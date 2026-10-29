@@ -195,9 +195,14 @@ def _own_ai_get(url, limit, progress=None):
     return bytes(buf), h.hexdigest()
 
 
-def own_ai_download(url=None):
+class OwnAiKept(Exception):
+    """the new model is not installed: the same as the running one, or its evaluation is worse (part 196)"""
+
+
+def own_ai_download(url=None, only_better=False):
     """Fetch the own model: manifest (moveeye_model.json) from the address in the settings, then the .onnx file next to it;
-    the sha256 of the manifest must match. Then switch to it («KI-Modell: Eigenes»)."""
+    the sha256 of the manifest must match. Then switch to it («KI-Modell: Eigenes»).
+    only_better: install only when it is new and its evaluation is not worse than the downloaded one (own_ai_not_worse, part 196)."""
     if OWN_AI["busy"]:
         return False, "already running"
     if DEMO["on"]:
@@ -218,6 +223,10 @@ def own_ai_download(url=None):
                 raise RuntimeError("the model description is not valid")
             except ValueError as e:
                 raise RuntimeError(str(e))
+            if only_better:
+                ok_, why_, det_ = own_ai_not_worse(meta, own_ai_current_meta())
+                if not ok_:
+                    raise OwnAiKept(tr(why_) + (f" ({det_})" if det_ else ""))
             src = meta.get("url") if str(meta.get("url") or "").startswith("https://") else url.rsplit("/", 1)[0] + "/" + meta["file"]
             def prog(got, total):
                 OWN_AI["pct"] = int(got * 90 / total) if total else min(89, got // (200 * 1024))
@@ -242,6 +251,9 @@ def own_ai_download(url=None):
                 w.ai = AIDetector()
             OWN_AI.update(msg="ready", pct=100)
             log_event("ai", f"Own AI model {meta['version']} downloaded ({len(data) // 1024} kB, sha256 ok) and switched on")
+        except OwnAiKept as e:
+            OWN_AI.update(msg=(tr("not installed") + ": " + str(e))[:160], pct=0)
+            log_event("ai", f"Own AI model: new one not installed ({e})"[:200])
         except Exception as e:
             reason = _short_net_err(e) if isinstance(e, (OSError, urllib.error.URLError)) else str(e)
             OWN_AI.update(msg=f"failed: {tr(reason)}"[:140], pct=0)
@@ -273,7 +285,11 @@ def own_ai_info(lang=None):
     ai = getattr(WATCH_REF.get("w"), "ai", None)
     running = "own" if ai is not None and ai.kind == "yolo" else ("ssd" if ai is not None and ai.net is not None else "")
     m = (meta or {}).get("metrics") or {}
-    return {"choice": CFG.get("ai_model", "ssd"), "running": running, "running_version": ai.meta.get("version") if running == "own" else None, "note": tr(STATE.get("ai_model_note") or "", lang),
+    en = norm_lang(lang or CFG.get("lang") or "en") not in ("de", "rm")
+    summ = str((meta or {}).get("summary_en" if en else "summary") or (meta or {}).get("summary") or "")[:400]
+    return {"summary": summ, "recall": m.get("recall"), "auto": bool(CFG.get("ai_own_auto", True)),
+            "check_msg": tr(OWN_AI.get("check_msg") or "", lang), "checked": CFG.get("ai_own_check_day") or None,
+            "choice": CFG.get("ai_model", "ssd"), "running": running, "running_version": ai.meta.get("version") if running == "own" else None, "note": tr(STATE.get("ai_model_note") or "", lang),
             "present": bool(onnx), "version": (meta or {}).get("version"), "classes": (meta or {}).get("classes"),
             "input": (meta or {}).get("input"), "map50": m.get("map50"), "made": (meta or {}).get("made"),
             "busy": OWN_AI["busy"], "pct": OWN_AI["pct"], "msg": OWN_AI["msg"], "url": CFG.get("ai_own_url") or DEFAULTS["ai_own_url"]}
@@ -319,3 +335,4 @@ def own_ai_selftest():
         pass
     m = own_ai_check_manifest({"format": "moveeye-model-1", "classes": ["person", "animal", "vehicle"], "input": 320, "sha256": "a" * 64, "conf": {"person": 0.3}})
     assert own_ai_thresholds(m, 0.5, 0.6) == [0.3, 0.45, 0.45], own_ai_thresholds(m, 0.5, 0.6)
+    own_ai_auto_selftest()                                 # part 196: may a new model replace the running one?

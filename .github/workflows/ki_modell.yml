@@ -17,6 +17,9 @@ on:
         description: "Als Release «ki-modell» veröffentlichen (sonst nur zum Herunterladen unter Artifacts)"
         type: boolean
         default: true
+      quelle:
+        description: "Wer hat das Training gestartet (nur fürs Protokoll, z. B. «Simulator: MW-Trainingsbilder_….zip»)"
+        default: "von Hand"
   # Automatic training (off). To switch it on: remove the «#» in front of the next two lines (here: every Sunday 02:17 UTC).
   # schedule:
   #   - cron: "17 2 * * 0"
@@ -37,6 +40,7 @@ jobs:
       BASIS: ${{ github.event.inputs.basis || 'yolov8n.pt' }}
       VEROEFFENTLICHEN: ${{ github.event.inputs.veroeffentlichen || 'true' }}
       GH_TOKEN: ${{ github.token }}
+      QUELLE: ${{ github.event.inputs.quelle || 'Zeitplan' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -80,7 +84,9 @@ jobs:
         run: |
           python ki_training/trainieren.py --pakete ki_training/pakete extra/pakete --echt ki_training/echt extra/echt \
             --basis "$BASIS" --epochen "$EPOCHEN" --imgsz 320 --version "${{ github.run_number }}" --aus ausgabe --arbeit arbeit
+          echo "Gestartet: $QUELLE"
           cat ausgabe/bericht.md >> "$GITHUB_STEP_SUMMARY"
+          if [ -f ausgabe/auswertung.md ]; then cat ausgabe/auswertung.md >> "$GITHUB_STEP_SUMMARY"; fi
       - name: Ergebnis aufbewahren (Artifacts)
         if: always()
         uses: actions/upload-artifact@v4
@@ -94,11 +100,14 @@ jobs:
         run: |
           set -e
           n="${{ github.run_number }}"
-          gh release create "ki-modell-$n" ausgabe/moveeye_model.onnx ausgabe/moveeye_model.json -R "$GITHUB_REPOSITORY" \
-            --title "MoveEye-KI-Modell $n" --notes-file ausgabe/bericht.md --latest=false
+          # notes = short report + «wo versagt die KI» (auswertung.md, also as a file in the release)
+          { cat ausgabe/bericht.md; echo; [ -f ausgabe/auswertung.md ] && cat ausgabe/auswertung.md; } > ausgabe/notizen.md
+          [ -f ausgabe/auswertung.md ] || echo "## Auswertung fehlt" > ausgabe/auswertung.md
+          gh release create "ki-modell-$n" ausgabe/moveeye_model.onnx ausgabe/moveeye_model.json ausgabe/auswertung.md -R "$GITHUB_REPOSITORY" \
+            --title "MoveEye-KI-Modell $n" --notes-file ausgabe/notizen.md --latest=false
           if ! gh release view ki-modell -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release create ki-modell -R "$GITHUB_REPOSITORY" --title "MoveEye-KI-Modell (neuestes)" \
               --notes "Immer das neueste eigene KI-Modell. MoveEye lädt es von hier." --latest=false
           fi
-          gh release upload ki-modell ausgabe/moveeye_model.onnx ausgabe/moveeye_model.json -R "$GITHUB_REPOSITORY" --clobber
-          gh release edit ki-modell -R "$GITHUB_REPOSITORY" --notes-file ausgabe/bericht.md
+          gh release upload ki-modell ausgabe/moveeye_model.onnx ausgabe/moveeye_model.json ausgabe/auswertung.md -R "$GITHUB_REPOSITORY" --clobber
+          gh release edit ki-modell -R "$GITHUB_REPOSITORY" --notes-file ausgabe/notizen.md

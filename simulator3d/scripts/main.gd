@@ -1077,6 +1077,7 @@ var planner                           # planner.gd
 var pruef                             # pruefstand.gd (3D-3.49): the test bench on this PC
 var replay                            # replay.gd: Alarm-Rückblick in 3D (3D-3.44)
 var dataset                           # dataset.gd: Trainingsbilder (3D-3.44)
+var kitrain                           # kitrain.gd: «KI trainieren» - Paket auf GitHub, Training starten
 var tunnel                            # tunnel.gd: Tunnel zu MoveEye (3D-3.45)
 var tunnel_host := ""
 var tunnel_code := ""
@@ -3611,13 +3612,20 @@ func _control(d: Dictionary) -> Dictionary:
 		if op2 == "game":                                # 3D-3.53: the «missed» pictures of the game
 			return dataset.load_game()
 		if op2 == "export":                              # 3D-3.74: a training set (YOLO) for an own AI model
-			return dataset.export_pack(int(d.get("n", 500)), bool(d.get("scenes", true)))
+			return dataset.export_pack(int(d.get("n", 500)), bool(d.get("scenes", true)), str(d.get("vielfalt", "")))
 		if op2 == "stop":
 			dataset.stop()
 		var st2: Dictionary = dataset.state()
 		if op2 == "list":
 			st2["items"] = dataset.list()
 		return st2
+	elif a == "kitrain":                               # «KI trainieren»: get / start {n, vielfalt, dry} / upload {dry}
+		var op3 := str(d.get("op", "get"))
+		if op3 == "start":
+			return kitrain.start(int(d.get("n", 200)), str(d.get("vielfalt", dataset.vielfalt)), bool(d.get("dry", false)))
+		if op3 == "upload":
+			return kitrain.upload_last(bool(d.get("dry", false)))
+		return kitrain.state()
 	elif a == "netmap":                                # Empfangskarte (3D-3.44): measured spots as patches on the ground
 		return {"ok": true, "n": show_netmap(d.get("points", []))}
 	elif a == "replay":                                # Alarm-Rückblick in 3D (3D-3.44)
@@ -4088,6 +4096,9 @@ func _build_ui() -> void:
 	dataset = preload("res://scripts/dataset.gd").new()      # Trainingsbilder (3D-3.44)
 	dataset.main = self
 	add_child(dataset)
+	kitrain = preload("res://scripts/kitrain.gd").new()      # «KI trainieren»: pack -> GitHub release «ki-daten» -> workflow
+	kitrain.main = self
+	add_child(kitrain)
 	replay = preload("res://scripts/replay.gd").new()        # Alarm-Rückblick (3D-3.44)
 	replay.main = self
 	add_child(replay)
@@ -4480,6 +4491,7 @@ func _build_ui() -> void:
 	dsr.add_child(dsb)
 	ds_label = UI.small("")
 	tl.add_child(ds_label)
+	kitrain.build(tl, dsn)                           # Vielfalt normal / hoch, «KI trainieren» (kitrain.gd)
 	tl = UI.sub_fold(tl_main, "Mehr: Aufstellen, Erkunden, Handy-Simulator", false)
 	tl.set_meta("always", true)
 	sub_bodies.append(tl)

@@ -8,6 +8,13 @@ weitertrainieren, auf zurückgehaltenen Bildern messen (mAP), als ONNX mit 320 p
 
     python3 ki_training/trainieren.py --pakete ki_training/pakete --echt ki_training/echt --aus ausgabe
     python3 ki_training/trainieren.py ... --nur-daten        # nur den Datensatz bauen (ohne Training, ohne ultralytics)
+    python3 ki_training/trainieren.py ... --probe-auswertung # Datensatz + Auswertung mit erfundenen Funden (Test ohne ultralytics)
+
+Auswertung «wo versagt die KI» (auswertung.md, Kurzfassung im Manifest unter "eval"/"summary"): die Simulator-Pakete haben
+pro Bild eine Datei labels_meta/<train|val>/<bild>.json (Abstand, Haltung, Licht, Verdeckung, Unschärfe, Art pro Objekt).
+Nach dem Training sucht das Modell auf den zurückgehaltenen Bildern; jeder echte Rahmen gilt als gefunden, wenn ein Fund
+derselben Klasse ihn mit IoU >= 0.5 trifft. Daraus: Trefferquote nach Abstand, Haltung, Licht, Verdeckung, Art …, und
+Fehlalarme auf leeren Bildern (nach Art der Falle: Ast, Fahne, Licht, Insekt, Schatten).
 """
 import argparse, datetime, hashlib, json, os, re, shutil, sys, zipfile
 
@@ -109,15 +116,18 @@ def read_names(yaml_path):
 
 class Dataset:
     def __init__(self, root):
-        self.root = root; self.stats = {"pack_images": 0, "real_images": 0, "real_skipped": 0, "blank_skipped": 0, "background": 0,
+        self.root = root; self.meta = {}; self.stats = {"pack_images": 0, "real_images": 0, "real_skipped": 0, "blank_skipped": 0, "background": 0,
                                         "boxes": {c: 0 for c in CLASSES}, "val_images": 0, "packs": [], "real_sets": []}
         for p in ("images/train", "images/val", "labels/train", "labels/val"):
             os.makedirs(os.path.join(root, p), exist_ok=True)
 
-    def add(self, img_path, lines, name, val):
+    def add(self, img_path, lines, name, val, meta=None):
+        """meta: {"image": {...}, "objects": [one dict per line (same order) or None]} - kept in meta.json for the evaluation"""
         part = "val" if val else "train"
         ext = os.path.splitext(img_path)[1].lower()
         base = SAFE.sub("_", name)[:140]
+        if meta is not None:
+            self.meta[base] = dict(meta, part=part)
         shutil.copyfile(img_path, os.path.join(self.root, "images", part, base + ext))
         with open(os.path.join(self.root, "labels", part, base + ".txt"), "w") as f:
             f.write("".join(f"{c} {x:.5f} {y:.5f} {w:.5f} {h:.5f}\n" for c, x, y, w, h in lines))
@@ -127,6 +137,10 @@ class Dataset:
             self.stats["background"] += 1
         if val:
             self.stats["val_images"] += 1
+
+    def write_meta(self):
+        with open(os.path.join(self.root, "meta.json"), "w", encoding="utf-8") as f:
+            json.dump(self.meta, f, ensure_ascii=False)
 
     def write_yaml(self):
         p = os.path.join(self.root, "data.yaml")
@@ -164,19 +178,34 @@ def add_packs(ds, folders):
                 if blank(os.path.join(idir, fn)):
                     ds.stats["blank_skipped"] += 1; continue
                 lab = os.path.join(root, "labels", part, os.path.splitext(fn)[0] + ".txt")
-                lines = []
+                pm = read_pack_meta(os.path.join(root, "labels_meta", part, os.path.splitext(fn)[0] + ".json"))
+                by_line = {int(o.get("line", -1)): o for o in (pm or {}).get("objects", []) if isinstance(o, dict)}
+                lines, objs = [], []
                 if os.path.isfile(lab):
-                    for ln in open(lab):
+                    for i, ln in enumerate(open(lab)):
                         v = ln.split()
                         if len(v) != 5:
                             continue
                         c = target_class(names.get(int(float(v[0])), ""))
                         if c is not None:
                             lines.append((c, *[min(1.0, max(0.0, float(x))) for x in v[1:]]))
-                ds.add(os.path.join(idir, fn), lines, f"sim_{tag}_{fn}", part == "val")
+                            objs.append(by_line.get(i))
+                img_meta = {k: v for k, v in (pm or {}).items() if k not in ("objects", "dropped")}
+                img_meta["source"] = "sim"
+                ds.add(os.path.join(idir, fn), lines, f"sim_{tag}_{fn}", part == "val", {"image": img_meta, "objects": objs})
                 ds.stats["pack_images"] += 1
         ds.stats["packs"].append({"name": tag, "images": ds.stats["pack_images"] - n0})
         print(f"  pack {tag}: {ds.stats['pack_images'] - n0} pictures")
+
+
+def read_pack_meta(path):
+    """labels_meta/<part>/<bild>.json of a simulator pack (3D-4.x) - None if missing or broken"""
+    try:
+        with open(path, encoding="utf-8") as f:
+            m = json.load(f)
+        return m if isinstance(m, dict) else None
+    except (OSError, ValueError):
+        return None
 
 
 def read_real_items(root):
@@ -244,7 +273,8 @@ def add_real(ds, folders, pseudo_model=None, conf=0.25):
                         lines.append((kind, (x1 + x2) / 2 / W, (y1 + y2) / 2 / H, (x2 - x1) / W, (y2 - y1) / H))
                     if lab in ("person", "animal") and not any(CLASSES[c] == lab for c, *_r in lines):
                         ds.stats["real_skipped"] += 1; continue          # the COCO model did not find it: no box, not used
-            ds.add(p, lines, f"real_{tag}_{fn}", is_val(tag + "/" + fn))
+            ds.add(p, lines, f"real_{tag}_{fn}", is_val(tag + "/" + fn),
+                   {"image": {"source": "echt", "label": lab, "empty": not lines}, "objects": [{"kind": "echt"} for _l in lines]})
             ds.stats["real_images"] += 1
         ds.stats["real_sets"].append({"name": tag, "images": ds.stats["real_images"] - n0})
         print(f"  real {tag}: {ds.stats['real_images'] - n0} pictures")
@@ -288,6 +318,254 @@ def opencv_check(onnx_path, n, val_dir, nc):
     return {"opencv": cv2.__version__, "output": shape, "pictures": len(imgs), "with_detection": found}
 
 
+# ---- Auswertung «wo versagt die KI» ------------------------------------------------------------------------------------
+# preds: {base name of the picture: [(class, x1, y1, x2, y2, conf), ...]} with coordinates 0..1 (from predict_val or a test)
+WEATHER_DE = {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}
+BANDS = [  # (key, title, function(object meta, image meta, box) -> band name or None, band order)
+    ("dist", "Abstand", lambda o, im, b: None if not isinstance(o.get("dist"), (int, float)) or o["dist"] < 0 else
+        "unter 5 m" if o["dist"] < 5 else "5–10 m" if o["dist"] < 10 else "10–20 m" if o["dist"] < 20 else "20–35 m" if o["dist"] < 35 else "über 35 m",
+        ["unter 5 m", "5–10 m", "10–20 m", "20–35 m", "über 35 m"]),
+    ("size", "Grösse im Bild (Höhe)", lambda o, im, b: "unter 3 %" if b[3] < 0.03 else "3–8 %" if b[3] < 0.08 else "8–20 %" if b[3] < 0.2 else "über 20 %",
+        ["unter 3 %", "3–8 %", "8–20 %", "über 20 %"]),
+    ("posture", "Haltung (Personen)", lambda o, im, b: o.get("posture") or None, ["stehend", "geduckt", "kriechend"]),
+    ("light", "Licht", lambda o, im, b: None if not isinstance(o.get("light", im.get("light")), (int, float)) else
+        ("dunkel" + (" (Infrarot)" if im.get("ir") else "") if o.get("light", im.get("light")) < 0.12 else "Dämmerung" if o.get("light", im.get("light")) < 0.5 else "hell"),
+        ["hell", "Dämmerung", "dunkel", "dunkel (Infrarot)"]),
+    ("lum", "Helligkeit im Rahmen", lambda o, im, b: None if not isinstance(o.get("box_lum"), (int, float)) or o["box_lum"] < 0 else
+        "sehr dunkel" if o["box_lum"] < 0.08 else "dunkel" if o["box_lum"] < 0.2 else "mittel" if o["box_lum"] < 0.5 else "hell",
+        ["sehr dunkel", "dunkel", "mittel", "hell"]),
+    ("occ", "Verdeckung", lambda o, im, b: None if not isinstance(o.get("occlusion"), (int, float)) or o["occlusion"] < 0 else
+        "frei (unter 10 %)" if o["occlusion"] < 0.1 else "teils (10–40 %)" if o["occlusion"] < 0.4 else "stark (40–80 %)",
+        ["frei (unter 10 %)", "teils (10–40 %)", "stark (40–80 %)"]),
+    ("cut", "Am Bildrand angeschnitten", lambda o, im, b: None if not isinstance(o.get("cut"), (int, float)) else "nein" if o["cut"] < 0.1 else "ja",
+        ["nein", "ja"]),
+    ("blur", "Unschärfe", lambda o, im, b: "scharf" if not (o.get("blur_px") or o.get("soft")) else
+        "Bewegung stark" if (o.get("blur_px") or 0) >= 6 else "Bewegung leicht" if (o.get("blur_px") or 0) > 0 else "unscharf (Fokus)",
+        ["scharf", "unscharf (Fokus)", "Bewegung leicht", "Bewegung stark"]),
+    ("weather", "Wetter", lambda o, im, b: WEATHER_DE.get(im.get("weather"), im.get("weather")), ["klar", "bewölkt", "Regen", "Nebel", "Schnee"]),
+    ("carry", "Trägt etwas", lambda o, im, b: None if o.get("class") not in (None, "person") or "carry" not in o else ("ja" if o.get("carry") else "nein"), ["nein", "ja"]),
+    ("kind", "Art", lambda o, im, b: o.get("kind") or None, None),
+    ("scene", "Szene", lambda o, im, b: im.get("scene"), None),
+    ("source", "Quelle", lambda o, im, b: {"sim": "Simulator", "echt": "echte Bilder"}.get(im.get("source"), im.get("source")), None),
+]
+
+
+def iou(a, b):
+    ix = max(0.0, min(a[2], b[2]) - max(a[0], b[0])); iy = max(0.0, min(a[3], b[3]) - max(a[1], b[1]))
+    inter = ix * iy; u = (a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - inter
+    return inter / u if u > 0 else 0.0
+
+
+def read_gt(ds_root, part="val"):
+    """{base: [(class, x1, y1, x2, y2), ...]} of the YOLO labels of one part"""
+    out = {}
+    ldir = os.path.join(ds_root, "labels", part)
+    for fn in sorted(os.listdir(ldir)) if os.path.isdir(ldir) else []:
+        if not fn.endswith(".txt"):
+            continue
+        rows = []
+        for ln in open(os.path.join(ldir, fn)):
+            v = ln.split()
+            if len(v) == 5:
+                c, x, y, w, h = int(v[0]), *map(float, v[1:])
+                rows.append((c, x - w / 2, y - h / 2, x + w / 2, y + h / 2))
+        out[fn[:-4]] = rows
+    return out
+
+
+def evaluate(gt, meta, preds, conf=None, iou_min=0.5):
+    """match the finds to the true boxes per picture (greedy by IoU, same class, find >= threshold of its class).
+    Returns {"objects": [...], "images": [...], "totals": {...}}"""
+    conf = conf or {}
+    objs, imgs = [], []
+    for base, rows in gt.items():
+        m = meta.get(base) or {}; im = m.get("image") or {}; om = m.get("objects") or []
+        thr = lambda c: float(conf.get(CLASSES[c], 0.35)) if 0 <= c < len(CLASSES) else 0.35
+        ps = sorted([p for p in preds.get(base, []) if p[5] >= thr(int(p[0]))], key=lambda p: -p[5])
+        used = set(); hit = [False] * len(rows)
+        pairs = sorted(((iou(r[1:], p[1:5]), i, j) for i, r in enumerate(rows) for j, p in enumerate(ps) if int(p[0]) == r[0]), reverse=True)
+        for v, i, j in pairs:
+            if v < iou_min or hit[i] or j in used:
+                continue
+            hit[i] = True; used.add(j)
+        for i, r in enumerate(rows):
+            o = om[i] if i < len(om) and isinstance(om[i], dict) else {}
+            b = (r[1], r[2], r[3] - r[1], r[4] - r[2])
+            objs.append({"class": CLASSES[r[0]] if 0 <= r[0] < len(CLASSES) else str(r[0]), "hit": hit[i], "o": o, "im": im, "box": b, "image": base})
+        fp = [CLASSES[int(p[0])] for j, p in enumerate(ps) if j not in used and 0 <= int(p[0]) < len(CLASSES)]
+        imgs.append({"image": base, "empty": not rows, "fp": fp, "negatives": list(im.get("negatives") or []), "im": im})
+    n = len(objs); h = sum(o["hit"] for o in objs)
+    per = {}
+    for c in CLASSES:
+        oc = [o for o in objs if o["class"] == c]
+        if oc:
+            per[c] = {"n": len(oc), "hit": sum(o["hit"] for o in oc), "recall": round(sum(o["hit"] for o in oc) / len(oc), 4)}
+    empty = [i for i in imgs if i["empty"]]
+    fpe = [i for i in empty if i["fp"]]
+    tot = {"objects": n, "hits": h, "recall": round(h / n, 4) if n else None, "per_class": per,
+           "images": len(imgs), "empty_images": len(empty), "empty_with_false_alarm": len(fpe),
+           "false_finds": sum(len(i["fp"]) for i in imgs)}
+    return {"objects": objs, "images": imgs, "totals": tot}
+
+
+def band_table(res, key, classes=("person", "animal")):
+    """[(band, {class: (hits, n)}, (hits, n) all)] in the order of the band"""
+    spec = next(b for b in BANDS if b[0] == key)
+    rows = {}
+    for o in res["objects"]:
+        try:
+            band = spec[2](o["o"], o["im"], o["box"])
+        except (TypeError, KeyError, ValueError):
+            band = None
+        if band is None:
+            continue
+        r = rows.setdefault(band, {"all": [0, 0]})
+        r["all"][0] += o["hit"]; r["all"][1] += 1
+        if o["class"] in classes:
+            r.setdefault(o["class"], [0, 0]); r[o["class"]][0] += o["hit"]; r[o["class"]][1] += 1
+    order = spec[3] or sorted(rows, key=lambda k: -rows[k]["all"][1])
+    return [(k, rows[k]) for k in order if k in rows] + [(k, rows[k]) for k in rows if spec[3] and k not in spec[3]]
+
+
+def _pct(hn):
+    h, n = hn
+    return f"{100 * h / n:.0f} % ({h}/{n})" if n else "–"
+
+
+def weak_spots(res, min_n=5, top=5):
+    """the bands with the lowest recall (at least min_n objects, clearly below the average)"""
+    avg = res["totals"]["recall"] or 0.0
+    out = []
+    for key, title, _f, _o in BANDS:
+        if key in ("source", "scene"):
+            continue
+        for band, r in band_table(res, key):
+            h, n = r["all"]
+            if n >= min_n and h / n < avg - 0.05:
+                out.append((h / n, title, band, h, n))
+    out.sort()
+    return out[:top]
+
+
+def neg_table(res):
+    """false alarms on empty pictures by kind of trap"""
+    rows = {}
+    for i in res["images"]:
+        if not i["empty"]:
+            continue
+        kinds = sorted(set(i["negatives"])) or (["echtes Bild «nichts»"] if i["im"].get("source") == "echt" else ["ohne Falle"])
+        for k in kinds:
+            r = rows.setdefault(k, [0, 0]); r[0] += bool(i["fp"]); r[1] += 1
+    return sorted(rows.items(), key=lambda kv: -kv[1][1])
+
+
+EN = {"Abstand": "distance", "Grösse im Bild (Höhe)": "size in the picture", "Haltung (Personen)": "posture", "Licht": "light",
+      "Helligkeit im Rahmen": "brightness in the box", "Verdeckung": "occlusion", "Am Bildrand angeschnitten": "cut at the edge",
+      "Unschärfe": "blur", "Wetter": "weather", "Trägt etwas": "carrying something", "Art": "kind", "unter 5 m": "under 5 m",
+      "über 35 m": "over 35 m", "unter 3 %": "under 3 %", "über 20 %": "over 20 %", "stehend": "standing", "geduckt": "crouching",
+      "kriechend": "crawling", "hell": "bright", "Dämmerung": "dusk", "dunkel": "dark", "dunkel (Infrarot)": "dark (infrared)",
+      "sehr dunkel": "very dark", "mittel": "medium", "frei (unter 10 %)": "free (under 10 %)", "teils (10–40 %)": "partly (10–40 %)",
+      "stark (40–80 %)": "mostly (40–80 %)", "nein": "no", "ja": "yes", "scharf": "sharp", "unscharf (Fokus)": "out of focus",
+      "Bewegung leicht": "slight motion", "Bewegung stark": "strong motion", "klar": "clear", "bewölkt": "cloudy", "Regen": "rain",
+      "Nebel": "fog", "Schnee": "snow", "ast": "branch", "fahne": "flag", "licht": "light", "insekt": "insect", "schatten": "shadow",
+      "ohne Falle": "no trap", "echtes Bild «nichts»": "real picture «nothing»"}
+
+
+def summary_text(res, lang="de"):
+    """2-3 short lines (German, or English with lang="en") - in the manifest; MoveEye shows them in the model box"""
+    t = res["totals"]; en = lang == "en"; T = (lambda x: EN.get(x, x)) if en else (lambda x: x)
+    if not t["objects"]:
+        return "No held-out pictures with persons or animals - no evaluation." if en else "Keine zurückgehaltenen Bilder mit Personen oder Tieren – keine Auswertung."
+    s = (f"Found: {100 * t['recall']:.0f} % of {t['objects']} persons/animals" if en else f"Gefunden: {100 * t['recall']:.0f} % von {t['objects']} Personen/Tieren")
+    if "person" in t["per_class"]:
+        s += f" ({'persons' if en else 'Personen'} {100 * t['per_class']['person']['recall']:.0f} %)"
+    s += "."
+    ws = weak_spots(res, top=3)
+    if ws:
+        s += (" Weak: " if en else " Schwach bei: ") + ", ".join(f"{T(title).split(' (')[0].lower()} {T(band)} {100 * r:.0f} %" for r, title, band, _h, _n in ws) + "."
+    if t["empty_images"]:
+        s += (f" False alarms on {t['empty_with_false_alarm']} of {t['empty_images']} empty pictures" if en else
+              f" Fehlalarme auf {t['empty_with_false_alarm']} von {t['empty_images']} leeren Bildern")
+        nt = [(k, v) for k, v in neg_table(res) if v[0]]
+        if nt:
+            s += (" (mostly: " if en else " (meist: ") + T(max(nt, key=lambda kv: kv[1][0])[0]) + ")"
+        s += "."
+    return s
+
+
+def eval_report(res, title="Auswertung: Wo versagt die KI?"):
+    """the markdown report (auswertung.md, in the release)"""
+    t = res["totals"]
+    L = [f"## {title}", "", summary_text(res), "",
+         f"- Zurückgehaltene Bilder: {t['images']} ({t['empty_images']} leer), Objekte: {t['objects']}, gefunden: {t['hits']}"
+         + (f" (**Trefferquote {100 * t['recall']:.1f} %**)" if t["recall"] is not None else ""),
+         "- " + ", ".join(f"{c}: {_pct((v['hit'], v['n']))}" for c, v in t["per_class"].items()),
+         f"- Falsche Funde insgesamt: {t['false_finds']} · leere Bilder mit Fehlalarm: {t['empty_with_false_alarm']} von {t['empty_images']}",
+         "- Ein Rahmen gilt als gefunden, wenn ein Fund derselben Klasse ihn mit IoU ≥ 0.5 trifft (Schwelle je Klasse wie in MoveEye).",
+         "- Zahlen mit weniger als 5 Objekten sind Zufall – mit (wenig) markiert.", ""]
+    ws = weak_spots(res)
+    if ws:
+        L += ["### Die grössten Schwächen", ""] + [f"{k + 1}. **{title_} {band}**: {100 * r:.0f} % gefunden ({h} von {n})"
+                                                   for k, (r, title_, band, h, n) in enumerate(ws)] + [""]
+    for key, title_, _f, _o in BANDS:
+        tb = band_table(res, key)
+        if not tb or (len(tb) == 1 and key in ("source", "scene", "carry", "cut")):
+            continue
+        L += [f"### Trefferquote nach {title_}", "", "| | alle | Personen | Tiere |", "|---|---|---|---|"]
+        for band, r in tb[:25]:
+            few = " (wenig)" if r["all"][1] < 5 else ""
+            L.append(f"| {band}{few} | {_pct(r['all'])} | {_pct(r.get('person', (0, 0)))} | {_pct(r.get('animal', (0, 0)))} |")
+        L.append("")
+    nt = neg_table(res)
+    if nt:
+        L += ["### Fehlalarme auf leeren Bildern (nach Falle)", "", "| Falle | Bilder mit Fehlalarm |", "|---|---|"]
+        L += [f"| {k} | {_pct(v)} |" for k, v in nt] + [""]
+    return "\n".join(L) + "\n"
+
+
+def eval_manifest(res):
+    """the short form for moveeye_model.json (MoveEye compares it with the running model before an automatic update)"""
+    t = res["totals"]
+    bands = {}
+    for key in ("dist", "posture", "light", "occ"):
+        bands[key] = {band: round(r["all"][0] / r["all"][1], 3) for band, r in band_table(res, key) if r["all"][1]}
+    return {"recall": t["recall"], "recall_person": (t["per_class"].get("person") or {}).get("recall"), "objects": t["objects"],
+            "empty_images": t["empty_images"], "empty_false_alarm": round(t["empty_with_false_alarm"] / t["empty_images"], 4) if t["empty_images"] else None,
+            "weak": [f"{title} {band}: {100 * r:.0f} %" for r, title, band, _h, _n in weak_spots(res)], "bands": bands, "summary": summary_text(res),
+            "summary_en": summary_text(res, "en")}
+
+
+def predict_val(model, ds_root, imgsz, batch=16):
+    """the trained model on all val pictures: {base: [(class, x1, y1, x2, y2, conf)]} (0..1), low threshold - evaluate() cuts"""
+    vdir = os.path.join(ds_root, "images", "val"); out = {}
+    files = sorted(f for f in os.listdir(vdir) if f.lower().endswith(IMG_EXT))
+    for k in range(0, len(files), batch):
+        chunk = files[k:k + batch]
+        for f, r in zip(chunk, model.predict([os.path.join(vdir, f) for f in chunk], imgsz=imgsz, conf=0.05, device="cpu", verbose=False)):
+            out[os.path.splitext(f)[0]] = [(int(c), *map(float, b), float(cf)) for b, c, cf in zip(r.boxes.xyxyn.tolist(), r.boxes.cls.tolist(), r.boxes.conf.tolist())]
+    return out
+
+
+def fake_predictions(gt, meta, seed=7):
+    """for --probe-auswertung: finds that miss more far away, crawling, in the dark and behind things (tests the report)"""
+    import random
+    rnd = random.Random(seed); out = {}
+    for base, rows in gt.items():
+        m = meta.get(base) or {}; om = m.get("objects") or []; im = m.get("image") or {}
+        ps = []
+        for i, r in enumerate(rows):
+            o = om[i] if i < len(om) and isinstance(om[i], dict) else {}
+            p = 0.95 - 0.012 * float(o.get("dist") or 8) - (0.25 if o.get("posture") == "kriechend" else 0.1 if o.get("posture") == "geduckt" else 0)
+            p -= 0.5 * max(0.0, float(o.get("occlusion") or 0)) + (0.2 if float(o.get("light", im.get("light", 1)) or 0) < 0.12 else 0)
+            if rnd.random() < p:
+                j = 0.01
+                ps.append((r[0], r[1] + j, r[2] + j, r[3] + j, r[4] + j, rnd.uniform(0.4, 0.95)))
+        if not rows and im.get("negatives") and rnd.random() < 0.4:
+            ps.append((0, 0.4, 0.3, 0.5, 0.7, 0.6))
+        out[base] = ps
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pakete", nargs="*", default=["ki_training/pakete"], help="folders or ZIPs with simulator packs")
@@ -301,14 +579,15 @@ def main():
     ap.add_argument("--batch", type=int, default=32)
     ap.add_argument("--version", default="")
     ap.add_argument("--nur-daten", action="store_true", help="only build the dataset (no training)")
+    ap.add_argument("--probe-auswertung", action="store_true", help="dataset + evaluation report with made-up finds (tests the report without ultralytics)")
     a = ap.parse_args()
     os.makedirs(a.aus, exist_ok=True); os.makedirs(a.arbeit, exist_ok=True)
     ds_root = os.path.join(a.arbeit, "datensatz")
     shutil.rmtree(ds_root, ignore_errors=True)
     ds = Dataset(ds_root)
     print("Trainingspakete:"); add_packs(ds, unpack_all(a.pakete, a.arbeit, "pakete"))
-    print("Echte Bilder:"); add_real(ds, unpack_all(a.echt, a.arbeit, "echt"), (a.pseudo or None) if not a.nur_daten else None)
-    data_yaml = ds.write_yaml()
+    print("Echte Bilder:"); add_real(ds, unpack_all(a.echt, a.arbeit, "echt"), (a.pseudo or None) if not (a.nur_daten or a.probe_auswertung) else None)
+    data_yaml = ds.write_yaml(); ds.write_meta()
     st = ds.stats; n_all = st["pack_images"] + st["real_images"]
     print(json.dumps(st, indent=1))
     if n_all < 20:
@@ -317,6 +596,14 @@ def main():
         sys.exit("keine zurückgehaltenen Bilder (val) - ein Simulator-Paket hat immer welche")
     if a.nur_daten:
         print("nur Daten: fertig ->", data_yaml); return
+    if a.probe_auswertung:
+        gt = read_gt(ds_root); res = evaluate(gt, ds.meta, fake_predictions(gt, ds.meta), {"person": 0.3, "animal": 0.3, "vehicle": 0.3})
+        rep = eval_report(res, "Probe-Auswertung (erfundene Funde – nur zum Testen des Berichts)")
+        with open(os.path.join(a.aus, "auswertung.md"), "w", encoding="utf-8") as f:
+            f.write(rep)
+        with open(os.path.join(a.aus, "auswertung.json"), "w", encoding="utf-8") as f:
+            json.dump(eval_manifest(res), f, indent=1, ensure_ascii=False)
+        print(rep); return
 
     from ultralytics import YOLO, __version__ as ul_version
     model = YOLO(a.basis)
@@ -338,9 +625,18 @@ def main():
     check = opencv_check(onnx, a.imgsz, os.path.join(ds_root, "images", "val"), len(CLASSES))
     with open(onnx, "rb") as f:
         raw = f.read()
+    conf = best_conf(m)
+    try:                                                      # «wo versagt die KI»: the model on the held-out pictures
+        res = evaluate(read_gt(ds_root), ds.meta, predict_val(best, ds_root, a.imgsz), conf)
+        ev = eval_manifest(res); ev_md = eval_report(res)
+    except Exception as e:                                    # the model itself is fine - the report must not stop it
+        print("  ! Auswertung ging nicht:", e); ev = {"summary": f"Auswertung ging nicht: {e}"[:200]}; ev_md = "## Auswertung\n\n" + ev["summary"] + "\n"
+    with open(os.path.join(a.aus, "auswertung.md"), "w", encoding="utf-8") as f:
+        f.write(ev_md)
     version = a.version or datetime.datetime.utcnow().strftime("%Y%m%d-%H%M")
     man = {"format": "moveeye-model-1", "version": str(version), "classes": CLASSES, "input": a.imgsz, "file": "moveeye_model.onnx",
-           "sha256": hashlib.sha256(raw).hexdigest(), "size": len(raw), "conf": best_conf(m), "metrics": metrics,
+           "sha256": hashlib.sha256(raw).hexdigest(), "size": len(raw), "conf": conf, "metrics": metrics,
+           "eval": ev, "summary": ev.get("summary", ""), "summary_en": ev.get("summary_en", ""),
            "made": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"), "base": a.basis, "epochs": a.epochen,
            "ultralytics": ul_version, "images": {k: st[k] for k in ("pack_images", "real_images", "real_skipped", "blank_skipped", "background", "val_images", "boxes")},
            "check": check}
@@ -353,7 +649,8 @@ def main():
            f"- Rahmen: " + ", ".join(f"{k} {v}" for k, v in st["boxes"].items()) + "\n"
            f"- **mAP50 {metrics['map50']:.3f}** · mAP50-95 {metrics['map50_95']:.3f} · Präzision {metrics['precision']:.3f} · Trefferquote {metrics['recall']:.3f}\n"
            f"- Grundmodell {a.basis}, {a.epochen} Epochen, Eingang {a.imgsz} px, ONNX {len(raw) // 1024} kB, sha256 `{man['sha256']}`\n"
-           f"- OpenCV-Prüfung ({check['opencv']}): Ausgabe {check['output']}, {check['with_detection']} von {check['pictures']} Bildern mit Fund\n\n"
+           f"- OpenCV-Prüfung ({check['opencv']}): Ausgabe {check['output']}, {check['with_detection']} von {check['pictures']} Bildern mit Fund\n"
+           f"- **Wo versagt die KI?** {ev.get('summary', '')} (ganze Auswertung: auswertung.md)\n\n"
            "| Klasse | mAP50 | mAP50-95 |\n|---|---|---|\n" + pc +
            "\nIn MoveEye: Einstellungen → KI-Erkennung → «Eigenes Modell herunterladen», dann «KI-Modell: Eigenes».\n")
     with open(os.path.join(a.aus, "bericht.md"), "w", encoding="utf-8") as f:

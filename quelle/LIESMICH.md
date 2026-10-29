@@ -59,6 +59,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `180_ki_tierarten_helfer_tunnel.py` | Tierarten, Alarm-Rückblick, KI-Rechenhilfe, KI-Prüfung, Tunnel, AIDetector | 841 |
 | `190_relais_wetter_tracker.py` | Relais, Wetter-Analyse, Auto-Tuner, Tracker | 422 |
 | `195_ki_eigenes_modell.py` | Eigenes KI-Modell (YOLO als ONNX): laden, herunterladen (sha256), Ausgabe entschlüsseln, Selbsttest | 321 |
+| `196_ki_modell_auto.py` | Eigenes KI-Modell von selbst aktualisieren: täglich prüfen, nur übernehmen, wenn die Auswertung nicht schlechter ist | 125 |
 | `200_erkennung_videoquellen.py` | Video-Quellen (USB, Pi-Kamera, Netz) | 166 |
 | `210_demo.py` | Demo-Modus | 255 |
 | `220_zeitraffer.py` | Zeitraffer | 195 |
@@ -114,6 +115,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `576_fenster_zeitleiste.py` | Fenster: Zeitleiste als Liste, Wochenbericht | 130 |
 | `577_nachlauf_konzept.py` | Nachlauf Konzept-Check: ein Wochenbericht, Rückkehr des Handys (ausschalten / fragen / nichts), Akku-Schwellen zusammen, Auto-Tuner ±20 %, Übernahme alter Einstellungen | 201 |
 | `578_sicher.py` | «Sicher»: «Aus» in der Push nur mit PIN, Push nach Stromausfall, Fehlerseiten in der eigenen Sprache, Nachtblick, Namen für Bildschirmleser, Aufnahmen nach N Tagen löschen / «Ferien vorbei», Push ohne Bild | 743 |
+| `579_ki_modell_auto_schalter.py` | Schalter «Eigenes Modell von selbst aktualisieren» (Web und Fenster) | 4 |
 | `571_alarm_einstellungen.py` | Schalter und Regler der Alarm-Extras (Web und Fenster) | 16 |
 | `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
 | `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
@@ -134,6 +136,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `609_uebersetzungen_robust.py` | Übersetzungen und Anleitung: Speicherkarte, Selbstheilung, Simulator-Sperre | 142 |
 | `610_anleitung_ergaenzungen.py` | Anleitung: Ergänzungen in allen Sprachen | 167 |
 | `613_uebersetzungen_sicher.py` | Übersetzungen und Anleitung zu 578 | 165 |
+| `614_uebersetzungen_training.py` | Übersetzungen «KI trainieren» / Modell von selbst aktualisieren | 27 |
 | `620_daten_produktseite.py` | Daten: Produktseite für Gäste (/info/) | 2651 |
 | `630_almanach.py` | Extras: Überlebens-Almanach | 270 |
 | `640_start.py` | Start: Befehlszeile, Selbsttest, Programmstart | 152 |

@@ -15190,9 +15190,14 @@ def _own_ai_get(url, limit, progress=None):
     return bytes(buf), h.hexdigest()
 
 
-def own_ai_download(url=None):
+class OwnAiKept(Exception):
+    """the new model is not installed: the same as the running one, or its evaluation is worse (part 196)"""
+
+
+def own_ai_download(url=None, only_better=False):
     """Fetch the own model: manifest (moveeye_model.json) from the address in the settings, then the .onnx file next to it;
-    the sha256 of the manifest must match. Then switch to it («KI-Modell: Eigenes»)."""
+    the sha256 of the manifest must match. Then switch to it («KI-Modell: Eigenes»).
+    only_better: install only when it is new and its evaluation is not worse than the downloaded one (own_ai_not_worse, part 196)."""
     if OWN_AI["busy"]:
         return False, "already running"
     if DEMO["on"]:
@@ -15213,6 +15218,10 @@ def own_ai_download(url=None):
                 raise RuntimeError("the model description is not valid")
             except ValueError as e:
                 raise RuntimeError(str(e))
+            if only_better:
+                ok_, why_, det_ = own_ai_not_worse(meta, own_ai_current_meta())
+                if not ok_:
+                    raise OwnAiKept(tr(why_) + (f" ({det_})" if det_ else ""))
             src = meta.get("url") if str(meta.get("url") or "").startswith("https://") else url.rsplit("/", 1)[0] + "/" + meta["file"]
             def prog(got, total):
                 OWN_AI["pct"] = int(got * 90 / total) if total else min(89, got // (200 * 1024))
@@ -15237,6 +15246,9 @@ def own_ai_download(url=None):
                 w.ai = AIDetector()
             OWN_AI.update(msg="ready", pct=100)
             log_event("ai", f"Own AI model {meta['version']} downloaded ({len(data) // 1024} kB, sha256 ok) and switched on")
+        except OwnAiKept as e:
+            OWN_AI.update(msg=(tr("not installed") + ": " + str(e))[:160], pct=0)
+            log_event("ai", f"Own AI model: new one not installed ({e})"[:200])
         except Exception as e:
             reason = _short_net_err(e) if isinstance(e, (OSError, urllib.error.URLError)) else str(e)
             OWN_AI.update(msg=f"failed: {tr(reason)}"[:140], pct=0)
@@ -15268,7 +15280,11 @@ def own_ai_info(lang=None):
     ai = getattr(WATCH_REF.get("w"), "ai", None)
     running = "own" if ai is not None and ai.kind == "yolo" else ("ssd" if ai is not None and ai.net is not None else "")
     m = (meta or {}).get("metrics") or {}
-    return {"choice": CFG.get("ai_model", "ssd"), "running": running, "running_version": ai.meta.get("version") if running == "own" else None, "note": tr(STATE.get("ai_model_note") or "", lang),
+    en = norm_lang(lang or CFG.get("lang") or "en") not in ("de", "rm")
+    summ = str((meta or {}).get("summary_en" if en else "summary") or (meta or {}).get("summary") or "")[:400]
+    return {"summary": summ, "recall": m.get("recall"), "auto": bool(CFG.get("ai_own_auto", True)),
+            "check_msg": tr(OWN_AI.get("check_msg") or "", lang), "checked": CFG.get("ai_own_check_day") or None,
+            "choice": CFG.get("ai_model", "ssd"), "running": running, "running_version": ai.meta.get("version") if running == "own" else None, "note": tr(STATE.get("ai_model_note") or "", lang),
             "present": bool(onnx), "version": (meta or {}).get("version"), "classes": (meta or {}).get("classes"),
             "input": (meta or {}).get("input"), "map50": m.get("map50"), "made": (meta or {}).get("made"),
             "busy": OWN_AI["busy"], "pct": OWN_AI["pct"], "msg": OWN_AI["msg"], "url": CFG.get("ai_own_url") or DEFAULTS["ai_own_url"]}
@@ -15314,6 +15330,120 @@ def own_ai_selftest():
         pass
     m = own_ai_check_manifest({"format": "moveeye-model-1", "classes": ["person", "animal", "vehicle"], "input": 320, "sha256": "a" * 64, "conf": {"person": 0.3}})
     assert own_ai_thresholds(m, 0.5, 0.6) == [0.3, 0.45, 0.45], own_ai_thresholds(m, 0.5, 0.6)
+    own_ai_auto_selftest()                                 # part 196: may a new model replace the running one?
+# ----------------------------------------------------------------------------
+# «KI trainieren» im Simulator (kitrain.gd) legt ein Trainingspaket auf GitHub und startet das Training (ki_modell.yml).
+# Das neue Modell erscheint im Release «ki-modell». Hier: einmal am Tag (und beim Knopf «Eigenes Modell aktualisieren»)
+# das Manifest lesen und das Modell nur übernehmen, wenn es neu ist und seine Messung nicht schlechter als die des
+# laufenden: mAP50, Trefferquote und «Personen gefunden» (eval.recall_person aus der Auswertung «wo versagt die KI»),
+# je mit 0.02 Spielraum (jedes Training misst auf etwas anderen Bildern).
+# Nur wenn schon ein eigenes Modell heruntergeladen ist - zum ersten Mal holt man es von Hand.
+# ----------------------------------------------------------------------------
+_OWNAUTO_CFG = {"ai_own_auto": True, "ai_own_check_day": ""}
+for _k, _v in _OWNAUTO_CFG.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+OWN_AI_TOL = 0.02
+
+
+def own_ai_current_meta():
+    """the manifest of the downloaded own model, or None"""
+    _o, js = own_ai_paths()
+    if not js:
+        return None
+    try:
+        with open(js, encoding="utf-8") as f:
+            return own_ai_check_manifest(json.load(f))
+    except (OSError, ValueError, TypeError):
+        return None
+
+
+def _own_ai_scores(m):
+    """the comparable numbers of a manifest: {"mAP50": .., "recall": .., "persons found": ..} (only those it has)"""
+    m = m or {}
+    met = m.get("metrics") if isinstance(m.get("metrics"), dict) else {}
+    ev = m.get("eval") if isinstance(m.get("eval"), dict) else {}
+    out = {}
+    for name, v in (("mAP50", met.get("map50")), ("recall", met.get("recall")), ("persons found", ev.get("recall_person"))):
+        if isinstance(v, (int, float)) and not isinstance(v, bool) and 0.0 <= float(v) <= 1.0:
+            out[name] = float(v)
+    return out
+
+
+def own_ai_not_worse(new, cur):
+    """(ok, reason in English for tr(), detail with numbers) - may the new model replace the running one?"""
+    if not cur:
+        return True, "", ""
+    if str(new.get("sha256") or "") and str(new.get("sha256")) == str(cur.get("sha256") or ""):
+        return False, "already the newest model", ""
+    a, b = _own_ai_scores(new), _own_ai_scores(cur)
+    common = [k for k in a if k in b]
+    if not common:
+        return (False, "the new model has no evaluation", "") if b else (True, "", "")
+    worse = [f"{k} {a[k]:.2f} < {b[k]:.2f}" for k in common if a[k] < b[k] - OWN_AI_TOL]
+    if worse:
+        return False, "its evaluation is worse", ", ".join(worse)
+    return True, "", ""
+
+
+def own_ai_auto_check(force=False):
+    """once a day (force: now): look for a new own model and install it only if it is not worse. Returns (started, reason)."""
+    if not CFG.get("ai_own_auto", True) and not force:
+        return False, "off"
+    if not own_ai_paths()[0]:
+        return False, "own model not downloaded yet"
+    if DEMO["on"] or OWN_AI["busy"]:
+        return False, "busy"
+    day = datetime.now().strftime("%Y-%m-%d")
+    if not force and CFG.get("ai_own_check_day") == day:
+        return False, "checked today"
+    CFG["ai_own_check_day"] = day
+    save_settings()
+    ok, err = own_ai_download(only_better=True)
+    OWN_AI["check_msg"] = "" if ok else err
+    if not ok:
+        log_event("ai", f"Own AI model: daily check not possible ({err})"[:200])
+    return ok, err
+
+
+def _own_ai_auto_loop():
+    time.sleep(600)                                      # not right at the start (network, camera first)
+    while True:
+        try:
+            own_ai_auto_check()
+        except Exception as e:
+            log_event("ai", f"Own AI model check: {e}"[:200])
+        time.sleep(1800)
+
+
+def own_ai_long_text(lang=None):
+    """own_ai_text + the summary of its evaluation («wo versagt die KI») + the automatic update (for the window)"""
+    i = own_ai_info(lang)
+    t = own_ai_text(lang)
+    if i.get("summary"):
+        t += "\n📊 " + i["summary"]
+    if i["present"]:
+        t += "\n🔄 " + (tr("updates by itself (daily, only if not worse)", lang) if i["auto"] else tr("automatic update off", lang))
+        if CFG.get("ai_own_check_day"):
+            t += f" · {tr('last check', lang)} {CFG['ai_own_check_day']}"
+    if OWN_AI.get("msg") and OWN_AI["msg"] != "ready" and not OWN_AI["busy"]:
+        t += "\n" + OWN_AI["msg"]
+    return t
+
+
+def own_ai_auto_selftest():
+    """self-test: comparing two manifests"""
+    cur = {"sha256": "a" * 64, "metrics": {"map50": 0.70, "recall": 0.60}, "eval": {"recall_person": 0.80}}
+    assert own_ai_not_worse({"sha256": "a" * 64}, cur)[0] is False                                   # the same file
+    assert own_ai_not_worse({"sha256": "b" * 64, "metrics": {"map50": 0.69, "recall": 0.61}, "eval": {"recall_person": 0.79}}, cur)[0]   # within 0.02
+    ok, why, det = own_ai_not_worse({"sha256": "b" * 64, "metrics": {"map50": 0.72, "recall": 0.62}, "eval": {"recall_person": 0.70}}, cur)
+    assert not ok and why == "its evaluation is worse" and "persons found" in det, (ok, why, det)
+    assert own_ai_not_worse({"sha256": "b" * 64}, cur)[1] == "the new model has no evaluation"
+    assert own_ai_not_worse({"sha256": "b" * 64, "metrics": {"map50": 0.5}}, None)[0]                 # nothing installed yet
+    assert own_ai_not_worse({"sha256": "b" * 64, "metrics": {"map50": 0.5}}, {"sha256": "c" * 64})[0]   # old model without numbers
+
+
+threading.Thread(target=_own_ai_auto_loop, daemon=True, name="own-ai-auto").start()
 # ----------------------------------------------------------------------------
 # Main detector
 # ----------------------------------------------------------------------------
@@ -43870,7 +44000,8 @@ Object.assign(I18N.de, {"Mover": "Mover", "Mover (tracked vehicle)": "Mover (Ket
 Object.assign(I18N.de, {"GPS module": "GPS-Modul", "Own GPS module (USB or serial; gpsd is used if installed)": "Eigenes GPS-Modul (USB oder seriell; gpsd wird genutzt, falls installiert)", "Theft tracking: alarm when the armed device is carried away, then its position every 5 minutes": "Diebstahl-Ortung: Alarm, wenn das geschützte Gerät weggetragen wird, danach alle 5 Minuten seine Position", "Theft tracking: alarm from a distance of (m)": "Diebstahl-Ortung: Alarm ab einer Entfernung von (m)", "Connection": "Anschluss", "automatic": "automatisch", "the device was carried away": "das Gerät wurde weggetragen", "Position": "Position", "position": "Position", "Position now": "Position jetzt", "THEFT ALARM": "DIEBSTAHL-ALARM", "gpsd not running": "gpsd läuft nicht", "no GPS module found": "kein GPS-Modul gefunden", "searching satellites": "sucht Satelliten", "fix": "Position gefunden", "A USB GPS receiver (e.g. u-blox, VK-162) is found by itself. It needs a view of the sky. With an LTE stick the position arrives also when the device is stolen.": "Ein USB-GPS-Empfänger (z. B. u-blox, VK-162) wird von selbst gefunden. Er braucht freie Sicht zum Himmel. Mit LTE-Stick kommt die Position auch an, wenn das Gerät gestohlen wird.", "satellites": "Satelliten", "Theft tracking on guard": "Diebstahl-Ortung wacht", "Theft tracking starts when armed": "Diebstahl-Ortung startet, wenn der Schutz an ist", "From the GPS module": "Vom GPS-Modul", "from the GPS module": "vom GPS-Modul"});
 Object.assign(I18N.de, {"Solar panel": "Solarpanel", "Solar panel with current meter (INA219 on I2C)": "Solarpanel mit Strommesser (INA219 an I2C)", "Push message in the evening when the battery will probably not last until sunrise": "Push-Nachricht am Abend, wenn der Akku voraussichtlich nicht bis Sonnenaufgang reicht", "Current meter: shunt resistor (Ohm, usually 0.1)": "Strommesser: Shunt-Widerstand (Ohm, meist 0,1)", "Current meter: address (I2C)": "Strommesser: Adresse (I2C)", "The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.": "Der Akku reicht voraussichtlich nicht bis Sonnenaufgang ({sr}): noch etwa {have} h, nötig {need} h. Aufladen oder Stromsparen einschalten.", "Battery": "Akku", "lasts until sunrise ({sr})": "reicht bis Sonnenaufgang ({sr})", "too little until sunrise ({sr})": "zu knapp bis Sonnenaufgang ({sr})", "INA219 current meter between the panel and the charger (address 0x41 or 0x44 - 0x40 is often taken by the servo board).": "INA219-Strommesser zwischen Panel und Laderegler (Adresse 0x41 oder 0x44 – 0x40 ist oft vom Servo-Board belegt).", "no current meter found at this address": "kein Strommesser an dieser Adresse gefunden", "today": "heute", "max.": "max.", "Battery lasts until sunrise": "Akku reicht bis Sonnenaufgang", "Battery probably too low until sunrise": "Akku reicht voraussichtlich nicht bis Sonnenaufgang", "Night forecast: needs a battery value (Settings → Battery)": "Nacht-Prognose: braucht einen Akku-Wert (Einstellungen → Akku)"});
 Object.assign(I18N.de, {"Recognise the animal species (second AI model - see the guide)": "Tierart erkennen (zweites KI-Modell – siehe Anleitung)", "Animal species: minimum certainty": "Tierart: Mindest-Sicherheit", "Animal species: model": "Tierart: Modell", "Animal species: picture preparation of the model": "Tierart: Bildaufbereitung des Modells", "Animal species: a second AI model (ONNX) recognises fox, badger, wild boar … It is not included - install it from an address or copy it into the folder.": "Tierart: ein zweites KI-Modell (ONNX) erkennt Fuchs, Dachs, Wildschwein … Es ist nicht dabei – von einer Adresse installieren oder in den Ordner kopieren.", "or .zip": "oder .zip", "Install model": "Modell installieren", "Folder": "Ordner", "Models": "Modelle", "Last": "Zuletzt", "downloading …": "lädt herunter …", "no model chosen": "kein Modell gewählt", "address must start with https://": "die Adresse muss mit https:// beginnen", "the address must end with .onnx or .zip": "die Adresse muss auf .onnx oder .zip enden", "file too big": "Datei zu gross"});
-Object.assign(I18N.de, {"AI model": "KI-Modell", "Standard (SSD MobileNet V2)": "Standard (SSD MobileNet V2)", "Own (MoveEye model)": "Eigenes (MoveEye-Modell)", "Own model: address of its description (moveeye_model.json)": "Eigenes Modell: Adresse seiner Beschreibung (moveeye_model.json)", "Download own model": "Eigenes Modell herunterladen", "Update own model": "Eigenes Modell aktualisieren", "Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs.": "Eigenes Modell: auf GitHub trainiert aus Simulator-Bildern und deinen beschrifteten Alarmbildern (Person, Tier, Fahrzeug). Nach dem Herunterladen nimmt MoveEye es (zurück zum Standard: «KI-Modell», Ansicht Experte). Fehlt es oder klappt es nicht, läuft das Standard-Modell.", "Now running": "Läuft jetzt", "own model not used": "eigenes Modell nicht benutzt", "not downloaded yet": "noch nicht heruntergeladen", "downloading the own model …": "lädt das eigene Modell …", "own model ready": "eigenes Modell bereit", "MoveEye model": "MoveEye-Modell", "made": "erstellt"});
+Object.assign(I18N.de, {"AI model": "KI-Modell", "Standard (SSD MobileNet V2)": "Standard (SSD MobileNet V2)", "Own (MoveEye model)": "Eigenes (MoveEye-Modell)", "Own model: address of its description (moveeye_model.json)": "Eigenes Modell: Adresse seiner Beschreibung (moveeye_model.json)", "Download own model": "Eigenes Modell herunterladen", "Update own model": "Eigenes Modell aktualisieren", "Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs.": "Eigenes Modell: auf GitHub trainiert aus Simulator-Bildern und deinen beschrifteten Alarmbildern (Person, Tier, Fahrzeug). Nach dem Herunterladen nimmt MoveEye es (zurück zum Standard: «KI-Modell», Ansicht Experte). Fehlt es oder klappt es nicht, läuft das Standard-Modell.", "Now running": "Läuft jetzt", "own model not used": "eigenes Modell nicht benutzt", "not downloaded yet": "noch nicht heruntergeladen", "downloading the own model …": "lädt das eigene Modell …", "own model ready": "eigenes Modell bereit", "MoveEye model": "MoveEye-Modell", "made": "erstellt",
+  "updates by itself (daily, only if not worse)": "aktualisiert sich selbst (täglich, nur wenn nicht schlechter)", "automatic update off": "automatisches Aktualisieren aus", "last check": "zuletzt geprüft"});
 function ownExtras(d) {                             // part 195: own MoveEye model (YOLO) - download + which model runs
   const box = el("div", "auxbox"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
   box.appendChild(el("div", "mut", "🧠 " + t("Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs.")));
@@ -43879,6 +44010,8 @@ function ownExtras(d) {                             // part 195: own MoveEye mod
     const L = [t("Now running") + ": " + (j.running === "ssd" ? "SSD MobileNet V2" : j.running === "own" ? t("MoveEye model") + " " + j.running_version : t("none"))];
     if (j.choice === "own" && j.note) L.push("⚠ " + t("own model not used") + ": " + j.note);
     L.push(t("Own (MoveEye model)") + ": " + (j.present ? j.version + " · " + (j.classes || []).join(", ") + " · " + j.input + " px" + (j.map50 != null ? " · mAP50 " + Number(j.map50).toFixed(2) : "") + (j.made ? " · " + t("made") + " " + j.made : "") : t("not downloaded yet")));
+    if (j.summary) L.push("📊 " + j.summary);
+    if (j.present) L.push("🔄 " + t(j.auto ? "updates by itself (daily, only if not worse)" : "automatic update off") + (j.checked ? " · " + t("last check") + " " + j.checked : ""));
     if (j.busy) L.push(t("downloading the own model …") + " " + j.pct + " %"); else if (j.msg && j.msg !== "ready") L.push("⚠ " + j.msg);
     st.textContent = L.join("\n"); };
   const load = () => fetch("/api/own_model?lang=" + LANG).then(r => r.json()).then(show).catch(() => {});
@@ -49648,8 +49781,8 @@ class WebStream:
         @app.route("/api/own_model", methods=["GET", "POST"])
         def api_own_model():                             # part 195: own MoveEye model (YOLO, ONNX) from the GitHub release
             lg = request.args.get("lang") or body().get("lang") if request.method == "POST" else request.args.get("lang")
-            if request.method == "POST":
-                ok, err = own_ai_download()
+            if request.method == "POST":                 # part 196: with a model already there only a new one that is not worse
+                ok, err = own_ai_download(only_better=bool(own_ai_paths()[0]) and not body().get("force"))
                 return reply({"ok": ok, "error": tr_err(err, lg) if err else None, **own_ai_info(lg)}, 200 if ok else 409)
             return reply(dict(own_ai_info(lg), text=own_ai_text(lg)))
 
@@ -52545,14 +52678,14 @@ class App:
         poll()
 
     def _own_ai_dl(self):
-        ok, err = own_ai_download()
+        ok, err = own_ai_download(only_better=bool(own_ai_paths()[0]))     # part 196: only a new model that is not worse
         if not ok:
             self._status("Own AI model", "⚠ " + tr_err(err)); return
         def poll():
             if OWN_AI["busy"]:
                 self._status("Own AI model", tr("downloading the own model …") + f" {OWN_AI['pct']} %"); self.root.after(1000, poll)
             else:
-                self._status("Own AI model", ("✓ " + tr("own model ready") + "\n" + own_ai_text()) if OWN_AI["msg"] == "ready" else "⚠ " + OWN_AI["msg"])
+                self._status("Own AI model", ("✓ " + tr("own model ready") + "\n" + own_ai_long_text()) if OWN_AI["msg"] == "ready" else "⚠ " + OWN_AI["msg"])
         poll()
 
     def _set_simple(self, v):
@@ -52966,7 +53099,7 @@ class App:
             ttk.Label(sbody, text="🧠 " + tr("Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs."),
                       style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(8, 0))
             ttk.Button(sbody, text=tr("Update own model" if own_ai_paths()[0] else "Download own model"), command=self._own_ai_dl).pack(fill="x", pady=(4, 0))
-            self.status_labels["Own AI model"] = ttk.Label(sbody, text=own_ai_text(), style="Mut.TLabel", wraplength=330, justify="left")
+            self.status_labels["Own AI model"] = ttk.Label(sbody, text=own_ai_long_text(), style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Own AI model"].pack(anchor="w", pady=(2, 0))
         if sec == "Notifications":
             ttk.Button(sbody, text=tr("Test notification"),
@@ -55711,6 +55844,9 @@ def sicher_selftest():
     finally:
         CFG.update(keep); PROTECT["pin_fails"] = fails
     return True
+TOGGLES.extend([
+    ("AI detection", "ai_own_auto", "Own model: update by itself (checks daily, installs a new model only if its evaluation is not worse)"),
+])
 # ----------------------------------------------------------------------------
 # Translations: French, Italian, Romansh (Rumantsch Grischun). Key = the English text of the program.
 #   Missing texts: Romansh shows German, French / Italian show English. HELP_X = the manual (help page).
@@ -61945,6 +62081,28 @@ if _hp_en > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_sicher(HELP_X[_L], _L)
+_HX_TRAINING = {
+    'Own model: update by itself (checks daily, installs a new model only if its evaluation is not worse)': (
+        'Eigenes Modell von selbst aktualisieren (prüft täglich, nimmt ein neues Modell nur, wenn seine Auswertung nicht schlechter ist)',
+        'Modèle propre : mise à jour automatique (vérifie chaque jour, n’installe un nouveau modèle que si son évaluation n’est pas moins bonne)',
+        'Modello proprio: aggiornamento automatico (controlla ogni giorno, installa un nuovo modello solo se la sua valutazione non è peggiore)',
+        'Agen model: actualisar sez (controllescha mintga di, installescha in nov model mo sch’sia evaluaziun n’è betg mendra)'),
+    'updates by itself (daily, only if not worse)': ('aktualisiert sich selbst (täglich, nur wenn nicht schlechter)', 'se met à jour tout seul (chaque jour, seulement s’il n’est pas moins bon)',
+                                                   'si aggiorna da solo (ogni giorno, solo se non peggiore)', 's’actualisescha sez (mintga di, mo sche betg mender)'),
+    'automatic update off': ('automatisches Aktualisieren aus', 'mise à jour automatique désactivée', 'aggiornamento automatico spento', 'actualisaziun automatica deactivada'),
+    'last check': ('zuletzt geprüft', 'dernière vérification', 'ultimo controllo', 'ultima controlla'),
+    'not installed': ('nicht übernommen', 'pas installé', 'non installato', 'betg installà'),
+    'already the newest model': ('schon das neueste Modell', 'déjà le modèle le plus récent', 'già il modello più recente', 'gia il model il pli nov'),
+    'its evaluation is worse': ('seine Auswertung ist schlechter', 'son évaluation est moins bonne', 'la sua valutazione è peggiore', 'sia evaluaziun è mendra'),
+    'the new model has no evaluation': ('das neue Modell hat keine Auswertung', 'le nouveau modèle n’a pas d’évaluation', 'il nuovo modello non ha una valutazione', 'il nov model n’ha nagina evaluaziun'),
+    'checked today': ('heute schon geprüft', 'déjà vérifié aujourd’hui', 'già controllato oggi', 'gia controllà oz'),
+    'off': ('aus', 'désactivé', 'spento', 'deactivà'),
+    'busy': ('beschäftigt', 'occupé', 'occupato', 'occupà'),
+}
+for _k, _v in _HX_TRAINING.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 # ---- the product page (2.95.52): the homepage of MoveEye (made as an artifact), packed here (gzip + base64) so the Pi
 # can show it without internet to guests in the same Wi-Fi at /info/. Questions from the form arrive as a push message. ----
 INFO_HTML_GZ = (  # 2.98.9: FAQ, French and Italian, «a night in time-lapse»; 2.98.7: MoveEye name, wake-up alarm, «Spiele freigeben», ticker, join wall, more animation
