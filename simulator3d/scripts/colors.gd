@@ -141,5 +141,5 @@ func _ground_tick() -> void:
 	if calm and float(main.humidity) >= 80.0 and (h >= 21.0 or h < 9.5) and el < 12.0:
 		want = clampf((float(main.humidity) - 80.0) / 15.0, 0.25, 1.0)
 	ground_fog = move_toward(ground_fog, want, dt / 600.0 if dt > 0.0 else 1.0)
-	main.env.fog_height = 1.2
-	main.env.fog_height_density = 0.35 * ground_fog
+	main.env.fog_height = 0.6
+	main.env.fog_height_density = 0.04 * ground_fog         # 3D-4.1: was 0.35 - the whole picture turned white under infrared

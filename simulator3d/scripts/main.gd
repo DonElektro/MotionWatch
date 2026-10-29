@@ -2219,7 +2219,7 @@ func _capture(i: int) -> void:
 	if i < 2 and expo_mats.size() > i:
 		var ex: float = NIGHT_SCALE * gain[i] if dark else 1.0
 		if i == 0 and dark and ir_on() and not white_light.light_energy > 0.0:
-			ex = max(ex, 0.85)                   # 3D-3.33: an infrared camera exposes for its own light - near things bright
+			ex = ir_ex                           # 3D-4.1: the infrared picture has its own exposure (before: fixed 0.85 - almost white)
 		expo_mats[i].set_shader_parameter("expo", ex)
 		lens_mats[i].set_shader_parameter("expo", ex)
 	if i < 2:
@@ -2316,7 +2316,21 @@ func ir_on() -> bool:
 			or (dataset != null and dataset.servo != null and is_dark())      # Trainingsbilder at night: like MoveEye, with infrared
 
 
+var ir_ex := 0.5                        # 3D-4.1: exposure of the infrared picture (follows its own light, see _auto_exposure)
+
+
 func _auto_exposure(i: int, img: Image) -> void:
+	if i == 0 and is_dark() and ir_on() and not white_light.light_energy > 0.0:
+		var sm: Image = img.duplicate()
+		sm.resize(32, 18, Image.INTERPOLATE_BILINEAR)
+		var sum_ := 0.0
+		for y in range(18):
+			for x in range(32):
+				var c := sm.get_pixel(x, y)
+				sum_ += (c.r + c.g + c.b) / 3.0
+		var m: float = maxf(0.01, sum_ / (18.0 * 32.0))
+		ir_ex = clampf(ir_ex * pow(0.38 / m, 0.6), 0.04, 1.0)   # a near tent bright, the far meadow dark - not all white
+		return
 	var small: Image = img.duplicate()
 	small.resize(32, 18, Image.INTERPOLATE_BILINEAR)
 	var sum := 0.0

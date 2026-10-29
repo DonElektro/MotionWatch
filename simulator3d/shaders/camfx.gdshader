@@ -37,7 +37,12 @@ void fragment() {
 		c = texture(screen_tex, uv).rgb;
 	}
 	if (trail > 0.0) {
-		c = mix(c, texture(prev_tex, uv).rgb, trail);
+		// 3D-4.1: the last picture is the finished one (after the lens: gain, grain) - never let it be brighter than now,
+		// otherwise it adds up from picture to picture (the infrared picture at night turned completely white)
+		vec3 pv = texture(prev_tex, uv).rgb;
+		float lc = dot(c, vec3(0.299, 0.587, 0.114)), lp = dot(pv, vec3(0.299, 0.587, 0.114));
+		pv *= clamp((lc + 0.04) / (lp + 0.04), 0.5, 1.0);
+		c = mix(c, pv, trail);
 	}
 	float l = dot(c, vec3(0.299, 0.587, 0.114));
 	c = mix(vec3(l), c, sat);

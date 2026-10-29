@@ -121,9 +121,20 @@ func _run(n: int) -> void:
 		# three new ones: the exposure settles like on the real camera
 		var f0: int = int(main.frame_no[0])
 		var t1 := Time.get_ticks_msec()
-		while int(main.frame_no[0]) < f0 + 3 and Time.get_ticks_msec() - t1 < 8000:
+		# 3D-4.1: until the exposure has settled (the camera follows slowly, 3D-3.94) - before, a bright picture right after a
+		# night one came out almost white, and a night picture after a day one almost black (half of a pack was unusable)
+		var g_prev := -1.0
+		var steady := 0
+		var f_seen := f0
+		while (int(main.frame_no[0]) < f0 + 3 or steady < 3) and Time.get_ticks_msec() - t1 < 12000:
 			main.snap_want[0] = main.now()
 			await main.get_tree().process_frame
+			if int(main.frame_no[0]) == f_seen:
+				continue                                     # no new picture yet: the exposure only changes with a picture
+			f_seen = int(main.frame_no[0])
+			var g: float = float(main.gain[0])
+			steady = steady + 1 if absf(g - g_prev) < 0.03 * maxf(g, 0.1) else 0
+			g_prev = g
 		while main.capturing:
 			await main.get_tree().process_frame
 		if not is_instance_valid(v):
