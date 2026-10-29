@@ -146,6 +146,22 @@ class WebStream:
             if ip in ("127.0.0.1", "::1") and request.headers.get("X-Forwarded-For"):
                 ip = request.headers["X-Forwarded-For"].split(",")[0].strip()[:45] or ip   # behind Tailscale serve / a tunnel
             now = time.time()
+            k_ = appkey_from_request(request)       # «App-Schlüssel» (573): programs, also over plain http (the key is no password)
+            if k_ is not None:
+                recent = [x for x in fails.get(ip, []) if now - x < 300]
+                if len(recent) >= 8:
+                    fails[ip] = recent
+                    return sx_err(429, "toomany", {"Retry-After": "300"})
+                ke = appkey_find(k_)
+                if ke is None:
+                    recent.append(now); fails[ip] = recent
+                    if len(recent) == 8:
+                        log_event("web", f"Login blocked for 5 minutes after 8 wrong app keys from {ip}")
+                    return appkey_refused(request, ip)
+                fails.pop(ip, None)
+                g.user, g.role, g.appkey = "🔑 " + str(ke.get("name") or "?"), "admin", ke["id"]
+                appkey_seen(ke, ip)
+                return appkey_guard(request)        # never the password, users, keys or security settings
             tf = trust_find(request.cookies.get(TRUST_COOKIE, ""))   # a trusted device: no login (also after updates)
             if tf:
                 g.user, g.role = tf[0]
@@ -1173,6 +1189,7 @@ class WebStream:
         timeline_routes(app, reply, body, request, Response)    # 2.98.14: Verlauf → Zeitleiste + weekly report (523)
         alx_routes(app, watch, reply, body)                # 2.98.13: push buttons /na/, «What was it?» (066)
         sx_routes(app, watch, reply, body)                 # night view / screen reader script, «holiday over», error pages (578)
+        appkey_routes(app, reply, body)                    # app keys, security check in Settings → Security (573)
 
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
@@ -1372,9 +1389,12 @@ class WebStream:
             if len(rec) >= 10:
                 return Response("too many wrong keys - wait 10 minutes", 429)
             tok = CFG.get("shortcut_token") or ""
-            if len(tok) < 20 or not hmac.compare_digest(tok, key):
+            ke = None if len(tok) >= 20 and hmac.compare_digest(tok, key) else appkey_find(key)   # 573: an app key works too
+            if ke is None and (len(tok) < 20 or not hmac.compare_digest(tok, key)):
                 rec.append(now); SC_FAILS[ip] = rec
                 return Response("unknown key", 403)
+            if ke is not None:
+                appkey_seen(ke, ip)
             txt = None
             if action == "arm":
                 arm(); txt = "armed" if is_armed() else "arming (delay " + str(CFG.get("arm_delay", "")) + " s)"
