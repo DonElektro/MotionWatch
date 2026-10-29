@@ -23,6 +23,7 @@ CFG = {
     "ai_require": False,         # motion persons must be confirmed by the AI
     "ai_conf": 0.5,              # confidence threshold
     "ai_every": 3,               # run the network every N frames
+    "night_strict": True,        # 2.98.18: at night a person found only by movement must stand upright in 3 pictures
     "size_check": True,          # 2.98.16: things much smaller than a person at that place are no person (417)
     "ai_zoom": True,             # 2.98.13: «KI-Lupe» - small moving things are looked at once more, enlarged (far persons)
     "ai_model": "ssd",           # «KI-Modell»: "ssd" = standard (SSD MobileNet V2), "own" = own MoveEye model (YOLO, ONNX - part 195)

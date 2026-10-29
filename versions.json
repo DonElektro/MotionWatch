@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 14:26",
+ "generated": "2026-10-29 14:54",
  "versions": [
   {
-   "version": "2.98.17",
-   "file": "webcam_bewegung_2_98_17.py",
+   "version": "2.98.18",
+   "file": "webcam_bewegung_2_98_18.py",
    "url": "",
-   "sha256": "b4e0ae0dd7624b4fa26af128503459b4f65033cd2797de4c87b5a27be8224153",
-   "date": "2026-10-29 14:26",
-   "notes": "Fehler behoben: Lautsprecher-Suche (Bluetooth) startete die Tracker-Suche",
-   "sig": "af4f7a97672556f4d4e31c82539b01f1cbeacd661cc38f974b9bab3c26776bb21f68e7c43d4788a703a89980aa541baa9da21eb7bdf346b25248da6495dc5c05"
+   "sha256": "2744c6c7e85128e764e6615ea6c9f1828e5517459530fd07a0d93e5f325ce18b",
+   "date": "2026-10-29 14:54",
+   "notes": "Nachts strenger: eine Person, die nur die Bewegung fand (ohne KI), muss in 3 Bildern aufrecht stehen – gegen Fehlalarme durch Tiere",
+   "sig": "a95a8b5e1281e12b300cafff18e330913ec7eefff2133e55a6fe702808fe6b208bc24bee2bd6f20bdb50825518978460b020abac42ae6de386d5a1bfaa68dd07"
   },
   {
    "version": "2.97.1",

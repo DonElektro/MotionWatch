@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_17.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_18.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.18: Nachts strenger: eine Person, die nur die Bewegung fand (ohne KI), muss in 3 Bildern aufrecht stehen – gegen
+    Fehlalarme durch Tiere
   * 2.98.17: Fehler behoben: Lautsprecher-Suche (Bluetooth) startete die Tracker-Suche
   * 2.98.16: Weniger Fehlalarme durch Tiere: Grössen-Prüfung (zu klein für eine Person an dieser Stelle = keine Person; lernt
     aus KI-bestätigten Personen)
@@ -883,10 +885,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_17.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_18.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_17.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_17.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_18.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_18.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -903,7 +905,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.17"
+APP_VERSION = "2.98.18"
 
 
 def default_data_dir():
@@ -1037,6 +1039,7 @@ CFG = {
     "ai_require": False,         # motion persons must be confirmed by the AI
     "ai_conf": 0.5,              # confidence threshold
     "ai_every": 3,               # run the network every N frames
+    "night_strict": True,        # 2.98.18: at night a person found only by movement must stand upright in 3 pictures
     "size_check": True,          # 2.98.16: things much smaller than a person at that place are no person (417)
     "ai_zoom": True,             # 2.98.13: «KI-Lupe» - small moving things are looked at once more, enlarged (far persons)
     "ai_model": "ssd",           # «KI-Modell»: "ssd" = standard (SSD MobileNet V2), "own" = own MoveEye model (YOLO, ONNX - part 195)
@@ -26351,7 +26354,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_17.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_18.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -28094,6 +28097,15 @@ class MotionWatch:
             walking = False                                 # (wide and flat: only as long as it was no person before - crawling)
         elif walking and not size_ok(t, getattr(self, "_ph", 0)):
             walking = False                                 # 2.98.16: far too small for a person at this place (417)
+        # 2.98.18 «nachts strenger»: in the dark (infrared) most false alarms were animals - a person that only the movement
+        # found (the AI did not confirm it) must also stand upright in the last 3 pictures (higher than wide)
+        ah = getattr(t, "_asp", None)
+        if ah is None:
+            ah = t._asp = deque(maxlen=3)
+        ah.append(aspect)
+        if (walking and not t.ai_confirmed and not t.is_person and CFG.get("night_strict", True) and is_dark()
+                and (len(ah) < 3 or max(ah) > 0.8)):
+            walking = False
         elif CFG["ai_require"] and self.ai.net is not None and CFG["ai_enabled"]:
             walking = False                                 # needs AI confirmation
         elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k:
@@ -50881,6 +50893,7 @@ TOGGLES = [  # (section, key, label)
     ("AI detection", "show_objects", "Mark all detected objects (cars, animals, ...)"),
     ("AI detection", "ai_require", "Motion persons need AI confirmation"),
     ("AI detection", "ai_zoom", "AI magnifier: look again, enlarged, at small moving things (persons far away)"),
+    ("AI detection", "night_strict", "At night stricter: a person found only by movement must stand upright (against animals)"),
     ("AI detection", "size_check", "Size check: much smaller than a person at that place = no person (learns from the persons the AI confirmed)"),
     ("Web stream", "web_stream", "Web stream + remote control (port 5000)"),
     ("Web stream", "ext_on", "Picture for other programs (Home Assistant, recorder, VLC) with a secret address"),
@@ -51462,7 +51475,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.17")
+        self.root.title("MoveEye 2.98.18")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -51815,7 +51828,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.17 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.18 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -59836,6 +59849,7 @@ for _k, _v in _HX124.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 _HX125 = {  # 2.98.7: «Spiele freigeben», wake-up alarm, sleeping place
+    'At night stricter: a person found only by movement must stand upright (against animals)': ('Nachts strenger: eine Person, die nur die Bewegung fand, muss aufrecht stehen (gegen Tiere)', 'La nuit plus strict : une personne trouvée seulement par le mouvement doit être debout (contre les animaux)', 'Di notte più severo: una persona trovata solo dal movimento deve stare in piedi (contro gli animali)', 'La notg pli sever: ina persuna chattada mo tras il moviment sto star en pe (cunter animals)'),
     'Size check: much smaller than a person at that place = no person (learns from the persons the AI confirmed)': ('Grössen-Prüfung: viel kleiner als eine Person an dieser Stelle = keine Person (lernt aus den Personen, die die KI bestätigt hat)', 'Contrôle de taille : bien plus petit qu\'une personne à cet endroit = pas une personne (apprend des personnes confirmées par l\'IA)', 'Controllo dimensioni: molto più piccolo di una persona in quel punto = nessuna persona (impara dalle persone confermate dall\'IA)', 'Controlla da grondezza: bler pli pitschen ch\'ina persuna en quest lieu = nagina persuna (emprenda da las persunas confermadas da l\'IA)'),
     'AI magnifier: look again, enlarged, at small moving things (persons far away)': ('KI-Lupe: kleine bewegte Dinge nochmals vergrössert anschauen (Personen weit weg)', 'Loupe IA : regarder encore une fois, agrandi, les petits objets en mouvement (personnes au loin)', 'Lente IA: guardare di nuovo, ingrandito, le piccole cose in movimento (persone lontane)', 'Lupa IA: guardar anc ina giada, engrondì, chaussas pitschnas en moviment (persunas lontanas)'),
     'Message list': ('Nachrichten', 'Messages', 'Messaggi', 'Messadis'),

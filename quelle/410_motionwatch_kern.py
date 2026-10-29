@@ -334,6 +334,15 @@ class MotionWatch:
             walking = False                                 # (wide and flat: only as long as it was no person before - crawling)
         elif walking and not size_ok(t, getattr(self, "_ph", 0)):
             walking = False                                 # 2.98.16: far too small for a person at this place (417)
+        # 2.98.18 «nachts strenger»: in the dark (infrared) most false alarms were animals - a person that only the movement
+        # found (the AI did not confirm it) must also stand upright in the last 3 pictures (higher than wide)
+        ah = getattr(t, "_asp", None)
+        if ah is None:
+            ah = t._asp = deque(maxlen=3)
+        ah.append(aspect)
+        if (walking and not t.ai_confirmed and not t.is_person and CFG.get("night_strict", True) and is_dark()
+                and (len(ah) < 3 or max(ah) > 0.8)):
+            walking = False
         elif CFG["ai_require"] and self.ai.net is not None and CFG["ai_enabled"]:
             walking = False                                 # needs AI confirmation
         elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k:
