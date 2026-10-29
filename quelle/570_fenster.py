@@ -516,6 +516,7 @@ TK_PANEL_TABS = ("protect", "settings", "sim")
 TK_GROUP_TAB = {"alarm": "protect", "notify": "protect", "theft": "protect", "sched": "protect"}
 TK_SIM_GROUPS = [("simset", "Settings of the simulation", ["Simulator"])]
 TK_PSEUDO = {"Improve detection"}
+TK_AI_MODEL_KEYS = ("ai_model", "ai_own_url", "ai_own_auto")   # 2.98.23 (Konzept): shown together in the group «KI-Modell» (section AI detection)
 SECTIONS = ["Wake-up alarm", "Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup"]
 
@@ -2001,6 +2002,7 @@ class App:
             self._bt_sig = None
         for s, key, label in TOGGLES:
             if s != sec or simple_hidden(key) or (CFG["lock_on"] and key in LOCK_DENY_KEYS): continue
+            if key in TK_AI_MODEL_KEYS: continue           # 2.98.23: in the group «KI-Modell» below
             tg = Toggle(sp, tr(label), CFG[key], lambda val, k=key: self._set(k, val)); tg.pack(fill="x", pady=3)
             self.vars[key] = tg
         for s, key, label, lo, hi, step in SLIDERS:
@@ -2024,7 +2026,7 @@ class App:
         if sec == "Messages":
             ttk.Label(sp, text=tr("Empty = standard text. Placeholders:") + " " + MSG_PLACEHOLDERS, style="Mut.TLabel",
                       wraplength=330, justify="left").pack(anchor="w", pady=(2, 0))
-        self._build_texts(sp, sec)
+        self._build_texts(sp, sec, skip=TK_AI_MODEL_KEYS)
         if sec == "SMS (LTE stick)":
             def sms_test():
                 ok, err = sms_send(f"{CFG['device_name'] or 'MoveEye'}: " + tr("test SMS - it works"), force=True)
@@ -2114,6 +2116,11 @@ class App:
             self.store_cb.bind("<<ComboboxSelected>>", pick)
             self.status_labels["Storage"] = ttk.Label(sbody, text=tr("now") + ": " + rec_dir(), style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Storage"].pack(anchor="w", pady=(2, 0))
+        if sec == "AI detection":                        # 2.98.23 (Konzept): choice, standard model and own model in ONE group «KI-Modell»
+            sbody = tk.Frame(sbody, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=8, pady=6)
+            sbody.pack(fill="x", pady=(10, 0))
+            tk.Label(sbody, text="🧠 " + tr("AI model"), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10, "bold"), anchor="w").pack(fill="x")
+            self._build_texts(sbody, sec, only=("ai_model",))
         if sec == "AI detection" and not ai_model_paths()[0]:
             ttk.Button(sbody, text=tr("Download AI model") + " (≈ 70 MB)", command=self._ai_dl).pack(fill="x", pady=(8, 0))
             self.status_labels["AI model"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
@@ -2124,6 +2131,11 @@ class App:
             ttk.Button(sbody, text=tr("Update own model" if own_ai_paths()[0] else "Download own model"), command=self._own_ai_dl).pack(fill="x", pady=(4, 0))
             self.status_labels["Own AI model"] = ttk.Label(sbody, text=own_ai_long_text(), style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Own AI model"].pack(anchor="w", pady=(2, 0))
+            for s_, key_, label_ in TOGGLES:               # 2.98.23: the switch «update by itself» and the address in the same group
+                if s_ == sec and key_ in TK_AI_MODEL_KEYS and not simple_hidden(key_) and not (CFG["lock_on"] and key_ in LOCK_DENY_KEYS):
+                    tg_ = Toggle(sbody, tr(label_), CFG[key_], lambda val, k=key_: self._set(k, val)); tg_.pack(fill="x", pady=(6, 0))
+                    self.vars[key_] = tg_
+            self._build_texts(sbody, sec, only=("ai_own_url",))
         if sec == "Notifications":
             ttk.Button(sbody, text=tr("Test notification"),
                        command=lambda: self.watch.notifier.test(self.watch.frame_out)).pack(fill="x", pady=(8, 0))
@@ -2392,8 +2404,9 @@ class App:
         self._status("Extra sensors", " · ".join(p))
 
     # ---- text settings (notifications, location, presence) ----------------
-    def _build_texts(self, parent, sec):
-        specs = [x for x in TEXTS if x[0] == sec and not simple_hidden(x[1]) and not (CFG["lock_on"] and x[1] in LOCK_DENY_KEYS)]
+    def _build_texts(self, parent, sec, skip=(), only=None):
+        specs = [x for x in TEXTS if x[0] == sec and not simple_hidden(x[1]) and not (CFG["lock_on"] and x[1] in LOCK_DENY_KEYS)
+                 and x[1] not in skip and (only is None or x[1] in only)]
         if not specs:
             return
         ent_kw = dict(bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat",

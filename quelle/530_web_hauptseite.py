@@ -371,6 +371,7 @@ h4.sub{margin:14px 0 4px;font-size:11px;letter-spacing:.08em;color:var(--mut);te
 .days button{padding:4px 9px;font-size:12px;background:var(--btn2);color:var(--mut);border:1px solid var(--line)}
 .days button.on{background:var(--acc);color:#fff;border-color:transparent}
 .auxbox{margin:2px 0 6px}
+.aimg{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin:8px 0}.aimh{font-weight:700;margin:0 0 4px}.aimg>button.sec{margin-top:6px}
 #upd-list{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.updrow{padding:7px 0;border-bottom:1px solid var(--line)}.updrow .row{gap:8px}
 .btrow{gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}.btrow>span:first-child{flex:1;min-width:0;overflow-wrap:anywhere}
 .aumeter{position:relative;height:12px;border-radius:6px;background:var(--field);border:1px solid var(--line);overflow:hidden;margin:6px 0 3px}
@@ -2243,7 +2244,7 @@ async function build() {
         const iv = setInterval(async () => { let j = {}; try { j = await (await fetch("/api/ai_model")).json(); } catch (e) {}
           am.textContent = j.busy ? t("downloading the AI model …") + " " + j.pct + " %" : (j.msg === "ready" ? "✓ " + t("AI ready") : "⚠ " + (j.msg || ""));
           if (!j.busy) { clearInterval(iv); ab.disabled = false; if (j.msg === "ready") ab.hidden = true; } }, 1500); };
-      d.append(ab, am); ownExtras(d); spExtras(d);
+      d.append(ab, am); ownExtras(d); spExtras(d); aiModelGroup(d, ab, am);
     }
     if (sec.id === "Notifications") {
       const tb = el("button", "sec", t("Test notification")); tb.style.marginTop = "8px";
@@ -2906,8 +2907,15 @@ Object.assign(I18N.de, {"Solar panel": "Solarpanel", "Solar panel with current m
 Object.assign(I18N.de, {"Recognise the animal species (second AI model - see the guide)": "Tierart erkennen (zweites KI-Modell – siehe Anleitung)", "Animal species: minimum certainty": "Tierart: Mindest-Sicherheit", "Animal species: model": "Tierart: Modell", "Animal species: picture preparation of the model": "Tierart: Bildaufbereitung des Modells", "Animal species: a second AI model (ONNX) recognises fox, badger, wild boar … It is not included - install it from an address or copy it into the folder.": "Tierart: ein zweites KI-Modell (ONNX) erkennt Fuchs, Dachs, Wildschwein … Es ist nicht dabei – von einer Adresse installieren oder in den Ordner kopieren.", "or .zip": "oder .zip", "Install model": "Modell installieren", "Folder": "Ordner", "Models": "Modelle", "Last": "Zuletzt", "downloading …": "lädt herunter …", "no model chosen": "kein Modell gewählt", "address must start with https://": "die Adresse muss mit https:// beginnen", "the address must end with .onnx or .zip": "die Adresse muss auf .onnx oder .zip enden", "file too big": "Datei zu gross"});
 Object.assign(I18N.de, {"AI model": "KI-Modell", "Standard (SSD MobileNet V2)": "Standard (SSD MobileNet V2)", "Own (MoveEye model)": "Eigenes (MoveEye-Modell)", "Own model: address of its description (moveeye_model.json)": "Eigenes Modell: Adresse seiner Beschreibung (moveeye_model.json)", "Download own model": "Eigenes Modell herunterladen", "Update own model": "Eigenes Modell aktualisieren", "Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs.": "Eigenes Modell: auf GitHub trainiert aus Simulator-Bildern und deinen beschrifteten Alarmbildern (Person, Tier, Fahrzeug). Nach dem Herunterladen nimmt MoveEye es (zurück zum Standard: «KI-Modell», Ansicht Experte). Fehlt es oder klappt es nicht, läuft das Standard-Modell.", "Now running": "Läuft jetzt", "own model not used": "eigenes Modell nicht benutzt", "not downloaded yet": "noch nicht heruntergeladen", "downloading the own model …": "lädt das eigene Modell …", "own model ready": "eigenes Modell bereit", "MoveEye model": "MoveEye-Modell", "made": "erstellt",
   "updates by itself (daily, only if not worse)": "aktualisiert sich selbst (täglich, nur wenn nicht schlechter)", "automatic update off": "automatisches Aktualisieren aus", "last check": "zuletzt geprüft"});
+function aiModelGroup(d, ab, am) {                 // 2.98.23 (Konzept): the choice «AI model» and the own model in ONE group «KI-Modell»
+  const q = k => d.querySelector('[data-key="' + k + '"]:not(select)'), sel = q("ai_model"), own = d.querySelector(".auxbox.ownai");
+  const at = sel || q("ai_own_auto") || own; if (!at) return;                // «Simple» shows fewer of them: the group starts at the first one
+  const g = el("div", "aimg"); at.before(g);
+  g.appendChild(el("div", "aimh", "🧠 " + t("AI model")));
+  [sel, ab, am, own, q("ai_own_auto"), q("ai_own_url")].forEach(x => { if (x) g.appendChild(x); });
+}
 function ownExtras(d) {                             // part 195: own MoveEye model (YOLO) - download + which model runs
-  const box = el("div", "auxbox"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
+  const box = el("div", "auxbox ownai"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
   box.appendChild(el("div", "mut", "🧠 " + t("Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs.")));
   const b = el("button", "sec", "⬇ " + t("Download own model")); b.type = "button"; b.style.marginTop = "6px";
   const show = j => { b.textContent = "⬇ " + t(j.present ? "Update own model" : "Download own model");

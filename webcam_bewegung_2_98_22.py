@@ -10018,6 +10018,7 @@ SIMHUB_CSS = r"""
 .shub .st i{font-style:normal;font-size:24px;line-height:1}.shub .st b{font-size:13px;hyphens:auto;overflow-wrap:anywhere}.shub .st small{font-size:11px;color:var(--mut,#8a9bb0)}
 .shub .st.on{border-color:#f59a4a;box-shadow:0 0 0 1px #f59a4a inset}
 .shsheet{margin-top:8px;padding:10px;border-radius:14px;background:var(--panel,#111822);border:1px solid var(--line,#1f2b3a);display:flex;flex-wrap:wrap;gap:6px}
+.shsheet.trs{display:block}.shsheet #tr-box button{flex:0 1 auto}
 .shsheet button{flex:1 1 auto;min-width:84px}.shsheet .shrow{display:flex;gap:6px;width:100%;align-items:center}
 .stile{display:flex;gap:10px;align-items:stretch;padding:10px;border-radius:16px;border:1px solid #f59a4a;background:linear-gradient(135deg,rgba(245,154,74,.12),transparent 60%);cursor:pointer}
 .stile img{width:132px;height:74px;object-fit:cover;border-radius:10px;background:#000;flex:0 0 auto}
@@ -10063,7 +10064,7 @@ SIMHUB_JS = r"""
   const VIS = __VIS__;
   const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
   const say = m => { if (typeof toast === "function") toast(m); };
-  let H = null, open = "";
+  let H = null, open = "", HASHED = 0;
   const act = async (a, v) => { try { const r = await (await fetch("/api/simhub", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({a: a, v: v})})).json();
       if (r.hub) H = r.hub; if (!r.ok) say("⚠ " + (r.error || tt("Simulator not reachable"))); paintAll(); return r; } catch (e) { say("⚠ " + tt("Simulator not reachable")); } };
   const wxIcon = w => (WX.find(x => x[0] === w) || ["", "☁"])[1];
@@ -10087,6 +10088,8 @@ SIMHUB_JS = r"""
       s.appendChild(E("div", "mut", "🔋 " + (R.batt != null ? R.batt + " %" : "–") + (R.charging ? " · " + tt("charging") : "") + " · " + tt("rover-note")));
     }
     if (kind === "stats") statsSheet(s);
+    if (kind === "tests") { const tb = document.getElementById("tr-box") || window._trBox;   // 2.98.23: the test run (470) lives here, no own card
+      if (tb) { window._trBox = tb; s.classList.add("trs"); s.appendChild(tb); } else s.appendChild(E("div", "mut", "–")); }
     if (["blind", "rehearsal", "autoth", "falearn", "week", "points"].includes(kind)) learnSheet(s, kind);
     box.appendChild(s);
   }
@@ -10225,8 +10228,8 @@ SIMHUB_JS = r"""
         if (k === "improve") return window.mwTune && window.mwTune.open();
         if (k === "twin") return act("twin").then(r => r && r.ok && say("🪞 " + tt("The map opens at your place on the PC – confirm «Load this place»")));
         if (k === "zones3d") return act("overlay", {id: "show_zones3d", on: !H.zones3d}); if (k === "det3d") return act("overlay", {id: "show_det3d", on: !H.det3d});
-        if (k === "game") return location.href = "/sim#c-game"; if (k === "tests") return location.href = "/sim#c-test"; if (k === "diary") return location.href = "/diary#simcard";
-        open = open === k ? "" : k; paintAll(); };
+        if (k === "game") return location.href = "/sim#c-game"; if (k === "tests" && !document.getElementById("tr-box") && !window._trBox) return location.href = "/sim#c-test"; if (k === "diary") return location.href = "/diary#simcard";
+        open = open === k ? "" : k; paintAll(); if (k === "tests" && open && typeof trLoad === "function") trLoad(); };
       (full ? G[GRP[k] || "world"] : g).appendChild(b); });
     if (full) { [["world", "🌍 " + tt("World")], ["test", "🧪 " + tt("Testing")], ["learn", "🎓 " + tt("Learning")], ["play", "🎮 " + tt("Playing")]].forEach(([id, h]) => {
         if (G[id].children.length) box.append(E("div", "shubh", h), G[id]); });
@@ -10250,11 +10253,14 @@ SIMHUB_JS = r"""
   }
   function paintFull(el_) { el_.textContent = ""; if (!H || !H.on) { el_.hidden = true; return; } el_.hidden = false;
     if (!H.ok) { el_.appendChild(E("div", "mut", "⚠ " + tt("Simulator not reachable") + (H.msg ? " (" + H.msg + ")" : ""))); return; } tiles(el_, true); }
-  function paintAll() { document.querySelectorAll("[data-simhub]").forEach(x => x.dataset.simhub === "full" ? paintFull(x) : paintTile(x)); }
+  function parkTr() { const tb = window._trBox, home = document.getElementById("c-test"); if (tb && home && !home.contains(tb)) home.appendChild(tb); }
+  function paintAll() { parkTr(); document.querySelectorAll("[data-simhub]").forEach(x => x.dataset.simhub === "full" ? paintFull(x) : paintTile(x)); }
   async function load() { if (!document.querySelector("[data-simhub]")) return; try { H = await (await fetch("/api/simhub")).json(); } catch (e) { return; }
     if (document.querySelector('[data-simhub="full"]')) { try { LB = await (await fetch("/api/lab")).json(); LN = await (await fetch("/api/learn")).json(); } catch (e) {} }
     const ti = document.querySelector('[data-simhub="tile"] img'); if (ti && !document.hidden) ti.src = "/sim/view.jpg?w=320&r=" + Date.now();
-    if (!document.activeElement || document.activeElement.type !== "range") paintAll(); }
+    if (!HASHED && location.hash === "#c-test" && document.getElementById("tr-box")) { HASHED = 1; open = "tests"; }   // 2.98.23: old links to the test run
+    const ae = document.activeElement;
+    if (!ae || (ae.type !== "range" && !(ae.closest && ae.closest("#tr-box")))) paintAll(); }
   document.addEventListener("DOMContentLoaded", () => { load(); setInterval(load, 6000); });
 })();
 """
@@ -33147,12 +33153,19 @@ function scOn(G, r) {                               // 2.95.51: the symbol of a 
 // wizard or under «Experte» (as the simulator window does from 3D-4.x; this also covers older simulators)
 const SC_GAME_MAIN = ["game_wizard", "game_open", "game_start", "game_stop"];
 function scExpert(c) { return !!c.expert || ((c.group === "Spiel" || c.group === "Game") && SC_GAME_MAIN.indexOf(c.id) < 0); }
+// 2.98.23 (Konzept): the simulator group «Testlauf» is not shown in the Simulator control (testing has ONE place: group «Testen»,
+// tile «Tests»); there it is built with data-only="Testlauf" (#tr-sim, recordings of the sneak paths, Pi 5 settings)
+const SC_TEST_GROUPS = ["Testlauf", "Test run"];
+const SC_TEST_DUP = ["testrun_plan", "testrun_start", "testrun_stop"];   // the same as «Testlauf starten» of MoveEye right above (/api/simtest)
 function simCtlBuild(G, r, ctl, fmt) {
   scCss();
+  const only = G.dataset.only || "";
+  r = Object.assign({}, r, {controls: (r.controls || []).filter(c => only ? SC_TEST_GROUPS.indexOf(c.group) >= 0 && SC_TEST_DUP.indexOf(c.id) < 0 : SC_TEST_GROUPS.indexOf(c.group) < 0)});
   const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
   const ss = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"])), openS = new Set(ls("mw-sc-sub2", ["Besuch/Vorlagen", "Besuch/Menschen schicken", "Besuch/Tiere schicken", "Spiel/Runde"]));
-  let expert = ls("mw-sc-expert", false), q = G.dataset.q || "";
+  let expert = only ? true : ls("mw-sc-expert", false), q = G.dataset.q || "";
+  if (only) openC.add(only);
   G.textContent = "";
   const top = el("div", "sc-top"); const qi = document.createElement("input"); qi.type = "search"; qi.placeholder = t("Search a setting …"); qi.value = q;
   top.appendChild(qi); G.appendChild(top);
@@ -33208,9 +33221,10 @@ function simCtlBuild(G, r, ctl, fmt) {
   });
   const seg = el("div", "sc-seg"); const b1 = el("button", "", t("Simple")), b2 = el("button", "", t("Expert")); b1.type = b2.type = "button"; seg.append(b1, b2); G.appendChild(seg);
   const note = el("div", "mut", t("Simple: only the important settings. «Expert» shows all.")); G.appendChild(note);
+  if (only) { top.hidden = true; seg.hidden = true; }
   function apply() {
     q = qi.value.trim().toLowerCase(); G.dataset.q = qi.value; let any = false;
-    b1.classList.toggle("on", !expert); b2.classList.toggle("on", expert); note.hidden = expert;
+    b1.classList.toggle("on", !expert); b2.classList.toggle("on", expert); note.hidden = expert || !!only;
     cards.forEach(card => {
       let vis = 0;
       card.querySelectorAll("[data-lab]").forEach(n => { const ok = (q ? n.dataset.lab.toLowerCase().includes(q) : true) && (expert || q || n.dataset.ex !== "1"); n.classList.toggle("sc-hide", !ok); if (ok) vis++; });
@@ -33554,7 +33568,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 #s-scn{display:flex;gap:8px;flex-wrap:wrap}#s-scn select{flex:1 1 220px;min-width:0}
 .howto{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
 .simq{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;margin-top:8px}.simq select{padding:4px 8px;font-size:13px;width:auto}
-@media(max-width:820px){main.simp{grid-template-columns:1fr;padding:12px 12px 32px}.sc{padding:14px}details.fold{padding:0}details.fold>summary{padding:14px}details.fold>.fb{padding:0 14px 14px}.dl{grid-template-columns:1fr}
+@media(max-width:820px){main.simp{grid-template-columns:minmax(0,1fr);padding:12px 12px 32px}.sc{padding:14px}details.fold{padding:0}details.fold>summary{padding:14px}details.fold>.fb{padding:0 14px 14px}.dl{grid-template-columns:1fr}
   .tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}}
 </style></head><body>
 <header>
@@ -33646,8 +33660,9 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     </div>
   </details>
 
-  <details class="sc fold wide" id="c-test" data-k="test" data-need="ok">
-    <summary><h2><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><span data-i18n="Test run and optimization">Test run and optimization</span></h2></summary>
+  <!-- 2.98.23 (Konzept): no own card «Testlauf und Optimierung» any more - the test run is the tile «Tests» in the group
+       «Testen» of the Simulator centre (139 moves #tr-box into its sheet); here only its parking place -->
+  <div id="c-test" hidden>
     <div class="fb" id="tr-box">
     <div class="mut" data-i18n="tr-note">tr-note</div>
     <div class="tr-row"><select id="tr-plan"></select>
@@ -33657,8 +33672,9 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div class="mut" id="tr-autonote"></div>
     <div id="tr-live" hidden><div class="rng"><span id="tr-livet"></span><b id="tr-left"></b></div><div class="tr-prog"><i id="tr-bar" style="width:0"></i></div></div>
     <div id="tr-res"></div>
+    <div id="tr-sim" data-only="Testlauf" style="margin-top:10px"></div>
     </div>
-  </details>
+  </div>
 
   <details class="sc fold" id="c-perf" data-k="perf" data-need="ok">
     <summary><h2><svg viewBox="0 0 24 24"><path d="M13 3L4 14h7l-1 7 9-11h-7z"/></svg><span data-i18n="Computing power">Computing power</span></h2></summary>
@@ -34117,16 +34133,16 @@ async function ctl(d) { const r = await post("/api/sim", Object.assign({action: 
 function scnLoad() { const v = $("#s-sel").value; if (v) ctl({ctl: "scenario", id: v}); }
 function scnDel() { const s = $("#s-sel"); if (s.value && confirm(t("Delete this scenario in the simulator?") + "\n" + s.options[s.selectedIndex].textContent)) ctl({ctl: "delete", id: s.value}); }
 /*SIMMAP*/
-function buildCtl(r) { simCtlBuild($("#s-groups"), r, ctl, fmt); }        // like the panel of the simulator (simCtlBuild, 2.93.16)
+function buildCtl(r) { simCtlBuild($("#s-groups"), r, ctl, fmt); const ts = $("#tr-sim"); if (ts) simCtlBuild(ts, r, ctl, fmt); }   // 2.98.23: «Testlauf» of the simulator in the sheet «Tests»        // like the panel of the simulator (simCtlBuild, 2.93.16)
 
 function showCtl(r) {
   if (!r || !r.ok) { $("#s-cst").textContent = "⚠ " + ((r && r.error) || t("simulator not reachable")); return; }
   $("#s-cname").textContent = r.name ? "· " + r.name : "";
   const sig = JSON.stringify([(r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options, c.sub])]);
   if (sig !== CS) { CS = sig; buildCtl(r); }
-  scOn($("#s-groups"), r);
+  scOn($("#s-groups"), r); scOn($("#tr-sim"), r);
   updPaint(r); gamePaint(r);
-  document.querySelectorAll("#s-groups [data-cid]").forEach(row => {
+  document.querySelectorAll("#s-groups [data-cid], #tr-sim [data-cid]").forEach(row => {
     const c = (r.controls || []).find(x => x.id === row.dataset.cid); const inp = row.querySelector(".simv"); if (!c || !inp || inp === document.activeElement) return;
     if (c.type === "toggle") inp.checked = !!c.value; else if (c.value != null) inp.value = c.value;
     const vv = row.querySelector(".simvv"); if (vv) vv.textContent = fmt(c, c.value);
@@ -34173,7 +34189,6 @@ function trInit() {
   $("#tr-run").onclick = () => trAct({action: "run", plan: TRPLAN});
   $("#tr-auto").onclick = () => { if (confirm(t("tr-auto-ask"))) trAct({action: "auto", plan: TRPLAN, tries: 4}); };
   $("#tr-stop").onclick = () => trAct({action: "stop"});
-  $("#c-test").addEventListener("toggle", () => trLoad());
   trLoad();
 }
 async function trAct(d) {
@@ -34185,7 +34200,7 @@ async function trAct(d) {
 }
 async function trLoad() {
   clearTimeout(trT);
-  const open = $("#c-test").open;
+  const open = !!document.querySelector(".shsheet #tr-box");          // 2.98.23: open = shown in the sheet «Tests» of the Simulator centre
   const r = await fetch("/api/simtest").then(x => x.ok ? x.json() : null).catch(() => null);
   if (r) { TR = r; trPaint(); }
   const busy = r && (r.busy || (r.sim && r.sim.running));
@@ -34194,7 +34209,6 @@ async function trLoad() {
 function trPaint() {
   const R = TR || {}, SM = R.sim || {}, busy = !!R.busy || !!SM.running, A = R.auto;
   [...$("#tr-plan").options].forEach(o => { const p = TR_PLANS.find(x => x[0] === o.value); if (p) o.textContent = t(p[1]); });
-  $("#c-test").classList.toggle("act", busy);
   $("#tr-run").disabled = busy || !R.connected; $("#tr-auto").disabled = busy || !R.connected; $("#tr-stop").hidden = !busy; $("#tr-plan").disabled = busy;
   $("#tr-autonote").textContent = !R.connected ? t("Connect the simulation first (3D simulator 3D-3.27 or newer).") : R.msg && !busy ? "⚠ " + t(R.msg) : "";
   $("#tr-live").hidden = !busy;
@@ -41497,6 +41511,7 @@ h4.sub{margin:14px 0 4px;font-size:11px;letter-spacing:.08em;color:var(--mut);te
 .days button{padding:4px 9px;font-size:12px;background:var(--btn2);color:var(--mut);border:1px solid var(--line)}
 .days button.on{background:var(--acc);color:#fff;border-color:transparent}
 .auxbox{margin:2px 0 6px}
+.aimg{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin:8px 0}.aimh{font-weight:700;margin:0 0 4px}.aimg>button.sec{margin-top:6px}
 #upd-list{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.updrow{padding:7px 0;border-bottom:1px solid var(--line)}.updrow .row{gap:8px}
 .btrow{gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}.btrow>span:first-child{flex:1;min-width:0;overflow-wrap:anywhere}
 .aumeter{position:relative;height:12px;border-radius:6px;background:var(--field);border:1px solid var(--line);overflow:hidden;margin:6px 0 3px}
@@ -43369,7 +43384,7 @@ async function build() {
         const iv = setInterval(async () => { let j = {}; try { j = await (await fetch("/api/ai_model")).json(); } catch (e) {}
           am.textContent = j.busy ? t("downloading the AI model …") + " " + j.pct + " %" : (j.msg === "ready" ? "✓ " + t("AI ready") : "⚠ " + (j.msg || ""));
           if (!j.busy) { clearInterval(iv); ab.disabled = false; if (j.msg === "ready") ab.hidden = true; } }, 1500); };
-      d.append(ab, am); ownExtras(d); spExtras(d);
+      d.append(ab, am); ownExtras(d); spExtras(d); aiModelGroup(d, ab, am);
     }
     if (sec.id === "Notifications") {
       const tb = el("button", "sec", t("Test notification")); tb.style.marginTop = "8px";
@@ -44032,8 +44047,15 @@ Object.assign(I18N.de, {"Solar panel": "Solarpanel", "Solar panel with current m
 Object.assign(I18N.de, {"Recognise the animal species (second AI model - see the guide)": "Tierart erkennen (zweites KI-Modell – siehe Anleitung)", "Animal species: minimum certainty": "Tierart: Mindest-Sicherheit", "Animal species: model": "Tierart: Modell", "Animal species: picture preparation of the model": "Tierart: Bildaufbereitung des Modells", "Animal species: a second AI model (ONNX) recognises fox, badger, wild boar … It is not included - install it from an address or copy it into the folder.": "Tierart: ein zweites KI-Modell (ONNX) erkennt Fuchs, Dachs, Wildschwein … Es ist nicht dabei – von einer Adresse installieren oder in den Ordner kopieren.", "or .zip": "oder .zip", "Install model": "Modell installieren", "Folder": "Ordner", "Models": "Modelle", "Last": "Zuletzt", "downloading …": "lädt herunter …", "no model chosen": "kein Modell gewählt", "address must start with https://": "die Adresse muss mit https:// beginnen", "the address must end with .onnx or .zip": "die Adresse muss auf .onnx oder .zip enden", "file too big": "Datei zu gross"});
 Object.assign(I18N.de, {"AI model": "KI-Modell", "Standard (SSD MobileNet V2)": "Standard (SSD MobileNet V2)", "Own (MoveEye model)": "Eigenes (MoveEye-Modell)", "Own model: address of its description (moveeye_model.json)": "Eigenes Modell: Adresse seiner Beschreibung (moveeye_model.json)", "Download own model": "Eigenes Modell herunterladen", "Update own model": "Eigenes Modell aktualisieren", "Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs.": "Eigenes Modell: auf GitHub trainiert aus Simulator-Bildern und deinen beschrifteten Alarmbildern (Person, Tier, Fahrzeug). Nach dem Herunterladen nimmt MoveEye es (zurück zum Standard: «KI-Modell», Ansicht Experte). Fehlt es oder klappt es nicht, läuft das Standard-Modell.", "Now running": "Läuft jetzt", "own model not used": "eigenes Modell nicht benutzt", "not downloaded yet": "noch nicht heruntergeladen", "downloading the own model …": "lädt das eigene Modell …", "own model ready": "eigenes Modell bereit", "MoveEye model": "MoveEye-Modell", "made": "erstellt",
   "updates by itself (daily, only if not worse)": "aktualisiert sich selbst (täglich, nur wenn nicht schlechter)", "automatic update off": "automatisches Aktualisieren aus", "last check": "zuletzt geprüft"});
+function aiModelGroup(d, ab, am) {                 // 2.98.23 (Konzept): the choice «AI model» and the own model in ONE group «KI-Modell»
+  const q = k => d.querySelector('[data-key="' + k + '"]:not(select)'), sel = q("ai_model"), own = d.querySelector(".auxbox.ownai");
+  const at = sel || q("ai_own_auto") || own; if (!at) return;                // «Simple» shows fewer of them: the group starts at the first one
+  const g = el("div", "aimg"); at.before(g);
+  g.appendChild(el("div", "aimh", "🧠 " + t("AI model")));
+  [sel, ab, am, own, q("ai_own_auto"), q("ai_own_url")].forEach(x => { if (x) g.appendChild(x); });
+}
 function ownExtras(d) {                             // part 195: own MoveEye model (YOLO) - download + which model runs
-  const box = el("div", "auxbox"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
+  const box = el("div", "auxbox ownai"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
   box.appendChild(el("div", "mut", "🧠 " + t("Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs.")));
   const b = el("button", "sec", "⬇ " + t("Download own model")); b.type = "button"; b.style.marginTop = "6px";
   const show = j => { b.textContent = "⬇ " + t(j.present ? "Update own model" : "Download own model");
@@ -51523,6 +51545,7 @@ TK_PANEL_TABS = ("protect", "settings", "sim")
 TK_GROUP_TAB = {"alarm": "protect", "notify": "protect", "theft": "protect", "sched": "protect"}
 TK_SIM_GROUPS = [("simset", "Settings of the simulation", ["Simulator"])]
 TK_PSEUDO = {"Improve detection"}
+TK_AI_MODEL_KEYS = ("ai_model", "ai_own_url", "ai_own_auto")   # 2.98.23 (Konzept): shown together in the group «KI-Modell» (section AI detection)
 SECTIONS = ["Wake-up alarm", "Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup"]
 
@@ -53008,6 +53031,7 @@ class App:
             self._bt_sig = None
         for s, key, label in TOGGLES:
             if s != sec or simple_hidden(key) or (CFG["lock_on"] and key in LOCK_DENY_KEYS): continue
+            if key in TK_AI_MODEL_KEYS: continue           # 2.98.23: in the group «KI-Modell» below
             tg = Toggle(sp, tr(label), CFG[key], lambda val, k=key: self._set(k, val)); tg.pack(fill="x", pady=3)
             self.vars[key] = tg
         for s, key, label, lo, hi, step in SLIDERS:
@@ -53031,7 +53055,7 @@ class App:
         if sec == "Messages":
             ttk.Label(sp, text=tr("Empty = standard text. Placeholders:") + " " + MSG_PLACEHOLDERS, style="Mut.TLabel",
                       wraplength=330, justify="left").pack(anchor="w", pady=(2, 0))
-        self._build_texts(sp, sec)
+        self._build_texts(sp, sec, skip=TK_AI_MODEL_KEYS)
         if sec == "SMS (LTE stick)":
             def sms_test():
                 ok, err = sms_send(f"{CFG['device_name'] or 'MoveEye'}: " + tr("test SMS - it works"), force=True)
@@ -53121,6 +53145,11 @@ class App:
             self.store_cb.bind("<<ComboboxSelected>>", pick)
             self.status_labels["Storage"] = ttk.Label(sbody, text=tr("now") + ": " + rec_dir(), style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Storage"].pack(anchor="w", pady=(2, 0))
+        if sec == "AI detection":                        # 2.98.23 (Konzept): choice, standard model and own model in ONE group «KI-Modell»
+            sbody = tk.Frame(sbody, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=8, pady=6)
+            sbody.pack(fill="x", pady=(10, 0))
+            tk.Label(sbody, text="🧠 " + tr("AI model"), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10, "bold"), anchor="w").pack(fill="x")
+            self._build_texts(sbody, sec, only=("ai_model",))
         if sec == "AI detection" and not ai_model_paths()[0]:
             ttk.Button(sbody, text=tr("Download AI model") + " (≈ 70 MB)", command=self._ai_dl).pack(fill="x", pady=(8, 0))
             self.status_labels["AI model"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
@@ -53131,6 +53160,11 @@ class App:
             ttk.Button(sbody, text=tr("Update own model" if own_ai_paths()[0] else "Download own model"), command=self._own_ai_dl).pack(fill="x", pady=(4, 0))
             self.status_labels["Own AI model"] = ttk.Label(sbody, text=own_ai_long_text(), style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Own AI model"].pack(anchor="w", pady=(2, 0))
+            for s_, key_, label_ in TOGGLES:               # 2.98.23: the switch «update by itself» and the address in the same group
+                if s_ == sec and key_ in TK_AI_MODEL_KEYS and not simple_hidden(key_) and not (CFG["lock_on"] and key_ in LOCK_DENY_KEYS):
+                    tg_ = Toggle(sbody, tr(label_), CFG[key_], lambda val, k=key_: self._set(k, val)); tg_.pack(fill="x", pady=(6, 0))
+                    self.vars[key_] = tg_
+            self._build_texts(sbody, sec, only=("ai_own_url",))
         if sec == "Notifications":
             ttk.Button(sbody, text=tr("Test notification"),
                        command=lambda: self.watch.notifier.test(self.watch.frame_out)).pack(fill="x", pady=(8, 0))
@@ -53399,8 +53433,9 @@ class App:
         self._status("Extra sensors", " · ".join(p))
 
     # ---- text settings (notifications, location, presence) ----------------
-    def _build_texts(self, parent, sec):
-        specs = [x for x in TEXTS if x[0] == sec and not simple_hidden(x[1]) and not (CFG["lock_on"] and x[1] in LOCK_DENY_KEYS)]
+    def _build_texts(self, parent, sec, skip=(), only=None):
+        specs = [x for x in TEXTS if x[0] == sec and not simple_hidden(x[1]) and not (CFG["lock_on"] and x[1] in LOCK_DENY_KEYS)
+                 and x[1] not in skip and (only is None or x[1] in only)]
         if not specs:
             return
         ent_kw = dict(bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat",
@@ -55138,7 +55173,7 @@ def nachlauf_selftest():
 #     Wachsam». Nicht nach einem Update / Neustart (die enden sauber, 390 run_state.json «clean»).
 #  3  Fehlermeldungen des Web-Servers in der eigenen Sprache als kleine Seite (Anmeldung, zu viele Versuche, fremde Seite,
 #     Gast-Link, unbekannte Adresse). Basic-Realm «MoveEye» (Gäste sehen ihn); das Vertrauens-Cookie bleibt gleich.
-#  4  «Nachtblick»: ganze Seite sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt (pro Browser gemerkt);
+#  4  «Dunkle Ansicht» (bis 2.98.22 «Nachtblick»): ganze Seite sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt (pro Browser gemerkt);
 #     im Fenster ein Knopf ◑ (Einstellung tk_night).
 #  5  Bildschirmleser: Knöpfe und Symbole bekommen aria-label / title in der eigenen Sprache (Hauptseite, Kopf, Navigation).
 #  6  «Aufnahmen nach … Tagen löschen» (0 = nie) neben der Grössen-Grenze; Knopf «Ferien vorbei: alle Aufnahmen löschen»
@@ -55573,8 +55608,8 @@ html.sxnight .badge{background:#0d0101!important;color:#a52a20!important;border-
 </style><script>try{if(localStorage.getItem("mw-night")==="1")document.documentElement.classList.add("sxnight")}catch(e){}</script>"""
 
 # the texts the script needs (English key -> translated by the page language)
-SX_JS_KEYS = ["Night view", "Night view: very dark and red, the live picture dimmed - for a short look in the tent", "Night view on - tap 🌑 again to switch it off",
-              "Night view off", "View", "Settings panel", "Full screen", "Light / dark", "Language", "Exit full screen", "Close", "Copy", "Standard text",
+SX_JS_KEYS = ["Dark view", "Dark view: very dark and red, the live picture dimmed - for a short look in the tent", "Dark view on - tap 🌑 again to switch it off",
+              "Dark view off", "View", "Settings panel", "Full screen", "Light / dark", "Language", "Exit full screen", "Close", "Copy", "Standard text",
               "Up", "Down", "Remove", "Edit", "Refresh", "Help", "Menu", "Play", "Pause", "Stop", "Delete", "Back", "Next", "Previous", "Settings",
               "Live picture", "Main navigation", "Sub navigation", "Show settings", "Hide settings", "More", "Search", "Expand all", "Collapse all",
               "Listen", "Centre", "Other side", "Take a photo", "Favourite", "Download", "Share", "Zoom in", "Zoom out", "Mute", "Sound on",
@@ -55609,9 +55644,9 @@ try { if (typeof I18N !== "undefined" && I18N.de) Object.keys(TX.de || {}).forEa
 // ---- 4: night view ----
 const isN = () => H.classList.contains("sxnight");
 function paintN() { const b = D.getElementById("btn-night"); if (!b) return; b.setAttribute("aria-pressed", isN() ? "true" : "false");
-  b.title = T("Night view: very dark and red, the live picture dimmed - for a short look in the tent"); b.setAttribute("aria-label", T("Night view")); }
+  b.title = T("Dark view: very dark and red, the live picture dimmed - for a short look in the tent"); b.setAttribute("aria-label", T("Dark view")); }
 function setN(on) { H.classList.toggle("sxnight", on); try { localStorage.setItem("mw-night", on ? "1" : "0"); } catch (e) {}
-  paintN(); say(on ? "🌑 " + T("Night view on - tap 🌑 again to switch it off") : T("Night view off")); }
+  paintN(); say(on ? "🌑 " + T("Dark view on - tap 🌑 again to switch it off") : T("Dark view off")); }
 window.sxNight = setN;
 function addBtn() {
   if (D.getElementById("btn-night")) return;
@@ -55623,12 +55658,12 @@ function addBtn() {
   paintN();
 }
 try { if (typeof QS !== "undefined" && Array.isArray(QS) && !QS.some(q => q.id === "night"))
-  QS.push({id: "night", ic: "🌑", lb: "Night view", tip: "Night view: very dark and red, the live picture dimmed - for a short look in the tent",
+  QS.push({id: "night", ic: "🌑", lb: "Dark view", tip: "Dark view: very dark and red, the live picture dimmed - for a short look in the tent",
            on: () => isN(), go: () => { setN(!isN()); return {ok: true}; }}); } catch (e) {}
 
 // ---- 5: names for screen readers ----
 const ID = {"btn-view": "View", "btn-side": "Settings panel", "btn-fs": "Full screen", "btn-theme": "Light / dark", "btn-lang": "Language",
-  "btn-night": "Night view", "vo-exit": "Exit full screen", "side-close": "Hide settings", "side-open": "Show settings", "all-open": "Expand all",
+  "btn-night": "Dark view", "vo-exit": "Exit full screen", "side-close": "Hide settings", "side-open": "Show settings", "all-open": "Expand all",
   "all-close": "Collapse all", "b-sim": "Simulation off", "b-arm": "Protection state", "b-health": "Self-check", "b-lock": "Operator mode", "b-mode": "Mode",
   "btn-listen": "Listen", "stick-listen": "Listen", "lv-vin": "Zoom in", "lv-vout": "Zoom out", "lv-vctl": "Operate with the finger (otherwise the page scrolls)",
   "lv-vrot": "Finger: rotate instead of move", "lv-vbig": "Large picture"};
@@ -55736,7 +55771,7 @@ def _sx_tk_build_header(self):
     try:
         b_fs = getattr(self, "b_fs", None)
         if b_fs is not None and b_fs.winfo_exists():
-            b = self._ibtn(b_fs.master, "◑", lambda: _sx_tk_night(self), tr("Night view: very dark and red, the live picture dimmed - for a short look in the tent"),
+            b = self._ibtn(b_fs.master, "◑", lambda: _sx_tk_night(self), tr("Dark view: very dark and red, the live picture dimmed - for a short look in the tent"),
                            on=bool(CFG.get("tk_night")))
             b.pack(side="right", padx=(0, 6))
     except Exception:
@@ -55867,7 +55902,7 @@ def sicher_selftest():
         assert "pin" in sx_off_form("de") and "inputmode" in sx_off_form("fr")
         CFG["protect_pin"] = ""; assert "Schutz-PIN" in sx_off_form("de")
         js = sx_ui_js_text()
-        assert "Nachtblick" in js and "/*TX*/" not in js
+        assert "Dunkle Ansicht" in js and "Nachtblick" not in js and "/*TX*/" not in js
         assert "sxnight" in render_page("<html><head></head><body><header></header></body></html>", "live")
         for k, (_i, h, t_) in SX_ERRS.items():
             assert tr(h, "de") != h and tr(t_, "fr") != t_, "error page text not translated: " + h
@@ -61985,11 +62020,11 @@ _HX_SICHER = {
     'Something went wrong': ('Etwas ist schiefgegangen', 'Quelque chose n’a pas marché', 'Qualcosa è andato storto', 'Insatge n’è betg ì bain'),
     'MoveEye could not answer this request. Please try again in a moment.': ('MoveEye konnte diese Anfrage nicht beantworten. Bitte gleich nochmals versuchen.', 'MoveEye n’a pas pu répondre à cette requête. Réessaie dans un instant.', 'MoveEye non ha potuto rispondere a questa richiesta. Riprova tra un momento.', 'MoveEye n’ha betg pudì respunder a questa dumonda. Empruvar danovamain en in mument.'),
     'To the start page': ('Zur Startseite', 'Vers la page d’accueil', 'Alla pagina iniziale', 'A la pagina da partenza'),
-    # 4: night view
-    'Night view': ('Nachtblick', 'Vue de nuit', 'Vista notte', 'Vista da notg'),
-    'Night view: very dark and red, the live picture dimmed - for a short look in the tent': ('Nachtblick: sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt', 'Vue de nuit : très sombre et rouge, image en direct atténuée – pour un bref coup d’œil dans la tente', 'Vista notte: molto scura e rossa, immagine live attenuata – per un breve sguardo nella tenda', 'Vista da notg: fitg stgir e cotschen, maletg live stgirentà – per in curt sguard en la tenda'),
-    'Night view on - tap 🌑 again to switch it off': ('Nachtblick an – nochmals 🌑 antippen zum Ausschalten', 'Vue de nuit activée – touche encore 🌑 pour la couper', 'Vista notte attiva – tocca di nuovo 🌑 per spegnerla', 'Vista da notg activa – smatgar anc ina giada 🌑 per la stizzar'),
-    'Night view off': ('Nachtblick aus', 'Vue de nuit désactivée', 'Vista notte spenta', 'Vista da notg stizzada'),
+    # 4: dark view (until 2.98.22 «night view»)
+    'Dark view': ('Dunkle Ansicht', 'Vue sombre', 'Vista scura', 'Vista stgira'),
+    'Dark view: very dark and red, the live picture dimmed - for a short look in the tent': ('Dunkle Ansicht: sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt', 'Vue sombre : très sombre et rouge, image en direct atténuée – pour un bref coup d’œil dans la tente', 'Vista scura: molto scura e rossa, immagine live attenuata – per un breve sguardo nella tenda', 'Vista stgira: fitg stgir e cotschen, maletg live stgirentà – per in curt sguard en la tenda'),
+    'Dark view on - tap 🌑 again to switch it off': ('Dunkle Ansicht an – nochmals 🌑 antippen zum Ausschalten', 'Vue sombre activée – touche encore 🌑 pour la couper', 'Vista scura attiva – tocca di nuovo 🌑 per spegnerla', 'Vista stgira activa – smatgar anc ina giada 🌑 per la stizzar'),
+    'Dark view off': ('Dunkle Ansicht aus', 'Vue sombre désactivée', 'Vista scura spenta', 'Vista stgira stizzada'),
     # 5: names for screen readers
     'Full screen': ('Vollbild', 'Plein écran', 'Schermo intero', 'Visur entir'),
     'Light / dark': ('Hell / dunkel', 'Clair / sombre', 'Chiaro / scuro', 'Cler / stgir'),
@@ -62043,7 +62078,7 @@ _HELP_SICHER = {
           '(ab 3 kommt ein Diebstahl-Alarm). «Fehlalarm» und «Sirene» gehen weiterhin mit einem Tipp.</li>'
           '<li><b>Nach einem Stromausfall oder Absturz</b> kommt eine Push-Nachricht, wie lange MoveEye aus war und ob der Schutz wieder läuft. '
           'Nach einem Update oder Neustart nicht.</li>'
-          '<li><b>🌑 Nachtblick</b> (oben und als Schnellschalter): die ganze Seite sehr dunkel und rot, das Livebild gedimmt – für einen kurzen Blick '
+          '<li><b>🌑 Dunkle Ansicht</b> (oben und als Schnellschalter): die ganze Seite sehr dunkel und rot, das Livebild gedimmt – für einen kurzen Blick '
           'im Zelt, ohne die Augen zu blenden. Jeder Browser merkt es sich selbst. Im Fenster: ◑.</li>'
           '<li><b>Aufnahmen nach … Tagen löschen</b> (Einstellungen → Aufnahme, 0 = nie) – zusätzlich zur Grössen-Grenze. '
           '«🧹 Ferien vorbei: alle Aufnahmen löschen» fragt nach; ⭐ Favoriten bleiben, ausser man hakt sie an.</li>'
@@ -62054,7 +62089,7 @@ _HELP_SICHER = {
           '(without a PIN: the web password). With neither, «Off» works only on the page of MoveEye. Wrong PINs lock as on the web page '
           '(from 3 on a theft alarm). «False alarm» and «Siren» still work with one tap.</li>'
           '<li><b>After a power cut or a crash</b> a push message says how long MoveEye was off and whether the protection runs again. Not after an update or restart.</li>'
-          '<li><b>🌑 Night view</b> (top and as a quick switch): the whole page very dark and red, the live picture dimmed – for a short look in the tent '
+          '<li><b>🌑 Dark view</b> (top and as a quick switch): the whole page very dark and red, the live picture dimmed – for a short look in the tent '
           'without dazzling your eyes. Every browser remembers it itself. In the window: ◑.</li>'
           '<li><b>Delete recordings after … days</b> (Settings → Recording, 0 = never) – in addition to the size limit. '
           '«🧹 Holiday over: delete all recordings» asks first; ⭐ favourites stay unless you tick them.</li>'
@@ -62065,7 +62100,7 @@ _HELP_SICHER = {
           '(sans PIN : le mot de passe web). Sans les deux, «Arrêt» ne marche que sur la page de MoveEye. Les PIN erronés bloquent comme sur la page web '
           '(dès 3, alarme vol). «Fausse alarme» et «Sirène» marchent toujours d’un toucher.</li>'
           '<li><b>Après une coupure de courant ou un plantage</b>, une notification dit combien de temps MoveEye était éteint et si la protection tourne à nouveau. Pas après une mise à jour ou un redémarrage.</li>'
-          '<li><b>🌑 Vue de nuit</b> (en haut et comme interrupteur rapide) : toute la page très sombre et rouge, l’image en direct atténuée – pour un bref coup d’œil dans la tente. '
+          '<li><b>🌑 Vue sombre</b> (en haut et comme interrupteur rapide) : toute la page très sombre et rouge, l’image en direct atténuée – pour un bref coup d’œil dans la tente. '
           'Chaque navigateur s’en souvient. Dans la fenêtre : ◑.</li>'
           '<li><b>Supprimer les enregistrements après … jours</b> (Réglages → Enregistrement, 0 = jamais) – en plus de la limite de taille. '
           '«🧹 Vacances finies : supprimer tous les enregistrements» demande confirmation ; les favoris ⭐ restent, sauf si tu les coches.</li>'
@@ -62076,7 +62111,7 @@ _HELP_SICHER = {
           '(senza PIN: la password web). Senza entrambi, «Spento» funziona solo sulla pagina di MoveEye. I PIN errati bloccano come sulla pagina web '
           '(da 3 allarme furto). «Falso allarme» e «Sirena» funzionano sempre con un tocco.</li>'
           '<li><b>Dopo un’interruzione di corrente o un arresto</b> una notifica dice per quanto tempo MoveEye è stato spento e se la protezione è di nuovo attiva. Non dopo un aggiornamento o un riavvio.</li>'
-          '<li><b>🌑 Vista notte</b> (in alto e come interruttore rapido): tutta la pagina molto scura e rossa, l’immagine live attenuata – per un breve sguardo nella tenda. '
+          '<li><b>🌑 Vista scura</b> (in alto e come interruttore rapido): tutta la pagina molto scura e rossa, l’immagine live attenuata – per un breve sguardo nella tenda. '
           'Ogni browser se lo ricorda. Nella finestra: ◑.</li>'
           '<li><b>Eliminare le registrazioni dopo … giorni</b> (Impostazioni → Registrazione, 0 = mai) – oltre al limite di dimensione. '
           '«🧹 Vacanze finite: eliminare tutte le registrazioni» chiede conferma; i preferiti ⭐ restano, a meno di spuntarli.</li>'
@@ -62087,7 +62122,7 @@ _HELP_SICHER = {
           '(senza PIN: il pled-clav web). Senza omadus funcziuna «Ora» mo sin la pagina da MoveEye. PINs sbagliads bloccan sco en il web '
           '(a partir da 3 in alarm da ladranaria). «Fauss alarm» e «Sirena» funcziunan vinavant cun in tip.</li>'
           '<li><b>Suenter ina interrupziun da current u in collaps</b> di in avis push quant ditg che MoveEye era stizzà e sche la protecziun funcziuna puspè. Betg suenter in update u in restart.</li>'
-          '<li><b>🌑 Vista da notg</b> (sisura e sco cumutader svelt): tut la pagina fitg stgira e cotschna, il maletg live stgirentà – per in curt sguard en la tenda. '
+          '<li><b>🌑 Vista stgira</b> (sisura e sco cumutader svelt): tut la pagina fitg stgira e cotschna, il maletg live stgirentà – per in curt sguard en la tenda. '
           'Mintga navigatur sa regorda sez. En la fanestra: ◑.</li>'
           '<li><b>Stizzar las registraziuns suenter … dis</b> (Parameters → Registraziun, 0 = mai) – ultra dal limit da grondezza. '
           '«🧹 Vacanzas finidas: stizzar tut las registraziuns» dumonda l’emprim; ils favurits ⭐ restan, auter che sch’ins als marca.</li>'

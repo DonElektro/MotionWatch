@@ -114,7 +114,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |
 | `576_fenster_zeitleiste.py` | Fenster: Zeitleiste als Liste, Wochenbericht | 130 |
 | `577_nachlauf_konzept.py` | Nachlauf Konzept-Check: ein Wochenbericht, Rückkehr des Handys (ausschalten / fragen / nichts), Akku-Schwellen zusammen, Auto-Tuner ±20 %, Übernahme alter Einstellungen | 201 |
-| `578_sicher.py` | «Sicher»: «Aus» in der Push nur mit PIN, Push nach Stromausfall, Fehlerseiten in der eigenen Sprache, Nachtblick, Namen für Bildschirmleser, Aufnahmen nach N Tagen löschen / «Ferien vorbei», Push ohne Bild | 743 |
+| `578_sicher.py` | «Sicher»: «Aus» in der Push nur mit PIN, Push nach Stromausfall, Fehlerseiten in der eigenen Sprache, Dunkle Ansicht, Namen für Bildschirmleser, Aufnahmen nach N Tagen löschen / «Ferien vorbei», Push ohne Bild | 743 |
 | `579_ki_modell_auto_schalter.py` | Schalter «Eigenes Modell von selbst aktualisieren» (Web und Fenster) | 4 |
 | `571_alarm_einstellungen.py` | Schalter und Regler der Alarm-Extras (Web und Fenster) | 16 |
 | `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
