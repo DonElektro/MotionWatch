@@ -194,6 +194,7 @@ def jpg_without_exif(data):
 def share_jpg(data, caption=""):
     """A picture as it leaves the Pi when shared: logo (if on), location only when wanted."""
     g = exif_gps_bytes(data) if CFG["share_gps"] else None
+    data = faces_blur_jpg(data)                               # 2.98.14: faces pixelated (375), only in the shared copy
     data = brand_jpg(data, caption) if CFG["share_logo"] else data
     data = jpg_without_exif(data)
     if g:
@@ -220,6 +221,10 @@ def exif_gps_bytes(data):
 
 def share_video(src, caption=""):
     """A video as it leaves the Pi when shared: logo (if on); the location removed unless wanted. (path, error)"""
+    if CFG.get("share_blur_faces", True) and not src.endswith(".faces.mp4"):
+        src, err = faces_blur_video(src)                      # 2.98.14: a copy with pixelated faces (375)
+        if not src:
+            return None, err
     if CFG["share_logo"]:
         return brand_video(src, caption)
     if CFG["share_gps"] or not shutil.which("ffmpeg"):

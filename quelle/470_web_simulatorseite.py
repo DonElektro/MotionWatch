@@ -1412,10 +1412,10 @@ $("#d-link").textContent = t("Link for the PC browser") + ": " + location.origin
 NAV_ITEMS = [("live", "/", "Live", "Live"), ("protect", "/protect", "Protection", "Protection"), ("history", "/recordings", "History", "History"),
              ("settings", "/settings", "Settings", "Sett."), ("sim", "/sim", "Simulator", "Sim"), ("more", "/more", "More", "More")]
 NAV_SUB = {"protect": [("protect", "/protect", "Protection"), ("zones", "/zones", "Zones")],
-           "history": [("rec", "/recordings", "Recordings"), ("diary", "/diary", "Diary"), ("msgs", "/messages", "Messages"), ("log", "/log", "Log")],
+           "history": [("rec", "/recordings", "Recordings"), ("tl", "/timeline", "Night timeline"), ("diary", "/diary", "Diary"), ("msgs", "/messages", "Message list"), ("log", "/log", "Log")],
            "settings": [("settings", "/settings", "Settings"), ("cams", "/cams", "Cameras")],
            "more": [("more", "/more", "Overview"), ("help", "/help", "Manual"), ("party", "/party", "Game corner"), ("tools", "/tools", "Tools")]}
-NAV_OF = {"zones": "protect", "rec": "history", "diary": "history", "msgs": "history", "log": "history", "cams": "settings", "help": "more",
+NAV_OF = {"zones": "protect", "rec": "history", "tl": "history", "diary": "history", "msgs": "history", "log": "history", "cams": "settings", "help": "more",
           "party": "more", "tools": "more"}
 
 

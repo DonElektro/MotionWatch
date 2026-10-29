@@ -1068,7 +1068,7 @@ def self_test(folder=""):
 
     def pages():
         node = shutil.which("node")
-        names = ["WEB_PAGE", "CAMS_PAGE", "ZONES_PAGE", "REC_PAGE", "DIARY_PAGE", "HELP_PAGE", "LOG_PAGE", "GUEST_PAGE", "MSG_PAGE"]
+        names = ["WEB_PAGE", "CAMS_PAGE", "ZONES_PAGE", "REC_PAGE", "DIARY_PAGE", "HELP_PAGE", "LOG_PAGE", "GUEST_PAGE", "MSG_PAGE", "TL_PAGE"]
         n = 0
         for nm in names:
             html = render_page(globals()[nm], "live")
@@ -1083,6 +1083,7 @@ def self_test(folder=""):
                 n += 1
         return None if node else "JavaScript not checked (node missing)"
     chk("Web pages (render + JavaScript)", pages)
+    chk("Timeline, weekly report, blur faces when sharing", verlauf_selftest)     # 2.98.14 (425, 426, 375)
 
     if folder:
         def manifest():

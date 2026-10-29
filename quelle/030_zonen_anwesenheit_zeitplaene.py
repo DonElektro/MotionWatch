@@ -404,6 +404,7 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("MQTT / Home Assistant", "mqtt_password", "MQTT password", "secret", None),
     ("MQTT / Home Assistant", "mqtt_prefix", "Topic prefix", "str", None),
     ("Recording", "rec_marks", "Markings in recordings and alarm pictures", "enum", "rec_marks"),
+    ("Night report", "weekrep_day", "Weekly detection report: day", "enum", ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")),
     ("Backup", "backup_type", "Copy recordings to", "enum", "backup_types"),
     ("Patrol", "patrol_mode", "Patrol route", "enum", "patrol_modes"),
     ("Backup", "backup_url", "WebDAV folder (address, e.g. Nextcloud)", "str", None),

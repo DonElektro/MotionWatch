@@ -1136,7 +1136,10 @@ $("#btn-starsel").onclick = async () => { if (selected.size) { await setFav([...
 $("#more").onclick = () => load(false);
 
 (async () => {
-  await initAppearance(); markKind(); updateSelBtn(); load(true); loadStats();
+  await initAppearance(); markKind(); updateSelBtn();
+  const q_ = new URLSearchParams(location.search), d_ = q_.get("day") || "";   // 2.98.14: from the timeline (?open=name&day=…)
+  if (q_.get("open")) { openAfter = q_.get("open"); if (/^\d{4}-\d{2}-\d{2}$/.test(d_)) { tlDay = d_; F.from = F.to = d_; $("#f-from").value = $("#f-to").value = d_; } }
+  load(true); loadStats();
 })();
 /*ALERTS*/
 </script></body></html>

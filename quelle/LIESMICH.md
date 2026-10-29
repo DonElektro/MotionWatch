@@ -62,11 +62,14 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `350_simulator_link.py` | Verbindung zum Simulator (Schleife) | 87 |
 | `360_daten_simulator_python.py` | Daten: der Python-Simulator als ZIP | 897 |
 | `370_rueckmeldung_teilen_abschreckung.py` | Rückmeldung, Teilen, Abschreckung, Gegensprechen | 405 |
+| `375_gesichter_verpixeln.py` | Gesichter verpixeln beim Teilen (nur die geteilte Kopie) | 250 |
 | `380_updates.py` | Updates | 216 |
 | `390_protokoll_bedienermodus.py` | Protokoll, Bedienermodus, Pause, Update-Wächter | 1065 |
 | `400_ausschalten.py` | Pi ausschalten / neu starten | 53 |
 | `410_motionwatch_kern.py` | KERN: die Erkennungs-Schleife (Bewegung, Personen, Alarm) | 969 |
 | `420_webzugang_aufnahmen.py` | Web-Zugang, Aufnahmen, Speicher, Bild für andere Programme | 630 |
+| `425_zeitleiste.py` | Zeitleiste der Nacht: Daten für /api/timeline | 230 |
+| `426_wochenbericht.py` | Wochenbericht der Erkennung (Push + Karte) | 200 |
 | `430_pdf_bericht.py` | PDF-Bericht | 757 |
 | `440_zusatzkameras.py` | zusätzliche Kameras | 203 |
 | `450_web_gemeinsam.py` | Web: gemeinsames Aussehen (CSS), Bluetooth-Teil | 240 |
@@ -77,12 +80,14 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `500_web_seitenbau.py` | Web: App-Symbol, Seiten zusammensetzen | 80 |
 | `510_web_kopf_alarm.py` | Web: Service Worker, Kopf, Alarm, gemeinsames JavaScript | 494 |
 | `520_web_seiten_kameras_zonen_tagebuch.py` | Web: Kameras, Zonen, Tagebuch, Gast, Protokoll | 730 |
+| `523_web_zeitleiste.py` | Web: Seite «Zeitleiste» (Verlauf), /api/timeline, /api/weekreport | 330 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
 | `560_uebersetzungen_de.py` | Übersetzungen Deutsch | 498 |
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |
+| `575_fenster_zeitleiste.py` | Fenster: Zeitleiste als Liste, Wochenbericht | 130 |
 | `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
 | `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
 | `600_uebersetzungen_rm.py` | Übersetzungen Rätoromanisch, Anleitungen | 1763 |
@@ -94,3 +99,4 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 Grob gruppiert: **Kern** (Erkennung, Alarm: 170–230, 410), **Geräte** (Hardware, Audio, Sensoren: 070–100, 240–280),
 **Netz** (110–160), **Simulator und Prüfungen** (290–360), **Webseiten** (450–550), **Fenster** (570),
 **Extras** (Spiele, Almanach, Produktseite: 320, 340, 620, 630), **Übersetzungen** (560–610), **Daten** (Bilder, ZIPs: 360, 480, 490, 620).
+| `607_uebersetzungen_verlauf.py` | Übersetzungen Zeitleiste / Wochenbericht / Gesichter verpixeln, Anleitung | 110 |
