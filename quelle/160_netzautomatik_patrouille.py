@@ -103,11 +103,18 @@ class NetAuto:
 
 # ----------------------------------------------------------------------------
 # Patrol: pendulum over waypoints  (1-2-3-2-1-2-3 ...)
+# 2.98.30: «kluge Runde» - the stops come from kopf_patrol_plan() (part 162): the places of «Platz einrichten» with a
+# longer stay at the tent and the access, hardly a stop at ignored directions; without places the waypoints. It also
+# runs by itself in Wachsam / Voll (setting «Automatic head movement»), pauses while following and gives way to every
+# mover with a higher rank (kopf_may). Battery low / deep night: it stays at the most important direction.
 # ----------------------------------------------------------------------------
 class Patrol:
     def __init__(self):
         self.paused_until = 0
         threading.Thread(target=self.loop, daemon=True).start()
+
+    def _go_on(self):
+        return not STATE["tracking"] and not servo_hold() and kopf_may("round") and bool(kopf_patrol_plan()[0])
 
     def move_to(self, pan, tilt):
         """Smoothly move pan and tilt together (straight line) at patrol_speed %/s; returns False if interrupted."""
@@ -116,7 +123,7 @@ class Patrol:
             dist = math.hypot(dp, dt)
             if dist <= 0.5:
                 break
-            if not CFG["patrol"] or STATE["tracking"] or servo_hold():
+            if not self._go_on():
                 return False
             f = min(1.0, CFG["patrol_speed"] * 0.02 / dist)
             CFG["pan"] = CFG["pan"] + dp * f
@@ -126,35 +133,45 @@ class Patrol:
         return True
 
     def loop(self):
-        announced = False
+        announced = ""
         while True:
-            if not CFG["patrol"] or len(WAYPOINTS) < 2:
-                STATE["patrol_status"] = "off" if not CFG["patrol"] else "need 2+ waypoints"
-                announced = False
+            try:
+                plan, why = kopf_patrol_plan()
+            except Exception:
+                plan, why = [], "off"
+            if not plan:
+                STATE["patrol_status"] = KOPF["status"] or why
+                KOPF["round_on"] = False; announced = ""
                 time.sleep(0.3); continue
             if STATE["tracking"]:
-                STATE["patrol_status"] = "paused (tracking person)"
+                STATE["patrol_status"] = "paused (tracking person)"; KOPF["round_on"] = False
                 time.sleep(0.2); continue
             if servo_hold():
-                STATE["patrol_status"] = "paused (manual control)"
+                STATE["patrol_status"] = "paused (manual control)"; KOPF["round_on"] = False
                 time.sleep(0.2); continue
-            if not announced:
-                log_event("patrol", f"Patrol started over {len(WAYPOINTS)} waypoints (pan/tilt): {wp_text()}")
-                announced = True
-            wps = list(WAYPOINTS)
+            if not kopf_may("round"):
+                STATE["patrol_status"] = "paused (the head is busy)"; KOPF["round_on"] = False
+                time.sleep(0.3); continue
+            KOPF["round_on"] = True
+            sig = ";".join(f"{p[0]:.0f}/{p[1]:.0f}" for p in plan)
+            if announced != sig:
+                log_event("patrol", (f"Smart round over {len(plan)} directions: " if any(p[3] for p in plan) else f"Patrol started over {len(plan)} waypoints (pan/tilt): ")
+                          + ", ".join((f"{p[3]} {p[2]:.0f}s" if p[3] else f"{p[0]:.0f}/{p[1]:.0f}") for p in plan))
+                announced = sig
             # pendulum 1-2-3-2-1 (no doubled end points) or round trip 1-2-3-1-2-3
-            path = wps if CFG["patrol_mode"] == "loop" else wps + wps[-2:0:-1]
+            path = plan if CFG["patrol_mode"] == "loop" or len(plan) < 3 else plan + plan[-2:0:-1]
             for i, wp in enumerate(path):
                 STATE["patrol_status"] = f"moving to waypoint {i + 1}/{len(path)} ({wp[0]:.0f}/{wp[1]:.0f})"
-                if not self.move_to(wp[0], wp[1]):
+                STATE["patrol_moving"] = True
+                ok = self.move_to(wp[0], wp[1])
+                STATE["patrol_moving"] = False
+                if not ok:
                     break
-                STATE["patrol_status"] = f"dwelling at {wp[0]:.0f}/{wp[1]:.0f}"
-                t_end = time.time() + CFG["patrol_dwell"]
+                STATE["patrol_status"] = (why + " (" + wp[3] + ")") if why else f"dwelling at {(wp[3] + ' ') if wp[3] else ''}{wp[0]:.0f}/{wp[1]:.0f}"
+                t_end = time.time() + wp[2]
                 while time.time() < t_end:
-                    if not CFG["patrol"] or STATE["tracking"] or servo_hold():
+                    if not self._go_on():
                         break
                     time.sleep(0.05)
-                if not CFG["patrol"] or STATE["tracking"] or servo_hold():
+                if not self._go_on() or len(plan) == 1:
                     break
-
-

@@ -75,6 +75,7 @@ class ExtraCam:
         if t0 < self.raw_until:
             self.raw = frame.copy(); self.raw_t = t0
         H, W = frame.shape[:2]
+        self.wh = (W, H)                                       # 2.98.30: the overview steers the head (162)
         if self.n % 2 == 0 or not self.times:                  # detection on every 2nd frame is enough
             pw = 320; ph = max(1, int(H * pw / W)); sx = W / pw; sy = H / ph
             gray = cv2.GaussianBlur(cv2.cvtColor(cv2.resize(frame, (pw, ph)), cv2.COLOR_BGR2GRAY), (5, 5), 0)

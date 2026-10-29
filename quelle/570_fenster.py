@@ -3365,8 +3365,9 @@ class App:
         self._sb("b_relays", f"{tr('Relays')}: {on}/{len(RELAYS)} {tr('on')}", C["grn"], show=on > 0)
         self._sb("b_light", "🌙 " + tr("LOW LIGHT"), C["yel"], show=st["lowlight"])
         self._sb("b_auto", f"{tr('Auto')}: {st['auto_status']}", C["org"], show=str(st["auto_status"]).startswith("calibrat"))
-        self._sb("b_patrol", tr("MANUAL") if manual else (tr("TRACKING") if st["tracking"] else f"{tr('Patrol')}: {tr(st['patrol_status'])}"),
-                 C["yel"] if manual else C["acc"], show=bool(manual or st["tracking"] or CFG["patrol"]))
+        kt = kopf_text()                           # 2.98.30: automatic head movement (162): parked, quick look, saving, estimated position
+        self._sb("b_patrol", tr("MANUAL") if manual else (tr("TRACKING") if st["tracking"] else (f"{tr('Patrol')}: {patrol_status_text(st['patrol_status'])}" if CFG["patrol"] or KOPF["round_on"] else "⟲ " + kt)),
+                 C["yel"] if manual else C["acc"], show=bool(manual or st["tracking"] or CFG["patrol"] or KOPF["round_on"] or kt))
         self._sb("b_camp", "⛺ " + tr("Camping profile"), C["grn"], show=bool(CFG["camping"]))
         try:                                       # this window counts as a viewer while it is on the screen (not minimised)
             if self.root.state() != "iconic" and self.root.winfo_viewable():

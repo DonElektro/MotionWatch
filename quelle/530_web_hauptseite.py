@@ -1432,6 +1432,7 @@ function psText(x) {                     // patrol status in words: «moving to 
   let m = /^moving to waypoint (\d+)\/(\d+) \((.+)\)$/.exec(x || "");
   if (m) return t("moving to waypoint") + " " + m[1] + "/" + m[2] + " (" + m[3] + ")";
   m = /^dwelling at (.+)$/.exec(x || ""); if (m) return t("waiting at") + " " + m[1];
+  m = /^(.+?) \((.+)\)$/.exec(x || ""); if (m && t(m[1]) !== m[1]) return t(m[1]) + " (" + m[2] + ")";   // 2.98.30 (162)
   return t(x || "");
 }
 Object.assign(I18N.de, {"Temperature sensor (BME280 / BMP280 on I2C or DS18B20 on GPIO 4), if connected": "Temperaturfühler (BME280 / BMP280 an I2C oder DS18B20 an GPIO 4), falls angeschlossen", "Temperature sensor: correction (°C)": "Temperaturfühler: Korrektur (°C)", "Outside": "Aussen", "no temperature sensor": "kein Temperaturfühler", "Outside temperature": "Aussentemperatur", "Take the location from the phone (the page must be open over https)": "Standort vom Handy übernehmen (die Seite muss über https offen sein)", "GPS position in photos and videos": "GPS-Position in Fotos und Videos", "Location": "Standort", "from the phone": "vom Handy", "fixed (settings)": "fest (Einstellungen)", "unknown – the phone shares it only over the https page": "unbekannt – das Handy gibt ihn nur über die https-Seite weiter", "Night vision": "Nachtsicht", "Night vision: green picture, thermal outlines and temperatures": "Nachtsicht: grünes Bild, Wärme-Umrisse und Temperaturen",
@@ -1872,7 +1873,7 @@ const GROUPS = [                                            // 2.98.0: by goal -
   {id: "sched", tab: "protect", icon: "🗓", name: "Zones, schedule, presence", items: [{card: "schedule", sec: "Schedule", title: "Schedule", ic: "🗓️"}]},
   {id: "detect", tab: "settings", icon: "🎯", name: "Detection", items: [{card: "tune", title: "Improve detection", ic: "🎯"}, {sec: "Detection", ic: "👁️"}, {sec: "AI detection", ic: "🤖"}, {sec: "Thermal camera", ic: "🌡"}, {fine: true},
    {sec: "Walking recognition", ic: "🚶"}, {sec: "Vehicle filter", ic: "🚗"}, {sec: "Rain", ic: "🌧️"}, {sec: "Wind", ic: "🌬️"}, {sec: "Low light", ic: "🌘"}, {sec: "Auto-tune", ic: "🎚️"}]},
-  {id: "camera", tab: "settings", icon: "📷", name: "Cameras & head", items: [{sec: "Camera / Servos", ic: "🕹️"}, {sec: "Patrol", ic: "🔄"}, {card: "source", sec: "Video source", ic: "🎥"},
+  {id: "camera", tab: "settings", icon: "📷", name: "Cameras & head", items: [{sec: "Camera / Servos", ic: "🕹️"}, {sec: "Patrol", ic: "🔄"}, {sec: "Automatic head movement", ic: "🤖"}, {card: "source", sec: "Video source", ic: "🎥"},
    {sec: "Timelapse", ic: "⏱️"}, {sec: "Mover", title: "Mover (tracked vehicle)", ic: "🚜"}, {fine: true}, {sec: "Servo driver", ic: "🔌"}]},
   {id: "lightsound", tab: "settings", icon: "🔌", name: "Devices & sensors", items: [{sec: "Lights", ic: "💡"}, {sec: "Microphone", ic: "🎤"}, {sec: "Loudspeaker", ic: "🔊"},
    {card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {sec: "Extra sensors", ic: "📡"}, {sec: "Clap switch", ic: "👏"}, {sec: "Bless you", title: "«Bless you!»", ic: "🤧"},
@@ -1884,7 +1885,8 @@ const GROUPS = [                                            // 2.98.0: by goal -
   {id: "sys", tab: "settings", icon: "⚙", name: "System", items: [{card: "system", ic: "🖥️"}, {sec: "Setup", ic: "📍"}, {sec: "Updates", ic: "⬆️"},
    {card: "log", ic: "📜"}]},
 ];
-Object.assign(I18N.de, {"Improve detection": "Erkennung verbessern"});   // 2.98.14: the assistant (312); the simulator settings are on the page Simulator
+Object.assign(I18N.de, {"Improve detection": "Erkennung verbessern", "Automatic head movement": "Automatische Kopfbewegung",
+  "paused (the head is busy)": "Pause (der Kopf ist beschäftigt)", "saving: stays at the most important direction": "sparsam: bleibt bei der wichtigsten Richtung"});   // 2.98.14: the assistant (312); the simulator settings are on the page Simulator
 function toBlock(d) {                                        // a settings section -> its controls (without its own title)
   const b = el("div", "blk");
   [...d.children].filter(c => c.tagName !== "SUMMARY").forEach(k => b.appendChild(k));
@@ -4479,7 +4481,7 @@ async function refresh() {
   $("#v-pan").textContent = Math.round(c.pan); $("#v-tilt").textContent = Math.round(c.tilt);
   showPos(c.pan, c.tilt);
   $("#patrol-st").textContent = ((s.manual ? t("Manual control - tracking / patrol paused") : s.tracking ? t("Tracking person")
-      : (c.patrol ? t("Patrol") + ": " + psText(s.patrol_status) : "")) + (j.waypoints.length ? " · " + t("waypoints") + " (↔/↕): " + j.waypoints.map(w => Math.round(w[0]) + "/" + Math.round(w[1])).join(", ") : "")).replace(/^ · /, "");
+      : ((c.patrol || (s.kopf && s.kopf.owner === "round")) ? t("Patrol") + ": " + psText(s.patrol_status) : (s.kopf && s.kopf.text ? "⟲ " + s.kopf.text : ""))) + (j.waypoints.length ? " · " + t("waypoints") + " (↔/↕): " + j.waypoints.map(w => Math.round(w[0]) + "/" + Math.round(w[1])).join(", ") : "")).replace(/^ · /, "");
   wpPaint(j.waypoints, c);
   if (window.pipAlarm) pipAlarm(s.persons || 0);
   renderRelays(rel, rs, c.ai_enabled && !/no model|error/.test(s.ai_status));
