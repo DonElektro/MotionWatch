@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 00:38",
+ "generated": "2026-10-30 00:40",
  "versions": [
   {
    "version": "2.98.33",
    "file": "webcam_bewegung_2_98_33.py",
    "url": "",
-   "sha256": "045b8ee107c37a34f964e52b369d5644edf3fca2a6d03e5d075f45cdd67b8312",
-   "date": "2026-10-30 00:38",
+   "sha256": "a9c80fd05840b35a1d981dbd1622042d1b001336d7b53d2ac044493f1cf0748a",
+   "date": "2026-10-30 00:40",
    "notes": "Ein Guide nach der Installation (zuerst «Schnell oder ausgiebig?»), Rundgänge mit Sprechblasen auf allen Reitern («?» startet neu), Einfach/Experte pro Seite, Karten «Tipps & Tricks», «?» an den Einstellungen, Tipp des Tages; geschützte Werkseinstellungen (WLAN, Fernzugang, ntfy, Updates, KI-Modell bleiben). Rückmeldung 💬 von jeder Seite (Art, Sterne, Bild, geht an beide ntfy-Server), «Über MoveEye» (Versionsnummer antippen). QR-Codes neben den Links und eine QR-Galerie unter Mehr.",
-   "sig": "bb20b1621cd5740bed98b13554fc6377b9fe5800b7e8cfa5d1d536b481d0821913592bd1eb8b657337194d83c6a18493324358ce311c3ba57e86bceb00be8f06"
+   "sig": "1f3f0067b22b0ead53512d78fd95f17272b2b1065c102b957fff40ca3f7387d56a94a54d963d1c6e49494590298a91ea41f9b4faa0e8e95ddfd1df9e0810fe0d"
   },
   {
    "version": "2.97.1",
