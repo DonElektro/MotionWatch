@@ -30,7 +30,7 @@ def presence_back_mode():
 
 # ---- the settings lists (web and window): since 2.98.18 directly in the lists - weekrep_sim (570, after weekrep_on),
 # presence_auto (571, where back_ask was), batt_save_pct / mode_fire_min_pct (575), presence_back (TEXTS in 030), SIMPLE_KEYS (130).
-# simweek_on and back_ask are only read by nachlauf_migrate (MIGRATE_ONLY, 029).
+# simweek_on and back_ask are only read by nachlauf_migrate (MIGRATE_ONLY, 020).
 
 # text_choice_pairs (030) and the tools page «Am I at home?» (tools_state / tools_cfg, 300) know presence_back.
 
