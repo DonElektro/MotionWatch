@@ -24,6 +24,7 @@ import json
 import math
 import os
 import platform
+import re
 import shutil
 import signal
 import subprocess
@@ -80,6 +81,18 @@ def newest_mw():
     fs = glob.glob(os.path.join(REPO, "webcam_bewegung_*.py"))
     key = lambda f: [int(x) for x in os.path.basename(f)[16:-3].split("_") if x.isdigit()]
     return max(fs, key=key) if fs else ""
+
+
+def cpu_modell():
+    """the processor (e.g. «AMD EPYC 7763»): on GitHub the runners differ and with them the frame rate of the simulator"""
+    try:
+        with open("/proc/cpuinfo", encoding="utf-8", errors="replace") as f:
+            for z in f:
+                if z.lower().startswith("model name"):
+                    return re.sub(r"\s+(\d+-Core )?Processor\s*$", "", z.split(":", 1)[1].strip())[:40]
+    except OSError:
+        pass
+    return platform.processor()[:40]
 
 
 def mw_version(path):
@@ -205,6 +218,7 @@ def run(a):
         except Exception:
             info["sim_version"] = "?"
         rc = 0
+        info["cpu"] = cpu_modell()                       # GitHub gives different processors: the frame rate depends on it
         info["besucher_mal"] = a.mal
         info["seeds"] = a.seeds
         info["waermebild"] = a.waermebild
@@ -416,7 +430,7 @@ def verlauf_schreiben():
                 zl + (" – *%s*" % d["bemerkung"] if d.get("bemerkung") else ""), pt,
                 k["erkannt"], k["personen"], k["quote"], st, ("%d / %d" % (k["waerme_erkannt"], k["waerme"])) if k["waerme"] else "–", gt,
                 ("%.1f s" % k["reaktion"]) if k["reaktion"] is not None else "–", k["tiere_gemeldet"], k["tiere"], k["flackern"],
-                k["fps"], ki_art(d), d.get("rechner", "?")))
+                k["fps"], ki_art(d), d.get("rechner", "?") + (" · " + d["cpu"] if d.get("cpu") else "")))
     if not rows:
         L.append("| – | noch kein Lauf | | | | | | | | | | | | |")
     L += ["", "## Einzelheiten pro Phase (letzter Lauf)", ""]
