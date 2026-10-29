@@ -346,7 +346,7 @@ function simViewPoll(VI, fps) {
     info.w = w; info.q = L.q; info.fmt = SIM_WEBP ? "webp" : "jpg"; info.lvl = lvl;
     const fs = !!(document.fullscreenElement || document.webkitFullscreenElement || VI.closest(".fs"));
     const clean = fs && (typeof PVPAD === "undefined" || !PVPAD);      // 2.95.92: full screen: the simulator hides its rover stick
-    return "w=" + w + "&q=" + L.q + "&fmt=" + info.fmt + (clean ? "&clean=1" : "");
+    return "w=" + w + "&q=" + L.q + "&fmt=" + info.fmt + (clean ? "&clean=1" : "") + (VI.closest("[data-bare]") ? "&bare=1" : "");   // 538: without the buttons of the window
   };
   const step = async (g) => {
     if (!on || g !== gen) return;
@@ -376,7 +376,7 @@ const SIMPAD = {name: "", on: false};
   const tick = () => {
     let g = null; try { g = [...navigator.getGamepads()].find(x => x && x.connected); } catch (e) {}
     SIMPAD.on = !!g; SIMPAD.name = g ? String(g.id).replace(/\(.*?\)/g, "").trim().slice(0, 40) : "";
-    if (!g || document.hidden) return;
+    if (!g || document.hidden || (typeof window.mwPadOwn === "function" && window.mwPadOwn())) return;   // the «Controller-Ansicht» (538) has its own mapping
     // 2.98.10: the sticks go to the simulator unchanged - it takes off the drift itself (rest position + round dead zone)
     const ax = [0, 1, 2, 3].map(i => Math.round((g.axes[i] || 0) * 1000) / 1000);
     const bt = g.buttons.slice(0, 17).map(b => Math.round((b.value || (b.pressed ? 1 : 0)) * 100) / 100);
@@ -387,7 +387,7 @@ const SIMPAD = {name: "", on: false};
     post("/api/sim", {action: "pad", ax: ax, bt: bt, name: SIMPAD.name});
   };
   setInterval(tick, 66);
-  addEventListener("gamepadconnected", e => { try { toast("🎮 " + t("Controller connected") + ": " + String(e.gamepad.id).replace(/\(.*?\)/g, "").trim().slice(0, 40) + " – " + t("Start = explore with the rover")); } catch (x) {} });
+  addEventListener("gamepadconnected", e => { if (typeof window.mwPadAsk === "function" && window.mwPadAsk(e)) return; try { toast("🎮 " + t("Controller connected") + ": " + String(e.gamepad.id).replace(/\(.*?\)/g, "").trim().slice(0, 40) + " – " + t("Start = explore with the rover")); } catch (x) {} });
 })();
 function simQBox(VP) {                             // «Bildqualität» under the picture of the simulator window
   try { if (I18N && I18N.de) Object.assign(I18N.de, {"Controller connected": "Controller verbunden", "Start = explore with the rover": "Start = mit dem Rover erkunden", "Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig"}); } catch (e) {}
