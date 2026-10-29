@@ -600,7 +600,7 @@ def gpsmod_fix(lat, lon, sats=None, via=""):
         GPSMOD["sats"] = sats
     if first:
         log_event("sys", f"GPS module: position {lat:.4f}, {lon:.4f}")
-    if abs(lat - float(CFG["latitude"])) > 0.01 or abs(lon - float(CFG["longitude"])) > 0.01:     # ~1 km: a new place
+    if via != "simulator" and (abs(lat - float(CFG["latitude"])) > 0.01 or abs(lon - float(CFG["longitude"])) > 0.01):   # ~1 km: a new place (never from the simulator)
         CFG["latitude"], CFG["longitude"] = round(lat, 4), round(lon, 4); save_settings()
     gps_theft_check()
 
@@ -639,6 +639,14 @@ def gps_theft_check():
             w.notifier.alert("{name}: " + tr("THEFT ALARM") + " – " + tr("position"), tr("Position now") + f" ({dist / 1000.0:.2f} km): " + link, None)
 
 
+def sim_sensor(key):
+    """2.98.11: a sensor of the 3D simulator (solar panel, GPS module) while it is connected - instead of the real part"""
+    if not CFG.get("sim_on") or time.time() - SIM.get("t", 0.0) > 10:
+        return None
+    v = SIM.get(key)
+    return v if isinstance(v, dict) else None
+
+
 class GpsModule:
     def __init__(self):
         threading.Thread(target=self.loop, daemon=True, name="gps").start()
@@ -647,6 +655,14 @@ class GpsModule:
         while True:
             if not CFG["gpsmod_on"]:
                 GPSMOD["status"] = "off"; time.sleep(3); continue
+            sg = sim_sensor("gps")
+            if sg is not None:
+                try:
+                    GPSMOD["status"] = "fix"
+                    gpsmod_fix(float(sg["lat"]), float(sg["lon"]), int(sg.get("sats") or 0), via="simulator")
+                except (KeyError, TypeError, ValueError):
+                    pass
+                time.sleep(5); continue
             port = str(CFG["gpsmod_port"] or "auto")
             try:
                 if port in ("auto", "gpsd") and self.gpsd():
@@ -840,7 +856,14 @@ class SolarMonitor:
             except ValueError:
                 pca_ = -1
             clash = addr == pca_ and str(STATE.get("servo_backend", "")).startswith("pca9685")
-            r = None if clash else ina219_read(addr, CFG["solar_shunt"])
+            ss = sim_sensor("solar")
+            if ss is not None:
+                try:
+                    r = (float(ss["v"]), float(ss["a"])); clash = False
+                except (KeyError, TypeError, ValueError):
+                    r = None
+            else:
+                r = None if clash else ina219_read(addr, CFG["solar_shunt"])
             if r is not None and not (0.0 <= r[0] <= 40.0 and abs(r[1]) <= 20.0):
                 r = None                                  # not a plausible solar reading (another chip on that address?)
             if r is None:

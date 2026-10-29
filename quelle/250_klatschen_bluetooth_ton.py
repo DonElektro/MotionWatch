@@ -191,6 +191,38 @@ class SoundEvents:
 
 
 YAMNET_INFO = {}
+_SIM_SND = {"seen": 0}
+
+
+def sim_sound_events(evs, last, fresh=False):
+    """2.98.11: the short sounds of the 3D simulator (no real microphone): claps go to the clap switch (and snooze the
+    wake-up alarm), a sneeze to «Bless you». Each id once; after a (re)connect the old ones are skipped. Loudness at the
+    microphone must reach the same threshold as with a real microphone."""
+    if AUDIO is None or AUDIO.proc is not None:
+        return
+    if fresh or last < _SIM_SND["seen"]:
+        _SIM_SND["seen"] = last; return
+    bg = AUDIO.bg if AUDIO.bg is not None else -60.0
+    for e in sorted(evs or [], key=lambda x: int(x.get("id") or 0)):
+        i = int(e.get("id") or 0)
+        if i <= _SIM_SND["seen"]:
+            continue
+        _SIM_SND["seen"] = i
+        kind, n, db = str(e.get("kind") or ""), int(e.get("n") or 1), float(e.get("db") or -90.0)
+        if kind == "clap" and (CFG.get("clap_on") or wake_clap_listens()):
+            rise = 26.0 - 1.6 * float(CFG.get("clap_sens", 5))
+            if db < max(bg + rise, -42.0):
+                SOUNDEV.update(last_n=n, last_n_t=time.time(), last_act=tr("too quiet")); continue
+            SOUNDEV.update(last_clap=time.time(), seq_n=n)
+            if 2 <= n <= 4:
+                clap_action(n)
+            elif n > 4:
+                SOUNDEV.update(last_n=n, last_n_t=time.time(), last_act=tr("too many claps"))
+        elif kind == "sneeze" and CFG.get("sneeze_on"):
+            SOUNDEV["checks"] += 1
+            if db >= max(bg + 14.0, -45.0):
+                SOUNDEV.update(sneeze_score=0.9, sneeze_t=time.time())
+                sneeze_reply()
 
 
 def yamnet_runtime():

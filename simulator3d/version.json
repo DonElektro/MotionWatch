@@ -1,12 +1,12 @@
 {
- "version": "3D-3.97",
+ "version": "3D-3.98",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31254090,
- "sha256": "61e9fbed214cfa45da295838696866be51fb65cc8671477e83d4c0d171038fa9",
- "notes": "Natürliche Farben, Jahreszeiten, Kamerafarben; Stick-Drift lernt Ruhelage; Kopf mit L1/Steuerkreuz",
+ "size": 31269210,
+ "sha256": "32a5bae3400064ac6b13ef894c84a10b723b006547613e8c138750dc01f574f3",
+ "notes": "Tunnel nach Update, Geräusche, Solar/GPS, zweites Wärmebild, Mondphase, Pfützen, Bodennebel, Schneespuren",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24374969,
-  "sha256": "003a195b7290b3f500f39ea4f43e27e25d615f3cd528c5ca12fba1cdfbdeaff6"
+  "size": 24390906,
+  "sha256": "7a8c2112942c836e5fde9a8403433d28ac0a8c9fed48686bb64f3fb0f32b759e"
  }
 }

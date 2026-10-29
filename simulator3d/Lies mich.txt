@@ -608,12 +608,22 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-3.98
+3D-3.98: Tunnel nach einem Update: der alte Simulator schliesst seine Tunnel-Leitungen, bevor der neue startet (vorher blieb das
+Livebild in MoveEye schwarz, weil MoveEye in alte Leitungen schrieb). Geräusche für MoveEye: Karte «Testen» → «Geräusche»
+(Klatschen 2×/3×/4×, Niesen, Reden, Rufen) – für den Klatschschalter, «Gesundheit» und den Wecker (Klatschen = schlummern).
+Sensoren: Solarpanel (Watt nach Sonnenstand und Wetter) und GPS-Modul; «GPS: MoveEye wird weggetragen» unter Testen → Schutz
+testen löst den Diebstahl-Alarm aus. Zweites Gerät: eigenes Wärmebild (vorher eine leere Fläche). Mehr Realismus: Mondphase nach
+Datum (Licht und Form), Lichtglocke über Orten, Pfützen nach langem Regen, der Boden trocknet langsam, Bodennebel in ruhigen
+feuchten Nächten, Spuren im Schnee (Menschen, Tiere, Autos), Wärmebild wie ein echtes Modul (Streifen, Rand kühler, Drift,
+alle 1–2 Minuten kurz stehendes Bild beim Selbstabgleich).
+
 NEU IN 3D-3.97
 3D-3.97: Natürlichere Farben: weniger grelle Farben, Metall (Wohnwagen, Auto), Glas, Stoff, Stein und Holz glänzen unterschiedlich,
 bei Regen werden Flächen nass (dunkler, glänzender). Jahreszeiten nach Datum: Frühlingsgrün, Sommer, Herbstlaub (Nadelbäume bleiben
 grün), Winter. Blaue Stunde nach Sonnenuntergang und blauer Dunst in der Ferne. Kamerafarben wie bei einer echten Kamera: in der
 Dämmerung verblassen die Farben, im Dunkeln Farbrauschen, unter Lampen wärmeres Bild. Stick-Drift neu: der Simulator lernt die
-Ruhelage jedes Sticks selbst (3 s still = neue Mitte) und benutzt eine runde Totzone; «🎮 Controller-Test» zeigt roh (grau) und
+Ruhelage jedes Sticks selbst (3 s still = neue Mitte) und benutzt eine runde Totzone; «Controller testen» zeigt roh (grau) und
 bereinigt (grün). Ohne Controller gibt es keine Geistereingaben mehr. Kopf mit dem Controller bewegen: L1 halten + rechter Stick,
 oder das Steuerkreuz (LT + Steuerkreuz ↑↓ = Mast, LT + → = Einladen).
 
@@ -622,7 +632,7 @@ NEU IN 3D-3.96
 Wecker, reagiert sie von selbst: beim ersten Mal winkt sie (schlummern), beim nächsten Mal sitzt sie auf und steht auf (Wecker aus).
 Steuerbefehl «sleeper» (sleep, wave, sit, up, turn, auto). Keine Nachtfalter im Zimmer. «Blickrichtung» in der Leiste unten
 unter «Ansicht»: ein roter Strahl zeigt, wohin MoveEye schaut, dazu die Bildränder am Boden (nur für dich sichtbar). Gegen
-Stick-Drift: «🎮 Controller kalibrieren» unter Mover (2 s die Sticks nicht berühren) und eine einstellbare Totzone.
+Stick-Drift: «Controller kalibrieren» unter Mover (2 s die Sticks nicht berühren) und eine einstellbare Totzone.
 
 NEU IN 3D-3.95
 3D-3.95: Spiel «Team gegen MoveEye» mit mehr Mitspielern: bis 12 Läufer (Spiel → Runde → «Läufer höchstens», Standard 6;

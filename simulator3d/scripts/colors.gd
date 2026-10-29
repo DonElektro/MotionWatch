@@ -14,6 +14,10 @@ var _wet := -1.0
 var _month := -1
 var base_alb := {}                     # material -> its own colour (for wet darkening)
 var kind_mats := {}                    # "colour|kind" -> StandardMaterial3D
+var wetness := 0.0                     # 3D-3.98: the ground gets wet slowly and dries slowly (sun, wind)
+var puddle := 0.0                      # puddles in the hollows after long rain
+var ground_fog := 0.0                  # fog lying on the meadow (calm, humid nights and mornings)
+var _tw := -1.0
 
 # the kind of surface from the thermal key the scenes give to add_mesh
 const KIND := {"caravan": [0.32, 0.25, 0.6], "car": [0.22, 0.55, 0.7], "glass": [0.04, 0.0, 0.9], "tent": [0.9, 0.0, 0.3],
@@ -88,6 +92,7 @@ func update() -> void:
 			var lf: Array = LEAF[mo]
 			var amt: float = float(lf[1]) * (0.15 if conifer else 1.0)
 			fm.set_shader_parameter("color", b.lerp(lf[0], amt))
+	_ground_tick()
 	var wet: float = 1.0 if main.weather == "rain" else (0.4 if main.weather == "snow" else 0.0)
 	if wet != _wet and on:
 		_wet = wet
@@ -107,3 +112,34 @@ func update() -> void:
 	if main.weather in ["clear", "cloudy"]:                  # blue haze in the distance (rain, fog, snow keep their grey)
 		main.env.fog_light_color = main.env.fog_light_color.lerp(Color(0.62, 0.7, 0.84) * (0.05 + 0.95 * day), 0.6).lerp(Color(0.3, 0.38, 0.62), blue * 0.5)
 	main.env.fog_aerial_perspective = 0.35
+
+
+func _ground_tick() -> void:
+	"""3D-3.98: wet ground and puddles follow the rain slowly; ground fog on calm humid nights (time runs with «x-fach»)"""
+	var t: float = main.now()
+	var dt: float = 0.0 if _tw < 0.0 else clampf(t - _tw, 0.0, 5.0) * float(main.speed)
+	_tw = t
+	var el: float = main.sun_el()
+	var day: float = clampf((el + 6.0) / 18.0, 0.0, 1.0)
+	if main.weather == "rain":
+		wetness = minf(1.0, wetness + dt / 90.0)
+		puddle = minf(1.0, puddle + dt / 900.0)
+	else:
+		var dry: float = (1.0 + 2.0 * day + float(main.wind) / 15.0) / 2400.0
+		wetness = maxf(0.0, wetness - dt * dry)
+		puddle = maxf(0.0, puddle - dt * dry * 0.4)
+	if dt == 0.0 and main.weather == "rain":           # the first time (start, scene) in the rain: already wet
+		wetness = 1.0
+	var mats: Array = [main.grass_mat] + main.ground_mats
+	for gm in mats:
+		if gm != null:
+			gm.set_shader_parameter("wet", wetness)
+			gm.set_shader_parameter("puddle", puddle)
+	var h: float = main.hour()
+	var calm: bool = float(main.wind) < 12.0 and main.weather in ["clear", "cloudy"]
+	var want: float = 0.0
+	if calm and float(main.humidity) >= 80.0 and (h >= 21.0 or h < 9.5) and el < 12.0:
+		want = clampf((float(main.humidity) - 80.0) / 15.0, 0.25, 1.0)
+	ground_fog = move_toward(ground_fog, want, dt / 600.0 if dt > 0.0 else 1.0)
+	main.env.fog_height = 1.2
+	main.env.fog_height_density = 0.35 * ground_fog

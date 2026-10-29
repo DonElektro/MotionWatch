@@ -2168,6 +2168,8 @@ for _k, _v in _HX124.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 _HX125 = {  # 2.98.7: «Spiele freigeben», wake-up alarm, sleeping place
+    'too quiet': ('zu leise', 'trop faible', 'troppo debole', 'memia quiet'),
+    'too many claps': ('zu viele Klatscher', 'trop de claquements', 'troppi battiti di mani', 'memia bleras batter las mauns'),
     'Games': ('Spiele', 'Jeux', 'Giochi', 'Gieus'),
     'Open all games': ('Spiele freigeben', 'Ouvrir tous les jeux', 'Aprire tutti i giochi', 'Avrir tut ils gieus'),
     'All games for the phones: game corner, game collection and the simulator game - one QR code': ('Alle Spiele fürs Handy: Spielecke, Spielesammlung und Simulator-Spiel – ein QR-Code', 'Tous les jeux pour les téléphones : coin jeux, collection de jeux et jeu du simulateur – un seul code QR', 'Tutti i giochi per i telefoni: angolo giochi, raccolta di giochi e gioco del simulatore – un solo codice QR', 'Tut ils gieus per il telefonin: chantun da gieus, collecziun da gieus e gieu dal simulatur – in code QR'),

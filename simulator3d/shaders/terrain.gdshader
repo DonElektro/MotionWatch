@@ -9,6 +9,7 @@ uniform sampler2D noise_tex;
 uniform vec4 snow : source_color = vec4(0.93, 0.94, 0.96, 1.0);
 uniform float snow_amount = 0.0;
 uniform float wet = 0.0;
+uniform float puddle = 0.0;           // 3D-3.98: puddles after long rain
 uniform float detail = 1.0;
 
 varying vec3 wpos;
@@ -28,6 +29,8 @@ void fragment() {
 	float near = detail * (1.0 - smoothstep(30.0, 90.0, length(VERTEX)));
 	c *= 1.0 + near * green * (0.35 * (fine - 0.5) + 0.2 * (mid - 0.5));
 	c = mix(c, snow.rgb * (0.92 + 0.08 * fine), snow_amount);
-	ALBEDO = clamp(c, 0.0, 1.0) * (1.0 - 0.35 * wet);
-	ROUGHNESS = mix(0.95, 0.35, wet);
+	float pd = puddle * smoothstep(0.30, 0.22, texture(noise_tex, wpos.xz * 0.012).r + 0.15 * (mid - 0.5));
+	ALBEDO = mix(clamp(c, 0.0, 1.0) * (1.0 - 0.35 * wet), vec3(0.05, 0.055, 0.06), pd);
+	ROUGHNESS = mix(mix(0.95, 0.35, wet), 0.04, pd);
+	SPECULAR = mix(0.5, 0.9, pd);
 }

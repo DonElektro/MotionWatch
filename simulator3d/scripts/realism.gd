@@ -200,3 +200,39 @@ static func stats(img: Image) -> Dictionary:
 			m += 1
 	return {"mean": mean, "std": sqrt(maxf(0.0, sl2 / n - mean * mean)), "sat": ss / n, "r": sr / maxf(0.001, sg), "b": sb / maxf(0.001, sg),
 			"sharp": sharp / m, "noise": noise / m}
+
+
+# ---- 3D-3.98: the thermal module like a real one (Thermal-90: 80 × 62, uncooled) --------------------------------------
+var _th_cols := PackedFloat32Array()   # fixed pattern: every column a little warmer or colder
+var _th_drift := 0.0                   # the whole picture drifts slowly until the next shutter click (FFC)
+var _th_ffc := 0.0
+var _th_last := PackedFloat32Array()
+
+
+func thermal_fx(a: PackedFloat32Array, w: int, h: int) -> PackedFloat32Array:
+	"""column pattern ±0.15 °C, edges ~0.6 °C colder (vignette), slow drift and every 90-150 s a short «shutter» freeze
+	(the module calibrates itself: for 0.4 s the picture stands still, then the drift is gone)"""
+	var t: float = main.now()
+	if _th_cols.size() != w:
+		_th_cols.resize(w)
+		var rng := RandomNumberGenerator.new()
+		rng.seed = 4711
+		for x in range(w):
+			_th_cols[x] = rng.randf_range(-0.15, 0.15)
+		_th_ffc = t + randf_range(90.0, 150.0)
+	if t >= _th_ffc:
+		if t < _th_ffc + 0.4 and _th_last.size() == a.size():
+			return _th_last                          # shutter closed: the last picture once more
+		_th_ffc = t + randf_range(90.0, 150.0)
+		_th_drift = 0.0
+	_th_drift = clampf(_th_drift + randf_range(-0.004, 0.006), -0.6, 0.8)
+	var cx := (w - 1) * 0.5
+	var cy := (h - 1) * 0.5
+	for y in range(h):
+		var dy := (y - cy) / cy
+		for x in range(w):
+			var dx := (x - cx) / cx
+			var i := y * w + x
+			a[i] = a[i] + _th_cols[x] + _th_drift - 0.6 * (dx * dx + dy * dy) * 0.5
+	_th_last = a
+	return a

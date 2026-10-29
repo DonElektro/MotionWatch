@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_10.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_11.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.11: Livebild nach Simulator-Update: Wiederverbindung nach 6 s ohne Bild, alte Tunnel-Leitungen werden geschlossen;
+    Geräusche aus dem Simulator (Klatschschalter, Gesundheit, Wecker schlummern); Solarpanel und GPS-Modul im Simulator;
+    Simulator 3D-3.98
   * 2.98.10: Simulator 3D-3.97 (Farben, Jahreszeiten, Kamerafarben, Stick-Drift-Korrektur, Kopf mit Controller);
     Browser-Controller schickt rohe Achsen
   * 2.98.9: Privatsphäre-Zonen bleiben am Ort, wenn der Kopf sich dreht; eine Nachtzeit für Nachtbericht, Wecker und «Heute
@@ -865,10 +868,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_10.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_11.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_10.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_10.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_11.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_11.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -885,7 +888,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.10"
+APP_VERSION = "2.98.11"
 
 
 def default_data_dir():
@@ -12279,6 +12282,21 @@ def _tun_take():
     return None
 
 
+def tunnel_flush():
+    """2.98.11: close every idle line of the tunnel. After an update of the simulator on Windows the old lines may stay
+    open (the new process inherits them) but nobody answers on them any more: MoveEye waited on them until they were
+    100 s old. The simulator opens fresh ones at once."""
+    with TUN["lock"]:
+        old = list(TUN["pool"]); TUN["pool"].clear()
+    for c, _b in old:
+        try:
+            c.close()
+        except OSError:
+            pass
+    if old:
+        log_event("sys", f"Tunnel: {len(old)} old lines closed - the simulator opens new ones")
+
+
 def tunnel_start():
     """the listener for the simulator (whole network) and the two local doors (only this Pi)"""
     if TUN["srv"] or DEMO["on"]:
@@ -14301,6 +14319,38 @@ class SoundEvents:
 
 
 YAMNET_INFO = {}
+_SIM_SND = {"seen": 0}
+
+
+def sim_sound_events(evs, last, fresh=False):
+    """2.98.11: the short sounds of the 3D simulator (no real microphone): claps go to the clap switch (and snooze the
+    wake-up alarm), a sneeze to «Bless you». Each id once; after a (re)connect the old ones are skipped. Loudness at the
+    microphone must reach the same threshold as with a real microphone."""
+    if AUDIO is None or AUDIO.proc is not None:
+        return
+    if fresh or last < _SIM_SND["seen"]:
+        _SIM_SND["seen"] = last; return
+    bg = AUDIO.bg if AUDIO.bg is not None else -60.0
+    for e in sorted(evs or [], key=lambda x: int(x.get("id") or 0)):
+        i = int(e.get("id") or 0)
+        if i <= _SIM_SND["seen"]:
+            continue
+        _SIM_SND["seen"] = i
+        kind, n, db = str(e.get("kind") or ""), int(e.get("n") or 1), float(e.get("db") or -90.0)
+        if kind == "clap" and (CFG.get("clap_on") or wake_clap_listens()):
+            rise = 26.0 - 1.6 * float(CFG.get("clap_sens", 5))
+            if db < max(bg + rise, -42.0):
+                SOUNDEV.update(last_n=n, last_n_t=time.time(), last_act=tr("too quiet")); continue
+            SOUNDEV.update(last_clap=time.time(), seq_n=n)
+            if 2 <= n <= 4:
+                clap_action(n)
+            elif n > 4:
+                SOUNDEV.update(last_n=n, last_n_t=time.time(), last_act=tr("too many claps"))
+        elif kind == "sneeze" and CFG.get("sneeze_on"):
+            SOUNDEV["checks"] += 1
+            if db >= max(bg + 14.0, -45.0):
+                SOUNDEV.update(sneeze_score=0.9, sneeze_t=time.time())
+                sneeze_reply()
 
 
 def yamnet_runtime():
@@ -15364,7 +15414,8 @@ def away_view():
 
 def wake_clap_listens():
     """2.98.9: while the alarm rings, clapping 2 times = snooze (the melody pauses 8 s of every 20 s so the microphone hears it)"""
-    return WAKE["state"] == "ring" and bool(CFG.get("wake_clap", True)) and bool(CFG.get("audio_in"))
+    sim_ear = AUDIO is not None and time.time() - AUDIO.sim_t < 3.0        # 2.98.11: the simulator supplies the sound
+    return WAKE["state"] == "ring" and bool(CFG.get("wake_clap", True)) and (bool(CFG.get("audio_in")) or sim_ear)
 
 
 def wake_hold():
@@ -17140,7 +17191,7 @@ def gpsmod_fix(lat, lon, sats=None, via=""):
         GPSMOD["sats"] = sats
     if first:
         log_event("sys", f"GPS module: position {lat:.4f}, {lon:.4f}")
-    if abs(lat - float(CFG["latitude"])) > 0.01 or abs(lon - float(CFG["longitude"])) > 0.01:     # ~1 km: a new place
+    if via != "simulator" and (abs(lat - float(CFG["latitude"])) > 0.01 or abs(lon - float(CFG["longitude"])) > 0.01):   # ~1 km: a new place (never from the simulator)
         CFG["latitude"], CFG["longitude"] = round(lat, 4), round(lon, 4); save_settings()
     gps_theft_check()
 
@@ -17179,6 +17230,14 @@ def gps_theft_check():
             w.notifier.alert("{name}: " + tr("THEFT ALARM") + " – " + tr("position"), tr("Position now") + f" ({dist / 1000.0:.2f} km): " + link, None)
 
 
+def sim_sensor(key):
+    """2.98.11: a sensor of the 3D simulator (solar panel, GPS module) while it is connected - instead of the real part"""
+    if not CFG.get("sim_on") or time.time() - SIM.get("t", 0.0) > 10:
+        return None
+    v = SIM.get(key)
+    return v if isinstance(v, dict) else None
+
+
 class GpsModule:
     def __init__(self):
         threading.Thread(target=self.loop, daemon=True, name="gps").start()
@@ -17187,6 +17246,14 @@ class GpsModule:
         while True:
             if not CFG["gpsmod_on"]:
                 GPSMOD["status"] = "off"; time.sleep(3); continue
+            sg = sim_sensor("gps")
+            if sg is not None:
+                try:
+                    GPSMOD["status"] = "fix"
+                    gpsmod_fix(float(sg["lat"]), float(sg["lon"]), int(sg.get("sats") or 0), via="simulator")
+                except (KeyError, TypeError, ValueError):
+                    pass
+                time.sleep(5); continue
             port = str(CFG["gpsmod_port"] or "auto")
             try:
                 if port in ("auto", "gpsd") and self.gpsd():
@@ -17380,7 +17447,14 @@ class SolarMonitor:
             except ValueError:
                 pca_ = -1
             clash = addr == pca_ and str(STATE.get("servo_backend", "")).startswith("pca9685")
-            r = None if clash else ina219_read(addr, CFG["solar_shunt"])
+            ss = sim_sensor("solar")
+            if ss is not None:
+                try:
+                    r = (float(ss["v"]), float(ss["a"])); clash = False
+                except (KeyError, TypeError, ValueError):
+                    r = None
+            else:
+                r = None if clash else ina219_read(addr, CFG["solar_shunt"])
             if r is not None and not (0.0 <= r[0] <= 40.0 and abs(r[1]) <= 20.0):
                 r = None                                  # not a plausible solar reading (another chip on that address?)
             if r is None:
@@ -18446,8 +18520,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.97", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31254090,
-         "sha256": "61e9fbed214cfa45da295838696866be51fb65cc8671477e83d4c0d171038fa9"}
+SIM3D = {"version": "3D-3.98", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31269210,
+         "sha256": "32a5bae3400064ac6b13ef894c84a10b723b006547613e8c138750dc01f574f3"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -18586,8 +18660,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-3.97", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24374969,
-           "sha256": "003a195b7290b3f500f39ea4f43e27e25d615f3cd528c5ca12fba1cdfbdeaff6", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.98", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24390906,
+           "sha256": "7a8c2112942c836e5fde9a8403433d28ac0a8c9fed48686bb64f3fb0f32b759e", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -21882,6 +21956,8 @@ class SimLink:
                 except Exception:
                     pass
                 SIM.update(ok=False, msg=msg_, errs=SIM["errs"] + 1, since=0.0)
+                if SIM["errs"] in (2, 6) and CFG["sim_url"].startswith("http://127.0.0.1:18765"):
+                    tunnel_flush()                           # 2.98.11: lines of a simulator that was just updated - only fresh ones
                 time.sleep(2.0); continue
             time.sleep(max(0.02, (0.2 if sim_eco_now() else 0.1) - (time.time() - t0)))
 
@@ -21901,13 +21977,20 @@ class SimLink:
                 AUDIO.feed_sim(float(rep_["sound_db"]))      # the sound of the simulated world for the noise alarm
             except Exception:
                 pass
+        if rep_.get("sound_ev") is not None and AUDIO is not None:   # 2.98.11: claps, sneezes, voices of the simulated world
+            try:
+                sim_sound_events(rep_["sound_ev"], int(rep_.get("sound_ev_last") or 0), first or int(rep_.get("pid") or 0) != SIM.get("pid_seen"))
+            except Exception:
+                pass
         if first or int(rep_.get("pid") or 0) != SIM.get("pid_seen"):
             SIM["pid"] = SIM["pid_seen"] = int(rep_.get("pid") or 0)  # its process number: CPU share if it runs on this computer
         SIM.update(t=time.time(), ok=True, msg="connected", dark=bool(rep_.get("dark")), ambient=float(rep_.get("ambient_c", 15.0)),
                    pressure=float(rep_.get("pressure_hpa", 1013.0)), wind=float(rep_.get("wind_kmh", 0.0)), sent=SIM["sent"] + 1,
                    mover=bool(rep_.get("mover")),                # the simulator has a mover (3D-3.11): second stick
                    mover_pose=_mover_pose(rep_.get("mover_pose")) if rep_.get("mover") else None,   # where it is (2.95.43, optional)
-                   pc_cpu=rep_.get("pc_cpu"), cores=rep_.get("cores"))   # CPU of the PC the simulator runs on (3D-3.24)
+                   pc_cpu=rep_.get("pc_cpu"), cores=rep_.get("cores"),   # CPU of the PC the simulator runs on (3D-3.24)
+                   solar=rep_.get("solar") if isinstance(rep_.get("solar"), dict) else None,   # 2.98.11: solar panel and
+                   gps=rep_.get("gps") if isinstance(rep_.get("gps"), dict) else None)         # GPS module of the simulator   # CPU of the PC the simulator runs on (3D-3.24)
         if time.time() - SIMDIARY["t"] >= 30:                # 2.96.1: the diary of the simulator (visits)
             threading.Thread(target=simdiary_poll, daemon=True, name="simdiary").start()
             SIMDIARY["t"] = time.time() - 25                # (the thread sets it again)
@@ -23358,7 +23441,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_10.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_11.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -24891,6 +24974,7 @@ class MotionWatch:
 
     def _apply_opened(self, res):
         src, sid, label, err = res
+        self._good_t = time.time()                         # 2.98.11: a new source gets its 6 s (see the read loop)
         if src is None:
             log_event("sys", f"Video source '{label}' not available: {err}")
             if self.cap is not None and str(STATE.get("source_id", "")).startswith("sim:") and not CFG["sim_on"]:
@@ -25418,7 +25502,9 @@ class MotionWatch:
             ok, frame = self.cap.read()
             if not ok:
                 self.read_failures += 1
-                if self.read_failures >= 60:            # ~3 s without a frame -> reconnect the source
+                # ~3 s without a frame -> reconnect. 2.98.11: also by time - a stalled stream (tunnel line of a simulator that
+                # was just updated) waits up to 8 s per read, so 60 failures took minutes and the live picture stayed black
+                if self.read_failures >= 60 or (self.read_failures >= 2 and time.time() - getattr(self, "_good_t", 0.0) > 6.0):
                     log_event("sys", "Camera stopped delivering frames - reconnecting")
                     STATE["source_status"] = "connection lost - reconnecting"
                     if self.writer is not None:          # 2.95.33: the recording up to now is kept and backed up
@@ -25436,7 +25522,7 @@ class MotionWatch:
                     self.cap.release()
                     self.cap = None; self.read_failures = 0; self._retry_at = time.time() + 2.0
                 time.sleep(0.05); continue
-            self.read_failures = 0
+            self.read_failures = 0; self._good_t = time.time()
             ok_ = (str(CFG.get("cam_rotate", "0")), bool(CFG.get("cam_mirror")))
             if ok_ != getattr(self, "_orient", ok_):        # turned / mirrored now: a new scene for the detection
                 self.reset_scene()
@@ -39450,7 +39536,7 @@ function simExtras(d) {
     D.addEventListener("toggle", vtick); document.addEventListener("visibilitychange", vtick); setInterval(vtick, 1500);
   })();
 Object.assign(I18N.de, {"Clap switch": "Klatschschalter", "Bless you": "Gesundheit", "«Bless you!»": "«Gesundheit!»", "Clap 2×": "2× klatschen", "Clap 3×": "3× klatschen", "Clap 4×": "4× klatschen", "Answer": "Antwort", "Words (several: separate with |)": "Worte (mehrere mit | trennen)", "Sensitivity (higher = also softer claps)": "Empfindlichkeit (höher = auch leisere Klatscher)", "Volume of the beep": "Lautstärke des Pieptons", "Sensitivity (higher = answers more readily)": "Empfindlichkeit (höher = antwortet eher)", "Volume of the answer": "Lautstärke der Antwort", "Clap switch on": "Klatschschalter ein", "Beep when recognised": "Piepton, wenn erkannt", "Only when not armed (claps of strangers switch nothing)": "Nur wenn der Schutz aus ist (Klatscher von Fremden schalten nichts)", "Practice: only count and beep, switch nothing": "Üben: nur zählen und piepen, nichts schalten", "Say «Bless you!» after a sneeze": "Nach einem Niesen «Gesundheit!» sagen", "Quiet at night (22 to 7 o'clock)": "Nachts still (22 bis 7 Uhr)", "Test beep": "Piepton testen", "switch on and clap 2× to try it": "einschalten und zum Ausprobieren 2× klatschen", "clap 2, 3 or 4 times": "2, 3 oder 4 Mal klatschen", "counting": "zähle", "last": "zuletzt", "Hear the answer": "Antwort anhören", "Install": "Installieren", "sn-note": "Die Niesen-Erkennung nutzt ein kleines Erkennungsmodell (YAMNet von Google, etwa 4 MB). Es wird beim ersten lauten Geräusch einmal geladen. Tipp: «Gesundheit!» mit dem Handy als Sprachmemo aufnehmen und mit «Eigene Antwort» hochladen – sie wird sofort als Antwort gewählt.",
- "Own answer (sound file)": "Eigene Antwort (Tondatei)", "saved and chosen as answer": "gespeichert und als Antwort gewählt", "loading the sound recognition …": "lade die Geräusch-Erkennung …", "waiting for the first loud sound": "wartet auf das erste laute Geräusch", "needs the sound recognition program - button «Install»": "braucht das Erkennungsprogramm – Knopf «Installieren»", "model could not be loaded": "Modell konnte nicht geladen werden", "installing … (a few minutes)": "installiere … (ein paar Minuten)", "last check": "letzte Prüfung", "today": "heute", "no speech program (sudo apt install libttspico-utils)": "kein Sprachprogramm (sudo apt install libttspico-utils)", "no microphone selected (Microphone)": "kein Mikrofon gewählt (Mikrofon)", "not while armed": "nicht, solange der Schutz an ist", "too many claps": "zu viele Klatscher", "not possible": "nicht möglich"});
+ "Own answer (sound file)": "Eigene Antwort (Tondatei)", "saved and chosen as answer": "gespeichert und als Antwort gewählt", "loading the sound recognition …": "lade die Geräusch-Erkennung …", "waiting for the first loud sound": "wartet auf das erste laute Geräusch", "needs the sound recognition program - button «Install»": "braucht das Erkennungsprogramm – Knopf «Installieren»", "model could not be loaded": "Modell konnte nicht geladen werden", "installing … (a few minutes)": "installiere … (ein paar Minuten)", "last check": "letzte Prüfung", "today": "heute", "no speech program (sudo apt install libttspico-utils)": "kein Sprachprogramm (sudo apt install libttspico-utils)", "no microphone selected (Microphone)": "kein Mikrofon gewählt (Mikrofon)", "not while armed": "nicht, solange der Schutz an ist", "too many claps": "zu viele Klatscher", "too quiet": "zu leise", "not possible": "nicht möglich"});
 // ---- 2.98.7: wake-up alarm (Einstellungen → Geräte & Sensoren) and the banner while it rings ----
 async function wakeDo(a) { const r = await post("/api/wake", {action: a, lang: LANG}); if (!r.ok) toast("⚠ " + (r.error || "error")); else { if (a === "away_here") toast("✓ " + t("Saved")); refresh(); } }
 function wakePaint(s) {
@@ -46631,7 +46717,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.10")
+        self.root.title("MoveEye 2.98.11")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -46948,7 +47034,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.10 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.11 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -54370,6 +54456,8 @@ for _k, _v in _HX124.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 _HX125 = {  # 2.98.7: «Spiele freigeben», wake-up alarm, sleeping place
+    'too quiet': ('zu leise', 'trop faible', 'troppo debole', 'memia quiet'),
+    'too many claps': ('zu viele Klatscher', 'trop de claquements', 'troppi battiti di mani', 'memia bleras batter las mauns'),
     'Games': ('Spiele', 'Jeux', 'Giochi', 'Gieus'),
     'Open all games': ('Spiele freigeben', 'Ouvrir tous les jeux', 'Aprire tutti i giochi', 'Avrir tut ils gieus'),
     'All games for the phones: game corner, game collection and the simulator game - one QR code': ('Alle Spiele fürs Handy: Spielecke, Spielesammlung und Simulator-Spiel – ein QR-Code', 'Tous les jeux pour les téléphones : coin jeux, collection de jeux et jeu du simulateur – un seul code QR', 'Tutti i giochi per i telefoni: angolo giochi, raccolta di giochi e gioco del simulatore – un solo codice QR', 'Tut ils gieus per il telefonin: chantun da gieus, collecziun da gieus e gieu dal simulatur – in code QR'),

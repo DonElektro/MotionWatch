@@ -157,6 +157,7 @@ class MotionWatch:
 
     def _apply_opened(self, res):
         src, sid, label, err = res
+        self._good_t = time.time()                         # 2.98.11: a new source gets its 6 s (see the read loop)
         if src is None:
             log_event("sys", f"Video source '{label}' not available: {err}")
             if self.cap is not None and str(STATE.get("source_id", "")).startswith("sim:") and not CFG["sim_on"]:
@@ -684,7 +685,9 @@ class MotionWatch:
             ok, frame = self.cap.read()
             if not ok:
                 self.read_failures += 1
-                if self.read_failures >= 60:            # ~3 s without a frame -> reconnect the source
+                # ~3 s without a frame -> reconnect. 2.98.11: also by time - a stalled stream (tunnel line of a simulator that
+                # was just updated) waits up to 8 s per read, so 60 failures took minutes and the live picture stayed black
+                if self.read_failures >= 60 or (self.read_failures >= 2 and time.time() - getattr(self, "_good_t", 0.0) > 6.0):
                     log_event("sys", "Camera stopped delivering frames - reconnecting")
                     STATE["source_status"] = "connection lost - reconnecting"
                     if self.writer is not None:          # 2.95.33: the recording up to now is kept and backed up
@@ -702,7 +705,7 @@ class MotionWatch:
                     self.cap.release()
                     self.cap = None; self.read_failures = 0; self._retry_at = time.time() + 2.0
                 time.sleep(0.05); continue
-            self.read_failures = 0
+            self.read_failures = 0; self._good_t = time.time()
             ok_ = (str(CFG.get("cam_rotate", "0")), bool(CFG.get("cam_mirror")))
             if ok_ != getattr(self, "_orient", ok_):        # turned / mirrored now: a new scene for the detection
                 self.reset_scene()

@@ -11,6 +11,7 @@ uniform vec3 cloud_light : source_color = vec3(1.0);
 uniform vec3 cloud_shadow : source_color = vec3(0.55, 0.6, 0.68);
 uniform float night = 0.0;            // 0 = day … 1 = night (stars)
 uniform vec2 wind = vec2(0.004, 0.0015);
+uniform float moon_phase = 0.5;       // 3D-3.98: 0 = new moon, 0.5 = full moon, 1 = new moon again
 uniform float detail = 1.0;           // 0 = no clouds / stars (simple graphics)
 
 float hash3(vec3 p) {
@@ -66,6 +67,14 @@ void sky() {
 	if (LIGHT1_ENABLED) {                                   // the moon (not darkened with the sky)
 		float md = dot(d, LIGHT1_DIRECTION);
 		float mdisk = smoothstep(0.99965, 0.9998, md);
+		vec3 mr = normalize(cross(LIGHT1_DIRECTION, vec3(0.0, 1.0, 0.0)) + vec3(1e-4));
+		vec3 mu = cross(mr, LIGHT1_DIRECTION);
+		vec3 off = d - md * LIGHT1_DIRECTION;
+		float mx = dot(off, mr) / 0.0195, my = dot(off, mu) / 0.0195;
+		float lit = 0.5 - 0.5 * cos(moon_phase * 6.2832);              // lit part of the disk
+		float edge = (1.0 - 2.0 * lit) * sqrt(max(0.0, 1.0 - my * my));
+		float sx = moon_phase < 0.5 ? mx : -mx;                          // waxing: lit on the right
+		mdisk *= mix(0.04, 1.0, smoothstep(edge - 0.08, edge + 0.08, sx));
 		col += vec3(0.85, 0.88, 0.95) * mdisk * 1.6 * night * (1.0 - cloud_cover) + vec3(0.4, 0.45, 0.6) * pow(max(md, 0.0), 120.0) * 0.12 * night;
 	}
 	if (detail > 0.5 && h > 0.0) {

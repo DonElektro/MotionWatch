@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.97"
+const VERSION := "3D-3.98"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -179,6 +179,8 @@ var _flash_boost := 0.0
 var _amb_base := 0.3
 var _sky_e_base := 1.0
 var moon := 0.6
+var moon_auto := true                # 3D-3.98: moon light and shape from the real moon phase of the date
+var moon_ph := 0.5
 var auto_visitors := true
 var next_auto := 0.0
 var door_open := false
@@ -263,6 +265,9 @@ var night_gain := 2.5                 # how much a camera may amplify at night (
 var ir_range := 14.0                  # reach of the infrared light (m)
 var sound_on := true                  # the sounds of the world go to the microphone of MoveEye (from 3D-2.6)
 var sounds: Array = []                # [dB at 1 m, position, until]
+var sound_ev: Array = []              # 3D-3.98: short sounds for MoveEye [{id, kind: clap | sneeze | voice | shout, n, db, t}]
+var sound_ev_id := 0
+const SOUND_EV_DB := {"clap": -4.0, "sneeze": -10.0, "voice": -18.0, "shout": -4.0}   # loudness at 1 m
 var mw_det := {}                      # what MoveEye detects right now (from 2.93.3: persons, present, noise)
 var mw_det_t := 0.0
 var lens_mats: Array = []
@@ -271,6 +276,7 @@ var realism                           # realism.gd
 var fauna                             # fauna.gd (3D-3.95)
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
 var colors_on := true
+var tracks                            # tracks.gd (3D-3.98)
 var seasons_on := true
 var sleeper                           # sleeper.gd (3D-3.96): the person in the bed of the bedroom scene
 var fauna_on := true
@@ -318,6 +324,9 @@ func _ready() -> void:
 	colors = preload("res://scripts/colors.gd").new()        # 3D-3.97: natural colours, materials, seasons (before the world is built)
 	colors.main = self
 	add_child(colors)
+	tracks = preload("res://scripts/tracks.gd").new()        # 3D-3.98: tracks in the snow
+	tracks.main = self
+	add_child(tracks)
 	clock0 = Time.get_unix_time_from_system()
 	var t := Time.get_datetime_dict_from_system()
 	hour0 = t.hour + t.minute / 60.0
@@ -533,6 +542,7 @@ func _stream_retry(left: int, tries := 0) -> void:
 var _sw_t := 0.0
 var _sw_tries := 0
 var _old_killed := false
+var _released_t := -100.0              # 3D-3.98: release_ports() was called (an update / restart is starting)
 
 
 func _stream_watch() -> void:
@@ -541,6 +551,8 @@ func _stream_watch() -> void:
 	Try again every 3 s; after 5 s stop the old simulator (--old-pid), after the 3rd try take a spare port (8775 …).
 	Never gives up (before 3D-3.75 the tunnel switched sending on only once)."""
 	var want: bool = stream_last or tunnel_on or "--stream" in OS.get_cmdline_user_args()
+	if tunnel_on and tunnel != null and not tunnel.on and now() - _released_t > 20.0 and tunnel_host != "":
+		tunnel.set_on(true)                           # 3D-3.98: an update was given up after release_ports: tunnel on again
 	if stream_on or not want or net == null:
 		_sw_tries = 0
 		return
@@ -576,6 +588,9 @@ func release_ports() -> void:
 	_save_settings()                                  # 3D-3.76: the time of the scene for the new simulator
 	if net != null:
 		net.stop()
+	_released_t = now()
+	if tunnel != null and tunnel.on:                  # 3D-3.98: close the tunnel lines too - on Windows the new simulator would
+		tunnel.set_on(false)                          # inherit them, MoveEye kept sending «GO» into lines nobody reads
 	if game != null and game.open:
 		game.set_open(false)
 
@@ -1472,6 +1487,122 @@ func add_sound(db1m: float, pos: Vector3, secs: float) -> void:
 	sounds.append([db1m, pos, now() + secs])
 
 
+func emit_sound(kind: String, n: int = 1, pos = null) -> Dictionary:
+	"""3D-3.98: a short sound MoveEye should recognise (clap switch, «Gesundheit», noise alarm). Without a place: the person in
+	the bed, else the nearest visitor, else 2 m in front of the head camera."""
+	if not SOUND_EV_DB.has(kind):
+		return {"ok": false, "error": "kind: clap | sneeze | voice | shout"}
+	var ear := head.global_position if head != null else Vector3(0, HEAD_H, 0)
+	var p: Vector3
+	if pos is Vector3:
+		p = pos
+	elif sleeper != null and sleeper.root != null and is_instance_valid(sleeper.root) and sleeper.root.is_inside_tree() and sleeper.state != "gone":
+		p = (sleeper.upper.global_position if sleeper.upper != null else sleeper.root.global_position) + Vector3(0, 0.3, 0)
+	else:
+		p = ear + (-cams[0].global_transform.basis.z * 2.0 if cams.size() > 0 else Vector3(0, 0, -2))
+		var best := 30.0
+		for v in visitors.get_children():
+			if v is Node3D and v.get("kind") == "person" and (v as Node3D).global_position.distance_to(ear) < best:
+				best = (v as Node3D).global_position.distance_to(ear)
+				p = (v as Node3D).global_position + Vector3(0, 1.5, 0)
+	var d: float = maxf(1.0, p.distance_to(ear))
+	var db: float = float(SOUND_EV_DB[kind]) - 20.0 * log(d) / log(10.0)
+	sound_ev_id += 1
+	n = clampi(n, 1, 6)
+	sound_ev.append({"id": sound_ev_id, "kind": kind, "n": n, "db": snappedf(db, 0.1), "t": now()})
+	add_sound(float(SOUND_EV_DB[kind]), p, {"clap": 0.45 * n, "sneeze": 0.6, "voice": 2.5, "shout": 3.5}[kind])
+	_sound_play(kind, n)
+	return {"ok": true, "id": sound_ev_id, "db": snappedf(db, 0.1), "dist": snappedf(d, 0.1)}
+
+
+var _snd_player: AudioStreamPlayer = null
+
+
+func _sound_play(kind: String, n: int) -> void:
+	"""a small generated sound so you hear it on the PC too (claps = noise bursts, sneeze = «hatschi»-like burst)"""
+	if not sound_on:
+		return
+	var rate := 22050
+	var pcm := PackedByteArray()
+	var total := 0.0
+	var parts: Array = []
+	match kind:
+		"clap":
+			for i in range(n):
+				parts.append([i * 0.32, 0.05, 0.9, 1.0])
+			total = n * 0.32 + 0.1
+		"sneeze":
+			parts = [[0.0, 0.25, 0.25, 0.3], [0.25, 0.22, 0.8, 0.6]]
+			total = 0.55
+		_:
+			return                                    # voices: only the level for MoveEye
+	var ns := int(total * rate)
+	pcm.resize(ns * 2)
+	for i in range(ns):
+		var t := float(i) / rate
+		var v := 0.0
+		for pt in parts:
+			var dt: float = t - float(pt[0])
+			if dt >= 0.0 and dt < float(pt[1]):
+				var env := exp(-dt / (float(pt[1]) * 0.35)) * float(pt[2])
+				v += (randf() * 2.0 - 1.0) * env * (0.6 + 0.4 * sin(dt * 900.0 * float(pt[3])))
+		pcm.encode_s16(i * 2, int(clampf(v, -1.0, 1.0) * 26000.0))
+	var w := AudioStreamWAV.new()
+	w.format = AudioStreamWAV.FORMAT_16_BITS
+	w.mix_rate = rate
+	w.data = pcm
+	if _snd_player == null:
+		_snd_player = AudioStreamPlayer.new()
+		add_child(_snd_player)
+	_snd_player.stream = w
+	_snd_player.volume_db = -8.0
+	_snd_player.play()
+
+
+# ---- 3D-3.98: sensors for MoveEye - solar panel and GPS module (PIR, door, gas, tag, wind were there before) ----------
+var solar_wp := 20.0                   # the panel: watts in full sun
+var gps_steal_t := 0.0                 # «carried away»: since when (0 = standing)
+var gps_steal_dir := 0.0
+
+
+func solar_reading() -> Dictionary:
+	"""the current meter at the solar panel: volts and amperes from the sun height, clouds and weather"""
+	var el: float = sun_el()
+	var f := {"clear": 1.0, "cloudy": 0.4, "fog": 0.18, "rain": 0.15, "snow": 0.1}.get(weather, 0.6) as float
+	var w: float = solar_wp * clampf(sin(deg_to_rad(maxf(0.0, el))) * 1.1, 0.0, 1.0) * f
+	if el < -1.0:
+		w = 0.0
+	var v: float = 0.0 if w < 0.05 else clampf(14.0 + w * 0.35, 14.0, 19.5)
+	return {"v": snappedf(v, 0.01), "a": snappedf(w / v if v > 0.0 else 0.0, 0.001)}
+
+
+func gps_reading() -> Dictionary:
+	"""the GPS module: the place of the scene (a real place / twin, else the middle of Switzerland); carried away = 1.6 m/s off"""
+	var la: float = ort_lat if scene == "ort" and ort_lat != 0.0 else float(twin.get("lat", 46.80))
+	var lo: float = ort_lon if scene == "ort" and ort_lat != 0.0 else float(twin.get("lon", 8.23))
+	if gps_steal_t > 0.0:
+		var m: float = (now() - gps_steal_t) * 1.6
+		la += cos(gps_steal_dir) * m / 111320.0
+		lo += sin(gps_steal_dir) * m / (111320.0 * cos(deg_to_rad(la)))
+	return {"lat": snappedf(la, 0.000001), "lon": snappedf(lo, 0.000001), "sats": 9}
+
+
+func gps_steal(on: bool) -> Dictionary:
+	gps_steal_t = now() if on else 0.0
+	gps_steal_dir = randf() * TAU
+	return {"ok": true, "steal": on}
+
+
+func sound_events() -> Array:
+	"""the short sounds of the last 10 s (MoveEye takes each id once)"""
+	var t := now()
+	sound_ev = sound_ev.filter(func(e): return t - float(e["t"]) < 10.0)
+	var out := []
+	for e in sound_ev:
+		out.append({"id": e["id"], "kind": e["kind"], "n": e["n"], "db": e["db"]})
+	return out
+
+
 func sound_db() -> float:
 	"""what the microphone at the head hears now (dB): quiet background + weather + wind + the sounds, weaker with distance"""
 	var base := -62.0 if is_dark() else -56.0
@@ -1736,6 +1867,31 @@ func is_dark() -> bool:
 	return light_level() < 0.12
 
 
+static func no_emoji(t: String) -> String:
+	"""3D-3.98: emoji and pictographs away (the window shows them as empty boxes)"""
+	var o := ""
+	for i in range(t.length()):
+		var u := t.unicode_at(i)
+		if u >= 0x1F000 or (u >= 0x2600 and u <= 0x27BF) or u == 0xFE0F:
+			continue
+		o += t[i]
+	return o.strip_edges()
+
+
+func moon_phase() -> float:
+	"""3D-3.98: the age of the moon 0 … 1 (0 = new moon, 0.5 = full moon) for the date of the simulation"""
+	var t: float = Time.get_unix_time_from_system()
+	if season != "today":
+		var d0 := Time.get_datetime_dict_from_system()
+		d0["month"] = int(season)
+		d0["day"] = 15
+		t = Time.get_unix_time_from_datetime_dict(d0)
+	return fposmod((t - 947182440.0) / 86400.0 / 29.530588853, 1.0)     # new moon 6.1.2000 18:14 UTC
+
+
+const CITY_SCENES := ["garten", "parkplatz", "stellplatz", "baustelle", "zuhause"]
+
+
 func _update_sky() -> void:
 	var el := sun_el()
 	var day: float = clamp((el + 6.0) / 18.0, 0.0, 1.0)
@@ -1747,6 +1903,10 @@ func _update_sky() -> void:
 	sun.sky_mode = DirectionalLight3D.SKY_MODE_LIGHT_AND_SKY if sun_behind_hills() < 0.5 else DirectionalLight3D.SKY_MODE_LIGHT_ONLY   # no dark sun disk behind a mountain
 	var dusk: float = max(0.0, 1.0 - abs(el - 2.0) / 10.0) if el > -8.0 else 0.0
 	sun.light_color = Color(1.0, 0.95, 0.88).lerp(Color(1.0, 0.6, 0.35), dusk)
+	if moon_auto:
+		moon_ph = moon_phase()
+		moon = snappedf(0.5 - 0.5 * cos(moon_ph * TAU), 0.01)
+	sky_mat.set_shader_parameter("moon_phase", moon_ph if moon_auto else 0.5)
 	moonlight.light_energy = 0.035 * moon * (1.0 - cl) * (1.0 - day)
 	var top := Color(0.25, 0.45, 0.8).lerp(Color(0.55, 0.57, 0.6), cl)
 	var hor := Color(0.7, 0.78, 0.88).lerp(Color(0.95, 0.65, 0.45), dusk).lerp(Color(0.7, 0.71, 0.72), cl * 0.8)
@@ -1754,6 +1914,9 @@ func _update_sky() -> void:
 	var sky_top := top * k + Color(0.01, 0.015, 0.03) * (1.0 - k)
 	var sky_hor := hor * k + Color(0.02, 0.025, 0.04) * (1.0 - k)
 	sky_mat.set_shader_parameter("top_color", sky_top)
+	if scene in CITY_SCENES:                                # 3D-3.98: light pollution - the night sky glows orange over towns
+		sky_hor += Color(0.07, 0.045, 0.025) * (1.0 - k) * (0.6 + 0.8 * cl)
+		sky_top += Color(0.012, 0.009, 0.006) * (1.0 - k) * (0.5 + cl)
 	sky_mat.set_shader_parameter("horizon_color", sky_hor)
 	sky_mat.set_shader_parameter("ground_color", Color(0.1, 0.12, 0.08) * k if not terrain else sky_hor * 0.9)   # real place: haze below
 	_sky_e_base = 0.06 + 0.94 * day
@@ -2169,6 +2332,13 @@ func _auto_exposure(i: int, img: Image) -> void:
 
 
 func _decode_thermal(img: Image) -> void:
+	thermal = decode_thermal_img(img)
+	if preview_on:
+		_thermal_preview()
+
+
+func decode_thermal_img(img: Image, fx: bool = true) -> PackedFloat32Array:
+	"""the rendered thermal picture (2× size, grey = temperature) → TH_W × TH_H °C (also for the second device, 3D-3.98)"""
 	if img.get_format() != Image.FORMAT_RGBA8:
 		img.convert(Image.FORMAT_RGBA8)
 	var d := img.get_data()
@@ -2181,9 +2351,9 @@ func _decode_thermal(img: Image) -> void:
 			var b := a + w * 4
 			var t := (th_lut[d[a]] + th_lut[d[a + 4]] + th_lut[d[b]] + th_lut[d[b + 4]]) * 0.25
 			out[y * TH_W + x] = t + randf_range(-0.08, 0.08)
-	thermal = out
-	if preview_on:
-		_thermal_preview()
+	if fx and realism != null and realism.fx_on:       # 3D-3.98: like a real thermal module - see realism.thermal_fx()
+		out = realism.thermal_fx(out, TH_W, TH_H)
+	return out
 
 
 func _thermal_preview() -> void:
@@ -2247,6 +2417,8 @@ func world_reply() -> Dictionary:
 	return {"v": 1, "ok": true, "sim_time": midnight + hour() * 3600.0, "dark": is_dark(), "ambient_c": snappedf(ambient, 0.1),
 			"pressure_hpa": snappedf(press, 0.1), "wind_kmh": snappedf(wind, 0.1), "last_event": next_event_id - 1,
 			"pid": OS.get_process_id(), "active": sim_active, "sound_db": snappedf(sound_db(), 0.1) if sound_on else null,
+			"sound_ev": sound_events() if sound_on else null, "sound_ev_last": sound_ev_id,
+			"solar": solar_reading(), "gps": gps_reading(),
 			"weather": weather, "humidity": humidity, "mover": mover_on,
 			"pc_cpu": snappedf(mini_box.own["pc"], 0.1) if mini_box != null and float(mini_box.own["pc"]) >= 0.0 else null,
 			"sim_cpu_own": snappedf(mini_box.own["sim"], 0.1) if mini_box != null and float(mini_box.own["sim"]) >= 0.0 else null,
@@ -2795,7 +2967,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Zeit"]],
 const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "Patrouille"], "patrol_points": ["Mover", "Patrouille"], "patrol_area": ["Mover", "Patrouille"],
 		"patrol_random": ["Mover", "Patrouille"], "patrol_clear": ["Mover", "Patrouille"], "patrol_speed": ["Mover", "Patrouille"], "patrol_dwell": ["Mover", "Patrouille"],
 		"patrol_sweep": ["Mover", "Patrouille"], "patrol_follow": ["Mover", "Patrouille"], "patrol_judge": ["Mover", "Patrouille"],
-"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort von der Karte"], "speed": ["Szene", "Zeit"], "moon": ["Szene", "Zeit"], "season": ["Szene", "Zeit"],
+"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort von der Karte"], "speed": ["Szene", "Zeit"], "moon": ["Szene", "Zeit"], "moon_auto": ["Szene", "Zeit"], "season": ["Szene", "Zeit"],
 		"cam1_yaw": ["Kamerabild", "Feineinstellungen"], "humidity": ["Wetter", "Mehr Wetter"], "pressure": ["Wetter", "Mehr Wetter"],
 		"storm": ["Wetter", "Mehr Wetter"], "thunder": ["Wetter", "Mehr Wetter"], "cloud_shadows": ["Wetter", "Mehr Wetter"], "gusts": ["Wetter", "Natur und Wind"],
 		"world_cloth": ["Wetter", "Natur und Wind"], "world_smoke": ["Wetter", "Natur und Wind"], "world_fireflies": ["Wetter", "Natur und Wind"],
@@ -2887,7 +3059,10 @@ func _register_controls() -> void:
 			{"options": [["today", "wie heute (echtes Datum)"], ["1", "Januar"], ["2", "Februar"], ["3", "März"], ["4", "April"], ["5", "Mai"], ["6", "Juni"],
 			["7", "Juli"], ["8", "August"], ["9", "September"], ["10", "Oktober"], ["11", "November"], ["12", "Dezember"]]})
 	add_control("slider", "speed", "Zeit läuft x-fach", func(): return speed, func(v): _set_speed(v), "Szene", {"min": 1, "max": 120, "step": 1, "unit": "×", "expert": true})
-	add_control("slider", "moon", "Mond", func(): return moon, func(v): moon = v, "Szene", {"min": 0, "max": 1, "step": 0.1, "expert": true})
+	add_control("toggle", "moon_auto", "Mondphase nach Datum (Licht und Form des Monds)", func(): return moon_auto, func(v): moon_auto = v, "Szene", {"expert": true})
+	add_control("slider", "moon", "Mond", func(): return moon, func(v):
+		moon = v
+		moon_auto = false, "Szene", {"min": 0, "max": 1, "step": 0.1, "expert": true})
 	add_control("slider", "cam1_yaw", "Kamera 1: Richtung", func(): return cam1_yaw, func(v): cam1_yaw = v, "Szene", {"min": -90, "max": 90, "step": 1, "unit": "°", "expert": true})
 	add_control("select", "weather", "Wetter", func(): return weather, func(v): weather = v, "Wetter",
 			{"options": [["clear", "klar"], ["cloudy", "bewölkt"], ["rain", "Regen"], ["fog", "Nebel"], ["snow", "Schnee"]]})
@@ -3676,6 +3851,19 @@ func control(d: Dictionary) -> Dictionary:
 		if game == null:
 			return {"ok": false, "error": "no game"}
 		return game.mw_catch(str(d.get("who", "")).left(30), float(d.get("x", -1.0)), float(d.get("y", -1.0)))
+	elif a == "gps":                                   # 3D-3.98: {steal: true | false} - the device is carried away
+		if d.has("steal"):
+			return gps_steal(bool(d["steal"]))
+		var gr := gps_reading()
+		gr["ok"] = true
+		gr["steal"] = gps_steal_t > 0.0
+		gr["solar"] = solar_reading()
+		return gr
+	elif a == "sound":                                 # 3D-3.98: {kind: clap | sneeze | voice | shout, n, x, z}
+		var sp = null
+		if d.has("x") and d.has("z"):
+			sp = Vector3(float(d["x"]), ground_y(float(d["x"]), float(d["z"])) + 1.5, float(d["z"]))
+		return emit_sound(str(d.get("kind", "clap")), int(d.get("n", 2)), sp)
 	elif a == "sleeper":                               # 3D-3.96: the person in the bed (bedroom scene)
 		if sleeper == null:
 			return {"ok": false, "error": "no sleeper"}
@@ -4112,6 +4300,19 @@ func _build_ui() -> void:
 	psb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	psb.pressed.connect(func(): pruef.open(not pruef.visible))
 	tl.add_child(psb)
+	tl = UI.sub_fold(tl_main, "Geräusche (Klatschschalter, Gesundheit, Lärm)", false)   # 3D-3.98
+	tl.set_meta("always", true)
+	sub_bodies.append(tl)
+	tl.add_child(UI.small("Das Geräusch kommt von der Person im Bett, sonst vom nächsten Besucher, sonst 2 m vor MoveEye. MoveEye braucht dafür «Klatschschalter» bzw. «Gesundheit» – beim klingelnden Wecker heisst Klatschen schlummern."))
+	var sgr := GridContainer.new()
+	sgr.columns = 3
+	tl.add_child(sgr)
+	for b_ in [["Klatschen 2×", "clap", 2], ["Klatschen 3×", "clap", 3], ["Klatschen 4×", "clap", 4], ["Niesen", "sneeze", 1], ["Reden", "voice", 1], ["Rufen", "shout", 1]]:
+		var snb := Button.new()
+		snb.text = b_[0]
+		snb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		snb.pressed.connect(func(): emit_sound(b_[1], b_[2]))
+		sgr.add_child(snb)
 	tl = UI.sub_fold(tl_main, "Schutz testen (Referenz-Scan, Sabotage, Überraschung)", false)
 	tl.set_meta("always", true)
 	sub_bodies.append(tl)
@@ -4132,6 +4333,14 @@ func _build_ui() -> void:
 	ntb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	ntb.pressed.connect(ref_night_test)
 	tl.add_child(ntb)
+	var gsb := Button.new()                          # 3D-3.98: theft with the GPS module
+	gsb.text = "GPS: MoveEye wird weggetragen"
+	gsb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	gsb.tooltip_text = "Die GPS-Position wandert mit 1.6 m/s weg (wie zu Fuss). MoveEye braucht «GPS-Modul» und «Diebstahl-Alarm» und muss scharf sein. Nochmals drücken = zurückstellen."
+	gsb.pressed.connect(func():
+		gps_steal(gps_steal_t <= 0.0)
+		gsb.text = "GPS: zurückstellen" if gps_steal_t > 0.0 else "GPS: MoveEye wird weggetragen")
+	tl.add_child(gsb)
 	tl.add_child(UI.small("Dinge wegnehmen / zurückstellen (nur in der Szene Camping-Platz) – merkt MoveEye, dass etwas fehlt?"))
 	var pg := GridContainer.new()
 	pg.columns = 3
@@ -4812,7 +5021,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["pad_auto", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
+		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
 var _settings_dirty := false
 
 
@@ -4948,7 +5157,7 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 	match c.type:
 		"button":
 			var b := Button.new()
-			b.text = c.label
+			b.text = no_emoji(c.label)                  # 3D-3.98: the window has no emoji font (the page of MoveEye keeps them)
 			b.pressed.connect(func(): c["set"].call())
 			var tk: String = {"dogwalk": "dog", "herd": "deer", "feed": "deer", "garden_person": "person", "bench": "person", "thief": "person"}.get(
 					str(c.id), str(c.id).trim_prefix("spawn_"))

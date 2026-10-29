@@ -75,7 +75,8 @@ def away_view():
 
 def wake_clap_listens():
     """2.98.9: while the alarm rings, clapping 2 times = snooze (the melody pauses 8 s of every 20 s so the microphone hears it)"""
-    return WAKE["state"] == "ring" and bool(CFG.get("wake_clap", True)) and bool(CFG.get("audio_in"))
+    sim_ear = AUDIO is not None and time.time() - AUDIO.sim_t < 3.0        # 2.98.11: the simulator supplies the sound
+    return WAKE["state"] == "ring" and bool(CFG.get("wake_clap", True)) and (bool(CFG.get("audio_in")) or sim_ear)
 
 
 def wake_hold():

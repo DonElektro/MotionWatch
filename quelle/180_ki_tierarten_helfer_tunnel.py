@@ -560,6 +560,21 @@ def _tun_take():
     return None
 
 
+def tunnel_flush():
+    """2.98.11: close every idle line of the tunnel. After an update of the simulator on Windows the old lines may stay
+    open (the new process inherits them) but nobody answers on them any more: MoveEye waited on them until they were
+    100 s old. The simulator opens fresh ones at once."""
+    with TUN["lock"]:
+        old = list(TUN["pool"]); TUN["pool"].clear()
+    for c, _b in old:
+        try:
+            c.close()
+        except OSError:
+            pass
+    if old:
+        log_event("sys", f"Tunnel: {len(old)} old lines closed - the simulator opens new ones")
+
+
 def tunnel_start():
     """the listener for the simulator (whole network) and the two local doors (only this Pi)"""
     if TUN["srv"] or DEMO["on"]:

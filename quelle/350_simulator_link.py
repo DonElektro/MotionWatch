@@ -39,6 +39,8 @@ class SimLink:
                 except Exception:
                     pass
                 SIM.update(ok=False, msg=msg_, errs=SIM["errs"] + 1, since=0.0)
+                if SIM["errs"] in (2, 6) and CFG["sim_url"].startswith("http://127.0.0.1:18765"):
+                    tunnel_flush()                           # 2.98.11: lines of a simulator that was just updated - only fresh ones
                 time.sleep(2.0); continue
             time.sleep(max(0.02, (0.2 if sim_eco_now() else 0.1) - (time.time() - t0)))
 
@@ -58,13 +60,20 @@ class SimLink:
                 AUDIO.feed_sim(float(rep_["sound_db"]))      # the sound of the simulated world for the noise alarm
             except Exception:
                 pass
+        if rep_.get("sound_ev") is not None and AUDIO is not None:   # 2.98.11: claps, sneezes, voices of the simulated world
+            try:
+                sim_sound_events(rep_["sound_ev"], int(rep_.get("sound_ev_last") or 0), first or int(rep_.get("pid") or 0) != SIM.get("pid_seen"))
+            except Exception:
+                pass
         if first or int(rep_.get("pid") or 0) != SIM.get("pid_seen"):
             SIM["pid"] = SIM["pid_seen"] = int(rep_.get("pid") or 0)  # its process number: CPU share if it runs on this computer
         SIM.update(t=time.time(), ok=True, msg="connected", dark=bool(rep_.get("dark")), ambient=float(rep_.get("ambient_c", 15.0)),
                    pressure=float(rep_.get("pressure_hpa", 1013.0)), wind=float(rep_.get("wind_kmh", 0.0)), sent=SIM["sent"] + 1,
                    mover=bool(rep_.get("mover")),                # the simulator has a mover (3D-3.11): second stick
                    mover_pose=_mover_pose(rep_.get("mover_pose")) if rep_.get("mover") else None,   # where it is (2.95.43, optional)
-                   pc_cpu=rep_.get("pc_cpu"), cores=rep_.get("cores"))   # CPU of the PC the simulator runs on (3D-3.24)
+                   pc_cpu=rep_.get("pc_cpu"), cores=rep_.get("cores"),   # CPU of the PC the simulator runs on (3D-3.24)
+                   solar=rep_.get("solar") if isinstance(rep_.get("solar"), dict) else None,   # 2.98.11: solar panel and
+                   gps=rep_.get("gps") if isinstance(rep_.get("gps"), dict) else None)         # GPS module of the simulator   # CPU of the PC the simulator runs on (3D-3.24)
         if time.time() - SIMDIARY["t"] >= 30:                # 2.96.1: the diary of the simulator (visits)
             threading.Thread(target=simdiary_poll, daemon=True, name="simdiary").start()
             SIMDIARY["t"] = time.time() - 25                # (the thread sets it again)

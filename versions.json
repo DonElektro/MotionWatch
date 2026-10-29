@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 02:47",
+ "generated": "2026-10-29 03:13",
  "versions": [
   {
-   "version": "2.98.10",
-   "file": "webcam_bewegung_2_98_10.py",
+   "version": "2.98.11",
+   "file": "webcam_bewegung_2_98_11.py",
    "url": "",
-   "sha256": "fcbdeacc9f08c970b404753b2fa7821c6370fc5b187f5ac44383512773dd253f",
-   "date": "2026-10-29 02:47",
-   "notes": "Simulator 3D-3.97 (Farben, Jahreszeiten, Kamerafarben, Stick-Drift-Korrektur, Kopf mit Controller); Browser-Controller schickt rohe Achsen",
-   "sig": "60ae0ffb968d0cdbbbd5106f9576f3742744ac6fc1fd9481c71ed772544e9ea597c2346f25702e08b3db4db3124f978a0aa82e61571a1de894f8d97cc4402009"
+   "sha256": "9dca3c7273399d474b4fa5fa62fbeb998aecca77fa49ee7e0f5cf28ae57f85f2",
+   "date": "2026-10-29 03:13",
+   "notes": "Livebild nach Simulator-Update: Wiederverbindung nach 6 s ohne Bild, alte Tunnel-Leitungen werden geschlossen; Geräusche aus dem Simulator (Klatschschalter, Gesundheit, Wecker schlummern); Solarpanel und GPS-Modul im Simulator; Simulator 3D-3.98",
+   "sig": "9a117f305a884f41e8d8ce7a6cd644839b9db51ef398f5fc25d642f8127907f1ffec6fd3f1f82ecf0b18223671a5ae2495e87f4d283d103448c85bcb0ab62c00"
   },
   {
    "version": "2.97.1",

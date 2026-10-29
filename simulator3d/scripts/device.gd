@@ -81,6 +81,7 @@ func set_on(v: bool) -> void:
 		rig = null
 		vps.clear()
 		cams.clear()
+		thermal = PackedFloat32Array()
 
 
 func status() -> String:
@@ -173,6 +174,23 @@ func _build() -> void:
 		vp.add_child(cam)
 		vps.append(vp)
 		cams.append(cam)
+	# 3D-3.98: its own thermal camera (before: a flat picture at air temperature - persons were invisible for it)
+	var tvp := SubViewport.new()
+	tvp.size = Vector2i(main.TH_W * 2, main.TH_H * 2)
+	tvp.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	tvp.msaa_3d = Viewport.MSAA_DISABLED
+	tvp.world_3d = main.get_viewport().world_3d
+	add_child(tvp)
+	var tcam := Camera3D.new()
+	tcam.keep_aspect = Camera3D.KEEP_WIDTH
+	tcam.fov = main.TH_FOV
+	tcam.near = 0.1
+	tcam.far = 2000.0
+	tcam.cull_mask = 2
+	tcam.environment = main.th_env
+	tvp.add_child(tcam)
+	vps.append(tvp)
+	cams.append(tcam)
 	_put()
 
 
@@ -185,6 +203,7 @@ func _process(dt: float) -> void:
 	head_pitch.rotation.x = move_toward(head_pitch.rotation.x, deg_to_rad(float(s.get("tilt_deg", 0.0)) - 6.0), step)
 	cams[0].global_transform = head_pitch.global_transform.translated_local(Vector3(0, 0, -0.13))
 	cams[1].global_transform = rig.global_transform * Transform3D(Basis.from_euler(Vector3(deg_to_rad(-10.0), 0, 0)), Vector3(0, 2.4, 0.5))
+	cams[2].global_transform = head_pitch.global_transform.translated_local(Vector3(0.12, 0.0, -0.12))
 	var L: Dictionary = mw.get("lights", {})
 	white.light_energy = 9.0 if L.get("white", false) else 0.0
 	if busy:
@@ -197,6 +216,8 @@ func _process(dt: float) -> void:
 		if f > 0.0 and (main.now() - float(last_cap[i])) * f >= 1.0:
 			_capture(i)
 			return
+	if main.now() - _th_asked < 3.0 and main.now() - _th_cap >= 0.25:     # MoveEye 2 reads the thermal picture: 4 per second
+		_capture_thermal()
 
 
 func _capture(i: int) -> void:
@@ -214,6 +235,23 @@ func _capture(i: int) -> void:
 			jpgs[i] = img.save_jpg_to_buffer(0.8)
 			frame_no[i] += 1
 	ir.light_energy = 0.0
+	busy = false
+
+
+var thermal := PackedFloat32Array()
+var _th_asked := 0.0
+var _th_cap := 0.0
+
+
+func _capture_thermal() -> void:
+	busy = true
+	_th_cap = main.now()
+	vps[2].render_target_update_mode = SubViewport.UPDATE_ONCE
+	await RenderingServer.frame_post_draw
+	if vps.size() > 2:
+		var img: Image = vps[2].get_texture().get_image()
+		if img != null and not img.is_empty():
+			thermal = main.decode_thermal_img(img, false)
 	busy = false
 
 
@@ -255,6 +293,8 @@ func world_reply() -> Dictionary:
 	var r: Dictionary = main.world_reply()
 	r["last_event"] = 0
 	r["mover"] = false
+	r.erase("mw_cmd")          # 3D-3.98: requests from the buttons here (reference scan …) are for the first MoveEye only
+	r.erase("sound_ev")        # claps / sneezes: at the first device (the second hears the level only)
 	return r
 
 
@@ -263,6 +303,9 @@ func events_since(_n: int) -> Array:
 
 
 func thermal_values() -> PackedFloat32Array:
+	_th_asked = main.now()
+	if thermal.size() == TH_W * TH_H:
+		return thermal
 	var a := PackedFloat32Array()
 	a.resize(TH_W * TH_H)
 	a.fill(float(main.ambient))
