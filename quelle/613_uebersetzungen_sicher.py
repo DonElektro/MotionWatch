@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 613: Übersetzungen zu Teil 578 («Sicher»: Aus nur mit PIN, Push nach Stromausfall, Fehlerseiten, Nachtblick, Bildschirmleser, Aufnahmen nach Tagen löschen, Push ohne Bild) und die Anleitung dazu. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 613: Übersetzungen zu Teil 578 («Sicher»: Aus nur mit PIN, Push nach Stromausfall, Fehlerseiten, Dunkle Ansicht, Bildschirmleser, Aufnahmen nach Tagen löschen, Push ohne Bild) und die Anleitung dazu. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 _HX_SICHER = {
     # settings
     'Delete recordings after … days (0 = never)': ('Aufnahmen nach … Tagen löschen (0 = nie)', 'Supprimer les enregistrements après … jours (0 = jamais)', 'Eliminare le registrazioni dopo … giorni (0 = mai)', 'Stizzar las registraziuns suenter … dis (0 = mai)'),
@@ -37,11 +37,11 @@ _HX_SICHER = {
     'Something went wrong': ('Etwas ist schiefgegangen', 'Quelque chose n’a pas marché', 'Qualcosa è andato storto', 'Insatge n’è betg ì bain'),
     'MoveEye could not answer this request. Please try again in a moment.': ('MoveEye konnte diese Anfrage nicht beantworten. Bitte gleich nochmals versuchen.', 'MoveEye n’a pas pu répondre à cette requête. Réessaie dans un instant.', 'MoveEye non ha potuto rispondere a questa richiesta. Riprova tra un momento.', 'MoveEye n’ha betg pudì respunder a questa dumonda. Empruvar danovamain en in mument.'),
     'To the start page': ('Zur Startseite', 'Vers la page d’accueil', 'Alla pagina iniziale', 'A la pagina da partenza'),
-    # 4: night view
-    'Night view': ('Nachtblick', 'Vue de nuit', 'Vista notte', 'Vista da notg'),
-    'Night view: very dark and red, the live picture dimmed - for a short look in the tent': ('Nachtblick: sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt', 'Vue de nuit : très sombre et rouge, image en direct atténuée – pour un bref coup d’œil dans la tente', 'Vista notte: molto scura e rossa, immagine live attenuata – per un breve sguardo nella tenda', 'Vista da notg: fitg stgir e cotschen, maletg live stgirentà – per in curt sguard en la tenda'),
-    'Night view on - tap 🌑 again to switch it off': ('Nachtblick an – nochmals 🌑 antippen zum Ausschalten', 'Vue de nuit activée – touche encore 🌑 pour la couper', 'Vista notte attiva – tocca di nuovo 🌑 per spegnerla', 'Vista da notg activa – smatgar anc ina giada 🌑 per la stizzar'),
-    'Night view off': ('Nachtblick aus', 'Vue de nuit désactivée', 'Vista notte spenta', 'Vista da notg stizzada'),
+    # 4: dark view (until 2.98.22 «night view»)
+    'Dark view': ('Dunkle Ansicht', 'Vue sombre', 'Vista scura', 'Vista stgira'),
+    'Dark view: very dark and red, the live picture dimmed - for a short look in the tent': ('Dunkle Ansicht: sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt', 'Vue sombre : très sombre et rouge, image en direct atténuée – pour un bref coup d’œil dans la tente', 'Vista scura: molto scura e rossa, immagine live attenuata – per un breve sguardo nella tenda', 'Vista stgira: fitg stgir e cotschen, maletg live stgirentà – per in curt sguard en la tenda'),
+    'Dark view on - tap 🌑 again to switch it off': ('Dunkle Ansicht an – nochmals 🌑 antippen zum Ausschalten', 'Vue sombre activée – touche encore 🌑 pour la couper', 'Vista scura attiva – tocca di nuovo 🌑 per spegnerla', 'Vista stgira activa – smatgar anc ina giada 🌑 per la stizzar'),
+    'Dark view off': ('Dunkle Ansicht aus', 'Vue sombre désactivée', 'Vista scura spenta', 'Vista stgira stizzada'),
     # 5: names for screen readers
     'Full screen': ('Vollbild', 'Plein écran', 'Schermo intero', 'Visur entir'),
     'Light / dark': ('Hell / dunkel', 'Clair / sombre', 'Chiaro / scuro', 'Cler / stgir'),
@@ -95,7 +95,7 @@ _HELP_SICHER = {
           '(ab 3 kommt ein Diebstahl-Alarm). «Fehlalarm» und «Sirene» gehen weiterhin mit einem Tipp.</li>'
           '<li><b>Nach einem Stromausfall oder Absturz</b> kommt eine Push-Nachricht, wie lange MoveEye aus war und ob der Schutz wieder läuft. '
           'Nach einem Update oder Neustart nicht.</li>'
-          '<li><b>🌑 Nachtblick</b> (oben und als Schnellschalter): die ganze Seite sehr dunkel und rot, das Livebild gedimmt – für einen kurzen Blick '
+          '<li><b>🌑 Dunkle Ansicht</b> (oben und als Schnellschalter): die ganze Seite sehr dunkel und rot, das Livebild gedimmt – für einen kurzen Blick '
           'im Zelt, ohne die Augen zu blenden. Jeder Browser merkt es sich selbst. Im Fenster: ◑.</li>'
           '<li><b>Aufnahmen nach … Tagen löschen</b> (Einstellungen → Aufnahme, 0 = nie) – zusätzlich zur Grössen-Grenze. '
           '«🧹 Ferien vorbei: alle Aufnahmen löschen» fragt nach; ⭐ Favoriten bleiben, ausser man hakt sie an.</li>'
@@ -106,7 +106,7 @@ _HELP_SICHER = {
           '(without a PIN: the web password). With neither, «Off» works only on the page of MoveEye. Wrong PINs lock as on the web page '
           '(from 3 on a theft alarm). «False alarm» and «Siren» still work with one tap.</li>'
           '<li><b>After a power cut or a crash</b> a push message says how long MoveEye was off and whether the protection runs again. Not after an update or restart.</li>'
-          '<li><b>🌑 Night view</b> (top and as a quick switch): the whole page very dark and red, the live picture dimmed – for a short look in the tent '
+          '<li><b>🌑 Dark view</b> (top and as a quick switch): the whole page very dark and red, the live picture dimmed – for a short look in the tent '
           'without dazzling your eyes. Every browser remembers it itself. In the window: ◑.</li>'
           '<li><b>Delete recordings after … days</b> (Settings → Recording, 0 = never) – in addition to the size limit. '
           '«🧹 Holiday over: delete all recordings» asks first; ⭐ favourites stay unless you tick them.</li>'
@@ -117,7 +117,7 @@ _HELP_SICHER = {
           '(sans PIN : le mot de passe web). Sans les deux, «Arrêt» ne marche que sur la page de MoveEye. Les PIN erronés bloquent comme sur la page web '
           '(dès 3, alarme vol). «Fausse alarme» et «Sirène» marchent toujours d’un toucher.</li>'
           '<li><b>Après une coupure de courant ou un plantage</b>, une notification dit combien de temps MoveEye était éteint et si la protection tourne à nouveau. Pas après une mise à jour ou un redémarrage.</li>'
-          '<li><b>🌑 Vue de nuit</b> (en haut et comme interrupteur rapide) : toute la page très sombre et rouge, l’image en direct atténuée – pour un bref coup d’œil dans la tente. '
+          '<li><b>🌑 Vue sombre</b> (en haut et comme interrupteur rapide) : toute la page très sombre et rouge, l’image en direct atténuée – pour un bref coup d’œil dans la tente. '
           'Chaque navigateur s’en souvient. Dans la fenêtre : ◑.</li>'
           '<li><b>Supprimer les enregistrements après … jours</b> (Réglages → Enregistrement, 0 = jamais) – en plus de la limite de taille. '
           '«🧹 Vacances finies : supprimer tous les enregistrements» demande confirmation ; les favoris ⭐ restent, sauf si tu les coches.</li>'
@@ -128,7 +128,7 @@ _HELP_SICHER = {
           '(senza PIN: la password web). Senza entrambi, «Spento» funziona solo sulla pagina di MoveEye. I PIN errati bloccano come sulla pagina web '
           '(da 3 allarme furto). «Falso allarme» e «Sirena» funzionano sempre con un tocco.</li>'
           '<li><b>Dopo un’interruzione di corrente o un arresto</b> una notifica dice per quanto tempo MoveEye è stato spento e se la protezione è di nuovo attiva. Non dopo un aggiornamento o un riavvio.</li>'
-          '<li><b>🌑 Vista notte</b> (in alto e come interruttore rapido): tutta la pagina molto scura e rossa, l’immagine live attenuata – per un breve sguardo nella tenda. '
+          '<li><b>🌑 Vista scura</b> (in alto e come interruttore rapido): tutta la pagina molto scura e rossa, l’immagine live attenuata – per un breve sguardo nella tenda. '
           'Ogni browser se lo ricorda. Nella finestra: ◑.</li>'
           '<li><b>Eliminare le registrazioni dopo … giorni</b> (Impostazioni → Registrazione, 0 = mai) – oltre al limite di dimensione. '
           '«🧹 Vacanze finite: eliminare tutte le registrazioni» chiede conferma; i preferiti ⭐ restano, a meno di spuntarli.</li>'
@@ -139,7 +139,7 @@ _HELP_SICHER = {
           '(senza PIN: il pled-clav web). Senza omadus funcziuna «Ora» mo sin la pagina da MoveEye. PINs sbagliads bloccan sco en il web '
           '(a partir da 3 in alarm da ladranaria). «Fauss alarm» e «Sirena» funcziunan vinavant cun in tip.</li>'
           '<li><b>Suenter ina interrupziun da current u in collaps</b> di in avis push quant ditg che MoveEye era stizzà e sche la protecziun funcziuna puspè. Betg suenter in update u in restart.</li>'
-          '<li><b>🌑 Vista da notg</b> (sisura e sco cumutader svelt): tut la pagina fitg stgira e cotschna, il maletg live stgirentà – per in curt sguard en la tenda. '
+          '<li><b>🌑 Vista stgira</b> (sisura e sco cumutader svelt): tut la pagina fitg stgira e cotschna, il maletg live stgirentà – per in curt sguard en la tenda. '
           'Mintga navigatur sa regorda sez. En la fanestra: ◑.</li>'
           '<li><b>Stizzar las registraziuns suenter … dis</b> (Parameters → Registraziun, 0 = mai) – ultra dal limit da grondezza. '
           '«🧹 Vacanzas finidas: stizzar tut las registraziuns» dumonda l’emprim; ils favurits ⭐ restan, auter che sch’ins als marca.</li>'

@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_22.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_23.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.23: Aufräumen: «Nachtblick» heisst «Dunkle Ansicht», Testen nur noch an einer Stelle (Karte «Testen»), KI-Modell in
+    einer Gruppe, «Dein Platz» (früher Zwilling), KI-Daten aufräumen (Vielfalt im Paket, alte Pakete weg, PC-Hilfe mit eigenem
+    Modell), Anmelden nur verschlüsselt (Passwort von anderen Geräten nur über https).
   * 2.98.22: Wärmebild läuft mit: sobald eine Wärmebild-Kamera gewählt ist, sucht MoveEye darin Tag und Nacht nach Personen –
     auch wenn Überlagerung und Wärme-Alarm aus sind. Ältere Einstellungen werden einmal umgestellt (Ausschalten bleibt möglich:
     «… auch am Tag»).
@@ -897,10 +900,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_22.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_23.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_22.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_22.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_23.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_23.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -917,7 +920,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.22"
+APP_VERSION = "2.98.23"
 
 
 def default_data_dir():
@@ -8681,7 +8684,9 @@ def health_check(lang=None):
     else:
         add("pw", "🔑", "Password", "bad", T("no password"), "Without a password everyone in the same network can watch and control everything.")
     if STATE.get("https_port"):
-        add("https", "🔒", "https page", "ok", f"Port {STATE['https_port']}")
+        add("https", "🔒", "https page", "ok", f"Port {STATE['https_port']}" + (" · " + T("log in only encrypted") if seclogin_mode() == "on" else ""))
+    elif web_pw_active() and seclogin_mode() == "fallback":       # 574: never locked out, but warned
+        add("https", "🔒", "https page", "bad", T("off"), "No secure page (https) - the password still goes unencrypted through the network. Install openssl (sudo apt install openssl) and restart MoveEye.")
     else:
         add("https", "🔒", "https page", "warn", T("off"), "Phone location and talking through the Pi need the https page (start with --https).")
     try:
@@ -9813,7 +9818,7 @@ MAKEOVER_ALL = [
     (1, "Ein gemeinsames Erscheinungsbild (Web, Fenster, Simulator)"), (2, "Simulations-Modus sichtbar (oranger Streifen «SIMULATION»)"),
     (3, "Startseite mit Simulator-Kachel"), (4, "Kachel-Steuerung des Simulators auf dem Handy"), (5, "Kino-Modus (Vollbild für TV / Beamer)"),
     (6, "Einheitliche Ereignis-Symbole"), (7, "Simulator-Zentrale in MoveEye"), (8, "«Was wäre wenn …?» bei echten Alarmen"),
-    (9, "Zwilling deines Platzes (Ort, Winkel, Zonen, Patrouille)"), (10, "Zonen im Simulator sehen"), (11, "Erkennung live in der 3D-Ansicht"),
+    (9, "Dein Platz (Ort, Winkel, Zonen, Patrouille)"), (10, "Zonen im Simulator sehen"), (11, "Erkennung live in der 3D-Ansicht"),
     (12, "Automatische Trainings-Nacht"), (13, "Einstellungs-Vergleich A/B"), (14, "Benachrichtigungen testen (Test-Kanal)"),
     (15, "Akku-, Wetter- und WLAN-Ausfall üben"), (16, "Mehrere MoveEye-Geräte im Simulator"), (17, "Rover voll integriert"),
     (18, "Tagebuch-Statistik aus dem Simulator"), (19, "Versionen vergleichen (Kurve)"), (20, "Ein-Klick-Demo"),
@@ -10018,6 +10023,7 @@ SIMHUB_CSS = r"""
 .shub .st i{font-style:normal;font-size:24px;line-height:1}.shub .st b{font-size:13px;hyphens:auto;overflow-wrap:anywhere}.shub .st small{font-size:11px;color:var(--mut,#8a9bb0)}
 .shub .st.on{border-color:#f59a4a;box-shadow:0 0 0 1px #f59a4a inset}
 .shsheet{margin-top:8px;padding:10px;border-radius:14px;background:var(--panel,#111822);border:1px solid var(--line,#1f2b3a);display:flex;flex-wrap:wrap;gap:6px}
+.shsheet.trs{display:block}.shsheet #tr-box button{flex:0 1 auto}
 .shsheet button{flex:1 1 auto;min-width:84px}.shsheet .shrow{display:flex;gap:6px;width:100%;align-items:center}
 .stile{display:flex;gap:10px;align-items:stretch;padding:10px;border-radius:16px;border:1px solid #f59a4a;background:linear-gradient(135deg,rgba(245,154,74,.12),transparent 60%);cursor:pointer}
 .stile img{width:132px;height:74px;object-fit:cover;border-radius:10px;background:#000;flex:0 0 auto}
@@ -10047,7 +10053,7 @@ SIMHUB_JS = r"""
     "Patrol": "Patrouille", "Drive to the alarm": "Zum Alarm fahren", "To the charger": "Zur Ladestation", "At a person alarm: drive there by itself": "Bei Personen-Alarm von selbst hinfahren",
     "rover-note": "Akku hält etwa 30 Minuten Fahrt; unter 20 % fährt der Rover von selbst zur Ladestation.",
     "Visits (blue) and persons recognised in % (green), 4 weeks": "Besuche (blau) und erkannte Personen in % (grün), 4 Wochen", "Per MoveEye version": "Pro MoveEye-Version", "test": "Test",
-    "Twin of your place": "Zwilling deines Platzes", "Test inbox": "Test-Posteingang", "Drills": "Störfall-Übungen", "Battery, Wi-Fi, heat, cold": "Akku, WLAN, Hitze, Kälte",
+    "Your place": "Dein Platz", "Test inbox": "Test-Posteingang", "Drills": "Störfall-Übungen", "Battery, Wi-Fi, heat, cold": "Akku, WLAN, Hitze, Kälte",
     "Training night": "Trainings-Nacht", "A/B comparison": "A/B-Vergleich", "Which setting is better?": "Welche Einstellung ist besser?", "Messages here instead of the phone": "Meldungen hierhin statt aufs Handy",
     "Test the alarm chain": "Alarm-Kette testen", "Empty – nothing arrived yet": "Leer – noch nichts angekommen", "held back (offline), sent later": "zurückgehalten (offline), wird später gesendet",
     "Battery empty": "Akku leer", "Wi-Fi / internet gone": "WLAN / Internet weg", "Heat": "Hitze", "Cold": "Kälte", "Drill runs": "Übung läuft", "Last drill": "Letzte Übung",
@@ -10063,7 +10069,7 @@ SIMHUB_JS = r"""
   const VIS = __VIS__;
   const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
   const say = m => { if (typeof toast === "function") toast(m); };
-  let H = null, open = "";
+  let H = null, open = "", HASHED = 0;
   const act = async (a, v) => { try { const r = await (await fetch("/api/simhub", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({a: a, v: v})})).json();
       if (r.hub) H = r.hub; if (!r.ok) say("⚠ " + (r.error || tt("Simulator not reachable"))); paintAll(); return r; } catch (e) { say("⚠ " + tt("Simulator not reachable")); } };
   const wxIcon = w => (WX.find(x => x[0] === w) || ["", "☁"])[1];
@@ -10087,6 +10093,8 @@ SIMHUB_JS = r"""
       s.appendChild(E("div", "mut", "🔋 " + (R.batt != null ? R.batt + " %" : "–") + (R.charging ? " · " + tt("charging") : "") + " · " + tt("rover-note")));
     }
     if (kind === "stats") statsSheet(s);
+    if (kind === "tests") { const tb = document.getElementById("tr-box") || window._trBox;   // 2.98.23: the test run (470) lives here, no own card
+      if (tb) { window._trBox = tb; s.classList.add("trs"); s.appendChild(tb); } else s.appendChild(E("div", "mut", "–")); }
     if (["blind", "rehearsal", "autoth", "falearn", "week", "points"].includes(kind)) learnSheet(s, kind);
     box.appendChild(s);
   }
@@ -10197,7 +10205,7 @@ SIMHUB_JS = r"""
       ["visit", (window.EVI || {}).person || "🚶", tt("Send a visitor"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")]
       ];
     if (full) T.push(["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]);   // 2.98.13: drills / surprise only in the Simulator tab
-    if (full && H.twin_ok) T.push(["twin", "🪞", tt("Twin of your place"), tt("Place, zones, patrol")]);   // 2.98.5: zones / detection in 3D = simulator, «Ansicht»
+    if (full && H.twin_ok) T.push(["twin", "🪞", tt("Your place"), tt("Place, zones, patrol")]);   // 2.98.5: zones / detection in 3D = simulator, «Ansicht»
     if (full) { const R = H.rover || {};
       T.push(["devices", "📡", tt("Several devices"), H.dev2 ? tt("2nd device") + ": " + tt("P_" + (H.dev2_place || "opposite")) : tt("off")],
         ["rover", "🚜", tt("Rover"), H.rover ? (R.mission ? "⏳ " + tt("M_" + R.mission) : R.active ? tt("patrols") : R.charging ? "⚡ " + tt("charging") : tt("ready")) + " · 🔋 " + R.batt + " %" : "–"],
@@ -10225,8 +10233,8 @@ SIMHUB_JS = r"""
         if (k === "improve") return window.mwTune && window.mwTune.open();
         if (k === "twin") return act("twin").then(r => r && r.ok && say("🪞 " + tt("The map opens at your place on the PC – confirm «Load this place»")));
         if (k === "zones3d") return act("overlay", {id: "show_zones3d", on: !H.zones3d}); if (k === "det3d") return act("overlay", {id: "show_det3d", on: !H.det3d});
-        if (k === "game") return location.href = "/sim#c-game"; if (k === "tests") return location.href = "/sim#c-test"; if (k === "diary") return location.href = "/diary#simcard";
-        open = open === k ? "" : k; paintAll(); };
+        if (k === "game") return location.href = "/sim#c-game"; if (k === "tests" && !document.getElementById("tr-box") && !window._trBox) return location.href = "/sim#c-test"; if (k === "diary") return location.href = "/diary#simcard";
+        open = open === k ? "" : k; paintAll(); if (k === "tests" && open && typeof trLoad === "function") trLoad(); };
       (full ? G[GRP[k] || "world"] : g).appendChild(b); });
     if (full) { [["world", "🌍 " + tt("World")], ["test", "🧪 " + tt("Testing")], ["learn", "🎓 " + tt("Learning")], ["play", "🎮 " + tt("Playing")]].forEach(([id, h]) => {
         if (G[id].children.length) box.append(E("div", "shubh", h), G[id]); });
@@ -10237,7 +10245,7 @@ SIMHUB_JS = r"""
     if (open && full && G[GRP[open] || "world"].parentNode) { const hold = E("div"); G[GRP[open] || "world"].after(hold); sheet(hold, open); }   // the sheet right under its group
     else if (open) sheet(box, open);
     if (full && H.handover && H.handover.length) { const w = E("div", "mut", "🔁 " + H.handover.map(x => x.t + " " + x.from + " → " + x.to).join(" · ")); w.style.cssText = "margin-top:6px;font-size:12px"; box.appendChild(w); }
-    if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Twin of your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("mast") + " " + H.twin.mast.toFixed(2) + " m" : "")
+    if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("mast") + " " + H.twin.mast.toFixed(2) + " m" : "")
       + (H.twin.zones != null ? " · " + H.twin.zones + " " + tt("zones") : "") + (H.twin.waypoints != null ? " · " + H.twin.waypoints + " " + tt("patrol points") : "")); w.style.cssText = "margin-top:8px;font-size:12px"; box.appendChild(w); }
   }
   function paintTile(el_) {
@@ -10250,11 +10258,14 @@ SIMHUB_JS = r"""
   }
   function paintFull(el_) { el_.textContent = ""; if (!H || !H.on) { el_.hidden = true; return; } el_.hidden = false;
     if (!H.ok) { el_.appendChild(E("div", "mut", "⚠ " + tt("Simulator not reachable") + (H.msg ? " (" + H.msg + ")" : ""))); return; } tiles(el_, true); }
-  function paintAll() { document.querySelectorAll("[data-simhub]").forEach(x => x.dataset.simhub === "full" ? paintFull(x) : paintTile(x)); }
+  function parkTr() { const tb = window._trBox, home = document.getElementById("c-test"); if (tb && home && !home.contains(tb)) home.appendChild(tb); }
+  function paintAll() { parkTr(); document.querySelectorAll("[data-simhub]").forEach(x => x.dataset.simhub === "full" ? paintFull(x) : paintTile(x)); }
   async function load() { if (!document.querySelector("[data-simhub]")) return; try { H = await (await fetch("/api/simhub")).json(); } catch (e) { return; }
     if (document.querySelector('[data-simhub="full"]')) { try { LB = await (await fetch("/api/lab")).json(); LN = await (await fetch("/api/learn")).json(); } catch (e) {} }
     const ti = document.querySelector('[data-simhub="tile"] img'); if (ti && !document.hidden) ti.src = "/sim/view.jpg?w=320&r=" + Date.now();
-    if (!document.activeElement || document.activeElement.type !== "range") paintAll(); }
+    if (!HASHED && location.hash === "#c-test" && document.getElementById("tr-box")) { HASHED = 1; open = "tests"; }   // 2.98.23: old links to the test run
+    const ae = document.activeElement;
+    if (!ae || (ae.type !== "range" && !(ae.closest && ae.closest("#tr-box")))) paintAll(); }
   document.addEventListener("DOMContentLoaded", () => { load(); setInterval(load, 6000); });
 })();
 """
@@ -13955,7 +13966,8 @@ def helper_tick():
         if not d.get("model"):
             raise ValueError("the PC is still loading its AI model")
         was = HELPER["ok"]
-        HELPER.update(ok=True, fails=0, msg="", name=str(d.get("name") or "")[:40], last_ok=time.time(), gpu=str(d.get("accel") or ""))
+        HELPER.update(ok=True, fails=0, msg="", name=str(d.get("name") or "")[:40], last_ok=time.time(), gpu=str(d.get("accel") or ""),
+                      model=str(d.get("model_name") or "")[:40])
         if not was:
             log_event("ai", f"AI helper found: {HELPER['name']} ({u}) - the PC does the AI now")
     except Exception as e:
@@ -13967,7 +13979,8 @@ def helper_state():
     return {"use": bool(CFG.get("helper_use")), "url": u, "src": src, "ok": HELPER["ok"], "name": HELPER["name"], "ms": HELPER["ms"],
             "rtt": HELPER["rtt"], "n": HELPER["n"], "msg": HELPER["msg"], "manual_url": CFG.get("helper_url") or "",
             "serve": bool(CFG.get("helper_serve")), "my_code": CFG.get("helper_my_code") if CFG.get("helper_serve") else "",
-            "served": HELPER["served"], "serve_ms": HELPER["serve_ms"], "serve_from": HELPER["serve_from"], "accel": HELPER.get("gpu", "")}
+            "served": HELPER["served"], "serve_ms": HELPER["serve_ms"], "serve_from": HELPER["serve_from"], "accel": HELPER.get("gpu", ""),
+            "model": HELPER.get("model", ""), "serve_model": helper_model_name() if CFG.get("helper_serve") else ""}
 
 
 # ---- KI-Prüfung mit Simulator-Bildern (2.95.53): the 3D simulator makes pictures with a person or an animal (day, dusk,
@@ -14314,25 +14327,56 @@ def _tun_direct_port():
 
 
 # --- the helper side (on the PC) ---
-HELPER_NET = {"net": None, "accel": "CPU", "lock": threading.Lock(), "srv": None}
+# 2.98.x (KI-Daten aufräumen): the helper uses the own trained MoveEye model (ki_modell.yml, «Eigenes Modell
+# herunterladen» on this PC or the two files in <data>/models) when it is there, else the standard model (SSD).
+# A newer own model (downloaded later) is picked up by itself (the manifest file is watched).
+HELPER_NET = {"net": None, "accel": "CPU", "lock": threading.Lock(), "srv": None, "kind": "ssd", "meta": None, "key": None, "own_why": ""}
+
+
+def _helper_own_key():
+    _o, js = own_ai_paths()
+    try:
+        return (js, os.path.getmtime(js)) if js else None
+    except OSError:
+        return None
 
 
 def _helper_net():
+    key = _helper_own_key()
+    if HELPER_NET["net"] is not None and key != HELPER_NET["key"]:
+        HELPER_NET["net"] = None                          # the own model came, changed or went: load again
     if HELPER_NET["net"] is None:
-        pb, pbtxt = ai_model_paths()
-        if not pb:
-            if not AI_MODEL["busy"]:
-                ai_model_download()
-            return None
-        net = cv2.dnn.readNetFromTensorflow(pb, pbtxt)
+        net, kind, meta = None, "ssd", None
+        if key:
+            net, meta, why = own_ai_load()
+            HELPER_NET["own_why"] = why
+            if net is not None:
+                kind = "own"
+            else:
+                log_event("ai", f"AI helper: own model not used ({why}) - the standard model (SSD) runs")
+        if net is None:
+            pb, pbtxt = ai_model_paths()
+            if not pb:
+                if not AI_MODEL["busy"]:
+                    ai_model_download()
+                return None
+            net = cv2.dnn.readNetFromTensorflow(pb, pbtxt)
         try:                                            # a graphics card with CUDA makes it much faster
             if hasattr(cv2, "cuda") and cv2.cuda.getCudaEnabledDeviceCount() > 0:
                 net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA); net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
                 HELPER_NET["accel"] = "CUDA"
         except Exception:
             pass
-        HELPER_NET["net"] = net
+        HELPER_NET.update(net=net, kind=kind, meta=meta, key=key)
+        log_event("ai", "AI helper uses " + (own_ai_name(meta) if kind == "own" else "SSD MobileNet V2"))
     return HELPER_NET["net"]
+
+
+def helper_model_name():
+    """which model the helper on this PC uses (or would use)"""
+    if HELPER_NET["net"] is not None:
+        return own_ai_name(HELPER_NET["meta"]) if HELPER_NET["kind"] == "own" else "SSD MobileNet V2"
+    return "MoveEye model" if own_ai_paths()[0] else ("SSD MobileNet V2" if ai_model_paths()[0] else "")
 
 
 def helper_run(jpg, conf, oconf):
@@ -14344,22 +14388,28 @@ def helper_run(jpg, conf, oconf):
         raise ValueError("AI model is loading")
     t0 = time.time()
     h, w = img.shape[:2]
-    with HELPER_NET["lock"]:
-        net.setInput(cv2.dnn.blobFromImage(img, size=(300, 300), swapRB=True, crop=False))
-        det = net.forward()
     boxes, objects = [], []
-    for i in range(det.shape[2]):
-        cls, cf = int(det[0, 0, i, 1]), float(det[0, 0, i, 2])
-        if cls < 1 or cf < (conf if cls == 1 else oconf):
-            continue
-        x1, y1, x2, y2 = (det[0, 0, i, 3:7] * np.array([w, h, w, h])).astype(int)
-        x1, y1 = max(0, x1), max(0, y1); x2, y2 = min(w - 1, x2), min(h - 1, y2)
-        if x2 > x1 and y2 > y1:
-            (boxes.append([int(x1), int(y1), int(x2 - x1), int(y2 - y1), round(cf, 3)]) if cls == 1
-             else objects.append([int(x1), int(y1), int(x2 - x1), int(y2 - y1), round(cf, 3), cls]))
+    if HELPER_NET["kind"] == "own":                   # the own YOLO model: same answer as SSD (classes mapped to COCO ids)
+        with HELPER_NET["lock"]:
+            pb_, ob_ = own_ai_detect(net, HELPER_NET["meta"], img, conf, oconf)
+        boxes = [[int(b[0]), int(b[1]), int(b[2]), int(b[3]), round(float(b[4]), 3)] for b in pb_]
+        objects = [[int(o[0]), int(o[1]), int(o[2]), int(o[3]), round(float(o[4]), 3), int(o[5])] for o in ob_]
+    else:
+        with HELPER_NET["lock"]:
+            net.setInput(cv2.dnn.blobFromImage(img, size=(300, 300), swapRB=True, crop=False))
+            det = net.forward()
+        for i in range(det.shape[2]):
+            cls, cf = int(det[0, 0, i, 1]), float(det[0, 0, i, 2])
+            if cls < 1 or cf < (conf if cls == 1 else oconf):
+                continue
+            x1, y1, x2, y2 = (det[0, 0, i, 3:7] * np.array([w, h, w, h])).astype(int)
+            x1, y1 = max(0, x1), max(0, y1); x2, y2 = min(w - 1, x2), min(h - 1, y2)
+            if x2 > x1 and y2 > y1:
+                (boxes.append([int(x1), int(y1), int(x2 - x1), int(y2 - y1), round(cf, 3)]) if cls == 1
+                 else objects.append([int(x1), int(y1), int(x2 - x1), int(y2 - y1), round(cf, 3), cls]))
     ms = int((time.time() - t0) * 1000)
     HELPER["served"] += 1; HELPER["serve_ms"] = ms
-    return {"ok": True, "boxes": boxes, "objects": objects, "ms": ms}
+    return {"ok": True, "boxes": boxes, "objects": objects, "ms": ms, "model": helper_model_name()}
 
 
 def helper_server_start():
@@ -14386,10 +14436,10 @@ def helper_server_start():
             if self.path.startswith("/helper/hello"):
                 local = self.client_address[0] in ("127.0.0.1", "::1")
                 d = {"helper": 1, "name": CFG.get("device_name") or __import__("socket").gethostname(), "ver": APP_VERSION, "paired": self._paired(),
-                     "model": bool(ai_model_paths()[0]), "accel": HELPER_NET["accel"], "served": HELPER["served"], "ms": HELPER["serve_ms"]}
+                     "model": bool(ai_model_paths()[0] or own_ai_paths()[0]), "model_name": helper_model_name(), "accel": HELPER_NET["accel"], "served": HELPER["served"], "ms": HELPER["serve_ms"]}
                 if local:                                   # the simulator on this PC passes the code on to the Pi
                     d.update(code=CFG.get("helper_my_code"), port=HELPER_PORT, loading=AI_MODEL.get("busy"), pct=AI_MODEL.get("pct"))
-                    if not d["model"] and not AI_MODEL["busy"]:
+                    if not ai_model_paths()[0] and not own_ai_paths()[0] and not AI_MODEL["busy"]:
                         ai_model_download()
                 return self._js(d)
             self._js({"error": "not found"}, 404)
@@ -15458,6 +15508,92 @@ def own_ai_auto_selftest():
 
 
 threading.Thread(target=_own_ai_auto_loop, daemon=True, name="own-ai-auto").start()
+# ----------------------------------------------------------------------------
+# Wunsch Daniel (29.10.2026, «KI-Daten aufräumen»):
+#   * «Trainingspaket für ein eigenes KI-Modell (YOLO)» (Reiter Simulator und Fenster) hat dieselbe Wahl wie der Simulator:
+#     «Vielfalt: normal / hoch» (dataset.gd / kitrain.gd, Name «vielfalt» wie dort).
+#   * Die Pakete (Ordner user://trainingsbilder/<Zeit> + ZIP «MW-Trainingsbilder_….zip» auf dem Schreibtisch) liegen auf dem
+#     Rechner des Simulators (PC oder Pi). Der Simulator räumt nach jedem neuen Paket selbst auf (kidaten.gd): die neuesten 3
+#     bleiben, nichts älter als 30 Tage; das neueste Paket bleibt immer. Der Knopf «Alte KI-Daten löschen» löscht alle
+#     ausser dem neuesten. Das KI-Modell (models/moveeye_model.*, frozen_inference_graph.pb) wird nie angefasst.
+# ----------------------------------------------------------------------------
+KIDATA_VF = ("normal", "hoch")
+KIDATA_SIZES = (200, 500, 1000, 2000)
+
+
+def kidata_export(n, vielfalt=None):
+    """a training pack in the simulator; vielfalt "normal" / "hoch" (else the choice of the simulator)"""
+    try:
+        n = int(n or 500)
+    except (TypeError, ValueError):
+        n = 500
+    q = {"action": "dataset", "op": "export", "n": max(10, min(5000, n))}
+    if str(vielfalt or "") in KIDATA_VF:
+        q["vielfalt"] = str(vielfalt)
+    return sim_control(q)
+
+
+def kidata_packs(clean=False, lang=None):
+    """the packs on the PC of the simulator; clean=True: delete all except the newest. ValueError for an old simulator."""
+    r = sim_control({"action": "dataset", "op": "clean" if clean else "packs"})
+    if not isinstance(r, dict) or "packs" not in r:
+        raise ValueError("not supported - update the simulator")
+    if not r.get("ok", True):
+        raise ValueError(str(r.get("error") or "busy"))
+    if clean:
+        log_event("ai", f"Old AI data deleted: {int(r.get('deleted') or 0)} packs, {float(r.get('freed_mb') or 0):.0f} MB")
+    r["text"] = kidata_text(r, lang)
+    return r
+
+
+def kidata_text(r, lang=None):
+    ps = r.get("packs") or []
+    t = (f"📦 {len(ps)} " + tr("training packs", lang) + f" · {float(r.get('total_mb') or 0):.0f} MB") if ps else "📦 " + tr("no training packs", lang)
+    if r.get("deleted"):
+        t += " · 🧹 " + trf("{n} deleted ({mb} MB)", lang, n=int(r["deleted"]), mb=f"{float(r.get('freed_mb') or 0):.0f}")
+    return t
+
+
+def kidata_tk_build(app, parent):
+    """the window (section Simulator): size, «Vielfalt», «Trainingspaket», «Alte KI-Daten löschen» + one status line"""
+    ttk.Label(parent, text="📦 " + tr("Training set for an own AI model (YOLO)"), style="Mut.TLabel").pack(anchor="w", pady=(8, 0))
+    fr = ttk.Frame(parent); fr.pack(fill="x", pady=(2, 0))
+    n_var = tk.StringVar(value="500")
+    ttk.Combobox(fr, textvariable=n_var, values=[str(x) for x in KIDATA_SIZES], width=6, state="readonly").pack(side="left", padx=(0, 4))
+    vf_names = {"hoch": tr("Variety: high (recommended)"), "normal": tr("Variety: normal")}
+    vf_var = tk.StringVar(value=vf_names["hoch"])
+    ttk.Combobox(fr, textvariable=vf_var, values=[vf_names["hoch"], vf_names["normal"]], state="readonly", width=24).pack(side="left", fill="x", expand=True)
+    lbl = ttk.Label(parent, text="", style="Mut.TLabel", wraplength=330, justify="left")
+
+    def run(fn):
+        def work():
+            try:
+                txt = fn()
+            except ValueError as e:
+                txt = "⚠ " + tr_err(str(e))
+            except Exception:
+                txt = "⚠ " + tr_err("simulator not reachable")
+            try:
+                app.root.after(0, lambda: lbl.config(text=txt))
+            except Exception:
+                pass
+        threading.Thread(target=work, daemon=True, name="kidata").start()
+
+    def export():
+        vf = "normal" if vf_var.get() == vf_names["normal"] else "hoch"
+        r = kidata_export(n_var.get(), vf)
+        return tr("The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).") + " " + str((r or {}).get("msg") or "")
+
+    def clean():
+        if not messagebox.askyesno("MoveEye", tr("Delete all training packs on the PC of the simulator except the newest one? The AI model stays.")):
+            return
+        run(lambda: kidata_packs(True)["text"])
+    bf = ttk.Frame(parent); bf.pack(fill="x", pady=(4, 0))
+    ttk.Button(bf, text="📦 " + tr("Make the training pack"), command=lambda: run(export)).pack(side="left", expand=True, fill="x", padx=(0, 4))
+    ttk.Button(bf, text="🧹 " + tr("Delete old AI data"), command=clean).pack(side="left", expand=True, fill="x")
+    lbl.pack(anchor="w", pady=(4, 0))
+    ttk.Label(parent, text=tr("Cleaned up by itself: after every new pack the newest 3 stay, nothing older than 30 days (the newest always stays). The AI model is never deleted."), style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w")
+    run(lambda: kidata_packs(False)["text"])
 # ----------------------------------------------------------------------------
 # Main detector
 # ----------------------------------------------------------------------------
@@ -18699,12 +18835,47 @@ def fleet_hello():
             "tamper": (STATE.get("tamper") or {}).get("last", ""), "time": datetime.now().strftime("%H:%M:%S")}
 
 
+def _fleet_https(dev, path, data, h, timeout):
+    """2.98.x («Anmelden nur verschlüsselt», 574): the password goes to the other device over its secure page (https, port + 1).
+    Its certificate is self-made: it is remembered at the first contact (fingerprint in the device entry) and must stay
+    the same afterwards. None = that device has no secure page (older MoveEye) - then plain http as before."""
+    import http.client, ssl
+    from urllib.parse import urlsplit
+    u = urlsplit(dev["url"])
+    if u.scheme != "http" or not u.port or time.time() < FLEET.setdefault("no_tls", {}).get(dev.get("id") or dev["url"], 0):
+        return None
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT); ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
+    con = http.client.HTTPSConnection(u.hostname, u.port + 1, timeout=timeout, context=ctx)
+    try:
+        try:
+            con.connect()
+        except (OSError, ssl.SSLError):
+            FLEET["no_tls"][dev.get("id") or dev["url"]] = time.time() + 600     # try https again in 10 minutes
+            return None
+        fp = hashlib.sha256(con.sock.getpeercert(True) or b"").hexdigest()
+        if dev.get("fp") and dev["fp"] != fp:
+            raise urllib.error.HTTPError(dev["url"], 495, "certificate of the device changed", {}, None)
+        if not dev.get("fp") and dev in CFG["fleet"]:
+            dev["fp"] = fp; save_settings()
+        con.request("POST" if data is not None else "GET", path, body=json.dumps(data).encode() if data is not None else None, headers=h)
+        r = con.getresponse()
+        body = r.read(4 * 1024 * 1024)
+        if r.status >= 400:
+            raise urllib.error.HTTPError(dev["url"] + path, r.status, r.reason, r.headers, None)
+        return body, r.getheader("Content-Type", "")
+    finally:
+        con.close()
+
+
 def _fleet_req(dev, path, data=None, timeout=4.0):
     import base64
     url = dev["url"].rstrip("/") + path
     h = {"Content-Type": "application/json"} if data is not None else {}
     if dev.get("pw"):
         h["Authorization"] = "Basic " + base64.b64encode(("mw:" + dev["pw"]).encode()).decode()
+        res = _fleet_https(dev, path, data, dict(h, **{"User-Agent": "MotionWatch/" + APP_VERSION}), timeout)
+        if res is not None:
+            return res
     req = urllib.request.Request(url, data=json.dumps(data).encode() if data is not None else None, headers=h, method="POST" if data is not None else "GET")
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))      # devices are in the own network: no proxy
     with opener.open(req, timeout=timeout) as r:
@@ -18799,6 +18970,12 @@ def fleet_scan():
         except urllib.error.HTTPError as e:
             if e.code == 401 and ("Motion Watch" in str(e.headers.get("WWW-Authenticate", "")) or "MoveEye" in str(e.headers.get("WWW-Authenticate", ""))):
                 return {"url": url, "name": "", "needs_pw": True}
+            if e.code == 403:                            # 574: a MoveEye that takes the password only over https
+                try:
+                    if json.loads(e.read(4096).decode()).get("https"):
+                        return {"url": url, "name": "", "needs_pw": True}
+                except Exception:
+                    pass
         except Exception:
             pass
         return None
@@ -20667,10 +20844,11 @@ def security_check():
 
     def add(level, text, tip="", arg=""):
         items.append({"level": level, "text": text, "tip": tip, "arg": arg})
-    add("ok" if CFG["web_password"] else "bad", "Web password " + ("set" if CFG["web_password"] else "missing"),
-        "" if CFG["web_password"] else "Everybody in the network can operate MoveEye")
-    add("ok" if WEB_OPTS.get("https") else "warn", "Secure page (https) " + ("on" if WEB_OPTS.get("https") else "off"),
-        "" if WEB_OPTS.get("https") else "Passwords go through the network unencrypted - important in foreign Wi-Fi (camping)")
+    add("ok" if web_pw_active() else "bad", "Web password " + ("set" if web_pw_active() else "missing"),
+        "" if web_pw_active() else "Everybody in the network can operate MoveEye")
+    sl_ = seclogin_mode() == "on"                             # 574: «Log in only encrypted»
+    add("ok" if WEB_OPTS.get("https") or sl_ else "warn", "Secure page (https) " + ("on" if WEB_OPTS.get("https") or sl_ else "off"),
+        "" if WEB_OPTS.get("https") or sl_ else "Passwords go through the network unencrypted - important in foreign Wi-Fi (camping)")
     ports = set()
     try:
         for fn in ("/proc/net/tcp", "/proc/net/tcp6"):
@@ -21063,8 +21241,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.5", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31484593,
-         "sha256": "d9b63fb3172033423391211ec74e0f50d3a38915ab05b74cb1e3054eeb7cf632"}
+SIM3D = {"version": "3D-4.6", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31493167,
+         "sha256": "647c446e72690192260b3d3c11a3217b73463bd8cf2a423d5298514864cffc8a"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -21205,8 +21383,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-4.5", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24605718,
-           "sha256": "d56736892b90ff5889edbee68ab019d4a5eaf5e6aee2cb5aaa449b26f13f9432", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-4.6", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24615622,
+           "sha256": "cfe4443bb4e3f5a47d57d5f5cd5c055f77a856b31adc70f8e9eeb6e7fb5f47c4", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -26574,7 +26752,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_22.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_23.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -29625,10 +29803,10 @@ def ensure_cert():
     cert, key = os.path.join(DATA_DIR, "motionwatch_cert.pem"), os.path.join(DATA_DIR, "motionwatch_key.pem")
     if os.path.isfile(cert) and os.path.isfile(key):
         return cert, key
-    if shutil.which("openssl") is None:
-        return None, None
     import socket
     host = socket.gethostname()
+    if shutil.which("openssl") is None:
+        return _cert_python(cert, key, host)              # 2.98.x: without openssl with the Python package «cryptography»
     for san in (f"subjectAltName=DNS:localhost,DNS:{host},DNS:{host}.local,IP:127.0.0.1", None):
         cmd = ["openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", key, "-out", cert, "-days", "3650", "-subj", f"/CN={host}"]
         if san:
@@ -29640,7 +29818,38 @@ def ensure_cert():
                 return cert, key
         except (OSError, subprocess.SubprocessError):
             pass
-    return None, None
+    return _cert_python(cert, key, host)
+
+
+def _cert_python(cert, key, host):
+    """the self-signed certificate with «cryptography» (often there on Raspberry Pi OS) - (None, None) if it is missing too"""
+    try:
+        import datetime as _dt, ipaddress
+        from cryptography import x509
+        from cryptography.x509.oid import NameOID
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import rsa
+    except ImportError:
+        return None, None
+    try:
+        k = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, host[:60] or "moveeye")])
+        now = _dt.datetime.now(_dt.timezone.utc)
+        alt = x509.SubjectAlternativeName([x509.DNSName("localhost"), x509.DNSName(host), x509.DNSName(host + ".local"),
+                                           x509.IPAddress(ipaddress.ip_address("127.0.0.1"))])
+        c = (x509.CertificateBuilder().subject_name(name).issuer_name(name).public_key(k.public_key()).serial_number(x509.random_serial_number())
+             .not_valid_before(now - _dt.timedelta(days=1)).not_valid_after(now + _dt.timedelta(days=3650)).add_extension(alt, critical=False)
+             .sign(k, hashes.SHA256()))
+        fd = os.open(key, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "wb") as f:
+            f.write(k.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.TraditionalOpenSSL, serialization.NoEncryption()))
+        with open(cert, "wb") as f:
+            f.write(c.public_bytes(serialization.Encoding.PEM))
+        log_event("web", "Self-signed certificate created with Python (browsers will show a warning once)")
+        return cert, key
+    except Exception as e:
+        log_event("web", f"Certificate could not be made: {e}"[:160])
+        return None, None
 
 
 def service_text():
@@ -32515,10 +32724,10 @@ function hpPaint(j) {
   const iu = $("#hp-url"); if (iu && iu !== document.activeElement && !iu.value) iu.value = (H.manual_url || "").replace(/^https?:\/\//, "").replace(/:5057$/, "");
   const box = $("#hp-box"); if (!box) return; box.textContent = "";
   const big = el("div", "big", H.ok ? "🟢 " + t("The PC does the AI") : (H.use ? "⚪ " + t("The Pi does the AI itself") : "⚪ " + t("off"))); box.appendChild(big);
-  if (H.ok) box.appendChild(el("div", "mut", (H.name || "PC") + " · " + H.url + " · " + (H.src === "simulator" ? t("found through the simulator") : t("by hand")) + " · " + t("AI") + " " + H.ms + " ms, " + t("way there and back") + " " + H.rtt + " ms · " + H.n + " " + t("pictures") + (H.accel ? " · " + H.accel : "")));
+  if (H.ok) box.appendChild(el("div", "mut", (H.name || "PC") + " · " + H.url + " · " + (H.src === "simulator" ? t("found through the simulator") : t("by hand")) + " · " + t("AI") + " " + H.ms + " ms, " + t("way there and back") + " " + H.rtt + " ms · " + H.n + " " + t("pictures") + (H.accel ? " · " + H.accel : "") + (H.model ? " · 🧠 " + t(H.model) : "")));
   else if (H.url && H.msg) box.appendChild(el("div", "mut", "⚠ " + H.url + ": " + t(H.msg)));
   else if (H.use) box.appendChild(el("div", "mut", t("helper-how")));
-  if (H.serve) box.appendChild(el("div", "", "🖥 " + t("Pairing code for the Pi") + ": " + H.my_code + (H.served ? " · " + H.served + " " + t("pictures") + " · " + H.serve_ms + " ms · " + H.serve_from : "")));
+  if (H.serve) box.appendChild(el("div", "", "🖥 " + t("Pairing code for the Pi") + ": " + H.my_code + (H.served ? " · " + H.served + " " + t("pictures") + " · " + H.serve_ms + " ms · " + H.serve_from : "") + (H.serve_model ? " · 🧠 " + t(H.serve_model) : "")));
 }
 (async () => { for (let i = 0; i < 30 && !LANG; i++) await new Promise(r => setTimeout(r, 100)); hpLoad(); })();
 // ---- product page for guests (2.95.52) ----
@@ -33147,12 +33356,19 @@ function scOn(G, r) {                               // 2.95.51: the symbol of a 
 // wizard or under «Experte» (as the simulator window does from 3D-4.x; this also covers older simulators)
 const SC_GAME_MAIN = ["game_wizard", "game_open", "game_start", "game_stop"];
 function scExpert(c) { return !!c.expert || ((c.group === "Spiel" || c.group === "Game") && SC_GAME_MAIN.indexOf(c.id) < 0); }
+// 2.98.23 (Konzept): the simulator group «Testlauf» is not shown in the Simulator control (testing has ONE place: group «Testen»,
+// tile «Tests»); there it is built with data-only="Testlauf" (#tr-sim, recordings of the sneak paths, Pi 5 settings)
+const SC_TEST_GROUPS = ["Testlauf", "Test run"];
+const SC_TEST_DUP = ["testrun_plan", "testrun_start", "testrun_stop"];   // the same as «Testlauf starten» of MoveEye right above (/api/simtest)
 function simCtlBuild(G, r, ctl, fmt) {
   scCss();
+  const only = G.dataset.only || "";
+  r = Object.assign({}, r, {controls: (r.controls || []).filter(c => only ? SC_TEST_GROUPS.indexOf(c.group) >= 0 && SC_TEST_DUP.indexOf(c.id) < 0 : SC_TEST_GROUPS.indexOf(c.group) < 0)});
   const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
   const ss = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"])), openS = new Set(ls("mw-sc-sub2", ["Besuch/Vorlagen", "Besuch/Menschen schicken", "Besuch/Tiere schicken", "Spiel/Runde"]));
-  let expert = ls("mw-sc-expert", false), q = G.dataset.q || "";
+  let expert = only ? true : ls("mw-sc-expert", false), q = G.dataset.q || "";
+  if (only) openC.add(only);
   G.textContent = "";
   const top = el("div", "sc-top"); const qi = document.createElement("input"); qi.type = "search"; qi.placeholder = t("Search a setting …"); qi.value = q;
   top.appendChild(qi); G.appendChild(top);
@@ -33208,9 +33424,10 @@ function simCtlBuild(G, r, ctl, fmt) {
   });
   const seg = el("div", "sc-seg"); const b1 = el("button", "", t("Simple")), b2 = el("button", "", t("Expert")); b1.type = b2.type = "button"; seg.append(b1, b2); G.appendChild(seg);
   const note = el("div", "mut", t("Simple: only the important settings. «Expert» shows all.")); G.appendChild(note);
+  if (only) { top.hidden = true; seg.hidden = true; }
   function apply() {
     q = qi.value.trim().toLowerCase(); G.dataset.q = qi.value; let any = false;
-    b1.classList.toggle("on", !expert); b2.classList.toggle("on", expert); note.hidden = expert;
+    b1.classList.toggle("on", !expert); b2.classList.toggle("on", expert); note.hidden = expert || !!only;
     cards.forEach(card => {
       let vis = 0;
       card.querySelectorAll("[data-lab]").forEach(n => { const ok = (q ? n.dataset.lab.toLowerCase().includes(q) : true) && (expert || q || n.dataset.ex !== "1"); n.classList.toggle("sc-hide", !ok); if (ok) vis++; });
@@ -33554,7 +33771,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 #s-scn{display:flex;gap:8px;flex-wrap:wrap}#s-scn select{flex:1 1 220px;min-width:0}
 .howto{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
 .simq{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;margin-top:8px}.simq select{padding:4px 8px;font-size:13px;width:auto}
-@media(max-width:820px){main.simp{grid-template-columns:1fr;padding:12px 12px 32px}.sc{padding:14px}details.fold{padding:0}details.fold>summary{padding:14px}details.fold>.fb{padding:0 14px 14px}.dl{grid-template-columns:1fr}
+@media(max-width:820px){main.simp{grid-template-columns:minmax(0,1fr);padding:12px 12px 32px}.sc{padding:14px}details.fold{padding:0}details.fold>summary{padding:14px}details.fold>.fb{padding:0 14px 14px}.dl{grid-template-columns:1fr}
   .tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}}
 </style></head><body>
 <header>
@@ -33646,8 +33863,9 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     </div>
   </details>
 
-  <details class="sc fold wide" id="c-test" data-k="test" data-need="ok">
-    <summary><h2><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><span data-i18n="Test run and optimization">Test run and optimization</span></h2></summary>
+  <!-- 2.98.23 (Konzept): no own card «Testlauf und Optimierung» any more - the test run is the tile «Tests» in the group
+       «Testen» of the Simulator centre (139 moves #tr-box into its sheet); here only its parking place -->
+  <div id="c-test" hidden>
     <div class="fb" id="tr-box">
     <div class="mut" data-i18n="tr-note">tr-note</div>
     <div class="tr-row"><select id="tr-plan"></select>
@@ -33657,8 +33875,9 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div class="mut" id="tr-autonote"></div>
     <div id="tr-live" hidden><div class="rng"><span id="tr-livet"></span><b id="tr-left"></b></div><div class="tr-prog"><i id="tr-bar" style="width:0"></i></div></div>
     <div id="tr-res"></div>
+    <div id="tr-sim" data-only="Testlauf" style="margin-top:10px"></div>
     </div>
-  </details>
+  </div>
 
   <details class="sc fold" id="c-perf" data-k="perf" data-need="ok">
     <summary><h2><svg viewBox="0 0 24 24"><path d="M13 3L4 14h7l-1 7 9-11h-7z"/></svg><span data-i18n="Computing power">Computing power</span></h2></summary>
@@ -34117,16 +34336,16 @@ async function ctl(d) { const r = await post("/api/sim", Object.assign({action: 
 function scnLoad() { const v = $("#s-sel").value; if (v) ctl({ctl: "scenario", id: v}); }
 function scnDel() { const s = $("#s-sel"); if (s.value && confirm(t("Delete this scenario in the simulator?") + "\n" + s.options[s.selectedIndex].textContent)) ctl({ctl: "delete", id: s.value}); }
 /*SIMMAP*/
-function buildCtl(r) { simCtlBuild($("#s-groups"), r, ctl, fmt); }        // like the panel of the simulator (simCtlBuild, 2.93.16)
+function buildCtl(r) { simCtlBuild($("#s-groups"), r, ctl, fmt); const ts = $("#tr-sim"); if (ts) simCtlBuild(ts, r, ctl, fmt); }   // 2.98.23: «Testlauf» of the simulator in the sheet «Tests»        // like the panel of the simulator (simCtlBuild, 2.93.16)
 
 function showCtl(r) {
   if (!r || !r.ok) { $("#s-cst").textContent = "⚠ " + ((r && r.error) || t("simulator not reachable")); return; }
   $("#s-cname").textContent = r.name ? "· " + r.name : "";
   const sig = JSON.stringify([(r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options, c.sub])]);
   if (sig !== CS) { CS = sig; buildCtl(r); }
-  scOn($("#s-groups"), r);
+  scOn($("#s-groups"), r); scOn($("#tr-sim"), r);
   updPaint(r); gamePaint(r);
-  document.querySelectorAll("#s-groups [data-cid]").forEach(row => {
+  document.querySelectorAll("#s-groups [data-cid], #tr-sim [data-cid]").forEach(row => {
     const c = (r.controls || []).find(x => x.id === row.dataset.cid); const inp = row.querySelector(".simv"); if (!c || !inp || inp === document.activeElement) return;
     if (c.type === "toggle") inp.checked = !!c.value; else if (c.value != null) inp.value = c.value;
     const vv = row.querySelector(".simvv"); if (vv) vv.textContent = fmt(c, c.value);
@@ -34173,7 +34392,6 @@ function trInit() {
   $("#tr-run").onclick = () => trAct({action: "run", plan: TRPLAN});
   $("#tr-auto").onclick = () => { if (confirm(t("tr-auto-ask"))) trAct({action: "auto", plan: TRPLAN, tries: 4}); };
   $("#tr-stop").onclick = () => trAct({action: "stop"});
-  $("#c-test").addEventListener("toggle", () => trLoad());
   trLoad();
 }
 async function trAct(d) {
@@ -34185,7 +34403,7 @@ async function trAct(d) {
 }
 async function trLoad() {
   clearTimeout(trT);
-  const open = $("#c-test").open;
+  const open = !!document.querySelector(".shsheet #tr-box");          // 2.98.23: open = shown in the sheet «Tests» of the Simulator centre
   const r = await fetch("/api/simtest").then(x => x.ok ? x.json() : null).catch(() => null);
   if (r) { TR = r; trPaint(); }
   const busy = r && (r.busy || (r.sim && r.sim.running));
@@ -34194,7 +34412,6 @@ async function trLoad() {
 function trPaint() {
   const R = TR || {}, SM = R.sim || {}, busy = !!R.busy || !!SM.running, A = R.auto;
   [...$("#tr-plan").options].forEach(o => { const p = TR_PLANS.find(x => x[0] === o.value); if (p) o.textContent = t(p[1]); });
-  $("#c-test").classList.toggle("act", busy);
   $("#tr-run").disabled = busy || !R.connected; $("#tr-auto").disabled = busy || !R.connected; $("#tr-stop").hidden = !busy; $("#tr-plan").disabled = busy;
   $("#tr-autonote").textContent = !R.connected ? t("Connect the simulation first (3D simulator 3D-3.27 or newer).") : R.msg && !busy ? "⚠ " + t(R.msg) : "";
   $("#tr-live").hidden = !busy;
@@ -41497,6 +41714,7 @@ h4.sub{margin:14px 0 4px;font-size:11px;letter-spacing:.08em;color:var(--mut);te
 .days button{padding:4px 9px;font-size:12px;background:var(--btn2);color:var(--mut);border:1px solid var(--line)}
 .days button.on{background:var(--acc);color:#fff;border-color:transparent}
 .auxbox{margin:2px 0 6px}
+.aimg{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin:8px 0}.aimh{font-weight:700;margin:0 0 4px}.aimg>button.sec{margin-top:6px}
 #upd-list{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.updrow{padding:7px 0;border-bottom:1px solid var(--line)}.updrow .row{gap:8px}
 .btrow{gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}.btrow>span:first-child{flex:1;min-width:0;overflow-wrap:anywhere}
 .aumeter{position:relative;height:12px;border-radius:6px;background:var(--field);border:1px solid var(--line);overflow:hidden;margin:6px 0 3px}
@@ -43000,7 +43218,7 @@ const GROUPS = [                                            // 2.98.0: by goal -
    {card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {sec: "Extra sensors", ic: "📡"}, {sec: "Clap switch", ic: "👏"}, {sec: "Bless you", title: "«Bless you!»", ic: "🤧"},
    {sec: "Wake-up alarm", ic: "⏰"}, {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}]},
   {id: "power", tab: "settings", icon: "🔋", name: "Power supply", items: [{card: "batt", sec: "Battery", title: "Battery", ic: "🔋"}, {sec: "Power saving", ic: "🍃"}, {sec: "Solar panel", ic: "☀️"}]},
-  {id: "net", tab: "settings", icon: "📶", name: "Network & access", items: [{card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"},
+  {id: "net", tab: "settings", icon: "📶", name: "Network & access", items: [{card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"}, {sec: "Security", ic: "🔐"},
    {card: "guest", title: "Guest access", ic: "👥"}, {sec: "MQTT / Home Assistant", title: "MQTT / Home Assistant", ic: "🏠"}]},
   {id: "sys", tab: "settings", icon: "⚙", name: "System", items: [{card: "system", ic: "🖥️"}, {sec: "Setup", ic: "📍"}, {sec: "Updates", ic: "⬆️"},
    {card: "log", ic: "📜"}]},
@@ -43369,7 +43587,7 @@ async function build() {
         const iv = setInterval(async () => { let j = {}; try { j = await (await fetch("/api/ai_model")).json(); } catch (e) {}
           am.textContent = j.busy ? t("downloading the AI model …") + " " + j.pct + " %" : (j.msg === "ready" ? "✓ " + t("AI ready") : "⚠ " + (j.msg || ""));
           if (!j.busy) { clearInterval(iv); ab.disabled = false; if (j.msg === "ready") ab.hidden = true; } }, 1500); };
-      d.append(ab, am); ownExtras(d); spExtras(d);
+      d.append(ab, am); ownExtras(d); spExtras(d); aiModelGroup(d, ab, am);
     }
     if (sec.id === "Notifications") {
       const tb = el("button", "sec", t("Test notification")); tb.style.marginTop = "8px";
@@ -43415,8 +43633,26 @@ async function build() {
     if (sec.id === "SMS (LTE stick)") smsExtras(d);
     if (sec.id === "Loudspeaker") spkExtras(d);
     if (sec.id === "Thermal camera") thExtras(d);
+    if (sec.id === "Security") secExtras(d);
     box.appendChild(d);
   });
+}
+
+// ---- «Log in only encrypted» (574): explanation, state, warning when there is no secure page ----
+Object.assign(I18N.de, {"Security": "Sicherheit", "secure page": "sichere Seite", "this connection": "diese Verbindung", "encrypted": "verschlüsselt",
+  "not encrypted": "nicht verschlüsselt", "Open the secure page": "Sichere Seite öffnen", "To the secure page": "Zur sicheren Seite",
+  "For your safety a password can only be set over the secure page (https).": "Zu deiner Sicherheit lässt sich ein Passwort nur über die sichere Seite (https) setzen.",
+  "The browser warns once about the certificate (MoveEye made it itself): «Advanced» → «Continue».": "Der Browser warnt einmal wegen des Zertifikats (MoveEye hat es selbst gemacht): «Erweitert» → «Weiter».",
+  "port": "Port"});
+function secExtras(d) {
+  const bx = el("div", "auxbox"), st = el("div", ""), nt = el("div", "mut"); nt.style.marginTop = "6px"; bx.append(st, nt); d.appendChild(bx);
+  const load = async () => { let j = null; try { j = await (await fetch("/api/seclogin?lang=" + LANG)).json(); } catch (e) { return; }
+    if (!j || !j.ok) return; st.textContent = ""; nt.textContent = j.note || "";
+    st.appendChild(el("div", "", (j.secure ? "🔒 " : "🔓 ") + t("this connection") + ": " + t(j.secure ? "encrypted" : "not encrypted")
+      + (j.port ? " · https " + t("port") + " " + j.port : "")));
+    if (j.warn) st.appendChild(el("div", "err", "⚠ " + j.warn));
+    if (!j.secure && j.url) { const a = el("a", "btn sec", "🔒 " + t("Open the secure page")); a.href = j.url; a.style.cssText = "display:inline-block;margin-top:6px"; st.appendChild(a); } };
+  load(); d.addEventListener("toggle", () => { if (d.open) load(); });
 }
 
 // ---- audio: microphone level, live listening (WebAudio: works on every phone), loudspeaker of the Pi ----
@@ -43667,6 +43903,13 @@ function pwDialog(first) {
   ov.textContent = ""; const c = el("div", "card"); ov.appendChild(c); c.style.textAlign = "left";
   const h = el("div", "", "🔒 " + (st.pw_set ? t("Change web password") : t("Set a web password"))); h.style.fontWeight = "700"; h.style.fontSize = "17px";
   c.appendChild(h);
+  const SL = st.seclogin || {};
+  if (SL.plain && SL.url) {                                  // 574: never a password over plain http from another device
+    c.append(el("div", "mut", t("For your safety a password can only be set over the secure page (https).")), el("div", "mut", t("The browser warns once about the certificate (MoveEye made it itself): «Advanced» → «Continue».")));
+    const bb = el("div", "btns"), go = el("a", "btn", "🔒 " + t("To the secure page")), cl = el("button", "sec", first ? t("Later") : t("Cancel"));
+    go.href = SL.url.replace(/^(https:\/\/[^/]+).*$/, "$1/"); cl.type = "button"; cl.onclick = () => { try { sessionStorage.setItem("mw-pw-later", "1"); } catch (e) {} ov.remove(); };
+    bb.append(go, cl); c.appendChild(bb); return;
+  }
   c.appendChild(el("div", "mut", first ? t("Nobody has set a password yet: anybody in this network can open this page, switch the alarm off or listen in. Set a password now (6 to 64 characters).")
                                       : t("6 to 64 characters. After saving, the browser asks for it once (any user name).")));
   const i1 = el("input"); i1.type = "password"; i1.placeholder = t("New password"); i1.autocomplete = "new-password";
@@ -44032,8 +44275,15 @@ Object.assign(I18N.de, {"Solar panel": "Solarpanel", "Solar panel with current m
 Object.assign(I18N.de, {"Recognise the animal species (second AI model - see the guide)": "Tierart erkennen (zweites KI-Modell – siehe Anleitung)", "Animal species: minimum certainty": "Tierart: Mindest-Sicherheit", "Animal species: model": "Tierart: Modell", "Animal species: picture preparation of the model": "Tierart: Bildaufbereitung des Modells", "Animal species: a second AI model (ONNX) recognises fox, badger, wild boar … It is not included - install it from an address or copy it into the folder.": "Tierart: ein zweites KI-Modell (ONNX) erkennt Fuchs, Dachs, Wildschwein … Es ist nicht dabei – von einer Adresse installieren oder in den Ordner kopieren.", "or .zip": "oder .zip", "Install model": "Modell installieren", "Folder": "Ordner", "Models": "Modelle", "Last": "Zuletzt", "downloading …": "lädt herunter …", "no model chosen": "kein Modell gewählt", "address must start with https://": "die Adresse muss mit https:// beginnen", "the address must end with .onnx or .zip": "die Adresse muss auf .onnx oder .zip enden", "file too big": "Datei zu gross"});
 Object.assign(I18N.de, {"AI model": "KI-Modell", "Standard (SSD MobileNet V2)": "Standard (SSD MobileNet V2)", "Own (MoveEye model)": "Eigenes (MoveEye-Modell)", "Own model: address of its description (moveeye_model.json)": "Eigenes Modell: Adresse seiner Beschreibung (moveeye_model.json)", "Download own model": "Eigenes Modell herunterladen", "Update own model": "Eigenes Modell aktualisieren", "Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs.": "Eigenes Modell: auf GitHub trainiert aus Simulator-Bildern und deinen beschrifteten Alarmbildern (Person, Tier, Fahrzeug). Nach dem Herunterladen nimmt MoveEye es (zurück zum Standard: «KI-Modell», Ansicht Experte). Fehlt es oder klappt es nicht, läuft das Standard-Modell.", "Now running": "Läuft jetzt", "own model not used": "eigenes Modell nicht benutzt", "not downloaded yet": "noch nicht heruntergeladen", "downloading the own model …": "lädt das eigene Modell …", "own model ready": "eigenes Modell bereit", "MoveEye model": "MoveEye-Modell", "made": "erstellt",
   "updates by itself (daily, only if not worse)": "aktualisiert sich selbst (täglich, nur wenn nicht schlechter)", "automatic update off": "automatisches Aktualisieren aus", "last check": "zuletzt geprüft"});
+function aiModelGroup(d, ab, am) {                 // 2.98.23 (Konzept): the choice «AI model» and the own model in ONE group «KI-Modell»
+  const q = k => d.querySelector('[data-key="' + k + '"]:not(select)'), sel = q("ai_model"), own = d.querySelector(".auxbox.ownai");
+  const at = sel || q("ai_own_auto") || own; if (!at) return;                // «Simple» shows fewer of them: the group starts at the first one
+  const g = el("div", "aimg"); at.before(g);
+  g.appendChild(el("div", "aimh", "🧠 " + t("AI model")));
+  [sel, ab, am, own, q("ai_own_auto"), q("ai_own_url")].forEach(x => { if (x) g.appendChild(x); });
+}
 function ownExtras(d) {                             // part 195: own MoveEye model (YOLO) - download + which model runs
-  const box = el("div", "auxbox"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
+  const box = el("div", "auxbox ownai"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
   box.appendChild(el("div", "mut", "🧠 " + t("Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs.")));
   const b = el("button", "sec", "⬇ " + t("Download own model")); b.type = "button"; b.style.marginTop = "6px";
   const show = j => { b.textContent = "⬇ " + t(j.present ? "Update own model" : "Download own model");
@@ -46048,6 +46298,11 @@ document.addEventListener("webkitfullscreenchange", fsChange);
 
 SIMTOOLS_JS = r"""
 // ---- simulator tools in the tab Simulator (2.95.53): Aufstell-Planer, alarm replay, AI test ----
+Object.assign(I18N.de, {"Training set for an own AI model (YOLO)": "Trainingspaket für ein eigenes KI-Modell (YOLO)", "Make the training pack": "Trainingspaket machen",
+  "The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).": "Der Simulator macht die Bilder und legt ein ZIP auf den Schreibtisch seines PCs (etwa 2 s pro Bild).",
+  "Variety: normal": "Vielfalt: normal", "Variety: high": "Vielfalt: hoch", "Variety: high (recommended)": "Vielfalt: hoch (empfohlen)", "Delete old AI data": "Alte KI-Daten löschen", "days": "Tage",
+  "Delete all training packs on the PC of the simulator except the newest one? The AI model stays.": "Alle Trainingspakete auf dem PC des Simulators ausser dem neuesten löschen? Das KI-Modell bleibt.",
+  "Cleaned up by itself: after every new pack the newest 3 stay, nothing older than 30 days (the newest always stays). The AI model is never deleted.": "Aufräumen von selbst: nach jedem neuen Paket bleiben die neuesten 3, nichts älter als 30 Tage (das neueste bleibt immer). Das KI-Modell wird nie gelöscht."});
 Object.assign(I18N.de, {"pictures": "Bilder", "Tag": "Anhänger", "Aufstell-Planer in the simulator": "Aufstell-Planer im Simulator", "open in the window of the simulator": "im Fenster des Simulators geöffnet", "Take over the patrol of the planner": "Patrouille vom Planer übernehmen", "Patrol set": "Patrouille gesetzt", "of the area in view": "des Bereichs im Blick", "Alarm replay in 3D": "Alarm-Rückblick in 3D", "Play in the simulator": "Im Simulator abspielen", "plays in the window of the simulator": "läuft im Fenster des Simulators", "no alarms yet": "noch keine Alarme", "replay-note": "Zeigt im 3D-Simulator nach, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Hilft, Fehlalarme zu verstehen. Die Positionen sind geschätzt (aus Bildposition und Grösse).", "AI test with simulator pictures": "KI-Prüfung mit Simulator-Bildern", "dset-note": "Der Simulator macht Bilder mit Person oder Tier – bei Tag, Abend, Nacht mit Infrarot, Regen und Nebel, nah und fern – und weiss, wo sie sind. MoveEye lässt seine KI (oder die PC-Rechenhilfe) darüber laufen und zählt Treffer, Fehlschläge und falsche Personen. Dauert pro Bild etwa 3 Sekunden.", "Start the test": "Prüfung starten", "found": "erkannt", "false persons": "falsche Personen", "near (under 8 m)": "nah (unter 8 m)", "far (8 m and more)": "fern (ab 8 m)", "AI time per picture": "KI-Zeit pro Bild", "Training pictures (ZIP)": "Trainingsbilder (ZIP)", "Abend": "Abend", "Nacht (Infrarot)": "Nacht (Infrarot)", "Regen": "Regen", "Nebel": "Nebel", "Nacht + Regen": "Nacht + Regen", "person": "Person", "fox": "Fuchs", "deer": "Reh", "dog": "Hund", "cat": "Katze", "boar": "Wildschwein", "the simulator makes the pictures …": "der Simulator macht die Bilder …", "done": "fertig", "Simulator tools": "Simulator-Werkzeuge"});
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Helps to understand false alarms. The positions are estimated (from the spot and size in the picture).", "dset-note": "The simulator makes pictures with a person or an animal - by day, dusk, night with infrared, rain and fog, near and far - and knows where they are. MoveEye runs its AI (or the PC helper) on them and counts hits, misses and false persons. About 3 seconds per picture.", "Tag": "day", "Abend": "dusk", "Nacht (Infrarot)": "night (infrared)", "Regen": "rain", "Nebel": "fog", "Nacht + Regen": "night + rain"});
 (async function () {
@@ -46082,7 +46337,26 @@ I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D
     const z = document.createElement("a"); z.className = "btn sec"; z.href = "/api/dataset.zip"; z.textContent = "⬇ " + t("Training pictures (ZIP)"); dout.appendChild(z); };
   dgo.onclick = async () => { const r = await P({action: "dataset", start: true, n: dn.value === "game" ? "game" : +dn.value}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } dpaint(r); };
   dr.append(dn, dgo); db.append(dr, dout);
-  box.append(pl, rb, db);
+  // KI-Daten (197): a training pack (YOLO) with «Vielfalt» like in the simulator; the packs on its PC, «Delete old AI data»
+  const xb = el("div", ""); xb.style.marginTop = "14px"; xb.append(el("b", "", "📦 " + t("Training set for an own AI model (YOLO)")));
+  const xr = el("div", "btns"), xn = document.createElement("select"), xvf = document.createElement("select");
+  [200, 500, 1000, 2000].forEach(n => { const o = document.createElement("option"); o.value = n; o.textContent = n + " " + t("pictures"); if (n === 500) o.selected = true; xn.appendChild(o); });
+  [["hoch", "Variety: high (recommended)"], ["normal", "Variety: normal"]].forEach(([v, l]) => { const o = document.createElement("option"); o.value = v; o.textContent = t(l); xvf.appendChild(o); });
+  const xgo = el("button", "", "📦 " + t("Make the training pack")); xgo.type = "button"; const xout = el("div", "mut");
+  const kd = el("div", ""); kd.id = "kidata-box"; kd.style.marginTop = "8px"; const kdl = el("div", ""), kdr = el("div", "mut", t("Cleaned up by itself: after every new pack the newest 3 stay, nothing older than 30 days (the newest always stays). The AI model is never deleted."));
+  const kdb = el("button", "sec", "🧹 " + t("Delete old AI data")); kdb.type = "button"; kdb.style.marginTop = "6px";
+  const kdPaint = r => { kdl.textContent = ""; if (!r || !r.ok) { kdl.appendChild(el("div", "mut", "⚠ " + ((r && r.error) || t("error")))); kdb.hidden = true; return; }
+    kdl.appendChild(el("div", "", r.text || "")); kdb.hidden = (r.packs || []).length < 2;
+    (r.packs || []).forEach(p => kdl.appendChild(el("div", "mut", (p.newest ? "⭐ " : "· ") + p.name + " · " + p.mb + " MB · " + p.age_days + " " + t("days") + (p.vielfalt === "hoch" ? " · " + t("Variety: high") : "")))); };
+  const kdLoad = async () => kdPaint(await P({action: "dataset", packs: true}));
+  xgo.onclick = async () => { xgo.disabled = true; const r = await P({action: "dataset", export: true, n: +xn.value, vielfalt: xvf.value}); xgo.disabled = false;
+    if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; }
+    xout.textContent = t("The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).") + " " + ((r.export || {}).msg || ""); };
+  kdb.onclick = async () => { if (!confirm(t("Delete all training packs on the PC of the simulator except the newest one? The AI model stays."))) return;
+    kdb.disabled = true; const r = await P({action: "dataset", clean: true}); kdb.disabled = false; kdPaint(r); };
+  xr.append(xn, xvf, xgo); kd.append(kdl, kdb, kdr); xb.append(xr, xout, kd);
+  document.getElementById("c-tools").addEventListener("toggle", e => { if (e.target.open) kdLoad(); });
+  box.append(pl, rb, db, xb); kdLoad();
   let K = "";
   const poll = async () => { try { const st = (await (await fetch("/api/state", {cache: "no-store"})).json()).state || {};
       const S = st.sim || {}; document.getElementById("c-tools").hidden = !(S.on && S.ok);
@@ -47682,6 +47956,8 @@ class WebStream:
                 if now - float(tf[1].get("seen", 0)) > 3600:
                     tf[1]["seen"] = int(now); tf[1]["ip"] = ip[:45]; save_settings()
                 return None
+            if seclogin_plain(request):              # «Anmelden nur verschlüsselt» (574): no password over plain http
+                return seclogin_block(request)
             recent = [x for x in fails.get(ip, []) if now - x < 300]
             if len(recent) >= 8:
                 fails[ip] = recent
@@ -47703,6 +47979,14 @@ class WebStream:
                 for k in [k for k, v in fails.items() if not v or now - v[-1] > 300]:
                     fails.pop(k, None)
             return sx_err(401, "login", {"WWW-Authenticate": 'Basic realm="MoveEye", charset="UTF-8"'})   # guests see the realm
+
+        @app.before_request
+        def seclogin_guard():                       # 574: setting a password over plain http from another device
+            return seclogin_body_check(request)
+
+        @app.route("/api/seclogin")
+        def api_seclogin():
+            return reply(dict(seclogin_info(request, norm_lang(request.args.get("lang"))), ok=True))
 
         @app.before_request
         def role_guard():                           # users with a role: what they may do
@@ -47821,10 +48105,15 @@ class WebStream:
                 if act_ == "dataset":                            # 2.95.53: KI-Prüfung mit Simulator-Bildern
                     if d.get("export"):                          # 2.95.99: a training set (YOLO) made in the simulator, saved on its PC
                         try:
-                            r = sim_control({"action": "dataset", "op": "export", "n": max(10, min(5000, int(d.get("n") or 500)))})
+                            r = kidata_export(d.get("n"), d.get("vielfalt"))
                         except Exception:
                             return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
                         return reply({"ok": True, "export": r})
+                    if d.get("packs") or d.get("clean"):         # KI-Daten: the training packs on the PC of the simulator (197)
+                        try:
+                            return reply(dict(kidata_packs(bool(d.get("clean")), lang), ok=True))
+                        except Exception as e:
+                            return reply({"ok": False, "error": tr_err(str(e) if isinstance(e, ValueError) else "simulator not reachable", lang)}, 400)
                     if d.get("start"):
                         ok_, err_ = dset_run("game" if str(d.get("n")) == "game" else (int(d.get("n") or 24) if str(d.get("n") or "24").isdigit() else 24))
                         if not ok_:
@@ -48976,6 +49265,7 @@ class WebStream:
                 st["extra"] = cams_status()
                 st["camping"] = bool(CFG["camping"]); st["net_mode"] = CFG["net_mode"]; st["power_msg"] = POWER["msg"]
                 st["pw_set"] = web_pw_active(); st["pw_cli"] = bool(CFG["web_password"]); st["version"] = APP_VERSION
+                st["seclogin"] = {k: v for k, v in seclogin_info(request).items() if k in ("mode", "plain", "url", "secure")}
                 try:
                     st["health"] = health_check()["count"]
                 except Exception:
@@ -51504,7 +51794,7 @@ TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery":
                 "Walking recognition": "➜", "Vehicle filter": "⛀", "Rain": "☂", "Wind": "≋", "Low light": "◐", "Auto-tune": "✱",
                 "Camera / Servos": "✥", "Patrol": "↻", "Video source": "▣", "Servo driver": "⚒", "Lights": "☀", "Deterrence": "⚠",
                 "Microphone": "♪", "Loudspeaker": "♫", "Clap switch": "✋", "Bless you": "☺", "Wake-up alarm": "⏰", "Recording": "●", "Timelapse": "◷", "Backup": "☁", "Relays": "⚡",
-                "Schedule": "▦", "Setup": "⊕", "Wi-Fi / hotspot": "⌁", "Web stream": "⇅", "Guest access": "⚇",
+                "Schedule": "▦", "Setup": "⊕", "Wi-Fi / hotspot": "⌁", "Web stream": "⇅", "Security": "⚿", "Guest access": "⚇",
                 "MQTT / Home Assistant": "⇆", "Updates": "⬆", "Extra sensors": "◉", "Simulator": "⚗", "Storm warning": "≈", "GPS module": "✈", "Solar panel": "☼", "Mover": "⇕"}
 
 TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - 2.98.0: the same groups as the web page, «Schutz» first, then «Einstellungen»
@@ -51515,7 +51805,7 @@ TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - 2.98.0: the sam
     ("camera", "Cameras & head", ["Camera / Servos", "Patrol", "Video source", "Timelapse", "Mover", None, "Servo driver"]),
     ("sensors", "Devices & sensors", ["Lights", "Microphone", "Loudspeaker", "Relays", "Extra sensors", "Clap switch", "Bless you", "Wake-up alarm", "Storm warning", "GPS module"]),
     ("power", "Power supply", ["Battery", "Power saving", "Solar panel"]),
-    ("net", "Network & access", ["Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant"]),
+    ("net", "Network & access", ["Wi-Fi / hotspot", "Web stream", "Security", "Guest access", "MQTT / Home Assistant"]),
     ("sys", "System", ["Setup", "Updates"]),
 ]
 # 2.98.14 (Konzept): which tab shows a group (like the web page); the simulator settings are in the tab Simulator
@@ -51523,8 +51813,9 @@ TK_PANEL_TABS = ("protect", "settings", "sim")
 TK_GROUP_TAB = {"alarm": "protect", "notify": "protect", "theft": "protect", "sched": "protect"}
 TK_SIM_GROUPS = [("simset", "Settings of the simulation", ["Simulator"])]
 TK_PSEUDO = {"Improve detection"}
+TK_AI_MODEL_KEYS = ("ai_model", "ai_own_url", "ai_own_auto")   # 2.98.23 (Konzept): shown together in the group «KI-Modell» (section AI detection)
 SECTIONS = ["Wake-up alarm", "Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
-            "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup"]
+            "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup", "Security"]
 
 
 class Toggle(tk.Frame):
@@ -51781,7 +52072,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.22")
+        self.root.title("MoveEye 2.98.23")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -52134,7 +52425,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.22 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.23 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -53008,6 +53299,7 @@ class App:
             self._bt_sig = None
         for s, key, label in TOGGLES:
             if s != sec or simple_hidden(key) or (CFG["lock_on"] and key in LOCK_DENY_KEYS): continue
+            if key in TK_AI_MODEL_KEYS: continue           # 2.98.23: in the group «KI-Modell» below
             tg = Toggle(sp, tr(label), CFG[key], lambda val, k=key: self._set(k, val)); tg.pack(fill="x", pady=3)
             self.vars[key] = tg
         for s, key, label, lo, hi, step in SLIDERS:
@@ -53031,7 +53323,7 @@ class App:
         if sec == "Messages":
             ttk.Label(sp, text=tr("Empty = standard text. Placeholders:") + " " + MSG_PLACEHOLDERS, style="Mut.TLabel",
                       wraplength=330, justify="left").pack(anchor="w", pady=(2, 0))
-        self._build_texts(sp, sec)
+        self._build_texts(sp, sec, skip=TK_AI_MODEL_KEYS)
         if sec == "SMS (LTE stick)":
             def sms_test():
                 ok, err = sms_send(f"{CFG['device_name'] or 'MoveEye'}: " + tr("test SMS - it works"), force=True)
@@ -53063,6 +53355,11 @@ class App:
             ttk.Button(sf, text=tr("Install"), command=lambda: sim_do(sim_install, "Simulator installed")).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(sf, text=tr("Start"), command=lambda: sim_do(sim_start, "Simulator started")).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(sf, text=tr("Stop"), command=lambda: sim_do(sim_stop, "Simulator stopped")).pack(side="left", expand=True, fill="x")
+            kidata_tk_build(self, sbody)                  # training pack with «Vielfalt», «Delete old AI data» (197)
+        if sec == "Security":                             # «Log in only encrypted» (574)
+            self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
+            self.status_labels[sec].pack(anchor="w", pady=(4, 0))
+            ttk.Label(sbody, text=tr(SECLOGIN_NOTE), style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(4, 0))
         if sec == "Mover":
             self.status_labels["Mover"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Mover"].pack(anchor="w", pady=(4, 0))
@@ -53121,6 +53418,11 @@ class App:
             self.store_cb.bind("<<ComboboxSelected>>", pick)
             self.status_labels["Storage"] = ttk.Label(sbody, text=tr("now") + ": " + rec_dir(), style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Storage"].pack(anchor="w", pady=(2, 0))
+        if sec == "AI detection":                        # 2.98.23 (Konzept): choice, standard model and own model in ONE group «KI-Modell»
+            sbody = tk.Frame(sbody, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=8, pady=6)
+            sbody.pack(fill="x", pady=(10, 0))
+            tk.Label(sbody, text="🧠 " + tr("AI model"), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10, "bold"), anchor="w").pack(fill="x")
+            self._build_texts(sbody, sec, only=("ai_model",))
         if sec == "AI detection" and not ai_model_paths()[0]:
             ttk.Button(sbody, text=tr("Download AI model") + " (≈ 70 MB)", command=self._ai_dl).pack(fill="x", pady=(8, 0))
             self.status_labels["AI model"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
@@ -53131,6 +53433,11 @@ class App:
             ttk.Button(sbody, text=tr("Update own model" if own_ai_paths()[0] else "Download own model"), command=self._own_ai_dl).pack(fill="x", pady=(4, 0))
             self.status_labels["Own AI model"] = ttk.Label(sbody, text=own_ai_long_text(), style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Own AI model"].pack(anchor="w", pady=(2, 0))
+            for s_, key_, label_ in TOGGLES:               # 2.98.23: the switch «update by itself» and the address in the same group
+                if s_ == sec and key_ in TK_AI_MODEL_KEYS and not simple_hidden(key_) and not (CFG["lock_on"] and key_ in LOCK_DENY_KEYS):
+                    tg_ = Toggle(sbody, tr(label_), CFG[key_], lambda val, k=key_: self._set(k, val)); tg_.pack(fill="x", pady=(6, 0))
+                    self.vars[key_] = tg_
+            self._build_texts(sbody, sec, only=("ai_own_url",))
         if sec == "Notifications":
             ttk.Button(sbody, text=tr("Test notification"),
                        command=lambda: self.watch.notifier.test(self.watch.frame_out)).pack(fill="x", pady=(8, 0))
@@ -53399,8 +53706,9 @@ class App:
         self._status("Extra sensors", " · ".join(p))
 
     # ---- text settings (notifications, location, presence) ----------------
-    def _build_texts(self, parent, sec):
-        specs = [x for x in TEXTS if x[0] == sec and not simple_hidden(x[1]) and not (CFG["lock_on"] and x[1] in LOCK_DENY_KEYS)]
+    def _build_texts(self, parent, sec, skip=(), only=None):
+        specs = [x for x in TEXTS if x[0] == sec and not simple_hidden(x[1]) and not (CFG["lock_on"] and x[1] in LOCK_DENY_KEYS)
+                 and x[1] not in skip and (only is None or x[1] in only)]
         if not specs:
             return
         ent_kw = dict(bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat",
@@ -54443,6 +54751,7 @@ class App:
                      + f" · {tr('Data')}: {pj_.get('data_mb')} MB · {tr('recordings')} {pj_.get('rec_mb')} MB ({pj_.get('rec_n')})"
                      + (f" · {tr('memory')} {pj_['ram_mb']} MB" if pj_.get("ram_mb") else ""))
         self._status("Auto-tune", f"{st['auto_status']} · {st['auto_changes']} {tr('automatic changes')}")
+        self._status("Security", seclogin_text())
         self._status("Notifications", f"{tr('status')}: {st['notify_status']}")
         hs = st["hotspot"] or {}
         a_st = st["arm_state"]
@@ -54800,6 +55109,240 @@ for _n, _f in (("_tk_bar", _tk_bar), ("_tk_history_bar", _tk_history_bar), ("_tk
                ("_tune_win", _tune_win)):
     setattr(App, _n, _f)
 # ----------------------------------------------------------------------------
+# Wunsch Daniel (29.10.2026): the web password must not travel unencrypted over the network.
+#   * A login (the browser's password question, the password of a program, setting a password) over plain http is only
+#     taken from this device itself (127.0.0.1, its own addresses) and from encrypted ways: the secure page (https,
+#     port + 1, self-signed certificate made once in the settings folder, part 420), Tailscale (WireGuard, 100.64.0.0/10)
+#     and «https over Tailscale» / a tunnel on this device (arrives as 127.0.0.1 with X-Forwarded-*).
+#   * From any other address the page answers with a short hint (certificate warning of the browser) and leads to the
+#     secure page - WITHOUT asking for the password over http (no «WWW-Authenticate»), so the browser never sends it.
+#   * Never lock Daniel out: if the secure page cannot run (no openssl / cryptography, port busy, «https_extra» off),
+#     the http login keeps working and a warning is shown (self-check, settings, window).
+#   * Unchanged: links with their own key (/na/ buttons in the push, /g/ guests, /x/ shares, /k/ kiosk, /tv/ ...), the
+#     public files, and a device that is already trusted (its cookie is no password).
+# ----------------------------------------------------------------------------
+_SECLOGIN_CFG = {"login_https_only": True}
+for _k, _v in _SECLOGIN_CFG.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+TOGGLES.extend([
+    ("Security", "login_https_only", "Log in only encrypted (https): from other devices the password is only accepted over the secure page"),
+])
+# «Simple» shows the section only when something is wrong (no secure page, or switched off with a password); «Expert» always
+SIMPLE_IN_USE["Security"] = lambda: web_pw_active() and seclogin_mode() != "on"
+SIMPLE_KEYS.add("login_https_only")
+SECLOGIN = {"own": (0.0, frozenset()), "logged": {}, "fallback_logged": False}
+SECLOGIN_NOTE = ("The password is only accepted over the secure page (https://…:port + 1) or from this device itself. Over plain http "
+                 "everybody in the same Wi-Fi (camping!) could read it. The browser warns once about the certificate (it is made by MoveEye "
+                 "itself) - accept it once. Tailscale and «https over Tailscale» are encrypted and work as before. Links with their own key "
+                 "(buttons in the push message, guests, shares) keep working. Programs (Home Assistant, shortcuts) use the https address too.")
+
+
+def _seclogin_ip(s):
+    import ipaddress
+    try:
+        return ipaddress.ip_address(str(s or "").split("%")[0])
+    except ValueError:
+        return None
+
+
+def seclogin_tailscale(ip):
+    """Tailscale addresses (WireGuard: always encrypted): 100.64.0.0/10 and fd7a:115c:a1e0::/48"""
+    import ipaddress
+    a = _seclogin_ip(ip)
+    if a is None:
+        return False
+    if getattr(a, "ipv4_mapped", None):
+        a = a.ipv4_mapped
+    nets = (ipaddress.ip_network("100.64.0.0/10"),) if a.version == 4 else (ipaddress.ip_network("fd7a:115c:a1e0::/48"),)
+    return any(a in n for n in nets)
+
+
+def seclogin_own_ips():
+    """the addresses of this device (a browser on the Pi that opens http://<own address>/ is the device itself)"""
+    t, ips = SECLOGIN["own"]
+    if time.time() - t < 60:
+        return ips
+    import socket
+    s = {"127.0.0.1", "::1"}
+    try:
+        ip_ = local_ip()
+        if ip_:
+            s.add(ip_)
+    except Exception:
+        pass
+    try:
+        for x in socket.getaddrinfo(socket.gethostname(), None):
+            s.add(x[4][0].split("%")[0])
+    except OSError:
+        pass
+    if shutil.which("hostname"):
+        try:
+            out = subprocess.run(["hostname", "-I"], capture_output=True, text=True, timeout=3).stdout
+            s.update(x.split("%")[0] for x in out.split())
+        except (OSError, subprocess.SubprocessError):
+            pass
+    ips = frozenset(s)
+    SECLOGIN["own"] = (time.time(), ips)
+    return ips
+
+
+def seclogin_https_port():
+    """the port of the secure page, or None when there is none"""
+    if WEB_OPTS.get("https"):
+        return int(CFG["web_port"])
+    return STATE.get("https_port") or None
+
+
+def seclogin_secure(req):
+    """may a password come with this request? (https, this device, Tailscale, a proxy on this device that is https)"""
+    if req.is_secure:
+        return True
+    ra = str(req.remote_addr or "")
+    fwd = req.headers.get("X-Forwarded-For") or req.headers.get("Forwarded") or req.headers.get("X-Forwarded-Host")
+    if ra in ("127.0.0.1", "::1", "::ffff:127.0.0.1"):
+        if not fwd:
+            return True                                     # really this device (the window, a browser on the Pi)
+        proto = str(req.headers.get("X-Forwarded-Proto") or "").split(",")[0].strip().lower()
+        return proto != "http"                              # «https over Tailscale» (tailscale serve) / a tunnel: https outside
+    if seclogin_tailscale(ra):
+        return True
+    return ra.split("%")[0] in seclogin_own_ips()
+
+
+def seclogin_mode():
+    """"off" (setting off), "fallback" (setting on, but no secure page: http login allowed with a warning), "on" """
+    if not CFG.get("login_https_only", True):
+        return "off"
+    if not seclogin_https_port():
+        if not SECLOGIN["fallback_logged"] and time.time() - START > 60:
+            SECLOGIN["fallback_logged"] = True
+            log_event("web", "Warning: no secure page (https) - the web password still goes unencrypted through the network (install openssl)")
+        return "fallback"
+    return "on"
+
+
+def seclogin_plain(req):
+    """True = this request comes over plain http from another device and must not carry a password"""
+    return seclogin_mode() == "on" and not seclogin_secure(req)
+
+
+def seclogin_url(req):
+    """the same address on the secure page"""
+    port = seclogin_https_port()
+    host = str(req.host or "")
+    if not re.fullmatch(r"[A-Za-z0-9.\-\[\]:]{1,200}", host):
+        host = local_ip() or "localhost"
+    if host.startswith("["):
+        name = host[:host.find("]") + 1] if "]" in host else host
+    else:
+        name = host.rsplit(":", 1)[0] if host.count(":") == 1 else host
+    path = req.full_path if req.query_string else req.path
+    return f"https://{name}:{port}{path if path.startswith('/') else '/' + path}"
+
+
+def seclogin_block(req):
+    """the answer for a login over plain http from another device: a hint page (browser) or a short JSON (programs)"""
+    from flask import Response
+    import html as _h
+    url = seclogin_url(req)
+    ip = str(req.remote_addr or "?")
+    if req.authorization:                                 # the password came already: tell it once per hour and device
+        now = time.time()
+        if now - SECLOGIN["logged"].get(ip, 0) > 3600:
+            SECLOGIN["logged"][ip] = now
+            if len(SECLOGIN["logged"]) > 200:
+                SECLOGIN["logged"].clear()
+            log_event("web", f"Login over unencrypted http from {ip} refused - only over the secure page {url.split('/', 3)[2]}")
+    L = sx_req_lang()
+    if sx_wants_html():
+        body = ("<p>" + _h.escape(tr("For your safety MoveEye takes the password only over the secure page (https). Over plain http everybody in the same Wi-Fi could read it.", L)) + "</p>"
+                "<p>" + _h.escape(tr("The browser will warn once that the certificate is not trusted: MoveEye made it itself. Choose «Advanced» → «Continue» (iPhone: «Show details» → «visit this website»).", L)) + "</p>"
+                '<a class="btn" id="go" href="' + _h.escape(url) + '">🔒 ' + _h.escape(tr("To the secure page", L)) + "</a>"
+                '<p style="font-size:13px;opacity:.75;word-break:break-all">' + _h.escape(url) + "</p>"
+                "<script>setTimeout(function(){location.href=document.getElementById('go').href;},12000);</script>")
+        return Response(sx_page(tr("Log in only encrypted", L), body, "🔒", L), 403, {"Cache-Control": "no-store"}, mimetype="text/html")
+    return Response(json.dumps({"ok": False, "error": tr("log in only over the secure page (https)", L) + ": " + url, "https": url}),
+                    403, {"Cache-Control": "no-store"}, mimetype="application/json")
+
+
+def seclogin_body_check(req):
+    """a request that SETS a password (web password, users, setup assistant) over plain http from another device:
+    refused with the https address (also when no password is set yet - else the first password goes unencrypted)"""
+    if req.method != "POST" or req.path not in ("/api/password", "/api/users", "/api/setup"):
+        return None
+    if not seclogin_plain(req):
+        return None
+    d = req.get_json(force=True, silent=True)
+    if not (isinstance(d, dict) and str(d.get("password") or "")):
+        return None
+    L = norm_lang(d.get("lang") or sx_req_lang())
+    url = seclogin_url(req).split("/api/")[0] + "/"
+    return _seclogin_json({"ok": False, "error": tr("For your safety a password can only be set over the secure page", L) + ": " + url, "https": url}, 403)
+
+
+def _seclogin_json(obj, code=200):
+    from flask import Response
+    return Response(json.dumps(obj), status=code, mimetype="application/json", headers={"Cache-Control": "no-store"})
+
+
+def seclogin_info(req=None, lang=None):
+    """for the page (Settings → Security), /api/state and the window"""
+    m = seclogin_mode()
+    port = seclogin_https_port()
+    i = {"on": bool(CFG.get("login_https_only", True)), "mode": m, "port": port, "pw": web_pw_active(),
+         "note": tr(SECLOGIN_NOTE, lang), "warn": ""}
+    if req is not None:
+        i["secure"] = seclogin_secure(req)
+        i["plain"] = m == "on" and not i["secure"]
+        i["url"] = seclogin_url(req) if port else ""
+    if m == "fallback":
+        i["warn"] = tr("No secure page (https) - the password still goes unencrypted through the network. Install openssl (sudo apt install openssl) and restart MoveEye.", lang)
+    elif m == "off" and web_pw_active():
+        i["warn"] = tr("Off: the password may go unencrypted through the network (http).", lang)
+    return i
+
+
+def seclogin_text(lang=None):
+    """one line for the window"""
+    i = seclogin_info(None, lang)
+    if i["mode"] == "on":
+        return "🔒 " + tr("on", lang) + f" · https {tr('port', lang)} {i['port']}"
+    return "⚠ " + i["warn"] if i["warn"] else "🔓 " + tr("off", lang)
+
+
+def seclogin_selftest():
+    """the address rules (no server needed)"""
+    class _H(dict):
+        def get(self, k, d=None):
+            return dict.get(self, k, d)
+
+    class _R:
+        def __init__(self, ra, sec=False, h=None, host="192.168.1.5:5000", path="/"):
+            self.remote_addr, self.is_secure, self.headers, self.host, self.path = ra, sec, _H(h or {}), host, path
+            self.query_string, self.full_path = b"", path + "?"
+    assert seclogin_tailscale("100.101.102.103") and seclogin_tailscale("fd7a:115c:a1e0::1") and not seclogin_tailscale("192.168.1.20")
+    assert seclogin_secure(_R("127.0.0.1")) and seclogin_secure(_R("10.0.0.9", sec=True))
+    assert seclogin_secure(_R("127.0.0.1", h={"X-Forwarded-For": "1.2.3.4", "X-Forwarded-Proto": "https"}))
+    assert not seclogin_secure(_R("127.0.0.1", h={"X-Forwarded-For": "1.2.3.4", "X-Forwarded-Proto": "http"}))
+    assert not seclogin_secure(_R("192.0.2.77"))                       # TEST-NET: never an own address
+    keep = STATE.get("https_port"), CFG.get("login_https_only")
+    try:
+        STATE["https_port"] = 5001; CFG["login_https_only"] = True
+        assert seclogin_url(_R("192.0.2.77", path="/zones")) == "https://192.168.1.5:5001/zones"
+        assert seclogin_url(_R("192.0.2.77", host="[fe80::1]:5000")) == "https://[fe80::1]:5001/"
+        assert seclogin_mode() == "on" and seclogin_plain(_R("192.0.2.77")) and not seclogin_plain(_R("100.64.0.5"))
+        STATE["https_port"] = None
+        assert seclogin_mode() == "fallback" and not seclogin_plain(_R("192.0.2.77"))   # no secure page: never locked out
+        STATE["https_port"] = 5001; CFG["login_https_only"] = False
+        assert not seclogin_plain(_R("192.0.2.77"))
+    finally:
+        STATE["https_port"], CFG["login_https_only"] = keep
+    return True
+
+
+SELFTEST_EXTRA.append(("Log in only encrypted (https rules)", seclogin_selftest))
+# ----------------------------------------------------------------------------
 # 2.98.13: the settings of parts 105 / 232 / 415 in the schema (web and window show them by themselves), and the window
 # «Gehtest» of the desktop program (button in «Camping / protection»).
 # ----------------------------------------------------------------------------
@@ -55138,7 +55681,7 @@ def nachlauf_selftest():
 #     Wachsam». Nicht nach einem Update / Neustart (die enden sauber, 390 run_state.json «clean»).
 #  3  Fehlermeldungen des Web-Servers in der eigenen Sprache als kleine Seite (Anmeldung, zu viele Versuche, fremde Seite,
 #     Gast-Link, unbekannte Adresse). Basic-Realm «MoveEye» (Gäste sehen ihn); das Vertrauens-Cookie bleibt gleich.
-#  4  «Nachtblick»: ganze Seite sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt (pro Browser gemerkt);
+#  4  «Dunkle Ansicht» (bis 2.98.22 «Nachtblick»): ganze Seite sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt (pro Browser gemerkt);
 #     im Fenster ein Knopf ◑ (Einstellung tk_night).
 #  5  Bildschirmleser: Knöpfe und Symbole bekommen aria-label / title in der eigenen Sprache (Hauptseite, Kopf, Navigation).
 #  6  «Aufnahmen nach … Tagen löschen» (0 = nie) neben der Grössen-Grenze; Knopf «Ferien vorbei: alle Aufnahmen löschen»
@@ -55573,8 +56116,8 @@ html.sxnight .badge{background:#0d0101!important;color:#a52a20!important;border-
 </style><script>try{if(localStorage.getItem("mw-night")==="1")document.documentElement.classList.add("sxnight")}catch(e){}</script>"""
 
 # the texts the script needs (English key -> translated by the page language)
-SX_JS_KEYS = ["Night view", "Night view: very dark and red, the live picture dimmed - for a short look in the tent", "Night view on - tap 🌑 again to switch it off",
-              "Night view off", "View", "Settings panel", "Full screen", "Light / dark", "Language", "Exit full screen", "Close", "Copy", "Standard text",
+SX_JS_KEYS = ["Dark view", "Dark view: very dark and red, the live picture dimmed - for a short look in the tent", "Dark view on - tap 🌑 again to switch it off",
+              "Dark view off", "View", "Settings panel", "Full screen", "Light / dark", "Language", "Exit full screen", "Close", "Copy", "Standard text",
               "Up", "Down", "Remove", "Edit", "Refresh", "Help", "Menu", "Play", "Pause", "Stop", "Delete", "Back", "Next", "Previous", "Settings",
               "Live picture", "Main navigation", "Sub navigation", "Show settings", "Hide settings", "More", "Search", "Expand all", "Collapse all",
               "Listen", "Centre", "Other side", "Take a photo", "Favourite", "Download", "Share", "Zoom in", "Zoom out", "Mute", "Sound on",
@@ -55609,9 +56152,9 @@ try { if (typeof I18N !== "undefined" && I18N.de) Object.keys(TX.de || {}).forEa
 // ---- 4: night view ----
 const isN = () => H.classList.contains("sxnight");
 function paintN() { const b = D.getElementById("btn-night"); if (!b) return; b.setAttribute("aria-pressed", isN() ? "true" : "false");
-  b.title = T("Night view: very dark and red, the live picture dimmed - for a short look in the tent"); b.setAttribute("aria-label", T("Night view")); }
+  b.title = T("Dark view: very dark and red, the live picture dimmed - for a short look in the tent"); b.setAttribute("aria-label", T("Dark view")); }
 function setN(on) { H.classList.toggle("sxnight", on); try { localStorage.setItem("mw-night", on ? "1" : "0"); } catch (e) {}
-  paintN(); say(on ? "🌑 " + T("Night view on - tap 🌑 again to switch it off") : T("Night view off")); }
+  paintN(); say(on ? "🌑 " + T("Dark view on - tap 🌑 again to switch it off") : T("Dark view off")); }
 window.sxNight = setN;
 function addBtn() {
   if (D.getElementById("btn-night")) return;
@@ -55623,12 +56166,12 @@ function addBtn() {
   paintN();
 }
 try { if (typeof QS !== "undefined" && Array.isArray(QS) && !QS.some(q => q.id === "night"))
-  QS.push({id: "night", ic: "🌑", lb: "Night view", tip: "Night view: very dark and red, the live picture dimmed - for a short look in the tent",
+  QS.push({id: "night", ic: "🌑", lb: "Dark view", tip: "Dark view: very dark and red, the live picture dimmed - for a short look in the tent",
            on: () => isN(), go: () => { setN(!isN()); return {ok: true}; }}); } catch (e) {}
 
 // ---- 5: names for screen readers ----
 const ID = {"btn-view": "View", "btn-side": "Settings panel", "btn-fs": "Full screen", "btn-theme": "Light / dark", "btn-lang": "Language",
-  "btn-night": "Night view", "vo-exit": "Exit full screen", "side-close": "Hide settings", "side-open": "Show settings", "all-open": "Expand all",
+  "btn-night": "Dark view", "vo-exit": "Exit full screen", "side-close": "Hide settings", "side-open": "Show settings", "all-open": "Expand all",
   "all-close": "Collapse all", "b-sim": "Simulation off", "b-arm": "Protection state", "b-health": "Self-check", "b-lock": "Operator mode", "b-mode": "Mode",
   "btn-listen": "Listen", "stick-listen": "Listen", "lv-vin": "Zoom in", "lv-vout": "Zoom out", "lv-vctl": "Operate with the finger (otherwise the page scrolls)",
   "lv-vrot": "Finger: rotate instead of move", "lv-vbig": "Large picture"};
@@ -55736,7 +56279,7 @@ def _sx_tk_build_header(self):
     try:
         b_fs = getattr(self, "b_fs", None)
         if b_fs is not None and b_fs.winfo_exists():
-            b = self._ibtn(b_fs.master, "◑", lambda: _sx_tk_night(self), tr("Night view: very dark and red, the live picture dimmed - for a short look in the tent"),
+            b = self._ibtn(b_fs.master, "◑", lambda: _sx_tk_night(self), tr("Dark view: very dark and red, the live picture dimmed - for a short look in the tent"),
                            on=bool(CFG.get("tk_night")))
             b.pack(side="right", padx=(0, 6))
     except Exception:
@@ -55867,7 +56410,7 @@ def sicher_selftest():
         assert "pin" in sx_off_form("de") and "inputmode" in sx_off_form("fr")
         CFG["protect_pin"] = ""; assert "Schutz-PIN" in sx_off_form("de")
         js = sx_ui_js_text()
-        assert "Nachtblick" in js and "/*TX*/" not in js
+        assert "Dunkle Ansicht" in js and "Nachtblick" not in js and "/*TX*/" not in js
         assert "sxnight" in render_page("<html><head></head><body><header></header></body></html>", "live")
         for k, (_i, h, t_) in SX_ERRS.items():
             assert tr(h, "de") != h and tr(t_, "fr") != t_, "error page text not translated: " + h
@@ -61985,11 +62528,11 @@ _HX_SICHER = {
     'Something went wrong': ('Etwas ist schiefgegangen', 'Quelque chose n’a pas marché', 'Qualcosa è andato storto', 'Insatge n’è betg ì bain'),
     'MoveEye could not answer this request. Please try again in a moment.': ('MoveEye konnte diese Anfrage nicht beantworten. Bitte gleich nochmals versuchen.', 'MoveEye n’a pas pu répondre à cette requête. Réessaie dans un instant.', 'MoveEye non ha potuto rispondere a questa richiesta. Riprova tra un momento.', 'MoveEye n’ha betg pudì respunder a questa dumonda. Empruvar danovamain en in mument.'),
     'To the start page': ('Zur Startseite', 'Vers la page d’accueil', 'Alla pagina iniziale', 'A la pagina da partenza'),
-    # 4: night view
-    'Night view': ('Nachtblick', 'Vue de nuit', 'Vista notte', 'Vista da notg'),
-    'Night view: very dark and red, the live picture dimmed - for a short look in the tent': ('Nachtblick: sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt', 'Vue de nuit : très sombre et rouge, image en direct atténuée – pour un bref coup d’œil dans la tente', 'Vista notte: molto scura e rossa, immagine live attenuata – per un breve sguardo nella tenda', 'Vista da notg: fitg stgir e cotschen, maletg live stgirentà – per in curt sguard en la tenda'),
-    'Night view on - tap 🌑 again to switch it off': ('Nachtblick an – nochmals 🌑 antippen zum Ausschalten', 'Vue de nuit activée – touche encore 🌑 pour la couper', 'Vista notte attiva – tocca di nuovo 🌑 per spegnerla', 'Vista da notg activa – smatgar anc ina giada 🌑 per la stizzar'),
-    'Night view off': ('Nachtblick aus', 'Vue de nuit désactivée', 'Vista notte spenta', 'Vista da notg stizzada'),
+    # 4: dark view (until 2.98.22 «night view»)
+    'Dark view': ('Dunkle Ansicht', 'Vue sombre', 'Vista scura', 'Vista stgira'),
+    'Dark view: very dark and red, the live picture dimmed - for a short look in the tent': ('Dunkle Ansicht: sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt', 'Vue sombre : très sombre et rouge, image en direct atténuée – pour un bref coup d’œil dans la tente', 'Vista scura: molto scura e rossa, immagine live attenuata – per un breve sguardo nella tenda', 'Vista stgira: fitg stgir e cotschen, maletg live stgirentà – per in curt sguard en la tenda'),
+    'Dark view on - tap 🌑 again to switch it off': ('Dunkle Ansicht an – nochmals 🌑 antippen zum Ausschalten', 'Vue sombre activée – touche encore 🌑 pour la couper', 'Vista scura attiva – tocca di nuovo 🌑 per spegnerla', 'Vista stgira activa – smatgar anc ina giada 🌑 per la stizzar'),
+    'Dark view off': ('Dunkle Ansicht aus', 'Vue sombre désactivée', 'Vista scura spenta', 'Vista stgira stizzada'),
     # 5: names for screen readers
     'Full screen': ('Vollbild', 'Plein écran', 'Schermo intero', 'Visur entir'),
     'Light / dark': ('Hell / dunkel', 'Clair / sombre', 'Chiaro / scuro', 'Cler / stgir'),
@@ -62043,7 +62586,7 @@ _HELP_SICHER = {
           '(ab 3 kommt ein Diebstahl-Alarm). «Fehlalarm» und «Sirene» gehen weiterhin mit einem Tipp.</li>'
           '<li><b>Nach einem Stromausfall oder Absturz</b> kommt eine Push-Nachricht, wie lange MoveEye aus war und ob der Schutz wieder läuft. '
           'Nach einem Update oder Neustart nicht.</li>'
-          '<li><b>🌑 Nachtblick</b> (oben und als Schnellschalter): die ganze Seite sehr dunkel und rot, das Livebild gedimmt – für einen kurzen Blick '
+          '<li><b>🌑 Dunkle Ansicht</b> (oben und als Schnellschalter): die ganze Seite sehr dunkel und rot, das Livebild gedimmt – für einen kurzen Blick '
           'im Zelt, ohne die Augen zu blenden. Jeder Browser merkt es sich selbst. Im Fenster: ◑.</li>'
           '<li><b>Aufnahmen nach … Tagen löschen</b> (Einstellungen → Aufnahme, 0 = nie) – zusätzlich zur Grössen-Grenze. '
           '«🧹 Ferien vorbei: alle Aufnahmen löschen» fragt nach; ⭐ Favoriten bleiben, ausser man hakt sie an.</li>'
@@ -62054,7 +62597,7 @@ _HELP_SICHER = {
           '(without a PIN: the web password). With neither, «Off» works only on the page of MoveEye. Wrong PINs lock as on the web page '
           '(from 3 on a theft alarm). «False alarm» and «Siren» still work with one tap.</li>'
           '<li><b>After a power cut or a crash</b> a push message says how long MoveEye was off and whether the protection runs again. Not after an update or restart.</li>'
-          '<li><b>🌑 Night view</b> (top and as a quick switch): the whole page very dark and red, the live picture dimmed – for a short look in the tent '
+          '<li><b>🌑 Dark view</b> (top and as a quick switch): the whole page very dark and red, the live picture dimmed – for a short look in the tent '
           'without dazzling your eyes. Every browser remembers it itself. In the window: ◑.</li>'
           '<li><b>Delete recordings after … days</b> (Settings → Recording, 0 = never) – in addition to the size limit. '
           '«🧹 Holiday over: delete all recordings» asks first; ⭐ favourites stay unless you tick them.</li>'
@@ -62065,7 +62608,7 @@ _HELP_SICHER = {
           '(sans PIN : le mot de passe web). Sans les deux, «Arrêt» ne marche que sur la page de MoveEye. Les PIN erronés bloquent comme sur la page web '
           '(dès 3, alarme vol). «Fausse alarme» et «Sirène» marchent toujours d’un toucher.</li>'
           '<li><b>Après une coupure de courant ou un plantage</b>, une notification dit combien de temps MoveEye était éteint et si la protection tourne à nouveau. Pas après une mise à jour ou un redémarrage.</li>'
-          '<li><b>🌑 Vue de nuit</b> (en haut et comme interrupteur rapide) : toute la page très sombre et rouge, l’image en direct atténuée – pour un bref coup d’œil dans la tente. '
+          '<li><b>🌑 Vue sombre</b> (en haut et comme interrupteur rapide) : toute la page très sombre et rouge, l’image en direct atténuée – pour un bref coup d’œil dans la tente. '
           'Chaque navigateur s’en souvient. Dans la fenêtre : ◑.</li>'
           '<li><b>Supprimer les enregistrements après … jours</b> (Réglages → Enregistrement, 0 = jamais) – en plus de la limite de taille. '
           '«🧹 Vacances finies : supprimer tous les enregistrements» demande confirmation ; les favoris ⭐ restent, sauf si tu les coches.</li>'
@@ -62076,7 +62619,7 @@ _HELP_SICHER = {
           '(senza PIN: la password web). Senza entrambi, «Spento» funziona solo sulla pagina di MoveEye. I PIN errati bloccano come sulla pagina web '
           '(da 3 allarme furto). «Falso allarme» e «Sirena» funzionano sempre con un tocco.</li>'
           '<li><b>Dopo un’interruzione di corrente o un arresto</b> una notifica dice per quanto tempo MoveEye è stato spento e se la protezione è di nuovo attiva. Non dopo un aggiornamento o un riavvio.</li>'
-          '<li><b>🌑 Vista notte</b> (in alto e come interruttore rapido): tutta la pagina molto scura e rossa, l’immagine live attenuata – per un breve sguardo nella tenda. '
+          '<li><b>🌑 Vista scura</b> (in alto e come interruttore rapido): tutta la pagina molto scura e rossa, l’immagine live attenuata – per un breve sguardo nella tenda. '
           'Ogni browser se lo ricorda. Nella finestra: ◑.</li>'
           '<li><b>Eliminare le registrazioni dopo … giorni</b> (Impostazioni → Registrazione, 0 = mai) – oltre al limite di dimensione. '
           '«🧹 Vacanze finite: eliminare tutte le registrazioni» chiede conferma; i preferiti ⭐ restano, a meno di spuntarli.</li>'
@@ -62087,7 +62630,7 @@ _HELP_SICHER = {
           '(senza PIN: il pled-clav web). Senza omadus funcziuna «Ora» mo sin la pagina da MoveEye. PINs sbagliads bloccan sco en il web '
           '(a partir da 3 in alarm da ladranaria). «Fauss alarm» e «Sirena» funcziunan vinavant cun in tip.</li>'
           '<li><b>Suenter ina interrupziun da current u in collaps</b> di in avis push quant ditg che MoveEye era stizzà e sche la protecziun funcziuna puspè. Betg suenter in update u in restart.</li>'
-          '<li><b>🌑 Vista da notg</b> (sisura e sco cumutader svelt): tut la pagina fitg stgira e cotschna, il maletg live stgirentà – per in curt sguard en la tenda. '
+          '<li><b>🌑 Vista stgira</b> (sisura e sco cumutader svelt): tut la pagina fitg stgira e cotschna, il maletg live stgirentà – per in curt sguard en la tenda. '
           'Mintga navigatur sa regorda sez. En la fanestra: ◑.</li>'
           '<li><b>Stizzar las registraziuns suenter … dis</b> (Parameters → Registraziun, 0 = mai) – ultra dal limit da grondezza. '
           '«🧹 Vacanzas finidas: stizzar tut las registraziuns» dumonda l’emprim; ils favurits ⭐ restan, auter che sch’ins als marca.</li>'
@@ -62140,6 +62683,130 @@ for _k, _v in _HX_SPIEL2.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX_PLATZ = {
+    'Your place': ('Dein Platz', 'Ton emplacement', 'Il tuo posto', 'Tes plaz'),
+}
+for _k, _v in _HX_PLATZ.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX_KISICHER = {
+    # ---- 197: KI-Daten aufräumen ----
+    'Training set for an own AI model (YOLO)': ('Trainingspaket für ein eigenes KI-Modell (YOLO)', 'Jeu d’entraînement pour un modèle IA propre (YOLO)',
+                                                'Pacchetto di addestramento per un modello IA proprio (YOLO)', 'Pachet da trenament per in agen model IA (YOLO)'),
+    'The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).': (
+        'Der Simulator macht die Bilder und legt ein ZIP auf den Schreibtisch seines PCs (etwa 2 s pro Bild).',
+        'Le simulateur fait les images et dépose un ZIP sur le bureau de son PC (environ 2 s par image).',
+        'Il simulatore fa le immagini e mette uno ZIP sul desktop del suo PC (circa 2 s per immagine).',
+        'Il simulatur fa ils maletgs e metta in ZIP sin la scrivania da ses PC (circa 2 s per maletg).'),
+    'Variety: normal': ('Vielfalt: normal', 'Variété : normale', 'Varietà: normale', 'Varietad: normala'),
+    'Variety: high': ('Vielfalt: hoch', 'Variété : élevée', 'Varietà: alta', 'Varietad: auta'),
+    'Variety: high (recommended)': ('Vielfalt: hoch (empfohlen)', 'Variété : élevée (recommandé)', 'Varietà: alta (consigliato)', 'Varietad: auta (recumandà)'),
+    'Make the training pack': ('Trainingspaket machen', 'Faire le jeu d’entraînement', 'Crea il pacchetto di addestramento', 'Far il pachet da trenament'),
+    'Delete old AI data': ('Alte KI-Daten löschen', 'Supprimer les anciennes données IA', 'Elimina i vecchi dati IA', 'Stizzar las datas IA veglias'),
+    'training packs': ('Trainingspakete', 'jeux d’entraînement', 'pacchetti di addestramento', 'pachets da trenament'),
+    'no training packs': ('keine Trainingspakete', 'aucun jeu d’entraînement', 'nessun pacchetto di addestramento', 'nagins pachets da trenament'),
+    '{n} deleted ({mb} MB)': ('{n} gelöscht ({mb} MB)', '{n} supprimés ({mb} Mo)', '{n} eliminati ({mb} MB)', '{n} stizzads ({mb} MB)'),
+    'newest': ('neuestes', 'le plus récent', 'il più recente', 'il pli nov'),
+    'Delete all training packs on the PC of the simulator except the newest one? The AI model stays.': (
+        'Alle Trainingspakete auf dem PC des Simulators ausser dem neuesten löschen? Das KI-Modell bleibt.',
+        'Supprimer tous les jeux d’entraînement sur le PC du simulateur sauf le plus récent ? Le modèle IA reste.',
+        'Eliminare tutti i pacchetti di addestramento sul PC del simulatore tranne il più recente? Il modello IA resta.',
+        'Stizzar tut ils pachets da trenament sin il PC dal simulatur danor il pli nov? Il model IA resta.'),
+    'Cleaned up by itself: after every new pack the newest 3 stay, nothing older than 30 days (the newest always stays). The AI model is never deleted.': (
+        'Aufräumen von selbst: nach jedem neuen Paket bleiben die neuesten 3, nichts älter als 30 Tage (das neueste bleibt immer). Das KI-Modell wird nie gelöscht.',
+        'Nettoyage automatique : après chaque nouveau jeu, les 3 plus récents restent, rien de plus vieux que 30 jours (le plus récent reste toujours). Le modèle IA n’est jamais supprimé.',
+        'Pulizia automatica: dopo ogni nuovo pacchetto restano i 3 più recenti, niente più vecchio di 30 giorni (il più recente resta sempre). Il modello IA non viene mai eliminato.',
+        'Rumir sez: suenter mintga nov pachet restan ils 3 ils pli novs, nagut pli vegl che 30 dis (il pli nov resta adina). Il model IA na vegn mai stizzà.'),
+    # ---- 574: Anmelden nur verschlüsselt ----
+    'Security': ('Sicherheit', 'Sécurité', 'Sicurezza', 'Segirezza'),
+    'port': ('Port', 'port', 'porta', 'port'),
+    'this connection': ('diese Verbindung', 'cette connexion', 'questa connessione', 'questa connexiun'),
+    'encrypted': ('verschlüsselt', 'chiffrée', 'cifrata', 'criptada'),
+    'not encrypted': ('nicht verschlüsselt', 'non chiffrée', 'non cifrata', 'betg criptada'),
+    'secure page': ('sichere Seite', 'page sécurisée', 'pagina sicura', 'pagina segira'),
+    'Open the secure page': ('Sichere Seite öffnen', 'Ouvrir la page sécurisée', 'Apri la pagina sicura', 'Avrir la pagina segira'),
+    'To the secure page': ('Zur sicheren Seite', 'Vers la page sécurisée', 'Alla pagina sicura', 'A la pagina segira'),
+    'Log in only encrypted': ('Anmelden nur verschlüsselt', 'Connexion uniquement chiffrée', 'Accesso solo cifrato', 'S’annunziar mo criptà'),
+    'log in only encrypted': ('Anmelden nur verschlüsselt', 'connexion uniquement chiffrée', 'accesso solo cifrato', 's’annunziar mo criptà'),
+    'Log in only encrypted (https): from other devices the password is only accepted over the secure page': (
+        'Anmelden nur verschlüsselt (https): von anderen Geräten wird das Passwort nur über die sichere Seite angenommen',
+        'Connexion uniquement chiffrée (https) : depuis d’autres appareils, le mot de passe n’est accepté que par la page sécurisée',
+        'Accesso solo cifrato (https): da altri dispositivi la password è accettata solo tramite la pagina sicura',
+        'S’annunziar mo criptà (https): dad auters apparats vegn il pled-clav acceptà mo sur la pagina segira'),
+    'The password is only accepted over the secure page (https://…:port + 1) or from this device itself. Over plain http everybody in the same Wi-Fi (camping!) could read it. The browser warns once about the certificate (it is made by MoveEye itself) - accept it once. Tailscale and «https over Tailscale» are encrypted and work as before. Links with their own key (buttons in the push message, guests, shares) keep working. Programs (Home Assistant, shortcuts) use the https address too.': (
+        'Das Passwort wird nur über die sichere Seite (https://…:Port + 1) oder vom Gerät selbst angenommen. Über einfaches http könnte es jeder im gleichen WLAN (Camping!) mitlesen. Der Browser warnt einmal wegen des Zertifikats (MoveEye macht es selbst) – einmal annehmen. Tailscale und «https über Tailscale» sind verschlüsselt und gehen wie bisher. Links mit eigenem Schlüssel (Knöpfe in der Push-Nachricht, Gäste, Teilen) gehen weiter. Programme (Home Assistant, Kurzbefehle) nehmen ebenfalls die https-Adresse.',
+        'Le mot de passe n’est accepté que par la page sécurisée (https://…:port + 1) ou depuis l’appareil lui-même. En http simple, tout le monde dans le même Wi-Fi (camping !) pourrait le lire. Le navigateur avertit une fois à cause du certificat (MoveEye le crée lui-même) – l’accepter une fois. Tailscale et «https via Tailscale» sont chiffrés et fonctionnent comme avant. Les liens avec leur propre clé (boutons de la notification, invités, partages) continuent de fonctionner. Les programmes (Home Assistant, raccourcis) utilisent aussi l’adresse https.',
+        'La password è accettata solo tramite la pagina sicura (https://…:porta + 1) o dal dispositivo stesso. Con http semplice chiunque nella stessa Wi-Fi (campeggio!) potrebbe leggerla. Il browser avvisa una volta per il certificato (lo crea MoveEye stesso) – accettarlo una volta. Tailscale e «https tramite Tailscale» sono cifrati e funzionano come prima. I link con una propria chiave (pulsanti nella notifica, ospiti, condivisioni) continuano a funzionare. I programmi (Home Assistant, comandi rapidi) usano anche l’indirizzo https.',
+        'Il pled-clav vegn acceptà mo sur la pagina segira (https://…:port + 1) u da l’apparat sez. Sur http simpel pudess mintgin en il medem WLAN (camping!) al leger. Il navigatur avertescha ina giada pervi dal certificat (MoveEye al fa sez) – al acceptar ina giada. Tailscale e «https sur Tailscale» èn criptads e funcziunan sco fin ussa. Colliaziuns cun agen clav (buttuns en l’avis push, giasts, parter) funcziunan vinavant. Programs (Home Assistant, cumonds curts) duvran er l’adressa https.'),
+    'For your safety MoveEye takes the password only over the secure page (https). Over plain http everybody in the same Wi-Fi could read it.': (
+        'Zu deiner Sicherheit nimmt MoveEye das Passwort nur über die sichere Seite (https). Über einfaches http könnte es jeder im gleichen WLAN mitlesen.',
+        'Pour ta sécurité, MoveEye n’accepte le mot de passe que par la page sécurisée (https). En http simple, tout le monde dans le même Wi-Fi pourrait le lire.',
+        'Per la tua sicurezza MoveEye accetta la password solo tramite la pagina sicura (https). Con http semplice chiunque nella stessa Wi-Fi potrebbe leggerla.',
+        'Per tia segirezza accepta MoveEye il pled-clav mo sur la pagina segira (https). Sur http simpel pudess mintgin en il medem WLAN al leger.'),
+    'The browser will warn once that the certificate is not trusted: MoveEye made it itself. Choose «Advanced» → «Continue» (iPhone: «Show details» → «visit this website»).': (
+        'Der Browser warnt einmal, dass dem Zertifikat nicht vertraut wird: MoveEye hat es selbst gemacht. «Erweitert» → «Weiter» wählen (iPhone: «Details einblenden» → «diese Website besuchen»).',
+        'Le navigateur avertit une fois que le certificat n’est pas fiable : MoveEye l’a créé lui-même. Choisir «Paramètres avancés» → «Continuer» (iPhone : «Afficher les détails» → «visiter ce site web»).',
+        'Il browser avvisa una volta che il certificato non è attendibile: l’ha creato MoveEye stesso. Scegliere «Avanzate» → «Procedi» (iPhone: «Mostra dettagli» → «visita questo sito web»).',
+        'Il navigatur avertescha ina giada ch’il certificat na saja betg fidà: MoveEye l’ha fatg sez. Tscherner «Avanzà» → «Cuntinuar» (iPhone: «Mussar detagls» → «visitar questa website»).'),
+    'log in only over the secure page (https)': ('Anmelden nur über die sichere Seite (https)', 'connexion uniquement par la page sécurisée (https)',
+                                                 'accesso solo tramite la pagina sicura (https)', 's’annunziar mo sur la pagina segira (https)'),
+    'For your safety a password can only be set over the secure page': ('Zu deiner Sicherheit lässt sich ein Passwort nur über die sichere Seite setzen',
+                                                                        'Pour ta sécurité, un mot de passe ne peut être défini que par la page sécurisée',
+                                                                        'Per la tua sicurezza una password si può impostare solo tramite la pagina sicura',
+                                                                        'Per tia segirezza po in pled-clav vegnir definì mo sur la pagina segira'),
+    'For your safety a password can only be set over the secure page (https).': (
+        'Zu deiner Sicherheit lässt sich ein Passwort nur über die sichere Seite (https) setzen.',
+        'Pour ta sécurité, un mot de passe ne peut être défini que par la page sécurisée (https).',
+        'Per la tua sicurezza una password si può impostare solo tramite la pagina sicura (https).',
+        'Per tia segirezza po in pled-clav vegnir definì mo sur la pagina segira (https).'),
+    'The browser warns once about the certificate (MoveEye made it itself): «Advanced» → «Continue».': (
+        'Der Browser warnt einmal wegen des Zertifikats (MoveEye hat es selbst gemacht): «Erweitert» → «Weiter».',
+        'Le navigateur avertit une fois à cause du certificat (MoveEye l’a créé lui-même) : «Paramètres avancés» → «Continuer».',
+        'Il browser avvisa una volta per il certificato (l’ha creato MoveEye stesso): «Avanzate» → «Procedi».',
+        'Il navigatur avertescha ina giada pervi dal certificat (MoveEye l’ha fatg sez): «Avanzà» → «Cuntinuar».'),
+    'No secure page (https) - the password still goes unencrypted through the network. Install openssl (sudo apt install openssl) and restart MoveEye.': (
+        'Keine sichere Seite (https) – das Passwort geht weiterhin unverschlüsselt durchs Netz. openssl installieren (sudo apt install openssl) und MoveEye neu starten.',
+        'Pas de page sécurisée (https) – le mot de passe passe encore en clair sur le réseau. Installer openssl (sudo apt install openssl) et redémarrer MoveEye.',
+        'Nessuna pagina sicura (https) – la password passa ancora in chiaro nella rete. Installare openssl (sudo apt install openssl) e riavviare MoveEye.',
+        'Nagina pagina segira (https) – il pled-clav va vinavant betg criptà tras la rait. Installar openssl (sudo apt install openssl) e reaviar MoveEye.'),
+    'Off: the password may go unencrypted through the network (http).': ('Aus: das Passwort kann unverschlüsselt durchs Netz gehen (http).',
+                                                                         'Désactivé : le mot de passe peut passer en clair sur le réseau (http).',
+                                                                         'Spento: la password può passare in chiaro nella rete (http).',
+                                                                         'Deactivà: il pled-clav po ir betg criptà tras la rait (http).'),
+}
+for _k, _v in _HX_KISICHER.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# ---- guide (Anleitung): one point each in the chapter «System» of every language ----
+_HELP_KISICHER = {
+    "de": '<li><b>🔒 Anmelden nur verschlüsselt</b> (Einstellungen → Netz &amp; Zugang → Sicherheit, ein): das Web-Passwort wird nur über die sichere Seite (https, Port + 1, z. B. <code>https://&lt;pi&gt;:5001</code>), vom Gerät selbst oder über Tailscale angenommen. Wer im WLAN die normale http-Adresse öffnet, sieht einen kurzen Hinweis und kommt zur sicheren Seite; der Browser warnt einmal wegen des selbst gemachten Zertifikats («Erweitert» → «Weiter»). Knöpfe in der Push-Nachricht, Gäste- und Teilen-Links gehen weiter. Kann die sichere Seite nicht starten (openssl fehlt), geht die Anmeldung über http weiter – mit Warnung im Selbstcheck.</li>'
+          '<li><b>🧹 KI-Daten:</b> Reiter Simulator → Werkzeuge: «Trainingspaket für ein eigenes KI-Modell» mit <i>Vielfalt normal / hoch</i>, darunter die Pakete auf dem PC des Simulators. Nach jedem neuen Paket räumt der Simulator selbst auf (die neuesten 3 bleiben, nichts älter als 30 Tage); «Alte KI-Daten löschen» lässt nur das neueste. Das KI-Modell wird nie gelöscht. Die KI-Rechenhilfe auf dem PC nimmt das eigene Modell, sobald es dort heruntergeladen ist.</li>',
+    "en": '<li><b>🔒 Log in only encrypted</b> (Settings → Network &amp; access → Security, on): the web password is only accepted over the secure page (https, port + 1, e.g. <code>https://&lt;pi&gt;:5001</code>), from the device itself or over Tailscale. Opening the plain http address in the Wi-Fi shows a short hint and leads to the secure page; the browser warns once about the self-made certificate («Advanced» → «Continue»). Buttons in push messages, guest and share links keep working. If the secure page cannot start (openssl missing), the http login keeps working - with a warning in the self-check.</li>'
+          '<li><b>🧹 AI data:</b> tab Simulator → tools: «Training set for an own AI model» with <i>variety normal / high</i>, below it the packs on the PC of the simulator. After every new pack the simulator cleans up by itself (the newest 3 stay, nothing older than 30 days); «Delete old AI data» keeps only the newest. The AI model is never deleted. The AI helper on the PC uses the own model as soon as it is downloaded there.</li>',
+    "fr": '<li><b>🔒 Connexion uniquement chiffrée</b> (Réglages → Réseau → Sécurité) : le mot de passe web n’est accepté que par la page sécurisée (https, port + 1), depuis l’appareil lui-même ou via Tailscale. Le navigateur avertit une fois à cause du certificat créé par MoveEye. Les boutons des notifications et les liens invités restent valables. Sans page sécurisée (openssl manquant), la connexion http reste possible, avec un avertissement.</li>'
+          '<li><b>🧹 Données IA :</b> onglet Simulateur → outils : jeu d’entraînement avec <i>variété normale / élevée</i> et la liste des jeux ; les 3 plus récents restent, rien de plus vieux que 30 jours ; «Supprimer les anciennes données IA» ne garde que le plus récent. Le modèle IA n’est jamais supprimé.</li>',
+    "it": '<li><b>🔒 Accesso solo cifrato</b> (Impostazioni → Rete → Sicurezza): la password web è accettata solo tramite la pagina sicura (https, porta + 1), dal dispositivo stesso o via Tailscale. Il browser avvisa una volta per il certificato creato da MoveEye. I pulsanti delle notifiche e i link ospiti restano validi. Senza pagina sicura (manca openssl) l’accesso http resta possibile, con un avviso.</li>'
+          '<li><b>🧹 Dati IA:</b> scheda Simulatore → strumenti: pacchetto di addestramento con <i>varietà normale / alta</i> e l’elenco dei pacchetti; restano i 3 più recenti, niente più vecchio di 30 giorni; «Elimina i vecchi dati IA» tiene solo il più recente. Il modello IA non viene mai eliminato.</li>',
+    "rm": '<li><b>🔒 S’annunziar mo criptà</b> (Parameters → Rait → Segirezza): il pled-clav vegn acceptà mo sur la pagina segira (https, port + 1), da l’apparat sez u sur Tailscale. Il navigatur avertescha ina giada pervi dal certificat da MoveEye. Buttuns en ils avis e colliaziuns da giasts funcziunan vinavant. Senza pagina segira (openssl manca) resta l’annunzia sur http pussaivla, cun in avertiment.</li>'
+          '<li><b>🧹 Datas IA:</b> register Simulatur → utensils: pachet da trenament cun <i>varietad normala / auta</i> e la glista dals pachets; ils 3 ils pli novs restan, nagut pli vegl che 30 dis; «Stizzar las datas IA veglias» tegna mo il pli nov. Il model IA na vegn mai stizzà.</li>',
+}
+
+
+def _help_kisicher(doc, lang):
+    i = doc.find('<section id="system"')
+    j = doc.find("</ul>", i) if i >= 0 else -1
+    return doc[:j] + _HELP_KISICHER[lang] + doc[j:] if j > 0 else doc
+
+
+_hp_en2 = HELP_PAGE.find('<div lang="en">')
+if _hp_en2 > 0:
+    HELP_PAGE = _help_kisicher(HELP_PAGE[:_hp_en2], "de") + _help_kisicher(HELP_PAGE[_hp_en2:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_kisicher(HELP_X[_L], _L)
 # ---- the product page (2.95.52): the homepage of MoveEye (made as an artifact), packed here (gzip + base64) so the Pi
 # can show it without internet to guests in the same Wi-Fi at /info/. Questions from the form arrive as a push message. ----
 INFO_HTML_GZ = (  # 2.98.9: FAQ, French and Italian, «a night in time-lapse»; 2.98.7: MoveEye name, wake-up alarm, «Spiele freigeben», ticker, join wall, more animation

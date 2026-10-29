@@ -60,6 +60,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `190_relais_wetter_tracker.py` | Relais, Wetter-Analyse, Auto-Tuner, Tracker | 422 |
 | `195_ki_eigenes_modell.py` | Eigenes KI-Modell (YOLO als ONNX): laden, herunterladen (sha256), Ausgabe entschlüsseln, Selbsttest | 321 |
 | `196_ki_modell_auto.py` | Eigenes KI-Modell von selbst aktualisieren: täglich prüfen, nur übernehmen, wenn die Auswertung nicht schlechter ist | 125 |
+| `197_ki_daten.py` | KI-Daten aufräumen: Trainingspaket mit «Vielfalt», Liste der Pakete auf dem Simulator-PC, «Alte KI-Daten löschen» (Web und Fenster) | 100 |
 | `200_erkennung_videoquellen.py` | Video-Quellen (USB, Pi-Kamera, Netz) | 166 |
 | `210_demo.py` | Demo-Modus | 255 |
 | `220_zeitraffer.py` | Zeitraffer | 195 |
@@ -114,9 +115,10 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |
 | `576_fenster_zeitleiste.py` | Fenster: Zeitleiste als Liste, Wochenbericht | 130 |
 | `577_nachlauf_konzept.py` | Nachlauf Konzept-Check: ein Wochenbericht, Rückkehr des Handys (ausschalten / fragen / nichts), Akku-Schwellen zusammen, Auto-Tuner ±20 %, Übernahme alter Einstellungen | 201 |
-| `578_sicher.py` | «Sicher»: «Aus» in der Push nur mit PIN, Push nach Stromausfall, Fehlerseiten in der eigenen Sprache, Nachtblick, Namen für Bildschirmleser, Aufnahmen nach N Tagen löschen / «Ferien vorbei», Push ohne Bild | 743 |
+| `578_sicher.py` | «Sicher»: «Aus» in der Push nur mit PIN, Push nach Stromausfall, Fehlerseiten in der eigenen Sprache, Dunkle Ansicht, Namen für Bildschirmleser, Aufnahmen nach N Tagen löschen / «Ferien vorbei», Push ohne Bild | 743 |
 | `579_ki_modell_auto_schalter.py` | Schalter «Eigenes Modell von selbst aktualisieren» (Web und Fenster) | 4 |
 | `571_alarm_einstellungen.py` | Schalter und Regler der Alarm-Extras (Web und Fenster) | 16 |
+| `574_anmelden_verschluesselt.py` | «Anmelden nur verschlüsselt»: das Web-Passwort nur über https, vom Gerät selbst oder Tailscale; Hinweis-Seite, Rückfall ohne https (Web und Fenster) | 235 |
 | `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
 | `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
 | `600_uebersetzungen_rm.py` | Übersetzungen Rätoromanisch, Anleitungen | 1763 |
@@ -138,6 +140,8 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `613_uebersetzungen_sicher.py` | Übersetzungen und Anleitung zu 578 | 165 |
 | `614_uebersetzungen_training.py` | Übersetzungen «KI trainieren» / Modell von selbst aktualisieren | 27 |
 | `616_uebersetzungen_spiel2.py` | Übersetzungen der Spiel-Extras (Wetterwechsel, Tarn-Sachen, Diebstahl, Lern-Punkte) | 8 |
+| `617_uebersetzungen_platz.py` | Übersetzungen «Dein Platz» (früher «Zwilling deines Platzes») | 8 |
+| `618_uebersetzungen_kisicher.py` | Übersetzungen zu 197 (KI-Daten aufräumen) und 574 (Anmelden nur verschlüsselt) | 95 |
 | `620_daten_produktseite.py` | Daten: Produktseite für Gäste (/info/) | 2651 |
 | `630_almanach.py` | Extras: Überlebens-Almanach | 270 |
 | `640_start.py` | Start: Befehlszeile, Selbsttest, Programmstart | 152 |

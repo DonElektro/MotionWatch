@@ -152,6 +152,8 @@ class WebStream:
                 if now - float(tf[1].get("seen", 0)) > 3600:
                     tf[1]["seen"] = int(now); tf[1]["ip"] = ip[:45]; save_settings()
                 return None
+            if seclogin_plain(request):              # «Anmelden nur verschlüsselt» (574): no password over plain http
+                return seclogin_block(request)
             recent = [x for x in fails.get(ip, []) if now - x < 300]
             if len(recent) >= 8:
                 fails[ip] = recent
@@ -173,6 +175,14 @@ class WebStream:
                 for k in [k for k, v in fails.items() if not v or now - v[-1] > 300]:
                     fails.pop(k, None)
             return sx_err(401, "login", {"WWW-Authenticate": 'Basic realm="MoveEye", charset="UTF-8"'})   # guests see the realm
+
+        @app.before_request
+        def seclogin_guard():                       # 574: setting a password over plain http from another device
+            return seclogin_body_check(request)
+
+        @app.route("/api/seclogin")
+        def api_seclogin():
+            return reply(dict(seclogin_info(request, norm_lang(request.args.get("lang"))), ok=True))
 
         @app.before_request
         def role_guard():                           # users with a role: what they may do
@@ -291,10 +301,15 @@ class WebStream:
                 if act_ == "dataset":                            # 2.95.53: KI-Prüfung mit Simulator-Bildern
                     if d.get("export"):                          # 2.95.99: a training set (YOLO) made in the simulator, saved on its PC
                         try:
-                            r = sim_control({"action": "dataset", "op": "export", "n": max(10, min(5000, int(d.get("n") or 500)))})
+                            r = kidata_export(d.get("n"), d.get("vielfalt"))
                         except Exception:
                             return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
                         return reply({"ok": True, "export": r})
+                    if d.get("packs") or d.get("clean"):         # KI-Daten: the training packs on the PC of the simulator (197)
+                        try:
+                            return reply(dict(kidata_packs(bool(d.get("clean")), lang), ok=True))
+                        except Exception as e:
+                            return reply({"ok": False, "error": tr_err(str(e) if isinstance(e, ValueError) else "simulator not reachable", lang)}, 400)
                     if d.get("start"):
                         ok_, err_ = dset_run("game" if str(d.get("n")) == "game" else (int(d.get("n") or 24) if str(d.get("n") or "24").isdigit() else 24))
                         if not ok_:
@@ -1446,6 +1461,7 @@ class WebStream:
                 st["extra"] = cams_status()
                 st["camping"] = bool(CFG["camping"]); st["net_mode"] = CFG["net_mode"]; st["power_msg"] = POWER["msg"]
                 st["pw_set"] = web_pw_active(); st["pw_cli"] = bool(CFG["web_password"]); st["version"] = APP_VERSION
+                st["seclogin"] = {k: v for k, v in seclogin_info(request).items() if k in ("mode", "plain", "url", "secure")}
                 try:
                     st["health"] = health_check()["count"]
                 except Exception:

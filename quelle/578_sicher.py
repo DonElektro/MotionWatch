@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 578: «Sicher» – Aus in der Push nur mit PIN, Push nach Stromausfall, freundliche Fehlerseiten, Nachtblick, Bildschirmleser, Aufnahmen nach N Tagen löschen, Push ohne Bild. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 578: «Sicher» – Aus in der Push nur mit PIN, Push nach Stromausfall, freundliche Fehlerseiten, Dunkle Ansicht, Bildschirmleser, Aufnahmen nach N Tagen löschen, Push ohne Bild. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Wunsch Daniel (29.10.2026):
 #  1  «Aus» in der Push-Nachricht nur mit PIN: der Knopf öffnet eine kleine Seite mit dem PIN-Feld (Schutz-PIN; ohne PIN das
@@ -8,7 +8,7 @@
 #     Wachsam». Nicht nach einem Update / Neustart (die enden sauber, 390 run_state.json «clean»).
 #  3  Fehlermeldungen des Web-Servers in der eigenen Sprache als kleine Seite (Anmeldung, zu viele Versuche, fremde Seite,
 #     Gast-Link, unbekannte Adresse). Basic-Realm «MoveEye» (Gäste sehen ihn); das Vertrauens-Cookie bleibt gleich.
-#  4  «Nachtblick»: ganze Seite sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt (pro Browser gemerkt);
+#  4  «Dunkle Ansicht» (bis 2.98.22 «Nachtblick»): ganze Seite sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt (pro Browser gemerkt);
 #     im Fenster ein Knopf ◑ (Einstellung tk_night).
 #  5  Bildschirmleser: Knöpfe und Symbole bekommen aria-label / title in der eigenen Sprache (Hauptseite, Kopf, Navigation).
 #  6  «Aufnahmen nach … Tagen löschen» (0 = nie) neben der Grössen-Grenze; Knopf «Ferien vorbei: alle Aufnahmen löschen»
@@ -443,8 +443,8 @@ html.sxnight .badge{background:#0d0101!important;color:#a52a20!important;border-
 </style><script>try{if(localStorage.getItem("mw-night")==="1")document.documentElement.classList.add("sxnight")}catch(e){}</script>"""
 
 # the texts the script needs (English key -> translated by the page language)
-SX_JS_KEYS = ["Night view", "Night view: very dark and red, the live picture dimmed - for a short look in the tent", "Night view on - tap 🌑 again to switch it off",
-              "Night view off", "View", "Settings panel", "Full screen", "Light / dark", "Language", "Exit full screen", "Close", "Copy", "Standard text",
+SX_JS_KEYS = ["Dark view", "Dark view: very dark and red, the live picture dimmed - for a short look in the tent", "Dark view on - tap 🌑 again to switch it off",
+              "Dark view off", "View", "Settings panel", "Full screen", "Light / dark", "Language", "Exit full screen", "Close", "Copy", "Standard text",
               "Up", "Down", "Remove", "Edit", "Refresh", "Help", "Menu", "Play", "Pause", "Stop", "Delete", "Back", "Next", "Previous", "Settings",
               "Live picture", "Main navigation", "Sub navigation", "Show settings", "Hide settings", "More", "Search", "Expand all", "Collapse all",
               "Listen", "Centre", "Other side", "Take a photo", "Favourite", "Download", "Share", "Zoom in", "Zoom out", "Mute", "Sound on",
@@ -479,9 +479,9 @@ try { if (typeof I18N !== "undefined" && I18N.de) Object.keys(TX.de || {}).forEa
 // ---- 4: night view ----
 const isN = () => H.classList.contains("sxnight");
 function paintN() { const b = D.getElementById("btn-night"); if (!b) return; b.setAttribute("aria-pressed", isN() ? "true" : "false");
-  b.title = T("Night view: very dark and red, the live picture dimmed - for a short look in the tent"); b.setAttribute("aria-label", T("Night view")); }
+  b.title = T("Dark view: very dark and red, the live picture dimmed - for a short look in the tent"); b.setAttribute("aria-label", T("Dark view")); }
 function setN(on) { H.classList.toggle("sxnight", on); try { localStorage.setItem("mw-night", on ? "1" : "0"); } catch (e) {}
-  paintN(); say(on ? "🌑 " + T("Night view on - tap 🌑 again to switch it off") : T("Night view off")); }
+  paintN(); say(on ? "🌑 " + T("Dark view on - tap 🌑 again to switch it off") : T("Dark view off")); }
 window.sxNight = setN;
 function addBtn() {
   if (D.getElementById("btn-night")) return;
@@ -493,12 +493,12 @@ function addBtn() {
   paintN();
 }
 try { if (typeof QS !== "undefined" && Array.isArray(QS) && !QS.some(q => q.id === "night"))
-  QS.push({id: "night", ic: "🌑", lb: "Night view", tip: "Night view: very dark and red, the live picture dimmed - for a short look in the tent",
+  QS.push({id: "night", ic: "🌑", lb: "Dark view", tip: "Dark view: very dark and red, the live picture dimmed - for a short look in the tent",
            on: () => isN(), go: () => { setN(!isN()); return {ok: true}; }}); } catch (e) {}
 
 // ---- 5: names for screen readers ----
 const ID = {"btn-view": "View", "btn-side": "Settings panel", "btn-fs": "Full screen", "btn-theme": "Light / dark", "btn-lang": "Language",
-  "btn-night": "Night view", "vo-exit": "Exit full screen", "side-close": "Hide settings", "side-open": "Show settings", "all-open": "Expand all",
+  "btn-night": "Dark view", "vo-exit": "Exit full screen", "side-close": "Hide settings", "side-open": "Show settings", "all-open": "Expand all",
   "all-close": "Collapse all", "b-sim": "Simulation off", "b-arm": "Protection state", "b-health": "Self-check", "b-lock": "Operator mode", "b-mode": "Mode",
   "btn-listen": "Listen", "stick-listen": "Listen", "lv-vin": "Zoom in", "lv-vout": "Zoom out", "lv-vctl": "Operate with the finger (otherwise the page scrolls)",
   "lv-vrot": "Finger: rotate instead of move", "lv-vbig": "Large picture"};
@@ -606,7 +606,7 @@ def _sx_tk_build_header(self):
     try:
         b_fs = getattr(self, "b_fs", None)
         if b_fs is not None and b_fs.winfo_exists():
-            b = self._ibtn(b_fs.master, "◑", lambda: _sx_tk_night(self), tr("Night view: very dark and red, the live picture dimmed - for a short look in the tent"),
+            b = self._ibtn(b_fs.master, "◑", lambda: _sx_tk_night(self), tr("Dark view: very dark and red, the live picture dimmed - for a short look in the tent"),
                            on=bool(CFG.get("tk_night")))
             b.pack(side="right", padx=(0, 6))
     except Exception:
@@ -737,7 +737,7 @@ def sicher_selftest():
         assert "pin" in sx_off_form("de") and "inputmode" in sx_off_form("fr")
         CFG["protect_pin"] = ""; assert "Schutz-PIN" in sx_off_form("de")
         js = sx_ui_js_text()
-        assert "Nachtblick" in js and "/*TX*/" not in js
+        assert "Dunkle Ansicht" in js and "Nachtblick" not in js and "/*TX*/" not in js
         assert "sxnight" in render_page("<html><head></head><body><header></header></body></html>", "live")
         for k, (_i, h, t_) in SX_ERRS.items():
             assert tr(h, "de") != h and tr(t_, "fr") != t_, "error page text not translated: " + h

@@ -75,8 +75,7 @@ func _ready() -> void:
 	_tab_scenes()
 	_tab_places()
 	_tab_kits()
-	_tab_own()
-	_tab_twin()
+	_tab_own()                      # 3D-4.x: «Dein Platz» (photo of the place) is now the first tab of the window «Dein Platz» (inventar.gd)
 	_msg = UI.small("")
 	_msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_msg.custom_minimum_size = Vector2(580, 0)
@@ -242,13 +241,6 @@ func _tab_own() -> void:
 	add_child(_fd)
 
 
-# ---- tab 5 (3D-4.4): your place as a twin - a photo / panorama behind the scene (zwilling.gd) ---------------------------
-func _tab_twin() -> void:
-	var v := _page("Dein Platz", "Ein Foto oder Panorama deines echten Platzes als Hintergrund – so sieht die Kopfkamera fast deinen Platz. Am besten mit dem Handy von der Stelle aus fotografieren, wo MoveEye steht (Panorama: ganz herum drehen). Danach Zelt und Auto dorthin setzen, wo sie wirklich stehen. Gilt nur für diese Szene / diesen Ort und bleibt gespeichert. Auch: Bild einfach ins Fenster ziehen.")
-	if main.zwilling != null:
-		main.zwilling.build_tab(v)
-
-
 func _pick_file() -> void:
 	_fd.popup_centered()
 
@@ -257,10 +249,8 @@ func _on_drop(files: PackedStringArray) -> void:
 	var n := 0
 	for p in files:
 		if p.get_extension().to_lower() in ["jpg", "jpeg", "png", "webp"] and main.zwilling != null:   # 3D-4.4: a photo of the place
-			if main.zwilling.import_image(p):
-				visible = true
-				tabs.current_tab = tabs.get_tab_count() - 1
-				get_parent().move_child(self, -1)
+			if main.zwilling.import_image(p) and main.inventar != null:
+				main.inventar.open(0)                    # 3D-4.x: shown in the window «Dein Platz»
 			return
 		if p.get_extension().to_lower() in ["glb", "gltf"]:
 			if import_file(p, false):

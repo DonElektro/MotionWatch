@@ -275,10 +275,11 @@ def security_check():
 
     def add(level, text, tip="", arg=""):
         items.append({"level": level, "text": text, "tip": tip, "arg": arg})
-    add("ok" if CFG["web_password"] else "bad", "Web password " + ("set" if CFG["web_password"] else "missing"),
-        "" if CFG["web_password"] else "Everybody in the network can operate MoveEye")
-    add("ok" if WEB_OPTS.get("https") else "warn", "Secure page (https) " + ("on" if WEB_OPTS.get("https") else "off"),
-        "" if WEB_OPTS.get("https") else "Passwords go through the network unencrypted - important in foreign Wi-Fi (camping)")
+    add("ok" if web_pw_active() else "bad", "Web password " + ("set" if web_pw_active() else "missing"),
+        "" if web_pw_active() else "Everybody in the network can operate MoveEye")
+    sl_ = seclogin_mode() == "on"                             # 574: «Log in only encrypted»
+    add("ok" if WEB_OPTS.get("https") or sl_ else "warn", "Secure page (https) " + ("on" if WEB_OPTS.get("https") or sl_ else "off"),
+        "" if WEB_OPTS.get("https") or sl_ else "Passwords go through the network unencrypted - important in foreign Wi-Fi (camping)")
     ports = set()
     try:
         for fn in ("/proc/net/tcp", "/proc/net/tcp6"):
@@ -671,8 +672,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.5", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31484593,
-         "sha256": "d9b63fb3172033423391211ec74e0f50d3a38915ab05b74cb1e3054eeb7cf632"}
+SIM3D = {"version": "3D-4.6", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31493167,
+         "sha256": "647c446e72690192260b3d3c11a3217b73463bd8cf2a423d5298514864cffc8a"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -813,8 +814,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-4.5", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24605718,
-           "sha256": "d56736892b90ff5889edbee68ab019d4a5eaf5e6aee2cb5aaa449b26f13f9432", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-4.6", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24615622,
+           "sha256": "cfe4443bb4e3f5a47d57d5f5cd5c055f77a856b31adc70f8e9eeb6e7fb5f47c4", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
