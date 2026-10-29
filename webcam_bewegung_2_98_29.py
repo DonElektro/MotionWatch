@@ -1563,7 +1563,11 @@ def _clean_zone(z, i):
             out["secs"] = int(max(3, min(600, float(z.get("secs") or 20))))
         except (TypeError, ValueError):
             out["secs"] = 20
-    if mode in FIXED_MODES:
+    if z.get("anchor") and mode not in FIXED_MODES:
+        out["anchor"] = True                              # 2.98.30: «Platz einrichten» (317): stays on its place when the head turns
+    if z.get("src") == "place":
+        out["src"] = "place"
+    if mode in FIXED_MODES or out.get("anchor"):
         ang = z.get("ang")
         if isinstance(ang, list) and len(ang) == len(pts) and all(isinstance(a, (list, tuple)) and len(a) == 2 and _num(a[0]) and _num(a[1]) for a in ang):
             out["ang"] = [[round(float(a[0]), 3), round(float(a[1]), 3)] for a in ang]
@@ -1605,7 +1609,10 @@ def sleep_project(ang, pan=None, tilt=None, margin=0.0):
         (a1, e1), (a2, e2) = pts[i], pts[(i + 1) % len(pts)]
         for k in range(8):
             a = a1 + (a2 - a1) * k / 8.0; e = e1 + (e2 - e1) * k / 8.0
-            da = max(-80.0, min(80.0, a - a0)); de = max(-80.0, min(80.0, e - e0))
+            da = a - a0
+            if servo_half("pan") >= 179.0:                     # 2.98.30: a 360° head - the shorter way round
+                da = (da + 180.0) % 360.0 - 180.0
+            da = max(-80.0, min(80.0, da)); de = max(-80.0, min(80.0, e - e0))
             out.append([0.5 + math.tan(math.radians(da)) / (2.0 * th), 0.5 - math.tan(math.radians(de)) / (2.0 * tv)])
     return out
 
@@ -1616,6 +1623,17 @@ FIXED_MODES = ("privacy", "sleep")    # 2.98.9: privacy zones stay on their plac
 
 def fixed_zones():
     return [z for z in ZONES if z["mode"] in FIXED_MODES and z.get("ang")]
+
+
+def anchored_zones():
+    """2.98.30: every zone whose corners are kept as directions - the black ones (FIXED_MODES) and the zones of
+    «Platz einrichten» (ignore / line / loiter with "anchor": they follow the place, not the picture)"""
+    return [z for z in ZONES if z.get("ang") and (z["mode"] in FIXED_MODES or z.get("anchor"))]
+
+
+def zone_here(z):
+    """False for an anchored zone that lies outside the picture now (the head looks elsewhere)"""
+    return not z.get("anchor") or z.get("vis", True)
 
 
 def sleep_zones():
@@ -1641,11 +1659,13 @@ def sleep_update(now=None):
     pos = (round(float(CFG["pan"]), 2), round(float(CFG["tilt"]), 2))
     if not SLEEP_POS or SLEEP_POS[-1][1:] != pos:
         SLEEP_POS.append((now,) + pos)
-    for z in fixed_zones():
+    for z in anchored_zones():
         if z.get("_at") != pos:
             z["_at"] = pos
             pp = sleep_project(z["ang"], *pos)
             corners = pp[::8]                                # the corners (every 8th point)
+            if z["mode"] == "line" and len(pp) >= 9:
+                corners = [pp[0], pp[8]]                     # a line: its two ends
             z["points"] = [[round(min(1.0, max(0.0, x)), 4), round(min(1.0, max(0.0, y)), 4)] for x, y in corners]
             z["vis"] = any(0.0 <= x <= 1.0 and 0.0 <= y <= 1.0 for x, y in pp)
 
@@ -1688,7 +1708,7 @@ class ZoneWatch:
         self.st = {}
 
     def update(self, persons, pw, ph, frame, now):
-        zs = [z for z in ZONES if z["mode"] in ("line", "loiter")]
+        zs = [z for z in ZONES if z["mode"] in ("line", "loiter") and zone_here(z)]
         if not zs:
             self.st.clear(); return []
         if STATE.get("tracking") or manual_active() or str(STATE.get("patrol_status", "")).startswith("moving"):
@@ -1759,6 +1779,8 @@ def apply_privacy(frame):
         except Exception:
             pass
     sl = any(z["mode"] in FIXED_MODES and z.get("ang") for z in ZONES)
+    if not sl and frame is not None and any(z.get("anchor") for z in ZONES):
+        sleep_update()                                   # 2.98.30: the zones of the place follow the head (317)
     if (not zs and not sl) or frame is None:
         return frame
     h, w = frame.shape[:2]
@@ -1791,9 +1813,9 @@ def zone_allows(nx, ny, kind=None):
         return True
     ap = lambda z: kind is None or z.get("kinds", "all") in ("all", kind)
     for z in zs:
-        if z["mode"] in ("ignore", "privacy", "sleep") and (z["mode"] != "ignore" or ap(z)) and point_in_poly(nx, ny, z["points"]):
+        if z["mode"] in ("ignore", "privacy", "sleep") and (z["mode"] != "ignore" or ap(z)) and zone_here(z) and point_in_poly(nx, ny, z["points"]):
             return False
-    only = [z for z in zs if z["mode"] == "only" and ap(z)]
+    only = [z for z in zs if z["mode"] == "only" and ap(z) and zone_here(z)]
     return (not only) or any(point_in_poly(nx, ny, z["points"]) for z in only)
 
 
@@ -1808,15 +1830,15 @@ def zones_set(lst):
     if not isinstance(lst, list):
         return False, "invalid zones"
     out = []
-    old = {z["id"]: z for z in ZONES if z["mode"] in FIXED_MODES}
+    old = {z["id"]: z for z in ZONES if z["mode"] in FIXED_MODES or z.get("anchor")}
     for z in lst[:MAX_ZONES]:
         c = _clean_zone(z, len(out))
         if c:
-            if c["mode"] in FIXED_MODES:                # 2.98.7 / 2.98.9: corners as directions from where the camera looks now
+            if c["mode"] in FIXED_MODES or c.get("anchor"):     # 2.98.7 / 2.98.9: corners as directions from where the camera looks now
                 o = old.get(c["id"])
                 same = o and o.get("ang") and len(o.get("points") or []) == len(c["points"]) and all(
                     abs(a[0] - b[0]) < 0.003 and abs(a[1] - b[1]) < 0.003 for a, b in zip(o["points"], c["points"]))
-                c["ang"] = o["ang"] if same else sleep_to_ang(c["points"])
+                c["ang"] = o["ang"] if same else (c["ang"] if c.get("ang") and not o else sleep_to_ang(c["points"]))   # new with directions (317): kept
                 c.pop("_at", None)
             out.append(c)
     with LOCK:
@@ -10870,7 +10892,7 @@ def simtask_busy(except_=""):
         if busy and name != except_:
             return name
     for name, ref in (("blind spots", "BLIND"), ("false alarm learning", "FALEARN"), ("automatic thresholds", "AUTOTH"), ("demo", "DEMO_RUN"),
-                      ("improve assistant", "TUNEA")):        # 2.98.14: the assistant «Erkennung verbessern» (312)
+                      ("improve assistant", "TUNEA"), ("place setup", "PLACE")):   # 2.98.14: «Erkennung verbessern» (312); 2.98.30: «Platz einrichten» (317)
         d = globals().get(ref)
         if isinstance(d, dict) and d.get("busy") and name != except_:
             return name
@@ -12218,7 +12240,8 @@ def simtask_local():
                        ("drill", DRILL.get("busy"))):
         if busy:
             return name
-    for name, ref in (("blind spots", "BLIND"), ("false alarm learning", "FALEARN"), ("automatic thresholds", "AUTOTH"), ("demo", "DEMO_RUN")):
+    for name, ref in (("blind spots", "BLIND"), ("false alarm learning", "FALEARN"), ("automatic thresholds", "AUTOTH"), ("demo", "DEMO_RUN"),
+                      ("place setup", "PLACE")):
         d = globals().get(ref)
         if isinstance(d, dict) and d.get("busy") and not (ref == "BLIND" and d.get("ext")):
             return name
@@ -20367,7 +20390,10 @@ def cam_fov():
                 return hf, vf
     except (TypeError, ValueError, KeyError):
         pass
-    return float(CFG.get("cam_hfov") or 66.0), float(CFG.get("cam_vfov") or 41.0)
+    try:
+        return cam_fov_hv(None)[:2]                      # 2.98.30: the field of view per camera (318: model, own value, picamera2)
+    except NameError:
+        return float(CFG.get("cam_hfov") or 66.0), float(CFG.get("cam_vfov") or 41.0)
 
 
 def servo_half(axis):
@@ -22814,7 +22840,7 @@ def _refscan_settle():
 def refscan_start(op, reason="by hand", kind=None):
     """op: scan | compare. Runs in the background; False when something else runs or there is no reference."""
     with _REFSCAN_LOCK:
-        if REFSCAN["busy"]:
+        if REFSCAN["busy"] or (globals().get("PLACE") or {}).get("busy"):     # 2.98.30: «Platz einrichten» (317) drives the head
             return False, "a scan is already running"
         if WATCH_REF.get("w") is None:
             return False, "no camera"
@@ -23181,6 +23207,93 @@ def _pano_track(reps):
     return marks
 
 
+def pano_canvas(pos, load, tw=320, head=0, foot=0, geo=None):
+    """2.98.30: the panorama picture of the reference-scan directions - used by the morning report (pano_build) and by
+    «Platz einrichten» (317). pos: [{"i", "pan", "tilt", …}], load(p) -> picture or None.
+    geo None: every photo whole, side by side (columns = pan, rows = tilt, looking up = the upper row) as before.
+    geo {"hf", "vf", "hp", "ht", "wrap", "a0"?, "a1"?, "e0"?, "e1"?}: a stitched panorama in degrees - of every photo only the
+    part up to the middle between it and its neighbours, so x / y of the canvas are directions: az = a0 + x / k,
+    el = e_top - (y - head) / k (k pixels per degree). wrap (a 360° head): the first column is repeated after the seam.
+    Returns (canvas, cells) - cells {i: {"col", "row", "tw", "th", "x0", "y0", "x1", "y1"}}; with geo also cells["_geo"]."""
+    if geo is None:
+        pans = sorted({p["pan"] for p in pos})
+        tilts = sorted({p["tilt"] for p in pos}, reverse=True)
+        th = None
+        tiles = {}
+        for p in pos:
+            im = load(p)
+            if im is None:
+                continue
+            h = int(round(im.shape[0] * tw / im.shape[1]))
+            th = th or h
+            tiles[p["i"]] = (cv2.resize(im, (tw, th)), pans.index(p["pan"]), tilts.index(p["tilt"]))
+        if not tiles:
+            return None, {}
+        W, H = tw * len(pans), th * len(tilts) + head + foot
+        can = np.full((H, W, 3), 22, np.uint8)
+        cells = {}
+        for i, (im, cx, cy) in tiles.items():
+            can[head + cy * th: head + (cy + 1) * th, cx * tw: (cx + 1) * tw] = im
+            cells[i] = {"col": cx, "row": cy, "tw": tw, "th": th, "x0": cx * tw, "y0": head + cy * th, "x1": (cx + 1) * tw, "y1": head + (cy + 1) * th}
+        return can, cells
+    hf, vf, hp, ht = float(geo["hf"]), float(geo["vf"]), float(geo["hp"]), float(geo["ht"])
+    wrap = bool(geo.get("wrap"))
+    k = tw / hf                                            # pixels per degree (the same both ways)
+    azs = sorted({(float(p["pan"]) - 50.0) / 50.0 * hp for p in pos})
+    els = sorted({(float(p["tilt"]) - 50.0) / 50.0 * ht for p in pos}, reverse=True)
+
+    def bounds(cs, fov, wrap_):
+        out = []
+        for j, c in enumerate(cs):
+            if wrap_ and len(cs) > 1:
+                st = 360.0 / len(cs)
+                lo, hi = c - st / 2.0, c + st / 2.0
+            else:
+                lo = (cs[j - 1] + c) / 2.0 if j > 0 else c - fov / 2.0
+                hi = (cs[j + 1] + c) / 2.0 if j + 1 < len(cs) else c + fov / 2.0
+            out.append((max(lo, c - fov / 2.0), min(hi, c + fov / 2.0)))
+        return out
+    ab = bounds(azs, hf, wrap)
+    eb = [(b, a) for a, b in bounds(sorted(els), vf, False)][::-1]    # (top, bottom) from the top row down
+    eb = [(hi, lo) for (hi, lo) in eb]
+    a0 = float(geo.get("a0", ab[0][0])); a1 = float(geo.get("a1", ab[-1][1]))
+    e_top = float(geo.get("e0", max(x[0] for x in eb))); e_bot = float(geo.get("e1", min(x[1] for x in eb)))
+    seam = min(hf / 2.0, 360.0 - (a1 - a0) + hf / 2.0) if wrap else 0.0
+    W = max(8, int(round((a1 - a0 + seam) * k))); H = max(8, int(round((e_top - e_bot) * k))) + head + foot
+    can = np.full((H, W, 3), 22, np.uint8)
+    th_, tv_ = math.tan(math.radians(hf / 2.0)), math.tan(math.radians(vf / 2.0))
+    cells = {}
+    for p in pos:
+        az = (float(p["pan"]) - 50.0) / 50.0 * hp; el = (float(p["tilt"]) - 50.0) / 50.0 * ht
+        ci = min(range(len(azs)), key=lambda q: abs(azs[q] - az)); ri = min(range(len(els)), key=lambda q: abs(els[q] - el))
+        im = load(p)
+        if im is None:
+            continue
+        ih, iw = im.shape[:2]
+        (lo, hi), (top, bot) = ab[ci], eb[ri]
+        u0 = int(round((0.5 + math.tan(math.radians(lo - az)) / (2 * th_)) * iw)); u1 = int(round((0.5 + math.tan(math.radians(hi - az)) / (2 * th_)) * iw))
+        v0 = int(round((0.5 - math.tan(math.radians(top - el)) / (2 * tv_)) * ih)); v1 = int(round((0.5 - math.tan(math.radians(bot - el)) / (2 * tv_)) * ih))
+        u0, u1 = max(0, min(iw - 1, u0)), max(1, min(iw, u1)); v0, v1 = max(0, min(ih - 1, v0)), max(1, min(ih, v1))
+        cw = int(round((hi - a0) * k)) - int(round((lo - a0) * k)); chh = int(round((e_top - bot) * k)) - int(round((e_top - top) * k))   # no 1-px gaps
+        if u1 - u0 < 2 or v1 - v0 < 2 or cw < 2 or chh < 2:
+            continue
+        part = cv2.resize(im[v0:v1, u0:u1], (cw, chh), interpolation=cv2.INTER_AREA)
+        for off in ((0.0, 360.0) if wrap else (0.0,)):     # wrap: the columns after the seam once more
+            x = int(round((lo + off - a0) * k)); y = head + int(round((e_top - top) * k))
+            if x >= W or x + cw <= 0 or y >= H:
+                continue
+            xs, xe = max(0, x), min(W, x + cw); ys, ye = max(0, y), min(H - foot, y + chh)
+            if xe > xs and ye > ys:
+                can[ys:ye, xs:xe] = part[ys - y:ye - y, xs - x:xe - x]
+            if off == 0.0:
+                cells[p["i"]] = {"col": ci, "row": ri, "tw": cw, "th": chh, "x0": x, "y0": y, "x1": x + cw, "y1": y + chh}
+    if not cells:
+        return None, {}
+    cells["_geo"] = {"a0": round(a0, 3), "a1": round(a1, 3), "e_top": round(e_top, 3), "e_bot": round(e_bot, 3), "k": round(k, 5), "head": head,
+                     "w": W, "h": H, "wrap": wrap, "seam": round(seam, 3), "hf": hf, "vf": vf, "hp": hp, "ht": ht}
+    return can, cells
+
+
 def pano_build(since=None, until=None, label=""):
     """the panorama with the marks; returns (path, marks) or (None, error)"""
     now = time.time()
@@ -23194,25 +23307,13 @@ def pano_build(since=None, until=None, label=""):
     if not meta or not meta.get("positions"):
         return None, "no reference yet - scan first"
     pos = meta["positions"]
-    pans = sorted({p["pan"] for p in pos})
-    tilts = sorted({p["tilt"] for p in pos}, reverse=True)  # looking up = the upper row
-    tw = 320
-    th = None
-    tiles = {}
-    for p in pos:
-        im = cv2.imread(refscan_dir(REFSCAN_KINDS[meta["_kind"]], p["file"]))
-        if im is None:
-            continue
-        h = int(round(im.shape[0] * tw / im.shape[1]))
-        th = th or h
-        tiles[p["i"]] = (cv2.resize(im, (tw, th)), pans.index(p["pan"]), tilts.index(p["tilt"]))
-    if not tiles:
-        return None, "no reference yet - scan first"
     head = 54
-    W, H = tw * len(pans), th * len(tilts) + head + 30
-    can = np.full((H, W, 3), 22, np.uint8)
-    for i, (im, cx, cy) in tiles.items():
-        can[head + cy * th: head + (cy + 1) * th, cx * tw: (cx + 1) * tw] = im
+    can, cells = pano_canvas(pos, lambda p: cv2.imread(refscan_dir(REFSCAN_KINDS[meta["_kind"]], p["file"])), head=head, foot=30)
+    if can is None:
+        return None, "no reference yet - scan first"
+    H, W = can.shape[:2]
+    tiles = {i: (None, c["col"], c["row"]) for i, c in cells.items()}
+    tw, th = cells[next(iter(cells))]["tw"], cells[next(iter(cells))]["th"]
     marks = _pano_track(reps)
     fmt = lambda t: datetime.fromtimestamp(t).strftime("%H:%M")
     for m in marks:
@@ -23406,7 +23507,7 @@ def place_info():
         hf, vf = cam_fov()
     except Exception:
         hf, vf = 66.0, 41.0
-    sd = 2.0 * servo_half("pan")
+    sd = 2.0 * min(servo_half("pan"), max(5.0, float(CFG.get("pan_limit") or 180)))
     return {"done": bool(rec.get("t")), "t": rec.get("t"), "n": len(items), "kinds": kinds, "tent": tent, "home": home,
             "pan_range_deg": round(min(360.0, sd + hf)), "servo_deg": round(sd), "fov": [round(hf, 1), round(vf, 1)],
             "lat": rec.get("lat"), "lon": rec.get("lon"), "public_path_report_only": bool(rec.get("public_report", True)),
@@ -23423,6 +23524,904 @@ def place_new_position():
         return abs(lat - float(CFG["latitude"])) > 0.01 or abs(lon - float(CFG["longitude"])) > 0.01
     except (TypeError, ValueError, KeyError):
         return False
+
+
+# ---- settings (inside the assistant, no own section) ------------------------------------------------------------------
+for _k, _v in {"place_observe_s": 10, "place_rows": 2, "place_tent_secs": 15, "place_public_push": True, "place_offer_off": "",
+               "place_patrol": False}.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+
+PLACE_OBJ = {                                        # what the AI sees -> what it suggests (static / moving)
+    "bicycle": ("valuable", "Bike", "access"), "motorcycle": ("valuable", "Motorbike", "ignore"), "car": ("valuable", "Car", "ignore"),
+    "truck": ("tent", "Camper?", "ignore"), "bus": ("tent", "Camper?", "ignore"), "chair": ("valuable", "Chair", None),
+    "bench": ("valuable", "Bench", None), "backpack": ("valuable", "Backpack", None), "suitcase": ("valuable", "Suitcase", None),
+    "handbag": ("valuable", "Bag", None), "umbrella": ("valuable", "Umbrella", None), "dining table": ("valuable", "Table", None),
+    "person": (None, "", "access"),
+}
+PLACE_MOVING_NAME = {"access": "Path?", "ignore": "Road?"}
+
+
+# ---- directions: a picture point <-> degrees (right +, up +) ------------------------------------------------------------
+def place_pic_to_ang(x, y, pan, tilt, hf, vf):
+    a0, e0 = _cam_deg(pan, tilt)
+    return (a0 + math.degrees(math.atan((x - 0.5) * 2.0 * math.tan(math.radians(hf / 2.0)))),
+            e0 + math.degrees(math.atan((0.5 - y) * 2.0 * math.tan(math.radians(vf / 2.0)))))
+
+
+def place_ang_to_pic(a, e, pan, tilt, hf, vf):
+    a0, e0 = _cam_deg(pan, tilt)
+    da = a - a0
+    if servo_half("pan") >= 179.0:
+        da = (da + 180.0) % 360.0 - 180.0
+    da = max(-85.0, min(85.0, da)); de = max(-85.0, min(85.0, e - e0))
+    return (0.5 + math.tan(math.radians(da)) / (2.0 * math.tan(math.radians(hf / 2.0))),
+            0.5 - math.tan(math.radians(de)) / (2.0 * math.tan(math.radians(vf / 2.0))))
+
+
+def _box_ang(b, pan, tilt, hf, vf):
+    """(x, y, w, h) 0..1 of a picture -> {"a0", "a1", "e0" (bottom), "e1" (top)} in degrees"""
+    x, y, w_, h_ = b
+    a0, e1 = place_pic_to_ang(x, y, pan, tilt, hf, vf)
+    a1, e0 = place_pic_to_ang(x + w_, y + h_, pan, tilt, hf, vf)
+    return {"a0": round(a0, 2), "a1": round(a1, 2), "e0": round(e0, 2), "e1": round(e1, 2)}
+
+
+def _ang_iou(p, q):
+    ix = max(0.0, min(p["a1"], q["a1"]) - max(p["a0"], q["a0"])); iy = max(0.0, min(p["e1"], q["e1"]) - max(p["e0"], q["e0"]))
+    u = (p["a1"] - p["a0"]) * (p["e1"] - p["e0"]) + (q["a1"] - q["a0"]) * (q["e1"] - q["e0"]) - ix * iy
+    return ix * iy / u if u > 0 else 0.0
+
+
+def _ang_union(p, q):
+    return {"a0": min(p["a0"], q["a0"]), "a1": max(p["a1"], q["a1"]), "e0": min(p["e0"], q["e0"]), "e1": max(p["e1"], q["e1"])}
+
+
+def place_ang_to_item(b, kind, name):
+    """a box in degrees -> an item of place_items() (servo percent; a 360° head: the middle between 0 and 100)"""
+    hp, ht = servo_half("pan"), servo_half("tilt")
+    ca = (b["a0"] + b["a1"]) / 2.0
+    if hp >= 179.0:
+        ca = (ca + 180.0) % 360.0 - 180.0
+    pan = 50.0 + ca / hp * 50.0
+    pan = pan % 100.0 if hp >= 179.0 else max(0.0, min(100.0, pan))
+    return {"kind": kind, "pan": round(pan, 2), "tilt": round(max(0.0, min(100.0, 50.0 + (b["e0"] + b["e1"]) / 2.0 / ht * 50.0)), 2),
+            "w_pan": round(abs(b["a1"] - b["a0"]) / hp * 50.0, 2), "h_tilt": round(abs(b["e1"] - b["e0"]) / ht * 50.0, 2), "name": name}
+
+
+# ---- the plan of the scan --------------------------------------------------------------------------------------------
+def place_plan(rows=None, wide=False):
+    """the directions of the scan: the whole pan range of the servo (180 / 270 / 360° - pan_servo_range), 1-3 tilt rows.
+    The number of steps follows the field of view of the camera that takes the photos (a wide-angle one: fewer)."""
+    spec = cam_wide_spec() if wide else ""
+    hf, vf = cam_fov_hv(spec)[:2] if spec else cam_fov()
+    hp, ht = servo_half("pan"), servo_half("tilt")
+    eh = min(hp, max(5.0, float(CFG.get("pan_limit", hp) or hp)))      # the pan limit (Camera / Servos) counts too
+    et = min(ht, max(5.0, float(CFG.get("tilt_limit", ht) or ht)))
+    wrap = eh >= 179.0
+    lo, hi = 50.0 - eh / hp * 50.0, 50.0 + eh / hp * 50.0
+    if wrap:
+        n = max(2, min(12, int(math.ceil(360.0 / (0.8 * hf)))))
+        pans = [round(100.0 * i / n, 1) for i in range(n)]
+    else:
+        n = max(2, min(12, int(math.ceil(2.0 * eh / (0.8 * hf))) + 1))
+        pans = [round(lo + (hi - lo) * i / (n - 1), 1) for i in range(n)]
+    m = max(1, min(3, int(rows or CFG.get("place_rows", 2))))
+    mid = float(CFG.get("refscan_tilt_mid", 50))
+    dt = min(30.0, 0.8 * vf / ht * 50.0)
+    sp = dt * (m - 1)
+    tlo, thi = 50.0 - et / ht * 50.0, 50.0 + et / ht * 50.0
+    sp = min(sp, thi - tlo)
+    mid = max(tlo + sp / 2.0, min(thi - sp / 2.0, mid))
+    tilts = [round(mid, 1)] if m == 1 else [round(mid - sp / 2.0 + sp * j / (m - 1), 1) for j in range(m)]
+    pos = []
+    for j, t in enumerate(tilts):                       # a snake like the reference scan (315): short ways
+        row = pans if j % 2 == 0 else list(reversed(pans))
+        pos += [(p, t) for p in row]
+    obs = max(3.0, min(30.0, float(CFG.get("place_observe_s", 10))))
+    per = obs + _refscan_settle() + 1.5
+    cover = min(360.0, 2.0 * eh + hf)
+    return {"spec": spec, "wide": bool(spec), "hf": round(hf, 1), "vf": round(vf, 1), "hp": hp, "ht": ht, "wrap": wrap, "pans": pans,
+            "tilts": tilts, "positions": pos, "n": len(pos), "observe": obs, "eta": round(len(pos) * per), "cover": round(cover),
+            "servo": round(2.0 * hp), "limit": round(2.0 * eh), "cover_v": round(min(180.0, sp / 50.0 * ht + vf)), "tilt_span": round(sp, 1), "tilt_mid": mid}
+
+
+def place_busy_reason():
+    """'' when the assistant may start, else why not (one lock with the simulator tasks, the reference scan, the walk test)"""
+    if PLACE["busy"]:
+        return "the place setup is already running"
+    if REFSCAN["busy"]:
+        return "a scan is already running"
+    if WATCH_REF.get("w") is None:
+        return "no camera"
+    try:
+        if walktest_on():
+            return "the walk test is running"
+    except NameError:
+        pass
+    if CFG.get("sim_on"):
+        b = simtask_busy("place setup")
+        if b:
+            return trf("The simulator is busy: {what}", what=tr(b))
+    return ""
+
+
+def place_start(night_ir=True, thermal=True, wide=False, rows=None, by="web"):
+    with _PLACE_LOCK:
+        why = place_busy_reason()
+        if why:
+            return False, why
+        plan = place_plan(rows, wide)
+        dark = refscan_is_dark()
+        PLACE.update(busy="scan", step=0, n=plan["n"], phase="", msg="", stop=False, t0=time.time(), eta=float(plan["eta"]), night=dark,
+                     plan=plan)
+    threading.Thread(target=_place_run, args=(plan, dark and night_ir, dark and thermal, by), daemon=True, name="placescan").start()
+    log_event("sys", f"Place setup: scan started ({plan['n']} directions, {plan['cover']}° wide, {by})")
+    return True, ""
+
+
+def place_stop():
+    PLACE["stop"] = True
+
+
+def _place_grab_cam(cam, settle):
+    """a clean picture of an extra camera (440) after the head stood still a moment"""
+    time.sleep(settle)
+    t_ask = time.time()
+    cam.raw_until = t_ask + 20
+    end = t_ask + 12
+    while time.time() < end and not PLACE["stop"]:
+        if cam.raw is not None and cam.raw_t > t_ask + 0.3:
+            return cam.raw.copy()
+        time.sleep(0.05)
+    return None
+
+
+def _place_frame(w, cam):
+    w.raw_until = time.time() + 20                      # the main camera too: its AI boxes are mapped to the picture size
+    if cam is not None:
+        cam.raw_until = time.time() + 20
+        return (cam.raw, cam.raw_t) if cam.raw is not None else (None, 0.0)
+    w.raw_until = time.time() + 20
+    return w.frame_raw, float(getattr(w, "_last_t0", 0) or 0)
+
+
+def _place_observe(w, cam, secs, pan, tilt, hf, vf):
+    """~secs seconds looking in one direction: what moves (a map of changes) and what the AI sees (main camera)"""
+    end = time.time() + secs
+    prev = None; acc = None; n = 0; last_t = 0.0; ai = []; seen_run = None
+    mh, mv = cam_fov()
+    while time.time() < end and not PLACE["stop"]:
+        fr, t_ = _place_frame(w, cam)
+        if fr is not None and t_ > last_t:
+            last_t = t_
+            H, W_ = fr.shape[:2]
+            sw = 160; sh = max(8, int(round(160 * H / float(W_))))
+            g = cv2.GaussianBlur(cv2.cvtColor(cv2.resize(fr, (sw, sh), interpolation=cv2.INTER_AREA), cv2.COLOR_BGR2GRAY), (5, 5), 0)
+            if prev is not None and prev.shape == g.shape:
+                m = (cv2.absdiff(g, prev) > 14).astype(np.float32)
+                if float(m.mean()) < 0.5:                  # half the picture changed: light switched / the camera moved - not counted
+                    acc = m if acc is None else acc + m
+                    n += 1
+            prev = g
+        ai_ = getattr(w, "ai", None)
+        mf = w.frame_raw
+        if ai_ is not None and mf is not None:
+            run = (getattr(ai_, "_last_run", None), len(ai_.objects or []), len(ai_.boxes or []))
+            if run != seen_run:
+                seen_run = run
+                pw = float(CFG.get("proc_width") or 480); ph = pw * mf.shape[0] / float(mf.shape[1])
+                for b in list(ai_.boxes or []):
+                    ai.append(("person", b[0] / pw, b[1] / ph, b[2] / pw, b[3] / ph, float(b[4]) if len(b) > 4 else 0.5))
+                for o in list(ai_.objects or []):
+                    ai.append((COCO_LABELS.get(o[5], "object"), o[0] / pw, o[1] / ph, o[2] / pw, o[3] / ph, float(o[4])))
+        time.sleep(0.2)
+    motion = []
+    if acc is not None and n >= 3:
+        frac = acc / float(n)
+        mk = (frac > 0.12).astype(np.uint8) * 255
+        mk = cv2.morphologyEx(mk, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+        cnts, _ = cv2.findContours(mk, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        sh, sw = mk.shape
+        for c in cnts:
+            if cv2.contourArea(c) < sw * sh * 0.004:
+                continue
+            x, y, w_, h_ = cv2.boundingRect(c)
+            b = _box_ang((x / sw, y / sh, w_ / sw, h_ / sh), pan, tilt, hf, vf)
+            b["score"] = round(float(frac[y:y + h_, x:x + w_].mean()), 3)
+            motion.append(b)
+    objs = []
+    for lab, x, y, w_, h_, cf in ai:                    # the AI looks with the main camera
+        b = _box_ang((x, y, w_, h_), pan, tilt, mh, mv)
+        b.update(label=lab, conf=round(cf, 2))
+        objs.append(b)
+    return {"motion": motion[:20], "ai": objs[:200], "frames": n}
+
+
+def place_suggest(positions, night=False):
+    """the suggestions of the scan (in degrees): moving things -> «Ignorieren» / «Zugang», standing things -> «Wertsachen»,
+    a camper (truck / bus) -> «Mein Zelt / Wohnmobil»"""
+    clusters = []
+    for p in positions:
+        for o in (p.get("obs") or {}).get("ai") or []:
+            for c in clusters:
+                if c["label"] == o["label"] and (_ang_iou(c["last"], o) > 0.25 or (abs((c["last"]["a0"] + c["last"]["a1"]) - (o["a0"] + o["a1"])) / 2 < 4.0
+                                                                              and abs((c["last"]["e0"] + c["last"]["e1"]) - (o["e0"] + o["e1"])) / 2 < 4.0)):
+                    c["box"] = _ang_union(c["box"], o); c["n"] += 1; c["conf"] = max(c["conf"], o["conf"])
+                    ca = ((o["a0"] + o["a1"]) / 2.0, (o["e0"] + o["e1"]) / 2.0)
+                    c["move"] = max(c["move"], math.hypot(ca[0] - c["c0"][0], ca[1] - c["c0"][1]))
+                    c["last"] = o
+                    break
+            else:
+                clusters.append({"label": o["label"], "box": dict(o), "last": o, "n": 1, "conf": o["conf"], "move": 0.0,
+                                 "c0": ((o["a0"] + o["a1"]) / 2.0, (o["e0"] + o["e1"]) / 2.0)})
+    out = []
+    for c in clusters:
+        rule = PLACE_OBJ.get(c["label"])
+        if not rule:
+            continue
+        b = c["box"]
+        size = max(2.0, b["a1"] - b["a0"])
+        moving = c["move"] > max(3.0, 0.5 * size)
+        if moving and rule[2]:
+            kind, name, why = rule[2], PLACE_MOVING_NAME.get(rule[2], ""), "moving " + c["label"]
+        elif not moving and rule[0] and c["n"] >= 1:
+            kind, name, why = rule[0], rule[1], c["label"]
+        else:
+            continue
+        out.append({"kind": kind, "name": name, "why": why, "a0": b["a0"], "a1": b["a1"], "e0": b["e0"], "e1": b["e1"], "conf": c["conf"]})
+    persons = [o for p in positions for o in (p.get("obs") or {}).get("ai") or [] if o["label"] == "person"]
+    mot = []
+    for p in positions:                                  # things that move by themselves (branches, flags, lights)
+        for m in (p.get("obs") or {}).get("motion") or []:
+            if m.get("score", 0) < (0.2 if night else 0.12):
+                continue                                 # at night the picture is noisy (infrared, insects)
+            if any(_ang_iou(m, s_) > 0.1 for s_ in out if s_["why"].startswith("moving")) or any(_ang_iou(m, o) > 0.05 for o in persons):
+                continue                                 # a person walking, a car driving: already a suggestion
+            mot.append(m)
+    mot.sort(key=lambda m: -m.get("score", 0) * (m["a1"] - m["a0"]) * (m["e1"] - m["e0"]))
+    for m in mot[:4]:                                    # only the strongest few - the operator decides
+        out.append({"kind": "ignore", "name": "Moves by itself", "why": "motion", "a0": m["a0"], "a1": m["a1"], "e0": m["e0"], "e1": m["e1"],
+                    "conf": m.get("score", 0.2)})
+    merged = []
+    for s in out:                                        # the same thing seen from two directions: one suggestion
+        for t in merged:
+            if t["kind"] == s["kind"] and t["name"] == s["name"] and _ang_iou(t, s) > 0.2:
+                t.update(_ang_union(t, s)); t["conf"] = max(t["conf"], s["conf"])
+                break
+        else:
+            merged.append(dict(s))
+    order = {"tent": 0, "valuable": 1, "access": 2, "ignore": 3}
+    merged.sort(key=lambda s: (order.get(s["kind"], 9), -s["conf"]))
+    for i, s in enumerate(merged[:14]):
+        s["id"] = "s%d" % (i + 1)
+        for k in ("a0", "a1", "e0", "e1"):
+            s[k] = round(s[k], 2)
+    return merged[:14]
+
+
+def _place_run(plan, use_ir, use_thermal, by):
+    w = WATCH_REF.get("w")
+    old = (CFG["pan"], CFG["tilt"])
+    old_ir = CFG.get("light_ir")
+    tmp = place_dir("scan_new")
+    try:
+        shutil.rmtree(tmp, ignore_errors=True); os.makedirs(tmp, exist_ok=True)
+        cam = next((c for c in list(CAMS) if c.spec == plan["spec"]), None) if plan["wide"] else None
+        if plan["wide"] and cam is None:
+            plan = place_plan(len(plan["tilts"]), False)
+            PLACE["n"] = plan["n"]
+        if use_ir and old_ir != "on":
+            CFG["light_ir"] = "on"                       # the night reference with the infrared light (070)
+        hf, vf = plan["hf"], plan["vf"]
+        meta = {"t": time.time(), "night": PLACE["night"], "ir": bool(use_ir), "wide": plan["wide"], "spec": plan["spec"], "hf": hf, "vf": vf,
+                "hp": plan["hp"], "ht": plan["ht"], "wrap": plan["wrap"], "positions": [], "by": by, "sim": bool(CFG.get("sim_on")),
+                "main_fov": list(cam_fov())}
+        for i, (p, t) in enumerate(plan["positions"]):
+            if PLACE["stop"]:
+                PLACE["msg"] = "stopped"; return
+            PLACE.update(step=i + 1, phase="photo")
+            _refscan_move(p, t)
+            settle = _refscan_settle() + (1.0 if i == 0 else 0.0)
+            img = _place_grab_cam(cam, settle) if cam is not None else _refscan_grab(w, settle, max(1, min(5, int(CFG.get("refscan_photos", 2)))))
+            if img is None:
+                PLACE["msg"] = "stopped" if PLACE["stop"] else "no picture from the camera"; return
+            fn = f"pos_{i:02d}.jpg"
+            cv2.imwrite(os.path.join(tmp, fn), img, [cv2.IMWRITE_JPEG_QUALITY, 88])
+            entry = {"i": i, "pan": p, "tilt": t, "file": fn}
+            if use_thermal and THERMAL is not None and THERMAL.frame is not None and time.time() - THERMAL.t < 5:
+                try:
+                    cv2.imwrite(os.path.join(tmp, f"th_{i:02d}.jpg"), THERMAL.color(THERMAL.frame)[0], [cv2.IMWRITE_JPEG_QUALITY, 88])
+                    entry["th"] = f"th_{i:02d}.jpg"
+                except Exception:
+                    pass
+            PLACE["phase"] = "watch"
+            MANUAL["until"] = time.time() + 60
+            entry["obs"] = _place_observe(w, cam, plan["observe"], p, t, hf, vf)
+            meta["positions"].append(entry)
+        PLACE["phase"] = "panorama"
+        meta["suggest"] = place_suggest(meta["positions"], PLACE["night"])
+        _place_pano(tmp, meta)
+        if not plan["wide"]:                             # the photos are the reference of the reference scan (315) too
+            _place_to_refscan(tmp, meta, plan)
+        with open(os.path.join(tmp, "scan.json"), "w", encoding="utf-8") as f:
+            json.dump(meta, f)
+        shutil.rmtree(place_dir("scan"), ignore_errors=True)
+        os.replace(tmp, place_dir("scan"))
+        PLACE["scan"] = None
+        PLACE["msg"] = "done"
+        log_event("sys", f"Place setup: scan done - {len(meta['suggest'])} suggestions")
+    except Exception as e:
+        PLACE["msg"] = "error: " + str(e)[:120]
+        log_event("sys", f"Place setup failed: {e}"[:200])
+    finally:
+        if CFG.get("light_ir") != old_ir:
+            CFG["light_ir"] = old_ir
+        _refscan_move(*old)
+        MANUAL["until"] = time.time() + 2
+        shutil.rmtree(tmp, ignore_errors=True)
+        PLACE.update(busy="", stop=False, phase="")
+
+
+def _place_pano(d, meta):
+    geo = {"hf": meta["hf"], "vf": meta["vf"], "hp": meta["hp"], "ht": meta["ht"], "wrap": meta["wrap"]}
+    pos = meta["positions"]
+    can, cells = pano_canvas(pos, lambda p: cv2.imread(os.path.join(d, p["file"])), tw=420, geo=geo)
+    if can is None:
+        raise RuntimeError("no panorama")
+    g = cells.pop("_geo")
+    cv2.imwrite(os.path.join(d, "pano.jpg"), can, [cv2.IMWRITE_JPEG_QUALITY, 85])
+    meta["geo"] = g
+    if any(p.get("th") for p in pos):                   # the thermal pictures on the same degrees (own field of view)
+        thf, thv = cam_fov_hv("thermal")[:2]
+        tg = dict(geo, hf=thf, vf=thv, a0=g["a0"], a1=g["a1"], e0=g["e_top"], e1=g["e_bot"])
+        tk = g["k"]
+        tcan, _c = pano_canvas([p for p in pos if p.get("th")], lambda p: cv2.imread(os.path.join(d, p["th"])), tw=int(round(tk * thf)), geo=tg)
+        if tcan is not None:
+            if tcan.shape[:2] != can.shape[:2]:
+                tcan = cv2.resize(tcan, (can.shape[1], can.shape[0]))
+            cv2.imwrite(os.path.join(d, "pano_th.jpg"), tcan, [cv2.IMWRITE_JPEG_QUALITY, 85])
+            meta["thermal"] = True
+
+
+def _place_to_refscan(d, meta, plan):
+    """the scan becomes the reference of the reference scan (day or night) - and the grid of the reference scan the grid
+    of the place, so «compare» drives the same directions (refscan_positions)"""
+    CFG.update(refscan_pan_from=plan["pans"][0], refscan_pan_to=plan["pans"][-1], refscan_pan_steps=len(plan["pans"]),
+               refscan_tilt_steps=len(plan["tilts"]), refscan_tilt_mid=plan["tilt_mid"], refscan_tilt_span=max(1.0, plan["tilt_span"]))
+    kind = "night" if meta["night"] else "day"
+    old = refscan_meta(kind) or {}
+    rd = refscan_dir(REFSCAN_KINDS[kind] + "_new")
+    shutil.rmtree(rd, ignore_errors=True); os.makedirs(rd, exist_ok=True)
+    rm = {"t": meta["t"], "positions": [], "source": STATE.get("source_label", ""), "sim": bool(CFG.get("sim_on")), "dark": kind == "night",
+          "photos": int(CFG.get("refscan_photos", 2)), "kind": kind, "place": True,
+          "watch": [x for x in old.get("watch") or [] if x.get("src") != "place"] if len(old.get("positions") or []) == len(meta["positions"]) else []}
+    for p in meta["positions"]:
+        shutil.copy(os.path.join(d, p["file"]), os.path.join(rd, p["file"]))
+        rm["positions"].append({"i": p["i"], "pan": p["pan"], "tilt": p["tilt"], "file": p["file"]})
+    with open(os.path.join(rd, "meta.json"), "w", encoding="utf-8") as f:
+        json.dump(rm, f)
+    shutil.rmtree(refscan_dir(REFSCAN_KINDS[kind]), ignore_errors=True)
+    os.replace(rd, refscan_dir(REFSCAN_KINDS[kind]))
+    save_settings()
+    meta["refscan"] = kind
+
+
+def place_scan():
+    """the last scan (scan.json) or None"""
+    if PLACE.get("scan") is not None:
+        return PLACE["scan"]
+    try:
+        with open(place_dir("scan", "scan.json"), encoding="utf-8") as f:
+            PLACE["scan"] = json.load(f)
+    except (OSError, ValueError):
+        PLACE["scan"] = None
+    return PLACE["scan"]
+
+
+# ---- apply: zones, masks, waypoints, guarded things, the place record --------------------------------------------------
+def _clean_items(items):
+    out = []
+    for it in (items or [])[:30]:
+        if not isinstance(it, dict) or it.get("kind") not in PLACE_KINDS:
+            continue
+        try:
+            a0, a1, e0, e1 = (float(it[k]) for k in ("a0", "a1", "e0", "e1"))
+        except (KeyError, TypeError, ValueError):
+            continue
+        if not all(math.isfinite(v) for v in (a0, a1, e0, e1)):
+            continue
+        a0, a1 = min(a0, a1), max(a0, a1); e0, e1 = min(e0, e1), max(e0, e1)
+        if a1 - a0 < 0.3 or e1 - e0 < 0.3 or a1 - a0 > 200 or e1 - e0 > 120:
+            continue
+        nm = re.sub(r"[\x00-\x1f<>]", "", str(it.get("name") or ""))[:40].strip()
+        out.append({"kind": it["kind"], "a0": round(a0, 2), "a1": round(a1, 2), "e0": round(e0, 2), "e1": round(e1, 2), "name": nm})
+    return out
+
+
+PLACE_DEFAULT_NAMES = {"tent": "My tent / camper", "access": "Access / path", "public_path": "Public path", "valuable": "Valuables", "ignore": "Ignore"}
+
+
+def _zone_points(ang, line=False):
+    pp = sleep_project(ang)
+    pts = [pp[0], pp[8]] if line else pp[::8]
+    return [[round(min(1.0, max(0.0, x)), 4), round(min(1.0, max(0.0, y)), 4)] for x, y in pts]
+
+
+def place_apply(items, public_report=True, patrol=None, by="web"):
+    """make the zones / masks / waypoints / guarded things of the marked items and keep the place record"""
+    its = _clean_items(items)
+    scan = place_scan() or {}
+    old = _place_load() or {}
+    for it in its:
+        it["name"] = it["name"] or tr(PLACE_DEFAULT_NAMES[it["kind"]])
+        if it["kind"] == "public_path" and not public_report:
+            it["kind"] = "access"
+    keep = [dict(z) for z in ZONES if z.get("src") != "place"]
+    new, skipped = [], 0
+    room = MAX_ZONES - len(keep)
+    for it in its:
+        k = it["kind"]
+        if k not in ("tent", "access", "ignore"):
+            continue
+        if len(new) >= room:
+            skipped += 1; continue
+        if k == "access":
+            em = round((it["e0"] + it["e1"]) / 2.0, 2)
+            ang = [[it["a0"], em], [it["a1"], em]]
+            z = {"mode": "line", "name": "🚶 " + it["name"], "points": _zone_points(ang, True), "ang": ang, "dir": "both"}
+        else:
+            ang = [[it["a0"], it["e1"]], [it["a1"], it["e1"]], [it["a1"], it["e0"]], [it["a0"], it["e0"]]]
+            z = {"mode": "loiter" if k == "tent" else "ignore", "name": ("⛺ " if k == "tent" else "🌿 ") + it["name"], "points": _zone_points(ang), "ang": ang}
+            if k == "tent":
+                z["secs"] = int(CFG.get("place_tent_secs", 15))
+        z.update(id=uuid.uuid4().hex[:8], anchor=True, src="place")
+        new.append(z)
+    ok, err = zones_set(keep + new)
+    if not ok:
+        return False, err, {}
+    # waypoints: the accesses (and the tent) - the patrol (160) looks there
+    wps_old = [list(x) for x in old.get("wps") or []]
+    for wp in wps_old:
+        if wp in WAYPOINTS:
+            WAYPOINTS.remove(wp)
+    wps = []
+    for it in its:
+        if it["kind"] in ("access", "public_path", "tent"):
+            pi = place_ang_to_item(it, it["kind"], it["name"])
+            wp = [round(pi["pan"], 1), round(pi["tilt"], 1)]
+            if wp not in WAYPOINTS and len(WAYPOINTS) < 50:
+                WAYPOINTS.append(wp); wps.append(wp)
+    if patrol is not None:
+        CFG["place_patrol"] = bool(patrol)
+        if patrol and len(WAYPOINTS) >= 2:
+            CFG["patrol"] = True
+    # guarded things of the reference scan (315): the box in the picture of the direction that sees it best
+    vals = [it for it in its if it["kind"] == "valuable"]
+    watched = place_set_watch(vals)
+    if vals and not watched and scan.get("wide"):
+        threading.Thread(target=_place_ref_then_watch, args=(vals,), daemon=True, name="placeref").start()
+    if vals:
+        CFG["refscan_on_arm"] = True                     # compare when armed + the morning panorama: «Velo fehlt»
+        CFG["refscan_pano_on"] = True
+    home = place_ang_to_item(next((it for it in its if it["kind"] == "tent"), None) or {"a0": -1, "a1": 1, "e0": -1, "e1": 1}, "home", "")
+    rec = {"v": 1, "t": time.time(), "by": by, "scan_t": scan.get("t"), "night_ref": bool(scan.get("night")),
+           "items": [dict(place_ang_to_item(it, it["kind"], it["name"]), a0=it["a0"], a1=it["a1"], e0=it["e0"], e1=it["e1"]) for it in its],
+           "zones": [z["id"] for z in new], "wps": wps, "watched": watched, "public_report": bool(public_report),
+           "home": {"pan": home["pan"], "tilt": home["tilt"]}, "lat": CFG.get("latitude"), "lon": CFG.get("longitude")}
+    _place_save(rec)
+    CFG["place_offer_off"] = ""
+    save_settings()
+    res = {"zones": len(new), "skipped": skipped, "waypoints": len(wps), "watched": watched,
+           "public": sum(1 for it in its if it["kind"] == "public_path"), "masks": sum(1 for z in new if z["mode"] == "ignore"),
+           "tent": sum(1 for z in new if z["mode"] == "loiter"), "lines": sum(1 for z in new if z["mode"] == "line"), "items": len(its)}
+    log_event("sys", f"Place set up ({by}): {res['items']} things, {res['zones']} zones, {res['waypoints']} waypoints, {watched} guarded things")
+    return True, "", res
+
+
+def place_set_watch(vals):
+    """the valuables as guarded things of the reference scan (day and night reference, when there is one) - returns how many"""
+    n = 0
+    mh, mv = cam_fov()
+    for kind in ("day", "night"):
+        meta = refscan_meta(kind)
+        if not meta or meta.get("_kind") != kind or not meta.get("positions"):
+            continue
+        out = [x for x in meta.get("watch") or [] if x.get("src") != "place"]
+        for it in vals:
+            ca, ce = (it["a0"] + it["a1"]) / 2.0, (it["e0"] + it["e1"]) / 2.0
+            best = min(meta["positions"], key=lambda p: math.hypot(*(np.subtract(place_ang_to_pic(ca, ce, p["pan"], p["tilt"], mh, mv), 0.5))))
+            x0, y0 = place_ang_to_pic(it["a0"], it["e1"], best["pan"], best["tilt"], mh, mv)
+            x1, y1 = place_ang_to_pic(it["a1"], it["e0"], best["pan"], best["tilt"], mh, mv)
+            x0, x1 = max(0.0, min(1.0, x0)), max(0.0, min(1.0, x1)); y0, y1 = max(0.0, min(1.0, y0)), max(0.0, min(1.0, y1))
+            if x1 - x0 < 0.01 or y1 - y0 < 0.01:
+                continue
+            out.append({"pos": int(best["i"]), "x": round(x0, 4), "y": round(y0, 4), "w": round(x1 - x0, 4), "h": round(y1 - y0, 4),
+                        "name": it["name"][:40], "src": "place"})
+        meta["watch"] = out[:30]
+        refscan_save_meta(meta)
+        n = max(n, sum(1 for x in out if x.get("src") == "place"))
+    return n
+
+
+def _place_ref_then_watch(vals):
+    """the scan was made with the wide-angle camera: the reference scan of the main camera first, then the guarded things"""
+    for _ in range(60):
+        if not REFSCAN["busy"]:
+            break
+        time.sleep(2)
+    ok, _e = refscan_start("scan", "place setup")
+    if not ok:
+        return
+    time.sleep(3)
+    while REFSCAN["busy"]:
+        time.sleep(2)
+    n = place_set_watch(vals)
+    rec = _place_load()
+    if rec:
+        rec["watched"] = n
+        _place_save(rec)
+
+
+def place_clear(by="web"):
+    """forget the place: its zones, waypoints and guarded things (the photos of the reference scan stay)"""
+    rec = _place_load() or {}
+    zones_set([dict(z) for z in ZONES if z.get("src") != "place"])
+    for wp in rec.get("wps") or []:
+        if list(wp) in WAYPOINTS:
+            WAYPOINTS.remove(list(wp))
+    place_set_watch([])
+    try:
+        os.remove(place_dir("place.json"))
+    except OSError:
+        pass
+    PLACE["rec"] = None
+    save_settings()
+    log_event("sys", f"Place forgotten ({by})")
+    return True
+
+
+# ---- the offer: on the first start and after a new position -------------------------------------------------------------
+def place_offer():
+    """'' = nothing to offer, "first" = never set up, "moved" = the device stands somewhere else now"""
+    rec = _place_load()
+    off = str(CFG.get("place_offer_off") or "")
+    if not rec or not rec.get("t"):
+        return "" if off == "first" else "first"
+    if place_new_position() and off != "moved:%s,%s" % (CFG.get("latitude"), CFG.get("longitude")):
+        return "moved"
+    return ""
+
+
+def place_offer_dismiss():
+    o = place_offer()
+    CFG["place_offer_off"] = "first" if o == "first" else "moved:%s,%s" % (CFG.get("latitude"), CFG.get("longitude"))
+    save_settings()
+
+
+def place_state(lang=None):
+    plan = place_plan()
+    wide = cam_wide_spec()
+    pw = place_plan(wide=True) if wide else None
+    scan = place_scan()
+    rec = _place_load()
+    sc = None
+    if scan:
+        sc = {"t": scan.get("t"), "geo": scan.get("geo"), "suggest": scan.get("suggest") or [], "night": scan.get("night"),
+              "thermal": bool(scan.get("thermal")), "wide": scan.get("wide"), "n": len(scan.get("positions") or []), "refscan": scan.get("refscan"),
+              "v": int(scan.get("t") or 0)}
+    left = 0
+    if PLACE["busy"]:
+        left = max(0, int(PLACE["eta"] - (time.time() - PLACE["t0"])))
+    th_ok = THERMAL is not None and THERMAL.frame is not None and time.time() - THERMAL.t < 10
+    return {"busy": PLACE["busy"], "step": PLACE["step"], "n": PLACE["n"], "phase": PLACE["phase"], "msg": tr(PLACE["msg"], lang) if PLACE["msg"] else "",
+            "done_msg": PLACE["msg"] == "done", "left": left, "dark": refscan_is_dark(), "thermal_ok": th_ok,
+            "ir_ok": bool(CFG.get("light_ir_out")) or bool(CFG.get("sim_on")),
+            "plan": {"n": plan["n"], "eta": plan["eta"], "cover": plan["cover"], "servo": plan["servo"], "hf": plan["hf"], "vf": plan["vf"],
+                     "rows": len(plan["tilts"]), "wrap": plan["wrap"], "cover_v": plan["cover_v"]},
+            "wide": {"spec": wide, "label": source_label(wide), "hf": pw["hf"], "n": pw["n"], "eta": pw["eta"], "cover": pw["cover"]} if pw else None,
+            "scan": sc, "record": {"t": rec.get("t"), "items": rec.get("items") or [], "public_report": rec.get("public_report", True),
+                                   "watched": rec.get("watched", 0), "zones": len(rec.get("zones") or []), "wps": len(rec.get("wps") or [])} if rec else None,
+            "offer": place_offer(), "why_not": tr(place_busy_reason(), lang) if not PLACE["busy"] else "",
+            "info": place_info()}
+
+
+# ---- the alarm: a person on the public path is only reported, a person at the tent counts more ---------------------------
+PLACE_GATE = {"pub_t": 0.0, "tent_t": 0.0}
+
+
+def _place_in(it, a, e, grow=0.0):
+    a0, a1 = it["a0"] - grow, it["a1"] + grow
+    if servo_half("pan") >= 179.0:
+        c = (a0 + a1) / 2.0
+        a = c + ((a - c + 180.0) % 360.0 - 180.0)
+    return a0 <= a <= a1 and it["e0"] - grow <= e <= it["e1"] + grow
+
+
+_alarm_gate_base = alarm_gate
+
+
+def alarm_gate(w, frame, persons, now):
+    """2.98.30 (317): before the gate of 066: persons whose feet stand on a public path (place record, «nur melden») are no
+    alarm - one log line / info push now and then. A person at the tent (or coming closer to it) needs no double confirmation."""
+    rec = PLACE["rec"] if PLACE["loaded"] else _place_load()
+    its = (rec or {}).get("items") or []
+    if not persons or not its or not any(it.get("kind") in ("public_path", "tent") and "a0" in it for it in its):
+        return _alarm_gate_base(w, frame, persons, now)
+    pw = float(CFG.get("proc_width") or 480)
+    ph = float(getattr(w, "_ph", 0) or 0) or (pw * frame.shape[0] / float(frame.shape[1]) if frame is not None else pw * 0.5625)
+    hf, vf = cam_fov()
+    pubs = [it for it in its if it.get("kind") == "public_path" and "a0" in it]
+    tents = [it for it in its if it.get("kind") == "tent" and "a0" in it]
+    keep, pub, near = [], 0, False
+    for b in persons:
+        x, y, bw, bh = (float(v) for v in b[:4])
+        a, e = place_pic_to_ang((x + bw / 2.0) / pw, (y + bh * 0.95) / ph, CFG["pan"], CFG["tilt"], hf, vf)
+        at_tent = any(_place_in(t, a, e, 4.0) for t in tents)
+        if not at_tent and any(_place_in(p_, a, e) for p_ in pubs):
+            pub += 1; continue
+        near = near or at_tent
+        keep.append(b)
+    if pub and now - PLACE_GATE["pub_t"] > 300:
+        PLACE_GATE["pub_t"] = now
+        log_event("person", "Person on the public path - only reported (place setup)")
+        if is_armed() and CFG.get("place_public_push", True):
+            try:
+                w.notifier.info(tr("Person on the public path (only reported, no alarm)"), title="{name}: " + tr("Public path"))
+            except Exception:
+                pass
+    res = _alarm_gate_base(w, frame, keep, now)
+    if res or not keep or not near:
+        return res
+    closer = (ERK.get("best") or {}).get("trend") == "closer" and now - float(ERK.get("t") or 0) < 3.0
+    if ALX["hold_until"] <= now and is_armed() and CFG.get("alarm_confirm2"):
+        if now - PLACE_GATE["tent_t"] > 30:
+            PLACE_GATE["tent_t"] = now
+            log_event("person", "Person at the tent" + (" coming closer" if closer else "") + " - alarm without the second confirmation (place setup)")
+        return keep
+    return res
+
+
+def place_selftest():
+    sv = (CFG["pan"], CFG["tilt"], CFG.get("pan_servo_range"), CFG["pan_limit"])
+    try:
+        CFG["pan"], CFG["tilt"] = 50.0, 50.0
+        hf, vf = 66.0, 41.0
+        a, e = place_pic_to_ang(0.75, 0.25, 30.0, 60.0, hf, vf)
+        x, y = place_ang_to_pic(a, e, 30.0, 60.0, hf, vf)
+        assert abs(x - 0.75) < 1e-6 and abs(y - 0.25) < 1e-6
+        it = place_ang_to_item({"a0": -10, "a1": 10, "e0": -5, "e1": 5}, "tent", "x")
+        assert abs(it["pan"] - 50) < 1e-6 and it["w_pan"] > 0
+        CFG["pan_servo_range"] = 360.0
+        it = place_ang_to_item({"a0": 170, "a1": 190, "e0": -5, "e1": 5}, "access", "x")   # across the seam
+        assert it["pan"] < 1.0 or it["pan"] > 99.0, it
+        assert _place_in({"a0": 170, "a1": 190, "e0": -5, "e1": 5}, -175.0, 0.0)
+        p = place_plan(2)
+        CFG["pan_limit"] = 180
+        p = place_plan(2)
+        assert p["wrap"] and p["cover"] == 360 and p["n"] == len(p["pans"]) * 2 and max(p["pans"]) < 100
+        CFG["pan_servo_range"] = 180.0; CFG["pan_limit"] = 90
+        p = place_plan(2)
+        assert not p["wrap"] and p["pans"][0] == 0 and p["pans"][-1] == 100
+        assert _clean_items([{"kind": "tent", "a0": 5, "a1": -5, "e0": 1, "e1": -3}])[0]["a0"] == -5
+        assert not _clean_items([{"kind": "x", "a0": 0, "a1": 5, "e0": 0, "e1": 5}])
+        # the alarm gate: a person on the public path is no alarm, one beside it is
+        CFG["pan"], CFG["tilt"] = 50.0, 50.0
+        old = (PLACE["rec"], PLACE["loaded"], CFG.get("alarm_confirm2"), PLACE_GATE["pub_t"], ALX["hold_until"])
+        try:
+            PLACE.update(rec={"items": [{"kind": "public_path", "a0": -12, "a1": 12, "e0": -25, "e1": 25, "name": "p"}]}, loaded=True)
+            CFG["alarm_confirm2"] = False; ALX["hold_until"] = 0.0
+
+            class _W:
+                _ph = 270; ai = None; last_warm = 0.0; notifier = None
+            pw = float(CFG.get("proc_width") or 480)
+            on_path = (pw / 2 - 10, 100, 20, 60); beside = (pw * 0.9, 100, 20, 60)
+            assert alarm_gate(_W(), None, [on_path], time.time()) == []
+            assert alarm_gate(_W(), None, [on_path, beside], time.time()) == [beside]
+        finally:
+            PLACE["rec"], PLACE["loaded"], CFG["alarm_confirm2"], PLACE_GATE["pub_t"], ALX["hold_until"] = old
+        return "directions, 360° seam, plan, items, public path in the alarm"
+    finally:
+        CFG["pan"], CFG["tilt"], CFG["pan_servo_range"], CFG["pan_limit"] = sv
+# ----------------------------------------------------------------------------
+# 2.98.30 (Wunsch Daniel, 29.10.2026 - a second, wide-angle camera comes later: Pi 5 CAM1 -> «pi:1», Camera Module 3 Wide NoIR)
+#   CFG["cam_fov"] = {spec: {"model": "auto"|"m3"|"m3wide"|"m2"|"own", "deg": horizontal degrees for "own"}}
+#   CFG["cam_head"] = {spec: True} - an extra camera that sits on the head (turns with it) - «Platz einrichten» may use it
+#   cam_fov_h(spec=None) -> horizontal degrees (main camera when None) - other parts call it via globals().get("cam_fov_h")
+#   cam_fov_hv(spec=None) -> (horizontal, vertical, where it comes from: "sim" | "auto" | "model" | "own" | "default")
+# In the simulator the field of view comes from its /info (fov_h / fov_v of that camera). cam_fov() (290) asks here for the
+# main camera, so the distance (415), the sleeping place / zones (030) and the panorama (316 / 317) all use the same value.
+# ----------------------------------------------------------------------------
+for _k, _v in {"cam_fov": {}, "cam_head": {}}.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+
+CAM_FOV_MODELS = (                                   # (id, name, horizontal °, vertical ° at 16:9, picamera2 sensor names)
+    ("m3", "Camera Module 3", 66.0, 41.0, ("imx708", "imx708_noir")),
+    ("m3wide", "Camera Module 3 Wide", 102.0, 67.0, ("imx708_wide", "imx708_wide_noir")),
+    ("m2", "Camera Module 2", 62.2, 48.8, ("imx219", "imx219_noir")),
+)
+CAM_FOV_CHOICES = [("auto", "Automatic")] + [(m[0], f"{m[1]} ({m[2]:.0f}°)") for m in CAM_FOV_MODELS] + [("own", "HQ / other camera: own value")]
+_PICAM_INFO = {"t": 0.0, "list": None}
+
+
+def _picam_models():
+    """the sensor names of the Raspberry Pi cameras (picamera2 global_camera_info, asked once a minute) - [] without picamera2"""
+    if _PICAM_INFO["list"] is not None and time.time() - _PICAM_INFO["t"] < 60:
+        return _PICAM_INFO["list"]
+    out = []
+    try:
+        from picamera2 import Picamera2
+        out = [str(i.get("Model") or "").lower() for i in Picamera2.global_camera_info()]
+    except Exception:
+        out = []
+    _PICAM_INFO.update(t=time.time(), list=out)
+    return out
+
+
+def cam_fov_detect(spec):
+    """the model id ("m3", "m3wide", "m2") of a Pi camera from its sensor name, or "" """
+    m = re.fullmatch(r"pi:(\d+)", str(spec or ""))
+    if not m:
+        return ""
+    lst = _picam_models()
+    n = int(m.group(1))
+    name = lst[n] if n < len(lst) else ""
+    for mid, _nm, _h, _v, sensors in CAM_FOV_MODELS:
+        if name in sensors:
+            return mid
+    return ""
+
+
+def _vfov_from_h(h, aspect=16.0 / 9.0):
+    return math.degrees(2 * math.atan(math.tan(math.radians(h) / 2.0) / aspect))
+
+
+def cam_fov_hv(spec=None):
+    """(horizontal °, vertical °, source) of a camera: spec None = the main camera (CFG["source"]), "thermal" = the thermal camera"""
+    main = spec is None or str(spec) == str(CFG.get("source"))
+    spec = str(CFG.get("source") if spec is None else spec)
+    if spec in ("thermal", "sim:thermal"):
+        try:
+            th = (SIM.get("info") or {}).get("thermal") if CFG.get("sim_on") else None
+            if th and th.get("fov_h"):
+                return float(th["fov_h"]), float(th.get("fov_v") or _vfov_from_h(float(th["fov_h"]), 4 / 3.0)), "sim"
+        except (TypeError, ValueError, AttributeError):
+            pass
+        return 90.0, 67.0, "default"                     # Waveshare Thermal-90
+    if spec.startswith("sim:") and CFG.get("sim_on"):
+        try:
+            info = SIM.get("info") or {}
+            cam = next((c for c in info.get("cameras") or [] if str(c.get("id")) == spec[4:]), None)
+            if cam and cam.get("fov_h"):
+                hf = float(cam["fov_h"])
+                vf = float(cam.get("fov_v") or 0) or math.degrees(2 * math.atan(math.tan(math.radians(hf) / 2) * float(cam.get("h") or 9) / float(cam.get("w") or 16)))
+                return hf, vf, "sim"
+        except (TypeError, ValueError, KeyError, AttributeError):
+            pass
+    st = (CFG.get("cam_fov") or {}).get(spec) if isinstance(CFG.get("cam_fov"), dict) else None
+    st = st if isinstance(st, dict) else {}
+    model = st.get("model") or "auto"
+    if model == "own":
+        try:
+            h = max(20.0, min(200.0, float(st.get("deg"))))
+            return h, min(160.0, _vfov_from_h(h)), "own"
+        except (TypeError, ValueError):
+            model = "auto"
+    src = "model"
+    if model == "auto":
+        model = cam_fov_detect(spec); src = "auto"
+    for mid, _nm, h, v, _s in CAM_FOV_MODELS:
+        if mid == model:
+            return h, v, src
+    if main:                                             # as before 2.98.30: Camera Module 3 and the setting cam_vfov
+        return float(CFG.get("cam_hfov") or 66.0), float(CFG.get("cam_vfov") or 41.0), "default"
+    return 66.0, 41.0, "default"
+
+
+def cam_fov_h(spec=None):
+    """horizontal field of view in degrees (main camera when spec is None)"""
+    return cam_fov_hv(spec)[0]
+
+
+def cam_on_head(spec):
+    """does this camera turn with the head? The main camera: yes. An extra camera: the simulator knows, else the setting."""
+    spec = str(spec or "")
+    if not spec or spec == str(CFG.get("source")):
+        return True
+    if spec.startswith("sim:") and CFG.get("sim_on"):
+        cam = next((c for c in (SIM.get("info") or {}).get("cameras") or [] if str(c.get("id")) == spec[4:]), None)
+        if cam is not None and "on_head" in cam and not (CFG.get("cam_head") or {}).get(spec):
+            return bool(cam.get("on_head"))
+    return bool((CFG.get("cam_head") or {}).get(spec))
+
+
+def cam_fov_set(spec, model, deg=None, head=None):
+    spec = str(spec or "")
+    if not re.fullmatch(r"[A-Za-z0-9:_./\-@]{1,200}", spec):
+        return False, "invalid value"
+    if model not in [c[0] for c in CAM_FOV_CHOICES]:
+        return False, "invalid value"
+    d = dict(CFG.get("cam_fov") or {})
+    e = {"model": model}
+    if model == "own":
+        try:
+            e["deg"] = round(max(20.0, min(200.0, float(deg))), 1)
+        except (TypeError, ValueError):
+            return False, "invalid value"
+    d[spec] = e
+    CFG["cam_fov"] = dict(list(d.items())[-12:])
+    if head is not None:
+        hd = dict(CFG.get("cam_head") or {})
+        hd[spec] = bool(head)
+        CFG["cam_head"] = dict(list(hd.items())[-12:])
+    save_settings()
+    log_event("sys", f"Field of view of {spec}: {model}" + (f" {e.get('deg')}°" if model == "own" else ""))
+    return True, ""
+
+
+def cam_fov_list(lang=None):
+    """all cameras with their field of view (for the web page and the window)"""
+    out = []
+    specs = [str(CFG.get("source") or "")] + [str(s) for s in (CFG.get("extra_cams") or []) if s]
+    for i, s in enumerate(dict.fromkeys(specs)):
+        h, v, src = cam_fov_hv(s)
+        st = (CFG.get("cam_fov") or {}).get(s) or {}
+        det = cam_fov_detect(s)
+        out.append({"spec": s, "main": i == 0, "label": source_label(s) if s else s, "h": round(h, 1), "v": round(v, 1), "src": src,
+                    "model": st.get("model") or "auto", "deg": st.get("deg"), "detected": det,
+                    "detected_name": next((m[1] for m in CAM_FOV_MODELS if m[0] == det), ""), "head": cam_on_head(s)})
+    return {"cams": out, "choices": [[c[0], tr(c[1], lang)] for c in CAM_FOV_CHOICES]}
+
+
+def cam_wide_spec():
+    """an extra camera that sits on the head and sees clearly more than the main camera (for the panorama), or "" """
+    h0 = cam_fov_h(None)
+    best, bh = "", h0 + 15.0
+    for c in list(CAMS):
+        if c.status == "connected" and cam_on_head(c.spec):
+            h = cam_fov_h(c.spec)
+            if h > bh:
+                best, bh = c.spec, h
+    return best
+
+
+def cam_fov_selftest():
+    sv = (dict(CFG.get("cam_fov") or {}), CFG.get("source"), CFG.get("sim_on"))
+    try:
+        CFG["sim_on"] = False; CFG["source"] = "pi:0"
+        CFG["cam_fov"] = {"pi:0": {"model": "m3wide"}, "usb:1": {"model": "own", "deg": 120}}
+        assert abs(cam_fov_h() - 102.0) < 0.1 and abs(cam_fov()[0] - 102.0) < 0.1
+        h, v, src = cam_fov_hv("usb:1")
+        assert src == "own" and abs(h - 120) < 0.1 and 70 < v < 90, (h, v)
+        assert cam_fov_hv("usb:7")[0] == 66.0
+        _PICAM_INFO.update(t=time.time(), list=["imx708_wide_noir", "imx219"])
+        assert cam_fov_detect("pi:0") == "m3wide" and cam_fov_detect("pi:1") == "m2" and cam_fov_detect("usb:0") == ""
+        CFG["cam_fov"] = {}
+        assert abs(cam_fov_h("pi:1") - 62.2) < 0.1
+        return "own value, models, picamera2 names"
+    finally:
+        CFG["cam_fov"], CFG["source"], CFG["sim_on"] = sv
+        _PICAM_INFO.update(t=0.0, list=None)
+
+
+
+def _extra_cams_boot():
+    """2.98.30: the extra cameras of the settings were only started when one was added or the simulation switched -
+    after a restart they stayed off (found while testing «Panorama mit Weitwinkel»). Start them once with the camera loop."""
+    for _ in range(600):
+        time.sleep(1.0)
+        if WATCH_REF.get("w") is not None:
+            time.sleep(3.0)
+            try:
+                if CFG.get("extra_cams") and not CAMS and not toolmode_on():
+                    cams_apply()
+            except Exception as e:
+                print(f"extra cameras: {e}")
+            return
+
+
+threading.Thread(target=_extra_cams_boot, daemon=True, name="extracams-boot").start()
 # ---- game corner (2.95.29): party games for the phones in the own Wi-Fi - quiz with buzzer, werewolf narrator,
 # drawing and guessing, connect four, dice / timer / scores - and a collection of free browser games (from GitHub).
 # The phones join with a QR code (a room key in the address, no password); the room closes by itself after some hours.
@@ -31910,6 +32909,7 @@ class ExtraCam:
         self.motion = False; self.recording = False
         self.writer = None; self.rec_name = ""; self.rec_info = None; self.last_motion = 0.0; self.streak = 0
         self.boxes = []; self.times = deque(maxlen=30); self.ftimes = deque(maxlen=31); self.n = 0; self.last_cleanup = 0.0
+        self.raw = None; self.raw_t = 0.0; self.raw_until = 0.0        # 2.98.30: a clean picture for the panorama (317), only when asked
         self.thread = threading.Thread(target=self.loop, daemon=True); self.thread.start()
 
     def info(self):
@@ -31959,6 +32959,8 @@ class ExtraCam:
     def _process(self, frame, bg):
         t0 = time.time()
         self.n += 1
+        if t0 < self.raw_until:
+            self.raw = frame.copy(); self.raw_t = t0
         H, W = frame.shape[:2]
         if self.n % 2 == 0 or not self.times:                  # detection on every 2nd frame is enough
             pw = 320; ph = max(1, int(H * pw / W)); sx = W / pw; sy = H / ph
@@ -47382,6 +48384,449 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
 """
 WEB_PAGE = WEB_PAGE.replace("</body>", LIVE_VIEW_JS + "</body>", 1)
 WEB_UI_LOCAL.add("mw-live-view")                         # per device: the layout of the phone is not the one of the PC (not copied to the Pi)
+# ----------------------------------------------------------------------------
+# 2.98.30: phone first (390 px): three steps - 1 look around (scan), 2 mark (tap the suggestions or draw a box with one
+# of four big buttons), 3 done (what was made, «Gehtest» at once). The main page (530) stays as it is: a small script at its
+# end adds the card on the Schutz tab, the offer («MoveEye hingestellt? Platz einrichten») and the field of view per camera.
+# ----------------------------------------------------------------------------
+PLACE_PAGE = r"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MoveEye - Set up the place</title>
+<style>
+/*BASECSS*/
+main{padding:14px 16px 90px;max-width:980px;margin:0 auto}
+.steps{display:flex;gap:6px;margin:0 0 12px}.steps span{flex:1;text-align:center;padding:6px 4px;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--mut)}
+.steps span.on{border-color:var(--acc);color:var(--txt);font-weight:700}
+.big{display:block;width:100%;padding:15px 12px;font-size:17px;border-radius:14px;margin:10px 0 0}
+.opt{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:8px 0 0;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.opt input{width:22px;height:22px;flex:none}
+.bar{height:12px;border-radius:8px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--acc);transition:width .4s}
+#prev{width:100%;max-width:520px;border-radius:12px;display:block;margin:10px auto 0;background:#000;aspect-ratio:16/9;object-fit:cover}
+.tools{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
+@media(min-width:700px){.tools{grid-template-columns:repeat(5,1fr)}}
+.tools button{padding:12px 6px;font-size:15px;border-radius:12px;min-height:52px;line-height:1.2}
+.tools button.on{outline:3px solid var(--acc);outline-offset:1px;font-weight:700}
+#pwrap{overflow-x:auto;overflow-y:hidden;border-radius:12px;background:#111;-webkit-overflow-scrolling:touch;position:relative}
+#pin{position:relative;display:inline-block;vertical-align:top}
+#pimg{display:block;height:260px;width:auto;max-width:none;user-select:none;-webkit-user-drag:none}
+@media(min-width:700px){#pimg{height:min(420px,50vh)}}
+#psvg{position:absolute;left:0;top:0;width:100%;height:100%}
+#pin.draw #psvg{touch-action:none;cursor:crosshair}
+.lst .it{display:grid;grid-template-columns:34px 1fr 40px;gap:6px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.lst .it i{font-style:normal;font-size:22px;text-align:center}.lst .it input[type=text]{width:100%;box-sizing:border-box}
+.lst .it .sub{grid-column:2/-1;font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lst .it.sel{background:rgba(120,160,255,.10)}
+.leg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;margin:6px 0}
+.sum div{padding:6px 0;border-top:1px solid var(--line)}
+#selbar{display:none;gap:6px;margin:8px 0;flex-wrap:wrap}#selbar.on{display:flex}
+</style></head><body>
+<header>
+  <h1>MoveEye</h1>
+  <!--NAV-->
+  <span class="hdr-ctl">
+    <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
+    <button class="sec" id="btn-lang" onclick="toggleLang()">DE</button>
+  </span>
+</header>
+<main>
+  <h2 style="margin:0 0 8px">📍 <span data-i18n="Set up the place">Set up the place</span></h2>
+  <div class="steps"><span id="st1" data-i18n="1 Look around">1 Look around</span><span id="st2" data-i18n="2 Mark">2 Mark</span><span id="st3" data-i18n="3 Done">3 Done</span></div>
+  <div id="view" class="card"></div>
+</main>
+<script>
+/*COMMON*/
+/*PLACEDE*/
+const KINDS = {tent: ["⛺", "My tent / camper", "#ff5a5a"], access: ["🚶", "Access / path", "#ffb020"], public_path: ["🛣", "Public path", "#c9a0ff"],
+  valuable: ["🚲", "Valuables", "#3cc8ff"], ignore: ["🌿", "Ignore", "#8fd18f"]};
+const P = {s: null, items: [], tool: "", sel: -1, th: false, timer: 0, mode: "", ver: 0, drag: null};
+const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
+const V = () => document.getElementById("view");
+const LOC = () => ({de: "de-CH", fr: "fr-CH", it: "it-CH", rm: "de-CH"}[LANG] || "en-GB");
+function steps(n) { [1, 2, 3].forEach(i => document.getElementById("st" + i).classList.toggle("on", i === n)); }
+function mmss(s) { s = Math.max(0, s | 0); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
+async function load() {
+  clearTimeout(P.timer);
+  try { const r = await fetch("/api/place?lang=" + LANG, {cache: "no-store"}); if (r.ok) P.s = await r.json(); } catch (e) {}
+  const S = P.s; if (!S) { P.timer = setTimeout(load, 3000); return; }
+  if (S.busy) { if (P.mode !== "scan") P.mode = "scan"; paintScan(); P.timer = setTimeout(load, 1000); return; }
+  if (P.mode === "scan") { P.mode = S.scan && S.done_msg ? "mark" : "start"; if (P.mode === "mark") startMark(true); else paintStart(); return; }
+  if (!P.mode) { P.mode = location.hash === "#mark" && S.scan ? "mark" : "start"; if (P.mode === "mark") startMark(false); else paintStart(); }
+}
+// ---- step 1: start ----
+function paintStart() {
+  steps(1); const S = P.s, v = V(); v.textContent = ""; const pl = S.plan;
+  v.appendChild(E("p", "", t("Put MoveEye where it will guard. The head looks around once: it takes a photo in every direction and watches for about 10 seconds what moves and what the AI recognises. Then you only mark your tent, the access, your valuables and what to ignore.")));
+  const cov = pl.wrap ? t("the whole circle (360°)") : t("about") + " " + pl.cover + "°";
+  v.appendChild(E("p", "mut", tf("Pan range of the servo {servo}°, with the lens it sees {cover} (camera {hf}°).", {servo: pl.servo, cover: cov, hf: Math.round(pl.hf)})));
+  if (!pl.wrap) v.appendChild(E("p", "mut", t("No full turn: the head turns only as far as its servo goes.")));
+  v.appendChild(E("p", "mut", tf("{n} directions in {rows} rows - about {min} minutes.", {n: pl.n, rows: pl.rows, min: Math.max(1, Math.round(pl.eta / 60))})));
+  const opts = {};
+  const opt = (id, label, on) => { const l = E("label", "opt"); const c = E("input"); c.type = "checkbox"; c.checked = on; c.id = id; l.append(c, E("span", "", label)); v.appendChild(l); opts[id] = c; };
+  if (S.wide) opt("o-wide", tf("Use the wide-angle camera ({cam}, {deg}°): {n} directions, about {min} min", {cam: S.wide.label, deg: Math.round(S.wide.hf), n: S.wide.n, min: Math.max(1, Math.round(S.wide.eta / 60))}), true);
+  opt("o-rows", t("Thorough: 3 rows instead of 2 (takes longer)"), false);
+  if (S.dark) {
+    v.appendChild(E("div", "mut", "🌙 " + t("It is dark: the night reference is made now.")));
+    if (S.ir_ok) opt("o-ir", t("with the infrared light"), true);
+    if (S.thermal_ok) opt("o-th", t("with the thermal camera too"), true);
+  }
+  const b = E("button", "big", "▶ " + t("Start looking around")); b.type = "button";
+  if (S.why_not) { b.disabled = true; v.appendChild(E("div", "mut", "⚠ " + S.why_not)); }
+  b.onclick = async () => {
+    b.disabled = true;
+    const r = await post("/api/place", {op: "start", lang: LANG, wide: !!(opts["o-wide"] && opts["o-wide"].checked), rows: opts["o-rows"].checked ? 3 : 2,
+      ir: !!(opts["o-ir"] && opts["o-ir"].checked), thermal: !!(opts["o-th"] && opts["o-th"].checked)});
+    if (!r || !r.ok) { b.disabled = false; toast("⚠ " + ((r && r.error) || "error")); return; }
+    P.mode = "scan"; load();
+  };
+  v.appendChild(b);
+  if (S.scan) { const m = E("button", "sec big", "🖼 " + t("Show the last look-around") + " (" + new Date(S.scan.t * 1000).toLocaleString(LOC(), {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"}) + ")");
+    m.type = "button"; m.onclick = () => startMark(false); v.appendChild(m); }
+  if (S.record) {
+    const R = S.record; const d = E("div", "mut"); d.style.marginTop = "12px";
+    d.textContent = "✓ " + tf("Place set up on {when}: {n} things marked", {when: new Date(R.t * 1000).toLocaleString(LOC(), {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"}), n: R.items.length});
+    v.appendChild(d);
+    const f = E("button", "sec", "🗑 " + t("Forget the place")); f.type = "button"; f.style.marginTop = "8px";
+    f.onclick = async () => { if (!confirm(t("Forget the place? Its zones, waypoints and guarded things are removed."))) return; await post("/api/place", {op: "clear", lang: LANG}); P.mode = ""; load(); };
+    v.appendChild(f);
+  }
+}
+// ---- step 1b: scanning ----
+function paintScan() {
+  steps(1); const S = P.s, v = V();
+  if (!document.getElementById("sc-bar")) {
+    v.textContent = "";
+    v.appendChild(E("div", "", "")).id = "sc-t";
+    const bar = E("div", "bar"); const i = E("i"); i.id = "sc-bar"; bar.appendChild(i); bar.style.margin = "10px 0"; v.appendChild(bar);
+    v.appendChild(E("div", "mut", "")).id = "sc-left";
+    const im = E("img"); im.id = "prev"; im.alt = ""; v.appendChild(im);
+    v.appendChild(E("div", "mut", t("The head turns by itself - please do not stand in front of it."))).style.marginTop = "8px";
+    const c = E("button", "sec big", "✕ " + t("Cancel")); c.type = "button"; c.onclick = () => post("/api/place", {op: "stop"}); v.appendChild(c);
+    P.pv = 0;
+  }
+  const ph = {photo: t("taking the photo"), watch: t("watching what moves"), panorama: t("making the panorama")}[S.phase] || "…";
+  document.getElementById("sc-t").innerHTML = "";
+  const h = E("b", "", "🔄 " + tf("Direction {i} of {n}", {i: S.step, n: S.n})); h.style.fontSize = "18px";
+  document.getElementById("sc-t").append(h, E("div", "mut", ph));
+  document.getElementById("sc-bar").style.width = Math.round(100 * Math.max(0, S.step - (S.phase === "photo" ? 1 : 0.5)) / Math.max(1, S.n)) + "%";
+  document.getElementById("sc-left").textContent = t("about") + " " + mmss(S.left) + " " + t("left");
+  if (Date.now() - P.pv > 2000) { P.pv = Date.now(); document.getElementById("prev").src = "/api/frame.jpg?" + Date.now(); }
+}
+// ---- step 2: mark ----
+function geo() { return P.s.scan.geo; }
+function toPx(a, e) { const g = geo(); let x = (a - g.a0) * g.k; if (g.wrap && x < 0) x += 360 * g.k; return [x, (g.e_top - e) * g.k + (g.head || 0)]; }
+function toAng(x, y) { const g = geo(); return [g.a0 + x / g.k, g.e_top - (y - (g.head || 0)) / g.k]; }
+function startMark(fresh) {
+  P.mode = "mark"; const S = P.s;
+  if (!S.scan) { paintStart(); return; }
+  P.items = (!fresh && S.record && S.record.items && S.record.items.length && (S.record.t || 0) >= (S.scan.t || 0) - 1)
+    ? S.record.items.filter(it => it.a0 != null).map(it => ({kind: it.kind, name: it.name, a0: it.a0, a1: it.a1, e0: it.e0, e1: it.e1})) : [];
+  P.taken = {}; P.tool = ""; P.sel = -1; paintMark();
+}
+function paintMark() {
+  steps(2); const S = P.s, v = V(), g = geo(); v.textContent = "";
+  v.appendChild(E("div", "mut", t("Tap a suggestion to take it, or choose a button and draw a box on the panorama with your finger. Swipe sideways with ✋.")));
+  const tools = E("div", "tools");
+  [["tent"], ["access"], ["valuable"], ["ignore"], [""]].forEach(([k]) => {
+    const b = E("button", "sec", k ? KINDS[k][0] + " " + t(KINDS[k][1]) : "✋ " + t("Move / select")); b.type = "button"; b.classList.toggle("on", P.tool === k);
+    b.onclick = () => { P.tool = k; paintMark(); }; tools.appendChild(b);
+  });
+  v.appendChild(tools);
+  if (S.scan.thermal) { const l = E("label", "opt"); const c = E("input"); c.type = "checkbox"; c.checked = P.th; c.onchange = () => { P.th = c.checked; paintMark(); };
+    l.append(c, E("span", "", "🌡 " + t("Show the thermal picture"))); v.appendChild(l); }
+  const wrap = E("div"); wrap.id = "pwrap"; const pin = E("div"); pin.id = "pin"; pin.classList.toggle("draw", !!P.tool);
+  const img = E("img"); img.id = "pimg"; img.alt = ""; img.draggable = false; img.src = "/place/file/" + (P.th ? "pano_th.jpg" : "pano.jpg") + "?v=" + S.scan.v;
+  const NS = "http://www.w3.org/2000/svg"; const svg = document.createElementNS(NS, "svg"); svg.id = "psvg"; svg.setAttribute("viewBox", "0 0 " + g.w + " " + g.h);
+  svg.setAttribute("preserveAspectRatio", "none"); pin.append(img, svg); wrap.appendChild(pin); v.appendChild(wrap);
+  const lg = E("div", "leg mut"); lg.append(E("span", "", "┅ " + t("suggestion - tap to take it")), E("span", "", "▭ " + t("marked")));
+  if (g.wrap) lg.appendChild(E("span", "", "↔ " + t("the picture goes on after the seam (360°)")));
+  v.appendChild(lg);
+  const sb = E("div"); sb.id = "selbar"; v.appendChild(sb);
+  drawSvg(svg);
+  bindDraw(svg, pin);
+  const all = E("button", "sec", "✚ " + t("Take all suggestions")); all.type = "button"; all.style.marginTop = "6px";
+  all.onclick = () => { (S.scan.suggest || []).forEach(s => take(s, s.kind)); paintMark(); };
+  if ((S.scan.suggest || []).some(s => !P.taken[s.id])) v.appendChild(all);
+  const lst = E("div", "lst"); lst.style.marginTop = "10px";
+  if (!P.items.length) lst.appendChild(E("div", "mut", t("Nothing marked yet.")));
+  P.items.forEach((it, i) => {
+    const r = E("div", "it" + (i === P.sel ? " sel" : "")); r.appendChild(E("i", "", KINDS[it.kind][0]));
+    const n = E("input"); n.type = "text"; n.value = it.name; n.maxLength = 40; n.placeholder = t(KINDS[it.kind][1]); n.oninput = () => { it.name = n.value; };
+    const x = E("button", "sec", "✕"); x.type = "button"; x.title = t("Remove"); x.onclick = () => { P.items.splice(i, 1); P.sel = -1; paintMark(); };
+    r.append(n, x);
+    const sub = E("div", "sub mut");
+    const ks = E("select"); ["tent", "access", "valuable", "ignore"].forEach(k => { const o = E("option", "", KINDS[k][0] + " " + t(KINDS[k][1])); o.value = k; ks.appendChild(o); });
+    ks.value = it.kind === "public_path" ? "access" : it.kind; ks.onchange = () => { it.kind = ks.value; paintMark(); }; sub.appendChild(ks);
+    if (it.kind === "access" || it.kind === "public_path") { const l = E("label"); const c = E("input"); c.type = "checkbox"; c.checked = it.kind === "public_path";
+      c.onchange = () => { it.kind = c.checked ? "public_path" : "access"; paintMark(); }; l.append(c, " " + t("public path = only report")); sub.appendChild(l); }
+    sub.appendChild(E("span", "", KIND_NOTE(it.kind)));
+    r.appendChild(sub); r.onclick = e => { if (e.target === r) { P.sel = i; paintMark(); } }; lst.appendChild(r);
+  });
+  v.appendChild(lst);
+  const pt = E("label", "opt"); const pc = E("input"); pc.type = "checkbox"; pc.id = "o-patrol"; pc.checked = !!(S.info && S.info.patrol);
+  pt.append(pc, E("span", "", "🔁 " + t("Patrol: the head looks at the accesses now and then"))); v.appendChild(pt);
+  const ap = E("button", "big", "✓ " + t("Apply")); ap.type = "button";
+  ap.onclick = async () => {
+    ap.disabled = true;
+    const r = await post("/api/place", {op: "apply", lang: LANG, items: P.items, patrol: pc.checked});
+    ap.disabled = false;
+    if (!r || !r.ok) { toast("⚠ " + ((r && r.error) || "error")); return; }
+    P.res = r.result; paintDone();
+  };
+  v.appendChild(ap);
+  const bk = E("button", "sec big", "↻ " + t("Look around again")); bk.type = "button"; bk.onclick = () => { P.mode = "start"; paintStart(); }; v.appendChild(bk);
+  // scroll to the tent / the first item once
+  if (!P.scrolled) { P.scrolled = true; setTimeout(() => { const f = P.items[0] || (S.scan.suggest || [])[0]; if (f) { const [x] = toPx(f.a0, f.e1); wrap.scrollLeft = Math.max(0, x * scaleOf() - 60); } }, 300); }
+}
+function KIND_NOTE(k) { return {tent: t("protection zone, lights / siren aim here, a person close by counts more"), access: t("line: a person crossing it is reported + patrol point"),
+  public_path: t("persons there: only a note, no alarm"), valuable: t("guarded: in the morning «Bike missing»"), ignore: t("mask: movement there is ignored")}[k] || ""; }
+function scaleOf() { const im = document.getElementById("pimg"); return im && im.naturalHeight ? im.clientHeight / im.naturalHeight : 260 / geo().h; }
+function take(s, kind) { if (P.taken[s.id]) return; P.taken[s.id] = 1; P.items.push({kind: kind || s.kind, name: t(s.name || KINDS[s.kind][1]), a0: s.a0, a1: s.a1, e0: s.e0, e1: s.e1}); }
+function rect(svg, b, col, dash, label, extra) {
+  const NS = "http://www.w3.org/2000/svg"; const [x0, y0] = toPx(b.a0, b.e1); const [x1, y1] = toPx(b.a1, b.e0);
+  const r = document.createElementNS(NS, "rect"); r.setAttribute("x", Math.min(x0, x1)); r.setAttribute("y", y0); r.setAttribute("width", Math.abs(x1 - x0)); r.setAttribute("height", y1 - y0);
+  r.setAttribute("fill", dash ? "rgba(255,255,255,.06)" : col + "33"); r.setAttribute("stroke", col); r.setAttribute("stroke-width", extra ? 5 : 3); if (dash) r.setAttribute("stroke-dasharray", "10 7");
+  r.setAttribute("vector-effect", "non-scaling-stroke"); svg.appendChild(r);
+  const tx = document.createElementNS(NS, "text"); tx.setAttribute("x", Math.min(x0, x1) + 6); tx.setAttribute("y", y0 + 26); tx.setAttribute("fill", "#fff"); tx.setAttribute("font-size", "22");
+  tx.setAttribute("stroke", "#000"); tx.setAttribute("stroke-width", "4"); tx.setAttribute("paint-order", "stroke"); tx.textContent = label; svg.appendChild(tx);
+  return r;
+}
+function drawSvg(svg) {
+  svg.textContent = ""; const S = P.s;
+  (S.scan.suggest || []).forEach(s => { if (!P.taken[s.id]) rect(svg, s, KINDS[s.kind][2], true, "+" + KINDS[s.kind][0]); });
+  P.items.forEach((it, i) => rect(svg, it, KINDS[it.kind][2], false, KINDS[it.kind][0] + " " + (it.name || t(KINDS[it.kind][1])), i === P.sel));
+  if (P.drag && P.drag.b) rect(svg, P.drag.b, P.tool ? KINDS[P.tool][2] : "#fff", false, "");
+}
+function hit(list, a, e) { for (let i = list.length - 1; i >= 0; i--) { const b = list[i]; let aa = a; const g = geo(); if (g.wrap) { const c = (b.a0 + b.a1) / 2; aa = c + (((a - c + 180) % 360) + 360) % 360 - 180; }
+  if (aa >= b.a0 && aa <= b.a1 && e >= b.e0 && e <= b.e1) return i; } return -1; }
+function bindDraw(svg, pin) {
+  const pt = ev => { const r = svg.getBoundingClientRect(), g = geo(); return [(ev.clientX - r.left) / r.width * g.w, (ev.clientY - r.top) / r.height * g.h]; };
+  svg.onpointerdown = ev => { const [x, y] = pt(ev); P.drag = {x0: x, y0: y, sx: ev.clientX, sy: ev.clientY, b: null}; if (P.tool) { try { svg.setPointerCapture(ev.pointerId); } catch (e) {} ev.preventDefault(); } };
+  svg.onpointermove = ev => { if (!P.drag || !P.tool) return; const [x, y] = pt(ev); const [a0, e0] = toAng(Math.min(P.drag.x0, x), Math.max(P.drag.y0, y)), [a1, e1] = toAng(Math.max(P.drag.x0, x), Math.min(P.drag.y0, y));
+    P.drag.b = {a0: a0, a1: a1, e0: e0, e1: e1}; drawSvg(svg); };
+  svg.onpointerup = ev => {
+    const D = P.drag; P.drag = null; if (!D) return;
+    const moved = Math.hypot(ev.clientX - D.sx, ev.clientY - D.sy);
+    if (P.tool && moved > 14 && D.b) { P.items.push({kind: P.tool, name: "", a0: D.b.a0, a1: D.b.a1, e0: D.b.e0, e1: D.b.e1}); P.sel = P.items.length - 1; paintMark(); return; }
+    if (moved > 14) { drawSvg(svg); return; }
+    const [a, e] = toAng(...pt(ev));
+    const ii = hit(P.items, a, e); if (ii >= 0) { P.sel = ii; if (P.tool) P.items[ii].kind = P.tool; paintMark(); return; }
+    const sg = (P.s.scan.suggest || []).filter(s => !P.taken[s.id]); const si = hit(sg, a, e);
+    if (si >= 0) { take(sg[si], P.tool || sg[si].kind); P.sel = P.items.length - 1; paintMark(); return; }
+    if (P.tool) { const g = geo(), half = 4; P.items.push({kind: P.tool, name: "", a0: a - half * 1.5, a1: a + half * 1.5, e0: e - half, e1: e + half}); P.sel = P.items.length - 1; paintMark(); }
+  };
+  svg.onpointercancel = () => { P.drag = null; drawSvg(svg); };
+}
+// ---- step 3: done ----
+function paintDone() {
+  steps(3); const R = P.res || {}, v = V(); v.textContent = "";
+  v.appendChild(E("h3", "", "✓ " + t("The place is set up")));
+  const s = E("div", "sum");
+  const line = (ic, txt) => s.appendChild(E("div", "", ic + " " + txt));
+  if (R.tent) line("⛺", tf("{n} protection zone(s) at the tent", {n: R.tent}));
+  if (R.lines) line("🚶", tf("{n} line(s) at the accesses", {n: R.lines}));
+  if (R.public) line("🛣", tf("{n} public path(s): only reported", {n: R.public}));
+  if (R.masks) line("🌿", tf("{n} mask(s): ignored", {n: R.masks}));
+  if (R.waypoints) line("🔁", tf("{n} patrol point(s)", {n: R.waypoints}));
+  if (R.watched) line("🚲", tf("{n} guarded thing(s) - reported in the morning when missing", {n: R.watched}));
+  else if ((P.items || []).some(i => i.kind === "valuable")) line("🚲", t("The guarded things follow after the reference scan of the main camera."));
+  if (R.skipped) line("⚠", tf("{n} zone(s) not made: at most 12 zones", {n: R.skipped}));
+  if (!R.items) line("ℹ", t("Nothing marked - nothing changed."));
+  v.appendChild(s);
+  v.appendChild(E("p", "mut", t("Now test it: walk past like a visitor would. MoveEye beeps at every detection.")));
+  const w = E("button", "big", "🚶 " + t("Start the walk test")); w.type = "button";
+  w.onclick = async () => { const r = await post("/api/walktest", {action: "start", lang: LANG}); if (r && r.ok) location.href = "/"; else toast("⚠ " + ((r && r.error) || "error")); };
+  v.appendChild(w);
+  const z = E("a", "btn sec big", "▱ " + t("Look at the zones")); z.href = "/zones"; z.style.textAlign = "center"; v.appendChild(z);
+  const b = E("a", "btn sec big", "🛡 " + t("Back to Schutz")); b.href = "/protect"; b.style.textAlign = "center"; v.appendChild(b);
+}
+function tf(k, o) { let s = t(k); for (const x in o) s = s.split("{" + x + "}").join(o[x]); return s; }
+(async () => { await initAppearance(); load(); })();
+/*ALERTS*/
+</script>
+</body></html>
+"""
+
+# the card on the Schutz tab, the offer after setting up, the field of view in Settings → Camera / Servos (main page 530)
+PLACE_MAIN_JS = r"""
+<script>
+(function () {
+  try { const D = /*PLDE*/{}; for (const k in D) if (!(k in I18N.de)) I18N.de[k] = D[k]; } catch (e) {}
+  const T = x => (typeof t === "function" ? t(x) : x);
+  const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
+  const L = () => (typeof LANG !== "undefined" ? LANG : "en");
+  const tab = () => document.body.getAttribute("data-tab") || "";
+  let S = null;
+  function card() {
+    const pc = document.getElementById("pr-card"); if (!pc) return;
+    let c = document.getElementById("pl-card");
+    if (!c) { c = E("div", "auxbox"); c.id = "pl-card"; c.style.margin = "10px 0";
+      const nr = document.getElementById("pr-night"); if (nr) nr.before(c); else pc.appendChild(c); }
+    c.textContent = "";
+    const a = E("a", "btn", "📍 " + T("Set up the place")); a.href = "/place"; a.style.cssText = "display:block;text-align:center;padding:12px;font-size:16px";
+    const R = S && S.record;
+    const d = E("div", "mut", R ? "✓ " + T("Place set up") + " · " + new Date(R.t * 1000).toLocaleDateString({de: "de-CH", fr: "fr-CH", it: "it-CH", rm: "de-CH"}[L()] || "en-GB") + " · " + (R.items || []).length + " " + T("things marked")
+                            : T("MoveEye put up? Let it look around once: tent, access, valuables, what to ignore."));
+    d.style.marginTop = "6px"; c.append(a, d);
+  }
+  function offer() {
+    let o = document.getElementById("pl-offer");
+    const want = S && S.offer && (tab() === "protect" || tab() === "live");
+    if (!want) { if (o) o.remove(); return; }
+    if (o) return;
+    o = E("div", "card"); o.id = "pl-offer"; o.style.cssText = "border:2px solid var(--acc);margin:0 0 12px";
+    o.appendChild(E("b", "", "📍 " + T(S.offer === "moved" ? "New place? Set it up again" : "MoveEye put up? Set up the place")));
+    o.appendChild(E("div", "mut", T("2-3 minutes: the head looks around, you only tap tent, access, valuables.")));
+    const r = E("div", "btns"); const a = E("a", "btn", "📍 " + T("Set up the place")); a.href = "/place";
+    const x = E("button", "sec", T("Later")); x.type = "button"; x.onclick = async () => { await post("/api/place", {op: "dismiss"}); o.remove(); };
+    r.append(a, x); o.appendChild(r);
+    const m = document.querySelector("main"); if (m) m.prepend(o);
+  }
+  // Settings → Camera / Servos: field of view per camera
+  let F = null, fbusy = false;
+  async function fov() {
+    const sl = document.querySelector('.sl[data-key="cam_vfov"]'), sec = document.querySelector('details[data-view="sec:Camera / Servos"]');
+    if ((!sl && !sec) || document.getElementById("fov-box") || fbusy) return;
+    fbusy = true;
+    try { F = await (await fetch("/api/camfov?lang=" + L(), {cache: "no-store"})).json(); } catch (e) { F = null; }
+    fbusy = false;
+    if (!F || !F.ok || document.getElementById("fov-box")) return;
+    const bx = E("div", "auxbox"); bx.id = "fov-box"; bx.style.margin = "8px 0";
+    bx.appendChild(E("b", "", "📐 " + T("Field of view of the camera")));
+    F.cams.forEach(c => {
+      const r = E("div"); r.style.cssText = "margin-top:8px";
+      r.appendChild(E("div", "", (c.main ? T("Main camera") : T("Extra camera")) + ": " + c.label));
+      const s = E("select"); s.style.width = "100%"; F.choices.forEach(([k, n]) => { const o = E("option", "", n); o.value = k; s.appendChild(o); }); s.value = c.model;
+      const n = E("input"); n.type = "number"; n.min = 20; n.max = 200; n.step = 1; n.value = c.deg || Math.round(c.h); n.style.width = "90px"; n.hidden = c.model !== "own";
+      const info = E("div", "mut", "");
+      const src = {sim: T("from the simulator"), auto: c.detected_name ? T("detected") + ": " + c.detected_name : T("not detected - Camera Module 3 assumed"), model: T("chosen"), own: T("own value"), default: T("standard")}[c.src] || "";
+      info.textContent = Math.round(c.h) + "° × " + Math.round(c.v) + "° · " + src;
+      const send = async () => { n.hidden = s.value !== "own";
+        const q = await post("/api/camfov", {spec: c.spec, model: s.value, deg: +n.value, head: hd ? hd.checked : null, lang: L()});
+        if (q && q.ok) { const cc = (q.cams || []).find(x => x.spec === c.spec); if (cc) info.textContent = Math.round(cc.h) + "° × " + Math.round(cc.v) + "°"; toast("✓"); } else toast("⚠ " + ((q && q.error) || "error")); };
+      s.onchange = send; n.onchange = send;
+      let hd = null;
+      const row = E("div"); row.style.cssText = "display:flex;gap:8px;align-items:center;margin-top:4px"; row.append(s, n); r.append(row, info);
+      if (!c.main) { const l = E("label", "mut"); hd = E("input"); hd.type = "checkbox"; hd.checked = !!c.head; hd.onchange = send; l.append(hd, " " + T("sits on the head (turns with it) - for the panorama")); r.appendChild(l); }
+      bx.appendChild(r);
+    });
+    if (sl) sl.before(bx); else sec.appendChild(bx);
+  }
+  async function poll() {
+    try { const r = await fetch("/api/place?lite=1&lang=" + L(), {cache: "no-store"}); if (r.ok) S = await r.json(); } catch (e) {}
+    try { card(); offer(); } catch (e) {}
+    setTimeout(poll, 20000);
+  }
+  setInterval(() => { try { fov(); } catch (e) {} }, 1500);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(poll, 600)); else setTimeout(poll, 600);
+})();
+</script>
+"""
+
+
+def _place_de(keys):
+    return {k: DE.get(k, k) for k in keys}
+
+
+PLACE_PAGE_KEYS = ["Set up the place", "1 Look around", "2 Mark", "3 Done", "Put MoveEye where it will guard. The head looks around once: it takes a photo in every direction and watches for about 10 seconds what moves and what the AI recognises. Then you only mark your tent, the access, your valuables and what to ignore.", "the whole circle (360°)", "about", "Pan range of the servo {servo}°, with the lens it sees {cover} (camera {hf}°).",
+                   "No full turn: the head turns only as far as its servo goes.", "{n} directions in {rows} rows - about {min} minutes.",
+                   "Use the wide-angle camera ({cam}, {deg}°): {n} directions, about {min} min", "Thorough: 3 rows instead of 2 (takes longer)",
+                   "It is dark: the night reference is made now.", "with the infrared light", "with the thermal camera too", "Start looking around",
+                   "Show the last look-around", "Place set up on {when}: {n} things marked", "Forget the place",
+                   "Forget the place? Its zones, waypoints and guarded things are removed.", "The head turns by itself - please do not stand in front of it.",
+                   "Cancel", "taking the photo", "watching what moves", "making the panorama", "Direction {i} of {n}", "left", "Tap a suggestion to take it, or choose a button and draw a box on the panorama with your finger. Swipe sideways with ✋.",
+                   "My tent / camper", "Access / path", "Public path", "Valuables", "Ignore", "Move / select", "Show the thermal picture",
+                   "suggestion - tap to take it", "marked", "the picture goes on after the seam (360°)", "Take all suggestions", "Nothing marked yet.",
+                   "Remove", "public path = only report", "Patrol: the head looks at the accesses now and then", "Apply", "Look around again",
+                   "protection zone, lights / siren aim here, a person close by counts more", "line: a person crossing it is reported + patrol point",
+                   "persons there: only a note, no alarm", "guarded: in the morning «Bike missing»", "mask: movement there is ignored",
+                   "The place is set up", "{n} protection zone(s) at the tent", "{n} line(s) at the accesses", "{n} public path(s): only reported",
+                   "{n} mask(s): ignored", "{n} patrol point(s)", "{n} guarded thing(s) - reported in the morning when missing",
+                   "The guarded things follow after the reference scan of the main camera.", "{n} zone(s) not made: at most 12 zones",
+                   "Nothing marked - nothing changed.", "Now test it: walk past like a visitor would. MoveEye beeps at every detection.",
+                   "Start the walk test", "Look at the zones", "Back to Schutz",
+                   "Bike", "Motorbike", "Car", "Camper?", "Chair", "Bench", "Backpack", "Suitcase", "Bag", "Umbrella", "Table", "Path?", "Road?", "Moves by itself"]
+PLACE_MAIN_KEYS = ["Set up the place", "Place set up", "things marked", "MoveEye put up? Let it look around once: tent, access, valuables, what to ignore.",
+                   "New place? Set it up again", "MoveEye put up? Set up the place", "2-3 minutes: the head looks around, you only tap tent, access, valuables.",
+                   "Later", "Field of view of the camera", "Main camera", "Extra camera", "from the simulator", "detected",
+                   "not detected - Camera Module 3 assumed", "chosen", "own value", "standard", "sits on the head (turns with it) - for the panorama"]
+
+
+def place_page():
+    js = "Object.assign(I18N.de, " + json.dumps(_place_de(PLACE_PAGE_KEYS), ensure_ascii=False) + ");"
+    return render_page(PLACE_PAGE, "place").replace("/*PLACEDE*/", js, 1)
+
+
+def _place_main_js():
+    return PLACE_MAIN_JS.replace("/*PLDE*/{}", json.dumps(_place_de(PLACE_MAIN_KEYS), ensure_ascii=False))
+
+
+NAV_SUB["protect"].append(("place", "/place", "Set up the place"))     # Schutz · Zonen · Platz einrichten
+NAV_OF["place"] = "protect"
+COMMON_JS = COMMON_JS.replace('"Game corner": "Spielecke"}};', '"Game corner": "Spielecke", "Set up the place": "Platz einrichten"}};', 1)
+WEB_PAGE = WEB_PAGE.replace("</body>", "<!--PLACEJS--></body>", 1)     # filled by 624 (after the German texts are known)
+
+
+def place_routes(app, watch, reply, body):
+    """the addresses (called once by the web server, 550)"""
+    from flask import Response, request, g, send_file
+
+    @app.route("/place")
+    def place_web_page():
+        return Response(place_page(), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+    @app.route("/api/place", methods=["GET", "POST"])
+    def api_place():
+        lang = norm_lang(request.args.get("lang") or CFG.get("lang"))
+        if request.method == "GET":
+            if request.args.get("lite") == "1":
+                rec = _place_load()
+                return reply({"ok": True, "offer": place_offer(), "busy": PLACE["busy"],
+                              "record": {"t": rec.get("t"), "items": rec.get("items") or []} if rec else None})
+            return reply(dict(place_state(lang), ok=True))
+        d = body(); lang = norm_lang(d.get("lang") or lang); op = str(d.get("op") or "")
+        if getattr(g, "role", "admin") != "admin":
+            return reply({"ok": False, "error": "not allowed"}, 403)
+        if op == "start":
+            ok, err = place_start(bool(d.get("ir", True)), bool(d.get("thermal", True)), bool(d.get("wide")), int(d.get("rows") or 2) if str(d.get("rows") or "2").isdigit() else 2, "web")
+            return reply({"ok": ok, "error": tr(err, lang) if err else None}, 200 if ok else 400)
+        if op == "stop":
+            place_stop()
+        elif op == "apply":
+            ok, err, res = place_apply(d.get("items") or [], True, bool(d.get("patrol")), "web")
+            if not ok:
+                return reply({"ok": False, "error": tr_err(err, lang)}, 400)
+            return reply({"ok": True, "result": res})
+        elif op == "dismiss":
+            place_offer_dismiss()
+        elif op == "clear":
+            place_clear("web")
+        else:
+            return reply({"ok": False, "error": "unknown"}, 400)
+        return reply({"ok": True})
+
+    @app.route("/place/file/<fn>")
+    def place_file(fn):
+        if not re.fullmatch(r"(pano|pano_th|pos_\d{2}|th_\d{2})\.jpg", fn):
+            return Response("not found", 404)
+        p_ = place_dir("scan", fn)
+        return send_file(p_, mimetype="image/jpeg", max_age=60) if os.path.isfile(p_) else Response("not found", 404)
+
+    @app.route("/api/camfov", methods=["GET", "POST"])
+    def api_camfov():
+        lang = norm_lang(request.args.get("lang") or CFG.get("lang"))
+        if request.method == "POST":
+            if getattr(g, "role", "admin") != "admin":
+                return reply({"ok": False, "error": "not allowed"}, 403)
+            d = body(); lang = norm_lang(d.get("lang") or lang)
+            ok, err = cam_fov_set(d.get("spec"), str(d.get("model") or ""), d.get("deg"), d.get("head") if isinstance(d.get("head"), bool) else None)
+            if not ok:
+                return reply({"ok": False, "error": tr_err(err, lang)}, 400)
+        return reply(dict(cam_fov_list(lang), ok=True))
+
+
+SELFTEST_EXTRA.append(("Set up the place (directions, plan, items)", place_selftest))
+SELFTEST_EXTRA.append(("Field of view per camera (cam_fov_h)", cam_fov_selftest))
 HELP_PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -49850,6 +51295,7 @@ class WebStream:
         alx_routes(app, watch, reply, body)                # 2.98.13: push buttons /na/, «What was it?» (066)
         sx_routes(app, watch, reply, body)                 # night view / screen reader script, «holiday over», error pages (578)
         appkey_routes(app, reply, body)                    # app keys, security check in Settings → Security (573)
+        place_routes(app, watch, reply, body)              # 2.98.30: «Platz einrichten» /place, field of view per camera (537)
 
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
@@ -54348,7 +55794,10 @@ class App:
                 ttk.Button(mg, text=mic + " " + tr(mname), command=_pick).grid(row=i_ // 2, column=i_ % 2, sticky="ew", padx=(0, 4), pady=2)
             mg.columnconfigure(0, weight=1); mg.columnconfigure(1, weight=1)
             ttk.Button(sbody, text="☾ " + tr("Guard tonight"), command=self._night).pack(fill="x", pady=(8, 0))
+            ttk.Button(sbody, text="📍 " + tr("Set up the place"), command=self._place).pack(fill="x", pady=(6, 0))     # 2.98.30 (317, 582)
             ttk.Button(sbody, text="🚶 " + tr("Walk test"), command=self._walktest).pack(fill="x", pady=(6, 0))     # 2.98.13 (415, 575)
+        if sec == "Camera / Servos":
+            self._fov_box(sbody)                                                    # 2.98.30: field of view per camera (318, 582)
             self.status_labels["Battery saver"] = ttk.Label(sbody, text=batt_save_text(), style="Mut.TLabel", wraplength=380, justify="left")
             self.status_labels["Battery saver"].pack(anchor="w", pady=(4, 0))
             ttk.Button(sbody, text=tr("Open quick guide (browser)"), command=lambda: self._open_page("/quick")).pack(fill="x", pady=(6, 0))
@@ -59525,6 +60974,291 @@ for _n, _f in (("_tkv_tiles", _tkv_tiles), ("_tkv_more", _tkv_more), ("_tk_head"
                ("_tkv_redraw", _tkv_redraw), ("_tkv_preset", _tkv_preset), ("_status_line", _tkv_status_line), ("_tkv_share", _tkv_share),
                ("_tkv_reset", _tkv_reset), ("_tkv_dialog", _tkv_dialog)):
     setattr(App, _n, _f)
+# ----------------------------------------------------------------------------
+# 2.98.30: the same three steps as the web page: look around (start, progress, cancel), mark on the panorama (tap a
+# suggestion or draw a box with the mouse, kind buttons), apply + walk test. Button in Schutz → «Camping / protection».
+# ----------------------------------------------------------------------------
+PLACE_TK_KINDS = (("tent", "⛺", "My tent / camper", "#ff5a5a"), ("access", "🚶", "Access / path", "#ffb020"),
+                  ("valuable", "🚲", "Valuables", "#3cc8ff"), ("ignore", "🌿", "Ignore", "#8fd18f"))
+PLACE_TK_COL = {k: c for k, _i, _n, c in PLACE_TK_KINDS}
+PLACE_TK_COL["public_path"] = "#c9a0ff"
+PLACE_TK_ICON = {k: i for k, i, _n, _c in PLACE_TK_KINDS}
+PLACE_TK_ICON["public_path"] = "🛣"
+
+
+def _app_place(self):
+    win = getattr(self, "_pl_win", None)
+    try:
+        if win is not None and win.winfo_exists():
+            win.lift(); return
+    except Exception:
+        pass
+    win = tk.Toplevel(self.root); self._pl_win = win
+    win.title("MoveEye – " + tr("Set up the place")); win.geometry("820x860")
+    S = {"items": [], "taken": set(), "tool": tk.StringVar(win, ""), "sel": -1, "scale": 1.0, "geo": None, "img": None, "drag": None,
+         "scan_v": None, "busy": False}
+    top = ttk.Frame(win); top.pack(fill="x", padx=12, pady=(10, 4))
+    intro = ttk.Label(top, text="", wraplength=780, justify="left"); intro.pack(anchor="w")
+    of = ttk.Frame(top); of.pack(fill="x", pady=(4, 0))
+    v_wide, v_rows, v_ir, v_th = tk.BooleanVar(win, True), tk.BooleanVar(win, False), tk.BooleanVar(win, True), tk.BooleanVar(win, True)
+    cb_wide = ttk.Checkbutton(of, variable=v_wide, text="")
+    ttk.Checkbutton(of, variable=v_rows, text=tr("Thorough: 3 rows instead of 2 (takes longer)")).pack(anchor="w")
+    cb_ir = ttk.Checkbutton(of, variable=v_ir, text=tr("with the infrared light"))
+    cb_th = ttk.Checkbutton(of, variable=v_th, text=tr("with the thermal camera too"))
+    bf = ttk.Frame(top); bf.pack(fill="x", pady=(6, 0))
+    prog = ttk.Progressbar(top, maximum=100); prog.pack(fill="x", pady=(6, 0))
+    st = ttk.Label(top, text="", font=("TkDefaultFont", 11, "bold")); st.pack(anchor="w", pady=(4, 0))
+
+    def start():
+        ok, err = place_start(v_ir.get(), v_th.get(), v_wide.get() and bool(cam_wide_spec()), 3 if v_rows.get() else 2, "window")
+        self._status("Camping / protection", ("📍 " + tr("Set up the place")) if ok else "⚠ " + tr(err))
+        if not ok:
+            st.config(text="⚠ " + tr(err))
+    ttk.Button(bf, text="▶ " + tr("Start looking around"), command=start).pack(side="left", expand=True, fill="x", padx=(0, 4))
+    ttk.Button(bf, text="✕ " + tr("Cancel"), command=place_stop).pack(side="left", expand=True, fill="x")
+    # ---- the panorama ----
+    tf = ttk.Frame(win); tf.pack(fill="x", padx=12, pady=(8, 2))
+    for k, ic, nm, _c in PLACE_TK_KINDS + (("", "✋", "Move / select", ""),):
+        ttk.Radiobutton(tf, text=ic + " " + tr(nm), value=k, variable=S["tool"]).pack(side="left", padx=(0, 8))
+    cf = ttk.Frame(win); cf.pack(fill="x", padx=12)
+    cv = tk.Canvas(cf, height=270, background="#111", highlightthickness=0)
+    sx = ttk.Scrollbar(cf, orient="horizontal", command=cv.xview); cv.configure(xscrollcommand=sx.set)
+    cv.pack(fill="x"); sx.pack(fill="x")
+    lf = ttk.Frame(win); lf.pack(fill="both", expand=True, padx=12, pady=(6, 0))
+    lb = tk.Listbox(lf, height=7); lb.pack(side="left", fill="both", expand=True)
+    ef = ttk.Frame(lf); ef.pack(side="left", fill="y", padx=(8, 0))
+    v_name = tk.StringVar(win, ""); v_pub = tk.BooleanVar(win, False)
+    ttk.Label(ef, text=tr("Name")).pack(anchor="w")
+    en = ttk.Entry(ef, textvariable=v_name, width=24); en.pack(anchor="w")
+    cb_pub = ttk.Checkbutton(ef, variable=v_pub, text=tr("public path = only report"))
+    cb_pub.pack(anchor="w", pady=(4, 0))
+    note = ttk.Label(ef, text="", style="Mut.TLabel", wraplength=230, justify="left"); note.pack(anchor="w", pady=(4, 0))
+    v_pat = tk.BooleanVar(win, bool(CFG.get("place_patrol")))
+    af = ttk.Frame(win); af.pack(fill="x", padx=12, pady=(6, 10))
+    res = ttk.Label(win, text="", wraplength=780, justify="left"); res.pack(anchor="w", padx=12, pady=(0, 8))
+    notes = {"tent": "protection zone, lights / siren aim here, a person close by counts more", "access": "line: a person crossing it is reported + patrol point",
+             "public_path": "persons there: only a note, no alarm", "valuable": "guarded: in the morning «Bike missing»", "ignore": "mask: movement there is ignored"}
+
+    def px(a, e):
+        g = S["geo"]; x = (a - g["a0"]) * g["k"]
+        if g.get("wrap") and x < 0:
+            x += 360 * g["k"]
+        return x * S["scale"], ((g["e_top"] - e) * g["k"] + g.get("head", 0)) * S["scale"]
+
+    def ang(x, y):
+        g = S["geo"]; x, y = cv.canvasx(x) / S["scale"], cv.canvasy(y) / S["scale"]
+        return g["a0"] + x / g["k"], g["e_top"] - (y - g.get("head", 0)) / g["k"]
+
+    def redraw():
+        cv.delete("box")
+        scan = place_scan() or {}
+        if not S["geo"]:
+            return
+        for s_ in scan.get("suggest") or []:
+            if s_["id"] in S["taken"]:
+                continue
+            x0, y0 = px(s_["a0"], s_["e1"]); x1, y1 = px(s_["a1"], s_["e0"])
+            cv.create_rectangle(x0, y0, x1, y1, outline=PLACE_TK_COL.get(s_["kind"], "#fff"), dash=(6, 4), width=2, tags="box")
+            cv.create_text(x0 + 4, y0 + 4, anchor="nw", text="+ " + tr(s_["name"]), fill="#fff", tags="box")
+        for i, it in enumerate(S["items"]):
+            x0, y0 = px(it["a0"], it["e1"]); x1, y1 = px(it["a1"], it["e0"])
+            cv.create_rectangle(x0, y0, x1, y1, outline=PLACE_TK_COL.get(it["kind"], "#fff"), width=4 if i == S["sel"] else 2, tags="box")
+            cv.create_text(x0 + 4, y0 + 4, anchor="nw", text=PLACE_TK_ICON.get(it["kind"], "") + " " + it["name"], fill="#fff", tags="box")
+        if S["drag"] and S["drag"].get("b"):
+            b = S["drag"]["b"]; x0, y0 = px(b["a0"], b["e1"]); x1, y1 = px(b["a1"], b["e0"])
+            cv.create_rectangle(x0, y0, x1, y1, outline="#fff", width=2, tags="box")
+        lb.delete(0, "end")
+        for it in S["items"]:
+            lb.insert("end", PLACE_TK_ICON.get(it["kind"], "") + " " + it["name"])
+        if 0 <= S["sel"] < len(S["items"]):
+            lb.selection_clear(0, "end"); lb.selection_set(S["sel"])
+
+    def select(i):
+        S["sel"] = i
+        if 0 <= i < len(S["items"]):
+            it = S["items"][i]
+            v_name.set(it["name"]); v_pub.set(it["kind"] == "public_path")
+            note.config(text=tr(notes.get(it["kind"], "")))
+        redraw()
+
+    def take(s_, kind=None):
+        if s_["id"] in S["taken"]:
+            return
+        S["taken"].add(s_["id"])
+        S["items"].append({"kind": kind or s_["kind"], "name": tr(s_["name"]), "a0": s_["a0"], "a1": s_["a1"], "e0": s_["e0"], "e1": s_["e1"]})
+
+    def hit(lst, a, e):
+        for i in range(len(lst) - 1, -1, -1):
+            if _place_in(lst[i], a, e):
+                return i
+        return -1
+
+    def down(ev):
+        if S["geo"]:
+            S["drag"] = {"x": ev.x, "y": ev.y, "b": None}
+            if not S["tool"].get():
+                cv.scan_mark(ev.x, 0)
+
+    def move(ev):
+        D = S["drag"]
+        if not D:
+            return
+        if not S["tool"].get():
+            cv.scan_dragto(ev.x, 0, gain=1); return
+        a0, e1 = ang(min(D["x"], ev.x), min(D["y"], ev.y)); a1, e0 = ang(max(D["x"], ev.x), max(D["y"], ev.y))
+        D["b"] = {"a0": a0, "a1": a1, "e0": e0, "e1": e1}; redraw()
+
+    def up(ev):
+        D, S["drag"] = S["drag"], None
+        if not D:
+            return
+        tool = S["tool"].get()
+        if tool and D.get("b") and abs(ev.x - D["x"]) + abs(ev.y - D["y"]) > 12:
+            S["items"].append(dict(D["b"], kind=tool, name=tr(dict((k, n) for k, _i, n, _c in PLACE_TK_KINDS)[tool])))
+            select(len(S["items"]) - 1); return
+        if abs(ev.x - D["x"]) + abs(ev.y - D["y"]) > 12:
+            redraw(); return
+        a, e = ang(ev.x, ev.y)
+        i = hit(S["items"], a, e)
+        if i >= 0:
+            if tool:
+                S["items"][i]["kind"] = tool
+            select(i); return
+        sg = [s_ for s_ in (place_scan() or {}).get("suggest") or [] if s_["id"] not in S["taken"]]
+        j = hit(sg, a, e)
+        if j >= 0:
+            take(sg[j], tool or None); select(len(S["items"]) - 1)
+    cv.bind("<ButtonPress-1>", down); cv.bind("<B1-Motion>", move); cv.bind("<ButtonRelease-1>", up)
+    lb.bind("<<ListboxSelect>>", lambda _e: select(lb.curselection()[0]) if lb.curselection() else None)
+
+    def name_changed(*_a):
+        if 0 <= S["sel"] < len(S["items"]):
+            S["items"][S["sel"]]["name"] = v_name.get()[:40]; redraw()
+    v_name.trace_add("write", name_changed)
+
+    def pub_changed(*_a):
+        if 0 <= S["sel"] < len(S["items"]) and S["items"][S["sel"]]["kind"] in ("access", "public_path"):
+            S["items"][S["sel"]]["kind"] = "public_path" if v_pub.get() else "access"; select(S["sel"])
+    v_pub.trace_add("write", pub_changed)
+
+    def remove():
+        if 0 <= S["sel"] < len(S["items"]):
+            S["items"].pop(S["sel"]); S["sel"] = -1; redraw()
+
+    def take_all():
+        for s_ in (place_scan() or {}).get("suggest") or []:
+            take(s_)
+        redraw()
+
+    def apply_():
+        ok, err, r = place_apply(S["items"], True, v_pat.get(), "window")
+        if not ok:
+            res.config(text="⚠ " + tr(err)); return
+        res.config(text="✓ " + tr("The place is set up") + " · " + " · ".join(x for x in (
+            trf("{n} protection zone(s) at the tent", n=r["tent"]) if r["tent"] else "", trf("{n} line(s) at the accesses", n=r["lines"]) if r["lines"] else "",
+            trf("{n} public path(s): only reported", n=r["public"]) if r["public"] else "", trf("{n} mask(s): ignored", n=r["masks"]) if r["masks"] else "",
+            trf("{n} patrol point(s)", n=r["waypoints"]) if r["waypoints"] else "",
+            trf("{n} guarded thing(s) - reported in the morning when missing", n=r["watched"]) if r["watched"] else "") if x)
+            + "\n" + tr("Now test it: walk past like a visitor would. MoveEye beeps at every detection."))
+
+    def forget():
+        if messagebox.askyesno("MoveEye", tr("Forget the place? Its zones, waypoints and guarded things are removed."), parent=win):
+            place_clear("window"); S["items"] = []; S["taken"] = set(); redraw()
+    ttk.Button(ef, text="✕ " + tr("Remove"), command=remove).pack(anchor="w", pady=(6, 0))
+    ttk.Button(ef, text="✚ " + tr("Take all suggestions"), command=take_all).pack(anchor="w", pady=(4, 0))
+    ttk.Checkbutton(af, variable=v_pat, text="🔁 " + tr("Patrol: the head looks at the accesses now and then")).pack(anchor="w")
+    ttk.Button(af, text="✓ " + tr("Apply"), command=apply_).pack(side="left", expand=True, fill="x", padx=(0, 4), pady=(4, 0))
+    ttk.Button(af, text="🚶 " + tr("Start the walk test"), command=self._walktest).pack(side="left", expand=True, fill="x", padx=(0, 4), pady=(4, 0))
+    ttk.Button(af, text="🗑 " + tr("Forget the place"), command=forget).pack(side="left", expand=True, fill="x", pady=(4, 0))
+
+    def load_pano(scan):
+        S["geo"] = scan.get("geo"); S["scan_v"] = scan.get("t")
+        rec = _place_load() or {}
+        S["items"] = [{k: it[k] for k in ("kind", "name", "a0", "a1", "e0", "e1")} for it in rec.get("items") or [] if "a0" in it] \
+            if (rec.get("t") or 0) >= (scan.get("t") or 0) - 1 else []
+        S["taken"] = set(); S["sel"] = -1
+        try:
+            im = cv2.imread(place_dir("scan", "pano.jpg"))
+            if im is None:
+                return
+            S["scale"] = 260.0 / im.shape[0]
+            im = cv2.resize(im, (int(im.shape[1] * S["scale"]), 260))
+            ok, buf = cv2.imencode(".png", im)
+            if ok:
+                S["img"] = tk.PhotoImage(data=base64.b64encode(buf.tobytes()).decode())
+                cv.delete("all"); cv.create_image(0, 0, anchor="nw", image=S["img"]); cv.configure(scrollregion=(0, 0, im.shape[1], 260))
+        except Exception:
+            pass
+        redraw()
+
+    def tick():
+        try:
+            if not win.winfo_exists():
+                return
+        except Exception:
+            return
+        P_ = place_state()
+        pl = P_["plan"]
+        cov = tr("the whole circle (360°)") if pl["wrap"] else tr("about") + f" {pl['cover']}°"
+        intro.config(text=tr("Put MoveEye where it will guard. The head looks around once: it takes a photo in every direction and watches for about 10 seconds what moves and what the AI recognises. Then you only mark your tent, the access, your valuables and what to ignore.")
+                     + "\n" + tr("Pan range of the servo {servo}°, with the lens it sees {cover} (camera {hf}°).").replace("{servo}", str(pl["servo"])).replace("{cover}", cov).replace("{hf}", str(round(pl["hf"])))
+                     + ("" if pl["wrap"] else " " + tr("No full turn: the head turns only as far as its servo goes."))
+                     + "\n" + tr("{n} directions in {rows} rows - about {min} minutes.").replace("{n}", str(pl["n"])).replace("{rows}", str(pl["rows"])).replace("{min}", str(max(1, round(pl["eta"] / 60)))))
+        W_ = P_.get("wide")
+        if W_:
+            cb_wide.config(text=tr("Use the wide-angle camera ({cam}, {deg}°): {n} directions, about {min} min").replace("{cam}", W_["label"]).replace("{deg}", str(round(W_["hf"])))
+                           .replace("{n}", str(W_["n"])).replace("{min}", str(max(1, round(W_["eta"] / 60)))))
+            if not cb_wide.winfo_ismapped():
+                cb_wide.pack(anchor="w")
+        for cb, okk in ((cb_ir, P_["dark"] and P_["ir_ok"]), (cb_th, P_["dark"] and P_["thermal_ok"])):
+            if okk and not cb.winfo_ismapped():
+                cb.pack(anchor="w")
+            elif not okk and cb.winfo_ismapped():
+                cb.pack_forget()
+        if P_["busy"]:
+            S["busy"] = True
+            prog["value"] = 100.0 * max(0, P_["step"] - 0.5) / max(1, P_["n"])
+            st.config(text="🔄 " + tr("Direction {i} of {n}").replace("{i}", str(P_["step"])).replace("{n}", str(P_["n"]))
+                      + f" · {tr('about')} {P_['left'] // 60}:{P_['left'] % 60:02d} {tr('left')}")
+        else:
+            if S["busy"]:
+                S["busy"] = False; prog["value"] = 100 if P_["done_msg"] else 0
+            st.config(text=P_["msg"] or (P_["why_not"] and "⚠ " + P_["why_not"]) or "")
+            scan = place_scan()
+            if scan and scan.get("t") != S["scan_v"]:
+                load_pano(scan)
+        win.after(1000, tick)
+    tick()
+
+
+def _app_fov_box(self, parent):
+    """Camera / Servos: the field of view of every camera (list, own value, «sits on the head»)"""
+    box = ttk.Frame(parent); box.pack(fill="x", pady=(8, 0))
+    ttk.Label(box, text="📐 " + tr("Field of view of the camera")).pack(anchor="w")
+    F = cam_fov_list()
+    names = [n for _k, n in F["choices"]]; keys = [k for k, _n in F["choices"]]
+    for c in F["cams"]:
+        r = ttk.Frame(box); r.pack(fill="x", pady=(4, 0))
+        ttk.Label(r, text=(tr("Main camera") if c["main"] else tr("Extra camera")) + ": " + str(c["label"]), style="Mut.TLabel").pack(anchor="w")
+        rr = ttk.Frame(r); rr.pack(fill="x")
+        cb = ttk.Combobox(rr, values=names, state="readonly", width=34)
+        cb.current(keys.index(c["model"]) if c["model"] in keys else 0); cb.pack(side="left")
+        v_deg = tk.StringVar(rr, str(c["deg"] or round(c["h"])))
+        ent = ttk.Entry(rr, textvariable=v_deg, width=6); ent.pack(side="left", padx=(6, 0))
+        info = ttk.Label(r, text=f"{round(c['h'])}° × {round(c['v'])}°", style="Mut.TLabel"); info.pack(anchor="w")
+        v_head = tk.BooleanVar(r, bool(c["head"]))
+
+        def send(*_a, c=c, cb=cb, v_deg=v_deg, info=info, v_head=v_head):
+            ok, err = cam_fov_set(c["spec"], keys[cb.current()], v_deg.get(), None if c["main"] else v_head.get())
+            h, v, _s = cam_fov_hv(c["spec"])
+            info.config(text=(f"{round(h)}° × {round(v)}°") if ok else "⚠ " + tr(err))
+        cb.bind("<<ComboboxSelected>>", send); ent.bind("<Return>", send); ent.bind("<FocusOut>", send)
+        if not c["main"]:
+            ttk.Checkbutton(r, variable=v_head, text=tr("sits on the head (turns with it) - for the panorama"), command=send).pack(anchor="w")
+
+
+App._place = _app_place
+App._fov_box = _app_fov_box
 TRX['it'].update({
     '(or the address from the push message).': "(o l'indirizzo della notifica push).",
     '+ Add relay': '+ Aggiungere un relè',
@@ -67611,6 +69345,224 @@ if _hp_en3 > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_sicher3(HELP_X[_L], _L)
+_HX_PLATZEIN = {
+    'Set up the place': ('Platz einrichten', 'Configurer l’emplacement', 'Configurare il posto', 'Endrizzar il plaz'),
+    '1 Look around': ('1 Umschauen', '1 Regarder autour', '1 Guardarsi intorno', '1 Guardar enturn'),
+    '2 Mark': ('2 Markieren', '2 Marquer', '2 Segnare', '2 Marcar'),
+    '3 Done': ('3 Fertig', '3 Terminé', '3 Fatto', '3 Fatg'),
+    'Put MoveEye where it will guard. The head looks around once: it takes a photo in every direction and watches for about 10 seconds what moves and what the AI recognises. Then you only mark your tent, the access, your valuables and what to ignore.': (
+        'Stell MoveEye dorthin, wo es bewachen soll. Der Kopf schaut sich einmal um: in jeder Richtung ein Foto und etwa 10 Sekunden beobachten, was sich bewegt und was die KI erkennt. Danach markierst du nur noch dein Zelt, den Zugang, deine Wertsachen und was ignoriert werden soll.',
+        'Place MoveEye là où il doit surveiller. La tête regarde une fois autour : une photo dans chaque direction et environ 10 secondes pour voir ce qui bouge et ce que l’IA reconnaît. Ensuite tu marques seulement ta tente, l’accès, tes objets de valeur et ce qu’il faut ignorer.',
+        'Metti MoveEye dove deve sorvegliare. La testa si guarda intorno una volta: una foto in ogni direzione e circa 10 secondi per osservare cosa si muove e cosa riconosce l’IA. Poi segni solo la tua tenda, l’accesso, gli oggetti di valore e cosa ignorare.',
+        'Metta MoveEye là nua ch’el duai survegliar. Il chau guarda ina giada enturn: en mintga direcziun ina foto ed observar var 10 secundas tge che sa mova e tge che la IA enconuscha. Lura marcas ti mo anc tia tenda, l’access, tias chaussas da valur e tge ch’ins duai ignorar.'),
+    'Pan range of the servo {servo}°, with the lens it sees {cover} (camera {hf}°).': (
+        'Schwenkbereich des Servos {servo}°, mit dem Objektiv sieht MoveEye {cover} (Kamera {hf}°).',
+        'Rotation du servo {servo}°, avec l’objectif MoveEye voit {cover} (caméra {hf}°).',
+        'Rotazione del servo {servo}°, con l’obiettivo MoveEye vede {cover} (telecamera {hf}°).',
+        'Rotaziun dal servo {servo}°, cun l’objectiv vesa MoveEye {cover} (camera {hf}°).'),
+    'the whole circle (360°)': ('den ganzen Kreis (360°)', 'tout le cercle (360°)', 'tutto il cerchio (360°)', 'l’entir circul (360°)'),
+    'No full turn: the head turns only as far as its servo goes.': (
+        'Keine volle Drehung: der Kopf dreht nur so weit, wie sein Servo kann.', 'Pas de tour complet : la tête tourne seulement aussi loin que son servo.',
+        'Nessun giro completo: la testa gira solo fin dove arriva il servo.', 'Nagina rotaziun cumplaina: il chau sa volva mo uschè lunsch sco ses servo po.'),
+    '{n} directions in {rows} rows - about {min} minutes.': (
+        '{n} Richtungen in {rows} Reihen – etwa {min} Minuten.', '{n} directions en {rows} rangées – environ {min} minutes.',
+        '{n} direzioni in {rows} file – circa {min} minuti.', '{n} direcziuns en {rows} lingias – var {min} minutas.'),
+    'Use the wide-angle camera ({cam}, {deg}°): {n} directions, about {min} min': (
+        'Weitwinkel-Kamera nutzen ({cam}, {deg}°): {n} Richtungen, etwa {min} min', 'Utiliser la caméra grand angle ({cam}, {deg}°) : {n} directions, environ {min} min',
+        'Usare la telecamera grandangolare ({cam}, {deg}°): {n} direzioni, circa {min} min', 'Duvrar la camera cun grond angul ({cam}, {deg}°): {n} direcziuns, var {min} min'),
+    'Thorough: 3 rows instead of 2 (takes longer)': ('Gründlich: 3 Reihen statt 2 (dauert länger)', 'Minutieux : 3 rangées au lieu de 2 (plus long)',
+                                                     'Accurato: 3 file invece di 2 (dura di più)', 'Precis: 3 lingias empè da 2 (dura pli ditg)'),
+    'It is dark: the night reference is made now.': ('Es ist dunkel: jetzt entsteht die Nacht-Referenz.', 'Il fait nuit : la référence de nuit est faite maintenant.',
+                                                     'È buio: ora si crea il riferimento notturno.', 'Igl è stgir: ussa vegn fatga la referenza da notg.'),
+    'with the infrared light': ('mit dem Infrarot-Licht', 'avec la lumière infrarouge', 'con la luce infrarossa', 'cun la glisch infracotschna'),
+    'with the thermal camera too': ('auch mit der Wärmebild-Kamera', 'aussi avec la caméra thermique', 'anche con la termocamera', 'er cun la camera termica'),
+    'Start looking around': ('Umschauen starten', 'Commencer à regarder autour', 'Iniziare a guardarsi intorno', 'Cumenzar a guardar enturn'),
+    'Show the last look-around': ('Letzten Rundblick zeigen', 'Montrer le dernier tour d’horizon', 'Mostrare l’ultimo giro', 'Mussar l’ultim sguard enturn'),
+    'Place set up on {when}: {n} things marked': ('Platz eingerichtet am {when}: {n} Sachen markiert', 'Emplacement configuré le {when} : {n} éléments marqués',
+                                                  'Posto configurato il {when}: {n} cose segnate', 'Plaz endrizzà ils {when}: {n} chaussas marcadas'),
+    'Forget the place': ('Platz vergessen', 'Oublier l’emplacement', 'Dimenticare il posto', 'Emblidar il plaz'),
+    'Forget the place? Its zones, waypoints and guarded things are removed.': (
+        'Platz vergessen? Seine Zonen, Wegpunkte und bewachten Sachen werden entfernt.', 'Oublier l’emplacement ? Ses zones, points de passage et objets surveillés sont supprimés.',
+        'Dimenticare il posto? Le sue zone, i punti di passaggio e gli oggetti sorvegliati vengono rimossi.', 'Emblidar il plaz? Sias zonas, ses puncts da via e las chaussas survegliadas vegnan allontanadas.'),
+    'The head turns by itself - please do not stand in front of it.': ('Der Kopf dreht sich von selbst – bitte nicht davor stehen.', 'La tête tourne toute seule – ne reste pas devant.',
+                                                                       'La testa gira da sola – per favore non stare davanti.', 'Il chau sa volva sez – per plaschair betg star davant.'),
+    'taking the photo': ('Foto', 'photo', 'foto', 'foto'),
+    'watching what moves': ('beobachtet, was sich bewegt', 'observe ce qui bouge', 'osserva cosa si muove', 'observa tge che sa mova'),
+    'making the panorama': ('Panorama wird zusammengesetzt', 'assemblage du panorama', 'composizione del panorama', 'il panorama vegn cumponì'),
+    'Direction {i} of {n}': ('Richtung {i} von {n}', 'Direction {i} sur {n}', 'Direzione {i} di {n}', 'Direcziun {i} da {n}'),
+    'Tap a suggestion to take it, or choose a button and draw a box on the panorama with your finger. Swipe sideways with ✋.': (
+        'Tipp einen Vorschlag an, um ihn zu übernehmen, oder wähle eine Taste und zieh mit dem Finger ein Rechteck auf dem Panorama. Mit ✋ seitwärts schieben.',
+        'Touche une suggestion pour la prendre, ou choisis un bouton et dessine un rectangle sur le panorama avec le doigt. Avec ✋ faire défiler.',
+        'Tocca un suggerimento per prenderlo, oppure scegli un pulsante e disegna un rettangolo sul panorama con il dito. Con ✋ scorrere di lato.',
+        'Tutga ina proposta per la prender, u tscherna in buttun e dissegna cun il det in rectangul sin il panorama. Cun ✋ stuschar da la vart.'),
+    'My tent / camper': ('Mein Zelt / Wohnmobil', 'Ma tente / camping-car', 'La mia tenda / camper', 'Mia tenda / auto da campadi'),
+    'Access / path': ('Zugang / Weg', 'Accès / chemin', 'Accesso / sentiero', 'Access / via'),
+    'Public path': ('Öffentlicher Weg', 'Chemin public', 'Sentiero pubblico', 'Via publica'),
+    'Valuables': ('Wertsachen', 'Objets de valeur', 'Oggetti di valore', 'Chaussas da valur'),
+    'Ignore': ('Ignorieren', 'Ignorer', 'Ignorare', 'Ignorar'),
+    'Move / select': ('Schieben / wählen', 'Déplacer / choisir', 'Spostare / scegliere', 'Stuschar / tscherner'),
+    'Show the thermal picture': ('Wärmebild zeigen', 'Montrer l’image thermique', 'Mostrare l’immagine termica', 'Mussar il maletg termic'),
+    'suggestion - tap to take it': ('Vorschlag – antippen zum Übernehmen', 'suggestion – toucher pour la prendre', 'suggerimento – toccare per prenderlo', 'proposta – tutgar per la prender'),
+    'marked': ('markiert', 'marqué', 'segnato', 'marcà'),
+    'the picture goes on after the seam (360°)': ('das Bild geht nach der Naht weiter (360°)', 'l’image continue après la couture (360°)',
+                                                  'l’immagine continua dopo la cucitura (360°)', 'il maletg cuntinuescha suenter la cusadira (360°)'),
+    'Take all suggestions': ('Alle Vorschläge übernehmen', 'Prendre toutes les suggestions', 'Prendere tutti i suggerimenti', 'Prender tut las propostas'),
+    'Nothing marked yet.': ('Noch nichts markiert.', 'Rien de marqué pour l’instant.', 'Ancora niente segnato.', 'Anc nagut marcà.'),
+    'Remove': ('Entfernen', 'Supprimer', 'Rimuovere', 'Allontanar'),
+    'public path = only report': ('öffentlicher Weg = nur melden', 'chemin public = seulement signaler', 'sentiero pubblico = solo segnalare', 'via publica = mo annunziar'),
+    'Patrol: the head looks at the accesses now and then': ('Patrouille: der Kopf schaut ab und zu zu den Zugängen', 'Patrouille : la tête regarde de temps en temps les accès',
+                                                            'Pattuglia: la testa guarda ogni tanto gli accessi', 'Patrulla: il chau guarda da temp en temp vers ils access'),
+    'Apply': ('Übernehmen', 'Appliquer', 'Applicare', 'Applitgar'),
+    'Look around again': ('Nochmals umschauen', 'Regarder autour à nouveau', 'Guardarsi intorno di nuovo', 'Guardar danovamain enturn'),
+    'protection zone, lights / siren aim here, a person close by counts more': ('Schutzzone, Licht / Sirene zielen hierhin, eine Person in der Nähe zählt mehr',
+                                                                               'zone de protection, lumière / sirène visent ici, une personne proche compte plus',
+                                                                               'zona di protezione, luce / sirena puntano qui, una persona vicina conta di più',
+                                                                               'zona da protecziun, glisch / sirena mirian qua, ina persuna datiers dumbra dapli'),
+    'line: a person crossing it is reported + patrol point': ('Linie: wer sie überquert, wird gemeldet + Patrouillen-Punkt', 'ligne : qui la traverse est signalé + point de patrouille',
+                                                              'linea: chi la attraversa viene segnalato + punto di pattuglia', 'lingia: tgi che la traversa vegn annunzià + punct da patrulla'),
+    'persons there: only a note, no alarm': ('Personen dort: nur ein Hinweis, kein Alarm', 'personnes là : seulement une note, pas d’alarme',
+                                             'persone lì: solo una nota, nessun allarme', 'persunas là: mo in avis, nagin alarm'),
+    'guarded: in the morning «Bike missing»': ('bewacht: am Morgen «Velo fehlt»', 'surveillé : le matin « vélo manquant »', 'sorvegliato: al mattino «bici mancante»',
+                                               'surveglià: la damaun «velo manca»'),
+    'mask: movement there is ignored': ('Maske: Bewegung dort wird ignoriert', 'masque : le mouvement là est ignoré', 'maschera: il movimento lì viene ignorato',
+                                        'mascra: moviment là vegn ignorà'),
+    'The place is set up': ('Der Platz ist eingerichtet', 'L’emplacement est configuré', 'Il posto è configurato', 'Il plaz è endrizzà'),
+    '{n} protection zone(s) at the tent': ('{n} Schutzzone(n) beim Zelt', '{n} zone(s) de protection à la tente', '{n} zona/e di protezione alla tenda', '{n} zona(s) da protecziun tar la tenda'),
+    '{n} line(s) at the accesses': ('{n} Linie(n) bei den Zugängen', '{n} ligne(s) aux accès', '{n} linea/e agli accessi', '{n} lingia(s) tar ils access'),
+    '{n} public path(s): only reported': ('{n} öffentliche(r) Weg(e): nur gemeldet', '{n} chemin(s) public(s) : seulement signalé', '{n} sentiero/i pubblico/i: solo segnalato',
+                                          '{n} via(s) publica(s): mo annunzià'),
+    '{n} mask(s): ignored': ('{n} Maske(n): ignoriert', '{n} masque(s) : ignoré', '{n} maschera/e: ignorata', '{n} mascra(s): ignorà'),
+    '{n} patrol point(s)': ('{n} Patrouillen-Punkt(e)', '{n} point(s) de patrouille', '{n} punto/i di pattuglia', '{n} punct(s) da patrulla'),
+    '{n} guarded thing(s) - reported in the morning when missing': ('{n} bewachte Sache(n) – am Morgen gemeldet, wenn sie fehlen',
+                                                                    '{n} objet(s) surveillé(s) – signalé(s) le matin s’ils manquent',
+                                                                    '{n} oggetto/i sorvegliato/i – segnalato al mattino se manca',
+                                                                    '{n} chaussa(s) survegliada(s) – annunziada la damaun sch’ella manca'),
+    'The guarded things follow after the reference scan of the main camera.': ('Die bewachten Sachen folgen nach dem Referenz-Scan der Hauptkamera.',
+                                                                               'Les objets surveillés suivent après le scan de référence de la caméra principale.',
+                                                                               'Gli oggetti sorvegliati seguono dopo la scansione di riferimento della telecamera principale.',
+                                                                               'Las chaussas survegliadas suondan suenter il scan da referenza da la camera principala.'),
+    '{n} zone(s) not made: at most 12 zones': ('{n} Zone(n) nicht erstellt: höchstens 12 Zonen', '{n} zone(s) non créée(s) : 12 zones au maximum',
+                                               '{n} zona/e non creata/e: al massimo 12 zone', '{n} zona(s) betg fatga: maximalmain 12 zonas'),
+    'Nothing marked - nothing changed.': ('Nichts markiert – nichts geändert.', 'Rien de marqué – rien changé.', 'Niente segnato – niente cambiato.', 'Nagut marcà – nagut midà.'),
+    'Now test it: walk past like a visitor would. MoveEye beeps at every detection.': (
+        'Jetzt testen: geh vorbei, wie es ein Besucher tun würde. MoveEye piepst bei jeder Erkennung.',
+        'Maintenant teste : passe comme le ferait un visiteur. MoveEye bipe à chaque détection.',
+        'Ora prova: passa come farebbe un visitatore. MoveEye emette un bip a ogni rilevamento.',
+        'Ussa testar: va speravi sco in visitader. MoveEye fa bip tar mintga identificaziun.'),
+    'Start the walk test': ('Gehtest starten', 'Démarrer le test de marche', 'Avviare il test di camminata', 'Cumenzar il test da chaminar'),
+    'Look at the zones': ('Zonen ansehen', 'Voir les zones', 'Vedere le zone', 'Guardar las zonas'),
+    'Back to Schutz': ('Zurück zu Schutz', 'Retour à Protection', 'Torna a Protezione', 'Enavos tar Protecziun'),
+    'Bike': ('Velo', 'Vélo', 'Bici', 'Velo'), 'Motorbike': ('Motorrad', 'Moto', 'Moto', 'Moto'), 'Car': ('Auto', 'Voiture', 'Auto', 'Auto'),
+    'Camper?': ('Wohnmobil?', 'Camping-car ?', 'Camper?', 'Auto da campadi?'), 'Chair': ('Stuhl', 'Chaise', 'Sedia', 'Sutga'), 'Bench': ('Bank', 'Banc', 'Panchina', 'Banc'),
+    'Backpack': ('Rucksack', 'Sac à dos', 'Zaino', 'Satgados'), 'Suitcase': ('Koffer', 'Valise', 'Valigia', 'Valisch'), 'Bag': ('Tasche', 'Sac', 'Borsa', 'Tastga'),
+    'Umbrella': ('Schirm', 'Parapluie', 'Ombrello', 'Umbrella'), 'Table': ('Tisch', 'Table', 'Tavolo', 'Maisa'), 'Path?': ('Weg?', 'Chemin ?', 'Sentiero?', 'Via?'),
+    'Road?': ('Strasse?', 'Route ?', 'Strada?', 'Via?'), 'Moves by itself': ('Bewegt sich von selbst', 'Bouge tout seul', 'Si muove da solo', 'Sa mova sez'),
+    'Place set up': ('Platz eingerichtet', 'Emplacement configuré', 'Posto configurato', 'Plaz endrizzà'),
+    'things marked': ('Sachen markiert', 'éléments marqués', 'cose segnate', 'chaussas marcadas'),
+    'MoveEye put up? Let it look around once: tent, access, valuables, what to ignore.': (
+        'MoveEye hingestellt? Lass es sich einmal umschauen: Zelt, Zugang, Wertsachen, was ignoriert werden soll.',
+        'MoveEye installé ? Laisse-le regarder une fois autour : tente, accès, objets de valeur, ce qu’il faut ignorer.',
+        'MoveEye posizionato? Lascialo guardare intorno una volta: tenda, accesso, oggetti di valore, cosa ignorare.',
+        'MoveEye plazzà? Al laschar guardar ina giada enturn: tenda, access, chaussas da valur, tge ignorar.'),
+    'New place? Set it up again': ('Neuer Platz? Nochmals einrichten', 'Nouvel emplacement ? Le configurer à nouveau', 'Nuovo posto? Configurarlo di nuovo', 'Nov plaz? L’endrizzar danovamain'),
+    'MoveEye put up? Set up the place': ('MoveEye hingestellt? Platz einrichten', 'MoveEye installé ? Configurer l’emplacement', 'MoveEye posizionato? Configurare il posto',
+                                         'MoveEye plazzà? Endrizzar il plaz'),
+    '2-3 minutes: the head looks around, you only tap tent, access, valuables.': ('2–3 Minuten: der Kopf schaut sich um, du tippst nur Zelt, Zugang, Wertsachen an.',
+                                                                                 '2–3 minutes : la tête regarde autour, tu touches seulement tente, accès, objets de valeur.',
+                                                                                 '2–3 minuti: la testa si guarda intorno, tu tocchi solo tenda, accesso, oggetti di valore.',
+                                                                                 '2–3 minutas: il chau guarda enturn, ti tutgas mo tenda, access, chaussas da valur.'),
+    'Later': ('Später', 'Plus tard', 'Più tardi', 'Pli tard'),
+    'Field of view of the camera': ('Blickwinkel der Kamera', 'Angle de vue de la caméra', 'Angolo di visione della telecamera', 'Angul da vista da la camera'),
+    'Main camera': ('Hauptkamera', 'Caméra principale', 'Telecamera principale', 'Camera principala'),
+    'Extra camera': ('Zusatzkamera', 'Caméra supplémentaire', 'Telecamera aggiuntiva', 'Camera supplementara'),
+    'from the simulator': ('aus dem Simulator', 'du simulateur', 'dal simulatore', 'dal simulatur'),
+    'detected': ('erkannt', 'détecté', 'rilevato', 'identifitgà'),
+    'not detected - Camera Module 3 assumed': ('nicht erkannt – Camera Module 3 angenommen', 'non détecté – Camera Module 3 supposé', 'non rilevato – si assume Camera Module 3',
+                                               'betg identifitgà – Camera Module 3 supponì'),
+    'chosen': ('gewählt', 'choisi', 'scelto', 'tschernì'), 'own value': ('eigener Wert', 'valeur propre', 'valore proprio', 'agen valur'),
+    'standard': ('Standard', 'standard', 'standard', 'standard'),
+    'sits on the head (turns with it) - for the panorama': ('sitzt auf dem Kopf (dreht mit) – für das Panorama', 'est sur la tête (tourne avec) – pour le panorama',
+                                                             'è sulla testa (gira con essa) – per il panorama', 'è sin il chau (sa volva cun el) – per il panorama'),
+    'Automatic': ('Automatisch', 'Automatique', 'Automatico', 'Automatic'),
+    'HQ / other camera: own value': ('HQ / andere Kamera: eigener Wert', 'HQ / autre caméra : valeur propre', 'HQ / altra telecamera: valore proprio', 'HQ / autra camera: agen valur'),
+    'Name': ('Name', 'Nom', 'Nome', 'Num'),
+    'the place setup is already running': ('«Platz einrichten» läuft schon', '« Configurer l’emplacement » est déjà en cours', '«Configurare il posto» è già in corso',
+                                           '«Endrizzar il plaz» è gia en funcziun'),
+    'the walk test is running': ('der Gehtest läuft', 'le test de marche est en cours', 'il test di camminata è in corso', 'il test da chaminar è en funcziun'),
+    'a scan is already running': ('ein Scan läuft schon', 'un scan est déjà en cours', 'una scansione è già in corso', 'in scan è gia en funcziun'),
+    'no camera': ('keine Kamera', 'pas de caméra', 'nessuna telecamera', 'nagina camera'),
+    'no picture from the camera': ('kein Bild von der Kamera', 'pas d’image de la caméra', 'nessuna immagine dalla telecamera', 'nagin maletg da la camera'),
+    'stopped': ('abgebrochen', 'interrompu', 'interrotto', 'interrut'),
+    'done': ('fertig', 'terminé', 'fatto', 'fatg'),
+    'place setup': ('Platz einrichten', 'configuration de l’emplacement', 'configurazione del posto', 'endrizzar il plaz'),
+    'Person on the public path (only reported, no alarm)': ('Person auf dem öffentlichen Weg (nur gemeldet, kein Alarm)', 'Personne sur le chemin public (seulement signalée, pas d’alarme)',
+                                                            'Persona sul sentiero pubblico (solo segnalata, nessun allarme)', 'Persuna sin la via publica (mo annunziada, nagin alarm)'),
+    'Cancel': ('Abbrechen', 'Annuler', 'Annulla', 'Interrumper'),
+    'about': ('etwa', 'environ', 'circa', 'var'),
+    'left': ('übrig', 'restant', 'rimanente', 'restant'),
+}
+for _k, _v in _HX_PLATZEIN.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+WEB_PAGE = WEB_PAGE.replace("<!--PLACEJS-->", _place_main_js(), 1)     # the script of 537 with the German texts
+
+# ---- the manual: one chapter «Platz einrichten» in every language (before «Tipps») ------------------------------------
+_HELP_PLATZEIN = {
+    "de": '<section id="place" data-icon="📍"><h2>Platz einrichten</h2><ul>'
+          '<li><b>Wann:</b> nach dem Hinstellen (beim ersten Start und wenn MoveEye an einem neuen Ort steht, schlägt es das selbst vor). Schutz → «📍 Platz einrichten» (Web und Fenster).</li>'
+          '<li><b>1 Umschauen:</b> der Kopf fährt seinen ganzen Schwenkbereich in 2 (gründlich: 3) Reihen ab. Wie weit, hängt vom Servo und vom Objektiv ab: MG90S rund 180°, mit dem Objektiv der Camera Module 3 (66°) rund 240° – keine volle Drehung; ein 360°-Servo sieht den ganzen Kreis. In jeder Richtung ein Foto und etwa 10 Sekunden beobachten: was sich bewegt (Äste, Strasse, Licht) und was die KI sieht (Auto, Velo, Stuhl, Bank, Person …). 2–3 Minuten, «Abbrechen» jederzeit.</li>'
+          '<li><b>Nachts:</b> mit Infrarot-Licht und Wärmebild – so passt die Nacht-Referenz. <b>Weitwinkel:</b> sitzt eine Zusatzkamera mit grösserem Blickwinkel auf dem Kopf, braucht der Rundblick weniger Schritte.</li>'
+          '<li><b>2 Markieren:</b> auf dem Panorama die Vorschläge antippen oder mit einer Taste ein Rechteck ziehen: <b>⛺ Mein Zelt / Wohnmobil</b> (Schutzzone: wer dort länger bleibt, wird gemeldet; eine Person beim Zelt braucht keine zweite Bestätigung), <b>🚶 Zugang / Weg</b> (Linie + Patrouillen-Punkt; «öffentlicher Weg = nur melden»: Passanten lösen keinen Alarm aus, nur einen Hinweis), <b>🚲 Wertsachen</b> (bewacht vom Referenz-Scan: am Morgen «Velo fehlt»), <b>🌿 Ignorieren</b> (Maske).</li>'
+          '<li><b>3 Fertig:</b> Zonen, Masken, Wegpunkte und bewachte Sachen entstehen von selbst; die Zonen bleiben an ihrem Platz, auch wenn der Kopf dreht. Danach gleich den <b>Gehtest</b> machen. Ändern: Schutz → Zonen, oder nochmals «Platz einrichten».</li>'
+          '<li><b>📐 Blickwinkel der Kamera</b> (Einstellungen → Kamera / Servos): pro Kamera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) oder ein eigener Wert; am Pi wird das Modell meist selbst erkannt, im Simulator kommt der Wert vom Simulator.</li></ul></section>\n\n',
+    "en": '<section id="place" data-icon="📍"><h2>Set up the place</h2><ul>'
+          '<li><b>When:</b> after putting MoveEye up (it suggests it itself on the first start and when it stands at a new place). Schutz → «📍 Set up the place» (web and window).</li>'
+          '<li><b>1 Look around:</b> the head drives its whole pan range in 2 (thorough: 3) rows. How far depends on the servo and the lens: MG90S about 180°, with the lens of the Camera Module 3 (66°) about 240° – no full turn; a 360° servo sees the whole circle. In every direction a photo and about 10 seconds of watching: what moves (branches, road, lights) and what the AI sees (car, bike, chair, bench, person …). 2–3 minutes, «Cancel» at any time.</li>'
+          '<li><b>At night:</b> with the infrared light and the thermal camera – so the night reference fits. <b>Wide angle:</b> when an extra camera with a wider view sits on the head, the look-around needs fewer steps.</li>'
+          '<li><b>2 Mark:</b> tap the suggestions on the panorama or draw a box with a button: <b>⛺ My tent / camper</b> (protection zone: who stays there is reported; a person at the tent needs no second confirmation), <b>🚶 Access / path</b> (line + patrol point; «public path = only report»: passers-by raise no alarm, only a note), <b>🚲 Valuables</b> (guarded by the reference scan: «Bike missing» in the morning), <b>🌿 Ignore</b> (mask).</li>'
+          '<li><b>3 Done:</b> zones, masks, waypoints and guarded things are made by themselves; the zones stay on their place when the head turns. Then do the <b>walk test</b>. To change: Schutz → zones, or «Set up the place» again.</li>'
+          '<li><b>📐 Field of view of the camera</b> (Settings → Camera / Servos): per camera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) or an own value; on the Pi the model is usually detected, in the simulator the value comes from the simulator.</li></ul></section>\n\n',
+    "fr": '<section id="place" data-icon="📍"><h2>Configurer l’emplacement</h2><ul>'
+          '<li><b>Quand :</b> après avoir installé MoveEye (il le propose lui-même au premier démarrage et à un nouvel endroit). Protection → « 📍 Configurer l’emplacement » (web et fenêtre).</li>'
+          '<li><b>1 Regarder autour :</b> la tête parcourt toute sa rotation en 2 (minutieux : 3) rangées. MG90S environ 180°, avec l’objectif de la Camera Module 3 (66°) environ 240° – pas de tour complet ; un servo 360° voit tout le cercle. Dans chaque direction une photo et environ 10 secondes d’observation : ce qui bouge (branches, route, lumières) et ce que l’IA voit (voiture, vélo, chaise, banc, personne …). 2–3 minutes, « Annuler » à tout moment.</li>'
+          '<li><b>La nuit :</b> avec la lumière infrarouge et la caméra thermique. <b>Grand angle :</b> une caméra supplémentaire plus large sur la tête demande moins d’étapes.</li>'
+          '<li><b>2 Marquer :</b> toucher les suggestions sur le panorama ou dessiner un rectangle : <b>⛺ Ma tente / camping-car</b> (zone de protection), <b>🚶 Accès / chemin</b> (ligne + point de patrouille ; « chemin public = seulement signaler »), <b>🚲 Objets de valeur</b> (surveillés par le scan de référence : « vélo manquant » le matin), <b>🌿 Ignorer</b> (masque).</li>'
+          '<li><b>3 Terminé :</b> zones, masques, points de passage et objets surveillés sont créés tout seuls ; les zones restent à leur place quand la tête tourne. Ensuite faire le <b>test de marche</b>.</li>'
+          '<li><b>📐 Angle de vue de la caméra</b> (Réglages → Caméra / Servos) : par caméra Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) ou une valeur propre.</li></ul></section>\n\n',
+    "it": '<section id="place" data-icon="📍"><h2>Configurare il posto</h2><ul>'
+          '<li><b>Quando:</b> dopo aver posizionato MoveEye (lo propone da solo al primo avvio e in un posto nuovo). Protezione → «📍 Configurare il posto» (web e finestra).</li>'
+          '<li><b>1 Guardarsi intorno:</b> la testa percorre tutta la sua rotazione in 2 (accurato: 3) file. MG90S circa 180°, con l’obiettivo della Camera Module 3 (66°) circa 240° – nessun giro completo; un servo a 360° vede tutto il cerchio. In ogni direzione una foto e circa 10 secondi di osservazione: cosa si muove (rami, strada, luci) e cosa vede l’IA (auto, bici, sedia, panchina, persona …). 2–3 minuti, «Annulla» in ogni momento.</li>'
+          '<li><b>Di notte:</b> con la luce infrarossa e la termocamera. <b>Grandangolo:</b> una telecamera aggiuntiva più larga sulla testa richiede meno passi.</li>'
+          '<li><b>2 Segnare:</b> toccare i suggerimenti sul panorama o disegnare un rettangolo: <b>⛺ La mia tenda / camper</b> (zona di protezione), <b>🚶 Accesso / sentiero</b> (linea + punto di pattuglia; «sentiero pubblico = solo segnalare»), <b>🚲 Oggetti di valore</b> (sorvegliati dalla scansione di riferimento: «bici mancante» al mattino), <b>🌿 Ignorare</b> (maschera).</li>'
+          '<li><b>3 Fatto:</b> zone, maschere, punti di passaggio e oggetti sorvegliati nascono da soli; le zone restano al loro posto quando la testa gira. Poi fare il <b>test di camminata</b>.</li>'
+          '<li><b>📐 Angolo di visione della telecamera</b> (Impostazioni → Telecamera / Servo): per telecamera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) o un valore proprio.</li></ul></section>\n\n',
+    "rm": '<section id="place" data-icon="📍"><h2>Endrizzar il plaz</h2><ul>'
+          '<li><b>Cura:</b> suenter avair plazzà MoveEye (el propona quai sez tar l’emprima partenza e sin in nov lieu). Protecziun → «📍 Endrizzar il plaz» (web e fanestra).</li>'
+          '<li><b>1 Guardar enturn:</b> il chau percurra tut sia rotaziun en 2 (precis: 3) lingias. MG90S var 180°, cun l’objectiv da la Camera Module 3 (66°) var 240° – nagina rotaziun cumplaina; in servo da 360° vesa l’entir circul. En mintga direcziun ina foto ed observar var 10 secundas: tge che sa mova (roma, via, glischs) e tge che la IA vesa (auto, velo, sutga, banc, persuna …). 2–3 minutas, «Interrumper» adina.</li>'
+          '<li><b>La notg:</b> cun la glisch infracotschna e la camera termica. <b>Grond angul:</b> ina camera supplementara pli largia sin il chau basegna damain pass.</li>'
+          '<li><b>2 Marcar:</b> tutgar las propostas sin il panorama u dissegnar in rectangul: <b>⛺ Mia tenda / auto da campadi</b> (zona da protecziun), <b>🚶 Access / via</b> (lingia + punct da patrulla; «via publica = mo annunziar»), <b>🚲 Chaussas da valur</b> (survegliadas dal scan da referenza: «velo manca» la damaun), <b>🌿 Ignorar</b> (mascra).</li>'
+          '<li><b>3 Fatg:</b> zonas, mascras, puncts da via e chaussas survegliadas vegnan fatgas sezzas; las zonas restan en lur plaz, er sch’il chau sa volva. Lura far il <b>test da chaminar</b>.</li>'
+          '<li><b>📐 Angul da vista da la camera</b> (Parameters → Camera / Servos): per camera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) u in agen valur.</li></ul></section>\n\n',
+}
+
+
+def _help_platzein(doc, lang):
+    if '<section id="place"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    if i < 0:
+        i = doc.find('<section id="privacy"')
+    return doc[:i] + _HELP_PLATZEIN[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en = HELP_PAGE.find('<div lang="en">')
+if _hp_en > 0:
+    HELP_PAGE = _help_platzein(HELP_PAGE[:_hp_en], "de") + _help_platzein(HELP_PAGE[_hp_en:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_platzein(HELP_X[_L], _L)
 _HX_live = {
     'Always': ('Immer', 'Toujours', 'Sempre', 'Adina'),
     'Never': ('Nie', 'Jamais', 'Mai', 'Mai'),

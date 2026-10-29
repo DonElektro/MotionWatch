@@ -58,6 +58,93 @@ def _pano_track(reps):
     return marks
 
 
+def pano_canvas(pos, load, tw=320, head=0, foot=0, geo=None):
+    """2.98.30: the panorama picture of the reference-scan directions - used by the morning report (pano_build) and by
+    «Platz einrichten» (317). pos: [{"i", "pan", "tilt", …}], load(p) -> picture or None.
+    geo None: every photo whole, side by side (columns = pan, rows = tilt, looking up = the upper row) as before.
+    geo {"hf", "vf", "hp", "ht", "wrap", "a0"?, "a1"?, "e0"?, "e1"?}: a stitched panorama in degrees - of every photo only the
+    part up to the middle between it and its neighbours, so x / y of the canvas are directions: az = a0 + x / k,
+    el = e_top - (y - head) / k (k pixels per degree). wrap (a 360° head): the first column is repeated after the seam.
+    Returns (canvas, cells) - cells {i: {"col", "row", "tw", "th", "x0", "y0", "x1", "y1"}}; with geo also cells["_geo"]."""
+    if geo is None:
+        pans = sorted({p["pan"] for p in pos})
+        tilts = sorted({p["tilt"] for p in pos}, reverse=True)
+        th = None
+        tiles = {}
+        for p in pos:
+            im = load(p)
+            if im is None:
+                continue
+            h = int(round(im.shape[0] * tw / im.shape[1]))
+            th = th or h
+            tiles[p["i"]] = (cv2.resize(im, (tw, th)), pans.index(p["pan"]), tilts.index(p["tilt"]))
+        if not tiles:
+            return None, {}
+        W, H = tw * len(pans), th * len(tilts) + head + foot
+        can = np.full((H, W, 3), 22, np.uint8)
+        cells = {}
+        for i, (im, cx, cy) in tiles.items():
+            can[head + cy * th: head + (cy + 1) * th, cx * tw: (cx + 1) * tw] = im
+            cells[i] = {"col": cx, "row": cy, "tw": tw, "th": th, "x0": cx * tw, "y0": head + cy * th, "x1": (cx + 1) * tw, "y1": head + (cy + 1) * th}
+        return can, cells
+    hf, vf, hp, ht = float(geo["hf"]), float(geo["vf"]), float(geo["hp"]), float(geo["ht"])
+    wrap = bool(geo.get("wrap"))
+    k = tw / hf                                            # pixels per degree (the same both ways)
+    azs = sorted({(float(p["pan"]) - 50.0) / 50.0 * hp for p in pos})
+    els = sorted({(float(p["tilt"]) - 50.0) / 50.0 * ht for p in pos}, reverse=True)
+
+    def bounds(cs, fov, wrap_):
+        out = []
+        for j, c in enumerate(cs):
+            if wrap_ and len(cs) > 1:
+                st = 360.0 / len(cs)
+                lo, hi = c - st / 2.0, c + st / 2.0
+            else:
+                lo = (cs[j - 1] + c) / 2.0 if j > 0 else c - fov / 2.0
+                hi = (cs[j + 1] + c) / 2.0 if j + 1 < len(cs) else c + fov / 2.0
+            out.append((max(lo, c - fov / 2.0), min(hi, c + fov / 2.0)))
+        return out
+    ab = bounds(azs, hf, wrap)
+    eb = [(b, a) for a, b in bounds(sorted(els), vf, False)][::-1]    # (top, bottom) from the top row down
+    eb = [(hi, lo) for (hi, lo) in eb]
+    a0 = float(geo.get("a0", ab[0][0])); a1 = float(geo.get("a1", ab[-1][1]))
+    e_top = float(geo.get("e0", max(x[0] for x in eb))); e_bot = float(geo.get("e1", min(x[1] for x in eb)))
+    seam = min(hf / 2.0, 360.0 - (a1 - a0) + hf / 2.0) if wrap else 0.0
+    W = max(8, int(round((a1 - a0 + seam) * k))); H = max(8, int(round((e_top - e_bot) * k))) + head + foot
+    can = np.full((H, W, 3), 22, np.uint8)
+    th_, tv_ = math.tan(math.radians(hf / 2.0)), math.tan(math.radians(vf / 2.0))
+    cells = {}
+    for p in pos:
+        az = (float(p["pan"]) - 50.0) / 50.0 * hp; el = (float(p["tilt"]) - 50.0) / 50.0 * ht
+        ci = min(range(len(azs)), key=lambda q: abs(azs[q] - az)); ri = min(range(len(els)), key=lambda q: abs(els[q] - el))
+        im = load(p)
+        if im is None:
+            continue
+        ih, iw = im.shape[:2]
+        (lo, hi), (top, bot) = ab[ci], eb[ri]
+        u0 = int(round((0.5 + math.tan(math.radians(lo - az)) / (2 * th_)) * iw)); u1 = int(round((0.5 + math.tan(math.radians(hi - az)) / (2 * th_)) * iw))
+        v0 = int(round((0.5 - math.tan(math.radians(top - el)) / (2 * tv_)) * ih)); v1 = int(round((0.5 - math.tan(math.radians(bot - el)) / (2 * tv_)) * ih))
+        u0, u1 = max(0, min(iw - 1, u0)), max(1, min(iw, u1)); v0, v1 = max(0, min(ih - 1, v0)), max(1, min(ih, v1))
+        cw = int(round((hi - a0) * k)) - int(round((lo - a0) * k)); chh = int(round((e_top - bot) * k)) - int(round((e_top - top) * k))   # no 1-px gaps
+        if u1 - u0 < 2 or v1 - v0 < 2 or cw < 2 or chh < 2:
+            continue
+        part = cv2.resize(im[v0:v1, u0:u1], (cw, chh), interpolation=cv2.INTER_AREA)
+        for off in ((0.0, 360.0) if wrap else (0.0,)):     # wrap: the columns after the seam once more
+            x = int(round((lo + off - a0) * k)); y = head + int(round((e_top - top) * k))
+            if x >= W or x + cw <= 0 or y >= H:
+                continue
+            xs, xe = max(0, x), min(W, x + cw); ys, ye = max(0, y), min(H - foot, y + chh)
+            if xe > xs and ye > ys:
+                can[ys:ye, xs:xe] = part[ys - y:ye - y, xs - x:xe - x]
+            if off == 0.0:
+                cells[p["i"]] = {"col": ci, "row": ri, "tw": cw, "th": chh, "x0": x, "y0": y, "x1": x + cw, "y1": y + chh}
+    if not cells:
+        return None, {}
+    cells["_geo"] = {"a0": round(a0, 3), "a1": round(a1, 3), "e_top": round(e_top, 3), "e_bot": round(e_bot, 3), "k": round(k, 5), "head": head,
+                     "w": W, "h": H, "wrap": wrap, "seam": round(seam, 3), "hf": hf, "vf": vf, "hp": hp, "ht": ht}
+    return can, cells
+
+
 def pano_build(since=None, until=None, label=""):
     """the panorama with the marks; returns (path, marks) or (None, error)"""
     now = time.time()
@@ -71,25 +158,13 @@ def pano_build(since=None, until=None, label=""):
     if not meta or not meta.get("positions"):
         return None, "no reference yet - scan first"
     pos = meta["positions"]
-    pans = sorted({p["pan"] for p in pos})
-    tilts = sorted({p["tilt"] for p in pos}, reverse=True)  # looking up = the upper row
-    tw = 320
-    th = None
-    tiles = {}
-    for p in pos:
-        im = cv2.imread(refscan_dir(REFSCAN_KINDS[meta["_kind"]], p["file"]))
-        if im is None:
-            continue
-        h = int(round(im.shape[0] * tw / im.shape[1]))
-        th = th or h
-        tiles[p["i"]] = (cv2.resize(im, (tw, th)), pans.index(p["pan"]), tilts.index(p["tilt"]))
-    if not tiles:
-        return None, "no reference yet - scan first"
     head = 54
-    W, H = tw * len(pans), th * len(tilts) + head + 30
-    can = np.full((H, W, 3), 22, np.uint8)
-    for i, (im, cx, cy) in tiles.items():
-        can[head + cy * th: head + (cy + 1) * th, cx * tw: (cx + 1) * tw] = im
+    can, cells = pano_canvas(pos, lambda p: cv2.imread(refscan_dir(REFSCAN_KINDS[meta["_kind"]], p["file"])), head=head, foot=30)
+    if can is None:
+        return None, "no reference yet - scan first"
+    H, W = can.shape[:2]
+    tiles = {i: (None, c["col"], c["row"]) for i, c in cells.items()}
+    tw, th = cells[next(iter(cells))]["tw"], cells[next(iter(cells))]["th"]
     marks = _pano_track(reps)
     fmt = lambda t: datetime.fromtimestamp(t).strftime("%H:%M")
     for m in marks:

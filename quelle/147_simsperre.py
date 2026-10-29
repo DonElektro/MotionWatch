@@ -20,7 +20,8 @@ def simtask_local():
                        ("drill", DRILL.get("busy"))):
         if busy:
             return name
-    for name, ref in (("blind spots", "BLIND"), ("false alarm learning", "FALEARN"), ("automatic thresholds", "AUTOTH"), ("demo", "DEMO_RUN")):
+    for name, ref in (("blind spots", "BLIND"), ("false alarm learning", "FALEARN"), ("automatic thresholds", "AUTOTH"), ("demo", "DEMO_RUN"),
+                      ("place setup", "PLACE")):
         d = globals().get(ref)
         if isinstance(d, dict) and d.get("busy") and not (ref == "BLIND" and d.get("ext")):
             return name

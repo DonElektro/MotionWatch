@@ -137,7 +137,7 @@ def _refscan_settle():
 def refscan_start(op, reason="by hand", kind=None):
     """op: scan | compare. Runs in the background; False when something else runs or there is no reference."""
     with _REFSCAN_LOCK:
-        if REFSCAN["busy"]:
+        if REFSCAN["busy"] or (globals().get("PLACE") or {}).get("busy"):     # 2.98.30: «Platz einrichten» (317) drives the head
             return False, "a scan is already running"
         if WATCH_REF.get("w") is None:
             return False, "no camera"
