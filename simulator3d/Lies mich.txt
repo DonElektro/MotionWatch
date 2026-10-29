@@ -608,6 +608,12 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-4.5
+3D-4.5: Spiel: Wetterwechsel mitten in der Runde (Gewitter, Nebelbank, Dämmerung – 10 s vorher Warnung auf dem Handy),
+Tarn-Sachen (Tarnkleidung, Wärmedecke gegen das Wärmebild, Karton, Regenschirm – jede mit einem Nachteil), Ziel «Diebstahl»
+(Velo oder Kühlbox zum Ausgang tragen; am Schluss sagt MoveEye mit dem Referenz-Scan, ob es das Fehlen bemerkt hat) und
+Lern-Punkte («Deine Runde hat MoveEye 12 Dinge beigebracht», Rangliste «Beste Lehrer»). Alles im Assistenten.
+
 NEU IN 3D-4.4
 3D-4.4: Realistischer: «Wie ein echter Pi 5» (Kopfkamera etwa 10 Bilder/s mit Verzögerung, Karte «Testen»), Objektiv wie das
 Camera Module 3 (Verzerrung am Rand, Rolling Shutter beim Schwenken, Rauschen im Dunkeln), Infrarot mit echtem LED-Kegel,

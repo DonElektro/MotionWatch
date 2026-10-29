@@ -1,12 +1,12 @@
 {
- "version": "3D-4.4",
+ "version": "3D-4.5",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31442814,
- "sha256": "594db727441bb35cbcb8818fbe476c3b4deebc157366a14cb0620d50b5c1bd05",
- "notes": "Realismus, KI-Training",
+ "size": 31484593,
+ "sha256": "d9b63fb3172033423391211ec74e0f50d3a38915ab05b74cb1e3054eeb7cf632",
+ "notes": "Spiel-Extras",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24564519,
-  "sha256": "d1ab66de5ee56b548bb39f6384a29b626fd7968b9e49798daf6a480fcf3b9009"
+  "size": 24605718,
+  "sha256": "d56736892b90ff5889edbee68ab019d4a5eaf5e6aee2cb5aaa449b26f13f9432"
  }
 }
