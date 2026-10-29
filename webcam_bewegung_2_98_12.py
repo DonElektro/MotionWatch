@@ -11151,7 +11151,7 @@ def sim_busy_remote():
     itself, the simulator being busy is that task - not counted."""
     if not CFG.get("sim_on") or simtask_local():
         return ""
-    if time.time() - SIMBUSY["t"] > 10:
+    if time.time() - SIMBUSY["t"] > 30:
         return ""
     w = str(SIMBUSY["w"] or "")
     if not w or w == "Spielrunde" or "MoveEye" in w:          # the game round: sim_game_running() in 141
@@ -11181,8 +11181,13 @@ def _simbusy_adopt_blind():
     threading.Thread(target=run, daemon=True, name="blindmap-ext").start()
 
 
+def _sim_reachable():
+    """looser than sim_ready(): a slow simulator PC may miss a few frames - the lock still counts (30 s)"""
+    return bool(CFG.get("sim_on")) and SIM.get("ok") and time.time() - SIM.get("t", 0) < 30
+
+
 def simbusy_poll():
-    if not sim_ready():
+    if not _sim_reachable():
         SIMBUSY["seen_blind"] = 0
         return
     if SIMBUSY["ok"] is not False:
