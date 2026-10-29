@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_31.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_32.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,10 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.32: Controller-Ansicht für Handy und Tablet: mit Bluetooth-Controller (oder Knopf 🎮) Live-Bild und nacktes
+    Simulator-Bild über- bzw. nebeneinander, tauschbar; Gesten auf dem Simulator-Bild (drehen, zoomen, Ansicht wechseln);
+    schlanke Leiste (Licht, IR, Wärmebild, Nachtsicht, Markieren, Foto, Aufnahme, Folgen); linker Stick Kopf, rechter Stick
+    Rover (später auch echter Mover), R1 Ansicht drehen, R3 Blick wechseln (mit Simulator 3D-4.10).
   * 2.98.31: Kein Live-Bild seit 2.98.30 behoben: die Pi-Kamera stand noch als Zusatzkamera in der Liste (Hauptkamera
     «Automatisch»), und seit Zusatzkameras nach dem Neustart wieder starten, stritten beide um die Kamera. Die Hauptkamera hat
     jetzt immer Vorrang und wird aus der Zusatzliste entfernt. Live-Seite: ohne Bild ein schwarzes 16:9-Feld statt eines
@@ -932,10 +936,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_31.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_32.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_31.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_31.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_32.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_32.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -952,7 +956,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.31"
+APP_VERSION = "2.98.32"
 
 
 def default_data_dir():
@@ -22313,8 +22317,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.9", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31504916,
-         "sha256": "69242ffaf847049c44c51b3de0dc813075a42154b5c8421565dbfa45b083914c"}
+SIM3D = {"version": "3D-4.10", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31510004,
+         "sha256": "46e39192ae1f7f39c01aabccbc12698f3cab26d27d4749fca17e43000bff631d"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -22455,8 +22459,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-4.9", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24626571,
-           "sha256": "d965a28503f7f7d4c54cfc1424d057b30f0e346ec8e6f2bb464ed85a8d0cb012", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-4.10", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24631949,
+           "sha256": "b012ed9f3d0e432ca1ae74130dc2aa4b5c1fec5451f3ebc72afd7e552a6cdc5d", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -28904,7 +28908,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_31.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_32.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -35744,7 +35748,7 @@ function simViewPoll(VI, fps) {
     info.w = w; info.q = L.q; info.fmt = SIM_WEBP ? "webp" : "jpg"; info.lvl = lvl;
     const fs = !!(document.fullscreenElement || document.webkitFullscreenElement || VI.closest(".fs"));
     const clean = fs && (typeof PVPAD === "undefined" || !PVPAD);      // 2.95.92: full screen: the simulator hides its rover stick
-    return "w=" + w + "&q=" + L.q + "&fmt=" + info.fmt + (clean ? "&clean=1" : "");
+    return "w=" + w + "&q=" + L.q + "&fmt=" + info.fmt + (clean ? "&clean=1" : "") + (VI.closest("[data-bare]") ? "&bare=1" : "");   // 538: without the buttons of the window
   };
   const step = async (g) => {
     if (!on || g !== gen) return;
@@ -35774,7 +35778,7 @@ const SIMPAD = {name: "", on: false};
   const tick = () => {
     let g = null; try { g = [...navigator.getGamepads()].find(x => x && x.connected); } catch (e) {}
     SIMPAD.on = !!g; SIMPAD.name = g ? String(g.id).replace(/\(.*?\)/g, "").trim().slice(0, 40) : "";
-    if (!g || document.hidden) return;
+    if (!g || document.hidden || (typeof window.mwPadOwn === "function" && window.mwPadOwn())) return;   // the «Controller-Ansicht» (538) has its own mapping
     // 2.98.10: the sticks go to the simulator unchanged - it takes off the drift itself (rest position + round dead zone)
     const ax = [0, 1, 2, 3].map(i => Math.round((g.axes[i] || 0) * 1000) / 1000);
     const bt = g.buttons.slice(0, 17).map(b => Math.round((b.value || (b.pressed ? 1 : 0)) * 100) / 100);
@@ -35785,7 +35789,7 @@ const SIMPAD = {name: "", on: false};
     post("/api/sim", {action: "pad", ax: ax, bt: bt, name: SIMPAD.name});
   };
   setInterval(tick, 66);
-  addEventListener("gamepadconnected", e => { try { toast("🎮 " + t("Controller connected") + ": " + String(e.gamepad.id).replace(/\(.*?\)/g, "").trim().slice(0, 40) + " – " + t("Start = explore with the rover")); } catch (x) {} });
+  addEventListener("gamepadconnected", e => { if (typeof window.mwPadAsk === "function" && window.mwPadAsk(e)) return; try { toast("🎮 " + t("Controller connected") + ": " + String(e.gamepad.id).replace(/\(.*?\)/g, "").trim().slice(0, 40) + " – " + t("Start = explore with the rover")); } catch (x) {} });
 })();
 function simQBox(VP) {                             // «Bildqualität» under the picture of the simulator window
   try { if (I18N && I18N.de) Object.assign(I18N.de, {"Controller connected": "Controller verbunden", "Start = explore with the rover": "Start = mit dem Rover erkunden", "Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig"}); } catch (e) {}
@@ -46715,7 +46719,7 @@ function simExtras(d) {
     simTouchPad(VI.parentElement, VB, () => vOn && (vctl || VW.classList.contains("big")));
     $("#lv-vbig").onclick = () => { VW.classList.toggle("big"); $("#lv-vbig").textContent = VW.classList.contains("big") ? "✕" : "⛶"; };
     const vtick = () => {
-      const S_ = QSJ && QSJ.state && QSJ.state.sim, want = !!(S_ && S_.on && S_.ok && S_.view) && D.open && !document.hidden && !W.hidden;
+      const S_ = QSJ && QSJ.state && QSJ.state.sim, want = !!(S_ && S_.on && S_.ok && S_.view) && D.open && !document.hidden && !W.hidden && !document.body.classList.contains("pv-on");   // 538: the controller view has its own picture
       VW.hidden = !(S_ && S_.view);
       if (!VW.hidden) { const h = t("sim-view-help"); if (h !== "sim-view-help") $("#lv-vhelp").textContent = h; }
       if (want && !vOn) { vOn = true; VP.start(); }
@@ -49252,6 +49256,7 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
       b.append(E("span", "", P.ic + " " + T(P.lb)), E("small", "", T(P.d)));
       b.onclick = e => { e.stopPropagation(); preset(k); menuBuild(); }; pr.appendChild(b); });
     MN.appendChild(pr);
+    if (typeof window.pvMenu === "function") try { window.pvMenu(MN, E, T); } catch (e) {}     // 538: «Controller-Ansicht»
     MN.appendChild(E("h3", "", T("Layout")));
     MN.appendChild(seg([["auto", "Automatic"], ["port", "Portrait"], ["land", "Landscape"], ["mini", "Picture only"]], V.layout, v => { V.layout = v; }));
     const md = mode();
@@ -49778,6 +49783,388 @@ def place_routes(app, watch, reply, body):
 
 SELFTEST_EXTRA.append(("Set up the place (directions, plan, items)", place_selftest))
 SELFTEST_EXTRA.append(("Field of view per camera (cam_fov_h)", cam_fov_selftest))
+# ----------------------------------------------------------------------------
+# Wish of Daniel (29.10.2026): a full-screen view for phones and tablets (web only - the Tk window has its own
+# camera control) with a Bluetooth / USB game controller or the fingers:
+#   portrait = live picture on top, simulator picture below; landscape = live left, simulator right; swappable (long tap
+#   on a picture or Select); without the simulator only the live picture. The simulator picture is naked (view.jpg with
+#   bare=1: the simulator hides its buttons, map and boxes for MoveEye - simulator padview.gd).
+#   Gestures on the simulator picture: one finger = turn the view, two fingers = zoom (the view events «view_in» of the
+#   simulator window, 3D-3.18), double tap = next view (head camera → from above → behind the rover), long tap = swap.
+#   Slim bar (the quick switches of 530: Lamp, IR, Thermal, Night vision, Marks, Photo, Record, Follow, then Centre …),
+#   at most 8 visible (fewer on a narrow phone), the rest behind «…», hides itself after 4 s, a tap shows it again.
+#   Controller (standard mapping of the Gamepad API):
+#     left stick = head (pan / tilt, /api/stick like the joystick: real servos and simulator) · L3 = centre
+#     right stick = rover (up = forward, sideways = steer) through MoveEye's mover (/api/mover → MOVER: the real mover
+#       later, in the simulation the simulator's rover); the simulator view follows behind the rover (explore «hinterher»)
+#     without a rover: right stick = fly the simulator view (up = forward, sideways = turn)
+#     R1 held + right stick = turn the simulator view · L1 = zoom out, R1 short = zoom in, L2 / R2 = zoom out / in
+#     R3 = next view (behind the rover → driver → from above; without rover: head camera → from above → free)
+#     A Photo · B Record · X Lamp (IR without lamp) · Y Follow · D-pad ← → choose a button of the bar, ↑ press it, ↓ help
+#     Select = swap the pictures · Start = bar on / off, held 1 s = leave
+#   While it is open the raw controller is not sent to the simulator (470 simPadLink: mwPadOwn), the small simulator
+#   window of the live page pauses (530) - one picture, one mapping. Stored per device (localStorage «mw-pad», not on
+#   the Pi): open, swapped, asked. Translations: part 628.
+# ----------------------------------------------------------------------------
+
+PADVIEW_JS = r"""
+<style id="pv-css">
+#pv{position:fixed;inset:0;z-index:190;background:#000;display:flex;flex-direction:column;touch-action:none;user-select:none;-webkit-user-select:none;
+  overscroll-behavior:none;-webkit-touch-callout:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+#pv[hidden]{display:none}
+#pv.land{flex-direction:row}
+#pv .pv-p{flex:1 1 0;min-width:0;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000}
+#pv.swap #pv-live{order:2}
+#pv:not(.land) .pv-p+.pv-p{border-top:2px solid #1a1f27}#pv.land .pv-p+.pv-p{border-left:2px solid #1a1f27}
+#pv.swap:not(.land) #pv-sim{border-top:0;border-bottom:2px solid #1a1f27}#pv.swap.land #pv-sim{border-left:0;border-right:2px solid #1a1f27}
+#pv.nosim #pv-sim{display:none}
+#pv #pv-live img,#pv #pv-sim img{width:100%;height:100%;max-height:none!important;min-height:0;aspect-ratio:auto;object-fit:contain;display:block;-webkit-user-drag:none;touch-action:none;visibility:visible}
+#pv .pv-tag{position:absolute;left:8px;top:8px;font:700 10px/1 system-ui,sans-serif;letter-spacing:.08em;color:#fff;background:rgba(220,40,40,.75);padding:3px 6px;border-radius:5px;pointer-events:none}
+#pv #pv-simwait{position:absolute;color:#8a96a6;font-size:13px;pointer-events:none}
+#pv-x{position:absolute;z-index:3;top:max(8px,env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px));width:44px;height:44px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.3);background:rgba(8,12,20,.6);color:#fff;font-size:20px;padding:0;transition:opacity .3s}
+#pv-pad{position:absolute;z-index:3;top:max(10px,env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);font-size:12px;color:#fff;background:rgba(8,12,20,.55);
+  padding:4px 10px;border-radius:10px;pointer-events:none;transition:opacity .3s;white-space:nowrap}
+#pv.calm #pv-x,#pv.calm #pv-pad{opacity:0;pointer-events:none}
+#pv-bar{position:absolute;z-index:3;left:50%;bottom:max(10px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;gap:6px;padding:6px;border-radius:16px;
+  background:rgba(8,12,20,.74);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);transition:opacity .3s,transform .3s;max-width:calc(100% - 16px)}
+#pv.calm #pv-bar{opacity:0;pointer-events:none;transform:translate(-50%,24px)}
+#pv button.pvb{width:54px;height:54px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:21px;line-height:1;border-radius:12px;
+  border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#fff;padding:0;position:relative;cursor:pointer;touch-action:manipulation}
+#pv button.pvb small{font-size:9.5px;line-height:1.1;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52px}
+#pv button.pvb.on{background:var(--acc,#3b8cff);border-color:transparent}
+#pv button.pvb.rec{background:#d93636;border-color:transparent}
+#pv button.pvb.foc{outline:3px solid #ffd34d;outline-offset:1px}
+#pv button.pvb.flash{background:#fff;color:#000}
+#pv button.pvb i{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;font:700 10px/18px system-ui,sans-serif;font-style:normal;color:#fff;background:#4b5563;border:1px solid rgba(255,255,255,.5)}
+#pv button.pvb i.kA{background:#2f9e44}#pv button.pvb i.kB{background:#d9480f}#pv button.pvb i.kX{background:#1c7ed6}#pv button.pvb i.kY{background:#e0a800}
+#pv-more{position:absolute;z-index:4;left:50%;transform:translateX(-50%);bottom:calc(max(10px,env(safe-area-inset-bottom,0px)) + 76px);display:grid;grid-template-columns:repeat(auto-fill,54px);
+  gap:8px;justify-content:center;width:min(calc(100% - 24px),400px);padding:10px;border-radius:16px;background:rgba(8,12,20,.88);border:1px solid rgba(255,255,255,.14)}
+#pv-more[hidden],#pv-help[hidden],#pv-ask[hidden]{display:none}
+#pv-help{position:absolute;z-index:5;left:50%;top:50%;transform:translate(-50%,-50%);width:min(calc(100% - 24px),460px);max-height:calc(100% - 24px);overflow-y:auto;
+  background:rgba(8,12,20,.92);color:#e8eef5;border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.45}
+#pv-help b{display:block;margin:2px 0 6px;font-size:14px}#pv-help table{border-collapse:collapse;width:100%}
+#pv-help td{padding:3px 4px;vertical-align:top;border-top:1px solid rgba(255,255,255,.08)}#pv-help td:first-child{white-space:nowrap;color:#ffd34d;padding-right:10px}
+#pv-help .mut{color:#8a96a6;margin-top:8px}
+#pv-ask{position:fixed;z-index:260;left:12px;right:12px;top:max(12px,env(safe-area-inset-top,0px));max-width:520px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  background:var(--panel,#121821);color:var(--txt,#e8eef5);border:1px solid var(--acc,#3b8cff);border-radius:14px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,.45)}
+#pv-ask>span{flex:1 1 100%;font-size:14px}#pv-ask button{flex:1 1 auto;padding:10px 12px;min-height:44px}
+body.pv-on{overflow:hidden}
+body.pv-on #gd-card{display:none!important}   /* the tips of the guide (515) not over the controller view */
+body.pv-on main,body.pv-on header,body.pv-on #lv-menu{visibility:hidden}
+#lv-b-pad{font-size:17px}
+body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0px)) + 80px)}
+</style>
+<script>
+(function () {
+  if (document.body.dataset.tab !== "live") return;
+  try { const D = /*PVDE*/{}; for (const k in D) if (!(k in I18N.de)) I18N.de[k] = D[k]; } catch (e) {}
+  const T = x => (typeof t === "function" ? t(x) : x);
+  const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
+  const KEY = "mw-pad";                                  // per device (this phone / tablet) - never copied to the Pi
+  const P = {open: false, swap: false, ask: true, help: false};
+  try { Object.assign(P, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {} };
+  const J = () => (typeof QSJ !== "undefined" && QSJ) || {};
+  const ST = () => J().state || {};
+  const simOn = () => { const s = ST().sim; return !!(s && s.on && s.ok && s.view); };
+  const rover = () => { const m = ST().mover; return !!(m && m.avail && (m.hw || !m.test)); };   // a real mover, or the simulator has its rover
+  const touchDev = () => (navigator.maxTouchPoints || 0) > 0 || (window.matchMedia && matchMedia("(pointer: coarse)").matches);
+  const handy = () => touchDev() || Math.min(innerWidth, innerHeight) <= 900;   // phone / tablet / small window
+  const r3 = v => Math.round(v * 1000) / 1000;
+  const toastT = m => { if (typeof toast === "function") toast(m); };
+  const PV = {open: false, view: "", followed: false};
+  // ---- the page ----
+  const W = E("div"); W.id = "pv"; W.hidden = true;
+  const PL = E("div", "pv-p"); PL.id = "pv-live"; const slot = E("div", "pv-p"); slot.style.cssText = "position:absolute;inset:0"; PL.appendChild(slot);
+  PL.appendChild(E("span", "pv-tag", "LIVE"));
+  const PS = E("div", "pv-p"); PS.id = "pv-sim"; PS.dataset.bare = "1";             // naked: only the picture of the simulator
+  const SI = E("img"); SI.alt = ""; SI.draggable = false; PS.appendChild(SI);
+  const SW = E("div"); SW.id = "pv-simwait"; SW.textContent = "…"; PS.appendChild(SW);
+  SI.addEventListener("load", () => { SW.hidden = true; });
+  const X = E("button", "", "✕"); X.id = "pv-x"; X.type = "button";
+  const PADI = E("div"); PADI.id = "pv-pad"; PADI.hidden = true;
+  const BAR = E("div"); BAR.id = "pv-bar";
+  const MORE = E("div"); MORE.id = "pv-more"; MORE.hidden = true;
+  const HELP = E("div"); HELP.id = "pv-help"; HELP.hidden = true;
+  W.append(PL, PS, X, PADI, BAR, MORE, HELP); document.body.appendChild(W);
+  X.onclick = e => { e.stopPropagation(); open(false); };
+  // ---- the bar: the quick switches of the live page (530 QS), in this order; not available (no lamp …) = not shown ----
+  const QD = id => (typeof QS !== "undefined" && Array.isArray(QS) ? QS.find(q => q.id === id) : null);
+  const EXTRA = {
+    center: {ic: "◎", lb: "Centre", tip: "Head to the middle", on: () => false, go: () => post("/api/move", {dir: "center"})},
+    rover: {ic: "🚜", lb: "Rover", tip: "The rover in the simulator on / off", on: () => rover(), ok: () => simOn() && !(ST().mover || {}).hw,
+            go: () => post("/api/sim", {action: "ctl", ctl: "set", id: "mover_on", value: !rover(), lang: LANG})},
+    swap: {ic: "⇅", lb: "Swap", tip: "Swap the pictures (long tap on a picture, Select)", on: () => !!P.swap, ok: () => simOn(), go: () => { swap(); return Promise.resolve({ok: true}); }, util: true},
+    help: {ic: "?", lb: "Help", tip: "Controller and gestures", on: () => !HELP.hidden, go: () => { help(HELP.hidden); return Promise.resolve({ok: true}); }, util: true},
+    exit: {ic: "✕", lb: "Exit", tip: "Leave the controller view", on: () => false, go: () => { open(false); return Promise.resolve({ok: true}); }, util: true}};
+  const ORDER = ["white", "ir", "therm", "nv", "marks", "photo", "rec", "track", "center", "patrol", "listen", "mask", "rover", "swap", "help", "exit"];
+  const KEYS = () => ({photo: "A", rec: "B", [okId("white") ? "white" : "ir"]: "X", track: "Y"});
+  const item = id => EXTRA[id] || QD(id);
+  function okId(id) { const q = item(id); if (!q) return false; const c = J().cfg || {}, s = ST(); try { return q.ok ? !!q.ok(c, s) : true; } catch (e) { return false; } }
+  function act(id, btn) {
+    const q = item(id); if (!q || !okId(id)) return;
+    const c = J().cfg || {}, s = ST();
+    if (btn) btn.disabled = true;
+    Promise.resolve(q.go(c, s)).then(r => {
+      if (btn) btn.disabled = false;
+      if (r && r.ok === false) toastT("⚠ " + (r.error || "error"));
+      else if (q.flash) { if (btn) { btn.classList.add("flash"); setTimeout(() => btn.classList.remove("flash"), 400); } toastT("📷 " + T("Photo saved")); }
+      if (typeof refresh === "function") refresh();
+      setTimeout(paintBar, 300);
+    });
+  }
+  let BSIG = "", focus = -1;
+  const mkBtn = id => { const q = item(id), b = E("button", "pvb"); b.type = "button"; b.dataset.id = id;
+    b.append(E("span", "", q.ic), E("small", "", q.raw ? q.lb : T(q.lb))); b.title = T(q.tip || q.lb);
+    b.onclick = e => { e.stopPropagation(); wake(); if (id === "more") return; act(id, b); }; return b; };
+  function fitN() { const w = W.clientWidth || innerWidth; return Math.max(3, Math.min(8, Math.floor((w - 28) / 60) - 1)); }
+  function paintBar() {
+    if (!PV.open) return;
+    const avail = ORDER.filter(id => item(id) && okId(id)), main_ = avail.filter(id => !(EXTRA[id] && EXTRA[id].util));
+    const n = fitN(), vis = main_.slice(0, n), rest = main_.slice(n).concat(avail.filter(id => EXTRA[id] && EXTRA[id].util));
+    const sig = vis.join() + "|" + rest.join() + "|" + LANG + JSON.stringify(KEYS());
+    if (sig !== BSIG) {
+      BSIG = sig; BAR.textContent = ""; MORE.textContent = "";
+      vis.forEach(id => BAR.appendChild(mkBtn(id)));
+      const m = E("button", "pvb"); m.type = "button"; m.dataset.id = "more"; m.append(E("span", "", "…"), E("small", "", T("more"))); m.title = T("More buttons");
+      m.onclick = e => { e.stopPropagation(); MORE.hidden = !MORE.hidden; wake(); paintBar(); }; BAR.appendChild(m);
+      rest.forEach(id => MORE.appendChild(mkBtn(id)));
+      const K = KEYS(); W.querySelectorAll("button.pvb").forEach(b => { const k = K[b.dataset.id]; if (k) { const i = E("i", "k" + k, k); b.appendChild(i); } });
+    }
+    const c = J().cfg || {}, s = ST();
+    W.querySelectorAll("button.pvb").forEach(b => { const id = b.dataset.id; if (id === "more") { b.classList.toggle("on", !MORE.hidden); return; }
+      const q = item(id); if (!q) return; let on = false; try { on = !!q.on(c, s); } catch (e) {}
+      b.classList.toggle(q.cls || "on", on);
+      if (q.lbf) { const sm = b.querySelector("small"), tx = T(q.lbf(c, s)); if (sm.textContent !== tx) sm.textContent = tx; }
+      if (q.icf) { const sp = b.querySelector("span"), ic = q.icf(c, s); if (sp.textContent !== ic) sp.textContent = ic; } });
+    const L = [...BAR.children]; L.forEach((b, i) => b.classList.toggle("foc", i === focus));
+  }
+  // ---- the bar hides itself after 4 s without touch; a tap shows it again ----
+  let calmT = null;
+  function wake() { W.classList.remove("calm"); clearTimeout(calmT); calmT = setTimeout(() => { if (MORE.hidden && HELP.hidden) { W.classList.add("calm"); focus = -1; paintBar(); } else wake(); }, 4000); }
+  function barToggle() { if (W.classList.contains("calm")) wake(); else { MORE.hidden = true; W.classList.add("calm"); clearTimeout(calmT); } }
+  W.addEventListener("pointerdown", e => { if (BAR.contains(e.target) || MORE.contains(e.target) || e.target === X) wake(); }, true);
+  // ---- help: what the controller and the fingers do ----
+  function help(on) {
+    HELP.hidden = !on; if (!on) { paintBar(); return; }
+    HELP.textContent = ""; HELP.appendChild(E("b", "", "🎮 " + T("Controller view")));
+    const tb = E("table");
+    [["L ◉", "Left stick: turn / tilt the head of MoveEye"], ["L3", "Press the left stick: head to the middle"],
+     ["R ◉", rover() ? "Right stick: drive the rover (up = forward, sideways = steer) - the view follows behind it" : "Right stick: move the simulator view (no rover)"],
+     ["R1 + R ◉", "Hold R1 + right stick: turn the simulator view"], ["L1 / R1", "Zoom out / in (L2 / R2 too)"],
+     ["R3", "Press the right stick: next view (behind the rover, driver, from above)"],
+     ["A B X Y", "A Photo · B Record · X Lamp · Y Follow"], ["✚ ← →", "Choose a button of the bar, ↑ presses it, ↓ this help"],
+     ["Select", "Swap the pictures"], ["Start", "Bar on / off · hold 1 s = leave"],
+     ["☝", "Simulator picture: one finger = turn, two fingers = zoom, double tap = next view, long tap = swap the pictures"]]
+      .forEach(([k, v]) => { const tr = E("tr"); tr.append(E("td", "", k), E("td", "", T(v))); tb.appendChild(tr); });
+    HELP.appendChild(tb); HELP.appendChild(E("div", "mut", T("Tap here to close. Stored on this device only.")));
+    wake();
+  }
+  HELP.addEventListener("click", e => { e.stopPropagation(); help(false); });
+  // ---- layout: portrait = on top of each other, landscape = side by side; swapped; without simulator only the live picture ----
+  function layout() {
+    if (!PV.open) return;
+    W.classList.toggle("land", innerWidth > innerHeight);
+    W.classList.toggle("swap", !!P.swap);
+    W.classList.toggle("nosim", !simOn());
+  }
+  function swap() { if (!simOn()) return; P.swap = !P.swap; save(); layout(); paintBar(); toastT("⇅ " + T("Pictures swapped")); }
+  addEventListener("resize", () => { layout(); paintBar(); });
+  // ---- the simulator picture: the picture poll of the simulator window (470 simViewPoll), naked (bare=1) ----
+  let VP = null, vOn = false;
+  function simTick() {
+    const want = PV.open && simOn() && !document.hidden;
+    if (want && !VP && typeof simViewPoll === "function") VP = simViewPoll(SI, 8);
+    if (want && !vOn && VP) { vOn = true; SW.hidden = false; VP.start(); }
+    else if (!want && vOn && VP) { vOn = false; VP.stop(); }
+    if (want && rover() && !PV.followed) { PV.followed = true; sim({view: "follow"}); }   // the view goes behind the rover
+    if (!rover()) PV.followed = false;
+  }
+  function sim(d) { if (!simOn()) return Promise.resolve({ok: false});
+    return post("/api/sim", Object.assign({action: "padview", lang: LANG}, d)).then(r => { if (r && r.ok && r.view != null) PV.view = r.view; return r; }); }
+  // ---- view events into the simulator window (the protocol of simViewBind, 470: view_in) ----
+  const VB = typeof simViewBind === "function" ? simViewBind(E("img"), {active: () => false}) : null;   // only its sender (queue of 70 ms)
+  const vpush = (e, now) => { if (VB) VB.push(e, now); else post("/api/sim", {action: "view_in", ev: [e], lang: LANG}); };
+  function posIn(img, cx, cy) {                           // x / y 0 … 1 in the shown picture (object-fit: contain = black edges)
+    const r = img.getBoundingClientRect(), nw = img.naturalWidth || 16, nh = img.naturalHeight || 9, k = Math.min(r.width / nw, r.height / nh);
+    const w = nw * k, h = nh * k;
+    return {x: Math.max(0, Math.min(1, (cx - r.left - (r.width - w) / 2) / w)), y: Math.max(0, Math.min(1, (cy - r.top - (r.height - h) / 2) / h))};
+  }
+  // gestures: one finger turns (right mouse button drag), two fingers zoom (wheel), double tap = next view, long tap = swap
+  function gestures(el, img, isSim) {
+    const pts = new Map(); let g = null, pinch = 0, lastTap = 0, longT = null;
+    const cancelLong = () => { clearTimeout(longT); longT = null; };
+    el.addEventListener("contextmenu", e => e.preventDefault());
+    el.addEventListener("dblclick", e => { e.preventDefault(); e.stopPropagation(); }, true);   // not the full screen of the live picture
+    el.addEventListener("pointerdown", e => {
+      if (e.target.closest && e.target.closest("button")) return;
+      e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch (x) {}
+      pts.set(e.pointerId, {x: e.clientX, y: e.clientY});
+      if (pts.size === 1) {
+        g = {id: e.pointerId, x: e.clientX, y: e.clientY, t: Date.now(), drag: false, mouse: e.pointerType === "mouse"};
+        cancelLong(); longT = setTimeout(() => { longT = null; if (g && !g.drag && pts.size === 1) { g.long = true; swap(); } }, 650);
+      } else if (pts.size === 2) {
+        cancelLong();
+        if (g && g.drag && isSim) { const p = posIn(img, g.lx, g.ly); vpush(Object.assign({t: "up", b: 2}, p), true); }
+        if (g) { g.drag = false; g.pinch = true; }
+        const [a, b] = [...pts.values()]; pinch = Math.hypot(a.x - b.x, a.y - b.y);
+      }
+    });
+    el.addEventListener("pointermove", e => {
+      if (!pts.has(e.pointerId)) return;
+      pts.set(e.pointerId, {x: e.clientX, y: e.clientY});
+      if (pts.size === 2 && pinch && isSim) {
+        const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (Math.abs(d - pinch) > 36) { vpush(Object.assign({t: "wheel", d: d > pinch ? 1 : -1}, posIn(img, (a.x + b.x) / 2, (a.y + b.y) / 2)), true); pinch = d; }
+        return;
+      }
+      if (!g || g.id !== e.pointerId || g.pinch) return;
+      if (!g.drag && Math.hypot(e.clientX - g.x, e.clientY - g.y) > 10) {
+        cancelLong(); g.drag = true;
+        if (isSim) { const p = posIn(img, g.x, g.y); vpush(Object.assign({t: "move"}, p)); vpush(Object.assign({t: "down", b: 2}, p), true); }
+      }
+      if (g.drag && isSim) { g.lx = e.clientX; g.ly = e.clientY; vpush(Object.assign({t: "move"}, posIn(img, e.clientX, e.clientY))); }
+    });
+    const up = e => {
+      if (!pts.delete(e.pointerId)) return;
+      if (pts.size < 2) pinch = 0;
+      if (!g || g.id !== e.pointerId) { if (!pts.size) g = null; return; }
+      cancelLong();
+      if (g.drag && isSim) vpush(Object.assign({t: "up", b: 2}, posIn(img, e.clientX, e.clientY)), true);
+      else if (!g.drag && !g.pinch && !g.long && e.type === "pointerup" && Date.now() - g.t < 400) {
+        const now = Date.now();
+        if (isSim && now - lastTap < 320) { lastTap = 0; sim({view: "next"}).then(r => { if (r && r.ok) toastT("👁 " + T(VIEWNAME[r.view] || "Free view")); }); }
+        else { lastTap = now; wake(); }
+      }
+      g = null;
+    };
+    el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+    if (isSim) el.addEventListener("wheel", e => { e.preventDefault(); vpush(Object.assign({t: "wheel", d: e.deltaY < 0 ? 1 : -1}, posIn(img, e.clientX, e.clientY)), true); }, {passive: false});
+  }
+  const VIEWNAME = {follow: "Behind the rover", driver: "Driver's view", top: "From above", head: "Head camera", free: "Free view"};
+  gestures(PS, SI, true);
+  gestures(PL, slot, false);
+  // ---- the game controller (Gamepad API, standard mapping) ----
+  const GP = {mute: false, prev: [], lastHead: 0, headZero: true, lastR: 0, rZero: true, r1T: 0, r1Used: false, startT: 0, startLong: false, l1T: 0, zT: 0, name: ""};
+  function pad() { try { return [...(navigator.getGamepads ? navigator.getGamepads() : [])].find(g => g && g.connected) || null; } catch (e) { return null; } }
+  const dz = (x, y) => { const m = Math.hypot(x, y); if (m < 0.18) return [0, 0]; const k = Math.min(1, (m - 0.18) / 0.78) / m; return [x * k, y * k]; };
+  const spd = () => { const s = document.getElementById("stick-speed"); return s ? parseFloat(s.value) || 30 : 30; };
+  const zoom = d => sim({zoom: d});
+  function focusMove(d) { const n = BAR.children.length; if (!n) return; wake(); focus = focus < 0 ? (d > 0 ? 0 : n - 1) : (focus + d + n) % n; paintBar(); }
+  function focusPress() { const b = BAR.children[focus]; if (b) b.click(); }
+  function gpTick() {
+    const g = pad();
+    if (GP.mute && !(g && [...g.buttons].some(b => b && b.pressed))) GP.mute = false;   // left with Start held: let go first
+    if (!PV.open || !g || document.hidden) return;
+    const cur = [...g.buttons].map(b => !!(b && (b.pressed || b.value > 0.5))), prev = GP.prev; GP.prev = cur;
+    const down = i => cur[i] && !prev[i], up = i => !cur[i] && prev[i], val = i => (g.buttons[i] ? g.buttons[i].value || (g.buttons[i].pressed ? 1 : 0) : 0);
+    const now = Date.now();
+    const [lx, ly] = dz(g.axes[0] || 0, g.axes[1] || 0), [rx, ry] = dz(g.axes[2] || 0, g.axes[3] || 0);
+    // left stick = head (the same as the joystick of the live page: /api/stick, real servos and the simulator)
+    if (lx || ly) { if (now - GP.lastHead >= 100) { GP.lastHead = now; GP.headZero = false; post("/api/stick", {x: r3(lx), y: r3(-ly), speed: spd()}); } }
+    else if (!GP.headZero) { GP.headZero = true; post("/api/stick", {x: 0, y: 0, speed: spd()}); }
+    // right stick = rover (MoveEye's mover: real mover or the simulator's rover) · R1 held = turn the view · no rover = fly the view
+    if (down(5)) { GP.r1T = now; GP.r1Used = false; }
+    if (rx || ry) {
+      if (now - GP.lastR >= 100) { GP.lastR = now;
+        if (cur[5] && simOn()) { GP.r1Used = true; sim({look: [r3(rx), r3(ry)], dt: 0.1}); if (!GP.rZero) { GP.rZero = true; post("/api/mover", {v: 0, w: 0}); } }
+        else if (rover()) { GP.rZero = false; post("/api/mover", {v: r3(-ry), w: r3(rx)}); }
+        else if (simOn()) sim({fly: [r3(-ry), r3(rx)], dt: 0.1}); }
+    } else if (!GP.rZero) { GP.rZero = true; post("/api/mover", {v: 0, w: 0}); }
+    if (up(5) && !GP.r1Used && now - GP.r1T < 400) zoom(1);              // R1 short = zoom in
+    if (down(4)) { GP.l1T = now; zoom(-1); }                              // L1 = zoom out (held: again and again)
+    else if (cur[4] && now - GP.l1T > 450 && now - GP.zT > 300) { GP.zT = now; zoom(-1); }
+    const l2 = val(6), r2 = val(7);                                       // L2 / R2: zoom out / in while pressed
+    if ((l2 > 0.4 || r2 > 0.4) && now - GP.zT > 250) { GP.zT = now; zoom(r2 > l2 ? 1 : -1); }
+    if (down(10)) act("center");                                           // L3
+    if (down(11)) sim({view: "rnext"}).then(r => { if (r && r.ok) toastT("👁 " + T(VIEWNAME[r.view] || "Free view")); });   // R3
+    const K = KEYS(), byKey = k => Object.keys(K).find(id => K[id] === k);
+    [[0, "A"], [1, "B"], [2, "X"], [3, "Y"]].forEach(([i, k]) => { if (down(i)) { const id = byKey(k), b = W.querySelector('button.pvb[data-id="' + id + '"]'); act(id, b); wake(); } });
+    if (down(8)) swap();                                                   // Select
+    if (down(9)) { GP.startT = now; GP.startLong = false; }               // Start: short = bar, held 1 s = leave
+    if (cur[9] && !GP.startLong && now - GP.startT > 1000) { GP.startLong = true; GP.mute = true; open(false); return; }   // (the held Start must not reach the simulator)
+    if (up(9) && !GP.startLong) barToggle();
+    if (down(14)) focusMove(-1); if (down(15)) focusMove(1); if (down(12)) focusPress(); if (down(13)) help(HELP.hidden);
+  }
+  setInterval(gpTick, 50);
+  window.mwPadOwn = () => (PV.open || GP.mute) && !!pad();                // 470: the raw controller does not go to the simulator meanwhile
+  // ---- open / close ----
+  let vHome = null;
+  function open(on) {
+    on = !!on; if (on === PV.open) return;
+    PV.open = on; P.open = on; save();
+    const v = document.getElementById("video");
+    if (on) {
+      if (typeof videoOnly !== "undefined" && videoOnly && typeof setVideoOnly === "function") setVideoOnly(false);
+      if (document.body.classList.contains("lv-edit") && typeof window.lvEdit === "function") window.lvEdit(false);
+      if (typeof window.pipShow === "function") window.pipShow(false);
+      const mn = document.getElementById("lv-menu"); if (mn) mn.hidden = true;
+      if (v) { vHome = v.parentNode; slot.appendChild(v); }            // the same picture element (no second stream)
+      document.body.classList.add("pv-on"); W.hidden = false; GP.prev = []; PV.followed = false; focus = -1;
+      layout(); BSIG = ""; paintBar(); wake(); simTick();
+      if (!P.help && pad()) { P.help = true; save(); help(true); }
+      try { if (touchDev() && W.requestFullscreen && !document.fullscreenElement) W.requestFullscreen({navigationUI: "hide"}).catch(() => {}); } catch (e) {}
+    } else {
+      document.body.classList.remove("pv-on"); W.hidden = true; MORE.hidden = true; HELP.hidden = true;
+      if (v && vHome) vHome.insertBefore(v, vHome.firstChild);
+      if (!GP.headZero) post("/api/stick", {x: 0, y: 0, speed: spd()}); if (!GP.rZero) post("/api/mover", {v: 0, w: 0}); GP.headZero = GP.rZero = true;
+      if (PV.view) sim({view: "off"}); PV.view = "";
+      simTick();
+      try { if (document.fullscreenElement === W) document.exitFullscreen().catch(() => {}); } catch (e) {}
+      if (typeof window.lvApply === "function") setTimeout(window.lvApply, 50);
+    }
+  }
+  window.pvOpen = open;
+  // ---- ask when a controller connects on a phone / tablet (and not the usual hint of 470) ----
+  const ASK = E("div"); ASK.id = "pv-ask"; ASK.hidden = true; document.body.appendChild(ASK);
+  let askT = null;
+  window.mwPadAsk = e => {
+    const nm = String((e && e.gamepad && e.gamepad.id) || "").replace(/\(.*?\)/g, "").trim().slice(0, 40);
+    if (PV.open) { toastT("🎮 " + T("Controller connected") + (nm ? ": " + nm : "")); return true; }
+    if (!handy() || P.ask === false) return false;
+    ASK.textContent = ""; ASK.appendChild(E("span", "", "🎮 " + T("Controller connected") + (nm ? ": " + nm : "") + " – " + T("Open the controller view?")));
+    const b1 = E("button", "", T("Open")), b2 = E("button", "sec", T("Not now")), b3 = E("button", "sec", T("Don't ask again"));
+    [b1, b2, b3].forEach(b => { b.type = "button"; });
+    b1.onclick = () => { ASK.hidden = true; open(true); }; b2.onclick = () => { ASK.hidden = true; };
+    b3.onclick = () => { ASK.hidden = true; P.ask = false; save(); toastT(T("The controller view stays in «View» (◫) and the 🎮 on the picture")); };
+    ASK.append(b1, b2, b3); ASK.hidden = false; clearTimeout(askT); askT = setTimeout(() => { ASK.hidden = true; }, 20000);
+    return true;
+  };
+  // ---- the ways in: 🎮 on the picture (next to ◫) and the «View» panel (536) ----
+  function toolBtn() {
+    const TB = document.getElementById("lv-tools"); if (!TB || document.getElementById("lv-b-pad")) return;
+    const b = E("button", "", "🎮"); b.type = "button"; b.id = "lv-b-pad"; b.title = T("Controller view (phone / tablet, game controller)"); b.setAttribute("aria-label", b.title);
+    b.onclick = e => { e.stopPropagation(); open(true); }; b.addEventListener("dblclick", e => e.stopPropagation());
+    TB.insertBefore(b, TB.firstChild);
+  }
+  window.pvMenu = (MN, E_, T_) => {
+    MN.appendChild(E_("h3", "", T_("Controller view")));
+    const b = E_("button", "sec", "🎮 " + T_("Open the controller view")); b.type = "button"; b.style.width = "100%";
+    b.onclick = e => { e.stopPropagation(); MN.hidden = true; open(true); }; MN.appendChild(b);
+    MN.appendChild(E_("div", "mut", T_("Full screen for phone and tablet: live picture and simulator, steered with a game controller or the fingers.")));
+    if (P.ask === false) { const a = E_("button", "sec", T_("Ask again when a controller connects")); a.type = "button"; a.style.cssText = "width:100%;margin-top:6px";
+      a.onclick = e => { e.stopPropagation(); P.ask = true; save(); a.remove(); }; MN.appendChild(a); }
+  };
+  // ---- every second: state of the buttons, simulator there?, controller there? ----
+  setInterval(() => {
+    toolBtn();
+    const g = pad(); const nm = g ? String(g.id).replace(/\(.*?\)/g, "").trim().slice(0, 30) : "";
+    if (PV.open) {
+      PADI.hidden = !g; if (g && PADI.textContent !== "🎮 " + nm) PADI.textContent = "🎮 " + nm;
+      layout(); paintBar(); simTick();
+    }
+  }, 1000);
+  addEventListener("pagehide", () => { if (PV.open) { if (!GP.headZero) post("/api/stick", {x: 0, y: 0}); if (!GP.rZero) post("/api/mover", {v: 0, w: 0}); } });
+  document.addEventListener("visibilitychange", simTick);
+  addEventListener("keydown", e => { if (PV.open && e.key === "Escape" && !document.fullscreenElement) open(false); });
+  toolBtn();
+  if (P.open) setTimeout(() => { if (!PV.open) open(true); }, 900);   // it was open when this device left the page
+})();
+</script>
+"""
+WEB_PAGE = WEB_PAGE.replace("</body>", PADVIEW_JS + "</body>", 1)
+WEB_UI_LOCAL.add("mw-pad")                                # per device: the controller view of the tablet is not the one of the PC
 HELP_PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -49835,7 +50222,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <div class="tip">💡 <b>Tipp:</b> Lege die Seite als Lesezeichen oder als Symbol auf den Startbildschirm des Handys («Zum Home-Bildschirm»). Dann ist sie mit einem Tipp offen.</div>
 </section>
 
-<section id="live" data-icon="📺"><h2>Die Live-Seite</h2><p><b>Die 6 Reiter (ab 2.98.0):</b> <b>Live</b> (Bild, Joystick, Schnellschalter) · <b>Schutz</b> (Aus / Wachsam / Voll, «Heute Nacht bewachen», was bei Alarm passiert, Diebstahlschutz, Zeitplan, darunter «Zonen») · <b>Verlauf</b> (Aufnahmen, Tagebuch, Protokoll) · <b>Einstellungen</b> (Erkennung, Kameras &amp; Kopf, Geräte &amp; Sensoren, Strom, Netz &amp; Zugang, System; darunter «Kameras») · <b>Simulator</b> · <b>Mehr</b> (Anleitung, Spielecke, Werkzeuge, Infoseite, Almanach, Rückmeldung). Oben im Schutz zeigt die Kette «Person → Push → Licht → Aufnahme → Sirene», was eingeschaltet ist; antippen öffnet die Einstellung. «Einfach / Experte» steht oben in den Einstellungen.</p><p><b>🎯 Folgen (ab 2.98.1):</b> ein Schalter für alles: Die Kamera hält, was erkannt wird, in der Bildmitte – Personen zuerst, sonst Tiere und was sich wirklich bewegt. Sie dreht um den Winkel, den das Objekt von der Mitte hat, und wartet kurz auf das neue Bild (kein Hin- und Herpendeln). Im Simulator heisst derselbe Schalter «Verfolgen». Von Hand steuern pausiert das Folgen kurz.</p><p><b>◫ Ansicht (ab 2.98.29):</b> der Knopf oben rechts im Bild. Fertige Ansichten (Nur schauen / Bedienen / Einrichten), Hoch- oder Querformat, Bildgrösse und «Grösse von Schrift und Knöpfen» (60–160 %, wie eine Auflösung – das Bild bleibt immer ganz sichtbar). «✏️ Bearbeiten» ist der eine Weg zum Ordnen: Karten mit ▲ ▼ verschieben oder mit ✕ ausblenden, Schnellschalter antippen = Liebling ★ (höchstens 8, die anderen hinter «… mehr»), in der Liste darunter Reihenfolge und Ausblenden. Das gilt für dieses Gerät; «Für alle Geräte übernehmen» speichert die Anordnung auf MoveEye als Standard für Geräte ohne eigene. Ohne Schwenk-/Neigekopf gibt es keinen Joystick, «Kalibrieren» steht dann unter «… mehr». Im Fenster: ◫ in der Kamerasteuerung oder Rechtsklick ins Bild.</p>
+<section id="live" data-icon="📺"><h2>Die Live-Seite</h2><p><b>Die 6 Reiter (ab 2.98.0):</b> <b>Live</b> (Bild, Joystick, Schnellschalter) · <b>Schutz</b> (Aus / Wachsam / Voll, «Heute Nacht bewachen», was bei Alarm passiert, Diebstahlschutz, Zeitplan, darunter «Zonen») · <b>Verlauf</b> (Aufnahmen, Tagebuch, Protokoll) · <b>Einstellungen</b> (Erkennung, Kameras &amp; Kopf, Geräte &amp; Sensoren, Strom, Netz &amp; Zugang, System; darunter «Kameras») · <b>Simulator</b> · <b>Mehr</b> (Anleitung, Spielecke, Werkzeuge, Infoseite, Almanach, Rückmeldung). Oben im Schutz zeigt die Kette «Person → Push → Licht → Aufnahme → Sirene», was eingeschaltet ist; antippen öffnet die Einstellung. «Einfach / Experte» steht oben in den Einstellungen.</p><p><b>🎯 Folgen (ab 2.98.1):</b> ein Schalter für alles: Die Kamera hält, was erkannt wird, in der Bildmitte – Personen zuerst, sonst Tiere und was sich wirklich bewegt. Sie dreht um den Winkel, den das Objekt von der Mitte hat, und wartet kurz auf das neue Bild (kein Hin- und Herpendeln). Im Simulator heisst derselbe Schalter «Verfolgen». Von Hand steuern pausiert das Folgen kurz.</p><p><b>◫ Ansicht (ab 2.98.29):</b> der Knopf oben rechts im Bild. Fertige Ansichten (Nur schauen / Bedienen / Einrichten), Hoch- oder Querformat, Bildgrösse und «Grösse von Schrift und Knöpfen» (60–160 %, wie eine Auflösung – das Bild bleibt immer ganz sichtbar). «✏️ Bearbeiten» ist der eine Weg zum Ordnen: Karten mit ▲ ▼ verschieben oder mit ✕ ausblenden, Schnellschalter antippen = Liebling ★ (höchstens 8, die anderen hinter «… mehr»), in der Liste darunter Reihenfolge und Ausblenden. Das gilt für dieses Gerät; «Für alle Geräte übernehmen» speichert die Anordnung auf MoveEye als Standard für Geräte ohne eigene. Ohne Schwenk-/Neigekopf gibt es keinen Joystick, «Kalibrieren» steht dann unter «… mehr». Im Fenster: ◫ in der Kamerasteuerung oder Rechtsklick ins Bild.</p><p><b>🎮 Controller-Ansicht (Handy und Tablet):</b> der Knopf 🎮 oben rechts im Bild oder «◫ Ansicht → Controller-Ansicht öffnen». Verbindet sich ein Bluetooth- oder USB-Controller mit dem Handy oder Tablet, fragt MoveEye, ob die Ansicht aufgehen soll. Vollbild: hochkant das Live-Bild oben und das Simulator-Bild unten, quer nebeneinander; lange auf ein Bild tippen oder <b>Select</b> tauscht die Bilder. Ohne Simulator nur das Live-Bild. Im Simulator-Bild: ein Finger = Ansicht drehen, zwei Finger = zoomen, Doppeltipp = nächste Ansicht (Kopfkamera → von oben → hinter dem Rover). Die schmale Leiste unten (Licht, IR, Wärmebild, Nachtsicht, Markieren, Foto, Aufnahme, Folgen; der Rest hinter «…») verschwindet nach 4 s, ein Tipp zeigt sie wieder. <b>Controller:</b> linker Stick = Kopf schwenken / neigen (wie der Joystick, echte Servos und Simulator), L3 = Mitte · rechter Stick = Rover fahren (hoch = vorwärts, seitlich = lenken) über den Mover von MoveEye – später ein echter Mover, in der Simulation der Rover; die Ansicht fährt hinter dem Rover her. Ohne Rover bewegt der rechte Stick die Simulator-Ansicht · R1 halten + rechter Stick = Ansicht drehen · L1 / R1 kurz (oder L2 / R2) = verkleinern / vergrössern · R3 = nächste Ansicht (hinter dem Rover, Fahrersicht, von oben) · A Foto, B Aufnahme, X Licht, Y Folgen · Steuerkreuz ← → Knopf wählen, ↑ drücken, ↓ Hilfe · Start = Leiste ein / aus, 1 s halten = beenden. Gespeichert nur auf diesem Gerät.</p>
 <h3>Kopfzeile</h3>
 <p>Oben links stehen Name und <b>Version</b>. Daneben zeigen kleine Anzeigen nur, was gerade wichtig ist. Was im Normalzustand ist (kein Regen, Licht ok …), wird nicht angezeigt.</p>
 <table><tr><td>🛡 Schutz ein / aus</td><td>Alarme an oder aus. Antippen schaltet um.</td></tr>
@@ -50049,7 +50436,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <div class="tip">💡 <b>Tip:</b> save the page as a bookmark or as an icon on the home screen of the phone («Add to Home Screen»).</div>
 </section>
 
-<section id="live" data-icon="📺"><h2>The live page</h2><p><b>The 6 tabs (from 2.98.0):</b> <b>Live</b> (picture, joystick, quick switches) · <b>Protection</b> (Off / Watchful / Full, «Guard tonight», what happens at an alarm, theft protection, schedule, below it «Zones») · <b>History</b> (recordings, diary, log) · <b>Settings</b> (detection, cameras &amp; head, devices &amp; sensors, power, network &amp; access, system; below it «Cameras») · <b>Simulator</b> · <b>More</b> (manual, game corner, tools, info page, almanac, feedback). On top of Protection the chain «person → push → light → recording → siren» shows what is switched on; tap a step to change it. «Simple / Expert» is at the top of the settings.</p><p><b>🎯 Follow (from 2.98.1):</b> one switch for everything: the camera keeps what is detected in the middle of the picture – persons first, otherwise animals and things that really go somewhere. It turns by the angle the object has from the middle and waits for the new picture (no swinging). In the simulator the same switch is called «Verfolgen». Steering by hand pauses following for a moment.</p><p><b>◫ View (from 2.98.29):</b> the button at the top right of the picture. Ready-made views (just watching / operating / setting up), portrait or landscape, picture size and «size of text and buttons» (60–160 %, like a resolution – the picture always stays fully visible). «✏️ Edit» is the one way to arrange: move cards with ▲ ▼ or hide them with ✕, tap a quick switch = favourite ★ (max. 8, the others behind «… more»), order and hide in the list below. This is stored for this device; «Use for all devices» stores the arrangement on MoveEye as the default for devices without their own. Without a pan / tilt head there is no joystick and «Calibrate» is under «… more». In the window: ◫ in the camera control or right click on the picture.</p>
+<section id="live" data-icon="📺"><h2>The live page</h2><p><b>The 6 tabs (from 2.98.0):</b> <b>Live</b> (picture, joystick, quick switches) · <b>Protection</b> (Off / Watchful / Full, «Guard tonight», what happens at an alarm, theft protection, schedule, below it «Zones») · <b>History</b> (recordings, diary, log) · <b>Settings</b> (detection, cameras &amp; head, devices &amp; sensors, power, network &amp; access, system; below it «Cameras») · <b>Simulator</b> · <b>More</b> (manual, game corner, tools, info page, almanac, feedback). On top of Protection the chain «person → push → light → recording → siren» shows what is switched on; tap a step to change it. «Simple / Expert» is at the top of the settings.</p><p><b>🎯 Follow (from 2.98.1):</b> one switch for everything: the camera keeps what is detected in the middle of the picture – persons first, otherwise animals and things that really go somewhere. It turns by the angle the object has from the middle and waits for the new picture (no swinging). In the simulator the same switch is called «Verfolgen». Steering by hand pauses following for a moment.</p><p><b>◫ View (from 2.98.29):</b> the button at the top right of the picture. Ready-made views (just watching / operating / setting up), portrait or landscape, picture size and «size of text and buttons» (60–160 %, like a resolution – the picture always stays fully visible). «✏️ Edit» is the one way to arrange: move cards with ▲ ▼ or hide them with ✕, tap a quick switch = favourite ★ (max. 8, the others behind «… more»), order and hide in the list below. This is stored for this device; «Use for all devices» stores the arrangement on MoveEye as the default for devices without their own. Without a pan / tilt head there is no joystick and «Calibrate» is under «… more». In the window: ◫ in the camera control or right click on the picture.</p><p><b>🎮 Controller view (phone and tablet):</b> the button 🎮 at the top right of the picture or «◫ View → Open the controller view». When a Bluetooth or USB controller connects to the phone or tablet, MoveEye asks whether to open it. Full screen: upright the live picture on top and the simulator picture below, sideways next to each other; a long tap on a picture or <b>Select</b> swaps them. Without the simulator only the live picture. In the simulator picture: one finger = turn the view, two fingers = zoom, double tap = next view (head camera → from above → behind the rover). The slim bar at the bottom (lamp, IR, thermal, night vision, marks, photo, record, follow; the rest behind «…») hides after 4 s, a tap shows it again. <b>Controller:</b> left stick = turn / tilt the head (like the joystick, real servos and the simulator), L3 = centre · right stick = drive the rover (up = forward, sideways = steer) through the mover of MoveEye – a real mover later, the rover in the simulation; the view follows behind the rover. Without a rover the right stick moves the simulator view · hold R1 + right stick = turn the view · L1 / R1 short (or L2 / R2) = zoom out / in · R3 = next view (behind the rover, driver, from above) · A photo, B record, X lamp, Y follow · D-pad ← → choose a button, ↑ press it, ↓ help · Start = bar on / off, hold 1 s = leave. Stored on this device only.</p>
 <h3>Header</h3>
 <p>Top left: name and <b>version</b>. Small badges show only what matters right now; things in their normal state (no rain, light ok …) are not shown.</p>
 <table><tr><td>🛡 Armed / disarmed</td><td>Alarms on or off. Tap to switch.</td></tr>
@@ -51511,6 +51898,24 @@ class WebStream:
                     except Exception:
                         return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
                     return reply(r if isinstance(r, dict) else {"ok": False})
+                if act_ == "padview":                        # «Controller-Ansicht» (538): views, turning, flying, zoom of the simulator view
+                    q_ = {"action": "padview"}
+                    try:
+                        if str(d.get("view") or "") in ("follow", "driver", "top", "head", "free", "next", "rnext", "off"):
+                            q_["view"] = str(d["view"])
+                        for k_ in ("look", "fly"):
+                            if isinstance(d.get(k_), list) and len(d[k_]) >= 2:
+                                q_[k_] = [max(-1.0, min(1.0, float(v_))) for v_ in d[k_][:2]]
+                        if d.get("zoom") is not None:
+                            q_["zoom"] = 1 if float(d["zoom"]) > 0 else -1
+                        if d.get("dt") is not None:
+                            q_["dt"] = max(0.0, min(0.5, float(d["dt"])))
+                        r = sim_control(q_)
+                    except (TypeError, ValueError):
+                        return reply({"ok": False, "error": "invalid values"}, 400)
+                    except Exception:
+                        return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+                    return reply(r if isinstance(r, dict) else {"ok": False})
                 if act_ == "look":                           # the phone as a window (3D-3.27): turning the phone turns the view
                     try:
                         yw = max(-360.0, min(360.0, float(d.get("yaw", 0)))); pt = max(-90.0, min(90.0, float(d.get("pitch", 0))))
@@ -52145,6 +52550,8 @@ class WebStream:
                 q_.append("fmt=" + request.args.get("fmt"))
             if request.args.get("clean") == "1":
                 q_.append("clean=1")                         # 2.95.92: full screen - the simulator hides its rover stick
+            if request.args.get("bare") == "1":
+                q_.append("bare=1")                          # «Controller-Ansicht» (538): the picture without the buttons of the window
             try:
                 b_, h_ = _sim_get("/view.jpg" + ("?" + "&".join(q_) if q_ else ""), 3.0)
             except Exception:
@@ -55369,7 +55776,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.31")
+        self.root.title("MoveEye 2.98.32")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -55735,7 +56142,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.31 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.32 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -70796,6 +71203,81 @@ for _k, _v in _HX_live2.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 # the German texts into the page (I18N.de of the main page, only where it has no own text yet - see 536)
 WEB_PAGE = WEB_PAGE.replace("/*LVDE2*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_live2.items()}, ensure_ascii=False), 1)
+_HX_padview = {
+    'Controller view': ('Controller-Ansicht', 'Vue manette', 'Vista controller', 'Vista controller'),
+    'Open the controller view': ('Controller-Ansicht öffnen', 'Ouvrir la vue manette', 'Aprire la vista controller', 'Avrir la vista controller'),
+    'Open the controller view?': ('Controller-Ansicht öffnen?', 'Ouvrir la vue manette ?', 'Aprire la vista controller?', 'Avrir la vista controller?'),
+    'Controller view (phone / tablet, game controller)': ('Controller-Ansicht (Handy / Tablet, Game-Controller)', 'Vue manette (téléphone / tablette, manette de jeu)',
+                                                          'Vista controller (telefono / tablet, controller di gioco)', 'Vista controller (telefonin / tablet, controller da gieu)'),
+    'Full screen for phone and tablet: live picture and simulator, steered with a game controller or the fingers.': (
+        'Vollbild für Handy und Tablet: Live-Bild und Simulator, gesteuert mit einem Game-Controller oder den Fingern.',
+        'Plein écran pour téléphone et tablette : image en direct et simulateur, pilotés avec une manette ou les doigts.',
+        'Schermo intero per telefono e tablet: immagine live e simulatore, comandati con un controller o con le dita.',
+        'Visur cumplet per telefonin e tablet: maletg live e simulatur, manischads cun in controller u cun ils dets.'),
+    'Ask again when a controller connects': ('Wieder fragen, wenn ein Controller verbunden wird', 'Redemander quand une manette se connecte',
+                                             'Chiedere di nuovo quando si collega un controller', 'Puspè dumandar cura ch’in controller vegn collià'),
+    'Controller connected': ('Controller verbunden', 'Manette connectée', 'Controller collegato', 'Controller collià'),
+    'Open': ('Öffnen', 'Ouvrir', 'Apri', 'Avrir'),
+    'Not now': ('Jetzt nicht', 'Pas maintenant', 'Non ora', 'Betg ussa'),
+    "Don't ask again": ('Nicht mehr fragen', 'Ne plus demander', 'Non chiedere più', 'Betg pli dumandar'),
+    'The controller view stays in «View» (◫) and the 🎮 on the picture': ('Die Controller-Ansicht bleibt unter «Ansicht» (◫) und beim 🎮 im Bild',
+        'La vue manette reste dans « Affichage » (◫) et sous 🎮 sur l’image', 'La vista controller resta in «Vista» (◫) e nel 🎮 sull’immagine',
+        'La vista controller resta sut «Vista» (◫) e tar il 🎮 en il maletg'),
+    'More buttons': ('Weitere Knöpfe', 'Autres boutons', 'Altri pulsanti', 'Ulteriurs buttuns'),
+    'Head to the middle': ('Kopf in die Mitte', 'Tête au milieu', 'Testa al centro', 'Chau en il center'),
+    'Rover': ('Rover', 'Rover', 'Rover', 'Rover'),
+    'The rover in the simulator on / off': ('Rover im Simulator ein / aus', 'Rover dans le simulateur oui / non', 'Rover nel simulatore acceso / spento', 'Rover en il simulatur en / ora'),
+    'Swap': ('Tauschen', 'Échanger', 'Scambia', 'Barattar'),
+    'Swap the pictures (long tap on a picture, Select)': ('Bilder tauschen (lange auf ein Bild tippen, Select)', 'Échanger les images (appui long sur une image, Select)',
+                                                          'Scambiare le immagini (tocco lungo su un’immagine, Select)', 'Barattar ils maletgs (tutgar ditg in maletg, Select)'),
+    'Pictures swapped': ('Bilder getauscht', 'Images échangées', 'Immagini scambiate', 'Maletgs barattads'),
+    'Help': ('Hilfe', 'Aide', 'Aiuto', 'Agid'),
+    'Controller and gestures': ('Controller und Gesten', 'Manette et gestes', 'Controller e gesti', 'Controller e gests'),
+    'Exit': ('Beenden', 'Quitter', 'Esci', 'Terminar'),
+    'Leave the controller view': ('Controller-Ansicht verlassen', 'Quitter la vue manette', 'Uscire dalla vista controller', 'Bandunar la vista controller'),
+    'Tap here to close. Stored on this device only.': ('Hier tippen zum Schliessen. Nur auf diesem Gerät gespeichert.', 'Toucher ici pour fermer. Enregistré seulement sur cet appareil.',
+                                                       'Tocca qui per chiudere. Salvato solo su questo dispositivo.', 'Tutgar qua per serrar. Memorisà mo sin quest apparat.'),
+    'Left stick: turn / tilt the head of MoveEye': ('Linker Stick: Kopf von MoveEye schwenken / neigen', 'Stick gauche : tourner / incliner la tête de MoveEye',
+                                                    'Stick sinistro: ruotare / inclinare la testa di MoveEye', 'Stick sanester: volver / sbassar il chau da MoveEye'),
+    'Press the left stick: head to the middle': ('Linken Stick drücken: Kopf in die Mitte', 'Appuyer sur le stick gauche : tête au milieu',
+                                                 'Premere lo stick sinistro: testa al centro', 'Smatgar il stick sanester: chau en il center'),
+    'Right stick: drive the rover (up = forward, sideways = steer) - the view follows behind it': (
+        'Rechter Stick: Rover fahren (hoch = vorwärts, seitlich = lenken) – die Ansicht fährt hinterher',
+        'Stick droit : conduire le rover (haut = avant, côté = diriger) – la vue suit derrière',
+        'Stick destro: guidare il rover (su = avanti, lato = sterzare) – la vista segue da dietro',
+        'Stick dretg: manar il rover (ensi = enavant, da la vart = dirigir) – la vista suonda davos'),
+    'Right stick: move the simulator view (no rover)': ('Rechter Stick: Simulator-Ansicht bewegen (kein Rover)', 'Stick droit : déplacer la vue du simulateur (pas de rover)',
+                                                        'Stick destro: muovere la vista del simulatore (nessun rover)', 'Stick dretg: mover la vista dal simulatur (nagin rover)'),
+    'Hold R1 + right stick: turn the simulator view': ('R1 halten + rechter Stick: Simulator-Ansicht drehen', 'Maintenir R1 + stick droit : tourner la vue du simulateur',
+                                                       'Tenere R1 + stick destro: ruotare la vista del simulatore', 'Tegnair R1 + stick dretg: volver la vista dal simulatur'),
+    'Zoom out / in (L2 / R2 too)': ('Verkleinern / vergrössern (auch L2 / R2)', 'Zoom arrière / avant (aussi L2 / R2)', 'Zoom indietro / avanti (anche L2 / R2)', 'Zoom enavos / enavant (er L2 / R2)'),
+    'Press the right stick: next view (behind the rover, driver, from above)': ('Rechten Stick drücken: nächste Ansicht (hinter dem Rover, Fahrersicht, von oben)',
+        'Appuyer sur le stick droit : vue suivante (derrière le rover, conducteur, d’en haut)', 'Premere lo stick destro: vista successiva (dietro il rover, conducente, dall’alto)',
+        'Smatgar il stick dretg: proxima vista (davos il rover, manischunz, dad ensi)'),
+    'A Photo · B Record · X Lamp · Y Follow': ('A Foto · B Aufnahme · X Licht · Y Folgen', 'A Photo · B Enregistrer · X Lampe · Y Suivre',
+                                              'A Foto · B Registra · X Lampada · Y Segui', 'A Foto · B Registrar · X Lampa · Y Suandar'),
+    'Choose a button of the bar, ↑ presses it, ↓ this help': ('Knopf der Leiste wählen, ↑ drückt ihn, ↓ diese Hilfe', 'Choisir un bouton de la barre, ↑ l’active, ↓ cette aide',
+                                                               'Scegliere un pulsante della barra, ↑ lo preme, ↓ questo aiuto', 'Tscherner in buttun da la trav, ↑ al smatga, ↓ quest agid'),
+    'Swap the pictures': ('Bilder tauschen', 'Échanger les images', 'Scambiare le immagini', 'Barattar ils maletgs'),
+    'Bar on / off · hold 1 s = leave': ('Leiste ein / aus · 1 s halten = beenden', 'Barre oui / non · maintenir 1 s = quitter', 'Barra sì / no · tenere 1 s = uscire', 'Trav en / ora · tegnair 1 s = terminar'),
+    'Simulator picture: one finger = turn, two fingers = zoom, double tap = next view, long tap = swap the pictures': (
+        'Simulator-Bild: ein Finger = drehen, zwei Finger = zoomen, Doppeltipp = nächste Ansicht, lange tippen = Bilder tauschen',
+        'Image du simulateur : un doigt = tourner, deux doigts = zoom, double appui = vue suivante, appui long = échanger les images',
+        'Immagine del simulatore: un dito = ruotare, due dita = zoom, doppio tocco = vista successiva, tocco lungo = scambiare le immagini',
+        'Maletg dal simulatur: in det = volver, dus dets = zoom, tutgar dubel = proxima vista, tutgar ditg = barattar ils maletgs'),
+    'Behind the rover': ('Hinter dem Rover', 'Derrière le rover', 'Dietro il rover', 'Davos il rover'),
+    "Driver's view": ('Fahrersicht', 'Vue du conducteur', 'Vista del conducente', 'Vista dal manischunz'),
+    'From above': ('Von oben', 'D’en haut', 'Dall’alto', 'Dad ensi'),
+    'Head camera': ('Kopfkamera', 'Caméra de la tête', 'Camera della testa', 'Camera dal chau'),
+    'Free view': ('Freie Ansicht', 'Vue libre', 'Vista libera', 'Vista libra'),
+    'Photo saved': ('Foto gespeichert', 'Photo enregistrée', 'Foto salvata', 'Foto memorisada'),
+}
+for _k, _v in _HX_padview.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+# the German texts into the page (I18N.de of the main page, only where it has no own text yet - see 538)
+WEB_PAGE = WEB_PAGE.replace("/*PVDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_padview.items()}, ensure_ascii=False), 1)
 _HX_KOPFAUTO = {
     'Automatic head movement': ('Automatische Kopfbewegung', 'Mouvement automatique de la tête', 'Movimento automatico della testa', 'Moviment automatic dal chau'),
     'Automatic head movement (the head turns by itself - one mover at a time: hand > alarm > walk test > valuables > round > parking)': ('Automatische Kopfbewegung (der Kopf dreht sich selbst – immer nur einer bewegt ihn: Hand > Alarm > Gehtest > Wertsachen > Runde > Parken)', 'Mouvement automatique de la tête (la tête tourne seule – un seul à la fois : main > alarme > test de marche > objets de valeur > ronde > parking)', 'Movimento automatico della testa (la testa gira da sola – uno alla volta: mano > allarme > test di camminata > oggetti di valore > giro > parcheggio)', 'Moviment automatic dal chau (il chau sa volva sez – mo in a la giada: maun > alarm > test da chaminar > objects da valur > runda > parcar)'),

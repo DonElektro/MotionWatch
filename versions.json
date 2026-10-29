@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 22:38",
+ "generated": "2026-10-29 23:45",
  "versions": [
   {
-   "version": "2.98.31",
-   "file": "webcam_bewegung_2_98_31.py",
+   "version": "2.98.32",
+   "file": "webcam_bewegung_2_98_32.py",
    "url": "",
-   "sha256": "965135774850126b235e2026c2314533b98847259ea61f21a23fe625599310a2",
-   "date": "2026-10-29 22:38",
-   "notes": "Kein Live-Bild seit 2.98.30 behoben: die Pi-Kamera stand noch als Zusatzkamera in der Liste (Hauptkamera «Automatisch»), und seit Zusatzkameras nach dem Neustart wieder starten, stritten beide um die Kamera. Die Hauptkamera hat jetzt immer Vorrang und wird aus der Zusatzliste entfernt. Live-Seite: ohne Bild ein schwarzes 16:9-Feld statt eines schmalen Streifens.",
-   "sig": "c960cb7a92f06422d4c7ce2ee7c7b6425f708c7e33c54a8b1de95f36892543fb1dce5f3ee369bb7e8f3e17c67528774bb6c631ad42571b01b814150ac2a85e01"
+   "sha256": "9cec7d44040d732009ecfcf136407b53aa4608fcfaeb6cb503a9ecd7ebb44a39",
+   "date": "2026-10-29 23:45",
+   "notes": "Controller-Ansicht für Handy und Tablet: mit Bluetooth-Controller (oder Knopf 🎮) Live-Bild und nacktes Simulator-Bild über- bzw. nebeneinander, tauschbar; Gesten auf dem Simulator-Bild (drehen, zoomen, Ansicht wechseln); schlanke Leiste (Licht, IR, Wärmebild, Nachtsicht, Markieren, Foto, Aufnahme, Folgen); linker Stick Kopf, rechter Stick Rover (später auch echter Mover), R1 Ansicht drehen, R3 Blick wechseln (mit Simulator 3D-4.10).",
+   "sig": "bd10c5a3237959f5bea90ccedcabc02adb108bce3fad4ae1c475fd02a1b2a5dd079f87d8c2468349693595cb8d9000adb14654932da61dc71738bdff3dcc4700"
   },
   {
    "version": "2.97.1",

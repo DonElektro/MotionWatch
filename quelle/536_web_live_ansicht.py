@@ -547,6 +547,7 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
       b.append(E("span", "", P.ic + " " + T(P.lb)), E("small", "", T(P.d)));
       b.onclick = e => { e.stopPropagation(); preset(k); menuBuild(); }; pr.appendChild(b); });
     MN.appendChild(pr);
+    if (typeof window.pvMenu === "function") try { window.pvMenu(MN, E, T); } catch (e) {}     // 538: «Controller-Ansicht»
     MN.appendChild(E("h3", "", T("Layout")));
     MN.appendChild(seg([["auto", "Automatic"], ["port", "Portrait"], ["land", "Landscape"], ["mini", "Picture only"]], V.layout, v => { V.layout = v; }));
     const md = mode();

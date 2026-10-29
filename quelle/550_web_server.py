@@ -453,6 +453,24 @@ class WebStream:
                     except Exception:
                         return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
                     return reply(r if isinstance(r, dict) else {"ok": False})
+                if act_ == "padview":                        # «Controller-Ansicht» (538): views, turning, flying, zoom of the simulator view
+                    q_ = {"action": "padview"}
+                    try:
+                        if str(d.get("view") or "") in ("follow", "driver", "top", "head", "free", "next", "rnext", "off"):
+                            q_["view"] = str(d["view"])
+                        for k_ in ("look", "fly"):
+                            if isinstance(d.get(k_), list) and len(d[k_]) >= 2:
+                                q_[k_] = [max(-1.0, min(1.0, float(v_))) for v_ in d[k_][:2]]
+                        if d.get("zoom") is not None:
+                            q_["zoom"] = 1 if float(d["zoom"]) > 0 else -1
+                        if d.get("dt") is not None:
+                            q_["dt"] = max(0.0, min(0.5, float(d["dt"])))
+                        r = sim_control(q_)
+                    except (TypeError, ValueError):
+                        return reply({"ok": False, "error": "invalid values"}, 400)
+                    except Exception:
+                        return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+                    return reply(r if isinstance(r, dict) else {"ok": False})
                 if act_ == "look":                           # the phone as a window (3D-3.27): turning the phone turns the view
                     try:
                         yw = max(-360.0, min(360.0, float(d.get("yaw", 0)))); pt = max(-90.0, min(90.0, float(d.get("pitch", 0))))
@@ -1087,6 +1105,8 @@ class WebStream:
                 q_.append("fmt=" + request.args.get("fmt"))
             if request.args.get("clean") == "1":
                 q_.append("clean=1")                         # 2.95.92: full screen - the simulator hides its rover stick
+            if request.args.get("bare") == "1":
+                q_.append("bare=1")                          # «Controller-Ansicht» (538): the picture without the buttons of the window
             try:
                 b_, h_ = _sim_get("/view.jpg" + ("?" + "&".join(q_) if q_ else ""), 3.0)
             except Exception:

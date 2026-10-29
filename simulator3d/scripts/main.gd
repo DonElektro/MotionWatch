@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.9"
+const VERSION := "3D-4.10"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -2731,7 +2731,7 @@ func info() -> Dictionary:
 			"cameras": [{"id": 0, "name": "Head camera (NoIR)", "w": CAM_W[0], "h": CAM_H[0], "fps": CAM_FPS[0], "fov_h": CAM_FOV[0], "fov_v": 41.0, "on_head": true, "noir": true},
 						{"id": 1, "name": "Fixed camera", "w": CAM_W[1], "h": CAM_H[1], "fps": CAM_FPS[1], "fov_h": CAM_FOV[1], "fov_v": 62.0, "on_head": false, "noir": false}],
 			"thermal": {"w": TH_W, "h": TH_H, "fps": 8.0, "fov_h": TH_FOV, "fov_v": 35.0, "unit": "C", "on_head": true},
-			"view": {"input": 1, "path": "/view.mjpg"},
+			"view": {"input": 1, "path": "/view.mjpg", "padview": 1},
 			"sensors": [{"name": "Wohnwagen-Tür", "kind": "door"}, {"name": "PIR Zelt", "kind": "pir"}, {"name": "Gas Wohnwagen", "kind": "gas"}, {"name": "Velo", "kind": "tag"}],
 			"helper": {"port": mwpc.HELPER_PORT, "code": str(mwpc.helper.get("code", "")), "accel": str(mwpc.helper.get("accel", ""))} if mwpc != null and mwpc.helper.has("code") else null}
 
@@ -3841,6 +3841,8 @@ func _control(d: Dictionary) -> Dictionary:
 		var ap: Vector3 = gp["actor"].position
 		return {"ok": true, "box": game.learn.box(gp), "sees": game.cam_sees(gp, 0), "state": gp["state"], "fx": game.fx_nodes.size(),
 				"head": [hp.x, hp.y, hp.z], "pos": [ap.x, ap.y, ap.z], "goal": [game.goal.x, game.goal.z], "report": game.learn.report_dict() if d.get("report", false) else {}}
+	elif a == "padview":                               # the «Controller-Ansicht» of MoveEye (padview.gd)
+		return padview.command(d) if padview != null else {"ok": false, "error": "no padview"}
 	elif a == "pad":                                   # 3D-3.59: a game controller at the browser (MoveEye page): axes and buttons
 		if explore == null:
 			return {"ok": false, "error": "no explore"}
@@ -5653,6 +5655,7 @@ var pad_auto := true                  # 3D-3.97: learn the rest position by itse
 var padtest
 var pad_center := [0.0, 0.0, 0.0, 0.0] # 3D-3.96: rest position of the sticks (measured with «Controller kalibrieren»)
 var explore                           # explore.gd: «Erkunden» with the rover - keyboard, mouse, touch, game controller (3D-3.55)
+var padview                           # padview.gd: the «Controller-Ansicht» of MoveEye (phone / tablet + game controller)
 var pad_drive := Vector2.ZERO         # (forward, turn right) from rover_pad, -1 … 1
 var pad_t := -10.0
 var pad_on := false                   # rover_pad is used right now
@@ -6102,6 +6105,9 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	explore = preload("res://scripts/explore.gd").new()       # 3D-3.55: explore with the rover
 	explore.main = self
 	layer.add_child(explore)
+	padview = preload("res://scripts/padview.gd").new()       # the «Controller-Ansicht» of MoveEye: views, turning, zoom, picture without buttons
+	padview.main = self
+	add_child(padview)
 	patrol = preload("res://scripts/patrol.gd").new()         # 3D-3.61: the mover drives MoveEye round a route
 	patrol.main = self
 	add_child(patrol)
@@ -6868,6 +6874,8 @@ func view_request(q: Dictionary) -> void:
 		view_webp = str(q["fmt"]) == "webp"
 	if str(q.get("clean", "")) == "1":
 		view_clean_t = now()                    # 3D-3.67: MoveEye shows the picture in full screen: no rover stick
+	if str(q.get("bare", "")) == "1" and padview != null:
+		padview.bare_t = now()                  # «Controller-Ansicht»: the picture without the buttons of the window
 const VIEW_KEYS := {"ArrowUp": KEY_UP, "ArrowDown": KEY_DOWN, "ArrowLeft": KEY_LEFT, "ArrowRight": KEY_RIGHT, "w": KEY_W, "a": KEY_A,
 		"s": KEY_S, "d": KEY_D, "q": KEY_Q, "e": KEY_E, "r": KEY_R, "f": KEY_F, "PageUp": KEY_PAGEUP, "PageDown": KEY_PAGEDOWN,
 		"0": KEY_0, "1": KEY_1, "2": KEY_2, "3": KEY_3, "4": KEY_4, "5": KEY_5, "+": KEY_PLUS, "-": KEY_MINUS, "Shift": KEY_SHIFT, "p": KEY_P}

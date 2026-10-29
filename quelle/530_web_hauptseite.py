@@ -3172,7 +3172,7 @@ function simExtras(d) {
     simTouchPad(VI.parentElement, VB, () => vOn && (vctl || VW.classList.contains("big")));
     $("#lv-vbig").onclick = () => { VW.classList.toggle("big"); $("#lv-vbig").textContent = VW.classList.contains("big") ? "✕" : "⛶"; };
     const vtick = () => {
-      const S_ = QSJ && QSJ.state && QSJ.state.sim, want = !!(S_ && S_.on && S_.ok && S_.view) && D.open && !document.hidden && !W.hidden;
+      const S_ = QSJ && QSJ.state && QSJ.state.sim, want = !!(S_ && S_.on && S_.ok && S_.view) && D.open && !document.hidden && !W.hidden && !document.body.classList.contains("pv-on");   // 538: the controller view has its own picture
       VW.hidden = !(S_ && S_.view);
       if (!VW.hidden) { const h = t("sim-view-help"); if (h !== "sim-view-help") $("#lv-vhelp").textContent = h; }
       if (want && !vOn) { vOn = true; VP.start(); }

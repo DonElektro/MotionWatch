@@ -1,12 +1,12 @@
 {
- "version": "3D-4.9",
+ "version": "3D-4.10",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31504916,
- "sha256": "69242ffaf847049c44c51b3de0dc813075a42154b5c8421565dbfa45b083914c",
- "notes": "Controller im Spiel, nur ein MoveEye steuert den Simulator",
+ "size": 31510004,
+ "sha256": "46e39192ae1f7f39c01aabccbc12698f3cab26d27d4749fca17e43000bff631d",
+ "notes": "Nacktes Bild für die Controller-Ansicht",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24626571,
-  "sha256": "d965a28503f7f7d4c54cfc1424d057b30f0e346ec8e6f2bb464ed85a8d0cb012"
+  "size": 24631949,
+  "sha256": "b012ed9f3d0e432ca1ae74130dc2aa4b5c1fec5451f3ebc72afd7e552a6cdc5d"
  }
 }
