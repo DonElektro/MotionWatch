@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 18:38",
+ "generated": "2026-10-29 18:53",
  "versions": [
   {
-   "version": "2.98.27",
-   "file": "webcam_bewegung_2_98_27.py",
+   "version": "2.98.28",
+   "file": "webcam_bewegung_2_98_28.py",
    "url": "",
-   "sha256": "12b58a81a24b5e5e37e9d9c66a3be23f50788b19baa2f7e52809e6ec19c67b64",
-   "date": "2026-10-29 18:38",
-   "notes": "Pi-Kamera als Hauptkamera: läuft sie noch als Zusatzkamera, wird diese zuerst geschlossen (vorher «Camera __init__ sequence did not complete»); die Hauptkamera lässt sich nicht mehr ein zweites Mal als Zusatzkamera hinzufügen.",
-   "sig": "180a7388b6e25164a1e99d70ee829bb35384b7bdd71f98d82b2bd935262fe31752c5b79fabfc0bb24ca10aa0a5ea7308eafbb696fc168dd0ddeb19da4cd09c03"
+   "sha256": "f558226a96d05301151623ff9b01f4ae2cb8dfb8f7e8a2d0b6b5edd233b644a3",
+   "date": "2026-10-29 18:53",
+   "notes": "Neue Live-Seite: ordnet sich nach dem Fensterformat (hoch: Bild oben; quer: Bild links, Steuerung rechts; klein: nur Bild mit schwebenden Knöpfen), Bild immer ganz sichtbar, Bildgrösse-Regler, Joystick nur mit Schwenkkopf (quer im Bild), Lieblingsknöpfe, Simulator direkt unter dem Bild und darunter der Gehtest, Knopf «Ansicht» mit Vorlagen (Nur schauen, Bedienen, Einrichten) und Bearbeiten-Modus, pro Gerät gespeichert. Überlappungen in «Bedienung» behoben.",
+   "sig": "700f75029d23410a46b2c3ccfe6abcc5621206a2ff4b02656924bdb11e923a3bb8c5b0945d63d488d28ad4c1c60c3fed1d0f775889d5b7eff329658c90d37e0b"
   },
   {
    "version": "2.97.1",
