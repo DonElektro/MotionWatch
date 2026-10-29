@@ -146,12 +146,19 @@ function scOn(G, r) {                               // 2.95.51: the symbol of a 
 // wizard or under «Experte» (as the simulator window does from 3D-4.x; this also covers older simulators)
 const SC_GAME_MAIN = ["game_wizard", "game_open", "game_start", "game_stop"];
 function scExpert(c) { return !!c.expert || ((c.group === "Spiel" || c.group === "Game") && SC_GAME_MAIN.indexOf(c.id) < 0); }
+// 2.98.23 (Konzept): the simulator group «Testlauf» is not shown in the Simulator control (testing has ONE place: group «Testen»,
+// tile «Tests»); there it is built with data-only="Testlauf" (#tr-sim, recordings of the sneak paths, Pi 5 settings)
+const SC_TEST_GROUPS = ["Testlauf", "Test run"];
+const SC_TEST_DUP = ["testrun_plan", "testrun_start", "testrun_stop"];   // the same as «Testlauf starten» of MoveEye right above (/api/simtest)
 function simCtlBuild(G, r, ctl, fmt) {
   scCss();
+  const only = G.dataset.only || "";
+  r = Object.assign({}, r, {controls: (r.controls || []).filter(c => only ? SC_TEST_GROUPS.indexOf(c.group) >= 0 && SC_TEST_DUP.indexOf(c.id) < 0 : SC_TEST_GROUPS.indexOf(c.group) < 0)});
   const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
   const ss = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"])), openS = new Set(ls("mw-sc-sub2", ["Besuch/Vorlagen", "Besuch/Menschen schicken", "Besuch/Tiere schicken", "Spiel/Runde"]));
-  let expert = ls("mw-sc-expert", false), q = G.dataset.q || "";
+  let expert = only ? true : ls("mw-sc-expert", false), q = G.dataset.q || "";
+  if (only) openC.add(only);
   G.textContent = "";
   const top = el("div", "sc-top"); const qi = document.createElement("input"); qi.type = "search"; qi.placeholder = t("Search a setting …"); qi.value = q;
   top.appendChild(qi); G.appendChild(top);
@@ -207,9 +214,10 @@ function simCtlBuild(G, r, ctl, fmt) {
   });
   const seg = el("div", "sc-seg"); const b1 = el("button", "", t("Simple")), b2 = el("button", "", t("Expert")); b1.type = b2.type = "button"; seg.append(b1, b2); G.appendChild(seg);
   const note = el("div", "mut", t("Simple: only the important settings. «Expert» shows all.")); G.appendChild(note);
+  if (only) { top.hidden = true; seg.hidden = true; }
   function apply() {
     q = qi.value.trim().toLowerCase(); G.dataset.q = qi.value; let any = false;
-    b1.classList.toggle("on", !expert); b2.classList.toggle("on", expert); note.hidden = expert;
+    b1.classList.toggle("on", !expert); b2.classList.toggle("on", expert); note.hidden = expert || !!only;
     cards.forEach(card => {
       let vis = 0;
       card.querySelectorAll("[data-lab]").forEach(n => { const ok = (q ? n.dataset.lab.toLowerCase().includes(q) : true) && (expert || q || n.dataset.ex !== "1"); n.classList.toggle("sc-hide", !ok); if (ok) vis++; });
@@ -553,7 +561,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 #s-scn{display:flex;gap:8px;flex-wrap:wrap}#s-scn select{flex:1 1 220px;min-width:0}
 .howto{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
 .simq{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;margin-top:8px}.simq select{padding:4px 8px;font-size:13px;width:auto}
-@media(max-width:820px){main.simp{grid-template-columns:1fr;padding:12px 12px 32px}.sc{padding:14px}details.fold{padding:0}details.fold>summary{padding:14px}details.fold>.fb{padding:0 14px 14px}.dl{grid-template-columns:1fr}
+@media(max-width:820px){main.simp{grid-template-columns:minmax(0,1fr);padding:12px 12px 32px}.sc{padding:14px}details.fold{padding:0}details.fold>summary{padding:14px}details.fold>.fb{padding:0 14px 14px}.dl{grid-template-columns:1fr}
   .tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}}
 </style></head><body>
 <header>
@@ -645,8 +653,9 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     </div>
   </details>
 
-  <details class="sc fold wide" id="c-test" data-k="test" data-need="ok">
-    <summary><h2><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><span data-i18n="Test run and optimization">Test run and optimization</span></h2></summary>
+  <!-- 2.98.23 (Konzept): no own card «Testlauf und Optimierung» any more - the test run is the tile «Tests» in the group
+       «Testen» of the Simulator centre (139 moves #tr-box into its sheet); here only its parking place -->
+  <div id="c-test" hidden>
     <div class="fb" id="tr-box">
     <div class="mut" data-i18n="tr-note">tr-note</div>
     <div class="tr-row"><select id="tr-plan"></select>
@@ -656,8 +665,9 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div class="mut" id="tr-autonote"></div>
     <div id="tr-live" hidden><div class="rng"><span id="tr-livet"></span><b id="tr-left"></b></div><div class="tr-prog"><i id="tr-bar" style="width:0"></i></div></div>
     <div id="tr-res"></div>
+    <div id="tr-sim" data-only="Testlauf" style="margin-top:10px"></div>
     </div>
-  </details>
+  </div>
 
   <details class="sc fold" id="c-perf" data-k="perf" data-need="ok">
     <summary><h2><svg viewBox="0 0 24 24"><path d="M13 3L4 14h7l-1 7 9-11h-7z"/></svg><span data-i18n="Computing power">Computing power</span></h2></summary>
@@ -1116,16 +1126,16 @@ async function ctl(d) { const r = await post("/api/sim", Object.assign({action: 
 function scnLoad() { const v = $("#s-sel").value; if (v) ctl({ctl: "scenario", id: v}); }
 function scnDel() { const s = $("#s-sel"); if (s.value && confirm(t("Delete this scenario in the simulator?") + "\n" + s.options[s.selectedIndex].textContent)) ctl({ctl: "delete", id: s.value}); }
 /*SIMMAP*/
-function buildCtl(r) { simCtlBuild($("#s-groups"), r, ctl, fmt); }        // like the panel of the simulator (simCtlBuild, 2.93.16)
+function buildCtl(r) { simCtlBuild($("#s-groups"), r, ctl, fmt); const ts = $("#tr-sim"); if (ts) simCtlBuild(ts, r, ctl, fmt); }   // 2.98.23: «Testlauf» of the simulator in the sheet «Tests»        // like the panel of the simulator (simCtlBuild, 2.93.16)
 
 function showCtl(r) {
   if (!r || !r.ok) { $("#s-cst").textContent = "⚠ " + ((r && r.error) || t("simulator not reachable")); return; }
   $("#s-cname").textContent = r.name ? "· " + r.name : "";
   const sig = JSON.stringify([(r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options, c.sub])]);
   if (sig !== CS) { CS = sig; buildCtl(r); }
-  scOn($("#s-groups"), r);
+  scOn($("#s-groups"), r); scOn($("#tr-sim"), r);
   updPaint(r); gamePaint(r);
-  document.querySelectorAll("#s-groups [data-cid]").forEach(row => {
+  document.querySelectorAll("#s-groups [data-cid], #tr-sim [data-cid]").forEach(row => {
     const c = (r.controls || []).find(x => x.id === row.dataset.cid); const inp = row.querySelector(".simv"); if (!c || !inp || inp === document.activeElement) return;
     if (c.type === "toggle") inp.checked = !!c.value; else if (c.value != null) inp.value = c.value;
     const vv = row.querySelector(".simvv"); if (vv) vv.textContent = fmt(c, c.value);
@@ -1172,7 +1182,6 @@ function trInit() {
   $("#tr-run").onclick = () => trAct({action: "run", plan: TRPLAN});
   $("#tr-auto").onclick = () => { if (confirm(t("tr-auto-ask"))) trAct({action: "auto", plan: TRPLAN, tries: 4}); };
   $("#tr-stop").onclick = () => trAct({action: "stop"});
-  $("#c-test").addEventListener("toggle", () => trLoad());
   trLoad();
 }
 async function trAct(d) {
@@ -1184,7 +1193,7 @@ async function trAct(d) {
 }
 async function trLoad() {
   clearTimeout(trT);
-  const open = $("#c-test").open;
+  const open = !!document.querySelector(".shsheet #tr-box");          // 2.98.23: open = shown in the sheet «Tests» of the Simulator centre
   const r = await fetch("/api/simtest").then(x => x.ok ? x.json() : null).catch(() => null);
   if (r) { TR = r; trPaint(); }
   const busy = r && (r.busy || (r.sim && r.sim.running));
@@ -1193,7 +1202,6 @@ async function trLoad() {
 function trPaint() {
   const R = TR || {}, SM = R.sim || {}, busy = !!R.busy || !!SM.running, A = R.auto;
   [...$("#tr-plan").options].forEach(o => { const p = TR_PLANS.find(x => x[0] === o.value); if (p) o.textContent = t(p[1]); });
-  $("#c-test").classList.toggle("act", busy);
   $("#tr-run").disabled = busy || !R.connected; $("#tr-auto").disabled = busy || !R.connected; $("#tr-stop").hidden = !busy; $("#tr-plan").disabled = busy;
   $("#tr-autonote").textContent = !R.connected ? t("Connect the simulation first (3D simulator 3D-3.27 or newer).") : R.msg && !busy ? "⚠ " + t(R.msg) : "";
   $("#tr-live").hidden = !busy;
