@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 03:37",
+ "generated": "2026-10-29 05:30",
  "versions": [
   {
-   "version": "2.98.12",
-   "file": "webcam_bewegung_2_98_12.py",
+   "version": "2.98.13",
+   "file": "webcam_bewegung_2_98_13.py",
    "url": "",
-   "sha256": "90c88d5bcd93e198828fe2092c08b939679b1e3f66be780939e7c76e51e70c5e",
-   "date": "2026-10-29 03:37",
-   "notes": "Simulator 3D-3.99 (Start mit Tunnel, Kopfkamera am Tag nicht zu dunkel)",
-   "sig": "1f264477681941de416e9bd66e2280a967d83f5652976212b3aacb07d0a58b764cd734bc96f46456e0ced92807ceed53b8b953b551529086eac445929f87bf05"
+   "sha256": "c60736a950b598578fb208c9c0012132a71256d444f66c9782c83650e224e2cc",
+   "date": "2026-10-29 05:29",
+   "notes": "Erkennung: Schattenfilter schnitt blasse Personen weg (NoIR) – behoben; Lichtwechsel im ganzen Bild = sofort neuer Hintergrund; Auto-Tuner zählt Gehende nicht mehr als Rauschen; KI-Lupe für Personen weit weg; Menü Verlauf → Nachrichten (gesendete Push-Nachrichten, ntfy-Server); Tunnel-Selbsttest; Simulator 3D-4.0",
+   "sig": "08f8a2adb81f63aae6db938e38478bb76eb8aa185932c3037bf1e20029ee4246a91ea86c8c00e0c9cfb415253bd0e944f2a3fe5105c509a59ec90267ae90650e"
   },
   {
    "version": "2.97.1",
