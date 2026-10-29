@@ -3,7 +3,8 @@
 **Name ab 2.96.0: MoveEye** (Logo E6a-4: Sichtfeld, Auge unten, gehende Person in Erkennungs-Ecken). In allen sichtbaren Texten «MoveEye»; interne Namen bleiben (Dateien `webcam_bewegung_*.py`, Ordner `~/.config/motionwatch/`, Repository, `"app": "Motion Watch"` in Protokollen wie versions.json und der Geräte-Suche, Basic-Realm).
 
 Raspberry-Pi-5-Gerät zur Wildtier- und Personenwarnung beim Camping (Schwenk-/Neigekopf, KI-Erkennung, Wärmebild,
-Push-Nachrichten). Besitzer: Daniel (Schweiz). Eventuell später als Produkt vermarkten.
+Push-Nachrichten). Besitzer: Daniel (Schweiz). Eventuell später als Produkt vermarkten – Zielgruppen (Daniel, 29.10.2026):
+Camper (Zelt, Wohnmobil), Haus und Garten, Wildtier-Beobachter, allgemeine Bewachungsaufgaben; Vertriebsform noch offen.
 Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `docs/Uebergabe_Gehaeuse_Licht_Audio.md`.
 
 ## Zusammenarbeit
