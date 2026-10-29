@@ -94,6 +94,7 @@ var bike_lamp: Array = []                 # [spot, front material, rear material
 const CAR_VARIANTS := ["tractor", "moto", "van"]
 var wheels: Array = []        # cyclist, stroller: wheels that turn
 var carry := false            # courier: holds the box in front with both hands
+var _lie_k := 0.0             # 3D-4.4: 0 standing … 1 lying (deer bedded down, simreal.gd «deer_bedded»)
 
 
 func setup(m, k: String, from: Vector3, to: Vector3, spd: float) -> void:
@@ -229,6 +230,8 @@ func _build_person() -> void:
 	var hair := _pick("hair")
 	var shoe: Color = Color(0.95, 0.95, 0.95) if jog else [Color(0.12, 0.1, 0.09), Color(0.35, 0.22, 0.12), Color(0.2, 0.2, 0.22)][randi() % 3]
 	var cloth_t := 26.0 - (3.0 if cold else 0.0) + (2.0 if jog else 0.0)
+	if main.simreal != null:
+		cloth_t = main.simreal.cloth_t(cloth_t, jog)                    # 3D-4.4: clothes insulate (cooler than the skin)
 	var old_ := variant == "elderly"                                      # 3D-3.95: more kinds of people
 	var shorts: bool = main.ambient > 21.0 and not wet and not kid and not old_ and variant not in ["police", "burglar", "courier"] and randf() < 0.45
 	var coat: bool = cold and not jog and not kid and variant == "" and randf() < 0.3
@@ -700,6 +703,8 @@ func _build_car() -> void:
 		lamp.material_override = lm
 		lights.append(lm)
 		_part(body_root, _box(0.28, 0.1, 0.04), Vector3(x2, 0.72, 2.12), Color(0.7, 0.05, 0.05), main.ambient + 8.0)   # tail lights
+	if main.simreal != null and not preview and not van:
+		main.simreal.note_car(body_root, false)            # 3D-4.4: number plates that reflect
 
 
 func _headlight(pos: Vector3) -> void:
@@ -841,6 +846,13 @@ func _step(dt: float) -> void:
 		var off: Vector3 = leader.global_transform.basis * follow_off
 		target = leader.position + off
 		route.clear()
+		if main.simreal != null and main.simreal.anim_real and now >= idle_until:   # 3D-4.4: a herd stops together
+			if leader.kind == kind and now < leader.idle_until and leader.idle_kind != "":
+				idle_kind = leader.idle_kind if randf() < 0.7 else ["look", "graze", "sniff"][randi() % 3]
+				idle_until = leader.idle_until + randf_range(-0.5, 1.0)
+			elif is_animal() and leader.kind == "person" and leader.cur_speed < 0.1 and randf() < 0.02:
+				idle_kind = "sniff"                              # the dog sniffs while its person stands
+				idle_until = now + randf_range(1.5, 4.0)
 	if now < wait_until or now < idle_until:
 		cur_speed = move_toward(cur_speed, 0.0, dt * 3.0)
 		_turn(dt, true)
@@ -857,9 +869,10 @@ func _step(dt: float) -> void:
 		_next_point(now)
 		return
 	# graze / look round now and then (not when fleeing, not cars, not on a walk)
+	var real_a: bool = is_animal() and main.simreal != null and main.simreal.anim_real   # 3D-4.4: stop and sniff more often
 	if kind != "car" and not fled and leader == null and now > next_idle and route.size() >= 0:
-		next_idle = now + randf_range(8.0, 20.0)
-		if randf() < (0.55 if is_animal() else 0.3):
+		next_idle = now + (randf_range(4.0, 11.0) if real_a else randf_range(8.0, 20.0))
+		if randf() < (0.8 if real_a else (0.55 if is_animal() else 0.3)):
 			var kinds: Array = {"person": ["look", "look", "phone", "bend"], "deer": ["graze", "graze", "look"], "boar": ["root", "graze"],
 					"fox": ["sniff", "look"], "hare": ["sit_up", "graze"], "cat": ["sit", "look"], "dog": ["sniff", "sit"],
 					"badger": ["root", "sniff"], "hedgehog": ["sniff"], "wolf": ["look", "sniff", "look"], "marten": ["sniff", "look"],
@@ -869,6 +882,9 @@ func _step(dt: float) -> void:
 			idle_until = now + randf_range(2.0, 5.0)
 			if is_animal() and main.is_dark() and main.eye_shine(global_position) > 0.5 and randf() < 0.6:
 				idle_kind = "stare"                                  # 3D-3.95: in the light animals stop and stare into it (eyes glow)
+				idle_until = now + randf_range(2.5, 6.0)
+			if real_a and kind in ["deer", "chamois", "ibex"] and randf() < 0.35:
+				idle_kind = "alert"                                  # 3D-4.4: head up high, ears to the noise, very still
 				idle_until = now + randf_range(2.5, 6.0)
 			look_yaw = randf_range(-0.8, 0.8)
 			return
@@ -1021,6 +1037,7 @@ func _animate(dt: float, spd: float, now: float) -> void:
 	var k: float = clamp(dt * 12.0, 0.0, 1.0)
 	var idle: String = idle_kind if now < idle_until else ""
 	var leap := kind == "deer" and fled and spd > 2.0                     # a fleeing deer jumps
+	_lie_k = move_toward(_lie_k, 1.0 if idle == "lie" else 0.0, dt * (0.9 if idle == "lie" else 0.75))   # 3D-4.4: lying / standing up
 	for l in legs:
 		if kind == "person":
 			break                                         # persons: legs in _animate_person (3D-3.24)
@@ -1032,6 +1049,8 @@ func _animate(dt: float, spd: float, now: float) -> void:
 			want = (-0.7 if legs.find(l) < 2 else 0.8) * air + sw * 0.3
 		elif kind == "person" and prone > 0.5:
 			want = sw * l[1] * 0.5 + 0.2                                   # crawling: legs push a little
+		if _lie_k > 0.0:
+			want = lerpf(want, -1.45 if legs.find(l) < 2 else 1.45, _lie_k)   # folded under the body
 		l[0].rotation.x = want
 		if l.size() > 2 and l[2] != null:                 # knee bends while the leg swings back (more when running)
 			var bend: float = max(0.0, -sin(phase * l[1])) * amp * (1.2 + (0.8 if spd > 2.2 else 0.0)) + crouch * 1.4
@@ -1060,6 +1079,8 @@ func _animate(dt: float, spd: float, now: float) -> void:
 					y = -0.03
 				"root":
 					y = 0.01 * sin(now * 13.0)
+			if _lie_k > 0.0:
+				y = lerpf(y, -body_h * 0.62, _lie_k)
 			body_root.position.y = lerp(body_root.position.y, y, k) if not leap and kind != "hare" else y
 			body_root.rotation.x = lerp(body_root.rotation.x, rx, clamp(dt * 6.0, 0.0, 1.0))
 	# head: grazing (down), rooting, sniffing, looking round, else forward
@@ -1085,6 +1106,13 @@ func _animate(dt: float, spd: float, now: float) -> void:
 				hx = 0.1
 			"sit_up":
 				hx = -0.6
+			"lie":                                                       # 3D-4.4: lying, the head up now and then
+				hx = 0.15 * sin(now * 0.4 + seed_t)
+				hyaw = 0.5 * sin(now * 0.23 + seed_t)
+			"alert":                                                     # 3D-4.4: head high, towards the camera
+				var to_c2: Vector3 = main.head.global_position - global_position
+				hyaw = clampf(wrapf(atan2(-to_c2.x, -to_c2.z) - heading, -PI, PI), -1.2, 1.2)
+				hx = 0.45
 		if kind == "person" and (now < startle_until or emote == "caught" and now < emote_until):
 			hx = 0.15
 		if kind == "person" and idle == "":

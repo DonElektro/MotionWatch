@@ -76,6 +76,7 @@ func _ready() -> void:
 	_tab_places()
 	_tab_kits()
 	_tab_own()
+	_tab_twin()
 	_msg = UI.small("")
 	_msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_msg.custom_minimum_size = Vector2(580, 0)
@@ -241,6 +242,13 @@ func _tab_own() -> void:
 	add_child(_fd)
 
 
+# ---- tab 5 (3D-4.4): your place as a twin - a photo / panorama behind the scene (zwilling.gd) ---------------------------
+func _tab_twin() -> void:
+	var v := _page("Dein Platz", "Ein Foto oder Panorama deines echten Platzes als Hintergrund – so sieht die Kopfkamera fast deinen Platz. Am besten mit dem Handy von der Stelle aus fotografieren, wo MoveEye steht (Panorama: ganz herum drehen). Danach Zelt und Auto dorthin setzen, wo sie wirklich stehen. Gilt nur für diese Szene / diesen Ort und bleibt gespeichert. Auch: Bild einfach ins Fenster ziehen.")
+	if main.zwilling != null:
+		main.zwilling.build_tab(v)
+
+
 func _pick_file() -> void:
 	_fd.popup_centered()
 
@@ -248,6 +256,12 @@ func _pick_file() -> void:
 func _on_drop(files: PackedStringArray) -> void:
 	var n := 0
 	for p in files:
+		if p.get_extension().to_lower() in ["jpg", "jpeg", "png", "webp"] and main.zwilling != null:   # 3D-4.4: a photo of the place
+			if main.zwilling.import_image(p):
+				visible = true
+				tabs.current_tab = tabs.get_tab_count() - 1
+				get_parent().move_child(self, -1)
+			return
 		if p.get_extension().to_lower() in ["glb", "gltf"]:
 			if import_file(p, false):
 				n += 1
@@ -409,7 +423,7 @@ func place_into(root: Node3D) -> void:
 			main.set_obstacle_height(a.position.y + a.size.y)
 			nob += 1
 	if placed.is_empty():
-		main._say("Noch keine 3D-Datei – «Vorlagen» → «Eigene Datei» oder eine .glb ins Fenster ziehen.")
+		_say("Noch keine 3D-Datei – «Vorlagen» → «Eigene Datei» oder eine .glb ins Fenster ziehen.")   # (was main._say: wrong arguments)
 
 
 func _paint_list() -> void:
