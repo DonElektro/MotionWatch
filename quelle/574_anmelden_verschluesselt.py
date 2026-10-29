@@ -26,7 +26,7 @@ SECLOGIN = {"own": (0.0, frozenset()), "logged": {}, "fallback_logged": False}
 SECLOGIN_NOTE = ("The password is only accepted over the secure page (https://…:port + 1) or from this device itself. Over plain http "
                  "everybody in the same Wi-Fi (camping!) could read it. The browser warns once about the certificate (it is made by MoveEye "
                  "itself) - accept it once. Tailscale and «https over Tailscale» are encrypted and work as before. Links with their own key "
-                 "(buttons in the push message, guests, shares) keep working. Programs (Home Assistant, shortcuts) use the https address too.")
+                 "(buttons in the push message, guests, shares) keep working. Programs (Home Assistant, shortcuts) use an app key (below) or the https address.")
 
 
 def _seclogin_ip(s):

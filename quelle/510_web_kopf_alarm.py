@@ -540,8 +540,13 @@ function applyI18n() {
   const b = $("#btn-lang"); if (b) b.textContent = (LANG || "en").toUpperCase();
   document.documentElement.lang = LANG;
 }
-function applyTheme() { document.body.classList.toggle("light", THEME === "light"); const b = $("#btn-theme"); if (b) b.innerHTML = THEME === "light" ? "&#9790;" : "&#9728;"; }
-function toggleTheme() { THEME = THEME === "light" ? "dark" : "light"; try { localStorage.setItem("mw-theme", THEME); } catch (e) {} applyTheme(); }
+function themeStep() { return document.documentElement.classList.contains("sxnight") ? "red" : THEME === "light" ? "light" : "dark"; }   // 573/578: Hell → Dunkel → Rotlicht
+function applyTheme() { document.body.classList.toggle("light", THEME === "light"); const b = $("#btn-theme"), s = themeStep();
+  if (b) { b.innerHTML = s === "light" ? "&#9790;" : s === "dark" ? "&#9673;" : "&#9728;"; b.classList.toggle("thred", s === "red"); } }
+function toggleTheme() { const n = {light: "dark", dark: "red", red: "light"}[themeStep()];
+  document.documentElement.classList.toggle("sxnight", n === "red"); THEME = n === "light" ? "light" : "dark";
+  try { localStorage.setItem("mw-theme", THEME); localStorage.setItem("mw-night", n === "red" ? "1" : "0"); } catch (e) {} applyTheme();
+  if (window.sxThemeSaid) window.sxThemeSaid(n); }
 function toggleLang() { langMenu(document.querySelector("#btn-lang")); }
 let toastTimer = null;
 function toast(msg) { let e = $("#toast"); if (!e) { e = el("div"); e.id = "toast"; document.body.appendChild(e); } e.textContent = msg; e.classList.add("on");
