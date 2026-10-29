@@ -61,7 +61,7 @@ body.lv-land:not(.videoonly) #lv-main>:not(#vcard){flex:none}
 body.lv-port:not(.videoonly) main>section{display:block!important;height:100%;overflow-y:auto!important;overflow-x:hidden;scrollbar-width:thin;padding-bottom:16px!important}
 body.lv-port:not(.videoonly) #lv-side{margin-top:12px}
 body.lv-port:not(.videoonly) #vcard{padding:8px}
-body.lv-port:not(.videoonly) #video{width:100%;height:auto;max-height:var(--lv-ph,60vh);min-height:0;object-fit:contain}
+body.lv-port:not(.videoonly) #video{width:100%;height:auto;aspect-ratio:auto 16/9;max-height:var(--lv-ph,60vh);min-height:0;object-fit:contain}   /* 2.98.31: no picture yet = 16:9 black box, not a 0 px strip */
 body.lv-low:not(.videoonly) header{position:static}
 body.lv-ovon .ctl-stick{display:none!important}
 /* very small window: only the picture, the cards as a drawer (☰) */

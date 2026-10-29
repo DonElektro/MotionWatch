@@ -113,9 +113,14 @@ def open_source(spec, thermal=False):
                 src = _open_usb(idx)
                 if src:
                     return src, f"usb:{idx}", f"USB camera {idx}", ""
-            pis = [n for n in _pi_cams() if f"pi:{n}" not in {c.spec for c in CAMS}]     # 2.98.24: no USB camera -> the Pi camera
+            pis = _pi_cams()                                     # 2.98.24: no USB camera -> the Pi camera
             if pis:
-                return PiCamSource(pis[0]), f"pi:{pis[0]}", source_label(f"pi:{pis[0]}"), ""
+                sp_ = f"pi:{pis[0]}"
+                if sp_ in CFG.get("extra_cams", []):              # 2.98.31: the main camera has priority (was: both fought)
+                    CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x != sp_]; save_settings()
+                    log_event("sys", f"{source_label(sp_)}: removed from the extra cameras - it is the main camera")
+                    cams_apply(); time.sleep(2.0)
+                return PiCamSource(pis[0]), sp_, source_label(sp_), ""
             return None, spec, label, "no working camera found (ls /dev/video*)"
         if kind == "usb" and not thermal and _v4l_internal(int(arg)):
             pis = [n for n in _pi_cams() if f"pi:{n}" not in {c.spec for c in CAMS}]     # 2.98.24: an internal node was chosen
@@ -127,7 +132,7 @@ def open_source(spec, thermal=False):
             src = (_open_usb(int(arg), raw=True) or _open_usb(int(arg))) if thermal else _open_usb(int(arg))
             return (src, spec, label, "") if src else (None, spec, label, f"no picture from /dev/video{arg}")
         if kind == "pi":
-            if not thermal and spec in CFG.get("extra_cams", []) and CFG.get("source") == spec:
+            if not thermal and spec in CFG.get("extra_cams", []) and CFG.get("source") in (spec, "auto"):
                 # 2.98.26: the Pi camera can be open only once - the main camera has priority over an extra camera
                 CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x != spec]; save_settings()
                 log_event("sys", f"{label}: removed from the extra cameras - it is the main camera now")

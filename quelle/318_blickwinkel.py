@@ -190,6 +190,10 @@ def _extra_cams_boot():
         if WATCH_REF.get("w") is not None:
             time.sleep(3.0)
             try:
+                main_ = {CFG.get("source"), STATE.get("source_id")}       # 2.98.31: the main camera is never also an extra camera
+                if any(x in main_ for x in CFG.get("extra_cams", [])):
+                    CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x not in main_]; save_settings()
+                    log_event("sys", "Extra cameras: the main camera was also in the list - removed there")
                 if CFG.get("extra_cams") and not CAMS and not toolmode_on():
                     cams_apply()
             except Exception as e:

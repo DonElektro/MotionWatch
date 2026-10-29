@@ -155,7 +155,8 @@ class ExtraCam:
 
 def cams_apply():
     """Start / stop the extra camera threads so they match the settings."""
-    want = [x for x in CFG["extra_cams"] if x != CFG.get("source")]     # 2.98.27: never the main camera a second time
+    main_ = {CFG.get("source"), STATE.get("source_id")}       # 2.98.31: also when the main camera is «auto» = this Pi camera
+    want = [x for x in CFG["extra_cams"] if x not in main_]   # 2.98.27: never the main camera a second time
     for c in list(CAMS):
         if c.spec not in want:
             CAMS.remove(c); threading.Thread(target=c.close, daemon=True).start()

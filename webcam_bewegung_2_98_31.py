@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_30.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_31.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,10 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.31: Kein Live-Bild seit 2.98.30 behoben: die Pi-Kamera stand noch als Zusatzkamera in der Liste (Hauptkamera
+    «Automatisch»), und seit Zusatzkameras nach dem Neustart wieder starten, stritten beide um die Kamera. Die Hauptkamera hat
+    jetzt immer Vorrang und wird aus der Zusatzliste entfernt. Live-Seite: ohne Bild ein schwarzes 16:9-Feld statt eines
+    schmalen Streifens.
   * 2.98.30: Assistent «Platz einrichten» (Schutz): Rundblick mit Panorama, Bewegung und KI, nachts mit IR und Wärmebild;
     antippen Zelt / Zugang / Wertsachen / Ignorieren → Zonen, Linie, Patrouille, Masken, bewachte Sachen; Zonen bleiben am
     Platz, wenn der Kopf dreht. Blickwinkel pro Kamera (Modell wird erkannt). Automatische Kopfbewegung: kluge Runde, zum Alarm
@@ -928,10 +932,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_30.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_31.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_30.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_30.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_31.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_31.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -948,7 +952,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.30"
+APP_VERSION = "2.98.31"
 
 
 def default_data_dir():
@@ -16884,9 +16888,14 @@ def open_source(spec, thermal=False):
                 src = _open_usb(idx)
                 if src:
                     return src, f"usb:{idx}", f"USB camera {idx}", ""
-            pis = [n for n in _pi_cams() if f"pi:{n}" not in {c.spec for c in CAMS}]     # 2.98.24: no USB camera -> the Pi camera
+            pis = _pi_cams()                                     # 2.98.24: no USB camera -> the Pi camera
             if pis:
-                return PiCamSource(pis[0]), f"pi:{pis[0]}", source_label(f"pi:{pis[0]}"), ""
+                sp_ = f"pi:{pis[0]}"
+                if sp_ in CFG.get("extra_cams", []):              # 2.98.31: the main camera has priority (was: both fought)
+                    CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x != sp_]; save_settings()
+                    log_event("sys", f"{source_label(sp_)}: removed from the extra cameras - it is the main camera")
+                    cams_apply(); time.sleep(2.0)
+                return PiCamSource(pis[0]), sp_, source_label(sp_), ""
             return None, spec, label, "no working camera found (ls /dev/video*)"
         if kind == "usb" and not thermal and _v4l_internal(int(arg)):
             pis = [n for n in _pi_cams() if f"pi:{n}" not in {c.spec for c in CAMS}]     # 2.98.24: an internal node was chosen
@@ -16898,7 +16907,7 @@ def open_source(spec, thermal=False):
             src = (_open_usb(int(arg), raw=True) or _open_usb(int(arg))) if thermal else _open_usb(int(arg))
             return (src, spec, label, "") if src else (None, spec, label, f"no picture from /dev/video{arg}")
         if kind == "pi":
-            if not thermal and spec in CFG.get("extra_cams", []) and CFG.get("source") == spec:
+            if not thermal and spec in CFG.get("extra_cams", []) and CFG.get("source") in (spec, "auto"):
                 # 2.98.26: the Pi camera can be open only once - the main camera has priority over an extra camera
                 CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x != spec]; save_settings()
                 log_event("sys", f"{label}: removed from the extra cameras - it is the main camera now")
@@ -25318,6 +25327,10 @@ def _extra_cams_boot():
         if WATCH_REF.get("w") is not None:
             time.sleep(3.0)
             try:
+                main_ = {CFG.get("source"), STATE.get("source_id")}       # 2.98.31: the main camera is never also an extra camera
+                if any(x in main_ for x in CFG.get("extra_cams", [])):
+                    CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x not in main_]; save_settings()
+                    log_event("sys", "Extra cameras: the main camera was also in the list - removed there")
                 if CFG.get("extra_cams") and not CAMS and not toolmode_on():
                     cams_apply()
             except Exception as e:
@@ -28891,7 +28904,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_30.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_31.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -33976,7 +33989,8 @@ class ExtraCam:
 
 def cams_apply():
     """Start / stop the extra camera threads so they match the settings."""
-    want = [x for x in CFG["extra_cams"] if x != CFG.get("source")]     # 2.98.27: never the main camera a second time
+    main_ = {CFG.get("source"), STATE.get("source_id")}       # 2.98.31: also when the main camera is «auto» = this Pi camera
+    want = [x for x in CFG["extra_cams"] if x not in main_]   # 2.98.27: never the main camera a second time
     for c in list(CAMS):
         if c.spec not in want:
             CAMS.remove(c); threading.Thread(target=c.close, daemon=True).start()
@@ -48752,7 +48766,7 @@ body.lv-land:not(.videoonly) #lv-main>:not(#vcard){flex:none}
 body.lv-port:not(.videoonly) main>section{display:block!important;height:100%;overflow-y:auto!important;overflow-x:hidden;scrollbar-width:thin;padding-bottom:16px!important}
 body.lv-port:not(.videoonly) #lv-side{margin-top:12px}
 body.lv-port:not(.videoonly) #vcard{padding:8px}
-body.lv-port:not(.videoonly) #video{width:100%;height:auto;max-height:var(--lv-ph,60vh);min-height:0;object-fit:contain}
+body.lv-port:not(.videoonly) #video{width:100%;height:auto;aspect-ratio:auto 16/9;max-height:var(--lv-ph,60vh);min-height:0;object-fit:contain}   /* 2.98.31: no picture yet = 16:9 black box, not a 0 px strip */
 body.lv-low:not(.videoonly) header{position:static}
 body.lv-ovon .ctl-stick{display:none!important}
 /* very small window: only the picture, the cards as a drawer (☰) */
@@ -55355,7 +55369,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.30")
+        self.root.title("MoveEye 2.98.31")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -55721,7 +55735,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.30 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.31 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

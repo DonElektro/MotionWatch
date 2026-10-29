@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 21:13",
+ "generated": "2026-10-29 22:38",
  "versions": [
   {
-   "version": "2.98.30",
-   "file": "webcam_bewegung_2_98_30.py",
+   "version": "2.98.31",
+   "file": "webcam_bewegung_2_98_31.py",
    "url": "",
-   "sha256": "3b1ac18dbf6bb43890c410bec760ff2e76c7ffad5bd9aab3f58149fe05e7917e",
-   "date": "2026-10-29 21:13",
-   "notes": "Assistent «Platz einrichten» (Schutz): Rundblick mit Panorama, Bewegung und KI, nachts mit IR und Wärmebild; antippen Zelt / Zugang / Wertsachen / Ignorieren → Zonen, Linie, Patrouille, Masken, bewachte Sachen; Zonen bleiben am Platz, wenn der Kopf dreht. Blickwinkel pro Kamera (Modell wird erkannt). Automatische Kopfbewegung: kluge Runde, zum Alarm drehen, Parken bei Aus, Wertsachen-Blick, sparsam bei Akku/Nacht, Gehtest folgt, Wildtier-Modus, Sabotage-Prüfung; 360°- und Endlos-Servos, Übersichtskamera lenkt den Kopf. Behoben: Webseite konnte ohne https nach 60 s hängen; Zusatzkameras startet",
-   "sig": "056c8899f570940ac6a75ab0cb4debfdb77f712ad5fd2a447f6713b6b5067c240406d27f0b447b6ca27d0468061b884556c82b7e7dc6ef443f3142df30c1d607"
+   "sha256": "965135774850126b235e2026c2314533b98847259ea61f21a23fe625599310a2",
+   "date": "2026-10-29 22:38",
+   "notes": "Kein Live-Bild seit 2.98.30 behoben: die Pi-Kamera stand noch als Zusatzkamera in der Liste (Hauptkamera «Automatisch»), und seit Zusatzkameras nach dem Neustart wieder starten, stritten beide um die Kamera. Die Hauptkamera hat jetzt immer Vorrang und wird aus der Zusatzliste entfernt. Live-Seite: ohne Bild ein schwarzes 16:9-Feld statt eines schmalen Streifens.",
+   "sig": "c960cb7a92f06422d4c7ce2ee7c7b6425f708c7e33c54a8b1de95f36892543fb1dce5f3ee369bb7e8f3e17c67528774bb6c631ad42571b01b814150ac2a85e01"
   },
   {
    "version": "2.97.1",
