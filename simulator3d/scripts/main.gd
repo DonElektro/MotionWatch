@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.3"
+const VERSION := "3D-4.4"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -274,6 +274,8 @@ var mw_det_t := 0.0
 var lens_mats: Array = []
 var camfx_mats: Array = []            # 3D-3.94: camfx.gdshader per camera (realism.gd sets it)
 var realism                           # realism.gd
+var simreal                           # simreal.gd (3D-4.4): Pi 5, lens, infrared, thermal, false alarms, difficult visitors
+var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Zwilling» - photo / panorama of the real place
 var fauna                             # fauna.gd (3D-3.95)
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
 var colors_on := true
@@ -363,6 +365,12 @@ func _ready() -> void:
 	realism = preload("res://scripts/realism.gd").new()      # 3D-3.94: cameras like real ones (and like the real one of MoveEye)
 	realism.main = self
 	add_child(realism)
+	simreal = preload("res://scripts/simreal.gd").new()      # 3D-4.4: closer to the real device (every part can be switched off)
+	simreal.main = self
+	add_child(simreal)
+	zwilling = preload("res://scripts/zwilling.gd").new()    # 3D-4.4: your place as a twin (photo behind the scene)
+	zwilling.main = self
+	add_child(zwilling)
 	fauna = preload("res://scripts/fauna.gd").new()          # 3D-3.95: birds and bats
 	fauna.main = self
 	add_child(fauna)
@@ -889,6 +897,10 @@ func _build_scene() -> void:
 	scenes.build(scene, scene_parent)
 	for n in flat_nodes:
 		n.visible = not terrain
+	if zwilling != null:
+		zwilling.on_scene()                      # 3D-4.4: the photo of the real place, tent and car by hand (first: the tent moves obj["pir"])
+	if simreal != null:
+		simreal.on_scene()                       # 3D-4.4: tarp, pennant, road sign
 	if scene == "ort" and not geo.loaded and not geo.busy and ort_lat != 0.0:
 		geo.load_place(ort_lat, ort_lon, ort_name)      # from the cache or the internet; then place_loaded()
 	if scene == "wild":
@@ -1077,6 +1089,7 @@ var planner                           # planner.gd
 var pruef                             # pruefstand.gd (3D-3.49): the test bench on this PC
 var replay                            # replay.gd: Alarm-Rückblick in 3D (3D-3.44)
 var dataset                           # dataset.gd: Trainingsbilder (3D-3.44)
+var kitrain                           # kitrain.gd: «KI trainieren» - Paket auf GitHub, Training starten
 var tunnel                            # tunnel.gd: Tunnel zu MoveEye (3D-3.45)
 var tunnel_host := ""
 var tunnel_code := ""
@@ -2042,6 +2055,8 @@ func _update_temps() -> void:
 	tmat("pond").set_shader_parameter("temp", ambient - 2.0)
 	var sky_t := ambient - (35.0 * (1.0 - cl) + 4.0 * cl)
 	tmat("sky").set_shader_parameter("temp", sky_t)       # the sky is a big dome only the thermal camera sees
+	if simreal != null:
+		simreal.temps()                                   # 3D-4.4: heat of the day in stones / cars / asphalt, rain, windows
 
 
 # ---- every frame -----------------------------------------------------------------------------------------------------
@@ -2218,7 +2233,7 @@ func _wanted_fps(i: int) -> float:
 		f = max(f, 8.0)
 	if preview_on and win_open:
 		f = max(f, (2.0 if in_vm else 4.0) if i < 2 else (1.5 if in_vm else 3.0))
-	return f
+	return simreal.fps_cap(i, f) if simreal != null else f   # 3D-4.4: «Wie ein echter Pi 5»
 
 
 var _th_asked := 0.0
@@ -2261,6 +2276,8 @@ func _capture(i: int) -> void:
 		cam_attr[i].exposure_multiplier = gain[i] if not dark else 1.0   # at night the lens shader does the exposure
 		if realism != null:
 			realism.before_capture(i)
+		if simreal != null:
+			simreal.before_capture(i)            # 3D-4.4: lens, rolling shutter, noise, infrared, reflectors
 	vps[i].render_target_update_mode = SubViewport.UPDATE_ONCE
 	await RenderingServer.frame_post_draw
 	var img: Image = vps[i].get_texture().get_image()
@@ -2282,6 +2299,8 @@ func _capture(i: int) -> void:
 			if not hold:
 				jpgs[i] = img.save_jpg_to_buffer(realism.jpg_q if realism != null and realism.fx_on else 0.8)
 				frame_no[i] += 1
+				if simreal != null:
+					simreal.on_jpg(i, jpgs[i])           # 3D-4.4: «Wie ein echter Pi 5» - the picture comes late
 		else:
 			_decode_thermal(img)
 	capturing = false
@@ -2364,7 +2383,8 @@ func _auto_exposure(i: int, img: Image) -> void:
 				var c := sm.get_pixel(x, y)
 				sum_ += (c.r + c.g + c.b) / 3.0
 		var m: float = maxf(0.01, sum_ / (18.0 * 32.0))
-		ir_ex = clampf(ir_ex * pow(0.38 / m, 0.6), 0.04, 1.0)   # a near tent bright, the far meadow dark - not all white
+		var ir_min: float = 0.003 if simreal != null and simreal.ir_real else 0.04   # 3D-4.4: the real camera can shorten the exposure much more
+		ir_ex = clampf(ir_ex * pow(0.38 / m, 0.6), ir_min, 1.0)   # a near tent bright, the far meadow dark - not all white
 		return
 	var small: Image = img.duplicate()
 	small.resize(32, 18, Image.INTERPOLATE_BILINEAR)
@@ -2429,7 +2449,7 @@ func _inferno(f: float) -> Color:
 
 
 func latest_jpg(i: int) -> PackedByteArray:
-	return jpgs[i]
+	return simreal.delayed(i, jpgs[i]) if simreal != null else jpgs[i]
 
 
 func want_snapshot(i: int) -> void:
@@ -2696,6 +2716,8 @@ func time_scale_visitors() -> float:
 
 
 func spawn(kind: String, from = null, to = null) -> Node3D:
+	if simreal != null and simreal.is_kind(kind):
+		return simreal.spawn_kind(kind, from, to)     # 3D-4.4: hood, backpack, phoning, groups, edge sneaker, deer lying ...
 	if kids_on and not kids_scary and kind in ["wolf", "lynx", "boar"]:
 		kind = "hare"                             # 3D-3.69: Kinder-Modus without wild animals if so set
 	if kids_on and not kids_thief and kind in ["thief", "burglar", "drunk"]:
@@ -2765,9 +2787,7 @@ func visit(k: String) -> void:
 	elif k == "dogwalk":                                       # somebody walks the dog
 		var w = spawn("person")
 		var dg = spawn("dog", w.position + Vector3(1.0, 0, 1.0), w.target)
-		dg.leader = w
-		dg.speed = w.speed * 1.6
-		dg.follow_off = Vector3(randf_range(-1.2, 1.2), 0, randf_range(0.8, 2.0))
+		simreal.leash(w, dg)                                   # 3D-4.4: on a leash (or free as before, «Verhalten»)
 	elif k == "herd":                                          # a few deer together
 		var lead = spawn("deer")
 		for i in range(randi_range(1, 3)):
@@ -3003,7 +3023,7 @@ func add_control(type: String, id: String, label: String, getter, setter, group:
 
 # ---- order of the settings: groups with a symbol, parts inside (from 3D-3.5) ------------------------------------------------
 # [group, symbol (window: drawn; page of MoveEye: emoji), parts in their order]
-const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Zeit"]],
+const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Dein Platz", "Zeit"]],
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
 		["Kamerabild", "lens", "👁", ["", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
@@ -3210,6 +3230,8 @@ func _register_controls() -> void:
 			["shake", "Kamera wackelt im Wind (Mast, Stange)"], ["net", "Schlechtes WLAN: das Bild ruckelt und bleibt hängen"]]:
 		var key: String = cd[0]
 		add_control("toggle", "cond_" + key, cd[1], func(): return cond[key], func(v): cond[key] = bool(v), "Kamerabild")
+	simreal.add_controls()                                 # 3D-4.4: closer to the real device
+	zwilling.add_controls()
 	add_control("toggle", "dev2_on", "Zweites MoveEye-Gerät in der Welt (eigene Adresse: Port des Simulators + 20, meist 8785)", func(): return dev2.on, func(v): dev2.set_on(v), "Mover")
 	add_control("select", "dev2_place", "Platz des zweiten Geräts", func(): return dev2.place, func(v): dev2.set_place(str(v)), "Mover",
 			{"options": [["opposite", "gegenüber (30 m)"], ["left", "links"], ["right", "rechts"], ["door", "bewacht Zelt / Tür"], ["bike", "bewacht das Velo"], ["car", "bewacht das Auto (Strasse)"]]})
@@ -3611,13 +3633,20 @@ func _control(d: Dictionary) -> Dictionary:
 		if op2 == "game":                                # 3D-3.53: the «missed» pictures of the game
 			return dataset.load_game()
 		if op2 == "export":                              # 3D-3.74: a training set (YOLO) for an own AI model
-			return dataset.export_pack(int(d.get("n", 500)), bool(d.get("scenes", true)))
+			return dataset.export_pack(int(d.get("n", 500)), bool(d.get("scenes", true)), str(d.get("vielfalt", "")))
 		if op2 == "stop":
 			dataset.stop()
 		var st2: Dictionary = dataset.state()
 		if op2 == "list":
 			st2["items"] = dataset.list()
 		return st2
+	elif a == "kitrain":                               # «KI trainieren»: get / start {n, vielfalt, dry} / upload {dry}
+		var op3 := str(d.get("op", "get"))
+		if op3 == "start":
+			return kitrain.start(int(d.get("n", 200)), str(d.get("vielfalt", dataset.vielfalt)), bool(d.get("dry", false)))
+		if op3 == "upload":
+			return kitrain.upload_last(bool(d.get("dry", false)))
+		return kitrain.state()
 	elif a == "netmap":                                # Empfangskarte (3D-3.44): measured spots as patches on the ground
 		return {"ok": true, "n": show_netmap(d.get("points", []))}
 	elif a == "replay":                                # Alarm-Rückblick in 3D (3D-3.44)
@@ -3825,6 +3854,10 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "rover": patrol.rover_info()}
 	elif a == "overlay":
 		return {"ok": true, "overlay": overlay.info()}
+	elif a == "simreal":                               # 3D-4.4: {do: info | set (key, value) | sweep | bird | spawn (kind, from, to)}
+		return simreal.control(d)
+	elif a == "zwilling":                              # 3D-4.4: {do: info | import (path) | set (key, value) | item (k, x, z, r) | clear | remove | on}
+		return zwilling.control(d)
 	elif a == "whatif":                                # 3D-3.83: makeover 8 - MoveEye re-enacts a real recording
 		return whatif(d)
 	elif a == "twin":                                  # 3D-3.83: makeover 9 - the twin of the real place
@@ -4088,6 +4121,9 @@ func _build_ui() -> void:
 	dataset = preload("res://scripts/dataset.gd").new()      # Trainingsbilder (3D-3.44)
 	dataset.main = self
 	add_child(dataset)
+	kitrain = preload("res://scripts/kitrain.gd").new()      # «KI trainieren»: pack -> GitHub release «ki-daten» -> workflow
+	kitrain.main = self
+	add_child(kitrain)
 	replay = preload("res://scripts/replay.gd").new()        # Alarm-Rückblick (3D-3.44)
 	replay.main = self
 	add_child(replay)
@@ -4480,6 +4516,7 @@ func _build_ui() -> void:
 	dsr.add_child(dsb)
 	ds_label = UI.small("")
 	tl.add_child(ds_label)
+	kitrain.build(tl, dsn)                           # Vielfalt normal / hoch, «KI trainieren» (kitrain.gd)
 	tl = UI.sub_fold(tl_main, "Mehr: Aufstellen, Erkunden, Handy-Simulator", false)
 	tl.set_meta("always", true)
 	sub_bodies.append(tl)
@@ -6135,6 +6172,10 @@ func _place(p: Vector2) -> void:
 		place_rover_at(p)
 		place_kind = ""
 		_paint_palette()
+		return
+	if place_kind.begins_with("twin_"):                # 3D-4.4: tent / car of «Dein Platz als Zwilling»
+		zwilling.place_at_screen(place_kind, p)
+		place_kind = ""
 		return
 	if place_kind != "":
 		_place_at(place_kind, p)

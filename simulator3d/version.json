@@ -1,12 +1,12 @@
 {
- "version": "3D-4.3",
+ "version": "3D-4.4",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31356096,
- "sha256": "16fc1ea1ae532f0f9fb63f9ddbf9e3f96d7964cbf15f3b1e5faa11a13df21742",
- "notes": "Fehlalarm-Jäger, Prüfstand 2",
+ "size": 31442814,
+ "sha256": "594db727441bb35cbcb8818fbe476c3b4deebc157366a14cb0620d50b5c1bd05",
+ "notes": "Realismus, KI-Training",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24477641,
-  "sha256": "561e108c454eff7ba95353add63c6a1446a4090b1242925ab017e9e0306bcb4d"
+  "size": 24564519,
+  "sha256": "d1ab66de5ee56b548bb39f6384a29b626fd7968b9e49798daf6a480fcf3b9009"
  }
 }

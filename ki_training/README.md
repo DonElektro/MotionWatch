@@ -21,6 +21,42 @@ auf dem Pi kopieren.
 Automatisch trainieren (z. B. jeden Sonntag): in `.github/workflows/ki_modell.yml` vor den zwei Zeilen
 `schedule:` und `- cron:` das `#` entfernen. Standardmässig ist das aus.
 
+## Am einfachsten: Knopf «KI trainieren» im Simulator
+
+Im 3D-Simulator: Karte **«Testen»** → **«Trainingsbilder für eine eigene KI»** → Anzahl und **«Vielfalt: normal / hoch»**
+wählen → **«KI trainieren»**. Der Simulator macht das Paket, legt die ZIP-Datei ins Release **«ki-daten»** und startet
+hier das Training. MoveEye holt das neue Modell danach **von selbst** (einmal am Tag, Einstellung «Eigenes Modell von selbst
+aktualisieren»), aber nur, wenn seine Messung nicht schlechter ist als die des laufenden Modells (mAP50, Trefferquote,
+«Personen gefunden», je 0,02 Spielraum). Zum ersten Mal holt man das eigene Modell von Hand («Eigenes Modell herunterladen»).
+
+* Der **GitHub-Schlüssel** ist derselbe wie beim Prüfstand (Feld im Simulator, gespeichert in `user://pruefstand/schluessel.txt`).
+  Er braucht: *Contents: Read and write* **und** *Actions: Read and write*, nur dieses Repository (fein abgestufter Schlüssel,
+  github.com → Settings → Developer settings → Fine-grained tokens).
+* **Ohne Schlüssel**: die ZIP liegt auf dem Schreibtisch; von Hand ins Release «ki-daten» ziehen (siehe unten) und unter
+  Actions → «KI-Modell» → «Run workflow» starten.
+* **Vielfalt hoch** (empfohlen fürs Training): zufällige Kleider (Farben, Muster), Haltungen (stehend, geduckt, kriechend),
+  Dinge in der Hand, Lampen mit verschiedener Lichtfarbe, Sonnenstand (Monat), Wetter, alle Szenen (auch der echte Ort von
+  der Karte und «Meine Vorlage», wenn vorhanden), Personen bis 50 m, teils hinter Hecke/Zaun/Auto, Kamera-Fehler (Rauschen,
+  Unschärfe, Bewegungsunschärfe, Weissabgleich, JPEG-Qualität 30–90 %), leere Bilder mit Fallen (Ast vor der Linse, Fahne,
+  Lichter, Insekten, Schatten). Tiere: etwas grösser/kleiner, Fell heller/dunkler.
+
+## Was über jedes Bild gespeichert wird (labels_meta)
+
+Neben dem YOLO-Text (`labels/…/bild.txt`, unverändert) legt der Simulator `labels_meta/<train|val>/bild.json` ab:
+pro Bild Szene, Uhrzeit, Wetter, Licht (0…1), Infrarot, Kopf (Schwenk/Neigung), Kamera-Fehler, Fallen; pro Objekt
+(`"line"` = Zeile im YOLO-Text) Klasse, Art, **Abstand (m)**, **Haltung**, **Verdeckung** (0…1, geschätzt aus den Hindernissen
+des Simulators), Anschnitt am Bildrand, **Helligkeit im Rahmen**, **Unschärfe**, getragenes Ding, Kleider. Objekte, die nicht
+beschriftet wurden (ganz verdeckt, ausserhalb, zu klein), stehen unter `"dropped"`. Bilder, auf denen jemand *fast* ganz
+verdeckt ist (80–97 %), werden gar nicht gespeichert – dort gäbe es keine klare richtige Antwort.
+
+## Auswertung «Wo versagt die KI?»
+
+Nach dem Training sucht das neue Modell auf den zurückgehaltenen Bildern. Ein echter Rahmen gilt als gefunden, wenn ein Fund
+derselben Klasse ihn mit IoU ≥ 0,5 trifft. `auswertung.md` (im Release und in der Zusammenfassung des Laufs) zeigt die
+Trefferquote nach Abstand, Grösse im Bild, Haltung, Licht, Helligkeit, Verdeckung, Unschärfe, Wetter, Art, Szene – dazu die
+Fehlalarme auf leeren Bildern je Falle. Die Kurzfassung steht im Manifest (`"summary"`, `"summary_en"`, `"eval"`) und
+erscheint in MoveEye im Kasten «Eigenes Modell». Test ohne ultralytics: `--probe-auswertung` (erfundene Funde).
+
 ## Bilder dazugeben
 
 ### 1. Trainingspakete aus dem Simulator
@@ -95,6 +131,7 @@ Gleicher Datenschutz wie oben (echte Personen nur privat über das Secret `PRUEF
   MoveEye lädt zuerst das Manifest, dann die ONNX-Datei, und nimmt sie nur, wenn die **sha256** stimmt.
   `conf` ist die Schwelle mit dem besten F1-Wert je Klasse; MoveEye setzt sie dem Regler-Wert 0,5 gleich.
 * `bericht.md` – die Zusammenfassung (auch im Lauf auf GitHub zu sehen).
+* `auswertung.md` – «Wo versagt die KI?» (siehe oben), auch als Datei im Release.
 
 Vor dem Veröffentlichen prüft das Training die ONNX-Datei mit OpenCV (`cv2.dnn.readNetFromONNX`) – genau so, wie der Pi
 sie lädt. Export mit ONNX-Opset 12, damit auch ältere OpenCV-Versionen (ab 4.5) sie lesen können.
@@ -105,4 +142,5 @@ sie lädt. Export mit ONNX-Opset 12, damit auch ältere OpenCV-Versionen (ab 4.5
 pip install ultralytics opencv-python-headless onnx onnxslim
 python3 ki_training/trainieren.py --pakete ki_training/pakete --echt ki_training/echt --epochen 5 --aus ausgabe
 python3 ki_training/trainieren.py --nur-daten      # nur den Datensatz zusammenstellen (ohne ultralytics)
+python3 ki_training/trainieren.py --probe-auswertung   # Datensatz + Auswertung mit erfundenen Funden (ohne ultralytics)
 ```

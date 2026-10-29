@@ -608,6 +608,17 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-4.4
+3D-4.4: Realistischer: «Wie ein echter Pi 5» (Kopfkamera etwa 10 Bilder/s mit Verzögerung, Karte «Testen»), Objektiv wie das
+Camera Module 3 (Verzerrung am Rand, Rolling Shutter beim Schwenken, Rauschen im Dunkeln), Infrarot mit echtem LED-Kegel,
+Reflektoren (Nummernschild, Velo, Strassenschild) und Nebel/Regen/Schnee im Lichtkegel (das IR-Bild wurde früher oft weiss),
+Wärmebild mit isolierender Kleidung, warmen Steinen/Asphalt/Autos bis in die Nacht und Regen, der kühlt. Neue Fehlalarm-Quellen
+(flatternde Zeltplane und Wimpel, Autolicht über Wände, Katze auf dem Autodach, Vogel vor der Linse), schwierige Personen (Kapuze,
+Rucksack, telefoniert, Gruppen, schleicht am Rand) und Tiere (liegendes Reh steht auf, Hund an der Leine, Wildschwein-Rotte).
+«Dein Platz als Zwilling»: im Fenster «Vorlagen» → «Dein Platz» ein Foto oder Panorama deines Platzes als Hintergrund.
+KI-Training: «Vielfalt: hoch» für Trainingsbilder (Kleidung, Haltung, Verdeckung, Licht, Kamerafehler, Fehlalarm-Fallen),
+genaue Beschriftung, Knopf «KI trainieren» (Paket auf GitHub, Training starten).
+
 NEU IN 3D-4.3
 3D-4.3: Neues Spiel «Fehlalarm-Jäger» (im Assistenten): mit Lockvögeln – Fuchs, Katze, Reh, Wildschwein, Ast im Wind,
 Lampenstrahl, Ballon, fallender Gegenstand, Insektenschwarm – versuchen, MoveEye einen falschen Personen-Alarm zu entlocken;

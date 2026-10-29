@@ -369,6 +369,8 @@ func bike(p: Vector3, rot_y: float) -> void:
 	put(bk, m.box(0.5, 0.03, 0.03), Vector3(0, 0.88, -0.45), Color(0.2, 0.2, 0.2), "stone")                 # handlebar
 	put(bk, m.box(0.12, 0.05, 0.24), Vector3(0, 0.84, 0.32), Color(0.1, 0.1, 0.1), "stone")                 # saddle
 	put(bk, cyl(0.09, 0.09, 0.02, 12), Vector3(0.03, 0.3, 0.0), Color(0.6, 0.6, 0.62), "stone", Vector3(0, 0, PI / 2))   # chain ring
+	if m.simreal != null:
+		m.simreal.note_bike(bk)                    # 3D-4.4: reflectors (flare up in the infrared light)
 	m.obj["bike"] = p
 	m.bike_node = bk                             # 3D-3.71: the test aid «Velo wegnehmen» hides it
 	m.test_props["Velo"] = bk
@@ -415,6 +417,8 @@ func static_car(p: Vector3, rot_y: float, col: Color) -> void:
 			put(c, cyl(0.18, 0.18, 0.23), Vector3(x, 0.33, z), Color(0.6, 0.6, 0.62), "caravan", Vector3(0, 0, PI / 2))
 	m.add_obstacle_box(p, 1.95, 4.4, rot_y)
 	m.set_obstacle_height(1.5)
+	if m.simreal != null:
+		m.simreal.note_car(c)                      # 3D-4.4: number plates that reflect; a cat may sit on the roof
 
 
 func mushroom(p: Vector3, s := 1.0) -> void:

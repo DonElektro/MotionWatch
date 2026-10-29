@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 15:42",
+ "generated": "2026-10-29 16:22",
  "versions": [
   {
-   "version": "2.98.19",
-   "file": "webcam_bewegung_2_98_19.py",
+   "version": "2.98.20",
+   "file": "webcam_bewegung_2_98_20.py",
    "url": "",
-   "sha256": "8590acac51bf3ead394246e09e54308026baf10fd94ddf1fa1dff509a2bb19d2",
-   "date": "2026-10-29 15:42",
-   "notes": "«Aus» in der Push-Nachricht nur mit PIN, Push nach Stromausfall, Fehlerseiten übersetzt (Anmeldung «MoveEye»), Nachtblick, Bildschirmleser, Aufnahmen nach Tagen löschen, Push ohne Bild; Code-Pflege (Doppelte-Funktionen-Prüfung, Web-Rauchtest, Übersetzungs-Test), Echtbild-Prüfsatz, Einrichtungs-Skript; Prüfstand zählt echte Pushes; Fehlalarm-Jäger lernt mit; Simulator 3D-4.3",
-   "sig": "755f2690be42d651d7e9a09f374364513b6b8fc76f2799d711096bfa92159449a183d8e92c53b070eaaab113178750367bccb71a9f6ea409a98c8db62ef2ec06"
+   "sha256": "b266ec6ddfdf2c0e297172660f0f5c3a934bab30a60154d1febd6a33b7581363",
+   "date": "2026-10-29 16:22",
+   "notes": "KI-Modell: Auswertung «wo versagt die KI» im Modellfeld, neues Modell nur wenn nicht schlechter (täglich); Simulator 3D-4.4 (realistischer: Pi-5-Modus, Objektiv, Infrarot, Wärmebild, Fehlalarm-Quellen, schwierige Personen, Tiere, Dein Platz; KI-Training mit Vielfalt)",
+   "sig": "9e19bbbef0251f41a0acf37c3f486632d4ba69874d6ac24b7604764d62cedee2d5889540c2e6a3b3da100882f3d81b32043f370188cbd702a1d4db7b70ec8404"
   },
   {
    "version": "2.97.1",
