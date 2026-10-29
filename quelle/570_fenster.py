@@ -776,7 +776,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.32")
+        self.root.title("MoveEye 2.98.33")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1141,8 +1141,9 @@ class App:
             small = self._lay[0]
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
-                tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.32 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+                vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
+                vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
+            Tip(nm, f"{tr('Build')} 2.98.33 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1168,7 +1169,9 @@ class App:
             lb.config(width=3, font=("DejaVu Sans", 9, "bold")); lb.pack(side="right")
             self._ibtn(ctl, "◐", self.toggle_theme, tk_theme_tip(), on=bool(CFG.get("tk_night"))).pack(side="right", padx=(0, 6))   # Hell → Dunkel → Rotlicht (578)
             self._ibtn(ctl, "✉", self._messages_win, tr("Message list")).pack(side="right", padx=(0, 6))     # 2.98.13
+            self._ibtn(ctl, "💬", self._feedback, tr("Feedback to the developer")).pack(side="right", padx=(0, 6))   # 2.98.33 (584)
             self._ibtn(ctl, "◷", lambda: tk_timeline_win(self), tr("Night timeline")).pack(side="right", padx=(0, 6))   # 2.98.14 (575)
+            self._ibtn(ctl, "?", lambda: self._g2_tour(self.tab, True), tr("Tour of this page")).pack(side="right", padx=(0, 6))   # 584
             self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
             self.b_fs.pack(side="right", padx=(0, 6))
             vb = self._ibtn(ctl, "☰", lambda: None, tr("View") + " – " + tr("show / hide fields"))
@@ -1726,8 +1729,13 @@ class App:
         poll()
 
     def _set_simple(self, v):
-        if bool(CFG["ui_simple"]) != v:
-            CFG["ui_simple"] = v; save_settings(); self._simple_seen = v; self.root.after(30, self._rebuild)
+        """586: Simple / Expert of THIS tab (the default stays - it is chosen in the guide)"""
+        tab = self.tab
+        if page_simple(tab) != v:
+            m_ = page_modes(); m_[tab] = "simple" if v else "expert"
+            if v == bool(CFG["ui_simple"]):
+                m_.pop(tab)
+            web_ui_update({"mw-page-mode": json.dumps(m_)}); self.root.after(30, self._rebuild)
 
     def _protect(self, level):
         """2.95.105: protection level; switching off needs the PIN if one is set"""
@@ -1782,13 +1790,14 @@ class App:
         if tab != "sim":
             mrow.pack(fill="x", pady=(0, 10))
         self._simple_seen = bool(CFG["ui_simple"])
+        _G2_SIMPLE.v = page_simple(tab)                    # 586: Simple / Expert of this tab (simple_hidden in the window thread)
         for i, (val, lab) in enumerate(((True, tr("Simple")), (False, tr("Expert")))):
-            on = bool(CFG["ui_simple"]) == val
+            on = page_simple(tab) == val
             l = tk.Label(mrow, text=lab, font=("DejaVu Sans", 9, "bold"), pady=4, cursor="hand2",
                          bg=C["acc"] if on else C["field"], fg="#ffffff" if on else C["mut"])
             l.pack(side="left", fill="x", expand=True, padx=(0 if i == 0 else 1, 0))
             l.bind("<Button-1>", lambda e, v=val: self._set_simple(v))
-        if CFG["ui_simple"] and tab != "sim":
+        if page_simple(tab) and tab != "sim":
             tk.Label(inner, text=tr("Simple: only the important settings. «Expert» shows all of them."), bg=C["bg"], fg=C["mut"],
                      font=("DejaVu Sans", 8), anchor="w", justify="left", wraplength=330).pack(fill="x", pady=(0, 8))
         self.grp_meta = {}; self._open_before = None
@@ -2017,12 +2026,13 @@ class App:
             if s != sec or simple_hidden(key) or (CFG["lock_on"] and key in LOCK_DENY_KEYS): continue
             if key in TK_AI_MODEL_KEYS: continue           # 2.98.23: in the group «KI-Modell» below
             tg = Toggle(sp, tr(label), CFG[key], lambda val, k=key: self._set(k, val)); tg.pack(fill="x", pady=3)
-            self.vars[key] = tg
+            self.vars[key] = tg; self._g2_q(tg, key)          # «?»: explanation + recommendation (584)
         for s, key, label, lo, hi, step in SLIDERS:
             if s != sec or simple_hidden(key): continue
             row = ttk.Frame(sp); row.pack(fill="x", pady=(6, 0))
             ttk.Label(row, text=tr(label)).pack(side="left")
             vl = ttk.Label(row, text=str(CFG[key]), style="Mut.TLabel"); vl.pack(side="right"); self.value_labels[key] = vl
+            self._g2_q(row, key)
             v = tk.DoubleVar(value=CFG[key]); self.vars[key] = v
             sc = ttk.Scale(sp, from_=lo, to=hi, variable=v, orient="horizontal",
                            command=lambda val, k=key, st=step: self._slide(k, float(val), st))
@@ -2251,7 +2261,7 @@ class App:
         if sec == "Auto-tune":
             bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(8, 0))
             ttk.Button(bf, text=tr("Recalibrate (scene empty)"), command=self.watch.tuner.reset).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(bf, text=tr("Reset all settings"), command=self._reset_settings).pack(side="left", expand=True, fill="x")
+            ttk.Button(bf, text=tr("⚠ Reset to factory settings …"), command=self._reset_settings).pack(side="left", expand=True, fill="x")
 
     def _set_adv(self, gid, open_, save=True):
         ah, ab = self.adv[gid]
@@ -2892,10 +2902,7 @@ class App:
             c.yview_scroll(direction, "units")
 
     def _reset_settings(self):
-        theme, lang, hidden = CFG["theme"], CFG["lang"], CFG["ui_hidden"]
-        reset_settings()
-        CFG["theme"], CFG["lang"], CFG["ui_hidden"] = theme, lang, hidden     # keep the chosen look, language and view
-        save_settings(); self._schedule_rebuild()
+        self._g2_factory()                               # 586 / 584: «Reset to factory settings» (password / PIN, typed word, backup)
 
     # ---- collapsible sections -------------------------------------------
     def _set_section(self, sec, open_, save=True):
@@ -3599,27 +3606,7 @@ class App:
                 pts += [w - (len(hist) - 1 - i) * (w / 59.0), h - 2 - (h - 4) * v / 100.0]
             c.create_line(*pts, fill=C["grn"] if cpu < 60 else (C["yel"] if cpu < 85 else C["red"]), width=2)
 
-    def _feedback(self):
-        from tkinter import messagebox
-        w = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Feedback to the developer")); w.configure(bg=C["bg"])
-        ttk.Label(w, text=tr("Ideas, errors, praise - everything helps. The message is sent anonymously: no name, no address, unless you write one."),
-                  style="Mut.TLabel", wraplength=420, justify="left").pack(padx=14, pady=(12, 6), anchor="w")
-        kinds = [("idea", tr("Idea")), ("bug", tr("Error")), ("praise", tr("Praise")), ("other", tr("Other"))]
-        cb = ttk.Combobox(w, state="readonly", values=[k[1] for k in kinds]); cb.current(0); cb.pack(fill="x", padx=14)
-        txt = tk.Text(w, height=8, width=52, bg=C["field"] if "field" in C else C["panel"], fg=C["txt"], insertbackground=C["txt"], relief="flat")
-        txt.pack(fill="both", expand=True, padx=14, pady=8)
-        diag = tk.BooleanVar(value=True)
-        ttk.Checkbutton(w, text=tr("Add technical details (version, device, last important events - no pictures, no passwords)"), variable=diag).pack(anchor="w", padx=14)
-        bf = ttk.Frame(w); bf.pack(fill="x", padx=14, pady=10)
-
-        def send():
-            ok, err = feedback_send(kinds[cb.current()][0], txt.get("1.0", "end"), "", diag.get())
-            if ok:
-                messagebox.showinfo("MoveEye", tr("Thank you! The message is on its way."), parent=w); w.destroy()
-            else:
-                messagebox.showerror("MoveEye", tr_err(err), parent=w)
-        ttk.Button(bf, text=tr("Send"), command=send).pack(side="right")
-        ttk.Button(bf, text=tr("Cancel"), command=w.destroy).pack(side="right", padx=(0, 6))
+    # _feedback (feedback to the developer) and _about_win («About MoveEye»): part 584
 
     def _qr_window(self, first):
         """QR codes on the Pi screen: scan with the phone camera - the setup goes on there (own Wi-Fi of the Pi: first its code)."""
@@ -3658,7 +3645,7 @@ class App:
 
     def run(self):
         if not CFG["setup_done"] and not CFG["lock_on"]:
-            self.root.after(1500, lambda: self._qr_window(True))
+            self.root.after(1500, self._g2_first)            # the one guide (584); the QR codes come at its end
         self.root.mainloop()
 
 

@@ -9,7 +9,7 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 
 ## Zusammenarbeit
 
-- Deutsch (Schweiz, «ss» statt «ß»), kurz und verständlich. Daniel ist kein Programmierer, aber technisch interessiert.
+- Deutsch (Schweiz, «ss» statt «ß»), kurz und verständlich. Daniel ist Roboterentwickler (programmiert selbst) – trotzdem kurz und verständlich erklären.
 - Rückfragen nur bei echten Entscheidungen; sonst umsetzen und am Schluss kurz erklären (was neu ist, was getestet ist, was nicht).
 - Ehrlich sagen, was nicht getestet werden konnte (echte Hardware, iPhone usw.).
 - Keine Passwörter, privaten ntfy-Themen oder Zugangsdaten in Dateien, Commits oder geteilte Pakete.

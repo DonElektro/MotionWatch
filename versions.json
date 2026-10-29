@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 23:45",
+ "generated": "2026-10-30 00:41",
  "versions": [
   {
-   "version": "2.98.32",
-   "file": "webcam_bewegung_2_98_32.py",
+   "version": "2.98.33",
+   "file": "webcam_bewegung_2_98_33.py",
    "url": "",
-   "sha256": "9cec7d44040d732009ecfcf136407b53aa4608fcfaeb6cb503a9ecd7ebb44a39",
-   "date": "2026-10-29 23:45",
-   "notes": "Controller-Ansicht für Handy und Tablet: mit Bluetooth-Controller (oder Knopf 🎮) Live-Bild und nacktes Simulator-Bild über- bzw. nebeneinander, tauschbar; Gesten auf dem Simulator-Bild (drehen, zoomen, Ansicht wechseln); schlanke Leiste (Licht, IR, Wärmebild, Nachtsicht, Markieren, Foto, Aufnahme, Folgen); linker Stick Kopf, rechter Stick Rover (später auch echter Mover), R1 Ansicht drehen, R3 Blick wechseln (mit Simulator 3D-4.10).",
-   "sig": "bd10c5a3237959f5bea90ccedcabc02adb108bce3fad4ae1c475fd02a1b2a5dd079f87d8c2468349693595cb8d9000adb14654932da61dc71738bdff3dcc4700"
+   "sha256": "43727dc0685a89d6bc457918fedc802139f977c1b5211fb8c07dde0fe43ef8f2",
+   "date": "2026-10-30 00:41",
+   "notes": "Ein Guide nach der Installation (zuerst «Schnell oder ausgiebig?»), Rundgänge mit Sprechblasen auf allen Reitern («?» startet neu), Einfach/Experte pro Seite, Karten «Tipps & Tricks», «?» an den Einstellungen, Tipp des Tages; geschützte Werkseinstellungen (WLAN, Fernzugang, ntfy, Updates, KI-Modell bleiben). Rückmeldung 💬 von jeder Seite (Art, Sterne, Bild, geht an beide ntfy-Server), «Über MoveEye» (Versionsnummer antippen). QR-Codes neben den Links und eine QR-Galerie unter Mehr.",
+   "sig": "caca62caf5c22030cadb9d766bbf9f1c2c65fa628738ce4a748a5ef5197322e6db7f6ddc7901e0ba7c37fd28e2a8edec5300726572eb68bfc6d1c09a402ad10a"
   },
   {
    "version": "2.97.1",

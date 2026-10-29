@@ -144,7 +144,11 @@ def guide_js(active):
     data = {"active": active, "level": guide_level(), "ver": APP_VERSION,
             "tips": [{"k": k, "l": lv, "v": v, "te": te, "xe": xe, "td": td, "xd": xd} for k, lv, v, te, xe, td, xd in GUIDE_TIPS],
             "ui": GUIDE_UI}
-    return "window.MW_GUIDE=" + json.dumps(data, ensure_ascii=False).replace("</", "<\\/") + ";\n" + GUIDE_JS
+    g2 = {"page": g2_page_key(active), "tourAuto": bool(CFG.get("tours_auto", True)), "tourPages": sorted(G2_TOURS),
+          "setupDone": bool(CFG["setup_done"]), "guide": {k: (CFG.get("guide2") or {}).get(k) for k in ("mode", "paused", "finished", "step")},
+          "simple": bool(CFG.get("ui_simple")), "lock": bool(CFG.get("lock_on"))}
+    return ("window.MW_GUIDE=" + json.dumps(data, ensure_ascii=False).replace("</", "<\\/") + ";\n"
+            + "window.MW_G2B=" + json.dumps(g2, ensure_ascii=False).replace("</", "<\\/") + ";\n" + GUIDE_JS + G2_LOADER_JS)
 
 
 GUIDE_JS = r"""
@@ -211,7 +215,10 @@ GUIDE_JS = r"""
   const act = G.active === "history" ? "rec" : G.active;
   const here = "page:" + act;
   if (act === "rec" && tip["page:history"] && !seen.has("page:history")) want("page:history");
-  want(here);
+  const B2 = window.MW_G2B || {};                          // 586: the tour of this page starts on the first visit - then no extra card
+  let tSeen = []; try { tSeen = JSON.parse(localStorage.getItem("mw-tours-seen") || "[]"); } catch (e) {}
+  if (!B2.setupDone) { /* the setup guide runs first - the page explains itself later (tour or this card) */ }
+  else if (B2.tourAuto && (B2.tourPages || []).includes(B2.page) && !tSeen.includes(B2.page)) seen.add(here); else want(here);
   if (here === "page:history") { seen.add("page:rec"); }
   // a settings topic opened the first time
   const t0 = Date.now();                                    // sections the page opens by itself at the start do not count

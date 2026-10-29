@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_32.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_33.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,11 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.33: Ein Guide nach der Installation (zuerst «Schnell oder ausgiebig?»), Rundgänge mit Sprechblasen auf allen Reitern
+    («?» startet neu), Einfach/Experte pro Seite, Karten «Tipps & Tricks», «?» an den Einstellungen, Tipp des Tages; geschützte
+    Werkseinstellungen (WLAN, Fernzugang, ntfy, Updates, KI-Modell bleiben). Rückmeldung 💬 von jeder Seite (Art, Sterne, Bild,
+    geht an beide ntfy-Server), «Über MoveEye» (Versionsnummer antippen). QR-Codes neben den Links und eine QR-Galerie unter
+    Mehr.
   * 2.98.32: Controller-Ansicht für Handy und Tablet: mit Bluetooth-Controller (oder Knopf 🎮) Live-Bild und nacktes
     Simulator-Bild über- bzw. nebeneinander, tauschbar; Gesten auf dem Simulator-Bild (drehen, zoomen, Ansicht wechseln);
     schlanke Leiste (Licht, IR, Wärmebild, Nachtsicht, Markieren, Foto, Aufnahme, Folgen); linker Stick Kopf, rechter Stick
@@ -936,10 +941,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_32.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_33.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_32.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_32.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_33.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_33.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -956,7 +961,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.32"
+APP_VERSION = "2.98.33"
 
 
 def default_data_dir():
@@ -3035,19 +3040,8 @@ def save_settings():
     _save_timer = threading.Timer(wait, go); _save_timer.daemon = True; _save_timer.start()
 
 
-def reset_settings():
-    for k, v in DEFAULTS.items():
-        if k not in VOLATILE and k not in ("pan", "tilt", "source", "ip_sources", "extra_cams", "latitude", "longitude",
-                                           "presence_hosts", "telegram_token", "telegram_chat", "public_url", "notify_url", "notify_type",
-                                           "pushover_user", "pushover_token", "email_to", "email_host", "email_port", "email_user",
-                                           "email_password", "email_from", "shortcut_token",
-                                           "web_ui", "ui_open", "ui_hidden", "theme", "lang"):
-            CFG[k] = v
-    WAYPOINTS.clear()
-    RELAYS[:] = default_relays()
-    ZONES.clear(); SCHEDULES.clear(); SCHED["base"].clear(); SCHED["manual"].clear(); SCHED["last"] = {}; SCHED["active"] = []
-    save_settings_now()
-    log_event("sys", "Settings reset to defaults")
+# «Reset settings» (before: a plain confirm, also removed the password) is now «Reset to factory settings» with password /
+# PIN, a typed word and a backup copy: factory_reset() in 586.
 
 
 # ----------------------------------------------------------------------------
@@ -9190,7 +9184,7 @@ def use_case_set(u, who="web"):
 
 def simple_hidden(key, sec=None):
     """True when Simple is on and this setting (or section) belongs to Expert only."""
-    if not CFG.get("ui_simple"):
+    if not ui_simple_now():                          # the choice of the page (586) or the default
         return False
     if sec is not None and sec in USE_HIDE.get(CFG.get("use_case") or "", ()):
         return True
@@ -10068,7 +10062,7 @@ def sim_hub(force=False):
             d["rover"] = None
         d["rover_alarm"] = bool(CFG.get("rover_alarm"))
     d["demo"] = {"busy": DEMO_RUN["busy"], "i": DEMO_RUN["i"], "n": DEMO_RUN["n"]}
-    d["simple"] = bool(CFG.get("ui_simple"))                # 2.98.14: «Simple» shows the assistant instead of the single tools
+    d["simple"] = page_simple("sim")                      # 2.98.14: «Simple» shows the assistant instead of the single tools
     d["tune"] = {"busy": TUNEA["busy"], "step": TUNEA["step"], "last": bool(TUNEA.get("last"))}
     d["devices"] = len(CFG.get("fleet") or [])
     if d.get("ok"):                                         # the twin, back from the simulator (place, mast)
@@ -10345,7 +10339,7 @@ SIMHUB_JS = r"""
     if (full) { [["world", "🌍 " + tt("World")], ["test", "🧪 " + tt("Testing")], ["learn", "🎓 " + tt("Learning")], ["play", "🎮 " + tt("Playing")]].forEach(([id, h]) => {
         if (G[id].children.length) box.append(E("div", "shubh", h), G[id]); });
       const sx = B(H.simple ? "🧰 " + tt("Show all tools («Expert»)") : "🎯 " + tt("Only the assistant («Simple»)"), async () => {
-        try { await fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !H.simple})}); } catch (e) {} H.simple = !H.simple; paintAll(); });
+        try { await fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !H.simple, page: "sim"})}); } catch (e) {} H.simple = !H.simple; paintAll(); });
       sx.style.cssText = "margin-top:10px;font-size:12px"; box.appendChild(sx); }   // 2.98.14: four groups, Simple / Expert
     else box.appendChild(g);
     if (open && full && G[GRP[open] || "world"].parentNode) { const hold = E("div"); G[GRP[open] || "world"].after(hold); sheet(hold, open); }   // the sheet right under its group
@@ -23460,7 +23454,7 @@ def tune_assist_state(lang=None):
                     "total": run.get("total_s") if isinstance(run, dict) else None},
             "missing": tune_assist_check(L), "last": last, "score": runs[-1]["score"] if runs else None,
             "keys": {k: bool(CFG.get(k)) for k in TUNEA_KEYS}, "train_hour": int(CFG.get("train_hour", 1)),
-            "auto_status": str(STATE.get("auto_status") or ""), "simple": bool(CFG.get("ui_simple")), "sim_on": bool(CFG.get("sim_on"))}
+            "auto_status": str(STATE.get("auto_status") or ""), "simple": page_simple("sim"), "sim_on": bool(CFG.get("sim_on"))}
 
 
 # ---- the page part (main page: Einstellungen → Erkennung; Simulator tab: tile «Erkennung verbessern») ------------------------
@@ -27212,6 +27206,10 @@ class SimLink:
                     follow_set(bool(mc_.get("on")), "simulator")
                 elif op_ == "light":                        # 2.95.103: the white light from the simulator (on / off)
                     light_set("white", "on" if mc_.get("on") else "auto")
+                elif op_ == "feedback":                     # 2.98.33: «Rückmeldung an den Entwickler» in the simulator (584)
+                    threading.Thread(target=lambda m=dict(mc_): feedback_send(m.get("kind"), m.get("text"), str(m.get("contact") or "")[:120], True, m.get("stars"),
+                                     "3D-Simulator " + str(m.get("sim") or "")[:12], feedback_shot("sim") if m.get("shot") else None, "simulator"),
+                                     daemon=True, name="simfeedback").start()
         le = int(rep_.get("last_event") or 0)
         if le > SIM["seen_event"]:
             data, _ = _sim_get(f"/events?since={SIM['seen_event']}")
@@ -28230,14 +28228,21 @@ def sms_send(text, force=False):
 #   destination is not shown). Sent by the Pi; without internet it waits and is sent later.
 # ----------------------------------------------------------------------------
 _FB_DEST = "aHR0cHM6Ly9udGZ5LW1lLmNvbS9tdy1mYi0xYzE3ZTFkMWViNWZhMmFhZTQ5Nw=="
-FEEDBACK = {"sent": [], "lock": threading.Lock()}
+_FB_DEST2 = "aHR0cHM6Ly9udGZ5LnNoL213LWZiLTFjMTdlMWQxZWI1ZmEyYWFlNDk3"      # 2.98.33: the same topic on a second server - sent to both, one is enough
+FEEDBACK = {"sent": [], "lock": threading.Lock(), "err": {}, "log_t": {}, "ok_t": 0.0, "test_t": 0.0}
 
 
 def _fb_file():
     return os.path.join(DATA_DIR, "feedback_outbox.json")
 
 
-def feedback_send(kind, text, contact="", diag=False):
+FB_KINDS = {"bug": "Fehler", "idea": "Wunsch", "praise": "Lob", "question": "Frage", "other": "Feedback"}   # 2.98.33: + «Frage»
+FB_SHOT_MAX = 350 * 1024               # 2.98.33: a screenshot as ntfy attachment (the ntfy servers allow several MB; small = quick on mobile)
+
+
+def feedback_send(kind, text, contact="", diag=False, stars=0, page="", shot=None, src="web"):
+    """2.98.33 (584): + satisfaction 1-5 stars, the page / place it was written on, the version (always) and an optional
+    screenshot (JPEG bytes, faces pixelated by feedback_shot). Anonymous as before: no address, no name unless written."""
     text = str(text or "").strip()[:3000]
     if len(text) < 3:
         return False, "please write a few words"
@@ -28245,19 +28250,52 @@ def feedback_send(kind, text, contact="", diag=False):
     FEEDBACK["sent"] = [x for x in FEEDBACK["sent"] if now - x < 3600]
     if len(FEEDBACK["sent"]) >= 5:
         return False, "at most 5 messages per hour"
-    kind = kind if kind in ("idea", "bug", "praise", "other") else "other"
+    kind = kind if kind in FB_KINDS else "other"
+    try:
+        stars = max(0, min(5, int(stars or 0)))
+    except (TypeError, ValueError):
+        stars = 0
+    page = re.sub(r"[^\w ./#:+\-]", "", str(page or ""))[:40]
+    src = src if src in ("web", "window", "simulator") else "web"
     body_ = text + (("\n\nKontakt: " + str(contact)[:120]) if contact else "")
+    if stars:
+        body_ += "\n\nZufriedenheit: " + "★" * stars + "☆" * (5 - stars) + f" ({stars}/5)"
+    where = {"web": "Web", "window": "Fenster", "simulator": "3D-Simulator"}[src]
+    body_ += f"\n\n— MoveEye {APP_VERSION} · {where}" + (f" · Seite: {page}" if page else "")
     if diag:
         imp = [e for e in STATE["events"] if e.get("imp")][:8]
         body_ += (f"\n\n--- Technik ---\nVersion {APP_VERSION} · Python {sys.version.split()[0]} · {platform_model()} · "
                   f"Sprache {CFG['lang']} · Laufzeit {int((now - START) / 3600)} h\n" + "\n".join(f"{e.get('t', '')} {e.get('text', '')[:140]}" for e in imp))
-    msg = {"kind": kind, "body": body_, "t": datetime.now().isoformat(timespec="seconds")}
+    msg = {"kind": kind, "body": body_, "t": datetime.now().isoformat(timespec="seconds"), "stars": stars}
+    if shot and len(shot) <= FB_SHOT_MAX:
+        try:
+            os.makedirs(_fb_shot_dir(), exist_ok=True)
+            msg["img"] = uuid.uuid4().hex[:12]
+            with open(os.path.join(_fb_shot_dir(), msg["img"] + ".jpg"), "wb") as f:
+                f.write(shot)
+        except OSError:
+            msg.pop("img", None)
     FEEDBACK["sent"].append(now)
     with FEEDBACK["lock"]:
-        box = _fb_load(); box.append(msg); _fb_save(box[-20:])
+        box = _fb_load(); box.append(msg); _fb_save(box[-20:]); _fb_shots_tidy(box[-20:])
     threading.Thread(target=feedback_flush, daemon=True).start()
     log_event("web", "Feedback written - it is sent to the developer (also later, when there is internet)")
     return True, ""
+
+
+def _fb_shot_dir():
+    return os.path.join(DATA_DIR, "feedback_shots")
+
+
+def _fb_shots_tidy(box):
+    """screenshots of messages that are no longer waiting are deleted"""
+    keep = {m.get("img") for m in box if m.get("img")}
+    try:
+        for fn in os.listdir(_fb_shot_dir()):
+            if fn[:-4] not in keep:
+                os.remove(os.path.join(_fb_shot_dir(), fn))
+    except OSError:
+        pass
 
 
 def _fb_load():
@@ -28276,28 +28314,87 @@ def _fb_save(box):
         pass
 
 
-def feedback_flush():
-    """Send what is waiting. Called after writing and every 10 minutes."""
+def _fb_urls():
     import base64
+    return [base64.b64decode(x).decode() for x in (_FB_DEST, _FB_DEST2)]
+
+
+def _fb_host(u):
+    return u.split("/")[2] if u.count("/") >= 2 else u
+
+
+def _fb_req(url, data, headers, method):
+    """one request to one server: True / False; the reason of a failure is kept (no topic, no secret) and logged once per hour"""
+    host = _fb_host(url)
+    try:
+        req = urllib.request.Request(url, data=data, method=method, headers=headers)
+        with urllib.request.urlopen(req, timeout=30 if method == "PUT" else 15) as r:
+            if r.status < 300:
+                FEEDBACK["err"].pop(host, None); FEEDBACK["ok_t"] = time.time()
+                return True
+            why = f"HTTP {r.status} {r.reason}"
+    except urllib.error.HTTPError as e:
+        why = f"HTTP {e.code} {e.reason}"
+    except Exception as e:
+        why = (type(e).__name__ + ": " + str(getattr(e, "reason", "") or e))[:120]
+    FEEDBACK["err"][host] = {"why": why, "t": time.time()}
+    if time.time() - FEEDBACK["log_t"].get(host, 0) > 3600:
+        FEEDBACK["log_t"][host] = time.time()
+        log_event("web", f"Feedback: {host} refused ({why}) - tried again later")
+    return False
+
+
+def feedback_flush():
+    """Send what is waiting. Called after writing and every 10 minutes. 2.98.33: to both servers (ntfy-me.com and
+    ntfy.sh, same topic); a message counts as sent when one server took it; the picture goes to the same server(s)."""
     with FEEDBACK["lock"]:
         box = _fb_load()
         if not box:
             return
-        url = base64.b64decode(_FB_DEST).decode()
+        urls = _fb_urls()
         left = []
         for m in box:
-            title = {"idea": "Idee", "bug": "Fehler", "praise": "Lob", "other": "Feedback"}[m.get("kind", "other")]
-            try:
-                req = urllib.request.Request(url, data=m["body"].encode(), method="POST",
-                                             headers={"Title": _hdr("MoveEye – " + title), "Tags": {"bug": "bug", "idea": "bulb", "praise": "star"}.get(m.get("kind"), "speech_balloon")})
-                with urllib.request.urlopen(req, timeout=15) as r:
-                    if r.status >= 300:
-                        left.append(m)
-            except Exception:
-                left.append(m)
-        _fb_save(left)
+            title = "MoveEye – " + FB_KINDS.get(m.get("kind"), "Feedback") + ((" " + "★" * int(m["stars"])) if m.get("stars") else "")
+            tags = {"bug": "bug", "idea": "bulb", "praise": "star", "question": "question"}.get(m.get("kind"), "speech_balloon")
+            if not m.get("text_sent"):
+                oks = [i for i, u in enumerate(urls) if _fb_req(u, m["body"].encode(), {"Title": _hdr(title), "Tags": tags}, "POST")]
+                if not oks:
+                    left.append(m); continue
+                m["text_sent"] = True; m["dests"] = oks
+            if m.get("img"):                             # 2.98.33: the screenshot as a second message with the picture attached
+                try:
+                    with open(os.path.join(_fb_shot_dir(), m["img"] + ".jpg"), "rb") as f:
+                        jpg = f.read()
+                except OSError:
+                    jpg = b""
+                if jpg:
+                    h = {"Title": _hdr(title + " · Bildschirmfoto"), "Tags": "camera", "Filename": "moveeye_rueckmeldung.jpg",
+                         "Message": _hdr("Bildschirmfoto zur Rückmeldung von " + str(m.get("t", ""))[:16].replace("T", " ")), "Content-Type": "image/jpeg"}
+                    if not [i for i in (m.get("dests") or [0, 1]) if i < len(urls) and _fb_req(urls[i], jpg, h, "PUT")]:
+                        left.append(m); continue
+        _fb_save(left); _fb_shots_tidy(left)
         if len(left) < len(box):
             log_event("web", f"Feedback sent ({len(box) - len(left)})")
+
+
+def feedback_status():
+    """for the dialog: how many messages wait, the last refusal per server (host only)"""
+    box = _fb_load()
+    errs = [{"host": h, "why": e["why"], "t": e["t"]} for h, e in FEEDBACK["err"].items()]
+    return {"waiting": len(box), "errors": errs, "ok_t": FEEDBACK["ok_t"]}
+
+
+def feedback_test():
+    """«Send a test feedback» (developer): one short message to each server, the result per server; not kept"""
+    if time.time() - FEEDBACK["test_t"] < 20:
+        return False, "wait a moment", []
+    FEEDBACK["test_t"] = time.time()
+    res = []
+    for u in _fb_urls():
+        ok = _fb_req(u, f"Test-Feedback von MoveEye {APP_VERSION} ({datetime.now().strftime('%d.%m.%Y %H:%M')})".encode(),
+                     {"Title": _hdr("MoveEye – Test-Feedback"), "Tags": "test_tube"}, "POST")
+        res.append({"host": _fb_host(u), "ok": ok, "why": "" if ok else FEEDBACK["err"].get(_fb_host(u), {}).get("why", "")})
+    return any(r["ok"] for r in res), "", res
 
 
 def platform_model():
@@ -28908,7 +29005,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_32.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_33.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -29418,8 +29515,6 @@ def lock_allows(path, method, data):
         return False
     d = data or {}
     if path in ("/api/set", "/api/text") and d.get("key") in LOCK_DENY_KEYS:
-        return False
-    if path == "/api/action" and d.get("action") == "reset_settings":
         return False
     return True
 
@@ -42092,7 +42187,11 @@ def guide_js(active):
     data = {"active": active, "level": guide_level(), "ver": APP_VERSION,
             "tips": [{"k": k, "l": lv, "v": v, "te": te, "xe": xe, "td": td, "xd": xd} for k, lv, v, te, xe, td, xd in GUIDE_TIPS],
             "ui": GUIDE_UI}
-    return "window.MW_GUIDE=" + json.dumps(data, ensure_ascii=False).replace("</", "<\\/") + ";\n" + GUIDE_JS
+    g2 = {"page": g2_page_key(active), "tourAuto": bool(CFG.get("tours_auto", True)), "tourPages": sorted(G2_TOURS),
+          "setupDone": bool(CFG["setup_done"]), "guide": {k: (CFG.get("guide2") or {}).get(k) for k in ("mode", "paused", "finished", "step")},
+          "simple": bool(CFG.get("ui_simple")), "lock": bool(CFG.get("lock_on"))}
+    return ("window.MW_GUIDE=" + json.dumps(data, ensure_ascii=False).replace("</", "<\\/") + ";\n"
+            + "window.MW_G2B=" + json.dumps(g2, ensure_ascii=False).replace("</", "<\\/") + ";\n" + GUIDE_JS + G2_LOADER_JS)
 
 
 GUIDE_JS = r"""
@@ -42159,7 +42258,10 @@ GUIDE_JS = r"""
   const act = G.active === "history" ? "rec" : G.active;
   const here = "page:" + act;
   if (act === "rec" && tip["page:history"] && !seen.has("page:history")) want("page:history");
-  want(here);
+  const B2 = window.MW_G2B || {};                          // 586: the tour of this page starts on the first visit - then no extra card
+  let tSeen = []; try { tSeen = JSON.parse(localStorage.getItem("mw-tours-seen") || "[]"); } catch (e) {}
+  if (!B2.setupDone) { /* the setup guide runs first - the page explains itself later (tour or this card) */ }
+  else if (B2.tourAuto && (B2.tourPages || []).includes(B2.page) && !tSeen.includes(B2.page)) seen.add(here); else want(here);
   if (here === "page:history") { seen.add("page:rec"); }
   // a settings topic opened the first time
   const t0 = Date.now();                                    // sections the page opens by itself at the start do not count
@@ -42167,6 +42269,749 @@ GUIDE_JS = r"""
     const v = d.dataset && d.dataset.view; if (v && v.startsWith("sec:")) want(v); }, true);
   const start = () => { paintDots(); setTimeout(paintDots, 2500); setTimeout(paintDots, 6000); };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+})();
+"""
+# ----------------------------------------------------------------------------
+# The logic is in 586 (state of the guide, help texts, tip of the day, factory reset), the window in 584. Every page loads
+# /g2/ui.js?lang=xx once (the loader is at the end of guide_js, 515). The texts come translated with the script.
+# ----------------------------------------------------------------------------
+def g2_page_key(active):
+    a = str(active or "")
+    return "history" if a in ("rec", "history") else a
+
+
+# tours: page -> [(CSS selector (first visible one), English title, English text)]; missing / hidden controls are left out
+G2_TOURS = {
+    "live": [("#vcard, #video", "The live picture", "What the camera sees right now. Double-tap = only the picture, big."),
+             ("#lv-joy, #stick", "Turn the head", "With the joystick you turn the camera head. Tapping into the picture makes it look there."),
+             ("#qsw", "Quick switches", "Recording, photo, follow, patrol, light, infrared and thermal picture - one tap each."),
+             ("#b-arm", "The state", "Off · Watchful · Full: tap here to switch the protection."),
+             ("nav.nav", "The six tabs", "Live · Protection · History · Settings · Simulator · More. The «?» at the top shows this tour again.")],
+    "protect": [("#protect-box", "Protection level", "Off, Watchful (only messages) or Full (light, siren). The traffic light says what is still missing."),
+                ("#pr-night", "Guard tonight", "One tap: everything for the night - and off again in the morning."),
+                ("#pr-wt", "Walk test", "Walk past the camera: MoveEye beeps at every detection and shows how far it sees you."),
+                ("#mode-box", "Mode", "Camping, home, wildlife … the mode decides what MoveEye does by itself."),
+                ("nav.subnav a[href='/zones']", "Zones", "Draw areas into the picture: ignore the road, privacy, sleeping place.")],
+    "history": [("#statcard", "Overview", "How many alarms, when and where - for the last days."),
+                ("#f-kind, #f-q", "Filter", "Only persons, only animals, a day or a word - find a recording quickly."),
+                ("#btn-fav", "Favourites", "⭐ keeps a recording for ever; the others are deleted when the memory is full."),
+                ("nav.subnav", "More history", "Night timeline, animal diary, message list and log.")],
+    "settings": [("#srch", "Search", "Type a word - every setting is found, sorted by topic."),
+                 ("#simplebar", "Simple or Expert", "«Simple» shows only the important settings - for this page. «Expert» shows all."),
+                 ("#settings", "Topics", "Open a topic to change it. Changes are saved at once."),
+                 ("#settings .g2-q", "The «?»", "Next to a setting: what it does and what we recommend."),
+                 ("nav.subnav a[href='/cams']", "Cameras", "Choose the camera, add a second one, check the thermal picture.")],
+    "sim": [("#c-conn", "Connection", "The 3D simulator runs on a PC. Here MoveEye connects to it."),
+            ("#c-status", "State", "Is the simulator connected, which version, which scene."),
+            ("#c-prev", "Preview and control", "The picture of the simulation - move the camera, walk a person, change the weather."),
+            ("#c-hub, #simhub", "Simulator centre", "Tests, «Improve detection», training night - MoveEye learns without the real place."),
+            ("#c-game", "Team against MoveEye", "A game for guests: who gets past MoveEye unseen?")],
+    "more": [("#games", "Games", "«Open all games»: game corner, game collection and the simulator game with one QR code."),
+             ("a.mi[href='/help']", "Manual", "Everything explained, with a search - and a quick guide to print."),
+             ("#g2-more", "Setup and help", "Start or continue the setup, show the tours again, tip of the day."),
+             ("#g2-sys", "System", "Reset to factory settings - with a copy of the old settings first."),
+             ("a.mi[href='/tools']", "Tools", "Network test, servo test, diagnosis and more.")],
+}
+# «Tipps & Tricks» per page: (s = Simple and Expert, e = only Expert, English text)
+G2_TT = {
+    "live": [("s", "Double-tap the picture = only the picture, big. Double-tap again = back."),
+             ("s", "Tap into the picture: the head looks there (with a pan / tilt head)."),
+             ("e", "«◫ View»: layout, picture size, favourite buttons and cards - for this device or for all."),
+             ("e", "⇱ or F11: full screen, e.g. for a tablet on the table.")],
+    "protect": [("s", "«Guard tonight» switches everything on for the night and off again in the morning."),
+                ("s", "Before the first night: a walk test shows how far MoveEye recognises you."),
+                ("e", "A PIN for disarming: three wrong PINs give a theft alarm with a picture."),
+                ("e", "Draw the road as «ignore» under Zones - that saves many false alarms.")],
+    "history": [("s", "⭐ keeps a recording for ever - old ones are deleted when the memory is full."),
+                ("s", "Mark a false alarm: MoveEye learns from it (with the simulator)."),
+                ("e", "The night timeline shows the whole night at one glance."),
+                ("e", "The log explains why MoveEye did something.")],
+    "settings": [("s", "The «?» next to a setting explains it and says what we recommend."),
+                 ("s", "The search at the top finds every setting quickly."),
+                 ("e", "«Expert» is only for this page - the other pages stay as they are."),
+                 ("e", "Keep a copy of your settings: System → 💾 Settings file → ⬇ Save settings.")],
+    "sim": [("s", "Test without the real place: day, night, weather, animals and people in the 3D simulator."),
+            ("s", "«Improve detection» tries changes and keeps only what is clearly better."),
+            ("e", "Team against MoveEye: the guests try to get past MoveEye unseen.")],
+    "more": [("s", "Print the quick guide (1 page) with the QR codes and keep it in the camper."),
+             ("s", "See the tours and tips again: «Reset all tours» below."),
+             ("e", "Factory settings: Wi-Fi, remote access, the push channel and the own AI model stay.")],
+    "zones": [("s", "Draw the road as «ignore»: passing cars then give no alarm."),
+              ("s", "Privacy zones are black and never recorded."),
+              ("e", "A line gives an alarm only when somebody crosses it.")],
+    "cams": [("s", "Picture upside down? Settings → Camera → turn the picture."),
+             ("e", "Add a second camera (USB or network) as an overview.")],
+    "place": [("s", "Set up the place every time you put MoveEye somewhere new: it looks round and suggests zones."),
+              ("e", "The waypoints of the patrol come straight from the look round.")],
+    "tools": [("s", "The network test shows whether the Wi-Fi is good enough for the live picture."),
+              ("e", "The diagnosis package helps the developer when something does not work.")],
+}
+G2_MODE_PAGES = ("history", "zones", "cams", "place", "tools")      # a small Simple / Expert switch on top (settings / protect have theirs)
+G2_UI = [
+    "Tour of this page", "Next", "Skip", "Done", "Back", "Later", "Continue later", "Tips & tricks", "Simple", "Expert", "View of this page:",
+    "Recommended", "Close", "Tip of the day", "Show me", "Not now", "Tip of the day off", "Step", "of",
+    "Quick (about 5 min.) or thorough?", "Quick", "about 5 minutes", "In depth", "about 20 to 30 minutes",
+    "Basics, push messages to the phone, camera test and place, protection and walk test.",
+    "Everything of «Quick» plus zones, night time, light and siren, head, AI model, thermal camera, battery, simulator - each step can be skipped.",
+    "Welcome to MoveEye", "Every step can be skipped. You can stop at any time and continue later (More → Setup).",
+    "Language", "Name of this device (optional)", "e.g. camper, garden", "Time and place", "Time on MoveEye", "on this device",
+    "🕒 Take the time of this device", "📍 Location of this device", "Latitude", "Longitude", "Location: only on a secure page (https) - or type it.",
+    "Password for this page", "Without a password everybody in the same network (and with the link) can watch and switch everything.",
+    "Password (6-64 characters)", "Repeat password", "Continue without a password (not recommended)", "The passwords are not the same",
+    "A password is set already. Enter a new one only to change it.", "The password was given on the command line (--web-password).",
+    "The page now asks once for the new password (user name: anything) and then continues here.",
+    "1. Install the free app «ntfy» (App Store / Play Store).",
+    "2. In the app: + → enter the topic below (and the server, if it is not the default one) - or open this code with the phone camera.",
+    "Server", "Topic (like a secret channel name)", "📨 Send test message", "Sent - did it arrive on the phone?", "The push channel is set up already:",
+    "Is the picture right? Upright, sharp, the place in view?", "No picture yet.", "📷 Choose the camera", "🎮 Use the 3D simulator as camera",
+    "Address of the simulator", "Connecting …", "📐 Set up the place", "MoveEye looks round once and suggests zones, paths and the things to guard (a few minutes). Then come back here.",
+    "frames/s", "Who should see «Simple» - and what is MoveEye for?", "Default of every page (each page can switch by itself).",
+    "What is MoveEye for?", "Camping: tent, caravan", "House and garden", "Watching animals", "Holiday house, alpine hut", "In the room: wake-up alarm", "everything (not chosen)",
+    "Draw areas into the picture: ignore the road, privacy, the sleeping place for the wake-up alarm, a line.", "✏ Draw the zones",
+    "State of the protection", "Everything ready.", "Still missing:", "Switch on now?", "Leave it off", "Watchful", "Full", "switches on at once (with the countdown)",
+    "🚶 Start walk test", "■ Stop", "Walk past the camera like a visitor - MoveEye beeps at every detection. 3 minutes, no alarms meanwhile.", "left", "recognised",
+    "Night report in the morning", "End of the night time", "o'clock", "🕘 Schedules", "Schedules switch features by themselves, e.g. the protection every night.",
+    "💡 Light 3 s", "🌙 Infrared 3 s", "🔊 Test sound", "🚨 Siren 2 s", "Loud! Warn the neighbours first.",
+    "◎ Centre", "◀ ▶ Turn a little", "Direction of turning wrong? Swap it:", "Invert pan direction", "Invert tilt direction", "🛠 Servo test (tools)",
+    "AI detection", "The AI says «person», «animal», «car». It runs on the Pi or on a helper PC.", "Own AI model",
+    "Thermal picture over the live picture", "Alarm from the thermal camera", "Battery", "Battery saving automatic", "charge",
+    "no battery", "Powerbank capacity", "Fast updates (development)", "🔋 Charged full now",
+    "The 3D simulator on the PC tests MoveEye without the real place. Optional.", "🔌 Connect", "connected", "not connected",
+    "Tours and tips", "Tour of a page on its first visit", "Tip of the day", "Explanations the first time something is opened",
+    "off", "basic", "normal", "all", "Done!", "Done", "skipped", "skipped automatically", "Open MoveEye on other devices with these codes. On the phone: Share → «Add to Home Screen» - then it starts like an app.",
+    "Home network", "Own Wi-Fi of the device", "On the road (Tailscale)", "🖨 Quick start card with QR codes", "Let's go", "➕ Set up more (thorough)",
+    "↩ Back to the setup", "Setup", "Setup finished.", "Setup paused - step", "never done", "🧭 Start the setup", "🧭 Continue the setup", "🧭 Setup again",
+    "↺ Reset all tours", "All tours will show again.", "System", "⚠ Reset to factory settings …", "Copies of the old settings", "⬇",
+    "Reset to factory settings", "Back to the factory settings:", "all settings, zones, schedules, waypoints, password, users, PIN, the place",
+    "These stay:", "Wi-Fi and own Wi-Fi, remote access (Tailscale), the push channel (ntfy), the update settings, the own AI model and what it learned",
+    "These are deleted:", "all recordings and photos, the animal diary, the log", "First a copy of the old settings is saved - you can download it below.",
+    "Your password", "Your PIN", "Type {w} to confirm", "Reset now", "Reset done.", "Copy of the old settings:", "Start the setup",
+    "error", "Setup assistant", "Help", "on", "optional", "ok", "Saved",
+]
+
+
+def g2_js(L):
+    T = lambda s: tr(s, L)
+    tours = {p: [{"s": s, "t": T(a), "x": T(b)} for s, a, b in v] for p, v in G2_TOURS.items()}
+    tt = {p: [{"l": lv, "x": T(x)} for lv, x in v] for p, v in G2_TT.items()}
+    tx = {s: T(s) for s in G2_UI}
+    data = {"lang": L, "tx": tx, "tours": tours, "tt": tt, "help": g2_help(L), "modePages": list(G2_MODE_PAGES), "ver": APP_VERSION}
+    return "window.MW_G2D=" + json.dumps(data, ensure_ascii=False).replace("</", "<\\/") + ";\n" + G2_JS
+
+
+G2_LOADER_JS = r"""
+(function () {                                     // 586: guide 2 (tours, tips, setup, factory reset) - one script for every page
+  if (window._g2l) return; window._g2l = true;
+  let L = "de"; try { L = (typeof LANG !== "undefined" && LANG) || localStorage.getItem("mw-lang") || "de"; } catch (e) {}
+  const s = document.createElement("script"); s.src = "/g2/ui.js?v=" + encodeURIComponent((window.MW_GUIDE || {}).ver || "") + "&lang=" + encodeURIComponent(L); s.defer = true;
+  (document.head || document.documentElement).appendChild(s);
+})();
+"""
+
+G2_JS = r"""
+(function g2() {
+  if (window._g2) return; window._g2 = true;
+  const D = window.MW_G2D || {tx: {}, tours: {}, tt: {}, help: {}}, B = window.MW_G2B || {};
+  const T = k => D.tx[k] || k;
+  const PG = B.page || "";
+  const LG = () => { try { return (typeof LANG !== "undefined" && LANG) || D.lang || "de"; } catch (e) { return D.lang || "de"; } };
+  const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
+  const BT = (text, cls, fn) => { const b = E("button", cls || "", text); b.type = "button"; if (fn) b.onclick = fn; return b; };
+  const J = async (u) => { try { return await (await fetch(u, {cache: "no-store"})).json(); } catch (e) { return null; } };
+  const P = async (u, b) => { try { const r = await fetch(u, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: LG()}, b || {}))});
+    let j = {}; try { j = await r.json(); } catch (e) { j = {ok: false, error: "HTTP " + r.status}; } if (r.status >= 400 && j.ok !== false) j.ok = false; return j; } catch (e) { return {ok: false, error: String(e)}; } };
+  const LSget = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
+  const LSset = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  const css = E("style");
+  css.textContent = `
+.g2-q{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;min-height:0!important;min-width:0;padding:0!important;margin:0 0 0 6px;border-radius:50%!important;border:1px solid var(--line,#2a3646)!important;background:transparent!important;color:var(--mut,#9fb0c3)!important;font-size:12px!important;font-weight:700;line-height:1;cursor:pointer;vertical-align:middle;flex:none;box-shadow:none!important}
+.g2-q:hover,.g2-q:focus-visible{color:var(--acc,#3d8bff)!important;border-color:var(--acc,#3d8bff)!important}
+#g2-pop{position:fixed;z-index:265;width:min(340px,calc(100vw - 24px));background:var(--panel,#111822);color:var(--txt,#e8eef5);border:1px solid var(--line,#1f2b3a);border-left:4px solid var(--acc,#3d8bff);border-radius:12px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.45);font-size:14px;line-height:1.4}
+#g2-pop b{display:block;margin-bottom:4px;padding-right:22px}#g2-pop .r{margin-top:6px;color:var(--grn,#3ecf8e)}#g2-pop .d{margin-top:4px;color:var(--mut,#9fb0c3);font-size:12px}
+#g2-pop .x{position:absolute;top:4px;right:6px;background:none!important;border:0!important;color:var(--mut,#9fb0c3);min-height:0;padding:2px 6px;font-size:16px}
+#g2-ov{position:fixed;inset:0;z-index:280;background:transparent}
+#g2-spot{position:fixed;z-index:281;border-radius:12px;box-shadow:0 0 0 200vmax rgba(0,0,0,.64);outline:3px solid var(--acc,#3d8bff);outline-offset:2px;transition:left .25s ease,top .25s ease,width .25s ease,height .25s ease;pointer-events:none}
+#g2-bub{position:fixed;z-index:282;width:min(340px,calc(100vw - 24px));background:var(--panel,#111822);color:var(--txt,#e8eef5);border:1px solid var(--line,#1f2b3a);border-radius:14px;padding:12px 14px;box-shadow:0 12px 40px rgba(0,0,0,.55);box-sizing:border-box}
+#g2-bub b{display:block;font-size:16px;margin-bottom:4px}#g2-bub p{margin:0 0 12px;font-size:14px;line-height:1.45;color:var(--mut,#9fb0c3)}
+#g2-bub .gb{display:flex;gap:8px;align-items:center}#g2-bub .n{margin-right:auto;font-size:12px;color:var(--mut,#9fb0c3)}
+#g2-bub .dots{display:flex;gap:4px;margin-right:auto}#g2-bub .dots i{width:7px;height:7px;border-radius:50%;background:var(--line,#2a3646)}#g2-bub .dots i.on{background:var(--acc,#3d8bff)}
+#g2-help{font-weight:800}
+details.g2-tt{margin:0 0 12px;border:1px solid var(--line,#1f2b3a);border-radius:14px;background:var(--panel,#111822);padding:0 14px}
+details.g2-tt>summary{cursor:pointer;padding:11px 0;font-weight:700;list-style:none}details.g2-tt>summary::-webkit-details-marker{display:none}
+details.g2-tt>summary::after{content:"▸";float:right;color:var(--mut,#9fb0c3)}details.g2-tt[open]>summary::after{content:"▾"}
+details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0;line-height:1.4;font-size:14px}details.g2-tt li.e::marker{content:"◆ ";color:var(--acc,#3d8bff)}
+.g2-modebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px;font-size:13px;color:var(--mut,#9fb0c3)}
+.g2-seg{display:inline-flex;border:1px solid var(--line,#2a3646);border-radius:999px;overflow:hidden}
+.g2-seg button{border:0!important;border-radius:0!important;min-height:0!important;padding:5px 12px!important;background:transparent!important;color:var(--txt,#e8eef5)!important;font-size:13px;box-shadow:none!important}
+.g2-seg button.on{background:var(--acc,#3d8bff)!important;color:#fff!important}
+.g2m{position:fixed;inset:0;z-index:270;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:10px}
+.g2m .wc{background:var(--panel,#111822);color:var(--txt,#e8eef5);border:1px solid var(--line,#1f2b3a);border-radius:16px;max-width:560px;width:100%;max-height:94vh;max-height:94dvh;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box}
+.g2m .wh{padding:12px 16px 6px}.g2m .wb{padding:4px 16px 12px;overflow-y:auto;flex:1}.g2m .wf{display:flex;gap:8px;padding:10px 16px 14px;border-top:1px solid var(--line,#1f2b3a);flex-wrap:wrap;justify-content:flex-end}
+.g2m .wf .sp{margin-right:auto}
+.g2m .pb{height:6px;border-radius:3px;background:var(--line,#1f2b3a);overflow:hidden;margin:6px 0 2px}.g2m .pb i{display:block;height:100%;background:var(--acc,#3d8bff);transition:width .3s}
+.g2m .st{font-size:12px;color:var(--mut,#9fb0c3);display:flex;justify-content:space-between;gap:8px}
+.g2m .later{background:none!important;border:0!important;color:var(--mut,#9fb0c3)!important;font-size:13px;padding:2px 4px!important;min-height:0!important;box-shadow:none!important}
+.g2m h2{font-size:19px;margin:8px 0 6px}.g2m p{margin:6px 0;line-height:1.45}.g2m label.l{display:block;margin:12px 0 4px;font-weight:600}
+.g2m input[type=text],.g2m input[type=password],.g2m input[type=number],.g2m select{width:100%;box-sizing:border-box;padding:9px 11px;border-radius:10px}
+.g2m .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.g2m .row2{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.g2m .big{display:block;width:100%;text-align:left;padding:14px!important;margin:0 0 10px;border-radius:14px;height:auto}.g2m .big b{font-size:17px;display:block}.g2m .big small{display:block;opacity:.85;margin-top:4px;line-height:1.35;font-size:13px}
+.g2m .qr{width:170px;height:170px;margin:8px auto;background:#fff;border-radius:10px;overflow:hidden}.g2m .qr svg{width:100%;height:100%;display:block}
+.g2m .qrs{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;text-align:center}.g2m .qrs .mut{word-break:break-all;font-size:12px}
+.g2m .cam{width:100%;aspect-ratio:16/9;object-fit:contain;background:#000;border-radius:10px;display:block}
+.g2m .usegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.g2m .useopt{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 6px!important;font-size:13px;text-align:center;height:auto}
+.g2m .on2{border-color:var(--acc,#3d8bff)!important;box-shadow:0 0 0 2px var(--acc,#3d8bff) inset!important}
+.g2m .del{color:var(--red,#ff5d5d)}.g2m .ok{color:var(--grn,#3ecf8e)}.g2m .warn{color:var(--yel,#f0c040)}.g2m .err{color:var(--red,#ff5d5d);min-height:1.2em;font-size:13px}
+.g2m .mut{color:var(--mut,#9fb0c3)}.g2m ul.sum{padding-left:18px;margin:6px 0}.g2m ul.sum li{margin:3px 0}
+.g2m .tg{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;font-weight:400}
+#g2-pill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:240;box-shadow:0 8px 24px rgba(0,0,0,.45);border-radius:999px!important;white-space:nowrap;max-width:calc(100vw - 24px);overflow:hidden;text-overflow:ellipsis}
+#g2-tip{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;transition:transform .35s ease,opacity .35s ease;z-index:249;width:min(440px,calc(100vw - 24px));background:var(--panel,#111822);color:var(--txt,#e8eef5);border:1px solid var(--line,#1f2b3a);border-left:4px solid var(--yel,#f0a540);border-radius:14px;padding:12px 14px;box-shadow:0 12px 40px rgba(0,0,0,.45);box-sizing:border-box}
+#g2-tip.on{transform:translate(-50%,0);opacity:1}#g2-tip b{display:block;font-size:15px;margin-bottom:4px}#g2-tip p{margin:0 0 10px;font-size:14px;line-height:1.4;color:var(--mut,#9fb0c3)}#g2-tip .gb{display:flex;gap:8px;flex-wrap:wrap}
+#g2-tip small{display:block;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--yel,#f0a540);margin-bottom:2px;font-weight:700}
+.g2-card{border:1px solid var(--line,#1f2b3a);border-radius:14px;background:var(--panel,#111822);padding:12px 14px;margin:0 0 10px}
+.g2-card h3{margin:0 0 6px;font-size:16px}.g2-card .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.g2-card .tg{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0}
+.g2-card ul{margin:6px 0;padding-left:18px}.g2-card li{font-size:13px;margin:3px 0}
+@media (prefers-reduced-motion:reduce){#g2-spot,#g2-tip,.g2m .pb i{transition:none}}`;
+  document.head.appendChild(css);
+  try {                                              // German of the main page: its own dictionary (I18N.de) - add the new texts
+    if (LG() === "de" && window.I18N && I18N.de) { for (const k in D.tx) if (!(k in I18N.de)) I18N.de[k] = D.tx[k]; }
+    document.querySelectorAll("[data-i18n]").forEach(e => { const k = e.dataset.i18n; if (D.tx[k] && D.tx[k] !== k && e.textContent.trim() === k) e.textContent = D.tx[k]; });
+  } catch (e) {}
+  const sw = (on, fn) => { const c = E("input"); c.type = "checkbox"; c.className = "sw"; c.checked = !!on; c.onchange = () => fn(c.checked); return c; };
+
+  // ---------------------------------------------------------------- Simple / Expert per page
+  const modes = () => { try { const m = JSON.parse(LSget("mw-page-mode", "{}")); return m && typeof m === "object" ? m : {}; } catch (e) { return {}; } };
+  const simpleHere = () => { const v = modes()[PG]; return v === "simple" ? true : v === "expert" ? false : !!B.simple; };
+  async function setSimple(on) { await P("/api/ui_simple", {on: on, page: PG}); const m = modes(); m[PG] = on ? "simple" : "expert";
+    if (on === !!B.simple) delete m[PG]; LSset("mw-page-mode", JSON.stringify(m)); paintTT(); paintMode(); }
+  function modeBar() {
+    const w = E("div", "g2-modebar"); w.id = "g2-modebar"; w.appendChild(E("span", "", T("View of this page:")));
+    const s = E("span", "g2-seg"), a = BT(T("Simple"), simpleHere() ? "on" : "", () => setSimple(true)), b = BT(T("Expert"), simpleHere() ? "" : "on", () => setSimple(false));
+    s.append(a, b); w.appendChild(s); return w;
+  }
+  function paintMode() { const o = document.getElementById("g2-modebar"); if (o) o.replaceWith(modeBar()); document.body.classList.toggle("g2-simple", simpleHere()); }
+
+  // ---------------------------------------------------------------- Tipps & Tricks
+  function paintTT() {
+    const list = D.tt[PG]; if (!list || !list.length) return;
+    let d = document.getElementById("g2-tt");
+    const simple = PG === "live" ? !!B.simple : simpleHere();
+    const items = list.filter(x => x.l === "s" || !simple);
+    if (!d) {
+      d = E("details", "g2-tt"); d.id = "g2-tt";
+      if (LSget("mw-g2-tt", "") === "open") d.open = true;
+      d.addEventListener("toggle", () => LSset("mw-g2-tt", d.open ? "open" : "closed"));
+      place(d);
+    }
+    d.textContent = "";
+    d.appendChild(E("summary", "", "💡 " + T("Tips & tricks") + " (" + items.length + ")"));
+    const ul = E("ul"); items.forEach(x => ul.appendChild(E("li", x.l === "e" ? "e" : "", x.x))); d.appendChild(ul);
+  }
+  function place(node) {
+    const main = document.querySelector("main"); if (!main) return;
+    if (PG === "live") { main.appendChild(node); return; }
+    const sb = document.getElementById("simplebar");
+    if (sb && sb.parentElement) { sb.parentElement.insertBefore(node, sb.nextSibling); return; }
+    const mb = document.getElementById("g2-modebar");
+    if (mb) { mb.parentElement.insertBefore(node, mb.nextSibling); return; }
+    main.insertBefore(node, main.firstChild);
+  }
+
+  // ---------------------------------------------------------------- «?» next to the settings
+  let pop = null;
+  function closePop() { if (pop) { pop.remove(); pop = null; } }
+  function showHelp(btn, key, label) {
+    closePop(); const h = D.help[key]; if (!h) return;
+    pop = E("div"); pop.id = "g2-pop"; pop.setAttribute("role", "dialog");
+    pop.append(BT("✕", "x", closePop), E("b", "", label || key), E("div", "", h.x));
+    if (h.r) pop.appendChild(E("div", "r", "👍 " + T("Recommended") + ": " + h.r));
+    if (h.d) pop.appendChild(E("div", "d", h.d));
+    document.body.appendChild(pop);
+    const r = btn.getBoundingClientRect(), W = pop.offsetWidth, H = pop.offsetHeight;
+    let x = Math.min(window.innerWidth - W - 12, Math.max(12, r.left - 20)), y = r.bottom + 8;
+    if (y + H > window.innerHeight - 8) y = Math.max(8, r.top - H - 8);
+    pop.style.left = x + "px"; pop.style.top = y + "px";
+  }
+  document.addEventListener("click", ev => { if (pop && !pop.contains(ev.target) && !ev.target.classList.contains("g2-q")) closePop(); }, true);
+  document.addEventListener("keydown", ev => { if (ev.key === "Escape") closePop(); });
+  function decorate() {
+    const root = document.getElementById("settings"); if (!root) return;
+    root.querySelectorAll("[data-key]").forEach(row => {
+      if (row.tagName === "SELECT" || row.dataset.g2q) return; const key = row.dataset.key; if (!D.help[key]) return;
+      const lab = row.classList.contains("tg") ? row.querySelector(":scope > span") : row.querySelector(":scope > .row > span, :scope > span");
+      if (!lab) return; row.dataset.g2q = "1";
+      const b = BT("?", "g2-q"); b.setAttribute("aria-label", T("Help") + ": " + lab.textContent);
+      const ltxt = lab.textContent.trim();
+      b.addEventListener("click", ev => { ev.preventDefault(); ev.stopPropagation(); showHelp(b, key, ltxt); });
+      lab.appendChild(b);
+    });
+  }
+
+  // ---------------------------------------------------------------- tours (coach marks)
+  const toursSeen = () => { try { const v = JSON.parse(LSget("mw-tours-seen", "[]")); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+  const markSeen = p => { const s = toursSeen(); if (!s.includes(p)) { s.push(p); LSset("mw-tours-seen", JSON.stringify(s)); } };
+  const visible = el => { if (!el) return false; const r = el.getBoundingClientRect(); const cs = getComputedStyle(el);
+    return r.width > 4 && r.height > 4 && cs.visibility !== "hidden" && cs.display !== "none" && !el.closest("[hidden]"); };
+  const findEl = sel => { for (const s of sel.split(",")) { const all = document.querySelectorAll(s.trim()); for (const e of all) if (visible(e)) return e; } return null; };
+  let TOUR = null;
+  function tourEnd(done) {
+    if (!TOUR) return; markSeen(TOUR.page);
+    ["g2-ov", "g2-spot", "g2-bub"].forEach(i => { const e = document.getElementById(i); if (e) e.remove(); });
+    window.removeEventListener("resize", TOUR.pos); window.removeEventListener("scroll", TOUR.pos, true); document.removeEventListener("keydown", TOUR.key);
+    TOUR = null;
+  }
+  function tour(page, force) {
+    const def = D.tours[page]; if (!def || TOUR) return false;
+    if (!force && (toursSeen().includes(page) || !B.tourAuto)) return false;
+    const steps = def.map(s => ({el: findEl(s.s), t: s.t, x: s.x})).filter(s => s.el);
+    if (!steps.length) return false;
+    closePop();
+    const gd = document.getElementById("gd-card"); if (gd) gd.remove();        // the short page tip (515) is part of the tour
+    try { const ts = new Set(JSON.parse(LSget("mw-tips-seen", "[]"))); ts.add("page:" + (page === "history" ? "history" : page)); LSset("mw-tips-seen", JSON.stringify([...ts].slice(-400))); } catch (e) {}
+    const ov = E("div"); ov.id = "g2-ov"; const sp = E("div"); sp.id = "g2-spot"; const bub = E("div"); bub.id = "g2-bub";
+    bub.setAttribute("role", "dialog"); bub.setAttribute("aria-live", "polite");
+    document.body.append(ov, sp, bub);
+    TOUR = {page, i: 0, steps};
+    TOUR.pos = () => {
+      if (!TOUR) return; const s = TOUR.steps[TOUR.i]; const r = s.el.getBoundingClientRect(), pad = 6;
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const L = Math.max(4, r.left - pad), Tp = Math.max(4, r.top - pad), W = Math.min(vw - 8, r.width + 2 * pad), H = Math.min(vh - 8, r.height + 2 * pad);
+      Object.assign(sp.style, {left: L + "px", top: Tp + "px", width: W + "px", height: H + "px"});
+      const bw = bub.offsetWidth, bh = bub.offsetHeight;
+      let y = Tp + H + 10; if (y + bh > vh - 8) y = Tp - bh - 10; if (y < 8) y = Math.max(8, Math.min(vh - bh - 8, vh / 2 - bh / 2));
+      const x = Math.max(12, Math.min(vw - bw - 12, L + W / 2 - bw / 2));
+      bub.style.left = x + "px"; bub.style.top = y + "px";
+    };
+    TOUR.key = ev => { if (ev.key === "Escape") tourEnd(false); else if (ev.key === "ArrowRight" || ev.key === "Enter") go(1); else if (ev.key === "ArrowLeft") go(-1); };
+    function go(d) {
+      if (!TOUR) return; const n = TOUR.i + d; if (n >= TOUR.steps.length) { tourEnd(true); return; } if (n < 0) return; TOUR.i = n; paint();
+    }
+    function paint() {
+      const s = TOUR.steps[TOUR.i], n = TOUR.steps.length; bub.textContent = "";
+      bub.append(E("b", "", s.t), E("p", "", s.x));
+      const gb = E("div", "gb"), dots = E("span", "dots");
+      for (let k = 0; k < n; k++) { const i = E("i"); if (k === TOUR.i) i.className = "on"; dots.appendChild(i); }
+      dots.setAttribute("aria-label", T("Step") + " " + (TOUR.i + 1) + " " + T("of") + " " + n);
+      const sk = BT(T("Skip"), "sec", () => tourEnd(false)), nx = BT(TOUR.i === n - 1 ? T("Done") : T("Next") + " ›", "", () => go(1));
+      gb.append(dots, sk, nx); bub.appendChild(gb);
+      try { s.el.scrollIntoView({block: "center", behavior: "instant"}); } catch (e) { s.el.scrollIntoView(); }
+      requestAnimationFrame(() => { TOUR && TOUR.pos(); setTimeout(() => TOUR && TOUR.pos(), 120); });
+      setTimeout(() => nx.focus(), 30);
+    }
+    ov.onclick = () => go(1);
+    window.addEventListener("resize", TOUR.pos); window.addEventListener("scroll", TOUR.pos, true); document.addEventListener("keydown", TOUR.key);
+    paint(); return true;
+  }
+  window.g2Tour = (p, f) => tour(p || PG, f !== false);
+  function helpButton() {
+    if (!D.tours[PG] || document.getElementById("g2-help")) return;
+    const hc = document.querySelector("header .hdr-ctl") || document.querySelector("header"); if (!hc) return;
+    const b = BT("?", "sec ic", () => tour(PG, true)); b.id = "g2-help"; b.title = T("Tour of this page"); b.setAttribute("aria-label", T("Tour of this page"));
+    hc.insertBefore(b, hc.firstChild);
+  }
+
+  // ---------------------------------------------------------------- tip of the day
+  async function tipOfDay() {
+    if (PG !== "live" || B.lock) return;
+    const j = await J("/api/g2?lang=" + LG()); if (!j || !j.tip) return;
+    const x = j.tip; if (TOUR || busy() || document.querySelector("#gd-card, #g2-tip")) { setTimeout(tipOfDay, 15000); return; }
+    const c = E("div"); c.id = "g2-tip"; c.setAttribute("role", "status");
+    c.append(E("small", "", "☀ " + T("Tip of the day")), E("b", "", x.icon + " " + x.title), E("p", "", x.text));
+    const gb = E("div", "gb"), close = () => { c.classList.remove("on"); setTimeout(() => c.remove(), 350); };
+    const a = E("a", "btn", T("Show me") + " ›"); a.href = x.href;
+    gb.append(a, BT(T("Not now"), "sec", close), BT(T("Tip of the day off"), "sec", async () => { await P("/api/set", {key: "tip_of_day", value: false}); close(); }));
+    c.appendChild(gb); document.body.appendChild(c); requestAnimationFrame(() => requestAnimationFrame(() => c.classList.add("on")));
+    P("/api/g2", {action: "tip_seen", id: x.id});
+  }
+
+  // ---------------------------------------------------------------- the guide (setup)
+  const LANGS = [["de", "Deutsch"], ["fr", "Français"], ["it", "Italiano"], ["rm", "Rumantsch"], ["en", "English"]];
+  let S = null;
+  const loadS = async () => { S = await J("/api/setup?lang=" + LG()); return S; };
+  const gpost = b => P("/api/setup", Object.assign({step: "guide"}, b));
+  function modal(id) { let ov = document.getElementById(id); if (ov) ov.remove(); ov = E("div", "g2m"); ov.id = id; const wc = E("div", "wc"); ov.appendChild(wc); document.body.appendChild(ov); return {ov, wc}; }
+  async function qrSvg(u) { try { return await (await fetch("/api/qr?t=" + encodeURIComponent(u))).text(); } catch (e) { return ""; } }
+
+  async function mwGuide(force, start) {
+    if (document.getElementById("g2w") || mwGuide.busy) return true;
+    if (B.lock) return true;
+    mwGuide.busy = true;
+    try { await loadS(); } finally { mwGuide.busy = false; }
+    if (!S || S.locked || document.getElementById("g2w")) return true;
+    const G = S.guide || {};
+    const want = /[?&]guide=1/.test(location.search);
+    if (!force && !want && S.done) return true;
+    if (want) { try { history.replaceState(null, "", location.pathname + location.hash); } catch (e) {} }
+    const {ov, wc} = modal("g2w");
+    let cur = start || (G.mode && !G.finished && !force ? (G.left[0] || "done") : "choose");
+    if (force && G.mode && !G.finished && G.left.length) cur = G.left[0];
+    const qrs = {}; for (const a of S.addresses || []) qrs[a.url] = await qrSvg(a.url);
+    let timers = [];
+    const clearT = () => { timers.forEach(clearInterval); timers = []; };
+    const order = () => (S.guide.steps || []).filter(s => !s.auto_skip).map(s => s.id);
+    const titleOf = id => ((S.guide.steps || []).find(s => s.id === id) || {});
+    const close = () => { clearT(); ov.remove(); };
+    async function refresh() { await loadS(); }
+    async function move(dir) {
+      const o = order(), i = o.indexOf(cur);
+      if (dir > 0) cur = i < 0 ? (o[0] || "done") : (o[i + 1] || "done"); else cur = i <= 0 ? "choose" : o[i - 1];
+      if (cur !== "done" && cur !== "choose") gpost({action: "step", id: cur});
+      render();
+    }
+    async function render() {
+      clearT(); wc.textContent = ""; await refresh();
+      const head = E("div", "wh"), body = E("div", "wb"), foot = E("div", "wf");
+      wc.append(head, body, foot);
+      const later = BT(T("Continue later"), "later", async () => { await gpost({action: "pause"}); close(); });
+      const o = order(), i = o.indexOf(cur);
+      const st = E("div", "st"); st.append(E("span", "", "🧭 " + T("Setup") + (S.guide.mode ? " · " + T(S.guide.mode === "full" ? "In depth" : "Quick") : "")), later);
+      head.appendChild(st);
+      if (cur !== "choose") {
+        const pb = E("div", "pb"), bi = E("i"); const n = o.length || 1, k = cur === "done" ? n : Math.max(0, i);
+        bi.style.width = Math.round(100 * k / n) + "%"; pb.appendChild(bi); head.appendChild(pb);
+        if (cur !== "done") head.appendChild(E("div", "st", T("Step") + " " + (i + 1) + " " + T("of") + " " + n));
+      }
+      const err = E("div", "err");
+      const ctx = {body, foot, err, next: null, skip: true, back: cur !== "choose"};
+      await (STEP[cur] || STEP.done)(ctx);
+      body.appendChild(err);
+      if (ctx.back) foot.appendChild(BT("‹ " + T("Back"), "sec sp", () => move(-1)));
+      if (cur !== "choose" && cur !== "done") {
+        if (ctx.skip) foot.appendChild(BT(T("Skip"), "sec", async () => { await gpost({action: "skip", id: cur}); move(1); }));
+        foot.appendChild(BT(T("Next") + " ›", "", async () => {
+          if (ctx.next) { const r = await ctx.next(); if (r === false) return; if (r === "stop") return; }
+          await gpost({action: "done", id: cur}); move(1); }));
+      }
+    }
+    const H = (ctx, icon, title, text) => { ctx.body.append(E("h2", "", icon + " " + title)); if (text) ctx.body.appendChild(E("p", "mut", text)); };
+    const setKey = (k, v) => P("/api/set", {key: k, value: v});
+    const tgRow = (ctx, label, on, fn) => { const l = E("label", "tg"); l.append(E("span", "", label), sw(on, fn)); ctx.body.appendChild(l); return l; };
+    const gotoWith = async (href) => { await gpost({action: "step", id: cur}); location.href = href; };
+    const STEP = {
+      async choose(ctx) {
+        H(ctx, "👋", T("Welcome to MoveEye"), T("Every step can be skipped. You can stop at any time and continue later (More → Setup)."));
+        ctx.body.appendChild(E("p", "", T("Quick (about 5 min.) or thorough?")));
+        const mk = (mode, ic, name, dur, text, cls) => { const b = BT("", "big " + cls); const bb = E("b", "", ic + " " + name + " · " + dur); b.append(bb, E("small", "", text));
+          b.onclick = async () => { const r = await gpost({action: "start", mode}); if (!r.ok) { ctx.err.textContent = r.error || T("error"); return; } await refresh(); cur = order()[0] || "done"; render(); }; return b; };
+        ctx.body.append(mk("quick", "⚡", T("Quick"), T("about 5 minutes"), T("Basics, push messages to the phone, camera test and place, protection and walk test."), ""),
+                        mk("full", "🔬", T("In depth"), T("about 20 to 30 minutes"), T("Everything of «Quick» plus zones, night time, light and siren, head, AI model, thermal camera, battery, simulator - each step can be skipped."), "sec"));
+        ctx.foot.appendChild(BT(T("Later"), "sec", async () => { await gpost({action: "pause"}); close(); }));
+        ctx.back = false;
+      },
+      async basics(ctx) {
+        H(ctx, "🌐", titleOf("basics").title || "");
+        ctx.body.appendChild(E("label", "l", T("Language")));
+        const lg = E("div", "row2");
+        LANGS.forEach(([k, n]) => lg.appendChild(BT(n, "sec" + (LG() === k ? " on2" : ""), async () => {
+          LSset("mw-lang", k); await P("/api/setup", {step: "basics", ui_lang: k, device_name: ni.value.trim()}); location.href = "/?guide=1"; })));
+        ctx.body.appendChild(lg);
+        ctx.body.appendChild(E("label", "l", T("Name of this device (optional)")));
+        const ni = E("input"); ni.type = "text"; ni.maxLength = 40; ni.value = S.device_name || ""; ni.placeholder = T("e.g. camper, garden"); ctx.body.appendChild(ni);
+        ctx.body.appendChild(E("label", "l", T("Time and place")));
+        const tl = E("div", "mut"); const now = new Date();
+        tl.textContent = T("Time on MoveEye") + ": " + (S.time || "–") + " · " + T("on this device") + ": " + now.toLocaleString([], {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
+        const tb = BT(T("🕒 Take the time of this device"), "sec", async () => { const r = await gpost({action: "place_time", t: Date.now(), tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || "")});
+          await refresh(); tl.textContent = (r.ok ? "✓ " : "⚠ ") + T("Time on MoveEye") + ": " + (S.time || "–"); });
+        const r1 = E("div", "row2"); r1.appendChild(tb); ctx.body.append(tl, r1);
+        const two = E("div", "two"), la = E("input"), lo = E("input"); la.type = lo.type = "number"; la.step = lo.step = "0.0001";
+        la.value = S.lat; lo.value = S.lon; la.setAttribute("aria-label", T("Latitude")); lo.setAttribute("aria-label", T("Longitude"));
+        const c1 = E("div"), c2 = E("div"); c1.append(E("div", "mut", T("Latitude")), la); c2.append(E("div", "mut", T("Longitude")), lo); two.append(c1, c2);
+        const gb = BT(T("📍 Location of this device"), "sec", () => {
+          if (!window.isSecureContext || !navigator.geolocation) { ctx.err.textContent = T("Location: only on a secure page (https) - or type it."); return; }
+          navigator.geolocation.getCurrentPosition(p => { la.value = p.coords.latitude.toFixed(4); lo.value = p.coords.longitude.toFixed(4); }, e => { ctx.err.textContent = e.message; }, {timeout: 10000}); });
+        const r2 = E("div", "row2"); r2.appendChild(gb); ctx.body.append(two, r2);
+        tgRow(ctx, "⚡ " + T("Fast updates (development)"), S.guide.update_fast, x => setKey("update_fast", x));
+        ctx.body.appendChild(E("label", "l", "🔒 " + T("Password for this page")));
+        ctx.body.appendChild(E("p", "mut", T("Without a password everybody in the same network (and with the link) can watch and switch everything.")));
+        let p1 = null, p2 = null, without = null;
+        if (S.pw_cmdline) ctx.body.appendChild(E("p", "ok", "✓ " + T("The password was given on the command line (--web-password).")));
+        else {
+          if (S.has_pw) ctx.body.appendChild(E("p", "ok", "✓ " + T("A password is set already. Enter a new one only to change it.")));
+          p1 = E("input"); p1.type = "password"; p1.autocomplete = "new-password"; p1.placeholder = T("Password (6-64 characters)");
+          p2 = E("input"); p2.type = "password"; p2.autocomplete = "new-password"; p2.placeholder = T("Repeat password"); p2.style.marginTop = "8px";
+          ctx.body.append(p1, p2);
+          if (!S.has_pw) { const l = E("label", "tg"); without = E("input"); without.type = "checkbox"; l.append(E("span", "", T("Continue without a password (not recommended)")), without); ctx.body.appendChild(l); }
+        }
+        ctx.next = async () => {
+          if (p1 && p1.value !== p2.value) { ctx.err.textContent = T("The passwords are not the same"); return false; }
+          if (p1 && !p1.value && !S.has_pw && !(without && without.checked)) { ctx.err.textContent = T("Password (6-64 characters)"); p1.focus(); return false; }
+          let r = await P("/api/setup", {step: "basics", ui_lang: LG(), device_name: ni.value.trim()}); if (!r.ok) { ctx.err.textContent = r.error || T("error"); return false; }
+          if (String(la.value) !== String(S.lat) || String(lo.value) !== String(S.lon)) { r = await gpost({action: "place_time", lat: la.value, lon: lo.value}); if (!r.ok) { ctx.err.textContent = r.error || T("error"); return false; } }
+          if (p1 && p1.value) {
+            await gpost({action: "done", id: "basics"});
+            r = await P("/api/password", {password: p1.value}); if (!r.ok) { ctx.err.textContent = r.error || T("error"); await gpost({action: "step", id: "basics"}); return false; }
+            ctx.body.appendChild(E("p", "ok", "✓ " + T("The page now asks once for the new password (user name: anything) and then continues here.")));
+            setTimeout(() => { location.href = "/?guide=1"; }, 1600); return "stop";
+          }
+          return true;
+        };
+      },
+      async push(ctx) {
+        H(ctx, "🔔", titleOf("push").title || "");
+        const nt = (S.notify_type === "ntfy" && /^https:\/\/[^/]+\/[^/]+$/.test(S.notify_url || "")) ? S.notify_url : "";
+        let server = nt ? nt.replace(/\/[^/]+$/, "") : "https://ntfy-me.com";
+        let topic = nt ? nt.replace(/^.*\//, "") : "mw-" + Array.from(crypto.getRandomValues(new Uint8Array(8)), b => "abcdefghijkmnpqrstuvwxyz23456789"[b % 32]).join("");
+        if (nt) ctx.body.appendChild(E("p", "ok", "✓ " + T("The push channel is set up already:") + " " + server.replace(/^https:\/\//, "") + " / " + topic));
+        ctx.body.append(E("p", "", T("1. Install the free app «ntfy» (App Store / Play Store).")), E("p", "", T("2. In the app: + → enter the topic below (and the server, if it is not the default one) - or open this code with the phone camera.")));
+        const box = E("div", "qr"); const upd = async () => { box.innerHTML = await qrSvg(server.replace(/\/+$/, "") + "/" + topic); };
+        ctx.body.appendChild(E("label", "l", T("Topic (like a secret channel name)")));
+        const ti = E("input"); ti.type = "text"; ti.value = topic; ti.maxLength = 64; ti.oninput = () => { topic = ti.value.trim().replace(/[^A-Za-z0-9_-]/g, ""); }; ti.onchange = upd; ctx.body.appendChild(ti);
+        ctx.body.appendChild(E("label", "l", T("Server")));
+        const si = E("input"); si.type = "text"; si.value = server; si.oninput = () => { server = si.value.trim(); }; si.onchange = upd; ctx.body.append(si, box); upd();
+        const res = E("div", "mut");
+        const save = async () => { const r = await P("/api/setup", {step: "push", url: server.replace(/\/+$/, "") + "/" + topic}); if (!r.ok) ctx.err.textContent = r.error || T("error"); return r.ok; };
+        const rw = E("div", "row2"); rw.appendChild(BT(T("📨 Send test message"), "sec", async () => { if (!(await save())) return; const r = await P("/api/notify_test", {});
+          res.textContent = r.ok ? "✓ " + T("Sent - did it arrive on the phone?") : "⚠ " + (r.error || T("error")); res.className = r.ok ? "ok" : "warn"; }));
+        ctx.body.append(rw, res);
+        ctx.next = async () => (topic.length < 3 ? true : await save());
+      },
+      async camera(ctx) {
+        H(ctx, "📷", titleOf("camera").title || "", T("Is the picture right? Upright, sharp, the place in view?"));
+        const img = E("img", "cam"); img.alt = ""; const stl = E("div", "mut");
+        const tick = async () => { img.src = "/api/frame.jpg?t=" + Date.now();
+          const j = await J("/api/state?lang=" + LG()); const s = j && j.state; if (!s) return;
+          const fps = +s.fps || 0; stl.textContent = (s.source_status || "") + " · " + fps.toFixed(1) + " " + T("frames/s"); noPic.hidden = fps > 0; };
+        const noPic = E("div"); noPic.hidden = true;
+        noPic.appendChild(E("p", "warn", "⚠ " + T("No picture yet.")));
+        const r0 = E("div", "row2"); const ca = E("a", "btn sec", T("📷 Choose the camera")); ca.href = "#"; ca.onclick = e => { e.preventDefault(); gotoWith("/cams"); }; r0.appendChild(ca); noPic.appendChild(r0);
+        noPic.appendChild(E("label", "l", T("🎮 Use the 3D simulator as camera")));
+        const su = E("input"); su.type = "text"; su.placeholder = "http://192.168.1.20:8765"; noPic.appendChild(su);
+        J("/api/sim").then(j => { if (j && (j.url || (j.sim && j.sim.url))) su.value = j.url || j.sim.url; });
+        const sm = E("div", "mut"); const r1 = E("div", "row2");
+        r1.appendChild(BT(T("🔌 Connect"), "sec", async () => { sm.textContent = T("Connecting …"); const r = await P("/api/sim", {url: su.value.trim(), on: true, confirm: true});
+          sm.textContent = r.ok === false ? "⚠ " + (r.error || T("error")) : "✓ " + T("Connecting …"); }));
+        noPic.append(r1, sm);
+        ctx.body.append(img, stl, noPic);
+        ctx.body.appendChild(E("p", "", T("MoveEye looks round once and suggests zones, paths and the things to guard (a few minutes). Then come back here.")));
+        const r2 = E("div", "row2"); r2.appendChild(BT(T("📐 Set up the place"), "", () => gotoWith("/place"))); ctx.body.appendChild(r2);
+        tick(); timers.push(setInterval(tick, 2000));
+      },
+      async view(ctx) {
+        H(ctx, "🧭", titleOf("view").title || "", T("Who should see «Simple» - and what is MoveEye for?"));
+        let simple = S.guide.default_simple, use = S.guide.use_case;
+        const seg = E("div", "row2"); const a = BT("🙂 " + T("Simple"), "sec"), b = BT("🧑‍🔧 " + T("Expert"), "sec");
+        const pa = () => { a.classList.toggle("on2", simple); b.classList.toggle("on2", !simple); }; a.onclick = () => { simple = true; pa(); }; b.onclick = () => { simple = false; pa(); }; pa();
+        seg.append(a, b); ctx.body.append(seg, E("p", "mut", T("Default of every page (each page can switch by itself).")));
+        ctx.body.appendChild(E("label", "l", T("What is MoveEye for?")));
+        const g = E("div", "usegrid"), opts = [];
+        [["camping", "⛺", "Camping: tent, caravan"], ["home", "🏡", "House and garden"], ["wild", "🦌", "Watching animals"], ["holiday", "🏔", "Holiday house, alpine hut"],
+         ["room", "⏰", "In the room: wake-up alarm"], ["", "🧰", "everything (not chosen)"]].forEach(([v, ic, n]) => {
+          const o = BT("", "sec useopt"); o.append(E("span", "", ic), E("span", "", T(n))); o.onclick = () => { use = v; opts.forEach(([x, e]) => e.classList.toggle("on2", x === use)); };
+          opts.push([v, o]); g.appendChild(o); });
+        opts.forEach(([x, e]) => e.classList.toggle("on2", x === use)); ctx.body.appendChild(g);
+        ctx.next = async () => { const r = await gpost({action: "view", simple, use}); if (!r.ok) { ctx.err.textContent = r.error || T("error"); return false; }
+          B.simple = simple; LSset("mw-page-mode", "{}"); return true; };
+      },
+      async zones(ctx) {
+        H(ctx, "✏", titleOf("zones").title || "", T("Draw areas into the picture: ignore the road, privacy, the sleeping place for the wake-up alarm, a line."));
+        const r = E("div", "row2"); r.appendChild(BT(T("✏ Draw the zones"), "", () => gotoWith("/zones"))); ctx.body.appendChild(r);
+      },
+      async protect(ctx) {
+        H(ctx, "🛡", titleOf("protect").title || "");
+        const box = E("div"); ctx.body.appendChild(box);
+        const paint = async () => { const v = await J("/api/protect?lang=" + LG()); if (!v) return; box.textContent = "";
+          const col = {green: "ok", orange: "warn", red: "err"}[v.colour] || "mut";
+          const bad = (v.items || []).filter(x => !x.ok);
+          box.appendChild(E("p", col, (v.colour === "green" ? "🟢 " : v.colour === "red" ? "🔴 " : "🟠 ") + T("State of the protection") + ": " + (bad.length ? T("Still missing:") : T("Everything ready."))));
+          if (bad.length) { const ul = E("ul", "sum"); bad.forEach(x => ul.appendChild(E("li", "", x.text))); box.appendChild(ul); } };
+        paint();
+        ctx.body.appendChild(E("label", "l", "🚶 " + T("Walk past the camera like a visitor - MoveEye beeps at every detection. 3 minutes, no alarms meanwhile.")));
+        const ws = E("div", "mut"), wr = E("div", "row2");
+        const wb = BT(T("🚶 Start walk test"), "", async () => { const on = wb.dataset.on === "1"; const r = await P("/api/walktest", {action: on ? "stop" : "start"}); if (r.ok === false) ws.textContent = "⚠ " + (r.error || T("error")); wpaint(r); });
+        const wpaint = w => { if (!w) return; wb.dataset.on = w.on ? "1" : "0"; wb.textContent = w.on ? T("■ Stop") : T("🚶 Start walk test");
+          ws.textContent = w.on ? ("⏱ " + Math.floor(w.left / 60) + ":" + String(w.left % 60).padStart(2, "0") + " " + T("left") + " · " + w.n_det + " × " + T("recognised")) : (w.result ? "✓ " + (w.result.text || "") : ""); };
+        wr.appendChild(wb); ctx.body.append(wr, ws);
+        J("/api/walktest?lang=" + LG()).then(wpaint); timers.push(setInterval(async () => { if (wb.dataset.on === "1") wpaint(await J("/api/walktest?lang=" + LG())); }, 1500));
+        ctx.body.appendChild(E("label", "l", T("Switch on now?")));
+        const lv = E("div", "row2"); const lm = E("div", "mut", T("switches on at once (with the countdown)"));
+        [["off", T("Leave it off")], ["watch", "🛡 " + T("Watchful")], ["full", "🚨 " + T("Full")]].forEach(([k, n]) => lv.appendChild(BT(n, "sec", async e => {
+          lv.querySelectorAll("button").forEach(x => x.classList.remove("on2")); e.target.classList.add("on2");
+          const r = await P("/api/protect", {action: "level", level: k}); lm.textContent = r.ok === false ? "⚠ " + (r.error || T("error")) : "✓ " + n; paint(); })));
+        ctx.body.append(lv, lm);
+      },
+      async schedules(ctx) {
+        H(ctx, "🕘", titleOf("schedules").title || "");
+        const sc = await J("/api/schema?lang=" + LG()) || []; let rep = null;
+        sc.forEach(s => { (s.toggles || []).forEach(x => { if (x.key === "report_on") rep = x; }); (s.sliders || []).forEach(x => { if (x.key === "report_hour") ctx._h = x; }); });
+        tgRow(ctx, T("Night report in the morning"), rep ? rep.value : true, v => setKey("report_on", v));
+        if (ctx._h) { const l = E("label", "tg"); const s = E("select"); for (let h = ctx._h.min; h <= ctx._h.max; h++) { const o = E("option", "", h + ":00"); o.value = h; s.appendChild(o); }
+          s.value = ctx._h.value; s.style.width = "auto"; s.onchange = () => setKey("report_hour", +s.value); l.append(E("span", "", T("End of the night time")), s); ctx.body.appendChild(l); }
+        ctx.body.appendChild(E("p", "mut", T("Schedules switch features by themselves, e.g. the protection every night.")));
+        const r = E("div", "row2"); r.appendChild(BT(T("🕘 Schedules"), "sec", () => gotoWith("/protect#sched-list"))); ctx.body.appendChild(r);
+      },
+      async lightsiren(ctx) {
+        H(ctx, "💡", titleOf("lightsiren").title || "");
+        const hw = S.guide.hw || {}; const r = E("div", "row2"); const m = E("div", "mut");
+        const lightT = async (n) => { await P("/api/light", {light: n, mode: "on"}); m.textContent = "✓ " + n; setTimeout(() => P("/api/light", {light: n, mode: "auto"}), 3000); };
+        if (hw.light) r.append(BT(T("💡 Light 3 s"), "sec", () => lightT("white")), BT(T("🌙 Infrared 3 s"), "sec", () => lightT("ir")));
+        if (hw.speaker) r.append(BT(T("🔊 Test sound"), "sec", async () => { const x = await P("/api/audio", {action: "test"}); m.textContent = x.ok ? "✓" : "⚠ " + (x.error || ""); }),
+                                 BT(T("🚨 Siren 2 s"), "sec", async () => { const x = await P("/api/audio", {action: "siren"}); m.textContent = x.ok ? "✓" : "⚠ " + (x.error || ""); setTimeout(() => P("/api/audio", {action: "stop"}), 2000); }));
+        ctx.body.append(r, m); if (hw.speaker) ctx.body.appendChild(E("p", "mut", T("Loud! Warn the neighbours first.")));
+      },
+      async servos(ctx) {
+        H(ctx, "🎯", titleOf("servos").title || "");
+        const r = E("div", "row2"); const mv = d => P("/api/move", {dir: d, step: 8});
+        r.append(BT(T("◎ Centre"), "sec", () => mv("center")), BT(T("◀ ▶ Turn a little"), "sec", async () => { await mv("left"); setTimeout(() => mv("right"), 900); setTimeout(() => mv("center"), 1800); }));
+        ctx.body.append(r, E("p", "mut", T("Direction of turning wrong? Swap it:")));
+        const sc = await J("/api/schema?lang=" + LG() + "&simple=0") || []; const v = {};
+        sc.forEach(s => (s.toggles || []).forEach(x => { v[x.key] = x.value; }));
+        tgRow(ctx, T("Invert pan direction"), v.invert_pan, x => setKey("invert_pan", x)); tgRow(ctx, T("Invert tilt direction"), v.invert_tilt, x => setKey("invert_tilt", x));
+        const r2 = E("div", "row2"); r2.appendChild(BT(T("🛠 Servo test (tools)"), "sec", () => gotoWith("/tools"))); ctx.body.appendChild(r2);
+      },
+      async ai(ctx) {
+        H(ctx, "🤖", titleOf("ai").title || "", T("The AI says «person», «animal», «car». It runs on the Pi or on a helper PC."));
+        const sc = await J("/api/schema?lang=" + LG() + "&simple=0") || []; const v = {}; sc.forEach(s => (s.toggles || []).forEach(x => { v[x.key] = x.value; }));
+        tgRow(ctx, T("AI detection"), v.ai_enabled !== false, x => setKey("ai_enabled", x));
+        const st = await J("/api/state?lang=" + LG()); if (st && st.state) ctx.body.appendChild(E("p", "mut", "🤖 " + (st.state.ai_status || "")));
+        const om = await J("/api/own_model?lang=" + LG()); if (om) ctx.body.appendChild(E("p", "mut", T("Own AI model") + ": " + (om.msg || om.status || (om.loaded ? "✓" : "–"))));
+      },
+      async thermal(ctx) {
+        H(ctx, "🌡", titleOf("thermal").title || "");
+        const sc = await J("/api/schema?lang=" + LG() + "&simple=0") || []; const v = {}; sc.forEach(s => (s.toggles || []).forEach(x => { v[x.key] = x.value; }));
+        tgRow(ctx, T("Thermal picture over the live picture"), v.thermal_on, x => setKey("thermal_on", x)); tgRow(ctx, T("Alarm from the thermal camera"), v.thermal_alarm, x => setKey("thermal_alarm", x));
+        const st = await J("/api/state?lang=" + LG()); if (st && st.state && st.state.thermal) ctx.body.appendChild(E("p", "mut", "🌡 " + st.state.thermal));
+      },
+      async battery(ctx) {
+        H(ctx, "🔋", titleOf("battery").title || "");
+        const st = await J("/api/state?lang=" + LG()); const b = st && st.state && st.state.battery;
+        if (b && b.on) ctx.body.appendChild(E("p", "", "🔋 " + (b.pct != null ? b.pct + " % " + T("charge") : "") + (b.hours != null ? " · ~" + b.hours + " h" : "")));
+        const sc = await J("/api/schema?lang=" + LG() + "&simple=0") || []; const v = {}; sc.forEach(s => { (s.toggles || []).forEach(x => { v[x.key] = x.value; }); (s.sliders || []).forEach(x => { v[x.key] = x.value; }); });
+        if (!(b && b.src === "ups")) {                     // no UPS HAT: a powerbank? (it cannot be detected)
+          const l = E("label", "tg"), s = E("select"); s.style.width = "auto";
+          [0, 5000, 10000, 20000, 26800, 30000, 40000, 50000].forEach(m => { const o = E("option", "", m ? m + " mAh" : "– " + T("no battery") + " –"); o.value = m; s.appendChild(o); });
+          s.value = String(v.batt_mah || 0); if (s.value === "") { const o = E("option", "", v.batt_mah + " mAh"); o.value = v.batt_mah; s.appendChild(o); s.value = String(v.batt_mah); }
+          s.onchange = () => setKey("batt_mah", +s.value); l.append(E("span", "", T("Powerbank capacity")), s); ctx.body.appendChild(l);
+          const r = E("div", "row2"), m = E("span", "mut"); r.append(BT(T("🔋 Charged full now"), "sec", async () => { const x = await P("/api/battery", {}); m.textContent = x.ok ? "✓" : "⚠"; }), m); ctx.body.appendChild(r);
+        }
+        tgRow(ctx, T("Battery saving automatic"), v.batt_save_on, x => setKey("batt_save_on", x));
+      },
+      async sim(ctx) {
+        H(ctx, "🎮", titleOf("sim").title || "", T("The 3D simulator on the PC tests MoveEye without the real place. Optional."));
+        const j = await J("/api/sim") || {}; const su = E("input"); su.type = "text"; su.placeholder = "http://192.168.1.20:8765"; su.value = j.url || (j.sim && j.sim.url) || "";
+        ctx.body.append(E("label", "l", T("Address of the simulator")), su);
+        const sm = E("div", "mut", (j.on || (j.sim && j.sim.on)) ? "✓ " + T("connected") : ""); const r = E("div", "row2");
+        r.appendChild(BT(T("🔌 Connect"), "sec", async () => { sm.textContent = T("Connecting …"); const x = await P("/api/sim", {url: su.value.trim(), on: true, confirm: true}); sm.textContent = x.ok === false ? "⚠ " + (x.error || T("error")) : "✓ " + T("Connecting …"); }));
+        ctx.body.append(r, sm);
+      },
+      async tours(ctx) {
+        H(ctx, "💡", titleOf("tours").title || "");
+        tgRow(ctx, T("Tour of a page on its first visit"), S.guide.tours_auto, x => { B.tourAuto = x; setKey("tours_auto", x); });
+        tgRow(ctx, T("Tip of the day"), S.guide.tip_of_day, x => setKey("tip_of_day", x));
+        const l = E("label", "tg"), s = E("select"); s.style.width = "auto";
+        ["off", "basic", "normal", "all"].forEach(k => { const o = E("option", "", T(k)); o.value = k; s.appendChild(o); });
+        try { s.value = ["off", "basic", "normal", "all"][(window.MW_GUIDE || {}).level ?? 2]; } catch (e) {}
+        s.onchange = () => P("/api/text", {key: "tips_level", value: s.value}); l.append(E("span", "", T("Explanations the first time something is opened")), s); ctx.body.appendChild(l);
+        const r = E("div", "row2"); r.appendChild(BT(T("↺ Reset all tours"), "sec", async () => { await gpost({action: "tours_reset"}); LSset("mw-tours-seen", "[]"); ctx.err.textContent = ""; r.appendChild(E("span", "ok", "✓ " + T("All tours will show again."))); })); ctx.body.appendChild(r);
+      },
+      async done(ctx) {
+        H(ctx, "✅", T("Done!"));
+        const ul = E("ul", "sum");
+        (S.guide.steps || []).forEach(s => { const d = (S.guide.done || []).includes(s.id), k = (S.guide.skipped || []).includes(s.id);
+          ul.appendChild(E("li", d ? "ok" : "mut", (d ? "✓ " : "⤼ ") + s.icon + " " + s.title + (d ? "" : " · " + (s.auto_skip ? T("skipped automatically") + " (" + s.auto_skip + ")" : k ? T("skipped") : "–")))); });
+        ctx.body.appendChild(ul);
+        ctx.body.appendChild(E("p", "mut", T("Open MoveEye on other devices with these codes. On the phone: Share → «Add to Home Screen» - then it starts like an app.")));
+        const g = E("div", "qrs");
+        for (const a of S.addresses || []) { const c = E("div"), b = E("div", "qr"); b.innerHTML = qrs[a.url] || "";
+          c.append(E("b", "", T({lan: "Home network", hotspot: "Own Wi-Fi of the device", tailscale: "On the road (Tailscale)"}[a.kind] || a.kind)), b, E("div", "mut", a.url)); g.appendChild(c); }
+        ctx.body.appendChild(g);
+        const r = E("div", "row2"); const lk = E("a", "btn sec", T("🖨 Quick start card with QR codes")); lk.href = "/setup-card?lang=" + LG(); lk.target = "_blank"; r.appendChild(lk); ctx.body.appendChild(r);
+        if (S.guide.mode !== "full") ctx.foot.appendChild(BT(T("➕ Set up more (thorough)"), "sec", async () => { await gpost({action: "start", mode: "full"}); await refresh(); cur = S.guide.left[0] || "done"; render(); }));
+        ctx.foot.appendChild(BT(T("Let's go"), "", async () => { await gpost({action: "finish"}); close(); if (D.tours[PG] && B.tourAuto) setTimeout(() => tour(PG, false), 600); }));
+        ctx.skip = false;
+      },
+    };
+    render();
+    return true;
+  }
+  window.mwGuide = mwGuide;
+
+  // ---------------------------------------------------------------- «back to the setup» on the other pages
+  function pill() {
+    const g = B.guide || {}; if (!g.mode || g.finished || g.paused || !g.step) return;
+    if (PG === "live" || document.getElementById("g2-pill")) return;
+    const b = BT(T("↩ Back to the setup"), "", () => { location.href = "/?guide=1"; }); b.id = "g2-pill"; document.body.appendChild(b);
+  }
+
+  // ---------------------------------------------------------------- factory reset (Mehr → System, Einstellungen → System)
+  async function g2Factory() {
+    const F = await J("/api/factory?lang=" + LG()); if (!F || F.ok === false) { alert(T("error")); return; }
+    const {ov, wc} = modal("g2f"); const h = E("div", "wh"), b = E("div", "wb"), f = E("div", "wf"); wc.append(h, b, f);
+    h.appendChild(E("h2", "", "⚠ " + T("Reset to factory settings")));
+    const sec = (t1, t2, cls) => { b.append(E("b", cls || "", t1), E("p", "mut", t2)); };
+    sec(T("Back to the factory settings:"), T("all settings, zones, schedules, waypoints, password, users, PIN, the place"));
+    sec(T("These stay:"), T("Wi-Fi and own Wi-Fi, remote access (Tailscale), the push channel (ntfy), the update settings, the own AI model and what it learned"), "ok");
+    sec(T("These are deleted:"), T("all recordings and photos, the animal diary, the log"), "del");
+    b.appendChild(E("p", "", T("First a copy of the old settings is saved - you can download it below.")));
+    let pw = null, pin = null;
+    if (F.need_pw) { b.appendChild(E("label", "l", T("Your password"))); pw = E("input"); pw.type = "password"; pw.autocomplete = "current-password"; b.appendChild(pw); }
+    else if (F.need_pin) { b.appendChild(E("label", "l", T("Your PIN"))); pin = E("input"); pin.type = "password"; pin.inputMode = "numeric"; b.appendChild(pin); }
+    b.appendChild(E("label", "l", T("Type {w} to confirm").replace("{w}", "«" + F.word + "»")));
+    const w = E("input"); w.type = "text"; w.autocomplete = "off"; w.autocapitalize = "characters"; w.spellcheck = false; b.appendChild(w);
+    const err = E("div", "err"); b.appendChild(err);
+    const go = BT(T("Reset now"), ""); go.disabled = true; go.style.background = "var(--red,#d33)"; go.style.borderColor = "var(--red,#d33)";
+    w.oninput = () => { go.disabled = w.value.trim().toUpperCase() !== String(F.word).toUpperCase(); };
+    go.onclick = async () => {
+      go.disabled = true; err.textContent = "";
+      const r = await P("/api/factory", {word: w.value, password: pw ? pw.value : "", pin: pin ? pin.value : ""});
+      if (!r.ok) { err.textContent = "⚠ " + (r.error || T("error")); go.disabled = false; return; }
+      try { Object.keys(localStorage).forEach(k => { if (/^mw-/.test(k) && k !== "mw-lang") localStorage.removeItem(k); }); } catch (e) {}
+      b.textContent = ""; f.textContent = "";
+      b.append(E("p", "ok", "✓ " + T("Reset done.")), E("p", "", T("Copy of the old settings:")));
+      const a = E("a", "btn sec", "⬇ " + r.backup); a.href = "/api/factory/backup/" + encodeURIComponent(r.backup); a.download = r.backup; b.appendChild(a);
+      f.appendChild(BT(T("Start the setup"), "", () => { location.href = "/?guide=1"; }));
+    };
+    f.append(BT(T("Close"), "sec sp", () => ov.remove()), go);
+    if (F.backups && F.backups.length) {
+      b.appendChild(E("label", "l", T("Copies of the old settings")));
+      F.backups.forEach(x => { const a = E("a", "", "⬇ " + x.when + " (" + x.kb + " kB)"); a.href = "/api/factory/backup/" + encodeURIComponent(x.name); a.download = x.name; a.style.display = "block"; b.appendChild(a); });
+    }
+    setTimeout(() => (pw || pin || w).focus(), 50);
+  }
+  window.g2Factory = g2Factory;
+
+  // ---------------------------------------------------------------- Mehr: setup, tours, system
+  async function moreCards() {
+    const box = document.getElementById("g2-more"); if (!box) return;
+    const j = await J("/api/g2?lang=" + LG()); if (!j || !j.guide) return;
+    const g = j.guide; box.textContent = ""; box.className = "g2-card";
+    box.appendChild(E("h3", "", "🧭 " + T("Setup") + " · " + T("Help")));
+    const n = (g.steps || []).filter(s => !s.auto_skip).length, k = n - (g.left || []).length;
+    box.appendChild(E("div", "mut", g.finished || (!g.mode && g.setup_done) ? "✓ " + T("Setup finished.") : g.mode ? T("Setup paused - step") + " " + Math.min(n, k + 1) + " " + T("of") + " " + n : T("never done")));
+    const bt = E("div", "btns");
+    const start = E("a", "btn", g.mode && !g.finished ? T("🧭 Continue the setup") : (g.finished || g.setup_done) ? T("🧭 Setup again") : T("🧭 Start the setup"));
+    start.href = "/?guide=1"; start.onclick = async e => { e.preventDefault(); if (g.finished || !g.mode) await P("/api/setup", {step: "again"}); else await gpost({action: "resume"}); location.href = "/?guide=1"; };
+    const rs = BT(T("↺ Reset all tours"), "sec", async () => { await gpost({action: "tours_reset"}); LSset("mw-tours-seen", "[]"); rs.textContent = "✓ " + T("All tours will show again."); });
+    bt.append(start, rs); box.appendChild(bt);
+    const row = (label, on, key) => { const l = E("label", "tg"); l.append(E("span", "", label), sw(on, v => P("/api/set", {key, value: v}))); box.appendChild(l); };
+    row(T("Tour of a page on its first visit"), g.tours_auto, "tours_auto"); row(T("Tip of the day"), g.tip_of_day, "tip_of_day");
+    const sysb = document.getElementById("g2-sys"); if (!sysb) return;
+    sysb.textContent = ""; sysb.className = "g2-card"; sysb.appendChild(E("h3", "", "⚙ " + T("System")));
+    const sb = E("div", "btns"); sb.appendChild(BT(T("⚠ Reset to factory settings …"), "sec", g2Factory)); sysb.appendChild(sb);
+    const F = await J("/api/factory?lang=" + LG());
+    if (F && F.backups && F.backups.length) { sysb.appendChild(E("div", "mut", T("Copies of the old settings") + ":")); const ul = E("ul");
+      F.backups.forEach(x => { const li = E("li"), a = E("a", "", "⬇ " + x.when + " (" + x.kb + " kB)"); a.href = "/api/factory/backup/" + encodeURIComponent(x.name); a.download = x.name; li.appendChild(a); ul.appendChild(li); });
+      sysb.appendChild(ul); }
+  }
+
+  // ---------------------------------------------------------------- start
+  const busy = () => !!document.querySelector(".g2m, #wiz, #spa, .prt-wiz, #g2-bub");
+  function startAll() {
+    helpButton();
+    if (D.modePages.includes(PG)) { const main = document.querySelector("main"); if (main && !document.getElementById("g2-modebar")) main.insertBefore(modeBar(), main.firstChild); paintMode(); }
+    paintTT();
+    decorate();
+    const st = document.getElementById("settings");
+    if (st) new MutationObserver(() => { clearTimeout(startAll._d); startAll._d = setTimeout(() => { decorate(); if (!document.getElementById("g2-tt")) paintTT(); }, 150); }).observe(st, {childList: true, subtree: true});
+    moreCards(); pill();
+    const wantGuide = /[?&]guide=1/.test(location.search) || (!B.setupDone && !B.lock);
+    if (PG === "live" && wantGuide) setTimeout(() => mwGuide(false), 300);
+    else if (B.setupDone && B.tourAuto && D.tours[PG] && !toursSeen().includes(PG)) {
+      let tries = 0;                                   // after other windows (news of the version, protection assistant, guide)
+      const go = () => { if (busy() && tries++ < 20) { setTimeout(go, 2000); return; } if (!busy()) tour(PG, false); };
+      setTimeout(go, 1800);
+    }
+    if (B.setupDone) setTimeout(tipOfDay, 6000);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startAll); else startAll();
 })();
 """
 CAMS_PAGE = r"""<!doctype html>
@@ -43457,7 +44302,6 @@ main{padding:16px;max-width:720px;margin:0 auto}
 #games{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:14px;margin:0 0 12px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
 #games.on{border-color:var(--grn)}#games .gq{width:120px;height:120px;background:#fff;border-radius:10px;padding:6px;box-sizing:border-box}#games .gq svg{width:100%;height:100%}
 #games .gt{flex:1 1 200px}#games .gt b{font-size:16px}#games button{margin:8px 8px 0 0}
-#fb{display:none}#fb.on{display:block}#fb textarea{width:100%;box-sizing:border-box;background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
 </style></head><body>
 <header>
   <h1>MoveEye</h1>
@@ -43475,21 +44319,16 @@ main{padding:16px;max-width:720px;margin:0 auto}
   <a class="mi" href="/tools"><i>🧰</i><span><b data-i18n="Tools">Tools</b><small data-i18n="Network test, diagnosis and more">Network test, diagnosis and more</small></span><span class="ar">›</span></a>
   <a class="mi" href="/info" id="m-info"><i>👋</i><span><b data-i18n="Info page for guests">Info page for guests</b><small data-i18n="what MoveEye is - for neighbours and fellow campers">what MoveEye is - for neighbours and fellow campers</small></span><span class="ar">›</span></a>
   <a class="mi" href="/almanach"><i>🌦</i><span><b data-i18n="Almanac">Almanac</b><small data-i18n="Sun, moon, weather">Sun, moon, weather</small></span><span class="ar">›</span></a>
-  <button type="button" class="mi" onclick="document.getElementById('fb').classList.toggle('on')"><i>💬</i><span><b data-i18n="Feedback to the developer">Feedback to the developer</b><small data-i18n="Ideas, errors, praise - anonymous">Ideas, errors, praise - anonymous</small></span><span class="ar">›</span></button>
-  <div class="card" id="fb">
-    <select id="fb-k" style="width:100%;margin-bottom:8px"><option value="idea" data-i18n="💡 Idea">💡 Idea</option><option value="bug" data-i18n="🐞 Error">🐞 Error</option><option value="praise" data-i18n="⭐ Praise">⭐ Praise</option><option value="other" data-i18n="💬 Other">💬 Other</option></select>
-    <textarea id="fb-t" rows="5" maxlength="3000"></textarea>
-    <div class="btns"><button type="button" id="fb-s" data-i18n="Send">Send</button></div><div class="mut" id="fb-r"></div>
-  </div>
+  <button type="button" class="mi" id="m-fb" onclick="window.mwFeedback && mwFeedback()"><i>💬</i><span><b data-i18n="Feedback to the developer">Feedback to the developer</b><small data-i18n="Errors, wishes, praise, questions - anonymous">Errors, wishes, praise, questions - anonymous</small></span><span class="ar">›</span></button>
+  <button type="button" class="mi" id="m-fbtest" onclick="window.mwFeedbackTest && mwFeedbackTest(document.getElementById('m-fbtest-r'))"><i>🧪</i><span><b data-i18n="Send a test feedback">Send a test feedback</b><small id="m-fbtest-r" data-i18n="for the developer: does a message reach the servers?">for the developer: does a message reach the servers?</small></span><span class="ar">›</span></button>
+  <button type="button" class="mi" id="m-about" onclick="window.mwAbout && mwAbout()"><i>ℹ️</i><span><b data-i18n="About MoveEye">About MoveEye</b><small data-i18n="history, developer, numbers">history, developer, numbers</small></span><span class="ar">›</span></button>
+  <div id="g2-more"></div>
+  <div id="g2-sys"></div>
 </main>
 <script>
 /*COMMON*/
 /*MOREDE*/
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"games-off-note": "One button: game corner (quiz, werewolf …), game collection and - when the 3D simulator runs - «Team against MoveEye». One QR code, type the name, done."});
-document.getElementById("fb-s").onclick = async () => {
-  const r = await post("/api/feedback", {kind: document.getElementById("fb-k").value, text: document.getElementById("fb-t").value, diag: true, lang: LANG});
-  document.getElementById("fb-r").textContent = r && r.ok ? "✓ " + t("Thank you! The message is on its way.") : "⚠ " + ((r && r.error) || "error");
-};
 (async () => { await initAppearance(); gmLoad(); })();
 // 2.98.7: «Spiele freigeben» - one button for the game corner, the game collection and the game of the 3D simulator
 let GMT = 0;
@@ -43528,8 +44367,9 @@ MORE_DE = {"Everything explained, with search": "Alles erklärt, mit Suche", "Qu
            "Network test, diagnosis and more": "Netztest, Diagnose und mehr", "Info page for guests": "Infoseite für Gäste",
            "what MoveEye is - for neighbours and fellow campers": "was MoveEye ist – für Nachbarn und Mitcamper", "Almanac": "Almanach",
            "Sun, moon, weather": "Sonne, Mond, Wetter", "Feedback to the developer": "Rückmeldung an den Entwickler",
-           "Ideas, errors, praise - anonymous": "Ideen, Fehler, Lob – anonym", "💡 Idea": "💡 Idee", "🐞 Error": "🐞 Fehler", "⭐ Praise": "⭐ Lob",
-           "💬 Other": "💬 Anderes", "Send": "Senden", "Thank you! The message is on its way.": "Danke! Die Nachricht ist unterwegs.",
+           "Errors, wishes, praise, questions - anonymous": "Fehler, Wünsche, Lob, Fragen – anonym",
+           "About MoveEye": "Über MoveEye", "Send a test feedback": "Test-Feedback senden",
+           "for the developer: does a message reach the servers?": "für den Entwickler: kommt eine Nachricht bei den Servern an?", "history, developer, numbers": "Geschichte, Entwickler, Zahlen",
            "Games": "Spiele", "Open all games": "Spiele freigeben", "Open until": "Offen bis", "players": "Spieler", "Game corner": "Spielecke",
            "Game collection": "Spielesammlung", "Simulator game": "Simulator-Spiel", "Scan the QR code with the phone (same Wi-Fi).": "QR-Code mit dem Handy scannen (gleiches WLAN).",
            "Players and QR code": "Spieler und QR-Code", "Close": "Schliessen", "Close all games? The players are logged out.": "Alle Spiele schliessen? Die Spieler werden abgemeldet.",
@@ -43927,18 +44767,6 @@ h4.sub{margin:14px 0 4px;font-size:11px;letter-spacing:.08em;color:var(--mut);te
 .aumeter b{position:absolute;top:0;bottom:0;width:3px;margin-left:-1px;background:var(--red);display:none}
 button.on{box-shadow:inset 0 0 0 2px var(--grn)}
 .pwr{margin-top:14px;padding-top:10px;border-top:1px solid var(--line)}
-#wiz{position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:14px}
-#wiz .card{max-width:470px;width:100%;max-height:92vh;overflow-y:auto;position:relative;padding:20px}
-#wiz h2{margin:4px 0 6px;font-size:20px}#wiz p{margin:6px 0}#wiz label{display:block;margin:12px 0 4px;font-weight:600}
-#wiz input[type=text],#wiz input[type=password]{width:100%;padding:10px 12px;border-radius:10px}
-#wiz .dots{display:flex;gap:6px;justify-content:center;margin-bottom:6px}#wiz .dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
-#wiz .dots i.on{background:var(--acc)}#wiz .usegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
-#wiz .useopt{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;font-size:14px;text-align:center}#wiz .useopt .ic{font-size:26px}
-#wiz .useopt.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}#wiz .later{position:absolute;top:10px;right:12px;background:none;border:0;color:var(--mut);font-size:13px;padding:4px}
-#wiz .qr{display:block;width:180px;height:180px;margin:8px auto;border-radius:10px;overflow:hidden;background:#fff}#wiz .qr svg{width:100%;height:100%;display:block}
-#wiz .qrs{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;text-align:center}#wiz .qrs .mut{word-break:break-all}
-#wiz .wnav{display:flex;gap:8px;margin-top:16px}#wiz .wnav button{flex:1;padding:11px}
-#wiz .lang button.on{background:var(--acc);color:#fff}
 #pw-ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:20px}
 #pw-ov .card,#talk-ov .card,#pwd-ov .card{max-width:440px;width:100%;text-align:center}
 #pwd-ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:20px}
@@ -44215,7 +45043,7 @@ body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
         <input type="file" id="imp-file" accept=".json,application/json" hidden onchange="importSettings(this.files[0]); this.value=''">
       </div>
       <div class="btns pwr">
-        <button class="sec l-hide" onclick="if(confirm(t('Reset all settings to defaults?')))act('reset_settings')" data-i18n="Reset settings">Reset settings</button>
+        <button class="sec l-hide" onclick="if(window.g2Factory)g2Factory()" data-i18n="⚠ Reset to factory settings …">⚠ Reset to factory settings …</button>
       </div>
       </details>
       <details class="adv sblk" data-view="sysblk:info"><summary data-i18n="ℹ Version and status">ℹ Version and status</summary>
@@ -45547,25 +46375,8 @@ function chainPaint(c, s) {
   box.appendChild(el("div", "mut", armed ? t("Crossed out = off. Tap a step to change it. «Test protection» plays the chain.") : t("Protection is off - nothing happens. Choose «Wachsam» or «Voll» above.")));
 }
 
-// ---- feedback to the developer (anonymous) ----
-function fbDialog() {
-  let ov = $("#fb-ov"); if (ov) ov.remove();
-  ov = el("div"); ov.id = "fb-ov"; ov.style.cssText = "position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:14px";
-  const c = el("div", "card"); c.style.cssText = "max-width:460px;width:100%;max-height:92vh;overflow:auto"; ov.appendChild(c); document.body.appendChild(ov);
-  c.append(el("h3", "", "💬 " + t("Feedback to the developer")), el("div", "mut", t("Ideas, errors, praise - everything helps. The message is sent anonymously: no name, no address, unless you write one.")));
-  const kind = el("select"); [["idea", "💡 Idea"], ["bug", "🐞 Error"], ["praise", "⭐ Praise"], ["other", "💬 Other"]].forEach(([v, l]) => { const o = el("option", "", t(l)); o.value = v; kind.appendChild(o); });
-  kind.style.cssText = "width:100%;margin:10px 0 8px";
-  const tx = el("textarea"); tx.rows = 6; tx.maxLength = 3000; tx.placeholder = t("Your message …");
-  tx.style.cssText = "width:100%;box-sizing:border-box;background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit";
-  const ct = el("input"); ct.type = "text"; ct.maxLength = 120; ct.placeholder = t("Contact for an answer (optional)"); ct.style.cssText = "width:100%;margin-top:8px";
-  const dl = el("label", "row"); const dg = el("input"); dg.type = "checkbox"; dg.checked = true; dl.style.cssText = "justify-content:flex-start;gap:8px;margin-top:8px";
-  dl.append(dg, el("span", "mut", t("Add technical details (version, device, last important events - no pictures, no passwords)")));
-  const st = el("div", "err"), bt = el("div", "btns"), send = el("button", "", t("Send")), cancel = el("button", "sec", t("Cancel"));
-  send.type = cancel.type = "button"; cancel.onclick = () => ov.remove();
-  send.onclick = async () => { send.disabled = true; const r = await post("/api/feedback", {kind: kind.value, text: tx.value, contact: ct.value, diag: dg.checked, lang: LANG});
-    send.disabled = false; if (!r.ok) { st.textContent = "⚠ " + (r.error || "error"); return; } ov.remove(); toast("✓ " + t("Thank you! The message is on its way.")); };
-  bt.append(cancel, send); c.append(kind, tx, ct, dl, st, bt); tx.focus();
-}
+// ---- feedback to the developer: the one dialog of all pages (/fbx/ui.js, 584) ----
+function fbDialog() { if (window.mwFeedback) window.mwFeedback(); }
 // ---- quick switches below the joystick: thermal overlay, marks, lights, tracking, patrol, recording, photo ----
 const QS = [
   {id: "therm", ic: "🌡", lb: "Thermal", tip: "Thermal picture over the live picture", on: (c, s) => c.thermal_on, ok: (c, s) => !!c.thermal_source,
@@ -45708,9 +46519,11 @@ function mainPaint(j) {
 async function build() {
   try { TRIG = await (await fetch("/api/triggers?lang=" + LANG)).json(); } catch (e) { TRIG = []; }
   try { FEAT = (await (await fetch("/api/schedule?lang=" + LANG)).json()).features || []; } catch (e) { FEAT = []; }
-  const sch = await (await fetch("/api/schema?lang=" + LANG)).json();
+  const PG = document.body.dataset.tab || "settings";     // Simple / Expert per page (586)
+  let U = {on: true}; try { U = await (await fetch("/api/ui_simple?page=" + PG)).json(); } catch (e) {}
+  const sch = await (await fetch("/api/schema?lang=" + LANG + "&simple=" + (U.on ? 1 : 0))).json();
   const box = $("#settings");
-  try { const u = await (await fetch("/api/ui_simple")).json(); const old = document.getElementById("simplebar"); if (old) old.remove();
+  try { const u = U; const old = document.getElementById("simplebar"); if (old) old.remove();
     const sbar = simpleBar(!!u.on); sbar.id = "simplebar"; box.parentElement.insertBefore(sbar, box); } catch (e) {}
   sch.forEach(sec => {
     const d = el("details", "card");
@@ -45737,7 +46550,7 @@ async function build() {
           const r = el("div", ""); r.style.margin = "4px 0"; const b = el("b", "", l + ": "); const c = el("code", "", u); c.style.userSelect = "all";
           const cp = el("button", "sec", "⧉"); cp.type = "button"; cp.style.padding = "2px 8px"; cp.title = t("Copy");
           cp.onclick = () => { try { navigator.clipboard.writeText(u); toast("⧉ " + t("Copied")); } catch (e) {} };
-          r.append(b, c, " ", cp); out.appendChild(r); });
+          r.append(b, c, " ", cp, qrBtn(u, l, {secret: true})); out.appendChild(r); });
         if (j.rtsp_msg && j.rtsp_msg !== "running") out.appendChild(el("div", "err", "RTSP: " + t(j.rtsp_msg)));
         out.appendChild(el("div", "", t("Keep these addresses secret: whoever has them sees the picture without a password."))); };
       const load = () => fetch("/api/ext").then(r => r.json()).then(show).catch(() => {});
@@ -47326,7 +48139,7 @@ function scPick() {
       const r = el("div"); r.style.cssText = "display:flex;gap:8px;align-items:center;margin:4px 0";
       const c = el("button", "sec", "📋"); c.type = "button"; c.title = t("Copy"); c.onclick = () => { try { navigator.clipboard.writeText(u); toast("✓ " + t("copied")); } catch (e) { prompt(t(n), u); } };
       const lab = el("span", "", t(n)); lab.style.minWidth = "140px"; const cd = el("code", "mut", u.replace(j.key, "•••")); cd.style.cssText = "font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1";
-      r.append(c, lab, cd); box.appendChild(r); });
+      r.append(c, qrBtn(u, t(n), {secret: true}), lab, cd); box.appendChild(r); });
     box.appendChild(el("div", "mut", t("sc-key-note"))).style.marginTop = "6px";
     const row = el("div", "btns"); row.style.marginTop = "6px";
     const nb = el("button", "sec", "🔄 " + t("New key")); nb.type = "button"; nb.onclick = async () => { if (confirm(t("Make a new key? The old addresses stop working."))) paint(await post("/api/shortcut", {action: "new"})); };
@@ -47743,7 +48556,7 @@ function tvPaint(T) {                               // 2.95.51: the TV view (HDM
     bs.onclick = async () => { const x = await post("/api/tv", {sim: !T.sim, lang: LANG}); if (!x.ok) toast("⚠ " + (x.error || t("error"))); }; r.append(bs); }
   const a = document.createElement("a"); a.href = T.url; a.target = "_blank"; a.className = "btn sec"; a.textContent = "🔗 " + t("Open the link"); r.append(a);
   const cp = el("button", "sec", "📋"); cp.type = "button"; cp.title = t("Copy the link");
-  cp.onclick = () => { try { navigator.clipboard.writeText(location.origin + T.url); toast("✓ " + t("Link copied")); } catch (e) {} }; r.append(cp);
+  cp.onclick = () => { try { navigator.clipboard.writeText(location.origin + T.url); toast("✓ " + t("Link copied")); } catch (e) {} }; r.append(cp, qrBtn(location.origin + T.url, t("TV view"), {secret: true}));
   b.append(r);
   const l = el("label", "row pr-sw"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.checked = !!T.auto;
   cb.onchange = () => post("/api/tv", {auto: cb.checked});
@@ -47833,7 +48646,7 @@ async function nightGuard() {
 function simpleBar(on) {
   const w = el("div", "simplebar"), seg = el("div", "seg lseg"), a = el("button", on ? "sel-auto" : "", t("Simple")), e = el("button", on ? "" : "sel-auto", t("Expert"));
   a.type = e.type = "button"; seg.append(a, e);
-  const set = v => post("/api/ui_simple", {on: v}).then(() => location.reload());
+  const set = v => post("/api/ui_simple", {on: v, page: document.body.dataset.tab || "settings"}).then(() => location.reload());
   a.onclick = () => { if (!on) set(true); }; e.onclick = () => { if (on) set(false); };
   w.appendChild(seg); if (on) w.appendChild(el("div", "mut", t("Simple: only the important settings. «Expert» shows all of them.")));
   // 2.95.70: symbols coloured (with a green dot while on) or plain (turn green) - per device
@@ -48313,140 +49126,8 @@ function initSections() {
   });
 }
 // ---- setup assistant: first start (and System -> "Setup assistant"): language, name, push (ntfy with QR code), password, QR codes ----
-const WZ = {"What is MoveEye for?": "Wofür brauchst du MoveEye?", "Choose what fits - «Simple» then shows only the settings you need. You can change it later (Settings → Setup).": "Wähle, was passt – «Einfach» zeigt dann nur die Einstellungen, die du brauchst. Später änderbar (Einstellungen → Setup).",
-  "Camping: tent, caravan": "Camping: Zelt, Wohnwagen", "House and garden": "Haus und Garten", "Watching animals": "Tiere beobachten", "Holiday house, alpine hut": "Ferienhaus, Maiensäss",
-  "In the room: wake-up alarm": "Im Zimmer: Wecker", "everything (not chosen)": "alles (nichts gewählt)", "Welcome to MoveEye": "Willkommen bei MoveEye", "Set up in three short steps - takes about 3 minutes.": "In drei kurzen Schritten eingerichtet – dauert etwa 3 Minuten.",
-  "Language": "Sprache", "Name of this device (optional)": "Name dieses Geräts (freiwillig)", "e.g. camper, garden": "z. B. Wohnmobil, Garten",
-  "Push messages to the phone": "Push-Nachrichten aufs Handy", "1. Install the free app «ntfy» (App Store / Play Store).": "1. Die kostenlose App «ntfy» installieren (App Store / Play Store).",
-  "2. In the app: + → enter the topic below (and the server, if it is not the default one) - or open this code with the phone camera.":
-    "2. In der App: + → das Thema unten eintragen (und den Server, falls nicht der Standard) – oder diesen Code mit der Handy-Kamera öffnen.",
-  "Server": "Server", "Topic (like a secret channel name)": "Thema (wie ein geheimer Kanalname)", "Send test message": "Test-Nachricht senden",
-  "Sent - did it arrive on the phone?": "Gesendet – ist sie auf dem Handy angekommen?", "Skip": "Überspringen", "Next": "Weiter", "Back": "Zurück",
-  "Password for this page": "Passwort für diese Seite", "Without a password everybody in the same network (and with the link) can watch and switch everything.":
-    "Ohne Passwort kann jeder im gleichen Netz (und mit dem Link) zuschauen und alles schalten.", "Password (6-64 characters)": "Passwort (6–64 Zeichen)",
-  "Repeat password": "Passwort wiederholen", "Continue without a password (not recommended)": "Ohne Passwort weiter (nicht empfohlen)",
-  "The passwords are not the same": "Die Passwörter sind nicht gleich", "A password is set already. Enter a new one only to change it.":
-    "Es ist schon ein Passwort gesetzt. Nur zum Ändern ein neues eingeben.", "The password was given on the command line (--web-password).":
-    "Das Passwort wurde beim Start angegeben (--web-password).", "Done!": "Fertig!",
-  "Open MoveEye on other devices with these codes. On the phone: Share → «Add to Home Screen» - then it starts like an app.":
-    "Mit diesen Codes öffnest du MoveEye auf weiteren Geräten. Auf dem Handy: Teilen → «Zum Home-Bildschirm» – dann startet es wie eine App.",
-  "Home network": "Heimnetz", "Own Wi-Fi of the device": "Eigenes WLAN des Geräts", "On the road (Tailscale)": "Unterwegs (Tailscale)",
-  "🖨 Quick start card with QR codes": "🖨 Kurzanleitung mit QR-Codes", "Let's go": "Los geht's", "Later": "Später",
-  "After this the page asks for the new password once (user name: anything).": "Danach fragt die Seite einmal nach dem neuen Passwort (Benutzername: beliebig)."};
-const wt = s => (LANG === "de" && WZ[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && WZ[s]) || s;
-async function setupWizard(force) {
-  let S; try { S = await (await fetch("/api/setup", {cache: "no-store"})).json(); } catch (e) { return; }
-  if (S.locked || (S.done && !force)) return;
-  const qrs = {};
-  const qr = async u => { if (!qrs[u]) { try { qrs[u] = await (await fetch("/api/qr?t=" + encodeURIComponent(u))).text(); } catch (e) { qrs[u] = ""; } } return qrs[u]; };
-  for (const a of S.addresses || []) await qr(a.url);                      // load before the password is set
-  let ov = $("#wiz"); if (ov) ov.remove();
-  ov = el("div"); ov.id = "wiz"; document.body.appendChild(ov);
-  const card = el("div", "card"); ov.appendChild(card);
-  let step = 0, pwNew = false;
-  const nt = (S.notify_type === "ntfy" && /^https:\/\/[^/]+\/[^/]+$/.test(S.notify_url || "")) ? S.notify_url : "";
-  let server = nt ? nt.replace(/\/[^/]+$/, "") : "https://ntfy-me.com";
-  let topic = nt ? nt.replace(/^.*\//, "") : "mw-" + Array.from(crypto.getRandomValues(new Uint8Array(8)), b => "abcdefghijkmnpqrstuvwxyz23456789"[b % 32]).join("");
-  let name = S.device_name || "";
-  const close = () => ov.remove();
-  async function render() {
-    card.textContent = "";
-    const later = el("button", "later", wt("Later")); later.type = "button";
-    later.onclick = async () => { await post("/api/setup", {step: "skip", lang: LANG}); close(); };
-    const dots = el("div", "dots"); for (let i = 0; i < 5; i++) { const d = el("i"); if (i <= step) d.classList.add("on"); dots.appendChild(d); }
-    card.append(later, dots);
-    const nav = el("div", "wnav"), back = el("button", "sec", wt("Back")), next = el("button", "", wt("Next"));
-    back.type = next.type = "button"; back.onclick = () => { step--; render(); };
-    const err = el("div", "err");
-    if (step === 0) {
-      card.append(el("h2", "", "👋 " + wt("Welcome to MoveEye")), el("p", "mut", wt("Set up in three short steps - takes about 3 minutes.")));
-      card.appendChild(el("label", "", wt("Language")));
-      const lg = el("div", "seg lang");
-      Object.keys(LANGN).forEach(k => { const b = el("button", LANG === k ? "on" : "", LANGN[k]); b.type = "button";
-        b.onclick = () => {
-          if (["fr", "it", "rm"].includes(k) || ["fr", "it", "rm"].includes(LANG)) { langSet(k); return; }   // needs its translation file
-          try { localStorage.setItem("mw-lang", k); } catch (e) {} LANG = k; applyI18n(); render(); }; lg.appendChild(b); });
-      card.appendChild(lg);
-      card.appendChild(el("label", "", wt("Name of this device (optional)")));
-      const ni = el("input"); ni.type = "text"; ni.maxLength = 40; ni.value = name; ni.placeholder = wt("e.g. camper, garden"); ni.oninput = () => { name = ni.value; };
-      card.appendChild(ni);
-      next.onclick = async () => { const r = await post("/api/setup", {step: "basics", ui_lang: LANG, device_name: name.trim(), lang: LANG});
-        if (!r.ok) { err.textContent = r.error || "error"; return; } step = 1; render(); };
-      nav.append(next);
-    } else if (step === 1) {                      // 2.98.9: what is MoveEye for? - «Simple» shows only what fits
-      card.append(el("h2", "", "🧭 " + wt("What is MoveEye for?")), el("p", "mut", wt("Choose what fits - «Simple» then shows only the settings you need. You can change it later (Settings → Setup).")));
-      const L = [["camping", "⛺", "Camping: tent, caravan"], ["home", "🏡", "House and garden"], ["wild", "🦌", "Watching animals"],
-                 ["holiday", "🏔", "Holiday house, alpine hut"], ["room", "⏰", "In the room: wake-up alarm"], ["", "🧰", "everything (not chosen)"]];
-      const g = el("div", "usegrid");
-      L.forEach(([v, ic, n]) => { const b = el("button", "sec useopt" + ((S.use_case || "") === v ? " on" : ""), ""); b.type = "button";
-        b.append(el("span", "ic", ic), el("span", "", wt(n)));
-        b.onclick = async () => { const r = await post("/api/setup", {step: "usecase", use: v, lang: LANG}); if (!r.ok) { err.textContent = r.error || "error"; return; }
-          S.use_case = v; step = 2; render(); }; g.appendChild(b); });
-      card.appendChild(g);
-      const skip = el("button", "sec", wt("Skip")); skip.type = "button"; skip.onclick = () => { step = 2; render(); };
-      nav.append(back, skip);
-    } else if (step === 2) {
-      card.append(el("h2", "", "🔔 " + wt("Push messages to the phone")), el("p", "", wt("1. Install the free app «ntfy» (App Store / Play Store).")),
-                  el("p", "", wt("2. In the app: + → enter the topic below (and the server, if it is not the default one) - or open this code with the phone camera.")));
-      const box = el("div", "qr");
-      const upd = async () => { box.innerHTML = await qr(server.replace(/\/+$/, "") + "/" + topic); };
-      card.appendChild(el("label", "", wt("Topic (like a secret channel name)")));
-      const ti = el("input"); ti.type = "text"; ti.value = topic; ti.maxLength = 64; ti.oninput = () => { topic = ti.value.trim().replace(/[^A-Za-z0-9_-]/g, ""); };
-      ti.onchange = upd; card.appendChild(ti);
-      card.appendChild(el("label", "", wt("Server")));
-      const si = el("input"); si.type = "text"; si.value = server; si.oninput = () => { server = si.value.trim(); }; si.onchange = upd; card.appendChild(si);
-      card.appendChild(box); upd();
-      const st = el("div", "mut"), tb = el("button", "sec", "📨 " + wt("Send test message")); tb.type = "button";
-      const save = async () => { const r = await post("/api/setup", {step: "push", url: server.replace(/\/+$/, "") + "/" + topic, lang: LANG});
-        if (!r.ok) { err.textContent = r.error || "error"; } return r.ok; };
-      tb.onclick = async () => { if (!(await save())) return; const r = await post("/api/notify_test", {lang: LANG});
-        st.textContent = r.ok ? "✓ " + wt("Sent - did it arrive on the phone?") : "⚠ " + (r.error || "error"); };
-      const bt = el("div", "btns"); bt.appendChild(tb); card.append(bt, st);
-      const skip = el("button", "sec", wt("Skip")); skip.type = "button"; skip.onclick = () => { step = 3; render(); };
-      next.onclick = async () => { if (topic.length < 3) { step = 3; render(); return; } if (await save()) { step = 3; render(); } };
-      nav.append(back, skip, next);
-    } else if (step === 3) {
-      card.append(el("h2", "", "🔒 " + wt("Password for this page")), el("p", "mut", wt("Without a password everybody in the same network (and with the link) can watch and switch everything.")));
-      if (S.pw_cmdline) { card.appendChild(el("p", "", "✓ " + wt("The password was given on the command line (--web-password)."))); }
-      else {
-        if (S.has_pw) card.appendChild(el("p", "", "✓ " + wt("A password is set already. Enter a new one only to change it.")));
-        card.appendChild(el("label", "", wt("Password (6-64 characters)")));
-        const p1 = el("input"); p1.type = "password"; p1.autocomplete = "new-password"; card.appendChild(p1);
-        card.appendChild(el("label", "", wt("Repeat password")));
-        const p2 = el("input"); p2.type = "password"; p2.autocomplete = "new-password"; card.appendChild(p2);
-        let without = null;
-        if (!S.has_pw) { const l = el("label", "row"); l.style.fontWeight = "400"; without = el("input"); without.type = "checkbox";
-          l.append(el("span", "", wt("Continue without a password (not recommended)")), without); card.appendChild(l); }
-        card.appendChild(el("p", "mut", wt("After this the page asks for the new password once (user name: anything).")));
-        next.onclick = async () => {
-          const pw = p1.value;
-          if (pw !== p2.value) { err.textContent = wt("The passwords are not the same"); return; }
-          if (!pw && !S.has_pw && !(without && without.checked)) { err.textContent = wt("Password (6-64 characters)"); p1.focus(); return; }
-          const r = await post("/api/setup", {step: "finish", password: pw, lang: LANG});
-          if (!r.ok) { err.textContent = r.error || "error"; return; }
-          pwNew = !!pw; step = 4; render();
-        };
-      }
-      if (S.pw_cmdline) next.onclick = async () => { await post("/api/setup", {step: "finish", lang: LANG}); step = 4; render(); };
-      nav.append(back, next);
-    } else {
-      card.append(el("h2", "", "✅ " + wt("Done!")), el("p", "mut", wt("Open MoveEye on other devices with these codes. On the phone: Share → «Add to Home Screen» - then it starts like an app.")));
-      const g = el("div", "qrs");
-      for (const a of S.addresses || []) {
-        const c = el("div"), b = el("div", "qr"); b.innerHTML = qrs[a.url] || "";
-        c.append(el("b", "", wt({lan: "Home network", hotspot: "Own Wi-Fi of the device", tailscale: "On the road (Tailscale)"}[a.kind] || a.kind)), b, el("div", "mut", a.url));
-        g.appendChild(c);
-      }
-      card.appendChild(g);
-      const lk = el("a", "btn sec", wt("🖨 Quick start card with QR codes")); lk.href = "/setup-card?lang=" + LANG; lk.target = "_blank";
-      const bt = el("div", "btns"); bt.appendChild(lk); card.appendChild(bt);
-      next.textContent = wt("Let's go"); next.onclick = () => { close(); if (pwNew) location.reload(); };
-      nav.append(next);
-    }
-    card.append(err, nav);
-  }
-  render();
-}
+// the setup assistant is the one guide now (516 / 586): «quick or thorough?», resumable, place, walk test …
+function setupWizard(force) { const go = () => window.mwGuide && window.mwGuide(force); if (!go()) setTimeout(go, 1500); }
 function allGroups() {                     // overview: every group open, the topics inside closed
   document.querySelectorAll("#settings details.grp").forEach(d => { if (!d.open) d.open = true; });
   document.querySelectorAll("#settings details.sub:not(.inline), #settings details.adv").forEach(d => { if (d.open) d.open = false; });
@@ -48568,6 +49249,7 @@ I18N.en = I18N.en || {}; Object.assign(I18N.en, {"tunnel-note": "If the simulato
     big.textContent = T.on ? t("Code") + ": " + T.code : t("off"); box.appendChild(big);
     const host = (j.address || "").replace(/^https?:\/\//, "").replace(/[:\/].*$/, "");
     if (T.on) box.appendChild(el("div", "", t("In the simulator: Verbindung → «Tunnel zu MoveEye»: address") + " " + host + ", " + t("code") + " " + T.code));
+    if (T.on) box.appendChild(qrBtn(j.address || location.origin + "/", qrT("Simulator connection (tunnel)"), {secret: true, note: t("Code") + ": " + T.code + " · " + qrT("In the simulator (Verbindung → «Tunnel zu MoveEye») paste the address and type the code.")}));   // 585
     if (T.on) {                                                         // 2.95.60: the ports, to compare with the simulator
       const pt = el("div", T.listen && T.listen !== "ok" ? "" : "mut");
       pt.textContent = T.listen && T.listen !== "ok" ? "⚠ " + t("could not open port") + " " + T.port + ": " + T.listen
@@ -50354,7 +51036,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>
 <ul>
 <li>🔍 <b>Einstellung suchen:</b> im Einstellungsbereich oben ins Suchfeld tippen (z. B. «Passwort», «Sirene», «WLAN») – alles andere verschwindet, die Treffer sind blau umrandet. ✕ oder Esc zeigt wieder alles.</li>
-<li>💬 <b>Feedback an den Entwickler:</b> System → «Feedback an den Entwickler» (im Fenster: Einrichtung). Ideen, Fehler, Lob – anonym, ohne Absender. Ohne Internet wartet die Nachricht und geht später weg.</li>
+<li>💬 <b>Rückmeldung an den Entwickler:</b> das 💬 oben auf jeder Seite (auch im Fenster und im 3D-Simulator, dort unter «Mehr: Aufstellen …») oder Mehr → «Rückmeldung an den Entwickler». Art wählen (Fehler / Wunsch / Lob / Frage), auf Wunsch 1–5 Sterne «Wie zufrieden?» und «Bildschirmfoto mitschicken» (im Browser das aktuelle Live-Bild, im Fenster das Fenster, im Simulator sein Bild – Gesichter verpixelt). Version und Seite gehen immer mit. Anonym, ohne Absender. Ohne Internet wartet die Nachricht und geht später weg; der Dialog zeigt, wie viele noch warten («Jetzt senden»).</li><li>ℹ️ <b>Über MoveEye:</b> die Versionsnummer neben dem Logo antippen (Web und Fenster) oder Mehr → «Über MoveEye»: die Geschichte des Projekts, der Entwickler, eine Zeitleiste und ein paar Zahlen.</li>
 <li>🎞 <b>Markierungen in Aufnahmen:</b> Aufnahme → «Markierungen in Aufnahmen und Alarmbildern»: dünne Eckmarken (Standard, das Gesicht bleibt frei), keine, oder rote Rahmen wie im Live-Bild.</li>
 <li>⚡ <b>Schnellschalter neben dem Stick</b> (grün = an): 🌡 Wärmebild über das Live-Bild, 🏷 Objekte markieren, 💡 weisses Licht, 🔴 IR-Licht, 🎧 Mithören, ⚡ je Relais (ein / automatisch), 🎯 Person folgen, 🔄 Patrouille, ⏺ jetzt aufnehmen (max. 10 min, rot während der Aufnahme, nochmals tippen = stopp), 📷 Foto in die Aufnahmen. Grau = nicht angeschlossen.</li>
 <li>🕹 <b>Steuer-Stick im Vollbild</b> (Handy, Tablet, PC): das Bild füllt den ganzen Bildschirm, der Stick liegt durchsichtig unten rechts darüber. Nach 3 s ohne Berührung wird er blass, beim Berühren wieder deutlich. Daneben: ◎ Mitte, 🎧 Mithören; ⇆ oben neben ✕ legt den Stick auf die andere Seite.</li>
@@ -50367,7 +51049,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li>🦊 <b>Gezielte Abschreckung</b> (Licht &amp; Ton → Abschreckung): für Person, grosses Tier (Bär, Kuh, Pferd …), kleines Tier (Katze, Hund, Vogel) und warmen Körper (Wärmebild) je eine eigene Reaktion – Ton (neu: hohes Pfeifen, Knallen/Klatschen oder eigene Töne) und/oder Lichtblitze mit dem weissen Licht. Dauer und Pause einstellbar; «auch wenn der Schutz aus ist» z. B. für den Garten. Tiere brauchen die KI-Erkennung.</li>
 <li>🚨 <b>Diebstahlschutz</b> (Alarm &amp; Camping): wenn der Schutz an ist gibt es eine dringende Push-Nachricht mit Bild und die Sirene, sobald die Kamera <b>abgedeckt oder weggedreht</b> wird, das Gerät <b>bewegt oder umgeworfen</b> wird (Bewegungssensor MPU-6050 an I2C 0x68, ca. 3 Fr., optional) oder der <b>Strom getrennt</b> wird (mit USV-Akku). Während sich der Kamerakopf selbst bewegt (Patrouille, Verfolgen, Joystick), lernt die Bildprüfung neu.</li>
 <li>☁️ <b>Sicherung der Alarm-Aufnahmen:</b> Aufnahmen &amp; Zeitraffer → Sicherung. Fertige Alarm-Aufnahmen (Schutz an oder mit Person) gehen automatisch auf einen WebDAV-Ordner (Nextcloud: <code>https://…/remote.php/dav/files/BENUTZER/MotionWatch/</code> mit App-Passwort, Synology/QNAP-NAS, viele Clouds), in einen Ordner (USB-Stick, eingebundenes NAS) oder als Video zu Telegram. Ein Unterordner pro Tag. «Sicherung testen» prüft die Einstellungen.</li>
-<li>🧭 <b>Einrichtungs-Assistent:</b> erscheint beim ersten Öffnen der Seite – Sprache und Gerätename, Push-Nachrichten (ntfy-Thema mit QR-Code und Test-Nachricht), Web-Passwort, QR-Codes für weitere Geräte. Jederzeit wieder unter System → «Einrichtungs-Assistent». «Kurzanleitung (QR)» ergibt eine Karte zum Ausdrucken mit QR-Codes für das eigene WLAN des Pi und die Seite. Im Fenster auf dem Pi: Einrichtung → «QR-Code fürs Handy».</li>
+<li>🧭 <b>Einrichtung:</b> erscheint beim ersten Öffnen der Seite (und nach «Auf Werkseinstellungen zurücksetzen») – zuerst die Frage «Schnell (ca. 5 Min.) oder ausgiebig?». Jeder Schritt lässt sich überspringen, «Später weitermachen» unter Mehr → Einrichtung. Mehr dazu im Kapitel «Einrichtung, Rundgänge und Tipps». «Kurzanleitung (QR)» ergibt eine Karte zum Ausdrucken mit QR-Codes für das eigene WLAN des Pi und die Seite. Im Fenster auf dem Pi: Reiter Mehr → «🧭 Einrichtung».</li>
 <li>🔗 <b>Ein Symbol für zu Hause und unterwegs:</b> die Seite über die Tailscale-Adresse zum Home-Bildschirm hinzufügen (z. B. <code>http://NAME-DES-PI:5000</code> oder die 100.…-Adresse aus der Tailscale-App). Zu Hause verbindet Tailscale direkt im WLAN, unterwegs übers Internet – die Tailscale-App muss eingeschaltet sein. Nur im eigenen WLAN des Pi ohne Internet die lokale Adresse nehmen (z. B. <code>http://10.42.0.1:5000</code>). Oben zeigt «🌐 Fern», wenn du über Tailscale verbunden bist.</li>
 <li>📱 <b>Wie eine App:</b> MoveEye auf den Home-Bildschirm legen (iPhone: Teilen → Zum Home-Bildschirm). Dann gibt es auch auf dem iPhone ein richtiges Vollbild. Oben rechts erscheint dort der Knopf <b>⟳</b> zum Neuladen; läuft nach einem Update eine neue Version, erscheint unten «Neu laden».</li>
 <li>🦊 <b>Tierfotos sammeln:</b> KI-Erkennung eingeschaltet lassen, Kamera auf einen Futterplatz oder Wildwechsel richten – am Morgen im <i>Tagebuch</i> nachsehen.</li>
@@ -50414,6 +51096,12 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <dt>Sprechen geht nicht</dt><dd>Nur auf der sicheren Seite <code>https://…:5001</code>. Zertifikatswarnung einmal bestätigen und das Mikrofon erlauben.</dd>
 </dl></section>
 
+<section id="qr" data-icon="▦"><h2>QR-Codes</h2><p>Überall, wo MoveEye einen Link fürs Handy zeigt, steht daneben ein kleines <b>▦</b>. Antippen: der QR-Code gross, darunter der Link, «Kopieren» und «Drucken». Mit der Handy-Kamera scannen – fertig.</p>
+<ul><li><b>Wo:</b> Push-Nachrichten (ntfy-Adresse), Gast-Zugang, Adressen von MoveEye (Heimnetz, Tailscale, https – bei der Tailscale-Zeile unter System), Kurzbefehle fürs iPhone (jede Adresse), App-Schlüssel (nur einmal beim Erstellen), Bild für andere Programme, TV-Ansicht, Simulator-Tunnel (Adresse und Code für ein Tablet), Aufnahmen, «Adresse dieser Seite für Links».</li>
+<li><b>ntfy:</b> Android – der Code abonniert das Thema direkt in der ntfy-App (ntfy://…). iPhone – die App kann das nicht; der Code öffnet das Thema im Browser, in der App dann «+» und das Thema eintippen.</li>
+<li><b>Alle auf einer Seite:</b> Mehr → «QR-Codes». Geheime Codes sind verschwommen, bis man sie antippt; jeder lässt sich einzeln drucken. «Alle drucken» macht ein A4-Blatt mit Etiketten – geheime nur, wenn «Geheime Codes mitdrucken» angekreuzt ist.</li>
+<li><b>Sicherheit:</b> QR-Codes gibt es nur für den Administrator (nicht für andere Benutzer und nicht über einen App-Schlüssel). Geheime Codes (Schlüssel, Stream-Adresse, ntfy-Thema, Kurzbefehl-Schlüssel) bleiben nicht im Browser-Speicher und stehen in keinem Protokoll. Wer einen geheimen Code scannt, hat Zugang – nur Vertrauten zeigen, Ausdrucke sicher aufbewahren.</li>
+<li><b>Fenster:</b> Knöpfe «QR-Code …» bei Gast-Zugang, Web-Stream, Benachrichtigungen, Simulator (Tunnel) und beim App-Schlüssel; unter Einrichtung «Alle QR-Codes …». Dort auch «Bild speichern …» und – wenn ein Drucker eingerichtet ist – «Drucken».</li></ul></section>
 <section id="setup" data-icon="🧰"><h2>Einrichtung auf dem Raspberry Pi</h2>
 <pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils
 pip install opencv-python numpy pillow flask psutil</pre>
@@ -50568,7 +51256,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>
 <ul>
 <li>🔍 <b>Find a setting:</b> type into the search box at the top of the settings (e.g. «password», «siren», «Wi-Fi») – everything else disappears, matches get a blue frame. ✕ or Esc shows everything again.</li>
-<li>💬 <b>Feedback to the developer:</b> System → «Feedback to the developer» (window: Setup). Ideas, errors, praise – anonymous, no sender. Without internet the message waits and is sent later.</li>
+<li>💬 <b>Feedback to the developer:</b> the 💬 at the top of every page (also in the window and in the 3D simulator, there under «Mehr: Aufstellen …») or More → «Feedback to the developer». Choose the kind (error / wish / praise / question), optionally 1–5 stars «How happy are you?» and «Send a screenshot» (in the browser the current live picture, in the window the window, in the simulator its picture – faces pixelated). Version and page always go along. Anonymous, no sender. Without internet the message waits and is sent later; the dialog shows how many are waiting («Send now»).</li><li>ℹ️ <b>About MoveEye:</b> tap the version number next to the logo (web and window) or More → «About MoveEye»: the story of the project, the developer, a timeline and a few numbers.</li>
 <li>🎞 <b>Markings in recordings:</b> Recording → «Markings in recordings and alarm pictures»: thin corner marks (default, the face stays free), none, or red boxes like the live picture.</li>
 <li>⚡ <b>Quick switches next to the stick</b> (green = on): 🌡 thermal picture over the live picture, 🏷 mark objects, 💡 white light, 🔴 IR light, 🎧 listen, ⚡ per relay (on / automatic), 🎯 follow person, 🔄 patrol, ⏺ record now (max. 10 min, red while recording, tap again = stop), 📷 photo into the recordings. Grey = not connected.</li>
 <li>🕹 <b>Joystick in full screen</b> (phone, tablet, PC): the picture fills the whole screen, the stick floats see-through at the bottom right. After 3 s untouched it becomes pale, on touch clearly visible again. Next to it: ◎ centre, 🎧 listen; ⇆ at the top next to ✕ puts the stick on the other side.</li>
@@ -50581,7 +51269,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li>🦊 <b>Targeted deterrence</b> (Light &amp; sound → Deterrence): an own reaction for person, big animal (bear, cow, horse …), small animal (cat, dog, bird) and warm body (thermal camera) – sound (new: high whistle, bangs/claps or own sounds) and/or the white light flashing. Duration and pause adjustable; «also when disarmed» e.g. for the garden. Animals need the AI detection.</li>
 <li>🚨 <b>Theft protection</b> (Alarm &amp; camping): when armed an urgent push with picture and the siren as soon as the camera is <b>covered or turned away</b>, the device is <b>moved or knocked over</b> (motion sensor MPU-6050 at I2C 0x68, about 3 $, optional) or the <b>power is cut</b> (with the UPS HAT). While the camera head moves itself (patrol, tracking, joystick) the picture check learns anew.</li>
 <li>☁️ <b>Backup of alarm recordings:</b> Recordings &amp; timelapse → Backup. Finished alarm recordings (armed or with a person) go automatically to a WebDAV folder (Nextcloud: <code>https://…/remote.php/dav/files/USER/MotionWatch/</code> with an app password, Synology/QNAP NAS, many clouds), to a folder (USB stick, mounted NAS) or as a video to Telegram. One sub-folder per day. «Test the backup» checks the settings.</li>
-<li>🧭 <b>Setup assistant:</b> shows the first time the page is opened – language and device name, push messages (ntfy topic with QR code and test message), web password, QR codes for more devices. Any time again under System → «Setup assistant». «Quick start (QR)» gives a card to print with QR codes for the own Wi-Fi of the Pi and the page. In the window on the Pi: Setup → «QR code for the phone».</li>
+<li>🧭 <b>Setup:</b> shows the first time the page is opened (and after «Reset to factory settings») – first the question «Quick (about 5 min.) or thorough?». Every step can be skipped, «Continue later» under More → Setup. More in the chapter «Setup, tours and tips». «Quick start (QR)» gives a card to print with QR codes for the own Wi-Fi of the Pi and the page. In the window on the Pi: tab More → «🧭 Setup».</li>
 <li>🔗 <b>One icon for home and away:</b> add the page to the home screen from the Tailscale address (e.g. <code>http://NAME-OF-THE-PI:5000</code> or the 100.… address shown in the Tailscale app). At home Tailscale connects directly over the Wi-Fi, away over the internet – the Tailscale app must be on. Only on the Pi&#39;s own Wi-Fi without internet use the local address (e.g. <code>http://10.42.0.1:5000</code>). «🌐 Remote» at the top shows when you are connected over Tailscale.</li>
 <li>📱 <b>Like an app:</b> put MoveEye on the home screen (iPhone: Share → Add to Home Screen). Then the iPhone also gets a real full screen. In this mode the button <b>⟳</b> (top right) reloads the page; after an update a «Reload» bar appears at the bottom.</li>
 <li>🦊 <b>Collect animal photos:</b> keep AI detection on, point the camera at a feeding place or a game trail – check the <i>Diary</i> in the morning.</li>
@@ -50630,6 +51318,12 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <dt>Talking does not work</dt><dd>Only on the secure page <code>https://…:5001</code>. Confirm the certificate warning once and allow the microphone.</dd>
 </dl></section>
 
+<section id="qr" data-icon="▦"><h2>QR codes</h2><p>Wherever MoveEye shows a link for the phone, a small <b>▦</b> stands next to it. Tap it: the QR code big, the link below, «Copy» and «Print». Scan it with the phone camera – done.</p>
+<ul><li><b>Where:</b> push messages (ntfy address), guest access, addresses of MoveEye (home network, Tailscale, https – next to the Tailscale line under System), iPhone shortcuts (every address), app key (only once, when it is made), picture for other programs, TV view, simulator tunnel (address and code for a tablet), recordings, «Address of this page for links».</li>
+<li><b>ntfy:</b> Android – the code subscribes to the topic straight in the ntfy app (ntfy://…). iPhone – the app cannot do that; the code opens the topic in the browser, then tap «+» in the app and type the topic.</li>
+<li><b>All on one page:</b> More → «QR codes». Secret codes are blurred until tapped; each one can be printed. «Print all» makes an A4 sheet with labels – secret ones only when «Print secret codes too» is ticked.</li>
+<li><b>Security:</b> QR codes only for the administrator (not for other users, not through an app key). Secret codes (keys, stream address, ntfy topic, shortcut key) are not kept in the browser cache and never written to a log. Whoever scans a secret code has access – show it only to people you trust, keep printouts safe.</li>
+<li><b>Window:</b> buttons «QR code …» at guest access, web stream, notifications, simulator (tunnel) and the app key; under Setup «All QR codes …». There also «Save picture …» and – when a printer is set up – «Print».</li></ul></section>
 <section id="setup" data-icon="🧰"><h2>Setup on the Raspberry Pi</h2>
 <pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils
 pip install opencv-python numpy pillow flask psutil</pre>
@@ -51040,6 +51734,7 @@ function openAt(i, list) {
   $("#m-title").textContent = it.time; $("#m-meta").textContent = [fmtSize(it.size), it.source || "", it.schedules.join(", ")].filter(Boolean).join(" · ");
   $("#m-dl").href = "/rec/file/" + encodeURIComponent(it.name) + "?dl=1"; $("#m-dl").setAttribute("download", it.name);
   $("#m-share").onclick = () => recShare(it); $("#m-share").title = t("Share");
+  if (!$("#m-qr") && window.qrBtn) { const q = qrBtn(() => location.origin + "/rec/file/" + encodeURIComponent(ML[modalIdx].name), qrT("Recording"), {note: qrT("Opens the recording on the phone (with the password of MoveEye).")}); q.id = "m-qr"; $("#m-share").after(q); }   // 585
   $("#m-pdf").href = "/rec/report/" + encodeURIComponent(it.name) + "?lang=" + LANG; $("#m-pdf").title = t("Event report (PDF) for the police / insurance");
   $("#m-fav").textContent = it.fav ? "★" : "☆"; $("#m-fav").style.color = it.fav ? "var(--yel)" : "";
   faRow(it);
@@ -52654,8 +53349,11 @@ class WebStream:
         timeline_routes(app, reply, body, request, Response)    # 2.98.14: Verlauf → Zeitleiste + weekly report (523)
         alx_routes(app, watch, reply, body)                # 2.98.13: push buttons /na/, «What was it?» (066)
         sx_routes(app, watch, reply, body)                 # night view / screen reader script, «holiday over», error pages (578)
+        fbx_routes(app, watch, reply, body)                # 2.98.33: feedback from every page, «About MoveEye» (584)
         appkey_routes(app, reply, body)                    # app keys, security check in Settings → Security (573)
         place_routes(app, watch, reply, body)              # 2.98.30: «Platz einrichten» /place, field of view per camera (537)
+        g2_routes(app, watch, reply, body)                 # guide 2: tours, tip of the day, factory reset (586)
+        qr_routes(app, reply, body)                        # QR codes: POST /api/qr, gallery /qr, print page, no-store for secrets (587)
 
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
@@ -52916,7 +53614,12 @@ class WebStream:
         @app.route("/api/schema")
         def api_schema():
             lang = request.args.get("lang") or CFG["lang"]
-            return reply(web_schema(norm_lang(lang), request.args.get("sec") or None))   # 2.98.14: ?sec= one section (page Simulator)
+            sv = request.args.get("simple")                # Simple / Expert of this page (586)
+            _G2_SIMPLE.v = None if sv not in ("0", "1") else sv == "1"
+            try:
+                return reply(web_schema(norm_lang(lang), request.args.get("sec") or None))   # 2.98.14: ?sec= one section (page Simulator)
+            finally:
+                _G2_SIMPLE.v = None
 
         @app.route("/api/appearance")
         def api_appearance():
@@ -53033,7 +53736,8 @@ class WebStream:
         @app.route("/api/feedback", methods=["POST"])
         def api_feedback():
             d = body(); lang = norm_lang(d.get("lang"))
-            ok, err = feedback_send(d.get("kind"), d.get("text"), str(d.get("contact") or "").strip(), bool(d.get("diag")))
+            ok, err = feedback_send(d.get("kind"), d.get("text"), str(d.get("contact") or "").strip(), bool(d.get("diag")), d.get("stars"),
+                                    d.get("page"), fbx_web_shot(False) if d.get("shot") else None, "web")      # 2.98.33: stars, page, picture (584)
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
 
         @app.route("/api/quick", methods=["POST"])
@@ -53692,8 +54396,6 @@ class WebStream:
             elif a == "reset_counter":
                 STATE["detections_total"] = 0; STATE["ignored_vehicles"] = 0
                 log_event("person", "Person counter reset (web)")
-            elif a == "reset_settings":
-                reset_settings()
             elif a == "save_settings":
                 save_settings_now()
             else:
@@ -53765,9 +54467,17 @@ class WebStream:
 
         @app.route("/api/ui_simple", methods=["GET", "POST"])
         def api_ui_simple():
+            pg = str(request.args.get("page") or "")[:20]
             if request.method == "POST":
-                CFG["ui_simple"] = bool(body().get("on")); save_settings()      # the Pi window follows by itself
-            return reply({"on": bool(CFG["ui_simple"])})
+                d = body(); pg = str(d.get("page") or pg)[:20]
+                if pg and re.fullmatch(r"[a-z]{2,20}", pg):     # 586: Simple / Expert of ONE page (the default stays)
+                    m_ = page_modes(); m_[pg] = "simple" if d.get("on") else "expert"
+                    if (m_[pg] == "simple") == bool(CFG["ui_simple"]):
+                        m_.pop(pg)
+                    web_ui_update({"mw-page-mode": json.dumps(m_)})
+                else:
+                    CFG["ui_simple"] = bool(d.get("on")); save_settings()      # the default (the Pi window follows by itself)
+            return reply({"on": page_simple(pg) if pg else bool(CFG["ui_simple"]), "default": bool(CFG["ui_simple"]), "own": pg in page_modes()})
 
         @app.route("/api/night", methods=["POST"])
         def api_night():
@@ -54344,7 +55054,9 @@ class WebStream:
                 return reply({"done": CFG["setup_done"], "lang": CFG["lang"], "device_name": CFG["device_name"], "has_pw": web_pw_active(),
                               "pw_cmdline": bool(CFG["web_password"]), "notify_type": CFG["notify_type"], "notify_url": CFG["notify_url"],
                               "addresses": setup_addresses(), "hotspot": {"on": CFG["hotspot_on"], "ssid": CFG["hotspot_ssid"], "has_pw": bool(hs_pw)},
-                              "locked": CFG["lock_on"], "use_case": CFG.get("use_case") or ""})
+                              "locked": CFG["lock_on"], "use_case": CFG.get("use_case") or "",
+                              "guide": g2_state(request.args.get("lang") or CFG["lang"]), "lat": CFG["latitude"], "lon": CFG["longitude"],
+                              "time": datetime.now().strftime("%d.%m.%Y %H:%M")})
             d = body(); lang = norm_lang(d.get("lang")); step = d.get("step")
             ok, err = True, ""
             if step == "basics":
@@ -54371,6 +55083,8 @@ class WebStream:
                 CFG["setup_done"] = True; save_settings_now()
             elif step == "again":
                 CFG["setup_done"] = False; save_settings()
+            elif step == "guide":                        # 586: the one guide (quick / thorough, resumable)
+                ok, err = g2_action(d, "web")
             else:
                 return reply({"ok": False, "error": "unknown step"}, 400)
             if ok and step == "basics":
@@ -54581,7 +55295,7 @@ DE = {
     "QR code for the phone": "QR-Code fürs Handy", "Markings in recordings and alarm pictures": "Markierungen in Aufnahmen und Alarmbildern",
     "thin corner marks (face stays free)": "dünne Eckmarken (Gesicht bleibt frei)", "none (clean picture)": "keine (sauberes Bild)",
     "like the live picture (red boxes)": "wie im Live-Bild (rote Rahmen)", "please write a few words": "bitte ein paar Worte schreiben",
-    "at most 5 messages per hour": "höchstens 5 Nachrichten pro Stunde", "Feedback to the developer": "Feedback an den Entwickler",
+    "at most 5 messages per hour": "höchstens 5 Nachrichten pro Stunde", "Feedback to the developer": "Rückmeldung an den Entwickler",
     "Ideas, errors, praise - everything helps. The message is sent anonymously: no name, no address, unless you write one.": "Ideen, Fehler, Lob – alles hilft. Die Nachricht geht anonym weg: kein Name, keine Adresse, ausser du schreibst sie dazu.",
     "Idea": "Idee", "Error": "Fehler", "Praise": "Lob", "Other": "Sonstiges", "Send": "Senden", "Cancel": "Abbrechen",
     "Add technical details (version, device, last important events - no pictures, no passwords)": "Technische Angaben mitsenden (Version, Gerät, letzte wichtige Ereignisse – keine Bilder, keine Passwörter)", "Thank you! The message is on its way.": "Danke! Die Nachricht ist unterwegs.", "need 2+ waypoints": "mindestens 2 Wegpunkte nötig", "Person": "Person", "SMS (LTE stick)": "SMS (LTE-Stick)", "Send test SMS": "Test-SMS senden", "SMS sent": "SMS gesendet",
@@ -55776,7 +56490,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.32")
+        self.root.title("MoveEye 2.98.33")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -56141,8 +56855,9 @@ class App:
             small = self._lay[0]
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
-                tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.32 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+                vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
+                vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
+            Tip(nm, f"{tr('Build')} 2.98.33 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -56168,7 +56883,9 @@ class App:
             lb.config(width=3, font=("DejaVu Sans", 9, "bold")); lb.pack(side="right")
             self._ibtn(ctl, "◐", self.toggle_theme, tk_theme_tip(), on=bool(CFG.get("tk_night"))).pack(side="right", padx=(0, 6))   # Hell → Dunkel → Rotlicht (578)
             self._ibtn(ctl, "✉", self._messages_win, tr("Message list")).pack(side="right", padx=(0, 6))     # 2.98.13
+            self._ibtn(ctl, "💬", self._feedback, tr("Feedback to the developer")).pack(side="right", padx=(0, 6))   # 2.98.33 (584)
             self._ibtn(ctl, "◷", lambda: tk_timeline_win(self), tr("Night timeline")).pack(side="right", padx=(0, 6))   # 2.98.14 (575)
+            self._ibtn(ctl, "?", lambda: self._g2_tour(self.tab, True), tr("Tour of this page")).pack(side="right", padx=(0, 6))   # 584
             self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
             self.b_fs.pack(side="right", padx=(0, 6))
             vb = self._ibtn(ctl, "☰", lambda: None, tr("View") + " – " + tr("show / hide fields"))
@@ -56726,8 +57443,13 @@ class App:
         poll()
 
     def _set_simple(self, v):
-        if bool(CFG["ui_simple"]) != v:
-            CFG["ui_simple"] = v; save_settings(); self._simple_seen = v; self.root.after(30, self._rebuild)
+        """586: Simple / Expert of THIS tab (the default stays - it is chosen in the guide)"""
+        tab = self.tab
+        if page_simple(tab) != v:
+            m_ = page_modes(); m_[tab] = "simple" if v else "expert"
+            if v == bool(CFG["ui_simple"]):
+                m_.pop(tab)
+            web_ui_update({"mw-page-mode": json.dumps(m_)}); self.root.after(30, self._rebuild)
 
     def _protect(self, level):
         """2.95.105: protection level; switching off needs the PIN if one is set"""
@@ -56782,13 +57504,14 @@ class App:
         if tab != "sim":
             mrow.pack(fill="x", pady=(0, 10))
         self._simple_seen = bool(CFG["ui_simple"])
+        _G2_SIMPLE.v = page_simple(tab)                    # 586: Simple / Expert of this tab (simple_hidden in the window thread)
         for i, (val, lab) in enumerate(((True, tr("Simple")), (False, tr("Expert")))):
-            on = bool(CFG["ui_simple"]) == val
+            on = page_simple(tab) == val
             l = tk.Label(mrow, text=lab, font=("DejaVu Sans", 9, "bold"), pady=4, cursor="hand2",
                          bg=C["acc"] if on else C["field"], fg="#ffffff" if on else C["mut"])
             l.pack(side="left", fill="x", expand=True, padx=(0 if i == 0 else 1, 0))
             l.bind("<Button-1>", lambda e, v=val: self._set_simple(v))
-        if CFG["ui_simple"] and tab != "sim":
+        if page_simple(tab) and tab != "sim":
             tk.Label(inner, text=tr("Simple: only the important settings. «Expert» shows all of them."), bg=C["bg"], fg=C["mut"],
                      font=("DejaVu Sans", 8), anchor="w", justify="left", wraplength=330).pack(fill="x", pady=(0, 8))
         self.grp_meta = {}; self._open_before = None
@@ -57017,12 +57740,13 @@ class App:
             if s != sec or simple_hidden(key) or (CFG["lock_on"] and key in LOCK_DENY_KEYS): continue
             if key in TK_AI_MODEL_KEYS: continue           # 2.98.23: in the group «KI-Modell» below
             tg = Toggle(sp, tr(label), CFG[key], lambda val, k=key: self._set(k, val)); tg.pack(fill="x", pady=3)
-            self.vars[key] = tg
+            self.vars[key] = tg; self._g2_q(tg, key)          # «?»: explanation + recommendation (584)
         for s, key, label, lo, hi, step in SLIDERS:
             if s != sec or simple_hidden(key): continue
             row = ttk.Frame(sp); row.pack(fill="x", pady=(6, 0))
             ttk.Label(row, text=tr(label)).pack(side="left")
             vl = ttk.Label(row, text=str(CFG[key]), style="Mut.TLabel"); vl.pack(side="right"); self.value_labels[key] = vl
+            self._g2_q(row, key)
             v = tk.DoubleVar(value=CFG[key]); self.vars[key] = v
             sc = ttk.Scale(sp, from_=lo, to=hi, variable=v, orient="horizontal",
                            command=lambda val, k=key, st=step: self._slide(k, float(val), st))
@@ -57251,7 +57975,7 @@ class App:
         if sec == "Auto-tune":
             bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(8, 0))
             ttk.Button(bf, text=tr("Recalibrate (scene empty)"), command=self.watch.tuner.reset).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(bf, text=tr("Reset all settings"), command=self._reset_settings).pack(side="left", expand=True, fill="x")
+            ttk.Button(bf, text=tr("⚠ Reset to factory settings …"), command=self._reset_settings).pack(side="left", expand=True, fill="x")
 
     def _set_adv(self, gid, open_, save=True):
         ah, ab = self.adv[gid]
@@ -57892,10 +58616,7 @@ class App:
             c.yview_scroll(direction, "units")
 
     def _reset_settings(self):
-        theme, lang, hidden = CFG["theme"], CFG["lang"], CFG["ui_hidden"]
-        reset_settings()
-        CFG["theme"], CFG["lang"], CFG["ui_hidden"] = theme, lang, hidden     # keep the chosen look, language and view
-        save_settings(); self._schedule_rebuild()
+        self._g2_factory()                               # 586 / 584: «Reset to factory settings» (password / PIN, typed word, backup)
 
     # ---- collapsible sections -------------------------------------------
     def _set_section(self, sec, open_, save=True):
@@ -58599,27 +59320,7 @@ class App:
                 pts += [w - (len(hist) - 1 - i) * (w / 59.0), h - 2 - (h - 4) * v / 100.0]
             c.create_line(*pts, fill=C["grn"] if cpu < 60 else (C["yel"] if cpu < 85 else C["red"]), width=2)
 
-    def _feedback(self):
-        from tkinter import messagebox
-        w = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Feedback to the developer")); w.configure(bg=C["bg"])
-        ttk.Label(w, text=tr("Ideas, errors, praise - everything helps. The message is sent anonymously: no name, no address, unless you write one."),
-                  style="Mut.TLabel", wraplength=420, justify="left").pack(padx=14, pady=(12, 6), anchor="w")
-        kinds = [("idea", tr("Idea")), ("bug", tr("Error")), ("praise", tr("Praise")), ("other", tr("Other"))]
-        cb = ttk.Combobox(w, state="readonly", values=[k[1] for k in kinds]); cb.current(0); cb.pack(fill="x", padx=14)
-        txt = tk.Text(w, height=8, width=52, bg=C["field"] if "field" in C else C["panel"], fg=C["txt"], insertbackground=C["txt"], relief="flat")
-        txt.pack(fill="both", expand=True, padx=14, pady=8)
-        diag = tk.BooleanVar(value=True)
-        ttk.Checkbutton(w, text=tr("Add technical details (version, device, last important events - no pictures, no passwords)"), variable=diag).pack(anchor="w", padx=14)
-        bf = ttk.Frame(w); bf.pack(fill="x", padx=14, pady=10)
-
-        def send():
-            ok, err = feedback_send(kinds[cb.current()][0], txt.get("1.0", "end"), "", diag.get())
-            if ok:
-                messagebox.showinfo("MoveEye", tr("Thank you! The message is on its way."), parent=w); w.destroy()
-            else:
-                messagebox.showerror("MoveEye", tr_err(err), parent=w)
-        ttk.Button(bf, text=tr("Send"), command=send).pack(side="right")
-        ttk.Button(bf, text=tr("Cancel"), command=w.destroy).pack(side="right", padx=(0, 6))
+    # _feedback (feedback to the developer) and _about_win («About MoveEye»): part 584
 
     def _qr_window(self, first):
         """QR codes on the Pi screen: scan with the phone camera - the setup goes on there (own Wi-Fi of the Pi: first its code)."""
@@ -58658,7 +59359,7 @@ class App:
 
     def run(self):
         if not CFG["setup_done"] and not CFG["lock_on"]:
-            self.root.after(1500, lambda: self._qr_window(True))
+            self.root.after(1500, self._g2_first)            # the one guide (584); the QR codes come at its end
         self.root.mainloop()
 
 
@@ -58697,9 +59398,16 @@ def _tk_history_bar(self, parent):
 
 
 def _tk_more_bar(self, parent):
-    return self._tk_bar(parent, [("? " + tr("Manual"), self._open_help), ("🎲 " + tr("Game corner"), lambda: self._open_page("/party")),
-                                 ("🛠 " + tr("Tools"), lambda: self._open_page("/tools")), ("💬 " + tr("Feedback to the developer"), self._feedback),
-                                 ("🌐 " + tr("Overview"), lambda: self._open_page("/more"))])
+    def setup():                                     # 586 / 584: the one guide (start again or continue)
+        g_ = g2_state()
+        g2_action({"action": "again"} if g_["finished"] or not g_["mode"] else {"action": "resume"}, "window"); self._g2_wizard()
+    f = self._tk_bar(parent, [("? " + tr("Manual"), self._open_help), ("🎲 " + tr("Game corner"), lambda: self._open_page("/party")),
+                              ("🛠 " + tr("Tools"), lambda: self._open_page("/tools")), ("💬 " + tr("Feedback to the developer"), self._feedback),
+                              ("🌐 " + tr("Overview"), lambda: self._open_page("/more")), ("ℹ " + tr("About MoveEye"), self._about_win), ("🧭 " + tr("Setup"), setup),
+                              ("↺ " + tr("Reset all tours"), lambda: (g2_action({"action": "tours_reset"}, "window"), self._status("Setup", tr("All tours will show again.")))),
+                              (tr("⚠ Reset to factory settings …"), self._g2_factory)])
+    self._g2_more_bar = f
+    return f
 
 
 def _tk_sim_head(self, inner):
@@ -59097,6 +59805,7 @@ SECPANEL_JS = r"""
     c.appendChild(k);
     const bb = E("div", "btns"), cp = E("button", "", "📋 " + T("Copy")), cl = E("button", "sec", T("Done")); cp.type = cl.type = "button";
     cp.onclick = () => copy(key); cl.onclick = () => { ov.remove(); akLoad(box); }; bb.append(cp, cl); c.appendChild(bb);
+    if (window.qrBtn) { const qb = qrBtn(key, T("App key") + " «" + name + "»", {secret: true}); qb.id = "ak-qr"; bb.insertBefore(qb, cl); }   // 585: once, while it is shown
     document.body.appendChild(ov);
   }
   // -- security check (before: Tools) --
@@ -59264,6 +59973,7 @@ def _ak_tk_show(app, name, key):
         win.clipboard_clear(); win.clipboard_append(key); app._status("App keys", "✓ " + tr("Copied"))
     bf = tk.Frame(win, bg=C["panel"]); bf.pack(fill="x", padx=14, pady=(0, 12))
     ttk.Button(bf, text="📋 " + tr("Copy"), command=cp).pack(side="left", expand=True, fill="x", padx=(0, 4))
+    ttk.Button(bf, text="▦ QR", command=lambda: qr_tk_dialog(win, key, tr("App key") + " «" + name + "»", True)).pack(side="left", padx=(0, 4))   # 585
     ttk.Button(bf, text=tr("Done"), command=win.destroy).pack(side="left", expand=True, fill="x")
 
 
@@ -62734,6 +63444,2185 @@ def kopf_selftest():
 
 
 SELFTEST_EXTRA.append(("Automatic head movement (180 / 360° servos, smart round, one mover)", kopf_selftest))
+# ----------------------------------------------------------------------------
+# 2.98.33 (Wunsch Daniel):
+#   A) Rückmeldung an den Entwickler von überall: ein dezentes 💬 im Kopf jeder Webseite (ein Dialog für alle Seiten, hier
+#      im Skript /fbx/ui.js), im Fenster (💬 im Kopf, Reiter Mehr, Einstellungen) und im 3D-Simulator (Knopf → mw_cmd
+#      «feedback», 350). Art Fehler / Wunsch / Lob / Frage, «Wie zufrieden?» 1–5 Sterne, Version und Seite immer dabei,
+#      «Bildschirmfoto mitschicken» (Web: das aktuelle Live-Bild – ein Bild der Seite selbst kann der Browser nicht machen;
+#      Fenster: das Fenster, sonst das Live-Bild; Simulator: sein Bild /view.jpg), Gesichter verpixelt (375), höchstens
+#      FB_SHOT_MAX. Gesendet wird wie bisher von feedback_send / feedback_flush (370): Text als ntfy-Nachricht, das Bild als
+#      zweite Nachricht mit Anhang (PUT, wie die Alarm-Pushes mit Bild).
+#   B) «Über MoveEye»: Antippen der Versionsnummer neben dem Logo (Web und Fenster; ein einzelnes Tippen – 7× schnell
+#      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
+#      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
+# ----------------------------------------------------------------------------
+INFO_PARTS = 152                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
+FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
+
+# the milestones: (date or "", version, text) - dates from the chats and the git history, versions from the change list
+INFO_TIMELINE = [
+    ("16.10.2026", "", "The first lines: a small program reads the USB webcam of the Raspberry Pi 5 and marks movement in red - Motion Watch begins"),
+    ("18.10.2026", "1.2", "AI marks persons and objects; web page with camera control; desktop window"),
+    ("", "1.5", "Thermal camera over the picture"),
+    ("", "1.7", "Camping: own Wi-Fi, armed / disarmed with countdown"),
+    ("23.10.2026", "2.0", "Animal diary, night report, remote access"),
+    ("", "2.28", "Five languages (with Romansh)"),
+    ("", "2.70", "Simulator inside the program"),
+    ("26.10.2026", "2.90", "3D simulator with six scenes"),
+    ("27.10.2026", "2.95.29", "Game corner for the campfire"),
+    ("28.10.2026", "2.95.63", "Program in parts, test bench"),
+    ("28.10.2026", "2.95.99", "Training package for an own AI model"),
+    ("28.10.2026", "2.96.0", "New name: MoveEye"),
+    ("28.10.2026", "2.98.0", "Six tabs"),
+    ("29.10.2026", "2.98.20", "AI training and realism"),
+    ("29.10.2026", "2.98.30", "Set up the place"),
+    ("29.10.2026", "2.98.32", "Controller view for phone and tablet"),
+]
+INFO_STORY = [
+    "MoveEye was born while camping, from a simple question: who keeps an eye on the tent while we sleep or are away? Instead of an expensive alarm system Elektro wanted something of his own - a small camera on a pan / tilt head that recognises wild animals and persons and quietly reports to the phone.",
+    "The developer is Elektro (alias Daniel) from Switzerland. Elektro develops robots for a living - but MoveEye was honestly built together with Claude, an AI by Anthropic. Elektro brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.",
+    "Do you like MoveEye, or does something not work? With 💬 your message reaches Elektro directly - anonymously.",
+]
+INFO_TECH = [
+    "One Python program (OpenCV, Flask, Tkinter) for the Raspberry Pi 5 - edited in {parts} parts, put together into one file with {lines} lines.",
+    "Detection: movement (background model), walking pattern, AI model (SSD MobileNet, optionally an own YOLO model trained in the simulator), thermal camera (Waveshare Thermal-90).",
+    "The 3D simulator (Godot 4, version {sim}) rebuilds the place - persons, animals, weather, night - so MoveEye can practise without real nights. The test bench measures every version with it.",
+    "Updates come signed over GitHub; push messages over ntfy; remote access over Tailscale.",
+]
+
+
+def info_numbers():
+    """counted at run time: versions in the change list (head of this file), lines of this file, parts (bauen.py), languages"""
+    if not FBX["lines"]:
+        try:
+            with open(os.path.abspath(__file__), "rb") as f:
+                FBX["lines"] = f.read().count(b"\n")
+        except (OSError, NameError):
+            FBX["lines"] = 0
+    vers = set(re.findall(r"^\s*\*\s*(\d+\.\d+\.\d+):", globals().get("__doc__") or "", re.M))
+    try:
+        days = (datetime.now().date() - datetime.strptime(INFO_START, "%Y-%m-%d").date()).days
+    except ValueError:
+        days = 0
+    sim = ""
+    try:
+        sim = str(SIM3D.get("version") or "")
+    except NameError:
+        pass
+    return {"versions": len(vers), "lines": FBX["lines"], "parts": INFO_PARTS, "languages": len(LANGS), "sim": sim, "days": days,
+            "version": APP_VERSION}
+
+
+def _fbx_n(v):
+    return f"{v:,}".replace(",", "'") if isinstance(v, int) else str(v)
+
+
+def about_info(lang=None):
+    """everything for the window «About MoveEye» in one language (web: /api/about, window: _about_win)"""
+    L = cur_lang(lang); N = info_numbers()
+    fmt = {k: _fbx_n(v) for k, v in N.items()}
+    return {"ok": True, "lang": L, "title": tr("About MoveEye", L), "version": APP_VERSION,
+            "dev": tr("Elektro (alias Daniel)", L), "dev_where": tr("Switzerland", L),
+            "story": [tr(x, L) for x in INFO_STORY],
+            "tech_title": tr("For the technically interested", L),
+            "tech": [trf(x, L, **fmt) for x in INFO_TECH],
+            "numbers": [(tr("Versions in the change list", L), fmt["versions"]), (tr("Lines of code", L), fmt["lines"]),
+                        (tr("Parts", L), fmt["parts"]), (tr("Languages", L), fmt["languages"] + " (DE · FR · IT · RM · EN)"),
+                        (tr("3D simulator", L), fmt["sim"] or "–"), (tr("Days since the first line", L), fmt["days"])],
+            "timeline_title": tr("Timeline", L),
+            "timeline": [{"d": d, "v": v, "t": tr(t, L)} for d, v, t in INFO_TIMELINE],
+            "egg": tr("Psst … there is a hidden easter egg.", L),
+            "fb": tr("Feedback to the developer", L)}
+
+
+# ---- the screenshot that goes with a message --------------------------------------------------------------------------
+def _fbx_jpg(img, maxw=1024):
+    """small JPEG (faces pixelated, like everything that is shared): at most FB_SHOT_MAX"""
+    if img is None:
+        return None
+    img = img.copy()
+    try:
+        faces_blur_image(img)                            # (in place)
+    except Exception:
+        pass
+    h, w = img.shape[:2]
+    if w > maxw:
+        img = cv2.resize(img, (maxw, max(1, int(h * maxw / w))), interpolation=cv2.INTER_AREA)
+    for q in (75, 60, 45, 35):
+        ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, q])
+        if ok and len(buf) <= FB_SHOT_MAX:
+            return buf.tobytes()
+        if ok and q == 45:
+            img = cv2.resize(img, (img.shape[1] // 2, img.shape[0] // 2), interpolation=cv2.INTER_AREA)
+    return None
+
+
+def feedback_shot(src="live", root=None):
+    """JPEG bytes for «Send a screenshot»: live = the current live picture, sim = the picture of the 3D simulator,
+    window = the window of MoveEye (when the screen can be read, else the live picture)"""
+    img = None
+    if src == "window" and root is not None:
+        try:
+            from PIL import ImageGrab
+            root.update_idletasks()
+            x, y, w, h = root.winfo_rootx(), root.winfo_rooty(), root.winfo_width(), root.winfo_height()
+            im = ImageGrab.grab(bbox=(x, y, x + w, y + h))
+            img = cv2.cvtColor(np.array(im.convert("RGB")), cv2.COLOR_RGB2BGR)
+        except Exception:
+            img = None
+    if src == "sim" and img is None:
+        try:
+            data, _ = _sim_get("/view.jpg", timeout=4.0)
+            img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
+        except Exception:
+            img = None
+    if img is None:
+        w_ = WATCH_REF.get("w")
+        fo = getattr(w_, "frame_out", None) if w_ is not None else None
+        img = fo.copy() if fo is not None else None
+    return _fbx_jpg(img)
+
+
+def fbx_web_shot(fresh=True):
+    """the live picture for the web dialog: the preview and the message use the same picture (2 minutes)"""
+    if fresh or not FBX["shot"] or time.time() - FBX["shot_t"] > 120:
+        FBX["shot"] = feedback_shot("live"); FBX["shot_t"] = time.time()
+    return FBX["shot"]
+
+
+# ---- the web page: one script for every page (dialog, info window, 💬 in the header, version number) -----------------
+_render_page_before_fbx = render_page
+
+
+# wraps: render_page
+def render_page(page, active):
+    """+ the 💬 and «About MoveEye» on every page (not on guest pages)"""
+    out = _render_page_before_fbx(page, active)
+    if active in ("guest", "info"):
+        return out
+    i = out.rfind("</body>")
+    tag = '<script src="/fbx/ui.js?v=' + APP_VERSION + '" data-page="' + _fbx_esc(str(active)) + '" defer></script>'
+    return out[:i] + tag + out[i:] if i >= 0 else out + tag
+
+
+def _fbx_esc(s):
+    return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def fbx_tx():
+    """the texts of the script in de / fr / it / rm (English = the key)"""
+    keys = sorted(_HX_INFO.keys())
+    out = {"de": {k: DE.get(k, k) for k in keys}}
+    for L in ("fr", "it", "rm"):
+        out[L] = {k: TRX[L].get(k) or (DE.get(k, k) if L == "rm" else k) for k in keys}
+    return out
+
+
+def fbx_ui_js():
+    return FBX_JS.replace("/*FX*/{}", json.dumps(fbx_tx(), ensure_ascii=False)).replace("__VER__", APP_VERSION).replace("</", "<\\/")
+
+
+FBX_JS = r"""
+// ---- 2.98.33: feedback from every page (one dialog) and «About MoveEye» (584) ----
+(function fbx() {
+  if (window._fbx) return; window._fbx = true;
+  const FX = /*FX*/{};
+  const me = document.currentScript, PAGE = (me && me.dataset.page) || location.pathname;
+  const L = () => { try { return (typeof LANG !== "undefined" && LANG) || localStorage.getItem("mw-lang") || "de"; } catch (e) { return "de"; } };
+  const T = k => ((FX[L()] || {})[k]) || k;
+  const E = (tag, css, txt) => { const e = document.createElement(tag); if (css) e.style.cssText = css; if (txt != null) e.textContent = txt; return e; };
+  const POST = async (u, d) => { try { const r = await fetch(u, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(d)}); return await r.json(); } catch (e) { return {ok: false, error: String(e)}; } };
+  const BOX = "background:var(--panel,#111822);color:var(--txt,#e8eef5);border:1px solid var(--line,#1f2b3a);border-radius:16px;max-width:520px;width:100%;max-height:92vh;overflow:auto;padding:16px;box-sizing:border-box";
+  const FIELD = "width:100%;box-sizing:border-box;background:var(--field,#0c121a);color:var(--txt,#e8eef5);border:1px solid var(--line,#1f2b3a);border-radius:10px;padding:10px;font:inherit";
+  const MUT = "color:var(--mut,#8b9bb0);font-size:13px;line-height:1.45";
+  function overlay(id) {
+    let ov = document.getElementById(id); if (ov) ov.remove();
+    ov = E("div", "position:fixed;inset:0;z-index:320;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:12px");
+    ov.id = id; ov.addEventListener("click", e => { if (e.target === ov) ov.remove(); });
+    const b = E("div", BOX); b.setAttribute("role", "dialog"); b.setAttribute("aria-modal", "true"); ov.appendChild(b); document.body.appendChild(ov);
+    const esc = e => { if (e.key === "Escape") { ov.remove(); removeEventListener("keydown", esc); } }; addEventListener("keydown", esc);
+    return [ov, b];
+  }
+  function seg(items, cur, on) {                       // a row of buttons, one is chosen
+    const r = E("div", "display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 4px"), bs = [];
+    items.forEach(([v, lb]) => { const b = E("button", "flex:1 1 auto;min-width:0;padding:7px 8px;font-size:13px", lb); b.type = "button"; b.className = "sec";
+      b.onclick = () => { cur = v; bs.forEach(x => { const sel = x._v === cur; x.classList.toggle("on", sel); x.style.borderColor = sel ? "var(--acc,#f59a4a)" : ""; x.setAttribute("aria-pressed", sel); }); on(v); };
+      b._v = v; bs.push(b); r.appendChild(b); });
+    bs.forEach(x => { const sel = x._v === cur; x.style.borderColor = sel ? "var(--acc,#f59a4a)" : ""; x.setAttribute("aria-pressed", sel); });
+    return r;
+  }
+  // ---- A) the one feedback dialog ----
+  window.mwFeedback = function (opt) {
+    opt = opt || {};
+    const [ov, c] = overlay("fbx-ov");
+    let kind = opt.kind || "idea", stars = 0;
+    c.append(E("h3", "margin:0 0 4px", "💬 " + T("Feedback to the developer")),
+             E("div", MUT, T("Errors, wishes, praise, questions - everything helps. The message is sent anonymously: no name, no address, unless you write one.")));
+    c.appendChild(seg([["bug", "🐞 " + T("Error")], ["idea", "💡 " + T("Wish")], ["praise", "⭐ " + T("Praise")], ["question", "❓ " + T("Question")]], kind, v => kind = v));
+    const sr = E("div", "display:flex;align-items:center;gap:4px;margin:8px 0;flex-wrap:wrap"); sr.appendChild(E("span", MUT + ";margin-right:6px", T("How happy are you?") + " (" + T("optional") + ")"));
+    const sb = [], sw = E("span", "display:inline-flex;white-space:nowrap"); sr.appendChild(sw);
+    for (let i = 1; i <= 5; i++) { const b = E("button", "background:none;border:0;padding:2px 3px;font-size:24px;line-height:1;cursor:pointer;color:var(--yel,#f5c542);min-height:0", "☆"); b.type = "button";
+      b.setAttribute("aria-label", i + " / 5"); b.onclick = () => { stars = stars === i ? 0 : i; sb.forEach((x, j) => x.textContent = j < stars ? "★" : "☆"); }; sb.push(b); sw.appendChild(b); }
+    c.appendChild(sr);
+    const tx = E("textarea", FIELD); tx.rows = 5; tx.maxLength = 3000; tx.placeholder = T("Your message …");
+    const ct = E("input", FIELD + ";margin-top:8px;padding:8px 10px"); ct.type = "text"; ct.maxLength = 120; ct.placeholder = T("Contact for an answer (optional)");
+    const chk = (label, on) => { const l = E("label", "display:flex;gap:8px;align-items:flex-start;margin-top:10px;cursor:pointer"); const i = E("input", "margin-top:3px"); i.type = "checkbox"; i.checked = on;
+      l.append(i, E("span", MUT, label)); return [l, i]; };
+    const [sl, si] = chk(T("Send a screenshot") + " – " + T("the current live picture (faces pixelated). A picture of the page itself is not possible in the browser."), !!opt.shot);
+    const pv = E("img", "display:none;max-width:100%;max-height:160px;border-radius:8px;margin-top:6px;border:1px solid var(--line,#1f2b3a)"); pv.alt = "";
+    const pvShow = () => { if (si.checked) { pv.src = "/api/fbx/shot.jpg?t=" + Date.now(); pv.style.display = "block"; pv.onerror = () => { pv.style.display = "none"; }; } else pv.style.display = "none"; };
+    si.onchange = pvShow;
+    const [dl, di] = chk(T("Add technical details (version, device, last important events - no pictures, no passwords)"), true);
+    const info = E("div", MUT + ";font-size:12px;margin-top:8px", T("Always included") + ": MoveEye __VER__ · " + T("page") + " «" + PAGE + "»");
+    const st = E("div", "color:var(--red,#ff6b6b);font-size:13px;margin-top:6px"), bt = E("div", "display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap");
+    const cancel = E("button", "", T("Cancel")), send = E("button", "", T("Send")); cancel.type = send.type = "button"; cancel.className = "sec";
+    cancel.onclick = () => ov.remove();
+    send.onclick = async () => { send.disabled = true; st.textContent = "";
+      const r = await POST("/api/feedback", {kind: kind, stars: stars, text: tx.value, contact: ct.value, diag: di.checked, shot: si.checked, page: PAGE, lang: L()});
+      send.disabled = false; if (!r || !r.ok) { st.textContent = "⚠ " + ((r && r.error) || "error"); return; }
+      ov.remove(); const m = "✓ " + T("Thank you! The message is on its way.");
+      if (typeof toast === "function") toast(m); else { const d = E("div", "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:330;background:var(--panel,#111822);color:var(--txt,#e8eef5);border:1px solid var(--grn,#3ecf8e);border-radius:12px;padding:10px 16px", m); document.body.appendChild(d); setTimeout(() => d.remove(), 3500); } };
+    const wq = E("div", MUT + ";font-size:12px;margin-top:8px;display:none");
+    bt.append(cancel, send); c.append(tx, ct, sl, pv, dl, info, wq, st, bt); pvShow(); tx.focus();
+    fbWaiting(wq);
+  };
+  // 2.98.33: messages that could not be sent yet - how many, the last refusal, «Send now»
+  async function fbWaiting(box, j) {
+    if (!j) { try { j = await (await fetch("/api/fbx/status", {cache: "no-store"})).json(); } catch (e) { return; } }
+    box.textContent = ""; if (!j || !j.waiting) { box.style.display = "none"; return; }
+    box.style.display = "block";
+    box.appendChild(E("span", "", "⏳ " + T("{n} feedbacks are still waiting to be sent").replace("{n}", j.waiting) + " "));
+    const now = E("button", "padding:3px 9px;font-size:12px;min-height:0;margin-left:4px", T("Send now")); now.type = "button"; now.className = "sec";
+    now.onclick = async () => { now.disabled = true; now.textContent = "…"; const r = await POST("/api/fbx/flush", {}); fbWaiting(box, r); };
+    box.appendChild(now);
+    (j.errors || []).forEach(e => box.appendChild(E("div", "margin-top:3px", T("Last error") + " · " + e.host + ": " + e.why)));
+  }
+  // 2.98.33: «Send a test feedback» (developer): the result per server
+  window.mwFeedbackTest = async function (out) {
+    if (out) out.textContent = "…";
+    const r = await POST("/api/fbx/test", {lang: L()});
+    const txt = r && r.servers && r.servers.length ? r.servers.map(x => (x.ok ? "✓ " : "✗ ") + x.host + (x.ok ? "" : " – " + x.why)).join(" · ") : "⚠ " + ((r && r.error) || "error");
+    if (out) out.textContent = txt; else alert(txt);
+    return r;
+  };
+  // ---- B) «About MoveEye» ----
+  window.mwAbout = async function () {
+    const [ov, c] = overlay("fbx-about");
+    c.appendChild(E("div", MUT, "…"));
+    let j = null; try { j = await (await fetch("/api/about?lang=" + L(), {cache: "no-store"})).json(); } catch (e) {}
+    c.textContent = ""; if (!j || !j.ok) { c.appendChild(E("div", MUT, "⚠")); return; }
+    const hd = E("div", "display:flex;align-items:center;gap:12px;margin-bottom:8px");
+    const ic = E("img", "width:52px;height:52px;border-radius:12px;flex:none"); ic.src = "/icon-192.png?i=" + (window.MW_ICON || ""); ic.alt = "";
+    const ht = E("div"); ht.append(E("div", "font-size:19px;font-weight:700", j.title), E("div", MUT, "MoveEye " + j.version + " · " + j.dev + " · " + j.dev_where));
+    hd.append(ic, ht); c.appendChild(hd);
+    j.story.forEach(p => c.appendChild(E("p", "margin:8px 0;line-height:1.5;font-size:14.5px", p)));
+    const det = E("details", "margin:12px 0 4px;border:1px solid var(--line,#1f2b3a);border-radius:12px;padding:8px 12px"); det.id = "fbx-tech";
+    const sm = E("summary", "cursor:pointer;font-weight:600", "🔧 " + j.tech_title); det.appendChild(sm);
+    const ul = E("ul", "margin:8px 0;padding-left:18px;line-height:1.5;font-size:13.5px"); j.tech.forEach(x => ul.appendChild(E("li", "", x))); det.appendChild(ul);
+    const g = E("div", "display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;margin:8px 0");
+    j.numbers.forEach(([k, v]) => { const b = E("div", "border:1px solid var(--line,#1f2b3a);border-radius:10px;padding:6px 8px"); b.append(E("div", "font-size:17px;font-weight:700", v), E("div", MUT + ";font-size:12px", k)); g.appendChild(b); });
+    det.appendChild(g);
+    det.appendChild(E("div", "font-weight:600;margin:10px 0 4px", "🗓 " + j.timeline_title));
+    const tl = E("div", "border-left:2px solid var(--acc,#f59a4a);margin-left:6px;padding-left:12px");
+    j.timeline.forEach(e => { const r = E("div", "margin:0 0 8px;font-size:13.5px;line-height:1.4");
+      r.append(E("div", MUT + ";font-size:12px", [e.d, e.v ? "v" + e.v : ""].filter(Boolean).join(" · ")), E("div", "", e.t)); tl.appendChild(r); });
+    det.appendChild(tl); c.appendChild(det);
+    c.appendChild(E("div", MUT + ";font-style:italic;margin:12px 0 4px;text-align:center", "🤫 " + j.egg));
+    const bt = E("div", "display:flex;gap:8px;justify-content:flex-end;margin-top:10px;flex-wrap:wrap");
+    const fb = E("button", "", "💬 " + j.fb), cl = E("button", "", T("Close")); fb.type = cl.type = "button"; fb.className = "sec";
+    fb.onclick = () => { ov.remove(); mwFeedback(); }; cl.onclick = () => ov.remove();
+    bt.append(fb, cl); c.appendChild(bt);
+  };
+  // ---- the discreet 💬 in the header ----
+  function addBtn() {
+    const hc = document.querySelector("header .hdr-ctl"); if (!hc || document.getElementById("fbx-b")) return;
+    const b = E("button", "font-size:15px"); b.type = "button"; b.id = "fbx-b"; b.className = "sec ic"; b.textContent = "💬";
+    b.title = T("Feedback to the developer"); b.setAttribute("aria-label", T("Feedback to the developer"));
+    b.onclick = () => mwFeedback(); hc.insertBefore(b, hc.firstChild);
+  }
+  // ---- the version number next to the logo: one tap = «About MoveEye» (7 quick taps stay the little surprise) ----
+  function verTap() {
+    const h1 = document.querySelector("header h1"); if (!h1) return;
+    const v = h1.querySelector(".ver"); if (!v) return;
+    v.style.cursor = "pointer"; v.title = T("About MoveEye"); v.setAttribute("role", "button"); v.tabIndex = 0;
+    let tm = 0, last = 0;
+    h1.addEventListener("click", e => { const now = Date.now(), quick = now - last < 900; last = now; clearTimeout(tm);
+      if (e.target.closest && e.target.closest(".ver") && !quick) tm = setTimeout(() => { if (Date.now() - last >= 600) mwAbout(); }, 650); });
+    v.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); mwAbout(); } });
+  }
+  const byHash = () => { if (location.hash === "#feedback") mwFeedback(); else if (location.hash === "#about") mwAbout(); };
+  const go = () => { addBtn(); verTap(); byHash(); };
+  addEventListener("hashchange", byHash);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go();
+})();
+"""
+
+
+def fbx_routes(app, watch, reply, body):
+    """the web addresses (called once by the web server, 550)"""
+    from flask import Response, request
+
+    @app.route("/fbx/ui.js")
+    def fbx_ui():
+        return Response(fbx_ui_js(), mimetype="application/javascript", headers={"Cache-Control": "no-cache"})
+
+    @app.route("/api/about")
+    def api_about():
+        return reply(about_info(norm_lang(request.args.get("lang") or CFG["lang"])))
+
+    @app.route("/api/fbx/status")
+    def api_fbx_status():
+        return reply(dict(feedback_status(), ok=True))
+
+    @app.route("/api/fbx/flush", methods=["POST"])
+    def api_fbx_flush():
+        """«Send now»: the waiting messages (to both servers)"""
+        t_ = threading.Thread(target=feedback_flush, daemon=True); t_.start(); t_.join(40)
+        return reply(dict(feedback_status(), ok=True))
+
+    @app.route("/api/fbx/test", methods=["POST"])
+    def api_fbx_test():
+        """«Send a test feedback» (developer): the result per server"""
+        lang = norm_lang(body().get("lang"))
+        ok, err, res = feedback_test()
+        return reply({"ok": ok, "error": tr(err, lang) if err else None, "servers": res})
+
+    @app.route("/api/fbx/shot.jpg")
+    def api_fbx_shot():
+        j = fbx_web_shot(True)
+        if not j:
+            return Response("no picture", 404)
+        return Response(j, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+
+
+# ---- the window (Tkinter): the same dialog and the info window --------------------------------------------------------
+def _fbx_tk_feedback(self, kind="idea"):
+    from tkinter import messagebox
+    w = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Feedback to the developer")); w.configure(bg=C["bg"])
+    ttk.Label(w, text=tr("Errors, wishes, praise, questions - everything helps. The message is sent anonymously: no name, no address, unless you write one."),
+              style="Mut.TLabel", wraplength=440, justify="left").pack(padx=14, pady=(12, 6), anchor="w")
+    kinds = [("bug", "🐞 " + tr("Error")), ("idea", "💡 " + tr("Wish")), ("praise", "⭐ " + tr("Praise")), ("question", "❓ " + tr("Question"))]
+    kv = tk.StringVar(value=kind)
+    kf = tk.Frame(w, bg=C["bg"]); kf.pack(fill="x", padx=14)
+    for k, lb in kinds:
+        ttk.Radiobutton(kf, text=lb, value=k, variable=kv).pack(side="left", padx=(0, 10))
+    sf = tk.Frame(w, bg=C["bg"]); sf.pack(fill="x", padx=14, pady=(8, 0))
+    ttk.Label(sf, text=tr("How happy are you?") + " (" + tr("optional") + ")", style="Mut.TLabel").pack(side="left", padx=(0, 6))
+    stars = {"n": 0}; sbs = []
+
+    def star(i):
+        stars["n"] = 0 if stars["n"] == i else i
+        for j, b in enumerate(sbs):
+            b.config(text="★" if j < stars["n"] else "☆")
+    for i in range(1, 6):
+        b = tk.Label(sf, text="☆", bg=C["bg"], fg=C.get("yel", "#f5c542"), font=("DejaVu Sans", 16), cursor="hand2")
+        b.bind("<Button-1>", lambda e, i=i: star(i)); b.pack(side="left"); sbs.append(b)
+    txt = tk.Text(w, height=7, width=54, bg=C.get("field", C["panel"]), fg=C["txt"], insertbackground=C["txt"], relief="flat")
+    txt.pack(fill="both", expand=True, padx=14, pady=8)
+    cf = tk.Frame(w, bg=C["bg"]); cf.pack(fill="x", padx=14)
+    ttk.Label(cf, text=tr("Contact for an answer (optional)"), style="Mut.TLabel").pack(side="left")
+    ct = ttk.Entry(cf); ct.pack(side="left", fill="x", expand=True, padx=(8, 0))
+    shot = tk.BooleanVar(value=False); diag = tk.BooleanVar(value=True)
+    ttk.Checkbutton(w, text=tr("Send a screenshot") + " (" + tr("the window, faces pixelated") + ")", variable=shot).pack(anchor="w", padx=14, pady=(8, 0))
+    ttk.Checkbutton(w, text=tr("Add technical details (version, device, last important events - no pictures, no passwords)"), variable=diag).pack(anchor="w", padx=14)
+    ttk.Label(w, text=tr("Always included") + f": MoveEye {APP_VERSION} · " + tr("page") + " «" + tr("Window") + "»", style="Mut.TLabel").pack(anchor="w", padx=14, pady=(6, 0))
+    st_ = feedback_status()
+    if st_["waiting"]:                                   # 2.98.33: messages still waiting, the last refusal, «Send now»
+        wf = tk.Frame(w, bg=C["bg"]); wf.pack(fill="x", padx=14, pady=(6, 0))
+        wl = ttk.Label(wf, text="⏳ " + tr("{n} feedbacks are still waiting to be sent").replace("{n}", str(st_["waiting"])) + "".join(
+            "\n" + tr("Last error") + " · " + e["host"] + ": " + e["why"] for e in st_["errors"]), style="Mut.TLabel", justify="left")
+        wl.pack(side="left")
+
+        def now_():
+            threading.Thread(target=lambda: (feedback_flush(), self.root.after(0, lambda: wl.winfo_exists() and wl.config(
+                text="⏳ " + tr("{n} feedbacks are still waiting to be sent").replace("{n}", str(feedback_status()["waiting"]))))), daemon=True).start()
+        ttk.Button(wf, text=tr("Send now"), command=now_).pack(side="right")
+    bf = ttk.Frame(w); bf.pack(fill="x", padx=14, pady=10)
+
+    def send():
+        img = None
+        if shot.get():
+            w.withdraw(); self.root.update(); time.sleep(0.15)       # the picture without this little window
+            try:
+                img = feedback_shot("window", self.root)
+            finally:
+                w.deiconify()
+        page = "Fenster/" + str(getattr(self, "tab", "") or "")
+        ok, err = feedback_send(kv.get(), txt.get("1.0", "end"), ct.get().strip(), diag.get(), stars["n"], page, img, "window")
+        if ok:
+            messagebox.showinfo("MoveEye", tr("Thank you! The message is on its way."), parent=w); w.destroy()
+        else:
+            messagebox.showerror("MoveEye", tr_err(err), parent=w)
+    ttk.Button(bf, text=tr("Send"), command=send).pack(side="right")
+    ttk.Button(bf, text=tr("Cancel"), command=w.destroy).pack(side="right", padx=(0, 6))
+    txt.focus_set()
+
+
+def _fbx_tk_about(self):
+    j = about_info()
+    w = tk.Toplevel(self.root); w.title("MoveEye – " + j["title"]); w.configure(bg=C["bg"])
+    head = tk.Frame(w, bg=C["bg"]); head.pack(fill="x", padx=16, pady=(14, 4))
+    try:
+        import base64
+        self._about_logo = tk.PhotoImage(data=base64.b64encode(app_icon_png(48)).decode())
+        tk.Label(head, image=self._about_logo, bg=C["bg"]).pack(side="left", padx=(0, 10))
+    except Exception:
+        pass
+    hf = tk.Frame(head, bg=C["bg"]); hf.pack(side="left", fill="x")
+    tk.Label(hf, text=j["title"], bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 14, "bold"), anchor="w").pack(anchor="w")
+    tk.Label(hf, text=f"MoveEye {j['version']} · {j['dev']} · {j['dev_where']}", bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9), anchor="w").pack(anchor="w")
+    for p in j["story"]:
+        tk.Label(w, text=p, bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 10), wraplength=520, justify="left", anchor="w").pack(fill="x", padx=16, pady=4)
+    tech = tk.Frame(w, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=12, pady=8)
+    shown = {"on": False}
+
+    def fold():
+        shown["on"] = not shown["on"]
+        tb.config(text=("▾ " if shown["on"] else "▸ ") + j["tech_title"])
+        if shown["on"]:
+            tech.pack(fill="x", padx=16, pady=(0, 6), after=tb)
+        else:
+            tech.pack_forget()
+    tb = self._fbtn(w, "▸ " + j["tech_title"], fold); tb.pack(anchor="w", padx=16, pady=(8, 4))
+    for x in j["tech"]:
+        tk.Label(tech, text="• " + x, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 9), wraplength=500, justify="left", anchor="w").pack(fill="x", pady=1)
+    nf = tk.Frame(tech, bg=C["panel"]); nf.pack(fill="x", pady=(6, 4))
+    for i, (k, v) in enumerate(j["numbers"]):
+        c_ = tk.Frame(nf, bg=C["panel"]); c_.grid(row=i // 3, column=i % 3, sticky="w", padx=(0, 16), pady=2)
+        tk.Label(c_, text=v, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11, "bold")).pack(anchor="w")
+        tk.Label(c_, text=k, bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(anchor="w")
+    tk.Label(tech, text=j["timeline_title"], bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10, "bold"), anchor="w").pack(fill="x", pady=(6, 2))
+    tl = tk.Text(tech, height=9, width=64, bg=C["panel"], fg=C["txt"], relief="flat", font=("DejaVu Sans", 9), wrap="word", highlightthickness=0)
+    tl.tag_configure("m", foreground=C["mut"])
+    for e in j["timeline"]:
+        tl.insert("end", " · ".join(x for x in (e["d"], ("v" + e["v"]) if e["v"] else "") if x) + "\n", "m")
+        tl.insert("end", e["t"] + "\n\n")
+    tl.config(state="disabled"); tl.pack(fill="both", expand=True)
+    tk.Label(w, text="🤫 " + j["egg"], bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9, "italic")).pack(pady=(8, 2))
+    bf = tk.Frame(w, bg=C["bg"]); bf.pack(fill="x", padx=16, pady=(4, 12))
+    self._fbtn(bf, tr("Close"), w.destroy, primary=True).pack(side="right")
+    self._fbtn(bf, "💬 " + j["fb"], lambda: (w.destroy(), self._feedback())).pack(side="right", padx=(0, 6))
+
+
+def _fbx_tk_ver_tap(self, _e=None):
+    """a single tap on the version number: «About MoveEye»; quick taps (the little surprise) open nothing"""
+    now = time.time()
+    last = getattr(self, "_ver_last", 0.0); self._ver_last = now
+    try:
+        self.root.after_cancel(self._ver_job)
+    except Exception:
+        pass
+    if now - last < 0.9:
+        return
+    self._ver_job = self.root.after(650, lambda: self._about_win() if time.time() - self._ver_last >= 0.6 else None)
+
+
+App._feedback = _fbx_tk_feedback
+App._about_win = _fbx_tk_about
+App._ver_tap = _fbx_tk_ver_tap
+
+
+def fbx_selftest():
+    j = about_info("de")
+    assert j["numbers"] and j["timeline"] and len(j["story"]) == 3, "about_info incomplete"
+    assert all("{" not in x for x in j["tech"]), "placeholder left in the technical text"
+    assert "ß" not in json.dumps(j, ensure_ascii=False), "German with ß"
+    out = render_page("<html><head></head><body><header><h1>MoveEye</h1></header></body></html>", "live")
+    assert "/fbx/ui.js" in out, "script not on the page"
+    assert "/fbx/ui.js" not in render_page("<html><head></head><body></body></html>", "guest"), "script on a guest page"
+    assert all(x in (HELP_X.get(L) or "") for L, x in (("fr", "À propos de MoveEye"), ("it", "Informazioni su MoveEye"), ("rm", "Davart MoveEye"))), "manual fr / it / rm"
+    assert "Über MoveEye" in HELP_PAGE, "manual de"
+    miss = [k for k in _HX_INFO if not all(_HX_INFO[k])]
+    assert not miss, f"texts without translation: {miss[:3]}"
+    node = shutil.which("node")
+    if node:
+        with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as f:
+            f.write(fbx_ui_js()); fn = f.name
+        r = subprocess.run([node, "--check", fn], capture_output=True, text=True)
+        os.remove(fn)
+        assert r.returncode == 0, "fbx/ui.js: " + (r.stderr.strip().splitlines()[-1] if r.stderr else "error")
+    N = info_numbers()
+    return f"{N['versions']} versions, {N['lines']} lines, {N['parts']} parts" + ("" if node else " (JavaScript not checked)")
+
+
+SELFTEST_EXTRA.append(("Feedback from everywhere, «About MoveEye»", fbx_selftest))
+# ----------------------------------------------------------------------------
+# The same guide as on the web page (516): the state is on the Pi (CFG guide2, 586), so a setup begun in the window can be
+# continued on the phone and the other way round. The tour of a tab is simpler than on the web page: a coloured frame
+# round the control and a text box with «Next» / «Skip» (Tk cannot dim the rest of the window).
+# ----------------------------------------------------------------------------
+TK_G2_TOURS = {   # tab -> [(attribute or callable(self) -> widget, English title, English text)]
+    "live": [("video", "The live picture", "What the camera sees right now. Double-click = only the picture."),
+             (lambda s: getattr(s, "stick", None), "Turn the head", "With the joystick you turn the camera head."),
+             (lambda s: next((w.master for w in (s.qs_tiles or {}).values() if hasattr(w, "master")), None), "Quick switches", "Recording, photo, follow, patrol, light, infrared and thermal picture - one click each."),
+             (lambda s: getattr(s, "_tabs_row", None), "The six tabs", "Live · Protection · History · Settings · Simulator · More. The «?» at the top shows this tour again.")],
+    "protect": [(lambda s: s.tab_btns.get("protect"), "Protection", "Off, Watchful (only messages) or Full (light, siren) - and everything that protects, in groups."),
+                (lambda s: getattr(s, "right_f", None), "Topics", "Open a group to change it. Changes are saved at once."),
+                (lambda s: s.tab_btns.get("settings"), "Settings", "All other settings, sorted by topic.")],
+    "history": [(lambda s: getattr(s, "log", None), "Event log", "What MoveEye did and why - the important events."),
+                (lambda s: s.tab_btns.get("history"), "More history", "Recordings, animal diary and the message list: the buttons below the log.")],
+    "settings": [(lambda s: getattr(s, "right_f", None), "Topics", "Open a topic to change it. Changes are saved at once."),
+                 (lambda s: s.tab_btns.get("settings"), "Simple or Expert", "«Simple» shows only the important settings - for this tab. «Expert» shows all."),
+                 (lambda s: s.tab_btns.get("more"), "The «?»", "Next to a setting: what it does and what we recommend.")],
+    "sim": [(lambda s: getattr(s, "right_f", None), "Simulator", "The 3D simulator on the PC: connection, «Improve detection», settings of the simulation."),
+            (lambda s: s.tab_btns.get("sim"), "Simulator centre", "Tests, «Improve detection», training night - MoveEye learns without the real place.")],
+    "more": [(lambda s: getattr(s, "h_text", None), "Self-check", "What works and what is missing - with a hint what to do."),
+             (lambda s: getattr(s, "_g2_more_bar", None), "Setup and help", "Start or continue the setup, show the tours again, reset to factory settings.")],
+}
+
+
+def _g2_tk_widget(self, g):
+    try:
+        w = g(self) if callable(g) else getattr(self, g, None)
+        return w if w is not None and w.winfo_exists() and w.winfo_ismapped() else None
+    except Exception:
+        return None
+
+
+def _g2_tk_tour(self, tab=None, force=False):
+    """the tour of a tab: a frame round the control and a text box (Next / Skip)"""
+    tab = tab or self.tab
+    if getattr(self, "_g2_tw", None) is not None:
+        return
+    try:
+        seen = json.loads((CFG.get("web_ui") or {}).get("mw-tours-seen") or "[]")
+    except (TypeError, ValueError):
+        seen = []
+    if not force and (tab in seen or not CFG.get("tours_auto", True) or not CFG["setup_done"]):
+        return
+    steps = [(w, tr(t), tr(x)) for w, t, x in ((self._g2_tk_widget(g), t, x) for g, t, x in TK_G2_TOURS.get(tab, [])) if w is not None]
+    if not steps:
+        return
+    frames = []
+    box = tk.Toplevel(self.root); box.overrideredirect(True); box.configure(bg=C["acc"]); box.attributes("-topmost", True)
+    self._g2_tw = box
+    inner = tk.Frame(box, bg=C["panel"], padx=12, pady=10); inner.pack(padx=2, pady=2)
+    l_t = tk.Label(inner, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11, "bold"), anchor="w", justify="left"); l_t.pack(fill="x")
+    l_x = tk.Label(inner, bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9), anchor="w", justify="left", wraplength=300); l_x.pack(fill="x", pady=(2, 8))
+    bf = tk.Frame(inner, bg=C["panel"]); bf.pack(fill="x")
+    l_n = tk.Label(bf, bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8)); l_n.pack(side="left")
+    st = {"i": 0}
+
+    def end():
+        for f in frames:
+            try:
+                f.destroy()
+            except Exception:
+                pass
+        try:
+            box.destroy()
+        except Exception:
+            pass
+        self._g2_tw = None
+        s_ = set(seen); s_.add(tab)
+        web_ui_update({"mw-tours-seen": json.dumps(sorted(s_))})
+
+    def show():
+        for f in frames:
+            f.destroy()
+        frames.clear()
+        w, t, x = steps[st["i"]]
+        try:
+            X, Y, W, H = w.winfo_rootx(), w.winfo_rooty(), w.winfo_width(), w.winfo_height()
+        except Exception:
+            nxt(); return
+        for (fx, fy, fw, fh) in ((X - 4, Y - 4, W + 8, 4), (X - 4, Y + H, W + 8, 4), (X - 4, Y, 4, H), (X + W, Y, 4, H)):
+            f = tk.Toplevel(self.root); f.overrideredirect(True); f.configure(bg=C["acc"]); f.attributes("-topmost", True)
+            f.geometry(f"{max(1, fw)}x{max(1, fh)}+{fx}+{fy}"); frames.append(f)
+        l_t.config(text=t); l_x.config(text=x); l_n.config(text=f"{st['i'] + 1} / {len(steps)}")
+        b_n.config(text=(tr("Done") if st["i"] == len(steps) - 1 else tr("Next") + " ›"))
+        box.update_idletasks()
+        bw, bh = box.winfo_reqwidth(), box.winfo_reqheight()
+        sw_, sh_ = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+        by = Y + H + 10 if Y + H + 10 + bh < sh_ else max(0, Y - bh - 10)
+        bx = max(0, min(sw_ - bw, X))
+        box.geometry(f"+{bx}+{by}"); box.lift()
+
+    def nxt():
+        st["i"] += 1
+        if st["i"] >= len(steps):
+            end()
+        else:
+            show()
+    b_n = self._fbtn(bf, tr("Next"), nxt, primary=True); b_n.pack(side="right")
+    self._fbtn(bf, tr("Skip"), end).pack(side="right", padx=(0, 6))
+    box.bind("<Escape>", lambda e: end())
+    self.root.after(50, show)
+
+
+def _g2_tk_q(self, parent, key, side="right"):
+    """the «?» next to a setting (window): explanation, recommendation, default"""
+    h = getattr(self, "_g2_help_cache", None)
+    if h is None or h[0] != cur_lang():
+        h = self._g2_help_cache = (cur_lang(), g2_help())
+    x = h[1].get(key)
+    if not x:
+        return
+    bg = parent.cget("bg") if isinstance(parent, tk.Frame) else C["panel"]
+    q = tk.Label(parent, text="?", bg=bg, fg=C["mut"], font=("DejaVu Sans", 8, "bold"), cursor="hand2", padx=4,
+                 highlightthickness=1, highlightbackground=C["line"])
+    q.pack(side=side, padx=(4, 4))
+
+    def show(_e=None):
+        txt = x["x"] + (("\n\n👍 " + tr("Recommended") + ": " + x["r"]) if x["r"] else "") + (("\n" + x["d"]) if x["d"] else "")
+        w = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Help")); w.configure(bg=C["bg"]); w.transient(self.root)
+        tk.Label(w, text=txt, bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 10), wraplength=380, justify="left").pack(padx=14, pady=(12, 8))
+        ttk.Button(w, text=tr("Close"), command=w.destroy).pack(pady=(0, 12))
+        w.geometry(f"+{q.winfo_rootx() - 40}+{q.winfo_rooty() + 20}")
+    q.bind("<Button-1>", show)
+    return q
+
+
+def _g2_tk_factory(self):
+    """«Reset to factory settings» in the window: password / PIN, the typed word, then the backup copy and the setup"""
+    from tkinter import messagebox
+    if CFG.get("lock_on"):
+        messagebox.showinfo("MoveEye", tr_err("not possible in operator mode"), parent=self.root); return
+    w = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Reset to factory settings")); w.configure(bg=C["bg"]); w.transient(self.root)
+    f = tk.Frame(w, bg=C["bg"], padx=16, pady=12); f.pack(fill="both", expand=True)
+    tk.Label(f, text="⚠ " + tr("Reset to factory settings"), bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 13, "bold"), anchor="w").pack(fill="x")
+    for t1, t2, col in ((tr("Back to the factory settings:"), tr("all settings, zones, schedules, waypoints, password, users, PIN, the place"), C["txt"]),
+                        (tr("These stay:"), tr("Wi-Fi and own Wi-Fi, remote access (Tailscale), the push channel (ntfy), the update settings, the own AI model and what it learned"), C["grn"]),
+                        (tr("These are deleted:"), tr("all recordings and photos, the animal diary, the log"), C["red"])):
+        tk.Label(f, text=t1, bg=C["bg"], fg=col, font=("DejaVu Sans", 10, "bold"), anchor="w").pack(fill="x", pady=(8, 0))
+        tk.Label(f, text=t2, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9), anchor="w", justify="left", wraplength=420).pack(fill="x")
+    tk.Label(f, text=tr("First a copy of the old settings is saved - you can download it below."), bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 9),
+             anchor="w", justify="left", wraplength=420).pack(fill="x", pady=(8, 0))
+    pw = tk.StringVar(); word = tk.StringVar()
+    if web_pw_active():
+        ttk.Label(f, text=tr("Your password")).pack(anchor="w", pady=(10, 0)); ttk.Entry(f, textvariable=pw, show="•").pack(fill="x")
+    elif CFG.get("protect_pin"):
+        ttk.Label(f, text=tr("Your PIN")).pack(anchor="w", pady=(10, 0)); ttk.Entry(f, textvariable=pw, show="•").pack(fill="x")
+    ttk.Label(f, text=tr("Type {w} to confirm").replace("{w}", "«" + factory_word() + "»")).pack(anchor="w", pady=(10, 0))
+    e = ttk.Entry(f, textvariable=word); e.pack(fill="x"); e.focus_set()
+    l_err = tk.Label(f, text="", bg=C["bg"], fg=C["red"], font=("DejaVu Sans", 9), anchor="w"); l_err.pack(fill="x", pady=(4, 0))
+    bf = tk.Frame(f, bg=C["bg"]); bf.pack(fill="x", pady=(8, 0))
+
+    def go():
+        ok, err = factory_check(pw.get(), pw.get(), word.get())
+        if not ok:
+            l_err.config(text="⚠ " + tr_err(err)); return
+        ok, err, name = factory_reset("window")
+        if not ok:
+            l_err.config(text="⚠ " + tr_err(err)); return
+        w.destroy()
+        messagebox.showinfo("MoveEye", tr("Reset done.") + "\n\n" + tr("Copy of the old settings:") + "\n" + os.path.join(DATA_DIR, name), parent=self.root)
+        self._schedule_rebuild()
+        self.root.after(800, lambda: self._g2_wizard())
+    ttk.Button(bf, text=tr("Reset now"), command=go).pack(side="right")
+    ttk.Button(bf, text=tr("Close"), command=w.destroy).pack(side="right", padx=(0, 6))
+    bk = factory_backups()
+    if bk:
+        tk.Label(f, text=tr("Copies of the old settings") + ":\n" + "\n".join(f"{x['when']} · {x['name']}" for x in bk[:5]) + "\n" + DATA_DIR,
+                 bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), anchor="w", justify="left").pack(fill="x", pady=(10, 0))
+
+
+def _g2_tk_wizard(self, force=False):
+    """the guide in the window: the same steps as on the web page (state on the Pi, 586)"""
+    from tkinter import messagebox
+    w = getattr(self, "_g2_wz", None)
+    if w is not None and w.winfo_exists():
+        w.lift(); return
+    w = self._g2_wz = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Setup")); w.configure(bg=C["bg"])
+    w.geometry("560x620" if self.root.winfo_screenheight() >= 700 else "520x" + str(max(380, self.root.winfo_screenheight() - 60)))
+    g = g2_state()
+    st = {"cur": (g["left"][0] if g["left"] else "done") if g["mode"] and not g["finished"] else "choose", "after": []}
+    top = tk.Frame(w, bg=C["bg"], padx=14, pady=8); top.pack(fill="x")
+    l_head = tk.Label(top, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"), anchor="w"); l_head.pack(side="left")
+    l_later = tk.Label(top, text=tr("Continue later"), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8, "underline"), cursor="hand2")
+    l_later.pack(side="right"); l_later.bind("<Button-1>", lambda e: (g2_action({"action": "pause"}, "window"), close()))
+    pb = ttk.Progressbar(w, maximum=100); pb.pack(fill="x", padx=14)
+    body = tk.Frame(w, bg=C["bg"], padx=14, pady=8); body.pack(fill="both", expand=True)
+    foot = tk.Frame(w, bg=C["bg"], padx=14, pady=10); foot.pack(fill="x")
+
+    def close():
+        for a in st["after"]:
+            try:
+                w.after_cancel(a)
+            except Exception:
+                pass
+        w.destroy()
+    w.protocol("WM_DELETE_WINDOW", lambda: (g2_action({"action": "pause"}, "window"), close()))
+
+    def order():
+        return [s["id"] for s in g2_state()["steps"] if not s["auto_skip"]]
+
+    def move(d):
+        o = order(); c = st["cur"]
+        i = o.index(c) if c in o else -1
+        st["cur"] = (o[i + 1] if i + 1 < len(o) else "done") if d > 0 else ("choose" if i <= 0 else o[i - 1])
+        if st["cur"] not in ("done", "choose"):
+            g2_action({"action": "step", "id": st["cur"]}, "window")
+        render()
+
+    def lab(txt, mut=True, bold=False, col=None):
+        l_ = tk.Label(body, text=txt, bg=C["bg"], fg=col or (C["mut"] if mut else C["txt"]), font=("DejaVu Sans", 12 if bold else 9, "bold" if bold else "normal"),
+                      wraplength=500, justify="left", anchor="w")
+        l_.pack(fill="x", pady=(6 if bold else 2, 2)); return l_
+
+    def row():
+        r = tk.Frame(body, bg=C["bg"]); r.pack(fill="x", pady=4); return r
+
+    def toggle(text, key):
+        f_ = tk.Frame(body, bg=C["panel"], padx=8, pady=4); f_.pack(fill="x", pady=2)
+        Toggle(f_, text, bool(CFG.get(key)), lambda v, k=key: self._set(k, v)).pack(fill="x")
+
+    def entry(label, value="", show=None):
+        ttk.Label(body, text=label).pack(anchor="w", pady=(6, 0))
+        v = tk.StringVar(value=str(value)); ttk.Entry(body, textvariable=v, show=show).pack(fill="x"); return v
+
+    def render():
+        for a in st["after"]:
+            try:
+                w.after_cancel(a)
+            except Exception:
+                pass
+        st["after"] = []
+        for x in body.winfo_children() + foot.winfo_children():
+            x.destroy()
+        G = g2_state(); o = [s["id"] for s in G["steps"] if not s["auto_skip"]]; c = st["cur"]
+        l_head.config(text="🧭 " + tr("Setup") + (" · " + tr("In depth" if G["mode"] == "full" else "Quick") if G["mode"] else "")
+                      + (f" · {tr('Step')} {o.index(c) + 1} {tr('of')} {len(o)}" if c in o else ""))
+        pb.config(value=0 if c == "choose" else (100 if c == "done" else 100 * (o.index(c) if c in o else 0) / max(1, len(o))))
+        meta = next((s for s in G["steps"] if s["id"] == c), {"icon": "", "title": ""})
+        nxt = {"fn": None}
+        if c == "choose":
+            lab("👋 " + tr("Welcome to MoveEye"), False, True)
+            lab(tr("Every step can be skipped. You can stop at any time and continue later (More → Setup)."))
+            lab(tr("Quick (about 5 min.) or thorough?"), False)
+            for mode, ic, n, dur, txt in (("quick", "⚡", "Quick", "about 5 minutes", "Basics, push messages to the phone, camera test and place, protection and walk test."),
+                                          ("full", "🔬", "In depth", "about 20 to 30 minutes", "Everything of «Quick» plus zones, night time, light and siren, head, AI model, thermal camera, battery, simulator - each step can be skipped.")):
+                def pick(m=mode):
+                    g2_action({"action": "start", "mode": m}, "window"); o_ = order(); st["cur"] = o_[0] if o_ else "done"; render()
+                b = self._fbtn(body, f"{ic} {tr(n)} · {tr(dur)}\n{tr(txt)}", pick, primary=mode == "quick", font=("DejaVu Sans", 9, "bold"))
+                b.config(justify="left", anchor="w", wraplength=480, pady=8); b.pack(fill="x", pady=4)
+            self._fbtn(foot, tr("Later"), lambda: (g2_action({"action": "pause"}, "window"), close())).pack(side="right")
+            return
+        if c == "done":
+            lab("✅ " + tr("Done!"), False, True)
+            for s in G["steps"]:
+                d_ = s["id"] in G["done"]
+                lab(("✓ " if d_ else "⤼ ") + s["icon"] + " " + s["title"] + ("" if d_ else " · " + (tr("skipped automatically") + f" ({s['auto_skip']})" if s["auto_skip"] else tr("skipped"))),
+                    not d_, col=C["grn"] if d_ else None)
+            r = row(); self._fbtn(r, "📱 " + tr("QR code for the phone"), lambda: self._qr_window(False)).pack(side="left")
+            if G["mode"] != "full":
+                def more():
+                    g2_action({"action": "start", "mode": "full"}, "window"); st["cur"] = g2_state()["left"][0] if g2_state()["left"] else "done"; render()
+                self._fbtn(foot, tr("➕ Set up more (thorough)"), more).pack(side="left")
+            self._fbtn(foot, tr("Let's go"), lambda: (g2_action({"action": "finish"}, "window"), close(), self.root.after(500, lambda: self._g2_tour(self.tab))), primary=True).pack(side="right")
+            self._fbtn(foot, "‹ " + tr("Back"), lambda: move(-1)).pack(side="right", padx=(0, 6))
+            return
+        lab(meta["icon"] + " " + meta["title"], False, True)
+        if c == "basics":
+            ttk.Label(body, text=tr("Language")).pack(anchor="w", pady=(6, 0))
+            lv = tk.StringVar(value=cur_lang())
+            cb = ttk.Combobox(body, state="readonly", values=list(LANGS), textvariable=lv); cb.pack(fill="x")
+            nm = entry(tr("Name of this device (optional)"), CFG.get("device_name") or "")
+            lab(tr("Time on MoveEye") + ": " + datetime.now().strftime("%d.%m.%Y %H:%M"))
+            la = entry(tr("Latitude"), CFG.get("latitude")); lo = entry(tr("Longitude"), CFG.get("longitude"))
+            toggle("⚡ " + tr("Fast updates (development)"), "update_fast")
+            lab("🔒 " + tr("Password for this page"), False)
+            lab(tr("Without a password everybody in the same network (and with the link) can watch and switch everything."))
+            p1 = entry(tr("Password (6-64 characters)"), "", "•"); p2 = entry(tr("Repeat password"), "", "•")
+            if web_pw_active():
+                lab("✓ " + tr("A password is set already. Enter a new one only to change it."), col=C["grn"])
+
+            def fn():
+                if p1.get() != p2.get():
+                    messagebox.showinfo("MoveEye", tr("The passwords are not the same"), parent=w); return False
+                if lv.get() in LANGS:
+                    CFG["lang"] = lv.get()
+                ok, err = set_text("device_name", nm.get().strip()[:40])
+                if not ok:
+                    messagebox.showinfo("MoveEye", tr_err(err), parent=w); return False
+                ok, err = g2_action({"action": "place_time", "lat": la.get(), "lon": lo.get()}, "window")
+                if not ok:
+                    messagebox.showinfo("MoveEye", tr_err(err), parent=w); return False
+                if p1.get():
+                    ok, err = web_pw_set(p1.get())
+                    if not ok:
+                        messagebox.showinfo("MoveEye", tr_err(err), parent=w); return False
+                save_settings(); return True
+            nxt["fn"] = fn
+        elif c == "push":
+            lab(tr("1. Install the free app «ntfy» (App Store / Play Store)."), False)
+            lab(tr("2. In the app: + → enter the topic below (and the server, if it is not the default one) - or open this code with the phone camera."), False)
+            u = CFG.get("notify_url") or ""
+            ok_ = CFG.get("notify_type") == "ntfy" and re.match(r"^https://[^/]+/[^/]+$", u)
+            if ok_:
+                lab("✓ " + tr("The push channel is set up already:") + " " + u.replace("https://", ""), col=C["grn"])
+            sv = entry(tr("Server"), u.rsplit("/", 1)[0] if ok_ else "https://ntfy-me.com")
+            tv = entry(tr("Topic (like a secret channel name)"), u.rsplit("/", 1)[1] if ok_ else "mw-" + secrets.token_hex(5))
+            res = lab("")
+
+            def save():
+                url = sv.get().strip().rstrip("/") + "/" + re.sub(r"[^A-Za-z0-9_-]", "", tv.get())
+                ok, err = set_text("notify_url", url)
+                if ok:
+                    ok, err = set_text("notify_type", "ntfy"); CFG["notify_on"] = True; save_settings()
+                if not ok:
+                    res.config(text="⚠ " + tr_err(err), fg=C["red"])
+                return ok
+
+            def test():
+                if save():
+                    try:
+                        self.watch.notifier.test(self.watch.frame_out); res.config(text="✓ " + tr("Sent - did it arrive on the phone?"), fg=C["grn"])
+                    except Exception as e_:
+                        res.config(text="⚠ " + str(e_)[:80], fg=C["red"])
+            r = row(); self._fbtn(r, tr("📨 Send test message"), test).pack(side="left")
+            nxt["fn"] = lambda: save() if len(tv.get()) >= 3 else True
+        elif c == "camera":
+            lab(tr("Is the picture right? Upright, sharp, the place in view?"))
+            l_s = lab("", False)
+
+            def tick():
+                if not w.winfo_exists():
+                    return
+                l_s.config(text=f"{STATE.get('source_status', '')} · {float(STATE.get('fps') or 0):.1f} {tr('frames/s')}"
+                           + ("" if float(STATE.get("fps") or 0) > 0 else "\n⚠ " + tr("No picture yet.")))
+                st["after"].append(w.after(2000, tick))
+            tick()
+            lab(tr("MoveEye looks round once and suggests zones, paths and the things to guard (a few minutes). Then come back here."))
+            r = row(); self._fbtn(r, tr("📐 Set up the place"), self._place, primary=True).pack(side="left")
+            self._fbtn(r, tr("📷 Choose the camera"), lambda: self._open_page("/cams")).pack(side="left", padx=(6, 0))
+        elif c == "view":
+            lab(tr("Who should see «Simple» - and what is MoveEye for?"))
+            sv_ = tk.BooleanVar(value=bool(CFG.get("ui_simple")))
+            for v_, n_ in ((True, "Simple"), (False, "Expert")):
+                tk.Radiobutton(body, text=tr(n_), variable=sv_, value=v_, bg=C["bg"], fg=C["txt"], selectcolor=C["field"], activebackground=C["bg"], anchor="w").pack(fill="x")
+            lab(tr("Default of every page (each page can switch by itself)."))
+            uses = [("camping", "Camping: tent, caravan"), ("home", "House and garden"), ("wild", "Watching animals"), ("holiday", "Holiday house, alpine hut"),
+                    ("room", "In the room: wake-up alarm"), ("", "everything (not chosen)")]
+            ttk.Label(body, text=tr("What is MoveEye for?")).pack(anchor="w", pady=(6, 0))
+            uc = ttk.Combobox(body, state="readonly", values=[tr(n_) for _v, n_ in uses]); uc.pack(fill="x")
+            uc.current(next((i for i, (v_, _n) in enumerate(uses) if v_ == (CFG.get("use_case") or "")), 5))
+            nxt["fn"] = lambda: g2_action({"action": "view", "simple": sv_.get(), "use": uses[uc.current()][0]}, "window")[0]
+        elif c == "zones":
+            lab(tr("Draw areas into the picture: ignore the road, privacy, the sleeping place for the wake-up alarm, a line."))
+            r = row(); self._fbtn(r, tr("✏ Draw the zones"), lambda: self._open_page("/zones"), primary=True).pack(side="left")
+        elif c == "protect":
+            l_p = lab("", False)
+            l_w = lab("")
+
+            def ptick():
+                if not w.winfo_exists():
+                    return
+                v = protect_status()
+                bad = [x["text"] for x in v.get("items", []) if not x.get("ok")]
+                l_p.config(text=tr("State of the protection") + ": " + (tr("Still missing:") + "\n• " + "\n• ".join(bad) if bad else tr("Everything ready.")))
+                ws = walktest_state()
+                l_w.config(text=(f"⏱ {ws['left'] // 60}:{ws['left'] % 60:02d} {tr('left')} · {ws['n_det']} × {tr('recognised')}" if ws["on"]
+                                 else ("✓ " + ws["result"]["text"] if ws.get("result") else "")))
+                st["after"].append(w.after(1500, ptick))
+            lab(tr("Walk past the camera like a visitor - MoveEye beeps at every detection. 3 minutes, no alarms meanwhile."))
+            r = row()
+            self._fbtn(r, tr("🚶 Start walk test"), lambda: walktest_start("window"), primary=True).pack(side="left")
+            self._fbtn(r, tr("■ Stop"), lambda: walktest_stop("button")).pack(side="left", padx=(6, 0))
+            lab(tr("Switch on now?") + " (" + tr("switches on at once (with the countdown)") + ")", False)
+            r = row()
+            for k, n in (("off", "Leave it off"), ("watch", "Watchful"), ("full", "Full")):
+                self._fbtn(r, tr(n), lambda k=k: self._protect(k)).pack(side="left", padx=(0, 6))
+            ptick()
+        elif c == "schedules":
+            toggle(tr("Night report in the morning"), "report_on")
+            ttk.Label(body, text=tr("End of the night time") + " (" + tr("o'clock") + ")").pack(anchor="w", pady=(6, 0))
+            hv = tk.IntVar(value=int(CFG.get("report_hour", 7)))
+            sp_ = ttk.Spinbox(body, from_=3, to=12, textvariable=hv, width=5, command=lambda: self._set("report_hour", int(hv.get()))); sp_.pack(anchor="w")
+            lab(tr("Schedules switch features by themselves, e.g. the protection every night."))
+            r = row(); self._fbtn(r, tr("🕘 Schedules"), lambda: self._tab("protect")).pack(side="left")
+        elif c == "lightsiren":
+            hw = G["hw"]; r = row()
+            if hw.get("light"):
+                for nm_, txt in (("white", "💡 Light 3 s"), ("ir", "🌙 Infrared 3 s")):
+                    self._fbtn(r, tr(txt), lambda n=nm_: (light_set(n, "on"), w.after(3000, lambda: light_set(n, "auto")))).pack(side="left", padx=(0, 6))
+            if hw.get("speaker"):
+                self._fbtn(r, tr("🔊 Test sound"), lambda: sound_play(None, 2.5, None, "test")).pack(side="left", padx=(0, 6))
+                self._fbtn(r, tr("🚨 Siren 2 s"), lambda: (sound_play(None, None, None, reason="by hand (window)"), w.after(2000, sound_stop))).pack(side="left")
+                lab(tr("Loud! Warn the neighbours first."))
+        elif c == "servos":
+            r = row()
+            self._fbtn(r, tr("◎ Centre"), lambda: move_camera("center")).pack(side="left", padx=(0, 6))
+            self._fbtn(r, tr("◀ ▶ Turn a little"), lambda: (move_camera("left", 8), w.after(900, lambda: move_camera("right", 8)), w.after(1800, lambda: move_camera("center")))).pack(side="left")
+            lab(tr("Direction of turning wrong? Swap it:"))
+            toggle(tr("Invert pan direction"), "invert_pan"); toggle(tr("Invert tilt direction"), "invert_tilt")
+            r = row(); self._fbtn(r, tr("🛠 Servo test (tools)"), lambda: self._open_page("/tools")).pack(side="left")
+        elif c == "ai":
+            lab(tr("The AI says «person», «animal», «car». It runs on the Pi or on a helper PC."))
+            toggle(tr("AI detection"), "ai_enabled"); lab("🤖 " + str(STATE.get("ai_status") or ""))
+        elif c == "thermal":
+            toggle(tr("Thermal picture over the live picture"), "thermal_on"); toggle(tr("Alarm from the thermal camera"), "thermal_alarm")
+            lab("🌡 " + str(STATE.get("thermal") or ""))
+        elif c == "battery":
+            b = STATE.get("battery") or {}
+            if b.get("on"):
+                lab(f"🔋 {b.get('pct', '–')} % {tr('charge')}", False)
+            if b.get("src") != "ups":                    # no UPS HAT: a powerbank? (it cannot be detected)
+                ttk.Label(body, text=tr("Powerbank capacity") + " (mAh, 0 = " + tr("no battery") + ")").pack(anchor="w", pady=(6, 0))
+                mv = tk.IntVar(value=int(CFG.get("batt_mah") or 0))
+                ttk.Spinbox(body, from_=0, to=60000, increment=1000, textvariable=mv, width=8,
+                            command=lambda: self._set("batt_mah", int(mv.get()))).pack(anchor="w")
+                r = row(); self._fbtn(r, tr("🔋 Charged full now"), battery_full).pack(side="left")
+            toggle(tr("Battery saving automatic"), "batt_save_on")
+        elif c == "sim":
+            lab(tr("The 3D simulator on the PC tests MoveEye without the real place. Optional."))
+            su = entry(tr("Address of the simulator"), CFG.get("sim_url") or "")
+            res = lab("")
+
+            def conn():
+                ok, err = set_text("sim_url", su.get().strip())
+                if ok:
+                    ok, err = sim_set(True, "window", True)
+                res.config(text=("✓ " + tr("Connecting …")) if ok else "⚠ " + tr_err(err))
+            r = row(); self._fbtn(r, tr("🔌 Connect"), conn).pack(side="left")
+        elif c == "tours":
+            toggle(tr("Tour of a page on its first visit"), "tours_auto"); toggle(tr("Tip of the day"), "tip_of_day")
+            r = row(); self._fbtn(r, tr("↺ Reset all tours"), lambda: g2_action({"action": "tours_reset"}, "window")).pack(side="left")
+
+        def go_next():
+            if nxt["fn"] is not None and nxt["fn"]() is False:
+                return
+            g2_action({"action": "done", "id": c}, "window"); move(1)
+        self._fbtn(foot, tr("Next") + " ›", go_next, primary=True).pack(side="right")
+        self._fbtn(foot, tr("Skip"), lambda: (g2_action({"action": "skip", "id": c}, "window"), move(1))).pack(side="right", padx=(0, 6))
+        self._fbtn(foot, "‹ " + tr("Back"), lambda: move(-1)).pack(side="left")
+    render()
+
+
+def _g2_tk_first(self):
+    """the first start (not set up yet): the guide; the QR codes for the phone come at its end"""
+    if not CFG["setup_done"] and not CFG["lock_on"]:
+        self._g2_wizard()
+
+
+def _g2_tk_tip(self):
+    """tip of the day in the window (once a day, a function not used yet)"""
+    x = g2_tip_today()
+    if not x:
+        return
+    g2_tip_seen(x["id"])
+    w = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Tip of the day")); w.configure(bg=C["bg"]); w.transient(self.root)
+    tk.Label(w, text="☀ " + tr("Tip of the day").upper(), bg=C["bg"], fg=C["yel"], font=("DejaVu Sans", 8, "bold"), anchor="w").pack(fill="x", padx=14, pady=(12, 0))
+    tk.Label(w, text=x["icon"] + " " + x["title"], bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12, "bold"), anchor="w").pack(fill="x", padx=14)
+    tk.Label(w, text=x["text"], bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9), wraplength=380, justify="left", anchor="w").pack(fill="x", padx=14, pady=(4, 8))
+    bf = tk.Frame(w, bg=C["bg"]); bf.pack(fill="x", padx=14, pady=(0, 12))
+    self._fbtn(bf, tr("Show me") + " ›", lambda: (w.destroy(), self._open_page(x["href"])), primary=True).pack(side="left")
+    self._fbtn(bf, tr("Not now"), w.destroy).pack(side="left", padx=(6, 0))
+    self._fbtn(bf, tr("Tip of the day off"), lambda: (self._set("tip_of_day", False), w.destroy())).pack(side="left", padx=(6, 0))
+
+
+_g2_tab_before = App._tab
+# wraps: App._tab
+
+
+def _g2_tk_tab(self, tid):
+    _g2_tab_before(self, tid)
+    self.root.after(900, lambda: self._g2_tour(tid))
+
+
+_g2_run_before = App.run
+# wraps: App.run
+
+
+def _g2_tk_run(self):
+    self.root.after(4000, lambda: self._g2_tour(self.tab))
+    self.root.after(25000, self._g2_tip)
+    _g2_run_before(self)
+
+
+for _n, _f in (("_g2_tk_widget", _g2_tk_widget), ("_g2_tour", _g2_tk_tour), ("_g2_q", _g2_tk_q), ("_g2_factory", _g2_tk_factory),
+               ("_g2_wizard", _g2_tk_wizard), ("_g2_first", _g2_tk_first), ("_g2_tip", _g2_tk_tip),
+               ("_tab", _g2_tk_tab), ("run", _g2_tk_run)):
+    setattr(App, _n, _f)
+# ----------------------------------------------------------------------------
+# Wish of Daniel (29.10.2026, Konzept-Check «one system»): the setup assistant (/api/setup, before: 4 steps), the first-open
+# explanations (515), Simple / Expert, «Platz einrichten» (317), the walk test (415), the protection assistant (135) and
+# the push test are ONE guide now:
+#   * guide after (re)install: «Quick (about 5 min) or thorough?» - quick = basics, push, camera + place, protection +
+#     walk test; thorough adds the other steps. Every step can be skipped, the state is kept on the Pi (CFG guide2), so
+#     «Continue later» works from every device and from the window. Hardware steps are skipped when the part is missing.
+#   * tours (coach marks) per page: web 516, window 584. Seen = web_ui «mw-tours-seen» (same on every device).
+#   * Simple / Expert per page: web_ui «mw-page-mode» {page: "simple"|"expert"}; without an entry the default CFG ui_simple
+#     (the choice in the guide). /api/schema?simple=0|1 uses it (simple_hidden, 130).
+#   * «?» next to a setting: g2_help(key) from the hand-written texts below, the label and the topic explanation (515).
+#   * tip of the day: a function that was never used (g2_tip_today), once a day, switch tip_of_day.
+#   * factory reset (Mehr → System): everything back to the defaults and setup_done False, BUT Wi-Fi / own Wi-Fi / remote
+#     access, the ntfy push channel and the own AI model + learning data stay. Recordings, diary and log are deleted. A
+#     copy of the old settings is kept first (motionwatch_settings.before_reset_<time>.json, downloadable).
+# ----------------------------------------------------------------------------
+G2_DEF = {"mode": "", "step": "", "done": [], "skipped": [], "paused": False, "finished": False, "t": 0.0}
+for _k, _v in (("guide2", G2_DEF), ("tours_auto", True), ("tip_of_day", True), ("tip_day_last", "")):
+    CFG.setdefault(_k, json.loads(json.dumps(_v))); DEFAULTS.setdefault(_k, json.loads(json.dumps(_v)))
+TOGGLES.extend([
+    ("Setup", "tours_auto", "Tour of a page on its first visit (dims the screen and shows the controls one after another)"),
+    ("Setup", "tip_of_day", "Tip of the day (a function you have not used yet)"),
+])
+SIMPLE_KEYS.update({"tours_auto", "tip_of_day"})
+VIEW_GET = VIEW_GET + ("/g2/",)                       # the script of the tours / tips also for viewers (only texts)
+
+# ---- the steps of the guide ------------------------------------------------------------------------------------------
+G2_QUICK = ["basics", "push", "camera", "protect"]
+G2_FULL = ["basics", "push", "camera", "view", "zones", "protect", "schedules", "lightsiren", "servos", "ai", "thermal", "battery", "sim", "tours"]
+G2_STEPS = {   # id: (icon, English title, needs hardware (any of))
+    "basics": ("🌐", "Basics", ()), "push": ("🔔", "Push messages to the phone", ()), "camera": ("📷", "Camera test and place", ()),
+    "view": ("🧭", "Simple or Expert", ()), "zones": ("✏", "Fine-tune the zones", ()), "protect": ("🛡", "Protection and walk test", ()),
+    "schedules": ("🕘", "Night time and schedules", ()), "lightsiren": ("💡", "Light and siren test", ("light", "speaker")),
+    "servos": ("🎯", "Head and calibration", ("head",)), "ai": ("🤖", "AI model", ()), "thermal": ("🌡", "Thermal camera", ("thermal",)),
+    "battery": ("🔋", "Battery", ()),      # a powerbank cannot be detected: the step asks for it
+    "sim": ("🎮", "3D simulator", ()), "tours": ("💡", "Tours and tips", ()),
+}
+G2_HW_NAMES = {"light": "light", "speaker": "loudspeaker", "head": "pan / tilt head", "thermal": "thermal camera", "battery": "battery (UPS)"}
+
+
+def g2_hw():
+    """which hardware is there (the guide skips the steps of missing parts). The simulator counts as hardware."""
+    sim = False
+    try:
+        sim = bool(CFG.get("sim_on") and sim_live())
+    except Exception:
+        pass
+    try:
+        head = bool(live_has_head())
+    except Exception:
+        head = False
+    try:
+        spk = bool(out_selected())
+    except Exception:
+        spk = False
+    b = STATE.get("battery") or {}
+    return {"head": head, "light": bool(CFG.get("light_white_out") or CFG.get("light_ir_out") or sim
+                                        or str(STATE.get("servo_backend") or "").startswith("pca9685")),
+            "speaker": spk or sim, "thermal": bool(CFG.get("thermal_source")) or STATE.get("thermal") == "connected",
+            "battery": bool(CFG.get("ups_on") or b.get("on")), "sim": sim}
+
+
+def g2_steps(mode=None, lang=None):
+    mode = mode or CFG["guide2"].get("mode") or "quick"
+    hw = g2_hw()
+    out = []
+    for sid in (G2_FULL if mode == "full" else G2_QUICK):
+        ic, title, needs = G2_STEPS[sid]
+        miss = [n for n in needs if not hw.get(n)]
+        auto = len(miss) == len(needs) and bool(needs)      # skipped only when ALL of its parts are missing
+        out.append({"id": sid, "icon": ic, "title": tr(title, lang),
+                    "auto_skip": (tr("not connected", lang) + ": " + ", ".join(tr(G2_HW_NAMES[n], lang) for n in miss)) if auto else ""})
+    return out
+
+
+def g2_state(lang=None):
+    g = dict(G2_DEF); g.update(CFG.get("guide2") or {})
+    steps = g2_steps(g.get("mode") or "quick", lang)
+    ids = [s["id"] for s in steps]
+    left = [i for i in ids if i not in g["done"] and i not in g["skipped"] and not next(s for s in steps if s["id"] == i)["auto_skip"]]
+    return dict(g, steps=steps, hw=g2_hw(), left=left, setup_done=bool(CFG["setup_done"]), update_fast=bool(CFG.get("update_fast")),
+                open=bool(g.get("mode")) and not g.get("finished"), default_simple=bool(CFG.get("ui_simple")),
+                use_case=CFG.get("use_case") or "", tours_auto=bool(CFG.get("tours_auto", True)), tip_of_day=bool(CFG.get("tip_of_day", True)))
+
+
+def g2_action(d, who="web"):
+    """the guide: start / step / done / skip / pause / resume / finish / again / view / place_time / tours_reset (POST /api/setup step=guide)"""
+    a = str(d.get("action") or "")
+    g = dict(G2_DEF); g.update(CFG.get("guide2") or {})
+    sid = str(d.get("id") or "")
+    if a == "start":
+        mode = "full" if d.get("mode") == "full" else "quick"
+        keep = g.get("mode") == mode and not g.get("finished")
+        g = dict(G2_DEF, mode=mode, done=g["done"] if keep else [], skipped=g["skipped"] if keep else [], t=time.time())
+        log_event("sys", f"Setup guide started ({mode}, {who})")
+    elif a in ("done", "skip"):
+        if sid not in G2_STEPS:
+            return False, "unknown step"
+        lst = g["done"] if a == "done" else g["skipped"]
+        other = g["skipped"] if a == "done" else g["done"]
+        if sid not in lst:
+            lst.append(sid)
+        if sid in other:
+            other.remove(sid)
+        g["step"] = sid
+    elif a == "step":
+        if sid not in G2_STEPS:
+            return False, "unknown step"
+        g["step"] = sid; g["paused"] = False
+    elif a == "pause":
+        g["paused"] = True
+        CFG["setup_done"] = True                     # the start page does not ask again by itself - «continue» under Mehr
+        log_event("sys", f"Setup guide paused - continue later ({who})")
+    elif a == "resume":
+        g["paused"] = False
+    elif a == "finish":
+        g["finished"] = True; g["paused"] = False
+        CFG["setup_done"] = True
+        log_event("sys", f"Setup guide finished ({g.get('mode') or 'quick'}, {len(g['done'])} steps done, {who})")
+    elif a == "again":
+        g = dict(G2_DEF)
+        CFG["setup_done"] = False
+    elif a == "view":                                # «Simple» or «Expert» as the default of every page + what it is for
+        if "use" in d:
+            ok, err = use_case_set(str(d.get("use") or ""), who)
+            if not ok:
+                return ok, err
+        if "simple" in d:
+            CFG["ui_simple"] = bool(d.get("simple"))
+            web_ui_update({}, ["mw-page-mode"])      # the choice is the new default of every page
+    elif a == "place_time":
+        try:
+            lat, lon = d.get("lat"), d.get("lon")
+            if lat is not None and lon is not None and str(lat) != "" and str(lon) != "":
+                lat, lon = float(lat), float(lon)
+                if not (-90 <= lat <= 90 and -180 <= lon <= 180 and math.isfinite(lat) and math.isfinite(lon)):
+                    return False, "invalid value"
+                CFG["latitude"], CFG["longitude"] = round(lat, 4), round(lon, 4)
+                log_event("sys", f"Location set in the setup guide: {lat:.4f}, {lon:.4f}")
+        except (TypeError, ValueError):
+            return False, "invalid value"
+        if d.get("t"):
+            try:
+                sync_time_from_client(d.get("t"), str(d.get("tz") or "")[:60], True)
+            except Exception:
+                pass
+    elif a == "tours_reset":
+        web_ui_update({}, ["mw-tours-seen"])
+        log_event("sys", f"All tours reset ({who})")
+    else:
+        return False, "unknown action"
+    g["t"] = time.time()
+    CFG["guide2"] = g
+    save_settings()
+    return True, ""
+
+
+# ---- Simple / Expert per page ------------------------------------------------------------------------------------------
+_G2_SIMPLE = threading.local()
+
+
+def page_modes():
+    try:
+        v = json.loads((CFG.get("web_ui") or {}).get("mw-page-mode") or "{}")
+        return v if isinstance(v, dict) else {}
+    except (TypeError, ValueError):
+        return {}
+
+
+def page_simple(page):
+    """Simple (True) or Expert (False) on this page: its own choice, otherwise the default (the guide / Settings)"""
+    v = page_modes().get(str(page or ""))
+    return bool(CFG.get("ui_simple")) if v not in ("simple", "expert") else v == "simple"
+
+
+def ui_simple_now():
+    """what simple_hidden() uses: during /api/schema?simple= the choice of the page, otherwise the default"""
+    v = getattr(_G2_SIMPLE, "v", None)
+    return bool(CFG.get("ui_simple")) if v is None else v
+
+
+# ---- «?» next to a setting --------------------------------------------------------------------------------------------
+# (explanation, recommendation) - English; the other languages in 633
+SET_HELP = {
+    "detection_on": ("Motion detection is the base of everything: without it MoveEye sees nothing.", "Leave it on."),
+    "sensitivity": ("How small a change in the picture may be to count as movement. Higher = also small and far things, but more false alarms (grass, insects).", "Start in the middle, raise it only if the walk test misses you."),
+    "ai_enabled": ("The AI checks every movement: person, animal, car - or nothing. Without it every movement could give an alarm.", "Leave it on."),
+    "record": ("A video of every alarm, with a few seconds before.", "On - you see later what really happened."),
+    "snapshot_on_person": ("A photo as soon as a person is recognised (smaller than a video, also in the push message).", "On."),
+    "record_max_gb": ("How much of the memory card the recordings may use. The oldest are deleted first (⭐ stay).", "About half of the free memory."),
+    "notify_on": ("Push messages to your phone at an alarm. Without them you only see the alarms on this page.", "On - set up the app ntfy in the guide."),
+    "notify_prealarm": ("A first short message as soon as something moves, before the AI is sure.", "Off if you get too many messages."),
+    "webpush_on": ("Messages directly in this browser (without the app ntfy). Only works on https pages.", "Additional to ntfy, not instead."),
+    "notify_type": ("How the messages reach you: ntfy (app), Telegram, Pushover or a web address of your own.", "ntfy - free and simple."),
+    "notify_url": ("The address of your ntfy channel (server + topic). Like a secret channel name: who knows it gets your alarms.", "Use a long random topic (the guide makes one)."),
+    "arm_delay": ("The countdown after «arm» - time to leave the picture without an alarm.", "30 to 60 seconds."),
+    "siren_on": ("The siren at an alarm (only in the protection level «Full»).", "On for theft protection, off at the campsite at night (neighbours)."),
+    "siren_volume": ("How loud the siren is.", "Test it once with the light and siren test."),
+    "light_white_auto": ("When the white light goes on by itself: at an alarm, at night or never.", "At an alarm - it scares and gives a good picture."),
+    "light_ir_auto": ("Infrared light: invisible for people and animals, the camera sees in the dark with it.", "Automatic at night."),
+    "track_person": ("The head follows a recognised person.", "On if you have a pan / tilt head."),
+    "track_motion": ("The head follows everything that moves (also animals, branches).", "Off - «follow persons» is calmer."),
+    "patrol": ("The head drives through the saved points and looks round the place by itself.", "On when the place is bigger than the picture."),
+    "report_on": ("A short message in the morning: what happened in the night, with the best pictures.", "On."),
+    "report_hour": ("The end of the night time: the report comes then, «Guard tonight» ends then.", "The time you usually get up."),
+    "diary_on": ("Collects the best picture of every animal visit by itself.", "On - it costs little memory."),
+    "eco_on": ("Fewer pictures while all is quiet: the battery lasts longer, the reaction is a little slower.", "On with a battery, off with a power supply."),
+    "update_auto": ("New versions are installed by themselves (only signed ones).", "On."),
+    "thermal_on": ("The thermal camera finds warm bodies, also in the dark and behind grass.", "On if a thermal camera is connected."),
+    "thermal_alarm": ("An alarm from the thermal picture alone (warm body without movement in the normal picture).", "On at night without light."),
+    "noise_alarm": ("An alarm when it is loud (the microphone).", "Off at a busy campsite."),
+    "nightvision_auto": ("The brighter night picture, switched on by itself when it gets dark.", "On."),
+    "lowlight_auto": ("Brightens the picture at dusk.", "On."),
+    "device_name": ("The name in the push messages and on the page - helpful with several devices.", "Short, e.g. «Camper» or «Garden»."),
+    "net_mode": ("Which network MoveEye uses: home Wi-Fi, its own Wi-Fi or automatic.", "Automatic."),
+    "hotspot_ssid": ("The name of the own Wi-Fi of MoveEye (when there is no other network).", "Leave it as it is."),
+    "tips_level": ("How many explanations appear the first time something is opened.", "«Normal»; «Off» when you know MoveEye."),
+    "use_case": ("What MoveEye is for - «Simple» then shows only the settings that fit.", "Choose it in the guide."),
+    "tours_auto": ("Every page shows its tour once on the first visit. The «?» at the top starts it again.", "On while you get to know MoveEye."),
+    "tip_of_day": ("Once a day a tip about a function you have not used yet.", "On."),
+    "tamper_on": ("Alarm when the camera is covered, turned away or the device is moved.", "On."),
+    "rec_keep_days": ("Recordings older than this are deleted by themselves (0 = keep until the memory is full).", "14 to 30 days."),
+    "push_pics": ("A picture in the push message.", "On - you see at once what it is."),
+    "batt_save_on": ("Below a battery level MoveEye saves power by itself (fewer pictures, the AI less often).", "On with a battery."),
+    "login_https_only": ("The password is only accepted over a secure connection (https, the device itself or Tailscale).", "On when you use MoveEye from outside."),
+    "lens_check": ("Warns when the lens is dirty, wet or covered.", "On."),
+    "weather_on": ("Weather forecast and warnings for the place (needs the location).", "On."),
+    "gps_tag": ("Writes the location into the photos.", "Off if you share pictures."),
+    "audio_out": ("Which loudspeaker plays the siren and the sounds.", "Test it with the light and siren test."),
+    "cam_rotate": ("Turns the picture when the camera is mounted upside down or on its side.", "Look at the live picture and choose what is upright."),
+}
+
+
+def _g2_default_txt(key, lang):
+    if key not in DEFAULTS:
+        return ""
+    v = DEFAULTS[key]
+    if isinstance(v, bool):
+        return tr("Default", lang) + ": " + tr("on" if v else "off", lang)
+    if isinstance(v, (int, float)):
+        return tr("Default", lang) + ": " + (str(int(v)) if float(v).is_integer() else str(v))
+    if isinstance(v, str) and v:
+        try:
+            lab = dict(text_choice_pairs(key)).get(v)
+        except Exception:
+            lab = None
+        if lab:
+            return tr("Default", lang) + ": " + tr(lab, lang)
+    return ""
+
+
+def g2_help(lang=None):
+    """{key: {"x": explanation, "r": recommendation}} for every setting with something to say (all of «Simple»)"""
+    L = cur_lang(lang)
+    tips = {k[4:]: (xe, xd) for k, _lv, _v, _te, xe, _td, xd in GUIDE_TIPS if k.startswith("sec:")}
+    out = {}
+    specs = [(s, k, l) for s, k, l in TOGGLES] + [(x[0], x[1], x[2]) for x in SLIDERS] + [(x[0], x[1], x[2]) for x in TEXTS]
+    for sec, key, label in specs:
+        if key in out:
+            continue
+        hand = SET_HELP.get(key)
+        m_ = re.search(r"\(([^()]{8,})\)\s*$", label or "")
+        if not (hand or key in SIMPLE_KEYS or m_):
+            continue
+        parts = []                                   # the label is the title of the box - the text says more
+        sec_txt = tips.get(sec)
+        if hand:
+            parts.append(tr(hand[0], L))
+        elif sec_txt:
+            parts.append(sec_txt[1] if L == "de" else tr(sec_txt[0], L))
+        else:
+            m2 = re.search(r"\(([^()]{8,})\)\s*$", tr(label, L) or "")
+            parts.append(m2.group(1) if m2 else tr(label, L))
+        rec = tr(hand[1], L) if hand else ""
+        dft = _g2_default_txt(key, L)
+        out[key] = {"x": " ".join(parts), "r": rec, "d": dft}
+    return out
+
+
+# ---- tip of the day: a function that was never used ------------------------------------------------------------------
+def _g2_seen(k):
+    try:
+        return k in guide_seen()
+    except Exception:
+        return False
+
+
+def _g2_place_done():
+    try:
+        return _place_load() is not None
+    except Exception:
+        return False
+
+
+def _g2_walk_done():
+    try:
+        _walk_load()
+        return bool(WALK.get("result"))
+    except Exception:
+        return False
+
+
+def _g2_refscan():
+    try:
+        return bool(refscan_meta())
+    except Exception:
+        return False
+
+
+G2_FEATURES = [   # (id, icon, English title, English text, link, used?)
+    ("place", "📐", "Set up the place", "MoveEye looks round once and suggests zones, paths and the things to guard.", "/place", _g2_place_done),
+    ("walk", "🚶", "Walk test", "Walk past the camera like a visitor: MoveEye beeps at every detection and shows how far it sees.", "/protect", _g2_walk_done),
+    ("zones", "✏", "Zones", "Draw areas into the picture: ignore the road, privacy, the sleeping place for the wake-up alarm.", "/zones", lambda: bool(ZONES)),
+    ("diary", "📔", "Animal diary", "The best picture of every animal visit, collected by itself - every day on one page.", "/diary", lambda: _g2_seen("page:diary")),
+    ("party", "🎲", "Game corner", "Quiz, werewolf and connect four for the phones in the same Wi-Fi - for the campfire.", "/party", lambda: _g2_seen("page:party")),
+    ("schedule", "🕘", "Schedules", "Switch features on and off by themselves, e.g. the protection every night from 22:00.", "/settings#sec:Schedule", lambda: bool(SCHEDULES)),
+    ("timelapse", "🎞", "Timelapse", "A photo every few minutes - a film of the whole day.", "/settings#sec:Timelapse", lambda: bool(CFG.get("timelapse_on"))),
+    ("guest", "👀", "Guest access", "A link for others: only watching, for a limited time.", "/settings#sec:Guest access", lambda: bool(CFG.get("guest_token"))),
+    ("backup", "☁", "Backup", "Copy the recordings away from the device (cloud, USB stick) - a thief cannot delete them then.", "/settings#sec:Backup", lambda: CFG.get("backup_type", "off") != "off"),
+    ("wake", "⏰", "Wake-up alarm", "Wakes you with a melody and light; wave = snooze, sit up = off.", "/settings#sec:Wake-up alarm", lambda: bool(CFG.get("wake_on"))),
+    ("refscan", "🔎", "Reference scan", "The head photographs the place and later sees what is missing or new.", "/protect", _g2_refscan),
+    ("sim", "🎮", "3D simulator", "Test MoveEye on the PC without the real place: day, night, weather, animals, people.", "/sim", lambda: bool(CFG.get("sim_on") or CFG.get("sim_url"))),
+    ("pin", "🔢", "PIN for disarming", "A thief cannot simply switch MoveEye off - and three wrong PINs give an alarm.", "/protect", lambda: bool(CFG.get("protect_pin"))),
+    ("webpush", "🌐", "Messages in the browser", "Alarm messages directly in this browser, without the app.", "/settings#sec:Notifications", lambda: bool(CFG.get("webpush_on"))),
+    ("quick", "📄", "Quick guide to print", "One page with the QR codes - for the camper or the neighbours.", "/quick", lambda: _g2_seen("page:help")),
+]
+
+
+def g2_tip_today(lang=None, peek=False):
+    """the tip of the day: once a day, a function not used yet (rotating), or None"""
+    if not CFG.get("tip_of_day", True) or not CFG["setup_done"]:
+        return None
+    today = datetime.now().strftime("%Y-%m-%d")
+    if not peek and str(CFG.get("tip_day_last") or "").startswith(today):
+        return None
+    unused = []
+    for fid, ic, title, text, href, used in G2_FEATURES:
+        try:
+            u = used()
+        except Exception:
+            u = False
+        if not u:
+            unused.append((fid, ic, title, text, href))
+    if not unused:
+        return None
+    fid, ic, title, text, href = unused[datetime.now().toordinal() % len(unused)]
+    return {"id": fid, "icon": ic, "title": tr(title, lang), "text": tr(text, lang), "href": href, "day": today}
+
+
+def g2_tip_seen(fid=""):
+    CFG["tip_day_last"] = datetime.now().strftime("%Y-%m-%d") + " " + str(fid)[:20]
+    save_settings()
+
+
+# ---- factory reset ------------------------------------------------------------------------------------------------------
+FACTORY_KEEP = {
+    # Wi-Fi, own Wi-Fi (hotspot), network
+    "hotspot_on", "hotspot_password", "hotspot_ssid", "net_mode", "net_known", "net_watch", "net_noinet", "net_inet_notify",
+    "wifi_count", "wifi_guard", "wifi_guard_thr", "wifi_presence", "wifi_repeater", "wifi_swap",
+    # remote access (Tailscale / tunnel / address of the page)
+    "web_port", "https_extra", "public_url", "tunnel_on", "tunnel_code", "tunnel_prev_url",
+    # the ntfy push channel
+    "notify_type", "notify_url", "notify_on",
+    # the own AI model and its learning (the AI helper PC belongs to it)
+    "ai_model", "ai_own_url", "ai_own_auto", "ai_own_check_day", "fa_learn_auto", "species_model", "helper_use", "helper_url", "helper_code",
+    # paths, the language of the page and internal markers (otherwise old migrations / news would run again)
+    "record_dir", "storage_path", "lang", "sim_autostart_v2", "dev_phase_done", "app_icon_moveeye_done", "app_icon_orange_done",
+    "news_seen_web", "news_seen_tk", "weekcheck_last", "weekrep_last", "report_last_day",
+    # updates (Daniel, development phase: the fast test updates must keep working after a reset)
+    "update_fast", "update_auto", "update_url", "update_token", "update_unsigned", "update_hour", "update_install",
+    "update_install_armed", "update_push", "update_notified",
+}
+FACTORY_WORD = "ZURÜCKSETZEN"
+FACTORY_WORDS = {"ZURÜCKSETZEN", "ZURUECKSETZEN", "RESET", "RÉINITIALISER", "REINITIALISER", "RIPRISTINA", "RESETTAR"}
+FACTORY_DATA = ["sightings.json", "sim_diary.jsonl", "alarm_tracks.json", "places.json", "place", "refscan", "gehtest", "logs", "motionwatch.log"]
+_BACKUP_RE = re.compile(r"^motionwatch_settings\.before_reset_\d{8}-\d{6}\.json$")
+
+
+def factory_word(lang=None):
+    """the word to type: German «ZURÜCKSETZEN», the other languages «RESET» (both are always accepted)"""
+    return FACTORY_WORD if cur_lang(lang) == "de" else "RESET"
+
+
+def factory_backups():
+    try:
+        names = sorted((n for n in os.listdir(DATA_DIR) if _BACKUP_RE.match(n)), reverse=True)
+    except OSError:
+        names = []
+    out = []
+    for n in names[:10]:
+        try:
+            out.append({"name": n, "kb": max(1, os.path.getsize(os.path.join(DATA_DIR, n)) // 1024),
+                        "when": datetime.strptime(n[33:48], "%Y%m%d-%H%M%S").strftime("%d.%m.%Y %H:%M")})
+        except (OSError, ValueError):
+            pass
+    return out
+
+
+def factory_backup_path(name):
+    n = os.path.basename(str(name or ""))
+    p = os.path.join(DATA_DIR, n)
+    return p if _BACKUP_RE.match(n) and os.path.isfile(p) else None
+
+
+def factory_info(lang=None):
+    return {"need_pw": web_pw_active(), "need_pin": bool(CFG.get("protect_pin")) and not web_pw_active(),
+            "word": factory_word(lang), "backups": factory_backups(), "locked": bool(CFG.get("lock_on")),
+            "rec_dir": rec_dir(), "pw_cli": bool(CFG.get("web_password"))}
+
+
+def factory_check(pw, pin, word):
+    if CFG.get("lock_on"):
+        return False, "not possible in operator mode"
+    if str(word or "").strip().upper() not in FACTORY_WORDS:
+        return False, "type the word to confirm"
+    if web_pw_active():
+        p = str(pw or "")
+        ok = (CFG["web_password"] and hmac.compare_digest(p, CFG["web_password"])) or (CFG.get("web_pw_hash") and pw_check(p))
+        if not ok:
+            return False, "wrong password"
+    elif CFG.get("protect_pin") and not protect_pin_ok(pin):
+        return False, "wrong PIN"
+    return True, ""
+
+
+def _g2_rm_tree_files(d):
+    """deletes the files below the folder d (recordings), not d itself; counts them"""
+    n = 0
+    d = os.path.abspath(d)
+    bad = {os.path.abspath(os.sep), os.path.abspath(os.path.expanduser("~")), os.path.abspath(DATA_DIR), os.path.abspath(HERE)}
+    if d in bad or len([p for p in d.split(os.sep) if p]) < 2 or not os.path.isdir(d):
+        return 0
+    for root, dirs, files in os.walk(d, topdown=False):
+        for f in files:
+            try:
+                os.remove(os.path.join(root, f)); n += 1
+            except OSError:
+                pass
+        for x in dirs:
+            try:
+                os.rmdir(os.path.join(root, x))
+            except OSError:
+                pass
+    return n
+
+
+def factory_reset(who="web"):
+    """everything back to the defaults (see FACTORY_KEEP), recordings / diary / log deleted. Returns (ok, err, backup name)."""
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    name = f"motionwatch_settings.before_reset_{stamp}.json"
+    try:
+        with open(os.path.join(DATA_DIR, name), "w", encoding="utf-8") as f:
+            json.dump(settings_data(), f, ensure_ascii=False, indent=1)
+        os.chmod(os.path.join(DATA_DIR, name), 0o600)
+    except OSError as e:
+        return False, f"could not write the backup copy: {e}", ""
+    try:
+        if CFG.get("armed"):
+            disarm()
+    except Exception:
+        pass
+    try:
+        if walktest_on():
+            walktest_stop("reset")
+    except Exception:
+        pass
+    base = globals().get("FACTORY_CFG") or DEFAULTS
+    for k in list(CFG.keys()):
+        if k in VOLATILE or k in FACTORY_KEEP or k.startswith("update_") or k not in base:
+            continue
+        CFG[k] = __import__("copy").deepcopy(base[k])
+    CFG["setup_done"] = False
+    CFG["dev_phase_done"] = True                     # never again «fast updates on once» - the kept value of update_fast counts
+    CFG["guide2"] = json.loads(json.dumps(G2_DEF))
+    WAYPOINTS[:] = []; ZONES[:] = []; SCHEDULES[:] = []
+    try:
+        RELAYS[:] = default_relays()
+    except Exception:
+        RELAYS[:] = []
+    SCHED["base"].clear(); SCHED["manual"].clear()
+    _PW_OK.clear()
+    # what is deleted: recordings (with diary pictures and timelapse), the diary list, the log, place / reference scan
+    n_rec = _g2_rm_tree_files(rec_dir())
+    for nm in FACTORY_DATA:
+        p = os.path.join(DATA_DIR, nm)
+        try:
+            if os.path.isdir(p):
+                shutil.rmtree(p, ignore_errors=True)
+            elif os.path.isfile(p):
+                os.remove(p)
+        except OSError:
+            pass
+    for fn in ("SIGHT", "PLACE", "PLACES", "_ATR"):
+        try:
+            v = globals().get(fn)
+            if fn == "SIGHT":
+                v["list"] = []; v["loaded"] = True
+            elif fn == "PLACE":
+                v["rec"] = None; v["loaded"] = True
+            elif fn == "PLACES":
+                v["names"] = None
+            elif fn == "_ATR":
+                ALARM_TRACKS.clear(); v["loaded"] = True
+        except Exception:
+            pass
+    try:
+        WALK["result"] = None
+    except Exception:
+        pass
+    with LOCK:
+        STATE["events"].clear()
+    save_settings_now()
+    HW_REINIT["want"] = True; SETTINGS_GEN["n"] += 1
+    log_event("sys", f"Factory reset ({who}): settings back to the defaults, {n_rec} recordings deleted. Kept: Wi-Fi, remote access, push channel, own AI model. Old settings: {name}")
+    return True, "", name
+
+
+# ---- the window and the web page: data for the script /g2/ui.js -----------------------------------------------------
+def g2_routes(app, watch, reply, body):
+    from flask import request, Response, send_file
+    for p in ("/api/factory",):
+        LOCK_DENY_PATHS.add(p); APPKEY_DENY_PATHS.add(p)
+
+    @app.route("/g2/ui.js")
+    def g2_ui_js():
+        L = norm_lang(request.args.get("lang") or CFG["lang"])
+        return Response(g2_js(L), mimetype="application/javascript", headers={"Cache-Control": "no-cache"})
+
+    @app.route("/api/g2", methods=["GET", "POST"])
+    def api_g2():
+        """for every page (also viewers: read only): tours seen, tip of the day"""
+        lang = norm_lang(request.args.get("lang") or CFG["lang"])
+        if request.method == "POST":
+            d = body()
+            if d.get("action") == "tip_seen":
+                g2_tip_seen(d.get("id")); return reply({"ok": True})
+            return reply({"ok": False, "error": "unknown action"}, 400)
+        return reply({"ok": True, "tip": g2_tip_today(lang), "guide": g2_state(lang), "modes": page_modes(),
+                      "default_simple": bool(CFG.get("ui_simple"))})
+
+    @app.route("/api/factory", methods=["GET", "POST"])
+    def api_factory():
+        lang = norm_lang(request.args.get("lang") or CFG["lang"])
+        if request.method == "GET":
+            return reply(dict(factory_info(lang), ok=True))
+        d = body(); lang = norm_lang(d.get("lang") or lang)
+        ok, err = factory_check(d.get("password"), d.get("pin"), d.get("word"))
+        if not ok:
+            return reply({"ok": False, "error": tr_err(err, lang)}, 400)
+        ok, err, name = factory_reset("web " + (request.remote_addr or "?"))
+        return reply({"ok": ok, "error": tr_err(err, lang) if err else None, "backup": name}, 200 if ok else 500)
+
+    @app.route("/api/factory/backup/<name>")
+    def api_factory_backup(name):
+        p = factory_backup_path(name)
+        if not p:
+            return Response("not found", 404)
+        return send_file(p, mimetype="application/json", as_attachment=True, download_name=os.path.basename(p), max_age=0)
+# ----------------------------------------------------------------------------
+# Wish of Daniel (30.10.2026): a small QR icon next to every link that a phone should open; the link and «Copy» stay.
+#   Web: one shared helper for every page (rendered into <head> by render_page below, so the main page has it too):
+#     qrBtn(url, title, opts) -> a small QR button;  qrShow(url, title, opts) -> big overlay (QR, link, Copy, Print, Close)
+#     opts: {secret: true} (a warning, never cached), {alt: [{label, url, note}]} (choice, e.g. ntfy Android / iPhone),
+#           {note: "…"}, {pick: 1} (first choice), {print: true} (print at once).
+#     The QR comes from the own encoder (qr_svg, part 110) over POST /api/qr: the text never stands in an address (no
+#     browser history, no proxy log), the answer is «no-store». Like GET /api/qr only for the administrator (role_guard).
+#     Fields that already exist are decorated by themselves (no change in 530 needed): guest link #g-link, the ntfy
+#     address (Notifications), «Address of this page for links», the Tailscale line (System) → all addresses.
+#     Explicit calls: iPhone shortcuts, picture for other programs, TV link, simulator tunnel (530), app key (573),
+#     recordings (540).
+#   «QR codes» (Mehr → QR codes, /qr): every current code on one page, only for the administrator (not for app keys),
+#     secrets blurred until tapped, each with print; «Print all» → /qr/print (A4, labels; secrets only when ticked).
+#   Window: qr_tk_dialog (picture via qr_png, Copy, Save picture, Print with lp) and qr_tk_gallery; buttons in the sections
+#     Guest access, Web stream, Notifications, Simulator (tunnel) and Setup (all codes); the app key (573) too.
+#   ntfy: the Android app subscribes with ntfy://<server>/<topic>?display=… (docs.ntfy.sh/subscribe/phone - https links
+#     do not work there); the iPhone app has no such link: the https address opens the topic in the browser.
+# Translations: part 625.
+# ----------------------------------------------------------------------------
+
+QR_SECRET_PATHS = ("/api/ext", "/api/shortcut", "/api/guest", "/api/tunnel", "/api/qr", "/qr", "/api/appkeys", "/api/setup", "/api/party")
+QR_SHORTCUTS = (("arm", "Arm"), ("disarm", "Disarm"), ("siren_off", "Siren off"), ("light_on", "White light on"), ("light_off", "White light off"),
+                ("photo.jpg", "Photo now"), ("status", "Status (text)"))
+QR_GROUPS = (("addr", "Addresses of MoveEye"), ("wifi", "Own Wi-Fi of the device"), ("push", "Push messages (ntfy)"), ("guest", "Guest access"),
+             ("short", "iPhone shortcuts"), ("stream", "Picture for other programs"), ("tv", "TV view"), ("sim", "Simulator connection (tunnel)"),
+             ("games", "Games"), ("info", "Info page for guests"))
+
+
+def ntfy_app_url(url, name="MoveEye"):
+    """https://<server>/<topic> -> ntfy://<server>/<topic>?display=<name> (the Android app subscribes); '' if it is no topic address"""
+    m = re.fullmatch(r"(https?)://([^/\s?#]+)/([A-Za-z0-9_-]{1,64})/?", str(url or "").strip())
+    if not m:
+        return ""
+    from urllib.parse import quote
+    return f"ntfy://{m.group(2)}/{m.group(3)}?display={quote(str(name or 'MoveEye')[:40])}" + ("&secure=false" if m.group(1) == "http" else "")
+
+
+def qr_items(lang=None, host=None):
+    """All QR codes of now: [{id, group, title, url, secret, note, alt: [{label, url, note}]}]. host = the address the
+    browser uses (fallback when no network address is known). Secrets only go to the administrator (routes below)."""
+    L = norm_lang(lang)
+    T = lambda s: tr(s, L)
+    out, seen = [], set()
+
+    def add(group, title, url, secret=False, note="", alt=None):
+        if not url or (group, url) in seen:
+            return
+        seen.add((group, url))
+        out.append({"id": f"{group}{len(out)}", "group": group, "title": title, "url": url, "secret": bool(secret), "note": note, "alt": alt or []})
+    try:
+        addrs = setup_addresses()
+    except Exception:
+        addrs = []
+    names = {"lan": "Home network", "hotspot": "Own Wi-Fi of the device", "tailscale": "On the road (Tailscale)"}
+    for a in addrs:
+        add("addr", T(names.get(a["kind"], a["kind"])), a["url"])
+    try:
+        hu = tailscale_https_url()
+    except Exception:
+        hu = ""
+    add("addr", T("On the road, encrypted (https)"), hu)
+    pu = str(CFG.get("public_url") or "").strip()
+    if pu and pu.rstrip("/") not in [o["url"].rstrip("/") for o in out]:
+        add("addr", T("Address of this page for links"), pu)
+    loc = (page_address() or "").rstrip("/") or str(host or "").rstrip("/")
+    if not out and loc:
+        add("addr", T("This address"), loc + "/")
+    if CFG.get("hotspot_on") and CFG.get("hotspot_password"):
+        add("wifi", T("Own Wi-Fi of the device") + ": " + str(CFG.get("hotspot_ssid") or ""), wifi_qr_text(CFG["hotspot_ssid"], CFG["hotspot_password"]), True,
+            T("Scan with the phone camera to join the Wi-Fi."))
+    nu = str(CFG.get("notify_url") or "").strip()
+    na = ntfy_app_url(nu, CFG.get("device_name") or "MoveEye") if CFG.get("notify_type") == "ntfy" else ""
+    if na:
+        add("push", T("Push messages (ntfy)"), na, True, T("Android: the ntfy app subscribes to the topic by itself."),
+            [{"label": "Android", "url": na, "note": T("Android: the ntfy app subscribes to the topic by itself.")}, {"label": "iPhone / " + T("Browser"), "url": nu, "note": T("iPhone: the ntfy app cannot subscribe from a code - the code opens the topic in the browser. In the app: + and enter the topic.")}])
+    try:
+        gi = guest_info()
+    except Exception:
+        gi = {"active": False}
+    if gi.get("active") and loc:
+        add("guest", T("Guest access"), loc + gi["path"], True, T("Guests see only the live picture."))
+    tok = str(CFG.get("shortcut_token") or "")
+    if tok:
+        base = (pu.rstrip("/") or loc)
+        for a, n in QR_SHORTCUTS:
+            add("short", T("iPhone shortcuts") + " · " + T(n), f"{base}/k/{tok}/{a}", True)
+    try:
+        from urllib.parse import urlparse
+        hn = None if page_address() else (urlparse(str(host or "")).hostname or None)
+        lk = ext_links(hn if hn not in ("localhost",) else None) if CFG.get("ext_on") else {"on": False}
+    except Exception:
+        lk = {"on": False}
+    if lk.get("on"):
+        for k, n in (("mjpeg", "MJPEG"), ("jpg", T("Still picture")), ("rtsp", "RTSP")):
+            add("stream", T("Picture for other programs") + " · " + n, lk.get(k) or "", True,
+                T("Keep these addresses secret: whoever has them sees the picture without a password."))
+    if loc:
+        try:
+            add("tv", T("TV view"), loc + tv_url(False), True, T("Open on a TV or a second screen."))
+        except Exception:
+            pass
+    if CFG.get("tunnel_on") and loc:
+        try:
+            code = tunnel_code()
+        except Exception:
+            code = ""
+        add("sim", T("Simulator connection (tunnel)"), loc + "/", True, T("Code") + ": " + code + " · " + T("In the simulator (Verbindung → «Tunnel zu MoveEye») paste the address and type the code."))
+    try:
+        if party_on() and loc:
+            add("games", T("Games"), loc + "/p/" + PARTY["key"] + "/", False, T("Scan the QR code with the phone (same Wi-Fi)."))
+    except Exception:
+        pass
+    if CFG.get("info_page") and loc:
+        add("info", T("Info page for guests"), loc + "/info/")
+    return out
+
+
+def qr_items_json(lang=None, host=None, svg=True):
+    items = qr_items(lang, host)
+    if svg:
+        for it in items:
+            try:
+                it["svg"] = qr_svg(it["url"])
+            except ValueError:
+                it["svg"] = ""
+    L = norm_lang(lang)
+    return {"ok": True, "items": items, "groups": {g: tr(n, L) for g, n in QR_GROUPS}}
+
+
+# ---- web: the shared helper (every page, through render_page) ------------------------------------------------------------
+QR_JS = r"""
+(function () {
+  if (window.qrShow) return;
+  const QT = /*QRTX*/{}, DEF = /*QRLANG*/"de";
+  const lang = () => { let l = ""; try { l = (typeof LANG !== "undefined" && LANG) || ""; } catch (e) {} if (!l) { try { l = localStorage.getItem("mw-lang") || ""; } catch (e) {} } return l || DEF; };
+  const qt = k => { const d = QT[lang()]; return (d && d[k]) || (lang() === "rm" && QT.de && QT.de[k]) || k; };
+  window.qrT = qt;
+  const abs = u => { u = String(u == null ? "" : u); return u.charAt(0) === "/" ? location.origin + u : u; };
+  const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
+  const ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 3h8v8H3zm2 2v4h4V5zm8-2h8v8h-8zm2 2v4h4V5zM3 13h8v8H3zm2 2v4h4v-4zm8-2h3v3h-3zm5 0h3v3h-3zm-5 5h3v3h-3zm5 0h3v3h-3zm-2.5-2.5h3v3h-3z"/></svg>';
+  const CSS = ".qrb{display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:32px;padding:4px 7px;margin:2px;border:1px solid var(--line,#8886);border-radius:8px;background:transparent;color:inherit;cursor:pointer;vertical-align:middle;opacity:.8;flex:0 0 auto}"
+    + ".qrb:hover,.qrb:focus-visible{opacity:1;border-color:var(--acc,#e8590c)}.qrb svg{width:16px;height:16px;display:block}.qrb[hidden]{display:none}"
+    + "#qr-ov{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box}"
+    + "#qr-ov .qr-card{background:var(--panel,#fff);color:var(--txt,#111);border:1px solid var(--line,#ccc);border-radius:14px;max-width:420px;width:100%;max-height:calc(100vh - 32px);overflow:auto;padding:16px;box-sizing:border-box;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.45)}"
+    + "#qr-ov h3{margin:0 0 6px;font-size:17px}#qr-ov .qr-img{background:#fff;border-radius:10px;padding:8px;margin:8px auto;width:min(300px,72vw);aspect-ratio:1/1;box-sizing:border-box;color:#333;display:flex;align-items:center;justify-content:center}"
+    + "#qr-ov .qr-img svg{width:100%;height:100%;display:block}#qr-ov .qr-url{display:block;word-break:break-all;font-size:13px;margin:6px 0;user-select:all;-webkit-user-select:all;font-family:ui-monospace,Menlo,monospace}"
+    + "#qr-ov .qr-note{font-size:12px;opacity:.8;margin:6px 0}#qr-ov .qr-sec{font-size:12px;color:var(--org,#c60);margin:6px 0}"
+    + "#qr-ov .qr-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}#qr-ov .qr-seg{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:4px 0}"
+    + "#qr-ov .qr-seg button{min-height:32px;padding:4px 10px}#qr-ov .qr-seg button.on{outline:2px solid var(--acc,#e8590c);outline-offset:1px}"
+    + "@media print{body.qr-print>*:not(#qr-ov){display:none!important}body.qr-print #qr-ov{position:static;background:none;padding:0;display:block}"
+    + "body.qr-print #qr-ov .qr-card{border:0;box-shadow:none;max-height:none;max-width:none;color:#000;background:#fff;overflow:visible}"
+    + "body.qr-print #qr-ov .qr-btns,body.qr-print #qr-ov .qr-seg,body.qr-print #qr-ov .qr-sec{display:none!important}body.qr-print #qr-ov .qr-img{width:8cm}body.qr-print #qr-ov .qr-url{font-size:11pt}}";
+  const addCss = () => { if (document.getElementById("qr-css")) return; const s = E("style"); s.id = "qr-css"; s.textContent = CSS; (document.head || document.documentElement).appendChild(s); };
+  const cache = new Map();
+  async function svgOf(text, secret) {
+    if (!secret && cache.has(text)) return cache.get(text);
+    const r = await fetch("/api/qr", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({t: text}), cache: "no-store", credentials: "same-origin"});
+    if (!r.ok) throw new Error(r.status === 403 ? qt("Only for the administrator") : r.status === 400 ? qt("Too long for a QR code") : "HTTP " + r.status);
+    const s = await r.text(); if (!secret) { if (cache.size > 40) cache.clear(); cache.set(text, s); } return s;
+  }
+  window.qrSvg = svgOf;
+  async function copy(txt, node) {
+    try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(txt); return true; } } catch (e) {}
+    try { const ta = E("textarea"); ta.value = txt; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;left:-9999px;top:0"; (node || document.body).appendChild(ta); ta.select();
+      const ok = document.execCommand("copy"); ta.remove(); return ok; } catch (e) { return false; }
+  }
+  function close() { const o = document.getElementById("qr-ov"); if (o) { if (o._key) document.removeEventListener("keydown", o._key); o.remove(); } document.body.classList.remove("qr-print"); }
+  window.qrClose = close;
+  window.qrShow = function (url, title, o) {
+    o = (typeof o === "function" ? o() : o) || {}; addCss(); close();
+    const alts = (o.alt && o.alt.length ? o.alt : [{label: "", url: url, note: o.note}]).map(a => ({label: a.label || "", url: abs(a.url), note: a.note || o.note || ""}));
+    let cur = Math.max(0, Math.min(alts.length - 1, (typeof o.pick === "function" ? o.pick() : o.pick) | 0)), last = null;
+    const ov = E("div"); ov.id = "qr-ov"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true");
+    const c = E("div", "qr-card"); ov.appendChild(c);
+    const h = E("h3", "", title || qt("QR code")); h.id = "qr-h"; ov.setAttribute("aria-labelledby", "qr-h");
+    const seg = E("div", "qr-seg"), img = E("div", "qr-img", "…"), u = E("code", "qr-url"), note = E("div", "qr-note");
+    img.setAttribute("role", "img");
+    c.append(h, seg, img, u, note);
+    if (o.secret) c.appendChild(E("div", "qr-sec", "🔒 " + qt("Secret: whoever scans this code gets access. Show it only to people you trust.")));
+    const bt = E("div", "qr-btns"), cp = E("button", "sec", "📋 " + qt("Copy")), pr = E("button", "sec", "🖨 " + qt("Print")), cl = E("button", "", qt("Close"));
+    cp.type = pr.type = cl.type = "button"; cp.id = "qr-copy"; pr.id = "qr-printb"; cl.id = "qr-close";
+    bt.append(cp, pr, cl); c.appendChild(bt);
+    const paint = async () => { const a = alts[cur];
+      [...seg.children].forEach((b, i) => b.classList.toggle("on", i === cur));
+      u.textContent = a.url; note.textContent = a.note; note.hidden = !a.note; img.textContent = "…"; img.removeAttribute("data-ok");
+      try { const s = await svgOf(a.url, !!o.secret); if (alts[cur] !== a) return; img.innerHTML = s; img.dataset.ok = "1"; img.setAttribute("aria-label", qt("QR code") + ": " + a.url); last = a.url; }
+      catch (e) { img.textContent = "⚠ " + e.message; } };
+    if (alts.length > 1) alts.forEach((a, i) => { const b = E("button", "sec", a.label || String(i + 1)); b.type = "button"; b.onclick = () => { cur = i; paint(); }; seg.appendChild(b); });
+    cp.onclick = async () => { const ok = await copy(alts[cur].url, c); cp.textContent = ok ? "✓ " + qt("Copied") : "⚠ " + qt("Copy the link from the field"); if (!ok) { const r = document.createRange(); r.selectNodeContents(u); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } };
+    const doPrint = () => { document.body.classList.add("qr-print"); const off = () => { document.body.classList.remove("qr-print"); removeEventListener("afterprint", off); }; addEventListener("afterprint", off); setTimeout(() => { try { print(); } catch (e) {} }, 50); };
+    pr.onclick = doPrint;
+    cl.onclick = close;
+    ov.addEventListener("click", e => { if (e.target === ov) close(); });
+    ov._key = e => { if (e.key === "Escape") close(); }; document.addEventListener("keydown", ov._key);
+    document.body.appendChild(ov); cl.focus();
+    paint().then(() => { if (o.print && last) doPrint(); });
+    return ov;
+  };
+  window.qrBtn = function (url, title, o) {
+    addCss(); const b = E("button", "qrb"); b.type = "button"; b.innerHTML = ICON; b.dataset.qr = "1";
+    const tl = qt("Show the QR code") + (title ? " – " + title : ""); b.title = tl; b.setAttribute("aria-label", tl);
+    b.onclick = e => { e.preventDefault(); e.stopPropagation(); const v = typeof url === "function" ? url() : url; if (v) qrShow(v, title, o); };
+    return b;
+  };
+  // -- fields that exist already: decorated here, so the pages need no change --
+  const ntfyAlt = v => { const m = /^(https?):\/\/([^\/\s?#]+)\/([A-Za-z0-9_-]{1,64})\/?$/.exec(String(v || "").trim()); if (!m) return null;
+    const app = "ntfy://" + m[2] + "/" + m[3] + "?display=MoveEye" + (m[1] === "http" ? "&secure=false" : "");
+    return [{label: "Android", url: app, note: qt("Android: the ntfy app subscribes to the topic by itself.")}, {label: "iPhone / " + qt("Browser"), url: m[0], note: qt("iPhone: the ntfy app cannot subscribe from a code - the code opens the topic in the browser. In the app: + and enter the topic.")}]; };
+  window.qrNtfy = ntfyAlt;
+  async function listShow(group, title) {
+    let j = null; try { j = await (await fetch("/api/qr/items?lang=" + encodeURIComponent(lang()), {cache: "no-store"})).json(); } catch (e) {}
+    const it = ((j && j.items) || []).filter(x => x.group === group);
+    if (!it.length) { qrShow(location.origin + "/", title); return; }
+    qrShow(it[0].url, title, {alt: it.map(x => ({label: x.title, url: x.url, note: x.note}))});
+  }
+  const AUTO = [
+    {sel: "#g-link", get: e => (!e.hidden && e.value) || "", title: "Guest access", o: {secret: true}},
+    {sel: '[data-key="notify_url"] input', get: e => ntfyAlt(e.value) ? e.value : "", title: "Push messages (ntfy)",
+     o: e => ({secret: true, alt: ntfyAlt(e.value), pick: /iPhone|iPad|iPod/.test(navigator.userAgent) ? 1 : 0})},
+    {sel: '[data-key="public_url"] input', get: e => /^https?:\/\/\S+$/.test(e.value.trim()) ? e.value.trim() : "", title: "Address of this page for links"},
+    {sel: "#sys-remote", list: "addr", title: "Addresses of MoveEye"}];
+  function deco() {
+    AUTO.forEach(a => document.querySelectorAll(a.sel).forEach(e => {
+      let b = e._qrb;
+      if (!b || !b.isConnected) {
+        b = a.list ? qrBtn(() => { listShow(a.list, qt(a.title)); return ""; }, qt(a.title))
+                   : qrBtn(() => a.get(e), qt(a.title), () => (typeof a.o === "function" ? a.o(e) : a.o) || {});
+        b.classList.add("qr-auto"); e.insertAdjacentElement("afterend", b); e._qrb = b;
+      }
+      b.hidden = !(a.list || a.get(e));
+    }));
+  }
+  let tm = 0; const soon = () => { clearTimeout(tm); tm = setTimeout(deco, 250); };
+  const start = () => { deco(); try { new MutationObserver(soon).observe(document.body, {childList: true, subtree: true, attributes: true, attributeFilter: ["hidden"]}); } catch (e) {}
+    document.addEventListener("input", soon, true); document.addEventListener("change", soon, true); };
+  if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
+})();
+"""
+
+
+def qr_js_tx():
+    """the texts of the helper in every language (it is the same on every page; the pages have different dictionaries)"""
+    d = {"de": {}, "fr": {}, "it": {}, "rm": {}}
+    for k, v in _HX_QR.items():
+        d["de"][k] = DE.get(k) or v[0]                          # the German of the rest of the program wins (same word everywhere)
+        for i, L in enumerate(("fr", "it", "rm")):
+            d[L][k] = TRX[L].get(k) or v[i + 1]
+    return d
+
+
+def qr_js():
+    return ("<script>" + QR_JS.replace("/*QRTX*/{}", json.dumps(qr_js_tx(), ensure_ascii=False, separators=(",", ":")), 1)
+            .replace('/*QRLANG*/"de"', json.dumps(norm_lang(CFG.get("lang"))), 1).replace("</", "<\\/") + "</script>")
+
+
+QR_MORE_ITEM = ('<a class="mi" href="/qr" id="m-qr"><i>▦</i><span><b id="m-qr-t">QR codes</b><small id="m-qr-s">All addresses and links to scan and print</small></span>'
+                '<span class="ar">›</span></a>\n<script>(function(){var T=window.qrT||function(s){return s;};document.getElementById("m-qr-t").textContent=T("QR codes");'
+                'document.getElementById("m-qr-s").textContent=T("All addresses and links to scan and print");})();</script>\n  ')
+
+
+_render_page_before_qr = render_page
+
+
+# wraps: render_page
+def render_page(page, active):
+    """+ the QR helper (qrBtn / qrShow) on every page, and «QR codes» on the page «Mehr»"""
+    out = _render_page_before_qr(page, active)
+    out = out.replace("</head>", qr_js() + "</head>", 1)
+    if active == "more" and 'href="/qr"' not in out:
+        i = out.find('<a class="mi" href="/tools">')
+        if i >= 0:
+            out = out[:i] + QR_MORE_ITEM + out[i:]
+    return out
+
+
+# ---- web: the gallery /qr and the print page /qr/print --------------------------------------------------------------------
+QR_PAGE = r"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>MoveEye - QR codes</title>
+<style>
+/*BASECSS*/
+main{padding:16px;max-width:980px;margin:0 auto;box-sizing:border-box}
+.qg-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}.qg-top h2{margin:0;flex:1 1 200px;font-size:20px}
+.qg-top label{display:flex;gap:6px;align-items:center;font-size:13px}
+.qg-h{font-weight:700;margin:16px 0 6px;font-size:15px}
+.qg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}@media(max-width:520px){.qg-grid{grid-template-columns:1fr 1fr;gap:8px}.qg-card .btns button{flex:1 1 100%}}
+.qg-card{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.qg-img{background:#fff;border-radius:10px;padding:6px;aspect-ratio:1/1;cursor:zoom-in;position:relative;overflow:hidden}.qg-img svg{width:100%;height:100%;display:block}
+.qg-card b{font-size:14px}.qg-url{font-size:11px;word-break:break-all;color:var(--mut);font-family:ui-monospace,Menlo,monospace}
+.qg-note{font-size:11px;color:var(--mut)}
+.qg-card .btns{display:flex;gap:6px;flex-wrap:wrap}.qg-card .btns button{flex:1 1 auto;min-height:34px;padding:4px 8px}
+.qg-sec .qg-img svg,.qg-sec .qg-url{filter:blur(9px)}.qg-sec .qg-img::after{content:attr(data-tap);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:10px;color:#111;font-weight:700;font-size:13px;background:rgba(255,255,255,.35)}
+.qg-lock{font-size:11px;color:var(--org)}
+#qg-empty{color:var(--mut)}
+</style></head><body>
+<header>
+  <h1>MoveEye</h1>
+  <!--NAV-->
+  <span class="hdr-ctl">
+    <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
+    <button class="sec" id="btn-lang" onclick="toggleLang()">DE</button>
+  </span>
+</header>
+<main>
+  <div class="qg-top"><h2 id="qg-title">QR codes</h2>
+    <label><input type="checkbox" id="qg-sec"> <span id="qg-sec-l">Print secret codes too</span></label>
+    <a class="btn sec" id="qg-all" href="/qr/print?p=1" target="_blank" rel="noopener">🖨 Print all</a></div>
+  <div class="mut" id="qg-intro"></div>
+  <div id="qg-list">…</div>
+</main>
+<script>
+/*COMMON*/
+(async function () {
+  try { await initAppearance(); } catch (e) {}
+  const T = window.qrT || (s => s), $ = id => document.getElementById(id);
+  const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
+  const L = () => { try { return LANG || "de"; } catch (e) { return "de"; } };
+  document.title = "MoveEye – " + T("QR codes");
+  $("qg-title").textContent = "▦ " + T("QR codes"); $("qg-sec-l").textContent = T("Print secret codes too"); $("qg-all").textContent = "🖨 " + T("Print all");
+  $("qg-intro").textContent = T("All current QR codes for the phone. Secret ones are blurred - tap to show. Each one can be printed.");
+  const allHref = () => { $("qg-all").href = "/qr/print?p=1&lang=" + encodeURIComponent(L()) + ($("qg-sec").checked ? "&s=1" : ""); };
+  $("qg-sec").onchange = allHref; allHref();
+  let j = null; try { j = await (await fetch("/api/qr/items?lang=" + encodeURIComponent(L()), {cache: "no-store"})).json(); } catch (e) {}
+  const box = $("qg-list"); box.textContent = "";
+  if (!j || !j.ok) { box.appendChild(E("div", "err", "⚠ " + ((j && j.error) || T("Only for the administrator")))); return; }
+  const by = {}; (j.items || []).forEach(it => { (by[it.group] = by[it.group] || []).push(it); });
+  Object.keys(j.groups).forEach(g => { if (!by[g]) return;
+    box.appendChild(E("div", "qg-h", j.groups[g])); const grid = E("div", "qg-grid"); box.appendChild(grid);
+    by[g].forEach(it => {
+      const c = E("div", "qg-card" + (it.secret ? " qg-sec" : "")); c.dataset.id = it.id; c.dataset.url = it.url;
+      const im = E("div", "qg-img"); im.innerHTML = it.svg || ""; im.dataset.tap = "🔒 " + T("Tap to show");
+      const opts = it.alt && it.alt.length ? {secret: it.secret, alt: it.alt, pick: /iPhone|iPad|iPod/.test(navigator.userAgent) ? 1 : 0} : {secret: it.secret, note: it.note};
+      const big = pr => { if (c.classList.contains("qg-sec")) { c.classList.remove("qg-sec"); return; } qrShow(it.url, it.title, Object.assign({}, opts, {print: !!pr})); };
+      im.onclick = () => big(false);
+      c.append(im, E("b", "", it.title), E("div", "qg-url", it.url));
+      if (it.note) c.appendChild(E("div", "qg-note", it.note));
+      if (it.secret) c.appendChild(E("div", "qg-lock", "🔒 " + T("secret")));
+      const bb = E("div", "btns"), b1 = E("button", "sec", "🔍 " + T("Big")), b2 = E("button", "sec", "🖨 " + T("Print"));
+      b1.type = b2.type = "button"; b1.onclick = () => { c.classList.remove("qg-sec"); big(false); }; b2.onclick = () => { c.classList.remove("qg-sec"); big(true); };
+      bb.append(b1, b2); c.appendChild(bb); grid.appendChild(c);
+    }); });
+  if (!(j.items || []).length) box.appendChild(E("div", "", T("No codes right now.")));
+  box.appendChild(E("div", "mut", "🔑 " + T("App keys show their QR code only once, when they are made (Settings → Security).")));
+})();
+</script>
+</body></html>
+"""
+
+
+def qr_print_page(lang=None, host=None, secrets=False, auto=False):
+    """A4 page with labels: QR, name, address (secrets only when asked)"""
+    L = norm_lang(lang)
+    T = lambda s: tr(s, L)
+    groups = {g: T(n) for g, n in QR_GROUPS}
+    cards = []
+    for it in qr_items(L, host):
+        if it["secret"] and not secrets:
+            continue
+        try:
+            svg = qr_svg(it["url"])
+        except ValueError:
+            continue
+        cards.append(f'<div class="lb"><div class="q">{svg}</div><b>{html_escape(it["title"])}</b>'
+                     f'<div class="g">{html_escape(groups.get(it["group"], ""))}{" · 🔒 " + html_escape(T("secret")) if it["secret"] else ""}</div>'
+                     f'<div class="u">{html_escape(it["url"])}</div>{("<div class=g>" + html_escape(it["note"]) + "</div>") if it["note"] else ""}</div>')
+    name = html_escape(str(CFG.get("device_name") or "MoveEye"))
+    return ('<!doctype html><html lang="' + L + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<meta name="referrer" content="no-referrer"><title>MoveEye – ' + html_escape(T("QR codes")) + '</title><style>'
+            '@page{size:A4;margin:12mm}body{font:13px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif;color:#111;background:#fff;margin:0;padding:16px}'
+            'h1{font-size:18px;margin:0 0 4px}.m{color:#555;margin:0 0 12px}.bar{display:flex;gap:8px;margin:0 0 12px}.bar button{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid #999;background:#f4f4f4;cursor:pointer}'
+            '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(58mm,1fr));gap:4mm}'
+            '.lb{border:1px dashed #999;border-radius:3mm;padding:3mm;break-inside:avoid;page-break-inside:avoid;text-align:center}'
+            '.q{width:40mm;height:40mm;margin:0 auto 2mm}.q svg{width:100%;height:100%;display:block}.lb b{display:block;font-size:11pt}'
+            '.g{font-size:8.5pt;color:#555}.u{font:8pt ui-monospace,Menlo,monospace;word-break:break-all;margin-top:1mm}'
+            '@media print{.bar,.m.np{display:none}body{padding:0}.grid{grid-template-columns:repeat(3,1fr)}}'
+            '</style></head><body><h1>▦ ' + name + ' – ' + html_escape(T("QR codes")) + '</h1>'
+            '<div class="m">' + html_escape(datetime.now().strftime("%d.%m.%Y %H:%M")) + ' · ' + html_escape(T("Scan with the phone camera.")) + '</div>'
+            '<div class="bar"><button type="button" onclick="print()">🖨 ' + html_escape(T("Print")) + '</button>'
+            '<button type="button" onclick="history.length>1?history.back():close()">' + html_escape(T("Close")) + '</button></div>'
+            + ('<div class="m np">🔒 ' + html_escape(T("Secret codes are on this page - keep the paper safe.")) + '</div>' if secrets else "")
+            + '<div class="grid">' + ("".join(cards) or "<p>" + html_escape(T("No codes right now.")) + "</p>") + '</div>'
+            + ('<script>addEventListener("load",function(){setTimeout(function(){try{print();}catch(e){}},300);});</script>' if auto else "")
+            + '<script>window.__mwExit = true;</script></body></html>')       # own «Close» (no «✕ Zurück» of 340 on the paper)
+
+
+def qr_routes(app, reply, body):
+    from flask import request, Response, g as g_
+
+    def nope():
+        # the administrator only (role_guard already stops other users); an app key may not read the secrets as pictures
+        if getattr(g_, "role", "admin") != "admin" or getattr(g_, "appkey", None):
+            return reply({"ok": False, "error": tr("Only for the administrator", norm_lang(request.args.get("lang")))}, 403)
+        return None
+
+    @app.route("/api/qr", methods=["POST"])
+    def api_qr_post():
+        n = nope()
+        if n is not None:
+            return n
+        txt = str(body().get("t") or "")[:600]
+        try:
+            svg = qr_svg(txt or " ")
+        except ValueError:
+            return Response("too long", 400, headers={"Cache-Control": "no-store"})
+        return Response(svg, mimetype="image/svg+xml", headers={"Cache-Control": "no-store"})
+
+    @app.route("/api/qr/items")
+    def api_qr_items():
+        n = nope()
+        if n is not None:
+            return n
+        return reply(qr_items_json(request.args.get("lang"), request.host_url))
+
+    @app.route("/qr")
+    def qr_gallery():
+        n = nope()
+        if n is not None:
+            return n
+        return Response(render_page(QR_PAGE, "more"), mimetype="text/html")
+
+    @app.route("/qr/print")
+    def qr_print():
+        n = nope()
+        if n is not None:
+            return n
+        return Response(qr_print_page(request.args.get("lang") or CFG["lang"], request.host_url, request.args.get("s") == "1", request.args.get("p") == "1"),
+                        mimetype="text/html")
+
+    @app.after_request
+    def qr_no_store(resp):                       # secrets (keys, topics, stream addresses, codes) never stay in the browser cache
+        try:
+            p = request.path
+            if p.startswith(QR_SECRET_PATHS) and not resp.headers.get("Cache-Control"):
+                resp.headers["Cache-Control"] = "no-store"
+        except Exception:
+            pass
+        return resp
+
+
+# ---- window (Tkinter): the same as a dialog ---------------------------------------------------------------------------------
+def qr_tk_dialog(parent, text, title, secret=False, note="", alts=None):
+    """QR picture (qr_png) + the text + Copy, Save picture, Print (lp), Close. alts = [(label, text, note)] for a choice."""
+    import base64
+    alts = [a for a in (alts or [("", text, note)]) if a and a[1]]
+    if not alts:
+        return None
+    w = tk.Toplevel(parent); w.title("MoveEye – " + tr("QR code")); w.configure(bg=C["panel"])
+    try:
+        w.transient(parent)
+    except tk.TclError:
+        pass
+    tk.Label(w, text="▦ " + str(title or tr("QR code")), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 12, "bold"), wraplength=380).pack(padx=14, pady=(12, 4))
+    cur = {"i": 0}
+    seg = tk.Frame(w, bg=C["panel"]); seg.pack(padx=14)
+    pic = tk.Label(w, bg="#ffffff"); pic.pack(padx=14, pady=8)
+    uv = tk.StringVar(value="")
+    tk.Entry(w, textvariable=uv, state="readonly", readonlybackground=C["field"], fg=C["txt"], relief="flat", width=48).pack(fill="x", padx=14)
+    nl = tk.Label(w, text="", bg=C["panel"], fg=C["mut"], wraplength=380, justify="center"); nl.pack(padx=14, pady=(4, 0))
+    if secret:
+        tk.Label(w, text="🔒 " + tr("Secret: whoever scans this code gets access. Show it only to people you trust."), bg=C["panel"], fg=C.get("org", C["txt"]),
+                 wraplength=380, justify="center").pack(padx=14, pady=(4, 0))
+    st = tk.Label(w, text="", bg=C["panel"], fg=C["mut"]); st.pack()
+
+    def show(i):
+        cur["i"] = i; _l, t_, n_ = alts[i]
+        try:
+            img = tk.PhotoImage(data=base64.b64encode(qr_png(t_, 6)).decode())
+        except Exception as e:
+            pic.configure(image="", text="⚠ " + str(e)[:80]); return
+        pic.configure(image=img); pic.image = img
+        uv.set(t_); nl.configure(text=n_ or ""); st.configure(text="")
+    if len(alts) > 1:
+        for i, (l_, _t, _n) in enumerate(alts):
+            ttk.Button(seg, text=l_ or str(i + 1), command=lambda i=i: show(i)).pack(side="left", padx=2)
+
+    def cp():
+        try:
+            w.clipboard_clear(); w.clipboard_append(alts[cur["i"]][1]); st.configure(text="✓ " + tr("Copied"))
+        except tk.TclError:
+            pass
+
+    def save():
+        from tkinter import filedialog
+        p = filedialog.asksaveasfilename(parent=w, defaultextension=".png", initialfile="MoveEye-QR.png", filetypes=[("PNG", "*.png")])
+        if p:
+            try:
+                with open(p, "wb") as f:
+                    f.write(qr_png(alts[cur["i"]][1], 10))
+                st.configure(text="✓ " + tr("Saved"))
+            except OSError as e:
+                st.configure(text="⚠ " + str(e)[:80])
+
+    def prn():
+        import tempfile
+        try:
+            fd, p = tempfile.mkstemp(suffix=".png", prefix="moveeye-qr-")
+            with os.fdopen(fd, "wb") as f:
+                f.write(qr_png(alts[cur["i"]][1], 10))
+            subprocess.Popen([shutil.which("lp"), "-o", "fit-to-page", p], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            st.configure(text="✓ " + tr("Sent to the printer"))
+            w.after(60000, lambda: os.path.exists(p) and os.remove(p))
+        except (OSError, TypeError) as e:
+            st.configure(text="⚠ " + str(e)[:80])
+    bf = tk.Frame(w, bg=C["panel"]); bf.pack(fill="x", padx=14, pady=(6, 12))
+    ttk.Button(bf, text="📋 " + tr("Copy"), command=cp).pack(side="left", expand=True, fill="x", padx=(0, 4))
+    ttk.Button(bf, text="💾 " + tr("Save picture …"), command=save).pack(side="left", expand=True, fill="x", padx=(0, 4))
+    if shutil.which("lp"):
+        ttk.Button(bf, text="🖨 " + tr("Print"), command=prn).pack(side="left", expand=True, fill="x", padx=(0, 4))
+    ttk.Button(bf, text=tr("Close"), command=w.destroy).pack(side="left", expand=True, fill="x")
+    show(0)
+    return w
+
+
+def qr_tk_gallery(app):
+    """all QR codes of now (like /qr): secrets hidden until «Show»"""
+    w = tk.Toplevel(app.root); w.title("MoveEye – " + tr("QR codes")); w.configure(bg=C["panel"])
+    tk.Label(w, text="▦ " + tr("QR codes"), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 13, "bold")).pack(anchor="w", padx=14, pady=(12, 2))
+    tk.Label(w, text=tr("All current QR codes for the phone. Secret ones are blurred - tap to show. Each one can be printed."), bg=C["panel"], fg=C["mut"], wraplength=460, justify="left").pack(anchor="w", padx=14)
+    cv = tk.Canvas(w, bg=C["panel"], highlightthickness=0, width=500, height=420); sb = ttk.Scrollbar(w, orient="vertical", command=cv.yview)
+    fr = tk.Frame(cv, bg=C["panel"]); cv.create_window((0, 0), window=fr, anchor="nw"); cv.configure(yscrollcommand=sb.set)
+    fr.bind("<Configure>", lambda _e: cv.configure(scrollregion=cv.bbox("all")))
+    sb.pack(side="right", fill="y"); cv.pack(fill="both", expand=True, padx=(14, 0), pady=8)
+    groups = {g: tr(n) for g, n in QR_GROUPS}
+    items = qr_items(CFG["lang"])
+    last = None
+    for it in items:
+        if it["group"] != last:
+            last = it["group"]
+            tk.Label(fr, text=groups.get(last, last).upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").pack(fill="x", pady=(8, 0))
+        row = tk.Frame(fr, bg=C["panel"]); row.pack(fill="x", pady=2)
+        lv = tk.StringVar(value=it["title"] + "\n" + ("•••••• (" + tr("secret") + ")" if it["secret"] else it["url"]))
+        tk.Label(row, textvariable=lv, bg=C["panel"], fg=C["txt"], wraplength=330, justify="left", anchor="w").pack(side="left", fill="x", expand=True)
+        alts = [(a["label"], a["url"], a.get("note", "")) for a in it["alt"]] or None
+        ttk.Button(row, text="▦ QR", command=lambda it=it, alts=alts: qr_tk_dialog(w, it["url"], it["title"], it["secret"], it["note"], alts)).pack(side="right")
+        if it["secret"]:
+            ttk.Button(row, text=tr("Show"), command=lambda lv=lv, it=it: lv.set(it["title"] + "\n" + it["url"])).pack(side="right", padx=(0, 4))
+    if not items:
+        tk.Label(fr, text=tr("No codes right now."), bg=C["panel"], fg=C["mut"]).pack(anchor="w")
+    tk.Label(w, text="🔑 " + tr("App keys show their QR code only once, when they are made (Settings → Security)."), bg=C["panel"], fg=C["mut"],
+             wraplength=460, justify="left").pack(anchor="w", padx=14)
+    bf = ttk.Frame(w); bf.pack(fill="x", padx=14, pady=(6, 12))
+    ttk.Button(bf, text="🖨 " + tr("Print all") + " (" + tr("browser") + ")", command=lambda: app._open_page("/qr/print?p=1")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+    ttk.Button(bf, text=tr("Close"), command=w.destroy).pack(side="left", expand=True, fill="x")
+    return w
+
+
+def _qr_hint(app, sec, text):
+    if app.status_labels.get(sec) is not None:
+        app._status(sec, text)
+    else:
+        messagebox.showinfo("MoveEye", text, parent=app.root)
+
+
+def _qr_tk_btn(parent, label, cmd):
+    b = ttk.Button(parent, text="▦ " + label, command=cmd); b.pack(fill="x", pady=(4, 0)); return b
+
+
+def _qr_tk_build_section(self, sec, sbody, settings_parent=None):
+    _qr_tk_build_section_before(self, sec, sbody, settings_parent)
+    try:
+        if sec == "Guest access":
+            def gq():
+                v = self.guest_var.get() if hasattr(self, "guest_var") else ""
+                if not v:
+                    _qr_hint(self, "Guest access", tr("Create a link first.")); return
+                qr_tk_dialog(self.root, v, tr("Guest access"), True, tr("Guests see only the live picture."))
+            _qr_tk_btn(sbody, tr("QR code of the link") + " …", gq)
+        elif sec == "Web stream":
+            def sq():
+                lk = ext_links()
+                if not lk.get("on"):
+                    _qr_hint(self, "Web stream", tr("Off – switch on «Picture for other programs» above.")); return
+                alts = [(n, lk.get(k), "") for k, n in (("mjpeg", "MJPEG"), ("jpg", tr("Still picture")), ("rtsp", "RTSP")) if lk.get(k)]
+                qr_tk_dialog(self.root, alts[0][1], tr("Picture for other programs"), True,
+                             tr("Keep these addresses secret: whoever has them sees the picture without a password."), alts)
+            _qr_tk_btn(sbody, tr("QR codes of the addresses") + " …", sq)
+        elif sec == "Notifications":
+            def nq():
+                nu = str(CFG.get("notify_url") or "")
+                na = ntfy_app_url(nu, CFG.get("device_name") or "MoveEye") if CFG.get("notify_type") == "ntfy" else ""
+                if not na:
+                    _qr_hint(self, "Notifications", tr("Enter the ntfy address first (https://server/topic).")); return
+                qr_tk_dialog(self.root, na, tr("Push messages (ntfy)"), True, "", [("Android", na, tr("Android: the ntfy app subscribes to the topic by itself.")),
+                                                                                  ("iPhone / " + tr("Browser"), nu, tr("iPhone: the ntfy app cannot subscribe from a code - the code opens the topic in the browser. In the app: + and enter the topic."))])
+            _qr_tk_btn(sbody, tr("QR code for the ntfy app") + " …", nq)
+        elif sec == "Simulator":
+            def tq():
+                if not CFG.get("tunnel_on"):
+                    _qr_hint(self, "Simulator", tr("The tunnel is off (web: Simulator → «Simulator behind a firewall»).")); return
+                qr_tk_dialog(self.root, page_address() or f"http://<pi-ip>:{CFG['web_port']}/", tr("Simulator connection (tunnel)"), True,
+                             tr("Code") + ": " + tunnel_code() + " · " + tr("In the simulator (Verbindung → «Tunnel zu MoveEye») paste the address and type the code."))
+            _qr_tk_btn(sbody, tr("QR code of the tunnel (for a tablet)") + " …", tq)
+        elif sec == "Setup":
+            _qr_tk_btn(sbody, tr("All QR codes") + " …", lambda: qr_tk_gallery(self))
+    except Exception as e:
+        log_event("sys", f"Window: QR buttons ({sec}): {e}"[:160])
+
+
+_qr_tk_build_section_before = App._build_section
+# wraps: App._build_section
+App._build_section = _qr_tk_build_section
+
+
+# ---- self-test ----------------------------------------------------------------------------------------------------------------
+def qr_selftest():
+    assert ntfy_app_url("https://ntfy-me.com/mw-abc_12") == "ntfy://ntfy-me.com/mw-abc_12?display=MoveEye"
+    assert ntfy_app_url("http://10.0.0.2:8080/x", "Zelt 1").endswith("display=Zelt%201&secure=false")
+    assert ntfy_app_url("https://hooks.example.com/a/b") == "" and ntfy_app_url("") == ""
+    det = cv2.QRCodeDetector()
+    t_ = ntfy_app_url("https://ntfy-me.com/mw-abcdefgh")
+    img = cv2.imdecode(np.frombuffer(qr_png(t_, 6), np.uint8), cv2.IMREAD_GRAYSCALE)
+    got, _p, _s = det.detectAndDecode(img)
+    assert got == t_, f"QR decoded {got!r}"
+    items = qr_items("de", "http://192.0.2.1:5000/")
+    assert all(set(("id", "group", "title", "url", "secret")) <= set(i) for i in items)
+    assert not [i for i in items if i["group"] in ("wifi", "push", "guest", "short", "stream", "tv", "sim") and not i["secret"]], "secret without the mark"
+    js = qr_js()
+    assert "window.qrBtn" in js and "/*QRTX*/" not in js and "</script" not in js[8:-9]
+    for k in _HX_QR:
+        assert "ß" not in _HX_QR[k][0], k
+    p = render_page("<html><head></head><body></body></html>", "more")
+    assert "window.qrShow" in p
+
+
+SELFTEST_EXTRA.append(("QR codes (ntfy link, gallery, helper)", qr_selftest))
 TRX['it'].update({
     '(or the address from the push message).': "(o l'indirizzo della notifica push).",
     '+ Add relay': '+ Aggiungere un relè',
@@ -70820,6 +73709,139 @@ if _hp_en3 > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_sicher3(HELP_X[_L], _L)
+# English: (Deutsch, Français, Italiano, Rumantsch)
+_HX_INFO = {
+    'Feedback to the developer': ('Rückmeldung an den Entwickler', 'Retour au développeur', 'Feedback allo sviluppatore', 'Resposta al svilupader'),
+    'Errors, wishes, praise, questions - everything helps. The message is sent anonymously: no name, no address, unless you write one.': (
+        'Fehler, Wünsche, Lob, Fragen – alles hilft. Die Nachricht geht anonym weg: kein Name, keine Adresse, ausser du schreibst sie hinein.',
+        'Erreurs, souhaits, compliments, questions – tout aide. Le message part de façon anonyme : ni nom ni adresse, sauf si tu les écris.',
+        'Errori, desideri, lodi, domande – tutto aiuta. Il messaggio parte in modo anonimo: nessun nome, nessun indirizzo, a meno che tu non li scriva.',
+        'Sbagls, giavischs, laud, dumondas – tut gida. Il messadi va anonim: nagin num, nagina adressa, nun che ti las scrivias.'),
+    'Error': ('Fehler', 'Erreur', 'Errore', 'Sbagl'),
+    'Wish': ('Wunsch', 'Souhait', 'Desiderio', 'Giavisch'),
+    'Praise': ('Lob', 'Compliment', 'Lode', 'Laud'),
+    'Question': ('Frage', 'Question', 'Domanda', 'Dumonda'),
+    'How happy are you?': ('Wie zufrieden?', 'Satisfait·e ?', 'Quanto sei soddisfatto?', 'Co cuntent?'),
+    'optional': ('freiwillig', 'facultatif', 'facoltativo', 'facultativ'),
+    'Your message …': ('Deine Nachricht …', 'Ton message …', 'Il tuo messaggio …', 'Tes messadi …'),
+    'Contact for an answer (optional)': ('Kontakt für eine Antwort (freiwillig)', 'Contact pour une réponse (facultatif)', 'Contatto per una risposta (facoltativo)', 'Contact per ina resposta (facultativ)'),
+    'Send a screenshot': ('Bildschirmfoto mitschicken', 'Joindre une capture', 'Allegare uno screenshot', 'Agiuntar in maletg dal visur'),
+    'the current live picture (faces pixelated). A picture of the page itself is not possible in the browser.': (
+        'das aktuelle Live-Bild (Gesichter verpixelt). Ein Bild der Seite selbst ist im Browser nicht möglich.',
+        'l’image en direct actuelle (visages floutés). Une image de la page elle-même n’est pas possible dans le navigateur.',
+        'l’immagine live attuale (volti pixelati). Un’immagine della pagina stessa non è possibile nel browser.',
+        'il maletg live actual (fatschas pixeladas). In maletg da la pagina sezza n’è betg pussaivel en il navigatur.'),
+    'the window, faces pixelated': ('das Fenster, Gesichter verpixelt', 'la fenêtre, visages floutés', 'la finestra, volti pixelati', 'la fanestra, fatschas pixeladas'),
+    'Add technical details (version, device, last important events - no pictures, no passwords)': (
+        'Technische Angaben anhängen (Version, Gerät, letzte wichtige Ereignisse – keine Bilder, keine Passwörter)',
+        'Joindre des détails techniques (version, appareil, derniers événements importants – pas d’images, pas de mots de passe)',
+        'Aggiungere dettagli tecnici (versione, dispositivo, ultimi eventi importanti – niente immagini, niente password)',
+        'Agiuntar indicaziuns tecnicas (versiun, apparat, ultims eveniments impurtants – nagins maletgs, nagins pleds-clav)'),
+    'Always included': ('Immer dabei', 'Toujours inclus', 'Sempre incluso', 'Adina cun'),
+    'page': ('Seite', 'page', 'pagina', 'pagina'),
+    'Window': ('Fenster', 'Fenêtre', 'Finestra', 'Fanestra'),
+    'Cancel': ('Abbrechen', 'Annuler', 'Annulla', 'Interrumper'),
+    'Send': ('Senden', 'Envoyer', 'Invia', 'Trametter'),
+    'Close': ('Schliessen', 'Fermer', 'Chiudi', 'Serrar'),
+    'Thank you! The message is on its way.': ('Danke! Die Nachricht ist unterwegs.', 'Merci ! Le message est en route.', 'Grazie! Il messaggio è in viaggio.', 'Grazia! Il messadi è sin via.'),
+    'Errors, wishes, praise, questions - anonymous': ('Fehler, Wünsche, Lob, Fragen – anonym', 'Erreurs, souhaits, compliments, questions – anonyme', 'Errori, desideri, lodi, domande – anonimo', 'Sbagls, giavischs, laud, dumondas – anonim'),
+    '{n} feedbacks are still waiting to be sent': ('{n} Feedbacks warten noch auf das Senden', '{n} retours attendent encore d’être envoyés', '{n} feedback attendono ancora l’invio', '{n} respostas spetgan anc da vegnir tramessas'),
+    'Send now': ('Jetzt senden', 'Envoyer maintenant', 'Invia ora', 'Trametter ussa'),
+    'Last error': ('Letzter Fehler', 'Dernière erreur', 'Ultimo errore', 'Ultim sbagl'),
+    'Send a test feedback': ('Test-Feedback senden', 'Envoyer un retour de test', 'Invia un feedback di prova', 'Trametter ina resposta da test'),
+    'for the developer: does a message reach the servers?': ('für den Entwickler: kommt eine Nachricht bei den Servern an?', 'pour le développeur : un message arrive-t-il aux serveurs ?', 'per lo sviluppatore: un messaggio arriva ai server?', 'per il svilupader: arriva in messadi tar ils servers?'),
+    'wait a moment': ('einen Moment warten', 'attends un instant', 'aspetta un momento', 'spetga in mument'),
+    'About MoveEye': ('Über MoveEye', 'À propos de MoveEye', 'Informazioni su MoveEye', 'Davart MoveEye'),
+    'history, developer, numbers': ('Geschichte, Entwickler, Zahlen', 'histoire, développeur, chiffres', 'storia, sviluppatore, numeri', 'istorgia, svilupader, cifras'),
+    'Elektro (alias Daniel)': ('Elektro (alias Daniel)', 'Elektro (alias Daniel)', 'Elektro (alias Daniel)', 'Elektro (alias Daniel)'),
+    'Switzerland': ('Schweiz', 'Suisse', 'Svizzera', 'Svizra'),
+    'MoveEye was born while camping, from a simple question: who keeps an eye on the tent while we sleep or are away? Instead of an expensive alarm system Elektro wanted something of his own - a small camera on a pan / tilt head that recognises wild animals and persons and quietly reports to the phone.': (
+        'MoveEye ist beim Camping entstanden, aus einer einfachen Frage: Wer passt auf das Zelt auf, während wir schlafen oder unterwegs sind? Statt einer teuren Alarmanlage wollte Elektro etwas Eigenes – eine kleine Kamera auf einem Schwenk-Neige-Kopf, die Wildtiere und Personen erkennt und leise aufs Handy meldet.',
+        'MoveEye est né en camping, d’une question simple : qui surveille la tente pendant que nous dormons ou sommes absents ? Plutôt qu’une alarme coûteuse, Elektro voulait quelque chose à lui – une petite caméra sur une tête orientable qui reconnaît les animaux sauvages et les personnes et prévient discrètement le téléphone.',
+        'MoveEye è nato in campeggio, da una semplice domanda: chi tiene d’occhio la tenda mentre dormiamo o siamo via? Invece di un costoso impianto d’allarme Elektro voleva qualcosa di suo – una piccola telecamera su una testa orientabile che riconosce animali selvatici e persone e avvisa in silenzio il telefono.',
+        'MoveEye è naschì durant il campadi, ord ina dumonda simpla: tgi fa adatg da la tenda, durant che nus durmin u essan davent? Empè d’in urden d’alarm char vuleva Elektro insatge agen – ina pitschna camera sin in chau che sa volva, che renconuscha animals selvadis e persunas ed avisa quietamain il telefonin.'),
+    'The developer is Elektro (alias Daniel) from Switzerland. Elektro develops robots for a living - but MoveEye was honestly built together with Claude, an AI by Anthropic. Elektro brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.': (
+        'Der Entwickler ist Elektro (alias Daniel) aus der Schweiz. Elektro ist von Beruf Roboterentwickler – MoveEye ist aber, ganz ehrlich, zusammen mit Claude entstanden, einer KI von Anthropic. Elektro bringt die Ideen, die Wünsche und die Tests am echten Gerät ein, Claude schreibt und erklärt den Code. Aus Freude am Tüfteln wurde aus einem kleinen Webcam-Skript schnell ein ganzes System – mit Webseite, Fenster, 3D-Simulator und Spielen fürs Lagerfeuer.',
+        'Le développeur est Elektro (alias Daniel), de Suisse. Elektro est développeur de robots de métier – mais MoveEye a honnêtement été créé avec Claude, une IA d’Anthropic. Elektro apporte les idées, les souhaits et les tests sur le vrai appareil, Claude écrit et explique le code. Par plaisir de bricoler, un petit script de webcam est vite devenu tout un système – avec page web, fenêtre, simulateur 3D et jeux pour le feu de camp.',
+        'Lo sviluppatore è Elektro (alias Daniel), dalla Svizzera. Elektro è sviluppatore di robot di professione – ma MoveEye è nato, onestamente, insieme a Claude, un’IA di Anthropic. Elektro porta le idee, i desideri e i test sul vero apparecchio, Claude scrive e spiega il codice. Per il piacere di armeggiare, un piccolo script per webcam è diventato presto un intero sistema – con pagina web, finestra, simulatore 3D e giochi per il falò.',
+        'Il svilupader è Elektro (alias Daniel) da la Svizra. Elektro è svilupader da robots da professiun – ma MoveEye è sincer naschì ensemen cun Claude, ina IA dad Anthropic. Elektro porta las ideas, ils giavischs ed ils tests vi da l’apparat vair, Claude scriva ed explitga il code. Ord plaschair da pruvar ora è naschì or d’in pitschen script da webcam spert in entir sistem – cun pagina web, fanestra, simulatur 3D e gieus per il fieu da campadi.'),
+    'Do you like MoveEye, or does something not work? With 💬 your message reaches Elektro directly - anonymously.': (
+        'Gefällt dir MoveEye, oder klappt etwas nicht? Mit 💬 erreicht deine Nachricht Elektro direkt – anonym.',
+        'MoveEye te plaît, ou quelque chose ne marche pas ? Avec 💬 ton message arrive directement chez Elektro – anonymement.',
+        'Ti piace MoveEye, o qualcosa non funziona? Con 💬 il tuo messaggio arriva direttamente a Elektro – in modo anonimo.',
+        'Ta plascha MoveEye, u funcziuna insatge betg? Cun 💬 cuntanscha tes messadi directamain Elektro – anonim.'),
+    'For the technically interested': ('Für Technik-Interessierte', 'Pour les curieux de technique', 'Per chi si interessa di tecnica', 'Per persunas interessadas da la tecnica'),
+    'One Python program (OpenCV, Flask, Tkinter) for the Raspberry Pi 5 - edited in {parts} parts, put together into one file with {lines} lines.': (
+        'Ein Python-Programm (OpenCV, Flask, Tkinter) für den Raspberry Pi 5 – bearbeitet in {parts} Teilen, zusammengesetzt zu einer Datei mit {lines} Zeilen.',
+        'Un programme Python (OpenCV, Flask, Tkinter) pour le Raspberry Pi 5 – modifié en {parts} parties, assemblées en un fichier de {lines} lignes.',
+        'Un programma Python (OpenCV, Flask, Tkinter) per il Raspberry Pi 5 – modificato in {parts} parti, unite in un file di {lines} righe.',
+        'In program Python (OpenCV, Flask, Tkinter) per il Raspberry Pi 5 – elavurà en {parts} parts, cumponì ad ina datoteca cun {lines} lingias.'),
+    'Detection: movement (background model), walking pattern, AI model (SSD MobileNet, optionally an own YOLO model trained in the simulator), thermal camera (Waveshare Thermal-90).': (
+        'Erkennung: Bewegung (Hintergrund-Modell), Gehmuster, KI-Modell (SSD MobileNet, auf Wunsch ein eigenes YOLO-Modell, im Simulator trainiert), Wärmebild (Waveshare Thermal-90).',
+        'Détection : mouvement (modèle d’arrière-plan), démarche, modèle d’IA (SSD MobileNet, en option un propre modèle YOLO entraîné dans le simulateur), caméra thermique (Waveshare Thermal-90).',
+        'Rilevamento: movimento (modello dello sfondo), andatura, modello di IA (SSD MobileNet, a scelta un proprio modello YOLO addestrato nel simulatore), termocamera (Waveshare Thermal-90).',
+        'Renconuschientscha: moviment (model dal fund), moda da ir, model IA (SSD MobileNet, sin giavisch in agen model YOLO, trenà en il simulatur), maletg termic (Waveshare Thermal-90).'),
+    'The 3D simulator (Godot 4, version {sim}) rebuilds the place - persons, animals, weather, night - so MoveEye can practise without real nights. The test bench measures every version with it.': (
+        'Der 3D-Simulator (Godot 4, Version {sim}) baut den Platz nach – Personen, Tiere, Wetter, Nacht –, damit MoveEye ohne echte Nächte üben kann. Der Prüfstand misst damit jede Version.',
+        'Le simulateur 3D (Godot 4, version {sim}) reconstruit le lieu – personnes, animaux, météo, nuit – pour que MoveEye puisse s’entraîner sans vraies nuits. Le banc d’essai mesure chaque version avec lui.',
+        'Il simulatore 3D (Godot 4, versione {sim}) ricostruisce il luogo – persone, animali, meteo, notte – così MoveEye può esercitarsi senza notti vere. Il banco di prova misura ogni versione con esso.',
+        'Il simulatur 3D (Godot 4, versiun {sim}) fa suenter il plaz – persunas, animals, aura, notg –, uschia che MoveEye po exercitar senza notgs veras. Il banc da prova mesira cun el mintga versiun.'),
+    'Updates come signed over GitHub; push messages over ntfy; remote access over Tailscale.': (
+        'Updates kommen signiert über GitHub; Push-Nachrichten über ntfy; Fernzugriff über Tailscale.',
+        'Les mises à jour arrivent signées via GitHub ; les notifications via ntfy ; l’accès à distance via Tailscale.',
+        'Gli aggiornamenti arrivano firmati tramite GitHub; le notifiche tramite ntfy; l’accesso remoto tramite Tailscale.',
+        'Actualisaziuns vegnan suttascrittas sur GitHub; avis push sur ntfy; access a distanza sur Tailscale.'),
+    'Versions in the change list': ('Versionen in der Änderungsliste', 'Versions dans la liste des modifications', 'Versioni nell’elenco delle modifiche', 'Versiuns en la glista da midadas'),
+    'Lines of code': ('Zeilen Code', 'Lignes de code', 'Righe di codice', 'Lingias code'),
+    'Parts': ('Teile', 'Parties', 'Parti', 'Parts'),
+    'Languages': ('Sprachen', 'Langues', 'Lingue', 'Linguas'),
+    '3D simulator': ('3D-Simulator', 'Simulateur 3D', 'Simulatore 3D', 'Simulatur 3D'),
+    'Days since the first line': ('Tage seit der ersten Zeile', 'Jours depuis la première ligne', 'Giorni dalla prima riga', 'Dis dapi l’emprima lingia'),
+    'Timeline': ('Zeitleiste', 'Chronologie', 'Cronologia', 'Cronologia'),
+    'Psst … there is a hidden easter egg.': ('Psst … es gibt ein verstecktes Easter Egg.', 'Psst … il y a un easter egg caché.', 'Psst … c’è un easter egg nascosto.', 'Psst … i dat in easter egg zuppà.'),
+    'The first lines: a small program reads the USB webcam of the Raspberry Pi 5 and marks movement in red - Motion Watch begins': (
+        'Die ersten Zeilen: ein kleines Programm liest die USB-Webcam am Raspberry Pi 5 und markiert Bewegung rot – Motion Watch beginnt',
+        'Les premières lignes : un petit programme lit la webcam USB du Raspberry Pi 5 et marque le mouvement en rouge – Motion Watch commence',
+        'Le prime righe: un piccolo programma legge la webcam USB del Raspberry Pi 5 e segna il movimento in rosso – inizia Motion Watch',
+        'Las emprimas lingias: in pitschen program legia la webcam USB dal Raspberry Pi 5 e marca il moviment cotschen – Motion Watch cumenza'),
+    'AI marks persons and objects; web page with camera control; desktop window': (
+        'KI markiert Personen und Objekte; Webseite mit Kamerasteuerung; Desktop-Fenster',
+        'L’IA marque personnes et objets ; page web avec commande de la caméra ; fenêtre de bureau',
+        'L’IA segna persone e oggetti; pagina web con comando della telecamera; finestra desktop',
+        'IA marca persunas ed objects; pagina web cun manischament da la camera; fanestra dal computer'),
+    'Thermal camera over the picture': ('Wärmebildkamera über dem Bild', 'Caméra thermique sur l’image', 'Termocamera sopra l’immagine', 'Camera termica sur il maletg'),
+    'Camping: own Wi-Fi, armed / disarmed with countdown': ('Camping: eigenes WLAN, scharf / unscharf mit Countdown', 'Camping : propre Wi-Fi, armé / désarmé avec compte à rebours', 'Campeggio: Wi-Fi proprio, inserito / disinserito con conto alla rovescia', 'Campadi: agen WLAN, activà / deactivà cun dumbrar enavos'),
+    'Animal diary, night report, remote access': ('Tier-Tagebuch, Nachtbericht, Fernzugriff', 'Journal des animaux, rapport de nuit, accès à distance', 'Diario degli animali, rapporto notturno, accesso remoto', 'Diari dals animals, rapport da la notg, access a distanza'),
+    'Five languages (with Romansh)': ('Fünf Sprachen (mit Rumantsch)', 'Cinq langues (avec le romanche)', 'Cinque lingue (con il romancio)', 'Tschintg linguas (cun rumantsch)'),
+    'Simulator inside the program': ('Simulator im Programm', 'Simulateur dans le programme', 'Simulatore nel programma', 'Simulatur en il program'),
+    '3D simulator with six scenes': ('3D-Simulator mit sechs Szenen', 'Simulateur 3D avec six scènes', 'Simulatore 3D con sei scene', 'Simulatur 3D cun sis scenas'),
+    'Game corner for the campfire': ('Spielecke fürs Lagerfeuer', 'Coin des jeux pour le feu de camp', 'Angolo dei giochi per il falò', 'Chantun da gieus per il fieu da campadi'),
+    'Program in parts, test bench': ('Programm in Teilen, Prüfstand', 'Programme en parties, banc d’essai', 'Programma in parti, banco di prova', 'Program en parts, banc da prova'),
+    'Training package for an own AI model': ('Trainingspaket für ein eigenes KI-Modell', 'Paquet d’entraînement pour un propre modèle d’IA', 'Pacchetto di addestramento per un proprio modello di IA', 'Pachet da trenament per in agen model IA'),
+    'New name: MoveEye': ('Neuer Name: MoveEye', 'Nouveau nom : MoveEye', 'Nuovo nome: MoveEye', 'Num nov: MoveEye'),
+    'Six tabs': ('Sechs Reiter', 'Six onglets', 'Sei schede', 'Sis tabs'),
+    'AI training and realism': ('KI-Training und Realismus', 'Entraînement de l’IA et réalisme', 'Addestramento IA e realismo', 'Trenament IA e realissem'),
+    'Set up the place': ('Platz einrichten', 'Aménager le lieu', 'Allestire il posto', 'Endrizzar il plaz'),
+    'Controller view for phone and tablet': ('Controller-Ansicht für Handy und Tablet', 'Vue manette pour téléphone et tablette', 'Vista controller per telefono e tablet', 'Vista controller per telefonin e tablet'),
+}
+for _k, _v in _HX_INFO.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+
+# ---- manual (fr / it / rm): at the end of the chapter «System» (de / en: 540) ----
+_HELP_INFO = {
+    "fr": '<li>💬 <b>Retour au développeur :</b> le 💬 en haut de chaque page (aussi dans la fenêtre et le simulateur 3D) ou Plus → «Retour au développeur». Type (erreur / souhait / compliment / question), en option 1–5 étoiles et «Joindre une capture» (l’image en direct, visages floutés). Version et page sont toujours jointes. Anonyme.</li><li>ℹ️ <b>À propos de MoveEye :</b> toucher le numéro de version à côté du logo ou Plus → «À propos de MoveEye» : l’histoire, le développeur, une chronologie et quelques chiffres.</li>',
+    "it": '<li>💬 <b>Feedback allo sviluppatore:</b> il 💬 in alto su ogni pagina (anche nella finestra e nel simulatore 3D) o Altro → «Feedback allo sviluppatore». Tipo (errore / desiderio / lode / domanda), a scelta 1–5 stelle e «Allegare uno screenshot» (l’immagine live, volti pixelati). Versione e pagina sono sempre incluse. Anonimo.</li><li>ℹ️ <b>Informazioni su MoveEye:</b> toccare il numero di versione accanto al logo o Altro → «Informazioni su MoveEye»: la storia, lo sviluppatore, una cronologia e qualche numero.</li>',
+    "rm": '<li>💬 <b>Resposta al svilupader:</b> il 💬 sisum mintga pagina (er en la fanestra ed en il simulatur 3D) u Dapli → «Resposta al svilupader». Gener (sbagl / giavisch / laud / dumonda), sin giavisch 1–5 stailas e «Agiuntar in maletg dal visur» (il maletg live, fatschas pixeladas). Versiun e pagina van adina cun. Anonim.</li><li>ℹ️ <b>Davart MoveEye:</b> tutgar il numer da versiun sper il logo u Dapli → «Davart MoveEye»: l’istorgia, il svilupader, ina cronologia e intginas cifras.</li>',
+}
+for _L, _li in _HELP_INFO.items():
+    _d = HELP_X.get(_L) or ""
+    _i = _d.find('<section id="system"')
+    _j = _d.find("</ul>", _i) if _i >= 0 else -1
+    if _j >= 0:
+        HELP_X[_L] = _d[:_j] + _li + _d[_j:]
 _HX_PLATZEIN = {
     'Set up the place': ('Platz einrichten', 'Configurer l’emplacement', 'Configurare il posto', 'Endrizzar il plaz'),
     '1 Look around': ('1 Umschauen', '1 Regarder autour', '1 Guardarsi intorno', '1 Guardar enturn'),
@@ -71038,6 +74060,134 @@ if _hp_en > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_platzein(HELP_X[_L], _L)
+_HX_QR = {
+    'QR code': ('QR-Code', 'Code QR', 'Codice QR', 'Code QR'),
+    'QR codes': ('QR-Codes', 'Codes QR', 'Codici QR', 'Codes QR'),
+    'Show the QR code': ('QR-Code zeigen', 'Afficher le code QR', 'Mostra il codice QR', 'Mussar il code QR'),
+    'All addresses and links to scan and print': ('Alle Adressen und Links zum Scannen und Drucken', 'Toutes les adresses et liens à scanner et imprimer',
+                                                  'Tutti gli indirizzi e link da scansionare e stampare', 'Tut las adressas e colliaziuns per scannar e stampar'),
+    'All QR codes': ('Alle QR-Codes', 'Tous les codes QR', 'Tutti i codici QR', 'Tut ils codes QR'),
+    'All current QR codes for the phone. Secret ones are blurred - tap to show. Each one can be printed.': (
+        'Alle aktuellen QR-Codes fürs Handy. Geheime sind verschwommen – antippen zum Zeigen. Jeder lässt sich drucken.',
+        'Tous les codes QR actuels pour le portable. Les secrets sont flous – toucher pour afficher. Chacun peut être imprimé.',
+        'Tutti i codici QR attuali per il cellulare. Quelli segreti sono sfocati – tocca per mostrarli. Ognuno si può stampare.',
+        'Tut ils codes QR actuals per il telefonin. Ils secrets èn sfuschads – tutgar per mussar. Mintgin sa lascha stampar.'),
+    'Copy': ('Kopieren', 'Copier', 'Copia', 'Copiar'),
+    'Copied': ('Kopiert', 'Copié', 'Copiato', 'Copià'),
+    'Copy the link from the field': ('Link aus dem Feld kopieren', 'Copier le lien depuis le champ', 'Copia il link dal campo', 'Copiar la colliaziun ord il champ'),
+    'Print': ('Drucken', 'Imprimer', 'Stampa', 'Stampar'),
+    'Print all': ('Alle drucken', 'Tout imprimer', 'Stampa tutti', 'Stampar tut'),
+    'Print secret codes too': ('Geheime Codes mitdrucken', 'Imprimer aussi les codes secrets', 'Stampa anche i codici segreti', 'Stampar er ils codes secrets'),
+    'Close': ('Schliessen', 'Fermer', 'Chiudi', 'Serrar'),
+    'Big': ('Gross', 'Grand', 'Grande', 'Grond'),
+    'Show': ('Zeigen', 'Afficher', 'Mostra', 'Mussar'),
+    'Tap to show': ('Antippen zum Zeigen', 'Toucher pour afficher', 'Tocca per mostrare', 'Tutgar per mussar'),
+    'secret': ('geheim', 'secret', 'segreto', 'secret'),
+    'Secret: whoever scans this code gets access. Show it only to people you trust.': (
+        'Geheim: Wer diesen Code scannt, hat Zugang. Nur Personen zeigen, denen du vertraust.',
+        'Secret : qui scanne ce code obtient l’accès. Ne le montrer qu’aux personnes de confiance.',
+        'Segreto: chi scansiona questo codice ottiene l’accesso. Mostralo solo a persone di fiducia.',
+        'Secret: Tgi che scanna quest code survegn access. Mo mussar a persunas da fidanza.'),
+    'Secret codes are on this page - keep the paper safe.': ('Auf diesem Blatt sind geheime Codes – sicher aufbewahren.',
+                                                             'Cette page contient des codes secrets – la garder en lieu sûr.',
+                                                             'Su questo foglio ci sono codici segreti – conservalo al sicuro.',
+                                                             'Sin quest fegl èn codes secrets – al tegnair en salv.'),
+    'Only for the administrator': ('Nur für den Administrator', 'Réservé à l’administrateur', 'Solo per l’amministratore', 'Mo per l’administratur'),
+    'Too long for a QR code': ('Zu lang für einen QR-Code', 'Trop long pour un code QR', 'Troppo lungo per un codice QR', 'Memia lung per in code QR'),
+    'No codes right now.': ('Im Moment keine Codes.', 'Aucun code pour le moment.', 'Al momento nessun codice.', 'Per il mument nagins codes.'),
+    'Scan with the phone camera.': ('Mit der Handy-Kamera scannen.', 'Scanner avec l’appareil photo du portable.', 'Scansiona con la fotocamera del cellulare.',
+                                    'Scannar cun la camera dal telefonin.'),
+    'Scan with the phone camera to join the Wi-Fi.': ('Mit der Handy-Kamera scannen, um ins WLAN zu kommen.', 'Scanner avec le portable pour rejoindre le Wi-Fi.',
+                                                      'Scansiona con il cellulare per entrare nel Wi-Fi.', 'Scannar cun il telefonin per entrar en il WLAN.'),
+    'Addresses of MoveEye': ('Adressen von MoveEye', 'Adresses de MoveEye', 'Indirizzi di MoveEye', 'Adressas da MoveEye'),
+    'Home network': ('Heimnetz', 'Réseau domestique', 'Rete di casa', 'Rait da chasa'),
+    'Own Wi-Fi of the device': ('Eigenes WLAN des Geräts', 'Wi-Fi propre de l’appareil', 'Wi-Fi proprio del dispositivo', 'Agen WLAN da l’apparat'),
+    'On the road (Tailscale)': ('Unterwegs (Tailscale)', 'En déplacement (Tailscale)', 'In viaggio (Tailscale)', 'Sin via (Tailscale)'),
+    'On the road, encrypted (https)': ('Unterwegs, verschlüsselt (https)', 'En déplacement, chiffré (https)', 'In viaggio, cifrato (https)', 'Sin via, criptà (https)'),
+    'Address of this page for links': ('Adresse dieser Seite für Links', 'Adresse de cette page pour les liens', 'Indirizzo di questa pagina per i link',
+                                       'Adressa da questa pagina per colliaziuns'),
+    'This address': ('Diese Adresse', 'Cette adresse', 'Questo indirizzo', 'Questa adressa'),
+    'Push messages (ntfy)': ('Push-Nachrichten (ntfy)', 'Messages push (ntfy)', 'Messaggi push (ntfy)', 'Messadis push (ntfy)'),
+    'Browser': ('Browser', 'Navigateur', 'Browser', 'Navigatur'),
+    'browser': ('Browser', 'navigateur', 'browser', 'navigatur'),
+    'Android: the ntfy app subscribes to the topic by itself.': ('Android: Die ntfy-App abonniert das Thema von selbst.',
+                                                                 'Android : l’app ntfy s’abonne toute seule au sujet.',
+                                                                 'Android: l’app ntfy si abbona da sola all’argomento.',
+                                                                 'Android: L’app ntfy abunescha il tema da sezza.'),
+    'iPhone: the ntfy app cannot subscribe from a code - the code opens the topic in the browser. In the app: + and enter the topic.': (
+        'iPhone: Die ntfy-App kann nicht über einen Code abonnieren – der Code öffnet das Thema im Browser. In der App: + und das Thema eintippen.',
+        'iPhone : l’app ntfy ne peut pas s’abonner par un code – le code ouvre le sujet dans le navigateur. Dans l’app : + et saisir le sujet.',
+        'iPhone: l’app ntfy non può abbonarsi da un codice – il codice apre l’argomento nel browser. Nell’app: + e inserire l’argomento.',
+        'iPhone: L’app ntfy na po betg abunar cun in code – il code avra il tema en il navigatur. En l’app: + ed endatar il tema.'),
+    'QR code for the ntfy app': ('QR-Code für die ntfy-App', 'Code QR pour l’app ntfy', 'Codice QR per l’app ntfy', 'Code QR per l’app ntfy'),
+    'Enter the ntfy address first (https://server/topic).': ('Zuerst die ntfy-Adresse eintragen (https://server/thema).',
+                                                             'D’abord saisir l’adresse ntfy (https://serveur/sujet).',
+                                                             'Prima inserire l’indirizzo ntfy (https://server/argomento).',
+                                                             'L’emprim endatar l’adressa ntfy (https://server/tema).'),
+    'Guest access': ('Gast-Zugang', 'Accès invité', 'Accesso ospite', 'Access per giasts'),
+    'Guests see only the live picture.': ('Gäste sehen nur das Live-Bild.', 'Les invités ne voient que l’image en direct.', 'Gli ospiti vedono solo l’immagine dal vivo.',
+                                          'Ils giasts vesan mo il maletg live.'),
+    'QR code of the link': ('QR-Code des Links', 'Code QR du lien', 'Codice QR del link', 'Code QR da la colliaziun'),
+    'Create a link first.': ('Zuerst einen Link erstellen.', 'Créer d’abord un lien.', 'Crea prima un link.', 'L’emprim crear ina colliaziun.'),
+    'iPhone shortcuts': ('Kurzbefehle fürs iPhone', 'Raccourcis iPhone', 'Comandi rapidi iPhone', 'Scursanidas iPhone'),
+    'Arm': ('Scharf schalten', 'Armer', 'Attiva', 'Activar'),
+    'Disarm': ('Entschärfen', 'Désarmer', 'Disattiva', 'Deactivar'),
+    'Siren off': ('Sirene aus', 'Sirène arrêtée', 'Sirena spenta', 'Sirena ora'),
+    'White light on': ('Weisses Licht an', 'Lumière blanche allumée', 'Luce bianca accesa', 'Glisch alva en'),
+    'White light off': ('Weisses Licht aus', 'Lumière blanche éteinte', 'Luce bianca spenta', 'Glisch alva ora'),
+    'Photo now': ('Foto jetzt', 'Photo maintenant', 'Foto ora', 'Foto ussa'),
+    'Status (text)': ('Status (Text)', 'État (texte)', 'Stato (testo)', 'Status (text)'),
+    'Picture for other programs': ('Bild für andere Programme', 'Image pour d’autres programmes', 'Immagine per altri programmi', 'Maletg per auters programs'),
+    'Still picture': ('Standbild', 'Image fixe', 'Immagine fissa', 'Maletg fix'),
+    'Keep these addresses secret: whoever has them sees the picture without a password.': (
+        'Diese Adressen geheim halten: Wer sie hat, sieht das Bild ohne Passwort.',
+        'Garder ces adresses secrètes : qui les a voit l’image sans mot de passe.',
+        'Tieni segreti questi indirizzi: chi li ha vede l’immagine senza password.',
+        'Tegnair secretas questas adressas: Tgi che las ha, vesa il maletg senza pled-clav.'),
+    'QR codes of the addresses': ('QR-Codes der Adressen', 'Codes QR des adresses', 'Codici QR degli indirizzi', 'Codes QR da las adressas'),
+    'Off – switch on «Picture for other programs» above.': ('Aus – oben «Bild für andere Programme» einschalten.',
+                                                            'Désactivé – activer «Image pour d’autres programmes» ci-dessus.',
+                                                            'Spento – attiva sopra «Immagine per altri programmi».',
+                                                            'Ora – survart activar «Maletg per auters programs».'),
+    'TV view': ('TV-Ansicht', 'Vue TV', 'Vista TV', 'Vista TV'),
+    'Open on a TV or a second screen.': ('Auf einem Fernseher oder zweiten Bildschirm öffnen.', 'Ouvrir sur une télé ou un second écran.',
+                                         'Apri su un televisore o un secondo schermo.', 'Avrir sin in televisiun u in segund visur.'),
+    'Simulator connection (tunnel)': ('Simulator-Verbindung (Tunnel)', 'Connexion du simulateur (tunnel)', 'Connessione del simulatore (tunnel)',
+                                      'Colliaziun dal simulatur (tunnel)'),
+    'Code': ('Code', 'Code', 'Codice', 'Code'),
+    'In the simulator (Verbindung → «Tunnel zu MoveEye») paste the address and type the code.': (
+        'Im Simulator (Verbindung → «Tunnel zu MoveEye») die Adresse einfügen und den Code eintippen.',
+        'Dans le simulateur (Verbindung → «Tunnel zu MoveEye») coller l’adresse et saisir le code.',
+        'Nel simulatore (Verbindung → «Tunnel zu MoveEye») incolla l’indirizzo e digita il codice.',
+        'En il simulatur (Verbindung → «Tunnel zu MoveEye») encollar l’adressa ed endatar il code.'),
+    'QR code of the tunnel (for a tablet)': ('QR-Code des Tunnels (für ein Tablet)', 'Code QR du tunnel (pour une tablette)', 'Codice QR del tunnel (per un tablet)',
+                                             'Code QR dal tunnel (per in tablet)'),
+    'The tunnel is off (web: Simulator → «Simulator behind a firewall»).': ('Der Tunnel ist aus (Web: Simulator → «Simulator hinter einer Firewall»).',
+                                                                            'Le tunnel est désactivé (web : Simulateur → «Simulateur derrière un pare-feu»).',
+                                                                            'Il tunnel è spento (web: Simulatore → «Simulatore dietro un firewall»).',
+                                                                            'Il tunnel è ora (web: Simulatur → «Simulatur davos in firewall»).'),
+    'Games': ('Spiele', 'Jeux', 'Giochi', 'Gieus'),
+    'Scan the QR code with the phone (same Wi-Fi).': ('QR-Code mit dem Handy scannen (gleiches WLAN).', 'Scanner le code QR avec le portable (même Wi-Fi).',
+                                                      'Scansiona il codice QR con il cellulare (stesso Wi-Fi).', 'Scannar il code QR cun il telefonin (medem WLAN).'),
+    'Info page for guests': ('Infoseite für Gäste', 'Page d’info pour les invités', 'Pagina informativa per ospiti', 'Pagina d’infurmaziun per giasts'),
+    'Recording': ('Aufnahme', 'Enregistrement', 'Registrazione', 'Registraziun'),
+    'Opens the recording on the phone (with the password of MoveEye).': ('Öffnet die Aufnahme auf dem Handy (mit dem Passwort von MoveEye).',
+                                                                         'Ouvre l’enregistrement sur le portable (avec le mot de passe de MoveEye).',
+                                                                         'Apre la registrazione sul cellulare (con la password di MoveEye).',
+                                                                         'Avra la registraziun sin il telefonin (cun il pled-clav da MoveEye).'),
+    'App keys show their QR code only once, when they are made (Settings → Security).': (
+        'App-Schlüssel zeigen ihren QR-Code nur einmal, beim Erstellen (Einstellungen → Sicherheit).',
+        'Les clés d’app montrent leur code QR une seule fois, à la création (Réglages → Sécurité).',
+        'Le chiavi app mostrano il loro codice QR una sola volta, alla creazione (Impostazioni → Sicurezza).',
+        'Las clavs d’app mussan lur code QR mo ina giada, cura ch’ellas vegnan fatgas (Parameters → Segirezza).'),
+    'Save picture …': ('Bild speichern …', 'Enregistrer l’image …', 'Salva immagine …', 'Memorisar il maletg …'),
+    'Saved': ('Gespeichert', 'Enregistré', 'Salvato', 'Memorisà'),
+    'Sent to the printer': ('An den Drucker geschickt', 'Envoyé à l’imprimante', 'Inviato alla stampante', 'Tramess al stampader'),
+}
+for _k, _v in _HX_QR.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 _HX_live = {
     'Always': ('Immer', 'Toujours', 'Sempre', 'Adina'),
     'Never': ('Nie', 'Jamais', 'Mai', 'Mai'),
@@ -71609,6 +74759,455 @@ def almanac_tip():
     return {"i": i, "icon": ic, "chapter": ch, "title": t, "text": first[:400]}
 
 
+_HX_GUIDE2 = {
+    "Tour of this page": ("Rundgang durch diese Seite", "Visite de cette page", "Tour di questa pagina", "Gir tras questa pagina"),
+    "Continue later": ("Später weitermachen", "Continuer plus tard", "Continuare più tardi", "Cuntinuar pli tard"),
+    "Tips & tricks": ("Tipps & Tricks", "Trucs & astuces", "Consigli e trucchi", "Cussegls e trics"),
+    "View of this page:": ("Ansicht dieser Seite:", "Affichage de cette page :", "Vista di questa pagina:", "Vista da questa pagina:"),
+    "Recommended": ("Empfehlung", "Recommandation", "Consiglio", "Recumandaziun"),
+    "Tip of the day": ("Tipp des Tages", "Astuce du jour", "Consiglio del giorno", "Cussegl dal di"),
+    "Show me": ("Zeig es mir", "Montre-moi", "Mostrami", "Ma mussa"),
+    "Not now": ("Nicht jetzt", "Pas maintenant", "Non ora", "Betg ussa"),
+    "Tip of the day off": ("Tipp des Tages aus", "Astuce du jour désactivée", "Consiglio del giorno spento", "Cussegl dal di deactivà"),
+    "Quick (about 5 min.) or thorough?": ("Schnell (ca. 5 Min.) oder ausgiebig?", "Rapide (env. 5 min) ou complet ?", "Veloce (ca. 5 min) o completo?", "Svelt (ca. 5 min.) u detaglià?"),
+    "about 5 minutes": ("ca. 5 Minuten", "env. 5 minutes", "ca. 5 minuti", "ca. 5 minutas"),
+    "about 20 to 30 minutes": ("ca. 20 bis 30 Minuten", "env. 20 à 30 minutes", "ca. 20-30 minuti", "ca. 20 fin 30 minutas"),
+    "Basics, push messages to the phone, camera test and place, protection and walk test.": (
+        "Grundlagen, Push-Nachrichten aufs Handy, Kamera-Test und Platz, Schutz und Gehtest.",
+        "Bases, notifications sur le téléphone, test de la caméra et emplacement, protection et test de passage.",
+        "Base, notifiche sul telefono, test della telecamera e posto, protezione e test di passaggio.",
+        "Basa, avis push sin il telefonin, test da la camera e plazza, protecziun e test da passar."),
+    "Everything of «Quick» plus zones, night time, light and siren, head, AI model, thermal camera, battery, simulator - each step can be skipped.": (
+        "Alles von «Schnell» und dazu Zonen, Nachtzeit, Licht und Sirene, Kopf, KI-Modell, Wärmebild, Akku, Simulator – jeder Schritt kann übersprungen werden.",
+        "Tout de «Rapide» plus zones, heures de nuit, lumière et sirène, tête, modèle IA, caméra thermique, batterie, simulateur – chaque étape peut être sautée.",
+        "Tutto di «Veloce» più zone, ore notturne, luce e sirena, testa, modello IA, termocamera, batteria, simulatore – ogni passo si può saltare.",
+        "Tut da «Svelt» ed ultra quai zonas, temp da notg, glisch e sirena, chau, model IA, camera termica, accu, simulatur – mintga pass sa vegnir sursiglì."),
+    "Every step can be skipped. You can stop at any time and continue later (More → Setup).": (
+        "Jeder Schritt kann übersprungen werden. Du kannst jederzeit aufhören und später weitermachen (Mehr → Einrichtung).",
+        "Chaque étape peut être sautée. Tu peux t’arrêter à tout moment et continuer plus tard (Plus → Configuration).",
+        "Ogni passo si può saltare. Puoi fermarti in ogni momento e continuare più tardi (Altro → Configurazione).",
+        "Mintga pass sa vegnir sursiglì. Ti pos smetter da tut temp e cuntinuar pli tard (Dapli → Installaziun)."),
+    "Name of this device (optional)": ("Name dieses Geräts (freiwillig)", "Nom de cet appareil (facultatif)", "Nome di questo dispositivo (facoltativo)", "Num da quest apparat (facultativ)"),
+    "e.g. camper, garden": ("z. B. Wohnmobil, Garten", "p. ex. camping-car, jardin", "p. es. camper, giardino", "p.ex. camper, curtin"),
+    "Time and place": ("Uhrzeit und Ort", "Heure et lieu", "Ora e luogo", "Ura e lieu"),
+    "Time on MoveEye": ("Uhrzeit auf MoveEye", "Heure sur MoveEye", "Ora su MoveEye", "Ura sin MoveEye"),
+    "on this device": ("auf diesem Gerät", "sur cet appareil", "su questo dispositivo", "sin quest apparat"),
+    "🕒 Take the time of this device": ("🕒 Uhrzeit dieses Geräts übernehmen", "🕒 Reprendre l’heure de cet appareil", "🕒 Prendere l’ora di questo dispositivo", "🕒 Surpigliar l’ura da quest apparat"),
+    "📍 Location of this device": ("📍 Standort dieses Geräts", "📍 Position de cet appareil", "📍 Posizione di questo dispositivo", "📍 Posiziun da quest apparat"),
+    "Latitude": ("Breite", "Latitude", "Latitudine", "Ladezza"),
+    "Longitude": ("Länge", "Longitude", "Longitudine", "Lunghezza"),
+    "Location: only on a secure page (https) - or type it.": ("Standort: nur auf einer sicheren Seite (https) – oder von Hand eintippen.", "Position : seulement sur une page sécurisée (https) – ou la taper.", "Posizione: solo su una pagina sicura (https) – oppure digitarla.", "Posiziun: mo sin ina pagina segira (https) – u la tippar."),
+    "Password for this page": ("Passwort für diese Seite", "Mot de passe pour cette page", "Password per questa pagina", "Pled-clav per questa pagina"),
+    "Without a password everybody in the same network (and with the link) can watch and switch everything.": (
+        "Ohne Passwort kann jeder im gleichen Netz (und mit dem Link) zuschauen und alles schalten.",
+        "Sans mot de passe, tout le monde dans le même réseau (et avec le lien) peut regarder et tout commander.",
+        "Senza password chiunque nella stessa rete (e con il link) può guardare e comandare tutto.",
+        "Senza pled-clav po mintgin en la medema rait (e cun il link) guardar e cumandar tut."),
+    "Password (6-64 characters)": ("Passwort (6–64 Zeichen)", "Mot de passe (6 à 64 caractères)", "Password (6-64 caratteri)", "Pled-clav (6-64 caracters)"),
+    "Repeat password": ("Passwort wiederholen", "Répéter le mot de passe", "Ripetere la password", "Repeter il pled-clav"),
+    "Continue without a password (not recommended)": ("Ohne Passwort weiter (nicht empfohlen)", "Continuer sans mot de passe (déconseillé)", "Continuare senza password (sconsigliato)", "Cuntinuar senza pled-clav (betg recumandà)"),
+    "The passwords are not the same": ("Die Passwörter sind nicht gleich", "Les mots de passe ne sont pas identiques", "Le password non sono uguali", "Ils pleds-clav n’èn betg medems"),
+    "A password is set already. Enter a new one only to change it.": ("Es ist schon ein Passwort gesetzt. Nur zum Ändern ein neues eingeben.", "Un mot de passe est déjà défini. N’en saisir un nouveau que pour le changer.", "Una password è già impostata. Inserirne una nuova solo per cambiarla.", "In pled-clav è gia fixà. Endatar in nov mo per al midar."),
+    "The password was given on the command line (--web-password).": ("Das Passwort wurde beim Start angegeben (--web-password).", "Le mot de passe a été donné au démarrage (--web-password).", "La password è stata data all’avvio (--web-password).", "Il pled-clav è vegnì dà a l’aviar (--web-password)."),
+    "The page now asks once for the new password (user name: anything) and then continues here.": (
+        "Die Seite fragt jetzt einmal nach dem neuen Passwort (Benutzername: beliebig) und macht dann hier weiter.",
+        "La page demande maintenant une fois le nouveau mot de passe (nom d’utilisateur : n’importe lequel) puis continue ici.",
+        "La pagina chiede ora una volta la nuova password (nome utente: qualsiasi) e poi continua qui.",
+        "La pagina dumonda ussa ina giada il nov pled-clav (num d’utilisader: tgenin ch’i saja) e cuntinuescha lura qua."),
+    "1. Install the free app «ntfy» (App Store / Play Store).": ("1. Die kostenlose App «ntfy» installieren (App Store / Play Store).", "1. Installer l’app gratuite «ntfy» (App Store / Play Store).", "1. Installare l’app gratuita «ntfy» (App Store / Play Store).", "1. Installar l’app gratuita «ntfy» (App Store / Play Store)."),
+    "2. In the app: + → enter the topic below (and the server, if it is not the default one) - or open this code with the phone camera.": (
+        "2. In der App: + → das Thema unten eintragen (und den Server, falls nicht der Standard) – oder diesen Code mit der Handy-Kamera öffnen.",
+        "2. Dans l’app : + → saisir le sujet ci-dessous (et le serveur, s’il n’est pas celui par défaut) – ou ouvrir ce code avec la caméra du téléphone.",
+        "2. Nell’app: + → inserire l’argomento qui sotto (e il server, se non è quello standard) – oppure aprire questo codice con la fotocamera del telefono.",
+        "2. En l’app: + → endatar il tema sutvart (ed il server, sch’el n’è betg il standard) – u avrir quest code cun la camera dal telefonin."),
+    "Server": ("Server", "Serveur", "Server", "Server"),
+    "Topic (like a secret channel name)": ("Thema (wie ein geheimer Kanalname)", "Sujet (comme un nom de canal secret)", "Argomento (come un nome di canale segreto)", "Tema (sco in num da chanal secret)"),
+    "📨 Send test message": ("📨 Test-Nachricht senden", "📨 Envoyer un message test", "📨 Inviare un messaggio di prova", "📨 Trametter in messadi da test"),
+    "Sent - did it arrive on the phone?": ("Gesendet – ist sie auf dem Handy angekommen?", "Envoyé – est-il arrivé sur le téléphone ?", "Inviato – è arrivato sul telefono?", "Tramess – è el arrivà sin il telefonin?"),
+    "The push channel is set up already:": ("Der Push-Kanal ist schon eingerichtet:", "Le canal push est déjà configuré :", "Il canale push è già configurato:", "Il chanal push è gia installà:"),
+    "Is the picture right? Upright, sharp, the place in view?": ("Stimmt das Bild? Aufrecht, scharf, der Platz im Blick?", "L’image est-elle juste ? Droite, nette, l’emplacement en vue ?", "L’immagine va bene? Dritta, nitida, il posto in vista?", "È il maletg en urden? Dretg, net, la plazza en vista?"),
+    "No picture yet.": ("Noch kein Bild.", "Pas encore d’image.", "Ancora nessuna immagine.", "Anc nagin maletg."),
+    "📷 Choose the camera": ("📷 Kamera wählen", "📷 Choisir la caméra", "📷 Scegliere la telecamera", "📷 Tscherner la camera"),
+    "🎮 Use the 3D simulator as camera": ("🎮 3D-Simulator als Kamera verwenden", "🎮 Utiliser le simulateur 3D comme caméra", "🎮 Usare il simulatore 3D come telecamera", "🎮 Duvrar il simulatur 3D sco camera"),
+    "Address of the simulator": ("Adresse des Simulators", "Adresse du simulateur", "Indirizzo del simulatore", "Adressa dal simulatur"),
+    "Connecting …": ("Verbinde …", "Connexion …", "Connessione …", "Collia …"),
+    "📐 Set up the place": ("📐 Platz einrichten", "📐 Configurer l’emplacement", "📐 Configurare il posto", "📐 Installar la plazza"),
+    "MoveEye looks round once and suggests zones, paths and the things to guard (a few minutes). Then come back here.": (
+        "MoveEye schaut sich einmal um und schlägt Zonen, Wege und die bewachten Sachen vor (ein paar Minuten). Danach hierher zurückkommen.",
+        "MoveEye regarde une fois autour de lui et propose des zones, des chemins et les objets à surveiller (quelques minutes). Puis reviens ici.",
+        "MoveEye si guarda intorno una volta e propone zone, percorsi e gli oggetti da sorvegliare (qualche minuto). Poi torna qui.",
+        "MoveEye guarda enturn ina giada e propona zonas, sendas e las chaussas da survegliar (in pèr minutas). Lura turnar qua."),
+    "frames/s": ("Bilder/s", "images/s", "immagini/s", "maletgs/s"),
+    "Who should see «Simple» - and what is MoveEye for?": ("Wer soll «Einfach» sehen – und wofür ist MoveEye da?", "Qui doit voir «Simple» – et à quoi sert MoveEye ?", "Chi deve vedere «Semplice» – e a cosa serve MoveEye?", "Tgi duai vesair «Simpel» – e per tge è MoveEye?"),
+    "Default of every page (each page can switch by itself).": ("Standard für jede Seite (jede Seite kann selbst umschalten).", "Par défaut pour chaque page (chaque page peut changer elle-même).", "Predefinito per ogni pagina (ogni pagina può cambiare da sola).", "Standard per mintga pagina (mintga pagina po midar sezza)."),
+    "Draw areas into the picture: ignore the road, privacy, the sleeping place for the wake-up alarm, a line.": (
+        "Bereiche ins Bild zeichnen: die Strasse ignorieren, Privatsphäre, den Schlafplatz für den Wecker, eine Linie.",
+        "Dessiner des zones dans l’image : ignorer la route, la sphère privée, le lieu de sommeil pour le réveil, une ligne.",
+        "Disegnare zone nell’immagine: ignorare la strada, la privacy, il posto letto per la sveglia, una linea.",
+        "Dissegnar zonas en il maletg: ignorar la via, la sfera privata, la plazza da durmir per il svegliarin, ina lingia."),
+    "✏ Draw the zones": ("✏ Zonen zeichnen", "✏ Dessiner les zones", "✏ Disegnare le zone", "✏ Dissegnar las zonas"),
+    "State of the protection": ("Zustand des Schutzes", "État de la protection", "Stato della protezione", "Stadi da la protecziun"),
+    "Switch on now?": ("Jetzt einschalten?", "Activer maintenant ?", "Attivare ora?", "Activar ussa?"),
+    "Leave it off": ("Aus lassen", "Laisser éteint", "Lasciare spento", "Laschar deactivà"),
+    "Full": ("Voll", "Complet", "Completo", "Cumplain"),
+    "switches on at once (with the countdown)": ("schaltet sofort ein (mit dem Countdown)", "s’active tout de suite (avec le compte à rebours)", "si attiva subito (con il conto alla rovescia)", "s’activescha immediat (cun il countdown)"),
+    "🚶 Start walk test": ("🚶 Gehtest starten", "🚶 Lancer le test de passage", "🚶 Avviare il test di passaggio", "🚶 Cumenzar il test da passar"),
+    "Walk past the camera like a visitor - MoveEye beeps at every detection. 3 minutes, no alarms meanwhile.": (
+        "Geh an der Kamera vorbei wie ein Besucher – MoveEye piepst bei jeder Erkennung. 3 Minuten, in dieser Zeit keine Alarme.",
+        "Passe devant la caméra comme un visiteur – MoveEye bipe à chaque détection. 3 minutes, sans alarme pendant ce temps.",
+        "Passa davanti alla telecamera come un visitatore – MoveEye suona a ogni rilevamento. 3 minuti, nel frattempo nessun allarme.",
+        "Va sper la camera sco in visitader – MoveEye pipa tar mintga renconuschientscha. 3 minutas, durant quel temp nagins alarms."),
+    "End of the night time": ("Ende der Nachtzeit", "Fin des heures de nuit", "Fine delle ore notturne", "Fin dal temp da notg"),
+    "🕘 Schedules": ("🕘 Zeitpläne", "🕘 Horaires", "🕘 Orari", "🕘 Plans da temp"),
+    "Schedules switch features by themselves, e.g. the protection every night.": ("Zeitpläne schalten Funktionen von selbst, z. B. den Schutz jede Nacht.", "Les horaires commandent des fonctions tout seuls, p. ex. la protection chaque nuit.", "Gli orari comandano le funzioni da soli, p. es. la protezione ogni notte.", "Plans da temp cumandan funcziuns da sasez, p.ex. la protecziun mintga notg."),
+    "💡 Light 3 s": ("💡 Licht 3 s", "💡 Lumière 3 s", "💡 Luce 3 s", "💡 Glisch 3 s"),
+    "🌙 Infrared 3 s": ("🌙 Infrarot 3 s", "🌙 Infrarouge 3 s", "🌙 Infrarosso 3 s", "🌙 Infracotschen 3 s"),
+    "🔊 Test sound": ("🔊 Testton", "🔊 Son test", "🔊 Suono di prova", "🔊 Tun da test"),
+    "🚨 Siren 2 s": ("🚨 Sirene 2 s", "🚨 Sirène 2 s", "🚨 Sirena 2 s", "🚨 Sirena 2 s"),
+    "Loud! Warn the neighbours first.": ("Laut! Zuerst die Nachbarn warnen.", "Fort ! Préviens d’abord les voisins.", "Forte! Avvisa prima i vicini.", "Ferm! Avertir l’emprim ils vischins."),
+    "◎ Centre": ("◎ Mitte", "◎ Centre", "◎ Centro", "◎ Center"),
+    "◀ ▶ Turn a little": ("◀ ▶ Etwas drehen", "◀ ▶ Tourner un peu", "◀ ▶ Girare un po’", "◀ ▶ Volver in pau"),
+    "Direction of turning wrong? Swap it:": ("Dreht er falsch herum? Umkehren:", "Il tourne dans le mauvais sens ? Inverser :", "Gira al contrario? Invertire:", "Volva el il fallà sen? Invertir:"),
+    "🛠 Servo test (tools)": ("🛠 Servo-Test (Werkzeuge)", "🛠 Test des servos (outils)", "🛠 Test dei servo (strumenti)", "🛠 Test dals servos (utensils)"),
+    "The AI says «person», «animal», «car». It runs on the Pi or on a helper PC.": ("Die KI sagt «Person», «Tier», «Auto». Sie läuft auf dem Pi oder auf einem Helfer-PC.", "L’IA dit «personne», «animal», «voiture». Elle tourne sur le Pi ou sur un PC d’aide.", "L’IA dice «persona», «animale», «auto». Gira sul Pi o su un PC di aiuto.", "L’IA di «persuna», «animal», «auto». Ella lavura sin il Pi u sin in PC d’agid."),
+    "Own AI model": ("Eigenes KI-Modell", "Propre modèle IA", "Modello IA proprio", "Agen model IA"),
+    "Alarm from the thermal camera": ("Alarm von der Wärmebildkamera", "Alarme de la caméra thermique", "Allarme dalla termocamera", "Alarm da la camera termica"),
+    "Battery saving automatic": ("Akku-Sparen automatisch", "Économie de batterie automatique", "Risparmio batteria automatico", "Spargnar accu automaticamain"),
+    "charge": ("geladen", "chargée", "carica", "chargià"),
+    "The 3D simulator on the PC tests MoveEye without the real place. Optional.": ("Der 3D-Simulator auf dem PC testet MoveEye ohne den echten Platz. Freiwillig.", "Le simulateur 3D sur le PC teste MoveEye sans le vrai lieu. Facultatif.", "Il simulatore 3D sul PC prova MoveEye senza il posto reale. Facoltativo.", "Il simulatur 3D sin il PC testa MoveEye senza la vaira plazza. Facultativ."),
+    "🔌 Connect": ("🔌 Verbinden", "🔌 Connecter", "🔌 Collegare", "🔌 Colliar"),
+    "Tours and tips": ("Rundgänge und Tipps", "Visites et astuces", "Tour e consigli", "Girs e cussegls"),
+    "Tour of a page on its first visit": ("Rundgang beim ersten Besuch einer Seite", "Visite d’une page à la première ouverture", "Tour di una pagina alla prima visita", "Gir tras ina pagina a l’emprima visita"),
+    "Explanations the first time something is opened": ("Erklärungen beim ersten Öffnen", "Explications à la première ouverture", "Spiegazioni alla prima apertura", "Explicaziuns a l’emprima avertura"),
+    "basic": ("wenige", "peu", "poche", "paucas"),
+    "normal": ("normal", "normal", "normali", "normal"),
+    "all": ("alle", "toutes", "tutte", "tuttas"),
+    "Done!": ("Fertig!", "Terminé !", "Fatto!", "Fatg!"),
+    "skipped": ("übersprungen", "sautée", "saltato", "sursiglì"),
+    "skipped automatically": ("von selbst übersprungen", "sautée automatiquement", "saltato automaticamente", "sursiglì automaticamain"),
+    "Open MoveEye on other devices with these codes. On the phone: Share → «Add to Home Screen» - then it starts like an app.": (
+        "Mit diesen Codes öffnest du MoveEye auf weiteren Geräten. Auf dem Handy: Teilen → «Zum Home-Bildschirm» – dann startet es wie eine App.",
+        "Avec ces codes, tu ouvres MoveEye sur d’autres appareils. Sur le téléphone : Partager → «Sur l’écran d’accueil» – il démarre alors comme une app.",
+        "Con questi codici apri MoveEye su altri dispositivi. Sul telefono: Condividi → «Aggiungi alla schermata Home» – poi parte come un’app.",
+        "Cun quests codes avras ti MoveEye sin ulteriurs apparats. Sin il telefonin: Parter → «Sin il visur da partenza» – lura cumenza el sco ina app."),
+    "🖨 Quick start card with QR codes": ("🖨 Kurzanleitung mit QR-Codes", "🖨 Guide rapide avec codes QR", "🖨 Guida rapida con codici QR", "🖨 Instrucziun curta cun codes QR"),
+    "Let's go": ("Los geht's", "C’est parti", "Si parte", "Ans giain"),
+    "➕ Set up more (thorough)": ("➕ Mehr einrichten (ausgiebig)", "➕ Configurer plus (complet)", "➕ Configurare di più (completo)", "➕ Installar dapli (detaglià)"),
+    "↩ Back to the setup": ("↩ Zurück zur Einrichtung", "↩ Retour à la configuration", "↩ Torna alla configurazione", "↩ Enavos a l’installaziun"),
+    "Setup finished.": ("Einrichtung abgeschlossen.", "Configuration terminée.", "Configurazione terminata.", "Installaziun terminada."),
+    "Setup paused - step": ("Einrichtung pausiert – Schritt", "Configuration en pause – étape", "Configurazione in pausa – passo", "Installaziun en pausa – pass"),
+    "never done": ("noch nie gemacht", "jamais faite", "mai fatta", "anc mai fatg"),
+    "🧭 Start the setup": ("🧭 Einrichtung starten", "🧭 Lancer la configuration", "🧭 Avviare la configurazione", "🧭 Cumenzar l’installaziun"),
+    "🧭 Continue the setup": ("🧭 Einrichtung weitermachen", "🧭 Continuer la configuration", "🧭 Continuare la configurazione", "🧭 Cuntinuar l’installaziun"),
+    "🧭 Setup again": ("🧭 Nochmals einrichten", "🧭 Reconfigurer", "🧭 Configurare di nuovo", "🧭 Installar danovamain"),
+    "↺ Reset all tours": ("↺ Alle Rundgänge zurücksetzen", "↺ Réinitialiser toutes les visites", "↺ Ripristinare tutti i tour", "↺ Restaurar tut ils girs"),
+    "Reset all tours": ("Alle Rundgänge zurücksetzen", "Réinitialiser toutes les visites", "Ripristinare tutti i tour", "Restaurar tut ils girs"),
+    "All tours will show again.": ("Alle Rundgänge erscheinen wieder.", "Toutes les visites réapparaîtront.", "Tutti i tour riappariranno.", "Tut ils girs cumparan puspè."),
+    "⚠ Reset to factory settings …": ("⚠ Auf Werkseinstellungen zurücksetzen …", "⚠ Rétablir les réglages d’usine …", "⚠ Ripristinare le impostazioni di fabbrica …", "⚠ Restaurar ils parameters da fabrica …"),
+    "Copies of the old settings": ("Kopien der alten Einstellungen", "Copies des anciens réglages", "Copie delle vecchie impostazioni", "Copias dals vegls parameters"),
+    "⬇": ("⬇", "⬇", "⬇", "⬇"),
+    "Reset to factory settings": ("Auf Werkseinstellungen zurücksetzen", "Rétablir les réglages d’usine", "Ripristinare le impostazioni di fabbrica", "Restaurar ils parameters da fabrica"),
+    "Back to the factory settings:": ("Zurück auf die Werkseinstellungen:", "Retour aux réglages d’usine :", "Ritorno alle impostazioni di fabbrica:", "Enavos als parameters da fabrica:"),
+    "all settings, zones, schedules, waypoints, password, users, PIN, the place": ("alle Einstellungen, Zonen, Zeitpläne, Wegpunkte, Passwort, Benutzer, PIN, der Platz", "tous les réglages, zones, horaires, points de passage, mot de passe, utilisateurs, PIN, l’emplacement", "tutte le impostazioni, zone, orari, punti di passaggio, password, utenti, PIN, il posto", "tut ils parameters, zonas, plans da temp, puncts da via, pled-clav, utilisaders, PIN, la plazza"),
+    "These stay:": ("Das bleibt:", "Ceci reste :", "Questo resta:", "Quai resta:"),
+    "Wi-Fi and own Wi-Fi, remote access (Tailscale), the push channel (ntfy), the update settings, the own AI model and what it learned": (
+        "WLAN und eigenes WLAN, Fernzugriff (Tailscale), der Push-Kanal (ntfy), die Update-Einstellungen, das eigene KI-Modell und was es gelernt hat",
+        "Wi-Fi et propre Wi-Fi, accès à distance (Tailscale), le canal push (ntfy), les réglages de mise à jour, le propre modèle IA et ce qu’il a appris",
+        "Wi-Fi e Wi-Fi proprio, accesso remoto (Tailscale), il canale push (ntfy), le impostazioni di aggiornamento, il modello IA proprio e ciò che ha imparato",
+        "WLAN ed agen WLAN, access a distanza (Tailscale), il chanal push (ntfy), ils parameters d’actualisaziun, l’agen model IA e quai ch’el ha emprendì"),
+    "These are deleted:": ("Das wird gelöscht:", "Ceci est effacé :", "Questo viene cancellato:", "Quai vegn stizzà:"),
+    "all recordings and photos, the animal diary, the log": ("alle Aufnahmen und Fotos, das Tier-Tagebuch, das Protokoll", "tous les enregistrements et photos, le journal des animaux, le journal", "tutte le registrazioni e foto, il diario animali, il registro", "tut las registraziuns e fotos, il diari d’animals, il protocol"),
+    "First a copy of the old settings is saved - you can download it below.": ("Zuerst wird eine Kopie der alten Einstellungen gespeichert – du kannst sie unten herunterladen.", "D’abord une copie des anciens réglages est enregistrée – tu peux la télécharger ci-dessous.", "Prima viene salvata una copia delle vecchie impostazioni – puoi scaricarla qui sotto.", "L’emprim vegn memorisada ina copia dals vegls parameters – ti la pos telechargiar sutvart."),
+    "Your password": ("Dein Passwort", "Ton mot de passe", "La tua password", "Tes pled-clav"),
+    "Your PIN": ("Deine PIN", "Ton PIN", "Il tuo PIN", "Tes PIN"),
+    "Type {w} to confirm": ("Zum Bestätigen {w} eintippen", "Taper {w} pour confirmer", "Digitare {w} per confermare", "Tippar {w} per confermar"),
+    "Reset now": ("Jetzt zurücksetzen", "Rétablir maintenant", "Ripristinare ora", "Restaurar ussa"),
+    "Reset done.": ("Zurückgesetzt.", "Réglages d’usine rétablis.", "Ripristino fatto.", "Restaurà."),
+    "Copy of the old settings:": ("Kopie der alten Einstellungen:", "Copie des anciens réglages :", "Copia delle vecchie impostazioni:", "Copia dals vegls parameters:"),
+    "Start the setup": ("Einrichtung starten", "Lancer la configuration", "Avviare la configurazione", "Cumenzar l’installaziun"),
+    "Setup assistant": ("Einrichtungs-Assistent", "Assistant de configuration", "Assistente di configurazione", "Assistent d’installaziun"),
+    "optional": ("freiwillig", "facultatif", "facoltativo", "facultativ"),
+    "ok": ("ok", "ok", "ok", "ok"),
+    # ---- tours
+    "The live picture": ("Das Livebild", "L’image en direct", "L’immagine live", "Il maletg live"),
+    "What the camera sees right now. Double-tap = only the picture, big.": ("Was die Kamera gerade sieht. Doppeltippen = nur das Bild, gross.", "Ce que la caméra voit maintenant. Double toucher = seulement l’image, en grand.", "Ciò che la telecamera vede ora. Doppio tocco = solo l’immagine, grande.", "Quai che la camera vesa ussa. Tutgar dubel = mo il maletg, grond."),
+    "Turn the head": ("Den Kopf drehen", "Tourner la tête", "Girare la testa", "Volver il chau"),
+    "With the joystick you turn the camera head. Tapping into the picture makes it look there.": ("Mit dem Joystick drehst du den Kamerakopf. Ins Bild tippen = er schaut dorthin.", "Avec le joystick tu tournes la tête de la caméra. Toucher l’image = elle regarde là.", "Con il joystick giri la testa della telecamera. Toccare l’immagine = guarda lì.", "Cun il joystick volvas ti il chau da la camera. Tutgar il maletg = el guarda là."),
+    "Recording, photo, follow, patrol, light, infrared and thermal picture - one tap each.": ("Aufnahme, Foto, Folgen, Patrouille, Licht, Infrarot und Wärmebild – je ein Tipp.", "Enregistrement, photo, suivre, patrouille, lumière, infrarouge et image thermique – une touche chacun.", "Registrazione, foto, seguire, pattuglia, luce, infrarosso e immagine termica – un tocco ciascuno.", "Registraziun, foto, suandar, patruglia, glisch, infracotschen e maletg termic – mintgamai in tip."),
+    "The state": ("Der Zustand", "L’état", "Lo stato", "Il stadi"),
+    "Off · Watchful · Full: tap here to switch the protection.": ("Aus · Wachsam · Voll: hier tippen schaltet den Schutz um.", "Arrêt · Vigilant · Complet : toucher ici change la protection.", "Spento · Vigile · Completa: toccare qui cambia la protezione.", "Deactivà · Vigilant · Cumplain: tutgar qua mida la protecziun."),
+    "The six tabs": ("Die sechs Reiter", "Les six onglets", "Le sei schede", "Ils sis registers"),
+    "Live · Protection · History · Settings · Simulator · More. The «?» at the top shows this tour again.": ("Live · Schutz · Verlauf · Einstellungen · Simulator · Mehr. Das «?» oben zeigt diesen Rundgang wieder.", "Direct · Protection · Historique · Réglages · Simulateur · Plus. Le «?» en haut remontre cette visite.", "Live · Protezione · Cronologia · Impostazioni · Simulatore · Altro. Il «?» in alto mostra di nuovo questo tour.", "Live · Protecziun · Cronologia · Parameters · Simulatur · Dapli. Il «?» sisum mussa puspè quest gir."),
+    "Off, Watchful (only messages) or Full (light, siren). The traffic light says what is still missing.": ("Aus, Wachsam (nur Meldungen) oder Voll (Licht, Sirene). Die Ampel sagt, was noch fehlt.", "Arrêt, Vigilant (seulement des messages) ou Complet (lumière, sirène). Le feu dit ce qui manque encore.", "Spento, Vigile (solo messaggi) o Completa (luce, sirena). Il semaforo dice cosa manca ancora.", "Deactivà, Vigilant (mo messadis) u Cumplain (glisch, sirena). Il semafor di tge che manca anc."),
+    "One tap: everything for the night - and off again in the morning.": ("Ein Tipp: alles für die Nacht – und am Morgen wieder aus.", "Une touche : tout pour la nuit – et éteint le matin.", "Un tocco: tutto per la notte – e spento di nuovo al mattino.", "In tip: tut per la notg – e la damaun puspè deactivà."),
+    "Walk past the camera: MoveEye beeps at every detection and shows how far it sees you.": ("An der Kamera vorbeigehen: MoveEye piepst bei jeder Erkennung und zeigt, wie weit es dich sieht.", "Passe devant la caméra : MoveEye bipe à chaque détection et montre jusqu’où il te voit.", "Passa davanti alla telecamera: MoveEye suona a ogni rilevamento e mostra fin dove ti vede.", "Va sper la camera: MoveEye pipa tar mintga renconuschientscha e mussa fin nua ch’el ta vesa."),
+    "Camping, home, wildlife … the mode decides what MoveEye does by itself.": ("Camping, Zuhause, Wildtiere … der Modus bestimmt, was MoveEye von selbst tut.", "Camping, maison, faune … le mode décide ce que MoveEye fait tout seul.", "Campeggio, casa, fauna … la modalità decide cosa fa MoveEye da solo.", "Camping, a chasa, animals selvadis … il modus decida tge che MoveEye fa da sasez."),
+    "Draw areas into the picture: ignore the road, privacy, sleeping place.": ("Bereiche ins Bild zeichnen: Strasse ignorieren, Privatsphäre, Schlafplatz.", "Dessiner des zones : ignorer la route, sphère privée, lieu de sommeil.", "Disegnare zone: ignorare la strada, privacy, posto letto.", "Dissegnar zonas: ignorar la via, sfera privata, plazza da durmir."),
+    "How many alarms, when and where - for the last days.": ("Wie viele Alarme, wann und wo – für die letzten Tage.", "Combien d’alarmes, quand et où – pour les derniers jours.", "Quanti allarmi, quando e dove – per gli ultimi giorni.", "Quants alarms, cura e nua – per ils ultims dis."),
+    "Filter": ("Filter", "Filtre", "Filtro", "Filter"),
+    "Only persons, only animals, a day or a word - find a recording quickly.": ("Nur Personen, nur Tiere, ein Tag oder ein Wort – eine Aufnahme schnell finden.", "Seulement des personnes, des animaux, un jour ou un mot – trouver vite un enregistrement.", "Solo persone, solo animali, un giorno o una parola – trovare subito una registrazione.", "Mo persunas, mo animals, in di u in pled – chattar svelt ina registraziun."),
+    "Favourites": ("Favoriten", "Favoris", "Preferiti", "Preferids"),
+    "⭐ keeps a recording for ever; the others are deleted when the memory is full.": ("⭐ behält eine Aufnahme für immer; die anderen werden gelöscht, wenn der Speicher voll ist.", "⭐ garde un enregistrement pour toujours ; les autres sont effacés quand la mémoire est pleine.", "⭐ tiene una registrazione per sempre; le altre vengono cancellate quando la memoria è piena.", "⭐ tegna ina registraziun per adina; las autras vegnan stizzadas, cur che la memoria è plaina."),
+    "More history": ("Mehr Verlauf", "Plus d’historique", "Altra cronologia", "Dapli cronologia"),
+    "Night timeline, animal diary, message list and log.": ("Zeitleiste der Nacht, Tier-Tagebuch, Nachrichten und Protokoll.", "Chronologie de la nuit, journal des animaux, liste des messages et journal.", "Linea del tempo della notte, diario animali, lista messaggi e registro.", "Lingia da temp da la notg, diari d’animals, glista da messadis e protocol."),
+    "Type a word - every setting is found, sorted by topic.": ("Ein Wort eintippen – jede Einstellung wird gefunden, nach Thema sortiert.", "Taper un mot – chaque réglage est trouvé, trié par thème.", "Digitare una parola – ogni impostazione viene trovata, ordinata per tema.", "Tippar in pled – mintga parameter vegn chattà, zavrà tenor tema."),
+    "Simple or Expert": ("Einfach oder Experte", "Simple ou Expert", "Semplice o Esperto", "Simpel u Expert"),
+    "«Simple» shows only the important settings - for this page. «Expert» shows all.": ("«Einfach» zeigt nur die wichtigen Einstellungen – für diese Seite. «Experte» zeigt alle.", "«Simple» ne montre que les réglages importants – pour cette page. «Expert» les montre tous.", "«Semplice» mostra solo le impostazioni importanti – per questa pagina. «Esperto» le mostra tutte.", "«Simpel» mussa mo ils parameters impurtants – per questa pagina. «Expert» mussa tuts."),
+    "Topics": ("Themen", "Thèmes", "Temi", "Temas"),
+    "Open a topic to change it. Changes are saved at once.": ("Ein Thema öffnen, um es zu ändern. Änderungen werden sofort gespeichert.", "Ouvrir un thème pour le modifier. Les changements sont enregistrés tout de suite.", "Aprire un tema per cambiarlo. Le modifiche vengono salvate subito.", "Avrir in tema per al midar. Midadas vegnan memorisadas immediat."),
+    "The «?»": ("Das «?»", "Le «?»", "Il «?»", "Il «?»"),
+    "Next to a setting: what it does and what we recommend.": ("Neben einer Einstellung: was sie tut und was wir empfehlen.", "À côté d’un réglage : ce qu’il fait et ce que nous recommandons.", "Accanto a un’impostazione: cosa fa e cosa consigliamo.", "Sper in parameter: tge ch’el fa e tge che nus recumandain."),
+    "Choose the camera, add a second one, check the thermal picture.": ("Kamera wählen, eine zweite dazunehmen, das Wärmebild prüfen.", "Choisir la caméra, en ajouter une deuxième, vérifier l’image thermique.", "Scegliere la telecamera, aggiungerne una seconda, controllare l’immagine termica.", "Tscherner la camera, agiuntar ina segunda, controllar il maletg termic."),
+    "The 3D simulator runs on a PC. Here MoveEye connects to it.": ("Der 3D-Simulator läuft auf einem PC. Hier verbindet sich MoveEye mit ihm.", "Le simulateur 3D tourne sur un PC. Ici MoveEye s’y connecte.", "Il simulatore 3D gira su un PC. Qui MoveEye si collega.", "Il simulatur 3D lavura sin in PC. Qua sa collia MoveEye cun el."),
+    "State": ("Zustand", "État", "Stato", "Stadi"),
+    "Is the simulator connected, which version, which scene.": ("Ist der Simulator verbunden, welche Version, welche Szene.", "Le simulateur est-il connecté, quelle version, quelle scène.", "Il simulatore è collegato, quale versione, quale scena.", "È il simulatur collià, tge versiun, tge scena."),
+    "Preview and control": ("Vorschau und Steuerung", "Aperçu et commande", "Anteprima e comando", "Prevista e cumond"),
+    "The picture of the simulation - move the camera, walk a person, change the weather.": ("Das Bild der Simulation – Kamera bewegen, eine Person gehen lassen, das Wetter ändern.", "L’image de la simulation – bouger la caméra, faire marcher une personne, changer la météo.", "L’immagine della simulazione – muovere la telecamera, far camminare una persona, cambiare il tempo.", "Il maletg da la simulaziun – mover la camera, laschar ir ina persuna, midar l’aura."),
+    "Tests, «Improve detection», training night - MoveEye learns without the real place.": ("Tests, «Erkennung verbessern», Trainings-Nacht – MoveEye lernt ohne den echten Platz.", "Tests, «Améliorer la détection», nuit d’entraînement – MoveEye apprend sans le vrai lieu.", "Test, «Migliorare il rilevamento», notte di allenamento – MoveEye impara senza il posto reale.", "Tests, «Meglierar la renconuschientscha», notg da trenament – MoveEye emprenda senza la vaira plazza."),
+    "Team against MoveEye": ("Team gegen MoveEye", "Équipe contre MoveEye", "Squadra contro MoveEye", "Team cunter MoveEye"),
+    "A game for guests: who gets past MoveEye unseen?": ("Ein Spiel für Gäste: wer kommt ungesehen an MoveEye vorbei?", "Un jeu pour les invités : qui passe devant MoveEye sans être vu ?", "Un gioco per ospiti: chi passa davanti a MoveEye senza essere visto?", "In gieu per giasts: tgi passa sper MoveEye senza vegnir vis?"),
+    "«Open all games»: game corner, game collection and the simulator game with one QR code.": ("«Spiele freigeben»: Spielecke, Spielesammlung und das Simulator-Spiel mit einem QR-Code.", "«Ouvrir tous les jeux» : coin jeux, collection de jeux et le jeu du simulateur avec un seul code QR.", "«Aprire tutti i giochi»: angolo giochi, raccolta di giochi e il gioco del simulatore con un codice QR.", "«Avrir tut ils gieus»: chantun da gieus, collecziun da gieus ed il gieu dal simulatur cun in code QR."),
+    "Everything explained, with a search - and a quick guide to print.": ("Alles erklärt, mit Suche – und eine Kurzanleitung zum Ausdrucken.", "Tout expliqué, avec recherche – et un guide rapide à imprimer.", "Tutto spiegato, con ricerca – e una guida rapida da stampare.", "Tut explitgà, cun tschertga – ed ina instrucziun curta per stampar."),
+    "Setup and help": ("Einrichtung und Hilfe", "Configuration et aide", "Configurazione e aiuto", "Installaziun ed agid"),
+    "Start or continue the setup, show the tours again, tip of the day.": ("Einrichtung starten oder weitermachen, Rundgänge wieder zeigen, Tipp des Tages.", "Lancer ou continuer la configuration, remontrer les visites, astuce du jour.", "Avviare o continuare la configurazione, mostrare di nuovo i tour, consiglio del giorno.", "Cumenzar u cuntinuar l’installaziun, mussar puspè ils girs, cussegl dal di."),
+    "Reset to factory settings - with a copy of the old settings first.": ("Auf Werkseinstellungen zurücksetzen – vorher mit einer Kopie der alten Einstellungen.", "Rétablir les réglages d’usine – avec d’abord une copie des anciens réglages.", "Ripristinare le impostazioni di fabbrica – prima con una copia delle vecchie impostazioni.", "Restaurar ils parameters da fabrica – avant cun ina copia dals vegls parameters."),
+    "Network test, servo test, diagnosis and more.": ("Netztest, Servo-Test, Diagnose und mehr.", "Test du réseau, test des servos, diagnostic et plus.", "Test di rete, test dei servo, diagnosi e altro.", "Test da la rait, test dals servos, diagnosa e dapli."),
+    # ---- tips & tricks
+    "Double-tap the picture = only the picture, big. Double-tap again = back.": ("Doppeltippen aufs Bild = nur das Bild, gross. Nochmals doppeltippen = zurück.", "Double toucher l’image = seulement l’image, en grand. Encore une fois = retour.", "Doppio tocco sull’immagine = solo l’immagine, grande. Di nuovo = indietro.", "Tutgar dubel il maletg = mo il maletg, grond. Anc ina giada = enavos."),
+    "Tap into the picture: the head looks there (with a pan / tilt head).": ("Ins Bild tippen: der Kopf schaut dorthin (mit Schwenk-/Neigekopf).", "Toucher l’image : la tête regarde là (avec une tête orientable).", "Toccare l’immagine: la testa guarda lì (con una testa orientabile).", "Tutgar il maletg: il chau guarda là (cun in chau che sa volver)."),
+    "«◫ View»: layout, picture size, favourite buttons and cards - for this device or for all.": ("«◫ Ansicht»: Anordnung, Bildgrösse, Lieblingsknöpfe und Karten – für dieses Gerät oder für alle.", "«◫ Affichage» : disposition, taille de l’image, boutons favoris et cartes – pour cet appareil ou pour tous.", "«◫ Vista»: disposizione, dimensione dell’immagine, pulsanti preferiti e schede – per questo dispositivo o per tutti.", "«◫ Vista»: urden, grondezza dal maletg, buttuns preferids e cartas – per quest apparat u per tuts."),
+    "⇱ or F11: full screen, e.g. for a tablet on the table.": ("⇱ oder F11: Vollbild, z. B. für ein Tablet auf dem Tisch.", "⇱ ou F11 : plein écran, p. ex. pour une tablette sur la table.", "⇱ o F11: schermo intero, p. es. per un tablet sul tavolo.", "⇱ u F11: visur cumplain, p.ex. per in tablet sin la maisa."),
+    "«Guard tonight» switches everything on for the night and off again in the morning.": ("«Heute Nacht bewachen» schaltet alles für die Nacht ein und am Morgen wieder aus.", "«Surveiller cette nuit» active tout pour la nuit et l’éteint le matin.", "«Sorvegliare stanotte» attiva tutto per la notte e lo spegne al mattino.", "«Survegliar questa notg» activescha tut per la notg e la damaun puspè deactivescha."),
+    "Before the first night: a walk test shows how far MoveEye recognises you.": ("Vor der ersten Nacht: ein Gehtest zeigt, wie weit MoveEye dich erkennt.", "Avant la première nuit : un test de passage montre jusqu’où MoveEye te reconnaît.", "Prima della prima notte: un test di passaggio mostra fin dove MoveEye ti riconosce.", "Avant l’emprima notg: in test da passar mussa fin nua che MoveEye ta renconuscha."),
+    "A PIN for disarming: three wrong PINs give a theft alarm with a picture.": ("Eine PIN fürs Ausschalten: drei falsche PINs lösen einen Diebstahl-Alarm mit Bild aus.", "Un PIN pour désactiver : trois PIN faux déclenchent une alarme vol avec image.", "Un PIN per disattivare: tre PIN sbagliati fanno scattare un allarme furto con immagine.", "In PIN per deactivar: trais PINs fallads dattan in alarm da rapina cun maletg."),
+    "Draw the road as «ignore» under Zones - that saves many false alarms.": ("Die Strasse unter Zonen als «ignorieren» einzeichnen – das spart viele Fehlalarme.", "Dessiner la route comme «ignorer» sous Zones – cela évite beaucoup de fausses alarmes.", "Disegnare la strada come «ignorare» in Zone – evita molti falsi allarmi.", "Dissegnar la via sco «ignorar» sut Zonas – quai spargna bleras alarms fallads."),
+    "⭐ keeps a recording for ever - old ones are deleted when the memory is full.": ("⭐ behält eine Aufnahme für immer – alte werden gelöscht, wenn der Speicher voll ist.", "⭐ garde un enregistrement pour toujours – les anciens sont effacés quand la mémoire est pleine.", "⭐ tiene una registrazione per sempre – le vecchie vengono cancellate quando la memoria è piena.", "⭐ tegna ina registraziun per adina – veglias vegnan stizzadas, cur che la memoria è plaina."),
+    "Mark a false alarm: MoveEye learns from it (with the simulator).": ("Einen Fehlalarm markieren: MoveEye lernt daraus (mit dem Simulator).", "Marquer une fausse alarme : MoveEye en apprend (avec le simulateur).", "Segnare un falso allarme: MoveEye ne impara (con il simulatore).", "Marcar in alarm fallà: MoveEye emprenda da quai (cun il simulatur)."),
+    "The night timeline shows the whole night at one glance.": ("Die Zeitleiste zeigt die ganze Nacht auf einen Blick.", "La chronologie montre toute la nuit d’un coup d’œil.", "La linea del tempo mostra tutta la notte in un colpo d’occhio.", "La lingia da temp mussa l’entira notg cun in sguard."),
+    "The log explains why MoveEye did something.": ("Das Protokoll erklärt, warum MoveEye etwas getan hat.", "Le journal explique pourquoi MoveEye a fait quelque chose.", "Il registro spiega perché MoveEye ha fatto qualcosa.", "Il protocol explitga pertge che MoveEye ha fatg insatge."),
+    "The «?» next to a setting explains it and says what we recommend.": ("Das «?» neben einer Einstellung erklärt sie und sagt, was wir empfehlen.", "Le «?» à côté d’un réglage l’explique et dit ce que nous recommandons.", "Il «?» accanto a un’impostazione la spiega e dice cosa consigliamo.", "Il «?» sper in parameter al explitga e di tge che nus recumandain."),
+    "The search at the top finds every setting quickly.": ("Die Suche oben findet jede Einstellung schnell.", "La recherche en haut trouve vite chaque réglage.", "La ricerca in alto trova subito ogni impostazione.", "La tschertga sisum chatta svelt mintga parameter."),
+    "«Expert» is only for this page - the other pages stay as they are.": ("«Experte» gilt nur für diese Seite – die anderen Seiten bleiben, wie sie sind.", "«Expert» ne vaut que pour cette page – les autres pages restent comme elles sont.", "«Esperto» vale solo per questa pagina – le altre pagine restano come sono.", "«Expert» vala mo per questa pagina – las autras paginas restan sco ch’ellas èn."),
+    "Keep a copy of your settings: System → 💾 Settings file → ⬇ Save settings.": ("Eine Kopie der Einstellungen behalten: System → 💾 Einstellungsdatei → ⬇ Einstellungen speichern.", "Garder une copie des réglages : Système → 💾 Fichier des réglages → ⬇ Enregistrer les réglages.", "Tenere una copia delle impostazioni: Sistema → 💾 File delle impostazioni → ⬇ Salvare le impostazioni.", "Tegnair ina copia dals parameters: Sistem → 💾 Datoteca dals parameters → ⬇ Memorisar ils parameters."),
+    "Test without the real place: day, night, weather, animals and people in the 3D simulator.": ("Ohne den echten Platz testen: Tag, Nacht, Wetter, Tiere und Menschen im 3D-Simulator.", "Tester sans le vrai lieu : jour, nuit, météo, animaux et personnes dans le simulateur 3D.", "Provare senza il posto reale: giorno, notte, tempo, animali e persone nel simulatore 3D.", "Testar senza la vaira plazza: di, notg, aura, animals e persunas en il simulatur 3D."),
+    "«Improve detection» tries changes and keeps only what is clearly better.": ("«Erkennung verbessern» probiert Änderungen aus und behält nur, was klar besser ist.", "«Améliorer la détection» essaie des changements et ne garde que ce qui est clairement meilleur.", "«Migliorare il rilevamento» prova modifiche e tiene solo ciò che è chiaramente migliore.", "«Meglierar la renconuschientscha» emprova midadas e tegna mo quai ch’è cler meglier."),
+    "Team against MoveEye: the guests try to get past MoveEye unseen.": ("Team gegen MoveEye: die Gäste versuchen, ungesehen an MoveEye vorbeizukommen.", "Équipe contre MoveEye : les invités essaient de passer devant MoveEye sans être vus.", "Squadra contro MoveEye: gli ospiti cercano di passare davanti a MoveEye senza essere visti.", "Team cunter MoveEye: ils giasts emprovan da passar sper MoveEye senza vegnir vis."),
+    "Print the quick guide (1 page) with the QR codes and keep it in the camper.": ("Die Kurzanleitung (1 Seite) mit den QR-Codes ausdrucken und ins Wohnmobil legen.", "Imprimer le guide rapide (1 page) avec les codes QR et le garder dans le camping-car.", "Stampare la guida rapida (1 pagina) con i codici QR e tenerla nel camper.", "Stampar l’instrucziun curta (1 pagina) cun ils codes QR e la metter en il camper."),
+    "See the tours and tips again: «Reset all tours» below.": ("Rundgänge und Tipps nochmals sehen: unten «Alle Rundgänge zurücksetzen».", "Revoir les visites et astuces : «Réinitialiser toutes les visites» ci-dessous.", "Rivedere i tour e i consigli: «Ripristinare tutti i tour» qui sotto.", "Vesair puspè ils girs e cussegls: sutvart «Restaurar tut ils girs»."),
+    "Factory settings: Wi-Fi, remote access, the push channel and the own AI model stay.": ("Werkseinstellungen: WLAN, Fernzugriff, der Push-Kanal und das eigene KI-Modell bleiben.", "Réglages d’usine : le Wi-Fi, l’accès à distance, le canal push et le propre modèle IA restent.", "Impostazioni di fabbrica: Wi-Fi, accesso remoto, il canale push e il modello IA proprio restano.", "Parameters da fabrica: WLAN, access a distanza, il chanal push e l’agen model IA restan."),
+    "Draw the road as «ignore»: passing cars then give no alarm.": ("Die Strasse als «ignorieren» einzeichnen: vorbeifahrende Autos lösen dann keinen Alarm aus.", "Dessiner la route comme «ignorer» : les voitures qui passent ne déclenchent alors pas d’alarme.", "Disegnare la strada come «ignorare»: le auto che passano non fanno più scattare l’allarme.", "Dissegnar la via sco «ignorar»: autos che passan na dattan lura nagin alarm."),
+    "Privacy zones are black and never recorded.": ("Privatsphäre-Zonen sind schwarz und werden nie aufgenommen.", "Les zones privées sont noires et jamais enregistrées.", "Le zone privacy sono nere e mai registrate.", "Zonas privatas èn naira e vegnan mai registradas."),
+    "A line gives an alarm only when somebody crosses it.": ("Eine Linie löst nur aus, wenn jemand sie überquert.", "Une ligne ne déclenche que si quelqu’un la traverse.", "Una linea fa scattare l’allarme solo quando qualcuno la attraversa.", "Ina lingia dat alarm mo, sch’insatgi la traversa."),
+    "Picture upside down? Settings → Camera → turn the picture.": ("Bild auf dem Kopf? Einstellungen → Kamera → Bild drehen.", "Image à l’envers ? Réglages → Caméra → tourner l’image.", "Immagine capovolta? Impostazioni → Telecamera → ruotare l’immagine.", "Maletg sin il chau? Parameters → Camera → volver il maletg."),
+    "Add a second camera (USB or network) as an overview.": ("Eine zweite Kamera (USB oder Netz) als Übersicht dazunehmen.", "Ajouter une deuxième caméra (USB ou réseau) comme vue d’ensemble.", "Aggiungere una seconda telecamera (USB o rete) come panoramica.", "Agiuntar ina segunda camera (USB u rait) sco survista."),
+    "Set up the place every time you put MoveEye somewhere new: it looks round and suggests zones.": ("Den Platz jedes Mal einrichten, wenn MoveEye an einem neuen Ort steht: es schaut sich um und schlägt Zonen vor.", "Configurer l’emplacement chaque fois que MoveEye est posé ailleurs : il regarde autour et propose des zones.", "Configurare il posto ogni volta che MoveEye è in un posto nuovo: si guarda intorno e propone zone.", "Installar la plazza mintga giada che MoveEye stat in auter lieu: el guarda enturn e propona zonas."),
+    "The waypoints of the patrol come straight from the look round.": ("Die Wegpunkte der Patrouille entstehen direkt aus dem Rundblick.", "Les points de passage de la patrouille viennent directement du tour d’horizon.", "I punti di passaggio della pattuglia nascono direttamente dalla panoramica.", "Ils puncts da via da la patruglia resultan directamain da la vista enturn."),
+    "The network test shows whether the Wi-Fi is good enough for the live picture.": ("Der Netz-Test zeigt, ob das WLAN für das Livebild reicht.", "Le test du réseau montre si le Wi-Fi suffit pour l’image en direct.", "Il test di rete mostra se il Wi-Fi basta per l’immagine live.", "Il test da la rait mussa, sch’il WLAN tanscha per il maletg live."),
+    "The diagnosis package helps the developer when something does not work.": ("Das Diagnose-Paket hilft dem Entwickler, wenn etwas nicht geht.", "Le paquet de diagnostic aide le développeur quand quelque chose ne marche pas.", "Il pacchetto di diagnosi aiuta lo sviluppatore quando qualcosa non funziona.", "Il pachet da diagnosa gida al sviluppader, sch’insatge na funcziuna betg."),
+    # ---- window tours
+    "What the camera sees right now. Double-click = only the picture.": ("Was die Kamera gerade sieht. Doppelklick = nur das Bild.", "Ce que la caméra voit maintenant. Double-clic = seulement l’image.", "Ciò che la telecamera vede ora. Doppio clic = solo l’immagine.", "Quai che la camera vesa ussa. Clic dubel = mo il maletg."),
+    "With the joystick you turn the camera head.": ("Mit dem Joystick drehst du den Kamerakopf.", "Avec le joystick tu tournes la tête de la caméra.", "Con il joystick giri la testa della telecamera.", "Cun il joystick volvas ti il chau da la camera."),
+    "Recording, photo, follow, patrol, light, infrared and thermal picture - one click each.": ("Aufnahme, Foto, Folgen, Patrouille, Licht, Infrarot und Wärmebild – je ein Klick.", "Enregistrement, photo, suivre, patrouille, lumière, infrarouge et image thermique – un clic chacun.", "Registrazione, foto, seguire, pattuglia, luce, infrarosso e immagine termica – un clic ciascuno.", "Registraziun, foto, suandar, patruglia, glisch, infracotschen e maletg termic – mintgamai in clic."),
+    "Off, Watchful (only messages) or Full (light, siren) - and everything that protects, in groups.": ("Aus, Wachsam (nur Meldungen) oder Voll (Licht, Sirene) – und alles, was schützt, in Gruppen.", "Arrêt, Vigilant (seulement des messages) ou Complet (lumière, sirène) – et tout ce qui protège, en groupes.", "Spento, Vigile (solo messaggi) o Completa (luce, sirena) – e tutto ciò che protegge, in gruppi.", "Deactivà, Vigilant (mo messadis) u Cumplain (glisch, sirena) – e tut quai che protegia, en gruppas."),
+    "Open a group to change it. Changes are saved at once.": ("Eine Gruppe öffnen, um sie zu ändern. Änderungen werden sofort gespeichert.", "Ouvrir un groupe pour le modifier. Les changements sont enregistrés tout de suite.", "Aprire un gruppo per cambiarlo. Le modifiche vengono salvate subito.", "Avrir ina gruppa per la midar. Midadas vegnan memorisadas immediat."),
+    "All other settings, sorted by topic.": ("Alle anderen Einstellungen, nach Thema sortiert.", "Tous les autres réglages, triés par thème.", "Tutte le altre impostazioni, ordinate per tema.", "Tut ils auters parameters, zavrads tenor tema."),
+    "What MoveEye did and why - the important events.": ("Was MoveEye getan hat und warum – die wichtigen Ereignisse.", "Ce que MoveEye a fait et pourquoi – les événements importants.", "Cosa ha fatto MoveEye e perché – gli eventi importanti.", "Tge che MoveEye ha fatg e pertge – ils eveniments impurtants."),
+    "Recordings, animal diary and the message list: the buttons below the log.": ("Aufnahmen, Tier-Tagebuch und Nachrichten: die Knöpfe unter dem Protokoll.", "Enregistrements, journal des animaux et liste des messages : les boutons sous le journal.", "Registrazioni, diario animali e lista messaggi: i pulsanti sotto il registro.", "Registraziuns, diari d’animals e glista da messadis: ils buttuns sut il protocol."),
+    "«Simple» shows only the important settings - for this tab. «Expert» shows all.": ("«Einfach» zeigt nur die wichtigen Einstellungen – für diesen Reiter. «Experte» zeigt alle.", "«Simple» ne montre que les réglages importants – pour cet onglet. «Expert» les montre tous.", "«Semplice» mostra solo le impostazioni importanti – per questa scheda. «Esperto» le mostra tutte.", "«Simpel» mussa mo ils parameters impurtants – per quest register. «Expert» mussa tuts."),
+    "The 3D simulator on the PC: connection, «Improve detection», settings of the simulation.": ("Der 3D-Simulator auf dem PC: Verbindung, «Erkennung verbessern», Einstellungen der Simulation.", "Le simulateur 3D sur le PC : connexion, «Améliorer la détection», réglages de la simulation.", "Il simulatore 3D sul PC: collegamento, «Migliorare il rilevamento», impostazioni della simulazione.", "Il simulatur 3D sin il PC: colliaziun, «Meglierar la renconuschientscha», parameters da la simulaziun."),
+    "What works and what is missing - with a hint what to do.": ("Was geht und was fehlt – mit einem Hinweis, was zu tun ist.", "Ce qui marche et ce qui manque – avec une indication de ce qu’il faut faire.", "Cosa funziona e cosa manca – con un’indicazione su cosa fare.", "Tge che funcziuna e tge che manca – cun in avis tge far."),
+    "Start or continue the setup, show the tours again, reset to factory settings.": ("Einrichtung starten oder weitermachen, Rundgänge wieder zeigen, auf Werkseinstellungen zurücksetzen.", "Lancer ou continuer la configuration, remontrer les visites, rétablir les réglages d’usine.", "Avviare o continuare la configurazione, mostrare di nuovo i tour, ripristinare le impostazioni di fabbrica.", "Cumenzar u cuntinuar l’installaziun, mussar puspè ils girs, restaurar ils parameters da fabrica."),
+    # ---- «?» next to the settings
+    "Motion detection is the base of everything: without it MoveEye sees nothing.": ("Die Bewegungserkennung ist die Grundlage von allem: ohne sie sieht MoveEye nichts.", "La détection de mouvement est la base de tout : sans elle MoveEye ne voit rien.", "Il rilevamento del movimento è la base di tutto: senza MoveEye non vede niente.", "La renconuschientscha da moviment è la basa da tut: senza ella na vesa MoveEye nagut."),
+    "Leave it on.": ("Eingeschaltet lassen.", "La laisser activée.", "Lasciarlo acceso.", "Laschar activà."),
+    "How small a change in the picture may be to count as movement. Higher = also small and far things, but more false alarms (grass, insects).": (
+        "Wie klein eine Änderung im Bild sein darf, um als Bewegung zu zählen. Höher = auch kleine und ferne Dinge, aber mehr Fehlalarme (Gras, Insekten).",
+        "Quelle petite modification de l’image compte comme mouvement. Plus haut = aussi les choses petites et lointaines, mais plus de fausses alarmes (herbe, insectes).",
+        "Quanto piccola può essere una modifica nell’immagine per contare come movimento. Più alto = anche cose piccole e lontane, ma più falsi allarmi (erba, insetti).",
+        "Quant pitschna ch’ina midada en il maletg dastga esser per dumbrar sco moviment. Pli aut = er chaussas pitschnas e lontanas, ma dapli alarms fallads (erva, insects)."),
+    "Start in the middle, raise it only if the walk test misses you.": ("In der Mitte beginnen, nur erhöhen, wenn der Gehtest dich verpasst.", "Commencer au milieu, ne l’augmenter que si le test de passage te rate.", "Iniziare a metà, aumentarlo solo se il test di passaggio non ti vede.", "Cumenzar en il mez, auzar mo sch’il test da passar na ta vesa betg."),
+    "The AI checks every movement: person, animal, car - or nothing. Without it every movement could give an alarm.": ("Die KI prüft jede Bewegung: Person, Tier, Auto – oder nichts. Ohne sie könnte jede Bewegung einen Alarm geben.", "L’IA vérifie chaque mouvement : personne, animal, voiture – ou rien. Sans elle chaque mouvement pourrait donner une alarme.", "L’IA controlla ogni movimento: persona, animale, auto – o niente. Senza ogni movimento potrebbe dare un allarme.", "L’IA controllescha mintga moviment: persuna, animal, auto – u nagut. Senza ella pudess mintga moviment dar in alarm."),
+    "A video of every alarm, with a few seconds before.": ("Ein Video von jedem Alarm, mit ein paar Sekunden davor.", "Une vidéo de chaque alarme, avec quelques secondes avant.", "Un video di ogni allarme, con qualche secondo prima.", "In video da mintga alarm, cun in pèr secundas avant."),
+    "On - you see later what really happened.": ("Ein – so siehst du später, was wirklich war.", "Activé – tu vois plus tard ce qui s’est vraiment passé.", "Acceso – vedi più tardi cosa è successo davvero.", "Activà – ti vesas pli tard tge ch’è propi capità."),
+    "A photo as soon as a person is recognised (smaller than a video, also in the push message).": ("Ein Foto, sobald eine Person erkannt ist (kleiner als ein Video, auch in der Push-Nachricht).", "Une photo dès qu’une personne est reconnue (plus petite qu’une vidéo, aussi dans la notification).", "Una foto appena una persona è riconosciuta (più piccola di un video, anche nella notifica).", "Ina foto, uschespert ch’ina persuna è renconuschida (pli pitschna ch’in video, er en l’avis push)."),
+    "On.": ("Ein.", "Activé.", "Acceso.", "Activà."),
+    "How much of the memory card the recordings may use. The oldest are deleted first (⭐ stay).": ("Wie viel der Speicherkarte die Aufnahmen brauchen dürfen. Die ältesten werden zuerst gelöscht (⭐ bleiben).", "Quelle part de la carte mémoire les enregistrements peuvent utiliser. Les plus anciens sont effacés d’abord (⭐ restent).", "Quanta parte della scheda di memoria possono usare le registrazioni. Le più vecchie vengono cancellate per prime (⭐ restano).", "Quant da la carta da memoria che las registraziuns dastgan duvrar. Las pli veglias vegnan stizzadas l’emprim (⭐ restan)."),
+    "About half of the free memory.": ("Etwa die Hälfte des freien Speichers.", "Environ la moitié de la mémoire libre.", "Circa la metà della memoria libera.", "Var la mesadad da la memoria libra."),
+    "Push messages to your phone at an alarm. Without them you only see the alarms on this page.": ("Push-Nachrichten aufs Handy bei einem Alarm. Ohne sie siehst du Alarme nur auf dieser Seite.", "Notifications sur ton téléphone lors d’une alarme. Sans elles tu ne vois les alarmes que sur cette page.", "Notifiche sul telefono in caso di allarme. Senza vedi gli allarmi solo su questa pagina.", "Avis push sin il telefonin tar in alarm. Senza quels vesas ti ils alarms mo sin questa pagina."),
+    "On - set up the app ntfy in the guide.": ("Ein – die App ntfy in der Einrichtung einrichten.", "Activé – configurer l’app ntfy dans la configuration.", "Acceso – configurare l’app ntfy nella configurazione.", "Activà – installar l’app ntfy en l’installaziun."),
+    "A first short message as soon as something moves, before the AI is sure.": ("Eine erste kurze Meldung, sobald sich etwas bewegt, bevor die KI sicher ist.", "Un premier court message dès que quelque chose bouge, avant que l’IA soit sûre.", "Un primo breve messaggio appena qualcosa si muove, prima che l’IA sia sicura.", "In emprim curt messadi, uschespert ch’insatge sa mova, avant che l’IA è segira."),
+    "Off if you get too many messages.": ("Aus, wenn du zu viele Meldungen bekommst.", "Désactivé si tu reçois trop de messages.", "Spento se ricevi troppi messaggi.", "Deactivà, sche ti survegns memia blers messadis."),
+    "Messages directly in this browser (without the app ntfy). Only works on https pages.": ("Meldungen direkt in diesem Browser (ohne die App ntfy). Geht nur auf https-Seiten.", "Messages directement dans ce navigateur (sans l’app ntfy). Ne marche que sur les pages https.", "Messaggi direttamente in questo browser (senza l’app ntfy). Funziona solo su pagine https.", "Messadis directamain en quest navigatur (senza l’app ntfy). Funcziuna mo sin paginas https."),
+    "Additional to ntfy, not instead.": ("Zusätzlich zu ntfy, nicht statt.", "En plus de ntfy, pas à la place.", "In aggiunta a ntfy, non al posto.", "Supplementar a ntfy, betg empè."),
+    "How the messages reach you: ntfy (app), Telegram, Pushover or a web address of your own.": ("Wie die Meldungen dich erreichen: ntfy (App), Telegram, Pushover oder eine eigene Web-Adresse.", "Comment les messages t’atteignent : ntfy (app), Telegram, Pushover ou une adresse web à toi.", "Come ti raggiungono i messaggi: ntfy (app), Telegram, Pushover o un tuo indirizzo web.", "Co ch’ils messadis ta cuntanschan: ntfy (app), Telegram, Pushover u ina atgna adressa web."),
+    "ntfy - free and simple.": ("ntfy – gratis und einfach.", "ntfy – gratuit et simple.", "ntfy – gratuito e semplice.", "ntfy – gratuit e simpel."),
+    "The address of your ntfy channel (server + topic). Like a secret channel name: who knows it gets your alarms.": ("Die Adresse deines ntfy-Kanals (Server + Thema). Wie ein geheimer Kanalname: wer ihn kennt, bekommt deine Alarme.", "L’adresse de ton canal ntfy (serveur + sujet). Comme un nom de canal secret : qui le connaît reçoit tes alarmes.", "L’indirizzo del tuo canale ntfy (server + argomento). Come un nome di canale segreto: chi lo conosce riceve i tuoi allarmi.", "L’adressa da tes chanal ntfy (server + tema). Sco in num da chanal secret: tgi ch’al enconuscha, survegn tes alarms."),
+    "Use a long random topic (the guide makes one).": ("Ein langes, zufälliges Thema verwenden (die Einrichtung macht eines).", "Utiliser un sujet long et aléatoire (la configuration en crée un).", "Usare un argomento lungo e casuale (la configurazione ne crea uno).", "Duvrar in tema lung e casual (l’installaziun fa in)."),
+    "The countdown after «arm» - time to leave the picture without an alarm.": ("Der Countdown nach dem Einschalten – Zeit, um ohne Alarm aus dem Bild zu gehen.", "Le compte à rebours après l’activation – le temps de quitter l’image sans alarme.", "Il conto alla rovescia dopo l’attivazione – il tempo per uscire dall’immagine senza allarme.", "Il countdown suenter l’activar – temp per bandunar il maletg senza alarm."),
+    "30 to 60 seconds.": ("30 bis 60 Sekunden.", "30 à 60 secondes.", "30-60 secondi.", "30 fin 60 secundas."),
+    "The siren at an alarm (only in the protection level «Full»).": ("Die Sirene bei einem Alarm (nur in der Schutzstufe «Voll»).", "La sirène lors d’une alarme (seulement au niveau de protection «Complet»).", "La sirena in caso di allarme (solo nel livello di protezione «Completa»).", "La sirena tar in alarm (mo en il stgalim da protecziun «Cumplain»)."),
+    "On for theft protection, off at the campsite at night (neighbours).": ("Ein gegen Diebstahl, aus auf dem Campingplatz in der Nacht (Nachbarn).", "Activée contre le vol, désactivée au camping la nuit (voisins).", "Accesa contro il furto, spenta al campeggio di notte (vicini).", "Activà cunter rapina, deactivà sin il camping la notg (vischins)."),
+    "How loud the siren is.": ("Wie laut die Sirene ist.", "Le volume de la sirène.", "Quanto è forte la sirena.", "Quant ferm che la sirena è."),
+    "Test it once with the light and siren test.": ("Einmal mit dem Licht- und Sirenen-Test ausprobieren.", "L’essayer une fois avec le test lumière et sirène.", "Provarla una volta con il test luce e sirena.", "L’emprovar ina giada cun il test da glisch e sirena."),
+    "When the white light goes on by itself: at an alarm, at night or never.": ("Wann das weisse Licht von selbst angeht: bei einem Alarm, in der Nacht oder nie.", "Quand la lumière blanche s’allume toute seule : lors d’une alarme, la nuit ou jamais.", "Quando la luce bianca si accende da sola: in caso di allarme, di notte o mai.", "Cura che la glisch alva s’envida da sasez: tar in alarm, la notg u mai."),
+    "At an alarm - it scares and gives a good picture.": ("Bei einem Alarm – es schreckt ab und gibt ein gutes Bild.", "Lors d’une alarme – elle effraie et donne une bonne image.", "In caso di allarme – spaventa e dà una buona immagine.", "Tar in alarm – quai stermenta e dat in bun maletg."),
+    "Infrared light: invisible for people and animals, the camera sees in the dark with it.": ("Infrarot-Licht: unsichtbar für Menschen und Tiere, die Kamera sieht damit im Dunkeln.", "Lumière infrarouge : invisible pour les personnes et les animaux, la caméra voit avec elle dans le noir.", "Luce infrarossa: invisibile per persone e animali, la telecamera vede con essa al buio.", "Glisch infracotschna: nunvisibla per umans ed animals, la camera vesa cun quella en l’stgir."),
+    "Automatic at night.": ("Automatisch in der Nacht.", "Automatique la nuit.", "Automatica di notte.", "Automatic la notg."),
+    "The head follows a recognised person.": ("Der Kopf folgt einer erkannten Person.", "La tête suit une personne reconnue.", "La testa segue una persona riconosciuta.", "Il chau suonda ina persuna renconuschida."),
+    "On if you have a pan / tilt head.": ("Ein, wenn du einen Schwenk-/Neigekopf hast.", "Activé si tu as une tête orientable.", "Acceso se hai una testa orientabile.", "Activà, sche ti has in chau che sa volver."),
+    "The head follows everything that moves (also animals, branches).": ("Der Kopf folgt allem, was sich bewegt (auch Tieren, Ästen).", "La tête suit tout ce qui bouge (aussi animaux, branches).", "La testa segue tutto ciò che si muove (anche animali, rami).", "Il chau suonda tut quai che sa mova (er animals, roms)."),
+    "Off - «follow persons» is calmer.": ("Aus – «Personen folgen» ist ruhiger.", "Désactivé – «suivre les personnes» est plus calme.", "Spento – «seguire le persone» è più calmo.", "Deactivà – «suandar persunas» è pli quiet."),
+    "The head drives through the saved points and looks round the place by itself.": ("Der Kopf fährt die gespeicherten Punkte ab und schaut sich von selbst um.", "La tête parcourt les points enregistrés et regarde autour toute seule.", "La testa percorre i punti salvati e si guarda intorno da sola.", "Il chau va tras ils puncts memorisads e guarda enturn da sasez."),
+    "On when the place is bigger than the picture.": ("Ein, wenn der Platz grösser ist als das Bild.", "Activé si l’emplacement est plus grand que l’image.", "Acceso se il posto è più grande dell’immagine.", "Activà, sche la plazza è pli gronda ch’il maletg."),
+    "A short message in the morning: what happened in the night, with the best pictures.": ("Eine kurze Meldung am Morgen: was in der Nacht war, mit den besten Bildern.", "Un court message le matin : ce qui s’est passé la nuit, avec les meilleures images.", "Un breve messaggio al mattino: cosa è successo di notte, con le immagini migliori.", "In curt messadi la damaun: tge ch’è capità la notg, cun ils meglinders maletgs."),
+    "The end of the night time: the report comes then, «Guard tonight» ends then.": ("Das Ende der Nachtzeit: dann kommt der Bericht, dann endet «Heute Nacht bewachen».", "La fin des heures de nuit : le rapport arrive alors, «Surveiller cette nuit» se termine alors.", "La fine delle ore notturne: allora arriva il rapporto, allora finisce «Sorvegliare stanotte».", "La fin dal temp da notg: lura vegn il rapport, lura finescha «Survegliar questa notg»."),
+    "The time you usually get up.": ("Die Zeit, zu der du meistens aufstehst.", "L’heure à laquelle tu te lèves d’habitude.", "L’ora in cui di solito ti alzi.", "L’ura che ti levas per ordinari."),
+    "Collects the best picture of every animal visit by itself.": ("Sammelt von selbst das beste Bild jedes Tierbesuchs.", "Collectionne tout seul la meilleure image de chaque visite d’animal.", "Raccoglie da solo la migliore immagine di ogni visita di animali.", "Rimna da sasez il meglier maletg da mintga visita d’animals."),
+    "On - it costs little memory.": ("Ein – es braucht wenig Speicher.", "Activé – cela prend peu de mémoire.", "Acceso – occupa poca memoria.", "Activà – quai dovra pauca memoria."),
+    "Fewer pictures while all is quiet: the battery lasts longer, the reaction is a little slower.": ("Weniger Bilder, solange alles ruhig ist: der Akku hält länger, die Reaktion ist etwas langsamer.", "Moins d’images tant que tout est calme : la batterie dure plus longtemps, la réaction est un peu plus lente.", "Meno immagini finché tutto è tranquillo: la batteria dura di più, la reazione è un po’ più lenta.", "Pli paucs maletgs, uschè ditg che tut è quiet: l’accu tegna pli ditg, la reacziun è in pau pli plauna."),
+    "On with a battery, off with a power supply.": ("Ein mit Akku, aus mit Netzteil.", "Activé avec une batterie, désactivé sur secteur.", "Acceso con batteria, spento con alimentatore.", "Activà cun accu, deactivà cun alimentaziun."),
+    "New versions are installed by themselves (only signed ones).": ("Neue Versionen werden von selbst installiert (nur signierte).", "Les nouvelles versions s’installent toutes seules (seulement signées).", "Le nuove versioni vengono installate da sole (solo firmate).", "Novas versiuns vegnan installadas da sasez (mo suttascrittas)."),
+    "On if a thermal camera is connected.": ("Ein, wenn eine Wärmebildkamera angeschlossen ist.", "Activé si une caméra thermique est branchée.", "Acceso se è collegata una termocamera.", "Activà, sch’ina camera termica è colliada."),
+    "An alarm from the thermal picture alone (warm body without movement in the normal picture).": ("Ein Alarm nur aus dem Wärmebild (warmer Körper ohne Bewegung im normalen Bild).", "Une alarme seulement à partir de l’image thermique (corps chaud sans mouvement dans l’image normale).", "Un allarme solo dall’immagine termica (corpo caldo senza movimento nell’immagine normale).", "In alarm mo dal maletg termic (corp chaud senza moviment en il maletg normal)."),
+    "On at night without light.": ("Ein in der Nacht ohne Licht.", "Activé la nuit sans lumière.", "Acceso di notte senza luce.", "Activà la notg senza glisch."),
+    "An alarm when it is loud (the microphone).": ("Ein Alarm, wenn es laut ist (das Mikrofon).", "Une alarme quand c’est bruyant (le micro).", "Un allarme quando c’è rumore (il microfono).", "In alarm, sch’igl è canera (il microfon)."),
+    "Off at a busy campsite.": ("Aus auf einem belebten Campingplatz.", "Désactivé dans un camping animé.", "Spento in un campeggio affollato.", "Deactivà sin in camping animà."),
+    "The brighter night picture, switched on by itself when it gets dark.": ("Das hellere Nachtbild, schaltet von selbst ein, wenn es dunkel wird.", "L’image de nuit plus claire, activée toute seule quand il fait sombre.", "L’immagine notturna più chiara, si accende da sola quando fa buio.", "Il maletg da notg pli cler, s’activescha da sasez, cur ch’i vegn stgir."),
+    "Brightens the picture at dusk.": ("Hellt das Bild in der Dämmerung auf.", "Éclaircit l’image au crépuscule.", "Schiarisce l’immagine al crepuscolo.", "Fa pli cler il maletg a l’embrunir."),
+    "The name in the push messages and on the page - helpful with several devices.": ("Der Name in den Push-Nachrichten und auf der Seite – hilfreich mit mehreren Geräten.", "Le nom dans les notifications et sur la page – utile avec plusieurs appareils.", "Il nome nelle notifiche e sulla pagina – utile con più dispositivi.", "Il num en ils avis push e sin la pagina – nizzaivel cun plirs apparats."),
+    "Short, e.g. «Camper» or «Garden».": ("Kurz, z. B. «Wohnmobil» oder «Garten».", "Court, p. ex. «Camping-car» ou «Jardin».", "Breve, p. es. «Camper» o «Giardino».", "Curt, p.ex. «Camper» u «Curtin»."),
+    "Which network MoveEye uses: home Wi-Fi, its own Wi-Fi or automatic.": ("Welches Netz MoveEye nutzt: Heim-WLAN, eigenes WLAN oder automatisch.", "Quel réseau MoveEye utilise : Wi-Fi de la maison, son propre Wi-Fi ou automatique.", "Quale rete usa MoveEye: Wi-Fi di casa, il proprio Wi-Fi o automatico.", "Tge rait che MoveEye dovra: WLAN da chasa, l’agen WLAN u automatic."),
+    "Automatic.": ("Automatisch.", "Automatique.", "Automatico.", "Automatic."),
+    "The name of the own Wi-Fi of MoveEye (when there is no other network).": ("Der Name des eigenen WLANs von MoveEye (wenn kein anderes Netz da ist).", "Le nom du propre Wi-Fi de MoveEye (quand il n’y a pas d’autre réseau).", "Il nome del Wi-Fi proprio di MoveEye (quando non c’è un’altra rete).", "Il num da l’agen WLAN da MoveEye (sch’i na dat nagina autra rait)."),
+    "Leave it as it is.": ("So lassen.", "Le laisser tel quel.", "Lasciarlo com’è.", "Laschar uschia."),
+    "How many explanations appear the first time something is opened.": ("Wie viele Erklärungen beim ersten Öffnen erscheinen.", "Combien d’explications apparaissent à la première ouverture.", "Quante spiegazioni appaiono alla prima apertura.", "Quantas explicaziuns che cumparan a l’emprima avertura."),
+    "«Normal»; «Off» when you know MoveEye.": ("«Normal»; «Aus», wenn du MoveEye kennst.", "«Normal» ; «Arrêt» quand tu connais MoveEye.", "«Normali»; «Spento» quando conosci MoveEye.", "«Normal»; «Deactivà», sche ti enconuschas MoveEye."),
+    "What MoveEye is for - «Simple» then shows only the settings that fit.": ("Wofür MoveEye da ist – «Einfach» zeigt dann nur die passenden Einstellungen.", "À quoi sert MoveEye – «Simple» ne montre alors que les réglages qui conviennent.", "A cosa serve MoveEye – «Semplice» mostra poi solo le impostazioni adatte.", "Per tge che MoveEye è – «Simpel» mussa lura mo ils parameters adattads."),
+    "Choose it in the guide.": ("In der Einrichtung wählen.", "Le choisir dans la configuration.", "Sceglierlo nella configurazione.", "Tscherner en l’installaziun."),
+    "Every page shows its tour once on the first visit. The «?» at the top starts it again.": ("Jede Seite zeigt ihren Rundgang einmal beim ersten Besuch. Das «?» oben startet ihn wieder.", "Chaque page montre sa visite une fois à la première ouverture. Le «?» en haut la relance.", "Ogni pagina mostra il suo tour una volta alla prima visita. Il «?» in alto lo riavvia.", "Mintga pagina mussa ses gir ina giada a l’emprima visita. Il «?» sisum al cumenza puspè."),
+    "On while you get to know MoveEye.": ("Ein, solange du MoveEye kennenlernst.", "Activé tant que tu découvres MoveEye.", "Acceso finché impari a conoscere MoveEye.", "Activà, uschè ditg che ti emprendas d’enconuscher MoveEye."),
+    "Once a day a tip about a function you have not used yet.": ("Einmal am Tag ein Tipp zu einer Funktion, die du noch nicht benutzt hast.", "Une fois par jour une astuce sur une fonction que tu n’as pas encore utilisée.", "Una volta al giorno un consiglio su una funzione che non hai ancora usato.", "Ina giada al di in cussegl davart ina funcziun che ti n’has anc betg duvrà."),
+    "Alarm when the camera is covered, turned away or the device is moved.": ("Alarm, wenn die Kamera abgedeckt, weggedreht oder das Gerät bewegt wird.", "Alarme quand la caméra est couverte, détournée ou l’appareil déplacé.", "Allarme quando la telecamera viene coperta, girata o il dispositivo spostato.", "Alarm, sche la camera vegn cuverta, volvida davent u l’apparat muventà."),
+    "Recordings older than this are deleted by themselves (0 = keep until the memory is full).": ("Ältere Aufnahmen werden von selbst gelöscht (0 = behalten, bis der Speicher voll ist).", "Les enregistrements plus anciens sont effacés tout seuls (0 = garder jusqu’à ce que la mémoire soit pleine).", "Le registrazioni più vecchie vengono cancellate da sole (0 = tenere finché la memoria è piena).", "Registraziuns pli veglias vegnan stizzadas da sasez (0 = tegnair fin che la memoria è plaina)."),
+    "14 to 30 days.": ("14 bis 30 Tage.", "14 à 30 jours.", "14-30 giorni.", "14 fin 30 dis."),
+    "A picture in the push message.": ("Ein Bild in der Push-Nachricht.", "Une image dans la notification.", "Un’immagine nella notifica.", "In maletg en l’avis push."),
+    "On - you see at once what it is.": ("Ein – du siehst sofort, was es ist.", "Activé – tu vois tout de suite ce que c’est.", "Acceso – vedi subito cos’è.", "Activà – ti vesas immediat tge ch’igl è."),
+    "Below a battery level MoveEye saves power by itself (fewer pictures, the AI less often).": ("Unter einem Akkustand spart MoveEye von selbst Strom (weniger Bilder, die KI seltener).", "Sous un niveau de batterie, MoveEye économise tout seul (moins d’images, l’IA moins souvent).", "Sotto un livello di batteria MoveEye risparmia da solo (meno immagini, l’IA meno spesso).", "Sut in stadi da l’accu spargna MoveEye da sasez energia (pli paucs maletgs, l’IA pli darar)."),
+    "On with a battery.": ("Ein mit Akku.", "Activé avec une batterie.", "Acceso con batteria.", "Activà cun accu."),
+    "The password is only accepted over a secure connection (https, the device itself or Tailscale).": ("Das Passwort wird nur über eine sichere Verbindung angenommen (https, das Gerät selbst oder Tailscale).", "Le mot de passe n’est accepté que par une connexion sécurisée (https, l’appareil lui-même ou Tailscale).", "La password viene accettata solo tramite una connessione sicura (https, il dispositivo stesso o Tailscale).", "Il pled-clav vegn acceptà mo sur ina colliaziun segira (https, l’apparat sez u Tailscale)."),
+    "On when you use MoveEye from outside.": ("Ein, wenn du MoveEye von aussen benutzt.", "Activé si tu utilises MoveEye depuis l’extérieur.", "Acceso se usi MoveEye dall’esterno.", "Activà, sche ti duvras MoveEye da dadora."),
+    "Warns when the lens is dirty, wet or covered.": ("Warnt, wenn die Linse schmutzig, nass oder abgedeckt ist.", "Avertit quand l’objectif est sale, mouillé ou couvert.", "Avvisa quando l’obiettivo è sporco, bagnato o coperto.", "Avertescha, sche la lentilla è maltschecha, bletscha u cuverta."),
+    "Weather forecast and warnings for the place (needs the location).": ("Wettervorhersage und Warnungen für den Ort (braucht den Standort).", "Prévisions météo et alertes pour le lieu (il faut la position).", "Previsioni meteo e avvisi per il luogo (serve la posizione).", "Previsiun da l’aura ed avertiments per il lieu (dovra la posiziun)."),
+    "Writes the location into the photos.": ("Schreibt den Standort in die Fotos.", "Écrit la position dans les photos.", "Scrive la posizione nelle foto.", "Scriva la posiziun en las fotos."),
+    "Off if you share pictures.": ("Aus, wenn du Bilder teilst.", "Désactivé si tu partages des images.", "Spento se condividi immagini.", "Deactivà, sche ti partas maletgs."),
+    "Which loudspeaker plays the siren and the sounds.": ("Welcher Lautsprecher die Sirene und die Töne spielt.", "Quel haut-parleur joue la sirène et les sons.", "Quale altoparlante suona la sirena e i suoni.", "Tge autpledader che suna la sirena ed ils tuns."),
+    "Test it with the light and siren test.": ("Mit dem Licht- und Sirenen-Test ausprobieren.", "L’essayer avec le test lumière et sirène.", "Provarlo con il test luce e sirena.", "L’emprovar cun il test da glisch e sirena."),
+    "Turns the picture when the camera is mounted upside down or on its side.": ("Dreht das Bild, wenn die Kamera auf dem Kopf oder seitlich montiert ist.", "Tourne l’image quand la caméra est montée à l’envers ou de côté.", "Ruota l’immagine quando la telecamera è montata capovolta o di lato.", "Volva il maletg, sche la camera è montada sin il chau u da la vart."),
+    "Look at the live picture and choose what is upright.": ("Das Livebild anschauen und wählen, was aufrecht ist.", "Regarder l’image en direct et choisir ce qui est droit.", "Guardare l’immagine live e scegliere ciò che è dritto.", "Guardar il maletg live e tscherner quai ch’è dretg."),
+    # ---- steps, hardware, features
+    "Basics": ("Grundlagen", "Bases", "Base", "Basa"),
+    "Push messages to the phone": ("Push-Nachrichten aufs Handy", "Notifications sur le téléphone", "Notifiche sul telefono", "Avis push sin il telefonin"),
+    "Camera test and place": ("Kamera-Test und Platz", "Test de la caméra et emplacement", "Test della telecamera e posto", "Test da la camera e plazza"),
+    "Fine-tune the zones": ("Zonen fein einstellen", "Affiner les zones", "Regolare le zone", "Fintgar las zonas"),
+    "Protection and walk test": ("Schutz und Gehtest", "Protection et test de passage", "Protezione e test di passaggio", "Protecziun e test da passar"),
+    "Night time and schedules": ("Nachtzeit und Zeitpläne", "Heures de nuit et horaires", "Ore notturne e orari", "Temp da notg e plans da temp"),
+    "Light and siren test": ("Licht- und Sirenen-Test", "Test lumière et sirène", "Test luce e sirena", "Test da glisch e sirena"),
+    "Head and calibration": ("Kopf und Kalibrierung", "Tête et calibrage", "Testa e calibrazione", "Chau e calibraziun"),
+    "3D simulator": ("3D-Simulator", "Simulateur 3D", "Simulatore 3D", "Simulatur 3D"),
+    "loudspeaker": ("Lautsprecher", "haut-parleur", "altoparlante", "autpledader"),
+    "pan / tilt head": ("Schwenk-/Neigekopf", "tête orientable", "testa orientabile", "chau che sa volver"),
+    "thermal camera": ("Wärmebildkamera", "caméra thermique", "termocamera", "camera termica"),
+    "battery (UPS)": ("Akku (USV)", "batterie (ASI)", "batteria (UPS)", "accu (USV)"),
+    "MoveEye looks round once and suggests zones, paths and the things to guard.": ("MoveEye schaut sich einmal um und schlägt Zonen, Wege und die bewachten Sachen vor.", "MoveEye regarde une fois autour de lui et propose des zones, des chemins et les objets à surveiller.", "MoveEye si guarda intorno una volta e propone zone, percorsi e gli oggetti da sorvegliare.", "MoveEye guarda enturn ina giada e propona zonas, sendas e las chaussas da survegliar."),
+    "Walk past the camera like a visitor: MoveEye beeps at every detection and shows how far it sees.": ("Wie ein Besucher an der Kamera vorbeigehen: MoveEye piepst bei jeder Erkennung und zeigt, wie weit es sieht.", "Passer devant la caméra comme un visiteur : MoveEye bipe à chaque détection et montre jusqu’où il voit.", "Passare davanti alla telecamera come un visitatore: MoveEye suona a ogni rilevamento e mostra fin dove vede.", "Ir sper la camera sco in visitader: MoveEye pipa tar mintga renconuschientscha e mussa fin nua ch’el vesa."),
+    "Draw areas into the picture: ignore the road, privacy, the sleeping place for the wake-up alarm.": ("Bereiche ins Bild zeichnen: die Strasse ignorieren, Privatsphäre, den Schlafplatz für den Wecker.", "Dessiner des zones dans l’image : ignorer la route, la sphère privée, le lieu de sommeil pour le réveil.", "Disegnare zone nell’immagine: ignorare la strada, la privacy, il posto letto per la sveglia.", "Dissegnar zonas en il maletg: ignorar la via, la sfera privata, la plazza da durmir per il svegliarin."),
+    "The best picture of every animal visit, collected by itself - every day on one page.": ("Das beste Bild jedes Tierbesuchs, von selbst gesammelt – jeder Tag auf einer Seite.", "La meilleure image de chaque visite d’animal, collectée toute seule – chaque jour sur une page.", "La migliore immagine di ogni visita di animali, raccolta da sola – ogni giorno su una pagina.", "Il meglier maletg da mintga visita d’animals, rimnà da sasez – mintga di sin ina pagina."),
+    "Quiz, werewolf and connect four for the phones in the same Wi-Fi - for the campfire.": ("Quiz, Werwolf und Vier gewinnt für die Handys im gleichen WLAN – fürs Lagerfeuer.", "Quiz, loup-garou et puissance quatre pour les téléphones dans le même Wi-Fi – pour le feu de camp.", "Quiz, lupo mannaro e forza quattro per i telefoni nella stessa Wi-Fi – per il falò.", "Quiz, luf ed quatter en lingia per ils telefonins en il medem WLAN – per il fieu dal champ."),
+    "Schedules": ("Zeitpläne", "Horaires", "Orari", "Plans da temp"),
+    "Switch features on and off by themselves, e.g. the protection every night from 22:00.": ("Funktionen von selbst ein- und ausschalten, z. B. den Schutz jede Nacht ab 22:00.", "Activer et désactiver des fonctions toutes seules, p. ex. la protection chaque nuit dès 22:00.", "Accendere e spegnere funzioni da sole, p. es. la protezione ogni notte dalle 22:00.", "Activar e deactivar funcziuns da sasez, p.ex. la protecziun mintga notg a partir da las 22:00."),
+    "Copy the recordings away from the device (cloud, USB stick) - a thief cannot delete them then.": ("Die Aufnahmen vom Gerät wegkopieren (Cloud, USB-Stick) – ein Dieb kann sie dann nicht löschen.", "Copier les enregistrements hors de l’appareil (cloud, clé USB) – un voleur ne peut alors pas les effacer.", "Copiare le registrazioni fuori dal dispositivo (cloud, chiavetta USB) – un ladro non può poi cancellarle.", "Copiar las registraziuns davent da l’apparat (cloud, stick USB) – in lader na las po lura betg stizzar."),
+    "Wakes you with a melody and light; wave = snooze, sit up = off.": ("Weckt dich mit Melodie und Licht; winken = schlummern, aufsitzen = aus.", "Te réveille avec une mélodie et de la lumière ; faire signe = répéter, s’asseoir = arrêt.", "Ti sveglia con melodia e luce; salutare = posticipare, sedersi = spento.", "Ta sveglia cun melodia e glisch; far cun il maun = durmigliar, seser si = deactivà."),
+    "Test MoveEye on the PC without the real place: day, night, weather, animals, people.": ("MoveEye auf dem PC ohne den echten Platz testen: Tag, Nacht, Wetter, Tiere, Menschen.", "Tester MoveEye sur le PC sans le vrai lieu : jour, nuit, météo, animaux, personnes.", "Provare MoveEye sul PC senza il posto reale: giorno, notte, tempo, animali, persone.", "Testar MoveEye sin il PC senza la vaira plazza: di, notg, aura, animals, umans."),
+    "PIN for disarming": ("PIN fürs Ausschalten", "PIN pour désactiver", "PIN per disattivare", "PIN per deactivar"),
+    "A thief cannot simply switch MoveEye off - and three wrong PINs give an alarm.": ("Ein Dieb kann MoveEye nicht einfach ausschalten – und drei falsche PINs lösen einen Alarm aus.", "Un voleur ne peut pas simplement éteindre MoveEye – et trois PIN faux déclenchent une alarme.", "Un ladro non può semplicemente spegnere MoveEye – e tre PIN sbagliati fanno scattare un allarme.", "In lader na po betg simplamain deactivar MoveEye – e trais PINs fallads dattan in alarm."),
+    "Messages in the browser": ("Meldungen im Browser", "Messages dans le navigateur", "Messaggi nel browser", "Messadis en il navigatur"),
+    "Alarm messages directly in this browser, without the app.": ("Alarm-Meldungen direkt in diesem Browser, ohne die App.", "Messages d’alarme directement dans ce navigateur, sans l’app.", "Messaggi di allarme direttamente in questo browser, senza l’app.", "Messadis d’alarm directamain en quest navigatur, senza l’app."),
+    "Quick guide to print": ("Kurzanleitung zum Ausdrucken", "Guide rapide à imprimer", "Guida rapida da stampare", "Instrucziun curta per stampar"),
+    "One page with the QR codes - for the camper or the neighbours.": ("Eine Seite mit den QR-Codes – fürs Wohnmobil oder die Nachbarn.", "Une page avec les codes QR – pour le camping-car ou les voisins.", "Una pagina con i codici QR – per il camper o i vicini.", "Ina pagina cun ils codes QR – per il camper u ils vischins."),
+    "Tour of a page on its first visit (dims the screen and shows the controls one after another)": ("Rundgang beim ersten Besuch einer Seite (dunkelt ab und zeigt die Bedienelemente nacheinander)", "Visite d’une page à la première ouverture (assombrit l’écran et montre les commandes l’une après l’autre)", "Tour di una pagina alla prima visita (oscura lo schermo e mostra i comandi uno dopo l’altro)", "Gir tras ina pagina a l’emprima visita (fa stgir il visur e mussa ils elements da manaschar in suenter l’auter)"),
+    "Tip of the day (a function you have not used yet)": ("Tipp des Tages (eine Funktion, die du noch nicht benutzt hast)", "Astuce du jour (une fonction que tu n’as pas encore utilisée)", "Consiglio del giorno (una funzione che non hai ancora usato)", "Cussegl dal di (ina funcziun che ti n’has anc betg duvrà)"),
+    "not possible in operator mode": ("im Bedienermodus nicht möglich", "impossible en mode opérateur", "non possibile in modalità operatore", "betg pussaivel en il modus d’operatur"),
+    "Default": ("Standard", "Par défaut", "Predefinito", "Standard"),
+    "type the word to confirm": ("zum Bestätigen das Wort eintippen", "taper le mot pour confirmer", "digitare la parola per confermare", "tippar il pled per confermar"),
+    "wrong password": ("falsches Passwort", "mot de passe incorrect", "password sbagliata", "pled-clav fallà"),
+    "wrong PIN": ("falsche PIN", "PIN incorrect", "PIN sbagliato", "PIN fallà"),
+    "In depth": ("Ausgiebig", "Complet", "Completo", "Detaglià"),
+    "Fast updates (development)": ("Schnelle Updates (Entwicklung)", "Mises à jour rapides (développement)", "Aggiornamenti rapidi (sviluppo)", "Actualisaziuns svelts (svilup)"),
+    "no battery": ("kein Akku", "pas de batterie", "nessuna batteria", "nagin accu"),
+    "Powerbank capacity": ("Kapazität der Powerbank", "Capacité de la batterie externe", "Capacità del powerbank", "Capacitad da la powerbank"),
+    "🔋 Charged full now": ("🔋 Jetzt voll geladen", "🔋 Chargée à fond maintenant", "🔋 Carica piena ora", "🔋 Ussa chargià cumplain"),
+    "Quick": ("Schnell", "Rapide", "Veloce", "Svelt"),
+}
+for _k, _v in _HX_GUIDE2.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# ---- the manual: one chapter «Einrichtung, Rundgänge und Tipps» in every language (before «Tipps») ---------------------
+_HELP_GUIDE2 = {
+    "de": '<section id="guide2" data-icon="🧭"><h2>Einrichtung, Rundgänge und Tipps</h2><ul>'
+          '<li><b>Einrichtung:</b> beim ersten Start (und nach dem Zurücksetzen) fragt MoveEye «Schnell (ca. 5 Min.) oder ausgiebig?». <b>Schnell:</b> Grundlagen (Sprache, Gerätename, Passwort, Uhrzeit und Ort), Push-Nachrichten aufs Handy (ntfy mit QR-Code und Test-Nachricht), Kamera-Test und «Platz einrichten», Schutz-Zustand und Gehtest. <b>Ausgiebig</b> dazu: Einfach oder Experte als Standard und wofür MoveEye da ist, Zonen, Nachtzeit und Zeitpläne, Licht- und Sirenen-Test, Kopf und Drehrichtung, KI-Modell, Wärmebild, Akku, 3D-Simulator, Rundgänge und Tipps.</li>'
+          '<li>Jeder Schritt lässt sich überspringen; ein Balken zeigt, wie weit du bist. Fehlt ein Teil (Licht, Lautsprecher, Kopf, Wärmebild, Akku), wird sein Schritt von selbst übersprungen. «Später weitermachen» merkt sich den Schritt auf dem Gerät – weiter unter Mehr → «Einrichtung weitermachen», auch von einem anderen Handy oder im Fenster (Reiter Mehr → «🧭 Einrichtung»). Wer eine andere Seite öffnet (z. B. «Platz einrichten»), kommt mit «↩ Zurück zur Einrichtung» zurück.</li>'
+          '<li><b>Rundgänge:</b> beim ersten Besuch eines Reiters wird der Bildschirm abgedunkelt und die wichtigsten Bedienelemente werden nacheinander gezeigt (Weiter / Überspringen). Das «?» oben startet den Rundgang der Seite jederzeit. Ein- und ausschalten: Mehr → «Rundgang beim ersten Besuch einer Seite» (oder Einstellungen → Setup); «Alle Rundgänge zurücksetzen» zeigt alle wieder. Im Fenster: ein farbiger Rahmen und ein Textfeld pro Schritt.</li>'
+          '<li><b>Einfach / Experte pro Seite:</b> die Wahl in der Einrichtung gilt für alle Seiten; jede Seite (Schutz, Einstellungen, Simulator, Aufnahmen, Zonen, Kameras, Platz, Werkzeuge) kann oben selbst umschalten. <b>Tipps & Tricks:</b> eine Karte zum Aufklappen mit 2–3 Tipps passend zur Stufe. <b>«?» bei einer Einstellung:</b> was sie tut, unsere Empfehlung und der Standardwert.</li>'
+          '<li><b>Tipp des Tages:</b> einmal am Tag auf der Live-Seite ein Tipp zu einer Funktion, die du noch nicht benutzt hast (z. B. Zonen, Gehtest, Tier-Tagebuch, Zeitpläne). Ausschalten in der Karte oder unter Mehr.</li>'
+          '<li><b>Auf Werkseinstellungen zurücksetzen</b> (Mehr → System, Einstellungen → System → Einstellungsdatei, im Fenster Reiter Mehr): alle Einstellungen, Zonen, Zeitpläne, Wegpunkte, Passwort, Benutzer, PIN und der Platz gehen zurück auf den Standard, danach startet die Einrichtung. <b>Es bleiben:</b> WLAN und eigenes WLAN, Fernzugriff (Tailscale), der Push-Kanal (ntfy-Server und -Thema), die Update-Einstellungen (auch «Testmodus: neue Versionen sofort»), das eigene KI-Modell und was es gelernt hat, die Sprache. <b>Gelöscht werden:</b> alle Aufnahmen und Fotos, das Tier-Tagebuch und das Protokoll. Zum Bestätigen das Passwort (oder die PIN) und das Wort «ZURÜCKSETZEN» eintippen. Vorher wird eine Kopie der alten Einstellungen gespeichert (motionwatch_settings.before_reset_….json) – unter Mehr → System herunterladen und bei Bedarf unter System → «Einstellungen laden» wieder einspielen.</li></ul></section>\n\n',
+    "en": '<section id="guide2" data-icon="🧭"><h2>Setup, tours and tips</h2><ul>'
+          '<li><b>Setup:</b> at the first start (and after a reset) MoveEye asks «Quick (about 5 min.) or thorough?». <b>Quick:</b> basics (language, device name, password, time and place), push messages to the phone (ntfy with QR code and test message), camera test and «Set up the place», state of the protection and walk test. <b>Thorough</b> adds: Simple or Expert as the default and what MoveEye is for, zones, night time and schedules, light and siren test, head and turning direction, AI model, thermal camera, battery, 3D simulator, tours and tips.</li>'
+          '<li>Every step can be skipped; a bar shows how far you are. When a part is missing (light, loudspeaker, head, thermal camera, battery) its step is skipped by itself. «Continue later» keeps the step on the device – continue under More → «Continue the setup», also from another phone or in the window (tab More → «🧭 Setup»). Whoever opens another page (e.g. «Set up the place») comes back with «↩ Back to the setup».</li>'
+          '<li><b>Tours:</b> on the first visit of a tab the screen is dimmed and the most important controls are shown one after another (Next / Skip). The «?» at the top starts the tour of the page at any time. Switch on / off: More → «Tour of a page on its first visit» (or Settings → Setup); «Reset all tours» shows all of them again. In the window: a coloured frame and a text box per step.</li>'
+          '<li><b>Simple / Expert per page:</b> the choice in the setup is the default of every page; every page (Protection, Settings, Simulator, Recordings, Zones, Cameras, Place, Tools) can switch by itself at the top. <b>Tips & tricks:</b> a card to open with 2–3 tips for the level. <b>«?» next to a setting:</b> what it does, our recommendation and the default.</li>'
+          '<li><b>Tip of the day:</b> once a day on the Live page a tip about a function you have not used yet (e.g. zones, walk test, animal diary, schedules). Switch it off in the card or under More.</li>'
+          '<li><b>Reset to factory settings</b> (More → System, Settings → System → settings file, in the window tab More): all settings, zones, schedules, waypoints, password, users, PIN and the place go back to the defaults, then the setup starts. <b>These stay:</b> Wi-Fi and own Wi-Fi, remote access (Tailscale), the push channel (ntfy server and topic), the update settings (also «test mode: new versions at once»), the own AI model and what it learned, the language. <b>Deleted:</b> all recordings and photos, the animal diary and the log. To confirm type the password (or the PIN) and the word «ZURÜCKSETZEN» (or «RESET»). First a copy of the old settings is saved (motionwatch_settings.before_reset_….json) – download it under More → System and load it again under System → «Load settings» if needed.</li></ul></section>\n\n',
+    "fr": '<section id="guide2" data-icon="🧭"><h2>Configuration, visites et astuces</h2><ul>'
+          '<li><b>Configuration :</b> au premier démarrage (et après une réinitialisation) MoveEye demande « Rapide (env. 5 min) ou complet ? ». <b>Rapide :</b> bases (langue, nom de l’appareil, mot de passe, heure et lieu), notifications sur le téléphone (ntfy avec code QR et message test), test de la caméra et « Configurer l’emplacement », état de la protection et test de passage. <b>Complet</b> ajoute : Simple ou Expert par défaut, zones, heures de nuit et horaires, test lumière et sirène, tête, modèle IA, caméra thermique, batterie, simulateur 3D, visites et astuces.</li>'
+          '<li>Chaque étape peut être sautée ; une barre montre l’avancement. S’il manque une pièce (lumière, haut-parleur, tête, caméra thermique, batterie), son étape est sautée toute seule. « Continuer plus tard » garde l’étape sur l’appareil – continuer sous Plus, aussi depuis un autre téléphone ou dans la fenêtre.</li>'
+          '<li><b>Visites :</b> à la première ouverture d’un onglet l’écran s’assombrit et les commandes importantes sont montrées l’une après l’autre (Suivant / Passer). Le « ? » en haut relance la visite. Activer / désactiver sous Plus ; « Réinitialiser toutes les visites » les remontre toutes.</li>'
+          '<li><b>Simple / Expert par page</b>, carte <b>Trucs & astuces</b>, <b>« ? »</b> à côté d’un réglage (explication, recommandation, valeur par défaut) et <b>Astuce du jour</b> (une fonction pas encore utilisée).</li>'
+          '<li><b>Rétablir les réglages d’usine</b> (Plus → Système) : tout revient aux valeurs par défaut, puis la configuration démarre. <b>Restent :</b> Wi-Fi, accès à distance (Tailscale), le canal push (ntfy), les réglages de mise à jour, le propre modèle IA et ce qu’il a appris, la langue. <b>Effacés :</b> enregistrements, photos, journal des animaux et journal. Confirmer avec le mot de passe (ou le PIN) et le mot « ZURÜCKSETZEN » (ou « RESET »). Une copie des anciens réglages est enregistrée avant (téléchargeable sous Plus → Système).</li></ul></section>\n\n',
+    "it": '<section id="guide2" data-icon="🧭"><h2>Configurazione, tour e consigli</h2><ul>'
+          '<li><b>Configurazione:</b> al primo avvio (e dopo un ripristino) MoveEye chiede «Veloce (ca. 5 min) o completo?». <b>Veloce:</b> base (lingua, nome del dispositivo, password, ora e luogo), notifiche sul telefono (ntfy con codice QR e messaggio di prova), test della telecamera e «Configurare il posto», stato della protezione e test di passaggio. <b>Completo</b> aggiunge: Semplice o Esperto come predefinito, zone, ore notturne e orari, test luce e sirena, testa, modello IA, termocamera, batteria, simulatore 3D, tour e consigli.</li>'
+          '<li>Ogni passo si può saltare; una barra mostra l’avanzamento. Se manca un componente (luce, altoparlante, testa, termocamera, batteria) il suo passo viene saltato da solo. «Continuare più tardi» tiene il passo sul dispositivo – continuare sotto Altro, anche da un altro telefono o nella finestra.</li>'
+          '<li><b>Tour:</b> alla prima visita di una scheda lo schermo si oscura e i comandi importanti vengono mostrati uno dopo l’altro (Avanti / Salta). Il «?» in alto riavvia il tour. Attivare / disattivare sotto Altro; «Ripristinare tutti i tour» li mostra di nuovo.</li>'
+          '<li><b>Semplice / Esperto per pagina</b>, scheda <b>Consigli e trucchi</b>, <b>«?»</b> accanto a un’impostazione (spiegazione, consiglio, valore predefinito) e <b>Consiglio del giorno</b> (una funzione non ancora usata).</li>'
+          '<li><b>Ripristinare le impostazioni di fabbrica</b> (Altro → Sistema): tutto torna ai valori predefiniti, poi parte la configurazione. <b>Restano:</b> Wi-Fi, accesso remoto (Tailscale), il canale push (ntfy), le impostazioni di aggiornamento, il modello IA proprio e ciò che ha imparato, la lingua. <b>Cancellati:</b> registrazioni, foto, diario animali e registro. Confermare con la password (o il PIN) e la parola «ZURÜCKSETZEN» (o «RESET»). Prima viene salvata una copia delle vecchie impostazioni (scaricabile sotto Altro → Sistema).</li></ul></section>\n\n',
+    "rm": '<section id="guide2" data-icon="🧭"><h2>Installaziun, girs e cussegls</h2><ul>'
+          '<li><b>Installaziun:</b> a l’emprima partenza (e suenter restaurar) dumonda MoveEye «Svelt (ca. 5 min.) u detaglià?». <b>Svelt:</b> basa (lingua, num da l’apparat, pled-clav, ura e lieu), avis push sin il telefonin (ntfy cun code QR e messadi da test), test da la camera ed «Installar la plazza», stadi da la protecziun e test da passar. <b>Detaglià</b> agiunta: Simpel u Expert sco standard, zonas, temp da notg e plans da temp, test da glisch e sirena, chau, model IA, camera termica, accu, simulatur 3D, girs e cussegls.</li>'
+          '<li>Mintga pass sa vegnir sursiglì; ina trav mussa quant lunsch che ti es. Sch’ina part manca (glisch, autpledader, chau, camera termica, accu), vegn ses pass sursiglì da sasez. «Cuntinuar pli tard» tegna il pass sin l’apparat – cuntinuar sut Dapli, er dad in auter telefonin u en la fanestra.</li>'
+          '<li><b>Girs:</b> a l’emprima visita d’in register vegn il visur stgir ed ils elements impurtants vegnan mussads in suenter l’auter (Vinavant / Sursiglir). Il «?» sisum cumenza il gir puspè. Activar / deactivar sut Dapli; «Restaurar tut ils girs» als mussa puspè.</li>'
+          '<li><b>Simpel / Expert per pagina</b>, carta <b>Cussegls e trics</b>, <b>«?»</b> sper in parameter (explicaziun, recumandaziun, standard) e <b>Cussegl dal di</b> (ina funcziun anc betg duvrada).</li>'
+          '<li><b>Restaurar ils parameters da fabrica</b> (Dapli → Sistem): tut turna al standard, lura cumenza l’installaziun. <b>Restan:</b> WLAN, access a distanza (Tailscale), il chanal push (ntfy), ils parameters d’actualisaziun, l’agen model IA e quai ch’el ha emprendì, la lingua. <b>Stizzà:</b> registraziuns, fotos, diari d’animals e protocol. Confermar cun il pled-clav (u il PIN) ed il pled «ZURÜCKSETZEN» (u «RESET»). Avant vegn memorisada ina copia dals vegls parameters (da telechargiar sut Dapli → Sistem).</li></ul></section>\n\n',
+}
+
+
+def _help_guide2(doc, lang):
+    if '<section id="guide2"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    if i < 0:
+        i = doc.find('<section id="privacy"')
+    return doc[:i] + _HELP_GUIDE2[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en2 = HELP_PAGE.find('<div lang="en">')
+if _hp_en2 > 0:
+    HELP_PAGE = _help_guide2(HELP_PAGE[:_hp_en2], "de") + _help_guide2(HELP_PAGE[_hp_en2:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_guide2(HELP_X[_L], _L)
+# All parts have added their settings now (CFG.setdefault in later parts), the start (640) loads the file only after this.
+import copy as _copy_g2
+FACTORY_CFG = _copy_g2.deepcopy(CFG)
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

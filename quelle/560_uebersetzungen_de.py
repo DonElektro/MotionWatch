@@ -81,7 +81,7 @@ DE = {
     "QR code for the phone": "QR-Code fürs Handy", "Markings in recordings and alarm pictures": "Markierungen in Aufnahmen und Alarmbildern",
     "thin corner marks (face stays free)": "dünne Eckmarken (Gesicht bleibt frei)", "none (clean picture)": "keine (sauberes Bild)",
     "like the live picture (red boxes)": "wie im Live-Bild (rote Rahmen)", "please write a few words": "bitte ein paar Worte schreiben",
-    "at most 5 messages per hour": "höchstens 5 Nachrichten pro Stunde", "Feedback to the developer": "Feedback an den Entwickler",
+    "at most 5 messages per hour": "höchstens 5 Nachrichten pro Stunde", "Feedback to the developer": "Rückmeldung an den Entwickler",
     "Ideas, errors, praise - everything helps. The message is sent anonymously: no name, no address, unless you write one.": "Ideen, Fehler, Lob – alles hilft. Die Nachricht geht anonym weg: kein Name, keine Adresse, ausser du schreibst sie dazu.",
     "Idea": "Idee", "Error": "Fehler", "Praise": "Lob", "Other": "Sonstiges", "Send": "Senden", "Cancel": "Abbrechen",
     "Add technical details (version, device, last important events - no pictures, no passwords)": "Technische Angaben mitsenden (Version, Gerät, letzte wichtige Ereignisse – keine Bilder, keine Passwörter)", "Thank you! The message is on its way.": "Danke! Die Nachricht ist unterwegs.", "need 2+ waypoints": "mindestens 2 Wegpunkte nötig", "Person": "Person", "SMS (LTE stick)": "SMS (LTE-Stick)", "Send test SMS": "Test-SMS senden", "SMS sent": "SMS gesendet",
