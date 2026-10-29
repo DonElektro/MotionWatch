@@ -13,7 +13,7 @@ const NEXT_ALL := [
 	[1, "Ein gemeinsames Erscheinungsbild (Web, Fenster, Simulator)"], [2, "Simulations-Modus sichtbar (oranger Streifen «SIMULATION»)"],
 	[3, "Startseite mit Simulator-Kachel"], [4, "Kachel-Steuerung des Simulators auf dem Handy"], [5, "Kino-Modus (Vollbild für TV / Beamer)"],
 	[6, "Einheitliche Ereignis-Symbole"], [7, "Simulator-Zentrale in MoveEye"], [8, "«Was wäre wenn …?» bei echten Alarmen"],
-	[9, "Zwilling deines Platzes (Ort, Winkel, Zonen, Patrouille)"], [10, "Zonen im Simulator sehen"], [11, "Erkennung live in der 3D-Ansicht"],
+	[9, "Dein Platz (Ort, Winkel, Zonen, Patrouille)"], [10, "Zonen im Simulator sehen"], [11, "Erkennung live in der 3D-Ansicht"],
 	[12, "Automatische Trainings-Nacht"], [13, "Einstellungs-Vergleich A/B"], [14, "Benachrichtigungen testen (Test-Kanal)"],
 	[15, "Akku-, Wetter- und WLAN-Ausfall üben"], [16, "Mehrere MoveEye-Geräte im Simulator"], [17, "Rover voll integriert"],
 	[18, "Tagebuch-Statistik aus dem Simulator"], [19, "Versionen vergleichen (Kurve)"], [20, "Ein-Klick-Demo"],

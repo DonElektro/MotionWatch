@@ -1,9 +1,11 @@
 extends Node
-## 3D-4.4 «Dein Platz als Zwilling»: a photo or a panorama of the real place behind the scene (a piece of a cylinder round
+## 3D-4.4 «Dein Platz» (first called «Zwilling», internal names twin_* / zwilling.json stay for old saves): a photo or a panorama of the real place behind the scene (a piece of a cylinder round
 ## MoveEye, far away: the 3D ground with the visitors in front, the real trees, houses and mountains behind), plus the
 ## tent and the car placed by hand where they really stand. Everything per place (scene, at a real place also lat / lon)
-## in user://zwilling.json, the pictures in user://zwilling/. Import: Vorlagen window, tab «Dein Platz» (button or drag a
-## .jpg / .png into the window), settings in «Szene · Dein Platz».
+## in user://zwilling.json, the pictures in user://zwilling/. Import: the window «Dein Platz» (inventar.gd, first tab; button
+## or drag a .jpg / .png into the window), settings in «Szene · Dein Platz».
+## 3D-4.x (Aufräumen, Daniel 29.10.2026): one thing «Dein Platz» - the inventory window holds this tab, the tent and the car
+## are tiles there; the Vorlagen window has no tab «Dein Platz» any more.
 
 var main
 const FILE := "user://zwilling.json"
@@ -17,7 +19,7 @@ var _nodes: Array = []
 var _tex_key := ""
 var _tex: ImageTexture = null
 var _slow := 0.0
-var _box: VBoxContainer = null     # the tab in the Vorlagen window
+var _box: VBoxContainer = null     # the photo part of the tab «Dein Platz» (inventar.gd)
 var _fd: FileDialog = null
 
 const UI = preload("res://scripts/ui_style.gd")
@@ -65,19 +67,20 @@ func set_val(k: String, v) -> void:
 
 func add_controls() -> void:
 	var m = main
-	m.add_control("toggle", "twin_on", "Dein Platz als Zwilling: Foto / Panorama deines echten Platzes als Hintergrund (Laden im Fenster «Vorlagen», Reiter «Dein Platz»)",
+	m.add_control("toggle", "twin_on", "Dein Platz: Foto / Panorama deines echten Platzes als Hintergrund (Laden im Fenster «Dein Platz»)",
 			func(): return on, func(v): on = bool(v); save(); on_scene(), "Szene", {"sub": "Dein Platz"})
-	m.add_control("button", "twin_open", "Foto oder Panorama laden … (Vorlagen · Dein Platz)", null, func(): open_tab(), "Szene", {"sub": "Dein Platz"})
-	m.add_control("slider", "twin_yaw", "Zwilling: Richtung der Bildmitte (0 = geradeaus)", func(): return float(gv("yaw", 0.0)), func(v): set_val("yaw", float(v)), "Szene",
+	m.add_control("button", "twin_open", "«Dein Platz» öffnen: Foto / Panorama, Zelt, Auto, bewachte Sachen", null, func(): open_tab(), "Szene", {"sub": "Dein Platz"})
+	m.add_control("slider", "twin_yaw", "Dein Platz: Richtung der Bildmitte (0 = geradeaus)", func(): return float(gv("yaw", 0.0)), func(v): set_val("yaw", float(v)), "Szene",
 			{"sub": "Dein Platz", "min": -180, "max": 180, "step": 1, "unit": "°"})
-	m.add_control("slider", "twin_span", "Zwilling: Bildwinkel (Handyfoto etwa 65°, Panorama bis 360°)", func(): return float(gv("span", 66.0)), func(v): set_val("span", float(v)), "Szene",
+	m.add_control("slider", "twin_span", "Dein Platz: Bildwinkel (Handyfoto etwa 65°, Panorama bis 360°)", func(): return float(gv("span", 66.0)), func(v): set_val("span", float(v)), "Szene",
 			{"sub": "Dein Platz", "min": 30, "max": 360, "step": 1, "unit": "°"})
-	m.add_control("slider", "twin_dist", "Zwilling: Entfernung des Hintergrunds", func(): return float(gv("dist", 60.0)), func(v): set_val("dist", float(v)), "Szene",
+	m.add_control("slider", "twin_dist", "Dein Platz: Entfernung des Hintergrunds", func(): return float(gv("dist", 60.0)), func(v): set_val("dist", float(v)), "Szene",
 			{"sub": "Dein Platz", "min": 15, "max": 300, "step": 5, "unit": "m", "expert": true})
-	m.add_control("slider", "twin_horizon", "Zwilling: Horizont im Bild höher / tiefer", func(): return float(gv("horizon", 0.0)), func(v): set_val("horizon", float(v)), "Szene",
+	m.add_control("slider", "twin_horizon", "Dein Platz: Horizont im Bild höher / tiefer", func(): return float(gv("horizon", 0.0)), func(v): set_val("horizon", float(v)), "Szene",
 			{"sub": "Dein Platz", "min": -20, "max": 20, "step": 0.5, "unit": "°", "expert": true})
-	m.add_control("button", "twin_tent", "Zelt hierhin – danach in die Welt klicken", null, func(): main.place_kind = "twin_tent", "Szene", {"sub": "Dein Platz"})
-	m.add_control("button", "twin_car", "Auto hierhin – danach in die Welt klicken", null, func(): main.place_kind = "twin_car", "Szene", {"sub": "Dein Platz"})
+	# 3D-4.x: tent and car are tiles in the window «Dein Platz» (not twice here); for MoveEye's page they stay hidden controls
+	m.add_control("button", "twin_tent", "Zelt hierhin – danach in die Welt klicken", null, func(): main.place_kind = "twin_tent", "Szene", {"sub": "Dein Platz", "hide": true})
+	m.add_control("button", "twin_car", "Auto hierhin – danach in die Welt klicken", null, func(): main.place_kind = "twin_car", "Szene", {"sub": "Dein Platz", "hide": true})
 	m.add_control("button", "twin_turn", "Zuletzt gesetztes Zelt / Auto um 15° drehen", null, func(): turn_last(15.0), "Szene", {"sub": "Dein Platz", "expert": true})
 	m.add_control("button", "twin_clear", "Zelt und Auto dieses Platzes entfernen", null, func(): clear_items(), "Szene", {"sub": "Dein Platz", "expert": true})
 
@@ -241,6 +244,9 @@ func add_item(k: String, x: float, z: float, r: float) -> void:
 	data[key()] = e
 	save()
 	_build_item(it)
+	if main.inventar != null:
+		main.inventar._paint()
+		main.inventar._paint_list()
 	_say("%s gesetzt (%.1f / %.1f m). Drehen: «Zuletzt gesetztes … drehen»." % ["Zelt" if k == "tent" else "Auto", x, z])
 	_paint()
 
@@ -289,15 +295,15 @@ func _build_item(it: Dictionary) -> void:
 	_nodes.append(tn)
 
 
-# ---- the tab in the Vorlagen window ----------------------------------------------------------------------------------
+# ---- the photo part of the tab «Dein Platz» (inventar.gd) -------------------------------------------------------------
 func open_tab() -> void:
-	if main.templates != null:
-		main.templates.toggle(main.templates.tabs.get_tab_count() - 1)
+	if main.inventar != null:
+		main.inventar.open(0)
 		_paint()
 
 
 func build_tab(v: VBoxContainer) -> void:
-	"""templates.gd: the content of the tab «Dein Platz»"""
+	"""inventar.gd: the photo / panorama part of the tab «Dein Platz»"""
 	_box = VBoxContainer.new()
 	_box.add_theme_constant_override("separation", 8)
 	v.add_child(_box)
@@ -320,7 +326,7 @@ func _paint() -> void:
 	var e: Dictionary = cur()
 	var l := UI.small("Platz: «%s»  ·  %s" % [place_name(), info_txt if e.has("img") else "noch kein Foto"], UI.TXT)
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	l.custom_minimum_size = Vector2(540, 0)
+	l.custom_minimum_size = Vector2(520, 0)
 	_box.add_child(l)
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", 8)
@@ -330,13 +336,6 @@ func _paint() -> void:
 	UI.primary(b)
 	b.pressed.connect(func(): _fd.popup_centered())
 	h.add_child(b)
-	for it in [["Zelt hierhin", "twin_tent"], ["Auto hierhin", "twin_car"]]:
-		var bb := Button.new()
-		bb.text = it[0]
-		bb.tooltip_text = "Danach in die Welt klicken (Esc = abbrechen)"
-		var pk: String = it[1]
-		bb.pressed.connect(func(): main.place_kind = pk; main.templates.visible = false)
-		h.add_child(bb)
 	if e.has("img"):
 		var x := Button.new()
 		x.text = "Foto weg"
@@ -344,16 +343,16 @@ func _paint() -> void:
 		h.add_child(x)
 	var items: Array = e.get("items", [])
 	if not items.is_empty():
-		var t := UI.small("%d Dinge gesetzt: %s" % [items.size(), ", ".join(items.map(func(i): return ("Zelt" if i["k"] == "tent" else "Auto") + " %.0f/%.0f m" % [float(i["x"]), float(i["z"])]))], UI.MUT)
+		var t := UI.small("Zelt / Auto gesetzt (%d): %s" % [items.size(), ", ".join(items.map(func(i): return ("Zelt" if i["k"] == "tent" else "Auto") + " %.0f/%.0f m" % [float(i["x"]), float(i["z"])]))], UI.MUT)
 		t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		t.custom_minimum_size = Vector2(540, 0)
+		t.custom_minimum_size = Vector2(520, 0)
 		_box.add_child(t)
 
 
 func _say(s: String) -> void:
 	info_txt = s
-	if main.templates != null and main.templates._msg != null:
-		main.templates._say(s)
+	if main.inventar != null and main.inventar._msg != null:
+		main.inventar._msg.text = s
 
 
 func info() -> Dictionary:

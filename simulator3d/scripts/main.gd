@@ -3293,13 +3293,13 @@ func _register_controls() -> void:
 	add_control("button", "game_stop", "Runde beenden", null, func(): game.end_round(), "Spiel")
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
-			{"options": [["mw", "Gegen MoveEye (echte Erkennung)"], ["guard", "Wächter (ein Spieler oder der Bot-Wächter)"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"], ["free", "Zonen-Check – ohne Erwischen (zum Testen der Erkennung)"], ["jaeger", "Fehlalarm-Jäger – Tiere und Dinge täuschen MoveEye (nur mit MoveEye)"], ["camera", "ältere: Alle gegen die Kamera"], ["teamguard", "ältere: Team gegen Team"], ["mwhand", "ältere: Team gegen MoveEye (Wächter steuern MoveEye)"], ["patrol", "ältere: Patrouille mit dem Mover"]]})
+			{"options": [["mw", "Gegen MoveEye (echte Erkennung)"], ["guard", "Wächter (ein Spieler oder der Bot-Wächter)"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"], ["free", "Zonen-Check – ohne Erwischen (zum Testen der Erkennung)"], ["jaeger", "Fehlalarm-Jäger – Tiere und Dinge täuschen MoveEye (nur mit MoveEye)"], ["camera", "ältere: Alle gegen die Kamera"], ["mwhand", "ältere: Team gegen MoveEye (Wächter steuern MoveEye)"], ["patrol", "ältere: Patrouille mit dem Mover"]]})
 	add_control("select", "game_level", "Schwierigkeit (Wächter und MoveEye)", func(): return game_level, func(v): game_level = v, "Spiel",
 			{"options": [["easy", "leicht – Easy-Mode: MoveEye muss 2.5 s melden, Kriechen ist sicher, 6 s Pause"], ["normal", "normal – 1 s melden, 3 s Pause"], ["hard", "schwer – sofort, 2 s Pause"]]})
 	add_control("select", "game_lives", "Leben", func(): return str(game_lives), func(v): game_lives = int(v), "Spiel",
 			{"options": [["0", "unbegrenzt"], ["3", "3 Leben"], ["1", "1 Leben"]]})
 	add_control("slider", "game_items", "Kristalle zum Sammeln", func(): return game_items, func(v): game_items = int(v), "Spiel", {"min": 0, "max": 6, "step": 1})
-	add_control("toggle", "game_teams", "Zwei Teams (Rot gegen Blau)", func(): return game_teams, func(v): game_teams = v; game.on_teams(), "Spiel")
+	# 3D-4.x (Aufräumen): no toggle «Zwei Teams» any more - teams only with the goal «Fahne erobern» (game.sync_teams)
 	add_control("toggle", "game_rescue", "Befreien: Erwischte kommen in die Zelle, ein Teamkollege befreit sie", func(): return game_rescue, func(v): game_rescue = v, "Spiel")
 	add_control("toggle", "game_teamgoal", "Team-Ziel: das Ziel öffnet erst, wenn alle Kristalle gefunden sind", func(): return game_teamgoal, func(v): game_teamgoal = v, "Spiel", ex)
 	add_control("select", "game_goal", "Spielziel", func(): return game_goal, func(v): game_goal = v, "Spiel",
@@ -3869,11 +3869,11 @@ func _control(d: Dictionary) -> Dictionary:
 			twin["lon"] = float(d["lon"])
 			karte.open(twin["lat"], twin["lon"], 17)
 			karte.sel = Vector2(twin["lat"], twin["lon"])
-			karte.sel_name = "Zwilling: " + twin["name"]
+			karte.sel_name = "Dein Platz: " + twin["name"]
 			karte._show_step(1)
-			start_info = "Zwilling von «%s»: Karte an diesem Ort – «Diesen Ort laden» bestätigen" % twin["name"]
+			start_info = "Dein Platz («%s»): Karte an diesem Ort – «Diesen Ort laden» bestätigen" % twin["name"]
 		else:
-			start_info = "Zwilling: MoveEye kennt seinen Ort nicht (GPS oder Ort in den Einstellungen) – Zonen und Patrouille kommen trotzdem"
+			start_info = "Dein Platz: MoveEye kennt seinen Ort nicht (GPS oder Ort in den Einstellungen) – Zonen und Patrouille kommen trotzdem"
 		_settings_dirty = true
 		return {"ok": true, "twin": twin_info(), "map": d.has("lat")}
 	elif a == "news":                                  # 3D-3.82: {do: info | show | close}
@@ -4571,7 +4571,7 @@ func _build_ui() -> void:
 			sub_bodies.append(vs)
 			subs["Besuch/Besucher hinsetzen"] = vs
 			var ivb := Button.new()                  # 3D-3.86: all people, animals and things in the inventory
-			ivb.text = "Inventar öffnen: Menschen, Tiere, Fahrzeuge und alle 80 Dinge der KI"
+			ivb.text = "«Dein Platz» öffnen: Zelt, Auto, bewachte Sachen, Menschen, Tiere und alle 80 Dinge der KI"
 			ivb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			UI.primary(ivb)
 			ivb.pressed.connect(func(): inventar.toggle())
@@ -6175,7 +6175,7 @@ func _place(p: Vector2) -> void:
 		place_kind = ""
 		_paint_palette()
 		return
-	if place_kind.begins_with("twin_"):                # 3D-4.4: tent / car of «Dein Platz als Zwilling»
+	if place_kind.begins_with("twin_"):                # 3D-4.4: tent / car of «Dein Platz»
 		zwilling.place_at_screen(place_kind, p)
 		place_kind = ""
 		return
@@ -6200,6 +6200,9 @@ func place_rover_at(p: Vector2) -> bool:
 
 func _place_at(k: String, p: Vector2) -> void:
 	"""a visitor where the mouse points (on the ground, never inside an object); it then walks off in some direction"""
+	if k.begins_with("twin_"):                        # 3D-4.x: tent / car of «Dein Platz», dragged from its tile
+		zwilling.place_at_screen(k, p)
+		return
 	if k.begins_with("obj:"):                         # 3D-3.86: an object of the inventory stays where it is put
 		if inventar != null:
 			inventar.place_at_screen(k, p)
