@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 14:12",
+ "generated": "2026-10-29 14:26",
  "versions": [
   {
-   "version": "2.98.16",
-   "file": "webcam_bewegung_2_98_16.py",
+   "version": "2.98.17",
+   "file": "webcam_bewegung_2_98_17.py",
    "url": "",
-   "sha256": "ab6eef80c483392b6ddd5bfb2206f500fbd5eaaca994a0da1eb491ee9b02260f",
-   "date": "2026-10-29 14:12",
-   "notes": "Weniger Fehlalarme durch Tiere: Grössen-Prüfung (zu klein für eine Person an dieser Stelle = keine Person; lernt aus KI-bestätigten Personen)",
-   "sig": "e90430ec03f530b639af6751f96def01b633db6a23dce37d9661bf7d17e44e9fe8d57d3a4d45cc3e0b6a8aa8bf292244c189bb7e5d5abd02ee5ec47146e57d02"
+   "sha256": "b4e0ae0dd7624b4fa26af128503459b4f65033cd2797de4c87b5a27be8224153",
+   "date": "2026-10-29 14:26",
+   "notes": "Fehler behoben: Lautsprecher-Suche (Bluetooth) startete die Tracker-Suche",
+   "sig": "af4f7a97672556f4d4e31c82539b01f1cbeacd661cc38f974b9bab3c26776bb21f68e7c43d4788a703a89980aa541baa9da21eb7bdf346b25248da6495dc5c05"
   },
   {
    "version": "2.97.1",
