@@ -55,6 +55,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `147_simsperre.py` | Eine Sperre für Simulator-Aufgaben mit dem Simulator; blinde Flecken aus dem Simulator | 118 |
 | `150_zweites_wlan_tv_netzcheck.py` | zweites WLAN, USB-Tethering, TV-Anzeige, Netz-Check, WLAN-Wächter | 1059 |
 | `160_netzautomatik_patrouille.py` | Netz-Automatik, Patrouille | 160 |
+| `162_kopf_auto.py` | Automatische Kopfbewegung: ein Koordinator (Hand > Alarm/Folgen > Gehtest > Wertsachen-Blick > Runde > Parken, Simulator-Sperre), kluge Runde (place_items / Wegpunkte), zum Alarm drehen (Bildrand, Wärmefleck, Geräusch mit Zugang, Übersichtskamera), Parken bei «Aus», Wertsachen-Blick, sparsam (Akku / tiefe Nacht), Wildtier-Modus, Sabotage umschauen, 180/270/360°- und Endlos-Servos | 834 |
 | `170_ki_personen.py` | KI-Modell laden und herunterladen | 110 |
 | `180_ki_tierarten_helfer_tunnel.py` | Tierarten, Alarm-Rückblick, KI-Rechenhilfe, KI-Prüfung, Tunnel, AIDetector | 841 |
 | `190_relais_wetter_tracker.py` | Relais, Wetter-Analyse, Auto-Tuner, Tracker | 422 |
@@ -121,6 +122,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `571_alarm_einstellungen.py` | Schalter und Regler der Alarm-Extras (Web und Fenster) | 16 |
 | `573_app_schluessel.py` | «App-Schlüssel» für andere Programme (nur als Hash gespeichert, auch über http, nie Sicherheits-Funktionen) und «Sicherheit an einem Ort» (Passwort, Benutzer, App-Schlüssel, Sicherheits-Check unter Einstellungen → Sicherheit; Web und Fenster) | 380 |
 | `574_anmelden_verschluesselt.py` | «Anmelden nur verschlüsselt»: das Web-Passwort nur über https, vom Gerät selbst oder Tailscale; Hinweis-Seite, Rückfall ohne https (Web und Fenster) | 235 |
+| `582_kopf_auto_einstellungen.py` | Einstellungen «Automatische Kopfbewegung» (Web und Fenster), Servo-Art, Übersichtskamera, Selbsttest | 92 |
 | `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
 | `581_fenster_ansicht.py` | Fenster: «Ansicht» des Reiters Live wie im Web (Vorlagen, Anordnung, Bildgrösse, Grösse, Lieblingsknöpfe + «mehr», Karten, Joystick; «Für alle Geräte») | 355 |
 | `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
@@ -149,6 +151,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `621_uebersetzungen_sicher3.py` | Übersetzungen und Anleitung zu 573 (App-Schlüssel, Sicherheit an einem Ort) und zur Rotlicht-Ansicht (578) | 150 |
 | `626_uebersetzungen_live.py` | Übersetzungen der neuen Live-Seite (536) und des Fensters (570) | 89 |
 | `627_uebersetzungen_live2.py` | Übersetzungen zu 2.98.29: ein Bearbeiten-Modus, «Für alle Geräte», Grösse, Fenster-Ansicht | 79 |
+| `629_uebersetzungen_kopfauto.py` | Übersetzungen «Automatische Kopfbewegung» (2.98.30) | 63 |
 | `620_daten_produktseite.py` | Daten: Produktseite für Gäste (/info/) | 2651 |
 | `630_almanach.py` | Extras: Überlebens-Almanach | 270 |
 | `640_start.py` | Start: Befehlszeile, Selbsttest, Programmstart | 152 |

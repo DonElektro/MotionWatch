@@ -328,6 +328,9 @@ def patrol_status_text(st, lang=None):
     m = re.fullmatch(r"dwelling at (.+)", st or "")
     if m:
         return tr("waiting at", lang) + " " + m.group(1)
+    m = re.fullmatch(r"(.+?) \((.+)\)", st or "")             # 2.98.30: «saving: stays at the most important direction (Zelt)» (162)
+    if m and tr(m.group(1), lang) != m.group(1):
+        return tr(m.group(1), lang) + " (" + m.group(2) + ")"
     return tr(st or "", lang)
 
 

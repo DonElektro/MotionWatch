@@ -222,6 +222,10 @@ class TamperGuard:
             self.ref, self.ref_e, self.ref_mean, self.ref_std = g, e, mean, std
             STATE["tamper"]["state"] = "watching"; return
         covered = mean < 18 and std < 7 and self.ref_mean > 35 and self.ref_std > 8
+        # 2.98.30: a cloth over the lens is not always black - the camera brightens it (auto exposure, the simulator too):
+        # a flat picture without edges where there were many is covered as well
+        if not covered and std < 7 and self.ref_std > 12 and float(e.mean()) < 0.25 * max(1e-3, float(self.ref_e.mean())):
+            covered = True
         a, b = e - e.mean(), self.ref_e - self.ref_e.mean()
         corr = float((a * b).sum() / (math.sqrt(float((a * a).sum()) * float((b * b).sum())) + 1e-6))
         moved = (not covered) and self.ref_std > 10 and std > 8 and corr < 0.3 and not STATE.get("persons")
@@ -308,20 +312,35 @@ class TamperGuard:
             self.base = [x / n for x in a]
 
     # ---- alarm ----
-    def alarm(self, what):
+    def alarm(self, what, looked=None):
         now = time.time()
-        de = CFG["lang"] == "de"
         txt = {"covered": ("Kamera abgedeckt", "camera covered"), "turned": ("Kamera verdreht / Bild verändert", "camera turned / picture changed"),
                "moved": ("Gerät bewegt", "device moved"), "knocked": ("Gerät umgeworfen", "device knocked over"),
                "power": ("Strom getrennt (Schutz an)", "power cut while armed")}[what]
-        STATE["tamper"]["last"] = datetime.now().strftime("%H:%M") + " " + tr(txt[1])
-        log_event("sys", f"SABOTAGE: {txt[1]}" + ("" if is_armed() else " (disarmed - no alarm)"))
+        # 2.98.30: covered or turned? The head looks briefly in other directions first (162) - then the push says which
+        if looked is None and what in ("covered", "turned") and is_armed() and now - self.cool >= 120 and kopf_tamper_wanted():
+            self.cool = now - 115                          # no second look-around meanwhile
+            ref = None if self.ref is None else self.ref.copy()
+
+            def look():
+                extra = ""
+                try:
+                    extra = kopf_tamper_look(what, ref)
+                except Exception as e:
+                    log_event("sys", f"Sabotage look-around: {e}"[:160])
+                self.cool = 0.0; self.pos = None
+                self.alarm(what, looked=extra)
+            threading.Thread(target=look, daemon=True, name="tamper-look").start()
+            return
+        full = tr(txt[1]) + (" – " + looked if looked else "")
+        STATE["tamper"]["last"] = datetime.now().strftime("%H:%M") + " " + full
+        log_event("sys", f"SABOTAGE: {txt[1]}" + (f" - {looked}" if looked else "") + ("" if is_armed() else " (disarmed - no alarm)"))
         if not is_armed() or now - self.cool < 120:
             return
         self.cool = now
         w = WATCH_REF["w"]
         if w is not None:
-            w.notifier.tamper(tr(txt[1]), w.frame_out)
+            w.notifier.tamper(full, w.frame_out)
         siren_alarm("tamper")
 
 

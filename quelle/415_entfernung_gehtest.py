@@ -147,11 +147,15 @@ def walktest_start(by="web"):
         return False, "the detection is switched off"
     now = time.time()
     keep = {k: CFG.get(k) for k in ("track_person", "track_motion", "patrol")}
-    WALK.update(on=True, t0=now, until=now + WALKTEST_S, by=by, hits=[], motion=[], ref=None, last={}, beep_t=0.0, n=0, seq=WALK["seq"] + 1)
-    if any(keep.values()):                                    # the head must stand still - else the map is wrong
+    follow = kopf_walk_follow()                               # 2.98.30: the head follows the walker (162)
+    WALK.update(on=True, t0=now, until=now + WALKTEST_S, by=by, hits=[], motion=[], ref=None, last={}, beep_t=0.0, n=0, seq=WALK["seq"] + 1,
+                follow=follow, hp=[], mp=[], lost=[], ref_pt=(round(float(CFG["pan"]), 1), round(float(CFG["tilt"]), 1)))
+    if any(keep.values()) or follow:                          # without following the head must stand still - else the map is wrong
         CFG["walktest_keep"] = keep
         for k in keep:
             CFG[k] = False
+        if follow:
+            CFG["track_person"] = True                        # only persons, no patrol; the map is turned back to the start view
         save_settings()
     try:
         protect_cancel_escalation()
@@ -165,6 +169,8 @@ def walktest_stop(why="button"):
     if not WALK["on"]:
         return False
     WALK["on"] = False
+    if WALK.get("follow") and WALK.get("ref_pt"):            # 2.98.30: back to where the walk test started (162)
+        KOPF["back"] = {"pos": tuple(WALK["ref_pt"]), "since": 0.0, "why": "after the walk test"}
     keep = CFG.get("walktest_keep") or {}
     if keep:
         for k, v in keep.items():
@@ -218,6 +224,7 @@ def walktest_hit(nx, ny, d, src, tid, t0):
     WALK["last"][("p", tid)] = t0
     if len(WALK["hits"]) < 3000:
         WALK["hits"].append((round(t0 - WALK["t0"], 1), round(nx, 3), round(ny, 3), round(float(d), 1) if d else None, src))
+        WALK.setdefault("hp", []).append((round(float(CFG["pan"]), 1), round(float(CFG["tilt"]), 1)))   # where the head looked (162)
     if t0 - WALK["last"].get(("beep", tid), 0.0) > 1.2:
         WALK["last"][("beep", tid)] = t0
         _walk_beep()
@@ -251,6 +258,7 @@ def walktest_feed(persons, candidates, pw, ph, t0, small):
         if len(WALK["motion"]) < 3000:
             WALK["motion"].append((round(t0 - WALK["t0"], 1), round((x + w / 2.0) / pw, 3), round(min(1.0, (y + h) / float(ph)), 3),
                                    round(d, 1) if d else None))
+            WALK.setdefault("mp", []).append((round(float(CFG["pan"]), 1), round(float(CFG["tilt"]), 1)))
 
 
 _WT_BANDS = ((0, 5), (5, 10), (10, 15), (15, 25), (25, 40), (40, 999))
@@ -269,11 +277,20 @@ def _walk_marks(img, hits, motion):
 
 def _walktest_result(why):
     hits, motion = list(WALK["hits"]), list(WALK["motion"])
+    lost = [dict(x) for x in WALK.get("lost") or []]
+    if WALK.get("follow") and WALK.get("ref_pt"):           # 2.98.30: the head followed - every mark into the picture of the start
+        rp = WALK["ref_pt"][0]
+        hp, mp = WALK.get("hp") or [], WALK.get("mp") or []
+        hits = [(h[0], round(kopf_walk_where(h[1], hp[i][0], rp), 3)) + tuple(h[2:]) for i, h in enumerate(hits) if i < len(hp)]
+        motion = [(m[0], round(kopf_walk_where(m[1], mp[i][0], rp), 3)) + tuple(m[2:]) for i, m in enumerate(motion) if i < len(mp)]
+        for x in lost:
+            x["nx"] = round(kopf_walk_where(x["nx"], x["pan"], rp), 3)
+        # (marks outside the start view are counted, the picture simply does not show them)
     ds = [h[3] for h in hits if h[3]]
     res = {"t": time.time(), "t0": WALK["t0"], "s": int(time.time() - WALK["t0"]), "why": why, "by": WALK["by"],
            "n_det": len(hits), "n_mot": len(motion), "n_thermal": sum(1 for h in hits if h[4] == "thermal"),
            "max_m": dist_round(max(ds)) if ds else None, "min_m": dist_round(min(ds)) if ds else None,
-           "bands": [], "thirds": [], "img": False}
+           "bands": [], "thirds": [], "img": False, "follow": bool(WALK.get("follow")), "lost": lost}
     for lo, hi in _WT_BANDS:
         res["bands"].append({"lo": lo, "hi": hi, "det": sum(1 for h in hits if h[3] and lo <= h[3] < hi),
                              "mot": sum(1 for m in motion if m[3] and lo <= m[3] < hi)})
@@ -293,6 +310,10 @@ def _walktest_result(why):
             for x_ in (W // 3, 2 * W // 3):
                 cv2.line(img, (x_, 0), (x_, H), (200, 200, 200), 1, cv2.LINE_AA)
             _walk_marks(img, hits, motion)
+            for x in lost:                                    # 2.98.30: where the head lost the walker: a red cross
+                if 0.0 <= x["nx"] <= 1.0:
+                    p = (int(x["nx"] * W), int(min(1.0, x["ny"]) * H))
+                    cv2.drawMarker(img, p, (40, 40, 255), cv2.MARKER_TILTED_CROSS, max(14, W // 30), 3, cv2.LINE_AA)
             for _t, nx, ny, dd, _s in hits[::max(1, len(hits) // 12)][:14]:       # a few distances written beside the marks
                 if dd:
                     p = (min(W - 40, int(nx * W) + 8), max(14, int(ny * H) - 6))
@@ -342,6 +363,7 @@ def walktest_summary(res, lang=None):
                            lang, where=names[i], m=th["mot"], d=th["det"]))
         elif th["det"] == 0 and th["mot"] == 0 and res["n_det"] + res["n_mot"] >= 10:
             out.append(trf("{where}: nothing seen - did you walk there?", lang, where=names[i]))
+    out += kopf_walk_lost_text(res, lang)                    # 2.98.30: where the head lost you (162)
     far = [b for b in res.get("bands") or [] if b["lo"] >= 5 and b["mot"] >= 4 and b["det"] * 2 < b["mot"]]
     if far and res["n_det"]:
         b = far[0]

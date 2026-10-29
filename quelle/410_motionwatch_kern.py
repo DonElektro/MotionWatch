@@ -35,6 +35,10 @@ class MotionWatch:
         self.scheduler = Scheduler()
         global THERMAL, AUDIO, BACKUP
         self.timelapse = Timelapse(); THERMAL = ThermalCam()
+        try:                                              # 2.98.30: the extra cameras of the settings start with the program
+            cams_apply()                                  # (before only when one was added or the simulation switched)
+        except Exception as e:
+            log_event("sys", f"Extra cameras: {e}"[:160])
         if BACKUP is None:
             BACKUP = Backup()
         global TAMPER, LENS
@@ -455,7 +459,7 @@ class MotionWatch:
         """2.98.1: aim at the object - turn by the angle it has from the middle of the picture (field of view of the camera),
         a part of the way (no overshoot), then wait until the picture shows the new direction. Before, it moved a fixed
         bit per picture: slow at a low frame rate and swinging past the object when the picture came late."""
-        if wake_hold():                        # 2.98.7: the wake-up alarm holds the head (sleeping place)
+        if wake_hold() or kopf_track_blocked():    # 2.98.7: the wake-up alarm holds the head (sleeping place); 2.98.30: parked (Aus, 162)
             return
         x, y, w, h = target_box[:4]
         ex = (x + w / 2.0) / pw - 0.5          # -0.5 .. 0.5  (right = positive)
@@ -841,7 +845,7 @@ class MotionWatch:
                 min_area = CFG["min_area"] * (1.0 - CFG["sensitivity"] / 200.0) * wind_boost
                 cnts, _ = cv2.findContours(fg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 # following movement also sees smaller things (a cat, a fox far away) - they never count as a person / alarm
-                small_area = min(min_area, float(CFG["track_motion_min"]) / 100.0 * pw * ph) if CFG["track_motion"] else min_area
+                small_area = min(min_area, float(CFG["track_motion_min"]) / 100.0 * pw * ph) if (CFG["track_motion"] or kopf_wild_active()) else min_area
                 boxes = [b for b in (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= small_area) if zone_box_ok(b, pw, ph, "person")]
                 if any(b[2] * b[3] >= min_area for b in boxes):
                     present.add("prealarm")              # pre-alarm: anything at all moves in the picture (before it is judged to be a person)
@@ -931,10 +935,10 @@ class MotionWatch:
                     if not STATE["tracking"]:
                         log_event("servo", "Tracking person - patrol paused")
                     STATE["tracking"] = True
-                elif CFG["track_motion"] and not manual and (mt_box := self.motion_target(candidates + persons, rec_animals, pw, ph, gray)) is not None:
+                elif (CFG["track_motion"] or kopf_wild_active()) and not manual and (mt_box := self.motion_target(candidates + persons, rec_animals, pw, ph, gray)) is not None:
                     if t0 - self.mt["moved"] > 0.4:                # move, let the picture settle a moment, look again
                         p0, q0 = CFG["pan"], CFG["tilt"]
-                        self.track(mt_box, pw, ph, 1.0)
+                        self.track(mt_box, pw, ph, kopf_motion_gain())     # 2.98.30: slowly in the wildlife mode (162)
                         if (CFG["pan"], CFG["tilt"]) != (p0, q0):
                             self.mt["moved"] = t0
                     if not STATE["tracking"]:
@@ -1029,6 +1033,10 @@ class MotionWatch:
                 elif self.warm_alerted and t0 - self.last_warm > 5.0:
                     self.warm_alerted = False
             STATE["warm"] = len(warm_boxes)
+            try:                                          # 2.98.30: automatic head movement - turn to the alarm, wildlife photos (162)
+                kopf_frame(self, candidates, person_boxes, warm_boxes, present, rec_clean if rec_clean is not None else frame, pw, ph, t0)
+            except Exception as e:
+                log_event("servo", f"Automatic head movement: {e}"[:160])
             if AUDIO is not None and AUDIO.noisy():
                 present.add("noise")                      # relay trigger: loud noise at the microphone
             if CFG["diary_on"] and not CFG["sim_on"]:       # 2.97.0: like animals and persons - not from the simulation
@@ -1048,7 +1056,7 @@ class MotionWatch:
                 self.handle_recording(frame, person_boxes)
             self.relays.update(present)
             STATE["present"] = sorted(present); STATE["manual"] = manual_active()
-            if "prealarm" in present:
+            if "prealarm" in present and not kopf_wild_quiet():     # 2.98.30: wildlife - an animal followed is no alarm (162)
                 self.pre_last = t0
                 if not self.pre_since:
                     self.pre_since = t0
