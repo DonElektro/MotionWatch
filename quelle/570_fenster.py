@@ -1982,6 +1982,7 @@ class App:
             self._build_source_box(sbody)
         if sec == "Schedule":
             self._build_schedule_box(sbody)
+            alx_tk_zones(self, sbody)                  # 2.98.13: zones by kind (066)
         if sec == "Messages":
             ttk.Label(sp, text=tr("Empty = standard text. Placeholders:") + " " + MSG_PLACEHOLDERS, style="Mut.TLabel",
                       wraplength=330, justify="left").pack(anchor="w", pady=(2, 0))
@@ -3390,7 +3391,8 @@ class App:
         self._status("Notifications", f"{tr('status')}: {st['notify_status']}")
         hs = st["hotspot"] or {}
         a_st = st["arm_state"]
-        self._status("Camping / protection", "🛡 " + protect_label(a_st, st.get("arm_left", 0))
+        fc_ = arm_forecast_text()                      # 2.98.13: battery forecast (066)
+        self._status("Camping / protection", "🛡 " + protect_label(a_st, st.get("arm_left", 0)) + (f" · 🔋 {fc_}" if fc_ else "")
                      + (" · ⛺ " + tr("Camping profile") if CFG["camping"] else "")
                      + (f" · 📡 «{hs.get('ssid')}» {hs.get('clients', 0)} {tr('devices')} · {page_address('10.42.0.1')}" if hs.get("on") else
                         f" · 📡 «{CFG['hotspot_ssid']}» / {CFG['hotspot_password'] or '–'}")

@@ -273,6 +273,8 @@ ol{padding-left:18px;margin:6px 0}
 </main>
 <script>
 /*COMMON*/
+Object.assign(I18N.de, {"Applies to: everything": "Gilt für: alles", "Applies to: persons only": "Gilt für: nur Personen", "Applies to: animals only": "Gilt für: nur Tiere",
+  "z-kinds": "Eine Ignorier- oder Nur-hier-Zone kann nur für Personen oder nur für Tiere gelten – für die anderen gibt es sie dann nicht (z. B. Weg: Personen ignorieren, Tiere melden)."});
 Object.assign(I18N.de, {"+ Sleeping place": "+ Schlafplatz", "Sleeping place": "Schlafplatz",
   "z-sleep": "Wie eine Privatsphäre-Zone (schwarz, bleibt auf dem Bett, auch wenn sich die Kamera dreht). Der Wecker dreht die Kamera beim Wecken dorthin (Gesten). Einzeichnen, während die Kamera auf das Bett schaut."});
 Object.assign(I18N.de, {"+ Ignore zone": "+ Ignorier-Zone", "+ Only-here zone": "+ Nur-hier-Zone", "+ Privacy zone": "+ Privatsphäre-Zone",
@@ -289,7 +291,7 @@ Object.assign(I18N.de, {"+ Ignore zone": "+ Ignorier-Zone", "+ Only-here zone": 
   "z-ign": "Personen und Objekte, deren Füsse darin stehen, werden ignoriert (Strasse, Baum, Nachbars Garten).",
   "z-only": "Wenn mindestens eine solche Zone existiert, zählt nur, was darin passiert (Eingang, Einfahrt).",
   "z-how": "Eine Zone wirkt auf die Erkennung, die Aufnahme, die Alarme und die Relais. Gezählt wird der Punkt unten in der Mitte des erkannten Objekts (die Füsse)."});
-Object.assign(I18N, {en: {"z-sleep": "Like a privacy zone (black, stays on the bed when the camera turns). The wake-up alarm turns the camera there (gestures). Draw it while the camera looks at the bed.", "z-line": "Reports when a person crosses the line – both ways or only in the arrow direction (e.g. «comes to the tent»).",
+Object.assign(I18N, {en: {"z-kinds": "An ignore or only-here zone can apply to persons only or to animals only - for the other kinds it does not exist (e.g. a path: ignore persons, still report animals).", "z-sleep": "Like a privacy zone (black, stays on the bed when the camera turns). The wake-up alarm turns the camera there (gestures). Draw it while the camera looks at the bed.", "z-line": "Reports when a person crosses the line – both ways or only in the arrow direction (e.g. «comes to the tent»).",
   "z-loit": "Reports when a person stays inside longer than the time set (e.g. at the car).", "z-ign": "Persons and objects whose feet are inside are ignored (street, tree, neighbour's garden).",
   "z-only": "If at least one such zone exists, only what happens inside it counts (entrance, driveway).",
   "z-how": "A zone affects detection, recording, alarms and relays. The point that counts is the bottom middle of the detected object (the feet).",
@@ -369,6 +371,11 @@ function renderList() {
     if (z.mode === "line") { const d = el("select"); [["both", t("both directions")], ["ab", "→ " + t("only in the arrow direction")], ["ba", "← " + t("only against the arrow")]]
         .forEach(([v, l]) => { const o = el("option", "", l); o.value = v; d.appendChild(o); });
       d.value = z.dir || "both"; d.onchange = () => { z.dir = d.value; draw(); }; d.onclick = e => e.stopPropagation(); d.style.gridColumn = "1 / -1"; r.appendChild(d); }
+    if (z.mode === "ignore" || z.mode === "only") { const k = el("select"); k.title = tt("z-kinds");      // 2.98.13: zones by kind
+      [["all", tt("Applies to: everything")], ["person", tt("Applies to: persons only")], ["animal", tt("Applies to: animals only")]]
+        .forEach(([v, l]) => { const o = el("option", "", l); o.value = v; k.appendChild(o); });
+      k.value = z.kinds || "all"; k.onchange = () => { if (k.value === "all") delete z.kinds; else z.kinds = k.value; draw(); }; k.onclick = e => e.stopPropagation();
+      k.style.gridColumn = "1 / -1"; r.appendChild(k); }
     if (z.mode === "loiter") { const w = el("label", "mut", t("Alarm after (seconds)") + " "); const n = el("input"); n.type = "number"; n.min = 3; n.max = 600; n.value = z.secs || 20; n.style.width = "80px";
       n.onchange = () => { z.secs = Math.max(3, Math.min(600, +n.value || 20)); }; n.onclick = e => e.stopPropagation(); w.appendChild(n); w.style.gridColumn = "1 / -1"; r.appendChild(w); }
     L.appendChild(r);

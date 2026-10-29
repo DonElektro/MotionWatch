@@ -457,6 +457,7 @@ class MotionWatch:
             persons = []                                  # disarmed: no snapshots, no notifications, no new recordings
         elif persons and CFG.get("mode") == "fire" and not CFG.get("mode_fire_persons"):
             persons = []                                  # 2.97.0: campfire - the people at the fire are no alarm, animals still are
+        persons = alarm_gate(self, frame, persons, now)   # 2.98.13: «Is it you?» / double confirmation (066)
         settle = now - SIM.get("off_t", 0.0) < 30.0       # just back from the simulation: the camera learns its picture
         if settle:
             persons = []; self.last_person_time = 0
@@ -468,6 +469,7 @@ class MotionWatch:
             if CFG["snapshot_on_person"] and not CFG["sim_on"]:
                 snap = os.path.join(CFG["record_dir"], f"person_{stamp}.jpg")
                 cv2.imwrite(snap, frame, [cv2.IMWRITE_JPEG_QUALITY, 85]); gps_tag_jpg(snap)
+            alarm_ctx_note(self, stamp, snap, frame, persons)   # 2.98.13: picture + boxes for «What was it?» and the push buttons (066)
             self.notifier.person(len(persons), snap, frame)
             try:
                 alarm_track_begin("person", stamp, snap)
@@ -796,8 +798,8 @@ class MotionWatch:
             if CFG["detection_on"]:
                 g = self.preprocess(gray, rain_mode)
                 fg = self.foreground(g, small, rain_mode, wind_boost)
-                ai_boxes = [b for b in self.ai.detect(small) if zone_box_ok(b, pw, ph)]
-                ai_objs = [o for o in self.ai.objects if zone_box_ok(o, pw, ph)]
+                ai_boxes = [b for b in self.ai.detect(small) if zone_box_ok(b, pw, ph, "person")]     # 2.98.13: zones by kind (066)
+                ai_objs = [o for o in self.ai.objects if zone_box_ok(o, pw, ph, "animal" if COCO_LABELS.get(o[5]) in ANIMALS else "other")]
                 rec_animals = [o for o in ai_objs if COCO_LABELS.get(o[5]) in ANIMALS]
                 objects = ai_objs if (CFG["show_objects"] and CFG["ai_enabled"]) else []
                 counts = {}
@@ -809,7 +811,7 @@ class MotionWatch:
                 cnts, _ = cv2.findContours(fg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 # following movement also sees smaller things (a cat, a fox far away) - they never count as a person / alarm
                 small_area = min(min_area, float(CFG["track_motion_min"]) / 100.0 * pw * ph) if CFG["track_motion"] else min_area
-                boxes = [b for b in (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= small_area) if zone_box_ok(b, pw, ph)]
+                boxes = [b for b in (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= small_area) if zone_box_ok(b, pw, ph, "person")]
                 if any(b[2] * b[3] >= min_area for b in boxes):
                     present.add("prealarm")              # pre-alarm: anything at all moves in the picture (before it is judged to be a person)
                 raw_boxes = list(boxes)

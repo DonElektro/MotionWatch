@@ -1208,6 +1208,12 @@ class Notifier:
              "Priority": {"person": "high", "warm": "high", "noise": "high", "prealarm": "default", "tamper": "urgent"}.get(ev, "default")}
         if p["link"]:
             h["Click"] = p["link"]
+        try:
+            acts = alx_ntfy_actions(p)                   # 2.98.13: buttons «False alarm · Siren · Off» (066)
+        except Exception:
+            acts = ""
+        if acts:
+            h["Actions"] = _hdr(acts)
         text = self._text(p)
         if jpg:
             h["Filename"] = fname; h["Message"] = _hdr(text); h["Content-Type"] = "image/jpeg"
@@ -1221,17 +1227,31 @@ class Notifier:
         base = f"{TELEGRAM_API}/bot{CFG['telegram_token']}"
         body_txt = self._text(p)
         text = self._title(p) + "\n" + body_txt + (("\n" + p["link"]) if p["link"] and p["link"] not in body_txt else "")
+        try:
+            mk = None if p.get("_no_kb") else alx_telegram_markup(p)    # 2.98.13: link buttons (066)
+        except Exception:
+            mk = None
+        if mk:
+            try:
+                return self._telegram_send(base, p, jpg, fname, text, mk)
+            except urllib.error.HTTPError as e:
+                if e.code != 400:
+                    raise
+                log_event("web", "Telegram refused the buttons (address of the page?) - sent without")
+        return self._telegram_send(base, p, jpg, fname, text, None)
+
+    def _telegram_send(self, base, p, jpg, fname, text, mk):
         if jpg:
             b = uuid.uuid4().hex
             parts = []
-            for k, v in (("chat_id", CFG["telegram_chat"]), ("caption", text)):
+            for k, v in (("chat_id", CFG["telegram_chat"]), ("caption", text)) + ((("reply_markup", json.dumps(mk)),) if mk else ()):
                 parts.append(f'--{b}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode())
             parts.append((f'--{b}\r\nContent-Disposition: form-data; name="photo"; filename="{fname}"\r\n'
                           f'Content-Type: image/jpeg\r\n\r\n').encode() + jpg + b"\r\n")
             parts.append(f"--{b}--\r\n".encode())
             req = urllib.request.Request(base + "/sendPhoto", data=b"".join(parts), headers={"Content-Type": "multipart/form-data; boundary=" + b})
         else:
-            req = urllib.request.Request(base + "/sendMessage", data=json.dumps({"chat_id": CFG["telegram_chat"], "text": text}).encode(),
+            req = urllib.request.Request(base + "/sendMessage", data=json.dumps(dict({"chat_id": CFG["telegram_chat"], "text": text}, **({"reply_markup": mk} if mk else {}))).encode(),
                                          headers={"Content-Type": "application/json"})
         with urllib.request.urlopen(req, timeout=15) as r:
             return r.status
