@@ -80,6 +80,15 @@ def _namen(name, text):
                 above = lines[j].strip()
                 break
         m = WRAPS_RE.search(above) or WRAPS_RE.search(lines[nd.lineno - 1])
+        if isinstance(nd, ast.ClassDef):                         # its methods (Klasse.methode = … later replaces one)
+            for m_ in nd.body:
+                if isinstance(m_, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    out.append((nd.name + "." + m_.name, m_.lineno, "method", False))
+        if (isinstance(nd, ast.Assign) and len(nd.targets) == 1 and isinstance(nd.targets[0], ast.Attribute)
+                and isinstance(nd.targets[0].value, ast.Name)):
+            out.append((nd.targets[0].value.id + "." + nd.targets[0].attr, nd.lineno, "=",
+                        bool(m and m.group(1) in (nd.targets[0].attr, nd.targets[0].value.id + "." + nd.targets[0].attr))))
+            continue
         if isinstance(nd, ast.Assign) and len(nd.targets) == 1 and isinstance(nd.targets[0], ast.Name):
             tg = nd.targets[0].id
             if isinstance(nd.value, ast.Name) and tg.startswith("_") and nd.value.id in tg:
@@ -103,7 +112,8 @@ def doppelte():
     wrapper, marked in the later part by
         _<name>_base = <name>        (any name with a leading «_» that contains <name>, above the new def), or
         # wraps: <name>              (comment on the line before the def / its decorator, or at the end of the def line)
-    Also a plain assignment «<name> = …» to a function of another part needs «# wraps: <name>».
+    Also a plain assignment «<name> = …» to a function of another part, or «Klasse.methode = …» to a method the class
+    already has, needs «# wraps: <name>».
     Returns the list of problems (empty = ok)."""
     defs, probs = {}, []
     alle = [(n, _namen(n, lesen(n))) for n in teile()]
@@ -112,10 +122,14 @@ def doppelte():
         for nm, ln, kind, marked in xs:
             if kind == "=" and nm not in funcs:
                 continue
+            if kind == "method":
+                if nm not in defs:
+                    defs[nm] = (n, ln)
+                continue
             if nm in defs and not marked:
-                probs.append("%s:%d %s %s – schon in %s:%d (Wrapper? «_%s_base = %s» oder «# wraps: %s» davor)"
-                             % (n, ln, kind, nm, defs[nm][0], defs[nm][1], nm, nm, nm))
-            if kind != "=":
+                tip = ("«# wraps: %s» davor" % nm) if "." in nm else ("«_%s_base = %s» oder «# wraps: %s» davor" % (nm, nm, nm))
+                probs.append("%s:%d %s %s – schon in %s:%d (Wrapper? %s)" % (n, ln, kind, nm, defs[nm][0], defs[nm][1], tip))
+            if kind != "=" and not (kind == "method" and nm in defs):
                 defs.setdefault(nm, (n, ln))
     return probs
 

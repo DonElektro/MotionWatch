@@ -123,6 +123,12 @@ def main():
     a = ap.parse_args()
     datei = a.datei or sorted(glob.glob(os.path.join(REPO, "webcam_bewegung_*.py")),
                               key=lambda p: [int(x) for x in re.findall(r"\d+", os.path.basename(p))])[-1]
+    import socket
+    with socket.socket() as sk:                              # the port is taken (another MoveEye): a free one
+        try:
+            sk.bind(("127.0.0.1", a.port))
+        except OSError:
+            sk.bind(("127.0.0.1", 0)); print("Port %d belegt – nehme %d" % (a.port, sk.getsockname()[1])); a.port = sk.getsockname()[1]
     rs = routen(datei)
     print("%d Adressen in %s" % (len(rs), os.path.basename(datei)))
     tmp = tempfile.mkdtemp(prefix="mw_rauch_")
@@ -139,14 +145,15 @@ def main():
     base = "http://127.0.0.1:%d" % a.port
     fehler, warn = [], []
     try:
-        for _i in range(90):
+        for _i in range(240):                                    # a busy computer needs a while
             if p.poll() is not None:
                 sys.exit("MoveEye hat sich beendet:\n" + open(os.path.join(tmp, "motionwatch.log")).read()[-3000:])
             if holen(base + "/manifest.webmanifest", timeout=2)[0] == 200:
                 break
             time.sleep(1)
         else:
-            sys.exit("Webseite nicht erreichbar:\n" + open(os.path.join(tmp, "motionwatch.log")).read()[-3000:])
+            mlog = os.path.join(cfg, "motionwatch.log")
+            sys.exit("Webseite nicht erreichbar:\n" + (open(mlog, errors="replace").read()[-3000:] if os.path.isfile(mlog) else ""))
         n_pub = n_zu = 0
 
         def eine(r):
