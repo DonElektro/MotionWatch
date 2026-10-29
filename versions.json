@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 16:42",
+ "generated": "2026-10-29 17:35",
  "versions": [
   {
-   "version": "2.98.22",
-   "file": "webcam_bewegung_2_98_22.py",
+   "version": "2.98.23",
+   "file": "webcam_bewegung_2_98_23.py",
    "url": "",
-   "sha256": "4487e3c1c1016b45d49f13a64ca86f8f5e1dec37769143512ac4dcfde187621d",
-   "date": "2026-10-29 16:42",
-   "notes": "Wärmebild läuft mit: sobald eine Wärmebild-Kamera gewählt ist, sucht MoveEye darin Tag und Nacht nach Personen – auch wenn Überlagerung und Wärme-Alarm aus sind. Ältere Einstellungen werden einmal umgestellt (Ausschalten bleibt möglich: «… auch am Tag»).",
-   "sig": "ba08763112c733ba3c853f18c67d5107c6009b0e59bf590165e5cd4ff5b4cc865869f398e52f9cd73d53d433718450c2772c1feb6d0cec5d33aa9f9ca5496b01"
+   "sha256": "5ba8414fabf42fcf1302d11075f88ceed31e2ce1d42cc9c3250b20383511e105",
+   "date": "2026-10-29 17:34",
+   "notes": "Aufräumen: «Nachtblick» heisst «Dunkle Ansicht», Testen nur noch an einer Stelle (Karte «Testen»), KI-Modell in einer Gruppe, «Dein Platz» (früher Zwilling), KI-Daten aufräumen (Vielfalt im Paket, alte Pakete weg, PC-Hilfe mit eigenem Modell), Anmelden nur verschlüsselt (Passwort von anderen Geräten nur über https).",
+   "sig": "95bda1da6e807c3b4fb7fc85fda154636627bc089beb9dcb68a2d4f3c2c987f79663f1e15563e164708b14ceaea7bfc9adf4220ff8672012dadd3076832fd10b"
   },
   {
    "version": "2.97.1",

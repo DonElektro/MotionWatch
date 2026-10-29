@@ -1,12 +1,12 @@
 {
- "version": "3D-4.5",
+ "version": "3D-4.6",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31484593,
- "sha256": "d9b63fb3172033423391211ec74e0f50d3a38915ab05b74cb1e3054eeb7cf632",
- "notes": "Spiel-Extras",
+ "size": 31493167,
+ "sha256": "647c446e72690192260b3d3c11a3217b73463bd8cf2a423d5298514864cffc8a",
+ "notes": "«Dein Platz» ein Fenster (Zelt, bewachte Sachen), Tarn-Look nur als Tarn-Sache, Teams nur bei Fahne erobern, KI-Daten aufräumen",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24605718,
-  "sha256": "d56736892b90ff5889edbee68ab019d4a5eaf5e6aee2cb5aaa449b26f13f9432"
+  "size": 24615622,
+  "sha256": "cfe4443bb4e3f5a47d57d5f5cd5c055f77a856b31adc70f8e9eeb6e7fb5f47c4"
  }
 }
