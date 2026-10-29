@@ -40,6 +40,8 @@ main{padding:16px;max-width:720px;margin:0 auto}
     <textarea id="fb-t" rows="5" maxlength="3000"></textarea>
     <div class="btns"><button type="button" id="fb-s" data-i18n="Send">Send</button></div><div class="mut" id="fb-r"></div>
   </div>
+  <div id="g2-more"></div>
+  <div id="g2-sys"></div>
 </main>
 <script>
 /*COMMON*/

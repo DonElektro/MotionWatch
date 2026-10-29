@@ -108,6 +108,11 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `510_web_kopf_alarm.py` | Web: Service Worker, Kopf, Alarm, gemeinsames JavaScript | 494 |
 | `520_web_seiten_kameras_zonen_tagebuch.py` | Web: Kameras, Zonen, Tagebuch, Gast, Protokoll | 730 |
 | `523_web_zeitleiste.py` | Web: Seite «Zeitleiste» (Verlauf), /api/timeline, /api/weekreport | 330 |
+| `516_web_guide2.py` | Web: Guide 2 – Einrichtung schnell / ausgiebig, Rundgänge mit Sprechblasen, Einfach/Experte pro Seite, «Tipps & Tricks», «?» bei Einstellungen, Tipp des Tages, Werkseinstellungen (/g2/ui.js) | 560 |
+| `584_fenster_guide2.py` | Fenster: Guide 2 – Einrichtung, Rundgang pro Reiter (Rahmen + Textfeld), «?» bei Einstellungen, Tipp des Tages, Werkseinstellungen | 420 |
+| `586_guide2.py` | Guide 2: Zustand der Einrichtung (CFG guide2), Schritte und Hardware, Einfach/Experte pro Seite, Hilfetexte, Tipp des Tages, «Auf Werkseinstellungen zurücksetzen» (Kopie, was bleibt / gelöscht wird) | 480 |
+| `633_uebersetzungen_guide2.py` | Übersetzungen und Anleitungs-Kapitel «Einrichtung, Rundgänge und Tipps» zu Guide 2 | 330 |
+| `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |
 | `535_web_erkennung.py` | Web: Gehtest (Live, Schutz), Akku-Sparen auf der Schutz-Seite | 119 |

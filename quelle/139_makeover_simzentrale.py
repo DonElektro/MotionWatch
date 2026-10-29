@@ -45,7 +45,7 @@ def sim_hub(force=False):
             d["rover"] = None
         d["rover_alarm"] = bool(CFG.get("rover_alarm"))
     d["demo"] = {"busy": DEMO_RUN["busy"], "i": DEMO_RUN["i"], "n": DEMO_RUN["n"]}
-    d["simple"] = bool(CFG.get("ui_simple"))                # 2.98.14: «Simple» shows the assistant instead of the single tools
+    d["simple"] = page_simple("sim")                      # 2.98.14: «Simple» shows the assistant instead of the single tools
     d["tune"] = {"busy": TUNEA["busy"], "step": TUNEA["step"], "last": bool(TUNEA.get("last"))}
     d["devices"] = len(CFG.get("fleet") or [])
     if d.get("ok"):                                         # the twin, back from the simulator (place, mast)
@@ -322,7 +322,7 @@ SIMHUB_JS = r"""
     if (full) { [["world", "🌍 " + tt("World")], ["test", "🧪 " + tt("Testing")], ["learn", "🎓 " + tt("Learning")], ["play", "🎮 " + tt("Playing")]].forEach(([id, h]) => {
         if (G[id].children.length) box.append(E("div", "shubh", h), G[id]); });
       const sx = B(H.simple ? "🧰 " + tt("Show all tools («Expert»)") : "🎯 " + tt("Only the assistant («Simple»)"), async () => {
-        try { await fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !H.simple})}); } catch (e) {} H.simple = !H.simple; paintAll(); });
+        try { await fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !H.simple, page: "sim"})}); } catch (e) {} H.simple = !H.simple; paintAll(); });
       sx.style.cssText = "margin-top:10px;font-size:12px"; box.appendChild(sx); }   // 2.98.14: four groups, Simple / Expert
     else box.appendChild(g);
     if (open && full && G[GRP[open] || "world"].parentNode) { const hold = E("div"); G[GRP[open] || "world"].after(hold); sheet(hold, open); }   // the sheet right under its group

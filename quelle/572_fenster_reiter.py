@@ -19,9 +19,16 @@ def _tk_history_bar(self, parent):
 
 
 def _tk_more_bar(self, parent):
-    return self._tk_bar(parent, [("? " + tr("Manual"), self._open_help), ("🎲 " + tr("Game corner"), lambda: self._open_page("/party")),
-                                 ("🛠 " + tr("Tools"), lambda: self._open_page("/tools")), ("💬 " + tr("Feedback to the developer"), self._feedback),
-                                 ("🌐 " + tr("Overview"), lambda: self._open_page("/more"))])
+    def setup():                                     # 586 / 584: the one guide (start again or continue)
+        g_ = g2_state()
+        g2_action({"action": "again"} if g_["finished"] or not g_["mode"] else {"action": "resume"}, "window"); self._g2_wizard()
+    f = self._tk_bar(parent, [("? " + tr("Manual"), self._open_help), ("🎲 " + tr("Game corner"), lambda: self._open_page("/party")),
+                              ("🛠 " + tr("Tools"), lambda: self._open_page("/tools")), ("💬 " + tr("Feedback to the developer"), self._feedback),
+                              ("🌐 " + tr("Overview"), lambda: self._open_page("/more")), ("🧭 " + tr("Setup"), setup),
+                              ("↺ " + tr("Reset all tours"), lambda: (g2_action({"action": "tours_reset"}, "window"), self._status("Setup", tr("All tours will show again.")))),
+                              (tr("⚠ Reset to factory settings …"), self._g2_factory)])
+    self._g2_more_bar = f
+    return f
 
 
 def _tk_sim_head(self, inner):

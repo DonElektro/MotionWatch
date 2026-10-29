@@ -154,7 +154,7 @@ def tune_assist_state(lang=None):
                     "total": run.get("total_s") if isinstance(run, dict) else None},
             "missing": tune_assist_check(L), "last": last, "score": runs[-1]["score"] if runs else None,
             "keys": {k: bool(CFG.get(k)) for k in TUNEA_KEYS}, "train_hour": int(CFG.get("train_hour", 1)),
-            "auto_status": str(STATE.get("auto_status") or ""), "simple": bool(CFG.get("ui_simple")), "sim_on": bool(CFG.get("sim_on"))}
+            "auto_status": str(STATE.get("auto_status") or ""), "simple": page_simple("sim"), "sim_on": bool(CFG.get("sim_on"))}
 
 
 # ---- the page part (main page: Einstellungen → Erkennung; Simulator tab: tile «Erkennung verbessern») ------------------------

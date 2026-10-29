@@ -1169,6 +1169,7 @@ class App:
             self._ibtn(ctl, "◐", self.toggle_theme, tk_theme_tip(), on=bool(CFG.get("tk_night"))).pack(side="right", padx=(0, 6))   # Hell → Dunkel → Rotlicht (578)
             self._ibtn(ctl, "✉", self._messages_win, tr("Message list")).pack(side="right", padx=(0, 6))     # 2.98.13
             self._ibtn(ctl, "◷", lambda: tk_timeline_win(self), tr("Night timeline")).pack(side="right", padx=(0, 6))   # 2.98.14 (575)
+            self._ibtn(ctl, "?", lambda: self._g2_tour(self.tab, True), tr("Tour of this page")).pack(side="right", padx=(0, 6))   # 584
             self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
             self.b_fs.pack(side="right", padx=(0, 6))
             vb = self._ibtn(ctl, "☰", lambda: None, tr("View") + " – " + tr("show / hide fields"))
@@ -1726,8 +1727,13 @@ class App:
         poll()
 
     def _set_simple(self, v):
-        if bool(CFG["ui_simple"]) != v:
-            CFG["ui_simple"] = v; save_settings(); self._simple_seen = v; self.root.after(30, self._rebuild)
+        """586: Simple / Expert of THIS tab (the default stays - it is chosen in the guide)"""
+        tab = self.tab
+        if page_simple(tab) != v:
+            m_ = page_modes(); m_[tab] = "simple" if v else "expert"
+            if v == bool(CFG["ui_simple"]):
+                m_.pop(tab)
+            web_ui_update({"mw-page-mode": json.dumps(m_)}); self.root.after(30, self._rebuild)
 
     def _protect(self, level):
         """2.95.105: protection level; switching off needs the PIN if one is set"""
@@ -1782,13 +1788,14 @@ class App:
         if tab != "sim":
             mrow.pack(fill="x", pady=(0, 10))
         self._simple_seen = bool(CFG["ui_simple"])
+        _G2_SIMPLE.v = page_simple(tab)                    # 586: Simple / Expert of this tab (simple_hidden in the window thread)
         for i, (val, lab) in enumerate(((True, tr("Simple")), (False, tr("Expert")))):
-            on = bool(CFG["ui_simple"]) == val
+            on = page_simple(tab) == val
             l = tk.Label(mrow, text=lab, font=("DejaVu Sans", 9, "bold"), pady=4, cursor="hand2",
                          bg=C["acc"] if on else C["field"], fg="#ffffff" if on else C["mut"])
             l.pack(side="left", fill="x", expand=True, padx=(0 if i == 0 else 1, 0))
             l.bind("<Button-1>", lambda e, v=val: self._set_simple(v))
-        if CFG["ui_simple"] and tab != "sim":
+        if page_simple(tab) and tab != "sim":
             tk.Label(inner, text=tr("Simple: only the important settings. «Expert» shows all of them."), bg=C["bg"], fg=C["mut"],
                      font=("DejaVu Sans", 8), anchor="w", justify="left", wraplength=330).pack(fill="x", pady=(0, 8))
         self.grp_meta = {}; self._open_before = None
@@ -2017,12 +2024,13 @@ class App:
             if s != sec or simple_hidden(key) or (CFG["lock_on"] and key in LOCK_DENY_KEYS): continue
             if key in TK_AI_MODEL_KEYS: continue           # 2.98.23: in the group «KI-Modell» below
             tg = Toggle(sp, tr(label), CFG[key], lambda val, k=key: self._set(k, val)); tg.pack(fill="x", pady=3)
-            self.vars[key] = tg
+            self.vars[key] = tg; self._g2_q(tg, key)          # «?»: explanation + recommendation (584)
         for s, key, label, lo, hi, step in SLIDERS:
             if s != sec or simple_hidden(key): continue
             row = ttk.Frame(sp); row.pack(fill="x", pady=(6, 0))
             ttk.Label(row, text=tr(label)).pack(side="left")
             vl = ttk.Label(row, text=str(CFG[key]), style="Mut.TLabel"); vl.pack(side="right"); self.value_labels[key] = vl
+            self._g2_q(row, key)
             v = tk.DoubleVar(value=CFG[key]); self.vars[key] = v
             sc = ttk.Scale(sp, from_=lo, to=hi, variable=v, orient="horizontal",
                            command=lambda val, k=key, st=step: self._slide(k, float(val), st))
@@ -2251,7 +2259,7 @@ class App:
         if sec == "Auto-tune":
             bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(8, 0))
             ttk.Button(bf, text=tr("Recalibrate (scene empty)"), command=self.watch.tuner.reset).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(bf, text=tr("Reset all settings"), command=self._reset_settings).pack(side="left", expand=True, fill="x")
+            ttk.Button(bf, text=tr("⚠ Reset to factory settings …"), command=self._reset_settings).pack(side="left", expand=True, fill="x")
 
     def _set_adv(self, gid, open_, save=True):
         ah, ab = self.adv[gid]
@@ -2892,10 +2900,7 @@ class App:
             c.yview_scroll(direction, "units")
 
     def _reset_settings(self):
-        theme, lang, hidden = CFG["theme"], CFG["lang"], CFG["ui_hidden"]
-        reset_settings()
-        CFG["theme"], CFG["lang"], CFG["ui_hidden"] = theme, lang, hidden     # keep the chosen look, language and view
-        save_settings(); self._schedule_rebuild()
+        self._g2_factory()                               # 586 / 584: «Reset to factory settings» (password / PIN, typed word, backup)
 
     # ---- collapsible sections -------------------------------------------
     def _set_section(self, sec, open_, save=True):
@@ -3658,7 +3663,7 @@ class App:
 
     def run(self):
         if not CFG["setup_done"] and not CFG["lock_on"]:
-            self.root.after(1500, lambda: self._qr_window(True))
+            self.root.after(1500, self._g2_first)            # the one guide (584); the QR codes come at its end
         self.root.mainloop()
 
 
