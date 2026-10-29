@@ -17,6 +17,7 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 | Datum | Motion Watch | Simulator | Testlauf | Pushes richtig / falsch | Personen erkannt | Wärmebild | nah / mittel / weit | Reaktion | Tiere gemeldet | Flackern | Bilder/s | KI | Rechner |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-29 19:16 | 2.98.29 | 3D-4.9 | Kurz (Tag + Nacht) | **3** / **0** | 10 / 10 (**100 %**) | – | 7/7 / 3/3 / – | 1.2 s | 4 / 4 | 4 | 2.8 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
 | 2026-10-29 17:50 | 2.98.27 | 3D-4.8 | Kurz (Tag + Nacht) | **2** / **1** | 9 / 10 (**90 %**) | – | 6/7 / 3/3 / – | 1.2 s | 4 / 4 | 7 | 4.4 | mit KI | GitHub (ubuntu, 4 Kerne) |
 | 2026-10-29 17:50 | 2.98.27 | 3D-4.8 | Nacht | **3** / **0** | 6 / 12 (**50 %**) | 2 / 8 | 3/3 / 1/1 / – | 1.1 s | 5 / 8 | 0 | 4.6 | mit KI | GitHub (ubuntu, 4 Kerne) |
 | 2026-10-29 17:50 | 2.98.27 | 3D-4.8 | Standard (Tag, Wind, Nacht, Regen) | **6** / **1** | 19 / 22 (**86 %**) | 5 / 8 | 6/6 / 6/6 / 2/2 | 0.8 s | 7 / 10 | 2 | 4.6 | mit KI | GitHub (ubuntu, 4 Kerne) |
@@ -84,45 +85,10 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 ## Einzelheiten pro Phase (letzter Lauf)
 
-**Kurz (Tag + Nacht)** – 2026-10-29 17:50, Motion Watch 2.98.27
+**Kurz (Tag + Nacht)** – 2026-10-29 19:16, Motion Watch 2.98.29
 
 | Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
 |---|---|---|---|---|---|---|---|
-| Tag, Wind | 1 / 0 | 6 / 6 | – | 0.6 s | 2 / 2 | 5 | – |
-| Nacht mit Infrarot | 1 / 1 | 3 / 4 | – | 2.3 s | 2 / 2 | 2 | 1× zu dunkel |
-
-**Nacht** – 2026-10-29 17:50, Motion Watch 2.98.27
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Nacht, ohne Licht | 0 / 0 | 0 / 4 | 0 / 4 | – | 1 / 3 | 0 | 4× zu dunkel, 4× zu klein / weit weg |
-| Nacht, Infrarot an | 2 / 0 | 4 / 4 | – | 0.9 s | 4 / 4 | 0 | – |
-| Nacht, Regen | 1 / 0 | 2 / 4 | 2 / 4 | 1.5 s | 0 / 1 | 0 | 2× zu dunkel, 2× zu klein / weit weg |
-
-**Standard (Tag, Wind, Nacht, Regen)** – 2026-10-29 17:50, Motion Watch 2.98.27
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Tag, klar | 3 / 0 | 8 / 8 | – | 1.0 s | 4 / 4 | 0 | – |
-| Tag, Wind und Wolken | 1 / 0 | 6 / 6 | – | 0.7 s | 2 / 2 | 2 | – |
-| Nacht, klar (Insekten am Licht) | 1 / 1 | 3 / 4 | 3 / 4 | 1.1 s | 1 / 4 | 0 | 1× zu dunkel, 1× zu klein / weit weg |
-| Nacht, Regen | 1 / 0 | 2 / 4 | 2 / 4 | 0.4 s | 0 / 0 | 0 | 2× zu dunkel, 2× zu klein / weit weg |
-
-**Ganze Nacht (20–6 Uhr, Zeitraffer)** – 2026-10-29 17:50, Motion Watch 2.98.27
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Abend, Dämmerung | 1 / 0 | 1 / 1 | 1 / 1 | 0.6 s | 0 / 2 | 0 | – |
-| Nacht, Windböen | 0 / 0 | 0 / 0 | – | – | 0 / 3 | 0 | – |
-| Nacht, Regenschauer | 0 / 0 | 0 / 0 | – | – | 0 / 2 | 0 | – |
-| Mitternacht, nach dem Regen | 0 / 0 | 0 / 1 | 0 / 1 | – | 0 / 2 | 0 | 1× zu dunkel, 1× zu klein / weit weg |
-| Tiefe Nacht | 0 / 0 | 0 / 0 | – | – | 0 / 4 | 0 | – |
-| Morgendämmerung | 0 / 1 | 0 / 0 | – | – | 2 / 2 | 1 | – |
-
-**Kurz (Tag + Nacht) · ohne Kamera-Effekte** – 2026-10-29 17:50, Motion Watch 2.98.27
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Tag, Wind | 2 / 0 | 6 / 6 | – | 0.5 s | 2 / 2 | 1 | – |
-| Nacht mit Infrarot | 1 / 0 | 4 / 4 | – | 1.0 s | 2 / 2 | 1 | – |
+| Tag, Wind | 2 / 0 | 6 / 6 | – | 0.8 s | 2 / 2 | 0 | – |
+| Nacht mit Infrarot | 1 / 0 | 4 / 4 | – | 1.9 s | 2 / 2 | 4 | – |
 
