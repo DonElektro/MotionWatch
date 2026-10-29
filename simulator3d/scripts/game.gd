@@ -2625,6 +2625,7 @@ table{border-collapse:collapse;margin:8px auto;font-size:14px}td{padding:4px 8px
 .duel span{display:block;font-size:46px;font-weight:800;line-height:1.1}.duel .win{border-color:var(--grn);background:#34c75922}.duel i{align-self:center;font-style:normal;font-size:30px;font-weight:800}
 .chips button[disabled]{opacity:.45}
 body.aim #v{outline:4px dashed var(--org);outline-offset:-4px}
+#padh{position:fixed;left:50%;bottom:max(8px,env(safe-area-inset-bottom));transform:translateX(-50%);background:#111822dd;border:1px solid var(--line);border-radius:10px;padding:3px 10px;font-size:12px;color:#cfd8e3;pointer-events:none;white-space:nowrap}
 </style></head><body>
 <img id="v" alt="">
 <div class="top"><span class="pill" id="me"><span class="dot"></span><b id="nm">…</b> <span id="lv"></span></span>
@@ -2638,6 +2639,7 @@ body.aim #v{outline:4px dashed var(--org);outline-offset:-4px}
 <div class="btns" id="wb" style="display:none"><div class="b" id="b-vote"><i>🔮</i>Tipp</div><div class="b" id="b-wst"><i>🪨</i>Lockstein</div></div>
 <div class="btns" id="gb" style="display:none"><div class="b" id="b-light"><i>💡</i>Licht</div><div class="b big red" id="b-catch"><i>🚨</i>Erwischt!</div></div>
 <div id="tip" hidden></div>
+<div id="padh" hidden>🎮 Controller verbunden</div>
 <div id="pic" hidden><img id="picimg" alt=""><div id="pictxt"></div></div>
 <div id="tut"></div><div id="side"><button id="full" title="Vollbild">⛶</button><button id="snd" title="Ton">🔊</button><button id="leave" title="Spiel verlassen">🚪</button></div>
 <div id="msg"></div>
@@ -2919,12 +2921,38 @@ const keys = {};
 addEventListener("keydown", e => { if (e.target.tagName === "INPUT") return; keys[e.code] = true; if (e.code === "KeyC") { posture = posture === 1 ? 0 : 1; btns(); } if (e.code === "KeyX") { posture = posture === 2 ? 0 : 2; btns(); }
   if (e.code === "KeyF") send({t: role === "guard" ? "light" : st.mode === "jaeger" ? "act" : "stone"}); if (e.code === "Space") send({t: "catch"}); });
 addEventListener("keyup", e => { keys[e.code] = false; });
+// 3D-4.x (wish of Daniel): a game controller at this phone, tablet or computer (Bluetooth or USB, Gamepad API, standard
+// mapping) sends the same messages as the touch buttons: left stick / D-pad = go (guard: turn the head), right stick = look
+// round, RT / RB / L3 = run, A = throw / «Erwischt!», B = crouch / light, X = crawl / light, Y = lamp, Start = start the round
+let gpOld = [], gpName = "";
+function padRead() {
+  let g = null; try { g = [...(navigator.getGamepads ? navigator.getGamepads() : [])].find(x => x && x.connected); } catch (e) {}
+  const nm = g ? String(g.id).replace(/[(].*?[)]/g, "").trim().slice(0, 30) : "";
+  if (nm !== gpName) { gpName = nm; const h = $("#padh"); h.hidden = !g; h.textContent = "🎮 Controller verbunden" + (nm ? ": " + nm : ""); if (g) $("#hint").style.display = "none"; }
+  if (!g || document.hidden) { gpOld = []; return null; }
+  const B = i => !!(g.buttons[i] && (g.buttons[i].pressed || g.buttons[i].value > 0.5)), hit = i => B(i) && !gpOld[i];
+  const dz = (x, y) => { const l = Math.hypot(x, y), d = 0.18; if (l <= d) return [0, 0]; const k = Math.min(1, (l - d) / (1 - d)); return [x / l * k, y / l * k]; };
+  let [lx_, ly_] = dz(g.axes[0] || 0, g.axes[1] || 0); const [rx_, ry_] = dz(g.axes[2] || 0, g.axes[3] || 0);
+  lx_ += (B(15) ? 1 : 0) - (B(14) ? 1 : 0); ly_ += (B(13) ? 1 : 0) - (B(12) ? 1 : 0);
+  const l = Math.hypot(lx_, ly_); if (l > 1) { lx_ /= l; ly_ /= l; }
+  const g_ = role === "guard";
+  if (hit(0)) send({t: g_ ? "catch" : st.mode === "jaeger" ? "act" : "stone"});
+  if (hit(1)) { if (g_) send({t: "light"}); else { posture = posture === 1 ? 0 : 1; btns(); } }
+  if (hit(2)) { if (g_) send({t: "light"}); else { posture = posture === 2 ? 0 : 2; btns(); } }
+  if (hit(3) && !g_) send({t: "lamp"});
+  if (hit(9) && (st.rs === "lobby" || st.rs === "end")) send({t: "start"});
+  gpOld = g.buttons.map((x, i) => B(i));
+  return {mx: lx_, my: ly_, look: rx_ * 12, pitch: ry_ * 8, run: B(7) || B(5) || B(10)};
+}
 setInterval(() => {
+  const P = padRead();
   if (!me || !ws || ws.readyState !== 1) return;
+  if (P) { look += P.look; pitch += P.pitch; }
   let kx = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0), ky = (keys.KeyS || keys.ArrowDown ? 1 : 0) - (keys.KeyW || keys.ArrowUp ? 1 : 0);
   if (keys.KeyQ) look -= 6; if (keys.KeyE) look += 6;
-  const r = run || keys.ShiftLeft || keys.ShiftRight;
-  const d = {t: "in", mx: sid !== null ? mx : kx, my: sid !== null ? my : ky, look: Math.round(look * 10) / 10, pitch: Math.round(pitch * 10) / 10, run: !!r, pos: posture};
+  const r = run || keys.ShiftLeft || keys.ShiftRight || (P && P.run);
+  const usePad = sid === null && P && (P.mx || P.my) && !kx && !ky;
+  const d = {t: "in", mx: sid !== null ? mx : usePad ? Math.round(P.mx * 100) / 100 : kx, my: sid !== null ? my : usePad ? Math.round(P.my * 100) / 100 : ky, look: Math.round(look * 10) / 10, pitch: Math.round(pitch * 10) / 10, run: !!r, pos: posture};
   look = 0; pitch = 0;
   const j = JSON.stringify(d), now = Date.now();
   if (j !== lastSent || now - lastT > 250 || d.look || d.pitch) { ws.send(j); lastSent = j; lastT = now; }
