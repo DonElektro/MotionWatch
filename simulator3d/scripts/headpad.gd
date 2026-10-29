@@ -2,7 +2,7 @@ extends PanelContainer
 ## 3D-3.77: «Kopf steuern» - turn the head of MoveEye from the simulator window: big arrows (hold = keeps turning),
 ## centre, the white light, and the picture of the head camera (drag in it = turn). MoveEye does it (2.95.103,
 ## request «look» / «light» through mw_cmd) - like the arrows on its own page. In a game with a PC guard the game turns
-## the head (localplay.gd).
+## the head (localplay.gd). A game controller turns the head too (explore.gd _head_tick: D-pad or L1 + right stick).
 
 var main
 var img: TextureRect
@@ -99,6 +99,8 @@ func _process(dt: float) -> void:
 	info.text = ("Den Kopf steuert gerade: %s – deine Befehle wirken erst danach." % own if con and own != ""
 			else ("MoveEye dreht den Kopf (auch Tracking und Patrouille pausieren kurz)." if con
 			else "MoveEye ist nicht verbunden – zuerst «An MoveEye senden» und MoveEye verbinden."))
+	if main.localplay != null and main.localplay.pad_on():    # 3D-4.x: the controller turns the head too (explore.gd _head_tick)
+		info.text += "\nController: Steuerkreuz oder L1 + rechter Stick drehen den Kopf."
 	if _hold != "":
 		_hold_t -= dt
 		if _hold_t <= 0.0:

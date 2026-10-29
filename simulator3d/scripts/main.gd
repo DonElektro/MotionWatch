@@ -3339,7 +3339,7 @@ func _register_controls() -> void:
 	add_control("toggle", "game_ghost", "Geisterläufer: der eigene beste Weg läuft als Geist mit (nur die Spieler sehen ihn)", func(): return game_ghost, func(v): game_ghost = v, "Spiel")
 	add_control("toggle", "game_heart", "Herzschlag, wenn die Kamera dich gleich sieht (Handy vibriert)", func(): return game_heart, func(v): game_heart = v, "Spiel")
 	add_control("toggle", "game_botguard", "Bot-Wächter, wenn niemand Wächter sein will (Spielart «Wächter»)", func(): return game_botguard, func(v): game_botguard = v, "Spiel")
-	add_control("button", "game_local", "Hier am PC mitspielen (Tastatur und Maus)", null, func(): localplay.start("runner"), "Spiel")
+	add_control("button", "game_local", "Hier am PC mitspielen (Tastatur, Maus oder Controller)", null, func(): localplay.start("runner"), "Spiel")
 	add_control("button", "game_local_guard", "Hier am PC Wächter sein (Kopf drehen, «Erwischt!»)", null, func(): localplay.start("guard"), "Spiel")
 	add_control("toggle", "game_tasks", "Aufgabe für jede Runde (z. B. nur kriechend ins Ziel, Bonus)", func(): return game_tasks, func(v): game_tasks = v, "Spiel")
 	add_control("toggle", "game_autohandicap", "Handicap für den Ersten der Rangliste", func(): return game_autohandicap, func(v): game_autohandicap = v, "Spiel")
@@ -3804,6 +3804,8 @@ func _control(d: Dictionary) -> Dictionary:
 		if explore == null:
 			return {"ok": false, "error": "no explore"}
 		explore.remote_pad(d.get("ax", []), d.get("bt", []), str(d.get("name", "")))
+		if d.has("hold"):                              # for tests on a slow PC: the values stay valid for «hold» s
+			explore.rp_t = now() + clampf(float(d["hold"]), 0.0, 30.0)
 		return {"ok": true, "on": explore.on, "view": explore.view}
 	elif a == "patrol":                                # 3D-3.61: «Patrouille» (for tests and remote): {on, points: [[x, z], …], area: [x, z, w, d], mode}
 		if patrol == null:
