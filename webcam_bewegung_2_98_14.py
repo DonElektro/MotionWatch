@@ -5184,7 +5184,7 @@ def _alx_loop():
                 h = presence_home()
             except Exception:
                 h = None
-            if h is True and home is False and CFG.get("back_ask"):
+            if h is True and home is False and presence_back_mode() == "ask":     # 2.98.15: the choice presence_back (577)
                 back_t = time.time() + 3.0               # first let the presence switch off the protection by itself (150)
             home = h if h is not None else home
             if back_t and time.time() >= back_t:
@@ -6661,14 +6661,12 @@ def morning_add(text, jpg=None):
 
 
 def morning_wait(now):
-    """2.98.1: in the first 10 minutes wait for the panorama / the simulator week, so they come in the same push"""
+    """2.98.1: in the first 10 minutes wait for the panorama, so it comes in the same push (the simulator week: weekly report, 426)"""
     if now.minute >= 10:
         return False
     day = now.strftime("%Y-%m-%d")
     try:
         if CFG.get("refscan_pano_on") and (PANO.get("busy") or (PANO.get("day") != day and CFG.get("refscan_pano_day") != day)):
-            return True
-        if now.weekday() == 0 and CFG.get("simweek_on") and CFG.get("sim_on") and CFG.get("simweek_last") != now.strftime("%G-W%V"):
             return True
     except NameError:
         pass
@@ -9455,6 +9453,8 @@ def protect_level():
 def protect_label(arm_state, left=0, lang=None):
     """2.98.0: one name for the state everywhere (web, window, alarm window): Aus / Wachsam / Voll"""
     lv = tr("Full protection", lang) if (CFG.get("protect_level") == "full") else tr("Watchful", lang)
+    if arm_state in ("armed", "arming") and walktest_on():    # 2.98.15: during the walk test no alarms - say so (415)
+        return tr("Walk test", lang)
     if arm_state == "armed":
         return lv
     if arm_state == "arming":
@@ -9509,10 +9509,11 @@ def protect_status(lang=None, force=False):
     k = L + str(CFG["armed"]) + str(CFG.get("protect_level")) + str(PROTECT["test"]["busy"]) + str(len(PROTECT["test"]["steps"]))
     if not force and _PROT_CACHE["v"] is not None and _PROT_CACHE["k"] == k and time.time() - _PROT_CACHE["t"] < 3.0:
         v = dict(_PROT_CACHE["v"]); v["arm"] = STATE.get("arm_state"); v["left"] = STATE.get("arm_left", 0)
+        v["walk"] = walktest_on()
         return v
     v = _protect_status(L)
     _PROT_CACHE.update(t=time.time(), k=k, v=v)
-    return v
+    return dict(v, walk=walktest_on())                     # 2.98.15: walk test running = the state shows «Gehtest»
 
 
 def _protect_status(L):
@@ -9574,7 +9575,7 @@ def _protect_status(L):
                            "missing": it["name"] in miss})
     return {"level": lv, "chosen": CFG.get("protect_level") or "off", "arm": STATE.get("arm_state"), "left": STATE.get("arm_left", 0),
             "colour": colour, "items": items, "device": "  ·  ".join(dev), "things": things, "pin": bool(CFG.get("protect_pin")),
-            "presence": {"on": bool(CFG.get("presence_auto")), "devices": len(CFG.get("presence_macs") or []) + len(CFG.get("presence_bt") or []),
+            "presence": {"on": bool(CFG.get("presence_auto")), "back": presence_back_mode(), "devices": len(CFG.get("presence_macs") or []) + len(CFG.get("presence_bt") or []),
                          "here": (TOOLS.get("presence") or {}).get("here")},
             "escalate": {"on": bool(CFG.get("escalate_on")), "s": int(CFG.get("escalate_siren_s", 30)), "pending": max(0, int(PROTECT["esc_t"] - time.time())) if PROTECT["esc_t"] else 0},
             "test": PROTECT["test"], "forecast": arm_forecast_text(L)}      # 2.98.13 (066)
@@ -11243,35 +11244,8 @@ def simdiary_stats(days=28):
             "versions": out_v[-10:], "total": len(vs)}
 
 
-def simweek_loop():
-    """Monday, at the hour of the night report: the week in the simulator as a push (when switched on)"""
-    while True:
-        time.sleep(60)                                     # 2.98.1: every minute (it must be ready before the night report)
-        try:
-            if not CFG.get("simweek_on"):
-                continue
-            now = datetime.now()
-            wk = now.strftime("%G-W%V")
-            if now.weekday() != 0 or now.hour < int(CFG.get("report_hour", 7)) or CFG.get("simweek_last") == wk:
-                continue
-            CFG["simweek_last"] = wk
-            save_settings()
-            st = simdiary_stats(7)
-            vis = sum(x["visits"] for x in st["days"])
-            if not vis:
-                continue
-            seen = sum(x["seen"] for x in st["days"]); rec = sum(x["rec"] for x in st["days"])
-            an = ", ".join(f"{k['k']} {k['n']}" for k in st["kinds"] if k["animal"])[:120]
-            txt = trf("Week in the simulator: {v} visits, persons recognised {r} % ({a} of {b}). Animals: {an}",
-                      v=vis, r=round(100 * rec / seen) if seen else "–", a=rec, b=seen, an=an or "–")
-            w = WATCH_REF.get("w")
-            if w is not None and not morning_add("🧪 " + txt):   # 2.98.1: with the night report when it is on
-                w.notifier.info(txt, title="{name}: " + tr("Simulator diary"))
-        except Exception as e:
-            log_event("sys", f"Week report: {e}"[:120])
-
-
-threading.Thread(target=simweek_loop, daemon=True, name="simweek").start()
+# 2.98.15 (Konzept-Check): the Monday push «Woche im Simulator» is now part of the one weekly report (426, weekrep_simweek) -
+# one message per week instead of two. The setting simweek_on became weekrep_sim (migration in 577).
 
 
 # ---- 20: the one-click demo ------------------------------------------------------------------------------------------
@@ -13109,13 +13083,15 @@ def presence_eval():
         was = P["here"]; P.update(here=is_here, since=now)
         if was is not None:
             log_event("sys", "Presence: " + ("your device is back" if is_here else "your device is gone"))
-            if CFG.get("presence_auto") and CFG.get("mode") != "transport":   # 2.97.0: not while travelling
-                if not is_here and PRESENCE.get("home") is True:
-                    log_event("sys", "Presence: your device is gone, but a device still answers the ping - not armed")
-                elif is_here and CFG["armed"]:
+            if CFG.get("mode") != "transport":                  # 2.97.0: not while travelling
+                # 2.98.15: «Wenn mein Handy zurückkommt: ausschalten / fragen / nichts» (presence_back, 577); presence_auto = arm when gone
+                if is_here and CFG["armed"] and presence_back_mode() == "off":
                     disarm(); log_event("sys", "Disarmed automatically (your device is here)")
-                elif not is_here and not CFG["armed"]:
-                    arm(); log_event("sys", "Armed automatically (your device is gone)")
+                elif not is_here and CFG.get("presence_auto"):
+                    if PRESENCE.get("home") is True:
+                        log_event("sys", "Presence: your device is gone, but a device still answers the ping - not armed")
+                    elif not CFG["armed"]:
+                        arm(); log_event("sys", "Armed automatically (your device is gone)")
 
 
 class WifiGuard:
@@ -14808,11 +14784,13 @@ class AutoTuner:
         self.new_candidates = self.became_person = self.near_miss = self.walkers = 0
         self.seen_ids = set()
         self.base_min_area = None
+        autotune_base_reset()                                   # 2.98.15: the ±20 % range (577)
         STATE["auto_status"] = "calibrating…"
         log_event("auto", "Auto-tune: calibrating - keep the scene empty for a few seconds")
 
     @staticmethod
     def _set(key, value, why):
+        value = autotune_clamp(key, value)                     # 2.98.15: at most ±20 % around the measured values (577)
         value = round(value, 2) if isinstance(CFG[key], float) else int(value)
         if value != CFG[key]:
             old = CFG[key]; CFG[key] = value
@@ -14844,6 +14822,7 @@ class AutoTuner:
                     self._set("sensitivity", max(10, CFG["sensitivity"] - 20), "noisy scene")
                 elif frac < 0.001:
                     self._set("sensitivity", min(90, CFG["sensitivity"] + 10), "very quiet scene")
+                autotune_base_set("calibration")                  # 2.98.15: the anchor of the ±20 % (unless the assistant measured)
                 STATE["auto_status"] = "tuned"
                 log_event("auto", "Auto-tune: calibration done, now adjusting live")
             return
@@ -21358,7 +21337,7 @@ def sim_auto_adopt():
 # other: a change stays only if the next test run is really better.
 OPT_KEYS = ["sensitivity", "min_area", "ai_conf", "ai_every", "ai_require", "wind_auto", "wind_threshold", "wind_boost_max",
             "rain_auto", "rain_threshold", "lowlight_auto", "lowlight_threshold", "walk_frames", "speed_consistency",
-            "shadow_filter", "car_filter", "object_conf", "auto_tune"]
+            "shadow_filter", "car_filter", "object_conf"]      # 2.98.15: no «auto_tune» - the optimizer never switches the tuner on / off
 TESTOPT = {"busy": "", "msg": "", "plan": "standard", "sim": {}, "runs": [], "undo": None, "sugg": [], "auto": None, "stop": False}
 _TESTOPT_LOCK = threading.Lock()
 
@@ -21614,6 +21593,8 @@ def opt_apply(changes, why="test run"):
 
 def opt_restore(snap, why="undo"):
     for k, v in (snap or {}).items():
+        if k == "auto_tune":                                 # 2.98.15: older snapshots - the tuner switch stays as the user set it
+            continue
         if k in CFG and isinstance(v, type(CFG[k])) or (k in CFG and isinstance(CFG[k], float) and isinstance(v, int)):
             CFG[k] = v; sched_user_changed(k)
     save_settings()
@@ -27666,6 +27647,7 @@ def self_test(folder=""):
         return None if node else "JavaScript not checked (node missing)"
     chk("Web pages (render + JavaScript)", pages)
     chk("Timeline, weekly report, blur faces when sharing", verlauf_selftest)     # 2.98.14 (425, 426, 375)
+    chk("One weekly report, return of the phone, auto-tuner ±20 % (migrations)", nachlauf_selftest)     # 2.98.15 (577)
 
     if folder:
         def manifest():
@@ -30096,6 +30078,8 @@ def timeline_text(tl, lang=None):
 #   · im Simulator-Tagebuch (355) verpasste Personen (im Bild, aber nicht erkannt)
 #   · dazu ein Tipp, der zur Woche passt.
 # Auch zu sehen: Verlauf → Zeitleiste (Karte «Wochenbericht») und im Fenster (Zeitleiste).
+# 2.98.15: der frühere Montags-Push «Woche im Simulator» (142) ist hier drin (Besuche, Tiere) – eine Nachricht pro Woche;
+# Einstellung weekrep_sim («mit der Woche im Simulator», übernommen aus simweek_on, 577).
 # ----------------------------------------------------------------------------
 WEEKREP = {"last": None}
 WEEKDAYS_EN = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
@@ -30200,7 +30184,11 @@ def weekrep_build(lang=None, now=None):
                      n=R[0], p=Rp[0], f=R[1], tr=_wr_trend(R[1], Rp[1], better_up=False)) +
                  ((" (" + ", ".join(f"{tr(WR_CAUSES.get(k, k), L)} {v}" for k, v in sorted(R[2].items(), key=lambda kv: -kv[1])) + ")") if R[2] else ""))
     lines.append(trf("Alarm messages: {n} (week before {p})", L, n=M, p=Mp))
-    if S["seen"]:
+    sim_on = bool(CFG.get("weekrep_sim", True))             # «Wochenbericht: mit der Woche im Simulator» (577, was simweek_on)
+    SW = weekrep_simweek(a, now, L) if sim_on else None        # 2.98.15: the former Monday push «week in the simulator» is part of it
+    if SW and SW["visits"]:
+        lines.append(trf("Week in the simulator: {v} visits. Animals: {an}", L, v=SW["visits"], an=SW["animals"] or "–"))
+    if sim_on and S["seen"]:
         lines.append(trf("Simulator diary: persons recognised {r} % ({a} of {b}) {tr}, missed {m}", L,
                          r=S["rate"], a=S["rec"], b=S["seen"], tr=_wr_trend(S["rate"], Sp.get("rate")), m=S["missed"]) +
                      ((" – " + ", ".join(f"{tr_trigger(k, L)} {v}" for k, v in S["miss_kinds"])) if S["miss_kinds"] else ""))
@@ -30208,9 +30196,20 @@ def weekrep_build(lang=None, now=None):
     text = "\n".join(lines) + "\n💡 " + tip
     return {"t": now.isoformat(timespec="seconds"), "from": a.strftime("%d.%m."), "to": now.strftime("%d.%m."),
             "tests": T, "tests_prev": Tp, "recs": {"n": R[0], "false": R[1], "causes": R[2]}, "recs_prev": {"n": Rp[0], "false": Rp[1]},
-            "msgs": M, "msgs_prev": Mp, "sim": S, "sim_prev": Sp, "weeks": weeks, "lines": lines, "tip": tip, "link": link, "text": text,
+            "msgs": M, "msgs_prev": Mp, "sim": S, "sim_prev": Sp, "simweek": SW, "with_sim": sim_on, "weeks": weeks, "lines": lines, "tip": tip, "link": link, "text": text,
             "on": bool(CFG.get("weekrep_on")), "day": CFG.get("weekrep_day"), "hour": int(CFG.get("weekrep_hour", 18)),
             "last": WEEKREP["last"]}
+
+
+def weekrep_simweek(a, b, L=None):
+    """2.98.15: what the Monday push «Woche im Simulator» (142) said - visits and animals of the simulator diary"""
+    try:
+        st = simdiary_stats(max(1, (b - a).days))
+    except Exception:
+        return None
+    vis = sum(int(x.get("visits") or 0) for x in st.get("days") or [])
+    an = ", ".join(f"{tr_trigger(k['k'], L)} {k['n']}" for k in st.get("kinds") or [] if k.get("animal"))[:120]
+    return {"visits": vis, "animals": an}
 
 
 def weekrep_tip(L, T, Tp, R, S, now):
@@ -30223,7 +30222,7 @@ def weekrep_tip(L, T, Tp, R, S, now):
         if sg:
             return trf("{n} false alarms this week. Suggestion: {s} (History → Recordings → false alarms)", L, n=R[1], s=sg[0]["text"]), "/recordings"
         return trf("{n} false alarms this week. Draw an ignore zone over what moves (trees, road) – tab Protection → Zones.", L, n=R[1]), "/zones"
-    if S["missed"] >= 2:
+    if S["missed"] >= 2 and CFG.get("weekrep_sim", True):
         return trf("In the simulator {n} persons were in the picture but not recognised. Run the test «Night» and the automatic optimization (Simulator → Testing).", L, n=S["missed"]), "/sim"
     if T["n"] and Tp.get("score") is not None and T["score"] <= Tp["score"] - 5:
         return tr("The test score went down. Look at what changed in the settings (Simulator → Test runs, «undo»).", L), "/sim"
@@ -31746,7 +31745,10 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
     <div class="tbd">
     <div class="big" id="pres-st">–</div>
     <div class="mut" id="pres-note" data-i18n="pres-note">pres-note</div>
-    <label class="opt"><span data-i18n="Disarm when my device comes, arm when it is gone">Disarm when my device comes, arm when it is gone</span><input type="checkbox" class="sw" id="cf-presence_auto" onchange="cfg('presence_auto',this.checked)"></label>
+    <label class="opt"><span data-i18n="Automatic: on when my phone is gone">Automatic: on when my phone is gone</span><input type="checkbox" class="sw" id="cf-presence_auto" onchange="cfg('presence_auto',this.checked)"></label>
+    <div class="trow"><span data-i18n="When my phone comes back:">When my phone comes back:</span> <select id="cf-presence_back" onchange="cfg('presence_back',this.value)">
+      <option value="off" data-i18n="switch the protection off">switch the protection off</option><option value="ask" data-i18n="ask «Is it you?» (person alarms wait)">ask «Is it you?» (person alarms wait)</option>
+      <option value="none" data-i18n="nothing (the protection stays on)">nothing (the protection stays on)</option></select></div>
     <div class="trow"><span data-i18n="Gone after">Gone after</span> <input type="number" id="cf-presence_gone_min" min="2" max="120" onchange="cfg('presence_gone_min',+this.value)"> <span data-i18n="minutes">minutes</span></div>
     </div>
   </section>
@@ -31905,7 +31907,7 @@ Object.assign(I18N.de, {"Leisure": "Freizeit", "Game corner": "Spielecke",
  "Tools": "Werkzeuge", "Network scanner": "Netzwerkscanner", "Scan": "Suchen", "All devices in your own network (only there).": "Alle Geräte im eigenen Netz (nur dort).",
  "Warn me about new devices (push, check every 10 min)": "Bei neuen Geräten warnen (Push, Prüfung alle 10 Min.)", "Am I at home?": "Bin ich zu Hause?",
  "pres-note": "Markiere unten im Netzwerkscanner dein Handy mit «🏠 meins». Handys melden sich im WLAN zuverlässiger als über Bluetooth.",
- "Disarm when my device comes, arm when it is gone": "Entschärfen, wenn mein Gerät kommt – Schutz einschalten, wenn es weg ist", "Gone after": "Weg nach", "minutes": "Minuten",
+ "Disarm when my device comes, arm when it is gone": "Entschärfen, wenn mein Gerät kommt – Schutz einschalten, wenn es weg ist", "Automatic: on when my phone is gone": "Automatisch an, wenn mein Handy weg ist", "When my phone comes back:": "Wenn mein Handy zurückkommt:", "switch the protection off": "Schutz ausschalten", "ask «Is it you?» (person alarms wait)": "fragen «Bist du's?» (Personen-Alarme warten)", "nothing (the protection stays on)": "nichts (der Schutz bleibt an)", "Gone after": "Weg nach", "minutes": "Minuten",
  "Wi-Fi around": "WLAN-Umgebung", "Shows the Wi-Fi networks nearby and the best channel for the own Wi-Fi (hotspot).": "Zeigt die WLANs in der Nähe und den besten Kanal für das eigene WLAN (Hotspot).",
  "Internet test": "Internet-Test", "Start": "Start", "Stop": "Stopp", "speed-warn": "Braucht etwa 6 MB Daten – bei einem Handy-Abo mit wenig Volumen nur selten starten.",
  "Security check": "Sicherheits-Check", "Check": "Prüfen", "What can be reached from the network or the internet, and what is risky.": "Was aus dem Netz oder dem Internet erreichbar ist und was riskant ist.",
@@ -31959,6 +31961,7 @@ function btn(id, label, running) { const b = $("#b-" + id); if (!b) return; b.di
 function draw() {
   const C = S.cfg || {};
   ["net_watch", "presence_auto", "bt_tracker_warn"].forEach(k => { const e = $("#cf-" + k); if (e) e.checked = !!C[k]; });
+  { const e = $("#cf-presence_back"); if (e && document.activeElement !== e) e.value = C.presence_back || "ask"; }      // 2.98.15
   ["presence_gone_min", "bt_tracker_min"].forEach(k => { const e = $("#cf-" + k); if (e && document.activeElement !== e) e.value = C[k] != null ? C[k] : ""; });
   // network
   const N = S.net; btn("net", "Scan", N.running);
@@ -32745,6 +32748,10 @@ function scOn(G, r) {                               // 2.95.51: the symbol of a 
   const O = (r && r.groups_on) || {}; if (!G) return;
   G.querySelectorAll(".sc-card[data-g]").forEach(c => { const v = O[c.dataset.g] || 0; c.classList.toggle("sc-on1", v === 1); c.classList.toggle("sc-on2", v === 2); });
 }
+// 2.98.15 (Konzept-Check): the group «Spiel» shows only assistant / open / start / stop - everything else is set in the game
+// wizard or under «Experte» (as the simulator window does from 3D-4.x; this also covers older simulators)
+const SC_GAME_MAIN = ["game_wizard", "game_open", "game_start", "game_stop"];
+function scExpert(c) { return !!c.expert || ((c.group === "Spiel" || c.group === "Game") && SC_GAME_MAIN.indexOf(c.id) < 0); }
 function simCtlBuild(G, r, ctl, fmt) {
   scCss();
   const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
@@ -32785,7 +32792,7 @@ function simCtlBuild(G, r, ctl, fmt) {
       else if (c.type === "button") {
         let grid = tgt.lastElementChild; if (!grid || !grid.classList.contains("sc-bt")) { grid = el("div", "sc-bt"); tgt.appendChild(grid); }
         const x = el("button", "", (c.emoji ? c.emoji + " " : "") + c.label); x.type = "button"; if (c.label.length > 26) x.className = "wide";
-        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; x.dataset.ex = c.expert ? "1" : ""; grid.appendChild(x); return;
+        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; x.dataset.ex = scExpert(c) ? "1" : ""; grid.appendChild(x); return;
       } else if (c.type === "toggle") {
         row = el("label", "sc-row sc-tg"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sc-sw simv";
         cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked}); row.append(el("span", "", c.label), cb);
@@ -32801,7 +32808,7 @@ function simCtlBuild(G, r, ctl, fmt) {
         row = el("div", "sc-row sc-tx"); const ti = document.createElement("input"); ti.className = "simv";
         ti.onkeydown = e => { if (e.key === "Enter") ctl({ctl: "set", id: c.id, value: ti.value}); }; row.append(el("div", "", c.label), ti);
       }
-      row.dataset.cid = c.id; row.dataset.lab = c.label; row.dataset.ex = c.expert ? "1" : ""; tgt.appendChild(row);
+      row.dataset.cid = c.id; row.dataset.lab = c.label; row.dataset.ex = scExpert(c) ? "1" : ""; tgt.appendChild(row);
     });
   });
   const seg = el("div", "sc-seg"); const b1 = el("button", "", t("Simple")), b2 = el("button", "", t("Expert")); b1.type = b2.type = "button"; seg.append(b1, b2); G.appendChild(seg);
@@ -40580,6 +40587,7 @@ addEventListener("resize", function () { if (D) paintChart(); });
   await initAppearance();
   var q = new URLSearchParams(location.search);
   DAY = /^\d{4}-\d{2}-\d{2}$/.test(q.get("day") || "") ? q.get("day") : iso(new Date());
+  if (q.get("mode") === "day" || q.get("mode") === "night") MODE = q.get("mode");      // 2.98.15: from the page Recordings (?mode=day)
   load();
   setInterval(function () { if (!document.hidden && DAY === iso(new Date()) && document.getElementById("viewer").hidden) load(); }, 60000);
 })();
@@ -44425,6 +44433,7 @@ setTimeout(() => { if ($("#wf-card").open) wfLoad(); }, 1500);
 let PR = {campUntil: 0, hsUntil: 0};
 function prText(s) {                                       // 2.98.0: one name for the state everywhere: Aus / Wachsam / Voll
   const lv = ((s.protect || {}).level === "full" || (s.protect || {}).chosen === "full") ? t("Full protection") : t("Watchful");
+  if ((s.protect || {}).walk && (s.arm_state === "armed" || s.arm_state === "arming")) return ["🚶 " + t("Walk test"), "yel"];   // 2.98.15: no alarms meanwhile
   if (s.arm_state === "armed") return ["🛡 " + lv, "grn"];
   if (s.arm_state === "arming") return ["🛡 " + lv + " " + t("in") + " " + s.arm_left + " s", "yel"];
   return ["🛡 " + t("Off"), ""];
@@ -44688,7 +44697,8 @@ function modePaint(s) {
     const ti = document.createElement("input"); ti.type = "time"; ti.value = M.fire_until || ""; ti.style.width = "120px"; ti.style.flex = "none";
     ti.onchange = () => post("/api/mode", {mode_fire_until: ti.value});
     const sp = el("span", "", t("or battery below")); const se = document.createElement("select");
-    [0, 20, 30, 40, 50].forEach(v => { const op = document.createElement("option"); op.value = v; op.textContent = v ? v + " %" : t("never"); se.appendChild(op); });
+    [...new Set([0, 10, 20, 30, 40, 50, +M.fire_min_pct || 0])].sort((a, b) => a - b).forEach(v => { const op = document.createElement("option"); op.value = v; op.textContent = v ? v + " %" : t("never"); se.appendChild(op); });
+    se.title = t("Also under Settings → Battery, next to the battery saver");      // 2.98.15: the two battery thresholds together
     se.value = String(M.fire_min_pct); se.onchange = () => post("/api/mode", {mode_fire_min_pct: +se.value});
     r.append(ti, sp, se); o.appendChild(r);
     const r2 = el("label", "row pr-sw"); const c2 = document.createElement("input"); c2.type = "checkbox"; c2.className = "sw"; c2.checked = !!M.fire_persons;
@@ -44705,17 +44715,19 @@ function modePaint(s) {
 const PRT = {key: "", pinFor: "", until: 0};
 function protectPaint(P) {
   const box = $("#protect-box"); if (!box || !P) return;
-  const key = JSON.stringify([P.level, P.chosen, P.arm, P.colour, P.items, P.device, P.things, P.pin, P.presence, P.escalate.on, P.escalate.s, P.test, PRT.pinFor, LANG, P.forecast]);
+  const key = JSON.stringify([P.level, P.chosen, P.arm, P.colour, P.items, P.device, P.things, P.pin, P.presence, P.escalate.on, P.escalate.s, P.test, PRT.pinFor, LANG, P.forecast, P.walk]);
   if (key === PRT.key) { const c = $("#prt-left"); if (c) c.textContent = P.arm === "arming" ? t("starts in") + " " + P.left + " s" : (P.escalate.pending ? "🚨 " + t("siren in") + " " + P.escalate.pending + " s" : ""); return; }
   PRT.key = key; box.textContent = "";
   const head = el("div", "row"); head.style.cssText = "justify-content:space-between;align-items:center";
   head.append(el("b", "", "🛡 " + t("Protection")), el("span", "mut", "")); head.lastChild.id = "prt-left"; box.appendChild(head);
   const seg = el("div", "prt-seg");
+  const walk = !!P.walk && P.level !== "off";          // 2.98.15: during the walk test the state is «Gehtest», not «Wachsam» / «Voll»
   [["off", "⚪", t("Off")], ["watch", "🟡", t("Watchful")], ["full", "🛡", t("Full protection")]].forEach(([k, ic, n]) => {
+    if (walk && P.level === k) { ic = "🚶"; n = t("Walk test"); }
     const b = el("button", "prt-b" + (P.level === k ? " on" : " sec"), ""); b.type = "button"; b.append(el("span", "ic", ic), el("span", "", n));
     b.onclick = () => k === "off" ? protectOff() : protectLevel(k); seg.appendChild(b); });
   box.appendChild(seg);
-  box.appendChild(el("div", "mut prt-what", P.level === "off" ? t("prt-off") : (P.level === "watch" ? t("prt-watch") : t("prt-full"))));
+  box.appendChild(el("div", "mut prt-what", walk ? "🚶 " + t("Walk test running: no alarms until it ends (afterwards the protection is as before).") : P.level === "off" ? t("prt-off") : (P.level === "watch" ? t("prt-watch") : t("prt-full"))));
   if (P.forecast) box.appendChild(el("div", "prt-what", "🔋 " + P.forecast));      // 2.98.13: battery forecast (066)
   if (PRT.pinFor) { const r = el("div", "row"); r.style.cssText = "gap:6px;margin-top:8px"; const i = document.createElement("input"); i.type = "password"; i.inputMode = "numeric";
     i.placeholder = "PIN"; i.style.flex = "1"; const ok = el("button", "", t("Switch off")); ok.type = "button"; const no = el("button", "sec", "✕"); no.type = "button";
@@ -44753,8 +44765,14 @@ function protectPaint(P) {
   const sp1 = el("span", "", t("Siren when nobody switches off after")); e1.append(sp1, sel, c1); more.appendChild(e1);
   const e2 = el("label", "row pr-sw"); const c2 = document.createElement("input"); c2.type = "checkbox"; c2.className = "sw"; c2.checked = !!P.presence.on;
   c2.onchange = () => post("/api/protect", {action: "presence", on: c2.checked, lang: LANG});
-  const sp2 = el("span", "", t("Automatic: on when my phone is gone, off when it is back") + (P.presence.devices ? (P.presence.here === true ? " · 🏠 " + t("here") : P.presence.here === false ? " · 🚶 " + t("away") : "") : " · " + t("choose the phone under Tools → Network")));
-  e2.append(sp2, c2); more.appendChild(e2); box.appendChild(more);
+  const sp2 = el("span", "", t("Automatic: on when my phone is gone") + (P.presence.devices ? (P.presence.here === true ? " · 🏠 " + t("here") : P.presence.here === false ? " · 🚶 " + t("away") : "") : " · " + t("choose the phone under Tools → Network")));
+  e2.append(sp2, c2); more.appendChild(e2);
+  // 2.98.15: one clear choice instead of two switches (auto-off at return / «Is it you?»)
+  const e3 = el("div", "row"); e3.style.cssText = "gap:8px;flex-wrap:wrap;align-items:center"; e3.appendChild(el("span", "", t("When my phone comes back:")));
+  const s3 = document.createElement("select"); s3.style.cssText = "flex:1;min-width:180px";
+  PRES_BACK.forEach(([v, n]) => { const o = document.createElement("option"); o.value = v; o.textContent = t(n); s3.appendChild(o); }); s3.value = P.presence.back || "ask";
+  s3.onchange = () => post("/api/protect", {action: "presence", back: s3.value, lang: LANG}); e3.appendChild(s3); more.appendChild(e3);
+  box.appendChild(more);
 }
 async function protectLevel(k, answers) {
   const r = await post("/api/protect", {action: "level", level: k, answers: answers || null, lang: LANG});
@@ -44801,20 +44819,23 @@ async function demoGo() {                             // 2.96.7: makeover 20
 Object.assign(I18N.de, {"New in this version": "Neu in dieser Version", "Next in the makeover": "Als Nächstes im Makeover", "No changes noted.": "Keine Änderungen notiert.",
   "Do not show any more": "Nicht mehr anzeigen", "What is new?": "Was ist neu?", "Cinema mode": "Kino-Modus", "One-click demo": "Ein-Klick-Demo", "Cinema": "Kino", "Demo": "Demo"});
 
+const PRES_BACK = [["off", "switch the protection off"], ["ask", "ask «Is it you?» (person alarms wait)"], ["none", "nothing (the protection stays on)"]];
 function protectWizard() {                       // three questions, then everything is set
-  const A = {what: "place", when: "now", react: "push"};
-  const Q = [["what", t("What shall be protected?"), [["place", "⛺", t("The place / tent")], ["things", "🚲", t("Things like the bike")], ["device", "📷", t("The device itself")], ["all", "🛡", t("Everything")]]],
+  const A = {what: "place", when: "now", react: "push", back: (((window.__lastState || {}).protect || {}).presence || {}).back || "ask"};
+  const BQ = ["back", t("When my phone comes back?"), [["off", "⚪", t("switch the protection off")], ["ask", "❓", t("ask «Is it you?» (person alarms wait)")], ["none", "🛡", t("nothing (the protection stays on)")]]];
+  const Q0 = [["what", t("What shall be protected?"), [["place", "⛺", t("The place / tent")], ["things", "🚲", t("Things like the bike")], ["device", "📷", t("The device itself")], ["all", "🛡", t("Everything")]]],
     ["when", t("When?"), [["now", "▶", t("Now")], ["night", "🌙", t("Tonight")], ["away", "🚶", t("While I am away")]]],
     ["react", t("How shall it react?"), [["push", "📱", t("Quietly: push message")], ["light", "💡", t("Light + push")], ["siren", "🚨", t("Light, push, then the siren")]]]];
-  let i = 0; const ov = el("div", "prt-wiz"); document.body.appendChild(ov);
-  const show = () => { ov.textContent = ""; const c = el("div", "prt-card"); ov.appendChild(c);
+  let i = 0, Q = Q0; const ov = el("div", "prt-wiz"); document.body.appendChild(ov);
+  const show = () => { Q = A.when === "away" ? [Q0[0], Q0[1], BQ, Q0[2]] : Q0;   // 2.98.15: «while I am away» asks what happens at the return
+    ov.textContent = ""; const c = el("div", "prt-card"); ov.appendChild(c);
     if (i < Q.length) { const [k, q, opts] = Q[i]; c.append(el("div", "mut", (i + 1) + " / " + Q.length), el("h3", "", q));
       opts.forEach(([v, ic, n]) => { const b = el("button", "prt-opt" + (A[k] === v ? " on" : ""), ""); b.type = "button"; b.append(el("span", "ic", ic), el("span", "", n));
         b.onclick = () => { A[k] = v; i++; show(); }; c.appendChild(b); });
     } else { const lv = A.react === "siren" || A.what === "all" ? "full" : "watch";
       c.append(el("h3", "", t("Ready")), el("p", "", (lv === "full" ? "🛡 " + t("Full protection") : "🟡 " + t("Watchful")) + " · " + t(A.when === "night" ? "Tonight" : A.when === "away" ? "While I am away" : "Now")));
       const go = el("button", "", "🛡 " + t("Switch on the protection")); go.type = "button"; go.style.width = "100%";
-      go.onclick = () => { ov.remove(); if (A.when === "away") post("/api/protect", {action: "presence", on: true, lang: LANG});
+      go.onclick = () => { ov.remove(); if (A.when === "away") post("/api/protect", {action: "presence", on: true, back: A.back, lang: LANG});
         protectLevel(lv, {things: A.what === "things" || A.what === "all", device: A.what === "device" || A.what === "all", when: A.when === "night" ? "night" : "now", react: A.react}); };
       c.appendChild(go); }
     const x = el("button", "sec", i ? "‹ " + t("Back") : t("Cancel")); x.type = "button"; x.style.marginTop = "8px"; x.onclick = () => { if (i) { i--; show(); } else ov.remove(); }; c.appendChild(x); };
@@ -44827,6 +44848,10 @@ Object.assign(I18N.de, {"Protection": "Schutz", "Off": "Aus", "Watchful": "Wachs
   "Switch off": "Ausschalten", "Protection off": "Schutz aus", "All ready": "Alles bereit", "thing(s) missing": "Punkt(e) offen", "Fix": "Beheben",
   "Device protection": "Gerät", "Protection assistant": "Schutz-Assistent", "Test runs …": "Test läuft …", "Test the protection": "Schutz testen",
   "Change PIN": "PIN ändern", "PIN for switching off": "PIN zum Ausschalten", "More: siren delay, presence": "Mehr: Sirene, Abwesenheit",
+  "Automatic: on when my phone is gone": "Automatisch an, wenn mein Handy weg ist", "When my phone comes back:": "Wenn mein Handy zurückkommt:",
+  "When my phone comes back?": "Wenn mein Handy zurückkommt?", "switch the protection off": "Schutz ausschalten", "ask «Is it you?» (person alarms wait)": "fragen «Bist du's?» (Personen-Alarme warten)",
+  "nothing (the protection stays on)": "nichts (der Schutz bleibt an)", "Walk test": "Gehtest", "Walk test running: no alarms until it ends (afterwards the protection is as before).": "Gehtest läuft: keine Alarme, bis er fertig ist (danach ist der Schutz wie vorher).",
+  "Also under Settings → Battery, next to the battery saver": "Auch unter Einstellungen → Akku, neben dem Akku-Sparen",
   "Siren when nobody switches off after": "Sirene, wenn niemand ausschaltet, nach", "Automatic: on when my phone is gone, off when it is back": "Automatisch: an, wenn mein Handy weg ist, aus, wenn es zurück ist",
   "here": "da", "away": "weg", "choose the phone under Tools → Network": "Handy unter Werkzeuge → Netz wählen", "Current PIN": "Bisherige PIN",
   "New PIN (4 to 8 digits, empty = no PIN)": "Neue PIN (4 bis 8 Ziffern, leer = keine PIN)", "PIN saved": "PIN gespeichert", "PIN removed": "PIN entfernt",
@@ -46442,11 +46467,7 @@ body.selecting .chk{display:block}
 .dbars .d i{display:block;width:100%;background:var(--acc);border-radius:4px 4px 0 0;min-height:2px;opacity:.75}
 .dbars .d.on i{opacity:1;background:var(--yel)}
 .dbars .d small{font-size:10px;color:var(--mut);margin-top:3px}
-.tl{position:relative;height:38px;background:var(--field);border:1px solid var(--line);border-radius:8px;margin-top:6px}
-.tl .m{position:absolute;top:5px;bottom:5px;width:5px;margin-left:-2px;border-radius:3px;background:var(--acc);cursor:pointer}
-.tl .m.image{background:var(--mut)}
-.tl .m:hover{background:var(--yel)}
-.tl .tk{position:absolute;top:100%;font-size:10px;color:var(--mut);transform:translateX(-50%);margin-top:2px}
+.tl-go{display:block;margin-top:14px;text-align:center;text-decoration:none;overflow-wrap:anywhere}
 </style></head><body>
 <header>
   <h1>MoveEye</h1>
@@ -46465,7 +46486,7 @@ body.selecting .chk{display:block}
     <div class="stats">
       <div><h4 data-i18n="Events per weekday and hour">Events per weekday and hour</h4><div class="heat" id="heat"></div></div>
       <div><h4 data-i18n="Last 14 days (click a day)">Last 14 days (click a day)</h4><div class="dbars" id="dbars"></div>
-        <h4 style="margin-top:16px" id="tl-title"></h4><div class="tl" id="tl"></div><div style="height:16px"></div></div>
+        <a class="btn sec tl-go" id="tl-go" href="/timeline">🕒 <span id="tl-title" data-i18n="Open the timeline of this day">Open the timeline of this day</span></a></div>
     </div>
   </details>
   <section class="card filters">
@@ -46560,7 +46581,7 @@ Object.assign(I18N.de, {
   "Still recording - available when it ends.": "Aufnahme läuft noch - danach verfügbar.", "Error": "Fehler",
   "Delete this recording?": "Diese Aufnahme löschen?", "recordings?": "Aufnahmen löschen?", "Image": "Bild", "Video": "Video",
   "Statistics": "Statistik", "Events per weekday and hour": "Ereignisse pro Wochentag und Stunde", "Last 14 days (click a day)": "Letzte 14 Tage (Tag anklicken)",
-  "Favorites": "Favoriten", "Protect selected": "Auswahl schützen", "Download ZIP": "ZIP laden", "events": "Ereignisse", "Timeline": "Zeitleiste",
+  "Favorites": "Favoriten", "Protect selected": "Auswahl schützen", "Download ZIP": "ZIP laden", "events": "Ereignisse", "Timeline": "Zeitleiste", "Open the timeline of this day": "Zeitleiste dieses Tages öffnen",
   "Favorites are never deleted by the automatic cleanup": "Favoriten werden vom automatischen Aufräumen nie gelöscht", "Timelapse": "Zeitraffer",
   "Place": "Ort", "All places": "Alle Orte", "Without location": "Ohne Ort", "Map": "Karte", "Show only this place": "Nur diesen Ort zeigen",
   "Rename place": "Ort umbenennen", "Name of this place (empty = automatic)": "Name dieses Orts (leer = automatisch)", "Fit": "Alles zeigen",
@@ -46761,11 +46782,9 @@ async function loadStats() {
     const i = el("i"); i.style.height = Math.max(2, 100 * d.count / mx * 0.8) + "%"; b.append(i, el("small", "", d.date.slice(8)));
     b.onclick = () => { tlDay = d.date; setDates(d.date, d.date); loadStats(); }; db.appendChild(b);
   });
-  $("#tl-title").textContent = t("Timeline") + " · " + tlDay + " · " + j.events.length + " " + t("events");
-  const tl = $("#tl"); tl.textContent = "";
-  [0, 3, 6, 9, 12, 15, 18, 21, 24].forEach(h => { const k = el("span", "tk", pad(h)); k.style.left = (h / 24 * 100) + "%"; tl.appendChild(k); });
-  j.events.forEach(ev => { const m = el("span", "m " + ev.kind); m.style.left = (ev.m / 1440 * 100) + "%"; m.title = ev.t;
-    m.onclick = () => { openAfter = ev.name; setDates(tlDay, tlDay); }; tl.appendChild(m); });
+  // 2.98.15 (Konzept-Check): one timeline - the small strip here became a link to the page «Zeitleiste» (523)
+  $("#tl-title").textContent = t("Timeline") + " · " + tlDay + " · " + j.events.length + " " + t("events") + " →";
+  $("#tl-go").href = "/timeline?day=" + tlDay + "&mode=day";
 }
 
 // ---- filter controls ----
@@ -48859,7 +48878,11 @@ class WebStream:
                     pass
                 save_settings()
             elif a == "presence":
-                CFG["presence_auto"] = bool(d.get("on")); save_settings()
+                if "on" in d:
+                    CFG["presence_auto"] = bool(d.get("on"))
+                if d.get("back") in PRESENCE_BACK_KEYS:           # 2.98.15: when my phone comes back: off / ask / nothing (577)
+                    CFG["presence_back"] = d["back"]
+                save_settings()
             elif a == "fix_push":
                 CFG["notify_on"] = True; sched_user_changed("notify_on"); save_settings()
             else:
@@ -54571,6 +54594,206 @@ def _tk_tl_open(app, index):
     except (OSError, AttributeError) as e:
         app._status("Night report", f"⚠ {e}"[:120])
 # ----------------------------------------------------------------------------
+# 2.98.15 (Wunsch Daniel, Vorschläge aus dem Konzept-Check von 2.98.14):
+#   1 Eine Nachricht pro Woche: der Montags-Push «Woche im Simulator» (142, simweek_on) steckt jetzt im Wochenbericht (426).
+#     Einstellung weekrep_sim («mit der Woche im Simulator»), übernommen aus simweek_on.
+#   4 Akku: die Schwelle des Akku-Sparens (batt_save_pct, 105) und die der Lagerfeuer-Spiele (mode_fire_min_pct, 130) stehen
+#     zusammen im Abschnitt «Akku» (Web und Fenster lesen dieselben Listen).
+#   5 Rückkehr des Handys: EINE Wahl presence_back = off (Schutz ausschalten) / ask («Bist du's?», 066) / none (nichts) statt
+#     zwei Schaltern (presence_auto schaltete beim Zurückkommen aus, back_ask fragte). presence_auto heisst jetzt nur noch
+#     «automatisch an, wenn mein Handy weg ist». Übernahme der alten Werte: presence_auto → off, sonst back_ask → ask, sonst none.
+#   6 Auto-Tuner (190): min_area / sensitivity / speed_consistency höchstens ±20 % um die gemessenen Werte (Kalibrierung oder
+#     Assistent «Erkennung verbessern», 312). Der Optimierer schaltet den Tuner nicht mehr (OPT_KEYS, 310).
+# Hier statt in den grossen Listen von 570, damit dort nichts verschoben wird.
+# ----------------------------------------------------------------------------
+for _k, _v in {"weekrep_sim": True, "presence_back": "ask", "auto_tune_base": {}}.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+
+PRESENCE_BACK = (("off", "switch the protection off"), ("ask", "ask «Is it you?» (person alarms wait)"), ("none", "nothing (the protection stays on)"))
+PRESENCE_BACK_KEYS = tuple(k for k, _l in PRESENCE_BACK)
+AUTOTUNE_KEYS = ("min_area", "sensitivity", "speed_consistency")
+AUTOTUNE_SPAN = 0.20
+AUTOTUNE_LAST = {}                                          # the value the tuner set last (to see a change by hand)
+
+
+def presence_back_mode():
+    v = CFG.get("presence_back")
+    return v if v in PRESENCE_BACK_KEYS else "ask"
+
+
+def _nl_put_after(lst, after_key, item, idx=1):
+    """item into a settings list right after the entry with this key (else at the end); an entry with the same key is replaced"""
+    lst[:] = [x for x in lst if x[idx] != item[idx]]
+    for i, x in enumerate(lst):
+        if x[idx] == after_key:
+            lst.insert(i + 1, item)
+            return
+    lst.append(item)
+
+
+# ---- the settings lists (web and window) ---------------------------------------------------------------------------------
+_nl_put_after(TOGGLES, "weekrep_on", ("Night report", "weekrep_sim", "Weekly report: with the week in the simulator (visits, animals, recognised persons)"))
+_nl_put_after(TOGGLES, "back_ask", ("Camping / protection", "presence_auto", "Protection on automatically when my phone is gone (choose the phone: Tools → Am I at home?)"))
+TOGGLES[:] = [x for x in TOGGLES if x[1] not in ("simweek_on", "back_ask")]
+for _i, _x in enumerate(SLIDERS):
+    if _x[1] == "batt_save_pct":
+        SLIDERS[_i] = ("Battery", "batt_save_pct", "🐢 Battery saver below (% battery): fewer pictures, the AI less often - normal again at +5 % or when charging", _x[3], _x[4], _x[5])
+_nl_put_after(SLIDERS, "batt_save_pct", ("Battery", "mode_fire_min_pct", "🔥 Campfire games end below (% battery): back to the camping guard (0 = never)", 0, 50, 10))
+_nl_put_after(TEXTS, "", ("Camping / protection", "presence_back", "When my phone comes back", "enum", "presence_back"))
+TEXT_SPECS["presence_back"] = ("enum", "presence_back")
+SIMPLE_KEYS.update({"weekrep_sim", "mode_fire_min_pct", "presence_back", "presence_auto"})
+
+_text_choice_pairs_before_nl = text_choice_pairs
+
+
+def text_choice_pairs(key):                                 # 2.98.15: + the choice at the return of the phone
+    if TEXT_SPECS.get(key, (None, None))[1] == "presence_back":
+        return [(k, tr(l)) for k, l in PRESENCE_BACK]
+    return _text_choice_pairs_before_nl(key)
+
+
+# ---- tools page «Am I at home?» (300) ---------------------------------------------------------------------------------------
+_tools_state_before_nl = tools_state
+_tools_cfg_before_nl = tools_cfg
+
+
+def tools_state():
+    r = _tools_state_before_nl()
+    try:
+        r["cfg"]["presence_back"] = presence_back_mode()
+    except (KeyError, TypeError):
+        pass
+    return r
+
+
+def tools_cfg(key, value, mac=None):
+    if key == "presence_back":
+        if value not in PRESENCE_BACK_KEYS:
+            return False, "invalid value"
+        CFG["presence_back"] = value
+        save_settings()
+        return True, ""
+    return _tools_cfg_before_nl(key, value, mac)
+
+
+# ---- the auto-tuner: ±20 % around the measured values -----------------------------------------------------------------------
+def autotune_base_set(src):
+    """src = «calibration» (the tuner itself, 190) or «assistant» (312): the values now are the middle of the allowed range.
+    The calibration does not replace values measured by the assistant."""
+    b = CFG.get("auto_tune_base") if isinstance(CFG.get("auto_tune_base"), dict) else {}
+    if src == "calibration" and str(b.get("src", "")).startswith("assistant") and all(k in b for k in AUTOTUNE_KEYS):
+        return b
+    nb = {k: float(CFG[k]) for k in AUTOTUNE_KEYS if k in CFG}
+    nb.update(src=src, t=int(time.time()))
+    CFG["auto_tune_base"] = nb
+    AUTOTUNE_LAST.clear()
+    log_event("auto", f"Auto-tune: base from the {src} - " + ", ".join(f"{k} {nb[k]:g}" for k in AUTOTUNE_KEYS if k in nb) + " (±20 %)")
+    return nb
+
+
+def autotune_base_reset():
+    """the tuner starts again (190, reset): a new calibration measures freely - values of the assistant stay the middle"""
+    b = CFG.get("auto_tune_base") if isinstance(CFG.get("auto_tune_base"), dict) else {}
+    if not str(b.get("src", "")).startswith("assistant"):
+        CFG["auto_tune_base"] = {}
+    AUTOTUNE_LAST.clear()
+
+
+def autotune_clamp(key, value):
+    """the value the tuner may set: at most ±20 % around the base. Changed by hand outside the band = that is the new base."""
+    if key not in AUTOTUNE_KEYS:
+        return value
+    b = CFG.get("auto_tune_base") if isinstance(CFG.get("auto_tune_base"), dict) else {}
+    try:
+        mid = float(b[key])
+    except (KeyError, TypeError, ValueError):
+        return value
+    cur = float(CFG.get(key, mid))
+    lo, hi = mid * (1 - AUTOTUNE_SPAN), mid * (1 + AUTOTUNE_SPAN)
+    if not (lo - 1e-6 <= cur <= hi + 1e-6) and AUTOTUNE_LAST.get(key) != CFG.get(key):
+        b = dict(b, **{key: cur, "src": b.get("src", "") + "+hand"}); CFG["auto_tune_base"] = b      # set by hand / by a test
+        mid = cur; lo, hi = mid * (1 - AUTOTUNE_SPAN), mid * (1 + AUTOTUNE_SPAN)
+    v = max(lo, min(hi, float(value)))
+    AUTOTUNE_LAST[key] = round(v, 2) if isinstance(CFG.get(key), float) else int(v)
+    return v
+
+
+_tunea_autotune_base_before_nl = _tunea_autotune_base
+
+
+def _tunea_autotune_base():                                # 312: after «Erkennung verbessern» (and its «undo») = the new middle
+    _tunea_autotune_base_before_nl()
+    try:
+        autotune_base_set("assistant")
+    except Exception as e:
+        log_event("sys", f"Auto-tune base: {e}"[:120])
+
+
+# ---- taking over the settings of 2.98.14 and older ----------------------------------------------------------------------------
+def nachlauf_migrate(cfg_in):
+    """cfg_in = the «cfg» of the loaded / imported file; returns the list of what was taken over"""
+    did = []
+    if not isinstance(cfg_in, dict):
+        return did
+    if "weekrep_sim" not in cfg_in and isinstance(cfg_in.get("simweek_on"), bool):
+        CFG["weekrep_sim"] = cfg_in["simweek_on"]
+        did.append(f"simulator week push -> weekly report ({'with' if CFG['weekrep_sim'] else 'without'} simulator)")
+    if "presence_back" not in cfg_in and ("presence_auto" in cfg_in or "back_ask" in cfg_in):
+        CFG["presence_back"] = "off" if cfg_in.get("presence_auto") is True else ("ask" if cfg_in.get("back_ask") is True else "none")
+        did.append(f"return of the phone -> {CFG['presence_back']}")
+    if CFG.get("presence_back") not in PRESENCE_BACK_KEYS:
+        CFG["presence_back"] = "ask"
+    if not isinstance(CFG.get("auto_tune_base"), dict):
+        CFG["auto_tune_base"] = {}
+    return did
+
+
+_apply_settings_before_nl = apply_settings
+
+
+def apply_settings(data):                                   # 2.98.15: the same as before, then the migration above
+    r = _apply_settings_before_nl(data)
+    try:
+        did = nachlauf_migrate(data.get("cfg") if isinstance(data, dict) else None)
+        if did:
+            log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
+    except Exception as e:
+        log_event("sys", f"Settings migration (577): {e}"[:150])
+    return r
+
+
+def nachlauf_selftest():
+    """--self-test: the migrations, the ±20 % of the auto-tuner, the one weekly report"""
+    keep = {k: CFG.get(k) for k in ("weekrep_sim", "presence_back", "auto_tune_base", "min_area", "sensitivity", "speed_consistency")}
+    try:
+        for old, want in (({"presence_auto": True, "back_ask": True}, "off"), ({"presence_auto": False, "back_ask": True}, "ask"),
+                          ({"presence_auto": False, "back_ask": False}, "none"), ({"presence_auto": False}, "none")):
+            CFG["presence_back"] = "ask"
+            nachlauf_migrate(old)
+            assert CFG["presence_back"] == want, f"presence {old} -> {CFG['presence_back']}"
+        CFG["presence_back"] = "none"; nachlauf_migrate({"presence_back": "none", "presence_auto": True})
+        assert CFG["presence_back"] == "none", "a new file is not migrated again"
+        CFG["weekrep_sim"] = True; nachlauf_migrate({"simweek_on": False}); assert CFG["weekrep_sim"] is False
+        CFG["weekrep_sim"] = True; nachlauf_migrate({"simweek_on": False, "weekrep_sim": True}); assert CFG["weekrep_sim"] is True
+        assert dict(text_choice_pairs("presence_back")).keys() == set(PRESENCE_BACK_KEYS)
+        assert not any(x[1] in ("simweek_on", "back_ask") for x in TOGGLES) and "auto_tune" not in OPT_KEYS
+        ks = [x[1] for x in SLIDERS if x[0] == "Battery"]
+        assert ks.index("mode_fire_min_pct") == ks.index("batt_save_pct") + 1, "battery thresholds together"
+        CFG.update(min_area=1000, sensitivity=50, speed_consistency=0.5)
+        autotune_base_set("assistant")
+        assert autotune_clamp("min_area", 5000) == 1200 and autotune_clamp("min_area", 100) == 800
+        assert abs(autotune_clamp("speed_consistency", 0.3) - 0.4) < 1e-9 and autotune_clamp("sensitivity", 70) == 60
+        assert autotune_clamp("walk_frames", 99) == 99
+        CFG["min_area"] = 1100; autotune_base_set("calibration"); assert CFG["auto_tune_base"]["min_area"] == 1000, "assistant wins"
+        CFG["min_area"] = 3000; AUTOTUNE_LAST.clear()          # changed by hand far outside: that is the new middle
+        assert abs(autotune_clamp("min_area", 4000) - 3600) < 1e-6
+        wr = weekrep_build("de")
+        assert "with_sim" in wr and wr["text"]
+    finally:
+        CFG.update(keep); AUTOTUNE_LAST.clear()
+    return True
+# ----------------------------------------------------------------------------
 # Translations: French, Italian, Romansh (Rumantsch Grischun). Key = the English text of the program.
 #   Missing texts: Romansh shows German, French / Italian show English. HELP_X = the manual (help page).
 # ----------------------------------------------------------------------------
@@ -59854,6 +60077,32 @@ _HX_ALARM = {
     'no zones': ('keine Zonen', 'aucune zone', 'nessuna zona', 'naginas zonas'),
 }
 for _k, _v in _HX_ALARM.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX_NACHLAUF = {
+    # ---- 1: one weekly report ----
+    'Week in the simulator: {v} visits. Animals: {an}': ('Woche im Simulator: {v} Besuche. Tiere: {an}', 'Semaine dans le simulateur : {v} visites. Animaux : {an}', 'Settimana nel simulatore: {v} visite. Animali: {an}', 'Emna en il simulatur: {v} visitas. Animals: {an}'),
+    'Weekly report: with the week in the simulator (visits, animals, recognised persons)': ('Wochenbericht: mit der Woche im Simulator (Besuche, Tiere, erkannte Personen)', 'Rapport hebdomadaire : avec la semaine dans le simulateur (visites, animaux, personnes reconnues)', 'Rapporto settimanale: con la settimana nel simulatore (visite, animali, persone riconosciute)', 'Rapport d’emna: cun l’emna en il simulatur (visitas, animals, persunas renconuschidas)'),
+    # ---- 2: one timeline ----
+    'Open the timeline of this day': ('Zeitleiste dieses Tages öffnen', 'Ouvrir la chronologie de ce jour', 'Apri la cronologia di questo giorno', 'Avrir la cronologia da quest di'),
+    # ---- 4: battery thresholds together ----
+    '🐢 Battery saver below (% battery): fewer pictures, the AI less often - normal again at +5 % or when charging': ('🐢 Akku-Sparen unter (% Akku): weniger Bilder, die KI seltener – wieder normal ab +5 % oder beim Laden', '🐢 Économie de batterie en dessous de (% de batterie) : moins d’images, l’IA moins souvent – normal à nouveau à +5 % ou en charge', '🐢 Risparmio batteria sotto (% batteria): meno immagini, l’IA meno spesso – di nuovo normale a +5 % o in carica', '🐢 Spargnar accu sut (% accu): main maletgs, la IA pli darar – puspè normal a partir da +5 % u cun chargiar'),
+    '🔥 Campfire games end below (% battery): back to the camping guard (0 = never)': ('🔥 Lagerfeuer-Spiele enden unter (% Akku): zurück zur Camping-Wache (0 = nie)', '🔥 Les jeux du feu de camp s’arrêtent en dessous de (% de batterie) : retour à la garde camping (0 = jamais)', '🔥 I giochi al falò finiscono sotto (% batteria): ritorno alla guardia campeggio (0 = mai)', '🔥 Ils gieus al fieu da campadi finan sut (% accu): enavos a la guardia da campadi (0 = mai)'),
+    'Also under Settings → Battery, next to the battery saver': ('Auch unter Einstellungen → Akku, neben dem Akku-Sparen', 'Aussi sous Réglages → Batterie, à côté de l’économie de batterie', 'Anche in Impostazioni → Batteria, accanto al risparmio batteria', 'Er sut Parameters → Accu, sper il spargnar accu'),
+    # ---- 5: return of the phone ----
+    'When my phone comes back': ('Wenn mein Handy zurückkommt', 'Quand mon téléphone revient', 'Quando il mio telefono torna', 'Cur che mes telefonin returna'),
+    'When my phone comes back:': ('Wenn mein Handy zurückkommt:', 'Quand mon téléphone revient :', 'Quando il mio telefono torna:', 'Cur che mes telefonin returna:'),
+    'When my phone comes back?': ('Wenn mein Handy zurückkommt?', 'Quand mon téléphone revient ?', 'Quando il mio telefono torna?', 'Cur che mes telefonin returna?'),
+    'switch the protection off': ('Schutz ausschalten', 'désactiver la protection', 'spegnere la protezione', 'deactivar la protecziun'),
+    'ask «Is it you?» (person alarms wait)': ('fragen «Bist du\'s?» (Personen-Alarme warten)', 'demander «C’est toi ?» (les alarmes personne attendent)', 'chiedere «Sei tu?» (gli allarmi persona aspettano)', 'dumandar «Es ti?» (ils alarms da persunas spetgan)'),
+    'nothing (the protection stays on)': ('nichts (der Schutz bleibt an)', 'rien (la protection reste active)', 'niente (la protezione resta attiva)', 'nagut (la protecziun resta activa)'),
+    'Automatic: on when my phone is gone': ('Automatisch an, wenn mein Handy weg ist', 'Automatique : active quand mon téléphone est parti', 'Automatico: attiva quando il mio telefono non c’è', 'Automatic: activ, cur che mes telefonin è davent'),
+    'Protection on automatically when my phone is gone (choose the phone: Tools → Am I at home?)': ('Schutz automatisch an, wenn mein Handy weg ist (Handy wählen: Werkzeuge → Bin ich zu Hause?)', 'Protection automatiquement active quand mon téléphone est parti (choisir le téléphone : Outils → Suis-je à la maison ?)', 'Protezione attiva automaticamente quando il mio telefono non c’è (scegliere il telefono: Strumenti → Sono a casa?)', 'Protecziun activa automaticamain, cur che mes telefonin è davent (tscherner il telefonin: Utensils → Sun jau a chasa?)'),
+    # ---- 7: walk test ----
+    'Walk test running: no alarms until it ends (afterwards the protection is as before).': ('Gehtest läuft: keine Alarme, bis er fertig ist (danach ist der Schutz wie vorher).', 'Test de passage en cours : pas d’alarme jusqu’à la fin (ensuite la protection est comme avant).', 'Test di passaggio in corso: nessun allarme fino alla fine (poi la protezione è come prima).', 'Test da passar en curs: nagins alarms fin ch’el è a fin (suenter è la protecziun sco avant).'),
+}
+for _k, _v in _HX_NACHLAUF.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])

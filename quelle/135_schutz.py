@@ -22,6 +22,8 @@ def protect_level():
 def protect_label(arm_state, left=0, lang=None):
     """2.98.0: one name for the state everywhere (web, window, alarm window): Aus / Wachsam / Voll"""
     lv = tr("Full protection", lang) if (CFG.get("protect_level") == "full") else tr("Watchful", lang)
+    if arm_state in ("armed", "arming") and walktest_on():    # 2.98.15: during the walk test no alarms - say so (415)
+        return tr("Walk test", lang)
     if arm_state == "armed":
         return lv
     if arm_state == "arming":
@@ -76,10 +78,11 @@ def protect_status(lang=None, force=False):
     k = L + str(CFG["armed"]) + str(CFG.get("protect_level")) + str(PROTECT["test"]["busy"]) + str(len(PROTECT["test"]["steps"]))
     if not force and _PROT_CACHE["v"] is not None and _PROT_CACHE["k"] == k and time.time() - _PROT_CACHE["t"] < 3.0:
         v = dict(_PROT_CACHE["v"]); v["arm"] = STATE.get("arm_state"); v["left"] = STATE.get("arm_left", 0)
+        v["walk"] = walktest_on()
         return v
     v = _protect_status(L)
     _PROT_CACHE.update(t=time.time(), k=k, v=v)
-    return v
+    return dict(v, walk=walktest_on())                     # 2.98.15: walk test running = the state shows «Gehtest»
 
 
 def _protect_status(L):
@@ -141,7 +144,7 @@ def _protect_status(L):
                            "missing": it["name"] in miss})
     return {"level": lv, "chosen": CFG.get("protect_level") or "off", "arm": STATE.get("arm_state"), "left": STATE.get("arm_left", 0),
             "colour": colour, "items": items, "device": "  ·  ".join(dev), "things": things, "pin": bool(CFG.get("protect_pin")),
-            "presence": {"on": bool(CFG.get("presence_auto")), "devices": len(CFG.get("presence_macs") or []) + len(CFG.get("presence_bt") or []),
+            "presence": {"on": bool(CFG.get("presence_auto")), "back": presence_back_mode(), "devices": len(CFG.get("presence_macs") or []) + len(CFG.get("presence_bt") or []),
                          "here": (TOOLS.get("presence") or {}).get("here")},
             "escalate": {"on": bool(CFG.get("escalate_on")), "s": int(CFG.get("escalate_siren_s", 30)), "pending": max(0, int(PROTECT["esc_t"] - time.time())) if PROTECT["esc_t"] else 0},
             "test": PROTECT["test"], "forecast": arm_forecast_text(L)}      # 2.98.13 (066)

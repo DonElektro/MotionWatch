@@ -616,11 +616,7 @@ body.selecting .chk{display:block}
 .dbars .d i{display:block;width:100%;background:var(--acc);border-radius:4px 4px 0 0;min-height:2px;opacity:.75}
 .dbars .d.on i{opacity:1;background:var(--yel)}
 .dbars .d small{font-size:10px;color:var(--mut);margin-top:3px}
-.tl{position:relative;height:38px;background:var(--field);border:1px solid var(--line);border-radius:8px;margin-top:6px}
-.tl .m{position:absolute;top:5px;bottom:5px;width:5px;margin-left:-2px;border-radius:3px;background:var(--acc);cursor:pointer}
-.tl .m.image{background:var(--mut)}
-.tl .m:hover{background:var(--yel)}
-.tl .tk{position:absolute;top:100%;font-size:10px;color:var(--mut);transform:translateX(-50%);margin-top:2px}
+.tl-go{display:block;margin-top:14px;text-align:center;text-decoration:none;overflow-wrap:anywhere}
 </style></head><body>
 <header>
   <h1>MoveEye</h1>
@@ -639,7 +635,7 @@ body.selecting .chk{display:block}
     <div class="stats">
       <div><h4 data-i18n="Events per weekday and hour">Events per weekday and hour</h4><div class="heat" id="heat"></div></div>
       <div><h4 data-i18n="Last 14 days (click a day)">Last 14 days (click a day)</h4><div class="dbars" id="dbars"></div>
-        <h4 style="margin-top:16px" id="tl-title"></h4><div class="tl" id="tl"></div><div style="height:16px"></div></div>
+        <a class="btn sec tl-go" id="tl-go" href="/timeline">🕒 <span id="tl-title" data-i18n="Open the timeline of this day">Open the timeline of this day</span></a></div>
     </div>
   </details>
   <section class="card filters">
@@ -734,7 +730,7 @@ Object.assign(I18N.de, {
   "Still recording - available when it ends.": "Aufnahme läuft noch - danach verfügbar.", "Error": "Fehler",
   "Delete this recording?": "Diese Aufnahme löschen?", "recordings?": "Aufnahmen löschen?", "Image": "Bild", "Video": "Video",
   "Statistics": "Statistik", "Events per weekday and hour": "Ereignisse pro Wochentag und Stunde", "Last 14 days (click a day)": "Letzte 14 Tage (Tag anklicken)",
-  "Favorites": "Favoriten", "Protect selected": "Auswahl schützen", "Download ZIP": "ZIP laden", "events": "Ereignisse", "Timeline": "Zeitleiste",
+  "Favorites": "Favoriten", "Protect selected": "Auswahl schützen", "Download ZIP": "ZIP laden", "events": "Ereignisse", "Timeline": "Zeitleiste", "Open the timeline of this day": "Zeitleiste dieses Tages öffnen",
   "Favorites are never deleted by the automatic cleanup": "Favoriten werden vom automatischen Aufräumen nie gelöscht", "Timelapse": "Zeitraffer",
   "Place": "Ort", "All places": "Alle Orte", "Without location": "Ohne Ort", "Map": "Karte", "Show only this place": "Nur diesen Ort zeigen",
   "Rename place": "Ort umbenennen", "Name of this place (empty = automatic)": "Name dieses Orts (leer = automatisch)", "Fit": "Alles zeigen",
@@ -935,11 +931,9 @@ async function loadStats() {
     const i = el("i"); i.style.height = Math.max(2, 100 * d.count / mx * 0.8) + "%"; b.append(i, el("small", "", d.date.slice(8)));
     b.onclick = () => { tlDay = d.date; setDates(d.date, d.date); loadStats(); }; db.appendChild(b);
   });
-  $("#tl-title").textContent = t("Timeline") + " · " + tlDay + " · " + j.events.length + " " + t("events");
-  const tl = $("#tl"); tl.textContent = "";
-  [0, 3, 6, 9, 12, 15, 18, 21, 24].forEach(h => { const k = el("span", "tk", pad(h)); k.style.left = (h / 24 * 100) + "%"; tl.appendChild(k); });
-  j.events.forEach(ev => { const m = el("span", "m " + ev.kind); m.style.left = (ev.m / 1440 * 100) + "%"; m.title = ev.t;
-    m.onclick = () => { openAfter = ev.name; setDates(tlDay, tlDay); }; tl.appendChild(m); });
+  // 2.98.15 (Konzept-Check): one timeline - the small strip here became a link to the page «Zeitleiste» (523)
+  $("#tl-title").textContent = t("Timeline") + " · " + tlDay + " · " + j.events.length + " " + t("events") + " →";
+  $("#tl-go").href = "/timeline?day=" + tlDay + "&mode=day";
 }
 
 // ---- filter controls ----

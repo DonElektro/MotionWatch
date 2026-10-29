@@ -3706,6 +3706,7 @@ setTimeout(() => { if ($("#wf-card").open) wfLoad(); }, 1500);
 let PR = {campUntil: 0, hsUntil: 0};
 function prText(s) {                                       // 2.98.0: one name for the state everywhere: Aus / Wachsam / Voll
   const lv = ((s.protect || {}).level === "full" || (s.protect || {}).chosen === "full") ? t("Full protection") : t("Watchful");
+  if ((s.protect || {}).walk && (s.arm_state === "armed" || s.arm_state === "arming")) return ["🚶 " + t("Walk test"), "yel"];   // 2.98.15: no alarms meanwhile
   if (s.arm_state === "armed") return ["🛡 " + lv, "grn"];
   if (s.arm_state === "arming") return ["🛡 " + lv + " " + t("in") + " " + s.arm_left + " s", "yel"];
   return ["🛡 " + t("Off"), ""];
@@ -3969,7 +3970,8 @@ function modePaint(s) {
     const ti = document.createElement("input"); ti.type = "time"; ti.value = M.fire_until || ""; ti.style.width = "120px"; ti.style.flex = "none";
     ti.onchange = () => post("/api/mode", {mode_fire_until: ti.value});
     const sp = el("span", "", t("or battery below")); const se = document.createElement("select");
-    [0, 20, 30, 40, 50].forEach(v => { const op = document.createElement("option"); op.value = v; op.textContent = v ? v + " %" : t("never"); se.appendChild(op); });
+    [...new Set([0, 10, 20, 30, 40, 50, +M.fire_min_pct || 0])].sort((a, b) => a - b).forEach(v => { const op = document.createElement("option"); op.value = v; op.textContent = v ? v + " %" : t("never"); se.appendChild(op); });
+    se.title = t("Also under Settings → Battery, next to the battery saver");      // 2.98.15: the two battery thresholds together
     se.value = String(M.fire_min_pct); se.onchange = () => post("/api/mode", {mode_fire_min_pct: +se.value});
     r.append(ti, sp, se); o.appendChild(r);
     const r2 = el("label", "row pr-sw"); const c2 = document.createElement("input"); c2.type = "checkbox"; c2.className = "sw"; c2.checked = !!M.fire_persons;
@@ -3986,17 +3988,19 @@ function modePaint(s) {
 const PRT = {key: "", pinFor: "", until: 0};
 function protectPaint(P) {
   const box = $("#protect-box"); if (!box || !P) return;
-  const key = JSON.stringify([P.level, P.chosen, P.arm, P.colour, P.items, P.device, P.things, P.pin, P.presence, P.escalate.on, P.escalate.s, P.test, PRT.pinFor, LANG, P.forecast]);
+  const key = JSON.stringify([P.level, P.chosen, P.arm, P.colour, P.items, P.device, P.things, P.pin, P.presence, P.escalate.on, P.escalate.s, P.test, PRT.pinFor, LANG, P.forecast, P.walk]);
   if (key === PRT.key) { const c = $("#prt-left"); if (c) c.textContent = P.arm === "arming" ? t("starts in") + " " + P.left + " s" : (P.escalate.pending ? "🚨 " + t("siren in") + " " + P.escalate.pending + " s" : ""); return; }
   PRT.key = key; box.textContent = "";
   const head = el("div", "row"); head.style.cssText = "justify-content:space-between;align-items:center";
   head.append(el("b", "", "🛡 " + t("Protection")), el("span", "mut", "")); head.lastChild.id = "prt-left"; box.appendChild(head);
   const seg = el("div", "prt-seg");
+  const walk = !!P.walk && P.level !== "off";          // 2.98.15: during the walk test the state is «Gehtest», not «Wachsam» / «Voll»
   [["off", "⚪", t("Off")], ["watch", "🟡", t("Watchful")], ["full", "🛡", t("Full protection")]].forEach(([k, ic, n]) => {
+    if (walk && P.level === k) { ic = "🚶"; n = t("Walk test"); }
     const b = el("button", "prt-b" + (P.level === k ? " on" : " sec"), ""); b.type = "button"; b.append(el("span", "ic", ic), el("span", "", n));
     b.onclick = () => k === "off" ? protectOff() : protectLevel(k); seg.appendChild(b); });
   box.appendChild(seg);
-  box.appendChild(el("div", "mut prt-what", P.level === "off" ? t("prt-off") : (P.level === "watch" ? t("prt-watch") : t("prt-full"))));
+  box.appendChild(el("div", "mut prt-what", walk ? "🚶 " + t("Walk test running: no alarms until it ends (afterwards the protection is as before).") : P.level === "off" ? t("prt-off") : (P.level === "watch" ? t("prt-watch") : t("prt-full"))));
   if (P.forecast) box.appendChild(el("div", "prt-what", "🔋 " + P.forecast));      // 2.98.13: battery forecast (066)
   if (PRT.pinFor) { const r = el("div", "row"); r.style.cssText = "gap:6px;margin-top:8px"; const i = document.createElement("input"); i.type = "password"; i.inputMode = "numeric";
     i.placeholder = "PIN"; i.style.flex = "1"; const ok = el("button", "", t("Switch off")); ok.type = "button"; const no = el("button", "sec", "✕"); no.type = "button";
@@ -4034,8 +4038,14 @@ function protectPaint(P) {
   const sp1 = el("span", "", t("Siren when nobody switches off after")); e1.append(sp1, sel, c1); more.appendChild(e1);
   const e2 = el("label", "row pr-sw"); const c2 = document.createElement("input"); c2.type = "checkbox"; c2.className = "sw"; c2.checked = !!P.presence.on;
   c2.onchange = () => post("/api/protect", {action: "presence", on: c2.checked, lang: LANG});
-  const sp2 = el("span", "", t("Automatic: on when my phone is gone, off when it is back") + (P.presence.devices ? (P.presence.here === true ? " · 🏠 " + t("here") : P.presence.here === false ? " · 🚶 " + t("away") : "") : " · " + t("choose the phone under Tools → Network")));
-  e2.append(sp2, c2); more.appendChild(e2); box.appendChild(more);
+  const sp2 = el("span", "", t("Automatic: on when my phone is gone") + (P.presence.devices ? (P.presence.here === true ? " · 🏠 " + t("here") : P.presence.here === false ? " · 🚶 " + t("away") : "") : " · " + t("choose the phone under Tools → Network")));
+  e2.append(sp2, c2); more.appendChild(e2);
+  // 2.98.15: one clear choice instead of two switches (auto-off at return / «Is it you?»)
+  const e3 = el("div", "row"); e3.style.cssText = "gap:8px;flex-wrap:wrap;align-items:center"; e3.appendChild(el("span", "", t("When my phone comes back:")));
+  const s3 = document.createElement("select"); s3.style.cssText = "flex:1;min-width:180px";
+  PRES_BACK.forEach(([v, n]) => { const o = document.createElement("option"); o.value = v; o.textContent = t(n); s3.appendChild(o); }); s3.value = P.presence.back || "ask";
+  s3.onchange = () => post("/api/protect", {action: "presence", back: s3.value, lang: LANG}); e3.appendChild(s3); more.appendChild(e3);
+  box.appendChild(more);
 }
 async function protectLevel(k, answers) {
   const r = await post("/api/protect", {action: "level", level: k, answers: answers || null, lang: LANG});
@@ -4082,20 +4092,23 @@ async function demoGo() {                             // 2.96.7: makeover 20
 Object.assign(I18N.de, {"New in this version": "Neu in dieser Version", "Next in the makeover": "Als Nächstes im Makeover", "No changes noted.": "Keine Änderungen notiert.",
   "Do not show any more": "Nicht mehr anzeigen", "What is new?": "Was ist neu?", "Cinema mode": "Kino-Modus", "One-click demo": "Ein-Klick-Demo", "Cinema": "Kino", "Demo": "Demo"});
 
+const PRES_BACK = [["off", "switch the protection off"], ["ask", "ask «Is it you?» (person alarms wait)"], ["none", "nothing (the protection stays on)"]];
 function protectWizard() {                       // three questions, then everything is set
-  const A = {what: "place", when: "now", react: "push"};
-  const Q = [["what", t("What shall be protected?"), [["place", "⛺", t("The place / tent")], ["things", "🚲", t("Things like the bike")], ["device", "📷", t("The device itself")], ["all", "🛡", t("Everything")]]],
+  const A = {what: "place", when: "now", react: "push", back: (((window.__lastState || {}).protect || {}).presence || {}).back || "ask"};
+  const BQ = ["back", t("When my phone comes back?"), [["off", "⚪", t("switch the protection off")], ["ask", "❓", t("ask «Is it you?» (person alarms wait)")], ["none", "🛡", t("nothing (the protection stays on)")]]];
+  const Q0 = [["what", t("What shall be protected?"), [["place", "⛺", t("The place / tent")], ["things", "🚲", t("Things like the bike")], ["device", "📷", t("The device itself")], ["all", "🛡", t("Everything")]]],
     ["when", t("When?"), [["now", "▶", t("Now")], ["night", "🌙", t("Tonight")], ["away", "🚶", t("While I am away")]]],
     ["react", t("How shall it react?"), [["push", "📱", t("Quietly: push message")], ["light", "💡", t("Light + push")], ["siren", "🚨", t("Light, push, then the siren")]]]];
-  let i = 0; const ov = el("div", "prt-wiz"); document.body.appendChild(ov);
-  const show = () => { ov.textContent = ""; const c = el("div", "prt-card"); ov.appendChild(c);
+  let i = 0, Q = Q0; const ov = el("div", "prt-wiz"); document.body.appendChild(ov);
+  const show = () => { Q = A.when === "away" ? [Q0[0], Q0[1], BQ, Q0[2]] : Q0;   // 2.98.15: «while I am away» asks what happens at the return
+    ov.textContent = ""; const c = el("div", "prt-card"); ov.appendChild(c);
     if (i < Q.length) { const [k, q, opts] = Q[i]; c.append(el("div", "mut", (i + 1) + " / " + Q.length), el("h3", "", q));
       opts.forEach(([v, ic, n]) => { const b = el("button", "prt-opt" + (A[k] === v ? " on" : ""), ""); b.type = "button"; b.append(el("span", "ic", ic), el("span", "", n));
         b.onclick = () => { A[k] = v; i++; show(); }; c.appendChild(b); });
     } else { const lv = A.react === "siren" || A.what === "all" ? "full" : "watch";
       c.append(el("h3", "", t("Ready")), el("p", "", (lv === "full" ? "🛡 " + t("Full protection") : "🟡 " + t("Watchful")) + " · " + t(A.when === "night" ? "Tonight" : A.when === "away" ? "While I am away" : "Now")));
       const go = el("button", "", "🛡 " + t("Switch on the protection")); go.type = "button"; go.style.width = "100%";
-      go.onclick = () => { ov.remove(); if (A.when === "away") post("/api/protect", {action: "presence", on: true, lang: LANG});
+      go.onclick = () => { ov.remove(); if (A.when === "away") post("/api/protect", {action: "presence", on: true, back: A.back, lang: LANG});
         protectLevel(lv, {things: A.what === "things" || A.what === "all", device: A.what === "device" || A.what === "all", when: A.when === "night" ? "night" : "now", react: A.react}); };
       c.appendChild(go); }
     const x = el("button", "sec", i ? "‹ " + t("Back") : t("Cancel")); x.type = "button"; x.style.marginTop = "8px"; x.onclick = () => { if (i) { i--; show(); } else ov.remove(); }; c.appendChild(x); };
@@ -4108,6 +4121,10 @@ Object.assign(I18N.de, {"Protection": "Schutz", "Off": "Aus", "Watchful": "Wachs
   "Switch off": "Ausschalten", "Protection off": "Schutz aus", "All ready": "Alles bereit", "thing(s) missing": "Punkt(e) offen", "Fix": "Beheben",
   "Device protection": "Gerät", "Protection assistant": "Schutz-Assistent", "Test runs …": "Test läuft …", "Test the protection": "Schutz testen",
   "Change PIN": "PIN ändern", "PIN for switching off": "PIN zum Ausschalten", "More: siren delay, presence": "Mehr: Sirene, Abwesenheit",
+  "Automatic: on when my phone is gone": "Automatisch an, wenn mein Handy weg ist", "When my phone comes back:": "Wenn mein Handy zurückkommt:",
+  "When my phone comes back?": "Wenn mein Handy zurückkommt?", "switch the protection off": "Schutz ausschalten", "ask «Is it you?» (person alarms wait)": "fragen «Bist du's?» (Personen-Alarme warten)",
+  "nothing (the protection stays on)": "nichts (der Schutz bleibt an)", "Walk test": "Gehtest", "Walk test running: no alarms until it ends (afterwards the protection is as before).": "Gehtest läuft: keine Alarme, bis er fertig ist (danach ist der Schutz wie vorher).",
+  "Also under Settings → Battery, next to the battery saver": "Auch unter Einstellungen → Akku, neben dem Akku-Sparen",
   "Siren when nobody switches off after": "Sirene, wenn niemand ausschaltet, nach", "Automatic: on when my phone is gone, off when it is back": "Automatisch: an, wenn mein Handy weg ist, aus, wenn es zurück ist",
   "here": "da", "away": "weg", "choose the phone under Tools → Network": "Handy unter Werkzeuge → Netz wählen", "Current PIN": "Bisherige PIN",
   "New PIN (4 to 8 digits, empty = no PIN)": "Neue PIN (4 bis 8 Ziffern, leer = keine PIN)", "PIN saved": "PIN gespeichert", "PIN removed": "PIN entfernt",

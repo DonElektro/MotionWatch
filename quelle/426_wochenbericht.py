@@ -8,6 +8,8 @@
 #   · im Simulator-Tagebuch (355) verpasste Personen (im Bild, aber nicht erkannt)
 #   · dazu ein Tipp, der zur Woche passt.
 # Auch zu sehen: Verlauf → Zeitleiste (Karte «Wochenbericht») und im Fenster (Zeitleiste).
+# 2.98.15: der frühere Montags-Push «Woche im Simulator» (142) ist hier drin (Besuche, Tiere) – eine Nachricht pro Woche;
+# Einstellung weekrep_sim («mit der Woche im Simulator», übernommen aus simweek_on, 577).
 # ----------------------------------------------------------------------------
 WEEKREP = {"last": None}
 WEEKDAYS_EN = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
@@ -112,7 +114,11 @@ def weekrep_build(lang=None, now=None):
                      n=R[0], p=Rp[0], f=R[1], tr=_wr_trend(R[1], Rp[1], better_up=False)) +
                  ((" (" + ", ".join(f"{tr(WR_CAUSES.get(k, k), L)} {v}" for k, v in sorted(R[2].items(), key=lambda kv: -kv[1])) + ")") if R[2] else ""))
     lines.append(trf("Alarm messages: {n} (week before {p})", L, n=M, p=Mp))
-    if S["seen"]:
+    sim_on = bool(CFG.get("weekrep_sim", True))             # «Wochenbericht: mit der Woche im Simulator» (577, was simweek_on)
+    SW = weekrep_simweek(a, now, L) if sim_on else None        # 2.98.15: the former Monday push «week in the simulator» is part of it
+    if SW and SW["visits"]:
+        lines.append(trf("Week in the simulator: {v} visits. Animals: {an}", L, v=SW["visits"], an=SW["animals"] or "–"))
+    if sim_on and S["seen"]:
         lines.append(trf("Simulator diary: persons recognised {r} % ({a} of {b}) {tr}, missed {m}", L,
                          r=S["rate"], a=S["rec"], b=S["seen"], tr=_wr_trend(S["rate"], Sp.get("rate")), m=S["missed"]) +
                      ((" – " + ", ".join(f"{tr_trigger(k, L)} {v}" for k, v in S["miss_kinds"])) if S["miss_kinds"] else ""))
@@ -120,9 +126,20 @@ def weekrep_build(lang=None, now=None):
     text = "\n".join(lines) + "\n💡 " + tip
     return {"t": now.isoformat(timespec="seconds"), "from": a.strftime("%d.%m."), "to": now.strftime("%d.%m."),
             "tests": T, "tests_prev": Tp, "recs": {"n": R[0], "false": R[1], "causes": R[2]}, "recs_prev": {"n": Rp[0], "false": Rp[1]},
-            "msgs": M, "msgs_prev": Mp, "sim": S, "sim_prev": Sp, "weeks": weeks, "lines": lines, "tip": tip, "link": link, "text": text,
+            "msgs": M, "msgs_prev": Mp, "sim": S, "sim_prev": Sp, "simweek": SW, "with_sim": sim_on, "weeks": weeks, "lines": lines, "tip": tip, "link": link, "text": text,
             "on": bool(CFG.get("weekrep_on")), "day": CFG.get("weekrep_day"), "hour": int(CFG.get("weekrep_hour", 18)),
             "last": WEEKREP["last"]}
+
+
+def weekrep_simweek(a, b, L=None):
+    """2.98.15: what the Monday push «Woche im Simulator» (142) said - visits and animals of the simulator diary"""
+    try:
+        st = simdiary_stats(max(1, (b - a).days))
+    except Exception:
+        return None
+    vis = sum(int(x.get("visits") or 0) for x in st.get("days") or [])
+    an = ", ".join(f"{tr_trigger(k['k'], L)} {k['n']}" for k in st.get("kinds") or [] if k.get("animal"))[:120]
+    return {"visits": vis, "animals": an}
 
 
 def weekrep_tip(L, T, Tp, R, S, now):
@@ -135,7 +152,7 @@ def weekrep_tip(L, T, Tp, R, S, now):
         if sg:
             return trf("{n} false alarms this week. Suggestion: {s} (History → Recordings → false alarms)", L, n=R[1], s=sg[0]["text"]), "/recordings"
         return trf("{n} false alarms this week. Draw an ignore zone over what moves (trees, road) – tab Protection → Zones.", L, n=R[1]), "/zones"
-    if S["missed"] >= 2:
+    if S["missed"] >= 2 and CFG.get("weekrep_sim", True):
         return trf("In the simulator {n} persons were in the picture but not recognised. Run the test «Night» and the automatic optimization (Simulator → Testing).", L, n=S["missed"]), "/sim"
     if T["n"] and Tp.get("score") is not None and T["score"] <= Tp["score"] - 5:
         return tr("The test score went down. Look at what changed in the settings (Simulator → Test runs, «undo»).", L), "/sim"

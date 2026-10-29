@@ -100,11 +100,13 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `560_uebersetzungen_de.py` | Übersetzungen Deutsch | 498 |
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |
 | `576_fenster_zeitleiste.py` | Fenster: Zeitleiste als Liste, Wochenbericht | 130 |
+| `577_nachlauf_konzept.py` | Nachlauf Konzept-Check: ein Wochenbericht, Rückkehr des Handys (ausschalten / fragen / nichts), Akku-Schwellen zusammen, Auto-Tuner ±20 %, Übernahme alter Einstellungen | 201 |
 | `571_alarm_einstellungen.py` | Schalter und Regler der Alarm-Extras (Web und Fenster) | 16 |
 | `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
 | `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
 | `600_uebersetzungen_rm.py` | Übersetzungen Rätoromanisch, Anleitungen | 1763 |
 | `602_uebersetzungen_alarm.py` | Übersetzungen der Alarm-Extras | 130 |
+| `603_uebersetzungen_nachlauf.py` | Übersetzungen zum Nachlauf des Konzept-Checks (577) | 27 |
 | `607_uebersetzungen_modell.py` | Übersetzungen «Eigenes KI-Modell» | 37 |
 | `575_fenster_erkennung.py` | Fenster + Einstellungen: Gehtest, Wärmebild-Personen, Akku-Sparen | 87 |
 | `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |

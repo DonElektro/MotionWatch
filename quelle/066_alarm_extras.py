@@ -566,7 +566,7 @@ def _alx_loop():
                 h = presence_home()
             except Exception:
                 h = None
-            if h is True and home is False and CFG.get("back_ask"):
+            if h is True and home is False and presence_back_mode() == "ask":     # 2.98.15: the choice presence_back (577)
                 back_t = time.time() + 3.0               # first let the presence switch off the protection by itself (150)
             home = h if h is not None else home
             if back_t and time.time() >= back_t:
