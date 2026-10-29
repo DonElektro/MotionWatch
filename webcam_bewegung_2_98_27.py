@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_26.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_27.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.27: Pi-Kamera als Hauptkamera: läuft sie noch als Zusatzkamera, wird diese zuerst geschlossen (vorher «Camera __init__
+    sequence did not complete»); die Hauptkamera lässt sich nicht mehr ein zweites Mal als Zusatzkamera hinzufügen.
   * 2.98.26: Simulator: zwei offene Simulator-Fenster liessen das Bild zwischen zwei Ansichten springen – jetzt zählt nur das
     neueste (mit Simulator 3D-4.8). Nach dem Ausschalten der Simulation bleibt das Simulator-Bild nicht mehr stehen (man sieht
     den Stand der echten Kamera); die Pi-Kamera als Hauptkamera hat Vorrang vor einer Zusatzkamera und wird bei «besetzt»
@@ -912,10 +914,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_26.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_27.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_26.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_26.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_27.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_27.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -932,7 +934,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.26"
+APP_VERSION = "2.98.27"
 
 
 def default_data_dir():
@@ -15963,7 +15965,7 @@ def open_source(spec, thermal=False):
             src = (_open_usb(int(arg), raw=True) or _open_usb(int(arg))) if thermal else _open_usb(int(arg))
             return (src, spec, label, "") if src else (None, spec, label, f"no picture from /dev/video{arg}")
         if kind == "pi":
-            if not thermal and spec in CFG.get("extra_cams", []) and STATE.get("source_id") != spec and CFG.get("source") == spec:
+            if not thermal and spec in CFG.get("extra_cams", []) and CFG.get("source") == spec:
                 # 2.98.26: the Pi camera can be open only once - the main camera has priority over an extra camera
                 CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x != spec]; save_settings()
                 log_event("sys", f"{label}: removed from the extra cameras - it is the main camera now")
@@ -15971,8 +15973,10 @@ def open_source(spec, thermal=False):
             try:
                 return PiCamSource(int(arg)), spec, label, ""
             except Exception as e:
-                if "busy" in str(e).lower() or "acquire" in str(e).lower():
-                    time.sleep(2.0)                              # the old picture of the camera is still being closed: once more
+                if any(k in str(e).lower() for k in ("busy", "acquire", "sequence did not complete", "in use")):
+                    if any(c.spec == spec for c in CAMS):        # 2.98.27: an extra camera holds it - close that one first
+                        cams_apply()
+                    time.sleep(3.0)                              # the old picture of the camera is still being closed: once more
                     return PiCamSource(int(arg)), spec, label, ""
                 raise
         if kind == "senxor":
@@ -26851,7 +26855,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_26.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_27.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -31902,7 +31906,7 @@ class ExtraCam:
 
 def cams_apply():
     """Start / stop the extra camera threads so they match the settings."""
-    want = list(CFG["extra_cams"])
+    want = [x for x in CFG["extra_cams"] if x != CFG.get("source")]     # 2.98.27: never the main camera a second time
     for c in list(CAMS):
         if c.spec not in want:
             CAMS.remove(c); threading.Thread(target=c.close, daemon=True).start()
@@ -31924,6 +31928,8 @@ def cams_status(watch=None):
 def cams_add(spec):
     if not isinstance(spec, str) or not SRC_RE.match(spec) or spec == "auto":
         return False, "unknown source"
+    if spec == CFG.get("source") or spec == STATE.get("source_id"):
+        return False, "this is the main camera already"         # 2.98.27: a Pi camera can be open only once
     if spec.startswith("url:") and not find_ip_source(spec[4:]):
         return False, "unknown network camera"
     if spec in CFG["extra_cams"] or spec == STATE["source_id"]:
@@ -51185,7 +51191,7 @@ DE.update({
     "Time must look like 07:30": "Die Zeit muss so aussehen: 07:30",
     SCHED_NOTE: "Solange ein Zeitplan aktiv ist, werden die gewählten Funktionen fest EIN oder AUS geschaltet. Danach gilt wieder "
                 "deine eigene Einstellung. Wer von Hand schaltet, überstimmt den Zeitplan bis zu dessen nächster Änderung.",
-    "unknown source": "unbekannte Quelle", "unknown network camera": "unbekannte Netzwerk-Kamera",
+    "unknown source": "unbekannte Quelle", "unknown network camera": "unbekannte Netzwerk-Kamera", "this is the main camera already": "das ist schon die Hauptkamera",
     "invalid URL (rtsp:// or http:// expected)": "ungültige URL (rtsp:// oder http:// erwartet)",
     "too many network cameras": "zu viele Netzwerk-Kameras", "invalid schedule": "ungültiger Zeitplan",
     "unknown schedule": "unbekannter Zeitplan",
@@ -52206,7 +52212,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.26")
+        self.root.title("MoveEye 2.98.27")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -52559,7 +52565,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.26 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.27 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -58348,6 +58354,7 @@ TRX['fr'].update({
     'unknown entry': 'entrée inconnue',
     'unknown field': 'champ inconnu',
     'unknown network': 'réseau inconnu',
+    'this is the main camera already': "c'est déjà la caméra principale",
     'unknown network camera': 'caméra réseau inconnue',
     'unknown relay': 'relais inconnu',
     'unknown schedule': 'programme horaire inconnu',
@@ -59740,6 +59747,7 @@ TRX['it'].update({
     'unknown entry': 'voce sconosciuta',
     'unknown field': 'campo sconosciuto',
     'unknown network': 'rete sconosciuta',
+    'this is the main camera already': "è già la telecamera principale",
     'unknown network camera': 'telecamera di rete sconosciuta',
     'unknown relay': 'relè sconosciuto',
     'unknown schedule': 'pianificazione sconosciuta',
@@ -61132,6 +61140,7 @@ TRX['rm'].update({
     'unknown entry': 'inscripziun nunenconuschenta',
     'unknown field': 'champ nunenconuschent',
     'unknown network': 'rait nunenconuschenta',
+    'this is the main camera already': "quai è gia la camera principala",
     'unknown network camera': 'camera da rait nunenconuschenta',
     'unknown relay': 'relais nunenconuschent',
     'unknown schedule': 'plan da temp nunenconuschent',

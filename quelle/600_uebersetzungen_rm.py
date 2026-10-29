@@ -1324,6 +1324,7 @@ TRX['rm'].update({
     'unknown entry': 'inscripziun nunenconuschenta',
     'unknown field': 'champ nunenconuschent',
     'unknown network': 'rait nunenconuschenta',
+    'this is the main camera already': "quai è gia la camera principala",
     'unknown network camera': 'camera da rait nunenconuschenta',
     'unknown relay': 'relais nunenconuschent',
     'unknown schedule': 'plan da temp nunenconuschent',

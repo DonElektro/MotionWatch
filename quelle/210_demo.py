@@ -127,7 +127,7 @@ def open_source(spec, thermal=False):
             src = (_open_usb(int(arg), raw=True) or _open_usb(int(arg))) if thermal else _open_usb(int(arg))
             return (src, spec, label, "") if src else (None, spec, label, f"no picture from /dev/video{arg}")
         if kind == "pi":
-            if not thermal and spec in CFG.get("extra_cams", []) and STATE.get("source_id") != spec and CFG.get("source") == spec:
+            if not thermal and spec in CFG.get("extra_cams", []) and CFG.get("source") == spec:
                 # 2.98.26: the Pi camera can be open only once - the main camera has priority over an extra camera
                 CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x != spec]; save_settings()
                 log_event("sys", f"{label}: removed from the extra cameras - it is the main camera now")
@@ -135,8 +135,10 @@ def open_source(spec, thermal=False):
             try:
                 return PiCamSource(int(arg)), spec, label, ""
             except Exception as e:
-                if "busy" in str(e).lower() or "acquire" in str(e).lower():
-                    time.sleep(2.0)                              # the old picture of the camera is still being closed: once more
+                if any(k in str(e).lower() for k in ("busy", "acquire", "sequence did not complete", "in use")):
+                    if any(c.spec == spec for c in CAMS):        # 2.98.27: an extra camera holds it - close that one first
+                        cams_apply()
+                    time.sleep(3.0)                              # the old picture of the camera is still being closed: once more
                     return PiCamSource(int(arg)), spec, label, ""
                 raise
         if kind == "senxor":

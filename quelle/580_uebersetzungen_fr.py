@@ -1328,6 +1328,7 @@ TRX['fr'].update({
     'unknown entry': 'entrée inconnue',
     'unknown field': 'champ inconnu',
     'unknown network': 'réseau inconnu',
+    'this is the main camera already': "c'est déjà la caméra principale",
     'unknown network camera': 'caméra réseau inconnue',
     'unknown relay': 'relais inconnu',
     'unknown schedule': 'programme horaire inconnu',

@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 18:29",
+ "generated": "2026-10-29 18:38",
  "versions": [
   {
-   "version": "2.98.26",
-   "file": "webcam_bewegung_2_98_26.py",
+   "version": "2.98.27",
+   "file": "webcam_bewegung_2_98_27.py",
    "url": "",
-   "sha256": "7bed7ac16671f59e660e70e35607a6234268d9ce4ee96843872adc9c02f6c9c2",
-   "date": "2026-10-29 18:29",
-   "notes": "Simulator: zwei offene Simulator-Fenster liessen das Bild zwischen zwei Ansichten springen – jetzt zählt nur das neueste (mit Simulator 3D-4.8). Nach dem Ausschalten der Simulation bleibt das Simulator-Bild nicht mehr stehen (man sieht den Stand der echten Kamera); die Pi-Kamera als Hauptkamera hat Vorrang vor einer Zusatzkamera und wird bei «besetzt» nochmals versucht.",
-   "sig": "c343b7079ba12e6dec5dc5b0da1161a2126bef23643bbdfe25514ff85b4ffce87d5b570ef7c49f39ec0c472421c211bc99195d5bfba80379b4f7723c04518f0d"
+   "sha256": "12b58a81a24b5e5e37e9d9c66a3be23f50788b19baa2f7e52809e6ec19c67b64",
+   "date": "2026-10-29 18:38",
+   "notes": "Pi-Kamera als Hauptkamera: läuft sie noch als Zusatzkamera, wird diese zuerst geschlossen (vorher «Camera __init__ sequence did not complete»); die Hauptkamera lässt sich nicht mehr ein zweites Mal als Zusatzkamera hinzufügen.",
+   "sig": "180a7388b6e25164a1e99d70ee829bb35384b7bdd71f98d82b2bd935262fe31752c5b79fabfc0bb24ca10aa0a5ea7308eafbb696fc168dd0ddeb19da4cd09c03"
   },
   {
    "version": "2.97.1",

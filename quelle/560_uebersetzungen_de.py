@@ -255,7 +255,7 @@ DE.update({
     "Time must look like 07:30": "Die Zeit muss so aussehen: 07:30",
     SCHED_NOTE: "Solange ein Zeitplan aktiv ist, werden die gewählten Funktionen fest EIN oder AUS geschaltet. Danach gilt wieder "
                 "deine eigene Einstellung. Wer von Hand schaltet, überstimmt den Zeitplan bis zu dessen nächster Änderung.",
-    "unknown source": "unbekannte Quelle", "unknown network camera": "unbekannte Netzwerk-Kamera",
+    "unknown source": "unbekannte Quelle", "unknown network camera": "unbekannte Netzwerk-Kamera", "this is the main camera already": "das ist schon die Hauptkamera",
     "invalid URL (rtsp:// or http:// expected)": "ungültige URL (rtsp:// oder http:// erwartet)",
     "too many network cameras": "zu viele Netzwerk-Kameras", "invalid schedule": "ungültiger Zeitplan",
     "unknown schedule": "unbekannter Zeitplan",

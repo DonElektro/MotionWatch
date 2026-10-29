@@ -151,7 +151,7 @@ class ExtraCam:
 
 def cams_apply():
     """Start / stop the extra camera threads so they match the settings."""
-    want = list(CFG["extra_cams"])
+    want = [x for x in CFG["extra_cams"] if x != CFG.get("source")]     # 2.98.27: never the main camera a second time
     for c in list(CAMS):
         if c.spec not in want:
             CAMS.remove(c); threading.Thread(target=c.close, daemon=True).start()
@@ -173,6 +173,8 @@ def cams_status(watch=None):
 def cams_add(spec):
     if not isinstance(spec, str) or not SRC_RE.match(spec) or spec == "auto":
         return False, "unknown source"
+    if spec == CFG.get("source") or spec == STATE.get("source_id"):
+        return False, "this is the main camera already"         # 2.98.27: a Pi camera can be open only once
     if spec.startswith("url:") and not find_ip_source(spec[4:]):
         return False, "unknown network camera"
     if spec in CFG["extra_cams"] or spec == STATE["source_id"]:

@@ -1324,6 +1324,7 @@ TRX['it'].update({
     'unknown entry': 'voce sconosciuta',
     'unknown field': 'campo sconosciuto',
     'unknown network': 'rete sconosciuta',
+    'this is the main camera already': "è già la telecamera principale",
     'unknown network camera': 'telecamera di rete sconosciuta',
     'unknown relay': 'relè sconosciuto',
     'unknown schedule': 'pianificazione sconosciuta',
