@@ -1851,6 +1851,49 @@ class WebStream:
             ok, err, name = sneeze_upload(request.get_data(cache=False))
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None, "name": name}, 200 if ok else 400)
 
+        @app.route("/dev")
+        def dev_home():
+            if not dev_available():
+                return Response("not found", 404)
+            return Response(dev_page(), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+        @app.route("/api/dev", methods=["GET", "POST"])
+        def api_dev():
+            """2.98.7: the developer area - only this device, read-only, behind its own PIN. Admin only."""
+            lang = norm_lang(request.args.get("lang") or CFG["lang"])
+            if getattr(g, "role", "admin") != "admin":
+                return reply({"ok": False, "error": "not allowed"}, 403)
+            if not dev_available():
+                return reply({"ok": False, "error": "the developer area is switched off"}, 404)
+            if request.method == "POST":
+                d = body(); a_ = d.get("action"); lang = norm_lang(d.get("lang") or lang)
+                if a_ == "setpin":
+                    ok_, err_ = dev_pin_set(d.get("pin"), d.get("old") or "")
+                    if not ok_:
+                        return reply({"ok": False, "error": tr(err_, lang)}, 400)
+                elif a_ == "unlock":
+                    ok_, err_, tok = dev_unlock(d.get("pin"), "web " + (request.remote_addr or "?"))
+                    if not ok_:
+                        return reply({"ok": False, "error": tr(err_, lang)}, 400)
+                    return reply({"ok": True, "token": tok, "dev": dev_state(lang)})
+                elif a_ == "lock":
+                    dev_lock()
+                else:
+                    return reply({"ok": False, "error": "unknown action"}, 400)
+            return reply({"ok": True, "dev": dev_state(lang)})
+
+        @app.route("/api/dev/<what>")
+        def api_dev_data(what):
+            if getattr(g, "role", "admin") != "admin" or not dev_available():
+                return reply({"ok": False, "error": "not allowed"}, 403)
+            if not dev_token_ok(request.args.get("token")):
+                return reply({"ok": False, "error": "locked"}, 401)
+            fns = {"conns": dev_connections, "dns": dev_dns, "ifaces": dev_ifaces}
+            fn = fns.get(what)
+            if fn is None:
+                return reply({"ok": False, "error": "unknown"}, 404)
+            return reply({"ok": True, "items": fn(), "dev": dev_state()})
+
         @app.route("/api/wake", methods=["GET", "POST"])
         def api_wake():
             """2.98.7: wake-up alarm - state, test, snooze, off, direction for the night, good night"""

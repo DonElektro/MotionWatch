@@ -198,6 +198,7 @@ CFG = {
     # 2.98.7: wake-up alarm with the sleeping place (255_wecker.py)
     "wake_on": False, "wake_time": "07:00", "wake_days": "mon-fri", "wake_sleep": "22:30", "wake_snooze": 9, "wake_ring_max": 15,
     "wake_volume": 60, "wake_sound": "chime", "wake_light": True, "wake_gestures": True, "wake_away_pan": -1.0, "wake_away_tilt": -1.0,
+    "dev_area": False, "dev_pin": "",   # 2.98.7: developer area (258), hidden until switched on, own PIN
     "wifi_swap": False, "wifi_guard": False,
     "wifi_guard_thr": 20, "wifi_count": False, "wifi_presence": False, "net_noinet": [], "net_inet_notify": True, "sim_prev_source": "", "sim_prev_thermal": "",
     "lens_check": True, "temp_alarm_on": False, "temp_hot": 30, "temp_cold": 3,

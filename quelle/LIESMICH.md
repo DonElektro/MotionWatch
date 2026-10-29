@@ -48,6 +48,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `240_audio.py` | Mikrofon, Geräusch-Alarm | 81 |
 | `250_klatschen_bluetooth_ton.py` | Klatschschalter, Bluetooth, Lautsprecher, Sprachausgabe | 1131 |
 | `255_wecker.py` | Wecker mit Schlafplatz: wegschauen, wecken, Gesten (winken / aufstehen) | 330 |
+| `258_entwickler.py` | Entwickler-Bereich: eigene Verbindungen, erreichte Namen, Datenmenge (nur lesen, PIN) | 330 |
 | `260_mehrere_geraete.py` | mehrere Motion-Watch-Geräte | 164 |
 | `270_mqtt.py` | MQTT / Home Assistant | 250 |
 | `280_sms_sensoren_sturm_gps_solar.py` | SMS, Sensoren, Sturmwarnung, GPS, Solar | 870 |

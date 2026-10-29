@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 01:13",
+ "generated": "2026-10-29 01:29",
  "versions": [
   {
-   "version": "2.98.7",
-   "file": "webcam_bewegung_2_98_7.py",
+   "version": "2.98.8",
+   "file": "webcam_bewegung_2_98_8.py",
    "url": "",
-   "sha256": "a7e55a1527bb168e54721eb0f9178af0adae6091650d6e53f1f44d6faad05dc5",
-   "date": "2026-10-29 01:13",
-   "notes": "Spiele freigeben: eine Taste für Spielecke, Spielesammlung und Simulator-Spiel (ein QR-Code); Wecker mit Schlafplatz: nachts wegschauen, beim Wecken zum Bett drehen, Gesten (winken = schlummern, aufstehen = aus); Schlafplatz in jedem Bild abgedeckt",
-   "sig": "7b221a97f88abe13db2542ce963e75336d1f198035898a57b01ff81c9fd996cb501bac125f41d4796e749d6443e1f45a422a1c2c6dc6efae3d377367354b930e"
+   "sha256": "a10624a70ea69f4d962d0d5b3e511a03b108bc25bb132e5fddc965125eecdfc8",
+   "date": "2026-10-29 01:29",
+   "notes": "Entwickler-Bereich (nur eigenes Gerät, nur lesen: eigene Verbindungen, erreichte Namen, Datenmenge der Netzwerkkarten), ausblendbar, mit eigener PIN; jede Nutzung im Protokoll",
+   "sig": "cc67bdd23aec4463c1b8ffa9b912216746afdebe3eb93bf5c1d83e5c0d1fa82559bee01a0a1936d2a51fa36d5b9cbae559d83e33832526764d84ba58b820a10d"
   },
   {
    "version": "2.97.1",

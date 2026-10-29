@@ -2217,6 +2217,9 @@ _HX125 = {  # 2.98.7: «Spiele freigeben», wake-up alarm, sleeping place
     'Sleeping place': ('Schlafplatz', 'Lit', 'Letto', 'Letg'),
     '+ Sleeping place': ('+ Schlafplatz', '+ Lit', '+ Letto', '+ Letg'),
     'Volume of the alarm': ('Lautstärke', 'Volume du réveil', 'Volume della sveglia', 'Volumen dal svegliarin'),
+    'Developer area (own network, with its own PIN) - only for the developer': ('Entwickler-Bereich (eigenes Netz, mit eigener PIN) – nur für den Entwickler', 'Espace développeur (propre réseau, avec son propre NIP) – seulement pour le développeur', 'Area sviluppatore (propria rete, con un proprio PIN) – solo per lo sviluppatore', 'Secziun dal sviluppader (agen rait, cun agen PIN) – mo per il sviluppader'),
+    'wrong PIN': ('falsche PIN', 'NIP erroné', 'PIN errato', 'PIN fallà'),
+    'the PIN must have 4 to 10 digits': ('die PIN muss 4 bis 10 Ziffern haben', 'le NIP doit avoir 4 à 10 chiffres', 'il PIN deve avere da 4 a 10 cifre', 'il PIN sto avair 4 fin 10 cifras'),
     'unknown action': ('unbekannte Aktion', 'action inconnue', 'azione sconosciuta', 'acziun nunenconuschenta'),
 }
 for _k, _v in _HX125.items():

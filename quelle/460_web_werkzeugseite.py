@@ -145,6 +145,7 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
   <div class="tlg" data-i18n="Power and help">Power and help</div>
   <a class="tli" href="/almanach/" target="_blank" style="text-decoration:none;color:inherit"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7M8 11h7"/></svg><span class="tln"><b data-i18n="Survival almanac">Survival almanac</b><span class="tsum" data-i18n="tips for camping, to look up or read in the evening">tips for camping, to look up or read in the evening</span></span><i class="tdot" id="d-alm"></i></a>
   <button type="button" class="tli" data-k="pow" onclick="pick('pow')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 11v2M7 10v4M11 10v4"/></svg><span class="tln"><b data-i18n="Power calculator">Power calculator</b><span class="tsum" id="s-pow"></span></span><i class="tdot" id="d-pow"></i></button>
+  <a class="tli" id="t-dev" href="/dev" style="text-decoration:none;color:inherit;display:none"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h12"/><circle cx="19" cy="18" r="2"/></svg><span class="tln"><b data-i18n="Developer">Developer</b><span class="tsum" data-i18n="own network, read-only">own network, read-only</span></span><span class="tdot"></span></a>
   <button type="button" class="tli" data-k="diag" onclick="pick('diag')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M8 14h2l1.5-3 2 5 1.5-2H16"/></svg><span class="tln"><b data-i18n="Diagnosis package">Diagnosis package</b><span class="tsum" id="s-diag"></span></span><i class="tdot" id="d-diag"></i></button>
 </nav>
 <div class="tpane">
@@ -445,7 +446,7 @@ Object.assign(I18N.de, {"Internet over the USB stick (better antenna)": "Interne
 Object.assign(I18N.de, {"rep-confirm": "Repeater einschalten? Ein Adapter wird dann zum eigenen WLAN «MotionWatch». Der Pi bekommt im Heimnetz eventuell eine neue Adresse. Hat er nach 2½ Minuten keine Verbindung mehr, schaltet er den Repeater selbst wieder aus.",
   "repeater switched off again: no connection to a network": "Repeater wieder ausgeschaltet: keine Verbindung zu einem Netz"});
 Object.assign(I18N.de, {"All tools": "Alle Werkzeuge", "problem": "Problem", "problems": "Probleme", "warning": "Warnung", "warnings": "Warnungen", "all ok": "alles in Ordnung"});
-Object.assign(I18N.de, {"tools-intro": "Tippe auf ein Werkzeug, um es aufzuklappen. Die Zeile rechts zeigt das letzte Ergebnis.", "Open all": "Alle aufklappen", "Close all": "Alle zuklappen", "Network and internet": "Netz und Internet", "Wi-Fi": "WLAN", "Device tests": "Geräte-Tests", "Power and help": "Strom und Hilfe", "Wi-Fi jamming!": "WLAN-Störung!", "Best channel": "Bester Kanal", "networks": "Netze"});
+Object.assign(I18N.de, {"tools-intro": "Tippe auf ein Werkzeug, um es aufzuklappen. Die Zeile rechts zeigt das letzte Ergebnis.", "Open all": "Alle aufklappen", "Close all": "Alle zuklappen", "Network and internet": "Netz und Internet", "Wi-Fi": "WLAN", "Device tests": "Geräte-Tests", "Power and help": "Strom und Hilfe", "Developer": "Entwickler", "own network, read-only": "eigenes Netz, nur lesen", "Wi-Fi jamming!": "WLAN-Störung!", "Best channel": "Bester Kanal", "networks": "Netze"});
 let S = null, FOC = null;
 const fmtT = ts => ts ? new Date(ts * 1000).toLocaleString(LOCALE || undefined, {hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit"}) : "–";
 function tr_(cells, head) { const r = el("tr"); cells.forEach(c => { const d = el(head ? "th" : "td"); if (c instanceof Node) d.appendChild(c); else d.textContent = c == null ? "–" : c; r.appendChild(d); }); return r; }
@@ -984,6 +985,7 @@ function pick(k, push) {
 }
 function showList() { document.body.classList.remove("picked"); if (location.hash) history.pushState(null, "", location.pathname); }
 addEventListener("popstate", () => { const h = location.hash.slice(1); if (h) pick(h, false); else document.body.classList.remove("picked"); });
+fetch("/api/dev", {cache: "no-store"}).then(r => r.ok ? r.json() : null).then(j => { if (j && j.ok && j.dev && j.dev.on) { const e = document.getElementById("t-dev"); if (e) e.style.display = ""; } }).catch(() => {});
 (function () { let k = location.hash.slice(1);
   if (window.MW_SOLO) { pick(window.MW_SOLO, false); return; }
   if (k === "party") { location.replace("/party"); return; }               // the game corner has its own tab now
