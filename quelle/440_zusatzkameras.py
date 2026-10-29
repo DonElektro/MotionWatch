@@ -22,6 +22,7 @@ class ExtraCam:
         self.motion = False; self.recording = False
         self.writer = None; self.rec_name = ""; self.rec_info = None; self.last_motion = 0.0; self.streak = 0
         self.boxes = []; self.times = deque(maxlen=30); self.ftimes = deque(maxlen=31); self.n = 0; self.last_cleanup = 0.0
+        self.raw = None; self.raw_t = 0.0; self.raw_until = 0.0        # 2.98.30: a clean picture for the panorama (317), only when asked
         self.thread = threading.Thread(target=self.loop, daemon=True); self.thread.start()
 
     def info(self):
@@ -71,6 +72,8 @@ class ExtraCam:
     def _process(self, frame, bg):
         t0 = time.time()
         self.n += 1
+        if t0 < self.raw_until:
+            self.raw = frame.copy(); self.raw_t = t0
         H, W = frame.shape[:2]
         if self.n % 2 == 0 or not self.times:                  # detection on every 2nd frame is enough
             pw = 320; ph = max(1, int(H * pw / W)); sx = W / pw; sy = H / ph

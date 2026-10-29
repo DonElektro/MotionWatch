@@ -63,7 +63,10 @@ def cam_fov():
                 return hf, vf
     except (TypeError, ValueError, KeyError):
         pass
-    return float(CFG.get("cam_hfov") or 66.0), float(CFG.get("cam_vfov") or 41.0)
+    try:
+        return cam_fov_hv(None)[:2]                      # 2.98.30: the field of view per camera (318: model, own value, picamera2)
+    except NameError:
+        return float(CFG.get("cam_hfov") or 66.0), float(CFG.get("cam_vfov") or 41.0)
 
 
 def servo_half(axis):

@@ -78,6 +78,8 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `310_testlaeufe.py` | Testläufe mit Auswertung und Optimierung | 485 |
 | `312_erkennung_assistent.py` | Assistent «Erkennung verbessern» (ein Ablauf statt sechs Funktionen), Pause des Auto-Tuners | 307 |
 | `315_referenz_scan.py` | Referenz-Scan: Raster abfahren, Referenz-Fotos, Vergleich, Bericht (2.95.97) | 347 |
+| `317_platz.py` | «Platz einrichten»: Rundblick mit Beobachtung, Vorschläge, Zonen / Masken / Wegpunkte / bewachte Sachen aus dem Panorama, Platz-Datensatz `place_items()` / `place_info()`, öffentlicher Weg und Zelt im Alarm | 750 |
+| `318_blickwinkel.py` | «Blickwinkel der Kamera» pro Kamera (Modell-Liste, eigener Wert, picamera2 / Simulator), `cam_fov_h(spec)`, Zusatzkameras nach dem Start | 230 |
 | `320_spielecke.py` | Extras: Spielecke und Spieleabend | 743 |
 | `330_usb_geraete.py` | USB-Geräte, Spielesammlung, Seite verlassen (✕ Zurück) | 172 |
 | `340_spiele_seiten.py` | Extras: Seiten der Spielecke und des Spieleabends | 655 |
@@ -109,6 +111,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |
 | `535_web_erkennung.py` | Web: Gehtest (Live, Schutz), Akku-Sparen auf der Schutz-Seite | 119 |
 | `536_web_live_ansicht.py` | Web: Live-Seite nach Format (Hoch / Quer / nur Bild), «Ansicht» (Vorlagen, Bildgrösse, Lieblingsknöpfe, Karten, Bearbeiten), Joystick nur mit Kopf (`live_has_head`) | 488 |
+| `537_web_platz.py` | Web: Seite «Platz einrichten» (/place), Karte auf der Schutz-Seite, Angebot nach dem Hinstellen, Blickwinkel in Kamera / Servos | 420 |
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
 | `545_simulator_updates.py` | Simulator-Updates: ein Besitzer («Neue Versionen» im Simulator) | 72 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
@@ -123,6 +126,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `574_anmelden_verschluesselt.py` | «Anmelden nur verschlüsselt»: das Web-Passwort nur über https, vom Gerät selbst oder Tailscale; Hinweis-Seite, Rückfall ohne https (Web und Fenster) | 235 |
 | `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
 | `581_fenster_ansicht.py` | Fenster: «Ansicht» des Reiters Live wie im Web (Vorlagen, Anordnung, Bildgrösse, Grösse, Lieblingsknöpfe + «mehr», Karten, Joystick; «Für alle Geräte») | 355 |
+| `582_fenster_platz.py` | Fenster: «Platz einrichten» und «Blickwinkel der Kamera» | 300 |
 | `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
 | `600_uebersetzungen_rm.py` | Übersetzungen Rätoromanisch, Anleitungen | 1763 |
 | `602_uebersetzungen_alarm.py` | Übersetzungen der Alarm-Extras | 130 |
@@ -147,6 +151,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `618_uebersetzungen_kisicher.py` | Übersetzungen zu 197 (KI-Daten aufräumen) und 574 (Anmelden nur verschlüsselt) | 95 |
 | `619_uebersetzungen_simdopp.py` | Übersetzungen der Aufräum-Punkte Spiel-Karte, Bewachte Sachen, Sim-Schalter, Unsichtbar-Trank | 12 |
 | `621_uebersetzungen_sicher3.py` | Übersetzungen und Anleitung zu 573 (App-Schlüssel, Sicherheit an einem Ort) und zur Rotlicht-Ansicht (578) | 150 |
+| `624_uebersetzungen_platzein.py` | Übersetzungen und Anleitung «Platz einrichten» / «Blickwinkel der Kamera» | 200 |
 | `626_uebersetzungen_live.py` | Übersetzungen der neuen Live-Seite (536) und des Fensters (570) | 89 |
 | `627_uebersetzungen_live2.py` | Übersetzungen zu 2.98.29: ein Bearbeiten-Modus, «Für alle Geräte», Grösse, Fenster-Ansicht | 79 |
 | `620_daten_produktseite.py` | Daten: Produktseite für Gäste (/info/) | 2651 |
