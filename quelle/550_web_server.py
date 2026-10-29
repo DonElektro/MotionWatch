@@ -2474,7 +2474,7 @@ class WebStream:
             if request.method == "GET":
                 return reply(tools_state())
             d = body(); a = d.get("action"); lang = norm_lang(d.get("lang"))
-            jobs = {"net": net_scan, "wifi": wifi_survey, "speed": speed_test, "sec": security_check, "bt": bt_scan, "sd": sd_test}
+            jobs = {"net": net_scan, "wifi": wifi_survey, "speed": speed_test, "sec": security_check, "bt": tracker_scan, "sd": sd_test}
             if a in jobs:
                 if TOOLS[a].get("running"):
                     return reply({"ok": False, "error": tr_err("already running", lang)}, 409)

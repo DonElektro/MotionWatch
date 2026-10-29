@@ -20518,7 +20518,7 @@ def security_check():
     return True
 
 
-def bt_scan(secs=10):
+def tracker_scan(secs=10):
     """Bluetooth devices around. Trackers (Apple Find My, Samsung SmartTag, Tile) that stay near for a long time = warning."""
     T = TOOLS["bt"]
     if T["running"]:
@@ -20807,7 +20807,7 @@ class ToolsWatch:
                 if CFG.get("net_watch") or CFG.get("presence_macs"):
                     net_scan(alert=True)
                 if CFG.get("bt_tracker_warn") and n % 2 == 0 and _has_bleak():
-                    bt_scan(8)
+                    tracker_scan(8)
             except Exception as e:
                 log_event("sys", f"Tools: {e}"[:160])
             n += 1
@@ -49686,7 +49686,7 @@ class WebStream:
             if request.method == "GET":
                 return reply(tools_state())
             d = body(); a = d.get("action"); lang = norm_lang(d.get("lang"))
-            jobs = {"net": net_scan, "wifi": wifi_survey, "speed": speed_test, "sec": security_check, "bt": bt_scan, "sd": sd_test}
+            jobs = {"net": net_scan, "wifi": wifi_survey, "speed": speed_test, "sec": security_check, "bt": tracker_scan, "sd": sd_test}
             if a in jobs:
                 if TOOLS[a].get("running"):
                     return reply({"ok": False, "error": tr_err("already running", lang)}, 409)
