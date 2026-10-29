@@ -298,8 +298,6 @@ def lock_allows(path, method, data):
     d = data or {}
     if path in ("/api/set", "/api/text") and d.get("key") in LOCK_DENY_KEYS:
         return False
-    if path == "/api/action" and d.get("action") == "reset_settings":
-        return False
     return True
 
 

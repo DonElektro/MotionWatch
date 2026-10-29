@@ -36,6 +36,8 @@ main{padding:16px;max-width:720px;margin:0 auto}
   <button type="button" class="mi" id="m-fb" onclick="window.mwFeedback && mwFeedback()"><i>💬</i><span><b data-i18n="Feedback to the developer">Feedback to the developer</b><small data-i18n="Errors, wishes, praise, questions - anonymous">Errors, wishes, praise, questions - anonymous</small></span><span class="ar">›</span></button>
   <button type="button" class="mi" id="m-fbtest" onclick="window.mwFeedbackTest && mwFeedbackTest(document.getElementById('m-fbtest-r'))"><i>🧪</i><span><b data-i18n="Send a test feedback">Send a test feedback</b><small id="m-fbtest-r" data-i18n="for the developer: does a message reach the servers?">for the developer: does a message reach the servers?</small></span><span class="ar">›</span></button>
   <button type="button" class="mi" id="m-about" onclick="window.mwAbout && mwAbout()"><i>ℹ️</i><span><b data-i18n="About MoveEye">About MoveEye</b><small data-i18n="history, developer, numbers">history, developer, numbers</small></span><span class="ar">›</span></button>
+  <div id="g2-more"></div>
+  <div id="g2-sys"></div>
 </main>
 <script>
 /*COMMON*/

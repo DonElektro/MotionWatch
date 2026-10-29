@@ -1212,6 +1212,7 @@ class WebStream:
         fbx_routes(app, watch, reply, body)                # 2.98.33: feedback from every page, «About MoveEye» (584)
         appkey_routes(app, reply, body)                    # app keys, security check in Settings → Security (573)
         place_routes(app, watch, reply, body)              # 2.98.30: «Platz einrichten» /place, field of view per camera (537)
+        g2_routes(app, watch, reply, body)                 # guide 2: tours, tip of the day, factory reset (586)
 
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
@@ -1472,7 +1473,12 @@ class WebStream:
         @app.route("/api/schema")
         def api_schema():
             lang = request.args.get("lang") or CFG["lang"]
-            return reply(web_schema(norm_lang(lang), request.args.get("sec") or None))   # 2.98.14: ?sec= one section (page Simulator)
+            sv = request.args.get("simple")                # Simple / Expert of this page (586)
+            _G2_SIMPLE.v = None if sv not in ("0", "1") else sv == "1"
+            try:
+                return reply(web_schema(norm_lang(lang), request.args.get("sec") or None))   # 2.98.14: ?sec= one section (page Simulator)
+            finally:
+                _G2_SIMPLE.v = None
 
         @app.route("/api/appearance")
         def api_appearance():
@@ -2249,8 +2255,6 @@ class WebStream:
             elif a == "reset_counter":
                 STATE["detections_total"] = 0; STATE["ignored_vehicles"] = 0
                 log_event("person", "Person counter reset (web)")
-            elif a == "reset_settings":
-                reset_settings()
             elif a == "save_settings":
                 save_settings_now()
             else:
@@ -2322,9 +2326,17 @@ class WebStream:
 
         @app.route("/api/ui_simple", methods=["GET", "POST"])
         def api_ui_simple():
+            pg = str(request.args.get("page") or "")[:20]
             if request.method == "POST":
-                CFG["ui_simple"] = bool(body().get("on")); save_settings()      # the Pi window follows by itself
-            return reply({"on": bool(CFG["ui_simple"])})
+                d = body(); pg = str(d.get("page") or pg)[:20]
+                if pg and re.fullmatch(r"[a-z]{2,20}", pg):     # 586: Simple / Expert of ONE page (the default stays)
+                    m_ = page_modes(); m_[pg] = "simple" if d.get("on") else "expert"
+                    if (m_[pg] == "simple") == bool(CFG["ui_simple"]):
+                        m_.pop(pg)
+                    web_ui_update({"mw-page-mode": json.dumps(m_)})
+                else:
+                    CFG["ui_simple"] = bool(d.get("on")); save_settings()      # the default (the Pi window follows by itself)
+            return reply({"on": page_simple(pg) if pg else bool(CFG["ui_simple"]), "default": bool(CFG["ui_simple"]), "own": pg in page_modes()})
 
         @app.route("/api/night", methods=["POST"])
         def api_night():
@@ -2901,7 +2913,9 @@ class WebStream:
                 return reply({"done": CFG["setup_done"], "lang": CFG["lang"], "device_name": CFG["device_name"], "has_pw": web_pw_active(),
                               "pw_cmdline": bool(CFG["web_password"]), "notify_type": CFG["notify_type"], "notify_url": CFG["notify_url"],
                               "addresses": setup_addresses(), "hotspot": {"on": CFG["hotspot_on"], "ssid": CFG["hotspot_ssid"], "has_pw": bool(hs_pw)},
-                              "locked": CFG["lock_on"], "use_case": CFG.get("use_case") or ""})
+                              "locked": CFG["lock_on"], "use_case": CFG.get("use_case") or "",
+                              "guide": g2_state(request.args.get("lang") or CFG["lang"]), "lat": CFG["latitude"], "lon": CFG["longitude"],
+                              "time": datetime.now().strftime("%d.%m.%Y %H:%M")})
             d = body(); lang = norm_lang(d.get("lang")); step = d.get("step")
             ok, err = True, ""
             if step == "basics":
@@ -2928,6 +2942,8 @@ class WebStream:
                 CFG["setup_done"] = True; save_settings_now()
             elif step == "again":
                 CFG["setup_done"] = False; save_settings()
+            elif step == "guide":                        # 586: the one guide (quick / thorough, resumable)
+                ok, err = g2_action(d, "web")
             else:
                 return reply({"ok": False, "error": "unknown step"}, 400)
             if ok and step == "basics":

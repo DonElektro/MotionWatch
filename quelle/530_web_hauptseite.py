@@ -380,18 +380,6 @@ h4.sub{margin:14px 0 4px;font-size:11px;letter-spacing:.08em;color:var(--mut);te
 .aumeter b{position:absolute;top:0;bottom:0;width:3px;margin-left:-1px;background:var(--red);display:none}
 button.on{box-shadow:inset 0 0 0 2px var(--grn)}
 .pwr{margin-top:14px;padding-top:10px;border-top:1px solid var(--line)}
-#wiz{position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:14px}
-#wiz .card{max-width:470px;width:100%;max-height:92vh;overflow-y:auto;position:relative;padding:20px}
-#wiz h2{margin:4px 0 6px;font-size:20px}#wiz p{margin:6px 0}#wiz label{display:block;margin:12px 0 4px;font-weight:600}
-#wiz input[type=text],#wiz input[type=password]{width:100%;padding:10px 12px;border-radius:10px}
-#wiz .dots{display:flex;gap:6px;justify-content:center;margin-bottom:6px}#wiz .dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
-#wiz .dots i.on{background:var(--acc)}#wiz .usegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
-#wiz .useopt{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;font-size:14px;text-align:center}#wiz .useopt .ic{font-size:26px}
-#wiz .useopt.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}#wiz .later{position:absolute;top:10px;right:12px;background:none;border:0;color:var(--mut);font-size:13px;padding:4px}
-#wiz .qr{display:block;width:180px;height:180px;margin:8px auto;border-radius:10px;overflow:hidden;background:#fff}#wiz .qr svg{width:100%;height:100%;display:block}
-#wiz .qrs{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;text-align:center}#wiz .qrs .mut{word-break:break-all}
-#wiz .wnav{display:flex;gap:8px;margin-top:16px}#wiz .wnav button{flex:1;padding:11px}
-#wiz .lang button.on{background:var(--acc);color:#fff}
 #pw-ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:20px}
 #pw-ov .card,#talk-ov .card,#pwd-ov .card{max-width:440px;width:100%;text-align:center}
 #pwd-ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:20px}
@@ -668,7 +656,7 @@ body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
         <input type="file" id="imp-file" accept=".json,application/json" hidden onchange="importSettings(this.files[0]); this.value=''">
       </div>
       <div class="btns pwr">
-        <button class="sec l-hide" onclick="if(confirm(t('Reset all settings to defaults?')))act('reset_settings')" data-i18n="Reset settings">Reset settings</button>
+        <button class="sec l-hide" onclick="if(window.g2Factory)g2Factory()" data-i18n="⚠ Reset to factory settings …">⚠ Reset to factory settings …</button>
       </div>
       </details>
       <details class="adv sblk" data-view="sysblk:info"><summary data-i18n="ℹ Version and status">ℹ Version and status</summary>
@@ -2144,9 +2132,11 @@ function mainPaint(j) {
 async function build() {
   try { TRIG = await (await fetch("/api/triggers?lang=" + LANG)).json(); } catch (e) { TRIG = []; }
   try { FEAT = (await (await fetch("/api/schedule?lang=" + LANG)).json()).features || []; } catch (e) { FEAT = []; }
-  const sch = await (await fetch("/api/schema?lang=" + LANG)).json();
+  const PG = document.body.dataset.tab || "settings";     // Simple / Expert per page (586)
+  let U = {on: true}; try { U = await (await fetch("/api/ui_simple?page=" + PG)).json(); } catch (e) {}
+  const sch = await (await fetch("/api/schema?lang=" + LANG + "&simple=" + (U.on ? 1 : 0))).json();
   const box = $("#settings");
-  try { const u = await (await fetch("/api/ui_simple")).json(); const old = document.getElementById("simplebar"); if (old) old.remove();
+  try { const u = U; const old = document.getElementById("simplebar"); if (old) old.remove();
     const sbar = simpleBar(!!u.on); sbar.id = "simplebar"; box.parentElement.insertBefore(sbar, box); } catch (e) {}
   sch.forEach(sec => {
     const d = el("details", "card");
@@ -4269,7 +4259,7 @@ async function nightGuard() {
 function simpleBar(on) {
   const w = el("div", "simplebar"), seg = el("div", "seg lseg"), a = el("button", on ? "sel-auto" : "", t("Simple")), e = el("button", on ? "" : "sel-auto", t("Expert"));
   a.type = e.type = "button"; seg.append(a, e);
-  const set = v => post("/api/ui_simple", {on: v}).then(() => location.reload());
+  const set = v => post("/api/ui_simple", {on: v, page: document.body.dataset.tab || "settings"}).then(() => location.reload());
   a.onclick = () => { if (!on) set(true); }; e.onclick = () => { if (on) set(false); };
   w.appendChild(seg); if (on) w.appendChild(el("div", "mut", t("Simple: only the important settings. «Expert» shows all of them.")));
   // 2.95.70: symbols coloured (with a green dot while on) or plain (turn green) - per device
@@ -4749,140 +4739,8 @@ function initSections() {
   });
 }
 // ---- setup assistant: first start (and System -> "Setup assistant"): language, name, push (ntfy with QR code), password, QR codes ----
-const WZ = {"What is MoveEye for?": "Wofür brauchst du MoveEye?", "Choose what fits - «Simple» then shows only the settings you need. You can change it later (Settings → Setup).": "Wähle, was passt – «Einfach» zeigt dann nur die Einstellungen, die du brauchst. Später änderbar (Einstellungen → Setup).",
-  "Camping: tent, caravan": "Camping: Zelt, Wohnwagen", "House and garden": "Haus und Garten", "Watching animals": "Tiere beobachten", "Holiday house, alpine hut": "Ferienhaus, Maiensäss",
-  "In the room: wake-up alarm": "Im Zimmer: Wecker", "everything (not chosen)": "alles (nichts gewählt)", "Welcome to MoveEye": "Willkommen bei MoveEye", "Set up in three short steps - takes about 3 minutes.": "In drei kurzen Schritten eingerichtet – dauert etwa 3 Minuten.",
-  "Language": "Sprache", "Name of this device (optional)": "Name dieses Geräts (freiwillig)", "e.g. camper, garden": "z. B. Wohnmobil, Garten",
-  "Push messages to the phone": "Push-Nachrichten aufs Handy", "1. Install the free app «ntfy» (App Store / Play Store).": "1. Die kostenlose App «ntfy» installieren (App Store / Play Store).",
-  "2. In the app: + → enter the topic below (and the server, if it is not the default one) - or open this code with the phone camera.":
-    "2. In der App: + → das Thema unten eintragen (und den Server, falls nicht der Standard) – oder diesen Code mit der Handy-Kamera öffnen.",
-  "Server": "Server", "Topic (like a secret channel name)": "Thema (wie ein geheimer Kanalname)", "Send test message": "Test-Nachricht senden",
-  "Sent - did it arrive on the phone?": "Gesendet – ist sie auf dem Handy angekommen?", "Skip": "Überspringen", "Next": "Weiter", "Back": "Zurück",
-  "Password for this page": "Passwort für diese Seite", "Without a password everybody in the same network (and with the link) can watch and switch everything.":
-    "Ohne Passwort kann jeder im gleichen Netz (und mit dem Link) zuschauen und alles schalten.", "Password (6-64 characters)": "Passwort (6–64 Zeichen)",
-  "Repeat password": "Passwort wiederholen", "Continue without a password (not recommended)": "Ohne Passwort weiter (nicht empfohlen)",
-  "The passwords are not the same": "Die Passwörter sind nicht gleich", "A password is set already. Enter a new one only to change it.":
-    "Es ist schon ein Passwort gesetzt. Nur zum Ändern ein neues eingeben.", "The password was given on the command line (--web-password).":
-    "Das Passwort wurde beim Start angegeben (--web-password).", "Done!": "Fertig!",
-  "Open MoveEye on other devices with these codes. On the phone: Share → «Add to Home Screen» - then it starts like an app.":
-    "Mit diesen Codes öffnest du MoveEye auf weiteren Geräten. Auf dem Handy: Teilen → «Zum Home-Bildschirm» – dann startet es wie eine App.",
-  "Home network": "Heimnetz", "Own Wi-Fi of the device": "Eigenes WLAN des Geräts", "On the road (Tailscale)": "Unterwegs (Tailscale)",
-  "🖨 Quick start card with QR codes": "🖨 Kurzanleitung mit QR-Codes", "Let's go": "Los geht's", "Later": "Später",
-  "After this the page asks for the new password once (user name: anything).": "Danach fragt die Seite einmal nach dem neuen Passwort (Benutzername: beliebig)."};
-const wt = s => (LANG === "de" && WZ[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && WZ[s]) || s;
-async function setupWizard(force) {
-  let S; try { S = await (await fetch("/api/setup", {cache: "no-store"})).json(); } catch (e) { return; }
-  if (S.locked || (S.done && !force)) return;
-  const qrs = {};
-  const qr = async u => { if (!qrs[u]) { try { qrs[u] = await (await fetch("/api/qr?t=" + encodeURIComponent(u))).text(); } catch (e) { qrs[u] = ""; } } return qrs[u]; };
-  for (const a of S.addresses || []) await qr(a.url);                      // load before the password is set
-  let ov = $("#wiz"); if (ov) ov.remove();
-  ov = el("div"); ov.id = "wiz"; document.body.appendChild(ov);
-  const card = el("div", "card"); ov.appendChild(card);
-  let step = 0, pwNew = false;
-  const nt = (S.notify_type === "ntfy" && /^https:\/\/[^/]+\/[^/]+$/.test(S.notify_url || "")) ? S.notify_url : "";
-  let server = nt ? nt.replace(/\/[^/]+$/, "") : "https://ntfy-me.com";
-  let topic = nt ? nt.replace(/^.*\//, "") : "mw-" + Array.from(crypto.getRandomValues(new Uint8Array(8)), b => "abcdefghijkmnpqrstuvwxyz23456789"[b % 32]).join("");
-  let name = S.device_name || "";
-  const close = () => ov.remove();
-  async function render() {
-    card.textContent = "";
-    const later = el("button", "later", wt("Later")); later.type = "button";
-    later.onclick = async () => { await post("/api/setup", {step: "skip", lang: LANG}); close(); };
-    const dots = el("div", "dots"); for (let i = 0; i < 5; i++) { const d = el("i"); if (i <= step) d.classList.add("on"); dots.appendChild(d); }
-    card.append(later, dots);
-    const nav = el("div", "wnav"), back = el("button", "sec", wt("Back")), next = el("button", "", wt("Next"));
-    back.type = next.type = "button"; back.onclick = () => { step--; render(); };
-    const err = el("div", "err");
-    if (step === 0) {
-      card.append(el("h2", "", "👋 " + wt("Welcome to MoveEye")), el("p", "mut", wt("Set up in three short steps - takes about 3 minutes.")));
-      card.appendChild(el("label", "", wt("Language")));
-      const lg = el("div", "seg lang");
-      Object.keys(LANGN).forEach(k => { const b = el("button", LANG === k ? "on" : "", LANGN[k]); b.type = "button";
-        b.onclick = () => {
-          if (["fr", "it", "rm"].includes(k) || ["fr", "it", "rm"].includes(LANG)) { langSet(k); return; }   // needs its translation file
-          try { localStorage.setItem("mw-lang", k); } catch (e) {} LANG = k; applyI18n(); render(); }; lg.appendChild(b); });
-      card.appendChild(lg);
-      card.appendChild(el("label", "", wt("Name of this device (optional)")));
-      const ni = el("input"); ni.type = "text"; ni.maxLength = 40; ni.value = name; ni.placeholder = wt("e.g. camper, garden"); ni.oninput = () => { name = ni.value; };
-      card.appendChild(ni);
-      next.onclick = async () => { const r = await post("/api/setup", {step: "basics", ui_lang: LANG, device_name: name.trim(), lang: LANG});
-        if (!r.ok) { err.textContent = r.error || "error"; return; } step = 1; render(); };
-      nav.append(next);
-    } else if (step === 1) {                      // 2.98.9: what is MoveEye for? - «Simple» shows only what fits
-      card.append(el("h2", "", "🧭 " + wt("What is MoveEye for?")), el("p", "mut", wt("Choose what fits - «Simple» then shows only the settings you need. You can change it later (Settings → Setup).")));
-      const L = [["camping", "⛺", "Camping: tent, caravan"], ["home", "🏡", "House and garden"], ["wild", "🦌", "Watching animals"],
-                 ["holiday", "🏔", "Holiday house, alpine hut"], ["room", "⏰", "In the room: wake-up alarm"], ["", "🧰", "everything (not chosen)"]];
-      const g = el("div", "usegrid");
-      L.forEach(([v, ic, n]) => { const b = el("button", "sec useopt" + ((S.use_case || "") === v ? " on" : ""), ""); b.type = "button";
-        b.append(el("span", "ic", ic), el("span", "", wt(n)));
-        b.onclick = async () => { const r = await post("/api/setup", {step: "usecase", use: v, lang: LANG}); if (!r.ok) { err.textContent = r.error || "error"; return; }
-          S.use_case = v; step = 2; render(); }; g.appendChild(b); });
-      card.appendChild(g);
-      const skip = el("button", "sec", wt("Skip")); skip.type = "button"; skip.onclick = () => { step = 2; render(); };
-      nav.append(back, skip);
-    } else if (step === 2) {
-      card.append(el("h2", "", "🔔 " + wt("Push messages to the phone")), el("p", "", wt("1. Install the free app «ntfy» (App Store / Play Store).")),
-                  el("p", "", wt("2. In the app: + → enter the topic below (and the server, if it is not the default one) - or open this code with the phone camera.")));
-      const box = el("div", "qr");
-      const upd = async () => { box.innerHTML = await qr(server.replace(/\/+$/, "") + "/" + topic); };
-      card.appendChild(el("label", "", wt("Topic (like a secret channel name)")));
-      const ti = el("input"); ti.type = "text"; ti.value = topic; ti.maxLength = 64; ti.oninput = () => { topic = ti.value.trim().replace(/[^A-Za-z0-9_-]/g, ""); };
-      ti.onchange = upd; card.appendChild(ti);
-      card.appendChild(el("label", "", wt("Server")));
-      const si = el("input"); si.type = "text"; si.value = server; si.oninput = () => { server = si.value.trim(); }; si.onchange = upd; card.appendChild(si);
-      card.appendChild(box); upd();
-      const st = el("div", "mut"), tb = el("button", "sec", "📨 " + wt("Send test message")); tb.type = "button";
-      const save = async () => { const r = await post("/api/setup", {step: "push", url: server.replace(/\/+$/, "") + "/" + topic, lang: LANG});
-        if (!r.ok) { err.textContent = r.error || "error"; } return r.ok; };
-      tb.onclick = async () => { if (!(await save())) return; const r = await post("/api/notify_test", {lang: LANG});
-        st.textContent = r.ok ? "✓ " + wt("Sent - did it arrive on the phone?") : "⚠ " + (r.error || "error"); };
-      const bt = el("div", "btns"); bt.appendChild(tb); card.append(bt, st);
-      const skip = el("button", "sec", wt("Skip")); skip.type = "button"; skip.onclick = () => { step = 3; render(); };
-      next.onclick = async () => { if (topic.length < 3) { step = 3; render(); return; } if (await save()) { step = 3; render(); } };
-      nav.append(back, skip, next);
-    } else if (step === 3) {
-      card.append(el("h2", "", "🔒 " + wt("Password for this page")), el("p", "mut", wt("Without a password everybody in the same network (and with the link) can watch and switch everything.")));
-      if (S.pw_cmdline) { card.appendChild(el("p", "", "✓ " + wt("The password was given on the command line (--web-password)."))); }
-      else {
-        if (S.has_pw) card.appendChild(el("p", "", "✓ " + wt("A password is set already. Enter a new one only to change it.")));
-        card.appendChild(el("label", "", wt("Password (6-64 characters)")));
-        const p1 = el("input"); p1.type = "password"; p1.autocomplete = "new-password"; card.appendChild(p1);
-        card.appendChild(el("label", "", wt("Repeat password")));
-        const p2 = el("input"); p2.type = "password"; p2.autocomplete = "new-password"; card.appendChild(p2);
-        let without = null;
-        if (!S.has_pw) { const l = el("label", "row"); l.style.fontWeight = "400"; without = el("input"); without.type = "checkbox";
-          l.append(el("span", "", wt("Continue without a password (not recommended)")), without); card.appendChild(l); }
-        card.appendChild(el("p", "mut", wt("After this the page asks for the new password once (user name: anything).")));
-        next.onclick = async () => {
-          const pw = p1.value;
-          if (pw !== p2.value) { err.textContent = wt("The passwords are not the same"); return; }
-          if (!pw && !S.has_pw && !(without && without.checked)) { err.textContent = wt("Password (6-64 characters)"); p1.focus(); return; }
-          const r = await post("/api/setup", {step: "finish", password: pw, lang: LANG});
-          if (!r.ok) { err.textContent = r.error || "error"; return; }
-          pwNew = !!pw; step = 4; render();
-        };
-      }
-      if (S.pw_cmdline) next.onclick = async () => { await post("/api/setup", {step: "finish", lang: LANG}); step = 4; render(); };
-      nav.append(back, next);
-    } else {
-      card.append(el("h2", "", "✅ " + wt("Done!")), el("p", "mut", wt("Open MoveEye on other devices with these codes. On the phone: Share → «Add to Home Screen» - then it starts like an app.")));
-      const g = el("div", "qrs");
-      for (const a of S.addresses || []) {
-        const c = el("div"), b = el("div", "qr"); b.innerHTML = qrs[a.url] || "";
-        c.append(el("b", "", wt({lan: "Home network", hotspot: "Own Wi-Fi of the device", tailscale: "On the road (Tailscale)"}[a.kind] || a.kind)), b, el("div", "mut", a.url));
-        g.appendChild(c);
-      }
-      card.appendChild(g);
-      const lk = el("a", "btn sec", wt("🖨 Quick start card with QR codes")); lk.href = "/setup-card?lang=" + LANG; lk.target = "_blank";
-      const bt = el("div", "btns"); bt.appendChild(lk); card.appendChild(bt);
-      next.textContent = wt("Let's go"); next.onclick = () => { close(); if (pwNew) location.reload(); };
-      nav.append(next);
-    }
-    card.append(err, nav);
-  }
-  render();
-}
+// the setup assistant is the one guide now (516 / 586): «quick or thorough?», resumable, place, walk test …
+function setupWizard(force) { const go = () => window.mwGuide && window.mwGuide(force); if (!go()) setTimeout(go, 1500); }
 function allGroups() {                     // overview: every group open, the topics inside closed
   document.querySelectorAll("#settings details.grp").forEach(d => { if (!d.open) d.open = true; });
   document.querySelectorAll("#settings details.sub:not(.inline), #settings details.adv").forEach(d => { if (d.open) d.open = false; });

@@ -469,18 +469,7 @@ def save_settings():
     _save_timer = threading.Timer(wait, go); _save_timer.daemon = True; _save_timer.start()
 
 
-def reset_settings():
-    for k, v in DEFAULTS.items():
-        if k not in VOLATILE and k not in ("pan", "tilt", "source", "ip_sources", "extra_cams", "latitude", "longitude",
-                                           "presence_hosts", "telegram_token", "telegram_chat", "public_url", "notify_url", "notify_type",
-                                           "pushover_user", "pushover_token", "email_to", "email_host", "email_port", "email_user",
-                                           "email_password", "email_from", "shortcut_token",
-                                           "web_ui", "ui_open", "ui_hidden", "theme", "lang"):
-            CFG[k] = v
-    WAYPOINTS.clear()
-    RELAYS[:] = default_relays()
-    ZONES.clear(); SCHEDULES.clear(); SCHED["base"].clear(); SCHED["manual"].clear(); SCHED["last"] = {}; SCHED["active"] = []
-    save_settings_now()
-    log_event("sys", "Settings reset to defaults")
+# «Reset settings» (before: a plain confirm, also removed the password) is now «Reset to factory settings» with password /
+# PIN, a typed word and a backup copy: factory_reset() in 586.
 
 

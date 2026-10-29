@@ -127,7 +127,7 @@ def use_case_set(u, who="web"):
 
 def simple_hidden(key, sec=None):
     """True when Simple is on and this setting (or section) belongs to Expert only."""
-    if not CFG.get("ui_simple"):
+    if not ui_simple_now():                          # the choice of the page (586) or the default
         return False
     if sec is not None and sec in USE_HIDE.get(CFG.get("use_case") or "", ()):
         return True
