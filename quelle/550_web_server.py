@@ -2261,6 +2261,14 @@ class WebStream:
                 return reply({"ok": ok, "error": err or None, **AI_MODEL}, 200 if ok else 409)
             return reply(dict(AI_MODEL, present=bool(ai_model_paths()[0])))
 
+        @app.route("/api/own_model", methods=["GET", "POST"])
+        def api_own_model():                             # part 195: own MoveEye model (YOLO, ONNX) from the GitHub release
+            lg = request.args.get("lang") or body().get("lang") if request.method == "POST" else request.args.get("lang")
+            if request.method == "POST":
+                ok, err = own_ai_download()
+                return reply({"ok": ok, "error": tr_err(err, lg) if err else None, **own_ai_info(lg)}, 200 if ok else 409)
+            return reply(dict(own_ai_info(lg), text=own_ai_text(lg)))
+
         @app.route("/api/storage", methods=["GET", "POST"])
         def api_storage():
             if request.method == "POST":

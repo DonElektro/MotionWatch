@@ -24,6 +24,8 @@ CFG = {
     "ai_conf": 0.5,              # confidence threshold
     "ai_every": 3,               # run the network every N frames
     "ai_zoom": True,             # 2.98.13: «KI-Lupe» - small moving things are looked at once more, enlarged (far persons)
+    "ai_model": "ssd",           # «KI-Modell»: "ssd" = standard (SSD MobileNet V2), "own" = own MoveEye model (YOLO, ONNX - part 195)
+    "ai_own_url": "https://github.com/DonElektro/MotionWatch/releases/download/ki-modell/moveeye_model.json",   # its manifest
     "show_objects": True,        # mark ALL objects the network finds (not just persons)
     "object_conf": 0.5,          # confidence threshold for non-person objects
     # recording

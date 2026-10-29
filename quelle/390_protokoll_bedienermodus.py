@@ -1037,6 +1037,7 @@ def self_test(folder=""):
         finally:
             TUN["pool"].clear(); TUN["pool"].extend(saved)
     chk("Tunnel to the simulator (lines, GO, pipe, flush)", tun)
+    chk("Own AI model: YOLO decoder + NMS (fake output)", own_ai_selftest)
 
     def wp():
         if not webpush_supported():

@@ -42,6 +42,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `170_ki_personen.py` | KI-Modell laden und herunterladen | 110 |
 | `180_ki_tierarten_helfer_tunnel.py` | Tierarten, Alarm-Rückblick, KI-Rechenhilfe, KI-Prüfung, Tunnel, AIDetector | 841 |
 | `190_relais_wetter_tracker.py` | Relais, Wetter-Analyse, Auto-Tuner, Tracker | 422 |
+| `195_ki_eigenes_modell.py` | Eigenes KI-Modell (YOLO als ONNX): laden, herunterladen (sha256), Ausgabe entschlüsseln, Selbsttest | 321 |
 | `200_erkennung_videoquellen.py` | Video-Quellen (USB, Pi-Kamera, Netz) | 166 |
 | `210_demo.py` | Demo-Modus | 255 |
 | `220_zeitraffer.py` | Zeitraffer | 195 |
@@ -94,6 +95,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
 | `600_uebersetzungen_rm.py` | Übersetzungen Rätoromanisch, Anleitungen | 1763 |
 | `602_uebersetzungen_alarm.py` | Übersetzungen der Alarm-Extras | 130 |
+| `607_uebersetzungen_modell.py` | Übersetzungen «Eigenes KI-Modell» | 37 |
 | `610_anleitung_ergaenzungen.py` | Anleitung: Ergänzungen in allen Sprachen | 167 |
 | `620_daten_produktseite.py` | Daten: Produktseite für Gäste (/info/) | 2651 |
 | `630_almanach.py` | Extras: Überlebens-Almanach | 270 |

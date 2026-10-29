@@ -1,0 +1,104 @@
+# Trains MoveEye's own AI model (small YOLO detector: person / animal / vehicle) from the simulator training packs and the
+# labelled real alarm pictures, exports it as ONNX (320 px) and publishes it as release asset - see ki_training/README.md.
+# Start: Actions -> «KI-Modell» -> Run workflow. Takes about 30-120 minutes (CPU), depending on the number of pictures.
+name: KI-Modell
+on:
+  workflow_dispatch:
+    inputs:
+      epochen:
+        description: "Trainings-Durchgänge (Epochen, 30-150)"
+        default: "60"
+      basis:
+        description: "Grundmodell"
+        type: choice
+        options: [yolov8n.pt, yolo11n.pt]
+        default: yolov8n.pt
+      veroeffentlichen:
+        description: "Als Release «ki-modell» veröffentlichen (sonst nur zum Herunterladen unter Artifacts)"
+        type: boolean
+        default: true
+  # Automatic training (off). To switch it on: remove the «#» in front of the next two lines (here: every Sunday 02:17 UTC).
+  # schedule:
+  #   - cron: "17 2 * * 0"
+
+permissions:
+  contents: write          # for the release with the model
+
+concurrency:
+  group: ki-modell
+  cancel-in-progress: false
+
+jobs:
+  trainieren:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    env:
+      EPOCHEN: ${{ github.event.inputs.epochen || '60' }}
+      BASIS: ${{ github.event.inputs.basis || 'yolov8n.pt' }}
+      VEROEFFENTLICHEN: ${{ github.event.inputs.veroeffentlichen || 'true' }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: ki_training          # only this folder (the repository has big files elsewhere)
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Pakete (PyTorch nur für CPU, Ultralytics, OpenCV)
+        run: |
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install ultralytics onnx onnxslim opencv-python-headless
+      - name: Prüfen der Eingaben
+        run: |
+          case "$EPOCHEN" in ''|*[!0-9]*) echo "Epochen: nur eine Zahl"; exit 1;; esac
+          if [ "$EPOCHEN" -lt 1 ] || [ "$EPOCHEN" -gt 300 ]; then echo "Epochen: 1-300"; exit 1; fi
+          case "$BASIS" in yolov8n.pt|yolo11n.pt) ;; *) echo "Grundmodell unbekannt"; exit 1;; esac
+      - name: Zusätzliche Bilder aus dem Release «ki-daten» (falls vorhanden)
+        run: |
+          mkdir -p extra/pakete extra/echt
+          if gh release view ki-daten -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release download ki-daten -R "$GITHUB_REPOSITORY" -D extra/dl -p "*.zip" || true
+            for f in extra/dl/*.zip; do
+              [ -e "$f" ] || continue
+              case "$(basename "$f")" in echt*|Echt*|was_war_das*|Was_war_das*) mv "$f" extra/echt/ ;; *) mv "$f" extra/pakete/ ;; esac
+            done
+          fi
+          ls -la extra/pakete extra/echt
+      - name: Private echte Bilder (Secret KI_DATEN_URL, falls gesetzt)
+        env:
+          KI_DATEN_URL: ${{ secrets.KI_DATEN_URL }}
+        run: |
+          if [ -n "$KI_DATEN_URL" ]; then
+            i=0
+            for u in $(echo "$KI_DATEN_URL" | tr ',' ' '); do
+              i=$((i+1)); curl -fsSL --max-filesize 2000000000 -o "extra/echt/privat_$i.zip" "$u" || echo "konnte Quelle $i nicht laden"
+            done
+          else
+            echo "kein Secret KI_DATEN_URL - nur Bilder aus dem Repository / Release"
+          fi
+      - name: Trainieren, messen, als ONNX exportieren
+        run: |
+          python ki_training/trainieren.py --pakete ki_training/pakete extra/pakete --echt ki_training/echt extra/echt \
+            --basis "$BASIS" --epochen "$EPOCHEN" --imgsz 320 --version "${{ github.run_number }}" --aus ausgabe --arbeit arbeit
+          cat ausgabe/bericht.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Ergebnis aufbewahren (Artifacts)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: moveeye-ki-modell-${{ github.run_number }}
+          path: ausgabe/
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Veröffentlichen (Release «ki-modell» = neuestes, dazu «ki-modell-NR»)
+        if: env.VEROEFFENTLICHEN == 'true'
+        run: |
+          set -e
+          n="${{ github.run_number }}"
+          gh release create "ki-modell-$n" ausgabe/moveeye_model.onnx ausgabe/moveeye_model.json -R "$GITHUB_REPOSITORY" \
+            --title "MoveEye-KI-Modell $n" --notes-file ausgabe/bericht.md --latest=false
+          if ! gh release view ki-modell -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create ki-modell -R "$GITHUB_REPOSITORY" --title "MoveEye-KI-Modell (neuestes)" \
+              --notes "Immer das neueste eigene KI-Modell. MoveEye lädt es von hier." --latest=false
+          fi
+          gh release upload ki-modell ausgabe/moveeye_model.onnx ausgabe/moveeye_model.json -R "$GITHUB_REPOSITORY" --clobber
+          gh release edit ki-modell -R "$GITHUB_REPOSITORY" --notes-file ausgabe/bericht.md
