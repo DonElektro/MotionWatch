@@ -315,8 +315,15 @@ class MotionWatch:
         need_frames = int(CFG["walk_frames"] * wind_boost)
         walking = (len(t.speeds) >= need_frames and CFG["walk_min_speed"] <= sp <= CFG["walk_max_speed"] * k
                    and t.steadiness() >= CFG["speed_consistency"] and aspect < CFG["car_aspect"])
+        # 2.98.14: the AI sees an animal there (fox, cat, boar ...), or the thing is much wider than high while the AI runs and
+        # does not call it a person: no person (test bench: most false alarms were animals walking through the picture)
+        ai_on = self.ai.net is not None and CFG["ai_enabled"]
+        if not t.ai_confirmed and any(iou(t.box, a) > 0.15 for a in getattr(self, "_animal_boxes", [])):
+            t.animal_like = True                            # the AI called it an animal: stays so (until the AI says person)
         if t.ai_confirmed:
             walking = True                                  # AI says person -> person
+        elif getattr(t, "animal_like", False) or (ai_on and aspect > 1.4 and not t.is_person):
+            walking = False                                 # (wide and flat: only as long as it was no person before - crawling)
         elif CFG["ai_require"] and self.ai.net is not None and CFG["ai_enabled"]:
             walking = False                                 # needs AI confirmation
         elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k:
@@ -826,6 +833,7 @@ class MotionWatch:
                 for t in tracks:
                     if t.lost:
                         continue
+                    self._animal_boxes = [o[:4] for o in rec_animals]
                     self.classify(t, pw * ph, wind_boost, ai_boxes)
                     if t.is_person and not t.ai_confirmed and t.box[2] * t.box[3] < min_area * 0.8:
                         t.is_person = False                     # too small for a person (only seen for following movement)
