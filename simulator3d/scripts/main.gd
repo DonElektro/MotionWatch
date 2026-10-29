@@ -3636,6 +3636,13 @@ func _control(d: Dictionary) -> Dictionary:
 			return dataset.export_pack(int(d.get("n", 500)), bool(d.get("scenes", true)), str(d.get("vielfalt", "")))
 		if op2 == "stop":
 			dataset.stop()
+		if op2 == "packs" or op2 == "clean":            # «KI-Daten aufräumen» (kidaten.gd)
+			var KD = preload("res://scripts/kidaten.gd")
+			if op2 == "packs":
+				return KD.state()
+			if dataset.busy or kitrain.running:
+				return KD.state({"ok": false, "error": "busy"})
+			return KD.state(KD.aufraeumen(true, str(dataset.last_pack.get("dir", "")).get_file()))
 		var st2: Dictionary = dataset.state()
 		if op2 == "list":
 			st2["items"] = dataset.list()
@@ -4519,6 +4526,24 @@ func _build_ui() -> void:
 	ds_label = UI.small("")
 	tl.add_child(ds_label)
 	kitrain.build(tl, dsn)                           # Vielfalt normal / hoch, «KI trainieren» (kitrain.gd)
+	var kdr := HBoxContainer.new()                   # «KI-Daten aufräumen» (kidaten.gd)
+	kdr.add_theme_constant_override("separation", 6)
+	tl.add_child(kdr)
+	var kdl := UI.small(preload("res://scripts/kidaten.gd").summary())
+	kdl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	kdl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var kdb := Button.new()
+	kdb.text = "Alte KI-Daten löschen"
+	kdb.tooltip_text = "Löscht alle Trainingspakete ausser dem neuesten (Ordner und ZIP). Das KI-Modell bleibt."
+	kdb.pressed.connect(func():
+		if dataset.busy or kitrain.running:
+			kdl.text = "Gerade beschäftigt – später nochmals."
+			return
+		var KD = preload("res://scripts/kidaten.gd")
+		var r: Dictionary = KD.aufraeumen(true, str(dataset.last_pack.get("dir", "")).get_file())
+		kdl.text = "Gelöscht: %d Pakete (%.0f MB) · %s" % [int(r["deleted"]), float(r["freed_mb"]), KD.summary()])
+	kdr.add_child(kdb)
+	kdr.add_child(kdl)
 	tl = UI.sub_fold(tl_main, "Mehr: Aufstellen, Erkunden, Handy-Simulator", false)
 	tl.set_meta("always", true)
 	sub_bodies.append(tl)

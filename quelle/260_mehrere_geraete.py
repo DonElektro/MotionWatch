@@ -31,12 +31,47 @@ def fleet_hello():
             "tamper": (STATE.get("tamper") or {}).get("last", ""), "time": datetime.now().strftime("%H:%M:%S")}
 
 
+def _fleet_https(dev, path, data, h, timeout):
+    """2.98.x («Anmelden nur verschlüsselt», 574): the password goes to the other device over its secure page (https, port + 1).
+    Its certificate is self-made: it is remembered at the first contact (fingerprint in the device entry) and must stay
+    the same afterwards. None = that device has no secure page (older MoveEye) - then plain http as before."""
+    import http.client, ssl
+    from urllib.parse import urlsplit
+    u = urlsplit(dev["url"])
+    if u.scheme != "http" or not u.port or time.time() < FLEET.setdefault("no_tls", {}).get(dev.get("id") or dev["url"], 0):
+        return None
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT); ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
+    con = http.client.HTTPSConnection(u.hostname, u.port + 1, timeout=timeout, context=ctx)
+    try:
+        try:
+            con.connect()
+        except (OSError, ssl.SSLError):
+            FLEET["no_tls"][dev.get("id") or dev["url"]] = time.time() + 600     # try https again in 10 minutes
+            return None
+        fp = hashlib.sha256(con.sock.getpeercert(True) or b"").hexdigest()
+        if dev.get("fp") and dev["fp"] != fp:
+            raise urllib.error.HTTPError(dev["url"], 495, "certificate of the device changed", {}, None)
+        if not dev.get("fp") and dev in CFG["fleet"]:
+            dev["fp"] = fp; save_settings()
+        con.request("POST" if data is not None else "GET", path, body=json.dumps(data).encode() if data is not None else None, headers=h)
+        r = con.getresponse()
+        body = r.read(4 * 1024 * 1024)
+        if r.status >= 400:
+            raise urllib.error.HTTPError(dev["url"] + path, r.status, r.reason, r.headers, None)
+        return body, r.getheader("Content-Type", "")
+    finally:
+        con.close()
+
+
 def _fleet_req(dev, path, data=None, timeout=4.0):
     import base64
     url = dev["url"].rstrip("/") + path
     h = {"Content-Type": "application/json"} if data is not None else {}
     if dev.get("pw"):
         h["Authorization"] = "Basic " + base64.b64encode(("mw:" + dev["pw"]).encode()).decode()
+        res = _fleet_https(dev, path, data, dict(h, **{"User-Agent": "MotionWatch/" + APP_VERSION}), timeout)
+        if res is not None:
+            return res
     req = urllib.request.Request(url, data=json.dumps(data).encode() if data is not None else None, headers=h, method="POST" if data is not None else "GET")
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))      # devices are in the own network: no proxy
     with opener.open(req, timeout=timeout) as r:
@@ -131,6 +166,12 @@ def fleet_scan():
         except urllib.error.HTTPError as e:
             if e.code == 401 and ("Motion Watch" in str(e.headers.get("WWW-Authenticate", "")) or "MoveEye" in str(e.headers.get("WWW-Authenticate", ""))):
                 return {"url": url, "name": "", "needs_pw": True}
+            if e.code == 403:                            # 574: a MoveEye that takes the password only over https
+                try:
+                    if json.loads(e.read(4096).decode()).get("https"):
+                        return {"url": url, "name": "", "needs_pw": True}
+                except Exception:
+                    pass
         except Exception:
             pass
         return None

@@ -275,10 +275,11 @@ def security_check():
 
     def add(level, text, tip="", arg=""):
         items.append({"level": level, "text": text, "tip": tip, "arg": arg})
-    add("ok" if CFG["web_password"] else "bad", "Web password " + ("set" if CFG["web_password"] else "missing"),
-        "" if CFG["web_password"] else "Everybody in the network can operate MoveEye")
-    add("ok" if WEB_OPTS.get("https") else "warn", "Secure page (https) " + ("on" if WEB_OPTS.get("https") else "off"),
-        "" if WEB_OPTS.get("https") else "Passwords go through the network unencrypted - important in foreign Wi-Fi (camping)")
+    add("ok" if web_pw_active() else "bad", "Web password " + ("set" if web_pw_active() else "missing"),
+        "" if web_pw_active() else "Everybody in the network can operate MoveEye")
+    sl_ = seclogin_mode() == "on"                             # 574: «Log in only encrypted»
+    add("ok" if WEB_OPTS.get("https") or sl_ else "warn", "Secure page (https) " + ("on" if WEB_OPTS.get("https") or sl_ else "off"),
+        "" if WEB_OPTS.get("https") or sl_ else "Passwords go through the network unencrypted - important in foreign Wi-Fi (camping)")
     ports = set()
     try:
         for fn in ("/proc/net/tcp", "/proc/net/tcp6"):

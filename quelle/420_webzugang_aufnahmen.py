@@ -12,10 +12,10 @@ def ensure_cert():
     cert, key = os.path.join(DATA_DIR, "motionwatch_cert.pem"), os.path.join(DATA_DIR, "motionwatch_key.pem")
     if os.path.isfile(cert) and os.path.isfile(key):
         return cert, key
-    if shutil.which("openssl") is None:
-        return None, None
     import socket
     host = socket.gethostname()
+    if shutil.which("openssl") is None:
+        return _cert_python(cert, key, host)              # 2.98.x: without openssl with the Python package «cryptography»
     for san in (f"subjectAltName=DNS:localhost,DNS:{host},DNS:{host}.local,IP:127.0.0.1", None):
         cmd = ["openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", key, "-out", cert, "-days", "3650", "-subj", f"/CN={host}"]
         if san:
@@ -27,7 +27,38 @@ def ensure_cert():
                 return cert, key
         except (OSError, subprocess.SubprocessError):
             pass
-    return None, None
+    return _cert_python(cert, key, host)
+
+
+def _cert_python(cert, key, host):
+    """the self-signed certificate with «cryptography» (often there on Raspberry Pi OS) - (None, None) if it is missing too"""
+    try:
+        import datetime as _dt, ipaddress
+        from cryptography import x509
+        from cryptography.x509.oid import NameOID
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import rsa
+    except ImportError:
+        return None, None
+    try:
+        k = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, host[:60] or "moveeye")])
+        now = _dt.datetime.now(_dt.timezone.utc)
+        alt = x509.SubjectAlternativeName([x509.DNSName("localhost"), x509.DNSName(host), x509.DNSName(host + ".local"),
+                                           x509.IPAddress(ipaddress.ip_address("127.0.0.1"))])
+        c = (x509.CertificateBuilder().subject_name(name).issuer_name(name).public_key(k.public_key()).serial_number(x509.random_serial_number())
+             .not_valid_before(now - _dt.timedelta(days=1)).not_valid_after(now + _dt.timedelta(days=3650)).add_extension(alt, critical=False)
+             .sign(k, hashes.SHA256()))
+        fd = os.open(key, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "wb") as f:
+            f.write(k.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.TraditionalOpenSSL, serialization.NoEncryption()))
+        with open(cert, "wb") as f:
+            f.write(c.public_bytes(serialization.Encoding.PEM))
+        log_event("web", "Self-signed certificate created with Python (browsers will show a warning once)")
+        return cert, key
+    except Exception as e:
+        log_event("web", f"Certificate could not be made: {e}"[:160])
+        return None, None
 
 
 def service_text():

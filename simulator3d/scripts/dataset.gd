@@ -424,6 +424,9 @@ func _export(n: int, scenes_too: bool, hi: bool) -> void:
 	main.weather = str(keep["weather"])
 	main.auto_visitors = bool(keep["auto"])
 	msg = "fertig: %d Bilder · %s" % [made, export_zip if export_zip != "" else export_dir]
+	var kd: Dictionary = preload("res://scripts/kidaten.gd").aufraeumen(false, export_dir.get_file())   # KI-Daten aufräumen
+	if int(kd["deleted"]) > 0:
+		msg += " · alte KI-Daten gelöscht: %d (%.0f MB)" % [int(kd["deleted"]), float(kd["freed_mb"])]
 	busy = false
 
 

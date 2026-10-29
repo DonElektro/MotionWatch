@@ -339,7 +339,8 @@ def helper_tick():
         if not d.get("model"):
             raise ValueError("the PC is still loading its AI model")
         was = HELPER["ok"]
-        HELPER.update(ok=True, fails=0, msg="", name=str(d.get("name") or "")[:40], last_ok=time.time(), gpu=str(d.get("accel") or ""))
+        HELPER.update(ok=True, fails=0, msg="", name=str(d.get("name") or "")[:40], last_ok=time.time(), gpu=str(d.get("accel") or ""),
+                      model=str(d.get("model_name") or "")[:40])
         if not was:
             log_event("ai", f"AI helper found: {HELPER['name']} ({u}) - the PC does the AI now")
     except Exception as e:
@@ -351,7 +352,8 @@ def helper_state():
     return {"use": bool(CFG.get("helper_use")), "url": u, "src": src, "ok": HELPER["ok"], "name": HELPER["name"], "ms": HELPER["ms"],
             "rtt": HELPER["rtt"], "n": HELPER["n"], "msg": HELPER["msg"], "manual_url": CFG.get("helper_url") or "",
             "serve": bool(CFG.get("helper_serve")), "my_code": CFG.get("helper_my_code") if CFG.get("helper_serve") else "",
-            "served": HELPER["served"], "serve_ms": HELPER["serve_ms"], "serve_from": HELPER["serve_from"], "accel": HELPER.get("gpu", "")}
+            "served": HELPER["served"], "serve_ms": HELPER["serve_ms"], "serve_from": HELPER["serve_from"], "accel": HELPER.get("gpu", ""),
+            "model": HELPER.get("model", ""), "serve_model": helper_model_name() if CFG.get("helper_serve") else ""}
 
 
 # ---- KI-Prüfung mit Simulator-Bildern (2.95.53): the 3D simulator makes pictures with a person or an animal (day, dusk,
@@ -698,25 +700,56 @@ def _tun_direct_port():
 
 
 # --- the helper side (on the PC) ---
-HELPER_NET = {"net": None, "accel": "CPU", "lock": threading.Lock(), "srv": None}
+# 2.98.x (KI-Daten aufräumen): the helper uses the own trained MoveEye model (ki_modell.yml, «Eigenes Modell
+# herunterladen» on this PC or the two files in <data>/models) when it is there, else the standard model (SSD).
+# A newer own model (downloaded later) is picked up by itself (the manifest file is watched).
+HELPER_NET = {"net": None, "accel": "CPU", "lock": threading.Lock(), "srv": None, "kind": "ssd", "meta": None, "key": None, "own_why": ""}
+
+
+def _helper_own_key():
+    _o, js = own_ai_paths()
+    try:
+        return (js, os.path.getmtime(js)) if js else None
+    except OSError:
+        return None
 
 
 def _helper_net():
+    key = _helper_own_key()
+    if HELPER_NET["net"] is not None and key != HELPER_NET["key"]:
+        HELPER_NET["net"] = None                          # the own model came, changed or went: load again
     if HELPER_NET["net"] is None:
-        pb, pbtxt = ai_model_paths()
-        if not pb:
-            if not AI_MODEL["busy"]:
-                ai_model_download()
-            return None
-        net = cv2.dnn.readNetFromTensorflow(pb, pbtxt)
+        net, kind, meta = None, "ssd", None
+        if key:
+            net, meta, why = own_ai_load()
+            HELPER_NET["own_why"] = why
+            if net is not None:
+                kind = "own"
+            else:
+                log_event("ai", f"AI helper: own model not used ({why}) - the standard model (SSD) runs")
+        if net is None:
+            pb, pbtxt = ai_model_paths()
+            if not pb:
+                if not AI_MODEL["busy"]:
+                    ai_model_download()
+                return None
+            net = cv2.dnn.readNetFromTensorflow(pb, pbtxt)
         try:                                            # a graphics card with CUDA makes it much faster
             if hasattr(cv2, "cuda") and cv2.cuda.getCudaEnabledDeviceCount() > 0:
                 net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA); net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
                 HELPER_NET["accel"] = "CUDA"
         except Exception:
             pass
-        HELPER_NET["net"] = net
+        HELPER_NET.update(net=net, kind=kind, meta=meta, key=key)
+        log_event("ai", "AI helper uses " + (own_ai_name(meta) if kind == "own" else "SSD MobileNet V2"))
     return HELPER_NET["net"]
+
+
+def helper_model_name():
+    """which model the helper on this PC uses (or would use)"""
+    if HELPER_NET["net"] is not None:
+        return own_ai_name(HELPER_NET["meta"]) if HELPER_NET["kind"] == "own" else "SSD MobileNet V2"
+    return "MoveEye model" if own_ai_paths()[0] else ("SSD MobileNet V2" if ai_model_paths()[0] else "")
 
 
 def helper_run(jpg, conf, oconf):
@@ -728,22 +761,28 @@ def helper_run(jpg, conf, oconf):
         raise ValueError("AI model is loading")
     t0 = time.time()
     h, w = img.shape[:2]
-    with HELPER_NET["lock"]:
-        net.setInput(cv2.dnn.blobFromImage(img, size=(300, 300), swapRB=True, crop=False))
-        det = net.forward()
     boxes, objects = [], []
-    for i in range(det.shape[2]):
-        cls, cf = int(det[0, 0, i, 1]), float(det[0, 0, i, 2])
-        if cls < 1 or cf < (conf if cls == 1 else oconf):
-            continue
-        x1, y1, x2, y2 = (det[0, 0, i, 3:7] * np.array([w, h, w, h])).astype(int)
-        x1, y1 = max(0, x1), max(0, y1); x2, y2 = min(w - 1, x2), min(h - 1, y2)
-        if x2 > x1 and y2 > y1:
-            (boxes.append([int(x1), int(y1), int(x2 - x1), int(y2 - y1), round(cf, 3)]) if cls == 1
-             else objects.append([int(x1), int(y1), int(x2 - x1), int(y2 - y1), round(cf, 3), cls]))
+    if HELPER_NET["kind"] == "own":                   # the own YOLO model: same answer as SSD (classes mapped to COCO ids)
+        with HELPER_NET["lock"]:
+            pb_, ob_ = own_ai_detect(net, HELPER_NET["meta"], img, conf, oconf)
+        boxes = [[int(b[0]), int(b[1]), int(b[2]), int(b[3]), round(float(b[4]), 3)] for b in pb_]
+        objects = [[int(o[0]), int(o[1]), int(o[2]), int(o[3]), round(float(o[4]), 3), int(o[5])] for o in ob_]
+    else:
+        with HELPER_NET["lock"]:
+            net.setInput(cv2.dnn.blobFromImage(img, size=(300, 300), swapRB=True, crop=False))
+            det = net.forward()
+        for i in range(det.shape[2]):
+            cls, cf = int(det[0, 0, i, 1]), float(det[0, 0, i, 2])
+            if cls < 1 or cf < (conf if cls == 1 else oconf):
+                continue
+            x1, y1, x2, y2 = (det[0, 0, i, 3:7] * np.array([w, h, w, h])).astype(int)
+            x1, y1 = max(0, x1), max(0, y1); x2, y2 = min(w - 1, x2), min(h - 1, y2)
+            if x2 > x1 and y2 > y1:
+                (boxes.append([int(x1), int(y1), int(x2 - x1), int(y2 - y1), round(cf, 3)]) if cls == 1
+                 else objects.append([int(x1), int(y1), int(x2 - x1), int(y2 - y1), round(cf, 3), cls]))
     ms = int((time.time() - t0) * 1000)
     HELPER["served"] += 1; HELPER["serve_ms"] = ms
-    return {"ok": True, "boxes": boxes, "objects": objects, "ms": ms}
+    return {"ok": True, "boxes": boxes, "objects": objects, "ms": ms, "model": helper_model_name()}
 
 
 def helper_server_start():
@@ -770,10 +809,10 @@ def helper_server_start():
             if self.path.startswith("/helper/hello"):
                 local = self.client_address[0] in ("127.0.0.1", "::1")
                 d = {"helper": 1, "name": CFG.get("device_name") or __import__("socket").gethostname(), "ver": APP_VERSION, "paired": self._paired(),
-                     "model": bool(ai_model_paths()[0]), "accel": HELPER_NET["accel"], "served": HELPER["served"], "ms": HELPER["serve_ms"]}
+                     "model": bool(ai_model_paths()[0] or own_ai_paths()[0]), "model_name": helper_model_name(), "accel": HELPER_NET["accel"], "served": HELPER["served"], "ms": HELPER["serve_ms"]}
                 if local:                                   # the simulator on this PC passes the code on to the Pi
                     d.update(code=CFG.get("helper_my_code"), port=HELPER_PORT, loading=AI_MODEL.get("busy"), pct=AI_MODEL.get("pct"))
-                    if not d["model"] and not AI_MODEL["busy"]:
+                    if not ai_model_paths()[0] and not own_ai_paths()[0] and not AI_MODEL["busy"]:
                         ai_model_download()
                 return self._js(d)
             self._js({"error": "not found"}, 404)
