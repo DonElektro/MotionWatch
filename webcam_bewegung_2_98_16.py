@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_15.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_16.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.16: Weniger Fehlalarme durch Tiere: Grössen-Prüfung (zu klein für eine Person an dieser Stelle = keine Person; lernt
+    aus KI-bestätigten Personen)
   * 2.98.15: Eine Wochenmeldung (mit der Simulator-Woche), eine Zeitleiste, Spiel-Gruppe nur Assistent/Öffnen/Start/Stopp,
     Akku-Schwellen zusammen, «Wenn mein Handy zurückkommt: ausschalten / fragen / nichts», Auto-Tuner höchstens ±20 %,
     Gehtest-Anzeige; Simulator 3D-4.2
@@ -880,10 +882,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_15.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_16.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_15.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_15.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_16.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_16.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -900,7 +902,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.15"
+APP_VERSION = "2.98.16"
 
 
 def default_data_dir():
@@ -1034,6 +1036,7 @@ CFG = {
     "ai_require": False,         # motion persons must be confirmed by the AI
     "ai_conf": 0.5,              # confidence threshold
     "ai_every": 3,               # run the network every N frames
+    "size_check": True,          # 2.98.16: things much smaller than a person at that place are no person (417)
     "ai_zoom": True,             # 2.98.13: «KI-Lupe» - small moving things are looked at once more, enlarged (far persons)
     "ai_model": "ssd",           # «KI-Modell»: "ssd" = standard (SSD MobileNet V2), "own" = own MoveEye model (YOLO, ONNX - part 195)
     "ai_own_url": "https://github.com/DonElektro/MotionWatch/releases/download/ki-modell/moveeye_model.json",   # its manifest
@@ -26347,7 +26350,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_15.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_16.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -28088,6 +28091,8 @@ class MotionWatch:
             walking = True                                  # AI says person -> person
         elif getattr(t, "animal_like", False) or (ai_on and aspect > 1.4 and not t.is_person):
             walking = False                                 # (wide and flat: only as long as it was no person before - crawling)
+        elif walking and not size_ok(t, getattr(self, "_ph", 0)):
+            walking = False                                 # 2.98.16: far too small for a person at this place (417)
         elif CFG["ai_require"] and self.ai.net is not None and CFG["ai_enabled"]:
             walking = False                                 # needs AI confirmation
         elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k:
@@ -28591,6 +28596,10 @@ class MotionWatch:
                 boxes = [b for b in boxes if b[2] * b[3] <= 0.25 * pw * ph] if ai_boxes else boxes
                 boxes = merge_boxes(boxes + [b[:4] for b in ai_boxes])   # AI persons become tracks too
                 tracks = self.tracker.update(boxes)
+                try:
+                    size_learn(tracks, ai_boxes, pw, ph)        # 2.98.16: how big a person is at which place (417)
+                except Exception:
+                    pass
                 # 2.98.13: small moving things the AI has not confirmed - the «KI-Lupe» looks at the biggest of them next time
                 self.ai.hints = [t.box for t in tracks if not t.lost and len(t.speeds) >= 2 and t.box[3] < 0.4 * ph
                                  and t.box[2] * t.box[3] < 0.08 * pw * ph and not any(iou(t.box, b) > 0.2 for b in ai_boxes)]
@@ -28598,6 +28607,7 @@ class MotionWatch:
                     if t.lost:
                         continue
                     self._animal_boxes = [o[:4] for o in rec_animals]
+                    self._ph = ph
                     self.classify(t, pw * ph, wind_boost, ai_boxes)
                     if t.is_person and not t.ai_confirmed and t.box[2] * t.box[3] < min_area * 0.8:
                         t.is_person = False                     # too small for a person (only seen for following movement)
@@ -29220,6 +29230,77 @@ def walktest_draw(frame):
         cv2.putText(frame, txt, (10, H - 9), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (80, 230, 80), 2, cv2.LINE_AA)
     except cv2.error:
         pass
+# ----------------------------------------------------------------------------
+# 2.98.16 (Fehlalarme durch Tiere, Prüfstand): auf ebenem Boden steht eine Person weiter unten im Bild (näher) grösser da
+# als weiter oben (weiter weg) – die Höhe im Bild wächst fast linear mit dem Abstand der Füsse vom Horizont. MoveEye lernt
+# diese Gerade aus den Personen, die die KI sicher bestätigt hat (pro Neigung des Kopfes). Ein Ding, das nur durch seine
+# Bewegung als «Person» gälte, aber viel kleiner ist, als eine Person an dieser Stelle wäre (Dachs, Katze, Fuchs), wird
+# keine Person. Ohne genug gelernte Personen (die ersten Abende) prüft es nichts.
+# ----------------------------------------------------------------------------
+SIZEFIT = {"b": {}, "fit": {}, "t": 0.0, "rejects": 0}
+SIZE_MIN_SAMPLES = 12
+
+
+def _size_bucket():
+    try:
+        return int(round(float(CFG.get("tilt", 50)) / 3.0))     # the tilt of the head: another tilt = another line
+    except (TypeError, ValueError):
+        return 0
+
+
+def size_learn(tracks, ai_boxes, pw, ph):
+    """the AI-confirmed, upright persons of this picture: (feet row, height) both 0..1"""
+    if not ai_boxes or ph <= 0:
+        return
+    b = SIZEFIT["b"].setdefault(_size_bucket(), deque(maxlen=120))
+    for (x, y, w, h, *_r) in ai_boxes:
+        if h < 0.04 * ph or w > 0.9 * h or y + h > 0.985 * ph or y < 0.01 * ph:
+            continue                                     # not upright, or cut off at the edge: the size is not reliable
+        b.append(((y + h) / ph, h / ph))
+    now = time.time()
+    if now - SIZEFIT["t"] > 5.0:
+        SIZEFIT["t"] = now
+        for k, d in SIZEFIT["b"].items():
+            if len(d) >= SIZE_MIN_SAMPLES:
+                a = np.array(d, dtype=np.float32)
+                if float(a[:, 0].max() - a[:, 0].min()) < 0.12:
+                    continue                             # all at the same distance: no line yet
+                m, c = np.polyfit(a[:, 0], a[:, 1], 1)
+                res = a[:, 1] - (m * a[:, 0] + c)
+                ok = np.abs(res) < 2.5 * (np.std(res) + 1e-3)
+                if ok.sum() >= SIZE_MIN_SAMPLES * 0.7:
+                    m, c = np.polyfit(a[ok, 0], a[ok, 1], 1)
+                if m > 0.05:                             # lower in the picture = bigger: a sensible line
+                    SIZEFIT["fit"][k] = (float(m), float(c), len(d))
+
+
+def size_expected(box, ph):
+    f = SIZEFIT["fit"].get(_size_bucket())
+    if not f or ph <= 0:
+        return None
+    yb = (box[1] + box[3]) / ph
+    e = f[0] * yb + f[1]
+    return e if e > 0.02 else None
+
+
+def size_ok(t, ph):
+    """False when the thing is much smaller than a person standing at that place would be (crouching persons are about half
+    as high, crawling ones a third - so only clearly smaller things are refused, and never one the AI calls a person)"""
+    if not CFG.get("size_check", True) or getattr(t, "ai_confirmed", False):
+        return True
+    e = size_expected(t.box, ph)
+    if e is None:
+        return True
+    h = t.box[3] / ph
+    small = h < 0.28 * e
+    if small and not getattr(t, "_size_rej", False):
+        t._size_rej = True; SIZEFIT["rejects"] += 1
+    return not small
+
+
+def size_state():
+    f = SIZEFIT["fit"].get(_size_bucket())
+    return {"learned": bool(f), "persons": int(f[2]) if f else len(SIZEFIT["b"].get(_size_bucket(), [])), "rejects": SIZEFIT["rejects"]}
 # ----------------------------------------------------------------------------
 # Web access options (set on the command line) + self-signed certificate + systemd unit
 # ----------------------------------------------------------------------------
@@ -50799,6 +50880,7 @@ TOGGLES = [  # (section, key, label)
     ("AI detection", "show_objects", "Mark all detected objects (cars, animals, ...)"),
     ("AI detection", "ai_require", "Motion persons need AI confirmation"),
     ("AI detection", "ai_zoom", "AI magnifier: look again, enlarged, at small moving things (persons far away)"),
+    ("AI detection", "size_check", "Size check: much smaller than a person at that place = no person (learns from the persons the AI confirmed)"),
     ("Web stream", "web_stream", "Web stream + remote control (port 5000)"),
     ("Web stream", "ext_on", "Picture for other programs (Home Assistant, recorder, VLC) with a secret address"),
     ("Web stream", "rtsp_on", "RTSP video for recorders (needs mediamtx; uses CPU)"),
@@ -51379,7 +51461,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.15")
+        self.root.title("MoveEye 2.98.16")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -51732,7 +51814,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.15 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.16 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -59753,6 +59835,7 @@ for _k, _v in _HX124.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 _HX125 = {  # 2.98.7: «Spiele freigeben», wake-up alarm, sleeping place
+    'Size check: much smaller than a person at that place = no person (learns from the persons the AI confirmed)': ('Grössen-Prüfung: viel kleiner als eine Person an dieser Stelle = keine Person (lernt aus den Personen, die die KI bestätigt hat)', 'Contrôle de taille : bien plus petit qu\'une personne à cet endroit = pas une personne (apprend des personnes confirmées par l\'IA)', 'Controllo dimensioni: molto più piccolo di una persona in quel punto = nessuna persona (impara dalle persone confermate dall\'IA)', 'Controlla da grondezza: bler pli pitschen ch\'ina persuna en quest lieu = nagina persuna (emprenda da las persunas confermadas da l\'IA)'),
     'AI magnifier: look again, enlarged, at small moving things (persons far away)': ('KI-Lupe: kleine bewegte Dinge nochmals vergrössert anschauen (Personen weit weg)', 'Loupe IA : regarder encore une fois, agrandi, les petits objets en mouvement (personnes au loin)', 'Lente IA: guardare di nuovo, ingrandito, le piccole cose in movimento (persone lontane)', 'Lupa IA: guardar anc ina giada, engrondì, chaussas pitschnas en moviment (persunas lontanas)'),
     'Message list': ('Nachrichten', 'Messages', 'Messaggi', 'Messadis'),
     'Everything MoveEye sent to your phone - and the messages on the ntfy server.': ('Alles, was MoveEye ans Handy geschickt hat – und die Nachrichten auf dem ntfy-Server.', 'Tout ce que MoveEye a envoyé à ton téléphone – et les messages sur le serveur ntfy.', 'Tutto ciò che MoveEye ha inviato al telefono – e i messaggi sul server ntfy.', 'Tut quai che MoveEye ha tramess al telefonin – ed ils messadis sin il server ntfy.'),

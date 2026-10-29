@@ -332,6 +332,8 @@ class MotionWatch:
             walking = True                                  # AI says person -> person
         elif getattr(t, "animal_like", False) or (ai_on and aspect > 1.4 and not t.is_person):
             walking = False                                 # (wide and flat: only as long as it was no person before - crawling)
+        elif walking and not size_ok(t, getattr(self, "_ph", 0)):
+            walking = False                                 # 2.98.16: far too small for a person at this place (417)
         elif CFG["ai_require"] and self.ai.net is not None and CFG["ai_enabled"]:
             walking = False                                 # needs AI confirmation
         elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k:
@@ -835,6 +837,10 @@ class MotionWatch:
                 boxes = [b for b in boxes if b[2] * b[3] <= 0.25 * pw * ph] if ai_boxes else boxes
                 boxes = merge_boxes(boxes + [b[:4] for b in ai_boxes])   # AI persons become tracks too
                 tracks = self.tracker.update(boxes)
+                try:
+                    size_learn(tracks, ai_boxes, pw, ph)        # 2.98.16: how big a person is at which place (417)
+                except Exception:
+                    pass
                 # 2.98.13: small moving things the AI has not confirmed - the «KI-Lupe» looks at the biggest of them next time
                 self.ai.hints = [t.box for t in tracks if not t.lost and len(t.speeds) >= 2 and t.box[3] < 0.4 * ph
                                  and t.box[2] * t.box[3] < 0.08 * pw * ph and not any(iou(t.box, b) > 0.2 for b in ai_boxes)]
@@ -842,6 +848,7 @@ class MotionWatch:
                     if t.lost:
                         continue
                     self._animal_boxes = [o[:4] for o in rec_animals]
+                    self._ph = ph
                     self.classify(t, pw * ph, wind_boost, ai_boxes)
                     if t.is_person and not t.ai_confirmed and t.box[2] * t.box[3] < min_area * 0.8:
                         t.is_person = False                     # too small for a person (only seen for following movement)

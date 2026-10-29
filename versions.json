@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 12:10",
+ "generated": "2026-10-29 14:12",
  "versions": [
   {
-   "version": "2.98.15",
-   "file": "webcam_bewegung_2_98_15.py",
+   "version": "2.98.16",
+   "file": "webcam_bewegung_2_98_16.py",
    "url": "",
-   "sha256": "92f203fd5bc7b50df715a7a493df9fea1a85db4f75be553d32dbb03a34f1ac40",
-   "date": "2026-10-29 12:10",
-   "notes": "Eine Wochenmeldung (mit der Simulator-Woche), eine Zeitleiste, Spiel-Gruppe nur Assistent/Öffnen/Start/Stopp, Akku-Schwellen zusammen, «Wenn mein Handy zurückkommt: ausschalten / fragen / nichts», Auto-Tuner höchstens ±20 %, Gehtest-Anzeige; Simulator 3D-4.2",
-   "sig": "cd7435d18caf89e74497347cc20f0062fc63712c26b54ec1bbfa38598a14113e3205003cda232beb1dde6cda7e23fadd8239b608d3832a0d047c852838b0a107"
+   "sha256": "ab6eef80c483392b6ddd5bfb2206f500fbd5eaaca994a0da1eb491ee9b02260f",
+   "date": "2026-10-29 14:12",
+   "notes": "Weniger Fehlalarme durch Tiere: Grössen-Prüfung (zu klein für eine Person an dieser Stelle = keine Person; lernt aus KI-bestätigten Personen)",
+   "sig": "e90430ec03f530b639af6751f96def01b633db6a23dce37d9661bf7d17e44e9fe8d57d3a4d45cc3e0b6a8aa8bf292244c189bb7e5d5abd02ee5ec47146e57d02"
   },
   {
    "version": "2.97.1",
