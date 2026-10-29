@@ -23245,9 +23245,10 @@ def pano_canvas(pos, load, tw=320, head=0, foot=0, geo=None):
     def bounds(cs, fov, wrap_):
         out = []
         for j, c in enumerate(cs):
-            if wrap_ and len(cs) > 1:
-                st = 360.0 / len(cs)
-                lo, hi = c - st / 2.0, c + st / 2.0
+            if wrap_ and len(cs) > 1:                          # the neighbours round the circle (no gap from rounded steps)
+                prev = cs[j - 1] if j > 0 else cs[-1] - 360.0
+                nxt = cs[j + 1] if j + 1 < len(cs) else cs[0] + 360.0
+                lo, hi = (prev + c) / 2.0, (nxt + c) / 2.0
             else:
                 lo = (cs[j - 1] + c) / 2.0 if j > 0 else c - fov / 2.0
                 hi = (cs[j + 1] + c) / 2.0 if j + 1 < len(cs) else c + fov / 2.0
