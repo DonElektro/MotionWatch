@@ -1357,6 +1357,7 @@ function paintExtras(s) {
   else if (bl) bl.textContent = !b.on ? t("Off – enter the capacity of the powerbank below.")
     : (b.pct == null ? t("Press «Battery is full now» after charging.") + " · " + b.watts + " W"
        : "🔋 " + b.pct + " % · " + t("about") + " " + fmtH(b.hours) + " " + t("left") + " · " + b.watts + " W" + (b.src === "estimate" ? " (" + t("estimated") + ")" : ""));
+  if (bl && s.batt_save && s.batt_save.on) bl.textContent += " · 🐢 " + t("Battery saver active: fewer pictures, the AI less often");   // 2.98.13 (105)
 }
 async function repSend() { const r = await post("/api/report/send", {lang: LANG}); toast(r.ok ? t("Night report sent") : t("Not sent – push messages are not set up")); refresh(); }
 async function guestAct(a) {
@@ -2651,7 +2652,7 @@ function tidyHeader(s, c) {
   const bt = s.battery || {};
   const ups = bt.src === "ups";
   hb("#b-batt", !!(bt.on && bt.pct != null), (ups && !bt.on_battery ? "🔌 " : "🔋 ") + bt.pct + " %" + (bt.hours != null ? " · " + fmtH(bt.hours) : "")
-     + (ups && bt.charging ? " · " + t("charging") : ""), ups && !bt.on_battery ? "grn" : (bt.pct <= 15 ? "red" : (bt.pct <= 30 ? "yel" : "grn")));
+     + (ups && bt.charging ? " · " + t("charging") : "") + (s.batt_save && s.batt_save.on ? " · 🐢 " + t("saver") : ""), ups && !bt.on_battery ? "grn" : (bt.pct <= 15 ? "red" : (bt.pct <= 30 ? "yel" : "grn")));
   const rem = s.remote || [];
   hb("#b-remote", rem.length > 0, "🌐 " + t("Remote") + ": " + rem.join(", ").slice(0, 30), "org");
   if (typeof s.fps === "number") badge("#b-fps", (s.eco === "saving" ? "💤 " : "") + Math.round(s.fps) + " FPS",   // 2.95.64: real pictures per second; power saving is slow on purpose

@@ -33,6 +33,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `080_waermebild_modul.py` | Treiber Wärmebild-Modul, Klasse Hardware | 281 |
 | `090_system_fern_sichtungen.py` | System, Fernzugriff, Sichtungen, Nachtbericht, Gast-Zugang | 465 |
 | `100_akku.py` | Akku / USV, Systemüberwachung | 417 |
+| `105_akku_sparen.py` | Akku-Sparen automatisch (unter einer Schwelle weniger Bilder, die KI seltener) | 116 |
 | `110_netz_wlan.py` | Netz, WLAN suchen und verbinden, QR-Codes | 813 |
 | `120_eigenes_wlan_uhr_ort.py` | eigenes WLAN, Uhr vom Handy, Ort (GPS) vom Handy | 720 |
 | `130_scharf_profile_modi.py` | Scharf / unscharf, Camping-Profil, einfache Einstellungen, Modi | 368 |
@@ -47,6 +48,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `210_demo.py` | Demo-Modus | 255 |
 | `220_zeitraffer.py` | Zeitraffer | 195 |
 | `230_waermebild.py` | Wärmebild-Überlagerung, Nachtsicht, Easter Egg (Herz) | 349 |
+| `232_waermebild_person.py` | Personen im Wärmebild (nachts, wenn die Kamera nichts sieht) | 105 |
 | `240_audio.py` | Mikrofon, Geräusch-Alarm | 81 |
 | `250_klatschen_bluetooth_ton.py` | Klatschschalter, Bluetooth, Lautsprecher, Sprachausgabe | 1131 |
 | `255_wecker.py` | Wecker mit Schlafplatz: wegschauen, wecken, Gesten (winken / aufstehen) | 330 |
@@ -69,6 +71,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `390_protokoll_bedienermodus.py` | Protokoll, Bedienermodus, Pause, Update-Wächter | 1065 |
 | `400_ausschalten.py` | Pi ausschalten / neu starten | 53 |
 | `410_motionwatch_kern.py` | KERN: die Erkennungs-Schleife (Bewegung, Personen, Alarm) | 969 |
+| `415_entfernung_gehtest.py` | Entfernung und Richtung einer Person, Gehtest beim Einrichten | 376 |
 | `420_webzugang_aufnahmen.py` | Web-Zugang, Aufnahmen, Speicher, Bild für andere Programme | 630 |
 | `425_zeitleiste.py` | Zeitleiste der Nacht: Daten für /api/timeline | 230 |
 | `426_wochenbericht.py` | Wochenbericht der Erkennung (Push + Karte) | 200 |
@@ -85,6 +88,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `523_web_zeitleiste.py` | Web: Seite «Zeitleiste» (Verlauf), /api/timeline, /api/weekreport | 330 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |
+| `535_web_erkennung.py` | Web: Gehtest (Live, Schutz), Akku-Sparen auf der Schutz-Seite | 119 |
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
 | `560_uebersetzungen_de.py` | Übersetzungen Deutsch | 498 |
@@ -96,6 +100,11 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `600_uebersetzungen_rm.py` | Übersetzungen Rätoromanisch, Anleitungen | 1763 |
 | `602_uebersetzungen_alarm.py` | Übersetzungen der Alarm-Extras | 130 |
 | `607_uebersetzungen_modell.py` | Übersetzungen «Eigenes KI-Modell» | 37 |
+| `575_fenster_erkennung.py` | Fenster + Einstellungen: Gehtest, Wärmebild-Personen, Akku-Sparen | 87 |
+| `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
+| `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
+| `600_uebersetzungen_rm.py` | Übersetzungen Rätoromanisch, Anleitungen | 1763 |
+| `602_uebersetzungen_erkennung.py` | Übersetzungen: Gehtest, Entfernung, Wärmebild-Personen, Akku-Sparen | 102 |
 | `610_anleitung_ergaenzungen.py` | Anleitung: Ergänzungen in allen Sprachen | 167 |
 | `620_daten_produktseite.py` | Daten: Produktseite für Gäste (/info/) | 2651 |
 | `630_almanach.py` | Extras: Überlebens-Almanach | 270 |

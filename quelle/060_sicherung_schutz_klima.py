@@ -931,6 +931,8 @@ class Notifier:
         payload = {"event": "person" if count else "test", "persons": int(count), "time": datetime.now().isoformat(timespec="seconds"),
                    "snapshot": snapshot_path, "rain": bool(STATE["rain_mode"]), "wind": STATE["wind_level"],
                    "source": STATE["source_label"], "link": pub + "/recordings" if pub else "", "more": more}
+        if count:
+            payload["dist"] = person_dist_text()              # 2.98.13: «Person, ca. 12 m, kommt näher» (415)
         threading.Thread(target=self._dispatch, args=(payload, jpg, fname), daemon=True).start()
 
     def test(self, frame):
@@ -1035,7 +1037,7 @@ class Notifier:
 
     @staticmethod
     def _text(p):
-        return Notifier._text0(p) + (" " + trf("(+{n} more detections since the last message)", n=p["more"]) if p.get("more") else "") \
+        return Notifier._text0(p) + (" · " + p["dist"] if p.get("dist") else "") + (" " + trf("(+{n} more detections since the last message)", n=p["more"]) if p.get("more") else "") \
             + (" · " + trf("late - from {t} (the message could not be sent then)", t=str(p.get("time", ""))[11:16]) if p.get("late") else "")
 
     @staticmethod

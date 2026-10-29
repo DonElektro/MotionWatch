@@ -884,14 +884,15 @@ class AIDetector:
             if self.net is None:
                 return self.boxes
         self.frame_counter += 1
-        if self.frame_counter % max(1, int(CFG["ai_every"])) != 0:
+        if self.frame_counter % (max(1, int(CFG["ai_every"])) * batt_save_ai_k()) != 0:     # 2.98.13: battery saver (105)
             return self.boxes
         # at most a few times per second and slower when the Pi gets hot: the AI is the biggest load (power, heat)
         gap = max(0.3, 2.0 * (STATE.get("ai_ms") or 0) / 1000.0)
         ct = STATE.get("cpu_temp") or 0
         gap *= 4.0 if ct >= 80 else 2.0 if ct >= 75 else 1.0
         if CFG.get("sim_on") and sim_eco_now():
-            gap *= 2.0                                     # simulation with CPU saving: the AI only half as often
+            gap *= 2.0
+        gap *= batt_save_ai_k()                                     # simulation with CPU saving: the AI only half as often
         if time.time() - getattr(self, "_last_run", 0.0) < gap:
             return self.boxes
         self._last_run = time.time()

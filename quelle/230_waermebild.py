@@ -12,7 +12,8 @@ class ThermalCam:
         threading.Thread(target=self.loop, daemon=True).start()
 
     def wanted(self):
-        spec = CFG["thermal_source"] if (CFG["thermal_on"] or CFG["thermal_alarm"] or CFG["nightvision"] or CFG["nightvision_auto"]) else ""
+        spec = CFG["thermal_source"] if (CFG["thermal_on"] or CFG["thermal_alarm"] or CFG["nightvision"] or CFG["nightvision_auto"]
+                                         or thermal_person_active()) else ""
         if spec and spec == STATE["source_id"]:
             return ""                                          # that camera is the main camera already
         return spec
