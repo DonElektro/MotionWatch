@@ -307,7 +307,7 @@ class AutoTuner:
     def observe(self, fg, tracks, persons, fps):
         if not CFG["auto_tune"]:
             STATE["auto_status"] = "off"; return
-        if TESTOPT.get("busy") or ABT.get("busy") or TRAIN.get("busy"):
+        if autotune_paused():                                   # 2.98.14: every measurement / training (312), not only three
             STATE["auto_status"] = "paused (test run)"; return   # 2.97.0: a measurement needs fixed values
         now = time.time()
         if fps > 1:

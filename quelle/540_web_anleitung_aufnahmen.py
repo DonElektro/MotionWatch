@@ -76,7 +76,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 
 <section id="alarm" data-icon="🛡"><h2>Alarm &amp; Camping</h2><p><b>🛡 Schutz (ab 2.95.105):</b> Oben in «Camping / Schutz» eine Stufe statt vieler Schalter: <b>Aus</b> · <b>Wachsam</b> (Personen und Sabotage aufs Handy, keine Sirene) · <b>Voll</b> (dazu bewachte Gegenstände aus dem Referenz-Scan, GPS-Ortung und die Sirene, wenn niemand ausschaltet). Der <b>Schutz-Assistent</b> fragt drei Dinge (was, wann, wie reagieren) und stellt alles ein. Die <b>Ampel</b> zeigt, was noch fehlt, mit «Beheben». <b>PIN zum Ausschalten</b>: ohne PIN kein «Schutz aus»; 3 falsche PINs lösen einen Diebstahl-Alarm aus. <b>Schutz testen</b> prüft Kamera, Push, Lautsprecher, Referenz-Scan – mit dem Simulator auch Abdecken und eine Person. Unter «Mehr»: Sirene nach 10–120 s und «automatisch an, wenn mein Handy weg ist». Die Begriffe «scharf / unscharf» heissen jetzt «Schutz an / aus». Der Bluetooth-Lautsprecher ist unter den Modi schnell erreichbar, das Disco-Licht zugeklappt darunter.</p><p><b>Modus (ab 2.95.47):</b> ein Schalter für das ganze Gerät, oben in «Camping / Schutz» (auch im Fenster): ⛺ Camping-Wache · 🔥 Lagerfeuer-Spiele (Spielecke offen im bestehenden WLAN, die Wache schaut sparsam weiter; zur eingestellten Zeit oder bei knappem Akku zurück zur Camping-Wache) · 🎮 Gamer (nur mit Netzstrom: Powermodus, alle Spiele, Wache nach Wahl; auf Akku zurück zu den Lagerfeuer-Spielen) · 🏠 Zuhause · 🦌 Wildbeobachtung (keine Sirene, kein Licht von selbst) · 🌙 Nachtwache · 🔕 Transport. «Eigene Einstellungen» stellt alles zurück, wie es vor dem ersten Modus war.</p><p><b>📺 TV-Anzeige und Internet vom Handy (ab 2.95.51):</b> Unter dem Modus zeigt «Am HDMI zeigen» eine grosse Spielseite auf dem Fernseher am Pi (Raspberry Pi OS mit Desktop und Chromium nötig): links das Bild des Simulators oder der Kamera, rechts der Spielassistent, der QR-Code zum Mitspielen, die Zeit, die Spieler und die Rangliste. Bei Lagerfeuer und Gamer geht sie von selbst an. Den Link kann auch jeder andere Bildschirm im gleichen Netz öffnen. Ein Handy am USB-Kabel (Android «USB-Tethering», iPhone «Persönlicher Hotspot») gibt MoveEye Internet – das eigene WLAN (Spiel-Netz) bekommt es dann auch.</p><p><b>📶 Netz-Check und 🛈 Infoseite (ab 2.95.52):</b> Werkzeuge → «Netz-Check der Mitspieler» misst bei allen Handys Reaktionszeit, Schwankung, Verluste, Download und Upload bis zu MoveEye; Handys in der Spielecke messen von selbst, alle anderen über den QR-Code. Ist MoveEye selbst das WLAN, kommt das Empfangssignal jedes Handys dazu, mit Tipps für schwache Verbindungen. Werkzeuge → «Infoseite für Gäste» zeigt deine Homepage von MoveEye allen im gleichen WLAN, ohne Login und ohne Internet (QR-Code, auch auf der TV-Anzeige). Fragen aus dem Formular kommen als Push-Nachricht.</p><p><b>🖥 Simulator als Helfer (ab 2.95.53):</b> <b>KI-Rechenhilfe</b> (Werkzeuge): Läuft MoveEye auch auf dem PC (im 3D-Simulator «MoveEye auf diesem PC starten»), rechnet der PC die Erkennung für den Pi – der Pi findet ihn von selbst und rechnet wieder selbst, wenn der PC weg ist. <b>TV-Modus</b>: Taste T im Simulator oder «TV-Modus im 3D-Simulator» unter dem Modus – grosses Bild mit Spiel, QR-Code und Rangliste. Im Tab Simulator: <b>Aufstell-Planer</b> (wo MoveEye hin soll, tote Winkel, Patrouille übernehmen), <b>Alarm-Rückblick in 3D</b> (ein Alarm wird nachgespielt), <b>KI-Prüfung mit Simulator-Bildern</b> (wie gut erkennt die KI bei Nacht, Regen, Nebel? mit Trainingsbildern als ZIP). Im Netz-Check: <b>Empfangs-Rundgang</b> – eine Karte, wo das WLAN gut ist.</p><p><b>📖 Almanach, 🪩 Disco-Licht, 🔒 Tunnel, 🎮 Spiele (ab 2.95.54):</b> Werkzeuge → «Überlebens-Almanach»: Tipps fürs Camping in der Schweiz zum Nachschlagen oder als Abendlektüre, offline, mit Suche, Rotlicht und Vorlesen (Adresse /almanach/, auch für Gäste). Unter dem Modus: «Disco-Licht» – das weisse Licht blitzt im Takt der Musik (Mikrofon) oder in festem Takt, höchstens 3-mal pro Sekunde, ein Alarm geht vor. Tab Simulator → «Simulator hinter einer Firewall»: Läuft der Simulator auf einem PC ohne Adminrechte, verbindet er sich mit Adresse und Code selbst zu MoveEye. Die Spielesammlung ist in Touch-Spiele und Spiele mit Bildschirm-Tasten geteilt (Tetris, Racer, Breakout, Pong, Astray).</p>
 <ul><li><b>Schutz ein / aus:</b> nur bei Schutz an gibt es Alarme, Push-Nachrichten, Sirene und Aufnahmen. Der Countdown (einstellbar) gibt dir Zeit wegzugehen. «Sofort Schutz an» überspringt ihn.</li>
-<li><b>Camping-Profil:</b> ein Schalter für alles Nötige: eigenes WLAN an, Kamera bleibt stehen (keine Patrouille/Verfolgung/Zeitraffer), Alarme, Aufnahmen und Stromsparen an, nach dem Countdown Schutz an. Ausschalten stellt deine vorherigen Einstellungen wieder her.</li>
+<li><b>⛺ Modus «Camping» (früher «Camping-Profil» / «Camping-Wache», ab 2.98.14 dasselbe):</b> ein Schalter für alles Nötige: eigenes WLAN an, Kamera bleibt stehen (keine Patrouille/Verfolgung/Zeitraffer), Alarme, Aufnahmen und Stromsparen an, nach dem Countdown Schutz an. Ausschalten stellt deine vorherigen Einstellungen wieder her.</li>
 <li><b>Eigenes WLAN (Hotspot):</b> der Pi macht sein eigenes WLAN – funktioniert ohne Handynetz. Name und Passwort unter <i>Schutz &amp; Netzwerk</i>.</li>
 <li><b>Netzwerk:</b> «Automatisch» sucht zuerst bekannte Netze (z. B. den Handy-Hotspot, dann gibt es Internet und Push-Nachrichten) und schaltet sonst das eigene WLAN ein.</li>
 <li><b>Autostart:</b> MoveEye startet beim Einschalten von selbst, ohne Bildschirm.</li>
@@ -98,7 +98,8 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 </section>
 
 <section id="detect" data-icon="🎯"><h2>Erkennung</h2>
-<ul><li><b>Empfindlichkeit</b> und <b>Min. Objektgrösse</b> sind die wichtigsten Regler gegen Fehlalarme.</li>
+<ul><li><b>🎯 Erkennung verbessern (ab 2.98.14):</b> ein Assistent in 5 Schritten (Einstellungen → Erkennung oder Simulator-Zentrale): prüfen, wie gründlich (schnell / Tag + Nacht), MoveEye misst sich im 3D-Simulator und probiert Änderungen aus, Ergebnis vorher → nachher (mit «Rückgängig»), dann Dranbleiben (Auto-Tuner, Trainings-Nacht, Wochen-Check, Fehlalarm-Lernen). Es läuft immer nur ein Test; der Auto-Tuner macht so lange Pause. Die einzelnen Werkzeuge (A/B-Vergleich, Schwellen automatisch …) gibt es unter «Experte».</li>
+<li><b>Empfindlichkeit</b> und <b>Min. Objektgrösse</b> sind die wichtigsten Regler gegen Fehlalarme.</li>
 <li><b>KI-Erkennung</b> erkennt Personen, Tiere und Fahrzeuge. «Bewegungs-Personen brauchen KI-Bestätigung» = weniger Fehlalarme, aber etwas langsamer.</li>
 <li><b>Zonen</b> (Reiter <i>Zonen</i>): «Ignorieren» für Bäume, Strasse, Zeltwand; «Nur hier» wenn nur ein Bereich zählen soll.</li>
 <li><b>Privatsphäre-Zone</b> (Reiter <i>Zonen</i>): der Bereich wird gleich nach der Kamera schwarz abgedeckt – im Live-Bild, in Aufnahmen, Fotos, Zeitraffer und für Gäste. Für Nachbarzelt, Weg, fremde Fenster. Wichtig für den Datenschutz: fremde Personen und öffentlichen Grund nicht dauernd filmen.</li>
@@ -177,7 +178,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 
 <section id="window" data-icon="🖥"><h2>Desktop-Fenster auf dem Pi</h2>
 <table><tr><td>Doppelklick aufs Video</td><td>nur Video</td></tr><tr><td>⛶ / F11 / Esc</td><td>Video-Vollbild / ganze Seite als Vollbild / zurück</td></tr>
-<tr><td>Strg+B</td><td>Einstellungsbereich ein/aus</td></tr><tr><td>Strg+T / Strg+L</td><td>hell/dunkel, Sprache</td></tr>
+<tr><td>Strg+B</td><td>Reiter Einstellungen / zurück zu Live (das Fenster hat dieselben 6 Reiter wie die Webseite)</td></tr><tr><td>Strg+T / Strg+L</td><td>hell/dunkel, Sprache</td></tr>
 <tr><td>Pfeiltasten / Pos1</td><td>Kamera bewegen / Mitte</td></tr><tr><td>Rechtsklick aufs Video</td><td>Felder ein-/ausblenden</td></tr></table>
 <p>Die Einstellungen sind gleich gegliedert wie auf der Webseite. Der Knopf «Anleitung» öffnet diese Seite.</p>
 </section>
@@ -287,7 +288,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 
 <section id="alarm" data-icon="🛡"><h2>Alarm &amp; camping</h2><p><b>🛡 Protection (from 2.95.105):</b> at the top of «Camping / protection» one level instead of many switches: <b>Off</b> · <b>Watchful</b> (persons and sabotage to the phone, no siren) · <b>Full protection</b> (plus guarded things of the reference scan, GPS tracking and the siren when nobody switches off). The <b>protection assistant</b> asks three things (what, when, how to react) and sets everything. The <b>traffic light</b> shows what is missing, with «Fix». <b>PIN for switching off</b>: no «off» without the PIN; 3 wrong PINs raise a theft alarm. <b>Test the protection</b> checks camera, push, loudspeaker, reference scan – with the simulator also covering the camera and a person. Under «More»: siren after 10–120 s and «on automatically when my phone is gone». The Bluetooth loudspeaker is quick to reach below the modes, the disco light folded away below it.</p><p><b>Mode (from 2.95.47):</b> one switch for the whole device, at the top of «Camping / protection» (also in the window): ⛺ camping guard · 🔥 campfire games (game corner open, the guard watches on sparingly; back to the camping guard at the set time or when the battery gets low) · 🎮 gamer (only with mains power: power mode, all games, guard if you want; on battery back to the campfire games) · 🏠 home · 🦌 wildlife watching (no siren, no light by itself) · 🌙 night guard · 🔕 transport. «Own settings» brings everything back as it was before the first mode.</p><p><b>📺 TV view and internet from the phone (from 2.95.51):</b> Below the mode, «Show on the HDMI» puts a big game page on the TV at the Pi (Raspberry Pi OS with desktop and Chromium needed): left the picture of the simulator or the camera, right the game wizard, the QR code to join, the time, the players and the ranking. In the campfire and gamer mode it starts by itself. Any other screen in the same network can open the link too. A phone on the USB cable (Android «USB tethering», iPhone «Personal Hotspot») gives MoveEye internet – the own Wi-Fi (game network) gets it too.</p><p><b>📶 Network check and 🛈 product page (from 2.95.52):</b> Tools → «Network check of the players» measures reaction time, jitter, losses, download and upload from every phone to MoveEye; phones in the game corner measure by themselves, all others with the QR code. When MoveEye is the Wi-Fi itself, the signal of every phone is added, with tips for weak connections. Tools → «Product page for guests» shows your MoveEye homepage to everybody in the same Wi-Fi, without login and without internet (QR code, also on the TV view). Questions from the form arrive as a push message.</p><p><b>🖥 The simulator as helper (from 2.95.53):</b> <b>AI helper</b> (Tools): when MoveEye also runs on the PC (in the 3D simulator «Start MoveEye on this PC»), the PC does the detection for the Pi - the Pi finds it by itself and does it again itself when the PC is gone. <b>TV mode</b>: key T in the simulator or «TV mode in the 3D simulator» below the mode. In the tab Simulator: <b>Aufstell-Planer</b> (where MoveEye should stand, blind spots, take over the patrol), <b>alarm replay in 3D</b>, <b>AI test with simulator pictures</b> (how well does the AI see at night, in rain, fog? with training pictures as ZIP). In the network check: <b>walk round</b> - a map where the Wi-Fi is good.</p><p><b>📖 Almanac, 🪩 disco light, 🔒 tunnel, 🎮 games (from 2.95.54):</b> Tools → «Survival almanac» (German): camping tips to look up or read in the evening, offline, with search, red light and reading aloud (/almanach/, also for guests). Below the mode: «Disco light» - the white light flashes with the music (microphone) or a fixed tempo, at most 3 times a second, an alarm comes first. Tab Simulator → «Simulator behind a firewall»: a simulator on a PC without admin rights connects to MoveEye itself with address and code. The game collection is split into touch games and games with on-screen buttons.</p>
 <ul><li><b>Armed / disarmed:</b> only when armed there are alarms, push messages, siren and recordings. The countdown gives you time to leave; «Arm now» skips it.</li>
-<li><b>Camping profile:</b> one switch for everything: own Wi-Fi on, the camera stays where it is, alarms, recordings and power saving on, armed after the countdown. Switching it off restores your settings.</li>
+<li><b>⛺ Mode «Camping» (before «camping profile» / «camping guard», the same from 2.98.14):</b> one switch for everything: own Wi-Fi on, the camera stays where it is, alarms, recordings and power saving on, armed after the countdown. Switching it off restores your settings.</li>
 <li><b>Own Wi-Fi (hotspot):</b> the Pi makes its own Wi-Fi – works without a mobile network. Name and password under <i>Protection &amp; network</i>.</li>
 <li><b>Network:</b> «Automatic» tries known networks first (e.g. the phone hotspot: internet + push messages), otherwise it switches the own Wi-Fi on.</li>
 <li><b>Autostart:</b> MoveEye starts by itself at power-on, without a screen.</li>
@@ -309,7 +310,8 @@ pip install opencv-python numpy pillow flask psutil</pre>
 </section>
 
 <section id="detect" data-icon="🎯"><h2>Detection</h2>
-<ul><li><b>Sensitivity</b> and <b>min. object size</b> are the most important settings against false alarms.</li>
+<ul><li><b>🎯 Improve detection (from 2.98.14):</b> an assistant in 5 steps (Settings → Detection or the simulator centre): check, how thorough (quick / day + night), MoveEye measures itself in the 3D simulator and tries changes, result before → after (with «Undo»), then keep it up (auto-tuner, training night, weekly check, false alarm learning). Only one test runs at a time; the auto-tuner pauses meanwhile. The single tools (A/B comparison, thresholds automatic …) are under «Expert».</li>
+<li><b>Sensitivity</b> and <b>min. object size</b> are the most important settings against false alarms.</li>
 <li><b>AI detection</b> recognises persons, animals and vehicles. «Motion persons need AI confirmation» = fewer false alarms, a little slower.</li>
 <li><b>Zones</b> (tab <i>Zones</i>): «Ignore» for trees, road, tent wall; «Only here» when only one area counts.</li>
 <li><b>Privacy zone</b> (tab <i>Zones</i>): the area is painted black right after the camera – in the live picture, recordings, photos, timelapse and for guests. For a neighbour's tent, a path, other people's windows. Important for data protection: do not film strangers and public ground all the time.</li>
@@ -388,7 +390,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 
 <section id="window" data-icon="🖥"><h2>Desktop window on the Pi</h2>
 <table><tr><td>Double-click the video</td><td>video only</td></tr><tr><td>⛶ / F11 / Esc</td><td>video full screen / whole page full screen / back</td></tr>
-<tr><td>Ctrl+B</td><td>settings panel on / off</td></tr><tr><td>Ctrl+T / Ctrl+L</td><td>light/dark, language</td></tr>
+<tr><td>Ctrl+B</td><td>tab Settings / back to Live (the window has the same 6 tabs as the web page)</td></tr><tr><td>Ctrl+T / Ctrl+L</td><td>light/dark, language</td></tr>
 <tr><td>Arrow keys / Home</td><td>move the camera / centre</td></tr><tr><td>Right-click the video</td><td>show / hide fields</td></tr></table>
 <p>The settings are grouped like on the web page. The button «Manual» opens this page.</p>
 </section>
@@ -1154,14 +1156,26 @@ def web_specs():
     return specs
 
 
-def web_schema(lang=None):
+SECTIONS_ON_SIM_PAGE = ("Simulator",)       # 2.98.14 (Konzept): these settings are on the page Simulator, not under Einstellungen
+
+
+def web_schema(lang=None, only=None):
+    """the settings sections for the page; only = one section with its values (the page Simulator), «Simple» does not apply"""
     out = []
     for sec in SECTIONS:
-        if simple_hidden(None, sec):
+        if only is not None:
+            if sec != only:
+                continue
+            hid = lambda k, s_=None: False
+        else:
+            if sec in SECTIONS_ON_SIM_PAGE:
+                continue
+            hid = simple_hidden
+        if hid(None, sec):
             continue
-        toggles = [{"key": k, "label": tr(l, lang)} for s, k, l in TOGGLES if s == sec and k != "web_stream" and not simple_hidden(k)]
-        sliders = [{"key": k, "label": tr(l, lang), "min": lo, "max": hi, "step": st} for s, k, l, lo, hi, st in SLIDERS if s == sec and not simple_hidden(k)]
-        texts = [x for x in web_texts(lang) if x["section"] == sec and not simple_hidden(x["key"])]
+        toggles = [{"key": k, "label": tr(l, lang), "value": bool(CFG.get(k))} for s, k, l in TOGGLES if s == sec and k != "web_stream" and not hid(k)]
+        sliders = [{"key": k, "label": tr(l, lang), "min": lo, "max": hi, "step": st, "value": CFG.get(k)} for s, k, l, lo, hi, st in SLIDERS if s == sec and not hid(k)]
+        texts = [x for x in web_texts(lang) if x["section"] == sec and not hid(x["key"])]
         if toggles or sliders or texts:
             out.append({"id": sec, "name": tr(sec, lang), "toggles": toggles, "sliders": sliders, "texts": texts})
     return out

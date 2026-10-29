@@ -585,7 +585,7 @@ body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
         <button type="button" class="sec" id="pr-armnow" data-i18n="Arm now">Arm now</button>
         <button type="button" class="sec" id="pr-disarm" data-i18n="Disarm">Disarm</button>
       </div>
-      <label class="row pr-sw"><span><b>⛺ <span data-i18n="Camping profile">Camping profile</span></b><br>
+      <label class="row pr-sw" hidden><span><b>⛺ <span data-i18n="Camping profile">Camping profile</span></b><br>
         <span class="mut" data-i18n="cp-desc">Own Wi-Fi on, the camera stays where it is (no patrol / tracking / timelapse), alarms and recordings on, armed after the countdown. Switching it off restores your settings.</span></span>
         <input type="checkbox" class="sw" id="pr-camp"></label>
       <label class="row pr-sw"><span><b>🔋 <span data-i18n="Power saving">Power saving</span></b><br><span class="mut" id="pr-eco-info"></span></span>
@@ -609,6 +609,7 @@ body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
       <div class="mut" id="pr-env" style="margin-top:4px"></div>
       <div class="err" id="pr-err"></div>
     </details>
+    <details class="card" data-view="tune" data-vgroup="Panels" data-vlabel="Improve detection"><summary data-i18n="Improve detection">Improve detection</summary><div id="tune-box"></div></details>
     <details class="card" id="hcard" data-view="health" data-vgroup="Panels" data-vlabel="Self-check">
       <summary><span data-i18n="🩺 Self-check">🩺 Self-check</span> <span class="mut" id="h-sum" style="text-transform:none;letter-spacing:0;font-weight:500"></span></summary>
       <div id="h-list"></div>
@@ -1864,7 +1865,7 @@ const GROUPS = [                                            // 2.98.0: by goal -
   {id: "theft", tab: "protect", icon: "🔒", name: "Theft protection", items: [{sec: "Theft protection", title: "Device", ic: "🔒"},
    {sec: "Reference scan", title: "Guarded things (reference scan)", ic: "🧭"}, {sec: "Backup", title: "Backup (pictures off the device)", ic: "☁️"}]},
   {id: "sched", tab: "protect", icon: "🗓", name: "Zones, schedule, presence", items: [{card: "schedule", sec: "Schedule", title: "Schedule", ic: "🗓️"}]},
-  {id: "detect", tab: "settings", icon: "🎯", name: "Detection", items: [{sec: "Detection", ic: "👁️"}, {sec: "AI detection", ic: "🤖"}, {sec: "Thermal camera", ic: "🌡"}, {fine: true},
+  {id: "detect", tab: "settings", icon: "🎯", name: "Detection", items: [{card: "tune", title: "Improve detection", ic: "🎯"}, {sec: "Detection", ic: "👁️"}, {sec: "AI detection", ic: "🤖"}, {sec: "Thermal camera", ic: "🌡"}, {fine: true},
    {sec: "Walking recognition", ic: "🚶"}, {sec: "Vehicle filter", ic: "🚗"}, {sec: "Rain", ic: "🌧️"}, {sec: "Wind", ic: "🌬️"}, {sec: "Low light", ic: "🌘"}, {sec: "Auto-tune", ic: "🎚️"}]},
   {id: "camera", tab: "settings", icon: "📷", name: "Cameras & head", items: [{sec: "Camera / Servos", ic: "🕹️"}, {sec: "Patrol", ic: "🔄"}, {card: "source", sec: "Video source", ic: "🎥"},
    {sec: "Timelapse", ic: "⏱️"}, {sec: "Mover", title: "Mover (tracked vehicle)", ic: "🚜"}, {fine: true}, {sec: "Servo driver", ic: "🔌"}]},
@@ -1875,8 +1876,9 @@ const GROUPS = [                                            // 2.98.0: by goal -
   {id: "net", tab: "settings", icon: "📶", name: "Network & access", items: [{card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"},
    {card: "guest", title: "Guest access", ic: "👥"}, {sec: "MQTT / Home Assistant", title: "MQTT / Home Assistant", ic: "🏠"}]},
   {id: "sys", tab: "settings", icon: "⚙", name: "System", items: [{card: "system", ic: "🖥️"}, {sec: "Setup", ic: "📍"}, {sec: "Updates", ic: "⬆️"},
-   {sec: "Simulator", ic: "🧪"}, {card: "log", ic: "📜"}]},
+   {card: "log", ic: "📜"}]},
 ];
+Object.assign(I18N.de, {"Improve detection": "Erkennung verbessern"});   // 2.98.14: the assistant (312); the simulator settings are on the page Simulator
 function toBlock(d) {                                        // a settings section -> its controls (without its own title)
   const b = el("div", "blk");
   [...d.children].filter(c => c.tagName !== "SUMMARY").forEach(k => b.appendChild(k));
@@ -3901,18 +3903,17 @@ Object.assign(I18N.en, {"tether-hint": "Connect a phone with the USB cable. Andr
 Object.assign(I18N.de, {"Internet from the phone (USB cable)": "Internet vom Handy (USB-Kabel)", "phone found, connecting …": "Handy gefunden, verbinde …",
   "the own Wi-Fi gets this internet too": "das eigene WLAN bekommt dieses Internet auch",
   "tether-hint": "Handy per USB-Kabel anschliessen. Android: Einstellungen → Hotspot & Tethering → «USB-Tethering». iPhone: «Persönlicher Hotspot» einschalten und «Vertrauen» antippen. MoveEye verbindet von selbst – auch das eigene WLAN (Spiel-Netz) bekommt dann Internet."});
-Object.assign(I18N.de, {"Mode": "Modus", "Camping guard": "Camping-Wache", "Campfire games": "Lagerfeuer-Spiele", "Gamer": "Gamer",
-  "Home / garden": "Zuhause / Garten", "Wildlife watching": "Wildbeobachtung", "Night guard": "Nachtwache", "Transport / rest": "Transport / Ruhe",
+Object.assign(I18N.de, {"Mode": "Modus", "Camping": "Camping", "Campfire games": "Lagerfeuer-Spiele", "Gamer": "Gamer",
+  "Home / garden": "Zuhause / Garten", "Wildlife watching": "Wildbeobachtung", "Transport / rest": "Transport / Ruhe",
   "Own settings": "Eigene Einstellungen", "no mode": "kein Modus", "since": "seit",
   "Your own settings, no mode.": "Deine eigenen Einstellungen, kein Modus.",
   "Full guard: alarms, recordings, own Wi-Fi, armed after the countdown. Power saving while all is quiet.": "Volle Wache: Alarme, Aufnahmen, eigenes WLAN, Schutz an nach dem Countdown. Stromsparen, solange alles ruhig ist.",
-  "The game corner is open for the phones (in the Wi-Fi MoveEye is in). The guard watches on sparingly: few pictures, the AI only at movement - an animal at the tent is still reported. Back to the camping guard at the set time or when the battery gets low.": "Die Spielecke ist offen für die Handys (im WLAN, in dem MoveEye ist). Die Wache schaut sparsam weiter: wenige Bilder, die KI nur bei Bewegung – ein Tier am Zelt wird trotzdem gemeldet. Zur eingestellten Zeit oder wenn der Akku knapp wird, zurück zur Camping-Wache.",
+  "The game corner is open for the phones (in the Wi-Fi MoveEye is in). The guard watches on sparingly: few pictures, the AI only at movement - an animal at the tent is still reported. Back to camping at the set time or when the battery gets low.": "Die Spielecke ist offen für die Handys (im WLAN, in dem MoveEye ist). Die Wache schaut sparsam weiter: wenige Bilder, die KI nur bei Bewegung – ein Tier am Zelt wird trotzdem gemeldet. Zur eingestellten Zeit oder wenn der Akku knapp wird, zurück zum Camping.",
   "Only with mains power: power mode, all games and the game collection, the best picture. The guard only if you want it. On battery MoveEye goes back to the campfire games by itself.": "Nur mit Netzstrom: Powermodus, alle Spiele und die Spielesammlung, bestes Bild. Die Wache nur, wenn du willst. Auf Akku wechselt MoveEye von selbst zurück zu den Lagerfeuer-Spielen.",
   "Guarding house and garden: alarms and recordings on, no own Wi-Fi, no camping profile.": "Haus und Garten bewachen: Alarme und Aufnahmen ein, kein eigenes WLAN, kein Camping-Profil.",
   "Animals: no siren, the light does not go on by itself (it would scare them), many pictures, the camera follows what moves.": "Tiere: keine Sirene, das Licht geht nicht von selbst an (es würde sie verscheuchen), viele Bilder, die Kamera folgt dem, was sich bewegt.",
-  "The highest attention: more sensitive, thermal alarm, infrared light by itself, the pre-alarm too.": "Höchste Aufmerksamkeit: empfindlicher, Wärmealarm, Infrarotlicht von selbst, auch der Voralarm.",
   "Rest while travelling: no detection, no recordings, no alarms - only the battery, GPS theft and tamper protection stay on.": "Ruhe unterwegs: keine Erkennung, keine Aufnahmen, keine Alarme – nur Akku, GPS-Diebstahlschutz und Sabotageschutz bleiben an.",
-  "Back to the camping guard at": "Zurück zur Camping-Wache um", "or below": "oder unter", "or battery below": "oder Akku unter", "battery": "Akku", "never": "nie",
+  "Back to camping at": "Zurück zum Camping um", "or below": "oder unter", "or battery below": "oder Akku unter", "battery": "Akku", "never": "nie",
   "Guard during the games": "Wache während der Spiele", "needs mains power": "braucht Netzstrom", "Mode switched": "Modus gewechselt",
   "runs on the battery": "läuft auf Akku", "under-voltage: the power supply is too weak": "Unterspannung: das Netzteil ist zu schwach"});
 const MD = {built: 0, until: 0, hover: null};
@@ -3946,7 +3947,7 @@ function modePaint(s) {
   const o = $("#mode-opts"); const key = cur + "|" + M.fire_until + "|" + M.fire_min_pct + "|" + M.gamer_watch + "|" + M.fire_persons;
   if (o.dataset.k === key) return; o.dataset.k = key; o.textContent = "";
   if (cur === "fire") {
-    const r = el("div", "row"); r.append(el("span", "", t("Back to the camping guard at")));
+    const r = el("div", "row"); r.append(el("span", "", t("Back to camping at")));
     const ti = document.createElement("input"); ti.type = "time"; ti.value = M.fire_until || ""; ti.style.width = "120px"; ti.style.flex = "none";
     ti.onchange = () => post("/api/mode", {mode_fire_until: ti.value});
     const sp = el("span", "", t("or battery below")); const se = document.createElement("select");

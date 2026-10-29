@@ -35,6 +35,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `110_netz_wlan.py` | Netz, WLAN suchen und verbinden, QR-Codes | 813 |
 | `120_eigenes_wlan_uhr_ort.py` | eigenes WLAN, Uhr vom Handy, Ort (GPS) vom Handy | 720 |
 | `130_scharf_profile_modi.py` | Scharf / unscharf, Camping-Profil, einfache Einstellungen, Modi | 368 |
+| `131_konzept_modi.py` | Modi und Profile zusammengeführt: alte Einstellungen beim Laden übernehmen (2.98.14) | 66 |
 | `140_autostart.py` | Autostart | 422 |
 | `150_zweites_wlan_tv_netzcheck.py` | zweites WLAN, USB-Tethering, TV-Anzeige, Netz-Check, WLAN-Wächter | 1059 |
 | `160_netzautomatik_patrouille.py` | Netz-Automatik, Patrouille | 160 |
@@ -55,6 +56,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `290_simulator_verbindung.py` | Verbindung zum Simulator | 333 |
 | `300_werkzeuge_simulator3d.py` | Werkzeuge, 3D-Simulator für Windows und den Pi, Simulator-Suche | 1155 |
 | `310_testlaeufe.py` | Testläufe mit Auswertung und Optimierung | 485 |
+| `312_erkennung_assistent.py` | Assistent «Erkennung verbessern» (ein Ablauf statt sechs Funktionen), Pause des Auto-Tuners | 307 |
 | `315_referenz_scan.py` | Referenz-Scan: Raster abfahren, Referenz-Fotos, Vergleich, Bericht (2.95.97) | 347 |
 | `320_spielecke.py` | Extras: Spielecke und Spieleabend | 743 |
 | `330_usb_geraete.py` | USB-Geräte, Spielesammlung, Seite verlassen (✕ Zurück) | 172 |
@@ -83,9 +85,11 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
 | `560_uebersetzungen_de.py` | Übersetzungen Deutsch | 498 |
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |
+| `571_fenster_reiter.py` | Fenster: Reiter Verlauf / Mehr / Simulator, Assistent im Fenster | 144 |
 | `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
 | `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
 | `600_uebersetzungen_rm.py` | Übersetzungen Rätoromanisch, Anleitungen | 1763 |
+| `602_uebersetzungen_konzept.py` | Übersetzungen der Konzept-Bereinigung (Assistent, Modi, Fenster-Reiter) | 97 |
 | `610_anleitung_ergaenzungen.py` | Anleitung: Ergänzungen in allen Sprachen | 167 |
 | `620_daten_produktseite.py` | Daten: Produktseite für Gäste (/info/) | 2651 |
 | `630_almanach.py` | Extras: Überlebens-Almanach | 270 |
