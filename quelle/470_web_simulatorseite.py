@@ -142,6 +142,10 @@ function scOn(G, r) {                               // 2.95.51: the symbol of a 
   const O = (r && r.groups_on) || {}; if (!G) return;
   G.querySelectorAll(".sc-card[data-g]").forEach(c => { const v = O[c.dataset.g] || 0; c.classList.toggle("sc-on1", v === 1); c.classList.toggle("sc-on2", v === 2); });
 }
+// 2.98.15 (Konzept-Check): the group «Spiel» shows only assistant / open / start / stop - everything else is set in the game
+// wizard or under «Experte» (as the simulator window does from 3D-4.x; this also covers older simulators)
+const SC_GAME_MAIN = ["game_wizard", "game_open", "game_start", "game_stop"];
+function scExpert(c) { return !!c.expert || ((c.group === "Spiel" || c.group === "Game") && SC_GAME_MAIN.indexOf(c.id) < 0); }
 function simCtlBuild(G, r, ctl, fmt) {
   scCss();
   const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
@@ -182,7 +186,7 @@ function simCtlBuild(G, r, ctl, fmt) {
       else if (c.type === "button") {
         let grid = tgt.lastElementChild; if (!grid || !grid.classList.contains("sc-bt")) { grid = el("div", "sc-bt"); tgt.appendChild(grid); }
         const x = el("button", "", (c.emoji ? c.emoji + " " : "") + c.label); x.type = "button"; if (c.label.length > 26) x.className = "wide";
-        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; x.dataset.ex = c.expert ? "1" : ""; grid.appendChild(x); return;
+        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; x.dataset.ex = scExpert(c) ? "1" : ""; grid.appendChild(x); return;
       } else if (c.type === "toggle") {
         row = el("label", "sc-row sc-tg"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sc-sw simv";
         cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked}); row.append(el("span", "", c.label), cb);
@@ -198,7 +202,7 @@ function simCtlBuild(G, r, ctl, fmt) {
         row = el("div", "sc-row sc-tx"); const ti = document.createElement("input"); ti.className = "simv";
         ti.onkeydown = e => { if (e.key === "Enter") ctl({ctl: "set", id: c.id, value: ti.value}); }; row.append(el("div", "", c.label), ti);
       }
-      row.dataset.cid = c.id; row.dataset.lab = c.label; row.dataset.ex = c.expert ? "1" : ""; tgt.appendChild(row);
+      row.dataset.cid = c.id; row.dataset.lab = c.label; row.dataset.ex = scExpert(c) ? "1" : ""; tgt.appendChild(row);
     });
   });
   const seg = el("div", "sc-seg"); const b1 = el("button", "", t("Simple")), b2 = el("button", "", t("Expert")); b1.type = b2.type = "button"; seg.append(b1, b2); G.appendChild(seg);

@@ -377,14 +377,12 @@ def morning_add(text, jpg=None):
 
 
 def morning_wait(now):
-    """2.98.1: in the first 10 minutes wait for the panorama / the simulator week, so they come in the same push"""
+    """2.98.1: in the first 10 minutes wait for the panorama, so it comes in the same push (the simulator week: weekly report, 426)"""
     if now.minute >= 10:
         return False
     day = now.strftime("%Y-%m-%d")
     try:
         if CFG.get("refscan_pano_on") and (PANO.get("busy") or (PANO.get("day") != day and CFG.get("refscan_pano_day") != day)):
-            return True
-        if now.weekday() == 0 and CFG.get("simweek_on") and CFG.get("sim_on") and CFG.get("simweek_last") != now.strftime("%G-W%V"):
             return True
     except NameError:
         pass

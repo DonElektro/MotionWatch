@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 10:53",
+ "generated": "2026-10-29 12:10",
  "versions": [
   {
-   "version": "2.98.14",
-   "file": "webcam_bewegung_2_98_14.py",
+   "version": "2.98.15",
+   "file": "webcam_bewegung_2_98_15.py",
    "url": "",
-   "sha256": "b6b8573f6cda7906fbf6b1b4651e0f65249fb1e0306c7709d10e3df435feeba6",
-   "date": "2026-10-29 10:53",
-   "notes": "Gesamtrunde: ntfy-Knöpfe (Fehlalarm/Sirene/Aus), Akku-Prognose, Morgen-Push mit Bildstreifen, «Was war das?», Zonen nach Art, doppelte Bestätigung, Ansage beim Scharfschalten, «Bist du's?»; Gehtest, Entfernung im Alarm, Personen im Wärmebild, Akku-Sparautomatik; Zeitleiste der Nacht, Gesichter verpixeln beim Teilen, Wochenbericht; eigenes KI-Modell (ONNX); Assistent «Erkennung verbessern», Modi vereint, Einfach-Modus 9 Bereiche, Fenster mit 6 Reitern, Sim-Zentrale in Gruppen; Speicherkarten-Schutz, Selbstheilung, eine Sperre mit dem Simulator; Tiere seltener als Person; Simulator 3D-4.1",
-   "sig": "f2eea1a9db317a8dd272fe8d105eca34a52112a173674032aa0189526892e7e926cc475fc3980b294fea86dca48ee631894d49df74fc8e0817edf0145405a50b"
+   "sha256": "92f203fd5bc7b50df715a7a493df9fea1a85db4f75be553d32dbb03a34f1ac40",
+   "date": "2026-10-29 12:10",
+   "notes": "Eine Wochenmeldung (mit der Simulator-Woche), eine Zeitleiste, Spiel-Gruppe nur Assistent/Öffnen/Start/Stopp, Akku-Schwellen zusammen, «Wenn mein Handy zurückkommt: ausschalten / fragen / nichts», Auto-Tuner höchstens ±20 %, Gehtest-Anzeige; Simulator 3D-4.2",
+   "sig": "cd7435d18caf89e74497347cc20f0062fc63712c26b54ec1bbfa38598a14113e3205003cda232beb1dde6cda7e23fadd8239b608d3832a0d047c852838b0a107"
   },
   {
    "version": "2.97.1",

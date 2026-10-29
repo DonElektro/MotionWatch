@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.1"
+const VERSION := "3D-4.2"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -4386,7 +4386,7 @@ func _build_ui() -> void:
 		snb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		snb.pressed.connect(func(): emit_sound(b_[1], b_[2]))
 		sgr.add_child(snb)
-	tl = UI.sub_fold(tl_main, "Schutz testen (Referenz-Scan, Sabotage, Überraschung)", false)
+	tl = UI.sub_fold(tl_main, "Diebstahlschutz prüfen (Referenz-Scan, Sabotage, Überraschung)", false)
 	tl.set_meta("always", true)
 	sub_bodies.append(tl)
 	# 3D-3.71: the reference scan of MoveEye, started from here

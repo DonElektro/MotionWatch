@@ -872,13 +872,15 @@ def presence_eval():
         was = P["here"]; P.update(here=is_here, since=now)
         if was is not None:
             log_event("sys", "Presence: " + ("your device is back" if is_here else "your device is gone"))
-            if CFG.get("presence_auto") and CFG.get("mode") != "transport":   # 2.97.0: not while travelling
-                if not is_here and PRESENCE.get("home") is True:
-                    log_event("sys", "Presence: your device is gone, but a device still answers the ping - not armed")
-                elif is_here and CFG["armed"]:
+            if CFG.get("mode") != "transport":                  # 2.97.0: not while travelling
+                # 2.98.15: «Wenn mein Handy zurückkommt: ausschalten / fragen / nichts» (presence_back, 577); presence_auto = arm when gone
+                if is_here and CFG["armed"] and presence_back_mode() == "off":
                     disarm(); log_event("sys", "Disarmed automatically (your device is here)")
-                elif not is_here and not CFG["armed"]:
-                    arm(); log_event("sys", "Armed automatically (your device is gone)")
+                elif not is_here and CFG.get("presence_auto"):
+                    if PRESENCE.get("home") is True:
+                        log_event("sys", "Presence: your device is gone, but a device still answers the ping - not armed")
+                    elif not CFG["armed"]:
+                        arm(); log_event("sys", "Armed automatically (your device is gone)")
 
 
 class WifiGuard:

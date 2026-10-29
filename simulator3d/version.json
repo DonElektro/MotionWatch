@@ -1,12 +1,12 @@
 {
- "version": "3D-4.1",
+ "version": "3D-4.2",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31308402,
- "sha256": "7c6aa18c517a3971a643c18c75f3d410b98e0111307156a1ff70e4e62bb9958b",
- "notes": "Spiel (Wertung, Stufen, Schnellstarts, Bots, Duell, Sprint, Zuschauer), Testen an einer Stelle, eine Sperre, Infrarotbild",
+ "size": 31308479,
+ "sha256": "53c66ca1e9c16f8a0f8db3b398e483e353780a22173f60a75c759aead82a28fa",
+ "notes": "Diebstahlschutz prüfen (Name)",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24430071,
-  "sha256": "2888ec2b85dc72f49cf562d72ac1640a8a2526af83fb33410f9a86cc31b0804f"
+  "size": 24430183,
+  "sha256": "fd3d09597f495209849886fb29798a24e6fe83ddb24460590623b0b933c42b38"
  }
 }

@@ -293,11 +293,13 @@ class AutoTuner:
         self.new_candidates = self.became_person = self.near_miss = self.walkers = 0
         self.seen_ids = set()
         self.base_min_area = None
+        autotune_base_reset()                                   # 2.98.15: the ±20 % range (577)
         STATE["auto_status"] = "calibrating…"
         log_event("auto", "Auto-tune: calibrating - keep the scene empty for a few seconds")
 
     @staticmethod
     def _set(key, value, why):
+        value = autotune_clamp(key, value)                     # 2.98.15: at most ±20 % around the measured values (577)
         value = round(value, 2) if isinstance(CFG[key], float) else int(value)
         if value != CFG[key]:
             old = CFG[key]; CFG[key] = value
@@ -329,6 +331,7 @@ class AutoTuner:
                     self._set("sensitivity", max(10, CFG["sensitivity"] - 20), "noisy scene")
                 elif frac < 0.001:
                     self._set("sensitivity", min(90, CFG["sensitivity"] + 10), "very quiet scene")
+                autotune_base_set("calibration")                  # 2.98.15: the anchor of the ±20 % (unless the assistant measured)
                 STATE["auto_status"] = "tuned"
                 log_event("auto", "Auto-tune: calibration done, now adjusting live")
             return
