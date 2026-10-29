@@ -92,9 +92,8 @@ func set_invite(v: bool) -> void:
 		return
 	if v:
 		if main.game_mode != "free":                     # 3D-3.88: say it instead of switching silently
-			main.start_info = "Spielart auf «Frei bewegen» gestellt (Mitspieler einladen)"
-		main.game_mode = "free"
-		g.set_open(true)
+			main.start_info = "Spielart auf «Zonen-Check» gestellt (Mitspieler einladen)"
+		main.gamewiz.apply_preset("free")                # 3D-4.x: the preset of the wizard (no crystals, events, bots …)
 	invite.visible = v
 	_inv_for = ""
 

@@ -3,6 +3,9 @@ extends PanelContainer
 ## the extras) -> start (summary, rules, QR code, players). MoveEye shows the same steps on its page and works them
 ## from afar (CONTROL action «gamewiz»: get, open, close, pick, set, next, back, last). The settings are the normal
 ## controls of the game; «Like last time» is kept in user://gamewiz_last.json.
+## 3D-4.x: the wizard is THE place to set up a game. Three quick starts («Kinder · 5 Min.», «Familie», «Profis») set
+## everything in one tap; all single options are under «Extras». The kids mode and «Mitspieler einladen» use the same
+## presets (apply_preset). The panel card «Spiel» only has Öffnen / Start / Stopp / Assistent (the rest under «Experte»).
 
 var main
 var shown := false               # open (in this window and / or on the page of MoveEye)
@@ -25,26 +28,28 @@ const Pics = preload("res://scripts/wizpics.gd")
 var _tex := {}
 const KEYS := ["game_mode", "game_goal", "game_level", "game_lives", "game_minutes", "game_items", "game_teams", "game_rescue", "game_stones",
 		"game_cones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints",
-		"game_autohandicap", "game_tasks", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart"]
+		"game_autohandicap", "game_tasks", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard"]
 const STEPS := ["Spielart", "Ziel", "Schwierigkeit", "Mitspieler & Start"]
 # 3D-3.77: on the last step - who plays along
 const PLAYER_OPTS := [["game_bots", "Computer-Spieler (Bots)", "select", 0, 0, "", false, [["0", "keine"], ["1", "1 Bot"], ["2", "2 Bots"], ["3", "3 Bots"]]],
-		["game_tutorial", "Übungsrunde: Schritt für Schritt erklärt, niemand wird erwischt", "toggle", 0, 0, "", false],
-		["game_daily", "Tagesaufgabe: heute für alle dieselbe Szene, dasselbe Ziel, dieselben Startpunkte", "toggle", 0, 0, "", false],
-		["game_ghost", "Geisterläufer: der eigene beste Weg läuft als Geist mit", "toggle", 0, 0, "", false],
-		["game_heart", "Herzschlag, wenn die Kamera dich gleich sieht", "toggle", 0, 0, "", false]]
+		["game_botguard", "🤖 Bot-Wächter, wenn niemand Wächter sein will (Spielart «Wächter»)", "toggle", 0, 0, "", false],
+		["game_tutorial", "Übungsrunde für alle: Schritt für Schritt erklärt, niemand wird erwischt (wer zum ersten Mal spielt, bekommt sie von selbst)", "toggle", 0, 0, "", true],
+		["game_daily", "Tagesaufgabe: heute für alle dieselbe Szene, dasselbe Ziel, dieselben Startpunkte", "toggle", 0, 0, "", true],
+		["game_ghost", "Geisterläufer: der eigene beste Weg läuft als Geist mit", "toggle", 0, 0, "", true],
+		["game_heart", "Herzschlag, wenn die Kamera dich gleich sieht", "toggle", 0, 0, "", true]]
 # 3D-3.90: four game types with a use for MoveEye first; the others (true = old) only with «Experte»
 const MODES := [["mw", "🛡", "Gegen MoveEye", "Die echte Erkennung von MoveEye passt auf: Meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht. Was MoveEye verpasst, kommt ins Training und auf die Karte der blinden Flecken."],
-		["guard", "👮", "Wächter", "Ein Spieler ist Wächter – am Handy oder am PC: Er dreht den Kopf, schaltet das Licht ein und ruft «Erwischt!». Mit «Zwei Teams» wechseln Rot und Blau die Rollen. Am Schluss: wer hat mehr erwischt, du oder MoveEye?"],
+		["guard", "👮", "Wächter", "Ein Spieler ist Wächter – am Handy oder am PC: Er dreht den Kopf, schaltet das Licht ein und ruft «Erwischt!». Will niemand, passt der Bot-Wächter auf (zu zweit spielbar). Am Schluss das Duell: wer hat mehr erwischt, der Wächter oder MoveEye?"],
 		["seek", "🙈", "Verstecken mit dem Rover", "Alle starten bei der Basis und verstecken sich 30 s lang. Der Fänger sieht nur die Kamera, fährt den Rover und drückt «Gefunden!». Wer die Basis berührt, rettet alle. Danach steht MoveEye wieder am alten Ort."],
 		["free", "🧪", "Zonen-Check", "Ohne Erwischen: geh die Grenzen deiner Zonen und die Wege ums Zelt ab. Das Handy sagt laufend, ob MoveEye dich sieht – jede Stelle, wo es dich nicht meldet, kommt auf die Karte der blinden Flecken."],
-		["camera", "🎥", "Alle gegen die Kamera", "Alle schleichen zum Ziel. Der Kopf von MoveEye dreht sich und sucht euch. Wer zu lange gesehen wird, ist erwischt (der Simulator schätzt das).", true],
-		["teamguard", "🔴🔵", "Team gegen Team", "Räuber und Wächter: Rot gegen Blau. Ein Team schleicht, das andere bewacht mit dem Kopf und ruft «Erwischt!».", true],
+		["camera", "🎥", "Alle gegen die Kamera (ältere Spielart)", "Wie «Gegen MoveEye», aber immer schätzt der Simulator, wer gesehen wird – auch wenn MoveEye verbunden ist.", true],
+		["teamguard", "🔴🔵", "Team gegen Team (ältere Spielart)", "Wie «Wächter», aber ein ganzes Team bewacht und die Teams tauschen nach einer Runde.", true],
 		["mwhand", "🕹", "Team gegen MoveEye", "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an MoveEye: Sie drehen die echte Kamera mit dem Joystick auf der Live-Seite und drücken «Erwischt!».", true],
 		["patrol", "🚜", "Patrouille", "MoveEye fährt auf dem Mover eine Route ab und schaut sich an jedem Punkt um. Die Spieler schleichen zum Ziel, während die Patrouille unterwegs ist.", true]]
 const GOALS := [["reach", "🟢", "Zum Ziel schleichen", "Ziel: zum grünen Licht schleichen, ohne erwischt zu werden. Der Pfeil auf dem Handy zeigt den Weg."],
 		["return", "💰", "Beute holen und zurückbringen", "Ziel: die Beute beim grünen Licht holen und zurück zum Start bringen."],
-		["flag", "🚩", "Fahne erobern (zwei Teams)", "Ziel: zwei Teams. Holt die Fahne der anderen und bringt sie zur eigenen Basis. Wer mit der Fahne erwischt wird, verliert sie."]]
+		["flag", "🚩", "Fahne erobern (zwei Teams)", "Ziel: zwei Teams. Holt die Fahne der anderen und bringt sie zur eigenen Basis. Wer mit der Fahne erwischt wird, verliert sie. Es gewinnt das Team mit mehr eroberten Fahnen (z. B. Rot 2 : 1 Blau)."],
+		["sprint", "⏱", "Sprint (90 Sekunden)", "Für Kinder und kurze Runden: immer derselbe Parcours mit 3 Toren. Durch die Tore, dann ins Ziel – je schneller, desto mehr Punkte."]]
 const LEVELS := [["easy", "🌱", "Anfänger", "Wächter leicht, unbegrenzte Leben, 8 Minuten, Sichtfeld der Kameras sichtbar."],
 		["normal", "🎯", "Normal", "Wächter normal, 3 Leben, 5 Minuten."],
 		["hard", "🔥", "Profis", "Wächter schwer, nur 1 Leben, 4 Minuten, kein Sichtfeld."]]
@@ -52,16 +57,17 @@ const LEVEL_SET := {"easy": {"game_level": "easy", "game_lives": "0", "game_minu
 		"normal": {"game_level": "normal", "game_lives": "3", "game_minutes": 5, "game_cones": false},
 		"hard": {"game_level": "hard", "game_lives": "1", "game_minutes": 4, "game_cones": false}}
 # [key, label, type, min, max, unit, extra]
-const OPTIONS := [["game_minutes", "Dauer einer Runde", "range", 1, 15, " min", false], ["game_lives", "Leben", "select", 0, 0, "", false],
-		["game_items", "Kristalle zum Sammeln", "range", 0, 6, "", false], ["game_teams", "Zwei Teams (Rot gegen Blau)", "toggle", 0, 0, "", false],
-		["game_rescue", "Befreien (Erwischte warten in der Zelle)", "toggle", 0, 0, "", false], ["game_stones", "Steine werfen zum Ablenken", "toggle", 0, 0, "", false],
-		["game_cones", "Sichtfeld der Kameras zeigen", "toggle", 0, 0, "", false], ["game_powers", "Power-ups: Tarnkappe (lila) und Turbo (gelb)", "toggle", 0, 0, "", false],
-		["game_spectate", "Zuschauer-Kamera: fliegt selbst übers Spielfeld", "toggle", 0, 0, "", false],
+const OPTIONS := [["game_minutes", "Dauer einer Runde", "range", 1, 15, " min", true], ["game_lives", "Leben", "select", 0, 0, "", true],
+		["game_items", "Kristalle zum Sammeln", "range", 0, 6, "", true], ["game_teams", "Zwei Teams (Rot gegen Blau)", "toggle", 0, 0, "", true],
+		["game_rescue", "Befreien (Erwischte warten in der Zelle)", "toggle", 0, 0, "", true], ["game_stones", "Steine werfen zum Ablenken", "toggle", 0, 0, "", true],
+		["game_cones", "Sichtfeld der Kameras zeigen", "toggle", 0, 0, "", true], ["game_powers", "Power-ups: Tarnkappe (lila) und Turbo (gelb)", "toggle", 0, 0, "", true],
+		["game_spectate", "Zuschauer-Kamera: fliegt selbst übers Spielfeld", "toggle", 0, 0, "", true],
 		["game_photos", "📸 Erwischt-Fotos (Galerie am Schluss)", "toggle", 0, 0, "", true], ["game_hides", "🌳 Verstecke (Büsche, 8 s unsichtbar)", "range", 0, 6, "", true],
 		["game_decoy", "🦆 Lockvogel erlaubt", "toggle", 0, 0, "", true], ["game_night", "🌙 Nacht-Runde mit Taschenlampen", "toggle", 0, 0, "", true],
 		["game_events", "⛈ Zufallsereignisse (Gewitter, Hund, Auto)", "toggle", 0, 0, "", true], ["game_checkpoints", "🚩 Checkpoints (+150 Punkte je)", "range", 0, 3, "", true],
 		["game_autohandicap", "🎯 Handicap für den Ersten der Rangliste", "toggle", 0, 0, "", true], ["game_tasks", "✅ Eine Aufgabe für jede Runde (Bonus)", "toggle", 0, 0, "", true]]
 const LIVES := [["0", "unbegrenzt"], ["3", "3 Leben"], ["1", "1 Leben"]]
+const EXTRAS_LABEL := ["Extras – Übungsrunde, Tagesaufgabe, Geist, Herzschlag", "Extras – Dauer, Leben, Kristalle, Teams, Steine, Fotos, Verstecke, Nacht, Ereignisse …"]
 const RULES := {"tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter Dingen sieht euch die Kamera schlechter. Rennen hört das Mikrofon.",
 		"rescue": "Befreien: Wer erwischt wird, wartet in der Zelle, bis ihn ein Teamkollege befreit.",
 		"items": "Kristalle: Wer welche einsammelt, bekommt Extrapunkte.",
@@ -74,7 +80,29 @@ const RULES := {"tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter
 		"events": "⛈ Zufallsereignisse: Gewitter (man hört dich kaum), ein bellender Hund, ein Auto mit Scheinwerfern.",
 		"cps": "🚩 Checkpoints: Leuchtende Ringe unterwegs geben je 150 Punkte.",
 		"tasks": "🎯 Jede Runde hat eine Aufgabe, z. B. «nur kriechend ins Ziel» oder «nie über 50 % Verdacht». Wer sie schafft, bekommt Bonuspunkte.",
-		"hc": "🎯 Handicap: Wer in der Rangliste vorne liegt, wird leichter gesehen und ist etwas langsamer."}
+		"hc": "🎯 Handicap: Wer in der Rangliste vorne liegt, wird leichter gesehen und ist etwas langsamer.",
+		"botguard": "🤖 Bot-Wächter: Will niemand Wächter sein, dreht ein Bot den Kopf und ruft «Erwischt!» – auch er kann sich täuschen lassen.",
+		"level": "⭐ Stufen: Jede Runde gibt Erfahrungspunkte (Punkte, Abzeichen, Aufgabe, Tagesaufgabe). Höhere Stufen schalten Dinge für die eigene Figur frei.",
+		"watch": "👀 Zuschauer machen mit: Sie tippen, wer durchkommt, und dürfen zwei Locksteine werfen.",
+		"new": "🎓 Wer zum ersten Mal spielt, bekommt von selbst die Übungsschritte (gehen, ducken, kriechen, Stein, Busch)."}
+# 3D-4.x: the quick starts and the presets for the kids mode and «Mitspieler einladen» - every key of KEYS is set
+const BASE := {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 5, "game_items": 3, "game_teams": false,
+		"game_rescue": false, "game_stones": true, "game_cones": false, "game_powers": true, "game_spectate": true, "game_photos": true, "game_hides": 3,
+		"game_decoy": true, "game_night": false, "game_events": true, "game_checkpoints": 0, "game_autohandicap": false, "game_tasks": true, "game_bots": "0",
+		"game_tutorial": false, "game_daily": false, "game_ghost": true, "game_heart": true, "game_botguard": true}
+const PRESETS := {"kids": {"game_mode": "mw", "game_level": "easy", "game_lives": "0", "game_minutes": 5, "game_cones": true, "game_events": false,
+			"game_tasks": false, "game_decoy": false, "game_heart": false, "game_bots": "1", "game_items": 3, "game_hides": 4},
+		"family": {"game_mode": "guard", "game_level": "normal", "game_lives": "3", "game_minutes": 5, "game_botguard": true, "game_autohandicap": true},
+		"pro": {"game_mode": "mw", "game_level": "hard", "game_lives": "1", "game_minutes": 4, "game_powers": false, "game_items": 2, "game_hides": 2,
+			"game_checkpoints": 2, "game_autohandicap": true},
+		"kids_pc": {"game_mode": "camera", "game_level": "easy", "game_lives": "0", "game_minutes": 5, "game_cones": true, "game_events": false,
+			"game_tasks": false, "game_decoy": false, "game_heart": false, "game_bots": "2", "game_tutorial": true, "game_hides": 4},
+		"free": {"game_mode": "free", "game_lives": "0", "game_items": 0, "game_hides": 0, "game_powers": false, "game_events": false, "game_tasks": false,
+			"game_decoy": false, "game_checkpoints": 0, "game_bots": "0", "game_botguard": false, "game_spectate": false, "game_photos": false}}
+const QUICK := [["kids", "🧒", "Kinder · 5 Min.", "Leicht: unbegrenzte Leben, Sichtfeld sichtbar, Verstecke, 1 Bot läuft mit. Ohne Aufgaben und Zufallsereignisse."],
+		["family", "👪", "Familie", "Einer ist Wächter (sonst der Bot-Wächter), 3 Leben, 5 Minuten, Aufgaben und Zufallsereignisse. Am Schluss das Duell gegen MoveEye."],
+		["pro", "🔥", "Profis", "Gegen MoveEye, schwer: nur 1 Leben, 4 Minuten, Checkpoints, Handicap für den Ersten, keine Power-ups."]]
+const LEVEL_OF := {"kids": "easy", "family": "normal", "pro": "hard", "kids_pc": "easy", "free": "normal"}
 
 
 # ---- the model (the same for this window and for MoveEye) ------------------------------------------------------
@@ -144,7 +172,33 @@ func _rules() -> Array:
 			out.append(RULES[pair[1]])
 	if W.get("game_decoy", false) and str(W.get("game_mode")) in ["camera", "mw"]:
 		out.append(RULES["decoy"])
+	if str(W.get("game_mode")) == "guard" and W.get("game_botguard", false):
+		out.append(RULES["botguard"])
+	out.append(RULES["new"])
+	out.append(RULES["watch"])
+	out.append(RULES["level"])
 	return out
+
+
+func preset(id: String) -> Dictionary:
+	"""3D-4.x: a full set of settings (BASE + the preset)"""
+	var d := BASE.duplicate()
+	d.merge(PRESETS.get(id, {}), true)
+	return d
+
+
+func apply_preset(id: String, open_game := true) -> Array:
+	"""3D-4.x: set everything of a preset at once (quick start, kids mode, «Mitspieler einladen»). Returns what failed."""
+	var d := preset(id)
+	var errs := []
+	for k in KEYS:
+		if d.has(k):
+			var r: Dictionary = main.control_set(k, d[k])
+			if not r.get("ok", false):
+				errs.append(k)
+	if open_game:
+		main.game.set_open(true)
+	return errs
 
 
 func model() -> Dictionary:
@@ -162,6 +216,7 @@ func model() -> Dictionary:
 			src = MODES
 		1:
 			title = "Was ist das Ziel?"
+			lead = "Sprint: 90 Sekunden, immer derselbe Parcours – gut für Kinder und kurze Runden."
 			key = "game_goal"
 			src = GOALS
 		2:
@@ -175,10 +230,16 @@ func model() -> Dictionary:
 		if key == "game_mode" and c.size() > 4 and bool(c[4]) and main.ui_simple and not on:
 			continue                                       # 3D-3.90: the old game types only with «Experte»
 		cards.append({"v": c[0], "icon": c[1], "title": c[2], "text": c[3], "on": on, "pic": Pics.PICS.get(c[0], "")})
+	var quick := []
+	if step == 0:                                          # 3D-4.x: one tap - everything set
+		for q in QUICK:
+			quick.append({"v": q[0], "icon": q[1], "title": q[2], "text": q[3]})
 	var opts := []
 	if step == 2 or step == 3:
 		for o in (OPTIONS if step == 2 else PLAYER_OPTS):
 			if not W.has(o[0]):
+				continue
+			if o[0] == "game_botguard" and str(W.get("game_mode")) != "guard":
 				continue
 			var d := {"id": o[0], "label": o[1], "type": o[2], "value": W[o[0]], "extra": o[6]}
 			if o[2] == "range":
@@ -206,10 +267,12 @@ func model() -> Dictionary:
 	if step == 3:
 		nl = "▶ Runde starten" if g.open else "✓ Spiel öffnen & QR-Code zeigen"
 	return {"ok": true, "shown": shown, "seq": seq, "step": step, "steps": STEPS, "title": title, "lead": lead, "key": key, "cards": cards,
-			"options": opts, "extras_open": extras_open, "summary": summary,
+			"options": opts, "extras_open": extras_open, "summary": summary, "quick": quick, "quick_title": "Schnellstart – ein Tipp, alles eingestellt" if step == 0 else "",
+			"own_title": "Oder selbst zusammenstellen:" if step == 0 else "",
+			"extras_label": EXTRAS_LABEL[1] if step == 2 else (EXTRAS_LABEL[0] if step == 3 else ""),
 			"pics": [Pics.PICS.get(str(W.get("game_mode")), ""), Pics.PICS.get(str(W.get("game_goal")), "")] if step == 3 else [], "rules": _rules() if step == 3 else [],
 			"last": _summary(last) if last != null and step == 0 else "", "error": error, "next": nl, "back": step > 0,
-			"game": {"open": g.open, "url": g.address() if g.open else "", "players": g.count(), "round": g.round_state}}
+			"game": {"open": g.open, "url": g.address() if g.open else "", "players": g.count(), "round": g.round_state, "max": int(main.game_max)}}
 
 
 func op(d: Dictionary) -> Dictionary:
@@ -242,6 +305,15 @@ func op(d: Dictionary) -> Dictionary:
 		"back":
 			step = max(0, step - 1)
 			_changed()
+		"quick":                                        # 3D-4.x: a quick start - set, open the game, show the QR code
+			var qv := str(d.get("value", ""))
+			if PRESETS.has(qv):
+				W = preset(qv)
+				lvl = LEVEL_OF.get(qv, "normal")
+				extras_open = false
+				step = 3
+				error = ""
+				_apply()
 		"last":
 			var l = _last()
 			if l != null:
@@ -276,10 +348,17 @@ func _next() -> void:
 		_changed()
 		return
 	var g = main.game
-	if g.open:                                         # the game is open: start the round
+	if g.open:                                         # the game is open: take over the settings, start the round
+		_apply()
 		g.start_round()
 		close_wiz()
 		return
+	_apply()
+
+
+func _apply() -> void:
+	"""take over the settings (and keep them for «Wie letztes Mal»), open the game"""
+	var g = main.game
 	var save := W.duplicate()
 	save["_lvl"] = lvl
 	var f := FileAccess.open(LAST, FileAccess.WRITE)
@@ -583,6 +662,24 @@ func _paint() -> void:
 	body.add_child(_lab(M["title"], 22, Color(1, 1, 1)))
 	if M["lead"] != "":
 		body.add_child(_lab(M["lead"], 13, Color(0.6, 0.66, 0.74)))
+	if not M["quick"].is_empty():                       # 3D-4.x: the three quick starts, big
+		body.add_child(_lab(M["quick_title"], 15, Color(1, 1, 1), false))
+		var qg := GridContainer.new()
+		qg.columns = 3
+		qg.add_theme_constant_override("h_separation", 10)
+		body.add_child(qg)
+		for q in M["quick"]:
+			var qb := Button.new()
+			qb.text = plain(q["title"]) + "\n" + plain(q["text"])
+			qb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			qb.custom_minimum_size = Vector2(190, 92)
+			qb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			if main.UI.has_method("primary"):
+				main.UI.primary(qb)
+			var qv: String = q["v"]
+			qb.pressed.connect(func(): op({"op": "quick", "value": qv}))
+			qg.add_child(qb)
+		body.add_child(_lab(M["own_title"], 13, Color(0.6, 0.66, 0.74), false))
 	if M["last"] != "":
 		var lb := Button.new()
 		lb.text = plain("Wie letztes Mal: " + M["last"])
@@ -609,7 +706,7 @@ func _paint() -> void:
 		if o["extra"]:
 			if extra == null:
 				var eb := Button.new()
-				eb.text = ("▾ " if extras_open else "▸ ") + "Extras – Fotos, Verstecke, Lockvogel, Nacht, Ereignisse, Checkpoints, Handicap"
+				eb.text = plain(("▾ " if extras_open else "▸ ") + str(M["extras_label"]))
 				eb.flat = true
 				eb.alignment = HORIZONTAL_ALIGNMENT_LEFT
 				eb.pressed.connect(func(): op({"op": "extras", "value": not extras_open}))
@@ -640,7 +737,7 @@ func _paint() -> void:
 		pt.add_theme_constant_override("separation", 8)
 		pr.add_child(pt)
 		pt.add_child(_lab(("Handys: QR-Code scannen (gleiches WLAN) oder %s öffnen" % G["url"]) if G["open"] else "Handys: nach «Spiel öffnen» erscheint hier der QR-Code.", 13))
-		pt.add_child(_lab("Dabei: %d / 4" % G["players"], 15, Color.WHITE, false))
+		pt.add_child(_lab("Dabei: %d (laufen höchstens %d, die anderen schauen zu und tippen)" % [G["players"], int(G["max"])], 15, Color.WHITE, false))
 		var lr := HBoxContainer.new()
 		lr.add_theme_constant_override("separation", 8)
 		pt.add_child(lr)
