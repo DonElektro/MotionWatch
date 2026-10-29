@@ -20,6 +20,7 @@ var trail_pts := []
 var strip: Label
 var servo := Vector2.ZERO     # pan / tilt in degrees while replaying (main takes this instead of MoveEye)
 var _cam_t := 0.0
+var last_track := {}          # Prüfstand 2: the last track played - can be kept as a bench case (pruefstand.gd)
 
 
 func setup(layer: CanvasLayer) -> void:
@@ -43,6 +44,7 @@ func start(track: Dictionary) -> Dictionary:
 		return {"ok": false, "error": "too few samples"}
 	samples.sort_custom(func(a, b): return float(a.get("t", 0)) < float(b.get("t", 0)))
 	title = str(track.get("title", "Alarm"))
+	last_track = {"title": title, "samples": samples.duplicate(true)}
 	var ta := float(samples[0].get("t", 0.0))
 	for s in samples:
 		s["_rt"] = float(s.get("t", 0.0)) - ta

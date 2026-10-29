@@ -7,12 +7,17 @@ extends PanelContainer
 ##   3. am Schluss erscheint das Ergebnis; «Senden» legt es ins GitHub-Repository (pruefstand/ergebnisse/, mit einem
 ##      GitHub-Schlüssel) oder auf den Schreibtisch.
 ## Das Ergebnis hat dasselbe Format wie pruefstand/pruefstand.py im Repository (VERLAUF.md liest beide).
+## Prüfstand 2: die Hauptzahl sind die echten Pushes (richtig / falsch); «Schleichwege an GitHub senden» legt die unerkannten
+## Wege der Spielrunden nach simulator3d/spielwege/ (doppelte nur einmal); «Alarm-Rückblick als Prüfstand-Fall» speichert die
+## zuletzt abgespielte Alarm-Spur als echte Nacht (simulator3d/pruefnaechte/), die der Prüfstand mit anderem Wetter nachspielt.
 
 const UI = preload("res://scripts/ui_style.gd")
 const TR := preload("res://scripts/testrun.gd")         # 3D-3.90: names and times of the plans only there
-const PLANS := [["quick", "", true], ["night", "", true], ["standard", "", true], ["hard", "", false]]
+const PLANS := [["quick", "", true], ["night", "", true], ["standard", "", true], ["nacht", "", false], ["hard", "", false]]
 const PLAN_DAUER := TR.DAUER
 const REPO_API := "https://api.github.com/repos/DonElektro/MotionWatch/contents/pruefstand/ergebnisse/"
+const REPO_FILES := "https://api.github.com/repos/DonElektro/MotionWatch/contents/"
+const WAYS_SENT := "user://pruefstand/wege_gesendet.json"
 
 var main
 var file_lbl: Label
@@ -39,6 +44,7 @@ var result := {}
 var result_path := ""
 var _wait_mw := 0.0
 var http: HTTPRequest
+var extra_lbl: Label
 # 3D-3.75: automatically after every update of MoveEye: when the connected MoveEye has a new version and nobody
 # uses the simulator (no click for 3 minutes, no game, no test run), the short test runs once; the result is sent when a
 # GitHub key is there, else it stays in the folder (and on the list of results here).
@@ -139,6 +145,24 @@ func _ready() -> void:
 	auto_cb.button_pressed = auto
 	auto_cb.toggled.connect(func(on_): set_auto(on_))
 	v.add_child(auto_cb)
+	# Prüfstand 2: bench cases from the game and from real alarms
+	v.add_child(UI.small("Testfälle für den Prüfstand (auf GitHub mit dem Schlüssel oben, sonst auf den Schreibtisch):", UI.TXT))
+	var xr := HBoxContainer.new()
+	xr.add_theme_constant_override("separation", 8)
+	v.add_child(xr)
+	var wb := Button.new()
+	wb.text = "Schleichwege an GitHub senden"
+	wb.tooltip_text = "Die Wege aus den Spielrunden, auf denen MoveEye niemanden meldete – der Prüfstand geht sie dann bei jeder Version nach."
+	wb.pressed.connect(send_ways)
+	xr.add_child(wb)
+	var cb2 := Button.new()
+	cb2.text = "Letzten Alarm-Rückblick als Prüfstand-Fall"
+	cb2.tooltip_text = "Die zuletzt abgespielte Alarm-Spur (MoveEye → Alarm-Rückblick in 3D) wird zur «echten Nacht»: der Prüfstand spielt sie nach, auch mit Regen, ohne Licht und am Tag."
+	cb2.pressed.connect(save_case)
+	xr.add_child(cb2)
+	extra_lbl = UI.small("")
+	extra_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(extra_lbl)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	v.add_child(row)
@@ -421,24 +445,32 @@ func _finish() -> void:
 	var tp := 0
 	var td := 0
 	var fa := 0
+	var pok := 0
+	var pfa := 0
 	for p in plans:
 		var P := 0
 		var D := 0
 		var F := 0
+		var PO := 0
+		var PF := 0
 		for r in plans[p]:
 			P += int(r.get("persons", 0))
 			D += int(r.get("persons_detected", 0))
-			F += int(r.get("false_alarms", 0))
+			F += int(r.get("flicker", r.get("false_alarms", 0)))
+			PO += int(r.get("pushes", {}).get("ok", 0))
+			PF += int(r.get("pushes", {}).get("false", 0))
 		tp += P
 		td += D
 		fa += F
-		lines.append("%s ×%d: Personen %d von %d erkannt (%d %%), Fehlalarme %d" % [_name(p), (plans[p] as Array).size(), D, P, int(round(100.0 * D / max(1, P))), F])
-	result_lbl.text = "MoveEye %s · %s\n\nInsgesamt: Personen %d von %d erkannt (%d %%), Fehlalarme %d · Dauer %d Min.\n\n%s" % [
-			result["mw_version"], result["rechner"], td, tp, int(round(100.0 * td / max(1, tp))), fa, int((main.now() - t_all) / 60.0), "\n".join(PackedStringArray(lines))]
+		pok += PO
+		pfa += PF
+		lines.append("%s ×%d: Pushes richtig %d / falsch %d · Personen %d von %d erkannt (%d %%) · Flackern %d" % [_name(p), (plans[p] as Array).size(), PO, PF, D, P, int(round(100.0 * D / max(1, P))), F])
+	result_lbl.text = "MoveEye %s · %s\n\nInsgesamt: Pushes richtig %d / falsch %d · Personen %d von %d erkannt (%d %%) · Flackern %d · Dauer %d Min.\n\n%s" % [
+			result["mw_version"], result["rechner"], pok, pfa, td, tp, int(round(100.0 * td / max(1, tp))), fa, int((main.now() - t_all) / 60.0), "\n".join(PackedStringArray(lines))]
 	result_box.visible = true
 	send_lbl.text = "Gespeichert: " + ProjectSettings.globalize_path(result_path)
 	info.text = "Fertig." + (" (automatisch nach dem Update von MoveEye)" if auto_run else "")
-	main.start_info = "Prüfstand fertig: MoveEye %s – Personen %d von %d, Fehlalarme %d" % [result["mw_version"], td, tp, fa]
+	main.start_info = "Prüfstand fertig: MoveEye %s – Pushes richtig %d / falsch %d, Personen %d von %d" % [result["mw_version"], pok, pfa, td, tp]
 	if auto_run:
 		if token_le.text.strip_edges() != "":
 			send()                                       # with a key: straight to GitHub
@@ -494,3 +526,112 @@ func send() -> void:
 		send_lbl.text = "Diese Datei ist schon auf GitHub."
 	else:
 		send_lbl.text = "Senden ging nicht (Antwort %d) – «Ordner öffnen» und die Datei im Chat anhängen." % code
+
+
+# ---- Prüfstand 2: sneaking ways and real nights as bench cases -------------------------------------------------------
+func _desk_dir() -> String:
+	var desk := OS.get_system_dir(OS.SYSTEM_DIR_DESKTOP)
+	if desk == "" or not DirAccess.dir_exists_absolute(desk):
+		desk = OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
+	if desk == "" or not DirAccess.dir_exists_absolute(desk):
+		desk = ProjectSettings.globalize_path("user://pruefstand")
+	return desk.path_join("MoveEye_Pruefstand")
+
+
+func _put(repo_path: String, text: String, msg: String) -> int:
+	"""one file into the repository (GitHub key of the test bench): 201 new, 422 already there, else the error"""
+	var data := JSON.stringify({"message": msg, "content": Marshalls.utf8_to_base64(text)})
+	var headers := ["Authorization: Bearer " + token_le.text.strip_edges(), "Accept: application/vnd.github+json", "User-Agent: MotionWatch3D", "Content-Type: application/json"]
+	if http.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
+		http.cancel_request()
+	if http.request(REPO_FILES + repo_path, headers, HTTPClient.METHOD_PUT, data) != OK:
+		return -1
+	var r: Array = await http.request_completed
+	return int(r[1])
+
+
+func _sent_keys() -> Dictionary:
+	var d = JSON.parse_string(FileAccess.get_file_as_string(WAYS_SENT)) if FileAccess.file_exists(WAYS_SENT) else null
+	return d if typeof(d) == TYPE_DICTIONARY else {}
+
+
+func send_ways() -> void:
+	"""the unseen ways of the own game rounds (user://spiel/) → simulator3d/spielwege/schleichweg_<key>.json - the same way
+	only once (the key is made from the points); without a key: into a folder on the desktop (attach it in the chat)"""
+	var sent := _sent_keys()
+	var todo: Array = []
+	for w in preload("res://scripts/gamelearn.gd").load_ways():
+		if str(w.get("file", "")).begins_with("user://") and not sent.has(str(w["key"])):
+			todo.append(w)
+	if todo.is_empty():
+		extra_lbl.text = "Keine neuen Schleichwege (alle schon gesendet – oder noch keine Spielrunde, in der jemand unerkannt ins Ziel kam)."
+		return
+	var tok := token_le.text.strip_edges()
+	var n_new := 0
+	var n_old := 0
+	var n_err := 0
+	for w in todo:
+		var ww: Dictionary = w.duplicate(true)
+		ww.erase("file")
+		var fn := "schleichweg_%s.json" % str(w["key"])
+		var txt := JSON.stringify(ww)
+		if tok == "":
+			DirAccess.make_dir_recursive_absolute(_desk_dir())
+			var f := FileAccess.open(_desk_dir().path_join(fn), FileAccess.WRITE)
+			if f != null:
+				f.store_string(txt)
+				f.close()
+				n_new += 1
+			continue
+		extra_lbl.text = "Sende Schleichweg %d von %d …" % [n_new + n_old + n_err + 1, todo.size()]
+		var code: int = await _put("simulator3d/spielwege/" + fn, txt, "Prüfstand: Schleichweg aus dem Spiel (%s)" % str(w.get("scene", "?")))
+		if code in [200, 201]:
+			n_new += 1
+		elif code == 422:
+			n_old += 1                                       # already on GitHub (somebody sent the same way)
+		else:
+			n_err += 1
+			continue
+		sent[str(w["key"])] = true
+	if tok == "":
+		OS.shell_show_in_file_manager(_desk_dir())
+		extra_lbl.text = "%d Schleichwege in den Ordner %s gelegt – die Dateien im Chat anhängen." % [n_new, _desk_dir()]
+		return
+	DirAccess.make_dir_recursive_absolute("user://pruefstand")
+	var fs := FileAccess.open(WAYS_SENT, FileAccess.WRITE)
+	if fs != null:
+		fs.store_string(JSON.stringify(sent))
+	extra_lbl.text = "Schleichwege: %d neu auf GitHub, %d waren schon da%s. Der Prüfstand geht sie ab der nächsten Messung nach." % [n_new, n_old,
+			(", %d gingen nicht (Schlüssel prüfen)" % n_err) if n_err > 0 else ""]
+
+
+func save_case() -> void:
+	"""the last «Alarm-Rückblick in 3D» → a real night for the test bench (format: testrun.gd load_cases / pruefstand/LIESMICH.md)"""
+	var tr_: Dictionary = main.replay.last_track if main.replay != null else {}
+	if tr_.is_empty() or tr_.get("samples", []).size() < 3:
+		extra_lbl.text = "Noch kein Alarm-Rückblick – zuerst in MoveEye bei einem Alarm «Rückblick in 3D» abspielen."
+		return
+	var smp: Array = tr_["samples"]
+	var cs: Array = []
+	for x in smp:                                        # only what the format needs (no internal fields of replay.gd)
+		cs.append({"t": x.get("t", 0.0), "pan": x.get("pan", 0.0), "tilt": x.get("tilt", 0.0), "objs": x.get("objs", [])})
+	var t_: float = float(smp[0].get("t", 0.0))
+	var bias: int = int(Time.get_time_zone_from_system().get("bias", 0)) * 60
+	var dt := Time.get_datetime_dict_from_unix_time(int(t_) + bias) if t_ > 1.0e9 else Time.get_datetime_dict_from_system()
+	var c := {"v": 1, "title": str(tr_.get("title", "Alarm")), "date": "%04d-%02d-%02d %02d:%02d" % [dt.year, dt.month, dt.day, dt.hour, dt.minute],
+			"hour": snappedf(dt.hour + dt.minute / 60.0, 0.1), "weather": str(main.weather), "wind": snappedf(float(main.wind), 1.0),
+			"quelle": "Alarm-Rückblick (MoveEye %s)" % str(main.mw.get("mw_version", "?")), "samples": cs}
+	var fn := "nacht_%04d%02d%02d_%02d%02d.json" % [dt.year, dt.month, dt.day, dt.hour, dt.minute]
+	DirAccess.make_dir_recursive_absolute("user://pruefstand/faelle")
+	var txt := JSON.stringify(c)
+	var f := FileAccess.open("user://pruefstand/faelle/" + fn, FileAccess.WRITE)
+	if f != null:
+		f.store_string(txt)
+		f.close()
+	if token_le.text.strip_edges() == "":
+		extra_lbl.text = "Gespeichert als Prüfstand-Fall (läuft hier im Testlauf «Echte Nächte» mit): %s – für GitHub den Schlüssel oben eintragen und nochmals drücken." % fn
+		return
+	extra_lbl.text = "Sende den Fall an GitHub …"
+	var code: int = await _put("simulator3d/pruefnaechte/" + fn, txt, "Prüfstand: echte Nacht %s" % c["date"])
+	extra_lbl.text = ("✅ Prüfstand-Fall gesendet: simulator3d/pruefnaechte/%s" % fn) if code in [200, 201] else (
+			"Dieser Fall ist schon auf GitHub." if code == 422 else "Senden ging nicht (%d) – Schlüssel prüfen. Der Fall ist hier gespeichert." % code)

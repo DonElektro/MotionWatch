@@ -1,22 +1,35 @@
 # Prüfstand: lässt die neuste Version von Motion Watch gegen den 3D-Simulator laufen (feste Testläufe, immer dieselben
-# Besucher) und schreibt die Zahlen in pruefstand/VERLAUF.md: Personen erkannt, Reaktionszeit, Tiere, Fehlalarme.
-# Startet von Hand (Actions → Prüfstand → Run workflow), jeden Sonntag in der Nacht und (ab 2.98.9) nach jeder neuen
-# Version (versions.json geändert). Ist die Erkennung schlechter als beim letzten Lauf, öffnet er ein GitHub-Issue.
+# Besucher) und schreibt die Zahlen in pruefstand/VERLAUF.md: Pushes richtig / falsch, Personen erkannt, Reaktionszeit,
+# Tiere, Flackern. Ist die Erkennung schlechter als beim letzten Lauf, öffnet er ein GitHub-Issue.
+#  - nach jeder neuen Version (versions.json geändert, ab 2.98.9): kurz, höchstens etwa 45 Minuten –
+#    quick, night, standard, ganze Nacht; «quick» zusätzlich ohne Kamera-Effekte; 1 Zufallsstart
+#  - jeden Sonntag in der Nacht: alles, auch «hard» (Nebel, Scheinwerfer, Spinnennetz, Tropfen …), 3 Zufallsstarts (Streuung)
+#  - von Hand (Actions → Prüfstand → Run workflow): alles wählbar
 name: Prüfstand
 on:
   workflow_dispatch:
     inputs:
       plaene:
-        description: "Testläufe (quick, standard, night, hard – mit Komma)"
-        default: "quick,night,standard"
+        description: "Testläufe (quick, standard, night, nacht = ganze Nacht, hard – mit Komma)"
+        default: "quick,night,standard,nacht"
+      schwer:
+        description: "Auch «hard» (Gegenlicht, Nebel, Schnee, Tropfen, Spinnennetz, Scheinwerfer · etwa 25 Min. mehr)"
+        type: boolean
+        default: false
+      seeds:
+        description: "Zufallsstarts (1 = die festen Besucher; 3 = Streuung zeigen, dauert 3×)"
+        default: "1"
       wiederholungen:
         description: "Jeden Testlauf so oft"
         default: "1"
       realismus:
         description: "Kamera-Effekte des Simulators: an, aus oder an,aus"
         default: "an,aus"
+      roh_plaene:
+        description: "Bei an,aus: nur diese Testläufe auch ohne Kamera-Effekte (leer = alle)"
+        default: "quick"
       mal:
-        description: "Besucherlisten so oft (mehr Personen = verlässlicher)"
+        description: "Besucherlisten so oft, 1–5 (mehr Personen = verlässlicher, dauert länger)"
         default: "2"
   schedule:
     - cron: "17 2 * * 0"
@@ -33,7 +46,7 @@ concurrency:
 jobs:
   pruefstand:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 300
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -59,10 +72,26 @@ jobs:
           curl -sSL -o ssd_mobilenet_v2_coco.pbtxt https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt
           ls -la
       - name: Prüfstand
+        env:
+          EVENT: ${{ github.event_name }}
+          IN_PLAENE: ${{ github.event.inputs.plaene }}
+          IN_SCHWER: ${{ github.event.inputs.schwer }}
+          IN_SEEDS: ${{ github.event.inputs.seeds }}
+          IN_WDH: ${{ github.event.inputs.wiederholungen }}
+          IN_REAL: ${{ github.event.inputs.realismus }}
+          IN_ROH: ${{ github.event.inputs.roh_plaene }}
+          IN_MAL: ${{ github.event.inputs.mal }}
         run: |
+          PLAENE="quick,night,standard,nacht"; SEEDS=1; WDH=1; REAL="an,aus"; ROH="quick"; MAL=2
+          if [ "$EVENT" = "schedule" ]; then                  # weekly: everything, also «hard», 3 random starts
+            PLAENE="quick,night,standard,nacht,hard"; SEEDS=3; REAL="an"; ROH=""
+          elif [ "$EVENT" = "workflow_dispatch" ]; then
+            PLAENE="${IN_PLAENE:-$PLAENE}"; SEEDS="${IN_SEEDS:-1}"; WDH="${IN_WDH:-1}"; REAL="${IN_REAL:-an,aus}"; ROH="$IN_ROH"; MAL="${IN_MAL:-2}"
+            if [ "$IN_SCHWER" = "true" ] && ! echo ",$PLAENE," | grep -q ",hard,"; then PLAENE="$PLAENE,hard"; fi
+          fi
+          echo "Testläufe: $PLAENE · Zufallsstarts $SEEDS · Wiederholungen $WDH · Kamera-Effekte $REAL (ohne: ${ROH:-alle}) · Besucher ×$MAL"
           python3 pruefstand/pruefstand.py --godot ./Godot_v4.3-stable_linux.x86_64 --ki-ordner ki \
-            --plaene "${{ github.event.inputs.plaene || 'quick,night,standard' }}" --wiederholungen "${{ github.event.inputs.wiederholungen || '1' }}" \
-            --realismus "${{ github.event.inputs.realismus || 'an,aus' }}" --mal "${{ github.event.inputs.mal || '2' }}" \
+            --plaene "$PLAENE" --seeds "$SEEDS" --wiederholungen "$WDH" --realismus "$REAL" --roh-plaene "$ROH" --mal "$MAL" \
             --rechner "GitHub (ubuntu, $(nproc) Kerne)" --behalten
       - name: Ergebnis aufbewahren
         if: always()
@@ -87,7 +116,7 @@ jobs:
         run: |
           git config user.name "Prüfstand"
           git config user.email "pruefstand@users.noreply.github.com"
-          git add pruefstand/ergebnisse pruefstand/VERLAUF.md
+          git add pruefstand/ergebnisse pruefstand/VERLAUF.md simulator3d/spielwege
           git diff --cached --quiet && exit 0
           git commit -q -m "Prüfstand: Ergebnis $(ls webcam_bewegung_*.py | sort -V | tail -1 | sed 's/webcam_bewegung_//; s/\.py//; s/_/./g')"
           for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 5; done

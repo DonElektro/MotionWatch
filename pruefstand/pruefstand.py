@@ -3,20 +3,25 @@
 
 Startet den 3D-Simulator und Motion Watch ohne Bildschirm, lässt feste Testläufe laufen (immer dieselben Besucher auf
 denselben Wegen, siehe simulator3d/scripts/testrun.gd) und schreibt die Zahlen auf:
-Personen erkannt (%), Reaktionszeit, Tiere gemeldet, Fehlalarme. Jeder Lauf kommt als JSON nach pruefstand/ergebnisse/,
-die Tabelle pruefstand/VERLAUF.md wird daraus neu geschrieben und der Lauf mit dem vorherigen verglichen.
+Pushes (richtig / falsch), Personen erkannt (%), Reaktionszeit, Tiere gemeldet, Flackern. Jeder Lauf kommt als JSON nach
+pruefstand/ergebnisse/, die Tabelle pruefstand/VERLAUF.md wird daraus neu geschrieben und der Lauf mit dem vorherigen verglichen.
 
 Beispiele:
   python3 pruefstand/pruefstand.py --godot /pfad/Godot_v4.3-stable_linux.x86_64          # aus dem Godot-Projekt
   python3 pruefstand/pruefstand.py --sim-bin /pfad/MotionWatch3D.x86_64 --plaene quick,night
+  python3 pruefstand/pruefstand.py --godot … --plaene nacht --seeds 3                      # ganze Nacht, 3 Zufallsstarts
   python3 pruefstand/pruefstand.py --nur-verlauf                                            # nur VERLAUF.md neu schreiben
+  python3 pruefstand/pruefstand.py --wege-einlesen                                          # Schleichwege aus feedback/ übernehmen
+  python3 pruefstand/pruefstand.py --fall-aus-spur alarm_tracks.json [--spur-id ID]        # echte Nacht als Prüfstand-Fall
 
 Der Rückgabewert ist 0, wenn alles lief; 2, wenn ein Lauf nicht zu Ende kam; 3 mit --streng, wenn die Erkennung
 schlechter ist als beim letzten vergleichbaren Lauf.
 """
 import argparse
 import glob
+import hashlib
 import json
+import math
 import os
 import platform
 import shutil
@@ -26,13 +31,18 @@ import sys
 import tempfile
 import time
 import urllib.request
+import zipfile
 
 HIER = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HIER)
 ERGEBNISSE = os.path.join(HIER, "ergebnisse")
 VERLAUF = os.path.join(HIER, "VERLAUF.md")
-PLAN_DAUER = {"quick": 150, "standard": 300, "night": 230, "hard": 520}     # Sekunden, ungefähr (Simulator in Echtzeit)
-PLAN_NAME = {"quick": "Kurz (Tag + Nacht)", "standard": "Standard (Tag, Wind, Nacht, Regen)", "night": "Nacht", "hard": "Schwierige Bedingungen"}
+PLAN_DAUER = {"quick": 150, "standard": 300, "night": 230, "hard": 520, "nacht": 650}   # Sekunden, ungefähr (Simulator in Echtzeit)
+PLAN_NAME = {"quick": "Kurz (Tag + Nacht)", "standard": "Standard (Tag, Wind, Nacht, Regen)", "night": "Nacht", "hard": "Schwierige Bedingungen",
+             "nacht": "Ganze Nacht (20–6 Uhr, Zeitraffer)", "spielwege": "Schleichwege aus dem Spiel", "echtenaechte": "Echte Nächte nachgespielt"}
+FIX_PLAENE = ("spielwege", "echtenaechte", "nacht")      # Prüfstand 2: realistic numbers - --mal does not multiply, no run without effects
+WEGE = os.path.join(REPO, "simulator3d", "spielwege")
+NAECHTE = os.path.join(REPO, "simulator3d", "pruefnaechte")
 ROH = "~roh"                  # 2.98.13: the same plan without the camera effects of the simulator (blur, colours, grain)
 
 
@@ -138,7 +148,10 @@ def run(a):
         os.makedirs(cfg, exist_ok=True)
         st = {"sim_on": True, "source": "sim:0", "thermal_source": "sim:thermal", "sim_url": "http://127.0.0.1:%d" % a.sim_port,
               "sim_auto": False, "sim_autostart": False, "sim_autostart_v2": False, "sim_autoupd": False, "update_auto": False,
-              "lang": "de", "desktop_notice": False, "setup_done": True}
+              "lang": "de", "desktop_notice": False, "setup_done": True,
+              # Prüfstand 2: the pushes go into the test inbox of the simulation and are counted (MoveEye part 068);
+              # the thermal camera is on - at night without light it sees the persons (part 232)
+              "notify_sandbox": True, "thermal_on": a.waermebild == "an"}
         with open(os.path.join(cfg, "motionwatch_settings.json"), "w") as f:
             json.dump({"cfg": st}, f)
         if a.ki_ordner:                                          # the AI model next to the program (from GitHub Actions)
@@ -193,7 +206,10 @@ def run(a):
             info["sim_version"] = "?"
         rc = 0
         info["besucher_mal"] = a.mal
-        laeufe = [(p, m) for m in a.realismus for p in a.plaene if not (m == "aus" and p == "spielwege")]
+        info["seeds"] = a.seeds
+        info["waermebild"] = a.waermebild
+        laeufe = [(p, m) for m in a.realismus for p in a.plaene
+                  if not (m == "aus" and (p in FIX_PLAENE or (a.roh_plaene and p not in a.roh_plaene)))]
         for plan0, modus in laeufe:
           try:                                                   # 2.98.13: camera effects of the simulator on / off
               http_json(sim + "/control", {"action": "set", "id": "real_fx", "value": modus == "an"}, timeout=6)
@@ -201,8 +217,8 @@ def run(a):
           except Exception:
               pass
           plan = plan0 + ("" if modus == "an" else ROH)
-          for rep in range(a.wiederholungen):
-                log("Testlauf «%s» (%d/%d) …" % (plan_name(plan), rep + 1, a.wiederholungen))
+          for seed_n, rep in [(sd, rp) for sd in range(1, a.seeds + 1) for rp in range(a.wiederholungen)]:
+                log("Testlauf «%s» (Zufall %d, %d/%d) …" % (plan_name(plan), seed_n, rep + 1, a.wiederholungen))
                 try:
                     st_ = http_json(sim + "/control", {"action": "test_report"}, timeout=6)
                     if st_.get("running"):
@@ -210,7 +226,7 @@ def run(a):
                         http_json(sim + "/control", {"action": "test_stop"}, timeout=6)
                 except Exception:
                     pass
-                r = http_json(sim + "/control", {"action": "test_start", "plan": plan0, "cams": a.kameras, "mult": a.mal}, timeout=10)
+                r = http_json(sim + "/control", {"action": "test_start", "plan": plan0, "cams": a.kameras, "mult": a.mal, "seed": seed_n}, timeout=10)
                 if not r.get("ok"):
                     log("  startet nicht:", r.get("error") or r.get("info"))
                     rc = 2
@@ -218,7 +234,9 @@ def run(a):
                 t0 = time.time()
                 fps = []
                 rep_ = None
-                while time.time() - t0 < PLAN_DAUER.get(plan0, 400) * a.mal * 3 + 120:
+                soll = float(r.get("total_s") or PLAN_DAUER.get(plan0, 400) * a.mal)       # the simulator knows how long it takes
+                log("  dauert etwa %d Min." % round(soll / 60.0))
+                while time.time() - t0 < soll * 2.5 + 180:
                     time.sleep(5)
                     try:
                         fps.append(float(http_json(web + "/api/state", timeout=4)["state"].get("fps") or 0))
@@ -239,14 +257,21 @@ def run(a):
                     continue
                 rep_["dauer_s"] = round(time.time() - t0)
                 rep_["mw_fps"] = round(sum(fps) / len(fps), 1) if fps else 0
+                rep_.setdefault("seed", seed_n)
                 info["plaene"].setdefault(plan, []).append(rep_)
                 gb = kennzahlen([rep_])["groessen"]
                 if gb:
                     log("  nach Grösse: " + ", ".join("%s %d/%d" % (b, gb[b][1], gb[b][0]) for b in ("nah", "mittel", "weit") if b in gb))
-                log("%s: Personen %d/%d (%.0f %%), Reaktion %s s, Tiere %d/%d, Fehlalarme %d, %.1f Bilder/s" % (plan_name(plan),
-                    rep_["persons_detected"], rep_["persons"], rep_["rate"], rep_.get("latency_s", "–"),
+                pu = rep_.get("pushes") or {}
+                log("%s: Pushes %s, Personen %d/%d (%.0f %%, davon nur Wärmebild %d/%d), Reaktion %s s, Tiere %d/%d, Flackern %d, %.1f Bilder/s" % (
+                    plan_name(plan), ("richtig %d / falsch %d" % (pu.get("ok", 0), pu.get("false", 0))) if pu else "unbekannt",
+                    rep_["persons_detected"], rep_["persons"], rep_["rate"], rep_.get("persons_thermal_detected", 0), rep_.get("persons_thermal", 0),
+                    rep_.get("latency_s", "–"),
                     sum(p.get("animals_reported", 0) for p in rep_.get("phases", [])), sum(p.get("animals", 0) for p in rep_.get("phases", [])),
-                    rep_["false_alarms"], rep_["mw_fps"]), wichtig=True)
+                    rep_.get("flicker", rep_.get("false_alarms", 0)), rep_["mw_fps"]), wichtig=True)
+                for q in rep_.get("push_list", []):
+                    log("    Push %5.0f s  %-8s %s%s" % (q.get("t", 0), q.get("ev", ""), ("richtig: " if q.get("ok") else "FALSCH: ") + str(q.get("who", "")),
+                                                     "  (gleicher Besuch innert 10 s)" if q.get("dup") else ""))
         if not info["plaene"]:
             return 2, None
         os.makedirs(ERGEBNISSE, exist_ok=True)
@@ -265,24 +290,35 @@ def run(a):
 
 # ---------------------------------------------------------------------------------------------------------------------
 def kennzahlen(reps):
-    """the numbers of one plan (several runs: added up)"""
+    """the numbers of one plan (several runs: added up; «streuung» = min / max over the runs - seeds and repetitions)"""
     P = sum(r["persons"] for r in reps)
     D = sum(r["persons_detected"] for r in reps)
     A = sum(p.get("animals", 0) for r in reps for p in r.get("phases", []))
     AR = sum(p.get("animals_reported", 0) for r in reps for p in r.get("phases", []))
-    F = sum(r["false_alarms"] for r in reps)
+    F = sum(r.get("flicker", r.get("false_alarms", 0)) for r in reps)          # «Flackern» (before Prüfstand 2: «Fehlalarme»)
     lat = [r["latency_s"] for r in reps if float(r.get("latency_s", -1)) >= 0]
     bands = {}                                                  # by size in the picture (simulator 3D-3.48 and newer)
     for r in reps:
         for v in r.get("visitors", []):
-            if not v.get("person"):
+            if not v.get("person") or v.get("thermal_only"):      # only seen in the thermal picture: own column «Wärmebild»
                 continue
             b = "nah" if v["px"] >= 100 else ("mittel" if v["px"] >= 60 else "weit")
             n, d = bands.get(b, (0, 0))
             bands[b] = (n + 1, d + (1 if float(v.get("det_s", -1)) >= 0 else 0))
+    mit_push = [r for r in reps if r.get("pushes")]               # Prüfstand 2: the real pushes (MoveEye part 068)
+    po = sum(r["pushes"].get("ok", 0) for r in mit_push)
+    pf = sum(r["pushes"].get("false", 0) for r in mit_push)
+    quoten = [100.0 * r["persons_detected"] / r["persons"] for r in reps if r.get("persons")]
     return {"groessen": bands, "personen": P, "erkannt": D, "quote": round(100.0 * D / max(1, P), 1), "reaktion": round(sum(lat) / len(lat), 1) if lat else None,
-            "tiere": A, "tiere_gemeldet": AR, "fehlalarme": F, "fehlalarme_pro_lauf": round(F / max(1, len(reps)), 2), "laeufe": len(reps),
-            "fps": round(sum(r.get("mw_fps", 0) for r in reps) / max(1, len(reps)), 1)}
+            "tiere": A, "tiere_gemeldet": AR, "flackern": F, "fehlalarme": F, "fehlalarme_pro_lauf": round(F / max(1, len(reps)), 2), "laeufe": len(reps),
+            "fps": round(sum(r.get("mw_fps", 0) for r in reps) / max(1, len(reps)), 1),
+            "pushes": bool(mit_push), "push_richtig": po, "push_falsch": pf,
+            "push_falsch_pro_lauf": round(pf / max(1, len(mit_push)), 2), "push_richtig_pro_lauf": round(po / max(1, len(mit_push)), 2),
+            "waerme": sum(r.get("persons_thermal", 0) for r in reps), "waerme_erkannt": sum(r.get("persons_thermal_detected", 0) for r in reps),
+            "seeds": sorted({int(r.get("seed", 1)) for r in reps}),
+            "streuung_quote": (round(min(quoten)), round(max(quoten))) if len(quoten) > 1 else None,
+            "streuung_falsch": (min(r["pushes"].get("false", 0) for r in mit_push), max(r["pushes"].get("false", 0) for r in mit_push)) if len(mit_push) > 1 else None,
+            "streuung_richtig": (min(r["pushes"].get("ok", 0) for r in mit_push), max(r["pushes"].get("ok", 0) for r in mit_push)) if len(mit_push) > 1 else None}
 
 
 def alle_ergebnisse():
@@ -305,7 +341,9 @@ def ki_art(d):
 
 
 def vergleich(info):
-    """this run against the last comparable one (same plan, same computer, AI the same): lines of text, worse?"""
+    """this run against the last comparable one (same plan, same computer, AI the same): lines of text, worse?
+    Prüfstand 2: when both runs have real pushes, one false push more per run (or 15 points fewer persons) is worse;
+    otherwise the flicker as before."""
     zeilen, schlechter = [], False
     alte = [d for d in alle_ergebnisse() if d.get("_datei") and d.get("datum") != info.get("datum")]
     for plan, reps in info["plaene"].items():
@@ -316,18 +354,29 @@ def vergleich(info):
             continue
         v = vor[-1]
         kv = kennzahlen(v["plaene"][plan])
-        dq, df = k["quote"] - kv["quote"], k["fehlalarme_pro_lauf"] - kv["fehlalarme_pro_lauf"]
+        pushes = k["pushes"] and kv["pushes"]
+        dq = k["quote"] - kv["quote"]
+        df = (k["push_falsch_pro_lauf"] - kv["push_falsch_pro_lauf"]) if pushes else (k["fehlalarme_pro_lauf"] - kv["fehlalarme_pro_lauf"])
+        was = "falsche Pushes" if pushes else "Flackern"
         urteil = "gleich"
         if min(k["personen"], kv["personen"]) < 8:              # 2.98.13: too few persons - one miss would be 20 %+
-            zeilen.append("%s: zu wenige Personen für einen Vergleich (%d / %d) – Personen %.0f %%." % (plan_name(plan), k["personen"], kv["personen"], k["quote"]))
+            if pushes and df >= 1:
+                urteil, schlechter = "SCHLECHTER", True
+            zeilen.append("%s: zu wenige Personen für einen Vergleich (%d / %d) – Personen %.0f %%, %s pro Lauf %.1f (%+.1f)%s." % (
+                plan_name(plan), k["personen"], kv["personen"], k["quote"], was,
+                k["push_falsch_pro_lauf"] if pushes else k["fehlalarme_pro_lauf"], df, " → SCHLECHTER" if urteil == "SCHLECHTER" else ""))
             continue
         if dq <= -15 or df >= 1:
             urteil, schlechter = "SCHLECHTER", True
         elif dq >= 15 or df <= -1:
             urteil = "besser"
-        zeilen.append("%s gegen %s: Personen %.0f %% (%+.0f), Fehlalarme pro Lauf %.1f (%+.1f) → %s" % (
-            plan_name(plan), v.get("mw_version"), k["quote"], dq, k["fehlalarme_pro_lauf"], df, urteil))
+        zeilen.append("%s gegen %s: Personen %.0f %% (%+.0f), %s pro Lauf %.1f (%+.1f) → %s" % (
+            plan_name(plan), v.get("mw_version"), k["quote"], dq, was, k["push_falsch_pro_lauf"] if pushes else k["fehlalarme_pro_lauf"], df, urteil))
     return zeilen, schlechter
+
+
+def _spanne(t):
+    return ("%d–%d" % t) if t and t[0] != t[1] else (("%d" % t[0]) if t else "")
 
 
 def verlauf_schreiben():
@@ -337,39 +386,148 @@ def verlauf_schreiben():
          "Jeder Testlauf schickt immer dieselben Besucher auf denselben Wegen durch den 3D-Simulator. Der Simulator weiss, wer wann",
          "für eine Kamera sichtbar war, und vergleicht das mit den Meldungen von Motion Watch. Vergleichbar sind nur Zeilen vom",
          "gleichen Rechner und mit gleichem KI-Stand (ein langsamer Rechner liefert weniger Bilder pro Sekunde).", "",
+         "**Pushes richtig / falsch** (ab Prüfstand 2): die Push-Nachrichten, die MoveEye wirklich verschickt hat (Test-Postfach der",
+         "Simulation). Richtig = eine Person war sichtbar oder im Bild; derselbe Besuch nochmals innert 10 s zählt einmal.",
+         "Bei «Ganze Nacht» ist das die Zahl pro Nacht. **Flackern** = jede kurze Personen-Meldung ohne sichtbare Person (hiess",
+         "vorher «Fehlalarme»; ein Dachs gab so 3–5 «Fehlalarme» in Sekunden, aber höchstens einen Push).",
+         "**Wärmebild**: Personen, die nachts nur die Wärmebildkamera sah (ohne Licht, zu weit fürs Infrarot) – erkannt / sichtbar.",
+         "Mehrere Läufe (Zufall 1, 2, 3 … oder Wiederholungen): in Klammern die Streuung (kleinster–grösster Wert pro Lauf).", "",
          "Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpunkte ≈ näher als 6 m, 60–100, 30–60 bei 540 Zeilen).", "",
-         "| Datum | Motion Watch | Simulator | Testlauf | Personen erkannt | nah / mittel / weit | Reaktion | Tiere gemeldet | Fehlalarme | Bilder/s | KI | Rechner |",
-         "|---|---|---|---|---|---|---|---|---|---|---|---|"]
+         "| Datum | Motion Watch | Simulator | Testlauf | Pushes richtig / falsch | Personen erkannt | Wärmebild | nah / mittel / weit | Reaktion | Tiere gemeldet | Flackern | Bilder/s | KI | Rechner |",
+         "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for d in reversed(rows):
         for plan, reps in d.get("plaene", {}).items():
             k = kennzahlen(reps)
             gb = k["groessen"]
             gt = " / ".join(("%d/%d" % (gb[b][1], gb[b][0])) if b in gb else "–" for b in ("nah", "mittel", "weit")) if gb else "–"
-            L.append("| %s | %s | %s | %s%s | %d / %d (**%.0f %%**) | %s | %s | %d / %d | %d | %s | %s | %s |" % (
+            if k["pushes"]:
+                pt = "**%d** / **%d**" % (k["push_richtig"], k["push_falsch"])
+                if k["laeufe"] > 1:
+                    pt += " (falsch %s pro Lauf)" % _spanne(k["streuung_falsch"]) if k["streuung_falsch"] else ""
+                if plan.split("~")[0] == "nacht":
+                    pt += " pro Nacht" if k["laeufe"] == 1 else " in %d Nächten (Ø %.1f / %.1f pro Nacht)" % (
+                        k["laeufe"], k["push_richtig_pro_lauf"], k["push_falsch_pro_lauf"])
+            else:
+                pt = "–"
+            st = (" (%s %%)" % _spanne(k["streuung_quote"])) if k["streuung_quote"] else ""
+            zl = (" ×%d" % k["laeufe"] if k["laeufe"] > 1 else "") + ((" · Zufall %s" % ",".join(str(x) for x in k["seeds"])) if k["seeds"] != [1] else "")
+            L.append("| %s | %s | %s | %s%s | %s | %d / %d (**%.0f %%**)%s | %s | %s | %s | %d / %d | %d | %s | %s | %s |" % (
                 d.get("datum", "?"), d.get("mw_version", "?"), d.get("sim_version", "?"), plan_name(plan),
-                (" ×%d" % k["laeufe"] if k["laeufe"] > 1 else "") + (" – *%s*" % d["bemerkung"] if d.get("bemerkung") else ""),
-                k["erkannt"], k["personen"], k["quote"], gt,
-                ("%.1f s" % k["reaktion"]) if k["reaktion"] is not None else "–", k["tiere_gemeldet"], k["tiere"], k["fehlalarme"],
+                zl + (" – *%s*" % d["bemerkung"] if d.get("bemerkung") else ""), pt,
+                k["erkannt"], k["personen"], k["quote"], st, ("%d / %d" % (k["waerme_erkannt"], k["waerme"])) if k["waerme"] else "–", gt,
+                ("%.1f s" % k["reaktion"]) if k["reaktion"] is not None else "–", k["tiere_gemeldet"], k["tiere"], k["flackern"],
                 k["fps"], ki_art(d), d.get("rechner", "?")))
     if not rows:
-        L.append("| – | noch kein Lauf | | | | | | | | | | |")
+        L.append("| – | noch kein Lauf | | | | | | | | | | | | |")
     L += ["", "## Einzelheiten pro Phase (letzter Lauf)", ""]
     if rows:
         d = rows[-1]
         for plan, reps in d.get("plaene", {}).items():
             L += ["**%s** – %s, Motion Watch %s" % (plan_name(plan), d.get("datum"), d.get("mw_version")), "",
-                  "| Phase | Personen | Reaktion | Tiere | Fehlalarme | verpasst, weil … |", "|---|---|---|---|---|---|"]
+                  "| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |", "|---|---|---|---|---|---|---|---|"]
             for p in reps[-1].get("phases", []):
                 why = p.get("missed_why") or {}
                 WHY = {"dark": "zu dunkel", "small": "zu klein / weit weg", "fast": "zu schnell", "crouch": "geduckt"}
                 why_t = ", ".join("%d× %s" % (v, WHY.get(k, k)) for k, v in why.items() if v) if isinstance(why, dict) else str(why)
-                L.append("| %s | %d / %d | %s | %d / %d | %d | %s |" % (p.get("name"), p.get("persons_detected", 0), p.get("persons", 0),
+                L.append("| %s | %s | %d / %d | %s | %s | %d / %d | %d | %s |" % (p.get("name"),
+                         ("%d / %d" % (p.get("pushes_ok", 0), p.get("pushes_false", 0))) if reps[-1].get("pushes") else "–",
+                         p.get("persons_detected", 0), p.get("persons", 0),
+                         ("%d / %d" % (p.get("persons_thermal_detected", 0), p.get("persons_thermal", 0))) if p.get("persons_thermal") else "–",
                          ("%.1f s" % p["latency_s"]) if float(p.get("latency_s", -1)) >= 0 else "–", p.get("animals_reported", 0), p.get("animals", 0),
-                         p.get("false_alarms", 0), why_t or "–"))
+                         p.get("flicker", p.get("false_alarms", 0)), why_t or "–"))
             L.append("")
     with open(VERLAUF, "w", encoding="utf-8") as f:
         f.write("\n".join(L) + "\n")
     return "\n".join(L)
+
+
+# ---- Prüfstand 2: sneaking ways from the game and real nights as bench cases ----------------------------------------
+def _gd_round(x):
+    """round like GDScript (half away from zero) - the key of a way must be the same as in gamelearn.gd way_key()"""
+    return int(math.floor(abs(x) + 0.5)) * (1 if x >= 0 else -1)
+
+
+def weg_schluessel(w):
+    t = str(w.get("scene", ""))
+    for q in w.get("points", []):
+        if isinstance(q, list) and len(q) >= 3:
+            t += ";%d,%d" % (_gd_round(float(q[1]) * 10.0), _gd_round(float(q[2]) * 10.0))
+    return hashlib.md5(t.encode("utf-8")).hexdigest()[:12]
+
+
+def _weg_ok(w):
+    return isinstance(w, dict) and isinstance(w.get("points"), list) and len(w["points"]) >= 6 and w.get("scene")
+
+
+def wege_einlesen():
+    """unseen ways from game reports (feedback/**/*.zip, feedback/**/schleichweg_*.json, also from the simulator button)
+    → simulator3d/spielwege/schleichweg_<key>.json; the same way (same scene, same points) only once"""
+    os.makedirs(WEGE, exist_ok=True)
+    da = {}
+    for fn in glob.glob(os.path.join(WEGE, "schleichweg_*.json")):
+        try:
+            with open(fn, encoding="utf-8") as f:
+                da[weg_schluessel(json.load(f))] = fn
+        except (OSError, ValueError):
+            pass
+    gefunden = []
+    for fn in glob.glob(os.path.join(REPO, "feedback", "**", "*"), recursive=True):
+        b = os.path.basename(fn)
+        try:
+            if b.startswith("schleichweg") and b.endswith(".json"):
+                with open(fn, encoding="utf-8") as f:
+                    gefunden.append(json.load(f))
+            elif b.endswith(".zip"):
+                with zipfile.ZipFile(fn) as z:
+                    for n in z.namelist():
+                        if os.path.basename(n).startswith("schleichweg") and n.endswith(".json"):
+                            gefunden.append(json.loads(z.read(n).decode("utf-8", "replace")))
+        except (OSError, ValueError, zipfile.BadZipFile):
+            continue
+    neu = 0
+    for w in gefunden:
+        if not _weg_ok(w):
+            continue
+        k = weg_schluessel(w)
+        if k in da:
+            continue
+        w.pop("file", None)
+        w.pop("key", None)
+        ziel = os.path.join(WEGE, "schleichweg_%s.json" % k)
+        with open(ziel, "w", encoding="utf-8") as f:
+            json.dump(w, f, ensure_ascii=False)
+        da[k] = ziel
+        neu += 1
+    if neu:
+        log("%d neue Schleichwege nach simulator3d/spielwege/ übernommen" % neu, wichtig=True)
+    return neu
+
+
+def fall_aus_spur(pfad, spur_id="", wetter="", wind=None, titel=""):
+    """an alarm track of MoveEye (alarm_tracks.json in its settings folder, or one track as JSON) → a real night for the
+    test bench: simulator3d/pruefnaechte/nacht_<date>.json (format: pruefstand/LIESMICH.md)"""
+    with open(pfad, encoding="utf-8") as f:
+        d = json.load(f)
+    spuren = d if isinstance(d, list) else ([d] if isinstance(d, dict) and "samples" in d else d.get("tracks", []))
+    spuren = [t for t in spuren if isinstance(t, dict) and len(t.get("samples") or []) >= 3]
+    if spur_id:
+        spuren = [t for t in spuren if str(t.get("id")) == spur_id]
+    if not spuren:
+        sys.exit("keine Alarm-Spur mit mindestens 3 Punkten gefunden" + (" (Kennung %s)" % spur_id if spur_id else ""))
+    t = spuren[-1]
+    sm = sorted(t["samples"], key=lambda x: float(x.get("t", 0)))
+    t0 = float(t.get("t") or sm[0].get("t") or time.time())
+    lt = time.localtime(t0)
+    fall = {"v": 1, "title": titel or ("Alarm %s" % time.strftime("%d.%m. %H:%M", lt)), "date": time.strftime("%Y-%m-%d %H:%M", lt),
+            "hour": round(lt.tm_hour + lt.tm_min / 60.0, 1), "weather": wetter or "clear", "wind": float(wind if wind is not None else 10),
+            "quelle": "MoveEye-Alarm %s (%s)" % (t.get("id", "?"), "Simulation" if t.get("sim") else "echt"),
+            "samples": [{"t": x.get("t", 0), "pan": x.get("pan", 0), "tilt": x.get("tilt", 0), "objs": x.get("objs", [])} for x in sm]}
+    os.makedirs(NAECHTE, exist_ok=True)
+    ziel = os.path.join(NAECHTE, "nacht_%s.json" % time.strftime("%Y%m%d_%H%M", lt))
+    with open(ziel, "w", encoding="utf-8") as f:
+        json.dump(fall, f, ensure_ascii=False, indent=1)
+    log("Prüfstand-Fall geschrieben:", os.path.relpath(ziel, REPO), "(%d Punkte, %.0f s)" % (len(sm), float(sm[-1]["t"]) - float(sm[0]["t"])))
+    return ziel
 
 
 def main():
@@ -377,10 +535,13 @@ def main():
     ap.add_argument("--mw", default="", help="die Motion-Watch-Datei (Standard: die neuste im Repository)")
     ap.add_argument("--sim-bin", default="", help="das exportierte Simulator-Programm (Linux)")
     ap.add_argument("--godot", default="", help="Godot 4.3 (startet das Projekt simulator3d/ direkt)")
-    ap.add_argument("--plaene", default="quick,night", help="quick, standard, night, hard (mit Komma)")
+    ap.add_argument("--plaene", default="quick,night", help="quick, standard, night, hard, nacht (ganze Nacht) – mit Komma")
     ap.add_argument("--wiederholungen", type=int, default=1, help="jeden Testlauf so oft (mehr = verlässlichere Zahlen)")
-    ap.add_argument("--mal", type=int, default=2, help="jede Besucherliste so oft (mehr Personen pro Lauf = verlässlichere Zahlen)")
+    ap.add_argument("--seeds", type=int, default=1, help="so viele Zufallsstarts (1 = die festen Besucher von früher, 4711; 2, 3 … andere Wege)")
+    ap.add_argument("--mal", type=int, default=2, help="jede Besucherliste so oft, 1–5 (mehr Personen pro Lauf = verlässlichere Zahlen)")
     ap.add_argument("--realismus", default="an", help="Kamera-Effekte des Simulators: an, aus oder an,aus (beides messen)")
+    ap.add_argument("--roh-plaene", default="", help="nur diese Testläufe auch ohne Kamera-Effekte (Standard: alle, wenn --realismus an,aus)")
+    ap.add_argument("--waermebild", default="an", choices=["an", "aus"], help="Wärmebildkamera von MoveEye an (Standard) oder aus")
     ap.add_argument("--szene", default="stellplatz", help="Szene (2.98.13: Stellplatz - freie Sicht wie auf einem Camping-Platz; camping verdeckt viel)")
     ap.add_argument("--qualitaet", default="simple", help="Grafik des Simulators: simple, medium, nice")
     ap.add_argument("--sim-port", type=int, default=8795)
@@ -394,13 +555,32 @@ def main():
     ap.add_argument("--behalten", action="store_true", help="Protokolle und Einstellungen nicht löschen")
     ap.add_argument("--streng", action="store_true", help="Rückgabewert 3, wenn die Erkennung schlechter geworden ist")
     ap.add_argument("--nur-verlauf", action="store_true", help="nur VERLAUF.md aus den gespeicherten Ergebnissen schreiben")
+    ap.add_argument("--wege-einlesen", action="store_true", help="nur die Schleichwege aus feedback/ nach simulator3d/spielwege/ übernehmen")
+    ap.add_argument("--ohne-extras", action="store_true", help="Schleichwege und echte Nächte nicht automatisch mitlaufen lassen")
+    ap.add_argument("--fall-aus-spur", default="", help="eine Alarm-Spur von MoveEye (alarm_tracks.json) als echte Nacht speichern")
+    ap.add_argument("--spur-id", default="", help="welche Spur aus der Datei (Standard: die neuste)")
+    ap.add_argument("--spur-wetter", default="", help="Wetter der echten Nacht (clear, cloudy, rain, fog, snow)")
     a = ap.parse_args()
     a.plaene = [p.strip() for p in a.plaene.split(",") if p.strip()]
     a.realismus = [m.strip() for m in a.realismus.split(",") if m.strip() in ("an", "aus")] or ["an"]
+    a.roh_plaene = [p.strip() for p in a.roh_plaene.split(",") if p.strip()]
+    a.mal = max(1, min(5, a.mal))
+    a.seeds = max(1, min(9, a.seeds))
+    if a.fall_aus_spur:
+        fall_aus_spur(a.fall_aus_spur, a.spur_id, a.spur_wetter)
+        return 0
+    if a.wege_einlesen:
+        wege_einlesen()
+        return 0
+    if not a.nur_verlauf:
+        wege_einlesen()                                        # Prüfstand 2: new ways from the game reports in feedback/
     # the sneaking ways of the game (simulator3d/spielwege/schleichweg_*.json, from 3D-3.53) always run along: did a change
-    # close a known blind spot?
-    if glob.glob(os.path.join(REPO, "simulator3d", "spielwege", "schleichweg_*.json")) and "spielwege" not in a.plaene and not a.nur_verlauf:
-        a.plaene.append("spielwege")
+    # close a known blind spot? The same for the real nights (simulator3d/pruefnaechte/*.json, Prüfstand 2).
+    if not a.nur_verlauf and not a.ohne_extras:
+        if glob.glob(os.path.join(WEGE, "schleichweg_*.json")) and "spielwege" not in a.plaene:
+            a.plaene.append("spielwege")
+        if glob.glob(os.path.join(NAECHTE, "*.json")) and "echtenaechte" not in a.plaene:
+            a.plaene.append("echtenaechte")
     a.kameras = [0] if a.kameras == "kopf" else [0, 1]
     if a.nur_verlauf:
         verlauf_schreiben()
