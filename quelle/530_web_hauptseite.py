@@ -2190,7 +2190,7 @@ async function build() {
           const r = el("div", ""); r.style.margin = "4px 0"; const b = el("b", "", l + ": "); const c = el("code", "", u); c.style.userSelect = "all";
           const cp = el("button", "sec", "⧉"); cp.type = "button"; cp.style.padding = "2px 8px"; cp.title = t("Copy");
           cp.onclick = () => { try { navigator.clipboard.writeText(u); toast("⧉ " + t("Copied")); } catch (e) {} };
-          r.append(b, c, " ", cp); out.appendChild(r); });
+          r.append(b, c, " ", cp, qrBtn(u, l, {secret: true})); out.appendChild(r); });
         if (j.rtsp_msg && j.rtsp_msg !== "running") out.appendChild(el("div", "err", "RTSP: " + t(j.rtsp_msg)));
         out.appendChild(el("div", "", t("Keep these addresses secret: whoever has them sees the picture without a password."))); };
       const load = () => fetch("/api/ext").then(r => r.json()).then(show).catch(() => {});
@@ -3779,7 +3779,7 @@ function scPick() {
       const r = el("div"); r.style.cssText = "display:flex;gap:8px;align-items:center;margin:4px 0";
       const c = el("button", "sec", "📋"); c.type = "button"; c.title = t("Copy"); c.onclick = () => { try { navigator.clipboard.writeText(u); toast("✓ " + t("copied")); } catch (e) { prompt(t(n), u); } };
       const lab = el("span", "", t(n)); lab.style.minWidth = "140px"; const cd = el("code", "mut", u.replace(j.key, "•••")); cd.style.cssText = "font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1";
-      r.append(c, lab, cd); box.appendChild(r); });
+      r.append(c, qrBtn(u, t(n), {secret: true}), lab, cd); box.appendChild(r); });
     box.appendChild(el("div", "mut", t("sc-key-note"))).style.marginTop = "6px";
     const row = el("div", "btns"); row.style.marginTop = "6px";
     const nb = el("button", "sec", "🔄 " + t("New key")); nb.type = "button"; nb.onclick = async () => { if (confirm(t("Make a new key? The old addresses stop working."))) paint(await post("/api/shortcut", {action: "new"})); };
@@ -4196,7 +4196,7 @@ function tvPaint(T) {                               // 2.95.51: the TV view (HDM
     bs.onclick = async () => { const x = await post("/api/tv", {sim: !T.sim, lang: LANG}); if (!x.ok) toast("⚠ " + (x.error || t("error"))); }; r.append(bs); }
   const a = document.createElement("a"); a.href = T.url; a.target = "_blank"; a.className = "btn sec"; a.textContent = "🔗 " + t("Open the link"); r.append(a);
   const cp = el("button", "sec", "📋"); cp.type = "button"; cp.title = t("Copy the link");
-  cp.onclick = () => { try { navigator.clipboard.writeText(location.origin + T.url); toast("✓ " + t("Link copied")); } catch (e) {} }; r.append(cp);
+  cp.onclick = () => { try { navigator.clipboard.writeText(location.origin + T.url); toast("✓ " + t("Link copied")); } catch (e) {} }; r.append(cp, qrBtn(location.origin + T.url, t("TV view"), {secret: true}));
   b.append(r);
   const l = el("label", "row pr-sw"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.checked = !!T.auto;
   cb.onchange = () => post("/api/tv", {auto: cb.checked});
@@ -5021,6 +5021,7 @@ I18N.en = I18N.en || {}; Object.assign(I18N.en, {"tunnel-note": "If the simulato
     big.textContent = T.on ? t("Code") + ": " + T.code : t("off"); box.appendChild(big);
     const host = (j.address || "").replace(/^https?:\/\//, "").replace(/[:\/].*$/, "");
     if (T.on) box.appendChild(el("div", "", t("In the simulator: Verbindung → «Tunnel zu MoveEye»: address") + " " + host + ", " + t("code") + " " + T.code));
+    if (T.on) box.appendChild(qrBtn(j.address || location.origin + "/", qrT("Simulator connection (tunnel)"), {secret: true, note: t("Code") + ": " + T.code + " · " + qrT("In the simulator (Verbindung → «Tunnel zu MoveEye») paste the address and type the code.")}));   // 585
     if (T.on) {                                                         // 2.95.60: the ports, to compare with the simulator
       const pt = el("div", T.listen && T.listen !== "ok" ? "" : "mut");
       pt.textContent = T.listen && T.listen !== "ok" ? "⚠ " + t("could not open port") + " " + T.port + ": " + T.listen
