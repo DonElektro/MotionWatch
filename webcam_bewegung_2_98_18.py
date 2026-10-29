@@ -4337,6 +4337,7 @@ class Notifier:
     def _send_main(self, p, jpg, fname):
         """the main channel (ntfy / Telegram / webhook) once; raises on failure; returns (HTTP code, where)"""
         kind = CFG["notify_type"]
+        jpg = sx_push_jpg(jpg)                           # «text only» - the picture stays in MoveEye (578)
         if kind == "telegram":
             return self._telegram(p, jpg, fname), "Telegram"
         if kind == "ntfy":
@@ -4349,6 +4350,7 @@ class Notifier:
             return r.status, _url_host(url)
 
     def _pushover(self, p, jpg, fname):
+        jpg = sx_push_jpg(jpg)                           # (578)
         ev = self._event(p)
         alarm = ev in ("person", "warm", "noise", "tamper")
         prio = 2 if alarm and CFG["pushover_emergency"] else (1 if alarm or ev == "test" else (-1 if ev == "info" else 0))
@@ -4702,6 +4704,9 @@ def alx_ntfy_actions(p):
     out = []
     for lab, url, clear in alx_buttons(p):
         lab = lab.replace(",", " ").replace(";", " ")
+        if url.endswith("/off"):                         # (578): «Off» opens the page with the PIN field - never in the background
+            out.append(f"view, {lab}, {url}" + (", clear=true" if clear else ""))
+            continue
         out.append(f"http, {lab}, {url}, method=POST" + (", clear=true" if clear else ""))
     return "; ".join(out)
 
@@ -4782,7 +4787,7 @@ def alx_routes(app, watch, reply, body):
         now = time.time()
         rec = [x for x in ALX["fails"].get(ip, []) if now - x < 600]
         if len(rec) >= 20:
-            return Response("too many wrong keys - wait 10 minutes", 429)
+            return sx_err(429, "keys")                   # in the own language (578)
         names = {"fa": "False alarm", "siren": "Siren", "off": "Off"}
         if request.method == "GET":                      # a browser (Telegram link): ask first - a link preview must not switch anything
             with ALX["lock"]:
@@ -4790,8 +4795,21 @@ def alx_routes(app, watch, reply, body):
             if not e or act not in e["acts"] or now - e["t"] > ALX_TTL:
                 rec.append(now); ALX["fails"][ip] = rec
                 return Response(_ALX_PAGE % ("MoveEye", _html.escape(tr("This button is no longer valid.")), ""), 404, mimetype="text/html")
+            if act == "off":                             # (578): switching off needs the protection PIN (or the web password)
+                L_ = sx_req_lang()
+                return Response(sx_page(tr("Switch the protection off?", L_), sx_off_form(L_), "⏻", L_), mimetype="text/html")
             form = ('<form method="post"><button type="submit">' + _html.escape(tr(names.get(act, act))) + "</button></form>")
             return Response(_ALX_PAGE % ("MoveEye", _html.escape(tr("Tap to confirm.")), form), mimetype="text/html")
+        if act == "off":                                 # (578): first the key (not used up), then the PIN, then switch off
+            with ALX["lock"]:
+                e0 = ALX["tok"].get(tok)
+            if e0 and act in e0["acts"] and act not in e0["used"] and now - e0["t"] <= ALX_TTL:
+                L_ = sx_req_lang()
+                ok_, err_ = sx_off_check(request.form.get("pin", ""), request.form.get("pw", ""), "push button")
+                if not ok_:
+                    if "text/html" in (request.headers.get("Accept") or "") or request.form:
+                        return Response(sx_page(tr("Switch the protection off?", L_), sx_off_form(L_, err_), "⏻", L_), 403, mimetype="text/html")
+                    return Response(tr("Off needs the protection PIN - open the message and tap «Off» there.", L_), 403, mimetype="text/plain")
         ok, err, e = alx_use(tok, act)
         if not ok:
             if err == "unknown":
@@ -27245,7 +27263,7 @@ def run_paused(until, argv_rest):
                     except (ValueError, IndexError):
                         ok = False
                 if not ok:
-                    self._send(401, "Login required", "text/plain", {"WWW-Authenticate": 'Basic realm="Motion Watch"'}); return
+                    self._send(401, tr("Login required"), "text/plain", {"WWW-Authenticate": 'Basic realm="MoveEye", charset="UTF-8"'}); return
             state["go"] = True
             self._send(200, "<meta http-equiv='refresh' content='15;url=/'>" + tr("Starting …"))
 
@@ -27658,6 +27676,7 @@ def self_test(folder=""):
     chk("Web pages (render + JavaScript)", pages)
     chk("Timeline, weekly report, blur faces when sharing", verlauf_selftest)     # 2.98.14 (425, 426, 375)
     chk("One weekly report, return of the phone, auto-tuner ±20 % (migrations)", nachlauf_selftest)     # 2.98.15 (577)
+    chk("Off in the push only with the PIN, push after a power cut, recordings by age, push without picture", sicher_selftest)   # (578)
 
     if folder:
         def manifest():
@@ -47360,7 +47379,7 @@ class WebStream:
                 if (request.content_length or 0) < 1 << 20:
                     request.get_data()                      # read the body first, else the connection is reset
                 log_event("web", f"Blocked a request from another web page ({request.headers.get('Origin', '')[:60]}) to {request.path}")
-                return Response("Forbidden: request from another web page", 403)
+                return sx_err(403, "foreign")                  # in the own language (578)
             if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/na/", "/spiele", "/tv/", "/nt/", "/info", "/almanach")) or request.path in public:
                 return None                         # guest links check their own key; app icons are not secret
             pw = CFG["web_password"]
@@ -47380,7 +47399,7 @@ class WebStream:
             recent = [x for x in fails.get(ip, []) if now - x < 300]
             if len(recent) >= 8:
                 fails[ip] = recent
-                return Response("Too many failed logins - try again in a few minutes", 429, {"Retry-After": "300"})
+                return sx_err(429, "toomany", {"Retry-After": "300"})
             a = request.authorization
             who = user_login(a.username or "", a.password or "") if a else None
             if who:
@@ -47397,7 +47416,7 @@ class WebStream:
             if len(fails) > 500:
                 for k in [k for k, v in fails.items() if not v or now - v[-1] > 300]:
                     fails.pop(k, None)
-            return Response("Login required", 401, {"WWW-Authenticate": 'Basic realm="Motion Watch"'})
+            return sx_err(401, "login", {"WWW-Authenticate": 'Basic realm="MoveEye", charset="UTF-8"'})   # guests see the realm
 
         @app.before_request
         def role_guard():                           # users with a role: what they may do
@@ -48382,6 +48401,7 @@ class WebStream:
 
         timeline_routes(app, reply, body, request, Response)    # 2.98.14: Verlauf → Zeitleiste + weekly report (523)
         alx_routes(app, watch, reply, body)                # 2.98.13: push buttons /na/, «What was it?» (066)
+        sx_routes(app, watch, reply, body)                 # night view / screen reader script, «holiday over», error pages (578)
 
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
@@ -49834,7 +49854,7 @@ class WebStream:
         @app.route("/g/<token>")
         def guest_page(token):
             if not guest_ok(token):
-                return Response("This guest link is not valid (any more).", 404, mimetype="text/plain")
+                return sx_err(404, "guest")
             keep = COMMON_JS[COMMON_JS.index("function keepStream"):COMMON_JS.index("\nconst post")]
             gt = {L: {k: TRX[L][k] for k in GUEST_KEYS if TRX[L].get(k)} for L in ("fr", "it", "rm")}
             return Response(GUEST_PAGE.replace("__BASE__", "/g/" + token).replace("/*KEEP*/", keep).replace("/*GT*/{}", json.dumps(gt, ensure_ascii=False)),
@@ -54891,6 +54911,748 @@ def nachlauf_selftest():
         assert "with_sim" in wr and wr["text"]
     finally:
         CFG.update(keep); AUTOTUNE_LAST.clear()
+    return True
+# ----------------------------------------------------------------------------
+# Wunsch Daniel (29.10.2026):
+#  1  «Aus» in der Push-Nachricht nur mit PIN: der Knopf öffnet eine kleine Seite mit dem PIN-Feld (Schutz-PIN; ohne PIN das
+#     Web-Passwort; ohne beides: «Bitte zuerst eine Schutz-PIN setzen», nichts wird ausgeschaltet). Falsche PINs: dieselbe Sperre
+#     wie beim Ausschalten im Web (5 in 10 Minuten, ab 3 Diebstahl-Alarm). «Fehlalarm» und «Sirene» bleiben ohne PIN. (066)
+#  2  Nach einem unsauberen Ende (Strom weg, Absturz) eine Info-Push «MoveEye war 14 Min. aus (Strom/Absturz) – jetzt wieder
+#     Wachsam». Nicht nach einem Update / Neustart (die enden sauber, 390 run_state.json «clean»).
+#  3  Fehlermeldungen des Web-Servers in der eigenen Sprache als kleine Seite (Anmeldung, zu viele Versuche, fremde Seite,
+#     Gast-Link, unbekannte Adresse). Basic-Realm «MoveEye» (Gäste sehen ihn); das Vertrauens-Cookie bleibt gleich.
+#  4  «Nachtblick»: ganze Seite sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt (pro Browser gemerkt);
+#     im Fenster ein Knopf ◑ (Einstellung tk_night).
+#  5  Bildschirmleser: Knöpfe und Symbole bekommen aria-label / title in der eigenen Sprache (Hauptseite, Kopf, Navigation).
+#  6  «Aufnahmen nach … Tagen löschen» (0 = nie) neben der Grössen-Grenze; Knopf «Ferien vorbei: alle Aufnahmen löschen»
+#     (Bestätigung; ⭐ Favoriten bleiben, ausser man hakt es an).
+#  7  «Bilder in Push-Nachrichten: mitschicken / nur Text (Bild nur in MoveEye)» für ntfy, Telegram und Pushover (060).
+# ----------------------------------------------------------------------------
+_SX_CFG = {"rec_keep_days": 0, "push_pics": "with", "tk_night": False}
+for _k, _v in _SX_CFG.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+
+SX = {"lock": threading.Lock(), "pw_fails": [], "hk": False, "last_prune": 0.0, "pc": None}
+WEB_UI_LOCAL.add("mw-night")                         # 4: the night view is per browser (not copied to the other devices)
+
+
+# ---- settings (web and window read the same lists) -----------------------------------------------------------------------
+def _sx_put_after(lst, after_key, item, idx=1):
+    lst[:] = [x for x in lst if x[idx] != item[idx]]
+    for i, x in enumerate(lst):
+        if x[idx] == after_key:
+            lst.insert(i + 1, item)
+            return
+    lst.append(item)
+
+
+_sx_put_after(SLIDERS, "record_max_gb", ("Recording", "rec_keep_days", "Delete recordings after … days (0 = never)", 0, 365, 1))
+_sx_put_after(TEXTS, "notify_type", ("Notifications", "push_pics", "Pictures in push messages", "enum", "push_pics"))
+TEXT_SPECS["push_pics"] = ("enum", "push_pics")
+SIMPLE_KEYS.update({"rec_keep_days", "push_pics"})
+SX_PUSH_PICS = (("with", "send along"), ("text", "text only (picture only in MoveEye)"))
+
+_text_choice_pairs_before_sx = text_choice_pairs
+
+
+def text_choice_pairs(key):                                 # + 7: pictures in push messages
+    if TEXT_SPECS.get(key, (None, None))[1] == "push_pics":
+        return [(k, tr(l)) for k, l in SX_PUSH_PICS]
+    return _text_choice_pairs_before_sx(key)
+
+
+# ---- 7: push without picture ---------------------------------------------------------------------------------------------
+def sx_push_jpg(jpg):
+    """the picture for ntfy / Telegram / Pushover - None when the owner wants text only (the picture stays in MoveEye)"""
+    return None if CFG.get("push_pics") == "text" else jpg
+
+
+# ---- 1: «Off» in the push message only with the PIN ----------------------------------------------------------------------
+def sx_off_mode():
+    """how «Off» from a push message is confirmed: pin / pw (web password) / none (nothing set: not possible)"""
+    if CFG.get("protect_pin"):
+        return "pin"
+    if web_pw_active():
+        return "pw"
+    return "none"
+
+
+def sx_off_check(pin="", pw="", source="push button"):
+    """(ok, error) - the same lock as disarming on the web page: 5 wrong tries in 10 minutes, from 3 on a theft alarm"""
+    now = time.time()
+    mode = sx_off_mode()
+    if mode == "none":
+        return False, "Please set a protection PIN first"
+    if mode == "pin":
+        PROTECT["pin_fails"] = [t for t in PROTECT["pin_fails"] if now - t < 600]
+        if len(PROTECT["pin_fails"]) >= 5:
+            return False, "too many wrong PINs - try again in 10 minutes"
+        if protect_pin_ok(pin) and str(pin or "").strip():
+            PROTECT["pin_fails"] = []
+            return True, ""
+        PROTECT["pin_fails"].append(now)
+        log_event("sys", f"Protection: wrong PIN for disarming ({source})")
+        if len(PROTECT["pin_fails"]) >= 3:
+            w = WATCH_REF.get("w")
+            try:
+                if w is not None:
+                    w.notifier.tamper(tr("Somebody tries to disarm with a wrong PIN"), w.frame_out)
+            except Exception:
+                pass
+            try:
+                siren_alarm("tamper")
+            except Exception:
+                pass
+        return False, "wrong PIN"
+    with SX["lock"]:
+        SX["pw_fails"] = [t for t in SX["pw_fails"] if now - t < 600]
+        if len(SX["pw_fails"]) >= 5:
+            return False, "too many wrong passwords - try again in 10 minutes"
+    who = user_login("", str(pw or "")) if pw else None
+    if who and who[1] == "admin":
+        with SX["lock"]:
+            SX["pw_fails"] = []
+        return True, ""
+    with SX["lock"]:
+        SX["pw_fails"].append(now)
+    log_event("web", f"Wrong web password for «Off» in the push message ({source})")
+    return False, "wrong password"
+
+
+def sx_off_form(lang, err=""):
+    """the small form under «Off» (PIN or web password); without either only the note"""
+    import html as _h
+    E = lambda s: _h.escape(tr(s, lang))
+    mode = sx_off_mode()
+    if mode == "none":
+        return ('<p class="err">' + E("Please set a protection PIN first") + "</p><p>" + E("MoveEye → Protection → PIN. Until then «Off» works only on the page of MoveEye.") + "</p>")
+    if mode == "pin":
+        fld = ('<label for="pin">' + E("Protection PIN") + '</label><input id="pin" name="pin" type="password" inputmode="numeric" '
+               'pattern="[0-9]*" maxlength="8" autocomplete="one-time-code" autofocus required>')
+    else:
+        fld = ('<label for="pw">' + E("Web password") + '</label><input id="pw" name="pw" type="password" autocomplete="current-password" autofocus required>')
+    return ((('<p class="err" role="alert">⚠ ' + _h.escape(tr_err(err, lang)) + "</p>") if err else "")
+            + '<form method="post">' + fld + '<button type="submit">⏻ ' + E("Switch the protection off") + "</button></form>")
+
+
+# ---- 3: friendly error pages in the own language -------------------------------------------------------------------------
+SX_PAGE = """<!doctype html><html lang="%(lang)s"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>MoveEye</title><style>
+:root{--bg:#0a0e14;--panel:#111822;--txt:#e8eef5;--mut:#8a9bb0;--acc:#3b8cff;--red:#ff6b6b}
+@media(prefers-color-scheme:light){:root{--bg:#eef2f7;--panel:#fff;--txt:#18212d;--mut:#5a6b80;--acc:#1f6feb;--red:#d1242f}}
+html.sxnight{--bg:#000;--panel:#0a0000;--txt:#b8322a;--mut:#7d1f1a;--acc:#7a160e;--red:#c0392b}
+body{font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--txt);margin:0;display:flex;min-height:100vh;
+align-items:center;justify-content:center;padding:16px;box-sizing:border-box}
+main{background:var(--panel);border-radius:16px;padding:24px;max-width:380px;width:100%%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.ic{font-size:40px;line-height:1}h1{font-size:21px;margin:10px 0 6px}p{color:var(--mut);margin:8px 0}.err{color:var(--red);font-weight:600}
+label{display:block;text-align:left;font-size:14px;color:var(--mut);margin:14px 0 4px}
+input{width:100%%;box-sizing:border-box;font-size:20px;padding:10px 12px;border-radius:10px;border:1px solid var(--mut);background:var(--bg);color:var(--txt);letter-spacing:.15em}
+button,.btn{display:inline-block;font-size:17px;padding:12px 22px;border-radius:12px;border:0;background:var(--acc);color:#fff;margin-top:14px;text-decoration:none;cursor:pointer}
+button{width:100%%}a{color:var(--acc)}
+</style><script>try{if(localStorage.getItem("mw-night")==="1")document.documentElement.classList.add("sxnight")}catch(e){}</script></head>
+<body><main><div class="ic" aria-hidden="true">%(ic)s</div><h1>%(h)s</h1>%(body)s</main></body></html>"""
+
+SX_ERRS = {   # key: (symbol, title, text)
+    "login": ("🔒", "Login required", "This MoveEye is protected with a password. Reload the page and enter the password (any user name)."),
+    "toomany": ("⏳", "Too many wrong passwords", "For safety the login is blocked for a few minutes. Please wait 5 minutes and try again."),
+    "foreign": ("🛡", "Request blocked", "This action came from another web page and was refused for your safety. Open MoveEye directly and try again."),
+    "guest": ("⌛", "Guest link not valid", "This guest link is not valid (any more). Ask the owner for a new link."),
+    "keys": ("⏳", "Too many wrong keys", "Too many wrong keys from this device. Please wait 10 minutes."),
+    "notfound": ("🧭", "Page not found", "This address does not exist on MoveEye."),
+    "error": ("⚠", "Something went wrong", "MoveEye could not answer this request. Please try again in a moment."),
+}
+
+
+def sx_req_lang():
+    """the language of a request without a page: ?lang=, the saved page language is unknown here - so the browser
+    language (Accept-Language), else the language of the device"""
+    try:
+        from flask import request
+        q = str(request.args.get("lang") or "")[:2].lower()
+        if q in LANGS:
+            return q
+        for part in str(request.headers.get("Accept-Language") or "").split(","):
+            c = part.strip()[:2].lower()
+            if c in LANGS:
+                return c
+            if c == "gs":                                    # Swiss German (gsw)
+                return "de"
+    except Exception:
+        pass
+    return cur_lang()
+
+
+def sx_page(h, body_html, ic="🛡", lang=None):
+    import html as _h
+    L = lang or sx_req_lang()
+    return SX_PAGE % {"lang": L, "ic": ic, "h": _h.escape(h), "body": body_html}
+
+
+def sx_wants_html():
+    try:
+        from flask import request
+        return "text/html" in (request.headers.get("Accept") or "") and not request.path.startswith("/api/")
+    except Exception:
+        return False
+
+
+def sx_err(code, key, headers=None):
+    """a refused request: a small page in the own language for a browser, a short translated text for programs"""
+    from flask import Response
+    import html as _h
+    L = sx_req_lang()
+    ic, h, txt = SX_ERRS.get(key) or SX_ERRS["error"]
+    if sx_wants_html():
+        extra = ""
+        if key in ("login", "foreign", "notfound", "toomany"):
+            extra = '<a class="btn" href="/">' + _h.escape(tr("To the start page", L)) + "</a>"
+        return Response(sx_page(tr(h, L), "<p>" + _h.escape(tr(txt, L)) + "</p>" + extra, ic, L), code, headers or {}, mimetype="text/html")
+    return Response(tr(h, L) + ": " + tr(txt, L), code, headers or {}, mimetype="text/plain")
+
+
+# ---- 2: a push after an unclean end (power cut, crash) -------------------------------------------------------------------
+def sx_fmt_dur(sec, lang=None):
+    m = int(round(max(0.0, float(sec)) / 60.0))
+    if m < 1:
+        return tr("less than a minute", lang)
+    if m < 120:
+        return trf("{m} min.", lang, m=m)
+    return trf("{h} h {m} min.", lang, h=m // 60, m=m % 60)
+
+
+def sx_unclean_info(prev):
+    """from the run_state.json of the last run: None when it ended cleanly (update, restart, stop) or is unusable,
+    else {"t_end": time of the last sign of life, "ran_s": how long it ran}"""
+    if not isinstance(prev, dict) or prev.get("clean"):
+        return None
+    try:
+        start = float(prev.get("start") or 0); up = max(0, int(prev.get("up") or 0))
+    except (TypeError, ValueError):
+        return None
+    if start <= 0:
+        return None
+    return {"t_end": start + up, "ran_s": up}
+
+
+def sx_unclean_text(info, now=None, lang=None, state=None):
+    """«MoveEye war 14 Min. aus (Strom/Absturz) – jetzt wieder Wachsam»; an implausible clock (no internet time yet) -> no duration"""
+    now = time.time() if now is None else now
+    st = state if state is not None else protect_label(STATE.get("arm_state"), STATE.get("arm_left", 0), lang)
+    off = now - float(info.get("t_end") or 0)
+    if 0 <= off < 400 * 86400:
+        return trf("MoveEye was off for {dur} (power cut / crash) – now {state} again", lang, dur=sx_fmt_dur(off, lang), state=st)
+    return trf("MoveEye was off (power cut / crash) – now {state} again", lang, state=st)
+
+
+def _sx_unclean_tell(info):
+    """after the start: wait until the messages can go out and the clock is plausible (a Pi without a clock battery gets
+    the right time from the internet only after a while), then one info push"""
+    time.sleep(45)
+    t0 = time.time()
+    while time.time() - float(info["t_end"]) < 0 and time.time() - t0 < 600:
+        time.sleep(15)
+    for _i in range(30):                                   # the camera loop (and its notifier) may need a moment
+        w = WATCH_REF.get("w")
+        if w is not None and getattr(w, "notifier", None) is not None:
+            break
+        time.sleep(5)
+    w = WATCH_REF.get("w")
+    txt = sx_unclean_text(info)
+    SX["pc"] = {"text": txt, "t": time.time()}
+    log_event("sys", "Back after an unexpected end: " + sx_unclean_text(info, lang="en"))
+    if w is None:
+        return
+    try:
+        w.notifier.info(txt, title="{name}: " + tr("Back on"))
+    except Exception as e:
+        log_event("sys", f"Push after the unexpected end not sent: {e}"[:160])
+
+
+_run_guard_start_before_sx = run_guard_start
+
+
+def run_guard_start():
+    """+ 2: the last run ended without a clean stop -> one info push with how long MoveEye was off (not with the safe start:
+    that one sends its own message)"""
+    prev = None
+    if not DEMO["on"]:
+        try:
+            with open(_run_file()) as f:
+                prev = json.load(f)
+        except (OSError, ValueError):
+            prev = None
+    _run_guard_start_before_sx()
+    sx_housekeeping_start()
+    info = sx_unclean_info(prev) if not DEMO["on"] else None
+    if info and not RUNGUARD.get("safe"):
+        threading.Thread(target=_sx_unclean_tell, args=(info,), daemon=True, name="sx-back").start()
+
+
+# ---- 6: recordings older than N days; «holiday over: delete all» ---------------------------------------------------------
+_SX_REC_EXT = {".mp4", ".jpg", ".jpeg", ".json", ".wav", ".m4a", ".aac", ".avi", ".mkv", ".webm", ".png", ".gpx", ".srt", ".txt"}
+_SX_REC_MAIN = {".mp4", ".jpg", ".jpeg", ".avi", ".mkv", ".webm"}
+
+
+def _sx_rec_groups():
+    """{stem: [files]} of the recordings folder (only recordings: a video or picture belongs to every group)"""
+    groups = {}
+    try:
+        names = os.listdir(rec_dir())
+    except OSError:
+        return {}
+    for n in names:
+        p = os.path.join(rec_dir(), n)
+        stem, ext = os.path.splitext(n)
+        if n.startswith(".") or ext.lower() not in _SX_REC_EXT or not os.path.isfile(p):
+            continue
+        groups.setdefault(stem, []).append(p)
+    return {k: v for k, v in groups.items() if any(os.path.splitext(f)[1].lower() in _SX_REC_MAIN for f in v)}
+
+
+def _sx_live(fs):
+    names = {os.path.basename(f) for f in fs}
+    if names & set(LIVE_RECS):
+        return True
+    w = WATCH_REF.get("w")
+    rn = os.path.basename(str(getattr(w, "rec_name", "") or "")) if w is not None else ""
+    return bool(rn and rn in names)
+
+
+def _sx_fav(stem):
+    try:
+        return bool(_read_sidecar(stem + ".json").get("fav"))
+    except Exception:
+        return False
+
+
+def _sx_remove(stem, fs):
+    for f in fs:
+        try:
+            os.remove(f)
+        except OSError:
+            pass
+    try:
+        rec_purge_extras(stem)
+    except Exception:
+        pass
+
+
+def sx_rec_prune(days=None, now=None):
+    """delete the recordings older than «rec_keep_days» days (0 = never); favourites stay. Returns the number deleted."""
+    days = int(CFG.get("rec_keep_days") or 0) if days is None else int(days)
+    if days <= 0:
+        return 0
+    now = time.time() if now is None else now
+    limit = now - days * 86400
+    n = 0
+    for stem, fs in _sx_rec_groups().items():
+        try:
+            mt = max(os.path.getmtime(f) for f in fs)
+        except OSError:
+            continue
+        if mt >= limit or _sx_fav(stem) or _sx_live(fs):
+            continue
+        _sx_remove(stem, fs); n += 1
+    if n:
+        log_event("rec", f"Cleanup: {n} recording(s) older than {days} days deleted")
+    return n
+
+
+def sx_rec_wipe(with_favs=False, who="web"):
+    """«Holiday over»: all recordings (and the continuous recording) - favourites only when asked. Returns (deleted, kept)."""
+    n = kept = 0
+    for stem, fs in _sx_rec_groups().items():
+        if _sx_live(fs):
+            kept += 1; continue
+        if not with_favs and _sx_fav(stem):
+            kept += 1; continue
+        _sx_remove(stem, fs); n += 1
+    lr = globals().get("LOOPREC")                         # the continuous recording too (not the piece being written)
+    cur = str(getattr(lr, "cur", "") or "")
+    base = os.path.join(rec_dir(), "loop")
+    for root, _dirs, files in os.walk(base, topdown=False):
+        for fn in files:
+            rel = "loop/" + os.path.relpath(os.path.join(root, fn), base).replace(os.sep, "/")
+            if rel != cur and fn.lower().endswith((".mp4", ".jpg", ".json")):
+                try:
+                    os.remove(os.path.join(root, fn))
+                except OSError:
+                    pass
+        if root != base:
+            try:
+                os.rmdir(root)
+            except OSError:
+                pass
+    STATE["rec_dir_mb"] = 0 if not kept else STATE.get("rec_dir_mb", 0)
+    log_event("rec", f"Holiday over: {n} recording(s) deleted, {kept} kept" + (" (favourites too)" if with_favs else "") + f" ({who})")
+    return n, kept
+
+
+def sx_rec_counts():
+    g = _sx_rec_groups()
+    favs = sum(1 for s in g if _sx_fav(s))
+    return {"all": len(g), "favs": favs}
+
+
+def sx_housekeeping_start():
+    """one quiet thread: the age limit once an hour (the size limit runs before every recording, 410)"""
+    if SX["hk"] or DEMO["on"]:
+        return
+    SX["hk"] = True
+
+    def run():
+        time.sleep(300)
+        while True:
+            try:
+                if int(CFG.get("rec_keep_days") or 0) > 0:
+                    sx_rec_prune(); SX["last_prune"] = time.time()
+            except Exception as e:
+                log_event("rec", f"Cleanup by age failed: {e}"[:160])
+            time.sleep(3600)
+    threading.Thread(target=run, daemon=True, name="sx-housekeeping").start()
+
+
+# ---- the web addresses (called once by the web server, 550) --------------------------------------------------------------
+def sx_routes(app, watch, reply, body):
+    from flask import Response, request, g
+
+    @app.route("/sx/ui.js")
+    def sx_ui_js():
+        return Response(sx_ui_js_text(), mimetype="application/javascript", headers={"Cache-Control": "no-cache"})
+
+    @app.route("/api/sx/recwipe", methods=["GET", "POST"])
+    def api_sx_recwipe():
+        if request.method == "GET":
+            return reply(dict(sx_rec_counts(), ok=True, keep_days=int(CFG.get("rec_keep_days") or 0)))
+        if getattr(g, "role", "admin") != "admin":
+            return reply({"ok": False, "error": "not allowed"}, 403)
+        d = body(); lang = norm_lang(d.get("lang"))
+        if d.get("confirm") is not True:
+            return reply({"ok": False, "error": tr("please confirm", lang)}, 400)
+        n, kept = sx_rec_wipe(bool(d.get("favs")), "web")
+        return reply({"ok": True, "deleted": n, "kept": kept,
+                      "text": trf("{n} recordings deleted, {k} kept", lang, n=n, k=kept)})
+
+    @app.errorhandler(404)
+    def sx_not_found(_e):
+        if sx_wants_html():
+            return sx_err(404, "notfound")
+        return Response("not found", 404, mimetype="text/plain")
+
+
+# ---- 4 + 5: night view and screen readers (all pages through render_page) ------------------------------------------------
+SX_NIGHT_CSS = """<style id="sx-night-css">
+html.sxnight,html.sxnight body,html.sxnight body.light{--bg:#000;--panel:#070000;--panel2:#0a0101;--line:#2a0606;--txt:#c0392b;--mut:#7d1f1a;--acc:#7a160e;
+--acc2:#8e1b12;--red:#d03020;--grn:#8a2a12;--yel:#8a3a12;--blu:#7a1f2a;--org:#9a3010;--pur:#7a1f3a;--field:#050000;--btn2:#120202;--hdr:rgba(0,0,0,.94);
+--glow:transparent;--shadow:none;color-scheme:dark}
+html.sxnight body{background:#000!important;color:var(--txt)!important}
+html.sxnight img,html.sxnight video,html.sxnight canvas{filter:grayscale(1) brightness(.38) contrast(1.1)}
+html.sxnight::after{content:"";position:fixed;inset:0;background:#b81400;mix-blend-mode:multiply;pointer-events:none;z-index:2147483647}
+html.sxnight button,html.sxnight .btn,html.sxnight input,html.sxnight select,html.sxnight textarea{background-color:#0d0101!important;color:#b8322a!important;border-color:#3a0a08!important}
+html.sxnight .badge{background:#0d0101!important;color:#a52a20!important;border-color:#3a0a08!important}
+#btn-night[aria-pressed=true]{background:#5a0d08!important;color:#ff6a50!important}
+.sx-sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style><script>try{if(localStorage.getItem("mw-night")==="1")document.documentElement.classList.add("sxnight")}catch(e){}</script>"""
+
+# the texts the script needs (English key -> translated by the page language)
+SX_JS_KEYS = ["Night view", "Night view: very dark and red, the live picture dimmed - for a short look in the tent", "Night view on - tap 🌑 again to switch it off",
+              "Night view off", "View", "Settings panel", "Full screen", "Light / dark", "Language", "Exit full screen", "Close", "Copy", "Standard text",
+              "Up", "Down", "Remove", "Edit", "Refresh", "Help", "Menu", "Play", "Pause", "Stop", "Delete", "Back", "Next", "Previous", "Settings",
+              "Live picture", "Main navigation", "Sub navigation", "Show settings", "Hide settings", "More", "Search", "Expand all", "Collapse all",
+              "Listen", "Centre", "Other side", "Take a photo", "Favourite", "Download", "Share", "Zoom in", "Zoom out", "Mute", "Sound on",
+              "Holiday over: delete all recordings", "Also delete the favourites ⭐", "Delete ALL recordings now? This cannot be undone.",
+              "Favourites ⭐ are kept.", "recordings", "favourites", "Deleting …", "{n} recordings deleted, {k} kept", "Simulation off",
+              "Protection state", "Persons", "Self-check", "Operator mode", "Mode", "Battery", "Recording",
+              "Operate with the finger (otherwise the page scrolls)", "Finger: rotate instead of move", "Large picture"]
+
+
+def sx_ui_tx():
+    out = {}
+    for L in ("de", "fr", "it", "rm"):
+        out[L] = {k: tr(k, L) for k in SX_JS_KEYS if tr(k, L) != k}
+    return out
+
+
+SX_UI_JS = r"""(function () {
+if (window._sxui) return; window._sxui = 1;
+const TX = /*TX*/{};
+const D = document, H = D.documentElement;
+const L = () => { try { return (typeof LANG !== "undefined" && LANG) || localStorage.getItem("mw-lang") || /*DL*/"de"; } catch (e) { return /*DL*/"de"; } };
+const T = k => { const l = L(), m = TX[l] || {}; if (m[k]) return m[k];
+  try { if (typeof t === "function") { const x = t(k); if (x && x !== k) return x; } } catch (e) {}
+  if (l === "rm" && TX.de[k]) return TX.de[k]; return k; };
+const say = m => { if (typeof toast === "function") { try { toast(m); return; } catch (e) {} }
+  let e = D.getElementById("sx-toast"); if (!e) { e = D.createElement("div"); e.id = "sx-toast"; e.setAttribute("role", "status");
+    e.style.cssText = "position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9999;background:#111822;color:#e8eef5;padding:9px 16px;border-radius:12px;font:14px system-ui;max-width:90vw"; D.body.appendChild(e); }
+  e.textContent = m; e.hidden = false; clearTimeout(e._t); e._t = setTimeout(() => { e.hidden = true; }, 2600); };
+// German texts of this script also for the page itself (quick switch label)
+try { if (typeof I18N !== "undefined" && I18N.de) Object.keys(TX.de || {}).forEach(k => { if (!I18N.de[k]) I18N.de[k] = TX.de[k]; }); } catch (e) {}
+
+// ---- 4: night view ----
+const isN = () => H.classList.contains("sxnight");
+function paintN() { const b = D.getElementById("btn-night"); if (!b) return; b.setAttribute("aria-pressed", isN() ? "true" : "false");
+  b.title = T("Night view: very dark and red, the live picture dimmed - for a short look in the tent"); b.setAttribute("aria-label", T("Night view")); }
+function setN(on) { H.classList.toggle("sxnight", on); try { localStorage.setItem("mw-night", on ? "1" : "0"); } catch (e) {}
+  paintN(); say(on ? "🌑 " + T("Night view on - tap 🌑 again to switch it off") : T("Night view off")); }
+window.sxNight = setN;
+function addBtn() {
+  if (D.getElementById("btn-night")) return;
+  const hdr = D.querySelector("header"); if (!hdr) return;
+  const b = D.createElement("button"); b.type = "button"; b.id = "btn-night"; b.className = "sec"; b.textContent = "🌑";
+  b.onclick = () => setN(!isN());
+  const th = D.getElementById("btn-theme"), hc = hdr.querySelector(".hdr-ctl");
+  if (th && th.parentNode) th.parentNode.insertBefore(b, th); else if (hc) hc.insertBefore(b, hc.firstChild); else { b.style.marginLeft = "auto"; hdr.appendChild(b); }
+  paintN();
+}
+try { if (typeof QS !== "undefined" && Array.isArray(QS) && !QS.some(q => q.id === "night"))
+  QS.push({id: "night", ic: "🌑", lb: "Night view", tip: "Night view: very dark and red, the live picture dimmed - for a short look in the tent",
+           on: () => isN(), go: () => { setN(!isN()); return {ok: true}; }}); } catch (e) {}
+
+// ---- 5: names for screen readers ----
+const ID = {"btn-view": "View", "btn-side": "Settings panel", "btn-fs": "Full screen", "btn-theme": "Light / dark", "btn-lang": "Language",
+  "btn-night": "Night view", "vo-exit": "Exit full screen", "side-close": "Hide settings", "side-open": "Show settings", "all-open": "Expand all",
+  "all-close": "Collapse all", "b-sim": "Simulation off", "b-arm": "Protection state", "b-health": "Self-check", "b-lock": "Operator mode", "b-mode": "Mode",
+  "btn-listen": "Listen", "stick-listen": "Listen", "lv-vin": "Zoom in", "lv-vout": "Zoom out", "lv-vctl": "Operate with the finger (otherwise the page scrolls)",
+  "lv-vrot": "Finger: rotate instead of move", "lv-vbig": "Large picture"};
+const SYM = {"✕": "Close", "✖": "Close", "×": "Close", "⧉": "Copy", "↺": "Standard text", "▲": "Up", "▼": "Down", "▶": "Play", "►": "Play", "⏸": "Pause",
+  "⏹": "Stop", "■": "Stop", "🗑": "Delete", "🗑️": "Delete", "✏️": "Edit", "✏": "Edit", "🔄": "Refresh", "↻": "Refresh", "?": "Help", "☰": "Menu", "⚙": "Settings",
+  "⚙️": "Settings", "←": "Back", "‹": "Previous", "›": "Next", "→": "Next", "⋯": "More", "…": "More", "🔍": "Search", "📷": "Take a photo", "⭐": "Favourite",
+  "☆": "Favourite", "★": "Favourite", "⬇": "Download", "📤": "Share", "+": "Zoom in", "−": "Zoom out", "-": "Zoom out", "＋": "Zoom in", "－": "Zoom out", "🔇": "Mute", "🔊": "Sound on", "◀": "Back"};
+const word = s => /[A-Za-zÀ-ÖØ-öø-ÿ]{2,}/.test(s || "");
+function nameOf(e) {
+  const tx = (e.textContent || "").trim();
+  if (e.id && ID[e.id]) return T(ID[e.id]);
+  if (e.dataset && e.dataset.vlabel) return T(e.dataset.vlabel);
+  const ti = e.getAttribute("title"); if (ti) return ti;
+  if (SYM[tx]) return T(SYM[tx]);
+  return "";
+}
+function fixTitle(e) {                       // English titles written into the HTML: in the page language
+  const ti = e.getAttribute("title"); if (!ti) return;
+  if (e.dataset.sxT === ti && e.dataset.sxEn) { const n = T(e.dataset.sxEn); if (n !== ti) { e.setAttribute("title", n); e.dataset.sxT = n; } return; }
+  const n = T(ti); if (n !== ti) { e.dataset.sxEn = ti; e.setAttribute("title", n); e.dataset.sxT = n; }
+}
+function label(e) {
+  fixTitle(e);
+  const own = e.getAttribute("aria-label"); if (own && e.dataset.sxA !== own) return;     // the page named it itself
+  const tx = (e.textContent || "").trim();
+  if (word(tx) && !(e.id && ID[e.id])) { if (e.dataset.sxA) { e.removeAttribute("aria-label"); delete e.dataset.sxA; } return; }
+  const n = nameOf(e); if (!n) return;
+  const full = (e.classList.contains("badge") && tx && !SYM[tx] && !(e.id && ID[e.id] && e.id !== "b-arm")) ? n + ": " + tx : n;
+  if (own !== full) { e.setAttribute("aria-label", full); e.dataset.sxA = full; }
+  if (!e.getAttribute("title") || (e.id && ID[e.id] && e.getAttribute("title") !== n && !e.dataset.sxEn)) { e.setAttribute("title", n); e.dataset.sxT = n; }
+}
+function pass() {
+  addBtn(); paintN();
+  D.querySelectorAll("button,[role=button],a.ic,header .badge,.qsw button").forEach(e => { try { label(e); } catch (x) {} });
+  D.querySelectorAll("header .badge[onclick],header .badge[style*=pointer]").forEach(e => { if (!e.hasAttribute("role")) { e.setAttribute("role", "button"); e.tabIndex = 0;
+    e.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); e.click(); } }); } });
+  D.querySelectorAll("header .badge:not([role])").forEach(e => { if (!word(e.textContent)) e.setAttribute("role", "img"); });
+  D.querySelectorAll("#video,#lv-vimg").forEach(e => { if (!e.getAttribute("alt")) e.setAttribute("alt", T("Live picture")); });
+  const nv = D.querySelector("nav.nav"); if (nv) nv.setAttribute("aria-label", T("Main navigation"));
+  const sn = D.querySelector("nav.subnav"); if (sn) sn.setAttribute("aria-label", T("Sub navigation"));
+  D.querySelectorAll("nav.nav a.on,nav.subnav a.on").forEach(a => a.setAttribute("aria-current", "page"));
+  D.querySelectorAll("nav.nav a").forEach(a => { const s = a.querySelector(".nl"); if (s && !a.getAttribute("aria-label")) a.setAttribute("aria-label", s.textContent.trim()); });
+  recBox();
+}
+let tm = null, lastL = "";
+const soon = () => { clearTimeout(tm); tm = setTimeout(pass, 250); };
+// ---- 6: «holiday over» in the settings section «Recording» ----
+function recBox() {
+  const d = D.querySelector('#settings details[data-view="sec:Recording"]'); if (!d || d.querySelector(".sx-wipe")) return;
+  const box = D.createElement("div"); box.className = "sl sx-wipe";
+  const b = D.createElement("button"); b.type = "button"; b.className = "sec"; b.style.width = "100%"; b.textContent = "🧹 " + T("Holiday over: delete all recordings");
+  const lab = D.createElement("label"); lab.className = "row"; lab.style.cssText = "gap:8px;justify-content:flex-start;font-size:13px";
+  const cb = D.createElement("input"); cb.type = "checkbox"; lab.append(cb, D.createTextNode(" " + T("Also delete the favourites ⭐")));
+  const info = D.createElement("div"); info.className = "mut"; info.style.fontSize = "12px"; info.setAttribute("role", "status");
+  const load = () => fetch("/api/sx/recwipe").then(r => r.json()).then(j => { info.textContent = j.all + " " + T("recordings") + " · " + j.favs + " " + T("favourites"); }).catch(() => {});
+  b.onclick = async () => { if (!confirm(T("Delete ALL recordings now? This cannot be undone.") + (cb.checked ? "" : "\n" + T("Favourites ⭐ are kept.")))) return;
+    b.disabled = true; info.textContent = T("Deleting …");
+    try { const r = await (await fetch("/api/sx/recwipe", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({confirm: true, favs: cb.checked, lang: L()})})).json();
+      say(r.ok ? "✓ " + r.text : "⚠ " + (r.error || "error")); } catch (e) { say("⚠ error"); }
+    b.disabled = false; cb.checked = false; load(); };
+  box.append(b, lab, info); d.appendChild(box); load();
+}
+function start() {
+  pass();
+  try { new MutationObserver(soon).observe(D.body, {childList: true, subtree: true}); } catch (e) {}
+  setInterval(() => { if (L() !== lastL) { lastL = L(); pass(); } }, 1500);
+}
+if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", start); else start();
+})();
+"""
+
+
+def sx_ui_js_text():
+    return (SX_UI_JS.replace("/*TX*/{}", json.dumps(sx_ui_tx(), ensure_ascii=False))
+            .replace('/*DL*/"de"', json.dumps(cur_lang())).replace("</", "<\\/"))
+
+
+_render_page_before_sx = render_page
+
+
+def render_page(page, active):
+    """+ 4 / 5: the night view (before the first paint, no flash) and the script with the names for screen readers"""
+    out = _render_page_before_sx(page, active)
+    out = out.replace("</head>", SX_NIGHT_CSS + "</head>", 1)
+    i = out.rfind("</body>")
+    tag = '<script src="/sx/ui.js?v=' + APP_VERSION + '" defer></script>'
+    return out[:i] + tag + out[i:] if i >= 0 else out + tag
+
+
+# ---- window (Tkinter): night view ◑ and «holiday over» -----------------------------------------------------------------
+SX_TK_NIGHT = {"bg": "#000000", "panel": "#0a0000", "line": "#2a0606", "txt": "#c0392b", "mut": "#7d1f1a", "acc": "#6e140c", "red": "#d03020",
+               "grn": "#8a2a12", "yel": "#8a3a12", "blu": "#7a1f2a", "org": "#9a3010", "pur": "#7a1f3a", "field": "#050000", "knob_off": "#1a0402",
+               "badge_red_bg": "#100000"}
+_apply_theme_before_sx = apply_theme
+
+
+def apply_theme():
+    _apply_theme_before_sx()
+    if CFG.get("tk_night"):
+        C.update(SX_TK_NIGHT)
+
+
+def _sx_tk_build_header(self):
+    _sx_tk_build_header_before(self)
+    try:
+        b_fs = getattr(self, "b_fs", None)
+        if b_fs is not None and b_fs.winfo_exists():
+            b = self._ibtn(b_fs.master, "◑", lambda: _sx_tk_night(self), tr("Night view: very dark and red, the live picture dimmed - for a short look in the tent"),
+                           on=bool(CFG.get("tk_night")))
+            b.pack(side="right", padx=(0, 6))
+    except Exception:
+        pass
+
+
+def _sx_tk_night(app):
+    CFG["tk_night"] = not CFG.get("tk_night")
+    save_settings()
+    app._rebuild()
+
+
+def _sx_tk_update_video(self):
+    """like 570, plus the night view: the picture grey, dark and red"""
+    try:
+        frame = self.watch.frame_out
+        if frame is not None and self.video is not None and self.video.winfo_exists():
+            w = max(160, self.video.winfo_width()); h = max(90, self.video.winfo_height())
+            fh, fw = frame.shape[:2]; scale = min(w / fw, h / fh)
+            small = cv2.resize(frame, (max(1, int(fw * scale)), max(1, int(fh * scale))))
+            if CFG.get("tk_night"):
+                gy = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+                img = np.zeros((gy.shape[0], gy.shape[1], 3), dtype=np.uint8); img[:, :, 0] = (gy * 0.42).astype(np.uint8)
+            else:
+                img = cv2.cvtColor(small, cv2.COLOR_BGR2RGB)
+            pim = Image.fromarray(img)
+            if getattr(self, "_egg_t0", 0):
+                pim = self._egg_draw(pim)
+            self.photo = ImageTk.PhotoImage(pim); self.video.config(image=self.photo)
+    finally:
+        self.root.after(33, self._update_video)
+
+
+def _sx_tk_build_section(self, sec, sbody, settings_parent=None):
+    _sx_tk_build_section_before(self, sec, sbody, settings_parent)
+    if sec != "Recording":
+        return
+    try:
+        ttk.Button(sbody, text="🧹 " + tr("Holiday over: delete all recordings") + " …", command=lambda: _sx_tk_wipe(self)).pack(fill="x", pady=(8, 0))
+    except Exception:
+        pass
+
+
+def _sx_tk_wipe(app):
+    """the confirmation: how many, favourites kept unless ticked"""
+    c = sx_rec_counts()
+    win = tk.Toplevel(app.root); win.title("MoveEye"); win.configure(bg=C["panel"]); win.transient(app.root)
+    tk.Label(win, text="🧹 " + tr("Holiday over: delete all recordings"), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11, "bold")).pack(anchor="w", padx=14, pady=(12, 4))
+    tk.Label(win, text=f"{c['all']} {tr('recordings')} · {c['favs']} {tr('favourites')}\n" + tr("Delete ALL recordings now? This cannot be undone."),
+             bg=C["panel"], fg=C["mut"], justify="left", wraplength=360).pack(anchor="w", padx=14)
+    fv = tk.BooleanVar(value=False)
+    tk.Checkbutton(win, text=tr("Also delete the favourites ⭐"), variable=fv, bg=C["panel"], fg=C["txt"], selectcolor=C["field"],
+                   activebackground=C["panel"], activeforeground=C["txt"]).pack(anchor="w", padx=10, pady=(6, 0))
+    bf = tk.Frame(win, bg=C["panel"]); bf.pack(fill="x", padx=14, pady=12)
+
+    def go():
+        n, k = sx_rec_wipe(bool(fv.get()), "window")
+        win.destroy()
+        try:
+            app._status("Recording", "✓ " + trf("{n} recordings deleted, {k} kept", n=n, k=k))
+        except Exception:
+            pass
+        messagebox.showinfo("MoveEye", trf("{n} recordings deleted, {k} kept", n=n, k=k))
+    ttk.Button(bf, text=tr("Cancel"), command=win.destroy).pack(side="right")
+    ttk.Button(bf, text=tr("Delete"), command=go).pack(side="right", padx=(0, 6))
+
+
+_sx_tk_build_header_before = App._build_header
+_sx_tk_build_section_before = App._build_section
+App._build_header = _sx_tk_build_header
+App._build_section = _sx_tk_build_section
+App._update_video = _sx_tk_update_video
+
+
+# ---- --self-test ---------------------------------------------------------------------------------------------------------
+def sicher_selftest():
+    """the parts that can be checked without hardware: unclean end -> text, push without picture, recordings by age,
+    «holiday over», the PIN gate, error pages, the script of the pages"""
+    import tempfile
+    keep = {k: CFG.get(k) for k in ("push_pics", "rec_keep_days", "record_dir", "protect_pin", "web_pw_hash", "web_password")}
+    fails = list(PROTECT["pin_fails"])
+    try:
+        now = 1_800_000_000.0
+        assert sx_unclean_info({"clean": True, "start": now - 100, "up": 50}) is None, "a clean end gives no push"
+        assert sx_unclean_info(None) is None and sx_unclean_info({"clean": False}) is None
+        inf = sx_unclean_info({"clean": False, "start": now - 3600, "up": 2760})
+        assert inf and abs(inf["t_end"] - (now - 840)) < 1e-6
+        tx = sx_unclean_text(inf, now, "de", "Wachsam")
+        assert "14 Min." in tx and "Wachsam" in tx and "aus" in tx, tx
+        assert "(" in sx_unclean_text(inf, now - 5000, "de", "Aus") and "Min." not in sx_unclean_text(inf, now - 5000, "de", "Aus"), "clock behind: no duration"
+        assert sx_fmt_dur(125 * 60, "en") == "2 h 5 min." and "2 Std. 5 Min." == sx_fmt_dur(125 * 60, "de")
+        CFG["push_pics"] = "text"; assert sx_push_jpg(b"x") is None
+        CFG["push_pics"] = "with"; assert sx_push_jpg(b"x") == b"x"
+        assert dict(text_choice_pairs("push_pics")).keys() == {"with", "text"}
+        assert any(x[1] == "rec_keep_days" for x in SLIDERS) and any(x[1] == "push_pics" for x in TEXTS)
+        d = tempfile.mkdtemp(prefix="mw-sx-")
+        CFG["record_dir"] = d
+        old = now - 10 * 86400
+
+        def mk(stem, t, fav=False):
+            for ext in (".mp4", ".jpg"):
+                with open(os.path.join(d, stem + ext), "wb") as f:
+                    f.write(b"x")
+                os.utime(os.path.join(d, stem + ext), (t, t))
+            with open(os.path.join(d, stem + ".json"), "w") as f:
+                json.dump({"fav": fav}, f)
+            os.utime(os.path.join(d, stem + ".json"), (t, t))
+        mk("person_a", old); mk("person_b", old, True); mk("person_c", now)
+        with open(os.path.join(d, "notes.cfg"), "w") as f:
+            f.write("keep")
+        assert sx_rec_prune(0, now) == 0
+        assert sx_rec_prune(7, now) == 1 and not os.path.exists(os.path.join(d, "person_a.mp4")), "old one gone"
+        assert os.path.exists(os.path.join(d, "person_b.mp4")) and os.path.exists(os.path.join(d, "person_c.jpg")), "favourite and new one stay"
+        os.makedirs(os.path.join(d, "loop", "2026-10-29")); open(os.path.join(d, "loop", "2026-10-29", "a.mp4"), "w").close()
+        assert sx_rec_wipe(False, "test") == (1, 1) and os.path.exists(os.path.join(d, "person_b.mp4"))
+        assert not os.path.exists(os.path.join(d, "loop", "2026-10-29")), "continuous recording deleted too"
+        assert sx_rec_wipe(True, "test") == (1, 0) and os.path.exists(os.path.join(d, "notes.cfg")), "only recordings are deleted"
+        shutil.rmtree(d, ignore_errors=True)
+        CFG.update(protect_pin="", web_pw_hash="", web_password="")
+        assert sx_off_mode() == "none" and not sx_off_check("1234")[0]
+        CFG["protect_pin"] = _pin_hash("4711"); PROTECT["pin_fails"] = []
+        assert sx_off_mode() == "pin" and sx_off_check("4711")[0] and not sx_off_check("0000")[0] and not sx_off_check("")[0]
+        PROTECT["pin_fails"] = [time.time()] * 5
+        assert sx_off_check("4711")[1].startswith("too many"), "locked after 5 wrong PINs"
+        assert "pin" in sx_off_form("de") and "inputmode" in sx_off_form("fr")
+        CFG["protect_pin"] = ""; assert "Schutz-PIN" in sx_off_form("de")
+        js = sx_ui_js_text()
+        assert "Nachtblick" in js and "/*TX*/" not in js
+        assert "sxnight" in render_page("<html><head></head><body><header></header></body></html>", "live")
+        for k, (_i, h, t_) in SX_ERRS.items():
+            assert tr(h, "de") != h and tr(t_, "fr") != t_, "error page text not translated: " + h
+    finally:
+        CFG.update(keep); PROTECT["pin_fails"] = fails
     return True
 # ----------------------------------------------------------------------------
 # Translations: French, Italian, Romansh (Rumantsch Grischun). Key = the English text of the program.
@@ -60962,6 +61724,170 @@ if _hp_en > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_298(HELP_X[_L], _L)
+_HX_SICHER = {
+    # settings
+    'Delete recordings after … days (0 = never)': ('Aufnahmen nach … Tagen löschen (0 = nie)', 'Supprimer les enregistrements après … jours (0 = jamais)', 'Eliminare le registrazioni dopo … giorni (0 = mai)', 'Stizzar las registraziuns suenter … dis (0 = mai)'),
+    'Pictures in push messages': ('Bilder in Push-Nachrichten', 'Images dans les notifications push', 'Immagini nelle notifiche push', 'Maletgs en ils avis push'),
+    'send along': ('mitschicken', 'les envoyer', 'inviarle', 'trametter cun'),
+    'text only (picture only in MoveEye)': ('nur Text (Bild nur in MoveEye)', 'texte seulement (image seulement dans MoveEye)', 'solo testo (immagine solo in MoveEye)', 'mo text (maletg mo en MoveEye)'),
+    # 1: «Off» with the PIN
+    'Please set a protection PIN first': ('Bitte zuerst eine Schutz-PIN setzen', 'Définis d’abord un PIN de protection', 'Imposta prima un PIN di protezione', 'Fixescha l’emprim in PIN da protecziun'),
+    'MoveEye → Protection → PIN. Until then «Off» works only on the page of MoveEye.': ('MoveEye → Schutz → PIN. Bis dahin geht «Aus» nur auf der Seite von MoveEye.', 'MoveEye → Protection → PIN. D’ici là, «Arrêt» ne fonctionne que sur la page de MoveEye.', 'MoveEye → Protezione → PIN. Fino ad allora «Spento» funziona solo sulla pagina di MoveEye.', 'MoveEye → Protecziun → PIN. Fin lura funcziuna «Ora» mo sin la pagina da MoveEye.'),
+    'Protection PIN': ('Schutz-PIN', 'PIN de protection', 'PIN di protezione', 'PIN da protecziun'),
+    'Switch the protection off': ('Schutz ausschalten', 'Désactiver la protection', 'Disattivare la protezione', 'Stizzar la protecziun'),
+    'Switch the protection off?': ('Schutz ausschalten?', 'Désactiver la protection ?', 'Disattivare la protezione?', 'Stizzar la protecziun?'),
+    'Off needs the protection PIN - open the message and tap «Off» there.': ('«Aus» braucht die Schutz-PIN – Nachricht öffnen und dort «Aus» antippen.', '«Arrêt» demande le PIN de protection – ouvre la notification et touche «Arrêt».', '«Spento» richiede il PIN di protezione – apri la notifica e tocca «Spento».', '«Ora» basegna il PIN da protecziun – avrir l’avis e smatgar là «Ora».'),
+    'too many wrong passwords - try again in 10 minutes': ('zu viele falsche Passwörter – in 10 Minuten nochmals', 'trop de mots de passe erronés – réessaie dans 10 minutes', 'troppe password errate – riprova tra 10 minuti', 'memia bleras pleds-clav sbagliads – empruvar danovamain en 10 minutas'),
+    'wrong password': ('falsches Passwort', 'mot de passe erroné', 'password errata', 'pled-clav sbaglià'),
+    # 2: after a power cut
+    'MoveEye was off for {dur} (power cut / crash) – now {state} again': ('MoveEye war {dur} aus (Strom/Absturz) – jetzt wieder {state}', 'MoveEye était éteint pendant {dur} (courant / plantage) – maintenant de nouveau {state}', 'MoveEye è stato spento per {dur} (corrente / arresto) – ora di nuovo {state}', 'MoveEye era {dur} stizzà (current / collaps) – ussa puspè {state}'),
+    'MoveEye was off (power cut / crash) – now {state} again': ('MoveEye war aus (Strom/Absturz) – jetzt wieder {state}', 'MoveEye était éteint (courant / plantage) – maintenant de nouveau {state}', 'MoveEye era spento (corrente / arresto) – ora di nuovo {state}', 'MoveEye era stizzà (current / collaps) – ussa puspè {state}'),
+    'Back on': ('Wieder da', 'De retour', 'Di nuovo attivo', 'Puspè cò'),
+    'less than a minute': ('weniger als eine Minute', 'moins d’une minute', 'meno di un minuto', 'main ch’ina minuta'),
+    '{m} min.': ('{m} Min.', '{m} min', '{m} min', '{m} min.'),
+    '{h} h {m} min.': ('{h} Std. {m} Min.', '{h} h {m} min', '{h} h {m} min', '{h} uras {m} min.'),
+    # 3: error pages
+    'Login required': ('Anmeldung nötig', 'Connexion nécessaire', 'Accesso richiesto', 'Annunzia necessaria'),
+    'This MoveEye is protected with a password. Reload the page and enter the password (any user name).': ('Dieses MoveEye ist mit einem Passwort geschützt. Seite neu laden und das Passwort eingeben (Benutzername beliebig).', 'Ce MoveEye est protégé par un mot de passe. Recharge la page et saisis le mot de passe (nom d’utilisateur au choix).', 'Questo MoveEye è protetto da una password. Ricarica la pagina e inserisci la password (nome utente a piacere).', 'Quest MoveEye è protegì cun in pled-clav. Chargiar danovamain la pagina ed endatar il pled-clav (num d’utilisader a piacer).'),
+    'Too many wrong passwords': ('Zu viele falsche Passwörter', 'Trop de mots de passe erronés', 'Troppe password errate', 'Memia bleras pleds-clav sbagliads'),
+    'For safety the login is blocked for a few minutes. Please wait 5 minutes and try again.': ('Zur Sicherheit ist die Anmeldung ein paar Minuten gesperrt. Bitte 5 Minuten warten und nochmals versuchen.', 'Par sécurité, la connexion est bloquée quelques minutes. Attends 5 minutes et réessaie.', 'Per sicurezza l’accesso è bloccato per qualche minuto. Attendi 5 minuti e riprova.', 'Per segirezza è l’annunzia bloccada in pèr minutas. Spetgar 5 minutas ed empruvar danovamain.'),
+    'Request blocked': ('Anfrage gesperrt', 'Requête bloquée', 'Richiesta bloccata', 'Dumonda bloccada'),
+    'This action came from another web page and was refused for your safety. Open MoveEye directly and try again.': ('Diese Aktion kam von einer anderen Webseite und wurde zu deiner Sicherheit abgelehnt. MoveEye direkt öffnen und nochmals versuchen.', 'Cette action venait d’une autre page web et a été refusée pour ta sécurité. Ouvre MoveEye directement et réessaie.', 'Questa azione proveniva da un’altra pagina web ed è stata rifiutata per la tua sicurezza. Apri MoveEye direttamente e riprova.', 'Questa acziun è vegnida d’in’autra pagina d’internet ed è vegnida refusada per tia segirezza. Avrir MoveEye directamain ed empruvar danovamain.'),
+    'Guest link not valid': ('Gast-Link nicht gültig', 'Lien d’invité non valable', 'Link ospite non valido', 'Link da giast betg valaivel'),
+    'This guest link is not valid (any more). Ask the owner for a new link.': ('Dieser Gast-Link ist nicht (mehr) gültig. Bitte beim Besitzer einen neuen Link verlangen.', 'Ce lien d’invité n’est (plus) valable. Demande un nouveau lien au propriétaire.', 'Questo link ospite non è (più) valido. Chiedi un nuovo link al proprietario.', 'Quest link da giast n’è betg (pli) valaivel. Dumandar il possessur per in nov link.'),
+    'Too many wrong keys': ('Zu viele falsche Schlüssel', 'Trop de clés erronées', 'Troppe chiavi errate', 'Memia bleras clavs sbagliadas'),
+    'Too many wrong keys from this device. Please wait 10 minutes.': ('Zu viele falsche Schlüssel von diesem Gerät. Bitte 10 Minuten warten.', 'Trop de clés erronées depuis cet appareil. Attends 10 minutes.', 'Troppe chiavi errate da questo apparecchio. Attendi 10 minuti.', 'Memia bleras clavs sbagliadas da quest apparat. Spetgar 10 minutas.'),
+    'Page not found': ('Seite nicht gefunden', 'Page introuvable', 'Pagina non trovata', 'Pagina betg chattada'),
+    'This address does not exist on MoveEye.': ('Diese Adresse gibt es bei MoveEye nicht.', 'Cette adresse n’existe pas sur MoveEye.', 'Questo indirizzo non esiste su MoveEye.', 'Questa adressa n’exista betg tar MoveEye.'),
+    'Something went wrong': ('Etwas ist schiefgegangen', 'Quelque chose n’a pas marché', 'Qualcosa è andato storto', 'Insatge n’è betg ì bain'),
+    'MoveEye could not answer this request. Please try again in a moment.': ('MoveEye konnte diese Anfrage nicht beantworten. Bitte gleich nochmals versuchen.', 'MoveEye n’a pas pu répondre à cette requête. Réessaie dans un instant.', 'MoveEye non ha potuto rispondere a questa richiesta. Riprova tra un momento.', 'MoveEye n’ha betg pudì respunder a questa dumonda. Empruvar danovamain en in mument.'),
+    'To the start page': ('Zur Startseite', 'Vers la page d’accueil', 'Alla pagina iniziale', 'A la pagina da partenza'),
+    # 4: night view
+    'Night view': ('Nachtblick', 'Vue de nuit', 'Vista notte', 'Vista da notg'),
+    'Night view: very dark and red, the live picture dimmed - for a short look in the tent': ('Nachtblick: sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt', 'Vue de nuit : très sombre et rouge, image en direct atténuée – pour un bref coup d’œil dans la tente', 'Vista notte: molto scura e rossa, immagine live attenuata – per un breve sguardo nella tenda', 'Vista da notg: fitg stgir e cotschen, maletg live stgirentà – per in curt sguard en la tenda'),
+    'Night view on - tap 🌑 again to switch it off': ('Nachtblick an – nochmals 🌑 antippen zum Ausschalten', 'Vue de nuit activée – touche encore 🌑 pour la couper', 'Vista notte attiva – tocca di nuovo 🌑 per spegnerla', 'Vista da notg activa – smatgar anc ina giada 🌑 per la stizzar'),
+    'Night view off': ('Nachtblick aus', 'Vue de nuit désactivée', 'Vista notte spenta', 'Vista da notg stizzada'),
+    # 5: names for screen readers
+    'Full screen': ('Vollbild', 'Plein écran', 'Schermo intero', 'Visur entir'),
+    'Light / dark': ('Hell / dunkel', 'Clair / sombre', 'Chiaro / scuro', 'Cler / stgir'),
+    'Exit full screen': ('Vollbild verlassen', 'Quitter le plein écran', 'Esci dallo schermo intero', 'Bandunar il visur entir'),
+    'Up': ('Nach oben', 'Vers le haut', 'Su', 'Ensi'),
+    'Down': ('Nach unten', 'Vers le bas', 'Giù', 'Engiu'),
+    'Remove': ('Entfernen', 'Supprimer', 'Rimuovi', 'Allontanar'),
+    'Refresh': ('Aktualisieren', 'Actualiser', 'Aggiorna', 'Actualisar'),
+    'Help': ('Hilfe', 'Aide', 'Aiuto', 'Agid'),
+    'Menu': ('Menü', 'Menu', 'Menu', 'Menu'),
+    'Pause': ('Pause', 'Pause', 'Pausa', 'Pausa'),
+    'Previous': ('Vorherige', 'Précédent', 'Precedente', 'Precedent'),
+    'Live picture': ('Livebild', 'Image en direct', 'Immagine live', 'Maletg live'),
+    'Main navigation': ('Hauptnavigation', 'Navigation principale', 'Navigazione principale', 'Navigaziun principala'),
+    'Sub navigation': ('Unternavigation', 'Sous-navigation', 'Sottonavigazione', 'Sutnavigaziun'),
+    'Search': ('Suchen', 'Rechercher', 'Cerca', 'Tschertgar'),
+    'Listen': ('Zuhören', 'Écouter', 'Ascolta', 'Tadlar'),
+    'Other side': ('Andere Seite', 'Autre côté', 'Altro lato', 'Autra vart'),
+    'Favourite': ('Favorit', 'Favori', 'Preferito', 'Favurit'),
+    'Download': ('Herunterladen', 'Télécharger', 'Scarica', 'Telechargiar'),
+    'Share': ('Teilen', 'Partager', 'Condividi', 'Parter'),
+    'Zoom in': ('Vergrössern', 'Agrandir', 'Ingrandisci', 'Engrondir'),
+    'Zoom out': ('Verkleinern', 'Réduire', 'Riduci', 'Empitschnir'),
+    'Mute': ('Ton aus', 'Couper le son', 'Silenzia', 'Tun ora'),
+    'Sound on': ('Ton an', 'Son activé', 'Audio attivo', 'Tun en'),
+    'Protection state': ('Schutz-Zustand', 'État de la protection', 'Stato della protezione', 'Stadi da la protecziun'),
+    'Operate with the finger (otherwise the page scrolls)': ('Bedienen mit dem Finger (sonst scrollt die Seite)', 'Utiliser avec le doigt (sinon la page défile)', 'Usare con il dito (altrimenti la pagina scorre)', 'Manar cun il det (uschiglio sa mova la pagina)'),
+    'Finger: rotate instead of move': ('Finger: drehen statt verschieben', 'Doigt : tourner au lieu de déplacer', 'Dito: ruotare invece di spostare', 'Det: volver empè da spustar'),
+    'Large picture': ('Grosses Bild', 'Grande image', 'Immagine grande', 'Maletg grond'),
+    # 6: recordings
+    'Holiday over: delete all recordings': ('Ferien vorbei: alle Aufnahmen löschen', 'Vacances finies : supprimer tous les enregistrements', 'Vacanze finite: eliminare tutte le registrazioni', 'Vacanzas finidas: stizzar tut las registraziuns'),
+    'Also delete the favourites ⭐': ('Auch die Favoriten ⭐ löschen', 'Supprimer aussi les favoris ⭐', 'Eliminare anche i preferiti ⭐', 'Stizzar er ils favurits ⭐'),
+    'Delete ALL recordings now? This cannot be undone.': ('Jetzt ALLE Aufnahmen löschen? Das lässt sich nicht rückgängig machen.', 'Supprimer TOUS les enregistrements maintenant ? Impossible d’annuler.', 'Eliminare TUTTE le registrazioni ora? Non si può annullare.', 'Stizzar ussa TUT las registraziuns? Quai na sa lascha betg revocar.'),
+    'Favourites ⭐ are kept.': ('Favoriten ⭐ bleiben.', 'Les favoris ⭐ sont conservés.', 'I preferiti ⭐ restano.', 'Ils favurits ⭐ restan.'),
+    'favourites': ('Favoriten', 'favoris', 'preferiti', 'favurits'),
+    'Deleting …': ('Löschen …', 'Suppression …', 'Eliminazione …', 'Stizzar …'),
+    '{n} recordings deleted, {k} kept': ('{n} Aufnahmen gelöscht, {k} behalten', '{n} enregistrements supprimés, {k} conservés', '{n} registrazioni eliminate, {k} conservate', '{n} registraziuns stizzadas, {k} tegnidas'),
+    'please confirm': ('bitte bestätigen', 'merci de confirmer', 'conferma per favore', 'per plaschair confermar'),
+}
+for _k, _v in _HX_SICHER.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+
+# ---- the manual: one short section in every language (before «Tipps») ----------------------------------------------------
+_HELP_SICHER = {
+    "de": '<section id="sicher" data-icon="🔐"><h2>Sicher unterwegs</h2><ul>'
+          '<li><b>«Aus» in der Push-Nachricht</b> öffnet eine kleine Seite mit dem PIN-Feld: ausgeschaltet wird erst mit der Schutz-PIN '
+          '(ohne PIN mit dem Web-Passwort). Ist beides nicht gesetzt, geht «Aus» nur auf der Seite von MoveEye. Falsche PINs sperren wie im Web '
+          '(ab 3 kommt ein Diebstahl-Alarm). «Fehlalarm» und «Sirene» gehen weiterhin mit einem Tipp.</li>'
+          '<li><b>Nach einem Stromausfall oder Absturz</b> kommt eine Push-Nachricht, wie lange MoveEye aus war und ob der Schutz wieder läuft. '
+          'Nach einem Update oder Neustart nicht.</li>'
+          '<li><b>🌑 Nachtblick</b> (oben und als Schnellschalter): die ganze Seite sehr dunkel und rot, das Livebild gedimmt – für einen kurzen Blick '
+          'im Zelt, ohne die Augen zu blenden. Jeder Browser merkt es sich selbst. Im Fenster: ◑.</li>'
+          '<li><b>Aufnahmen nach … Tagen löschen</b> (Einstellungen → Aufnahme, 0 = nie) – zusätzlich zur Grössen-Grenze. '
+          '«🧹 Ferien vorbei: alle Aufnahmen löschen» fragt nach; ⭐ Favoriten bleiben, ausser man hakt sie an.</li>'
+          '<li><b>Bilder in Push-Nachrichten</b> (Benachrichtigungen): «nur Text» schickt kein Bild an ntfy, Telegram oder Pushover – das Bild bleibt in MoveEye.</li>'
+          '</ul></section>\n\n',
+    "en": '<section id="sicher" data-icon="🔐"><h2>Safe on the road</h2><ul>'
+          '<li><b>«Off» in the push message</b> opens a small page with a PIN field: the protection goes off only with the protection PIN '
+          '(without a PIN: the web password). With neither, «Off» works only on the page of MoveEye. Wrong PINs lock as on the web page '
+          '(from 3 on a theft alarm). «False alarm» and «Siren» still work with one tap.</li>'
+          '<li><b>After a power cut or a crash</b> a push message says how long MoveEye was off and whether the protection runs again. Not after an update or restart.</li>'
+          '<li><b>🌑 Night view</b> (top and as a quick switch): the whole page very dark and red, the live picture dimmed – for a short look in the tent '
+          'without dazzling your eyes. Every browser remembers it itself. In the window: ◑.</li>'
+          '<li><b>Delete recordings after … days</b> (Settings → Recording, 0 = never) – in addition to the size limit. '
+          '«🧹 Holiday over: delete all recordings» asks first; ⭐ favourites stay unless you tick them.</li>'
+          '<li><b>Pictures in push messages</b> (Notifications): «text only» sends no picture to ntfy, Telegram or Pushover – the picture stays in MoveEye.</li>'
+          '</ul></section>\n\n',
+    "fr": '<section id="sicher" data-icon="🔐"><h2>En sécurité en route</h2><ul>'
+          '<li><b>«Arrêt» dans la notification</b> ouvre une petite page avec un champ PIN : la protection ne s’arrête qu’avec le PIN de protection '
+          '(sans PIN : le mot de passe web). Sans les deux, «Arrêt» ne marche que sur la page de MoveEye. Les PIN erronés bloquent comme sur la page web '
+          '(dès 3, alarme vol). «Fausse alarme» et «Sirène» marchent toujours d’un toucher.</li>'
+          '<li><b>Après une coupure de courant ou un plantage</b>, une notification dit combien de temps MoveEye était éteint et si la protection tourne à nouveau. Pas après une mise à jour ou un redémarrage.</li>'
+          '<li><b>🌑 Vue de nuit</b> (en haut et comme interrupteur rapide) : toute la page très sombre et rouge, l’image en direct atténuée – pour un bref coup d’œil dans la tente. '
+          'Chaque navigateur s’en souvient. Dans la fenêtre : ◑.</li>'
+          '<li><b>Supprimer les enregistrements après … jours</b> (Réglages → Enregistrement, 0 = jamais) – en plus de la limite de taille. '
+          '«🧹 Vacances finies : supprimer tous les enregistrements» demande confirmation ; les favoris ⭐ restent, sauf si tu les coches.</li>'
+          '<li><b>Images dans les notifications push</b> : «texte seulement» n’envoie aucune image à ntfy, Telegram ou Pushover – l’image reste dans MoveEye.</li>'
+          '</ul></section>\n\n',
+    "it": '<section id="sicher" data-icon="🔐"><h2>Sicuri in viaggio</h2><ul>'
+          '<li><b>«Spento» nella notifica</b> apre una piccola pagina con il campo PIN: la protezione si spegne solo con il PIN di protezione '
+          '(senza PIN: la password web). Senza entrambi, «Spento» funziona solo sulla pagina di MoveEye. I PIN errati bloccano come sulla pagina web '
+          '(da 3 allarme furto). «Falso allarme» e «Sirena» funzionano sempre con un tocco.</li>'
+          '<li><b>Dopo un’interruzione di corrente o un arresto</b> una notifica dice per quanto tempo MoveEye è stato spento e se la protezione è di nuovo attiva. Non dopo un aggiornamento o un riavvio.</li>'
+          '<li><b>🌑 Vista notte</b> (in alto e come interruttore rapido): tutta la pagina molto scura e rossa, l’immagine live attenuata – per un breve sguardo nella tenda. '
+          'Ogni browser se lo ricorda. Nella finestra: ◑.</li>'
+          '<li><b>Eliminare le registrazioni dopo … giorni</b> (Impostazioni → Registrazione, 0 = mai) – oltre al limite di dimensione. '
+          '«🧹 Vacanze finite: eliminare tutte le registrazioni» chiede conferma; i preferiti ⭐ restano, a meno di spuntarli.</li>'
+          '<li><b>Immagini nelle notifiche push</b>: «solo testo» non invia immagini a ntfy, Telegram o Pushover – l’immagine resta in MoveEye.</li>'
+          '</ul></section>\n\n',
+    "rm": '<section id="sicher" data-icon="🔐"><h2>Segir sin viadi</h2><ul>'
+          '<li><b>«Ora» en l’avis push</b> avra ina pitschna pagina cun il champ PIN: la protecziun vegn stizzada mo cun il PIN da protecziun '
+          '(senza PIN: il pled-clav web). Senza omadus funcziuna «Ora» mo sin la pagina da MoveEye. PINs sbagliads bloccan sco en il web '
+          '(a partir da 3 in alarm da ladranaria). «Fauss alarm» e «Sirena» funcziunan vinavant cun in tip.</li>'
+          '<li><b>Suenter ina interrupziun da current u in collaps</b> di in avis push quant ditg che MoveEye era stizzà e sche la protecziun funcziuna puspè. Betg suenter in update u in restart.</li>'
+          '<li><b>🌑 Vista da notg</b> (sisura e sco cumutader svelt): tut la pagina fitg stgira e cotschna, il maletg live stgirentà – per in curt sguard en la tenda. '
+          'Mintga navigatur sa regorda sez. En la fanestra: ◑.</li>'
+          '<li><b>Stizzar las registraziuns suenter … dis</b> (Parameters → Registraziun, 0 = mai) – ultra dal limit da grondezza. '
+          '«🧹 Vacanzas finidas: stizzar tut las registraziuns» dumonda l’emprim; ils favurits ⭐ restan, auter che sch’ins als marca.</li>'
+          '<li><b>Maletgs en ils avis push</b>: «mo text» na trametta nagin maletg a ntfy, Telegram u Pushover – il maletg resta en MoveEye.</li>'
+          '</ul></section>\n\n',
+}
+
+
+def _help_sicher(doc, lang):
+    if '<section id="sicher"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    if i < 0:
+        i = doc.find('<section id="privacy"')
+    return doc[:i] + _HELP_SICHER[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en = HELP_PAGE.find('<div lang="en">')
+if _hp_en > 0:
+    HELP_PAGE = _help_sicher(HELP_PAGE[:_hp_en], "de") + _help_sicher(HELP_PAGE[_hp_en:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_sicher(HELP_X[_L], _L)
 # ---- the product page (2.95.52): the homepage of MoveEye (made as an artifact), packed here (gzip + base64) so the Pi
 # can show it without internet to guests in the same Wi-Fi at /info/. Questions from the form arrive as a push message. ----
 INFO_HTML_GZ = (  # 2.98.9: FAQ, French and Italian, «a night in time-lapse»; 2.98.7: MoveEye name, wake-up alarm, «Spiele freigeben», ticker, join wall, more animation

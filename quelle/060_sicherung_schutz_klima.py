@@ -1103,6 +1103,7 @@ class Notifier:
     def _send_main(self, p, jpg, fname):
         """the main channel (ntfy / Telegram / webhook) once; raises on failure; returns (HTTP code, where)"""
         kind = CFG["notify_type"]
+        jpg = sx_push_jpg(jpg)                           # «text only» - the picture stays in MoveEye (578)
         if kind == "telegram":
             return self._telegram(p, jpg, fname), "Telegram"
         if kind == "ntfy":
@@ -1115,6 +1116,7 @@ class Notifier:
             return r.status, _url_host(url)
 
     def _pushover(self, p, jpg, fname):
+        jpg = sx_push_jpg(jpg)                           # (578)
         ev = self._event(p)
         alarm = ev in ("person", "warm", "noise", "tamper")
         prio = 2 if alarm and CFG["pushover_emergency"] else (1 if alarm or ev == "test" else (-1 if ev == "info" else 0))

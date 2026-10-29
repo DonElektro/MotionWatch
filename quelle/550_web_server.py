@@ -135,7 +135,7 @@ class WebStream:
                 if (request.content_length or 0) < 1 << 20:
                     request.get_data()                      # read the body first, else the connection is reset
                 log_event("web", f"Blocked a request from another web page ({request.headers.get('Origin', '')[:60]}) to {request.path}")
-                return Response("Forbidden: request from another web page", 403)
+                return sx_err(403, "foreign")                  # in the own language (578)
             if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/na/", "/spiele", "/tv/", "/nt/", "/info", "/almanach")) or request.path in public:
                 return None                         # guest links check their own key; app icons are not secret
             pw = CFG["web_password"]
@@ -155,7 +155,7 @@ class WebStream:
             recent = [x for x in fails.get(ip, []) if now - x < 300]
             if len(recent) >= 8:
                 fails[ip] = recent
-                return Response("Too many failed logins - try again in a few minutes", 429, {"Retry-After": "300"})
+                return sx_err(429, "toomany", {"Retry-After": "300"})
             a = request.authorization
             who = user_login(a.username or "", a.password or "") if a else None
             if who:
@@ -172,7 +172,7 @@ class WebStream:
             if len(fails) > 500:
                 for k in [k for k, v in fails.items() if not v or now - v[-1] > 300]:
                     fails.pop(k, None)
-            return Response("Login required", 401, {"WWW-Authenticate": 'Basic realm="Motion Watch"'})
+            return sx_err(401, "login", {"WWW-Authenticate": 'Basic realm="MoveEye", charset="UTF-8"'})   # guests see the realm
 
         @app.before_request
         def role_guard():                           # users with a role: what they may do
@@ -1157,6 +1157,7 @@ class WebStream:
 
         timeline_routes(app, reply, body, request, Response)    # 2.98.14: Verlauf → Zeitleiste + weekly report (523)
         alx_routes(app, watch, reply, body)                # 2.98.13: push buttons /na/, «What was it?» (066)
+        sx_routes(app, watch, reply, body)                 # night view / screen reader script, «holiday over», error pages (578)
 
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
@@ -2609,7 +2610,7 @@ class WebStream:
         @app.route("/g/<token>")
         def guest_page(token):
             if not guest_ok(token):
-                return Response("This guest link is not valid (any more).", 404, mimetype="text/plain")
+                return sx_err(404, "guest")
             keep = COMMON_JS[COMMON_JS.index("function keepStream"):COMMON_JS.index("\nconst post")]
             gt = {L: {k: TRX[L][k] for k in GUEST_KEYS if TRX[L].get(k)} for L in ("fr", "it", "rm")}
             return Response(GUEST_PAGE.replace("__BASE__", "/g/" + token).replace("/*KEEP*/", keep).replace("/*GT*/{}", json.dumps(gt, ensure_ascii=False)),
