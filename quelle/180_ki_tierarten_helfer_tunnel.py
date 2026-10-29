@@ -523,12 +523,14 @@ def _tun_pipe(a, b):
                 except OSError:
                     pass
     TUN["open"] += 1
+    TUN.setdefault("pipes", set()).add(b)                # 2.98.26: the simulator side, to close it when a newer simulator comes
     t1 = threading.Thread(target=one, args=(a, b), daemon=True); t2 = threading.Thread(target=one, args=(b, a), daemon=True)
     t1.start(); t2.start()
 
     def done():
         t1.join(); t2.join()
         TUN["open"] -= 1
+        TUN.get("pipes", set()).discard(b)
         for z in (a, b):
             try:
                 z.close()
@@ -565,6 +567,42 @@ def _tun_take():
             continue
         return c
     return None
+
+
+def _tun_instance_ok(inst, peer):
+    """2.98.26 (Daniel: «das Bild springt zwischen zwei Ansichten»): two simulator windows were open (an old one after an update,
+    or started twice) and both sent their lines - MoveEye took lines of both, so the picture jumped between the two. Each
+    simulator (3D-4.8) names itself «start time-process»: the newest one wins, the lines of the older one are refused."""
+    try:
+        t_new = int(str(inst).split("-")[0])
+    except ValueError:
+        return True
+    cur = TUN.get("inst") or ""
+    if inst == cur:
+        return True
+    try:
+        t_cur = int(cur.split("-")[0]) if cur else 0
+    except ValueError:
+        t_cur = 0
+    if t_new >= t_cur:
+        if cur:
+            TUN["dupe"] = {"t": time.time(), "peer": peer}
+            log_event("sys", f"Tunnel: a newer simulator window connected ({peer}) - the lines of the older one are closed. "
+                             "Two simulators were open: close the old window.")
+            TUN["inst"] = inst
+            tunnel_flush()
+            for z in list(TUN.get("pipes", ())):        # running streams of the old window: closed, they reconnect to the new one
+                try:
+                    z.shutdown(_socket.SHUT_RDWR)
+                except OSError:
+                    pass
+        TUN["inst"] = inst
+        return True
+    TUN["dupe"] = {"t": time.time(), "peer": peer}
+    if time.time() - TUN.get("dupe_log", 0.0) > 600:
+        TUN["dupe_log"] = time.time()
+        log_event("sys", f"Tunnel: a second, older simulator window ({peer}) is refused - please close it")
+    return False
 
 
 def tunnel_flush():
@@ -607,7 +645,9 @@ def tunnel_start():
                         break
                     line += ch
                 parts = line.decode("ascii", "replace").split()
-                good = bool(CFG.get("tunnel_on")) and len(parts) == 2 and parts[0] == "MWTUN1" and secrets.compare_digest(parts[1], tunnel_code())
+                good = bool(CFG.get("tunnel_on")) and len(parts) in (2, 3) and parts[0] == "MWTUN1" and secrets.compare_digest(parts[1], tunnel_code())
+                if good and len(parts) == 3 and not _tun_instance_ok(parts[2], addr[0]):
+                    c.sendall(b"NO\n"); c.close(); continue    # 2.98.26: an older simulator window (two are open) is refused
                 if parts and parts[0] == "MWTUN1":           # 2.95.66: only a simulator counts (not the own simulator search)
                     TUN["try"] = {"peer": addr[0], "t": time.time(), "ok": good}     # 2.95.60: shown on the page (wrong code?)
                 if not good:
@@ -684,7 +724,8 @@ def tunnel_state():
     return {"on": bool(CFG.get("tunnel_on")), "code": tunnel_code() if CFG.get("tunnel_on") else "", "port": TUN_PORT, "active": tunnel_active(),
             "peer": TUN["peer"], "idle": len(TUN["pool"]), "open": TUN["open"], "mb": round(TUN["bytes"] / 1e6, 1),
             "listen": TUN["listen"], "try": ({"peer": TUN["try"]["peer"], "ago": int(time.time() - TUN["try"]["t"]), "ok": TUN["try"]["ok"]} if TUN["try"] else None),
-            "sim_port": _tun_direct_port()}
+            "sim_port": _tun_direct_port(),
+            "dupe": bool(TUN.get("dupe") and time.time() - TUN["dupe"]["t"] < 30)}
 
 
 def _tun_direct_port():

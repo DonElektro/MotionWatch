@@ -18,6 +18,7 @@ var msg := "aus"
 var ok_t := 0.0                     # last time MoveEye accepted the code
 var bytes := 0
 var _next := 0.0
+var inst := "%d-%d" % [int(Time.get_unix_time_from_system()), OS.get_process_id()]   # 3D-4.8: which simulator (MoveEye takes only the newest)
 var _fails := 0                     # 3D-3.75: failed tries in a row - wait longer each time (3 s … 15 s)
 const RECYCLE := 40.0               # 3D-3.75: an idle connection is renewed after 40-55 s (routers forget quiet connections)
 const PIPE_IDLE := 180.0            # 3D-3.75: a pipe without any byte for 3 minutes is closed
@@ -90,7 +91,7 @@ func _step(c: Dictionary, now: float) -> void:
 		"connect":
 			if s == StreamPeerTCP.STATUS_CONNECTED:
 				o.set_no_delay(true)
-				o.put_data(("MWTUN1 %s\n" % code).to_utf8_buffer())
+				o.put_data(("MWTUN1 %s %s\n" % [code, inst]).to_utf8_buffer())
 				c["st"] = "hello"
 				c["t"] = now
 			elif now - float(c["t"]) > 6.0:

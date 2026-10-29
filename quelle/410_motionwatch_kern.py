@@ -170,6 +170,7 @@ class MotionWatch:
                 ls_[2] += 1
             if self.cap is not None and str(STATE.get("source_id", "")).startswith("sim:") and not CFG["sim_on"]:
                 self.cap.release(); self.cap = None                # simulation switched off: never keep the simulator picture
+                STATE.update(source_id=CFG["source"], source_label=source_label(CFG["source"]))     # 2.98.26: not «Simulator» any more
                 STATE["source_status"] = f"failed: {err}"; self._retry_at = time.time() + 3.0
             elif self.cap is not None and str(sid).startswith("sim:") and CFG["sim_on"]:
                 # 2.95.55: the simulation is on but its camera gives no picture (slow PC / VM, firewall): keep the working
@@ -714,6 +715,10 @@ class MotionWatch:
             if self.cap is None:
                 self.relays.update(set()); STATE["present"] = []
                 self.frame_out = self.no_camera_frame(); time.sleep(0.5)
+                if self.web_viewers > 0:                      # 2.98.26: show it - before, the last picture (simulator) stood still
+                    ok_nc, buf_nc = cv2.imencode(".jpg", self.frame_out, [cv2.IMWRITE_JPEG_QUALITY, 70])
+                    if ok_nc:
+                        self.jpeg = buf_nc.tobytes(); self.jpeg_seq += 1
                 if not self._opening and time.time() >= self._retry_at:
                     self._start_opener(CFG["source"])
                 continue

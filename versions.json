@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 18:04",
+ "generated": "2026-10-29 18:29",
  "versions": [
   {
-   "version": "2.98.25",
-   "file": "webcam_bewegung_2_98_25.py",
+   "version": "2.98.26",
+   "file": "webcam_bewegung_2_98_26.py",
    "url": "",
-   "sha256": "b30aace31218adab4fdfb96998e353de56ff4ec9b8e312853d9c99b4741188bd",
-   "date": "2026-10-29 18:03",
-   "notes": "App-Schlüssel für Home Assistant und Kurzbefehle (auch über http, können Passwort und Sicherheit nie ändern, jederzeit sperrbar); alles zur Sicherheit an einem Ort (Einstellungen → Sicherheit); ein Knopf Hell → Dunkel → Rotlicht (früher eigener Knopf «Dunkle Ansicht»); Simulator: Spiel-Karte schlank, Bewachte Sachen, Sim-Schalter nur als Kachel, Unsichtbar-Trank.",
-   "sig": "4c6fa7f40f5db1764ac8024d58b9522c9e0f495ac4349850f6ebcab7337512ddf2b0bff7a8b5fb2692e29b13bb11d3b6cf65bb3f031d113d413cd3d0eb9a560a"
+   "sha256": "7bed7ac16671f59e660e70e35607a6234268d9ce4ee96843872adc9c02f6c9c2",
+   "date": "2026-10-29 18:29",
+   "notes": "Simulator: zwei offene Simulator-Fenster liessen das Bild zwischen zwei Ansichten springen – jetzt zählt nur das neueste (mit Simulator 3D-4.8). Nach dem Ausschalten der Simulation bleibt das Simulator-Bild nicht mehr stehen (man sieht den Stand der echten Kamera); die Pi-Kamera als Hauptkamera hat Vorrang vor einer Zusatzkamera und wird bei «besetzt» nochmals versucht.",
+   "sig": "c343b7079ba12e6dec5dc5b0da1161a2126bef23643bbdfe25514ff85b4ffce87d5b570ef7c49f39ec0c472421c211bc99195d5bfba80379b4f7723c04518f0d"
   },
   {
    "version": "2.97.1",

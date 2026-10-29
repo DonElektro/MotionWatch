@@ -1,12 +1,12 @@
 {
- "version": "3D-4.7",
+ "version": "3D-4.8",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31497088,
- "sha256": "f2fd9b4f57c32147d8f8f285260065bcfdbd8a3d38a4625f408e02666095a45f",
- "notes": "Spiel-Karte schlank, Bewachte Sachen in Dein Platz, Unsichtbar-Trank",
+ "size": 31497236,
+ "sha256": "6279de5eada7c8f1c53a4b7219771b136080e0bc0722f220621e23d40be84f84",
+ "notes": "Tunnel: nur das neueste Simulator-Fenster zählt (kein Springen zwischen zwei Ansichten)",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24619868,
-  "sha256": "c3426df4b4db2d3f7a653fcb1513ed83e59982a838bdf17c29a2709edce14a44"
+  "size": 24620135,
+  "sha256": "8d208a055de1cb835d9b8f8e53528e541c0fd98327b81e0fe1cf9d86eab4db28"
  }
 }

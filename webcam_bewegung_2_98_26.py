@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_25.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_26.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,10 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.26: Simulator: zwei offene Simulator-Fenster liessen das Bild zwischen zwei Ansichten springen – jetzt zählt nur das
+    neueste (mit Simulator 3D-4.8). Nach dem Ausschalten der Simulation bleibt das Simulator-Bild nicht mehr stehen (man sieht
+    den Stand der echten Kamera); die Pi-Kamera als Hauptkamera hat Vorrang vor einer Zusatzkamera und wird bei «besetzt»
+    nochmals versucht.
   * 2.98.25: App-Schlüssel für Home Assistant und Kurzbefehle (auch über http, können Passwort und Sicherheit nie ändern,
     jederzeit sperrbar); alles zur Sicherheit an einem Ort (Einstellungen → Sicherheit); ein Knopf Hell → Dunkel → Rotlicht
     (früher eigener Knopf «Dunkle Ansicht»); Simulator: Spiel-Karte schlank, Bewachte Sachen, Sim-Schalter nur als Kachel,
@@ -908,10 +912,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_25.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_26.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_25.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_25.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_26.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_26.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -928,7 +932,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.25"
+APP_VERSION = "2.98.26"
 
 
 def default_data_dir():
@@ -14160,12 +14164,14 @@ def _tun_pipe(a, b):
                 except OSError:
                     pass
     TUN["open"] += 1
+    TUN.setdefault("pipes", set()).add(b)                # 2.98.26: the simulator side, to close it when a newer simulator comes
     t1 = threading.Thread(target=one, args=(a, b), daemon=True); t2 = threading.Thread(target=one, args=(b, a), daemon=True)
     t1.start(); t2.start()
 
     def done():
         t1.join(); t2.join()
         TUN["open"] -= 1
+        TUN.get("pipes", set()).discard(b)
         for z in (a, b):
             try:
                 z.close()
@@ -14202,6 +14208,42 @@ def _tun_take():
             continue
         return c
     return None
+
+
+def _tun_instance_ok(inst, peer):
+    """2.98.26 (Daniel: «das Bild springt zwischen zwei Ansichten»): two simulator windows were open (an old one after an update,
+    or started twice) and both sent their lines - MoveEye took lines of both, so the picture jumped between the two. Each
+    simulator (3D-4.8) names itself «start time-process»: the newest one wins, the lines of the older one are refused."""
+    try:
+        t_new = int(str(inst).split("-")[0])
+    except ValueError:
+        return True
+    cur = TUN.get("inst") or ""
+    if inst == cur:
+        return True
+    try:
+        t_cur = int(cur.split("-")[0]) if cur else 0
+    except ValueError:
+        t_cur = 0
+    if t_new >= t_cur:
+        if cur:
+            TUN["dupe"] = {"t": time.time(), "peer": peer}
+            log_event("sys", f"Tunnel: a newer simulator window connected ({peer}) - the lines of the older one are closed. "
+                             "Two simulators were open: close the old window.")
+            TUN["inst"] = inst
+            tunnel_flush()
+            for z in list(TUN.get("pipes", ())):        # running streams of the old window: closed, they reconnect to the new one
+                try:
+                    z.shutdown(_socket.SHUT_RDWR)
+                except OSError:
+                    pass
+        TUN["inst"] = inst
+        return True
+    TUN["dupe"] = {"t": time.time(), "peer": peer}
+    if time.time() - TUN.get("dupe_log", 0.0) > 600:
+        TUN["dupe_log"] = time.time()
+        log_event("sys", f"Tunnel: a second, older simulator window ({peer}) is refused - please close it")
+    return False
 
 
 def tunnel_flush():
@@ -14244,7 +14286,9 @@ def tunnel_start():
                         break
                     line += ch
                 parts = line.decode("ascii", "replace").split()
-                good = bool(CFG.get("tunnel_on")) and len(parts) == 2 and parts[0] == "MWTUN1" and secrets.compare_digest(parts[1], tunnel_code())
+                good = bool(CFG.get("tunnel_on")) and len(parts) in (2, 3) and parts[0] == "MWTUN1" and secrets.compare_digest(parts[1], tunnel_code())
+                if good and len(parts) == 3 and not _tun_instance_ok(parts[2], addr[0]):
+                    c.sendall(b"NO\n"); c.close(); continue    # 2.98.26: an older simulator window (two are open) is refused
                 if parts and parts[0] == "MWTUN1":           # 2.95.66: only a simulator counts (not the own simulator search)
                     TUN["try"] = {"peer": addr[0], "t": time.time(), "ok": good}     # 2.95.60: shown on the page (wrong code?)
                 if not good:
@@ -14321,7 +14365,8 @@ def tunnel_state():
     return {"on": bool(CFG.get("tunnel_on")), "code": tunnel_code() if CFG.get("tunnel_on") else "", "port": TUN_PORT, "active": tunnel_active(),
             "peer": TUN["peer"], "idle": len(TUN["pool"]), "open": TUN["open"], "mb": round(TUN["bytes"] / 1e6, 1),
             "listen": TUN["listen"], "try": ({"peer": TUN["try"]["peer"], "ago": int(time.time() - TUN["try"]["t"]), "ok": TUN["try"]["ok"]} if TUN["try"] else None),
-            "sim_port": _tun_direct_port()}
+            "sim_port": _tun_direct_port(),
+            "dupe": bool(TUN.get("dupe") and time.time() - TUN["dupe"]["t"] < 30)}
 
 
 def _tun_direct_port():
@@ -15918,7 +15963,18 @@ def open_source(spec, thermal=False):
             src = (_open_usb(int(arg), raw=True) or _open_usb(int(arg))) if thermal else _open_usb(int(arg))
             return (src, spec, label, "") if src else (None, spec, label, f"no picture from /dev/video{arg}")
         if kind == "pi":
-            return PiCamSource(int(arg)), spec, label, ""
+            if not thermal and spec in CFG.get("extra_cams", []) and STATE.get("source_id") != spec and CFG.get("source") == spec:
+                # 2.98.26: the Pi camera can be open only once - the main camera has priority over an extra camera
+                CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x != spec]; save_settings()
+                log_event("sys", f"{label}: removed from the extra cameras - it is the main camera now")
+                cams_apply(); time.sleep(2.0)
+            try:
+                return PiCamSource(int(arg)), spec, label, ""
+            except Exception as e:
+                if "busy" in str(e).lower() or "acquire" in str(e).lower():
+                    time.sleep(2.0)                              # the old picture of the camera is still being closed: once more
+                    return PiCamSource(int(arg)), spec, label, ""
+                raise
         if kind == "senxor":
             if not thermal:
                 return None, spec, label, "the Thermal-90 can only be used as thermal camera"
@@ -21281,8 +21337,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.7", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31497088,
-         "sha256": "f2fd9b4f57c32147d8f8f285260065bcfdbd8a3d38a4625f408e02666095a45f"}
+SIM3D = {"version": "3D-4.8", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31497236,
+         "sha256": "6279de5eada7c8f1c53a4b7219771b136080e0bc0722f220621e23d40be84f84"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -21423,8 +21479,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-4.7", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24619868,
-           "sha256": "c3426df4b4db2d3f7a653fcb1513ed83e59982a838bdf17c29a2709edce14a44", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-4.8", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24620135,
+           "sha256": "8d208a055de1cb835d9b8f8e53528e541c0fd98327b81e0fe1cf9d86eab4db28", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -26795,7 +26851,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_25.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_26.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -28452,6 +28508,7 @@ class MotionWatch:
                 ls_[2] += 1
             if self.cap is not None and str(STATE.get("source_id", "")).startswith("sim:") and not CFG["sim_on"]:
                 self.cap.release(); self.cap = None                # simulation switched off: never keep the simulator picture
+                STATE.update(source_id=CFG["source"], source_label=source_label(CFG["source"]))     # 2.98.26: not «Simulator» any more
                 STATE["source_status"] = f"failed: {err}"; self._retry_at = time.time() + 3.0
             elif self.cap is not None and str(sid).startswith("sim:") and CFG["sim_on"]:
                 # 2.95.55: the simulation is on but its camera gives no picture (slow PC / VM, firewall): keep the working
@@ -28996,6 +29053,10 @@ class MotionWatch:
             if self.cap is None:
                 self.relays.update(set()); STATE["present"] = []
                 self.frame_out = self.no_camera_frame(); time.sleep(0.5)
+                if self.web_viewers > 0:                      # 2.98.26: show it - before, the last picture (simulator) stood still
+                    ok_nc, buf_nc = cv2.imencode(".jpg", self.frame_out, [cv2.IMWRITE_JPEG_QUALITY, 70])
+                    if ok_nc:
+                        self.jpeg = buf_nc.tobytes(); self.jpeg_seq += 1
                 if not self._opening and time.time() >= self._retry_at:
                     self._start_opener(CFG["source"])
                 continue
@@ -52145,7 +52206,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.25")
+        self.root.title("MoveEye 2.98.26")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -52498,7 +52559,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.25 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.26 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
