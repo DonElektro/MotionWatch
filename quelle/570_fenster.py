@@ -776,7 +776,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.27")
+        self.root.title("MoveEye 2.98.28")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -983,6 +983,16 @@ class App:
     def _panel(self, parent):
         return tk.Frame(parent, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=12, pady=10)
 
+    def _tk_live_land(self, w=None, h=None):
+        """2.98.26: wide, low window (like Daniel's PC): the controls go right of the live picture instead of under it."""
+        try:
+            w = w or self.root.winfo_width(); h = h or self.root.winfo_height()
+            if w < 50 or h < 50:
+                w, h = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+        except Exception:
+            return False
+        return w >= 1000 and w >= h * 1.45
+
     def _win_w(self):
         w = self.root.winfo_width()
         return w if w > 50 else min(self.root.winfo_screenwidth(), 1360)
@@ -995,12 +1005,13 @@ class App:
         return (w < 1100, side, left >= 800)
 
     def _on_resize(self, e):
-        if e.widget is self.root and not self.video_only and self._layout(e.width) != getattr(self, "_lay", None):
+        if e.widget is self.root and not self.video_only and (self._layout(e.width) != getattr(self, "_lay", None)
+                                                              or self._tk_live_land(e.width, e.height) != getattr(self, "_lay_land", None)):
             self._schedule_rebuild()
 
     def _build(self):
         r = self.root
-        self._lay = self._layout()
+        self._lay = self._layout(); self._lay_land = self._tk_live_land()
         if not getattr(self, "_resize_bound", False):
             self._resize_bound = True; r.bind("<Configure>", self._on_resize, add="+")
         self.stat, self.badges = {}, {}
@@ -1129,7 +1140,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.27 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.28 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1368,9 +1379,14 @@ class App:
             self.video = tk.Label(vh, bg="#000", bd=0, cursor="hand2"); self.video.pack(fill="both", expand=True)
             self.video.bind("<Double-Button-1>", lambda e: self.toggle_video_only())
             self.video.bind("<Button-3>", lambda e: self._view_menu(e.x_root, e.y_root))
+            land = self._tk_live_land()                   # 2.98.26: wide window = the controls right of the picture (the picture keeps the height)
+            self._ctl_side = land
             if show("controls"):
                 c = tk.Frame(left, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=12, pady=8)
-                c.grid(row=1, column=0, sticky="ew", pady=(10, 0))
+                if land:
+                    c.grid(row=0, column=1, sticky="nsew", padx=(10, 0)); left.columnconfigure(1, weight=0)
+                else:
+                    c.grid(row=1, column=0, sticky="ew", pady=(10, 0))
                 folded = self._ctl_folded()
                 hd = tk.Frame(c, bg=C["panel"], cursor="hand2"); hd.pack(fill="x")
                 h1 = tk.Label(hd, text=tr("CAMERA CONTROL"), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"), cursor="hand2")
@@ -1434,16 +1450,21 @@ class App:
     SPEEDS = (("Slow", 12.0), ("Medium", 30.0), ("Fast", 60.0))
 
     def _build_controls(self, f):
-        wide = self._lay[2]                              # wide: stick | small things | quick switches in one row
+        side_col = getattr(self, "_ctl_side", False)     # 2.98.26: in the column right of the picture = the narrow arrangement
+        wide = self._lay[2] and not side_col             # wide: stick | small things | quick switches in one row
         left_w = self._win_w() - self._lay[1] - 60
-        tiny = not wide and left_w < 520                 # very narrow: small things beside the stick, switches below both
+        tiny = side_col or (not wide and left_w < 520)   # very narrow: small things beside the stick, switches below both
+        head = live_has_head()                           # 2.98.26: joystick, centre, calibrate, waypoints only with a pan / tilt head
         bar = tk.Frame(f, bg=C["panel"]); bar.pack(fill="x")
         # 1) joystick with the camera position (orange ring) and the waypoints
         swap = "ctl:swap" in self.open_secs                # ⇆ left- / right-handed: stick and small buttons change places
         c_st, c_sd = (1, 0) if swap else (0, 1)
-        sb = tk.Frame(bar, bg=C["panel"]); sb.grid(row=0, column=c_st, rowspan=1 if (wide or tiny) else 2, sticky="n")
-        self.stick = StickPad(sb, self, 176 if wide else 140); self.stick.pack()
-        self.l_pt = tk.Label(sb, text="", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8)); self.l_pt.pack(pady=(2, 0))
+        sb = tk.Frame(bar, bg=C["panel"])
+        if head or MOVER["avail"]:
+            sb.grid(row=0, column=c_st, rowspan=1 if (wide or tiny) else 2, sticky="n")
+        if head:
+            self.stick = StickPad(sb, self, 176 if wide else 140); self.stick.pack()
+            self.l_pt = tk.Label(sb, text="", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8)); self.l_pt.pack(pady=(2, 0))
         # the mover (2.94.0): second stick under the camera stick, only while the mover is there
         self.mstick = MoverPad(sb, self, 140 if wide else 116)
         if MOVER["avail"]:
@@ -1485,6 +1506,10 @@ class App:
             for _, short, cmd, tip in btns:
                 self._fbtn(side, short, cmd, tip).pack(side="left", padx=(6, 0))
             swb(side).pack(side="left", padx=(6, 0))
+        if not head:
+            side.grid_remove()
+            tk.Label(bar, text=tr("no pan / tilt head - joystick hidden (Settings → Camera / Servos → Servo driver)"), bg=C["panel"], fg=C["mut"],
+                     font=("DejaVu Sans", 8), wraplength=360, justify="left").grid(row=3, column=0, columnspan=4, sticky="w")
         self.l_ctl_status = tk.Label(side if wide else bar, text="", bg=C["panel"], fg=C["yel"], font=("DejaVu Sans", 8), wraplength=200 if wide else 400,
                                      justify="left")
         if wide:
@@ -1505,7 +1530,7 @@ class App:
             grid.columnconfigure(k, weight=1, uniform="qs")
         self.qs_tiles = {}
         th = 58 if wide else 50
-        qs = qs_arrange(self._qs_list()) + [dict(id="edit", ic="✎", lb=tr("Arrange"), tip=tr("Choose and arrange the switches"),
+        qs = [q for q in qs_arrange(self._qs_list()) if head or q["id"] not in ("track", "patrol")] + [dict(id="edit", ic="✎", lb=tr("Arrange"), tip=tr("Choose and arrange the switches"),
                                                  on=lambda: False, go=self._qs_edit)]
         for n, q in enumerate(qs):
             t = tk.Frame(grid, bg=self._btn2(), highlightthickness=1, highlightbackground=C["line"], width=50, height=th, cursor="hand2")
@@ -1530,7 +1555,7 @@ class App:
         """Folded by the user - or by default on a low screen (picture first), until unfolded."""
         h = self.root.winfo_height()
         h = h if h > 50 else self.root.winfo_screenheight()
-        return "ctl:folded" in self.open_secs or (h < 640 and "ctl:open" not in self.open_secs)
+        return "ctl:folded" in self.open_secs or (h < 640 and "ctl:open" not in self.open_secs and not self._tk_live_land())
 
     def _fold_ctl(self):
         fold = not self._ctl_folded()
@@ -2772,7 +2797,7 @@ class App:
         return self.watch.ai.net is not None and CFG["ai_enabled"]
 
     def _relay_sig(self):
-        return json.dumps([{k: v for k, v in r.items() if k != "mode"} for r in RELAYS], sort_keys=True) + str(self._ai_ok())
+        return json.dumps([{k: v for k, v in r.items() if k != "mode"} for r in RELAYS], sort_keys=True) + str(self._ai_ok()) + str(live_has_head())
 
     def _relay_msg(self, text):
         self.relay_err = ("⚠ " + tr_err(text)) if text else ""
