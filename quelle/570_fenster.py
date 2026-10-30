@@ -518,6 +518,7 @@ TK_GROUP_TAB = {"alarm": "protect", "notify": "protect", "theft": "protect", "sc
 TK_SIM_GROUPS = [("simset", "Settings of the simulation", ["Simulator"])]
 TK_PSEUDO = {"Improve detection"}
 TK_AI_MODEL_KEYS = ("ai_model", "ai_own_url", "ai_own_auto")   # 2.98.23 (Konzept): shown together in the group «KI-Modell» (section AI detection)
+TK_SPECIES_KEYS = ("species_on", "species_model", "species_norm", "species_conf")   # aufr (Konzept): the group «Tierart» (like «KI-Modell»)
 SECTIONS = ["Wake-up alarm", "Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup", "Security"]
 
@@ -567,7 +568,7 @@ VIEW_ITEMS = [  # (group, key, label)
     ("Header", "b_therm", "Thermal camera"), ("Header", "b_patrol", "Patrol"), ("Header", "b_hs", "Own Wi-Fi (hotspot)"), ("Header", "b_remote", "Remote access"), ("Header", "b_batt", "Battery"), ("Header", "b_update", "New version"),
     ("Header", "b_relays", "Relays"), ("Header", "b_rain", "Rain"), ("Header", "b_wind", "Wind"), ("Header", "b_light", "Light level"),
     ("Header", "b_auto", "Auto-tune"), ("Header", "b_fps", "FPS"), ("Header", "b_env", "Outside temperature"), ("Header", "b_view", "Viewers"),
-    ("Panels", "controls", "Camera control"), ("Panels", "weather", "Weather"), ("Panels", "cpu", "System · CPU"),
+    ("Panels", "weather", "Weather"), ("Panels", "cpu", "System · CPU"),     # aufr: «Camera control» only in ◫ Ansicht (581, card «Controls»)
     ("Panels", "log", "Event log"), ("Panels", "settings_line", "Settings status"),
 ] + [("Settings sections", "sec:" + s, s) for s in SECTIONS]
 STAT_TILES = []          # the statistics tiles were removed in 2.2.2 (FPS / persons / objects are in the header and the log)
@@ -776,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.38")
+        self.root.title("MoveEye 2.98.39")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1143,7 +1144,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.38 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.39 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1511,7 +1512,7 @@ class App:
                 ("⚑ + " + tr("Waypoint"), "⚑+", self._add_wp, tr("Save the current position as waypoint for the patrol")),
                 ("⚑ ✕", "⚑✕", self._clear_wp_ask, tr("Clear waypoints")),
                 ("⏹ " + tr("Stop"), "⏹", self._srv_estop_btn, tr("Emergency stop") + " / " + tr("Release")),          # 2.98.35 (588)
-                ("📍 " + tr("Positions"), "📍", lambda: self._srv_win("teach"), tr("Servos: safety, positions, diagnosis")))
+                ("📍 " + tr("Positions"), "📍", lambda: self._srv_win("teach"), tr("Servos: safety, positions, test, diagnosis")))
         swb = lambda par: self._fbtn(par, "⇆", self._swap_side, tr("Swap stick and buttons (left- / right-handed)"), font=("DejaVu Sans", 11, "bold"))
         if wide:
             r0 = tk.Frame(side, bg=C["panel"]); r0.pack(fill="x")
@@ -2030,11 +2031,11 @@ class App:
             self._bt_sig = None
         for s, key, label in TOGGLES:
             if s != sec or simple_hidden(key) or (CFG["lock_on"] and key in LOCK_DENY_KEYS): continue
-            if key in TK_AI_MODEL_KEYS: continue           # 2.98.23: in the group «KI-Modell» below
+            if key in TK_AI_MODEL_KEYS or key in TK_SPECIES_KEYS: continue      # 2.98.23 / aufr: in the groups «KI-Modell» / «Tierart» below
             tg = Toggle(sp, tr(label), CFG[key], lambda val, k=key: self._set(k, val)); tg.pack(fill="x", pady=3)
             self.vars[key] = tg; self._g2_q(tg, key)          # «?»: explanation + recommendation (584)
         for s, key, label, lo, hi, step in SLIDERS:
-            if s != sec or simple_hidden(key): continue
+            if s != sec or simple_hidden(key) or key in TK_SPECIES_KEYS: continue
             row = ttk.Frame(sp); row.pack(fill="x", pady=(6, 0))
             ttk.Label(row, text=tr(label)).pack(side="left")
             vl = ttk.Label(row, text=str(CFG[key]), style="Mut.TLabel"); vl.pack(side="right"); self.value_labels[key] = vl
@@ -2055,7 +2056,7 @@ class App:
         if sec == "Messages":
             ttk.Label(sp, text=tr("Empty = standard text. Placeholders:") + " " + MSG_PLACEHOLDERS, style="Mut.TLabel",
                       wraplength=330, justify="left").pack(anchor="w", pady=(2, 0))
-        self._build_texts(sp, sec, skip=TK_AI_MODEL_KEYS)
+        self._build_texts(sp, sec, skip=TK_AI_MODEL_KEYS + TK_SPECIES_KEYS)
         if sec == "SMS (LTE stick)":
             def sms_test():
                 ok, err = sms_send(f"{CFG['device_name'] or 'MoveEye'}: " + tr("test SMS - it works"), force=True)
@@ -2170,6 +2171,7 @@ class App:
                     tg_ = Toggle(sbody, tr(label_), CFG[key_], lambda val, k=key_: self._set(k, val)); tg_.pack(fill="x", pady=(6, 0))
                     self.vars[key_] = tg_
             self._build_texts(sbody, sec, only=("ai_own_url",))
+            self._tk_species_group(sbody.master, sec)          # aufr: «Tierart» as its own group below «KI-Modell»
         if sec == "Notifications":
             ttk.Button(sbody, text=tr("Test notification"),
                        command=lambda: self.watch.notifier.test(self.watch.frame_out)).pack(fill="x", pady=(8, 0))

@@ -533,7 +533,7 @@ def place_apply(items, public_report=True, patrol=None, by="web"):
     room = MAX_ZONES - len(keep)
     for it in its:
         k = it["kind"]
-        if k not in ("tent", "access", "ignore"):
+        if k not in ("tent", "access", "ignore", "public_path"):
             continue
         if len(new) >= room:
             skipped += 1; continue
@@ -543,7 +543,8 @@ def place_apply(items, public_report=True, patrol=None, by="web"):
             z = {"mode": "line", "name": "🚶 " + it["name"], "points": _zone_points(ang, True), "ang": ang, "dir": "both"}
         else:
             ang = [[it["a0"], it["e1"]], [it["a1"], it["e1"]], [it["a1"], it["e0"]], [it["a0"], it["e0"]]]
-            z = {"mode": "loiter" if k == "tent" else "ignore", "name": ("⛺ " if k == "tent" else "🌿 ") + it["name"], "points": _zone_points(ang), "ang": ang}
+            z = {"mode": {"tent": "loiter", "public_path": "report"}.get(k, "ignore"), "name": {"tent": "⛺ ", "public_path": "🛣 "}.get(k, "🌿 ") + it["name"],
+                 "points": _zone_points(ang), "ang": ang}            # aufr: the public path = a zone «nur melden» (030), editable in the zone editor
             if k == "tent":
                 z["secs"] = int(CFG.get("place_tent_secs", 15))
         z.update(id=uuid.uuid4().hex[:8], anchor=True, src="place")
@@ -701,6 +702,36 @@ def place_state(lang=None):
 PLACE_GATE = {"pub_t": 0.0, "tent_t": 0.0}
 
 
+def place_report_migrate():
+    """aufr: the «public path» of a place set up with 2.98.36 or older was only an item of the place record (alarm_gate looked
+    at it). Now it is a zone «nur melden» (mode report, stays on its place) - made once from the record, so it shows up
+    and can be changed in the zone editor. Returns the list of what was taken over."""
+    rec = _place_load() or {}
+    pubs = [it for it in (rec.get("items") or []) if isinstance(it, dict) and it.get("kind") == "public_path" and "a0" in it]
+    if not pubs or not rec.get("public_report", True) or any(z["mode"] == "report" and z.get("src") == "place" for z in ZONES):
+        return []
+    new = []
+    for it in pubs:
+        if len(ZONES) + len(new) >= MAX_ZONES:
+            break
+        try:
+            ang = [[float(it["a0"]), float(it["e1"])], [float(it["a1"]), float(it["e1"])], [float(it["a1"]), float(it["e0"])], [float(it["a0"]), float(it["e0"])]]
+        except (KeyError, TypeError, ValueError):
+            continue
+        new.append({"id": uuid.uuid4().hex[:8], "mode": "report", "name": "🛣 " + (str(it.get("name") or "") or tr(PLACE_DEFAULT_NAMES["public_path"])),
+                    "points": _zone_points(ang), "ang": ang, "anchor": True, "src": "place"})
+    if not new:
+        return []
+    ok, _e = zones_set([dict(z) for z in ZONES] + new)
+    if ok:
+        rec["zones"] = list(rec.get("zones") or []) + [z["id"] for z in ZONES if z.get("src") == "place" and z["mode"] == "report"]
+        try:
+            _place_save(rec)
+        except OSError:
+            pass
+    return [f"public path of the place -> {len(new)} zone(s) «only report»"] if ok else []
+
+
 def _place_in(it, a, e, grow=0.0):
     a0, a1 = it["a0"] - grow, it["a1"] + grow
     if servo_half("pan") >= 179.0:
@@ -713,32 +744,35 @@ _alarm_gate_base = alarm_gate
 
 
 def alarm_gate(w, frame, persons, now):
-    """2.98.30 (317): before the gate of 066: persons whose feet stand on a public path (place record, «nur melden») are no
-    alarm - one log line / info push now and then. A person at the tent (or coming closer to it) needs no double confirmation."""
+    """2.98.30 (317): before the gate of 066: persons whose feet stand in a zone «nur melden» (aufr: zone mode report - the
+    public path of «Platz einrichten» and every such zone of the zone editor) are no alarm - one log line / info push now and
+    then. A person at the tent (or coming closer to it) needs no double confirmation."""
     rec = PLACE["rec"] if PLACE["loaded"] else _place_load()
     its = (rec or {}).get("items") or []
-    if not persons or not its or not any(it.get("kind") in ("public_path", "tent") and "a0" in it for it in its):
+    reps = [z for z in ZONES if z["mode"] == "report" and zone_here(z) and len(z.get("points") or []) >= 3]
+    tents = [it for it in its if it.get("kind") == "tent" and "a0" in it]
+    if not persons or not (reps or tents):
         return _alarm_gate_base(w, frame, persons, now)
     pw = float(CFG.get("proc_width") or 480)
     ph = float(getattr(w, "_ph", 0) or 0) or (pw * frame.shape[0] / float(frame.shape[1]) if frame is not None else pw * 0.5625)
     hf, vf = cam_fov()
-    pubs = [it for it in its if it.get("kind") == "public_path" and "a0" in it]
-    tents = [it for it in its if it.get("kind") == "tent" and "a0" in it]
-    keep, pub, near = [], 0, False
+    keep, pub, near, where = [], 0, False, ""
     for b in persons:
         x, y, bw, bh = (float(v) for v in b[:4])
-        a, e = place_pic_to_ang((x + bw / 2.0) / pw, (y + bh * 0.95) / ph, CFG["pan"], CFG["tilt"], hf, vf)
+        fx, fy = (x + bw / 2.0) / pw, (y + bh * 0.95) / ph
+        a, e = place_pic_to_ang(fx, fy, CFG["pan"], CFG["tilt"], hf, vf)
         at_tent = any(_place_in(t, a, e, 4.0) for t in tents)
-        if not at_tent and any(_place_in(p_, a, e) for p_ in pubs):
-            pub += 1; continue
+        zr = None if at_tent else next((z for z in reps if point_in_poly(fx, fy, z["points"])), None)
+        if zr is not None:
+            pub += 1; where = where or zr["name"]; continue
         near = near or at_tent
         keep.append(b)
     if pub and now - PLACE_GATE["pub_t"] > 300:
         PLACE_GATE["pub_t"] = now
-        log_event("person", "Person on the public path - only reported (place setup)")
+        log_event("person", f"Person in «{where}» - only reported (zone «only report»)")
         if is_armed() and CFG.get("place_public_push", True):
             try:
-                w.notifier.info(tr("Person on the public path (only reported, no alarm)"), title="{name}: " + tr("Public path"))
+                w.notifier.info(tr("Person on the public path (only reported, no alarm)") + " · " + where, title="{name}: " + tr("Only report"))
             except Exception:
                 pass
     res = _alarm_gate_base(w, frame, keep, now)
@@ -782,15 +816,29 @@ def place_selftest():
         try:
             PLACE.update(rec={"items": [{"kind": "public_path", "a0": -12, "a1": 12, "e0": -25, "e1": 25, "name": "p"}]}, loaded=True)
             CFG["alarm_confirm2"] = False; ALX["hold_until"] = 0.0
+            zs_old = [dict(z) for z in ZONES]
+            _ss, globals()["save_settings"] = globals()["save_settings"], lambda: None
+            _ps, globals()["_place_save"] = globals()["_place_save"], lambda r: None
+            try:
+                ZONES[:] = []
+                assert place_report_migrate() and [z["mode"] for z in ZONES] == ["report"] and ZONES[0].get("anchor") and ZONES[0].get("ang")
+                assert place_report_migrate() == [], "taken over only once"
+                sleep_update()
 
-            class _W:
-                _ph = 270; ai = None; last_warm = 0.0; notifier = None
-            pw = float(CFG.get("proc_width") or 480)
-            on_path = (pw / 2 - 10, 100, 20, 60); beside = (pw * 0.9, 100, 20, 60)
-            assert alarm_gate(_W(), None, [on_path], time.time()) == []
-            assert alarm_gate(_W(), None, [on_path, beside], time.time()) == [beside]
+                class _W:
+                    _ph = 270; ai = None; last_warm = 0.0; notifier = None
+                pw = float(CFG.get("proc_width") or 480)
+                on_path = (pw / 2 - 10, 100, 20, 60); beside = (pw * 0.9, 100, 20, 60)
+                assert alarm_gate(_W(), None, [on_path], time.time()) == []
+                assert alarm_gate(_W(), None, [on_path, beside], time.time()) == [beside]
+                ZONES[:] = [dict(ZONES[0], anchor=False)]                       # a zone «only report» of the zone editor (not anchored)
+                assert _clean_zone(ZONES[0], 0)["mode"] == "report"
+                assert alarm_gate(_W(), None, [on_path], time.time()) == []
+            finally:
+                ZONES[:] = zs_old
+                globals()["save_settings"] = _ss; globals()["_place_save"] = _ps
         finally:
             PLACE["rec"], PLACE["loaded"], CFG["alarm_confirm2"], PLACE_GATE["pub_t"], ALX["hold_until"] = old
-        return "directions, 360° seam, plan, items, public path in the alarm"
+        return "directions, 360° seam, plan, items, public path = zone «only report» (migration, alarm)"
     finally:
         CFG["pan"], CFG["tilt"], CFG["pan_servo_range"], CFG["pan_limit"] = sv

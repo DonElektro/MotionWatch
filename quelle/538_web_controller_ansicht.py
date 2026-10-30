@@ -14,8 +14,8 @@
 #     right stick = rover (up = forward, sideways = steer) through MoveEye's mover (/api/mover → MOVER: the real mover
 #       later, in the simulation the simulator's rover); the simulator view follows behind the rover (explore «hinterher»)
 #     without a rover: right stick = fly the simulator view (up = forward, sideways = turn)
-#     R1 held + right stick = turn the simulator view · L1 = zoom out, R1 short = zoom in, L2 / R2 = zoom out / in
-#     (2.98.35: with the simulator R2 = the shutter «Auslöser», part 539)
+#     R1 held + right stick = turn the simulator view · L1 = zoom out, R1 short = zoom in, L2 = zoom out too
+#     (2.98.35: with the simulator R2 = the shutter «Auslöser», part 539; aufr: the help no longer says «L2 / R2 zoom»)
 #     R3 = next view (behind the rover → driver → from above; without rover: head camera → from above → free)
 #     A Photo · B Record · X Lamp (IR without lamp) · Y Follow · D-pad ← → choose a button of the bar, ↑ press it, ↓ help
 #     Select = swap the pictures · Start = bar on / off, held 1 s = leave
@@ -169,7 +169,7 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     const tb = E("table");
     [["L ◉", "Left stick: turn / tilt the head of MoveEye"], ["L3", "Press the left stick: head to the middle"],
      ["R ◉", rover() ? "Right stick: drive the rover (up = forward, sideways = steer) - the view follows behind it" : "Right stick: move the simulator view (no rover)"],
-     ["R1 + R ◉", "Hold R1 + right stick: turn the simulator view"], ["L1 / R1", "Zoom out / in (L2 / R2 too)"],
+     ["R1 + R ◉", "Hold R1 + right stick: turn the simulator view"], ["L1 / R1", "Zoom out / in (L2 = zoom out too)"],
      ["R2 🎯", "Shutter: a shot at the middle of the picture (with the simulator; in «Team gegen MoveEye» a catch)"],
      ["R3", "Press the right stick: next view (behind the rover, driver, from above)"],
      ["A B X Y", "A Photo · B Record · X Lamp · Y Follow"], ["✚ ← →", "Choose a button of the bar, ↑ presses it, ↓ this help"],

@@ -160,9 +160,28 @@ def light_alarm():                                   # wildlife: the light stays
     _light_alarm_base()
 
 
+def kopf_game_hand():
+    """aufr (decision Daniel): a round of «Team gegen MoveEye» runs in the simulator (countdown / play) - the players at
+    MoveEye steer the head, so MoveEye does not follow and moves the head by itself only after the round (nothing is
+    switched off: «Folgen» is on again by itself afterwards). From the game state of the simulator (SIMGAME, 340)."""
+    if not CFG.get("sim_on"):
+        on = False
+    else:
+        try:
+            g = sim_game()                                 # fetched fresh in the background every 2.5 s at most
+        except Exception:
+            g = SIMGAME.get("g") if "SIMGAME" in globals() else None
+        on = bool(g) and g.get("mode") == "mwhand" and g.get("round") in ("play", "countdown")
+    if on != KOPF.get("game_was", False):
+        KOPF["game_was"] = on
+        log_event("servo", "Game «Team gegen MoveEye»: following paused - the players steer the head" if on
+                  else "Game round over: following and the automatic head movement go on")
+    return on
+
+
 def kopf_track_blocked():
-    """410 track(): parked (Aus, privacy) - the head does not follow"""
-    return bool(CFG.get("kopf_parked")) and bool(CFG.get("kopf_park")) and bool(CFG.get("kopf_on"))
+    """410 track(): parked (Aus, privacy) or a game round where people steer the head - the head does not follow"""
+    return (bool(CFG.get("kopf_parked")) and bool(CFG.get("kopf_park")) and bool(CFG.get("kopf_on"))) or kopf_game_hand()
 
 
 # ---- who holds the head ----------------------------------------------------------------------------------------------
@@ -205,6 +224,8 @@ def kopf_may(who, sim_lock=True):
                 return False
         except NameError:
             pass
+    if who != "manual" and KOPF.get("game_was") and kopf_game_hand():
+        return False                                     # aufr: game round «Team gegen MoveEye» - only the players move the head
     return True
 
 
@@ -220,10 +241,10 @@ def kopf_move(pan, tilt, who, speed=None, stop=None):
 
 # ---- the round (called by the patrol, part 160) ----------------------------------------------------------------------
 def kopf_patrol_plan():
-    """(stops, why): what the patrol drives now. [] = it does not run (why = the status)"""
-    auto = (CFG.get("kopf_on") and CFG.get("kopf_round") and CFG.get("armed") and STATE.get("arm_state") == "armed"
-            and protect_level() in ("watch", "full"))
-    if not CFG["patrol"] and not auto:
+    """(stops, why): what the patrol drives now. [] = it does not run (why = the status).
+    aufr (decision Daniel): the round runs only when «Patrouille» is on - «kluge Runde» (kopf_round) only chooses the stops
+    (places of «Platz einrichten», longer at the tent); without «Patrouille» the head stays at its home position."""
+    if not CFG["patrol"]:
         return [], "off"
     stops = kopf_stops()
     sv = kopf_save_active()
@@ -312,6 +333,7 @@ def _kopf_status(s):
 
 def _kopf_tick():
     now = time.time()
+    kopf_game_hand()                                     # aufr: notices the start / end of a round «Team gegen MoveEye»
     armed = bool(CFG.get("armed"))
     pos = (round(float(CFG["pan"]), 1), round(float(CFG["tilt"]), 1))
     on = bool(CFG.get("kopf_on"))
@@ -425,6 +447,8 @@ def _kopf_tick():
         _kopf_status("turned to the alarm")
     elif own == "round" and KOPF["save_why"]:
         _kopf_status("saving: stays at the most important direction")
+    elif KOPF.get("game_was"):
+        _kopf_status("game round: the players steer the head - following paused")
     else:
         _kopf_status("")
 

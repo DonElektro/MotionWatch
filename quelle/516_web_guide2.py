@@ -38,7 +38,7 @@ G2_TOURS = {
              ("a.mi[href='/help']", "Manual", "Everything explained, with a search - and a quick guide to print."),
              ("#g2-more", "Setup and help", "Start or continue the setup, show the tours again, tip of the day."),
              ("#g2-sys", "System", "Reset to factory settings - with a copy of the old settings first."),
-             ("a.mi[href='/tools']", "Tools", "Network test, servo test, diagnosis and more.")],
+             ("a.mi[href='/tools']", "Tools", "Network test, servos, diagnosis and more.")],
 }
 # «Tipps & Tricks» per page: (s = Simple and Expert, e = only Expert, English text)
 G2_TT = {
@@ -100,7 +100,7 @@ G2_UI = [
     "🚶 Start walk test", "■ Stop", "Walk past the camera like a visitor - MoveEye beeps at every detection. 3 minutes, no alarms meanwhile.", "left", "recognised",
     "Night report in the morning", "End of the night time", "o'clock", "🕘 Schedules", "Schedules switch features by themselves, e.g. the protection every night.",
     "💡 Light 3 s", "🌙 Infrared 3 s", "🔊 Test sound", "🚨 Siren 2 s", "Loud! Warn the neighbours first.",
-    "◎ Centre", "◀ ▶ Turn a little", "Direction of turning wrong? Swap it:", "Invert pan direction", "Invert tilt direction", "🛠 Servo test (tools)",
+    "◎ Centre", "◀ ▶ Turn a little", "Direction of turning wrong? Swap it:", "Invert pan direction", "Invert tilt direction", "🛠 Servos: test and positions",
     "AI detection", "The AI says «person», «animal», «car». It runs on the Pi or on a helper PC.", "Own AI model",
     "Thermal picture over the live picture", "Alarm from the thermal camera", "Battery", "Battery saving automatic", "charge",
     "no battery", "Powerbank capacity", "Fast updates (development)", "🔋 Charged full now",
@@ -109,7 +109,7 @@ G2_UI = [
     "off", "basic", "normal", "all", "Done!", "Done", "skipped", "skipped automatically", "Open MoveEye on other devices with these codes. On the phone: Share → «Add to Home Screen» - then it starts like an app.",
     "Home network", "Own Wi-Fi of the device", "On the road (Tailscale)", "🖨 Quick start card with QR codes", "Let's go", "➕ Set up more (thorough)",
     "↩ Back to the setup", "Setup", "Setup finished.", "Setup paused - step", "never done", "🧭 Start the setup", "🧭 Continue the setup", "🧭 Setup again",
-    "↺ Reset all tours", "All tours will show again.", "System", "⚠ Reset to factory settings …", "Copies of the old settings", "⬇",
+    "↺ Reset all tours", "All tours will show again.", "System", "⚠ Reset to factory settings …", "Send a test feedback", "for the developer: does a message reach the servers?", "Copies of the old settings", "⬇",
     "Reset to factory settings", "Back to the factory settings:", "all settings, zones, schedules, waypoints, password, users, PIN, the place",
     "These stay:", "Wi-Fi and own Wi-Fi, remote access (Tailscale), the push channel (ntfy), the update settings, the own AI model and what it learned",
     "These are deleted:", "all recordings and photos, the animal diary, the log", "First a copy of the old settings is saved - you can download it below.",
@@ -598,7 +598,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
         const sc = await J("/api/schema?lang=" + LG() + "&simple=0") || []; const v = {};
         sc.forEach(s => (s.toggles || []).forEach(x => { v[x.key] = x.value; }));
         tgRow(ctx, T("Invert pan direction"), v.invert_pan, x => setKey("invert_pan", x)); tgRow(ctx, T("Invert tilt direction"), v.invert_tilt, x => setKey("invert_tilt", x));
-        const r2 = E("div", "row2"); r2.appendChild(BT(T("🛠 Servo test (tools)"), "sec", () => gotoWith("/tools"))); ctx.body.appendChild(r2);
+        const r2 = E("div", "row2"); r2.appendChild(BT(T("🛠 Servos: test and positions"), "sec", () => gotoWith("/servo#test"))); ctx.body.appendChild(r2);
       },
       async ai(ctx) {
         H(ctx, "🤖", titleOf("ai").title || "", T("The AI says «person», «animal», «car». It runs on the Pi or on a helper PC."));
@@ -731,6 +731,11 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
     const sysb = document.getElementById("g2-sys"); if (!sysb) return;
     sysb.textContent = ""; sysb.className = "g2-card"; sysb.appendChild(E("h3", "", "⚙ " + T("System")));
     const sb = E("div", "btns"); sb.appendChild(BT(T("⚠ Reset to factory settings …"), "sec", g2Factory)); sysb.appendChild(sb);
+    {                                                  // aufr: «Test-Feedback senden» lives here (before: a line of its own in Mehr; script of 584)
+      const fr = E("div", "mut", T("for the developer: does a message reach the servers?")); fr.id = "m-fbtest-r";
+      const fb = E("div", "btns"); const fbb = BT("🧪 " + T("Send a test feedback"), "sec", () => { if (window.mwFeedbackTest) mwFeedbackTest(fr); }); fbb.id = "m-fbtest"; fb.appendChild(fbb);
+      sysb.append(fb, fr);
+    }
     const F = await J("/api/factory?lang=" + LG());
     if (F && F.backups && F.backups.length) { sysb.appendChild(E("div", "mut", T("Copies of the old settings") + ":")); const ul = E("ul");
       F.backups.forEach(x => { const li = E("li"), a = E("a", "", "⬇ " + x.when + " (" + x.kb + " kB)"); a.href = "/api/factory/backup/" + encodeURIComponent(x.name); a.download = x.name; li.appendChild(a); ul.appendChild(li); });

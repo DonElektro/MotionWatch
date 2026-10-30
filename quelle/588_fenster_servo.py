@@ -79,7 +79,7 @@ def _app_srv_win(self, page="teach"):
         pass
     who = ("window", tr("Window") + " (" + tr("this computer") + ")")
     win = tk.Toplevel(self.root); self._srv_w = win
-    win.title("MoveEye – " + tr("Servos: safety, positions, diagnosis")); win.geometry("720x820")
+    win.title("MoveEye – " + tr("Servos: safety, positions, test, diagnosis")); win.geometry("720x820")
     top = ttk.Frame(win); top.pack(fill="x", padx=12, pady=(10, 4))
     st = tk.Label(top, text="", font=("DejaVu Sans", 13, "bold"), anchor="w", justify="left", wraplength=680, padx=8, pady=6)
     st.pack(fill="x")
@@ -163,6 +163,27 @@ def _app_srv_win(self, page="teach"):
                    ("🗑", lambda: ed("delete") if sel() is not None and messagebox.askyesno("MoveEye", tr("Delete this position?"), parent=win) else None)):
         ttk.Button(tb, text=txt, command=f).pack(side="left", padx=(0, 4), pady=(0, 4))
     ttk.Button(tp, text="📍 " + tr("Take over from «Set up the place»"), command=lambda: (teach_from_place("window"), refresh(True))).pack(anchor="w", pady=(4, 0))
+    # ---- test (aufr: before Mehr → Werkzeuge «Servo test» of the web page; the same servo_test() of part 300) ----
+    xp = ttk.Frame(nb); nb.add(xp, text="🛠 " + tr("Test"))
+    ttk.Label(xp, text=tr("servo-note"), style="Mut.TLabel", wraplength=660, justify="left").pack(anchor="w", pady=(6, 4))
+    xb = ttk.Frame(xp); xb.pack(fill="x")
+    x_msg = ttk.Label(xb, text="", wraplength=520, justify="left")
+
+    def x_start():
+        if not servo_test():
+            messagebox.showinfo("MoveEye", tr("not possible now"), parent=win)
+        refresh(True)
+    ttk.Button(xb, text="▶ " + tr("Start the servo test"), command=x_start).pack(side="left")
+    x_msg.pack(side="left", padx=(10, 0))
+    x_txt = tk.Text(xp, height=20, wrap="none", font=("DejaVu Sans Mono", 9)); x_txt.pack(fill="both", expand=True, pady=(6, 4))
+
+    def test_text():
+        V = TOOLS["servo"]
+        out = [f"{tr('Axis'):8} {tr('To'):>6} {tr('Picture change'):>16}  {tr('Result')}"] if V["steps"] else []
+        for s_ in V["steps"]:
+            out.append(f"{tr('Pan' if s_['axis'] == 'pan' else 'Tilt'):8} {str(s_['to']) + ' %':>6} {('–' if s_['diff'] is None else str(s_['diff'])):>16}  "
+                       + ("⚠ " + tr("no change") if s_.get("ok") is False else "✓" if s_.get("ok") else "…"))
+        return "\n".join(out)
     # ---- diagnosis ----
     dp = ttk.Frame(nb); nb.add(dp, text="🩺 " + tr("Diagnosis"))
     txt = tk.Text(dp, height=24, wrap="word", font=("DejaVu Sans Mono", 9)); txt.pack(fill="both", expand=True, pady=(6, 4))
@@ -242,6 +263,13 @@ def _app_srv_win(self, page="teach"):
             if keep is not None and 0 <= keep < len(L):
                 tv.selection_set(str(keep))
         if nb.index("current") == 1:
+            V = TOOLS["servo"]
+            x_msg.config(text=tr("running…") if V["running"] else ("✓ " + tr("ok")) if V["msg"] == "ok" else ("⚠ " + str(V.get("bad") or "") + " " + tr(V["msg"])) if V["msg"] else "")
+            tt_ = test_text()
+            if force or tt_ != S.get("tsig"):
+                S["tsig"] = tt_
+                x_txt.config(state="normal"); x_txt.delete("1.0", "end"); x_txt.insert("1.0", tt_); x_txt.config(state="disabled")
+        if nb.index("current") == 2:
             dt_ = diag_text()
             if force or dt_ != S["dsig"]:
                 S["dsig"] = dt_
@@ -255,8 +283,10 @@ def _app_srv_win(self, page="teach"):
         except Exception:
             return
         win.after(1000, loop)
-    nb.bind("<<NotebookTabChanged>>", lambda e: S.update(dsig=None))
+    nb.bind("<<NotebookTabChanged>>", lambda e: S.update(dsig=None, tsig=None))
     if page == "diag":
+        nb.select(2)
+    elif page == "test":
         nb.select(1)
     refresh(True); win.after(1000, loop)
 
@@ -270,6 +300,7 @@ def _servo_tk_build_section(self, sec, sbody, settings_parent=None):
         try:
             bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(6, 0))
             ttk.Button(bf, text="📍 " + tr("Positions") + " …", command=lambda: self._srv_win("teach")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+            ttk.Button(bf, text="🛠 " + tr("Test") + " …", command=lambda: self._srv_win("test")).pack(side="left", expand=True, fill="x", padx=(0, 4))   # aufr
             ttk.Button(bf, text="🩺 " + tr("Diagnosis") + " …", command=lambda: self._srv_win("diag")).pack(side="left", expand=True, fill="x")
         except Exception as e:
             log_event("sys", f"Window: servo buttons: {e}"[:160])
@@ -283,11 +314,12 @@ App._srv_estop_btn = _app_srv_estop_btn
 
 def servo_web_selftest():
     """the page renders, the JS of the live page is filled in, the API ops are known"""
-    assert "/servo#diag" in TOOLS_PAGE and "servoPaint" in WEB_PAGE and "<!--SERVOJS-->" not in WEB_PAGE
+    assert "/servo#test" in TOOLS_PAGE and "pick('servo')" not in TOOLS_PAGE and "Servo diagnosis" not in TOOLS_PAGE   # aufr: ONE entry «Servos»
+    assert 'id="p-test"' in SERVO_PAGE and "servoPaint" in WEB_PAGE and "<!--SERVOJS-->" not in WEB_PAGE
     html = servo_page()
     assert "/*SERVODE*/" not in html and "sv-estop" in html
     assert servo_api_op({"op": "nonsense"}, ("k", "x"), True)[1] == 400 and servo_api_op({"op": "release"}, ("k", "x"), False)[1] == 403
-    return "page /servo, live page script, Tools entry"
+    return "page /servo (positions, test, diagnosis), live page script, one Tools entry"
 
 
 SELFTEST_EXTRA.append(("Servo motion planner (ramps, limits)", servo_planner_selftest))

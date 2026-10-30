@@ -1014,6 +1014,7 @@ try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem
       HIDDEN = new Set(JSON.parse(localStorage.getItem("mw-hidden") || "[]")); } catch (e) {}
 Object.assign(I18N.de, {"Person alarms at the campfire (off: only animals - the people at the fire are not burglars)": "Personen-Alarm am Lagerfeuer (aus: nur Tiere – die Leute am Feuer sind keine Einbrecher)"});  // 2.97.0
 Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Message list": "Nachrichten", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
+Object.assign(I18N.de, /*AUFRDE*/{}); Object.assign(I18N.en, /*AUFREN*/{});   // aufr (part 632): the texts of the clean-up round
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"conn-note": "Address of the simulator program. Usually not needed: the simulator announces itself in the network and is found by itself.", "autostart-note": "And off again (back to the real cameras and sensors) when none is there for a minute. Switched off by hand: stays off until a new simulator appears.", "sim-missing": "A simulator is missing? Switch on «Send to MoveEye» in the simulator. On a PC the Windows firewall must allow its port (8765; a second simulator e.g. 8767).", "sim-view-help": "The window of the simulator: drag with the left mouse button = move, right = turn, wheel = zoom (after a click into the picture), double click = fly there. Finger: tap = click, otherwise the page scrolls; with ✋ the finger controls the simulator (drag = move, ⟲ = turn, two fingers = zoom). The buttons below change the view."});  // 2.97.0: no raw keys in English
 Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Message list": "Nachrichten", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Protection level": "Schutzstufe", "Arming and own Wi-Fi": "Einschalten und eigenes WLAN", "What happens at an alarm?": "Was passiert bei Alarm?", "Theft protection": "Diebstahlschutz", "Device": "Gerät", "Guarded things (reference scan)": "Bewachte Dinge (Referenz-Scan)", "Backup (pictures off the device)": "Sicherung (Bilder weg vom Gerät)", "Zones, schedule, presence": "Zonen, Zeitplan, Anwesenheit", "Cameras & head": "Kameras & Kopf", "Devices & sensors": "Geräte & Sensoren", "Power supply": "Strom", "Network & access": "Netz & Zugang", "System": "System", "Draw the zones": "Zonen zeichnen", "Person": "Person", "Push": "Push", "Light": "Licht", "Siren": "Sirene", "Siren after {s} s": "Sirene nach {s} s", "Crossed out = off. Tap a step to change it. «Test protection» plays the chain.": "Durchgestrichen = aus. Ein Glied antippen = einstellen. «Schutz testen» spielt die Kette durch.", "Protection is off - nothing happens. Choose «Wachsam» or «Voll» above.": "Der Schutz ist aus – es passiert nichts. Oben «Wachsam» oder «Voll» wählen.", "Watchful": "Wachsam", "Full protection": "Voll", "in": "in", "Off": "Aus", "Settings": "Einstellungen"});  // 2.98.0: tabs, groups, alarm chain
 Object.assign(I18N.de, {"Keep what is detected in the middle: persons, animals, moving things": "Hält Erkanntes in der Bildmitte: Personen, Tiere, Bewegtes"});  // 2.98.1
@@ -1392,6 +1393,7 @@ function buildViewMenu() {
   qb("▴ " + t("Hide header"), () => { const b = $("#btn-hdr"); if (b) b.click(); $("#viewmenu").hidden = true; });
   if (window.lvMenu) qb("◫ " + t("View of the live page …"), () => { $("#viewmenu").hidden = true; setTimeout(window.lvMenu, 0); });   // 2.98.26: live cards per device (536)
   m.append(el("h3", "", t("Quick")), q);
+  const vn = el("div", "mut", t("vm-device")); vn.style.cssText = "font-size:12px;margin:8px 0 0"; m.appendChild(vn);   // aufr: per device, like ◫ View (536)
   document.querySelectorAll("[data-view]").forEach(e => { if (window.lvMenu && e.closest("#lv-side,#lv-main")) return;
     (groups[e.dataset.vgroup] = groups[e.dataset.vgroup] || []).push(e); });
   ["Header", "Panels", "Settings"].forEach(g => {
@@ -2227,6 +2229,7 @@ async function build() {
       wrap.dataset.key = s.key; wrap.append(top, r); d.appendChild(wrap);
       ctrl[s.key] = {type: "num", input: r, val: val};
     });
+    if (sec.id === "AI detection") spGroup(d);              // aufr: after the sliders (species_conf is one)
     if (sec.id === "Timelapse") tlExtras(d);
     if (sec.id === "Microphone") micExtras(d);
     if (sec.id === "Updates") updExtras(d);
@@ -2239,7 +2242,6 @@ async function build() {
     if (sec.id === "Storm warning") stormExtras(d);
     if (sec.id === "GPS module") gpsExtras(d);
     if (sec.id === "Mover") moverExtras(d);
-    if (sec.id === "Simulator") simExtras(d);
     if (sec.id === "Solar panel") solarExtras(d);
     if (sec.id === "Deterrence") dtExtras(d);
     if (sec.id === "MQTT / Home Assistant") mqExtras(d);
@@ -2914,8 +2916,16 @@ function ownExtras(d) {                             // part 195: own MoveEye mod
       if (!j.busy) { clearInterval(iv); b.disabled = false; toast(j.msg === "ready" ? "✓ " + t("own model ready") : "⚠ " + (j.msg || "error")); } }, 1500); };
   box.append(b, st); d.appendChild(box); load(); setInterval(() => { if (document.body.contains(st)) load(); }, 15000);
 }
+function spGroup(d) {                               // aufr (Konzept): the animal species settings in ONE group «Tierart» like «KI-Modell»
+  const q = k => d.querySelector('[data-key="' + k + '"]:not(select)');
+  const parts = [q("species_on"), d.querySelector(".auxbox.spai"), q("species_model"), q("species_norm"), q("species_conf")].filter(Boolean);
+  if (!parts.length) return;
+  const g = el("div", "aimg"); g.id = "sp-group"; parts[0].before(g);
+  g.appendChild(el("div", "aimh", "🦊 " + t("Animal species")));
+  parts.forEach(x => g.appendChild(x));
+}
 function spExtras(d) {                              // animal species: second model, install from an address
-  const box = el("div", "auxbox"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
+  const box = el("div", "auxbox spai"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
   box.appendChild(el("div", "mut", "🦊 " + t("Animal species: a second AI model (ONNX) recognises fox, badger, wild boar … It is not included - install it from an address or copy it into the folder.")));
   const url = el("input"); url.type = "url"; url.placeholder = "https://…/model.onnx  (" + t("or .zip") + ")"; url.style.cssText = "width:100%;box-sizing:border-box;margin-top:6px;background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:8px";
   const b = el("button", "sec", "⬇ " + t("Install model")); b.type = "button"; b.style.marginTop = "6px";
@@ -2965,153 +2975,8 @@ Object.assign(I18N.de, {"iPhone shortcuts": "iPhone-Kurzbefehle",
  "Get ready": "Gleich geht's los", "You are the guard: turn the camera and catch them": "Du bist Wächter: Kamera drehen und erwischen", "Caught!": "Erwischt!",
  "Power mode": "Powermodus", "Power mode on: everything on the highest performance": "Powermodus ein: alles auf Höchstleistung", "Power mode off: your settings are back": "Powermodus aus: deine Einstellungen sind zurück", "active: every picture through the AI, best picture, processor at full clock": "aktiv: jedes Bild durch die KI, bestes Bild, Prozessor auf vollem Takt", "hot": "heiss", "the highest performance (uses more current and gets warmer) - switching it off restores your settings": "Höchstleistung (braucht mehr Strom und wird wärmer) – Ausschalten stellt deine Einstellungen wieder her", "Trusted devices": "Vertrauenswürdige Geräte", "A device that has logged in once is remembered (also after updates). Remove a device here if it is lost or should log in again.": "Ein Gerät, das sich einmal angemeldet hat, wird gemerkt (auch nach Updates). Entferne hier ein Gerät, wenn es verloren ist oder sich neu anmelden soll.", "since": "seit", "Remove this device? It must log in again.": "Dieses Gerät entfernen? Es muss sich neu anmelden.", "Remove all": "Alle entfernen", "Remove all trusted devices? Every device must log in again.": "Alle vertrauenswürdigen Geräte entfernen? Jedes Gerät muss sich neu anmelden.", "Update": "Update", "New update for the simulator": "Neues Update für den Simulator", "tab Simulator": "Reiter Simulator", "sim-view-help": "Das Fenster des Simulators: Maus links ziehen = verschieben, rechts ziehen = drehen, Rad = zoomen (nach einem Klick ins Bild), Doppelklick = hinfliegen. Finger: antippen = klicken, sonst scrollt die Seite; mit ✋ bedient der Finger den Simulator (ziehen = verschieben, ⟲ = drehen, zwei Finger = zoomen). Knöpfe unten wechseln die Ansicht.", "Python world simulator (ZIP)": "MW Sim · Welt (Kevin) (ZIP)", "second simulator, needs Python on the PC": "zweiter Simulator, braucht Python auf dem PC", "Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An MoveEye senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where MoveEye stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo MoveEye steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
 Object.assign(I18N.de, {"Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren", "Start simulator here": "Simulator hier starten", "Stop simulator": "Simulator beenden", "Download for a PC (ZIP)": "Für einen PC herunterladen (ZIP)", "Simulator installed": "Simulator installiert", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator beendet", "the simulator runs on this Pi": "der Simulator läuft auf diesem Pi", "Install": "Installieren", "Start": "Starten"});
-function simExtras(d) {
-  // the settings of the section (switches, address, slider) go into a fold-out «Settings»
-  const rows = [...d.children].filter(x => x.tagName !== "SUMMARY");
-  const box = el("div", "auxbox"); box.id = "sim-main";
-  const head = el("div", ""); head.id = "sim-head"; head.style.cssText = "font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap";
-  const st = el("div", "mut"); st.id = "sim-st"; st.style.cssText = "white-space:pre-wrap;margin-top:2px";
-  const b = el("button", "", ""); b.type = "button"; b.id = "sim-btn"; b.style.cssText = "margin-top:10px;width:100%";
-  b.onclick = async () => { const on = !(QSJ && QSJ.state.sim && QSJ.state.sim.on); b.disabled = true; await mwSimSet(on, LANG); b.disabled = false; refresh(); };
-  const stats = el("div", ""); stats.id = "sim-stats"; stats.style.cssText = "display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:6px;margin-top:10px";
-  box.append(head, st, stats, b);
-  // ---- search in the network ----
-  const nb = el("div", "auxbox"); nb.style.marginTop = "10px";
-  const nh = el("div", "", "🔎 " + t("Simulators in the network")); nh.style.fontWeight = "600";
-  const srch = el("button", "sec", "🔎 " + t("Search now")); srch.type = "button"; srch.id = "sim-search"; srch.style.cssText = "margin-top:8px;width:100%";
-  srch.onclick = async () => { srch.disabled = true; await post("/api/sim", {action: "search", lang: LANG}); refresh(); setTimeout(() => { srch.disabled = false; }, 2500); };
-  const sl = el("div", "mut"); sl.id = "sim-scan"; sl.style.cssText = "margin-top:6px;white-space:pre-wrap";
-  const fnd = el("div", ""); fnd.id = "sim-found"; fnd.style.marginTop = "6px";
-  // the 3D simulator for Windows to download - right here, not hidden under Tools
-  const d3 = el("a", "btn", "🎮 " + t("3D simulator for Windows (ZIP)")); d3.href = "/sim/simulator3d.zip?lang=" + (LANG || "");
-  d3.style.cssText = "display:block;margin-top:8px;width:100%;text-align:center;box-sizing:border-box";
-  const d3n = el("div", "mut", t("Link for the PC browser") + ": " + location.origin + "/sim/simulator3d.zip"); d3n.style.cssText = "margin-top:6px;font-size:12px;word-break:break-all";
-  const dpy = el("a", "btn sec", "🌍 " + t("Python world simulator (ZIP)")); dpy.href = "/sim/simulator_py.zip?lang=" + (LANG || "");
-  dpy.style.cssText = "display:block;margin-top:8px;width:100%;text-align:center;box-sizing:border-box";
-  const all = el("a", "btn sec", "⚙ " + t("Everything about the simulator (tab Simulator)")); all.href = "/sim"; all.style.cssText = "display:block;margin-top:8px;width:100%";
-  const pi = el("div", ""); pi.id = "sim-pi"; pi.hidden = true; pi.style.marginTop = "8px";   // 2.95.51: the 3D simulator on the Pi itself
-  const pl = el("div", "trow"); pl.id = "sim-plan"; pl.hidden = true; pl.style.marginTop = "8px";      // 2.95.53: Aufstell-Planer
-  const plo = el("button", "sec", "🗺 " + t("Aufstell-Planer in the simulator")); plo.type = "button";
-  plo.onclick = async () => { const r = await post("/api/sim", {action: "planner_open", lang: LANG}); if (!r.ok) toast("⚠ " + (r.error || t("error"))); else toast("✓ " + t("open in the window of the simulator")); };
-  const pla = el("button", "sec", "✓ " + t("Take over the patrol of the planner")); pla.type = "button";
-  pla.onclick = async () => { const r = await post("/api/sim", {action: "planner_apply", lang: LANG}); if (!r.ok) toast("⚠ " + (r.error || t("error"))); else toast("✓ " + t("Patrol set") + " · " + r.planner.pct + " % " + t("of the area in view")); };
-  pl.append(plo, pla);
-  const rb = el("div", ""); rb.id = "sim-replay"; rb.hidden = true; rb.style.marginTop = "8px";      // 2.95.53: Alarm-Rückblick
-  rb.append(el("b", "", "⏪ " + t("Alarm replay in 3D")));
-  const rs = document.createElement("select"); rs.id = "sim-replay-sel"; rs.style.cssText = "width:100%;margin-top:6px";
-  const rr = el("div", "trow"); rr.style.marginTop = "6px";
-  const rgo = el("button", "", "▶ " + t("Play in the simulator")); rgo.type = "button";
-  const rsp = document.createElement("select"); [1, 2, 4].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + "×"; rsp.appendChild(o); });
-  rsp.style.flex = "0 0 auto";
-  rgo.onclick = async () => { if (!rs.value) return; const r = await post("/api/sim", {action: "replay", id: rs.value, speed: +rsp.value, lang: LANG});
-    if (!r.ok) toast("⚠ " + (r.error || t("error"))); else toast("✓ " + t("plays in the window of the simulator") + " (" + Math.round(r.replay.seconds) + " s)"); };
-  const rst = el("button", "sec", "⏹"); rst.type = "button"; rst.onclick = () => post("/api/sim", {action: "replay", stop: true});
-  rr.append(rgo, rsp, rst); rb.append(rs, rr, el("div", "mut", t("replay-note")));
-  const dsb = el("div", ""); dsb.style.marginTop = "12px";                // 2.95.53: KI-Prüfung mit Simulator-Bildern
-  dsb.append(el("b", "", "🧪 " + t("AI test with simulator pictures")), el("div", "mut", t("dset-note")));
-  const dr = el("div", "trow"); dr.style.marginTop = "6px";
-  const dn = document.createElement("select"); [12, 24, 48].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + " " + t("pictures"); dn.appendChild(o); }); { const og = document.createElement("option"); og.value = "game"; og.textContent = "🎮 " + t("missed pictures from the game (hard cases)"); dn.appendChild(og); } dn.value = "24"; dn.style.flex = "0 0 auto";
-  const dgo = el("button", "", "▶ " + t("Start the test")); dgo.type = "button";
-  const dout = el("div", ""); dout.id = "dset-out";
-  const dpaint = j => { const D = j.dataset || j; dout.textContent = "";
-    if (D.busy) { dout.appendChild(el("div", "mut", "⏳ " + D.pct + " % · " + t(D.msg))); setTimeout(async () => dpaint(await post("/api/sim", {action: "dataset"})), 2000); return; }
-    if (D.msg && D.msg.startsWith("error")) dout.appendChild(el("div", "err", "⚠ " + D.msg));
-    const S = D.sum; if (!S) return;
-    dout.appendChild(el("div", "big", S.found + " / " + S.n + " " + t("found") + " · " + S.false + " " + t("false persons")));
-    const tb = document.createElement("table"); tb.className = "tl";
-    const row = (a, b) => { const tr = document.createElement("tr"); tr.append(el("td", "", a), el("td", "", b)); tb.appendChild(tr); };
-    Object.entries(S.by_cond).forEach(([k, v]) => row(t(k), v.found + "/" + v.n + " · " + v.pct + " %"));
-    Object.entries(S.by_kind).forEach(([k, v]) => row(t(k), v.found + "/" + v.n + " · " + v.pct + " %"));
-    row(t("near (under 8 m)"), S.near + " %"); row(t("far (8 m and more)"), S.far + " %"); row(t("AI time per picture"), S.ms + " ms (" + S.where + ")");
-    dout.appendChild(tb);
-    const z = document.createElement("a"); z.className = "btn sec"; z.href = "/api/dataset.zip"; z.textContent = "⬇ " + t("Training pictures (ZIP)"); z.style.display = "inline-block"; z.style.marginTop = "6px"; dout.appendChild(z); };
-  dgo.onclick = async () => { const r = await post("/api/sim", {action: "dataset", start: true, n: dn.value === "game" ? "game" : +dn.value, lang: LANG}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } dpaint(r); };
-  dr.append(dn, dgo); dsb.append(dr, dout); rb.appendChild(dsb);
-  // 2.95.99: a big training set for an own AI model - made by the simulator, saved as ZIP on the desktop of its PC
-  const xr = el("div", "trow"); xr.style.marginTop = "8px"; const xn = document.createElement("select");
-  [200, 500, 1000, 2000].forEach(n => { const o = document.createElement("option"); o.value = n; o.textContent = n + " " + t("pictures"); if (n === 500) o.selected = true; xn.appendChild(o); });
-  const xgo = el("button", "sec", "📦 " + t("Training set for an own AI model (YOLO)")); xgo.type = "button";
-  const xout = el("div", "mut");
-  xgo.onclick = async () => { const r = await post("/api/sim", {action: "dataset", export: true, n: +xn.value, lang: LANG}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; }
-    xout.textContent = t("The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).") + " " + ((r.export || {}).msg || ""); };
-  xr.append(xn, xgo); dsb.append(xr, xout);
-  (async () => { const r = await post("/api/sim", {action: "dataset"}); if (r && r.ok) dpaint(r); })();
-  nb.append(nh, sl, fnd, srch, pi, pl, rb, d3, d3n, dpy, all);
-  // ---- settings (moved here) ----
-  const set = el("details", "sub"); set.style.marginTop = "10px"; set.appendChild(el("summary", "", "⚙️ " + t("Settings")));
-  const sbody = el("div", ""); sbody.style.padding = "4px 0";
-  rows.forEach(x => sbody.appendChild(x));
-  sbody.appendChild(el("div", "mut", t("A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.")));
-  set.appendChild(sbody);
-  // ---- tools ----
-  const tl = el("details", "sub"); tl.style.marginTop = "6px"; tl.appendChild(el("summary", "", "🧰 " + t("Tools")));
-  const tools = el("div", ""); tools.id = "sim-tools"; tools.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 0";
-  const mk = (id, txt, act) => { const x = el("button", "sec", txt); x.type = "button"; x.id = id;
-    x.onclick = async () => { x.disabled = true; const r = await post("/api/sim", {action: act, lang: LANG}); x.disabled = false;
-      toast(r.ok ? "✓ " + t({install: "Simulator installed", start: "Simulator started", stop: "Simulator stopped"}[act]) : "⚠ " + (r.error || "error")); refresh(); };
-    return x; };
-  const dl = el("a", "btn sec", "⬇ " + t("Download for a PC (ZIP)")); dl.href = "/sim/simulator.zip";
-  const pv = el("a", "btn sec", "📱 " + t("Phone / tablet view")); pv.href = "/preview"; pv.target = "_blank";
-  tools.append(mk("sim-inst", "📦 " + t("Install simulator on the Pi"), "install"), mk("sim-start", "▶ " + t("Start simulator here"), "start"),
-               mk("sim-stop", "⏹ " + t("Stop simulator"), "stop"), dl, pv);
-  tools.querySelectorAll("button,a").forEach(x => { x.style.fontSize = "13px"; x.style.padding = "8px"; });
-  tl.appendChild(tools);
-  box.append(nb, set, tl);
-  // ---- remote control of the simulator: it describes its scenarios and controls itself (CONTROL protocol 1) ----
-  const vb = el("div", "auxbox"); vb.id = "sim-vbox"; vb.style.marginTop = "10px"; vb.hidden = true;
-  const hd = el("div", "", "🎮 " + t("Simulator control")); hd.id = "sim-chd"; hd.style.fontWeight = "600";
-  const vst = el("div", "mut"); vst.id = "sim-vst"; vst.style.whiteSpace = "pre-wrap"; vst.style.marginTop = "4px";
-  const srow = el("div", "btns"); srow.style.flexWrap = "wrap"; srow.style.marginTop = "6px"; srow.style.alignItems = "center";
-  const sel = document.createElement("select"); sel.id = "sim-vsel"; sel.style.flex = "1 1 100%"; sel.style.minWidth = "0";
-  const vk = (txt, fn, cls) => { const x = el("button", cls === undefined ? "sec" : cls, txt); x.type = "button";
-    x.onclick = async () => { x.disabled = true; try { await fn(); } finally { x.disabled = false; } }; return x; };
-  const ctl = async (d) => { const r = await post("/api/sim", Object.assign({action: "ctl", lang: LANG}, d)); show(r); return r; };
-  const bLoad = vk("▶ " + t("Load"), () => sel.value && ctl({ctl: "scenario", id: sel.value}), "");
-  const bDel = vk("🗑 " + t("Delete"), async () => { if (sel.value && confirm(t("Delete this scenario in the simulator?") + "\n" + sel.options[sel.selectedIndex].textContent)) await ctl({ctl: "delete", id: sel.value}); });
-  srow.append(sel, bLoad, vk("↻", () => ctl({ctl: "get"})), bDel);
-  sel.onchange = () => { const o = sel.options[sel.selectedIndex]; bDel.hidden = !(o && o.dataset.del === "1"); };
-  const groups = el("div", ""); groups.id = "sim-cgroups"; groups.style.marginTop = "8px";
-  const upw = el("div", ""); upw.hidden = true; upw.style.marginTop = "8px";
-  const upl = el("div", "mut", ""); const up = document.createElement("input"); up.type = "file"; up.id = "sim-vup"; up.style.maxWidth = "100%";
-  const prog = el("div", "mut"); prog.id = "sim-vprog"; upw.append(upl, up, prog);
-  up.onchange = () => {
-    const f = up.files && up.files[0]; if (!f) return;
-    const x = new XMLHttpRequest(); x.open("POST", "/api/sim/upload?lang=" + LANG + "&name=" + encodeURIComponent(f.name));
-    x.upload.onprogress = (e) => { if (e.lengthComputable) prog.textContent = "⬆ " + f.name + " · " + Math.round(e.loaded / e.total * 100) + " %"; };
-    x.onload = () => { let r = null; try { r = JSON.parse(x.responseText); } catch (e) {}
-      prog.textContent = r && r.ok ? "✓ " + t("uploaded") + ": " + (r.saved || f.name) : "⚠ " + ((r && r.error) || x.status); up.value = ""; if (r && r.ok) show(r); };
-    x.onerror = () => { prog.textContent = "⚠ " + t("upload interrupted"); };
-    x.send(f);
-  };
-  let SIG = "";
-  const fmt = (c, v) => (v == null ? "–" : (Math.abs(v) >= 100 || c.step >= 1 ? Math.round(v) : (+v).toFixed(c.step < 0.1 ? 2 : 1))) + (c.unit ? " " + c.unit : "");
-  const build = (r) => simCtlBuild(groups, r, ctl, fmt);      // like the panel of the simulator (simCtlBuild, 2.93.16)
-  const show = (r) => {
-    if (!r || !r.ok) { vst.textContent = "⚠ " + ((r && r.error) || t("simulator not reachable")); return; }
-    hd.textContent = "🎮 " + t("Simulator control") + (r.name ? " · " + r.name : "");
-    const sig = JSON.stringify([(r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options, c.sub]), r.upload ? r.upload.accept : null]);
-    if (sig !== SIG) { SIG = sig; build(r); }
-    scOn(groups, r);
-    groups.querySelectorAll("[data-cid]").forEach(row => {
-      const c = (r.controls || []).find(x => x.id === row.dataset.cid); const inp = row.querySelector(".simv"); if (!c || !inp || inp === document.activeElement) return;
-      if (c.type === "toggle") inp.checked = !!c.value; else if (c.value != null) inp.value = c.value;
-      const vv = row.querySelector(".simvv"); if (vv) vv.textContent = fmt(c, c.value);
-    });
-    const cur = sel.value; sel.innerHTML = "";
-    (r.scenarios || []).forEach(o => { const op = document.createElement("option"); op.value = o.id; op.dataset.del = o.deletable ? "1" : "";
-      op.textContent = o.name + (o.id === r.scenario ? "  ◀ " + t("running") : ""); sel.appendChild(op); });
-    srow.hidden = !(r.scenarios || []).length;
-    sel.value = [...sel.options].some(o => o.value === cur) ? cur : (r.scenario || (sel.options[0] && sel.options[0].value) || "");
-    sel.onchange();
-    vst.textContent = r.status || "";
-    upw.hidden = !r.upload;
-    if (r.upload) { upl.textContent = "⬆ " + (r.upload.label || t("Upload a file to the simulator")) + (r.upload.max_mb ? " (max. " + r.upload.max_mb + " MB)" : ""); up.accept = (r.upload.accept || []).join(","); }
-  };
-  window.simCtl = () => ctl({ctl: "get"});
-  vb.append(hd, vst, srow, groups, upw);
-  box.appendChild(vb); d.appendChild(box);
-  setInterval(() => { const v = $("#sim-vbox"); if (v && !v.hidden && v.offsetParent !== null && !document.hidden) window.simCtl(); }, 4000);
-}
+// aufr: simExtras() (the old settings section «Simulator» on this page) is gone - that section is not on this page since
+// 2.98.0 (everything about the simulator is on the page Simulator, 470); simPaint keeps only the badge and the body class.
   // ---- the same controls on the live view, under the picture (2.95.2): only while the simulation is on and connected ----
   (function () {
     const W = $("#lv-simw"), D = $("#lv-sim"), G = $("#lv-simg"); if (!W || !G) return;
@@ -3222,58 +3087,8 @@ function sevPaint(s) {
       + " · 🤧 " + t("today") + ": " + V.sneezes_today + "×" + (!V.tts ? " · " + t("no speech program (sudo apt install libttspico-utils)") : "");
     $("#sev-inst").hidden = V.runtime || V.install === "done"; $("#sev-inst").disabled = V.install === "running"; }
 }
-function simPiPaint(P) {
-  const b = $("#sim-pi"); if (!b || !P) return; b.hidden = !P.possible; if (!P.possible) return;
-  const key = [P.on, P.loading, P.pct, P.msg, P.version].join("|"); if (b.dataset.k === key) return; b.dataset.k = key; b.textContent = "";
-  const bt = el("button", P.on ? "sec" : "", P.on ? "⏹ " + t("Stop the 3D simulator on the Pi") : "🍓 " + t("3D simulator on this Pi (HDMI / TV)"));
-  bt.type = "button"; bt.style.width = "100%"; bt.disabled = P.loading;
-  bt.onclick = async () => { bt.disabled = true; const r = await post("/api/sim", {action: P.on ? "pi_stop" : "pi_start", lang: LANG}); if (!r.ok) toast("⚠ " + (r.error || t("error"))); };
-  b.append(bt, el("div", "mut", P.loading ? "⏳ " + t("loading") + " " + P.pct + " % (" + P.version + ")" : (P.msg ? "⚠ " + t(P.msg) : t("sim-pi-hint"))));
-}
 function simPaint(s) {
-  simPiPaint(s.sim_pi);
-  const spl = $("#sim-plan"); if (spl) spl.hidden = !((s.sim || {}).on && (s.sim || {}).ok);
-  const srb = $("#sim-replay"), srs = $("#sim-replay-sel"), AT = s.alarm_tracks || [];
-  if (srb) { srb.hidden = !(spl && !spl.hidden); const k = AT.map(a => a.id + a.n).join(",");
-    if (srs && srs.dataset.k !== k) { srs.dataset.k = k; const cur = srs.value; srs.textContent = "";
-      if (!AT.length) { const o = document.createElement("option"); o.value = ""; o.textContent = t("no alarms yet"); srs.appendChild(o); }
-      AT.forEach(a => { const o = document.createElement("option"); o.value = a.id; o.textContent = new Date(a.t * 1000).toLocaleString([], {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"}) + " · " + t(a.kind) + " · " + a.sec + " s" + (a.sim ? " · " + t("Simulator") : ""); srs.appendChild(o); });
-      if ([...srs.options].some(o => o.value === cur)) srs.value = cur; } }
-  const S = s.sim || {}, st = $("#sim-st"), b = $("#sim-btn"); document.body.classList.toggle("sim-on", !!S.on);
-  if ($("#sim-inst")) { $("#sim-inst").textContent = "📦 " + t(S.installed ? "Install simulator again" : "Install simulator on the Pi");
-    $("#sim-start").hidden = !!S.running; $("#sim-stop").hidden = !S.running; }
-  if (b) b.textContent = S.on ? "⏹ " + t("Switch the simulation off") : "🧪 " + t("Switch the simulation on");
-  const vb = $("#sim-vbox"); if (vb) { const vis = !!S.ok; if (vis && (vb.hidden || !vb.dataset.loaded)) { vb.dataset.loaded = "1"; window.simCtl && window.simCtl(); } vb.hidden = !vis; }
-  const hd = $("#sim-head"), T = S.stats || {};
-  if (hd) hd.textContent = !S.on ? "⚪ " + t("Simulation off") : (S.ok ? "🟢 " + (T.name || t("connected")) : "🔴 " + t("Simulator not reachable"));
-  const sg = $("#sim-stats");
-  if (sg) { const tile = (k, v) => '<div style="border:1px solid var(--line);border-radius:10px;padding:6px 8px"><div class="mut" style="font-size:11px">' + k + '</div><div style="font-weight:600">' + v + '</div></div>';
-    const dur = n => n == null ? "–" : n < 60 ? n + " s" : n < 3600 ? Math.floor(n / 60) + " min" : Math.floor(n / 3600) + " h " + Math.floor(n % 3600 / 60) + " min";
-    sg.hidden = !S.on;
-    sg.innerHTML = tile(t("Connected for"), dur(T.since)) + tile(t("Response time"), T.rtt == null ? "–" : T.rtt + " ms") + tile(t("Camera pictures/s"), T.cam_fps == null ? "–" : T.cam_fps)
-      + tile(t("Thermal pictures/s"), T.th_fps == null ? "–" : T.th_fps) + tile(t("Messages sent"), T.sent || 0) + tile(t("Sensor events"), T.events || 0) + tile(t("Errors"), T.errs || 0); }
-  const sc = $("#sim-scan"), SC = S.scan || {};
-  if (sc) { const ago = SC.t ? Math.round(Date.now() / 1000 - SC.t) : null;
-    sc.textContent = SC.running ? "⏳ " + t("Searching") + " " + SC.net + " … " + Math.round(100 * (SC.done || 0) / Math.max(1, SC.hosts || 1)) + " % · " + (SC.found || 0) + " " + t("found")
-      : (SC.t ? t("Last search") + ": " + (ago < 60 ? ago + " s" : Math.round(ago / 60) + " min") + " · " + SC.hosts + " " + t("addresses in") + " " + SC.secs + " s · " + SC.found + " " + t("found") + " (" + SC.net + ")"
-        : t("Simulators announce themselves every 2 s. «Search now» also asks every address of the network.")); }
-  const fb = $("#sim-found");
-  if (fb) { const F = S.found || [], sig = JSON.stringify(F.map(x => [x.ip, x.port, x.name, x.host, x.count, x.ms, x.age > 5])) + S.url;
-    if (fb.dataset.sig !== sig) { fb.dataset.sig = sig; fb.textContent = "";
-      if (!F.length) fb.appendChild(el("div", "mut", t("No simulator announces itself in the network right now.")));
-      fb.appendChild(el("div", "mut", t("sim-missing"))).style.marginTop = "6px";
-      F.forEach(x => { const r = el("div"); r.style.cssText = "display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--line);border-radius:10px;margin-top:6px";
-        const cur = S.url === "http://" + x.ip + ":" + x.port;
-        const info = el("div"); info.style.flex = "1";
-        info.append(el("div", "", (cur ? "✅ " : "🖥 ") + x.name + (x.host ? "  ·  💻 " + x.host : "")), el("div", "mut", x.ip + ":" + x.port + (x.ip === "127.0.0.1" ? " · " + t("this device") : "") + (x.version ? " · v" + x.version : "")));
-        const f = new Date((x.first || x.t) * 1000);
-        info.appendChild(el("div", "mut", t("seen since") + " " + (("0" + f.getHours()).slice(-2) + ":" + ("0" + f.getMinutes()).slice(-2)) + " · " + t("last") + " " + x.age + " s · "
-          + (x.count ? x.count + " " + t("messages") : t("found by the search")) + (x.ms != null ? " · " + x.ms + " ms" : "")));
-        info.lastChild.style.fontSize = "12px"; r.appendChild(info);
-        if (!cur) { const u = el("button", "sec", t("Use")); u.type = "button"; u.onclick = async () => { await post("/api/sim", {action: "use", ip: x.ip, port: x.port, lang: LANG}); refresh(); }; r.appendChild(u); }
-        fb.appendChild(r); }); } }
-  if (st) st.textContent = (!S.on ? t("off - the real cameras and sensors are used") + " · " + S.url : (S.ok ? S.url + " · " + (S.dark ? t("night") : t("day")) + " · " + S.ambient + " °C" : t(S.msg || "not reachable") + " · " + S.url))
-    + (S.running ? "\n▶ " + t("the simulator runs on this Pi") : "");
+  const S = s.sim || {}; document.body.classList.toggle("sim-on", !!S.on);
   const bs = $("#b-sim"); if (bs) { bs.hidden = !S.on; const nv = S.on && S.versions && S.versions.newer;
     const pcc = S.on && S.ok && S.stats && S.stats.pc_cpu != null ? " · PC " + Math.round(S.stats.pc_cpu) + " %" : "";
     bs.textContent = "🧪 " + t("SIMULATION") + (S.on && !S.ok ? " ⚠" : "") + pcc + (nv ? " · ⟳ " + t("Update") + " " + S.versions.latest : "");
@@ -3752,19 +3567,31 @@ function scPick() {
     const ol = el("ol"); ol.style.cssText = "margin:0 0 8px;padding-left:20px;line-height:1.5";
     ["sc-1", "sc-2", "sc-3", "sc-4", "sc-5"].forEach(k => ol.appendChild(el("li", "", t(k)))); box.appendChild(ol);
     const h = el("div", "", "↩ " + t("Addresses back to MoveEye (for «Get contents of URL»)")); h.style.cssText = "font-weight:600;margin-top:6px"; box.appendChild(h);
-    if (!j.on) { box.appendChild(el("div", "mut", t("sc-key-off")));
-      const b = el("button", "", "🔑 " + t("Make a shortcut key")); b.type = "button"; b.onclick = async () => paint(await post("/api/shortcut", {action: "new"})); box.appendChild(b); return; }
+    // aufr: the key is an app key (Settings → Security → App keys, 573) - shown in full only once, right after it is made
+    const key = j.key || "", nm = j.name || "";
+    if (key) box.appendChild(el("div", "", "🔑 " + t("Copy the addresses now - the key is shown only this one time.") + (nm ? " («" + nm + "»)" : ""))).style.cssText = "margin:4px 0;font-weight:600";
+    const KEYS = j.keys || [];
     [["arm", "Arm"], ["disarm", "Disarm"], ["siren_off", "Siren off"], ["light_on", "White light on"], ["light_off", "White light off"],
-     ["photo.jpg", "Photo now"], ["status", "Status (text)"]].forEach(([a, n]) => { const u = j.base + "/k/" + j.key + "/" + a;
+     ["photo.jpg", "Photo now"], ["status", "Status (text)"]].forEach(([a, n]) => { const u = j.base + "/k/" + (key || "<" + t("app key") + ">") + "/" + a;
       const r = el("div"); r.style.cssText = "display:flex;gap:8px;align-items:center;margin:4px 0";
-      const c = el("button", "sec", "📋"); c.type = "button"; c.title = t("Copy"); c.onclick = () => { try { navigator.clipboard.writeText(u); toast("✓ " + t("copied")); } catch (e) { prompt(t(n), u); } };
-      const lab = el("span", "", t(n)); lab.style.minWidth = "140px"; const cd = el("code", "mut", u.replace(j.key, "•••")); cd.style.cssText = "font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1";
-      r.append(c, qrBtn(u, t(n), {secret: true}), lab, cd); box.appendChild(r); });
-    box.appendChild(el("div", "mut", t("sc-key-note"))).style.marginTop = "6px";
+      const lab = el("span", "", t(n)); lab.style.minWidth = "140px"; const cd = el("code", "mut", key ? u.replace(key, "•••") : u); cd.style.cssText = "font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1";
+      if (key) { const c = el("button", "sec", "📋"); c.type = "button"; c.title = t("Copy"); c.onclick = () => { try { navigator.clipboard.writeText(u); toast("✓ " + t("copied")); } catch (e) { prompt(t(n), u); } };
+        r.append(c, qrBtn(u, t(n), {secret: true})); }
+      r.append(lab, cd); box.appendChild(r); });
+    box.appendChild(el("div", "mut", t("sc-key-note2"))).style.marginTop = "6px";
+    KEYS.forEach(k => { const r = el("div"); r.style.cssText = "display:flex;gap:8px;align-items:center;margin:4px 0";
+      const tx = el("span", "", "🔑 " + k.name + " · " + t("last used") + " " + (k.seen ? new Date(k.seen * 1000).toLocaleString() : t("never"))); tx.style.flex = "1";
+      const bl = el("button", "red", "⛔ " + t("Block")); bl.type = "button";
+      bl.onclick = async () => { if (!confirm(t("Block this key? Programs that use it get no access any more.") + "\n" + k.name)) return;
+        await post("/api/appkeys", {action: "revoke", id: k.id, lang: LANG}); fetch("/api/shortcut").then(r_ => r_.json()).then(paint).catch(() => {}); };
+      r.append(tx, bl); box.appendChild(r); });
+    if ((j.other || []).length) box.appendChild(el("div", "mut", t("These app keys work here too:") + " " + j.other.join(", ")));
+    const err = el("div", "err");
     const row = el("div", "btns"); row.style.marginTop = "6px";
-    const nb = el("button", "sec", "🔄 " + t("New key")); nb.type = "button"; nb.onclick = async () => { if (confirm(t("Make a new key? The old addresses stop working."))) paint(await post("/api/shortcut", {action: "new"})); };
-    const ob = el("button", "sec", "⛔ " + t("Switch off")); ob.type = "button"; ob.onclick = async () => paint(await post("/api/shortcut", {action: "off"}));
-    row.append(nb, ob); box.appendChild(row); };
+    const nb = el("button", KEYS.length ? "sec" : "", "🔑 " + t(KEYS.length ? "One more shortcut key" : "Make a shortcut key")); nb.type = "button";
+    nb.onclick = async () => { const r_ = await post("/api/shortcut", {action: "new", lang: LANG}); if (!r_.ok) { err.textContent = "⚠ " + (r_.error || "error"); return; } paint(r_); };
+    const ak = el("a", "btn sec", "🔐 " + t("All app keys")); ak.href = "/settings?open=grp:security";
+    row.append(nb, ak); box.append(row, err); };
   fetch("/api/shortcut").then(r => r.json()).then(paint).catch(() => {});
 }
 // ---- app icon (2.95.23): choose it here; on an iPhone / iPad the home screen keeps the old one - a hint says what to do ----

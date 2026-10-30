@@ -253,6 +253,7 @@ ol{padding-left:18px;margin:6px 0}
         <button onclick="startZone('sleep')" data-i18n="+ Sleeping place">+ Sleeping place</button>
         <button onclick="startZone('line')" data-i18n="+ Line">+ Line</button>
         <button onclick="startZone('loiter')" data-i18n="+ Dwell area">+ Dwell area</button>
+        <button onclick="startZone('report')" data-i18n="+ Only report">+ Only report</button>
       </div>
       <div class="btns"><button class="sec" id="b-fin" onclick="finish()" data-i18n="Finish shape" hidden>Finish shape</button>
         <button class="sec" onclick="loadFrame()" data-i18n="New picture">New picture</button></div>
@@ -266,7 +267,9 @@ ol{padding-left:18px;margin:6px 0}
       <div style="margin-top:4px"><i style="background:#a98bff"></i><span data-i18n="Privacy zone">Privacy zone</span>: <span data-i18n="z-priv">z-priv</span></div>
       <div style="margin-top:4px"><i style="background:#ff7ab6"></i><span data-i18n="Sleeping place">Sleeping place</span>: <span data-i18n="z-sleep">z-sleep</span></div>
       <div style="margin-top:4px"><i style="background:#3cd2ff"></i><span data-i18n="Line">Line</span>: <span data-i18n="z-line">z-line</span></div>
-      <div style="margin-top:4px"><i style="background:#ffdc3c"></i><span data-i18n="Dwell area">Dwell area</span>: <span data-i18n="z-loit">z-loit</span></div></div>
+      <div style="margin-top:4px"><i style="background:#ffdc3c"></i><span data-i18n="Dwell area">Dwell area</span>: <span data-i18n="z-loit">z-loit</span></div>
+      <div style="margin-top:4px"><i style="background:#c9a0ff"></i><span data-i18n="Only report">Only report</span>: <span data-i18n="z-report">z-report</span></div>
+      <div style="margin-top:4px">📌 <span data-i18n="Stays on its place">Stays on its place</span>: <span data-i18n="z-anchor">z-anchor</span></div></div>
       <div class="mut" style="margin-top:8px" data-i18n="z-how">z-how</div>
     </div>
   </aside>
@@ -291,7 +294,10 @@ Object.assign(I18N.de, {"+ Ignore zone": "+ Ignorier-Zone", "+ Only-here zone": 
   "z-ign": "Personen und Objekte, deren Füsse darin stehen, werden ignoriert (Strasse, Baum, Nachbars Garten).",
   "z-only": "Wenn mindestens eine solche Zone existiert, zählt nur, was darin passiert (Eingang, Einfahrt).",
   "z-how": "Eine Zone wirkt auf die Erkennung, die Aufnahme, die Alarme und die Relais. Gezählt wird der Punkt unten in der Mitte des erkannten Objekts (die Füsse)."});
-Object.assign(I18N, {en: {"z-kinds": "An ignore or only-here zone can apply to persons only or to animals only - for the other kinds it does not exist (e.g. a path: ignore persons, still report animals).", "z-sleep": "Like a privacy zone (black, stays on the bed when the camera turns). The wake-up alarm turns the camera there (gestures). Draw it while the camera looks at the bed.", "z-line": "Reports when a person crosses the line – both ways or only in the arrow direction (e.g. «comes to the tent»).",
+Object.assign(I18N.de, /*ZAUFRDE*/{});
+Object.assign(I18N, {en: {"z-report": "A person whose feet stand inside is no alarm - only a note in the log and now and then an info push (a public path, the neighbours' way). «Set up the place» makes its public path such a zone.",
+  "z-anchor": "The zone stays on the ground when the head turns (corners kept as directions) - otherwise it is fixed to the picture. Draw it while the camera looks there. Privacy zones and the sleeping place always stay.",
+  "z-kinds": "An ignore or only-here zone can apply to persons only or to animals only - for the other kinds it does not exist (e.g. a path: ignore persons, still report animals).", "z-sleep": "Like a privacy zone (black, stays on the bed when the camera turns). The wake-up alarm turns the camera there (gestures). Draw it while the camera looks at the bed.", "z-line": "Reports when a person crosses the line – both ways or only in the arrow direction (e.g. «comes to the tent»).",
   "z-loit": "Reports when a person stays inside longer than the time set (e.g. at the car).", "z-ign": "Persons and objects whose feet are inside are ignored (street, tree, neighbour's garden).",
   "z-only": "If at least one such zone exists, only what happens inside it counts (entrance, driveway).",
   "z-how": "A zone affects detection, recording, alarms and relays. The point that counts is the bottom middle of the detected object (the feet).",
@@ -299,8 +305,9 @@ Object.assign(I18N, {en: {"z-kinds": "An ignore or only-here zone can apply to p
 const tt = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 const cv = $("#cv"), g = cv.getContext("2d"), img = new Image();
 let zones = [], sel = -1, drawing = null, drawMode = "ignore", drag = null;
-const COL = {ignore: "245,154,74", only: "63,207,107", privacy: "169,139,255", line: "60,210,255", loiter: "255,220,60", sleep: "255,122,182"};
-const ZNAME = {only: "Only-here zone", privacy: "Privacy zone", ignore: "Ignore zone", line: "Line", loiter: "Dwell area", sleep: "Sleeping place"};
+const COL = {ignore: "245,154,74", only: "63,207,107", privacy: "169,139,255", line: "60,210,255", loiter: "255,220,60", sleep: "255,122,182", report: "201,160,255"};
+const ZNAME = {only: "Only-here zone", privacy: "Privacy zone", ignore: "Ignore zone", line: "Line", loiter: "Dwell area", sleep: "Sleeping place", report: "Only report"};
+const FIXED = ["privacy", "sleep"];                    // they always stay on their place (030)
 function arrow(z, on) {                 // line: the arrow shows in which direction crossing it counts
   const [a, b] = z.points.map(px), mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
   let nx = -(b[1] - a[1]), ny = b[0] - a[0]; const l = Math.hypot(nx, ny) || 1; nx /= l; ny /= l;
@@ -364,7 +371,7 @@ function renderList() {
     const nm = el("input"); nm.type = "text"; nm.value = z.name; nm.maxLength = 40; nm.oninput = () => { z.name = nm.value; draw(); }; nm.onclick = e => e.stopPropagation();
     const del = el("button", "sec", "✕"); del.title = t("Delete"); del.onclick = e => { e.stopPropagation(); zones.splice(i, 1); sel = -1; renderList(); draw(); };
     const md = el("select");
-    (z.mode === "line" ? [["line", t("Line")]] : [["ignore", t("Ignore zone")], ["only", t("Only-here zone")], ["privacy", t("Privacy zone")], ["sleep", t("Sleeping place")], ["loiter", t("Dwell area")]])
+    (z.mode === "line" ? [["line", t("Line")]] : [["ignore", t("Ignore zone")], ["only", t("Only-here zone")], ["privacy", t("Privacy zone")], ["sleep", t("Sleeping place")], ["loiter", t("Dwell area")], ["report", t("Only report")]])
       .forEach(([v, l]) => { const o = el("option", "", l); o.value = v; md.appendChild(o); });
     md.value = z.mode; md.onchange = () => { z.mode = md.value; if (z.mode === "loiter" && !z.secs) z.secs = 20; renderList(); draw(); }; md.onclick = e => e.stopPropagation();
     r.append(nm, del, md);
@@ -378,6 +385,12 @@ function renderList() {
       k.style.gridColumn = "1 / -1"; r.appendChild(k); }
     if (z.mode === "loiter") { const w = el("label", "mut", t("Alarm after (seconds)") + " "); const n = el("input"); n.type = "number"; n.min = 3; n.max = 600; n.value = z.secs || 20; n.style.width = "80px";
       n.onchange = () => { z.secs = Math.max(3, Math.min(600, +n.value || 20)); }; n.onclick = e => e.stopPropagation(); w.appendChild(n); w.style.gridColumn = "1 / -1"; r.appendChild(w); }
+    {                                                    // aufr: «stays on its place» (anchor, 030 / 317) for every zone
+      const l = el("label", "mut"), c = el("input"); c.type = "checkbox"; const fx = FIXED.includes(z.mode);
+      c.checked = fx || !!z.anchor; c.disabled = fx; c.onclick = e => e.stopPropagation();
+      c.onchange = () => { if (c.checked) z.anchor = true; else { delete z.anchor; delete z.ang; } };
+      l.title = tt("z-anchor"); l.style.gridColumn = "1 / -1"; l.append(c, " 📌 " + t("Stays on its place") + (z.src === "place" ? " · " + t("from «Set up the place»") : "")); r.appendChild(l);
+    }
     L.appendChild(r);
   });
 }

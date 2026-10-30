@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_38.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_39.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,10 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.39: Aufräumen: ein Eintrag «Servos» (Positionen, Test, Diagnose); alter Kurzbefehl-Schlüssel wird App-Schlüssel (/k/
+    geht weiter); Almanach folgt Hell/Dunkel/Rotlicht; Ausblenden überall pro Gerät; Zonen-Art «Nur melden» und Schalter «Bleibt
+    am Platz»; Licht/Sirene zielen auf Person oder Zelt; kluge Runde nur mit Patrouille; während «Team gegen MoveEye» keine
+    automatische Kopfbewegung; Tierart-Gruppe; «Weckton» und «Sirenenton» statt zweimal «Ton».
   * 2.98.38: Live-Bild: wird das Bild nach dem Wechseln der Reiter wieder sichtbar, holt die Seite einen frischen Bildstrom
     (vorher blieb es auf dem iPhone manchmal schwarz); solange kein Bild da ist, zeigt eine Sanduhr ⏳ «Bild wird geladen –
     tippen zum Neuladen».
@@ -953,10 +957,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_38.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_39.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_38.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_38.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_39.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_39.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -973,7 +977,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.38"
+APP_VERSION = "2.98.39"
 
 
 def default_data_dir():
@@ -1251,8 +1255,7 @@ CFG = {
     # e-mail as a way for messages (the iPhone «E-Mail» automation can start a shortcut)
     "email_on": False, "email_to": "", "email_host": "", "email_port": "587", "email_user": "", "email_password": "", "email_from": "",
     "email_events": "alarms",       # alarms | all
-    # shortcut key (2.95.27): /k/<key>/<action> works without the password, only for a few actions (arm, siren off, light ...)
-    "shortcut_token": "",
+    # (the shortcut key of 2.95.27, shortcut_token, is an app key with scope «shortcut» since aufr - part 573, MIGRATE_ONLY)
     # 2.95.28: a short test run every night (when the simulator runs), message only when it gets clearly worse
     "testopt_nightly": False, "testopt_hour": 3, "testopt_plan": "quick",
     "deter_person_act": "off", "deter_person_sound": "two-tone",
@@ -1355,7 +1358,8 @@ STATE = {
 DEFAULTS = dict(CFG)
 # 2.98.18: old keys that are only READ from settings files of older versions (the migration takes them over) - never in CFG,
 # so they are not shown, saved or exported anywhere. key -> what took its place.
-MIGRATE_ONLY = {"simweek_on": "weekrep_sim (577, 2.98.15)", "back_ask": "presence_back (577, 2.98.15)"}
+MIGRATE_ONLY = {"simweek_on": "weekrep_sim (577, 2.98.15)", "back_ask": "presence_back (577, 2.98.15)",
+                "shortcut_token": "an app key with scope «shortcut» (573, aufr)"}
 WAYPOINTS = []          # [pan, tilt] positions in percent
 
 
@@ -1577,6 +1581,10 @@ ZONES = []              # [{"id", "name", "mode": "ignore"|"only"|"privacy", "po
 # 2.98.7: "sleep" = the sleeping place - a privacy zone that stays on the bed when the head turns: its corners are kept as
 # directions (degrees, "ang") and drawn into every picture for the direction the camera has (and had in the last 2 s, the
 # picture comes a little later than the servo moves). The wake-up alarm turns the camera to it.
+# aufr: "report" = «nur melden»: a person whose feet stand inside is no alarm - one log line / info push now and then (the
+# «öffentlicher Weg» of «Platz einrichten» is such a zone since aufr, alarm_gate in 317). Every zone except the black ones
+# (they always do) can «stay on its place» ("anchor": the corners are kept as directions and follow the turning head) - a
+# switch in the zone editor (520) since aufr; before only the zones of «Platz einrichten» (317) had it.
 
 
 def _num(v):
@@ -1590,7 +1598,7 @@ def _clean_zone(z, i):
     for p in (z.get("points") or [])[:40] if isinstance(z.get("points"), list) else []:
         if isinstance(p, (list, tuple)) and len(p) == 2 and _num(p[0]) and _num(p[1]):
             pts.append([round(min(1.0, max(0.0, float(p[0]))), 4), round(min(1.0, max(0.0, float(p[1]))), 4)])
-    mode = z.get("mode") if z.get("mode") in ("only", "privacy", "line", "loiter", "sleep") else "ignore"
+    mode = z.get("mode") if z.get("mode") in ("only", "privacy", "line", "loiter", "sleep", "report") else "ignore"
     if mode == "line":
         if len(pts) < 2:
             return None
@@ -2029,9 +2037,9 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Setup", "use_case", "What is MoveEye for? («Simple» shows only what fits)", "enum", "use_cases"),
     ("Wake-up alarm", "wake_time", "Wake-up time (HH:MM)", "str", None),
     ("Wake-up alarm", "wake_days", "Days", "enum", "wake_days"),
-    ("Wake-up alarm", "wake_sound", "Sound", "enum", "wake_sounds"),
+    ("Wake-up alarm", "wake_sound", "Wake-up sound", "enum", "wake_sounds"),
     ("Bless you", "sneeze_texts", "Words (several: separate with |)", "str", None),
-    ("Loudspeaker", "siren_sound", "Sound", "enum", "sounds"),
+    ("Loudspeaker", "siren_sound", "Siren sound", "enum", "sounds"),
     ("Lights", "light_white_out", "White light: connected to", "enum", "light_white_out"),
     ("Lights", "light_white_auto", "White light: Auto means", "enum", "light_auto"),
     ("Lights", "light_ir_out", "Infrared light: connected to", "enum", "light_ir_out"),
@@ -3016,6 +3024,13 @@ def _settings_migrations(cfg_in):
             log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
     except Exception as e:
         log_event("sys", f"Settings migration (232): {e}"[:150])
+    for _f, _n in ((lambda: shortcut_migrate(cfg_in), "573"), (place_report_migrate, "317")):   # aufr: shortcut key -> app key, public path -> zone
+        try:
+            did = _f()
+            if did:
+                log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
+        except Exception as e:
+            log_event("sys", f"Settings migration ({_n}): {e}"[:150])
 
 
 _SAVE_LOCK = threading.Lock()
@@ -5439,22 +5454,40 @@ def alx_tk_zones(app, parent):
     def fill():
         for c in rows.winfo_children():
             c.destroy()
-        zs = [z for z in ZONES if z["mode"] in ("ignore", "only")]
+        zs = list(ZONES)                                  # aufr: every zone - «applies to» for ignore / only-here, «stays on its place» for all
         if not zs:
             ttk.Label(rows, text=tr("no zones") + " · " + tr("Open zone editor (browser)"), style="Mut.TLabel").pack(anchor="w")
             return
+        names = {"ignore": "Ignore zone", "only": "Only-here zone", "privacy": "Privacy zone", "sleep": "Sleeping place", "line": "Line",
+                 "loiter": "Dwell area", "report": "Only report"}
         for z in zs:
             r = ttk.Frame(rows); r.pack(fill="x", pady=1)
-            ttk.Label(r, text=f"{z['name']} ({tr('Ignore zone' if z['mode'] == 'ignore' else 'Only-here zone')})", width=28).pack(side="left")
-            cb = ttk.Combobox(r, state="readonly", values=[l for _k, l in opts], width=16)
-            cb.current([k for k, _l in opts].index(z.get("kinds", "all")) if z.get("kinds", "all") in ("all", "person", "animal") else 0)
-            cb.pack(side="left", padx=(4, 0))
+            ttk.Label(r, text=f"{z['name']} ({tr(names.get(z['mode'], z['mode']))})", width=28).pack(side="left")
+            if z["mode"] in ("ignore", "only"):
+                cb = ttk.Combobox(r, state="readonly", values=[l for _k, l in opts], width=16)
+                cb.current([k for k, _l in opts].index(z.get("kinds", "all")) if z.get("kinds", "all") in ("all", "person", "animal") else 0)
+                cb.pack(side="left", padx=(4, 0))
 
-            def pick(_e=None, zid=z["id"], cb=cb):
-                k = opts[cb.current()][0]
-                lst = [dict(x, kinds=k) if x["id"] == zid else dict(x) for x in ZONES]
+                def pick(_e=None, zid=z["id"], cb=cb):
+                    k = opts[cb.current()][0]
+                    lst = [dict(x, kinds=k) if x["id"] == zid else dict(x) for x in ZONES]
+                    zones_set(lst)
+                cb.bind("<<ComboboxSelected>>", pick)
+            fx = z["mode"] in FIXED_MODES
+            av = tk.BooleanVar(value=fx or bool(z.get("anchor")))
+
+            def anc(zid=z["id"], av=av):
+                lst = []
+                for x in ZONES:
+                    x = dict(x)
+                    if x["id"] == zid:
+                        if av.get():
+                            x["anchor"] = True
+                        else:
+                            x.pop("anchor", None); x.pop("ang", None)
+                    lst.append(x)
                 zones_set(lst)
-            cb.bind("<<ComboboxSelected>>", pick)
+            ttk.Checkbutton(r, text="📌 " + tr("Stays on its place"), variable=av, command=anc, state="disabled" if fx else "normal").pack(side="left", padx=(6, 0))
     fill()
     ttk.Button(box, text="↻", width=3, command=fill).pack(anchor="e")
 
@@ -14706,8 +14739,8 @@ class NetAuto:
 # ----------------------------------------------------------------------------
 # Patrol: pendulum over waypoints  (1-2-3-2-1-2-3 ...)
 # 2.98.30: «kluge Runde» - the stops come from kopf_patrol_plan() (part 162): the places of «Platz einrichten» with a
-# longer stay at the tent and the access, hardly a stop at ignored directions; without places the waypoints. It also
-# runs by itself in Wachsam / Voll (setting «Automatic head movement»), pauses while following and gives way to every
+# longer stay at the tent and the access, hardly a stop at ignored directions; without places the waypoints. It runs only
+# when «Patrouille» is on (aufr, decision Daniel - before also by itself in Wachsam / Voll), pauses while following and gives way to every
 # mover with a higher rank (kopf_may). Battery low / deep night: it stays at the most important direction.
 # ----------------------------------------------------------------------------
 class Patrol:
@@ -14930,9 +14963,28 @@ def light_alarm():                                   # wildlife: the light stays
     _light_alarm_base()
 
 
+def kopf_game_hand():
+    """aufr (decision Daniel): a round of «Team gegen MoveEye» runs in the simulator (countdown / play) - the players at
+    MoveEye steer the head, so MoveEye does not follow and moves the head by itself only after the round (nothing is
+    switched off: «Folgen» is on again by itself afterwards). From the game state of the simulator (SIMGAME, 340)."""
+    if not CFG.get("sim_on"):
+        on = False
+    else:
+        try:
+            g = sim_game()                                 # fetched fresh in the background every 2.5 s at most
+        except Exception:
+            g = SIMGAME.get("g") if "SIMGAME" in globals() else None
+        on = bool(g) and g.get("mode") == "mwhand" and g.get("round") in ("play", "countdown")
+    if on != KOPF.get("game_was", False):
+        KOPF["game_was"] = on
+        log_event("servo", "Game «Team gegen MoveEye»: following paused - the players steer the head" if on
+                  else "Game round over: following and the automatic head movement go on")
+    return on
+
+
 def kopf_track_blocked():
-    """410 track(): parked (Aus, privacy) - the head does not follow"""
-    return bool(CFG.get("kopf_parked")) and bool(CFG.get("kopf_park")) and bool(CFG.get("kopf_on"))
+    """410 track(): parked (Aus, privacy) or a game round where people steer the head - the head does not follow"""
+    return (bool(CFG.get("kopf_parked")) and bool(CFG.get("kopf_park")) and bool(CFG.get("kopf_on"))) or kopf_game_hand()
 
 
 # ---- who holds the head ----------------------------------------------------------------------------------------------
@@ -14975,6 +15027,8 @@ def kopf_may(who, sim_lock=True):
                 return False
         except NameError:
             pass
+    if who != "manual" and KOPF.get("game_was") and kopf_game_hand():
+        return False                                     # aufr: game round «Team gegen MoveEye» - only the players move the head
     return True
 
 
@@ -14990,10 +15044,10 @@ def kopf_move(pan, tilt, who, speed=None, stop=None):
 
 # ---- the round (called by the patrol, part 160) ----------------------------------------------------------------------
 def kopf_patrol_plan():
-    """(stops, why): what the patrol drives now. [] = it does not run (why = the status)"""
-    auto = (CFG.get("kopf_on") and CFG.get("kopf_round") and CFG.get("armed") and STATE.get("arm_state") == "armed"
-            and protect_level() in ("watch", "full"))
-    if not CFG["patrol"] and not auto:
+    """(stops, why): what the patrol drives now. [] = it does not run (why = the status).
+    aufr (decision Daniel): the round runs only when «Patrouille» is on - «kluge Runde» (kopf_round) only chooses the stops
+    (places of «Platz einrichten», longer at the tent); without «Patrouille» the head stays at its home position."""
+    if not CFG["patrol"]:
         return [], "off"
     stops = kopf_stops()
     sv = kopf_save_active()
@@ -15082,6 +15136,7 @@ def _kopf_status(s):
 
 def _kopf_tick():
     now = time.time()
+    kopf_game_hand()                                     # aufr: notices the start / end of a round «Team gegen MoveEye»
     armed = bool(CFG.get("armed"))
     pos = (round(float(CFG["pan"]), 1), round(float(CFG["tilt"]), 1))
     on = bool(CFG.get("kopf_on"))
@@ -15195,6 +15250,8 @@ def _kopf_tick():
         _kopf_status("turned to the alarm")
     elif own == "round" and KOPF["save_why"]:
         _kopf_status("saving: stays at the most important direction")
+    elif KOPF.get("game_was"):
+        _kopf_status("game round: the players steer the head - following paused")
     else:
         _kopf_status("")
 
@@ -26005,7 +26062,7 @@ def place_apply(items, public_report=True, patrol=None, by="web"):
     room = MAX_ZONES - len(keep)
     for it in its:
         k = it["kind"]
-        if k not in ("tent", "access", "ignore"):
+        if k not in ("tent", "access", "ignore", "public_path"):
             continue
         if len(new) >= room:
             skipped += 1; continue
@@ -26015,7 +26072,8 @@ def place_apply(items, public_report=True, patrol=None, by="web"):
             z = {"mode": "line", "name": "🚶 " + it["name"], "points": _zone_points(ang, True), "ang": ang, "dir": "both"}
         else:
             ang = [[it["a0"], it["e1"]], [it["a1"], it["e1"]], [it["a1"], it["e0"]], [it["a0"], it["e0"]]]
-            z = {"mode": "loiter" if k == "tent" else "ignore", "name": ("⛺ " if k == "tent" else "🌿 ") + it["name"], "points": _zone_points(ang), "ang": ang}
+            z = {"mode": {"tent": "loiter", "public_path": "report"}.get(k, "ignore"), "name": {"tent": "⛺ ", "public_path": "🛣 "}.get(k, "🌿 ") + it["name"],
+                 "points": _zone_points(ang), "ang": ang}            # aufr: the public path = a zone «nur melden» (030), editable in the zone editor
             if k == "tent":
                 z["secs"] = int(CFG.get("place_tent_secs", 15))
         z.update(id=uuid.uuid4().hex[:8], anchor=True, src="place")
@@ -26173,6 +26231,36 @@ def place_state(lang=None):
 PLACE_GATE = {"pub_t": 0.0, "tent_t": 0.0}
 
 
+def place_report_migrate():
+    """aufr: the «public path» of a place set up with 2.98.36 or older was only an item of the place record (alarm_gate looked
+    at it). Now it is a zone «nur melden» (mode report, stays on its place) - made once from the record, so it shows up
+    and can be changed in the zone editor. Returns the list of what was taken over."""
+    rec = _place_load() or {}
+    pubs = [it for it in (rec.get("items") or []) if isinstance(it, dict) and it.get("kind") == "public_path" and "a0" in it]
+    if not pubs or not rec.get("public_report", True) or any(z["mode"] == "report" and z.get("src") == "place" for z in ZONES):
+        return []
+    new = []
+    for it in pubs:
+        if len(ZONES) + len(new) >= MAX_ZONES:
+            break
+        try:
+            ang = [[float(it["a0"]), float(it["e1"])], [float(it["a1"]), float(it["e1"])], [float(it["a1"]), float(it["e0"])], [float(it["a0"]), float(it["e0"])]]
+        except (KeyError, TypeError, ValueError):
+            continue
+        new.append({"id": uuid.uuid4().hex[:8], "mode": "report", "name": "🛣 " + (str(it.get("name") or "") or tr(PLACE_DEFAULT_NAMES["public_path"])),
+                    "points": _zone_points(ang), "ang": ang, "anchor": True, "src": "place"})
+    if not new:
+        return []
+    ok, _e = zones_set([dict(z) for z in ZONES] + new)
+    if ok:
+        rec["zones"] = list(rec.get("zones") or []) + [z["id"] for z in ZONES if z.get("src") == "place" and z["mode"] == "report"]
+        try:
+            _place_save(rec)
+        except OSError:
+            pass
+    return [f"public path of the place -> {len(new)} zone(s) «only report»"] if ok else []
+
+
 def _place_in(it, a, e, grow=0.0):
     a0, a1 = it["a0"] - grow, it["a1"] + grow
     if servo_half("pan") >= 179.0:
@@ -26185,32 +26273,35 @@ _alarm_gate_base = alarm_gate
 
 
 def alarm_gate(w, frame, persons, now):
-    """2.98.30 (317): before the gate of 066: persons whose feet stand on a public path (place record, «nur melden») are no
-    alarm - one log line / info push now and then. A person at the tent (or coming closer to it) needs no double confirmation."""
+    """2.98.30 (317): before the gate of 066: persons whose feet stand in a zone «nur melden» (aufr: zone mode report - the
+    public path of «Platz einrichten» and every such zone of the zone editor) are no alarm - one log line / info push now and
+    then. A person at the tent (or coming closer to it) needs no double confirmation."""
     rec = PLACE["rec"] if PLACE["loaded"] else _place_load()
     its = (rec or {}).get("items") or []
-    if not persons or not its or not any(it.get("kind") in ("public_path", "tent") and "a0" in it for it in its):
+    reps = [z for z in ZONES if z["mode"] == "report" and zone_here(z) and len(z.get("points") or []) >= 3]
+    tents = [it for it in its if it.get("kind") == "tent" and "a0" in it]
+    if not persons or not (reps or tents):
         return _alarm_gate_base(w, frame, persons, now)
     pw = float(CFG.get("proc_width") or 480)
     ph = float(getattr(w, "_ph", 0) or 0) or (pw * frame.shape[0] / float(frame.shape[1]) if frame is not None else pw * 0.5625)
     hf, vf = cam_fov()
-    pubs = [it for it in its if it.get("kind") == "public_path" and "a0" in it]
-    tents = [it for it in its if it.get("kind") == "tent" and "a0" in it]
-    keep, pub, near = [], 0, False
+    keep, pub, near, where = [], 0, False, ""
     for b in persons:
         x, y, bw, bh = (float(v) for v in b[:4])
-        a, e = place_pic_to_ang((x + bw / 2.0) / pw, (y + bh * 0.95) / ph, CFG["pan"], CFG["tilt"], hf, vf)
+        fx, fy = (x + bw / 2.0) / pw, (y + bh * 0.95) / ph
+        a, e = place_pic_to_ang(fx, fy, CFG["pan"], CFG["tilt"], hf, vf)
         at_tent = any(_place_in(t, a, e, 4.0) for t in tents)
-        if not at_tent and any(_place_in(p_, a, e) for p_ in pubs):
-            pub += 1; continue
+        zr = None if at_tent else next((z for z in reps if point_in_poly(fx, fy, z["points"])), None)
+        if zr is not None:
+            pub += 1; where = where or zr["name"]; continue
         near = near or at_tent
         keep.append(b)
     if pub and now - PLACE_GATE["pub_t"] > 300:
         PLACE_GATE["pub_t"] = now
-        log_event("person", "Person on the public path - only reported (place setup)")
+        log_event("person", f"Person in «{where}» - only reported (zone «only report»)")
         if is_armed() and CFG.get("place_public_push", True):
             try:
-                w.notifier.info(tr("Person on the public path (only reported, no alarm)"), title="{name}: " + tr("Public path"))
+                w.notifier.info(tr("Person on the public path (only reported, no alarm)") + " · " + where, title="{name}: " + tr("Only report"))
             except Exception:
                 pass
     res = _alarm_gate_base(w, frame, keep, now)
@@ -26254,16 +26345,30 @@ def place_selftest():
         try:
             PLACE.update(rec={"items": [{"kind": "public_path", "a0": -12, "a1": 12, "e0": -25, "e1": 25, "name": "p"}]}, loaded=True)
             CFG["alarm_confirm2"] = False; ALX["hold_until"] = 0.0
+            zs_old = [dict(z) for z in ZONES]
+            _ss, globals()["save_settings"] = globals()["save_settings"], lambda: None
+            _ps, globals()["_place_save"] = globals()["_place_save"], lambda r: None
+            try:
+                ZONES[:] = []
+                assert place_report_migrate() and [z["mode"] for z in ZONES] == ["report"] and ZONES[0].get("anchor") and ZONES[0].get("ang")
+                assert place_report_migrate() == [], "taken over only once"
+                sleep_update()
 
-            class _W:
-                _ph = 270; ai = None; last_warm = 0.0; notifier = None
-            pw = float(CFG.get("proc_width") or 480)
-            on_path = (pw / 2 - 10, 100, 20, 60); beside = (pw * 0.9, 100, 20, 60)
-            assert alarm_gate(_W(), None, [on_path], time.time()) == []
-            assert alarm_gate(_W(), None, [on_path, beside], time.time()) == [beside]
+                class _W:
+                    _ph = 270; ai = None; last_warm = 0.0; notifier = None
+                pw = float(CFG.get("proc_width") or 480)
+                on_path = (pw / 2 - 10, 100, 20, 60); beside = (pw * 0.9, 100, 20, 60)
+                assert alarm_gate(_W(), None, [on_path], time.time()) == []
+                assert alarm_gate(_W(), None, [on_path, beside], time.time()) == [beside]
+                ZONES[:] = [dict(ZONES[0], anchor=False)]                       # a zone «only report» of the zone editor (not anchored)
+                assert _clean_zone(ZONES[0], 0)["mode"] == "report"
+                assert alarm_gate(_W(), None, [on_path], time.time()) == []
+            finally:
+                ZONES[:] = zs_old
+                globals()["save_settings"] = _ss; globals()["_place_save"] = _ps
         finally:
             PLACE["rec"], PLACE["loaded"], CFG["alarm_confirm2"], PLACE_GATE["pub_t"], ALX["hold_until"] = old
-        return "directions, 360° seam, plan, items, public path in the alarm"
+        return "directions, 360° seam, plan, items, public path = zone «only report» (migration, alarm)"
     finally:
         CFG["pan"], CFG["tilt"], CFG["pan_servo_range"], CFG["pan_limit"] = sv
 # ----------------------------------------------------------------------------
@@ -30602,7 +30707,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_38.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_39.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -32035,6 +32140,136 @@ def migrate_only_selftest():
 SELFTEST_EXTRA.append(("Old settings only for taking over (MIGRATE_ONLY)", migrate_only_selftest))
 SELFTEST_EXTRA.append(("Translations fr / it / rm (texts in use)", i18n_selftest))
 # ----------------------------------------------------------------------------
+# aufr (Konzept-Check, Teil 317 / 162): light and siren sit on the head. When MoveEye deters (alarm light, the flashing
+#   white light of «Abschreckung» 370, the siren 250), the head turns them to where it matters:
+#     1. the person seen in the last 3 s (biggest box of the picture, kopf_frame of 162) - if «Folgen» already holds the
+#        person in the middle, nothing to do;
+#     2. otherwise the tent of «Platz einrichten» (place_info()["tent"], 317).
+#   Only through the one mover of the head (KOPF["turn_req"] = the same way as «zum Alarm drehen», rank «alarm»): the hand,
+#   Not-Aus, a game round and the parking keep their rank; afterwards the head goes home by itself (kopf_return).
+#   Switch: «Automatic head movement» → kopf_deter_aim (583). At most once every 20 s.
+# ----------------------------------------------------------------------------
+CFG.setdefault("kopf_deter_aim", True)
+DEFAULTS.setdefault("kopf_deter_aim", True)
+
+
+def kopf_deter_target(now=None):
+    """(pan %, tilt %, what) where light and siren should point now, or None"""
+    now = time.time() if now is None else now
+    pd = KOPF.get("pers_dir")
+    if pd and now - pd[2] < 3.0:
+        return (pd[0], pd[1], "person")
+    try:
+        pi = place_info()
+    except Exception:
+        return None
+    tent = pi.get("tent") if pi.get("done") else None
+    if tent:
+        return (float(tent["pan"]), float(tent["tilt"]), "tent")
+    return None
+
+
+def kopf_deter_aim(why):
+    """turn the head (light / siren) to the person or the tent - one request to the coordinator (162)"""
+    try:
+        if not (CFG.get("kopf_on") and CFG.get("kopf_deter_aim", True)) or STATE.get("tracking"):
+            return False                                 # «Folgen» already looks at the person
+        now = time.time()
+        if now - float(KOPF.get("aim_t") or 0.0) < 20.0 or KOPF.get("turn_req") or not kopf_may("alarm"):
+            return False
+        tg = kopf_deter_target(now)
+        if tg is None:
+            return False
+        p0, t0 = servo_pos()
+        if abs(tg[0] - p0) < 2.0 and abs(tg[1] - t0) < 2.0:
+            return False                                 # it looks there already
+        KOPF["aim_t"] = now
+        KOPF["turn_req"] = (tg[0], tg[1], f"{why}: light / siren to the {tg[2]}")
+        return True
+    except Exception as e:
+        log_event("servo", f"Deterrence aim: {e}"[:160])
+        return False
+
+
+_kopf_frame_aim_base = kopf_frame
+
+
+# wraps: kopf_frame
+def kopf_frame(w, candidates, person_boxes, warm_boxes, present, frame, pw, ph, t0):
+    if person_boxes and CFG.get("kopf_on"):              # where the biggest person is (for the aim of the deterrence)
+        try:
+            b = max(person_boxes, key=lambda x: float(x[2]) * float(x[3]))
+            pan, tilt = kopf_pic_to_pan((b[0] + b[2] / 2.0) / pw, (b[1] + b[3] / 2.0) / ph)
+            KOPF["pers_dir"] = (pan, tilt, t0)
+        except Exception:
+            pass
+    return _kopf_frame_aim_base(w, candidates, person_boxes, warm_boxes, present, frame, pw, ph, t0)
+
+
+_light_alarm_aim_base = light_alarm
+
+
+# wraps: light_alarm
+def light_alarm():
+    kopf_deter_aim("alarm light")
+    _light_alarm_aim_base()
+
+
+_siren_alarm_aim_base = siren_alarm
+
+
+# wraps: siren_alarm
+def siren_alarm(kind):
+    if is_armed() and CFG.get("siren_on") != "off" and kind in ("person", "warm", "sensor"):
+        kopf_deter_aim("siren")
+    return _siren_alarm_aim_base(kind)
+
+
+_deter_react_aim_base = Deterrence.react
+
+
+def _deter_react_aim(self, group, label):
+    if group != "small":
+        kopf_deter_aim("deterrence")
+    return _deter_react_aim_base(self, group, label)
+
+
+# wraps: Deterrence.react
+Deterrence.react = _deter_react_aim
+
+
+def kopf_deter_selftest():
+    keep = {k: CFG.get(k) for k in ("kopf_on", "kopf_deter_aim")}
+    kk = {k: KOPF.get(k) for k in ("pers_dir", "aim_t", "turn_req")}
+    st = STATE.get("tracking")
+    try:
+        CFG.update(kopf_on=True, kopf_deter_aim=True); STATE["tracking"] = False
+        p0, t0 = servo_pos()
+        KOPF.update(pers_dir=(min(100.0, p0 + 30.0), t0, time.time()), aim_t=0.0, turn_req=None)
+        ok = kopf_deter_aim("test")
+        if kopf_may("alarm"):
+            assert ok and KOPF["turn_req"] and "person" in KOPF["turn_req"][2], KOPF["turn_req"]
+            KOPF["turn_req"] = None
+            assert not kopf_deter_aim("test"), "at most once in 20 s"
+        STATE["tracking"] = True; KOPF["aim_t"] = 0.0
+        assert not kopf_deter_aim("test"), "following holds the person already"
+        # aufr (decision Daniel): a round «Team gegen MoveEye» - no following, no automatic move; afterwards everything again
+        sg, sim0, gw = globals()["sim_game"], CFG.get("sim_on"), KOPF.get("game_was", False)
+        try:
+            CFG["sim_on"] = True
+            globals()["sim_game"] = lambda: {"mode": "mwhand", "round": "play"}
+            assert kopf_game_hand() and kopf_track_blocked() and not kopf_may("round") and not kopf_may("alarm") and kopf_may("manual")
+            globals()["sim_game"] = lambda: {"mode": "mwhand", "round": "end"}
+            assert not kopf_game_hand() and not KOPF["game_was"]
+        finally:
+            globals()["sim_game"] = sg; CFG["sim_on"] = sim0; KOPF["game_was"] = gw
+    finally:
+        CFG.update(keep); KOPF.update(kk); STATE["tracking"] = st
+    return "aim at the person (else the tent), once in 20 s, not while following; game round: following paused"
+
+
+SELFTEST_EXTRA.append(("Deterrence turns light / siren to the person or the tent (162)", kopf_deter_selftest))
+# ----------------------------------------------------------------------------
 # Power: shut down / restart the Raspberry Pi (web page + desktop window). The recording is finished and the settings are
 #   saved first. Works as root, with the polkit rule of --allow-wifi or (Raspberry Pi OS) with sudo without a password.
 # ----------------------------------------------------------------------------
@@ -33087,7 +33322,7 @@ class MotionWatch:
                     if z["mode"] == "privacy":
                         continue
                     pts = np.array([(int(px * W), int(py * H)) for px, py in z["points"]], np.int32)
-                    col = {"ignore": (0, 160, 255), "line": (255, 210, 60), "loiter": (60, 220, 255)}.get(z["mode"], (80, 200, 80))
+                    col = {"ignore": (0, 160, 255), "line": (255, 210, 60), "loiter": (60, 220, 255), "report": (255, 160, 201)}.get(z["mode"], (80, 200, 80))
                     cv2.polylines(frame, [pts], z["mode"] != "line", col, 2 if z["mode"] == "line" else 1, cv2.LINE_AA)
                     if z["mode"] == "line" and z.get("dir", "both") != "both":
                         (ax, ay), (bx, by) = pts[0], pts[1]
@@ -34711,11 +34946,11 @@ def weekrep_tip(L, T, Tp, R, S, now):
             return trf("{n} false alarms this week. Suggestion: {s} (History → Recordings → false alarms)", L, n=R[1], s=sg[0]["text"]), "/recordings"
         return trf("{n} false alarms this week. Draw an ignore zone over what moves (trees, road) – tab Protection → Zones.", L, n=R[1]), "/zones"
     if S["missed"] >= 2 and CFG.get("weekrep_sim", True):
-        return trf("In the simulator {n} persons were in the picture but not recognised. Run the test «Night» and the automatic optimization (Simulator → Testing).", L, n=S["missed"]), "/sim"
+        return trf("In the simulator {n} persons were in the picture but not recognised. Run the test «Night» and the automatic optimization (Simulator → Testing → Tests).", L, n=S["missed"]), "/sim"
     if T["n"] and Tp.get("score") is not None and T["score"] <= Tp["score"] - 5:
-        return tr("The test score went down. Look at what changed in the settings (Simulator → Test runs, «undo»).", L), "/sim"
+        return tr("The test score went down. Look at what changed in the settings (Simulator → Testing → Tests, «undo»).", L), "/sim"
     if not T["n"]:
-        return tr("No test run this week: switch on the nightly test run (Simulator → Testing) – then you see the trend here.", L), "/sim"
+        return tr("No test run this week: switch on the nightly test run (Simulator → Testing → Tests) – then you see the trend here.", L), "/sim"
     if not R[0]:
         return tr("A quiet week. Check now and then that the camera still looks at the right place (Live).", L), "/"
     tips = ["Mark wrong alarms with «Was nothing» – MoveEye learns from them and suggests better settings.",
@@ -36121,7 +36356,7 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
   <div class="tlg" data-i18n="Device tests">Device tests</div>
   <button type="button" class="tli" data-k="focus" onclick="pick('focus')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span class="tln"><b data-i18n="Focus assistant">Focus assistant</b><span class="tsum" id="s-focus"></span></span><i class="tdot" id="d-focus"></i></button>
   <button type="button" class="tli" data-k="refscan" onclick="pick('refscan')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><circle cx="12" cy="12" r="3.5"/><path d="M12 6v2M12 16v2M6 12h2M16 12h2"/></svg><span class="tln"><b data-i18n="Reference scan">Reference scan</b><span class="tsum" id="s-refscan"></span></span><i class="tdot" id="d-refscan"></i></button>
-  <button type="button" class="tli" data-k="servo" onclick="pick('servo')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><span class="tln"><b data-i18n="Servo test">Servo test</b><span class="tsum" id="s-servo"></span></span><i class="tdot" id="d-servo"></i></button>
+  <a class="tli" data-k="servo" href="/servo#test" style="text-decoration:none;color:inherit"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><span class="tln"><b data-i18n="Servos">Servos</b><span class="tsum" id="s-servo" data-i18n="Positions, test, diagnosis, Not-Aus">Positions, test, diagnosis, Not-Aus</span></span><i class="tdot" id="d-servo"></i></a>
   <button type="button" class="tli" data-k="audio" onclick="pick('audio')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span class="tln"><b data-i18n="Speaker and microphone">Speaker and microphone</b><span class="tsum" id="s-audio"></span></span><i class="tdot" id="d-audio"></i></button>
   <button type="button" class="tli" data-k="sd" onclick="pick('sd')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M10 7v3M13 7v3M16 8v2"/></svg><span class="tln"><b data-i18n="Memory card test">Memory card test</b><span class="tsum" id="s-sd"></span></span><i class="tdot" id="d-sd"></i></button>
   <button type="button" class="tli" data-k="bt" onclick="pick('bt')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span class="tln"><b data-i18n="Bluetooth scanner">Bluetooth scanner</b><span class="tsum" id="s-bt"></span></span><i class="tdot" id="d-bt"></i></button>
@@ -36308,14 +36543,6 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
     <div class="mut" id="f-trend"></div>
     </div>
   </section>
-  <section class="tool" id="c-servo" data-k="servo" hidden>
-    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
-      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><h2 data-i18n="Servo test">Servo test</h2></div><div class="tact"><button id="b-servo" onclick="run('servo')" data-i18n="Start">Start</button></div></div>
-    <div class="tbd">
-    <div class="mut" data-i18n="servo-note">servo-note</div>
-    <div id="servo-res"></div>
-    </div>
-  </section>
   <section class="tool" id="c-audio" data-k="audio" hidden>
     <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
       <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><h2 data-i18n="Speaker and microphone">Speaker and microphone</h2></div><div class="tact"><button onclick="soundTest()" data-i18n="Test sound">Test sound</button></div></div>
@@ -36402,7 +36629,7 @@ Object.assign(I18N.de, {"Leisure": "Freizeit", "Game corner": "Spielecke",
  "Bluetooth scanner": "Bluetooth-Scanner", "Scan (10 s)": "Suchen (10 s)", "bt-note": "Geräte in der Nähe. Fremde Geräte werden nicht gespeichert – nur die, die du als «meins» markierst.",
  "Warn me about unknown trackers that stay near": "Warnen bei fremden Trackern, die lange in der Nähe bleiben", "after": "nach",
  "Focus assistant": "Fokus-Assistent", "focus-note": "Dreh am Objektiv: je höher die Zahl, desto schärfer. Gemessen wird die Bildmitte.",
- "Servo test": "Servo-Test", "servo-note": "Fährt Schwenken und Neigen langsam über den ganzen Bereich und prüft, ob sich das Bild jedes Mal bewegt. Danach zurück an die alte Stelle.",
+ "Servo test": "Servo-Test", "Servos": "Servos", "Positions, test, diagnosis, Not-Aus": "Positionen, Test, Diagnose, Not-Aus", "servo-note": "Fährt Schwenken und Neigen langsam über den ganzen Bereich und prüft, ob sich das Bild jedes Mal bewegt. Danach zurück an die alte Stelle.",
  "Speaker and microphone": "Lautsprecher und Mikrofon", "Test sound": "Testton", "Clap or speak: the bar shows what the microphone hears.": "Klatsche oder sprich: der Balken zeigt, was das Mikrofon hört.",
  "Memory card test": "Speicherkarten-Test", "Writes and reads 64 MB once, then deletes them again.": "Schreibt und liest einmal 64 MB und löscht sie danach wieder.",
  "Diagnosis package": "Diagnose-Paket", "Download": "Herunterladen", "diag-note": "Ein ZIP für die Fehlersuche: Protokoll, Systemwerte und Einstellungen – ohne Passwörter, Adressen, Themen und Bilder.",
@@ -36504,11 +36731,6 @@ function draw() {
   if (B.devices.length) bt.appendChild(tr_([t("Name"), t("Kind"), t("Signal"), "🏠"], true));
   B.devices.forEach(d => { const own = el("input"); own.type = "checkbox"; own.checked = mbt.has((d.addr || "").toLowerCase()); own.onchange = () => cfg("presence_bt", own.checked, {mac: d.addr});
     bt.appendChild(tr_([el("span", d.tracker ? "newdev" : "", d.name || d.addr), t(d.kind) || "", d.rssi != null ? d.rssi + " dBm" : "", own])); });
-  // servo
-  const V = S.servo; btn("servo", "Start", V.running); const sr = $("#servo-res"); sr.innerHTML = "";
-  if (V.steps.length) { const tb2 = el("table", "tl"); tb2.appendChild(tr_([t("Axis"), t("To"), t("Picture change"), t("Result")], true));
-    V.steps.forEach(s => tb2.appendChild(tr_([t(s.axis), s.to + " %", s.diff, s.ok === false ? "⚠ " + t("no change") : (s.ok ? "✅" : "…")]))); sr.appendChild(tb2); }
-  if (V.msg) sr.appendChild(el("div", V.msg === "ok" ? "" : "newdev", V.msg === "ok" ? "✅ " + t("ok") : "⚠ " + (V.bad || "") + " " + t(V.msg)));
   // sd
   const D = S.sd; btn("sd", "Start", D.running); const sd = $("#sd-res"); sd.innerHTML = ""; const R = D.res || {};
   if (D.msg) sd.append(el("span", "", "⚠"), el("span", "", D.msg));
@@ -36992,7 +37214,7 @@ function drawSums() {
   sum("guard", recent ? "⚠ " + t("Wi-Fi jamming!") : G.state === "listening" ? "👂 " + t("listening") : G.state === "off" ? t("off") : t(G.state || ""), recent ? "bad" : G.state === "listening" ? "ok" : "");
   const W = S.wifi; sum("wifi", W.running ? t("running…") : W.best ? t("Best channel") + " " + W.best + " · " + W.nets.length + " " + t("networks") : "");
   const B = S.bt, tk = (B.trackers || []).length; sum("bt", B.running ? t("running…") : B.t ? B.devices.length + " " + t("devices") + (tk ? " · 📍 " + tk : "") : "", tk ? "warn" : "");
-  const V = S.servo; sum("servo", V.running ? t("running…") : V.msg ? (V.msg === "ok" ? "✅ " + t("ok") : "⚠ " + (V.bad || "")) : "", V.msg && V.msg !== "ok" ? "warn" : V.msg ? "ok" : "");
+  const V = S.servo; if (V.running || V.msg) sum("servo", V.running ? t("running…") : V.msg === "ok" ? "✅ " + t("ok") : "⚠ " + (V.bad || ""), V.msg && V.msg !== "ok" ? "warn" : V.msg ? "ok" : "");   // the test is on /servo (541)
   const R = (S.sd || {}).res || {}; sum("sd", S.sd.running ? t("running…") : R.write_mb_s != null ? "✍ " + R.write_mb_s + " · 📖 " + R.read_mb_s + " MB/s" : "", {ok: "ok", warn: "warn", bad: "bad"}[R.verdict] || "");
   if (S.power) sum("pow", S.power.watts.toFixed(1) + " W");
 }
@@ -38600,7 +38822,7 @@ def nav_html(active):
 def ui_seed_script():
     """Runs first on every page: copies the saved layout into the browser storage (so the page code finds it there) and
     sends every later layout change back to the Pi, where it is kept in the settings file."""
-    data = json.dumps(CFG["web_ui"]).replace("</", "<\\/")
+    data = json.dumps({k: v for k, v in CFG["web_ui"].items() if k not in WEB_UI_LOCAL}).replace("</", "<\\/")   # aufr: per-device keys stay on the device
     return ("<script>(function(){var S=" + data + ";try{for(var k in S)localStorage.setItem(k,S[k]);}catch(e){}"
             "var P={},T=null,L=" + json.dumps(sorted(WEB_UI_LOCAL)) + ";"
             "function send(){var b=P;P={};T=null;try{fetch('/api/ui',{method:'POST',headers:{'Content-Type':'application/json'},"
@@ -43914,7 +44136,7 @@ G2_TOURS = {
              ("a.mi[href='/help']", "Manual", "Everything explained, with a search - and a quick guide to print."),
              ("#g2-more", "Setup and help", "Start or continue the setup, show the tours again, tip of the day."),
              ("#g2-sys", "System", "Reset to factory settings - with a copy of the old settings first."),
-             ("a.mi[href='/tools']", "Tools", "Network test, servo test, diagnosis and more.")],
+             ("a.mi[href='/tools']", "Tools", "Network test, servos, diagnosis and more.")],
 }
 # «Tipps & Tricks» per page: (s = Simple and Expert, e = only Expert, English text)
 G2_TT = {
@@ -43976,7 +44198,7 @@ G2_UI = [
     "🚶 Start walk test", "■ Stop", "Walk past the camera like a visitor - MoveEye beeps at every detection. 3 minutes, no alarms meanwhile.", "left", "recognised",
     "Night report in the morning", "End of the night time", "o'clock", "🕘 Schedules", "Schedules switch features by themselves, e.g. the protection every night.",
     "💡 Light 3 s", "🌙 Infrared 3 s", "🔊 Test sound", "🚨 Siren 2 s", "Loud! Warn the neighbours first.",
-    "◎ Centre", "◀ ▶ Turn a little", "Direction of turning wrong? Swap it:", "Invert pan direction", "Invert tilt direction", "🛠 Servo test (tools)",
+    "◎ Centre", "◀ ▶ Turn a little", "Direction of turning wrong? Swap it:", "Invert pan direction", "Invert tilt direction", "🛠 Servos: test and positions",
     "AI detection", "The AI says «person», «animal», «car». It runs on the Pi or on a helper PC.", "Own AI model",
     "Thermal picture over the live picture", "Alarm from the thermal camera", "Battery", "Battery saving automatic", "charge",
     "no battery", "Powerbank capacity", "Fast updates (development)", "🔋 Charged full now",
@@ -43985,7 +44207,7 @@ G2_UI = [
     "off", "basic", "normal", "all", "Done!", "Done", "skipped", "skipped automatically", "Open MoveEye on other devices with these codes. On the phone: Share → «Add to Home Screen» - then it starts like an app.",
     "Home network", "Own Wi-Fi of the device", "On the road (Tailscale)", "🖨 Quick start card with QR codes", "Let's go", "➕ Set up more (thorough)",
     "↩ Back to the setup", "Setup", "Setup finished.", "Setup paused - step", "never done", "🧭 Start the setup", "🧭 Continue the setup", "🧭 Setup again",
-    "↺ Reset all tours", "All tours will show again.", "System", "⚠ Reset to factory settings …", "Copies of the old settings", "⬇",
+    "↺ Reset all tours", "All tours will show again.", "System", "⚠ Reset to factory settings …", "Send a test feedback", "for the developer: does a message reach the servers?", "Copies of the old settings", "⬇",
     "Reset to factory settings", "Back to the factory settings:", "all settings, zones, schedules, waypoints, password, users, PIN, the place",
     "These stay:", "Wi-Fi and own Wi-Fi, remote access (Tailscale), the push channel (ntfy), the update settings, the own AI model and what it learned",
     "These are deleted:", "all recordings and photos, the animal diary, the log", "First a copy of the old settings is saved - you can download it below.",
@@ -44474,7 +44696,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
         const sc = await J("/api/schema?lang=" + LG() + "&simple=0") || []; const v = {};
         sc.forEach(s => (s.toggles || []).forEach(x => { v[x.key] = x.value; }));
         tgRow(ctx, T("Invert pan direction"), v.invert_pan, x => setKey("invert_pan", x)); tgRow(ctx, T("Invert tilt direction"), v.invert_tilt, x => setKey("invert_tilt", x));
-        const r2 = E("div", "row2"); r2.appendChild(BT(T("🛠 Servo test (tools)"), "sec", () => gotoWith("/tools"))); ctx.body.appendChild(r2);
+        const r2 = E("div", "row2"); r2.appendChild(BT(T("🛠 Servos: test and positions"), "sec", () => gotoWith("/servo#test"))); ctx.body.appendChild(r2);
       },
       async ai(ctx) {
         H(ctx, "🤖", titleOf("ai").title || "", T("The AI says «person», «animal», «car». It runs on the Pi or on a helper PC."));
@@ -44607,6 +44829,11 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
     const sysb = document.getElementById("g2-sys"); if (!sysb) return;
     sysb.textContent = ""; sysb.className = "g2-card"; sysb.appendChild(E("h3", "", "⚙ " + T("System")));
     const sb = E("div", "btns"); sb.appendChild(BT(T("⚠ Reset to factory settings …"), "sec", g2Factory)); sysb.appendChild(sb);
+    {                                                  // aufr: «Test-Feedback senden» lives here (before: a line of its own in Mehr; script of 584)
+      const fr = E("div", "mut", T("for the developer: does a message reach the servers?")); fr.id = "m-fbtest-r";
+      const fb = E("div", "btns"); const fbb = BT("🧪 " + T("Send a test feedback"), "sec", () => { if (window.mwFeedbackTest) mwFeedbackTest(fr); }); fbb.id = "m-fbtest"; fb.appendChild(fbb);
+      sysb.append(fb, fr);
+    }
     const F = await J("/api/factory?lang=" + LG());
     if (F && F.backups && F.backups.length) { sysb.appendChild(E("div", "mut", T("Copies of the old settings") + ":")); const ul = E("ul");
       F.backups.forEach(x => { const li = E("li"), a = E("a", "", "⬇ " + x.when + " (" + x.kb + " kB)"); a.href = "/api/factory/backup/" + encodeURIComponent(x.name); a.download = x.name; li.appendChild(a); ul.appendChild(li); });
@@ -44889,6 +45116,7 @@ ol{padding-left:18px;margin:6px 0}
         <button onclick="startZone('sleep')" data-i18n="+ Sleeping place">+ Sleeping place</button>
         <button onclick="startZone('line')" data-i18n="+ Line">+ Line</button>
         <button onclick="startZone('loiter')" data-i18n="+ Dwell area">+ Dwell area</button>
+        <button onclick="startZone('report')" data-i18n="+ Only report">+ Only report</button>
       </div>
       <div class="btns"><button class="sec" id="b-fin" onclick="finish()" data-i18n="Finish shape" hidden>Finish shape</button>
         <button class="sec" onclick="loadFrame()" data-i18n="New picture">New picture</button></div>
@@ -44902,7 +45130,9 @@ ol{padding-left:18px;margin:6px 0}
       <div style="margin-top:4px"><i style="background:#a98bff"></i><span data-i18n="Privacy zone">Privacy zone</span>: <span data-i18n="z-priv">z-priv</span></div>
       <div style="margin-top:4px"><i style="background:#ff7ab6"></i><span data-i18n="Sleeping place">Sleeping place</span>: <span data-i18n="z-sleep">z-sleep</span></div>
       <div style="margin-top:4px"><i style="background:#3cd2ff"></i><span data-i18n="Line">Line</span>: <span data-i18n="z-line">z-line</span></div>
-      <div style="margin-top:4px"><i style="background:#ffdc3c"></i><span data-i18n="Dwell area">Dwell area</span>: <span data-i18n="z-loit">z-loit</span></div></div>
+      <div style="margin-top:4px"><i style="background:#ffdc3c"></i><span data-i18n="Dwell area">Dwell area</span>: <span data-i18n="z-loit">z-loit</span></div>
+      <div style="margin-top:4px"><i style="background:#c9a0ff"></i><span data-i18n="Only report">Only report</span>: <span data-i18n="z-report">z-report</span></div>
+      <div style="margin-top:4px">📌 <span data-i18n="Stays on its place">Stays on its place</span>: <span data-i18n="z-anchor">z-anchor</span></div></div>
       <div class="mut" style="margin-top:8px" data-i18n="z-how">z-how</div>
     </div>
   </aside>
@@ -44927,7 +45157,10 @@ Object.assign(I18N.de, {"+ Ignore zone": "+ Ignorier-Zone", "+ Only-here zone": 
   "z-ign": "Personen und Objekte, deren Füsse darin stehen, werden ignoriert (Strasse, Baum, Nachbars Garten).",
   "z-only": "Wenn mindestens eine solche Zone existiert, zählt nur, was darin passiert (Eingang, Einfahrt).",
   "z-how": "Eine Zone wirkt auf die Erkennung, die Aufnahme, die Alarme und die Relais. Gezählt wird der Punkt unten in der Mitte des erkannten Objekts (die Füsse)."});
-Object.assign(I18N, {en: {"z-kinds": "An ignore or only-here zone can apply to persons only or to animals only - for the other kinds it does not exist (e.g. a path: ignore persons, still report animals).", "z-sleep": "Like a privacy zone (black, stays on the bed when the camera turns). The wake-up alarm turns the camera there (gestures). Draw it while the camera looks at the bed.", "z-line": "Reports when a person crosses the line – both ways or only in the arrow direction (e.g. «comes to the tent»).",
+Object.assign(I18N.de, /*ZAUFRDE*/{});
+Object.assign(I18N, {en: {"z-report": "A person whose feet stand inside is no alarm - only a note in the log and now and then an info push (a public path, the neighbours' way). «Set up the place» makes its public path such a zone.",
+  "z-anchor": "The zone stays on the ground when the head turns (corners kept as directions) - otherwise it is fixed to the picture. Draw it while the camera looks there. Privacy zones and the sleeping place always stay.",
+  "z-kinds": "An ignore or only-here zone can apply to persons only or to animals only - for the other kinds it does not exist (e.g. a path: ignore persons, still report animals).", "z-sleep": "Like a privacy zone (black, stays on the bed when the camera turns). The wake-up alarm turns the camera there (gestures). Draw it while the camera looks at the bed.", "z-line": "Reports when a person crosses the line – both ways or only in the arrow direction (e.g. «comes to the tent»).",
   "z-loit": "Reports when a person stays inside longer than the time set (e.g. at the car).", "z-ign": "Persons and objects whose feet are inside are ignored (street, tree, neighbour's garden).",
   "z-only": "If at least one such zone exists, only what happens inside it counts (entrance, driveway).",
   "z-how": "A zone affects detection, recording, alarms and relays. The point that counts is the bottom middle of the detected object (the feet).",
@@ -44935,8 +45168,9 @@ Object.assign(I18N, {en: {"z-kinds": "An ignore or only-here zone can apply to p
 const tt = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 const cv = $("#cv"), g = cv.getContext("2d"), img = new Image();
 let zones = [], sel = -1, drawing = null, drawMode = "ignore", drag = null;
-const COL = {ignore: "245,154,74", only: "63,207,107", privacy: "169,139,255", line: "60,210,255", loiter: "255,220,60", sleep: "255,122,182"};
-const ZNAME = {only: "Only-here zone", privacy: "Privacy zone", ignore: "Ignore zone", line: "Line", loiter: "Dwell area", sleep: "Sleeping place"};
+const COL = {ignore: "245,154,74", only: "63,207,107", privacy: "169,139,255", line: "60,210,255", loiter: "255,220,60", sleep: "255,122,182", report: "201,160,255"};
+const ZNAME = {only: "Only-here zone", privacy: "Privacy zone", ignore: "Ignore zone", line: "Line", loiter: "Dwell area", sleep: "Sleeping place", report: "Only report"};
+const FIXED = ["privacy", "sleep"];                    // they always stay on their place (030)
 function arrow(z, on) {                 // line: the arrow shows in which direction crossing it counts
   const [a, b] = z.points.map(px), mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
   let nx = -(b[1] - a[1]), ny = b[0] - a[0]; const l = Math.hypot(nx, ny) || 1; nx /= l; ny /= l;
@@ -45000,7 +45234,7 @@ function renderList() {
     const nm = el("input"); nm.type = "text"; nm.value = z.name; nm.maxLength = 40; nm.oninput = () => { z.name = nm.value; draw(); }; nm.onclick = e => e.stopPropagation();
     const del = el("button", "sec", "✕"); del.title = t("Delete"); del.onclick = e => { e.stopPropagation(); zones.splice(i, 1); sel = -1; renderList(); draw(); };
     const md = el("select");
-    (z.mode === "line" ? [["line", t("Line")]] : [["ignore", t("Ignore zone")], ["only", t("Only-here zone")], ["privacy", t("Privacy zone")], ["sleep", t("Sleeping place")], ["loiter", t("Dwell area")]])
+    (z.mode === "line" ? [["line", t("Line")]] : [["ignore", t("Ignore zone")], ["only", t("Only-here zone")], ["privacy", t("Privacy zone")], ["sleep", t("Sleeping place")], ["loiter", t("Dwell area")], ["report", t("Only report")]])
       .forEach(([v, l]) => { const o = el("option", "", l); o.value = v; md.appendChild(o); });
     md.value = z.mode; md.onchange = () => { z.mode = md.value; if (z.mode === "loiter" && !z.secs) z.secs = 20; renderList(); draw(); }; md.onclick = e => e.stopPropagation();
     r.append(nm, del, md);
@@ -45014,6 +45248,12 @@ function renderList() {
       k.style.gridColumn = "1 / -1"; r.appendChild(k); }
     if (z.mode === "loiter") { const w = el("label", "mut", t("Alarm after (seconds)") + " "); const n = el("input"); n.type = "number"; n.min = 3; n.max = 600; n.value = z.secs || 20; n.style.width = "80px";
       n.onchange = () => { z.secs = Math.max(3, Math.min(600, +n.value || 20)); }; n.onclick = e => e.stopPropagation(); w.appendChild(n); w.style.gridColumn = "1 / -1"; r.appendChild(w); }
+    {                                                    // aufr: «stays on its place» (anchor, 030 / 317) for every zone
+      const l = el("label", "mut"), c = el("input"); c.type = "checkbox"; const fx = FIXED.includes(z.mode);
+      c.checked = fx || !!z.anchor; c.disabled = fx; c.onclick = e => e.stopPropagation();
+      c.onchange = () => { if (c.checked) z.anchor = true; else { delete z.anchor; delete z.ang; } };
+      l.title = tt("z-anchor"); l.style.gridColumn = "1 / -1"; l.append(c, " 📌 " + t("Stays on its place") + (z.src === "place" ? " · " + t("from «Set up the place»") : "")); r.appendChild(l);
+    }
     L.appendChild(r);
   });
 }
@@ -45941,7 +46181,6 @@ main{padding:16px;max-width:720px;margin:0 auto}
   <a class="mi" href="/info" id="m-info"><i>👋</i><span><b data-i18n="Info page for guests">Info page for guests</b><small data-i18n="what MoveEye is - for neighbours and fellow campers">what MoveEye is - for neighbours and fellow campers</small></span><span class="ar">›</span></a>
   <a class="mi" href="/almanach"><i>🌦</i><span><b data-i18n="Almanac">Almanac</b><small data-i18n="Sun, moon, weather">Sun, moon, weather</small></span><span class="ar">›</span></a>
   <button type="button" class="mi" id="m-fb" onclick="window.mwFeedback && mwFeedback()"><i>💬</i><span><b data-i18n="Feedback to the developer">Feedback to the developer</b><small data-i18n="Errors, wishes, praise, questions - anonymous">Errors, wishes, praise, questions - anonymous</small></span><span class="ar">›</span></button>
-  <button type="button" class="mi" id="m-fbtest" onclick="window.mwFeedbackTest && mwFeedbackTest(document.getElementById('m-fbtest-r'))"><i>🧪</i><span><b data-i18n="Send a test feedback">Send a test feedback</b><small id="m-fbtest-r" data-i18n="for the developer: does a message reach the servers?">for the developer: does a message reach the servers?</small></span><span class="ar">›</span></button>
   <button type="button" class="mi" id="m-about" onclick="window.mwAbout && mwAbout()"><i>ℹ️</i><span><b data-i18n="About MoveEye">About MoveEye</b><small data-i18n="history, developer, numbers">history, developer, numbers</small></span><span class="ar">›</span></button>
   <div id="g2-more"></div>
   <div id="g2-sys"></div>
@@ -47022,6 +47261,7 @@ try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem
       HIDDEN = new Set(JSON.parse(localStorage.getItem("mw-hidden") || "[]")); } catch (e) {}
 Object.assign(I18N.de, {"Person alarms at the campfire (off: only animals - the people at the fire are not burglars)": "Personen-Alarm am Lagerfeuer (aus: nur Tiere – die Leute am Feuer sind keine Einbrecher)"});  // 2.97.0
 Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Message list": "Nachrichten", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
+Object.assign(I18N.de, /*AUFRDE*/{}); Object.assign(I18N.en, /*AUFREN*/{});   // aufr (part 632): the texts of the clean-up round
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"conn-note": "Address of the simulator program. Usually not needed: the simulator announces itself in the network and is found by itself.", "autostart-note": "And off again (back to the real cameras and sensors) when none is there for a minute. Switched off by hand: stays off until a new simulator appears.", "sim-missing": "A simulator is missing? Switch on «Send to MoveEye» in the simulator. On a PC the Windows firewall must allow its port (8765; a second simulator e.g. 8767).", "sim-view-help": "The window of the simulator: drag with the left mouse button = move, right = turn, wheel = zoom (after a click into the picture), double click = fly there. Finger: tap = click, otherwise the page scrolls; with ✋ the finger controls the simulator (drag = move, ⟲ = turn, two fingers = zoom). The buttons below change the view."});  // 2.97.0: no raw keys in English
 Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Message list": "Nachrichten", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Protection level": "Schutzstufe", "Arming and own Wi-Fi": "Einschalten und eigenes WLAN", "What happens at an alarm?": "Was passiert bei Alarm?", "Theft protection": "Diebstahlschutz", "Device": "Gerät", "Guarded things (reference scan)": "Bewachte Dinge (Referenz-Scan)", "Backup (pictures off the device)": "Sicherung (Bilder weg vom Gerät)", "Zones, schedule, presence": "Zonen, Zeitplan, Anwesenheit", "Cameras & head": "Kameras & Kopf", "Devices & sensors": "Geräte & Sensoren", "Power supply": "Strom", "Network & access": "Netz & Zugang", "System": "System", "Draw the zones": "Zonen zeichnen", "Person": "Person", "Push": "Push", "Light": "Licht", "Siren": "Sirene", "Siren after {s} s": "Sirene nach {s} s", "Crossed out = off. Tap a step to change it. «Test protection» plays the chain.": "Durchgestrichen = aus. Ein Glied antippen = einstellen. «Schutz testen» spielt die Kette durch.", "Protection is off - nothing happens. Choose «Wachsam» or «Voll» above.": "Der Schutz ist aus – es passiert nichts. Oben «Wachsam» oder «Voll» wählen.", "Watchful": "Wachsam", "Full protection": "Voll", "in": "in", "Off": "Aus", "Settings": "Einstellungen"});  // 2.98.0: tabs, groups, alarm chain
 Object.assign(I18N.de, {"Keep what is detected in the middle: persons, animals, moving things": "Hält Erkanntes in der Bildmitte: Personen, Tiere, Bewegtes"});  // 2.98.1
@@ -47400,6 +47640,7 @@ function buildViewMenu() {
   qb("▴ " + t("Hide header"), () => { const b = $("#btn-hdr"); if (b) b.click(); $("#viewmenu").hidden = true; });
   if (window.lvMenu) qb("◫ " + t("View of the live page …"), () => { $("#viewmenu").hidden = true; setTimeout(window.lvMenu, 0); });   // 2.98.26: live cards per device (536)
   m.append(el("h3", "", t("Quick")), q);
+  const vn = el("div", "mut", t("vm-device")); vn.style.cssText = "font-size:12px;margin:8px 0 0"; m.appendChild(vn);   // aufr: per device, like ◫ View (536)
   document.querySelectorAll("[data-view]").forEach(e => { if (window.lvMenu && e.closest("#lv-side,#lv-main")) return;
     (groups[e.dataset.vgroup] = groups[e.dataset.vgroup] || []).push(e); });
   ["Header", "Panels", "Settings"].forEach(g => {
@@ -48235,6 +48476,7 @@ async function build() {
       wrap.dataset.key = s.key; wrap.append(top, r); d.appendChild(wrap);
       ctrl[s.key] = {type: "num", input: r, val: val};
     });
+    if (sec.id === "AI detection") spGroup(d);              // aufr: after the sliders (species_conf is one)
     if (sec.id === "Timelapse") tlExtras(d);
     if (sec.id === "Microphone") micExtras(d);
     if (sec.id === "Updates") updExtras(d);
@@ -48247,7 +48489,6 @@ async function build() {
     if (sec.id === "Storm warning") stormExtras(d);
     if (sec.id === "GPS module") gpsExtras(d);
     if (sec.id === "Mover") moverExtras(d);
-    if (sec.id === "Simulator") simExtras(d);
     if (sec.id === "Solar panel") solarExtras(d);
     if (sec.id === "Deterrence") dtExtras(d);
     if (sec.id === "MQTT / Home Assistant") mqExtras(d);
@@ -48922,8 +49163,16 @@ function ownExtras(d) {                             // part 195: own MoveEye mod
       if (!j.busy) { clearInterval(iv); b.disabled = false; toast(j.msg === "ready" ? "✓ " + t("own model ready") : "⚠ " + (j.msg || "error")); } }, 1500); };
   box.append(b, st); d.appendChild(box); load(); setInterval(() => { if (document.body.contains(st)) load(); }, 15000);
 }
+function spGroup(d) {                               // aufr (Konzept): the animal species settings in ONE group «Tierart» like «KI-Modell»
+  const q = k => d.querySelector('[data-key="' + k + '"]:not(select)');
+  const parts = [q("species_on"), d.querySelector(".auxbox.spai"), q("species_model"), q("species_norm"), q("species_conf")].filter(Boolean);
+  if (!parts.length) return;
+  const g = el("div", "aimg"); g.id = "sp-group"; parts[0].before(g);
+  g.appendChild(el("div", "aimh", "🦊 " + t("Animal species")));
+  parts.forEach(x => g.appendChild(x));
+}
 function spExtras(d) {                              // animal species: second model, install from an address
-  const box = el("div", "auxbox"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
+  const box = el("div", "auxbox spai"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
   box.appendChild(el("div", "mut", "🦊 " + t("Animal species: a second AI model (ONNX) recognises fox, badger, wild boar … It is not included - install it from an address or copy it into the folder.")));
   const url = el("input"); url.type = "url"; url.placeholder = "https://…/model.onnx  (" + t("or .zip") + ")"; url.style.cssText = "width:100%;box-sizing:border-box;margin-top:6px;background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:8px";
   const b = el("button", "sec", "⬇ " + t("Install model")); b.type = "button"; b.style.marginTop = "6px";
@@ -48973,153 +49222,8 @@ Object.assign(I18N.de, {"iPhone shortcuts": "iPhone-Kurzbefehle",
  "Get ready": "Gleich geht's los", "You are the guard: turn the camera and catch them": "Du bist Wächter: Kamera drehen und erwischen", "Caught!": "Erwischt!",
  "Power mode": "Powermodus", "Power mode on: everything on the highest performance": "Powermodus ein: alles auf Höchstleistung", "Power mode off: your settings are back": "Powermodus aus: deine Einstellungen sind zurück", "active: every picture through the AI, best picture, processor at full clock": "aktiv: jedes Bild durch die KI, bestes Bild, Prozessor auf vollem Takt", "hot": "heiss", "the highest performance (uses more current and gets warmer) - switching it off restores your settings": "Höchstleistung (braucht mehr Strom und wird wärmer) – Ausschalten stellt deine Einstellungen wieder her", "Trusted devices": "Vertrauenswürdige Geräte", "A device that has logged in once is remembered (also after updates). Remove a device here if it is lost or should log in again.": "Ein Gerät, das sich einmal angemeldet hat, wird gemerkt (auch nach Updates). Entferne hier ein Gerät, wenn es verloren ist oder sich neu anmelden soll.", "since": "seit", "Remove this device? It must log in again.": "Dieses Gerät entfernen? Es muss sich neu anmelden.", "Remove all": "Alle entfernen", "Remove all trusted devices? Every device must log in again.": "Alle vertrauenswürdigen Geräte entfernen? Jedes Gerät muss sich neu anmelden.", "Update": "Update", "New update for the simulator": "Neues Update für den Simulator", "tab Simulator": "Reiter Simulator", "sim-view-help": "Das Fenster des Simulators: Maus links ziehen = verschieben, rechts ziehen = drehen, Rad = zoomen (nach einem Klick ins Bild), Doppelklick = hinfliegen. Finger: antippen = klicken, sonst scrollt die Seite; mit ✋ bedient der Finger den Simulator (ziehen = verschieben, ⟲ = drehen, zwei Finger = zoomen). Knöpfe unten wechseln die Ansicht.", "Python world simulator (ZIP)": "MW Sim · Welt (Kevin) (ZIP)", "second simulator, needs Python on the PC": "zweiter Simulator, braucht Python auf dem PC", "Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An MoveEye senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where MoveEye stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo MoveEye steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
 Object.assign(I18N.de, {"Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren", "Start simulator here": "Simulator hier starten", "Stop simulator": "Simulator beenden", "Download for a PC (ZIP)": "Für einen PC herunterladen (ZIP)", "Simulator installed": "Simulator installiert", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator beendet", "the simulator runs on this Pi": "der Simulator läuft auf diesem Pi", "Install": "Installieren", "Start": "Starten"});
-function simExtras(d) {
-  // the settings of the section (switches, address, slider) go into a fold-out «Settings»
-  const rows = [...d.children].filter(x => x.tagName !== "SUMMARY");
-  const box = el("div", "auxbox"); box.id = "sim-main";
-  const head = el("div", ""); head.id = "sim-head"; head.style.cssText = "font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap";
-  const st = el("div", "mut"); st.id = "sim-st"; st.style.cssText = "white-space:pre-wrap;margin-top:2px";
-  const b = el("button", "", ""); b.type = "button"; b.id = "sim-btn"; b.style.cssText = "margin-top:10px;width:100%";
-  b.onclick = async () => { const on = !(QSJ && QSJ.state.sim && QSJ.state.sim.on); b.disabled = true; await mwSimSet(on, LANG); b.disabled = false; refresh(); };
-  const stats = el("div", ""); stats.id = "sim-stats"; stats.style.cssText = "display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:6px;margin-top:10px";
-  box.append(head, st, stats, b);
-  // ---- search in the network ----
-  const nb = el("div", "auxbox"); nb.style.marginTop = "10px";
-  const nh = el("div", "", "🔎 " + t("Simulators in the network")); nh.style.fontWeight = "600";
-  const srch = el("button", "sec", "🔎 " + t("Search now")); srch.type = "button"; srch.id = "sim-search"; srch.style.cssText = "margin-top:8px;width:100%";
-  srch.onclick = async () => { srch.disabled = true; await post("/api/sim", {action: "search", lang: LANG}); refresh(); setTimeout(() => { srch.disabled = false; }, 2500); };
-  const sl = el("div", "mut"); sl.id = "sim-scan"; sl.style.cssText = "margin-top:6px;white-space:pre-wrap";
-  const fnd = el("div", ""); fnd.id = "sim-found"; fnd.style.marginTop = "6px";
-  // the 3D simulator for Windows to download - right here, not hidden under Tools
-  const d3 = el("a", "btn", "🎮 " + t("3D simulator for Windows (ZIP)")); d3.href = "/sim/simulator3d.zip?lang=" + (LANG || "");
-  d3.style.cssText = "display:block;margin-top:8px;width:100%;text-align:center;box-sizing:border-box";
-  const d3n = el("div", "mut", t("Link for the PC browser") + ": " + location.origin + "/sim/simulator3d.zip"); d3n.style.cssText = "margin-top:6px;font-size:12px;word-break:break-all";
-  const dpy = el("a", "btn sec", "🌍 " + t("Python world simulator (ZIP)")); dpy.href = "/sim/simulator_py.zip?lang=" + (LANG || "");
-  dpy.style.cssText = "display:block;margin-top:8px;width:100%;text-align:center;box-sizing:border-box";
-  const all = el("a", "btn sec", "⚙ " + t("Everything about the simulator (tab Simulator)")); all.href = "/sim"; all.style.cssText = "display:block;margin-top:8px;width:100%";
-  const pi = el("div", ""); pi.id = "sim-pi"; pi.hidden = true; pi.style.marginTop = "8px";   // 2.95.51: the 3D simulator on the Pi itself
-  const pl = el("div", "trow"); pl.id = "sim-plan"; pl.hidden = true; pl.style.marginTop = "8px";      // 2.95.53: Aufstell-Planer
-  const plo = el("button", "sec", "🗺 " + t("Aufstell-Planer in the simulator")); plo.type = "button";
-  plo.onclick = async () => { const r = await post("/api/sim", {action: "planner_open", lang: LANG}); if (!r.ok) toast("⚠ " + (r.error || t("error"))); else toast("✓ " + t("open in the window of the simulator")); };
-  const pla = el("button", "sec", "✓ " + t("Take over the patrol of the planner")); pla.type = "button";
-  pla.onclick = async () => { const r = await post("/api/sim", {action: "planner_apply", lang: LANG}); if (!r.ok) toast("⚠ " + (r.error || t("error"))); else toast("✓ " + t("Patrol set") + " · " + r.planner.pct + " % " + t("of the area in view")); };
-  pl.append(plo, pla);
-  const rb = el("div", ""); rb.id = "sim-replay"; rb.hidden = true; rb.style.marginTop = "8px";      // 2.95.53: Alarm-Rückblick
-  rb.append(el("b", "", "⏪ " + t("Alarm replay in 3D")));
-  const rs = document.createElement("select"); rs.id = "sim-replay-sel"; rs.style.cssText = "width:100%;margin-top:6px";
-  const rr = el("div", "trow"); rr.style.marginTop = "6px";
-  const rgo = el("button", "", "▶ " + t("Play in the simulator")); rgo.type = "button";
-  const rsp = document.createElement("select"); [1, 2, 4].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + "×"; rsp.appendChild(o); });
-  rsp.style.flex = "0 0 auto";
-  rgo.onclick = async () => { if (!rs.value) return; const r = await post("/api/sim", {action: "replay", id: rs.value, speed: +rsp.value, lang: LANG});
-    if (!r.ok) toast("⚠ " + (r.error || t("error"))); else toast("✓ " + t("plays in the window of the simulator") + " (" + Math.round(r.replay.seconds) + " s)"); };
-  const rst = el("button", "sec", "⏹"); rst.type = "button"; rst.onclick = () => post("/api/sim", {action: "replay", stop: true});
-  rr.append(rgo, rsp, rst); rb.append(rs, rr, el("div", "mut", t("replay-note")));
-  const dsb = el("div", ""); dsb.style.marginTop = "12px";                // 2.95.53: KI-Prüfung mit Simulator-Bildern
-  dsb.append(el("b", "", "🧪 " + t("AI test with simulator pictures")), el("div", "mut", t("dset-note")));
-  const dr = el("div", "trow"); dr.style.marginTop = "6px";
-  const dn = document.createElement("select"); [12, 24, 48].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + " " + t("pictures"); dn.appendChild(o); }); { const og = document.createElement("option"); og.value = "game"; og.textContent = "🎮 " + t("missed pictures from the game (hard cases)"); dn.appendChild(og); } dn.value = "24"; dn.style.flex = "0 0 auto";
-  const dgo = el("button", "", "▶ " + t("Start the test")); dgo.type = "button";
-  const dout = el("div", ""); dout.id = "dset-out";
-  const dpaint = j => { const D = j.dataset || j; dout.textContent = "";
-    if (D.busy) { dout.appendChild(el("div", "mut", "⏳ " + D.pct + " % · " + t(D.msg))); setTimeout(async () => dpaint(await post("/api/sim", {action: "dataset"})), 2000); return; }
-    if (D.msg && D.msg.startsWith("error")) dout.appendChild(el("div", "err", "⚠ " + D.msg));
-    const S = D.sum; if (!S) return;
-    dout.appendChild(el("div", "big", S.found + " / " + S.n + " " + t("found") + " · " + S.false + " " + t("false persons")));
-    const tb = document.createElement("table"); tb.className = "tl";
-    const row = (a, b) => { const tr = document.createElement("tr"); tr.append(el("td", "", a), el("td", "", b)); tb.appendChild(tr); };
-    Object.entries(S.by_cond).forEach(([k, v]) => row(t(k), v.found + "/" + v.n + " · " + v.pct + " %"));
-    Object.entries(S.by_kind).forEach(([k, v]) => row(t(k), v.found + "/" + v.n + " · " + v.pct + " %"));
-    row(t("near (under 8 m)"), S.near + " %"); row(t("far (8 m and more)"), S.far + " %"); row(t("AI time per picture"), S.ms + " ms (" + S.where + ")");
-    dout.appendChild(tb);
-    const z = document.createElement("a"); z.className = "btn sec"; z.href = "/api/dataset.zip"; z.textContent = "⬇ " + t("Training pictures (ZIP)"); z.style.display = "inline-block"; z.style.marginTop = "6px"; dout.appendChild(z); };
-  dgo.onclick = async () => { const r = await post("/api/sim", {action: "dataset", start: true, n: dn.value === "game" ? "game" : +dn.value, lang: LANG}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } dpaint(r); };
-  dr.append(dn, dgo); dsb.append(dr, dout); rb.appendChild(dsb);
-  // 2.95.99: a big training set for an own AI model - made by the simulator, saved as ZIP on the desktop of its PC
-  const xr = el("div", "trow"); xr.style.marginTop = "8px"; const xn = document.createElement("select");
-  [200, 500, 1000, 2000].forEach(n => { const o = document.createElement("option"); o.value = n; o.textContent = n + " " + t("pictures"); if (n === 500) o.selected = true; xn.appendChild(o); });
-  const xgo = el("button", "sec", "📦 " + t("Training set for an own AI model (YOLO)")); xgo.type = "button";
-  const xout = el("div", "mut");
-  xgo.onclick = async () => { const r = await post("/api/sim", {action: "dataset", export: true, n: +xn.value, lang: LANG}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; }
-    xout.textContent = t("The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).") + " " + ((r.export || {}).msg || ""); };
-  xr.append(xn, xgo); dsb.append(xr, xout);
-  (async () => { const r = await post("/api/sim", {action: "dataset"}); if (r && r.ok) dpaint(r); })();
-  nb.append(nh, sl, fnd, srch, pi, pl, rb, d3, d3n, dpy, all);
-  // ---- settings (moved here) ----
-  const set = el("details", "sub"); set.style.marginTop = "10px"; set.appendChild(el("summary", "", "⚙️ " + t("Settings")));
-  const sbody = el("div", ""); sbody.style.padding = "4px 0";
-  rows.forEach(x => sbody.appendChild(x));
-  sbody.appendChild(el("div", "mut", t("A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.")));
-  set.appendChild(sbody);
-  // ---- tools ----
-  const tl = el("details", "sub"); tl.style.marginTop = "6px"; tl.appendChild(el("summary", "", "🧰 " + t("Tools")));
-  const tools = el("div", ""); tools.id = "sim-tools"; tools.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 0";
-  const mk = (id, txt, act) => { const x = el("button", "sec", txt); x.type = "button"; x.id = id;
-    x.onclick = async () => { x.disabled = true; const r = await post("/api/sim", {action: act, lang: LANG}); x.disabled = false;
-      toast(r.ok ? "✓ " + t({install: "Simulator installed", start: "Simulator started", stop: "Simulator stopped"}[act]) : "⚠ " + (r.error || "error")); refresh(); };
-    return x; };
-  const dl = el("a", "btn sec", "⬇ " + t("Download for a PC (ZIP)")); dl.href = "/sim/simulator.zip";
-  const pv = el("a", "btn sec", "📱 " + t("Phone / tablet view")); pv.href = "/preview"; pv.target = "_blank";
-  tools.append(mk("sim-inst", "📦 " + t("Install simulator on the Pi"), "install"), mk("sim-start", "▶ " + t("Start simulator here"), "start"),
-               mk("sim-stop", "⏹ " + t("Stop simulator"), "stop"), dl, pv);
-  tools.querySelectorAll("button,a").forEach(x => { x.style.fontSize = "13px"; x.style.padding = "8px"; });
-  tl.appendChild(tools);
-  box.append(nb, set, tl);
-  // ---- remote control of the simulator: it describes its scenarios and controls itself (CONTROL protocol 1) ----
-  const vb = el("div", "auxbox"); vb.id = "sim-vbox"; vb.style.marginTop = "10px"; vb.hidden = true;
-  const hd = el("div", "", "🎮 " + t("Simulator control")); hd.id = "sim-chd"; hd.style.fontWeight = "600";
-  const vst = el("div", "mut"); vst.id = "sim-vst"; vst.style.whiteSpace = "pre-wrap"; vst.style.marginTop = "4px";
-  const srow = el("div", "btns"); srow.style.flexWrap = "wrap"; srow.style.marginTop = "6px"; srow.style.alignItems = "center";
-  const sel = document.createElement("select"); sel.id = "sim-vsel"; sel.style.flex = "1 1 100%"; sel.style.minWidth = "0";
-  const vk = (txt, fn, cls) => { const x = el("button", cls === undefined ? "sec" : cls, txt); x.type = "button";
-    x.onclick = async () => { x.disabled = true; try { await fn(); } finally { x.disabled = false; } }; return x; };
-  const ctl = async (d) => { const r = await post("/api/sim", Object.assign({action: "ctl", lang: LANG}, d)); show(r); return r; };
-  const bLoad = vk("▶ " + t("Load"), () => sel.value && ctl({ctl: "scenario", id: sel.value}), "");
-  const bDel = vk("🗑 " + t("Delete"), async () => { if (sel.value && confirm(t("Delete this scenario in the simulator?") + "\n" + sel.options[sel.selectedIndex].textContent)) await ctl({ctl: "delete", id: sel.value}); });
-  srow.append(sel, bLoad, vk("↻", () => ctl({ctl: "get"})), bDel);
-  sel.onchange = () => { const o = sel.options[sel.selectedIndex]; bDel.hidden = !(o && o.dataset.del === "1"); };
-  const groups = el("div", ""); groups.id = "sim-cgroups"; groups.style.marginTop = "8px";
-  const upw = el("div", ""); upw.hidden = true; upw.style.marginTop = "8px";
-  const upl = el("div", "mut", ""); const up = document.createElement("input"); up.type = "file"; up.id = "sim-vup"; up.style.maxWidth = "100%";
-  const prog = el("div", "mut"); prog.id = "sim-vprog"; upw.append(upl, up, prog);
-  up.onchange = () => {
-    const f = up.files && up.files[0]; if (!f) return;
-    const x = new XMLHttpRequest(); x.open("POST", "/api/sim/upload?lang=" + LANG + "&name=" + encodeURIComponent(f.name));
-    x.upload.onprogress = (e) => { if (e.lengthComputable) prog.textContent = "⬆ " + f.name + " · " + Math.round(e.loaded / e.total * 100) + " %"; };
-    x.onload = () => { let r = null; try { r = JSON.parse(x.responseText); } catch (e) {}
-      prog.textContent = r && r.ok ? "✓ " + t("uploaded") + ": " + (r.saved || f.name) : "⚠ " + ((r && r.error) || x.status); up.value = ""; if (r && r.ok) show(r); };
-    x.onerror = () => { prog.textContent = "⚠ " + t("upload interrupted"); };
-    x.send(f);
-  };
-  let SIG = "";
-  const fmt = (c, v) => (v == null ? "–" : (Math.abs(v) >= 100 || c.step >= 1 ? Math.round(v) : (+v).toFixed(c.step < 0.1 ? 2 : 1))) + (c.unit ? " " + c.unit : "");
-  const build = (r) => simCtlBuild(groups, r, ctl, fmt);      // like the panel of the simulator (simCtlBuild, 2.93.16)
-  const show = (r) => {
-    if (!r || !r.ok) { vst.textContent = "⚠ " + ((r && r.error) || t("simulator not reachable")); return; }
-    hd.textContent = "🎮 " + t("Simulator control") + (r.name ? " · " + r.name : "");
-    const sig = JSON.stringify([(r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options, c.sub]), r.upload ? r.upload.accept : null]);
-    if (sig !== SIG) { SIG = sig; build(r); }
-    scOn(groups, r);
-    groups.querySelectorAll("[data-cid]").forEach(row => {
-      const c = (r.controls || []).find(x => x.id === row.dataset.cid); const inp = row.querySelector(".simv"); if (!c || !inp || inp === document.activeElement) return;
-      if (c.type === "toggle") inp.checked = !!c.value; else if (c.value != null) inp.value = c.value;
-      const vv = row.querySelector(".simvv"); if (vv) vv.textContent = fmt(c, c.value);
-    });
-    const cur = sel.value; sel.innerHTML = "";
-    (r.scenarios || []).forEach(o => { const op = document.createElement("option"); op.value = o.id; op.dataset.del = o.deletable ? "1" : "";
-      op.textContent = o.name + (o.id === r.scenario ? "  ◀ " + t("running") : ""); sel.appendChild(op); });
-    srow.hidden = !(r.scenarios || []).length;
-    sel.value = [...sel.options].some(o => o.value === cur) ? cur : (r.scenario || (sel.options[0] && sel.options[0].value) || "");
-    sel.onchange();
-    vst.textContent = r.status || "";
-    upw.hidden = !r.upload;
-    if (r.upload) { upl.textContent = "⬆ " + (r.upload.label || t("Upload a file to the simulator")) + (r.upload.max_mb ? " (max. " + r.upload.max_mb + " MB)" : ""); up.accept = (r.upload.accept || []).join(","); }
-  };
-  window.simCtl = () => ctl({ctl: "get"});
-  vb.append(hd, vst, srow, groups, upw);
-  box.appendChild(vb); d.appendChild(box);
-  setInterval(() => { const v = $("#sim-vbox"); if (v && !v.hidden && v.offsetParent !== null && !document.hidden) window.simCtl(); }, 4000);
-}
+// aufr: simExtras() (the old settings section «Simulator» on this page) is gone - that section is not on this page since
+// 2.98.0 (everything about the simulator is on the page Simulator, 470); simPaint keeps only the badge and the body class.
   // ---- the same controls on the live view, under the picture (2.95.2): only while the simulation is on and connected ----
   (function () {
     const W = $("#lv-simw"), D = $("#lv-sim"), G = $("#lv-simg"); if (!W || !G) return;
@@ -49230,58 +49334,8 @@ function sevPaint(s) {
       + " · 🤧 " + t("today") + ": " + V.sneezes_today + "×" + (!V.tts ? " · " + t("no speech program (sudo apt install libttspico-utils)") : "");
     $("#sev-inst").hidden = V.runtime || V.install === "done"; $("#sev-inst").disabled = V.install === "running"; }
 }
-function simPiPaint(P) {
-  const b = $("#sim-pi"); if (!b || !P) return; b.hidden = !P.possible; if (!P.possible) return;
-  const key = [P.on, P.loading, P.pct, P.msg, P.version].join("|"); if (b.dataset.k === key) return; b.dataset.k = key; b.textContent = "";
-  const bt = el("button", P.on ? "sec" : "", P.on ? "⏹ " + t("Stop the 3D simulator on the Pi") : "🍓 " + t("3D simulator on this Pi (HDMI / TV)"));
-  bt.type = "button"; bt.style.width = "100%"; bt.disabled = P.loading;
-  bt.onclick = async () => { bt.disabled = true; const r = await post("/api/sim", {action: P.on ? "pi_stop" : "pi_start", lang: LANG}); if (!r.ok) toast("⚠ " + (r.error || t("error"))); };
-  b.append(bt, el("div", "mut", P.loading ? "⏳ " + t("loading") + " " + P.pct + " % (" + P.version + ")" : (P.msg ? "⚠ " + t(P.msg) : t("sim-pi-hint"))));
-}
 function simPaint(s) {
-  simPiPaint(s.sim_pi);
-  const spl = $("#sim-plan"); if (spl) spl.hidden = !((s.sim || {}).on && (s.sim || {}).ok);
-  const srb = $("#sim-replay"), srs = $("#sim-replay-sel"), AT = s.alarm_tracks || [];
-  if (srb) { srb.hidden = !(spl && !spl.hidden); const k = AT.map(a => a.id + a.n).join(",");
-    if (srs && srs.dataset.k !== k) { srs.dataset.k = k; const cur = srs.value; srs.textContent = "";
-      if (!AT.length) { const o = document.createElement("option"); o.value = ""; o.textContent = t("no alarms yet"); srs.appendChild(o); }
-      AT.forEach(a => { const o = document.createElement("option"); o.value = a.id; o.textContent = new Date(a.t * 1000).toLocaleString([], {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"}) + " · " + t(a.kind) + " · " + a.sec + " s" + (a.sim ? " · " + t("Simulator") : ""); srs.appendChild(o); });
-      if ([...srs.options].some(o => o.value === cur)) srs.value = cur; } }
-  const S = s.sim || {}, st = $("#sim-st"), b = $("#sim-btn"); document.body.classList.toggle("sim-on", !!S.on);
-  if ($("#sim-inst")) { $("#sim-inst").textContent = "📦 " + t(S.installed ? "Install simulator again" : "Install simulator on the Pi");
-    $("#sim-start").hidden = !!S.running; $("#sim-stop").hidden = !S.running; }
-  if (b) b.textContent = S.on ? "⏹ " + t("Switch the simulation off") : "🧪 " + t("Switch the simulation on");
-  const vb = $("#sim-vbox"); if (vb) { const vis = !!S.ok; if (vis && (vb.hidden || !vb.dataset.loaded)) { vb.dataset.loaded = "1"; window.simCtl && window.simCtl(); } vb.hidden = !vis; }
-  const hd = $("#sim-head"), T = S.stats || {};
-  if (hd) hd.textContent = !S.on ? "⚪ " + t("Simulation off") : (S.ok ? "🟢 " + (T.name || t("connected")) : "🔴 " + t("Simulator not reachable"));
-  const sg = $("#sim-stats");
-  if (sg) { const tile = (k, v) => '<div style="border:1px solid var(--line);border-radius:10px;padding:6px 8px"><div class="mut" style="font-size:11px">' + k + '</div><div style="font-weight:600">' + v + '</div></div>';
-    const dur = n => n == null ? "–" : n < 60 ? n + " s" : n < 3600 ? Math.floor(n / 60) + " min" : Math.floor(n / 3600) + " h " + Math.floor(n % 3600 / 60) + " min";
-    sg.hidden = !S.on;
-    sg.innerHTML = tile(t("Connected for"), dur(T.since)) + tile(t("Response time"), T.rtt == null ? "–" : T.rtt + " ms") + tile(t("Camera pictures/s"), T.cam_fps == null ? "–" : T.cam_fps)
-      + tile(t("Thermal pictures/s"), T.th_fps == null ? "–" : T.th_fps) + tile(t("Messages sent"), T.sent || 0) + tile(t("Sensor events"), T.events || 0) + tile(t("Errors"), T.errs || 0); }
-  const sc = $("#sim-scan"), SC = S.scan || {};
-  if (sc) { const ago = SC.t ? Math.round(Date.now() / 1000 - SC.t) : null;
-    sc.textContent = SC.running ? "⏳ " + t("Searching") + " " + SC.net + " … " + Math.round(100 * (SC.done || 0) / Math.max(1, SC.hosts || 1)) + " % · " + (SC.found || 0) + " " + t("found")
-      : (SC.t ? t("Last search") + ": " + (ago < 60 ? ago + " s" : Math.round(ago / 60) + " min") + " · " + SC.hosts + " " + t("addresses in") + " " + SC.secs + " s · " + SC.found + " " + t("found") + " (" + SC.net + ")"
-        : t("Simulators announce themselves every 2 s. «Search now» also asks every address of the network.")); }
-  const fb = $("#sim-found");
-  if (fb) { const F = S.found || [], sig = JSON.stringify(F.map(x => [x.ip, x.port, x.name, x.host, x.count, x.ms, x.age > 5])) + S.url;
-    if (fb.dataset.sig !== sig) { fb.dataset.sig = sig; fb.textContent = "";
-      if (!F.length) fb.appendChild(el("div", "mut", t("No simulator announces itself in the network right now.")));
-      fb.appendChild(el("div", "mut", t("sim-missing"))).style.marginTop = "6px";
-      F.forEach(x => { const r = el("div"); r.style.cssText = "display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--line);border-radius:10px;margin-top:6px";
-        const cur = S.url === "http://" + x.ip + ":" + x.port;
-        const info = el("div"); info.style.flex = "1";
-        info.append(el("div", "", (cur ? "✅ " : "🖥 ") + x.name + (x.host ? "  ·  💻 " + x.host : "")), el("div", "mut", x.ip + ":" + x.port + (x.ip === "127.0.0.1" ? " · " + t("this device") : "") + (x.version ? " · v" + x.version : "")));
-        const f = new Date((x.first || x.t) * 1000);
-        info.appendChild(el("div", "mut", t("seen since") + " " + (("0" + f.getHours()).slice(-2) + ":" + ("0" + f.getMinutes()).slice(-2)) + " · " + t("last") + " " + x.age + " s · "
-          + (x.count ? x.count + " " + t("messages") : t("found by the search")) + (x.ms != null ? " · " + x.ms + " ms" : "")));
-        info.lastChild.style.fontSize = "12px"; r.appendChild(info);
-        if (!cur) { const u = el("button", "sec", t("Use")); u.type = "button"; u.onclick = async () => { await post("/api/sim", {action: "use", ip: x.ip, port: x.port, lang: LANG}); refresh(); }; r.appendChild(u); }
-        fb.appendChild(r); }); } }
-  if (st) st.textContent = (!S.on ? t("off - the real cameras and sensors are used") + " · " + S.url : (S.ok ? S.url + " · " + (S.dark ? t("night") : t("day")) + " · " + S.ambient + " °C" : t(S.msg || "not reachable") + " · " + S.url))
-    + (S.running ? "\n▶ " + t("the simulator runs on this Pi") : "");
+  const S = s.sim || {}; document.body.classList.toggle("sim-on", !!S.on);
   const bs = $("#b-sim"); if (bs) { bs.hidden = !S.on; const nv = S.on && S.versions && S.versions.newer;
     const pcc = S.on && S.ok && S.stats && S.stats.pc_cpu != null ? " · PC " + Math.round(S.stats.pc_cpu) + " %" : "";
     bs.textContent = "🧪 " + t("SIMULATION") + (S.on && !S.ok ? " ⚠" : "") + pcc + (nv ? " · ⟳ " + t("Update") + " " + S.versions.latest : "");
@@ -49760,19 +49814,31 @@ function scPick() {
     const ol = el("ol"); ol.style.cssText = "margin:0 0 8px;padding-left:20px;line-height:1.5";
     ["sc-1", "sc-2", "sc-3", "sc-4", "sc-5"].forEach(k => ol.appendChild(el("li", "", t(k)))); box.appendChild(ol);
     const h = el("div", "", "↩ " + t("Addresses back to MoveEye (for «Get contents of URL»)")); h.style.cssText = "font-weight:600;margin-top:6px"; box.appendChild(h);
-    if (!j.on) { box.appendChild(el("div", "mut", t("sc-key-off")));
-      const b = el("button", "", "🔑 " + t("Make a shortcut key")); b.type = "button"; b.onclick = async () => paint(await post("/api/shortcut", {action: "new"})); box.appendChild(b); return; }
+    // aufr: the key is an app key (Settings → Security → App keys, 573) - shown in full only once, right after it is made
+    const key = j.key || "", nm = j.name || "";
+    if (key) box.appendChild(el("div", "", "🔑 " + t("Copy the addresses now - the key is shown only this one time.") + (nm ? " («" + nm + "»)" : ""))).style.cssText = "margin:4px 0;font-weight:600";
+    const KEYS = j.keys || [];
     [["arm", "Arm"], ["disarm", "Disarm"], ["siren_off", "Siren off"], ["light_on", "White light on"], ["light_off", "White light off"],
-     ["photo.jpg", "Photo now"], ["status", "Status (text)"]].forEach(([a, n]) => { const u = j.base + "/k/" + j.key + "/" + a;
+     ["photo.jpg", "Photo now"], ["status", "Status (text)"]].forEach(([a, n]) => { const u = j.base + "/k/" + (key || "<" + t("app key") + ">") + "/" + a;
       const r = el("div"); r.style.cssText = "display:flex;gap:8px;align-items:center;margin:4px 0";
-      const c = el("button", "sec", "📋"); c.type = "button"; c.title = t("Copy"); c.onclick = () => { try { navigator.clipboard.writeText(u); toast("✓ " + t("copied")); } catch (e) { prompt(t(n), u); } };
-      const lab = el("span", "", t(n)); lab.style.minWidth = "140px"; const cd = el("code", "mut", u.replace(j.key, "•••")); cd.style.cssText = "font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1";
-      r.append(c, qrBtn(u, t(n), {secret: true}), lab, cd); box.appendChild(r); });
-    box.appendChild(el("div", "mut", t("sc-key-note"))).style.marginTop = "6px";
+      const lab = el("span", "", t(n)); lab.style.minWidth = "140px"; const cd = el("code", "mut", key ? u.replace(key, "•••") : u); cd.style.cssText = "font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1";
+      if (key) { const c = el("button", "sec", "📋"); c.type = "button"; c.title = t("Copy"); c.onclick = () => { try { navigator.clipboard.writeText(u); toast("✓ " + t("copied")); } catch (e) { prompt(t(n), u); } };
+        r.append(c, qrBtn(u, t(n), {secret: true})); }
+      r.append(lab, cd); box.appendChild(r); });
+    box.appendChild(el("div", "mut", t("sc-key-note2"))).style.marginTop = "6px";
+    KEYS.forEach(k => { const r = el("div"); r.style.cssText = "display:flex;gap:8px;align-items:center;margin:4px 0";
+      const tx = el("span", "", "🔑 " + k.name + " · " + t("last used") + " " + (k.seen ? new Date(k.seen * 1000).toLocaleString() : t("never"))); tx.style.flex = "1";
+      const bl = el("button", "red", "⛔ " + t("Block")); bl.type = "button";
+      bl.onclick = async () => { if (!confirm(t("Block this key? Programs that use it get no access any more.") + "\n" + k.name)) return;
+        await post("/api/appkeys", {action: "revoke", id: k.id, lang: LANG}); fetch("/api/shortcut").then(r_ => r_.json()).then(paint).catch(() => {}); };
+      r.append(tx, bl); box.appendChild(r); });
+    if ((j.other || []).length) box.appendChild(el("div", "mut", t("These app keys work here too:") + " " + j.other.join(", ")));
+    const err = el("div", "err");
     const row = el("div", "btns"); row.style.marginTop = "6px";
-    const nb = el("button", "sec", "🔄 " + t("New key")); nb.type = "button"; nb.onclick = async () => { if (confirm(t("Make a new key? The old addresses stop working."))) paint(await post("/api/shortcut", {action: "new"})); };
-    const ob = el("button", "sec", "⛔ " + t("Switch off")); ob.type = "button"; ob.onclick = async () => paint(await post("/api/shortcut", {action: "off"}));
-    row.append(nb, ob); box.appendChild(row); };
+    const nb = el("button", KEYS.length ? "sec" : "", "🔑 " + t(KEYS.length ? "One more shortcut key" : "Make a shortcut key")); nb.type = "button";
+    nb.onclick = async () => { const r_ = await post("/api/shortcut", {action: "new", lang: LANG}); if (!r_.ok) { err.textContent = "⚠ " + (r_.error || "error"); return; } paint(r_); };
+    const ak = el("a", "btn sec", "🔐 " + t("All app keys")); ak.href = "/settings?open=grp:security";
+    row.append(nb, ak); box.append(row, err); };
   fetch("/api/shortcut").then(r => r.json()).then(paint).catch(() => {});
 }
 // ---- app icon (2.95.23): choose it here; on an iPhone / iPad the home screen keeps the old one - a hint says what to do ----
@@ -50990,6 +51056,8 @@ WEB_PAGE = WEB_PAGE.replace("</body>", WALKTEST_JS + "</body>", 1)
 # The joystick, «Centre» and «Calibrate» only when there is a pan / tilt head (PCA9685, GPIO chosen by hand, or the simulator);
 # in landscape the joystick floats see-through in a corner of the picture. Everything is stored per browser
 # (localStorage «mw-live-view», the hidden cards in the existing «mw-hidden» of the ☰ view menu) - not on the device.
+# aufr: «mw-hidden» (the ☰ menu of the other tabs) is per device now as well (WEB_UI_LOCAL) - the same rule and wording; the
+# live cards are only in «◫ Ansicht» (the ☰ menu leaves them out), so no card has two «hide» switches.
 # 530 stays as it is except the phone placement (not on the Live tab any more). Translations: part 626.
 # 2.98.29 (Wunsch Daniel): ONE edit mode for the arrangement (the separate «✏️ Anpassen» of the quick switches is gone):
 #   favourites ★, order ▲ ▼ and hidden ✕ of the quick switches and of the cards, per device; «Für alle Geräte übernehmen»
@@ -51613,6 +51681,7 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
 """
 WEB_PAGE = WEB_PAGE.replace("</body>", LIVE_VIEW_JS + "</body>", 1)
 WEB_UI_LOCAL.add("mw-live-view")                         # per device: the layout of the phone is not the one of the PC (not copied to the Pi)
+WEB_UI_LOCAL.add("mw-hidden")                            # aufr: the ☰ menu (fields shown / hidden) per device too - one rule for «hide» on every page
 # ----------------------------------------------------------------------------
 # 2.98.30: phone first (390 px): three steps - 1 look around (scan), 2 mark (tap the suggestions or draw a box with one
 # of four big buttons), 3 done (what was made, «Gehtest» at once). The main page (530) stays as it is: a small script at its
@@ -52071,8 +52140,8 @@ SELFTEST_EXTRA.append(("Field of view per camera (cam_fov_h)", cam_fov_selftest)
 #     right stick = rover (up = forward, sideways = steer) through MoveEye's mover (/api/mover → MOVER: the real mover
 #       later, in the simulation the simulator's rover); the simulator view follows behind the rover (explore «hinterher»)
 #     without a rover: right stick = fly the simulator view (up = forward, sideways = turn)
-#     R1 held + right stick = turn the simulator view · L1 = zoom out, R1 short = zoom in, L2 / R2 = zoom out / in
-#     (2.98.35: with the simulator R2 = the shutter «Auslöser», part 539)
+#     R1 held + right stick = turn the simulator view · L1 = zoom out, R1 short = zoom in, L2 = zoom out too
+#     (2.98.35: with the simulator R2 = the shutter «Auslöser», part 539; aufr: the help no longer says «L2 / R2 zoom»)
 #     R3 = next view (behind the rover → driver → from above; without rover: head camera → from above → free)
 #     A Photo · B Record · X Lamp (IR without lamp) · Y Follow · D-pad ← → choose a button of the bar, ↑ press it, ↓ help
 #     Select = swap the pictures · Start = bar on / off, held 1 s = leave
@@ -52226,7 +52295,7 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     const tb = E("table");
     [["L ◉", "Left stick: turn / tilt the head of MoveEye"], ["L3", "Press the left stick: head to the middle"],
      ["R ◉", rover() ? "Right stick: drive the rover (up = forward, sideways = steer) - the view follows behind it" : "Right stick: move the simulator view (no rover)"],
-     ["R1 + R ◉", "Hold R1 + right stick: turn the simulator view"], ["L1 / R1", "Zoom out / in (L2 / R2 too)"],
+     ["R1 + R ◉", "Hold R1 + right stick: turn the simulator view"], ["L1 / R1", "Zoom out / in (L2 = zoom out too)"],
      ["R2 🎯", "Shutter: a shot at the middle of the picture (with the simulator; in «Team gegen MoveEye» a catch)"],
      ["R3", "Press the right stick: next view (behind the rover, driver, from above)"],
      ["A B X Y", "A Photo · B Record · X Lamp · Y Follow"], ["✚ ← →", "Choose a button of the bar, ↑ presses it, ↓ this help"],
@@ -52691,7 +52760,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <div class="tip">💡 <b>Tipp:</b> Lege die Seite als Lesezeichen oder als Symbol auf den Startbildschirm des Handys («Zum Home-Bildschirm»). Dann ist sie mit einem Tipp offen.</div>
 </section>
 
-<section id="live" data-icon="📺"><h2>Die Live-Seite</h2><p><b>Die 6 Reiter (ab 2.98.0):</b> <b>Live</b> (Bild, Joystick, Schnellschalter) · <b>Schutz</b> (Aus / Wachsam / Voll, «Heute Nacht bewachen», was bei Alarm passiert, Diebstahlschutz, Zeitplan, darunter «Zonen») · <b>Verlauf</b> (Aufnahmen, Tagebuch, Protokoll) · <b>Einstellungen</b> (Erkennung, Kameras &amp; Kopf, Geräte &amp; Sensoren, Strom, Netz &amp; Zugang, System; darunter «Kameras») · <b>Simulator</b> · <b>Mehr</b> (Anleitung, Spielecke, Werkzeuge, Infoseite, Almanach, Rückmeldung). Oben im Schutz zeigt die Kette «Person → Push → Licht → Aufnahme → Sirene», was eingeschaltet ist; antippen öffnet die Einstellung. «Einfach / Experte» steht oben in den Einstellungen.</p><p><b>🎯 Folgen (ab 2.98.1):</b> ein Schalter für alles: Die Kamera hält, was erkannt wird, in der Bildmitte – Personen zuerst, sonst Tiere und was sich wirklich bewegt. Sie dreht um den Winkel, den das Objekt von der Mitte hat, und wartet kurz auf das neue Bild (kein Hin- und Herpendeln). Im Simulator heisst derselbe Schalter «Verfolgen». Von Hand steuern pausiert das Folgen kurz.</p><p><b>◫ Ansicht (ab 2.98.29):</b> der Knopf oben rechts im Bild. Fertige Ansichten (Nur schauen / Bedienen / Einrichten), Hoch- oder Querformat, Bildgrösse und «Grösse von Schrift und Knöpfen» (60–160 %, wie eine Auflösung – das Bild bleibt immer ganz sichtbar). «✏️ Bearbeiten» ist der eine Weg zum Ordnen: Karten mit ▲ ▼ verschieben oder mit ✕ ausblenden, Schnellschalter antippen = Liebling ★ (höchstens 8, die anderen hinter «… mehr»), in der Liste darunter Reihenfolge und Ausblenden. Das gilt für dieses Gerät; «Für alle Geräte übernehmen» speichert die Anordnung auf MoveEye als Standard für Geräte ohne eigene. Ohne Schwenk-/Neigekopf gibt es keinen Joystick, «Kalibrieren» steht dann unter «… mehr». Im Fenster: ◫ in der Kamerasteuerung oder Rechtsklick ins Bild.</p><p><b>🎮 Controller-Ansicht (Handy und Tablet):</b> der Knopf 🎮 oben rechts im Bild oder «◫ Ansicht → Controller-Ansicht öffnen». Verbindet sich ein Bluetooth- oder USB-Controller mit dem Handy oder Tablet, fragt MoveEye, ob die Ansicht aufgehen soll. Vollbild: hochkant das Live-Bild oben und das Simulator-Bild unten, quer nebeneinander; lange auf ein Bild tippen oder <b>Select</b> tauscht die Bilder. Ohne Simulator nur das Live-Bild. Im Simulator-Bild: ein Finger = Ansicht drehen, zwei Finger = zoomen, Doppeltipp = nächste Ansicht (Kopfkamera → von oben → hinter dem Rover). Die schmale Leiste unten (Licht, IR, Wärmebild, Nachtsicht, Markieren, Foto, Aufnahme, Folgen; der Rest hinter «…») verschwindet nach 4 s, ein Tipp zeigt sie wieder. <b>Controller:</b> linker Stick = Kopf schwenken / neigen (wie der Joystick, echte Servos und Simulator), L3 = Mitte · rechter Stick = Rover fahren (hoch = vorwärts, seitlich = lenken) über den Mover von MoveEye – später ein echter Mover, in der Simulation der Rover; die Ansicht fährt hinter dem Rover her. Ohne Rover bewegt der rechte Stick die Simulator-Ansicht · R1 halten + rechter Stick = Ansicht drehen · L1 / R1 kurz (oder L2 / R2) = verkleinern / vergrössern · R3 = nächste Ansicht (hinter dem Rover, Fahrersicht, von oben) · A Foto, B Aufnahme, X Licht, Y Folgen · Steuerkreuz ← → Knopf wählen, ↑ drücken, ↓ Hilfe · Start = Leiste ein / aus, 1 s halten = beenden. Gespeichert nur auf diesem Gerät.</p><p><b>🎯 Auslöser (ab 2.98.36):</b> Steuert ein Mensch statt der KI die Kamera («Team gegen MoveEye» im 3D-Simulator, der Wächter am Handy oder am Simulator-PC), zeigt das Bild ein Fadenkreuz in der Mitte – der Kreis ist der Trefferbereich (leicht = gross, schwer = klein). Bildmitte auf einen Spieler richten und den runden Knopf 🎯 unten rechts im Bild drücken (oder <b>R2</b> am Controller). Treffer: Foto mit Fadenkreuz, Zeit und Name im Spielbericht, Alarm wie bei der KI (Licht und Sirene im Simulator, Push nur ins Test-Postfach), der Spieler muss zurück zum Start, Punkte für den Wächter (mehr für nah und schnell). Daneben: Fehlalarm, −50 Punkte und der Auslöser ist 3 s gesperrt (Ring). Mit dem Simulator ist R2 in der Controller-Ansicht auch ausserhalb einer Runde ein Schuss auf die Bildmitte.</p>
+<section id="live" data-icon="📺"><h2>Die Live-Seite</h2><p><b>Die 6 Reiter (ab 2.98.0):</b> <b>Live</b> (Bild, Joystick, Schnellschalter) · <b>Schutz</b> (Aus / Wachsam / Voll, «Heute Nacht bewachen», was bei Alarm passiert, Diebstahlschutz, Zeitplan, darunter «Zonen») · <b>Verlauf</b> (Aufnahmen, Tagebuch, Protokoll) · <b>Einstellungen</b> (Erkennung, Kameras &amp; Kopf, Geräte &amp; Sensoren, Strom, Netz &amp; Zugang, System; darunter «Kameras») · <b>Simulator</b> · <b>Mehr</b> (Anleitung, Spielecke, Werkzeuge, Infoseite, Almanach, Rückmeldung). Oben im Schutz zeigt die Kette «Person → Push → Licht → Aufnahme → Sirene», was eingeschaltet ist; antippen öffnet die Einstellung. «Einfach / Experte» steht oben in den Einstellungen.</p><p><b>🎯 Folgen (ab 2.98.1):</b> ein Schalter für alles: Die Kamera hält, was erkannt wird, in der Bildmitte – Personen zuerst, sonst Tiere und was sich wirklich bewegt. Sie dreht um den Winkel, den das Objekt von der Mitte hat, und wartet kurz auf das neue Bild (kein Hin- und Herpendeln). Im Simulator heisst derselbe Schalter «Verfolgen». Von Hand steuern pausiert das Folgen kurz.</p><p><b>◫ Ansicht (ab 2.98.29):</b> der Knopf oben rechts im Bild. Fertige Ansichten (Nur schauen / Bedienen / Einrichten), Hoch- oder Querformat, Bildgrösse und «Grösse von Schrift und Knöpfen» (60–160 %, wie eine Auflösung – das Bild bleibt immer ganz sichtbar). «✏️ Bearbeiten» ist der eine Weg zum Ordnen: Karten mit ▲ ▼ verschieben oder mit ✕ ausblenden, Schnellschalter antippen = Liebling ★ (höchstens 8, die anderen hinter «… mehr»), in der Liste darunter Reihenfolge und Ausblenden. Das gilt für dieses Gerät; «Für alle Geräte übernehmen» speichert die Anordnung auf MoveEye als Standard für Geräte ohne eigene. Ohne Schwenk-/Neigekopf gibt es keinen Joystick, «Kalibrieren» steht dann unter «… mehr». Im Fenster: ◫ in der Kamerasteuerung oder Rechtsklick ins Bild.</p><p><b>🎮 Controller-Ansicht (Handy und Tablet):</b> der Knopf 🎮 oben rechts im Bild oder «◫ Ansicht → Controller-Ansicht öffnen». Verbindet sich ein Bluetooth- oder USB-Controller mit dem Handy oder Tablet, fragt MoveEye, ob die Ansicht aufgehen soll. Vollbild: hochkant das Live-Bild oben und das Simulator-Bild unten, quer nebeneinander; lange auf ein Bild tippen oder <b>Select</b> tauscht die Bilder. Ohne Simulator nur das Live-Bild. Im Simulator-Bild: ein Finger = Ansicht drehen, zwei Finger = zoomen, Doppeltipp = nächste Ansicht (Kopfkamera → von oben → hinter dem Rover). Die schmale Leiste unten (Licht, IR, Wärmebild, Nachtsicht, Markieren, Foto, Aufnahme, Folgen; der Rest hinter «…») verschwindet nach 4 s, ein Tipp zeigt sie wieder. <b>Controller:</b> linker Stick = Kopf schwenken / neigen (wie der Joystick, echte Servos und Simulator), L3 = Mitte · rechter Stick = Rover fahren (hoch = vorwärts, seitlich = lenken) über den Mover von MoveEye – später ein echter Mover, in der Simulation der Rover; die Ansicht fährt hinter dem Rover her. Ohne Rover bewegt der rechte Stick die Simulator-Ansicht · R1 halten + rechter Stick = Ansicht drehen · L1 / R1 kurz = verkleinern / vergrössern (L2 verkleinert auch; R2 ist der Auslöser 🎯) · R3 = nächste Ansicht (hinter dem Rover, Fahrersicht, von oben) · A Foto, B Aufnahme, X Licht, Y Folgen · Steuerkreuz ← → Knopf wählen, ↑ drücken, ↓ Hilfe · Start = Leiste ein / aus, 1 s halten = beenden. Gespeichert nur auf diesem Gerät.</p><p><b>🎯 Auslöser (ab 2.98.36):</b> Steuert ein Mensch statt der KI die Kamera («Team gegen MoveEye» im 3D-Simulator, der Wächter am Handy oder am Simulator-PC), zeigt das Bild ein Fadenkreuz in der Mitte – der Kreis ist der Trefferbereich (leicht = gross, schwer = klein). Bildmitte auf einen Spieler richten und den runden Knopf 🎯 unten rechts im Bild drücken (oder <b>R2</b> am Controller). Treffer: Foto mit Fadenkreuz, Zeit und Name im Spielbericht, Alarm wie bei der KI (Licht und Sirene im Simulator, Push nur ins Test-Postfach), der Spieler muss zurück zum Start, Punkte für den Wächter (mehr für nah und schnell). Daneben: Fehlalarm, −50 Punkte und der Auslöser ist 3 s gesperrt (Ring). Mit dem Simulator ist R2 in der Controller-Ansicht auch ausserhalb einer Runde ein Schuss auf die Bildmitte.</p>
 <h3>Kopfzeile</h3>
 <p>Oben links stehen Name und <b>Version</b>. Daneben zeigen kleine Anzeigen nur, was gerade wichtig ist. Was im Normalzustand ist (kein Regen, Licht ok …), wird nicht angezeigt.</p>
 <table><tr><td>🛡 Schutz ein / aus</td><td>Alarme an oder aus. Antippen schaltet um.</td></tr>
@@ -52709,7 +52778,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li>Doppelklick aufs Bild: nur noch Video, nochmals doppelklicken: zurück.</li></ul>
 </section>
 
-<section id="alarm" data-icon="🛡"><h2>Alarm &amp; Camping</h2><p><b>🛡 Schutz (ab 2.95.105):</b> Oben in «Camping / Schutz» eine Stufe statt vieler Schalter: <b>Aus</b> · <b>Wachsam</b> (Personen und Sabotage aufs Handy, keine Sirene) · <b>Voll</b> (dazu bewachte Gegenstände aus dem Referenz-Scan, GPS-Ortung und die Sirene, wenn niemand ausschaltet). Der <b>Schutz-Assistent</b> fragt drei Dinge (was, wann, wie reagieren) und stellt alles ein. Die <b>Ampel</b> zeigt, was noch fehlt, mit «Beheben». <b>PIN zum Ausschalten</b>: ohne PIN kein «Schutz aus»; 3 falsche PINs lösen einen Diebstahl-Alarm aus. <b>Schutz testen</b> prüft Kamera, Push, Lautsprecher, Referenz-Scan – mit dem Simulator auch Abdecken und eine Person. Unter «Mehr»: Sirene nach 10–120 s und «automatisch an, wenn mein Handy weg ist». Die Begriffe «scharf / unscharf» heissen jetzt «Schutz an / aus». Der Bluetooth-Lautsprecher ist unter den Modi schnell erreichbar, das Disco-Licht zugeklappt darunter.</p><p><b>Modus (ab 2.95.47):</b> ein Schalter für das ganze Gerät, oben in «Camping / Schutz» (auch im Fenster): ⛺ Camping-Wache · 🔥 Lagerfeuer-Spiele (Spielecke offen im bestehenden WLAN, die Wache schaut sparsam weiter; zur eingestellten Zeit oder bei knappem Akku zurück zur Camping-Wache) · 🎮 Gamer (nur mit Netzstrom: Powermodus, alle Spiele, Wache nach Wahl; auf Akku zurück zu den Lagerfeuer-Spielen) · 🏠 Zuhause · 🦌 Wildbeobachtung (keine Sirene, kein Licht von selbst) · 🌙 Nachtwache · 🔕 Transport. «Eigene Einstellungen» stellt alles zurück, wie es vor dem ersten Modus war.</p><p><b>📺 TV-Anzeige und Internet vom Handy (ab 2.95.51):</b> Unter dem Modus zeigt «Am HDMI zeigen» eine grosse Spielseite auf dem Fernseher am Pi (Raspberry Pi OS mit Desktop und Chromium nötig): links das Bild des Simulators oder der Kamera, rechts der Spielassistent, der QR-Code zum Mitspielen, die Zeit, die Spieler und die Rangliste. Bei Lagerfeuer und Gamer geht sie von selbst an. Den Link kann auch jeder andere Bildschirm im gleichen Netz öffnen. Ein Handy am USB-Kabel (Android «USB-Tethering», iPhone «Persönlicher Hotspot») gibt MoveEye Internet – das eigene WLAN (Spiel-Netz) bekommt es dann auch.</p><p><b>📶 Netz-Check und 🛈 Infoseite (ab 2.95.52):</b> Werkzeuge → «Netz-Check der Mitspieler» misst bei allen Handys Reaktionszeit, Schwankung, Verluste, Download und Upload bis zu MoveEye; Handys in der Spielecke messen von selbst, alle anderen über den QR-Code. Ist MoveEye selbst das WLAN, kommt das Empfangssignal jedes Handys dazu, mit Tipps für schwache Verbindungen. Werkzeuge → «Infoseite für Gäste» zeigt deine Homepage von MoveEye allen im gleichen WLAN, ohne Login und ohne Internet (QR-Code, auch auf der TV-Anzeige). Fragen aus dem Formular kommen als Push-Nachricht.</p><p><b>🖥 Simulator als Helfer (ab 2.95.53):</b> <b>KI-Rechenhilfe</b> (Werkzeuge): Läuft MoveEye auch auf dem PC (im 3D-Simulator «MoveEye auf diesem PC starten»), rechnet der PC die Erkennung für den Pi – der Pi findet ihn von selbst und rechnet wieder selbst, wenn der PC weg ist. <b>TV-Modus</b>: Taste T im Simulator oder «TV-Modus im 3D-Simulator» unter dem Modus – grosses Bild mit Spiel, QR-Code und Rangliste. Im Tab Simulator: <b>Aufstell-Planer</b> (wo MoveEye hin soll, tote Winkel, Patrouille übernehmen), <b>Alarm-Rückblick in 3D</b> (ein Alarm wird nachgespielt), <b>KI-Prüfung mit Simulator-Bildern</b> (wie gut erkennt die KI bei Nacht, Regen, Nebel? mit Trainingsbildern als ZIP). Im Netz-Check: <b>Empfangs-Rundgang</b> – eine Karte, wo das WLAN gut ist.</p><p><b>📖 Almanach, 🪩 Disco-Licht, 🔒 Tunnel, 🎮 Spiele (ab 2.95.54):</b> Werkzeuge → «Überlebens-Almanach»: Tipps fürs Camping in der Schweiz zum Nachschlagen oder als Abendlektüre, offline, mit Suche, Rotlicht und Vorlesen (Adresse /almanach/, auch für Gäste). Unter dem Modus: «Disco-Licht» – das weisse Licht blitzt im Takt der Musik (Mikrofon) oder in festem Takt, höchstens 3-mal pro Sekunde, ein Alarm geht vor. Tab Simulator → «Simulator hinter einer Firewall»: Läuft der Simulator auf einem PC ohne Adminrechte, verbindet er sich mit Adresse und Code selbst zu MoveEye. Die Spielesammlung ist in Touch-Spiele und Spiele mit Bildschirm-Tasten geteilt (Tetris, Racer, Breakout, Pong, Astray).</p>
+<section id="alarm" data-icon="🛡"><h2>Alarm &amp; Camping</h2><p><b>🛡 Schutz (ab 2.95.105):</b> Oben in «Camping / Schutz» eine Stufe statt vieler Schalter: <b>Aus</b> · <b>Wachsam</b> (Personen und Sabotage aufs Handy, keine Sirene) · <b>Voll</b> (dazu bewachte Gegenstände aus dem Referenz-Scan, GPS-Ortung und die Sirene, wenn niemand ausschaltet). Der <b>Schutz-Assistent</b> fragt drei Dinge (was, wann, wie reagieren) und stellt alles ein. Die <b>Ampel</b> zeigt, was noch fehlt, mit «Beheben». <b>PIN zum Ausschalten</b>: ohne PIN kein «Schutz aus»; 3 falsche PINs lösen einen Diebstahl-Alarm aus. <b>Schutz testen</b> prüft Kamera, Push, Lautsprecher, Referenz-Scan – mit dem Simulator auch Abdecken und eine Person. Unter «Mehr»: Sirene nach 10–120 s und «automatisch an, wenn mein Handy weg ist». Die Begriffe «scharf / unscharf» heissen jetzt «Schutz an / aus». Der Bluetooth-Lautsprecher ist unter den Modi schnell erreichbar, das Disco-Licht zugeklappt darunter.</p><p><b>Modus (ab 2.95.47):</b> ein Schalter für das ganze Gerät, oben in «Camping / Schutz» (auch im Fenster): ⛺ Camping-Wache · 🔥 Lagerfeuer-Spiele (Spielecke offen im bestehenden WLAN, die Wache schaut sparsam weiter; zur eingestellten Zeit oder bei knappem Akku zurück zur Camping-Wache) · 🎮 Gamer (nur mit Netzstrom: Powermodus, alle Spiele, Wache nach Wahl; auf Akku zurück zu den Lagerfeuer-Spielen) · 🏠 Zuhause · 🦌 Wildbeobachtung (keine Sirene, kein Licht von selbst) · 🌙 Nachtwache · 🔕 Transport. «Eigene Einstellungen» stellt alles zurück, wie es vor dem ersten Modus war.</p><p><b>📺 TV-Anzeige und Internet vom Handy (ab 2.95.51):</b> Unter dem Modus zeigt «Am HDMI zeigen» eine grosse Spielseite auf dem Fernseher am Pi (Raspberry Pi OS mit Desktop und Chromium nötig): links das Bild des Simulators oder der Kamera, rechts der Spielassistent, der QR-Code zum Mitspielen, die Zeit, die Spieler und die Rangliste. Bei Lagerfeuer und Gamer geht sie von selbst an. Den Link kann auch jeder andere Bildschirm im gleichen Netz öffnen. Ein Handy am USB-Kabel (Android «USB-Tethering», iPhone «Persönlicher Hotspot») gibt MoveEye Internet – das eigene WLAN (Spiel-Netz) bekommt es dann auch.</p><p><b>📶 Netz-Check und 🛈 Infoseite (ab 2.95.52):</b> Werkzeuge → «Netz-Check der Mitspieler» misst bei allen Handys Reaktionszeit, Schwankung, Verluste, Download und Upload bis zu MoveEye; Handys in der Spielecke messen von selbst, alle anderen über den QR-Code. Ist MoveEye selbst das WLAN, kommt das Empfangssignal jedes Handys dazu, mit Tipps für schwache Verbindungen. Werkzeuge → «Infoseite für Gäste» zeigt deine Homepage von MoveEye allen im gleichen WLAN, ohne Login und ohne Internet (QR-Code, auch auf der TV-Anzeige). Fragen aus dem Formular kommen als Push-Nachricht.</p><p><b>🖥 Simulator als Helfer (ab 2.95.53):</b> <b>KI-Rechenhilfe</b> (Werkzeuge): Läuft MoveEye auch auf dem PC (im 3D-Simulator «MoveEye auf diesem PC starten»), rechnet der PC die Erkennung für den Pi – der Pi findet ihn von selbst und rechnet wieder selbst, wenn der PC weg ist. <b>TV-Modus</b>: Taste T im Simulator oder «TV-Modus im 3D-Simulator» unter dem Modus – grosses Bild mit Spiel, QR-Code und Rangliste. Im Tab Simulator: <b>Aufstell-Planer</b> (wo MoveEye hin soll, tote Winkel, Patrouille übernehmen), <b>Alarm-Rückblick in 3D</b> (ein Alarm wird nachgespielt), <b>KI-Prüfung mit Simulator-Bildern</b> (wie gut erkennt die KI bei Nacht, Regen, Nebel? mit Trainingsbildern als ZIP). Im Netz-Check: <b>Empfangs-Rundgang</b> – eine Karte, wo das WLAN gut ist.</p><p><b>📖 Almanach, 🪩 Disco-Licht, 🔒 Tunnel, 🎮 Spiele (ab 2.95.54):</b> Werkzeuge → «Überlebens-Almanach»: Tipps fürs Camping in der Schweiz zum Nachschlagen oder als Abendlektüre, offline, mit Suche, Vorlesen und Hell / Dunkel / Rotlicht wie überall in MoveEye (Adresse /almanach/, auch für Gäste). Unter dem Modus: «Disco-Licht» – das weisse Licht blitzt im Takt der Musik (Mikrofon) oder in festem Takt, höchstens 3-mal pro Sekunde, ein Alarm geht vor. Tab Simulator → «Simulator hinter einer Firewall»: Läuft der Simulator auf einem PC ohne Adminrechte, verbindet er sich mit Adresse und Code selbst zu MoveEye. Die Spielesammlung ist in Touch-Spiele und Spiele mit Bildschirm-Tasten geteilt (Tetris, Racer, Breakout, Pong, Astray).</p>
 <ul><li><b>Schutz ein / aus:</b> nur bei Schutz an gibt es Alarme, Push-Nachrichten, Sirene und Aufnahmen. Der Countdown (einstellbar) gibt dir Zeit wegzugehen. «Sofort Schutz an» überspringt ihn.</li>
 <li><b>⛺ Modus «Camping» (früher «Camping-Profil» / «Camping-Wache», ab 2.98.14 dasselbe):</b> ein Schalter für alles Nötige: eigenes WLAN an, Kamera bleibt stehen (keine Patrouille/Verfolgung/Zeitraffer), Alarme, Aufnahmen und Stromsparen an, nach dem Countdown Schutz an. Ausschalten stellt deine vorherigen Einstellungen wieder her.</li>
 <li><b>Eigenes WLAN (Hotspot):</b> der Pi macht sein eigenes WLAN – funktioniert ohne Handynetz. Name und Passwort unter <i>Schutz &amp; Netzwerk</i>.</li>
@@ -52747,8 +52816,9 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <ul><li><b>Grenzen:</b> wie weit die Kamera schwenken/neigen darf (Grad aus der Mitte) – schützt Kabel und Gehäuse.</li>
 <li><b>Person verfolgen:</b> die Kamera dreht einer erkannten Person nach.</li>
 <li><b>Patrouille:</b> die Kamera fährt zwischen Wegpunkten hin und her (Wegpunkt = aktuelle Position, Schwenk und Neigung, mit «+ Wegpunkt»; Anzeige z.B. 24/60 = 24 % links–rechts, 60 % unten–oben). Der Knopf 🔄 schaltet bei jedem Tippen weiter: Aus → hin und zurück (1-2-3-2-1) → Runde (1-2-3-1) → Aus.</li>
-<li><b>🤖 Automatische Kopfbewegung (ab 2.98.30, Einstellungen → Kameras &amp; Kopf):</b> der Kopf dreht sich selbst – aber immer nur einer bewegt ihn: von Hand (Joystick) &gt; Alarm / Folgen &gt; Gehtest &gt; Wertsachen-Blick &gt; Runde &gt; Parken. Während der Simulator eine Aufgabe hat (Testlauf, Prüfstand …), warten die automatischen Bewegungen. <b>Wachsam / Voll – kluge Runde:</b> länger beim Zelt und beim Zugang, kaum bei ignorierten Richtungen (Äste, Strasse); die Orte kommen aus «Platz einrichten», sonst die Wegpunkte; Pause, solange jemand verfolgt wird. <b>Voll – zum Alarm drehen:</b> Bewegung am Bildrand, ein warmer Fleck im Wärmebild oder die Übersichtskamera → der Kopf dreht dorthin, folgt der Person und kehrt danach zur Grundstellung zurück. Ein Geräusch hat mit einem Mikrofon keine Richtung: der Kopf schaut nur zum «Zugang», wenn einer eingerichtet ist. <b>Aus – Parken:</b> die Kamera schaut weg (nach unten, einstellbar) – sichtbare Privatsphäre; beim Einschalten zurück. <b>Wertsachen-Blick:</b> alle 10–30 Minuten ein kurzer Blick auf die Wertsachen (aus «Platz einrichten», sonst die bewachten Dinge des Referenz-Scans), Vergleich wie beim Referenz-Scan → fehlt etwas zweimal hintereinander, kommt sofort ein Push («Velo fehlt»). <b>Sparsam:</b> bei knappem Akku oder tiefer Nacht (einstellbar, 1–5 Uhr) bleibt der Kopf bei der wichtigsten Richtung. <b>Gehtest:</b> der Kopf folgt dir; das Ergebnis zeigt mit rotem Kreuz, wo er dich verloren hat. <b>Wildtier-Modus</b> (automatisch mit «Wildbeobachtung»): Tieren langsam folgen, kein Voralarm, kein Licht, alle 15 s ein Foto. <b>Sabotage:</b> wird das Bild plötzlich schwarz oder anders, schaut der Kopf kurz links und rechts – der Push sagt dann «abgedeckt» oder «um etwa 30° verdreht». <b>Übersichtskamera:</b> eine feste Weitwinkel-Zusatzkamera als «Übersicht» wählen; ihre Bewegungen lenken den Kopf, die KI der Hauptkamera prüft. «Ausrichtung der Übersicht» in Grad oder «Kalibrieren»: den Kopf auf etwas richten, das sich in der Übersicht bewegt, dann den Schalter antippen. <b>Servo-Art:</b> 180 / 270 / 360°-Positions-Servos fahren nie über den Anschlag (Kabel); bei «Endlos-Drehung (360° endlos)» wird die Stellung nur aus Geschwindigkeit × Zeit geschätzt – einmal «als Mitte setzen», wenn der Kopf geradeaus schaut.</li>
-<li><b>🛑 Servos wie beim Industrieroboter (ab 2.98.36, Einstellungen → Kameras &amp; Kopf → «Servo-Bewegung &amp; Sicherheit», Seite Mehr → Werkzeuge → «Servo-Diagnose»):</b> <b>Rampen:</b> ein einziger Bewegungsplaner fährt jede Bewegung (Joystick, Knöpfe, Runde, Alarm, Referenz-Scan, Platz einrichten, Zeitraffer …) mit Beschleunigen – Fahren – Bremsen (Trapez-Profil), ohne Ruck und ohne Überschwingen; Höchstgeschwindigkeit und Beschleunigung pro Achse in °/s und °/s². Von der Ruhe aus starten und enden beide Achsen gleichzeitig (gerade Linie). Der Simulator bekommt jede Zwischenstellung. <b>⏹ Not-Aus:</b> roter Knopf auf der Live-Seite, im Fenster, auf der Seite «Servos», am Controller <b>Select 1,5 s halten</b> oder <code>POST /api/servo {"op":"estop"}</code>: bremst sofort (doppelte Verzögerung), hält dann (oder fährt langsam in die Parkposition, einstellbar), stoppt auch den Mover; alle Geräte zeigen «Not-Aus – gedrückt von iPhone …». Weiter erst mit <b>✅ Freigeben</b> (nur Administrator), auch nach einem Neustart. <b>Sichere Zustände:</b> I2C-Fehler (3 in Folge) oder ein PCA9685, der seine Einstellungen verloren hat (Spannungseinbruch), = Störung: Ausgänge aus bis «Freigeben». Unterspannung (vcgencmd get_throttled) oder eine hängende Kamera-Schleife (Watchdog) = Stopp, geht von selbst weiter; höchstens ein Push pro Stunde, nie die Sirene. Die Software-Grenzen werden ganz unten vor dem PWM nochmals geprüft. <b>Wer steuert?</b> Unter dem Joystick steht, welches Gerät den Kopf gerade steuert («Kopf wird gesteuert von: iPhone · Safari»); übernimmt ein anderes Handy, PC, das Fenster, der Controller oder der Simulator, erscheint kurz ein Hinweis. <b>📍 Teach-in:</b> «Positionen» – mit Pfeilen oder Joystick hinfahren, Namen eingeben («Zelt», «Eingang»), speichern; «Anfahren» fährt genau dorthin. Umbenennen, Reihenfolge, löschen, «in der Runde» an/aus, als Park- oder Grundstellung wählen, aus «Platz einrichten» übernehmen. Die Positionen sind die Wegpunkte der Patrouille. <b>Diagnose:</b> Fehlerspeicher (I2C, Spannungseinbruch, Grenzen, Unterspannung, Temperatur, Watchdog, Not-Aus), Betriebsstunden, gefahrene Grad und Bewegungen pro Servo (echt und Simulation getrennt), Wartungshinweise (z. B. «MG90S nach ~100 h Bewegung prüfen»), «Wartung erledigt», Export als JSON oder CSV.</li>
+<li><b>🤖 Automatische Kopfbewegung (ab 2.98.30, Einstellungen → Kameras &amp; Kopf):</b> der Kopf dreht sich selbst – aber immer nur einer bewegt ihn: von Hand (Joystick) &gt; Alarm / Folgen &gt; Gehtest &gt; Wertsachen-Blick &gt; Runde &gt; Parken. Während der Simulator eine Aufgabe hat (Testlauf, Prüfstand …), warten die automatischen Bewegungen. <b>Kluge Runde (nur wenn «Patrouille» an ist – sonst bleibt der Kopf in der Grundstellung):</b> länger beim Zelt und beim Zugang, kaum bei ignorierten Richtungen (Äste, Strasse); die Orte kommen aus «Platz einrichten», sonst die Wegpunkte; Pause, solange jemand verfolgt wird. <b>Voll – zum Alarm drehen:</b> Bewegung am Bildrand, ein warmer Fleck im Wärmebild oder die Übersichtskamera → der Kopf dreht dorthin, folgt der Person und kehrt danach zur Grundstellung zurück. Ein Geräusch hat mit einem Mikrofon keine Richtung: der Kopf schaut nur zum «Zugang», wenn einer eingerichtet ist. <b>Aus – Parken:</b> die Kamera schaut weg (nach unten, einstellbar) – sichtbare Privatsphäre; beim Einschalten zurück. <b>Wertsachen-Blick:</b> alle 10–30 Minuten ein kurzer Blick auf die Wertsachen (aus «Platz einrichten», sonst die bewachten Dinge des Referenz-Scans), Vergleich wie beim Referenz-Scan → fehlt etwas zweimal hintereinander, kommt sofort ein Push («Velo fehlt»). <b>Sparsam:</b> bei knappem Akku oder tiefer Nacht (einstellbar, 1–5 Uhr) bleibt der Kopf bei der wichtigsten Richtung. <b>Gehtest:</b> der Kopf folgt dir; das Ergebnis zeigt mit rotem Kreuz, wo er dich verloren hat. <b>Wildtier-Modus</b> (automatisch mit «Wildbeobachtung»): Tieren langsam folgen, kein Voralarm, kein Licht, alle 15 s ein Foto. <b>Sabotage:</b> wird das Bild plötzlich schwarz oder anders, schaut der Kopf kurz links und rechts – der Push sagt dann «abgedeckt» oder «um etwa 30° verdreht». <b>Übersichtskamera:</b> eine feste Weitwinkel-Zusatzkamera als «Übersicht» wählen; ihre Bewegungen lenken den Kopf, die KI der Hauptkamera prüft. «Ausrichtung der Übersicht» in Grad oder «Kalibrieren»: den Kopf auf etwas richten, das sich in der Übersicht bewegt, dann den Schalter antippen. <b>Servo-Art:</b> 180 / 270 / 360°-Positions-Servos fahren nie über den Anschlag (Kabel); bei «Endlos-Drehung (360° endlos)» wird die Stellung nur aus Geschwindigkeit × Zeit geschätzt – einmal «als Mitte setzen», wenn der Kopf geradeaus schaut.</li>
+<li><b>🛑 Servos wie beim Industrieroboter (ab 2.98.36, Einstellungen → Kameras &amp; Kopf → «Servo-Bewegung &amp; Sicherheit», Seite Mehr → Werkzeuge → «Servos»):</b> <b>Rampen:</b> ein einziger Bewegungsplaner fährt jede Bewegung (Joystick, Knöpfe, Runde, Alarm, Referenz-Scan, Platz einrichten, Zeitraffer …) mit Beschleunigen – Fahren – Bremsen (Trapez-Profil), ohne Ruck und ohne Überschwingen; Höchstgeschwindigkeit und Beschleunigung pro Achse in °/s und °/s². Von der Ruhe aus starten und enden beide Achsen gleichzeitig (gerade Linie). Der Simulator bekommt jede Zwischenstellung. <b>⏹ Not-Aus:</b> roter Knopf auf der Live-Seite, im Fenster, auf der Seite «Servos», am Controller <b>Select 1,5 s halten</b> oder <code>POST /api/servo {"op":"estop"}</code>: bremst sofort (doppelte Verzögerung), hält dann (oder fährt langsam in die Parkposition, einstellbar), stoppt auch den Mover; alle Geräte zeigen «Not-Aus – gedrückt von iPhone …». Weiter erst mit <b>✅ Freigeben</b> (nur Administrator), auch nach einem Neustart. <b>Sichere Zustände:</b> I2C-Fehler (3 in Folge) oder ein PCA9685, der seine Einstellungen verloren hat (Spannungseinbruch), = Störung: Ausgänge aus bis «Freigeben». Unterspannung (vcgencmd get_throttled) oder eine hängende Kamera-Schleife (Watchdog) = Stopp, geht von selbst weiter; höchstens ein Push pro Stunde, nie die Sirene. Die Software-Grenzen werden ganz unten vor dem PWM nochmals geprüft. <b>Wer steuert?</b> Unter dem Joystick steht, welches Gerät den Kopf gerade steuert («Kopf wird gesteuert von: iPhone · Safari»); übernimmt ein anderes Handy, PC, das Fenster, der Controller oder der Simulator, erscheint kurz ein Hinweis. <b>📍 Teach-in:</b> «Positionen» – mit Pfeilen oder Joystick hinfahren, Namen eingeben («Zelt», «Eingang»), speichern; «Anfahren» fährt genau dorthin. Umbenennen, Reihenfolge, löschen, «in der Runde» an/aus, als Park- oder Grundstellung wählen, aus «Platz einrichten» übernehmen. Die Positionen sind die Wegpunkte der Patrouille. <b>Diagnose:</b> Fehlerspeicher (I2C, Spannungseinbruch, Grenzen, Unterspannung, Temperatur, Watchdog, Not-Aus), Betriebsstunden, gefahrene Grad und Bewegungen pro Servo (echt und Simulation getrennt), Wartungshinweise (z. B. «MG90S nach ~100 h Bewegung prüfen»), «Wartung erledigt», Export als JSON oder CSV.</li>
+<li><b>🧹 Ein Ort pro Sache (Aufräum-Runde):</b> <b>Servos:</b> Mehr → Werkzeuge → «Servos» = eine Seite mit Positionen, <b>Test</b> (der frühere «Servo-Test») und Diagnose; im Fenster das Fenster «Servos» mit denselben drei Reitern. <b>Kurzbefehle fürs iPhone:</b> der Kurzbefehl-Schlüssel ist jetzt ein App-Schlüssel (Einstellungen → Sicherheit → App-Schlüssel), der nur die Adressen /k/… öffnet; ein alter Schlüssel wurde einmal übernommen (gespeichert nur als Fingerabdruck) – die gespeicherten Kurzbefehle laufen weiter. Ein neuer Schlüssel wird wie jeder App-Schlüssel nur einmal gezeigt (mit Kopieren und QR), und nur über die sichere Seite (https) erstellt. Jeder andere App-Schlüssel geht für /k/ auch. <b>Zonen:</b> neue Art «Nur melden» (eine Person darin gibt keinen Alarm, nur einen Eintrag und ab und zu eine Info-Nachricht) – der «öffentliche Weg» aus «Platz einrichten» ist jetzt so eine Zone und im Zonen-Editor sichtbar und änderbar. Jede Zone hat den Schalter «📌 Bleibt am Platz»: dann bleibt sie auf dem Boden, wenn sich der Kopf dreht (Privatsphäre und Schlafplatz immer). <b>Abschrecken:</b> Licht und Sirene sitzen auf dem Kopf – beim Abschrecken dreht er sie zur Person (zuletzt gesehen) oder sonst zum Zelt aus «Platz einrichten» (Schalter unter «Automatische Kopfbewegung»). <b>Spiel:</b> während einer Runde «Team gegen MoveEye» folgt MoveEye nicht und bewegt den Kopf nicht selbst (die Spieler steuern); danach geht es von selbst weiter. <b>Ansicht:</b> Ein- und Ausblenden im ☰-Menü gilt wie «◫ Ansicht» nur für dieses Gerät; im Fenster steht die Kamerasteuerung nur noch in «◫ Ansicht» (nicht mehr im Rechtsklick-Menü «Felder»). <b>Tierart:</b> die Einstellungen des Tierart-Modells stehen in einer Gruppe «Tierart» (wie «KI-Modell»). <b>Test-Feedback senden</b> steht unter Mehr → System.</li>
 <li><b>Videoquelle:</b> Pi-Kamera, USB- oder Netzwerkkamera. Weitere Kameras im Reiter <i>Kameras</i>.</li>
 <li><b>Servo-Treiber</b> (Feineinstellungen): PCA9685 und Adresse, Kanäle.</li><li><b>🚜 Mover (Kettenfahrzeug, ab 2.94.0):</b> steht MoveEye auf einem kleinen Kettenfahrzeug, erscheint ein zweiter, grüner Stick: hoch = vorwärts, runter = rückwärts, seitlich = an Ort drehen. Den Motortreiber (Motor HAT mit PCA9685 + TB6612, I2C 0x60) findet MoveEye von selbst – ohne ihn bleibt der Stick weg. Einstellungen unter Kamera &amp; Servos → Mover. Ohne neuen Befehl halten die Ketten nach 0,6 s an. Im 3D-Simulator: «Mover simulieren». In der Simulation lässt sich der Stick auch ohne Mover einblenden (Mover → «Simulation: den Stick auch ohne Mover … zeigen», ab 2.94.4) – zum Ausprobieren der Bedienung.</li></ul>
 </section>
@@ -52885,10 +52955,10 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 </dl></section>
 
 <section id="qr" data-icon="▦"><h2>QR-Codes</h2><p>Überall, wo MoveEye einen Link fürs Handy zeigt, steht daneben ein kleines <b>▦</b>. Antippen: der QR-Code gross, darunter der Link, «Kopieren» und «Drucken». Mit der Handy-Kamera scannen – fertig.</p>
-<ul><li><b>Wo:</b> Push-Nachrichten (ntfy-Adresse), Gast-Zugang, Adressen von MoveEye (Heimnetz, Tailscale, https – bei der Tailscale-Zeile unter System), Kurzbefehle fürs iPhone (jede Adresse), App-Schlüssel (nur einmal beim Erstellen), Bild für andere Programme, TV-Ansicht, Simulator-Tunnel (Adresse und Code für ein Tablet), Aufnahmen, «Adresse dieser Seite für Links».</li>
+<ul><li><b>Wo:</b> Push-Nachrichten (ntfy-Adresse), Gast-Zugang, Adressen von MoveEye (Heimnetz, Tailscale, https – bei der Tailscale-Zeile unter System), App-Schlüssel (nur einmal beim Erstellen), Bild für andere Programme, TV-Ansicht, Simulator-Tunnel (Adresse und Code für ein Tablet), Aufnahmen, «Adresse dieser Seite für Links».</li>
 <li><b>ntfy:</b> Android – der Code abonniert das Thema direkt in der ntfy-App (ntfy://…). iPhone – die App kann das nicht; der Code öffnet das Thema im Browser, in der App dann «+» und das Thema eintippen.</li>
 <li><b>Alle auf einer Seite:</b> Mehr → «QR-Codes». Geheime Codes sind verschwommen, bis man sie antippt; jeder lässt sich einzeln drucken. «Alle drucken» macht ein A4-Blatt mit Etiketten – geheime nur, wenn «Geheime Codes mitdrucken» angekreuzt ist.</li>
-<li><b>Sicherheit:</b> QR-Codes gibt es nur für den Administrator (nicht für andere Benutzer und nicht über einen App-Schlüssel). Geheime Codes (Schlüssel, Stream-Adresse, ntfy-Thema, Kurzbefehl-Schlüssel) bleiben nicht im Browser-Speicher und stehen in keinem Protokoll. Wer einen geheimen Code scannt, hat Zugang – nur Vertrauten zeigen, Ausdrucke sicher aufbewahren.</li>
+<li><b>Sicherheit:</b> QR-Codes gibt es nur für den Administrator (nicht für andere Benutzer und nicht über einen App-Schlüssel). Geheime Codes (Schlüssel, Stream-Adresse, ntfy-Thema, App-Schlüssel der Kurzbefehle) bleiben nicht im Browser-Speicher und stehen in keinem Protokoll. Wer einen geheimen Code scannt, hat Zugang – nur Vertrauten zeigen, Ausdrucke sicher aufbewahren.</li>
 <li><b>Fenster:</b> Knöpfe «QR-Code …» bei Gast-Zugang, Web-Stream, Benachrichtigungen, Simulator (Tunnel) und beim App-Schlüssel; unter Einrichtung «Alle QR-Codes …». Dort auch «Bild speichern …» und – wenn ein Drucker eingerichtet ist – «Drucken».</li></ul></section>
 <section id="setup" data-icon="🧰"><h2>Einrichtung auf dem Raspberry Pi</h2>
 <pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils
@@ -52912,7 +52982,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <div class="tip">💡 <b>Tip:</b> save the page as a bookmark or as an icon on the home screen of the phone («Add to Home Screen»).</div>
 </section>
 
-<section id="live" data-icon="📺"><h2>The live page</h2><p><b>The 6 tabs (from 2.98.0):</b> <b>Live</b> (picture, joystick, quick switches) · <b>Protection</b> (Off / Watchful / Full, «Guard tonight», what happens at an alarm, theft protection, schedule, below it «Zones») · <b>History</b> (recordings, diary, log) · <b>Settings</b> (detection, cameras &amp; head, devices &amp; sensors, power, network &amp; access, system; below it «Cameras») · <b>Simulator</b> · <b>More</b> (manual, game corner, tools, info page, almanac, feedback). On top of Protection the chain «person → push → light → recording → siren» shows what is switched on; tap a step to change it. «Simple / Expert» is at the top of the settings.</p><p><b>🎯 Follow (from 2.98.1):</b> one switch for everything: the camera keeps what is detected in the middle of the picture – persons first, otherwise animals and things that really go somewhere. It turns by the angle the object has from the middle and waits for the new picture (no swinging). In the simulator the same switch is called «Verfolgen». Steering by hand pauses following for a moment.</p><p><b>◫ View (from 2.98.29):</b> the button at the top right of the picture. Ready-made views (just watching / operating / setting up), portrait or landscape, picture size and «size of text and buttons» (60–160 %, like a resolution – the picture always stays fully visible). «✏️ Edit» is the one way to arrange: move cards with ▲ ▼ or hide them with ✕, tap a quick switch = favourite ★ (max. 8, the others behind «… more»), order and hide in the list below. This is stored for this device; «Use for all devices» stores the arrangement on MoveEye as the default for devices without their own. Without a pan / tilt head there is no joystick and «Calibrate» is under «… more». In the window: ◫ in the camera control or right click on the picture.</p><p><b>🎮 Controller view (phone and tablet):</b> the button 🎮 at the top right of the picture or «◫ View → Open the controller view». When a Bluetooth or USB controller connects to the phone or tablet, MoveEye asks whether to open it. Full screen: upright the live picture on top and the simulator picture below, sideways next to each other; a long tap on a picture or <b>Select</b> swaps them. Without the simulator only the live picture. In the simulator picture: one finger = turn the view, two fingers = zoom, double tap = next view (head camera → from above → behind the rover). The slim bar at the bottom (lamp, IR, thermal, night vision, marks, photo, record, follow; the rest behind «…») hides after 4 s, a tap shows it again. <b>Controller:</b> left stick = turn / tilt the head (like the joystick, real servos and the simulator), L3 = centre · right stick = drive the rover (up = forward, sideways = steer) through the mover of MoveEye – a real mover later, the rover in the simulation; the view follows behind the rover. Without a rover the right stick moves the simulator view · hold R1 + right stick = turn the view · L1 / R1 short (or L2 / R2) = zoom out / in · R3 = next view (behind the rover, driver, from above) · A photo, B record, X lamp, Y follow · D-pad ← → choose a button, ↑ press it, ↓ help · Start = bar on / off, hold 1 s = leave. Stored on this device only.</p><p><b>🎯 Shutter (from 2.98.36):</b> when a person instead of the AI steers the camera («Team gegen MoveEye» in the 3D simulator, the guard at the phone or at the simulator PC), the picture shows a crosshair in the middle – the circle is the hit area (easy = big, hard = small). Aim the middle of the picture at a player and press the round 🎯 button at the bottom right of the picture (or <b>R2</b> on the controller). Hit: a photo with crosshair, time and name in the game report, an alarm like with the AI (light and siren in the simulator, a push only into the test inbox), the player goes back to the start, points for the guard (more for near and fast). Miss: a false alarm, −50 points and the shutter is locked for 3 s (ring). With the simulator R2 in the controller view is a shot at the middle outside a round too.</p>
+<section id="live" data-icon="📺"><h2>The live page</h2><p><b>The 6 tabs (from 2.98.0):</b> <b>Live</b> (picture, joystick, quick switches) · <b>Protection</b> (Off / Watchful / Full, «Guard tonight», what happens at an alarm, theft protection, schedule, below it «Zones») · <b>History</b> (recordings, diary, log) · <b>Settings</b> (detection, cameras &amp; head, devices &amp; sensors, power, network &amp; access, system; below it «Cameras») · <b>Simulator</b> · <b>More</b> (manual, game corner, tools, info page, almanac, feedback). On top of Protection the chain «person → push → light → recording → siren» shows what is switched on; tap a step to change it. «Simple / Expert» is at the top of the settings.</p><p><b>🎯 Follow (from 2.98.1):</b> one switch for everything: the camera keeps what is detected in the middle of the picture – persons first, otherwise animals and things that really go somewhere. It turns by the angle the object has from the middle and waits for the new picture (no swinging). In the simulator the same switch is called «Verfolgen». Steering by hand pauses following for a moment.</p><p><b>◫ View (from 2.98.29):</b> the button at the top right of the picture. Ready-made views (just watching / operating / setting up), portrait or landscape, picture size and «size of text and buttons» (60–160 %, like a resolution – the picture always stays fully visible). «✏️ Edit» is the one way to arrange: move cards with ▲ ▼ or hide them with ✕, tap a quick switch = favourite ★ (max. 8, the others behind «… more»), order and hide in the list below. This is stored for this device; «Use for all devices» stores the arrangement on MoveEye as the default for devices without their own. Without a pan / tilt head there is no joystick and «Calibrate» is under «… more». In the window: ◫ in the camera control or right click on the picture.</p><p><b>🎮 Controller view (phone and tablet):</b> the button 🎮 at the top right of the picture or «◫ View → Open the controller view». When a Bluetooth or USB controller connects to the phone or tablet, MoveEye asks whether to open it. Full screen: upright the live picture on top and the simulator picture below, sideways next to each other; a long tap on a picture or <b>Select</b> swaps them. Without the simulator only the live picture. In the simulator picture: one finger = turn the view, two fingers = zoom, double tap = next view (head camera → from above → behind the rover). The slim bar at the bottom (lamp, IR, thermal, night vision, marks, photo, record, follow; the rest behind «…») hides after 4 s, a tap shows it again. <b>Controller:</b> left stick = turn / tilt the head (like the joystick, real servos and the simulator), L3 = centre · right stick = drive the rover (up = forward, sideways = steer) through the mover of MoveEye – a real mover later, the rover in the simulation; the view follows behind the rover. Without a rover the right stick moves the simulator view · hold R1 + right stick = turn the view · L1 / R1 short = zoom out / in (L2 zooms out too; R2 is the shutter 🎯) · R3 = next view (behind the rover, driver, from above) · A photo, B record, X lamp, Y follow · D-pad ← → choose a button, ↑ press it, ↓ help · Start = bar on / off, hold 1 s = leave. Stored on this device only.</p><p><b>🎯 Shutter (from 2.98.36):</b> when a person instead of the AI steers the camera («Team gegen MoveEye» in the 3D simulator, the guard at the phone or at the simulator PC), the picture shows a crosshair in the middle – the circle is the hit area (easy = big, hard = small). Aim the middle of the picture at a player and press the round 🎯 button at the bottom right of the picture (or <b>R2</b> on the controller). Hit: a photo with crosshair, time and name in the game report, an alarm like with the AI (light and siren in the simulator, a push only into the test inbox), the player goes back to the start, points for the guard (more for near and fast). Miss: a false alarm, −50 points and the shutter is locked for 3 s (ring). With the simulator R2 in the controller view is a shot at the middle outside a round too.</p>
 <h3>Header</h3>
 <p>Top left: name and <b>version</b>. Small badges show only what matters right now; things in their normal state (no rain, light ok …) are not shown.</p>
 <table><tr><td>🛡 Armed / disarmed</td><td>Alarms on or off. Tap to switch.</td></tr>
@@ -52930,7 +53000,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li>Double-click the picture: video only; double-click again: back.</li></ul>
 </section>
 
-<section id="alarm" data-icon="🛡"><h2>Alarm &amp; camping</h2><p><b>🛡 Protection (from 2.95.105):</b> at the top of «Camping / protection» one level instead of many switches: <b>Off</b> · <b>Watchful</b> (persons and sabotage to the phone, no siren) · <b>Full protection</b> (plus guarded things of the reference scan, GPS tracking and the siren when nobody switches off). The <b>protection assistant</b> asks three things (what, when, how to react) and sets everything. The <b>traffic light</b> shows what is missing, with «Fix». <b>PIN for switching off</b>: no «off» without the PIN; 3 wrong PINs raise a theft alarm. <b>Test the protection</b> checks camera, push, loudspeaker, reference scan – with the simulator also covering the camera and a person. Under «More»: siren after 10–120 s and «on automatically when my phone is gone». The Bluetooth loudspeaker is quick to reach below the modes, the disco light folded away below it.</p><p><b>Mode (from 2.95.47):</b> one switch for the whole device, at the top of «Camping / protection» (also in the window): ⛺ camping guard · 🔥 campfire games (game corner open, the guard watches on sparingly; back to the camping guard at the set time or when the battery gets low) · 🎮 gamer (only with mains power: power mode, all games, guard if you want; on battery back to the campfire games) · 🏠 home · 🦌 wildlife watching (no siren, no light by itself) · 🌙 night guard · 🔕 transport. «Own settings» brings everything back as it was before the first mode.</p><p><b>📺 TV view and internet from the phone (from 2.95.51):</b> Below the mode, «Show on the HDMI» puts a big game page on the TV at the Pi (Raspberry Pi OS with desktop and Chromium needed): left the picture of the simulator or the camera, right the game wizard, the QR code to join, the time, the players and the ranking. In the campfire and gamer mode it starts by itself. Any other screen in the same network can open the link too. A phone on the USB cable (Android «USB tethering», iPhone «Personal Hotspot») gives MoveEye internet – the own Wi-Fi (game network) gets it too.</p><p><b>📶 Network check and 🛈 product page (from 2.95.52):</b> Tools → «Network check of the players» measures reaction time, jitter, losses, download and upload from every phone to MoveEye; phones in the game corner measure by themselves, all others with the QR code. When MoveEye is the Wi-Fi itself, the signal of every phone is added, with tips for weak connections. Tools → «Product page for guests» shows your MoveEye homepage to everybody in the same Wi-Fi, without login and without internet (QR code, also on the TV view). Questions from the form arrive as a push message.</p><p><b>🖥 The simulator as helper (from 2.95.53):</b> <b>AI helper</b> (Tools): when MoveEye also runs on the PC (in the 3D simulator «Start MoveEye on this PC»), the PC does the detection for the Pi - the Pi finds it by itself and does it again itself when the PC is gone. <b>TV mode</b>: key T in the simulator or «TV mode in the 3D simulator» below the mode. In the tab Simulator: <b>Aufstell-Planer</b> (where MoveEye should stand, blind spots, take over the patrol), <b>alarm replay in 3D</b>, <b>AI test with simulator pictures</b> (how well does the AI see at night, in rain, fog? with training pictures as ZIP). In the network check: <b>walk round</b> - a map where the Wi-Fi is good.</p><p><b>📖 Almanac, 🪩 disco light, 🔒 tunnel, 🎮 games (from 2.95.54):</b> Tools → «Survival almanac» (German): camping tips to look up or read in the evening, offline, with search, red light and reading aloud (/almanach/, also for guests). Below the mode: «Disco light» - the white light flashes with the music (microphone) or a fixed tempo, at most 3 times a second, an alarm comes first. Tab Simulator → «Simulator behind a firewall»: a simulator on a PC without admin rights connects to MoveEye itself with address and code. The game collection is split into touch games and games with on-screen buttons.</p>
+<section id="alarm" data-icon="🛡"><h2>Alarm &amp; camping</h2><p><b>🛡 Protection (from 2.95.105):</b> at the top of «Camping / protection» one level instead of many switches: <b>Off</b> · <b>Watchful</b> (persons and sabotage to the phone, no siren) · <b>Full protection</b> (plus guarded things of the reference scan, GPS tracking and the siren when nobody switches off). The <b>protection assistant</b> asks three things (what, when, how to react) and sets everything. The <b>traffic light</b> shows what is missing, with «Fix». <b>PIN for switching off</b>: no «off» without the PIN; 3 wrong PINs raise a theft alarm. <b>Test the protection</b> checks camera, push, loudspeaker, reference scan – with the simulator also covering the camera and a person. Under «More»: siren after 10–120 s and «on automatically when my phone is gone». The Bluetooth loudspeaker is quick to reach below the modes, the disco light folded away below it.</p><p><b>Mode (from 2.95.47):</b> one switch for the whole device, at the top of «Camping / protection» (also in the window): ⛺ camping guard · 🔥 campfire games (game corner open, the guard watches on sparingly; back to the camping guard at the set time or when the battery gets low) · 🎮 gamer (only with mains power: power mode, all games, guard if you want; on battery back to the campfire games) · 🏠 home · 🦌 wildlife watching (no siren, no light by itself) · 🌙 night guard · 🔕 transport. «Own settings» brings everything back as it was before the first mode.</p><p><b>📺 TV view and internet from the phone (from 2.95.51):</b> Below the mode, «Show on the HDMI» puts a big game page on the TV at the Pi (Raspberry Pi OS with desktop and Chromium needed): left the picture of the simulator or the camera, right the game wizard, the QR code to join, the time, the players and the ranking. In the campfire and gamer mode it starts by itself. Any other screen in the same network can open the link too. A phone on the USB cable (Android «USB tethering», iPhone «Personal Hotspot») gives MoveEye internet – the own Wi-Fi (game network) gets it too.</p><p><b>📶 Network check and 🛈 product page (from 2.95.52):</b> Tools → «Network check of the players» measures reaction time, jitter, losses, download and upload from every phone to MoveEye; phones in the game corner measure by themselves, all others with the QR code. When MoveEye is the Wi-Fi itself, the signal of every phone is added, with tips for weak connections. Tools → «Product page for guests» shows your MoveEye homepage to everybody in the same Wi-Fi, without login and without internet (QR code, also on the TV view). Questions from the form arrive as a push message.</p><p><b>🖥 The simulator as helper (from 2.95.53):</b> <b>AI helper</b> (Tools): when MoveEye also runs on the PC (in the 3D simulator «Start MoveEye on this PC»), the PC does the detection for the Pi - the Pi finds it by itself and does it again itself when the PC is gone. <b>TV mode</b>: key T in the simulator or «TV mode in the 3D simulator» below the mode. In the tab Simulator: <b>Aufstell-Planer</b> (where MoveEye should stand, blind spots, take over the patrol), <b>alarm replay in 3D</b>, <b>AI test with simulator pictures</b> (how well does the AI see at night, in rain, fog? with training pictures as ZIP). In the network check: <b>walk round</b> - a map where the Wi-Fi is good.</p><p><b>📖 Almanac, 🪩 disco light, 🔒 tunnel, 🎮 games (from 2.95.54):</b> Tools → «Survival almanac» (German): camping tips to look up or read in the evening, offline, with search, reading aloud and light / dark / red light like everywhere in MoveEye (/almanach/, also for guests). Below the mode: «Disco light» - the white light flashes with the music (microphone) or a fixed tempo, at most 3 times a second, an alarm comes first. Tab Simulator → «Simulator behind a firewall»: a simulator on a PC without admin rights connects to MoveEye itself with address and code. The game collection is split into touch games and games with on-screen buttons.</p>
 <ul><li><b>Armed / disarmed:</b> only when armed there are alarms, push messages, siren and recordings. The countdown gives you time to leave; «Arm now» skips it.</li>
 <li><b>⛺ Mode «Camping» (before «camping profile» / «camping guard», the same from 2.98.14):</b> one switch for everything: own Wi-Fi on, the camera stays where it is, alarms, recordings and power saving on, armed after the countdown. Switching it off restores your settings.</li>
 <li><b>Own Wi-Fi (hotspot):</b> the Pi makes its own Wi-Fi – works without a mobile network. Name and password under <i>Protection &amp; network</i>.</li>
@@ -52968,8 +53038,9 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <ul><li><b>Limits:</b> how far the camera may pan / tilt (degrees from the middle) – protects cables and housing.</li>
 <li><b>Follow person:</b> the camera follows a detected person.</li>
 <li><b>Patrol:</b> the camera moves between waypoints (waypoint = current position, pan and tilt, «+ Waypoint»; shown e.g. as 24/60 = 24 % left–right, 60 % down–up). The 🔄 button steps on with each tap: off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off.</li>
-<li><b>🤖 Automatic head movement (from 2.98.30, Settings → Cameras &amp; head):</b> the head turns by itself – but only one mover at a time: by hand (joystick) &gt; alarm / follow &gt; walk test &gt; quick look at the valuables &gt; round &gt; parking. While the simulator has a task (test run, test bench …) the automatic moves wait. <b>Watchful / Full – smart round:</b> longer at the tent and the access, hardly at ignored directions (branches, road); the places come from «Platz einrichten», otherwise the waypoints; it pauses while somebody is followed. <b>Full – turn to the alarm:</b> movement at the edge of the picture, a warm spot of the thermal camera or the overview camera → the head turns there, follows the person and goes back home afterwards. With one microphone a noise has no direction: the head only looks at the «access» if one is set up. <b>Off – parking:</b> the camera looks away (down, adjustable) – visible privacy; back when switched on. <b>Quick look at the valuables:</b> every 10–30 minutes (from «Platz einrichten», otherwise the guarded things of the reference scan), compared like the reference scan → missing twice in a row = a push at once («bike missing»). <b>Saving:</b> battery low or deep night (adjustable, 1–5 h): the head stays at the most important direction. <b>Walk test:</b> the head follows you; the result shows with a red cross where it lost you. <b>Wildlife mode</b> (automatic with «Wildlife watching»): follow animals slowly, no pre-alarm, no light, a photo every 15 s. <b>Sabotage:</b> when the picture suddenly goes black or changes, the head looks left and right – the push then says «covered» or «turned by about 30°». <b>Overview camera:</b> choose a fixed wide-angle extra camera as «overview»; its movements steer the head, the AI of the main camera checks. «Overview: where it looks» in degrees or «Calibrate»: point the head at something that moves in the overview, then tap the switch. <b>Servo kind:</b> 180 / 270 / 360° positional servos never pass their end stop (cable); with «continuous rotation (360° endless)» the position is only estimated from speed × time – «set as the middle» once when the head looks straight ahead.</li>
-<li><b>🛑 Servos like an industrial robot (from 2.98.36, Settings → Cameras &amp; head → «Servo motion &amp; safety», page More → Tools → «Servo diagnosis»):</b> <b>Ramps:</b> one motion planner drives every move (joystick, buttons, round, alarm, reference scan, place setup, timelapse …) with accelerate – cruise – brake (trapezoid profile), no jerk, no overshoot; max. speed and acceleration per axis in °/s and °/s². From rest both axes start and arrive together (straight line). The simulator gets every intermediate position. <b>⏹ Emergency stop:</b> red button on the live page, in the window, on the page «Servos», on the controller <b>hold Select 1.5 s</b> or <code>POST /api/servo {"op":"estop"}</code>: brakes at once (twice the deceleration), then holds (or drives slowly to the parking position, setting), stops the mover too; every device shows «Emergency stop – pressed by iPhone …». Moving again only after <b>✅ Release</b> (administrator only), also after a restart. <b>Safe states:</b> I2C errors (3 in a row) or a PCA9685 that lost its settings (brown-out) = fault: outputs off until «Release». Under-voltage (vcgencmd get_throttled) or a hanging camera loop (watchdog) = stop that clears by itself; at most one push an hour, never the siren. The software limits are checked once more at the lowest level before the PWM. <b>Who steers?</b> Below the joystick: which device steers the head right now («The head is steered by: iPhone · Safari»); when another phone, PC, the window, the controller or the simulator takes over, a short notice appears. <b>📍 Teach-in:</b> «Positions» – drive there with the arrows or the joystick, enter a name («Tent», «Entrance»), save; «Go» drives exactly there. Rename, order, delete, «in the round» on/off, choose as parking or home position, take over from «Set up the place». The positions are the waypoints of the patrol. <b>Diagnosis:</b> fault memory (I2C, brown-out, limits, under-voltage, temperature, watchdog, emergency stop), operating hours, degrees travelled and moves per servo (real and simulation apart), maintenance hints (e.g. «check the MG90S after ~100 h of movement»), «Maintenance done», export as JSON or CSV.</li>
+<li><b>🤖 Automatic head movement (from 2.98.30, Settings → Cameras &amp; head):</b> the head turns by itself – but only one mover at a time: by hand (joystick) &gt; alarm / follow &gt; walk test &gt; quick look at the valuables &gt; round &gt; parking. While the simulator has a task (test run, test bench …) the automatic moves wait. <b>Smart round (only when «Patrol» is on – otherwise the head stays at its home position):</b> longer at the tent and the access, hardly at ignored directions (branches, road); the places come from «Platz einrichten», otherwise the waypoints; it pauses while somebody is followed. <b>Full – turn to the alarm:</b> movement at the edge of the picture, a warm spot of the thermal camera or the overview camera → the head turns there, follows the person and goes back home afterwards. With one microphone a noise has no direction: the head only looks at the «access» if one is set up. <b>Off – parking:</b> the camera looks away (down, adjustable) – visible privacy; back when switched on. <b>Quick look at the valuables:</b> every 10–30 minutes (from «Platz einrichten», otherwise the guarded things of the reference scan), compared like the reference scan → missing twice in a row = a push at once («bike missing»). <b>Saving:</b> battery low or deep night (adjustable, 1–5 h): the head stays at the most important direction. <b>Walk test:</b> the head follows you; the result shows with a red cross where it lost you. <b>Wildlife mode</b> (automatic with «Wildlife watching»): follow animals slowly, no pre-alarm, no light, a photo every 15 s. <b>Sabotage:</b> when the picture suddenly goes black or changes, the head looks left and right – the push then says «covered» or «turned by about 30°». <b>Overview camera:</b> choose a fixed wide-angle extra camera as «overview»; its movements steer the head, the AI of the main camera checks. «Overview: where it looks» in degrees or «Calibrate»: point the head at something that moves in the overview, then tap the switch. <b>Servo kind:</b> 180 / 270 / 360° positional servos never pass their end stop (cable); with «continuous rotation (360° endless)» the position is only estimated from speed × time – «set as the middle» once when the head looks straight ahead.</li>
+<li><b>🛑 Servos like an industrial robot (from 2.98.36, Settings → Cameras &amp; head → «Servo motion &amp; safety», page More → Tools → «Servos»):</b> <b>Ramps:</b> one motion planner drives every move (joystick, buttons, round, alarm, reference scan, place setup, timelapse …) with accelerate – cruise – brake (trapezoid profile), no jerk, no overshoot; max. speed and acceleration per axis in °/s and °/s². From rest both axes start and arrive together (straight line). The simulator gets every intermediate position. <b>⏹ Emergency stop:</b> red button on the live page, in the window, on the page «Servos», on the controller <b>hold Select 1.5 s</b> or <code>POST /api/servo {"op":"estop"}</code>: brakes at once (twice the deceleration), then holds (or drives slowly to the parking position, setting), stops the mover too; every device shows «Emergency stop – pressed by iPhone …». Moving again only after <b>✅ Release</b> (administrator only), also after a restart. <b>Safe states:</b> I2C errors (3 in a row) or a PCA9685 that lost its settings (brown-out) = fault: outputs off until «Release». Under-voltage (vcgencmd get_throttled) or a hanging camera loop (watchdog) = stop that clears by itself; at most one push an hour, never the siren. The software limits are checked once more at the lowest level before the PWM. <b>Who steers?</b> Below the joystick: which device steers the head right now («The head is steered by: iPhone · Safari»); when another phone, PC, the window, the controller or the simulator takes over, a short notice appears. <b>📍 Teach-in:</b> «Positions» – drive there with the arrows or the joystick, enter a name («Tent», «Entrance»), save; «Go» drives exactly there. Rename, order, delete, «in the round» on/off, choose as parking or home position, take over from «Set up the place». The positions are the waypoints of the patrol. <b>Diagnosis:</b> fault memory (I2C, brown-out, limits, under-voltage, temperature, watchdog, emergency stop), operating hours, degrees travelled and moves per servo (real and simulation apart), maintenance hints (e.g. «check the MG90S after ~100 h of movement»), «Maintenance done», export as JSON or CSV.</li>
+<li><b>🧹 One place per thing (clean-up round):</b> <b>Servos:</b> More → Tools → «Servos» = one page with positions, <b>test</b> (the former «Servo test») and diagnosis; in the window the window «Servos» with the same three tabs. <b>iPhone shortcuts:</b> the shortcut key is an app key now (Settings → Security → App keys) that opens only the addresses /k/…; an old key was taken over once (stored only as a fingerprint) – the saved shortcuts keep working. A new key is shown only once like every app key (with copy and QR) and is made only over the secure page (https). Every other app key works for /k/ too. <b>Zones:</b> new kind «Only report» (a person inside gives no alarm, only a log line and now and then an info push) – the «public path» of «Set up the place» is such a zone now, visible and editable in the zone editor. Every zone has the switch «📌 Stays on its place»: it stays on the ground when the head turns (privacy and sleeping place always). <b>Deterrence:</b> light and siren sit on the head – when deterring it turns them to the person (last seen) or else to the tent of «Set up the place» (switch under «Automatic head movement»). <b>Game:</b> during a round «Team gegen MoveEye» MoveEye does not follow and does not move the head by itself (the players steer); afterwards it goes on by itself. <b>View:</b> showing and hiding in the ☰ menu is for this device only, like «◫ View»; in the window the camera control is only in «◫ View» (no longer in the right-click menu «Panels»). <b>Animal species:</b> the settings of the species model are in one group «Animal species» (like «AI model»). <b>Send a test feedback</b> is under More → System.</li>
 <li><b>Video source:</b> Pi camera, USB or network camera; more cameras in the tab <i>Cameras</i>.</li>
 <li><b>Servo driver</b> (fine-tuning): PCA9685, address, channels.</li><li><b>🚜 Mover (tracked vehicle, from 2.94.0):</b> when MoveEye sits on a small tracked vehicle, a second, green stick appears: up = forward, down = back, sideways = turn on the spot. The motor driver (Motor HAT with PCA9685 + TB6612, I2C 0x60) is found by itself – without it the stick stays away. Settings under Camera &amp; servos → Mover. Without a new command the tracks stop after 0.6 s. In the 3D simulator: «Mover simulieren». In the simulation the stick can also be shown without a mover (Mover → «Simulation: show the stick even without …», from 2.94.4) – to try out the controls.</li></ul>
 </section>
@@ -53111,7 +53182,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <ul><li><b>Where:</b> push messages (ntfy address), guest access, addresses of MoveEye (home network, Tailscale, https – next to the Tailscale line under System), iPhone shortcuts (every address), app key (only once, when it is made), picture for other programs, TV view, simulator tunnel (address and code for a tablet), recordings, «Address of this page for links».</li>
 <li><b>ntfy:</b> Android – the code subscribes to the topic straight in the ntfy app (ntfy://…). iPhone – the app cannot do that; the code opens the topic in the browser, then tap «+» in the app and type the topic.</li>
 <li><b>All on one page:</b> More → «QR codes». Secret codes are blurred until tapped; each one can be printed. «Print all» makes an A4 sheet with labels – secret ones only when «Print secret codes too» is ticked.</li>
-<li><b>Security:</b> QR codes only for the administrator (not for other users, not through an app key). Secret codes (keys, stream address, ntfy topic, shortcut key) are not kept in the browser cache and never written to a log. Whoever scans a secret code has access – show it only to people you trust, keep printouts safe.</li>
+<li><b>Security:</b> QR codes only for the administrator (not for other users, not through an app key). Secret codes (keys, stream address, ntfy topic, the app key of the shortcuts) are not kept in the browser cache and never written to a log. Whoever scans a secret code has access – show it only to people you trust, keep printouts safe.</li>
 <li><b>Window:</b> buttons «QR code …» at guest access, web stream, notifications, simulator (tunnel) and the app key; under Setup «All QR codes …». There also «Save picture …» and – when a printer is set up – «Print».</li></ul></section>
 <section id="setup" data-icon="🧰"><h2>Setup on the Raspberry Pi</h2>
 <pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils
@@ -53869,7 +53940,9 @@ def _set_cfg_sim(key):
 # 2.98.35 (Wunsch Daniel): one page for the servos, phone first: (1) state + ⏹ Not-Aus / ✅ Freigeben + who steers the head,
 #   a small picture and arrows to drive, (2) the taught points (Teach-in: save, go, rename, order, round, park / home,
 #   take over from «Platz einrichten»), (3) diagnosis (counters, fault memory, maintenance hints, export JSON / CSV).
-#   Reached from Mehr → Werkzeuge («Servo diagnosis»), from the live page («📍 Positionen») and the settings section.
+#   Reached from Mehr → Werkzeuge («Servos»), from the live page («📍 Positionen») and the settings section.
+# aufr (Konzept-Check): the old «Servo test» of the tools page is the tab «Test» here - ONE entry «Servos» under Werkzeuge
+#   (positions, test, diagnosis); the test itself stays servo_test() (300), started through /api/tools {"action": "servo"}.
 # The live page (530) only gets a small script at its end (like 537): a red «⏹ Stopp» in the camera controls, a red bar
 #   while stopped (with who pressed it and «Freigeben»), the line «Kopf: gesteuert von …» and a short notice when another
 #   panel (phone, PC, window, controller, simulator) takes the head. Everything from the usual state poll (st.servo).
@@ -53945,8 +54018,8 @@ button.sv-stop{background:#d1242f;border-color:#d1242f;color:#fff}button.sv-rel{
   </span>
 </header>
 <main>
-  <h2 style="margin:0 0 8px">🎯 <span data-i18n="Servos: safety, positions, diagnosis">Servos: safety, positions, diagnosis</span></h2>
-  <div class="sv-tabs"><a href="#teach" id="tb-teach" data-i18n="Positions">Positions</a><a href="#diag" id="tb-diag" data-i18n="Diagnosis">Diagnosis</a></div>
+  <h2 style="margin:0 0 8px">🎯 <span data-i18n="Servos: safety, positions, test, diagnosis">Servos: safety, positions, test, diagnosis</span></h2>
+  <div class="sv-tabs"><a href="#teach" id="tb-teach" data-i18n="Positions">Positions</a><a href="#test" id="tb-test" data-i18n="Test">Test</a><a href="#diag" id="tb-diag" data-i18n="Diagnosis">Diagnosis</a></div>
   <div id="sv-state" class="sv-state"></div>
   <div class="sv-big"><button type="button" class="sv-stop" id="sv-estop">⏹ <span data-i18n="Emergency stop">Emergency stop</span></button>
     <button type="button" class="sv-rel" id="sv-release" hidden>✅ <span data-i18n="Release">Release</span></button></div>
@@ -53962,6 +54035,11 @@ button.sv-stop{background:#d1242f;border-color:#d1242f;color:#fff}button.sv-rel{
     <div class="sv-row"><input type="text" id="sv-name" maxlength="30" data-ph="Name, e.g. «Tent» or «Entrance»"><button type="button" id="sv-add">📍 <span data-i18n="Save position">Save position</span></button></div>
     <div id="sv-list"></div>
     <div class="sv-row"><button type="button" class="sec" id="sv-place">📍 <span data-i18n="Take over from «Set up the place»">Take over from «Set up the place»</span></button></div>
+  </section>
+  <section id="p-test" class="card" hidden>
+    <div class="mut" data-i18n="servo-note">servo-note</div>
+    <div class="sv-row"><button type="button" id="sv-test">▶ <span data-i18n="Start the servo test">Start the servo test</span></button><span class="mut" id="sv-tmsg"></span></div>
+    <div id="sv-tres"></div>
   </section>
   <section id="p-diag" class="card" hidden>
     <div id="sv-hints"></div>
@@ -53980,7 +54058,7 @@ button.sv-stop{background:#d1242f;border-color:#d1242f;color:#fff}button.sv-rel{
 const SV = {s: null, d: null, timer: 0, img: 0};
 const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
 const tf = (s, o) => t(s).replace(/\{(\w+)\}/g, (m, k) => (o && o[k] != null) ? o[k] : m);
-const tab = () => location.hash === "#diag" ? "diag" : "teach";
+const tab = () => location.hash === "#diag" ? "diag" : location.hash === "#test" ? "test" : "teach";
 const LOC = () => ({de: "de-CH", fr: "fr-CH", it: "it-CH", rm: "de-CH"}[LANG] || "en-GB");
 const when = s => new Date(s * 1000).toLocaleString(LOC(), {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"});
 async function op(o) {
@@ -54049,15 +54127,29 @@ function paintDiag() {
     F.appendChild(r);
   });
 }
+function paintTest(V) {                         // the servo test (300, before: Mehr → Werkzeuge → «Servo test»)
+  const R = document.getElementById("sv-tres"); R.textContent = ""; V = V || {steps: []};
+  const b = document.getElementById("sv-test"); b.disabled = !!V.running || !!(SV.s && SV.s.blocked);
+  document.getElementById("sv-tmsg").textContent = V.running ? t("running…") : V.msg ? (V.msg === "ok" ? "✅ " + t("ok") : "⚠ " + (V.bad || "") + " " + t(V.msg)) : "";
+  if ((V.steps || []).length) {
+    const g = E("div", "sv-kv"); g.style.gridTemplateColumns = "auto auto auto auto";
+    [t("Axis"), t("To"), t("Picture change"), t("Result")].forEach(x => g.appendChild(E("b", "", x)));
+    V.steps.forEach(s => g.append(E("span", "", t(s.axis === "pan" ? "Pan" : "Tilt")), E("span", "", s.to + " %"), E("span", "", s.diff == null ? "–" : String(s.diff)),
+      E("span", "", s.ok === false ? "⚠ " + t("no change") : (s.ok ? "✅" : "…"))));
+    R.appendChild(g);
+  }
+}
 async function load() {
   clearTimeout(SV.timer);
   const tb = tab();
   try { const r = await fetch("/api/servo?lang=" + LANG + (tb === "diag" ? "&diag=1" : ""), {cache: "no-store"}); if (r.ok) { const j = await r.json(); SV.s = j; if (j.diag) SV.d = j.diag; } } catch (e) {}
-  document.getElementById("p-teach").hidden = tb !== "teach"; document.getElementById("p-diag").hidden = tb !== "diag";
-  document.getElementById("tb-teach").classList.toggle("on", tb === "teach"); document.getElementById("tb-diag").classList.toggle("on", tb === "diag");
-  if (SV.s) { paintState(); if (tb === "teach") paintTeach(); else paintDiag(); }
+  let TV = null;
+  if (tb === "test") { try { const r = await fetch("/api/tools", {cache: "no-store"}); if (r.ok) TV = (await r.json()).servo; } catch (e) {} }
+  ["teach", "test", "diag"].forEach(k => { document.getElementById("p-" + k).hidden = tb !== k; document.getElementById("tb-" + k).classList.toggle("on", tb === k); });
+  if (SV.s) { paintState(); if (tb === "teach") paintTeach(); else if (tb === "diag") paintDiag(); }
+  if (tb === "test") paintTest(TV);
   if (tb === "teach" && Date.now() - SV.img > 900) { SV.img = Date.now(); document.getElementById("sv-img").src = "/api/frame.jpg?" + Date.now(); }
-  SV.timer = setTimeout(load, tb === "teach" ? 1000 : 4000);
+  SV.timer = setTimeout(load, tb === "teach" || (TV && TV.running) ? 1000 : 4000);
 }
 document.querySelectorAll(".sv-pad button").forEach(b => b.onclick = async () => {
   const r = await post("/api/move", {dir: b.dataset.d, step: parseFloat(document.getElementById("sv-step").value) || 3, lang: LANG});
@@ -54068,12 +54160,14 @@ document.getElementById("sv-release").onclick = () => { if (confirm(t("Release t
 document.getElementById("sv-add").onclick = async () => { const n = document.getElementById("sv-name"); const r = await op({op: "add", name: n.value}); if (r.ok) { n.value = ""; toast("📍 " + t("Position saved")); } };
 document.getElementById("sv-place").onclick = async () => { const r = await op({op: "from_place"}); if (r.ok) toast(tf("{n} positions taken over", {n: r.n})); };
 document.getElementById("sv-svc").onclick = () => { if (confirm(t("Maintenance of both servos done? The maintenance counters start again."))) op({op: "service"}); };
+document.getElementById("sv-test").onclick = async () => { const r = await post("/api/tools", {action: "servo", lang: LANG}); if (!r.ok && r.error) toast("⚠ " + r.error); setTimeout(load, 500); };
 document.getElementById("sv-clr").onclick = () => { if (confirm(t("Clear the fault memory?"))) op({op: "clear_faults"}); };
 addEventListener("hashchange", load);
 (async () => { await initAppearance(); const n = document.getElementById("sv-name"); n.placeholder = t(n.dataset.ph); load(); })();
 </script></body></html>"""
 
-SERVO_PAGE_KEYS = ["Servos: safety, positions, diagnosis", "Positions", "Diagnosis", "Emergency stop", "Release", "Step", "teach-note",
+SERVO_PAGE_KEYS = ["Servos: safety, positions, test, diagnosis", "Positions", "Diagnosis", "Test", "servo-note", "Start the servo test", "running…", "ok",
+                   "Axis", "To", "Picture change", "Result", "no change", "steps without a change of the picture - blocked, at the end or camera not on the head?", "Emergency stop", "Release", "Step", "teach-note",
                    "Name, e.g. «Tent» or «Entrance»", "Save position", "Take over from «Set up the place»", "Counters", "Maintenance done",
                    "Fault memory", "Clear fault memory", "EMERGENCY STOP", "Ready - the servos may move", "pressed by {who}",
                    "Emergency stop - press «Release» to move again", "Pan {p}° · tilt {t}°", "moving", "The head is steered by: {who}", "you",
@@ -54138,12 +54232,7 @@ SERVO_LIVE_KEYS = ["EMERGENCY STOP", "Release the servos? The head may move agai
                    "pressed by {who}", "Release", "The head is steered by: {who}", "you", "The head moves by itself: {what}", "Now steered by {who}"]
 WEB_PAGE = WEB_PAGE.replace("</body>", "<!--SERVOJS--></body>", 1)          # filled by 634 (after the German texts are known)
 NAV_OF["servo"] = "more"
-# Mehr → Werkzeuge: an entry «Servo diagnosis» next to «Servo test» (opens /servo#diag)
-TOOLS_PAGE = TOOLS_PAGE.replace('  <button type="button" class="tli" data-k="audio"',
-                                '  <a class="tli" href="/servo#diag" style="text-decoration:none;color:inherit"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true">'
-                                '<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/><path d="M4 4l3 3M20 4l-3 3"/></svg><span class="tln"><b data-i18n="Servo diagnosis">'
-                                'Servo diagnosis</b><span class="tsum" data-i18n="Fault memory, hours, maintenance, Not-Aus">Fault memory, hours, maintenance, Not-Aus</span></span></a>\n'
-                                '  <button type="button" class="tli" data-k="audio"', 1)
+# Mehr → Werkzeuge: the one entry «Servos» (460) opens this page (aufr: before a second entry «Servo diagnosis» beside «Servo test»)
 
 
 def servo_page():
@@ -54621,7 +54710,7 @@ class WebStream:
                 if len(recent) >= 8:
                     fails[ip] = recent
                     return sx_err(429, "toomany", {"Retry-After": "300"})
-                ke = appkey_find(k_)
+                ke = appkey_find(k_, api=True)      # a shortcut key (scope «shortcut», 573) opens only /k/…
                 if ke is None:
                     recent.append(now); fails[ip] = recent
                     if len(recent) == 8:
@@ -55884,13 +55973,11 @@ class WebStream:
             rec = [x for x in SC_FAILS.get(ip, []) if now - x < 600]
             if len(rec) >= 10:
                 return Response("too many wrong keys - wait 10 minutes", 429)
-            tok = CFG.get("shortcut_token") or ""
-            ke = None if len(tok) >= 20 and hmac.compare_digest(tok, key) else appkey_find(key)   # 573: an app key works too
-            if ke is None and (len(tok) < 20 or not hmac.compare_digest(tok, key)):
+            ke = appkey_find(key)                  # aufr: one key system - shortcut keys and every other app key (573)
+            if ke is None:
                 rec.append(now); SC_FAILS[ip] = rec
                 return Response("unknown key", 403)
-            if ke is not None:
-                appkey_seen(ke, ip)
+            appkey_seen(ke, ip)
             txt = None
             if action == "arm":
                 arm(); txt = "armed" if is_armed() else "arming (delay " + str(CFG.get("arm_delay", "")) + " s)"
@@ -55919,17 +56006,11 @@ class WebStream:
         def api_shortcut():
             if getattr(g, "role", "admin") != "admin":
                 return reply({"ok": False, "error": "not allowed"}, 403)
-            if request.method == "POST":
-                a_ = body().get("action")
-                if a_ == "new":
-                    CFG["shortcut_token"] = secrets.token_urlsafe(24); save_settings()
-                    log_event("sys", "New shortcut key made (the old addresses no longer work)")
-                elif a_ == "off":
-                    CFG["shortcut_token"] = ""; save_settings()
-            tok = CFG.get("shortcut_token") or ""
             base = (CFG.get("public_url") or "").strip().rstrip("/") or request.host_url.rstrip("/")
-            return reply({"ok": True, "on": bool(tok), "base": base, "key": tok, "prefix": msg_keyword("person").split("-")[0] if msg_keyword("person") else "MW",
-                          "keywords": {k: msg_keyword(k) or ("MW-" + v) for k, v in MSG_KEYWORDS.items()}})
+            if request.method == "POST":                   # aufr: the shortcut keys are app keys (573)
+                res_, code_ = shortcut_action(body(), getattr(g, "user", "") or "admin", request)
+                return reply(dict(shortcut_state(base), **res_), code_)
+            return reply(shortcut_state(base))
 
         @app.route("/snapshot.jpg")
         def snapshot():
@@ -58569,6 +58650,7 @@ TK_GROUP_TAB = {"alarm": "protect", "notify": "protect", "theft": "protect", "sc
 TK_SIM_GROUPS = [("simset", "Settings of the simulation", ["Simulator"])]
 TK_PSEUDO = {"Improve detection"}
 TK_AI_MODEL_KEYS = ("ai_model", "ai_own_url", "ai_own_auto")   # 2.98.23 (Konzept): shown together in the group «KI-Modell» (section AI detection)
+TK_SPECIES_KEYS = ("species_on", "species_model", "species_norm", "species_conf")   # aufr (Konzept): the group «Tierart» (like «KI-Modell»)
 SECTIONS = ["Wake-up alarm", "Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup", "Security"]
 
@@ -58618,7 +58700,7 @@ VIEW_ITEMS = [  # (group, key, label)
     ("Header", "b_therm", "Thermal camera"), ("Header", "b_patrol", "Patrol"), ("Header", "b_hs", "Own Wi-Fi (hotspot)"), ("Header", "b_remote", "Remote access"), ("Header", "b_batt", "Battery"), ("Header", "b_update", "New version"),
     ("Header", "b_relays", "Relays"), ("Header", "b_rain", "Rain"), ("Header", "b_wind", "Wind"), ("Header", "b_light", "Light level"),
     ("Header", "b_auto", "Auto-tune"), ("Header", "b_fps", "FPS"), ("Header", "b_env", "Outside temperature"), ("Header", "b_view", "Viewers"),
-    ("Panels", "controls", "Camera control"), ("Panels", "weather", "Weather"), ("Panels", "cpu", "System · CPU"),
+    ("Panels", "weather", "Weather"), ("Panels", "cpu", "System · CPU"),     # aufr: «Camera control» only in ◫ Ansicht (581, card «Controls»)
     ("Panels", "log", "Event log"), ("Panels", "settings_line", "Settings status"),
 ] + [("Settings sections", "sec:" + s, s) for s in SECTIONS]
 STAT_TILES = []          # the statistics tiles were removed in 2.2.2 (FPS / persons / objects are in the header and the log)
@@ -58827,7 +58909,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.38")
+        self.root.title("MoveEye 2.98.39")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -59194,7 +59276,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.38 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.39 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -59562,7 +59644,7 @@ class App:
                 ("⚑ + " + tr("Waypoint"), "⚑+", self._add_wp, tr("Save the current position as waypoint for the patrol")),
                 ("⚑ ✕", "⚑✕", self._clear_wp_ask, tr("Clear waypoints")),
                 ("⏹ " + tr("Stop"), "⏹", self._srv_estop_btn, tr("Emergency stop") + " / " + tr("Release")),          # 2.98.35 (588)
-                ("📍 " + tr("Positions"), "📍", lambda: self._srv_win("teach"), tr("Servos: safety, positions, diagnosis")))
+                ("📍 " + tr("Positions"), "📍", lambda: self._srv_win("teach"), tr("Servos: safety, positions, test, diagnosis")))
         swb = lambda par: self._fbtn(par, "⇆", self._swap_side, tr("Swap stick and buttons (left- / right-handed)"), font=("DejaVu Sans", 11, "bold"))
         if wide:
             r0 = tk.Frame(side, bg=C["panel"]); r0.pack(fill="x")
@@ -60081,11 +60163,11 @@ class App:
             self._bt_sig = None
         for s, key, label in TOGGLES:
             if s != sec or simple_hidden(key) or (CFG["lock_on"] and key in LOCK_DENY_KEYS): continue
-            if key in TK_AI_MODEL_KEYS: continue           # 2.98.23: in the group «KI-Modell» below
+            if key in TK_AI_MODEL_KEYS or key in TK_SPECIES_KEYS: continue      # 2.98.23 / aufr: in the groups «KI-Modell» / «Tierart» below
             tg = Toggle(sp, tr(label), CFG[key], lambda val, k=key: self._set(k, val)); tg.pack(fill="x", pady=3)
             self.vars[key] = tg; self._g2_q(tg, key)          # «?»: explanation + recommendation (584)
         for s, key, label, lo, hi, step in SLIDERS:
-            if s != sec or simple_hidden(key): continue
+            if s != sec or simple_hidden(key) or key in TK_SPECIES_KEYS: continue
             row = ttk.Frame(sp); row.pack(fill="x", pady=(6, 0))
             ttk.Label(row, text=tr(label)).pack(side="left")
             vl = ttk.Label(row, text=str(CFG[key]), style="Mut.TLabel"); vl.pack(side="right"); self.value_labels[key] = vl
@@ -60106,7 +60188,7 @@ class App:
         if sec == "Messages":
             ttk.Label(sp, text=tr("Empty = standard text. Placeholders:") + " " + MSG_PLACEHOLDERS, style="Mut.TLabel",
                       wraplength=330, justify="left").pack(anchor="w", pady=(2, 0))
-        self._build_texts(sp, sec, skip=TK_AI_MODEL_KEYS)
+        self._build_texts(sp, sec, skip=TK_AI_MODEL_KEYS + TK_SPECIES_KEYS)
         if sec == "SMS (LTE stick)":
             def sms_test():
                 ok, err = sms_send(f"{CFG['device_name'] or 'MoveEye'}: " + tr("test SMS - it works"), force=True)
@@ -60221,6 +60303,7 @@ class App:
                     tg_ = Toggle(sbody, tr(label_), CFG[key_], lambda val, k=key_: self._set(k, val)); tg_.pack(fill="x", pady=(6, 0))
                     self.vars[key_] = tg_
             self._build_texts(sbody, sec, only=("ai_own_url",))
+            self._tk_species_group(sbody.master, sec)          # aufr: «Tierart» as its own group below «KI-Modell»
         if sec == "Notifications":
             ttk.Button(sbody, text=tr("Test notification"),
                        command=lambda: self.watch.notifier.test(self.watch.frame_out)).pack(fill="x", pady=(8, 0))
@@ -61886,7 +61969,12 @@ for _n, _f in (("_tk_bar", _tk_bar), ("_tk_history_bar", _tk_history_bar), ("_tk
 #  2  «Sicherheit an einem Ort»: Settings → Security (own group, web and window) holds the encrypted login (574), the web
 #     password, the users (+ trusted devices), the app keys and the security check (before: Tools). The old places keep a link.
 # ----------------------------------------------------------------------------
-_AK_CFG = {"app_keys": []}       # [{"id", "name", "h": sha256 of the key, "t0", "seen", "ip"}] - the key itself is never stored
+_AK_CFG = {"app_keys": []}       # [{"id", "name", "h": sha256 of the key, "t0", "seen", "ip", "scope"}] - the key itself is never stored
+# aufr (Konzept-Check, one key system): the old «shortcut key» (CFG shortcut_token, plain text, 2.95.27) is an app key now with
+#   "scope": "shortcut" = it opens ONLY the shortcut addresses /k/<key>/<action> (arm, siren off, light, photo, status), like
+#   before - not the rest of MoveEye. shortcut_migrate() takes an old key over once (as hash, the same key, the /k/ addresses
+#   keep working); the card «iPhone shortcuts» (530) lists and makes these keys through /api/shortcut. Every normal app key
+#   works on /k/ too.
 for _k, _v in _AK_CFG.items():
     CFG.setdefault(_k, _v)
     DEFAULTS.setdefault(_k, _v)
@@ -61918,8 +62006,13 @@ def appkey_entries():
     return out
 
 
-def appkey_find(key):
-    """the entry of this key, or None (compares the hashes in constant time)"""
+SHORTCUT_SCOPE = "shortcut"
+SHORTCUT_KEY_NAME = "iPhone shortcuts"
+
+
+def appkey_find(key, api=False):
+    """the entry of this key, or None (compares the hashes in constant time). api=True (the login of 550): a key that only
+    opens the shortcut addresses (scope «shortcut») counts as unknown there"""
     if not isinstance(key, str) or not (10 <= len(key) <= 120):
         return None
     h = _appkey_hash(key.strip())
@@ -61927,6 +62020,8 @@ def appkey_find(key):
     for e in appkey_entries():
         if hmac.compare_digest(str(e.get("h", "")), h):
             hit = e
+    if api and hit is not None and hit.get("scope") == SHORTCUT_SCOPE:
+        return None
     return hit
 
 
@@ -61993,12 +62088,13 @@ def appkey_list():
     out = []
     for e in appkey_entries():
         seen = max(float(e.get("seen") or 0), float(APPKEY["seen"].get(e["id"], 0)))
-        out.append({"id": e["id"], "name": e.get("name") or "?", "t0": int(e.get("t0") or 0), "seen": int(seen), "ip": e.get("ip") or ""})
+        out.append({"id": e["id"], "name": e.get("name") or "?", "t0": int(e.get("t0") or 0), "seen": int(seen), "ip": e.get("ip") or "",
+                    "scope": e.get("scope") or ""})
     return out
 
 
-def appkey_create(name, who="web"):
-    """(ok, error, key): the key is only returned here - once"""
+def appkey_create(name, who="web", scope=""):
+    """(ok, error, key): the key is only returned here - once. scope «shortcut»: only the shortcut addresses /k/…"""
     name = re.sub(r"[\x00-\x1f<>]", "", str(name or "")).strip()[:40]
     if not name:
         return False, "give the key a name (e.g. Home Assistant)", ""
@@ -62009,7 +62105,10 @@ def appkey_create(name, who="web"):
         return False, "this name exists already", ""
     key = APPKEY_PREFIX + secrets.token_urlsafe(24)
     now = int(time.time())
-    lst.append({"id": secrets.token_hex(4), "name": name, "h": _appkey_hash(key), "t0": now, "seen": 0, "ip": ""})
+    e = {"id": secrets.token_hex(4), "name": name, "h": _appkey_hash(key), "t0": now, "seen": 0, "ip": ""}
+    if scope == SHORTCUT_SCOPE:
+        e["scope"] = SHORTCUT_SCOPE
+    lst.append(e)
     CFG["app_keys"] = lst
     save_settings_now()
     log_event("web", f"{who}: app key «{name}» made")
@@ -62026,6 +62125,67 @@ def appkey_revoke(kid, who="web"):
     save_settings_now()
     log_event("web", f"{who}: app key «{e.get('name')}» blocked")
     return True, ""
+
+
+# ---- the shortcut keys (before: CFG shortcut_token in plain text) ----------------------------------------------------------
+def shortcut_migrate(cfg_in):
+    """settings of 2.98.36 and older: the plain shortcut key becomes an app key «iPhone shortcuts» (scope shortcut, only its
+    hash is kept). The same key keeps working on /k/<key>/…; nothing happens when it was taken over already."""
+    if not isinstance(cfg_in, dict):
+        return []
+    tok = str(cfg_in.get("shortcut_token") or "").strip()
+    if len(tok) < 20:
+        return []
+    lst = appkey_entries()
+    h = _appkey_hash(tok)
+    if any(hmac.compare_digest(str(e.get("h", "")), h) for e in lst):
+        return []
+    if len(lst) >= APPKEY_MAX:
+        lst = lst[:APPKEY_MAX - 1]                     # (never happens in practice: 20 keys) - the shortcut key must not get lost
+    names = {str(e.get("name", "")).lower() for e in lst}
+    nm0 = tr(SHORTCUT_KEY_NAME)                       # in the language of the device
+    name = nm0 if nm0.lower() not in names else nm0 + " (2)"
+    lst.append({"id": secrets.token_hex(4), "name": name, "h": h, "t0": int(time.time()), "seen": 0, "ip": "", "scope": SHORTCUT_SCOPE})
+    CFG["app_keys"] = lst
+    try:
+        save_settings()                               # the plain key is gone from the file with the next save (MIGRATE_ONLY)
+    except Exception:
+        pass
+    return ["shortcut key -> app key «" + name + "» (only the shortcut addresses /k/, stored as hash)"]
+
+
+def shortcut_state(base):
+    """/api/shortcut GET: the keys that work on /k/ (shortcut keys first, then the other app keys) and the keywords"""
+    keys = appkey_list()
+    sc = [k for k in keys if k["scope"] == SHORTCUT_SCOPE]
+    return {"ok": True, "on": bool(keys), "base": base, "keys": sc, "other": [k["name"] for k in keys if k["scope"] != SHORTCUT_SCOPE],
+            "actions": [a for a, _n in QR_SHORTCUTS],
+            "prefix": msg_keyword("person").split("-")[0] if msg_keyword("person") else "MW",
+            "keywords": {k: msg_keyword(k) or ("MW-" + v) for k, v in MSG_KEYWORDS.items()}}
+
+
+def shortcut_action(d, who, plain_req=None):
+    """/api/shortcut POST {action: new | off}: new = one more shortcut key (shown once, like every app key); off = block all
+    shortcut keys. -> (reply dict, http code)"""
+    a = d.get("action"); lang = norm_lang(d.get("lang"))
+    if a == "new":
+        if plain_req is not None and seclogin_plain(plain_req):     # like every app key: never unencrypted through the network (574)
+            url = seclogin_url(plain_req).split("/api/")[0] + "/"
+            return {"ok": False, "error": tr("For your safety an app key can only be made over the secure page", lang) + ": " + url, "https": url}, 403
+        names = {k["name"].lower() for k in appkey_list()}
+        nm = tr(SHORTCUT_KEY_NAME, lang)
+        n = 2
+        while nm.lower() in names and n < 30:
+            nm = tr(SHORTCUT_KEY_NAME, lang) + f" ({n})"; n += 1
+        ok, err, key = appkey_create(nm, who, SHORTCUT_SCOPE)
+        return {"ok": ok, "error": tr_err(err, lang) if err else None, "key": key, "name": nm}, 200 if ok else 400
+    if a == "off":
+        n = 0
+        for k in appkey_list():
+            if k["scope"] == SHORTCUT_SCOPE:
+                appkey_revoke(k["id"], who); n += 1
+        return {"ok": True, "n": n}, 200
+    return {"ok": False, "error": tr_err("unknown action", lang)}, 400
 
 
 # ---- the security check (300) translated on the server: the same lines for the web page and the window --------------------
@@ -62117,7 +62277,7 @@ SECPANEL_JS = r"""
     (j.keys || []).forEach(k => {
       const r = E("div", "sens-card"), r1 = E("div", "row"); r1.style.gap = "8px";
       const tx = E("div", ""); tx.style.flex = "1";
-      tx.append(E("b", "", "🔑 " + k.name), E("div", "mut", T("made") + " " + d2(k.t0) + " · " + T("last used") + " " + (k.seen ? d2(k.seen) + (k.ip ? " · " + k.ip : "") : T("never"))));
+      tx.append(E("b", "", "🔑 " + k.name), E("div", "mut", (k.scope === "shortcut" ? "📲 " + T("only the shortcut addresses /k/") + " · " : "") + T("made") + " " + d2(k.t0) + " · " + T("last used") + " " + (k.seen ? d2(k.seen) + (k.ip ? " · " + k.ip : "") : T("never"))));
       const bl = E("button", "red", "⛔ " + T("Block")); bl.type = "button";
       bl.onclick = async () => { if (!confirm(T("Block this key? Programs that use it get no access any more.") + "\n" + k.name)) return;
         const r_ = await post("/api/appkeys", {action: "revoke", id: k.id, lang: L()}); if (!r_.ok) toast("⚠ " + (r_.error || "error")); akLoad(box); };
@@ -62286,7 +62446,7 @@ def _ak_tk_keys(app, box):
     for k in appkey_list():
         r = tk.Frame(box, bg=C["panel"]); r.pack(fill="x", pady=(4, 0))
         seen = datetime.fromtimestamp(k["seen"]).strftime("%d.%m. %H:%M") if k["seen"] else tr("never")
-        tk.Label(r, text="🔑 " + k["name"] + "\n" + tr("made") + " " + datetime.fromtimestamp(k["t0"]).strftime("%d.%m.%Y") + " · " + tr("last used") + " " + seen,
+        tk.Label(r, text="🔑 " + k["name"] + ("  ·  " + tr("only the shortcut addresses /k/") if k["scope"] == SHORTCUT_SCOPE else "") + "\n" + tr("made") + " " + datetime.fromtimestamp(k["t0"]).strftime("%d.%m.%Y") + " · " + tr("last used") + " " + seen,
                  bg=C["panel"], fg=C["txt"], anchor="w", justify="left").pack(side="left", fill="x", expand=True)
 
         def block(kid=k["id"], name=k["name"]):
@@ -62346,6 +62506,16 @@ def appkey_selftest():
             assert not appkey_denied("/api/set", "POST", {"key": "sensitivity", "value": 50})
             kid = appkey_find(key)["id"]
             assert appkey_revoke(kid, "test")[0] and appkey_find(key) is None
+            # aufr: the old plain shortcut key becomes an app key (hash), the same key keeps working on /k/, not for the API
+            old = "Ab3_" + "x" * 28
+            did = shortcut_migrate({"shortcut_token": old})
+            assert did and shortcut_migrate({"shortcut_token": old}) == [], "taken over only once"
+            e_ = appkey_find(old)
+            assert e_ and e_["scope"] == SHORTCUT_SCOPE and old not in json.dumps(CFG["app_keys"]) and appkey_find(old, api=True) is None
+            assert "shortcut_token" not in CFG and "shortcut_token" in MIGRATE_ONLY
+            r_, c_ = shortcut_action({"action": "new"}, "test")
+            assert c_ == 200 and appkey_find(r_["key"])["scope"] == SHORTCUT_SCOPE and len(shortcut_state("x")["keys"]) == 2
+            assert shortcut_action({"action": "off"}, "test")[0]["n"] == 2 and appkey_find(old) is None
         finally:
             globals()["save_settings_now"] = _save
         for k_ in ("ak-note", "App keys", "Block", "An app key cannot change the password, the users, the app keys or the security settings"):
@@ -65168,6 +65338,11 @@ def _tk_ui(self):
 
 
 def _tkv_card(self, key):
+    if key == "controls" and "controls" in (CFG.get("ui_hidden") or []):
+        # aufr: «Panels → Camera control» of the old right-click menu is gone (one place: ◫ Ansicht, card «Controls») - a
+        # camera control hidden there before is taken over once as hidden in the Ansicht of the window
+        CFG["ui_hidden"] = [x for x in CFG["ui_hidden"] if x != "controls"]
+        tkv_set(hide=[x for x in tkv_hidden_cards() if x != "controls"] + ["controls"])
     return key not in tkv_hidden_cards()
 
 
@@ -65704,8 +65879,9 @@ App._fov_box = _app_fov_box
 _KS = "Automatic head movement"
 TOGGLES.extend([
     (_KS, "kopf_on", "Automatic head movement (the head turns by itself - one mover at a time: hand > alarm > walk test > valuables > round > parking)"),
-    (_KS, "kopf_round", "Watchful / Full: smart round - longer at the tent and the access, hardly at ignored directions (places from «Platz einrichten», otherwise the waypoints)"),
+    (_KS, "kopf_round", "Smart round (when «Patrol» is on): longer at the tent and the access, hardly at ignored directions (places from «Platz einrichten», otherwise the waypoints)"),
     (_KS, "kopf_alarm", "Full: turn to the alarm - movement at the edge of the picture, a warm spot of the thermal camera, a noise (only with an access as direction)"),
+    (_KS, "kopf_deter_aim", "Deterrence: turn the light and the siren to the person (otherwise to the tent of «Platz einrichten»)"),   # aufr (396)
     (_KS, "kopf_return", "Back to the home position when the person or the alarm is gone"),
     (_KS, "kopf_park", "Off: park the camera looking away (visible privacy), back home when switched on"),
     (_KS, "kopf_glance", "Quick look at the valuables now and then, compared with the reference (missing = push)"),
@@ -65781,6 +65957,8 @@ def kopf_selftest():
         CFG.update(kopf_on=True, kopf_round=True, patrol=False, armed=True, protect_level="watch"); STATE["arm_state"] = "armed"
         st = kopf_stops()
         assert [s[3] for s in st] == ["T", "I"] and st[0][2] > st[1][2] * 10, st
+        assert not kopf_patrol_plan()[0], "aufr: no round without «Patrouille» (the head stays at home)"
+        CFG["patrol"] = True
         assert kopf_patrol_plan()[0] and kopf_ignored(80, 50) and not kopf_ignored(30, 50)
         assert kopf_may("manual") and KOPF_PRIO.index("alarm") < KOPF_PRIO.index("round")
     finally:
@@ -65801,7 +65979,7 @@ SELFTEST_EXTRA.append(("Automatic head movement (180 / 360° servos, smart round
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 169                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 172                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -66701,7 +66879,7 @@ def _g2_tk_wizard(self, force=False):
             self._fbtn(r, tr("◀ ▶ Turn a little"), lambda: (move_camera("left", 8), w.after(900, lambda: move_camera("right", 8)), w.after(1800, lambda: move_camera("center")))).pack(side="left")
             lab(tr("Direction of turning wrong? Swap it:"))
             toggle(tr("Invert pan direction"), "invert_pan"); toggle(tr("Invert tilt direction"), "invert_tilt")
-            r = row(); self._fbtn(r, tr("🛠 Servo test (tools)"), lambda: self._open_page("/tools")).pack(side="left")
+            r = row(); self._fbtn(r, tr("🛠 Servos: test and positions"), lambda: self._srv_win("test")).pack(side="left")
         elif c == "ai":
             lab(tr("The AI says «person», «animal», «car». It runs on the Pi or on a helper PC."))
             toggle(tr("AI detection"), "ai_enabled"); lab("🤖 " + str(STATE.get("ai_status") or ""))
@@ -67429,11 +67607,8 @@ def qr_items(lang=None, host=None):
         gi = {"active": False}
     if gi.get("active") and loc:
         add("guest", T("Guest access"), loc + gi["path"], True, T("Guests see only the live picture."))
-    tok = str(CFG.get("shortcut_token") or "")
-    if tok:
-        base = (pu.rstrip("/") or loc)
-        for a, n in QR_SHORTCUTS:
-            add("short", T("iPhone shortcuts") + " · " + T(n), f"{base}/k/{tok}/{a}", True)
+    # (the shortcut addresses /k/<key>/… have no code here any more: the key is an app key (573, aufr) and only shown once,
+    #  with its codes, on the card «iPhone shortcuts» when it is made)
     try:
         from urllib.parse import urlparse
         hn = None if page_address() else (urlparse(str(host or "")).hostname or None)
@@ -68056,7 +68231,7 @@ def _app_srv_win(self, page="teach"):
         pass
     who = ("window", tr("Window") + " (" + tr("this computer") + ")")
     win = tk.Toplevel(self.root); self._srv_w = win
-    win.title("MoveEye – " + tr("Servos: safety, positions, diagnosis")); win.geometry("720x820")
+    win.title("MoveEye – " + tr("Servos: safety, positions, test, diagnosis")); win.geometry("720x820")
     top = ttk.Frame(win); top.pack(fill="x", padx=12, pady=(10, 4))
     st = tk.Label(top, text="", font=("DejaVu Sans", 13, "bold"), anchor="w", justify="left", wraplength=680, padx=8, pady=6)
     st.pack(fill="x")
@@ -68140,6 +68315,27 @@ def _app_srv_win(self, page="teach"):
                    ("🗑", lambda: ed("delete") if sel() is not None and messagebox.askyesno("MoveEye", tr("Delete this position?"), parent=win) else None)):
         ttk.Button(tb, text=txt, command=f).pack(side="left", padx=(0, 4), pady=(0, 4))
     ttk.Button(tp, text="📍 " + tr("Take over from «Set up the place»"), command=lambda: (teach_from_place("window"), refresh(True))).pack(anchor="w", pady=(4, 0))
+    # ---- test (aufr: before Mehr → Werkzeuge «Servo test» of the web page; the same servo_test() of part 300) ----
+    xp = ttk.Frame(nb); nb.add(xp, text="🛠 " + tr("Test"))
+    ttk.Label(xp, text=tr("servo-note"), style="Mut.TLabel", wraplength=660, justify="left").pack(anchor="w", pady=(6, 4))
+    xb = ttk.Frame(xp); xb.pack(fill="x")
+    x_msg = ttk.Label(xb, text="", wraplength=520, justify="left")
+
+    def x_start():
+        if not servo_test():
+            messagebox.showinfo("MoveEye", tr("not possible now"), parent=win)
+        refresh(True)
+    ttk.Button(xb, text="▶ " + tr("Start the servo test"), command=x_start).pack(side="left")
+    x_msg.pack(side="left", padx=(10, 0))
+    x_txt = tk.Text(xp, height=20, wrap="none", font=("DejaVu Sans Mono", 9)); x_txt.pack(fill="both", expand=True, pady=(6, 4))
+
+    def test_text():
+        V = TOOLS["servo"]
+        out = [f"{tr('Axis'):8} {tr('To'):>6} {tr('Picture change'):>16}  {tr('Result')}"] if V["steps"] else []
+        for s_ in V["steps"]:
+            out.append(f"{tr('Pan' if s_['axis'] == 'pan' else 'Tilt'):8} {str(s_['to']) + ' %':>6} {('–' if s_['diff'] is None else str(s_['diff'])):>16}  "
+                       + ("⚠ " + tr("no change") if s_.get("ok") is False else "✓" if s_.get("ok") else "…"))
+        return "\n".join(out)
     # ---- diagnosis ----
     dp = ttk.Frame(nb); nb.add(dp, text="🩺 " + tr("Diagnosis"))
     txt = tk.Text(dp, height=24, wrap="word", font=("DejaVu Sans Mono", 9)); txt.pack(fill="both", expand=True, pady=(6, 4))
@@ -68219,6 +68415,13 @@ def _app_srv_win(self, page="teach"):
             if keep is not None and 0 <= keep < len(L):
                 tv.selection_set(str(keep))
         if nb.index("current") == 1:
+            V = TOOLS["servo"]
+            x_msg.config(text=tr("running…") if V["running"] else ("✓ " + tr("ok")) if V["msg"] == "ok" else ("⚠ " + str(V.get("bad") or "") + " " + tr(V["msg"])) if V["msg"] else "")
+            tt_ = test_text()
+            if force or tt_ != S.get("tsig"):
+                S["tsig"] = tt_
+                x_txt.config(state="normal"); x_txt.delete("1.0", "end"); x_txt.insert("1.0", tt_); x_txt.config(state="disabled")
+        if nb.index("current") == 2:
             dt_ = diag_text()
             if force or dt_ != S["dsig"]:
                 S["dsig"] = dt_
@@ -68232,8 +68435,10 @@ def _app_srv_win(self, page="teach"):
         except Exception:
             return
         win.after(1000, loop)
-    nb.bind("<<NotebookTabChanged>>", lambda e: S.update(dsig=None))
+    nb.bind("<<NotebookTabChanged>>", lambda e: S.update(dsig=None, tsig=None))
     if page == "diag":
+        nb.select(2)
+    elif page == "test":
         nb.select(1)
     refresh(True); win.after(1000, loop)
 
@@ -68247,6 +68452,7 @@ def _servo_tk_build_section(self, sec, sbody, settings_parent=None):
         try:
             bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(6, 0))
             ttk.Button(bf, text="📍 " + tr("Positions") + " …", command=lambda: self._srv_win("teach")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+            ttk.Button(bf, text="🛠 " + tr("Test") + " …", command=lambda: self._srv_win("test")).pack(side="left", expand=True, fill="x", padx=(0, 4))   # aufr
             ttk.Button(bf, text="🩺 " + tr("Diagnosis") + " …", command=lambda: self._srv_win("diag")).pack(side="left", expand=True, fill="x")
         except Exception as e:
             log_event("sys", f"Window: servo buttons: {e}"[:160])
@@ -68260,11 +68466,12 @@ App._srv_estop_btn = _app_srv_estop_btn
 
 def servo_web_selftest():
     """the page renders, the JS of the live page is filled in, the API ops are known"""
-    assert "/servo#diag" in TOOLS_PAGE and "servoPaint" in WEB_PAGE and "<!--SERVOJS-->" not in WEB_PAGE
+    assert "/servo#test" in TOOLS_PAGE and "pick('servo')" not in TOOLS_PAGE and "Servo diagnosis" not in TOOLS_PAGE   # aufr: ONE entry «Servos»
+    assert 'id="p-test"' in SERVO_PAGE and "servoPaint" in WEB_PAGE and "<!--SERVOJS-->" not in WEB_PAGE
     html = servo_page()
     assert "/*SERVODE*/" not in html and "sv-estop" in html
     assert servo_api_op({"op": "nonsense"}, ("k", "x"), True)[1] == 400 and servo_api_op({"op": "release"}, ("k", "x"), False)[1] == 403
-    return "page /servo, live page script, Tools entry"
+    return "page /servo (positions, test, diagnosis), live page script, one Tools entry"
 
 
 SELFTEST_EXTRA.append(("Servo motion planner (ramps, limits)", servo_planner_selftest))
@@ -70056,6 +70263,40 @@ def _tk_sim_head(self, inner):
 
 setattr(App, "_tk_sim_head", _tk_sim_head)
 setattr(App, "_tk_gonl_card", _tk_gonl_card)
+# ----------------------------------------------------------------------------
+# aufr (Konzept-Check): the settings of the animal species (second AI model, part 180) stood scattered between the other
+#   switches of «KI-Erkennung» - now ONE framed group «🦊 Tierart» below «🧠 KI-Modell» (the web page: spGroup in 530).
+#   570 leaves the keys TK_SPECIES_KEYS out of its loops and calls App._tk_species_group.
+# ----------------------------------------------------------------------------
+def _app_tk_species_group(self, parent, sec):
+    keys = [k for k in TK_SPECIES_KEYS if not simple_hidden(k) and not (CFG["lock_on"] and k in LOCK_DENY_KEYS)]
+    if not keys:
+        return
+    box = tk.Frame(parent, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=8, pady=6)
+    box.pack(fill="x", pady=(10, 0))
+    tk.Label(box, text="🦊 " + tr("Animal species"), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10, "bold"), anchor="w").pack(fill="x")
+    for s, key, label in TOGGLES:
+        if s == sec and key in keys:
+            tg = Toggle(box, tr(label), CFG[key], lambda val, k=key: self._set(k, val)); tg.pack(fill="x", pady=3)
+            self.vars[key] = tg; self._g2_q(tg, key)
+    self._build_texts(box, sec, only=tuple(k for k in keys if k in ("species_model", "species_norm")))
+    for s, key, label, lo, hi, step in SLIDERS:
+        if s != sec or key not in keys:
+            continue
+        row = ttk.Frame(box); row.pack(fill="x", pady=(6, 0))
+        ttk.Label(row, text=tr(label)).pack(side="left")
+        vl = ttk.Label(row, text=str(CFG[key]), style="Mut.TLabel"); vl.pack(side="right"); self.value_labels[key] = vl
+        self._g2_q(row, key)
+        v = tk.DoubleVar(value=CFG[key]); self.vars[key] = v
+        sc = ttk.Scale(box, from_=lo, to=hi, variable=v, orient="horizontal", command=lambda val, k=key, st=step: self._slide(k, float(val), st))
+        sc.pack(fill="x")
+        sc.bind("<ButtonPress-1>", lambda e, k=key: setattr(self, "dragging", k))
+        sc.bind("<ButtonRelease-1>", lambda e: (setattr(self, "dragging", None), self.root.focus_set()))
+    ttk.Label(box, text=tr("Install the model: web page, Settings → AI detection → «Animal species» (address of an .onnx or .zip)"),
+              style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(6, 0))
+
+
+App._tk_species_group = _app_tk_species_group
 TRX['rm'].update({
     '(or the address from the push message).': "(u l'adressa da l'avis push).",
     '+ Add relay': '+ Agiuntar in relais',
@@ -72942,9 +73183,9 @@ _HX_VERLAUF = {
     'Simulator diary: persons recognised {r} % ({a} of {b}) {tr}, missed {m}': ('Simulator-Tagebuch: Personen erkannt {r} % ({a} von {b}) {tr}, verpasst {m}', 'Journal du simulateur : personnes reconnues {r} % ({a} sur {b}) {tr}, manquées {m}', 'Diario del simulatore: persone riconosciute {r} % ({a} su {b}) {tr}, mancate {m}', 'Diari dal simulatur: persunas renconuschidas {r} % ({a} da {b}) {tr}, mancadas {m}'),
     '{n} false alarms this week. Suggestion: {s} (History → Recordings → false alarms)': ('{n} Fehlalarme in dieser Woche. Vorschlag: {s} (Verlauf → Aufnahmen → Fehlalarme)', '{n} fausses alarmes cette semaine. Suggestion : {s} (Historique → Enregistrements → fausses alarmes)', '{n} falsi allarmi questa settimana. Suggerimento: {s} (Cronologia → Registrazioni → falsi allarmi)', '{n} fals alarms quest’emna. Proposta: {s} (Cronologia → Registraziuns → fals alarms)'),
     '{n} false alarms this week. Draw an ignore zone over what moves (trees, road) – tab Protection → Zones.': ('{n} Fehlalarme in dieser Woche. Zeichne eine Ignorier-Zone über das, was sich bewegt (Bäume, Strasse) – Reiter Schutz → Zonen.', '{n} fausses alarmes cette semaine. Dessine une zone ignorée sur ce qui bouge (arbres, route) – onglet Protection → Zones.', '{n} falsi allarmi questa settimana. Disegna una zona ignorata su ciò che si muove (alberi, strada) – scheda Protezione → Zone.', '{n} fals alarms quest’emna. Dissegna ina zona ignorada sur quai che sa mova (plantas, via) – register Protecziun → Zonas.'),
-    'In the simulator {n} persons were in the picture but not recognised. Run the test «Night» and the automatic optimization (Simulator → Testing).': ('Im Simulator waren {n} Personen im Bild, wurden aber nicht erkannt. Lass den Test «Nacht» und die automatische Optimierung laufen (Simulator → Testen).', 'Dans le simulateur, {n} personnes étaient dans l’image sans être reconnues. Lance le test «Nuit» et l’optimisation automatique (Simulateur → Tester).', 'Nel simulatore {n} persone erano nell’immagine ma non sono state riconosciute. Avvia il test «Notte» e l’ottimizzazione automatica (Simulatore → Testare).', 'En il simulatur eran {n} persunas en il maletg, ma betg renconuschidas. Lascha ir il test «Notg» e l’optimaziun automatica (Simulatur → Testar).'),
-    'The test score went down. Look at what changed in the settings (Simulator → Test runs, «undo»).': ('Die Test-Punkte sind gesunken. Schau, was sich in den Einstellungen geändert hat (Simulator → Testläufe, «Rückgängig»).', 'Le score des tests a baissé. Regarde ce qui a changé dans les réglages (Simulateur → Tests, «annuler»).', 'Il punteggio dei test è sceso. Guarda cosa è cambiato nelle impostazioni (Simulatore → Test, «annulla»).', 'Ils puncts dals tests èn sbassads. Guarda tge ch’è sa midà en ils parameters (Simulatur → Tests, «revocar»).'),
-    'No test run this week: switch on the nightly test run (Simulator → Testing) – then you see the trend here.': ('Diese Woche kein Testlauf: schalte den nächtlichen Testlauf ein (Simulator → Testen) – dann siehst du hier den Trend.', 'Aucun test cette semaine : active le test de nuit (Simulateur → Tester) – tu verras alors la tendance ici.', 'Nessun test questa settimana: attiva il test notturno (Simulatore → Testare) – poi qui vedi la tendenza.', 'Quest’emna nagin test: activescha il test da notg (Simulatur → Testar) – lura vesas ti qua la tendenza.'),
+    'In the simulator {n} persons were in the picture but not recognised. Run the test «Night» and the automatic optimization (Simulator → Testing → Tests).': ('Im Simulator waren {n} Personen im Bild, wurden aber nicht erkannt. Lass den Test «Nacht» und die automatische Optimierung laufen (Simulator → Testen → Tests).', 'Dans le simulateur, {n} personnes étaient dans l’image sans être reconnues. Lance le test «Nuit» et l’optimisation automatique (Simulateur → Tester → Tests).', 'Nel simulatore {n} persone erano nell’immagine ma non sono state riconosciute. Avvia il test «Notte» e l’ottimizzazione automatica (Simulatore → Testare → Test).', 'En il simulatur eran {n} persunas en il maletg, ma betg renconuschidas. Lascha ir il test «Notg» e l’optimaziun automatica (Simulatur → Testar → Tests).'),
+    'The test score went down. Look at what changed in the settings (Simulator → Testing → Tests, «undo»).': ('Die Test-Punkte sind gesunken. Schau, was sich in den Einstellungen geändert hat (Simulator → Testen → Tests, «Rückgängig»).', 'Le score des tests a baissé. Regarde ce qui a changé dans les réglages (Simulateur → Tester → Tests, «annuler»).', 'Il punteggio dei test è sceso. Guarda cosa è cambiato nelle impostazioni (Simulatore → Testare → Test, «annulla»).', 'Ils puncts dals tests èn sbassads. Guarda tge ch’è sa midà en ils parameters (Simulatur → Testar → Tests, «revocar»).'),
+    'No test run this week: switch on the nightly test run (Simulator → Testing → Tests) – then you see the trend here.': ('Diese Woche kein Testlauf: schalte den nächtlichen Testlauf ein (Simulator → Testen → Tests) – dann siehst du hier den Trend.', 'Aucun test cette semaine : active le test de nuit (Simulateur → Tester → Tests) – tu verras alors la tendance ici.', 'Nessun test questa settimana: attiva il test notturno (Simulatore → Testare → Test) – poi qui vedi la tendenza.', 'Quest’emna nagin test: activescha il test da notg (Simulatur → Testar → Tests) – lura vesas ti qua la tendenza.'),
     'A quiet week. Check now and then that the camera still looks at the right place (Live).': ('Eine ruhige Woche. Prüfe ab und zu, ob die Kamera noch auf den richtigen Ort schaut (Live).', 'Une semaine calme. Vérifie de temps en temps que la caméra regarde toujours au bon endroit (Direct).', 'Una settimana tranquilla. Controlla ogni tanto che la telecamera guardi ancora nel posto giusto (Live).', 'Ina emna quieta. Controllescha da temp en temp, sche la camera guarda anc al dretg lieu (Live).'),
     'Mark wrong alarms with «Was nothing» – MoveEye learns from them and suggests better settings.': ('Markiere falsche Alarme mit «War nichts» – MoveEye lernt daraus und schlägt bessere Einstellungen vor.', 'Marque les fausses alarmes avec «Ce n’était rien» – MoveEye en tire des leçons et propose de meilleurs réglages.', 'Segna i falsi allarmi con «Non era niente» – MoveEye impara e propone impostazioni migliori.', 'Marca fals alarms cun «Era nagut» – MoveEye emprenda da quai e propona meglers parameters.'),
     'Star (★) important recordings: they are never deleted automatically.': ('Markiere wichtige Aufnahmen mit ★: sie werden nie automatisch gelöscht.', 'Mets une étoile (★) aux enregistrements importants : ils ne sont jamais supprimés automatiquement.', 'Metti una stella (★) alle registrazioni importanti: non vengono mai cancellate automaticamente.', 'Marca registraziuns impurtantas cun ★: ellas na vegnan mai stizzadas automaticamain.'),
@@ -77454,7 +77695,7 @@ _HX_padview = {
                                                         'Stick destro: muovere la vista del simulatore (nessun rover)', 'Stick dretg: mover la vista dal simulatur (nagin rover)'),
     'Hold R1 + right stick: turn the simulator view': ('R1 halten + rechter Stick: Simulator-Ansicht drehen', 'Maintenir R1 + stick droit : tourner la vue du simulateur',
                                                        'Tenere R1 + stick destro: ruotare la vista del simulatore', 'Tegnair R1 + stick dretg: volver la vista dal simulatur'),
-    'Zoom out / in (L2 / R2 too)': ('Verkleinern / vergrössern (auch L2 / R2)', 'Zoom arrière / avant (aussi L2 / R2)', 'Zoom indietro / avanti (anche L2 / R2)', 'Zoom enavos / enavant (er L2 / R2)'),
+    'Zoom out / in (L2 = zoom out too)': ('Verkleinern / vergrössern (L2 verkleinert auch)', 'Zoom arrière / avant (L2 aussi en arrière)', 'Zoom indietro / avanti (anche L2 indietro)', 'Zoom enavos / enavant (er L2 enavos)'),
     'Press the right stick: next view (behind the rover, driver, from above)': ('Rechten Stick drücken: nächste Ansicht (hinter dem Rover, Fahrersicht, von oben)',
         'Appuyer sur le stick droit : vue suivante (derrière le rover, conducteur, d’en haut)', 'Premere lo stick destro: vista successiva (dietro il rover, conducente, dall’alto)',
         'Smatgar il stick dretg: proxima vista (davos il rover, manischunz, dad ensi)'),
@@ -77750,6 +77991,7 @@ Künstliches Licht stört sie beim Finden ihrer Partner. Darum: Wenn ihr Glühw�
 ALM_PAGE = r"""<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Überlebens-Almanach</title><style>
 :root{--bg:#0e1621;--panel:#16212f;--line:#24324a;--txt:#e8eef6;--mut:#8ea0b6;--acc:#e9a23b;--fs:17px}
+body.light{--bg:#f6f3ec;--panel:#ffffff;--line:#d9d2c3;--txt:#1d232b;--mut:#5d6773;--acc:#b86e0c}
 body.night{--bg:#0a0000;--panel:#160404;--line:#3a1010;--txt:#ff6a5a;--mut:#b4453a;--acc:#ff6a5a}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:var(--fs)/1.6 Georgia,"Times New Roman",serif}
 header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;z-index:2}
@@ -77764,17 +78006,22 @@ article h2{font:700 24px system-ui,sans-serif;margin:6px 0 10px}article p{margin
 .nav{display:flex;gap:8px;margin-top:18px}.nav button{flex:1}.mut{color:var(--mut);font:14px system-ui,sans-serif}
 </style></head><body>
 <header><h1>📖 Überlebens-Almanach</h1><input id="q" type="search" placeholder="Suchen …" style="flex:1 1 140px">
-<button id="b-home" title="Inhalt">☰</button><button id="b-big" title="Grosse Schrift">A+</button><button id="b-night" title="Rotlicht für die Nacht (schont die Nachtsicht)">🔴</button><button id="b-read" title="Vorlesen">🔊</button></header>
+<button id="b-home" title="Inhalt">☰</button><button id="b-big" title="Grosse Schrift">A+</button><button id="b-theme" title="Hell / Dunkel / Rotlicht (wie überall in MoveEye)">◐</button><button id="b-read" title="Vorlesen">🔊</button></header>
 <main id="m"></main>
 <script>
 const A = __DATA__;
 const $ = id => document.getElementById(id), m = $("m");
 const esc = s => s.replace(/[&<>"]/g, c => "&#" + c.charCodeAt(0) + ";");
 const all = []; A.forEach((c, ci) => c[3].forEach((a, ai) => all.push({ci, ai, ch: c, t: a[0], x: a[1]})));
-const S = {big: false, night: false}; try { Object.assign(S, JSON.parse(localStorage.getItem("mw-alm") || "{}")); } catch (e) {}
-function save() { try { localStorage.setItem("mw-alm", JSON.stringify(S)); } catch (e) {} }
-function apply() { document.documentElement.style.setProperty("--fs", S.big ? "21px" : "17px"); document.body.classList.toggle("night", S.night);
-  $("b-big").classList.toggle("on", S.big); $("b-night").classList.toggle("on", S.night); }
+const S = {big: false}; try { Object.assign(S, JSON.parse(localStorage.getItem("mw-alm") || "{}")); } catch (e) {}
+function save() { try { localStorage.setItem("mw-alm", JSON.stringify({big: S.big})); } catch (e) {} }
+// aufr: no own red-light switch any more - the almanac follows Hell / Dunkel / Rotlicht of MoveEye (toggleTheme, 510 / 530:
+// localStorage «mw-theme» = light | dark, «mw-night» = 1 for the red light); the button here is the same switch
+function step() { let th = "dark", n = "0"; try { th = localStorage.getItem("mw-theme") || "dark"; n = localStorage.getItem("mw-night") || "0"; } catch (e) {}
+  return n === "1" ? "red" : th === "light" ? "light" : "dark"; }
+function apply() { document.documentElement.style.setProperty("--fs", S.big ? "21px" : "17px"); const s = step();
+  document.body.classList.toggle("night", s === "red"); document.body.classList.toggle("light", s === "light");
+  $("b-big").classList.toggle("on", S.big); $("b-theme").textContent = {light: "☾", dark: "◉", red: "☀"}[s]; }
 function body(x) { return x.split("\n\n").map(b => b.split("\n").every(l => l.startsWith("- ")) ? "<ul>" + b.split("\n").map(l => "<li>" + esc(l.slice(2)) + "</li>").join("") + "</ul>" : "<p>" + esc(b).replace(/\n/g, "<br>") + "</p>").join(""); }
 function tipIdx() { const d = new Date(); return (d.getFullYear() * 400 + d.getMonth() * 31 + d.getDate()) % all.length; }
 function home(q) {
@@ -77797,7 +78044,11 @@ function show(i) {
 $("q").oninput = () => home($("q").value.trim().toLowerCase());
 $("b-home").onclick = () => { $("q").value = ""; location.hash = ""; home(""); };
 $("b-big").onclick = () => { S.big = !S.big; save(); apply(); };
-$("b-night").onclick = () => { S.night = !S.night; save(); apply(); };
+$("b-theme").onclick = () => { const n = {light: "dark", dark: "red", red: "light"}[step()], th = n === "light" ? "light" : "dark";
+  try { localStorage.setItem("mw-theme", th); localStorage.setItem("mw-night", n === "red" ? "1" : "0"); } catch (e) {}
+  fetch("/api/ui", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({set: {"mw-theme": th}})}).catch(() => {});   // like the other pages (guests: refused, no matter)
+  apply(); };
+addEventListener("storage", e => { if (e.key === "mw-theme" || e.key === "mw-night") apply(); });   // switched on another page of MoveEye
 $("b-read").onclick = () => { if (!window.speechSynthesis) return; if (speechSynthesis.speaking) { speechSynthesis.cancel(); return; }
   const a = all[window.cur ?? tipIdx()]; const u = new SpeechSynthesisUtterance(a.t + ". " + a.x.replace(/^- /gm, "")); u.lang = "de-CH"; u.rate = 0.95; speechSynthesis.speak(u); };
 apply(); const hm = /^#a(\d+)$/.exec(location.hash); if (hm && all[+hm[1]]) show(+hm[1]); else home("");
@@ -77932,6 +78183,115 @@ if _hp_ensb > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_spielb(HELP_X[_L], _L)
+# ----------------------------------------------------------------------------
+# English key: (Deutsch, Français, Italiano, Rumantsch). At the end the German texts go into the pages that have their own
+# dictionary (main page 530: /*AUFRDE*/ and /*AUFREN*/ for the code keys, zone editor 520: /*ZAUFRDE*/).
+# ----------------------------------------------------------------------------
+_HX_AUFR = {
+    # 1: Servos - one entry (positions, test, diagnosis)
+    'Positions, test, diagnosis, Not-Aus': ('Positionen, Test, Diagnose, Not-Aus', 'Positions, test, diagnostic, arrêt d’urgence', 'Posizioni, test, diagnosi, arresto d’emergenza', 'Posiziuns, test, diagnosa, stop d’urgenza'),
+    'Test': ('Test', 'Test', 'Test', 'Test'),
+    'Servos: safety, positions, test, diagnosis': ('Servos: Sicherheit, Positionen, Test, Diagnose', 'Servos : sécurité, positions, test, diagnostic', 'Servo: sicurezza, posizioni, test, diagnosi', 'Servos: segirezza, posiziuns, test, diagnosa'),
+    'servo-note': ('Fährt Schwenken und Neigen langsam über den ganzen Bereich und prüft, ob sich das Bild jedes Mal bewegt. Danach zurück an die alte Stelle.',
+                   'Fait pivoter et incliner lentement sur toute la plage et vérifie que l’image bouge à chaque fois. Puis retour à la position d’avant.',
+                   'Ruota e inclina lentamente su tutto il campo e controlla che l’immagine si muova ogni volta. Poi torna alla posizione di prima.',
+                   'Volva e sbassa plaun sur l’entir intervall e controllescha, sch’il maletg sa mova mintga giada. Lura enavos al lieu da pli baud.'),
+    'Start the servo test': ('Servo-Test starten', 'Lancer le test des servos', 'Avvia il test dei servo', 'Cumenzar il test dals servos'),
+    'Axis': ('Achse', 'Axe', 'Asse', 'Axa'),
+    'Picture change': ('Bildänderung', 'Changement d’image', 'Cambio immagine', 'Midada dal maletg'),
+    'no change': ('keine Änderung', 'aucun changement', 'nessun cambio', 'nagina midada'),
+    'steps without a change of the picture - blocked, at the end or camera not on the head?': (
+        'Schritte ohne Bildänderung – blockiert, am Anschlag oder Kamera nicht auf dem Kopf?',
+        'étapes sans changement d’image – bloqué, en butée ou caméra pas sur la tête ?',
+        'passi senza cambio d’immagine – bloccato, a fine corsa o telecamera non sulla testa?',
+        'pass senza midada dal maletg – blocà, a la fin u camera betg sin il chau?'),
+    '🛠 Servos: test and positions': ('🛠 Servos: Test und Positionen', '🛠 Servos : test et positions', '🛠 Servo: test e posizioni', '🛠 Servos: test e posiziuns'),
+    'Network test, servos, diagnosis and more.': ('Netztest, Servos, Diagnose und mehr.', 'Test réseau, servos, diagnostic et plus.', 'Test di rete, servo, diagnosi e altro.', 'Test da rait, servos, diagnosa e dapli.'),
+    # 2: the shortcut key is an app key
+    'only the shortcut addresses /k/': ('nur die Kurzbefehl-Adressen /k/', 'seulement les adresses de raccourci /k/', 'solo gli indirizzi delle scorciatoie /k/', 'mo las adressas da scursanidas /k/'),
+    'Copy the addresses now - the key is shown only this one time.': ('Adressen jetzt kopieren – der Schlüssel wird nur dieses eine Mal gezeigt.',
+        'Copie les adresses maintenant – la clé n’est montrée que cette fois.', 'Copia ora gli indirizzi – la chiave viene mostrata solo questa volta.',
+        'Copiar ussa las adressas – la clav vegn mussada mo questa giada.'),
+    'app key': ('App-Schlüssel', 'clé d’app', 'chiave app', 'clav d’app'),
+    'sc-key-note2': ('Der Schlüssel ist ein App-Schlüssel, der nur diese Adressen öffnet (nicht den Rest von MoveEye). MoveEye speichert nur seinen Fingerabdruck – darum steht er nur direkt nach dem Erstellen hier. Jeder App-Schlüssel (Einstellungen → Sicherheit) geht hier auch. Von unterwegs über die Tailscale-Adresse.',
+                     'La clé est une clé d’app qui n’ouvre que ces adresses (pas le reste de MoveEye). MoveEye ne garde que son empreinte – elle n’apparaît donc ici que juste après sa création. Toute clé d’app (Réglages → Sécurité) fonctionne aussi. En déplacement : par l’adresse Tailscale.',
+                     'La chiave è una chiave app che apre solo questi indirizzi (non il resto di MoveEye). MoveEye ne conserva solo l’impronta – per questo appare qui solo subito dopo la creazione. Funziona anche ogni chiave app (Impostazioni → Sicurezza). In viaggio: tramite l’indirizzo Tailscale.',
+                     'La clav è ina clav d’app che avra mo questas adressas (betg il rest da MoveEye). MoveEye memorisescha mo ses stampun – perquai stat ella qua mo directamain suenter l’avair fatg. Mintga clav d’app (Parameters → Segirezza) va er. Da viadi: sur l’adressa Tailscale.'),
+    'These app keys work here too:': ('Diese App-Schlüssel gehen hier auch:', 'Ces clés d’app fonctionnent aussi ici :', 'Anche queste chiavi app funzionano qui:', 'Questas clavs d’app van er qua:'),
+    'One more shortcut key': ('Noch ein Kurzbefehl-Schlüssel', 'Une clé de raccourci de plus', 'Un’altra chiave per scorciatoie', 'Anc ina clav da scursanida'),
+    'Make a shortcut key': ('Kurzbefehl-Schlüssel erstellen', 'Créer une clé de raccourci', 'Crea una chiave per scorciatoie', 'Far ina clav da scursanida'),
+    'All app keys': ('Alle App-Schlüssel', 'Toutes les clés d’app', 'Tutte le chiavi app', 'Tut las clavs d’app'),
+    # 5: the ☰ menu is per device
+    'vm-device': ('Ein- und Ausblenden gilt nur für dieses Gerät – wie «◫ Ansicht» auf der Live-Seite.', 'Afficher / masquer ne vaut que pour cet appareil – comme «◫ Vue» de la page en direct.',
+                  'Mostrare / nascondere vale solo per questo dispositivo – come «◫ Vista» della pagina live.', 'Mussar / zuppentar vala mo per quest apparat – sco «◫ Vista» da la pagina live.'),
+    # 6: zones «only report» and «stays on its place»
+    '+ Only report': ('+ Nur melden', '+ Signaler seulement', '+ Solo segnalare', '+ Mo annunziar'),
+    'Only report': ('Nur melden', 'Signaler seulement', 'Solo segnalare', 'Mo annunziar'),
+    'z-report': ('Steht eine Person mit den Füssen darin, gibt es keinen Alarm – nur eine Zeile im Protokoll und ab und zu eine Info-Nachricht (öffentlicher Weg, Weg der Nachbarn). «Platz einrichten» macht seinen öffentlichen Weg zu so einer Zone.',
+                 'Une personne qui a les pieds dedans ne déclenche pas d’alarme – seulement une ligne dans le journal et de temps en temps un message d’info (chemin public, chemin des voisins). «Aménager le lieu» fait de son chemin public une telle zone.',
+                 'Una persona con i piedi dentro non fa scattare l’allarme – solo una riga nel registro e ogni tanto un messaggio informativo (sentiero pubblico, passaggio dei vicini). «Allestire il posto» rende il suo sentiero pubblico una tale zona.',
+                 'Ina persuna cun ils pes lien na fa nagin alarm – mo ina lingia en il protocol e da temp en temp in avis d’info (via publica, via dals vischins). «Endrizzar il lieu» fa da sia via publica ina tala zona.'),
+    'Stays on its place': ('Bleibt am Platz', 'Reste à sa place', 'Resta al suo posto', 'Resta al ses lieu'),
+    'z-anchor': ('Die Zone bleibt auf dem Boden, wenn sich der Kopf dreht (Ecken als Richtungen gespeichert) – sonst klebt sie am Bild. Einzeichnen, während die Kamera dorthin schaut. Privatsphäre-Zonen und der Schlafplatz bleiben immer am Platz.',
+                 'La zone reste au sol quand la tête tourne (coins gardés comme directions) – sinon elle est fixée à l’image. La dessiner pendant que la caméra regarde là. Les zones de confidentialité et le lieu de sommeil restent toujours en place.',
+                 'La zona resta a terra quando la testa gira (angoli salvati come direzioni) – altrimenti è fissata all’immagine. Disegnarla mentre la telecamera guarda lì. Le zone privacy e il posto letto restano sempre al loro posto.',
+                 'La zona resta sin il terren, cur ch’il chau sa volva (cantuns memorisads sco direcziuns) – uschiglio stat ella fixa al maletg. Dissegnar, entant che la camera guarda là. Zonas da sfera privata ed il lieu da durmir restan adina al lieu.'),
+    'from «Set up the place»': ('aus «Platz einrichten»', 'de «Aménager le lieu»', 'da «Allestire il posto»', 'da «Endrizzar il lieu»'),
+    # 7 / 8: head
+    'Deterrence: turn the light and the siren to the person (otherwise to the tent of «Platz einrichten»)': (
+        'Abschrecken: Licht und Sirene zur Person drehen (sonst zum Zelt aus «Platz einrichten»)',
+        'Dissuasion : tourner la lumière et la sirène vers la personne (sinon vers la tente de «Aménager le lieu»)',
+        'Dissuasione: girare luce e sirena verso la persona (altrimenti verso la tenda di «Allestire il posto»)',
+        'Spaventar: volver la glisch e la sirena vers la persuna (uschiglio vers la tenda da «Endrizzar il lieu»)'),
+    'Smart round (when «Patrol» is on): longer at the tent and the access, hardly at ignored directions (places from «Platz einrichten», otherwise the waypoints)': (
+        'Kluge Runde (wenn «Patrouille» an ist): länger beim Zelt und beim Zugang, kaum bei ignorierten Richtungen (Orte aus «Platz einrichten», sonst die Wegpunkte)',
+        'Ronde intelligente (quand «Patrouille» est activée) : plus longtemps à la tente et à l’accès, à peine vers les directions ignorées (lieux de «Aménager le lieu», sinon les points de passage)',
+        'Giro intelligente (quando «Pattuglia» è attiva): più a lungo alla tenda e all’accesso, appena verso le direzioni ignorate (posti da «Allestire il posto», altrimenti i punti di passaggio)',
+        'Ronda intelligenta (cur che «Patruglia» è activa): pli ditg tar la tenda e tar l’access, strusch tar direcziuns ignoradas (lieus da «Endrizzar il lieu», uschiglio ils puncts da via)'),
+    'game round: the players steer the head - following paused': ('Spielrunde: die Spieler steuern den Kopf – Folgen pausiert', 'manche de jeu : les joueurs dirigent la tête – suivi en pause',
+        'turno di gioco: i giocatori guidano la testa – inseguimento in pausa', 'runda da gieu: ils giugaders manischan il chau – suandar en pausa'),
+    # 12: two settings with the same name «Ton»
+    'Wake-up sound': ('Weckton', 'Son du réveil', 'Suono della sveglia', 'Tun da la sveglia'),
+    'Siren sound': ('Sirenenton', 'Son de la sirène', 'Suono della sirena', 'Tun da la sirena'),
+    # 9: animal species as one group
+    'Animal species': ('Tierart', 'Espèce animale', 'Specie animale', 'Spezia d’animal'),
+    'Install the model: web page, Settings → AI detection → «Animal species» (address of an .onnx or .zip)': (
+        'Modell installieren: Webseite, Einstellungen → KI-Erkennung → «Tierart» (Adresse einer .onnx- oder .zip-Datei)',
+        'Installer le modèle : page web, Réglages → Détection IA → «Espèce animale» (adresse d’un .onnx ou .zip)',
+        'Installare il modello: pagina web, Impostazioni → Rilevamento IA → «Specie animale» (indirizzo di un .onnx o .zip)',
+        'Installar il model: pagina web, Parameters → Identificaziun IA → «Spezia d’animal» (adressa d’in .onnx u .zip)'),
+}
+for _k, _v in _HX_AUFR.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# the pages with their own German dictionary
+_AUFR_MAIN = ["Positions, test, diagnosis, Not-Aus", "only the shortcut addresses /k/", "Copy the addresses now - the key is shown only this one time.", "app key",
+              "sc-key-note2", "These app keys work here too:", "One more shortcut key", "Make a shortcut key", "All app keys", "vm-device", "Animal species"]
+_AUFR_EN = {k: k for k in _AUFR_MAIN}
+_AUFR_EN.update({"sc-key-note2": "The key is an app key that opens only these addresses (not the rest of MoveEye). MoveEye keeps only its fingerprint - so it stands here only right after it is made. Every app key (Settings → Security) works here too. On the road: through the Tailscale address.",
+                 "vm-device": "Showing and hiding is for this device only - like «◫ View» of the live page."})
+WEB_PAGE = WEB_PAGE.replace("/*AUFRDE*/{}", json.dumps({k: DE[k] for k in _AUFR_MAIN}, ensure_ascii=False), 1).replace(
+    "/*AUFREN*/{}", json.dumps({k: v for k, v in _AUFR_EN.items() if v != k}, ensure_ascii=False), 1)
+ZONES_PAGE = ZONES_PAGE.replace("/*ZAUFRDE*/{}", json.dumps({k: DE[k] for k in ("+ Only report", "Only report", "z-report", "Stays on its place", "z-anchor",
+                                                                                "from «Set up the place»")}, ensure_ascii=False), 1)
+
+
+def aufr_selftest():
+    """the clean-up round: one servo entry, the texts are filled in, the zone kinds"""
+    assert "/*AUFRDE*/" not in WEB_PAGE and "/*AUFREN*/" not in WEB_PAGE and "/*ZAUFRDE*/" not in ZONES_PAGE
+    assert "startZone('report')" in ZONES_PAGE and "Stays on its place" in ZONES_PAGE
+    assert 'id="m-fbtest"' not in MORE_PAGE, "Test-Feedback is in Mehr → System (516)"
+    assert "function simExtras" not in WEB_PAGE and "simExtras(d)" not in WEB_PAGE, "dead code (aufr)"
+    assert "mw-hidden" in WEB_UI_LOCAL and "b-night" not in ALM_PAGE
+    assert not any(k == "controls" for _g, k, _l in VIEW_ITEMS), "camera control only in ◫ Ansicht"
+    for k in _HX_AUFR:
+        assert tr(k, "de") != k or k in ("Test",), k
+    return f"{len(_HX_AUFR)} texts, servo entry, zone kinds, ☰ per device, almanac theme"
+
+
+SELFTEST_EXTRA.append(("Clean-up round (aufr): one place per thing", aufr_selftest))
 _HX_GUIDE2 = {
     "Tour of this page": ("Rundgang durch diese Seite", "Visite de cette page", "Tour di questa pagina", "Gir tras questa pagina"),
     "Continue later": ("Später weitermachen", "Continuer plus tard", "Continuare più tardi", "Cuntinuar pli tard"),

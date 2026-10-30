@@ -108,6 +108,11 @@ def _tk_ui(self):
 
 
 def _tkv_card(self, key):
+    if key == "controls" and "controls" in (CFG.get("ui_hidden") or []):
+        # aufr: «Panels → Camera control» of the old right-click menu is gone (one place: ◫ Ansicht, card «Controls») - a
+        # camera control hidden there before is taken over once as hidden in the Ansicht of the window
+        CFG["ui_hidden"] = [x for x in CFG["ui_hidden"] if x != "controls"]
+        tkv_set(hide=[x for x in tkv_hidden_cards() if x != "controls"] + ["controls"])
     return key not in tkv_hidden_cards()
 
 
