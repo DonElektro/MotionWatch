@@ -84,7 +84,7 @@ jobs:
         run: |
           PLAENE="quick"; SEEDS=1; WDH=1; REAL="an"; ROH=""; MAL=2     # 29.10.2026 (Daniel: Ressourcen sparen): pro Version nur «quick»
           if [ "$EVENT" = "schedule" ]; then                  # weekly: everything, also «hard», 3 random starts
-            PLAENE="quick,night,standard,nacht,hard,folgen"; SEEDS=3; REAL="an"; ROH=""
+            PLAENE="quick,night,standard,nacht,hard,folgen,camping_voll,tarnen,velodieb"; SEEDS=3; REAL="an"; ROH=""
           elif [ "$EVENT" = "workflow_dispatch" ]; then
             PLAENE="${IN_PLAENE:-$PLAENE}"; SEEDS="${IN_SEEDS:-1}"; WDH="${IN_WDH:-1}"; REAL="${IN_REAL:-an,aus}"; ROH="$IN_ROH"; MAL="${IN_MAL:-2}"
             if [ "$IN_SCHWER" = "true" ] && ! echo ",$PLAENE," | grep -q ",hard,"; then PLAENE="$PLAENE,hard"; fi

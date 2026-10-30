@@ -131,6 +131,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `595_fenster_simstopp.py` | Fenster: «⏹ Stopp» (Not-Aus) in der Simulation ausblenden | 75 |
 | `596_uebersetzungen_vier.py` | Übersetzungen für «MoveEye als KI-Wächter» (548) | 32 |
 | `597_uebersetzungen_simkompakt.py` | Übersetzungen für «Sim-Kompakt» (549) | 67 |
+| `551_uebersetzungen_szenen.py` | Namen der Simulator-Szenen in FR / IT / RM / EN (der Simulator schickt «en» mit; 139 / 470 / 549 zeigen sie) und Anleitungs-Absatz zu den neuen Szenen (Erkennung) | 50 |
 | `568_uebersetzungen_weit.py` | Übersetzungen und Anleitungs-Absatz (Kamera & Servos) zur Weitwinkel-Kamera (163 / 591) | 50 |
 | `598_simwerte_anzeige.py` | «🧪 Simulator»-Hinweis bei Simulator-Werten (Web und Fenster), Anleitung (285) | 175 |
 | `599_uebersetzungen_simwerte.py` | Übersetzungen der Simulator-Werte (285, 598) | 55 |

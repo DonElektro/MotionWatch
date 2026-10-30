@@ -41,7 +41,8 @@ const GEAR := [["", "🙂", "Nichts", "Ganz normal, ohne Tarnung."],
 const FX := {"camo": {"ai": 0.8, "spd": 0.9}, "blanket": {"th": 0.15, "loud": 2.2, "ai": 1.1, "spd": 0.95},
 		"box": {"ai": 0.3, "th": 0.5, "spd": 0.55, "run": false, "pmin": 1, "pmax": 1, "loud": 1.3},
 		"umbrella": {"ai": 0.55, "mo": 1.2, "th": 0.6, "spd": 0.85, "pmax": 1}}
-const GREEN_SCENES := ["camping", "wald", "garten", "wild", "bauernhof", "seeufer", "verstecken", "lustig", "parcours"]
+const GREEN_SCENES := ["camping", "wald", "garten", "wild", "bauernhof", "seeufer", "verstecken", "lustig", "camping_voll", "tarnen", "parcours"]
+const CAMO_STRONG := {"tarnen": 0.6}       # 3D-4.x «Tarnen und Kriechen»: the ground has the colours of the clothes (instead of 0.8)
 
 # ---- 3. theft --------------------------------------------------------------------------------------------------------------
 const THEFT_OBJ := {"Velo": ["🚲", "das Velo", "Velo", 0.8], "Kühlboxen": ["🧊", "die Kühlbox", "Kühlbox", 0.85]}
@@ -141,10 +142,12 @@ func round_start() -> void:
 			continue
 		if not gear_active():
 			p["gear"] = ""
-		elif str(p.get("kind", "phone")) == "bot" and not p.has("gear_set") and randf() < 0.5:
+		elif str(p.get("kind", "phone")) == "bot" and not p.has("gear_set") and (randf() < 0.5 or main.scene == "tarnen"):
 			p["gear"] = GEAR[1 + randi() % (GEAR.size() - 1)][0]          # bots try the things too (for the learning)
 		dress(p)
 		p["gear_round"] = str(p.get("gear", ""))         # what was worn in this round (the end screen)
+	if main.szenen != null:
+		main.szenen.restore()                            # 3D-4.x «Velodieb»: a visiting thief had the bike - it is back
 	_theft_start()
 
 
@@ -342,6 +345,8 @@ func ai_mul(p: Dictionary) -> float:
 	if g == "camo" and (main.is_dark() or not main.scene in GREEN_SCENES):
 		return 1.0                                       # camouflage only helps in the green by day
 	var m: float = fx(p, "ai")
+	if g == "camo" and CAMO_STRONG.has(main.scene):
+		m = float(CAMO_STRONG[main.scene])
 	if g == "blanket" and not (main.is_dark() and not p["actor"].player_lamp):
 		m = 1.1                                          # it shines in the light
 	elif g == "blanket":
@@ -522,6 +527,8 @@ func _target() -> Dictionary:
 		order = ["Kühlboxen", "Velo"]
 	elif theft_obj == "auto" and randf() < 0.5:
 		order = ["Kühlboxen", "Velo"]
+	if main.scene == "velodieb":
+		order = ["Velo"]                                 # 3D-4.x «Velodieb»: always the bike
 	for nm in order:
 		var n = main.test_props.get(nm, null)
 		if n != null and is_instance_valid(n) and n.visible:
@@ -721,6 +728,8 @@ func take(p: Dictionary) -> bool:
 		else:
 			n.transform = Transform3D(Basis.IDENTITY, Vector3(0, 0.78, -0.38))  # carried in front of the belly
 	_speed(p)
+	if theft["name"] == "Velo" and main.scene == "velodieb":
+		main.add_event("Velo", "tag")                    # 3D-4.x «Velodieb»: the bike sensor notices the grab (MoveEye gets it)
 	game._say(p, "%s Du hast %s! Jetzt zum Ausgang (orange) – aber pass auf die Kamera auf." % [theft["icon"], theft["label"]], 4.0)
 	game.news("%s %s schnappt sich %s!" % [theft["icon"], p["name"], theft["label"]])
 	seq += 1

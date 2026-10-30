@@ -39,8 +39,11 @@ REPO = os.path.dirname(HIER)
 ERGEBNISSE = os.path.join(HIER, "ergebnisse")
 VERLAUF = os.path.join(HIER, "VERLAUF.md")
 PLAN_DAUER = {"quick": 150, "standard": 300, "night": 230, "hard": 520, "nacht": 650}   # Sekunden, ungefähr (Simulator in Echtzeit)
+# Neue Szenen (Simulator 3D-4.x, szenenplus.gd): jeder Plan lädt seine eigene Szene (--szene gilt dafür nicht) - nicht in «quick»
+PLAN_DAUER.update({"camping_voll": 290, "tarnen": 270, "velodieb": 230})
 PLAN_NAME = {"quick": "Kurz (Tag + Nacht)", "standard": "Standard (Tag, Wind, Nacht, Regen)", "night": "Nacht", "hard": "Schwierige Bedingungen",
              "nacht": "Ganze Nacht (20–6 Uhr, Zeitraffer)", "spielwege": "Schleichwege aus dem Spiel", "echtenaechte": "Echte Nächte nachgespielt"}
+PLAN_NAME.update({"camping_voll": "Voller Campingplatz", "tarnen": "Tarnen und Kriechen", "velodieb": "Velodieb"})
 FIX_PLAENE = ("spielwege", "echtenaechte", "nacht")      # Prüfstand 2: realistic numbers - --mal does not multiply, no run without effects
 WEGE = os.path.join(REPO, "simulator3d", "spielwege")
 NAECHTE = os.path.join(REPO, "simulator3d", "pruefnaechte")
@@ -285,6 +288,16 @@ def run(a):
                     rep_.get("latency_s", "–"),
                     sum(p.get("animals_reported", 0) for p in rep_.get("phases", [])), sum(p.get("animals", 0) for p in rep_.get("phases", [])),
                     rep_.get("flicker", rep_.get("false_alarms", 0)), rep_["mw_fps"]), wichtig=True)
+                sz = rep_.get("szene") or {}                     # the numbers of the new scenes (reaction from the pitch / the grab)
+                if sz.get("art") == "camping_voll":
+                    log("  Voller Platz: an deinem Platz %d, mit Push %d, ohne %d, Reaktion ab Platz %s s, falsche Pushes wegen Nachbarn %d" % (
+                        sz.get("auf_platz", 0), sz.get("push", 0), sz.get("ohne_push", 0), sz.get("reaktion_platz_s", "–"), sz.get("push_falsch_nachbar", 0)), wichtig=True)
+                elif sz.get("art") == "velodieb":
+                    log("  Velodieb: Griffe %d, Push vor dem Griff %d, danach %d, ohne %d, Reaktion ab Griff %s s" % (
+                        sz.get("griffe", 0), sz.get("push_vor_griff", 0), sz.get("push_nach_griff", 0), sz.get("ohne_push", 0), sz.get("reaktion_griff_s", "–")), wichtig=True)
+                elif sz.get("art") == "tarnen":
+                    log("  Tarnen: " + ", ".join("%s %d/%d erkannt, %d Push" % (k[5:], v.get("erkannt", 0), v.get("sichtbar", 0), v.get("push", 0))
+                                                for k, v in sorted((sz.get("arten") or {}).items())), wichtig=True)
                 for q in rep_.get("push_list", []):
                     log("    Push %5.0f s  %-8s %s%s" % (q.get("t", 0), q.get("ev", ""), ("richtig: " if q.get("ok") else "FALSCH: ") + str(q.get("who", "")),
                                                      "  (gleicher Besuch innert 10 s)" if q.get("dup") else ""))
@@ -741,7 +754,7 @@ def main():
     ap.add_argument("--mw", default="", help="die Motion-Watch-Datei (Standard: die neuste im Repository)")
     ap.add_argument("--sim-bin", default="", help="das exportierte Simulator-Programm (Linux)")
     ap.add_argument("--godot", default="", help="Godot 4.3 (startet das Projekt simulator3d/ direkt)")
-    ap.add_argument("--plaene", default="quick,night", help="quick, standard, night, hard, nacht (ganze Nacht) – mit Komma")
+    ap.add_argument("--plaene", default="quick,night", help="quick, standard, night, hard, nacht (ganze Nacht), camping_voll, tarnen, velodieb – mit Komma")
     ap.add_argument("--wiederholungen", type=int, default=1, help="jeden Testlauf so oft (mehr = verlässlichere Zahlen)")
     ap.add_argument("--seeds", type=int, default=1, help="so viele Zufallsstarts (1 = die festen Besucher von früher, 4711; 2, 3 … andere Wege)")
     ap.add_argument("--mal", type=int, default=2, help="jede Besucherliste so oft, 1–5 (mehr Personen pro Lauf = verlässlichere Zahlen)")

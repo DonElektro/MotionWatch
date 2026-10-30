@@ -279,6 +279,7 @@ var lens_mats: Array = []
 var camfx_mats: Array = []            # 3D-3.94: camfx.gdshader per camera (realism.gd sets it)
 var realism                           # realism.gd
 var simreal                           # simreal.gd (3D-4.4): Pi 5, lens, infrared, thermal, false alarms, difficult visitors
+var szenen                            # szenenplus.gd (3D-4.x): Voller Campingplatz, Tarnen und Kriechen, Velodieb
 var weit                              # weitwinkel.gd (3D-4.17): camera 1 = the wide camera with its mount (mast, base, head front / rear)
 var parcours                          # parcours.gd (3D-4.18): «Verfolgungs-Parcours» - lessons, ground truth, game «Entkomme der Kamera»
 var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Zwilling» - photo / panorama of the real place
@@ -374,6 +375,9 @@ func _ready() -> void:
 	simreal = preload("res://scripts/simreal.gd").new()      # 3D-4.4: closer to the real device (every part can be switched off)
 	simreal.main = self
 	add_child(simreal)
+	szenen = preload("res://scripts/szenenplus.gd").new()   # 3D-4.x: the new scenes (neighbours, camouflage, bike thief)
+	szenen.main = self
+	add_child(szenen)
 	weit = preload("res://scripts/weitwinkel.gd").new()      # 3D-4.17: the wide camera (camera 1) and its mount
 	weit.main = self
 	add_child(weit)
@@ -916,6 +920,8 @@ func _build_scene() -> void:
 		zwilling.on_scene()                      # 3D-4.4: the photo of the real place, tent and car by hand (first: the tent moves obj["pir"])
 	if simreal != null:
 		simreal.on_scene()                       # 3D-4.4: tarp, pennant, road sign
+	if szenen != null:
+		szenen.on_scene()                        # 3D-4.x: the neighbours of «Voller Campingplatz»
 	if scene == "ort" and not geo.loaded and not geo.busy and ort_lat != 0.0:
 		geo.load_place(ort_lat, ort_lon, ort_name)      # from the cache or the internet; then place_loaded()
 	if scene == "wild":
@@ -2802,6 +2808,8 @@ func time_scale_visitors() -> float:
 func spawn(kind: String, from = null, to = null) -> Node3D:
 	if simreal != null and simreal.is_kind(kind):
 		return simreal.spawn_kind(kind, from, to)     # 3D-4.4: hood, backpack, phoning, groups, edge sneaker, deer lying ...
+	if szenen != null and szenen.is_kind(kind):
+		return szenen.spawn_kind(kind, from, to)      # 3D-4.x: on your pitch, camouflage / crawling, bike thief (szenenplus.gd)
 	if kids_on and not kids_scary and kind in ["wolf", "lynx", "boar"]:
 		kind = "hare"                             # 3D-3.69: Kinder-Modus without wild animals if so set
 	if kids_on and not kids_thief and kind in ["thief", "burglar", "drunk"]:
@@ -3327,6 +3335,7 @@ func _register_controls() -> void:
 		var key: String = cd[0]
 		add_control("toggle", "cond_" + key, cd[1], func(): return cond[key], func(v): cond[key] = bool(v), "Kamerabild")
 	simreal.add_controls()                                 # 3D-4.4: closer to the real device
+	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
 	weit.add_controls()                                    # 3D-4.17: the wide camera (card «Kamerabild», part «Weitwinkel-Kamera»)
 	parcours.add_controls()                                # 3D-4.18: card «Testlauf», part «Verfolgungs-Parcours»
 	zwilling.add_controls()
@@ -4013,6 +4022,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "rover": patrol.rover_info()}
 	elif a == "overlay":
 		return {"ok": true, "overlay": overlay.info()}
+	elif a == "szenen":                                # 3D-4.x: the new scenes {do: info | spawn (kind) | restore}
+		return szenen.control(d)
 	elif a == "simreal":                               # 3D-4.4: {do: info | set (key, value) | sweep | bird | spawn (kind, from, to)}
 		return simreal.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
@@ -4255,7 +4266,7 @@ func status_text() -> String:
 func scenarios() -> Array:
 	var out := []
 	for s in Scenes.LIST:
-		out.append({"id": s[0], "name": s[1] + " (3D)", "kind": "world", "deletable": false})
+		out.append({"id": s[0], "name": s[1] + " (3D)", "kind": "world", "deletable": false, "en": Scenes.EN.get(s[0], "")})
 	return out
 
 

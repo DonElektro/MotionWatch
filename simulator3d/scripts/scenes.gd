@@ -6,7 +6,14 @@ extends RefCounted
 const LIST := [["camping", "Camping-Platz"], ["wald", "Wald"], ["parkplatz", "Parkplatz"], ["garten", "Garten / Haus"],
 		["lustig", "Lustiger Platz"], ["wild", "Wildbeobachtung"], ["verstecken", "Versteckspiel (viele Verstecke)"], ["ort", "Ort von der Karte (Schweiz)"],
 		["zuhause", "Mein Zuhause (selbst gebaut)"], ["bauernhof", "Bauernhof"], ["seeufer", "Seeufer mit Steg"], ["baustelle", "Baustelle"],
-		["stellplatz", "Wohnmobil-Stellplatz"], ["vorlage", "Meine Vorlage (3D-Datei)"], ["schlafzimmer", "Schlafzimmer (Wecker)"], ["parcours", "Verfolgungs-Parcours"]]
+		["stellplatz", "Wohnmobil-Stellplatz"], ["vorlage", "Meine Vorlage (3D-Datei)"], ["schlafzimmer", "Schlafzimmer (Wecker)"],
+		["camping_voll", "Voller Campingplatz"], ["tarnen", "Tarnen und Kriechen"], ["velodieb", "Velodieb"], ["parcours", "Verfolgungs-Parcours"]]   # 3D-4.x: szenenplus.gd
+# 3D-4.x: the English names for MoveEye (it translates them into its languages; without a name MoveEye shows the German one)
+const EN := {"camping": "Campsite", "wald": "Forest", "parkplatz": "Car park", "garten": "Garden / house", "lustig": "Funny place",
+		"wild": "Wildlife watching", "verstecken": "Hide and seek (many hiding places)", "ort": "Place from the map (Switzerland)",
+		"zuhause": "My home (self-built)", "bauernhof": "Farm", "seeufer": "Lake shore with jetty", "baustelle": "Building site",
+		"stellplatz": "Camper van site", "vorlage": "My template (3D file)", "schlafzimmer": "Bedroom (wake-up alarm)",
+		"camping_voll": "Full campsite", "tarnen": "Camouflage and crawling", "velodieb": "Bike thief", "parcours": "Tracking course"}
 
 # visitors that come by themselves, and how often (seconds from .. to)
 const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox", "boar", "deer", "herd", "cat", "badger", "hare", "hedgehog", "marten", "squirrel", "cyclist", "couple", "stroller", "courier", "police", "drunk", "bats", "owl", "burglar", "bbq", "homecoming", "fox_trash", "kids_tag", "boar_group"], 35.0, 110.0],
@@ -25,6 +32,9 @@ const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox"
 		"schlafzimmer": [["cat"], 300.0, 900.0],
 		"parcours": [["person", "jogger", "fox", "deer", "hare", "cyclist"], 60.0, 150.0],   # 3D-4.18 (the lessons switch them off)
 		"zuhause": [["cat", "cat", "fox", "badger", "hedgehog", "hare", "garden_person", "garden_person", "dog", "marten", "squirrel", "courier", "bats", "owl", "parcel", "burglar", "kids_tag", "person", "dogwalk"], 35.0, 100.0],
+		"camping_voll": [["person", "child", "dogwalk", "couple", "cyclist", "stroller", "cat", "fox", "hedgehog", "bbq", "kids_tag", "homecoming", "drunk", "burglar", "platz_besuch", "platz_besuch"], 30.0, 90.0],
+		"tarnen": [["person", "dogwalk", "fox", "deer", "hare", "cat", "burglar", "tarn_robben", "tarn_robben", "tarn_schirm", "tarn_karton"], 35.0, 100.0],
+		"velodieb": [["person", "cyclist", "dogwalk", "child", "couple", "cat", "fox", "courier", "velodieb", "velodieb"], 30.0, 90.0],
 		"wild": [["feed_deer", "feed_deer", "feed_boar", "feed_fox", "feed_badger", "feed_hare", "herd", "deer", "chamois", "ibex", "lynx", "owl"], 15.0, 40.0]}
 
 var m                     # main.gd
@@ -78,6 +88,8 @@ func build(id: String, parent: Node3D) -> void:
 			_schlafzimmer()
 		"parcours":
 			m.parcours.build_scene(self)                    # 3D-4.18: parcours.gd (fixed obstacles for the lessons)
+		"camping_voll", "tarnen", "velodieb":
+			preload("res://scripts/szenenplus.gd").build_scene(self, id)     # 3D-4.x: the new scenes (szenenplus.gd)
 		_:
 			_camping()
 	if EXTRA_HIDE.has(id):                                        # more places to hide (3D-3.13)
@@ -96,6 +108,7 @@ const EXTRA_HIDE := {
 	"seeufer": [8, 8.0, 40.0, ["bush", "bush", "rock", "woodpile", "crates"]],
 	"baustelle": [12, 7.0, 35.0, ["pallets", "container", "barrels", "crates", "wall", "pallets"]],
 	"stellplatz": [8, 8.0, 40.0, ["bush", "hedge", "car", "crates", "barrels"]],
+	"tarnen": [6, 9.0, 35.0, ["bush", "woodpile", "rock", "haybale"]],
 }
 
 
