@@ -1,7 +1,7 @@
 {
- "version": "3D-4.18",
+ "version": "3D-4.19",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31824294,
- "sha256": "72a78258f5646011f945d8f3c156b6acab54c5351ddbd383ffee9709407188ef",
- "notes": "Weitwinkel-Kamera mit Montage, Simulator-Werte (Akku, Uhr, Ort/Wetter, Pi-Wärme, Netz-Ausfall), Verfolgungs-Parcours mit «Entkomme der Kamera», neue Szenen Voller Campingplatz / Tarnen und Kriechen / Velodieb, Aufklapp-Knöpfe wie MoveEye"
+ "size": 31836196,
+ "sha256": "180fd397ab8c0008101de7f6b971f79df43ab9a3ce651700158792963935bab1",
+ "notes": "Virtueller SmallTV für MoveEye 2.98.48"
 }

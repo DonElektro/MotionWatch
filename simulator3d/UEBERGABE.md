@@ -1,8 +1,10 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 30.10.2026 · Simulator-Version **3D-4.18** · passende MoveEye-Version (früher Motion Watch) **2.96.2**
+Stand: 30.10.2026 · Simulator-Version **3D-4.19** · passende MoveEye-Version (früher Motion Watch) **2.96.2**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.19 (MoveEye 2.98.48): virtueller SmallTV (`smalltv.gd`, Plan `docs/SmallTV_Anzeige_Plan.md`) – gleiche HTTP-Schnittstelle wie das Gerät auf dem Simulator-Port, Kachel, Macken-Schalter, Zähler im Prüfstand.
 
 ## NEU in 3D-4.18 (MoveEye 2.98.47): Neue Szenen (szenenplus.gd, Branch wt-szenen)
 
