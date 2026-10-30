@@ -22,6 +22,9 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   Aufklapp-Knöpfe «Alle zuklappen · Nur Gruppen · Alle aufklappen», Suchfeld, Schalter Einfach/Experte, Symbole, Farben, aktive
   Zustände blau), in beiden gleich oder möglichst ähnlich bauen. Bei jeder optischen Änderung im einen Projekt das andere
   prüfen und mitziehen; im Konzept-Check melden, wenn es (noch) abweicht.
+  **Verschärft (Daniel, 30.10.2026 20:00):** auch die **Menüstruktur** (Gruppen, Reihenfolge, Namen, Einfach/Experte,
+  Karten) soll in beiden Projekten grosse Ähnlichkeit haben. Daniel **aktiv erinnern**, sobald etwas abweicht oder nicht ins
+  gemeinsame Schema passt (in jedem Bericht und bei jedem Vorschlag), mit Vorschlag zum Angleichen.
 - **Zwischenberichte (Wunsch Daniel, bis 2.11.2026 24:00):** bei jeder Aufgabe, die länger als 3–4 Minuten dauert, jede Minute
   eine kurze Checkliste senden (✅ erledigt / ⏳ offen).
   **Pausiert (Daniel, 30.10.2026 10:58):** vorerst keine Zwischenberichte, nur melden, wenn es News gibt (fertig, Problem, Frage).
