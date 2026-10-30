@@ -55,3 +55,9 @@ Schleifring wie das zweite Flachkabel). Ansteuerung offen (WS2812 an GPIO oder R
 Entscheide 30.10.2026 21:55: **RGB-LED an PCA9685 Kanälen 5/6/7** (gemeinsame Anode/Kathode noch wählen), Farben pro Zustand
 einstellbar; Diffusor **in der Form von Blinkis Auge**. Dazu **zwei Tasten am Gerät**: «Schutz» (kurz Wachsam ↔ Aus, lang Voll)
 und «Alarm quittieren» – Platz und Kabel (GPIO) im Gehäuse vorsehen.
+
+## Blindabdeckung für die Weitwinkel-Öffnung (Wunsch Daniel, 30.10.2026 22:05)
+
+Solange die Weitwinkel-Kamera nicht eingebaut ist: **einrastender Stopfen** (kleine Rastnasen, ohne Werkzeug lösbar) für die
+Kamera-Öffnung und ein zweiter kleiner Stopfen für das Loch der breiten IR-LED. Lieferung: **STL + parametrisches Python-Skript**.
+Wartet auf Daniels Gehäuse-Modell (Upload), damit die Masse der Öffnung stimmen.
