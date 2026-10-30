@@ -50,6 +50,9 @@ def _g2_tk_tour(self, tab=None, force=False):
     box = tk.Toplevel(self.root); box.overrideredirect(True); box.configure(bg=C["acc"]); box.attributes("-topmost", True)
     self._g2_tw = box
     inner = tk.Frame(box, bg=C["panel"], padx=12, pady=10); inner.pack(padx=2, pady=2)
+    bk = blinki_tk_label(inner, 58, "normal", C["panel"])            # 589: Blinki next to the text
+    if bk is not None:
+        bk.pack(side="left", anchor="n", padx=(0, 10)); inner = tk.Frame(inner, bg=C["panel"]); inner.pack(side="left", fill="both")
     l_t = tk.Label(inner, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11, "bold"), anchor="w", justify="left"); l_t.pack(fill="x")
     l_x = tk.Label(inner, bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9), anchor="w", justify="left", wraplength=300); l_x.pack(fill="x", pady=(2, 8))
     bf = tk.Frame(inner, bg=C["panel"]); bf.pack(fill="x")
@@ -83,6 +86,9 @@ def _g2_tk_tour(self, tab=None, force=False):
             f = tk.Toplevel(self.root); f.overrideredirect(True); f.configure(bg=C["acc"]); f.attributes("-topmost", True)
             f.geometry(f"{max(1, fw)}x{max(1, fh)}+{fx}+{fy}"); frames.append(f)
         l_t.config(text=t); l_x.config(text=x); l_n.config(text=f"{st['i'] + 1} / {len(steps)}")
+        im = blinki_tk_image(58, "normal" if st["i"] == 0 else "happy" if st["i"] == len(steps) - 1 else "point") if bk is not None else None
+        if im is not None:
+            bk.config(image=im); bk.image = im
         b_n.config(text=(tr("Done") if st["i"] == len(steps) - 1 else tr("Next") + " ›"))
         box.update_idletasks()
         bw, bh = box.winfo_reqwidth(), box.winfo_reqheight()
@@ -240,7 +246,8 @@ def _g2_tk_wizard(self, force=False):
         meta = next((s for s in G["steps"] if s["id"] == c), {"icon": "", "title": ""})
         nxt = {"fn": None}
         if c == "choose":
-            lab("👋 " + tr("Welcome to MoveEye"), False, True)
+            if not blinki_tk_say(body, "normal", "👋 " + tr("Welcome to MoveEye"), tr("Hello, I am Blinki!") + " " + tr("I am the eye of MoveEye. I show you everything step by step - and when I blink, all is well.")):
+                lab("👋 " + tr("Welcome to MoveEye"), False, True)
             lab(tr("Every step can be skipped. You can stop at any time and continue later (More → Setup)."))
             lab(tr("Quick (about 5 min.) or thorough?"), False)
             for mode, ic, n, dur, txt in (("quick", "⚡", "Quick", "about 5 minutes", "Basics, push messages to the phone, camera test and place, protection and walk test."),
@@ -252,7 +259,8 @@ def _g2_tk_wizard(self, force=False):
             self._fbtn(foot, tr("Later"), lambda: (g2_action({"action": "pause"}, "window"), close())).pack(side="right")
             return
         if c == "done":
-            lab("✅ " + tr("Done!"), False, True)
+            if not blinki_tk_say(body, "happy", "✅ " + tr("Done!")):
+                lab("✅ " + tr("Done!"), False, True)
             for s in G["steps"]:
                 d_ = s["id"] in G["done"]
                 lab(("✓ " if d_ else "⤼ ") + s["icon"] + " " + s["title"] + ("" if d_ else " · " + (tr("skipped automatically") + f" ({s['auto_skip']})" if s["auto_skip"] else tr("skipped"))),
@@ -265,7 +273,8 @@ def _g2_tk_wizard(self, force=False):
             self._fbtn(foot, tr("Let's go"), lambda: (g2_action({"action": "finish"}, "window"), close(), self.root.after(500, lambda: self._g2_tour(self.tab))), primary=True).pack(side="right")
             self._fbtn(foot, "‹ " + tr("Back"), lambda: move(-1)).pack(side="right", padx=(0, 6))
             return
-        lab(meta["icon"] + " " + meta["title"], False, True)
+        if not blinki_tk_say(body, "point", meta["icon"] + " " + meta["title"]):
+            lab(meta["icon"] + " " + meta["title"], False, True)
         if c == "basics":
             ttk.Label(body, text=tr("Language")).pack(anchor="w", pady=(6, 0))
             lv = tk.StringVar(value=cur_lang())
@@ -429,7 +438,7 @@ def _g2_tk_wizard(self, force=False):
                 res.config(text=("✓ " + tr("Connecting …")) if ok else "⚠ " + tr_err(err))
             r = row(); self._fbtn(r, tr("🔌 Connect"), conn).pack(side="left")
         elif c == "tours":
-            toggle(tr("Tour of a page on its first visit"), "tours_auto"); toggle(tr("Tip of the day"), "tip_of_day")
+            toggle(tr("Tour of a page on its first visit"), "tours_auto"); toggle(tr("Tip of the day"), "tip_of_day"); toggle(tr("Show Blinki"), "blinki_on")
             r = row(); self._fbtn(r, tr("↺ Reset all tours"), lambda: g2_action({"action": "tours_reset"}, "window")).pack(side="left")
 
         def go_next():

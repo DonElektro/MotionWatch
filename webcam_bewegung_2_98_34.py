@@ -42584,11 +42584,16 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
     };
     TOUR.key = ev => { if (ev.key === "Escape") tourEnd(false); else if (ev.key === "ArrowRight" || ev.key === "Enter") go(1); else if (ev.key === "ArrowLeft") go(-1); };
     function go(d) {
-      if (!TOUR) return; const n = TOUR.i + d; if (n >= TOUR.steps.length) { tourEnd(true); return; } if (n < 0) return; TOUR.i = n; paint();
+      if (!TOUR) return; const n = TOUR.i + d; if (n >= TOUR.steps.length) { tourEnd(true); return; } if (n < 0) return; TOUR.i = n; paint(d);
     }
-    function paint() {
+    function paint(d0) {
       const s = TOUR.steps[TOUR.i], n = TOUR.steps.length; bub.textContent = "";
-      bub.append(E("b", "", s.t), E("p", "", s.x));
+      const BK = window.MWBlinki && MWBlinki.on() ? MWBlinki : null; bub.classList.toggle("bk-on", !!BK);
+      if (BK) {                                      // 589: Blinki sits next to the bubble and «speaks» it
+        const hi = !BK.seenHi() && TOUR.i === 0 ? E("p", "bk-hi", "👋 " + BK.t("Hello, I am Blinki!")) : null; if (hi) BK.markHi();
+        const r = BK.row(TOUR.i === 0 ? "normal" : TOUR.i === n - 1 ? "happy" : "point", s.t, [hi, s.x]); bub.appendChild(r);
+        if (TOUR.i > 0 && d0 > 0) BK.happyHop(r.fig, TOUR.i === n - 1 ? "happy" : "point");
+      } else bub.append(E("b", "", s.t), E("p", "", s.x));
       const gb = E("div", "gb"), dots = E("span", "dots");
       for (let k = 0; k < n; k++) { const i = E("i"); if (k === TOUR.i) i.className = "on"; dots.appendChild(i); }
       dots.setAttribute("aria-label", T("Step") + " " + (TOUR.i + 1) + " " + T("of") + " " + n);
@@ -42679,17 +42684,27 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
       if (cur !== "choose" && cur !== "done") {
         if (ctx.skip) foot.appendChild(BT(T("Skip"), "sec", async () => { await gpost({action: "skip", id: cur}); move(1); }));
         foot.appendChild(BT(T("Next") + " ›", "", async () => {
-          if (ctx.next) { const r = await ctx.next(); if (r === false) return; if (r === "stop") return; }
-          await gpost({action: "done", id: cur}); move(1); }));
+          if (ctx.fig && window.MWBlinki) MWBlinki.mood(ctx.fig, "think");
+          if (ctx.next) { const r = await ctx.next(); if (r === false) { if (ctx.fig) MWBlinki.mood(ctx.fig, "point"); return; } if (r === "stop") return; }
+          await gpost({action: "done", id: cur}); bkHop = true; move(1); }));
       }
     }
-    const H = (ctx, icon, title, text) => { ctx.body.append(E("h2", "", icon + " " + title)); if (text) ctx.body.appendChild(E("p", "mut", text)); };
+    let bkHop = false;
+    const H = (ctx, icon, title, text, extra) => {
+      const BK = window.MWBlinki && MWBlinki.on() ? MWBlinki : null;
+      if (!BK) { ctx.body.append(E("h2", "", icon + " " + title)); if (text) ctx.body.appendChild(E("p", "mut", text)); return; }
+      const m = cur === "choose" ? "normal" : cur === "done" ? "happy" : "point";          // 589: Blinki says the text of the step
+      const r = BK.row(m, icon + " " + title, [...(extra || []), text ? E("p", "mut", text) : null], true); ctx.body.appendChild(r); ctx.fig = r.fig;
+      if (bkHop || cur === "done") BK.happyHop(r.fig, m); bkHop = false;
+    };
     const setKey = (k, v) => P("/api/set", {key: k, value: v});
     const tgRow = (ctx, label, on, fn) => { const l = E("label", "tg"); l.append(E("span", "", label), sw(on, fn)); ctx.body.appendChild(l); return l; };
     const gotoWith = async (href) => { await gpost({action: "step", id: cur}); location.href = href; };
     const STEP = {
       async choose(ctx) {
-        H(ctx, "👋", T("Welcome to MoveEye"), T("Every step can be skipped. You can stop at any time and continue later (More → Setup)."));
+        const BK = window.MWBlinki && MWBlinki.on() ? MWBlinki : null; if (BK) BK.markHi();
+        H(ctx, "👋", T("Welcome to MoveEye"), T("Every step can be skipped. You can stop at any time and continue later (More → Setup)."),
+          BK ? [E("p", "bk-hi", BK.t("Hello, I am Blinki!")), E("p", "", BK.t("I am the eye of MoveEye. I show you everything step by step - and when I blink, all is well."))] : null);
         ctx.body.appendChild(E("p", "", T("Quick (about 5 min.) or thorough?")));
         const mk = (mode, ic, name, dur, text, cls) => { const b = BT("", "big " + cls); const bb = E("b", "", ic + " " + name + " · " + dur); b.append(bb, E("small", "", text));
           b.onclick = async () => { const r = await gpost({action: "start", mode}); if (!r.ok) { ctx.err.textContent = r.error || T("error"); return; } await refresh(); cur = order()[0] || "done"; render(); }; return b; };
@@ -42897,6 +42912,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
         H(ctx, "💡", titleOf("tours").title || "");
         tgRow(ctx, T("Tour of a page on its first visit"), S.guide.tours_auto, x => { B.tourAuto = x; setKey("tours_auto", x); });
         tgRow(ctx, T("Tip of the day"), S.guide.tip_of_day, x => setKey("tip_of_day", x));
+        if (window.MWBlinki) tgRow(ctx, MWBlinki.t("Show Blinki"), MWBlinki.on(), x => { MWBlinki.set(x); setKey("blinki_on", x); render(); });
         const l = E("label", "tg"), s = E("select"); s.style.width = "auto";
         ["off", "basic", "normal", "all"].forEach(k => { const o = E("option", "", T(k)); o.value = k; s.appendChild(o); });
         try { s.value = ["off", "basic", "normal", "all"][(window.MW_GUIDE || {}).level ?? 2]; } catch (e) {}
@@ -42984,6 +43000,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
     bt.append(start, rs); box.appendChild(bt);
     const row = (label, on, key) => { const l = E("label", "tg"); l.append(E("span", "", label), sw(on, v => P("/api/set", {key, value: v}))); box.appendChild(l); };
     row(T("Tour of a page on its first visit"), g.tours_auto, "tours_auto"); row(T("Tip of the day"), g.tip_of_day, "tip_of_day");
+    if (window.MWBlinki) { const l = E("label", "tg"); l.append(E("span", "", MWBlinki.t("Show Blinki")), sw(MWBlinki.on(), v => { MWBlinki.set(v); P("/api/set", {key: "blinki_on", value: v}); })); box.appendChild(l); }
     const sysb = document.getElementById("g2-sys"); if (!sysb) return;
     sysb.textContent = ""; sysb.className = "g2-card"; sysb.appendChild(E("h3", "", "⚙ " + T("System")));
     const sb = E("div", "btns"); sb.appendChild(BT(T("⚠ Reset to factory settings …"), "sec", g2Factory)); sysb.appendChild(sb);
@@ -64000,6 +64017,9 @@ def _g2_tk_tour(self, tab=None, force=False):
     box = tk.Toplevel(self.root); box.overrideredirect(True); box.configure(bg=C["acc"]); box.attributes("-topmost", True)
     self._g2_tw = box
     inner = tk.Frame(box, bg=C["panel"], padx=12, pady=10); inner.pack(padx=2, pady=2)
+    bk = blinki_tk_label(inner, 58, "normal", C["panel"])            # 589: Blinki next to the text
+    if bk is not None:
+        bk.pack(side="left", anchor="n", padx=(0, 10)); inner = tk.Frame(inner, bg=C["panel"]); inner.pack(side="left", fill="both")
     l_t = tk.Label(inner, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11, "bold"), anchor="w", justify="left"); l_t.pack(fill="x")
     l_x = tk.Label(inner, bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9), anchor="w", justify="left", wraplength=300); l_x.pack(fill="x", pady=(2, 8))
     bf = tk.Frame(inner, bg=C["panel"]); bf.pack(fill="x")
@@ -64033,6 +64053,9 @@ def _g2_tk_tour(self, tab=None, force=False):
             f = tk.Toplevel(self.root); f.overrideredirect(True); f.configure(bg=C["acc"]); f.attributes("-topmost", True)
             f.geometry(f"{max(1, fw)}x{max(1, fh)}+{fx}+{fy}"); frames.append(f)
         l_t.config(text=t); l_x.config(text=x); l_n.config(text=f"{st['i'] + 1} / {len(steps)}")
+        im = blinki_tk_image(58, "normal" if st["i"] == 0 else "happy" if st["i"] == len(steps) - 1 else "point") if bk is not None else None
+        if im is not None:
+            bk.config(image=im); bk.image = im
         b_n.config(text=(tr("Done") if st["i"] == len(steps) - 1 else tr("Next") + " ›"))
         box.update_idletasks()
         bw, bh = box.winfo_reqwidth(), box.winfo_reqheight()
@@ -64190,7 +64213,8 @@ def _g2_tk_wizard(self, force=False):
         meta = next((s for s in G["steps"] if s["id"] == c), {"icon": "", "title": ""})
         nxt = {"fn": None}
         if c == "choose":
-            lab("👋 " + tr("Welcome to MoveEye"), False, True)
+            if not blinki_tk_say(body, "normal", "👋 " + tr("Welcome to MoveEye"), tr("Hello, I am Blinki!") + " " + tr("I am the eye of MoveEye. I show you everything step by step - and when I blink, all is well.")):
+                lab("👋 " + tr("Welcome to MoveEye"), False, True)
             lab(tr("Every step can be skipped. You can stop at any time and continue later (More → Setup)."))
             lab(tr("Quick (about 5 min.) or thorough?"), False)
             for mode, ic, n, dur, txt in (("quick", "⚡", "Quick", "about 5 minutes", "Basics, push messages to the phone, camera test and place, protection and walk test."),
@@ -64202,7 +64226,8 @@ def _g2_tk_wizard(self, force=False):
             self._fbtn(foot, tr("Later"), lambda: (g2_action({"action": "pause"}, "window"), close())).pack(side="right")
             return
         if c == "done":
-            lab("✅ " + tr("Done!"), False, True)
+            if not blinki_tk_say(body, "happy", "✅ " + tr("Done!")):
+                lab("✅ " + tr("Done!"), False, True)
             for s in G["steps"]:
                 d_ = s["id"] in G["done"]
                 lab(("✓ " if d_ else "⤼ ") + s["icon"] + " " + s["title"] + ("" if d_ else " · " + (tr("skipped automatically") + f" ({s['auto_skip']})" if s["auto_skip"] else tr("skipped"))),
@@ -64215,7 +64240,8 @@ def _g2_tk_wizard(self, force=False):
             self._fbtn(foot, tr("Let's go"), lambda: (g2_action({"action": "finish"}, "window"), close(), self.root.after(500, lambda: self._g2_tour(self.tab))), primary=True).pack(side="right")
             self._fbtn(foot, "‹ " + tr("Back"), lambda: move(-1)).pack(side="right", padx=(0, 6))
             return
-        lab(meta["icon"] + " " + meta["title"], False, True)
+        if not blinki_tk_say(body, "point", meta["icon"] + " " + meta["title"]):
+            lab(meta["icon"] + " " + meta["title"], False, True)
         if c == "basics":
             ttk.Label(body, text=tr("Language")).pack(anchor="w", pady=(6, 0))
             lv = tk.StringVar(value=cur_lang())
@@ -64379,7 +64405,7 @@ def _g2_tk_wizard(self, force=False):
                 res.config(text=("✓ " + tr("Connecting …")) if ok else "⚠ " + tr_err(err))
             r = row(); self._fbtn(r, tr("🔌 Connect"), conn).pack(side="left")
         elif c == "tours":
-            toggle(tr("Tour of a page on its first visit"), "tours_auto"); toggle(tr("Tip of the day"), "tip_of_day")
+            toggle(tr("Tour of a page on its first visit"), "tours_auto"); toggle(tr("Tip of the day"), "tip_of_day"); toggle(tr("Show Blinki"), "blinki_on")
             r = row(); self._fbtn(r, tr("↺ Reset all tours"), lambda: g2_action({"action": "tours_reset"}, "window")).pack(side="left")
 
         def go_next():
@@ -65624,6 +65650,268 @@ def qr_selftest():
 
 
 SELFTEST_EXTRA.append(("QR codes (ntfy link, gallery, helper)", qr_selftest))
+# ----------------------------------------------------------------------------
+# Wish of Daniel (30.10.2026): an own, ABSTRACT mascot «Blinki» - only in the guide (setup assistant) and the tours.
+# Built from the shapes of the logo (144 / simulator mw_logo.gd): the orange field-of-view fan is the body, the eye at the
+# bottom (orange iris, dark pupil) is the face, the four detection corners float in the fan and show the mood.
+#   * blinks every few seconds (the name), looks left / right, hops when a step is done, «talks» when a new text comes
+#   * moods: normal · point (explains, looks at the text) · happy (eye smiles, heart) · think (looks up, three dots)
+#   * prefers-reduced-motion: no animation; light / dark / Rotlicht (html.sxnight: dim colours)
+#   * setting «blinki_on» (Setup; also in the guide step «Tours and tips» and under More); off = the plain boxes as before
+# Web: window.MWBlinki (make / mood / hop / talk / row) is put in front of the script /g2/ui.js (516), which uses it in the
+# tour bubble and in the guide. Window: blinki_tk_image() draws the same figure with cv2 into a PNG (585 uses it).
+# ----------------------------------------------------------------------------
+CFG.setdefault("blinki_on", True); DEFAULTS.setdefault("blinki_on", True)
+TOGGLES.append(("Setup", "blinki_on", "Show Blinki (the little figure that explains the setup and the tours)"))
+SIMPLE_KEYS.add("blinki_on")
+SET_HELP["blinki_on"] = ("Blinki is the little figure made of the MoveEye logo: it speaks the texts of the setup and the tours.",
+                         "On - switch it off if you prefer plain text boxes.")
+BLINKI_TX = ["Hello, I am Blinki!", "I am the eye of MoveEye. I show you everything step by step - and when I blink, all is well.", "Show Blinki"]
+
+# the figure (viewBox 0 0 100 112): fan = body, eye at the bottom = face, corners in the fan = mood; __I__ = unique id
+BLINKI_SVG = (
+    '<svg viewBox="0 0 100 112" class="bk-svg" focusable="false" aria-hidden="true"><defs>'
+    '<linearGradient id="bkg__I__" x1="0" y1="1" x2="0" y2="0"><stop offset="0" class="bk-s0"/><stop offset="1" class="bk-s1"/></linearGradient>'
+    '<clipPath id="bkc__I__"><circle cx="50" cy="80" r="16.6"/></clipPath></defs>'
+    '<g class="bk-all">'
+    '<ellipse class="bk-ft" cx="39" cy="105.5" rx="7.5" ry="3.8"/><ellipse class="bk-ft" cx="61" cy="105.5" rx="7.5" ry="3.8"/>'
+    '<g class="bk-body"><path class="bk-fan" fill="url(#bkg__I__)" d="M50 80 L10.6 29.6 A64 64 0 0 1 89.4 29.6 Z"/>'
+    '<g class="bk-frm"><path class="bk-br" d="M37 33 V27 H43 M57 27 H63 V33 M63 45 V51 H57 M43 51 H37 V45"/>'
+    '<path class="bk-i bk-ip" d="M46 33.5 L54.5 39 L46 44.5"/>'
+    '<path class="bk-i bk-ih" d="M50 46 C42 40.5 42.5 33.5 46.5 33.5 C48.6 33.5 49.6 35 50 36.4 C50.4 35 51.4 33.5 53.5 33.5 C57.5 33.5 58 40.5 50 46 Z"/>'
+    '<g class="bk-i bk-it"><circle cx="43.5" cy="39" r="2.4"/><circle cx="50" cy="39" r="2.4"/><circle cx="56.5" cy="39" r="2.4"/></g></g></g>'
+    '<g class="bk-eye"><circle class="bk-scl" cx="50" cy="80" r="17"/>'
+    '<g clip-path="url(#bkc__I__)"><g class="bk-pup"><circle class="bk-iris" cx="50" cy="80" r="10.5"/><circle class="bk-pupil" cx="50" cy="80" r="5.2"/>'
+    '<circle class="bk-hl" cx="53.2" cy="76.6" r="2"/></g>'
+    '<path class="bk-hap" d="M40.5 83.5 Q50 71 59.5 83.5"/>'
+    '<rect class="bk-lid" x="32" y="62" width="36" height="36"/></g>'
+    '<circle class="bk-rim" cx="50" cy="80" r="17"/></g></g></svg>')
+
+BLINKI_CSS = r"""
+.bk{--bk-o:#ff9f43;--bk-o2:#e8590c;--bk-w:#fff;--bk-d:#0a0e14;--bk-hl:#fff;color:var(--txt,#e8eef5);width:60px;flex:none;align-self:flex-start;line-height:0}
+body.light .bk{--bk-o2:#d9530a}
+html.sxnight .bk{--bk-o:#7a160e;--bk-o2:#5a0f0a;--bk-w:#2a0606;--bk-d:#000;--bk-hl:#3a0a08}
+.bk svg{display:block;width:100%;height:auto;overflow:visible}
+.bk .bk-s0{stop-color:var(--bk-o);stop-opacity:1}.bk .bk-s1{stop-color:var(--bk-o);stop-opacity:.4}
+.bk .bk-ft{fill:var(--bk-o2)}
+.bk .bk-br{fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.bk .bk-i{display:none}.bk .bk-ip{fill:none;stroke:currentColor;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.bk .bk-ih{fill:var(--bk-o2)}.bk .bk-it circle{fill:currentColor}
+.bk .bk-scl{fill:var(--bk-w)}.bk .bk-rim{fill:none;stroke:var(--bk-o2);stroke-width:2.6}
+.bk .bk-iris{fill:var(--bk-o)}.bk .bk-pupil{fill:var(--bk-d)}.bk .bk-hl{fill:var(--bk-hl)}
+.bk .bk-hap{display:none;fill:none;stroke:var(--bk-d);stroke-width:3.6;stroke-linecap:round}
+.bk .bk-all,.bk .bk-body,.bk .bk-frm,.bk .bk-pup{transform-box:view-box}
+.bk .bk-body{transform-origin:50px 80px;transition:transform .35s ease}
+.bk .bk-frm,.bk .bk-pup{transition:transform .35s ease}
+.bk .bk-all{transform-origin:50px 110px}
+.bk .bk-lid{fill:var(--bk-o2);transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0);animation:bk-blink 4.8s infinite}
+.bk .bk-pup{animation:bk-look 7s ease-in-out infinite}
+@keyframes bk-blink{0%,90%,100%{transform:scaleY(0)}93%,94.5%{transform:scaleY(1)}}
+@keyframes bk-look{0%,8%,100%{transform:translate(0,0)}20%,36%{transform:translate(-5px,0)}52%,70%{transform:translate(5px,0)}84%{transform:translate(0,0)}}
+.bk[data-m=point] .bk-pup{animation:none;transform:translate(5px,-1px)}
+.bk[data-m=point] .bk-body{transform:rotate(7deg)}.bk[data-m=point] .bk-frm{transform:translate(3px,0)}.bk[data-m=point] .bk-ip{display:inline}
+.bk[data-m=happy] .bk-pup{display:none}.bk[data-m=happy] .bk-hap{display:inline}.bk[data-m=happy] .bk-lid{animation:none}.bk[data-m=happy] .bk-ih{display:inline}
+.bk[data-m=think] .bk-pup{animation:none;transform:translate(-4px,-5px)}.bk[data-m=think] .bk-body{transform:rotate(-5deg)}.bk[data-m=think] .bk-it{display:inline}
+.bk[data-m=think] .bk-it circle{animation:bk-dot 1.2s infinite}.bk[data-m=think] .bk-it circle:nth-child(2){animation-delay:.2s}.bk[data-m=think] .bk-it circle:nth-child(3){animation-delay:.4s}
+@keyframes bk-dot{0%,60%,100%{opacity:.25}30%{opacity:1}}
+.bk.hop .bk-all{animation:bk-hop .75s ease-out}
+@keyframes bk-hop{0%{transform:translateY(0) scale(1,1)}15%{transform:translateY(0) scale(1.08,.9)}40%{transform:translateY(-13px) scale(.95,1.06)}62%{transform:translateY(0) scale(1.06,.93)}80%{transform:translateY(-3px) scale(1,1)}100%{transform:translateY(0) scale(1,1)}}
+.bk.talk .bk-fan{animation:bk-talk .32s ease-in-out 4}
+.bk .bk-fan{transform-box:view-box;transform-origin:50px 80px}
+@keyframes bk-talk{0%,100%{transform:scale(1)}50%{transform:scale(1.045,1.025)}}
+@media (prefers-reduced-motion:reduce){.bk *,.bk.hop .bk-all,.bk.talk .bk-fan{animation:none!important;transition:none!important}}
+.bk-row{display:flex;gap:10px;align-items:flex-start;margin:6px 0 4px}
+.bk-say{position:relative;flex:1;min-width:0;background:var(--bg,#0b1016);border:1px solid var(--line,#2a3646);border-radius:14px;padding:9px 12px;box-sizing:border-box}
+body.light .bk-say{background:var(--panel2,#f3f5f8)}
+.bk-say::before{content:"";position:absolute;left:-8px;top:18px;width:14px;height:14px;background:inherit;border-left:1px solid var(--line,#2a3646);border-bottom:1px solid var(--line,#2a3646);transform:rotate(45deg);border-radius:0 0 0 3px}
+.bk-say>b{display:block;font-size:16px;margin:0 0 3px}.bk-say>p{margin:0 0 4px!important;line-height:1.45}.bk-say>p:last-child{margin-bottom:0!important}
+.bk-say .bk-hi{color:var(--txt,#e8eef5);font-weight:600}
+.g2m .bk-row h2{margin:0 0 4px;font-size:18px}
+#g2-bub.bk-on{width:min(380px,calc(100vw - 24px))}
+#g2-bub.bk-on .bk-row{margin:0 0 10px}#g2-bub.bk-on .bk-say>b{font-size:15px}
+@media (max-width:420px){.bk{width:50px}.bk-row{gap:8px}}
+"""
+
+BLINKI_JS = r"""
+(function () {                                    // 589: Blinki - the little figure of the guide and the tours
+  if (window.MWBlinki) return;
+  const K = window.MW_BK || {on: true, tx: {}, svg: ""};
+  let n = 0, on = !!K.on;
+  const st = document.createElement("style"); st.textContent = K.css || ""; (document.head || document.documentElement).appendChild(st);
+  const t = k => (K.tx || {})[k] || k;
+  function make(mood) {
+    const w = document.createElement("div"); w.className = "bk"; w.dataset.m = mood || "normal"; w.setAttribute("aria-hidden", "true");
+    w.innerHTML = String(K.svg || "").split("__I__").join("x" + (++n) + "_" + Math.random().toString(36).slice(2, 7)); return w;
+  }
+  const again = (el, cls, ms) => { if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); clearTimeout(el["_" + cls]); el["_" + cls] = setTimeout(() => el.classList.remove(cls), ms); };
+  const mood = (el, m) => { if (el) el.dataset.m = m || "normal"; };
+  const hop = el => again(el, "hop", 800), talk = el => again(el, "talk", 1350);
+  function happyHop(el, after) { mood(el, "happy"); hop(el); setTimeout(() => mood(el, after || "point"), 1100); }
+  // a row: Blinki + a speech bubble with the title (b or h2) and the texts (strings or nodes)
+  function row(m, title, texts, h2) {
+    const r = document.createElement("div"); r.className = "bk-row"; const f = make(m); const s = document.createElement("div"); s.className = "bk-say";
+    if (title) { const b = document.createElement(h2 ? "h2" : "b"); b.textContent = title; s.appendChild(b); }
+    (texts || []).forEach(x => { if (x == null || x === "") return; if (typeof x === "string") { const p = document.createElement("p"); p.textContent = x; s.appendChild(p); } else s.appendChild(x); });
+    r.append(f, s); r.fig = f; talk(f); return r;
+  }
+  const seenHi = () => { try { return localStorage.getItem("mw-bk-hi") === "1"; } catch (e) { return false; } };
+  const markHi = () => { try { localStorage.setItem("mw-bk-hi", "1"); } catch (e) {} };
+  window.MWBlinki = {on: () => on, set: v => { on = !!v; }, make, mood, hop, talk, happyHop, row, t, seenHi, markHi};
+})();
+"""
+
+
+def blinki_js(L):
+    data = {"on": bool(CFG.get("blinki_on", True)), "tx": {s: tr(s, L) for s in BLINKI_TX}, "svg": BLINKI_SVG, "css": BLINKI_CSS}
+    return "window.MW_BK=" + json.dumps(data, ensure_ascii=False).replace("</", "<\\/") + ";\n" + BLINKI_JS
+
+
+_g2_js_plain = g2_js
+
+
+def _g2_js_blinki(L):
+    """the script /g2/ui.js: Blinki first (window.MWBlinki), then the guide / tours (516)"""
+    return blinki_js(L) + _g2_js_plain(L)
+
+
+# wraps: g2_js
+g2_js = _g2_js_blinki
+
+
+# ---- the window: the same figure as a small PNG, drawn with cv2 (no SVG library needed) --------------------------------
+_BLINKI_TK = {}
+
+
+def _bk_hex(c, d=(232, 238, 245)):
+    try:
+        c = str(c).lstrip("#")
+        return (int(c[4:6], 16), int(c[2:4], 16), int(c[0:2], 16))           # BGR for cv2
+    except (ValueError, IndexError):
+        return d[::-1]
+
+
+def blinki_png(height=72, mood="normal", line="#e8eef5", red=False):
+    """Blinki as PNG bytes (RGBA, transparent background). mood: normal / point / happy / think"""
+    S = 8                                                    # draw 8 x bigger, then scale down (smooth edges)
+    W, H = 100, 112
+    k = height / float(H) * S
+    w, h = max(8, int(round(W * k))), max(8, int(round(H * k)))
+    O, O2, WH, DK = ((14, 22, 122), (10, 15, 90), (6, 6, 42), (0, 0, 0)) if red else ((67, 159, 255), (12, 89, 232), (255, 255, 255), (20, 14, 10))
+    LN = _bk_hex(line)
+    rgb = np.zeros((h, w, 3), np.float32); a = np.zeros((h, w), np.float32)
+
+    def P(x, y):
+        return [int(round(x * k)), int(round(y * k))]
+
+    def put(mask, col, alpha=1.0):
+        m = (mask > 0).astype(np.float32) * (alpha if np.isscalar(alpha) else alpha)
+        for i in range(3):
+            rgb[..., i] = rgb[..., i] * (1 - m) + col[i] * m
+        a[:] = a * (1 - m) + m
+    tilt = {"point": 7.0, "think": -5.0}.get(mood, 0.0)
+    rot = lambda x, y: (50 + (x - 50) * math.cos(math.radians(tilt)) - (y - 80) * math.sin(math.radians(tilt)),
+                        80 + (x - 50) * math.sin(math.radians(tilt)) + (y - 80) * math.cos(math.radians(tilt)))
+    for fx in (39, 61):                                      # feet
+        m = np.zeros((h, w), np.uint8); cv2.ellipse(m, tuple(P(fx, 105.5)), (int(7.5 * k), int(3.8 * k)), 0, 0, 360, 255, -1); put(m, O2)
+    pts = [rot(50, 80)] + [rot(50 + 64 * math.cos(math.radians(g)), 80 + 64 * math.sin(math.radians(g))) for g in np.linspace(-128, -52, 24)]
+    m = np.zeros((h, w), np.uint8); cv2.fillPoly(m, [np.array([P(x, y) for x, y in pts], np.int32)], 255)
+    yy = np.linspace(0, H, h, dtype=np.float32)[:, None] * np.ones((1, w), np.float32)
+    put(m, O, np.clip(0.4 + 0.6 * (yy - 16) / 64.0, 0.4, 1.0))   # the fan: opaque at the eye, lighter at the top
+    dx = 3.0 if mood == "point" else 0.0
+    lw = max(1, int(3 * k))
+    for seg in (((37, 33), (37, 27), (43, 27)), ((57, 27), (63, 27), (63, 33)), ((63, 45), (63, 51), (57, 51)), ((43, 51), (37, 51), (37, 45))):
+        m = np.zeros((h, w), np.uint8)
+        cv2.polylines(m, [np.array([P(*rot(x + dx, y)) for x, y in seg], np.int32)], False, 255, lw, cv2.LINE_AA); put(m, LN)
+    if mood == "point":
+        m = np.zeros((h, w), np.uint8); cv2.polylines(m, [np.array([P(*rot(x + dx, y)) for x, y in ((46, 33.5), (54.5, 39), (46, 44.5))], np.int32)], False, 255, lw, cv2.LINE_AA); put(m, LN)
+    elif mood == "think":
+        for cx in (43.5, 50, 56.5):
+            m = np.zeros((h, w), np.uint8); cv2.circle(m, tuple(P(*rot(cx, 39))), int(2.4 * k), 255, -1); put(m, LN)
+    elif mood == "happy":
+        m = np.zeros((h, w), np.uint8)
+        cv2.circle(m, tuple(P(46.6, 37.6)), int(3.9 * k), 255, -1); cv2.circle(m, tuple(P(53.4, 37.6)), int(3.9 * k), 255, -1)
+        cv2.fillPoly(m, [np.array([P(43, 39.5), P(57, 39.5), P(50, 46.5)], np.int32)], 255); put(m, O2)
+    m = np.zeros((h, w), np.uint8); cv2.circle(m, tuple(P(50, 80)), int(17 * k), 255, -1); put(m, WH)   # the eye
+    if mood == "happy":
+        m = np.zeros((h, w), np.uint8)
+        q = [(40.5 + 19 * t_, 83.5 - 25 * t_ * (1 - t_)) for t_ in np.linspace(0, 1, 16)]
+        cv2.polylines(m, [np.array([P(x, y) for x, y in q], np.int32)], False, 255, max(1, int(3.6 * k)), cv2.LINE_AA); put(m, DK)
+    else:
+        px, py = {"point": (5, -1), "think": (-4, -5)}.get(mood, (0, 0))
+        for r_, col in ((10.5, O), (5.2, DK)):
+            m = np.zeros((h, w), np.uint8); cv2.circle(m, tuple(P(50 + px, 80 + py)), int(r_ * k), 255, -1)
+            put(m, col)
+        if not red:
+            m = np.zeros((h, w), np.uint8); cv2.circle(m, tuple(P(53.2 + px, 76.6 + py)), int(2 * k), 255, -1); put(m, (255, 255, 255))
+    m = np.zeros((h, w), np.uint8); cv2.circle(m, tuple(P(50, 80)), int(17 * k), 255, max(1, int(2.6 * k)), cv2.LINE_AA); put(m, O2)
+    pm = rgb                                                 # rgb is premultiplied: scale down without dark edges
+    tw, th = int(round(W * height / float(H))), int(height)
+    pm = cv2.resize(pm, (tw, th), interpolation=cv2.INTER_AREA); a2 = cv2.resize(a, (tw, th), interpolation=cv2.INTER_AREA)
+    out = np.dstack([np.clip(pm / np.maximum(a2[..., None], 1e-4), 0, 255), np.clip(a2 * 255, 0, 255)]).astype(np.uint8)
+    ok, buf = cv2.imencode(".png", out)
+    return buf.tobytes() if ok else b""
+
+
+def blinki_tk_image(height=64, mood="normal"):
+    """a tk.PhotoImage of Blinki in the colours of the window (cached); None when off or not possible"""
+    if not CFG.get("blinki_on", True):
+        return None
+    try:
+        red = tk_theme_step() == "red"
+    except Exception:
+        red = False
+    key = (height, mood, C.get("txt"), red)
+    if key not in _BLINKI_TK:
+        try:
+            import base64
+            _BLINKI_TK[key] = tk.PhotoImage(data=base64.b64encode(blinki_png(height, mood, C.get("txt") or "#e8eef5", red)).decode("ascii"))
+        except Exception:
+            _BLINKI_TK[key] = None
+    return _BLINKI_TK[key]
+
+
+def blinki_tk_label(parent, height=64, mood="normal", bg=None):
+    """a label with Blinki (or None when it is switched off)"""
+    img = blinki_tk_image(height, mood)
+    if img is None:
+        return None
+    lb = tk.Label(parent, image=img, bg=bg or parent.cget("bg"), bd=0, highlightthickness=0)
+    lb.image = img
+    return lb
+
+
+def blinki_selftest():
+    for md in ("normal", "point", "happy", "think"):
+        png = blinki_png(64, md)
+        assert png[:8] == b"\x89PNG\r\n\x1a\n" and len(png) > 300, "Blinki PNG " + md
+        im = cv2.imdecode(np.frombuffer(png, np.uint8), cv2.IMREAD_UNCHANGED)
+        assert im is not None and im.shape[2] == 4 and im[0, 0, 3] == 0 and im[int(im.shape[0] * 0.71), im.shape[1] // 2, 3] > 200, "Blinki: transparent + eye"
+    js = _g2_js_blinki("de")
+    assert js.index("window.MWBlinki") < js.index("function g2()") and "Hallo, ich bin Blinki" in js and "__I__" in js
+    assert "MWBlinki" in G2_JS and "blinki_on" in DEFAULTS and tr("Show Blinki", "fr") != "Show Blinki"
+    return True
+
+
+SELFTEST_EXTRA.append(("Blinki (guide figure: web script, window picture)", blinki_selftest))
+
+
+def blinki_tk_say(parent, mood, title, text="", bg=None):
+    """window: Blinki and its words (title bold, text below) in one row; False when Blinki is off (then the caller writes the title)"""
+    bg = bg or parent.cget("bg")
+    try:
+        fr = tk.Frame(parent, bg=bg)
+        lb = blinki_tk_label(fr, 60, mood, bg)
+        if lb is None:
+            fr.destroy(); return False
+        lb.pack(side="left", anchor="n", padx=(0, 10))
+        tf = tk.Frame(fr, bg=C["panel"], padx=10, pady=6, highlightthickness=1, highlightbackground=C["line"]); tf.pack(side="left", fill="x", expand=True, anchor="n")
+        tk.Label(tf, text=title, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 12, "bold"), anchor="w", justify="left", wraplength=400).pack(fill="x")
+        if text:
+            tk.Label(tf, text=text, bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9), anchor="w", justify="left", wraplength=400).pack(fill="x", pady=(2, 0))
+        fr.pack(fill="x", pady=(6, 4))
+        return True
+    except Exception:
+        return False
 TRX['it'].update({
     '(or the address from the push message).': "(o l'indirizzo della notifica push).",
     '+ Add relay': '+ Aggiungere un relè',
@@ -75206,6 +75494,57 @@ if _hp_en2 > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_guide2(HELP_X[_L], _L)
+_HX_BLINKI = {
+    "Hello, I am Blinki!": ("Hallo, ich bin Blinki!", "Salut, je suis Blinki !", "Ciao, sono Blinki!", "Allegra, jau sun Blinki!"),
+    "I am the eye of MoveEye. I show you everything step by step - and when I blink, all is well.":
+        ("Ich bin das Auge von MoveEye. Ich zeige dir alles Schritt für Schritt – und wenn ich blinzle, ist alles in Ordnung.",
+         "Je suis l’œil de MoveEye. Je te montre tout pas à pas – et quand je cligne de l’œil, tout va bien.",
+         "Sono l’occhio di MoveEye. Ti mostro tutto passo dopo passo – e quando sbatto l’occhio, va tutto bene.",
+         "Jau sun l’egl da MoveEye. Jau ta mussel tut pass per pass – e cura che jau tschegn, è tut en urden."),
+    "Show Blinki": ("Blinki zeigen", "Afficher Blinki", "Mostra Blinki", "Mussar Blinki"),
+    "Show Blinki (the little figure that explains the setup and the tours)":
+        ("Blinki zeigen (die kleine Figur, die die Einrichtung und die Rundgänge erklärt)",
+         "Afficher Blinki (le petit personnage qui explique la configuration et les visites)",
+         "Mostra Blinki (la piccola figura che spiega la configurazione e i tour)",
+         "Mussar Blinki (la pitschna figura che explitgescha l’installaziun ed ils girs)"),
+    "Blinki is the little figure made of the MoveEye logo: it speaks the texts of the setup and the tours.":
+        ("Blinki ist die kleine Figur aus dem MoveEye-Logo: Sie spricht die Texte der Einrichtung und der Rundgänge.",
+         "Blinki est le petit personnage fait du logo MoveEye : il dit les textes de la configuration et des visites.",
+         "Blinki è la piccola figura fatta dal logo MoveEye: dice i testi della configurazione e dei tour.",
+         "Blinki è la pitschna figura fatga dal logo da MoveEye: ella di ils texts da l’installaziun e dals girs."),
+    "On - switch it off if you prefer plain text boxes.":
+        ("Ein – aus, wenn du lieber einfache Textfelder magst.", "Activé – désactive-le si tu préfères de simples cases de texte.",
+         "Attivo – disattivalo se preferisci semplici caselle di testo.", "En – deactivar, sche ti prefereschas simplas chaschettas da text."),
+}
+for _k, _v in _HX_BLINKI.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# ---- the manual: one line in the chapter «Einrichtung, Rundgänge und Tipps» (633) ---------------------------------------
+_HELP_BLINKI = {
+    "de": '<li><b>Blinki</b> 👁: die kleine Figur aus dem Logo (Sichtfächer, Auge, Erkennungs-Ecken) spricht die Texte der Einrichtung und der Rundgänge – sie blinzelt, schaut umher und hüpft, wenn ein Schritt erledigt ist. Ausschalten: Einstellungen → Einrichtung → «Blinki zeigen» (oder unter Mehr).</li>',
+    "en": '<li><b>Blinki</b> 👁: the little figure made of the logo (field of view, eye, detection corners) speaks the texts of the setup and the tours – it blinks, looks around and hops when a step is done. Switch it off: Settings → Setup → «Show Blinki» (or under More).</li>',
+    "fr": '<li><b>Blinki</b> 👁 : le petit personnage fait du logo (champ de vision, œil, coins de détection) dit les textes de la configuration et des visites – il cligne de l’œil, regarde autour de lui et saute quand une étape est faite. Désactiver : Réglages → Configuration → «Afficher Blinki» (ou sous Plus).</li>',
+    "it": '<li><b>Blinki</b> 👁: la piccola figura fatta dal logo (campo visivo, occhio, angoli di rilevamento) dice i testi della configurazione e dei tour – sbatte l’occhio, si guarda intorno e salta quando un passo è fatto. Disattivare: Impostazioni → Configurazione → «Mostra Blinki» (o sotto Altro).</li>',
+    "rm": '<li><b>Blinki</b> 👁: la pitschna figura fatga dal logo (champ da vista, egl, chantuns da reconuschientscha) di ils texts da l’installaziun e dals girs – ella tschegna, guarda enturn e siglia, cura ch’in pass è fatg. Deactivar: Parameters → Installaziun → «Mussar Blinki» (u sut Dapli).</li>',
+}
+
+
+def _help_blinki(doc, lang):
+    i = doc.find('<section id="guide2"')
+    j = doc.find("</ul>", i) if i >= 0 else -1
+    if j < 0 or "<b>Blinki</b>" in doc[i:j]:
+        return doc
+    return doc[:j] + _HELP_BLINKI[lang] + doc[j:]
+
+
+_hp_enb = HELP_PAGE.find('<div lang="en">')
+if _hp_enb > 0:
+    HELP_PAGE = _help_blinki(HELP_PAGE[:_hp_enb], "de") + _help_blinki(HELP_PAGE[_hp_enb:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_blinki(HELP_X[_L], _L)
 # All parts have added their settings now (CFG.setdefault in later parts), the start (640) loads the file only after this.
 import copy as _copy_g2
 FACTORY_CFG = _copy_g2.deepcopy(CFG)
