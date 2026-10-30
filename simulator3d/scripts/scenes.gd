@@ -6,7 +6,7 @@ extends RefCounted
 const LIST := [["camping", "Camping-Platz"], ["wald", "Wald"], ["parkplatz", "Parkplatz"], ["garten", "Garten / Haus"],
 		["lustig", "Lustiger Platz"], ["wild", "Wildbeobachtung"], ["verstecken", "Versteckspiel (viele Verstecke)"], ["ort", "Ort von der Karte (Schweiz)"],
 		["zuhause", "Mein Zuhause (selbst gebaut)"], ["bauernhof", "Bauernhof"], ["seeufer", "Seeufer mit Steg"], ["baustelle", "Baustelle"],
-		["stellplatz", "Wohnmobil-Stellplatz"], ["vorlage", "Meine Vorlage (3D-Datei)"], ["schlafzimmer", "Schlafzimmer (Wecker)"]]
+		["stellplatz", "Wohnmobil-Stellplatz"], ["vorlage", "Meine Vorlage (3D-Datei)"], ["schlafzimmer", "Schlafzimmer (Wecker)"], ["parcours", "Verfolgungs-Parcours"]]
 
 # visitors that come by themselves, and how often (seconds from .. to)
 const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox", "boar", "deer", "herd", "cat", "badger", "hare", "hedgehog", "marten", "squirrel", "cyclist", "couple", "stroller", "courier", "police", "drunk", "bats", "owl", "burglar", "bbq", "homecoming", "fox_trash", "kids_tag", "boar_group"], 35.0, 110.0],
@@ -23,6 +23,7 @@ const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox"
 		"stellplatz": [["person", "couple", "child", "dogwalk", "cat", "fox", "hedgehog", "cyclist", "van", "moto", "courier", "burglar", "homecoming", "drunk", "bbq"], 30.0, 90.0],
 		"vorlage": [["person", "child", "dogwalk", "cat", "fox", "deer", "hare", "hedgehog", "courier", "burglar", "cyclist"], 35.0, 100.0],
 		"schlafzimmer": [["cat"], 300.0, 900.0],
+		"parcours": [["person", "jogger", "fox", "deer", "hare", "cyclist"], 60.0, 150.0],   # 3D-4.18 (the lessons switch them off)
 		"zuhause": [["cat", "cat", "fox", "badger", "hedgehog", "hare", "garden_person", "garden_person", "dog", "marten", "squirrel", "courier", "bats", "owl", "parcel", "burglar", "kids_tag", "person", "dogwalk"], 35.0, 100.0],
 		"wild": [["feed_deer", "feed_deer", "feed_boar", "feed_fox", "feed_badger", "feed_hare", "herd", "deer", "chamois", "ibex", "lynx", "owl"], 15.0, 40.0]}
 
@@ -75,6 +76,8 @@ func build(id: String, parent: Node3D) -> void:
 			_vorlage()
 		"schlafzimmer":
 			_schlafzimmer()
+		"parcours":
+			m.parcours.build_scene(self)                    # 3D-4.18: parcours.gd (fixed obstacles for the lessons)
 		_:
 			_camping()
 	if EXTRA_HIDE.has(id):                                        # more places to hide (3D-3.13)

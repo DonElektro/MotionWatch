@@ -178,7 +178,7 @@ func calc() -> Dictionary:
 		if humans > 0:
 			f["e_mul"] = 1.5
 			f["helper"] = humans == 1 and main.game_mode == "guard" and not real_hw     # the fixed camera: only in the simulator
-			f["text"] = "⚖ %d Schleicher gegen %s: der Wächter hat 50 %% mehr Energie%s." % [runners, who, " und einen 🤖 Bot-Helfer an der festen Kamera" if f["helper"] else ""]
+			f["text"] = "⚖ %d Schleicher gegen %s: der Wächter hat 50 %% mehr Energie%s." % [runners, who, " und einen 🤖 Bot-Helfer an der Weitwinkel-Kamera" if f["helper"] else ""]
 		else:
 			f["rate"] = 1.15
 			f["text"] = "⚖ %d Schleicher gegen %s: die Kamera passt etwas besser auf." % [runners, who]
@@ -284,7 +284,7 @@ func _helper_tick(t: float) -> void:
 			continue
 		if float(p["susp"]) >= 80.0 and game.cam_sees(p, 1) > 0.12:
 			_help_t = t + 4.0
-			game._say(p, "🤖 Der Bot-Helfer an der festen Kamera hat dich erwischt!", 3.0)
+			game._say(p, "🤖 Der Bot-Helfer an der Weitwinkel-Kamera hat dich erwischt!", 3.0)
 			game._caught(p, helper)
 			return
 
@@ -346,7 +346,7 @@ func sneak_info(p: Dictionary) -> Dictionary:
 func round_end() -> void:
 	game.tools.round_end()
 	if not helper.is_empty():
-		game.results.append({"n": HELPER_NAME, "c": "#9aa7b8", "info": "Bot-Helfer an der festen Kamera · %d× erwischt" % int(helper["catches"]), "score": 0})
+		game.results.append({"n": HELPER_NAME, "c": "#9aa7b8", "info": "Bot-Helfer an der Weitwinkel-Kamera · %d× erwischt" % int(helper["catches"]), "score": 0})
 	helper = {}
 	_make_win()
 	_rotate()

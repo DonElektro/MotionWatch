@@ -280,6 +280,7 @@ var camfx_mats: Array = []            # 3D-3.94: camfx.gdshader per camera (real
 var realism                           # realism.gd
 var simreal                           # simreal.gd (3D-4.4): Pi 5, lens, infrared, thermal, false alarms, difficult visitors
 var weit                              # weitwinkel.gd (3D-4.17): camera 1 = the wide camera with its mount (mast, base, head front / rear)
+var parcours                          # parcours.gd (3D-4.18): «Verfolgungs-Parcours» - lessons, ground truth, game «Entkomme der Kamera»
 var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Zwilling» - photo / panorama of the real place
 var fauna                             # fauna.gd (3D-3.95)
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
@@ -376,6 +377,9 @@ func _ready() -> void:
 	weit = preload("res://scripts/weitwinkel.gd").new()      # 3D-4.17: the wide camera (camera 1) and its mount
 	weit.main = self
 	add_child(weit)
+	parcours = preload("res://scripts/parcours.gd").new()   # 3D-4.18: the tracking parcours (scene «parcours»)
+	parcours.main = self
+	add_child(parcours)
 	zwilling = preload("res://scripts/zwilling.gd").new()    # 3D-4.4: your place as a twin (photo behind the scene)
 	zwilling.main = self
 	add_child(zwilling)
@@ -1801,6 +1805,8 @@ func busy_with(except_ := "") -> String:
 		w = "Fehlalarm nachstellen"
 	elif game != null and game.round_state in ["countdown", "play"]:
 		w = "Spielrunde"
+	elif parcours != null and (parcours.running or bool(parcours.game.get("on", false))):
+		w = "Verfolgungs-Parcours"                    # 3D-4.18 (the head follows - not «measuring»: MoveEye steers it)
 	elif recorder != null and recorder.playing:
 		w = "Wiedergabe"
 	elif _mw_task() != "":                             # 3D-4.x: one lock with MoveEye (a drill, a protection test … there)
@@ -3109,7 +3115,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Dein Plat
 		["Mover", "track", "🚜", ["", "Patrouille", "Controller"]],
 		["Spiel", "pad", "🎮", ["", "Assistent"]],
 		["Wildbeobachtung", "target", "🎯", [""]],
-		["Testlauf", "check", "✅", [""]],
+		["Testlauf", "check", "✅", ["", "Verfolgungs-Parcours"]],
 		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates", "Kinder-Modus"]]]
 # id -> [group, part]; not listed: the group given in add_control, no part
 const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "Patrouille"], "patrol_points": ["Mover", "Patrouille"], "patrol_area": ["Mover", "Patrouille"],
@@ -3322,6 +3328,7 @@ func _register_controls() -> void:
 		add_control("toggle", "cond_" + key, cd[1], func(): return cond[key], func(v): cond[key] = bool(v), "Kamerabild")
 	simreal.add_controls()                                 # 3D-4.4: closer to the real device
 	weit.add_controls()                                    # 3D-4.17: the wide camera (card «Kamerabild», part «Weitwinkel-Kamera»)
+	parcours.add_controls()                                # 3D-4.18: card «Testlauf», part «Verfolgungs-Parcours»
 	zwilling.add_controls()
 	add_control("toggle", "dev2_on", "Zweites MoveEye-Gerät in der Welt (eigene Adresse: Port des Simulators + 20, meist 8785)", func(): return dev2.on, func(v): dev2.set_on(v), "Mover")
 	add_control("select", "dev2_place", "Platz des zweiten Geräts", func(): return dev2.place, func(v): dev2.set_place(str(v)), "Mover",
@@ -4010,6 +4017,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return simreal.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
 		return weit.control(d)
+	elif a == "parcours":                              # 3D-4.18: {do: info | start (lessons, night, seed, prep_s) | stop | state | result | game | steer ...}
+		return parcours.control(d)
 	elif a == "zwilling":                              # 3D-4.4: {do: info | import (path) | set (key, value) | item (k, x, z, r) | clear | remove | on}
 		return zwilling.control(d)
 	elif a == "whatif":                                # 3D-3.83: makeover 8 - MoveEye re-enacts a real recording

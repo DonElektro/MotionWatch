@@ -172,7 +172,7 @@ const EXPORT_KIND_CLASS := {"person": "person", "child": "person", "jogger": "pe
 		"squirrel": "squirrel", "lynx": "lynx", "chamois": "chamois", "ibex": "ibex"}
 const EXPORT_PEOPLE := ["person", "person", "person", "child", "jogger", "cyclist", "courier", "police", "drunk", "stroller"]
 const EXPORT_ANIMALS := ["dog", "cat", "fox", "fox", "deer", "boar", "badger", "hare", "hedgehog", "wolf", "marten", "squirrel", "lynx", "horse", "sheep", "cow", "chamois", "ibex"]
-const EXPORT_SCENES := ["camping", "wald", "garten", "parkplatz", "lustig", "wild", "zuhause"]
+const EXPORT_SCENES := ["camping", "wald", "garten", "parkplatz", "lustig", "wild", "zuhause", "parcours"]
 const EXPORT_CONDS := [["tag", 11.0, "clear"], ["morgen", 7.2, "clear"], ["abend", 19.6, "clear"], ["daemmerung", 20.4, "cloudy"], ["nacht_ir", 23.5, "clear"],
 		["regen", 14.0, "rain"], ["nebel", 9.0, "fog"], ["schnee", 12.0, "snow"], ["nacht_regen", 1.0, "rain"], ["bewoelkt", 15.0, "cloudy"]]
 var export_dir := ""
@@ -404,6 +404,10 @@ func _export(n: int, scenes_too: bool, hi: bool) -> void:
 	if gm > 0:
 		counts["person (Spiel)"] = gm
 		made += gm
+	var pc: int = main.parcours.add_to_pack(self) if main.parcours != null else 0   # 3D-4.18: moving / far figures of the parcours
+	if pc > 0:
+		counts["Parcours (bewegt / weit)"] = pc
+		made += pc
 	var yaml := "# Trainingsbilder aus dem MW Sim · 3D (%s) - YOLO-Format\npath: .\ntrain: images/train\nval: images/val\nnames:\n" % main.VERSION
 	for i in range(EXPORT_CLASSES.size()):
 		yaml += "  %d: %s\n" % [i, EXPORT_CLASSES[i]]
