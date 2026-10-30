@@ -117,6 +117,9 @@ body.locked #srch.withall>:not(#allbtns){display:none}body.locked #srch.withall 
 details.sub>.blk,details.grp>.blk{border-top:0;margin-top:0;padding-top:0}
 .fine{margin:16px 0 0;padding-top:8px;border-top:1px dashed var(--line);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--acc2);font-weight:700}
 .fine+details.sub{border-top:0;margin-top:4px}
+details.sub.ffold{border-top:1px dashed var(--line)}details.sub.ffold>summary{color:var(--acc2);font-size:10px}
+.mblk{margin-top:12px}.mblk .mtitle{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:4px 0 2px}
+.dtab{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px 8px;align-items:center;margin:8px 0}.dtab select{width:100%;min-width:0}.dtab b{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
 details.adv{margin-top:12px;border-top:1px dashed var(--line);padding-top:8px}
 details.adv>summary{cursor:pointer;color:var(--acc2);font-size:12.5px;font-weight:600;list-style:none;user-select:none}
 details.adv>summary::before{content:"▸";display:inline-block;width:1.1em}details.adv[open]>summary::before{content:"▾"}
@@ -1596,7 +1599,22 @@ function textField(x) {
   wrap.dataset.key = x.key;
   wrap.append(inp, err);
   if (x.kind === "secret") { const c = el("button", "sec", t("Clear")); c.style.marginTop = "2px"; c.onclick = () => send(" ").then(r => { if (r.ok) inp.placeholder = ""; }); wrap.appendChild(c); }
-  return wrap;
+  return mnMark(wrap, x);
+}
+// 639c: «Simple» puts what is not a main switch into a closed «Feineinstellungen» of its part; the long text of a shortened
+// label is the tooltip and is found by the search (the «?» of 516 shows it too)
+function mnMark(e, x) {
+  if (x.fine) e.classList.add("finerow");
+  if (x.help) { const lab = e.querySelector(":scope > span, :scope > .row > span"); if (lab) lab.title = x.help;
+    const h = el("span", "mnhelp", x.help); h.hidden = true; e.appendChild(h); }
+  return e;
+}
+function mnFold(d, view) {                                   // the closed «Feineinstellungen (n)» at the end of a part
+  const rows = [...d.children].filter(c => c.classList && c.classList.contains("finerow"));
+  if (!rows.length) return null;
+  const F = el("details", "sub ffold"); if (view) F.dataset.fold = view;
+  F.appendChild(el("summary", "", t("Fine-tuning") + " (" + rows.length + ")")); rows.forEach(r => F.appendChild(r)); d.appendChild(F);
+  return F;
 }
 // ---- message texts: one card per message, tap a chip to insert a placeholder, preview with example values ----
 function msgBoxes(d, texts) {
@@ -1837,7 +1855,7 @@ function icSpan(e) {                                         // symbol of a sett
   s.appendChild(el("i", "gdot")); return s;
 }
 try { document.body.classList.toggle("icplain", localStorage.getItem("mw-icons") === "plain"); } catch (e) {}
-const GROUPS = [                                            // 2.98.0: by goal - tab «Schutz» (protect) and tab «Einstellungen» (settings)
+const GROUPS = [                                            // 2.98.0: by goal - tab «Schutz» (protect) and tab «Einstellungen» (settings); 639c: menu structure 2
   {id: "alarm", tab: "protect", icon: "🛡", name: "Protection", open: true,
    items: [{card: "protect", title: "Protection level", ic: "🛡"}, {sec: "Camping / protection", title: "Arming and own Wi-Fi", ic: "🏕️"}]},
   {id: "notify", tab: "protect", icon: "🚨", name: "What happens at an alarm?", items: [{sec: "Notifications", title: "Push messages", ic: "📲"},
@@ -1845,20 +1863,24 @@ const GROUPS = [                                            // 2.98.0: by goal -
    {card: "report", sec: "Night report", title: "Night report", ic: "🌙"}]},
   {id: "theft", tab: "protect", icon: "🔒", name: "Theft protection", items: [{sec: "Theft protection", title: "Device", ic: "🔒"},
    {sec: "Reference scan", title: "Guarded things (reference scan)", ic: "🧭"}, {sec: "Backup", title: "Backup (pictures off the device)", ic: "☁️"}]},
-  {id: "sched", tab: "protect", icon: "🗓", name: "Zones, schedule, presence", items: [{card: "schedule", sec: "Schedule", title: "Schedule", ic: "🗓️"}]},
+  {id: "sched", tab: "protect", icon: "🗓", name: "Zones, schedule, presence", items: [{card: "schedule", sec: "Schedule", title: "Schedule", ic: "🗓️"},
+   {sec: "Night time", title: "Night time", ic: "🌙"}, {sec: "Presence", title: "Presence", ic: "🏠"}]},
   {id: "detect", tab: "settings", icon: "🎯", name: "Detection", items: [{card: "tune", title: "Improve detection", ic: "🎯"}, {sec: "Detection", ic: "👁️"}, {sec: "AI detection", ic: "🤖"}, {sec: "Thermal camera", ic: "🌡"}, {fine: true},
    {sec: "Walking recognition", ic: "🚶"}, {sec: "Vehicle filter", ic: "🚗"}, {sec: "Rain", ic: "🌧️"}, {sec: "Wind", ic: "🌬️"}, {sec: "Low light", ic: "🌘"}, {sec: "Auto-tune", ic: "🎚️"}]},
-  {id: "camera", tab: "settings", icon: "📷", name: "Cameras & head", items: [{sec: "Camera / Servos", ic: "🕹️"}, {sec: "Patrol", ic: "🔄"}, {sec: "Automatic head movement", ic: "🤖"}, {sec: "Servo motion & safety", ic: "🛑"}, {card: "source", sec: "Video source", ic: "🎥"},
-   {sec: "Timelapse", ic: "⏱️"}, {sec: "Mover", title: "Mover (tracked vehicle)", ic: "🚜"}, {fine: true}, {sec: "Servo driver", ic: "🔌"}]},
-  {id: "lightsound", tab: "settings", icon: "🔌", name: "Devices & sensors", items: [{sec: "Lights", ic: "💡"}, {sec: "Microphone", ic: "🎤"}, {sec: "Loudspeaker", ic: "🔊"}, {sec: "Extra display", title: "Extra display (SmallTV)", ic: "🖼️"},
-   {card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {sec: "Extra sensors", ic: "📡"}, {sec: "Clap switch", ic: "👏"}, {sec: "Bless you", title: "«Bless you!»", ic: "🤧"},
-   {sec: "Wake-up alarm", ic: "⏰"}, {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}]},
+  {id: "camera", tab: "settings", icon: "📷", name: "Cameras & head", items: [{sec: "Camera / Servos", title: "Head (servos)", ic: "🕹️", also: ["Automatic head movement", "Servo motion & safety"]},
+   {sec: "Patrol", ic: "🔄"}, {card: "source", sec: "Video source", ic: "🎥"}, {sec: "Timelapse", ic: "⏱️"}]},
+  {id: "mover", tab: "settings", icon: "🚜", name: "Mover", items: [{sec: "Mover", title: "Mover (tracked vehicle)", ic: "🚜"}]},
+  {id: "lightsound", tab: "settings", icon: "💡", name: "Light & sound", items: [{sec: "Lights", ic: "💡"}, {sec: "Loudspeaker", ic: "🔊"}, {sec: "Microphone", ic: "🎤"},
+   {sec: "Clap switch", ic: "👏"}, {sec: "Bless you", title: "«Bless you!»", ic: "🤧"}, {sec: "Wake-up alarm", ic: "⏰"}]},
+  {id: "extras", tab: "settings", icon: "🔌", name: "Extra devices", items: [{card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {sec: "Extra sensors", ic: "📡"},
+   {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}, {sec: "Extra display", title: "Extra display (SmallTV)", ic: "🖼️"}]},
   {id: "power", tab: "settings", icon: "🔋", name: "Power supply", items: [{card: "batt", sec: "Battery", title: "Battery", ic: "🔋"}, {sec: "Power saving", ic: "🍃"}, {sec: "Solar panel", ic: "☀️"}]},
   {id: "net", tab: "settings", icon: "📶", name: "Network & access", items: [{card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"},
    {card: "guest", title: "Guest access", ic: "👥"}, {sec: "MQTT / Home Assistant", title: "MQTT / Home Assistant", ic: "🏠"}]},
   {id: "security", tab: "settings", icon: "🔐", name: "Security", items: [{sec: "Security", ic: "🔐"}]},   // 573: password, users, app keys, check
-  {id: "sys", tab: "settings", icon: "⚙", name: "System", items: [{card: "system", ic: "🖥️"}, {sec: "Setup", ic: "📍"}, {sec: "Updates", ic: "⬆️"},
-   {card: "log", ic: "📜"}]},
+  {id: "sys", tab: "settings", icon: "⚙", name: "System", items: [{card: "system", ic: "🖥️"}, {sec: "Setup", title: "Place & clock", ic: "📍"}, {sec: "Device warnings", title: "Device warnings", ic: "🌡"},
+   {sec: "Device & help", title: "Device & help", ic: "🧭"}, {sec: "Updates", ic: "⬆️"}, {card: "log", ic: "📜"}]},
+  {id: "dev", tab: "settings", icon: "🧪", name: "Developer", items: [{sec: "Developer", title: "Developer", ic: "🧪"}, {sec: "Servo driver", ic: "🔌"}]},   // 639c: only with dev_area (the server leaves the sections out)
 ];
 Object.assign(I18N.de, {"Improve detection": "Erkennung verbessern", "Automatic head movement": "Automatische Kopfbewegung", "Servo motion & safety": "Servo-Bewegung & Sicherheit",
   "paused (the head is busy)": "Pause (der Kopf ist beschäftigt)", "saving: stays at the most important direction": "sparsam: bleibt bei der wichtigsten Richtung"});   // 2.98.14: the assistant (312); the simulator settings are on the page Simulator
@@ -1883,6 +1905,18 @@ function regroup() {
     const sum = el("summary"); if (it.ic) sum.appendChild(icSpan(it.ic)); sum.appendChild(el("span", "sn", title)); S.appendChild(sum);
     if (card) { [...card.children].filter(c => c.tagName !== "SUMMARY").forEach(k => S.appendChild(k)); card.remove(); }
     if (sd) { const b = toBlock(sd); if (b) S.appendChild(b); }
+    if (it.also) {                                           // 639c: «Kopf (Servos)» - the other parts in ONE «Feineinstellungen»
+      const own = S.querySelector(":scope > .blk > details.ffold"), F = own || el("details", "sub ffold");
+      if (!own) F.appendChild(el("summary", "", t("Fine-tuning")));
+      it.also.forEach(x => { const d2 = byView("sec:" + x); used.add("sec:" + x); if (!d2) return;
+        const nm = d2.querySelector("summary").textContent, inner = d2.querySelector(":scope > details.ffold");
+        const b = toBlock(d2); if (!b) return; b.dataset.view = "sec:" + x; b.classList.add("mblk");
+        b.insertBefore(el("div", "mtitle", nm), b.firstChild);
+        if (inner) { [...inner.children].filter(c => c.tagName !== "SUMMARY").forEach(c => b.appendChild(c)); inner.remove(); }
+        F.appendChild(b); });
+      const n = F.querySelectorAll(".row.tg, .sl").length; F.querySelector("summary").textContent = t("Fine-tuning") + " (" + n + ")";
+      if (F.children.length > 1) S.appendChild(F);
+    }
     return S.children.length > 1 ? S : null;
   };
   GROUPS.forEach(g => {
@@ -1951,7 +1985,8 @@ function tabOpen(v) {
   const d = document.querySelector('#settings [data-view="' + v + '"]'); if (!d) return;
   const g = d.closest(".grp") || d, tab = g.dataset.tabOf || "settings";
   if (tab !== document.body.dataset.tab) { location.href = "/" + tab + "?open=" + encodeURIComponent(v); return; }
-  d.open = true; g.open = true; setTimeout(() => d.scrollIntoView({behavior: "smooth", block: "start"}), 50);
+  d.open = true; g.open = true; for (let p = d.parentElement; p; p = p.parentElement) if (p.tagName === "DETAILS") p.open = true;   // 639c: also inside «Feineinstellungen»
+  setTimeout(() => d.scrollIntoView({behavior: "smooth", block: "start"}), 50);
 }
 setTimeout(() => { const v = new URLSearchParams(location.search).get("open"); if (v) tabOpen(v); }, 1500);
 // the alarm chain: person -> push -> light -> recording -> siren (after the wait); tap = its settings
@@ -2134,7 +2169,7 @@ async function build() {
       const cb = el("input"); cb.type = "checkbox"; cb.className = "sw";
       cb.onchange = () => { post("/api/set", {key: tg.key, value: cb.checked}); try { mainPaint(); } catch (e) {} };
       row.append(el("span", "", tg.label), cb);
-      d.appendChild(row); ctrl[tg.key] = {type: "bool", input: cb};
+      d.appendChild(mnMark(row, tg)); ctrl[tg.key] = {type: "bool", input: cb};
     });
     if (sec.id === "Messages") msgBoxes(d, sec.texts || []);
     else (sec.texts || []).forEach(x => { if (x.key === "longitude") return; d.appendChild(x.key === "latitude" ? locBox() : textField(x)); });
@@ -2204,7 +2239,7 @@ async function build() {
         if (!timer) timer = setTimeout(() => { timer = null; send(); }, 100);   // throttle while dragging
       };
       r.onchange = () => { clearTimeout(timer); timer = null; send(); editing = null; };
-      wrap.dataset.key = s.key; wrap.append(top, r); d.appendChild(wrap);
+      wrap.dataset.key = s.key; wrap.append(top, r); d.appendChild(mnMark(wrap, s));
       ctrl[s.key] = {type: "num", input: r, val: val};
     });
     if (sec.id === "AI detection") spGroup(d);              // aufr: after the sliders (species_conf is one)
@@ -2228,6 +2263,10 @@ async function build() {
     if (sec.id === "Thermal camera") thExtras(d);
     if (sec.id === "Security") secExtras(d);
     if (sec.id === "Extra display" && window.stvPanel) stvPanel(d);   // 552: GeekMagic SmallTV displays
+    if (sec.id === "Presence") prExtras(d);
+    if (sec.id === "Night time") d.insertBefore(el("div", "mut", t("Night time: the night report comes at its end, the wake-up alarm looks away during it, «Guard tonight» ends with it.")), d.children[1] || null);
+    if (sec.id === "Developer") devExtras(d);
+    mnFold(d, "sec:" + sec.id);
     box.appendChild(d);
   });
 }
@@ -2754,7 +2793,32 @@ function mqPaint(s) { const st = $("#mq-st"); if (!st) return; const m = s.mqtt 
 function dtExtras(d) {
   const box = el("div", "auxbox"); const st = el("div", "mut"); st.id = "dt-st";
   box.append(el("div", "mut", t("What is seen decides the reaction. Animals need the AI detection, warm bodies the thermal camera. Light flashes: the white light.")), st);
+  // 639c: the 8 choices as a small table - 4 kinds × reaction + sound
+  const tb = el("div", "dtab"); tb.append(el("b", "", ""), el("b", "", t("Reaction")), el("b", "", t("Sound")));
+  let n = 0; const errs = el("div");
+  [["person", "Person"], ["big", "Big animal"], ["small", "Small animal"], ["warm", "Warm body"]].forEach(([g, nm]) => {
+    const a = d.querySelector('select[data-key="deter_' + g + '_act"]'), so = d.querySelector('select[data-key="deter_' + g + '_sound"]');
+    if (!a || !so) return; n++;
+    const wa = a.closest(".sl"), ws = so.closest(".sl"); a.style.marginTop = so.style.marginTop = "0";
+    a.title = (wa.querySelector("span") || {}).textContent || ""; so.title = (ws.querySelector("span") || {}).textContent || "";
+    const ea = wa.querySelector(".err"), es = ws.querySelector(".err");
+    tb.append(el("span", "", t(nm)), a, so); [ea, es].forEach(e => { if (e) errs.appendChild(e); }); wa.remove(); ws.remove(); });
+  errs.querySelectorAll(".err").forEach(e => { e.style.cssText = "margin:0;min-height:0"; });
+  if (n) { const h = el("div", "mut", t("Reaction and sound per kind")); h.style.marginTop = "8px"; d.append(h, tb, errs); }
   d.appendChild(box);
+}
+// 639c: presence - the phone is chosen in the tools («Am I at home?»)
+function prExtras(d) {
+  const a = el("a", "btn sec", "📱 " + t("Choose the phone") + " ›"); a.href = "/tools#pres"; a.style.cssText = "display:block;margin-top:8px;text-align:center";
+  const r = d.querySelector('.row.tg[data-key="presence_auto"]'); if (r) r.after(a); else d.appendChild(a);
+}
+// 639c: the developer part (only with dev_area): links to what only the developer needs
+function devExtras(d) {
+  const bx = el("div", "auxbox"); bx.appendChild(el("div", "mut", t("Only for the developer (switch: System → Device & help → Developer area).")));
+  [["🧪", "Test bench and test run", "/sim#c-test"], ["⚖", "A/B comparison", "/sim#c-hub"], ["📈", "Statistics & versions", "/sim#c-hub"],
+   ["🩺", "Diagnosis package", "/tools#diag"], ["⚗", "Settings of the simulation", "/sim"], ["🛠", "Developer area", "/dev"]].forEach(([ic, nm, u]) => {
+    const a = el("a", "btn sec", ic + " " + t(nm) + " ›"); a.href = u; a.style.cssText = "display:block;margin-top:6px;text-align:left"; bx.appendChild(a); });
+  d.insertBefore(bx, d.children[1] || null);
 }
 function dtPaint(s) { const st = $("#dt-st"); if (st) st.textContent = s.deter_last ? "↻ " + t("Last") + ": " + s.deter_last : ""; }
 // ---- theft protection: what is watched ----
@@ -3577,10 +3641,11 @@ function scPick() {
 }
 // ---- app icon (2.95.23): choose it here; on an iPhone / iPad the home screen keeps the old one - a hint says what to do ----
 function iconPick() {
-  const d = document.querySelector('details[data-view="sec:Setup"]') || document.querySelector('details[data-view="sec:Web stream"]');
+  // 639c: in «Gerät & Hilfe», closed (was open in «Einrichtung» - 700 px on the phone)
+  const d = document.querySelector('details[data-view="sec:Device & help"]') || document.querySelector('details[data-view="sec:Setup"]') || document.querySelector('details[data-view="sec:Web stream"]');
   if (!d || d.querySelector("#appicon")) return;
-  const box = el("div"); box.id = "appicon"; box.style.cssText = "margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px";
-  box.appendChild(el("div", "", "📱 " + t("App icon")));
+  const box = el("details", "sub ffold"); box.id = "appicon";
+  box.appendChild(el("summary", "", "📱 " + t("App icon")));
   const row = el("div"); row.style.cssText = "display:flex;flex-wrap:wrap;gap:10px;margin:8px 0";
   const note = el("div", "mut", ""); note.style.fontSize = "13px";
   const paint = cur => row.querySelectorAll("button").forEach(b => { const on = b.dataset.i === cur; b.style.outline = on ? "3px solid var(--acc,#3b8cff)" : "none"; b.setAttribute("aria-pressed", on); });

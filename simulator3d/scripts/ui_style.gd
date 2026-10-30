@@ -63,6 +63,9 @@ static func theme() -> Theme:
 		t.set_color("font_pressed_color", kind, TXT)
 		t.set_color("font_hover_pressed_color", kind, Color.WHITE)
 		t.set_color("font_focus_color", kind, TXT)
+	# 3D-4.21 (Menü 2): switches like MoveEye (.sw): on = blue pill, knob right; off = grey pill, knob left
+	for st in [["checked", true, 1.0], ["unchecked", false, 1.0], ["checked_disabled", true, 0.45], ["unchecked_disabled", false, 0.45]]:
+		t.set_icon(st[0], "CheckButton", switch_tex(st[1], st[2]))
 	t.set_color("font_color", "Label", TXT)
 	t.set_stylebox("normal", "LineEdit", box(FIELD, LINE, 8))
 	t.set_stylebox("focus", "LineEdit", box(FIELD, ACC, 8))
@@ -88,6 +91,44 @@ static func theme() -> Theme:
 	t.set_stylebox("grabber_highlight", "VScrollBar", box(LINE.lightened(0.2), LINE, 4, 0, 0))
 	t.set_stylebox("grabber_pressed", "VScrollBar", box(ACC, ACC, 4, 0, 0))
 	return t
+
+
+static func switch_tex(on: bool, alpha := 1.0) -> ImageTexture:
+	"""a drawn switch 44 × 24 (no font, the same on every PC) - the colours of MoveEye"""
+	var w := 44
+	var h := 24
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var bg: Color = ACC if on else Color("#2a3542")
+	var r := 11.0
+	var kx := 32.0 if on else 12.0
+	for y in range(h):
+		for x in range(w):
+			var px := x + 0.5
+			var py := y + 0.5
+			var cx := clampf(px, 1.0 + r, w - 1.0 - r)
+			var d := Vector2(px - cx, py - 12.0).length()
+			var a_bg := clampf(r + 0.5 - d, 0.0, 1.0)
+			var dk := Vector2(px - kx, py - 12.0).length()
+			var a_k := clampf(8.5 - dk, 0.0, 1.0)
+			if a_bg <= 0.0:
+				continue
+			var col := bg.lerp(Color.WHITE, a_k)
+			col.a = a_bg * alpha
+			img.set_pixel(x, y, col)
+	return ImageTexture.create_from_image(img)
+
+
+static func short(label: String) -> Array:
+	"""3D-4.21 (labels at most ~40 characters, like MoveEye): [short text, tooltip] - the part in brackets or after « – »
+	goes into the tooltip"""
+	if label.length() <= 42:
+		return [label, ""]
+	for m in [" (", " – ", " - ", ": "]:
+		var i := label.find(m)
+		if i >= 8 and i <= 42:
+			return [label.substr(0, i).strip_edges(), label]
+	return [label, label]
 
 
 static func primary(b: Button) -> void:
@@ -223,9 +264,20 @@ static func sub_fold(parent: Control, title: String, open: bool) -> VBoxContaine
 	body.add_theme_constant_override("separation", 6)
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	mc.add_child(body)
+	# 3D-4.21 (like the parts of MoveEye): the name left, the arrow ▸ / ▾ on the right
+	var arr := Label.new()
+	arr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	arr.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	arr.offset_left = -18
+	arr.offset_right = -4
+	arr.offset_top = -10
+	arr.offset_bottom = 10
+	hdr.add_child(arr)
 	var paint := func():
-		hdr.text = ("▾  " if mc.visible else "▸  ") + title
+		hdr.text = title
+		arr.text = "▾" if mc.visible else "▸"
 		hdr.add_theme_color_override("font_color", TXT if mc.visible else MUT)
+		arr.add_theme_color_override("font_color", TXT if mc.visible else MUT)
 	mc.visible = open
 	paint.call()
 	hdr.pressed.connect(func():

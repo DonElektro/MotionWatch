@@ -147,6 +147,8 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `571a_fenster_push.py` | Fenster: «Push-Nachrichten» gleich aufgebaut wie im Web (Kanal-Karten, Stufen, Ruhezeiten, Erweitert) | 453 |
 | `579a_push_logik.py` | Push-Logik: Kanäle (Hauptkanal ntfy/Telegram/Webhook), Stufen Nur Personen / + Tiere / Alles, Ruhezeiten (Simulator-Uhr), Bilder mit/klein/ohne, Übernahme alter Einstellungen, /api/push, Selbsttest | 577 |
 | `639a_uebersetzungen_push.py` | Übersetzungen und «?»-Texte der Push-Karten | 205 |
+| `639b_uebersetzungen_menu.py` | Übersetzungen der Menü-Struktur 2: kurze Beschriftungen (die lange im «?»), neue Gruppen | 401 |
+| `639c_menu_struktur.py` | Menü-Struktur 2: Gruppen Web = Fenster, Entwickler-Gruppe, Einfach mit «Feineinstellungen», Abschreckungs-Tabelle | 339 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |

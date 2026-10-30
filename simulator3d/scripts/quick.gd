@@ -12,8 +12,11 @@ const UI = preload("res://scripts/ui_style.gd")
 
 # [id, symbol, name]
 const TILES := [["scene", "globe", "Szene"], ["time", "clock", "Tageszeit"], ["weather", "cloud", "Wetter"], ["visit", "person", "Besuch"],
-		["inventar", "box", "Dein Platz"], ["test", "check", "Testen"], ["game", "pad", "Spiel"],
-		["map", "map", "Echter Ort"], ["planner", "plan", "Aufstellen"], ["pruef", "meter", "Prüfstand"]]
+		["inventar", "box", "Gegenstände"], ["map", "map", "Echter Ort"], ["planner", "plan", "Aufstellen"],
+		["test", "check", "Testen"], ["pruef", "meter", "Prüfstand"], ["learn", "lens", "Trainingsbilder"], ["game", "pad", "Spiel"]]
+# 3D-4.21 (Menü 2): the tiles under the same four headings as the simulator centre of MoveEye
+const HEADS := [["Welt", ["scene", "time", "weather", "visit", "inventar", "map", "planner"]], ["Testen", ["test", "pruef"]],
+		["Lernen", ["learn"]], ["Spielen", ["game"]]]
 # 3D-4.0 (Gesamtrunde): «Patrouille» (= Rover-Route) and «Kopf steuern» only in the bar below - the bar moves, the tiles hold content
 const TIMES := [["Morgen 07:00", 7.0], ["Mittag 13:00", 13.0], ["Abend 19:30", 19.5], ["Dämmerung 21:00", 21.0], ["Nacht 23:00", 23.0], ["Tiefe Nacht 03:00", 3.0]]
 const WEATHER := [["Klar", "clear"], ["Bewölkt", "cloudy"], ["Regen", "rain"], ["Nebel", "fog"], ["Schnee", "snow"]]
@@ -28,11 +31,19 @@ func _ready() -> void:
 	var t := UI.small("SCHNELLZUGRIFF", UI.MUT)
 	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.add_child(t)
-	_grid = GridContainer.new()
-	_grid.columns = 4
-	_grid.add_theme_constant_override("h_separation", 6)
-	_grid.add_theme_constant_override("v_separation", 6)
-	add_child(_grid)
+	var grids := {}
+	for hd in HEADS:
+		var hl := UI.small(str(hd[0]).to_upper(), UI.MUT)
+		hl.add_theme_font_size_override("font_size", 10)
+		add_child(hl)
+		var g := GridContainer.new()
+		g.columns = 4
+		g.add_theme_constant_override("h_separation", 6)
+		g.add_theme_constant_override("v_separation", 6)
+		add_child(g)
+		for k in hd[1]:
+			grids[k] = g
+	_grid = grids["scene"]
 	for d in TILES:
 		var b := Button.new()
 		b.custom_minimum_size = Vector2(84, 58)
@@ -64,7 +75,7 @@ func _ready() -> void:
 		_subs[d[0]] = s
 		var id: String = d[0]
 		b.pressed.connect(func(): _press(id, b))
-		_grid.add_child(b)
+		(grids.get(id, _grid) as GridContainer).add_child(b)
 		_tiles[id] = b
 
 
@@ -105,6 +116,8 @@ func _press(id: String, b: Button) -> void:
 			main.open_testen()
 		"game":
 			main.gamewiz.open_wiz()
+		"learn":
+			main.open_train()
 		"patrol":
 			if main.patrol.active:
 				main.patrol.set_active(false)
@@ -136,6 +149,7 @@ func _paint() -> void:
 	_subs["weather"].text = {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(main.weather, main.weather)
 	_subs["visit"].text = "%d da" % main.visitors.get_child_count()
 	_subs["inventar"].text = "Zelt, Velo, 80 Dinge"
+	_subs["learn"].text = "eigene KI"
 	_subs["test"].text = "Testlauf läuft" if main.testrun.running else ("Blinde Flecken" if main.blindmap != null and main.blindmap.busy else "Karte öffnen")
 	_subs["game"].text = (main.game.status() if main.game != null and main.game.status() != "" else "Assistent")
 	if _subs.has("patrol"):
