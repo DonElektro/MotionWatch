@@ -719,7 +719,7 @@ def sim_auto_update_check():
     """MoveEye knows a newer simulator than the one connected: let it update itself (it starts again as it was)"""
     try:
         v = sim_versions()
-        if not v.get("newer") or (SIMPI["proc"] is not None and SIMPI["proc"].poll() is None):   # the Pi build comes with MoveEye
+        if not v.get("newer"):
             return
         key = (sim_base(), v["latest"])
         if key in SIM_AUTOUPD:
@@ -810,111 +810,6 @@ def sim3d_fetch(pkg=None, dl=None):
         finally:
             SIM3D_DL["running"] = False
     threading.Thread(target=work, daemon=True, name="simpkg").start()
-
-
-# ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
-# the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-4.12", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24718582,
-           "sha256": "a6fdf1dfd6ff1e342b7f54abdfa470032a2c7bf18099b3109157f0e48794fd20", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
-SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
-SIMPI = {"proc": None, "msg": "", "want": False}
-
-
-def _desktop_env():
-    """the environment for a window on the HDMI of the Pi (Wayland or X11) - or None without a desktop"""
-    env = dict(os.environ)
-    uid = os.getuid() if hasattr(os, "getuid") else 1000
-    rt = env.get("XDG_RUNTIME_DIR") or f"/run/user/{uid}"
-    if env.get("WAYLAND_DISPLAY") or env.get("DISPLAY"):
-        return env
-    way = next((os.path.basename(x) for x in sorted(glob.glob(os.path.join(rt, "wayland-*"))) if not x.endswith(".lock")), "")
-    if way:
-        env["WAYLAND_DISPLAY"] = way; env["XDG_RUNTIME_DIR"] = rt
-        if os.path.exists("/tmp/.X11-unix/X0"):
-            env["DISPLAY"] = ":0"                              # Xwayland: Godot opens its window through it
-        return env
-    if os.path.exists("/tmp/.X11-unix/X0"):
-        env["DISPLAY"] = ":0"
-        return env
-    return None
-
-
-def simpi_possible():
-    import platform
-    return sys.platform.startswith("linux") and platform.machine().lower() in ("aarch64", "arm64") and bool(SIM3DPI.get("size"))
-
-
-def simpi_dir():
-    return os.path.join(DATA_DIR, "sim3d", "pi_" + SIM3DPI["version"])
-
-
-def simpi_state():
-    on = SIMPI["proc"] is not None and SIMPI["proc"].poll() is None
-    pct = int(100 * SIM3DPI_DL["got"] / SIM3DPI["size"]) if SIM3DPI.get("size") else 0
-    return {"possible": simpi_possible(), "on": on, "version": SIM3DPI["version"], "loading": SIM3DPI_DL["running"], "pct": pct,
-            "msg": SIM3DPI_DL["msg"] or SIMPI["msg"], "ready": sim3d_ready(SIM3DPI) if SIM3DPI.get("size") else False}
-
-
-def simpi_start(who="web"):
-    """fetch (once), unpack and start the 3D simulator on the Pi; MoveEye then uses it"""
-    if not simpi_possible():
-        return False, "only on a Raspberry Pi (64 bit)"
-    if SIMPI["proc"] is not None and SIMPI["proc"].poll() is None:
-        return True, ""
-    if not sim3d_ready(SIM3DPI):
-        SIMPI["want"] = True
-        sim3d_fetch(SIM3DPI, SIM3DPI_DL)
-        return True, ""
-    env = _desktop_env()
-    if env is None:
-        SIMPI["msg"] = "no desktop on the HDMI (Raspberry Pi OS with desktop needed)"
-        return False, SIMPI["msg"]
-    d_ = simpi_dir(); exe = os.path.join(d_, "MotionWatch3D", "MotionWatch3D.arm64")
-    try:
-        if not os.path.isfile(exe):
-            os.makedirs(d_, exist_ok=True)
-            with zipfile.ZipFile(sim3d_path(SIM3DPI)) as z:
-                for n in z.namelist():
-                    if n.startswith("/") or ".." in n.split("/"):
-                        raise ValueError("bad file name in the package")
-                z.extractall(d_)
-            for old in glob.glob(os.path.join(DATA_DIR, "sim3d", "pi_*")):
-                if old != d_:
-                    shutil.rmtree(old, ignore_errors=True)
-        os.chmod(exe, 0o755)
-        port = 8765
-        SIMPI["proc"] = subprocess.Popen([exe, "--", "--no-update", "--stream", "--quality", "simple",
-                                          "--port", str(port)], cwd=os.path.dirname(exe), env=env, stdout=subprocess.DEVNULL,
-                                         stderr=subprocess.DEVNULL, start_new_session=True)
-    except Exception as e:
-        SIMPI["msg"] = "start: " + str(e)[:100]
-        return False, SIMPI["msg"]
-    SIMPI["msg"] = ""; SIMPI["want"] = False
-    CFG["sim_url"] = f"http://127.0.0.1:{port}"; save_settings()
-    if not CFG.get("sim_on"):
-        sim_set(True, who)
-    log_event("sys", f"{SIM3DPI['label']} {SIM3DPI['version']} started on the HDMI ({who})")
-    return True, ""
-
-
-def simpi_stop(who="web"):
-    pr = SIMPI["proc"]; SIMPI["want"] = False
-    if pr is not None and pr.poll() is None:
-        try:
-            pr.terminate()
-        except Exception:
-            pass
-    SIMPI["proc"] = None
-    log_event("sys", f"{SIM3DPI['label']} stopped ({who})")
-    return True, ""
-
-
-def simpi_tick():
-    """after the download: start by itself (called from the health thread)"""
-    if SIMPI["want"] and not SIM3DPI_DL["running"] and sim3d_ready(SIM3DPI):
-        simpi_start("download")
-    elif SIMPI["want"] and SIM3DPI_DL["msg"]:
-        SIMPI["want"] = False
 
 
 def sim3d_wait_page(lang, pkg=None, dl=None, url="/sim/simulator3d.zip"):

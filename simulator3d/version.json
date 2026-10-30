@@ -3,10 +3,5 @@
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
  "size": 31595904,
  "sha256": "28d554afb1b0800a1a13e43f0cce439852b24eb27ea52bad7baad7ad377ac4fa",
- "notes": "Spielkonzept (3 feste Spiele, Rollen reihum, Energie, Mensch gegen KI, online), Nur Gruppen ohne Verbindung",
- "pi": {
-  "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24718582,
-  "sha256": "a6fdf1dfd6ff1e342b7f54abdfa470032a2c7bf18099b3109157f0e48794fd20"
- }
+ "notes": "Spielkonzept (3 feste Spiele, Rollen reihum, Energie, Mensch gegen KI, online), Nur Gruppen ohne Verbindung"
 }

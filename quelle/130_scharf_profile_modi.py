@@ -405,7 +405,7 @@ def mode_set(m, who="web"):
         g = _governor("powersave")
         if g:
             MODE_RT["gov"] = g
-    if m in ("fire", "gamer") and CFG.get("tv_auto") and (_tv_browser() or (SIMPI["proc"] is not None and SIMPI["proc"].poll() is None)):
+    if m in ("fire", "gamer") and CFG.get("tv_auto") and _tv_browser():
         tv_show(True, "mode")                               # 2.95.51: the TV view on the HDMI (if a desktop is there)
         MODE_RT["tv"] = True
     MODE_RT["msg"] = ""

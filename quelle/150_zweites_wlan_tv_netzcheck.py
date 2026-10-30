@@ -338,7 +338,7 @@ TV = {"proc": None, "msg": "", "sim": False}
 
 
 def tv_sim(on, who="web"):
-    """2.95.53: the TV mode of the 3D simulator (on the PC at the television, or on the Pi itself) - smoother than the browser"""
+    """2.95.53: the TV mode of the 3D simulator (on the PC at the television) - smoother than the browser"""
     iu = (page_address().rstrip("/") + "/info/") if CFG.get("info_page") and page_address() else ""
     try:
         r = sim_control({"action": "tv", "on": bool(on), "info_url": iu})
@@ -371,8 +371,6 @@ def _tv_browser():
 
 def tv_show(on, who="web"):
     """the TV view on the HDMI of the Pi: a browser in kiosk mode on the desktop of the Pi"""
-    if SIMPI["proc"] is not None and SIMPI["proc"].poll() is None:
-        return tv_sim(on, who)                              # the simulator runs on the HDMI: it shows the TV itself
     if not on:
         pr = TV["proc"]
         if pr is not None and pr.poll() is None:
@@ -414,7 +412,7 @@ def tv_show(on, who="web"):
 
 def tv_state():
     on = TV["proc"] is not None and TV["proc"].poll() is None
-    return {"on": on or (TV["sim"] and SIMPI["proc"] is not None and SIMPI["proc"].poll() is None), "msg": TV["msg"], "browser": bool(_tv_browser()) or simpi_possible(),
+    return {"on": on, "msg": TV["msg"], "browser": bool(_tv_browser()),
             "url": tv_url(False), "auto": bool(CFG["tv_auto"]), "sim": TV["sim"], "sim_ok": bool(CFG.get("sim_on") and time.time() - SIM.get("t", 0) < 15)}
 
 
