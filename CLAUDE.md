@@ -43,6 +43,9 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   Stand 29.10.2026 17:40: **Camera Module 3 NoIR ist da und läuft** am Pi 5 (192.168.1.56, Videoquelle «Raspberry Pi camera»,
   ab 2.98.24). Noch fehlend: Wärmebild, Servos, Licht, Ton, Akku.
 
+- **Gehäuse-Erinnerung (Daniel, 30.10.2026 21:49):** sobald Daniel am Gehäuse arbeitet, daran erinnern: **Aussparung für eine
+  Farb-LED oben auf dem Kopf** (zeigt den Schutzzustand in Farbe: grün / orange / rot). Siehe `docs/Gehaeuse_Variante2_Weitwinkel.md`.
+
 ## Schwerpunkte (Antworten Daniel, 30.10.2026 11:12)
 
 - MoveEye im Alltag: keine besonderen Störungen genannt.

@@ -45,3 +45,9 @@ Umsetzung: nach dem Zusammenführen von Sim-Kompakt und Spiel-Balance (gleiche D
 | Prüfstand | **umgesetzt** – `--weitwinkel base,head_front,head_rear` (pruefstand/LIESMICH.md). Erster lokaler Lauf (langsamer 2-Kern-Rechner, fremde Last ~100 %, Weitwinkel-Bild < 1 Bild/s – Zahlen nur grob): Unterteil 2/3 gefunden (3,5 / 21,9 s), Kopf vorne 2/3 (2,4 / 3,8 s), Kopf hinten 3/3 (Median 4,3 s) |
 | Seiten / Spiel | **Seiten umgesetzt** – Kachel 🔭 «Weitwinkel-Kamera» in der Simulator-Zentrale (/sim) und in Sim-Kompakt: Bild (über die vorhandene Zusatzkamera, /cam_feed – kein neuer Strom vom Simulator), antippen = gross, Montage-Knöpfe. **Spiel:** die zweite Wächter-Sicht nutzt cams[1] weiter (jetzt mit der gewählten Montage); Texte «feste Kamera» im Spiel nicht angepasst (Spiel-Dateien gehören der Runde «balance») |
 
+
+## Status-LED oben auf dem Kopf (Wunsch Daniel, 30.10.2026 21:49)
+
+Aussparung oben auf dem Kopf für eine **Farb-LED** (RGB), die den Schutzzustand zeigt (grün / orange / rot, Zuordnung zu
+Aus / Wachsam / Voll noch festlegen). Lichtleiter/Diffusor einplanen, Kabel durch die Pan-Achse (zählt zur Drehgrenze /
+Schleifring wie das zweite Flachkabel). Ansteuerung offen (WS2812 an GPIO oder RGB an 3 PCA9685-Kanälen).
