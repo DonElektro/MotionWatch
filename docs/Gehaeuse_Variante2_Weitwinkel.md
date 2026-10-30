@@ -51,3 +51,7 @@ Umsetzung: nach dem Zusammenführen von Sim-Kompakt und Spiel-Balance (gleiche D
 Aussparung oben auf dem Kopf für eine **Farb-LED** (RGB), die den Schutzzustand zeigt (grün / orange / rot, Zuordnung zu
 Aus / Wachsam / Voll noch festlegen). Lichtleiter/Diffusor einplanen, Kabel durch die Pan-Achse (zählt zur Drehgrenze /
 Schleifring wie das zweite Flachkabel). Ansteuerung offen (WS2812 an GPIO oder RGB an 3 PCA9685-Kanälen).
+
+Entscheide 30.10.2026 21:55: **RGB-LED an PCA9685 Kanälen 5/6/7** (gemeinsame Anode/Kathode noch wählen), Farben pro Zustand
+einstellbar; Diffusor **in der Form von Blinkis Auge**. Dazu **zwei Tasten am Gerät**: «Schutz» (kurz Wachsam ↔ Aus, lang Voll)
+und «Alarm quittieren» – Platz und Kabel (GPIO) im Gehäuse vorsehen.
