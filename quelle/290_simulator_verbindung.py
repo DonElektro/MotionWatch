@@ -103,7 +103,9 @@ def sim_state():
     L = STATE.get("lights") or {}
     rs = STATE.get("relay_states") or []
     return {"v": 1, "t": time.time(), "device": CFG["device_name"] or "MoveEye", "armed": is_armed(),
-            "uid": f"{device_uid()}:{CFG.get('web_port')}", "helper": bool(STATE.get("helper_arg")), "picture_mode": CFG["picture_mode"],   # 2.98.29: uid/helper - one MoveEye leads the simulator (3D-4.9)
+            "uid": f"{device_uid()}:{CFG.get('web_port')}", "helper": bool(STATE.get("helper_arg")),   # 2.98.29: uid/helper - one MoveEye leads the simulator (3D-4.9)
+            # Aufräumen 2 (one field list: simulator3d/schnittstelle.json, self-test 558): «picture_mode» and «simtask» are no
+            # longer sent (nobody read them: MoveEye makes the picture grey itself, the simulator shows «simtask_de»)
             "mw_version": APP_VERSION, "ai_status": str(STATE.get("ai_status") or ""),     # 2.95.67: for the test bench in the simulator
             "refscan": _sim_refscan_info(),                                                  # 2.95.97: the reference scan, for the button there
             # 2.98.35: the REAL position of the motion planner (072, ramps) + its speed (the simulator goes on with it between
@@ -118,14 +120,16 @@ def sim_state():
                       # 2.98.1: «Folgen» on, and following something right now - the simulator lets the head follow then (not the patrol)
                       "track": bool(CFG["track_person"] or CFG["track_motion"]), "tracking": bool(STATE.get("tracking")),
                       "track_what": str(STATE.get("track_what") or "")},
+            "ups_mah": int(CFG.get("ups_mah") or 3450),   # Aufräumen 2: the battery size - the simulator shows it «von MoveEye» (power.gd)
             "lights": {"white": bool(L.get("white")), "ir": bool(L.get("ir")), "white_level": 1.0, "ir_level": 1.0},
             "wake": {"state": WAKE["state"], "snoozes": WAKE["snoozes"], "t0": round(WAKE["t0"], 2)},       # 2.98.9: the sleeper in the bedroom scene reacts
             "relays": [{"name": r["name"], "on": bool(rs[i]) if i < len(rs) else False} for i, r in enumerate(RELAYS)],
             "sound": (CFG["siren_sound"] or "siren") if SOUND["playing"] else ("talk" if TALK["proc"] is not None else ""),
-            "simtask": (stk_ := _simtask_now()), "simtask_de": tr(stk_, "de") if stk_ else "",   # 2.98.13: one lock (147)
+            "simtask_de": tr(stk_, "de") if (stk_ := _simtask_now()) else "",   # 2.98.13: one lock (147)
             "eco": STATE.get("eco") or "off",     # power saving of MoveEye: «saving» = quiet - the simulator may calculate slower (3D-3.30)
             # automatic update: the simulator compares these checksums with its own files and fetches /sim/simulator.zip
-            "sim_files": sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
+            # (only the Python simulator updates itself with them - the 3D simulator (/info «view») gets an empty list)
+            "sim_files": {} if (SIM.get("info") or {}).get("view") else sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
             # CPU in % of the whole computer: total, MoveEye, simulator (None = not on this computer / unknown)
             "cpu": {"total": STATE.get("cpu"), "mw": STATE.get("cpu_mw"), "sim": STATE.get("cpu_sim")},
             # what MoveEye detects right now: the simulator compares it with the truth (test run, game «MoveEye decides»)

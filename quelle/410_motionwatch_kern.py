@@ -787,6 +787,8 @@ class MotionWatch:
                 LOOPREC.feed(frame, t0)                         # continuous recording: a copy now and then
             if t0 < self.raw_until:
                 self.frame_raw = frame.copy()
+            if t0 < getattr(self, "clean_until", 0.0):   # 553: the live picture of the SmallTV - the pure picture, without HUD and marks
+                self.frame_clean = frame.copy(); self.frame_clean_t = t0
             H, W = frame.shape[:2]
             pw = CFG["proc_width"]; ph = int(H * pw / W); sx = W / pw; sy = H / ph
             if (pw, ph) != getattr(self, "_proc_size", (pw, ph)):     # power mode / camera changed the working size

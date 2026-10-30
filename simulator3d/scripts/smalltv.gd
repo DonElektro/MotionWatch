@@ -383,20 +383,41 @@ func control(d: Dictionary) -> Dictionary:
 			"gif_frames": (_gifs[img]["frames"] as Array).size() if _gifs.has(img) and not (_gifs[img] as Dictionary).is_empty() else 0}
 
 
+var _gl = null                     # Aufräumen 2: game_live of the last 0.25 s (world_reply asks 10 × a second)
+var _gl_t := -10.0
+
+
 func game_live():
-	"""das Spiel in wenigen Zahlen für die Spiel-Anzeige von MoveEye (Antwort auf /state, «game_live»): Runde, Countdown /
-	Restzeit, Punkte (wie am Rundenende gerechnet, ohne Abzeichen), wie oft erwischt; null ohne offenes Spiel"""
+	"""das Spiel in wenigen Zahlen - EINE Quelle für alle Spiel-Anzeigen (Aufräumen 2): Antwort auf /state «game_live» für
+	MoveEye (SmallTV 552, TV-Anzeige am HDMI 150) und der TV-Modus hier (tv.gd). Runde, Countdown / Restzeit, letzte
+	Minute, Ziel, Spieler (Name, Farbe, Zustand, wie oft erwischt, Kristalle, Punkte wie am Rundenende ohne Abzeichen),
+	was passiert ist, Rangliste, Aufgabe, Sieger und wer als Nächstes dran ist, die Adresse zum Mitspielen; null ohne Spiel"""
 	var g = main.game
 	if g == null or not g.open:
+		_gl = null
 		return null
+	if _gl != null and main.now() - _gl_t < 0.25:
+		return _gl
 	var t: float = g.now()
 	var ps := []
 	for p in g.players:
 		if p == null or str(p.get("role", "")) == "watch":
 			continue
 		var pt: int = max(0, 100 * int(p["items"]) - 150 * int(p["caught"]) + int(p.get("bonus", 0)))
-		ps.append({"n": str(p["name"]), "k": int(p["caught"]), "i": int(p["items"]), "pt": pt, "s": str(p["state"]), "r": str(p.get("role", ""))})
-	var d := {"round": g.round_state, "players": ps, "lm": g.last_minute, "mw": int(g.mwg.get("catches", 0))}
+		ps.append({"n": str(p["name"]), "k": int(p["caught"]), "i": int(p["items"]), "pt": pt, "s": str(p["state"]), "r": str(p.get("role", "")),
+				"c": "#" + (g.COLORS[int(p["slot"]) % g.COLORS.size()] as Color).to_html(false)})
+	var d := {"round": g.round_state, "players": ps, "lm": g.last_minute, "mw": int(g.mwg.get("catches", 0)), "goal": str(g.goal_name),
+			"url": g.address(), "task": str(g.task.get("text", ""))}
+	var fd := []
+	for e in g.feed.slice(max(0, g.feed.size() - 4)):
+		fd.push_front(str(e[1]))                     # the newest first
+	d["feed"] = fd
+	var bd := []
+	for b in g.board_list().slice(0, 6):
+		bd.append({"n": str(b.get("n", "")), "c": str(b.get("c", "#3b8cff")), "score": int(b.get("score", 0))})
+	d["board"] = bd
+	if g.rules != null:
+		d["next"] = str(g.rules.next_txt)
 	if g.round_state == "countdown":
 		d["cd"] = int(ceil(g.t_start - t))
 	elif g.round_state == "play":
@@ -406,6 +427,11 @@ func game_live():
 		for r in g.results.slice(0, 3):
 			top.append({"n": str(r.get("n", "")), "pt": int(r.get("score", 0))})
 		d["top"] = top
+		if g.rules != null and not (g.rules.win as Dictionary).is_empty():
+			var W: Dictionary = g.rules.win
+			d["win"] = {"title": str(W.get("title", "")), "score": int(W.get("score", -1)), "hl": str((W.get("hl", {}) as Dictionary).get("text", ""))}
+	_gl = d
+	_gl_t = main.now()
 	return d
 
 

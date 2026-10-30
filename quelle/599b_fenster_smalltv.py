@@ -289,7 +289,7 @@ def smalltv_selftest():
         assert k_ == "game" and brt == 40, (k_, brt)         # during a round the players are the persons: the game stays
         STV["game"] = {"round": "end", "players": []}; STV["end_t"] = time.time()
         k_, _s, _f, brt, now_ = stv_plan(e)
-        assert k_ == "alarm" and brt == 100 and now_
+        assert k_ == "gif" and brt == 100 and now_, k_          # Daniel 30.10.: the alarm animation on every display
         assert stv_plan(dict(e, alarm=False))[0] == "game"
         STV["end_t"] = time.time() - 61
         assert stv_plan(dict(e, alarm=False))[0] == "status"      # the end screen only 60 s
@@ -349,7 +349,8 @@ def smalltv_rot_selftest():
         t0 = 30.0 * 100000                                   # an even slot: the live picture
         ks = [stv_plan(e, t0 + dt)[0] for dt in (0, 29, 30, 59, 60, 90)]
         assert ks == ["live", "live", "batt", "batt", "live", "batt"], ks
-        assert stv_plan(e, t0)[1] != stv_plan(e, t0 + 60)[1], "the live picture is new at every live slot"
+        assert stv_plan(e, t0)[1] == stv_plan(e, t0 + 60)[1], "the live picture is new only at every second live slot (Daniel 30.10.)"
+        assert stv_plan(e, t0)[1] != stv_plan(e, t0 + 120)[1], "a new live picture after 2 min"
         assert stv_plan(e, t0 + 30)[1] == stv_plan(e, t0 + 90)[1], "the battery page unchanged -> same picture (only shown again)"
         assert stv_plan(e, t0)[1] == stv_plan(e, t0 + 29)[1], "one picture per 30 s at most"
         assert stv_plan(dict(e, rot=False), t0)[0] == "status" and stv_plan(dict(e, rot=False), t0 + 30)[0] == "status"   # off = as before
@@ -365,7 +366,7 @@ def smalltv_rot_selftest():
         k_, _s, _f, brt, now_ = stv_plan(e, t0 + 1)
         assert k_ == "gif" and brt == 100 and now_, (k_, brt)
         assert stv_plan(e, t0 + 61)[0] == "alarm" and stv_plan(e, t0 + 60 + 299)[0] == "alarm" and stv_plan(e, t0 + 60 + 301)[0] in ("live", "batt")
-        assert stv_plan(dict(e, rot=False), t0 + 1)[0] == "alarm" and stv_plan(dict(e, rot=False), t0 + 61)[0] == "status"
+        assert stv_plan(dict(e, rot=False), t0 + 1)[0] == "gif" and stv_plan(dict(e, rot=False), t0 + 61)[0] == "status"   # the GIF on every display
         G["is_dark"] = lambda: True
         assert stv_plan(e, t0 + 1)[0] == "gif" and stv_plan(e, t0 + 1)[3] == 100     # at night too, bright for a moment
         G["is_dark"] = lambda: False
@@ -375,9 +376,21 @@ def smalltv_rot_selftest():
         STV["alarm"] = None
         assert stv_plan(e, t0 + 101)[0] == "game" and stv_plan(e, t0 + 112)[0] in ("live", "batt")   # 10 s without news: the game is over
         STV["game"] = None
+        # the live picture: the pure camera picture (410 frame_clean), not the page picture with HUD / marks (Daniel 30.10.)
+        class _W: pass
+        w_ = _W(); w_.frame_out = np.full((240, 320, 3), 200, np.uint8); w_.frame_clean = np.zeros((240, 320, 3), np.uint8); w_.frame_clean_t = time.time()
+        keep_w = WATCH_REF.get("w"); WATCH_REF["w"] = w_
+        try:
+            f_ = stv_live_frame(True)
+            assert f_ is not None and f_.shape[0] == 240 and f_.mean() == 0 and getattr(w_, "clean_until", 0) > time.time(), "pure picture"
+            w_.frame_clean = None; w_.running = False
+            f_ = stv_live_frame(True)
+            assert f_ is not None and f_.mean() == 200, "without a pure picture: the page picture (as before)"
+        finally:
+            WATCH_REF["w"] = keep_w
         # pictures a day
         n_off, n_on = stv_per_day(dict(e, rot=False)), stv_per_day(e)
-        assert n_off == 168 and 600 <= n_on <= 2200 and n_on > n_off, (n_off, n_on)
+        assert n_off == 168 and 350 <= n_on <= 1300 and n_on > n_off, (n_off, n_on)     # live picture every 2 min: about half
         assert stv_per_day(dict(e, on=False)) == 0
         # the GIF: 240 × 240, 6-8 frames, small; the pages
         gif = stv_render_alarm_gif({"kind": "person", "label": "person", "conf": None, "dist": 12, "crop": None, "n": 1, "clock": "22:14"}, "de")

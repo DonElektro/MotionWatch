@@ -4469,7 +4469,9 @@ class EnvSensor:
 
     def read(self):
         if CFG.get("sim_on") and time.time() - SIM["t"] < 10:
-            return {"t": round(float(SIM["ambient"]), 1), "h": None, "p": round(float(SIM["pressure"]), 1), "src": "Simulator", "ds": [], "time": time.time()}
+            hs_ = SIM.get("humidity")                     # Aufräumen 2: the humidity of the scene (world_reply «humidity»)
+            return {"t": round(float(SIM["ambient"]), 1), "h": round(float(hs_)) if isinstance(hs_, (int, float)) else None,
+                    "p": round(float(SIM["pressure"]), 1), "src": "Simulator", "ds": [], "time": time.time()}
         if self.fd is None and time.time() - self.tried > 120:
             self.tried = time.time(); self._open()
         t = hum = pr = None; src = ""
@@ -14088,7 +14090,7 @@ def real_look():
 #  * MoveEye asks the simulator every 3 s ({"action": "busy"} -> busy_with("")). A test run, the test bench, training
 #    pictures, blind spots … started in the simulator window lock MoveEye's own starts with the same message
 #    «The simulator is busy: …» (simtask_busy in 141 asks sim_busy_remote()).
-#  * MoveEye tells the simulator what it does itself (sim_state: "simtask", "simtask_de"); the simulator refuses its own
+#  * MoveEye tells the simulator what it does itself (sim_state: "simtask_de" - Aufräumen 2: «simtask» in English is no longer sent); the simulator refuses its own
 #    starts then (busy_with in main.gd: «Störfall-Übung (von MoveEye)»).
 #  * Blind spots started in the simulator («Testen» card): MoveEye follows them like its own (BLIND / _blind_wait in 143),
 #    so the map in MoveEye shows the result, whoever started it. Older simulators without «busy»: blindmap info is asked.
@@ -14765,8 +14767,10 @@ function paint() {
     h += '<h2>🎮 ' + esc(G.title || "") + '</h2>';
     if (r === "countdown") h += '<div class="round"><div class="big">' + esc(G.cd) + '</div><h1>' + esc(d.t_ready) + '</h1></div>';
     else if (r === "play") h += '<div class="round"><div class="big">' + mmss(G.left || 0) + '</div><h1>' + esc(d.t_play) + (G.last_minute ? " 🔥" : "") + '</h1></div>';
-    else if (r === "end") h += '<h1>🏁 ' + esc(d.t_end) + '</h1>';
+    else if (r === "end") h += '<h1>🏁 ' + esc(d.t_end) + '</h1>' + (G.win && G.win.title ? '<h2>' + esc(G.win.title) + (G.win.score >= 0 ? " · " + esc(G.win.score) : "") + '</h2>' : "");
     else h += '<h1>' + esc(d.t_waiting) + '</h1>';
+    if ((r === "lobby" || r === "end") && G.next) h += '<div class="idle">' + esc(G.next) + '</div>';
+    if (G.mw) h += '<h2>🎯 ' + esc(String(d.t_mw || "").replace("{n}", G.mw)) + '</h2>';
     if (r !== "play" && r !== "countdown" && G.qr) h += '<div class="qr"><div class="q">' + G.qr + '</div><div class="t">' + esc(d.t_join) + '<div class="u">' + esc(G.url) + '</div></div></div>';
     if ((G.players || []).length) h += players(G.players);
     if ((G.feed || []).length) h += '<div class="feed">' + G.feed.map(x => '<div>• ' + esc(x) + '</div>').join("") + '</div>';
@@ -14872,6 +14876,24 @@ def tv_state():
             "url": tv_url(False), "auto": bool(CFG["tv_auto"]), "sim": TV["sim"], "sim_ok": bool(CFG.get("sim_on") and time.time() - SIM.get("t", 0) < 15)}
 
 
+GAME_STATE_WORDS = {"goal": "at the goal", "out": "caught", "jail": "in jail", "play": "on the way", "lobby": "ready"}
+
+
+def game_live_tv(g, T):
+    """Aufräumen 2: «game_live» of the simulator -> the game part of the TV page (the same words as tv.gd and the SmallTV)"""
+    url = str(g.get("url") or "")
+    def ps_(p):
+        k, pt = int(p.get("k", 0) or 0), p.get("pt")
+        return {"n": p.get("n"), "c": p.get("c") or "#3b8cff",
+                "s": " · ".join(x for x in (T(GAME_STATE_WORDS.get(str(p.get("s")), str(p.get("s") or ""))), f"{k}×" if k else "",
+                                            f"{int(pt)} {T('points')}" if pt is not None else "") if x)}
+    return {"open": True, "round": g.get("round"), "cd": g.get("cd"), "left": g.get("left"), "last_minute": g.get("lm"),
+            "title": T("Game in the 3D simulator") + (" · " + str(g.get("goal")) if g.get("goal") else ""), "url": url, "qr": qr_svg(url) if url else "",
+            "players": [ps_(p) for p in g.get("players") or []], "feed": [str(x)[:80] for x in (g.get("feed") or [])][:4],
+            "board": [{"n": b.get("n"), "c": b.get("c"), "score": b.get("score")} for b in (g.get("board") or [])],
+            "win": g.get("win"), "next": g.get("next") or "", "mw": g.get("mw")}
+
+
 def tv_data():
     """what the TV page shows"""
     L = norm_lang(CFG.get("lang")) or "de"
@@ -14882,7 +14904,7 @@ def tv_data():
          "state": T({"armed": "Armed", "arming": "Arming …", "disarmed": "Not armed"}.get(STATE.get("arm_state"), "")),
          "t_setup": T("The game is being set up"), "t_join": T("Join: scan the QR code with the phone (same Wi-Fi) or open"),
          "t_ready": T("Get ready"), "t_play": T("Round running"), "t_end": T("Round over"), "t_waiting": T("Waiting for players"),
-         "t_board": T("Ranking of the evening"), "t_corner": T("Game corner"), "t_idle": T("Nothing is going on at the moment - MoveEye keeps watch."),
+         "t_board": T("Ranking of the evening"), "t_mw": T("MoveEye caught {n}"), "t_corner": T("Game corner"), "t_idle": T("Nothing is going on at the moment - MoveEye keeps watch."),
          "events": [], "game": {}, "wiz": {}, "party": {}}
     try:
         d["events"] = [str(e.get("text") or e.get("msg") or "")[:90] for e in list(EVENTS)[-5:]][::-1] if "EVENTS" in globals() else []
@@ -14891,18 +14913,21 @@ def tv_data():
     if CFG.get("sim_on"):
         d["view_label"] = T("Simulator")
         try:
-            gi = sim_control({"action": "game_info"})
             wz = sim_control({"action": "gamewiz", "op": "get"})
             if isinstance(wz, dict) and wz.get("ok"):
                 d["wiz"] = {k: wz.get(k) for k in ("shown", "step", "steps", "title", "cards", "pics")}
-            if isinstance(gi, dict) and gi.get("open"):
-                url = ((wz or {}).get("game") or {}).get("url") or ""
-                st_ = {"goal": "🎉", "out": "👀", "jail": "🔒", "play": "🏃", "lobby": "⏳"}
-                d["game"] = {"open": True, "round": gi.get("round"), "cd": gi.get("cd"), "left": gi.get("left"), "last_minute": gi.get("last_minute"),
-                             "title": T("Game in the 3D simulator") + " · " + str(gi.get("goal") or ""), "url": url, "qr": qr_svg(url) if url else "",
-                             "players": [{"n": p.get("n"), "c": p.get("c"), "s": st_.get(p.get("s"), "") + " " + str(p.get("k", 0)) + "×"} for p in gi.get("players") or []],
-                             "feed": [str(x.get("x"))[:80] for x in (gi.get("feed") or [])][::-1][:4],
-                             "board": [{"n": b.get("n"), "c": b.get("c"), "score": b.get("score")} for b in (gi.get("board") or [])]}
+            # Aufräumen 2: ONE source for all game displays - «game_live» of the simulator (in every answer, 552 keeps it in
+            # STV «game»), the same as the SmallTV and the TV mode of the simulator (tv.gd); older simulators: «game_info»
+            gl = STV["game"] if "STV" in globals() and STV.get("game") and time.time() - STV.get("game_t", 0.0) < 10 else None
+            if gl is not None:
+                d["game"] = game_live_tv(gl, T)
+            else:
+                gi = sim_control({"action": "game_info"})
+                if isinstance(gi, dict) and gi.get("open"):
+                    url = ((wz or {}).get("game") or {}).get("url") or ""
+                    d["game"] = game_live_tv({"round": gi.get("round"), "cd": gi.get("cd"), "left": gi.get("left"), "lm": gi.get("last_minute"),
+                                              "goal": gi.get("goal"), "url": url, "players": gi.get("players") or [],
+                                              "feed": [str(x.get("x")) for x in (gi.get("feed") or [])][::-1][:4], "board": gi.get("board") or []}, T)
         except Exception:
             pass
     else:
@@ -23720,7 +23745,8 @@ def sim_battery_tick(bm, sb):
         log_event("sys", f"Simulated UPS HAT (simulator): battery {v:.2f} V, {pct} %")
     bm.ups_events(v, pct, hours, on_batt, False)          # volt_ok False: never the real shutdown of this computer
     lim = int(CFG["ups_shutdown_pct"])
-    if not SIMVAL["off"] and on_batt and lim > 0 and (pct <= lim or sb.get("empty")):
+    drill_ = drill_active("battery") if "drill_active" in globals() else False   # 565: the drill «battery empty» never «shuts down»
+    if not SIMVAL["off"] and on_batt and lim > 0 and (pct <= lim or sb.get("empty")) and not drill_:
         SIMVAL["off"] = True; SIMVAL["off_t"] = time.time()
         log_event("sys", f"Battery empty ({pct} %, {v:.2f} V) - the Pi would shut down now (simulator: this computer stays on)")
         w = WATCH_REF.get("w")
@@ -23835,7 +23861,9 @@ def sim_state():
     L = STATE.get("lights") or {}
     rs = STATE.get("relay_states") or []
     return {"v": 1, "t": time.time(), "device": CFG["device_name"] or "MoveEye", "armed": is_armed(),
-            "uid": f"{device_uid()}:{CFG.get('web_port')}", "helper": bool(STATE.get("helper_arg")), "picture_mode": CFG["picture_mode"],   # 2.98.29: uid/helper - one MoveEye leads the simulator (3D-4.9)
+            "uid": f"{device_uid()}:{CFG.get('web_port')}", "helper": bool(STATE.get("helper_arg")),   # 2.98.29: uid/helper - one MoveEye leads the simulator (3D-4.9)
+            # Aufräumen 2 (one field list: simulator3d/schnittstelle.json, self-test 558): «picture_mode» and «simtask» are no
+            # longer sent (nobody read them: MoveEye makes the picture grey itself, the simulator shows «simtask_de»)
             "mw_version": APP_VERSION, "ai_status": str(STATE.get("ai_status") or ""),     # 2.95.67: for the test bench in the simulator
             "refscan": _sim_refscan_info(),                                                  # 2.95.97: the reference scan, for the button there
             # 2.98.35: the REAL position of the motion planner (072, ramps) + its speed (the simulator goes on with it between
@@ -23850,14 +23878,16 @@ def sim_state():
                       # 2.98.1: «Folgen» on, and following something right now - the simulator lets the head follow then (not the patrol)
                       "track": bool(CFG["track_person"] or CFG["track_motion"]), "tracking": bool(STATE.get("tracking")),
                       "track_what": str(STATE.get("track_what") or "")},
+            "ups_mah": int(CFG.get("ups_mah") or 3450),   # Aufräumen 2: the battery size - the simulator shows it «von MoveEye» (power.gd)
             "lights": {"white": bool(L.get("white")), "ir": bool(L.get("ir")), "white_level": 1.0, "ir_level": 1.0},
             "wake": {"state": WAKE["state"], "snoozes": WAKE["snoozes"], "t0": round(WAKE["t0"], 2)},       # 2.98.9: the sleeper in the bedroom scene reacts
             "relays": [{"name": r["name"], "on": bool(rs[i]) if i < len(rs) else False} for i, r in enumerate(RELAYS)],
             "sound": (CFG["siren_sound"] or "siren") if SOUND["playing"] else ("talk" if TALK["proc"] is not None else ""),
-            "simtask": (stk_ := _simtask_now()), "simtask_de": tr(stk_, "de") if stk_ else "",   # 2.98.13: one lock (147)
+            "simtask_de": tr(stk_, "de") if (stk_ := _simtask_now()) else "",   # 2.98.13: one lock (147)
             "eco": STATE.get("eco") or "off",     # power saving of MoveEye: «saving» = quiet - the simulator may calculate slower (3D-3.30)
             # automatic update: the simulator compares these checksums with its own files and fetches /sim/simulator.zip
-            "sim_files": sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
+            # (only the Python simulator updates itself with them - the 3D simulator (/info «view») gets an empty list)
+            "sim_files": {} if (SIM.get("info") or {}).get("view") else sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
             # CPU in % of the whole computer: total, MoveEye, simulator (None = not on this computer / unknown)
             "cpu": {"total": STATE.get("cpu"), "mw": STATE.get("cpu_mw"), "sim": STATE.get("cpu_sim")},
             # what MoveEye detects right now: the simulator compares it with the truth (test run, game «MoveEye decides»)
@@ -30079,6 +30109,8 @@ class SimLink:
                    mover=bool(rep_.get("mover")),                # the simulator has a mover (3D-3.11): second stick
                    mover_pose=_mover_pose(rep_.get("mover_pose")) if rep_.get("mover") else None,   # where it is (2.95.43, optional)
                    pc_cpu=rep_.get("pc_cpu"), cores=rep_.get("cores"),   # CPU of the PC the simulator runs on (3D-3.24)
+                   sim_cpu=rep_.get("sim_cpu_own"),              # Aufräumen 2: its own share there (tile «CPU of the PC», 470)
+                   humidity=rep_.get("humidity"),                # Aufräumen 2: humidity of the scene -> climate sensor (060, field h)
                    solar=rep_.get("solar") if isinstance(rep_.get("solar"), dict) else None,   # 2.98.11: solar panel and
                    gps=rep_.get("gps") if isinstance(rep_.get("gps"), dict) else None)         # GPS module of the simulator   # CPU of the PC the simulator runs on (3D-3.24)
         simvals_take(rep_)                                 # Simulator-Werte: battery, clock, place, forecast, Pi heat, network test (285)
@@ -30086,6 +30118,7 @@ class SimLink:
         SIM["follower"] = bool(rep_.get("follower"))
         SIM["head"] = rep_.get("head_deg") if isinstance(rep_.get("head_deg"), list) else None    # 2.98.35: the simulated head (539 /api/servo)
         weit_from_sim(rep_.get("wide"))                 # 163: the mount of the wide camera (3D-4.17) - «Übersicht lenkt den Kopf» by itself
+        SIM["leader"] = str(rep_.get("leader") or "")[:40] if SIM["follower"] else ""   # Aufräumen 2: who steers (shown in the message)
         SIM["msg"] = "connected - only watching (another MoveEye steers the simulator)" if SIM["follower"] else "connected"
         if time.time() - SIMDIARY["t"] >= 30:                # 2.96.1: the diary of the simulator (visits)
             threading.Thread(target=simdiary_poll, daemon=True, name="simdiary").start()
@@ -34322,6 +34355,8 @@ class MotionWatch:
                 LOOPREC.feed(frame, t0)                         # continuous recording: a copy now and then
             if t0 < self.raw_until:
                 self.frame_raw = frame.copy()
+            if t0 < getattr(self, "clean_until", 0.0):   # 553: the live picture of the SmallTV - the pure picture, without HUD and marks
+                self.frame_clean = frame.copy(); self.frame_clean_t = t0
             H, W = frame.shape[:2]
             pw = CFG["proc_width"]; ph = int(H * pw / W); sx = W / pw; sy = H / ph
             if (pw, ph) != getattr(self, "_proc_size", (pw, ph)):     # power mode / camera changed the working size
@@ -39308,6 +39343,7 @@ function scWizOnly(c) { return !!c.wiz || (!("gid" in c) && scGid(c) === "game" 
 // 2.98.23 (Konzept): the simulator group «Testlauf» is not shown in the Simulator control (testing has ONE place: group «Testen»,
 // tile «Tests»); there it is built with data-only="testrun" (#tr-sim, recordings of the sneak paths, Pi 5 settings)
 const SC_TEST_DUP = ["testrun_plan", "testrun_start", "testrun_stop"];   // the same as «Testlauf starten» of MoveEye right above (/api/simtest)
+try { Object.assign(I18N.de, {"from MoveEye (setting of MoveEye, only shown here)": "von MoveEye (Einstellung von MoveEye, hier nur angezeigt)"}); } catch (e) {}   // Aufräumen 2
 function simCtlBuild(G, r, ctl, fmt) {
   scCss();
   const only = G.dataset.only || "";
@@ -39315,7 +39351,9 @@ function simCtlBuild(G, r, ctl, fmt) {
   const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
   const ss = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"])), openS = new Set(ls("mw-sc-sub2", ["Besuch/Vorlagen", "Besuch/Menschen schicken", "Besuch/Tiere schicken", "Spiel/Runde"]));
-  let expert = only ? true : ls("mw-sc-expert", false), q = G.dataset.q || "";
+  // Aufräumen 2: Einfach / Experte is stored in the settings of MoveEye (page «sim», /api/ui_simple like the main page and the
+  // simulator centre 139) - no longer per browser; the first build asks once, later builds take the known value
+  let expert = only ? true : window.SC_EXPERT != null ? window.SC_EXPERT : false, q = G.dataset.q || "";
   if (only) (r.controls || []).forEach(c => openC.add(c.group));
   G.textContent = "";
   const top = el("div", "sc-top"); const qi = document.createElement("input"); qi.type = "search"; qi.placeholder = t("Search a setting …"); qi.value = q;
@@ -39358,6 +39396,7 @@ function simCtlBuild(G, r, ctl, fmt) {
       } else if (c.type === "slider") {
         row = el("div", "sc-row sc-sl"); const l = el("div", "sc-l"); const vv = el("span", "mut simvv"); l.append(el("span", "", c.label), vv);
         const rg = document.createElement("input"); rg.type = "range"; rg.className = "simv"; rg.min = c.min; rg.max = c.max; rg.step = c.step || 1;
+        if (c.ro) { rg.disabled = true; rg.title = t("from MoveEye (setting of MoveEye, only shown here)"); }   // Aufräumen 2: e.g. the battery size
         let lvT = 0, lvW = null;                      // «live» (simulator 3D-4.x, e.g. the height of the pole): sent while dragging, 5× a second at most
         const lvSend = () => { lvW = null; lvT = Date.now(); ctl({ctl: "set", id: c.id, value: +rg.value}); };
         rg.oninput = () => { vv.textContent = fmt(c, +rg.value); if (c.live && !lvW) lvW = setTimeout(lvSend, Math.max(0, 200 - (Date.now() - lvT))); };
@@ -39389,8 +39428,11 @@ function simCtlBuild(G, r, ctl, fmt) {
     });
     none.hidden = !q || any;
   }
-  qi.oninput = apply; b1.onclick = () => { expert = false; ss("mw-sc-expert", false); apply(); }; b2.onclick = () => { expert = true; ss("mw-sc-expert", true); apply(); };
+  const setEx = v => { expert = v; window.SC_EXPERT = v; apply();
+    fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !v, page: "sim"})}).catch(() => {}); };
+  qi.oninput = apply; b1.onclick = () => setEx(false); b2.onclick = () => setEx(true);
   apply();
+  if (!only && window.SC_EXPERT == null) fetch("/api/ui_simple?page=sim").then(x => x.json()).then(j => { window.SC_EXPERT = !j.on; expert = window.SC_EXPERT; apply(); }).catch(() => {});
 }
 
 // ---- the simulator window (3D-3.18): mouse / finger / keys on a picture of /sim/view.mjpg go to the simulator ----
@@ -39983,10 +40025,10 @@ function paint() {
   const so = $("#s-on"); if (so && document.activeElement !== so) so.checked = !!S.on;
   $("#s-onnote").textContent = !S.on ? t("off - the real cameras and sensors are used") : nopic ? NP : S.ok ? t("connected") + (T.name ? ": " + T.name : "") : t("Simulator not reachable");
   $("#s-csub").textContent = nopic ? "· " + NP : S.on && S.ok ? "· " + t("connected") : "";
-  $("#s-msg").textContent = (S.msg ? t(S.msg) + " · " : "") + (S.url || "");
+  $("#s-msg").textContent = (S.msg ? t(S.msg) + (S.leader ? " (" + S.leader + ")" : "") + " · " : "") + (S.url || "");   // Aufräumen 2: who steers
   const tile = (k, v) => '<div class="tile"><div class="mut">' + k + '</div><b>' + v + '</b></div>';
   $("#s-tiles").hidden = !S.on;
-  const pcc = T.pc_cpu == null ? "–" : Math.round(T.pc_cpu) + " %";
+  const pcc = T.pc_cpu == null ? "–" : Math.round(T.pc_cpu) + " %" + (T.sim_cpu != null ? " · Sim " + Math.round(T.sim_cpu) + " %" : "");   // Aufräumen 2: «sim_cpu_own»
   $("#s-tiles").innerHTML = tile(t("CPU of the PC"), '<span style="color:' + (T.pc_cpu > 85 ? "var(--red,#ff5b4b)" : T.pc_cpu > 60 ? "#e8b33a" : "inherit") + '">' + pcc + '</span>') + tile(t("Connected for"), dur(T.since)) + tile(t("Response time"), T.rtt == null ? "–" : T.rtt + " ms") + tile(t("Camera pictures/s"), T.cam_fps == null ? "–" : T.cam_fps)
     + tile(t("Thermal pictures/s"), T.th_fps == null ? "–" : T.th_fps) + tile(t("Messages sent"), T.sent || 0) + tile(t("Sensor events"), T.events || 0) + tile(t("Errors"), T.errs || 0);
   const u = $("#s-url"); if (!URLEDIT && document.activeElement !== u) u.value = S.url || "";
@@ -51041,7 +51083,7 @@ Object.assign(I18N.de, {"iPhone shortcuts": "iPhone-Kurzbefehle",
  "Lens with waves": "Linse mit Wellen", "Light radar (green)": "Helles Radar (grün)", "Night radar (orange beam)": "Nacht-Radar (oranger Strahl)", "Forest with a find": "Wald mit Fund", "Thermal picture": "Wärmebild", "Field of view": "Blickfeld", "Tent watch": "Zelt-Wache", "Shield": "Schild", "Radar with finds": "Radar mit Treffern", "Classic (orange)": "Klassisch (orange)", "Done": "Erledigt", "Later": "Später",
  "icon-note": "Gilt für den Browser-Tab, die Kopfzeile und den Handy-Startbildschirm. Android holt das neue Symbol von selbst (kann einen Tag dauern). iPhone / iPad: das Symbol auf dem Startbildschirm löschen und die Seite neu «Zum Home-Bildschirm» hinzufügen.",
  "ios-icon-hint": "MoveEye hat ein neues Symbol. Das iPhone behält das alte: Symbol lange drücken → «App entfernen», dann in Safari «Teilen» → «Zum Home-Bildschirm».",
- "Get ready": "Gleich geht's los", "You are the guard: turn the camera and catch them": "Du bist Wächter: Kamera drehen und erwischen", "Caught!": "Erwischt!",
+ "Get ready": "Macht euch bereit", "You are the guard: turn the camera and catch them": "Du bist Wächter: Kamera drehen und erwischen", "Caught!": "Erwischt!",
  "Power mode": "Powermodus", "Power mode on: everything on the highest performance": "Powermodus ein: alles auf Höchstleistung", "Power mode off: your settings are back": "Powermodus aus: deine Einstellungen sind zurück", "active: every picture through the AI, best picture, processor at full clock": "aktiv: jedes Bild durch die KI, bestes Bild, Prozessor auf vollem Takt", "hot": "heiss", "the highest performance (uses more current and gets warmer) - switching it off restores your settings": "Höchstleistung (braucht mehr Strom und wird wärmer) – Ausschalten stellt deine Einstellungen wieder her", "Trusted devices": "Vertrauenswürdige Geräte", "A device that has logged in once is remembered (also after updates). Remove a device here if it is lost or should log in again.": "Ein Gerät, das sich einmal angemeldet hat, wird gemerkt (auch nach Updates). Entferne hier ein Gerät, wenn es verloren ist oder sich neu anmelden soll.", "since": "seit", "Remove this device? It must log in again.": "Dieses Gerät entfernen? Es muss sich neu anmelden.", "Remove all": "Alle entfernen", "Remove all trusted devices? Every device must log in again.": "Alle vertrauenswürdigen Geräte entfernen? Jedes Gerät muss sich neu anmelden.", "Update": "Update", "New update for the simulator": "Neues Update für den Simulator", "tab Simulator": "Reiter Simulator", "sim-view-help": "Das Fenster des Simulators: Maus links ziehen = verschieben, rechts ziehen = drehen, Rad = zoomen (nach einem Klick ins Bild), Doppelklick = hinfliegen. Finger: antippen = klicken, sonst scrollt die Seite; mit ✋ bedient der Finger den Simulator (ziehen = verschieben, ⟲ = drehen, zwei Finger = zoomen). Knöpfe unten wechseln die Ansicht.", "Python world simulator (ZIP)": "MW Sim · Welt (Kevin) (ZIP)", "second simulator, needs Python on the PC": "zweiter Simulator, braucht Python auf dem PC", "Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An MoveEye senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where MoveEye stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo MoveEye steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
 Object.assign(I18N.de, {"Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren", "Start simulator here": "Simulator hier starten", "Stop simulator": "Simulator beenden", "Download for a PC (ZIP)": "Für einen PC herunterladen (ZIP)", "Simulator installed": "Simulator installiert", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator beendet", "the simulator runs on this Pi": "der Simulator läuft auf diesem Pi", "Install": "Installieren", "Start": "Starten"});
 // aufr: simExtras() (the old settings section «Simulator» on this page) is gone - that section is not on this page since
@@ -51759,8 +51801,8 @@ Object.assign(I18N.de, {"Shoot": "Schiessen", "Shooting on": "Schiessen an", "Sh
 // ---- modes (2.95.47): camping guard, campfire games, gamer, home, wildlife, night guard, transport ----
 Object.assign(I18N.de, {"Stop the TV mode of the simulator": "TV-Modus des Simulators beenden", "TV mode in the 3D simulator": "TV-Modus im 3D-Simulator"});
 Object.assign(I18N.de, {"Aufstell-Planer in the simulator": "Aufstell-Planer im Simulator", "open in the window of the simulator": "im Fenster des Simulators geöffnet", "Take over the patrol of the planner": "Patrouille vom Planer übernehmen", "Patrol set": "Patrouille gesetzt", "of the area in view": "des Bereichs im Blick"});
-Object.assign(I18N.de, {"Alarm replay in 3D": "Alarm-Rückblick in 3D", "Play in the simulator": "Im Simulator abspielen", "plays in the window of the simulator": "läuft im Fenster des Simulators", "no alarms yet": "noch keine Alarme", "replay-note": "Zeigt im 3D-Simulator nach, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Hilft, Fehlalarme zu verstehen. Die Positionen sind geschätzt (aus Bildposition und Grösse)."});
-Object.assign(I18N.en, {"replay-note": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Helps to understand false alarms. The positions are estimated (from the spot and size in the picture)."});
+Object.assign(I18N.de, {"Replay in 3D": "In 3D nachspielen", "replay-3d-tip": "Zeigt im 3D-Simulator, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Braucht den verbundenen Simulator.", "Alarm replay in 3D": "Alarm-Rückblick in 3D", "Play in the simulator": "Im Simulator abspielen", "plays in the window of the simulator": "läuft im Fenster des Simulators", "no alarms yet": "noch keine Alarme", "replay-note": "Zeigt im 3D-Simulator nach, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Hilft, Fehlalarme zu verstehen. Die Positionen sind geschätzt (aus Bildposition und Grösse)."});
+Object.assign(I18N.en, {"replay-3d-tip": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Needs the connected simulator.", "replay-note": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Helps to understand false alarms. The positions are estimated (from the spot and size in the picture)."});
 Object.assign(I18N.de, {"AI test with simulator pictures": "KI-Prüfung mit Simulator-Bildern", "dset-note": "Der Simulator macht Bilder mit Person oder Tier – bei Tag, Abend, Nacht mit Infrarot, Regen und Nebel, nah und fern – und weiss, wo sie sind. MoveEye lässt seine KI (oder die PC-Rechenhilfe) darüber laufen und zählt Treffer, Fehlschläge und falsche Personen. Dauert pro Bild etwa 3 Sekunden.", "Start the test": "Prüfung starten", "found": "erkannt", "false persons": "falsche Personen", "near (under 8 m)": "nah (unter 8 m)", "far (8 m and more)": "fern (ab 8 m)", "AI time per picture": "KI-Zeit pro Bild", "Training pictures (ZIP)": "Trainingsbilder (ZIP)", "Tag": "Tag", "Abend": "Abend", "Nacht (Infrarot)": "Nacht (Infrarot)", "Regen": "Regen", "Nebel": "Nebel", "Nacht + Regen": "Nacht + Regen", "person": "Person", "fox": "Fuchs", "deer": "Reh", "dog": "Hund", "cat": "Katze", "boar": "Wildschwein", "the simulator makes the pictures …": "der Simulator macht die Bilder …", "done": "fertig"});
 Object.assign(I18N.en, {"dset-note": "The simulator makes pictures with a person or an animal - by day, dusk, night with infrared, rain and fog, near and far - and knows where they are. MoveEye runs its AI (or the PC helper) on them and counts hits, misses and false persons. About 3 seconds per picture.", "Tag": "day", "Abend": "dusk", "Nacht (Infrarot)": "night (infrared)", "Regen": "rain", "Nebel": "fog", "Nacht + Regen": "night + rain"});
 Object.assign(I18N.de, {"Loudspeaker": "Lautsprecher", "built-in / none": "eingebaut / keiner", "no Bluetooth": "kein Bluetooth", "Disco light": "Disco-Licht", "Stop": "Aus", "Start": "Los", "with the music (microphone)": "mit der Musik (Mikrofon)", "fixed tempo": "fester Takt", "needs the white light (Lights)": "braucht das weisse Licht (Licht)", "No microphone: the fixed tempo is used.": "Kein Mikrofon: dann gilt der feste Takt.", "disco-note": "Musik über die Bluetooth-Box oder ein Handy laufen lassen – das Mikrofon hört den Takt und das weisse Licht blitzt mit (höchstens 3-mal pro Sekunde; Vorsicht bei Menschen mit Epilepsie, Rücksicht auf Nachbarn). Ein Alarm geht immer vor. Endet nach 2 Stunden von selbst."});
@@ -52656,8 +52698,8 @@ Object.assign(I18N.de, {"Training set for an own AI model (YOLO)": "Trainingspak
   "Variety: normal": "Vielfalt: normal", "Variety: high": "Vielfalt: hoch", "Variety: high (recommended)": "Vielfalt: hoch (empfohlen)", "Delete old AI data": "Alte KI-Daten löschen", "days": "Tage",
   "Delete all training packs on the PC of the simulator except the newest one? The AI model stays.": "Alle Trainingspakete auf dem PC des Simulators ausser dem neuesten löschen? Das KI-Modell bleibt.",
   "Cleaned up by itself: after every new pack the newest 3 stay, nothing older than 30 days (the newest always stays). The AI model is never deleted.": "Aufräumen von selbst: nach jedem neuen Paket bleiben die neuesten 3, nichts älter als 30 Tage (das neueste bleibt immer). Das KI-Modell wird nie gelöscht."});
-Object.assign(I18N.de, {"pictures": "Bilder", "Tag": "Anhänger", "Aufstell-Planer in the simulator": "Aufstell-Planer im Simulator", "open in the window of the simulator": "im Fenster des Simulators geöffnet", "Take over the patrol of the planner": "Patrouille vom Planer übernehmen", "Patrol set": "Patrouille gesetzt", "of the area in view": "des Bereichs im Blick", "Alarm replay in 3D": "Alarm-Rückblick in 3D", "Play in the simulator": "Im Simulator abspielen", "plays in the window of the simulator": "läuft im Fenster des Simulators", "no alarms yet": "noch keine Alarme", "replay-note": "Zeigt im 3D-Simulator nach, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Hilft, Fehlalarme zu verstehen. Die Positionen sind geschätzt (aus Bildposition und Grösse).", "AI test with simulator pictures": "KI-Prüfung mit Simulator-Bildern", "dset-note": "Der Simulator macht Bilder mit Person oder Tier – bei Tag, Abend, Nacht mit Infrarot, Regen und Nebel, nah und fern – und weiss, wo sie sind. MoveEye lässt seine KI (oder die PC-Rechenhilfe) darüber laufen und zählt Treffer, Fehlschläge und falsche Personen. Dauert pro Bild etwa 3 Sekunden.", "Start the test": "Prüfung starten", "found": "erkannt", "false persons": "falsche Personen", "near (under 8 m)": "nah (unter 8 m)", "far (8 m and more)": "fern (ab 8 m)", "AI time per picture": "KI-Zeit pro Bild", "Training pictures (ZIP)": "Trainingsbilder (ZIP)", "Abend": "Abend", "Nacht (Infrarot)": "Nacht (Infrarot)", "Regen": "Regen", "Nebel": "Nebel", "Nacht + Regen": "Nacht + Regen", "person": "Person", "fox": "Fuchs", "deer": "Reh", "dog": "Hund", "cat": "Katze", "boar": "Wildschwein", "the simulator makes the pictures …": "der Simulator macht die Bilder …", "done": "fertig", "Simulator tools": "Simulator-Werkzeuge"});
-I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Helps to understand false alarms. The positions are estimated (from the spot and size in the picture).", "dset-note": "The simulator makes pictures with a person or an animal - by day, dusk, night with infrared, rain and fog, near and far - and knows where they are. MoveEye runs its AI (or the PC helper) on them and counts hits, misses and false persons. About 3 seconds per picture.", "Tag": "day", "Abend": "dusk", "Nacht (Infrarot)": "night (infrared)", "Regen": "rain", "Nebel": "fog", "Nacht + Regen": "night + rain"});
+Object.assign(I18N.de, {"Replay in 3D": "In 3D nachspielen", "replay-3d-tip": "Zeigt im 3D-Simulator, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Braucht den verbundenen Simulator.", "pictures": "Bilder", "Tag": "Anhänger", "Aufstell-Planer in the simulator": "Aufstell-Planer im Simulator", "open in the window of the simulator": "im Fenster des Simulators geöffnet", "Take over the patrol of the planner": "Patrouille vom Planer übernehmen", "Patrol set": "Patrouille gesetzt", "of the area in view": "des Bereichs im Blick", "Alarm replay in 3D": "Alarm-Rückblick in 3D", "Play in the simulator": "Im Simulator abspielen", "plays in the window of the simulator": "läuft im Fenster des Simulators", "no alarms yet": "noch keine Alarme", "replay-note": "Zeigt im 3D-Simulator nach, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Hilft, Fehlalarme zu verstehen. Die Positionen sind geschätzt (aus Bildposition und Grösse).", "AI test with simulator pictures": "KI-Prüfung mit Simulator-Bildern", "dset-note": "Der Simulator macht Bilder mit Person oder Tier – bei Tag, Abend, Nacht mit Infrarot, Regen und Nebel, nah und fern – und weiss, wo sie sind. MoveEye lässt seine KI (oder die PC-Rechenhilfe) darüber laufen und zählt Treffer, Fehlschläge und falsche Personen. Dauert pro Bild etwa 3 Sekunden.", "Start the test": "Prüfung starten", "found": "erkannt", "false persons": "falsche Personen", "near (under 8 m)": "nah (unter 8 m)", "far (8 m and more)": "fern (ab 8 m)", "AI time per picture": "KI-Zeit pro Bild", "Training pictures (ZIP)": "Trainingsbilder (ZIP)", "Abend": "Abend", "Nacht (Infrarot)": "Nacht (Infrarot)", "Regen": "Regen", "Nebel": "Nebel", "Nacht + Regen": "Nacht + Regen", "person": "Person", "fox": "Fuchs", "deer": "Reh", "dog": "Hund", "cat": "Katze", "boar": "Wildschwein", "the simulator makes the pictures …": "der Simulator macht die Bilder …", "done": "fertig", "Simulator tools": "Simulator-Werkzeuge"});
+I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-3d-tip": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Needs the connected simulator.", "replay-note": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Helps to understand false alarms. The positions are estimated (from the spot and size in the picture).", "dset-note": "The simulator makes pictures with a person or an animal - by day, dusk, night with infrared, rain and fog, near and far - and knows where they are. MoveEye runs its AI (or the PC helper) on them and counts hits, misses and false persons. About 3 seconds per picture.", "Tag": "day", "Abend": "dusk", "Nacht (Infrarot)": "night (infrared)", "Regen": "rain", "Nebel": "fog", "Nacht + Regen": "night + rain"});
 (async function () {
   for (let i = 0; i < 30 && !LANG; i++) await new Promise(r => setTimeout(r, 100));     // after the language is known
   const box = document.getElementById("st-box"); if (!box) return;
@@ -52670,8 +52712,9 @@ I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D
   pl.append(plo, pla);
   const rb = el("div", ""); rb.style.marginTop = "14px"; rb.append(el("b", "", "⏪ " + t("Alarm replay in 3D")));
   const rs = document.createElement("select"); rs.style.cssText = "width:100%;margin-top:6px";
-  const rr = el("div", "btns"); const rgo = el("button", "", "▶ " + t("Play in the simulator")); rgo.type = "button";
+  const rr = el("div", "btns");
   const rsp = document.createElement("select"); [1, 2, 4].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + "×"; rsp.appendChild(o); });
+  const rgo = el("button", "r3d", "⏪ " + t("Replay in 3D")); rgo.type = "button"; rgo.title = t("replay-3d-tip");   // 559: the same button (class r3d) as in the timeline and the recordings
   rgo.onclick = async () => { if (!rs.value) return; const r = await P({action: "replay", id: rs.value, speed: +rsp.value}); toast(r.ok ? "✓ " + t("plays in the window of the simulator") : "⚠ " + (r.error || t("error"))); };
   const rst = el("button", "sec", "⏹"); rst.type = "button"; rst.onclick = () => P({action: "replay", stop: true});
   rr.append(rgo, rsp, rst); rb.append(rs, rr, el("div", "mut", t("replay-note")));
@@ -61561,7 +61604,7 @@ def stv_plan(e, now=None):
     g = STV["game"]
     playing = bool(e.get("game") and g and now - STV["game_t"] < 10 and g.get("round") in ("countdown", "play"))
     if e.get("alarm") and alarm_on and not playing:        # in a round the players are the persons: the game shows «Erwischt!»
-        if rot and now - a["t"] < gif_s:                   # 553: first the animation (GIF), then the still picture
+        if now - a["t"] < gif_s:                           # 553: first the animation (GIF) - on every display (Daniel 30.10.), with rotation then the still picture
             key = ("alarmgif", a["t"], red, lang)
             return "gif", key, lambda: stv_render_alarm_gif(a, lang, red), brt, True
         key = ("alarm", a["t"], red, lang, rot)
@@ -61886,7 +61929,9 @@ STV_JS = r"""
 # Ein (nur tagsüber - nachts bleibt die rote, gedimmte Statusseite):
 #   alle STV_ROT_S = 30 s wechselt die Seite: gerade Zeitscheibe «Live-Bild» (Standbild der Hauptkamera, 240 × 240 mit
 #   Leiste Uhrzeit · Aus/Wachsam/Voll · Akku), ungerade «Akku und Strom» (grosser Akku, Laden/Solar, Verbrauch, Restlaufzeit,
-#   «SIM» bei Simulator-Werten). Das Live-Bild ist bei jeder Live-Zeitscheibe neu (höchstens ein Hochladen je 30 s);
+#   «SIM» bei Simulator-Werten). Das Live-Bild ist nur bei jeder zweiten Live-Zeitscheibe neu (Daniel 30.10.: halb so viele
+#   Uploads, ein neues Bild alle 2 min, beim Zeigen höchstens 60 s alt); dazwischen wird es nur wieder gezeigt;
+#   das Bild ist das reine Kamerabild ohne Leiste «Tilt … | CPU …» und ohne Rahmen (410 frame_clean, nur auf Anfrage);
 #   die Akku-Seite liegt noch auf dem Gerät (me_a / me_b, 552 StvDev.send «stored»): unverändert wird sie nur wieder gezeigt
 #   (/set?img=…, kein Schreiben in den Flash). Ohne Akku-Werte ist die zweite Seite die Statusseite.
 #   Personen im Live-Bild: Privatzonen sind schon geschwärzt (frame_out, 030 apply_privacy); ohne «Bild auch bei Personen»
@@ -61915,7 +61960,7 @@ def stv_rot_plan(now, lang):
     """(kind, key, render function) of the rotation, or None (-> the status page)"""
     slot = int(now // STV_ROT_S)
     if stv_rot_page(now) == "live":
-        return "live", ("live", slot, lang), lambda: stv_render_live(lang)
+        return "live", ("live", slot // 4, lang), lambda: stv_render_live(lang)   # every second live slot new (slots 4k and 4k+2)
     if not _stv_batt_ok():
         return None
     b = STATE.get("battery") or {}
@@ -61938,15 +61983,37 @@ def _stv_solar_w(b):
 
 
 # ---- the live still -----------------------------------------------------------------------------------------------------
+def stv_clean_frame(w, wait=1.5):
+    """the pure camera picture (after the privacy zones and the grey picture mode, before HUD, boxes and marks): 410 copies
+    it only while asked (clean_until) - None when no fresh one comes"""
+    w.clean_until = time.time() + 4.0
+    t_end = time.time() + wait
+    while True:
+        f, ft = getattr(w, "frame_clean", None), float(getattr(w, "frame_clean_t", 0.0) or 0.0)
+        if f is not None and time.time() - ft < 3.0:
+            return f
+        if time.time() >= t_end or not getattr(w, "running", True):
+            return None
+        time.sleep(0.1)
+
+
 def stv_live_frame(person_pic=None):
-    """a copy of the picture of the main camera (privacy zones already black) - persons pixelated unless «Bild auch bei Personen»"""
+    """a copy of the picture of the main camera (privacy zones already black) - persons pixelated unless «Bild auch bei Personen».
+    Daniel 30.10.: the pure picture without the strip «Tilt 50% | CPU …» and the marks of MoveEye (stv_clean_frame);
+    only when there is none, the picture of the page without its text line (as before)"""
     w = WATCH_REF.get("w") if "WATCH_REF" in globals() else None
-    f = getattr(w, "frame_out", None) if w is not None else None
-    if f is None:
+    if w is None:
         return None
-    f = f.copy()
-    if CFG.get("show_hud") and f.shape[0] > 120:
-        f = f[34:]                                        # without the text line on top of the live picture (410 HUD)
+    f = stv_clean_frame(w)
+    if f is not None:
+        f = f.copy()
+    else:
+        f = getattr(w, "frame_out", None)
+        if f is None:
+            return None
+        f = f.copy()
+        if CFG.get("show_hud") and f.shape[0] > 120:
+            f = f[34:]                                    # without the text line on top of the live picture (410 HUD)
     if not (CFG.get("stv_person_pic") if person_pic is None else person_pic):
         stv_hide_persons(f, STATE.get("person_boxes") if STATE.get("persons") else [])
     return f
@@ -62134,7 +62201,7 @@ def _stv_day_hours():
 def stv_per_day(e):
     """about how many pictures a day go to this display (uploads = writes into its flash), without alarms / games:
     status: the clock every stv_clock_min minutes + about one change an hour; rotation by day: the live picture every
-    60 s (every second 30-s slot), the battery page when its values changed (about every third time), night: status"""
+    120 s (every second live slot, Daniel 30.10.), the battery page when its values changed (about every third time), night: status"""
     if not e.get("on"):
         return 0
     clock = max(1, int(CFG.get("stv_clock_min", 10) or 10))
@@ -62143,7 +62210,7 @@ def stv_per_day(e):
         return int(round(24 * st_h)) if e.get("status") else 0
     day = _stv_day_hours() if CFG.get("stv_night") else 24.0
     batt_h = 20.0 if _stv_batt_ok() else (st_h if e.get("status") else 0.0)
-    n = day * (3600.0 / (2 * STV_ROT_S) + batt_h) + (24.0 - day) * (st_h if e.get("status") else 0.0)
+    n = day * (3600.0 / (4 * STV_ROT_S) + batt_h) + (24.0 - day) * (st_h if e.get("status") else 0.0)
     return int(round(n / 10.0) * 10)
 
 
@@ -62803,6 +62870,295 @@ def _tk_funnel_row(self, card):
             paint()
         fr.after(5000, loop)
     fr.after(300, loop)
+# ----------------------------------------------------------------------------
+# Die Liste simulator3d/schnittstelle.json nennt jedes Feld, das die beiden austauschen: die Antwort des Simulators auf
+# /state («world_reply», main.gd + power.gd + net.gd), den Zustand von MoveEye («state», sim_state 290 + Hüllen), /info
+# und die /control-Aktionen, die MoveEye braucht. Der Selbsttest meldet:
+#   * ein Feld wird gesendet, steht aber nicht in der Liste (oder umgekehrt),
+#   * ein Feld wird gesendet, aber die andere Seite liest es nie (unbenutzt),
+#   * MoveEye liest ein Feld der Antwort, das der Simulator gar nicht sendet,
+#   * MoveEye schickt eine /control-Aktion, die der Simulator nicht kennt.
+# Ein neues Feld: eine Zeile in schnittstelle.json (ein Ort). Holt main.gd world_reply ein weiteres Teil-Wörterbuch
+# (r.merge(x.reply())), dann hier in IFACE_GD_REPLY eintragen. Der Simulator prüft dieselbe Liste beim Start
+# (scripts/schnittstelle.gd, Zeile «Schnittstelle: …» im Log).
+# ----------------------------------------------------------------------------
+IFACE_GD_REPLY = [("main.gd", "world_reply"), ("power.gd", "reply")]     # (file, function) whose dict keys are the answer
+
+
+def _gd_func(text, name):
+    m = re.search(r"\nfunc " + re.escape(name) + r"\(.*?(?=\nfunc |\Z)", text, re.S)
+    return m.group(0) if m else ""
+
+
+def _gd_top_keys(body, var="r|d|rep"):
+    """the keys of the dictionary literals right after «var x := {» or «return {» (depth 1 only) plus «r["k"] = …»"""
+    keys, stack, i, n = [], [], 0, len(body)
+    while i < n:
+        c = body[i]
+        if c == "#":
+            j = body.find("\n", i)
+            i = n if j < 0 else j
+            continue
+        if c in "\"'":
+            j = i + 1
+            while j < n and body[j] != c:
+                j += 2 if body[j] == "\\" else 1
+            s, k = body[i + 1:j], j + 1
+            while k < n and body[k] in " \t":
+                k += 1
+            if stack == ["{v"] and k < n and body[k] == ":" and re.fullmatch(r"\w+", s):
+                keys.append(s)
+            i = j + 1
+            continue
+        if c in "{[(":
+            stack.append("{v" if c == "{" and re.search(r"(var \w+\s*:?=|return)\s*$", body[max(0, i - 60):i]) else c)
+        elif c in "}])" and stack:
+            stack.pop()
+        i += 1
+    keys += re.findall(r"\b(?:" + var + r')\["(\w+)"\]\s*=', body)
+    return list(dict.fromkeys(keys))
+
+
+def iface_list(base=None):
+    base = base or os.path.dirname(os.path.abspath(__file__))
+    p = os.path.join(base, "simulator3d", "schnittstelle.json")
+    if not os.path.exists(p):
+        return None
+    with open(p, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def iface_check(base=None):
+    """(problems, counts) - compares simulator3d/schnittstelle.json with the sources of both sides; None without the folder"""
+    import inspect
+    base = base or os.path.dirname(os.path.abspath(__file__))
+    L = iface_list(base)
+    gdir = os.path.join(base, "simulator3d", "scripts")
+    if L is None or not os.path.isdir(gdir):
+        return None
+    gd = {}
+    for fn in os.listdir(gdir):
+        if fn.endswith(".gd"):
+            with open(os.path.join(gdir, fn), encoding="utf-8") as f:
+                gd[fn] = f.read()
+    own = open(os.path.abspath(__file__), encoding="utf-8").read()
+    meta = L.get("_meta") or {}
+    pyonly = set(L.get("_nur_python_simulator") or [])
+    cond = set(L.get("_bedingt") or [])
+    probs = []
+
+    def cmp(sect, sent, where):
+        lst = set((L.get(sect) or {}).keys())
+        for k in sorted(set(sent) - lst):
+            probs.append(f"{sect}: «{k}» is sent ({where}) but not in schnittstelle.json")
+        for k in sorted(lst - set(sent) - cond):
+            probs.append(f"{sect}: «{k}» is in schnittstelle.json but not sent ({where})")
+        return lst
+
+    # 1. the answer of the simulator (world_reply) - sent by the GDScript sources, read by MoveEye (350, 285, 552 …)
+    wr = []
+    for fn, func in IFACE_GD_REPLY:
+        wr += _gd_top_keys(_gd_func(gd.get(fn, ""), func))
+    wr += re.findall(r'\brep\["(\w+)"\]\s*=', _gd_func(gd.get("net.gd", ""), "_handle"))
+    wl = cmp("world_reply", wr, "main.gd world_reply / power.gd reply / net.gd")
+    rd = inspect.getsource(SimLink.tick)
+    for nm, fn_ in list(globals().items()):
+        if re.fullmatch(r"_?simvals_take(_\w+)?", nm) and callable(fn_):
+            try:
+                rd += inspect.getsource(fn_)
+            except (OSError, TypeError):
+                pass
+    lits = set(re.findall(r'"(\w+)"', rd))
+    for k in sorted(wl - set(meta.get("world_reply") or []) - lits):
+        probs.append(f"world_reply: «{k}» is sent by the simulator but MoveEye never reads it (350 SimLink.tick / simvals_take)")
+    reads = set(re.findall(r'\brep_?\.get\("(\w+)"', rd)) | set(re.findall(r'\brep_?\["(\w+)"\]', rd))
+    for k in sorted(reads - wl - set(L.get("_optional_reply") or [])):
+        probs.append(f"world_reply: MoveEye reads «{k}» but the simulator does not send it")
+    # 2. the state of MoveEye (sim_state, part 290 + wrappers) - read by the GDScript sources
+    st = list(sim_state().keys())
+    sl = cmp("state", st, "sim_state")
+    allgd = "\n".join(gd.values())
+    gread = set(re.findall(r'(?:get|has)\("(\w+)"', allgd)) | set(re.findall(r'\["(\w+)"\]', allgd))
+    for k in sorted(sl - set(meta.get("state") or []) - pyonly - gread):
+        probs.append(f"state: «{k}» is sent by MoveEye but the 3D simulator never reads it")
+    # 3. /info
+    il = cmp("info", _gd_top_keys(_gd_func(gd.get("main.gd", ""), "info")), "main.gd info")
+    for k in sorted(il - set(meta.get("info") or [])):
+        if f'.get("{k}"' not in own and f'["{k}"]' not in own:
+            probs.append(f"info: «{k}» is sent by the simulator but MoveEye never reads it")
+    # 4. /control actions MoveEye sends: in the list and known by the simulator (main.gd _control)
+    used = set(re.findall(r'sim_control\(\{"action":\s*"(\w+)"', own)) | set(re.findall(r'\bq_?\s*=\s*\{"action":\s*"(\w+)"', own))
+    cb = _gd_func(gd.get("main.gd", ""), "_control")
+    known = set(re.findall(r'\ba == "(\w+)"', cb))
+    for g in re.findall(r"\ba in \[([^\]]*)\]", cb):
+        known |= set(re.findall(r'"(\w+)"', g))
+    cl = set((L.get("control") or {}).keys())
+    for k in sorted(used - known):
+        probs.append(f"control: MoveEye sends the action «{k}» but the simulator does not know it (main.gd _control)")
+    for k in sorted(used - cl):
+        probs.append(f"control: the action «{k}» is used by MoveEye but not in schnittstelle.json")
+    for k in sorted(cl - used):
+        probs.append(f"control: «{k}» is in schnittstelle.json but MoveEye does not use it")
+    return probs, {"world_reply": len(wl), "state": len(sl), "info": len(il), "control": len(cl)}
+
+
+def iface_selftest():
+    r = iface_check()
+    if r is None:
+        return "simulator folder not here"
+    probs, n = r
+    assert not probs, f"{len(probs)} problems: " + " | ".join(probs[:12])
+    return f"{n['world_reply']} answer fields, {n['state']} state fields, {n['info']} info fields, {n['control']} actions - same on both sides"
+
+
+SELFTEST_EXTRA.append(("One field list MoveEye ↔ simulator (simulator3d/schnittstelle.json)", iface_selftest))
+
+
+_sim_status_340 = sim_status
+
+
+# wraps: sim_status
+def sim_status():                                         # + 558: who steers the simulator (world_reply «leader»)
+    r = _sim_status_340()
+    r["leader"] = SIM.get("leader") or ""
+    return r
+
+
+_sim_stats_300 = sim_stats
+
+
+# wraps: sim_stats
+def sim_stats():                                          # + 558: the share of the simulator on its PC («sim_cpu_own»)
+    r = _sim_stats_300()
+    r["sim_cpu"] = SIM.get("sim_cpu") if r.get("pc_cpu") is not None else None
+    return r
+# ----------------------------------------------------------------------------
+# Bisher gab es den Alarm-Rückblick in 3D (180 ALARM_TRACKS, /api/sim «replay», 550) nur auf der Simulator-Seite /sim (Reiter
+# Simulator → Werkzeuge: Auswahl der letzten Alarme). Jetzt zeigt jede Aufnahme und jeder Alarm der Zeitleiste, zu dem
+# eine Spur gespeichert ist, denselben Knopf «⏪ In 3D nachspielen» (mwR3d unten, gleiche Klasse «r3d» auf allen drei
+# Seiten). Die Spur gehört zur Aufnahme, wenn ihr Zeitstempel im Namen steht (person_<stamp>.mp4), sonst die nächste
+# Spur höchstens 30 s neben der Zeit.
+# ----------------------------------------------------------------------------
+def replay3d_for(t=None, name=None):
+    """the id of the alarm track (180) for a recording / an alarm, or None"""
+    try:
+        alarm_tracks_load()
+        tracks = [x for x in list(ALARM_TRACKS) if len(x.get("samples") or []) >= 2]
+    except Exception:
+        return None
+    if name:
+        for x in tracks:
+            if str(x.get("id") or "") and str(x["id"]) in str(name):
+                return x["id"]
+    if t is None:
+        return None
+    best = min(tracks, key=lambda x: abs(float(x.get("t") or 0) - float(t)), default=None)
+    return best["id"] if best is not None and abs(float(best.get("t") or 0) - float(t)) <= 30.0 else None
+
+
+_timeline_build_425 = timeline_build
+
+
+# wraps: timeline_build
+def timeline_build(day=None, mode="night", lang=None):    # + 559: «In 3D nachspielen» at recordings and alarms
+    r = _timeline_build_425(day, mode, lang)
+    try:
+        if ALARM_TRACKS or os.path.exists(_atr_file()):
+            for it in r.get("items") or []:
+                if it.get("type") == "rec" or (it.get("type") == "log" and it.get("alarm")):
+                    k = replay3d_for(it.get("t"), it.get("name"))
+                    if k:
+                        it["r3d"] = k
+    except Exception:
+        pass
+    return r
+
+
+_list_recordings_430 = list_recordings
+
+
+# wraps: list_recordings
+def list_recordings(args, watch=None):                    # + 559: the same for the page «Aufnahmen»
+    r = _list_recordings_430(args, watch)
+    try:
+        for it in r.get("items") or []:
+            if not it.get("timelapse"):
+                ts = None
+                try:
+                    ts = datetime.strptime(it["time"], "%Y-%m-%d %H:%M:%S").timestamp()
+                except (KeyError, TypeError, ValueError):
+                    pass
+                k = replay3d_for(ts, it.get("name"))
+                if k:
+                    it["r3d"] = k
+    except Exception:
+        pass
+    return r
+
+
+R3D_JS = r"""<script>
+// ---- «⏪ In 3D nachspielen» (559): one button look on the simulator page (tools), in the timeline and in the recordings ----
+(function () {
+  try { Object.assign(I18N.de, {"Replay in 3D": "In 3D nachspielen", "plays in the window of the simulator": "läuft im Fenster des Simulators",
+    "replay-3d-tip": "Zeigt im 3D-Simulator, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Braucht den verbundenen Simulator."}); } catch (e) {}
+  try { if (I18N.en) Object.assign(I18N.en, {"replay-3d-tip": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Needs the connected simulator."}); } catch (e) {}
+  const tt = k => { try { return t(k); } catch (e) { return k; } };
+  if (!document.getElementById("r3d-css")) { const st = document.createElement("style"); st.id = "r3d-css";
+    st.textContent = ".r3d{display:inline-flex;align-items:center;gap:6px;background:var(--acc,#388bfd);color:#fff;border:1px solid var(--acc,#388bfd);border-radius:10px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer}.r3d:disabled{opacity:.6}";
+    document.head.appendChild(st); }
+  // id: the track id or a function giving it; speed: a function giving 1 / 2 / 4 (optional)
+  window.mwR3d = function (id, speed) {
+    const b = document.createElement("button"); b.type = "button"; b.className = "r3d"; b.textContent = "⏪ " + tt("Replay in 3D"); b.title = tt("replay-3d-tip");
+    b.onclick = async e => { e.stopPropagation(); const k = typeof id === "function" ? id() : id; if (!k) return; b.disabled = true; let r;
+      try { r = await (await fetch("/api/sim", {method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({action: "replay", id: k, speed: speed ? speed() : 1, lang: typeof LANG !== "undefined" ? LANG : "de"})})).json(); }
+      catch (x) { r = {ok: false, error: "simulator not reachable"}; }
+      b.disabled = false; const m = r.ok ? "✓ " + tt("plays in the window of the simulator") : "⚠ " + (r.error || "error");
+      if (typeof toast === "function") toast(m); else b.title = m; };
+    return b;
+  };
+})();
+</script>"""
+
+R3D_TL_JS = r"""<script>
+// 559: the viewer of the timeline: «In 3D nachspielen» next to the other buttons when a track belongs to it
+(function () { if (typeof openIt !== "function") return; const _oi = openIt;
+  openIt = function (it) { const p = _oi(it); try { const bx = document.querySelector("#vb .vbtn"); if (it && it.r3d && bx && window.mwR3d) bx.prepend(mwR3d(it.r3d)); } catch (e) {} return p; };
+})();
+</script>"""
+
+R3D_REC_JS = r"""<script>
+// 559: the recording opened in the big view: «In 3D nachspielen» below the picture when a track belongs to it
+(function () { if (typeof openAt !== "function") return; const _oa = openAt;
+  openAt = function (i, list) { const r = _oa(i, list); try { let w = document.getElementById("m-r3d"); const it = (typeof ML !== "undefined" ? ML : [])[i];
+    if (!w) { w = document.createElement("div"); w.id = "m-r3d"; w.style.cssText = "margin:8px 0"; const b = document.getElementById("m-body"); if (b) b.after(w); }
+    w.textContent = ""; if (it && it.r3d && window.mwR3d) w.appendChild(mwR3d(it.r3d)); } catch (e) {} return r; };
+})();
+</script>"""
+
+TL_PAGE = TL_PAGE.replace("</body>", R3D_JS + R3D_TL_JS + "</body>", 1)
+REC_PAGE = REC_PAGE.replace("</body>", R3D_JS + R3D_REC_JS + "</body>", 1)
+SIM_PAGE = SIM_PAGE.replace("</body>", R3D_JS + "</body>", 1)          # the simulator tools (530 SIMTOOLS_JS on /sim): the CSS of «r3d»
+
+
+def r3d_selftest():
+    """the track of a recording (name) or an alarm (time ± 30 s); the button script on the three pages"""
+    keep = list(ALARM_TRACKS); keep_l = _ATR["loaded"]
+    try:
+        _ATR["loaded"] = True
+        ALARM_TRACKS.clear()
+        t0 = time.time() - 3600
+        ALARM_TRACKS.append({"id": "20261030_202707", "t": t0, "kind": "person", "samples": [{"t": t0}, {"t": t0 + 1}]})
+        ALARM_TRACKS.append({"id": "20261030_210000", "t": t0 + 1800, "kind": "person", "samples": [{"t": t0}]})   # one sample: no replay
+        assert replay3d_for(None, "person_20261030_202707.mp4") == "20261030_202707"
+        assert replay3d_for(t0 + 25) == "20261030_202707" and replay3d_for(t0 + 40) is None and replay3d_for(t0 + 1800) is None
+        assert "mwR3d" in TL_PAGE and "mwR3d" in REC_PAGE and "mwR3d" in SIM_PAGE and 'class="r3d"' not in WEB_PAGE
+    finally:
+        ALARM_TRACKS.clear(); ALARM_TRACKS.extend(keep); _ATR["loaded"] = keep_l
+    return "recording by name, alarm by time, one button on timeline / recordings / simulator page"
+
+
+SELFTEST_EXTRA.append(("Replay in 3D from the timeline and the recordings (559)", r3d_selftest))
 # ----------------------------------------------------------------------------
 # Translations (English text is the key; German below). tr() is used everywhere.
 # ----------------------------------------------------------------------------
@@ -63562,9 +63918,9 @@ _HELP_SMALLTV = {
            'nur ein Symbol mit Abstand und Uhrzeit – das Bild der Person nur mit «Bild auch bei Personen». Das Alarmbild bleibt 60 s (einstellbar), der Bildschirm ist 20 s hell.</li>'
            '<li><b>Spiel:</b> während einer Runde im 3D-Simulator Countdown bzw. Restzeit, die Punkte der Spieler und gross «Erwischt!», wenn MoveEye jemanden erwischt.</li>'
            '<li><b>Live-Bild und Wechsel</b> (ein Schalter pro Bildschirm; bei neu hinzugefügten ein, bei schon eingetragenen aus): tagsüber wechseln alle 30 s '
-           '<i>Live-Bild</i> (Standbild der Hauptkamera mit Leiste Uhrzeit · Aus / Wachsam / Voll · Akku) und <i>Akku und Strom</i> (grosser Akku, Laden / Solar, Verbrauch, '
+           '<i>Live-Bild</i> (Standbild der Hauptkamera – das reine Kamerabild ohne die Leiste «Tilt … | CPU …» und ohne Rahmen, alle 2 min neu, dazwischen nur wieder gezeigt; mit Leiste Uhrzeit · Aus / Wachsam / Voll · Akku) und <i>Akku und Strom</i> (grosser Akku, Laden / Solar, Verbrauch, '
            'Restlaufzeit, «SIM» bei Werten des Simulators). Privatzonen sind im Live-Bild schwarz, erkannte Personen verpixelt (ausser mit «Bild auch bei Personen»). '
-           'Ein Alarm erscheint zuerst als <b>Animation</b> (GIF mit pulsierendem rotem Rahmen und ⚠, so lange wie «Alarmbild bleibt», Standard 60 s), danach als Standbild '
+           'Ein Alarm erscheint auf <b>jedem</b> Bildschirm zuerst als <b>Animation</b> (GIF mit pulsierendem rotem Rahmen und ⚠, so lange wie «Alarmbild bleibt», Standard 60 s); mit dem Schalter danach als Standbild '
            '(«Nach der Animation bleibt das Alarmbild», Standard 5 min), dann geht der Wechsel weiter. Nachts kein Wechsel, nur die rote, gedimmte Statusseite. '
            'Alarm und Spielrunde gehen immer vor. Schalter aus = nur die Statusseite wie bisher.</li></ul>'
            '<p><b>Nicht verwechseln:</b> Der SmallTV ist ein kleiner eigener Bildschirm im WLAN. Die <i>TV-Anzeige</i> ist eine Webseite für einen Fernseher am HDMI des Pi, der <i>TV-Modus</i> zeigt den Spielstand des Simulators auf dem PC-Bildschirm.</p>'
@@ -63574,8 +63930,8 @@ _HELP_SMALLTV = {
            'die der SmallTV zeigt. «Testbild senden» prüft Adresse, Bild und Helligkeit. Die Liste zeigt, ob er erreichbar ist, die Firmware und den freien Speicher.</p>'
            '<p><b>Schonend:</b> eine Anfrage nach der anderen, ein neues Bild nur bei Änderung und höchstens alle 5 s (ein Alarm sofort), immer dieselben zwei Dateien <code>me_a.jpg</code> / '
            '<code>me_b.jpg</code> (zusammen etwa 30 KB; die Animation als <code>me_a.gif</code> / <code>me_b.gif</code> – die Datei mit der anderen Endung am gleichen Platz wird gelöscht). '
-           'Mit «Live-Bild und Wechsel» ein Bild höchstens alle 30 s; die unveränderte Akku-Seite liegt noch auf dem Gerät und wird nur wieder gezeigt (kein Schreiben). '
-           'Die Liste zeigt pro Bildschirm «ca. N Bilder/Tag» (ohne Wechsel etwa 170, mit Wechsel je nach Tageslänge etwa 750–1350). Antwortet die Firmware beim Hochladen fälschlich mit «400», schaut MoveEye in der Dateiliste nach. '
+           'Mit «Live-Bild und Wechsel» ein Bild höchstens alle 30 s, ein neues Live-Bild alle 2 min; das unveränderte Live-Bild und die unveränderte Akku-Seite liegen noch auf dem Gerät und werden nur wieder gezeigt (kein Schreiben). '
+           'Die Liste zeigt pro Bildschirm «ca. N Bilder/Tag» (ohne Wechsel etwa 170, mit Wechsel je nach Tageslänge etwa 500–850). Antwortet die Firmware beim Hochladen fälschlich mit «400», schaut MoveEye in der Dateiliste nach. '
            '<b>Sicherheit:</b> der SmallTV hat kein Passwort – im eigenen WLAN von MoveEye betreiben. <b>🧪 Simulator:</b> der 3D-Simulator (ab 3D-4.19) hat einen virtuellen SmallTV mit derselben '
            'Schnittstelle; MoveEye nimmt ihn von selbst in die Liste, sein Bild steht als Kachel im Simulator-Fenster (Sensoren → Zusatz-Bildschirm).</p></section>\n'),
     "en": ('<section id="smalltv" data-icon="🖼"><h2>Extra display (SmallTV)</h2>'
@@ -63587,9 +63943,9 @@ _HELP_SMALLTV = {
            'a symbol with distance and time – the picture of the person only with «Picture also for persons». The alarm picture stays 60 s (adjustable), the screen is bright for 20 s.</li>'
            '<li><b>Game:</b> during a round in the 3D simulator the countdown or time left, the points of the players and a big «Caught!» when MoveEye catches somebody.</li>'
            '<li><b>Live picture and rotation</b> (one switch per display; on for newly added ones, off for displays already in the list): by day <i>Live picture</i> '
-           '(a still of the main camera with a bar time · Off / Watchful / Full · battery) and <i>Battery and power</i> (big battery, charging / solar, consumption, runtime left, '
+           '(a still of the main camera – the pure camera picture without the strip «Tilt … | CPU …» and without boxes, new every 2 min, shown again in between; with a bar time · Off / Watchful / Full · battery) and <i>Battery and power</i> (big battery, charging / solar, consumption, runtime left, '
            '«SIM» for values of the simulator) alternate every 30 s. Privacy zones are black in the live picture, detected persons pixelated (unless «Picture also for persons»). '
-           'An alarm first shows as an <b>animation</b> (GIF with a pulsing red frame and ⚠, as long as «Alarm picture stays», 60 s by default), then as a still picture '
+           'An alarm first shows on <b>every</b> display as an <b>animation</b> (GIF with a pulsing red frame and ⚠, as long as «Alarm picture stays», 60 s by default); with the switch then as a still picture '
            '(«After the animation the alarm picture stays», 5 min by default), then the rotation goes on. At night no rotation, only the red, dimmed status page. '
            'Alarm and game round always come first. Switch off = only the status page as before.</li></ul>'
            '<p><b>Not to be mixed up:</b> the SmallTV is a small display of its own in the Wi-Fi. The <i>TV display</i> is a web page for a television on the HDMI of the Pi, the <i>TV mode</i> shows the game of the simulator on the PC screen.</p>'
@@ -63599,8 +63955,8 @@ _HELP_SMALLTV = {
            'the SmallTV shows. «Send a test picture» checks address, picture and brightness. The list shows whether it is reachable, the firmware and the free memory.</p>'
            '<p><b>Gentle:</b> one request after the other, a new picture only when something changed and at most every 5 s (an alarm at once), always the same two files <code>me_a.jpg</code> / '
            '<code>me_b.jpg</code> (about 30 KB together; the animation as <code>me_a.gif</code> / <code>me_b.gif</code> – the file with the other ending at the same place is deleted). '
-           'With «Live picture and rotation» at most one picture every 30 s; the unchanged battery page is still on the device and only shown again (no writing). '
-           'The list shows «about N pictures/day» per display (without rotation about 170, with rotation about 750–1350 depending on the length of the day). If the firmware wrongly answers «400» to an upload, MoveEye looks at the file list. '
+           'With «Live picture and rotation» at most one picture every 30 s, a new live picture every 2 min; the unchanged live picture and battery page are still on the device and only shown again (no writing). '
+           'The list shows «about N pictures/day» per display (without rotation about 170, with rotation about 500–850 depending on the length of the day). If the firmware wrongly answers «400» to an upload, MoveEye looks at the file list. '
            '<b>Security:</b> the SmallTV has no password – run it in the own Wi-Fi of MoveEye. <b>🧪 Simulator:</b> the 3D simulator (from 3D-4.19) has a virtual SmallTV with the same '
            'interface; MoveEye adds it to the list by itself, its picture is a tile in the simulator window (Sensoren → Zusatz-Bildschirm).</p></section>\n'),
 }
@@ -63618,10 +63974,10 @@ if _hp_enstv > 0:
     HELP_PAGE = _help_smalltv(HELP_PAGE[:_hp_enstv], "de") + _help_smalltv(HELP_PAGE[_hp_enstv:], "en")
 _HX_STV2 = {
     'Live picture and rotation': ('Live-Bild und Wechsel', 'Image en direct et alternance', 'Immagine dal vivo e alternanza', 'Maletg live e midada'),
-    'stv-rot-hint': ('Tagsüber wechseln alle 30 s Live-Bild und «Akku und Strom», ein Alarm erscheint als Animation (60 s) und danach 5 min als Standbild. Nachts nur die rote Statusseite. Aus = nur die Statusseite.',
-                     'Le jour, l’image en direct et «Batterie et courant» alternent toutes les 30 s, une alarme apparaît en animation (60 s) puis 5 min en image fixe. La nuit seulement la page d’état rouge. Désactivé = seulement la page d’état.',
-                     'Di giorno ogni 30 s si alternano immagine dal vivo e «Batteria e corrente», un allarme appare come animazione (60 s) e poi 5 min come immagine fissa. Di notte solo la pagina di stato rossa. Spento = solo la pagina di stato.',
-                     'Di sa midan mintga 30 s maletg live ed «Accu e current», in alarm cumpara sco animaziun (60 s) e lura 5 min sco maletg fix. La notg mo la pagina da status cotschna. Deactivà = mo la pagina da status.'),
+    'stv-rot-hint': ('Tagsüber wechseln alle 30 s Live-Bild (reines Kamerabild, alle 2 min neu) und «Akku und Strom», ein Alarm erscheint als Animation (60 s, auf jedem Bildschirm) und danach 5 min als Standbild. Nachts nur die rote Statusseite. Aus = nur die Statusseite.',
+                     'Le jour, l’image en direct (image pure de la caméra, nouvelle toutes les 2 min) et «Batterie et courant» alternent toutes les 30 s, une alarme apparaît en animation (60 s, sur chaque écran) puis 5 min en image fixe. La nuit seulement la page d’état rouge. Désactivé = seulement la page d’état.',
+                     'Di giorno ogni 30 s si alternano immagine dal vivo (immagine pura della telecamera, nuova ogni 2 min) e «Batteria e corrente», un allarme appare come animazione (60 s, su ogni schermo) e poi 5 min come immagine fissa. Di notte solo la pagina di stato rossa. Spento = solo la pagina di stato.',
+                     'Di sa midan mintga 30 s maletg live (maletg pur da la camera, mintga 2 min nov) ed «Accu e current», in alarm cumpara sco animaziun (60 s, sin mintga visur) e lura 5 min sco maletg fix. La notg mo la pagina da status cotschna. Deactivà = mo la pagina da status.'),
     'Live picture': ('Live-Bild', 'Image en direct', 'Immagine dal vivo', 'Maletg live'),
     'Battery and power': ('Akku und Strom', 'Batterie et courant', 'Batteria e corrente', 'Accu e current'),
     'Alarm animation': ('Alarm-Animation', 'Animation d’alarme', 'Animazione d’allarme', 'Animaziun d’alarm'),
@@ -63641,6 +63997,158 @@ for _k, _v in _HX_STV2.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX_AUFR2 = {
+    'Replay in 3D': ('In 3D nachspielen', 'Rejouer en 3D', 'Rivivere in 3D', 'Reproducir en 3D'),
+    'replay-3d-tip': ('Zeigt im 3D-Simulator, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Braucht den verbundenen Simulator.',
+                      'Montre dans le simulateur 3D qui est venu d’où et où MoveEye regardait (15 s avant à 20 s après l’alarme). Il faut le simulateur connecté.',
+                      'Mostra nel simulatore 3D chi è arrivato da dove e dove guardava MoveEye (da 15 s prima a 20 s dopo l’allarme). Serve il simulatore collegato.',
+                      'Mussa en il simulatur 3D tgi è vegnì danunder e nua che MoveEye ha guardà (15 s avant fin 20 s suenter l’alarm). Dovra il simulatur collià.'),
+    'plays in the window of the simulator': ('läuft im Fenster des Simulators', 'joue dans la fenêtre du simulateur', 'in riproduzione nella finestra del simulatore', 'gira en la fanestra dal simulatur'),
+    'from MoveEye (setting of MoveEye, only shown here)': ('von MoveEye (Einstellung von MoveEye, hier nur angezeigt)', 'de MoveEye (réglage de MoveEye, seulement affiché ici)',
+                                                           'da MoveEye (impostazione di MoveEye, qui solo mostrata)', 'da MoveEye (parameter da MoveEye, qua mo mussà)'),
+    'at the goal': ('im Ziel', 'à l’arrivée', 'al traguardo', 'en la finamira'),
+    'in jail': ('gefangen', 'en prison', 'in prigione', 'en praschun'),
+    'on the way': ('unterwegs', 'en route', 'in cammino', 'en viadi'),
+    'points': ('Punkte', 'points', 'punti', 'puncts'),
+    'Get ready': ('Macht euch bereit', 'Préparez-vous', 'Preparatevi', 'Pinai vus'),
+}
+for _k, _v in _HX_AUFR2.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# ---- the manual (HELP_PAGE of 540): one paragraph in «System & network» (after the one of 598), German and English ----
+_AUFR2_HELP = {
+    "de": "<p><b>🧪 Simulator: ein Weg für jeden Wert (Aufräumen 2):</b> Die Übungen «Akku leer» und «WLAN / Internet weg» stellen bei "
+          "verbundenem Simulator nur noch dessen Regler (Ladung, Netzteil, «Internet weg») – MoveEye liest die Werte wie sonst; ohne diese "
+          "Werte rechnet die Übung wie bisher selbst. Die <b>Akku-Grösse</b> kommt aus MoveEye (Einstellung «USV-Akku: Kapazität EINER 18650-Zelle»): "
+          "der Simulator zeigt sie bei Verbindung nur an («von MoveEye»). <b>Einfach / Experte</b> der Simulator-Steuerung gilt jetzt für alle "
+          "Geräte (in den Einstellungen von MoveEye gespeichert, wie auf der Hauptseite). Die Luftfeuchtigkeit der Szene geht in den Klima-Sensor; "
+          "Schutz an / aus und die Relais von MoveEye stehen in der Statuszeile des Simulators. <b>Spiel-Anzeigen:</b> TV-Anzeige am HDMI, "
+          "TV-Modus des Simulators und die SmallTV-Seite «Spiel» zeigen dieselben Zahlen aus einer Quelle (Runde, Zeit, Spieler, Punkte, "
+          "Rangliste, Sieger). <b>⏪ In 3D nachspielen</b> gibt es jetzt auch in der Zeitleiste und bei den Aufnahmen, wenn zum Alarm eine Spur "
+          "gespeichert ist. Für Entwickler: alle Felder zwischen MoveEye und Simulator stehen in <code>simulator3d/schnittstelle.json</code>; "
+          "der Selbsttest und der Simulator prüfen beim Start, dass beide Seiten dazu passen.</p>",
+    "en": "<p><b>🧪 Simulator: one way for every value (clean-up 2):</b> with the simulator connected, the drills «battery empty» and "
+          "«Wi-Fi / internet gone» only set its controls (charge, mains adapter, «internet gone») – MoveEye reads the values as usual; without "
+          "these values the drill calculates by itself as before. The <b>battery size</b> comes from MoveEye (setting «UPS HAT: capacity of ONE 18650 "
+          "cell»): the simulator only shows it while connected («von MoveEye»). <b>Simple / Expert</b> of the simulator control now counts for "
+          "every device (stored in the settings of MoveEye, like on the main page). The humidity of the scene goes into the climate sensor; "
+          "protection on / off and the relays of MoveEye are in the status line of the simulator. <b>Game displays:</b> the TV view on the HDMI, "
+          "the TV mode of the simulator and the SmallTV page «Game» show the same numbers from one source (round, time, players, points, "
+          "ranking, winner). <b>⏪ Replay in 3D</b> is now also in the timeline and the recordings when a track was saved for the alarm. For "
+          "developers: every field between MoveEye and the simulator is listed in <code>simulator3d/schnittstelle.json</code>; the self-test "
+          "and the simulator check at the start that both sides match.</p>",
+}
+for _a, _b in (('<section id="system" data-icon="⚙"><h2>System &amp; Netz</h2>', _AUFR2_HELP["de"]),
+               ('<section id="system" data-icon="⚙"><h2>System &amp; network</h2>', _AUFR2_HELP["en"])):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+# ----------------------------------------------------------------------------
+# Der 3D-Simulator rechnet den USV-HAT, «WLAN weg / Internet weg» und die Hitze selbst (power.gd, «battery», «net»,
+# «ambient_c»). Darum gibt es jetzt EINEN Weg: ist der Simulator verbunden und simuliert er den Wert, stellen die Übungen
+# nur seine Regler (batt_level / batt_mains, net_internet_off; die Hitze / Kälte stellte schon immer «ambient»), MoveEye
+# liest die Werte wie sonst auch (285 sim_battery_tick, sim_net_down) - gleiche Texte, gleiche Meldungen wie bisher.
+# Ohne diese Werte (älterer Simulator, Akku nicht simuliert) bleiben die eigenen Übungswerte von 141 (Rückfall).
+# Am Ende kommen die Regler zurück, wie sie waren; «Netzstrom zurück» meldet der Simulator selbst (Netzteil kurz an).
+# ----------------------------------------------------------------------------
+DRILL_SIM = {"batt": None, "net": None, "pct": None, "t": 0.0}
+
+
+def _drill_sim_set(cid, value):
+    try:
+        r = sim_control({"action": "set", "id": cid, "value": value})
+        return isinstance(r, dict) and r.get("ok", True) is not False
+    except Exception:
+        return False
+
+
+_drill_start_141 = drill_start
+
+
+# wraps: drill_start
+def drill_start(kind):                                    # + 565: battery / net through the simulator values
+    DRILL_SIM.update(batt=None, net=None, pct=None, t=0.0)
+    sb = sim_sensor("battery") if kind == "battery" else None
+    sn = sim_sensor("net") if kind == "net" else None
+    ok, err = _drill_start_141(kind)
+    if not ok:
+        return ok, err
+    if sb is not None:
+        DRILL_SIM["batt"] = {"pct": int(sb.get("pct") or 60), "mains": bool(sb.get("mains"))}
+        _drill_sim_set("batt_mains", False)               # the cable is pulled: the next tick tells «power cut» (141 sets _on_batt False)
+        _drill_sim_set("batt_level", 60)
+        DRILL_SIM["pct"] = 60; DRILL_SIM["t"] = time.time()
+    if sn is not None and sn.get("wifi") is not False and sn.get("internet") is not False:
+        if _drill_sim_set("net_internet_off", True):      # the simulator plays «Internet weg» (MoveEye: sim_net_down)
+            DRILL_SIM["net"] = True
+            time.sleep(0.5)
+            try:
+                WATCH_REF["w"].netmon.recheck = True        # check at once with the new simulator value
+            except Exception:
+                pass
+    return ok, err
+
+
+_drill_battery_tick_141 = drill_battery_tick
+
+
+# wraps: drill_battery_tick
+def drill_battery_tick(bm):                               # + 565: 60 -> 4 % in the simulator, MoveEye reads it as usual
+    sb = sim_sensor("battery")
+    if DRILL_SIM["batt"] is None or sb is None:
+        return _drill_battery_tick_141(bm)                 # without simulator values: the own drill values (fallback)
+    if DRILL_SIM["batt"].get("back"):
+        return sim_battery_tick(bm, sb)                   # the last seconds: power back / the old values, as the simulator says
+    el = time.time() - DRILL["t0"]
+    pct = max(4, int(60 - el / DRILL_KINDS["battery"] * 60))
+    if pct != DRILL_SIM["pct"]:
+        _drill_sim_set("batt_level", pct)
+        DRILL_SIM["pct"] = pct
+    return sim_battery_tick(bm, sb)                       # (285: during the drill never «the Pi would shut down now»)
+
+
+_drill_end_later_141 = _drill_end_later
+
+
+# wraps: _drill_end_later
+def _drill_end_later():                                   # + 565: the simulator controls back as they were
+    # with the simulator «power back» comes 5 s before the end: its answer takes a moment and the message must still fall
+    # into the drill (141 notes reactions until 3 s after the end), as with the own values before
+    while time.time() < DRILL["until"] - (5.0 if DRILL_SIM["batt"] is not None and not DRILL_SIM["batt"]["mains"] else 0.0):
+        time.sleep(0.5)
+    B, N = DRILL_SIM["batt"], DRILL_SIM["net"]
+    bm = getattr(WATCH_REF.get("w"), "battmon", None)
+    if B is not None:
+        B["back"] = True                                   # drill_battery_tick: no more drill values from now on
+        if not B["mains"]:
+            _drill_sim_set("batt_mains", True)              # «Mains power back» - from the simulator values, like at the end of the drill before
+            for _ in range(30):                             # the new value in the answer of the simulator (10 × a second)
+                time.sleep(0.1)
+                if (sim_sensor("battery") or {}).get("mains"):
+                    break
+            if bm is not None:
+                try:
+                    bm.tick()                               # at once (the monitor itself looks only every 10 s): the message is part of the drill
+                except Exception:
+                    pass
+        if bm is not None:
+            bm._on_batt = None                              # the way back to the old values is no power cut
+        _drill_sim_set("batt_level", B["pct"])
+        _drill_sim_set("batt_mains", B["mains"])
+        time.sleep(1.0)
+        if bm is not None:
+            bm._on_batt = None
+        while time.time() < DRILL["until"]:
+            time.sleep(0.2)
+        DRILL_SIM["batt"] = None                           # the normal path again
+        if "batt_warned" in (DRILL.get("restore") or {}):
+            CFG["batt_warned"] = bool(DRILL["restore"]["batt_warned"])
+            DRILL["restore"].pop("batt_warned", None)      # done here (141 would send its own «power back» otherwise)
+    if N:
+        DRILL_SIM["net"] = None
+        _drill_sim_set("net_internet_off", False)
+    return _drill_end_later_141()
 # key = English text: (Deutsch, Français, Italiano, Rumantsch)
 _HX_weit = {
     'Wide infrared light (channel 4): second IR LED 120° on PCA9685 channel 4, on / off with the infrared light':
@@ -76994,7 +77502,7 @@ def smalltv_selftest():
         assert k_ == "game" and brt == 40, (k_, brt)         # during a round the players are the persons: the game stays
         STV["game"] = {"round": "end", "players": []}; STV["end_t"] = time.time()
         k_, _s, _f, brt, now_ = stv_plan(e)
-        assert k_ == "alarm" and brt == 100 and now_
+        assert k_ == "gif" and brt == 100 and now_, k_          # Daniel 30.10.: the alarm animation on every display
         assert stv_plan(dict(e, alarm=False))[0] == "game"
         STV["end_t"] = time.time() - 61
         assert stv_plan(dict(e, alarm=False))[0] == "status"      # the end screen only 60 s
@@ -77054,7 +77562,8 @@ def smalltv_rot_selftest():
         t0 = 30.0 * 100000                                   # an even slot: the live picture
         ks = [stv_plan(e, t0 + dt)[0] for dt in (0, 29, 30, 59, 60, 90)]
         assert ks == ["live", "live", "batt", "batt", "live", "batt"], ks
-        assert stv_plan(e, t0)[1] != stv_plan(e, t0 + 60)[1], "the live picture is new at every live slot"
+        assert stv_plan(e, t0)[1] == stv_plan(e, t0 + 60)[1], "the live picture is new only at every second live slot (Daniel 30.10.)"
+        assert stv_plan(e, t0)[1] != stv_plan(e, t0 + 120)[1], "a new live picture after 2 min"
         assert stv_plan(e, t0 + 30)[1] == stv_plan(e, t0 + 90)[1], "the battery page unchanged -> same picture (only shown again)"
         assert stv_plan(e, t0)[1] == stv_plan(e, t0 + 29)[1], "one picture per 30 s at most"
         assert stv_plan(dict(e, rot=False), t0)[0] == "status" and stv_plan(dict(e, rot=False), t0 + 30)[0] == "status"   # off = as before
@@ -77070,7 +77579,7 @@ def smalltv_rot_selftest():
         k_, _s, _f, brt, now_ = stv_plan(e, t0 + 1)
         assert k_ == "gif" and brt == 100 and now_, (k_, brt)
         assert stv_plan(e, t0 + 61)[0] == "alarm" and stv_plan(e, t0 + 60 + 299)[0] == "alarm" and stv_plan(e, t0 + 60 + 301)[0] in ("live", "batt")
-        assert stv_plan(dict(e, rot=False), t0 + 1)[0] == "alarm" and stv_plan(dict(e, rot=False), t0 + 61)[0] == "status"
+        assert stv_plan(dict(e, rot=False), t0 + 1)[0] == "gif" and stv_plan(dict(e, rot=False), t0 + 61)[0] == "status"   # the GIF on every display
         G["is_dark"] = lambda: True
         assert stv_plan(e, t0 + 1)[0] == "gif" and stv_plan(e, t0 + 1)[3] == 100     # at night too, bright for a moment
         G["is_dark"] = lambda: False
@@ -77080,9 +77589,21 @@ def smalltv_rot_selftest():
         STV["alarm"] = None
         assert stv_plan(e, t0 + 101)[0] == "game" and stv_plan(e, t0 + 112)[0] in ("live", "batt")   # 10 s without news: the game is over
         STV["game"] = None
+        # the live picture: the pure camera picture (410 frame_clean), not the page picture with HUD / marks (Daniel 30.10.)
+        class _W: pass
+        w_ = _W(); w_.frame_out = np.full((240, 320, 3), 200, np.uint8); w_.frame_clean = np.zeros((240, 320, 3), np.uint8); w_.frame_clean_t = time.time()
+        keep_w = WATCH_REF.get("w"); WATCH_REF["w"] = w_
+        try:
+            f_ = stv_live_frame(True)
+            assert f_ is not None and f_.shape[0] == 240 and f_.mean() == 0 and getattr(w_, "clean_until", 0) > time.time(), "pure picture"
+            w_.frame_clean = None; w_.running = False
+            f_ = stv_live_frame(True)
+            assert f_ is not None and f_.mean() == 200, "without a pure picture: the page picture (as before)"
+        finally:
+            WATCH_REF["w"] = keep_w
         # pictures a day
         n_off, n_on = stv_per_day(dict(e, rot=False)), stv_per_day(e)
-        assert n_off == 168 and 600 <= n_on <= 2200 and n_on > n_off, (n_off, n_on)
+        assert n_off == 168 and 350 <= n_on <= 1300 and n_on > n_off, (n_off, n_on)     # live picture every 2 min: about half
         assert stv_per_day(dict(e, on=False)) == 0
         # the GIF: 240 × 240, 6-8 frames, small; the pages
         gif = stv_render_alarm_gif({"kind": "person", "label": "person", "conf": None, "dist": 12, "crop": None, "n": 1, "clock": "22:14"}, "de")

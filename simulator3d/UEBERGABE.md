@@ -4,6 +4,16 @@ Stand: 30.10.2026 · Simulator-Version **3D-4.19** · passende MoveEye-Version (
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
+**NEU (Entwurf, Zweig wt-aufr, Aufräumen 2):** eine Feldliste `simulator3d/schnittstelle.json` (world_reply, state, info,
+control) für beide Seiten – neue `scripts/schnittstelle.gd` prüft sie 2 s nach dem Start (Log «Schnittstelle: OK …» oder
+«SCRIPT ERROR: Schnittstelle: …»), MoveEye im Selbsttest (Teil 558). Neues Feld = eine Zeile in der Liste. world_reply sendet
+nicht mehr `sim_time` (= clock), `active` (bei Verbindung immer an), `weather` (= forecast.weather); `humidity` geht in den
+Klima-Sensor von MoveEye, `sim_cpu_own` in die Kachel «CPU des PCs», `leader` in die Meldung «schaut nur zu». Von MoveEye
+neu `ups_mah` (power.gd: «Kapazität einer Zelle» bei Verbindung nur lesbar, `controls[i]["ro"]`), nicht mehr `picture_mode`
+und `simtask`; `armed` und `relays` stehen in der Statuszeile (schnittstelle.gd `mw_extra`). `smalltv.gd game_live()` ist
+die eine Quelle für SmallTV, TV-Anzeige (MoveEye 150) und den TV-Modus (`tv.gd`); dazu Farbe, Ziel, Adresse, Verlauf,
+Rangliste, Aufgabe, Sieger, «als Nächstes». Kommentare zu Einfach/Experte (MoveEye speichert es jetzt für die Seite «sim»).
+
 ## NEU in 3D-4.19 (MoveEye 2.98.48): virtueller SmallTV (`smalltv.gd`, Plan `docs/SmallTV_Anzeige_Plan.md`) – gleiche HTTP-Schnittstelle wie das Gerät auf dem Simulator-Port, Kachel, Macken-Schalter, Zähler im Prüfstand.
 
 ## NEU in 3D-4.18 (MoveEye 2.98.47): Neue Szenen (szenenplus.gd, Branch wt-szenen)
@@ -425,6 +435,7 @@ Seit 3D-1.4 sendet der Simulator nach dem Start **nichts**. Erst der Schalter «
 - Port 8765 (Option `--port`).
 - `POST /state`: Motion Watch schickt Servos, Lichter, Ton, Gerät.
 - `GET /info`, `/events?since=`, `/cam/<n>/video.mjpg?fps=`, `/cam/<n>/snapshot.jpg`, `/thermal.bin` (float32 °C, Header X-Width/X-Height).
+- Alle ausgetauschten Felder: `simulator3d/schnittstelle.json` (eine Liste, geprüft von MoveEye-Selbsttest und `schnittstelle.gd`).
 - `GET/POST /control`: CONTROL-Protokoll 1. Das Steuerfeld der Motion-Watch-Webseite wird daraus automatisch gebaut. Neue Regler meldet man in `main.gd` mit `add_control(...)` an; sie erscheinen dann im PC-Fenster und auf der Webseite.
 - UDP-Meldung alle 2 s an Port 8764: `{"mwsim":1,"name","port","version"}`.
 
