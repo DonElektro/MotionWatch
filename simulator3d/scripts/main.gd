@@ -3773,6 +3773,8 @@ func _control(d: Dictionary) -> Dictionary:
 			return {"ok": false, "error": "unknown scenario"}
 	elif a == "delete":
 		return {"ok": false, "error": "cannot be deleted"}
+	elif a == "lang":                                  # Sprachen (i18n.gd): switch / translate, for tests
+		return preload("res://scripts/i18n.gd").control(d)
 	elif a == "ui_width":                              # for tests: is the content of the panel wider than the panel?
 		_fold_all("open")
 		var sim_was := ui_simple
