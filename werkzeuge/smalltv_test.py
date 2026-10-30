@@ -106,6 +106,22 @@ def main():
     s4 = dv.send(a.sim, {"jpg": batt, "sig": 12, "kind": "batt", "brt": 60})
     st = ctl(a.sim, {"action": "smalltv"})
     ok(s4 and st["uploads"] == up and st["img"] == "/image/me_b.jpg", f"unverändertes Bild nur wieder gezeigt: {st['uploads']} Uploads, gezeigt {st['img']}")
+    # Aufräumen 2 (Daniel 30.10.): das Live-Bild nur jede zweite Live-Zeitscheibe neu; das Alarm-GIF auf jedem Bildschirm
+    night_, alarm_, game_, bat_ = g["CFG"].get("stv_night"), g["STV"]["alarm"], g["STV"]["game"], g["STATE"].get("battery")
+    try:
+        g["CFG"]["stv_night"] = False                     # (run_path gives a copy of the globals: change the dicts, not the names)
+        g["STV"]["alarm"] = None; g["STV"]["game"] = None
+        e = {"id": "x", "on": True, "status": True, "alarm": True, "game": True, "brt": 60, "rot": True}
+        t0 = 30.0 * 100000
+        k = [g["stv_plan"](e, t0 + dt)[1] for dt in (0, 60, 120)]
+        ok(k[0] == k[1] and k[1] != k[2], "Live-Bild nur jede zweite Live-Zeitscheibe neu (ein neues Bild alle 2 min)")
+        n_on, n_off = g["stv_per_day"](e), g["stv_per_day"](dict(e, rot=False))
+        ok(n_off < n_on <= 1300, f"Bilder pro Tag: ohne Wechsel {n_off}, mit Wechsel {n_on}")
+        g["STV"]["alarm"] = {"t": t0, "kind": "person", "label": "person", "conf": None, "dist": 5, "crop": None, "n": 1, "clock": "1"}
+        ok(g["stv_plan"](dict(e, rot=False), t0 + 1)[0] == "gif", "Alarm-GIF auch ohne «Live-Bild und Wechsel»")
+    finally:
+        g["CFG"]["stv_night"], g["STV"]["alarm"], g["STV"]["game"] = night_, alarm_, game_
+        g["STATE"]["battery"] = bat_
     ctl(a.sim, {"action": "smalltv", "quirks": False})
     print("OK" if not fails else f"{fails} Fehler")
     return 1 if fails else 0

@@ -72,6 +72,8 @@ class SimLink:
                    mover=bool(rep_.get("mover")),                # the simulator has a mover (3D-3.11): second stick
                    mover_pose=_mover_pose(rep_.get("mover_pose")) if rep_.get("mover") else None,   # where it is (2.95.43, optional)
                    pc_cpu=rep_.get("pc_cpu"), cores=rep_.get("cores"),   # CPU of the PC the simulator runs on (3D-3.24)
+                   sim_cpu=rep_.get("sim_cpu_own"),              # Aufräumen 2: its own share there (tile «CPU of the PC», 470)
+                   humidity=rep_.get("humidity"),                # Aufräumen 2: humidity of the scene -> climate sensor (060, field h)
                    solar=rep_.get("solar") if isinstance(rep_.get("solar"), dict) else None,   # 2.98.11: solar panel and
                    gps=rep_.get("gps") if isinstance(rep_.get("gps"), dict) else None)         # GPS module of the simulator   # CPU of the PC the simulator runs on (3D-3.24)
         simvals_take(rep_)                                 # Simulator-Werte: battery, clock, place, forecast, Pi heat, network test (285)
@@ -79,6 +81,7 @@ class SimLink:
         SIM["follower"] = bool(rep_.get("follower"))
         SIM["head"] = rep_.get("head_deg") if isinstance(rep_.get("head_deg"), list) else None    # 2.98.35: the simulated head (539 /api/servo)
         weit_from_sim(rep_.get("wide"))                 # 163: the mount of the wide camera (3D-4.17) - «Übersicht lenkt den Kopf» by itself
+        SIM["leader"] = str(rep_.get("leader") or "")[:40] if SIM["follower"] else ""   # Aufräumen 2: who steers (shown in the message)
         SIM["msg"] = "connected - only watching (another MoveEye steers the simulator)" if SIM["follower"] else "connected"
         if time.time() - SIMDIARY["t"] >= 30:                # 2.96.1: the diary of the simulator (visits)
             threading.Thread(target=simdiary_poll, daemon=True, name="simdiary").start()

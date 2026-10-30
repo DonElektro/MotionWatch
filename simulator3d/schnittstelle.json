@@ -1,0 +1,130 @@
+{
+  "_hinweis": "Die Felder, die MoveEye und der 3D-Simulator austauschen (eine Liste fuer beide Seiten). Geprueft im Selbsttest von MoveEye (Teil 558: liest die GDScript-Quellen und sim_state) und beim Start des Simulators (scripts/schnittstelle.gd). Neues Feld = eine Zeile hier im passenden Abschnitt: \"name\": \"was es ist -> wer es liest\".",
+  "world_reply": {
+    "v": "Version der Antwort",
+    "ok": "Antwort gueltig",
+    "dark": "Tag / Nacht der Szene -> 350 SIM dark (Nachtbetrieb)",
+    "ambient_c": "Aussentemperatur -> 350 SIM ambient, 060 Klima-Sensor, Temperatur-Alarm",
+    "pressure_hpa": "Luftdruck -> 350 SIM pressure, 060 Klima-Sensor, Sturmwarnung",
+    "wind_kmh": "Wind -> 350 SIM wind",
+    "humidity": "Luftfeuchtigkeit der Szene -> 350 SIM humidity, 060 Klima-Sensor (Feld h, Klima-Tagebuch)",
+    "last_event": "letzte Sensor-Ereignis-Nummer -> 350 holt /events",
+    "pid": "Prozessnummer des Simulators -> 100 CPU-Anteil, wenn er auf diesem Rechner laeuft",
+    "sound_db": "Lautstaerke der Welt -> 250 Geraeusch-Alarm",
+    "sound_ev": "Klatschen, Niesen, Stimmen -> 250 sim_sound_events",
+    "sound_ev_last": "letzte Ton-Ereignis-Nummer -> 250",
+    "solar": "Solarpanel -> 280 sim_sensor(solar)",
+    "gps": "GPS-Modul -> 280 sim_sensor(gps)",
+    "mover": "der Simulator hat einen Mover -> 350 zweiter Stick",
+    "pc_cpu": "CPU des Simulator-PCs gesamt -> Kachel CPU des PCs (470)",
+    "sim_cpu_own": "CPU-Anteil des Simulators auf seinem PC -> Kachel CPU des PCs (470, «Sim N %»)",
+    "cores": "Kerne des Simulator-PCs -> 350 SIM cores",
+    "mw_cmd": "Auftrag aus dem Simulator (Referenz-Scan, Kopf, Licht ...) -> 350",
+    "shut": "Treffer des Ausloesers -> 539 Test-Postfach",
+    "head_deg": "wo der simulierte Kopf wirklich steht -> 539 /api/servo",
+    "wide": "Halterung der Weitwinkel-Kamera -> 163 weit_from_sim",
+    "game_live": "das Spiel in wenigen Zahlen -> 552 SmallTV, 150 TV-Anzeige (559), Simulator tv.gd",
+    "pi_temp": "CPU-Temperatur des Pi im Gehaeuse -> 285",
+    "net": "Test-Schalter WLAN weg / Internet weg -> 285 sim_net_down, 110, Uebung Netz (141/565)",
+    "clock": "Datum, Stunde, Zeitraffer -> 285 sim_now",
+    "place": "Ort der Szene -> 285 sim_place",
+    "forecast": "Boeen, Wetter (forecast.weather), Sturm, Tmax/Tmin -> 285 sim_forecast, Tagebuch-Wetter",
+    "battery": "simulierter USV-HAT -> 285 sim_battery_tick, Uebung Akku (141/565)",
+    "follower": "ein anderes MoveEye steuert, dieses schaut nur zu -> 350",
+    "leader": "Name des MoveEye, das steuert -> 350 Meldung «schaut nur zu»"
+  },
+  "state": {
+    "v": "Version des Zustands",
+    "t": "Zeit von MoveEye",
+    "device": "Geraetename -> Simulator Verbindung, Status",
+    "armed": "Schutz an -> Simulator Statuszeile (schnittstelle.gd mw_extra), Python-Simulator",
+    "uid": "eindeutige Kennung -> main.gd _mw_lead (ein MoveEye fuehrt)",
+    "helper": "KI-Helfer auf dem PC -> main.gd _mw_lead",
+    "mw_version": "Version von MoveEye -> Simulator Updates, Pruefstand",
+    "ai_status": "KI-Status -> Simulator Testlauf",
+    "refscan": "Referenz-Scan -> Simulator Knopf",
+    "servo": "Kopf: Stellung, Tempo, Ziel, Not-Aus, Folgen -> Simulator Kopf",
+    "lights": "weisses Licht, IR -> Simulator Licht",
+    "wake": "Wecker -> sleeper.gd",
+    "relays": "Relais mit Name und an/aus -> Simulator Statuszeile (schnittstelle.gd mw_extra), Python-Simulator",
+    "sound": "Sirene / Sprechen -> Simulator Ton, Tiere fliehen",
+    "simtask_de": "was MoveEye gerade mit dem Simulator macht (eine Sperre, 147) -> main.gd",
+    "eco": "Strom sparen -> Simulator rechnet langsamer",
+    "sim_files": "Pruefsummen der Python-Simulator-Dateien -> nur Python-Simulator (Selbst-Update); an den 3D-Simulator leer",
+    "mw_scheme": "http / https -> Simulator Links zu MoveEye",
+    "mw_port": "Port von MoveEye -> Simulator Links zu MoveEye",
+    "cpu": "CPU gesamt / MoveEye / Simulator -> Simulator Mini-Fenster",
+    "real_look": "Aussehen der echten Bilder -> realism.gd",
+    "det": "was MoveEye erkennt -> Testlauf, Spiele",
+    "drive": "Mover-Ketten -> Simulator Rover",
+    "zones": "Zonen -> Simulator Zwilling",
+    "waypoints": "Patrouille-Punkte -> Simulator Zwilling",
+    "ups_mah": "Akku-Groesse einer Zelle (Einstellung ups_mah) -> power.gd: Kapazitaet nur lesbar «von MoveEye»"
+  },
+  "info": {
+    "v": "Version",
+    "name": "Name und Version des Simulators -> 300, Meldungen",
+    "host": "Rechnername -> 300 Simulatoren im Netz",
+    "cameras": "Kameras mit Bildwinkel -> 290, 318, 163",
+    "thermal": "Waermebild -> 230, 318",
+    "view": "Simulator-Fenster als Bild (nur 3D) -> 340, 290 (sim_files nur an den Python-Simulator)",
+    "sensors": "Sensoren der Szene -> 350 hello (Zusatz-Sensoren)",
+    "helper": "KI-Helfer auf diesem PC -> 180"
+  },
+  "control": {
+    "set": "einen Regler setzen (Uebungen, Akku-Laden ...)",
+    "scenario": "Szene laden",
+    "busy": "eine Sperre fuer Simulator-Aufgaben (147)",
+    "tv": "TV-Modus des Simulators (150)",
+    "game_info": "Spielstand fuer die Spiel-Seiten (340)",
+    "gamewiz": "Spiel-Assistent (150, 340)",
+    "game_compare": "Mensch gegen KI",
+    "game_handicap": "Ausgleich",
+    "game_shut": "Ausloeser",
+    "game_mwcatch": "MoveEye erwischt (550)",
+    "shoot": "Ausloeser-Schuss (550)",
+    "replay": "Alarm in 3D nachspielen (550, 559)",
+    "planner": "Aufstell-Planer",
+    "blindmap": "tote Winkel",
+    "dataset": "KI-Pruefbilder",
+    "farecreate": "Fehlalarm nachstellen",
+    "whatif": "Was waere wenn (139)",
+    "input": "Eingaben der Controller-Ansicht",
+    "pad": "Controller",
+    "padview": "Controller-Ansicht (550)",
+    "press": "Knopf im Simulator druecken",
+    "rover": "Rover",
+    "view_look": "Ansicht drehen",
+    "netmap": "WLAN-Karte",
+    "parcours": "Verfolgungs-Parcours (416)",
+    "sabotage": "Sabotage-Test",
+    "templates": "Besuchs-Vorlagen",
+    "twin": "Zwilling",
+    "visits": "Besuche",
+    "weit": "Weitwinkel-Halterung (163)"
+  },
+  "_meta": {
+    "world_reply": [
+      "v",
+      "ok"
+    ],
+    "state": [
+      "v",
+      "t"
+    ],
+    "info": [
+      "v"
+    ]
+  },
+  "_nur_python_simulator": [
+    "sim_files"
+  ],
+  "_bedingt": [
+    "battery",
+    "follower",
+    "leader"
+  ],
+  "_optional_reply": [
+    "mover_pose"
+  ]
+}

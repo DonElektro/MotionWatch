@@ -55,8 +55,27 @@ func save() -> void:
 	_dirty = false
 
 
+func mw_mah() -> float:
+	"""Aufräumen 2: the battery size of MoveEye (its setting «ups_mah», sim_state) while it is connected, else -1 (own slider)"""
+	if main.now() - main.mw_t > 10.0 or main.mw.get("ups_mah", null) == null:
+		return -1.0
+	return clampf(float(main.mw.get("ups_mah", cell_mah)), 500.0, 6000.0)
+
+
+func cell() -> float:
+	var m := mw_mah()
+	return m if m > 0.0 else cell_mah
+
+
+func _set_mah(v) -> void:
+	if mw_mah() > 0.0:
+		return                                        # MoveEye's value counts while it is connected
+	cell_mah = clampf(float(v), 500.0, 6000.0)
+	save()
+
+
 func cap_wh() -> float:
-	return cell_mah / 1000.0 * 7.4 * 0.9
+	return cell() / 1000.0 * 7.4 * 0.9
 
 
 func batt_temp() -> float:
@@ -167,6 +186,8 @@ func status_text() -> String:
 		else:
 			line = "🔌" + line.substr(2) + ("🔌 lädt" if net_w > 0.05 and soc < 1.0 else "🔌 Netzstrom")
 		t += "\n" + line + " · ☀ Solar %.1f W" % solar_w
+		if mw_mah() > 0.0:
+			t += "\n2 × %d mAh (von MoveEye)" % int(mw_mah())
 		if cold_k() < 0.99:
 			t += " · ❄ Kälte: nur %d %% nutzbar" % int(round(cold_k() * 100.0))
 		if empty:
@@ -186,8 +207,10 @@ func add_controls() -> void:
 	main.add_control("toggle", "batt_on", "🔋 Akku simulieren (USV-HAT, 2 × 18650)", func(): return batt_on, func(v): batt_on = bool(v); save(), g, A)
 	main.add_control("slider", "batt_level", "Ladung jetzt", func(): return snappedf(soc * 100.0, 1.0), func(v): soc = clampf(float(v) / 100.0, 0.0, 1.0); empty = false; save(), g,
 			{"sub": "Akku und Strom", "min": 0, "max": 100, "step": 1, "unit": "%"})
-	main.add_control("slider", "batt_mah", "Kapazität einer Zelle", func(): return cell_mah, func(v): cell_mah = clampf(float(v), 500.0, 6000.0); save(), g,
+	# one source (Aufräumen 2): while MoveEye is connected its setting «ups_mah» counts - the slider only shows it («von MoveEye»)
+	main.add_control("slider", "batt_mah", "Kapazität einer Zelle (verbunden: von MoveEye)", func(): return cell(), _set_mah, g,
 			{"sub": "Akku und Strom", "min": 1000, "max": 5000, "step": 50, "unit": "mAh"})
+	main.controls[-1]["ro"] = func(): return mw_mah() > 0.0
 	main.add_control("toggle", "batt_mains", "🔌 Netzteil angeschlossen (lädt mit etwa 2 A)", func(): return mains, func(v): mains = bool(v); save(), g, A)
 	main.add_control("slider", "solar_wp", "☀ Solarpanel (Watt bei voller Sonne)", func(): return main.solar_wp, func(v): main.solar_wp = clampf(float(v), 0.0, 200.0); save(), g,
 			{"sub": "Akku und Strom", "min": 0, "max": 100, "step": 1, "unit": "W"})

@@ -4,7 +4,7 @@
 #  * MoveEye asks the simulator every 3 s ({"action": "busy"} -> busy_with("")). A test run, the test bench, training
 #    pictures, blind spots … started in the simulator window lock MoveEye's own starts with the same message
 #    «The simulator is busy: …» (simtask_busy in 141 asks sim_busy_remote()).
-#  * MoveEye tells the simulator what it does itself (sim_state: "simtask", "simtask_de"); the simulator refuses its own
+#  * MoveEye tells the simulator what it does itself (sim_state: "simtask_de" - Aufräumen 2: «simtask» in English is no longer sent); the simulator refuses its own
 #    starts then (busy_with in main.gd: «Störfall-Übung (von MoveEye)»).
 #  * Blind spots started in the simulator («Testen» card): MoveEye follows them like its own (BLIND / _blind_wait in 143),
 #    so the map in MoveEye shows the result, whoever started it. Older simulators without «busy»: blindmap info is asked.

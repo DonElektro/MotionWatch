@@ -466,6 +466,9 @@ func _ready() -> void:
 	simint = preload("res://scripts/simint.gd").new()      # 30.10.2026: siren on the PC + microphone, servo faults, thermal model
 	simint.main = self
 	add_child(simint)
+	schnitt = preload("res://scripts/schnittstelle.gd").new()   # Aufräumen 2: one field list with MoveEye (schnittstelle.json), armed / relays shown
+	schnitt.main = self
+	add_child(schnitt)
 	recorder = Recorder.new()
 	recorder.main = self
 	add_child(recorder)
@@ -2578,14 +2581,15 @@ func world_reply() -> Dictionary:
 	var press := pressure
 	if storm_t > 0.0:
 		press -= min(6.0, (now() - storm_t) / 180.0 * 6.0)
-	var t := Time.get_datetime_dict_from_system()
-	var midnight: float = now() - (t.hour * 3600 + t.minute * 60 + t.second)
-	var r := {"v": 1, "ok": true, "sim_time": midnight + hour() * 3600.0, "dark": is_dark(), "ambient_c": snappedf(ambient, 0.1),
+	# Aufräumen 2 (30.10.2026): one field list with MoveEye (simulator3d/schnittstelle.json, checked at the start by
+	# schnittstelle.gd and in MoveEye's self-test); «sim_time» (= clock), «active» (always on while MoveEye is connected) and
+	# «weather» (= forecast.weather) are no longer sent
+	var r := {"v": 1, "ok": true, "dark": is_dark(), "ambient_c": snappedf(ambient, 0.1),
 			"pressure_hpa": snappedf(press, 0.1), "wind_kmh": snappedf(wind, 0.1), "last_event": next_event_id - 1,
-			"pid": OS.get_process_id(), "active": sim_active, "sound_db": snappedf(sound_db(), 0.1) if sound_on else null,
+			"pid": OS.get_process_id(), "sound_db": snappedf(sound_db(), 0.1) if sound_on else null,
 			"sound_ev": sound_events() if sound_on else null, "sound_ev_last": sound_ev_id,
 			"solar": solar_reading(), "gps": gps_reading(),
-			"weather": weather, "humidity": humidity, "mover": mover_on,
+			"humidity": snappedf(humidity, 1.0), "mover": mover_on,   # humidity: MoveEye's climate sensor (060, field h)
 			"pc_cpu": snappedf(mini_box.own["pc"], 0.1) if mini_box != null and float(mini_box.own["pc"]) >= 0.0 else null,
 			"sim_cpu_own": snappedf(mini_box.own["sim"], 0.1) if mini_box != null and float(mini_box.own["sim"]) >= 0.0 else null,
 			"cores": OS.get_processor_count(), "mw_cmd": mw_cmd if not mw_cmd.is_empty() else null,
@@ -2598,6 +2602,7 @@ func world_reply() -> Dictionary:
 	return r
 
 
+var schnitt = null                     # schnittstelle.gd (Aufräumen 2)
 var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
 var bike_node: Node3D = null
 var refscan_label: Label
@@ -3225,7 +3230,7 @@ func _order_controls() -> void:
 				c.extra["sub"] = "Assistent"
 		c.extra["gid"] = GROUP_IDS.get(c.group, str(c.group).to_lower())
 		if not _simple_ok(c):
-			c.extra["expert"] = true                      # 3D-3.90: «Einfach» = about 60 settings (the web page shows all)
+			c.extra["expert"] = true                      # 3D-3.90: «Einfach» = about 60 settings (the page of MoveEye has the same switch, stored in MoveEye «sim»)
 		var g: int = gi.get(c.group, GROUPS.size())
 		var sub := str(c.extra.get("sub", ""))
 		c.extra["icon"] = GROUPS[g][2] if g < GROUPS.size() else ""
@@ -3238,7 +3243,8 @@ func _order_controls() -> void:
 
 func _register_controls() -> void:
 	"""every setting of the simulator - for the window and for the web page of MoveEye (CONTROL protocol).
-	extra "expert": true = only shown with «Experte» in the window (the web page always shows everything)."""
+	extra "expert": true = only shown with «Experte» - in the window and on the page of MoveEye (its switch Einfach / Experte
+	is stored in the settings of MoveEye, page «sim», like on its main page)."""
 	var sc := []
 	for s in Scenes.LIST:
 		sc.append([s[0], s[1]])
@@ -3676,6 +3682,8 @@ func control_info() -> Dictionary:
 		if c["get"] != null:
 			var v = c["get"].call()
 			d["value"] = snappedf(v, 0.001) if typeof(v) == TYPE_FLOAT else v
+		if c.has("ro"):
+			d["ro"] = bool(c["ro"].call())            # Aufräumen 2: the page of MoveEye shows it read-only too
 		out.append(d)
 	return {"ok": true, "v": 1, "name": "MW Sim · 3D %s" % VERSION,
 				"scenarios": scenarios(), "scenario": scene,
@@ -4282,6 +4290,8 @@ func status_text() -> String:
 	var mww := mw_watchers()
 	if not mww.is_empty():                     # 3D-4.9: a second MoveEye only watches (does not steer the head)
 		mwc += " · schaut nur zu: " + ", ".join(mww)
+	if schnitt != null:
+		mwc += schnitt.mw_extra()                 # Aufräumen 2: «Schutz an · Relais …» from MoveEye
 	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
 	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
 
@@ -5721,6 +5731,8 @@ func _sync_ui() -> void:
 			w.value = float(v)
 		elif w is LineEdit and not w.has_focus():
 			w.text = str(v)
+		if w is HSlider and c.has("ro"):              # Aufräumen 2: only readable now (e.g. the battery size «von MoveEye»)
+			w.editable = not bool(c["ro"].call())
 	_syncing = false
 
 

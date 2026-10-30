@@ -175,11 +175,11 @@ func _process(dt: float) -> void:
 	if g != null and g.open and g.round_state in ["countdown", "play", "end"] and not main.spectate:
 		main.spectate_start()
 	shot.text = _plain(main.spec_label) if main.spectate else ""
-	var d: Dictionary = g.spectator_info() if g != null else {}
 	if w != null and w.shown:
 		_paint_wizard(w.model(), g)
 	elif g != null and g.open:
-		_paint_game(d, g)
+		var gl = main.smalltv.game_live() if main.smalltv != null else null   # Aufräumen 2: one source with MoveEye's displays
+		_paint_game(gl if gl != null else {}, g)
 	else:
 		_paint_idle()
 
@@ -264,6 +264,7 @@ func _paint_wizard(m: Dictionary, g) -> void:
 
 
 func _paint_game(d: Dictionary, g) -> void:
+	"""d = «game_live» (smalltv.gd): the same numbers and words as the TV page of MoveEye (150) and the SmallTV (552)"""
 	pics.visible = false
 	var r := str(d.get("round", "lobby"))
 	var names := {"lobby": "Warte auf Spieler", "countdown": "Macht euch bereit", "play": "Runde läuft", "end": "Runde vorbei"}
@@ -272,21 +273,23 @@ func _paint_game(d: Dictionary, g) -> void:
 		big.text = str(d.get("cd", ""))
 	elif r == "play":
 		var left := int(d.get("left", 0))
-		big.text = "%d:%02d" % [left / 60, left % 60] + ("  letzte Minute!" if bool(d.get("last_minute", false)) else "")
+		big.text = "%d:%02d" % [left / 60, left % 60] + ("  letzte Minute!" if bool(d.get("lm", false)) else "")
 	elif r == "end":
 		big.text = "Ende"
 	else:
 		big.text = "%d Spieler" % d.get("players", []).size()
-	sub.text = str(d.get("task", ""))
-	var RW: Dictionary = (d.get("rules", {}) as Dictionary).get("win", {})     # 3D-4.x: the winner screen (gamerules.gd)
+	sub.text = _plain(str(d.get("task", "")))
+	var RW: Dictionary = d.get("win", {})             # the winner screen (gamerules.gd)
 	if r == "end" and not RW.is_empty():
-		big.text = _plain(str(RW["title"])) + ("  %d" % int(RW["score"]) if int(RW["score"]) >= 0 else "")
-		sub.text = _plain(str((RW.get("hl", {}) as Dictionary).get("text", "")))
-	var RN: String = str((d.get("rules", {}) as Dictionary).get("next", ""))
+		big.text = _plain(str(RW.get("title", ""))) + ("  %d" % int(RW.get("score", -1)) if int(RW.get("score", -1)) >= 0 else "")
+		sub.text = _plain(str(RW.get("hl", "")))
+	var RN: String = str(d.get("next", ""))
 	if r in ["lobby", "end"] and RN != "":
 		sub.text = (sub.text + "\n" if sub.text != "" else "") + _plain(RN)
+	if int(d.get("mw", 0)) > 0:
+		sub.text = (sub.text + "\n" if sub.text != "" else "") + "MoveEye hat %d erwischt" % int(d.get("mw", 0))
 	if r in ["lobby", "end"]:
-		_set_qr(g.address(), "Mitspielen: QR-Code scannen\n(gleiches WLAN)\n" + g.address())
+		_set_qr(str(d.get("url", g.address())), "Mitspielen: QR-Code scannen\n(gleiches WLAN)\n" + str(d.get("url", g.address())))
 	else:
 		_set_qr("", "")
 	var st := {"goal": "im Ziel", "out": "erwischt", "jail": "gefangen", "play": "unterwegs", "lobby": "bereit"}
@@ -295,17 +298,15 @@ func _paint_game(d: Dictionary, g) -> void:
 		var i := 0
 		for b in d.get("board", []):
 			i += 1
-			if i > 6:
-				break
 			list.append({"n": "%d. " % i + str(b.get("n", "")), "c": b.get("c", "#3b8cff"), "s": str(b.get("score", ""))})
 	else:
 		for p in d.get("players", []):
-			list.append({"n": p.get("n", ""), "c": p.get("c", ""), "s": str(st.get(str(p.get("s", "")), str(p.get("s", "")))) + ("  %d×" % int(p.get("k", 0)) if int(p.get("k", 0)) > 0 else "")})
+			var k := int(p.get("k", 0))
+			list.append({"n": p.get("n", ""), "c": p.get("c", ""), "s": str(st.get(str(p.get("s", "")), str(p.get("s", "")))) + (" · %d×" % k if k > 0 else "") + " · %d Punkte" % int(p.get("pt", 0))})
 	_players(list)
 	var lines := []
 	for e in d.get("feed", []):
-		lines.append("• " + _plain(str(e.get("x", ""))))
-	lines.reverse()
+		lines.append("• " + _plain(str(e)))
 	feed.text = "\n".join(lines.slice(0, 4))
 
 

@@ -4,7 +4,9 @@
 # Ein (nur tagsüber - nachts bleibt die rote, gedimmte Statusseite):
 #   alle STV_ROT_S = 30 s wechselt die Seite: gerade Zeitscheibe «Live-Bild» (Standbild der Hauptkamera, 240 × 240 mit
 #   Leiste Uhrzeit · Aus/Wachsam/Voll · Akku), ungerade «Akku und Strom» (grosser Akku, Laden/Solar, Verbrauch, Restlaufzeit,
-#   «SIM» bei Simulator-Werten). Das Live-Bild ist bei jeder Live-Zeitscheibe neu (höchstens ein Hochladen je 30 s);
+#   «SIM» bei Simulator-Werten). Das Live-Bild ist nur bei jeder zweiten Live-Zeitscheibe neu (Daniel 30.10.: halb so viele
+#   Uploads, ein neues Bild alle 2 min, beim Zeigen höchstens 60 s alt); dazwischen wird es nur wieder gezeigt;
+#   das Bild ist das reine Kamerabild ohne Leiste «Tilt … | CPU …» und ohne Rahmen (410 frame_clean, nur auf Anfrage);
 #   die Akku-Seite liegt noch auf dem Gerät (me_a / me_b, 552 StvDev.send «stored»): unverändert wird sie nur wieder gezeigt
 #   (/set?img=…, kein Schreiben in den Flash). Ohne Akku-Werte ist die zweite Seite die Statusseite.
 #   Personen im Live-Bild: Privatzonen sind schon geschwärzt (frame_out, 030 apply_privacy); ohne «Bild auch bei Personen»
@@ -33,7 +35,7 @@ def stv_rot_plan(now, lang):
     """(kind, key, render function) of the rotation, or None (-> the status page)"""
     slot = int(now // STV_ROT_S)
     if stv_rot_page(now) == "live":
-        return "live", ("live", slot, lang), lambda: stv_render_live(lang)
+        return "live", ("live", slot // 4, lang), lambda: stv_render_live(lang)   # every second live slot new (slots 4k and 4k+2)
     if not _stv_batt_ok():
         return None
     b = STATE.get("battery") or {}
@@ -56,15 +58,37 @@ def _stv_solar_w(b):
 
 
 # ---- the live still -----------------------------------------------------------------------------------------------------
+def stv_clean_frame(w, wait=1.5):
+    """the pure camera picture (after the privacy zones and the grey picture mode, before HUD, boxes and marks): 410 copies
+    it only while asked (clean_until) - None when no fresh one comes"""
+    w.clean_until = time.time() + 4.0
+    t_end = time.time() + wait
+    while True:
+        f, ft = getattr(w, "frame_clean", None), float(getattr(w, "frame_clean_t", 0.0) or 0.0)
+        if f is not None and time.time() - ft < 3.0:
+            return f
+        if time.time() >= t_end or not getattr(w, "running", True):
+            return None
+        time.sleep(0.1)
+
+
 def stv_live_frame(person_pic=None):
-    """a copy of the picture of the main camera (privacy zones already black) - persons pixelated unless «Bild auch bei Personen»"""
+    """a copy of the picture of the main camera (privacy zones already black) - persons pixelated unless «Bild auch bei Personen».
+    Daniel 30.10.: the pure picture without the strip «Tilt 50% | CPU …» and the marks of MoveEye (stv_clean_frame);
+    only when there is none, the picture of the page without its text line (as before)"""
     w = WATCH_REF.get("w") if "WATCH_REF" in globals() else None
-    f = getattr(w, "frame_out", None) if w is not None else None
-    if f is None:
+    if w is None:
         return None
-    f = f.copy()
-    if CFG.get("show_hud") and f.shape[0] > 120:
-        f = f[34:]                                        # without the text line on top of the live picture (410 HUD)
+    f = stv_clean_frame(w)
+    if f is not None:
+        f = f.copy()
+    else:
+        f = getattr(w, "frame_out", None)
+        if f is None:
+            return None
+        f = f.copy()
+        if CFG.get("show_hud") and f.shape[0] > 120:
+            f = f[34:]                                    # without the text line on top of the live picture (410 HUD)
     if not (CFG.get("stv_person_pic") if person_pic is None else person_pic):
         stv_hide_persons(f, STATE.get("person_boxes") if STATE.get("persons") else [])
     return f
@@ -252,7 +276,7 @@ def _stv_day_hours():
 def stv_per_day(e):
     """about how many pictures a day go to this display (uploads = writes into its flash), without alarms / games:
     status: the clock every stv_clock_min minutes + about one change an hour; rotation by day: the live picture every
-    60 s (every second 30-s slot), the battery page when its values changed (about every third time), night: status"""
+    120 s (every second live slot, Daniel 30.10.), the battery page when its values changed (about every third time), night: status"""
     if not e.get("on"):
         return 0
     clock = max(1, int(CFG.get("stv_clock_min", 10) or 10))
@@ -261,7 +285,7 @@ def stv_per_day(e):
         return int(round(24 * st_h)) if e.get("status") else 0
     day = _stv_day_hours() if CFG.get("stv_night") else 24.0
     batt_h = 20.0 if _stv_batt_ok() else (st_h if e.get("status") else 0.0)
-    n = day * (3600.0 / (2 * STV_ROT_S) + batt_h) + (24.0 - day) * (st_h if e.get("status") else 0.0)
+    n = day * (3600.0 / (4 * STV_ROT_S) + batt_h) + (24.0 - day) * (st_h if e.get("status") else 0.0)
     return int(round(n / 10.0) * 10)
 
 

@@ -846,7 +846,7 @@ def stv_plan(e, now=None):
     g = STV["game"]
     playing = bool(e.get("game") and g and now - STV["game_t"] < 10 and g.get("round") in ("countdown", "play"))
     if e.get("alarm") and alarm_on and not playing:        # in a round the players are the persons: the game shows «Erwischt!»
-        if rot and now - a["t"] < gif_s:                   # 553: first the animation (GIF), then the still picture
+        if now - a["t"] < gif_s:                           # 553: first the animation (GIF) - on every display (Daniel 30.10.), with rotation then the still picture
             key = ("alarmgif", a["t"], red, lang)
             return "gif", key, lambda: stv_render_alarm_gif(a, lang, red), brt, True
         key = ("alarm", a["t"], red, lang, rot)
