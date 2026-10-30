@@ -31,6 +31,7 @@ class PCA9685:
             self._w(0x00, 0xA0)                    # restart the PWM
             if self._r(0xFE) != pre:
                 raise OSError("PCA9685 does not answer correctly")
+            self.pre = pre
         except Exception:
             os.close(self.fd); raise
 
@@ -40,6 +41,10 @@ class PCA9685:
     def _r(self, reg):
         os.write(self.fd, bytes([reg]))
         return os.read(self.fd, 1)[0]
+
+    def healthy(self):
+        """2.98.35: still awake with our prescaler? (after a brown-out / reset it sleeps with the default prescaler)"""
+        return not (self._r(0x00) & 0x10) and self._r(0xFE) == getattr(self, "pre", self._r(0xFE))
 
     def _set(self, ch, on, off):
         os.write(self.fd, bytes([0x06 + 4 * ch, on & 0xFF, (on >> 8) & 0xFF, off & 0xFF, (off >> 8) & 0xFF]))
@@ -95,6 +100,8 @@ def mover_drive(v, w, who="web"):
     except (TypeError, ValueError):
         return False
     if not MOVER["avail"]:
+        return False
+    if CFG.get("servo_estop"):                                    # 2.98.35: Not-Aus stops the mover too (072)
         return False
     MOVER.update(v=v, w=w, cmd_t=time.monotonic(), by=who)
     if abs(v) > 0.05 or abs(w) > 0.05:

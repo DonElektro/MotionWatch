@@ -2108,8 +2108,8 @@ func _process(dt: float) -> void:
 		return                                   # pause: nothing moves, nothing is drawn (net.gd still answers)
 	var s: Dictionary = mw.get("servo", {})
 	# the servos turn like real ones: towards the new angle with a limited speed (no jumps)
-	var want_pan := -deg_to_rad(float(s.get("pan_deg", 0.0)))
-	var want_tilt := deg_to_rad(float(s.get("tilt_deg", 0.0)) - 6.0)
+	var want_pan := -deg_to_rad(_srv_ahead(s, "pan"))
+	var want_tilt := deg_to_rad(_srv_ahead(s, "tilt") - 6.0)
 	if game != null and game.guard_auto:                 # the game: automatic guard or a player as guard turns the head
 		want_pan = game.guard_yaw
 		want_tilt = game.guard_tilt
@@ -2500,6 +2500,17 @@ func mw_watchers() -> Array:
 	return out
 
 
+func _srv_ahead(s: Dictionary, ax: String) -> float:
+	"""MoveEye 2.98.35 sends the position of its motion planner (ramps) about 10 x per second and its speed: between two
+	packets the head goes on with that speed (no staircase), never past the goal and at most 0.15 s ahead"""
+	var deg := float(s.get(ax + "_deg", 0.0))
+	if not s.has(ax + "_dps"):
+		return deg
+	var ahead := deg + float(s.get(ax + "_dps", 0.0)) * clampf(now() - mw_t, 0.0, 0.15)
+	var goal := float(s.get(ax + "_goal", ahead))
+	return clampf(ahead, minf(deg, goal), maxf(deg, goal))
+
+
 func on_state(d: Dictionary, host: String) -> bool:
 	if not _mw_lead(d, host):
 		return false
@@ -2534,7 +2545,8 @@ func world_reply() -> Dictionary:
 			"pc_cpu": snappedf(mini_box.own["pc"], 0.1) if mini_box != null and float(mini_box.own["pc"]) >= 0.0 else null,
 			"sim_cpu_own": snappedf(mini_box.own["sim"], 0.1) if mini_box != null and float(mini_box.own["sim"]) >= 0.0 else null,
 			"cores": OS.get_processor_count(), "mw_cmd": mw_cmd if not mw_cmd.is_empty() else null,
-			"shut": game.shut.log_tail() if game != null and game.shut != null else null}   # 3D-4.x: «Auslöser» hits -> MoveEye's test inbox
+			"shut": game.shut.log_tail() if game != null and game.shut != null else null,   # 3D-4.x: «Auslöser» hits -> MoveEye's test inbox
+			"head_deg": [snappedf(-rad_to_deg(head.rotation.y), 0.01), snappedf(rad_to_deg(head_pitch.rotation.x) + 6.0, 0.01)] if head != null else null}   # MoveEye 2.98.35: where the head really is (servo diagnosis)
 
 
 var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}

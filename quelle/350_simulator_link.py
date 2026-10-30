@@ -76,6 +76,7 @@ class SimLink:
                    gps=rep_.get("gps") if isinstance(rep_.get("gps"), dict) else None)         # GPS module of the simulator   # CPU of the PC the simulator runs on (3D-3.24)
         # 2.98.29: another MoveEye (e.g. the AI helper on the PC, or the Pi) steers the simulator - this one only watches
         SIM["follower"] = bool(rep_.get("follower"))
+        SIM["head"] = rep_.get("head_deg") if isinstance(rep_.get("head_deg"), list) else None    # 2.98.35: the simulated head (539 /api/servo)
         SIM["msg"] = "connected - only watching (another MoveEye steers the simulator)" if SIM["follower"] else "connected"
         if time.time() - SIMDIARY["t"] >= 30:                # 2.96.1: the diary of the simulator (visits)
             threading.Thread(target=simdiary_poll, daemon=True, name="simdiary").start()
@@ -100,7 +101,7 @@ class SimLink:
                 elif op_ == "refstop":
                     refscan_stop()
                 elif op_ == "look":                         # 2.95.103: «Kopf steuern» in the simulator window
-                    move_camera(str(mc_.get("dir") or ""), mc_.get("step", 3))
+                    move_camera(str(mc_.get("dir") or ""), mc_.get("step", 3), "Simulator")
                 elif op_ == "fa_box":                       # 2.98.2: a box of a game without a player: a false alarm to learn from
                     fa_game_box(mc_.get("box"), mc_.get("info"))      # 2.98.18: with the situation («Fehlalarm-Jäger»)
                 elif op_ == "track":                        # 2.98.1: «Verfolgen» in the simulator = «Folgen» of MoveEye

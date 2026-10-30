@@ -12,7 +12,7 @@ _TL_RENDER_LOCK = threading.Lock()
 
 def servo_hold():
     """Something other than tracking is holding the servos (hand control, timelapse position)."""
-    return manual_active() or TL_HOLD["on"] or wake_hold()
+    return manual_active() or TL_HOLD["on"] or wake_hold() or bool(servo_blocked())      # 2.98.35: Not-Aus / fault (072)
 
 
 def tl_dir():
@@ -119,7 +119,7 @@ class Timelapse:
             self._abort("alarm" if alarm else "manual control")
             STATE["timelapse"] = "waiting: alarm has priority" if alarm else "waiting: manual control"
             return
-        if now - self.t < CFG["timelapse_settle"]:
+        if not servo_arrived() or now - max(self.t, SRV["arrive_t"]) < CFG["timelapse_settle"]:     # 2.98.35: ramps (072)
             STATE["timelapse"] = "moving to the photo position"
             return
         self._shoot(frame, now)

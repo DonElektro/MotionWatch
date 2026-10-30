@@ -280,7 +280,7 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     const now = Date.now();
     const [lx, ly] = dz(g.axes[0] || 0, g.axes[1] || 0), [rx, ry] = dz(g.axes[2] || 0, g.axes[3] || 0);
     // left stick = head (the same as the joystick of the live page: /api/stick, real servos and the simulator)
-    if (lx || ly) { if (now - GP.lastHead >= 100) { GP.lastHead = now; GP.headZero = false; post("/api/stick", {x: r3(lx), y: r3(-ly), speed: spd()}); } }
+    if (lx || ly) { if (now - GP.lastHead >= 100) { GP.lastHead = now; GP.headZero = false; post("/api/stick", {x: r3(lx), y: r3(-ly), speed: spd(), via: "pad"}); } }
     else if (!GP.headZero) { GP.headZero = true; post("/api/stick", {x: 0, y: 0, speed: spd()}); }
     // right stick = rover (MoveEye's mover: real mover or the simulator's rover) · R1 held = turn the view · no rover = fly the view
     if (down(5)) { GP.r1T = now; GP.r1Used = false; }
@@ -302,7 +302,9 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     if (down(11)) sim({view: "rnext"}).then(r => { if (r && r.ok) toastT("👁 " + T(VIEWNAME[r.view] || "Free view")); });   // R3
     const K = KEYS(), byKey = k => Object.keys(K).find(id => K[id] === k);
     [[0, "A"], [1, "B"], [2, "X"], [3, "Y"]].forEach(([i, k]) => { if (down(i)) { const id = byKey(k), b = W.querySelector('button.pvb[data-id="' + id + '"]'); act(id, b); wake(); } });
-    if (down(8)) swap();                                                   // Select
+    if (down(8)) { GP.selT = now; GP.selLong = false; }                   // Select: short = swap the pictures,
+    if (cur[8] && !GP.selLong && now - GP.selT > 1500) { GP.selLong = true; if (window.servoEstop) window.servoEstop(); else post("/api/servo", {op: "estop"}); toastT("⛔ " + T("EMERGENCY STOP")); }   // held 1.5 s = Not-Aus (2.98.35, 539)
+    if (up(8) && !GP.selLong) swap();
     if (down(9)) { GP.startT = now; GP.startLong = false; }               // Start: short = bar, held 1 s = leave
     if (cur[9] && !GP.startLong && now - GP.startT > 1000) { GP.startLong = true; GP.mute = true; open(false); return; }   // (the held Start must not reach the simulator)
     if (up(9) && !GP.startLong) barToggle();

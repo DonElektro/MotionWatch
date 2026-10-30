@@ -281,7 +281,8 @@ def wp_text():
 
 
 def wp_add():
-    WAYPOINTS.append([round(float(CFG["pan"]), 1), round(float(CFG["tilt"]), 1)])
+    p_, t_ = servo_pos()                                         # 2.98.35: where the head really stands (planner 072)
+    WAYPOINTS.append([round(float(p_), 1), round(float(t_), 1)])
 START = time.time()
 LOCK = threading.Lock()
 GPIO_PAN, GPIO_TILT, GPIO_RELAY = 17, 27, 22
@@ -353,8 +354,11 @@ def manual_active():
     return time.time() < MANUAL["until"]
 
 
-def move_camera(cmd, step=3.0):
-    """Manual pan/tilt step (direction pad, arrow keys, web page). Pauses tracking/patrol for manual_hold seconds."""
+def move_camera(cmd, step=3.0, who="window"):
+    """Manual pan/tilt step (direction pad, arrow keys, web page). Pauses tracking/patrol for manual_hold seconds.
+    2.98.35: refused while the servos are stopped (Not-Aus, fault - 072); who = the panel that steers (shown everywhere)."""
+    if servo_blocked():
+        return False
     try:
         step = max(0.5, min(25.0, float(step)))
     except (TypeError, ValueError):
@@ -372,13 +376,14 @@ def move_camera(cmd, step=3.0):
     else:
         return False
     MANUAL["until"] = time.time() + CFG["manual_hold"]
+    servo_driver_note(who, cmd)
     return True
 
 
 STICK = {"t": 0.0}                 # time of the last joystick sample (0 = stick released)
 
 
-def stick_camera(x, y, speed=30.0):
+def stick_camera(x, y, speed=30.0, who="window"):
     """Joystick: x/y = deflection -1..1 (right / up are positive), speed = full-deflection speed in % per second.
     The camera moves by deflection * speed * time since the last sample, so it can never run away: no sample, no movement.
     A small dead zone and a quadratic curve make slow, precise moves easy near the centre."""
@@ -395,11 +400,18 @@ def stick_camera(x, y, speed=30.0):
     if mag < 0.08:
         STICK["t"] = 0.0
         return True
+    if servo_blocked():                                          # 2.98.35: Not-Aus / fault (072): the stick does nothing
+        return False
     dt = now - last if 0.0 < now - last < 0.5 else 0.1          # first sample after a pause counts as one 100 ms tick
     k = min(1.0, (mag - 0.08) / 0.92) ** 2 * speed * dt / mag
-    CFG["pan"] = max(0.0, min(100.0, CFG["pan"] + x * k))
-    CFG["tilt"] = max(0.0, min(100.0, CFG["tilt"] + y * k))
+    # 2.98.35: the target runs at most ~0.3 s ahead of the real position (planner 072) - letting go stops the head soon,
+    # it does not drive on to a target far ahead
+    pp, pt = servo_pos()
+    lead_p = max(2.0, srv_axis_limits("pan")[0] * 0.3); lead_t = max(2.0, srv_axis_limits("tilt")[0] * 0.3)
+    CFG["pan"] = max(0.0, min(100.0, max(pp - lead_p, min(pp + lead_p, CFG["pan"] + x * k))))
+    CFG["tilt"] = max(0.0, min(100.0, max(pt - lead_t, min(pt + lead_t, CFG["tilt"] + y * k))))
     MANUAL["until"] = now + CFG["manual_hold"]
+    servo_driver_note(who, "stick")
     return True
 
 

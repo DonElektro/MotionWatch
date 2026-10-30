@@ -442,7 +442,7 @@ def servo_test():
             prev = grab()
             for axis, v in plan:
                 CFG[axis] = float(v)
-                time.sleep(1.2)
+                servo_wait(10.0, 0.8)                     # 2.98.35: the planner drives (ramps), then the picture settles
                 cur = grab()
                 diff = None if prev is None or cur is None else round(float(np.mean(np.abs(cur - prev))), 1)
                 S["steps"].append({"axis": axis, "to": v, "real": round(CFG[axis], 1), "diff": diff})
