@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MW Sim · Basis – the camping simulator of Motion Watch (separate program, protocol: motionwatch_sim_interface.py in the same folder)
+MoveEye Sim · Basis – the camping simulator of MoveEye (before: Motion Watch) (separate program, protocol: motionwatch_sim_interface.py in the same folder)
 
 Tests Motion Watch without hardware:
   * real 3D: the cameras look into a 360° world with a depth for every pixel (a drawn camping place or YOUR OWN 360° photo);
@@ -43,8 +43,8 @@ import numpy as np
 
 from motionwatch_sim_interface import SimServer, SimInfo, CamInfo, SimReply, DEFAULT_PORT
 
-SIM_VERSION = "3.7"
-SIM_NAME = "MW Sim · Basis"          # the simulators are called MW Sim · Basis / 3D / Welt (3.7)
+SIM_VERSION = "3.8"
+SIM_NAME = "MoveEye Sim · Basis"          # the simulators are called MoveEye Sim · Basis / 3D / Welt (3.7; «MoveEye» instead of «MW» from 3.8)
 SIM_ICON = ('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAdUElEQVR42tV6eZCd1ZXfOffeb3v7e733672lltTa0C4QQuwMBtvIYGzjLcuMM4638aTCeFKe'
             'pCqZTNlTqeBkkklMVTwebIztAQbjccCGGMRmEEgCtLW61ep9ed3v9dvft9578sd7agkkgRnnn3x9q6v7q1v3O/ee7XfO/WHrmmvg/+dHABEgAP3OKyE2/qD3'
             'XIshAAC937T3/xwAASAIAkCqy0//mAXqYisiKYkIEZHzKyyFACRrLiAwzlFwZAyIiKCx1AcRAAnrkvNwqut3OHIiKUEqpnEtGgl3tGohyytXEBkAvmMgAhEK'

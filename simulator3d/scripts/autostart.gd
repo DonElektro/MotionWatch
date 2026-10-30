@@ -1,6 +1,6 @@
 extends RefCounted
 ## Start with the PC (from 3D-2.1).
-## Windows: a value «MotionWatch3D» under HKCU\...\Run (no administrator needed) – starts after the sign-in of this user.
+## Windows: a value «MotionWatch3D» (internal id, kept so existing entries still work) under HKCU\...\Run (no administrator needed) – starts after the sign-in of this user.
 ## Linux: ~/.config/autostart/motionwatch3d.desktop.
 ## «Without signing in»: Windows only shows a desktop (and a graphics card for 3D) after a sign-in. So the automatic sign-in
 ## of Windows is set up with «Autologon» of Microsoft (Sysinternals; the password is typed in there and stored encrypted by
@@ -68,14 +68,15 @@ static func set_on(on: bool) -> String:
 	var f := FileAccess.open(p, FileAccess.WRITE)
 	if f == null:
 		return "kann %s nicht schreiben" % p
-	f.store_string("[Desktop Entry]\nType=Application\nName=MW Sim 3D\nExec=%s\nX-GNOME-Autostart-enabled=true\n" % command())
+	f.store_string("[Desktop Entry]\nType=Application\nName=MoveEye Sim 3D\nExec=%s\nX-GNOME-Autostart-enabled=true\n" % command())
 	return ""
 
 
 static func repair() -> void:
-	"""the program was moved to another folder: the autostart follows it"""
+	"""the program was moved to another folder: the autostart follows it. 3D-4.22: an entry with the old name «MW Sim 3D»
+	(Linux) is written anew with «MoveEye Sim 3D» - same file, so no second autostart"""
 	var c := current()
-	if c != "" and c != command():
+	if c != "" and (c != command() or (OS.get_name() != "Windows" and FileAccess.get_file_as_string(_desktop_file()).contains("Name=MW Sim"))):
 		set_on(true)
 
 

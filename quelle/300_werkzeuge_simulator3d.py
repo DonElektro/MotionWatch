@@ -672,13 +672,13 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.21", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 32281831,
-         "sha256": "6be57756c875fbeef76ff95278c2eb45b3d3e083a7b2ea3bf0688b97f21d550d"}
+SIM3D = {"version": "3D-4.22", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 32283625,
+         "sha256": "572fed0f5db470f4f80cea7abc15fee623875f774a7b210d416487fbb4c08daf"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
          "sha256": "7e278179dc8f1c79b964248ad0a5cb500cc42f2010587a07b7641fe9f0577385", "stem": "MotionWatch_PythonSimulator",
-         "label": "MW Sim · Welt (Kevin)"}
+         "label": "MoveEye Sim · Welt (Kevin)"}
 SIMPY_DL = {"running": False, "got": 0, "msg": ""}
 SIMLATEST = {"t": 0.0, "busy": False, "3d": None, "py": None, "err": ""}   # newest simulator versions in the project (2.95.8)
 
@@ -755,7 +755,7 @@ def sim_versions():
     newer = bool(lat and cur and _vnum(lat["version"]) and _vnum(cur) and _vnum(lat["version"]) > _vnum(cur))
     return {"kind": kind, "current": cur, "latest": (lat or {}).get("version", ""), "notes": (lat or {}).get("notes", ""), "newer": newer,
             "checked": int(time.time() - SIMLATEST["t"]) if SIMLATEST["t"] else None, "err": SIMLATEST["err"]}
-SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "MW Sim · 3D"
+SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "MoveEye Sim · 3D"
 SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
 
 

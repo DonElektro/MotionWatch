@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.21"
+const VERSION := "3D-4.22"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -2832,7 +2832,7 @@ func refscan_text() -> String:
 
 
 func info() -> Dictionary:
-	return {"v": 1, "name": "MW Sim · 3D %s" % VERSION, "host": host_name(),
+	return {"v": 1, "name": "MoveEye Sim · 3D %s" % VERSION, "host": host_name(),
 			"cameras": [{"id": 0, "name": "Head camera (NoIR)", "w": CAM_W[0], "h": CAM_H[0], "fps": CAM_FPS[0], "fov_h": CAM_FOV[0], "fov_v": 41.0, "on_head": true, "noir": true},
 						weit.cam_info()],          # 3D-4.17: the wide camera with its mount (weitwinkel.gd)
 			"thermal": simint.thermal_info() if simint != null else {"w": TH_W, "h": TH_H, "fps": th_fps, "fov_h": TH_FOV, "fov_v": 35.0, "unit": "C", "on_head": true},
@@ -3177,9 +3177,9 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Foto des 
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
 		["Kamerabild", "lens", "👁", ["", "Weitwinkel-Kamera", "Wärmebild", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
-		["Sensoren", "bell", "🔔", ["", "Strom", "Lautsprecher", "Netz", "Zusatz-Bildschirm (SmallTV)"]],
+		["Sensoren", "bell", "🔔", ["", "Strom", "Netz", "Zusatz-Bildschirm (SmallTV)"]],
 		["Mover", "track", "🚜", ["", "Patrouille", "Controller"]],
-		["Licht & Ton", "sun", "💡", ["", "Status-LED & Tasten"]],
+		["Licht & Ton", "sun", "💡", ["", "Status-LED & Tasten", "Lautsprecher"]],      # 3D-4.22: «Lautsprecher» here like MoveEye (was «Sensoren»)
 		["Spiel", "pad", "🎮", ["", "Assistent"]],
 		["Wildtier", "target", "🎯", [""]],
 		["Testen", "check", "✅", ["", "Verfolgungs-Parcours", "Störungen"]],
@@ -3753,7 +3753,7 @@ func control_info() -> Dictionary:
 		if c.has("ro"):
 			d["ro"] = bool(c["ro"].call())            # Aufräumen 2: the page of MoveEye shows it read-only too
 		out.append(d)
-	return {"ok": true, "v": 1, "name": "MW Sim · 3D %s" % VERSION,
+	return {"ok": true, "v": 1, "name": "MoveEye Sim · 3D %s" % VERSION,
 				"scenarios": scenarios(), "scenario": scene,
 			"controls": out, "status": status_text(), "upload": null, "groups_on": _groups_on(),
 			"game": {"open": game != null and game.open, "url": game.address() if game != null and game.open else "", "players": game.count() if game != null else 0}}
@@ -4955,6 +4955,8 @@ func _build_ui() -> void:
 		testrun.add_info(testen_measure, UI)          # progress and result of the test run (card «Testen»)
 	elif groups.has("Testen"):
 		testrun.add_info(groups["Testen"], UI)
+	if subs.has("Licht & Ton/Status-LED & Tasten") and statusled != null:   # 3D-4.22: the rules of the buttons are in MoveEye - hint + link
+		statusled.add_info(subs["Licht & Ton/Status-LED & Tasten"], UI)
 	if subs.has("Sensoren/Strom"):                    # Simulator-Werte: what goes to MoveEye (power.gd)
 		simwerte.add_info(subs["Sensoren/Strom"], UI)
 	if subs.has("Kamerabild/Wie echt"):              # 3D-3.94: what the real look adjustment does

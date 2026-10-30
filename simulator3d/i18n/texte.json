@@ -9280,6 +9280,19 @@
   "it": "MOVEEYE SIM · ",
   "rm": "MOVEEYE SIM · "
  },
+ "MoveEye Sim · 3D %s": {
+  "en": "MoveEye Sim · 3D %s",
+  "fr": "MoveEye Sim · 3D %s",
+  "it": "MoveEye Sim · 3D %s",
+  "rm": "MoveEye Sim · 3D %s",
+  "?": "Gerätename an MoveEye (/info) – nicht umhüllen"
+ },
+ "MoveEye Sim · 3D %s · Gerät 2": {
+  "en": "MoveEye Sim · 3D %s · device 2",
+  "fr": "MoveEye Sim · 3D %s · appareil 2",
+  "it": "MoveEye Sim · 3D %s · apparecchio 2",
+  "rm": "MoveEye Sim · 3D %s · apparat 2"
+ },
  "MoveEye steht in einem Gebäude – das Gebäude wurde weggelassen.": {
   "en": "MoveEye stands in a building – the building was left out.",
   "fr": "MoveEye se trouve dans un bâtiment – le bâtiment a été omis.",
@@ -9303,6 +9316,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "MoveEye-CPU %d %%": {
+  "en": "MoveEye CPU %d %%",
+  "fr": "CPU MoveEye %d %%",
+  "it": "CPU MoveEye %d %%",
+  "rm": "CPU MoveEye %d %%"
  },
  "MoveEye-Download beschädigt (Prüfsumme falsch).": {
   "en": "MoveEye download damaged (wrong checksum).",
@@ -9387,25 +9406,6 @@
   "fr": "Meuh ! Une vache.",
   "it": "Muuu! Una mucca.",
   "rm": "Muuu! Ina vatga."
- },
- "MW %d %%": {
-  "en": "MW %d %%",
-  "fr": "MW %d %%",
-  "it": "MW %d %%",
-  "rm": "MW %d %%"
- },
- "MW Sim · 3D %s": {
-  "en": "MW Sim · 3D %s",
-  "fr": "MW Sim · 3D %s",
-  "it": "MW Sim · 3D %s",
-  "rm": "MW Sim · 3D %s",
-  "?": "Gerätename an MoveEye (/info) – nicht umhüllen"
- },
- "MW Sim · 3D %s · Gerät 2": {
-  "en": "MW Sim · 3D %s · device 2",
-  "fr": "MW Sim · 3D %s · appareil 2",
-  "it": "MW Sim · 3D %s · apparecchio 2",
-  "rm": "MW Sim · 3D %s · apparat 2"
  },
  "Mäh! Ein Schaf.": {
   "en": "Baa! A sheep.",
@@ -10806,6 +10806,18 @@
   "fr": "Règles",
   "it": "Regole",
   "rm": "Reglas"
+ },
+ "Regeln der Tasten (was sie dürfen, Push bei Ausschalten / Sirene-Stopp) stellt man in MoveEye ein: Einstellungen → Licht & Ton → Status-LED & Tasten.": {
+  "en": "The rules of the buttons (what they may do, push on switching off / siren stop) are set in MoveEye: Settings → Light & sound → Status LED & buttons.",
+  "fr": "Les règles des boutons (ce qu’ils peuvent faire, push à la désactivation / à l’arrêt de la sirène) se règlent dans MoveEye : Réglages → Lumière et son → LED d’état & boutons.",
+  "it": "Le regole dei tasti (cosa possono fare, push allo spegnimento / allo stop della sirena) si impostano in MoveEye: Impostazioni → Luce e suono → LED di stato & tasti.",
+  "rm": "Las reglas dals buttuns (tge els dastgan, push cun deactivar / cun fermar la sirena) vegnan fixadas en MoveEye: Parameters → Glisch e tun → LED da status & buttuns."
+ },
+ "Regeln der Tasten → in MoveEye": {
+  "en": "Button rules → in MoveEye",
+  "fr": "Règles des boutons → dans MoveEye",
+  "it": "Regole dei tasti → in MoveEye",
+  "rm": "Reglas dals buttuns → en MoveEye"
  },
  "Regen": {
   "en": "Rain",
@@ -15604,6 +15616,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Öffnet in MoveEye die Einstellungen «Status-LED & Tasten» im Browser": {
+  "en": "Opens the MoveEye settings «Status LED & buttons» in the browser",
+  "fr": "Ouvre dans le navigateur les réglages MoveEye « LED d’état & boutons »",
+  "it": "Apre nel browser le impostazioni MoveEye «LED di stato & tasti»",
+  "rm": "Avra en il navigatur ils parameters da MoveEye «LED da status & buttuns»"
  },
  "Über den Simulator": {
   "en": "",

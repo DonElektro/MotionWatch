@@ -695,7 +695,7 @@ class WebStream:
         def api_dataset_zip():
             if not DSET["res"]:
                 return Response("no pictures yet", 404)
-            return Response(dset_zip(), mimetype="application/zip", headers={"Content-Disposition": "attachment; filename=motionwatch_trainingsbilder.zip"})
+            return Response(dset_zip(), mimetype="application/zip", headers={"Content-Disposition": "attachment; filename=moveeye_trainingsbilder.zip"})
 
         @app.route("/almanach")
         @app.route("/almanach/")
@@ -1070,7 +1070,7 @@ class WebStream:
                         p_ = os.path.join(_testopt_dir(r["t"]), pc["file"])
                         if os.path.isfile(p_):
                             z.write(p_, f"bilder/{int(r['t'])}_{pc['file']}")
-            name = "MotionWatch_Testbericht_" + APP_VERSION.replace(".", "_") + "_" + datetime.now().strftime("%Y%m%d_%H%M") + ".zip"
+            name = "MoveEye_Testbericht_" + APP_VERSION.replace(".", "_") + "_" + datetime.now().strftime("%Y%m%d_%H%M") + ".zip"
             return Response(buf.getvalue(), mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
         @app.route("/api/sim/upload", methods=["POST"])
@@ -1094,7 +1094,7 @@ class WebStream:
             lang = norm_lang(request.args.get("lang") or CFG["lang"])
             if sim3d_ready():
                 return send_file(sim3d_path(), mimetype="application/zip", as_attachment=True,
-                                 download_name=f"MotionWatch3D_Simulator_{SIM3D['version']}.zip", conditional=True)
+                                 download_name=f"MoveEye_Sim3D_{SIM3D['version']}.zip", conditional=True)
             if request.args.get("retry"):
                 SIM3D_DL["msg"] = ""
             if not SIM3D_DL["msg"]:
@@ -1186,7 +1186,7 @@ class WebStream:
             lang = norm_lang(request.args.get("lang") or CFG["lang"])
             if sim3d_ready(SIMPY):
                 return send_file(sim3d_path(SIMPY), mimetype="application/zip", as_attachment=True,
-                                 download_name=f"{SIMPY['stem']}_{SIMPY['version']}.zip", conditional=True)
+                                 download_name=f"MoveEye_SimWelt_{SIMPY['version']}.zip", conditional=True)
             if request.args.get("retry"):
                 SIMPY_DL["msg"] = ""
             if not SIMPY_DL["msg"]:
@@ -1197,7 +1197,7 @@ class WebStream:
         def sim_zip():
             import base64
             return Response(base64.b64decode("".join(SIM_ZIP_B64.split())), mimetype="application/zip",
-                            headers={"Content-Disposition": 'attachment; filename="MotionWatch_Simulator.zip"'})
+                            headers={"Content-Disposition": 'attachment; filename="MoveEye_Simulator.zip"'})
 
         @app.route("/api/hwcheck", methods=["POST"])
         def api_hwcheck():
@@ -1294,7 +1294,7 @@ class WebStream:
                 return Response("not found", 404)
             if not os.path.isfile(path):
                 return Response("not found", 404)
-            dl = name if name != "motionwatch.log" else "motionwatch_" + datetime.now().strftime("%Y-%m-%d") + "_bis_" + datetime.now().strftime("%H%M") + ".log"
+            dl = name if name != "motionwatch.log" else "moveeye_" + datetime.now().strftime("%Y-%m-%d") + "_bis_" + datetime.now().strftime("%H%M") + ".log"
             return send_file(path, mimetype="application/gzip" if name.endswith(".gz") else "text/plain", as_attachment=True,
                              download_name=dl, max_age=0)
 
@@ -1925,7 +1925,7 @@ class WebStream:
         @app.route("/api/settings/export")
         def api_settings_export():
             data = dict(settings_data(), app="MoveEye", version=os.path.basename(__file__))
-            name = "motionwatch_einstellungen_" + datetime.now().strftime("%Y%m%d_%H%M") + ".json"
+            name = "moveeye_einstellungen_" + datetime.now().strftime("%Y%m%d_%H%M") + ".json"
             return Response(json.dumps(data, indent=1), mimetype="application/json",
                             headers={"Content-Disposition": f'attachment; filename="{name}"', "Cache-Control": "no-store"})
 
@@ -2440,7 +2440,7 @@ class WebStream:
                 pdf = rec_report_pdf(name, lang)
             except Exception as e:
                 log_event("web", f"Report failed: {e}"[:160]); return Response("report failed", 500)
-            fn = "MotionWatch_" + os.path.splitext(os.path.basename(name))[0] + ".pdf"
+            fn = "MoveEye_" + os.path.splitext(os.path.basename(name))[0] + ".pdf"
             log_event("web", f"Event report (PDF) created: {name}")
             return Response(pdf, mimetype="application/pdf", headers={"Content-Disposition": f'inline; filename="{fn}"'})
 
@@ -2631,7 +2631,7 @@ class WebStream:
         def tools_diag():
             log_event("web", f"Diagnosis package downloaded ({request.remote_addr or '?'})")
             return Response(diag_zip(), mimetype="application/zip",
-                            headers={"Content-Disposition": f'attachment; filename="motionwatch_diagnose_{datetime.now():%Y%m%d_%H%M}.zip"'})
+                            headers={"Content-Disposition": f'attachment; filename="moveeye_diagnose_{datetime.now():%Y%m%d_%H%M}.zip"'})
 
         # ---- animal diary + night report ----
         @app.route("/diary")
@@ -3081,7 +3081,7 @@ class WebStream:
                         os.remove(p)
                     except OSError:
                         pass
-            fname = "motionwatch_" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".zip"
+            fname = "moveeye_" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".zip"
             return Response(gen(), mimetype="application/zip",
                             headers={"Content-Disposition": f'attachment; filename="{fname}"', "Content-Length": str(os.path.getsize(p))})
 

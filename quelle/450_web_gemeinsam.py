@@ -10,7 +10,7 @@
 # ----------------------------------------------------------------------------
 BT_JS = r"""
 Object.assign(I18N.de, {"Everything about the simulator (tab Simulator)": "Alles zum Simulator (Reiter Simulator)"});
-Object.assign(I18N.de, {"3D simulator for Windows (ZIP)": "MW Sim · 3D für Windows (ZIP)", "Link for the PC browser": "Link für den Browser am PC"});
+Object.assign(I18N.de, {"3D simulator for Windows (ZIP)": "MoveEye Sim · 3D für Windows (ZIP)", "Link for the PC browser": "Link für den Browser am PC"});
 Object.assign(I18N.de, {"own Wi-Fi on + internet from": "Eigenes WLAN ein + Internet von", "repeater": "Repeater",
   "own Wi-Fi on - the second adapter looks for known networks": "Eigenes WLAN ein – der zweite Adapter sucht bekannte Netze"});
 Object.assign(I18N.de, {"Bluetooth loudspeaker": "Bluetooth-Lautsprecher", "Search Bluetooth loudspeakers": "Bluetooth-Lautsprecher suchen",

@@ -23,6 +23,7 @@ var _dome_mat: StandardMaterial3D
 var _glow: OmniLight3D
 var _hb_seen := -1
 var _hb_t := -10.0
+var _rules_btn: Button                                     # 3D-4.22: «Regeln der Tasten → in MoveEye» (only while MoveEye is connected)
 
 
 func _ready() -> void:
@@ -44,6 +45,29 @@ func add_controls() -> void:
 	# für Tests (Prüfstand / Selbsttest): «protect:300» = Taste 300 ms gedrückt, «click:ack:200» = Mausklick auf den Knopf im Fenster
 	main.add_control("select", "statusled_press", "Taste drücken (Test)", func(): return "", func(v): test_press(str(v)), "Licht & Ton",
 			{"sub": "Status-LED & Tasten", "hide": true, "expert": true, "options": [["protect:200", "Schutz kurz"], ["protect:1800", "Schutz lang"], ["ack:200", "Alarm quittieren"]]})
+
+
+# ---- 3D-4.22: the rules of the buttons are settings of MoveEye (163a / 599c) - a hint in the card, the link only when connected
+func add_info(parent: Control, UI) -> void:
+	parent.add_child(UI.small("Regeln der Tasten (was sie dürfen, Push bei Ausschalten / Sirene-Stopp) stellt man in MoveEye ein: Einstellungen → Licht & Ton → Status-LED & Tasten."))
+	_rules_btn = Button.new()
+	_rules_btn.text = "Regeln der Tasten → in MoveEye"
+	_rules_btn.tooltip_text = "Öffnet in MoveEye die Einstellungen «Status-LED & Tasten» im Browser"
+	_rules_btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_rules_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_rules_btn.pressed.connect(open_rules)
+	_rules_btn.visible = mw_connected()
+	parent.add_child(_rules_btn)
+
+
+func mw_connected() -> bool:
+	return main != null and main.mw_addr != "" and main.now() - main.mw_t < 10.0
+
+
+func open_rules() -> void:
+	if not mw_connected():
+		return
+	OS.shell_open("%s://%s:%d/settings?open=sec%%3AStatus%%20LED" % [str(main.mw.get("mw_scheme", "http")), main.mw_addr, int(main.mw.get("mw_port", 5000))])
 
 
 # ---- what MoveEye gets (world_reply «buttons») ---------------------------------------------------------------------------
@@ -177,6 +201,8 @@ func _process(_dt: float) -> void:
 		_dome_mat.albedo_color = c.lerp(Color(0.85, 0.86, 0.88), 0.35) if lit else Color(0.7, 0.71, 0.73)
 		_glow.light_color = c
 		_glow.light_energy = 0.35 * br if lit else 0.0
+	if _rules_btn != null:
+		_rules_btn.visible = mw_connected()
 	if tile == null:
 		return
 	tile.visible = show_panel and main.ui_root != null

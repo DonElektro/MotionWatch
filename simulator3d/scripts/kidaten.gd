@@ -1,6 +1,7 @@
 extends RefCounted
 ## «KI-Daten aufräumen» (Wunsch Daniel, 29.10.2026): die Trainingspakete (dataset.gd) brauchen viel Platz – jedes liegt als
-## Ordner user://trainingsbilder/<Zeit>[_hoch] und als ZIP «MW-Trainingsbilder_<Zeit>.zip» (Schreibtisch oder daneben).
+## Ordner user://trainingsbilder/<Zeit>[_hoch] und als ZIP «MoveEye-Trainingsbilder_<Zeit>.zip» (Schreibtisch oder daneben;
+## bis 3D-4.21 hiessen sie «MW-Trainingsbilder_<Zeit>.zip» – beide Namen werden erkannt).
 ##   aufraeumen(false): nach jedem neuen Paket von selbst – die neuesten 3 bleiben, nichts älter als 30 Tage.
 ##   aufraeumen(true):  Knopf «Alte KI-Daten löschen» – alle ausser dem neuesten.
 ## Das neueste Paket (und das gerade benutzte) bleibt immer. Gelöscht wird nur, was genau so heisst – nie ein KI-Modell,
@@ -9,7 +10,8 @@ extends RefCounted
 
 const KEEP := 3
 const MAX_DAYS := 30
-const ZIP_PREFIX := "MW-Trainingsbilder_"
+const ZIP_PREFIX := "MoveEye-Trainingsbilder_"
+const ZIP_PREFIXES := ["MoveEye-Trainingsbilder_", "MW-Trainingsbilder_"]   # 3D-4.22: new name, the old one (until 3D-4.21) still counts
 
 
 static func root() -> String:
@@ -82,9 +84,13 @@ static func packs() -> Array:
 		if dz == null:
 			continue
 		for fn in dz.get_files():
-			if not (fn.begins_with(ZIP_PREFIX) and fn.ends_with(".zip")):
+			var pre := ""
+			for zp in ZIP_PREFIXES:
+				if fn.begins_with(zp):
+					pre = zp
+			if pre == "" or not fn.ends_with(".zip"):
 				continue
-			var nm: String = fn.trim_prefix(ZIP_PREFIX).trim_suffix(".zip")
+			var nm: String = fn.trim_prefix(pre).trim_suffix(".zip")
 			if _stamp(nm) < 0:
 				continue
 			if not by.has(nm):

@@ -426,6 +426,22 @@ def push_migrate(cfg_in):
     return did
 
 
+def rename_migrate(cfg_in):
+    """2.98.51 (MoveEye instead of «MW» / «MotionWatch»), once per settings file (a file without «names_v»):
+    the push keyword: exactly the old default «MW» becomes «MoveEye» (an own word stays; the iPhone shortcuts must then look
+    for «MoveEye-» - in the release notes); the own Wi-Fi: devices from before keep «MotionWatch» (phones know that network),
+    only new setups get «MoveEye»."""
+    did = []
+    if not isinstance(cfg_in, dict) or "names_v" in cfg_in:
+        return did
+    if "msg_keyword_prefix" in cfg_in and str(CFG.get("msg_keyword_prefix") or "") == "MW":
+        CFG["msg_keyword_prefix"] = "MoveEye"; did.append("push: keyword MW -> MoveEye (iPhone shortcuts: «MoveEye-ALARM» …)")
+    if not str(cfg_in.get("hotspot_ssid") or "").strip():
+        CFG["hotspot_ssid"] = "MotionWatch"; did.append("own Wi-Fi keeps the name MotionWatch")
+    CFG["names_v"] = 1
+    return did
+
+
 _settings_migrations_before_px = _settings_migrations
 
 
@@ -437,6 +453,13 @@ def _settings_migrations(cfg_in):
             log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
     except Exception as e:
         log_event("sys", f"Settings migration (579a): {e}"[:150])
+    try:
+        did = rename_migrate(cfg_in)
+        if did:
+            log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
+            save_settings()                             # once: the file gets «names_v», the next start does not migrate again
+    except Exception as e:
+        log_event("sys", f"Settings migration (579a names): {e}"[:150])
 
 
 # ---- web: /api/push (only the administrator: the path is in no role's list, 040) -------------------------------------------
@@ -550,8 +573,16 @@ def push_selftest():
         CFG["notify_type"] = "webhook"; CFG["notify_url"] = ""; push_migrate({"notify_type": "webhook", "notify_url": ""})
         assert CFG["notify_type"] == "ntfy", "an untouched old default (webhook without address) becomes ntfy"
         # keyword: one field, empty = off (the word is kept)
-        push_keyword_set("MW"); assert push_keyword() == "MW" and msg_keyword("person").startswith("MW-")
-        push_keyword_set(""); assert push_keyword() == "" and msg_keyword("person") == "" and CFG["msg_keyword_prefix"] == "MW"
+        assert DEFAULTS["msg_keyword_prefix"] == "MoveEye" and DEFAULTS["hotspot_ssid"] == "MoveEye", "2.98.51: new names ab Werk"
+        push_keyword_set("MoveEye"); assert push_keyword() == "MoveEye" and msg_keyword("person") == "MoveEye-ALARM"
+        push_keyword_set(""); assert push_keyword() == "" and msg_keyword("person") == "" and CFG["msg_keyword_prefix"] == "MoveEye"
+        # 2.98.51: an old file - exactly «MW» becomes «MoveEye» once, an own word stays, the own Wi-Fi keeps «MotionWatch»
+        CFG.update(msg_keyword_on=True, msg_keyword_prefix="MW", hotspot_ssid="MotionWatch")
+        assert rename_migrate({"msg_keyword_prefix": "MW", "hotspot_ssid": "MotionWatch"}) and CFG["msg_keyword_prefix"] == "MoveEye"
+        assert CFG["hotspot_ssid"] == "MotionWatch" and msg_keyword("warm") == "MoveEye-WAERME"
+        CFG["msg_keyword_prefix"] = "Camp"; assert rename_migrate({"msg_keyword_prefix": "Camp", "hotspot_ssid": "x"}) == [] and CFG["msg_keyword_prefix"] == "Camp"
+        CFG["msg_keyword_prefix"] = "MW"; assert rename_migrate({"msg_keyword_prefix": "MW", "names_v": 1}) == [] and CFG["msg_keyword_prefix"] == "MW", "only once"
+        CFG["hotspot_ssid"] = "MoveEye"; rename_migrate({"msg_keyword_prefix": "Camp"}); assert CFG["hotspot_ssid"] == "MotionWatch", "old file without a name"
         push_keyword_set("Cam-1!"); assert push_keyword() == "Cam1"
         # pictures: small = about 640 px, without = none
         ok_, buf = cv2.imencode(".jpg", np.zeros((720, 1280, 3), np.uint8)); big = buf.tobytes()

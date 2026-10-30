@@ -56,7 +56,7 @@ func check(current: String, url := "") -> void:
 	_remove_old()
 	if not quiet:
 		_build_ui()
-		title.text = "MW Sim · 3D %s" % current
+		title.text = "MoveEye Sim · 3D %s" % current
 		text.text = "Suche nach einer neuen Version …"
 	http = HTTPRequest.new()
 	http.timeout = 6.0
@@ -83,7 +83,7 @@ func check(current: String, url := "") -> void:
 	result = "neue Version %s gefunden" % d["version"]
 	if quiet:
 		_build_ui()
-		title.text = "MW Sim · 3D %s" % current
+		title.text = "MoveEye Sim · 3D %s" % current
 	text.text = "Eine neue Version ist da: %s (du hast %s).\n\n%s" % [d["version"], current, str(d.get("notes", ""))]
 	if not OS.has_feature("template"):
 		text.text += "\n\n(Im Godot-Editor wird nicht aktualisiert.)"

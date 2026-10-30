@@ -257,7 +257,7 @@ func _capture_thermal() -> void:
 
 # ---- what net.gd asks --------------------------------------------------------------------------------------------
 func beacon_name() -> String:
-	return "MW Sim · 3D %s · Gerät 2" % main.VERSION
+	return "MoveEye Sim · 3D %s · Gerät 2" % main.VERSION
 
 
 func cpu_now() -> Dictionary:

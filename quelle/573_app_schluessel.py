@@ -204,8 +204,8 @@ def shortcut_state(base):
     sc = [k for k in keys if k["scope"] == SHORTCUT_SCOPE]
     return {"ok": True, "on": bool(keys), "base": base, "keys": sc, "other": [k["name"] for k in keys if k["scope"] != SHORTCUT_SCOPE],
             "actions": [a for a, _n in QR_SHORTCUTS],
-            "prefix": msg_keyword("person").split("-")[0] if msg_keyword("person") else "MW",
-            "keywords": {k: msg_keyword(k) or ("MW-" + v) for k, v in MSG_KEYWORDS.items()}}
+            "prefix": msg_keyword("person").split("-")[0] if msg_keyword("person") else "MoveEye",
+            "keywords": {k: msg_keyword(k) or ("MoveEye-" + v) for k, v in MSG_KEYWORDS.items()}}
 
 
 def shortcut_action(d, who, plain_req=None):

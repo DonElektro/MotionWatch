@@ -3,7 +3,7 @@
 # Wunsch Daniel (29.10.2026, «KI-Daten aufräumen»):
 #   * «Trainingspaket für ein eigenes KI-Modell (YOLO)» (Reiter Simulator und Fenster) hat dieselbe Wahl wie der Simulator:
 #     «Vielfalt: normal / hoch» (dataset.gd / kitrain.gd, Name «vielfalt» wie dort).
-#   * Die Pakete (Ordner user://trainingsbilder/<Zeit> + ZIP «MW-Trainingsbilder_….zip» auf dem Schreibtisch) liegen auf dem
+#   * Die Pakete (Ordner user://trainingsbilder/<Zeit> + ZIP «MoveEye-Trainingsbilder_….zip», bis 3D-4.21 «MW-…», auf dem Schreibtisch) liegen auf dem
 #     Rechner des Simulators (PC oder Pi). Der Simulator räumt nach jedem neuen Paket selbst auf (kidaten.gd): die neuesten 3
 #     bleiben, nichts älter als 30 Tage; das neueste Paket bleibt immer. Der Knopf «Alte KI-Daten löschen» löscht alle
 #     ausser dem neuesten. Das KI-Modell (models/moveeye_model.*, frozen_inference_graph.pb) wird nie angefasst.
