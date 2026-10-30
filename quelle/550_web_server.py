@@ -1780,6 +1780,8 @@ class WebStream:
                 ok, err = blind_start("rehearsal")
             elif a == "autoth":
                 ok, err = autoth_start()
+            elif a == "facheck":                         # 2.98.38: «Lernbilder prüfen» (148)
+                fa_review()
             elif a == "set" and d.get("key") in ("fa_learn_auto", "rehearsal_on_arm", "weekcheck_on"):
                 CFG[d["key"]] = bool(d.get("on")); save_settings()
             else:

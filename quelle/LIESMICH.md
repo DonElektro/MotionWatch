@@ -56,6 +56,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `140_autostart.py` | Autostart | 422 |
 | `145_selbstheilung.py` | Selbstheilung: Wächter für Kamera-Schleife, KI, Webseite (Neustart mit Bremse); Ampeln Speicherkarte / Selbstheilung | 303 |
 | `147_simsperre.py` | Eine Sperre für Simulator-Aufgaben mit dem Simulator; blinde Flecken aus dem Simulator | 118 |
+| `148_fehlalarm_pruefen.py` | Fehlalarme aus den Spielen prüfen (richtiges Bild, Wahrheit vom Simulator, Grösse), fa_learn/zweifel/, «Lernbilder prüfen» | 250 |
 | `150_zweites_wlan_tv_netzcheck.py` | zweites WLAN, USB-Tethering, TV-Anzeige, Netz-Check, WLAN-Wächter | 1059 |
 | `160_netzautomatik_patrouille.py` | Netz-Automatik, Patrouille | 160 |
 | `162_kopf_auto.py` | Automatische Kopfbewegung: ein Koordinator (Hand > Alarm/Folgen > Gehtest > Wertsachen-Blick > Runde > Parken, Simulator-Sperre), kluge Runde (place_items / Wegpunkte), zum Alarm drehen (Bildrand, Wärmefleck, Geräusch mit Zugang, Übersichtskamera), Parken bei «Aus», Wertsachen-Blick, sparsam (Akku / tiefe Nacht), Wildtier-Modus, Sabotage umschauen, 180/270/360°- und Endlos-Servos | 834 |
@@ -124,6 +125,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `634_uebersetzungen_ausl.py` | Übersetzungen für den «Auslöser» (539) | 40 |
 | `637_uebersetzungen_servo.py` | Übersetzungen Servo-Bewegung, Not-Aus, Teach-in, Diagnose | 156 |
 | `632_uebersetzungen_aufr.py` | Übersetzungen der Aufräum-Runde (Servos an einem Ort, Kurzbefehl-Schlüssel = App-Schlüssel, Zonen «nur melden» / «bleibt am Platz», Tierart) + Selbsttest | 150 |
+| `639_uebersetzungen_falearn.py` | Übersetzungen «Lernbilder prüfen» | 13 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |

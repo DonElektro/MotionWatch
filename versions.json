@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 04:42",
+ "generated": "2026-10-30 04:50",
  "versions": [
   {
-   "version": "2.98.41",
-   "file": "webcam_bewegung_2_98_41.py",
+   "version": "2.98.42",
+   "file": "webcam_bewegung_2_98_42.py",
    "url": "",
-   "sha256": "44ea9f0a12d270f2117ccc6fc5c088e0ef1e1df1cae398036274617f3b2dc632",
-   "date": "2026-10-30 04:42",
-   "notes": "3D-Simulator auf dem Pi (HDMI) entfernt – Updates werden ~25 MB kleiner; «Kluge Runde» ist jetzt ein Unterschalter von «Patrouille» («klug: wichtige Richtungen länger anschauen»).",
-   "sig": "53cb3a4346883a15a5a7039e2e0e52af0d28ebf0cec9f54b64b93803bd8038266c4d9d3e7da963ba62dd5fe1c71dc6492d14aad75358be0e7ff5ff8b3aa9320a"
+   "sha256": "5dd0c00227fb5cfb183d5bfca7a096bdbea0195805d889cd8d74960d6ceccc06",
+   "date": "2026-10-30 04:50",
+   "notes": "Fehlalarm-Lernbilder aus dem Spiel: Der Ausschnitt kommt aus dem richtigen Bild, zweifelhafte (Person in der Nähe, zu gross, Kopf gedreht) gehen nach fa_learn/zweifel/ statt ins Training; Knopf «🔍 Lernbilder prüfen» sortiert vorhandene aus (mit Simulator 3D-4.13: im Spiel nur noch 1–4 statt ≥19 Fehlalarme pro Minute).",
+   "sig": "9073de91c08e381810285960139a2bd06a7b3feb8c48fcef3c618479ef7448d135776e0a9b45bcdf7df50947ad091f6363105ed6c555ce1531fb3e12ac632604"
   },
   {
    "version": "2.97.1",

@@ -132,24 +132,29 @@ threading.Thread(target=points_week_loop, daemon=True, name="points").start()
 
 
 # ---- 2.98.2: false alarms from the games of the simulator ---------------------------------------------------------------
-FA_GAME = {"day": "", "n": 0}
+FA_GAME = {"day": "", "n": 0, "z": 0}
 
 
 def fa_game_box(box, info=None):
     """the simulator says: MoveEye reported a person here, but no player and no visitor was there -> this part of the
     picture (with some margin) goes to fa_learn/ as a «no person» example, like the false alarm learning (21). At most 40 a day.
-    2.98.18: «info» = the situation from the game «Fehlalarm-Jäger» (lure, distance, light, weather) - kept next to the picture."""
+    2.98.18: «info» = the situation from the game «Fehlalarm-Jäger» (lure, distance, light, weather) - kept next to the picture.
+    2.98.38 (falearn): checked once more before (148 fa_box_check): the picture the box came from (not the newest one), no
+    person of the simulator near the box, not bigger than a person there - otherwise it goes to fa_learn/zweifel/ (not used)."""
     try:
         x, y, w_, h_ = [float(v) for v in (box or [])[:4]]
     except (TypeError, ValueError):
         return
     day = datetime.now().strftime("%Y%m%d")
     if FA_GAME["day"] != day:
-        FA_GAME.update(day=day, n=0)
-    if FA_GAME["n"] >= 40 or not CFG.get("fa_learn_auto", True):
+        FA_GAME.update(day=day, n=0, z=0)
+    if FA_GAME["n"] >= 40 or FA_GAME.get("z", 0) >= 40 or not CFG.get("fa_learn_auto", True):
         return
-    w = WATCH_REF.get("w")
-    f = getattr(w, "frame_raw", None) if w is not None else None
+    f, how = fa_ring_find([x, y, w_, h_])               # 148: the picture MoveEye saw this box in
+    if f is None:
+        w = WATCH_REF.get("w")
+        f = getattr(w, "frame_raw", None) if w is not None else None
+        how = "now"
     if f is None:
         return
     H, W = f.shape[:2]
@@ -158,25 +163,33 @@ def fa_game_box(box, info=None):
     x1, y1 = min(W, int((x + w_ + mx) * W)), min(H, int((y + h_ + my) * H))
     if x1 - x0 < 16 or y1 - y0 < 16:
         return
-    d = os.path.join(DATA_DIR, "fa_learn", day + "_spiel")
+    ok, why = fa_box_check([x, y, w_, h_], info, how, H)
+    d = os.path.join(DATA_DIR, "fa_learn", day + "_spiel") if ok else os.path.join(DATA_DIR, "fa_learn", FA_DOUBT_DIR, day + "_spiel")
     os.makedirs(d, exist_ok=True)
-    FA_GAME["n"] += 1
-    cv2.imwrite(os.path.join(d, "%02d.jpg" % FA_GAME["n"]), f[y0:y1, x0:x1], [cv2.IMWRITE_JPEG_QUALITY, 88])
+    if ok:
+        FA_GAME["n"] += 1
+    else:
+        FA_GAME["z"] = FA_GAME.get("z", 0) + 1
+    n = fa_next_number(d)                               # (before: the count of today - a restart overwrote the pictures)
+    cv2.imwrite(os.path.join(d, "%02d.jpg" % n), f[y0:y1, x0:x1], [cv2.IMWRITE_JPEG_QUALITY, 88])
     sit = {}
     if isinstance(info, dict):                          # only short, plain values (it comes over the network)
-        for k, v in list(info.items())[:16]:
+        for k, v in list(info.items())[:20]:
             if isinstance(k, str) and isinstance(v, (str, int, float, bool)) and len(k) <= 20:
                 sit[re.sub(r"[^a-z_]", "", k.lower())[:20]] = v[:40] if isinstance(v, str) else v
     try:
         with open(os.path.join(d, "info.json"), "w") as fo:
-            json.dump({"label": "no_person", "cause": "game", "from": "simulator game", "crop": True, "n": FA_GAME["n"]}, fo)
-        if sit:                                         # 2.98.18: one file per case with its situation
-            with open(os.path.join(d, "%02d.json" % FA_GAME["n"]), "w") as fo:
-                json.dump({"label": "no_person", "box": [round(x, 3), round(y, 3), round(w_, 3), round(h_, 3)], "situation": sit}, fo)
+            json.dump({"label": "no_person" if ok else "doubtful", "use": ok, "cause": "game", "from": "simulator game", "crop": True, "n": n}, fo)
+        with open(os.path.join(d, "%02d.json" % n), "w") as fo:      # one file per case: the situation and the check
+            json.dump({"label": "no_person" if ok else "doubtful", "box": [round(x, 3), round(y, 3), round(w_, 3), round(h_, 3)], "situation": sit,
+                       "check": dict(fa_check_meta(info, how, H), ok=ok, why=why)}, fo)
     except OSError:
         pass
-    log_event("sys", f"False alarm in a game: picture part kept as «no person» ({FA_GAME['n']} today)")
-    points_add(30, "False alarm unmasked in a game")
+    if ok:
+        log_event("sys", f"False alarm in a game: picture part kept as «no person» ({FA_GAME['n']} today)")
+        points_add(30, "False alarm unmasked in a game")
+    else:
+        log_event("sys", f"False alarm in a game: picture part doubtful ({', '.join(why)[:80]}) - kept apart, not for the training")
 
 
 # ---- 22 / 23 --------------------------------------------------------------------------------------------------------------
@@ -361,4 +374,4 @@ def learn_state():
             "autoth": {"busy": AUTOTH["busy"], "step": AUTOTH["step"], "last": AUTOTH["last"]},
             "week": {"on": bool(CFG.get("weekcheck_on")), "runs": [{"t": r["t"], "score": r["score"], "mw": r.get("mw")} for r in TESTOPT["runs"] if r.get("week")][-8:]},
             "rehearsal_on_arm": bool(CFG.get("rehearsal_on_arm")), "fa_learn_auto": bool(CFG.get("fa_learn_auto")),
-            "points": points_state()}
+            "points": points_state(), "facheck": facheck_state()}
