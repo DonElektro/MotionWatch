@@ -29,8 +29,8 @@ for _ms, _mk in _MENU_MOVES.items():
         SECTIONS.append(_ms)
 TEXT_SPECS.update({k: (kind, extra) for s, k, l, kind, extra in TEXTS})
 MENU_DEV_SECTIONS = ("Developer", "Servo driver")          # only with «Developer area» (dev_area) on
-SIMPLE_SECTIONS.update({"Theft protection", "Night time", "Presence", "Device warnings", "Device & help", "Developer"})
-SIMPLE_KEYS.update({"presence_auto", "presence_hosts", "device_name", "deter_big_act", "deter_small_act", "deter_warm_act",
+SIMPLE_SECTIONS.update({"Theft protection", "Reference scan", "Night time", "Presence", "Device warnings", "Device & help", "Developer"})
+SIMPLE_KEYS.update({"presence_auto", "presence_hosts", "device_name", "refscan_on_arm", "deter_big_act", "deter_small_act", "deter_warm_act",
                     "deter_big_sound", "deter_small_sound", "deter_warm_sound"})
 # main switch of a part that has no key in SIMPLE_KEYS (shown in «Simple», the rest is folded)
 MENU_MAIN = {"refscan_on_arm", "kopf_on", "servo_stop_btn", "log_status_min", "dev_area", "tours_auto", "report_from", "report_hour",
@@ -60,7 +60,8 @@ TK_GROUPS[:] = [
 TK_GROUP_TAB.update({"alarm": "protect", "notify": "protect", "theft": "protect", "sched": "protect"})
 TK_GROUP_ICONS.update({"theft": "⚷", "mover": "⇕", "lightsound": "☀", "extras": "◉", "dev": "⚒"})
 TK_SUB_ICONS.update({"Night time": "☾", "Presence": "⌂", "Device warnings": "⚠", "Device & help": "?", "Developer": "⚒"})
-TK_MENU_MERGE = {"Camera / Servos": [_KS, _SVS]}          # «Kopf (Servos)»: one part, the two others in its «Feineinstellungen»
+TK_MENU_MERGE = {"Camera / Servos": [_KS, _SVS]}
+TK_INSIDE = {_KS, _SVS, "Messages", "SMS (LTE stick)"}      # window: inside «Kopf (Servos)» / «Push-Nachrichten»          # «Kopf (Servos)»: one part, the two others in its «Feineinstellungen»
 
 
 # ---- «Simple»: developer sections only with dev_area; folded fine-tuning --------------------------------------------
@@ -71,6 +72,8 @@ _simple_hidden_menu_base = simple_hidden
 def simple_hidden(key, sec=None):                           # + 639c: developer sections, forced hiding (window table)
     if sec is not None and sec in MENU_DEV_SECTIONS and not CFG.get("dev_area"):
         return True
+    if sec is not None and getattr(_MENU_TL, "tk", False) and sec in TK_INSIDE:
+        return True                                         # the window shows them inside another part (not again under the last group)
     if key is not None and key in getattr(_MENU_TL, "hide", ()):
         return True
     if key is not None and getattr(_MENU_TL, "all", False):
@@ -174,6 +177,14 @@ def tr(text, lang=None):                                    # + 639c: English of
 # ---- window: «Kopf (Servos)», folded fine-tuning, deterrence as a table, developer part ------------------------------
 if GUI_OK:
     _tk_sub_menu_base = App._sub
+    _tk_sidebar_menu_base = App._build_sidebar
+
+    def _menu_tk_sidebar(self, body, tab="settings"):
+        _MENU_TL.tk = True
+        try:
+            return _tk_sidebar_menu_base(self, body, tab)
+        finally:
+            _MENU_TL.tk = False
     _tk_build_section_menu_base = App._build_section
 
     def _menu_tk_fold(self, parent, title, n, key):
@@ -204,7 +215,11 @@ if GUI_OK:
 
     def _menu_tk_sub(self, parent, sec, default_open=False):
         _tk_sub_menu_base(self, parent, sec, default_open)
-        merged = [s for s in TK_MENU_MERGE.get(sec, ()) if s in SECTIONS and not simple_hidden(None, s)]
+        _MENU_TL.tk = False
+        try:
+            merged = [s for s in TK_MENU_MERGE.get(sec, ()) if s in SECTIONS and not simple_hidden(None, s)]
+        finally:
+            _MENU_TL.tk = True
         if not merged or ("sub:" + sec) not in self.subs:
             return
         body = self.subs["sub:" + sec][1]
@@ -281,6 +296,8 @@ if GUI_OK:
 
     # wraps: App._sub
     App._sub = _menu_tk_sub
+    # wraps: App._build_sidebar
+    App._build_sidebar = _menu_tk_sidebar
     # wraps: App._build_section
     App._build_section = _menu_tk_build_section
 

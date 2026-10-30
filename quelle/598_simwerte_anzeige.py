@@ -162,7 +162,7 @@ _SV_HELP = {
           "Nacht-Prognose – auch im Zeitraffer), Ort (Sonnenauf- und -untergang), Wetter und Böen-Prognose (kein Internet-Wetter), die "
           "Temperatur des Pi (Hitze-Warnung, KI langsamer) und der Test «WLAN weg» / «Internet weg» (Alarme warten und werden nachgeschickt). "
           "Solar, GPS, Aussentemperatur, Wind, Geräusche, Wärmebild und Sensoren kamen schon vorher vom Simulator. Jeder solche Wert trägt "
-          "«🧪». Die Regler sind im Simulator unter Sensoren → «Akku und Strom» und «Netz-Ausfall testen». Protokoll, Dateinamen, Signaturen "
+          "«🧪». Die Regler sind im Simulator unter Sensoren → «Strom» und «Netz». Protokoll, Dateinamen, Signaturen "
           "und Updates bleiben auf der echten Uhr. Antwortet der Simulator 10 Sekunden nicht, gelten wieder die echten Werte.</p>",
     "en": "<p><b>🧪 Values from the simulator (from 2.98.47):</b> while MoveEye is connected to the 3D simulator its «hardware» values come "
           "from the simulated world: battery (a simulated UPS HAT with 2 × 18650 – drained by the Pi, servos, light and siren, charged by the "
@@ -170,7 +170,7 @@ _SV_HELP = {
           "also in the time-lapse), place (sunrise and sunset), weather and gust forecast (no internet weather), the temperature of the Pi "
           "(heat warning, AI slower) and the test «Wi-Fi gone» / «Internet gone» (alarms wait and are sent later). Solar, GPS, outside "
           "temperature, wind, sounds, thermal camera and sensors came from the simulator before. Every such value carries «🧪». The controls "
-          "are in the simulator under Sensors → «Akku und Strom» and «Netz-Ausfall testen». Log, file names, signatures and updates stay on "
+          "are in the simulator under Sensors → «Strom» and «Netz». Log, file names, signatures and updates stay on "
           "the real clock. When the simulator does not answer for 10 seconds the real values apply again.</p>"}
 for _a, _b in (('<section id="system" data-icon="⚙"><h2>System &amp; Netz</h2>', _SV_HELP["de"]),
                ('<section id="system" data-icon="⚙"><h2>System &amp; network</h2>', _SV_HELP["en"])):

@@ -11922,7 +11922,7 @@ SIMHUB_CSS = r"""
 SIMHUB_JS = r"""
 (function () {
   const L = () => { try { return (typeof LANG !== "undefined" && LANG) || "de"; } catch (e) { return "de"; } };
-  const DE = Object.assign({"Improve detection": "Erkennung verbessern", "step by step": "Schritt für Schritt", "World": "Welt", "Testing": "Testen", "Learning": "Lernen", "Playing": "Spielen", "Show all tools («Expert»)": "Alle Werkzeuge zeigen («Experte»)", "Only the assistant («Simple»)": "Nur den Assistenten («Einfach»)", "Day": "Tag", "Night": "Nacht"}, {"Try out": "Ausprobieren", "Learn & test": "Lernen & Testen", "MoveEye points": "MoveEye-Punkte", "points": "Punkte", "points-note": "Ein Konto für Spiel und echten Betrieb: blinde Flecken in Spielen gefunden (+5), Fehlalarm im Spiel entlarvt (+30), Übung gemacht (+50), Woche ohne Fehlalarm (+100), «Entdecker»: früher blinde Stellen werden jetzt erkannt (+50 je Stelle).", "Badges of the players": "Abzeichen der Spieler", "Calm week: no false alarm": "Ruhige Woche: kein Fehlalarm", "False alarm unmasked in a game": "Fehlalarm im Spiel entlarvt", "{n} blind spot(s) found in games": "{n} blinde Flecken in Spielen gefunden", "Explorer: {n} blind spot(s) fixed": "Entdecker: {n} blinde Flecken behoben", "Drill done: battery": "Übung gemacht: Akku", "Drill done: net": "Übung gemacht: WLAN", "Drill done: heat": "Übung gemacht: Hitze", "Drill done: cold": "Übung gemacht: Kälte"}, {"Simulation": "Simulation", "Scene": "Szene", "Time of day": "Tageszeit", "Weather": "Wetter", "Send a visitor": "Besuch schicken",
+  const DE = Object.assign({"Improve detection": "Erkennung verbessern", "step by step": "Schritt für Schritt", "World": "Welt", "Testing": "Testen", "Learning": "Lernen", "Playing": "Spielen", "Show all tools («Expert»)": "Alle Werkzeuge zeigen («Experte»)", "Only the assistant («Simple»)": "Nur den Assistenten («Einfach»)", "Day": "Tag", "Night": "Nacht"}, {"Try out": "Ausprobieren", "Learn & test": "Lernen & Testen", "MoveEye points": "MoveEye-Punkte", "points": "Punkte", "points-note": "Ein Konto für Spiel und echten Betrieb: blinde Flecken in Spielen gefunden (+5), Fehlalarm im Spiel entlarvt (+30), Übung gemacht (+50), Woche ohne Fehlalarm (+100), «Entdecker»: früher blinde Stellen werden jetzt erkannt (+50 je Stelle).", "Badges of the players": "Abzeichen der Spieler", "Calm week: no false alarm": "Ruhige Woche: kein Fehlalarm", "False alarm unmasked in a game": "Fehlalarm im Spiel entlarvt", "{n} blind spot(s) found in games": "{n} blinde Flecken in Spielen gefunden", "Explorer: {n} blind spot(s) fixed": "Entdecker: {n} blinde Flecken behoben", "Drill done: battery": "Übung gemacht: Akku", "Drill done: net": "Übung gemacht: WLAN", "Drill done: heat": "Übung gemacht: Hitze", "Drill done: cold": "Übung gemacht: Kälte"}, {"Simulation": "Simulation", "Scene": "Szene", "Time of day": "Tageszeit", "Weather": "Wetter", "Send a visitor": "Besuch schicken", "Visit": "Besuch",
     "Surprise night": "Überraschungsnacht", "Templates": "Vorlagen", "Game": "Spiel", "Tests": "Tests", "Diary": "Tagebuch", "on": "an", "off": "aus",
     "Morning": "Morgen", "Noon": "Mittag", "Evening": "Abend", "Night": "Nacht", "clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee",
     "visitors": "Besucher", "Opens on the PC": "Öffnet sich am PC", "Simulator not reachable": "Simulator nicht erreichbar", "Simulator centre": "Simulator-Zentrale",
@@ -12099,10 +12099,10 @@ SIMHUB_JS = r"""
   const EXPERT_K = ["autoth", "ab"];
   function tiles(box, full) {
     const G = {world: E("div", "shub"), test: E("div", "shub"), learn: E("div", "shub"), play: E("div", "shub")}, g = G.world;
-    const T = [["scene", "🗺", tt("Scene"), scn((H.scenes || []).find(x => x.id === H.scene)) || H.scene || "–"],
+    const T = [["scene", "🌍", tt("Scene"), scn((H.scenes || []).find(x => x.id === H.scene)) || H.scene || "–"],
       ["hour", H.dark ? "🌙" : "☀", tt("Time of day"), H.clock || "–"],
       ["weather", wxIcon(H.weather), tt("Weather"), tt(H.weather || "–") + (H.ambient != null ? " · " + Math.round(H.ambient) + " °C" : "")],
-      ["visit", (window.EVI || {}).person || "🚶", tt("Send a visitor"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")]
+      ["visit", (window.EVI || {}).person || "🚶", tt("Visit"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")]
       ];
     if (full) T.push(["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]);   // 2.98.13: drills / surprise only in the Simulator tab
     if (full && H.wide && window.mwWide) T.push(["wide", "🔭", tt("Wide camera"), window.mwWide.sub(H)]);   // 591: the wide camera of the simulator
@@ -12114,7 +12114,7 @@ SIMHUB_JS = r"""
     if (full) { const TU = H.tune || {};
       T.push(["improve", "🎯", tt("Improve detection"), TU.busy ? "⏳ " + (TU.step === "night" ? tt("Night") : tt("Day")) : tt("step by step")]); }
     if (full) { const N = LN || {}; const bl = N.blind || {}, au = N.autoth || {}, re = bl.rehearsal;
-      T.push(["tests", "🧪", tt("Tests"), tt("Test run, test bench")]);
+      T.push(["tests", "🧪", tt("Testing"), tt("Test run, test bench")]);   // 639c: «Testen» like the simulator
       if (window.mwParc && H.parc) T.push(["parc", "🎯", tt("Tracking parcours"), window.mwParc.sub(H)]);   // 416: the tracking parcours
       T.push(
         ["blind", "🗺", tt("Blind spots"), bl.busy && bl.kind === "map" ? "⏳ " + (bl.prog || "") : bl.last ? bl.last.found + "/" + bl.last.inview + " " + tt("recognised") : tt("find them")],
@@ -48267,6 +48267,9 @@ body.locked #srch.withall>:not(#allbtns){display:none}body.locked #srch.withall 
 details.sub>.blk,details.grp>.blk{border-top:0;margin-top:0;padding-top:0}
 .fine{margin:16px 0 0;padding-top:8px;border-top:1px dashed var(--line);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--acc2);font-weight:700}
 .fine+details.sub{border-top:0;margin-top:4px}
+details.sub.ffold{border-top:1px dashed var(--line)}details.sub.ffold>summary{color:var(--acc2);font-size:10px}
+.mblk{margin-top:12px}.mblk .mtitle{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:4px 0 2px}
+.dtab{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px 8px;align-items:center;margin:8px 0}.dtab select{width:100%;min-width:0}.dtab b{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
 details.adv{margin-top:12px;border-top:1px dashed var(--line);padding-top:8px}
 details.adv>summary{cursor:pointer;color:var(--acc2);font-size:12.5px;font-weight:600;list-style:none;user-select:none}
 details.adv>summary::before{content:"▸";display:inline-block;width:1.1em}details.adv[open]>summary::before{content:"▾"}
@@ -49746,7 +49749,22 @@ function textField(x) {
   wrap.dataset.key = x.key;
   wrap.append(inp, err);
   if (x.kind === "secret") { const c = el("button", "sec", t("Clear")); c.style.marginTop = "2px"; c.onclick = () => send(" ").then(r => { if (r.ok) inp.placeholder = ""; }); wrap.appendChild(c); }
-  return wrap;
+  return mnMark(wrap, x);
+}
+// 639c: «Simple» puts what is not a main switch into a closed «Feineinstellungen» of its part; the long text of a shortened
+// label is the tooltip and is found by the search (the «?» of 516 shows it too)
+function mnMark(e, x) {
+  if (x.fine) e.classList.add("finerow");
+  if (x.help) { const lab = e.querySelector(":scope > span, :scope > .row > span"); if (lab) lab.title = x.help;
+    const h = el("span", "mnhelp", x.help); h.hidden = true; e.appendChild(h); }
+  return e;
+}
+function mnFold(d, view) {                                   // the closed «Feineinstellungen (n)» at the end of a part
+  const rows = [...d.children].filter(c => c.classList && c.classList.contains("finerow"));
+  if (!rows.length) return null;
+  const F = el("details", "sub ffold"); if (view) F.dataset.fold = view;
+  F.appendChild(el("summary", "", t("Fine-tuning") + " (" + rows.length + ")")); rows.forEach(r => F.appendChild(r)); d.appendChild(F);
+  return F;
 }
 // ---- message texts: one card per message, tap a chip to insert a placeholder, preview with example values ----
 function msgBoxes(d, texts) {
@@ -49987,7 +50005,7 @@ function icSpan(e) {                                         // symbol of a sett
   s.appendChild(el("i", "gdot")); return s;
 }
 try { document.body.classList.toggle("icplain", localStorage.getItem("mw-icons") === "plain"); } catch (e) {}
-const GROUPS = [                                            // 2.98.0: by goal - tab «Schutz» (protect) and tab «Einstellungen» (settings)
+const GROUPS = [                                            // 2.98.0: by goal - tab «Schutz» (protect) and tab «Einstellungen» (settings); 639c: menu structure 2
   {id: "alarm", tab: "protect", icon: "🛡", name: "Protection", open: true,
    items: [{card: "protect", title: "Protection level", ic: "🛡"}, {sec: "Camping / protection", title: "Arming and own Wi-Fi", ic: "🏕️"}]},
   {id: "notify", tab: "protect", icon: "🚨", name: "What happens at an alarm?", items: [{sec: "Notifications", title: "Push messages", ic: "📲"},
@@ -49995,20 +50013,24 @@ const GROUPS = [                                            // 2.98.0: by goal -
    {card: "report", sec: "Night report", title: "Night report", ic: "🌙"}]},
   {id: "theft", tab: "protect", icon: "🔒", name: "Theft protection", items: [{sec: "Theft protection", title: "Device", ic: "🔒"},
    {sec: "Reference scan", title: "Guarded things (reference scan)", ic: "🧭"}, {sec: "Backup", title: "Backup (pictures off the device)", ic: "☁️"}]},
-  {id: "sched", tab: "protect", icon: "🗓", name: "Zones, schedule, presence", items: [{card: "schedule", sec: "Schedule", title: "Schedule", ic: "🗓️"}]},
+  {id: "sched", tab: "protect", icon: "🗓", name: "Zones, schedule, presence", items: [{card: "schedule", sec: "Schedule", title: "Schedule", ic: "🗓️"},
+   {sec: "Night time", title: "Night time", ic: "🌙"}, {sec: "Presence", title: "Presence", ic: "🏠"}]},
   {id: "detect", tab: "settings", icon: "🎯", name: "Detection", items: [{card: "tune", title: "Improve detection", ic: "🎯"}, {sec: "Detection", ic: "👁️"}, {sec: "AI detection", ic: "🤖"}, {sec: "Thermal camera", ic: "🌡"}, {fine: true},
    {sec: "Walking recognition", ic: "🚶"}, {sec: "Vehicle filter", ic: "🚗"}, {sec: "Rain", ic: "🌧️"}, {sec: "Wind", ic: "🌬️"}, {sec: "Low light", ic: "🌘"}, {sec: "Auto-tune", ic: "🎚️"}]},
-  {id: "camera", tab: "settings", icon: "📷", name: "Cameras & head", items: [{sec: "Camera / Servos", ic: "🕹️"}, {sec: "Patrol", ic: "🔄"}, {sec: "Automatic head movement", ic: "🤖"}, {sec: "Servo motion & safety", ic: "🛑"}, {card: "source", sec: "Video source", ic: "🎥"},
-   {sec: "Timelapse", ic: "⏱️"}, {sec: "Mover", title: "Mover (tracked vehicle)", ic: "🚜"}, {fine: true}, {sec: "Servo driver", ic: "🔌"}]},
-  {id: "lightsound", tab: "settings", icon: "🔌", name: "Devices & sensors", items: [{sec: "Lights", ic: "💡"}, {sec: "Microphone", ic: "🎤"}, {sec: "Loudspeaker", ic: "🔊"}, {sec: "Extra display", title: "Extra display (SmallTV)", ic: "🖼️"},
-   {card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {sec: "Extra sensors", ic: "📡"}, {sec: "Clap switch", ic: "👏"}, {sec: "Bless you", title: "«Bless you!»", ic: "🤧"},
-   {sec: "Wake-up alarm", ic: "⏰"}, {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}]},
+  {id: "camera", tab: "settings", icon: "📷", name: "Cameras & head", items: [{sec: "Camera / Servos", title: "Head (servos)", ic: "🕹️", also: ["Automatic head movement", "Servo motion & safety"]},
+   {sec: "Patrol", ic: "🔄"}, {card: "source", sec: "Video source", ic: "🎥"}, {sec: "Timelapse", ic: "⏱️"}]},
+  {id: "mover", tab: "settings", icon: "🚜", name: "Mover", items: [{sec: "Mover", title: "Mover (tracked vehicle)", ic: "🚜"}]},
+  {id: "lightsound", tab: "settings", icon: "💡", name: "Light & sound", items: [{sec: "Lights", ic: "💡"}, {sec: "Loudspeaker", ic: "🔊"}, {sec: "Microphone", ic: "🎤"},
+   {sec: "Clap switch", ic: "👏"}, {sec: "Bless you", title: "«Bless you!»", ic: "🤧"}, {sec: "Wake-up alarm", ic: "⏰"}]},
+  {id: "extras", tab: "settings", icon: "🔌", name: "Extra devices", items: [{card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {sec: "Extra sensors", ic: "📡"},
+   {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}, {sec: "Extra display", title: "Extra display (SmallTV)", ic: "🖼️"}]},
   {id: "power", tab: "settings", icon: "🔋", name: "Power supply", items: [{card: "batt", sec: "Battery", title: "Battery", ic: "🔋"}, {sec: "Power saving", ic: "🍃"}, {sec: "Solar panel", ic: "☀️"}]},
   {id: "net", tab: "settings", icon: "📶", name: "Network & access", items: [{card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"},
    {card: "guest", title: "Guest access", ic: "👥"}, {sec: "MQTT / Home Assistant", title: "MQTT / Home Assistant", ic: "🏠"}]},
   {id: "security", tab: "settings", icon: "🔐", name: "Security", items: [{sec: "Security", ic: "🔐"}]},   // 573: password, users, app keys, check
-  {id: "sys", tab: "settings", icon: "⚙", name: "System", items: [{card: "system", ic: "🖥️"}, {sec: "Setup", ic: "📍"}, {sec: "Updates", ic: "⬆️"},
-   {card: "log", ic: "📜"}]},
+  {id: "sys", tab: "settings", icon: "⚙", name: "System", items: [{card: "system", ic: "🖥️"}, {sec: "Setup", title: "Place & clock", ic: "📍"}, {sec: "Device warnings", title: "Device warnings", ic: "🌡"},
+   {sec: "Device & help", title: "Device & help", ic: "🧭"}, {sec: "Updates", ic: "⬆️"}, {card: "log", ic: "📜"}]},
+  {id: "dev", tab: "settings", icon: "🧪", name: "Developer", items: [{sec: "Developer", title: "Developer", ic: "🧪"}, {sec: "Servo driver", ic: "🔌"}]},   // 639c: only with dev_area (the server leaves the sections out)
 ];
 Object.assign(I18N.de, {"Improve detection": "Erkennung verbessern", "Automatic head movement": "Automatische Kopfbewegung", "Servo motion & safety": "Servo-Bewegung & Sicherheit",
   "paused (the head is busy)": "Pause (der Kopf ist beschäftigt)", "saving: stays at the most important direction": "sparsam: bleibt bei der wichtigsten Richtung"});   // 2.98.14: the assistant (312); the simulator settings are on the page Simulator
@@ -50033,6 +50055,18 @@ function regroup() {
     const sum = el("summary"); if (it.ic) sum.appendChild(icSpan(it.ic)); sum.appendChild(el("span", "sn", title)); S.appendChild(sum);
     if (card) { [...card.children].filter(c => c.tagName !== "SUMMARY").forEach(k => S.appendChild(k)); card.remove(); }
     if (sd) { const b = toBlock(sd); if (b) S.appendChild(b); }
+    if (it.also) {                                           // 639c: «Kopf (Servos)» - the other parts in ONE «Feineinstellungen»
+      const own = S.querySelector(":scope > .blk > details.ffold"), F = own || el("details", "sub ffold");
+      if (!own) F.appendChild(el("summary", "", t("Fine-tuning")));
+      it.also.forEach(x => { const d2 = byView("sec:" + x); used.add("sec:" + x); if (!d2) return;
+        const nm = d2.querySelector("summary").textContent, inner = d2.querySelector(":scope > details.ffold");
+        const b = toBlock(d2); if (!b) return; b.dataset.view = "sec:" + x; b.classList.add("mblk");
+        b.insertBefore(el("div", "mtitle", nm), b.firstChild);
+        if (inner) { [...inner.children].filter(c => c.tagName !== "SUMMARY").forEach(c => b.appendChild(c)); inner.remove(); }
+        F.appendChild(b); });
+      const n = F.querySelectorAll(".row.tg, .sl").length; F.querySelector("summary").textContent = t("Fine-tuning") + " (" + n + ")";
+      if (F.children.length > 1) S.appendChild(F);
+    }
     return S.children.length > 1 ? S : null;
   };
   GROUPS.forEach(g => {
@@ -50101,7 +50135,8 @@ function tabOpen(v) {
   const d = document.querySelector('#settings [data-view="' + v + '"]'); if (!d) return;
   const g = d.closest(".grp") || d, tab = g.dataset.tabOf || "settings";
   if (tab !== document.body.dataset.tab) { location.href = "/" + tab + "?open=" + encodeURIComponent(v); return; }
-  d.open = true; g.open = true; setTimeout(() => d.scrollIntoView({behavior: "smooth", block: "start"}), 50);
+  d.open = true; g.open = true; for (let p = d.parentElement; p; p = p.parentElement) if (p.tagName === "DETAILS") p.open = true;   // 639c: also inside «Feineinstellungen»
+  setTimeout(() => d.scrollIntoView({behavior: "smooth", block: "start"}), 50);
 }
 setTimeout(() => { const v = new URLSearchParams(location.search).get("open"); if (v) tabOpen(v); }, 1500);
 // the alarm chain: person -> push -> light -> recording -> siren (after the wait); tap = its settings
@@ -50284,7 +50319,7 @@ async function build() {
       const cb = el("input"); cb.type = "checkbox"; cb.className = "sw";
       cb.onchange = () => { post("/api/set", {key: tg.key, value: cb.checked}); try { mainPaint(); } catch (e) {} };
       row.append(el("span", "", tg.label), cb);
-      d.appendChild(row); ctrl[tg.key] = {type: "bool", input: cb};
+      d.appendChild(mnMark(row, tg)); ctrl[tg.key] = {type: "bool", input: cb};
     });
     if (sec.id === "Messages") msgBoxes(d, sec.texts || []);
     else (sec.texts || []).forEach(x => { if (x.key === "longitude") return; d.appendChild(x.key === "latitude" ? locBox() : textField(x)); });
@@ -50354,7 +50389,7 @@ async function build() {
         if (!timer) timer = setTimeout(() => { timer = null; send(); }, 100);   // throttle while dragging
       };
       r.onchange = () => { clearTimeout(timer); timer = null; send(); editing = null; };
-      wrap.dataset.key = s.key; wrap.append(top, r); d.appendChild(wrap);
+      wrap.dataset.key = s.key; wrap.append(top, r); d.appendChild(mnMark(wrap, s));
       ctrl[s.key] = {type: "num", input: r, val: val};
     });
     if (sec.id === "AI detection") spGroup(d);              // aufr: after the sliders (species_conf is one)
@@ -50378,6 +50413,10 @@ async function build() {
     if (sec.id === "Thermal camera") thExtras(d);
     if (sec.id === "Security") secExtras(d);
     if (sec.id === "Extra display" && window.stvPanel) stvPanel(d);   // 552: GeekMagic SmallTV displays
+    if (sec.id === "Presence") prExtras(d);
+    if (sec.id === "Night time") d.insertBefore(el("div", "mut", t("Night time: the night report comes at its end, the wake-up alarm looks away during it, «Guard tonight» ends with it.")), d.children[1] || null);
+    if (sec.id === "Developer") devExtras(d);
+    mnFold(d, "sec:" + sec.id);
     box.appendChild(d);
   });
 }
@@ -50904,7 +50943,32 @@ function mqPaint(s) { const st = $("#mq-st"); if (!st) return; const m = s.mqtt 
 function dtExtras(d) {
   const box = el("div", "auxbox"); const st = el("div", "mut"); st.id = "dt-st";
   box.append(el("div", "mut", t("What is seen decides the reaction. Animals need the AI detection, warm bodies the thermal camera. Light flashes: the white light.")), st);
+  // 639c: the 8 choices as a small table - 4 kinds × reaction + sound
+  const tb = el("div", "dtab"); tb.append(el("b", "", ""), el("b", "", t("Reaction")), el("b", "", t("Sound")));
+  let n = 0; const errs = el("div");
+  [["person", "Person"], ["big", "Big animal"], ["small", "Small animal"], ["warm", "Warm body"]].forEach(([g, nm]) => {
+    const a = d.querySelector('select[data-key="deter_' + g + '_act"]'), so = d.querySelector('select[data-key="deter_' + g + '_sound"]');
+    if (!a || !so) return; n++;
+    const wa = a.closest(".sl"), ws = so.closest(".sl"); a.style.marginTop = so.style.marginTop = "0";
+    a.title = (wa.querySelector("span") || {}).textContent || ""; so.title = (ws.querySelector("span") || {}).textContent || "";
+    const ea = wa.querySelector(".err"), es = ws.querySelector(".err");
+    tb.append(el("span", "", t(nm)), a, so); [ea, es].forEach(e => { if (e) errs.appendChild(e); }); wa.remove(); ws.remove(); });
+  errs.querySelectorAll(".err").forEach(e => { e.style.cssText = "margin:0;min-height:0"; });
+  if (n) { const h = el("div", "mut", t("Reaction and sound per kind")); h.style.marginTop = "8px"; d.append(h, tb, errs); }
   d.appendChild(box);
+}
+// 639c: presence - the phone is chosen in the tools («Am I at home?»)
+function prExtras(d) {
+  const a = el("a", "btn sec", "📱 " + t("Choose the phone") + " ›"); a.href = "/tools#pres"; a.style.cssText = "display:block;margin-top:8px;text-align:center";
+  const r = d.querySelector('.row.tg[data-key="presence_auto"]'); if (r) r.after(a); else d.appendChild(a);
+}
+// 639c: the developer part (only with dev_area): links to what only the developer needs
+function devExtras(d) {
+  const bx = el("div", "auxbox"); bx.appendChild(el("div", "mut", t("Only for the developer (switch: System → Device & help → Developer area).")));
+  [["🧪", "Test bench and test run", "/sim#c-test"], ["⚖", "A/B comparison", "/sim#c-hub"], ["📈", "Statistics & versions", "/sim#c-hub"],
+   ["🩺", "Diagnosis package", "/tools#diag"], ["⚗", "Settings of the simulation", "/sim"], ["🛠", "Developer area", "/dev"]].forEach(([ic, nm, u]) => {
+    const a = el("a", "btn sec", ic + " " + t(nm) + " ›"); a.href = u; a.style.cssText = "display:block;margin-top:6px;text-align:left"; bx.appendChild(a); });
+  d.insertBefore(bx, d.children[1] || null);
 }
 function dtPaint(s) { const st = $("#dt-st"); if (st) st.textContent = s.deter_last ? "↻ " + t("Last") + ": " + s.deter_last : ""; }
 // ---- theft protection: what is watched ----
@@ -67574,7 +67638,7 @@ class App:
                 w_.bind("<Button-1>", lambda e, k=key: self._toggle_section(k))
             words = [tr(name)] + [tr(x) for x in real]
             for lst in (TOGGLES, SLIDERS, TEXTS):
-                words += [tr(t_[2]) for t_ in lst if t_[0] in real]
+                words += [tr(t_[2]) + " " + tr(MENU_LONG.get(t_[1], "")) for t_ in lst if t_[0] in real]   # 639c: + the long text («?»)
             self.grp_meta[key] = (arr, real, card, " ".join(words).lower())
             if len(real) == 1:
                 sb = tk.Frame(gbody, bg=C["panel"]); sb.pack(fill="x", pady=(4, 0))
@@ -67595,7 +67659,7 @@ class App:
     def _sub(self, parent, sec, default_open=False):
         """One topic of a group: thin line + title that opens / closes it (state kept in the settings)."""
         tk.Frame(parent, bg=C["line"], height=1).pack(fill="x", pady=(8, 4))
-        title = {"Camping / protection": "Protection & network", "Notifications": "Push messages"}.get(sec, sec)
+        title = MENU_TITLES.get(sec, sec)                  # 639c: the same part names as the web page
         # 2.95.71: like every menu - symbol left, name, arrow right; symbol and arrow green while the function is on
         h = tk.Frame(parent, bg=C["panel"], cursor="hand2"); h.pack(fill="x")
         ic = TK_SUB_ICONS.get(sec, "")
@@ -68131,7 +68195,7 @@ class App:
         if ok and d.get("action") == "test":
             self._toast("✓ " + tr("Test sent")) if hasattr(self, "_toast") else None
         if ok and rebuild:
-            self.open_secs.add("grp:sensors"); self._schedule_rebuild()
+            self.open_secs.add("grp:extras"); self._schedule_rebuild()
 
     def _sens_remove(self, x):
         if messagebox.askyesno(tr("Remove"), tr("Remove this sensor?") + "\n\n" + x["name"], parent=self.root):
@@ -68564,7 +68628,7 @@ class App:
 
     def _relay_add(self):
         ok, err = relay_add(); self._relay_msg("" if ok else err)
-        self.open_secs.add("grp:sensors"); self._schedule_rebuild()
+        self.open_secs.add("grp:extras"); self._schedule_rebuild()
 
     def _relay_remove(self, i):
         if not 0 <= i < len(RELAYS):
@@ -79510,7 +79574,7 @@ _SV_HELP = {
           "Nacht-Prognose – auch im Zeitraffer), Ort (Sonnenauf- und -untergang), Wetter und Böen-Prognose (kein Internet-Wetter), die "
           "Temperatur des Pi (Hitze-Warnung, KI langsamer) und der Test «WLAN weg» / «Internet weg» (Alarme warten und werden nachgeschickt). "
           "Solar, GPS, Aussentemperatur, Wind, Geräusche, Wärmebild und Sensoren kamen schon vorher vom Simulator. Jeder solche Wert trägt "
-          "«🧪». Die Regler sind im Simulator unter Sensoren → «Akku und Strom» und «Netz-Ausfall testen». Protokoll, Dateinamen, Signaturen "
+          "«🧪». Die Regler sind im Simulator unter Sensoren → «Strom» und «Netz». Protokoll, Dateinamen, Signaturen "
           "und Updates bleiben auf der echten Uhr. Antwortet der Simulator 10 Sekunden nicht, gelten wieder die echten Werte.</p>",
     "en": "<p><b>🧪 Values from the simulator (from 2.98.47):</b> while MoveEye is connected to the 3D simulator its «hardware» values come "
           "from the simulated world: battery (a simulated UPS HAT with 2 × 18650 – drained by the Pi, servos, light and siren, charged by the "
@@ -79518,7 +79582,7 @@ _SV_HELP = {
           "also in the time-lapse), place (sunrise and sunset), weather and gust forecast (no internet weather), the temperature of the Pi "
           "(heat warning, AI slower) and the test «Wi-Fi gone» / «Internet gone» (alarms wait and are sent later). Solar, GPS, outside "
           "temperature, wind, sounds, thermal camera and sensors came from the simulator before. Every such value carries «🧪». The controls "
-          "are in the simulator under Sensors → «Akku und Strom» and «Netz-Ausfall testen». Log, file names, signatures and updates stay on "
+          "are in the simulator under Sensors → «Strom» and «Netz». Log, file names, signatures and updates stay on "
           "the real clock. When the simulator does not answer for 10 seconds the real values apply again.</p>"}
 for _a, _b in (('<section id="system" data-icon="⚙"><h2>System &amp; Netz</h2>', _SV_HELP["de"]),
                ('<section id="system" data-icon="⚙"><h2>System &amp; network</h2>', _SV_HELP["en"])):
@@ -89289,6 +89353,744 @@ FACTORY_KEEP.update({"main_push_on", "push_url_ntfy", "push_url_webhook", "push_
 
 # ---- the main page: German for the cards (531a; added only where the page has no text yet) -----------------------------------
 WEB_PAGE = WEB_PAGE.replace("/*PXDE*/{}", json.dumps({_k: DE.get(_k, _v[0]) for _k, _v in _HX_PUSH.items()}, ensure_ascii=False), 1)
+# MENU_SHORT: long English label -> short English label (639c puts the short one into TOGGLES / SLIDERS / TEXTS, the long one becomes
+# the «?» help). The translations of the short labels are in _HX_MENU_SHORT, the long ones keep their old translations.
+MENU_SHORT = {
+    'Left track runs the wrong way (turn round)': 'Left track runs the wrong way',
+    'Right track runs the wrong way (turn round)': 'Right track runs the wrong way',
+    'Recognise the animal species (second AI model - see the guide)': 'Recognise the animal species',
+    'Solar panel with current meter (INA219 on I2C)': 'Solar panel with current meter',
+    'Own GPS module (USB or serial; gpsd is used if installed)': 'Own GPS module',
+    '433 MHz radio sensors (RTL-SDR stick + program rtl_433)': '433 MHz radio sensors',
+    'Zigbee sensors (Zigbee2MQTT - needs MQTT)': 'Zigbee sensors',
+    'Bluetooth tags (RuuviTag - needs python3-bleak)': 'Bluetooth tags',
+    'With a motion detector (PIR): only 1 picture per second while all is quiet': 'With a motion detector',
+    'Follow detected person (auto pan/tilt)': 'Follow detected person',
+    'Temperature alarm (e.g. a pet in the caravan): push when too hot or too cold': 'Temperature alarm',
+    'Developer area (own network, with its own PIN) - only for the developer': 'Developer area',
+    'Mark all detected objects (cars, animals, ...)': 'Mark all detected objects',
+    'Picture for other programs (Home Assistant, recorder, VLC) with a secret address': 'Picture for other programs',
+    'RTSP video for recorders (needs mediamtx; uses CPU)': 'RTSP video for recorders',
+    'Take the location from the phone (the page must be open over https)': 'Take the location from the phone',
+    'Temperature sensor (BME280 / BMP280 on I2C or DS18B20 on GPIO 4), if connected': 'Temperature sensor',
+    'Night vision automatically at night (sunset to sunrise)': 'Night vision automatically at night',
+    'Alarm also as SMS (person, sabotage, warm body, noise)': 'Alarm also as SMS',
+    'Home Assistant finds MoveEye by itself (discovery)': 'Home Assistant finds MoveEye by itself',
+    'Blur faces when sharing (only the shared copy, the original stays)': 'Blur faces when sharing',
+    'Continuous recording (all the time, few pictures per second) with a timeline': 'Continuous recording',
+    'Also when disarmed (e.g. keep animals out of the garden)': 'Also when disarmed',
+    'Motion sensor (MPU-6050, if fitted): alarm when the device is moved or knocked over': 'Motion sensor',
+    'Copy all recordings (otherwise only alarm recordings: armed or with a person)': 'Copy all recordings',
+    'Look for new versions by itself (every 3 hours)': 'Look for new versions by itself',
+    'Also accept unsigned versions (not recommended - only for own builds)': 'Also accept unsigned versions',
+    'Day overview: weather from the internet (Open-Meteo; the location is sent there)': 'Day overview: weather from the internet',
+    'Note animals, persons and noises (animal diary + night report)': 'Note animals, persons and noises',
+    'Take the clock from the phone (when the Pi has no internet time)': 'Take the clock from the phone',
+    'Only warm bodies that move (ignore warm stones, engines)': 'Only warm bodies that move',
+    'Show only the hot areas (people, animals, engines)': 'Show only the hot areas',
+    'Only when not armed (claps of strangers switch nothing)': 'Only when not armed',
+    'Look away during the night time (Night report → night time)': 'Look away during the night time',
+    'Log in only encrypted (https): from other devices the password is only accepted over the secure page': 'Log in only encrypted',
+    'Own model: update by itself (checks daily, installs a new model only if its evaluation is not worse)': 'Own model: update by itself',
+    'Automatic head movement (the head turns by itself - one mover at a time: hand > alarm > walk test > valuables > round > parking)': 'Automatic head movement',
+    'Off: park the camera looking away (visible privacy), back home when switched on': 'Off: park the camera looking away',
+    'The overview camera steers the head (a fixed wide-angle extra camera)': 'The overview camera steers the head',
+    'Tour of a page on its first visit (dims the screen and shows the controls one after another)': 'Tour of a page on its first visit',
+    'Tip of the day (a function you have not used yet)': 'Tip of the day',
+    'Under-voltage: stop the servos (they move again by themselves 30 s after it is over)': 'Under-voltage: stop the servos',
+    'Show Blinki (the little figure that explains the setup and the tours)': 'Show Blinki',
+    'Wide infrared light (channel 4): second IR LED 120° on PCA9685 channel 4, on / off with the infrared light': 'Wide infrared light',
+    'Alarm picture also for animals (picture section with species, certainty and distance)': 'Alarm picture also for animals',
+    'Picture also for persons (otherwise only a symbol and text)': 'Picture also for persons',
+    'At night dark and red (like the red light view), bright for a moment at an alarm': 'At night dark and red',
+    'Warm body (thermal camera, e.g. fox, boar)': 'Warm body',
+    'Phone numbers (e.g. +41791234567, several with commas)': 'Phone numbers',
+    'MQTT broker (address, e.g. 192.168.1.10 or homeassistant.local)': 'MQTT broker',
+    'WebDAV password (Nextcloud: app password)': 'WebDAV password',
+    'Thermal camera (run the camera scan first)': 'Thermal camera',
+    'Siren at an alarm (only when armed)': 'Siren at an alarm',
+    'What is MoveEye for? («Simple» shows only what fits)': 'What is MoveEye for?',
+    'Turn picture (camera mounted sideways or upside down)': 'Turn picture',
+    'Where new versions come from (address of versions.json, or a folder e.g. USB stick)': 'Where new versions come from',
+    'GitHub key (token) - only for a private repository': 'GitHub key',
+    'Phones / devices for presence (IP or name, comma separated)': 'Phones / devices for presence',
+    'Parking position: a taught point (instead of pan / tilt above)': 'Parking position: a taught point',
+    'Home position: a taught point (the head comes back there)': 'Home position: a taught point',
+    'Simulation: show the stick even without a mover or motor driver (to try it out)': 'Simulation: always show the stick',
+    "Small message on the Pi's desktop when MoveEye starts in the background": 'Message on the Pi desktop at start',
+    'Push message in the evening when the battery will probably not last until sunrise': 'Evening push: battery too low',
+    'Theft tracking: alarm when the armed device is carried away, then its position every 5 minutes': 'Theft tracking',
+    'Also from the weather forecast: gusts in the next 12 hours (sends the location to Open-Meteo)': 'Also from the weather forecast',
+    'Also follow animals and other movement (when no person is in the picture)': 'Also follow animals and movement',
+    'Warn when the lens is fogged or dirty (picture blurred for 15 minutes)': 'Warn: lens fogged or dirty',
+    'smart: look longer at the important directions': 'Smart round',
+    'Motion persons need AI confirmation': 'Motion persons need the AI',
+    'AI magnifier: look again, enlarged, at small moving things (persons far away)': 'AI magnifier for small things',
+    'At night stricter: a person found only by movement must stand upright (against animals)': 'Stricter at night (must stand)',
+    'Size check: much smaller than a person at that place = no person (learns from the persons the AI confirmed)': 'Size check',
+    'In the dark also brighten the picture you see (live, recordings)': 'Brighten the visible picture too',
+    'Night vision look: green picture, thermal outlines and temperatures': 'Night vision look',
+    'Recordings map and place names from the internet (OpenStreetMap)': 'Map and place names online',
+    'Only when push messages cannot be sent (no internet)': 'Only without internet',
+    'Shared pictures and videos with a small MoveEye logo': 'Small MoveEye logo when sharing',
+    'Send the location along when sharing pictures and videos': 'Send the location when sharing',
+    'Sabotage alarm: camera covered or turned away (when armed)': 'Sabotage alarm',
+    'Compare with the reference when armed': 'Compare when protection goes on',
+    'Push message also for new or changed things': 'Push also for new or changed things',
+    'Panorama report «Missing things» every morning (separate from the night report)': 'Morning panorama «Missing things»',
+    'Power cut while armed = alarm (needs the UPS HAT)': 'Power cut while armed = alarm',
+    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed; while on, the other update switches do not count)': 'Test mode: new versions at once',
+    'After an update: show briefly what is new and what comes next': 'After an update: show what is new',
+    'Automatic update also while armed (otherwise only when disarmed)': 'Update also while armed',
+    'UPS HAT (battery pack on the Pi): use it when found': 'Use the UPS HAT',
+    'UPS HAT: push message at a power cut / when power is back': 'UPS HAT: push at a power cut',
+    'UPS HAT: charging and discharging are shown the wrong way round': 'UPS HAT: charging shown reversed',
+    'Push message when a new version is there': 'Push when a new version is there',
+    'Night report: push message in the morning with what happened in the night': 'Night report in the morning',
+    'Weekly detection report: push once a week with the trend and a tip': 'Weekly detection report',
+    'Weekly report: with the week in the simulator (visits, animals, recognised persons)': 'Weekly report with the simulator',
+    'Power saving mode: fewer pictures while all is quiet': 'Power saving mode',
+    'Full speed while somebody watches the live picture': 'Full speed while somebody watches',
+    'Alarm when a warm body moves inside the zones': 'Warm body alarm in the zones',
+    'Return to the previous position afterwards': 'Then back to the previous position',
+    'Noise alarm: alarm when it gets loud (cracking, rustling, voices)': 'Noise alarm',
+    'Practice: only count and beep, switch nothing': 'Practice: only count and beep',
+    'Gestures: wave = snooze, sit up / get up = off': 'Gestures: wave, sit up, get up',
+    'Announcement when arming: the loudspeaker says battery, Wi-Fi and camera - or what is missing': 'Announcement when arming',
+    'Protection on automatically when my phone is gone (choose the phone: Tools → Am I at home?)': 'Protection on when my phone is gone',
+    'Morning push short: one sentence and a picture strip of the night': 'Short morning push with pictures',
+    'Thermal picture: an upright warm body counts as a person (at night, when the camera sees nobody)': 'Upright warm body = person',
+    'Battery saver: below the threshold fewer pictures and the AI less often (by itself)': 'Battery saver',
+    'Full: turn to the alarm - movement at the edge of the picture, a warm spot of the thermal camera, a noise (only with an access as direction)': 'Full: turn to the alarm',
+    'Deterrence: turn the light and the siren to the person (otherwise to the tent of «Platz einrichten»)': 'Aim light and siren at the person',
+    'Back to the home position when the person or the alarm is gone': 'Back to the home position',
+    'Quick look at the valuables now and then, compared with the reference (missing = push)': 'Glance at the valuables',
+    'Battery low or deep night: move less, stay at the most important direction': 'Move less (battery low, deep night)',
+    'Walk test: the head follows you and shows afterwards where it lost you': 'Walk test: the head follows you',
+    'Sabotage: the head looks around briefly - covered or turned? (in the push text)': 'Sabotage: the head looks around',
+    'Calibrate the overview now: the head looks at the thing that moves in the overview (switches itself off)': 'Calibrate the overview now',
+    'Continuous servo: the head looks straight ahead now - set as the middle (switches itself off)': 'Continuous servo: set the middle',
+    'Emergency stop: brake, then drive slowly to the parking position (otherwise: hold where it stopped)': 'Emergency stop: park slowly',
+    'Show the «⏹ Stop» button on the live page (only with a pan / tilt head)': '«⏹ Stop» on the live page',
+    'Show MoveEye on extra displays (GeekMagic SmallTV)': 'Show MoveEye on extra displays',
+    'Current meter: shunt resistor (Ohm, usually 0.1)': 'Shunt resistor (Ohm)',
+    'Theft tracking: alarm from a distance of (m)': 'Theft tracking: alarm from (m)',
+    'Warn when the air pressure falls by (hPa in 3 hours)': 'Air pressure falls by (hPa / 3 h)',
+    'Bluetooth tag: alarm when not seen for (min)': 'Tag not seen for (min)',
+    'Motion sensor: alarm from a tilt of (degrees)': 'Alarm from a tilt of (°)',
+    'Photos per direction (more = less noise)': 'Photos per direction',
+    'Compare every (minutes while armed, 0 = off)': 'Compare every (min, 0 = off)',
+    'Follow movement: smallest size (% of the picture)': 'Movement: smallest size (%)',
+    'Follow movement: must move for (seconds)': 'Movement: must move for (s)',
+    'Tracking: look ahead (seconds, 0 = off)': 'Tracking: look ahead (s)',
+    'Thermal alarm: warmer than the scene by (%)': 'Thermal alarm: warmer by (%)',
+    'Thermal alarm: minimum size (% of the picture)': 'Thermal alarm: minimum size (%)',
+    'Full speed after an event for (s)': 'Full speed after an event (s)',
+    "Night time from (o'clock) – for the night report, the wake-up alarm and «Guard tonight»": "Night time from (o'clock)",
+    'Event log: status line every N minutes (0 = off)': 'Log: status line every (min)',
+    'Event log: keep the archive (days)': 'Keep the log archive (days)',
+    "Night time until (o'clock) – the night report comes, «Guard tonight» ends": "Night time until (o'clock)",
+    'Keep diary entries (days, ★ always)': 'Keep diary entries (days)',
+    'UPS HAT: capacity of ONE 18650 cell (mAh)': 'UPS HAT: one 18650 cell (mAh)',
+    'UPS HAT: shut the Pi down at (%, 0 = never)': 'UPS HAT: shut down at (%)',
+    'Powerbank capacity (mAh, as on the label; 0 = off)': 'Powerbank capacity (mAh)',
+    'Automatic: look for known networks every (min, 0 = never)': 'Look for known networks (min)',
+    'Pan servo: turning range (degrees: 180, 270 or 360)': 'Pan servo: turning range (°)',
+    'Push message when the CPU is hotter than (°C)': 'Push when the CPU is hotter (°C)',
+    'Push message when less free space than (MB)': 'Push when less free space (MB)',
+    'Thermal: zoom - part the camera sees (%)': 'Thermal: zoom (%)',
+    'Thermal: shift left / right (%)': 'Thermal: shift left / right (%)',
+    'Noise alarm: louder than the background by (dB)': 'Noise alarm: louder by (dB)',
+    'Sensitivity (higher = also softer claps)': 'Sensitivity',
+    'Siren: min. pause between two alarms (s)': 'Siren: min. pause (s)',
+    'Speaking from the phone: volume boost (dB)': 'Speaking: volume boost (dB)',
+    '🐢 Battery saver below (% battery): fewer pictures, the AI less often - normal again at +5 % or when charging': '🐢 Battery saver below (%)',
+    '🔥 Campfire games end below (% battery): back to the camping guard (0 = never)': '🔥 Campfire games end below (%)',
+    'Battery saver: at most pictures per second': 'Battery saver: pictures per second',
+    'Camera: vertical field of view (°) - for the distance of a person (Camera Module 3: 41)': 'Camera: vertical field of view (°)',
+    'Smart round: stay at the tent / the access (s)': 'Smart round: stay at the tent (s)',
+    'Parking position: tilt (%, low = looks down)': 'Parking position: tilt (%)',
+    'Wildlife: a photo of the followed animal every (s)': 'Wildlife: a photo every (s)',
+    'Overview: where it looks (degrees from the middle of the head, + = right)': 'Overview: direction (°)',
+    'Overview: field of view (degrees, if not known)': 'Overview: field of view (°)',
+    'Continuous servo: degrees per second at full speed (measure once)': 'Continuous servo: degrees per second',
+    'Pan: acceleration and braking (°/s²)': 'Pan: acceleration (°/s²)',
+    'Watchdog: stop the servos when the camera loop hangs longer than (s)': 'Watchdog: stop the servos after (s)',
+    'Maintenance hint after (hours of movement per servo)': 'Maintenance hint after (hours)',
+    'After the animation the alarm picture stays (min)': 'Alarm picture stays after (min)',
+    'At most one picture every (s) - an alarm at once': 'At most one picture every (s)',
+    'Status picture: clock new every (minutes, spares the flash)': 'Status picture: clock every (min)',
+    'Markings in recordings and alarm pictures': 'Markings in recordings',
+    'Folder (USB stick / NAS, e.g. /media/pi/STICK/MotionWatch)': 'Folder (USB stick / NAS)',
+    'Explanations the first time something is opened (dots = never opened, NEW = new)': 'Explanations when opened first',
+    'Own model: address of its description (moveeye_model.json)': 'Own model: address',
+    'Wildlife mode: follow animals slowly, no alarm, no light, photos': 'Wildlife mode',
+}
+_HX_MENU_SHORT = {
+    'Left track runs the wrong way': ('Linke Kette läuft falsch herum', "La chenille gauche tourne à l'envers", 'Il cingolo sinistro gira al contrario', 'La chadaina sanestra gira dal fauss vers'),
+    'Right track runs the wrong way': ('Rechte Kette läuft falsch herum', "La chenille droite tourne à l'envers", 'Il cingolo destro gira al contrario', 'La chadaina dretga gira dal fauss vers'),
+    'Recognise the animal species': ('Tierart erkennen', "Reconnaître l'espèce animale", 'Riconoscere la specie animale', "Renconuscher la spezia d'animal"),
+    'Solar panel with current meter': ('Solarpanel mit Strommesser', 'Panneau solaire avec mesureur de courant', 'Pannello solare con misuratore di corrente', 'Panel solar cun mesirader da current'),
+    'Own GPS module': ('Eigenes GPS-Modul', 'Module GPS propre', 'Modulo GPS proprio', 'Agen modul GPS'),
+    '433 MHz radio sensors': ('433-MHz-Funksensoren', 'Capteurs radio 433 MHz', 'Sensori radio 433 MHz', 'Sensors radio 433 MHz'),
+    'Zigbee sensors': ('Zigbee-Sensoren', 'Capteurs Zigbee', 'Sensori Zigbee', 'Sensors Zigbee'),
+    'Bluetooth tags': ('Bluetooth-Anhänger', 'Balises Bluetooth', 'Tag Bluetooth', 'Pendaglias Bluetooth'),
+    'With a motion detector': ('Mit Bewegungsmelder', 'Avec détecteur de mouvement', 'Con rilevatore di movimento', 'Cun detectur da moviment'),
+    'Follow detected person': ('Erkannter Person folgen', 'Suivre la personne détectée', 'Seguire la persona rilevata', 'Suandar la persuna identifitgada'),
+    'Temperature alarm': ('Temperatur-Alarm', 'Alarme de température', 'Allarme temperatura', 'Alarm da temperatura'),
+    'Developer area': ('Entwickler-Bereich', 'Espace développeur', 'Area sviluppatore', 'Secziun dal sviluppader'),
+    'Mark all detected objects': ('Alle erkannten Objekte markieren', 'Marquer tous les objets détectés', 'Marcare tutti gli oggetti rilevati', 'Marcar tut ils objects identifitgads'),
+    'Picture for other programs': ('Bild für andere Programme', "Image pour d'autres programmes", 'Immagine per altri programmi', 'Maletg per auters programs'),
+    'RTSP video for recorders': ('RTSP-Video für Rekorder', 'Vidéo RTSP pour enregistreurs', 'Video RTSP per registratori', 'Video RTSP per registraturs'),
+    'Take the location from the phone': ('Standort vom Handy übernehmen', 'Prendre la position du portable', 'Prendere la posizione dal cellulare', 'Prender la posiziun dal telefonin'),
+    'Temperature sensor': ('Temperaturfühler', 'Sonde de température', 'Sensore di temperatura', 'Sensur da temperatura'),
+    'Night vision automatically at night': ('Nachtsicht automatisch in der Nacht', 'Vision nocturne automatique la nuit', 'Visione notturna automatica di notte', 'Vista da notg automaticamain la notg'),
+    'Alarm also as SMS': ('Alarm auch als SMS', 'Alarme aussi par SMS', 'Allarme anche via SMS', 'Alarm era sco SMS'),
+    'Home Assistant finds MoveEye by itself': ('Home Assistant findet MoveEye von selbst', 'Home Assistant trouve MoveEye tout seul', 'Home Assistant trova MoveEye da solo', 'Home Assistant chatta MoveEye sez'),
+    'Blur faces when sharing': ('Gesichter verpixeln beim Teilen', 'Flouter les visages lors du partage', 'Pixelare i volti quando si condivide', 'Pixelisar las fatschas cun parter'),
+    'Continuous recording': ('Daueraufnahme', 'Enregistrement continu', 'Registrazione continua', 'Registraziun cuntinuanta'),
+    'Also when disarmed': ('Auch wenn der Schutz aus ist', 'Aussi en mode désarmé', 'Anche se disinserito', "Era sch'il sistem è disarmà"),
+    'Motion sensor': ('Bewegungssensor', 'Capteur de mouvement', 'Sensore di movimento', 'Sensur da moviment'),
+    'Copy all recordings': ('Alle Aufnahmen kopieren', 'Copier tous les enregistrements', 'Copiare tutte le registrazioni', 'Copiar tut las registraziuns'),
+    'Look for new versions by itself': ('Selbst nach neuen Versionen suchen', 'Chercher soi-même les nouvelles versions', 'Cercare da solo nuove versioni', 'Tschertgar sez novas versiuns'),
+    'Also accept unsigned versions': ('Auch nicht signierte Versionen annehmen', 'Accepter aussi les versions non signées', 'Accettare anche versioni non firmate', 'Acceptar era versiuns betg signadas'),
+    'Day overview: weather from the internet': ('Tagesübersicht: Wetter aus dem Internet', "Résumé du jour : météo d'internet", 'Riepilogo del giorno: meteo da internet', "Survista dal di: ora d'internet"),
+    'Note animals, persons and noises': ('Tiere, Personen und Geräusche notieren', 'Noter animaux, personnes et bruits', 'Annotare animali, persone e rumori', 'Notar animals, persunas e caneras'),
+    'Take the clock from the phone': ('Uhrzeit vom Handy übernehmen', "Prendre l'heure du portable", "Prendere l'ora dal cellulare", "Prender l'ura dal telefonin"),
+    'Only warm bodies that move': ('Nur bewegte warme Körper', 'Seulement les corps chauds qui bougent', 'Solo corpi caldi in movimento', 'Mo corps chauds che sa movan'),
+    'Show only the hot areas': ('Nur heisse Bereiche zeigen', "N'afficher que les zones chaudes", 'Mostrare solo le zone calde', 'Mussar mo las zonas chaudas'),
+    'Only when not armed': ('Nur wenn der Schutz aus ist', 'Seulement si désarmé', 'Solo se non armato', "Mo sch'betg armà"),
+    'Look away during the night time': ('Während der Nachtzeit wegschauen', 'Regarder ailleurs pendant la nuit', 'Guardare altrove durante la notte', 'Guardar davent durant la notg'),
+    'Log in only encrypted': ('Anmelden nur verschlüsselt', 'Connexion uniquement chiffrée', 'Accesso solo cifrato', 'S’annunziar mo criptà'),
+    'Own model: update by itself': ('Eigenes Modell von selbst aktualisieren', 'Modèle propre : mise à jour automatique', 'Modello proprio: aggiornamento automatico', 'Agen model: actualisar sez'),
+    'Automatic head movement': ('Automatische Kopfbewegung', 'Mouvement automatique de la tête', 'Movimento automatico della testa', 'Moviment automatic dal chau'),
+    'Off: park the camera looking away': ('Aus: Kamera wegschauen lassen', 'Arrêt : la caméra regarde ailleurs', 'Spento: la telecamera guarda altrove', 'Deactivà: la camera guarda davent'),
+    'The overview camera steers the head': ('Die Übersichtskamera lenkt den Kopf', 'La caméra d’ensemble dirige la tête', 'La telecamera panoramica guida la testa', 'La camera da survista maina il chau'),
+    'Tour of a page on its first visit': ('Rundgang beim ersten Besuch einer Seite', 'Visite d’une page à la première ouverture', 'Tour di una pagina alla prima visita', 'Gir tras ina pagina a l’emprima visita'),
+    'Tip of the day': ('Tipp des Tages', 'Astuce du jour', 'Consiglio del giorno', 'Cussegl dal di'),
+    'Under-voltage: stop the servos': ('Unterspannung: Servos stoppen', 'Sous-tension : arrêter les servos', 'Sottotensione: fermare i servo', 'Sutatensiun: fermar ils servos'),
+    'Show Blinki': ('Blinki zeigen', 'Afficher Blinki', 'Mostra Blinki', 'Mussar Blinki'),
+    'Wide infrared light': ('IR-Licht breit', 'Lumière IR large', 'Luce IR ampia', 'Glisch IR largia'),
+    'Alarm picture also for animals': ('Alarmbild auch bei Tieren', 'Image d’alarme aussi pour les animaux', 'Immagine d’allarme anche per gli animali', 'Maletg d’alarm er per animals'),
+    'Picture also for persons': ('Bild auch bei Personen', 'Image aussi pour les personnes', 'Immagine anche per le persone', 'Maletg er per persunas'),
+    'At night dark and red': ('Nachts dunkel und rot', 'La nuit sombre et rouge', 'Di notte scuro e rosso', 'La notg stgir e cotschen'),
+    'Warm body': ('Warmer Körper', 'Corps chaud', 'Corpo caldo', 'Corp chaud'),
+    'Phone numbers': ('Telefonnummern', 'Numéros de téléphone', 'Numeri di telefono', 'Numers da telefon'),
+    'MQTT broker': ('MQTT-Broker', 'Broker MQTT', 'Broker MQTT', 'Broker MQTT'),
+    'WebDAV password': ('WebDAV-Passwort', 'Mot de passe WebDAV', 'Password WebDAV', 'Pled-clav WebDAV'),
+    'Thermal camera': ('Wärmebildkamera', 'Caméra thermique', 'Termocamera', 'Camera termica'),
+    'Siren at an alarm': ('Sirene bei Alarm', "Sirène en cas d'alarme", 'Sirena in caso di allarme', 'Sirena tar in alarm'),
+    'What is MoveEye for?': ('Wofür brauchst du MoveEye?', 'À quoi sert MoveEye ?', 'A cosa serve MoveEye?', 'Per tge drovas ti MoveEye?'),
+    'Turn picture': ('Bild drehen', "Tourner l'image", 'Ruota immagine', 'Volver il maletg'),
+    'Where new versions come from': ('Woher neue Versionen kommen', "D'où viennent les nouvelles versions", 'Da dove arrivano le nuove versioni', 'Danunder che novas versiuns vegnan'),
+    'GitHub key': ('GitHub-Schlüssel', 'Clé GitHub', 'Chiave GitHub', 'Clav GitHub'),
+    'Phones / devices for presence': ('Handys / Geräte für Anwesenheit', 'Portables / appareils pour la présence', 'Cellulari / dispositivi per la presenza', 'Telefonins / apparats per la preschientscha'),
+    'Parking position: a taught point': ('Parkposition: ein gespeicherter Punkt', 'Position de parcage : un point enregistré', 'Posizione di parcheggio: un punto salvato', 'Posiziun da parcar: in punct memorisà'),
+    'Home position: a taught point': ('Grundstellung: ein gespeicherter Punkt', 'Position de base : un point enregistré', 'Posizione base: un punto salvato', 'Posiziun da basa: in punct memorisà'),
+    'Simulation: always show the stick': ('Simulation: Stick immer zeigen', 'Simulation : toujours afficher le stick', 'Simulazione: mostrare sempre lo stick', 'Simulaziun: adina mussar il stick'),
+    'Message on the Pi desktop at start': ('Meldung auf dem Pi-Bildschirm beim Start', "Message sur l'écran du Pi au démarrage", "Messaggio sullo schermo del Pi all'avvio", "Messadi sin il visur dal Pi tar l'aviar"),
+    'Evening push: battery too low': ('Abend-Push: Akku reicht nicht', 'Push du soir : batterie insuffisante', 'Push serale: batteria insufficiente', 'Push da la saira: accu na tanscha betg'),
+    'Theft tracking': ('Diebstahl-Ortung', 'Localisation en cas de vol', 'Localizzazione in caso di furto', 'Localisaziun en cas da tschiffa'),
+    'Also from the weather forecast': ('Auch aus der Wetterprognose', 'Aussi selon les prévisions météo', 'Anche dalle previsioni meteo', "Era tenor la prognosa da l'aura"),
+    'Also follow animals and movement': ('Auch Tieren und Bewegung folgen', 'Suivre aussi animaux et mouvements', 'Seguire anche animali e movimenti', 'Era suandar animals e moviments'),
+    'Warn: lens fogged or dirty': ('Warnen: Linse beschlagen oder schmutzig', 'Alerte : objectif embué ou sale', 'Avviso: obiettivo appannato o sporco', 'Avertir: lentilla annebulada u malnetta'),
+    'Smart round': ('Kluge Runde', 'Ronde intelligente', 'Giro intelligente', 'Runda intelligenta'),
+    'Motion persons need the AI': ('Bewegungs-Personen brauchen die KI', 'Personnes en mouvement : IA requise', "Persone in movimento: serve l'IA", "Persunas en moviment: basegnan l'IA"),
+    'AI magnifier for small things': ('KI-Lupe für kleine Dinge', 'Loupe IA pour les petits objets', 'Lente IA per le cose piccole', 'Lupa IA per chaussas pitschnas'),
+    'Stricter at night (must stand)': ('Nachts strenger (muss aufrecht sein)', 'Plus strict la nuit (debout)', 'Più severo di notte (in piedi)', 'Pli sever la notg (en pe)'),
+    'Size check': ('Grössen-Prüfung', 'Contrôle de taille', 'Controllo dimensioni', 'Controlla da grondezza'),
+    'Brighten the visible picture too': ('Sichtbares Bild auch aufhellen', "Éclaircir aussi l'image visible", "Schiarire anche l'immagine visibile", 'Era sclerir il maletg visibel'),
+    'Night vision look': ('Nachtsicht-Look', 'Aspect vision nocturne', 'Aspetto visione notturna', 'Look da vista da notg'),
+    'Map and place names online': ('Karte und Ortsnamen aus dem Internet', 'Carte et noms de lieux en ligne', 'Mappa e nomi dei luoghi online', 'Charta e nums da lieus online'),
+    'Only without internet': ('Nur ohne Internet', 'Seulement sans internet', 'Solo senza internet', 'Mo senza internet'),
+    'Small MoveEye logo when sharing': ('Kleines MoveEye-Logo beim Teilen', 'Petit logo MoveEye lors du partage', 'Piccolo logo MoveEye nella condivisione', 'Pitschen logo MoveEye cun parter'),
+    'Send the location when sharing': ('Ort beim Teilen mitschicken', 'Envoyer la position lors du partage', 'Inviare la posizione nella condivisione', 'Trametter il lieu cun parter'),
+    'Sabotage alarm': ('Sabotage-Alarm', 'Alarme de sabotage', 'Allarme sabotaggio', 'Alarm da sabotascha'),
+    'Compare when protection goes on': ('Beim Einschalten vergleichen', "Comparer à l'activation", "Confrontare all'attivazione", "Cumparegliar tar l'activaziun"),
+    'Push also for new or changed things': ('Push auch bei Neuem oder Verändertem', 'Push aussi pour le nouveau ou modifié', 'Push anche per novità o modifiche', 'Push era per nov u midà'),
+    'Morning panorama «Missing things»': ('Morgen-Panorama «Fehlende Gegenstände»', 'Panorama du matin «Objets manquants»', 'Panorama del mattino «Oggetti mancanti»', 'Panorama da la damaun «Chaussas mancantas»'),
+    'Power cut while armed = alarm': ('Strom weg bei Schutz an = Alarm', 'Coupure de courant armé = alarme', 'Interruzione corrente armato = allarme', 'Current davent cun protecziun = alarm'),
+    'Test mode: new versions at once': ('Entwicklungsphase: Versionen sofort', 'Mode test : versions immédiatement', 'Modalità test: versioni subito', 'Modus da test: versiuns immediat'),
+    'After an update: show what is new': ('Nach Update zeigen, was neu ist', 'Après une mise à jour : nouveautés', 'Dopo un aggiornamento: novità', 'Suenter in update: mussar las novitads'),
+    'Update also while armed': ('Update auch bei Schutz an', 'Mise à jour aussi en mode armé', 'Aggiornamento anche se armato', 'Update era cun protecziun'),
+    'Use the UPS HAT': ('USV-Akku verwenden', "Utiliser l'UPS HAT", "Usare l'UPS HAT", "Duvrar l'accu USV"),
+    'UPS HAT: push at a power cut': ('USV-Akku: Push bei Stromausfall', 'UPS HAT : push en cas de coupure', 'UPS HAT: push in caso di blackout', 'Accu USV: push tar interrupziun'),
+    'UPS HAT: charging shown reversed': ('USV-Akku: Laden verkehrt angezeigt', 'UPS HAT : charge affichée inversée', 'UPS HAT: carica mostrata invertita', 'Accu USV: chargiar mussà enavos'),
+    'Push when a new version is there': ('Push bei neuer Version', 'Push à une nouvelle version', 'Push con una nuova versione', 'Push tar ina nova versiun'),
+    'Night report in the morning': ('Nachtbericht am Morgen', 'Rapport de nuit le matin', 'Rapporto notturno al mattino', 'Rapport da la notg la damaun'),
+    'Weekly detection report': ('Wochenbericht der Erkennung', 'Rapport hebdomadaire de détection', 'Rapporto settimanale di rilevamento', "Rapport d'emna da la renconuschientscha"),
+    'Weekly report with the simulator': ('Wochenbericht mit dem Simulator', 'Rapport hebdo avec le simulateur', 'Rapporto settimanale con il simulatore', "Rapport d'emna cun il simulatur"),
+    'Power saving mode': ('Stromsparmodus', "Mode économie d'énergie", 'Modalità risparmio energetico', 'Modus da spargnar energia'),
+    'Full speed while somebody watches': ('Volles Tempo, wenn jemand zuschaut', "Pleine vitesse si quelqu'un regarde", 'Piena velocità se qualcuno guarda', "Plaina sveltezza sch'insatgi guarda"),
+    'Warm body alarm in the zones': ('Wärme-Alarm in den Zonen', 'Alarme corps chaud dans les zones', 'Allarme corpo caldo nelle zone', 'Alarm da corp chaud en las zonas'),
+    'Then back to the previous position': ('Danach zurück an die alte Position', "Puis retour à la position d'avant", 'Poi ritorno alla posizione di prima', 'Lura enavos a la posiziun da vegl'),
+    'Noise alarm': ('Geräusch-Alarm', 'Alarme sonore', 'Allarme rumore', 'Alarm da canera'),
+    'Practice: only count and beep': ('Üben: nur zählen und piepen', 'Entraînement : compter et biper', 'Esercizio: solo contare e bip', 'Exercitar: mo dumbrar e pipar'),
+    'Gestures: wave, sit up, get up': ('Gesten: winken, aufsitzen, aufstehen', "Gestes : saluer, s'asseoir, se lever", 'Gesti: salutare, sedersi, alzarsi', 'Gests: far segn, seser, star si'),
+    'Announcement when arming': ('Ansage beim Einschalten', "Annonce à l'activation", "Annuncio all'attivazione", "Annunzia tar l'activaziun"),
+    'Protection on when my phone is gone': ('Schutz an, wenn mein Handy weg ist', 'Protection si mon portable est parti', 'Protezione se il mio cellulare è via', 'Protecziun cur che mes telefonin è davent'),
+    'Short morning push with pictures': ('Kurzer Morgen-Push mit Bildstreifen', 'Push court du matin avec images', 'Push breve al mattino con immagini', 'Push curt da la damaun cun maletgs'),
+    'Upright warm body = person': ('Aufrechter warmer Körper = Person', 'Corps chaud debout = personne', 'Corpo caldo in piedi = persona', 'Corp chaud en pe = persuna'),
+    'Battery saver': ('Akku-Sparen', 'Économiseur de batterie', 'Risparmio batteria', 'Spargnar accu'),
+    'Full: turn to the alarm': ('Voll: zum Alarm drehen', "Complet : tourner vers l'alarme", "Pieno: girare verso l'allarme", "Cumplet: sa volver vers l'alarm"),
+    'Aim light and siren at the person': ('Licht und Sirene zur Person drehen', 'Diriger lumière et sirène vers la personne', 'Puntare luce e sirena sulla persona', 'Drizzar glisch e sirena vers la persuna'),
+    'Back to the home position': ('Zurück zur Grundstellung', 'Retour à la position de base', 'Ritorno alla posizione base', 'Enavos a la posiziun da basa'),
+    'Glance at the valuables': ('Blick auf die Wertsachen', "Coup d'œil aux objets de valeur", 'Sguardo agli oggetti di valore', 'Egliada sin las valurs'),
+    'Move less (battery low, deep night)': ('Weniger bewegen (Akku knapp, Nacht)', 'Moins bouger (batterie faible, nuit)', 'Muoversi meno (batteria, notte)', 'Sa mover main (accu, notg)'),
+    'Walk test: the head follows you': ('Gehtest: der Kopf folgt dir', 'Test de marche : la tête te suit', 'Test di cammino: la testa ti segue', 'Test da chaminar: il chau ta suonda'),
+    'Sabotage: the head looks around': ('Sabotage: der Kopf schaut umher', 'Sabotage : la tête regarde autour', 'Sabotaggio: la testa si guarda intorno', 'Sabotascha: il chau guarda enturn'),
+    'Calibrate the overview now': ('Übersicht jetzt kalibrieren', "Calibrer la vue d'ensemble", 'Calibrare ora la panoramica', 'Calibrar ussa la survista'),
+    'Continuous servo: set the middle': ('Endlos-Servo: Mitte setzen', 'Servo continu : fixer le milieu', 'Servo continuo: impostare il centro', 'Servo cuntinuant: fixar il mez'),
+    'Emergency stop: park slowly': ('Not-Aus: langsam parkieren', "Arrêt d'urgence : garer lentement", "Arresto d'emergenza: parcheggiare piano", "Stop d'urgenza: parcar plaun"),
+    '«⏹ Stop» on the live page': ('«⏹ Stopp» auf der Live-Seite', '«⏹ Stop» sur la page en direct', '«⏹ Stop» sulla pagina live', '«⏹ Stop» sin la pagina live'),
+    'Show MoveEye on extra displays': ('MoveEye auf Zusatz-Bildschirmen', 'MoveEye sur les écrans supplémentaires', 'MoveEye sugli schermi aggiuntivi', 'MoveEye sin visurs supplementars'),
+    'Shunt resistor (Ohm)': ('Shunt-Widerstand (Ohm)', 'Résistance shunt (ohm)', 'Resistenza shunt (ohm)', 'Resistenza shunt (ohm)'),
+    'Theft tracking: alarm from (m)': ('Diebstahl-Ortung: Alarm ab (m)', 'Localisation vol : alarme dès (m)', 'Localizzazione furto: allarme da (m)', 'Localisaziun: alarm a partir da (m)'),
+    'Air pressure falls by (hPa / 3 h)': ('Luftdruck fällt um (hPa / 3 h)', 'La pression baisse de (hPa / 3 h)', 'La pressione scende di (hPa / 3 h)', "Squitsch d'aria croda per (hPa / 3 h)"),
+    'Tag not seen for (min)': ('Anhänger nicht gesehen seit (Min.)', 'Balise non vue depuis (min)', 'Tag non visto da (min)', 'Pendaglia betg vesida dapi (min)'),
+    'Alarm from a tilt of (°)': ('Alarm ab Neigung von (°)', 'Alarme dès une inclinaison de (°)', "Allarme da un'inclinazione di (°)", "Alarm a partir d'ina pendenza da (°)"),
+    'Photos per direction': ('Fotos pro Richtung', 'Photos par direction', 'Foto per direzione', 'Fotos per direcziun'),
+    'Compare every (min, 0 = off)': ('Vergleichen alle (Min., 0 = aus)', 'Comparer toutes les (min, 0 = arrêt)', 'Confrontare ogni (min, 0 = off)', 'Cumparegliar mintga (min, 0 = deactivà)'),
+    'Movement: smallest size (%)': ('Bewegung: kleinste Grösse (%)', 'Mouvement : taille minimale (%)', 'Movimento: dimensione minima (%)', 'Moviment: grondezza minimala (%)'),
+    'Movement: must move for (s)': ('Bewegung: muss sich bewegen (s)', 'Mouvement : doit bouger (s)', 'Movimento: deve muoversi (s)', 'Moviment: sto sa mover (s)'),
+    'Tracking: look ahead (s)': ('Folgen: vorausschauen (s)', 'Suivi : anticiper (s)', 'Inseguimento: anticipo (s)', 'Suandar: guardar ordavant (s)'),
+    'Thermal alarm: warmer by (%)': ('Wärme-Alarm: wärmer um (%)', 'Alarme thermique : plus chaud de (%)', 'Allarme termico: più caldo di (%)', 'Alarm termic: pli chaud per (%)'),
+    'Thermal alarm: minimum size (%)': ('Wärme-Alarm: Mindestgrösse (%)', 'Alarme thermique : taille min. (%)', 'Allarme termico: dimensione min. (%)', 'Alarm termic: grondezza min. (%)'),
+    'Full speed after an event (s)': ('Volles Tempo nach Ereignis (s)', 'Pleine vitesse après un événement (s)', 'Piena velocità dopo un evento (s)', 'Plaina sveltezza suenter in eveniment (s)'),
+    "Night time from (o'clock)": ('Nachtzeit ab (Uhr)', 'Nuit à partir de (heure)', 'Notte a partire dalle (ore)', 'Notg a partir da (uras)'),
+    'Log: status line every (min)': ('Protokoll: Statuszeile alle (Min.)', "Journal : ligne d'état toutes les (min)", 'Registro: riga di stato ogni (min)', 'Protocol: lingia da status mintga (min)'),
+    'Keep the log archive (days)': ('Protokoll-Archiv behalten (Tage)', "Garder l'archive du journal (jours)", "Conservare l'archivio registro (giorni)", "Tegnair l'archiv dal protocol (dis)"),
+    "Night time until (o'clock)": ('Nachtzeit bis (Uhr)', "Nuit jusqu'à (heure)", 'Notte fino alle (ore)', 'Notg fin (uras)'),
+    'Keep diary entries (days)': ('Tagebuch behalten (Tage)', 'Garder le journal (jours)', 'Conservare il diario (giorni)', 'Tegnair il diari (dis)'),
+    'UPS HAT: one 18650 cell (mAh)': ('USV-Akku: eine 18650-Zelle (mAh)', 'UPS HAT : une cellule 18650 (mAh)', 'UPS HAT: una cella 18650 (mAh)', 'Accu USV: ina cella 18650 (mAh)'),
+    'UPS HAT: shut down at (%)': ('USV-Akku: Pi aus bei (%)', 'UPS HAT : arrêt à (%)', 'UPS HAT: spegnere al (%)', 'Accu USV: deconnectar tar (%)'),
+    'Powerbank capacity (mAh)': ('Kapazität der Powerbank (mAh)', 'Capacité de la batterie externe (mAh)', 'Capacità del powerbank (mAh)', 'Capacitad da la powerbank (mAh)'),
+    'Look for known networks (min)': ('Bekannte Netze suchen alle (Min.)', 'Chercher les réseaux connus (min)', 'Cercare reti note ogni (min)', 'Tschertgar rets enconuschentas (min)'),
+    'Pan servo: turning range (°)': ('Schwenk-Servo: Drehbereich (°)', 'Servo pan : plage de rotation (°)', 'Servo pan: campo di rotazione (°)', 'Servo pan: spazi da rotaziun (°)'),
+    'Push when the CPU is hotter (°C)': ('Push, wenn CPU heisser als (°C)', 'Push si le CPU dépasse (°C)', 'Push se la CPU supera (°C)', 'Push sche la CPU è pli chauda (°C)'),
+    'Push when less free space (MB)': ('Push, wenn weniger frei als (MB)', "Push si moins d'espace libre (Mo)", 'Push se meno spazio libero (MB)', 'Push sche main plaz liber (MB)'),
+    'Thermal: zoom (%)': ('Wärmebild: Zoom (%)', 'Thermique : zoom (%)', 'Termico: zoom (%)', 'Termic: zoom (%)'),
+    'Thermal: shift left / right (%)': ('Wärmebild: links / rechts (%)', 'Thermique : gauche / droite (%)', 'Termico: sinistra / destra (%)', 'Termic: sanester / dretg (%)'),
+    'Noise alarm: louder by (dB)': ('Geräusch-Alarm: lauter um (dB)', 'Alarme sonore : plus fort de (dB)', 'Allarme rumore: più forte di (dB)', 'Alarm da canera: pli ferm per (dB)'),
+    'Sensitivity': ('Empfindlichkeit', 'Sensibilité', 'Sensibilità', 'Sensibilitad'),
+    'Siren: min. pause (s)': ('Sirene: min. Pause (s)', 'Sirène : pause min. (s)', 'Sirena: pausa min. (s)', 'Sirena: pausa min. (s)'),
+    'Speaking: volume boost (dB)': ('Sprechen: Lautstärke-Anhebung (dB)', 'Parler : gain de volume (dB)', 'Parlare: aumento volume (dB)', 'Discurrer: augment dal volumen (dB)'),
+    '🐢 Battery saver below (%)': ('🐢 Akku-Sparen unter (%)', '🐢 Économiseur sous (%)', '🐢 Risparmio batteria sotto (%)', '🐢 Spargnar accu sut (%)'),
+    '🔥 Campfire games end below (%)': ('🔥 Lagerfeuer-Spiele enden unter (%)', '🔥 Jeux de feu de camp finissent sous (%)', '🔥 Giochi del falò finiscono sotto (%)', '🔥 Gieus dal fieu finan sut (%)'),
+    'Battery saver: pictures per second': ('Akku-Sparen: Bilder pro Sekunde', 'Économiseur : images par seconde', 'Risparmio: immagini al secondo', 'Spargnar accu: maletgs per secunda'),
+    'Camera: vertical field of view (°)': ('Kamera: senkrechter Bildwinkel (°)', 'Caméra : champ vertical (°)', 'Telecamera: campo verticale (°)', 'Camera: angul vertical (°)'),
+    'Smart round: stay at the tent (s)': ('Kluge Runde: beim Zelt bleiben (s)', 'Ronde : rester à la tente (s)', 'Giro: restare alla tenda (s)', 'Runda: restar tar la tenda (s)'),
+    'Parking position: tilt (%)': ('Parkstellung: Neigen (%)', 'Position de parcage : inclinaison (%)', 'Posizione parcheggio: inclinazione (%)', 'Posiziun da parcar: pendenza (%)'),
+    'Wildlife: a photo every (s)': ('Wildtiere: ein Foto alle (s)', 'Faune : une photo toutes les (s)', 'Fauna: una foto ogni (s)', 'Animals selvadis: ina foto mintga (s)'),
+    'Overview: direction (°)': ('Übersicht: Ausrichtung (°)', "Vue d'ensemble : direction (°)", 'Panoramica: direzione (°)', 'Survista: direcziun (°)'),
+    'Overview: field of view (°)': ('Übersicht: Blickwinkel (°)', "Vue d'ensemble : champ (°)", 'Panoramica: campo visivo (°)', 'Survista: angul da vista (°)'),
+    'Continuous servo: degrees per second': ('Endlos-Servo: Grad pro Sekunde', 'Servo continu : degrés par seconde', 'Servo continuo: gradi al secondo', 'Servo cuntinuant: grads per secunda'),
+    'Pan: acceleration (°/s²)': ('Schwenken: Beschleunigung (°/s²)', 'Pan : accélération (°/s²)', 'Pan: accelerazione (°/s²)', 'Pan: acceleraziun (°/s²)'),
+    'Watchdog: stop the servos after (s)': ('Watchdog: Servos stoppen nach (s)', 'Watchdog : arrêter les servos après (s)', 'Watchdog: fermare i servo dopo (s)', 'Watchdog: fermar ils servos suenter (s)'),
+    'Maintenance hint after (hours)': ('Wartungshinweis nach (Stunden)', "Rappel d'entretien après (heures)", 'Avviso manutenzione dopo (ore)', 'Avis da mantegniment suenter (uras)'),
+    'Alarm picture stays after (min)': ('Alarmbild bleibt danach (min)', "L'image d'alarme reste ensuite (min)", "L'immagine d'allarme resta poi (min)", "Il maletg d'alarm resta suenter (min)"),
+    'At most one picture every (s)': ('Höchstens ein Bild alle (s)', 'Au plus une image toutes les (s)', "Al massimo un'immagine ogni (s)", 'Maximalmain in maletg mintga (s)'),
+    'Status picture: clock every (min)': ('Statusbild: Uhrzeit alle (Min.)', "Image d'état : heure toutes les (min)", 'Immagine di stato: ora ogni (min)', 'Maletg da status: ura mintga (min)'),
+    'Markings in recordings': ('Markierungen in Aufnahmen', 'Marquages dans les enregistrements', 'Marcature nelle registrazioni', 'Marcaziuns en las registraziuns'),
+    'Folder (USB stick / NAS)': ('Ordner (USB-Stick / NAS)', 'Dossier (clé USB / NAS)', 'Cartella (chiavetta USB / NAS)', 'Ordinatur (stick USB / NAS)'),
+    'Explanations when opened first': ('Erklärungen beim ersten Öffnen', 'Explications à la première ouverture', 'Spiegazioni alla prima apertura', "Explicaziuns a l'emprima avertura"),
+    'Own model: address': ('Eigenes Modell: Adresse', 'Modèle propre : adresse', 'Modello proprio: indirizzo', 'Agen model: adressa'),
+    'Wildlife mode': ('Wildtier-Modus', 'Mode faune', 'Modalità fauna', "Modus d'animals selvadis"),
+}
+_HX_MENU = {
+    'Place & clock': ('Ort & Uhr', 'Lieu & heure', 'Luogo & ora', 'Lieu & ura'),
+    'Head (servos)': ('Kopf (Servos)', 'Tête (servos)', 'Testa (servo)', 'Chau (servos)'),
+    'Night time': ('Nachtzeit', 'Heures de nuit', 'Orario notturno', 'Temp da notg'),
+    'Presence': ('Anwesenheit', 'Présence', 'Presenza', 'Preschientscha'),
+    'Device warnings': ('Gerätewarnungen', 'Alertes de l’appareil', 'Avvisi del dispositivo', 'Avertiments da l’apparat'),
+    'Device & help': ('Gerät & Hilfe', 'Appareil & aide', 'Dispositivo & aiuto', 'Apparat & agid'),
+    'Developer': ('Entwickler', 'Développeur', 'Sviluppatore', 'Sviluppader'),
+    'Light & sound': ('Licht & Ton', 'Lumière et son', 'Luce e suono', 'Glisch e tun'),
+    'Extra devices': ('Zusatzgeräte', 'Appareils supplémentaires', 'Dispositivi aggiuntivi', 'Apparats supplementars'),
+    'Developer area': ('Entwickler-Bereich', 'Espace développeur', 'Area sviluppatore', 'Secziun dal sviluppader'),
+    'Statistics & versions': ('Statistik & Versionen', 'Statistiques & versions', 'Statistiche & versioni', 'Statistica & versiuns'),
+    'Test bench and test run': ('Prüfstand und Testlauf', 'Banc d’essai et test', 'Banco di prova e test', 'Banc da prova e test'),
+    'Choose the phone': ('Handy wählen', 'Choisir le portable', 'Scegliere il cellulare', 'Tscherner il telefonin'),
+    'Reaction': ('Reaktion', 'Réaction', 'Reazione', 'Reacziun'),
+    'Big animal': ('Grosses Tier', 'Grand animal', 'Animale grande', 'Animal grond'),
+    'Small animal': ('Kleines Tier', 'Petit animal', 'Animale piccolo', 'Animal pitschen'),
+    'Only for the developer (switch: System → Device & help → Developer area).': (
+        'Nur für den Entwickler (Schalter: System → Gerät & Hilfe → Entwickler-Bereich).',
+        'Seulement pour le développeur (interrupteur : Système → Appareil & aide → Espace développeur).',
+        'Solo per lo sviluppatore (interruttore: Sistema → Dispositivo & aiuto → Area sviluppatore).',
+        'Mo per il sviluppader (cumutatur: Sistem → Apparat & agid → Secziun dal sviluppader).'),
+    'Protection on when my phone is gone: choose the phone here.': (
+        'Schutz an, wenn mein Handy weg ist: das Handy hier wählen.', 'Protection quand mon portable est parti : choisir le portable ici.',
+        'Protezione quando il cellulare è via: scegliere il cellulare qui.', 'Protecziun cur che mes telefonin è davent: tscherner il telefonin qua.'),
+    'Night time: the night report comes at its end, the wake-up alarm looks away during it, «Guard tonight» ends with it.': (
+        'Nachtzeit: an ihrem Ende kommt der Nachtbericht, der Wecker schaut während ihr weg, «Heute Nacht bewachen» endet mit ihr.',
+        'Heures de nuit : le rapport de nuit arrive à la fin, le réveil regarde ailleurs pendant ce temps, «Surveiller cette nuit» s’arrête avec elles.',
+        'Orario notturno: alla fine arriva il rapporto notturno, la sveglia guarda altrove, «Sorvegliare stanotte» finisce con esso.',
+        'Temp da notg: a la fin vegn il rapport da la notg, il svegliarin guarda davent, «Survegliar questa notg» finescha cun el.'),
+    'Reaction and sound per kind': ('Reaktion und Klang je Art', 'Réaction et son par type', 'Reazione e suono per tipo', 'Reacziun e tun per gener'),
+    'More in «Expert» and in the assistant.': ('Mehr in «Experte» und im Assistenten.', 'Plus dans «Expert» et dans l’assistant.', 'Altro in «Esperto» e nell’assistente.', 'Dapli en «Expert» ed en l’assistent.'),
+}
+# English of a few note keys (tr() and the web page show the key itself in English otherwise)
+MENU_EN = {
+    "stv-rot-hint": "By day the live picture (camera picture only, new every 2 min) and «Battery and power» take turns every 30 s; an alarm comes as an animation (60 s, on every display) and then stays 5 min as a still picture. At night only the red status page. Off = only the status page.",
+    "refscan-note": "The head goes through a grid of directions and stores photos as a reference. Later MoveEye compares the same directions and shows in the report what is missing, new or changed.",
+    "stv-note": "Shows the state, alarm pictures and the game on small GeekMagic SmallTV displays (240 × 240, Wi-Fi) - e.g. in the tent and in the caravan. Every display chooses what it shows. MoveEye sends a picture only when something changes and always overwrites the same two files (spares the device).",
+    "stv-security": "The SmallTV has no password: whoever is in the same network can change its picture. Best run it in the own Wi-Fi of MoveEye.",
+    "sc-intro": "Every message starts with a keyword. An automation of the Shortcuts app can react to it. On the iPhone this works with e-mail (switch on «E-mail» in this section) or SMS - not with notifications of apps.",
+    "sc-1": "Set up «E-mail» in this section and send a test message.",
+    "sc-2": "iPhone: Shortcuts → Automation → «+» → «E-mail». Sender: the address of MoveEye, subject contains: MW-ALARM.",
+    "sc-3": "Choose «Run immediately» (otherwise the iPhone asks every time).",
+    "sc-4": "Add actions, e.g. «Set volume» 100 %, «Play sound», «Flashlight», «Open URL» (live page), «Run scene» (Home app).",
+    "sc-5": "One automation per keyword: MW-WAERME, MW-LAERM, MW-SABOTAGE …",
+}
+for _d in (_HX_MENU, _HX_MENU_SHORT):
+    for _k, _v in _d.items():
+        DE.setdefault(_k, _v[0])
+        for _i, _L in enumerate(('fr', 'it', 'rm')):
+            TRX[_L].setdefault(_k, _v[_i + 1])
+# the web page: German of the texts its own script uses (groups, parts), English of the note keys
+WEB_PAGE = WEB_PAGE.replace("</body>", "<script>Object.assign(I18N.de, " + json.dumps({_k: DE.get(_k, _k) for _k in list(_HX_MENU) + ["Fine-tuning", "Sound", "Warm body", "Person", "A/B comparison", "Diagnosis package",
+                                                                      "Settings of the simulation", "Mover", "Mover (tracked vehicle)", "Theft protection", "Zones, schedule, presence"]}, ensure_ascii=False)
+                            + "); I18N.en = I18N.en || {}; Object.assign(I18N.en, " + json.dumps(MENU_EN, ensure_ascii=False) + ");</script></body>", 1)
+DE["Thermal: shift left / right (%)"] = "Wärmebild: links / rechts (%)"     # was 41 characters
+# ----------------------------------------------------------------------------
+# Here (after all the parts that add settings, before 640) so it sees every TOGGLES / SLIDERS / TEXTS entry:
+#   * moves a few settings to new sections (no CFG key changes - only where they are shown):
+#       Night time (report_from / report_hour) -> group «Zonen, Zeitplan, Anwesenheit»
+#       Presence (protection on when my phone is gone, the phones, «Is it you?») -> same group
+#       Setup -> «Ort & Uhr» (Setup) + «Gerätewarnungen» + «Gerät & Hilfe»; log status line -> «Entwickler»
+#   * the window groups (TK_GROUPS) = the web groups (GROUPS in 530): Diebstahlschutz, Licht & Ton, Zusatzgeräte, Mover,
+#     Entwickler (only with dev_area). «Kopf (Servos)» = Camera / Servos + Automatic head movement + Servo motion & safety
+#   * «Simple» (Einfach): the main switches of a part stay, the rest is in a closed «Feineinstellungen» (web and window);
+#     the old per-key list SIMPLE_KEYS decides what counts as main switch (fallback), MENU_MAIN adds a few
+#   * long labels: the short text is the label, the long one the «?» help (g2_help) - texts in 639b
+#   * the language of choices on the web page follows the page (web_texts), English texts of a few note keys
+# ----------------------------------------------------------------------------
+_MENU_MOVES = {
+    "Night time": ("report_from", "report_hour"),
+    "Presence": ("presence_auto", "presence_hosts", "presence_back", "back_hold_s", "away_after"),
+    "Setup": ("time_from_browser",),
+    "Device warnings": ("temp_alarm_on", "env_on", "temp_hot", "temp_cold", "env_offset", "temp_warn", "disk_warn_mb"),
+    "Device & help": ("device_name", "use_case", "tips_level", "tours_auto", "tip_of_day", "blinki_on", "desktop_notice", "log_keep_days", "dev_area"),
+    "Developer": ("log_status_min",),
+}
+for _ms, _mk in _MENU_MOVES.items():
+    for _lst in (TOGGLES, SLIDERS, TEXTS):
+        for _i, _x in enumerate(_lst):
+            if _x[1] in _mk:
+                _lst[_i] = (_ms,) + tuple(_x[1:])
+    if _ms not in SECTIONS:
+        SECTIONS.append(_ms)
+TEXT_SPECS.update({k: (kind, extra) for s, k, l, kind, extra in TEXTS})
+MENU_DEV_SECTIONS = ("Developer", "Servo driver")          # only with «Developer area» (dev_area) on
+SIMPLE_SECTIONS.update({"Theft protection", "Reference scan", "Night time", "Presence", "Device warnings", "Device & help", "Developer"})
+SIMPLE_KEYS.update({"presence_auto", "presence_hosts", "device_name", "refscan_on_arm", "deter_big_act", "deter_small_act", "deter_warm_act",
+                    "deter_big_sound", "deter_small_sound", "deter_warm_sound"})
+# main switch of a part that has no key in SIMPLE_KEYS (shown in «Simple», the rest is folded)
+MENU_MAIN = {"refscan_on_arm", "kopf_on", "servo_stop_btn", "log_status_min", "dev_area", "tours_auto", "report_from", "report_hour",
+             "time_from_browser", "gps_phone", "temp_warn", "disk_warn_mb", "deter_always"}
+MENU_NO_FOLD = {"Reference scan"}                          # «Simple»: only the link to the assistant (the rest in «Expert» / tools)
+MENU_TITLES = {"Setup": "Place & clock", "Camera / Servos": "Head (servos)", "Camping / protection": "Arming and own Wi-Fi",
+               "Notifications": "Push messages", "Device & help": "Device & help", "Night time": "Night time", "Presence": "Presence"}
+MENU_LONG = {}                                             # key -> the long label (now the «?» help)
+
+# ---- the window: the same groups as the web page ----------------------------------------------------------------------
+TK_GROUPS[:] = [
+    ("alarm", "Protection", ["Camping / protection"]),
+    ("notify", "What happens at an alarm?", ["Notifications", "Deterrence", "Recording", "Night report"]),     # messages / SMS: in the push panel (571a)
+    ("theft", "Theft protection", ["Theft protection", "Reference scan", "Backup"]),
+    ("sched", "Zones, schedule, presence", ["Schedule", "Night time", "Presence"]),
+    ("detect", "Detection", ["Improve detection", "Detection", "AI detection", "Thermal camera", None, "Walking recognition", "Vehicle filter", "Rain", "Wind", "Low light", "Auto-tune"]),
+    ("camera", "Cameras & head", ["Camera / Servos", "Patrol", "Video source", "Timelapse"]),
+    ("mover", "Mover", ["Mover"]),
+    ("lightsound", "Light & sound", ["Lights", "Loudspeaker", "Microphone", "Clap switch", "Bless you", "Wake-up alarm"]),
+    ("extras", "Extra devices", ["Relays", "Extra sensors", "Storm warning", "GPS module", _STVS]),
+    ("power", "Power supply", ["Battery", "Power saving", "Solar panel"]),
+    ("net", "Network & access", ["Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant"]),
+    ("security", "Security", ["Security"]),
+    ("sys", "System", ["Setup", "Device warnings", "Device & help", "Updates"]),
+    ("dev", "Developer", ["Developer", "Servo driver"]),
+]
+TK_GROUP_TAB.update({"alarm": "protect", "notify": "protect", "theft": "protect", "sched": "protect"})
+TK_GROUP_ICONS.update({"theft": "⚷", "mover": "⇕", "lightsound": "☀", "extras": "◉", "dev": "⚒"})
+TK_SUB_ICONS.update({"Night time": "☾", "Presence": "⌂", "Device warnings": "⚠", "Device & help": "?", "Developer": "⚒"})
+TK_MENU_MERGE = {"Camera / Servos": [_KS, _SVS]}
+TK_INSIDE = {_KS, _SVS, "Messages", "SMS (LTE stick)"}      # window: inside «Kopf (Servos)» / «Push-Nachrichten»          # «Kopf (Servos)»: one part, the two others in its «Feineinstellungen»
+
+
+# ---- «Simple»: developer sections only with dev_area; folded fine-tuning --------------------------------------------
+_MENU_TL = threading.local()
+_simple_hidden_menu_base = simple_hidden
+
+
+def simple_hidden(key, sec=None):                           # + 639c: developer sections, forced hiding (window table)
+    if sec is not None and sec in MENU_DEV_SECTIONS and not CFG.get("dev_area"):
+        return True
+    if sec is not None and getattr(_MENU_TL, "tk", False) and sec in TK_INSIDE:
+        return True                                         # the window shows them inside another part (not again under the last group)
+    if key is not None and key in getattr(_MENU_TL, "hide", ()):
+        return True
+    if key is not None and getattr(_MENU_TL, "all", False):
+        return False
+    return _simple_hidden_menu_base(key, sec)
+
+
+def menu_fine(key):
+    """«Simple»: this setting is in the closed «Feineinstellungen» of its part (not a main switch)"""
+    return key not in MENU_MAIN and _simple_hidden_menu_base(key)
+
+
+_cur_lang_menu_base = cur_lang
+
+
+def cur_lang(lang=None):                                    # + 639c: the language of the page while its schema is made
+    return norm_lang(lang or getattr(_MENU_TL, "lang", None) or CFG.get("lang") or "en")
+
+
+_web_texts_menu_base = web_texts
+
+
+def web_texts(lang=None):                                   # + 639c: the choices («nur Alarme …») in the language of the page
+    old = getattr(_MENU_TL, "lang", None)
+    _MENU_TL.lang = lang or old
+    try:
+        return _web_texts_menu_base(lang)
+    finally:
+        _MENU_TL.lang = old
+
+
+_web_schema_menu_base = web_schema
+
+
+def web_schema(lang=None, only=None):
+    """+ 639c: «Simple» sends every setting of a shown part; the ones that are not main switches carry fine=True (the page
+    puts them into a closed «Feineinstellungen»). Long labels: «help» = the long text (search + tooltip)."""
+    simple = only is None and ui_simple_now()
+    if simple:
+        vis = {s for s in SECTIONS if not simple_hidden(None, s)}
+        old = getattr(_MENU_TL, "all", False)
+        _MENU_TL.all = True
+        try:
+            out = _web_schema_menu_base(lang, only)
+        finally:
+            _MENU_TL.all = old
+        out = [s for s in out if s["id"] in vis]
+    else:
+        out = _web_schema_menu_base(lang, only)
+    for s in out:
+        s["title"] = tr(MENU_TITLES[s["id"]], lang) if s["id"] in MENU_TITLES else s["name"]
+        for k_ in ("toggles", "sliders", "texts"):
+            for x in s.get(k_) or []:
+                if simple and menu_fine(x["key"]) and s["id"] not in ("Notifications",):
+                    x["fine"] = True
+                if x["key"] in MENU_LONG:
+                    x["help"] = tr(MENU_LONG[x["key"]], lang)
+        if simple and s["id"] in MENU_NO_FOLD:
+            for k_ in ("toggles", "sliders", "texts"):
+                s[k_] = [x for x in s.get(k_) or [] if not x.get("fine")]
+    return out
+
+
+# ---- short labels (639b: MENU_SHORT {long English label: short English label}) --------------------------------------
+def _menu_short_apply():
+    for lst in (TOGGLES, SLIDERS, TEXTS):
+        for i, x in enumerate(lst):
+            sh = MENU_SHORT.get(x[2])
+            if sh and sh != x[2]:
+                MENU_LONG[x[1]] = x[2]
+                lst[i] = (x[0], x[1], sh) + tuple(x[3:])
+
+
+_menu_short_apply()
+_g2_help_menu_base = g2_help
+
+
+def g2_help(lang=None):                                     # + 639c: the long label of a shortened setting is its explanation
+    L = cur_lang(lang)
+    out = _g2_help_menu_base(lang)
+    for k, long_ in MENU_LONG.items():
+        x = out.get(k)
+        lt = tr(long_, L)
+        if x is None:
+            out[k] = {"x": lt, "r": "", "d": _g2_default_txt(k, L)}
+        elif lt not in x["x"]:
+            x["x"] = lt + "\n\n" + x["x"] if x["x"] else lt
+    return out
+
+
+# ---- a few note keys: English text (tr() returns the key in English) -------------------------------------------------
+_tr_menu_base = tr
+
+
+def tr(text, lang=None):                                    # + 639c: English of the note keys (MENU_EN in 639b)
+    if cur_lang(lang) == "en" and text in MENU_EN:
+        return MENU_EN[text]
+    return _tr_menu_base(text, lang)
+
+
+# ---- window: «Kopf (Servos)», folded fine-tuning, deterrence as a table, developer part ------------------------------
+if GUI_OK:
+    _tk_sub_menu_base = App._sub
+    _tk_sidebar_menu_base = App._build_sidebar
+
+    def _menu_tk_sidebar(self, body, tab="settings"):
+        _MENU_TL.tk = True
+        try:
+            return _tk_sidebar_menu_base(self, body, tab)
+        finally:
+            _MENU_TL.tk = False
+    _tk_build_section_menu_base = App._build_section
+
+    def _menu_tk_fold(self, parent, title, n, key):
+        """a closed line «Feineinstellungen (n) ▸» with its body (the state is kept like the parts)"""
+        h = tk.Frame(parent, bg=C["panel"], cursor="hand2"); h.pack(fill="x", pady=(8, 0))
+        al = tk.Label(h, text="▸", bg=C["panel"], fg=C["acc"], font=("DejaVu Sans", 9), cursor="hand2"); al.pack(side="right")
+        tl = tk.Label(h, text=tr(title).upper() + (f" ({n})" if n else ""), bg=C["panel"], fg=C["acc"], font=("DejaVu Sans", 7, "bold"),
+                      anchor="w", cursor="hand2")
+        tl.pack(side="left", fill="x", expand=True)
+        body = tk.Frame(parent, bg=C["panel"])
+        k = "fine:" + key
+
+        def paint(open_):
+            al.config(text="▾" if open_ else "▸")
+            if open_:
+                body.pack(fill="x", pady=(2, 0), after=h)
+            else:
+                body.pack_forget()
+
+        def click(_e=None):
+            o = k not in self.open_secs
+            (self.open_secs.add if o else self.open_secs.discard)(k)
+            CFG["ui_open"] = sorted(self.open_secs); save_settings(); paint(o)
+        for w_ in (h, al, tl):
+            w_.bind("<Button-1>", click)
+        paint(k in self.open_secs)
+        return body
+
+    def _menu_tk_sub(self, parent, sec, default_open=False):
+        _tk_sub_menu_base(self, parent, sec, default_open)
+        _MENU_TL.tk = False
+        try:
+            merged = [s for s in TK_MENU_MERGE.get(sec, ()) if s in SECTIONS and not simple_hidden(None, s)]
+        finally:
+            _MENU_TL.tk = True
+        if not merged or ("sub:" + sec) not in self.subs:
+            return
+        body = self.subs["sub:" + sec][1]
+        fb = _menu_tk_fold(self, body, "Fine-tuning", 0, "merge:" + sec)
+        for i, s in enumerate(merged):
+            self._sub_block(fb, s, i == 0, True)
+
+    def _menu_tk_build_section(self, sec, sbody, settings_parent=None):
+        if sec == "Developer":
+            ttk.Label(sbody, text=tr("Only for the developer (switch: System → Device & help → Developer area)."), style="Mut.TLabel",
+                      wraplength=330, justify="left").pack(anchor="w")
+            for ic, lab, path in (("🧪", "Test bench and test run", "/sim#c-test"), ("⚖", "A/B comparison", "/sim#c-hub"),
+                                  ("📈", "Statistics & versions", "/sim#c-hub"), ("🩺", "Diagnosis package", "/tools#diag"),
+                                  ("⚗", "Settings of the simulation", "/sim"), ("🛠", "Developer area", "/dev")):
+                ttk.Button(sbody, text=ic + " " + tr(lab) + " ›", command=lambda p=path: self._open_page(p)).pack(fill="x", pady=(4, 0))
+        if sec == "Deterrence":                     # 4 classes × reaction + sound as a small table (like the web page)
+            _MENU_TL.hide = {f"deter_{g}_{w}" for g in ("person", "big", "small", "warm") for w in ("act", "sound")}
+        try:
+            _tk_build_section_menu_base(self, sec, sbody, settings_parent)
+        finally:
+            _MENU_TL.hide = ()
+        sp = settings_parent if settings_parent is not None else sbody
+        if sec == "Deterrence":
+            _menu_tk_deter(self, sp)
+        if sec == "Presence":
+            ttk.Button(sbody, text="📱 " + tr("Choose the phone") + " ›", command=lambda: self._open_page("/tools#pres")).pack(fill="x", pady=(6, 0))
+        if not ui_simple_now() or sec in MENU_NO_FOLD or sec in ("Notifications",) or sec not in SECTIONS:
+            return
+        fine = [x for x in TOGGLES + SLIDERS + TEXTS if x[0] == sec and menu_fine(x[1]) and not (CFG["lock_on"] and x[1] in LOCK_DENY_KEYS)
+                and x[1] not in TK_AI_MODEL_KEYS + TK_SPECIES_KEYS and not (sec == "Deterrence" and x[1].startswith("deter_") and x[1][-4:] in ("_act", "ound"))]
+        if not fine:
+            return
+        fb = _menu_tk_fold(self, sp, "Fine-tuning", len(fine), sec)
+        keys = {x[1] for x in fine}
+        for s, key, label in TOGGLES:
+            if s == sec and key in keys:
+                tg = Toggle(fb, tr(label), CFG[key], lambda val, k=key: self._set(k, val)); tg.pack(fill="x", pady=3)
+                self.vars[key] = tg; self._g2_q(tg, key)
+        for s, key, label, lo, hi, step in SLIDERS:
+            if s == sec and key in keys:
+                row = ttk.Frame(fb); row.pack(fill="x", pady=(6, 0))
+                ttk.Label(row, text=tr(label)).pack(side="left")
+                vl = ttk.Label(row, text=str(CFG[key]), style="Mut.TLabel"); vl.pack(side="right"); self.value_labels[key] = vl
+                self._g2_q(row, key)
+                v = tk.DoubleVar(value=CFG[key]); self.vars[key] = v
+                sc = ttk.Scale(fb, from_=lo, to=hi, variable=v, orient="horizontal", command=lambda val, k=key, st=step: self._slide(k, float(val), st))
+                sc.pack(fill="x")
+                sc.bind("<ButtonPress-1>", lambda e, k=key: setattr(self, "dragging", k))
+                sc.bind("<ButtonRelease-1>", lambda e: (setattr(self, "dragging", None), self.root.focus_set()))
+        tk_ = [x[1] for x in TEXTS if x[0] == sec and x[1] in keys]
+        if tk_:
+            _MENU_TL.all = True
+            try:
+                self._build_texts(fb, sec, only=tk_)
+            finally:
+                _MENU_TL.all = False
+
+    def _menu_tk_deter(self, parent):
+        """Abschreckung: Person / grosses Tier / kleines Tier / warmer Körper × Reaktion + Klang"""
+        f = tk.Frame(parent, bg=C["panel"]); f.pack(fill="x", pady=(8, 0))
+        err = ttk.Label(parent, text="", style="Mut.TLabel", foreground=C["red"], wraplength=330, justify="left")
+        for c_, h_ in enumerate(("", "Reaction", "Sound")):
+            tk.Label(f, text=tr(h_).upper() if h_ else "", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").grid(row=0, column=c_, sticky="w")
+        for r_, (g, lab) in enumerate((("person", "Person"), ("big", "Big animal"), ("small", "Small animal"), ("warm", "Warm body")), 1):
+            tk.Label(f, text=tr(lab), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 9), anchor="w").grid(row=r_, column=0, sticky="w", padx=(0, 6), pady=2)
+            for c_, w in ((1, "act"), (2, "sound")):
+                key = f"deter_{g}_{w}"
+                pairs = text_choice_pairs(key); lab_ = dict(pairs); back = {l: c for c, l in pairs}
+                cb = ttk.Combobox(f, values=[l for _c, l in pairs], state="readonly", width=14); cb.set(lab_.get(CFG[key], CFG[key]))
+                cb.grid(row=r_, column=c_, sticky="ew", padx=(0, 4), pady=2)
+                cb.bind("<<ComboboxSelected>>", lambda e, k=key, c=cb, bk=back: (self.root.focus_set(), self._text_set(k, bk.get(c.get(), c.get()), err)))
+        f.columnconfigure(1, weight=1); f.columnconfigure(2, weight=1)
+        err.pack(anchor="w")
+
+    # wraps: App._sub
+    App._sub = _menu_tk_sub
+    # wraps: App._build_sidebar
+    App._build_sidebar = _menu_tk_sidebar
+    # wraps: App._build_section
+    App._build_section = _menu_tk_build_section
+
+
+def menu_selftest():
+    """every section is in a group of the window and of the web page, the developer sections hide without dev_area,
+    «Simple» keeps every setting of a shown part (folded), short labels have German"""
+    listed = {x for g in TK_GROUPS + TK_SIM_GROUPS for x in g[2] if x} | {s for v in TK_MENU_MERGE.values() for s in v} \
+        | {"Messages", "SMS (LTE stick)"}                   # the window shows them inside «Push-Nachrichten» (571a)
+    miss = [s for s in SECTIONS if s not in listed]
+    assert not miss, f"sections without a window group: {miss}"
+    page = WEB_PAGE
+    for s in SECTIONS:
+        if s in SECTIONS_ON_SIM_PAGE:
+            continue
+        assert ('sec: "' + s + '"') in page or ("also: [" in page and '"' + s + '"' in page), f"section not in the web GROUPS: {s}"
+    old = CFG.get("dev_area")
+    try:
+        CFG["dev_area"] = False
+        assert simple_hidden(None, "Developer") and simple_hidden(None, "Servo driver"), "developer sections visible without dev_area"
+        CFG["dev_area"] = True
+        assert not simple_hidden(None, "Developer"), "developer section hidden with dev_area"
+    finally:
+        CFG["dev_area"] = old
+    _G2_SIMPLE.v = True
+    try:
+        sch = web_schema("de")
+        keys = {x["key"] for s in sch for k_ in ("toggles", "sliders", "texts") for x in s[k_]}
+        assert "tamper_tilt" in keys and "report_from" in keys, "«Simple» lost settings of a shown part"
+        assert any(x.get("fine") for s in sch for x in s["sliders"]), "no folded fine-tuning in «Simple»"
+    finally:
+        _G2_SIMPLE.v = None
+    nde = [x[2] for x in TOGGLES + SLIDERS + TEXTS if x[1] in MENU_LONG and x[2] not in DE]
+    assert not nde, f"short labels without German: {nde[:5]}"
+    long_ = [x[1] for x in TOGGLES + SLIDERS + TEXTS if x[0] != "Simulator" and len(DE.get(x[2], x[2])) > 44]
+    return f"{len(MENU_LONG)} short labels, {len(long_)} German labels still over 44 characters" if long_ else f"{len(MENU_LONG)} short labels"
+
+
+SELFTEST_EXTRA.append(("Menu structure 2 (groups, Simple, developer, short labels)", menu_selftest))
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

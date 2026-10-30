@@ -313,6 +313,7 @@ var _group_state := {}
 var conn_body: Control                # the card «Verbindung» (symbol and title show the state)
 var cam_body: Control                 # 3D-3.50: the cards «Kameras» and «Werkzeuge» (symbol + arrow green while working)
 var tools_body: Control
+var testen_train: VBoxContainer       # 3D-4.21: card «Testen» → «Trainingsbilder» (quick tile «Lernen»)
 var testen_stoer: VBoxContainer       # 30.10.2026: card «Testen» → «Störungen» (simint.gd: servos, 5 V, I2C)
 var testen_measure: VBoxContainer     # 3D-4.x: card «Testen» → «Erkennung messen» (also the test run controls)
 var testen_rec: VBoxContainer         # 3D-4.x: card «Testen» → «Aufnahme …» (the recorder)
@@ -1860,6 +1861,20 @@ func open_testen() -> void:
 		(sc as ScrollContainer).ensure_control_visible.call_deferred(card)
 
 
+func open_train() -> void:
+	"""3D-4.21: the quick tile «Lernen»: card «Testen» with «Trainingsbilder» open"""
+	open_testen()
+	if testen_train != null:
+		UI.set_sub_open(testen_train, true)
+
+
+func _open_stoer() -> void:
+	"""3D-4.21 (group «Entwickler»): the card «Testen» with «Störungen» open"""
+	open_testen()
+	if testen_stoer != null:
+		UI.set_sub_open(testen_stoer, true)
+
+
 func busy_msg(w: String) -> String:
 	"""the same words as MoveEye: «Der Simulator ist belegt: …»"""
 	return "Der Simulator ist belegt: " + w
@@ -3140,12 +3155,19 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Dein Plat
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
 		["Kamerabild", "lens", "👁", ["", "Weitwinkel-Kamera", "Wärmebild", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
-		["Sensoren", "bell", "🔔", ["", "Akku und Strom", "Lautsprecher", "Netz-Ausfall testen", "Zusatz-Bildschirm"]],
+		["Sensoren", "bell", "🔔", ["", "Strom", "Lautsprecher", "Netz", "Zusatz-Bildschirm (SmallTV)"]],
 		["Mover", "track", "🚜", ["", "Patrouille", "Controller"]],
 		["Spiel", "pad", "🎮", ["", "Assistent"]],
-		["Wildbeobachtung", "target", "🎯", [""]],
-		["Testlauf", "check", "✅", ["", "Verfolgungs-Parcours", "Störungen"]],
-		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates", "Kinder-Modus"]]]
+		["Wildtier", "target", "🎯", [""]],
+		["Testen", "check", "✅", ["", "Verfolgungs-Parcours", "Störungen"]],
+		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates", "Sicherheit / Benutzer"]],
+		["Entwickler", "tools", "🧪", ["", "Updates"]]]
+# 3D-4.21 (Menü 2, Daniel 30.10.2026): the same names as MoveEye - the controls keep their old group / part in add_control,
+# _order_controls renames them here (MoveEye reads the fixed «gid», not the name)
+const GROUP_RENAME := {"Testlauf": "Testen", "Wildbeobachtung": "Wildtier"}
+const SUB_RENAME := {"Akku und Strom": "Strom", "Netz-Ausfall testen": "Netz", "Zusatz-Bildschirm": "Zusatz-Bildschirm (SmallTV)", "Kinder-Modus": "Sicherheit / Benutzer"}
+# 3D-4.21: what only the developer needs (like the group «Entwickler» of MoveEye) - always «Experte»
+const DEV_IDS := ["dev_updates", "pruef_open", "simint_open"]
 # id -> [group, part]; not listed: the group given in add_control, no part
 const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "Patrouille"], "patrol_points": ["Mover", "Patrouille"], "patrol_area": ["Mover", "Patrouille"],
 		"patrol_random": ["Mover", "Patrouille"], "patrol_clear": ["Mover", "Patrouille"], "patrol_speed": ["Mover", "Patrouille"], "patrol_dwell": ["Mover", "Patrouille"],
@@ -3177,17 +3199,17 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"cond_glare": ["Kamerabild", "Schwierige Bedingungen"], "cond_drops": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_web": ["Kamerabild", "Schwierige Bedingungen"], "cond_headlights": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_shadows": ["Kamerabild", "Schwierige Bedingungen"], "cond_ir": ["Kamerabild", "Schwierige Bedingungen"],
-		"autologon": ["System", "Start mit dem PC"], "kids_scary": ["System", "Kinder-Modus"], "kids_thief": ["System", "Kinder-Modus"], "kids_laser": ["System", "Kinder-Modus"], "kids_sound": ["System", "Kinder-Modus"], "kids_ask": ["System", "Kinder-Modus"], "auto_update": ["System", "Updates"], "dev_updates": ["System", "Updates"], "news_popup": ["System", "Updates"], "news_show": ["System", "Updates"], "update_now": ["System", "Updates"]}
+		"autologon": ["System", "Start mit dem PC"], "kids_scary": ["System", "Sicherheit / Benutzer"], "kids_thief": ["System", "Sicherheit / Benutzer"], "kids_laser": ["System", "Sicherheit / Benutzer"], "kids_sound": ["System", "Sicherheit / Benutzer"], "kids_ask": ["System", "Sicherheit / Benutzer"], "auto_update": ["System", "Updates"], "update_mode": ["System", "Updates"], "dev_updates": ["Entwickler", "Updates"], "news_popup": ["System", "Updates"], "news_show": ["System", "Updates"], "update_now": ["System", "Updates"]}
 
 
-const SIMPLE_GROUPS := ["Szene", "Wetter", "Besuch", "Testlauf", "Spiel"]
+const SIMPLE_GROUPS := ["Szene", "Wetter", "Besuch", "Testen", "Spiel"]
 # 3D-4.7 («Spiel-Karte schlank», Daniel): the card «Spiel» = Assistent öffnen, Start, Stopp and the state line; every other
 # setting of the game is only in the assistant (gamewiz.gd). Those controls stay (control API, saved settings) but get
 # extra «wiz»: not in this panel and not in the Simulator control of MoveEye.
 const GAME_MAIN := ["game_wizard", "game_start", "game_stop"]
 # 3D-4.7: a fixed id per group for MoveEye (the visible names may change); sent as «gid» with every control
 const GROUP_IDS := {"Szene": "scene", "Wetter": "weather", "Besuch": "visit", "Kamerabild": "camera", "Sensoren": "sensors", "Mover": "mover",
-		"Spiel": "game", "Wildbeobachtung": "wildlife", "Testlauf": "testrun", "System": "system"}
+		"Spiel": "game", "Wildtier": "wildlife", "Testen": "testrun", "System": "system", "Entwickler": "dev"}
 const SIMPLE_HIDE_SUBS := ["Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Verhalten", "Mehr Wetter", "Natur und Wind"]
 
 
@@ -3222,6 +3244,11 @@ func _order_controls() -> void:
 		if pl != null:
 			c.group = pl[0]
 			c.extra["sub"] = pl[1]
+		c.group = GROUP_RENAME.get(c.group, c.group)       # 3D-4.21: names like MoveEye
+		if SUB_RENAME.has(str(c.extra.get("sub", ""))):
+			c.extra["sub"] = SUB_RENAME[str(c.extra.get("sub", ""))]
+		if c.id in DEV_IDS:
+			c.extra["sub"] = "Updates" if c.id == "dev_updates" else ""
 		if c.group == "Spiel":                            # 3D-4.7: only open / start / stop on the card, the rest in the assistant
 			if c.id in GAME_MAIN:
 				c.extra["sub"] = ""                    # straight on the card (no part «Runde» any more)
@@ -3239,6 +3266,17 @@ func _order_controls() -> void:
 		keyed.append([g * 1000 + max(si, 0) * 100, i, c])
 	keyed.sort_custom(func(a, b): return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
 	controls = keyed.map(func(k): return k[2])
+	# 3D-4.21 (Menü 2, like MoveEye): «Einfach» = the main switch of every group - a group without one gets its first switch
+	var has_main := {}
+	for c in controls:
+		if not c.extra.get("expert", false) and not c.extra.get("hide", false) and not c.extra.get("wiz", false):
+			has_main[c.group] = true
+	for c in controls:
+		if has_main.has(c.group) or c.group in ["Entwickler", "Spiel"] or c.extra.get("hide", false) or c.extra.get("wiz", false):
+			continue
+		if c.type in ["toggle", "select", "button"]:
+			c.extra.erase("expert")
+			has_main[c.group] = true
 
 
 func _register_controls() -> void:
@@ -3410,6 +3448,9 @@ func _register_controls() -> void:
 	add_control("select", "update_mode", "Neue Versionen", func(): return "dev" if dev_updates else ("auto" if auto_update else "off"),
 			func(v): dev_updates = str(v) == "dev"; set_auto_update(str(v) != "off"), "Updates",
 			{"options": [["off", "nur von Hand (Knopf oben)"], ["auto", "automatisch installieren"], ["dev", "Entwicklungsphase: jede Minute, sofort"]]})
+	# 3D-4.21: group «Entwickler» (like MoveEye, only «Experte»): test bench and faults - the same buttons as in «Testen»
+	add_control("button", "pruef_open", "Prüfstand öffnen", null, func(): pruef.open(not pruef.visible), "Entwickler", {"expert": true})
+	add_control("button", "simint_open", "Störungen testen", null, func(): _open_stoer(), "Entwickler", {"expert": true})
 	add_control("toggle", "dev_updates", "Entwicklungsphase: jede Minute nach neuen Versionen schauen und sofort installieren", func(): return dev_updates, func(v): dev_updates = v; _settings_dirty = true, "Updates", {"expert": true, "hide": true})
 	add_control("toggle", "auto_update", "Neue Versionen automatisch installieren", func(): return auto_update, func(v): set_auto_update(v), "Updates", {"expert": true, "hide": true})
 	add_control("button", "update_now", "Jetzt nach Updates suchen und installieren", null, func(): run_update(true, false), "Updates", {"expert": true, "hide": true})
@@ -4715,6 +4756,7 @@ func _build_ui() -> void:
 	surprise_label = UI.small("")
 	tl.add_child(surprise_label)
 	tl = UI.sub_fold(tl_main, "Trainingsbilder für eine eigene KI", false)
+	testen_train = tl
 	tl.set_meta("always", true)
 	sub_bodies.append(tl)
 	var dsr := HBoxContainer.new()                   # 3D-3.74: a training set for an own AI model
@@ -4785,10 +4827,11 @@ func _build_ui() -> void:
 	# Watch shows, in the same order - GROUPS / PLACE)
 	var groups := {}
 	var subs := {}
+	var fine_folds := {}
 	for c in controls:
 		if c.extra.get("hide", false) or c.extra.get("wiz", false):
 			continue                                     # 3D-3.90: only for MoveEye (the web page), not in the window; 3D-4.7: «wiz» = only in the game assistant
-		if c.group == "Testlauf" and testen_measure != null:   # 3D-4.x: into the card «Testen» (no own card «Testlauf» any more)
+		if c.group == "Testen" and testen_measure != null:   # 3D-4.x: into the card «Testen» (no own card «Testlauf» any more)
 			if c.id in ["testrun_plan", "testrun_start"]:
 				continue                                 # the card has its own row «plan + Testlauf starten»
 			var tgt: VBoxContainer = testen_rec if c.id.begins_with("rec_") else (testen_stoer if c.id.begins_with("stoer_") and testen_stoer != null else testen_measure)
@@ -4814,7 +4857,8 @@ func _build_ui() -> void:
 			sub_bodies.append(vs)
 			subs["Besuch/Besucher hinsetzen"] = vs
 			var ivb := Button.new()                  # 3D-3.86: all people, animals and things in the inventory
-			ivb.text = "«Dein Platz» öffnen: Zelt, Auto, bewachte Sachen, Menschen, Tiere und alle 80 Dinge der KI"
+			ivb.text = "«Gegenstände» öffnen"
+			ivb.tooltip_text = "Zelt, Auto, bewachte Sachen, Menschen, Tiere und alle 80 Dinge der KI"
 			ivb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			UI.primary(ivb)
 			ivb.pressed.connect(func(): inventar.toggle())
@@ -4829,11 +4873,31 @@ func _build_ui() -> void:
 				subs[key] = UI.sub_fold(card_body, sub, sub in ["Vorlagen", "Menschen schicken", "Tiere schicken", "Runde"])
 				sub_bodies.append(subs[key])
 			target = subs[key]
+		# 3D-4.21 (Menü 2, same rule as MoveEye): «Einfach» shows the main switches, the rest sits in a closed «Feineinstellungen»
+		var folded := false
+		if c.extra.get("expert", false) and c.group != "Entwickler" and sub != "Feineinstellungen":
+			var fk := str(target.get_instance_id())
+			if not fine_folds.has(fk):
+				var fb := UI.sub_fold(target, "Feineinstellungen", false)
+				if target != card_body:
+					fb.set_meta("outer", target)
+				fine_folds[fk] = fb
+				sub_bodies.append(fb)
+				fine_bodies.append(fb)
+			target = fine_folds[fk]
+			folded = true
 		var n0 := ui_items.size()
 		_ui_control(target, c)
 		for i in range(n0, ui_items.size()):
 			ui_items[i][3] = card_body
 			ui_items[i].append(target)
+			if folded:
+				ui_items[i][2] = false                     # not hidden in «Einfach» - folded
+	for fb in fine_folds.values():                     # «Feineinstellungen» last in its part / card
+		var w: Control = fb.get_meta("wrap")
+		w.get_parent().move_child(w, -1)
+	if groups.has("Entwickler"):
+		expert_cards.append(groups["Entwickler"].get_meta("card"))
 	update_btn = Button.new()
 	update_btn.text = "Nach Updates suchen (jetzt %s)" % VERSION
 	update_btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -4841,10 +4905,10 @@ func _build_ui() -> void:
 	(subs.get("System/Updates", tl) as Control).add_child(update_btn)
 	if testen_measure != null:
 		testrun.add_info(testen_measure, UI)          # progress and result of the test run (card «Testen»)
-	elif groups.has("Testlauf"):
-		testrun.add_info(groups["Testlauf"], UI)
-	if subs.has("Sensoren/Akku und Strom"):           # Simulator-Werte: what goes to MoveEye (power.gd)
-		simwerte.add_info(subs["Sensoren/Akku und Strom"], UI)
+	elif groups.has("Testen"):
+		testrun.add_info(groups["Testen"], UI)
+	if subs.has("Sensoren/Strom"):                    # Simulator-Werte: what goes to MoveEye (power.gd)
+		simwerte.add_info(subs["Sensoren/Strom"], UI)
 	if subs.has("Kamerabild/Wie echt"):              # 3D-3.94: what the real look adjustment does
 		real_label = UI.small("")
 		real_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -4905,6 +4969,7 @@ var quick                             # 3D-3.86: quick.gd
 var expert_cards: Array = []
 var ui_items: Array = []              # [widget, label, expert, card body, part body] of every setting
 var sub_bodies: Array = []            # the parts inside the cards (3D-3.5)
+var fine_bodies: Array = []           # 3D-4.21: «Feineinstellungen» of a part / card (closed in «Einfach», open in «Experte»)
 
 
 func show_panel(on: bool) -> void:
@@ -5029,6 +5094,8 @@ func _search(q: String) -> void:
 			any = true
 			if it.size() > 4 and it[4] != it[3]:
 				UI.set_sub_open(it[4], true)
+				if it[4].has_meta("outer"):
+					UI.set_sub_open(it[4].get_meta("outer"), true)
 	for b in setting_bodies:
 		b.get_meta("card").visible = q == "" or hit_bodies.has(b)
 		if q != "":
@@ -5174,6 +5241,9 @@ func _apply_simple() -> void:
 		sb.get_meta("wrap").visible = sub_counts.has(sb) or sb.has_meta("always")
 	for c in expert_cards:
 		c.visible = not ui_simple
+	for fb in fine_bodies:                             # 3D-4.21: closed in «Einfach», open in «Experte»
+		if is_instance_valid(fb):
+			UI.set_sub_open(fb, not ui_simple)
 	if simple_note != null:
 		simple_note.visible = false                    # 3D-3.94: tooltip of the switch instead
 	if kids_on and kids != null:
@@ -5591,7 +5661,7 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 	match c.type:
 		"button":
 			var b := Button.new()
-			b.text = no_emoji(c.label)                  # 3D-3.98: the window has no emoji font (the page of MoveEye keeps them)
+			b.text = UI.short(no_emoji(c.label))[0]     # 3D-3.98: the window has no emoji font (the page of MoveEye keeps them); 3D-4.21: short, the rest in the tooltip
 			b.pressed.connect(func(): c["set"].call())
 			var tk: String = {"dogwalk": "dog", "herd": "deer", "feed": "deer", "garden_person": "person", "bench": "person", "thief": "person"}.get(
 					str(c.id), str(c.id).trim_prefix("spawn_"))
@@ -5610,7 +5680,7 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 				flow.add_theme_constant_override("h_separation", 6)
 				flow.add_theme_constant_override("v_separation", 6)
 				parent.add_child(flow)
-			b.custom_minimum_size = Vector2(150 if c.label.length() < 22 else 300, 0)
+			b.custom_minimum_size = Vector2(150 if b.text.length() < 22 else 300, 0)
 			b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART   # long texts on two lines (never wider than the panel)
 			b.tooltip_text = c.label
 			flow.add_child(b)
@@ -5618,7 +5688,9 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 		"toggle":
 			var row := HBoxContainer.new()                   # text (wraps) + switch on the right, like on the page of MoveEye
 			var tl := Label.new()
-			tl.text = c.label
+			var sh: Array = UI.short(no_emoji(c.label))          # 3D-4.21: at most ~40 characters, the rest in the tooltip
+			tl.text = sh[0]
+			tl.tooltip_text = sh[1]
 			tl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			tl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			tl.custom_minimum_size = Vector2(60, 0)
@@ -5638,7 +5710,10 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 			var hb := VBoxContainer.new()                    # label above the choice: long choices never widen the panel
 			hb.add_theme_constant_override("separation", 2)
 			var l := Label.new()
-			l.text = c.label
+			var shs: Array = UI.short(no_emoji(c.label))
+			l.text = shs[0]
+			l.tooltip_text = shs[1]
+			l.mouse_filter = Control.MOUSE_FILTER_PASS
 			l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			hb.add_child(l)
 			var ob := OptionButton.new()
@@ -5665,7 +5740,10 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 			var tb := VBoxContainer.new()
 			tb.add_theme_constant_override("separation", 2)
 			var tl2 := Label.new()
-			tl2.text = c.label
+			var sht: Array = UI.short(no_emoji(c.label))
+			tl2.text = sht[0]
+			tl2.tooltip_text = sht[1]
+			tl2.mouse_filter = Control.MOUSE_FILTER_PASS
 			tl2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			tb.add_child(tl2)
 			var le := LineEdit.new()
@@ -5679,7 +5757,10 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 			var vb := VBoxContainer.new()
 			var hb2 := HBoxContainer.new()
 			var l2 := Label.new()
-			l2.text = c.label
+			var shl: Array = UI.short(no_emoji(c.label))
+			l2.text = shl[0]
+			l2.tooltip_text = shl[1]
+			l2.mouse_filter = Control.MOUSE_FILTER_PASS
 			l2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			l2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			var val := Label.new()
@@ -5753,9 +5834,9 @@ func group_active(g: String) -> int:
 			return 1 if mover_on else 0
 		"Spiel":
 			return 1 if game != null and game.open else 0
-		"Wildbeobachtung":
+		"Wildtier":
 			return 1 if rifle_on else 0
-		"Testlauf":
+		"Testen":
 			return 1 if testrun != null and testrun.running else 0
 	return 0
 
