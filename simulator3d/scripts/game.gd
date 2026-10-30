@@ -824,8 +824,8 @@ func _clean_look(m) -> Dictionary:
 		return {}
 	var h := str(m.get("hat", ""))
 	var dc := str(m.get("deco", ""))                   # 3D-4.x: unlocked with the level (gamexp.gd)
-	return {"hat": h if h in ["", "cap", "hood"] else "", "pack": bool(m.get("pack", false)), "camo": false,   # 3D-4.x: camouflage only as «Tarn-Sachen» (gameplus.gd)
-			"deco": dc if dc in ["", "band", "scarf", "tophat", "cape", "crown"] else "", "gold": bool(m.get("gold", false))}
+	return Actor.clean_look(m, {"hat": h if h in ["", "cap", "hood"] else "", "pack": bool(m.get("pack", false)), "camo": false,   # 3D-4.x: camouflage only as «Tarn-Sachen» (gameplus.gd)
+			"deco": dc if dc in ["", "band", "scarf", "tophat", "cape", "crown"] else "", "gold": bool(m.get("gold", false))})   # 3D-4.12: + colour, size, build (figur.gd)
 
 
 func _smaller_team(me: int) -> int:
@@ -857,6 +857,7 @@ func _paint_cone(p: Dictionary) -> void:
 	var c: Color = TEAM_COLORS[int(p.get("team", 0))] if main.game_teams else COLORS[p["slot"]]
 	if p.has("cone") and is_instance_valid(p["cone"]):
 		p["cone"].material_override = _glow(c)
+	Actor.tag(p, c)                                        # 3D-4.12: name and role above the head (only the players see it)
 
 
 func _rebuild(p: Dictionary) -> void:
@@ -2738,12 +2739,19 @@ try { token = localStorage.getItem("mw3d-token") || ""; name = localStorage.getI
 if (!token) { token = Math.random().toString(36).slice(2) + Date.now().toString(36); try { localStorage.setItem("mw3d-token", token); } catch (e) {} }
 let lastOv = null, editing = false, GAL = [], XPI = null, aim = false;
 const ov = (html) => { if (html === lastOv) return; lastOv = html; $("#ov").innerHTML = html ? '<div class="card">' + html + '</div>' : ""; };
-let outfit = {hat: "", pack: false, deco: "", gold: false};
+let outfit = {hat: "", pack: false, deco: "", gold: false, col: "", size: "", build: ""};
 try { outfit = Object.assign(outfit, JSON.parse(localStorage.getItem("mw3d-look") || "{}")); } catch (e) {}
 function lookHtml() {
   const c = (grp, v, txt) => '<button type="button" data-g="' + grp + '" data-v="' + v + '" class="' + (String(outfit[grp]) === String(v) ? "on" : "") + '">' + txt + '</button>';
   return '<div class="lab">Kopf</div><div class="chips">' + c("hat", "", "Haare") + c("hat", "cap", "Mütze") + c("hat", "hood", "Kapuze") + '</div>' +
-    '<div class="lab">Rucksack</div><div class="chips">' + c("pack", false, "ohne") + c("pack", true, "mit") + '</div>' + lvLook(c);
+    '<div class="lab">Rucksack</div><div class="chips">' + c("pack", false, "ohne") + c("pack", true, "mit") + '</div>' + figLook(c) + lvLook(c);
+}
+function figLook(c) {                    // 3D-4.12: jacket colour, size, build of the own figure (figur.gd)
+  const cols = [["", "Spielerfarbe", ""], ["black", "Schwarz", "#1f1f21"], ["grey", "Grau", "#808085"], ["navy", "Marine", "#1f2961"], ["olive", "Oliv", "#545c33"], ["brown", "Braun", "#6b4729"], ["red", "Rot", "#b8241f"], ["orange", "Orange", "#e6731a"], ["white", "Weiss", "#e0e0db"]];
+  const cc = (v, t, h) => c("col", v, (h ? '<i style="display:inline-block;width:.8em;height:.8em;border-radius:50%;vertical-align:-1px;margin-right:4px;background:' + h + '"></i>' : '') + t);
+  return '<div class="lab">Jacke</div><div class="chips">' + cols.map(x => cc(x[0], x[1], x[2])).join("") + '</div>' +
+    '<div class="lab">Grösse</div><div class="chips">' + c("size", "s", "klein") + c("size", "", "mittel") + c("size", "l", "gross") + '</div>' +
+    '<div class="lab">Statur</div><div class="chips">' + c("build", "slim", "schlank") + c("build", "", "normal") + c("build", "strong", "kräftig") + '</div>';
 }
 function lvLook(c) {                     // 3D-4.x: what the level unlocks (only for the look)
   const X = XPI; if (!X || !(X.all || []).length) return "";
@@ -2775,7 +2783,7 @@ function duelHtml(D) {                   // 3D-4.x: MoveEye against the guard - 
   return '<h1>🛡 Duell: MoveEye gegen ' + esc(D.who) + '</h1><div class="duel"><div class="' + (D.win === "mw" ? "win" : "") + '"><b>🤖 MoveEye</b><span>' + D.mw + '</span><small>gemeldet</small></div><i>:</i><div class="' + (D.win === "human" ? "win" : "") + '"><b>' + esc(D.who) + '</b><span>' + D.human + '</span><small>erwischt</small></div></div><p><b>' + esc(D.text) + '</b></p>';
 }
 function bindLook() { document.querySelectorAll(".chips button[data-g]").forEach(b => b.onclick = () => {
-  const g = b.dataset.g; outfit[g] = g === "hat" || g === "deco" ? b.dataset.v : b.dataset.v === "true";
+  const g = b.dataset.g; outfit[g] = g === "hat" || g === "deco" || g === "col" || g === "size" || g === "build" ? b.dataset.v : b.dataset.v === "true";
   try { localStorage.setItem("mw3d-look", JSON.stringify(outfit)); } catch (e) {}
   document.querySelectorAll('.chips button[data-g="' + g + '"]').forEach(x => x.classList.toggle("on", x === b)); }); }
 // ---- sounds (Web Audio, no files): tick while seen, heartbeat when close to being caught, signals ----

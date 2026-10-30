@@ -1,7 +1,7 @@
 {
- "version": "3D-4.14",
+ "version": "3D-4.15",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31654680,
- "sha256": "ca56d6f03f44971da8ce87a2ddab7d621afd174b96a2c9cac0ead90a20379d75",
- "notes": "Controller einheitlich, Symbol-Dock"
+ "size": 31690028,
+ "sha256": "a4871183e085dadeec9f838f37374a32c42a7b07adaa90935be32cefb99e3efc",
+ "notes": "Neue Menschen-Figuren mit Skelett"
 }

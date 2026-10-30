@@ -166,6 +166,11 @@ func _first_colour(n: Node3D):
 
 func dress(v) -> String:
 	"""new jacket and trousers (colour, now and then a pattern) - returns a short description for the meta file"""
+	if v.get("fig") != null:                         # 3D-4.12: the figure with a skeleton - new colours (no pattern)
+		var fj := rand_cloth_colour()
+		var ft := rand_cloth_colour() if randf() < 0.7 else fj.darkened(0.3)
+		v.fig.recolour(fj, ft)
+		return "#%s/#%s" % [fj.to_html(false), ft.to_html(false)]
 	var jc = _first_colour(v.torso)
 	var tc = _first_colour(v.hips)
 	if jc == null:
@@ -206,6 +211,11 @@ func vary_animal(v) -> Dictionary:
 	return {"scale": snappedf(s, 0.01), "fur": snappedf(f, 0.01)}
 
 
+func vary_person(v) -> Dictionary:
+	"""3D-4.12: height, build, hood, backpack, umbrella (figur.gd)"""
+	return preload("res://scripts/figur.gd").vary(v)
+
+
 func carry(v) -> String:
 	"""something in the hands or on the shoulder - the AI must still see the person"""
 	if v.torso == null or v.arms.size() < 2:
@@ -240,6 +250,8 @@ func carry(v) -> String:
 	mi.mesh = bm
 	mi.material_override = main.mat(col)
 	parent.add_child(mi)
+	if what == "kiste":
+		v.carry = true                                   # 3D-4.12: both hands hold the box
 	return what
 
 
@@ -307,9 +319,16 @@ func occlusion(v, cam: Vector3, others: Array) -> float:
 	for ov in others:
 		if is_instance_valid(ov) and ov != v:
 			boxes.append([ov, _local_aabb(ov).grow(-0.05)])
+	var items := []
 	for mi in _meshes(v):
-		var ab: AABB = mi.get_aabb()
-		var xf: Transform3D = mi.global_transform
+		if mi.has_meta("pose_parts"):                    # 3D-4.12: a skinned figure - every bone in its pose
+			for pp in mi.get_meta("pose_parts"):
+				items.append([mi.global_transform * (pp[0] as Transform3D), pp[1]])
+		elif not mi.has_meta("pose_aabb"):
+			items.append([mi.global_transform, mi.get_aabb()])
+	for it in items:
+		var ab: AABB = it[1]
+		var xf: Transform3D = it[0]
 		var ext: Vector3 = (xf.basis * ab.size).abs()
 		var w: float = ext.x * ext.y + ext.y * ext.z + ext.x * ext.z
 		if w < 0.004:
@@ -337,7 +356,7 @@ func _local_aabb(v: Node3D) -> AABB:
 	var out := AABB()
 	var first := true
 	for mi in _meshes(v):
-		var ab: AABB = mi.get_aabb()
+		var ab: AABB = mi.get_meta("pose_aabb") if mi.has_meta("pose_aabb") else mi.get_aabb()   # 3D-4.12: the box of the pose
 		var xf: Transform3D = inv * mi.global_transform
 		var b2: AABB = xf * ab
 		out = b2 if first else out.merge(b2)

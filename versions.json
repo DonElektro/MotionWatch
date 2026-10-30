@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 05:01",
+ "generated": "2026-10-30 05:28",
  "versions": [
   {
-   "version": "2.98.43",
-   "file": "webcam_bewegung_2_98_43.py",
+   "version": "2.98.44",
+   "file": "webcam_bewegung_2_98_44.py",
    "url": "",
-   "sha256": "5cf7be5a7a696196fef29baf14cfde31bee609c366931dfd4bfc77ce584bb0d1",
-   "date": "2026-10-30 05:01",
-   "notes": "Benutzer mit Rollen Kind / Freund / Familie / Nur ansehen / Eigene Rechte, Handy per QR verknüpfen, Geräte pro Person, Zugangszeiten und Ablaufdatum, Push pro Person. Controller überall gleich belegt (mit Simulator 3D-4.14: Symbol-Dock, Menüs mit Controller, Vibration, mehrere Controller). «⏹ Stopp» nur mit Schwenkkopf und abschaltbar.",
-   "sig": "f69ebe65ca9a54e160decb364e40a3c072b94c22e3efb6529b19667b49ee4aa03256d9be7764f812536b67de8ac76805e08d49a8830bfdcb028d97a0832b2807"
+   "sha256": "dea61ffb3e5c54b46813ca1221324e43ba54b8ece27ecb61ce11e396350c5fa4",
+   "date": "2026-10-30 05:28",
+   "notes": "Mit Simulator 3D-4.15: neue Menschen-Figuren mit Skelett (echtere Bewegungen, Wärmebild, Avatar am Handy, Namen nur für Spieler).",
+   "sig": "528d385c255d8c88d8c8c2ae6e29881a9abad6c27abd55c7c247e63ac43755baf8783dfcedb0abeabe3b924b84f2162cb3f7ff645005d2c2bdc8b0ee77b5e506"
   },
   {
    "version": "2.97.1",

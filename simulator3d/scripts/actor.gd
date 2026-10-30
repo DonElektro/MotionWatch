@@ -99,6 +99,23 @@ const CAR_VARIANTS := ["tractor", "moto", "van"]
 var wheels: Array = []        # cyclist, stroller: wheels that turn
 var carry := false            # courier: holds the box in front with both hands
 var _lie_k := 0.0             # 3D-4.4: 0 standing … 1 lying (deer bedded down, simreal.gd «deer_bedded»)
+# ---- 3D-4.12 «Figuren»: a real figure with a skeleton (figur.gd) on «mittel» and better, the old one on «einfach» ----
+const Figur = preload("res://scripts/figur.gd")
+var fig = null                # the figure with a skeleton (null = built from shapes)
+var demo := -1.0              # tests (figur.gd «row»): walks on the spot at this speed
+var tag_p = null              # players: the dictionary of game.gd (name, role, team above the head)
+var tag_col := Color.WHITE
+var tag_lb: Label3D = null
+var tag_ring: MeshInstance3D = null
+var tag_t := 0.0
+var _glance_until := 0.0      # persons look round now and then (towards the camera when sneaking)
+var _glance_next := 0.0
+var _glance_yaw := 0.0
+var _want_c := 0.0            # visitors: the posture of the next point of the route - changes smoothly
+var _want_p := 0.0
+var _post_smooth := false
+var _jacket_c := Color(0.3, 0.3, 0.3)
+var _cloth_t := 26.0
 
 
 func setup(m, k: String, from: Vector3, to: Vector3, spd: float) -> void:
@@ -243,67 +260,37 @@ func _build_person() -> void:
 		hair = Color(0.78, 0.78, 0.76) if randf() < 0.7 else Color(0.55, 0.55, 0.53)
 	var wide := randf_range(0.9, 1.15) if not kid else 1.0                  # build: slim … sturdy
 	var tall := randf_range(0.93, 1.07)
+	if controlled and not look.is_empty():                                 # 3D-4.12: the own look of a player
+		var lc := str(look.get("col", ""))
+		if Figur.LOOK_COLS.has(lc) and not camo and not bool(look.get("gold", false)):
+			jacket = Figur.LOOK_COLS[lc]
+		tall = float(Figur.LOOK_SIZE.get(str(look.get("size", "")), 1.0))
+		wide = float(Figur.LOOK_BUILD.get(str(look.get("build", "")), 1.0))
 	body_root.scale = Vector3(wide, tall, wide) * (0.62 if kid else 1.0)
-	var open_jacket := not jog and not cold and randf() < 0.4
-	# ---- hips and legs ----
-	hips = _pivot(body_root, Vector3(0, 0.95, 0))
-	_part(hips, _caps(0.165, 0.3), Vector3(0, 0.02, 0), trousers, cloth_t, Vector3(0, 0, PI / 2), Vector3(1, 1, 0.78))
-	for s in [-1, 1]:
-		var hip := _pivot(hips, Vector3(0.1 * s, -0.03, 0))
-		_part(hip, _caps(0.078, 0.5), Vector3(0, -0.22, 0), trousers, cloth_t - 1.0)            # thigh
-		var knee := _pivot(hip, Vector3(0, -0.46, 0))
-		_part(knee, _caps(0.062, 0.46), Vector3(0, -0.21, 0), skin if shorts else trousers, 31.0 if shorts else cloth_t - 1.5)   # shin (bare with shorts)
-		_part(knee, _box(0.11, 0.06, 0.27), Vector3(0, -0.43, -0.06), shoe, cloth_t - 4.0)       # shoe
-		_part(knee, _box(0.115, 0.02, 0.28), Vector3(0, -0.465, -0.06), shoe.darkened(0.5), cloth_t - 5.0)   # sole
-		legs.append([hip, s, knee])
+	var open_jacket := not jog and not cold and variant not in ["police", "burglar"] and randf() < 0.4
+	var hand_c: Color = Color(0.15, 0.15, 0.16) if cold else skin             # gloves in the cold
+	_jacket_c = jacket
+	_cloth_t = cloth_t
+	if Figur.wanted(main):
+		_figure_body(jacket, shirt, trousers, skin, hair, shoe, hand_c, cloth_t, shorts, open_jacket, cold, jog, kid, old_, wide)
+	else:
+		_shape_body(jacket, shirt, trousers, skin, hair, shoe, hand_c, cloth_t, shorts, open_jacket, cold, jog)
 	if coat:                                                               # 3D-3.95: a long coat down to the knees
 		_part(hips, _cyl(0.2, 0.27, 0.62, 12), Vector3(0, -0.25, 0), jacket.darkened(0.15), cloth_t - 1.0)
-	# ---- upper body ----
-	torso = _pivot(body_root, Vector3(0, 0.98, 0))
-	_part(torso, _caps(0.17, 0.34), Vector3(0, 0.12, 0), jacket, cloth_t, Vector3.ZERO, Vector3(1.0, 1.0, 0.68))      # belly
-	_part(torso, _caps(0.205, 0.36), Vector3(0, 0.36, 0), jacket, cloth_t, Vector3.ZERO, Vector3(1.05, 1.0, 0.66))    # chest
-	_part(torso, _caps(0.07, 0.5), Vector3(0, 0.49, 0), jacket, cloth_t, Vector3(0, 0, PI / 2))                       # shoulders
-	if open_jacket:                                                        # open jacket: the shirt shows in front
-		_part(torso, _box(0.13, 0.42, 0.02), Vector3(0, 0.27, -0.142), shirt, cloth_t + 2.0)
-	else:
-		_part(torso, _box(0.012, 0.42, 0.012), Vector3(0, 0.27, -0.142), jacket.darkened(0.45), cloth_t)               # zip
 	if camo:                                                               # camouflage: darker and brown patches
 		for k2 in range(7):
 			var pc: Color = Color(0.2, 0.24, 0.13) if k2 % 2 == 0 else Color(0.38, 0.3, 0.18)
 			var a2 := randf() * TAU
 			_part(torso, _sph(0.07, 0.05), Vector3(cos(a2) * 0.16, randf_range(0.05, 0.45), sin(a2) * 0.12), pc, cloth_t, Vector3(0, a2, 0), Vector3(1.4, 1.0, 0.4))
 	if (controlled and bool(look.get("pack", false))) or (not jog and not kid and not controlled and randf() < 0.35):   # backpack
-		var bp: Color = jacket.darkened(0.5).lerp(Color(0.2, 0.3, 0.2), 0.5)
-		_part(torso, _box(0.3, 0.4, 0.15), Vector3(0, 0.3, 0.19), bp, main.ambient + 3.0)
-		_part(torso, _box(0.26, 0.12, 0.05), Vector3(0, 0.18, 0.28), bp.darkened(0.2), main.ambient + 3.0)
-	var hand_c: Color = Color(0.15, 0.15, 0.16) if cold else skin             # gloves in the cold
-	for s in [-1, 1]:
-		var sh := _pivot(torso, Vector3(0.245 * s, 0.48, 0))
-		_part(sh, _caps(0.058, 0.34), Vector3(0, -0.15, 0), jacket, cloth_t)
-		var el := _pivot(sh, Vector3(0, -0.3, 0))
-		_part(el, _caps(0.05, 0.32), Vector3(0, -0.14, 0), jacket if cold or not jog else skin, cloth_t if cold or not jog else 32.0)
-		_part(el, _caps(0.045, 0.11), Vector3(0, -0.32, -0.01), hand_c, 31.5 if not cold else 22.0, Vector3.ZERO, Vector3(1.0, 1.0, 0.7))  # hand
-		arms.append([sh, s, el])
-	# ---- head ----
-	head = _pivot(torso, Vector3(0, 0.6, 0))
-	_part(head, _caps(0.052, 0.13), Vector3(0, 0.02, 0), skin, 33.0)                                   # neck
-	_part(head, _sph(0.105, 0.25), Vector3(0, 0.16, 0), skin, 34.0, Vector3.ZERO, Vector3(1.0, 1.0, 1.08))   # head
-	_part(head, _sph(0.06, 0.07), Vector3(0, 0.085, -0.035), skin, 34.0, Vector3.ZERO, Vector3(1.2, 1.0, 1.1))  # chin / jaw
-	_part(head, _caps(0.016, 0.05), Vector3(0, 0.15, -0.115), skin.darkened(0.06), 34.0, Vector3(0.3, 0, 0))     # nose
-	for s3 in [-1, 1]:
-		_part(head, _sph(0.022), Vector3(0.042 * s3, 0.178, -0.093), Color(0.95, 0.95, 0.93), 35.0)            # eye white
-		_part(head, _sph(0.012), Vector3(0.042 * s3, 0.178, -0.11), Color(0.08, 0.07, 0.06), 35.0)             # pupil
-		_part(head, _box(0.045, 0.01, 0.012), Vector3(0.044 * s3, 0.21, -0.1), hair.darkened(0.2), 34.0, Vector3(0, 0, -0.12 * s3))   # eyebrow
-		_part(head, _sph(0.025, 0.05), Vector3(0.107 * s3, 0.16, 0.0), skin.darkened(0.05), 33.5, Vector3.ZERO, Vector3(0.5, 1.0, 0.8))   # ear
-	_part(head, _box(0.05, 0.008, 0.01), Vector3(0, 0.11, -0.108), Color(0.45, 0.2, 0.18), 34.0)           # mouth
+		add_backpack(jacket)
 	var style := randi() % 5
 	var hooded: bool = ((cold or wet) and not jog and randf() < 0.45) or variant == "burglar"
 	if controlled and not look.is_empty():                                  # a player chose
 		hooded = look.get("hat", "") == "hood"
 		style = 3 if look.get("hat", "") == "cap" else 0
 	if hooded:                                                             # hood up
-		_part(head, _sph(0.13, 0.27), Vector3(0, 0.18, 0.02), jacket.darkened(0.1), cloth_t - 2.0, Vector3.ZERO, Vector3(1.0, 1.0, 1.05))
-		_part(torso, _sph(0.11, 0.12), Vector3(0, 0.55, 0.12), jacket.darkened(0.1), cloth_t)
+		add_hood(jacket)
 	elif style == 0 or kid:
 		_part(head, _sph(0.112, 0.15), Vector3(0, 0.21, 0.012), hair, 30.0)                                # short hair
 	elif style == 1:
@@ -321,9 +308,7 @@ func _build_person() -> void:
 	body_h = 0.9 * body_root.scale.y
 	_person_extras(jacket, cloth_t)
 	if wet and not kid and not jog and variant in ["", "elderly"] and not controlled and randf() < 0.55:   # 3D-3.95: umbrella in the rain
-		var uc: Color = [Color(0.1, 0.1, 0.12), Color(0.55, 0.1, 0.12), Color(0.1, 0.25, 0.55), Color(0.85, 0.75, 0.2)][randi() % 4]
-		_part(torso, _cyl(0.012, 0.012, 0.85, 6), Vector3(0.12, 0.85, -0.12), Color(0.15, 0.15, 0.15), main.ambient)
-		_part(torso, _cyl(0.02, 0.55, 0.22, 16), Vector3(0.12, 1.28, -0.12), uc, main.ambient)
+		add_umbrella()
 	if old_:                                                              # walking stick
 		_part(arms[1][2], _cyl(0.014, 0.014, 0.9, 6), Vector3(0.02, -0.75, -0.1), Color(0.3, 0.2, 0.12), main.ambient)
 	# at night some people carry a light: a headlamp or the light of the phone (MoveEye sees it)
@@ -355,6 +340,109 @@ func _build_person() -> void:
 			arms[1][2].add_child(bulb)
 			phone_out = true
 		lamp.light_energy = 6.0
+
+
+func _shape_body(jacket: Color, shirt: Color, trousers: Color, skin: Color, hair: Color, shoe: Color, hand_c: Color, cloth_t: float,
+		shorts: bool, open_jacket: bool, cold: bool, jog: bool) -> void:
+	"""the old figure from shapes (Grafik «einfach», the Pi): joints with boxes, capsules and spheres"""
+	# ---- hips and legs ----
+	hips = _pivot(body_root, Vector3(0, 0.95, 0))
+	_part(hips, _caps(0.165, 0.3), Vector3(0, 0.02, 0), trousers, cloth_t, Vector3(0, 0, PI / 2), Vector3(1, 1, 0.78))
+	for s in [-1, 1]:
+		var hip := _pivot(hips, Vector3(0.1 * s, -0.03, 0))
+		_part(hip, _caps(0.078, 0.5), Vector3(0, -0.22, 0), trousers, cloth_t - 1.0)            # thigh
+		var knee := _pivot(hip, Vector3(0, -0.46, 0))
+		_part(knee, _caps(0.062, 0.46), Vector3(0, -0.21, 0), skin if shorts else trousers, 31.0 if shorts else cloth_t - 1.5)   # shin (bare with shorts)
+		_part(knee, _box(0.11, 0.06, 0.27), Vector3(0, -0.43, -0.06), shoe, cloth_t - 4.0)       # shoe
+		_part(knee, _box(0.115, 0.02, 0.28), Vector3(0, -0.465, -0.06), shoe.darkened(0.5), cloth_t - 5.0)   # sole
+		legs.append([hip, s, knee])
+	# ---- upper body ----
+	torso = _pivot(body_root, Vector3(0, 0.98, 0))
+	_part(torso, _caps(0.17, 0.34), Vector3(0, 0.12, 0), jacket, cloth_t, Vector3.ZERO, Vector3(1.0, 1.0, 0.68))      # belly
+	_part(torso, _caps(0.205, 0.36), Vector3(0, 0.36, 0), jacket, cloth_t, Vector3.ZERO, Vector3(1.05, 1.0, 0.66))    # chest
+	_part(torso, _caps(0.07, 0.5), Vector3(0, 0.49, 0), jacket, cloth_t, Vector3(0, 0, PI / 2))                       # shoulders
+	if open_jacket:                                                        # open jacket: the shirt shows in front
+		_part(torso, _box(0.13, 0.42, 0.02), Vector3(0, 0.27, -0.142), shirt, cloth_t + 2.0)
+	else:
+		_part(torso, _box(0.012, 0.42, 0.012), Vector3(0, 0.27, -0.142), jacket.darkened(0.45), cloth_t)               # zip
+	for s in [-1, 1]:
+		var sh := _pivot(torso, Vector3(0.245 * s, 0.48, 0))
+		_part(sh, _caps(0.058, 0.34), Vector3(0, -0.15, 0), jacket, cloth_t)
+		var el := _pivot(sh, Vector3(0, -0.3, 0))
+		_part(el, _caps(0.05, 0.32), Vector3(0, -0.14, 0), jacket if cold or not jog else skin, cloth_t if cold or not jog else 32.0)
+		_part(el, _caps(0.045, 0.11), Vector3(0, -0.32, -0.01), hand_c, 31.5 if not cold else 22.0, Vector3.ZERO, Vector3(1.0, 1.0, 0.7))  # hand
+		arms.append([sh, s, el])
+	# ---- head ----
+	head = _pivot(torso, Vector3(0, 0.6, 0))
+	_part(head, _caps(0.052, 0.13), Vector3(0, 0.02, 0), skin, 33.0)                                   # neck
+	_part(head, _sph(0.105, 0.25), Vector3(0, 0.16, 0), skin, 34.0, Vector3.ZERO, Vector3(1.0, 1.0, 1.08))   # head
+	_part(head, _sph(0.06, 0.07), Vector3(0, 0.085, -0.035), skin, 34.0, Vector3.ZERO, Vector3(1.2, 1.0, 1.1))  # chin / jaw
+	_part(head, _caps(0.016, 0.05), Vector3(0, 0.15, -0.115), skin.darkened(0.06), 34.0, Vector3(0.3, 0, 0))     # nose
+	for s3 in [-1, 1]:
+		_part(head, _sph(0.022), Vector3(0.042 * s3, 0.178, -0.093), Color(0.95, 0.95, 0.93), 35.0)            # eye white
+		_part(head, _sph(0.012), Vector3(0.042 * s3, 0.178, -0.11), Color(0.08, 0.07, 0.06), 35.0)             # pupil
+		_part(head, _box(0.045, 0.01, 0.012), Vector3(0.044 * s3, 0.21, -0.1), hair.darkened(0.2), 34.0, Vector3(0, 0, -0.12 * s3))   # eyebrow
+		_part(head, _sph(0.025, 0.05), Vector3(0.107 * s3, 0.16, 0.0), skin.darkened(0.05), 33.5, Vector3.ZERO, Vector3(0.5, 1.0, 0.8))   # ear
+	_part(head, _box(0.05, 0.008, 0.01), Vector3(0, 0.11, -0.108), Color(0.45, 0.2, 0.18), 34.0)           # mouth
+
+
+func _figure_body(jacket: Color, shirt: Color, trousers: Color, skin: Color, hair: Color, shoe: Color, hand_c: Color, cloth_t: float,
+		shorts: bool, open_jacket: bool, cold: bool, jog: bool, kid: bool, old_: bool, wide: float) -> void:
+	"""3D-4.12: the joints only (the same places as the old figure) + one skinned body with a skeleton (figur.gd)"""
+	hips = _pivot(body_root, Vector3(0, 0.95, 0))
+	for s in [-1, 1]:
+		var hip := _pivot(hips, Vector3(0.1 * s, -0.03, 0))
+		var knee := _pivot(hip, Vector3(0, -0.46, 0))
+		legs.append([hip, s, knee])
+	torso = _pivot(body_root, Vector3(0, 0.98, 0))
+	for s in [-1, 1]:
+		var sh := _pivot(torso, Vector3(0.245 * s, 0.48, 0))
+		var el := _pivot(sh, Vector3(0, -0.3, 0))
+		arms.append([sh, s, el])
+	head = _pivot(torso, Vector3(0, 0.6, 0))
+	var q: String = str(main.quality)
+	var strong := wide > 1.06
+	var p := {"skin": skin, "jacket": jacket, "shirt": shirt, "trousers": trousers, "shoe": shoe, "hand": hand_c, "hair": hair,
+			"shorts": shorts, "open": open_jacket, "short_sleeves": jog and not cold, "gloves": cold, "cloth_t": cloth_t,
+			"seg": {"medium": 8, "nice": 10, "ultra": 12}.get(q, 10),
+			"sh": 1.0 if kid else randf_range(0.93, 1.07), "hp": 1.0 if kid else randf_range(0.94, 1.1),
+			"bl": 0.0 if kid or jog else (randf_range(0.012, 0.045) if randf() < (0.5 if old_ or strong else 0.25) else 0.0),
+			"ch": 0.0 if kid else (randf_range(0.012, 0.03) if randf() < 0.4 else 0.0),
+			"lt": randf_range(0.93, 1.08) * (1.06 if strong else 1.0)}
+	fig = Figur.new()
+	body_root.add_child(fig)
+	fig.build(self, p)
+
+
+func rand_jacket() -> Color:
+	return _pick("jacket")
+
+
+func add_backpack(col: Color) -> void:
+	var bp: Color = col.darkened(0.5).lerp(Color(0.2, 0.3, 0.2), 0.5)
+	_part(torso, _box(0.3, 0.4, 0.15), Vector3(0, 0.3, 0.19), bp, main.ambient + 3.0)
+	_part(torso, _box(0.26, 0.12, 0.05), Vector3(0, 0.18, 0.28), bp.darkened(0.2), main.ambient + 3.0)
+
+
+func add_hood(col: Color) -> void:
+	_part(head, _sph(0.13, 0.27), Vector3(0, 0.18, 0.02), col.darkened(0.1), _cloth_t - 2.0, Vector3.ZERO, Vector3(1.0, 1.0, 1.05))
+	_part(torso, _sph(0.11, 0.12), Vector3(0, 0.55, 0.12), col.darkened(0.1), _cloth_t)
+
+
+func add_umbrella() -> void:
+	var uc: Color = [Color(0.1, 0.1, 0.12), Color(0.55, 0.1, 0.12), Color(0.1, 0.25, 0.55), Color(0.85, 0.75, 0.2)][randi() % 4]
+	_part(torso, _cyl(0.012, 0.012, 0.85, 6), Vector3(0.12, 0.85, -0.12), Color(0.15, 0.15, 0.15), main.ambient)
+	_part(torso, _cyl(0.02, 0.55, 0.22, 16), Vector3(0.12, 1.28, -0.12), uc, main.ambient)
+
+
+static func clean_look(m, out: Dictionary) -> Dictionary:
+	"""game.gd: jacket colour, size and build of a player (3D-4.12, figur.gd)"""
+	return Figur.clean_look(m, out)
+
+
+static func tag(p: Dictionary, col: Color) -> void:
+	"""game.gd: name, role and team colour above the head of a player - only players and the operator see it"""
+	Figur.tag(p, col)
 
 
 func _person_extras(jacket: Color, cloth_t: float) -> void:
@@ -827,6 +915,10 @@ func _process(dt: float) -> void:
 					l.emission_energy_multiplier = base * f
 	if main != null and main.terrain and not preview and is_inside_tree():
 		position.y = main.ground_y(position.x, position.z)   # a real place (from 3D-3.4): on the hills
+	if fig != null:
+		fig.sync(dt)                                         # 3D-4.12: the joints -> the bones, feet on the ground
+	if tag_p != null:
+		Figur.tag_tick(self, dt)
 
 
 func _step(dt: float) -> void:
@@ -839,6 +931,16 @@ func _step(dt: float) -> void:
 	if controlled:
 		_player(dt, now)
 		return
+	if demo >= 0.0:                                       # tests: on the spot
+		cur_speed = demo
+		_animate(dt, demo, now)
+		return
+	if _post_smooth:                                      # 3D-4.12: standing <-> crouching <-> crawling smoothly
+		var wc := 1.0 if _want_p < prone and prone > 0.3 else _want_c   # getting up from the ground: over the crouch
+		crouch = move_toward(crouch, wc, dt * 2.5)
+		prone = move_toward(prone, _want_p, dt * 1.6)
+		if is_equal_approx(crouch, _want_c) and is_equal_approx(prone, _want_p):
+			_post_smooth = false
 	if stars != null:
 		_dizzy(dt, now)
 	if leader != null:                                    # a dog on a walk: goes along with its person
@@ -943,8 +1045,8 @@ func player_speed_now() -> float:
 func _player(dt: float, now: float) -> void:
 	"""moved by the phone: direction from the joystick, posture from the buttons, never inside an object"""
 	ctl_posture = clampi(ctl_posture, gear_pmin, gear_pmax)            # 3D-4.x: what the camouflage thing allows (gameplus.gd)
-	var want_c := 1.0 if ctl_posture == 1 else 0.0
 	var want_p := 1.0 if ctl_posture == 2 else 0.0
+	var want_c := 1.0 if ctl_posture == 1 or (ctl_posture == 2 and prone < 0.9) or (want_p < prone and prone > 0.3) else 0.0   # 3D-4.12: over the crouch
 	crouch = move_toward(crouch, want_c, dt * 2.5)
 	prone = move_toward(prone, want_p, dt * 2.0)
 	var mv := ctl_move.limit_length(1.0)
@@ -982,15 +1084,16 @@ func _next_point(now: float) -> void:
 		if typeof(nxt) == TYPE_ARRAY:                     # [point, wait seconds, crouch, look at]
 			target = nxt[0]
 			wait_until = now + float(nxt[1])
-			crouch = float(nxt[2]) if nxt.size() > 2 else 0.0
-			prone = 1.0 if crouch >= 1.5 else 0.0          # 3D-3.74: crouch 2 = crawling (a sneaking person)
-			if crouch >= 1.5:
-				crouch = 1.0
+			var wc := float(nxt[2]) if nxt.size() > 2 else 0.0
+			_want_p = 1.0 if wc >= 1.5 else 0.0            # 3D-3.74: crouch 2 = crawling (a sneaking person)
+			_want_c = minf(wc, 1.0)
+			_post_smooth = true                            # 3D-4.12: goes down / gets up smoothly (_step)
 			_face(nxt[3] if nxt.size() > 3 else target)
 		else:
 			target = nxt
-			crouch = 0.0
-			prone = 0.0
+			_want_c = 0.0
+			_want_p = 0.0
+			_post_smooth = crouch > 0.0 or prone > 0.0
 			_face(target)
 	else:
 		done = true
@@ -1118,6 +1221,8 @@ func _animate(dt: float, spd: float, now: float) -> void:
 				var to_c2: Vector3 = main.head.global_position - global_position
 				hyaw = clampf(wrapf(atan2(-to_c2.x, -to_c2.z) - heading, -PI, PI), -1.2, 1.2)
 				hx = 0.45
+		if kind == "person" and not controlled and idle == "" and not puppet and not preview:
+			hyaw = _glance(now)                                         # 3D-4.12: looks round now and then
 		if kind == "person" and (now < startle_until or emote == "caught" and now < emote_until):
 			hx = 0.15
 		if kind == "person" and idle == "":
@@ -1193,7 +1298,7 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 		hips.rotation.y = sin(phase) * amp * 0.2 * (1.0 - pr)
 		hips.rotation.z = sin(phase) * 0.05 * amp + still * 0.03 * sin(now * 0.45 + seed_t)
 		torso.rotation.y = -sin(phase) * amp * 0.25 * (1.0 - pr) + sin(phase) * 0.15 * pr
-		var lean := -0.62 * c - 0.28 * run_f - (0.1 if jog and spd > 0.5 else 0.0) - lean_acc * (1.0 - pr) + still * 0.02 * sin(now * 1.6 + seed_t)
+		var lean := -0.62 * c - 0.28 * run_f - (0.1 if jog and spd > 0.5 else 0.0) - (0.14 if variant == "elderly" else 0.0) - lean_acc * (1.0 - pr) + still * 0.02 * sin(now * 1.6 + seed_t)
 		if idle == "bend":
 			lean = -1.05
 		if kl == 0.0:
@@ -1250,6 +1355,20 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 			torch.light_energy = 4.5 if player_lamp else 0.0
 		else:
 			torch.light_energy = 3.0 if crouch > 0.5 and int(now * 3.0) % 4 != 0 else 0.0
+
+
+func _glance(now: float) -> float:
+	"""3D-4.12: a person looks to the side now and then - a sneaking one mostly towards the camera"""
+	if now >= _glance_next:
+		_glance_next = now + randf_range(2.5, 7.0)
+		_glance_until = now + randf_range(0.6, 1.6)
+		var sneaky: bool = crouch > 0.3 or prone > 0.3 or variant == "burglar"
+		_glance_yaw = randf_range(-0.9, 0.9)
+		if main != null and main.head != null and randf() < (0.7 if sneaky else 0.3):
+			var to_c: Vector3 = main.head.global_position - global_position
+			if to_c.length() < 25.0:
+				_glance_yaw = clampf(wrapf(atan2(-to_c.x, -to_c.z) - heading, -PI, PI), -1.1, 1.1)
+	return _glance_yaw if now < _glance_until else 0.0
 
 
 func _at_door() -> bool:

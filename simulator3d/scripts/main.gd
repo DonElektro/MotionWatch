@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.14"
+const VERSION := "3D-4.15"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -4169,6 +4169,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return game.debug_info()
 	elif a == "gameplus":                              # 3D-4.x: weather change, camouflage things, theft (gameplus.gd, tests)
 		return game.plus.op(d)
+	elif a == "figuren":                               # 3D-4.12: for tests - figures in a row, a picture, frames per second (figur.gd)
+		return preload("res://scripts/figur.gd").op(self, d)
 	elif a == "set" or a == "press":
 		var c = null
 		for x in controls:
