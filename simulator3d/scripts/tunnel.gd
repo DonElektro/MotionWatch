@@ -121,7 +121,10 @@ func _step(c: Dictionary, now: float) -> void:
 						return
 				elif line.begins_with("GO "):
 					var port := int(line.substr(3))
-					if not port in [8765, 5057]:
+					var gm = main.game                     # 3D-4.x: the game for guests online (MoveEye 343): 8770 / 8771 = its page / WebSocket
+					if port in [8770, 8771] and gm != null and gm.open:
+						port = gm.http_port if port == 8770 else gm.ws_port
+					elif not port in [8765, 5057]:
 						_close(c)
 						return
 					var l := StreamPeerTCP.new()

@@ -86,6 +86,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `318_blickwinkel.py` | «Blickwinkel der Kamera» pro Kamera (Modell-Liste, eigener Wert, picamera2 / Simulator), `cam_fov_h(spec)`, Zusatzkameras nach dem Start | 230 |
 | `320_spielecke.py` | Extras: Spielecke und Spieleabend | 743 |
 | `330_usb_geraete.py` | USB-Geräte, Spielesammlung, Seite verlassen (✕ Zurück) | 172 |
+| `343_spiel_vergleich_online.py` | Spiel «Mensch gegen KI» (Start / Stand über /api/game_compare, Simulator gamecompare.gd) und «Online über das WLAN hinaus»: Einladungslink mit Ablauf, Proxy /game/<token>/ (nur das Spiel des Simulators, Seite + WebSocket, auch durch den Tunnel), Ratenbremse, Spielerzahl, Protokoll, /api/game_invite | 420 |
 | `340_spiele_seiten.py` | Extras: Seiten der Spielecke und des Spieleabends | 655 |
 | `350_simulator_link.py` | Verbindung zum Simulator (Schleife) | 87 |
 | `360_daten_simulator_python.py` | Daten: der Python-Simulator als ZIP | 897 |
@@ -114,6 +115,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `516_web_guide2.py` | Web: Guide 2 – Einrichtung schnell / ausgiebig, Rundgänge mit Sprechblasen, Einfach/Experte pro Seite, «Tipps & Tricks», «?» bei Einstellungen, Tipp des Tages, Werkseinstellungen (/g2/ui.js) | 560 |
 | `585_fenster_guide2.py` | Fenster: Guide 2 – Einrichtung, Rundgang pro Reiter (Rahmen + Textfeld), «?» bei Einstellungen, Tipp des Tages, Werkseinstellungen | 420 |
 | `586_guide2.py` | Guide 2: Zustand der Einrichtung (CFG guide2), Schritte und Hardware, Einfach/Experte pro Seite, Hilfetexte, Tipp des Tages, «Auf Werkseinstellungen zurücksetzen» (Kopie, was bleibt / gelöscht wird) | 480 |
+| `631_uebersetzungen_spielB.py` | Übersetzungen und Anleitungs-Zeilen (Kapitel «Spiele freigeben») zu 343 / 543 / 592 | 120 |
 | `633_uebersetzungen_guide2.py` | Übersetzungen und Anleitungs-Kapitel «Einrichtung, Rundgänge und Tipps» zu Guide 2 | 330 |
 | `589_blinki.py` | «Blinki», die Figur aus dem Logo für Einrichtung und Rundgänge: SVG + CSS + Skript vor /g2/ui.js (Web), kleines Bild mit cv2 (Fenster), Schalter «blinki_on» | 260 |
 | `635_uebersetzungen_blinki.py` | Übersetzungen und Anleitungs-Zeile zu Blinki | 60 |
@@ -129,6 +131,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `538_web_controller_ansicht.py` | Web: «Controller-Ansicht» der Live-Seite für Handy / Tablet (Live- + Simulator-Bild, Game-Controller, Gesten, schmale Leiste) | 383 |
 | `539_web_ausloeser.py` | «Auslöser»: ein Mensch steuert die Kamera – Fadenkreuz und runder 🎯-Knopf im Live-Bild, R2, Treffer als Alarm ins Test-Postfach | 170 |
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
+| `543_web_spiel_online.py` | Web: Seite Simulator, Karte «Spiel» – «Mensch gegen KI» (beide Runden, Ergebnis) und «Online-Einladung» (QR-Code, Zurückziehen, Protokoll) | 110 |
 | `545_simulator_updates.py` | Simulator-Updates: ein Besitzer («Neue Versionen» im Simulator) | 72 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
 | `560_uebersetzungen_de.py` | Übersetzungen Deutsch | 498 |
@@ -149,6 +152,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `581_fenster_ansicht.py` | Fenster: «Ansicht» des Reiters Live wie im Web (Vorlagen, Anordnung, Bildgrösse, Grösse, Lieblingsknöpfe + «mehr», Karten, Joystick; «Für alle Geräte») | 355 |
 | `582_fenster_platz.py` | Fenster: «Platz einrichten» und «Blickwinkel der Kamera» | 300 |
 | `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
+| `592_fenster_spiel_online.py` | Fenster: Reiter Simulator – Karte «Mensch gegen KI · Online-Einladung» (wie 543) | 130 |
 | `600_uebersetzungen_rm.py` | Übersetzungen Rätoromanisch, Anleitungen | 1763 |
 | `602_uebersetzungen_alarm.py` | Übersetzungen der Alarm-Extras | 130 |
 | `603_uebersetzungen_nachlauf.py` | Übersetzungen zum Nachlauf des Konzept-Checks (577) | 27 |

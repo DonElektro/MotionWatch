@@ -129,6 +129,7 @@ var bots                                 # gamebots.gd (3D-4.x): smarter bots an
 var watch                                # gamewatch.gd (3D-4.x): watchers guess and throw decoy stones
 var jaeger                               # gamejaeger.gd (3D-4.x): «Fehlalarm-Jäger» - animals and things fool MoveEye
 var plus                                 # gameplus.gd (3D-4.x): weather change, camouflage things, theft, learning points
+var cmp                                  # gamecompare.gd (3D-4.x): «Mensch gegen KI» - the same round with a person and with MoveEye as guard
 var shut                                 # gameshutter.gd (3D-4.x): «Auslöser» - a person steers the camera and presses the shutter
 var duel := {}                           # 3D-4.x: after a round with a guard: MoveEye against the guard
 var flag_res := {}                       # 3D-4.x: «Fahne erobern» is decided by the captures: {"caps", "win", "text"}
@@ -170,6 +171,10 @@ func _ready() -> void:
 	shut.game = self
 	shut.main = main
 	add_child(shut)
+	cmp = preload("res://scripts/gamecompare.gd").new()
+	cmp.game = self
+	cmp.main = main
+	add_child(cmp)
 
 
 func now() -> float:

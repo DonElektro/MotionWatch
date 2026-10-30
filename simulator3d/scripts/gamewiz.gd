@@ -330,6 +330,8 @@ func model() -> Dictionary:
 		if key == "game_mode" and c[0] == "jaeger" and not main.game.jaeger.mw_on():
 			tx += " ⚠ MoveEye ist gerade nicht verbunden."
 		cards.append({"v": c[0], "icon": c[1], "title": c[2], "text": tx, "on": on, "pic": Pics.PICS.get(c[0], "")})
+	if key == "game_mode" and g.cmp != null:              # 3D-4.x: «Mensch gegen KI» (gamecompare.gd)
+		cards.append(g.cmp.wiz_card(str(W.get("game_mode", "")) == "compare"))
 	var quick := []
 	if step == 0:                                          # 3D-4.x: one tap - everything set
 		for q in QUICK:
@@ -344,7 +346,7 @@ func model() -> Dictionary:
 			if jg() and o[0] == "game_night":
 				opts.append({"id": o[0], "label": "🌙 Nacht-Runde (Lampe und Insekten wirken besser)", "type": "toggle", "value": W[o[0]], "extra": false})
 				continue
-			if o[0] == "game_botguard" and str(W.get("game_mode")) != "guard":
+			if o[0] == "game_botguard" and not str(W.get("game_mode")) in ["guard", "compare"]:
 				continue
 			if o[0] == "game_theft" and str(W.get("game_goal")) != "theft":
 				continue                                       # 3D-4.x: which thing - only with the goal «Diebstahl»
@@ -363,6 +365,8 @@ func model() -> Dictionary:
 		for m in MODES:
 			if m[0] == str(W.get("game_mode")):
 				md = m[1] + " " + m[2]
+		if str(W.get("game_mode")) == "compare" and g.cmp != null:
+			md = g.cmp.WIZ[1] + " " + g.cmp.WIZ[2]
 		for x in GOALS:
 			if x[0] == str(W.get("game_goal")):
 				gl = x[1] + " " + x[2]
@@ -508,7 +512,13 @@ func _next() -> void:
 	var g = main.game
 	if g.open:                                         # the game is open: take over the settings, start the round
 		_apply()
-		g.start_round()
+		if g.cmp != null and g.cmp.armed:              # 3D-4.x: «Mensch gegen KI» - both rounds
+			error = g.cmp.start()
+			if error != "":
+				_changed()
+				return
+		else:
+			g.start_round()
 		close_wiz()
 		return
 	_apply()
@@ -530,11 +540,16 @@ func _apply() -> void:
 		W.merge(JG_FIXED, true)
 		g.jaeger.set_allowed(str(W.get("game_lures", "")))
 	g.plus.cfg_set(W)                                      # 3D-4.x: weather change, camouflage things, theft
+	var cmp_on: bool = str(W.get("game_mode", "")) == "compare"
+	if g.cmp != null:
+		g.cmp.wiz_apply(W)                                 # 3D-4.x: «Mensch gegen KI» is played as «Wächter», then MoveEye
 	for k in KEYS:
 		if W.has(k):
 			var r: Dictionary = main.control_set(k, W[k])
 			if not r.get("ok", false):
 				errs.append(k)
+	if cmp_on:
+		W["game_mode"] = "compare"
 	g.set_open(true)
 	if not g.open:
 		errs.append("Spiel öffnen")
