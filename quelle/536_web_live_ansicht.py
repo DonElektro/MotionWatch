@@ -347,6 +347,7 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
   function placeStick() {
     const head = lvHead(), md = mode();
     document.body.classList.toggle("lv-nohead", !head);
+    if (typeof window.skOwns === "function" && window.skOwns()) { document.body.classList.remove("lv-ovon"); jc.remove(); return; }   // 549: Sim-Kompakt holds the sticks
     const st = document.getElementById("stick"), box = document.querySelector(".ctl-stick .stickbox");
     if (!st || !box || isVO()) return;                   // full screen: setVideoOnly / voStick own the stick
     const ov = head && (md === "mini" || (V.ov === "auto" ? md === "land" : V.ov === "on"));
@@ -550,6 +551,7 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
       b.onclick = e => { e.stopPropagation(); preset(k); menuBuild(); }; pr.appendChild(b); });
     MN.appendChild(pr);
     if (typeof window.pvMenu === "function") try { window.pvMenu(MN, E, T); } catch (e) {}     // 538: «Controller-Ansicht»
+    if (typeof window.skMenu === "function") try { window.skMenu(MN, E, T); } catch (e) {}     // 549: «Sim-Kompakt»
     MN.appendChild(E("h3", "", T("Layout")));
     MN.appendChild(seg([["auto", "Automatic"], ["port", "Portrait"], ["land", "Landscape"], ["mini", "Picture only"]], V.layout, v => { V.layout = v; }));
     const md = mode();

@@ -348,7 +348,10 @@ SIMHUB_JS = r"""
   function paintFull(el_) { el_.textContent = ""; if (!H || !H.on) { el_.hidden = true; return; } el_.hidden = false;
     if (!H.ok) { el_.appendChild(E("div", "mut", "⚠ " + tt("Simulator not reachable") + (H.msg ? " (" + H.msg + ")" : ""))); return; } tiles(el_, true); }
   function parkTr() { const tb = window._trBox, home = document.getElementById("c-test"); if (tb && home && !home.contains(tb)) home.appendChild(tb); }
-  function paintAll() { parkTr(); document.querySelectorAll("[data-simhub]").forEach(x => x.dataset.simhub === "full" ? paintFull(x) : paintTile(x)); }
+  function paintSheet(el_) { if (el_.contains(document.activeElement) && document.activeElement.type === "range") return;   // 549 Sim-Kompakt: one sheet alone
+    el_.textContent = ""; if (H && H.ok && el_.dataset.kind) sheet(el_, el_.dataset.kind); }
+  function paintAll() { parkTr(); document.querySelectorAll("[data-simhub]").forEach(x => x.dataset.simhub === "full" ? paintFull(x) : x.dataset.simhub === "sheet" ? paintSheet(x) : paintTile(x)); }
+  window.mwSimHub = {H: () => H, tt: tt, paint: () => paintAll(), load: () => load()};   // 549: the tiles of the live page «Sim-Kompakt»
   async function load() { if (!document.querySelector("[data-simhub]")) return; try { H = await (await fetch("/api/simhub")).json(); } catch (e) { return; }
     if (document.querySelector('[data-simhub="full"]')) { try { LB = await (await fetch("/api/lab")).json(); LN = await (await fetch("/api/learn")).json(); } catch (e) {} }
     const ti = document.querySelector('[data-simhub="tile"] img'); if (ti && !document.hidden) ti.src = "/sim/view.jpg?w=320&r=" + Date.now();
