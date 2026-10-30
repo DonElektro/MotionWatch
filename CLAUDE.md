@@ -54,6 +54,9 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 - Wartet auf Daniel: Hardware-Tests; Gehäuse Variante 2 (Modell-ZIP); Tailscale Funnel (eingebaut 2.98.47) im Tailnet freischalten und echt testen;
   SmallTV (2.98.48) am echten Gerät testen (Testbild, Album-Weiterblättern, Suche, Lesbarkeit); KI-Wächter bei normalem Tempo; Parcours-Noten;
   Rückmeldung schwarzes Live-Bild / Seiten-Tempo; vor KI-Training «🔍 Lernbilder prüfen».
+- Als Nächstes (nach wt-objekte): Angleichungen MoveEye ↔ Simulator (Entwickler-Schalter teilen, «Dein Platz» klären, /sim
+  zuklappen statt ausblenden, Fenster «Strom»/System-Knöpfe, gezeichnete Symbole statt fehlender Emoji), dann Gameplay
+  (`docs/Gameplay_Ausfeilen_Plan.md`).
 - Später: Prüfstand-Plan «funktionen» (Kurzproben Sabotage, Wecker, Klatschen, Diebstahl, Sensoren, Akku, Sirene – Daniel 30.10.: später); Prüfstand-Rückgang ab 2.98.23; KI-Training (Token Actions-Rechte, Trainingspaket); «Vertrauenswürdige Geräte» nur
   Admin; Controller-Einstellungen als MoveEye-Einstellung statt pro Browser; Produkt-Seite (Lizenzen, Datenschutz, Kundendoku);
   mobiler MoveEye (Laufroboter, nur Notiz); Tiere mit der neuen Figur-Technik (figur.gd).
