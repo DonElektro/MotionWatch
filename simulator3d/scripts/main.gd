@@ -72,7 +72,7 @@ var night_weather := false            # 3D-3.74: the weather runs through the ni
 var _nw := {"day": -1, "plan": [], "last": "", "fog_lens": false}
 var real_time := false                # the clock of the PC
 var game                              # game.gd: «Unentdeckt ans Ziel» with up to 12 phones (3D-3.95, before 4)
-var game_minutes := 5.0
+var game_minutes := 3.0                # 3D-4.x: short rounds (Spielkonzept Daniel, before 5)
 var game_level := "normal"            # easy | normal | hard
 var game_quality := "mid"             # picture on the phone: small | mid | big
 var game_max := 6                     # 3D-3.95: runners at most (2..12); more players watch through the head camera
@@ -3408,6 +3408,9 @@ func _register_controls() -> void:
 	add_control("slider", "game_max", "Läufer höchstens (mehr Spieler schauen zu)", func(): return game_max, func(v): game_max = int(v), "Spiel",
 			{"min": 2, "max": 12, "step": 1, "tip": "Jeder Läufer ist ein eigenes 3D-Bild auf dem PC und ein eigenes Video übers Netz. Laptop: etwa 4, PC mit Grafikkarte: 6–8. Ab 5 Läufern werden die Bilder automatisch kleiner."})
 	add_control("toggle", "game_guard", "Ohne MoveEye bewacht der Kopf selbst", func(): return game_guard, func(v): game_guard = v, "Spiel", ex)
+	for tl in [["light", "💡 Licht"], ["siren", "📢 Sirene"], ["scan", "📡 Scan"], ["zoom", "🔍 Zoom"]]:   # 3D-4.x: tools of the guards at MoveEye (gametools.gd, part 543)
+		var tid: String = tl[0]
+		add_control("button", "game_tool_" + tid, "Wächter an MoveEye: " + tl[1], null, func(): game.tools.use(null, tid, "MoveEye"), "Spiel")
 	add_control("toggle", "autostart", "Mit dem PC starten (sendet gleich an MoveEye)", func(): return autostart_on, func(v): set_autostart(v), "Start mit dem PC")
 	add_control("toggle", "autostart_min", "Dabei klein (nur das Kästchen in der Ecke)", func(): return autostart_min, func(v): autostart_min = v, "Start mit dem PC")
 	add_control("toggle", "autostart_mwpc", "Dabei auch MoveEye auf diesem PC starten (ohne Pi)", func(): return autostart_mwpc, func(v): autostart_mwpc = v, "Start mit dem PC")
@@ -3844,6 +3847,12 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true}
 	elif a == "game_shut":                             # 3D-4.x: «Auslöser» (gameshutter.gd) - info / aim / fire, for tests
 		return game.shut.command(d) if game != null and game.shut != null else {"ok": false, "error": "no game"}
+	elif a == "game_tool":                             # 3D-4.x: a tool of the guard (gametools.gd): {tool, slot} or {op: "info"}
+		return game.tools.command(d) if game != null and game.tools != null else {"ok": false, "error": "no game"}
+	elif a == "game_rules":                            # 3D-4.x: for tests - fairness, next guard, winner (gamerules.gd)
+		var grd: Dictionary = game.rules.debug() if game != null and game.rules != null else {}
+		grd["ok"] = not grd.is_empty()
+		return grd
 	elif a == "game_test":                             # 3D-3.52: for tests - where a player is in the head camera / move him there
 		if game == null or not d.has("slot") or int(d["slot"]) < 0 or int(d["slot"]) >= game.players.size() or game.players[int(d["slot"])] == null:
 			return {"ok": false, "error": "no player"}

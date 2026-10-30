@@ -278,6 +278,13 @@ func _paint_game(d: Dictionary, g) -> void:
 	else:
 		big.text = "%d Spieler" % d.get("players", []).size()
 	sub.text = str(d.get("task", ""))
+	var RW: Dictionary = (d.get("rules", {}) as Dictionary).get("win", {})     # 3D-4.x: the winner screen (gamerules.gd)
+	if r == "end" and not RW.is_empty():
+		big.text = _plain(str(RW["title"])) + "  %d" % int(RW["score"])
+		sub.text = _plain(str((RW.get("hl", {}) as Dictionary).get("text", "")))
+	var RN: String = str((d.get("rules", {}) as Dictionary).get("next", ""))
+	if r in ["lobby", "end"] and RN != "":
+		sub.text = (sub.text + "\n" if sub.text != "" else "") + _plain(RN)
 	if r in ["lobby", "end"]:
 		_set_qr(g.address(), "Mitspielen: QR-Code scannen\n(gleiches WLAN)\n" + g.address())
 	else:

@@ -130,6 +130,8 @@ var watch                                # gamewatch.gd (3D-4.x): watchers guess
 var jaeger                               # gamejaeger.gd (3D-4.x): «Fehlalarm-Jäger» - animals and things fool MoveEye
 var plus                                 # gameplus.gd (3D-4.x): weather change, camouflage things, theft, learning points
 var shut                                 # gameshutter.gd (3D-4.x): «Auslöser» - a person steers the camera and presses the shutter
+var rules                                # gamerules.gd (3D-4.x): roles in turn, fairness, infos for sneakers, winner screen
+var tools                                # gametools.gd (3D-4.x): the tools of the guard with energy and cooldowns
 var duel := {}                           # 3D-4.x: after a round with a guard: MoveEye against the guard
 var flag_res := {}                       # 3D-4.x: «Fahne erobern» is decided by the captures: {"caps", "win", "text"}
 var round_runners := 1                   # how many ran in this round (the score of the guard is per runner)
@@ -170,6 +172,14 @@ func _ready() -> void:
 	shut.game = self
 	shut.main = main
 	add_child(shut)
+	rules = preload("res://scripts/gamerules.gd").new()
+	rules.game = self
+	rules.main = main
+	add_child(rules)
+	tools = preload("res://scripts/gametools.gd").new()
+	tools.game = self
+	tools.main = main
+	add_child(tools)
 
 
 func now() -> float:
@@ -748,6 +758,10 @@ func _message(s: Dictionary, m: Dictionary) -> void:
 			la.player_lamp = p2["lamp"]
 		"light":
 			_guard_light(p2)
+		"tool":                                        # 3D-4.x: siren, scan, zoom (and the light) of the guard (gametools.gd)
+			tools.use(p2, str(m.get("k", "")))
+		"hl":                                          # 3D-4.x: the closest moment of the round (gamerules.gd)
+			rules.send_hl(p2)
 		"catch":
 			_guard_catch(p2)
 		"vote":                                        # 3D-4.x: a watcher guesses «Wer kommt durch?»
@@ -1097,7 +1111,8 @@ func start_round() -> void:
 	_place_items(0 if fixed else int(main.game_items))
 	_place_powers(main.game_powers and not fixed)
 	var newbies := _mark_newbies()                         # 3D-4.x: who plays for the first time gets the practice steps
-	_place_hides(max(int(main.game_hides), 2 if (newbies or main.game_tutorial) else 0))
+	rules.plan()                                           # 3D-4.x: fairness by the ratio of the roles (more bushes for few sneakers)
+	_place_hides(max(int(main.game_hides), 2 if (newbies or main.game_tutorial) else 0) + rules.extra_hides())
 	_place_checkpoints(SPRINT_GATES if fixed else int(main.game_checkpoints))
 	gallery.clear()
 	ev_kind = ""
@@ -1177,6 +1192,7 @@ func start_round() -> void:
 	distract = {}
 	round_runners = max(1, runners_n())
 	bots.guard_start(round_runners)                        # 3D-4.x: «Wächter» without a person as guard
+	rules.round_start()                                    # 3D-4.x: fairness line, bot helper, the energy of the guard (gametools.gd)
 	watch.round_start()
 	_build_flags()
 	for p in players:
@@ -1563,6 +1579,7 @@ func end_round() -> void:
 	if jail_node != null:
 		jail_node.queue_free()
 		jail_node = null
+	rules.round_end()                                      # 3D-4.x: winner screen, closest moment, the next guard (roles in turn)
 	paint()
 
 
@@ -1639,8 +1656,8 @@ func _to_start(p: Dictionary) -> void:
 func light_at(pos: Vector3, i: int) -> float:
 	"""how much light a camera has on this place (1 = day). Night: lamps of the scene, the white light of the head,
 	the infrared light (only the head camera sees it)"""
-	if not main.is_dark():
-		return {"cloudy": 0.85, "rain": 0.7, "fog": 0.75, "snow": 0.8}.get(main.weather, 1.0)
+	if not main.is_dark():                                 # 3D-4.x: in the shadow of an object less (gamerules.shade_mul)
+		return {"cloudy": 0.85, "rain": 0.7, "fog": 0.75, "snow": 0.8}.get(main.weather, 1.0) * (rules.shade_mul(pos) if rules != null else 1.0)
 	var l: float = 0.05 + 0.1 * float(main.moon)
 	for lamp in main.lamps:
 		if is_instance_valid(lamp) and lamp is OmniLight3D and lamp.light_energy > 0.05:
@@ -1676,7 +1693,7 @@ func cam_sees(p: Dictionary, i: int) -> float:
 	if not main.line_free(cp, pos + Vector3(0, h * 0.95, 0)):
 		return 0.0                                         # hidden (the line of sight to the top of the head)
 	var rows: float = TH_H if i == 2 else CAM_H[i]
-	var px: float = h / (2.0 * d * tan(deg_to_rad(VFOV[i]) / 2.0)) * rows    # height of the person in the picture
+	var px: float = h / (2.0 * d * tan(deg_to_rad(VFOV[i]) / 2.0)) * rows * (tools.zoom_k(i) if tools != null else 1.0)   # height in the picture (3D-4.x: the zoom of the guard)
 	if i == 2:                                             # thermal: a warm spot, also at night, not through fog well
 		var contrast: float = clamp(abs(34.0 - float(main.ambient)) / 18.0, 0.2, 1.0) * {"fog": 0.7, "rain": 0.8}.get(main.weather, 1.0)
 		return smoothstep(2.5, 9.0, px) * contrast * (0.65 + 0.35 * clamp(spd, 0.0, 1.0)) * plus.th_mul(p)   # a warm spot of a few pixels (3D-4.x: a thermal blanket)
@@ -1806,7 +1823,7 @@ func _check_distract() -> void:
 
 
 func _referee(dt: float) -> void:
-	var lv: float = LEVEL.get(main.game_level, 1.0)
+	var lv: float = LEVEL.get(main.game_level, 1.0) * rules.rate_mul()   # 3D-4.x: fairness (many sneakers against the AI)
 	_check_distract()
 	_paint_goal()
 	if jaeger.on():                                        # «Fehlalarm-Jäger»: only the false alarms of MoveEye count
@@ -1951,6 +1968,8 @@ func _referee(dt: float) -> void:
 		if a.power == "turbo" and now() < float(a.power_until):
 			hr = min(1.0, hr * 1.6 + 0.1)                  # turbo: louder
 		var rate := (v * 55.0 + hr * 30.0) * (1.3 if last_minute else 1.0) * (0.55 if bool(p.get("decoy", false)) else 1.0)
+		if not hid:
+			rate += tools.extra_rate(p)                    # 3D-4.x: the siren of the guard - whoever moves is noticed
 		if rate > 0.5:
 			p["susp"] = min(100.0, float(p["susp"]) + rate * lv * dt)
 		else:
@@ -2249,10 +2268,7 @@ func _signal(p: Dictionary, k: String) -> void:
 
 
 func _guard_light(g: Dictionary) -> void:
-	if g["role"] != "guard" or now() < light_ready:
-		return
-	light_ready = now() + LIGHT_EVERY
-	flash_until = now() + 6.0
+	tools.use(g, "light")                                  # 3D-4.x: with energy and cooldown (gametools.gd); off: the old 20 s
 
 
 # ---- 3D-3.27: «Team gegen MoveEye»: the guards sit at MoveEye, turn the real camera head with its joystick and
@@ -2464,6 +2480,7 @@ func state_for(p: Dictionary) -> Dictionary:
 		d["catches"] = p["catches"]
 		d["pan"] = int(rad_to_deg(guard_yaw))
 		d["shut"] = shut.info_for(p)                       # 3D-4.x: «Auslöser»: crosshair and shutter on the phone
+		d["tools"] = tools.info_for(p)                     # 3D-4.x: energy, cooldowns, hint markers (gametools.gd)
 	if round_state == "countdown":
 		d["cd"] = int(ceil(t_start - now()))
 	if round_state == "play":
@@ -2483,6 +2500,7 @@ func state_for(p: Dictionary) -> Dictionary:
 	d["w"] = watch.state_for(p)
 	d["tut"] = str(p.get("tut_msg", "")) if bool(p.get("tut_on", false)) else ""
 	d["px"] = plus.state_for(p)                            # 3D-4.x: camouflage things, weather change, theft, learning points
+	d["rx"] = rules.state_for(p)                           # 3D-4.x: vibration, noise, shadow, fairness, next guard, winner
 	if jaeger.on():
 		d["jg"] = jaeger.state_for(p)
 		if round_state == "end":
@@ -2528,6 +2546,10 @@ func paint() -> void:
 	else:
 		lines.append({"lobby": "Bereit – «Start» (hier oder auf einem Handy)", "countdown": "Gleich geht es los …",
 				"play": "Runde läuft", "end": "Runde fertig"}.get(round_state, "") + " · Ziel: " + goal_name)
+		var rsi: Dictionary = rules.spec_info()                # 3D-4.x: fairness, the next guard (roles in turn)
+		for k in ["fair", "next"]:
+			if str(rsi.get(k, "")) != "":
+				lines.append(str(rsi[k]))
 		for p in players:
 			if p != null:
 				var st: String = {"goal": " – im Ziel", "out": " – ausgeschieden"}.get(p["state"], "")
@@ -2652,6 +2674,14 @@ body.aim #v{outline:4px dashed var(--org);outline-offset:-4px}
 #b-catch.shut i{font-size:30px}#b-catch.shut.lock{opacity:.75}#b-catch.shut .cnt{display:none}
 #shfl{position:fixed;inset:0;background:#fff;pointer-events:none;opacity:0;z-index:89}#shfl.on{animation:wf .35s ease-out}
 @media (max-height:440px){#b-catch.shut{width:80px;height:80px}#b-catch.shut i{font-size:24px}}
+#en{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:calc(max(12px,env(safe-area-inset-bottom)) + 96px);width:min(46vw,300px);background:#0a0e14cc;border:1px solid var(--line);border-radius:10px;padding:4px 8px;font-size:12px;pointer-events:none}
+#en[hidden]{display:none}#en .eb{height:8px;border-radius:99px;background:#1f2b3a;overflow:hidden;margin-top:3px}#en .eb i{display:block;height:100%;background:linear-gradient(90deg,#ffd166,#34c759);transition:width .3s}
+.b[hidden]{display:none}.b.noen{opacity:.4;filter:grayscale(1)}.b small{font-size:9px;opacity:.8;font-weight:500}
+#hints{position:fixed;inset:0;pointer-events:none;z-index:3}#hints span{position:absolute;transform:translateX(-50%);font-size:22px;text-shadow:0 0 6px #000;animation:hb 1s ease-in-out infinite alternate}
+#hints span b{display:block;font-size:10px;text-align:center}@keyframes hb{to{transform:translateX(-50%) scale(1.25)}}
+#lk{position:fixed;left:50%;top:52px;transform:translateX(-50%);background:#ff453acc;border-radius:999px;padding:3px 12px;font-size:13px;font-weight:700;pointer-events:none;opacity:0;transition:opacity .2s}
+.win{border:2px solid #ffd166;border-radius:14px;padding:8px 10px;margin:0 0 8px;background:#ffd16614}.win .big2{color:#ffd166;font-size:30px}
+@media (max-height:440px){#en{bottom:calc(max(12px,env(safe-area-inset-bottom)) + 78px)}}
 #padh{position:fixed;left:50%;bottom:max(8px,env(safe-area-inset-bottom));transform:translateX(-50%);background:#111822dd;border:1px solid var(--line);border-radius:10px;padding:3px 10px;font-size:12px;color:#cfd8e3;pointer-events:none;white-space:nowrap}
 </style></head><body>
 <img id="v" alt="">
@@ -2665,7 +2695,8 @@ body.aim #v{outline:4px dashed var(--org);outline-offset:-4px}
 <div class="hint" id="hint">links: gehen · rechts wischen: umschauen</div>
 <div class="btns" id="rb"><div class="b big" id="b-act" style="display:none"><i>💨</i>Aktion</div><div class="b" id="b-lamp" style="display:none"><i>🔦</i>Lampe</div><div class="b" id="b-stone"><i>🪨</i>Werfen</div><div class="b" id="b-run"><i>🏃</i>Rennen</div><div class="b" id="b-crouch"><i>🧎</i>Ducken</div><div class="b" id="b-crawl"><i>🐍</i>Kriechen</div></div>
 <div class="btns" id="wb" style="display:none"><div class="b" id="b-vote"><i>🔮</i>Tipp</div><div class="b" id="b-wst"><i>🪨</i>Lockstein</div></div>
-<div class="btns" id="gb" style="display:none"><div class="b" id="b-light"><i>💡</i>Licht</div><div class="b big red" id="b-catch"><i>🚨</i>Erwischt!</div></div>
+<div class="btns" id="gb" style="display:none"><div class="b" id="b-zoom" hidden><i>🔍</i>Zoom</div><div class="b" id="b-scan" hidden><i>📡</i>Scan</div><div class="b" id="b-siren" hidden><i>📢</i>Sirene</div><div class="b" id="b-light"><i>💡</i>Licht</div><div class="b big red" id="b-catch"><i>🚨</i>Erwischt!</div></div>
+<div id="en" hidden></div><div id="hints"></div><div id="lk">📷 Die Kamera schaut her!</div>
 <div id="tip" hidden></div>
 <div id="padh" hidden>🎮 Controller verbunden</div>
 <div id="pic" hidden><img id="picimg" alt=""><div id="pictxt"></div></div>
@@ -2798,7 +2829,11 @@ function paint(m) {
   if (wOn && (m.ps === "out" || m.ps === "found")) $("#rb").style.display = "none"; else if (role === "runner") $("#rb").style.display = "flex";
   const s = Math.max(0, Math.min(100, m.susp)); $("#bar").style.width = s + "%";
   $("#bar").style.background = s > 70 ? "var(--red)" : s > 35 ? "var(--org)" : "var(--grn)"; $("#eye").style.opacity = m.seen ? 1 : 0.35; $("#eye").textContent = m.seen ? "👁 gesehen" : "👁";
-  $("#ear").style.opacity = m.heard > 0.05 && role === "runner" ? 1 : 0;
+  const RX = m.rx || {}, SX = RX.sx || {};                        // 3D-4.x: infos for the sneaker (gamerules.gd)
+  const nz = Math.round((SX.nz || 0) * 5), heardNow = m.heard > 0.05 && role === "runner";
+  $("#ear").textContent = heardNow ? "👂 man hört dich" : "🔊 Lärm " + "▮".repeat(nz) + "▯".repeat(5 - nz);
+  $("#ear").style.opacity = heardNow ? 1 : (role === "runner" && m.rs === "play" && nz > 0 ? 0.85 : 0);
+  lookVib(!!SX.lk && role === "runner" && m.ps === "play");
   $("#arrow").style.transform = "rotate(" + (-m.ga) + "deg)"; $("#gd").textContent = Math.round(m.gd) + " m";
   $("#tm").textContent = m.rs === "play" ? "⏱ " + fmtT(m.left) : m.rs === "countdown" ? "gleich" : "–";
   $("#lv").textContent = role === "watch" ? "· 👀 schaut zu" : role === "guard" ? "· Wächter · " + (m.catches || 0) + "× erwischt" : (m.lives ? "· " + "❤️".repeat(Math.max(0, m.lives - m.caught)) + "🤍".repeat(Math.min(m.lives, m.caught)) : "· " + m.caught + "× erwischt");
@@ -2807,6 +2842,7 @@ function paint(m) {
   $("#extra").textContent = (m.goal_mode === "flag" && role === "runner" ? "🚩 Rot " + m.caps[0] + " : " + m.caps[1] + " Blau · " + (m.flag >= 0 ? "Fahne dabei – zur eigenen Basis! · " : "") : "") + (m.gopen === false && role === "runner" ? "🔒 Ziel noch zu – zuerst alle Kristalle finden · " : "") + (m.carry ? ((m.px && m.px.carry_txt) || "💰 Beute dabei – zurück zum Start! ") : (m.goal_mode === "return" && role === "runner" ? "Ziel: Beute holen und zurückbringen · " : "")) + (m.items_all && role === "runner" ? "💎 " + m.items + " · noch " + m.items_left + " zu finden" : "");
   if (m.cps_all && role === "runner") $("#extra").textContent = "🚩 " + m.cps + "/" + m.cps_all + " · " + $("#extra").textContent;
   if (m.decoy && role === "runner") $("#extra").textContent = "🦆 Lockvogel – lass dich sehen! · " + $("#extra").textContent;
+  if (SX.sh && role === "runner") $("#extra").textContent = "🌑 im Schatten – schlechter zu sehen · " + $("#extra").textContent;
   const J = m.mode === "jaeger" ? (m.jg || {}) : null;           // 3D-4.x: «Fehlalarm-Jäger» - the player is an animal or a thing
   ["#b-crouch", "#b-crawl"].forEach(k => $(k).style.display = J ? "none" : "flex");
   $("#b-act").style.display = J && (J.act || []).length && role === "runner" ? "flex" : "none";
@@ -2821,6 +2857,9 @@ function paint(m) {
   if (m.stone < 0 || J) $("#b-stone").style.display = "none"; else { $("#b-stone").style.display = "flex"; cool($("#b-stone"), m.stone); }
   $("#b-lamp").style.display = m.dark && role === "runner" && !J ? "flex" : "none"; $("#b-lamp").classList.toggle("on", !!m.lamp);
   if (role === "guard") { cool($("#b-light"), m.light); cool($("#b-catch"), m.catch); $("#gd").textContent = m.gcam === 1 ? "feste Kamera" : (m.pan > 0 ? "◀ " : "▶ ") + Math.abs(m.pan) + "°"; }
+  toolsPaint(m);
+  if (m.rs === "play") SAWPLAY = true;
+  if (m.rs === "countdown") { const rb_ = document.getElementById("rpbox"); if (rb_) { cancelAnimationFrame(rb_.__raf); rb_.remove(); } }   // a new round: the replay goes away
   shutPaint(m);
   if (m.rs === "countdown" && m.mode === "seek") { GAL = []; ov(role === "guard" ? '<h1>🙈 Augen zu!</h1><div id="big">' + Math.max(1, m.cd) + '</div><p>Die anderen verstecken sich.</p>' : ''); if (role !== "guard") $("#msg").textContent = "🙈 Verstecken! Noch " + m.cd + " s"; }
   else if (m.rs === "countdown") { GAL = []; ov('<div id="big">' + Math.max(1, m.cd) + '</div>'); }
@@ -2828,7 +2867,8 @@ function paint(m) {
   else if (m.rs === "lobby" || m.rs === "end") {
     const FR = m.fres || {}, XR = m.xpr || {};
     const JR = m.jres || {};
-    let h = pxTop(m) + (m.rs === "end" ? (JR.text ? '<div class="big2">' + (JR.n ? '🎉 ' + JR.n : '🛡 0') + '</div><h1>' + esc(JR.text) + '</h1>' + ((JR.cases || []).length ? '<p>' + JR.cases.map(c => c[0] + ' ' + esc(c[1]) + ' <small>(' + esc(c[2]) + ', ' + Math.round(c[3]) + ' m)</small>').join(" · ") + '</p>' : '') : '') +
+    const WN = (m.rx || {}).win || {};
+    let h = winHtml(m) + pxTop(m) + (m.rs === "end" ? (JR.text ? '<div class="big2">' + (JR.n ? '🎉 ' + JR.n : '🛡 0') + '</div><h1>' + esc(JR.text) + '</h1>' + ((JR.cases || []).length ? '<p>' + JR.cases.map(c => c[0] + ' ' + esc(c[1]) + ' <small>(' + esc(c[2]) + ', ' + Math.round(c[3]) + ' m)</small>').join(" · ") + '</p>' : '') : '') +
       (FR.text ? '<div class="big2">🚩 ' + esc(FR.text) + '</div><h1>' + esc(FR.title) + '</h1>' : '') + (m.duel && m.duel.text ? duelHtml(m.duel) : '') +
       (m.tres && m.tres.length && !FR.text ? '<h1>' + (m.tres[0].lead ? 'Runde 1 von 2: ' + esc(m.tres[0].n) + ' führt' : esc(m.tres[0].n) + ' gewinnt!') + '</h1>' : '') +
       (m.tres && m.tres.length ? '<p>' + m.tres.map(t => '<span style="color:' + t.c + '">●</span> ' + esc(t.n) + (t.caps !== undefined ? ' 🚩' + t.caps : '') + ' <b>' + t.score + '</b>' + (t.round !== undefined ? ' <small>(diese Runde ' + t.round + ')</small>' : '')).join(" · ") + '</p>' : '') +
@@ -2858,6 +2898,7 @@ function paint(m) {
     if (m.task && m.rs !== "end") h += '<p>🎯 <b>Aufgabe:</b> ' + esc(m.task) + ' (+' + m.task_bonus + ')</p>';
     if (m.daily && m.daily.text) h += '<p><b>' + esc(m.daily.text) + '</b>' + ((m.daily.best || []).length ? '<br>Heute vorne: ' + m.daily.best.map(b => '<span style="color:' + b.c + '">' + esc(b.n) + '</span> ' + b.score).join(" · ") : "") + '</p>';
     if (m.rs === "end" && m.replay) h += '<button class="sec" id="rpb">🎬 Wiederholung</button>';
+    if (m.rs === "end" && m.replay && WN.hl && WN.hl.text) h += '<button class="sec" id="hlb">😮 Knappster Moment</button>';
     h += '<button class="sec" id="lk">👕 Aussehen ändern</button><br><button class="pr" id="st">' + (m.rs === "end" ? "Nochmal" : "Runde starten") + '</button>';
     ov(h);
     document.querySelectorAll("[data-team]").forEach(b => b.onclick = () => ws.send(JSON.stringify({t: "team", k: +b.dataset.team})));
@@ -2866,6 +2907,8 @@ function paint(m) {
     const lkb = $("#lk"); if (lkb) lkb.onclick = () => { editing = true; ov('<h1>Aussehen</h1>' + lookHtml() + '<button class="pr" id="lkok">Fertig</button>'); bindLook();
       $("#lkok").onclick = () => { ws.send(JSON.stringify(Object.assign({t: "look"}, outfit))); editing = false; lastOv = null; paint(st); }; };
     const rpb = $("#rpb"); if (rpb) rpb.onclick = () => send({t: "replay"});
+    const hlb = $("#hlb"); if (hlb) hlb.onclick = () => send({t: "hl"});
+    if (m.rs === "end" && m.replay && WN.hl && WN.hl.text && SAWPLAY) { SAWPLAY = false; setTimeout(() => { if (st.rs === "end") send({t: "hl"}); }, 1800); }   // once, after a round this phone played
     const rd = $("#r-decoy"); if (rd) rd.onclick = () => ws.send(JSON.stringify({t: "decoy", v: !m.decoy}));
     const rr = $("#r-run"), rg = $("#r-guard"); if (rr) rr.onclick = () => ws.send('{"t":"role","r":"runner"}'); if (rg) rg.onclick = () => ws.send('{"t":"role","r":"guard"}');
   }
@@ -2877,6 +2920,38 @@ function paint(m) {
   else ov("");
   const b = $("#st"); if (b) b.onclick = () => ws.send('{"t":"start"}');
 }
+// ---- 3D-4.x Spielkonzept: winner screen, fairness, the next guard, the tools of the guard, vibration (gamerules.gd, gametools.gd) ----
+let SAWPLAY = false, LKon = false, LKt = 0;
+function winHtml(m) {
+  const R = m.rx || {}, W = R.win || {}; let h = "";
+  if (m.rs === "end" && W.title) h += '<div class="win"><div class="big2">' + esc(W.title) + '</div><p><b>' + W.score + ' Punkte</b> · ' + esc(W.info || "") + '</p>' +
+    (W.hl && W.hl.text ? '<p>' + esc(W.hl.text) + '</p>' : '') +
+    ((W.board || []).length ? '<p><small>🏆 Abend: ' + W.board.map((b, i) => (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + ' <span style="color:' + b.c + '">' + esc(b.n) + '</span> ' + b.score).join(" · ") + '</small></p>' : '') + '</div>';
+  if (R.next) h += '<p><b>' + esc(R.next) + '</b></p>';
+  if (R.fair) h += '<p><small>' + esc(R.fair) + '</small></p>';
+  return h;
+}
+function lookVib(on) {                   // the head camera looks this way: a short buzz (again every 2.5 s while it looks)
+  const n = Date.now(); $("#lk").style.opacity = on ? 1 : 0;
+  if (on && (!LKon || n - LKt > 2500) && (st.rx || {}).vibe !== false) { LKt = n; try { if (navigator.vibrate) navigator.vibrate(LKon ? [40] : [70, 50, 70]); } catch (e) {} }
+  LKon = on;
+}
+const TB = {light: "#b-light", siren: "#b-siren", scan: "#b-scan", zoom: "#b-zoom"};
+function toolsPaint(m) {
+  const T = m.tools || {}, g = role === "guard", on = g && !!T.on;
+  ["#b-siren", "#b-scan", "#b-zoom"].forEach(k => $(k).hidden = !on);
+  $("#en").hidden = !on;
+  if (on) {
+    const f = Math.max(0, Math.min(1, (T.e || 0) / Math.max(1, T.max || 1)));
+    $("#en").innerHTML = '⚡ Energie <b>' + (T.e || 0) + '</b>/' + (T.max || 0) + (T.siren ? ' · 📢 Sirene!' : '') + (T.zoom ? ' · 🔍 Zoom' : '') + '<div class="eb"><i style="width:' + Math.round(f * 100) + '%"></i></div>';
+    (T.t || []).forEach(x => { const b = TB[x[0]] && $(TB[x[0]]); if (!b) return; cool(b, x[4]); b.classList.toggle("noen", !x[5] && !(x[4] > 0));
+      const lab = x[1] + "|" + x[3]; if (b.dataset.l !== lab) { b.dataset.l = lab; b.innerHTML = "<i>" + x[1] + "</i>" + esc(x[2]) + "<small>" + x[3] + " ⚡</small>"; } });
+  }
+  const H = $("#hints"), L = g && m.rs === "play" ? (T.hints || []) : [];
+  if (!L.length) { if (H.innerHTML) H.innerHTML = ""; return; }
+  const v = $("#v"), r = v.getBoundingClientRect(), nw = v.naturalWidth || 16, nh = v.naturalHeight || 9, k = Math.min(r.width / nw, r.height / nh), w = nw * k, x0 = r.left + (r.width - w) / 2, y0 = r.top + (r.height - nh * k) / 2;
+  H.innerHTML = L.map(x => '<span style="left:' + Math.round(x0 + x[0] * w) + 'px;top:' + Math.round(y0 + 46) + 'px">' + (x[3] ? (x[0] < 0.5 ? "◀" : "▶") : "") + (x[1] === "scan" ? "📡" : "👣") + '<b>' + x[2] + ' m</b></span>').join("");
+}
 let hbT = 0;
 function heart(m) {                      // 3D-3.77: the phone vibrates like a heartbeat (the sound comes from sfx.beat)
   if (!m.heart || role !== "runner" || m.rs !== "play" || m.susp < 35) return;
@@ -2886,7 +2961,7 @@ function heart(m) {                      // 3D-3.77: the phone vibrates like a h
   if (navigator.vibrate) navigator.vibrate([40, 120, 30]);
 }
 function showReplay(R) {                 // 3D-3.77: the ways of the round on a map, the camera, who was seen when
-  let box = document.getElementById("rpbox"); if (box) box.remove();
+  let box = document.getElementById("rpbox"); if (box) { cancelAnimationFrame(box.__raf); box.remove(); }
   box = document.createElement("div"); box.id = "rpbox"; box.innerHTML = '<canvas id="rpc"></canvas><div id="rpi"></div><button class="lv" id="rpx">✕ Schliessen</button>';
   document.body.appendChild(box); $("#rpx").onclick = () => { box.remove(); cancelAnimationFrame(box.__raf); };
   const cv = $("#rpc"), W = cv.width = innerWidth * devicePixelRatio, H = cv.height = (innerHeight - 50) * devicePixelRatio, c = cv.getContext("2d");
@@ -2895,9 +2970,9 @@ function showReplay(R) {                 // 3D-3.77: the ways of the round on a 
   grow(R.mw[0], R.mw[1]); P.forEach(r => r[1].forEach(e => grow(e[1], e[2]))); lo = [lo[0] - 8, lo[1] - 8]; hi = [hi[0] + 8, hi[1] + 8];
   const sc = Math.min(W / (hi[0] - lo[0]), H / (hi[1] - lo[1])), ox = (W - (hi[0] - lo[0]) * sc) / 2, oy = (H - (hi[1] - lo[1]) * sc) / 2;
   const X = x => ox + (x - lo[0]) * sc, Y = z => oy + (z - lo[1]) * sc, col = {}; (R.who || []).forEach(w => col[w[0]] = [w[2], w[1]]);
-  const tMax = P.length ? P[P.length - 1][0] : 1, t0 = performance.now();
+  const tMax = P.length ? P[P.length - 1][0] : 1, t0 = performance.now(), O = R.only || null;   // 3D-4.x: «Knappster Moment» = only [t0, t1], slower
   const frame = () => {
-    const t = ((performance.now() - t0) / 1000 * 2) % (tMax + 3); c.fillStyle = "#0b1016"; c.fillRect(0, 0, W, H);
+    const t = O ? O[0] + ((performance.now() - t0) / 1000) % (O[1] - O[0] + 1.5) : ((performance.now() - t0) / 1000 * 2) % (tMax + 3); c.fillStyle = "#0b1016"; c.fillRect(0, 0, W, H);
     c.fillStyle = "#4a5058"; (R.obst || []).forEach(o => { c.beginPath(); c.arc(X(o[0]), Y(o[1]), Math.max(2, o[2] * sc), 0, 7); c.fill(); });
     let k = 0; while (k < P.length - 1 && P[k][0] < t) k++;
     if (P.length) { const yaw = P[k][2] * Math.PI / 180, half = R.fov / 2 * Math.PI / 180, r = 30 * sc; c.fillStyle = "rgba(255,215,80,.18)"; c.beginPath(); c.moveTo(X(R.mw[0]), Y(R.mw[1]));
@@ -2906,10 +2981,11 @@ function showReplay(R) {                 // 3D-3.77: the ways of the round on a 
     c.fillStyle = "rgba(80,255,120,.8)"; c.beginPath(); c.arc(X(R.goal[0]), Y(R.goal[1]), 10 * devicePixelRatio, 0, 7); c.fill();
     const last = {}; c.lineWidth = 2 * devicePixelRatio;
     for (let i = 0; i <= k && i < P.length; i++) P[i][1].forEach(e => { const q = [X(e[1]), Y(e[2])]; if (last[e[0]]) { c.strokeStyle = e[4] ? "#ff4a3d" : (col[e[0]] || ["#fff"])[0]; c.beginPath(); c.moveTo(...last[e[0]]); c.lineTo(...q); c.stroke(); } last[e[0]] = q; });
-    c.font = (14 * devicePixelRatio) + "px sans-serif"; Object.keys(last).forEach(s => { c.fillStyle = (col[s] || ["#fff"])[0]; c.beginPath(); c.arc(...last[s], 7 * devicePixelRatio, 0, 7); c.fill(); c.fillStyle = "#fff"; c.fillText((col[s] || ["", "?"])[1], last[s][0] + 10, last[s][1] - 6); });
+    c.font = (14 * devicePixelRatio) + "px sans-serif"; Object.keys(last).forEach(s => { c.fillStyle = (col[s] || ["#fff"])[0]; c.beginPath(); c.arc(...last[s], 7 * devicePixelRatio, 0, 7); c.fill(); c.fillStyle = "#fff"; c.fillText((col[s] || ["", "?"])[1], last[s][0] + 10, last[s][1] - 6);
+      if (O && +s === R.hs) { c.strokeStyle = "#ffd166"; c.lineWidth = 3 * devicePixelRatio; c.beginPath(); c.arc(...last[s], 13 * devicePixelRatio, 0, 7); c.stroke(); } });
     (R.ev || []).filter(e => e[0] <= t).forEach(e => { const r = P.find(r => r[0] >= e[0]); const p = r && r[1].find(x => x[0] === e[1]); if (p) c.fillText(e[2] === "caught" ? "🚨" : "🏁", X(p[1]) - 8, Y(p[2]) + 6); });
-    $("#rpi").textContent = "🎬 " + fmtT(Math.floor(t)) + " / " + fmtT(Math.floor(tMax)) + " · rot = gesehen";
-    box.__raf = requestAnimationFrame(frame); };
+    $("#rpi").textContent = (O ? (R.title || "😮 Knappster Moment") + " · " + fmtT(Math.floor(t)) : "🎬 " + fmtT(Math.floor(t)) + " / " + fmtT(Math.floor(tMax))) + " · rot = gesehen";
+    if (box.isConnected) box.__raf = requestAnimationFrame(frame); };
   frame();
 }
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c])); }
@@ -2932,6 +3008,7 @@ $("#b-stone").addEventListener("pointerdown", e => { e.preventDefault(); send({t
 $("#b-act").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "act"}); });
 $("#b-lamp").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "lamp"}); });
 $("#b-light").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "light"}); });
+["siren", "scan", "zoom"].forEach(k => $("#b-" + k).addEventListener("pointerdown", e => { e.preventDefault(); send({t: "tool", k}); }));   // 3D-4.x: tools of the guard
 $("#b-catch").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "catch"}); if ($("#b-catch").classList.contains("shut") && SH.until <= Date.now()) { const f = $("#shfl"); f.classList.remove("on"); void f.offsetWidth; f.classList.add("on"); tone(1600, 0.05, "square", 0.08); } });
 // 3D-4.x «Auslöser»: a person is the guard - crosshair in the middle (hit area by the difficulty), the round shutter, a 3 s lock ring after a miss
 const SH = {until: 0, len: 3};
@@ -2963,7 +3040,8 @@ function btns() { $("#b-run").classList.toggle("on", run); $("#b-crouch").classL
 // keyboard (for a computer): W A S D / arrows, Shift = run, C = crouch, X = crawl, Q / E = look round, F = throw / light, Space = «Erwischt!»
 const keys = {};
 addEventListener("keydown", e => { if (e.target.tagName === "INPUT") return; keys[e.code] = true; if (e.code === "KeyC") { posture = posture === 1 ? 0 : 1; btns(); } if (e.code === "KeyX") { posture = posture === 2 ? 0 : 2; btns(); }
-  if (e.code === "KeyF") send({t: role === "guard" ? "light" : st.mode === "jaeger" ? "act" : "stone"}); if (e.code === "Space") send({t: "catch"}); });
+  if (e.code === "KeyF") send({t: role === "guard" ? "light" : st.mode === "jaeger" ? "act" : "stone"}); if (e.code === "Space") send({t: "catch"});
+  if (role === "guard" && {KeyV: 1, KeyN: 1, KeyZ: 1}[e.code]) send({t: "tool", k: {KeyV: "siren", KeyN: "scan", KeyZ: "zoom"}[e.code]}); });
 addEventListener("keyup", e => { keys[e.code] = false; });
 // 3D-4.x (wish of Daniel): a game controller at this phone, tablet or computer (Bluetooth or USB, Gamepad API, standard
 // mapping) sends the same messages as the touch buttons: left stick / D-pad = go (guard: turn the head), right stick = look
@@ -2983,8 +3061,9 @@ function padRead() {
   if (hit(0)) send({t: g_ ? "catch" : st.mode === "jaeger" ? "act" : "stone"});
   if (hit(7) && g_) send({t: "catch"});                             // 3D-4.x: R2 = the shutter («Auslöser») of the guard
   if (hit(1)) { if (g_) send({t: "light"}); else { posture = posture === 1 ? 0 : 1; btns(); } }
-  if (hit(2)) { if (g_) send({t: "light"}); else { posture = posture === 2 ? 0 : 2; btns(); } }
-  if (hit(3) && !g_) send({t: "lamp"});
+  if (hit(2)) { if (g_) send({t: "tool", k: "scan"}); else { posture = posture === 2 ? 0 : 2; btns(); } }   // 3D-4.x: X = scan, Y = siren, LB = zoom (guard)
+  if (hit(3)) send(g_ ? {t: "tool", k: "siren"} : {t: "lamp"});
+  if (hit(4) && g_) send({t: "tool", k: "zoom"});
   if (hit(9) && (st.rs === "lobby" || st.rs === "end")) send({t: "start"});
   gpOld = g.buttons.map((x, i) => B(i));
   return {mx: lx_, my: ly_, look: rx_ * 12, pitch: ry_ * 8, run: B(7) || B(5) || B(10)};
@@ -3057,6 +3136,9 @@ func spectator_info() -> Dictionary:
 		d["botg"] = {"catches": int(bots.guard["catches"]), "false": int(bots.guard["false"])}
 	d["sprint"] = sprint()
 	d["px"] = plus.spec_info()                             # 3D-4.x: weather change, theft, learning points
+	d["rules"] = rules.spec_info()                         # 3D-4.x: fairness, next guard, winner screen
+	if main.game_mode == "mwhand":
+		d["tools"] = tools.info_for(null)                  # 3D-4.x: the tools of the guards at MoveEye (part 543)
 	if jaeger.on():                                        # «Fehlalarm-Jäger»: false alarms per player, the result
 		for i in range(ps.size()):
 			for p in players:
@@ -3079,7 +3161,7 @@ func debug_info() -> Dictionary:
 	for p in players:
 		if p != null and p.has("bot"):
 			bs[str(p["name"])] = [snappedf(float(p["bot"]["skill"]), 0.01), int(p["items"]), int(p.get("stones", 0)), snappedf(float(p.get("hide_s", 0.0)), 0.1), int(p["caught"])]
-	return {"ok": true, "px": plus.debug(), "round": round_state, "res": results, "tres": team_results, "duel": duel, "fres": flag_res, "levels": lv, "bots": bs,
+	return {"ok": true, "px": plus.debug(), "rules": rules.debug(), "tools": tools.debug(), "round": round_state, "res": results, "tres": team_results, "duel": duel, "fres": flag_res, "levels": lv, "bots": bs,
 			"botg": bots.guard.duplicate(), "votes": watch.votes_res, "sprint": sprint(), "cps": checkpoints.map(func(c): return [snappedf(c["pos"].x, 0.1), snappedf(c["pos"].z, 0.1)]),
 			"left": int(max(0.0, t_end - now())) if round_state == "play" else 0, "feed": feed.map(func(e): return e[1]),
 			"tut": players.filter(func(q): return q != null).map(func(q): return [q["name"], bool(q.get("tut_on", false)), int(q.get("tut", 0))]),
@@ -3162,7 +3244,7 @@ func _hide_check(p: Dictionary) -> bool:
 		if hi >= hides.size() or a.position.distance_to(hides[hi]["pos"]) > 1.3 or a.ctl_posture == 0:
 			p["hide_i"] = -1                             # left the bush
 			return false
-		var left: float = HIDE_MAX - (t - float(p["hide_t0"]))
+		var left: float = HIDE_MAX + rules.hide_bonus() - (t - float(p["hide_t0"]))   # 3D-4.x: fairness - longer for few sneakers
 		if left <= 0.0:
 			p["hide_i"] = -1
 			p["hide_cd"][hi] = t + 12.0

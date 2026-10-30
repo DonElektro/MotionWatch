@@ -128,6 +128,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `541_web_servo.py` | Web: Seite «Servos» (/servo, /api/servo): Not-Aus / Freigeben, wer steuert, Teach-in, Diagnose mit Export; Not-Aus auf der Live-Seite | 368 |
 | `538_web_controller_ansicht.py` | Web: «Controller-Ansicht» der Live-Seite für Handy / Tablet (Live- + Simulator-Bild, Game-Controller, Gesten, schmale Leiste) | 383 |
 | `539_web_ausloeser.py` | «Auslöser»: ein Mensch steuert die Kamera – Fadenkreuz und runder 🎯-Knopf im Live-Bild, R2, Treffer als Alarm ins Test-Postfach | 170 |
+| `543_web_spiel_waechter.py` | Spiel des Simulators: Wächter-Werkzeuge der Wächter an MoveEye («Team gegen MoveEye») – Energie, Licht, Sirene, Scan, Zoom, Hinweis-Marken im Live-Bild | 75 |
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
 | `545_simulator_updates.py` | Simulator-Updates: ein Besitzer («Neue Versionen» im Simulator) | 72 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
@@ -165,6 +166,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `605_uebersetzungen_konzept.py` | Übersetzungen der Konzept-Bereinigung (Assistent, Modi, Fenster-Reiter) | 97 |
 | `609_uebersetzungen_robust.py` | Übersetzungen und Anleitung: Speicherkarte, Selbstheilung, Simulator-Sperre | 142 |
 | `610_anleitung_ergaenzungen.py` | Anleitung: Ergänzungen in allen Sprachen | 167 |
+| `612_uebersetzungen_spielA.py` | Übersetzungen der Wächter-Werkzeuge (543) | 17 |
 | `613_uebersetzungen_sicher.py` | Übersetzungen und Anleitung zu 578 | 165 |
 | `614_uebersetzungen_training.py` | Übersetzungen «KI trainieren» / Modell von selbst aktualisieren | 27 |
 | `616_uebersetzungen_spiel2.py` | Übersetzungen der Spiel-Extras (Wetterwechsel, Tarn-Sachen, Diebstahl, Lern-Punkte) | 8 |
