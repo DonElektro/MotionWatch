@@ -1,7 +1,7 @@
 {
- "version": "3D-4.13",
+ "version": "3D-4.14",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31604291,
- "sha256": "27eb0430623d2d9e961e359b344ba69daaea24f6f9da2de5b32ed2ea39e6bb12",
- "notes": "Fehlalarm-Zählung im Spiel repariert"
+ "size": 31654680,
+ "sha256": "ca56d6f03f44971da8ce87a2ddab7d621afd174b96a2c9cac0ead90a20379d75",
+ "notes": "Controller einheitlich, Symbol-Dock"
 }
