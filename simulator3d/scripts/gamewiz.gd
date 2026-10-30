@@ -193,6 +193,8 @@ const QUICK := [["sneak", "🕵️", "Schleichen", "Unentdeckt zum grünen Ziel 
 		["duel", "👮", "Wächter-Duell", "Einer ist Wächter: Auslöser 🎯, Licht, Sirene, Scan und Zoom – mit Energie. Die anderen schleichen. Nach jeder Runde ist der Nächste Wächter (will niemand: der Bot-Wächter)."],
 		["theft", "🚲", "Diebstahl", "Das Velo oder die Kühlbox unbemerkt zum orangen Ausgang tragen. Am Schluss schaut MoveEye nach, ob es merkt, dass etwas fehlt."]]
 const LEVEL_OF := {"szene_voll": "normal", "szene_tarnen": "normal", "szene_velo": "normal", "sneak": "normal", "duel": "normal", "theft": "normal", "kids": "easy", "family": "normal", "pro": "hard", "kids_pc": "easy", "free": "normal"}
+# 3D-4.20 (Daniel): the quick start cards have pictures again (wizpics.gd) - quick card -> picture
+const QUICK_PIC := {"sneak": "mw", "duel": "guard", "theft": "theft", "szene_voll": "mw", "szene_tarnen": "free", "szene_velo": "theft", "escape_quick": "escape"}
 const OWN_LABEL := "⚙ Eigene Regeln – alle Spielarten, Ziele und Extras"
 
 
@@ -354,7 +356,7 @@ func model() -> Dictionary:
 	match step:
 		0:
 			title = "Welches Spiel?"
-			lead = "Drei feste Spiele – ein Tipp, alles eingestellt (3 Minuten pro Runde). Bis zu 12 Spieler laufen mit dem Handy mit, weitere schauen zu. Alles andere unter «Eigene Regeln»."
+			lead = "Ein Tipp, alles eingestellt (3 Minuten pro Runde). Bis zu 12 Spieler laufen mit dem Handy mit, weitere schauen zu. Alles andere unter «Eigene Regeln»."
 			key = "game_mode"
 			src = MODES if own_open else []                # 3D-4.x: the game types only under «Eigene Regeln»
 		1:
@@ -402,10 +404,14 @@ func model() -> Dictionary:
 	var quick := []
 	if step == 0:                                          # 3D-4.x: one tap - everything set
 		var sg: Dictionary = main.szenen.game_card() if main.szenen != null else {}
+		if main.scene == "parcours":                       # 3D-4.20 (Daniel): «Entkomme der Kamera» is the game of the tracking parcours
+			sg = {"v": "escape_quick", "icon": "🏃", "title": "Spiel zur Szene: Entkomme der Kamera", "scene": true,
+					"text": "Steuere eine Figur mit dem Stick und versuche, aus dem Bild von MoveEye zu kommen – 60 Sekunden, Punkte für die Rangliste."}
 		if not sg.is_empty():
+			sg["pic"] = Pics.PICS.get(str(QUICK_PIC.get(str(sg["v"]), "mw")), "")
 			quick.append(sg)                               # 3D-4.x: the game that fits the scene (szenenplus.gd) first
 		for q in QUICK:
-			quick.append({"v": q[0], "icon": q[1], "title": q[2], "text": q[3]})
+			quick.append({"v": q[0], "icon": q[1], "title": q[2], "text": q[3], "pic": Pics.PICS.get(str(QUICK_PIC.get(q[0], "mw")), "")})   # 3D-4.20: with a picture again
 	var opts := []
 	if step == 2 or step == 3:
 		for o in (OPTIONS if step == 2 else PLAYER_OPTS):
@@ -560,6 +566,10 @@ func op(d: Dictionary) -> Dictionary:
 			_changed()
 		"quick":                                        # 3D-4.x: a quick start - set, open the game, show the QR code
 			var qv := str(d.get("value", ""))
+			if qv == "escape_quick":                       # 3D-4.20: «Entkomme der Kamera» from the quick start of the parcours
+				W["game_mode"] = "escape"
+				_next()
+				return model()
 			if PRESETS.has(qv):
 				W = _cur()                                 # 3D-4.7: the settings a preset does not touch stay (Läufer höchstens …)
 				W.merge(preset(qv), true)
@@ -966,6 +976,12 @@ func _paint() -> void:
 			qb.text = plain(q["title"]) + "\n" + plain(q["text"])
 			qb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			qb.custom_minimum_size = Vector2(190, 92)
+			var qt: Texture2D = Pics.texture(str(QUICK_PIC.get(str(q["v"]), "mw")), 0.55) if str(q.get("pic", "")) != "" else null
+			if qt != null:                                 # 3D-4.20: the picture on top, like the cards of «Eigene Regeln»
+				qb.icon = qt
+				qb.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				qb.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+				qb.custom_minimum_size = Vector2(190, 260)
 			qb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			if main.UI.has_method("primary"):
 				main.UI.primary(qb)

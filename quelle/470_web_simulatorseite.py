@@ -509,7 +509,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .gw-body{padding:16px;overflow:auto}.gw-body h3{margin:0 0 4px;font-size:20px}.gw-body .lead{margin:0 0 14px}
 .gw-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
 .gw-card{text-align:left;padding:14px;border-radius:12px;border:2px solid var(--line,#1f2b3a);background:transparent;color:inherit;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:120px}
-.gw-pic{width:100%;aspect-ratio:16/9;border-radius:10px;display:block;margin-bottom:4px}.gw-card .ic:empty{display:none}
+.gw-pic{width:100%;aspect-ratio:16/9;border-radius:10px;display:block;margin-bottom:4px}.gw-card .ic:empty,.gw-q .ic:empty{display:none}
 .gw-pics2{display:flex;gap:8px;margin:2px 0 10px}.gw-pics2 img{width:calc(50% - 4px);border-radius:10px}
 .gw-card b{font-size:16px}.gw-card .ic{font-size:28px;line-height:1}.gw-card small{color:var(--mut,#8b9bb0);line-height:1.35}
 .gw-card.on{border-color:var(--acc,#3b8cff);background:rgba(59,140,255,.12)}
@@ -939,7 +939,9 @@ function gwPaint(M) {
   if ((M.quick || []).length) {                      // 3D-4.x: three quick starts - one tap sets everything and opens the game
     B.appendChild(el("div", "gw-sub", "⚡ " + (M.quick_title || t("Quick start"))));
     const qg = el("div", "gw-quick");
-    M.quick.forEach(q => { const b = el("button", "gw-q"); b.type = "button"; b.append(el("span", "ic", q.icon), el("b", "", q.title), el("small", "", q.text));
+    M.quick.forEach(q => { const b = el("button", "gw-q"); b.type = "button";
+      if (q.pic) { const im = el("img", "gw-pic"); im.alt = ""; im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(q.pic); b.appendChild(im); }   // 3D-4.20: pictures again, like in the simulator
+      b.append(el("span", "ic", q.pic ? "" : q.icon), el("b", "", (q.pic ? q.icon + " " : "") + q.title), el("small", "", q.text));
       b.onclick = async () => { b.disabled = true; const r = await gwOp({op: "quick", value: q.v}); b.disabled = false;
         if (r && r.game && r.game.open) { const qq = $("#gw-qr"); if (qq && qq.firstChild) qq.scrollIntoView({behavior: "smooth", block: "center"}); } };
       qg.appendChild(b); });
