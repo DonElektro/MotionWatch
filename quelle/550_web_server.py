@@ -152,7 +152,7 @@ class WebStream:
                 if len(recent) >= 8:
                     fails[ip] = recent
                     return sx_err(429, "toomany", {"Retry-After": "300"})
-                ke = appkey_find(k_)
+                ke = appkey_find(k_, api=True)      # a shortcut key (scope «shortcut», 573) opens only /k/…
                 if ke is None:
                     recent.append(now); fails[ip] = recent
                     if len(recent) == 8:
@@ -1414,13 +1414,11 @@ class WebStream:
             rec = [x for x in SC_FAILS.get(ip, []) if now - x < 600]
             if len(rec) >= 10:
                 return Response("too many wrong keys - wait 10 minutes", 429)
-            tok = CFG.get("shortcut_token") or ""
-            ke = None if len(tok) >= 20 and hmac.compare_digest(tok, key) else appkey_find(key)   # 573: an app key works too
-            if ke is None and (len(tok) < 20 or not hmac.compare_digest(tok, key)):
+            ke = appkey_find(key)                  # aufr: one key system - shortcut keys and every other app key (573)
+            if ke is None:
                 rec.append(now); SC_FAILS[ip] = rec
                 return Response("unknown key", 403)
-            if ke is not None:
-                appkey_seen(ke, ip)
+            appkey_seen(ke, ip)
             txt = None
             if action == "arm":
                 arm(); txt = "armed" if is_armed() else "arming (delay " + str(CFG.get("arm_delay", "")) + " s)"
@@ -1449,17 +1447,11 @@ class WebStream:
         def api_shortcut():
             if getattr(g, "role", "admin") != "admin":
                 return reply({"ok": False, "error": "not allowed"}, 403)
-            if request.method == "POST":
-                a_ = body().get("action")
-                if a_ == "new":
-                    CFG["shortcut_token"] = secrets.token_urlsafe(24); save_settings()
-                    log_event("sys", "New shortcut key made (the old addresses no longer work)")
-                elif a_ == "off":
-                    CFG["shortcut_token"] = ""; save_settings()
-            tok = CFG.get("shortcut_token") or ""
             base = (CFG.get("public_url") or "").strip().rstrip("/") or request.host_url.rstrip("/")
-            return reply({"ok": True, "on": bool(tok), "base": base, "key": tok, "prefix": msg_keyword("person").split("-")[0] if msg_keyword("person") else "MW",
-                          "keywords": {k: msg_keyword(k) or ("MW-" + v) for k, v in MSG_KEYWORDS.items()}})
+            if request.method == "POST":                   # aufr: the shortcut keys are app keys (573)
+                res_, code_ = shortcut_action(body(), getattr(g, "user", "") or "admin", request)
+                return reply(dict(shortcut_state(base), **res_), code_)
+            return reply(shortcut_state(base))
 
         @app.route("/snapshot.jpg")
         def snapshot():

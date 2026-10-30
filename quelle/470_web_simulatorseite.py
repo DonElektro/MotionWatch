@@ -1499,7 +1499,7 @@ def nav_html(active):
 def ui_seed_script():
     """Runs first on every page: copies the saved layout into the browser storage (so the page code finds it there) and
     sends every later layout change back to the Pi, where it is kept in the settings file."""
-    data = json.dumps(CFG["web_ui"]).replace("</", "<\\/")
+    data = json.dumps({k: v for k, v in CFG["web_ui"].items() if k not in WEB_UI_LOCAL}).replace("</", "<\\/")   # aufr: per-device keys stay on the device
     return ("<script>(function(){var S=" + data + ";try{for(var k in S)localStorage.setItem(k,S[k]);}catch(e){}"
             "var P={},T=null,L=" + json.dumps(sorted(WEB_UI_LOCAL)) + ";"
             "function send(){var b=P;P={};T=null;try{fetch('/api/ui',{method:'POST',headers:{'Content-Type':'application/json'},"

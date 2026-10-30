@@ -6,8 +6,9 @@
 _KS = "Automatic head movement"
 TOGGLES.extend([
     (_KS, "kopf_on", "Automatic head movement (the head turns by itself - one mover at a time: hand > alarm > walk test > valuables > round > parking)"),
-    (_KS, "kopf_round", "Watchful / Full: smart round - longer at the tent and the access, hardly at ignored directions (places from «Platz einrichten», otherwise the waypoints)"),
+    (_KS, "kopf_round", "Smart round (when «Patrol» is on): longer at the tent and the access, hardly at ignored directions (places from «Platz einrichten», otherwise the waypoints)"),
     (_KS, "kopf_alarm", "Full: turn to the alarm - movement at the edge of the picture, a warm spot of the thermal camera, a noise (only with an access as direction)"),
+    (_KS, "kopf_deter_aim", "Deterrence: turn the light and the siren to the person (otherwise to the tent of «Platz einrichten»)"),   # aufr (396)
     (_KS, "kopf_return", "Back to the home position when the person or the alarm is gone"),
     (_KS, "kopf_park", "Off: park the camera looking away (visible privacy), back home when switched on"),
     (_KS, "kopf_glance", "Quick look at the valuables now and then, compared with the reference (missing = push)"),
@@ -83,6 +84,8 @@ def kopf_selftest():
         CFG.update(kopf_on=True, kopf_round=True, patrol=False, armed=True, protect_level="watch"); STATE["arm_state"] = "armed"
         st = kopf_stops()
         assert [s[3] for s in st] == ["T", "I"] and st[0][2] > st[1][2] * 10, st
+        assert not kopf_patrol_plan()[0], "aufr: no round without «Patrouille» (the head stays at home)"
+        CFG["patrol"] = True
         assert kopf_patrol_plan()[0] and kopf_ignored(80, 50) and not kopf_ignored(30, 50)
         assert kopf_may("manual") and KOPF_PRIO.index("alarm") < KOPF_PRIO.index("round")
     finally:

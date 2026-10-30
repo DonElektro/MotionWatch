@@ -13,7 +13,12 @@
 #  2  «Sicherheit an einem Ort»: Settings → Security (own group, web and window) holds the encrypted login (574), the web
 #     password, the users (+ trusted devices), the app keys and the security check (before: Tools). The old places keep a link.
 # ----------------------------------------------------------------------------
-_AK_CFG = {"app_keys": []}       # [{"id", "name", "h": sha256 of the key, "t0", "seen", "ip"}] - the key itself is never stored
+_AK_CFG = {"app_keys": []}       # [{"id", "name", "h": sha256 of the key, "t0", "seen", "ip", "scope"}] - the key itself is never stored
+# aufr (Konzept-Check, one key system): the old «shortcut key» (CFG shortcut_token, plain text, 2.95.27) is an app key now with
+#   "scope": "shortcut" = it opens ONLY the shortcut addresses /k/<key>/<action> (arm, siren off, light, photo, status), like
+#   before - not the rest of MoveEye. shortcut_migrate() takes an old key over once (as hash, the same key, the /k/ addresses
+#   keep working); the card «iPhone shortcuts» (530) lists and makes these keys through /api/shortcut. Every normal app key
+#   works on /k/ too.
 for _k, _v in _AK_CFG.items():
     CFG.setdefault(_k, _v)
     DEFAULTS.setdefault(_k, _v)
@@ -45,8 +50,13 @@ def appkey_entries():
     return out
 
 
-def appkey_find(key):
-    """the entry of this key, or None (compares the hashes in constant time)"""
+SHORTCUT_SCOPE = "shortcut"
+SHORTCUT_KEY_NAME = "iPhone shortcuts"
+
+
+def appkey_find(key, api=False):
+    """the entry of this key, or None (compares the hashes in constant time). api=True (the login of 550): a key that only
+    opens the shortcut addresses (scope «shortcut») counts as unknown there"""
     if not isinstance(key, str) or not (10 <= len(key) <= 120):
         return None
     h = _appkey_hash(key.strip())
@@ -54,6 +64,8 @@ def appkey_find(key):
     for e in appkey_entries():
         if hmac.compare_digest(str(e.get("h", "")), h):
             hit = e
+    if api and hit is not None and hit.get("scope") == SHORTCUT_SCOPE:
+        return None
     return hit
 
 
@@ -120,12 +132,13 @@ def appkey_list():
     out = []
     for e in appkey_entries():
         seen = max(float(e.get("seen") or 0), float(APPKEY["seen"].get(e["id"], 0)))
-        out.append({"id": e["id"], "name": e.get("name") or "?", "t0": int(e.get("t0") or 0), "seen": int(seen), "ip": e.get("ip") or ""})
+        out.append({"id": e["id"], "name": e.get("name") or "?", "t0": int(e.get("t0") or 0), "seen": int(seen), "ip": e.get("ip") or "",
+                    "scope": e.get("scope") or ""})
     return out
 
 
-def appkey_create(name, who="web"):
-    """(ok, error, key): the key is only returned here - once"""
+def appkey_create(name, who="web", scope=""):
+    """(ok, error, key): the key is only returned here - once. scope «shortcut»: only the shortcut addresses /k/…"""
     name = re.sub(r"[\x00-\x1f<>]", "", str(name or "")).strip()[:40]
     if not name:
         return False, "give the key a name (e.g. Home Assistant)", ""
@@ -136,7 +149,10 @@ def appkey_create(name, who="web"):
         return False, "this name exists already", ""
     key = APPKEY_PREFIX + secrets.token_urlsafe(24)
     now = int(time.time())
-    lst.append({"id": secrets.token_hex(4), "name": name, "h": _appkey_hash(key), "t0": now, "seen": 0, "ip": ""})
+    e = {"id": secrets.token_hex(4), "name": name, "h": _appkey_hash(key), "t0": now, "seen": 0, "ip": ""}
+    if scope == SHORTCUT_SCOPE:
+        e["scope"] = SHORTCUT_SCOPE
+    lst.append(e)
     CFG["app_keys"] = lst
     save_settings_now()
     log_event("web", f"{who}: app key «{name}» made")
@@ -153,6 +169,67 @@ def appkey_revoke(kid, who="web"):
     save_settings_now()
     log_event("web", f"{who}: app key «{e.get('name')}» blocked")
     return True, ""
+
+
+# ---- the shortcut keys (before: CFG shortcut_token in plain text) ----------------------------------------------------------
+def shortcut_migrate(cfg_in):
+    """settings of 2.98.36 and older: the plain shortcut key becomes an app key «iPhone shortcuts» (scope shortcut, only its
+    hash is kept). The same key keeps working on /k/<key>/…; nothing happens when it was taken over already."""
+    if not isinstance(cfg_in, dict):
+        return []
+    tok = str(cfg_in.get("shortcut_token") or "").strip()
+    if len(tok) < 20:
+        return []
+    lst = appkey_entries()
+    h = _appkey_hash(tok)
+    if any(hmac.compare_digest(str(e.get("h", "")), h) for e in lst):
+        return []
+    if len(lst) >= APPKEY_MAX:
+        lst = lst[:APPKEY_MAX - 1]                     # (never happens in practice: 20 keys) - the shortcut key must not get lost
+    names = {str(e.get("name", "")).lower() for e in lst}
+    nm0 = tr(SHORTCUT_KEY_NAME)                       # in the language of the device
+    name = nm0 if nm0.lower() not in names else nm0 + " (2)"
+    lst.append({"id": secrets.token_hex(4), "name": name, "h": h, "t0": int(time.time()), "seen": 0, "ip": "", "scope": SHORTCUT_SCOPE})
+    CFG["app_keys"] = lst
+    try:
+        save_settings()                               # the plain key is gone from the file with the next save (MIGRATE_ONLY)
+    except Exception:
+        pass
+    return ["shortcut key -> app key «" + name + "» (only the shortcut addresses /k/, stored as hash)"]
+
+
+def shortcut_state(base):
+    """/api/shortcut GET: the keys that work on /k/ (shortcut keys first, then the other app keys) and the keywords"""
+    keys = appkey_list()
+    sc = [k for k in keys if k["scope"] == SHORTCUT_SCOPE]
+    return {"ok": True, "on": bool(keys), "base": base, "keys": sc, "other": [k["name"] for k in keys if k["scope"] != SHORTCUT_SCOPE],
+            "actions": [a for a, _n in QR_SHORTCUTS],
+            "prefix": msg_keyword("person").split("-")[0] if msg_keyword("person") else "MW",
+            "keywords": {k: msg_keyword(k) or ("MW-" + v) for k, v in MSG_KEYWORDS.items()}}
+
+
+def shortcut_action(d, who, plain_req=None):
+    """/api/shortcut POST {action: new | off}: new = one more shortcut key (shown once, like every app key); off = block all
+    shortcut keys. -> (reply dict, http code)"""
+    a = d.get("action"); lang = norm_lang(d.get("lang"))
+    if a == "new":
+        if plain_req is not None and seclogin_plain(plain_req):     # like every app key: never unencrypted through the network (574)
+            url = seclogin_url(plain_req).split("/api/")[0] + "/"
+            return {"ok": False, "error": tr("For your safety an app key can only be made over the secure page", lang) + ": " + url, "https": url}, 403
+        names = {k["name"].lower() for k in appkey_list()}
+        nm = tr(SHORTCUT_KEY_NAME, lang)
+        n = 2
+        while nm.lower() in names and n < 30:
+            nm = tr(SHORTCUT_KEY_NAME, lang) + f" ({n})"; n += 1
+        ok, err, key = appkey_create(nm, who, SHORTCUT_SCOPE)
+        return {"ok": ok, "error": tr_err(err, lang) if err else None, "key": key, "name": nm}, 200 if ok else 400
+    if a == "off":
+        n = 0
+        for k in appkey_list():
+            if k["scope"] == SHORTCUT_SCOPE:
+                appkey_revoke(k["id"], who); n += 1
+        return {"ok": True, "n": n}, 200
+    return {"ok": False, "error": tr_err("unknown action", lang)}, 400
 
 
 # ---- the security check (300) translated on the server: the same lines for the web page and the window --------------------
@@ -244,7 +321,7 @@ SECPANEL_JS = r"""
     (j.keys || []).forEach(k => {
       const r = E("div", "sens-card"), r1 = E("div", "row"); r1.style.gap = "8px";
       const tx = E("div", ""); tx.style.flex = "1";
-      tx.append(E("b", "", "🔑 " + k.name), E("div", "mut", T("made") + " " + d2(k.t0) + " · " + T("last used") + " " + (k.seen ? d2(k.seen) + (k.ip ? " · " + k.ip : "") : T("never"))));
+      tx.append(E("b", "", "🔑 " + k.name), E("div", "mut", (k.scope === "shortcut" ? "📲 " + T("only the shortcut addresses /k/") + " · " : "") + T("made") + " " + d2(k.t0) + " · " + T("last used") + " " + (k.seen ? d2(k.seen) + (k.ip ? " · " + k.ip : "") : T("never"))));
       const bl = E("button", "red", "⛔ " + T("Block")); bl.type = "button";
       bl.onclick = async () => { if (!confirm(T("Block this key? Programs that use it get no access any more.") + "\n" + k.name)) return;
         const r_ = await post("/api/appkeys", {action: "revoke", id: k.id, lang: L()}); if (!r_.ok) toast("⚠ " + (r_.error || "error")); akLoad(box); };
@@ -413,7 +490,7 @@ def _ak_tk_keys(app, box):
     for k in appkey_list():
         r = tk.Frame(box, bg=C["panel"]); r.pack(fill="x", pady=(4, 0))
         seen = datetime.fromtimestamp(k["seen"]).strftime("%d.%m. %H:%M") if k["seen"] else tr("never")
-        tk.Label(r, text="🔑 " + k["name"] + "\n" + tr("made") + " " + datetime.fromtimestamp(k["t0"]).strftime("%d.%m.%Y") + " · " + tr("last used") + " " + seen,
+        tk.Label(r, text="🔑 " + k["name"] + ("  ·  " + tr("only the shortcut addresses /k/") if k["scope"] == SHORTCUT_SCOPE else "") + "\n" + tr("made") + " " + datetime.fromtimestamp(k["t0"]).strftime("%d.%m.%Y") + " · " + tr("last used") + " " + seen,
                  bg=C["panel"], fg=C["txt"], anchor="w", justify="left").pack(side="left", fill="x", expand=True)
 
         def block(kid=k["id"], name=k["name"]):
@@ -473,6 +550,16 @@ def appkey_selftest():
             assert not appkey_denied("/api/set", "POST", {"key": "sensitivity", "value": 50})
             kid = appkey_find(key)["id"]
             assert appkey_revoke(kid, "test")[0] and appkey_find(key) is None
+            # aufr: the old plain shortcut key becomes an app key (hash), the same key keeps working on /k/, not for the API
+            old = "Ab3_" + "x" * 28
+            did = shortcut_migrate({"shortcut_token": old})
+            assert did and shortcut_migrate({"shortcut_token": old}) == [], "taken over only once"
+            e_ = appkey_find(old)
+            assert e_ and e_["scope"] == SHORTCUT_SCOPE and old not in json.dumps(CFG["app_keys"]) and appkey_find(old, api=True) is None
+            assert "shortcut_token" not in CFG and "shortcut_token" in MIGRATE_ONLY
+            r_, c_ = shortcut_action({"action": "new"}, "test")
+            assert c_ == 200 and appkey_find(r_["key"])["scope"] == SHORTCUT_SCOPE and len(shortcut_state("x")["keys"]) == 2
+            assert shortcut_action({"action": "off"}, "test")[0]["n"] == 2 and appkey_find(old) is None
         finally:
             globals()["save_settings_now"] = _save
         for k_ in ("ak-note", "App keys", "Block", "An app key cannot change the password, the users, the app keys or the security settings"):

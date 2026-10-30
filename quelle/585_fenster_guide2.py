@@ -408,7 +408,7 @@ def _g2_tk_wizard(self, force=False):
             self._fbtn(r, tr("◀ ▶ Turn a little"), lambda: (move_camera("left", 8), w.after(900, lambda: move_camera("right", 8)), w.after(1800, lambda: move_camera("center")))).pack(side="left")
             lab(tr("Direction of turning wrong? Swap it:"))
             toggle(tr("Invert pan direction"), "invert_pan"); toggle(tr("Invert tilt direction"), "invert_tilt")
-            r = row(); self._fbtn(r, tr("🛠 Servo test (tools)"), lambda: self._open_page("/tools")).pack(side="left")
+            r = row(); self._fbtn(r, tr("🛠 Servos: test and positions"), lambda: self._srv_win("test")).pack(side="left")
         elif c == "ai":
             lab(tr("The AI says «person», «animal», «car». It runs on the Pi or on a helper PC."))
             toggle(tr("AI detection"), "ai_enabled"); lab("🤖 " + str(STATE.get("ai_status") or ""))

@@ -421,6 +421,13 @@ def _settings_migrations(cfg_in):
             log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
     except Exception as e:
         log_event("sys", f"Settings migration (232): {e}"[:150])
+    for _f, _n in ((lambda: shortcut_migrate(cfg_in), "573"), (place_report_migrate, "317")):   # aufr: shortcut key -> app key, public path -> zone
+        try:
+            did = _f()
+            if did:
+                log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
+        except Exception as e:
+            log_event("sys", f"Settings migration ({_n}): {e}"[:150])
 
 
 _SAVE_LOCK = threading.Lock()

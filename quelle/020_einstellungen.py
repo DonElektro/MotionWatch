@@ -167,8 +167,7 @@ CFG = {
     # e-mail as a way for messages (the iPhone «E-Mail» automation can start a shortcut)
     "email_on": False, "email_to": "", "email_host": "", "email_port": "587", "email_user": "", "email_password": "", "email_from": "",
     "email_events": "alarms",       # alarms | all
-    # shortcut key (2.95.27): /k/<key>/<action> works without the password, only for a few actions (arm, siren off, light ...)
-    "shortcut_token": "",
+    # (the shortcut key of 2.95.27, shortcut_token, is an app key with scope «shortcut» since aufr - part 573, MIGRATE_ONLY)
     # 2.95.28: a short test run every night (when the simulator runs), message only when it gets clearly worse
     "testopt_nightly": False, "testopt_hour": 3, "testopt_plan": "quick",
     "deter_person_act": "off", "deter_person_sound": "two-tone",
@@ -271,7 +270,8 @@ STATE = {
 DEFAULTS = dict(CFG)
 # 2.98.18: old keys that are only READ from settings files of older versions (the migration takes them over) - never in CFG,
 # so they are not shown, saved or exported anywhere. key -> what took its place.
-MIGRATE_ONLY = {"simweek_on": "weekrep_sim (577, 2.98.15)", "back_ask": "presence_back (577, 2.98.15)"}
+MIGRATE_ONLY = {"simweek_on": "weekrep_sim (577, 2.98.15)", "back_ask": "presence_back (577, 2.98.15)",
+                "shortcut_token": "an app key with scope «shortcut» (573, aufr)"}
 WAYPOINTS = []          # [pan, tilt] positions in percent
 
 

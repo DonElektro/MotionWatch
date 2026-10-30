@@ -663,22 +663,40 @@ def alx_tk_zones(app, parent):
     def fill():
         for c in rows.winfo_children():
             c.destroy()
-        zs = [z for z in ZONES if z["mode"] in ("ignore", "only")]
+        zs = list(ZONES)                                  # aufr: every zone - «applies to» for ignore / only-here, «stays on its place» for all
         if not zs:
             ttk.Label(rows, text=tr("no zones") + " · " + tr("Open zone editor (browser)"), style="Mut.TLabel").pack(anchor="w")
             return
+        names = {"ignore": "Ignore zone", "only": "Only-here zone", "privacy": "Privacy zone", "sleep": "Sleeping place", "line": "Line",
+                 "loiter": "Dwell area", "report": "Only report"}
         for z in zs:
             r = ttk.Frame(rows); r.pack(fill="x", pady=1)
-            ttk.Label(r, text=f"{z['name']} ({tr('Ignore zone' if z['mode'] == 'ignore' else 'Only-here zone')})", width=28).pack(side="left")
-            cb = ttk.Combobox(r, state="readonly", values=[l for _k, l in opts], width=16)
-            cb.current([k for k, _l in opts].index(z.get("kinds", "all")) if z.get("kinds", "all") in ("all", "person", "animal") else 0)
-            cb.pack(side="left", padx=(4, 0))
+            ttk.Label(r, text=f"{z['name']} ({tr(names.get(z['mode'], z['mode']))})", width=28).pack(side="left")
+            if z["mode"] in ("ignore", "only"):
+                cb = ttk.Combobox(r, state="readonly", values=[l for _k, l in opts], width=16)
+                cb.current([k for k, _l in opts].index(z.get("kinds", "all")) if z.get("kinds", "all") in ("all", "person", "animal") else 0)
+                cb.pack(side="left", padx=(4, 0))
 
-            def pick(_e=None, zid=z["id"], cb=cb):
-                k = opts[cb.current()][0]
-                lst = [dict(x, kinds=k) if x["id"] == zid else dict(x) for x in ZONES]
+                def pick(_e=None, zid=z["id"], cb=cb):
+                    k = opts[cb.current()][0]
+                    lst = [dict(x, kinds=k) if x["id"] == zid else dict(x) for x in ZONES]
+                    zones_set(lst)
+                cb.bind("<<ComboboxSelected>>", pick)
+            fx = z["mode"] in FIXED_MODES
+            av = tk.BooleanVar(value=fx or bool(z.get("anchor")))
+
+            def anc(zid=z["id"], av=av):
+                lst = []
+                for x in ZONES:
+                    x = dict(x)
+                    if x["id"] == zid:
+                        if av.get():
+                            x["anchor"] = True
+                        else:
+                            x.pop("anchor", None); x.pop("ang", None)
+                    lst.append(x)
                 zones_set(lst)
-            cb.bind("<<ComboboxSelected>>", pick)
+            ttk.Checkbutton(r, text="📌 " + tr("Stays on its place"), variable=av, command=anc, state="disabled" if fx else "normal").pack(side="left", padx=(6, 0))
     fill()
     ttk.Button(box, text="↻", width=3, command=fill).pack(anchor="e")
 
