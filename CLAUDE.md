@@ -32,13 +32,13 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   Stand 29.10.2026 17:40: **Camera Module 3 NoIR ist da und läuft** am Pi 5 (192.168.1.56, Videoquelle «Raspberry Pi camera»,
   ab 2.98.24). Noch fehlend: Wärmebild, Servos, Licht, Ton, Akku.
 
-## Offene Aufträge (Stand 30.10.2026 03:15)
+## Offene Aufträge (Stand 30.10.2026 05:30, MoveEye 2.98.45 / Simulator 3D-4.16)
 
-- ✅ Auslöser im Spiel und Servo-Industrie-Funktionen: erledigt in 2.98.36 / 3D-4.11.
-- **Spielkonzept** (alle 8 gewählt): drei feste Spiele (Schleichen, Wächter-Duell, Diebstahl) + «Eigene Regeln»; Rollen reihum;
-  Wächter-Werkzeuge mit Abklingzeit/Energie; Infos für Schleicher (Vibration, Lärm, Schatten); Mensch gegen KI vergleichen;
-  3-Min-Runden + Siegerbild + Replay + Abend-Rangliste; Fairness nach Rollen-Verhältnis; online über Tunnel/Tailscale mit Einladung.
-- Später: Gehäuse Variante 2 (ZIP fehlt), Prüfstand-Rückgang, mobiler MoveEye (Laufroboter, nur Notiz), Hardware-Tests.
+- Wartet auf Daniel: Hardware-Tests; Gehäuse Variante 2 (Modell-ZIP); Tailscale Funnel fürs Online-Spiel (Entscheid);
+  Rückmeldung schwarzes Live-Bild / Seiten-Tempo; vor KI-Training «🔍 Lernbilder prüfen».
+- Später: Prüfstand-Rückgang ab 2.98.23; KI-Training (Token Actions-Rechte, Trainingspaket); «Vertrauenswürdige Geräte» nur
+  Admin; Controller-Einstellungen als MoveEye-Einstellung statt pro Browser; Produkt-Seite (Lizenzen, Datenschutz, Kundendoku);
+  mobiler MoveEye (Laufroboter, nur Notiz); Tiere mit der neuen Figur-Technik (figur.gd).
 
 ## Software
 
