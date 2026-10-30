@@ -436,7 +436,14 @@ STORM = {"p": deque(maxlen=480), "pulses": 0, "win": deque(maxlen=200), "cool": 
 
 
 def storm_forecast_gust():
-    """The strongest gust (km/h) expected in the next 12 hours, from the stored forecast (None = unknown)."""
+    """The strongest gust (km/h) expected in the next 12 hours, from the stored forecast (None = unknown).
+    While the simulator is connected: the gusts of the simulated weather (285), no internet forecast."""
+    sf = sim_forecast()
+    if sf is not None:
+        try:
+            return float(sf.get("gust_kmh"))
+        except (TypeError, ValueError):
+            return None
     now = datetime.now(); best = None
     for k in range(13):
         t = now + timedelta(hours=k)
@@ -799,10 +806,10 @@ def ina219_read(addr, shunt, bus=1):
 
 
 def next_sunrise(now=None):
-    now = now or datetime.now()
+    now = now or sim_now()                                 # the simulated clock and place while connected (285)
     for k in (0, 1):
         d = (now + timedelta(days=k)).date()
-        st = sun_times(d, float(CFG["latitude"]), float(CFG["longitude"]))
+        st = sun_times_here(d)
         if isinstance(st, str):
             return None
         t = datetime(d.year, d.month, d.day) + timedelta(minutes=st[0])
@@ -819,11 +826,11 @@ def night_forecast():
     sr = next_sunrise()
     if sr is None:
         return None
-    now = datetime.now(); dark = is_dark()
+    now = sim_now(); dark = is_dark()
     if dark:
         need = (sr - now).total_seconds() / 3600.0
     else:                                                  # daytime: the coming night (sunset .. sunrise), the sun still charges until then
-        st = sun_times(now.date(), float(CFG["latitude"]), float(CFG["longitude"]))
+        st = sun_times_here(now.date())
         ss = datetime(now.year, now.month, now.day) + timedelta(minutes=st[1]) if not isinstance(st, str) else now
         need = max(0.0, (sr - max(ss, now)).total_seconds() / 3600.0)
     have = b["pct"] / 100.0 * float(b["cap_wh"]) / max(0.5, float(b["use_w"]))
@@ -843,7 +850,7 @@ class SolarMonitor:
             time.sleep(10)
 
     def tick(self):
-        now = time.time(); day = datetime.now().strftime("%Y-%m-%d")
+        now = time.time(); day = sim_now().strftime("%Y-%m-%d")      # the day of the simulated scene while connected (285)
         if SOLAR["day"] != day:
             SOLAR.update(day=day, wh=0.0, max=0.0)
         if CFG["solar_on"]:
@@ -878,7 +885,7 @@ class SolarMonitor:
             STATE["solar"] = {"on": False}
         nf = night_forecast(); STATE["night"] = nf
         if nf and CFG["night_warn"] and not nf["enough"] and is_dark() and SOLAR["warned"] != day:
-            hh = datetime.now().hour
+            hh = sim_now().hour
             if hh >= 15:                                       # once in the evening (not again after midnight)
                 SOLAR["warned"] = day
                 log_event("sys", f"Battery will probably not last until sunrise ({nf['have_h']} h left, {nf['need_h']} h needed)")

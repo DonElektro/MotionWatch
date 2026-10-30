@@ -79,6 +79,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `260_mehrere_geraete.py` | mehrere Motion-Watch-Geräte | 164 |
 | `270_mqtt.py` | MQTT / Home Assistant | 250 |
 | `280_sms_sensoren_sturm_gps_solar.py` | SMS, Sensoren, Sturmwarnung, GPS, Solar | 870 |
+| `285_simwerte.py` | Simulator-Werte: Akku (simulierter USV-HAT), Uhrzeit (sim_now), Ort, Wetter, Pi-Wärme, «WLAN weg»-Test aus dem 3D-Simulator | 230 |
 | `290_simulator_verbindung.py` | Verbindung zum Simulator | 333 |
 | `300_werkzeuge_simulator3d.py` | Werkzeuge, 3D-Simulator für Windows und den Pi, Simulator-Suche | 1155 |
 | `310_testlaeufe.py` | Testläufe mit Auswertung und Optimierung | 485 |
@@ -127,6 +128,8 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `595_fenster_simstopp.py` | Fenster: «⏹ Stopp» (Not-Aus) in der Simulation ausblenden | 75 |
 | `596_uebersetzungen_vier.py` | Übersetzungen für «MoveEye als KI-Wächter» (548) | 32 |
 | `597_uebersetzungen_simkompakt.py` | Übersetzungen für «Sim-Kompakt» (549) | 67 |
+| `598_simwerte_anzeige.py` | «🧪 Simulator»-Hinweis bei Simulator-Werten (Web und Fenster), Anleitung (285) | 175 |
+| `599_uebersetzungen_simwerte.py` | Übersetzungen der Simulator-Werte (285, 598) | 55 |
 | `634_uebersetzungen_ausl.py` | Übersetzungen für den «Auslöser» (539) | 40 |
 | `637_uebersetzungen_servo.py` | Übersetzungen Servo-Bewegung, Not-Aus, Teach-in, Diagnose | 156 |
 | `623_uebersetzungen_pad2.py` | Übersetzungen des Controller-Konzepts (542, 538, 470) | 75 |

@@ -4,6 +4,16 @@ Stand: 30.10.2026 · Simulator-Version **3D-4.17** · passende MoveEye-Version (
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
+## NEU (Entwurf): Simulator-Werte für MoveEye (power.gd, Branch wt-simwerte)
+
+- `scripts/power.gd` (Knoten `simwerte` in main.gd): simulierter USV-HAT (2 × 18650, Kapazität pro Zelle, Ladung jetzt,
+  Netzteil, Solarpanel-Watt; Verbrauch aus Pi + CPU von MoveEye + Servos + Licht + Ton, Laden mit `solar_reading()`, Kälte senkt
+  die nutzbare Kapazität), Pi-Temperatur im Gehäuse (Aussentemperatur + Last + Sonne, Test «Lüftung blockiert»), Test
+  «WLAN weg» / «Internet weg», Tageszähler über Mitternacht (Zeitraffer). Einstellungen in `user://simwerte.json`.
+- `world_reply()` hängt `simwerte.reply()` an: `battery`, `pi_temp`, `net`, `clock` (date, hour, speed, tz_h), `place`
+  (lat, lon, name wie `sun_pos`), `forecast` (gust_kmh, weather, storm, tmax, tmin). MoveEye: Teil 285.
+- Regler: Karte Sensoren → «Akku und Strom» (mit Statuszeile) und «Netz-Ausfall testen» (auch in der Simulator-Steuerung von MoveEye).
+
 ## NEU in 3D-4.17 (MoveEye 2.98.46): Balance-Paket 30.10.2026 + KI-Wächter, Stange-Regler, nacktes /sim-Bild
 
 Spiel-Balance nach dem Code-Review (von Daniel freigegeben, Punkte 1, 3–11 und 12 teilweise):
