@@ -1354,7 +1354,8 @@ def wp_text():
 
 
 def wp_add():
-    WAYPOINTS.append([round(float(CFG["pan"]), 1), round(float(CFG["tilt"]), 1)])
+    p_, t_ = servo_pos()                                         # 2.98.35: where the head really stands (planner 072)
+    WAYPOINTS.append([round(float(p_), 1), round(float(t_), 1)])
 START = time.time()
 LOCK = threading.Lock()
 GPIO_PAN, GPIO_TILT, GPIO_RELAY = 17, 27, 22
@@ -1426,8 +1427,11 @@ def manual_active():
     return time.time() < MANUAL["until"]
 
 
-def move_camera(cmd, step=3.0):
-    """Manual pan/tilt step (direction pad, arrow keys, web page). Pauses tracking/patrol for manual_hold seconds."""
+def move_camera(cmd, step=3.0, who="window"):
+    """Manual pan/tilt step (direction pad, arrow keys, web page). Pauses tracking/patrol for manual_hold seconds.
+    2.98.35: refused while the servos are stopped (Not-Aus, fault - 072); who = the panel that steers (shown everywhere)."""
+    if servo_blocked():
+        return False
     try:
         step = max(0.5, min(25.0, float(step)))
     except (TypeError, ValueError):
@@ -1445,13 +1449,14 @@ def move_camera(cmd, step=3.0):
     else:
         return False
     MANUAL["until"] = time.time() + CFG["manual_hold"]
+    servo_driver_note(who, cmd)
     return True
 
 
 STICK = {"t": 0.0}                 # time of the last joystick sample (0 = stick released)
 
 
-def stick_camera(x, y, speed=30.0):
+def stick_camera(x, y, speed=30.0, who="window"):
     """Joystick: x/y = deflection -1..1 (right / up are positive), speed = full-deflection speed in % per second.
     The camera moves by deflection * speed * time since the last sample, so it can never run away: no sample, no movement.
     A small dead zone and a quadratic curve make slow, precise moves easy near the centre."""
@@ -1468,11 +1473,18 @@ def stick_camera(x, y, speed=30.0):
     if mag < 0.08:
         STICK["t"] = 0.0
         return True
+    if servo_blocked():                                          # 2.98.35: Not-Aus / fault (072): the stick does nothing
+        return False
     dt = now - last if 0.0 < now - last < 0.5 else 0.1          # first sample after a pause counts as one 100 ms tick
     k = min(1.0, (mag - 0.08) / 0.92) ** 2 * speed * dt / mag
-    CFG["pan"] = max(0.0, min(100.0, CFG["pan"] + x * k))
-    CFG["tilt"] = max(0.0, min(100.0, CFG["tilt"] + y * k))
+    # 2.98.35: the target runs at most ~0.3 s ahead of the real position (planner 072) - letting go stops the head soon,
+    # it does not drive on to a target far ahead
+    pp, pt = servo_pos()
+    lead_p = max(2.0, srv_axis_limits("pan")[0] * 0.3); lead_t = max(2.0, srv_axis_limits("tilt")[0] * 0.3)
+    CFG["pan"] = max(0.0, min(100.0, max(pp - lead_p, min(pp + lead_p, CFG["pan"] + x * k))))
+    CFG["tilt"] = max(0.0, min(100.0, max(pt - lead_t, min(pt + lead_t, CFG["tilt"] + y * k))))
     MANUAL["until"] = now + CFG["manual_hold"]
+    servo_driver_note(who, "stick")
     return True
 
 
@@ -2748,7 +2760,11 @@ def role_allows(role, path, method, d):
     if role == "admin":
         return True
     if method in ("GET", "HEAD"):
+        if path in ("/servo", "/api/servo"):                  # 2.98.35: everybody sees the servo state (who steers, Not-Aus)
+            return True
         return (path in VIEW_GET_PAGES or path.startswith(VIEW_GET)) and not path.startswith(ADMIN_GET)
+    if path == "/api/servo":                                  # 2.98.35: Not-Aus is for everybody, the rest for the administrator
+        return d.get("op") == "estop"
     if path == "/api/webpush":
         return d.get("action") in ("subscribe", "unsubscribe", "key", None)
     if path in VIEW_POST:
@@ -2909,8 +2925,8 @@ def apply_settings(data):
     for w in data.get("waypoints", []):
         if isinstance(w, (int, float)) and not isinstance(w, bool):        # old files: pan only
             wps.append([float(w), float(CFG["patrol_tilt"])])
-        elif isinstance(w, (list, tuple)) and len(w) == 2 and all(isinstance(x, (int, float)) for x in w):
-            wps.append([max(0.0, min(100.0, float(w[0]))), max(0.0, min(100.0, float(w[1])))])
+        elif isinstance(w, (list, tuple)) and wp_clean(w) is not None:      # 2.98.35: also [pan, tilt, name(, 0)] (076)
+            wps.append(wp_clean(w))
     WAYPOINTS[:] = wps[:50]
     CFG["ui_hidden"] = [k for k in CFG["ui_hidden"] if isinstance(k, str)][:200]
     CFG["ui_open"] = [k for k in CFG["ui_open"] if isinstance(k, str)][:100]
@@ -5801,6 +5817,7 @@ class PCA9685:
             self._w(0x00, 0xA0)                    # restart the PWM
             if self._r(0xFE) != pre:
                 raise OSError("PCA9685 does not answer correctly")
+            self.pre = pre
         except Exception:
             os.close(self.fd); raise
 
@@ -5810,6 +5827,10 @@ class PCA9685:
     def _r(self, reg):
         os.write(self.fd, bytes([reg]))
         return os.read(self.fd, 1)[0]
+
+    def healthy(self):
+        """2.98.35: still awake with our prescaler? (after a brown-out / reset it sleeps with the default prescaler)"""
+        return not (self._r(0x00) & 0x10) and self._r(0xFE) == getattr(self, "pre", self._r(0xFE))
 
     def _set(self, ch, on, off):
         os.write(self.fd, bytes([0x06 + 4 * ch, on & 0xFF, (on >> 8) & 0xFF, off & 0xFF, (off >> 8) & 0xFF]))
@@ -5865,6 +5886,8 @@ def mover_drive(v, w, who="web"):
     except (TypeError, ValueError):
         return False
     if not MOVER["avail"]:
+        return False
+    if CFG.get("servo_estop"):                                    # 2.98.35: Not-Aus stops the mover too (072)
         return False
     MOVER.update(v=v, w=w, cmd_t=time.monotonic(), by=who)
     if abs(v) > 0.05 or abs(w) > 0.05:
@@ -6167,6 +6190,1061 @@ def thermal_gpios():
 
 
 # ----------------------------------------------------------------------------
+# 2.98.35 (Wunsch Daniel, «industriell»): ONE motion planner for pan / tilt. Everybody (joystick, buttons, coordinator 162,
+#   patrol 160, reference scan 315, place scan 317, timelapse, wake-up alarm, tracking 410 …) still writes the WANTED
+#   position into CFG["pan"] / CFG["tilt"] (0..100 %). The servo loop (Hardware.loop, part 080, 50 Hz) calls servo_plan_tick():
+#   it drives the REAL position SRV["pos"] there with a trapezoid profile per axis (max. speed and acceleration in °/s and
+#   °/s² per axis, settings «Servo motion & safety»): accelerate, cruise, brake, land exactly on the target - no jump, no
+#   overshoot (a target that changes the direction while moving is braked first). A point-to-point move from rest is
+#   synchronised: both axes start and arrive together (straight line). Only SRV["pos"] reaches the PWM and the simulator
+#   (sim_state, part 290: pan_deg / tilt_deg + speed), so the simulator sees every intermediate position.
+#   servo_goto(pan, tilt, who, speed, wait) = drive there (optionally slower) and wait until it stands - the old own
+#   ramps of the patrol and the coordinator are gone (no second path). servo_pos() = where the head really looks (the
+#   picture comes from there: tracking, «turn to the alarm»).
+# Safe states:
+#   * Not-Aus / Stopp (web, window, controller: hold Select 1.5 s, API POST /api/servo {"op": "estop"}): braking with twice
+#     the acceleration, then hold (or park, setting); every new target is ignored, the mover stops. It stays after a
+#     restart (CFG["servo_estop"]) until somebody presses «Freigeben» (release).
+#   * Störung (latched, needs «Freigeben»): I2C errors in a row, the PCA9685 lost its settings (brown-out / reset). The
+#     servo outputs stay off until the release (no jump to an old position by itself).
+#   * Sperre (clears by itself): under-voltage (vcgencmd get_throttled, part 100, STATE["supply"]) and the watchdog of the
+#     camera loop (HEART older than servo_wd_s): the head stops and holds; no push spam (one push per hour at most).
+#   * Software limits (pan_limit / tilt_limit): the target is clamped here AND once more right before the PWM (080
+#     Hardware._servos) - also after an error or a wrong value (NaN) nothing goes past them.
+#   * Watchdog of the servo loop itself: a thread checks its heartbeat; when it hung (> 1.5 s) the old move is not
+#     continued afterwards (the target becomes the position where it stopped).
+# Fault memory, operating hours, degrees and moves per axis: part 074 (servo_diag_*).
+# ----------------------------------------------------------------------------
+for _k, _v in {"servo_vmax_pan": 120.0, "servo_vmax_tilt": 90.0, "servo_acc_pan": 360.0, "servo_acc_tilt": 300.0,
+               "servo_estop": False, "servo_estop_by": "", "servo_estop_park": False, "servo_uv_stop": True,
+               "servo_wd_s": 10.0}.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+SRV = {"pos": None, "vel": [0.0, 0.0], "tgt": None, "scale": [(1.0, 1.0), (1.0, 1.0)], "cap": None, "moving": False, "arrive_t": 0.0,
+       "start_t": 0.0, "beat": 0.0, "inhibit": "", "inhibit_t": 0.0, "inhibit_log": {}, "fault": "", "fault_t": 0.0,
+       "io_err": 0, "io_t": 0.0, "wd_trip": False, "wd_log": 0.0, "limit_on": [False, False], "parked": False,
+       "estop_t": 0.0, "push_t": 0.0, "safety_t": 0.0, "test_uv": False, "trace": deque(maxlen=1500), "started": False}
+SERVO_AXES = ("pan", "tilt")
+SRV_FAULT_LOCK = ("i2c", "pca_reset")          # latched faults that also keep the servo outputs off until the release
+
+
+def _srv_k(axis):
+    """% per degree of an axis (0..100 % = the whole turning range)"""
+    return 100.0 / (2.0 * servo_half(axis))
+
+
+def srv_limits_pct():
+    """[(lo, hi), (lo, hi)] in % for pan and tilt (pan_limit / tilt_limit, middle = 50 %)"""
+    try:
+        return Hardware.limits()
+    except Exception:
+        return [(0.0, 100.0), (0.0, 100.0)]
+
+
+def srv_clamp(pan, tilt):
+    """the software limits - for every target and once more before the PWM. NaN / nonsense -> None (keep the old value)"""
+    out = []
+    for v, (lo, hi) in zip((pan, tilt), srv_limits_pct()):
+        try:
+            v = float(v)
+        except (TypeError, ValueError):
+            return None
+        if not math.isfinite(v):
+            return None
+        out.append(max(lo, min(hi, max(0.0, min(100.0, v)))))
+    return out[0], out[1]
+
+
+def srv_axis_limits(axis):
+    """(max. speed %/s, max. acceleration %/s²) of an axis from the settings in degrees"""
+    k = _srv_k(axis)
+    try:
+        vm = max(5.0, min(600.0, float(CFG.get("servo_vmax_" + axis) or 120.0)))
+        am = max(20.0, min(5000.0, float(CFG.get("servo_acc_" + axis) or 300.0)))
+    except (TypeError, ValueError):
+        vm, am = 120.0, 300.0
+    return vm * k, am * k
+
+
+def srv_axis_step(p, v, tgt, vmax, amax, dt):
+    """one step of the motion planner for one axis - an online trapezoid profile.
+    p, tgt in %, v in %/s, vmax %/s, amax %/s², dt s -> (new p, new v).
+    The speed is always the highest one from which it can still stop on the target (v² / 2a, in the discrete form of the
+    step), at most vmax, and changes by at most amax * dt per step. Coming from rest it never passes the target and the
+    last step lands exactly on it."""
+    e = tgt - p
+    h = amax * dt
+    if abs(e) <= 1e-4 and abs(v) <= h:
+        return tgt, 0.0
+    s = 1.0 if e > 0 else -1.0
+    d = abs(e); vt = v * s                                  # speed towards the target (negative = moving away)
+    if 0.0 <= vt <= h * 1.0001 and d <= (vt + h * 0.5) * dt:
+        return tgt, 0.0                                     # the last step: it stops exactly on the target
+    q = h * h / 4.0 + 2.0 * amax * d - h * vt
+    vs = -h / 2.0 + math.sqrt(q) if q > 0 else 0.0
+    vd = s * min(vmax, vs)
+    v2 = v + max(-h, min(h, vd - v))
+    if vt > 0.0 and v2 * s < 0.0:
+        v2 = 0.0                                            # still before the target: do not turn round
+    p2 = p + (v + v2) * 0.5 * dt
+    if (tgt - p2) * s < 0.0 and abs(v2) <= h * 1.0001:
+        return tgt, 0.0
+    return p2, v2
+
+
+def srv_trap_time(d, vmax, amax):
+    """time of a trapezoid move over d from rest to rest"""
+    d = abs(d)
+    if d <= 0:
+        return 0.0
+    if d >= vmax * vmax / amax:
+        return d / vmax + vmax / amax
+    return 2.0 * math.sqrt(d / amax)
+
+
+def srv_sync_scale(dists, lims):
+    """both axes start and arrive together: the axis with the longer time leads, the other one gets the leader's profile
+    scaled by its distance / the distance of the leader (straight line). -> [(speed factor, acc. factor) pan, … tilt]
+    relative to each axis' own limits (never above 1)"""
+    ts = [srv_trap_time(d, vm, am) for d, (vm, am) in zip(dists, lims)]
+    out = [(1.0, 1.0), (1.0, 1.0)]
+    if max(ts) <= 0:
+        return out
+    li = 0 if ts[0] >= ts[1] else 1
+    oi = 1 - li
+    dl, do = abs(dists[li]), abs(dists[oi])
+    if dl > 1e-6 and do > 1e-6:
+        r = do / dl
+        vm_l, am_l = lims[li]; vm_o, am_o = lims[oi]
+        out[oi] = (max(0.01, min(1.0, vm_l * r / vm_o)), max(0.01, min(1.0, am_l * r / am_o)))
+    return out
+
+
+def servo_pos():
+    """where the head really is (pan %, tilt %) - the planned position that went to the servos"""
+    p = SRV["pos"]
+    if p is None:
+        return float(CFG["pan"]), float(CFG["tilt"])
+    return p[0], p[1]
+
+
+def servo_pos_deg():
+    p, t = servo_pos()
+    return (p - 50.0) / 50.0 * servo_half("pan"), (t - 50.0) / 50.0 * servo_half("tilt")
+
+
+def servo_arrived(tol=0.15):
+    """the head stands on the wanted position"""
+    p = SRV["pos"]
+    if p is None:
+        return True
+    return (abs(p[0] - float(CFG["pan"])) <= tol and abs(p[1] - float(CFG["tilt"])) <= tol
+            and abs(SRV["vel"][0]) < 0.05 and abs(SRV["vel"][1]) < 0.05)
+
+
+def servo_blocked():
+    """'' = it may move; otherwise why not (Not-Aus, a latched fault, a lock that clears by itself)"""
+    if CFG.get("servo_estop"):
+        return "estop"
+    if SRV["fault"]:
+        return "fault"
+    if SRV["inhibit"]:
+        return "inhibit"
+    return ""
+
+
+def servo_blocked_text(lang=None):
+    b = servo_blocked()
+    if b == "estop":
+        return tr("Emergency stop - press «Release» to move again", lang)
+    if b == "fault":
+        return tr("Servo fault", lang) + ": " + tr(SRV_FAULT_TEXT.get(SRV["fault"], SRV["fault"]), lang) + " - " + tr("press «Release» after checking", lang)
+    if b == "inhibit":
+        return tr("Servos stopped", lang) + ": " + tr(SRV_FAULT_TEXT.get(SRV["inhibit"], SRV["inhibit"]), lang) + " - " + tr("moves again by itself", lang)
+    return ""
+
+
+SRV_FAULT_TEXT = {"i2c": "I2C errors - the servo driver does not answer", "pca_reset": "the PCA9685 lost its settings (brown-out or reset)",
+                  "uv": "under-voltage of the power supply", "wd_cam": "the camera loop hangs (watchdog)",
+                  "wd_loop": "the servo loop hung (watchdog)", "estop": "emergency stop", "release": "released",
+                  "limit": "software limit reached", "temp": "high temperature of the Pi", "throttle": "the Pi slows down (throttled)",
+                  "no_driver": "no servo driver found"}
+
+
+def servo_park_target():
+    """the parking position: a taught point chosen as parking position (076), otherwise kopf_park_pan / kopf_park_tilt"""
+    try:
+        tp = teach_point_by_name(CFG.get("kopf_park_point") or "")
+    except NameError:
+        tp = None
+    if tp:
+        return srv_clamp(tp[0], tp[1])
+    return srv_clamp(CFG.get("kopf_park_pan", 50.0), CFG.get("kopf_park_tilt", 5.0))
+
+
+def servo_stop_point():
+    """where both axes stand when braking now with the normal acceleration"""
+    p = list(servo_pos())
+    for i, ax in enumerate(SERVO_AXES):
+        _vm, am = srv_axis_limits(ax)
+        v = SRV["vel"][i]
+        p[i] = p[i] + v * abs(v) / (2.0 * am)
+    return srv_clamp(p[0], p[1]) or servo_pos()
+
+
+def servo_goto(pan, tilt, who="", speed=None, wait=True, stop=None, timeout=60.0):
+    """THE way to drive the head to a position: the target goes to the planner (optionally slower: speed = path speed
+    in %/s, e.g. the patrol speed), wait = until it stands there. False: blocked (Not-Aus, fault), interrupted by stop() or
+    by somebody else who set another target, or timeout."""
+    if servo_blocked():
+        return False
+    c = srv_clamp(pan, tilt)
+    if c is None:
+        return False
+    pan, tilt = c
+    CFG["pan"], CFG["tilt"] = float(pan), float(tilt)
+    SRV["cap"] = (float(speed), (round(pan, 3), round(tilt, 3))) if speed else None
+    if not wait:
+        return True
+    if SRV["pos"] is None or not SRV.get("started"):
+        return True                                       # no servo loop (tests, tools): the target counts as reached
+    end = time.time() + timeout
+    while time.time() < end:
+        if servo_blocked():
+            return False
+        if abs(float(CFG["pan"]) - pan) > 0.01 or abs(float(CFG["tilt"]) - tilt) > 0.01:
+            return False                                  # somebody else drives the head now
+        if stop is not None:
+            try:
+                if stop():
+                    sp = servo_stop_point()               # brake gently where it is (no jerk, no return)
+                    CFG["pan"], CFG["tilt"] = sp[0], sp[1]; SRV["cap"] = None
+                    return False
+            except Exception:
+                return False
+        if servo_arrived():
+            return True
+        time.sleep(0.02)
+    return False
+
+
+def servo_wait(timeout=15.0, settle=0.0):
+    """wait until the head stands on its target (then settle seconds more) - for tools that set CFG themselves"""
+    end = time.time() + timeout
+    while time.time() < end and SRV.get("started") and not servo_arrived():
+        if servo_blocked():
+            return False
+        time.sleep(0.03)
+    if settle > 0:
+        time.sleep(settle)
+    return servo_arrived()
+
+
+# ---- the planner step, called by the servo loop (Hardware.loop, 080) ------------------------------------------------
+def servo_plan_tick(dt):
+    """-> (pan, tilt) in % for the servos now. Reads the targets CFG["pan"] / CFG["tilt"] (already clamped by the loop)."""
+    now = time.time()
+    SRV["beat"] = time.monotonic(); SRV["started"] = True
+    dt = max(0.001, min(0.1, float(dt)))
+    if SRV["pos"] is None:
+        SRV["pos"] = [float(CFG["pan"]), float(CFG["tilt"])]; SRV["tgt"] = list(SRV["pos"])
+    if now - SRV["safety_t"] >= 0.25:
+        SRV["safety_t"] = now
+        try:
+            servo_safety_tick(now)
+        except Exception as e:
+            log_event("servo", f"Servo safety check: {type(e).__name__}: {e}"[:160])
+    pos, vel = SRV["pos"], SRV["vel"]
+    if SRV["wd_trip"]:                                   # the loop hung: do not go on with the old move
+        SRV["wd_trip"] = False; vel[0] = vel[1] = 0.0
+        CFG["pan"], CFG["tilt"] = pos[0], pos[1]
+    blocked = servo_blocked()
+    estop = blocked == "estop"
+    if blocked:
+        # stop: brake (Not-Aus: twice the acceleration), then hold; with «park» drive slowly to the parking position
+        park = None
+        if estop and CFG.get("servo_estop_park") and SRV["parked"] is not True:
+            park = servo_park_target()
+        if park is not None and SRV["parked"] == "go":
+            for i, ax in enumerate(SERVO_AXES):          # stands: slowly (15 °/s) to the parking position
+                vm, am = srv_axis_limits(ax)
+                pos[i], vel[i] = srv_axis_step(pos[i], vel[i], park[i], min(vm, 15.0 * _srv_k(ax)), am, dt)
+            if pos[0] == park[0] and pos[1] == park[1] and vel[0] == 0.0 and vel[1] == 0.0:
+                SRV["parked"] = True
+                log_event("servo", "Emergency stop: parked - holding")
+        else:
+            for i, ax in enumerate(SERVO_AXES):          # braking (Not-Aus: twice the acceleration) to a stand
+                _vm, am = srv_axis_limits(ax)
+                a2 = am * (2.0 if estop else 1.0) * dt
+                v = vel[i]; v2 = v - math.copysign(min(abs(v), a2), v)
+                pos[i] += (v + v2) * 0.5 * dt; vel[i] = v2
+            if park is not None and vel[0] == 0.0 and vel[1] == 0.0:
+                SRV["parked"] = "go"
+        c = srv_clamp(pos[0], pos[1])
+        if c:
+            pos[0], pos[1] = c
+        CFG["pan"], CFG["tilt"] = round(pos[0], 3), round(pos[1], 3)      # the pages show where it stands; no target waits
+        SRV["cap"] = None; SRV["tgt"] = list(pos)
+    else:
+        SRV["parked"] = False
+        tgt = [float(CFG["pan"]), float(CFG["tilt"])]
+        lims = [srv_axis_limits(ax) for ax in SERVO_AXES]
+        if SRV["tgt"] is None or abs(tgt[0] - SRV["tgt"][0]) > 1e-3 or abs(tgt[1] - SRV["tgt"][1]) > 1e-3:
+            SRV["tgt"] = list(tgt)
+            rest = abs(vel[0]) < 0.5 and abs(vel[1]) < 0.5
+            SRV["scale"] = srv_sync_scale([tgt[0] - pos[0], tgt[1] - pos[1]], lims) if rest else [(1.0, 1.0), (1.0, 1.0)]
+        cap = SRV["cap"]
+        capv = None
+        if cap and abs(cap[1][0] - tgt[0]) < 0.01 and abs(cap[1][1] - tgt[1]) < 0.01:
+            capv = max(1.0, cap[0])
+        elif cap:
+            SRV["cap"] = None
+        dist = math.hypot(tgt[0] - pos[0], tgt[1] - pos[1])
+        for i, ax in enumerate(SERVO_AXES):
+            vm, am = lims[i]
+            kv, ka = SRV["scale"][i]
+            vm, am = vm * kv, am * ka
+            if capv is not None and dist > 1e-6:
+                vm = min(vm, max(0.2, capv * abs(tgt[i] - pos[i]) / dist)) if abs(vel[i]) < vm else min(vm, capv)
+            p0 = pos[i]
+            pos[i], vel[i] = srv_axis_step(pos[i], vel[i], tgt[i], vm, am, dt)
+            if not math.isfinite(pos[i]) or not math.isfinite(vel[i]):
+                pos[i], vel[i] = p0, 0.0
+    moving = abs(vel[0]) > 0.01 or abs(vel[1]) > 0.01
+    if moving and not SRV["moving"]:
+        SRV["start_t"] = now
+        servo_diag_move_start()
+    if SRV["moving"] and not moving:
+        SRV["arrive_t"] = now
+    SRV["moving"] = moving
+    servo_diag_count(dt, vel)
+    if moving or len(SRV["trace"]) == 0 or now - SRV["trace"][-1][0] > 1.0:
+        hp, ht = servo_half("pan"), servo_half("tilt")
+        SRV["trace"].append((round(now, 3), round((pos[0] - 50) / 50 * hp, 3), round((pos[1] - 50) / 50 * ht, 3)))
+    return pos[0], pos[1]
+
+
+def servo_speed_deg():
+    """the speed now in °/s (pan, tilt) - for the simulator (it goes on between two packets)"""
+    return SRV["vel"][0] / _srv_k("pan"), SRV["vel"][1] / _srv_k("tilt")
+
+
+def servo_outputs_off():
+    """a latched fault of the driver: the servo outputs stay off until the release"""
+    return SRV["fault"] in SRV_FAULT_LOCK
+
+
+# ---- who steers the head (several «panels»: phones, PCs, the window, the controller, the simulator) --------------------
+# Lesson from robotics (Daniel): never start the wrong robot from the wrong panel. Every manual command notes its panel;
+# all clients show «the head is steered by …» and a short notice when another panel takes it (state polling, no extra
+# connection). key = an anonymous short id of the panel (address + browser), label = what people read.
+def servo_driver_note(who, what=""):
+    if isinstance(who, (tuple, list)) and len(who) == 2:
+        key, label = str(who[0])[:24], str(who[1])[:60]
+    else:
+        key = label = str(who or "?")[:60]
+        if key == "window":
+            label = tr("Window") + " (" + tr("this computer") + ")"
+    d = SRV.get("drv") or {}
+    now = time.time()
+    if d.get("key") != key or now - float(d.get("t", 0)) > 10.0:
+        SRV["drv_n"] = int(SRV.get("drv_n", 0)) + 1      # a new «session» of a panel: the others get a notice
+        if d.get("key") != key:
+            log_event("servo", f"The head is steered by: {label}")
+    SRV["drv"] = {"key": key, "label": label, "t": now, "what": str(what)[:20], "n": SRV.get("drv_n", 0)}
+
+
+def servo_driver(lang=None):
+    """who steers the head right now: a panel (manual, last 10 s) or the automatic (162) - for every client"""
+    d = SRV.get("drv") or {}
+    now = time.time()
+    if d and now - float(d.get("t", 0)) <= 10.0:
+        return {"kind": "manual", "key": d["key"], "label": d["label"], "ago": round(now - d["t"], 1), "n": d.get("n", 0)}
+    try:
+        own = kopf_owner()
+    except Exception:
+        own = ""
+    names = {"manual": "by hand / tool", "alarm": "alarm / follow", "walktest": "walk test", "glance": "quick look at the valuables",
+             "round": "round (patrol)", "park": "parking"}
+    if STATE.get("tracking"):
+        own = "alarm"
+    return {"kind": "auto" if own else "idle", "key": "", "label": tr(names.get(own, ""), lang) if own else "", "ago": None,
+            "n": d.get("n", 0) if d else 0}
+
+
+# ---- Not-Aus / release -------------------------------------------------------------------------------------------------
+def servo_estop(by="web"):
+    """by = a label or (key, label) of the panel - every client shows who pressed it"""
+    if isinstance(by, (tuple, list)) and len(by) == 2:
+        servo_driver_note(by, "estop"); by = by[1]
+    first = not CFG.get("servo_estop")
+    CFG["servo_estop"] = True; CFG["servo_estop_by"] = str(by)[:60]
+    SRV["estop_t"] = time.time(); SRV["cap"] = None
+    try:
+        MOVER.update(v=0.0, w=0.0, cmd_t=0.0)              # the mover stops too
+        if MOVERCTL is not None:
+            MOVERCTL.stop_now()
+    except Exception:
+        pass
+    if first:
+        log_event("servo", f"EMERGENCY STOP ({by}): all movement stopped - «Release» needed")
+        servo_diag_fault("estop", "warn", f"Emergency stop ({by})")
+        save_settings()
+    return True
+
+
+def servo_release(by="web"):
+    """«Freigeben»: ends the Not-Aus and a latched fault. Not while the reason is still there (under-voltage …)."""
+    if isinstance(by, (tuple, list)) and len(by) == 2:
+        servo_driver_note(by, "release"); by = by[1]
+    if SRV["inhibit"] == "uv":
+        return False, "under-voltage is still there - check the power supply first"
+    was = servo_blocked()
+    if not was:
+        return True, ""
+    p = servo_pos()
+    CFG["pan"], CFG["tilt"] = p[0], p[1]                   # nothing jumps: the target is where it stands
+    SRV["vel"] = [0.0, 0.0]; SRV["tgt"] = list(p); SRV["cap"] = None
+    fault = SRV["fault"]
+    CFG["servo_estop"] = False; CFG["servo_estop_by"] = ""
+    SRV.update(fault="", fault_t=0.0, io_err=0, parked=False)
+    if fault in SRV_FAULT_LOCK:
+        HW_REINIT["want"] = True                           # the driver is set up again, then the outputs come back
+    MANUAL["until"] = time.time() + 3.0                    # a short pause before the automatic moves start again
+    log_event("servo", f"Servos released ({by})" + (f" after: {SRV_FAULT_TEXT.get(fault, fault)}" if fault else ""))
+    servo_diag_fault("release", "info", f"Released ({by})" + (f" - {fault}" if fault else ""))
+    save_settings()
+    return True, ""
+
+
+def servo_fault(code, text=""):
+    """a latched fault (needs «Freigeben»)"""
+    if SRV["fault"] == code:
+        return
+    SRV["fault"] = code; SRV["fault_t"] = time.time(); SRV["cap"] = None
+    log_event("servo", f"SERVO FAULT: {SRV_FAULT_TEXT.get(code, code)}" + (f" - {text}" if text else "") + " - stopped, «Release» needed")
+    servo_diag_fault(code, "error", text or SRV_FAULT_TEXT.get(code, code))
+    _servo_push_once(tr("Servo fault") + ": " + tr(SRV_FAULT_TEXT.get(code, code)))
+
+
+def _servo_push_once(text):
+    """at most one push per hour for servo problems (no spam, never the siren)"""
+    if time.time() - SRV["push_t"] < 3600:
+        return
+    SRV["push_t"] = time.time()
+    w = WATCH_REF.get("w") if "WATCH_REF" in globals() else None
+    if w is not None and not CFG.get("sim_on"):
+        try:
+            w.notifier.info(text, title="{name}: " + tr("Servos"))
+        except Exception:
+            pass
+
+
+def servo_io_error(e):
+    """a write to the servo driver failed (080). One error: noted; 3 in a row within 3 s: latched fault."""
+    now = time.time()
+    SRV["io_err"] = SRV["io_err"] + 1 if now - SRV["io_t"] < 3.0 else 1
+    SRV["io_t"] = now
+    servo_diag_fault("i2c", "warn", f"{type(e).__name__}: {e}"[:120])
+    if SRV["io_err"] >= 3:
+        servo_fault("i2c", f"{type(e).__name__}: {e}"[:120])
+
+
+def servo_io_ok():
+    SRV["io_err"] = 0
+
+
+def _servo_inhibit(code, on, now):
+    if on and SRV["inhibit"] != code and not SRV["inhibit"]:
+        SRV["inhibit"] = code; SRV["inhibit_t"] = now
+        if now - SRV["inhibit_log"].get(code, 0.0) > 300:
+            SRV["inhibit_log"][code] = now
+            log_event("servo", f"Servos stopped: {SRV_FAULT_TEXT.get(code, code)} - they move again by themselves")
+            servo_diag_fault(code, "warn", SRV_FAULT_TEXT.get(code, code))
+            if code == "uv":
+                _servo_push_once(tr("Servos stopped") + ": " + tr(SRV_FAULT_TEXT["uv"]))
+    elif not on and SRV["inhibit"] == code:
+        SRV["inhibit"] = ""
+        log_event("servo", f"Servos may move again ({SRV_FAULT_TEXT.get(code, code)} is over)")
+
+
+def servo_safety_tick(now):
+    """4 x per second: under-voltage, the camera loop watchdog, temperature (only noted)"""
+    sup = STATE.get("supply") or {}
+    uv = (bool(sup.get("uv_now")) and not CFG.get("sim_on")) or SRV["test_uv"]
+    if uv:
+        SRV["uv_last"] = now
+    if CFG.get("servo_uv_stop", True):
+        _servo_inhibit("uv", uv or (SRV["inhibit"] == "uv" and now - SRV.get("uv_last", 0.0) < 30.0), now)
+    elif SRV["inhibit"] == "uv":
+        _servo_inhibit("uv", False, now)
+    # the camera loop hangs (HEART, 410): nothing should move on old information
+    wd = max(3.0, float(CFG.get("servo_wd_s") or 10.0))
+    hb = now - float(HEART.get("t", now)) if "HEART" in globals() else 0.0
+    idle = PAUSING.get("on") or toolmode_on() if "PAUSING" in globals() else True
+    hang = hb > wd and not idle and now - START > 60 and WATCH_REF.get("w") is not None
+    if SRV["inhibit"] in ("", "wd_cam"):
+        _servo_inhibit("wd_cam", hang, now)
+    t = STATE.get("cpu_temp")
+    if isinstance(t, (int, float)) and t >= 82.0 and now - SRV.get("temp_t", 0.0) > 600:
+        SRV["temp_t"] = now
+        servo_diag_fault("temp", "warn", f"{t:.0f} °C")
+    if sup.get("throttled") and now - SRV.get("thr_t", 0.0) > 600:
+        SRV["thr_t"] = now
+        servo_diag_fault("throttle", "warn", "vcgencmd get_throttled")
+    if uv and now - SRV.get("uvd_t", 0.0) > 60:
+        SRV["uvd_t"] = now
+        servo_diag_count_uv()
+
+
+def servo_limit_note(axis_i, hit):
+    """the loop (080) clamped a target at the software limit: one entry per episode"""
+    if hit and not SRV["limit_on"][axis_i]:
+        servo_diag_fault("limit", "info", ("pan" if axis_i == 0 else "tilt") + " " + tr("limit"))
+    SRV["limit_on"][axis_i] = hit
+
+
+def _servo_watchdog():
+    """the servo loop itself: its heartbeat must be fresh - after a hang the old move is not continued"""
+    while True:
+        time.sleep(0.25)
+        try:
+            b = SRV["beat"]
+            if b and time.monotonic() - b > 1.5 and not SRV["wd_trip"]:
+                SRV["wd_trip"] = True
+                if time.time() - SRV["wd_log"] > 300:
+                    SRV["wd_log"] = time.time()
+                    log_event("servo", "Watchdog: the servo loop hung - the move is not continued")
+                    servo_diag_fault("wd_loop", "warn", f"{time.monotonic() - b:.1f} s")
+        except Exception:
+            pass
+
+
+def servo_watchdog_start():
+    if not SRV.get("wd_started"):
+        SRV["wd_started"] = True
+        threading.Thread(target=_servo_watchdog, daemon=True, name="servo-wd").start()
+
+
+def servo_state(lang=None):
+    """for the pages and the API"""
+    p, t = servo_pos()
+    pd, td = servo_pos_deg()
+    vp, vt = servo_speed_deg()
+    (plo, phi), (tlo, thi) = srv_limits_pct()
+    return {"pos": [round(p, 2), round(t, 2)], "deg": [round(pd, 1), round(td, 1)], "dps": [round(vp, 1), round(vt, 1)],
+            "target": [round(float(CFG["pan"]), 2), round(float(CFG["tilt"]), 2)], "moving": SRV["moving"],
+            "blocked": servo_blocked(), "text": servo_blocked_text(lang), "estop": bool(CFG.get("servo_estop")),
+            "estop_by": CFG.get("servo_estop_by") or "", "fault": SRV["fault"], "inhibit": SRV["inhibit"],
+            "limits": [[round(plo, 1), round(phi, 1)], [round(tlo, 1), round(thi, 1)]],
+            "limits_deg": [float(CFG["pan_limit"]), float(CFG["tilt_limit"])],
+            "vmax": [float(CFG["servo_vmax_pan"]), float(CFG["servo_vmax_tilt"])], "acc": [float(CFG["servo_acc_pan"]), float(CFG["servo_acc_tilt"])],
+            "backend": str(STATE.get("servo_backend") or ""), "driver": servo_driver(lang)}
+
+
+def servo_planner_selftest():
+    """the planner: no overshoot from rest, acceleration and speed limited, exact landing, both axes together"""
+    import random as _r
+    for d in (0.05, 0.4, 3.0, 25.0, -60.0, 100.0):
+        for jit in (False, True):
+            p, v, n, t = 0.0, 0.0, 0, 0.0
+            while n < 3000:
+                dt = 0.02 * (_r.uniform(0.6, 1.8) if jit else 1.0)
+                p2, v2 = srv_axis_step(p, v, d, 66.0, 220.0, dt)
+                assert abs(v2) <= 66.0 + 1e-6, (d, v2)
+                assert abs(v2 - v) <= 220.0 * dt + 1e-6, (d, v, v2)
+                assert (p2 - d) * (1 if d > 0 else -1) <= 1e-9, ("overshoot", d, p2)
+                assert (p2 - p) * (1 if d > 0 else -1) >= -1e-9, ("goes back", d, p, p2)
+                p, v, n, t = p2, v2, n + 1, t + dt
+                if p == d and v == 0.0:
+                    break
+            assert p == d and v == 0.0, ("not arrived", d, p, v)
+            assert t <= srv_trap_time(d, 66.0, 220.0) + 0.2, (d, t)
+    # a target behind it while moving: brakes (limited), turns, lands
+    p, v = 0.0, 50.0
+    for _ in range(400):
+        p2, v2 = srv_axis_step(p, v, -5.0, 66.0, 220.0, 0.02)
+        assert abs(v2 - v) <= 220.0 * 0.02 + 1e-6
+        p, v = p2, v2
+    assert p == -5.0 and v == 0.0
+    # synchronised: the shorter axis gets slower limits, both take about the same time
+    sc = srv_sync_scale([40.0, 10.0], [(60.0, 200.0), (50.0, 200.0)])
+    t0 = srv_trap_time(40.0, 60.0, 200.0); t1 = srv_trap_time(10.0, 50.0 * sc[1][0], 200.0 * sc[1][1])
+    assert sc[0] == (1.0, 1.0) and 0.0 < sc[1][0] < 1.0 and abs(t0 - t1) < 0.02, (sc, t0, t1)
+    # the limits: clamped, NaN refused
+    keep = (CFG["pan_limit"], CFG["tilt_limit"])
+    try:
+        CFG["pan_limit"] = 45; CFG["tilt_limit"] = 30
+        c = srv_clamp(100.0, -5.0)
+        assert c is not None and c[0] <= 50.0 + 45.0 / servo_half("pan") * 50.0 + 1e-9 and c[1] >= 50.0 - 30.0 / servo_half("tilt") * 50.0 - 1e-9
+        assert srv_clamp(float("nan"), 50) is None and srv_clamp("x", 50) is None
+    finally:
+        CFG["pan_limit"], CFG["tilt_limit"] = keep
+    return "trapezoid: no overshoot, limited, exact landing, synchronised, limits"
+# ----------------------------------------------------------------------------
+# 2.98.35 (Wunsch Daniel): the planner (072) counts per axis: degrees travelled, seconds moving, number of moves; the servo
+#   loop counts the operating time. Real servos («hw») and the simulation («sim») are counted apart - the maintenance
+#   hints only use the real ones. Fault memory (Fehlerspeicher): I2C errors, the PCA9685 lost its settings (brown-out),
+#   no driver, limit hits, under-voltage, temperature, throttling, watchdog, Not-Aus / release - the same code within
+#   10 minutes is one entry with a counter (no flood), at most 300 entries.
+# Memory card (067): <data>/servo_diag.json is written at most every 15 minutes (and at once for a fault, at most once a
+#   minute) and at the end of the program.
+# Pages: Mehr → Werkzeuge → «Servo diagnosis» (/servo#diag, part 539) and the window (588), export as JSON or CSV.
+# ----------------------------------------------------------------------------
+for _k, _v in {"servo_service_h": 100.0}.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+SVD = {"d": None, "dirty": False, "saved_t": 0.0, "fault_save_t": 0.0, "lock": threading.Lock(), "atexit": False}
+SVD_SAVE_S = 900
+SVD_MAX_FAULTS = 300
+SVD_LEVELS = ("info", "warn", "error")
+
+
+def _svd_file():
+    return os.path.join(DATA_DIR, "servo_diag.json")
+
+
+def _svd_axis():
+    return {"deg": 0.0, "move_s": 0.0, "moves": 0}
+
+
+def _svd_bucket():
+    return {"on_s": 0.0, "uv_min": 0, "pan": _svd_axis(), "tilt": _svd_axis()}
+
+
+def _svd_blank():
+    return {"v": 1, "since": time.time(), "hw": _svd_bucket(), "sim": _svd_bucket(),
+            "service": {"pan": 0.0, "tilt": 0.0, "t": 0.0}, "faults": []}
+
+
+def servo_diag_data():
+    if SVD["d"] is None:
+        d = None
+        try:
+            with open(_svd_file()) as f:
+                d = json.load(f)
+        except (OSError, ValueError):
+            d = None
+        b = _svd_blank()
+        if isinstance(d, dict):
+            for k in ("hw", "sim"):
+                if isinstance(d.get(k), dict):
+                    for kk in ("on_s", "uv_min"):
+                        if isinstance(d[k].get(kk), (int, float)):
+                            b[k][kk] = d[k][kk]
+                    for ax in SERVO_AXES:
+                        if isinstance(d[k].get(ax), dict):
+                            for kk in ("deg", "move_s", "moves"):
+                                if isinstance(d[k][ax].get(kk), (int, float)):
+                                    b[k][ax][kk] = d[k][ax][kk]
+            if isinstance(d.get("service"), dict):
+                b["service"].update({k: float(v) for k, v in d["service"].items() if k in ("pan", "tilt", "t") and isinstance(v, (int, float))})
+            if isinstance(d.get("since"), (int, float)):
+                b["since"] = d["since"]
+            b["faults"] = [x for x in (d.get("faults") or []) if isinstance(x, dict) and x.get("code")][-SVD_MAX_FAULTS:]
+        SVD["d"] = b
+        if not SVD["atexit"]:
+            SVD["atexit"] = True
+            atexit.register(lambda: servo_diag_save(True))
+    return SVD["d"]
+
+
+def servo_diag_save(force=False):
+    d = SVD["d"]
+    if d is None or not (SVD["dirty"] or force):
+        return
+    try:
+        with SVD["lock"]:
+            tmp = _svd_file() + ".tmp"
+            with open(tmp, "w") as f:
+                json.dump(d, f)
+            os.replace(tmp, _svd_file())
+        SVD["dirty"] = False; SVD["saved_t"] = time.time()
+    except OSError:
+        pass
+
+
+def _svd_cur():
+    sim = bool(CFG.get("sim_on")) or str(STATE.get("servo_backend") or "simulation").startswith("simulation")
+    return servo_diag_data()["sim" if sim else "hw"]
+
+
+def servo_diag_count(dt, vel):
+    """the planner (072), every step: operating time, degrees and seconds moving per axis"""
+    b = _svd_cur()
+    if not servo_outputs_off():
+        b["on_s"] += dt
+    for i, ax in enumerate(SERVO_AXES):
+        v = abs(vel[i])
+        if v > 0.01:
+            b[ax]["deg"] += v * dt / _srv_k(ax)
+            b[ax]["move_s"] += dt
+    SVD["dirty"] = True
+    if time.time() - SVD["saved_t"] > SVD_SAVE_S:
+        SVD["saved_t"] = time.time()
+        threading.Thread(target=servo_diag_save, daemon=True, name="servodiag-save").start()
+
+
+def servo_diag_move_start():
+    b = _svd_cur()
+    for i, ax in enumerate(SERVO_AXES):
+        if abs(SRV["vel"][i]) > 0.01:
+            b[ax]["moves"] += 1
+
+
+def servo_diag_count_uv():
+    _svd_cur()["uv_min"] += 1
+
+
+def servo_diag_fault(code, level="warn", text=""):
+    """one entry in the fault memory - the same code and text within 10 min only counts up"""
+    d = servo_diag_data()
+    now = time.time()
+    level = level if level in SVD_LEVELS else "warn"
+    text = str(text or "")[:160]
+    with SVD["lock"]:
+        for f in reversed(d["faults"][-20:]):
+            if f.get("code") == code and f.get("text") == text and now - float(f.get("last", 0)) < 600:
+                f["n"] = int(f.get("n", 1)) + 1; f["last"] = round(now, 1)
+                break
+        else:
+            d["faults"].append({"t": round(now, 1), "last": round(now, 1), "code": code, "level": level, "text": text, "n": 1,
+                                "sim": bool(CFG.get("sim_on"))})
+            del d["faults"][:-SVD_MAX_FAULTS]
+    SVD["dirty"] = True
+    if level == "error" and now - SVD["fault_save_t"] > 60:
+        SVD["fault_save_t"] = now
+        threading.Thread(target=servo_diag_save, daemon=True, name="servodiag-save").start()
+
+
+def servo_diag_clear_faults(by="web"):
+    d = servo_diag_data()
+    with SVD["lock"]:
+        d["faults"] = []
+    SVD["dirty"] = True; servo_diag_save(True)
+    log_event("servo", f"Servo fault memory cleared ({by})")
+
+
+def servo_diag_service_done(axis="", by="web"):
+    """«Wartung erledigt»: the maintenance counter of one axis (or both) starts again"""
+    d = servo_diag_data()
+    for ax in SERVO_AXES:
+        if axis in ("", ax):
+            d["service"][ax] = d["hw"][ax]["move_s"]
+    d["service"]["t"] = time.time()
+    SVD["dirty"] = True; servo_diag_save(True)
+    log_event("servo", f"Servo maintenance done ({axis or 'both axes'}, {by})")
+    servo_diag_fault("service", "info", f"maintenance done: {axis or 'pan + tilt'}")
+
+
+def _h(s):
+    return round(float(s) / 3600.0, 2)
+
+
+def servo_diag_hints(lang=None):
+    """maintenance hints from the counters and the fault memory (already translated)"""
+    d = servo_diag_data()
+    out = []
+    T = lambda x: tr(x, lang)
+    lim = max(5.0, float(CFG.get("servo_service_h") or 100.0))
+    for ax, name in (("pan", "Pan servo"), ("tilt", "Tilt servo")):
+        h = _h(d["hw"][ax]["move_s"] - float(d["service"].get(ax) or 0.0))
+        if h >= lim:
+            out.append(("warn", trf("{axis} (MG90S): {h} h moved since the last check - check it now: play in the gears, noise, does it hold the position?", lang, axis=T(name), h=f"{h:.1f}")))
+        elif h >= lim * 0.8:
+            out.append(("info", trf("{axis} (MG90S): {h} h moved - check after about {lim} h (play, noise).", lang, axis=T(name), h=f"{h:.1f}", lim=f"{lim:.0f}")))
+    cnt = {}
+    week = time.time() - 7 * 86400
+    for f in d["faults"]:
+        if float(f.get("last", 0)) >= week and not f.get("sim"):
+            cnt[f["code"]] = cnt.get(f["code"], 0) + int(f.get("n", 1))
+    if cnt.get("uv") or cnt.get("pca_reset") or d["hw"]["uv_min"] > 0 and cnt.get("uv"):
+        out.append(("warn", T("Under-voltage / brown-out: give the servos their own 5 V supply (BEC, at least 2 A), put a 470–1000 µF capacitor at V+ of the PCA9685 and use a short, thick cable.")))
+    if cnt.get("i2c"):
+        out.append(("warn", T("I2C errors: check the 4 wires to the PCA9685 (short, firmly plugged), the address 0x41 and that I2C is on (raspi-config).")))
+    if cnt.get("limit", 0) >= 20:
+        out.append(("info", T("The head often runs into the software limit: widen the limit (Camera / Servos) or move the taught points a little inwards.")))
+    if cnt.get("temp") or cnt.get("throttle"):
+        out.append(("info", T("The Pi gets hot or slows down: shade, air holes in the housing, a heat sink.")))
+    if cnt.get("wd_cam") or cnt.get("wd_loop"):
+        out.append(("info", T("The watchdog stopped the servos: the computer was too busy - see the log; fewer AI pictures or the AI helper on the PC help.")))
+    if d["hw"]["on_s"] < 60 and (d["sim"]["on_s"] > 0):
+        out.append(("info", T("Only the simulation so far - the counters of the real servos start with the hardware.")))
+    return out
+
+
+def servo_diag_state(lang=None):
+    d = servo_diag_data()
+    lim = max(5.0, float(CFG.get("servo_service_h") or 100.0))
+
+    def bucket(b, service=None):
+        ax = {}
+        for a in SERVO_AXES:
+            x = b[a]
+            ax[a] = {"deg": int(round(x["deg"])), "move_h": _h(x["move_s"]), "moves": int(x["moves"]),
+                     "turns": round(x["deg"] / 360.0, 1)}
+            if service is not None:
+                ax[a]["service_h"] = _h(x["move_s"] - float(service.get(a) or 0.0))
+                ax[a]["service_pct"] = int(min(100, round(ax[a]["service_h"] / lim * 100)))
+        return {"on_h": _h(b["on_s"]), "uv_min": int(b["uv_min"]), "axes": ax}
+    faults = []
+    for f in reversed(d["faults"][-100:]):
+        faults.append({"t": f["t"], "last": f.get("last", f["t"]), "code": f["code"], "level": f.get("level", "warn"), "n": int(f.get("n", 1)),
+                       "what": tr(SRV_FAULT_TEXT.get(f["code"], f["code"]), lang), "text": f.get("text", ""), "sim": bool(f.get("sim"))})
+    return {"since": d["since"], "hw": bucket(d["hw"], d["service"]), "sim": bucket(d["sim"]), "service_t": d["service"].get("t") or 0,
+            "service_h": lim, "faults": faults, "n_faults": len(d["faults"]),
+            "hints": [{"level": l, "text": t} for l, t in servo_diag_hints(lang)]}
+
+
+def servo_diag_export(fmt="json", lang=None):
+    """(bytes, mimetype, file name) - everything for the developer / a service note"""
+    stamp = datetime.now().strftime("%Y%m%d_%H%M")
+    st = {"app": "MoveEye", "version": APP_VERSION, "device": CFG.get("device_name") or "MoveEye", "t": datetime.now().isoformat(timespec="seconds"),
+          "servo": servo_state(lang), "diag": servo_diag_state(lang), "points": teach_list(lang),
+          "settings": {k: CFG.get(k) for k in ("servo_driver", "pca_address", "pca_pan_ch", "pca_tilt_ch", "servo_min_us", "servo_max_us",
+                                               "servo_range", "pan_servo_range", "servo_kind", "pan_limit", "tilt_limit", "invert_pan", "invert_tilt",
+                                               "servo_vmax_pan", "servo_vmax_tilt", "servo_acc_pan", "servo_acc_tilt", "servo_estop_park",
+                                               "servo_uv_stop", "servo_wd_s", "servo_service_h")}}
+    if fmt == "csv":
+        lines = ["time;last;code;level;count;sim;what;text"]
+        for f in st["diag"]["faults"]:
+            ts = lambda x: datetime.fromtimestamp(float(x)).strftime("%Y-%m-%d %H:%M:%S")
+            lines.append(";".join([ts(f["t"]), ts(f["last"]), f["code"], f["level"], str(f["n"]), "1" if f["sim"] else "0",
+                                   f["what"].replace(";", ","), str(f["text"]).replace(";", ",")]))
+        lines.append("")
+        for k in ("hw", "sim"):
+            b = st["diag"][k]
+            lines.append(f"{k};on_h;{b['on_h']};uv_min;{b['uv_min']}")
+            for a in SERVO_AXES:
+                x = b["axes"][a]
+                lines.append(f"{k};{a};deg;{x['deg']};move_h;{x['move_h']};moves;{x['moves']}")
+        return ("\n".join(lines) + "\n").encode("utf-8-sig"), "text/csv", f"moveeye_servo_{stamp}.csv"
+    return json.dumps(st, ensure_ascii=False, indent=1).encode("utf-8"), "application/json", f"moveeye_servo_{stamp}.json"
+
+
+def servo_diag_selftest():
+    keep = SVD["d"]
+    try:
+        SVD["d"] = _svd_blank()
+        servo_diag_fault("i2c", "warn", "x"); servo_diag_fault("i2c", "warn", "x"); servo_diag_fault("uv", "warn", "")
+        f = SVD["d"]["faults"]
+        assert len(f) == 2 and f[0]["n"] == 2, f
+        SVD["d"]["hw"]["pan"]["move_s"] = 3600.0 * float(CFG.get("servo_service_h") or 100)
+        for x in f:
+            x["sim"] = False
+        hs = servo_diag_hints("de")
+        assert any("MG90S" in t for _l, t in hs) and any("BEC" in t or "Unterspannung" in t for _l, t in hs), hs
+        b, mt, fn = servo_diag_export("csv")
+        assert mt == "text/csv" and b"i2c" in b and fn.endswith(".csv")
+        servo_diag_service_done("pan", "test") if False else None
+    finally:
+        SVD["d"] = keep; SVD["dirty"] = False
+    return "fault memory (counted up), maintenance hints, CSV export"
+# ----------------------------------------------------------------------------
+# 2.98.35 (Wunsch Daniel): no new list - the taught points ARE the waypoints (WAYPOINTS, part 020, saved with the
+#   settings). An entry is [pan %, tilt %] (as before, also «📍＋ Wegpunkt», Platz einrichten 317, Aufstell-Planer) or
+#   [pan %, tilt %, "name"] or [pan %, tilt %, "name", 0] (0 = not in the round). Everything that reads w[0] / w[1] works
+#   unchanged (patrol, smart round 162, simulator twin 290, the stick drawing on the web page and in the window).
+#   Teach = the REAL position of the head (servo_pos, 072) - drive there with the joystick, then «save as …».
+#   Go = servo_goto (072): the planner lands exactly on the stored value (as exact as the PWM: 4096 steps).
+#   Coordinator (162): «Parking position» and «Home position» may be a taught point (kopf_park_point / kopf_home_point).
+#   «Platz einrichten» (317): its directions can be taken over as named points (teach_from_place).
+# ----------------------------------------------------------------------------
+for _k, _v in {"kopf_park_point": "", "kopf_home_point": ""}.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+TEACH_MAX = 50
+
+
+def wp_name(w):
+    return str(w[2]) if isinstance(w, (list, tuple)) and len(w) >= 3 and w[2] else ""
+
+
+def wp_patrol(w):
+    """is this point part of the round (patrol)?"""
+    return not (isinstance(w, (list, tuple)) and len(w) >= 4 and not w[3])
+
+
+def _wp_make(pan, tilt, name="", patrol=True):
+    pan = round(max(0.0, min(100.0, float(pan))), 2); tilt = round(max(0.0, min(100.0, float(tilt))), 2)
+    name = re.sub(r"[\x00-\x1f<>\"]", "", str(name or "")).strip()[:30]
+    if not name and patrol:
+        return [pan, tilt]
+    return [pan, tilt, name] if patrol else [pan, tilt, name, 0]
+
+
+def wp_clean(w):
+    """an entry of a settings file -> a valid entry or None (040 loads them with this)"""
+    if isinstance(w, (int, float)) and not isinstance(w, bool):
+        return None
+    if not isinstance(w, (list, tuple)) or not 2 <= len(w) <= 4:
+        return None
+    if not all(isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(float(x)) for x in w[:2]):
+        return None
+    name = w[2] if len(w) >= 3 and isinstance(w[2], str) else ""
+    return _wp_make(w[0], w[1], name, not (len(w) >= 4 and not w[3]))
+
+
+def teach_list(lang=None):
+    hp, ht = servo_half("pan"), servo_half("tilt")
+    out = []
+    for i, w in enumerate(WAYPOINTS):
+        out.append({"i": i, "name": wp_name(w), "pan": float(w[0]), "tilt": float(w[1]), "patrol": wp_patrol(w),
+                    "deg": [round((float(w[0]) - 50) / 50 * hp, 1), round((float(w[1]) - 50) / 50 * ht, 1)],
+                    "park": bool(wp_name(w)) and wp_name(w) == CFG.get("kopf_park_point"),
+                    "home": bool(wp_name(w)) and wp_name(w) == CFG.get("kopf_home_point")})
+    return out
+
+
+def teach_point_by_name(name):
+    if not name:
+        return None
+    for w in WAYPOINTS:
+        if wp_name(w) == name:
+            return float(w[0]), float(w[1])
+    return None
+
+
+def _teach_i(i):
+    try:
+        i = int(i)
+    except (TypeError, ValueError):
+        return None
+    return i if 0 <= i < len(WAYPOINTS) else None
+
+
+def _teach_unique(name, skip=None):
+    base = name; n = 2
+    while any(wp_name(w) == name for j, w in enumerate(WAYPOINTS) if j != skip):
+        name = f"{base} {n}"; n += 1
+    return name
+
+
+def teach_add(name="", who="web", pan=None, tilt=None, patrol=True):
+    """save the position where the head stands now (or pan / tilt) under a name"""
+    if len(WAYPOINTS) >= TEACH_MAX:
+        return False, "at most 50 points", None
+    if pan is None or tilt is None:
+        pan, tilt = servo_pos()
+    w = _wp_make(pan, tilt, name, patrol)
+    if len(w) >= 3 and w[2]:
+        w[2] = _teach_unique(w[2])
+    WAYPOINTS.append(w)
+    save_settings()
+    log_event("patrol", f"Point taught ({who}): «{wp_name(w) or len(WAYPOINTS)}» pan {w[0]:.1f} % / tilt {w[1]:.1f} %")
+    return True, "", len(WAYPOINTS) - 1
+
+
+def teach_edit(op, i, value=None, who="web"):
+    """op: rename | delete | up | down | patrol | update (store the position of now) | park | home"""
+    i = _teach_i(i)
+    if i is None:
+        return False, "no such point"
+    w = list(WAYPOINTS[i])
+    if op == "rename":
+        nm = re.sub(r"[\x00-\x1f<>\"]", "", str(value or "")).strip()[:30]
+        old = wp_name(w)
+        nm = _teach_unique(nm, i) if nm else ""
+        WAYPOINTS[i] = _wp_make(w[0], w[1], nm, wp_patrol(w))
+        for k in ("kopf_park_point", "kopf_home_point"):
+            if old and CFG.get(k) == old:
+                CFG[k] = nm
+    elif op == "delete":
+        nm = wp_name(w)
+        WAYPOINTS.pop(i)
+        for k in ("kopf_park_point", "kopf_home_point"):
+            if nm and CFG.get(k) == nm:
+                CFG[k] = ""
+    elif op in ("up", "down"):
+        j = i - 1 if op == "up" else i + 1
+        if not 0 <= j < len(WAYPOINTS):
+            return False, "already at the end"
+        WAYPOINTS[i], WAYPOINTS[j] = WAYPOINTS[j], WAYPOINTS[i]
+    elif op == "patrol":
+        WAYPOINTS[i] = _wp_make(w[0], w[1], wp_name(w) or (tr("Point") + f" {i + 1}" if not value else ""), bool(value))
+    elif op == "update":
+        p, t = servo_pos()
+        WAYPOINTS[i] = _wp_make(p, t, wp_name(w), wp_patrol(w))
+    elif op in ("park", "home"):
+        k = "kopf_park_point" if op == "park" else "kopf_home_point"
+        nm = wp_name(w)
+        if not nm:
+            nm = _teach_unique(tr("Parking position") if op == "park" else tr("Home position"))
+            WAYPOINTS[i] = _wp_make(w[0], w[1], nm, wp_patrol(w))
+        CFG[k] = "" if CFG.get(k) == nm and value is not True else nm
+    else:
+        return False, "unknown"
+    save_settings()
+    log_event("patrol", f"Taught point {op} ({who}): «{wp_name(w) or i + 1}»")
+    return True, ""
+
+
+def teach_goto(i, who="web", wait=False):
+    """drive exactly to a taught point (the planner, 072). A manual command: pauses the automatic moves like the joystick."""
+    i = _teach_i(i)
+    if i is None:
+        return False, "no such point"
+    if servo_blocked():
+        return False, servo_blocked_text() or "stopped"
+    w = WAYPOINTS[i]
+    MANUAL["until"] = time.time() + max(10.0, float(CFG.get("manual_hold") or 10))
+    servo_driver_note(who, "goto")
+    ok = servo_goto(float(w[0]), float(w[1]), "teach", wait=wait)
+    log_event("servo", f"To the taught point «{wp_name(w) or i + 1}» (pan {float(w[0]):.1f} % / tilt {float(w[1]):.1f} %)")
+    return ok, "" if ok else "interrupted"
+
+
+def teach_from_place(who="web"):
+    """the directions of «Platz einrichten» (tent, access, valuables) as named points - those not there yet"""
+    try:
+        items = kopf_items()
+    except Exception:
+        items = []
+    n = 0
+    for it in items:
+        if it["kind"] == "ignore" or len(WAYPOINTS) >= TEACH_MAX:
+            continue
+        nm = str(it.get("name") or "")[:30]
+        if any(wp_name(w) == nm for w in WAYPOINTS):
+            continue
+        p, t = round(float(it["pan"]), 1), round(float(it["tilt"]), 1)
+        same = next((j for j, w in enumerate(WAYPOINTS) if abs(float(w[0]) - p) < 0.15 and abs(float(w[1]) - t) < 0.15), None)
+        if same is not None:                               # the place already put this point (unnamed): give it the name
+            if not wp_name(WAYPOINTS[same]):
+                WAYPOINTS[same] = _wp_make(p, t, nm, wp_patrol(WAYPOINTS[same])); n += 1
+            continue
+        WAYPOINTS.append(_wp_make(p, t, nm, it["kind"] in ("tent", "access", "public_path"))); n += 1
+    if n:
+        save_settings()
+        log_event("patrol", f"{n} points taken over from «Platz einrichten» ({who})")
+    return n
+
+
+def teach_choice_pairs():
+    return [("", "– " + tr("none") + " –")] + [(wp_name(w), wp_name(w)) for w in WAYPOINTS if wp_name(w)]
+
+
+def teach_selftest():
+    keep = [list(w) for w in WAYPOINTS]; kc = {k: CFG.get(k) for k in ("kopf_park_point", "kopf_home_point")}
+    sv = save_settings
+    try:
+        globals()["save_settings"] = lambda *a, **k: None
+        WAYPOINTS[:] = [[10.0, 50.0]]
+        assert wp_clean([1, 2, "x", 0]) == [1.0, 2.0, "x", 0] and wp_clean([1, 2]) == [1.0, 2.0] and wp_clean([1, "a"]) is None
+        ok, _e, i = teach_add("Zelt", "test", 30.0, 40.0)
+        ok2, _e, j = teach_add("Zelt", "test", 70.0, 45.0, patrol=False)
+        assert ok and ok2 and wp_name(WAYPOINTS[j]) == "Zelt 2" and not wp_patrol(WAYPOINTS[j]) and teach_point_by_name("Zelt") == (30.0, 40.0)
+        teach_edit("rename", j, "Eingang"); teach_edit("up", j); teach_edit("park", 1)
+        assert wp_name(WAYPOINTS[1]) == "Eingang" and CFG["kopf_park_point"] == "Eingang"
+        teach_edit("delete", 1)
+        assert CFG["kopf_park_point"] == "" and len(WAYPOINTS) == 2
+        assert [w[0] for w in WAYPOINTS if wp_patrol(w)] == [10.0, 30.0]
+        assert [s[3] for s in kopf_stops() if s[3]] in (["Zelt"], [])
+    finally:
+        globals()["save_settings"] = sv
+        WAYPOINTS[:] = keep; CFG.update(kc)
+    return "taught points: add, unique names, rename, order, park, delete, in the round"
+# ----------------------------------------------------------------------------
 # Waveshare Thermal-90 / Thermal-44 (80 x 62, Meridian MI48 "SenXor"): SPI for the pictures, I2C (0x40) for the settings,
 #   GPIO 23 = reset, 24 = data ready, 7 = chip select. Uses the driver of Waveshare (pysenxor, from their wiki:
 #   Thermal_Camera_Hat.zip -> pysenxor-master -> pip install -e ./). /boot/firmware/config.txt: dtparam=spi=on +
@@ -6321,7 +7399,18 @@ class Hardware:
     def _us(self, pct):
         return CFG["servo_min_us"] + (CFG["servo_max_us"] - CFG["servo_min_us"]) * pct / 100.0
 
-    def _servos(self, pan, tilt):
+    def _servos(self, pan, tilt, cont=False):
+        # 2.98.35: the software limits once more right here, the lowest level before the PWM (072) - whatever came before
+        # (an error, NaN, a wrong value) never drives past them. cont: pan is a speed (continuous servo), not a position.
+        lim = self.limits()
+        vals = []
+        for i, v in enumerate((pan, tilt)):
+            v = float(v)
+            if not math.isfinite(v):
+                raise ValueError("servo value is not a number")
+            lo, hi = (0.0, 100.0) if (cont and i == 0) else lim[i]
+            vals.append(max(lo, min(hi, max(0.0, min(100.0, v)))))
+        pan, tilt = vals
         if CFG["invert_pan"]: pan = 100 - pan
         if CFG["invert_tilt"]: tilt = 100 - tilt
         if self.pca is not None:
@@ -6423,8 +7512,24 @@ class Hardware:
         CFG["cont_est"] = round(est + sp * pct_s * dt, 2)
         return 50.0 + sp * 50.0
 
+    def _pca_check(self):
+        """2.98.35: every 10 s - does the PCA9685 still have its settings? After a brown-out (servos draw too much current)
+        it starts again asleep with outputs off: that is a latched fault (072) - set up again, outputs only after «Freigeben»"""
+        now = time.monotonic()
+        if self.pca is None or now - getattr(self, "_pca_t", 0.0) < 10.0:
+            return
+        self._pca_t = now
+        try:
+            ok = self.pca.healthy()
+        except OSError as e:
+            servo_io_error(e); return
+        if not ok:
+            servo_fault("pca_reset", "MODE1 / prescaler lost")
+            HW_REINIT["want"] = True
+
     def loop(self):
         """50 Hz: push pan/tilt, all relay states and the lights to the hardware when they change."""
+        servo_watchdog_start()                             # 2.98.35: the watchdog of this loop (072)
         while True:
             if HW_REINIT["want"]:
                 HW_REINIT["want"] = False
@@ -6433,20 +7538,41 @@ class Hardware:
                 except Exception as e:
                     log_event("servo", f"Servo driver: {e}")
             (plo, phi), (tlo, thi) = self.limits()
-            pan = max(plo, min(phi, float(CFG["pan"])))
-            tilt = max(tlo, min(thi, float(CFG["tilt"])))
+            try:
+                want = (float(CFG["pan"]), float(CFG["tilt"]))
+                if not all(math.isfinite(x) for x in want):
+                    raise ValueError
+            except (TypeError, ValueError):
+                want = servo_pos(); CFG["pan"], CFG["tilt"] = want    # 2.98.35: nonsense as target -> stays where it is
+            pan = max(plo, min(phi, want[0]))
+            tilt = max(tlo, min(thi, want[1]))
+            servo_limit_note(0, abs(pan - want[0]) > 0.05); servo_limit_note(1, abs(tilt - want[1]) > 0.05)
             if abs(pan - CFG["pan"]) > 0.05:
                 CFG["pan"] = round(pan, 2)                # the page / window shows where the camera really is
             if abs(tilt - CFG["tilt"]) > 0.05:
                 CFG["tilt"] = round(tilt, 2)
+            # 2.98.35: the motion planner (072) - ramps instead of jumps; only its position reaches the servos
+            mono = time.monotonic(); dt_ = mono - getattr(self, "_plan_t", mono - 0.02); self._plan_t = mono
+            try:
+                pan, tilt = servo_plan_tick(dt_)
+            except Exception as e:
+                pan, tilt = servo_pos()
+                log_event("servo", f"Motion planner: {type(e).__name__}: {e}"[:160])
             pan = self._cont_pan(pan)                      # 2.98.30: continuous rotation servo: speed instead of position (162)
-            cur = (round(pan, 1), round(tilt, 1))
-            if cur != self._last_servo:
+            cur = (round(pan, 2), round(tilt, 2))
+            if servo_outputs_off():
+                self._last_servo = None                    # 2.98.35: latched driver fault: outputs stay off until «Freigeben»
+            elif cur != self._last_servo:
                 try:
-                    self._servos(pan, tilt)
+                    self._servos(pan, tilt, cont=CFG.get("servo_kind") == "continuous" and not CFG.get("sim_on"))
+                    if self.pca is not None:
+                        servo_io_ok()
                 except Exception as e:
                     log_event("servo", f"Servo error: {e}")
+                    if self.pca is not None:
+                        servo_io_error(e)                  # 2.98.35: 3 in a row = fault, safe state (072)
                 self._last_servo = cur; SERVO_MOVE["t"] = time.time()
+            self._pca_check()
             wanted = {g: (on, al) for g, on, al in STATE["relay_out"]}
             try:
                 self._lights(wanted)
@@ -8677,6 +9803,8 @@ def health_check(lang=None):
     if sb.startswith("simulation") or not sb:
         add("servo", "🎯", "Servos (pan / tilt)", "warn", T("not found - the camera does not move"),
             "Check wiring and power of the servos; for the PCA9685 switch on I2C (raspi-config).")
+    elif servo_blocked():                                  # 2.98.35: Not-Aus / fault / lock (072)
+        add("servo", "🎯", "Servos (pan / tilt)", "bad" if servo_blocked() == "fault" else "warn", servo_blocked_text(L))
     else:
         add("servo", "🎯", "Servos (pan / tilt)", "ok", sb)
     th = str(STATE.get("thermal") or "off")
@@ -13578,20 +14706,9 @@ class Patrol:
         return not STATE["tracking"] and not servo_hold() and kopf_may("round") and bool(kopf_patrol_plan()[0])
 
     def move_to(self, pan, tilt):
-        """Smoothly move pan and tilt together (straight line) at patrol_speed %/s; returns False if interrupted."""
-        while True:
-            dp, dt = pan - CFG["pan"], tilt - CFG["tilt"]
-            dist = math.hypot(dp, dt)
-            if dist <= 0.5:
-                break
-            if not self._go_on():
-                return False
-            f = min(1.0, CFG["patrol_speed"] * 0.02 / dist)
-            CFG["pan"] = CFG["pan"] + dp * f
-            CFG["tilt"] = CFG["tilt"] + dt * f
-            time.sleep(0.02)
-        CFG["pan"], CFG["tilt"] = float(pan), float(tilt)
-        return True
+        """drive pan and tilt together (straight line) at patrol_speed %/s; returns False if interrupted.
+        2.98.35: through the motion planner (072, ramps) - no own ramp any more"""
+        return servo_goto(pan, tilt, "round", speed=CFG["patrol_speed"], stop=lambda: not self._go_on())
 
     def loop(self):
         announced = ""
@@ -13603,6 +14720,9 @@ class Patrol:
             if not plan:
                 STATE["patrol_status"] = KOPF["status"] or why
                 KOPF["round_on"] = False; announced = ""
+                time.sleep(0.3); continue
+            if servo_blocked():                           # 2.98.35: Not-Aus / fault / lock (072)
+                STATE["patrol_status"] = "paused (servos stopped)"; KOPF["round_on"] = False
                 time.sleep(0.3); continue
             if STATE["tracking"]:
                 STATE["patrol_status"] = "paused (tracking person)"; KOPF["round_on"] = False
@@ -13691,7 +14811,8 @@ def kopf_tilt_add(cur, ddeg):
 def kopf_pic_to_pan(cx, cy):
     """a point of the picture (0..1) -> (pan, tilt) in % where the head must look to have it in the middle"""
     hf, vf = cam_fov()
-    return kopf_pan_add(CFG["pan"], (cx - 0.5) * hf), kopf_tilt_add(CFG["tilt"], -(cy - 0.5) * vf)
+    p0, t0 = servo_pos()                                 # 2.98.35: the picture comes from the real position (072)
+    return kopf_pan_add(p0, (cx - 0.5) * hf), kopf_tilt_add(t0, -(cy - 0.5) * vf)
 
 
 def servo_estimated():
@@ -13729,7 +14850,7 @@ def kopf_stops():
         base = max(1.0, float(CFG.get("kopf_round_dwell") or 8.0))
         st = [(i["pan"], i["tilt"], round(max(0.3, base * KOPF_WEIGHT[i["kind"]] / 3.0), 1), i["name"], KOPF_WEIGHT[i["kind"]]) for i in its]
         return sorted(st, key=lambda s: s[0])
-    return [(w[0], w[1], float(CFG["patrol_dwell"]), "", 1.0) for w in WAYPOINTS]
+    return [(w[0], w[1], float(CFG["patrol_dwell"]), wp_name(w), 1.0) for w in WAYPOINTS if wp_patrol(w)]   # 2.98.35: taught points (076)
 
 
 def kopf_best():
@@ -13845,22 +14966,13 @@ def kopf_may(who, sim_lock=True):
 
 
 def kopf_move(pan, tilt, who, speed=None, stop=None):
-    """drive smoothly to pan / tilt (%) at speed %/s; False when someone with a higher rank comes or stop() says so"""
+    """drive smoothly to pan / tilt (%) at speed %/s; False when someone with a higher rank comes or stop() says so.
+    2.98.35: through the motion planner (072) - ramps, limits, Not-Aus; no own ramp any more"""
     sp = float(speed or CFG.get("patrol_speed") or 30.0)
-    (plo, phi), (tlo, thi) = Hardware.limits()
-    pan = max(plo, min(phi, float(pan))); tilt = max(tlo, min(thi, float(tilt)))
-    while True:
-        dp, dt = pan - CFG["pan"], tilt - CFG["tilt"]
-        dist = math.hypot(dp, dt)
-        if dist <= 0.5:
-            break
-        if not kopf_may(who, sim_lock=who not in ("alarm",)) or (stop is not None and stop()):
-            return False
-        f = min(1.0, sp * 0.02 / dist)
-        CFG["pan"] = CFG["pan"] + dp * f; CFG["tilt"] = CFG["tilt"] + dt * f
-        time.sleep(0.02)
-    CFG["pan"], CFG["tilt"] = float(pan), float(tilt)
-    return True
+
+    def brk():
+        return not kopf_may(who, sim_lock=who not in ("alarm",)) or (stop is not None and stop())
+    return servo_goto(pan, tilt, who, speed=sp, stop=brk)
 
 
 # ---- the round (called by the patrol, part 160) ----------------------------------------------------------------------
@@ -13987,9 +15099,7 @@ def _kopf_tick():
             CFG["kopf_parked"] = False
             log_event("servo", "Privacy ended: the camera was moved by hand")
         else:
-            tgt = (float(CFG["kopf_park_pan"]), float(CFG["kopf_park_tilt"]))
-            (plo, phi), (tlo, thi) = Hardware.limits()
-            tgt = (max(plo, min(phi, tgt[0])), max(tlo, min(thi, tgt[1])))
+            tgt = servo_park_target() or (50.0, 50.0)      # 2.98.35: a taught point may be the parking position (076)
             if abs(pos[0] - tgt[0]) > 0.6 or abs(pos[1] - tgt[1]) > 0.6:
                 if kopf_may("park"):
                     _kopf_status("parking - the camera looks away (privacy)")
@@ -14011,6 +15121,9 @@ def _kopf_tick():
         KOPF["home_pos"] = pos; KOPF["home_t"] = now
     if not kopf_claims() and now - KOPF["home_t"] > 8.0:
         KOPF["home"] = pos
+    hpt = teach_point_by_name(CFG.get("kopf_home_point") or "")    # 2.98.35: a taught point as the home position (076)
+    if hpt:
+        KOPF["home"] = (round(hpt[0], 1), round(hpt[1], 1))
     # ---- following started (410): remember where to come back ----
     if tracking and not KOPF["track_was"] and not KOPF["back"] and KOPF["home"] and not KOPF["round_on"]:
         KOPF["back"] = {"pos": KOPF["home"], "since": 0.0, "why": "after following"}
@@ -14327,7 +15440,8 @@ def kopf_tamper_look(what, ref):
             p = kopf_pan_add(p0, ddeg)
             if abs(p - p0) < 1.0:
                 continue
-            CFG["pan"] = p
+            if not servo_goto(p, q0, "alarm", timeout=8.0):      # 2.98.35: the planner drives, wait until it stands
+                break
             g = _kopf_gray(w, settle)
             if g is None:
                 continue
@@ -14343,8 +15457,7 @@ def kopf_tamper_look(what, ref):
             flat = float(g.std()) < 7 and float(e.mean()) < 0.25 * max(1e-3, float(ref_e.mean())) if ref_e is not None else False
             looks.append({"ddeg": (p - p0) / kopf_pct_per_deg("pan"), "dark": (float(g.mean()) < 18 and float(g.std()) < 7) or flat, "sc": float(sc), "sh": sh})
     finally:
-        CFG["pan"], CFG["tilt"] = p0, q0
-        time.sleep(0.3)
+        servo_goto(p0, q0, "alarm", timeout=8.0)
         KOPF["tamper"] = False; KOPF["tamper_t"] = time.time()
     if not looks:
         return ""
@@ -17067,7 +18180,7 @@ _TL_RENDER_LOCK = threading.Lock()
 
 def servo_hold():
     """Something other than tracking is holding the servos (hand control, timelapse position)."""
-    return manual_active() or TL_HOLD["on"] or wake_hold()
+    return manual_active() or TL_HOLD["on"] or wake_hold() or bool(servo_blocked())      # 2.98.35: Not-Aus / fault (072)
 
 
 def tl_dir():
@@ -17174,7 +18287,7 @@ class Timelapse:
             self._abort("alarm" if alarm else "manual control")
             STATE["timelapse"] = "waiting: alarm has priority" if alarm else "waiting: manual control"
             return
-        if now - self.t < CFG["timelapse_settle"]:
+        if not servo_arrived() or now - max(self.t, SRV["arrive_t"]) < CFG["timelapse_settle"]:     # 2.98.35: ramps (072)
             STATE["timelapse"] = "moving to the photo position"
             return
         self._shoot(frame, now)
@@ -21344,10 +22457,15 @@ def sim_state():
             "uid": f"{device_uid()}:{CFG.get('web_port')}", "helper": bool(STATE.get("helper_arg")), "picture_mode": CFG["picture_mode"],   # 2.98.29: uid/helper - one MoveEye leads the simulator (3D-4.9)
             "mw_version": APP_VERSION, "ai_status": str(STATE.get("ai_status") or ""),     # 2.95.67: for the test bench in the simulator
             "refscan": _sim_refscan_info(),                                                  # 2.95.97: the reference scan, for the button there
-            "servo": {"pan": round(CFG["pan"], 2), "tilt": round(CFG["tilt"], 2), "pan_deg": round((CFG["pan"] - 50) / 50 * hp, 2),
-                      "tilt_deg": round((CFG["tilt"] - 50) / 50 * ht, 2), "pan_limit": pl, "tilt_limit": tl,
+            # 2.98.35: the REAL position of the motion planner (072, ramps) + its speed (the simulator goes on with it between
+            # two packets) and the goal (it never goes past it)
+            "servo": {"pan": round((sp_ := servo_pos())[0], 2), "tilt": round(sp_[1], 2), "pan_deg": round((sp_[0] - 50) / 50 * hp, 2),
+                      "tilt_deg": round((sp_[1] - 50) / 50 * ht, 2), "pan_limit": pl, "tilt_limit": tl,
+                      "pan_dps": round((sv_ := servo_speed_deg())[0], 1), "tilt_dps": round(sv_[1], 1),
+                      "pan_goal": round((CFG["pan"] - 50) / 50 * hp, 2), "tilt_goal": round((CFG["tilt"] - 50) / 50 * ht, 2),
+                      "estop": bool(servo_blocked()),
                       "pan_range": round(2 * hp, 1),             # the whole turning range of the pan servo (2.95.24, for the Python simulator)
-                      "moving": time.time() - SERVO_MOVE["t"] < 0.5,
+                      "moving": bool(SRV["moving"]) or time.time() - SERVO_MOVE["t"] < 0.5,
                       # 2.98.1: «Folgen» on, and following something right now - the simulator lets the head follow then (not the patrol)
                       "track": bool(CFG["track_person"] or CFG["track_motion"]), "tracking": bool(STATE.get("tracking")),
                       "track_what": str(STATE.get("track_what") or "")},
@@ -22082,7 +23200,7 @@ def servo_test():
             prev = grab()
             for axis, v in plan:
                 CFG[axis] = float(v)
-                time.sleep(1.2)
+                servo_wait(10.0, 0.8)                     # 2.98.35: the planner drives (ramps), then the picture settles
                 cur = grab()
                 diff = None if prev is None or cur is None else round(float(np.mean(np.abs(cur - prev))), 1)
                 S["steps"].append({"axis": axis, "to": v, "real": round(CFG[axis], 1), "diff": diff})
@@ -23694,8 +24812,8 @@ def refscan_set_watch(kind, items):
 
 
 def _refscan_move(pan, tilt):
-    CFG["pan"] = max(0.0, min(100.0, float(pan))); CFG["tilt"] = max(0.0, min(100.0, float(tilt)))
     MANUAL["until"] = time.time() + 60                  # following / patrol pause while the scan drives the head
+    servo_goto(max(0.0, min(100.0, float(pan))), max(0.0, min(100.0, float(tilt))), "refscan", timeout=20.0)   # 2.98.35: planner (072), waits
 
 
 def _refscan_next(w, after, end):
@@ -27200,7 +28318,7 @@ class SimLink:
                 elif op_ == "refstop":
                     refscan_stop()
                 elif op_ == "look":                         # 2.95.103: «Kopf steuern» in the simulator window
-                    move_camera(str(mc_.get("dir") or ""), mc_.get("step", 3))
+                    move_camera(str(mc_.get("dir") or ""), mc_.get("step", 3), "Simulator")
                 elif op_ == "fa_box":                       # 2.98.2: a box of a game without a player: a false alarm to learn from
                     fa_game_box(mc_.get("box"), mc_.get("info"))      # 2.98.18: with the situation («Fehlalarm-Jäger»)
                 elif op_ == "track":                        # 2.98.1: «Verfolgen» in the simulator = «Folgen» of MoveEye
@@ -30950,7 +32068,7 @@ class MotionWatch:
         """2.98.1: aim at the object - turn by the angle it has from the middle of the picture (field of view of the camera),
         a part of the way (no overshoot), then wait until the picture shows the new direction. Before, it moved a fixed
         bit per picture: slow at a low frame rate and swinging past the object when the picture came late."""
-        if wake_hold() or kopf_track_blocked():    # 2.98.7: the wake-up alarm holds the head (sleeping place); 2.98.30: parked (Aus, 162)
+        if wake_hold() or kopf_track_blocked() or servo_blocked():    # 2.98.7: the wake-up alarm holds the head (sleeping place); 2.98.30: parked (Aus, 162); 2.98.35: Not-Aus (072)
             return
         x, y, w, h = target_box[:4]
         ex = (x + w / 2.0) / pw - 0.5          # -0.5 .. 0.5  (right = positive)
@@ -30964,10 +32082,11 @@ class MotionWatch:
         hf, vf = cam_fov()
         k = max(0.2, min(1.0, 0.75 * float(CFG["track_gain"]) / 0.6 * gain))
         moved = False
+        p0, t0 = servo_pos()                   # 2.98.35: from where the picture was taken (the planner may still drive, 072)
         if abs(ex) > dz:
-            CFG["pan"] = max(0.0, min(100.0, CFG["pan"] + ex * hf / (2.0 * servo_half("pan")) * 100.0 * k)); moved = True
+            CFG["pan"] = max(0.0, min(100.0, p0 + ex * hf / (2.0 * servo_half("pan")) * 100.0 * k)); moved = True
         if abs(ey) > dz:
-            CFG["tilt"] = max(0.0, min(100.0, CFG["tilt"] - ey * vf / (2.0 * servo_half("tilt")) * 100.0 * k)); moved = True
+            CFG["tilt"] = max(0.0, min(100.0, t0 - ey * vf / (2.0 * servo_half("tilt")) * 100.0 * k)); moved = True
         if moved:
             self._trk_t = now
 
@@ -46249,7 +47368,7 @@ const GROUPS = [                                            // 2.98.0: by goal -
   {id: "sched", tab: "protect", icon: "🗓", name: "Zones, schedule, presence", items: [{card: "schedule", sec: "Schedule", title: "Schedule", ic: "🗓️"}]},
   {id: "detect", tab: "settings", icon: "🎯", name: "Detection", items: [{card: "tune", title: "Improve detection", ic: "🎯"}, {sec: "Detection", ic: "👁️"}, {sec: "AI detection", ic: "🤖"}, {sec: "Thermal camera", ic: "🌡"}, {fine: true},
    {sec: "Walking recognition", ic: "🚶"}, {sec: "Vehicle filter", ic: "🚗"}, {sec: "Rain", ic: "🌧️"}, {sec: "Wind", ic: "🌬️"}, {sec: "Low light", ic: "🌘"}, {sec: "Auto-tune", ic: "🎚️"}]},
-  {id: "camera", tab: "settings", icon: "📷", name: "Cameras & head", items: [{sec: "Camera / Servos", ic: "🕹️"}, {sec: "Patrol", ic: "🔄"}, {sec: "Automatic head movement", ic: "🤖"}, {card: "source", sec: "Video source", ic: "🎥"},
+  {id: "camera", tab: "settings", icon: "📷", name: "Cameras & head", items: [{sec: "Camera / Servos", ic: "🕹️"}, {sec: "Patrol", ic: "🔄"}, {sec: "Automatic head movement", ic: "🤖"}, {sec: "Servo motion & safety", ic: "🛑"}, {card: "source", sec: "Video source", ic: "🎥"},
    {sec: "Timelapse", ic: "⏱️"}, {sec: "Mover", title: "Mover (tracked vehicle)", ic: "🚜"}, {fine: true}, {sec: "Servo driver", ic: "🔌"}]},
   {id: "lightsound", tab: "settings", icon: "🔌", name: "Devices & sensors", items: [{sec: "Lights", ic: "💡"}, {sec: "Microphone", ic: "🎤"}, {sec: "Loudspeaker", ic: "🔊"},
    {card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {sec: "Extra sensors", ic: "📡"}, {sec: "Clap switch", ic: "👏"}, {sec: "Bless you", title: "«Bless you!»", ic: "🤧"},
@@ -46261,7 +47380,7 @@ const GROUPS = [                                            // 2.98.0: by goal -
   {id: "sys", tab: "settings", icon: "⚙", name: "System", items: [{card: "system", ic: "🖥️"}, {sec: "Setup", ic: "📍"}, {sec: "Updates", ic: "⬆️"},
    {card: "log", ic: "📜"}]},
 ];
-Object.assign(I18N.de, {"Improve detection": "Erkennung verbessern", "Automatic head movement": "Automatische Kopfbewegung",
+Object.assign(I18N.de, {"Improve detection": "Erkennung verbessern", "Automatic head movement": "Automatische Kopfbewegung", "Servo motion & safety": "Servo-Bewegung & Sicherheit",
   "paused (the head is busy)": "Pause (der Kopf ist beschäftigt)", "saving: stays at the most important direction": "sparsam: bleibt bei der wichtigsten Richtung"});   // 2.98.14: the assistant (312); the simulator settings are on the page Simulator
 function toBlock(d) {                                        // a settings section -> its controls (without its own title)
   const b = el("div", "blk");
@@ -48827,6 +49946,7 @@ async function refresh() {
   applyRole(s.me);
   if (s.me && s.me.role === "admin" && !window.USERS_DONE && $("#users-box")) { window.USERS_DONE = true; usersLoad(); }
   try { mainPaint(j); } catch (e) {}
+  try { if (window.servoPaint) window.servoPaint(j); } catch (e) {}      // 2.98.35: Not-Aus, who steers the head (539)
   try { qsPaint(j); } catch (e) {}
   try { chainPaint(c, s); } catch (e) {}
   badge("#b-person", s.persons ? s.persons + " " + (s.persons > 1 ? t("PERSONS DETECTED") : t("PERSON DETECTED")) : t("No person"), s.persons ? "red" : "");
@@ -50745,7 +51865,7 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     const now = Date.now();
     const [lx, ly] = dz(g.axes[0] || 0, g.axes[1] || 0), [rx, ry] = dz(g.axes[2] || 0, g.axes[3] || 0);
     // left stick = head (the same as the joystick of the live page: /api/stick, real servos and the simulator)
-    if (lx || ly) { if (now - GP.lastHead >= 100) { GP.lastHead = now; GP.headZero = false; post("/api/stick", {x: r3(lx), y: r3(-ly), speed: spd()}); } }
+    if (lx || ly) { if (now - GP.lastHead >= 100) { GP.lastHead = now; GP.headZero = false; post("/api/stick", {x: r3(lx), y: r3(-ly), speed: spd(), via: "pad"}); } }
     else if (!GP.headZero) { GP.headZero = true; post("/api/stick", {x: 0, y: 0, speed: spd()}); }
     // right stick = rover (MoveEye's mover: real mover or the simulator's rover) · R1 held = turn the view · no rover = fly the view
     if (down(5)) { GP.r1T = now; GP.r1Used = false; }
@@ -50764,7 +51884,9 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     if (down(11)) sim({view: "rnext"}).then(r => { if (r && r.ok) toastT("👁 " + T(VIEWNAME[r.view] || "Free view")); });   // R3
     const K = KEYS(), byKey = k => Object.keys(K).find(id => K[id] === k);
     [[0, "A"], [1, "B"], [2, "X"], [3, "Y"]].forEach(([i, k]) => { if (down(i)) { const id = byKey(k), b = W.querySelector('button.pvb[data-id="' + id + '"]'); act(id, b); wake(); } });
-    if (down(8)) swap();                                                   // Select
+    if (down(8)) { GP.selT = now; GP.selLong = false; }                   // Select: short = swap the pictures,
+    if (cur[8] && !GP.selLong && now - GP.selT > 1500) { GP.selLong = true; if (window.servoEstop) window.servoEstop(); else post("/api/servo", {op: "estop"}); toastT("⛔ " + T("EMERGENCY STOP")); }   // held 1.5 s = Not-Aus (2.98.35, 539)
+    if (up(8) && !GP.selLong) swap();
     if (down(9)) { GP.startT = now; GP.startLong = false; }               // Start: short = bar, held 1 s = leave
     if (cur[9] && !GP.startLong && now - GP.startT > 1000) { GP.startLong = true; GP.mute = true; open(false); return; }   // (the held Start must not reach the simulator)
     if (up(9) && !GP.startLong) barToggle();
@@ -50848,6 +51970,372 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
 """
 WEB_PAGE = WEB_PAGE.replace("</body>", PADVIEW_JS + "</body>", 1)
 WEB_UI_LOCAL.add("mw-pad")                                # per device: the controller view of the tablet is not the one of the PC
+# ----------------------------------------------------------------------------
+# 2.98.35 (Wunsch Daniel): one page for the servos, phone first: (1) state + ⏹ Not-Aus / ✅ Freigeben + who steers the head,
+#   a small picture and arrows to drive, (2) the taught points (Teach-in: save, go, rename, order, round, park / home,
+#   take over from «Platz einrichten»), (3) diagnosis (counters, fault memory, maintenance hints, export JSON / CSV).
+#   Reached from Mehr → Werkzeuge («Servo diagnosis»), from the live page («📍 Positionen») and the settings section.
+# The live page (530) only gets a small script at its end (like 537): a red «⏹ Stopp» in the camera controls, a red bar
+#   while stopped (with who pressed it and «Freigeben»), the line «Kopf: gesteuert von …» and a short notice when another
+#   panel (phone, PC, window, controller, simulator) takes the head. Everything from the usual state poll (st.servo).
+# API: GET /api/servo (?diag=1, ?trace=<since>), POST /api/servo {"op": …}, GET /api/servo/export?fmt=json|csv.
+#   Not-Aus may be pressed by every role (also a guest) - releasing and teaching only by the administrator.
+# ----------------------------------------------------------------------------
+def servo_client(request, d=None):
+    """(key, label) of the panel that sent this request: device + browser + end of the address (+ user) - a label for
+    people, the key (a short hash) for «is it me?»"""
+    import hashlib
+    try:
+        from flask import g
+        user = str(getattr(g, "user", "") or "")
+    except Exception:
+        user = ""
+    ua = str(request.headers.get("User-Agent") or "")
+    ip = str(request.remote_addr or "?")
+    if "Godot" in ua or "MoveEye-Sim" in ua:
+        dev = tr("Simulator")
+    else:
+        dev = ("iPhone" if "iPhone" in ua else "iPad" if "iPad" in ua else "Android" if "Android" in ua else "Mac" if "Macintosh" in ua
+               else "Windows-PC" if "Windows" in ua else "Linux-PC" if "Linux" in ua else tr("Browser"))
+    br = ("Edge" if "Edg/" in ua else "Firefox" if "Firefox/" in ua else "Chrome" if "Chrome/" in ua or "CriOS" in ua
+          else "Safari" if "Safari/" in ua else "")
+    where = tr("this computer") if ip.startswith("127.") or ip == "::1" else "…" + (ip.split(".")[-1] if "." in ip else ip[-4:])
+    label = dev + (" · " + br if br else "") + f" ({where})" + (" · " + user if user else "")
+    if isinstance(d, dict) and d.get("via") == "pad":
+        label += " 🎮"
+    key = hashlib.sha1((ip + "|" + ua).encode("utf-8", "replace")).hexdigest()[:10]
+    return key, label[:60]
+
+
+def servo_client_state(request, lang=None):
+    """the small part for the state poll of every page: stopped? who steers? is it me?"""
+    key, label = servo_client(request)
+    drv = servo_driver(lang)
+    return {"blocked": servo_blocked(), "text": servo_blocked_text(lang), "estop": bool(CFG.get("servo_estop")),
+            "estop_by": CFG.get("servo_estop_by") or "", "driver": drv, "me": key, "mine": bool(drv.get("key")) and drv.get("key") == key,
+            "me_label": label, "moving": bool(SRV["moving"]), "deg": [round(x, 1) for x in servo_pos_deg()]}
+
+
+SERVO_PAGE = r"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MoveEye - Servos</title>
+<style>
+/*BASECSS*/
+main{padding:14px 16px 90px;max-width:980px;margin:0 auto}
+.sv-tabs{display:flex;gap:6px;margin:0 0 12px}.sv-tabs a{flex:1;text-align:center;padding:8px 4px;border-radius:10px;border:1px solid var(--line);color:var(--mut);text-decoration:none;font-size:14px}
+.sv-tabs a.on{border-color:var(--acc);color:var(--txt);font-weight:700}
+.sv-state{border-radius:14px;padding:12px 14px;margin:0 0 10px;border:2px solid var(--line);font-size:16px;font-weight:700}
+.sv-state.ok{border-color:#2ea043}.sv-state.stop{border-color:#e5534b;background:rgba(229,83,75,.14)}.sv-state.warn{border-color:#d29922;background:rgba(210,153,34,.12)}
+.sv-state small{display:block;font-weight:400;font-size:13px;color:var(--mut);margin-top:4px}
+.sv-big{display:flex;gap:8px;margin:8px 0}.sv-big button{flex:1;padding:16px 8px;font-size:18px;border-radius:14px;font-weight:700}
+button.sv-stop{background:#d1242f;border-color:#d1242f;color:#fff}button.sv-rel{background:#2ea043;border-color:#2ea043;color:#fff}
+#sv-img{width:100%;max-width:520px;aspect-ratio:16/9;object-fit:cover;background:#000;border-radius:12px;display:block;margin:8px auto}
+.sv-pad{display:grid;grid-template-columns:repeat(3,64px);gap:6px;justify-content:center;margin:8px 0}.sv-pad button{height:52px;font-size:20px;border-radius:12px}
+.sv-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}.sv-row input[type=text]{flex:1;min-width:140px}
+.sv-pt{display:grid;grid-template-columns:1fr auto;gap:6px;padding:10px 0;border-top:1px solid var(--line);align-items:center}
+.sv-pt b{font-size:15px}.sv-pt .sub{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}.sv-pt .sub button{padding:6px 9px;font-size:13px}
+.sv-kv{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px 12px;font-size:14px}.sv-kv b{font-weight:600}
+.sv-bar{height:8px;border-radius:6px;background:var(--line);overflow:hidden}.sv-bar i{display:block;height:100%;background:var(--acc)}
+.sv-f{padding:7px 0;border-top:1px solid var(--line);font-size:13.5px}.sv-f .lv{display:inline-block;min-width:18px}
+.sv-hint{padding:8px 10px;border-radius:10px;margin:6px 0;background:rgba(210,153,34,.12)}.sv-hint.info{background:rgba(56,139,253,.10)}
+#sv-drv{font-size:13.5px;margin:4px 0}
+</style></head><body>
+<header>
+  <h1>MoveEye</h1>
+  <!--NAV-->
+  <span class="hdr-ctl">
+    <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
+    <button class="sec" id="btn-lang" onclick="toggleLang()">DE</button>
+  </span>
+</header>
+<main>
+  <h2 style="margin:0 0 8px">🎯 <span data-i18n="Servos: safety, positions, diagnosis">Servos: safety, positions, diagnosis</span></h2>
+  <div class="sv-tabs"><a href="#teach" id="tb-teach" data-i18n="Positions">Positions</a><a href="#diag" id="tb-diag" data-i18n="Diagnosis">Diagnosis</a></div>
+  <div id="sv-state" class="sv-state"></div>
+  <div class="sv-big"><button type="button" class="sv-stop" id="sv-estop">⏹ <span data-i18n="Emergency stop">Emergency stop</span></button>
+    <button type="button" class="sv-rel" id="sv-release" hidden>✅ <span data-i18n="Release">Release</span></button></div>
+  <div id="sv-drv" class="mut"></div>
+  <section id="p-teach" class="card">
+    <img id="sv-img" alt="">
+    <div class="sv-pad"><span></span><button type="button" class="sec" data-d="up">▲</button><span></span>
+      <button type="button" class="sec" data-d="left">◀</button><button type="button" class="sec" data-d="center">◎</button><button type="button" class="sec" data-d="right">▶</button>
+      <span></span><button type="button" class="sec" data-d="down">▼</button><span></span></div>
+    <div class="sv-row"><span class="mut" data-i18n="Step">Step</span><select id="sv-step"><option>0.5</option><option>1</option><option selected>3</option><option>10</option></select>
+      <span class="mut" id="sv-pos"></span></div>
+    <div class="mut" data-i18n="teach-note">teach-note</div>
+    <div class="sv-row"><input type="text" id="sv-name" maxlength="30" data-ph="Name, e.g. «Tent» or «Entrance»"><button type="button" id="sv-add">📍 <span data-i18n="Save position">Save position</span></button></div>
+    <div id="sv-list"></div>
+    <div class="sv-row"><button type="button" class="sec" id="sv-place">📍 <span data-i18n="Take over from «Set up the place»">Take over from «Set up the place»</span></button></div>
+  </section>
+  <section id="p-diag" class="card" hidden>
+    <div id="sv-hints"></div>
+    <h3 data-i18n="Counters">Counters</h3>
+    <div id="sv-cnt"></div>
+    <div class="sv-row"><button type="button" class="sec" id="sv-svc">🔧 <span data-i18n="Maintenance done">Maintenance done</span></button>
+      <a class="btn sec" href="/api/servo/export?fmt=json" download>⬇ JSON</a><a class="btn sec" href="/api/servo/export?fmt=csv" download>⬇ CSV</a></div>
+    <h3 data-i18n="Fault memory">Fault memory</h3>
+    <div id="sv-faults"></div>
+    <div class="sv-row"><button type="button" class="sec" id="sv-clr">🗑 <span data-i18n="Clear fault memory">Clear fault memory</span></button></div>
+  </section>
+</main>
+<script>
+/*COMMON*/
+/*SERVODE*/
+const SV = {s: null, d: null, timer: 0, img: 0};
+const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
+const tf = (s, o) => t(s).replace(/\{(\w+)\}/g, (m, k) => (o && o[k] != null) ? o[k] : m);
+const tab = () => location.hash === "#diag" ? "diag" : "teach";
+const LOC = () => ({de: "de-CH", fr: "fr-CH", it: "it-CH", rm: "de-CH"}[LANG] || "en-GB");
+const when = s => new Date(s * 1000).toLocaleString(LOC(), {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"});
+async function op(o) {
+  const r = await post("/api/servo", Object.assign({lang: LANG}, o));
+  if (!r.ok && r.error) toast("⚠ " + r.error);
+  load(); return r;
+}
+function paintState() {
+  const S = SV.s; if (!S) return;
+  const b = document.getElementById("sv-state"); b.textContent = "";
+  const cls = S.blocked === "estop" || S.blocked === "fault" ? "stop" : S.blocked ? "warn" : "ok";
+  b.className = "sv-state " + cls;
+  b.appendChild(document.createTextNode(S.blocked ? (S.blocked === "estop" ? "⛔ " + t("EMERGENCY STOP") : "⚠ " + S.text) : "✅ " + t("Ready - the servos may move")));
+  if (S.blocked === "estop") b.appendChild(E("small", "", tf("pressed by {who}", {who: S.estop_by || "?"}) + " · " + t("Emergency stop - press «Release» to move again")));
+  b.appendChild(E("small", "", tf("Pan {p}° · tilt {t}°", {p: S.deg[0], t: S.deg[1]}) + (S.moving ? " · " + t("moving") : "") + " · " + (S.backend || "")));
+  document.getElementById("sv-release").hidden = !(S.blocked === "estop" || S.blocked === "fault");
+  document.getElementById("sv-estop").hidden = S.blocked === "estop";
+  const d = S.driver || {}, me = S.me || "";
+  document.getElementById("sv-drv").textContent = d.kind === "manual" ? "🎮 " + tf("The head is steered by: {who}", {who: d.label}) + (d.key === me ? " (" + t("you") + ")" : "")
+    : d.kind === "auto" ? "🤖 " + tf("The head moves by itself: {what}", {what: d.label}) : "";
+  document.getElementById("sv-pos").textContent = tf("Pan {p}° · tilt {t}°", {p: S.deg[0], t: S.deg[1]});
+}
+function paintTeach() {
+  const S = SV.s, L = document.getElementById("sv-list"); L.textContent = "";
+  if (!S.points.length) L.appendChild(E("div", "mut", t("No positions yet: drive the head with the arrows or the joystick and save.")));
+  S.points.forEach((p, k) => {
+    const r = E("div", "sv-pt");
+    const n = E("div"); n.appendChild(E("b", "", (k + 1) + ". " + (p.name || t("Waypoint") + " " + (k + 1))));
+    n.appendChild(E("div", "mut", tf("Pan {p}° · tilt {t}°", {p: p.deg[0], t: p.deg[1]}) + (p.patrol ? " · 🔄 " + t("in the round") : "") + (p.park ? " · 🅿 " + t("parking") : "") + (p.home ? " · 🏠 " + t("home") : "")));
+    const go = E("button", "", "▶ " + t("Go")); go.type = "button"; go.onclick = () => op({op: "goto", i: p.i});
+    r.append(n, go);
+    const sub = E("div", "sub");
+    const B = (txt, f, tip) => { const b = E("button", "sec", txt); b.type = "button"; if (tip) b.title = t(tip); b.onclick = f; sub.appendChild(b); };
+    B("✏️ " + t("Rename"), () => { const v = prompt(t("New name"), p.name || ""); if (v !== null) op({op: "rename", i: p.i, value: v}); });
+    B("⤓ " + t("Here"), () => { if (confirm(t("Store the position of now in this point?"))) op({op: "update", i: p.i}); }, "Store the position of now in this point?");
+    B("▲", () => op({op: "up", i: p.i})); B("▼", () => op({op: "down", i: p.i}));
+    B((p.patrol ? "🔄 ✓" : "🔄 ✗"), () => op({op: "patrol", i: p.i, value: !p.patrol}), "in the round");
+    B("🅿" + (p.park ? " ✓" : ""), () => op({op: "park", i: p.i}), "Parking position");
+    B("🏠" + (p.home ? " ✓" : ""), () => op({op: "home", i: p.i}), "Home position");
+    B("🗑", () => { if (confirm(t("Delete this position?"))) op({op: "delete", i: p.i}); });
+    r.appendChild(sub); L.appendChild(r);
+  });
+}
+function paintDiag() {
+  const D = SV.d; if (!D) return;
+  const H = document.getElementById("sv-hints"); H.textContent = "";
+  if (!D.hints.length) H.appendChild(E("div", "sv-hint info", "✅ " + t("No maintenance hints.")));
+  D.hints.forEach(h => H.appendChild(E("div", "sv-hint " + h.level, (h.level === "warn" ? "⚠ " : "ℹ ") + h.text)));
+  const C = document.getElementById("sv-cnt"); C.textContent = "";
+  [["hw", "Real servos"], ["sim", "Simulation"]].forEach(([k, nm]) => {
+    const b = D[k]; C.appendChild(E("h4", "", t(nm) + " · " + tf("{h} h switched on", {h: b.on_h})));
+    const g = E("div", "sv-kv"); g.append(E("b", "", ""), E("b", "", t("Pan")), E("b", "", t("Tilt")));
+    const row = (lab, f) => { g.append(E("span", "mut", t(lab)), E("span", "", f(b.axes.pan)), E("span", "", f(b.axes.tilt))); };
+    row("travelled", a => a.deg + "° (" + a.turns + " " + t("turns") + ")"); row("moving", a => a.move_h + " h"); row("moves", a => String(a.moves));
+    if (k === "hw") row("since maintenance", a => a.service_h + " / " + D.service_h + " h");
+    C.appendChild(g);
+    if (k === "hw") ["pan", "tilt"].forEach(ax => { const br = E("div", "sv-bar"); const i = E("i"); i.style.width = b.axes[ax].service_pct + "%"; br.appendChild(i); br.title = t(ax === "pan" ? "Pan" : "Tilt"); C.appendChild(br); });
+    if (b.uv_min) C.appendChild(E("div", "mut", "⚡ " + tf("{n} min with under-voltage", {n: b.uv_min})));
+  });
+  const F = document.getElementById("sv-faults"); F.textContent = "";
+  if (!D.faults.length) F.appendChild(E("div", "mut", t("The fault memory is empty.")));
+  D.faults.forEach(f => {
+    const r = E("div", "sv-f"); r.appendChild(E("span", "lv", f.level === "error" ? "⛔" : f.level === "warn" ? "⚠" : "ℹ"));
+    r.appendChild(document.createTextNode(" " + when(f.last) + " · " + f.what + (f.n > 1 ? " ×" + f.n : "") + (f.sim ? " · " + t("simulation") : "")));
+    if (f.text) r.appendChild(E("div", "mut", f.text));
+    F.appendChild(r);
+  });
+}
+async function load() {
+  clearTimeout(SV.timer);
+  const tb = tab();
+  try { const r = await fetch("/api/servo?lang=" + LANG + (tb === "diag" ? "&diag=1" : ""), {cache: "no-store"}); if (r.ok) { const j = await r.json(); SV.s = j; if (j.diag) SV.d = j.diag; } } catch (e) {}
+  document.getElementById("p-teach").hidden = tb !== "teach"; document.getElementById("p-diag").hidden = tb !== "diag";
+  document.getElementById("tb-teach").classList.toggle("on", tb === "teach"); document.getElementById("tb-diag").classList.toggle("on", tb === "diag");
+  if (SV.s) { paintState(); if (tb === "teach") paintTeach(); else paintDiag(); }
+  if (tb === "teach" && Date.now() - SV.img > 900) { SV.img = Date.now(); document.getElementById("sv-img").src = "/api/frame.jpg?" + Date.now(); }
+  SV.timer = setTimeout(load, tb === "teach" ? 1000 : 4000);
+}
+document.querySelectorAll(".sv-pad button").forEach(b => b.onclick = async () => {
+  const r = await post("/api/move", {dir: b.dataset.d, step: parseFloat(document.getElementById("sv-step").value) || 3, lang: LANG});
+  if (!r.ok && r.error) toast("⚠ " + r.error); setTimeout(load, 400);
+});
+document.getElementById("sv-estop").onclick = () => op({op: "estop"}).then(() => toast("⛔ " + t("EMERGENCY STOP")));
+document.getElementById("sv-release").onclick = () => { if (confirm(t("Release the servos? The head may move again (also by itself)."))) op({op: "release"}); };
+document.getElementById("sv-add").onclick = async () => { const n = document.getElementById("sv-name"); const r = await op({op: "add", name: n.value}); if (r.ok) { n.value = ""; toast("📍 " + t("Position saved")); } };
+document.getElementById("sv-place").onclick = async () => { const r = await op({op: "from_place"}); if (r.ok) toast(tf("{n} positions taken over", {n: r.n})); };
+document.getElementById("sv-svc").onclick = () => { if (confirm(t("Maintenance of both servos done? The maintenance counters start again."))) op({op: "service"}); };
+document.getElementById("sv-clr").onclick = () => { if (confirm(t("Clear the fault memory?"))) op({op: "clear_faults"}); };
+addEventListener("hashchange", load);
+(async () => { await initAppearance(); const n = document.getElementById("sv-name"); n.placeholder = t(n.dataset.ph); load(); })();
+</script></body></html>"""
+
+SERVO_PAGE_KEYS = ["Servos: safety, positions, diagnosis", "Positions", "Diagnosis", "Emergency stop", "Release", "Step", "teach-note",
+                   "Name, e.g. «Tent» or «Entrance»", "Save position", "Take over from «Set up the place»", "Counters", "Maintenance done",
+                   "Fault memory", "Clear fault memory", "EMERGENCY STOP", "Ready - the servos may move", "pressed by {who}",
+                   "Emergency stop - press «Release» to move again", "Pan {p}° · tilt {t}°", "moving", "The head is steered by: {who}", "you",
+                   "The head moves by itself: {what}", "No positions yet: drive the head with the arrows or the joystick and save.", "Waypoint",
+                   "in the round", "parking", "home", "Go", "Rename", "New name", "Here", "Store the position of now in this point?",
+                   "Parking position", "Home position", "Delete this position?", "No maintenance hints.", "Real servos", "Simulation",
+                   "{h} h switched on", "Pan", "Tilt", "travelled", "turns", "moves", "since maintenance", "{n} min with under-voltage",
+                   "The fault memory is empty.", "simulation", "Release the servos? The head may move again (also by itself).",
+                   "Position saved", "{n} positions taken over", "Maintenance of both servos done? The maintenance counters start again.",
+                   "Clear the fault memory?"]
+
+# ---- the live page (530): Not-Aus, the red bar, who steers - one small script at its end -----------------------------
+SERVO_LIVE_JS = r"""<script>
+(() => {
+  const SD = /*SVLDE*/{};
+  const T = s => (LANG === "de" && SD[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && SD[s]) || s;
+  const TF = (s, o) => T(s).replace(/\{(\w+)\}/g, (m, k) => (o && o[k] != null) ? o[k] : m);
+  const P = (u, b) => fetch(u, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(b || {})}).then(r => r.json()).catch(() => ({ok: false}));
+  const msg = m => { if (typeof toast === "function") toast(m); };
+  try { if (typeof I18N !== "undefined" && I18N.de) Object.keys(SD).forEach(k => { if (!I18N.de[k]) I18N.de[k] = SD[k]; }); } catch (e) {}   // the controller view (538) too
+  let lastN = null, bar = null, line = null;
+  function estop() { P("/api/servo", {op: "estop", lang: LANG}).then(r => { msg("⛔ " + T("EMERGENCY STOP")); if (window.servoPoll) window.servoPoll(); }); }
+  function release() { if (confirm(T("Release the servos? The head may move again (also by itself)."))) P("/api/servo", {op: "release", lang: LANG}).then(r => { if (!r.ok && r.error) msg("⚠ " + r.error); }); }
+  window.servoEstop = estop;
+  function build() {
+    const side = document.getElementById("ctl-side");
+    if (side && !document.getElementById("srv-stop")) {
+      const row = document.createElement("div"); row.className = "sr";
+      const b = document.createElement("button"); b.type = "button"; b.id = "srv-stop"; b.textContent = "⏹ " + T("Stop");
+      b.title = T("Emergency stop"); b.style.cssText = "background:#d1242f;border-color:#d1242f;color:#fff;font-weight:700"; b.onclick = estop;
+      const a = document.createElement("button"); a.type = "button"; a.className = "sec"; a.textContent = "📍 " + T("Positions"); a.onclick = () => { location.href = "/servo#teach"; };
+      row.append(b, a); side.insertBefore(row, side.firstChild);
+    }
+    const sp = document.getElementById("spos-txt");
+    if (sp && !document.getElementById("srv-drv")) { line = document.createElement("div"); line.id = "srv-drv"; line.className = "mut"; line.style.fontSize = "12px"; sp.after(line); }
+    if (!bar) {
+      bar = document.createElement("div"); bar.id = "srv-bar"; bar.hidden = true;
+      bar.style.cssText = "position:sticky;top:0;z-index:60;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 12px;background:#b62324;color:#fff;font-weight:700";
+      document.body.insertBefore(bar, document.body.firstChild.nextSibling);
+    }
+  }
+  window.servoPaint = j => {
+    const s = (j && j.state && j.state.servo) || null; if (!s) return;
+    build();
+    if (s.blocked === "estop" || s.blocked === "fault" || s.blocked === "inhibit") {
+      bar.textContent = ""; bar.hidden = false;
+      const tx = document.createElement("span"); tx.style.flex = "1";
+      tx.textContent = s.blocked === "estop" ? "⛔ " + T("EMERGENCY STOP") + " – " + TF("pressed by {who}", {who: s.estop_by || "?"}) : "⚠ " + s.text;
+      bar.appendChild(tx);
+      if (s.blocked !== "inhibit") { const r = document.createElement("button"); r.type = "button"; r.textContent = "✅ " + T("Release"); r.style.cssText = "background:#fff;color:#b62324;font-weight:700"; r.onclick = release; bar.appendChild(r); }
+    } else if (bar) bar.hidden = true;
+    const st = document.getElementById("srv-stop"); if (st) st.disabled = s.blocked === "estop";
+    const d = s.driver || {};
+    if (line) line.textContent = d.kind === "manual" ? "🎮 " + TF("The head is steered by: {who}", {who: d.label}) + (s.mine ? " (" + T("you") + ")" : "")
+      : d.kind === "auto" ? "🤖 " + TF("The head moves by itself: {what}", {what: d.label}) : "";
+    if (lastN !== null && d.n !== lastN && d.kind === "manual" && !s.mine) msg("🎮 " + TF("Now steered by {who}", {who: d.label}));
+    lastN = d.n;
+  };
+})();
+</script>"""
+SERVO_LIVE_KEYS = ["EMERGENCY STOP", "Release the servos? The head may move again (also by itself).", "Stop", "Emergency stop", "Positions",
+                   "pressed by {who}", "Release", "The head is steered by: {who}", "you", "The head moves by itself: {what}", "Now steered by {who}"]
+WEB_PAGE = WEB_PAGE.replace("</body>", "<!--SERVOJS--></body>", 1)          # filled by 634 (after the German texts are known)
+NAV_OF["servo"] = "more"
+# Mehr → Werkzeuge: an entry «Servo diagnosis» next to «Servo test» (opens /servo#diag)
+TOOLS_PAGE = TOOLS_PAGE.replace('  <button type="button" class="tli" data-k="audio"',
+                                '  <a class="tli" href="/servo#diag" style="text-decoration:none;color:inherit"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true">'
+                                '<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/><path d="M4 4l3 3M20 4l-3 3"/></svg><span class="tln"><b data-i18n="Servo diagnosis">'
+                                'Servo diagnosis</b><span class="tsum" data-i18n="Fault memory, hours, maintenance, Not-Aus">Fault memory, hours, maintenance, Not-Aus</span></span></a>\n'
+                                '  <button type="button" class="tli" data-k="audio"', 1)
+
+
+def servo_page():
+    js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in SERVO_PAGE_KEYS}, ensure_ascii=False) + ");"
+    return render_page(SERVO_PAGE, "servo").replace("/*SERVODE*/", js, 1)
+
+
+def servo_live_js():
+    return SERVO_LIVE_JS.replace("/*SVLDE*/{}", json.dumps({k: DE.get(k, k) for k in SERVO_LIVE_KEYS}, ensure_ascii=False), 1)
+
+
+def servo_api_op(d, who, admin, lang=None):
+    """POST /api/servo -> (reply dict, http code)"""
+    o = str(d.get("op") or "")
+    if o == "estop":
+        servo_estop(who)
+        return {"ok": True}, 200
+    if not admin:
+        return {"ok": False, "error": tr("not allowed", lang)}, 403
+    if o == "release":
+        ok, err = servo_release(who)
+        return {"ok": ok, "error": tr(err, lang) if err else None}, 200 if ok else 409
+    if o == "goto":
+        ok, err = teach_goto(d.get("i"), who)
+        return {"ok": ok, "error": tr(err, lang) if err else None}, 200 if ok else 409
+    if o == "add":
+        ok, err, i = teach_add(str(d.get("name") or ""), who[1] if isinstance(who, tuple) else who)
+        return {"ok": ok, "i": i, "error": tr(err, lang) if err else None}, 200 if ok else 400
+    if o in ("rename", "delete", "up", "down", "patrol", "update", "park", "home"):
+        ok, err = teach_edit(o, d.get("i"), d.get("value"), who[1] if isinstance(who, tuple) else who)
+        return {"ok": ok, "error": tr(err, lang) if err else None}, 200 if ok else 400
+    if o == "from_place":
+        return {"ok": True, "n": teach_from_place("web")}, 200
+    if o == "service":
+        servo_diag_service_done(str(d.get("axis") or "") if d.get("axis") in ("pan", "tilt") else "", "web")
+        return {"ok": True}, 200
+    if o == "clear_faults":
+        servo_diag_clear_faults("web")
+        return {"ok": True}, 200
+    if o == "test_fault":                                  # tests with the simulator only: pretend a fault
+        if not CFG.get("sim_on"):
+            return {"ok": False, "error": "only in the simulation"}, 400
+        k = str(d.get("kind") or "")
+        if k == "uv":
+            SRV["test_uv"] = bool(d.get("on", True))
+        elif k == "i2c":
+            for _ in range(3):
+                servo_io_error(OSError("test: I2C write failed"))
+        elif k == "pca_reset":
+            servo_fault("pca_reset", "test")
+        else:
+            return {"ok": False, "error": "unknown"}, 400
+        return {"ok": True}, 200
+    return {"ok": False, "error": "unknown"}, 400
+
+
+def servo_routes(app, reply, body):
+    """the addresses (called once by the web server, 550)"""
+    from flask import Response, request, g
+
+    @app.route("/servo")
+    def servo_web_page():
+        return Response(servo_page(), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+    @app.route("/api/servo", methods=["GET", "POST"])
+    def api_servo():
+        lang = norm_lang(request.args.get("lang") or CFG.get("lang"))
+        if request.method == "POST":
+            d = body(); lang = norm_lang(d.get("lang") or lang)
+            res, code = servo_api_op(d, servo_client(request, d), getattr(g, "role", "admin") == "admin", lang)
+            return reply(res, code)
+        out = dict(servo_state(lang), ok=True, points=teach_list(lang), me=servo_client(request)[0], me_label=servo_client(request)[1])
+        if request.args.get("diag") == "1":
+            out["diag"] = servo_diag_state(lang)
+        if request.args.get("trace") is not None:
+            try:
+                since = float(request.args.get("trace") or 0)
+            except ValueError:
+                since = 0.0
+            out["trace"] = [x for x in list(SRV["trace"]) if x[0] > since]
+        return reply(out)
+
+    @app.route("/api/servo/export")
+    def api_servo_export():
+        fmt = "csv" if request.args.get("fmt") == "csv" else "json"
+        data, mt, fn = servo_diag_export(fmt, norm_lang(request.args.get("lang") or CFG.get("lang")))
+        return Response(data, mimetype=mt, headers={"Content-Disposition": f"attachment; filename={fn}", "Cache-Control": "no-store"})
 HELP_PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -53355,6 +54843,7 @@ class WebStream:
         place_routes(app, watch, reply, body)              # 2.98.30: «Platz einrichten» /place, field of view per camera (537)
         g2_routes(app, watch, reply, body)                 # guide 2: tours, tip of the day, factory reset (586)
         qr_routes(app, reply, body)                        # QR codes: POST /api/qr, gallery /qr, print page, no-store for secrets (587)
+        servo_routes(app, reply, body)                     # 2.98.35: servos - Not-Aus, taught points, diagnosis /servo, /api/servo (539)
 
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
@@ -53683,6 +55172,7 @@ class WebStream:
                                "msg": tr(MOVER["msg"], lang_), "mode": CFG["mover_mode"],
                                "pose": SIM.get("mover_pose") if MOVER["sim"] else None}
                 st["soundev"] = soundev_state()
+                st["servo"] = servo_client_state(request, lang_)      # 2.98.35: Not-Aus, who steers the head (539)
                 st["wake"] = dict(wake_state(), text=wake_text(norm_lang(request.args.get("lang") or CFG["lang"])))   # 2.98.7
                 st["light_cfg"].update({n + "_auto_label": dict(text_choice_pairs("light_white_auto")).get(CFG[f"light_{n}_auto"], "")
                                         for n in ("white", "ir")})
@@ -53768,7 +55258,9 @@ class WebStream:
         @app.route("/api/move", methods=["POST"])
         def api_move():
             d = body()
-            if not move_camera(d.get("dir"), d.get("step", 3)):
+            if not move_camera(d.get("dir"), d.get("step", 3), servo_client(request, d)):
+                if servo_blocked():                        # 2.98.35: Not-Aus / fault (072)
+                    return reply({"ok": False, "error": servo_blocked_text(norm_lang(d.get("lang") or CFG["lang"])), "blocked": servo_blocked()}, 423)
                 return reply({"ok": False, "error": "unknown direction"}, 400)
             return reply({"ok": True, "pan": CFG["pan"], "tilt": CFG["tilt"]})
 
@@ -53781,7 +55273,9 @@ class WebStream:
         @app.route("/api/stick", methods=["POST"])
         def api_stick():
             d = body()
-            if not stick_camera(d.get("x", 0), d.get("y", 0), d.get("speed", 30)):
+            if not stick_camera(d.get("x", 0), d.get("y", 0), d.get("speed", 30), servo_client(request, d)):
+                if servo_blocked():
+                    return reply({"ok": False, "error": servo_blocked_text(norm_lang(d.get("lang") or CFG["lang"])), "blocked": servo_blocked()}, 423)
                 return reply({"ok": False, "error": "invalid values"}, 400)
             return reply({"ok": True, "pan": CFG["pan"], "tilt": CFG["tilt"]})
 
@@ -57224,7 +58718,9 @@ class App:
         btns = (("◎ " + tr("Centre"), "◎", lambda: self._move("center"), tr("Camera to the middle")),
                 ("↻ " + tr("Calibrate"), "↻", self._recal, tr("Learn the picture again (after moving the camera)")),
                 ("⚑ + " + tr("Waypoint"), "⚑+", self._add_wp, tr("Save the current position as waypoint for the patrol")),
-                ("⚑ ✕", "⚑✕", self._clear_wp_ask, tr("Clear waypoints")))
+                ("⚑ ✕", "⚑✕", self._clear_wp_ask, tr("Clear waypoints")),
+                ("⏹ " + tr("Stop"), "⏹", self._srv_estop_btn, tr("Emergency stop") + " / " + tr("Release")),          # 2.98.35 (588)
+                ("📍 " + tr("Positions"), "📍", lambda: self._srv_win("teach"), tr("Servos: safety, positions, diagnosis")))
         swb = lambda par: self._fbtn(par, "⇆", self._swap_side, tr("Swap stick and buttons (left- / right-handed)"), font=("DejaVu Sans", 11, "bold"))
         if wide:
             r0 = tk.Frame(side, bg=C["panel"]); r0.pack(fill="x")
@@ -57235,6 +58731,10 @@ class App:
             r2 = tk.Frame(side, bg=C["panel"]); r2.pack(fill="x", pady=(6, 0))
             self._fbtn(r2, btns[2][0], btns[2][2], btns[2][3]).pack(side="left", fill="x", expand=True)
             self._fbtn(r2, btns[3][0], btns[3][2], btns[3][3]).pack(side="left", padx=(6, 0))
+            r3 = tk.Frame(side, bg=C["panel"]); r3.pack(fill="x", pady=(6, 0))     # 2.98.35: Not-Aus + positions (588)
+            self._srv_btn = self._fbtn(r3, btns[4][0], btns[4][2], btns[4][3]); self._srv_btn.pack(side="left", fill="x", expand=True)
+            self._srv_btn.config(bg="#d1242f", fg="#ffffff"); self._srv_btn.bind("<Leave>", lambda e: self._srv_btn.config(bg="#d1242f"))
+            self._fbtn(r3, btns[5][0], btns[5][2], btns[5][3]).pack(side="left", fill="x", expand=True, padx=(6, 0))
         elif tiny:
             side.grid_configure(sticky="n", pady=(10, 0))
             cb.config(width=12); cb.pack(fill="x")
@@ -59134,7 +60634,8 @@ class App:
                 txt = tr("Tracking person")
             else:
                 txt = ""
-            self.l_ctl_status.config(text=txt)
+            sv_ = servo_tk_line(self)                      # 2.98.35: Not-Aus / who steers the head (588)
+            self.l_ctl_status.config(text=(sv_ + ("\n" + txt if txt else "")) if sv_ else txt, fg=C["red"] if servo_blocked() else C["yel"])
         self._qs_paint()
         ms_ = getattr(self, "mstick", None)
         if ms_ is not None:
@@ -65624,6 +67125,298 @@ def qr_selftest():
 
 
 SELFTEST_EXTRA.append(("QR codes (ntfy link, gallery, helper)", qr_selftest))
+# ----------------------------------------------------------------------------
+# 2.98.35: the same as the web page /servo (539) in the window. The settings section sits in «Cameras & head» after
+#   «Automatic head movement» (web GROUPS in 530, window TK_GROUPS here).
+# ----------------------------------------------------------------------------
+_SVS = "Servo motion & safety"
+SLIDERS.extend([
+    (_SVS, "servo_vmax_pan", "Pan: max. speed (°/s)", 10, 400, 5),
+    (_SVS, "servo_acc_pan", "Pan: acceleration and braking (°/s²)", 50, 2000, 10),
+    (_SVS, "servo_vmax_tilt", "Tilt: max. speed (°/s)", 10, 400, 5),
+    (_SVS, "servo_acc_tilt", "Tilt: acceleration and braking (°/s²)", 50, 2000, 10),
+    (_SVS, "servo_wd_s", "Watchdog: stop the servos when the camera loop hangs longer than (s)", 3, 60, 1),
+    (_SVS, "servo_service_h", "Maintenance hint after (hours of movement per servo)", 10, 1000, 10),
+])
+TOGGLES.extend([
+    (_SVS, "servo_estop_park", "Emergency stop: brake, then drive slowly to the parking position (otherwise: hold where it stopped)"),
+    (_SVS, "servo_uv_stop", "Under-voltage: stop the servos (they move again by themselves 30 s after it is over)"),
+])
+TEXTS.extend([
+    (_KS, "kopf_park_point", "Parking position: a taught point (instead of pan / tilt above)", "enum", "kopf_park_point"),
+    (_KS, "kopf_home_point", "Home position: a taught point (the head comes back there)", "enum", "kopf_home_point"),
+])
+for _k in ("kopf_park_point", "kopf_home_point"):
+    TEXT_SPECS[_k] = ("enum", _k)
+SECTIONS.append(_SVS)
+for _g in TK_GROUPS:
+    if _g[0] == "camera" and _SVS not in _g[2]:
+        _g[2].insert(_g[2].index(_KS) + 1 if _KS in _g[2] else 1, _SVS)
+TK_SUB_ICONS[_SVS] = "⛔"
+SIMPLE_IN_USE[_SVS] = lambda: live_has_head()
+
+_text_choice_pairs_servo_base = text_choice_pairs
+
+
+# wraps: text_choice_pairs
+def text_choice_pairs(key):                                 # + 2.98.35: taught points as parking / home position (076)
+    if key in ("kopf_park_point", "kopf_home_point"):
+        out = teach_choice_pairs()
+        cur = str(CFG.get(key) or "")
+        if cur and cur not in [p[0] for p in out]:
+            out.append((cur, cur))
+        return out
+    return _text_choice_pairs_servo_base(key)
+
+
+def servo_tk_line(app):
+    """one line for the camera controls of the window: stopped / who steers; a notice when another panel takes the head"""
+    if servo_blocked():
+        return ("⛔ " + tr("EMERGENCY STOP") + " – " + trf("pressed by {who}", who=CFG.get("servo_estop_by") or "?")) if servo_blocked() == "estop" else "⚠ " + servo_blocked_text()
+    d = servo_driver()
+    n_old = getattr(app, "_srv_n", None); app._srv_n = d.get("n")
+    if n_old is not None and d.get("n") != n_old and d.get("kind") == "manual" and d.get("key") != "window":
+        app._srv_note = (time.time() + 5.0, "🎮 " + trf("Now steered by {who}", who=d["label"]))
+    nt = getattr(app, "_srv_note", None)
+    if nt and time.time() < nt[0]:
+        return nt[1]
+    if d.get("kind") == "manual" and d.get("key") != "window":
+        return "🎮 " + trf("The head is steered by: {who}", who=d["label"])
+    return ""
+
+
+def _app_srv_estop_btn(self):
+    """the red button of the camera controls: stop - or, while stopped, release (with a question)"""
+    if servo_blocked() in ("estop", "fault"):
+        if messagebox.askyesno("MoveEye", tr("Release the servos? The head may move again (also by itself)."), parent=self.root):
+            ok, err = servo_release(("window", tr("Window") + " (" + tr("this computer") + ")"))
+            if not ok:
+                messagebox.showinfo("MoveEye", tr(err), parent=self.root)
+    else:
+        servo_estop(("window", tr("Window") + " (" + tr("this computer") + ")"))
+
+
+def _app_srv_win(self, page="teach"):
+    win = getattr(self, "_srv_w", None)
+    try:
+        if win is not None and win.winfo_exists():
+            win.lift(); return
+    except Exception:
+        pass
+    who = ("window", tr("Window") + " (" + tr("this computer") + ")")
+    win = tk.Toplevel(self.root); self._srv_w = win
+    win.title("MoveEye – " + tr("Servos: safety, positions, diagnosis")); win.geometry("720x820")
+    top = ttk.Frame(win); top.pack(fill="x", padx=12, pady=(10, 4))
+    st = tk.Label(top, text="", font=("DejaVu Sans", 13, "bold"), anchor="w", justify="left", wraplength=680, padx=8, pady=6)
+    st.pack(fill="x")
+    drv = ttk.Label(top, text="", style="Mut.TLabel", wraplength=680, justify="left"); drv.pack(anchor="w", pady=(4, 0))
+    bf = ttk.Frame(top); bf.pack(fill="x", pady=(6, 0))
+    b_stop = tk.Button(bf, text="⏹ " + tr("Emergency stop"), bg="#d1242f", fg="#ffffff", activebackground="#a40e26", font=("DejaVu Sans", 13, "bold"),
+                       command=lambda: (servo_estop(who), refresh()))
+    b_stop.pack(side="left", expand=True, fill="x", padx=(0, 6))
+
+    def rel():
+        if messagebox.askyesno("MoveEye", tr("Release the servos? The head may move again (also by itself)."), parent=win):
+            ok, err = servo_release(who)
+            if not ok:
+                messagebox.showinfo("MoveEye", tr(err), parent=win)
+        refresh()
+    b_rel = tk.Button(bf, text="✅ " + tr("Release"), bg="#2ea043", fg="#ffffff", font=("DejaVu Sans", 13, "bold"), command=rel)
+    # drive: arrows + step
+    pf = ttk.Frame(top); pf.pack(fill="x", pady=(8, 0))
+    v_step = tk.StringVar(win, "3")
+    for txt, cmd in (("◀", "left"), ("▲", "up"), ("▼", "down"), ("▶", "right"), ("◎", "center")):
+        ttk.Button(pf, text=txt, width=4, command=lambda c=cmd: move_camera(c, float(v_step.get() or 3), who)).pack(side="left", padx=(0, 4))
+    ttk.Label(pf, text=tr("Step")).pack(side="left", padx=(8, 4))
+    ttk.Combobox(pf, textvariable=v_step, values=("0.5", "1", "3", "10"), width=5, state="readonly").pack(side="left")
+    pos = ttk.Label(pf, text=""); pos.pack(side="left", padx=(10, 0))
+    nb = ttk.Notebook(win); nb.pack(fill="both", expand=True, padx=12, pady=(6, 10))
+    # ---- positions (teach-in) ----
+    tp = ttk.Frame(nb); nb.add(tp, text="📍 " + tr("Positions"))
+    ttk.Label(tp, text=tr("teach-note"), style="Mut.TLabel", wraplength=660, justify="left").pack(anchor="w", pady=(6, 4))
+    af = ttk.Frame(tp); af.pack(fill="x")
+    v_name = tk.StringVar(win, "")
+    ttk.Entry(af, textvariable=v_name).pack(side="left", fill="x", expand=True, padx=(0, 6))
+
+    def add():
+        ok, err, _i = teach_add(v_name.get(), "window")
+        if not ok:
+            messagebox.showinfo("MoveEye", tr(err), parent=win)
+        v_name.set(""); refresh(True)
+    ttk.Button(af, text="📍 " + tr("Save position"), command=add).pack(side="left")
+    cols = ("n", "name", "pan", "tilt", "flags")
+    tv = ttk.Treeview(tp, columns=cols, show="headings", height=10, selectmode="browse")
+    for c, w_, lab in (("n", 40, "#"), ("name", 220, tr("Name")), ("pan", 80, tr("Pan") + " °"), ("tilt", 80, tr("Tilt") + " °"), ("flags", 200, "")):
+        tv.heading(c, text=lab); tv.column(c, width=w_, anchor="w")
+    tv.pack(fill="both", expand=True, pady=(6, 4))
+
+    def sel():
+        s = tv.selection()
+        return int(s[0]) if s else None
+
+    def ed(op_, val=None):
+        i = sel()
+        if i is None:
+            return
+        ok, err = teach_edit(op_, i, val, "window")
+        if not ok:
+            messagebox.showinfo("MoveEye", tr(err), parent=win)
+        refresh(True, i - 1 if op_ == "up" else i + 1 if op_ == "down" else i)
+
+    def go():
+        i = sel()
+        if i is not None:
+            ok, err = teach_goto(i, who)
+            if not ok and err:
+                messagebox.showinfo("MoveEye", tr(err), parent=win)
+
+    def ren():
+        i = sel()
+        if i is None:
+            return
+        from tkinter import simpledialog
+        v = simpledialog.askstring("MoveEye", tr("New name"), initialvalue=wp_name(WAYPOINTS[i]), parent=win)
+        if v is not None:
+            ed("rename", v)
+    tb = ttk.Frame(tp); tb.pack(fill="x")
+    for txt, f in (("▶ " + tr("Go"), go), ("✏️ " + tr("Rename"), ren), ("⤓ " + tr("Here"), lambda: ed("update")),
+                   ("▲", lambda: ed("up")), ("▼", lambda: ed("down")),
+                   ("🔄 " + tr("in the round"), lambda: ed("patrol", not wp_patrol(WAYPOINTS[sel()])) if sel() is not None else None),
+                   ("🅿", lambda: ed("park")), ("🏠", lambda: ed("home")),
+                   ("🗑", lambda: ed("delete") if sel() is not None and messagebox.askyesno("MoveEye", tr("Delete this position?"), parent=win) else None)):
+        ttk.Button(tb, text=txt, command=f).pack(side="left", padx=(0, 4), pady=(0, 4))
+    ttk.Button(tp, text="📍 " + tr("Take over from «Set up the place»"), command=lambda: (teach_from_place("window"), refresh(True))).pack(anchor="w", pady=(4, 0))
+    # ---- diagnosis ----
+    dp = ttk.Frame(nb); nb.add(dp, text="🩺 " + tr("Diagnosis"))
+    txt = tk.Text(dp, height=24, wrap="word", font=("DejaVu Sans Mono", 9)); txt.pack(fill="both", expand=True, pady=(6, 4))
+    db = ttk.Frame(dp); db.pack(fill="x")
+
+    def export(fmt):
+        from tkinter import filedialog
+        data, _mt, fn = servo_diag_export(fmt)
+        p = filedialog.asksaveasfilename(parent=win, initialfile=fn, defaultextension="." + fmt, filetypes=[(fmt.upper(), "*." + fmt)])
+        if p:
+            try:
+                with open(p, "wb") as f:
+                    f.write(data)
+            except OSError as e:
+                messagebox.showinfo("MoveEye", str(e), parent=win)
+    ttk.Button(db, text="⬇ JSON", command=lambda: export("json")).pack(side="left", padx=(0, 4))
+    ttk.Button(db, text="⬇ CSV", command=lambda: export("csv")).pack(side="left", padx=(0, 4))
+    ttk.Button(db, text="🔧 " + tr("Maintenance done"), command=lambda: (servo_diag_service_done("", "window"), refresh(True))
+               if messagebox.askyesno("MoveEye", tr("Maintenance of both servos done? The maintenance counters start again."), parent=win) else None).pack(side="left", padx=(0, 4))
+    ttk.Button(db, text="🗑 " + tr("Clear fault memory"), command=lambda: (servo_diag_clear_faults("window"), refresh(True))
+               if messagebox.askyesno("MoveEye", tr("Clear the fault memory?"), parent=win) else None).pack(side="left")
+    S = {"sig": None, "dsig": None}
+
+    def diag_text():
+        D = servo_diag_state()
+        out = []
+        for h in D["hints"]:
+            out.append(("⚠ " if h["level"] == "warn" else "ℹ ") + h["text"])
+        if not D["hints"]:
+            out.append("✅ " + tr("No maintenance hints."))
+        for k, nm in (("hw", "Real servos"), ("sim", "Simulation")):
+            b = D[k]
+            out += ["", f"{tr(nm)} · {trf('{h} h switched on', h=b['on_h'])}" + (f" · ⚡ {trf('{n} min with under-voltage', n=b['uv_min'])}" if b["uv_min"] else "")]
+            for ax, an in (("pan", "Pan"), ("tilt", "Tilt")):
+                a = b["axes"][ax]
+                out.append(f"  {tr(an):8} {a['deg']:>8}° ({a['turns']} {tr('turns')}) · {a['move_h']} h {tr('moving')} · {a['moves']} {tr('moves')}"
+                           + (f" · {tr('since maintenance')}: {a['service_h']} / {D['service_h']:.0f} h" if k == "hw" else ""))
+        out += ["", tr("Fault memory") + f" ({D['n_faults']}):"]
+        for f in D["faults"]:
+            out.append(f"  {'⛔' if f['level'] == 'error' else '⚠' if f['level'] == 'warn' else 'ℹ'} {datetime.fromtimestamp(f['last']).strftime('%d.%m. %H:%M')} "
+                       f"{f['what']}{' ×' + str(f['n']) if f['n'] > 1 else ''}{' · ' + tr('simulation') if f['sim'] else ''}{' – ' + f['text'] if f['text'] else ''}")
+        if not D["faults"]:
+            out.append("  " + tr("The fault memory is empty."))
+        return "\n".join(out)
+
+    def refresh(force=False, select=None):
+        try:
+            if not win.winfo_exists():
+                return
+        except Exception:
+            return
+        b = servo_blocked()
+        if b:
+            st.config(text=("⛔ " + tr("EMERGENCY STOP") + " – " + trf("pressed by {who}", who=CFG.get("servo_estop_by") or "?")) if b == "estop" else "⚠ " + servo_blocked_text(),
+                      bg="#5c1515", fg="#ffffff")
+        else:
+            st.config(text="✅ " + tr("Ready - the servos may move"), bg="#16361f", fg="#ffffff")
+        if b in ("estop", "fault"):
+            b_rel.pack(side="left", expand=True, fill="x")
+        else:
+            b_rel.pack_forget()
+        b_stop.config(state="disabled" if b == "estop" else "normal")
+        d = servo_driver()
+        drv.config(text=("🎮 " + trf("The head is steered by: {who}", who=d["label"]) + (" (" + tr("you") + ")" if d["key"] == "window" else "")) if d["kind"] == "manual"
+                   else ("🤖 " + trf("The head moves by itself: {what}", what=d["label"])) if d["kind"] == "auto" else "")
+        pd, td = servo_pos_deg()
+        pos.config(text=trf("Pan {p}° · tilt {t}°", p=f"{pd:.1f}", t=f"{td:.1f}"))
+        L = teach_list()
+        sig = json.dumps(L)
+        if force or sig != S["sig"]:
+            S["sig"] = sig
+            keep = sel() if select is None else select
+            tv.delete(*tv.get_children())
+            for p in L:
+                fl = " ".join(x for x, on in (("🔄", p["patrol"]), ("🅿", p["park"]), ("🏠", p["home"])) if on)
+                tv.insert("", "end", iid=str(p["i"]), values=(p["i"] + 1, p["name"] or (tr("Waypoint") + f" {p['i'] + 1}"), p["deg"][0], p["deg"][1], fl))
+            if keep is not None and 0 <= keep < len(L):
+                tv.selection_set(str(keep))
+        if nb.index("current") == 1:
+            dt_ = diag_text()
+            if force or dt_ != S["dsig"]:
+                S["dsig"] = dt_
+                txt.config(state="normal"); txt.delete("1.0", "end"); txt.insert("1.0", dt_); txt.config(state="disabled")
+
+    def loop():
+        try:
+            if not win.winfo_exists():
+                return
+            refresh()
+        except Exception:
+            return
+        win.after(1000, loop)
+    nb.bind("<<NotebookTabChanged>>", lambda e: S.update(dsig=None))
+    if page == "diag":
+        nb.select(1)
+    refresh(True); win.after(1000, loop)
+
+
+_qr_tk_build_section_servo_base = App._build_section
+
+
+def _servo_tk_build_section(self, sec, sbody, settings_parent=None):
+    _qr_tk_build_section_servo_base(self, sec, sbody, settings_parent)
+    if sec == _SVS:
+        try:
+            bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(6, 0))
+            ttk.Button(bf, text="📍 " + tr("Positions") + " …", command=lambda: self._srv_win("teach")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+            ttk.Button(bf, text="🩺 " + tr("Diagnosis") + " …", command=lambda: self._srv_win("diag")).pack(side="left", expand=True, fill="x")
+        except Exception as e:
+            log_event("sys", f"Window: servo buttons: {e}"[:160])
+
+
+# wraps: App._build_section
+App._build_section = _servo_tk_build_section
+App._srv_win = _app_srv_win
+App._srv_estop_btn = _app_srv_estop_btn
+
+
+def servo_web_selftest():
+    """the page renders, the JS of the live page is filled in, the API ops are known"""
+    assert "/servo#diag" in TOOLS_PAGE and "servoPaint" in WEB_PAGE and "<!--SERVOJS-->" not in WEB_PAGE
+    html = servo_page()
+    assert "/*SERVODE*/" not in html and "sv-estop" in html
+    assert servo_api_op({"op": "nonsense"}, ("k", "x"), True)[1] == 400 and servo_api_op({"op": "release"}, ("k", "x"), False)[1] == 403
+    return "page /servo, live page script, Tools entry"
+
+
+SELFTEST_EXTRA.append(("Servo motion planner (ramps, limits)", servo_planner_selftest))
+SELFTEST_EXTRA.append(("Servo fault memory and maintenance hints", servo_diag_selftest))
+SELFTEST_EXTRA.append(("Taught points (teach-in)", teach_selftest))
+SELFTEST_EXTRA.append(("Servo page and Not-Aus on the live page", servo_web_selftest))
 TRX['it'].update({
     '(or the address from the push message).': "(o l'indirizzo della notifica push).",
     '+ Add relay': '+ Aggiungere un relè',
@@ -75206,6 +76999,161 @@ if _hp_en2 > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_guide2(HELP_X[_L], _L)
+_HX_SERVO = {
+    'Servo motion & safety': ('Servo-Bewegung & Sicherheit', 'Mouvement des servos & sécurité', 'Movimento dei servo & sicurezza', 'Moviment dals servos & segirezza'),
+    'Servos: safety, positions, diagnosis': ('Servos: Sicherheit, Positionen, Diagnose', 'Servos : sécurité, positions, diagnostic', 'Servo: sicurezza, posizioni, diagnosi', 'Servos: segirezza, posiziuns, diagnosa'),
+    'Servos': ('Servos', 'Servos', 'Servo', 'Servos'),
+    'Positions': ('Positionen', 'Positions', 'Posizioni', 'Posiziuns'),
+    'Diagnosis': ('Diagnose', 'Diagnostic', 'Diagnosi', 'Diagnosa'),
+    'Emergency stop': ('Not-Aus', 'Arrêt d’urgence', 'Arresto d’emergenza', 'Stop d’urgenza'),
+    'EMERGENCY STOP': ('NOT-AUS', 'ARRÊT D’URGENCE', 'ARRESTO D’EMERGENZA', 'STOP D’URGENZA'),
+    'Release': ('Freigeben', 'Libérer', 'Sbloccare', 'Liberar'),
+    'Stop': ('Stopp', 'Stop', 'Stop', 'Stop'),
+    'Step': ('Schritt', 'Pas', 'Passo', 'Pass'),
+    'teach-note': ('Teach-in: den Kopf mit den Pfeilen oder dem Joystick genau ausrichten, einen Namen eingeben («Zelt», «Eingang» …) und speichern. «▶ Anfahren» fährt genau dorthin (mit Rampe). Punkte mit 🔄 gehören zur Runde (Patrouille), 🅿 = Parkposition, 🏠 = Grundstellung.',
+                   'Apprentissage : orienter la tête avec les flèches ou le joystick, entrer un nom (« Tente », « Entrée » …) et enregistrer. « ▶ Aller » y va exactement (avec rampe). Les points 🔄 font partie de la ronde, 🅿 = position de parcage, 🏠 = position de base.',
+                   'Teach-in: orientare la testa con le frecce o il joystick, inserire un nome («Tenda», «Ingresso» …) e salvare. «▶ Vai» ci va esattamente (con rampa). I punti 🔄 fanno parte del giro, 🅿 = posizione di parcheggio, 🏠 = posizione base.',
+                   'Teach-in: drizzar il chau cun las frizzas u il joystick, endatar in num («Tenda», «Entrada» …) e memorisar. «▶ Ir» va exactamain là (cun rampa). Ils puncts 🔄 tutgan tar la runda, 🅿 = posiziun da parcar, 🏠 = posiziun da basa.'),
+    'Name, e.g. «Tent» or «Entrance»': ('Name, z. B. «Zelt» oder «Eingang»', 'Nom, p. ex. « Tente » ou « Entrée »', 'Nome, p. es. «Tenda» o «Ingresso»', 'Num, p. ex. «Tenda» u «Entrada»'),
+    'Save position': ('Position speichern', 'Enregistrer la position', 'Salvare la posizione', 'Memorisar la posiziun'),
+    'Take over from «Set up the place»': ('Aus «Platz einrichten» übernehmen', 'Reprendre de « Configurer l’emplacement »', 'Riprendere da «Configurare il posto»', 'Surpigliar da «Endrizzar il plaz»'),
+    'Counters': ('Zähler', 'Compteurs', 'Contatori', 'Quintaders'),
+    'Maintenance done': ('Wartung erledigt', 'Entretien fait', 'Manutenzione fatta', 'Mantegniment fatg'),
+    'Fault memory': ('Fehlerspeicher', 'Mémoire des défauts', 'Memoria errori', 'Memoria da sbagls'),
+    'Clear fault memory': ('Fehlerspeicher löschen', 'Effacer la mémoire des défauts', 'Cancellare la memoria errori', 'Stizzar la memoria da sbagls'),
+    'Ready - the servos may move': ('Bereit – die Servos dürfen sich bewegen', 'Prêt – les servos peuvent bouger', 'Pronto – i servo possono muoversi', 'Pront – ils servos dastgan sa mover'),
+    'pressed by {who}': ('gedrückt von {who}', 'pressé par {who}', 'premuto da {who}', 'smatgà da {who}'),
+    'Emergency stop - press «Release» to move again': ('Not-Aus – «Freigeben» drücken, damit sich der Kopf wieder bewegt', 'Arrêt d’urgence – appuyer sur « Libérer » pour bouger à nouveau', 'Arresto d’emergenza – premere «Sbloccare» per muoversi di nuovo', 'Stop d’urgenza – smatgar «Liberar» per sa mover puspè'),
+    'Pan {p}° · tilt {t}°': ('Schwenken {p}° · Neigen {t}°', 'Pan {p}° · inclinaison {t}°', 'Pan {p}° · inclinazione {t}°', 'Sviar {p}° · inclinar {t}°'),
+    'moving': ('fährt', 'en mouvement', 'in movimento', 'en moviment'),
+    'The head is steered by: {who}': ('Kopf wird gesteuert von: {who}', 'La tête est pilotée par : {who}', 'La testa è guidata da: {who}', 'Il chau vegn manà da: {who}'),
+    'Now steered by {who}': ('Jetzt gesteuert von {who}', 'Maintenant piloté par {who}', 'Ora guidata da {who}', 'Ussa manà da {who}'),
+    'you': ('du', 'vous', 'tu', 'ti'),
+    'The head moves by itself: {what}': ('Der Kopf bewegt sich selbst: {what}', 'La tête bouge seule : {what}', 'La testa si muove da sola: {what}', 'Il chau sa mova sez: {what}'),
+    'No positions yet: drive the head with the arrows or the joystick and save.': ('Noch keine Positionen: den Kopf mit den Pfeilen oder dem Joystick hinfahren und speichern.', 'Pas encore de positions : déplacer la tête avec les flèches ou le joystick et enregistrer.', 'Ancora nessuna posizione: muovere la testa con le frecce o il joystick e salvare.', 'Anc naginas posiziuns: mover il chau cun las frizzas u il joystick e memorisar.'),
+    'in the round': ('in der Runde', 'dans la ronde', 'nel giro', 'en la runda'),
+    'parking': ('Parken', 'parcage', 'parcheggio', 'parcar'),
+    'home': ('Grundstellung', 'position de base', 'posizione base', 'posiziun da basa'),
+    'Go': ('Anfahren', 'Aller', 'Vai', 'Ir'),
+    'Rename': ('Umbenennen', 'Renommer', 'Rinominare', 'Renumnar'),
+    'New name': ('Neuer Name', 'Nouveau nom', 'Nuovo nome', 'Num nov'),
+    'Here': ('Hier', 'Ici', 'Qui', 'Qua'),
+    'Store the position of now in this point?': ('Die jetzige Position in diesem Punkt speichern?', 'Enregistrer la position actuelle dans ce point ?', 'Salvare la posizione attuale in questo punto?', 'Memorisar la posiziun actuala en quest punct?'),
+    'Parking position': ('Parkposition', 'Position de parcage', 'Posizione di parcheggio', 'Posiziun da parcar'),
+    'Home position': ('Grundstellung', 'Position de base', 'Posizione base', 'Posiziun da basa'),
+    'Delete this position?': ('Diese Position löschen?', 'Supprimer cette position ?', 'Eliminare questa posizione?', 'Stizzar questa posiziun?'),
+    'No maintenance hints.': ('Keine Wartungshinweise.', 'Aucune indication d’entretien.', 'Nessuna indicazione di manutenzione.', 'Nagins avis da mantegniment.'),
+    'Real servos': ('Echte Servos', 'Servos réels', 'Servo reali', 'Servos vairs'),
+    'Simulation': ('Simulation', 'Simulation', 'Simulazione', 'Simulaziun'),
+    'simulation': ('Simulation', 'simulation', 'simulazione', 'simulaziun'),
+    '{h} h switched on': ('{h} h eingeschaltet', '{h} h allumé', '{h} h acceso', '{h} h enturn'),
+    'Pan': ('Schwenken', 'Pan', 'Pan', 'Sviar'),
+    'Tilt': ('Neigen', 'Inclinaison', 'Inclinazione', 'Inclinar'),
+    'travelled': ('gefahren', 'parcouru', 'percorso', 'fatg'),
+    'turns': ('Umdrehungen', 'tours', 'giri', 'rotaziuns'),
+    'moves': ('Bewegungen', 'mouvements', 'movimenti', 'moviments'),
+    'since maintenance': ('seit der Wartung', 'depuis l’entretien', 'dalla manutenzione', 'dapi il mantegniment'),
+    '{n} min with under-voltage': ('{n} min mit Unterspannung', '{n} min en sous-tension', '{n} min con sottotensione', '{n} min cun sutatensiun'),
+    'The fault memory is empty.': ('Der Fehlerspeicher ist leer.', 'La mémoire des défauts est vide.', 'La memoria errori è vuota.', 'La memoria da sbagls è vida.'),
+    'Release the servos? The head may move again (also by itself).': ('Servos freigeben? Der Kopf darf sich wieder bewegen (auch von selbst).', 'Libérer les servos ? La tête peut bouger à nouveau (aussi toute seule).', 'Sbloccare i servo? La testa può muoversi di nuovo (anche da sola).', 'Liberar ils servos? Il chau dastga puspè sa mover (er sez).'),
+    'Position saved': ('Position gespeichert', 'Position enregistrée', 'Posizione salvata', 'Posiziun memorisada'),
+    '{n} positions taken over': ('{n} Positionen übernommen', '{n} positions reprises', '{n} posizioni riprese', '{n} posiziuns surpigliadas'),
+    'Maintenance of both servos done? The maintenance counters start again.': ('Wartung beider Servos erledigt? Die Wartungszähler beginnen von vorn.', 'Entretien des deux servos fait ? Les compteurs recommencent.', 'Manutenzione di entrambi i servo fatta? I contatori ripartono.', 'Mantegniment dals dus servos fatg? Ils quintaders cumenzan da nov.'),
+    'Clear the fault memory?': ('Fehlerspeicher löschen?', 'Effacer la mémoire des défauts ?', 'Cancellare la memoria errori?', 'Stizzar la memoria da sbagls?'),
+    'Servo diagnosis': ('Servo-Diagnose', 'Diagnostic des servos', 'Diagnosi dei servo', 'Diagnosa dals servos'),
+    'Fault memory, hours, maintenance, Not-Aus': ('Fehlerspeicher, Stunden, Wartung, Not-Aus', 'Défauts, heures, entretien, arrêt d’urgence', 'Errori, ore, manutenzione, arresto d’emergenza', 'Sbagls, uras, mantegniment, stop d’urgenza'),
+    'Browser': ('Browser', 'Navigateur', 'Browser', 'Browser'),
+    'this computer': ('dieser Computer', 'cet ordinateur', 'questo computer', 'quest computer'),
+    'Window': ('Fenster', 'Fenêtre', 'Finestra', 'Fanestra'),
+    'Point': ('Punkt', 'Point', 'Punto', 'Punct'),
+    'Name': ('Name', 'Nom', 'Nome', 'Num'),
+    'Waypoint': ('Wegpunkt', 'Point de passage', 'Punto di passaggio', 'Punct da via'),
+    # 072: states, faults
+    'Servo fault': ('Servo-Störung', 'Défaut servo', 'Guasto servo', 'Disfunziun dal servo'),
+    'press «Release» after checking': ('nach der Kontrolle «Freigeben» drücken', 'appuyer sur « Libérer » après contrôle', 'premere «Sbloccare» dopo il controllo', 'smatgar «Liberar» suenter la controlla'),
+    'Servos stopped': ('Servos gestoppt', 'Servos arrêtés', 'Servo fermati', 'Servos fermads'),
+    'moves again by itself': ('bewegt sich wieder von selbst', 'repart tout seul', 'riparte da solo', 'sa mova puspè sez'),
+    'I2C errors - the servo driver does not answer': ('I2C-Fehler – der Servo-Treiber antwortet nicht', 'Erreurs I2C – le pilote des servos ne répond pas', 'Errori I2C – il driver dei servo non risponde', 'Sbagls I2C – il driver dals servos na respunda betg'),
+    'the PCA9685 lost its settings (brown-out or reset)': ('der PCA9685 hat seine Einstellungen verloren (Spannungseinbruch oder Reset)', 'le PCA9685 a perdu ses réglages (chute de tension ou reset)', 'il PCA9685 ha perso le impostazioni (calo di tensione o reset)', 'il PCA9685 ha pers ses parameters (crudada da tensiun u reset)'),
+    'under-voltage of the power supply': ('Unterspannung der Stromversorgung', 'sous-tension de l’alimentation', 'sottotensione dell’alimentazione', 'sutatensiun da l’alimentaziun'),
+    'the camera loop hangs (watchdog)': ('die Kamera-Schleife hängt (Watchdog)', 'la boucle caméra est bloquée (watchdog)', 'il ciclo della telecamera è bloccato (watchdog)', 'la bucla da la camera penda (watchdog)'),
+    'the servo loop hung (watchdog)': ('die Servo-Schleife hing (Watchdog)', 'la boucle des servos était bloquée (watchdog)', 'il ciclo dei servo era bloccato (watchdog)', 'la bucla dals servos pendeva (watchdog)'),
+    'emergency stop': ('Not-Aus', 'arrêt d’urgence', 'arresto d’emergenza', 'stop d’urgenza'),
+    'released': ('freigegeben', 'libéré', 'sbloccato', 'liberà'),
+    'software limit reached': ('Software-Grenze erreicht', 'limite logicielle atteinte', 'limite software raggiunto', 'limita da software cuntanschida'),
+    'high temperature of the Pi': ('hohe Temperatur des Pi', 'température élevée du Pi', 'temperatura alta del Pi', 'temperatura auta dal Pi'),
+    'the Pi slows down (throttled)': ('der Pi bremst sich (gedrosselt)', 'le Pi ralentit (bridé)', 'il Pi rallenta (limitato)', 'il Pi franescha (limità)'),
+    'no servo driver found': ('kein Servo-Treiber gefunden', 'aucun pilote de servo trouvé', 'nessun driver servo trovato', 'nagin driver da servo chattà'),
+    'under-voltage is still there - check the power supply first': ('die Unterspannung ist noch da – zuerst die Stromversorgung prüfen', 'la sous-tension est toujours là – vérifier d’abord l’alimentation', 'la sottotensione c’è ancora – controllare prima l’alimentazione', 'la sutatensiun è anc qua – l’emprim controllar l’alimentaziun'),
+    'limit': ('Grenze', 'limite', 'limite', 'limita'),
+    'by hand / tool': ('von Hand / Werkzeug', 'à la main / outil', 'a mano / strumento', 'a maun / utensil'),
+    'alarm / follow': ('Alarm / Folgen', 'alarme / suivre', 'allarme / seguire', 'alarm / suandar'),
+    'walk test': ('Gehtest', 'test de marche', 'test di camminata', 'test da chaminar'),
+    'round (patrol)': ('Runde (Patrouille)', 'ronde (patrouille)', 'giro (pattuglia)', 'runda (patruglia)'),
+    'paused (servos stopped)': ('Pause (Servos gestoppt)', 'pause (servos arrêtés)', 'pausa (servo fermati)', 'pausa (servos fermads)'),
+    'at most 50 points': ('höchstens 50 Punkte', '50 points au maximum', 'al massimo 50 punti', 'maximalmain 50 puncts'),
+    'no such point': ('diesen Punkt gibt es nicht', 'ce point n’existe pas', 'questo punto non esiste', 'quest punct n’exista betg'),
+    'already at the end': ('schon am Ende', 'déjà au bout', 'già alla fine', 'gia a la fin'),
+    'interrupted': ('unterbrochen', 'interrompu', 'interrotto', 'interrut'),
+    'only in the simulation': ('nur in der Simulation', 'seulement en simulation', 'solo nella simulazione', 'mo en la simulaziun'),
+    # 074: maintenance hints
+    'Pan servo': ('Schwenk-Servo', 'Servo pan', 'Servo pan', 'Servo da sviar'),
+    'Tilt servo': ('Neige-Servo', 'Servo d’inclinaison', 'Servo di inclinazione', 'Servo d’inclinar'),
+    '{axis} (MG90S): {h} h moved since the last check - check it now: play in the gears, noise, does it hold the position?': (
+        '{axis} (MG90S): {h} h bewegt seit der letzten Kontrolle – jetzt prüfen: Spiel im Getriebe, Geräusch, hält er die Position?',
+        '{axis} (MG90S) : {h} h de mouvement depuis le dernier contrôle – vérifier maintenant : jeu dans les engrenages, bruit, tient-il la position ?',
+        '{axis} (MG90S): {h} h di movimento dall’ultimo controllo – controllare ora: gioco negli ingranaggi, rumore, tiene la posizione?',
+        '{axis} (MG90S): {h} h movì dapi l’ultima controlla – ussa controllar: gieu en las rodas, canera, tegna el la posiziun?'),
+    '{axis} (MG90S): {h} h moved - check after about {lim} h (play, noise).': (
+        '{axis} (MG90S): {h} h bewegt – nach etwa {lim} h prüfen (Spiel, Geräusch).', '{axis} (MG90S) : {h} h de mouvement – vérifier après environ {lim} h (jeu, bruit).',
+        '{axis} (MG90S): {h} h di movimento – controllare dopo circa {lim} h (gioco, rumore).', '{axis} (MG90S): {h} h movì – controllar suenter var {lim} h (gieu, canera).'),
+    'Under-voltage / brown-out: give the servos their own 5 V supply (BEC, at least 2 A), put a 470–1000 µF capacitor at V+ of the PCA9685 and use a short, thick cable.': (
+        'Unterspannung / Spannungseinbruch: den Servos eine eigene 5-V-Versorgung geben (BEC, mindestens 2 A), einen Kondensator 470–1000 µF an V+ des PCA9685 und ein kurzes, dickes Kabel.',
+        'Sous-tension / chute de tension : une alimentation 5 V séparée pour les servos (BEC, au moins 2 A), un condensateur de 470–1000 µF sur V+ du PCA9685 et un câble court et épais.',
+        'Sottotensione / calo di tensione: un’alimentazione 5 V separata per i servo (BEC, almeno 2 A), un condensatore da 470–1000 µF su V+ del PCA9685 e un cavo corto e spesso.',
+        'Sutatensiun / crudada da tensiun: dar als servos in’atgna alimentaziun da 5 V (BEC, almain 2 A), in condensatur da 470–1000 µF a V+ dal PCA9685 ed in cabel curt e gross.'),
+    'I2C errors: check the 4 wires to the PCA9685 (short, firmly plugged), the address 0x41 and that I2C is on (raspi-config).': (
+        'I2C-Fehler: die 4 Drähte zum PCA9685 prüfen (kurz, fest gesteckt), die Adresse 0x41 und ob I2C eingeschaltet ist (raspi-config).',
+        'Erreurs I2C : vérifier les 4 fils vers le PCA9685 (courts, bien branchés), l’adresse 0x41 et que l’I2C est activé (raspi-config).',
+        'Errori I2C: controllare i 4 fili verso il PCA9685 (corti, ben inseriti), l’indirizzo 0x41 e che l’I2C sia attivo (raspi-config).',
+        'Sbagls I2C: controllar ils 4 fils al PCA9685 (curts, ferm enfilads), l’adressa 0x41 e sch’I2C è activà (raspi-config).'),
+    'The head often runs into the software limit: widen the limit (Camera / Servos) or move the taught points a little inwards.': (
+        'Der Kopf läuft oft an die Software-Grenze: die Grenze weiter stellen (Kamera / Servos) oder die gespeicherten Punkte etwas nach innen legen.',
+        'La tête bute souvent sur la limite logicielle : élargir la limite (Caméra / Servos) ou déplacer un peu les points vers l’intérieur.',
+        'La testa arriva spesso al limite software: allargare il limite (Telecamera / Servo) o spostare un po’ i punti verso l’interno.',
+        'Il chau va savens a la limita da software: metter la limita pli lada (Camera / Servos) u spustar ils puncts in pau vers en.'),
+    'The Pi gets hot or slows down: shade, air holes in the housing, a heat sink.': (
+        'Der Pi wird heiss oder bremst sich: Schatten, Luftlöcher im Gehäuse, ein Kühlkörper.', 'Le Pi chauffe ou ralentit : ombre, trous d’aération dans le boîtier, un dissipateur.',
+        'Il Pi si scalda o rallenta: ombra, fori di aerazione nell’involucro, un dissipatore.', 'Il Pi vegn chaud u franescha: sumbriva, foras d’aria en la chascha, in dissipatur.'),
+    'The watchdog stopped the servos: the computer was too busy - see the log; fewer AI pictures or the AI helper on the PC help.': (
+        'Der Watchdog hat die Servos gestoppt: der Computer war zu beschäftigt – siehe Protokoll; weniger KI-Bilder oder die KI-Rechenhilfe auf dem PC helfen.',
+        'Le watchdog a arrêté les servos : l’ordinateur était trop occupé – voir le journal ; moins d’images IA ou l’aide IA sur le PC aident.',
+        'Il watchdog ha fermato i servo: il computer era troppo occupato – vedi il protocollo; meno immagini IA o l’aiuto IA sul PC aiutano.',
+        'Il watchdog ha fermà ils servos: il computer era memia occupà – guarda il protocol; damain maletgs IA u l’agid IA sin il PC gidan.'),
+    'Only the simulation so far - the counters of the real servos start with the hardware.': (
+        'Bisher nur die Simulation – die Zähler der echten Servos beginnen mit der Hardware.', 'Seulement la simulation jusqu’ici – les compteurs des vrais servos commencent avec le matériel.',
+        'Finora solo la simulazione – i contatori dei servo reali partono con l’hardware.', 'Fin ussa mo la simulaziun – ils quintaders dals servos vairs cumenzan cun la hardware.'),
+    # 588: settings
+    'Pan: max. speed (°/s)': ('Schwenken: Höchstgeschwindigkeit (°/s)', 'Pan : vitesse max. (°/s)', 'Pan: velocità max. (°/s)', 'Sviar: sveltezza max. (°/s)'),
+    'Pan: acceleration and braking (°/s²)': ('Schwenken: Beschleunigen und Bremsen (°/s²)', 'Pan : accélération et freinage (°/s²)', 'Pan: accelerazione e frenata (°/s²)', 'Sviar: accelerar e franar (°/s²)'),
+    'Tilt: max. speed (°/s)': ('Neigen: Höchstgeschwindigkeit (°/s)', 'Inclinaison : vitesse max. (°/s)', 'Inclinazione: velocità max. (°/s)', 'Inclinar: sveltezza max. (°/s)'),
+    'Tilt: acceleration and braking (°/s²)': ('Neigen: Beschleunigen und Bremsen (°/s²)', 'Inclinaison : accélération et freinage (°/s²)', 'Inclinazione: accelerazione e frenata (°/s²)', 'Inclinar: accelerar e franar (°/s²)'),
+    'Watchdog: stop the servos when the camera loop hangs longer than (s)': ('Watchdog: Servos stoppen, wenn die Kamera-Schleife länger hängt als (s)', 'Watchdog : arrêter les servos si la boucle caméra bloque plus de (s)', 'Watchdog: fermare i servo se il ciclo della telecamera si blocca più di (s)', 'Watchdog: fermar ils servos, sche la bucla da la camera penda pli ditg che (s)'),
+    'Maintenance hint after (hours of movement per servo)': ('Wartungshinweis nach (Stunden Bewegung pro Servo)', 'Indication d’entretien après (heures de mouvement par servo)', 'Indicazione di manutenzione dopo (ore di movimento per servo)', 'Avis da mantegniment suenter (uras da moviment per servo)'),
+    'Emergency stop: brake, then drive slowly to the parking position (otherwise: hold where it stopped)': (
+        'Not-Aus: bremsen, dann langsam in die Parkposition fahren (sonst: dort halten, wo er stehen blieb)', 'Arrêt d’urgence : freiner, puis aller lentement en position de parcage (sinon : tenir là où elle s’est arrêtée)',
+        'Arresto d’emergenza: frenare, poi andare lentamente nella posizione di parcheggio (altrimenti: tenere dove si è fermata)', 'Stop d’urgenza: franar, lura ir plaun en la posiziun da parcar (uschiglio: tegnair là nua ch’el è sa fermà)'),
+    'Under-voltage: stop the servos (they move again by themselves 30 s after it is over)': (
+        'Unterspannung: Servos stoppen (sie bewegen sich 30 s danach wieder von selbst)', 'Sous-tension : arrêter les servos (ils repartent seuls 30 s après)',
+        'Sottotensione: fermare i servo (ripartono da soli 30 s dopo)', 'Sutatensiun: fermar ils servos (els sa movan puspè sez 30 s suenter)'),
+    'Parking position: a taught point (instead of pan / tilt above)': ('Parkposition: ein gespeicherter Punkt (statt Schwenken / Neigen oben)', 'Position de parcage : un point enregistré (au lieu de pan / inclinaison ci-dessus)', 'Posizione di parcheggio: un punto salvato (invece di pan / inclinazione sopra)', 'Posiziun da parcar: in punct memorisà (empè da sviar / inclinar survart)'),
+    'Home position: a taught point (the head comes back there)': ('Grundstellung: ein gespeicherter Punkt (dorthin kehrt der Kopf zurück)', 'Position de base : un point enregistré (la tête y revient)', 'Posizione base: un punto salvato (la testa ci ritorna)', 'Posiziun da basa: in punct memorisà (il chau turna là)'),
+}
+for _k, _v in _HX_SERVO.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+WEB_PAGE = WEB_PAGE.replace("<!--SERVOJS-->", servo_live_js(), 1)       # the script of 539 with the German texts
 # All parts have added their settings now (CFG.setdefault in later parts), the start (640) loads the file only after this.
 import copy as _copy_g2
 FACTORY_CFG = _copy_g2.deepcopy(CFG)

@@ -2108,8 +2108,8 @@ func _process(dt: float) -> void:
 		return                                   # pause: nothing moves, nothing is drawn (net.gd still answers)
 	var s: Dictionary = mw.get("servo", {})
 	# the servos turn like real ones: towards the new angle with a limited speed (no jumps)
-	var want_pan := -deg_to_rad(float(s.get("pan_deg", 0.0)))
-	var want_tilt := deg_to_rad(float(s.get("tilt_deg", 0.0)) - 6.0)
+	var want_pan := -deg_to_rad(_srv_ahead(s, "pan"))
+	var want_tilt := deg_to_rad(_srv_ahead(s, "tilt") - 6.0)
 	if game != null and game.guard_auto:                 # the game: automatic guard or a player as guard turns the head
 		want_pan = game.guard_yaw
 		want_tilt = game.guard_tilt
@@ -2498,6 +2498,17 @@ func mw_watchers() -> Array:
 		if now() - float(mw_others[k]["t"]) < 6.0:
 			out.append(str(mw_others[k]["name"]))
 	return out
+
+
+func _srv_ahead(s: Dictionary, ax: String) -> float:
+	"""MoveEye 2.98.35 sends the position of its motion planner (ramps) about 10 x per second and its speed: between two
+	packets the head goes on with that speed (no staircase), never past the goal and at most 0.15 s ahead"""
+	var deg := float(s.get(ax + "_deg", 0.0))
+	if not s.has(ax + "_dps"):
+		return deg
+	var ahead := deg + float(s.get(ax + "_dps", 0.0)) * clampf(now() - mw_t, 0.0, 0.15)
+	var goal := float(s.get(ax + "_goal", ahead))
+	return clampf(ahead, minf(deg, goal), maxf(deg, goal))
 
 
 func on_state(d: Dictionary, host: String) -> bool:

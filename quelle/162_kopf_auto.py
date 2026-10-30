@@ -54,7 +54,8 @@ def kopf_tilt_add(cur, ddeg):
 def kopf_pic_to_pan(cx, cy):
     """a point of the picture (0..1) -> (pan, tilt) in % where the head must look to have it in the middle"""
     hf, vf = cam_fov()
-    return kopf_pan_add(CFG["pan"], (cx - 0.5) * hf), kopf_tilt_add(CFG["tilt"], -(cy - 0.5) * vf)
+    p0, t0 = servo_pos()                                 # 2.98.35: the picture comes from the real position (072)
+    return kopf_pan_add(p0, (cx - 0.5) * hf), kopf_tilt_add(t0, -(cy - 0.5) * vf)
 
 
 def servo_estimated():
@@ -92,7 +93,7 @@ def kopf_stops():
         base = max(1.0, float(CFG.get("kopf_round_dwell") or 8.0))
         st = [(i["pan"], i["tilt"], round(max(0.3, base * KOPF_WEIGHT[i["kind"]] / 3.0), 1), i["name"], KOPF_WEIGHT[i["kind"]]) for i in its]
         return sorted(st, key=lambda s: s[0])
-    return [(w[0], w[1], float(CFG["patrol_dwell"]), "", 1.0) for w in WAYPOINTS]
+    return [(w[0], w[1], float(CFG["patrol_dwell"]), wp_name(w), 1.0) for w in WAYPOINTS if wp_patrol(w)]   # 2.98.35: taught points (076)
 
 
 def kopf_best():
@@ -208,22 +209,13 @@ def kopf_may(who, sim_lock=True):
 
 
 def kopf_move(pan, tilt, who, speed=None, stop=None):
-    """drive smoothly to pan / tilt (%) at speed %/s; False when someone with a higher rank comes or stop() says so"""
+    """drive smoothly to pan / tilt (%) at speed %/s; False when someone with a higher rank comes or stop() says so.
+    2.98.35: through the motion planner (072) - ramps, limits, Not-Aus; no own ramp any more"""
     sp = float(speed or CFG.get("patrol_speed") or 30.0)
-    (plo, phi), (tlo, thi) = Hardware.limits()
-    pan = max(plo, min(phi, float(pan))); tilt = max(tlo, min(thi, float(tilt)))
-    while True:
-        dp, dt = pan - CFG["pan"], tilt - CFG["tilt"]
-        dist = math.hypot(dp, dt)
-        if dist <= 0.5:
-            break
-        if not kopf_may(who, sim_lock=who not in ("alarm",)) or (stop is not None and stop()):
-            return False
-        f = min(1.0, sp * 0.02 / dist)
-        CFG["pan"] = CFG["pan"] + dp * f; CFG["tilt"] = CFG["tilt"] + dt * f
-        time.sleep(0.02)
-    CFG["pan"], CFG["tilt"] = float(pan), float(tilt)
-    return True
+
+    def brk():
+        return not kopf_may(who, sim_lock=who not in ("alarm",)) or (stop is not None and stop())
+    return servo_goto(pan, tilt, who, speed=sp, stop=brk)
 
 
 # ---- the round (called by the patrol, part 160) ----------------------------------------------------------------------
@@ -350,9 +342,7 @@ def _kopf_tick():
             CFG["kopf_parked"] = False
             log_event("servo", "Privacy ended: the camera was moved by hand")
         else:
-            tgt = (float(CFG["kopf_park_pan"]), float(CFG["kopf_park_tilt"]))
-            (plo, phi), (tlo, thi) = Hardware.limits()
-            tgt = (max(plo, min(phi, tgt[0])), max(tlo, min(thi, tgt[1])))
+            tgt = servo_park_target() or (50.0, 50.0)      # 2.98.35: a taught point may be the parking position (076)
             if abs(pos[0] - tgt[0]) > 0.6 or abs(pos[1] - tgt[1]) > 0.6:
                 if kopf_may("park"):
                     _kopf_status("parking - the camera looks away (privacy)")
@@ -374,6 +364,9 @@ def _kopf_tick():
         KOPF["home_pos"] = pos; KOPF["home_t"] = now
     if not kopf_claims() and now - KOPF["home_t"] > 8.0:
         KOPF["home"] = pos
+    hpt = teach_point_by_name(CFG.get("kopf_home_point") or "")    # 2.98.35: a taught point as the home position (076)
+    if hpt:
+        KOPF["home"] = (round(hpt[0], 1), round(hpt[1], 1))
     # ---- following started (410): remember where to come back ----
     if tracking and not KOPF["track_was"] and not KOPF["back"] and KOPF["home"] and not KOPF["round_on"]:
         KOPF["back"] = {"pos": KOPF["home"], "since": 0.0, "why": "after following"}
@@ -690,7 +683,8 @@ def kopf_tamper_look(what, ref):
             p = kopf_pan_add(p0, ddeg)
             if abs(p - p0) < 1.0:
                 continue
-            CFG["pan"] = p
+            if not servo_goto(p, q0, "alarm", timeout=8.0):      # 2.98.35: the planner drives, wait until it stands
+                break
             g = _kopf_gray(w, settle)
             if g is None:
                 continue
@@ -706,8 +700,7 @@ def kopf_tamper_look(what, ref):
             flat = float(g.std()) < 7 and float(e.mean()) < 0.25 * max(1e-3, float(ref_e.mean())) if ref_e is not None else False
             looks.append({"ddeg": (p - p0) / kopf_pct_per_deg("pan"), "dark": (float(g.mean()) < 18 and float(g.std()) < 7) or flat, "sc": float(sc), "sh": sh})
     finally:
-        CFG["pan"], CFG["tilt"] = p0, q0
-        time.sleep(0.3)
+        servo_goto(p0, q0, "alarm", timeout=8.0)
         KOPF["tamper"] = False; KOPF["tamper_t"] = time.time()
     if not looks:
         return ""

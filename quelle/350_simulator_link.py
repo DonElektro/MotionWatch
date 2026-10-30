@@ -100,7 +100,7 @@ class SimLink:
                 elif op_ == "refstop":
                     refscan_stop()
                 elif op_ == "look":                         # 2.95.103: «Kopf steuern» in the simulator window
-                    move_camera(str(mc_.get("dir") or ""), mc_.get("step", 3))
+                    move_camera(str(mc_.get("dir") or ""), mc_.get("step", 3), "Simulator")
                 elif op_ == "fa_box":                       # 2.98.2: a box of a game without a player: a false alarm to learn from
                     fa_game_box(mc_.get("box"), mc_.get("info"))      # 2.98.18: with the situation («Fehlalarm-Jäger»)
                 elif op_ == "track":                        # 2.98.1: «Verfolgen» in the simulator = «Folgen» of MoveEye

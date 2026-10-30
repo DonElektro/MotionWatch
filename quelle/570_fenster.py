@@ -1509,7 +1509,9 @@ class App:
         btns = (("◎ " + tr("Centre"), "◎", lambda: self._move("center"), tr("Camera to the middle")),
                 ("↻ " + tr("Calibrate"), "↻", self._recal, tr("Learn the picture again (after moving the camera)")),
                 ("⚑ + " + tr("Waypoint"), "⚑+", self._add_wp, tr("Save the current position as waypoint for the patrol")),
-                ("⚑ ✕", "⚑✕", self._clear_wp_ask, tr("Clear waypoints")))
+                ("⚑ ✕", "⚑✕", self._clear_wp_ask, tr("Clear waypoints")),
+                ("⏹ " + tr("Stop"), "⏹", self._srv_estop_btn, tr("Emergency stop") + " / " + tr("Release")),          # 2.98.35 (588)
+                ("📍 " + tr("Positions"), "📍", lambda: self._srv_win("teach"), tr("Servos: safety, positions, diagnosis")))
         swb = lambda par: self._fbtn(par, "⇆", self._swap_side, tr("Swap stick and buttons (left- / right-handed)"), font=("DejaVu Sans", 11, "bold"))
         if wide:
             r0 = tk.Frame(side, bg=C["panel"]); r0.pack(fill="x")
@@ -1520,6 +1522,10 @@ class App:
             r2 = tk.Frame(side, bg=C["panel"]); r2.pack(fill="x", pady=(6, 0))
             self._fbtn(r2, btns[2][0], btns[2][2], btns[2][3]).pack(side="left", fill="x", expand=True)
             self._fbtn(r2, btns[3][0], btns[3][2], btns[3][3]).pack(side="left", padx=(6, 0))
+            r3 = tk.Frame(side, bg=C["panel"]); r3.pack(fill="x", pady=(6, 0))     # 2.98.35: Not-Aus + positions (588)
+            self._srv_btn = self._fbtn(r3, btns[4][0], btns[4][2], btns[4][3]); self._srv_btn.pack(side="left", fill="x", expand=True)
+            self._srv_btn.config(bg="#d1242f", fg="#ffffff"); self._srv_btn.bind("<Leave>", lambda e: self._srv_btn.config(bg="#d1242f"))
+            self._fbtn(r3, btns[5][0], btns[5][2], btns[5][3]).pack(side="left", fill="x", expand=True, padx=(6, 0))
         elif tiny:
             side.grid_configure(sticky="n", pady=(10, 0))
             cb.config(width=12); cb.pack(fill="x")
@@ -3419,7 +3425,8 @@ class App:
                 txt = tr("Tracking person")
             else:
                 txt = ""
-            self.l_ctl_status.config(text=txt)
+            sv_ = servo_tk_line(self)                      # 2.98.35: Not-Aus / who steers the head (588)
+            self.l_ctl_status.config(text=(sv_ + ("\n" + txt if txt else "")) if sv_ else txt, fg=C["red"] if servo_blocked() else C["yel"])
         self._qs_paint()
         ms_ = getattr(self, "mstick", None)
         if ms_ is not None:

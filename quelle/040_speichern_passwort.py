@@ -176,7 +176,11 @@ def role_allows(role, path, method, d):
     if role == "admin":
         return True
     if method in ("GET", "HEAD"):
+        if path in ("/servo", "/api/servo"):                  # 2.98.35: everybody sees the servo state (who steers, Not-Aus)
+            return True
         return (path in VIEW_GET_PAGES or path.startswith(VIEW_GET)) and not path.startswith(ADMIN_GET)
+    if path == "/api/servo":                                  # 2.98.35: Not-Aus is for everybody, the rest for the administrator
+        return d.get("op") == "estop"
     if path == "/api/webpush":
         return d.get("action") in ("subscribe", "unsubscribe", "key", None)
     if path in VIEW_POST:
@@ -337,8 +341,8 @@ def apply_settings(data):
     for w in data.get("waypoints", []):
         if isinstance(w, (int, float)) and not isinstance(w, bool):        # old files: pan only
             wps.append([float(w), float(CFG["patrol_tilt"])])
-        elif isinstance(w, (list, tuple)) and len(w) == 2 and all(isinstance(x, (int, float)) for x in w):
-            wps.append([max(0.0, min(100.0, float(w[0]))), max(0.0, min(100.0, float(w[1])))])
+        elif isinstance(w, (list, tuple)) and wp_clean(w) is not None:      # 2.98.35: also [pan, tilt, name(, 0)] (076)
+            wps.append(wp_clean(w))
     WAYPOINTS[:] = wps[:50]
     CFG["ui_hidden"] = [k for k in CFG["ui_hidden"] if isinstance(k, str)][:200]
     CFG["ui_open"] = [k for k in CFG["ui_open"] if isinstance(k, str)][:100]

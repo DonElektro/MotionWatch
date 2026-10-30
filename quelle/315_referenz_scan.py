@@ -80,8 +80,8 @@ def refscan_set_watch(kind, items):
 
 
 def _refscan_move(pan, tilt):
-    CFG["pan"] = max(0.0, min(100.0, float(pan))); CFG["tilt"] = max(0.0, min(100.0, float(tilt)))
     MANUAL["until"] = time.time() + 60                  # following / patrol pause while the scan drives the head
+    servo_goto(max(0.0, min(100.0, float(pan))), max(0.0, min(100.0, float(tilt))), "refscan", timeout=20.0)   # 2.98.35: planner (072), waits
 
 
 def _refscan_next(w, after, end):

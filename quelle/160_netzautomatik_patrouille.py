@@ -117,20 +117,9 @@ class Patrol:
         return not STATE["tracking"] and not servo_hold() and kopf_may("round") and bool(kopf_patrol_plan()[0])
 
     def move_to(self, pan, tilt):
-        """Smoothly move pan and tilt together (straight line) at patrol_speed %/s; returns False if interrupted."""
-        while True:
-            dp, dt = pan - CFG["pan"], tilt - CFG["tilt"]
-            dist = math.hypot(dp, dt)
-            if dist <= 0.5:
-                break
-            if not self._go_on():
-                return False
-            f = min(1.0, CFG["patrol_speed"] * 0.02 / dist)
-            CFG["pan"] = CFG["pan"] + dp * f
-            CFG["tilt"] = CFG["tilt"] + dt * f
-            time.sleep(0.02)
-        CFG["pan"], CFG["tilt"] = float(pan), float(tilt)
-        return True
+        """drive pan and tilt together (straight line) at patrol_speed %/s; returns False if interrupted.
+        2.98.35: through the motion planner (072, ramps) - no own ramp any more"""
+        return servo_goto(pan, tilt, "round", speed=CFG["patrol_speed"], stop=lambda: not self._go_on())
 
     def loop(self):
         announced = ""
@@ -142,6 +131,9 @@ class Patrol:
             if not plan:
                 STATE["patrol_status"] = KOPF["status"] or why
                 KOPF["round_on"] = False; announced = ""
+                time.sleep(0.3); continue
+            if servo_blocked():                           # 2.98.35: Not-Aus / fault / lock (072)
+                STATE["patrol_status"] = "paused (servos stopped)"; KOPF["round_on"] = False
                 time.sleep(0.3); continue
             if STATE["tracking"]:
                 STATE["patrol_status"] = "paused (tracking person)"; KOPF["round_on"] = False
