@@ -60730,9 +60730,12 @@ for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
 # Mit dem Simulator (3D-4.19) kommt der virtuelle SmallTV von selbst dazu (🧪, Adresse = Simulator, gleiche Schnittstelle).
 # Einstellungen + Fenster: 599b, Übersetzungen + Anleitung: 562.
 # ----------------------------------------------------------------------------
-STV_CFG = {"stv_on": True, "stv_list": [], "stv_sim": {"on": True, "status": True, "alarm": True, "game": True, "brt": 60},
+STV_CFG = {"stv_on": True, "stv_list": [], "stv_sim": {"on": True, "status": True, "alarm": True, "game": True, "brt": 60, "rot": True},
            "stv_person_pic": False, "stv_animals": True, "stv_night": True, "stv_night_brt": 10, "stv_alarm_s": 60,
-           "stv_bright_s": 20, "stv_gap_s": 5, "stv_clock_min": 10}
+           "stv_bright_s": 20, "stv_gap_s": 5, "stv_clock_min": 10, "stv_alarm_keep_min": 5}
+# 30.10.2026 Abend (Daniel): per display «Live-Bild und Wechsel» («rot»): by day live picture <-> battery page every 30 s,
+# alarm as animated GIF (me_a.gif / me_b.gif) 60 s, then the still picture 5 min (553). Off = the status page as before.
+# Saved displays without «rot» stay off (no surprise), a newly added display has it on (stv_edit «add»).
 for _k, _v in STV_CFG.items():
     CFG.setdefault(_k, _v)
     DEFAULTS.setdefault(_k, _v)
@@ -60774,7 +60777,8 @@ def _stv_clean(e):
     except (TypeError, ValueError):
         brt = 60
     return {"id": sid, "name": str(e.get("name") or "SmallTV")[:30], "addr": addr, "on": bool(e.get("on", True)),
-            "status": bool(e.get("status", True)), "alarm": bool(e.get("alarm", True)), "game": bool(e.get("game", True)), "brt": brt}
+            "status": bool(e.get("status", True)), "alarm": bool(e.get("alarm", True)), "game": bool(e.get("game", True)), "brt": brt,
+            "rot": bool(e.get("rot", False))}
 
 
 def stv_entries(with_sim=True):
@@ -60787,7 +60791,8 @@ def stv_entries(with_sim=True):
         except (TypeError, ValueError):
             brt = 60
         out.append({"id": "sim", "name": "Simulator", "addr": sim_base(), "sim": True, "on": bool(s.get("on", True)),
-                    "status": bool(s.get("status", True)), "alarm": bool(s.get("alarm", True)), "game": bool(s.get("game", True)), "brt": brt})
+                    "status": bool(s.get("status", True)), "alarm": bool(s.get("alarm", True)), "game": bool(s.get("game", True)), "brt": brt,
+                    "rot": bool(s.get("rot", False))})
     return out
 
 
@@ -60831,7 +60836,7 @@ def stv_edit(action, d, who="web"):
         if len(lst) >= STV_MAX:
             return False, "too many displays"
         import secrets as _sec
-        e = _stv_clean({"id": _sec.token_hex(4), "name": str(d.get("name") or "").strip() or "SmallTV", "addr": addr})
+        e = _stv_clean({"id": _sec.token_hex(4), "name": str(d.get("name") or "").strip() or "SmallTV", "addr": addr, "rot": True})
         lst.append(e)
         CFG["stv_list"] = lst
         save_settings()
@@ -60843,7 +60848,7 @@ def stv_edit(action, d, who="web"):
         if action != "update":
             return False, "the display of the simulator comes by itself"
         f = str(d.get("field") or "")
-        if f in ("on", "status", "alarm", "game"):
+        if f in ("on", "status", "alarm", "game", "rot"):
             s[f] = bool(d.get("value"))
         elif f == "brt":
             s[f] = max(0, min(100, int(float(d.get("value") or 0))))
@@ -60865,7 +60870,7 @@ def stv_edit(action, d, who="web"):
     if action == "update":
         f = str(d.get("field") or "")
         v = d.get("value")
-        if f in ("on", "status", "alarm", "game"):
+        if f in ("on", "status", "alarm", "game", "rot"):
             e[f] = bool(v)
         elif f == "brt":
             try:
@@ -60922,10 +60927,12 @@ def stv_files(base, timeout=10.0):
 
 
 def stv_upload(base, name, jpg, timeout=30.0):
-    """POST /doUpload?dir=/image/ (multipart, field «file») -> (ok, note). HTTP 400 or a timeout: the file list decides."""
+    """POST /doUpload?dir=/image/ (multipart, field «file») -> (ok, note). HTTP 400 or a timeout: the file list decides.
+    A .gif goes the same way (the photo album of the Ultra plays GIFs, manual V9.0.18 «Picture Display»)."""
     import secrets as _sec
     bd = "----MoveEye" + _sec.token_hex(8)
-    body = (f"--{bd}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{name}\"\r\nContent-Type: image/jpeg\r\n\r\n").encode() \
+    ct = "image/gif" if name.lower().endswith(".gif") else "image/jpeg"
+    body = (f"--{bd}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{name}\"\r\nContent-Type: {ct}\r\n\r\n").encode() \
         + jpg + f"\r\n--{bd}--\r\n".encode()
     try:
         code, _b = _stv_req(base, "/doUpload?dir=/image/", body, "multipart/form-data; boundary=" + bd, timeout)
@@ -60998,7 +61005,23 @@ class StvDev:
                     pass
                 time.sleep(0.3)
             self.theme_t = time.time()
-        name = STV_NAMES[1] if self.shown == STV_NAMES[0] else STV_NAMES[0]   # the other one: the new picture is complete before it shows
+        ext = "gif" if w.get("ext") == "gif" else "jpg"
+        stored = getattr(self, "stored", None)
+        if stored is None:
+            stored = self.stored = {}                     # file name on the device -> sig of the picture in it
+        again = next((n for n, sg in stored.items() if sg == w["sig"]), None)
+        if again:                                         # 553: the picture is on the device already (rotation): only show it, no flash write
+            code, _b = _stv_req(base, "/set?img=" + urllib.parse.quote("/image//" + again, safe="/"), timeout=10.0)
+            if code == 200:
+                self.shown = again; self.sent_sig = w["sig"]; self.jpg = w["jpg"]; self.kind = w["kind"]
+                self.reshows = getattr(self, "reshows", 0) + 1
+                self.h.update(ok=True, err="", sent_t=time.time())
+                self.last_up = time.time()
+                return True
+            stored.pop(again, None)
+        slot = "b" if str(self.shown).startswith("me_a") else "a"   # the other one: the new picture is complete before it shows
+        name = f"me_{slot}.{ext}"
+        other = f"me_{slot}." + ("jpg" if ext == "gif" else "gif")
         ok, note = stv_upload(base, name, w["jpg"])
         time.sleep(0.3)
         if ok:
@@ -61007,9 +61030,12 @@ class StvDev:
             note = note or ("" if ok else f"show: HTTP {code}")
         if ok:
             self.shown = name; self.sent_sig = w["sig"]; self.ups += 1; self.bytes += len(w["jpg"]); self.jpg = w["jpg"]; self.kind = w["kind"]
+            stored[name] = w["sig"]
+            stored.pop(other, None)
             self.h.update(ok=True, err="", note=note, sent_t=time.time())
             if note:
                 self.h["note"] = note
+            self._drop(base, other)
         else:
             self.errs += 1
             self.h.update(err=note or "upload failed")
@@ -61019,6 +61045,24 @@ class StvDev:
             self.theme_t = 0.0
         self.last_up = time.time()
         return ok
+
+    def _drop(self, base, name):
+        """me_a.gif after me_a.jpg (and the other way round): away with the old one, so the device keeps only two pictures"""
+        try:
+            fl = getattr(self, "dev_files", None)
+            if fl is None:
+                time.sleep(0.3)
+                fl = stv_files(base) or []
+            fl = set(fl)
+            if name in fl:
+                time.sleep(0.3)
+                code, _b = _stv_req(base, "/delete?file=" + urllib.parse.quote("/image//" + name, safe="/"), timeout=10.0)
+                if code == 200:
+                    fl.discard(name)
+            fl.add(self.shown)
+            self.dev_files = fl
+        except Exception:
+            self.dev_files = None
 
     def run(self):
         while self.alive:
@@ -61353,7 +61397,12 @@ def stv_render_status(lang=None, red=False):
     return _stv_jpg(im, red)
 
 
-def stv_render_alarm(a, lang=None, red=False):
+def stv_render_alarm(a, lang=None, red=False, warn=False):
+    return _stv_jpg(_stv_alarm_im(a, lang, warn=warn), red)
+
+
+def _stv_alarm_im(a, lang=None, edge=4, edge_col=(255, 60, 60), warn=False, warn_col=(255, 214, 0)):
+    """the alarm picture (PIL): picture section or symbol, red frame, band «Fuchs · 91 % · 6 m»; warn: «⚠» in front (553 GIF / still)"""
     from PIL import Image
     im, d = _stv_canvas()
     band = 64
@@ -61378,7 +61427,7 @@ def stv_render_alarm(a, lang=None, red=False):
                 d.text((STV_SIZE - 50, 20), f"×{a['n']}", font=_font(26), fill=(255, 200, 200))
         else:
             d.ellipse((70, 40, 170, 140), outline=(245, 154, 74), width=6)
-    d.rectangle((0, 0, STV_SIZE - 1, STV_SIZE - 1), outline=(255, 60, 60), width=4)
+    d.rectangle((0, 0, STV_SIZE - 1, STV_SIZE - 1), outline=edge_col, width=edge)
     d.rectangle((0, STV_SIZE - band, STV_SIZE, STV_SIZE), fill=(160, 20, 24))
     lab = tr(a.get("label") or "", lang)
     lab = lab[:1].upper() + lab[1:]
@@ -61389,13 +61438,24 @@ def stv_render_alarm(a, lang=None, red=False):
         parts.append(f"{int(a['dist'])} m")
     line = " · ".join(parts)
     f = _font(24)
-    while d.textlength(line, font=f) > STV_SIZE - 16 and getattr(f, "size", 0) > 16:
+    ww = 30 if warn else 0                                 # the drawn warning sign (the fonts have no emoji)
+    while d.textlength(line, font=f) > STV_SIZE - 16 - ww and getattr(f, "size", 0) > 16:
         f = _font(f.size - 1)
-    d.text(((STV_SIZE - d.textlength(line, font=f)) / 2, STV_SIZE - band + 6), line, font=f, fill=(255, 255, 255))
+    x0 = (STV_SIZE - d.textlength(line, font=f) - ww) / 2
+    if warn:
+        _stv_warn(d, x0, STV_SIZE - band + 6, 24, warn_col)
+    d.text((x0 + ww, STV_SIZE - band + 6), line, font=f, fill=(255, 255, 255))
     sub = (tr("Alarm", lang) if kind == "person" else tr("Animal", lang)) + " · " + str(a.get("clock") or "")
     f2 = _font(16, False)
     d.text(((STV_SIZE - d.textlength(sub, font=f2)) / 2, STV_SIZE - 26), sub, font=f2, fill=(255, 215, 215))
-    return _stv_jpg(im, red)
+    return im
+
+
+def _stv_warn(d, x, y, s, col):
+    """a warning sign ⚠ (triangle with «!»), drawn - s = height in pixels"""
+    d.polygon([(x + s * 0.5, y), (x + s * 1.05, y + s), (x - s * 0.05, y + s)], fill=col, outline=(40, 0, 0))
+    d.rectangle((x + s * 0.44, y + s * 0.3, x + s * 0.56, y + s * 0.68), fill=(30, 0, 0))
+    d.rectangle((x + s * 0.44, y + s * 0.76, x + s * 0.56, y + s * 0.88), fill=(30, 0, 0))
 
 
 def stv_render_game(g, caught=None, lang=None, red=False):
@@ -61489,7 +61549,9 @@ def stv_plan(e, now=None):
     lang = CFG.get("lang")
     red = stv_night()
     a = STV["alarm"]
-    alarm_on = a is not None and now - a["t"] < float(CFG.get("stv_alarm_s", 60) or 60)
+    rot = bool(e.get("rot"))                               # 553: «Live-Bild und Wechsel»
+    gif_s = float(CFG.get("stv_alarm_s", 60) or 60)
+    alarm_on = a is not None and now - a["t"] < gif_s + (60.0 * float(CFG.get("stv_alarm_keep_min", 5) or 0) if rot else 0.0)
     if red:
         brt = int(CFG.get("stv_night_brt", 10))
     else:
@@ -61499,14 +61561,21 @@ def stv_plan(e, now=None):
     g = STV["game"]
     playing = bool(e.get("game") and g and now - STV["game_t"] < 10 and g.get("round") in ("countdown", "play"))
     if e.get("alarm") and alarm_on and not playing:        # in a round the players are the persons: the game shows «Erwischt!»
-        key = ("alarm", a["t"], red, lang)
-        return "alarm", key, lambda: stv_render_alarm(a, lang, red), brt, True
+        if rot and now - a["t"] < gif_s:                   # 553: first the animation (GIF), then the still picture
+            key = ("alarmgif", a["t"], red, lang)
+            return "gif", key, lambda: stv_render_alarm_gif(a, lang, red), brt, True
+        key = ("alarm", a["t"], red, lang, rot)
+        return "alarm", key, lambda: stv_render_alarm(a, lang, red, warn=rot), brt, True
     if playing or (e.get("game") and g and now - STV["game_t"] < 10 and g.get("round") == "end" and now - STV.get("end_t", 0.0) < 60):
         c = STV["caught"]
         cn = c[1] if c and now - c[0] < 5.0 else None
         sig_p = tuple((p.get("n"), p.get("pt"), p.get("k")) for p in (g.get("players") or [])[:4])
         key = ("game", g.get("round"), g.get("cd"), None if cn else g.get("left"), sig_p, tuple((x.get("n"), x.get("pt")) for x in g.get("top") or []), cn, g.get("mw"), red, lang)
         return "game", key, lambda: stv_render_game(g, cn, lang, red), brt, bool(cn)
+    if rot and not red:                                    # 553: by day live picture <-> battery every 30 s (night: the status page)
+        r_ = stv_rot_plan(now, lang)
+        if r_ is not None:
+            return r_[0], r_[1], r_[2], brt, False
     if e.get("status"):
         b = STATE.get("battery") or {}
         bp = int(b.get("pct") // 5 * 5) if b.get("on") and b.get("pct") is not None else None
@@ -61540,7 +61609,7 @@ def stv_tick():
         sig = hash(key)
         if dv.want is None or dv.want["sig"] != sig or dv.want["brt"] != brt:
             jpg = _stv_cached(key, fn)
-            dv.want = {"jpg": jpg, "sig": sig, "kind": kind, "brt": brt, "now": at_once}
+            dv.want = {"jpg": jpg, "sig": sig, "kind": kind, "brt": brt, "now": at_once, "ext": "gif" if kind == "gif" else "jpg"}
             dv.ev.set()
 
 
@@ -61693,7 +61762,7 @@ def smalltv_routes(app, reply, body):
         b = stv_img(sid)
         if not b:
             return Response(b"", status=404)
-        return Response(b, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+        return Response(b, mimetype="image/gif" if b[:4] == b"GIF8" else "image/jpeg", headers={"Cache-Control": "no-store"})
 
 
 # ---- the web page: Settings → Devices & sensors → «Extra display (SmallTV)» (530 calls stvPanel) --------------------------
@@ -61707,7 +61776,7 @@ STV_JS = r"""
   const P = (d) => post("/api/smalltv", Object.assign({lang: L()}, d));
   let BOX = null, TM = null, SIG = "";
   const ago = s => { if (!s) return "–"; const a = Math.max(0, Math.round(Date.now() / 1000 - s)); return a < 90 ? a + " s" : Math.round(a / 60) + " min"; };
-  const KIND = {status: "Status", alarm: "Alarm picture", game: "Game", test: "Test picture"};
+  const KIND = {status: "Status", alarm: "Alarm picture", game: "Game", test: "Test picture", live: "Live picture", batt: "Battery and power", gif: "Alarm animation"};
   function row(e) {
     const c = E("div", "sens-card stv-card"); c.dataset.id = e.id;
     const h = e.health || {};
@@ -61719,13 +61788,15 @@ STV_JS = r"""
     tx.append(E("b", "", dot + " " + (e.sim ? "🧪 " + T("Virtual SmallTV of the simulator") : e.name)));
     tx.append(E("div", "mut", e.addr.replace("http://", "") + (h.fw ? " · " + h.fw : "") + (h.free != null ? " · " + Math.round(h.free / 1024) + " KB " + T("free") : "")));
     tx.append(E("div", "mut", (h.ok === false ? "⚠ " + (h.err || T("not reachable")) : h.ok ? "✓ " + T("reachable") : T("checking …"))
-      + " · " + e.ups + " " + T("pictures") + (e.kind ? " · " + T(KIND[e.kind] || e.kind) : "") + (h.sent_t ? " · " + ago(h.sent_t) : "") + (h.note ? " · " + h.note : "")));
+      + " · " + e.ups + " " + T("pictures") + (e.kind ? " · " + T(KIND[e.kind] || e.kind) : "") + (h.sent_t ? " · " + ago(h.sent_t) : "") + (h.note ? " · " + h.note : "")
+      + (e.per_day ? " · " + T("about {n} pictures/day").replace("{n}", e.per_day) : "")));
     top.append(im, tx); c.appendChild(top);
     const ch = E("div", ""); ch.style.cssText = "display:flex;gap:6px 14px;flex-wrap:wrap;justify-content:flex-start;margin-top:6px";
-    [["on", "On"], ["status", "Status"], ["alarm", "Alarm picture"], ["game", "Game"]].forEach(([f, lb]) => {
+    [["on", "On"], ["status", "Status"], ["alarm", "Alarm picture"], ["game", "Game"], ["rot", "Live picture and rotation"]].forEach(([f, lb]) => {
       const l = E("label", ""); l.style.cssText = "display:inline-flex;gap:4px;align-items:center";
       const cb = E("input"); cb.type = "checkbox"; cb.checked = !!e[f]; cb.className = "sw stv-" + f;   // 2.98.48: the blue switch like everywhere
       cb.onchange = async () => { const r = await P({action: "update", id: e.id, field: f, value: cb.checked}); if (!r.ok) toast("⚠ " + (r.error || "error")); };
+      if (f === "rot") l.title = T("stv-rot-hint");
       l.style.gap = "8px"; l.append(E("span", "", T(lb)), cb); ch.appendChild(l); });
     c.appendChild(ch);
     const sl = E("div", "sl"), st = E("div", "row"), val = E("span", "val", e.brt + " %");
@@ -61810,6 +61881,305 @@ STV_JS = r"""
 })();
 </script>
 """
+# ----------------------------------------------------------------------------
+# Pro Bildschirm ein Schalter «Live-Bild und Wechsel» (Feld «rot» in stv_list, 552). Aus = wie bisher (Statusseite).
+# Ein (nur tagsüber - nachts bleibt die rote, gedimmte Statusseite):
+#   alle STV_ROT_S = 30 s wechselt die Seite: gerade Zeitscheibe «Live-Bild» (Standbild der Hauptkamera, 240 × 240 mit
+#   Leiste Uhrzeit · Aus/Wachsam/Voll · Akku), ungerade «Akku und Strom» (grosser Akku, Laden/Solar, Verbrauch, Restlaufzeit,
+#   «SIM» bei Simulator-Werten). Das Live-Bild ist bei jeder Live-Zeitscheibe neu (höchstens ein Hochladen je 30 s);
+#   die Akku-Seite liegt noch auf dem Gerät (me_a / me_b, 552 StvDev.send «stored»): unverändert wird sie nur wieder gezeigt
+#   (/set?img=…, kein Schreiben in den Flash). Ohne Akku-Werte ist die zweite Seite die Statusseite.
+#   Personen im Live-Bild: Privatzonen sind schon geschwärzt (frame_out, 030 apply_privacy); ohne «Bild auch bei Personen»
+#   werden die erkannten Personen (STATE person_boxes) grob verpixelt (faces_pixelate, 375).
+# Alarm (Vorrang wie bisher: Alarm, Spielrunde): zuerst ein animiertes GIF 240 × 240 (8 Bilder, pulsierender roter Rahmen,
+#   blinkendes ⚠ + Art), stv_alarm_s (60 s), danach das Alarmbild als JPEG mit ⚠ stv_alarm_keep_min (5 min), dann zurück.
+#   Das GIF geht wie ein JPEG nach /image/ (me_a.gif / me_b.gif); die Datei mit der anderen Endung am gleichen Platz wird
+#   gelöscht (552 StvDev._drop), so liegen nie mehr als zwei Bilder auf dem Gerät.
+# Schonung: «ca. N Bilder/Tag» je Bildschirm in der Liste und im Protokoll (stv_per_day).
+# ----------------------------------------------------------------------------
+STV_ROT_S = 30
+STV_GIF_FRAMES = 8
+
+
+def stv_rot_page(now):
+    """«live» or «batt»: the page of the 30-s slot of this time (real clock, so every display switches at the same moment)"""
+    return "live" if int(now // STV_ROT_S) % 2 == 0 else "batt"
+
+
+def _stv_batt_ok():
+    b = STATE.get("battery") or {}
+    return bool(b.get("on") and b.get("pct") is not None)
+
+
+def stv_rot_plan(now, lang):
+    """(kind, key, render function) of the rotation, or None (-> the status page)"""
+    slot = int(now // STV_ROT_S)
+    if stv_rot_page(now) == "live":
+        return "live", ("live", slot, lang), lambda: stv_render_live(lang)
+    if not _stv_batt_ok():
+        return None
+    b = STATE.get("battery") or {}
+    sol = _stv_solar_w(b)
+    clock = int(sim_now().timestamp() // (60 * max(1, int(CFG.get("stv_clock_min", 10) or 10))))
+    key = ("batt", int(b.get("pct") or 0), None if sol is None else int(round(sol)), round(float(b.get("use_w") or 0) * 2) / 2,
+           None if b.get("hours") is None else round(float(b["hours"]) * 2) / 2, bool(b.get("charging")), bool(b.get("on_battery")),
+           bool(b.get("sim")), b.get("full_min"), clock, lang)
+    return "batt", key, lambda: stv_render_batt(lang)
+
+
+def _stv_solar_w(b):
+    w_ = b.get("solar_w")
+    if w_ is None and CFG.get("solar_on"):
+        w_ = (STATE.get("solar") or {}).get("w")
+    try:
+        return None if w_ is None else float(w_)
+    except (TypeError, ValueError):
+        return None
+
+
+# ---- the live still -----------------------------------------------------------------------------------------------------
+def stv_live_frame(person_pic=None):
+    """a copy of the picture of the main camera (privacy zones already black) - persons pixelated unless «Bild auch bei Personen»"""
+    w = WATCH_REF.get("w") if "WATCH_REF" in globals() else None
+    f = getattr(w, "frame_out", None) if w is not None else None
+    if f is None:
+        return None
+    f = f.copy()
+    if CFG.get("show_hud") and f.shape[0] > 120:
+        f = f[34:]                                        # without the text line on top of the live picture (410 HUD)
+    if not (CFG.get("stv_person_pic") if person_pic is None else person_pic):
+        stv_hide_persons(f, STATE.get("person_boxes") if STATE.get("persons") else [])
+    return f
+
+
+def stv_hide_persons(f, boxes):
+    """the person boxes (0..1 of the picture) as coarse blocks - the same helper as «Gesichter verpixeln» (375)"""
+    H, W = f.shape[:2]
+    px = []
+    for b in boxes or []:
+        try:
+            px.append((int(b[0] * W), int(b[1] * H), max(2, int(b[2] * W)), max(2, int(b[3] * H))))
+        except (TypeError, ValueError, IndexError):
+            continue
+    if px:
+        faces_pixelate(f, px, pad=0.15)
+    return len(px)
+
+
+def stv_render_live(lang=None, frame=None):
+    from PIL import Image
+    im, d = _stv_canvas()
+    f = stv_live_frame() if frame is None else frame
+    bar = 30
+    if f is not None:
+        try:
+            H, W = f.shape[:2]
+            s_ = min(H, W)
+            x0, y0 = (W - s_) // 2, (H - s_) // 2
+            sq = cv2.resize(f[y0:y0 + s_, x0:x0 + s_], (STV_SIZE, STV_SIZE), interpolation=cv2.INTER_AREA)
+            im.paste(Image.fromarray(cv2.cvtColor(sq, cv2.COLOR_BGR2RGB)), (0, 0))
+        except Exception:
+            f = None
+    if f is None:
+        d.rounded_rectangle((80, 70, 160, 130), radius=10, outline=(110, 125, 145), width=4)
+        d.ellipse((104, 84, 136, 116), outline=(110, 125, 145), width=4)
+        t_ = tr("No camera picture", lang)
+        d.text(((STV_SIZE - d.textlength(t_, font=_font(16))) / 2, 146), t_, font=_font(16), fill=(170, 185, 205))
+    # small «● LIVE» top left
+    d.rounded_rectangle((6, 6, 62, 26), radius=6, fill=(0, 0, 0))
+    d.ellipse((11, 11, 21, 21), fill=(255, 60, 60))
+    d.text((25, 7), "LIVE", font=_font(14), fill=(255, 255, 255))
+    # the bar: time · state · battery
+    d.rectangle((0, STV_SIZE - bar, STV_SIZE, STV_SIZE), fill=(8, 12, 18))
+    now = sim_now()
+    d.text((8, STV_SIZE - bar + 5), now.strftime("%H:%M"), font=_font(17), fill=(232, 238, 245))
+    name, col = stv_level_name(lang)
+    if walktest_on():
+        name, col = tr("Walk test", lang), (180, 140, 40)
+    f2 = _font(15)
+    name = _stv_fit(d, name, f2, 86)
+    tw = d.textlength(name, font=f2)
+    cx = 120
+    d.rounded_rectangle((cx - tw / 2 - 8, STV_SIZE - bar + 4, cx + tw / 2 + 8, STV_SIZE - 4), radius=8, fill=col)
+    d.text((cx - tw / 2, STV_SIZE - bar + 6), name, font=f2, fill=(255, 255, 255))
+    b = STATE.get("battery") or {}
+    if b.get("on") and b.get("pct") is not None:
+        pct = int(b["pct"])
+        x, y, w_, h_ = 178, STV_SIZE - bar + 9, 22, 12
+        c_ = (63, 207, 107) if pct > 50 else (245, 154, 74) if pct > 20 else (255, 77, 77)
+        d.rectangle((x, y, x + w_, y + h_), outline=(200, 210, 225), width=1)
+        d.rectangle((x + w_ + 1, y + 3, x + w_ + 3, y + h_ - 3), fill=(200, 210, 225))
+        fw = int((w_ - 4) * max(0, min(100, pct)) / 100)
+        if fw > 0:
+            d.rectangle((x + 2, y + 2, x + 2 + fw, y + h_ - 2), fill=c_)
+        pt = f"{pct}%"
+        d.text((STV_SIZE - 6 - d.textlength(pt, font=_font(13)), STV_SIZE - bar + 8), pt, font=_font(13), fill=(232, 238, 245))
+    return _stv_jpg(im)
+
+
+# ---- the battery page ---------------------------------------------------------------------------------------------------
+def _stv_bolt(d, x, y, s, col):
+    """a lightning bolt (charging), drawn"""
+    d.polygon([(x + s * 0.55, y), (x + s * 0.1, y + s * 0.58), (x + s * 0.45, y + s * 0.58), (x + s * 0.3, y + s),
+               (x + s * 0.9, y + s * 0.38), (x + s * 0.55, y + s * 0.38), (x + s * 0.75, y)], fill=col, outline=(20, 20, 20))
+
+
+def _stv_hours(h):
+    try:
+        h = float(h)
+    except (TypeError, ValueError):
+        return "–"
+    if h >= 48:
+        return f"{h / 24.0:.1f} d"
+    hh, mm = int(h), int(round((h - int(h)) * 60))
+    if mm == 60:
+        hh, mm = hh + 1, 0
+    return f"{hh} h {mm:02d} min" if hh else f"{mm} min"
+
+
+def stv_render_batt(lang=None):
+    im, d = _stv_canvas()
+    now = sim_now()
+    _stv_head(im, d, now.strftime("%H:%M"))
+    b = STATE.get("battery") or {}
+    t_ = tr("Battery and power", lang)
+    d.text((10, 34), _stv_fit(d, t_, _font(15), STV_SIZE - 70), font=_font(15), fill=(245, 154, 74))
+    if b.get("sim"):
+        d.rounded_rectangle((STV_SIZE - 50, 34, STV_SIZE - 10, 52), radius=5, fill=(70, 50, 120))
+        d.text((STV_SIZE - 45, 35), "SIM", font=_font(14), fill=(225, 210, 255))
+    pct = int(b.get("pct") or 0)
+    col = (63, 207, 107) if pct > 50 else (245, 154, 74) if pct > 20 else (255, 77, 77)
+    x, y, w_, h_ = 12, 60, 112, 56                         # the big drawn battery
+    d.rounded_rectangle((x, y, x + w_, y + h_), radius=8, outline=(200, 210, 225), width=3)
+    d.rounded_rectangle((x + w_ + 2, y + 16, x + w_ + 9, y + h_ - 16), radius=2, fill=(200, 210, 225))
+    fw = int((w_ - 10) * max(0, min(100, pct)) / 100)
+    if fw > 0:
+        d.rounded_rectangle((x + 5, y + 5, x + 5 + fw, y + h_ - 5), radius=4, fill=col)
+    if b.get("charging"):
+        _stv_bolt(d, x + w_ / 2 - 14, y + 8, 40, (255, 230, 80))
+    pt = f"{pct} %"
+    f = _font(40)
+    while d.textlength(pt, font=f) > STV_SIZE - (x + w_ + 18) - 6 and f.size > 24:
+        f = _font(f.size - 2)
+    d.text((x + w_ + 18, y + 4), pt, font=f, fill=(232, 238, 245))
+    rows = []
+    sol = _stv_solar_w(b)
+    if b.get("charging"):
+        v_ = trf("full in {n} min", lang, n=int(b["full_min"])) if b.get("full_min") else tr("yes", lang)
+        rows.append((tr("Charging", lang), v_))
+    elif not b.get("on_battery", True):
+        rows.append((tr("Charging", lang), tr("Mains power", lang)))
+    if sol is not None:
+        rows.append((tr("Solar", lang), f"{sol:.1f} W"))
+    if b.get("use_w") is not None:
+        rows.append((tr("Consumption", lang), f"{float(b['use_w']):.1f} W"))
+    rows.append((tr("Runtime left", lang), _stv_hours(b.get("hours")) if b.get("on_battery", True) and not b.get("charging") else "–"))
+    yy = 128
+    f1, f2 = _font(16, False), _font(17)
+    for lb, v_ in rows[:4]:
+        d.text((12, yy), _stv_fit(d, lb, f1, 110), font=f1, fill=(170, 185, 205))
+        v_ = _stv_fit(d, v_, f2, STV_SIZE - 130)
+        d.text((STV_SIZE - 12 - d.textlength(v_, font=f2), yy - 1), v_, font=f2, fill=(232, 238, 245))
+        yy += 23
+    d.text((10, STV_SIZE - 22), _stv_fit(d, tr("as of", lang) + " " + now.strftime("%H:%M") + ("  ·  " + tr("simulator", lang) if b.get("sim") else ""),
+                                         _font(14, False), STV_SIZE - 20), font=_font(14, False), fill=(110, 125, 145))
+    return _stv_jpg(im)
+
+
+# ---- the alarm animation (GIF) ------------------------------------------------------------------------------------------
+def stv_render_alarm_gif(a, lang=None, red=False, n=STV_GIF_FRAMES, ms=160):
+    """animated GIF 240 × 240: the alarm picture with a pulsing red frame and a blinking ⚠. One palette for all frames,
+    from the 2nd frame only the changed pixels (the rest transparent) - so it stays small (about 30-70 KB)."""
+    from PIL import Image
+    import io
+    fr = []
+    for k in range(n):
+        ph = (1 + math.cos(2 * math.pi * k / n)) / 2.0      # 1 -> 0 -> 1
+        edge = 4 + int(round(8 * ph))
+        ec = (int(130 + 125 * ph), int(10 + 50 * ph), int(10 + 50 * ph))
+        wc = (255, 214, 0) if k < n // 2 else (255, 120, 40)
+        im = _stv_alarm_im(a, lang, edge=edge, edge_col=ec, warn=True, warn_col=wc)
+        fr.append(_stv_red(im) if red else im)
+    strip = Image.new("RGB", (STV_SIZE, STV_SIZE * n))
+    for k, im in enumerate(fr):
+        strip.paste(im, (0, k * STV_SIZE))
+    pal = strip.quantize(colors=255, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+    idx = [np.asarray(im.quantize(palette=pal, dither=Image.Dither.NONE), np.uint8) for im in fr]
+    pl = pal.getpalette()[:255 * 3] + [0, 0, 0]
+    out = []
+    for k, ix in enumerate(idx):
+        q = ix.copy()
+        if k:
+            q[ix == idx[k - 1]] = 255                      # unchanged -> transparent (the frame before stays: disposal 1)
+        p = Image.fromarray(q, "P")
+        p.putpalette(pl)
+        out.append(p)
+    b = io.BytesIO()
+    out[0].save(b, "GIF", save_all=True, append_images=out[1:], duration=ms, loop=0, transparency=255, disposal=1, optimize=False)
+    return b.getvalue()
+
+
+# ---- how many pictures a day (flash wear) -------------------------------------------------------------------------------
+def _stv_day_hours():
+    """hours of daylight today (sun times of the place; 12 without)"""
+    try:
+        st = sun_times(datetime.now().date(), float(CFG["latitude"]), float(CFG["longitude"]))
+        if isinstance(st, str):
+            return 0.0 if st == "dark" else 24.0
+        return max(0.0, min(24.0, (st[1] - st[0]) / 60.0))
+    except Exception:
+        return 12.0
+
+
+def stv_per_day(e):
+    """about how many pictures a day go to this display (uploads = writes into its flash), without alarms / games:
+    status: the clock every stv_clock_min minutes + about one change an hour; rotation by day: the live picture every
+    60 s (every second 30-s slot), the battery page when its values changed (about every third time), night: status"""
+    if not e.get("on"):
+        return 0
+    clock = max(1, int(CFG.get("stv_clock_min", 10) or 10))
+    st_h = 60.0 / clock + 1.0                              # status page per hour
+    if not e.get("rot"):
+        return int(round(24 * st_h)) if e.get("status") else 0
+    day = _stv_day_hours() if CFG.get("stv_night") else 24.0
+    batt_h = 20.0 if _stv_batt_ok() else (st_h if e.get("status") else 0.0)
+    n = day * (3600.0 / (2 * STV_ROT_S) + batt_h) + (24.0 - day) * (st_h if e.get("status") else 0.0)
+    return int(round(n / 10.0) * 10)
+
+
+_stv_tick_552 = stv_tick
+
+
+# wraps: stv_tick
+def stv_tick():                                           # + 553: the number of pictures a day in the log when it changes
+    _stv_tick_552()
+    try:
+        P = STV.setdefault("per_day", {})
+        for e in stv_entries() if CFG.get("stv_on") else []:
+            n = stv_per_day(e)
+            if P.get(e["id"]) != n:
+                if e["id"] in P or n:
+                    log_event("sys", f"SmallTV {e['name']}: about {n} pictures/day (live picture and rotation {'on' if e.get('rot') else 'off'})")
+                P[e["id"]] = n
+    except Exception:
+        pass
+
+
+_stv_state_552 = stv_state
+
+
+# wraps: stv_state
+def stv_state(lang=None):                                 # + 553: «ca. N Bilder/Tag» and «only shown again» per display
+    r = _stv_state_552(lang)
+    for x in r.get("list") or []:
+        try:
+            x["per_day"] = stv_per_day(x)
+            dv = STV["devs"].get(x["id"])
+            x["reshows"] = getattr(dv, "reshows", 0) if dv else 0
+        except Exception:
+            x["per_day"] = None
+    r["rot_s"] = STV_ROT_S
+    return r
 # Daniel 30.10.2026 («Tailscale-Tunnel einbauen»): friends WITHOUT Tailscale join the online game (343) from home.
 #   Switch «Online-Spiel über Tailscale Funnel» next to the invitations (web 544, window 592). Only an administrator may switch
 #   it on (web: g.role == "admin" and no app key, else 403; window: not in operator mode).
@@ -63190,14 +63560,22 @@ _HELP_SMALLTV = {
            '(die Uhrzeit nur alle 10 Minuten neu – das schont den Speicher des Geräts; einstellbar).</li>'
            '<li><b>Alarmbild:</b> bei einem Tier der Bildausschnitt mit «Fuchs · 91 % · 6 m» (Tierart, Sicherheit der KI, Abstand geschätzt), bei einer Person '
            'nur ein Symbol mit Abstand und Uhrzeit – das Bild der Person nur mit «Bild auch bei Personen». Das Alarmbild bleibt 60 s (einstellbar), der Bildschirm ist 20 s hell.</li>'
-           '<li><b>Spiel:</b> während einer Runde im 3D-Simulator Countdown bzw. Restzeit, die Punkte der Spieler und gross «Erwischt!», wenn MoveEye jemanden erwischt.</li></ul>'
+           '<li><b>Spiel:</b> während einer Runde im 3D-Simulator Countdown bzw. Restzeit, die Punkte der Spieler und gross «Erwischt!», wenn MoveEye jemanden erwischt.</li>'
+           '<li><b>Live-Bild und Wechsel</b> (ein Schalter pro Bildschirm; bei neu hinzugefügten ein, bei schon eingetragenen aus): tagsüber wechseln alle 30 s '
+           '<i>Live-Bild</i> (Standbild der Hauptkamera mit Leiste Uhrzeit · Aus / Wachsam / Voll · Akku) und <i>Akku und Strom</i> (grosser Akku, Laden / Solar, Verbrauch, '
+           'Restlaufzeit, «SIM» bei Werten des Simulators). Privatzonen sind im Live-Bild schwarz, erkannte Personen verpixelt (ausser mit «Bild auch bei Personen»). '
+           'Ein Alarm erscheint zuerst als <b>Animation</b> (GIF mit pulsierendem rotem Rahmen und ⚠, so lange wie «Alarmbild bleibt», Standard 60 s), danach als Standbild '
+           '(«Nach der Animation bleibt das Alarmbild», Standard 5 min), dann geht der Wechsel weiter. Nachts kein Wechsel, nur die rote, gedimmte Statusseite. '
+           'Alarm und Spielrunde gehen immer vor. Schalter aus = nur die Statusseite wie bisher.</li></ul>'
            '<p><b>Nicht verwechseln:</b> Der SmallTV ist ein kleiner eigener Bildschirm im WLAN. Die <i>TV-Anzeige</i> ist eine Webseite für einen Fernseher am HDMI des Pi, der <i>TV-Modus</i> zeigt den Spielstand des Simulators auf dem PC-Bildschirm.</p>'
            '<p><b>Nachts</b> (dunkel im Simulator oder nach Sonnenzeit) sind die Bilder rot wie die Rotlicht-Ansicht und gedimmt (Helligkeit nachts, Standard 10 %); bei Alarm kurz hell. '
            '<b>Einrichten:</b> «SmallTV einrichten (Schritt für Schritt)»: Gerät einstecken → mit dem Handy ins WLAN «GIFTV» (QR-Code) → Seite 192.168.4.1 (QR-Code) → dort das Netz von MoveEye wählen '
            '(am besten das eigene WLAN von MoveEye) → zurück und «Im Netz suchen» (fragt jede Adresse des eigenen Netzes kurz nach /v.json, nur auf Knopfdruck) oder die Adresse eintragen, '
            'die der SmallTV zeigt. «Testbild senden» prüft Adresse, Bild und Helligkeit. Die Liste zeigt, ob er erreichbar ist, die Firmware und den freien Speicher.</p>'
            '<p><b>Schonend:</b> eine Anfrage nach der anderen, ein neues Bild nur bei Änderung und höchstens alle 5 s (ein Alarm sofort), immer dieselben zwei Dateien <code>me_a.jpg</code> / '
-           '<code>me_b.jpg</code> (zusammen etwa 30 KB). Antwortet die Firmware beim Hochladen fälschlich mit «400», schaut MoveEye in der Dateiliste nach. '
+           '<code>me_b.jpg</code> (zusammen etwa 30 KB; die Animation als <code>me_a.gif</code> / <code>me_b.gif</code> – die Datei mit der anderen Endung am gleichen Platz wird gelöscht). '
+           'Mit «Live-Bild und Wechsel» ein Bild höchstens alle 30 s; die unveränderte Akku-Seite liegt noch auf dem Gerät und wird nur wieder gezeigt (kein Schreiben). '
+           'Die Liste zeigt pro Bildschirm «ca. N Bilder/Tag» (ohne Wechsel etwa 170, mit Wechsel je nach Tageslänge etwa 750–1350). Antwortet die Firmware beim Hochladen fälschlich mit «400», schaut MoveEye in der Dateiliste nach. '
            '<b>Sicherheit:</b> der SmallTV hat kein Passwort – im eigenen WLAN von MoveEye betreiben. <b>🧪 Simulator:</b> der 3D-Simulator (ab 3D-4.19) hat einen virtuellen SmallTV mit derselben '
            'Schnittstelle; MoveEye nimmt ihn von selbst in die Liste, sein Bild steht als Kachel im Simulator-Fenster (Sensoren → Zusatz-Bildschirm).</p></section>\n'),
     "en": ('<section id="smalltv" data-icon="🖼"><h2>Extra display (SmallTV)</h2>'
@@ -63207,14 +63585,22 @@ _HELP_SMALLTV = {
            '(the time only every 10 minutes – this spares the memory of the device; adjustable).</li>'
            '<li><b>Alarm picture:</b> for an animal the picture section with «fox · 91 % · 6 m» (species, certainty of the AI, estimated distance), for a person only '
            'a symbol with distance and time – the picture of the person only with «Picture also for persons». The alarm picture stays 60 s (adjustable), the screen is bright for 20 s.</li>'
-           '<li><b>Game:</b> during a round in the 3D simulator the countdown or time left, the points of the players and a big «Caught!» when MoveEye catches somebody.</li></ul>'
+           '<li><b>Game:</b> during a round in the 3D simulator the countdown or time left, the points of the players and a big «Caught!» when MoveEye catches somebody.</li>'
+           '<li><b>Live picture and rotation</b> (one switch per display; on for newly added ones, off for displays already in the list): by day <i>Live picture</i> '
+           '(a still of the main camera with a bar time · Off / Watchful / Full · battery) and <i>Battery and power</i> (big battery, charging / solar, consumption, runtime left, '
+           '«SIM» for values of the simulator) alternate every 30 s. Privacy zones are black in the live picture, detected persons pixelated (unless «Picture also for persons»). '
+           'An alarm first shows as an <b>animation</b> (GIF with a pulsing red frame and ⚠, as long as «Alarm picture stays», 60 s by default), then as a still picture '
+           '(«After the animation the alarm picture stays», 5 min by default), then the rotation goes on. At night no rotation, only the red, dimmed status page. '
+           'Alarm and game round always come first. Switch off = only the status page as before.</li></ul>'
            '<p><b>Not to be mixed up:</b> the SmallTV is a small display of its own in the Wi-Fi. The <i>TV display</i> is a web page for a television on the HDMI of the Pi, the <i>TV mode</i> shows the game of the simulator on the PC screen.</p>'
            '<p><b>At night</b> (dark in the simulator or by the sun) the pictures are red like the red light view and dimmed (brightness at night, 10 % by default); bright for a moment at an alarm. '
            '<b>Setup:</b> «Set up a SmallTV (step by step)»: plug it in → join the Wi-Fi «GIFTV» with the phone (QR code) → page 192.168.4.1 (QR code) → choose the network of MoveEye there '
            '(best the own Wi-Fi of MoveEye) → back and «Search in the network» (asks every address of the own network briefly for /v.json, only on the button) or enter the address '
            'the SmallTV shows. «Send a test picture» checks address, picture and brightness. The list shows whether it is reachable, the firmware and the free memory.</p>'
            '<p><b>Gentle:</b> one request after the other, a new picture only when something changed and at most every 5 s (an alarm at once), always the same two files <code>me_a.jpg</code> / '
-           '<code>me_b.jpg</code> (about 30 KB together). If the firmware wrongly answers «400» to an upload, MoveEye looks at the file list. '
+           '<code>me_b.jpg</code> (about 30 KB together; the animation as <code>me_a.gif</code> / <code>me_b.gif</code> – the file with the other ending at the same place is deleted). '
+           'With «Live picture and rotation» at most one picture every 30 s; the unchanged battery page is still on the device and only shown again (no writing). '
+           'The list shows «about N pictures/day» per display (without rotation about 170, with rotation about 750–1350 depending on the length of the day). If the firmware wrongly answers «400» to an upload, MoveEye looks at the file list. '
            '<b>Security:</b> the SmallTV has no password – run it in the own Wi-Fi of MoveEye. <b>🧪 Simulator:</b> the 3D simulator (from 3D-4.19) has a virtual SmallTV with the same '
            'interface; MoveEye adds it to the list by itself, its picture is a tile in the simulator window (Sensoren → Zusatz-Bildschirm).</p></section>\n'),
 }
@@ -63230,6 +63616,31 @@ def _help_smalltv(doc, lang):
 _hp_enstv = HELP_PAGE.find('<div lang="en">')
 if _hp_enstv > 0:
     HELP_PAGE = _help_smalltv(HELP_PAGE[:_hp_enstv], "de") + _help_smalltv(HELP_PAGE[_hp_enstv:], "en")
+_HX_STV2 = {
+    'Live picture and rotation': ('Live-Bild und Wechsel', 'Image en direct et alternance', 'Immagine dal vivo e alternanza', 'Maletg live e midada'),
+    'stv-rot-hint': ('Tagsüber wechseln alle 30 s Live-Bild und «Akku und Strom», ein Alarm erscheint als Animation (60 s) und danach 5 min als Standbild. Nachts nur die rote Statusseite. Aus = nur die Statusseite.',
+                     'Le jour, l’image en direct et «Batterie et courant» alternent toutes les 30 s, une alarme apparaît en animation (60 s) puis 5 min en image fixe. La nuit seulement la page d’état rouge. Désactivé = seulement la page d’état.',
+                     'Di giorno ogni 30 s si alternano immagine dal vivo e «Batteria e corrente», un allarme appare come animazione (60 s) e poi 5 min come immagine fissa. Di notte solo la pagina di stato rossa. Spento = solo la pagina di stato.',
+                     'Di sa midan mintga 30 s maletg live ed «Accu e current», in alarm cumpara sco animaziun (60 s) e lura 5 min sco maletg fix. La notg mo la pagina da status cotschna. Deactivà = mo la pagina da status.'),
+    'Live picture': ('Live-Bild', 'Image en direct', 'Immagine dal vivo', 'Maletg live'),
+    'Battery and power': ('Akku und Strom', 'Batterie et courant', 'Batteria e corrente', 'Accu e current'),
+    'Alarm animation': ('Alarm-Animation', 'Animation d’alarme', 'Animazione d’allarme', 'Animaziun d’alarm'),
+    'about {n} pictures/day': ('ca. {n} Bilder/Tag', 'env. {n} images/jour', 'ca. {n} immagini/giorno', 'ca. {n} maletgs/di'),
+    'No camera picture': ('Kein Kamerabild', 'Pas d’image de la caméra', 'Nessuna immagine della telecamera', 'Nagin maletg da la camera'),
+    'Charging': ('Laden', 'Charge', 'Carica', 'Chargiar'),
+    'Solar': ('Solar', 'Solaire', 'Solare', 'Solar'),
+    'Consumption': ('Verbrauch', 'Consommation', 'Consumo', 'Consum'),
+    'Runtime left': ('Restlaufzeit', 'Autonomie restante', 'Autonomia residua', 'Temp restant'),
+    'full in {n} min': ('voll in {n} min', 'pleine dans {n} min', 'piena tra {n} min', 'plain en {n} min'),
+    'yes': ('ja', 'oui', 'sì', 'gea'),
+    'simulator': ('Simulator', 'simulateur', 'simulatore', 'simulatur'),
+    'After the animation the alarm picture stays (min)': ('Nach der Animation bleibt das Alarmbild (min)', 'Après l’animation, l’image d’alarme reste (min)',
+                                                          'Dopo l’animazione l’immagine d’allarme resta (min)', 'Suenter l’animaziun resta il maletg d’alarm (min)'),
+}
+for _k, _v in _HX_STV2.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 # key = English text: (Deutsch, Français, Italiano, Rumantsch)
 _HX_weit = {
     'Wide infrared light (channel 4): second IR LED 120° on PCA9685 channel 4, on / off with the infrared light':
@@ -76307,6 +76718,7 @@ TOGGLES.extend([
 SLIDERS.extend([
     (_STVS, "stv_night_brt", "Brightness at night (%)", 0, 100, 5),
     (_STVS, "stv_alarm_s", "Alarm picture stays (s)", 10, 600, 10),
+    (_STVS, "stv_alarm_keep_min", "After the animation the alarm picture stays (min)", 0, 30, 1),     # 553: only with «Live-Bild und Wechsel»
     (_STVS, "stv_bright_s", "At an alarm bright for (s)", 0, 120, 5),
     (_STVS, "stv_gap_s", "At most one picture every (s) - an alarm at once", 5, 120, 5),
     (_STVS, "stv_clock_min", "Status picture: clock new every (minutes, spares the flash)", 1, 60, 1),
@@ -76328,7 +76740,8 @@ _STV_JS_KEYS = ["Virtual SmallTV of the simulator", "free", "not reachable", "re
                 "Back here: «Search in the network» or enter the address shown on the SmallTV.", "stv-security", "Name (e.g. Tent)", "Address (e.g. 192.168.1.77)",
                 "Add", "Search in the network", "searching … (about 10 s)", "No SmallTV found. Is it in the same network? Otherwise enter the address.",
                 "in the list", "Night: the displays are dimmed and red.", "No display yet.", "The simulator has a virtual SmallTV from version 3D-4.19.", "stv-note",
-                "Extra display", "Extra display (SmallTV)"]
+                "Extra display", "Extra display (SmallTV)",
+                "Live picture and rotation", "stv-rot-hint", "Live picture", "Battery and power", "Alarm animation", "about {n} pictures/day"]
 WEB_PAGE = WEB_PAGE.replace("</body>", STV_JS.replace("/*STVDE*/{}", json.dumps({_k: DE.get(_k, _k) for _k in _STV_JS_KEYS}, ensure_ascii=False), 1) + "</body>", 1)
 
 
@@ -76409,11 +76822,14 @@ def _stv_tk_panel(app, sbody):
                 info = e["addr"].replace("http://", "") + (" · " + h["fw"] if h.get("fw") else "") + \
                     (f" · {round(h['free'] / 1024)} KB " + tr("free") if h.get("free") is not None else "")
                 info2 = ("⚠ " + (h.get("err") or tr("not reachable")) if h.get("ok") is False else ("✓ " + tr("reachable") if h.get("ok") else tr("checking …"))) + \
-                    f" · {e['ups']} " + tr("pictures")
+                    f" · {e['ups']} " + tr("pictures") + (" · " + trf("about {n} pictures/day", n=e["per_day"]) if e.get("per_day") else "")
                 for t_ in (info, info2):
                     tk.Label(tf, text=t_, bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8), wraplength=240, justify="left", anchor="w").pack(anchor="w")
-                for f_, lb in (("on", "On"), ("status", "Status"), ("alarm", "Alarm picture"), ("game", "Game")):
+                for f_, lb in (("on", "On"), ("status", "Status"), ("alarm", "Alarm picture"), ("game", "Game"), ("rot", "Live picture and rotation")):
                     Toggle(card, tr(lb), e[f_], lambda v, f_=f_, sid=e["id"]: act({"action": "update", "id": sid, "field": f_, "value": v})).pack(fill="x", padx=6, pady=(2, 0))
+                    if f_ == "rot":                       # 553: what the switch does, small below it
+                        tk.Label(card, text=tr("stv-rot-hint"), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8), wraplength=300, justify="left",
+                                 anchor="w").pack(anchor="w", padx=6)
                 bf = tk.Frame(card, bg=C["panel"]); bf.pack(fill="x", padx=6, pady=(4, 0))
                 tk.Label(bf, text=tr("Brightness (day)"), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 9)).pack(side="left")
                 sc = tk.Scale(bf, from_=0, to=100, resolution=5, orient="horizontal", showvalue=True, bg=C["panel"], fg=C["txt"], troughcolor=C["field"],
@@ -76513,6 +76929,12 @@ def _stv_fake_server(quirks=True, delay=0.25):
                 return self._out(200, json.dumps({"total": 1048576, "free": 1048576 - sum(len(x) for x in S["files"].values())}), "application/json")
             if u.path == "/filelist":
                 return self._out(200, "".join(f'<a href="/image/{n}">{n}</a> {len(b)}<br>' for n, b in S["files"].items()), "text/html")
+            if u.path == "/delete":
+                n = q.get("file", "").split("/")[-1]
+                if S["files"].pop(n, None) is None:
+                    return self._out(404, "no")
+                S["deletes"] = S.get("deletes", 0) + 1
+                return self._out(200, "OK")
             if u.path == "/set":
                 if "img" in q:
                     n = q["img"].split("/")[-1]
@@ -76611,6 +77033,94 @@ def smalltv_selftest():
 
 
 SELFTEST_EXTRA.append(("Extra display SmallTV: pictures, plan, device with firmware quirks (552)", smalltv_selftest))
+
+
+def smalltv_rot_selftest():
+    """553 «Live-Bild und Wechsel»: rotation with a made-up clock, night, alarm GIF -> JPEG -> rotation, game first, switch off
+    = as before, pictures a day; the GIF itself; on the device: GIF in, the JPEG at its place removes it, unchanged = only shown"""
+    from PIL import Image
+    import io
+    G = globals()
+    keep = {k: CFG.get(k) for k in STV_CFG}
+    keep_a, keep_g, keep_b = STV["alarm"], STV["game"], STATE.get("battery")
+    keep_dark = G["is_dark"]
+    srv = None
+    try:
+        CFG.update(stv_night=True, stv_alarm_s=60, stv_alarm_keep_min=5, stv_bright_s=20, stv_clock_min=10)
+        G["is_dark"] = lambda: False
+        STV["alarm"] = None; STV["game"] = None
+        STATE["battery"] = {"on": True, "pct": 64, "sim": True, "charging": True, "on_battery": False, "use_w": 4.3, "solar_w": 7.9, "hours": None, "full_min": 75}
+        e = {"id": "x", "on": True, "status": True, "alarm": True, "game": True, "brt": 40, "rot": True}
+        t0 = 30.0 * 100000                                   # an even slot: the live picture
+        ks = [stv_plan(e, t0 + dt)[0] for dt in (0, 29, 30, 59, 60, 90)]
+        assert ks == ["live", "live", "batt", "batt", "live", "batt"], ks
+        assert stv_plan(e, t0)[1] != stv_plan(e, t0 + 60)[1], "the live picture is new at every live slot"
+        assert stv_plan(e, t0 + 30)[1] == stv_plan(e, t0 + 90)[1], "the battery page unchanged -> same picture (only shown again)"
+        assert stv_plan(e, t0)[1] == stv_plan(e, t0 + 29)[1], "one picture per 30 s at most"
+        assert stv_plan(dict(e, rot=False), t0)[0] == "status" and stv_plan(dict(e, rot=False), t0 + 30)[0] == "status"   # off = as before
+        STATE["battery"] = {"on": False}
+        assert stv_plan(e, t0 + 30)[0] == "status"           # no battery values: the status page instead
+        STATE["battery"] = {"on": True, "pct": 64, "sim": True, "charging": False, "on_battery": True, "use_w": 4.3, "hours": 7.6}
+        G["is_dark"] = lambda: True                          # night: no rotation, the red status page, dimmed
+        k_, _s, _f, brt, _n = stv_plan(e, t0)
+        assert k_ == "status" and brt == 10, (k_, brt)
+        G["is_dark"] = lambda: False
+        # alarm: GIF 60 s, then the still picture with ⚠ 5 min, then the rotation again; off: the JPEG 60 s as before
+        STV["alarm"] = {"t": t0, "kind": "animal", "label": "fox", "conf": 0.91, "dist": 6, "crop": np.full((90, 120, 3), 90, np.uint8), "n": 1, "clock": "14:02"}
+        k_, _s, _f, brt, now_ = stv_plan(e, t0 + 1)
+        assert k_ == "gif" and brt == 100 and now_, (k_, brt)
+        assert stv_plan(e, t0 + 61)[0] == "alarm" and stv_plan(e, t0 + 60 + 299)[0] == "alarm" and stv_plan(e, t0 + 60 + 301)[0] in ("live", "batt")
+        assert stv_plan(dict(e, rot=False), t0 + 1)[0] == "alarm" and stv_plan(dict(e, rot=False), t0 + 61)[0] == "status"
+        G["is_dark"] = lambda: True
+        assert stv_plan(e, t0 + 1)[0] == "gif" and stv_plan(e, t0 + 1)[3] == 100     # at night too, bright for a moment
+        G["is_dark"] = lambda: False
+        # a game round comes first (the players are the persons), the end screen too
+        STV["game"] = {"round": "play", "left": 50, "players": []}; STV["game_t"] = t0 + 100
+        assert stv_plan(e, t0 + 101)[0] == "game"
+        STV["alarm"] = None
+        assert stv_plan(e, t0 + 101)[0] == "game" and stv_plan(e, t0 + 112)[0] in ("live", "batt")   # 10 s without news: the game is over
+        STV["game"] = None
+        # pictures a day
+        n_off, n_on = stv_per_day(dict(e, rot=False)), stv_per_day(e)
+        assert n_off == 168 and 600 <= n_on <= 2200 and n_on > n_off, (n_off, n_on)
+        assert stv_per_day(dict(e, on=False)) == 0
+        # the GIF: 240 × 240, 6-8 frames, small; the pages
+        gif = stv_render_alarm_gif({"kind": "person", "label": "person", "conf": None, "dist": 12, "crop": None, "n": 1, "clock": "22:14"}, "de")
+        im = Image.open(io.BytesIO(gif))
+        assert gif[:6] == b"GIF89a" and im.size == (240, 240) and 6 <= getattr(im, "n_frames", 1) <= 8 and len(gif) < 150000, (im.size, len(gif))
+        gif2 = stv_render_alarm_gif({"kind": "animal", "label": "fox", "conf": 0.9, "dist": 5, "crop": np.random.randint(0, 255, (120, 160, 3), np.uint8), "clock": "1"}, "de", True)
+        assert len(gif2) < 150000, len(gif2)
+        im.seek(3); f3 = np.asarray(im.convert("RGB"), np.int32)
+        assert f3[2, 120, 0] > 100, "the red frame is there in a later frame too (transparency = the frame before)"
+        fr = np.zeros((300, 400, 3), np.uint8); fr[100:200, 150:250] = (255, 255, 255); fr[100:200:4, 150:250] = 0
+        f_ = fr.copy(); assert stv_hide_persons(f_, [[0.375, 0.333, 0.25, 0.333]]) == 1 and f_[100:200:4, 150:250].mean() > 30, "persons pixelated"
+        for jpg in (stv_render_live("de", fr), stv_render_live("de", None), stv_render_batt("de"), stv_render_alarm(STV.get("alarm") or
+                    {"kind": "person", "label": "person", "conf": None, "dist": 3, "crop": None, "n": 1, "clock": "1"}, "de", False, warn=True)):
+            im = Image.open(io.BytesIO(jpg))
+            assert im.size == (240, 240) and im.format == "JPEG", im.size
+        # on the device: GIF in me_a.gif, the JPEG at that place removes it; unchanged pictures are only shown again
+        srv, base, S = _stv_fake_server(quirks=False, delay=0)
+        dv = StvDev.__new__(StvDev)
+        dv.id = "t"; dv.shown = ""; dv.theme_t = time.time(); dv.ups = dv.bytes = dv.errs = 0; dv.h = {"ok": None, "t": 0.0}; dv.jpg = None; dv.kind = ""
+        live1, batt = stv_render_live("de", fr), stv_render_batt("de")
+        assert dv.send(base, {"jpg": gif, "sig": 1, "kind": "gif", "brt": 40, "ext": "gif"}) and S["img"] == "me_a.gif"
+        assert dv.send(base, {"jpg": batt, "sig": 2, "kind": "batt", "brt": 40}) and S["img"] == "me_b.jpg"
+        assert dv.send(base, {"jpg": live1, "sig": 3, "kind": "live", "brt": 40}) and S["img"] == "me_a.jpg"
+        assert sorted(S["files"]) == ["me_a.jpg", "me_b.jpg"] and S.get("deletes") == 1, (sorted(S["files"]), S.get("deletes"))
+        n_up = S["uploads"]
+        assert dv.send(base, {"jpg": batt, "sig": 2, "kind": "batt", "brt": 40}) and S["img"] == "me_b.jpg" and S["uploads"] == n_up and dv.reshows == 1
+        assert dv.send(base, {"jpg": live1, "sig": 4, "kind": "live", "brt": 40}) and S["img"] == "me_a.jpg" and S["uploads"] == n_up + 1
+    finally:
+        if srv is not None:
+            srv.shutdown()
+        G["is_dark"] = keep_dark
+        CFG.update(keep)
+        STV["alarm"], STV["game"] = keep_a, keep_g
+        STATE["battery"] = keep_b
+        STV["renders"].clear()
+
+
+SELFTEST_EXTRA.append(("SmallTV live picture and rotation, alarm GIF, pictures a day (553)", smalltv_rot_selftest))
 TRX['rm'].update({
     '(or the address from the push message).': "(u l'adressa da l'avis push).",
     '+ Add relay': '+ Agiuntar in relais',
