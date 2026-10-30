@@ -69,6 +69,12 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 - **Erinnern (Daniel 30.10.2026 21:45):** Simulator in den Sprachen FR/IT/RM/EN wie MoveEye – Daniel wartet noch, später daran erinnern.
 - Vorgemerkt (nicht bauen, Daniel 30.10.): BME280-Erweiterungen (Taupunkt-/Frost-Warnung, Anzeige wenn Sensor fehlt, Akku-Kälte) –
   erst wenn die Grund-Hardware läuft.
+- Vorgemerkt (nicht bauen, Daniel 30.10. 23:14): **Zwei MoveEye koppeln** für mehr Reichweite/Überwachungsbereich – erst nach
+  Hardware-Aufbau, wenn ein zweites echtes Gerät läuft. Basis ist Teil 260 «mehrere Geräte» (Übersicht, alle ein/aus, Suche,
+  Übergabe; braucht gleiches Netz). Stufen: 1) Koppeln per Code/QR, Gerät B verbindet sich selbst mit Hotspot von A, gemeinsamer
+  Schutz/Alarmübersicht, Push mit Gerätename (klein, ~30–80 m); 2) USB-WLAN mit externer Antenne (~100–200 m, braucht
+  Antennen-Durchführung im Gehäuse); 3) Kette A↔B↔C mit Weiterleitung (mittel); 4) LoRa nur für Alarme (gross, neue Hardware).
+  Empfehlung: mit Stufe 1 beginnen.
 - Später: Prüfstand-Plan «funktionen» (Kurzproben Sabotage, Wecker, Klatschen, Diebstahl, Sensoren, Akku, Sirene – Daniel 30.10.: später); Prüfstand-Rückgang ab 2.98.23; KI-Training (Token Actions-Rechte, Trainingspaket); «Vertrauenswürdige Geräte» nur
   Admin; Controller-Einstellungen als MoveEye-Einstellung statt pro Browser; Produkt-Seite (Lizenzen, Datenschutz, Kundendoku);
   mobiler MoveEye (Laufroboter, nur Notiz); Tiere mit der neuen Figur-Technik (figur.gd).
