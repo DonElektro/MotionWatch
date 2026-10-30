@@ -29,6 +29,8 @@ var _t := 0.0
 var _r2_old := false
 var _siren: AudioStreamPlayer
 var _ui: Array = []                     # the overlays (crosshair + button) in the windows of the simulator
+var ki                                  # gamekihilfe.gd: «KI-Rahmen», «KI zielt», «KI-Autopilot» for the person with the shutter
+var _ki_tag := ""
 
 
 func _ready() -> void:
@@ -36,6 +38,11 @@ func _ready() -> void:
 	_siren.stream = _make_siren()
 	_siren.volume_db = -6.0
 	add_child(_siren)
+	ki = preload("res://scripts/gamekihilfe.gd").new()
+	ki.shut = self
+	ki.game = game
+	ki.main = main
+	add_child(ki)
 
 
 var _ui_done := {}
@@ -49,12 +56,16 @@ func _add_ui() -> void:
 		_ui.append(attach(main.prev0, func(): return 0 if active() else -1, Callable(), false))
 	if not _ui_done.has("head") and main.headpad != null and main.headpad.img != null:
 		_ui_done["head"] = true
-		_ui.append(attach(main.headpad.img, func(): return 0 if human_mode() == "mw" else -1, func(): return fire(null, "Sim-PC"), false))
+		var hp_ := attach(main.headpad.img, func(): return 0 if human_mode() == "mw" else -1, func(): return fire(null, "Sim-PC"), false)
+		hp_.shooter = func(): return [true, null]                # KI-Hilfe: the guards at MoveEye
+		_ui.append(hp_)
 	if not _ui_done.has("local") and main.localplay != null and main.localplay.view != null:
 		_ui_done["local"] = true
 		var lp = main.localplay
-		_ui.append(attach(lp.view, func(): return game.guard_cam(lp.p) if lp.active and lp.p != null and str(lp.role) == "guard" and human_mode() == "guard" else -1,
-				func(): return fire(lp.p, str(lp.p["name"])) if lp.p != null else {}, true, func(): return lock_left(lp.p) if lp.p != null else 0.0))
+		var lo_ := attach(lp.view, func(): return game.guard_cam(lp.p) if lp.active and lp.p != null and str(lp.role) == "guard" and human_mode() == "guard" else -1,
+				func(): return fire(lp.p, str(lp.p["name"])) if lp.p != null else {}, true, func(): return lock_left(lp.p) if lp.p != null else 0.0)
+		lo_.shooter = func(): return [lp.p != null, lp.p]         # KI-Hilfe: the guard at this PC
+		_ui.append(lo_)
 
 
 func over_button(pos: Vector2) -> bool:
@@ -62,6 +73,8 @@ func over_button(pos: Vector2) -> bool:
 	for o in _ui:
 		if o != null and o.visible and o.btn != null and o.btn.get_global_rect().has_point(pos):
 			return true
+		if o != null and o.visible and o.kib != null and o.kib.visible and o.kib.get_global_rect().has_point(pos):
+			return true                                    # the button «KI-Hilfe»
 	return false
 
 
@@ -104,7 +117,8 @@ func info_for(g) -> Dictionary:
 	var gd: Dictionary = game.mwg if g == null else g
 	return {"on": (human_mode() == "mw") if g == null else (human_mode() == "guard" and g["role"] == "guard"), "r": radius(),
 			"lv": main.game_level, "lock": snappedf(lock_left(g), 0.1), "len": float(lock_len.get(k, LOCK)),
-			"pts": int(gd.get("shut_pts", 0)), "hits": int(gd.get("shut_hits", 0)), "miss": int(gd.get("shut_miss", 0))}
+			"pts": int(gd.get("shut_pts", 0)), "hits": int(gd.get("shut_hits", 0)), "miss": int(gd.get("shut_miss", 0)),
+			"ki": ki.info_for(g, g != null) if ki != null else {}}   # KI-Hilfe (gamekihilfe.gd); the boxes for the phone
 
 
 func box_cam(p: Dictionary, cam_i: int) -> Array:
@@ -187,6 +201,9 @@ func fire(g, who: String) -> Dictionary:
 	if game.round_state != "play" or mode == "" or (g == null) != (mode == "mw"):
 		return {"ok": false, "error": "Der Auslöser gilt nur in einer laufenden Runde, in der ein Mensch die Kamera steuert."}
 	var k := _key(g)
+	if ki != null and not ki.firing:
+		ki.human(g)                                    # KI-Hilfe: the person shoots - the autopilot waits
+	_ki_tag = ("auto" if ki.firing else ki.mode_of(g)) if ki != null else ""
 	var left := lock_left(g)
 	if left > 0.0:
 		return {"ok": false, "locked": true, "lock": snappedf(left, 0.1), "error": "Auslöser gesperrt – noch %d s (Fehlalarm)" % int(ceil(left))}
@@ -214,7 +231,7 @@ func fire(g, who: String) -> Dictionary:
 			best = dd
 			hit = p
 	var gd: Dictionary = game.mwg if g == null else g
-	if g == null and who != "" and not (who in game.mwg["names"]):
+	if g == null and who != "" and not (who in game.mwg["names"]) and not (ki != null and ki.firing):
 		game.mwg["names"].append(who)
 	game.learn.on_shot(hit, game.learn.reported_recently(hit) if hit != null else game.learn.reported_recently())
 	var by: String = who if who != "" else ("MoveEye" if g == null else str(g["name"]))
@@ -282,6 +299,8 @@ func _log(is_hit: bool, nm: String, pts: int, dist: float, rt: float, by: String
 	_id = max(int(Time.get_unix_time_from_system() * 1000.0), _id + 1)
 	log_.append({"id": _id, "hit": is_hit, "n": nm, "pts": pts, "d": snappedf(dist, 0.1), "rt": snappedf(rt, 0.1), "by": by.left(30),
 			"t": int(t_round), "mode": main.game_mode})
+	if _ki_tag != "" and _ki_tag != "off":
+		log_[log_.size() - 1]["ki"] = _ki_tag                  # KI-Hilfe: «auto» = fired by the autopilot
 	if log_.size() > 6:
 		log_.pop_front()
 	shots.append(log_[log_.size() - 1].duplicate())
@@ -295,6 +314,8 @@ func _log(is_hit: bool, nm: String, pts: int, dist: float, rt: float, by: String
 func round_start() -> void:
 	lock.clear()
 	shots.clear()
+	if ki != null:
+		ki.round_start()
 
 
 func report() -> Dictionary:
@@ -302,12 +323,15 @@ func report() -> Dictionary:
 	var h := 0
 	for s_ in shots:
 		h += 1 if bool(s_["hit"]) else 0
-	return {"schuesse": shots.size(), "treffer": h, "daneben": shots.size() - h, "radius": radius(), "stufe": main.game_level, "liste": shots}
+	return {"schuesse": shots.size(), "treffer": h, "daneben": shots.size() - h, "radius": radius(), "stufe": main.game_level, "liste": shots,
+			"ki_hilfe": ki.report() if ki != null else {}}
 
 
 func command(d: Dictionary) -> Dictionary:
 	"""control «game_shut» (for tests): op info | aim {slot, dist, off} (a runner in front of the head camera) | fire {slot = guard}"""
 	var op := str(d.get("op", "info"))
+	if op == "ki" and ki != null:                          # KI-Hilfe (gamekihilfe.gd)
+		return ki.command(d)
 	if op == "aim":
 		var sl := int(d.get("slot", 0))
 		if sl < 0 or sl >= game.players.size() or game.players[sl] == null:
@@ -340,7 +364,7 @@ func command(d: Dictionary) -> Dictionary:
 			bx.append({"slot": p["slot"], "name": p["name"], "box": game.learn.box(p), "sees": game.cam_sees(p, 0), "vis": visible_to(p, 0), "hid": int(p.get("hide_i", -1)), "post": int(p["actor"].ctl_posture), "state": p["state"],
 					"caught": p["caught"], "x": snappedf(p["actor"].position.x, 0.1), "z": snappedf(p["actor"].position.z, 0.1)})
 	var gp = game.guard_player()
-	return {"ok": true, "mode": human_mode(), "mw": info_for(null), "guard": info_for(gp) if gp != null else {}, "log": log_, "runners": bx, "gallery": game.gallery.map(func(x): return x["n"]),
+	return {"ok": true, "mode": human_mode(), "ki_used": ki.used_round() if ki != null else false, "mw": info_for(null), "guard": info_for(gp) if gp != null else {}, "log": log_, "runners": bx, "gallery": game.gallery.map(func(x): return x["n"]),
 			"flash": game.flash_until > now(), "siren": _siren.playing, "report": report()}
 
 
@@ -439,6 +463,8 @@ class Cross extends Control:
 	var lock_of: Callable
 	var big := false
 	var btn: Control
+	var shooter: Callable                    # KI-Hilfe: [has a person with the shutter, g] (gamekihilfe.gd)
+	var kib: Button                          # KI-Hilfe: the button (aus → Rahmen → zielt → Autopilot)
 	var _pic := Rect2()
 	var _cam := -1
 
@@ -483,11 +509,63 @@ class Cross extends Control:
 			btn.size = Vector2(bs, bs)
 			btn.position = vis.position + vis.size - Vector2(bs, bs) - Vector2(18.0, 18.0 + (64.0 if big else 0.0)) * (1.0 if big else 0.4)
 			btn.queue_redraw()
+			_ki_button()
 		queue_redraw()
+
+	func _ki_button() -> void:
+		"""KI-Hilfe: the button left of the shutter; click (or key K) = the next help"""
+		if not shooter.is_valid():
+			return
+		if kib == null:
+			kib = Button.new()
+			kib.focus_mode = Control.FOCUS_NONE
+			kib.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+			kib.tooltip_text = "KI-Hilfe für diese Runde (Taste K): aus → KI-Rahmen → KI zielt → KI-Autopilot. Mit KI-Hilfe zählt die Runde nicht für die Rangliste."
+			kib.add_theme_font_size_override("font_size", 17 if big else 11)
+			kib.pressed.connect(func():
+				var s_: Array = shooter.call()
+				if bool(s_[0]):
+					shut.ki.cycle(s_[1]))
+			add_child(kib)
+		var s: Array = shooter.call()
+		kib.visible = bool(s[0])
+		if not kib.visible:
+			return
+		var ki = shut.ki
+		var m: String = ki.mode_of(s[1])
+		var tx: String = "KI: aus" if m == "off" else str(ki.NAMES[m])
+		var pz: float = ki.paused(s[1])
+		if m == "auto" and pz > 0.0:
+			tx += " · Pause %d s" % int(ceil(pz))
+		elif m != "off" and m != "frame" and s[1] != null and ki._cam(s[1]) != 0:
+			tx += " (feste Kamera)"
+		if m != "off" and str(ki.boxes(_cam)["src"]) == "sim":
+			tx += " · Sim-KI"
+		if kib.text != tx:
+			kib.text = tx
+		kib.modulate = Color(1, 1, 1, 0.75) if m == "off" else Color(0.75, 1.0, 0.8)
+		kib.size = kib.get_combined_minimum_size()
+		kib.position = btn.position + Vector2(-kib.size.x - (14.0 if big else 6.0), (btn.size.y - kib.size.y) / 2.0)
 
 	func _draw() -> void:
 		if _cam < 0:
 			return
+		if shooter.is_valid():                           # KI-Hilfe: MoveEye's boxes (persons green, uncertain dashed)
+			var s: Array = shooter.call()
+			if bool(s[0]) and shut.ki.mode_of(s[1]) != "off":
+				var lw_: float = 3.0 if big else 2.0
+				var gc := Color(0.2, 1.0, 0.4, 0.95)
+				var hd: float = shut.ki.hold(s[1])
+				for b in shut.ki.boxes(_cam)["b"]:
+					var r := Rect2(_pic.position + Vector2(float(b[0]), float(b[1])) * _pic.size, Vector2(float(b[2]), float(b[3])) * _pic.size)
+					if bool(b[4]):
+						draw_rect(r, gc, false, lw_)
+						if hd > 0.0:                         # the autopilot: how long the person is in the circle already
+							draw_rect(Rect2(r.position + Vector2(0, r.size.y + 3.0), Vector2(r.size.x * hd, 4.0)), Color(1.0, 0.85, 0.3))
+					else:
+						var q := [r.position, r.position + Vector2(r.size.x, 0), r.end, r.position + Vector2(0, r.size.y)]
+						for i in range(4):
+							draw_dashed_line(q[i], q[(i + 1) % 4], Color(0.2, 1.0, 0.4, 0.8), lw_, 8.0)
 		var c := _pic.position + _pic.size / 2.0
 		var rad: float = shut.radius() * _pic.size.y
 		preload("res://scripts/padhud.gd").draw_crosshair(self, c, rad, 3.0 if big else 2.0)   # 3D-4.13: ONE crosshair

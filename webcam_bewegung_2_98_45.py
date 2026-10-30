@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_44.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_45.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.45: KI-Hilfe für den Menschen am Auslöser (Knopf 🤖 im Bild, L2): KI-Rahmen, KI zielt, KI-Autopilot; solche Runden
+    zählen nicht für die Rangliste (mit Simulator 3D-4.16).
   * 2.98.44: Mit Simulator 3D-4.15: neue Menschen-Figuren mit Skelett (echtere Bewegungen, Wärmebild, Avatar am Handy, Namen nur
     für Spieler).
   * 2.98.43: Benutzer mit Rollen Kind / Freund / Familie / Nur ansehen / Eigene Rechte, Handy per QR verknüpfen, Geräte pro
@@ -969,10 +971,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_44.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_45.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_44.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_44.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_45.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_45.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -989,7 +991,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.44"
+APP_VERSION = "2.98.45"
 
 
 def default_data_dir():
@@ -15799,8 +15801,9 @@ def kopf_game_hand():
 
 
 def kopf_track_blocked():
-    """410 track(): parked (Aus, privacy) or a game round where people steer the head - the head does not follow"""
-    return (bool(CFG.get("kopf_parked")) and bool(CFG.get("kopf_park")) and bool(CFG.get("kopf_on"))) or kopf_game_hand()
+    """410 track(): parked (Aus, privacy) or a game round where people steer the head - the head does not follow
+    (except «KI zielt» / «KI-Autopilot» of the guards, part 542)"""
+    return (bool(CFG.get("kopf_parked")) and bool(CFG.get("kopf_park")) and bool(CFG.get("kopf_on"))) or (kopf_game_hand() and not kihilfe_follow())
 
 
 # ---- who holds the head ----------------------------------------------------------------------------------------------
@@ -23369,6 +23372,7 @@ def sim_state():
             "real_look": real_look(),               # 2.98.6: the look of the real pictures (146_echt_abgleich.py, realism.gd 3D-3.94)
             "det": {"persons": int(STATE.get("persons") or 0), "present": list(STATE.get("present") or []), "armed": is_armed(),
                     "boxes": list(STATE.get("person_boxes") or []) if STATE.get("persons") else [],   # 2.95.75: 0..1 of the head camera
+                    "sure": list(STATE.get("person_sure") or []) if STATE.get("persons") else [],     # KI-Hilfe: confirmed by the AI (542)
                     "noise": bool(AUDIO is not None and AUDIO.noisy()),
                     "pushes": msglog_recent(4)},             # after 2.98.17: the test bench counts real pushes (068)
             # the tracks of the mover: -1 … 1 each (from 2.94.0)
@@ -24316,8 +24320,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.15", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31690028,
-         "sha256": "a4871183e085dadeec9f838f37374a32c42a7b07adaa90935be32cefb99e3efc"}
+SIM3D = {"version": "3D-4.16", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31706847,
+         "sha256": "65d2e232642de4422351076d8851529bae10495f17bbf538657f207f9ffedb18"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -31421,7 +31425,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_44.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_45.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -33999,7 +34003,8 @@ class MotionWatch:
                     if mk.any():
                         px = frame[mk].astype(np.uint16)
                         frame[mk] = ((px * 7 + np.array([40, 40, 255], np.uint16) * 3) // 10).astype(np.uint8)    # 30 % red
-                for t in candidates:
+                kih_clean = kihilfe_clean_stream()        # «Team gegen MoveEye» without «KI-Rahmen»: no boxes in the picture (542)
+                for t in ([] if kih_clean else candidates):
                     x, y, w, h = [int(v) for v in (t.box[0] * sx, t.box[1] * sy, t.box[2] * sx, t.box[3] * sy)]
                     draw_outline(frame, cnts, t.box, sx, sy, (255, 255, 255), 1)
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 1)
@@ -34007,7 +34012,7 @@ class MotionWatch:
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1, cv2.LINE_AA)
                 for obj in objects:
                     draw_object(frame, obj, sx, sy)
-                for t in persons:
+                for t in ([] if kih_clean else persons):
                     x, y, w, h = [int(v) for v in (t.box[0] * sx, t.box[1] * sy, t.box[2] * sx, t.box[3] * sy)]
                     if CFG["highlight_red"]:
                         roi = frame[max(0, y):y + h, max(0, x):x + w]
@@ -53130,6 +53135,10 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
       R.fired.forEach(a => { if (okFor(i, a)) fired.push(a); });
     });
     const now = Date.now(), r3 = v => Math.round(v * 1000) / 1000;
+    // KI-Hilfe (542): in a round of «Team gegen MoveEye» L2 = the next help (aus → Rahmen → zielt → Autopilot)
+    const l2 = L.some(g => g.buttons[6] && (g.buttons[6].value > 0.5 || g.buttons[6].pressed));
+    if (l2 && !GP.l2 && window.mwKiOn && window.mwKiOn() && window.mwKiCycle) window.mwKiCycle();
+    GP.l2 = l2;
     // left stick = head (the same as the joystick of the live page: /api/stick, real servos and the simulator)
     if (head[0] || head[1]) { if (now - GP.lastHead >= 100) { GP.lastHead = now; GP.headZero = false; post("/api/stick", {x: r3(Math.max(-1, Math.min(1, head[0]))), y: r3(Math.max(-1, Math.min(1, -head[1]))), speed: spd(), via: "pad"}); } }
     else if (!GP.headZero) { GP.headZero = true; post("/api/stick", {x: 0, y: 0, speed: spd()}); }
@@ -55509,6 +55518,270 @@ def sim_owns_updates():
     return SIMUPD.get("mode") is not None
 
 # set_cfg (540) passes «sim_autoupd» changed on the web page to the simulator (_set_cfg_sim -> simupd_push)
+# ----------------------------------------------------------------------------
+# Wish of Daniel (30.10.2026): the guards at MoveEye in «Team gegen MoveEye» (the shutter of part 539) may switch on help
+# of the AI for the running round, on the live page and in the «Controller-Ansicht» (538: L2 in a round):
+#   «KI-Rahmen»    MoveEye's live detection boxes (STATE person_boxes) on the live picture: persons green, uncertain dashed
+#                  (not confirmed by the AI this picture - STATE person_sure, from erk_frame below)
+#   «KI zielt»     the head follows the detected person like «Folgen» - although since 2.98.39 the head does not move by
+#                  itself in such a round (162 kopf_track_blocked asks kihilfe_follow()); the person presses the shutter
+#   «KI-Autopilot» aims and fires by itself when sure (the simulator decides: gamekihilfe.gd - a sure box in the hit
+#                  circle for 0.5 s, shutter free, energy of gametools.gd enough). Steering by hand (joystick, controller,
+#                  arrows: MANUAL) or the shutter pauses it 5 s (sent to the simulator: control «game_shut» op ki human).
+#   Any help marks the round «mit KI-Hilfe» in the simulator: no leaderboard, no badges, marked in the results and in
+#   the game report. During a round WITHOUT help the live picture has no burned-in person boxes (410 kihilfe_clean_stream):
+#   otherwise the boxes would be a help for everybody.
+# The mode lives in the simulator (game_info shut.ki, 340 sim_game → state.sim.game.shut.ki); switched through
+# /api/sim {action: kihilfe, mode: off|frame|aim|auto|next} (550). The guard phone and the simulator PC have their own
+# switch (simulator gamekihilfe.gd, gameshutter.gd). Translations: part 623.
+# ----------------------------------------------------------------------------
+
+KIH = {"mode": "off", "mode_t": 0.0, "man_was": 0.0, "hum_until": 0.0, "hum_sent": 0.0}
+KIH_MODES = ("off", "frame", "aim", "auto")
+
+
+def kihilfe_mode():
+    """the help of the guards at MoveEye in a running round «Team gegen MoveEye» ('off' otherwise)"""
+    if not CFG.get("sim_on"):
+        return "off"
+    try:
+        g = sim_game()
+    except Exception:
+        g = None
+    if not g or g.get("mode") != "mwhand" or g.get("round") not in ("play", "countdown"):
+        return "off"
+    if time.time() - KIH["mode_t"] < 4.0:                 # just switched here (the game info comes every 2.5 s)
+        return KIH["mode"]
+    m = str(((g.get("shut") or {}).get("ki") or {}).get("mode") or "off")
+    return m if m in KIH_MODES else "off"
+
+
+def kihilfe_follow():
+    """162: the head may follow in a round «Team gegen MoveEye» - «KI zielt» / «KI-Autopilot» is on and nobody steers"""
+    return kihilfe_mode() in ("aim", "auto") and time.time() >= KIH["hum_until"]
+
+
+def kihilfe_clean_stream():
+    """410: no burned-in person boxes on the live picture during a round «Team gegen MoveEye» without «KI-Rahmen»"""
+    try:
+        return kopf_game_hand() and kihilfe_mode() == "off"
+    except Exception:
+        return False
+
+
+def _kihilfe_human():
+    try:
+        sim_control({"action": "game_shut", "op": "ki", "human": True})
+    except Exception:
+        pass
+
+
+def kihilfe_frame(w, person_boxes, pw, ph):
+    """once per picture (kopf_frame): the person steers → the AI waits; «KI zielt» without «Folgen»: follow here"""
+    m = kihilfe_mode()
+    if m not in ("aim", "auto"):
+        return
+    now = time.time()
+    if manual_active():
+        if MANUAL["until"] != KIH["man_was"]:
+            KIH["man_was"] = MANUAL["until"]
+            KIH["hum_until"] = now + (5.0 if m == "auto" else 1.5)
+            if m == "auto" and now - KIH["hum_sent"] > 1.0:     # the autopilot in the simulator waits 5 s too
+                KIH["hum_sent"] = now
+                threading.Thread(target=_kihilfe_human, daemon=True, name="kihuman").start()
+        return
+    if now < KIH["hum_until"] or not person_boxes or CFG.get("track_person"):
+        return                                            # («Folgen» on: 410 follows by itself, 162 lets it)
+    try:
+        w.track(max(person_boxes, key=lambda b: b[2] * b[3]), pw, ph)
+    except Exception as e:
+        log_event("servo", f"KI-Hilfe: {e}"[:160])
+
+
+def kihilfe_api(d, who, lang):
+    """/api/sim {action: kihilfe, mode}: switch the help of the guards at MoveEye in the simulator → (answer, status)"""
+    m = str(d.get("mode") or "")
+    if m not in KIH_MODES + ("next",):
+        return {"ok": False, "error": tr_err("unknown action", lang)}, 400
+    if m == "next":
+        cur = kihilfe_mode()
+        m = KIH_MODES[(KIH_MODES.index(cur) + 1) % len(KIH_MODES)] if cur in KIH_MODES else "frame"
+    try:
+        r = sim_control({"action": "game_shut", "op": "ki", "mode": m, "who": str(who or "")[:30]})
+    except Exception:
+        return {"ok": False, "error": tr_err("simulator not reachable", lang)}, 400
+    if not isinstance(r, dict) or not r.get("ok"):
+        return {"ok": False, "error": tr_err(str((r or {}).get("error") or "not supported - update the simulator"), lang)}, 400
+    KIH.update(mode=str((r.get("ki") or {}).get("mode") or m), mode_t=time.time(), hum_until=0.0)
+    SIMGAME["t"] = 0.0
+    log_event("sim", f"KI-Hilfe of the guards at MoveEye: {KIH['mode']}" + (" - the round does not count for the leaderboard" if KIH["mode"] != "off" else ""))
+    return dict(r, ok=True), 200
+
+
+# ---- the boxes: which persons the AI has confirmed in this picture (for «uncertain» = dashed) ---------------------------
+_erk_frame_kih_base = erk_frame
+
+
+# wraps: erk_frame
+def erk_frame(persons, candidates, ai_boxes, pw, ph, t0, small):
+    try:
+        ai_on = bool(CFG.get("ai_enabled")) and STATE.get("ai_status") in ("ready", "demo")
+        STATE["person_sure"] = [bool(getattr(t, "ai_confirmed", False)) or not ai_on for t in persons[:8]]
+    except Exception:
+        pass
+    return _erk_frame_kih_base(persons, candidates, ai_boxes, pw, ph, t0, small)
+
+
+_kopf_frame_kih_base = kopf_frame
+
+
+# wraps: kopf_frame
+def kopf_frame(w, candidates, person_boxes, warm_boxes, present, frame, pw, ph, t0):
+    try:
+        kihilfe_frame(w, person_boxes, pw, ph)
+    except Exception as e:
+        log_event("servo", f"KI-Hilfe: {e}"[:160])
+    return _kopf_frame_kih_base(w, candidates, person_boxes, warm_boxes, present, frame, pw, ph, t0)
+
+
+def kihilfe_selftest():
+    sg, sim0, keep, tp, pk = globals()["sim_game"], CFG.get("sim_on"), dict(KIH), CFG.get("track_person"), CFG.get("kopf_parked")
+    try:
+        CFG["sim_on"] = True; CFG["kopf_parked"] = False
+        globals()["sim_game"] = lambda: {"mode": "mwhand", "round": "play", "shut": {"ki": {"mode": "off"}}}
+        KIH["mode_t"] = 0.0
+        assert kihilfe_mode() == "off" and kopf_track_blocked() and kihilfe_clean_stream()
+        globals()["sim_game"] = lambda: {"mode": "mwhand", "round": "play", "shut": {"ki": {"mode": "aim"}}}
+        assert kihilfe_mode() == "aim" and kihilfe_follow() and not kopf_track_blocked() and not kihilfe_clean_stream()
+        assert not kopf_may("round"), "the round of the head stays paused"
+        KIH["hum_until"] = time.time() + 5.0
+        assert not kihilfe_follow() and kopf_track_blocked(), "the person steers: the AI waits"
+        globals()["sim_game"] = lambda: {"mode": "mwhand", "round": "end", "shut": {"ki": {"mode": "auto"}}}
+        assert kihilfe_mode() == "off" and not kihilfe_clean_stream()
+        assert "/*KIHDE*/" not in WEB_PAGE and "kih-b" in WEB_PAGE
+    finally:
+        globals()["sim_game"] = sg; CFG["sim_on"] = sim0; KIH.clear(); KIH.update(keep); CFG["track_person"] = tp
+        CFG["kopf_parked"] = pk; KOPF["game_was"] = False
+    return "help off: head stays, clean picture; KI zielt: head follows; hand: waits; after the round: off"
+
+
+SELFTEST_EXTRA.append(("KI-Hilfe in «Team gegen MoveEye» (542)", kihilfe_selftest))
+
+
+KIH_JS = r"""
+<script>
+(function () {
+  if (document.body.dataset.tab !== "live") return;
+  try { const D = /*KIHDE*/{}; for (const k in D) if (!(k in I18N.de)) I18N.de[k] = D[k]; } catch (e) {}
+  const T = x => (typeof t === "function" ? t(x) : x);
+  const E = (tag, id) => { const x = document.createElement(tag); if (id) x.id = id; return x; };
+  const css = E("style"); css.textContent =
+    "#kih-c{position:absolute;z-index:57;pointer-events:none}#kih-c[hidden],#kih-b[hidden]{display:none}"
+    + "#kih-b{position:absolute;z-index:62;border-radius:999px;border:1px solid #3a4658;background:rgba(10,14,20,.8);color:#e8eef5;font:600 13px/1.1 system-ui,sans-serif;padding:8px 12px;min-height:36px;cursor:pointer;touch-action:manipulation;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.45)}"
+    + "#kih-b.on{border-color:#34c759;color:#9ff0b4}#kih-b.pz{border-color:#ffd166;color:#ffd166}#kih-b small{display:block;font-size:10px;font-weight:600;opacity:.8;margin-top:2px}";
+  document.head.appendChild(css);
+  const CV = E("canvas", "kih-c"), BT = E("button", "kih-b"); CV.hidden = BT.hidden = true; BT.type = "button";
+  const MODES = ["off", "frame", "aim", "auto"], NAMES = {off: "AI help off", frame: "AI frames", aim: "AI aims", auto: "AI autopilot"};
+  const KH = {mode: "off", t: 0, busy: false};
+  const J = () => (typeof QSJ !== "undefined" && QSJ) || {};
+  const ST = () => J().state || {};
+  const game = () => (ST().sim || {}).game || null;
+  const roundOn = () => !!(window.mwShutOn && window.mwShutOn());
+  const ki = () => ((game() || {}).shut || {}).ki || {};
+  const mode = () => Date.now() - KH.t < 4000 ? KH.mode : (MODES.includes(ki().mode) ? ki().mode : "off");
+  function set(m) {
+    if (KH.busy) return;
+    KH.busy = true;
+    post("/api/sim", {action: "kihilfe", mode: m, lang: LANG}).then(r => {
+      KH.busy = false; r = r || {};
+      if (!r.ok) { if (typeof toast === "function") toast("⚠ " + (r.error || T("error"))); return; }
+      KH.mode = (r.ki || {}).mode || m; KH.t = Date.now();
+      if (typeof toast === "function") toast("🤖 " + T(NAMES[KH.mode]) + (KH.mode !== "off" ? " · " + T("this round does not count for the leaderboard") : ""));
+      paint();
+    }).catch(() => { KH.busy = false; });
+  }
+  const next = () => set(MODES[(MODES.indexOf(mode()) + 1) % MODES.length]);
+  BT.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); next(); });
+  ["pointerdown", "pointerup", "dblclick"].forEach(k => BT.addEventListener(k, e => e.stopPropagation()));
+  window.mwKiOn = roundOn;                                 // 538: in such a round L2 = the next help
+  window.mwKiCycle = next;
+  function picRect(v) {
+    const r = v.getBoundingClientRect(), nw = v.naturalWidth || 16, nh = v.naturalHeight || 9;
+    const fit = getComputedStyle(v).objectFit, k = fit === "cover" ? Math.max(r.width / nw, r.height / nh) : fit === "fill" ? 0 : Math.min(r.width / nw, r.height / nh);
+    const w = k ? nw * k : r.width, h = k ? nh * k : r.height;
+    return {left: r.left + (r.width - w) / 2, top: r.top + (r.height - h) / 2, width: w, height: h};
+  }
+  const hits = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+  let sig = "";
+  function paint() {
+    const v = document.getElementById("video"), on = roundOn() && v && v.offsetParent !== null;
+    if (!on) { CV.hidden = BT.hidden = true; return; }
+    const cont = v.parentNode;
+    if (BT.parentNode !== cont) cont.append(CV, BT);
+    if (getComputedStyle(cont).position === "static") cont.style.position = "relative";
+    const cr = cont.getBoundingClientRect(), p = picRect(v);
+    const vis = {left: Math.max(p.left, cr.left), top: Math.max(p.top, cr.top), right: Math.min(p.left + p.width, cr.right), bottom: Math.min(p.top + p.height, cr.bottom)};
+    if (vis.right - vis.left < 60 || vis.bottom - vis.top < 60) { CV.hidden = BT.hidden = true; return; }
+    const md = mode(), K = ki();
+    // the button: top left of the picture, moved down until nothing else is there (gauges of 543, view buttons)
+    let tx = "🤖 " + T(NAMES[md]), sub = "";
+    if (md === "auto" && K.pause > 0) sub = T("paused") + " " + Math.ceil(K.pause) + " s – " + T("you steer");
+    else if (md !== "off") sub = T("round with AI help");
+    const s2 = tx + "|" + sub;
+    if (s2 !== sig) { sig = s2; BT.textContent = tx; if (sub) { const sm = E("small"); sm.textContent = sub; BT.appendChild(sm); }
+      BT.title = T("AI help for this round: off → AI frames → AI aims → AI autopilot (L2 on the controller). With AI help the round does not count for the leaderboard."); BT.setAttribute("aria-label", BT.title); }
+    BT.classList.toggle("on", md !== "off"); BT.classList.toggle("pz", md === "auto" && K.pause > 0);
+    BT.hidden = false;
+    const bw = BT.offsetWidth || 120, bh = BT.offsetHeight || 36, m = 10;
+    const obs = [...cont.querySelectorAll("button, .vtag, #vo-ctl, #vo-mctl, #lv-tools, [role=application]")].concat([...document.querySelectorAll("#mwt, #pv-bar, #pv-x, #lv-vw .lv-vbtn, #iconhint, #pip")])
+      .filter(x => x !== BT && !x.contains(v) && !x.hidden).map(x => x.getBoundingClientRect()).filter(r => r.width > 2 && r.height > 2 && r.width * r.height < 0.45 * p.width * p.height);
+    let pos = {x: vis.left + m, y: vis.top + m};
+    for (let y = vis.top + m; y <= vis.bottom - bh - m; y += 8) { const c = {left: vis.left + m - 2, top: y - 2, right: vis.left + m + bw + 2, bottom: y + bh + 2}; if (!obs.some(o => hits(c, o))) { pos.y = y; break; } }
+    BT.style.left = (pos.x - cr.left) + "px"; BT.style.top = (pos.y - cr.top) + "px";
+    // the boxes: MoveEye's persons in this picture (green; dashed = not confirmed by the AI)
+    const S = ST(), bx = (md !== "off" && S.persons) ? (S.person_boxes || []) : [], sure = S.person_sure || [];
+    CV.hidden = !bx.length;
+    if (!bx.length) return;
+    const dp = devicePixelRatio || 1;
+    CV.style.left = (p.left - cr.left) + "px"; CV.style.top = (p.top - cr.top) + "px"; CV.style.width = p.width + "px"; CV.style.height = p.height + "px";
+    if (CV.width !== Math.round(p.width * dp) || CV.height !== Math.round(p.height * dp)) { CV.width = Math.round(p.width * dp); CV.height = Math.round(p.height * dp); }
+    const x = CV.getContext("2d"); x.setTransform(dp, 0, 0, dp, 0, 0); x.clearRect(0, 0, p.width, p.height);
+    bx.forEach((b, i) => {
+      const ok = i >= sure.length || !!sure[i], X = b[0] * p.width, Y = b[1] * p.height, W = b[2] * p.width, H = b[3] * p.height;
+      x.setLineDash(ok ? [] : [9, 7]); x.lineWidth = 4; x.strokeStyle = "rgba(0,0,0,.5)"; x.strokeRect(X, Y, W, H);
+      x.lineWidth = 2.5; x.strokeStyle = "#34ff6a"; x.strokeRect(X, Y, W, H);
+    });
+    x.setLineDash([]);
+  }
+  setInterval(paint, 150);
+  addEventListener("resize", paint); addEventListener("scroll", paint, {passive: true});
+  addEventListener("keydown", e => { if (e.code === "KeyK" && e.shiftKey && roundOn()) { e.preventDefault(); next(); } });   // PC: Shift + K
+})();
+</script>
+"""
+WEB_PAGE = WEB_PAGE.replace("</body>", KIH_JS + "</body>", 1)
+
+# the manual (HELP_PAGE of 540): one paragraph after «Auslöser», German and English
+_KIH_HELP = (
+    ("ausserhalb einer Runde ein Schuss auf die Bildmitte.</p>",
+     "<p><b>🤖 KI-Hilfe am Auslöser:</b> Wer mit dem Auslöser bewacht, kann für die laufende Runde Hilfe der KI einschalten: "
+     "Knopf «🤖» oben links im Live-Bild (Controller-Ansicht: L2; Handy des Wächters: Knopf «KI»; Simulator-PC: Knopf neben dem "
+     "Auslöser oder Taste K). <b>KI-Rahmen</b> zeigt die Erkennung von MoveEye im Bild (Personen grün, unsichere gestrichelt), "
+     "<b>KI zielt</b> lässt den Kopf der erkannten Person folgen (du drückst ab), der <b>KI-Autopilot</b> zielt und drückt selbst ab, "
+     "wenn er sicher ist (0,5 s im Kreis, Energie und Sperre gelten). Jede Eingabe von dir (Stick, Joystick, Auslöser) pausiert "
+     "den Autopiloten 5 s. Eine Runde mit KI-Hilfe zählt nicht für Rangliste und Abzeichen und ist im Ergebnis und im Spielbericht "
+     "markiert. Ohne KI-Hilfe zeigt das Live-Bild während der Runde keine Erkennungsrahmen.</p>"),
+    ("outside a round too.</p>",
+     "<p><b>🤖 AI help at the shutter:</b> whoever guards with the shutter can switch on help of the AI for the running round: "
+     "button «🤖» at the top left of the live picture (controller view: L2; phone of the guard: button «KI»; simulator PC: button "
+     "next to the shutter or key K). <b>AI frames</b> shows MoveEye's detection in the picture (persons green, uncertain dashed), "
+     "<b>AI aims</b> lets the head follow the detected person (you press the shutter), the <b>AI autopilot</b> aims and fires by "
+     "itself when it is sure (0.5 s in the circle; energy and lock apply). Any input of yours (stick, joystick, shutter) pauses the "
+     "autopilot for 5 s. A round with AI help does not count for the leaderboard and badges and is marked in the result and the "
+     "game report. Without AI help the live picture shows no detection boxes during the round.</p>"))
+for _a, _b in _KIH_HELP:
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 # Server: 040 (Rechte), 041 (Zeitfenster, Einmal-Link, Push, Geräte). Deutsch der Seite: Teil 623 (/*USRDE*/), fr / it / rm über /i18n/<lang>.js.
 USERS_JS = r"""
 <script>
@@ -56020,6 +56293,8 @@ class WebStream:
                         log_event("sim", f"False alarm marked: a shot of {q_['who'] or 'MoveEye'} into the simulation missed")
                     SIMGAME["t"] = 0.0
                     return reply(r)
+                if act_ == "kihilfe":                        # «KI-Hilfe» of the guards at MoveEye (542, simulator gamekihilfe.gd)
+                    return reply(*kihilfe_api(d, getattr(g, "user", ""), lang))
                 if act_ == "game_mwcatch":                   # «Team gegen MoveEye»: «Erwischt!» from this page (3D-3.27)
                     try:
                         q_ = {"action": "game_mwcatch", "who": str(d.get("who") or getattr(g, "user", "") or "")[:30]}
@@ -59986,7 +60261,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.44")
+        self.root.title("MoveEye 2.98.45")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -60353,7 +60628,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.44 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.45 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -67115,7 +67390,7 @@ App._refresh = _kr_tk_refresh
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 180                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 182                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -71434,6 +71709,33 @@ def _app_tk_species_group(self, parent, sec):
 
 
 App._tk_species_group = _app_tk_species_group
+# ----------------------------------------------------------------------------
+# Key = English text: (Deutsch, Français, Italiano, Rumantsch). German also into I18N.de of the live page (/*KIHDE*/).
+# ----------------------------------------------------------------------------
+
+_HX_KIHILFE = {
+    'AI help off': ('KI-Hilfe aus', 'Aide IA désactivée', 'Aiuto IA spento', 'Agid IA deactivà'),
+    'AI frames': ('KI-Rahmen', 'Cadres IA', 'Riquadri IA', 'Rom IA'),
+    'AI aims': ('KI zielt', 'L’IA vise', 'L’IA mira', 'L’IA mira'),
+    'AI autopilot': ('KI-Autopilot', 'Pilote automatique IA', 'Pilota automatico IA', 'Autopilot IA'),
+    'paused': ('pausiert', 'en pause', 'in pausa', 'en pausa'),
+    'you steer': ('du steuerst', 'tu diriges', 'guidi tu', 'ti manegias'),
+    'round with AI help': ('Runde mit KI-Hilfe', 'manche avec aide IA', 'turno con aiuto IA', 'runda cun agid IA'),
+    'this round does not count for the leaderboard': (
+        'diese Runde zählt nicht für die Rangliste', 'cette manche ne compte pas pour le classement',
+        'questo turno non conta per la classifica', 'questa runda na quinta betg per la ranglista'),
+    'AI help for this round: off → AI frames → AI aims → AI autopilot (L2 on the controller). With AI help the round does not count for the leaderboard.': (
+        'KI-Hilfe für diese Runde: aus → KI-Rahmen → KI zielt → KI-Autopilot (L2 am Controller). Mit KI-Hilfe zählt die Runde nicht für die Rangliste.',
+        'Aide IA pour cette manche : désactivée → cadres IA → l’IA vise → pilote automatique IA (L2 sur la manette). Avec l’aide IA, la manche ne compte pas pour le classement.',
+        'Aiuto IA per questo turno: spento → riquadri IA → l’IA mira → pilota automatico IA (L2 sul controller). Con l’aiuto IA il turno non conta per la classifica.',
+        'Agid IA per questa runda: deactivà → rom IA → l’IA mira → autopilot IA (L2 al controller). Cun agid IA na quinta la runda betg per la ranglista.'),
+    'error': ('Fehler', 'erreur', 'errore', 'errur'),
+}
+for _k, _v in _HX_KIHILFE.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+WEB_PAGE = WEB_PAGE.replace("/*KIHDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_KIHILFE.items()}, ensure_ascii=False), 1)
 TRX['rm'].update({
     '(or the address from the push message).': "(u l'adressa da l'avis push).",
     '+ Add relay': '+ Agiuntar in relais',

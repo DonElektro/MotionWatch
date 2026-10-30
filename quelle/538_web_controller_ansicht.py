@@ -311,6 +311,10 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
       R.fired.forEach(a => { if (okFor(i, a)) fired.push(a); });
     });
     const now = Date.now(), r3 = v => Math.round(v * 1000) / 1000;
+    // KI-Hilfe (542): in a round of «Team gegen MoveEye» L2 = the next help (aus → Rahmen → zielt → Autopilot)
+    const l2 = L.some(g => g.buttons[6] && (g.buttons[6].value > 0.5 || g.buttons[6].pressed));
+    if (l2 && !GP.l2 && window.mwKiOn && window.mwKiOn() && window.mwKiCycle) window.mwKiCycle();
+    GP.l2 = l2;
     // left stick = head (the same as the joystick of the live page: /api/stick, real servos and the simulator)
     if (head[0] || head[1]) { if (now - GP.lastHead >= 100) { GP.lastHead = now; GP.headZero = false; post("/api/stick", {x: r3(Math.max(-1, Math.min(1, head[0]))), y: r3(Math.max(-1, Math.min(1, -head[1]))), speed: spd(), via: "pad"}); } }
     else if (!GP.headZero) { GP.headZero = true; post("/api/stick", {x: 0, y: 0, speed: spd()}); }

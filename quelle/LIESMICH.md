@@ -123,6 +123,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `589_blinki.py` | «Blinki», die Figur aus dem Logo für Einrichtung und Rundgänge: SVG + CSS + Skript vor /g2/ui.js (Web), kleines Bild mit cv2 (Fenster), Schalter «blinki_on» | 260 |
 | `593_fenster_aufraeumen.py` | Fenster: Gruppe «Tierart» in der KI-Erkennung (wie «KI-Modell») | 37 |
 | `635_uebersetzungen_blinki.py` | Übersetzungen und Anleitungs-Zeile zu Blinki | 60 |
+| `594_uebersetzungen_kihilfe.py` | Übersetzungen für die «KI-Hilfe» am Auslöser (542) | 25 |
 | `634_uebersetzungen_ausl.py` | Übersetzungen für den «Auslöser» (539) | 40 |
 | `637_uebersetzungen_servo.py` | Übersetzungen Servo-Bewegung, Not-Aus, Teach-in, Diagnose | 156 |
 | `623_uebersetzungen_pad2.py` | Übersetzungen des Controller-Konzepts (542, 538, 470) | 75 |
@@ -138,6 +139,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `538_web_controller_ansicht.py` | Web: «Controller-Ansicht» der Live-Seite für Handy / Tablet (Live- + Simulator-Bild, Game-Controller, Gesten, schmale Leiste) | 383 |
 | `539_web_ausloeser.py` | «Auslöser»: ein Mensch steuert die Kamera – Fadenkreuz und runder 🎯-Knopf im Live-Bild, R2, Treffer als Alarm ins Test-Postfach | 170 |
 | `542_web_padmap.py` | EIN Controller-Konzept (MWPad): Belegung für Controller-Ansicht, Simulator-Seite, Handy-Spiel und 3D-Simulator (gleicher Text wie simulator3d/scripts/padmap.gd, Selbsttest vergleicht), Vibration, Hilfe, Fadenkreuz, Mini-Karte | 230 |
+| `546_web_ki_hilfe.py` | «KI-Hilfe» am Auslöser (KI-Rahmen, KI zielt, KI-Autopilot): Knopf und Erkennungsrahmen im Live-Bild, Kopf folgt in «Team gegen MoveEye», /api/sim kihilfe, Runde «mit KI-Hilfe» | 230 |
 | `543_web_spiel_waechter.py` | Spiel des Simulators: Wächter-Werkzeuge der Wächter an MoveEye («Team gegen MoveEye») – Energie, Licht, Sirene, Scan, Zoom, Hinweis-Marken im Live-Bild | 75 |
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
 | `544_web_spiel_online.py` | Web: Seite Simulator, Karte «Spiel» – «Mensch gegen KI» (beide Runden, Ergebnis) und «Online-Einladung» (QR-Code, Zurückziehen, Protokoll) | 110 |

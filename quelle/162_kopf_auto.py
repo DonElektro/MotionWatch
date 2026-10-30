@@ -180,8 +180,9 @@ def kopf_game_hand():
 
 
 def kopf_track_blocked():
-    """410 track(): parked (Aus, privacy) or a game round where people steer the head - the head does not follow"""
-    return (bool(CFG.get("kopf_parked")) and bool(CFG.get("kopf_park")) and bool(CFG.get("kopf_on"))) or kopf_game_hand()
+    """410 track(): parked (Aus, privacy) or a game round where people steer the head - the head does not follow
+    (except «KI zielt» / «KI-Autopilot» of the guards, part 542)"""
+    return (bool(CFG.get("kopf_parked")) and bool(CFG.get("kopf_park")) and bool(CFG.get("kopf_on"))) or (kopf_game_hand() and not kihilfe_follow())
 
 
 # ---- who holds the head ----------------------------------------------------------------------------------------------

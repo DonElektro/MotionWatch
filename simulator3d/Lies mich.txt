@@ -608,6 +608,10 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-4.16
+3D-4.16: KI-Hilfe für den Wächter am Auslöser (umschaltbar: KI-Rahmen → KI zielt → KI-Autopilot, Knopf 🤖, Taste K, L2);
+Runden mit KI-Hilfe zählen nicht für die Rangliste.
+
 NEU IN 3D-4.15
 3D-4.15: Neue Menschen-Figuren mit Skelett und weichem Körper (ab Grafik «mittel», bei «einfach» die alten): weiche Übergänge
 Gehen/Ducken/Kriechen, Füsse am Hang, Kopf schaut umher, Tragen beim Diebstahl, echteres Wärmebild (Gesicht warm, Kleider kühl).

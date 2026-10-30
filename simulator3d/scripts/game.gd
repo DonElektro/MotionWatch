@@ -620,7 +620,7 @@ func _net() -> void:
 		var txt: String = (h[1] as PackedByteArray).get_string_from_utf8()
 		if txt.contains("\r\n\r\n"):
 			var path := txt.get_slice(" ", 1)
-			var body := PAGE.replace("%WSPORT%", str(ws_port)).replace("/*PADMAP*/", main.padmap.JS if main.padmap != null else "").to_utf8_buffer() if path == "/" or path.begins_with("/?") else "nicht gefunden".to_utf8_buffer()
+			var body := PAGE.replace("%WSPORT%", str(ws_port)).replace("/*PADMAP*/", main.padmap.JS if main.padmap != null else "").replace("</body>", shut.ki.PHONE_JS + "</body>").to_utf8_buffer() if path == "/" or path.begins_with("/?") else "nicht gefunden".to_utf8_buffer()   # KI-Hilfe (gamekihilfe.gd)
 			var ctype := "text/html; charset=utf-8"
 			if path == "/manifest.json":                   # «Zum Home-Bildschirm»: then the game runs without the address bar (3D-3.23)
 				body = JSON.stringify({"name": "Unentdeckt ans Ziel", "short_name": "Unentdeckt", "start_url": "/", "display": "fullscreen",
@@ -739,6 +739,8 @@ func _message(s: Dictionary, m: Dictionary) -> void:
 				_rebuild(p2)
 		"sig":
 			_signal(p2, str(m.get("k", "")))
+		"ki":                                              # KI-Hilfe of the guard (gamekihilfe.gd)
+			shut.ki.from_phone(p2, m)
 		"role":
 			_set_role(p2, str(m.get("r", "runner")))
 		"stone":
@@ -1426,11 +1428,12 @@ func end_round() -> void:
 		voted[v[0]["slot"]] = v[1]
 	_board_load()
 	var day := daily_id()
+	var kih: bool = shut.ki.used_round()                  # KI-Hilfe (gamekihilfe.gd): no badges, XP, leaderboard
 	for p in players:
 		if p == null:
 			continue
 		if p["role"] == "watch":                           # 3D-4.x: a watcher who guessed right gets XP too
-			if voted.has(p["slot"]):
+			if voted.has(p["slot"]) and not kih:
 				var xw: Dictionary = xp.award(str(p["name"]), [["Tipp richtig", 40 if voted[p["slot"]] else 0], ["Zugeschaut", 10]])
 				p["xpi"] = xw
 			continue
@@ -1482,7 +1485,7 @@ func end_round() -> void:
 			info += " · %d× erwischt" % p["caught"] + (" · 💎 %d" % p["items"] if int(p["items"]) > 0 else "")
 			if int(p.get("rescues", 0)) > 0:
 				info += " · %d× befreit" % p["rescues"]
-		var bd := _badges_of(p)                            # 3D-3.77: badges
+		var bd := [] if kih else _badges_of(p)             # 3D-3.77: badges
 		var nb := []
 		if not bd.is_empty():
 			info += " · " + " ".join(PackedStringArray(bd.map(func(b): return BADGES[b][0] + " " + BADGES[b][1])))
@@ -1492,7 +1495,7 @@ func end_round() -> void:
 		# 3D-4.x: experience points for the level (score, badges, task, the challenge of the day, a right guess)
 		var parts := [["Punkte", int(sc / 10.0)], ["Abzeichen", 25 * bd.size() + 50 * nb.size()], ["Aufgabe", 40 if bool(p.get("task_ok", false)) else 0],
 				["Dabei", 20]]
-		if main.game_daily and xp.daily_first(str(p["name"]), day):
+		if main.game_daily and not kih and xp.daily_first(str(p["name"]), day):
 			parts.append(["Tagesaufgabe", 100])
 		if voted.has(p["slot"]):
 			parts.append(["Tipp richtig", 40 if voted[p["slot"]] else 0])
@@ -1500,7 +1503,7 @@ func end_round() -> void:
 		parts.append_array(tp)
 		if not tp.is_empty():
 			info += " · 🧠 %d gelernt" % int(plus.teach[str(p["name"])]["n"])
-		var xr: Dictionary = xp.award(str(p["name"]), parts)
+		var xr: Dictionary = {} if kih else xp.award(str(p["name"]), parts)
 		p["xpi"] = xr
 		var r := {"n": p["name"], "c": "#" + COLORS[p["slot"]].to_html(false), "info": info, "score": sc, "badges": bd}
 		if not xr.is_empty():
@@ -1529,12 +1532,15 @@ func end_round() -> void:
 		var gb := guard_score(bots.guard, missed)
 		results.append({"n": bots.GUARD_NAME, "c": "#9aa7b8", "info": "Bot-Wächter · " + str(gb[1]), "score": int(gb[0])})
 	results.sort_custom(func(x, y): return x["score"] > y["score"])
+	if kih:
+		shut.ki.mark_results(results)
 	var adapt: Array = bots.round_end(results)             # 3D-4.x: the bots adapt their skill
 	for ad in adapt:
 		news("🤖 %s: Stärke %d %% → %d %%" % [ad[0], int(float(ad[1]) * 100.0), int(float(ad[2]) * 100.0)])
 	bots.guard = {}
 	_rec_end()                                             # 3D-3.77: replay, ghosts, challenge of the day
-	_board_add()
+	if not kih:
+		_board_add()
 	_event_end()
 	_place_hides(0)
 	_place_checkpoints(0)
@@ -3730,7 +3736,8 @@ func _rec_end() -> void:
 	replay = {"t": "rp", "pts": rec.duplicate(), "ev": rec_ev.duplicate(), "goal": [snappedf(goal.x, 0.1), snappedf(goal.z, 0.1)],
 			"mw": [snappedf(hp.x, 0.1), snappedf(hp.z, 0.1)], "obst": obst, "who": who, "fov": main.cams[0].fov * 16.0 / 9.0}
 	_ghosts_save()
-	_daily_save()
+	if not shut.ki.used_round():                           # KI-Hilfe: not for the challenge of the day
+		_daily_save()
 	_ghosts_clear()
 
 
