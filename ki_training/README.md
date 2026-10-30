@@ -62,7 +62,7 @@ erscheint in MoveEye im Kasten «Eigenes Modell». Test ohne ultralytics: `--pro
 ### 1. Trainingspakete aus dem Simulator
 
 Im 3D-Simulator der Knopf **«Trainingspaket (YOLO) machen»** (oder in MoveEye, Reiter Simulator: «Trainingspaket für ein eigenes KI-Modell (YOLO)»; etwa 2 s pro Bild). Es
-entsteht eine ZIP-Datei `MW-Trainingsbilder_….zip` auf dem Schreibtisch (YOLO-Format: `data.yaml`, `images/`, `labels/`).
+entsteht eine ZIP-Datei `MoveEye-Trainingsbilder_….zip` (bis 3D-4.21: `MW-Trainingsbilder_….zip`) auf dem Schreibtisch (YOLO-Format: `data.yaml`, `images/`, `labels/`).
 
 * **Kleine Pakete** (bis etwa 200 Bilder, rund 10 MB) direkt in den Ordner `ki_training/pakete/` hochladen
   (GitHub: Ordner öffnen → «Add file» → «Upload files»). Das ganze Repository soll klein bleiben:

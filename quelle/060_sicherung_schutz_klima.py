@@ -769,10 +769,11 @@ MSG_KEYWORDS = {"person": "ALARM", "warm": "WAERME", "noise": "LAERM", "tamper":
 
 
 def msg_keyword(ev):
-    """«MW-ALARM» etc. at the start of a message - a shortcut automation on the iPhone reacts to this word (2.95.27)"""
+    """«MoveEye-ALARM» etc. at the start of a message - a shortcut automation on the iPhone reacts to this word (2.95.27;
+    up to 2.98.50 the default was «MW»)"""
     if not CFG.get("msg_keyword_on", True):
         return ""
-    pre = re.sub(r"[^A-Za-z0-9]", "", str(CFG.get("msg_keyword_prefix") or "MW"))[:12] or "MW"
+    pre = re.sub(r"[^A-Za-z0-9]", "", str(CFG.get("msg_keyword_prefix") or "MoveEye"))[:12] or "MoveEye"
     return f"{pre}-{MSG_KEYWORDS.get(ev, 'INFO')}"
 
 

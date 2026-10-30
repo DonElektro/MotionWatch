@@ -268,7 +268,7 @@ def smalltv_selftest():
     try:
         assert stv_norm_addr("192.168.1.77") == "http://192.168.1.77" and stv_norm_addr("http://tv.local:8080/") == "http://tv.local:8080"
         assert stv_norm_addr("javascript:alert(1)") == "" and stv_norm_addr("http://a b") == "" and stv_norm_addr("https://x") == ""
-        assert stv_is_geekmagic({"m": "SmallTV-Ultra", "v": "Ultra-V9.0.40"}) and not stv_is_geekmagic({"v": 1, "name": "MW Sim"})
+        assert stv_is_geekmagic({"m": "SmallTV-Ultra", "v": "Ultra-V9.0.40"}) and not stv_is_geekmagic({"v": 1, "name": "MoveEye Sim"})
         for jpg in (stv_render_status("de"), stv_render_status("de", True), stv_render_test("Zelt"),
                     stv_render_alarm({"kind": "animal", "label": "fox", "conf": 0.91, "dist": 6, "crop": np.full((90, 120, 3), 90, np.uint8), "clock": "22:14"}, "de"),
                     stv_render_alarm({"kind": "person", "label": "person", "conf": None, "dist": 12, "crop": None, "n": 2, "clock": "01:05"}, "de", True),

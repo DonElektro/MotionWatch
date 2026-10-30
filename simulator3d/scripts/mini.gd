@@ -209,7 +209,7 @@ func _paint() -> void:
 		if c.get("total", null) != null and c.get("sim", null) == null:
 			mwp.append("Gerät-CPU %d %%" % roundi(float(c["total"])))
 		elif c.get("mw", null) != null:
-			mwp.append("MW %d %%" % roundi(float(c["mw"])))
+			mwp.append("MoveEye-CPU %d %%" % roundi(float(c["mw"])))   # 3D-4.22: «MoveEye-CPU» instead of «MW»
 		line_cpu.text = "  ·  ".join(mwp).strip_edges()
 	else:
 		line_cpu.text = "MoveEye: –" if sending else "MoveEye sieht den Simulator nicht"

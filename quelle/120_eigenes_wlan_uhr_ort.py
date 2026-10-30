@@ -2,6 +2,8 @@
 # ----------------------------------------------------------------------------
 # Own Wi-Fi of the Pi (access point / hotspot): the phone connects directly to the Pi - works without any mobile network.
 #   NetworkManager connection "MotionWatch-Hotspot" (WPA2, 2.4 GHz for range). The page is then at http://10.42.0.1:<port>/
+#   The connection name is internal and stays (existing devices); the Wi-Fi name (SSID) is CFG["hotspot_ssid"]: «MoveEye» for
+#   new setups from 2.98.51, devices from before keep «MotionWatch» (rename_migrate in 579a).
 # ----------------------------------------------------------------------------
 HOTSPOT_CON = "MotionWatch-Hotspot"
 _PW_ALPHA = "abcdefghjkmnpqrstuvwxyz23456789"           # no 0/O, 1/l/i: easy to type on a phone
@@ -40,7 +42,7 @@ def hotspot_set(on, persist=True):
     b = wifi_backend()
     if b != "nm":
         return False, "the own Wi-Fi needs NetworkManager (Raspberry Pi OS Bookworm or newer)"
-    iface, ssid = (WIFI.get("ap_iface") if DUAL["on"] else "") or WIFI["iface"], CFG["hotspot_ssid"] or "MotionWatch"
+    iface, ssid = (WIFI.get("ap_iface") if DUAL["on"] else "") or WIFI["iface"], CFG["hotspot_ssid"] or "MoveEye"
     with _WIFI_LOCK:
         if on:
             pw = hotspot_password()
@@ -247,7 +249,7 @@ HEALTH_ORDER = ("bad", "warn", "ok", "off")
 QUICK_GUIDE = {
 "de": ("Kurzanleitung", [
   ("⚡", "Aufstellen", ["Kamera auf den Platz richten, Temperaturfühler ausserhalb des Gehäuses.", "Powerbank anschliessen (Pi 5: 5 V / 5 A). Nach etwa 1 Minute ist alles bereit."]),
-  ("📱", "Verbinden", ["Handy-Hotspot einschalten – der Pi verbindet sich selbst. Oder mit dem WLAN «MotionWatch» des Pi verbinden.", "Seite öffnen: im WLAN des Pi <b>http://10.42.0.1:5000</b>. Für Standort und Mikrofon die https-Seite nehmen.", "«🖨 QR-Codes zum Verbinden» (unter System) druckt die Codes zum Verbinden."]),
+  ("📱", "Verbinden", ["Handy-Hotspot einschalten – der Pi verbindet sich selbst. Oder mit dem WLAN «MoveEye» des Pi verbinden (bei älteren Geräten «MotionWatch»).", "Seite öffnen: im WLAN des Pi <b>http://10.42.0.1:5000</b>. Für Standort und Mikrofon die https-Seite nehmen.", "«🖨 QR-Codes zum Verbinden» (unter System) druckt die Codes zum Verbinden."]),
   ("🌙", "Am Abend", ["<b>«🌙 Heute Nacht bewachen»</b> antippen.", "Was unter «Fehlt noch» steht, erledigen.", "Während des Countdowns den Bereich verlassen."]),
   ("🚨", "Bei Alarm", ["Push-Nachricht antippen → Live-Bild ansehen.", "Sirene oder Licht über die Schnellschalter.", "War es nichts? In den Aufnahmen <b>👎 «War nichts»</b> antippen – das Programm schlägt dann bessere Einstellungen vor."]),
   ("☀", "Am Morgen", ["Nachtbericht lesen (Push-Nachricht, Standard 7 Uhr).", "Schutz ausschalten, Powerbank laden.", "Im Tagebuch die Tiere der Nacht ansehen."]),
@@ -255,7 +257,7 @@ QUICK_GUIDE = {
 ]),
 "en": ("Quick guide", [
   ("⚡", "Set up", ["Point the camera at the pitch; temperature sensor outside the housing.", "Connect the powerbank (Pi 5: 5 V / 5 A). After about 1 minute everything is ready."]),
-  ("📱", "Connect", ["Switch on the phone hotspot – the Pi joins it by itself. Or join the Pi's Wi-Fi «MotionWatch».", "Open the page: in the Pi's Wi-Fi <b>http://10.42.0.1:5000</b>. For location and microphone use the https page.", "«🖨 QR codes for connecting» (under System) prints the codes."]),
+  ("📱", "Connect", ["Switch on the phone hotspot – the Pi joins it by itself. Or join the Pi's Wi-Fi «MoveEye» (older devices: «MotionWatch»).", "Open the page: in the Pi's Wi-Fi <b>http://10.42.0.1:5000</b>. For location and microphone use the https page.", "«🖨 QR codes for connecting» (under System) prints the codes."]),
   ("🌙", "In the evening", ["Tap <b>«🌙 Guard tonight»</b>.", "Fix what is listed under «Still missing».", "Leave the area during the countdown."]),
   ("🚨", "On an alarm", ["Tap the push message → watch the live picture.", "Siren or light with the quick switches.", "Was it nothing? In the recordings tap <b>👎 «Was nothing»</b> – the program then suggests better settings."]),
   ("☀", "In the morning", ["Read the night report (push message, 7 o'clock by default).", "Disarm, charge the powerbank.", "Look at the animals of the night in the diary."]),
@@ -263,7 +265,7 @@ QUICK_GUIDE = {
 ]),
 "fr": ("Guide rapide", [
   ("⚡", "Installer", ["Orienter la caméra vers l'emplacement ; sonde de température hors du boîtier.", "Brancher la batterie (Pi 5 : 5 V / 5 A). Après environ 1 minute, tout est prêt."]),
-  ("📱", "Se connecter", ["Activer le point d'accès du portable – le Pi s'y connecte seul. Ou rejoindre le Wi-Fi «MotionWatch» du Pi.", "Ouvrir la page : dans le Wi-Fi du Pi <b>http://10.42.0.1:5000</b>. Pour la position et le micro, utiliser la page https.", "«🖨 Codes QR pour se connecter» (sous Système) imprime les codes."]),
+  ("📱", "Se connecter", ["Activer le point d'accès du portable – le Pi s'y connecte seul. Ou rejoindre le Wi-Fi «MoveEye» du Pi (appareils plus anciens : «MotionWatch»).", "Ouvrir la page : dans le Wi-Fi du Pi <b>http://10.42.0.1:5000</b>. Pour la position et le micro, utiliser la page https.", "«🖨 Codes QR pour se connecter» (sous Système) imprime les codes."]),
   ("🌙", "Le soir", ["Toucher <b>«🌙 Surveiller cette nuit»</b>.", "Régler ce qui figure sous «Il manque encore».", "Quitter la zone pendant le compte à rebours."]),
   ("🚨", "En cas d'alarme", ["Toucher la notification → regarder l'image en direct.", "Sirène ou lumière avec les interrupteurs rapides.", "Ce n'était rien ? Dans les enregistrements, toucher <b>👎 «Ce n'était rien»</b> – le programme propose alors de meilleurs réglages."]),
   ("☀", "Le matin", ["Lire le rapport de nuit (notification, 7 h par défaut).", "Désarmer, recharger la batterie.", "Voir les animaux de la nuit dans le journal."]),
@@ -271,7 +273,7 @@ QUICK_GUIDE = {
 ]),
 "it": ("Guida rapida", [
   ("⚡", "Installare", ["Puntare la telecamera sulla piazzola; sensore di temperatura fuori dalla custodia.", "Collegare il powerbank (Pi 5: 5 V / 5 A). Dopo circa 1 minuto è tutto pronto."]),
-  ("📱", "Collegarsi", ["Accendere l'hotspot del cellulare – il Pi si collega da solo. Oppure collegarsi al Wi-Fi «MotionWatch» del Pi.", "Aprire la pagina: nel Wi-Fi del Pi <b>http://10.42.0.1:5000</b>. Per posizione e microfono usare la pagina https.", "«🖨 Codici QR per collegarsi» (in Sistema) stampa i codici."]),
+  ("📱", "Collegarsi", ["Accendere l'hotspot del cellulare – il Pi si collega da solo. Oppure collegarsi al Wi-Fi «MoveEye» del Pi (apparecchi più vecchi: «MotionWatch»).", "Aprire la pagina: nel Wi-Fi del Pi <b>http://10.42.0.1:5000</b>. Per posizione e microfono usare la pagina https.", "«🖨 Codici QR per collegarsi» (in Sistema) stampa i codici."]),
   ("🌙", "La sera", ["Toccare <b>«🌙 Sorvegliare stanotte»</b>.", "Sistemare ciò che appare sotto «Manca ancora».", "Lasciare la zona durante il conto alla rovescia."]),
   ("🚨", "In caso di allarme", ["Toccare la notifica → guardare l'immagine dal vivo.", "Sirena o luce con gli interruttori rapidi.", "Non era niente? Nelle registrazioni toccare <b>👎 «Non era niente»</b> – il programma propone poi impostazioni migliori."]),
   ("☀", "Al mattino", ["Leggere il rapporto notturno (notifica, di default alle 7).", "Disinserire, ricaricare il powerbank.", "Guardare gli animali della notte nel diario."]),
@@ -279,7 +281,7 @@ QUICK_GUIDE = {
 ]),
 "rm": ("Introducziun curta", [
   ("⚡", "Installar", ["Drizzar la camera sin la plazza; sensur da temperatura ordaifer la chascha.", "Colliar il powerbank (Pi 5: 5 V / 5 A). Suenter var 1 minuta è tut pront."]),
-  ("📱", "Colliar", ["Activar il hotspot dal telefonin – il Pi sa collia sez. U sa colliar cun il WLAN «MotionWatch» dal Pi.", "Avrir la pagina: en il WLAN dal Pi <b>http://10.42.0.1:5000</b>. Per la posiziun ed il microfon duvrar la pagina https.", "«🖨 Codes QR per colliar» (sut Sistem) stampa ils codes."]),
+  ("📱", "Colliar", ["Activar il hotspot dal telefonin – il Pi sa collia sez. U sa colliar cun il WLAN «MoveEye» dal Pi (apparats pli vegls: «MotionWatch»).", "Avrir la pagina: en il WLAN dal Pi <b>http://10.42.0.1:5000</b>. Per la posiziun ed il microfon duvrar la pagina https.", "«🖨 Codes QR per colliar» (sut Sistem) stampa ils codes."]),
   ("🌙", "La saira", ["Smatgar <b>«🌙 Survegliar questa notg»</b>.", "Reglar quai che stat sut «Manca anc».", "Bandunar la zona durant il countdown."]),
   ("🚨", "Tar in alarm", ["Smatgar l'avis push → guardar il maletg live.", "Sirena u glisch cun ils cumutaturs svelts.", "Na era nagut? En las registraziuns smatgar <b>👎 «Na era nagut»</b> – il program propona lura meglras configuraziuns."]),
   ("☀", "La damaun", ["Leger il rapport da notg (avis push, standard a las 7).", "Disarmar, chargiar il powerbank.", "Guardar en il diari ils animals da la notg."]),

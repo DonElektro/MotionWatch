@@ -421,7 +421,7 @@ func status_text() -> String:
 
 
 func add_controls() -> void:
-	var g := "Sensoren"
+	var g := "Licht & Ton"                              # 3D-4.22: like MoveEye (Licht & Ton → Lautsprecher), before «Sensoren»
 	var S := {"sub": "Lautsprecher"}
 	main.add_control("slider", "spk_vol", "♪ Lautsprecher von MoveEye am PC (Sirene, Wecker, Stimme)", func(): return spk_vol,
 			func(v): spk_vol = clampf(float(v), 0.0, 100.0); save(), g, {"sub": "Lautsprecher", "min": 0, "max": 100, "step": 5, "unit": "%"})

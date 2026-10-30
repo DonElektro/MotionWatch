@@ -1,8 +1,22 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 30.10.2026 · Simulator-Version **3D-4.21** · passende MoveEye-Version (früher Motion Watch) **2.96.2**
+Stand: 30.10.2026 · Simulator-Version **3D-4.22** · passende MoveEye-Version (früher Motion Watch) **2.98.51**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.22 (MoveEye 2.98.51): Namen «MoveEye» statt «MW», Lautsprecher in «Licht & Ton», Hinweis Tasten-Regeln
+
+- Sichtbare Namen: «MoveEye Sim · 3D %s» (main.gd `beacon_name` / `control_info`, net.gd, update.gd, device.gd «· Gerät 2»),
+  Autostart-Eintrag Linux `Name=MoveEye Sim 3D` (autostart.gd; Kennung «MotionWatch3D» / Datei `motionwatch3d.desktop` bleiben,
+  `repair()` schreibt einen alten Eintrag mit «Name=MW Sim» neu), mini.gd «MoveEye-CPU %d %%», data.yaml-Kommentar (dataset.gd).
+  MoveEye erkennt den Simulator weiter an «3D-x.y» im Namen (300 `sim_versions`), nicht an «MW».
+- Trainingspakete: `MoveEye-Trainingsbilder_<Zeit>.zip`; kidaten.gd `ZIP_PREFIXES` erkennt auch die alten `MW-Trainingsbilder_…`.
+- simint.gd: «Lautsprecher» (spk_vol, spk_mute) in der Gruppe «Licht & Ton» (GROUPS: «", Status-LED & Tasten, Lautsprecher» wie
+  MoveEye «Lichter, Status-LED, Lautsprecher»), vorher «Sensoren».
+- statusled.gd `add_info`: Hinweis «Regeln der Tasten … stellt man in MoveEye ein» + Knopf «Regeln der Tasten → in MoveEye»
+  (nur sichtbar, solange MoveEye verbunden ist; öffnet `/settings?open=sec:Status LED`).
+- Nicht umbenannt (technisch): project.godot `config/name` (= Ordner der Benutzerdaten), export_presets (Exe-Name
+  MotionWatch3D.exe, Firmenname), ZIP `simulator3d/MotionWatch3D_Simulator.zip` und Ordner im ZIP, User-Agent, Repo-URLs.
 
 ## NEU in 3D-4.21 (MoveEye 2.98.50): Status-LED & Tasten, Gruppe «Licht & Ton», Sprachen Schritt 1, Karte «Mehr», Angleichen
 
@@ -54,7 +68,7 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
 ## NEU in 3D-4.20 (MoveEye 2.98.49): Simulator «wie echt» – Lautsprecher, Servo-Störungen, Thermal-90 (`simint.gd`)
 
 - `scripts/simint.gd` (Knoten `simint` in main.gd, eigene Datei `user://simint.json`), Antwort an MoveEye über net.gd (`rep.merge(simint.reply())`, nicht in world_reply):
-  - **Lautsprecher:** `mw.sound` (MoveEye 554 schickt jetzt die echte Art: siren / two-tone / beeps / horn / whistle / bangs / chime / birds / marmot / tts / talk, dazu `sound_vol`) wird am PC als einfacher Ton gespielt (Sensoren → Lautsprecher: Lautstärke, «Am PC stumm»; Schalter «Geräusche» gilt auch). Das simulierte Mikrofon hört ihn am Gerät (`add_sound`, -2 dB bei 100 %), Pieps / Knall zusätzlich als `sound_ev` «clap» (n = 3, alle 2 s) – MoveEye muss das ignorieren. Fliehen bei Sirene: unverändert (on_state, _update_visitors).
+  - **Lautsprecher:** `mw.sound` (MoveEye 554 schickt jetzt die echte Art: siren / two-tone / beeps / horn / whistle / bangs / chime / birds / marmot / tts / talk, dazu `sound_vol`) wird am PC als einfacher Ton gespielt (Licht & Ton → Lautsprecher, bis 3D-4.21 Sensoren: Lautstärke, «Am PC stumm»; Schalter «Geräusche» gilt auch). Das simulierte Mikrofon hört ihn am Gerät (`add_sound`, -2 dB bei 100 %), Pieps / Knall zusätzlich als `sound_ev` «clap» (n = 3, alle 2 s) – MoveEye muss das ignorieren. Fliehen bei Sirene: unverändert (on_state, _update_visitors).
   - **Störungen** (Karte Testen → «Störungen», Gruppe Testlauf / Teil «Störungen», auch in der Simulator-Steuerung von MoveEye): `stoer_uv` (5 V erzwingen), `stoer_pca` (PCA9685-Reset: Kopf steht, bis `mw.servo.reinit` steigt), `stoer_i2c` (5 s), `stoer_block` (pan / tilt klemmt), `stoer_off`. 5-V-Schiene aus `simwerte.volts` (unter 6.8 V sackt sie ab, Servo-Strom -0.18 V), Unterspannung unter 4.63 V: Servos 35 % Tempo und kurze Stopps (`servo_k`, `hold` in der Kopf-Nachführung von main.gd). Antwort `servo_sim` {v5, uv, i2c, pca_reset, pca_hold, blocked, head_mw}.
   - **Wärmebild-Modell** (Kamerabild → Wärmebild): «Thermal-90 (Waveshare)» Standard (80 × 62, 90° × 67°, 15 Bilder/s, NETD 125 mK; Datenblatt Waveshare / Core Electronics: 90° H × 67° V, bis 25 fps, 125–150 mK) oder «45°-Modell (alt)» (45° × 35°, 8 Bilder/s). Gerendert 160 × 106 (nicht quadratische Pixel), `decode_thermal_img` tastet nach Bildgrösse ab, Rauschen `randfn(0, th_noise)`; /info `thermal` = `simint.thermal_info()` (mit model / name / netd_mk), jede Antwort `thermal_model`. testrun.gd nimmt fov_v des Modells.
   - **Warme Hand** (`warm_hand`): Hand + Unterarm (34 / 33 / 32.5 °C) 2 m vor der Kopfkamera, langsame Acht – für MoveEye «Wärmebild ausrichten» (557), schaltet MoveEye selbst ein und aus.

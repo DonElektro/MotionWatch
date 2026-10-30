@@ -608,6 +608,13 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-4.22
+3D-4.22: Neuer Name überall: «MoveEye Sim · 3D» statt «MW Sim · 3D» (Name an MoveEye, Update-Fenster, Autostart-Eintrag unter
+Linux, Mini-Anzeige «MoveEye-CPU»). Trainingspakete heissen jetzt «MoveEye-Trainingsbilder_….zip» (alte «MW-Trainingsbilder_…»
+werden weiter erkannt). «Lautsprecher» ist von «Sensoren» nach «Licht & Ton» umgezogen (wie in MoveEye). In «Licht & Ton →
+Status-LED & Tasten» steht, dass die Regeln der Tasten in MoveEye eingestellt werden – mit Knopf «Regeln der Tasten → in
+MoveEye», wenn MoveEye verbunden ist.
+
 NEU IN 3D-4.21
 3D-4.21: Status-LED auf dem Kopf (in Blinkis Augen-Ring) und Fenster «Gerät» mit den Tasten «Schutz» und «Alarm quittieren»
 (gehen wie echte Tasten an MoveEye) – neue Gruppe «Licht & Ton» wie in MoveEye. Grundlage für Sprachen (FR/IT/RM/EN folgen).

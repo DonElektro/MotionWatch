@@ -193,7 +193,7 @@ details.px-adv>summary::before{content:"▸ ";}details.px-adv[open]>summary::bef
     // ---- Erweitert ----
     const adv = el("details", "px-adv"); adv.appendChild(el("summary", "", t("Advanced"))); X.adv = adv;
     const kw = el("div", "sl"); kw.dataset.key = "msg_keyword_prefix"; const kl = el("div", "row"); kl.appendChild(el("span", "", t("Keyword (empty = off)")));
-    const ki = el("input"); ki.type = "text"; ki.autocomplete = "off"; ki.placeholder = "MW"; ki.maxLength = 12; ki.style.width = "100%"; ki.style.marginTop = "4px";
+    const ki = el("input"); ki.type = "text"; ki.autocomplete = "off"; ki.placeholder = "MoveEye"; ki.maxLength = 12; ki.style.width = "100%"; ki.style.marginTop = "4px";
     ki.onchange = () => api({action: "keyword", value: ki.value}).then(r => { toast(r.ok ? t("Saved") : "⚠ " + (r.error || "error")); paint(r && r.channels ? r : null); });
     kw.append(kl, ki); adv.appendChild(kw); X.kw = ki; xField(kw);
     hide(rowOf(d, "msg_keyword_on")); hide(rowOf(d, "msg_keyword_prefix"));

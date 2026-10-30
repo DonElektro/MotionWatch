@@ -18,7 +18,7 @@ on:
         type: boolean
         default: true
       quelle:
-        description: "Wer hat das Training gestartet (nur fürs Protokoll, z. B. «Simulator: MW-Trainingsbilder_….zip»)"
+        description: "Wer hat das Training gestartet (nur fürs Protokoll, z. B. «Simulator: MoveEye-Trainingsbilder_….zip»)"
         default: "von Hand"
   # Automatic training (off). To switch it on: remove the «#» in front of the next two lines (here: every Sunday 02:17 UTC).
   # schedule:

@@ -46,7 +46,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
     <div lang="de"><section id="start" data-icon="🚀"><h2>Schnellstart: die ersten 10 Minuten</h2>
 <ol>
 <li><b>Strom anschliessen.</b> Nach etwa einer Minute ist MoveEye bereit (mit Autostart startet es von selbst).</li>
-<li><b>Mit dem Handy verbinden.</b> Entweder ist der Pi im selben WLAN wie das Handy (z. B. Handy-Hotspot), oder du verbindest das Handy mit dem <b>eigenen WLAN des Pi</b> (Name «MotionWatch», das Passwort steht unter <i>Alarm &amp; Camping → Schalter</i>).</li>
+<li><b>Mit dem Handy verbinden.</b> Entweder ist der Pi im selben WLAN wie das Handy (z. B. Handy-Hotspot), oder du verbindest das Handy mit dem <b>eigenen WLAN des Pi</b> (Name «MoveEye», bei älteren Geräten «MotionWatch»; das Passwort steht unter <i>Alarm &amp; Camping → Schalter</i>).</li>
 <li><b>Seite öffnen:</b> im eigenen WLAN <code>http://10.42.0.1:5000</code>, sonst <code>http://&lt;Adresse-des-Pi&gt;:5000</code>. Die Adresse kommt auch als Push-Nachricht, sobald der Pi ein Netz findet.</li>
 <li><b>Passwort festlegen.</b> Beim ersten Besuch fragt die Seite danach. Danach fragt der Browser einmal (Benutzername beliebig).</li>
 <li><b>Push-Nachrichten einrichten</b> (<i>Benachrichtigungen</i>) und mit «Test-Nachricht senden» prüfen.</li>
@@ -268,7 +268,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
     <div lang="en"><section id="start" data-icon="🚀"><h2>Quick start: the first 10 minutes</h2>
 <ol>
 <li><b>Connect the power.</b> After about a minute MoveEye is ready (with autostart it starts by itself).</li>
-<li><b>Connect the phone.</b> Either the Pi is in the same Wi-Fi as the phone (e.g. the phone hotspot), or you join the <b>own Wi-Fi of the Pi</b> (name «MotionWatch», the password is shown under <i>Alarm &amp; camping → Switches</i>).</li>
+<li><b>Connect the phone.</b> Either the Pi is in the same Wi-Fi as the phone (e.g. the phone hotspot), or you join the <b>own Wi-Fi of the Pi</b> (name «MoveEye», older devices «MotionWatch»; the password is shown under <i>Alarm &amp; camping → Switches</i>).</li>
 <li><b>Open the page:</b> in the own Wi-Fi <code>http://10.42.0.1:5000</code>, otherwise <code>http://&lt;address-of-the-pi&gt;:5000</code>. The address also comes as a push message when the Pi joins a network.</li>
 <li><b>Set a password.</b> The page asks for it at the first visit; then the browser asks once (any user name).</li>
 <li><b>Set up push messages</b> (<i>Notifications</i>) and check them with «Test notification».</li>

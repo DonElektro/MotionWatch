@@ -698,7 +698,7 @@ _HX_SIMINT_HELP = (
     ('<section id="lightsound" data-icon="💡"><h2>Licht &amp; Ton</h2>',
      "<p><b>🔊 Sirene im Simulator:</b> Ist der 3D-Simulator verbunden, ist er der Lautsprecher von MoveEye: Sirene, Wecker-Melodie und "
      "Ansagen gehen an den Simulator – auch in Spielen, Übungen und Testläufen (Test-Postfach); der echte Lautsprecher bleibt dann still. "
-     "Der Simulator spielt einfache Töne am PC (Sensoren → Lautsprecher: Lautstärke, «Am PC stumm»), Besucher fliehen, und das simulierte "
+     "Der Simulator spielt einfache Töne am PC (Licht &amp; Ton → Lautsprecher: Lautstärke, «Am PC stumm»), Besucher fliehen, und das simulierte "
      "Mikrofon hört den Ton. MoveEye ignoriert seinen eigenen Ton für Lärm-Alarm und Klatschschalter, solange er spielt und 2 s danach. "
      "<b>🛠 Servo-Störungen:</b> Simulator → Testen → «Störungen»: Unterspannung (der simulierte Akku liefert zu wenig, die Servos werden "
      "schwach), PCA9685-Reset, I2C-Fehler, Servo blockiert – MoveEye stoppt die Servos wie bei echter Hardware, trägt es im Fehlerspeicher "
@@ -706,7 +706,7 @@ _HX_SIMINT_HELP = (
     ('<section id="lightsound" data-icon="💡"><h2>Light &amp; sound</h2>',
      "<p><b>🔊 Siren in the simulator:</b> while the 3D simulator is connected it is MoveEye's loudspeaker: siren, wake-up melody and "
      "announcements go to the simulator – also in games, drills and test runs (test inbox); the real loudspeaker stays silent then. The "
-     "simulator plays simple tones on the PC (Sensors → Loudspeaker: volume, «mute on the PC»), visitors flee, and the simulated microphone "
+     "simulator plays simple tones on the PC (Light &amp; sound → Loudspeaker: volume, «mute on the PC»), visitors flee, and the simulated microphone "
      "hears the sound. MoveEye ignores its own sound for the noise alarm and the clap switch while it plays and 2 s after it. "
      "<b>🛠 Servo faults:</b> simulator → Testing → «Faults»: under-voltage (the simulated battery delivers too little, the servos get "
      "weak), PCA9685 reset, I2C error, servo blocked – MoveEye stops the servos like with real hardware, notes it in the fault memory "

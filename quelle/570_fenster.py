@@ -247,7 +247,7 @@ TOGGLES = [  # (section, key, label)
     ("Notifications", "webpush_on", "Web push: alarm messages also to browsers that switched it on (no app needed)"),
     ("Notifications", "pushover_on", "Pushover: alarm messages also to the Pushover app (iPhone: can ring when muted)"),
     ("Notifications", "msg_icons", "Symbols in messages and the log (🚶 person, 🦊 animal, 🛑 sabotage …)"),
-    ("Notifications", "msg_keyword_on", "Keyword at the start of every message (MW-ALARM, MW-WAERME …: for iPhone shortcuts)"),
+    ("Notifications", "msg_keyword_on", "Keyword at the start of every message (MoveEye-ALARM, MoveEye-WAERME …: for iPhone shortcuts)"),
     ("Notifications", "email_on", "E-mail: messages also by e-mail (the iPhone can start a shortcut from it)"),
     ("Notifications", "pushover_emergency", "Pushover: alarms as emergency (critical alert, repeats until confirmed)"),
     ("Updates", "update_auto", "Look for new versions by itself (every 3 hours)"),
@@ -777,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.50")
+        self.root.title("MoveEye 2.98.51")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1144,7 +1144,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.50 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.51 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -3188,7 +3188,7 @@ class App:
     def _export(self):
         from tkinter import filedialog
         p = filedialog.asksaveasfilename(parent=self.root, defaultextension=".json", filetypes=[("JSON", "*.json")],
-                                         initialfile="motionwatch_einstellungen_" + datetime.now().strftime("%Y%m%d_%H%M") + ".json")
+                                         initialfile="moveeye_einstellungen_" + datetime.now().strftime("%Y%m%d_%H%M") + ".json")
         if p:
             try:
                 with open(p, "w") as f:

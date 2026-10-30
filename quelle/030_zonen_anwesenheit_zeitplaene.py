@@ -409,7 +409,7 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Notifications", "notify_url", "Webhook / ntfy URL", "str", None),
     ("Notifications", "telegram_token", "Telegram bot token", "secret", None),
     ("Notifications", "pushover_user", "Pushover: user key", "secret", None),
-    ("Notifications", "msg_keyword_prefix", "Keyword at the start of every message (e.g. MW gives MW-ALARM)", "str", None),
+    ("Notifications", "msg_keyword_prefix", "Keyword at the start of every message (e.g. MoveEye gives MoveEye-ALARM)", "str", None),
     ("Notifications", "email_to", "E-mail: to (your address)", "str", None),
     ("Notifications", "email_host", "E-mail: SMTP server (e.g. smtp.gmail.com, mail.gmx.net)", "str", None),
     ("Notifications", "email_port", "E-mail: port (587 or 465)", "str", None),

@@ -1,7 +1,7 @@
 {
- "version": "3D-4.21",
+ "version": "3D-4.22",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 32281831,
- "sha256": "6be57756c875fbeef76ff95278c2eb45b3d3e083a7b2ea3bf0688b97f21d550d",
- "notes": "Status-LED und Tasten im Fenster «Gerät», Gruppe «Licht & Ton», Sprachen-Grundlage, Karte «Mehr» wie MoveEye, 57 neue Gegenstände, Menü wie MoveEye"
+ "size": 32283625,
+ "sha256": "572fed0f5db470f4f80cea7abc15fee623875f774a7b210d416487fbb4c08daf",
+ "notes": "Neuer Name «MoveEye Sim · 3D» statt «MW Sim», Trainingspakete «MoveEye-Trainingsbilder_…», Lautsprecher in «Licht & Ton» wie MoveEye, Hinweis «Regeln der Tasten → in MoveEye»"
 }

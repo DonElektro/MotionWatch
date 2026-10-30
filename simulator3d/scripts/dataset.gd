@@ -408,7 +408,7 @@ func _export(n: int, scenes_too: bool, hi: bool) -> void:
 	if pc > 0:
 		counts["Parcours (bewegt / weit)"] = pc
 		made += pc
-	var yaml := "# Trainingsbilder aus dem MW Sim · 3D (%s) - YOLO-Format\npath: .\ntrain: images/train\nval: images/val\nnames:\n" % main.VERSION
+	var yaml := "# Trainingsbilder aus dem MoveEye Sim · 3D (%s) - YOLO-Format\npath: .\ntrain: images/train\nval: images/val\nnames:\n" % main.VERSION
 	for i in range(EXPORT_CLASSES.size()):
 		yaml += "  %d: %s\n" % [i, EXPORT_CLASSES[i]]
 	_write(export_dir.path_join("data.yaml"), yaml)
@@ -504,7 +504,7 @@ func _add_game_misses() -> int:
 func _zip_dir(dir: String) -> String:
 	"""the whole folder as one ZIP on the desktop (else next to the folder)"""
 	var desk := OS.get_system_dir(OS.SYSTEM_DIR_DESKTOP)
-	var out := (desk if desk != "" and DirAccess.dir_exists_absolute(desk) else dir.get_base_dir()).path_join("MW-Trainingsbilder_%s.zip" % dir.get_file())
+	var out := (desk if desk != "" and DirAccess.dir_exists_absolute(desk) else dir.get_base_dir()).path_join("MoveEye-Trainingsbilder_%s.zip" % dir.get_file())
 	var z := ZIPPacker.new()
 	if z.open(out) != OK:
 		return ""

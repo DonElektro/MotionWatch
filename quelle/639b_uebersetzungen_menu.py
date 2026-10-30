@@ -384,10 +384,10 @@ MENU_EN = {
     "stv-security": "The SmallTV has no password: whoever is in the same network can change its picture. Best run it in the own Wi-Fi of MoveEye.",
     "sc-intro": "Every message starts with a keyword. An automation of the Shortcuts app can react to it. On the iPhone this works with e-mail (switch on «E-mail» in this section) or SMS - not with notifications of apps.",
     "sc-1": "Set up «E-mail» in this section and send a test message.",
-    "sc-2": "iPhone: Shortcuts → Automation → «+» → «E-mail». Sender: the address of MoveEye, subject contains: MW-ALARM.",
+    "sc-2": "iPhone: Shortcuts → Automation → «+» → «E-mail». Sender: the address of MoveEye, subject contains: MoveEye-ALARM.",
     "sc-3": "Choose «Run immediately» (otherwise the iPhone asks every time).",
     "sc-4": "Add actions, e.g. «Set volume» 100 %, «Play sound», «Flashlight», «Open URL» (live page), «Run scene» (Home app).",
-    "sc-5": "One automation per keyword: MW-WAERME, MW-LAERM, MW-SABOTAGE …",
+    "sc-5": "One automation per keyword: MoveEye-WAERME, MoveEye-LAERM, MoveEye-SABOTAGE … (up to 2.98.50 they were «MW-…»: change older shortcuts to «MoveEye-»).",
 }
 for _d in (_HX_MENU, _HX_MENU_SHORT):
     for _k, _v in _d.items():

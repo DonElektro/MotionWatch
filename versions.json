@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 22:55",
+ "generated": "2026-10-30 23:17",
  "versions": [
   {
-   "version": "2.98.50",
-   "file": "webcam_bewegung_2_98_50.py",
+   "version": "2.98.51",
+   "file": "webcam_bewegung_2_98_51.py",
    "url": "",
-   "sha256": "df07b8ba77863e6b1c74f66838a1cf759b5eb470274c9a06056dae958452c5d5",
-   "date": "2026-10-30 22:55",
-   "notes": "Status-LED & 2 Tasten am Gerät (GPIO 16 / 26; dürfen alles, einzeln abschaltbar, Push bei Ausschalten / Sirene-Stopp am Gerät), Simulator-Gerätefenster, «Alarm quittieren» im Alarmfenster, Sprachen-Grundlage im Simulator, Grundsprache Deutsch, Romanisch «Aura»; dazu Menü-Umbau, 57 neue Gegenstände im Simulator, 💬 aus der Kopfzeile, Entwickler-Schalter geteilt, Karte «Mehr» im Simulator, Angleichen MoveEye ↔ Simulator",
-   "sig": "f3663d88723a6d4fe83a509baa4151b6530796c5a0d8b2b4a7958332940d9b6b5112e988da85749eacd8ddad8ea6542f360976be61113838c34cadb681e61606"
+   "sha256": "bff924d0cff8061ed09447a8161db3b1662bfaa5c2ce99bccfe7cb8d87910c94",
+   "date": "2026-10-30 23:17",
+   "notes": "Namen «MoveEye» statt «MW» / «MotionWatch»: Simulatoren heissen MoveEye Sim · 3D / Basis / Welt (Kevin); Push-Stichwort ab Werk «MoveEye» (MoveEye-ALARM, MoveEye-WAERME …; ein unverändertes «MW» wird einmal umgestellt – iPhone-Kurzbefehle auf \"MoveEye-\" anpassen); eigenes WLAN neu «MoveEye» (bestehende Geräte behalten «MotionWatch»); Downloads MoveEye_…; Simulator 3D-4.22: Lautsprecher in «Licht & Ton», Hinweis «Regeln der Tasten → in MoveEye»",
+   "sig": "a5ba85ec990fa0c8bc7dd97f6738ba21d8baf5806a72bdc497f69027d9e95a9580b23753948076b5e7823a3c4ecdd4b685333c6cf38e9bf2f4ccd83a4473720c"
   },
   {
    "version": "2.97.1",

@@ -121,8 +121,9 @@ CFG = {
     "notify_network": True,      # push message with the page address when the Pi joins a network (e.g. the phone hotspot)
     # protection: alarms only while armed; arming waits arm_delay seconds
     "armed": True, "arm_delay": 60.0,
-    # own Wi-Fi of the Pi (access point) + camping profile
-    "hotspot_on": False, "hotspot_ssid": "MotionWatch", "hotspot_password": "", "camping": False, "camping_prev": {},
+    # own Wi-Fi of the Pi (access point) + camping profile; 2.98.51: name «MoveEye» for new setups (devices from before keep
+    # «MotionWatch», rename_migrate in 579a; the NetworkManager connection keeps its internal name «MotionWatch-Hotspot», 120)
+    "hotspot_on": False, "hotspot_ssid": "MoveEye", "hotspot_password": "", "camping": False, "camping_prev": {},
     # thermal camera alarm: a warm body that moves inside the zones
     "thermal_alarm": False, "thermal_need_motion": True, "thermal_delta": 30.0, "thermal_min_area": 0.5,
     "time_from_browser": True,   # set the clock of the Pi from the phone when it has no internet time
@@ -162,8 +163,10 @@ CFG = {
     # Pushover (2.95.26): an extra way for alarms; «emergency» = priority 2: on an iPhone a critical alert (rings also when muted,
     # if «Critical Alerts» is on in the Pushover app), repeated every minute until it is acknowledged
     "pushover_on": False, "pushover_user": "", "pushover_token": "", "pushover_emergency": True,
-    # 2.95.27: a keyword at the start of every message (MW-ALARM, MW-WAERME ...): an iPhone shortcut automation reacts to it
-    "msg_keyword_on": True, "msg_keyword_prefix": "MW",
+    # 2.95.27: a keyword at the start of every message (MoveEye-ALARM, MoveEye-WAERME ...): an iPhone shortcut automation reacts
+    # to it. 2.98.51: «MoveEye» instead of «MW» (an untouched old «MW» becomes «MoveEye» once, rename_migrate in 579a);
+    # «names_v»: the settings file knows the new names (no migration any more)
+    "msg_keyword_on": True, "msg_keyword_prefix": "MoveEye", "names_v": 1,
     # e-mail as a way for messages (the iPhone «E-Mail» automation can start a shortcut)
     "email_on": False, "email_to": "", "email_host": "", "email_port": "587", "email_user": "", "email_password": "", "email_from": "",
     "email_events": "alarms",       # alarms | all

@@ -669,7 +669,7 @@ def stv_render_status(lang=None, red=False):
         f1, f2 = _font(16), _font(16, False)
         tm = (now - timedelta(seconds=max(0.0, time.time() - float(m.get("t", 0))))).strftime("%H:%M")   # (the clock of the simulation too)
         tt = _stv_txt(m.get("title", "")).replace("[SIM] ", "")
-        tt = re.sub(r"^MW-[A-Z]+ · ", "", tt)
+        tt = re.sub(r"^(?:MW|MoveEye|" + re.escape(str(CFG.get("msg_keyword_prefix") or "MoveEye")) + r")-[A-Z]+ · ", "", tt)   # 2.98.51: old and new keyword
         tt = re.sub(r"^[^:]{1,30}: ", "", tt) or tt                      # «MoveEye: Person» -> «Person» (the name is on top)
         d.text((10, 152), tm, font=f1, fill=(245, 154, 74))
         d.text((62, 152), _stv_fit(d, tt, f1, STV_SIZE - 72), font=f1, fill=(232, 238, 245))
@@ -1002,7 +1002,7 @@ def stv_state(lang=None):
     return {"ok": True, "on": bool(CFG.get("stv_on")), "list": out, "night": stv_night(), "max": STV_MAX,
             "scan": {"busy": S["busy"], "found": S["found"], "t": S["t"], "msg": S["msg"]},
             "setup": {"hotspot": STV_HOTSPOT, "url": STV_SETUP_URL, "wifi_qr": f"WIFI:T:nopass;S:{STV_HOTSPOT};;",
-                      "own_wifi": CFG.get("hotspot_ssid") or "MotionWatch", "own_on": bool(CFG.get("hotspot_on")), "own_clients": hs.get("clients")},
+                      "own_wifi": CFG.get("hotspot_ssid") or "MoveEye", "own_on": bool(CFG.get("hotspot_on")), "own_clients": hs.get("clients")},
             "sim": bool(CFG.get("sim_on")), "sim_has": bool(STV["sim_ok"])}
 
 
