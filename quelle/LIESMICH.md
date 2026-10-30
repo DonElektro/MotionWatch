@@ -160,7 +160,9 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `548_web_ki_waechter.py` | Web: «🤖 MoveEye als KI-Wächter» in der Karte «Spiel» (Schalter, Liste «gegen die KI»), Simulator-Fenster ohne Einblendungen | 80 |
 | `549_web_sim_kompakt.py` | Live-Seite «Sim-Kompakt»: mit verbundenem Simulator zwei kleine Bilder, Kopf- und Rover-Stick am Rand, Simulator-Kacheln dazwischen («◫ Ansicht», pro Gerät) | 429 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
+| `556_tailscale_funnel.py` | Online-Spiel über Tailscale Funnel: nur /game/ öffentlich (eigene Tür + Sperre bei Funnel-Anfragen), Auto-Aus, Aufräumen beim Neustart, Fehler mit Abhilfe, Fenster-Zeile | 605 |
 | `560_uebersetzungen_de.py` | Übersetzungen Deutsch | 498 |
+| `561_uebersetzungen_funnel.py` | Übersetzungen und Anleitung (DE/EN) zum Tailscale Funnel (556) | 128 |
 | `569_uebersetzungen_parcours.py` | Übersetzungen und Anleitungs-Absatz (Kamera & Servos) zum Verfolgungs-Parcours (416 / 599) | 140 |
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |
 | `576_fenster_zeitleiste.py` | Fenster: Zeitleiste als Liste, Wochenbericht | 130 |

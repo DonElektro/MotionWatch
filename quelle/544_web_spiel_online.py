@@ -17,6 +17,12 @@ GONL_DE = {"Human vs AI": "Mensch gegen KI", "online-note": "Freunde spielen von
            "The game is open - guests can join": "Das Spiel ist offen – Gäste können beitreten", "through the tunnel": "über den Tunnel",
            "the game is not open in the simulator": "das Spiel ist im Simulator nicht offen", "simulator not reachable": "Simulator nicht erreichbar",
            "Only the game: the guest sees no camera picture and no settings. Whoever has the link can play until it expires.": "Nur das Spiel: der Gast sieht kein Kamerabild und keine Einstellungen. Wer den Link hat, kann bis zum Ablauf mitspielen.",
+           "Online game over Tailscale Funnel": "Online-Spiel über Tailscale Funnel", "Switch the funnel on": "Funnel einschalten",
+           "funnel-note": "Macht nur das Spiel (/game/…) über Tailscale Funnel im Internet erreichbar – für Freunde ohne Tailscale. Alles andere von MoveEye bleibt privat. Geht von selbst aus, wenn die letzte Einladung abläuft oder zurückgezogen wird, spätestens nach der gewählten Zeit und beim Neustart.",
+           "local-warn-funnel": "Dieser Link geht nur im eigenen Netz. Für Freunde ohne Tailscale: Funnel einschalten – dann ist nur das Spiel öffentlich.",
+           "switches off at the latest after": "geht spätestens aus nach", "Funnel on": "Funnel an – öffentlich", "Funnel off": "Funnel aus",
+           "Make an invitation now - without one the funnel switches off after 15 minutes.": "Jetzt eine Einladung erstellen – ohne Einladung geht der Funnel nach 15 Minuten wieder aus.",
+           "Only the administrator can switch the funnel on.": "Nur der Administrator kann den Funnel einschalten.", "Only for the administrator": "Nur für den Administrator",
            "Who caught more?": "Wer hat mehr erwischt?", "wins": "gewinnt", "Draw": "Gleichstand", "h": "h", "no invitation yet": "noch keine Einladung"}
 
 GONL_JS = r"""<script>
@@ -57,13 +63,42 @@ Object.assign(I18N.de, /*GONLDE*/{});
     b1.onclick = async () => { b1.disabled = true; busyC = true; const q = await post("/api/game_compare?" + L(), {op: "start", bots: +sb.value, minutes: +sm.value, source: wc.checked ? "ways" : "rec", lang: LANG}); busyC = false; CK = ""; paintC(q); };
     const b2 = el("button", "sec", t("Stop the comparison")); b2.type = "button"; b2.hidden = !run; b2.onclick = async () => { CK = ""; paintC(await post("/api/game_compare?" + L(), {op: "stop", lang: LANG})); };
     if (!run) r.append(sb, sm); r.append(b1, b2); cb.appendChild(r); if (!run) cb.appendChild(wl); };
+  // ---- 556: «Online-Spiel über Tailscale Funnel» (only the game public; only the administrator switches) ----
+  const fErr = E => { const d = el("div", ""); d.style.margin = "4px 0"; d.appendChild(el("div", "err", "⚠ " + E.msg));
+    (E.steps || []).forEach(x => d.appendChild(el("div", "", "• " + x)));
+    if (E.cmd) { const c = el("pre", "", E.cmd); c.style.cssText = "white-space:pre-wrap;word-break:break-all;background:var(--field,#0c121a);border:1px solid var(--line);padding:6px 8px;border-radius:8px;font-size:12px;margin:4px 0;user-select:all"; d.appendChild(c); }
+    (E.links || []).forEach(l => { const a = el("a", "", "🔗 " + l.t); a.href = l.u; a.target = "_blank"; a.rel = "noopener noreferrer"; a.style.cssText = "display:block;margin:2px 0;font-size:13px;color:var(--acc)"; d.appendChild(a); });
+    return d; };
+  const fSet = async b => { b.lang = LANG; await post("/api/game_funnel?" + L(), b); VK = "";
+    try { paintV(await (await fetch("/api/game_invite?" + L(), {cache: "no-store"})).json()); } catch (e) {} };
+  const paintF = (box, S) => { const F = S.funnel; if (!F) { if (!S.public) box.appendChild(el("div", "mut", "⚠ " + t("local-warn"))); return; }
+    const w = el("div", ""); w.id = "g-funnel"; w.style.cssText = "border:1px solid " + (F.on ? "var(--acc)" : "var(--line)") + ";border-radius:10px;padding:8px;margin:6px 0";
+    if (!S.public && !F.on) { const r = el("div", "mut", "⚠ " + t(F.avail ? "local-warn-funnel" : "local-warn"));
+      if (F.avail && F.can) { const b = el("button", "", "🌍 " + t("Switch the funnel on")); b.type = "button"; b.style.cssText = "display:block;margin-top:6px";
+        b.onclick = () => { b.disabled = true; fSet({action: "on", hours: +(F.hours || 6)}); }; r.appendChild(b); }
+      w.appendChild(r); }
+    const lab = el("label", "opt"), cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.id = "g-funnel-sw"; cb.checked = !!F.on; cb.disabled = !F.can;
+    lab.append(el("span", "", "🌍 " + t("Online game over Tailscale Funnel")), cb); if (!F.can) { lab.style.opacity = ".5"; lab.title = t("Only for the administrator"); }
+    const hs = document.createElement("select"); hs.setAttribute("aria-label", t("switches off at the latest after")); hs.style.width = "auto"; hs.disabled = !F.can;
+    (F.choices || [1, 2, 3, 6, 12, 24]).forEach(h => { const o = el("option", "", t("switches off at the latest after") + " " + h + " " + t("h")); o.value = h; hs.appendChild(o); }); hs.value = String(F.hours || 6);
+    hs.onchange = () => fSet({action: F.on ? "on" : "hours", hours: +hs.value});
+    cb.onchange = () => { cb.disabled = true; fSet({action: cb.checked ? "on" : "off", hours: +hs.value}); };
+    w.appendChild(lab); w.appendChild(el("div", "mut", t("funnel-note")));
+    const hr = el("div", "btns"); hr.style.cssText = "align-items:center;flex-wrap:wrap;margin-top:6px"; hr.appendChild(hs); w.appendChild(hr);
+    const st = el("div", "", F.on ? "🌍 " + t("Funnel on") + " · " + t("time left") + " " + fmtS(F.left_s) : "⚪ " + t("Funnel off") + (F.why_off ? " (" + F.why_off + ")" : ""));
+    st.style.marginTop = "6px"; w.appendChild(st);
+    if (F.on) { const u = el("div", "mut", F.url); u.style.cssText = "word-break:break-all;font-size:12px"; w.appendChild(u); }
+    if (F.on && F.grace_s) w.appendChild(el("div", "mut", "⏳ " + t("Make an invitation now - without one the funnel switches off after 15 minutes.")));
+    if (!F.can) w.appendChild(el("div", "mut", "🔒 " + t("Only the administrator can switch the funnel on.")));
+    const E = F.err || F.need; if (E) w.appendChild(fErr(E));
+    box.appendChild(w); };
   // ---- invitations ----
   let vb = null, sel = {h: 3, p: 6};
   const paintV = j => { const k = JSON.stringify(j); if (k === VK) return; VK = k; if (!vb) vb = head(V, "🌐", "Online beyond the WLAN", "online-note"); vb.textContent = "";
     const S = j || {};
     if (S.ok === false) { vb.appendChild(el("div", "", "⚠ " + (S.error || "?"))); return; }
     vb.appendChild(el("div", S.game_open ? "" : "mut", S.game_open ? "🟢 " + t("The game is open - guests can join") + (S.tunnel ? " (" + t("through the tunnel") + ")" : "") : "⚪ " + (S.why || t("the game is not open in the simulator"))));
-    if (!S.public) vb.appendChild(el("div", "mut", "⚠ " + t("local-warn")));
+    paintF(vb, S);
     const act = (S.invites || []).filter(x => x.active), old = (S.invites || []).filter(x => !x.active);
     if (!act.length) vb.appendChild(el("div", "mut", t("no invitation yet")));
     act.forEach(x => { const row = el("div", ""); row.style.cssText = "border:1px solid var(--line);border-radius:10px;padding:8px;margin:6px 0";

@@ -66,7 +66,7 @@ def _tk_gonl_card(self, inner):
         if not act:
             lines.append(tr("no invitation yet"))
         if not st["public"]:
-            lines.append("⚠ " + tr("local-warn"))
+            lines.append("⚠ " + tr("local-warn-funnel" if (st.get("funnel") or {}).get("avail") else "local-warn"))
         return "\n".join(lines), act, st
 
     def make():
@@ -83,6 +83,7 @@ def _tk_gonl_card(self, inner):
 
     self._fbtn(bf2, "➕ " + tr("Make the invitation"), make).pack(side="left", padx=(0, 6))
     self._fbtn(bf2, tr("Revoke all"), revoke_all).pack(side="left")
+    _tk_funnel_row(self, card)                       # 556: «Online-Spiel über Tailscale Funnel» (the same switch as on the page)
 
     def refresh():
         def work():
