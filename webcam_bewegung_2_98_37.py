@@ -11282,6 +11282,8 @@ SIMHUB_JS = r"""
     "outside the picture": "ausserhalb des Bildes", "Rehearsal now (2 min)": "Generalprobe jetzt (2 Min.)", "By itself when arming": "Von selbst beim Einschalten des Schutzes",
     "Set the thresholds now (day + night)": "Schwellen jetzt einstellen (Tag + Nacht)", "autoth-note": "Die automatische Optimierung probiert Empfindlichkeit, Mindestgrösse, KI-Schwelle, Nacht- und Regen-Einstellungen aus – zuerst am Tag, dann in der Nacht. Eine Änderung bleibt nur, wenn sie klar besser ist.",
     "Re-enact every 👎 in the simulator": "Jedes 👎 im Simulator nachstellen", "fa-note": "Markierst du eine Aufnahme als Fehlalarm (mit Ursache), stellt der Simulator die Ursache nach und schaut 60 s zu. Meldet MoveEye wieder, kommen die Bilder als «keine Person» ins Training.",
+    "Check learning pictures": "Lernbilder prüfen", "Game pictures for the training": "Spielbilder fürs Training", "doubtful (not used)": "zweifelhaft (nicht verwendet)",
+    "Learning pictures checked": "Lernbilder geprüft", "moved to «doubtful»": "nach «zweifel» verschoben",
     "stays quiet": "bleibt ruhig", "alarm(s) – pictures kept for the training": "Alarm(e) – Bilder fürs Training behalten", "Every Sunday night": "Jeden Sonntag in der Nacht",
     "week-note": "Sonntags zur Stunde des Nacht-Tests ein Testlauf «standard». Ist er klar schlechter als letzte Woche, kommt ein Push.", "2nd device": "2. Gerät", "P_opposite": "gegenüber", "P_door": "bewacht Zelt / Tür", "P_bike": "bewacht Velo",
     "P_car": "bewacht Auto", "P_left": "links", "P_right": "rechts", "Rover": "Rover", "M_alarm": "fährt zum Alarm", "M_dock": "fährt zur Ladestation", "M_goto": "fährt hin",
@@ -11359,7 +11361,11 @@ SIMHUB_JS = r"""
     if (kind === "autoth") { s.append(B("▶ " + tt("Set the thresholds now (day + night)"), () => learn({do: "autoth"})), E("div", "mut", tt("autoth-note")));
       const l = LN.autoth.last; if (l) l.res.forEach(r => s.appendChild(E("div", "mut", (r.plan === "night" ? "🌙 " : "☀ ") + (r.base != null ? r.base : "–") + " → " + (r.best != null ? r.best : "–") + " · " + tt("kept") + ": " + (r.kept.join(", ") || "–")))); }
     if (kind === "falearn") { s.append(B((LN.fa_learn_auto ? "✓ " : "") + tt("Re-enact every 👎 in the simulator"), () => learn({do: "set", key: "fa_learn_auto", on: !LN.fa_learn_auto}), LN.fa_learn_auto ? "" : "sec"), E("div", "mut", tt("fa-note")));
-      (LN.falearn.last || []).forEach(r => s.appendChild(E("div", "mut", (r.ok ? "✅ " + tt("stays quiet") : "⚠ " + r.alarms + " " + tt("alarm(s) – pictures kept for the training") + " (" + r.pics + ")") + " · " + r.cause + " · " + r.name))); }
+      (LN.falearn.last || []).forEach(r => s.appendChild(E("div", "mut", (r.ok ? "✅ " + tt("stays quiet") : "⚠ " + r.alarms + " " + tt("alarm(s) – pictures kept for the training") + " (" + r.pics + ")") + " · " + r.cause + " · " + r.name)));
+      const fc = LN.facheck || {};                    // 2.98.38: the false alarms of the games, checked once more (148)
+      s.append(B("🔍 " + tt("Check learning pictures"), () => learn({do: "facheck"}), "sec"),
+        E("div", "mut", tt("Game pictures for the training") + ": " + (fc.game || 0) + " · " + tt("doubtful (not used)") + ": " + (fc.doubt || 0)));
+      if (fc.last) s.appendChild(E("div", "mut", "✓ " + tt("Learning pictures checked") + ": " + fc.last.checked + " · " + tt("kept") + " " + fc.last.kept + " · " + tt("moved to «doubtful»") + " " + fc.last.moved)); }
     if (kind === "points") { const P = LN.points || {};               // 2.98.2: one account for games and real use
       s.append(E("b", "", "🏅 " + (P.total || 0) + " " + tt("points")), E("div", "mut", tt("points-note")));
       (P.log || []).forEach(x => s.appendChild(E("div", "mut", new Date(x.t * 1000).toLocaleDateString() + " · +" + x.n + " · " + tt(x.why.replace(/\d+/, "{n}")).replace("{n}", (x.why.match(/\d+/) || [""])[0]))));
@@ -12772,24 +12778,29 @@ threading.Thread(target=points_week_loop, daemon=True, name="points").start()
 
 
 # ---- 2.98.2: false alarms from the games of the simulator ---------------------------------------------------------------
-FA_GAME = {"day": "", "n": 0}
+FA_GAME = {"day": "", "n": 0, "z": 0}
 
 
 def fa_game_box(box, info=None):
     """the simulator says: MoveEye reported a person here, but no player and no visitor was there -> this part of the
     picture (with some margin) goes to fa_learn/ as a «no person» example, like the false alarm learning (21). At most 40 a day.
-    2.98.18: «info» = the situation from the game «Fehlalarm-Jäger» (lure, distance, light, weather) - kept next to the picture."""
+    2.98.18: «info» = the situation from the game «Fehlalarm-Jäger» (lure, distance, light, weather) - kept next to the picture.
+    2.98.38 (falearn): checked once more before (148 fa_box_check): the picture the box came from (not the newest one), no
+    person of the simulator near the box, not bigger than a person there - otherwise it goes to fa_learn/zweifel/ (not used)."""
     try:
         x, y, w_, h_ = [float(v) for v in (box or [])[:4]]
     except (TypeError, ValueError):
         return
     day = datetime.now().strftime("%Y%m%d")
     if FA_GAME["day"] != day:
-        FA_GAME.update(day=day, n=0)
-    if FA_GAME["n"] >= 40 or not CFG.get("fa_learn_auto", True):
+        FA_GAME.update(day=day, n=0, z=0)
+    if FA_GAME["n"] >= 40 or FA_GAME.get("z", 0) >= 40 or not CFG.get("fa_learn_auto", True):
         return
-    w = WATCH_REF.get("w")
-    f = getattr(w, "frame_raw", None) if w is not None else None
+    f, how = fa_ring_find([x, y, w_, h_])               # 148: the picture MoveEye saw this box in
+    if f is None:
+        w = WATCH_REF.get("w")
+        f = getattr(w, "frame_raw", None) if w is not None else None
+        how = "now"
     if f is None:
         return
     H, W = f.shape[:2]
@@ -12798,25 +12809,33 @@ def fa_game_box(box, info=None):
     x1, y1 = min(W, int((x + w_ + mx) * W)), min(H, int((y + h_ + my) * H))
     if x1 - x0 < 16 or y1 - y0 < 16:
         return
-    d = os.path.join(DATA_DIR, "fa_learn", day + "_spiel")
+    ok, why = fa_box_check([x, y, w_, h_], info, how, H)
+    d = os.path.join(DATA_DIR, "fa_learn", day + "_spiel") if ok else os.path.join(DATA_DIR, "fa_learn", FA_DOUBT_DIR, day + "_spiel")
     os.makedirs(d, exist_ok=True)
-    FA_GAME["n"] += 1
-    cv2.imwrite(os.path.join(d, "%02d.jpg" % FA_GAME["n"]), f[y0:y1, x0:x1], [cv2.IMWRITE_JPEG_QUALITY, 88])
+    if ok:
+        FA_GAME["n"] += 1
+    else:
+        FA_GAME["z"] = FA_GAME.get("z", 0) + 1
+    n = fa_next_number(d)                               # (before: the count of today - a restart overwrote the pictures)
+    cv2.imwrite(os.path.join(d, "%02d.jpg" % n), f[y0:y1, x0:x1], [cv2.IMWRITE_JPEG_QUALITY, 88])
     sit = {}
     if isinstance(info, dict):                          # only short, plain values (it comes over the network)
-        for k, v in list(info.items())[:16]:
+        for k, v in list(info.items())[:20]:
             if isinstance(k, str) and isinstance(v, (str, int, float, bool)) and len(k) <= 20:
                 sit[re.sub(r"[^a-z_]", "", k.lower())[:20]] = v[:40] if isinstance(v, str) else v
     try:
         with open(os.path.join(d, "info.json"), "w") as fo:
-            json.dump({"label": "no_person", "cause": "game", "from": "simulator game", "crop": True, "n": FA_GAME["n"]}, fo)
-        if sit:                                         # 2.98.18: one file per case with its situation
-            with open(os.path.join(d, "%02d.json" % FA_GAME["n"]), "w") as fo:
-                json.dump({"label": "no_person", "box": [round(x, 3), round(y, 3), round(w_, 3), round(h_, 3)], "situation": sit}, fo)
+            json.dump({"label": "no_person" if ok else "doubtful", "use": ok, "cause": "game", "from": "simulator game", "crop": True, "n": n}, fo)
+        with open(os.path.join(d, "%02d.json" % n), "w") as fo:      # one file per case: the situation and the check
+            json.dump({"label": "no_person" if ok else "doubtful", "box": [round(x, 3), round(y, 3), round(w_, 3), round(h_, 3)], "situation": sit,
+                       "check": dict(fa_check_meta(info, how, H), ok=ok, why=why)}, fo)
     except OSError:
         pass
-    log_event("sys", f"False alarm in a game: picture part kept as «no person» ({FA_GAME['n']} today)")
-    points_add(30, "False alarm unmasked in a game")
+    if ok:
+        log_event("sys", f"False alarm in a game: picture part kept as «no person» ({FA_GAME['n']} today)")
+        points_add(30, "False alarm unmasked in a game")
+    else:
+        log_event("sys", f"False alarm in a game: picture part doubtful ({', '.join(why)[:80]}) - kept apart, not for the training")
 
 
 # ---- 22 / 23 --------------------------------------------------------------------------------------------------------------
@@ -13001,7 +13020,7 @@ def learn_state():
             "autoth": {"busy": AUTOTH["busy"], "step": AUTOTH["step"], "last": AUTOTH["last"]},
             "week": {"on": bool(CFG.get("weekcheck_on")), "runs": [{"t": r["t"], "score": r["score"], "mw": r.get("mw")} for r in TESTOPT["runs"] if r.get("week")][-8:]},
             "rehearsal_on_arm": bool(CFG.get("rehearsal_on_arm")), "fa_learn_auto": bool(CFG.get("fa_learn_auto")),
-            "points": points_state()}
+            "points": points_state(), "facheck": facheck_state()}
 # ----------------------------------------------------------------------------
 # 2.96.11 (Wunsch Daniel): in der Kopfzeile statt App-Symbol + «MoveEye» der Schriftzug - breit W6 (eine Zeile, «Move» hell,
 # «Eye» orange, das «o» ist das Auge, darüber der Sichtfächer mit der erkannten Person), schmal (Handy) W1 (untereinander,
@@ -13536,6 +13555,255 @@ def _simbusy_waiter():
 
 threading.Thread(target=_simbusy_waiter, daemon=True, name="simbusy-wait").start()
 
+# ----------------------------------------------------------------------------
+# 2.98.38: In jeder Spielrunde meldete der Simulator (gamelearn.gd) rund 20 «Fehlalarme» pro Minute – auch Rahmen um Spieler,
+# weil er MoveEyes Rahmen (aus einem Bild von vor 1–3 s) mit den Spielern von JETZT verglich. Diese Ausschnitte kamen als
+# «keine Person» nach fa_learn/ und hätten der KI Falsches beigebracht. Darum hier ein Sicherheitsnetz:
+#  - das richtige Bild: MoveEye merkt sich während einer Spielrunde die letzten Bilder mit ihren Personen-Rahmen
+#    (fa_ring_note, aus 410) und schneidet den Ausschnitt aus dem Bild, in dem es den Rahmen wirklich gesehen hat
+#  - die Wahrheit vom Simulator (ab 3D-4.13, «info.v» 2): keine Person / kein Spieler in der Nähe des Rahmens, der Rahmen
+#    nicht viel grösser als eine stehende Person an dieser Stelle («pmax»), der Kopf hat sich nicht gedreht
+#  - sonst kommt der Ausschnitt nach fa_learn/zweifel/ (label «doubtful», use false – nicht fürs Training)
+#  - «Lernbilder prüfen» (Web: Simulator → Lernen → Fehlalarm-Lernen; Fenster: Simulator): prüft die vorhandenen
+#    Spiel-Bilder in fa_learn/ nochmals mit den gespeicherten Angaben; alte Spiel-Bilder ohne diese Angaben gehen nach zweifel/.
+# ----------------------------------------------------------------------------
+FA_DOUBT_DIR = "zweifel"
+FA_RING = {"q": deque(maxlen=48)}          # (time, picture, [[x, y, w, h] 0..1, …]) of the last seconds
+FACHECK = {"last": None, "count": None, "count_t": 0.0}
+
+
+def fa_ring_note(frame, boxes):
+    """410: a picture with persons during a game round (frame_raw is a fresh copy per picture - only the reference is kept)"""
+    try:
+        q = FA_RING["q"]
+        now = time.time()
+        q.append((now, frame, [list(b) for b in boxes]))
+        while q and now - q[0][0] > 5.0:
+            q.popleft()
+    except Exception:
+        pass
+
+
+def fa_ring_find(box):
+    """(picture, "ring") in which MoveEye reported exactly this box, newest first - or (None, "")"""
+    try:
+        for t_, f_, bs in reversed(list(FA_RING["q"])):
+            if time.time() - t_ > 5.0:
+                break
+            for b in bs:
+                if all(abs(float(b[i]) - float(box[i])) <= 0.0015 for i in range(4)):
+                    return f_, "ring"
+    except Exception:
+        pass
+    return None, ""
+
+
+def fa_near(m, t):
+    """a box and a truth box mean the same thing (like gamelearn.gd «near»): the truth box grows by a margin; a quarter
+    of the box in it, or the centre of one in the other"""
+    try:
+        m = [float(v) for v in m[:4]]
+        t = [float(v) for v in t[:4]]
+    except (TypeError, ValueError, IndexError):
+        return False
+    mx, my = 0.04 + 0.25 * t[2], 0.04 + 0.15 * t[3]
+    e = [t[0] - mx, t[1] - my, t[2] + 2 * mx, t[3] + 2 * my]
+    ix = max(0.0, min(m[0] + m[2], e[0] + e[2]) - max(m[0], e[0]))
+    iy = max(0.0, min(m[1] + m[3], e[1] + e[3]) - max(m[1], e[1]))
+    if m[2] * m[3] > 0 and ix * iy / (m[2] * m[3]) >= 0.25:
+        return True
+    cx, cy = m[0] + m[2] / 2, m[1] + m[3] / 2
+    if e[0] <= cx <= e[0] + e[2] and e[1] <= cy <= e[1] + e[3]:
+        return True
+    tx, ty = t[0] + t[2] / 2, t[1] + t[3] / 2
+    return m[0] <= tx <= m[0] + m[2] and m[1] <= ty <= m[1] + m[3]
+
+
+def fa_box_check(box, info, how, H=0):
+    """(ok, [reasons]) - may this box be kept as «no person»? Every doubt is a reason."""
+    why = []
+    try:
+        x, y, w_, h_ = [float(v) for v in (box or [])[:4]]
+    except (TypeError, ValueError):
+        return False, ["no box"]
+    if w_ * h_ > 0.2 or w_ > 0.6 or h_ > 0.8:
+        why.append("very big")
+    if not isinstance(info, dict) or int(info.get("v") or 0) < 2:
+        why.append("no truth from the simulator")
+    else:
+        tru = info.get("truth") if isinstance(info.get("truth"), list) else []
+        if any(isinstance(t, (list, tuple)) and len(t) >= 4 and fa_near([x, y, w_, h_], t) for t in tru[:32]):
+            why.append("person near")
+        try:
+            pm = float(info.get("pmax") or -1)
+        except (TypeError, ValueError):
+            pm = -1.0
+        if pm > 0.005 and (h_ > 1.3 * pm or w_ > 1.0 * pm):     # a person is about a third as wide as high
+            why.append("bigger than a person there")
+        if info.get("steady") is False:
+            why.append("head turned")
+    if how != "ring":
+        why.append("picture not found")
+    try:
+        e = size_expected([x, y, w_, h_], 1.0)             # 417: how big a person is at this place (learned by MoveEye)
+        if e and h_ > 2.5 * e and "bigger than a person there" not in why:
+            why.append("bigger than a person there")
+    except Exception:
+        pass
+    return not why, why
+
+
+def fa_check_meta(info, how, H=0):
+    """what is kept next to the picture so «Lernbilder prüfen» can check it again later"""
+    m = {"v": 2 if isinstance(info, dict) and int(info.get("v") or 0) >= 2 else 1, "frame": how, "h": int(H or 0)}
+    if isinstance(info, dict):
+        tru = []
+        for t in (info.get("truth") if isinstance(info.get("truth"), list) else [])[:16]:
+            try:
+                tru.append([round(float(v), 3) for v in t[:4]])
+            except (TypeError, ValueError, IndexError):
+                pass
+        m["truth"] = tru
+        try:
+            m["pmax"] = round(float(info.get("pmax")), 3)
+        except (TypeError, ValueError):
+            m["pmax"] = -1
+        if isinstance(info.get("steady"), bool):
+            m["steady"] = info["steady"]
+    return m
+
+
+def fa_next_number(d):
+    n = 0
+    try:
+        for fn in os.listdir(d):
+            m_ = re.match(r"^(\d+)\.jpg$", fn)
+            if m_:
+                n = max(n, int(m_.group(1)))
+    except OSError:
+        pass
+    return n + 1
+
+
+def _fa_is_game_dir(dn, d):
+    if dn.endswith("_spiel"):
+        return True
+    try:
+        with open(os.path.join(d, "info.json")) as f:
+            i = json.load(f)
+        return i.get("cause") == "game" or i.get("from") == "simulator game"
+    except (OSError, ValueError, AttributeError):
+        return False
+
+
+def fa_counts():
+    """(game pictures for the training, doubtful pictures) - cached for 30 s"""
+    if FACHECK["count"] is not None and time.time() - FACHECK["count_t"] < 30:
+        return FACHECK["count"]
+    base = os.path.join(DATA_DIR, "fa_learn")
+    g = z = 0
+    try:
+        for dn in os.listdir(base):
+            d = os.path.join(base, dn)
+            if not os.path.isdir(d):
+                continue
+            if dn == FA_DOUBT_DIR:
+                for r_, _ds, fs in os.walk(d):
+                    z += sum(1 for f in fs if f.endswith(".jpg"))
+            elif _fa_is_game_dir(dn, d):
+                g += sum(1 for f in os.listdir(d) if f.endswith(".jpg"))
+    except OSError:
+        pass
+    FACHECK.update(count=(g, z), count_t=time.time())
+    return g, z
+
+
+def fa_review():
+    """«Lernbilder prüfen»: every game picture in fa_learn/ again - with the saved truth if there is one; game pictures
+    without it (before 2.98.38) go to fa_learn/zweifel/. The pictures of real false alarms (👎) are not touched."""
+    base = os.path.join(DATA_DIR, "fa_learn")
+    res = {"t": time.time(), "checked": 0, "kept": 0, "moved": 0}
+    try:
+        names = sorted(os.listdir(base))
+    except OSError:
+        names = []
+    for dn in names:
+        d = os.path.join(base, dn)
+        if dn == FA_DOUBT_DIR or not os.path.isdir(d) or not _fa_is_game_dir(dn, d):
+            continue
+        zd = os.path.join(base, FA_DOUBT_DIR, dn)
+        for fn in sorted(os.listdir(d)):
+            if not fn.endswith(".jpg"):
+                continue
+            res["checked"] += 1
+            jp = os.path.join(d, fn[:-4] + ".json")
+            meta = {}
+            try:
+                with open(jp) as f:
+                    meta = json.load(f)
+            except (OSError, ValueError):
+                meta = {}
+            chk = meta.get("check") if isinstance(meta, dict) else None
+            if isinstance(chk, dict) and int(chk.get("v") or 0) >= 2:
+                ok, why = fa_box_check(meta.get("box"), dict(chk, v=2), chk.get("frame"), chk.get("h") or 0)
+            else:
+                ok, why = False, ["old game picture without truth"]
+            if ok:
+                res["kept"] += 1
+                continue
+            try:
+                os.makedirs(zd, exist_ok=True)
+                n = fa_next_number(zd)
+                shutil.move(os.path.join(d, fn), os.path.join(zd, "%02d.jpg" % n))
+                meta = meta if isinstance(meta, dict) else {}
+                meta.update(label="doubtful", moved_from=dn + "/" + fn, check=dict(chk if isinstance(chk, dict) else {}, ok=False, why=why))
+                with open(os.path.join(zd, "%02d.json" % n), "w") as f:
+                    json.dump(meta, f)
+                if os.path.isfile(jp):
+                    os.remove(jp)
+                res["moved"] += 1
+            except OSError as e:
+                log_event("sys", f"Check learning pictures: {e}"[:120])
+        try:                                            # nothing left but info.json: the folder goes too
+            rest = [f for f in os.listdir(d) if f != "info.json"]
+            if not rest:
+                if os.path.isdir(zd) and not os.path.exists(os.path.join(zd, "info.json")) and os.path.isfile(os.path.join(d, "info.json")):
+                    shutil.copy(os.path.join(d, "info.json"), os.path.join(zd, "info.json"))
+                shutil.rmtree(d, ignore_errors=True)
+        except OSError:
+            pass
+    if res["moved"]:                                    # the doubtful folders say so themselves (a training tool walking fa_learn/)
+        for r_, ds, _fs in os.walk(os.path.join(base, FA_DOUBT_DIR)):
+            for x in ds + [""]:
+                p_ = os.path.join(r_, x, "info.json")
+                try:
+                    with open(p_, "w") as f:
+                        json.dump({"label": "doubtful", "use": False, "from": "simulator game", "note": "not for the training"}, f)
+                except OSError:
+                    pass
+            break
+    FACHECK["last"] = res
+    FACHECK["count"] = None
+    log_event("sys", f"Learning pictures checked: {res['checked']} checked, {res['kept']} kept, {res['moved']} moved to «doubtful»")
+    return res
+
+
+def facheck_state():
+    g, z = fa_counts()
+    return {"last": FACHECK["last"], "game": g, "doubt": z}
+
+
+def falearn_tk_build(app, sbody):
+    """the window (section Simulator): «Lernbilder prüfen» - like the web (139, sheet «Fehlalarm-Lernen»)"""
+    from tkinter import ttk
+    def run():
+        def go():
+            r = fa_review()
+            g, z = fa_counts()
+            app._status("Simulator", "✓ " + tr("Learning pictures checked") + f": {r['checked']} · {tr('kept')} {r['kept']} · "
+                        + f"{tr('moved to «doubtful»')} {r['moved']} · {tr('Game pictures for the training')} {g} · {tr('doubtful (not used)')} {z}")
+        threading.Thread(target=go, daemon=True, name="facheck").start()
+    ttk.Button(sbody, text="🔍 " + tr("Check learning pictures"), command=run).pack(fill="x", pady=(4, 0))
 # ----------------------------------------------------------------------------
 # Second Wi-Fi adapter (USB stick): one adapter makes the own Wi-Fi, the other one joins a known network (campsite, phone)
 # -> repeater: the devices in the own Wi-Fi have internet (NetworkManager "shared" does the routing). Also: automatic change
@@ -33183,6 +33451,8 @@ class MotionWatch:
             with LOCK:
                 # 2.95.75: where the persons are (0..1 of the picture) - the 3D simulator knows which player was detected
                 STATE["person_boxes"] = [[round(b[0] / pw, 3), round(b[1] / ph, 3), round(b[2] / pw, 3), round(b[3] / ph, 3)] for b in person_boxes[:8]]
+                if person_boxes and t0 < self.raw_until and self.frame_raw is not None:
+                    fa_ring_note(self.frame_raw, STATE["person_boxes"])    # 2.98.38: the picture of these boxes (148)
                 STATE.update(rain_score=round(rain_score, 2), rain_mode=rain_mode, persons=len(person_boxes),
                              candidates=len(candidates), fps=round(min(real_fps, proc_fps), 1), proc_fps=round(proc_fps, 1),
                              frames=STATE["frames"] + 1, uptime=int(time.time() - START))
@@ -56222,6 +56492,8 @@ class WebStream:
                 ok, err = blind_start("rehearsal")
             elif a == "autoth":
                 ok, err = autoth_start()
+            elif a == "facheck":                         # 2.98.38: «Lernbilder prüfen» (148)
+                fa_review()
             elif a == "set" and d.get("key") in ("fa_learn_auto", "rehearsal_on_arm", "weekcheck_on"):
                 CFG[d["key"]] = bool(d.get("on")); save_settings()
             else:
@@ -60129,6 +60401,7 @@ class App:
             ttk.Button(sf, text=tr("Start"), command=lambda: sim_do(sim_start, "Simulator started")).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(sf, text=tr("Stop"), command=lambda: sim_do(sim_stop, "Simulator stopped")).pack(side="left", expand=True, fill="x")
             kidata_tk_build(self, sbody)                  # training pack with «Vielfalt», «Delete old AI data» (197)
+            falearn_tk_build(self, sbody)                 # 2.98.38: «Lernbilder prüfen» (148)
         if sec == "Security":                             # «Log in only encrypted» (574)
             self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels[sec].pack(anchor="w", pady=(4, 0))
@@ -78615,6 +78888,18 @@ for _k, _v in _HX_SERVO.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 WEB_PAGE = WEB_PAGE.replace("<!--SERVOJS-->", servo_live_js(), 1)       # the script of 539 with the German texts
+_HX_FALEARN = {
+    'Check learning pictures': ('Lernbilder prüfen', 'Vérifier les images d’apprentissage', 'Controlla le immagini di apprendimento', 'Controllar ils maletgs d’emprender'),
+    'Learning pictures checked': ('Lernbilder geprüft', 'Images d’apprentissage vérifiées', 'Immagini di apprendimento controllate', 'Maletgs d’emprender controllads'),
+    'Game pictures for the training': ('Spielbilder fürs Training', 'Images de jeu pour l’entraînement', 'Immagini di gioco per l’addestramento', 'Maletgs da gieu per il trenament'),
+    'doubtful (not used)': ('zweifelhaft (nicht verwendet)', 'douteuses (non utilisées)', 'dubbie (non usate)', 'dubitaivels (betg utilisads)'),
+    'moved to «doubtful»': ('nach «zweifel» verschoben', 'déplacées vers «douteux»', 'spostate in «dubbi»', 'spustads en «dubis»'),
+    'kept': ('übernommen', 'conservées', 'tenute', 'tegnids'),
+}
+for _k, _v in _HX_FALEARN.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

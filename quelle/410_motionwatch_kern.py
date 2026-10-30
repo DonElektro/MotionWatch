@@ -1099,6 +1099,8 @@ class MotionWatch:
             with LOCK:
                 # 2.95.75: where the persons are (0..1 of the picture) - the 3D simulator knows which player was detected
                 STATE["person_boxes"] = [[round(b[0] / pw, 3), round(b[1] / ph, 3), round(b[2] / pw, 3), round(b[3] / ph, 3)] for b in person_boxes[:8]]
+                if person_boxes and t0 < self.raw_until and self.frame_raw is not None:
+                    fa_ring_note(self.frame_raw, STATE["person_boxes"])    # 2.98.38: the picture of these boxes (148)
                 STATE.update(rain_score=round(rain_score, 2), rain_mode=rain_mode, persons=len(person_boxes),
                              candidates=len(candidates), fps=round(min(real_fps, proc_fps), 1), proc_fps=round(proc_fps, 1),
                              frames=STATE["frames"] + 1, uptime=int(time.time() - START))

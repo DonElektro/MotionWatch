@@ -32,6 +32,18 @@ var _last_report := -100.0
 var _rep_by := {}                         # 3D-3.53: slot -> last time MoveEye reported exactly this player (its boxes)
 var mw_false: Array = []                  # boxes MoveEye reported where no player was {"t", "box"}
 var _false_t := 0.0
+# 3D-4.x (falearn): the false alarms are judged against the truth of the last seconds - MoveEye's boxes come from a picture
+# that is up to a few seconds old (processing, network, «Wie ein echter Pi 5»), the players walk on and the head turns.
+# Before, every box was compared only with where the players are NOW (and only players «play» as runner): ~20 «false
+# alarms» a minute in normal rounds, «gemeldet 0» - and the crops (often with a player in them) went to fa_learn/ as «keine Person».
+const FA_WINDOW := 3.0                    # s: the picture MoveEye judged was taken at most this long before its packet came
+const FA_MARGIN := 0.04                   # margin around the truth boxes (0..1 of the picture)
+const FA_STEADY := 3.0                    # degrees: the head turned more within the window -> the comparison is not sure
+var _hist: Array = []                     # [{"t": main.now(), "yaw", "pit", "b": [[x, y, w, h, kind, slot], …]}] every tick
+var _mw_seen_t := -1.0
+var _mw_key := ""
+var fa_stats := {"boxes": 0, "spieler": 0, "besuch": 0, "tier": 0, "ding": 0, "unsicher": 0, "fehlalarm": 0}
+var fa_log: Array = []                    # the last judgements (report «fa_pruefung», tests)
 var info := ""
 var http: HTTPRequest
 var saved_by: Array = []                  # 3D-4.x: names whose sneaking way was saved in this round (learning points, gameplus.gd)
@@ -67,6 +79,11 @@ func round_start() -> void:
 	mw_false.clear()
 	blind.clear()
 	saved_by.clear()
+	_hist.clear()
+	_mw_key = ""
+	fa_log.clear()
+	for k in fa_stats.keys():
+		fa_stats[k] = 0
 	hunter = {"shots": 0, "hits": 0, "miss_mw": 0}
 	_path_t = 0.0
 
@@ -78,24 +95,33 @@ func tick(dt: float) -> void:
 	var t := now()
 	if int(main.mw_det.get("persons", 0)) > 0:
 		_last_report = t
+	_hist_add()                                           # 3D-4.x (falearn): the truth of this moment, for the late pictures
 	var mwb: Array = mw_boxes()
-	if not mwb.is_empty():                                # 3D-3.53: which player is meant (MoveEye 2.95.75 sends boxes)
-		var used := {}
-		for p in game.players:
-			if p == null or p["role"] != "runner" or p["state"] != "play":
-				continue
-			var pb := box(p)
+	if not mwb.is_empty() and float(main.mw_det_t) != _mw_seen_t:   # 3D-3.53: which player is meant (MoveEye 2.95.75 sends boxes)
+		_mw_seen_t = float(main.mw_det_t)
+		var js: Array = []
+		for i in range(mwb.size()):
+			var j: Dictionary = judge(mwb[i], _mw_seen_t)
+			js.append(j)
+			if int(j["slot"]) >= 0:
+				_rep_by[int(j["slot"])] = t
+		var key := str(mwb)
+		if key != _mw_key:                                # the same picture comes in several packets: count it once
+			_mw_key = key
 			for i in range(mwb.size()):
-				if not pb.is_empty() and overlap(pb, mwb[i]):
-					_rep_by[int(p["slot"])] = t
-					used[i] = true
-		if t - _false_t > 2.0:
-			for i in range(mwb.size()):
-				if not used.has(i) and not _visitor_at(mwb[i]) and mw_false.size() < 20:
+				var j: Dictionary = js[i]
+				fa_stats["boxes"] = int(fa_stats["boxes"]) + 1
+				fa_stats[j["what"]] = int(fa_stats[j["what"]]) + 1
+				fa_log.append({"t": snappedf(t - game.t_start, 0.1), "box": mwb[i], "what": j["what"], "who": j["who"]})
+				if fa_log.size() > 60:
+					fa_log.pop_front()
+				if j["what"] == "fehlalarm" and t - _false_t > 2.0 and mw_false.size() < 20:
 					mw_false.append({"t": snappedf(t - game.t_start, 0.1), "box": mwb[i]})
 					_false_t = t
-					# 3D-3.92: MoveEye keeps this spot of its picture as a «no person» example (false alarm learning)
-					main.mw_cmd = {"id": max(int(Time.get_unix_time_from_system() * 1000.0), int(main.mw_cmd.get("id", 0)) + 1), "op": "fa_box", "box": mwb[i]}
+					# 3D-3.92: MoveEye keeps this spot of its picture as a «no person» example (false alarm learning);
+					# 3D-4.x: with the truth around it, so MoveEye can check it once more (143 fa_game_box)
+					main.mw_cmd = {"id": max(int(Time.get_unix_time_from_system() * 1000.0), int(main.mw_cmd.get("id", 0)) + 1), "op": "fa_box", "box": mwb[i],
+							"info": fa_info(mwb[i], {"game": "spiel", "mode": str(main.game_mode)}, _mw_seen_t)}
 	_path_t -= dt
 	var rec_path: bool = _path_t <= 0.0
 	if rec_path:
@@ -241,18 +267,209 @@ func reported_for(p: Dictionary) -> bool:
 	return now() - _last_report < REPORT_GRACE
 
 
-func _visitor_at(b: Array) -> bool:
-	"""a visitor of the simulation (person or animal) is there: not a false alarm of the game"""
+# ---- 3D-4.x (falearn): the truth behind MoveEye's boxes -----------------------------------------------------------------
+func _kind_of(a) -> String:
+	var k := str(a.get("kind")) if a.get("kind") != null else "person"
+	if k == "person":
+		return "person"
+	if k in ["car", "bike", "drone", "thing"]:
+		return "ding"
+	return "tier"
+
+
+func abox(a: Node3D) -> Array:
+	"""where a figure (player, visitor, animal) is in the picture of the head camera now: [x, y, w, h] 0..1 from the corners
+	of its meshes that the camera sees (layer 1), or [] (behind the camera, too far, not in the picture)"""
+	if a == null or not is_instance_valid(a) or not a.is_visible_in_tree():
+		return []
+	var cam: Camera3D = main.cams[0]
+	var cp: Vector3 = cam.global_position
+	if cp.distance_to(a.global_position) > 90.0 or cam.is_position_behind(a.global_position + Vector3(0, 0.5, 0)):
+		return []
+	var vs: Vector2 = Vector2(main.vps[0].size)
+	var lo := Vector2(INF, INF)
+	var hi := Vector2(-INF, -INF)
+	for m in a.find_children("*", "MeshInstance3D", true, false):
+		var mi := m as MeshInstance3D
+		if mi.mesh == null or not mi.is_visible_in_tree() or not (mi.layers & 1):
+			continue
+		var ab: AABB = mi.get_aabb()
+		for c in 8:
+			var w: Vector3 = mi.global_transform * ab.get_endpoint(c)
+			if cam.is_position_behind(w):
+				continue
+			var q := cam.unproject_position(w)
+			lo = lo.min(q)
+			hi = hi.max(q)
+	if lo.x == INF:
+		return []
+	lo /= vs
+	hi /= vs
+	if hi.x < 0.0 or lo.x > 1.0 or hi.y < 0.0 or lo.y > 1.0:
+		return []
+	lo = lo.clamp(Vector2.ZERO, Vector2.ONE)
+	hi = hi.clamp(Vector2.ZERO, Vector2.ONE)
+	return [lo.x, lo.y, hi.x - lo.x, hi.y - lo.y]
+
+
+func _union(a: Array, b: Array) -> Array:
+	if a.is_empty():
+		return b
+	if b.is_empty():
+		return a
+	var x0: float = min(a[0], b[0])
+	var y0: float = min(a[1], b[1])
+	return [x0, y0, max(a[0] + a[2], b[0] + b[2]) - x0, max(a[1] + a[3], b[1] + b[3]) - y0]
+
+
+func truth_now() -> Array:
+	"""everything with a body in the picture of the head camera now: [[x, y, w, h, kind, slot], …]; kind = «spieler» (a
+	player in any state and role - also caught ones, ones at the goal, the guard), «person» (a visitor), «tier», «ding»"""
+	var out: Array = []
+	var seen := {}
+	for p in game.players:
+		if p == null or p.get("actor") == null or not is_instance_valid(p["actor"]):
+			continue
+		var a = p["actor"]
+		seen[a.get_instance_id()] = true
+		var b := _union(abox(a), box(p) if a.is_visible_in_tree() else [])   # meshes + the old column (a figure being built)
+		if not b.is_empty():
+			out.append([b[0], b[1], b[2], b[3], "spieler" if _kind_of(a) == "person" else _kind_of(a), int(p["slot"])])
+	var groups: Array = [main.visitors]
+	if game.get("root") != null:
+		groups.append(game.root)
+	for g in groups:
+		if g == null:
+			continue
+		for v in g.get_children():
+			if seen.has(v.get_instance_id()) or not (v is Node3D) or v.get("kind") == null:
+				continue
+			var b := abox(v)
+			if not b.is_empty():
+				out.append([b[0], b[1], b[2], b[3], _kind_of(v), -1])
+	return out
+
+
+func _hist_add() -> void:
+	var cam: Camera3D = main.cams[0]
+	var r: Vector3 = cam.global_rotation_degrees
+	_hist.append({"t": main.now(), "yaw": r.y, "pit": r.x, "b": truth_now()})
+	while not _hist.is_empty() and main.now() - float(_hist[0]["t"]) > FA_WINDOW + 1.0:
+		_hist.pop_front()
+
+
+func _window(t_pkt: float) -> Array:
+	"""the truth of the moments the picture of this MoveEye packet can be from"""
+	var out: Array = []
+	for h in _hist:
+		if float(h["t"]) >= t_pkt - FA_WINDOW and float(h["t"]) <= t_pkt + 0.25:
+			out.append(h)
+	if out.is_empty() and not _hist.is_empty():
+		out.append(_hist[-1])
+	return out
+
+
+func near(m: Array, tb: Array) -> bool:
+	"""a box of MoveEye and a truth box mean the same thing: generous - the truth box grows by a margin, and it is enough
+	that a quarter of MoveEye's box lies in it, or the centre of one lies in the other"""
+	var mx: float = FA_MARGIN + 0.25 * float(tb[2])
+	var my: float = FA_MARGIN + 0.15 * float(tb[3])
+	var e := [float(tb[0]) - mx, float(tb[1]) - my, float(tb[2]) + 2.0 * mx, float(tb[3]) + 2.0 * my]
+	var ix: float = max(0.0, min(m[0] + m[2], e[0] + e[2]) - max(m[0], e[0]))
+	var iy: float = max(0.0, min(m[1] + m[3], e[1] + e[3]) - max(m[1], e[1]))
+	if m[2] * m[3] > 0.0 and ix * iy / (m[2] * m[3]) >= 0.25:
+		return true
+	var cx: float = m[0] + m[2] / 2.0
+	var cy: float = m[1] + m[3] / 2.0
+	if cx >= e[0] and cx <= e[0] + e[2] and cy >= e[1] and cy <= e[1] + e[3]:
+		return true
+	var tx: float = float(tb[0]) + float(tb[2]) / 2.0
+	var ty: float = float(tb[1]) + float(tb[3]) / 2.0
+	return tx >= m[0] and tx <= m[0] + m[2] and ty >= m[1] and ty <= m[1] + m[3]
+
+
+func judge(m: Array, t_pkt: float) -> Dictionary:
+	"""what a box of MoveEye is: {"what": spieler / besuch / tier / ding / unsicher / fehlalarm, "who", "slot"}.
+	A player or a person near wins over an animal, an animal over a thing; «unsicher» = the head turned meanwhile"""
+	var w := _window(t_pkt)
+	var best := ""
+	var slot := -1
+	var rank := {"spieler": 4, "person": 3, "tier": 2, "ding": 1}
+	var y0 := 1e9
+	var y1 := -1e9
+	var p0 := 1e9
+	var p1 := -1e9
+	for h in w:
+		y0 = min(y0, float(h["yaw"]))
+		y1 = max(y1, float(h["yaw"]))
+		p0 = min(p0, float(h["pit"]))
+		p1 = max(p1, float(h["pit"]))
+		for tb in h["b"]:
+			if near(m, tb) and int(rank.get(tb[4], 0)) > int(rank.get(best, 0)):
+				best = str(tb[4])
+				slot = int(tb[5])
+	if best == "spieler":
+		var nm := ""
+		for p in game.players:
+			if p != null and int(p["slot"]) == slot:
+				nm = str(p["name"])
+		return {"what": "spieler", "who": nm, "slot": slot}
+	if best != "":
+		return {"what": "besuch" if best == "person" else best, "who": best, "slot": -1}
+	if _hist.is_empty() or float(_hist[0]["t"]) > t_pkt - FA_WINDOW + 0.2:
+		return {"what": "unsicher", "who": "erst seit kurzem beobachtet", "slot": -1}   # (start of the round: the picture may be older)
+	if absf(wrapf(y1 - y0, -180.0, 180.0)) > FA_STEADY or p1 - p0 > FA_STEADY:
+		return {"what": "unsicher", "who": "Kopf %d° gedreht" % int(y1 - y0), "slot": -1}
+	return {"what": "fehlalarm", "who": "", "slot": -1}
+
+
+func person_h(m: Array) -> float:
+	"""how high (0..1 of the picture) a standing person (1.8 m) would be at the foot of this box; -1 = unknown (the foot is
+	at or above the horizon, so far away)"""
 	var cam: Camera3D = main.cams[0]
 	var vs: Vector2 = Vector2(main.vps[0].size)
-	for v in main.visitors.get_children():
-		if cam.is_position_behind(v.position):
-			continue
-		var q: Vector2 = cam.unproject_position(v.position + Vector3(0, 0.5, 0)) / vs
-		if q.x >= b[0] - 0.05 and q.x <= b[0] + b[2] + 0.05 and q.y >= b[1] - 0.1 and q.y <= b[1] + b[3] + 0.1:
-			return true
-	return false
+	var px := Vector2((float(m[0]) + float(m[2]) / 2.0) * vs.x, minf(float(m[1]) + float(m[3]), 0.999) * vs.y)
+	var o: Vector3 = cam.project_ray_origin(px)
+	var n: Vector3 = cam.project_ray_normal(px)
+	if n.y > -0.005:
+		return -1.0
+	var gy: float = main.ground_y(o.x, o.z)
+	var q: Vector3 = o
+	for _i in 3:                                          # the ground is not flat everywhere: twice more at the new place
+		var k: float = (gy - o.y) / n.y
+		if k <= 0.0 or k > 200.0:
+			return -1.0
+		q = o + n * k
+		gy = main.ground_y(q.x, q.z)
+	var top: Vector3 = q + Vector3(0, 1.8, 0)
+	if cam.is_position_behind(top):
+		return -1.0
+	return absf(cam.unproject_position(q).y - cam.unproject_position(top).y) / vs.y
 
+
+func fa_info(m: Array, extra := {}, t_pkt := -1.0) -> Dictionary:
+	"""what MoveEye gets with a «fa_box» so it can check it once more before keeping it as «keine Person» (143):
+	«truth» = the persons and players near in the window (0..1), «pmax» = a standing person there, «steady» = head still"""
+	var d: Dictionary = extra.duplicate()
+	var tru: Array = []
+	if _hist.is_empty() or main.now() - float(_hist[-1]["t"]) > 0.5:
+		_hist_add()                                       # (the game «Fehlalarm-Jäger» does not tick this script)
+	var w := _window(t_pkt if t_pkt >= 0.0 else float(main.mw_det_t))
+	var y0 := 1e9
+	var y1 := -1e9
+	for h in w:
+		y0 = min(y0, float(h["yaw"]))
+		y1 = max(y1, float(h["yaw"]))
+		for tb in h["b"]:
+			if tb[4] in ["spieler", "person"] and tru.size() < 16:
+				var bb := [snappedf(tb[0], 0.001), snappedf(tb[1], 0.001), snappedf(tb[2], 0.001), snappedf(tb[3], 0.001)]
+				if not tru.has(bb):
+					tru.append(bb)
+	d["v"] = 2
+	d["truth"] = tru
+	d["pmax"] = snappedf(person_h(m), 0.001)
+	d["steady"] = absf(wrapf(y1 - y0, -180.0, 180.0)) <= FA_STEADY
+	return d
 
 
 func _tags(p: Dictionary) -> Dictionary:
@@ -389,7 +606,7 @@ func report_dict() -> Dictionary:
 			"sichtbar": n, "gemeldet": found, "rate": (round(100.0 * found / n) if n > 0 else -1),
 			"reaktion_median_s": (lats[lats.size() / 2] if not lats.is_empty() else -1), "baender": bands,
 			"jaeger": hunter, "verpasst": misses, "episoden": eps, "zuordnung": "rahmen" if has_boxes() else "anzahl",
-			"fehlalarme_mw": mw_false, "extras": game.plus.report() if game.plus != null else {},
+			"fehlalarme_mw": mw_false, "fa_pruefung": {"zaehler": fa_stats, "letzte": fa_log.slice(-30)}, "extras": game.plus.report() if game.plus != null else {},
 			"ausloeser": game.shut.report() if game.shut != null else {}}   # 3D-4.x: the shots of the shutter (gameshutter.gd)
 
 
