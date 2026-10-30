@@ -135,6 +135,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `568_uebersetzungen_weit.py` | Übersetzungen und Anleitungs-Absatz (Kamera & Servos) zur Weitwinkel-Kamera (163 / 591) | 50 |
 | `598_simwerte_anzeige.py` | «🧪 Simulator»-Hinweis bei Simulator-Werten (Web und Fenster), Anleitung (285) | 175 |
 | `599_uebersetzungen_simwerte.py` | Übersetzungen der Simulator-Werte (285, 598) | 55 |
+| `599b_fenster_smalltv.py` | Zusatz-Bildschirm (552): Einstellungen (Abschnitt «Extra display» in «Geräte & Sensoren»), Fenster-Abschnitt (Liste, Testbild, Suche, Einrichtung mit QR), deutsche Texte der Webseite, Selbsttest mit nachgebautem Gerät (HTTP 400, langsam) | 300 |
 | `599a_fenster_parcours.py` | Fenster: Regler «Vorausschauen» bei Kamera / Servos (SLIDERS), Karte «Verfolgungs-Parcours» im Reiter Simulator (letzter Lauf, Start, Vorschlag übernehmen, Kachel im Browser) | 70 |
 | `598_uebersetzungen_weit.py` | Übersetzungen und Anleitungs-Absatz (Kamera & Servos) zur Weitwinkel-Kamera (163 / 591) | 50 |
 | `634_uebersetzungen_ausl.py` | Übersetzungen für den «Auslöser» (539) | 40 |
@@ -161,8 +162,10 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `548_web_ki_waechter.py` | Web: «🤖 MoveEye als KI-Wächter» in der Karte «Spiel» (Schalter, Liste «gegen die KI»), Simulator-Fenster ohne Einblendungen | 80 |
 | `549_web_sim_kompakt.py` | Live-Seite «Sim-Kompakt»: mit verbundenem Simulator zwei kleine Bilder, Kopf- und Rover-Stick am Rand, Simulator-Kacheln dazwischen («◫ Ansicht», pro Gerät) | 429 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
+| `552_smalltv.py` | Zusatz-Bildschirm GeekMagic SmallTV Ultra: Liste der Bildschirme (+ virtueller 🧪 des Simulators), Status / Alarmbild (Tier mit Ausschnitt, Person nur Symbol) / Spiel-Anzeige (`game_live` des Simulators), nachts gedimmt und rot, ein Faden pro Gerät, nur bei Änderung, me_a/me_b.jpg, Firmware-Macken (400), Suche im /24, /api/smalltv, Web-Teil (stvPanel); Wrapper um species_update, alarm_ctx_note, simvals_take, msglog_add | 900 |
 | `556_tailscale_funnel.py` | Online-Spiel über Tailscale Funnel: nur /game/ öffentlich (eigene Tür + Sperre bei Funnel-Anfragen), Auto-Aus, Aufräumen beim Neustart, Fehler mit Abhilfe, Fenster-Zeile | 605 |
 | `560_uebersetzungen_de.py` | Übersetzungen Deutsch | 498 |
+| `562_uebersetzungen_smalltv.py` | Übersetzungen und Anleitungs-Kapitel «Zusatz-Bildschirm (SmallTV)» zu 552 / 599b | 150 |
 | `561_uebersetzungen_funnel.py` | Übersetzungen und Anleitung (DE/EN) zum Tailscale Funnel (556) | 128 |
 | `569_uebersetzungen_parcours.py` | Übersetzungen und Anleitungs-Absatz (Kamera & Servos) zum Verfolgungs-Parcours (416 / 599) | 140 |
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |

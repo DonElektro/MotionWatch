@@ -179,6 +179,9 @@ func _json(c: Dictionary, obj, code := 200) -> void:
 
 
 func _handle(c: Dictionary, method: String, path: String, query: Dictionary, body: PackedByteArray, host: String) -> void:
+	if main.smalltv != null and main.smalltv.wants(path):      # 3D-4.19: virtueller SmallTV (smalltv.gd), gleiche Schnittstelle wie das Gerät
+		main.smalltv.handle(self, c, method, path, query, body, host)
+		return
 	if method == "POST" and path == "/state":
 		var d = JSON.parse_string(body.get_string_from_utf8())
 		if typeof(d) != TYPE_DICTIONARY:

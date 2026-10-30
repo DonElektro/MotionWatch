@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.18"
+const VERSION := "3D-4.19"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -280,6 +280,7 @@ var camfx_mats: Array = []            # 3D-3.94: camfx.gdshader per camera (real
 var realism                           # realism.gd
 var simreal                           # simreal.gd (3D-4.4): Pi 5, lens, infrared, thermal, false alarms, difficult visitors
 var szenen                            # szenenplus.gd (3D-4.x): Voller Campingplatz, Tarnen und Kriechen, Velodieb
+var smalltv                           # smalltv.gd (3D-4.19): virtueller Zusatz-Bildschirm GeekMagic SmallTV Ultra (MoveEye 552)
 var weit                              # weitwinkel.gd (3D-4.17): camera 1 = the wide camera with its mount (mast, base, head front / rear)
 var parcours                          # parcours.gd (3D-4.18): «Verfolgungs-Parcours» - lessons, ground truth, game «Entkomme der Kamera»
 var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Zwilling» - photo / panorama of the real place
@@ -381,6 +382,9 @@ func _ready() -> void:
 	weit = preload("res://scripts/weitwinkel.gd").new()      # 3D-4.17: the wide camera (camera 1) and its mount
 	weit.main = self
 	add_child(weit)
+	smalltv = preload("res://scripts/smalltv.gd").new()     # 3D-4.19: virtueller SmallTV (gleiche HTTP-Schnittstelle, Kachel im Fenster)
+	smalltv.main = self
+	add_child(smalltv)
 	parcours = preload("res://scripts/parcours.gd").new()   # 3D-4.18: the tracking parcours (scene «parcours»)
 	parcours.main = self
 	add_child(parcours)
@@ -2576,7 +2580,8 @@ func world_reply() -> Dictionary:
 			"cores": OS.get_processor_count(), "mw_cmd": mw_cmd if not mw_cmd.is_empty() else null,
 			"shut": game.shut.log_tail() if game != null and game.shut != null else null,   # 3D-4.x: «Auslöser» hits -> MoveEye's test inbox
 			"head_deg": [snappedf(-rad_to_deg(head.rotation.y), 0.01), snappedf(rad_to_deg(head_pitch.rotation.x) + 6.0, 0.01)] if head != null else null,   # MoveEye 2.98.35: where the head really is (servo diagnosis)
-			"wide": weit.state() if weit != null else null}   # 3D-4.17: the mount of the wide camera (MoveEye 163 at once)
+			"wide": weit.state() if weit != null else null,   # 3D-4.17: the mount of the wide camera (MoveEye 163 at once)
+			"game_live": smalltv.game_live() if smalltv != null else null}   # 3D-4.19: Spiel-Anzeige auf dem SmallTV (MoveEye 552)
 	if simwerte != null:
 		r.merge(simwerte.reply())                     # Simulator-Werte: battery, pi_temp, net, clock, place, forecast (power.gd)
 	return r
@@ -3119,7 +3124,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Dein Plat
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
 		["Kamerabild", "lens", "👁", ["", "Weitwinkel-Kamera", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
-		["Sensoren", "bell", "🔔", ["", "Akku und Strom", "Netz-Ausfall testen"]],
+		["Sensoren", "bell", "🔔", ["", "Akku und Strom", "Netz-Ausfall testen", "Zusatz-Bildschirm"]],
 		["Mover", "track", "🚜", ["", "Patrouille", "Controller"]],
 		["Spiel", "pad", "🎮", ["", "Assistent"]],
 		["Wildbeobachtung", "target", "🎯", [""]],
@@ -3336,6 +3341,8 @@ func _register_controls() -> void:
 		add_control("toggle", "cond_" + key, cd[1], func(): return cond[key], func(v): cond[key] = bool(v), "Kamerabild")
 	simreal.add_controls()                                 # 3D-4.4: closer to the real device
 	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
+	if smalltv != null:
+		smalltv.add_controls()                             # 3D-4.19: Sensoren → Zusatz-Bildschirm (virtueller SmallTV)
 	weit.add_controls()                                    # 3D-4.17: the wide camera (card «Kamerabild», part «Weitwinkel-Kamera»)
 	parcours.add_controls()                                # 3D-4.18: card «Testlauf», part «Verfolgungs-Parcours»
 	zwilling.add_controls()
@@ -4148,6 +4155,8 @@ func _control(d: Dictionary) -> Dictionary:
 		if sleeper == null:
 			return {"ok": false, "error": "no sleeper"}
 		return sleeper.command(d)
+	elif a == "smalltv":                               # 3D-4.19: virtueller SmallTV - Zähler, letztes Bild (Tests, Prüfstand)
+		return smalltv.control(d) if smalltv != null else {"ok": false, "error": "no smalltv"}
 	elif a == "game_info":                             # the spectators in MoveEye: the game in numbers (3D-3.22)
 		if game == null:
 			return {"ok": false, "error": "no game"}
@@ -5856,7 +5865,7 @@ var map_btn: Button
 
 func _over_hud(p: Vector2) -> bool:
 	"""is the mouse over the control panel or one of the boxes on the view (map, live picture, stick, bar …)?"""
-	for c in [ui_root, show_btn, view_bar, minimap, liveview, rover_pad, sel_box, karte, toolbar, cam_card, home_editor]:
+	for c in [ui_root, show_btn, view_bar, minimap, liveview, rover_pad, sel_box, karte, toolbar, cam_card, home_editor, smalltv.tile if smalltv != null else null]:
 		if c != null and is_instance_valid(c) and c is Control and (c as Control).is_visible_in_tree() and (c as Control).modulate.a > 0.01 and (c as Control).get_global_rect().has_point(p):
 			return true
 	return false
@@ -6282,6 +6291,8 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	liveview.width_px = live_size
 	liveview.visible = live_on
 	layer.add_child(liveview)
+	if smalltv != null:
+		smalltv.make_tile(layer)                           # 3D-4.19: das Bild des virtuellen SmallTV, unter Karte / Livebild
 	rover_pad = preload("res://scripts/rover_pad.gd").new()
 	rover_pad.main = self
 	layer.add_child(rover_pad)

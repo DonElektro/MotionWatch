@@ -608,6 +608,10 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-4.19
+3D-4.19: Virtueller SmallTV (GeekMagic SmallTV Ultra) für MoveEye 2.98.48 – gleiche Schnittstelle wie das echte Gerät,
+Kachel unter Karte / Livebild, Schalter «Macken wie das echte Gerät»; MoveEye zeigt dort Status, Alarmbild und Spielstand.
+
 NEU IN 3D-4.18
 3D-4.18: Weitwinkel-Kamera (102°, NoIR) statt fester Kamera – Montage Mast, Unterteil vorne, Kopf vorne oder hinten, mit
 Neigung, Fischauge, breitem IR-Licht (Kanal 4), Drehgrenze; MoveEye stellt «Übersicht lenkt den Kopf» selbst ein.

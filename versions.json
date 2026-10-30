@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 12:42",
+ "generated": "2026-10-30 13:39",
  "versions": [
   {
-   "version": "2.98.47",
-   "file": "webcam_bewegung_2_98_47.py",
+   "version": "2.98.48",
+   "file": "webcam_bewegung_2_98_48.py",
    "url": "",
-   "sha256": "1a0284258846106258f8c6bf717ca21551c22cc34f8e7b3623905857b1cf0b63",
-   "date": "2026-10-30 12:42",
-   "notes": "Weitwinkel-Kamera (Montage im Simulator, Übersicht lenkt den Kopf automatisch, IR breit Kanal 4), Werte aus dem Simulator (Akku, Uhr, Ort/Wetter, Pi-Wärme, Netz-Ausfall, 🧪), Verfolgungs-Parcours (Kachel 🎯: Regler, A/B, Auto-Tuning-Vorschlag), Online-Spiel über Tailscale Funnel (nur Spiel öffentlich, nur Admin mit Passwort, geht von selbst aus), neue Szenen, Simulator 3D-4.18",
-   "sig": "ec34551c47456045411f45e7a5a26e86a1c96d93b007784f857e69d4a5afff5da3bc39aea5bf80644e6351b753aaf02cfe7abdb469eac324c5acce6bd646ca0a"
+   "sha256": "0587c6c27b9bab234e57414f7828980dec72084d979c1ba153c1e4af8e3f9f78",
+   "date": "2026-10-30 13:39",
+   "notes": "Zusatz-Bildschirm GeekMagic SmallTV (Status, Alarmbild, Spielstand, nachts rot, mehrere Bildschirme, Einrichtung mit QR-Code, virtueller SmallTV im Simulator 3D-4.19)",
+   "sig": "86d768ca9efabd5ccdf0e329de1217a25e700bf0f57f8afbaaf32233c9f2febb18227ca60fec363afc73d4eac9c5cfd735fd3775100f6ebd6e0e7c19ce7f5a05"
   },
   {
    "version": "2.97.1",
