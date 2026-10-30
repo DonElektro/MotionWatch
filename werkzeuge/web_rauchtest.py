@@ -43,6 +43,7 @@ OEFFENTLICH_ANFANG = {
     "/info": "Info-Seite für Nachbarn (nur wenn eingeschaltet)",
     "/almanach": "Almanach (keine Daten)",
     "/game/": "Online-Spiel über Einladung (Token im Link, Ablauf, widerrufbar)",
+    "/l/": "Handy verknüpfen (Einmal-Link, 10 Minuten, nur der Fingerabdruck gespeichert)",
 }
 OEFFENTLICH_GENAU = {
     "/i18n/fr.js": "Übersetzung", "/i18n/it.js": "Übersetzung", "/i18n/rm.js": "Übersetzung",

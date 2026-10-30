@@ -2648,15 +2648,34 @@ def pw_check(pw, stored=None):
     return ok
 
 
-USER_ROLES = ("operate", "view")
+# 2.98.42 (Daniel): roles = presets of rights; «custom» = own choice of rights. Old roles: «operate» → «family», «view» stays.
+USER_ROLES = ("kid", "friend", "family", "view", "custom")
+USER_PERMS = ("live", "rec", "arm", "light", "siren", "games", "talk", "head", "settings")
+ROLE_PERMS = {"kid": ("live", "games"), "friend": ("live", "games", "talk", "light"),
+              "family": ("live", "rec", "arm", "light", "siren", "games", "talk", "head"), "view": ("live", "rec")}
+ROLE_OLD = {"operate": "family"}
+USER_PUSH = ("alarm", "info", "games")                # what a user may get as push message
+ROLE_PUSH = {"kid": ("games",), "friend": ("info", "games")}      # children get no alarms unless the administrator says so
 _USER_RE = re.compile(r"^[A-Za-z0-9ÄÖÜäöüéèàç][A-Za-z0-9ÄÖÜäöüéèàç ._\-]{0,23}$")
-# what an "operate" user may change (everything else is read-only); "view" may only look
-OPERATE_POST = {"/api/follow", "/api/tunnel", "/api/disco", "/api/helper", "/api/info", "/api/nettest", "/api/tv", "/api/mode", "/api/mover", "/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/light", "/api/move", "/api/stick", "/api/talk",
-                "/api/talk/stop", "/api/tts", "/api/rec/fav", "/api/rec/false", "/api/action"}
-VIEW_POST = {"/api/webpush", "/api/time", "/api/gps", "/api/rec/prepare", "/rec/zip"}
-OPERATE_SET_KEYS = {"thermal_on", "nightvision", "show_objects", "show_mask", "track_person", "track_motion"}
+_USER_HM = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
+_USER_DAY = re.compile(r"^20\d\d-[01]\d-[0-3]\d$")
+_USER_NTFY = re.compile(r"^(https://[A-Za-z0-9.\-]+(:\d+)?/)?[A-Za-z0-9_\-]{6,64}$")
 ADMIN_GET = ("/api/settings/export", "/api/ext", "/api/wifi", "/api/qr", "/setup-card", "/api/update", "/api/guest", "/api/fleet",
              "/api/users", "/api/setup", "/api/log/file/", "/api/tools", "/tools/diag.zip", "/api/usb")
+
+
+def user_perms(u):
+    """the rights of a user (dict from CFG["users"]) as a set"""
+    if not isinstance(u, dict):
+        return set()
+    if u.get("role") == "custom":
+        return {p for p in (u.get("perms") or []) if p in USER_PERMS}
+    return set(ROLE_PERMS.get(u.get("role"), ()))
+
+
+def user_get(name):
+    n = str(name or "").strip().lower()
+    return next((u for u in CFG["users"] if u["name"].lower() == n), None) if n else None
 
 
 def users_clean(lst):
@@ -2668,7 +2687,23 @@ def users_clean(lst):
         if not _USER_RE.match(n) or n.lower() in seen or not str(u.get("hash", "")).startswith("pbkdf2$"):
             continue
         seen.add(n.lower())
-        out.append({"name": n, "hash": u["hash"], "role": u.get("role") if u.get("role") in USER_ROLES else "view"})
+        r = ROLE_OLD.get(u.get("role"), u.get("role"))
+        r = r if r in USER_ROLES else "view"
+        e = {"name": n, "hash": u["hash"], "role": r}
+        if r == "custom":
+            e["perms"] = [p for p in USER_PERMS if p in (u.get("perms") or [])]
+        w = u.get("win") if isinstance(u.get("win"), dict) else None
+        if w and _USER_HM.match(str(w.get("from", ""))) and _USER_HM.match(str(w.get("to", ""))):
+            days = sorted({int(x) for x in (w.get("days") or []) if isinstance(x, int) and 0 <= x <= 6}) or list(range(7))
+            e["win"] = {"from": w["from"], "to": w["to"], "days": days}
+        if _USER_DAY.match(str(u.get("until") or "")):
+            e["until"] = u["until"]
+        e["push"] = [p for p in USER_PUSH if p in u["push"]] if isinstance(u.get("push"), list) else list(ROLE_PUSH.get(r, USER_PUSH))
+        if _USER_NTFY.match(str(u.get("ntfy") or "")):
+            e["ntfy"] = u["ntfy"]
+        if u.get("nopw"):
+            e["nopw"] = True                              # no own password (only phones linked with a QR code)
+        out.append(e)
     return out
 
 
@@ -2680,7 +2715,7 @@ def user_login(name, pw):
     elif CFG["web_pw_hash"] and pw_check(pw):
         return (name or "admin", "admin")
     for u in CFG["users"]:
-        if u["name"].lower() == str(name or "").strip().lower() and pw_check(pw, u["hash"]):
+        if u["name"].lower() == str(name or "").strip().lower() and not u.get("nopw") and pw_check(pw, u["hash"]):
             return (u["name"], u["role"])
     return None
 
@@ -2710,7 +2745,7 @@ def trust_find(tok):
     return None
 
 
-def trust_add(user, role, ua, ip):
+def trust_add(user, role, ua, ip, via=""):
     """a new trusted device: returns the cookie value (only its hash is kept here)"""
     import secrets
     tok = secrets.token_urlsafe(32)
@@ -2723,16 +2758,24 @@ def trust_add(user, role, ua, ip):
         if k in ua:
             name += " · " + n
             break
-    lst = [e for e in (CFG.get("trusted") or [])][-29:]
+    lst = [e for e in (CFG.get("trusted") or [])][-59:]
     lst.append({"h": _trust_hash(tok), "user": user, "role": "admin" if role == "admin" else "user", "name": name, "t0": int(time.time()),
                 "seen": int(time.time()), "ip": str(ip)[:45]})
+    if via:
+        lst[-1]["via"] = via                                # «link» = linked with the QR code of the administrator (041)
     CFG["trusted"] = lst
     save_settings()
     log_event("web", f"Trusted device added: {name} ({user}, {ip})")
     return tok
 
 
+def _user_pw_ok(pw):
+    return 6 <= len(pw) <= 64 and all(32 <= ord(c) < 127 for c in pw)
+
+
 def users_action(d, who="admin"):
+    """add / remove / role / password / update (rights, time window, expiry, push) - web (550/041) and window (573)"""
+    import secrets
     a = d.get("action")
     if a == "add":
         if not web_pw_active():
@@ -2742,65 +2785,130 @@ def users_action(d, who="admin"):
             return False, "name: 1 to 24 letters / digits"
         if any(u["name"].lower() == n.lower() for u in CFG["users"]):
             return False, "this name exists already"
-        if not (6 <= len(pw) <= 64 and all(32 <= ord(c) < 127 for c in pw)):
+        if pw and not _user_pw_ok(pw):
             return False, "the password must have 6 to 64 characters (letters, digits, signs, no umlauts)"
         if len(CFG["users"]) >= 20:
             return False, "at most 20 users"
-        CFG["users"] = users_clean(CFG["users"] + [{"name": n, "hash": pw_hash(pw), "role": d.get("role") if d.get("role") in USER_ROLES else "view"}])
+        r = ROLE_OLD.get(d.get("role"), d.get("role"))
+        e = {"name": n, "hash": pw_hash(pw or secrets.token_urlsafe(24)), "role": r if r in USER_ROLES else "view", "perms": d.get("perms") or []}
+        if not pw:
+            e["nopw"] = True
+        CFG["users"] = users_clean(CFG["users"] + [e])
         log_event("web", f"{who}: user «{n}» added ({CFG['users'][-1]['role']})")
     else:
         u = next((x for x in CFG["users"] if x["name"] == d.get("name")), None)
         if u is None:
             return False, "unknown user"
+        logout = True
         if a == "remove":
             CFG["users"] = [x for x in CFG["users"] if x is not u]; log_event("web", f"{who}: user «{u['name']}» removed")
-        elif a == "role" and d.get("role") in USER_ROLES:
-            u["role"] = d["role"]; log_event("web", f"{who}: user «{u['name']}» now {u['role']}")
+            users_push_forget(u["name"])                    # its browsers get no messages any more (041)
+        elif a == "role" and ROLE_OLD.get(d.get("role"), d.get("role")) in USER_ROLES:
+            u["role"] = ROLE_OLD.get(d["role"], d["role"]); logout = False; log_event("web", f"{who}: user «{u['name']}» now {u['role']}")
         elif a == "password":
             pw = str(d.get("password", ""))
-            if not (6 <= len(pw) <= 64 and all(32 <= ord(c) < 127 for c in pw)):
+            if not _user_pw_ok(pw):
                 return False, "the password must have 6 to 64 characters (letters, digits, signs, no umlauts)"
-            u["hash"] = pw_hash(pw); log_event("web", f"{who}: new password for «{u['name']}»")
+            u["hash"] = pw_hash(pw); u.pop("nopw", None); log_event("web", f"{who}: new password for «{u['name']}»")
+        elif a == "update":                                 # 2.98.42: rights, time window, expiry, push - the phones stay logged in
+            logout = False; ch = []
+            if "role" in d and ROLE_OLD.get(d.get("role"), d.get("role")) in USER_ROLES and d["role"] != u["role"]:
+                u["role"] = ROLE_OLD.get(d["role"], d["role"]); ch.append("role " + u["role"])
+                if "push" not in d:
+                    u["push"] = list(ROLE_PUSH.get(u["role"], USER_PUSH))
+            if "perms" in d and isinstance(d["perms"], list):
+                u["perms"] = [p for p in USER_PERMS if p in d["perms"]]; ch.append("rights " + ",".join(u["perms"]))
+            if "win" in d:
+                w = d["win"] if isinstance(d["win"], dict) else None
+                if w and not (_USER_HM.match(str(w.get("from", ""))) and _USER_HM.match(str(w.get("to", "")))):
+                    return False, "time: hh:mm"
+                u["win"] = w; ch.append("time " + (f"{w['from']}-{w['to']}" if w else "always"))
+            if "until" in d:
+                v = str(d.get("until") or "")
+                if v and not _USER_DAY.match(v):
+                    return False, "date: yyyy-mm-dd"
+                u["until"] = v; ch.append("until " + (v or "-"))
+            if "push" in d and isinstance(d["push"], list):
+                u["push"] = [p for p in USER_PUSH if p in d["push"]]; ch.append("push " + (",".join(u["push"]) or "-"))
+            if "ntfy" in d:
+                v = str(d.get("ntfy") or "").strip()
+                if v and not _USER_NTFY.match(v):
+                    return False, "ntfy: a topic (6 to 64 letters, digits, - _) or https://server/topic"
+                u["ntfy"] = v; ch.append("own ntfy topic" if v else "no own ntfy topic")
+            log_event("web", f"{who}: user «{u['name']}»: " + ("; ".join(ch) or "no change"))
         else:
             return False, "unknown action"
-        CFG["trusted"] = [e for e in (CFG.get("trusted") or []) if e.get("user") != u["name"]]   # 2.95.33: log in again
+        if logout:
+            CFG["trusted"] = [e for e in (CFG.get("trusted") or []) if e.get("user") != u["name"]]   # 2.95.33: log in again
+        CFG["users"] = users_clean(CFG["users"])
     _PW_OK.clear(); save_settings_now()
     return True, ""
 
 
 # 2.95.35: ONE list of what users without admin rights may read. Everything else (also every new function) is only for
-# the administrator. Changing things (POST): VIEW_POST for everybody, OPERATE_POST (+ the keys below) for «operate».
-VIEW_GET_PAGES = {"/", "/cams", "/recordings", "/diary", "/help", "/quick", "/preview", "/zones", "/kino"}
-VIEW_GET = ("/api/tunnel", "/api/dataset.zip", "/api/helper", "/api/info", "/api/nettest", "/api/state", "/api/alerts", "/api/appearance", "/api/version", "/api/health", "/api/cams", "/api/frame.jpg",
-            "/video_feed", "/cam_feed/", "/snapshot.jpg", "/api/audio/live", "/api/recordings", "/api/places", "/rec/file/",
-            "/rec/play/", "/rec/thumb/", "/rec/share/", "/rec/report/", "/api/day", "/api/diary", "/diary/img/", "/api/timelapse",
-            "/timelapse/", "/api/species", "/api/loop", "/api/gps", "/api/zones", "/api/webpush", "/api/ui", "/api/report",
-            "/api/battery", "/api/sensors", "/api/qs", "/api/schedule", "/api/schema", "/api/triggers", "/api/fa", "/api/appicon",
-            "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/sim/view.jpg", "/sim/view.mjpg", "/api/kino", "/api/simbar", "/api/news")
+# the administrator. 2.98.42: by rights (USER_PERMS) instead of two roles; every user may read BASE, each right adds its part.
+VIEW_GET_PAGES = {"/", "/help", "/quick", "/more"}
+VIEW_GET = ("/api/tunnel", "/api/helper", "/api/info", "/api/nettest", "/api/state", "/api/alerts", "/api/appearance", "/api/version",
+            "/api/health", "/api/gps", "/api/zones", "/api/webpush", "/api/ui", "/api/battery", "/api/sensors", "/api/qs", "/api/schedule",
+            "/api/schema", "/api/triggers", "/api/fa", "/api/appicon", "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/api/simbar", "/api/news")
+PERM_GET = {"live": ("/cams", "/preview", "/api/cams", "/api/frame.jpg", "/video_feed", "/cam_feed/", "/snapshot.jpg", "/api/audio/live",
+                     "/sim/view.jpg", "/sim/view.mjpg"),
+            "rec": ("/recordings", "/diary", "/kino", "/api/kino", "/api/dataset.zip", "/api/recordings", "/api/places", "/rec/file/", "/rec/play/",
+                    "/rec/thumb/", "/rec/share/", "/rec/report/", "/api/day", "/api/diary", "/diary/img/", "/api/timelapse", "/timelapse/",
+                    "/api/species", "/api/loop", "/api/report"),
+            "arm": ("/protect", "/zones"),
+            "games": ("/party", "/api/party"),
+            "settings": ("/settings",)}
+VIEW_POST = {"/api/webpush", "/api/time", "/api/gps"}
+PERM_POST = {"rec": {"/api/rec/prepare", "/rec/zip", "/api/rec/fav", "/api/rec/false"},
+             "arm": {"/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/mode", "/api/tunnel", "/api/helper", "/api/info", "/api/nettest", "/api/tv"},
+             "light": {"/api/light", "/api/disco"},
+             "talk": {"/api/talk", "/api/talk/stop", "/api/tts"},
+             "head": {"/api/follow", "/api/mover", "/api/move", "/api/stick"},
+             "settings": {"/api/zones", "/api/schedule"}}
+PERM_SET_KEYS = {"arm": {"thermal_on", "nightvision", "show_objects", "show_mask"}, "head": {"track_person", "track_motion"}}
 
 
-def role_allows(role, path, method, d):
+def role_allows(role, path, method, d, perms=None):
+    """may a user with this role (and these rights - for «custom») do this? The administrator may do everything."""
     if role == "admin":
         return True
+    P = set(perms) if perms is not None else set(ROLE_PERMS.get(ROLE_OLD.get(role, role), ()))
     if method in ("GET", "HEAD"):
         if path in ("/servo", "/api/servo"):                  # 2.98.35: everybody sees the servo state (who steers, Not-Aus)
             return True
-        return (path in VIEW_GET_PAGES or path.startswith(VIEW_GET)) and not path.startswith(ADMIN_GET)
+        if path.startswith(ADMIN_GET):
+            return False
+        if path in VIEW_GET_PAGES or path.startswith(VIEW_GET):
+            return True
+        return any(path == x or (x.endswith("/") and path.startswith(x)) or (x.startswith("/api/") and path.startswith(x))
+                   for p in P for x in PERM_GET.get(p, ()))
     if path == "/api/servo":                                  # 2.98.35: Not-Aus is for everybody, the rest for the administrator
         return d.get("op") == "estop"
     if path == "/api/webpush":
         return d.get("action") in ("subscribe", "unsubscribe", "key", None)
     if path in VIEW_POST:
         return True
-    if role != "operate":
-        return False
     if path == "/api/set":
-        return d.get("key") in OPERATE_SET_KEYS
+        k = d.get("key")
+        if any(k in PERM_SET_KEYS.get(p, ()) for p in P):
+            return True
+        return "settings" in P and isinstance(k, str) and k not in USER_SETTINGS_DENY and k in CFG
+    if path == "/api/text":
+        return "settings" in P and isinstance(d.get("key"), str) and d.get("key") not in USER_SETTINGS_DENY
     if path == "/api/audio":
-        return d.get("action") in ("test", "siren", "stop")
+        return ("siren" in P and d.get("action") in ("test", "siren", "stop")) or ("talk" in P and d.get("action") == "stop")
     if path == "/api/action":
-        return d.get("action") in ("center", "patrol")
-    return path in OPERATE_POST
+        return "head" in P and d.get("action") in ("center", "patrol")
+    return any(path in PERM_POST.get(p, ()) for p in P)
+
+
+# «settings» (own rights) never reaches the security: password, users, keys, access, updates, secret addresses and channels
+USER_SETTINGS_DENY = {"login_https_only", "https_extra", "web_port", "web_bind", "lock_on", "lock_pin", "update_unsigned", "update_url",
+                      "update_token", "protect_pin", "users", "trusted", "app_keys", "shortcut_token", "web_pw_hash", "guest_token",
+                      "ext_token", "web_password", "notify_url", "notify_type", "telegram_token", "telegram_chat", "pushover_token",
+                      "pushover_user", "email_password", "email_user", "sms_numbers", "public_url", "tunnel_on", "guest_on", "ext_on",
+                      "mqtt_password", "mqtt_user", "hotspot_password", "autostart", "sim_url"}
 
 
 def web_pw_active():
@@ -3092,6 +3200,436 @@ def save_settings():
 
 
 # ----------------------------------------------------------------------------
+# Wunsch Daniel (30.10.2026): feste Personen statt nur Gastlink.
+#   * Rollen = Vorlagen von Rechten (040: USER_PERMS / ROLE_PERMS): Kind · Freund · Familie · Nur ansehen · Eigene Rechte.
+#     Der Server prüft jedes Recht (role_allows, 040); die Seite blendet aus, was nicht erlaubt ist (users_ui_css unten).
+#   * Zeitfenster (z. B. Kind täglich 08–20) und Ablaufdatum (Freund): ausserhalb nur eine freundliche Seite
+#     «Zugang gerade nicht aktiv», keine Daten (user_gate, aufgerufen von role_guard in 550). Laufende Bildströme enden.
+#   * «Handy verknüpfen»: ein Einmal-Link (/l/<token>, 10 Minuten, nur der Fingerabdruck bleibt im Speicher) als QR-Code.
+#     Scannen = dieses Handy ist als dieser Benutzer angemeldet (Vertrauens-Cookie wie nach einem Login, 040), ohne Passwort.
+#     Sicherheit wie das Passwort (574): ist «Anmelden nur verschlüsselt» aktiv, zeigt der QR die sichere Seite (https);
+#     kommt der Link trotzdem über unverschlüsseltes http von einem anderen Gerät, wird er sofort gesperrt (er könnte
+#     mitgelesen worden sein) und ein neuer QR-Code ist nötig. Tailscale und dieses Gerät selbst gelten als sicher.
+#     Höchstens 10 Fehlversuche je Adresse in 10 Minuten.
+#   * Geräte pro Benutzer: Name/Browser, zuletzt gesehen; «Entfernen» meldet das Gerät sofort ab (auch der Bildstrom).
+#   * Push pro Benutzer: Alarme / Infos / Spiel-Einladungen; Web-Push-Abos merken sich den Benutzer, optional ein eigenes
+#     ntfy-Thema (steht nur in den Einstellungen des Geräts, nie in Dateien des Projekts). Der Hauptkanal (ntfy) bleibt beim
+#     Administrator. Ausserhalb des Zeitfensters bekommt ein Benutzer keine Nachrichten.
+# Übersetzungen: Teil 623. Web: Teil 547 (Karte «Benutzer» in Einstellungen → Sicherheit), Fenster: 573.
+# ----------------------------------------------------------------------------
+USER_LINK = {"links": {}, "fails": {}}               # sha256(token) -> {"user", "exp", "by"}; ip -> [times of wrong links]
+USER_LINK_TTL = 600
+
+
+def _ul_hash(tok):
+    import hashlib
+    return hashlib.sha256(("mw-link|" + str(tok)).encode()).hexdigest()
+
+
+def user_active(u, now=None):
+    """(True, "") or (False, why) - why = "until" (expired) or "window" (outside the time window)"""
+    if not isinstance(u, dict):
+        return False, "gone"
+    now = now or datetime.now()
+    if u.get("until") and now.strftime("%Y-%m-%d") > u["until"]:
+        return False, "until"
+    w = u.get("win")
+    if w:
+        hm, wd, days = now.strftime("%H:%M"), now.weekday(), w.get("days") or list(range(7))
+        a, b = w["from"], w["to"]
+        if a == b:
+            inside = wd in days
+        elif a < b:
+            inside = wd in days and a <= hm < b
+        else:                                               # over midnight, e.g. 18:00-02:00
+            inside = (wd in days and hm >= a) or ((wd - 1) % 7 in days and hm < b)
+        if not inside:
+            return False, "window"
+    return True, ""
+
+
+def user_when_text(u, lang=None):
+    """«daily 08:00-20:00 · until 31.12.2026» for the pages and the window"""
+    out = []
+    w = u.get("win") if isinstance(u, dict) else None
+    if w:
+        days = w.get("days") or list(range(7))
+        names = [tr(x, lang) for x in ("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")]
+        d_ = tr("daily", lang) if len(days) == 7 else ", ".join(names[i] for i in days)
+        out.append(f"{d_} {w['from']}–{w['to']}")
+    if isinstance(u, dict) and u.get("until"):
+        y, m, d = u["until"].split("-")
+        out.append(tr("until", lang) + f" {d}.{m}.{y}")
+    return " · ".join(out)
+
+
+def user_gate(req, g_):
+    """called by role_guard (550) for every user who is not the administrator: outside the time window / after the expiry
+    date only a friendly page (or a short JSON for the scripts) - no data"""
+    if getattr(g_, "role", "admin") == "admin":
+        return None
+    u = user_get(getattr(g_, "user", ""))
+    if u is None:
+        return None
+    ok, why = user_active(u)
+    if ok:
+        return None
+    from flask import Response
+    import html as _h
+    L = sx_req_lang()
+    msg = tr("This access has expired.", L) if why == "until" else tr("Your access is not active right now.", L)
+    when = user_when_text(u, L)
+    if sx_wants_html() or req.path in ("/", "/more", "/help", "/quick"):
+        body_ = ("<p>" + _h.escape(tr("Hello", L) + " " + u["name"] + "! " + msg) + "</p>"
+                 + ("<p class=\"mut\">" + _h.escape(tr("Access", L) + ": " + when) + "</p>" if when else "")
+                 + "<p class=\"mut\">" + _h.escape(tr("Ask the owner of MoveEye if you need it now.", L)) + "</p>"
+                 + '<a class="btn" href="/">' + _h.escape(tr("Try again", L)) + "</a>")
+        return Response(sx_page(tr("Access not active right now", L), body_, "🌙", L), 403, {"Cache-Control": "no-store"}, mimetype="text/html")
+    return Response(json.dumps({"ok": False, "inactive": why, "error": msg}), 403, {"Cache-Control": "no-store"}, mimetype="application/json")
+
+
+def user_perms_list(name, role):
+    """for /api/state «me»: the rights of the current user (the administrator: all)"""
+    if role == "admin":
+        return list(USER_PERMS)
+    u = user_get(name)
+    return sorted(user_perms(u)) if u else sorted(ROLE_PERMS.get(ROLE_OLD.get(role, role), ()))
+
+
+def user_req_perms(g_):
+    """the rights for role_allows (None = the preset of the role)"""
+    if getattr(g_, "role", "admin") in ("admin",):
+        return None
+    u = user_get(getattr(g_, "user", ""))
+    return user_perms(u) if u else set()
+
+
+# ---- linking a phone (QR, one-time link) ---------------------------------------------------------------------------------
+def user_link_base(req=None):
+    """the address the phone opens: the secure page when «Log in only encrypted» is active (574)"""
+    host, scheme, own = "", "http", ""
+    if req is not None:
+        fh = str(req.headers.get("X-Forwarded-Host") or "").split(",")[0].strip()
+        host = own = fh or str(req.host or "")
+        proto = str(req.headers.get("X-Forwarded-Proto") or "").split(",")[0].strip().lower()
+        scheme = "https" if (req.is_secure or proto == "https") else "http"
+        if host.rsplit(":", 1)[0] in ("127.0.0.1", "localhost", "[::1]"):
+            host = ""                                       # the phone cannot open the Pi's own «localhost»
+    if not host:
+        a = page_address() if "page_address" in globals() else ""
+        if not a:
+            try:
+                ip_ = local_ip()
+            except Exception:
+                ip_ = ""
+            a = f"http://{ip_}:{CFG['web_port']}/" if ip_ else (f"{scheme}://{own}/" if own else "")
+        if not a:
+            return ""
+        scheme, host = a.split("://", 1)[0], a.split("://", 1)[1].rstrip("/")
+    if scheme == "http" and seclogin_mode() == "on":
+        port = seclogin_https_port()
+        name = host[:host.find("]") + 1] if host.startswith("[") else (host.rsplit(":", 1)[0] if host.count(":") == 1 else host)
+        return f"https://{name}:{port}"
+    return f"{scheme}://{host}"
+
+
+def user_link_make(name, req=None, who="admin"):
+    """(url, seconds, secure) for a new one-time link of this user, or (None, error, False)"""
+    import secrets
+    u = user_get(name)
+    if u is None:
+        return None, "unknown user", False
+    now = time.time()
+    L = USER_LINK["links"]
+    for k in [k for k, v in L.items() if v["exp"] < now or v["user"].lower() == u["name"].lower()]:
+        L.pop(k, None)                                      # one open link per user: a new QR code makes the old one invalid
+    if len(L) >= 20:
+        return None, "too many open links - wait 10 minutes", False
+    base = user_link_base(req)
+    if not base:
+        return None, "no network address of MoveEye", False
+    tok = secrets.token_urlsafe(24)
+    L[_ul_hash(tok)] = {"user": u["name"], "exp": now + USER_LINK_TTL, "by": who}
+    log_event("web", f"{who}: link for a phone of «{u['name']}» made (valid 10 min, once)")
+    return base + "/l/" + tok, USER_LINK_TTL, base.startswith("https://")
+
+
+def user_link_page(title, text, ok, L, extra=""):
+    import html as _h
+    from flask import Response
+    b = "<p>" + _h.escape(text) + "</p>" + extra
+    return Response(sx_page(title, b, "📱" if ok else "⚠️", L), 200 if ok else 403, {"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"},
+                    mimetype="text/html")
+
+
+# ---- devices of a user (the trusted devices of 040) ---------------------------------------------------------------------
+def user_devices(name, mine_h=""):
+    return [{"id": e.get("h", "")[:12], "name": e.get("name"), "t0": e.get("t0"), "seen": e.get("seen"), "ip": e.get("ip"),
+             "via": e.get("via", ""), "me": bool(mine_h) and e.get("h") == mine_h}
+            for e in (CFG.get("trusted") or []) if str(e.get("user", "")).lower() == str(name).lower() and e.get("role") != "admin"]
+
+
+def user_device_remove(name, did, who="admin"):
+    lst = CFG.get("trusted") or []
+    hit = next((e for e in lst if str(e.get("user", "")).lower() == str(name).lower() and e.get("role") != "admin"
+                and len(str(did)) >= 8 and e.get("h", "").startswith(str(did))), None)
+    if hit is None:
+        return False
+    CFG["trusted"] = [e for e in lst if e is not hit]
+    save_settings_now()
+    log_event("web", f"{who}: device «{hit.get('name')}» of «{name}» removed - logged out")
+    return True
+
+
+def users_public(mine_h=""):
+    """the users for the page (never the password hash or the own ntfy topic in full)"""
+    out = []
+    for u in CFG["users"]:
+        t_ = str(u.get("ntfy") or "")
+        out.append({"name": u["name"], "role": u["role"], "perms": sorted(user_perms(u)), "win": u.get("win"), "until": u.get("until", ""),
+                    "push": u.get("push", []), "ntfy": ("…" + t_[-4:]) if t_ else "", "nopw": bool(u.get("nopw")),
+                    "active": user_active(u)[0], "devices": user_devices(u["name"], mine_h),
+                    "webpush": sum(1 for x in webpush_subs() if str(x.get("user", "")).lower() == u["name"].lower())})
+    return out
+
+
+# ---- push per user ---------------------------------------------------------------------------------------------------------
+def push_cat(tag):
+    """the kind of a message from the tag of the web push: alarm / info / games / test"""
+    t_ = str(tag or "")[3:]
+    if t_ in ("person", "warm", "noise", "tamper", "prealarm"):
+        return "alarm"
+    if t_.startswith("game"):
+        return "games"
+    return "test" if t_ == "test" else "info"
+
+
+def users_push_wants(name, cat):
+    u = user_get(name)
+    if u is None or not user_active(u)[0]:
+        return False
+    prefs = u.get("push") or []
+    if cat == "test":
+        return bool(prefs)
+    if cat == "games" and "games" not in user_perms(u):
+        return False
+    return cat in prefs
+
+
+def push_sub_wants(sub, cat):
+    """webpush_all (050): may this browser get this message? Browsers without a user = the administrator (as before)"""
+    n = sub.get("user") if isinstance(sub, dict) else ""
+    if not n:
+        return cat != "games"
+    return users_push_wants(n, cat)
+
+
+def users_push_forget(name):
+    subs = webpush_subs()
+    new = [x for x in subs if str(x.get("user", "")).lower() != str(name).lower()]
+    if len(new) != len(subs):
+        _webpush_save(new)
+
+
+def _users_ntfy_url(topic):
+    if topic.startswith("https://"):
+        return topic
+    base = "https://ntfy.sh"
+    if CFG.get("notify_type") == "ntfy":
+        m = re.match(r"^(https://[^/\s]+)/", str(CFG.get("notify_url") or "").strip())
+        if m:
+            base = m.group(1)
+    return base + "/" + topic
+
+
+def _users_ntfy_send(name, url, title, text, cat, click):
+    h = {"Title": _hdr(title), "Priority": "high" if cat == "alarm" else "default",
+         "Tags": {"alarm": "warning", "games": "game_die", "info": "information_source"}.get(cat, "bell")}
+    if click:
+        h["Click"] = click
+    try:
+        req = urllib.request.Request(url, data=str(text)[:2000].encode("utf-8"), headers=h, method="POST")
+        with urllib.request.urlopen(req, timeout=15) as r:
+            log_event("web", f"Push to «{name}» (own ntfy topic): HTTP {r.status}")
+    except Exception as e:
+        log_event("web", f"Push to «{name}» (own ntfy topic) failed: {str(e)[:80]}".replace(url, "ntfy"))
+
+
+def users_push_dispatch(title, text, cat, click=""):
+    """the own ntfy topics of the users (the main channel stays with the administrator)"""
+    n = 0
+    for u in list(CFG["users"]):
+        if u.get("ntfy") and users_push_wants(u["name"], cat):
+            threading.Thread(target=_users_ntfy_send, args=(u["name"], _users_ntfy_url(u["ntfy"]), title, text, cat, click),
+                             daemon=True, name="push-user").start()
+            n += 1
+    return n
+
+
+def users_push_games():
+    """«Spiele freigeben» (320): an invitation to the users who want it"""
+    if not CFG["users"]:
+        return
+    title, text = tr("🎲 Games are open"), tr("Come to the game corner - scan the QR code there or open MoveEye.")
+    click = (page_address().rstrip("/") + "/party") if "page_address" in globals() and page_address() else ""
+    try:
+        if CFG.get("webpush_on") and any(x.get("user") for x in webpush_subs()):
+            threading.Thread(target=webpush_all, args=(title, text, "/party", "mw-games", False), daemon=True, name="push-games").start()
+    except Exception:
+        pass
+    users_push_dispatch(title, text, "games", click)
+
+
+# ---- what the page hides for a user (the server refuses it anyway) --------------------------------------------------------
+USER_UI_HIDE = {
+    "live": '#vcard,#video,#pip,nav.subnav a[href="/cams"],#lv-vin,#lv-vbig',
+    "rec": 'nav.nav a[href="/recordings"],a[href="/kino"],#b-rec',
+    "arm": 'nav.nav a[href="/protect"],#b-arm,#pr-card,#protect-box,details[data-view="protect"],details[data-view="controls"]',
+    "light": '#b-light,#b-lights,#light-quick,#lights-box,#mode-disco,#disco-more,#disco-sum',
+    "head": '#stick,#mstickbox,#ctl-mstick,#stick-center,#vo-mctl,#vo-center,#mctl,#b-pat,#vo-mslot,#vo-mgrip',
+    "talk": '#talk-slot',
+    "games": 'a[href="/party"]',
+    "settings": 'nav.nav a[href="/settings"]',
+}
+USER_UI_ADMIN = ('nav.nav a[href="/sim"],a[href="/tools"],a[href="/qr"],#m-qr,a[href="/timeline"],a[href="/messages"],a[href="/log"],'
+                 'a[href="/info"],#m-info,#g2-sys,aside[data-view="sidebar"],#side-open,#wf-card,[data-view="wifi"],#games #g-btn')
+
+
+def users_ui_css(perms):
+    sel = [USER_UI_ADMIN] + [v for k, v in USER_UI_HIDE.items() if k not in perms]
+    return "<style id=\"mw-user-css\">" + ",".join(sel) + "{display:none!important}</style>"
+
+
+def users_routes(app, reply, body):
+    from flask import request, Response, g as g_
+
+    @app.route("/l/<tok>")
+    def user_link_open(tok):
+        L = sx_req_lang()
+        ip = request.remote_addr or "?"
+        now = time.time()
+        recent = [x for x in USER_LINK["fails"].get(ip, []) if now - x < 600]
+        if len(recent) >= 10:
+            USER_LINK["fails"][ip] = recent
+            return sx_err(429, "toomany", {"Retry-After": "600"})
+        h = _ul_hash(tok) if 20 <= len(tok) <= 64 else ""
+        e = USER_LINK["links"].get(h) if h else None
+        if e is None or e["exp"] < now:
+            if h:
+                USER_LINK["links"].pop(h, None)
+            recent.append(now); USER_LINK["fails"][ip] = recent
+            if len(USER_LINK["fails"]) > 300:
+                USER_LINK["fails"].clear()
+            return user_link_page(tr("Link not valid", L), tr("This link is not valid any more (10 minutes, only once). Ask for a new QR code.", L), False, L)
+        if seclogin_plain(request):                    # 574: it came unencrypted through the network - it could have been read
+            USER_LINK["links"].pop(h, None)
+            log_event("web", f"Phone link of «{e['user']}» opened over plain http from {ip} - blocked, make a new QR code")
+            return user_link_page(tr("Link blocked", L), tr("This link was opened without encryption (http) and is blocked now for safety. Make a new QR code and scan it - it leads to the secure page (https).", L), False, L)
+        USER_LINK["links"].pop(h, None)                # only once
+        u = user_get(e["user"])
+        if u is None:
+            return user_link_page(tr("Link not valid", L), tr("This user does not exist any more.", L), False, L)
+        cookie = trust_add(u["name"], u["role"], request.headers.get("User-Agent", ""), ip[:45], via="link")
+        log_event("web", f"Phone linked to «{u['name']}» ({ip})")
+        import html as _h
+        r = user_link_page("✓ " + tr("Phone linked", L), tr("This phone is now logged in as", L) + " «" + u["name"] + "». "
+                           + tr("No password needed. The owner can remove it at any time.", L), True, L,
+                           '<a class="btn" href="/">' + _h.escape(tr("Open MoveEye", L)) + "</a>"
+                           '<script>setTimeout(function(){location.replace("/")},1800)</script>')
+        r.set_cookie(TRUST_COOKIE, cookie, max_age=365 * 86400, httponly=True, samesite="Lax", secure=request.is_secure, path="/")
+        return r
+
+    @app.after_request
+    def users_after(resp):                         # the page shows only what this user may do; a removed device stops at once
+        role = getattr(g_, "role", "admin")
+        if role == "admin" or not CFG["users"]:
+            return resp
+        try:
+            if resp.status_code == 200 and resp.mimetype == "text/html" and not resp.direct_passthrough and not resp.is_streamed \
+                    and request.method == "GET":
+                perms = user_req_perms(g_) or set()
+                html_ = resp.get_data(as_text=True)
+                if "</head>" in html_:
+                    resp.set_data(html_.replace("</head>", users_ui_css(perms) + "</head>", 1))
+            elif resp.mimetype and resp.mimetype.startswith("multipart/x-mixed-replace") and resp.is_streamed:
+                tok = request.cookies.get(TRUST_COOKIE, "")
+                th = _trust_hash(tok) if tok else ""
+                name = getattr(g_, "user", "")
+                inner = resp.response
+
+                def guarded():
+                    last = 0.0
+                    try:
+                        for chunk in inner:
+                            if time.monotonic() - last > 1.0:
+                                last = time.monotonic()
+                                u = user_get(name)
+                                if u is None or not user_active(u)[0] or (th and not any(e.get("h") == th for e in (CFG.get("trusted") or []))):
+                                    break
+                            yield chunk
+                    finally:
+                        c_ = getattr(inner, "close", None)
+                        if c_:
+                            c_()
+                resp.response = guarded()
+        except Exception:
+            pass
+        return resp
+
+
+def users_api(request, reply, body, g_):
+    """/api/users (only the administrator - ADMIN_GET + role_guard): list, add, update, link a phone, remove a device"""
+    mine = _trust_hash(request.cookies.get(TRUST_COOKIE, "")) if request.cookies.get(TRUST_COOKIE) else ""
+    who = getattr(g_, "user", "") or "admin"
+    if getattr(g_, "appkey", None):
+        who = "app key"
+    if request.method == "GET":
+        return reply({"users": users_public(mine), "pw": web_pw_active(), "plain": seclogin_mode() != "on" and web_pw_active(),
+                      "roles": {r: list(p) for r, p in ROLE_PERMS.items()}, "perms": list(USER_PERMS), "push": list(USER_PUSH)})
+    d = body(); lang = norm_lang(d.get("lang"))
+    a = d.get("action")
+    res = {}
+    if a == "link":
+        url, sec, secure = user_link_make(str(d.get("name") or ""), request, who)
+        if url is None:
+            return reply({"ok": False, "error": tr_err(sec, lang)}, 400)
+        res = {"url": url, "seconds": sec, "secure": secure}
+        ok, err = True, ""
+    elif a == "device_remove":
+        ok = user_device_remove(str(d.get("name") or ""), str(d.get("id") or ""), who); err = "" if ok else "unknown device"
+    else:
+        ok, err = users_action(d, who)
+    return reply(dict(res, ok=ok, error=tr_err(err, lang) if err else None, users=users_public(mine)), 200 if ok else 400)
+
+
+def users_selftest():
+    """rights, time window, push filter, link tokens - without a server"""
+    from datetime import datetime as _dt
+    assert role_allows("kid", "/video_feed", "GET", {}) and role_allows("kid", "/party", "GET", {})
+    assert not role_allows("kid", "/api/recordings", "GET", {}) and not role_allows("kid", "/api/arm", "POST", {})
+    assert not role_allows("kid", "/settings", "GET", {}) and not role_allows("kid", "/api/light", "POST", {})
+    assert role_allows("friend", "/api/light", "POST", {}) and role_allows("friend", "/api/talk", "POST", {})
+    assert not role_allows("friend", "/api/arm", "POST", {}) and not role_allows("friend", "/rec/file/x.mp4", "GET", {})
+    assert role_allows("family", "/api/arm", "POST", {}) and role_allows("family", "/rec/file/x.mp4", "GET", {})
+    assert role_allows("family", "/api/audio", "POST", {"action": "siren"}) and not role_allows("family", "/settings", "GET", {})
+    assert not role_allows("family", "/api/users", "GET", {}) and not role_allows("family", "/api/set", "POST", {"key": "web_port"})
+    assert role_allows("operate", "/api/arm", "POST", {}) and not role_allows("view", "/api/arm", "POST", {})
+    assert role_allows("custom", "/api/set", "POST", {"key": "record"}, {"settings"})
+    assert not role_allows("custom", "/api/set", "POST", {"key": "users"}, {"settings"})
+    assert not role_allows("custom", "/api/text", "POST", {"key": "notify_url"}, {"settings"})
+    assert users_clean([{"name": "Alt", "hash": "pbkdf2$1$00$00", "role": "operate"}])[0]["role"] == "family"
+    k = users_clean([{"name": "Kid", "hash": "pbkdf2$1$00$00", "role": "kid", "win": {"from": "08:00", "to": "20:00"}}])[0]
+    assert k["push"] == ["games"] and k["win"]["days"] == list(range(7))
+    assert user_active(k, _dt(2026, 10, 30, 12, 0))[0] and not user_active(k, _dt(2026, 10, 30, 21, 0))[0]
+    n = dict(k, win={"from": "18:00", "to": "02:00", "days": [4]})
+    assert user_active(n, _dt(2026, 10, 30, 23, 0))[0] and user_active(n, _dt(2026, 10, 31, 1, 0))[0] and not user_active(n, _dt(2026, 10, 31, 3, 0))[0]
+    assert not user_active(dict(k, win=None, until="2026-10-29"), _dt(2026, 10, 30, 9, 0))[0]
+    assert user_active(dict(k, win=None, until="2026-10-30"), _dt(2026, 10, 30, 23, 59))[0]
+    assert push_cat("mw-person") == "alarm" and push_cat("mw-games") == "games" and push_cat("mw-info") == "info"
+    assert push_sub_wants({}, "alarm") and not push_sub_wants({}, "games")
+    return True
+
+# ----------------------------------------------------------------------------
 # Notifications: webhook / ntfy / Telegram when a person is detected (with cooldown)
 # ----------------------------------------------------------------------------
 TELEGRAM_API = "https://api.telegram.org"
@@ -3259,7 +3797,7 @@ def _webpush_save(subs):
 _WP_HOST = re.compile(r"^https://[A-Za-z0-9.\-]+(:\d+)?/[^\s]{1,900}$")
 
 
-def webpush_add(sub, label=""):
+def webpush_add(sub, label="", user=""):
     try:
         ep = str(sub["endpoint"]); keys = sub.get("keys") or {}
         p256, auth = _b64u_dec(keys["p256dh"]), _b64u_dec(keys["auth"])
@@ -3270,6 +3808,8 @@ def webpush_add(sub, label=""):
     subs = [x for x in webpush_subs() if x["endpoint"] != ep]
     subs.append({"endpoint": ep, "p256dh": _b64u(p256), "auth": _b64u(auth), "label": str(label or "")[:60],
                  "added": datetime.now().strftime("%Y-%m-%d %H:%M")})
+    if user:
+        subs[-1]["user"] = str(user)[:24]                    # 2.98.42: this browser belongs to a user - gets only what the user chose (041)
     _webpush_save(subs)
     log_event("web", f"Web push switched on for {str(label or 'a device')[:60]}")
     return True, ""
@@ -3334,7 +3874,8 @@ def webpush_all(title, text, url="/", tag="mw", urgent=True):
     subs = webpush_subs()
     if not subs or not webpush_supported():
         return 0
-    ok = 0; gone = []
+    ok = 0; gone = []; cat = push_cat(tag)
+    subs = [x for x in subs if push_sub_wants(x, cat)]      # 2.98.42: users get only alarms / infos / games they chose (041)
     for sb in subs:
         try:
             code = webpush_send(sb, {"title": title[:120], "body": text[:400], "url": url or "/", "tag": tag, "urgent": bool(urgent)},
@@ -4455,6 +4996,8 @@ class Notifier:
             return
         if CFG["webpush_on"] and webpush_subs():
             threading.Thread(target=self._webpush, args=(p,), daemon=True).start()
+        if CFG["users"]:                                 # 2.98.42: own ntfy topics of the users (041)
+            users_push_dispatch(self._title(p), self._text(p), push_cat("mw-" + self._event(p)))
         if pushover_ready():
             threading.Thread(target=self._pushover, args=(p, jpg, fname), daemon=True).start()
         ev = self._event(p)
@@ -26554,6 +27097,7 @@ def games_all_open(hours=6.0, who="web"):
                 GAMES_ALL["sim"] = False
         threading.Thread(target=_sim, daemon=True, name="games-sim").start()
     log_event("sys", f"All games open for {hours:g} h ({who})")
+    users_push_games()                                      # 2.98.42: invitation to the users who want it (041)
 
 
 def games_all_close(who="web"):
@@ -44357,7 +44901,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
     if (B.lock) return true;
     mwGuide.busy = true;
     try { await loadS(); } finally { mwGuide.busy = false; }
-    if (!S || S.locked || document.getElementById("g2w")) return true;
+    if (!S || S.locked || S.ok === false || document.getElementById("g2w")) return true;      // 403 for users without admin rights (041)
     const G = S.guide || {};
     const want = /[?&]guide=1/.test(location.search);
     if (!force && !want && S.done) return true;
@@ -46858,6 +47402,7 @@ body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
         <button type="button" class="sec" id="g-share" onclick="guestShare()" data-i18n="Share / copy link" hidden>Share / copy link</button>
         <button type="button" class="red" id="g-end" onclick="guestAct('end')" data-i18n="End guest access" hidden>End guest access</button></div>
       <input type="text" id="g-link" readonly hidden style="width:100%;margin-top:8px" onclick="this.select()">
+      <div class="mut" style="margin-top:8px" data-i18n="For people who come again and again, better create a user (Settings → Security → Users).">For people who come again and again, better create a user (Settings → Security → Users).</div>
     </details>
     <details class="card" data-view="batt" data-vgroup="Panels" data-vlabel="Battery">
       <summary data-i18n="Battery">Battery</summary>
@@ -47362,32 +47907,7 @@ async function hwCheck() {
   };
   show();
 }
-// ---- several users: the web password = administrator; others log in with their own name and password ----
-const ROLE_TXT = () => ({operate: t("Operate (arm, lights, camera, talk - no settings)"), view: t("View only (live picture and recordings)")});
-async function usersLoad() {
-  const box = $("#users-box"); if (!box) return;
-  let j = {users: [], pw: false}; try { j = await (await fetch("/api/users")).json(); } catch (e) { return; }
-  box.textContent = "";
-  box.appendChild(el("div", "mut", t("Each person gets an own login (user name + password). The web password stays the administrator. The log shows who armed or switched something.")));
-  if (!j.pw) { box.appendChild(el("div", "err", "⚠ " + t("set the web password first (it is the administrator)"))); return; }
-  const err = el("div", "err");
-  const roleSel = v => { const s = el("select"); Object.entries(ROLE_TXT()).forEach(([k, l]) => { const o = el("option", "", l); o.value = k; s.appendChild(o); }); s.value = v; return s; };
-  const go = async b => { b.lang = LANG; const r = await post("/api/users", b); err.textContent = r.ok ? "" : "⚠ " + (r.error || "error"); if (r.ok) usersLoad(); return r; };
-  j.users.forEach(u => {
-    const row = el("div", "sens-card"), r1 = el("div", "row"), del = el("button", "sec", "✕"), pwb = el("button", "sec", "🔑"); del.type = pwb.type = "button";
-    pwb.title = t("New password"); del.title = t("Remove");
-    del.onclick = () => { if (confirm(t("Remove this user?") + "\n" + u.name)) go({action: "remove", name: u.name}); };
-    pwb.onclick = () => { const p = prompt(t("New password for") + " " + u.name + " (6–64)"); if (p) go({action: "password", name: u.name, password: p}).then(r => { if (r.ok) toast("✓ " + t("Saved")); }); };
-    const rs = roleSel(u.role); rs.onchange = () => go({action: "role", name: u.name, role: rs.value});
-    r1.append(el("b", "", "👤 " + u.name), pwb, del); row.append(r1, rs); box.appendChild(row);
-  });
-  const add = el("div", "sens-card"), nm = el("input"), pw = el("input"), rs = roleSel("operate"), ab = el("button", "", "+ " + t("Add user"));
-  nm.type = "text"; nm.maxLength = 24; nm.placeholder = t("Name"); pw.type = "password"; pw.maxLength = 64; pw.placeholder = t("Password (6–64)"); pw.autocomplete = "new-password";
-  [nm, pw, rs].forEach(x => { x.style.cssText = "width:100%;margin-top:6px"; }); ab.type = "button"; ab.style.marginTop = "8px";
-  ab.onclick = () => go({action: "add", name: nm.value, password: pw.value, role: rs.value});
-  add.append(nm, pw, rs, ab); box.append(add, err);
-  trustLoad(box);
-}
+// ---- several users: the card «Users» (roles, phones, time window, push per user) is in part 547 (usersLoad) ----
 // ---- trusted devices (2.95.19): after a login the browser is remembered - no new login after an update ----
 async function trustLoad(parent) {
   let j = null; try { j = await (await fetch("/api/trusted")).json(); } catch (e) { return; }
@@ -47408,8 +47928,9 @@ async function trustLoad(parent) {
 }
 function applyRole(me) {
   const role = (me && me.role) || "admin";
-  document.body.classList.toggle("role-operate", role === "operate"); document.body.classList.toggle("role-view", role === "view");
-  const b = $("#b-me"); if (b) { b.hidden = !(me && me.users) || !me.name; b.textContent = "👤 " + (me && me.name || "") + (role !== "admin" ? " · " + t(role === "view" ? "view only" : "operate") : ""); }
+  const arm = role !== "admin" && ((me && me.perms) || []).includes("arm");       // 2.98.42: rights instead of two roles (040 / 547)
+  document.body.classList.toggle("role-operate", arm); document.body.classList.toggle("role-view", role !== "admin" && !arm);
+  const b = $("#b-me"); if (b) { b.hidden = !(me && me.users) || !me.name; b.textContent = "👤 " + (me && me.name || "") + (role !== "admin" ? " · " + userRoleName(role) : ""); }
 }
 function applyLock(on) {
   document.body.classList.toggle("locked", on);
@@ -49512,7 +50033,7 @@ function wfBars(n) { const b = el("span", "wbars"); for (let i = 1; i <= 4; i++)
 function wfErr(m) { const e = $("#wf-err"); e.textContent = m ? "⚠ " + m : ""; }
 async function wfLoad() {
   let j;
-  try { j = await (await fetch("/api/wifi")).json(); wfLost = false; }
+  try { const r_ = await fetch("/api/wifi"); if (r_.status === 403) return; j = await r_.json(); wfLost = false; }   // 403: a user without admin rights
   catch (e) {
     if (WF && WF.busy) { wfLost = true; wfRenderStatus(); }
     return;
@@ -54446,6 +54967,103 @@ def sim_owns_updates():
     return SIMUPD.get("mode") is not None
 
 # set_cfg (540) passes «sim_autoupd» changed on the web page to the simulator (_set_cfg_sim -> simupd_push)
+# Server: 040 (Rechte), 041 (Zeitfenster, Einmal-Link, Push, Geräte). Deutsch der Seite: Teil 623 (/*USRDE*/), fr / it / rm über /i18n/<lang>.js.
+USERS_JS = r"""
+<script>
+Object.assign(I18N.de, /*USRDE*/{});
+const USER_ROLES_UI = [["kid", "🧒", "Child"], ["friend", "🤝", "Friend"], ["family", "🏠", "Family"], ["view", "👁", "View only"], ["custom", "⚙", "Own rights"]];
+const USER_PERMS_UI = [["live", "📺", "Live picture"], ["rec", "🎞", "Recordings"], ["arm", "🛡", "Protection on / off"], ["light", "💡", "Switch the light"],
+  ["siren", "🚨", "Siren"], ["games", "🎲", "Games / game corner"], ["talk", "🎙", "Talk (intercom)"], ["head", "🕹", "Steer the head"], ["settings", "⚙", "Settings"]];
+const USER_PUSH_UI = [["alarm", "🚨", "Alarms"], ["info", "ℹ️", "Infos"], ["games", "🎲", "Game invitations"]];
+const USER_DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+function userRoleName(r) { const x = USER_ROLES_UI.find(z => z[0] === r); return x ? t(x[2]) : (r === "operate" ? t("Family") : r); }
+async function usersLoad() {
+  const box = $("#users-box"); if (!box) return;
+  let j = {users: [], pw: false}; try { j = await (await fetch("/api/users", {cache: "no-store"})).json(); } catch (e) { return; }
+  const open = new Set([...box.querySelectorAll("details.us-more[open]")].map(d => d.dataset.u));
+  box.textContent = "";
+  box.appendChild(el("div", "mut", t("Each person gets an own access: a role decides what they may do, a phone is linked with a QR code (no password needed). The web password stays the administrator. The log shows who switched what.")));
+  box.appendChild(el("div", "mut", "🎟 " + t("For short visits the guest link is enough (Live → Guest access). For people who come again and again, better create a user here.")));
+  if (!j.pw) { box.appendChild(el("div", "err", "⚠ " + t("set the web password first (it is the administrator)"))); return; }
+  const err = el("div", "err");
+  const go = async b => { b.lang = LANG; const r = await post("/api/users", b); err.textContent = r.ok ? "" : "⚠ " + (r.error || "error"); if (r.ok && !b.keep) usersLoad(); return r; };
+  const roleSel = v => { const s = el("select"); USER_ROLES_UI.forEach(([k, ic, l]) => { const o = el("option", "", ic + " " + t(l)); o.value = k; s.appendChild(o); }); s.value = v; return s; };
+  const chip = (txt, on) => { const c = el("span", "", txt); c.style.cssText = "display:inline-block;font-size:12px;padding:2px 8px;margin:3px 4px 0 0;border-radius:99px;border:1px solid var(--line);" + (on ? "" : "opacity:.45;text-decoration:line-through"); return c; };
+  const d2 = n => { if (!n) return "–"; const d = new Date(n * 1000); return d.toLocaleDateString() + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2); };
+  (j.users || []).forEach(u => {
+    const row = el("div", "sens-card us-card"), r1 = el("div", "row"); row.dataset.u = u.name;
+    const del = el("button", "sec", "✕"), pwb = el("button", "sec", "🔑"); del.type = pwb.type = "button";
+    pwb.title = t("New password"); del.title = t("Remove");
+    del.onclick = () => { if (confirm(t("Remove this user?") + "\n" + u.name)) go({action: "remove", name: u.name}); };
+    pwb.onclick = () => { const p = prompt(t("New password for") + " " + u.name + " (6–64)"); if (p) go({action: "password", name: u.name, password: p}).then(r => { if (r.ok) toast("✓ " + t("Saved")); }); };
+    const nm = el("b", "", "👤 " + u.name); nm.style.flex = "1";
+    const st = el("span", "mut", u.active ? "✓ " + t("active") : "🌙 " + t("not active right now")); st.style.fontSize = "12px";
+    r1.append(nm, st, pwb, del); row.appendChild(r1);
+    const rs = roleSel(u.role); rs.style.cssText = "width:100%;margin-top:6px"; rs.onchange = () => go({action: "update", name: u.name, role: rs.value}); row.appendChild(rs);
+    const perms = el("div", "us-perms");
+    if (u.role === "custom") {
+      USER_PERMS_UI.forEach(([k, ic, l]) => { const lb = el("label", ""), cb = el("input"); cb.type = "checkbox"; cb.checked = u.perms.includes(k); cb.dataset.p = k;
+        lb.style.cssText = "display:inline-flex;gap:4px;align-items:center;margin:4px 10px 0 0;font-size:13px"; lb.append(cb, document.createTextNode(ic + " " + t(l)));
+        cb.onchange = () => go({action: "update", name: u.name, keep: true, perms: [...perms.querySelectorAll("input:checked")].map(x => x.dataset.p)}); perms.appendChild(lb); });
+    } else USER_PERMS_UI.forEach(([k, ic, l]) => perms.appendChild(chip(ic + " " + t(l), u.perms.includes(k))));
+    row.appendChild(perms);
+    // access time, expiry, messages
+    const more = el("details", "us-more"); more.dataset.u = u.name; more.open = open.has(u.name); more.style.marginTop = "8px";
+    const sm = el("summary", "", "⏰ " + t("Access time and messages")); sm.style.cssText = "cursor:pointer;font-size:13px"; more.appendChild(sm);
+    const w = u.win || null, wl = el("label", ""), wc = el("input"); wc.type = "checkbox"; wc.checked = !!w; wl.style.cssText = "display:flex;gap:6px;align-items:center;margin-top:6px";
+    wl.append(wc, document.createTextNode(t("Only at certain times")));
+    const wr = el("div", "row"); wr.style.cssText = "gap:6px;margin-top:4px;flex-wrap:wrap"; const f = el("input"), to = el("input"); f.type = to.type = "time";
+    f.value = w ? w.from : "08:00"; to.value = w ? w.to : "20:00"; f.style.width = to.style.width = "110px"; wr.append(f, el("span", "", "–"), to);
+    const dy = el("div", ""); const days = new Set(w ? w.days : [0, 1, 2, 3, 4, 5, 6]);
+    USER_DAYS.forEach((d, i) => { const lb = el("label", ""), cb = el("input"); cb.type = "checkbox"; cb.checked = days.has(i); cb.dataset.d = i;
+      lb.style.cssText = "display:inline-flex;gap:3px;align-items:center;margin:4px 8px 0 0;font-size:13px"; lb.append(cb, document.createTextNode(t(d))); dy.appendChild(lb); });
+    const wbox = el("div", ""); wbox.append(wr, dy); wbox.hidden = !wc.checked; wc.onchange = () => { wbox.hidden = !wc.checked; };
+    const ur = el("div", "row"); ur.style.cssText = "gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap"; const un = el("input"); un.type = "date"; un.value = u.until || "";
+    const uc = el("button", "sec", "✕"); uc.type = "button"; uc.title = t("no end"); uc.onclick = () => { un.value = ""; };
+    ur.append(el("span", "", t("Valid until") + ":"), un, uc);
+    const pb = el("div", ""); pb.style.marginTop = "8px"; pb.appendChild(el("div", "mut", t("Push messages for this person:")));
+    USER_PUSH_UI.forEach(([k, ic, l]) => { const lb = el("label", ""), cb = el("input"); cb.type = "checkbox"; cb.checked = (u.push || []).includes(k); cb.dataset.k = k;
+      lb.style.cssText = "display:inline-flex;gap:4px;align-items:center;margin:4px 10px 0 0;font-size:13px"; lb.append(cb, document.createTextNode(ic + " " + t(l))); pb.appendChild(lb); });
+    pb.appendChild(el("div", "mut", "🌐 " + t("Browser push") + ": " + (u.webpush ? u.webpush + " " + t("device(s)") : t("none yet - the person switches it on in their own browser (Settings → Notifications)"))));
+    const nt = el("input"); nt.type = "text"; nt.maxLength = 120; nt.placeholder = t("own ntfy topic (optional)") + (u.ntfy ? " · " + t("now") + " " + u.ntfy : ""); nt.style.cssText = "width:100%;margin-top:6px"; nt.autocomplete = "off";
+    pb.appendChild(nt);
+    const sv = el("button", "", "✓ " + t("Save")); sv.type = "button"; sv.style.marginTop = "8px";
+    sv.onclick = () => { const b = {action: "update", name: u.name, until: un.value || "", push: [...pb.querySelectorAll("input[data-k]:checked")].map(x => x.dataset.k),
+      win: wc.checked ? {from: f.value || "00:00", to: to.value || "00:00", days: [...dy.querySelectorAll("input:checked")].map(x => +x.dataset.d)} : null};
+      if (nt.value.trim()) b.ntfy = nt.value.trim();
+      go(b).then(r => { if (r.ok) toast("✓ " + t("Saved")); }); };
+    const ntc = el("button", "sec", t("Remove own ntfy topic")); ntc.type = "button"; ntc.style.margin = "8px 0 0 6px"; ntc.hidden = !u.ntfy;
+    ntc.onclick = () => go({action: "update", name: u.name, ntfy: ""});
+    more.append(wl, wbox, ur, pb, sv, ntc); row.appendChild(more);
+    // phones
+    const lk = el("button", "sec", "📱 " + t("Link a phone")); lk.type = "button"; lk.style.marginTop = "8px"; lk.className = "sec us-link";
+    lk.onclick = async () => { const r = await go({action: "link", name: u.name, keep: true}); if (!r.ok) return;
+      const note = t("Scan with the camera of the phone of") + " " + u.name + ". " + t("Valid 10 minutes, only once. The phone is then logged in without a password.") + (r.secure ? "" : " ⚠ " + t("Without the secure page (https) the link goes unencrypted through the Wi-Fi."));
+      if (window.qrShow) { const ov = qrShow(r.url, "📱 " + t("Link a phone") + " – " + u.name, {secret: true, note: note});
+        const tick = setInterval(() => { if (!document.body.contains(ov)) { clearInterval(tick); usersLoad(); } }, 1500); }
+      else prompt(note, r.url); };
+    row.appendChild(lk);
+    if (u.nopw) row.appendChild(el("div", "mut", "🔑 " + t("No own password - logs in only with a linked phone.")));
+    (u.devices || []).forEach(x => { const r = el("div", "row"); r.style.marginTop = "6px";
+      const tx = el("div", ""); tx.style.flex = "1"; tx.append(el("div", "", "📱 " + x.name + (x.me ? " (" + t("this device") + ")" : "") + (x.via === "link" ? " · QR" : "")),
+        el("div", "mut", t("since") + " " + d2(x.t0) + " · " + t("last") + " " + d2(x.seen) + (x.ip ? " · " + x.ip : "")));
+      const b = el("button", "sec", "✕"); b.type = "button"; b.title = t("Remove"); b.className = "sec us-dev-del";
+      b.onclick = () => { if (confirm(t("Remove this device? It is logged out at once.") + "\n" + x.name)) go({action: "device_remove", name: u.name, id: x.id}); };
+      r.append(tx, b); row.appendChild(r); });
+    box.appendChild(row);
+  });
+  const add = el("div", "sens-card"), nm = el("input"), pw = el("input"), rs = roleSel("family"), ab = el("button", "", "+ " + t("Add user"));
+  nm.type = "text"; nm.maxLength = 24; nm.placeholder = t("Name"); nm.id = "us-name"; pw.type = "password"; pw.maxLength = 64; pw.placeholder = t("Password (optional, 6–64)"); pw.autocomplete = "new-password"; pw.id = "us-pw";
+  rs.id = "us-role"; ab.id = "us-add";
+  [nm, pw, rs].forEach(x => { x.style.cssText = "width:100%;margin-top:6px"; }); ab.type = "button"; ab.style.marginTop = "8px";
+  ab.onclick = () => go({action: "add", name: nm.value, password: pw.value, role: rs.value});
+  add.append(el("b", "", "+ " + t("New user")), nm, pw, rs, el("div", "mut", t("Without a password the person logs in only with a linked phone (QR code).")), ab);
+  box.append(add, err);
+  if (typeof trustLoad === "function") trustLoad(box);
+}
+</script>
+"""
+WEB_PAGE = WEB_PAGE.replace("</body>", USERS_JS + "</body>", 1)
 _GZ_CACHE = {}                         # 2.98.40: gzip of the big pages (blake2b of the page -> gzip)
 
 
@@ -54586,7 +55204,7 @@ class WebStream:
                     request.get_data()                      # read the body first, else the connection is reset
                 log_event("web", f"Blocked a request from another web page ({request.headers.get('Origin', '')[:60]}) to {request.path}")
                 return sx_err(403, "foreign")                  # in the own language (578)
-            if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/na/", "/spiele", "/tv/", "/nt/", "/info", "/almanach", "/game/")) or request.path in public:
+            if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/na/", "/spiele", "/tv/", "/nt/", "/info", "/almanach", "/game/", "/l/")) or request.path in public:
                 return None                         # guest links check their own key; app icons are not secret
             pw = CFG["web_password"]
             g.user, g.role = "", "admin"
@@ -54657,8 +55275,11 @@ class WebStream:
                 return None
             if request.path == "/api/sim/upload":                # only the administrator (and the body is a big video)
                 return reply({"ok": False, "error": tr("not allowed for your user", norm_lang(request.args.get("lang") or CFG["lang"]))}, 403)
+            gate = user_gate(request, g)                # 2.98.42: outside the time window / expired: a friendly page, no data (041)
+            if gate is not None:
+                return gate
             d = request.get_json(force=True, silent=True) if request.method == "POST" else None
-            if role_allows(role, request.path, request.method, d if isinstance(d, dict) else {}):
+            if role_allows(role, request.path, request.method, d if isinstance(d, dict) else {}, user_req_perms(g)):
                 return None
             lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or request.args.get("lang") or CFG["lang"])
             return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
@@ -55649,12 +56270,7 @@ class WebStream:
 
         @app.route("/api/users", methods=["GET", "POST"])
         def api_users():
-            if request.method == "GET":
-                return reply({"users": [{"name": u["name"], "role": u["role"]} for u in CFG["users"]], "pw": web_pw_active()})
-            d = body(); lang = norm_lang(d.get("lang"))
-            ok, err = users_action(d, getattr(g, "user", "") or "admin")
-            return reply({"ok": ok, "error": tr_err(err, lang) if err else None,
-                          "users": [{"name": u["name"], "role": u["role"]} for u in CFG["users"]]}, 200 if ok else 400)
+            return users_api(request, reply, body, g)     # 2.98.42: rights, time window, phones, push per user (041)
 
         @app.before_request
         def demo_guard():                           # demo: nothing that changes the computer or reaches outside
@@ -55689,6 +56305,7 @@ class WebStream:
         g2_routes(app, watch, reply, body)                 # guide 2: tours, tip of the day, factory reset (586)
         qr_routes(app, reply, body)                        # QR codes: POST /api/qr, gallery /qr, print page, no-store for secrets (587)
         servo_routes(app, reply, body)                     # 2.98.35: servos - Not-Aus, taught points, diagnosis /servo, /api/servo (539)
+        users_routes(app, reply, body)                     # 2.98.42: link a phone /l/<token>, page shows only the own rights (041)
         ginv_routes(app, reply, body)                      # game for guests online /game/<token>/ (only the game, token + expiry), «Human vs AI» (343)
 
         @app.route("/messages")
@@ -55986,7 +56603,8 @@ class WebStream:
                 st["mqtt"] = {"status": MQTT["status"], "topic": (CFG["mqtt_prefix"].strip().strip("/") or "motionwatch") + "/" + device_uid() if CFG["mqtt_on"] else ""}
                 st["web_open"] = not st["pw_set"] and WEB_OPTS["bind"] not in ("127.0.0.1", "localhost", "::1")
                 st["guest"] = guest_info(); st["report_on"] = bool(CFG["report_on"]); st["lock"] = lock_info()
-                st["me"] = {"name": getattr(g, "user", ""), "role": getattr(g, "role", "admin"), "users": len(CFG["users"])}
+                st["me"] = {"name": getattr(g, "user", ""), "role": getattr(g, "role", "admin"), "users": len(CFG["users"]),
+                            "perms": user_perms_list(getattr(g, "user", ""), getattr(g, "role", "admin"))}
                 st["pending"] = RESTART["pending"]
                 st["quick_rec"] = time.time() < QUICK["rec_until"]
                 st["games"] = {"on": party_on(), "n": len(PARTY["players"])}           # 2.98.7: quick switch «Spiele»
@@ -57280,8 +57898,9 @@ class WebStream:
         def api_webpush():
             if request.method == "GET":
                 sup = webpush_supported()
-                return reply({"supported": sup, "on": CFG["webpush_on"], "key": webpush_public() if sup else "", "count": len(webpush_subs()),
-                              "devices": [{"label": x.get("label", ""), "added": x.get("added", "")} for x in webpush_subs()],
+                mine_ = [x for x in webpush_subs() if getattr(g, "role", "admin") == "admin" or str(x.get("user", "")).lower() == str(getattr(g, "user", "")).lower()]
+                return reply({"supported": sup, "on": CFG["webpush_on"], "key": webpush_public() if sup else "", "count": len(mine_),
+                              "devices": [{"label": x.get("label", ""), "added": x.get("added", ""), "user": x.get("user", "")} for x in mine_],
                               "https_url": tailscale_https_url(), "status": WEBPUSH["status"]})
             d = body(); lang = norm_lang(d.get("lang")); a = d.get("action")
             ok, err = True, ""
@@ -57289,7 +57908,7 @@ class WebStream:
                 if not webpush_supported():
                     ok, err = False, "python3-cryptography is missing (sudo apt install python3-cryptography)"
                 else:
-                    ok, err = webpush_add(d.get("sub") or {}, d.get("label", ""))
+                    ok, err = webpush_add(d.get("sub") or {}, d.get("label", ""), "" if getattr(g, "role", "admin") == "admin" else getattr(g, "user", ""))
             elif a == "unsubscribe":
                 webpush_remove(str((d.get("sub") or {}).get("endpoint") or d.get("endpoint") or ""))
             elif a == "test":
@@ -62328,30 +62947,53 @@ def _ak_tk_security(app, sbody):
 
 
 def _ak_tk_users(app, box):
+    """2.98.42: roles Kind / Freund / Familie / Nur ansehen / Eigene Rechte, «Handy verknüpfen» (QR), time window shown (041).
+    Own rights, time window and push per user are set on the web page (Settings → Security → Users)."""
     for w in box.winfo_children():
         w.destroy()
     if not web_pw_active():
         ttk.Label(box, text="⚠ " + tr("set the web password first (it is the administrator)"), style="Mut.TLabel", wraplength=330).pack(anchor="w", pady=(4, 0))
         return
-    roles = {"operate": tr("operate"), "view": tr("view only")}
+    roles = {"kid": "🧒 " + tr("Child"), "friend": "🤝 " + tr("Friend"), "family": "🏠 " + tr("Family"), "view": "👁 " + tr("View only"),
+             "custom": "⚙ " + tr("Own rights")}
+    keys = list(roles)
 
     def act(d):
         ok, err = users_action(d, "window")
         if not ok:
             app._status("App keys", "⚠ " + tr_err(err))
         _ak_tk_users(app, box)
+
+    def link(n):
+        url, sec, secure = user_link_make(n, None, "window")
+        if url is None:
+            app._status("App keys", "⚠ " + tr_err(sec)); return
+        qr_tk_dialog(app.root, url, "📱 " + tr("Link a phone") + " – " + n, secret=True,
+                     note=tr("Valid 10 minutes, only once. The phone is then logged in without a password."))
+    ttk.Label(box, text=tr("For short visits the guest link is enough. For people who come again and again, better create a user here."),
+              style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(4, 0))
     for u in CFG["users"]:
         r = tk.Frame(box, bg=C["panel"]); r.pack(fill="x", pady=(4, 0))
-        tk.Label(r, text="👤 " + u["name"] + " · " + roles.get(u["role"], u["role"]), bg=C["panel"], fg=C["txt"], anchor="w").pack(side="left", fill="x", expand=True)
+        when = user_when_text(u)
+        ndev = len(user_devices(u["name"]))
+        tk.Label(r, text="👤 " + u["name"] + " · " + roles.get(u["role"], u["role"]) + ("\n   ⏰ " + when if when else "")
+                 + ("\n   📱 " + str(ndev) + " " + tr("device(s)") if ndev else "") + ("" if user_active(u)[0] else "\n   🌙 " + tr("not active right now")),
+                 bg=C["panel"], fg=C["txt"], anchor="w", justify="left").pack(side="left", fill="x", expand=True)
         ttk.Button(r, text="✕", width=3, command=lambda n=u["name"]: act({"action": "remove", "name": n})).pack(side="right")
+        ttk.Button(r, text="📱", width=3, command=lambda n=u["name"]: link(n)).pack(side="right", padx=(0, 4))
+        rc_ = ttk.Combobox(box, state="readonly", values=[roles[k] for k in keys])
+        rc_.current(keys.index(u["role"]) if u["role"] in keys else 3); rc_.pack(fill="x", pady=(2, 0))
+        rc_.bind("<<ComboboxSelected>>", lambda e, n=u["name"], c=rc_: act({"action": "update", "name": n, "role": keys[c.current()]}))
     ent_kw = dict(bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat", highlightthickness=1, highlightbackground=C["line"])
     nv, pv = tk.StringVar(), tk.StringVar()
     f = tk.Frame(box, bg=C["panel"]); f.pack(fill="x", pady=(6, 0))
     tk.Entry(f, textvariable=nv, width=12, **ent_kw).pack(side="left", fill="x", expand=True)
     tk.Entry(f, textvariable=pv, width=12, show="•", **ent_kw).pack(side="left", fill="x", expand=True, padx=(4, 0))
-    rc = ttk.Combobox(box, state="readonly", values=[roles["operate"], roles["view"]]); rc.current(0); rc.pack(fill="x", pady=(4, 0))
-    ttk.Button(box, text="+ " + tr("Add user") + "  (" + tr("Name") + " · " + tr("Password (6–64)") + ")",
-               command=lambda: act({"action": "add", "name": nv.get(), "password": pv.get(), "role": "operate" if rc.current() == 0 else "view"})).pack(fill="x", pady=(4, 0))
+    rc = ttk.Combobox(box, state="readonly", values=[roles[k] for k in keys]); rc.current(2); rc.pack(fill="x", pady=(4, 0))
+    ttk.Button(box, text="+ " + tr("Add user") + "  (" + tr("Name") + " · " + tr("Password (optional, 6–64)") + ")",
+               command=lambda: act({"action": "add", "name": nv.get(), "password": pv.get(), "role": keys[rc.current()]})).pack(fill="x", pady=(4, 0))
+    ttk.Label(box, text=tr("Own rights, time window and push per person: on the web page (Settings → Security → Users)."),
+              style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(4, 0))
 
 
 def _ak_tk_keys(app, box):
@@ -73327,7 +73969,7 @@ _HELP_NEW = {
   "lightsound": '<li><b>🗣 Ansage:</b> unter Lautsprecher einen Text eintippen (oder einen Vorschlag antippen), Stimme wählen, «Jetzt sprechen». «Als eigenen Klang speichern» legt die Ansage als Klang ab – dann ist sie für Sirene und Abschreckung wählbar. Braucht auf dem Pi einmal <code>sudo apt install espeak-ng</code> (schönere Stimme: <code>libttspico-utils</code>).</li>',
   "detect": '<li><b>🦊 Tierart:</b> ein zweites KI-Modell (ONNX) schaut sich jedes Tier an, das die erste KI findet, und erkennt z. B. Fuchs, Dachs, Wildschwein, Marder. Die Art erscheint im Bild, im Protokoll und im Tagebuch. Das Modell ist nicht dabei: unter KI-Erkennung eine Adresse (.onnx oder .zip) eintragen und «Modell installieren» – oder die Datei mit der Namensliste (.txt, eine Art pro Zeile, z. B. <code>red fox;Fuchs</code>) in den angezeigten Ordner kopieren.</li>',
   "rec": '<li><b>📄 Ereignisbericht (PDF):</b> in der Ansicht einer Aufnahme. Enthält Datum, Ort mit Kartenlink, Bilder aus dem Video, das Protokoll 10 Minuten davor und danach und eine Prüfsumme der Originaldatei – für Polizei oder Versicherung.</li>',
-  "system": '<li><b>👥 Benutzer:</b> eigene Logins für Familie und Mitcamper. Rolle «Bedienen» (Schutz ein/aus, Licht, Kamera, Sprechen – keine Einstellungen) oder «Nur ansehen». Das Web-Passwort bleibt der Administrator. Im Protokoll steht, wer Schutz eingeschaltet hat.</li>'
+  "system": '<li><b>👥 Benutzer:</b> eigene Zugänge für Familie, Kinder und Freunde mit Rollen (Kind, Freund, Familie, Nur ansehen, Eigene Rechte), Zeitfenster, Ablaufdatum und «📱 Handy verknüpfen» – siehe Kapitel «Benutzer und Handys». Das Web-Passwort bleibt der Administrator. Im Protokoll steht, wer was geschaltet hat.</li>'
             '<li><b>🧪 Hardware prüfen</b> (Hilfe und Einrichtung): geht Schritt für Schritt Kamera, Bewegung, KI, Wärmebild, Servos, Mikrofon, Lautsprecher, Licht, Push und jeden Zusatz-Sensor durch. Was die Seite selbst sieht, wird automatisch abgehakt; am Schluss eine Übersicht.</li>'
             '<li><b>🌡 Temperatur-Alarm</b> (Einrichtung): Push bei zu heiss oder zu kalt, z. B. für ein Haustier im Wohnwagen – der Fühler misst dort, wo er montiert ist.</li>',
   "new": '<section id="sensors" data-icon="📡"><h2>Sensoren</h2>\n<ul><li><b>Zusatz-Sensoren:</b> Bewegungsmelder (PIR), Tür-/Deckelkontakt und Gas-/Rauchmodul an einem GPIO; 433-MHz-Funksensoren (RTL-SDR-Stick + rtl_433), Zigbee (Zigbee2MQTT über MQTT) und Bluetooth-Anhänger (RuuviTag). Mit «+» hinzufügen, «Angeschlossen an» wählen. Funkgeräte einmal auslösen – sie erscheinen unter «Gefundene Funkgeräte».</li>'
@@ -73344,7 +73986,7 @@ _HELP_NEW = {
   "lightsound": '<li><b>🗣 Announcement:</b> under Loudspeaker type a text (or tap a suggestion), choose the voice, «Speak now». «Save as own sound» keeps it as a sound – then it can be chosen for the siren and deterrence. Needs once on the Pi <code>sudo apt install espeak-ng</code> (nicer voice: <code>libttspico-utils</code>).</li>',
   "detect": '<li><b>🦊 Animal species:</b> a second AI model (ONNX) looks at every animal the first AI finds and recognises e.g. fox, badger, wild boar, marten. The species appears on the picture, in the log and in the diary. The model is not included: under AI detection enter an address (.onnx or .zip) and «Install model» – or copy the file with its list of names (.txt, one species per line, e.g. <code>red fox;Fuchs</code>) into the folder shown.</li>',
   "rec": '<li><b>📄 Event report (PDF):</b> in the view of a recording. Date, place with a map link, pictures from the video, the log 10 minutes before and after and a checksum of the original file – for the police or the insurance.</li>',
-  "system": '<li><b>👥 Users:</b> own logins for family and fellow campers. Role «Operate» (arm / disarm, lights, camera, talk – no settings) or «View only». The web password stays the administrator. The log shows who armed.</li>'
+  "system": '<li><b>👥 Users:</b> own access for family, children and friends with roles (Child, Friend, Family, View only, Own rights), time window, expiry date and «📱 Link a phone» – see the chapter «Users and phones». The web password stays the administrator. The log shows who switched what.</li>'
             '<li><b>🧪 Hardware check</b> (Help and setup): goes step by step through camera, movement, AI, thermal camera, servos, microphone, loudspeaker, lights, push and every extra sensor. What the page can see itself is ticked automatically; a summary at the end.</li>'
             '<li><b>🌡 Temperature alarm</b> (Setup): push when too hot or too cold, e.g. for a pet in the caravan – the sensor measures where it is mounted.</li>',
   "new": '<section id="sensors" data-icon="📡"><h2>Sensors</h2>\n<ul><li><b>Extra sensors:</b> motion detector (PIR), door / lid contact and gas / smoke module on a GPIO; 433 MHz radio sensors (RTL-SDR stick + rtl_433), Zigbee (Zigbee2MQTT over MQTT) and Bluetooth tags (RuuviTag). Add with «+», choose «Connected to». Trigger radio devices once – they appear under «Found radio devices».</li>'
@@ -73361,7 +74003,7 @@ _HELP_NEW = {
   "lightsound": '<li><b>🗣 Annonce :</b> sous Haut-parleur, tapez un texte (ou touchez une proposition), choisissez la voix, «Parler maintenant». «Enregistrer comme son propre» le garde comme son – utilisable pour la sirène et la dissuasion. Nécessite une fois sur le Pi <code>sudo apt install espeak-ng</code>.</li>',
   "detect": '<li><b>🦊 Espèce animale :</b> un second modèle IA (ONNX) examine chaque animal trouvé par la première IA et reconnaît p. ex. renard, blaireau, sanglier, martre. Le modèle n\'est pas inclus : sous Détection IA, entrez une adresse (.onnx ou .zip) et «Installer le modèle», ou copiez le fichier avec sa liste de noms (.txt) dans le dossier affiché.</li>',
   "rec": '<li><b>📄 Rapport d\'événement (PDF) :</b> dans la vue d\'un enregistrement. Date, lieu avec lien de carte, images de la vidéo, journal 10 minutes avant et après et somme de contrôle du fichier original – pour la police ou l\'assurance.</li>',
-  "system": '<li><b>👥 Utilisateurs :</b> accès propres pour la famille et les voisins de camping. Rôle «Utiliser» (armer, lumière, caméra, parler – pas de réglages) ou «Voir seulement». Le mot de passe web reste l\'administrateur.</li>'
+  "system": '<li><b>👥 Utilisateurs :</b> accès propres pour la famille, les enfants et les amis avec des rôles (Enfant, Ami, Famille, Voir seulement, Droits propres), plage horaire, date d’expiration et «📱 Lier un téléphone» – voir le chapitre «Utilisateurs et téléphones». Le mot de passe web reste l’administrateur.</li>'
             '<li><b>🧪 Vérifier le matériel</b> (Aide et configuration) : passe pas à pas par caméra, mouvement, IA, caméra thermique, servos, micro, haut-parleur, lumière, push et chaque capteur.</li>'
             '<li><b>🌡 Alarme de température</b> (Configuration) : push si trop chaud ou trop froid, p. ex. pour un animal dans la caravane.</li>',
   "new": '<section id="sensors" data-icon="📡"><h2>Capteurs</h2>\n<ul><li><b>Capteurs supplémentaires :</b> détecteur de mouvement (PIR), contact de porte et module gaz/fumée sur un GPIO ; capteurs radio 433 MHz (clé RTL-SDR + rtl_433), Zigbee (Zigbee2MQTT via MQTT) et balises Bluetooth (RuuviTag). Ajouter avec «+». Déclenchez une fois les appareils radio – ils apparaissent sous «Appareils radio trouvés».</li>'
@@ -73377,7 +74019,7 @@ _HELP_NEW = {
   "lightsound": '<li><b>🗣 Annuncio:</b> sotto Altoparlante scrivi un testo (o tocca un suggerimento), scegli la voce, «Parla ora». «Salva come suono proprio» lo conserva come suono – selezionabile per sirena e deterrenza. Serve una volta sul Pi <code>sudo apt install espeak-ng</code>.</li>',
   "detect": '<li><b>🦊 Specie animale:</b> un secondo modello IA (ONNX) guarda ogni animale trovato dalla prima IA e riconosce p. es. volpe, tasso, cinghiale, martora. Il modello non è incluso: sotto Rilevamento IA inserire un indirizzo (.onnx o .zip) e «Installa modello», oppure copiare il file con l\'elenco dei nomi (.txt) nella cartella indicata.</li>',
   "rec": '<li><b>📄 Rapporto evento (PDF):</b> nella vista di una registrazione. Data, luogo con link alla mappa, immagini dal video, registro 10 minuti prima e dopo e checksum del file originale – per polizia o assicurazione.</li>',
-  "system": '<li><b>👥 Utenti:</b> accessi propri per famiglia e vicini di campeggio. Ruolo «Usare» (armare, luce, telecamera, parlare – nessuna impostazione) o «Solo guardare». La password web resta l\'amministratore.</li>'
+  "system": '<li><b>👥 Utenti:</b> accessi propri per famiglia, bambini e amici con ruoli (Bambino, Amico, Famiglia, Solo guardare, Diritti propri), fascia oraria, data di scadenza e «📱 Collegare un telefono» – vedi il capitolo «Utenti e telefoni». La password web resta l’amministratore.</li>'
             '<li><b>🧪 Verifica hardware</b> (Aiuto e configurazione): passo per passo telecamera, movimento, IA, termocamera, servo, microfono, altoparlante, luce, push e ogni sensore.</li>'
             '<li><b>🌡 Allarme temperatura</b> (Configurazione): push se fa troppo caldo o troppo freddo, p. es. per un animale nella roulotte.</li>',
   "new": '<section id="sensors" data-icon="📡"><h2>Sensori</h2>\n<ul><li><b>Sensori aggiuntivi:</b> rilevatore di movimento (PIR), contatto porta e modulo gas/fumo su un GPIO; sensori radio 433 MHz (chiavetta RTL-SDR + rtl_433), Zigbee (Zigbee2MQTT via MQTT) e tag Bluetooth (RuuviTag). Aggiungere con «+». Attivare una volta i dispositivi radio – appaiono sotto «Dispositivi radio trovati».</li>'
@@ -73393,7 +74035,7 @@ _HELP_NEW = {
   "lightsound": '<li><b>🗣 Annunzia:</b> sut Autpledader scriver in text, tscherner la vusch, «Discurrer ussa». «Memorisar sco agen tun» al tegna sco tun per la sirena e la deterrenza. Basegna ina giada sin il Pi <code>sudo apt install espeak-ng</code>.</li>',
   "detect": '<li><b>🦊 Spezia d\'animal:</b> in segund model IA (ONNX) guarda mintga animal che l\'emprima IA chatta e renconuscha p.ex. vulp, tais, portg selvadi, mardel. Il model n\'è betg cuntegnì: sut Detecziun IA endatar ina adressa (.onnx u .zip) e «Installar il model», u copiar la datoteca cun la glista da nums (.txt) en l\'ordinatur mussà.</li>',
   "rec": '<li><b>📄 Rapport d\'eveniment (PDF):</b> en la vista d\'ina registraziun. Data, lieu cun link da charta, maletgs dal video, protocol 10 minutas avant e suenter e summa da controlla da la datoteca originala – per la polizia u l\'assicuranza.</li>',
-  "system": '<li><b>👥 Utilisaders:</b> agens logins per la famiglia e vischins da campadi. Rolla «Manar» (activar, glisch, camera, discurrer – naginas configuraziuns) u «Mo guardar». Il pled-clav web resta l\'administratur.</li>'
+  "system": '<li><b>👥 Utilisaders:</b> agens accesses per la famiglia, uffants ed amis cun rollas (Uffant, Ami, Famiglia, Mo guardar, Agens dretgs), fanestra da temp, data da scadenza e «📱 Colliar in telefonin» – vesair il chapitel «Utilisaders e telefonins». Il pled-clav web resta l’administratur.</li>'
             '<li><b>🧪 Controllar la hardware</b> (Agid ed endrizzaziun): pass per pass camera, moviment, IA, camera termica, servos, microfon, autpledader, glisch, push e mintga sensor.</li>'
             '<li><b>🌡 Alarm da temperatura</b> (Endrizzaziun): push sch\'i fa memia chaud u memia fraid, p.ex. per in animal en la rulotta.</li>',
   "new": '<section id="sensors" data-icon="📡"><h2>Sensors</h2>\n<ul><li><b>Sensors supplementars:</b> detectur da moviment (PIR), contact da porta e modul da gas/fim sin in GPIO; sensors radio 433 MHz (stick RTL-SDR + rtl_433), Zigbee (Zigbee2MQTT via MQTT) e pendaglias Bluetooth (RuuviTag). Agiuntar cun «+». Deliberar ina giada ils apparats radio – els cumparan sut «Apparats radio chattads».</li>'
@@ -77090,6 +77732,229 @@ for _L, _li in _HELP_INFO.items():
     _j = _d.find("</ul>", _i) if _i >= 0 else -1
     if _j >= 0:
         HELP_X[_L] = _d[:_j] + _li + _d[_j:]
+_HX_USERS = {
+    # ---- roles and rights ----
+    'Child': ('Kind', 'Enfant', 'Bambino', 'Uffant'),
+    'Friend': ('Freund', 'Ami', 'Amico', 'Ami'),
+    'Family': ('Familie', 'Famille', 'Famiglia', 'Famiglia'),
+    'View only': ('Nur ansehen', 'Voir seulement', 'Solo guardare', 'Mo guardar'),
+    'Own rights': ('Eigene Rechte', 'Droits propres', 'Diritti propri', 'Agens dretgs'),
+    'Live picture': ('Livebild', 'Image en direct', 'Immagine live', 'Maletg live'),
+    'Recordings': ('Aufnahmen', 'Enregistrements', 'Registrazioni', 'Registraziuns'),
+    'Protection on / off': ('Schutz an / aus', 'Protection on / off', 'Protezione on / off', 'Protecziun en / ora'),
+    'Switch the light': ('Licht schalten', 'Allumer la lumière', 'Accendere la luce', 'Envidar la glisch'),
+    'Siren': ('Sirene', 'Sirène', 'Sirena', 'Sirena'),
+    'Games / game corner': ('Spiele / Spielecke', 'Jeux / coin jeux', 'Giochi / angolo giochi', 'Gieus / chantun da gieus'),
+    'Talk (intercom)': ('Gegensprechen', 'Interphone', 'Citofono', 'Intercom'),
+    'Steer the head': ('Kopf steuern', 'Diriger la tête', 'Guidare la testa', 'Guidar il chau'),
+    'Alarms': ('Alarme', 'Alarmes', 'Allarmi', 'Alarms'),
+    'Infos': ('Infos', 'Infos', 'Info', 'Infos'),
+    'Game invitations': ('Spiel-Einladungen', 'Invitations aux jeux', 'Inviti ai giochi', 'Invitaziuns da gieu'),
+    # ---- the card «Users» (547) ----
+    'Each person gets an own access: a role decides what they may do, a phone is linked with a QR code (no password needed). The web password stays the administrator. The log shows who switched what.':
+        ('Jede Person bekommt einen eigenen Zugang: die Rolle bestimmt, was sie darf, ein Handy wird mit einem QR-Code verknüpft (kein Passwort nötig). Das Web-Passwort bleibt der Administrator. Im Protokoll steht, wer was geschaltet hat.',
+         'Chaque personne reçoit son propre accès : le rôle décide de ce qu’elle peut faire, un téléphone est lié avec un code QR (pas de mot de passe). Le mot de passe web reste l’administrateur. Le journal montre qui a changé quoi.',
+         'Ogni persona riceve un accesso proprio: il ruolo decide cosa può fare, un telefono viene collegato con un codice QR (senza password). La password web resta l’amministratore. Il registro mostra chi ha cambiato cosa.',
+         'Mintga persuna survegn in agen access: la rolla decida tge ch’ella dastga far, in telefonin vegn collià cun in code QR (nagin pled-clav). Il pled-clav web resta l’administratur. Il protocol mussa tgi ch’ha midà tge.'),
+    'For short visits the guest link is enough (Live → Guest access). For people who come again and again, better create a user here.':
+        ('Für kurze Besuche reicht der Gastlink (Live → Gastzugang). Für feste Personen lieber hier einen Benutzer anlegen.',
+         'Pour de courtes visites, le lien invité suffit (Direct → Accès invité). Pour les personnes qui reviennent, mieux vaut créer un utilisateur ici.',
+         'Per visite brevi basta il link ospite (Live → Accesso ospite). Per persone fisse meglio creare qui un utente.',
+         'Per curtas visitas basta la colliaziun da giast (Live → Access da giast). Per persunas fixas meglier crear qua in utilisader.'),
+    'For short visits the guest link is enough. For people who come again and again, better create a user here.':
+        ('Für kurze Besuche reicht der Gastlink. Für feste Personen lieber hier einen Benutzer anlegen.',
+         'Pour de courtes visites, le lien invité suffit. Pour les personnes qui reviennent, mieux vaut créer un utilisateur ici.',
+         'Per visite brevi basta il link ospite. Per persone fisse meglio creare qui un utente.',
+         'Per curtas visitas basta la colliaziun da giast. Per persunas fixas meglier crear qua in utilisader.'),
+    'For people who come again and again, better create a user (Settings → Security → Users).':
+        ('Für feste Personen lieber einen Benutzer anlegen (Einstellungen → Sicherheit → Benutzer).',
+         'Pour les personnes qui reviennent, mieux vaut créer un utilisateur (Réglages → Sécurité → Utilisateurs).',
+         'Per persone fisse meglio creare un utente (Impostazioni → Sicurezza → Utenti).',
+         'Per persunas fixas meglier crear in utilisader (Parameters → Segirezza → Utilisaders).'),
+    'active': ('aktiv', 'actif', 'attivo', 'activ'),
+    'not active right now': ('gerade nicht aktiv', 'pas actif en ce moment', 'non attivo al momento', 'gist betg activ'),
+    'Access time and messages': ('Zugangszeit und Nachrichten', 'Horaires d’accès et messages', 'Orari di accesso e messaggi', 'Temp d’access e messadis'),
+    'Only at certain times': ('Nur zu bestimmten Zeiten', 'Seulement à certaines heures', 'Solo in certi orari', 'Mo a tschertas uras'),
+    'no end': ('kein Ende', 'pas de fin', 'nessuna fine', 'nagina fin'),
+    'Valid until': ('Gültig bis', 'Valable jusqu’au', 'Valido fino al', 'Valaivel fin'),
+    'Push messages for this person:': ('Push-Nachrichten für diese Person:', 'Notifications pour cette personne :', 'Notifiche per questa persona:', 'Messadis push per questa persuna:'),
+    'Browser push': ('Browser-Push', 'Push du navigateur', 'Push del browser', 'Push dal navigatur'),
+    'device(s)': ('Gerät(e)', 'appareil(s)', 'dispositivo/i', 'apparat(s)'),
+    'none yet - the person switches it on in their own browser (Settings → Notifications)':
+        ('noch keiner – die Person schaltet es im eigenen Browser ein (Einstellungen → Benachrichtigungen)',
+         'aucun encore – la personne l’active dans son propre navigateur (Réglages → Notifications)',
+         'ancora nessuno – la persona lo attiva nel proprio browser (Impostazioni → Notifiche)',
+         'anc nagin – la persuna l’activescha en ses agen navigatur (Parameters → Avis)'),
+    'own ntfy topic (optional)': ('eigenes ntfy-Thema (freiwillig)', 'propre sujet ntfy (facultatif)', 'argomento ntfy proprio (facoltativo)', 'agen tema ntfy (facultativ)'),
+    'Remove own ntfy topic': ('Eigenes ntfy-Thema entfernen', 'Retirer le sujet ntfy propre', 'Rimuovere l’argomento ntfy proprio', 'Allontanar l’agen tema ntfy'),
+    'Link a phone': ('Handy verknüpfen', 'Lier un téléphone', 'Collegare un telefono', 'Colliar in telefonin'),
+    'Scan with the camera of the phone of': ('Mit der Kamera des Handys scannen von', 'Scanner avec l’appareil photo du téléphone de', 'Scansionare con la fotocamera del telefono di', 'Scannar cun la camera dal telefonin da'),
+    'Valid 10 minutes, only once. The phone is then logged in without a password.':
+        ('Gültig 10 Minuten, nur einmal. Das Handy ist danach ohne Passwort angemeldet.',
+         'Valable 10 minutes, une seule fois. Le téléphone est ensuite connecté sans mot de passe.',
+         'Valido 10 minuti, una sola volta. Il telefono è poi connesso senza password.',
+         'Valaivel 10 minutas, mo ina giada. Il telefonin è lura annunzià senza pled-clav.'),
+    'Without the secure page (https) the link goes unencrypted through the Wi-Fi.':
+        ('Ohne sichere Seite (https) geht der Link unverschlüsselt durchs WLAN.',
+         'Sans la page sécurisée (https), le lien passe non chiffré par le Wi-Fi.',
+         'Senza la pagina sicura (https) il link passa non cifrato nel Wi-Fi.',
+         'Senza la pagina segira (https) va la colliaziun betg codada tras il WLAN.'),
+    'No own password - logs in only with a linked phone.': ('Kein eigenes Passwort – meldet sich nur mit einem verknüpften Handy an.', 'Pas de mot de passe propre – se connecte seulement avec un téléphone lié.', 'Nessuna password propria – accede solo con un telefono collegato.', 'Nagin agen pled-clav – s’annunzia mo cun in telefonin collià.'),
+    'Remove this device? It is logged out at once.': ('Dieses Gerät entfernen? Es wird sofort abgemeldet.', 'Retirer cet appareil ? Il est déconnecté tout de suite.', 'Rimuovere questo dispositivo? Viene disconnesso subito.', 'Allontanar quest apparat? El vegn deconnectà immediatamain.'),
+    'Password (optional, 6–64)': ('Passwort (freiwillig, 6–64)', 'Mot de passe (facultatif, 6–64)', 'Password (facoltativa, 6–64)', 'Pled-clav (facultativ, 6–64)'),
+    'New user': ('Neuer Benutzer', 'Nouvel utilisateur', 'Nuovo utente', 'Nov utilisader'),
+    'Without a password the person logs in only with a linked phone (QR code).':
+        ('Ohne Passwort meldet sich die Person nur mit einem verknüpften Handy an (QR-Code).',
+         'Sans mot de passe, la personne se connecte seulement avec un téléphone lié (code QR).',
+         'Senza password la persona accede solo con un telefono collegato (codice QR).',
+         'Senza pled-clav s’annunzia la persuna mo cun in telefonin collià (code QR).'),
+    'Own rights, time window and push per person: on the web page (Settings → Security → Users).':
+        ('Eigene Rechte, Zeitfenster und Push pro Person: auf der Webseite (Einstellungen → Sicherheit → Benutzer).',
+         'Droits propres, plage horaire et push par personne : sur la page web (Réglages → Sécurité → Utilisateurs).',
+         'Diritti propri, fascia oraria e push per persona: sulla pagina web (Impostazioni → Sicurezza → Utenti).',
+         'Agens dretgs, fanestra da temp e push per persuna: sin la pagina web (Parameters → Segirezza → Utilisaders).'),
+    'Mo': ('Mo', 'Lu', 'Lu', 'Gli'), 'Tu': ('Di', 'Ma', 'Ma', 'Ma'), 'We': ('Mi', 'Me', 'Me', 'Me'), 'Th': ('Do', 'Je', 'Gi', 'Gie'),
+    'Fr': ('Fr', 'Ve', 'Ve', 'Ve'), 'Sa': ('Sa', 'Sa', 'Sa', 'So'), 'Su': ('So', 'Di', 'Do', 'Du'),
+    'daily': ('täglich', 'chaque jour', 'ogni giorno', 'mintga di'),
+    'until': ('bis', 'jusqu’au', 'fino al', 'fin'),
+    # ---- server (041 / 040) ----
+    'Access not active right now': ('Zugang gerade nicht aktiv', 'Accès pas actif en ce moment', 'Accesso non attivo al momento', 'Access gist betg activ'),
+    'Your access is not active right now.': ('Dein Zugang ist gerade nicht aktiv.', 'Ton accès n’est pas actif en ce moment.', 'Il tuo accesso non è attivo al momento.', 'Tes access n’è gist betg activ.'),
+    'This access has expired.': ('Dieser Zugang ist abgelaufen.', 'Cet accès a expiré.', 'Questo accesso è scaduto.', 'Quest access è scadì.'),
+    'Hello': ('Hallo', 'Bonjour', 'Ciao', 'Allegra'),
+    'Access': ('Zugang', 'Accès', 'Accesso', 'Access'),
+    'Ask the owner of MoveEye if you need it now.': ('Frag die Besitzerin oder den Besitzer von MoveEye, wenn du es jetzt brauchst.', 'Demande au propriétaire de MoveEye si tu en as besoin maintenant.', 'Chiedi al proprietario di MoveEye se ti serve adesso.', 'Dumonda la possessura u il possessur da MoveEye, sche ti dovras quai ussa.'),
+    'Try again': ('Nochmals versuchen', 'Réessayer', 'Riprova', 'Empruvar anc ina giada'),
+    'Link not valid': ('Link ungültig', 'Lien pas valable', 'Link non valido', 'Colliaziun betg valaivla'),
+    'This link is not valid any more (10 minutes, only once). Ask for a new QR code.':
+        ('Dieser Link gilt nicht mehr (10 Minuten, nur einmal). Bitte einen neuen QR-Code zeigen lassen.',
+         'Ce lien n’est plus valable (10 minutes, une seule fois). Demande un nouveau code QR.',
+         'Questo link non è più valido (10 minuti, una sola volta). Chiedi un nuovo codice QR.',
+         'Questa colliaziun na vala betg pli (10 minutas, mo ina giada). Dumonda in nov code QR.'),
+    'Link blocked': ('Link gesperrt', 'Lien bloqué', 'Link bloccato', 'Colliaziun bloccada'),
+    'This link was opened without encryption (http) and is blocked now for safety. Make a new QR code and scan it - it leads to the secure page (https).':
+        ('Dieser Link wurde unverschlüsselt (http) geöffnet und ist zur Sicherheit jetzt gesperrt. Einen neuen QR-Code erzeugen und scannen – er führt auf die sichere Seite (https).',
+         'Ce lien a été ouvert sans chiffrement (http) et est maintenant bloqué par sécurité. Crée un nouveau code QR et scanne-le – il mène à la page sécurisée (https).',
+         'Questo link è stato aperto senza cifratura (http) ed è ora bloccato per sicurezza. Crea un nuovo codice QR e scansionalo – porta alla pagina sicura (https).',
+         'Questa colliaziun è vegnida averta senza codaziun (http) ed è ussa bloccada per segirezza. Crear in nov code QR e scannar – el maina a la pagina segira (https).'),
+    'This user does not exist any more.': ('Diesen Benutzer gibt es nicht mehr.', 'Cet utilisateur n’existe plus.', 'Questo utente non esiste più.', 'Quest utilisader n’exista betg pli.'),
+    'Phone linked': ('Handy verknüpft', 'Téléphone lié', 'Telefono collegato', 'Telefonin collià'),
+    'This phone is now logged in as': ('Dieses Handy ist jetzt angemeldet als', 'Ce téléphone est maintenant connecté comme', 'Questo telefono è ora connesso come', 'Quest telefonin è ussa annunzià sco'),
+    'No password needed. The owner can remove it at any time.': ('Kein Passwort nötig. Der Besitzer kann es jederzeit entfernen.', 'Pas de mot de passe. Le propriétaire peut le retirer à tout moment.', 'Nessuna password. Il proprietario può rimuoverlo in ogni momento.', 'Nagin pled-clav. Il possessur al po allontanar da tut temp.'),
+    'Open MoveEye': ('MoveEye öffnen', 'Ouvrir MoveEye', 'Aprire MoveEye', 'Avrir MoveEye'),
+    '🎲 Games are open': ('🎲 Die Spiele sind offen', '🎲 Les jeux sont ouverts', '🎲 I giochi sono aperti', '🎲 Ils gieus èn averts'),
+    'Come to the game corner - scan the QR code there or open MoveEye.': ('Komm in die Spielecke – dort den QR-Code scannen oder MoveEye öffnen.', 'Viens au coin jeux – scanne le code QR là-bas ou ouvre MoveEye.', 'Vieni nell’angolo giochi – scansiona lì il codice QR o apri MoveEye.', 'Vegn en il chantun da gieus – scannar là il code QR u avrir MoveEye.'),
+    'unknown user': ('unbekannter Benutzer', 'utilisateur inconnu', 'utente sconosciuto', 'utilisader nunenconuschent'),
+    'unknown device': ('unbekanntes Gerät', 'appareil inconnu', 'dispositivo sconosciuto', 'apparat nunenconuschent'),
+    'too many open links - wait 10 minutes': ('zu viele offene Links – 10 Minuten warten', 'trop de liens ouverts – attendre 10 minutes', 'troppi link aperti – aspettare 10 minuti', 'memia bleras colliaziuns avertas – spetgar 10 minutas'),
+    'no network address of MoveEye': ('keine Netzadresse von MoveEye', 'pas d’adresse réseau de MoveEye', 'nessun indirizzo di rete di MoveEye', 'nagina adressa da rait da MoveEye'),
+    'time: hh:mm': ('Zeit: hh:mm', 'heure : hh:mm', 'ora: hh:mm', 'temp: hh:mm'),
+    'date: yyyy-mm-dd': ('Datum: jjjj-mm-tt', 'date : aaaa-mm-jj', 'data: aaaa-mm-gg', 'data: oooo-mm-dd'),
+    'ntfy: a topic (6 to 64 letters, digits, - _) or https://server/topic': ('ntfy: ein Thema (6 bis 64 Buchstaben, Ziffern, - _) oder https://server/thema', 'ntfy : un sujet (6 à 64 lettres, chiffres, - _) ou https://serveur/sujet', 'ntfy: un argomento (da 6 a 64 lettere, cifre, - _) o https://server/argomento', 'ntfy: in tema (6 fin 64 bustabs, cifras, - _) u https://server/tema'),
+}
+for _k, _v in _HX_USERS.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+# the German of the web card (547): one place for the texts (fr / it / rm come through /i18n/<lang>.js)
+WEB_PAGE = WEB_PAGE.replace("/*USRDE*/{}", json.dumps({_k: DE.get(_k, _v[0]) for _k, _v in _HX_USERS.items()}, ensure_ascii=False), 1)
+SELFTEST_EXTRA.append(("Users: rights, time window, push filter", users_selftest))
+
+
+# ---- the manual: «Benutzer und Handys» (before «Tipps», like 621) ------------------------------------------------------------
+_HELP_USERS = {
+    "de": '<section id="users" data-icon="👥"><h2>Benutzer und Handys</h2>'
+          '<p>Für Personen, die immer wieder kommen (Familie, Kinder, Freunde), gibt es eigene Zugänge: <b>Einstellungen → Sicherheit → Benutzer</b>. '
+          'Das Web-Passwort bleibt der Administrator – nur er sieht Einstellungen, Benutzer und Schlüssel. Für einen kurzen Besuch reicht weiterhin der Gastlink.</p>'
+          '<ul><li><b>🧒 Kind:</b> Livebild und Spiele / Spielecke – keine Aufnahmen, kein Schutz-Schalter, keine Einstellungen. Bekommt keine Alarme, nur Spiel-Einladungen.</li>'
+          '<li><b>🤝 Freund:</b> Livebild, Spiele, Gegensprechen, Licht – keine Aufnahmen, keine Einstellungen.</li>'
+          '<li><b>🏠 Familie:</b> wie früher «Bedienen»: Schutz an / aus, Licht, Sirene, Aufnahmen ansehen, Kopf steuern, Gegensprechen, Spiele – keine Einstellungen.</li>'
+          '<li><b>👁 Nur ansehen:</b> Livebild und Aufnahmen.</li>'
+          '<li><b>⚙ Eigene Rechte:</b> selbst ankreuzen – Livebild, Aufnahmen, Schutz an / aus, Licht, Sirene, Spiele, Gegensprechen, Kopf steuern, Einstellungen '
+          '(Passwort, Benutzer, Schlüssel und Zugangs-Einstellungen bleiben auch dann beim Administrator).</li></ul>'
+          '<p>MoveEye prüft jedes Recht selbst (ein nicht erlaubter Befehl wird abgelehnt), und die Seite zeigt nur, was die Person darf.</p>'
+          '<p><b>📱 Handy verknüpfen:</b> beim Benutzer antippen – ein QR-Code erscheint. Mit der Kamera des Handys scannen: das Handy ist als diese Person angemeldet, '
+          'ohne Passwort. Der Code gilt 10 Minuten und nur einmal. Ist «Anmelden nur verschlüsselt» an, führt er auf die sichere Seite (https; einmal die Zertifikats-Warnung bestätigen). '
+          'Wird der Link trotzdem unverschlüsselt (http) von einem anderen Gerät geöffnet, sperrt MoveEye ihn sofort – dann einen neuen Code zeigen. '
+          'Ein Benutzer ohne Passwort meldet sich nur über verknüpfte Handys an.</p>'
+          '<p><b>Geräte:</b> unter jedem Benutzer stehen seine Geräte (Handy und Browser, zuletzt gesehen). «✕» meldet das Gerät sofort ab – auch ein laufendes Livebild endet.</p>'
+          '<p><b>⏰ Zugangszeit:</b> z. B. «Kind täglich 08:00–20:00» oder «Freund gültig bis 15.8.». Ausserhalb sieht die Person nur «Zugang gerade nicht aktiv» – keine Bilder, keine Daten, keine Nachrichten.</p>'
+          '<p><b>Nachrichten pro Person:</b> Alarme, Infos und Spiel-Einladungen einzeln wählbar. Die Person schaltet die Browser-Nachrichten im eigenen Browser ein '
+          '(Einstellungen → Benachrichtigungen) – MoveEye merkt sich, wem der Browser gehört. Oder ein eigenes ntfy-Thema eintragen. '
+          'Der Haupt-Kanal (ntfy) bleibt beim Administrator. Beim «Spiele freigeben» bekommen Personen mit Spiel-Einladungen eine Nachricht.</p></section>\n\n',
+    "en": '<section id="users" data-icon="👥"><h2>Users and phones</h2>'
+          '<p>People who come again and again (family, children, friends) get their own access: <b>Settings → Security → Users</b>. '
+          'The web password stays the administrator – only they see settings, users and keys. For a short visit the guest link is still enough.</p>'
+          '<ul><li><b>🧒 Child:</b> live picture and games / game corner – no recordings, no protection switch, no settings. Gets no alarms, only game invitations.</li>'
+          '<li><b>🤝 Friend:</b> live picture, games, intercom, light – no recordings, no settings.</li>'
+          '<li><b>🏠 Family:</b> like the former «Operate»: protection on / off, light, siren, view recordings, steer the head, intercom, games – no settings.</li>'
+          '<li><b>👁 View only:</b> live picture and recordings.</li>'
+          '<li><b>⚙ Own rights:</b> tick them yourself – live picture, recordings, protection on / off, light, siren, games, intercom, steer the head, settings '
+          '(password, users, keys and access settings stay with the administrator even then).</li></ul>'
+          '<p>MoveEye checks every right itself (a command that is not allowed is refused), and the page shows only what the person may do.</p>'
+          '<p><b>📱 Link a phone:</b> tap it at the user – a QR code appears. Scan it with the phone camera: the phone is logged in as this person, '
+          'without a password. The code is valid 10 minutes and only once. With «Log in only encrypted» on it leads to the secure page (https; accept the certificate warning once). '
+          'If the link is opened unencrypted (http) from another device anyway, MoveEye blocks it at once – then show a new code. '
+          'A user without a password logs in only through linked phones.</p>'
+          '<p><b>Devices:</b> each user lists their devices (phone and browser, last seen). «✕» logs the device out at once – a running live picture ends too.</p>'
+          '<p><b>⏰ Access time:</b> e.g. «Child daily 08:00–20:00» or «Friend valid until 15 Aug». Outside the person only sees «Access not active right now» – no pictures, no data, no messages.</p>'
+          '<p><b>Messages per person:</b> alarms, infos and game invitations each on / off. The person switches browser messages on in their own browser '
+          '(Settings → Notifications) – MoveEye remembers whose browser it is. Or enter an own ntfy topic. '
+          'The main channel (ntfy) stays with the administrator. «Open games» sends a message to people with game invitations.</p></section>\n\n',
+    "fr": '<section id="users" data-icon="👥"><h2>Utilisateurs et téléphones</h2>'
+          '<p>Les personnes qui reviennent (famille, enfants, amis) reçoivent leur propre accès : <b>Réglages → Sécurité → Utilisateurs</b>. '
+          'Le mot de passe web reste l’administrateur. Pour une courte visite, le lien invité suffit.</p>'
+          '<ul><li><b>🧒 Enfant :</b> image en direct et jeux – pas d’enregistrements, pas de protection, pas de réglages ; pas d’alarmes, seulement des invitations aux jeux.</li>'
+          '<li><b>🤝 Ami :</b> image en direct, jeux, interphone, lumière.</li>'
+          '<li><b>🏠 Famille :</b> protection on / off, lumière, sirène, enregistrements, tête, interphone, jeux – pas de réglages.</li>'
+          '<li><b>👁 Voir seulement :</b> image en direct et enregistrements.</li>'
+          '<li><b>⚙ Droits propres :</b> à cocher soi-même (mot de passe, utilisateurs et clés restent à l’administrateur).</li></ul>'
+          '<p><b>📱 Lier un téléphone :</b> un code QR valable 10 minutes et une seule fois ; le téléphone est ensuite connecté sans mot de passe. '
+          'Ouvert sans chiffrement (http) depuis un autre appareil, le lien est bloqué. «✕» à côté d’un appareil le déconnecte tout de suite.</p>'
+          '<p><b>⏰ Horaires d’accès</b> et <b>date d’expiration</b> : en dehors, seulement «Accès pas actif en ce moment». '
+          '<b>Messages par personne :</b> alarmes, infos, invitations aux jeux ; push du navigateur ou propre sujet ntfy.</p></section>\n\n',
+    "it": '<section id="users" data-icon="👥"><h2>Utenti e telefoni</h2>'
+          '<p>Le persone che tornano (famiglia, bambini, amici) ricevono un accesso proprio: <b>Impostazioni → Sicurezza → Utenti</b>. '
+          'La password web resta l’amministratore. Per una visita breve basta il link ospite.</p>'
+          '<ul><li><b>🧒 Bambino:</b> immagine live e giochi – niente registrazioni, protezione o impostazioni; niente allarmi, solo inviti ai giochi.</li>'
+          '<li><b>🤝 Amico:</b> immagine live, giochi, citofono, luce.</li>'
+          '<li><b>🏠 Famiglia:</b> protezione on / off, luce, sirena, registrazioni, testa, citofono, giochi – niente impostazioni.</li>'
+          '<li><b>👁 Solo guardare:</b> immagine live e registrazioni.</li>'
+          '<li><b>⚙ Diritti propri:</b> da spuntare (password, utenti e chiavi restano all’amministratore).</li></ul>'
+          '<p><b>📱 Collegare un telefono:</b> un codice QR valido 10 minuti e una sola volta; il telefono è poi connesso senza password. '
+          'Aperto senza cifratura (http) da un altro dispositivo, il link viene bloccato. «✕» accanto a un dispositivo lo disconnette subito.</p>'
+          '<p><b>⏰ Orari di accesso</b> e <b>data di scadenza</b>: fuori solo «Accesso non attivo al momento». '
+          '<b>Messaggi per persona:</b> allarmi, info, inviti ai giochi; push del browser o argomento ntfy proprio.</p></section>\n\n',
+    "rm": '<section id="users" data-icon="👥"><h2>Utilisaders e telefonins</h2>'
+          '<p>Persunas che vegnan adina puspè (famiglia, uffants, amis) survegnan in agen access: <b>Parameters → Segirezza → Utilisaders</b>. '
+          'Il pled-clav web resta l’administratur. Per ina curta visita basta la colliaziun da giast.</p>'
+          '<ul><li><b>🧒 Uffant:</b> maletg live e gieus – naginas registraziuns, nagina protecziun, nagins parameters; nagins alarms, mo invitaziuns da gieu.</li>'
+          '<li><b>🤝 Ami:</b> maletg live, gieus, intercom, glisch.</li>'
+          '<li><b>🏠 Famiglia:</b> protecziun en / ora, glisch, sirena, registraziuns, chau, intercom, gieus – nagins parameters.</li>'
+          '<li><b>👁 Mo guardar:</b> maletg live e registraziuns.</li>'
+          '<li><b>⚙ Agens dretgs:</b> sez marcar (pled-clav, utilisaders e clavs restan tar l’administratur).</li></ul>'
+          '<p><b>📱 Colliar in telefonin:</b> in code QR valaivel 10 minutas e mo ina giada; il telefonin è lura annunzià senza pled-clav. '
+          'Avert senza codaziun (http) dad in auter apparat, vegn la colliaziun bloccada. «✕» sper in apparat al deconnectescha immediatamain.</p>'
+          '<p><b>⏰ Temp d’access</b> e <b>data da scadenza</b>: ordaifer mo «Access gist betg activ». '
+          '<b>Messadis per persuna:</b> alarms, infos, invitaziuns da gieu; push dal navigatur u agen tema ntfy.</p></section>\n\n',
+}
+
+
+def _help_users(doc, lang):
+    if '<section id="users"' in doc:
+        return doc
+    i = doc.find('<section id="appkeys"')
+    if i < 0:
+        i = doc.find('<section id="tips"')
+    return doc[:i] + _HELP_USERS[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_us = HELP_PAGE.find('<div lang="en">')
+if _hp_en_us > 0:
+    HELP_PAGE = _help_users(HELP_PAGE[:_hp_en_us], "de") + _help_users(HELP_PAGE[_hp_en_us:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_users(HELP_X[_L], _L)
 _HX_PLATZEIN = {
     'Set up the place': ('Platz einrichten', 'Configurer l’emplacement', 'Configurare il posto', 'Endrizzar il plaz'),
     '1 Look around': ('1 Umschauen', '1 Regarder autour', '1 Guardarsi intorno', '1 Guardar enturn'),

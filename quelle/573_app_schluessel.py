@@ -458,7 +458,7 @@ def _ak_tk_security(app, sbody):
 
 
 def _ak_tk_users(app, box):
-    """2.98.41: roles Kind / Freund / Familie / Nur ansehen / Eigene Rechte, «Handy verknüpfen» (QR), time window shown (041).
+    """2.98.42: roles Kind / Freund / Familie / Nur ansehen / Eigene Rechte, «Handy verknüpfen» (QR), time window shown (041).
     Own rights, time window and push per user are set on the web page (Settings → Security → Users)."""
     for w in box.winfo_children():
         w.destroy()

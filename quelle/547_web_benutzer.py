@@ -4,8 +4,8 @@ USERS_JS = r"""
 <script>
 Object.assign(I18N.de, /*USRDE*/{});
 const USER_ROLES_UI = [["kid", "🧒", "Child"], ["friend", "🤝", "Friend"], ["family", "🏠", "Family"], ["view", "👁", "View only"], ["custom", "⚙", "Own rights"]];
-const USER_PERMS_UI = [["live", "📺", "Live picture"], ["rec", "🎞", "Recordings"], ["arm", "🛡", "Protection on / off"], ["light", "💡", "Light"],
-  ["siren", "🚨", "Siren"], ["games", "🎲", "Games / game corner"], ["talk", "🎙", "Talk"], ["head", "🕹", "Steer the head"], ["settings", "⚙", "Settings"]];
+const USER_PERMS_UI = [["live", "📺", "Live picture"], ["rec", "🎞", "Recordings"], ["arm", "🛡", "Protection on / off"], ["light", "💡", "Switch the light"],
+  ["siren", "🚨", "Siren"], ["games", "🎲", "Games / game corner"], ["talk", "🎙", "Talk (intercom)"], ["head", "🕹", "Steer the head"], ["settings", "⚙", "Settings"]];
 const USER_PUSH_UI = [["alarm", "🚨", "Alarms"], ["info", "ℹ️", "Infos"], ["games", "🎲", "Game invitations"]];
 const USER_DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 function userRoleName(r) { const x = USER_ROLES_UI.find(z => z[0] === r); return x ? t(x[2]) : (r === "operate" ? t("Family") : r); }

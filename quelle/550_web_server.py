@@ -210,7 +210,7 @@ class WebStream:
                 return None
             if request.path == "/api/sim/upload":                # only the administrator (and the body is a big video)
                 return reply({"ok": False, "error": tr("not allowed for your user", norm_lang(request.args.get("lang") or CFG["lang"]))}, 403)
-            gate = user_gate(request, g)                # 2.98.41: outside the time window / expired: a friendly page, no data (041)
+            gate = user_gate(request, g)                # 2.98.42: outside the time window / expired: a friendly page, no data (041)
             if gate is not None:
                 return gate
             d = request.get_json(force=True, silent=True) if request.method == "POST" else None
@@ -1205,7 +1205,7 @@ class WebStream:
 
         @app.route("/api/users", methods=["GET", "POST"])
         def api_users():
-            return users_api(request, reply, body, g)     # 2.98.41: rights, time window, phones, push per user (041)
+            return users_api(request, reply, body, g)     # 2.98.42: rights, time window, phones, push per user (041)
 
         @app.before_request
         def demo_guard():                           # demo: nothing that changes the computer or reaches outside
@@ -1240,7 +1240,7 @@ class WebStream:
         g2_routes(app, watch, reply, body)                 # guide 2: tours, tip of the day, factory reset (586)
         qr_routes(app, reply, body)                        # QR codes: POST /api/qr, gallery /qr, print page, no-store for secrets (587)
         servo_routes(app, reply, body)                     # 2.98.35: servos - Not-Aus, taught points, diagnosis /servo, /api/servo (539)
-        users_routes(app, reply, body)                     # 2.98.41: link a phone /l/<token>, page shows only the own rights (041)
+        users_routes(app, reply, body)                     # 2.98.42: link a phone /l/<token>, page shows only the own rights (041)
         ginv_routes(app, reply, body)                      # game for guests online /game/<token>/ (only the game, token + expiry), «Human vs AI» (343)
 
         @app.route("/messages")

@@ -41,7 +41,7 @@ def pw_check(pw, stored=None):
     return ok
 
 
-# 2.98.41 (Daniel): roles = presets of rights; «custom» = own choice of rights. Old roles: «operate» → «family», «view» stays.
+# 2.98.42 (Daniel): roles = presets of rights; «custom» = own choice of rights. Old roles: «operate» → «family», «view» stays.
 USER_ROLES = ("kid", "friend", "family", "view", "custom")
 USER_PERMS = ("live", "rec", "arm", "light", "siren", "games", "talk", "head", "settings")
 ROLE_PERMS = {"kid": ("live", "games"), "friend": ("live", "games", "talk", "light"),
@@ -203,7 +203,7 @@ def users_action(d, who="admin"):
             if not _user_pw_ok(pw):
                 return False, "the password must have 6 to 64 characters (letters, digits, signs, no umlauts)"
             u["hash"] = pw_hash(pw); u.pop("nopw", None); log_event("web", f"{who}: new password for «{u['name']}»")
-        elif a == "update":                                 # 2.98.41: rights, time window, expiry, push - the phones stay logged in
+        elif a == "update":                                 # 2.98.42: rights, time window, expiry, push - the phones stay logged in
             logout = False; ch = []
             if "role" in d and ROLE_OLD.get(d.get("role"), d.get("role")) in USER_ROLES and d["role"] != u["role"]:
                 u["role"] = ROLE_OLD.get(d["role"], d["role"]); ch.append("role " + u["role"])
@@ -239,7 +239,7 @@ def users_action(d, who="admin"):
 
 
 # 2.95.35: ONE list of what users without admin rights may read. Everything else (also every new function) is only for
-# the administrator. 2.98.41: by rights (USER_PERMS) instead of two roles; every user may read BASE, each right adds its part.
+# the administrator. 2.98.42: by rights (USER_PERMS) instead of two roles; every user may read BASE, each right adds its part.
 VIEW_GET_PAGES = {"/", "/help", "/quick", "/more"}
 VIEW_GET = ("/api/tunnel", "/api/helper", "/api/info", "/api/nettest", "/api/state", "/api/alerts", "/api/appearance", "/api/version",
             "/api/health", "/api/gps", "/api/zones", "/api/webpush", "/api/ui", "/api/battery", "/api/sensors", "/api/qs", "/api/schedule",

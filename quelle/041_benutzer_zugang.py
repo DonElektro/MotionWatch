@@ -107,16 +107,22 @@ def user_req_perms(g_):
 # ---- linking a phone (QR, one-time link) ---------------------------------------------------------------------------------
 def user_link_base(req=None):
     """the address the phone opens: the secure page when «Log in only encrypted» is active (574)"""
-    host, scheme = "", "http"
+    host, scheme, own = "", "http", ""
     if req is not None:
         fh = str(req.headers.get("X-Forwarded-Host") or "").split(",")[0].strip()
-        host = fh or str(req.host or "")
+        host = own = fh or str(req.host or "")
         proto = str(req.headers.get("X-Forwarded-Proto") or "").split(",")[0].strip().lower()
         scheme = "https" if (req.is_secure or proto == "https") else "http"
-        if host.split(":")[0] in ("127.0.0.1", "localhost", "::1", "[::1]"):
+        if host.rsplit(":", 1)[0] in ("127.0.0.1", "localhost", "[::1]"):
             host = ""                                       # the phone cannot open the Pi's own «localhost»
     if not host:
         a = page_address() if "page_address" in globals() else ""
+        if not a:
+            try:
+                ip_ = local_ip()
+            except Exception:
+                ip_ = ""
+            a = f"http://{ip_}:{CFG['web_port']}/" if ip_ else (f"{scheme}://{own}/" if own else "")
         if not a:
             return ""
         scheme, host = a.split("://", 1)[0], a.split("://", 1)[1].rstrip("/")
@@ -286,7 +292,7 @@ USER_UI_HIDE = {
     "settings": 'nav.nav a[href="/settings"]',
 }
 USER_UI_ADMIN = ('nav.nav a[href="/sim"],a[href="/tools"],a[href="/qr"],#m-qr,a[href="/timeline"],a[href="/messages"],a[href="/log"],'
-                 'a[href="/info"],#m-info,#g2-sys,aside[data-view="sidebar"],#side-open')
+                 'a[href="/info"],#m-info,#g2-sys,aside[data-view="sidebar"],#side-open,#wf-card,[data-view="wifi"],#games #g-btn')
 
 
 def users_ui_css(perms):
@@ -408,7 +414,7 @@ def users_selftest():
     assert role_allows("family", "/api/audio", "POST", {"action": "siren"}) and not role_allows("family", "/settings", "GET", {})
     assert not role_allows("family", "/api/users", "GET", {}) and not role_allows("family", "/api/set", "POST", {"key": "web_port"})
     assert role_allows("operate", "/api/arm", "POST", {}) and not role_allows("view", "/api/arm", "POST", {})
-    assert role_allows("custom", "/api/set", "POST", {"key": "fps"}, {"settings"}) is ("fps" in CFG)
+    assert role_allows("custom", "/api/set", "POST", {"key": "record"}, {"settings"})
     assert not role_allows("custom", "/api/set", "POST", {"key": "users"}, {"settings"})
     assert not role_allows("custom", "/api/text", "POST", {"key": "notify_url"}, {"settings"})
     assert users_clean([{"name": "Alt", "hash": "pbkdf2$1$00$00", "role": "operate"}])[0]["role"] == "family"

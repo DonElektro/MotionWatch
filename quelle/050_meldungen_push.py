@@ -179,7 +179,7 @@ def webpush_add(sub, label="", user=""):
     subs.append({"endpoint": ep, "p256dh": _b64u(p256), "auth": _b64u(auth), "label": str(label or "")[:60],
                  "added": datetime.now().strftime("%Y-%m-%d %H:%M")})
     if user:
-        subs[-1]["user"] = str(user)[:24]                    # 2.98.41: this browser belongs to a user - gets only what the user chose (041)
+        subs[-1]["user"] = str(user)[:24]                    # 2.98.42: this browser belongs to a user - gets only what the user chose (041)
     _webpush_save(subs)
     log_event("web", f"Web push switched on for {str(label or 'a device')[:60]}")
     return True, ""
@@ -245,7 +245,7 @@ def webpush_all(title, text, url="/", tag="mw", urgent=True):
     if not subs or not webpush_supported():
         return 0
     ok = 0; gone = []; cat = push_cat(tag)
-    subs = [x for x in subs if push_sub_wants(x, cat)]      # 2.98.41: users get only alarms / infos / games they chose (041)
+    subs = [x for x in subs if push_sub_wants(x, cat)]      # 2.98.42: users get only alarms / infos / games they chose (041)
     for sb in subs:
         try:
             code = webpush_send(sb, {"title": title[:120], "body": text[:400], "url": url or "/", "tag": tag, "urgent": bool(urgent)},

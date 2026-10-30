@@ -1247,7 +1247,7 @@ async function trustLoad(parent) {
 }
 function applyRole(me) {
   const role = (me && me.role) || "admin";
-  const arm = role !== "admin" && ((me && me.perms) || []).includes("arm");       // 2.98.41: rights instead of two roles (040 / 547)
+  const arm = role !== "admin" && ((me && me.perms) || []).includes("arm");       // 2.98.42: rights instead of two roles (040 / 547)
   document.body.classList.toggle("role-operate", arm); document.body.classList.toggle("role-view", role !== "admin" && !arm);
   const b = $("#b-me"); if (b) { b.hidden = !(me && me.users) || !me.name; b.textContent = "👤 " + (me && me.name || "") + (role !== "admin" ? " · " + userRoleName(role) : ""); }
 }
@@ -3352,7 +3352,7 @@ function wfBars(n) { const b = el("span", "wbars"); for (let i = 1; i <= 4; i++)
 function wfErr(m) { const e = $("#wf-err"); e.textContent = m ? "⚠ " + m : ""; }
 async function wfLoad() {
   let j;
-  try { j = await (await fetch("/api/wifi")).json(); wfLost = false; }
+  try { const r_ = await fetch("/api/wifi"); if (r_.status === 403) return; j = await r_.json(); wfLost = false; }   // 403: a user without admin rights
   catch (e) {
     if (WF && WF.busy) { wfLost = true; wfRenderStatus(); }
     return;
