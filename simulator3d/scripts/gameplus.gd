@@ -146,6 +146,8 @@ func round_start() -> void:
 			p["gear"] = GEAR[1 + randi() % (GEAR.size() - 1)][0]          # bots try the things too (for the learning)
 		dress(p)
 		p["gear_round"] = str(p.get("gear", ""))         # what was worn in this round (the end screen)
+	if main.szenen != null:
+		main.szenen.restore()                            # 3D-4.x «Velodieb»: a visiting thief had the bike - it is back
 	_theft_start()
 
 

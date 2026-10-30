@@ -458,6 +458,9 @@ func spawn_kind(kind: String, from, to) -> Node3D:
 		"tarn_robben", "tarn_schirm", "tarn_karton":
 			v = _tarn(kind, from, to)
 		"velodieb":
+			if _game_on():
+				v = main.spawn("person", from, to)        # during a game round the players steal the bike, not a visitor
+				return v
 			v = _velodieb()
 	if v != null:
 		tracked.append({"v": v, "kind": kind, "id": v.get_instance_id(), "t0": now(), "enter": -1.0, "grab": -1.0, "gone": -1.0})
@@ -543,6 +546,10 @@ func _velodieb() -> Node3D:
 	return v
 
 
+func _game_on() -> bool:
+	return main.game != null and str(main.game.round_state) in ["countdown", "play"]
+
+
 func _track(t: float) -> void:
 	var pc: Array = _pitch()
 	for r in tracked:
@@ -563,7 +570,9 @@ func _track(t: float) -> void:
 					r["grab"] = t
 					_take_bike(v)
 					events.append({"kind": "griff", "id": r["id"], "t": t})
-	# the bike back at its place when the thief is gone (he had a copy)
+	# the bike back at its place when the thief is gone (he had a copy) - or at once when a game round begins
+	if _bike_copy_of != null and _game_on():
+		restore()
 	if _bike_copy_of != null:
 		var busy := false
 		for r in tracked:
