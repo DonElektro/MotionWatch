@@ -1,0 +1,396 @@
+{
+ "datum": "2026-10-30 03:24",
+ "mw_version": "2.98.39",
+ "ki": "running · 59 ms",
+ "rechner": "GitHub (ubuntu, 4 Kerne)",
+ "qualitaet": "simple",
+ "szene": "stellplatz",
+ "kameras": "Kopfkamera",
+ "plaene": {
+  "quick": [
+   {
+    "date": "2026-10-30 03:28:43",
+    "device": "MoveEye",
+    "false_alarms": 11,
+    "false_events": 6,
+    "false_list": [
+     {
+      "cause": "Wind (Bäume, Büsche)",
+      "dup": false,
+      "phase": 0,
+      "t": 2.6
+     },
+     {
+      "cause": "Tier (fox)",
+      "dup": false,
+      "phase": 0,
+      "t": 35.3
+     },
+     {
+      "cause": "Tier (fox)",
+      "dup": true,
+      "phase": 0,
+      "t": 39.4
+     },
+     {
+      "cause": "Tier (fox)",
+      "dup": true,
+      "phase": 0,
+      "t": 40.9
+     },
+     {
+      "cause": "Wind (Bäume, Büsche)",
+      "dup": false,
+      "phase": 0,
+      "t": 59.2
+     },
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 1,
+      "t": 129.1
+     },
+     {
+      "cause": "Tier (cat)",
+      "dup": false,
+      "phase": 1,
+      "t": 162.1
+     },
+     {
+      "cause": "Tier (cat)",
+      "dup": true,
+      "phase": 1,
+      "t": 164.1
+     },
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 1,
+      "t": 197.3
+     },
+     {
+      "cause": "unbekannt",
+      "dup": true,
+      "phase": 1,
+      "t": 199.4
+     },
+     {
+      "cause": "unbekannt",
+      "dup": true,
+      "phase": 1,
+      "t": 204.2
+     }
+    ],
+    "flicker": 11,
+    "latency_s": 0.5,
+    "missed_list": [],
+    "mult": 2,
+    "noise_alarms": [],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 10,
+    "persons_detected": 10,
+    "persons_thermal": 0,
+    "persons_thermal_detected": 0,
+    "phases": [
+     {
+      "animals": 2,
+      "animals_as_person": 2,
+      "animals_reported": 2,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 5,
+      "false_events": 3,
+      "flicker": 5,
+      "hour": 13,
+      "latency_s": 0.2,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Tag, Wind",
+      "not_visible": 0,
+      "persons": 6,
+      "persons_detected": 6,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "cloudy",
+      "wind": 45
+     },
+     {
+      "animals": 1,
+      "animals_as_person": 1,
+      "animals_reported": 1,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 6,
+      "false_events": 3,
+      "flicker": 6,
+      "hour": 22.5,
+      "latency_s": 1,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 4,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     }
+    ],
+    "plan": "quick",
+    "plan_name": "Kurz (Tag und Nacht · etwa 2½ Min., für die automatische Optimierung)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 122.8,
+      "who": "person"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 212.4,
+      "who": "person"
+     }
+    ],
+    "pushes": {
+     "alarm": 2,
+     "false": 0,
+     "noise": 0,
+     "ok": 2,
+     "raw": 2,
+     "repeat": 0
+    },
+    "rate": 100,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "stellplatz",
+    "seed": 1,
+    "simulator": "3D-4.12",
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": false,
+      "det_s": 1.1,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 167,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 9
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "fox",
+      "light": 0.85,
+      "person": false,
+      "phase": 0,
+      "push_s": -1,
+      "px": 45,
+      "reported": true,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 11
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "jogger",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 79,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 10
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 123,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 12.8
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 71,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 12.8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "fox",
+      "light": 0.85,
+      "person": false,
+      "phase": 0,
+      "push_s": -1,
+      "px": 35,
+      "reported": true,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 6.5
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "jogger",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 54,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 11.8
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": 11.9,
+      "px": 183,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 8.8
+     },
+     {
+      "crouch": false,
+      "det_s": 2.1,
+      "kind": "person",
+      "light": 0.42,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 258,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 10.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "cat",
+      "light": 0.32,
+      "person": false,
+      "phase": 1,
+      "push_s": -1,
+      "px": 42,
+      "reported": true,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 10.5
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "person",
+      "light": 0.26,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 126,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 5.5
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "person",
+      "light": 0.46,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 208,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 4.8
+     },
+     {
+      "crouch": false,
+      "det_s": 1.9,
+      "kind": "person",
+      "light": 0.25,
+      "person": true,
+      "phase": 1,
+      "push_s": 1.9,
+      "px": 159,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 5.8
+     }
+    ],
+    "dauer_s": 229,
+    "mw_fps": 2.8
+   }
+  ]
+ },
+ "sim_version": "3D-4.12",
+ "cpu": "AMD EPYC 7763",
+ "besucher_mal": 2,
+ "seeds": 1,
+ "waermebild": "an"
+}
