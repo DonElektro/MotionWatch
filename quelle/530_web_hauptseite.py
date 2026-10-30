@@ -124,7 +124,7 @@ details.sblk{margin-top:10px;border-top:1px solid var(--line);padding-top:9px}
 details.sblk>summary{display:flex;justify-content:space-between;align-items:center;color:var(--txt);font-size:13.5px;font-weight:700;padding:3px 0}
 details.sblk>summary::before,details.sblk[open]>summary::before{content:none!important;display:none}details.sblk>summary::after{content:"▸";color:var(--mut);transition:transform .15s}details.sblk[open]>summary::after{transform:rotate(90deg)}
 .mbar{margin-top:12px}.mbar .row{margin-bottom:3px}.mbar b{font-size:14px}
-#settings .tg{padding:4px 0}#settings .sl{margin-top:7px}
+#settings .tg{padding:4px 0}#settings .tg.subtg{padding-left:18px}#settings .tg.subtg>span::before{content:"↳ ";color:var(--mut)}#settings .sl{margin-top:7px}
 @media(max-width:760px){.card{padding:12px}details.card>summary{font-size:11.5px}}
 .pr-sw{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);align-items:flex-start;cursor:pointer}
 .pr-sw input.sw{margin-top:2px}#b-arm{user-select:none}
@@ -2152,7 +2152,7 @@ async function build() {
     d.appendChild(el("summary", "", sec.name));
     d.dataset.view = "sec:" + sec.id; d.dataset.vgroup = "Settings"; d.dataset.vlabel = sec.name;
     sec.toggles.forEach(tg => {
-      const row = el("label", "row tg"); row.dataset.key = tg.key;
+      const row = el("label", "row tg" + (tg.key === "kopf_round" ? " subtg" : "")); row.dataset.key = tg.key;   // 2.98.41: sub-switch of «Patrouille»
       const cb = el("input"); cb.type = "checkbox"; cb.className = "sw";
       cb.onchange = () => { post("/api/set", {key: tg.key, value: cb.checked}); try { mainPaint(); } catch (e) {} };
       row.append(el("span", "", tg.label), cb);
@@ -3694,8 +3694,6 @@ Object.assign(I18N.de, {"Alarm replay in 3D": "Alarm-Rückblick in 3D", "Play in
 Object.assign(I18N.en, {"replay-note": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Helps to understand false alarms. The positions are estimated (from the spot and size in the picture)."});
 Object.assign(I18N.de, {"AI test with simulator pictures": "KI-Prüfung mit Simulator-Bildern", "dset-note": "Der Simulator macht Bilder mit Person oder Tier – bei Tag, Abend, Nacht mit Infrarot, Regen und Nebel, nah und fern – und weiss, wo sie sind. MoveEye lässt seine KI (oder die PC-Rechenhilfe) darüber laufen und zählt Treffer, Fehlschläge und falsche Personen. Dauert pro Bild etwa 3 Sekunden.", "Start the test": "Prüfung starten", "found": "erkannt", "false persons": "falsche Personen", "near (under 8 m)": "nah (unter 8 m)", "far (8 m and more)": "fern (ab 8 m)", "AI time per picture": "KI-Zeit pro Bild", "Training pictures (ZIP)": "Trainingsbilder (ZIP)", "Tag": "Tag", "Abend": "Abend", "Nacht (Infrarot)": "Nacht (Infrarot)", "Regen": "Regen", "Nebel": "Nebel", "Nacht + Regen": "Nacht + Regen", "person": "Person", "fox": "Fuchs", "deer": "Reh", "dog": "Hund", "cat": "Katze", "boar": "Wildschwein", "the simulator makes the pictures …": "der Simulator macht die Bilder …", "done": "fertig"});
 Object.assign(I18N.en, {"dset-note": "The simulator makes pictures with a person or an animal - by day, dusk, night with infrared, rain and fog, near and far - and knows where they are. MoveEye runs its AI (or the PC helper) on them and counts hits, misses and false persons. About 3 seconds per picture.", "Tag": "day", "Abend": "dusk", "Nacht (Infrarot)": "night (infrared)", "Regen": "rain", "Nebel": "fog", "Nacht + Regen": "night + rain"});
-Object.assign(I18N.en, {"sim-pi-hint": "Runs on the Pi with simple graphics and shows on the television at the HDMI. The first time it is fetched (about 30 MB)."});
-Object.assign(I18N.de, {"Stop the 3D simulator on the Pi": "3D-Simulator auf dem Pi beenden", "3D simulator on this Pi (HDMI / TV)": "3D-Simulator auf diesem Pi (HDMI / Fernseher)", "loading": "lädt", "sim-pi-hint": "Läuft auf dem Pi mit einfacher Grafik und zeigt sich am Fernseher am HDMI. Beim ersten Mal wird er geholt (etwa 30 MB).", "only on a Raspberry Pi (64 bit)": "nur auf einem Raspberry Pi (64 Bit)"});
 Object.assign(I18N.de, {"Loudspeaker": "Lautsprecher", "built-in / none": "eingebaut / keiner", "no Bluetooth": "kein Bluetooth", "Disco light": "Disco-Licht", "Stop": "Aus", "Start": "Los", "with the music (microphone)": "mit der Musik (Mikrofon)", "fixed tempo": "fester Takt", "needs the white light (Lights)": "braucht das weisse Licht (Licht)", "No microphone: the fixed tempo is used.": "Kein Mikrofon: dann gilt der feste Takt.", "disco-note": "Musik über die Bluetooth-Box oder ein Handy laufen lassen – das Mikrofon hört den Takt und das weisse Licht blitzt mit (höchstens 3-mal pro Sekunde; Vorsicht bei Menschen mit Epilepsie, Rücksicht auf Nachbarn). Ein Alarm geht immer vor. Endet nach 2 Stunden von selbst."});
 Object.assign(I18N.en, {"disco-note": "Play music on the Bluetooth box or a phone - the microphone hears the beat and the white light flashes along (at most 3 times a second; careful with people with epilepsy, think of the neighbours). An alarm always comes first. Ends by itself after 2 hours."});
 Object.assign(I18N.en, {"tv-auto": "In the campfire and gamer mode show it on the HDMI by itself (TV at the Pi). Any screen in the same network can open the link."});
@@ -4302,6 +4300,7 @@ async function refresh() {
     const x = ctrl[k];
     if (x.type === "bool") x.input.checked = !!c[k];
     else if (document.activeElement !== x.input) { x.input.value = c[k]; x.val.textContent = Math.round(c[k] * 100) / 100; }
+    if (k === "kopf_round") { const r_ = x.input.closest(".row"); if (r_) r_.hidden = !c.patrol; }   // 2.98.41: only while «Patrouille» is on
   }
   const log = $("#log"); log.textContent = "";
   const IC = {person: "🔴", rec: "🎬", sys: "⚙", web: "🌐", sched: "🗓"};

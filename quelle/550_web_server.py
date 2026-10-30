@@ -396,9 +396,6 @@ class WebStream:
                         CFG["patrol"] = True; CFG["patrol_mode"] = "pendulum"; save_settings()
                         log_event("patrol", f"Patrol from the Aufstell-Planer of the simulator: {len(wps)} waypoints, {r.get('pct')} % of the area in view")
                     return reply({"ok": True, "planner": r})
-                if act_ in ("pi_start", "pi_stop"):           # 2.95.51: the 3D simulator on the Pi itself (HDMI)
-                    ok_, err_ = (simpi_start if act_ == "pi_start" else simpi_stop)("web " + (request.remote_addr or "?"))
-                    return reply({"ok": ok_, "error": tr(err_, lang) if err_ else None, "pi": simpi_state()}, 200 if ok_ else 400)
                 if act_ == "shoot":                          # 2.95.96: a shot / trigger into the simulation (tap on the live picture)
                     try:
                         q_ = {"action": "shoot", "who": str(d.get("who") or getattr(g, "user", "") or "")[:30],
@@ -1559,7 +1556,6 @@ class WebStream:
                 st["disco"] = disco_state()
                 st["protect"] = protect_status(lang_)          # 2.95.105
                 st["tunnel"] = tunnel_state()
-                st["sim_pi"] = simpi_state()
                 st["helper"] = helper_state()
                 st["alarm_tracks"] = alarm_tracks_list()[:12]
                 st["mover"] = {"avail": MOVER["avail"], "sim": MOVER["sim"], "test": MOVER["test"], "hw": MOVER["hw"], "l": MOVER["l"], "r": MOVER["r"],

@@ -6,7 +6,6 @@
 _KS = "Automatic head movement"
 TOGGLES.extend([
     (_KS, "kopf_on", "Automatic head movement (the head turns by itself - one mover at a time: hand > alarm > walk test > valuables > round > parking)"),
-    (_KS, "kopf_round", "Smart round (when «Patrol» is on): longer at the tent and the access, hardly at ignored directions (places from «Platz einrichten», otherwise the waypoints)"),
     (_KS, "kopf_alarm", "Full: turn to the alarm - movement at the edge of the picture, a warm spot of the thermal camera, a noise (only with an access as direction)"),
     (_KS, "kopf_deter_aim", "Deterrence: turn the light and the siren to the person (otherwise to the tent of «Platz einrichten»)"),   # aufr (396)
     (_KS, "kopf_return", "Back to the home position when the person or the alarm is gone"),
@@ -39,6 +38,11 @@ TEXTS.extend([
 ])
 for _k in ("kopf_wild", "kopf_ov", "servo_kind"):
     TEXT_SPECS[_k] = ("enum", _k)
+# 2.98.41 (Daniel): «kluge Runde» is a sub-switch directly under «Patrouille» (same CFG key kopf_round), shown only when
+# «Patrouille» is on - web (530: row class «subtg», hidden in the refresh) and window (_kr_tk_refresh below).
+_kr_i = next((i for i, t_ in enumerate(TOGGLES) if t_[1] == "patrol"), len(TOGGLES) - 1)
+TOGGLES.insert(_kr_i + 1, ("Patrol", "kopf_round", "smart: look longer at the important directions"))
+SIMPLE_KEYS.add("kopf_round")
 SECTIONS.append(_KS)
 for _g in TK_GROUPS:
     if _g[0] == "camera" and _KS not in _g[2]:
@@ -93,3 +97,34 @@ def kopf_selftest():
 
 
 SELFTEST_EXTRA.append(("Automatic head movement (180 / 360° servos, smart round, one mover)", kopf_selftest))
+
+
+# ---- window: the sub-switch «klug» only while «Patrouille» is on (2.98.41) ----
+def _kr_tk_sub_show(self):
+    tg = self.vars.get("kopf_round"); par = self.vars.get("patrol")
+    if tg is None:
+        return
+    want = bool(CFG.get("patrol"))
+    if want and not (tg.winfo_manager() and getattr(tg, "_kr_sub", False)):
+        tg.pack_forget()                                      # indented, directly below «Patrouille»
+        tg.pack(fill="x", pady=3, padx=(22, 0), **({"after": par} if par is not None and par.winfo_manager() == "pack" else {}))
+        tg._kr_sub = True
+    elif not want and tg.winfo_manager():
+        tg.pack_forget(); tg._kr_sub = False
+
+
+_kr_tk_refresh_before = App._refresh
+
+
+def _kr_tk_refresh(self, *a, **k):
+    r = _kr_tk_refresh_before(self, *a, **k)
+    try:
+        _kr_tk_sub_show(self)
+    except Exception:
+        pass
+    return r
+
+
+# wraps: App._refresh
+App._refresh = _kr_tk_refresh
+

@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_40.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_41.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.41: 3D-Simulator auf dem Pi (HDMI) entfernt – Updates werden ~25 MB kleiner; «Kluge Runde» ist jetzt ein Unterschalter
+    von «Patrouille» («klug: wichtige Richtungen länger anschauen»).
   * 2.98.40: Schnellere Seiten: MoveEye schickt Seiten, Skripte und Daten komprimiert (gzip, die Hauptseite 810 KB → 250 KB);
     die grossen Seiten werden fertig komprimiert vorgehalten.
   * 2.98.39: Aufräumen: ein Eintrag «Servos» (Positionen, Test, Diagnose); alter Kurzbefehl-Schlüssel wird App-Schlüssel (/k/
@@ -959,10 +961,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_40.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_41.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_40.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_40.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_41.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_41.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -979,7 +981,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.40"
+APP_VERSION = "2.98.41"
 
 
 def default_data_dir():
@@ -8554,7 +8556,6 @@ class SysMonitor:
                 MODE_RT["checked"] = time.time()
                 try:
                     mode_tick()
-                    simpi_tick()
                     helper_tick()
                 except Exception as e:
                     log_event("sys", "mode check: " + str(e)[:80])
@@ -10639,7 +10640,7 @@ def mode_set(m, who="web"):
         g = _governor("powersave")
         if g:
             MODE_RT["gov"] = g
-    if m in ("fire", "gamer") and CFG.get("tv_auto") and (_tv_browser() or (SIMPI["proc"] is not None and SIMPI["proc"].poll() is None)):
+    if m in ("fire", "gamer") and CFG.get("tv_auto") and _tv_browser():
         tv_show(True, "mode")                               # 2.95.51: the TV view on the HDMI (if a desktop is there)
         MODE_RT["tv"] = True
     MODE_RT["msg"] = ""
@@ -12639,12 +12640,6 @@ def demo_start():
     if CFG["armed"] and not CFG.get("sim_on"):
         return False, "MoveEye is armed - disarm it first (the demo uses the simulator instead of the real camera)"
     if not CFG.get("sim_on") or not SIM.get("ok"):
-        try:
-            if not SIM.get("ok") and simpi_possible() and sim3d_ready("pi"):
-                simpi_start("demo")                        # on the Pi: start the simulator first
-                sim_set(True, "demo")
-        except Exception:
-            pass
         if not CFG.get("sim_on"):
             return False, "start the simulator first (tab Simulator)"
     DEMO_RUN.update(busy=True, step="", i=0, n=len(DEMO_STEPS), t=time.time(), stop=False)
@@ -13913,7 +13908,7 @@ TV = {"proc": None, "msg": "", "sim": False}
 
 
 def tv_sim(on, who="web"):
-    """2.95.53: the TV mode of the 3D simulator (on the PC at the television, or on the Pi itself) - smoother than the browser"""
+    """2.95.53: the TV mode of the 3D simulator (on the PC at the television) - smoother than the browser"""
     iu = (page_address().rstrip("/") + "/info/") if CFG.get("info_page") and page_address() else ""
     try:
         r = sim_control({"action": "tv", "on": bool(on), "info_url": iu})
@@ -13946,8 +13941,6 @@ def _tv_browser():
 
 def tv_show(on, who="web"):
     """the TV view on the HDMI of the Pi: a browser in kiosk mode on the desktop of the Pi"""
-    if SIMPI["proc"] is not None and SIMPI["proc"].poll() is None:
-        return tv_sim(on, who)                              # the simulator runs on the HDMI: it shows the TV itself
     if not on:
         pr = TV["proc"]
         if pr is not None and pr.poll() is None:
@@ -13989,7 +13982,7 @@ def tv_show(on, who="web"):
 
 def tv_state():
     on = TV["proc"] is not None and TV["proc"].poll() is None
-    return {"on": on or (TV["sim"] and SIMPI["proc"] is not None and SIMPI["proc"].poll() is None), "msg": TV["msg"], "browser": bool(_tv_browser()) or simpi_possible(),
+    return {"on": on, "msg": TV["msg"], "browser": bool(_tv_browser()),
             "url": tv_url(False), "auto": bool(CFG["tv_auto"]), "sim": TV["sim"], "sim_ok": bool(CFG.get("sim_on") and time.time() - SIM.get("t", 0) < 15)}
 
 
@@ -23549,7 +23542,7 @@ def sim_auto_update_check():
     """MoveEye knows a newer simulator than the one connected: let it update itself (it starts again as it was)"""
     try:
         v = sim_versions()
-        if not v.get("newer") or (SIMPI["proc"] is not None and SIMPI["proc"].poll() is None):   # the Pi build comes with MoveEye
+        if not v.get("newer"):
             return
         key = (sim_base(), v["latest"])
         if key in SIM_AUTOUPD:
@@ -23640,111 +23633,6 @@ def sim3d_fetch(pkg=None, dl=None):
         finally:
             SIM3D_DL["running"] = False
     threading.Thread(target=work, daemon=True, name="simpkg").start()
-
-
-# ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
-# the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-4.12", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24718582,
-           "sha256": "a6fdf1dfd6ff1e342b7f54abdfa470032a2c7bf18099b3109157f0e48794fd20", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
-SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
-SIMPI = {"proc": None, "msg": "", "want": False}
-
-
-def _desktop_env():
-    """the environment for a window on the HDMI of the Pi (Wayland or X11) - or None without a desktop"""
-    env = dict(os.environ)
-    uid = os.getuid() if hasattr(os, "getuid") else 1000
-    rt = env.get("XDG_RUNTIME_DIR") or f"/run/user/{uid}"
-    if env.get("WAYLAND_DISPLAY") or env.get("DISPLAY"):
-        return env
-    way = next((os.path.basename(x) for x in sorted(glob.glob(os.path.join(rt, "wayland-*"))) if not x.endswith(".lock")), "")
-    if way:
-        env["WAYLAND_DISPLAY"] = way; env["XDG_RUNTIME_DIR"] = rt
-        if os.path.exists("/tmp/.X11-unix/X0"):
-            env["DISPLAY"] = ":0"                              # Xwayland: Godot opens its window through it
-        return env
-    if os.path.exists("/tmp/.X11-unix/X0"):
-        env["DISPLAY"] = ":0"
-        return env
-    return None
-
-
-def simpi_possible():
-    import platform
-    return sys.platform.startswith("linux") and platform.machine().lower() in ("aarch64", "arm64") and bool(SIM3DPI.get("size"))
-
-
-def simpi_dir():
-    return os.path.join(DATA_DIR, "sim3d", "pi_" + SIM3DPI["version"])
-
-
-def simpi_state():
-    on = SIMPI["proc"] is not None and SIMPI["proc"].poll() is None
-    pct = int(100 * SIM3DPI_DL["got"] / SIM3DPI["size"]) if SIM3DPI.get("size") else 0
-    return {"possible": simpi_possible(), "on": on, "version": SIM3DPI["version"], "loading": SIM3DPI_DL["running"], "pct": pct,
-            "msg": SIM3DPI_DL["msg"] or SIMPI["msg"], "ready": sim3d_ready(SIM3DPI) if SIM3DPI.get("size") else False}
-
-
-def simpi_start(who="web"):
-    """fetch (once), unpack and start the 3D simulator on the Pi; MoveEye then uses it"""
-    if not simpi_possible():
-        return False, "only on a Raspberry Pi (64 bit)"
-    if SIMPI["proc"] is not None and SIMPI["proc"].poll() is None:
-        return True, ""
-    if not sim3d_ready(SIM3DPI):
-        SIMPI["want"] = True
-        sim3d_fetch(SIM3DPI, SIM3DPI_DL)
-        return True, ""
-    env = _desktop_env()
-    if env is None:
-        SIMPI["msg"] = "no desktop on the HDMI (Raspberry Pi OS with desktop needed)"
-        return False, SIMPI["msg"]
-    d_ = simpi_dir(); exe = os.path.join(d_, "MotionWatch3D", "MotionWatch3D.arm64")
-    try:
-        if not os.path.isfile(exe):
-            os.makedirs(d_, exist_ok=True)
-            with zipfile.ZipFile(sim3d_path(SIM3DPI)) as z:
-                for n in z.namelist():
-                    if n.startswith("/") or ".." in n.split("/"):
-                        raise ValueError("bad file name in the package")
-                z.extractall(d_)
-            for old in glob.glob(os.path.join(DATA_DIR, "sim3d", "pi_*")):
-                if old != d_:
-                    shutil.rmtree(old, ignore_errors=True)
-        os.chmod(exe, 0o755)
-        port = 8765
-        SIMPI["proc"] = subprocess.Popen([exe, "--", "--no-update", "--stream", "--quality", "simple",
-                                          "--port", str(port)], cwd=os.path.dirname(exe), env=env, stdout=subprocess.DEVNULL,
-                                         stderr=subprocess.DEVNULL, start_new_session=True)
-    except Exception as e:
-        SIMPI["msg"] = "start: " + str(e)[:100]
-        return False, SIMPI["msg"]
-    SIMPI["msg"] = ""; SIMPI["want"] = False
-    CFG["sim_url"] = f"http://127.0.0.1:{port}"; save_settings()
-    if not CFG.get("sim_on"):
-        sim_set(True, who)
-    log_event("sys", f"{SIM3DPI['label']} {SIM3DPI['version']} started on the HDMI ({who})")
-    return True, ""
-
-
-def simpi_stop(who="web"):
-    pr = SIMPI["proc"]; SIMPI["want"] = False
-    if pr is not None and pr.poll() is None:
-        try:
-            pr.terminate()
-        except Exception:
-            pass
-    SIMPI["proc"] = None
-    log_event("sys", f"{SIM3DPI['label']} stopped ({who})")
-    return True, ""
-
-
-def simpi_tick():
-    """after the download: start by itself (called from the health thread)"""
-    if SIMPI["want"] and not SIM3DPI_DL["running"] and sim3d_ready(SIM3DPI):
-        simpi_start("download")
-    elif SIMPI["want"] and SIM3DPI_DL["msg"]:
-        SIMPI["want"] = False
 
 
 def sim3d_wait_page(lang, pkg=None, dl=None, url="/sim/simulator3d.zip"):
@@ -30709,7 +30597,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_40.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_41.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -46373,7 +46261,7 @@ details.sblk{margin-top:10px;border-top:1px solid var(--line);padding-top:9px}
 details.sblk>summary{display:flex;justify-content:space-between;align-items:center;color:var(--txt);font-size:13.5px;font-weight:700;padding:3px 0}
 details.sblk>summary::before,details.sblk[open]>summary::before{content:none!important;display:none}details.sblk>summary::after{content:"▸";color:var(--mut);transition:transform .15s}details.sblk[open]>summary::after{transform:rotate(90deg)}
 .mbar{margin-top:12px}.mbar .row{margin-bottom:3px}.mbar b{font-size:14px}
-#settings .tg{padding:4px 0}#settings .sl{margin-top:7px}
+#settings .tg{padding:4px 0}#settings .tg.subtg{padding-left:18px}#settings .tg.subtg>span::before{content:"↳ ";color:var(--mut)}#settings .sl{margin-top:7px}
 @media(max-width:760px){.card{padding:12px}details.card>summary{font-size:11.5px}}
 .pr-sw{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);align-items:flex-start;cursor:pointer}
 .pr-sw input.sw{margin-top:2px}#b-arm{user-select:none}
@@ -48401,7 +48289,7 @@ async function build() {
     d.appendChild(el("summary", "", sec.name));
     d.dataset.view = "sec:" + sec.id; d.dataset.vgroup = "Settings"; d.dataset.vlabel = sec.name;
     sec.toggles.forEach(tg => {
-      const row = el("label", "row tg"); row.dataset.key = tg.key;
+      const row = el("label", "row tg" + (tg.key === "kopf_round" ? " subtg" : "")); row.dataset.key = tg.key;   // 2.98.41: sub-switch of «Patrouille»
       const cb = el("input"); cb.type = "checkbox"; cb.className = "sw";
       cb.onchange = () => { post("/api/set", {key: tg.key, value: cb.checked}); try { mainPaint(); } catch (e) {} };
       row.append(el("span", "", tg.label), cb);
@@ -49943,8 +49831,6 @@ Object.assign(I18N.de, {"Alarm replay in 3D": "Alarm-Rückblick in 3D", "Play in
 Object.assign(I18N.en, {"replay-note": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Helps to understand false alarms. The positions are estimated (from the spot and size in the picture)."});
 Object.assign(I18N.de, {"AI test with simulator pictures": "KI-Prüfung mit Simulator-Bildern", "dset-note": "Der Simulator macht Bilder mit Person oder Tier – bei Tag, Abend, Nacht mit Infrarot, Regen und Nebel, nah und fern – und weiss, wo sie sind. MoveEye lässt seine KI (oder die PC-Rechenhilfe) darüber laufen und zählt Treffer, Fehlschläge und falsche Personen. Dauert pro Bild etwa 3 Sekunden.", "Start the test": "Prüfung starten", "found": "erkannt", "false persons": "falsche Personen", "near (under 8 m)": "nah (unter 8 m)", "far (8 m and more)": "fern (ab 8 m)", "AI time per picture": "KI-Zeit pro Bild", "Training pictures (ZIP)": "Trainingsbilder (ZIP)", "Tag": "Tag", "Abend": "Abend", "Nacht (Infrarot)": "Nacht (Infrarot)", "Regen": "Regen", "Nebel": "Nebel", "Nacht + Regen": "Nacht + Regen", "person": "Person", "fox": "Fuchs", "deer": "Reh", "dog": "Hund", "cat": "Katze", "boar": "Wildschwein", "the simulator makes the pictures …": "der Simulator macht die Bilder …", "done": "fertig"});
 Object.assign(I18N.en, {"dset-note": "The simulator makes pictures with a person or an animal - by day, dusk, night with infrared, rain and fog, near and far - and knows where they are. MoveEye runs its AI (or the PC helper) on them and counts hits, misses and false persons. About 3 seconds per picture.", "Tag": "day", "Abend": "dusk", "Nacht (Infrarot)": "night (infrared)", "Regen": "rain", "Nebel": "fog", "Nacht + Regen": "night + rain"});
-Object.assign(I18N.en, {"sim-pi-hint": "Runs on the Pi with simple graphics and shows on the television at the HDMI. The first time it is fetched (about 30 MB)."});
-Object.assign(I18N.de, {"Stop the 3D simulator on the Pi": "3D-Simulator auf dem Pi beenden", "3D simulator on this Pi (HDMI / TV)": "3D-Simulator auf diesem Pi (HDMI / Fernseher)", "loading": "lädt", "sim-pi-hint": "Läuft auf dem Pi mit einfacher Grafik und zeigt sich am Fernseher am HDMI. Beim ersten Mal wird er geholt (etwa 30 MB).", "only on a Raspberry Pi (64 bit)": "nur auf einem Raspberry Pi (64 Bit)"});
 Object.assign(I18N.de, {"Loudspeaker": "Lautsprecher", "built-in / none": "eingebaut / keiner", "no Bluetooth": "kein Bluetooth", "Disco light": "Disco-Licht", "Stop": "Aus", "Start": "Los", "with the music (microphone)": "mit der Musik (Mikrofon)", "fixed tempo": "fester Takt", "needs the white light (Lights)": "braucht das weisse Licht (Licht)", "No microphone: the fixed tempo is used.": "Kein Mikrofon: dann gilt der feste Takt.", "disco-note": "Musik über die Bluetooth-Box oder ein Handy laufen lassen – das Mikrofon hört den Takt und das weisse Licht blitzt mit (höchstens 3-mal pro Sekunde; Vorsicht bei Menschen mit Epilepsie, Rücksicht auf Nachbarn). Ein Alarm geht immer vor. Endet nach 2 Stunden von selbst."});
 Object.assign(I18N.en, {"disco-note": "Play music on the Bluetooth box or a phone - the microphone hears the beat and the white light flashes along (at most 3 times a second; careful with people with epilepsy, think of the neighbours). An alarm always comes first. Ends by itself after 2 hours."});
 Object.assign(I18N.en, {"tv-auto": "In the campfire and gamer mode show it on the HDMI by itself (TV at the Pi). Any screen in the same network can open the link."});
@@ -50551,6 +50437,7 @@ async function refresh() {
     const x = ctrl[k];
     if (x.type === "bool") x.input.checked = !!c[k];
     else if (document.activeElement !== x.input) { x.input.value = c[k]; x.val.textContent = Math.round(c[k] * 100) / 100; }
+    if (k === "kopf_round") { const r_ = x.input.closest(".row"); if (r_) r_.hidden = !c.patrol; }   // 2.98.41: only while «Patrouille» is on
   }
   const log = $("#log"); log.textContent = "";
   const IC = {person: "🔴", rec: "🎬", sys: "⚙", web: "🌐", sched: "🗓"};
@@ -52818,7 +52705,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <ul><li><b>Grenzen:</b> wie weit die Kamera schwenken/neigen darf (Grad aus der Mitte) – schützt Kabel und Gehäuse.</li>
 <li><b>Person verfolgen:</b> die Kamera dreht einer erkannten Person nach.</li>
 <li><b>Patrouille:</b> die Kamera fährt zwischen Wegpunkten hin und her (Wegpunkt = aktuelle Position, Schwenk und Neigung, mit «+ Wegpunkt»; Anzeige z.B. 24/60 = 24 % links–rechts, 60 % unten–oben). Der Knopf 🔄 schaltet bei jedem Tippen weiter: Aus → hin und zurück (1-2-3-2-1) → Runde (1-2-3-1) → Aus.</li>
-<li><b>🤖 Automatische Kopfbewegung (ab 2.98.30, Einstellungen → Kameras &amp; Kopf):</b> der Kopf dreht sich selbst – aber immer nur einer bewegt ihn: von Hand (Joystick) &gt; Alarm / Folgen &gt; Gehtest &gt; Wertsachen-Blick &gt; Runde &gt; Parken. Während der Simulator eine Aufgabe hat (Testlauf, Prüfstand …), warten die automatischen Bewegungen. <b>Kluge Runde (nur wenn «Patrouille» an ist – sonst bleibt der Kopf in der Grundstellung):</b> länger beim Zelt und beim Zugang, kaum bei ignorierten Richtungen (Äste, Strasse); die Orte kommen aus «Platz einrichten», sonst die Wegpunkte; Pause, solange jemand verfolgt wird. <b>Voll – zum Alarm drehen:</b> Bewegung am Bildrand, ein warmer Fleck im Wärmebild oder die Übersichtskamera → der Kopf dreht dorthin, folgt der Person und kehrt danach zur Grundstellung zurück. Ein Geräusch hat mit einem Mikrofon keine Richtung: der Kopf schaut nur zum «Zugang», wenn einer eingerichtet ist. <b>Aus – Parken:</b> die Kamera schaut weg (nach unten, einstellbar) – sichtbare Privatsphäre; beim Einschalten zurück. <b>Wertsachen-Blick:</b> alle 10–30 Minuten ein kurzer Blick auf die Wertsachen (aus «Platz einrichten», sonst die bewachten Dinge des Referenz-Scans), Vergleich wie beim Referenz-Scan → fehlt etwas zweimal hintereinander, kommt sofort ein Push («Velo fehlt»). <b>Sparsam:</b> bei knappem Akku oder tiefer Nacht (einstellbar, 1–5 Uhr) bleibt der Kopf bei der wichtigsten Richtung. <b>Gehtest:</b> der Kopf folgt dir; das Ergebnis zeigt mit rotem Kreuz, wo er dich verloren hat. <b>Wildtier-Modus</b> (automatisch mit «Wildbeobachtung»): Tieren langsam folgen, kein Voralarm, kein Licht, alle 15 s ein Foto. <b>Sabotage:</b> wird das Bild plötzlich schwarz oder anders, schaut der Kopf kurz links und rechts – der Push sagt dann «abgedeckt» oder «um etwa 30° verdreht». <b>Übersichtskamera:</b> eine feste Weitwinkel-Zusatzkamera als «Übersicht» wählen; ihre Bewegungen lenken den Kopf, die KI der Hauptkamera prüft. «Ausrichtung der Übersicht» in Grad oder «Kalibrieren»: den Kopf auf etwas richten, das sich in der Übersicht bewegt, dann den Schalter antippen. <b>Servo-Art:</b> 180 / 270 / 360°-Positions-Servos fahren nie über den Anschlag (Kabel); bei «Endlos-Drehung (360° endlos)» wird die Stellung nur aus Geschwindigkeit × Zeit geschätzt – einmal «als Mitte setzen», wenn der Kopf geradeaus schaut.</li>
+<li><b>🤖 Automatische Kopfbewegung (ab 2.98.30, Einstellungen → Kameras &amp; Kopf):</b> der Kopf dreht sich selbst – aber immer nur einer bewegt ihn: von Hand (Joystick) &gt; Alarm / Folgen &gt; Gehtest &gt; Wertsachen-Blick &gt; Runde &gt; Parken. Während der Simulator eine Aufgabe hat (Testlauf, Prüfstand …), warten die automatischen Bewegungen. <b>Kluge Runde (Schalter «klug» direkt unter «Patrouille», nur wenn «Patrouille» an ist – sonst bleibt der Kopf in der Grundstellung):</b> länger beim Zelt und beim Zugang, kaum bei ignorierten Richtungen (Äste, Strasse); die Orte kommen aus «Platz einrichten», sonst die Wegpunkte; Pause, solange jemand verfolgt wird. <b>Voll – zum Alarm drehen:</b> Bewegung am Bildrand, ein warmer Fleck im Wärmebild oder die Übersichtskamera → der Kopf dreht dorthin, folgt der Person und kehrt danach zur Grundstellung zurück. Ein Geräusch hat mit einem Mikrofon keine Richtung: der Kopf schaut nur zum «Zugang», wenn einer eingerichtet ist. <b>Aus – Parken:</b> die Kamera schaut weg (nach unten, einstellbar) – sichtbare Privatsphäre; beim Einschalten zurück. <b>Wertsachen-Blick:</b> alle 10–30 Minuten ein kurzer Blick auf die Wertsachen (aus «Platz einrichten», sonst die bewachten Dinge des Referenz-Scans), Vergleich wie beim Referenz-Scan → fehlt etwas zweimal hintereinander, kommt sofort ein Push («Velo fehlt»). <b>Sparsam:</b> bei knappem Akku oder tiefer Nacht (einstellbar, 1–5 Uhr) bleibt der Kopf bei der wichtigsten Richtung. <b>Gehtest:</b> der Kopf folgt dir; das Ergebnis zeigt mit rotem Kreuz, wo er dich verloren hat. <b>Wildtier-Modus</b> (automatisch mit «Wildbeobachtung»): Tieren langsam folgen, kein Voralarm, kein Licht, alle 15 s ein Foto. <b>Sabotage:</b> wird das Bild plötzlich schwarz oder anders, schaut der Kopf kurz links und rechts – der Push sagt dann «abgedeckt» oder «um etwa 30° verdreht». <b>Übersichtskamera:</b> eine feste Weitwinkel-Zusatzkamera als «Übersicht» wählen; ihre Bewegungen lenken den Kopf, die KI der Hauptkamera prüft. «Ausrichtung der Übersicht» in Grad oder «Kalibrieren»: den Kopf auf etwas richten, das sich in der Übersicht bewegt, dann den Schalter antippen. <b>Servo-Art:</b> 180 / 270 / 360°-Positions-Servos fahren nie über den Anschlag (Kabel); bei «Endlos-Drehung (360° endlos)» wird die Stellung nur aus Geschwindigkeit × Zeit geschätzt – einmal «als Mitte setzen», wenn der Kopf geradeaus schaut.</li>
 <li><b>🛑 Servos wie beim Industrieroboter (ab 2.98.36, Einstellungen → Kameras &amp; Kopf → «Servo-Bewegung &amp; Sicherheit», Seite Mehr → Werkzeuge → «Servos»):</b> <b>Rampen:</b> ein einziger Bewegungsplaner fährt jede Bewegung (Joystick, Knöpfe, Runde, Alarm, Referenz-Scan, Platz einrichten, Zeitraffer …) mit Beschleunigen – Fahren – Bremsen (Trapez-Profil), ohne Ruck und ohne Überschwingen; Höchstgeschwindigkeit und Beschleunigung pro Achse in °/s und °/s². Von der Ruhe aus starten und enden beide Achsen gleichzeitig (gerade Linie). Der Simulator bekommt jede Zwischenstellung. <b>⏹ Not-Aus:</b> roter Knopf auf der Live-Seite, im Fenster, auf der Seite «Servos», am Controller <b>Select 1,5 s halten</b> oder <code>POST /api/servo {"op":"estop"}</code>: bremst sofort (doppelte Verzögerung), hält dann (oder fährt langsam in die Parkposition, einstellbar), stoppt auch den Mover; alle Geräte zeigen «Not-Aus – gedrückt von iPhone …». Weiter erst mit <b>✅ Freigeben</b> (nur Administrator), auch nach einem Neustart. <b>Sichere Zustände:</b> I2C-Fehler (3 in Folge) oder ein PCA9685, der seine Einstellungen verloren hat (Spannungseinbruch), = Störung: Ausgänge aus bis «Freigeben». Unterspannung (vcgencmd get_throttled) oder eine hängende Kamera-Schleife (Watchdog) = Stopp, geht von selbst weiter; höchstens ein Push pro Stunde, nie die Sirene. Die Software-Grenzen werden ganz unten vor dem PWM nochmals geprüft. <b>Wer steuert?</b> Unter dem Joystick steht, welches Gerät den Kopf gerade steuert («Kopf wird gesteuert von: iPhone · Safari»); übernimmt ein anderes Handy, PC, das Fenster, der Controller oder der Simulator, erscheint kurz ein Hinweis. <b>📍 Teach-in:</b> «Positionen» – mit Pfeilen oder Joystick hinfahren, Namen eingeben («Zelt», «Eingang»), speichern; «Anfahren» fährt genau dorthin. Umbenennen, Reihenfolge, löschen, «in der Runde» an/aus, als Park- oder Grundstellung wählen, aus «Platz einrichten» übernehmen. Die Positionen sind die Wegpunkte der Patrouille. <b>Diagnose:</b> Fehlerspeicher (I2C, Spannungseinbruch, Grenzen, Unterspannung, Temperatur, Watchdog, Not-Aus), Betriebsstunden, gefahrene Grad und Bewegungen pro Servo (echt und Simulation getrennt), Wartungshinweise (z. B. «MG90S nach ~100 h Bewegung prüfen»), «Wartung erledigt», Export als JSON oder CSV.</li>
 <li><b>🧹 Ein Ort pro Sache (Aufräum-Runde):</b> <b>Servos:</b> Mehr → Werkzeuge → «Servos» = eine Seite mit Positionen, <b>Test</b> (der frühere «Servo-Test») und Diagnose; im Fenster das Fenster «Servos» mit denselben drei Reitern. <b>Kurzbefehle fürs iPhone:</b> der Kurzbefehl-Schlüssel ist jetzt ein App-Schlüssel (Einstellungen → Sicherheit → App-Schlüssel), der nur die Adressen /k/… öffnet; ein alter Schlüssel wurde einmal übernommen (gespeichert nur als Fingerabdruck) – die gespeicherten Kurzbefehle laufen weiter. Ein neuer Schlüssel wird wie jeder App-Schlüssel nur einmal gezeigt (mit Kopieren und QR), und nur über die sichere Seite (https) erstellt. Jeder andere App-Schlüssel geht für /k/ auch. <b>Zonen:</b> neue Art «Nur melden» (eine Person darin gibt keinen Alarm, nur einen Eintrag und ab und zu eine Info-Nachricht) – der «öffentliche Weg» aus «Platz einrichten» ist jetzt so eine Zone und im Zonen-Editor sichtbar und änderbar. Jede Zone hat den Schalter «📌 Bleibt am Platz»: dann bleibt sie auf dem Boden, wenn sich der Kopf dreht (Privatsphäre und Schlafplatz immer). <b>Abschrecken:</b> Licht und Sirene sitzen auf dem Kopf – beim Abschrecken dreht er sie zur Person (zuletzt gesehen) oder sonst zum Zelt aus «Platz einrichten» (Schalter unter «Automatische Kopfbewegung»). <b>Spiel:</b> während einer Runde «Team gegen MoveEye» folgt MoveEye nicht und bewegt den Kopf nicht selbst (die Spieler steuern); danach geht es von selbst weiter. <b>Ansicht:</b> Ein- und Ausblenden im ☰-Menü gilt wie «◫ Ansicht» nur für dieses Gerät; im Fenster steht die Kamerasteuerung nur noch in «◫ Ansicht» (nicht mehr im Rechtsklick-Menü «Felder»). <b>Tierart:</b> die Einstellungen des Tierart-Modells stehen in einer Gruppe «Tierart» (wie «KI-Modell»). <b>Test-Feedback senden</b> steht unter Mehr → System.</li>
 <li><b>Videoquelle:</b> Pi-Kamera, USB- oder Netzwerkkamera. Weitere Kameras im Reiter <i>Kameras</i>.</li>
@@ -53040,7 +52927,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <ul><li><b>Limits:</b> how far the camera may pan / tilt (degrees from the middle) – protects cables and housing.</li>
 <li><b>Follow person:</b> the camera follows a detected person.</li>
 <li><b>Patrol:</b> the camera moves between waypoints (waypoint = current position, pan and tilt, «+ Waypoint»; shown e.g. as 24/60 = 24 % left–right, 60 % down–up). The 🔄 button steps on with each tap: off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off.</li>
-<li><b>🤖 Automatic head movement (from 2.98.30, Settings → Cameras &amp; head):</b> the head turns by itself – but only one mover at a time: by hand (joystick) &gt; alarm / follow &gt; walk test &gt; quick look at the valuables &gt; round &gt; parking. While the simulator has a task (test run, test bench …) the automatic moves wait. <b>Smart round (only when «Patrol» is on – otherwise the head stays at its home position):</b> longer at the tent and the access, hardly at ignored directions (branches, road); the places come from «Platz einrichten», otherwise the waypoints; it pauses while somebody is followed. <b>Full – turn to the alarm:</b> movement at the edge of the picture, a warm spot of the thermal camera or the overview camera → the head turns there, follows the person and goes back home afterwards. With one microphone a noise has no direction: the head only looks at the «access» if one is set up. <b>Off – parking:</b> the camera looks away (down, adjustable) – visible privacy; back when switched on. <b>Quick look at the valuables:</b> every 10–30 minutes (from «Platz einrichten», otherwise the guarded things of the reference scan), compared like the reference scan → missing twice in a row = a push at once («bike missing»). <b>Saving:</b> battery low or deep night (adjustable, 1–5 h): the head stays at the most important direction. <b>Walk test:</b> the head follows you; the result shows with a red cross where it lost you. <b>Wildlife mode</b> (automatic with «Wildlife watching»): follow animals slowly, no pre-alarm, no light, a photo every 15 s. <b>Sabotage:</b> when the picture suddenly goes black or changes, the head looks left and right – the push then says «covered» or «turned by about 30°». <b>Overview camera:</b> choose a fixed wide-angle extra camera as «overview»; its movements steer the head, the AI of the main camera checks. «Overview: where it looks» in degrees or «Calibrate»: point the head at something that moves in the overview, then tap the switch. <b>Servo kind:</b> 180 / 270 / 360° positional servos never pass their end stop (cable); with «continuous rotation (360° endless)» the position is only estimated from speed × time – «set as the middle» once when the head looks straight ahead.</li>
+<li><b>🤖 Automatic head movement (from 2.98.30, Settings → Cameras &amp; head):</b> the head turns by itself – but only one mover at a time: by hand (joystick) &gt; alarm / follow &gt; walk test &gt; quick look at the valuables &gt; round &gt; parking. While the simulator has a task (test run, test bench …) the automatic moves wait. <b>Smart round (switch «smart» directly below «Patrol», only when «Patrol» is on – otherwise the head stays at its home position):</b> longer at the tent and the access, hardly at ignored directions (branches, road); the places come from «Platz einrichten», otherwise the waypoints; it pauses while somebody is followed. <b>Full – turn to the alarm:</b> movement at the edge of the picture, a warm spot of the thermal camera or the overview camera → the head turns there, follows the person and goes back home afterwards. With one microphone a noise has no direction: the head only looks at the «access» if one is set up. <b>Off – parking:</b> the camera looks away (down, adjustable) – visible privacy; back when switched on. <b>Quick look at the valuables:</b> every 10–30 minutes (from «Platz einrichten», otherwise the guarded things of the reference scan), compared like the reference scan → missing twice in a row = a push at once («bike missing»). <b>Saving:</b> battery low or deep night (adjustable, 1–5 h): the head stays at the most important direction. <b>Walk test:</b> the head follows you; the result shows with a red cross where it lost you. <b>Wildlife mode</b> (automatic with «Wildlife watching»): follow animals slowly, no pre-alarm, no light, a photo every 15 s. <b>Sabotage:</b> when the picture suddenly goes black or changes, the head looks left and right – the push then says «covered» or «turned by about 30°». <b>Overview camera:</b> choose a fixed wide-angle extra camera as «overview»; its movements steer the head, the AI of the main camera checks. «Overview: where it looks» in degrees or «Calibrate»: point the head at something that moves in the overview, then tap the switch. <b>Servo kind:</b> 180 / 270 / 360° positional servos never pass their end stop (cable); with «continuous rotation (360° endless)» the position is only estimated from speed × time – «set as the middle» once when the head looks straight ahead.</li>
 <li><b>🛑 Servos like an industrial robot (from 2.98.36, Settings → Cameras &amp; head → «Servo motion &amp; safety», page More → Tools → «Servos»):</b> <b>Ramps:</b> one motion planner drives every move (joystick, buttons, round, alarm, reference scan, place setup, timelapse …) with accelerate – cruise – brake (trapezoid profile), no jerk, no overshoot; max. speed and acceleration per axis in °/s and °/s². From rest both axes start and arrive together (straight line). The simulator gets every intermediate position. <b>⏹ Emergency stop:</b> red button on the live page, in the window, on the page «Servos», on the controller <b>hold Select 1.5 s</b> or <code>POST /api/servo {"op":"estop"}</code>: brakes at once (twice the deceleration), then holds (or drives slowly to the parking position, setting), stops the mover too; every device shows «Emergency stop – pressed by iPhone …». Moving again only after <b>✅ Release</b> (administrator only), also after a restart. <b>Safe states:</b> I2C errors (3 in a row) or a PCA9685 that lost its settings (brown-out) = fault: outputs off until «Release». Under-voltage (vcgencmd get_throttled) or a hanging camera loop (watchdog) = stop that clears by itself; at most one push an hour, never the siren. The software limits are checked once more at the lowest level before the PWM. <b>Who steers?</b> Below the joystick: which device steers the head right now («The head is steered by: iPhone · Safari»); when another phone, PC, the window, the controller or the simulator takes over, a short notice appears. <b>📍 Teach-in:</b> «Positions» – drive there with the arrows or the joystick, enter a name («Tent», «Entrance»), save; «Go» drives exactly there. Rename, order, delete, «in the round» on/off, choose as parking or home position, take over from «Set up the place». The positions are the waypoints of the patrol. <b>Diagnosis:</b> fault memory (I2C, brown-out, limits, under-voltage, temperature, watchdog, emergency stop), operating hours, degrees travelled and moves per servo (real and simulation apart), maintenance hints (e.g. «check the MG90S after ~100 h of movement»), «Maintenance done», export as JSON or CSV.</li>
 <li><b>🧹 One place per thing (clean-up round):</b> <b>Servos:</b> More → Tools → «Servos» = one page with positions, <b>test</b> (the former «Servo test») and diagnosis; in the window the window «Servos» with the same three tabs. <b>iPhone shortcuts:</b> the shortcut key is an app key now (Settings → Security → App keys) that opens only the addresses /k/…; an old key was taken over once (stored only as a fingerprint) – the saved shortcuts keep working. A new key is shown only once like every app key (with copy and QR) and is made only over the secure page (https). Every other app key works for /k/ too. <b>Zones:</b> new kind «Only report» (a person inside gives no alarm, only a log line and now and then an info push) – the «public path» of «Set up the place» is such a zone now, visible and editable in the zone editor. Every zone has the switch «📌 Stays on its place»: it stays on the ground when the head turns (privacy and sleeping place always). <b>Deterrence:</b> light and siren sit on the head – when deterring it turns them to the person (last seen) or else to the tent of «Set up the place» (switch under «Automatic head movement»). <b>Game:</b> during a round «Team gegen MoveEye» MoveEye does not follow and does not move the head by itself (the players steer); afterwards it goes on by itself. <b>View:</b> showing and hiding in the ☰ menu is for this device only, like «◫ View»; in the window the camera control is only in «◫ View» (no longer in the right-click menu «Panels»). <b>Animal species:</b> the settings of the species model are in one group «Animal species» (like «AI model»). <b>Send a test feedback</b> is under More → System.</li>
 <li><b>Video source:</b> Pi camera, USB or network camera; more cameras in the tab <i>Cameras</i>.</li>
@@ -54956,9 +54843,6 @@ class WebStream:
                         CFG["patrol"] = True; CFG["patrol_mode"] = "pendulum"; save_settings()
                         log_event("patrol", f"Patrol from the Aufstell-Planer of the simulator: {len(wps)} waypoints, {r.get('pct')} % of the area in view")
                     return reply({"ok": True, "planner": r})
-                if act_ in ("pi_start", "pi_stop"):           # 2.95.51: the 3D simulator on the Pi itself (HDMI)
-                    ok_, err_ = (simpi_start if act_ == "pi_start" else simpi_stop)("web " + (request.remote_addr or "?"))
-                    return reply({"ok": ok_, "error": tr(err_, lang) if err_ else None, "pi": simpi_state()}, 200 if ok_ else 400)
                 if act_ == "shoot":                          # 2.95.96: a shot / trigger into the simulation (tap on the live picture)
                     try:
                         q_ = {"action": "shoot", "who": str(d.get("who") or getattr(g, "user", "") or "")[:30],
@@ -56119,7 +56003,6 @@ class WebStream:
                 st["disco"] = disco_state()
                 st["protect"] = protect_status(lang_)          # 2.95.105
                 st["tunnel"] = tunnel_state()
-                st["sim_pi"] = simpi_state()
                 st["helper"] = helper_state()
                 st["alarm_tracks"] = alarm_tracks_list()[:12]
                 st["mover"] = {"avail": MOVER["avail"], "sim": MOVER["sim"], "test": MOVER["test"], "hw": MOVER["hw"], "l": MOVER["l"], "r": MOVER["r"],
@@ -58940,7 +58823,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.40")
+        self.root.title("MoveEye 2.98.41")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -59307,7 +59190,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.40 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.41 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -65910,7 +65793,6 @@ App._fov_box = _app_fov_box
 _KS = "Automatic head movement"
 TOGGLES.extend([
     (_KS, "kopf_on", "Automatic head movement (the head turns by itself - one mover at a time: hand > alarm > walk test > valuables > round > parking)"),
-    (_KS, "kopf_round", "Smart round (when «Patrol» is on): longer at the tent and the access, hardly at ignored directions (places from «Platz einrichten», otherwise the waypoints)"),
     (_KS, "kopf_alarm", "Full: turn to the alarm - movement at the edge of the picture, a warm spot of the thermal camera, a noise (only with an access as direction)"),
     (_KS, "kopf_deter_aim", "Deterrence: turn the light and the siren to the person (otherwise to the tent of «Platz einrichten»)"),   # aufr (396)
     (_KS, "kopf_return", "Back to the home position when the person or the alarm is gone"),
@@ -65943,6 +65825,11 @@ TEXTS.extend([
 ])
 for _k in ("kopf_wild", "kopf_ov", "servo_kind"):
     TEXT_SPECS[_k] = ("enum", _k)
+# 2.98.41 (Daniel): «kluge Runde» is a sub-switch directly under «Patrouille» (same CFG key kopf_round), shown only when
+# «Patrouille» is on - web (530: row class «subtg», hidden in the refresh) and window (_kr_tk_refresh below).
+_kr_i = next((i for i, t_ in enumerate(TOGGLES) if t_[1] == "patrol"), len(TOGGLES) - 1)
+TOGGLES.insert(_kr_i + 1, ("Patrol", "kopf_round", "smart: look longer at the important directions"))
+SIMPLE_KEYS.add("kopf_round")
 SECTIONS.append(_KS)
 for _g in TK_GROUPS:
     if _g[0] == "camera" and _KS not in _g[2]:
@@ -65997,6 +65884,37 @@ def kopf_selftest():
 
 
 SELFTEST_EXTRA.append(("Automatic head movement (180 / 360° servos, smart round, one mover)", kopf_selftest))
+
+
+# ---- window: the sub-switch «klug» only while «Patrouille» is on (2.98.41) ----
+def _kr_tk_sub_show(self):
+    tg = self.vars.get("kopf_round"); par = self.vars.get("patrol")
+    if tg is None:
+        return
+    want = bool(CFG.get("patrol"))
+    if want and not (tg.winfo_manager() and getattr(tg, "_kr_sub", False)):
+        tg.pack_forget()                                      # indented, directly below «Patrouille»
+        tg.pack(fill="x", pady=3, padx=(22, 0), **({"after": par} if par is not None and par.winfo_manager() == "pack" else {}))
+        tg._kr_sub = True
+    elif not want and tg.winfo_manager():
+        tg.pack_forget(); tg._kr_sub = False
+
+
+_kr_tk_refresh_before = App._refresh
+
+
+def _kr_tk_refresh(self, *a, **k):
+    r = _kr_tk_refresh_before(self, *a, **k)
+    try:
+        _kr_tk_sub_show(self)
+    except Exception:
+        pass
+    return r
+
+
+# wraps: App._refresh
+App._refresh = _kr_tk_refresh
+
 # ----------------------------------------------------------------------------
 # 2.98.33 (Wunsch Daniel):
 #   A) Rückmeldung an den Entwickler von überall: ein dezentes 💬 im Kopf jeder Webseite (ein Dialog für alle Seiten, hier
@@ -66010,7 +65928,7 @@ SELFTEST_EXTRA.append(("Automatic head movement (180 / 360° servos, smart round
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 172                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 173                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -73554,10 +73472,6 @@ DE.update({"lost packets": "Pakete verloren", "slow reaction": "langsame Reaktio
 TRX['fr'].update({"Network check of the players": "Contrôle réseau des joueurs", "How well does every phone reach MoveEye? Each one measures reaction time, jitter, losses, download and upload; MoveEye adds the signal it receives from each phone (at its own Wi-Fi).": "Chaque portable atteint-il bien MoveEye ? Chacun mesure le temps de réaction, la gigue, les pertes, le téléchargement et l'envoi ; MoveEye ajoute le signal reçu de chaque portable (sur son propre Wi-Fi).", "running": "en cours", "measured": "mesurés", "weak": "faibles", "measure all phones at once": "mesurer tous les portables d'un coup", "End the check": "Terminer", "open for": "encore ouvert", "Start the check": "Démarrer le contrôle", "Clear": "Vider", "Phones in the game corner measure by themselves. Everybody else: scan the QR code or open": "Les portables du coin jeux mesurent tout seuls. Les autres : scanner le code QR ou ouvrir", "still waiting for": "en attente de", "MoveEye is the Wi-Fi itself: the signal of every phone is measured too.": "MoveEye est lui-même le Wi-Fi : le signal de chaque portable est aussi mesuré.", "Player": "Joueur", "Reaction": "Réaction", "Jitter": "Gigue", "Signal": "Signal", "Down / Up in Mbit/s, between the phone and MoveEye (not the internet). Reaction under 30 ms and over 10 Mbit/s are fine for all games.": "Down / Up en Mbit/s, entre le portable et MoveEye (pas Internet). Une réaction sous 30 ms et plus de 10 Mbit/s suffisent pour tous les jeux.", "nt-tips": "Rapprocher les portables faibles de MoveEye, placer MoveEye plus haut (pas au sol, pas derrière la voiture), éviter corps et murs entre les deux. Beaucoup de portables à la fois se partagent la vitesse.", "At the own Wi-Fi, not measured yet": "Sur le propre Wi-Fi, pas encore mesurés", "lost packets": "paquets perdus", "slow reaction": "réaction lente", "reaction a bit slow": "réaction un peu lente", "unsteady": "instable", "little speed": "peu de vitesse", "medium speed": "vitesse moyenne", "weak signal": "signal faible", "signal could be better": "signal améliorable"})   # network check (2.95.52)
 TRX['it'].update({"Network check of the players": "Controllo rete dei giocatori", "How well does every phone reach MoveEye? Each one measures reaction time, jitter, losses, download and upload; MoveEye adds the signal it receives from each phone (at its own Wi-Fi).": "Quanto bene ogni telefono raggiunge MoveEye? Ognuno misura tempo di reazione, jitter, perdite, download e upload; MoveEye aggiunge il segnale che riceve da ogni telefono (sul proprio Wi-Fi).", "running": "in corso", "measured": "misurati", "weak": "deboli", "measure all phones at once": "misurare tutti i telefoni insieme", "End the check": "Termina", "open for": "aperto ancora", "Start the check": "Avvia il controllo", "Clear": "Svuota", "Phones in the game corner measure by themselves. Everybody else: scan the QR code or open": "I telefoni nell'angolo giochi misurano da soli. Tutti gli altri: scansionare il codice QR o aprire", "still waiting for": "in attesa di", "MoveEye is the Wi-Fi itself: the signal of every phone is measured too.": "MoveEye è il Wi-Fi stesso: viene misurato anche il segnale di ogni telefono.", "Player": "Giocatore", "Reaction": "Reazione", "Jitter": "Jitter", "Signal": "Segnale", "Down / Up in Mbit/s, between the phone and MoveEye (not the internet). Reaction under 30 ms and over 10 Mbit/s are fine for all games.": "Down / Up in Mbit/s, tra telefono e MoveEye (non Internet). Reazione sotto 30 ms e oltre 10 Mbit/s bastano per tutti i giochi.", "nt-tips": "Avvicinare i telefoni deboli a MoveEye, mettere MoveEye più in alto (non a terra, non dietro l'auto), evitare corpi e muri in mezzo. Molti telefoni insieme si dividono la velocità.", "At the own Wi-Fi, not measured yet": "Sul proprio Wi-Fi, non ancora misurati", "lost packets": "pacchetti persi", "slow reaction": "reazione lenta", "reaction a bit slow": "reazione un po' lenta", "unsteady": "instabile", "little speed": "poca velocità", "medium speed": "velocità media", "weak signal": "segnale debole", "signal could be better": "segnale migliorabile"})   # network check (2.95.52)
 TRX['rm'].update({"Network check of the players": "Check da la rait dals giugaders", "running": "en curs", "measured": "mesirads", "weak": "flaivels", "Start the check": "Cumenzar il check", "End the check": "Finir il check", "Clear": "Svidar", "Player": "Giugader", "Reaction": "Reacziun", "Jitter": "Fluctuaziun", "Signal": "Signal", "lost packets": "pachets persos", "slow reaction": "reacziun plauna", "weak signal": "signal flaivel"})   # network check (2.95.52)
-DE.update({"only on a Raspberry Pi (64 bit)": "nur auf einem Raspberry Pi (64 Bit)"})   # 3D simulator on the Pi (2.95.51)
-TRX['fr'].update({"Stop the 3D simulator on the Pi": "Arrêter le simulateur 3D sur le Pi", "3D simulator on this Pi (HDMI / TV)": "Simulateur 3D sur ce Pi (HDMI / TV)", "loading": "chargement", "sim-pi-hint": "Tourne sur le Pi avec des graphismes simples et s'affiche sur le téléviseur au HDMI. La première fois, il est téléchargé (environ 30 Mo).", "only on a Raspberry Pi (64 bit)": "seulement sur un Raspberry Pi (64 bits)"})   # 3D simulator on the Pi (2.95.51)
-TRX['it'].update({"Stop the 3D simulator on the Pi": "Ferma il simulatore 3D sul Pi", "3D simulator on this Pi (HDMI / TV)": "Simulatore 3D su questo Pi (HDMI / TV)", "loading": "caricamento", "sim-pi-hint": "Gira sul Pi con grafica semplice e si vede sul televisore all'HDMI. La prima volta viene scaricato (circa 30 MB).", "only on a Raspberry Pi (64 bit)": "solo su un Raspberry Pi (64 bit)"})   # 3D simulator on the Pi (2.95.51)
-TRX['rm'].update({"Stop the 3D simulator on the Pi": "Finir il simulatur 3D sin il Pi", "3D simulator on this Pi (HDMI / TV)": "Simulatur 3D sin quest Pi (HDMI / TV)", "loading": "chargiar", "sim-pi-hint": "Cuorra sin il Pi cun grafica simpla e sa mussa sin la televisiun al HDMI. L'emprima giada vegn el chargià (circa 30 MB).", "only on a Raspberry Pi (64 bit)": "mo sin in Raspberry Pi (64 bit)"})   # 3D simulator on the Pi (2.95.51)
 DE.update({"The game is being set up": "Das Spiel wird eingerichtet", "Join: scan the QR code with the phone (same Wi-Fi) or open": "Mitspielen: QR-Code mit dem Handy scannen (gleiches WLAN) oder öffnen", "Get ready": "Macht euch bereit", "Round running": "Runde läuft", "Round over": "Runde vorbei", "Waiting for players": "Warte auf Spieler", "Ranking of the evening": "Rangliste des Abends", "Game corner": "Spielecke", "Nothing is going on at the moment - MoveEye keeps watch.": "Gerade ist nichts los – MoveEye hält Wache.", "Simulator": "Simulator", "Camera": "Kamera", "Game in the 3D simulator": "Spiel im 3D-Simulator", "Armed": "Schutz an", "Arming …": "Schutz startet …", "Not armed": "Schutz aus", "no browser on this device (Chromium)": "kein Browser auf diesem Gerät (Chromium)", "no desktop on the HDMI (Raspberry Pi OS with desktop needed)": "kein Desktop am HDMI (Raspberry Pi OS mit Desktop nötig)"})   # TV view (2.95.51)
 TRX['fr'].update({"TV view": "Affichage TV", "Stop on the HDMI": "Arrêter sur le HDMI", "Show on the HDMI": "Afficher sur le HDMI", "Open the link": "Ouvrir le lien", "Copy the link": "Copier le lien", "Link copied": "Lien copié", "tv-auto": "En mode feu de camp et gamer, afficher tout seul sur le HDMI (téléviseur au Pi). Tout écran du même réseau peut ouvrir le lien.", "The game is being set up": "Le jeu est en préparation", "Join: scan the QR code with the phone (same Wi-Fi) or open": "Participer : scanner le code QR avec le portable (même Wi-Fi) ou ouvrir", "Get ready": "Préparez-vous", "Round running": "Manche en cours", "Round over": "Manche terminée", "Waiting for players": "En attente de joueurs", "Ranking of the evening": "Classement de la soirée", "Game corner": "Coin jeux", "Nothing is going on at the moment - MoveEye keeps watch.": "Rien ne se passe – MoveEye veille.", "Camera": "Caméra", "Game in the 3D simulator": "Jeu dans le simulateur 3D", "no browser on this device (Chromium)": "pas de navigateur sur cet appareil (Chromium)", "no desktop on the HDMI (Raspberry Pi OS with desktop needed)": "pas de bureau sur le HDMI (Raspberry Pi OS avec bureau requis)"})   # TV view (2.95.51)
 TRX['it'].update({"TV view": "Vista TV", "Stop on the HDMI": "Ferma sull'HDMI", "Show on the HDMI": "Mostra sull'HDMI", "Open the link": "Apri il link", "Copy the link": "Copia il link", "Link copied": "Link copiato", "tv-auto": "In modalità falò e gamer mostrare da solo sull'HDMI (televisore al Pi). Ogni schermo nella stessa rete può aprire il link.", "The game is being set up": "Il gioco viene preparato", "Join: scan the QR code with the phone (same Wi-Fi) or open": "Partecipare: scansionare il codice QR con il telefono (stesso Wi-Fi) o aprire", "Get ready": "Preparatevi", "Round running": "Turno in corso", "Round over": "Turno finito", "Waiting for players": "In attesa di giocatori", "Ranking of the evening": "Classifica della serata", "Game corner": "Angolo giochi", "Nothing is going on at the moment - MoveEye keeps watch.": "Non succede niente – MoveEye fa la guardia.", "Camera": "Camera", "Game in the 3D simulator": "Gioco nel simulatore 3D", "no browser on this device (Chromium)": "nessun browser su questo dispositivo (Chromium)", "no desktop on the HDMI (Raspberry Pi OS with desktop needed)": "nessun desktop sull'HDMI (serve Raspberry Pi OS con desktop)"})   # TV view (2.95.51)
@@ -73806,6 +73720,14 @@ _HX_TRAINING = {
     'busy': ('beschäftigt', 'occupé', 'occupato', 'occupà'),
 }
 for _k, _v in _HX_TRAINING.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX_NOPISIM = {
+    'smart: look longer at the important directions': ('klug: wichtige Richtungen länger anschauen', 'intelligente : regarder plus longtemps les directions importantes',
+                                                       'intelligente: guardare più a lungo le direzioni importanti', 'intelligent: guardar pli ditg las direcziuns impurtantas'),
+}
+for _k, _v in _HX_NOPISIM.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
