@@ -5,10 +5,10 @@ extends Control
 ##   Wächter:    the picture of the head camera; mouse drag or A / D / arrows = turn the head, Space = «Erwischt!»,
 ##               G = light, V = siren, N = scan, Z = zoom (3D-4.x: with energy, gametools.gd; controller B Y X LB)
 ##   Enter = start the round, R = replay after the round, B = one more / fewer bot (Shift+B), Esc = menu (leave)
-## 3D-4.x (wish of Daniel): a game controller works too - at this PC or at the browser of MoveEye's simulator page (both
-## through explore.gd: same rest position / dead zone, stick() / _btn()). Left stick = go (guard: turn / tilt the head),
-## right stick = look round, RT / RB / L3 = run, A = stone / «Erwischt!», B = crouch / light, X = crawl, Y = lamp,
-## D-pad = go, Start = start the round / menu, Back = replay. One player per PC (all controllers steer the same one).
+## 3D-4.13: a game controller follows the ONE mapping of padmap.gd (modes «guard», «seek», «runner»): left stick = head /
+## look, right stick = walk / the rover, R2 = shutter / run, A B X Y = light scan «Erwischt!» siren / lamp crouch stone
+## crawl, Select = replay, Start = menu or start the round (held = leave), ✚ + A / B in the menus and on the card.
+## One player per PC; with «Controller zuteilen» only the controllers of his role steer him (padmap.roles).
 ## The big 3D view of the window is switched off meanwhile (main._check_active), the own view is the camera of the figure.
 
 var main
@@ -117,7 +117,22 @@ func _ready() -> void:
 	add_child(rp_view)
 	_snd = AudioStreamPlayer.new()
 	add_child(_snd)
+	call_deferred("_add_padhud")
 	_beat = _make_beat()
+
+
+var padhud: Control = null
+
+
+func _add_padhud() -> void:
+	"""3D-4.13: chips of the controllers, the mini-map with the field of view of the head, the focus ring (padhud.gd)"""
+	if main.padmap == null:
+		return
+	padhud = preload("res://scripts/padhud.gd").new()
+	padhud.main = main
+	padhud.pm = main.padmap
+	padhud.local = true
+	add_child(padhud)
 
 
 func _make_beat() -> AudioStreamWAV:
@@ -179,6 +194,8 @@ func stop() -> void:
 
 
 func on_event(k: String) -> void:
+	if main.padmap != null and k in ["caught", "seen"]:      # 3D-4.13: the controller feels it
+		main.padmap.rumble(k, pad_devs())
 	if k == "caught":
 		var tw := create_tween()
 		modulate = Color(1.6, 0.6, 0.6)
@@ -220,6 +237,8 @@ func _process(dt: float) -> void:
 				g._exposure(p, img)
 	_controls(dt)
 	_pad(dt)                                          # 3D-4.x: the game controller
+	if not active:
+		return                                            # 3D-4.13: Start held = left the game
 	_st_t -= dt
 	if _st_t <= 0.0:
 		_st_t = 0.2
@@ -258,108 +277,119 @@ func _controls(dt: float) -> void:
 	a.ctl_run = Input.is_key_pressed(KEY_SHIFT)
 
 
-# ---- the game controller ------------------------------------------------------------------------------------------------
-var _pad_old := {}
+# ---- the game controller (3D-4.13: padmap.gd) ---------------------------------------------------------------------------
+var _pad_n := 0
+var _catches := -1
+
+
+func pad_devs() -> Array:
+	"""the controllers of the player at the PC: all, or (after «Controller zuteilen») those of his role"""
+	var pm = main.padmap
+	return pm.devs_for(role) if pm != null else []
 
 
 func pad_on() -> bool:
-	"""a controller at this PC or at the browser (MoveEye's simulator page)"""
-	var ex = main.explore
-	return ex != null and (not Input.get_connected_joypads().is_empty() or ex._rp_on())
+	"""a controller at this PC or at the browser (MoveEye's simulator page) steers this player"""
+	return main.padmap != null and not pad_devs().is_empty()
 
 
-func _pad_hit(k: String, gb: int, bi: int) -> bool:
-	"""the button was just pressed (Godot number gb at the PC, standard number bi at the browser)"""
-	var now_: bool = main.explore._btn(gb, bi)
-	var was := bool(_pad_old.get(k, false))
-	_pad_old[k] = now_
-	return now_ and not was
-
-
-var _pad_n := 0
+func pad_mode() -> String:
+	if role == "guard":
+		return "seek" if main.game_mode == "seek" else "guard"
+	return "runner"
 
 
 func _pad(dt: float) -> void:
 	_pad_n += 1
 	if not pad_on():
-		_pad_old = {}
 		return
-	var ex = main.explore
+	var pm = main.padmap
+	var devs := pad_devs()
 	var g = main.game
-	var hit := {}
-	for b in [["a", JOY_BUTTON_A, 0], ["b", JOY_BUTTON_B, 1], ["x", JOY_BUTTON_X, 2], ["y", JOY_BUTTON_Y, 3],
-			["back", JOY_BUTTON_BACK, 8], ["start", JOY_BUTTON_START, 9]]:
-		hit[b[0]] = _pad_hit(b[0], b[1], b[2])
-	if hit["start"]:
-		if menu_box != null:
+	var mode := pad_mode()
+	var acts: Array = pm.fired(mode, devs)
+	if "exit" in acts:
+		stop()
+		return
+	if menu_box != null:                                   # the pause menu: ✚ / left stick + A, B or Start = go on
+		pm.nav_tick(devs)
+		if "menu" in acts or pm.hit("b", devs):
 			_close_menu()
-		elif g.round_state in ["lobby", "end"]:
+		return
+	if "menu" in acts:
+		if g.round_state in ["lobby", "end"]:
 			rp_view.visible = false
 			g.start_round()
 		else:
 			_open_menu()
-	if menu_box != null:                                   # the pause menu: A = go on, Back = leave the game
-		if hit["a"] or hit["b"]:
-			_close_menu()
-		elif hit["back"]:
-			stop()
 		return
-	if hit["back"] and g.round_state == "end" and not g.replay.is_empty():
+	if "replay" in acts and g.round_state == "end" and not g.replay.is_empty():
 		rp_view.visible = not rp_view.visible
 		_rp_t = 0.0
 		_rp_play = true
+		_rp_only = []
+		_card_sig = ""
 	if rp_view.visible:
+		if pm.hit("b", devs):
+			rp_view.visible = false
+			_card_sig = ""
 		return
-	var l: Vector2 = ex.stick(0)
-	var r: Vector2 = ex.stick(1)
-	var dp := Vector2(float(ex._btn(JOY_BUTTON_DPAD_RIGHT, 15)) - float(ex._btn(JOY_BUTTON_DPAD_LEFT, 14)),
-			float(ex._btn(JOY_BUTTON_DPAD_DOWN, 13)) - float(ex._btn(JOY_BUTTON_DPAD_UP, 12)))
-	var mv := (l + dp).limit_length(1.0)
+	if card.visible:                                        # lobby / end: ✚ + A on the buttons of the card
+		pm.nav_tick(devs)
+		acts = acts.filter(func(a): return not a in ["light", "lamp", "catch", "stone"])   # A belongs to the card here
+	var lk: Vector2 = pm.look(devs)
+	var mv: Vector2 = pm.move(devs)
+	var dp: Vector2 = Vector2.ZERO if card.visible else pm.dpad(devs)
 	if role == "guard":
-		if hit["a"]:
-			g._guard_catch(p)
-		if hit["b"]:
-			g._guard_light(p)
-		if hit["x"]:
-			g.tools.use(p, "scan")                         # 3D-4.x: the tools of the guard (gametools.gd)
-		if hit["y"]:
-			g.tools.use(p, "siren")
-		if _pad_hit("lb", JOY_BUTTON_LEFT_SHOULDER, 4):
-			g.tools.use(p, "zoom")
-		if main.game_mode == "seek":                       # the seeker drives the rover, the right stick turns the head
+		for a in acts:
+			match a:
+				"catch", "shutter":
+					g._guard_catch(p)
+				"light":
+					g._guard_light(p)
+				"scan", "siren", "zoom":
+					g.tools.use(p, a)                          # the tools of the guard (gametools.gd)
+				"center":
+					g.guard_yaw = 0.0
+					g.guard_tilt = deg_to_rad(-9.0)
+		var hv := lk + dp
+		if mode == "seek":                                 # the seeker drives the rover with the right stick
 			if mv != Vector2.ZERO:
 				p["mx"] = mv.x
 				p["my"] = mv.y
-			g.guard_yaw = wrapf(g.guard_yaw - r.x * dt * 1.4, -PI, PI)
-			g.guard_tilt = clampf(g.guard_tilt - r.y * dt * 0.7, deg_to_rad(-40.0), deg_to_rad(15.0))
-			return
-		var hv := mv + r
+		else:
+			hv += mv * 0.3                                 # right stick: aim finely
 		g.guard_yaw = wrapf(g.guard_yaw - hv.x * dt * 1.4, -PI, PI)
 		g.guard_tilt = clampf(g.guard_tilt - hv.y * dt * 0.7, deg_to_rad(-40.0), deg_to_rad(15.0))
 		return
 	var a = p["actor"]
-	if mv != Vector2.ZERO:                                 # the keys keep working when the sticks rest
-		p["mx"] = mv.x
-		p["my"] = mv.y
-	if r != Vector2.ZERO:
-		p["yaw"] = wrapf(float(p["yaw"]) - r.x * dt * 2.4, -PI, PI)
-		p["pitch"] = clampf(float(p["pitch"]) - r.y * dt * 1.2, deg_to_rad(-40.0), deg_to_rad(15.0))
-	if ex._axis(JOY_AXIS_TRIGGER_RIGHT) > 0.3 or ex._btn(JOY_BUTTON_RIGHT_SHOULDER, 5) or ex._btn(JOY_BUTTON_LEFT_STICK, 10):
+	var wk := (mv + dp).limit_length(1.0)
+	if wk != Vector2.ZERO:                                 # the keys keep working when the sticks rest
+		p["mx"] = wk.x
+		p["my"] = wk.y
+	if lk != Vector2.ZERO:
+		p["yaw"] = wrapf(float(p["yaw"]) - lk.x * dt * 2.4, -PI, PI)
+		p["pitch"] = clampf(float(p["pitch"]) - lk.y * dt * 1.2, deg_to_rad(-40.0), deg_to_rad(15.0))
+	if pm.trig("r2", devs) > 0.3:
 		a.ctl_run = true
-	if hit["a"]:
-		if g.jaeger.on():
-			g.jaeger.act(p)
-		else:
-			g._throw(p)
-	if hit["b"]:
-		a.ctl_posture = 0 if a.ctl_posture == 1 else 1
-	if hit["x"]:
-		a.ctl_posture = 0 if a.ctl_posture == 2 else 2
-	if hit["y"]:
-		p["lamp"] = not bool(p.get("lamp", false))
-		if a.torch == null:
-			a.add_torch()
-		a.player_lamp = p["lamp"]
+	for k in acts:
+		match k:
+			"stone":
+				if g.jaeger.on():
+					g.jaeger.act(p)
+				else:
+					g._throw(p)
+			"crouch":
+				a.ctl_posture = 0 if a.ctl_posture == 1 else 1
+			"crawl":
+				a.ctl_posture = 0 if a.ctl_posture == 2 else 2
+			"lamp":
+				p["lamp"] = not bool(p.get("lamp", false))
+				if a.torch == null:
+					a.add_torch()
+				a.player_lamp = p["lamp"]
+			"center":
+				p["pitch"] = 0.0
 
 
 func _input(ev: InputEvent) -> void:
@@ -489,10 +519,14 @@ func _paint_hud(vs: Vector2) -> void:
 	help_l.text = ("W A S D: Rover fahren · Maus ziehen / Q E: Kopf drehen · Leertaste oder Doppelklick: «Gefunden!» · G: Licht · Esc: Menü" if role == "guard" and main.game_mode == "seek"
 			else "Maus ziehen / Q E: umschauen · Bildmitte auf einen Spieler, dann Leertaste, Doppelklick oder runder Knopf: Auslöser · G Licht · V Sirene · N Scan · Z Zoom · W S: Kopf hoch / runter · Esc: Menü" if role == "guard"
 			else "W A S D: gehen · Maus ziehen / Q E: umschauen · Shift: rennen · C: ducken · X: kriechen · F: Stein · L: Lampe · Esc: Menü")
-	if pad_on():                                          # 3D-4.x: the controller
-		help_l.text = ("Controller: linker Stick Rover · rechter Stick Kopf · A «Gefunden!» · B Licht · Start Menü" if role == "guard" and main.game_mode == "seek"
-				else "Controller: Sticks Kopf drehen · R2 oder A Auslöser (Bildmitte) · B Licht · Y Sirene · X Scan · LB Zoom · Start Menü" if role == "guard"
-				else "Controller: linker Stick gehen · rechter Stick umschauen · RT rennen · A Stein · B ducken · X kriechen · Y Lampe · Start Menü") + "\n" + help_l.text
+	if pad_on():                                          # 3D-4.13: the controller - made from the one mapping (padmap.gd)
+		var only: Array = {"seek": ["head", "drive", "catch", "light", "menu"], "guard": ["head", "shutter", "light", "scan", "catch", "siren", "zoom", "menu"],
+				"runner": ["look", "walk", "run", "lamp", "crouch", "stone", "crawl", "menu"]}[pad_mode()]
+		help_l.text = "Controller: " + main.padmap.help_line(pad_mode(), only) + "\n" + help_l.text
+	var cn := int(S.get("catches", 0))                      # 3D-4.13: a catch of the guard: the controller feels the hit
+	if role == "guard" and _catches >= 0 and cn > _catches and main.padmap != null:
+		main.padmap.rumble("hit", pad_devs())
+	_catches = cn
 	help_l.position = Vector2(16, vs.y - 30 - (20 if pad_on() else 0))
 
 
@@ -615,6 +649,8 @@ func _paint_card() -> void:
 	UI.primary(sb)
 	sb.pressed.connect(func(): rp_view.visible = false; g.start_round())
 	row.add_child(sb)
+	if pad_on():
+		sb.grab_focus.call_deferred()                       # 3D-4.13: ✚ + A on the card
 	if rs == "end" and not g.replay.is_empty():
 		var rb := Button.new()
 		rb.text = "Wiederholung (R)"
@@ -669,6 +705,8 @@ func _open_menu() -> void:
 		b.custom_minimum_size = Vector2(260, 40)
 		b.pressed.connect(d[1])
 		v.add_child(b)
+		if pad_on() and d[0] == "Weiterspielen":
+			b.grab_focus.call_deferred()                    # 3D-4.13: ✚ + A in the menu
 	card.visible = false
 	_center.call_deferred(menu_box)
 
@@ -759,8 +797,8 @@ func debug() -> Dictionary:
 	var o := {"ok": true, "active": active, "role": role, "card": [card.position.x, card.position.y, card.size.x, card.size.y], "st": _st.get("rs", "")}
 	if main.explore != null:                               # 3D-4.x: the controller (tests through control «pad»)
 		var l0: Vector2 = main.explore.stick(0)
-		o["pad"] = {"on": pad_on(), "l": [l0.x, l0.y], "old": _pad_old.keys().filter(func(k): return _pad_old[k]), "n": _pad_n,
-				"st9": main.explore._btn(JOY_BUTTON_START, 9), "rp": main.explore.rp_bt}
+		o["pad"] = {"on": pad_on(), "l": [l0.x, l0.y], "n": _pad_n, "mode": pad_mode(), "devs": pad_devs(), "rp": main.explore.rp_bt,
+				"menu": menu_box != null, "focus": str(get_viewport().gui_get_focus_owner().get("text")) if get_viewport().gui_get_focus_owner() != null else ""}
 	if p != null:
 		o["in"] = [p["mx"], p["my"], p["yaw"], int(p["actor"].ctl_posture), bool(p["actor"].ctl_run), bool(p.get("lamp", false))]
 		var vp: SubViewport = p["vp"]

@@ -620,7 +620,7 @@ func _net() -> void:
 		var txt: String = (h[1] as PackedByteArray).get_string_from_utf8()
 		if txt.contains("\r\n\r\n"):
 			var path := txt.get_slice(" ", 1)
-			var body := PAGE.replace("%WSPORT%", str(ws_port)).to_utf8_buffer() if path == "/" or path.begins_with("/?") else "nicht gefunden".to_utf8_buffer()
+			var body := PAGE.replace("%WSPORT%", str(ws_port)).replace("/*PADMAP*/", main.padmap.JS if main.padmap != null else "").to_utf8_buffer() if path == "/" or path.begins_with("/?") else "nicht gefunden".to_utf8_buffer()
 			var ctype := "text/html; charset=utf-8"
 			if path == "/manifest.json":                   # «Zum Home-Bildschirm»: then the game runs without the address bar (3D-3.23)
 				body = JSON.stringify({"name": "Unentdeckt ans Ziel", "short_name": "Unentdeckt", "start_url": "/", "display": "fullscreen",
@@ -2431,6 +2431,23 @@ func _send_state(i: int) -> void:
 	w.send_text(JSON.stringify(state_for(p)))
 
 
+func _minimap(p: Dictionary) -> Dictionary:
+	"""the head (or the camera of this guard) with its field of view, the rover, and the player himself"""
+	var ci: int = guard_cam(p) if p["role"] == "guard" else 0
+	if ci >= main.cams.size():
+		ci = 0
+	var c: Camera3D = main.cams[ci]
+	var o := {"hx": snappedf(c.global_position.x, 0.1), "hz": snappedf(c.global_position.z, 0.1), "hy": snappedf(rad_to_deg(c.global_rotation.y), 0.5),
+			"fov": main.CAM_FOV[mini(ci, 1)]}
+	if main.mover_on:
+		o["rx"] = snappedf(main.rig.position.x, 0.1)
+		o["rz"] = snappedf(main.rig.position.z, 0.1)
+		o["ry"] = snappedf(rad_to_deg(main.rig.rotation.y), 0.5)
+	if p["role"] != "guard":
+		o["me"] = [snappedf(p["actor"].position.x, 0.1), snappedf(p["actor"].position.z, 0.1)]
+	return o
+
+
 func state_for(p: Dictionary) -> Dictionary:
 	"""what a player sees on his screen (phone, or the PC player of 3D-3.77)"""
 	var a = p["actor"]
@@ -2505,6 +2522,7 @@ func state_for(p: Dictionary) -> Dictionary:
 	d["w"] = watch.state_for(p)
 	d["tut"] = str(p.get("tut_msg", "")) if bool(p.get("tut_on", false)) else ""
 	d["px"] = plus.state_for(p)                            # 3D-4.x: camouflage things, weather change, theft, learning points
+	d["mm"] = _minimap(p)                                  # 3D-4.13: the mini-map of the controller player (padmap.gd MWPad.drawMap)
 	d["rx"] = rules.state_for(p)                           # 3D-4.x: vibration, noise, shadow, fairness, next guard, winner
 	if jaeger.on():
 		d["jg"] = jaeger.state_for(p)
@@ -2673,8 +2691,9 @@ table{border-collapse:collapse;margin:8px auto;font-size:14px}td{padding:4px 8px
 .duel span{display:block;font-size:46px;font-weight:800;line-height:1.1}.duel .win{border-color:var(--grn);background:#34c75922}.duel i{align-self:center;font-style:normal;font-size:30px;font-weight:800}
 .chips button[disabled]{opacity:.45}
 body.aim #v{outline:4px dashed var(--org);outline-offset:-4px}
-#xh{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);border:3px solid #ff3b30;border-radius:50%;pointer-events:none;box-shadow:0 0 0 1px #0007,inset 0 0 0 1px #0007;z-index:2}
-#xh[hidden]{display:none}#xh::before,#xh::after{content:"";position:absolute;left:50%;top:50%;background:#ff3b30;width:3px;height:calc(100% + 26px);transform:translate(-50%,-50%)}#xh::after{transform:translate(-50%,-50%) rotate(90deg)}
+#xh[hidden]{display:none}
+#pmap{position:fixed;right:max(8px,env(safe-area-inset-right));bottom:max(86px,calc(env(safe-area-inset-bottom) + 82px));width:110px;height:110px;opacity:.9;pointer-events:none;z-index:3}#pmap[hidden]{display:none}
+#padhelp{position:fixed;left:50%;bottom:max(34px,calc(env(safe-area-inset-bottom) + 30px));transform:translateX(-50%);max-width:min(96vw,720px);background:#111822e6;border:1px solid var(--line);border-radius:10px;padding:5px 10px;font-size:12px;color:#cfd8e3;pointer-events:none;text-align:center;transition:opacity .4s}
 #b-catch.shut{width:96px;height:96px;font-size:13px;background:radial-gradient(circle,#ff453a 0 58%,transparent 59%),conic-gradient(#ffd34d var(--p,0%),#ffffff33 0);border:3px solid #fff}
 #b-catch.shut i{font-size:30px}#b-catch.shut.lock{opacity:.75}#b-catch.shut .cnt{display:none}
 #shfl{position:fixed;inset:0;background:#fff;pointer-events:none;opacity:0;z-index:89}#shfl.on{animation:wf .35s ease-out}
@@ -2703,7 +2722,7 @@ body.aim #v{outline:4px dashed var(--org);outline-offset:-4px}
 <div class="btns" id="gb" style="display:none"><div class="b" id="b-zoom" hidden><i>🔍</i>Zoom</div><div class="b" id="b-scan" hidden><i>📡</i>Scan</div><div class="b" id="b-siren" hidden><i>📢</i>Sirene</div><div class="b" id="b-light"><i>💡</i>Licht</div><div class="b big red" id="b-catch"><i>🚨</i>Erwischt!</div></div>
 <div id="en" hidden></div><div id="hints"></div><div id="lk">📷 Die Kamera schaut her!</div>
 <div id="tip" hidden></div>
-<div id="padh" hidden>🎮 Controller verbunden</div>
+<div id="padh" hidden>🎮 Controller verbunden</div><div id="padhelp" style="opacity:0"></div><canvas id="pmap" width="232" height="232" hidden></canvas>
 <div id="pic" hidden><img id="picimg" alt=""><div id="pictxt"></div></div>
 <div id="tut"></div><div id="side"><button id="full" title="Vollbild">⛶</button><button id="snd" title="Ton">🔊</button><button id="leave" title="Spiel verlassen">🚪</button></div>
 <div id="msg"></div>
@@ -2711,6 +2730,7 @@ body.aim #v{outline:4px dashed var(--org);outline-offset:-4px}
 <div id="sigt"></div>
 <div class="ov" id="ov"></div>
 <div id="rot"><div>📱↻<br><br>Handy bitte <b>quer</b> halten.<br><small style="color:#8b98a8">Mit dem Knopf ⛶ wird es Vollbild.</small></div></div>
+<script>/*PADMAP*/</script>
 <script>
 const $ = s => document.querySelector(s), WSP = %WSPORT%;
 let ws = null, me = null, token = "", name = "", st = {}, posture = 0, run = false, mx = 0, my = 0, look = 0, pitch = 0, lastSent = "", lastT = 0, lastFrame = 0, oldUrl = "", sound = true, role = "runner";
@@ -2809,7 +2829,7 @@ function connect() {
     else if (m.t === "gal") { GAL = m.pics || []; lastOv = null; if (st && st.rs) paint(st); }
     else if (m.t === "sig") { const t = $("#sigt"); t.innerHTML = '<span style="color:' + m.c + '">●</span> ' + esc(m.n) + ': ' + esc(m.txt) + ' <span class="ar" style="transform:rotate(' + (-m.ga) + 'deg)">⬆</span> ' + m.d + ' m';
       t.style.opacity = 1; clearTimeout(window.__sigT); window.__sigT = setTimeout(() => t.style.opacity = 0, 3000); tone(880, 0.08, "triangle", 0.12); tone(1175, 0.1, "triangle", 0.12, 0.09); if (navigator.vibrate) navigator.vibrate(60); }
-    else if (m.t === "ev") { if (m.k === "caught") { hitFx(m.fx || []); if (navigator.vibrate) navigator.vibrate([300, 100, 300]); document.body.classList.remove("redfl"); void document.body.offsetWidth; document.body.classList.add("redfl"); }
+    else if (m.t === "ev") { if (m.k === "caught") { hitFx(m.fx || []); if (navigator.vibrate) navigator.vibrate([300, 100, 300]); if (window.MWPad) MWPad.rumble(null, "caught"); document.body.classList.remove("redfl"); void document.body.offsetWidth; document.body.classList.add("redfl"); }
       if (sfx[m.k]) sfx[m.k](); }
   };
   ws.onclose = () => { if (left) return; me = null; ov('<h1>Verbindung weg</h1><p>Neuer Versuch …</p>'); setTimeout(connect, 1500); };
@@ -2938,7 +2958,7 @@ function winHtml(m) {
 }
 function lookVib(on) {                   // the head camera looks this way: a short buzz (again every 2.5 s while it looks)
   const n = Date.now(); $("#lk").style.opacity = on ? 1 : 0;
-  if (on && (!LKon || n - LKt > 2500) && (st.rx || {}).vibe !== false) { LKt = n; try { if (navigator.vibrate) navigator.vibrate(LKon ? [40] : [70, 50, 70]); } catch (e) {} }
+  if (on && (!LKon || n - LKt > 2500) && (st.rx || {}).vibe !== false) { LKt = n; try { if (navigator.vibrate) navigator.vibrate(LKon ? [40] : [70, 50, 70]); if (window.MWPad) MWPad.rumble(null, "seen"); } catch (e) {} }
   LKon = on;
 }
 const TB = {light: "#b-light", siren: "#b-siren", scan: "#b-scan", zoom: "#b-zoom"};
@@ -3048,30 +3068,44 @@ addEventListener("keydown", e => { if (e.target.tagName === "INPUT") return; key
   if (e.code === "KeyF") send({t: role === "guard" ? "light" : st.mode === "jaeger" ? "act" : "stone"}); if (e.code === "Space") send({t: "catch"});
   if (role === "guard" && {KeyV: 1, KeyN: 1, KeyZ: 1}[e.code]) send({t: "tool", k: {KeyV: "siren", KeyN: "scan", KeyZ: "zoom"}[e.code]}); });
 addEventListener("keyup", e => { keys[e.code] = false; });
-// 3D-4.x (wish of Daniel): a game controller at this phone, tablet or computer (Bluetooth or USB, Gamepad API, standard
-// mapping) sends the same messages as the touch buttons: left stick / D-pad = go (guard: turn the head), right stick = look
-// round, RT / RB / L3 = run, A = throw / «Erwischt!», B = crouch / light, X = crawl / light, Y = lamp, Start = start the round
-let gpOld = [], gpName = "";
+// 3D-4.13: a game controller at this phone, tablet or computer (Bluetooth or USB, Gamepad API) follows the ONE mapping of
+// MoveEye and the simulator (MWPad, padmap.gd): left stick = look / the head, right stick = walk (seeker: the rover),
+// R2 = run / the shutter, A B X Y = lamp crouch stone crawl / light scan «Erwischt!» siren, Select = replay, Start = start
+let gpName = "", gpMode = "", gpHelpT = 0, gpCatch = -1;
+const PADR = window.MWPad ? MWPad.Pad("runner") : null;
+(function () { if (!window.MWPad) return; const c = document.createElement("style"); c.textContent = MWPad.XH_CSS("#xh") + "#xh{position:fixed;left:50%;top:50%;z-index:2}"; document.head.appendChild(c); })();
+function padHelp(mode) { const h = $("#padhelp"); if (!h || !window.MWPad) return; h.textContent = "🎮 " + MWPad.helpLine(mode, null, true, mode === "runner" ? ["look", "walk", "run", "lamp", "crouch", "stone", "crawl", "menu"] : mode === "seek" ? ["head", "drive", "light", "catch", "menu"] : ["head", "shutter", "light", "scan", "catch", "siren", "zoom", "menu"]);
+  h.style.opacity = 1; clearTimeout(gpHelpT); gpHelpT = setTimeout(() => { h.style.opacity = 0; }, 9000); }
 function padRead() {
-  let g = null; try { g = [...(navigator.getGamepads ? navigator.getGamepads() : [])].find(x => x && x.connected); } catch (e) {}
-  const nm = g ? String(g.id).replace(/[(].*?[)]/g, "").trim().slice(0, 30) : "";
-  if (nm !== gpName) { gpName = nm; const h = $("#padh"); h.hidden = !g; h.textContent = "🎮 Controller verbunden" + (nm ? ": " + nm : ""); if (g) $("#hint").style.display = "none"; }
-  if (!g || document.hidden) { gpOld = []; return null; }
-  const B = i => !!(g.buttons[i] && (g.buttons[i].pressed || g.buttons[i].value > 0.5)), hit = i => B(i) && !gpOld[i];
-  const dz = (x, y) => { const l = Math.hypot(x, y), d = 0.18; if (l <= d) return [0, 0]; const k = Math.min(1, (l - d) / (1 - d)); return [x / l * k, y / l * k]; };
-  let [lx_, ly_] = dz(g.axes[0] || 0, g.axes[1] || 0); const [rx_, ry_] = dz(g.axes[2] || 0, g.axes[3] || 0);
-  lx_ += (B(15) ? 1 : 0) - (B(14) ? 1 : 0); ly_ += (B(13) ? 1 : 0) - (B(12) ? 1 : 0);
-  const l = Math.hypot(lx_, ly_); if (l > 1) { lx_ /= l; ly_ /= l; }
-  const g_ = role === "guard";
-  if (hit(0)) send({t: g_ ? "catch" : st.mode === "jaeger" ? "act" : "stone"});
-  if (hit(7) && g_) send({t: "catch"});                             // 3D-4.x: R2 = the shutter («Auslöser») of the guard
-  if (hit(1)) { if (g_) send({t: "light"}); else { posture = posture === 1 ? 0 : 1; btns(); } }
-  if (hit(2)) { if (g_) send({t: "tool", k: "scan"}); else { posture = posture === 2 ? 0 : 2; btns(); } }   // 3D-4.x: X = scan, Y = siren, LB = zoom (guard)
-  if (hit(3)) send(g_ ? {t: "tool", k: "siren"} : {t: "lamp"});
-  if (hit(4) && g_) send({t: "tool", k: "zoom"});
-  if (hit(9) && (st.rs === "lobby" || st.rs === "end")) send({t: "start"});
-  gpOld = g.buttons.map((x, i) => B(i));
-  return {mx: lx_, my: ly_, look: rx_ * 12, pitch: ry_ * 8, run: B(7) || B(5) || B(10)};
+  if (!PADR) return null;
+  const g = MWPad.pads()[0] || null, nm = MWPad.name(g);
+  if (nm !== gpName) { gpName = nm; gpMode = ""; const h = $("#padh"); h.hidden = !g; h.textContent = "🎮 Controller verbunden" + (nm ? ": " + nm : ""); if (g) $("#hint").style.display = "none"; }
+  const mm = $("#pmap"), M = st && st.mm, showMap = !!(g && M && (st.rs === "play" || st.rs === "countdown"));
+  if (mm.hidden === showMap) mm.hidden = !showMap;
+  if (showMap) MWPad.drawMap(mm, M, 40);
+  if (!g || document.hidden) { PADR.read(null); return null; }
+  const g_ = role === "guard", mode = g_ ? (st.mode === "seek" ? "seek" : "guard") : "runner";
+  if (mode !== gpMode) { gpMode = mode; padHelp(mode); }
+  if (g_ && st.catches != null) { if (gpCatch >= 0 && st.catches > gpCatch) MWPad.rumble(g, "hit"); gpCatch = st.catches; }
+  const P = PADR.read(g, mode);
+  P.fired.forEach(a => {
+    if (a === "catch" || a === "shutter") send({t: "catch"});
+    else if (a === "light") send({t: "light"});
+    else if (a === "scan" || a === "siren" || a === "zoom") send({t: "tool", k: a});
+    else if (a === "lamp") send({t: "lamp"});
+    else if (a === "stone") send({t: st.mode === "jaeger" ? "act" : "stone"});
+    else if (a === "crouch") { posture = posture === 1 ? 0 : 1; btns(); }
+    else if (a === "crawl") { posture = posture === 2 ? 0 : 2; btns(); }
+    else if (a === "replay" && st.rs === "end") send({t: "replay"});
+    else if (a === "menu") { if (st.rs === "lobby" || st.rs === "end") send({t: "start"}); else padHelp(mode); }
+  });
+  const H = P.head, D = P.dpad;
+  let mx = 0, my = 0, lk = 0, pt = 0;
+  if (mode === "runner") { mx = P.move[0] + D[0]; my = P.move[1] + D[1]; lk = H[0] * 12; pt = H[1] * 8; }
+  else if (mode === "seek") { mx = P.move[0]; my = P.move[1]; lk = (H[0] + D[0]) * 12; pt = (H[1] + D[1]) * 8; }
+  else { lk = (H[0] + D[0] + P.move[0] * 0.3) * 12; pt = (H[1] + D[1] + P.move[1] * 0.3) * 8; }
+  const l = Math.hypot(mx, my); if (l > 1) { mx /= l; my /= l; }
+  return {mx, my, look: lk, pitch: pt, run: mode === "runner" && P.val("r2") > 0.3};
 }
 setInterval(() => {
   const P = padRead();

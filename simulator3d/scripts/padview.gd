@@ -48,7 +48,8 @@ func state() -> Dictionary:
 			"vm": main.view_mode, "bare": _hid, "cam": [snappedf(c.x, 0.01), snappedf(c.y, 0.01), snappedf(c.z, 0.01)],
 			"cam_yaw": snappedf(rad_to_deg(main.view_cam.global_rotation.y), 0.1),
 			"orbit": snappedf(ex.orbit, 0.01) if ex != null else 0.0, "dist": snappedf(ex.dist, 0.01) if ex != null else 0.0,
-			"x": snappedf(main.rig.position.x, 0.01), "z": snappedf(main.rig.position.z, 0.01), "yaw": snappedf(rad_to_deg(main.rig.rotation.y), 0.1)}
+			"x": snappedf(main.rig.position.x, 0.01), "z": snappedf(main.rig.position.z, 0.01), "yaw": snappedf(rad_to_deg(main.rig.rotation.y), 0.1),
+			"mm": main.padhud.map_data() if main.padhud != null else {}, "rumble": main.padmap.take_web_rumble() if main.padmap != null else ""}   # 3D-4.13: mini-map (MWPad.drawMap), vibration
 
 
 func _next(L: Array) -> String:

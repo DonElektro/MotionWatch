@@ -1,6 +1,6 @@
 extends Control
 ## Driving the mover in the simulator itself (from 3D-3.15): a green stick at the bottom right (drag with the mouse:
-## up = forward, down = back, sideways = turn on the spot), or the arrow keys. «Hinterher» = the view follows the mover.
+## up = forward, down = back, sideways = turn on the spot), the arrow keys or the right stick of a controller (padmap.gd). «Hinterher» = the view follows the mover.
 ## Shown only when «Mover simulieren» is on. Overrides MoveEye while it is used.
 
 var main
@@ -64,8 +64,9 @@ func command() -> Vector2:
 	var g = main.game
 	if g != null and g.round_state == "play" and g.seek_drive != Vector2.ZERO:
 		return g.seek_drive.limit_length(1.0)               # 3D-3.78: the seeker of «Verstecken» drives
+	var pd: Vector2 = main.padmap.drive_cmd() if main.padmap != null else Vector2.ZERO   # 3D-4.13: right stick (padmap.gd)
 	if main.localplay != null and main.localplay.active:
-		return Vector2.ZERO                                  # 3D-3.77: the keys belong to the player at the PC
+		return pd.limit_length(1.0)                          # 3D-3.77: the keys belong to the player at the PC (a «Rover» controller still drives)
 	if not main.karte.visible and not main.typing():
 		if Input.is_key_pressed(KEY_UP):
 			k.x += 1.0
@@ -77,6 +78,7 @@ func command() -> Vector2:
 			k.y -= 1.0
 	if main.explore != null and main.explore.on:          # 3D-3.55: exploring - also W A S D and the game controller
 		k += main.explore.command()
+	k += pd
 	if dragging:
 		k = Vector2(-knob.y, knob.x)
 	if k == Vector2.ZERO and main.patrol != null and main.patrol.active:   # 3D-3.61: the patrol drives (a hand on the stick wins)

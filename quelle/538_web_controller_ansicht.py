@@ -9,16 +9,13 @@
 #   simulator window, 3D-3.18), double tap = next view (head camera → from above → behind the rover), long tap = swap.
 #   Slim bar (the quick switches of 530: Lamp, IR, Thermal, Night vision, Marks, Photo, Record, Follow, then Centre …),
 #   at most 8 visible (fewer on a narrow phone), the rest behind «…», hides itself after 4 s, a tap shows it again.
-#   Controller (standard mapping of the Gamepad API):
-#     left stick = head (pan / tilt, /api/stick like the joystick: real servos and simulator) · L3 = centre
-#     right stick = rover (up = forward, sideways = steer) through MoveEye's mover (/api/mover → MOVER: the real mover
-#       later, in the simulation the simulator's rover); the simulator view follows behind the rover (explore «hinterher»)
-#     without a rover: right stick = fly the simulator view (up = forward, sideways = turn)
-#     R1 held + right stick = turn the simulator view · L1 = zoom out, R1 short = zoom in, L2 = zoom out too
-#     (2.98.35: with the simulator R2 = the shutter «Auslöser», part 539; aufr: the help no longer says «L2 / R2 zoom»)
-#     R3 = next view (behind the rover → driver → from above; without rover: head camera → from above → free)
-#     A Photo · B Record · X Lamp (IR without lamp) · Y Follow · D-pad ← → choose a button of the bar, ↑ press it, ↓ help
-#     Select = swap the pictures · Start = bar on / off, held 1 s = leave
+#   Controller: the ONE mapping of MoveEye and the simulator (part 542, MWPad, mode «view») - left stick = head,
+#     right stick = rover (no rover: move the view), R1 held + right stick = turn the view, R2 = shutter (otherwise zoom in),
+#     L1 / R1 tap = zoom out / in, A B X Y = light / IR / photo / follow, L3 = head to the middle, R3 = next view,
+#     Select = swap the pictures (held 1.5 s = emergency stop), Start = the bar (held 1 s = leave), D-pad ← → = choose a
+#     button of the bar, A or ↑ = press it, B = back, ↓ = help. Help, settings (dead zone, sensitivity, invert Y, swap the
+#     sticks, vibration) and the roles of 2+ controllers (1 = head, 2 = rover) in the help (↓). Mini-map with the field of
+#     view of the head on the simulator picture; the controller vibrates on an alarm and on a shot of the shutter.
 #   While it is open the raw controller is not sent to the simulator (470 simPadLink: mwPadOwn), the small simulator
 #   window of the live page pauses (530) - one picture, one mapping. Stored per device (localStorage «mw-pad», not on
 #   the Pi): open, swapped, asked. Translations: part 628.
@@ -43,6 +40,9 @@ PADVIEW_JS = r"""
 #pv-pad{position:absolute;z-index:3;top:max(10px,env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);font-size:12px;color:#fff;background:rgba(8,12,20,.55);
   padding:4px 10px;border-radius:10px;pointer-events:none;transition:opacity .3s;white-space:nowrap}
 #pv.calm #pv-x,#pv.calm #pv-pad{opacity:0;pointer-events:none}
+#pv-map{position:absolute;z-index:2;left:8px;top:8px;width:110px;height:110px;pointer-events:none}#pv-map[hidden]{display:none}
+#pv .mwpad-help{border-collapse:collapse;width:100%}#pv .mwpad-help td{padding:3px 4px;vertical-align:top;border-top:1px solid rgba(255,255,255,.08)}#pv .mwpad-help td:first-child{white-space:nowrap;color:#ffd34d;padding-right:10px}
+#pv .mwpad-set input[type=range]{accent-color:#ffd34d}
 #pv-bar{position:absolute;z-index:3;left:50%;bottom:max(10px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;gap:6px;padding:6px;border-radius:16px;
   background:rgba(8,12,20,.74);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);transition:opacity .3s,transform .3s;max-width:calc(100% - 16px)}
 #pv.calm #pv-bar{opacity:0;pointer-events:none;transform:translate(-50%,24px)}
@@ -116,7 +116,8 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     help: {ic: "?", lb: "Help", tip: "Controller and gestures", on: () => !HELP.hidden, go: () => { help(HELP.hidden); return Promise.resolve({ok: true}); }, util: true},
     exit: {ic: "✕", lb: "Exit", tip: "Leave the controller view", on: () => false, go: () => { open(false); return Promise.resolve({ok: true}); }, util: true}};
   const ORDER = ["white", "ir", "therm", "nv", "marks", "photo", "rec", "track", "center", "patrol", "listen", "mask", "rover", "swap", "help", "exit"];
-  const KEYS = () => ({photo: "A", rec: "B", [okId("white") ? "white" : "ir"]: "X", track: "Y"});
+  const ACT2ID = {light: "white", ir: "ir", photo: "photo", follow: "track"};   // the actions of MWPad (542) -> the buttons of the bar
+  const KEYS = () => { const K = {}; ((window.MWPad && MWPad.MAP.modes.view) || []).forEach(e => { if (ACT2ID[e[1]] && /^[abxy]$/.test(e[0])) K[ACT2ID[e[1]]] = e[0].toUpperCase(); }); return K; };
   const item = id => EXTRA[id] || QD(id);
   function okId(id) { const q = item(id); if (!q) return false; const c = J().cfg || {}, s = ST(); try { return q.ok ? !!q.ok(c, s) : true; } catch (e) { return false; } }
   function act(id, btn) {
@@ -166,17 +167,21 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
   function help(on) {
     HELP.hidden = !on; if (!on) { paintBar(); return; }
     HELP.textContent = ""; HELP.appendChild(E("b", "", "🎮 " + T("Controller view")));
-    const tb = E("table");
-    [["L ◉", "Left stick: turn / tilt the head of MoveEye"], ["L3", "Press the left stick: head to the middle"],
-     ["R ◉", rover() ? "Right stick: drive the rover (up = forward, sideways = steer) - the view follows behind it" : "Right stick: move the simulator view (no rover)"],
-     ["R1 + R ◉", "Hold R1 + right stick: turn the simulator view"], ["L1 / R1", "Zoom out / in (L2 = zoom out too)"],
-     ["R2 🎯", "Shutter: a shot at the middle of the picture (with the simulator; in «Team gegen MoveEye» a catch)"],
-     ["R3", "Press the right stick: next view (behind the rover, driver, from above)"],
-     ["A B X Y", "A Photo · B Record · X Lamp · Y Follow"], ["✚ ← →", "Choose a button of the bar, ↑ presses it, ↓ this help"],
-     ["Select", "Swap the pictures"], ["Start", "Bar on / off · hold 1 s = leave"],
-     ["☝", "Simulator picture: one finger = turn, two fingers = zoom, double tap = next view, long tap = swap the pictures"]]
-      .forEach(([k, v]) => { const tr = E("tr"); tr.append(E("td", "", k), E("td", "", T(v))); tb.appendChild(tr); });
-    HELP.appendChild(tb); HELP.appendChild(E("div", "mut", T("Tap here to close. Stored on this device only.")));
+    if (window.MWPad) HELP.appendChild(MWPad.helpTable("view", T));         // made from the one mapping (542)
+    const tb = E("table"), tr = E("tr");
+    tr.append(E("td", "", "☝"), E("td", "", T("Simulator picture: one finger = turn, two fingers = zoom, double tap = next view, long tap = swap the pictures")));
+    tb.appendChild(tr); HELP.appendChild(tb);
+    const L = window.MWPad ? MWPad.pads() : [];
+    if (L.length > 1) {                                                     // several controllers: a role each
+      HELP.appendChild(E("b", "", T("Controllers")));
+      L.forEach((g, i) => { const row = E("div"); row.style.cssText = "display:flex;gap:8px;align-items:center;margin:3px 0";
+        const r = roleOf(i), sel = E("select"); [["guard", "Head"], ["rover", "Rover"], ["all", "everything"]].forEach(([v, l]) => { const o = E("option", "", T(l)); o.value = v; sel.appendChild(o); });
+        sel.value = r; sel.onclick = e => e.stopPropagation(); sel.onchange = () => { P.roles = Object.assign({}, P.roles || {}, {[i]: sel.value}); save(); paintPads(); };
+        const n = E("span", "", (i + 1) + " " + MWPad.name(g)); n.style.cssText = "flex:1;color:" + roleCol(r); row.append(n, sel); HELP.appendChild(row); });
+    }
+    HELP.appendChild(E("b", "", T("Settings")));
+    if (window.MWPad) MWPad.settingsUI(HELP, T);
+    HELP.appendChild(E("div", "mut", T("Tap here to close. Stored on this device only.")));
     wake();
   }
   HELP.addEventListener("click", e => { e.stopPropagation(); help(false); });
@@ -200,7 +205,8 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     if (!rover()) PV.followed = false;
   }
   function sim(d) { if (!simOn()) return Promise.resolve({ok: false});
-    return post("/api/sim", Object.assign({action: "padview", lang: LANG}, d)).then(r => { if (r && r.ok && r.view != null) PV.view = r.view; return r; }); }
+    return post("/api/sim", Object.assign({action: "padview", lang: LANG}, d)).then(r => { if (r && r.ok && r.view != null) PV.view = r.view;
+      if (r && r.rumble && window.MWPad) MWPad.rumble(null, r.rumble); return r; }); }
   // ---- view events into the simulator window (the protocol of simViewBind, 470: view_in) ----
   const VB = typeof simViewBind === "function" ? simViewBind(E("img"), {active: () => false}) : null;   // only its sender (queue of 70 ms)
   const vpush = (e, now) => { if (VB) VB.push(e, now); else post("/api/sim", {action: "view_in", ev: [e], lang: LANG}); };
@@ -264,54 +270,82 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
   gestures(PS, SI, true);
   gestures(PL, slot, false);
   // ---- the game controller (Gamepad API, standard mapping) ----
-  const GP = {mute: false, prev: [], lastHead: 0, headZero: true, lastR: 0, rZero: true, r1T: 0, r1Used: false, startT: 0, startLong: false, l1T: 0, zT: 0, name: ""};
-  function pad() { try { return [...(navigator.getGamepads ? navigator.getGamepads() : [])].find(g => g && g.connected) || null; } catch (e) { return null; } }
-  const dz = (x, y) => { const m = Math.hypot(x, y); if (m < 0.18) return [0, 0]; const k = Math.min(1, (m - 0.18) / 0.78) / m; return [x * k, y * k]; };
+  const GP = {mute: false, lastHead: 0, headZero: true, lastR: 0, rZero: true, zT: 0, R: []};
+  const pads = () => (window.MWPad ? MWPad.pads() : []);
+  function pad() { return pads()[0] || null; }
+  // several controllers: 1 = head, 2 = rover (changeable in the help); one controller does everything
+  const ROLE_ACT = {head: "guard", center: "guard", light: "guard", ir: "guard", photo: "guard", follow: "guard", shutter: "guard", estop: "guard",
+                    drive: "rover", orbit: "rover", zoom_in: "rover", zoom_out: "rover", view: "rover", swap: "rover"};
+  const roleOf = i => (pads().length < 2 ? "all" : ((P.roles || {})[i] || (i === 0 ? "guard" : i === 1 ? "rover" : "all")));
+  const okFor = (i, a) => { const r = roleOf(i); return r === "all" || !ROLE_ACT[a] || ROLE_ACT[a] === r; };
+  const roleCol = r => ((window.MWPad && MWPad.MAP.roles[r]) || ["", "", "#c0ccdd"])[2];
   const spd = () => { const s = document.getElementById("stick-speed"); return s ? parseFloat(s.value) || 30 : 30; };
   const zoom = d => sim({zoom: d});
+  const mag = v => Math.hypot(v[0], v[1]);
   function focusMove(d) { const n = BAR.children.length; if (!n) return; wake(); focus = focus < 0 ? (d > 0 ? 0 : n - 1) : (focus + d + n) % n; paintBar(); }
   function focusPress() { const b = BAR.children[focus]; if (b) b.click(); }
+  function press(id) { const b = W.querySelector('button.pvb[data-id="' + id + '"]'); act(id, b); wake(); }
+  function doAct(a) {
+    if (ACT2ID[a]) return press(ACT2ID[a]);
+    if (a === "center") return press("center");
+    if (a === "shutter") { if (window.mwShutCan && window.mwShutCan()) window.mwShutFire(); else zoom(1); return; }
+    if (a === "zoom_in") return zoom(1);
+    if (a === "zoom_out") return zoom(-1);
+    if (a === "view") return sim({view: "rnext"}).then(r => { if (r && r.ok) toastT("👁 " + T(VIEWNAME[r.view] || "Free view")); });
+    if (a === "swap") return swap();
+    if (a === "estop") { if (window.servoEstop) window.servoEstop(); else post("/api/servo", {op: "estop"}); return toastT("⛔ " + T("EMERGENCY STOP")); }
+    if (a === "menu") return barToggle();
+    if (a === "exit") { GP.mute = true; open(false); }
+  }
   function gpTick() {
-    const g = pad();
-    if (GP.mute && !(g && [...g.buttons].some(b => b && b.pressed))) GP.mute = false;   // left with Start held: let go first
-    if (!PV.open || !g || document.hidden) return;
-    const cur = [...g.buttons].map(b => !!(b && (b.pressed || b.value > 0.5))), prev = GP.prev; GP.prev = cur;
-    const down = i => cur[i] && !prev[i], up = i => !cur[i] && prev[i], val = i => (g.buttons[i] ? g.buttons[i].value || (g.buttons[i].pressed ? 1 : 0) : 0);
-    const now = Date.now();
-    const [lx, ly] = dz(g.axes[0] || 0, g.axes[1] || 0), [rx, ry] = dz(g.axes[2] || 0, g.axes[3] || 0);
+    const L = pads();
+    if (GP.mute && !L.some(g => [...g.buttons].some(b => b && b.pressed))) GP.mute = false;   // left with Start held: let go first
+    if (!PV.open || !L.length || document.hidden) return;
+    let head = [0, 0], move = [0, 0], orbit = [0, 0]; const fired = [], keys = [];
+    L.forEach((g, i) => {
+      const R = GP.R[i] || (GP.R[i] = MWPad.Pad("view")); R.read(g, "view");
+      if (okFor(i, "head") && mag(R.head) > mag(head)) head = R.head;
+      if (okFor(i, "drive") && mag(R.move) > mag(move)) move = R.move;
+      if (okFor(i, "orbit") && mag(R.orbit) > mag(orbit)) orbit = R.orbit;
+      R.keys.forEach(k => keys.push(k));
+      R.fired.forEach(a => { if (okFor(i, a)) fired.push(a); });
+    });
+    const now = Date.now(), r3 = v => Math.round(v * 1000) / 1000;
     // left stick = head (the same as the joystick of the live page: /api/stick, real servos and the simulator)
-    if (lx || ly) { if (now - GP.lastHead >= 100) { GP.lastHead = now; GP.headZero = false; post("/api/stick", {x: r3(lx), y: r3(-ly), speed: spd(), via: "pad"}); } }
+    if (head[0] || head[1]) { if (now - GP.lastHead >= 100) { GP.lastHead = now; GP.headZero = false; post("/api/stick", {x: r3(Math.max(-1, Math.min(1, head[0]))), y: r3(Math.max(-1, Math.min(1, -head[1]))), speed: spd(), via: "pad"}); } }
     else if (!GP.headZero) { GP.headZero = true; post("/api/stick", {x: 0, y: 0, speed: spd()}); }
-    // right stick = rover (MoveEye's mover: real mover or the simulator's rover) · R1 held = turn the view · no rover = fly the view
-    if (down(5)) { GP.r1T = now; GP.r1Used = false; }
-    if (rx || ry) {
+    // R1 held + right stick = turn the view · right stick = rover (MoveEye's mover) · no rover = move the view
+    if (orbit[0] || orbit[1]) { if (now - GP.lastR >= 100 && simOn()) { GP.lastR = now; sim({look: [r3(orbit[0]), r3(orbit[1])], dt: 0.1}); } }
+    if (move[0] || move[1]) {
       if (now - GP.lastR >= 100) { GP.lastR = now;
-        if (cur[5] && simOn()) { GP.r1Used = true; sim({look: [r3(rx), r3(ry)], dt: 0.1}); if (!GP.rZero) { GP.rZero = true; post("/api/mover", {v: 0, w: 0}); } }
-        else if (rover()) { GP.rZero = false; post("/api/mover", {v: r3(-ry), w: r3(rx)}); }
-        else if (simOn()) sim({fly: [r3(-ry), r3(rx)], dt: 0.1}); }
+        if (rover()) { GP.rZero = false; post("/api/mover", {v: r3(-move[1]), w: r3(move[0])}); }
+        else if (simOn()) sim({fly: [r3(-move[1]), r3(move[0])], dt: 0.1}); }
     } else if (!GP.rZero) { GP.rZero = true; post("/api/mover", {v: 0, w: 0}); }
-    if (up(5) && !GP.r1Used && now - GP.r1T < 400) zoom(1);              // R1 short = zoom in
-    if (down(4)) { GP.l1T = now; zoom(-1); }                              // L1 = zoom out (held: again and again)
-    else if (cur[4] && now - GP.l1T > 450 && now - GP.zT > 300) { GP.zT = now; zoom(-1); }
-    const l2 = val(6), r2 = val(7);                                       // L2 / R2: zoom out / in while pressed
-    const shut = !!(window.mwShutCan && window.mwShutCan());              // 2.98.35: with the simulator R2 = the shutter («Auslöser», 539)
-    if (shut && r2 > 0.5 && !GP.r2) window.mwShutFire();
-    GP.r2 = r2 > 0.5;
-    if ((l2 > 0.4 || (!shut && r2 > 0.4)) && now - GP.zT > 250) { GP.zT = now; zoom(!shut && r2 > l2 ? 1 : -1); }
-    if (down(10)) act("center");                                           // L3
-    if (down(11)) sim({view: "rnext"}).then(r => { if (r && r.ok) toastT("👁 " + T(VIEWNAME[r.view] || "Free view")); });   // R3
-    const K = KEYS(), byKey = k => Object.keys(K).find(id => K[id] === k);
-    [[0, "A"], [1, "B"], [2, "X"], [3, "Y"]].forEach(([i, k]) => { if (down(i)) { const id = byKey(k), b = W.querySelector('button.pvb[data-id="' + id + '"]'); act(id, b); wake(); } });
-    if (down(8)) { GP.selT = now; GP.selLong = false; }                   // Select: short = swap the pictures,
-    if (cur[8] && !GP.selLong && now - GP.selT > 1500) { GP.selLong = true; if (window.servoEstop) window.servoEstop(); else post("/api/servo", {op: "estop"}); toastT("⛔ " + T("EMERGENCY STOP")); }   // held 1.5 s = Not-Aus (2.98.35, 539)
-    if (up(8) && !GP.selLong) swap();
-    if (down(9)) { GP.startT = now; GP.startLong = false; }               // Start: short = bar, held 1 s = leave
-    if (cur[9] && !GP.startLong && now - GP.startT > 1000) { GP.startLong = true; GP.mute = true; open(false); return; }   // (the held Start must not reach the simulator)
-    if (up(9) && !GP.startLong) barToggle();
-    if (down(14)) focusMove(-1); if (down(15)) focusMove(1); if (down(12)) focusPress(); if (down(13)) help(HELP.hidden);
+    // the bar with the D-pad: ← → choose, ↑ or A press, B back, ↓ help (the menu of this view)
+    if (keys.includes("left")) focusMove(-1); if (keys.includes("right")) focusMove(1);
+    if (keys.includes("down")) help(HELP.hidden);
+    if (focus >= 0 || !HELP.hidden || !MORE.hidden) {
+      if (keys.includes("up") || keys.includes("a")) { if (focus >= 0) focusPress(); else if (!HELP.hidden) help(false); }
+      if (keys.includes("b")) { focus = -1; MORE.hidden = true; help(false); paintBar(); }
+      fired.filter(a => !["light", "ir"].includes(a)).forEach(doAct);      // A / B belong to the bar now
+      return;
+    }
+    if (keys.includes("up")) { focus = 0; wake(); paintBar(); }
+    fired.forEach(doAct);
   }
   setInterval(gpTick, 50);
-  window.mwPadOwn = () => (PV.open || GP.mute) && !!pad();                // 470: the raw controller does not go to the simulator meanwhile
+  window.mwPadOwn = () => (PV.open || GP.mute) && !!pad();
+  // ---- the chips of the controllers (number + role in its colour) and the mini-map of the simulator ----
+  function paintPads() {
+    const L = pads(); PADI.hidden = !L.length; if (!L.length) return;
+    const h = L.map((g, i) => '<span style="color:' + roleCol(roleOf(i)) + '">🎮' + (L.length > 1 ? (i + 1) + " " + T(({guard: "Head", rover: "Rover", all: "everything"})[roleOf(i)]) : " " + MWPad.name(g).replace(/[<>&"]/g, "")) + "</span>").join(" · ");
+    if (PADI.innerHTML !== h) PADI.innerHTML = h;
+  }
+  const MM = E("canvas"); MM.id = "pv-map"; MM.width = MM.height = 220; MM.hidden = true; PS.appendChild(MM);
+  function mapTick() {
+    if (!PV.open || !simOn() || !window.MWPad) { MM.hidden = true; return; }
+    sim({}).then(r => { const m = r && r.mm; MM.hidden = !m || !pad(); if (m && pad()) MWPad.drawMap(MM, m, 40); });
+  }                // 470: the raw controller does not go to the simulator meanwhile
   // ---- open / close ----
   let vHome = null;
   function open(on) {
@@ -324,7 +358,7 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
       if (typeof window.pipShow === "function") window.pipShow(false);
       const mn = document.getElementById("lv-menu"); if (mn) mn.hidden = true;
       if (v) { vHome = v.parentNode; slot.appendChild(v); }            // the same picture element (no second stream)
-      document.body.classList.add("pv-on"); W.hidden = false; GP.prev = []; PV.followed = false; focus = -1;
+      document.body.classList.add("pv-on"); W.hidden = false; GP.R = []; PV.followed = false; focus = -1;
       layout(); BSIG = ""; paintBar(); wake(); simTick();
       if (!P.help && pad()) { P.help = true; save(); help(true); }
       try { if (touchDev() && W.requestFullscreen && !document.fullscreenElement) W.requestFullscreen({navigationUI: "hide"}).catch(() => {}); } catch (e) {}
@@ -374,7 +408,7 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     toolBtn();
     const g = pad(); const nm = g ? String(g.id).replace(/\(.*?\)/g, "").trim().slice(0, 30) : "";
     if (PV.open) {
-      PADI.hidden = !g; if (g && PADI.textContent !== "🎮 " + nm) PADI.textContent = "🎮 " + nm;
+      paintPads(); mapTick();
       layout(); paintBar(); simTick();
     }
   }, 1000);

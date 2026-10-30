@@ -124,6 +124,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `635_uebersetzungen_blinki.py` | Übersetzungen und Anleitungs-Zeile zu Blinki | 60 |
 | `634_uebersetzungen_ausl.py` | Übersetzungen für den «Auslöser» (539) | 40 |
 | `637_uebersetzungen_servo.py` | Übersetzungen Servo-Bewegung, Not-Aus, Teach-in, Diagnose | 156 |
+| `623_uebersetzungen_pad2.py` | Übersetzungen des Controller-Konzepts (542, 538, 470) | 75 |
 | `632_uebersetzungen_aufr.py` | Übersetzungen der Aufräum-Runde (Servos an einem Ort, Kurzbefehl-Schlüssel = App-Schlüssel, Zonen «nur melden» / «bleibt am Platz», Tierart) + Selbsttest | 150 |
 | `639_uebersetzungen_falearn.py` | Übersetzungen «Lernbilder prüfen» | 13 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
@@ -135,6 +136,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `541_web_servo.py` | Web: Seite «Servos» (/servo, /api/servo): Not-Aus / Freigeben, wer steuert, Teach-in, Diagnose mit Export; Not-Aus auf der Live-Seite | 368 |
 | `538_web_controller_ansicht.py` | Web: «Controller-Ansicht» der Live-Seite für Handy / Tablet (Live- + Simulator-Bild, Game-Controller, Gesten, schmale Leiste) | 383 |
 | `539_web_ausloeser.py` | «Auslöser»: ein Mensch steuert die Kamera – Fadenkreuz und runder 🎯-Knopf im Live-Bild, R2, Treffer als Alarm ins Test-Postfach | 170 |
+| `542_web_padmap.py` | EIN Controller-Konzept (MWPad): Belegung für Controller-Ansicht, Simulator-Seite, Handy-Spiel und 3D-Simulator (gleicher Text wie simulator3d/scripts/padmap.gd, Selbsttest vergleicht), Vibration, Hilfe, Fadenkreuz, Mini-Karte | 230 |
 | `543_web_spiel_waechter.py` | Spiel des Simulators: Wächter-Werkzeuge der Wächter an MoveEye («Team gegen MoveEye») – Energie, Licht, Sirene, Scan, Zoom, Hinweis-Marken im Live-Bild | 75 |
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
 | `544_web_spiel_online.py` | Web: Seite Simulator, Karte «Spiel» – «Mensch gegen KI» (beide Runden, Ergebnis) und «Online-Einladung» (QR-Code, Zurückziehen, Protokoll) | 110 |
