@@ -6,6 +6,18 @@
   "it": "\n\n(Nell’editor Godot non si aggiorna.)",
   "rm": "\n\n(En l’editur Godot na vegni betg actualisà.)"
  },
+ "\n\n+ ein Bild als zweite Nachricht (JPEG, höchstens 350 KB)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "\n\n--- Technik ---\nSimulator %s · Godot %s · %s · %s · Grafik %s · Laufzeit %d h": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "\n\nDer Simulator startet nach dem Update neu. Läuft MoveEye auf diesem PC, danach bitte wieder starten.": {
   "en": "\n\nThe simulator restarts after the update. If MoveEye runs on this PC, please start it again afterwards.",
   "fr": "\n\nLe simulateur redémarre après la mise à jour. Si MoveEye tourne sur ce PC, merci de le redémarrer ensuite.",
@@ -18,11 +30,29 @@
   "it": "\n\nFalsi allarmi: %s %d · MoveEye %d",
   "rm": "\n\nFauss alarms: %s %d · MoveEye %d"
  },
+ "\n\nKontakt: ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "\n\nWird in %d s automatisch installiert, danach startet der Simulator neu.": {
   "en": "\n\nWill be installed automatically in %d s, then the simulator restarts.",
   "fr": "\n\nSera installée automatiquement dans %d s, puis le simulateur redémarre.",
   "it": "\n\nVerrà installata automaticamente tra %d s, poi il simulatore si riavvia.",
   "rm": "\n\nVegn installà automaticamain en %d s, suenter cumenza il simulatur da nov."
+ },
+ "\n\nZufriedenheit: ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "\n\n— 3D-Simulator %s · ohne MoveEye · Seite: %s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "\n%s: %s %d · MoveEye %d – %s": {
   "en": "\n%s: %s %d · MoveEye %d – %s",
@@ -65,6 +95,12 @@
   "fr": "\nExécution : ",
   "it": "\nEsecuzione: ",
   "rm": "\nCurs: "
+ },
+ "\nLetzter Fehler · %s: %s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "\n⏻ Akku leer – das Gerät wäre jetzt aus": {
   "en": "\n⏻ Battery empty – the device would now be off",
@@ -234,6 +270,12 @@
   "it": " (direzione %d di %d)",
   "rm": " (direcziun %d da %d)"
  },
+ " (Testmodus)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  " (von MoveEye)": {
   "en": " (from MoveEye)",
   "fr": " (de MoveEye)",
@@ -257,6 +299,12 @@
   "fr": " (sera placé)",
   "it": " (verrà posizionato)",
   "rm": " (vegn mess)"
+ },
+ " (zuletzt %s)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  " Du hast jetzt %d Sterne.": {
   "en": " You now have %d stars.",
@@ -372,11 +420,29 @@
   "it": " · migliori: ",
   "rm": " · ils megliers: "
  },
+ " · Bildschirmfoto": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ " · Ersatz-Port, 8765 war besetzt": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  " · erwischt %d%s": {
   "en": " · caught %d%s",
   "fr": " · attrapé %d%s",
   "it": " · preso %d%s",
   "rm": " · tschiffà %d%s"
+ },
+ " · Fenster klein / versteckt": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  " · getrennt": {
   "en": " · disconnected",
@@ -498,11 +564,23 @@
   "it": " · giorno",
   "rm": " · di"
  },
+ " · TESTMODUS: geht nur an ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  " · Treffer %d von %d Schüssen, %d Punkte": {
   "en": " · hits %d of %d shots, %d points",
   "fr": " · %d touches sur %d tirs, %d points",
   "it": " · colpi %d su %d tiri, %d punti",
   "rm": " · tutgads %d da %d sajets, %d puncts"
+ },
+ " · Tunnel %s:%d (%s)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  " · Uhr (kein Fotoalbum)": {
   "en": " · clock (no photo album)",
@@ -516,11 +594,23 @@
   "it": " · aggiornamento: ",
   "rm": " · update: "
  },
+ " · Version ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  " · Vielfalt hoch": {
   "en": " · high variety",
   "fr": " · grande variété",
   "it": " · grande varietà",
   "rm": " · grond varietad"
+ },
+ " · virtuelle Maschine": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  " · Vollbild": {
   "en": " · full screen",
@@ -545,6 +635,12 @@
   "fr": " · attend le Pi",
   "it": " · aspetta il Pi",
   "rm": " · spetga il Pi"
+ },
+ " · was läuft und was fehlt": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  " · Ziel: ": {
   "en": " · goal: ",
@@ -726,6 +822,12 @@
   "it": " – test del simulatore: le notifiche push aspettano e vengono inviate dopo",
   "rm": " – test dal simulatur: avis push spetgan e vegnan tramess pli tard"
  },
+ " – Testmodus: ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  " – versucht es weiter (gleich auf einem freien Port)": {
   "en": " – keeps trying (soon on a free port)",
   "fr": " – continue d’essayer (bientôt sur un port libre)",
@@ -817,6 +919,18 @@
   "it": "%d presenti · muoversi liberamente, nessuno viene preso",
   "rm": "%d preschents · sa mover liber, nagin na vegn tschiffà"
  },
+ "%d Einträge (die letzten %d werden gezeigt) · %d Fehler von Godot seit dem Start": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "%d Feedbacks warten noch auf das Senden": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "%d Fehlalarme": {
   "en": "%d false alarms",
   "fr": "%d fausses alarmes",
@@ -834,6 +948,12 @@
   "fr": "%d objets dans «%s»",
   "it": "%d oggetti in «%s»",
   "rm": "%d objects en «%s»"
+ },
+ "%d Hinweise": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "%d Häuser, %d %% Wald, %d %% Wasser%s, %d %% Wiesen und Felder, %d m ü. M.": {
   "en": "%d houses, %d %% forest, %d %% water%s, %d %% meadows and fields, %d m a.s.l.",
@@ -858,6 +978,18 @@
   "fr": "%d images d’apprentissage (en mouvement / lointaines, données d’image seulement) – vont dans le paquet d’images d’entraînement",
   "it": "%d immagini di apprendimento (in movimento / lontane, solo dati immagine) – vanno nel pacchetto di immagini di addestramento",
   "rm": "%d maletgs d’emprender (en moviment / lontans, mo datas da maletg) – vegnan en il pachet da maletgs da trenament"
+ },
+ "%d Meldungen von Godot": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "%d Probleme": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "%d Punkte": {
   "en": "%d points",
@@ -1252,6 +1384,12 @@
   "it": "(la prima volta «Draft a new release», tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye scarica poi da solo il nuovo modello.\n",
   "rm": "(l’emprima giada «Draft a new release», tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye prenda suenter sez il nov model.\n"
  },
+ "(deine Nachricht)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "*.glb, *.gltf ; 3D-Modell (glTF)": {
   "en": "*.glb, *.gltf ; 3D model (glTF)",
   "fr": "*.glb, *.gltf ; modèle 3D (glTF)",
@@ -1287,6 +1425,12 @@
   "fr": ", terminé",
   "it": ", finito",
   "rm": ", finì"
+ },
+ ", mit Bild von /view.jpg": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  ", Runde läuft": {
   "en": ", round running",
@@ -1344,11 +1488,23 @@
   "it": "1 falso allarme provocato",
   "rm": "1 fauss alarm provocà"
  },
+ "1 Hinweis": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "1 Leben": {
   "en": "1 life",
   "fr": "1 vie",
   "it": "1 vita",
   "rm": "1 vita"
+ },
+ "1 Problem": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "1 Schleicher": {
   "en": "1 sneaker",
@@ -1482,6 +1638,18 @@
   "it": "Scansioni 3D da musei (oggetti, niente terreno).",
   "rm": "Scans 3D da museums (objects, nagin terren)."
  },
+ "3D-Simulator %s · Protokoll · %s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "3D-Simulator %s · Selbstdiagnose · %s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "3D-Simulator Live · %s": {
   "en": "3D simulator live · %s",
   "fr": "Simulateur 3D en direct · %s",
@@ -1530,6 +1698,12 @@
   "it": "<%d byte %s>",
   "rm": "<%d bytes %s>",
   "?": "technisch (Log)"
+ },
+ "=?UTF-8?B?": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "? übersehen": {
   "en": "? missed",
@@ -1615,6 +1789,12 @@
   "it": "Distintivo",
   "rm": "Insigna"
  },
+ "Achtung": {
+  "en": "Attention",
+  "fr": "Attention",
+  "it": "Attenzione",
+  "rm": "Attenziun"
+ },
  "Achtung: %s wird gleich entdeckt!": {
   "en": "Watch out: %s is about to be discovered!",
   "fr": "Attention : %s va être découvert !",
@@ -1633,6 +1813,12 @@
   "it": "Indirizzo e codice mancanti",
   "rm": "Adressa e code mancan"
  },
+ "Adresse und Code in der Karte Verbindung → Tunnel mit MoveEye (Reiter Simulator) vergleichen; MoveEye muss laufen.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Adresse ungültig": {
   "en": "Address invalid",
   "fr": "Adresse invalide",
@@ -1650,6 +1836,12 @@
   "fr": "Adresse :",
   "it": "Indirizzo:",
   "rm": "Adressa:"
+ },
+ "Akku": {
+  "en": "Battery",
+  "fr": "Batterie",
+  "it": "Batteria",
+  "rm": "Battaria"
  },
  "Akku leer: MoveEye wäre jetzt aus (der Simulator lädt mit der Sonne oder dem Netzteil wieder)": {
   "en": "Battery empty: MoveEye would now be off (the simulator charges again with the sun or the power supply)",
@@ -1681,6 +1873,12 @@
   "it": "Allarme %s",
   "rm": "Alarm %s"
  },
+ "Alarm quittieren": {
+  "en": "Acknowledge alarm",
+  "fr": "Acquitter l’alarme",
+  "it": "Conferma allarme",
+  "rm": "Quittar l’alarm"
+ },
  "Alarm-Rückblick": {
   "en": "Alarm review",
   "fr": "Revue des alarmes",
@@ -1698,6 +1896,12 @@
   "fr": "Revue d’alarme : %s  ·  %d / %d s%s  ·  Esc termine",
   "it": "Revisione allarme: %s  ·  %d / %d s%s  ·  Esc termina",
   "rm": "Retrospectiva d’alarm: %s  ·  %d / %d s%s  ·  Esc termina"
+ },
+ "Alle": {
+  "en": "All",
+  "fr": "Tous",
+  "it": "Tutti",
+  "rm": "Tuts"
  },
  "Alle %d Plätze zum Laufen sind besetzt": {
   "en": "All %d running places are taken",
@@ -1783,6 +1987,12 @@
   "it": "Tutti i guasti spenti",
   "rm": "Tut ils disturbis deactivads"
  },
+ "Alle Tasten": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Alle wegschicken": {
   "en": "Send everyone away",
   "fr": "Renvoyer tout le monde",
@@ -1807,6 +2017,12 @@
   "it": "Tutto scelto? Allora «Costruire la scena».",
   "rm": "Tut tschernì? Lura «Construir la scena»."
  },
+ "alles in Ordnung": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Alles leeren": {
   "en": "Clear all",
   "fr": "Tout effacer",
@@ -1818,6 +2034,12 @@
   "fr": "Tout normal",
   "it": "Tutto normale",
   "rm": "Tut normal"
+ },
+ "Alles unter «Mehr» im Bedienfeld": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Alltag: E-Trottinett, Rollstuhl, Lieferroboter und Mähroboter kommen ab und zu von selbst": {
   "en": "Everyday life: e-scooter, wheelchair, delivery robot and robot mower come by themselves now and then",
@@ -1879,6 +2101,18 @@
   "it": "Inviare a MoveEye (porta %d)",
   "rm": "Trametter a MoveEye (port %d)"
  },
+ "An MoveEye senden: aus": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "An MoveEye senden: ein (Port %d)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Andere Welt": {
   "en": "Another world",
   "fr": "Autre monde",
@@ -1909,6 +2143,12 @@
   "it": "Cliccare: riquadro di nuovo grande · trascinare: spostare",
   "rm": "Cliccar: stgatletta puspè gronda · trair: spustar"
  },
+ "Anleitung von MoveEye": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Ansicht": {
   "en": "View",
   "fr": "Affichage",
@@ -1927,11 +2167,23 @@
   "it": "Vista nitida al 75 %",
   "rm": "Vista 75 % sclera"
  },
+ "Ansicht des Bedienfelds wie in MoveEye: Hell → Rotlicht → Dunkel (Rotlicht für die Nacht im Zelt)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Ansicht mit der Maus: links ziehen = verschieben · rechts ziehen = drehen · Rad = zoomen · Doppelklick = hinfliegen\nTasten: 0 frei · 1 / 2 Kameras · 3 Wärmebild · M Karte · L Livebild · H Bedienfeld · Esc Punkte fertig": {
   "en": "View with the mouse: drag left = move · drag right = turn · wheel = zoom · double click = fly there\nKeys: 0 free · 1 / 2 cameras · 3 thermal image · M map · L live picture · H control panel · Esc points done",
   "fr": "Vue à la souris : glisser à gauche = déplacer · glisser à droite = tourner · molette = zoomer · double-clic = y voler\nTouches : 0 libre · 1 / 2 caméras · 3 image thermique · M carte · L image en direct · H panneau · Esc points terminés",
   "it": "Vista con il mouse: trascinare a sinistra = spostare · trascinare a destra = girare · rotella = zoom · doppio clic = volare lì\nTasti: 0 libero · 1 / 2 telecamere · 3 immagine termica · M mappa · L immagine live · H pannello · Esc punti fatti",
   "rm": "Vista cun la mieur: trair a sanestra = spustar · trair a dretga = volver · roda = zoom · dubel clic = svolar là\nTastas: 0 liber · 1 / 2 cameras · 3 maletg termic · M charta · L maletg live · H panela · Esc puncts finì"
+ },
+ "Ansicht und Tasten": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Ansicht zurück": {
   "en": "View back",
@@ -1944,6 +2196,12 @@
   "fr": "Vue : ",
   "it": "Vista: ",
   "rm": "Vista: "
+ },
+ "Ansicht: Hell / Rotlicht / Dunkel": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Antwort": {
   "en": "Answer",
@@ -1962,6 +2220,18 @@
   "fr": "Réponse %s",
   "it": "Risposta %s",
   "rm": "Resposta %s"
+ },
+ "Antwort unvollständig": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Antwort zu gross": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Anzeige": {
   "en": "Display",
@@ -1986,6 +2256,18 @@
   "fr": "Avril",
   "it": "Aprile",
   "rm": "Avrigl"
+ },
+ "Arbeitsspeicher": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Arbeitsspeicher (RAM)": {
+  "en": "Memory (RAM)",
+  "fr": "Mémoire vive (RAM)",
+  "it": "Memoria (RAM)",
+  "rm": "Memoria da lavur (RAM)"
  },
  "Assistent": {
   "en": "Wizard",
@@ -2112,6 +2394,12 @@
   "fr": "désactivé – chacun choisit",
   "it": "spento – ognuno sceglie",
   "rm": "deactivà – mintgin tscherna sez"
+ },
+ "aus – nur nötig, wenn MoveEye in einem anderen Netz ist": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "AUSGANG": {
   "en": "EXIT",
@@ -2280,6 +2568,12 @@
   "fr": "Ferme – vaches, moutons, tracteur",
   "it": "Fattoria – mucche, pecore, trattore",
   "rm": "Bain puril – vatgas, nursas, tractor"
+ },
+ "Baum": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Baustelle": {
   "en": "Building site",
@@ -2509,11 +2803,23 @@
   "it": "sorveglia tenda / porta",
   "rm": "surveglia tenda / isch"
  },
+ "Bewachte Sachen": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Bewachte Sachen – wegnehmen und schauen, ob MoveEye es merkt (Referenz-Scan; Velo und Kühlbox auch Spielziel «Diebstahl»):": {
   "en": "Guarded things – take away and see whether MoveEye notices (reference scan; bike and cool box also game goal «Theft»):",
   "fr": "Objets surveillés – enlever et voir si MoveEye le remarque (scan de référence ; vélo et glacière aussi but du jeu «Vol») :",
   "it": "Oggetti sorvegliati – togliere e vedere se MoveEye se ne accorge (scansione di riferimento; bici e borsa frigo anche obiettivo del gioco «Furto»):",
   "rm": "Objects survegliads – prender davent e guardar, sche MoveEye al remartga (scan da referenza; velo e chista da fraid er finamira dal gieu «Engul»):"
+ },
+ "Bewegen und Ansicht: Erkunden mit dem Rover, Rover-Route, Folgen, Kopf drehen, Versetzen, Stange, Mitspieler, Ansicht, Bedienfeld ein / aus, Hell / Rotlicht / Dunkel und «?». Mit der Maus über ein Symbol: sein Name.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "bewegt sich im Wind": {
   "en": "moves in the wind",
@@ -2599,6 +2905,12 @@
   "it": "Immagini con riquadri per un proprio modello IA: molte scene, giorno, notte, pioggia, nebbia, neve, persone e animali. ZIP sul desktop.",
   "rm": "Maletgs cun rom per in’atgna model IA: bleras scenas, di, notg, plievgia, tschajera, naiv, persunas ed animals. ZIP sin la scrivania."
  },
+ "Bilder pro Sekunde": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Bilder pro Sekunde im Fenster": {
   "en": "Frames per second in the window",
   "fr": "Images par seconde dans la fenêtre",
@@ -2616,6 +2928,18 @@
   "fr": "Joindre une capture d’écran (image du simulateur)",
   "it": "Allegare uno screenshot (immagine del simulatore)",
   "rm": "Agiuntar in maletg dal visur (maletg dal simulatur)"
+ },
+ "Bildschirmfoto mitschicken – das Bild des Simulator-Fensters (verkleinert)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Bildschirmfoto zur Rückmeldung von ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Birne": {
   "en": "Pear",
@@ -3032,6 +3356,12 @@
   "it": "Controller: ognuno fa tutto",
   "rm": "Controllers: mintgin fa tut"
  },
+ "Countdown": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "CPU": {
   "en": "CPU",
   "fr": "CPU",
@@ -3055,6 +3385,12 @@
   "fr": "CPU …",
   "it": "CPU …",
   "rm": "CPU …"
+ },
+ "CPU-Last": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "CPU: – (misst MoveEye, sobald verbunden)": {
   "en": "CPU: – (measured by MoveEye once connected)",
@@ -3110,11 +3446,35 @@
   "it": "Mancato – falso allarme",
   "rm": "Fallà – fauss alarm"
  },
+ "Danke! Die Nachricht ist unterwegs.": {
+  "en": "Thank you! The message is on its way.",
+  "fr": "Merci ! Le message est en route.",
+  "it": "Grazie! Il messaggio è in viaggio.",
+  "rm": "Grazia! Il messadi è en viadi."
+ },
  "Danke! MoveEye hat die Nachricht übernommen und schickt sie weiter (ohne Internet später).": {
   "en": "Thank you! MoveEye took the message and passes it on (later, if there is no internet).",
   "fr": "Merci ! MoveEye a reçu le message et le transmet (plus tard sans internet).",
   "it": "Grazie! MoveEye ha ricevuto il messaggio e lo inoltra (più tardi senza internet).",
   "rm": "Grazia! MoveEye ha survegnì il messadi e al inoltrescha (senza internet pli tard)."
+ },
+ "Danke! MoveEye hat die Nachricht übernommen und schickt sie weiter.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "das Bedienfeld Schritt für Schritt": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Das Ergebnis als Text in die Zwischenablage": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Das gerade verbundene (Pi oder MoveEye auf diesem PC)": {
   "en": "The one connected right now (Pi or MoveEye on this PC)",
@@ -3344,11 +3704,29 @@
   "it": "Il tuo posto: direzione del centro dell’immagine (0 = dritto)",
   "rm": "Tes plaz: direcziun dal center dal maletg (0 = dretg ora)"
  },
+ "Dein Zelt / Auto: %d": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Dein Zelt und dein Auto – anklicken und in die Welt klicken (oder hineinziehen):": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "dein Zelt – Hindernis, der PIR «Zelt» und die Besucher gehen dorthin": {
   "en": "your tent – obstacle, the PIR «Tent» and the visitors go there",
   "fr": "ta tente – obstacle, le PIR «Tente» et les visiteurs y vont",
   "it": "la tua tenda – ostacolo, il PIR «Tenda» e i visitatori ci vanno",
   "rm": "tia tenda – impediment, il PIR «Tenda» ed ils visitaders van là"
+ },
+ "Dein Zeug": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Dein Zeug – anklicken und in die Welt klicken (oder hineinziehen):": {
   "en": "Your stuff – click and click into the world (or drag in):",
@@ -3392,11 +3770,29 @@
   "it": "il laptop",
   "rm": "il laptop"
  },
+ "Den Rundgang beenden – er kommt nicht mehr von selbst": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Den Rundgang später fortsetzen (Esc) – Mehr → Rundgang mit Blinki": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "den Schlüsselbund": {
   "en": "the bunch of keys",
   "fr": "le trousseau de clés",
   "it": "il mazzo di chiavi",
   "rm": "il mazzet da clavs"
+ },
+ "Der 3D-Simulator baut den Platz von MoveEye nach – Personen, Tiere, Wetter, Nacht –, damit MoveEye üben kann, ohne echte Nächte. Der Prüfstand misst jede Version von MoveEye damit, und am Lagerfeuer wird er zum Spiel «Team gegen MoveEye». Gebaut mit Godot 4 – von Elektro zusammen mit Claude (einer KI von Anthropic).": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Der Auslöser gilt nur in einer laufenden Runde, in der ein Mensch die Kamera steuert.": {
   "en": "The shutter only works in a running round in which a human controls the camera.",
@@ -3452,6 +3848,12 @@
   "it": "Il PC è lento – alleggerito: %s (solo fino al riavvio; immagini per MoveEye invariate)",
   "rm": "Il PC è plaun – fatg pli lev: %s (mo fin a la reaviada; maletgs per MoveEye betg midads)"
  },
+ "Der PC ist voll: andere Programme schliessen, Grafik leichter, weniger Besucher gleichzeitig.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "der Platz beim Bewegungsmelder": {
   "en": "the spot at the motion sensor",
   "fr": "l’endroit du détecteur de mouvement",
@@ -3463,6 +3865,12 @@
   "fr": "à tour de rôle",
   "it": "a turno",
   "rm": "per rudi"
+ },
+ "Der Rundgang erklärt das Bedienfeld der Erwachsenen – zuerst oben «Erwachsene» wählen.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Der sieht schon Sterne": {
   "en": "That one is already seeing stars",
@@ -3476,11 +3884,23 @@
   "it": "Il simulatore è occupato: ",
   "rm": "Il simulatur è occupà: "
  },
+ "Der Simulator ist für Godot 4.3 gebaut – die fertige Fassung (ZIP) von MoveEye verwenden.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Der Simulator ist gerade beschäftigt (%s).": {
   "en": "The simulator is busy right now (%s).",
   "fr": "Le simulateur est occupé pour l’instant (%s).",
   "it": "Il simulatore è occupato al momento (%s).",
   "rm": "Il simulatur è gist occupà (%s)."
+ },
+ "Der Spiel-Assistent führt durch ein Spiel: «Team gegen MoveEye», «Entkomme der Kamera» … – mit Handys als Controller (QR-Code).": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Der Vergleich läuft schon.": {
   "en": "The comparison is already running.",
@@ -3506,11 +3926,41 @@
   "it": "Dicembre",
   "rm": "December"
  },
+ "Diagnose-Paket (MoveEye)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Diagnose-Paket MoveEye": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Diagnose-Paket: MoveEye ist nicht verbunden – das Paket macht MoveEye (Werkzeuge → Diagnose-Paket). Zuerst in MoveEye die Simulation einschalten.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Diagnose-Paket: MoveEye packt es – der Browser lädt das ZIP herunter.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Dichter Wald, viele Wildtiere": {
   "en": "Dense forest, lots of wild animals",
   "fr": "Forêt dense, beaucoup d’animaux sauvages",
   "it": "Bosco fitto, molti animali selvatici",
   "rm": "Guaud spess, blers animals selvadis"
+ },
+ "Die angezeigten Einträge als Text in die Zwischenablage (z. B. für eine Rückmeldung)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Die Ansicht fährt hinter dem Mover her": {
   "en": "The view drives behind the mover",
@@ -3536,6 +3986,12 @@
   "it": "il drone",
   "rm": "la drona"
  },
+ "Die dunklen Farben (wie bisher)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "die echte Erkennung von MoveEye": {
   "en": "MoveEye’s real detection",
   "fr": "la vraie détection de MoveEye",
@@ -3559,6 +4015,12 @@
   "fr": "le sac à main",
   "it": "la borsetta",
   "rm": "la tastga"
+ },
+ "Die Kacheln oben: Szene, Tageszeit, Wetter, Besuch, Gegenstände, echter Ort und Aufstellen – ein Klick, oder ein kleines Menü direkt an der Kachel.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "die Kamera": {
   "en": "the camera",
@@ -3607,6 +4069,18 @@
   "fr": "Impossible de remplacer le fichier en cours. Le simulateur tourne-t-il deux fois ? Merci de fermer toutes les fenêtres du simulateur (aussi la petite case) et de redémarrer.",
   "it": "Impossibile sostituire il file in uso. Il simulatore è avviato due volte? Chiudere tutte le finestre del simulatore (anche il piccolo riquadro) e riavviare.",
   "rm": "La datoteca che va na po betg vegnir remplazzada. Va il simulatur duas giadas? Per plaschair serrar tut las fanestras dal simulatur (er la pitschna stgatletta) e cumenzar da nov."
+ },
+ "Die Leiste unten": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "die letzten Ereignisse und Fehler – Filter, Kopieren": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Die neue Datei lässt sich nicht hinlegen.": {
   "en": "The new file cannot be put in place.",
@@ -3885,6 +4359,12 @@
   "it": "Duello: MoveEye %d : %d %s",
   "rm": "Duel: MoveEye %d : %d %s"
  },
+ "Dunkel": {
+  "en": "Dark",
+  "fr": "Sombre",
+  "it": "Scuro",
+  "rm": "Stgir"
+ },
  "Dunkelblau": {
   "en": "Dark blue",
   "fr": "Bleu foncé",
@@ -3926,6 +4406,12 @@
   "fr": "Regarder par la deuxième caméra (2)",
   "it": "Guardare dalla seconda telecamera (2)",
   "rm": "Guardar tras la segunda camera (2)"
+ },
+ "durchlässig – MoveEye ist verbunden": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Dämmerung": {
   "en": "Dusk",
@@ -4251,6 +4737,12 @@
   "it": "semplice (veloce)",
   "rm": "simpel (svelt)"
  },
+ "Einfach oder Experte": {
+  "en": "Simple or Expert",
+  "fr": "Simple ou Expert",
+  "it": "Semplice o Esperto",
+  "rm": "Simpel u Expert"
+ },
  "Einfach: das Wichtigste (Szene, Zeit, Wetter, Besuch, Testen, Spiel-Assistent). «Experte» zeigt alle.": {
   "en": "Simple: the most important (scene, time, weather, visitors, testing, game wizard). «Expert» shows everything.",
   "fr": "Simple : l’essentiel (scène, heure, météo, visites, tester, assistant de jeu). «Expert» affiche tout.",
@@ -4268,6 +4760,12 @@
   "fr": "Réduire : seulement une petite icône",
   "it": "Ridurre: solo una piccola icona",
   "rm": "Reducir: mo anc in pitschen simbol"
+ },
+ "Einst.": {
+  "en": "Sett.",
+  "fr": "Régl.",
+  "it": "Impost.",
+  "rm": "Param."
  },
  "Einstellung suchen …": {
   "en": "Search settings …",
@@ -4702,11 +5200,29 @@
   "it": "SBAGLIATO: ",
   "rm": "FALLÀ: "
  },
+ "Fast voll: Programme schliessen (Browser-Tabs), den Simulator neu starten.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Fast voll: «Alte KI-Daten löschen» (Karte Testen) oder alte Aufnahmen und Trainingsbilder im Ordner löschen.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Februar": {
   "en": "February",
   "fr": "Février",
   "it": "Febbraio",
   "rm": "Favrer"
+ },
+ "Feedback": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Fehlalarm": {
   "en": "False alarm",
@@ -4804,11 +5320,35 @@
   "it": "Errore %d",
   "rm": "Errur %d"
  },
+ "Fehler beim Schreiben": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Fehler beim Speichern": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Fehler seit dem Start": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Fehler, Wunsch, Lob oder Frage – geht über das verbundene MoveEye anonym an den Entwickler.": {
   "en": "Bug, wish, praise or question – goes anonymously to the developer via the connected MoveEye.",
   "fr": "Erreur, souhait, éloge ou question – va anonymement au développeur via le MoveEye connecté.",
   "it": "Errore, desiderio, lode o domanda – arriva in forma anonima allo sviluppatore tramite il MoveEye collegato.",
   "rm": "Errur, giavisch, laud u dumonda – va anonimamain al sviluppader sur il MoveEye collià."
+ },
+ "Fehler, Wünsche, Lob, Fragen – alles hilft. Die Nachricht geht anonym weg: kein Name, keine Adresse, ausser du schreibst sie hinein.": {
+  "en": "Errors, wishes, praise, questions - everything helps. The message is sent anonymously: no name, no address, unless you write one.",
+  "fr": "Erreurs, souhaits, compliments, questions – tout aide. Le message part de façon anonyme : ni nom ni adresse, sauf si tu les écris.",
+  "it": "Errori, desideri, lodi, domande – tutto aiuta. Il messaggio parte in modo anonimo: nessun nome, nessun indirizzo, a meno che tu non li scriva.",
+  "rm": "Sbagls, giavischs, laud, dumondas – tut gida. Il messadi va anonim: nagin num, nagina adressa, nun che ti las scrivias."
  },
  "Fehler, Wünsche, Lob, Fragen – alles hilft. MoveEye schickt die Nachricht anonym weiter: kein Name, keine Adresse, ausser du schreibst sie hinein.": {
   "en": "Bugs, wishes, praise, questions – everything helps. MoveEye passes the message on anonymously: no name, no address, unless you write them in.",
@@ -4816,6 +5356,12 @@
   "it": "Errori, desideri, lodi, domande – tutto aiuta. MoveEye inoltra il messaggio in forma anonima: nessun nome, nessun indirizzo, a meno che tu non li scriva.",
   "rm": "Errurs, giavischs, laud, dumondas – tut gida. MoveEye inoltrescha il messadi anonimamain: nagin num, nagina adressa, auter che ti als scrivas.",
   "?": "rm: Formulierung prüfen"
+ },
+ "Fehler, Wünsche, Lob, Fragen – anonym": {
+  "en": "Errors, wishes, praise, questions - anonymous",
+  "fr": "Erreurs, souhaits, compliments, questions – anonyme",
+  "it": "Errori, desideri, lodi, domande – anonimo",
+  "rm": "Sbagls, giavischs, laud, dumondas – anonim"
  },
  "feine Höhen von swisstopo fehlen, grobe genommen": {
   "en": "fine heights from swisstopo missing, coarse ones taken",
@@ -4841,6 +5387,12 @@
   "it": "Finestra con tenda (la TV tremola)",
   "rm": "Fanestra cun cortina (la televisiun sbrigliescha)"
  },
+ "Fenster «Gerät»: Status-LED und die Tasten «Schutz» / «Alarm quittieren» zeigen (gehen wie echte Tasten an MoveEye)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Fernbedienung": {
   "en": "Remote control",
   "fr": "Télécommande",
@@ -4852,6 +5404,18 @@
   "fr": "Téléviseur",
   "it": "Televisore",
   "rm": "Televisiun"
+ },
+ "Fertig": {
+  "en": "Done",
+  "fr": "Terminé",
+  "it": "Fatto",
+  "rm": "Finì"
+ },
+ "fertig": {
+  "en": "done",
+  "fr": "terminé",
+  "it": "fatto",
+  "rm": "fatg"
  },
  "Fertig (Start)": {
   "en": "Done (Start)",
@@ -4907,11 +5471,29 @@
   "it": "Test fissi: sempre gli stessi visitatori sugli stessi percorsi. Il simulatore sa chi era ben visibile per la telecamera della testa e lo confronta con le segnalazioni di MoveEye. Su questo PC (con scheda grafica) i numeri sono più realistici che su GitHub.",
   "rm": "Tests fixs: adina ils medems visitaders sin las medemas vias. Il simulatur sa, tgi ch’era bain visibel per la camera dal chau, e cumparegliescha quai cun ils messadis da MoveEye. Sin quest PC (cun carta grafica) èn las cifras pli realisticas che sin GitHub."
  },
+ "Filename: moveeye_rueckmeldung.jpg": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Finde den Fuchs": {
   "en": "Find the fox",
   "fr": "Trouve le renard",
   "it": "Trova la volpe",
   "rm": "Chatta la vulp"
+ },
+ "Firewall": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Firewall (z. B. ufw): eingehend TCP-Port %d erlauben – «sudo ufw allow %d/tcp».": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Flasche": {
   "en": "Bottle",
@@ -4961,11 +5543,29 @@
   "it": "Foto / panorama del tuo luogo reale come sfondo – meglio con il telefonino da dove sta MoveEye (panorama: girare tutto intorno). Anche: trascinare semplicemente un’immagine nella finestra. Direzione e angolo sotto «Scena · Il tuo posto».",
   "rm": "Foto / panorama da tes lieu vair sco fund – il meglier cun il telefonin dal lieu, nua che MoveEye stat (panorama: volver tut enturn). Er: simplamain trair in maletg en la fanestra. Direcziun ed angul sut «Scena · Tes plaz»."
  },
+ "Foto / Panorama deines echten Platzes als Hintergrund – am besten mit dem Handy von dort, wo MoveEye steht (Panorama: ganz herum drehen). Auch: Bild einfach ins Fenster ziehen. Richtung und Winkel unter «Szene · Foto des Platzes».": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Foto / Panorama wählen …": {
   "en": "Choose photo / panorama …",
   "fr": "Choisir photo / panorama …",
   "it": "Scegliere foto / panorama …",
   "rm": "Tscherner foto / panorama …"
+ },
+ "Foto des Platzes": {
+  "en": "Photo of the place",
+  "fr": "Photo de l’emplacement",
+  "it": "Foto del posto",
+  "rm": "Foto da la plazza"
+ },
+ "Foto des Platzes: Foto / Panorama deines echten Platzes als Hintergrund (laden im Fenster «Gegenstände»)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Foto fehlt: ": {
   "en": "Photo missing: ",
@@ -4991,11 +5591,35 @@
   "it": "Togliere la foto",
   "rm": "Foto davent"
  },
+ "Foto: Bildwinkel (Handyfoto etwa 65°, Panorama bis 360°)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Foto: Entfernung des Hintergrunds": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Foto: Horizont im Bild höher / tiefer": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Foto: noch kein Bild": {
   "en": "Photo: no picture yet",
   "fr": "Photo : pas encore d’image",
   "it": "Foto: ancora nessuna immagine",
   "rm": "Foto: anc nagin maletg"
+ },
+ "Foto: Richtung der Bildmitte (0 = geradeaus)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Fotorealistische Modelle, Oberflächen und Himmel (HDRI).": {
   "en": "Photorealistic models, surfaces and skies (HDRI).",
@@ -5026,6 +5650,24 @@
   "fr": "Libre",
   "it": "Libero",
   "rm": "Liber"
+ },
+ "frei %s von %s · ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "frei %s von %s · Simulator %s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "frei %s · %s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Frei (0)": {
   "en": "Free (0)",
@@ -5117,6 +5759,12 @@
   "it": "Asciugacapelli",
   "rm": "Fön"
  },
+ "Für das Bedienfeld und die Fenster – die 3D-Ansicht bleibt. Auch mit ◐ in der Leiste unten.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Für das Handy ohne Pi – und als KI-Rechenhilfe: Der Pi lässt dann die Erkennung von diesem PC rechnen (schneller, der Pi bleibt kühl). Beim ersten Mal werden Python, MoveEye und das KI-Modell geladen (rund 170 MB, einige Minuten). Windows fragt dabei, ob Python ins Netz darf: «Zulassen» wählen.": {
   "en": "For the phone without Pi – and as AI computing help: the Pi then lets this PC calculate the detection (faster, the Pi stays cool). The first time, Python, MoveEye and the AI model are loaded (about 170 MB, a few minutes). Windows asks whether Python may access the network: choose «Allow».",
   "fr": "Pour le téléphone sans Pi – et comme aide de calcul IA : le Pi fait alors calculer la détection par ce PC (plus rapide, le Pi reste frais). La première fois, Python, MoveEye et le modèle IA sont chargés (environ 170 MB, quelques minutes). Windows demande si Python peut accéder au réseau : choisir «Autoriser».",
@@ -5140,6 +5788,12 @@
   "fr": "Pour MoveEye : patrouille sur 3 points (panoramique %d / %d / %d %%) – sur la page de MoveEye sous Simulateur → «Reprendre du planificateur d’emplacement».",
   "it": "Per MoveEye: pattuglia su 3 punti (brandeggio %d / %d / %d %%) – sulla pagina di MoveEye sotto Simulatore → «Riprendere dal pianificatore di posizione».",
   "rm": "Per MoveEye: patrulla sur 3 puncts (volver %d / %d / %d %%) – sin la pagina da MoveEye sut Simulatur → «Surpigliar dal planisader da plazzament»."
+ },
+ "Für Trainingspakete und Aufnahmen bald Platz schaffen (Karte Testen → «Alte KI-Daten löschen»).": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Für «Schleichwege» braucht es mindestens einen Bot.": {
   "en": "«Sneak paths» needs at least one bot.",
@@ -5298,6 +5952,12 @@
   "it": "di fronte (30 m)",
   "rm": "visavi (30 m)"
  },
+ "Geht an MoveEye «%s», das sie wie alle Rückmeldungen anonym weiterschickt (Art %s, %d Sterne%s).": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Geisterläufer: der eigene beste Weg läuft als Geist mit": {
   "en": "Ghost runner: your own best path runs along as a ghost",
   "fr": "Coureur fantôme : ton meilleur chemin court avec toi en fantôme",
@@ -5364,6 +6024,12 @@
   "it": "Nessun turno «Squadra contro MoveEye» o «Nascondino» in corso.",
   "rm": "Nagina runda «Team cunter MoveEye» u «Giu da zuppar» n’è gist en cursa."
  },
+ "GERÄT": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Gerät 2: Port %d, %s": {
   "en": "Device 2: port %d, %s",
   "fr": "Appareil 2 : port %d, %s",
@@ -5375,6 +6041,12 @@
   "fr": "CPU appareil %d %%",
   "it": "CPU apparecchio %d %%",
   "rm": "CPU apparat %d %%"
+ },
+ "Gerät: Status-LED oben auf dem Kopf und die zwei Tasten (wie am echten MoveEye)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Geräusch": {
   "en": "Noise",
@@ -5580,6 +6252,18 @@
   "it": "Lucciole nelle notti calde",
   "rm": "Glischvermets en notgs chaudas"
  },
+ "Godot": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Godot-Version": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Godot: ": {
   "en": "Godot: ",
   "fr": "Godot : ",
@@ -5610,11 +6294,41 @@
   "it": "Grafica",
   "rm": "Grafica"
  },
+ "Grafik auf «einfach (schnell)», «Schärfe der Ansicht» kleiner, andere Programme schliessen.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Grafik leichter stellen (System → Grafik) oder «Automatisch leichter» einschalten.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Grafik und Bilder pro Sekunde": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Grafik «%s»": {
   "en": "Graphics «%s»",
   "fr": "Graphisme «%s»",
   "it": "Grafica «%s»",
   "rm": "Grafica «%s»"
+ },
+ "Grafik: ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Grafikkarte unbekannt": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Gras und Blumen auf der Wiese": {
   "en": "Grass and flowers on the meadow",
@@ -5772,6 +6486,12 @@
   "it": "Ciao! Sono Murmli. Premi un’immagine – e succede qualcosa nel mondo!",
   "rm": "Allegra! Jau sun Murmli. Smatga sin in maletg – lura capita insatge en il mund!"
  },
+ "Hallo, ich bin Blinki!": {
+  "en": "Hello, I am Blinki!",
+  "fr": "Salut, je suis Blinki !",
+  "it": "Ciao, sono Blinki!",
+  "rm": "Allegra, jau sun Blinki!"
+ },
  "Handicap für den Ersten der Rangliste": {
   "en": "Handicap for the leader of the ranking",
   "fr": "Handicap pour le premier du classement",
@@ -5845,6 +6565,24 @@
   "it": "Siepe (2 clic)",
   "rm": "Saiv viva (2 clics)"
  },
+ "Hell": {
+  "en": "Light",
+  "fr": "Clair",
+  "it": "Chiaro",
+  "rm": "Cler"
+ },
+ "Hell / Rotlicht / Dunkel": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Helle Farben wie MoveEye «Hell» – für draussen am Tag": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Hellgrün": {
   "en": "Light green",
   "fr": "Vert clair",
@@ -5893,6 +6631,12 @@
   "it": "Qui ci sono i file caricati",
   "rm": "Qua èn las datotecas chargiadas"
  },
+ "Hier schickt der Simulator seine Bilder an MoveEye. Das Symbol wird grün, sobald MoveEye verbunden ist; im anderen Netz hilft der Tunnel.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Hierhin stellen + Referenz-Scan": {
   "en": "Put here + reference scan",
   "fr": "Placer ici + scan de référence",
@@ -5904,6 +6648,12 @@
   "fr": "Aide",
   "it": "Aiuto",
   "rm": "Agid"
+ },
+ "Hilfe, dieser Rundgang, Selbstdiagnose, Protokoll, Updates, Hell / Rotlicht / Dunkel, Rückmeldung an den Entwickler und «Über». Das «?» in der Leiste führt auch hierher. Viel Spass!": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Himmelblau": {
   "en": "Sky blue",
@@ -6031,6 +6781,12 @@
   "it": "Case in 3D da swisstopo",
   "rm": "Chasas en 3D da swisstopo"
  },
+ "Höchstens 5 Nachrichten pro Stunde – bitte später nochmals.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Höchstens gleichzeitig": {
   "en": "At most at the same time",
   "fr": "Au maximum en même temps",
@@ -6090,6 +6846,12 @@
   "fr": "Moi (PC)",
   "it": "Io (PC)",
   "rm": "Jau (PC)"
+ },
+ "Ich bin das Auge von MoveEye. Ich zeige dir das Bedienfeld des Simulators Schritt für Schritt – und wenn ich blinzle, ist alles gut.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Igel": {
   "en": "Hedgehog",
@@ -6157,6 +6919,18 @@
   "it": "Al traguardo! 🎉",
   "rm": "A la finala! 🎉"
  },
+ "Immer dabei: 3D-Simulator %s · Seite «%s». Weg: direkt vom Simulator (kein MoveEye verbunden) – ohne Internet wartet sie und geht später.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Immer dabei: 3D-Simulator %s · Seite «%s». Weg: über MoveEye «%s» (verbunden) – MoveEye schickt sie anonym weiter.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Immer dabei: Version von MoveEye und Simulator %s.": {
   "en": "Always included: version of MoveEye and simulator %s.",
   "fr": "Toujours inclus : version de MoveEye et du simulateur %s.",
@@ -6180,6 +6954,12 @@
   "fr": "Cliquer dans le monde = point, clic droit sur un point = l’enlever",
   "it": "Cliccare nel mondo = punto, clic destro su un punto = via",
   "rm": "Cliccar en il mund = punct, clic dretg sin in punct = davent"
+ },
+ "In MoveEye: Reiter Simulator → Verbindung: die Adresse dieses PCs eintragen (gleiches Netz) – oder unten den Tunnel nutzen.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "In «%s» gibt es nichts zum Wegnehmen (Szene «Camping-Platz»: Velo, Zelt, Tisch, Kühlbox, Grill).": {
   "en": "In «%s» there is nothing to take away (scene «Campsite»: bike, tent, table, cool box, grill).",
@@ -6228,6 +7008,12 @@
   "fr": "Installation des paquets pour MoveEye (seulement la première fois, quelques minutes)",
   "it": "Installo i pacchetti per MoveEye (solo la prima volta, qualche minuto)",
   "rm": "Installar ils pachets per MoveEye (mo l’emprima giada, in pèr minutas)"
+ },
+ "Internet prüfen; später nochmals «Jetzt nach Updates suchen».": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Internet weg": {
   "en": "Internet gone",
@@ -6330,6 +7116,12 @@
   "fr": "Chercher les mises à jour maintenant et installer",
   "it": "Cercare aggiornamenti ora e installare",
   "rm": "Tschertgar ussa updates ed installar"
+ },
+ "Jetzt senden": {
+  "en": "Send now",
+  "fr": "Envoyer maintenant",
+  "it": "Invia ora",
+  "rm": "Trametter ussa"
  },
  "Jogger": {
   "en": "Jogger",
@@ -6577,6 +7369,12 @@
   "it": "Carta e foto aerea © swisstopo · edifici, bosco, strade © collaboratori di OpenStreetMap · altitudini © swisstopo / Terrarium",
   "rm": "Charta e fotografia aviatica © swisstopo · edifizis, guaud, vias © collavuraturs dad OpenStreetMap · autezzas © swisstopo / Terrarium"
  },
+ "Karte Verbindung → «An MoveEye senden» einschalten.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Karte öffnen": {
   "en": "Open map",
   "fr": "Ouvrir la carte",
@@ -6625,6 +7423,12 @@
   "it": "Gatto in giro",
   "rm": "Giat sin sia runda"
  },
+ "kein": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Kein Besuch von selbst": {
   "en": "No visitors by themselves",
   "fr": "Pas de visites spontanées",
@@ -6660,6 +7464,18 @@
   "fr": "pas de photo pour «%s»",
   "it": "nessuna foto per «%s»",
   "rm": "nagina foto per «%s»"
+ },
+ "kein Netz": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "kein Netz / Adresse unbekannt": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Kein Treffer": {
   "en": "No match",
@@ -6738,6 +7554,12 @@
   "fr": "Bougie (vacille)",
   "it": "Candela (tremola)",
   "rm": "Chandaila (sbrigliescha)"
+ },
+ "KI": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "KI aus": {
   "en": "AI off",
@@ -6853,6 +7675,12 @@
   "fr": "Mode enfants",
   "it": "Modalità bambini",
   "rm": "Modus d’uffants"
+ },
+ "Kinder-Modus ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Kinder-Modus: Laser-Treffer im Spiel": {
   "en": "Kids mode: laser hits in the game",
@@ -6980,6 +7808,12 @@
   "it": "Cliccare e trascinare = dito · rotella = scorrere · si può scrivere quando l’immagine è cliccata",
   "rm": "Cliccar e trair = det · roda = scrollar · scriver va, cur ch’il maletg è cliccà"
  },
+ "Knapp: läuft MoveEye auf demselben PC, braucht es auch Rechenzeit – Grafik etwas leichter stellen.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Knappster Moment  %d:%02d  ·  rot = gesehen": {
   "en": "Closest moment  %d:%02d  ·  red = seen",
   "fr": "Moment le plus serré  %d:%02d  ·  rouge = vu",
@@ -7082,6 +7916,24 @@
   "it": "Telecamera della testa",
   "rm": "Camera dal chau"
  },
+ "Kopieren": {
+  "en": "Copy",
+  "fr": "Copier",
+  "it": "Copia",
+  "rm": "Copiar"
+ },
+ "Kopiert.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Kopiert: %d Einträge in der Zwischenablage.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Krawatte (an der Leine)": {
   "en": "Tie (on the line)",
   "fr": "Cravate (sur la corde à linge)",
@@ -7147,6 +7999,18 @@
   "fr": "Court : 1, 5, 6",
   "it": "Breve: 1, 5, 6",
   "rm": "Curt: 1, 5, 6"
+ },
+ "kurz: Wachsam ↔ Aus · lang (1,5 s): Voll": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Kälte": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Kühe auf der Weide": {
   "en": "Cows in the pasture",
@@ -7316,6 +8180,18 @@
   "it": "Vite",
   "rm": "Vitas"
  },
+ "LED": {
+  "en": "LED",
+  "fr": "LED",
+  "it": "LED",
+  "rm": "LED"
+ },
+ "LED: wartet auf MoveEye": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Leider falsch – noch einmal.": {
   "en": "Sorry, wrong – try again.",
   "fr": "Dommage, faux – encore une fois.",
@@ -7381,6 +8257,12 @@
   "fr": "Lumière ",
   "it": "Luce ",
   "rm": "Glisch "
+ },
+ "Licht & Ton": {
+  "en": "Light & sound",
+  "fr": "Lumière et son",
+  "it": "Luce e suono",
+  "rm": "Glisch e tun"
  },
  "Licht lädt noch %d s": {
   "en": "Light still charging %d s",
@@ -7672,6 +8554,12 @@
   "it": "Preparatevi",
   "rm": "Pinai vus"
  },
+ "macOS: Systemeinstellungen → Netzwerk → Firewall: eingehende Verbindungen für den Simulator erlauben (Port %d).": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Mai": {
   "en": "May",
   "fr": "Mai",
@@ -7708,11 +8596,23 @@
   "it": "Mouse e tasti nella vista",
   "rm": "Mieur e tastas en la vista"
  },
+ "Maus und Tasten · Klick: Rundgang, Selbstdiagnose, Protokoll, Rückmeldung, Über (Mehr)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Maus ziehen / Q E: umschauen · Bildmitte auf einen Spieler, dann Leertaste, Doppelklick oder runder Knopf: Auslöser · G Licht · V Sirene · N Scan · Z Zoom · W S: Kopf hoch / runter · Esc: Menü": {
   "en": "Drag mouse / Q E: look around · picture centre on a player, then space, double click or round button: shutter · G light · V siren · N scan · Z zoom · W S: head up / down · Esc: menu",
   "fr": "Glisser la souris / Q E : regarder autour · centre de l’image sur un joueur, puis espace, double-clic ou bouton rond : déclencheur · G lumière · V sirène · N scan · Z zoom · W S : tête haut / bas · Esc : menu",
   "it": "Trascinare il mouse / Q E: guardarsi intorno · centro dell’immagine su un giocatore, poi spazio, doppio clic o pulsante rotondo: scatto · G luce · V sirena · N scansione · Z zoom · W S: testa su / giù · Esc: menu",
   "rm": "Trair la mieur / Q E: guardar enturn · center dal maletg sin in giugader, lura spazi, dubel clic u buttun radund: sajet · G glisch · V sirena · N scan · Z zoom · W S: chau si / giu · Esc: menu"
+ },
+ "Maus, Tasten, Leiste – und die Anleitung von MoveEye": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Maus: links ziehen = verschieben · rechts ziehen = drehen · Rad = zoomen (Shift + Rad: Tempo von W A S D) · mittlere Taste oder Alt + rechts = umschauen · Doppelklick = hinfliegen · Besucher anklicken = auswählen, ziehen = tragen.  Tasten: W A S D Q E fliegen (Shift schneller) · 1 / 2 Kamera · 3 Wärmebild · 0 frei · F folgen · Entf entfernen · Esc abwählen · H Bedienfeld · P Handy / Tablet · K Karte · G Gewehr (Linksklick = Schuss)": {
   "en": "Mouse: drag left = move · drag right = turn · wheel = zoom (Shift + wheel: speed of W A S D) · middle button or Alt + right = look around · double click = fly there · click visitor = select, drag = carry.  Keys: W A S D Q E fly (Shift faster) · 1 / 2 camera · 3 thermal image · 0 free · F follow · Del remove · Esc deselect · H control panel · P phone / tablet · K map · G rifle (left click = shot)",
@@ -7749,6 +8649,18 @@
   "fr": "Plus sur MoveEye :\nscanner le code QR\n",
   "it": "Altro su MoveEye:\nscansionare il codice QR\n",
   "rm": "Dapli davart MoveEye:\nscannar il code QR\n"
+ },
+ "Mehr → Protokoll → «Fehler»: ansehen, kopieren und mit einer Rückmeldung schicken.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Mehr → Updates: die neue Version installieren.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Mehr: Aufstellen, Erkunden, Handy-Simulator": {
   "en": "More: set up, explore, phone simulator",
@@ -7834,6 +8746,12 @@
   "it": "Persone",
   "rm": "Persunas"
  },
+ "Menschen & Tiere": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Menschen schauen zum Licht, wenn es angeht": {
   "en": "People look at the light when it comes on",
   "fr": "Les gens regardent la lumière quand elle s’allume",
@@ -7863,6 +8781,12 @@
   "fr": "Menu : ✚ / stick gauche choisir · A sélectionner · B retour · Start fermer",
   "it": "Menu: ✚ / stick sinistro scegliere · A selezionare · B indietro · Start chiudere",
   "rm": "Menu: ✚ / stick sanester tscherner · A tscherner · B enavos · Start serrar"
+ },
+ "Message: ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Messer": {
   "en": "Knife",
@@ -8086,6 +9010,12 @@
   "it": "MoveEye (posizione)",
   "rm": "MoveEye (lieu)"
  },
+ "MoveEye 3D-Simulator": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "MoveEye als %s · %s%s": {
   "en": "MoveEye as %s · %s%s",
   "fr": "MoveEye comme %s · %s%s",
@@ -8236,6 +9166,12 @@
   "it": "MoveEye non è più collegato – riprova più tardi.",
   "rm": "MoveEye n’è betg pli collià – per plaschair pli tard anc ina giada."
  },
+ "MoveEye ist nicht verbunden – die Anleitung steht in MoveEye unter Mehr → Anleitung.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "MoveEye ist nicht verbunden – die zweite Runde braucht die echte Erkennung von MoveEye.": {
   "en": "MoveEye is not connected – the second round needs the real detection of MoveEye.",
   "fr": "MoveEye n’est pas connecté – la deuxième manche a besoin de la vraie détection de MoveEye.",
@@ -8278,6 +9214,12 @@
   "it": "MoveEye non è ancora collegato: attivare la simulazione in MoveEye, inserire l’indirizzo – o senza Pi: avviare MoveEye su questo PC.",
   "rm": "MoveEye n’è anc betg collià: activar la simulaziun en MoveEye, endatar l’adressa – u senza Pi: cumenzar MoveEye sin quest PC."
  },
+ "MoveEye kommt nicht durch – vielleicht blockiert die Firewall": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "MoveEye liess sich nicht finden (GitHub nicht erreichbar: %s).": {
   "en": "MoveEye could not be found (GitHub not reachable: %s).",
   "fr": "MoveEye introuvable (GitHub inaccessible : %s).",
@@ -8307,6 +9249,12 @@
   "fr": "MoveEye pas connecté",
   "it": "MoveEye non collegato",
   "rm": "MoveEye betg collià"
+ },
+ "MoveEye packt Protokoll, Einstellungen ohne Passwörter und Systemwerte in ein ZIP (öffnet den Browser). Braucht ein verbundenes MoveEye.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "MoveEye schneller": {
   "en": "MoveEye faster",
@@ -8349,6 +9297,12 @@
   "fr": "MoveEye n’était pas connecté",
   "it": "MoveEye non era collegato",
   "rm": "MoveEye n’era betg collià"
+ },
+ "MoveEye – ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "MoveEye-Download beschädigt (Prüfsumme falsch).": {
   "en": "MoveEye download damaged (wrong checksum).",
@@ -8802,6 +9756,12 @@
   "it": "non valutato: la persona non è mai stata ben visibile nell’immagine della telecamera della testa",
   "rm": "betg valità: l’uman n’era mai bain en il maletg da la camera dal chau"
  },
+ "nicht erreich": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "nicht gefunden": {
   "en": "not found",
   "fr": "introuvable",
@@ -8837,6 +9797,12 @@
   "fr": "Ne plus suivre",
   "it": "Non seguire più",
   "rm": "Betg pli suandar"
+ },
+ "nicht verbunden": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Nichts": {
   "en": "Nothing",
@@ -8958,6 +9924,12 @@
   "it": "Ancora nessuna notte vera – prima salvare una revisione di allarme come caso del banco di prova.",
   "rm": "Anc naginas notgs vairas – l’emprim memorisar ina retrospectiva d’alarm sco cas dal banc da prova."
  },
+ "Noch keine Einträge in dieser Auswahl.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Noch keine Referenz": {
   "en": "No reference yet",
   "fr": "Pas encore de référence",
@@ -8976,6 +9948,24 @@
   "it": "Ancora nessuna immagine mancata dal gioco.",
   "rm": "Anc nagins maletgs manchentads dal gieu."
  },
+ "noch nicht gemessen": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "noch nicht geprüft": {
+  "en": "not checked yet",
+  "fr": "pas encore vérifié",
+  "it": "non ancora controllato",
+  "rm": "anc betg controllà"
+ },
+ "noch nichts zu prüfen (Senden aus oder gerade gestartet)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "noch niemand dabei": {
   "en": "nobody joined yet",
   "fr": "encore personne",
@@ -8993,6 +9983,12 @@
   "fr": "Encore personne.",
   "it": "Ancora nessuno.",
   "rm": "Anc nagin."
+ },
+ "Nochmals prüfen": {
+  "en": "Check again",
+  "fr": "Vérifier à nouveau",
+  "it": "Controlla di nuovo",
+  "rm": "Controllar danovamain"
  },
  "Norden – anklicken: nach Norden schauen": {
   "en": "North – click: look north",
@@ -9017,6 +10013,12 @@
   "fr": "Novembre",
   "it": "Novembre",
   "rm": "November"
+ },
+ "Nur %d Bilder pro Sekunde seit 10 s – Grafik leichter stellen oder andere Programme schliessen": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Nur .glb- und .gltf-Dateien gehen (andere Formate in Blender öffnen und als glTF 2.0 exportieren).": {
   "en": "Only .glb and .gltf files work (open other formats in Blender and export as glTF 2.0).",
@@ -9179,6 +10181,12 @@
   "fr": "Orange",
   "it": "Arancione",
   "rm": "Oransch"
+ },
+ "Ordner": {
+  "en": "Folder",
+  "fr": "Dossier",
+  "it": "Cartella",
+  "rm": "Ordinatur"
  },
  "Ordner öffnen": {
   "en": "Open folder",
@@ -9354,6 +10362,18 @@
   "it": "PC %s (%s)",
   "rm": "PC %s (%s)"
  },
+ "PC %s · Simulator %s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "PC %s · Simulator %s · %d Kerne": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "PC-CPU %s  ·  Simulator %s": {
   "en": "PC CPU %s  ·  simulator %s",
   "fr": "CPU du PC %s  ·  simulateur %s",
@@ -9457,6 +10477,12 @@
   "it": "Sacchetto di plastica al vento",
   "rm": "Satg da plastic en il vent"
  },
+ "Platz & Umgebung": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Platz des zweiten Geräts": {
   "en": "Place of the second device",
   "fr": "Emplacement du deuxième appareil",
@@ -9499,11 +10525,23 @@
   "it": "Porta %d",
   "rm": "Port %d"
  },
+ "Port %d (Bilder, Steuerung, /view.jpg)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Portemonnaie": {
   "en": "Wallet",
   "fr": "Porte-monnaie",
   "it": "Portafoglio",
   "rm": "Bursa"
+ },
+ "Ports": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Power-ups: Die lila Kugel ist ein Unsichtbar-Trank (9 s fast unsichtbar), die gelbe ein Turbo (7 s schneller, aber lauter).": {
   "en": "Power-ups: the purple ball is an invisibility potion (9 s almost invisible), the yellow one a turbo (7 s faster, but louder).",
@@ -9546,6 +10584,12 @@
   "fr": "Pros",
   "it": "Professionisti",
   "rm": "Profis"
+ },
+ "Protokoll": {
+  "en": "Log",
+  "fr": "Journal",
+  "it": "Registro",
+  "rm": "Protocol"
  },
  "Prüfe die Datei …": {
   "en": "Checking the file …",
@@ -9902,6 +10946,18 @@
   "it": "Raggio rosso: dove guarda la telecamera di MoveEye (visibile solo a te)",
   "rm": "Radi cotschen: nua che la camera da MoveEye guarda (mo visibel per tai)"
  },
+ "Rotlicht": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Rotlicht: sehr dunkel und rot – für einen kurzen Blick in der Nacht im Zelt (die Augen bleiben ans Dunkel gewöhnt)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Route": {
   "en": "Route",
   "fr": "Itinéraire",
@@ -10094,11 +11150,53 @@
   "it": "Giro:",
   "rm": "Runda:"
  },
+ "Rundgang fertig – jederzeit wieder unter Mehr.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Rundgang mit Blinki": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Rundgang pausiert – weiter unter Mehr → Rundgang mit Blinki (Schritt %d von %d).": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Rückmeldung an den Entwickler": {
   "en": "Feedback to the developer",
   "fr": "Retour au développeur",
   "it": "Feedback allo sviluppatore",
   "rm": "Resposta al sviluppader"
+ },
+ "Rückmeldung an MoveEye übergeben – MoveEye schickt sie weiter": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Rückmeldung geschrieben (%s) – geht direkt an den Entwickler%s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Rückmeldung gesendet (%d)%s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Rückmeldung: %s hat abgelehnt (%s) – später nochmals": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Rüebli": {
   "en": "Carrot",
@@ -10117,6 +11215,12 @@
   "fr": "Test de sabotage : ",
   "it": "Test di sabotaggio: ",
   "rm": "Test da sabotascha: "
+ },
+ "Sachen & Wertsachen": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Sammler": {
   "en": "Collector",
@@ -10346,6 +11450,12 @@
   "it": "ACCESSO RAPIDO",
   "rm": "ACCESS SVELT"
  },
+ "Schnittstelle zu MoveEye": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Schnittstelle: ": {
   "en": "Interface: ",
   "fr": "Interface : ",
@@ -10407,6 +11517,30 @@
   "fr": "Tir depuis la caméra de la tête",
   "it": "Colpo dalla telecamera della testa",
   "rm": "Sajet da la camera dal chau"
+ },
+ "Schutz": {
+  "en": "Protection",
+  "fr": "Protection",
+  "it": "Protezione",
+  "rm": "Protecziun"
+ },
+ "Schutz kurz": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Schutz kurz: Wachsam ↔ Aus · lang: Voll": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Schutz lang": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Schweiz (Mitte)": {
   "en": "Switzerland (centre)",
@@ -10518,6 +11652,12 @@
   "it": "Costruito da sé nell’editor della casa",
   "rm": "Construì sez en l’editur da la chasa"
  },
+ "Selbstdiagnose": {
+  "en": "Self-check",
+  "fr": "Autodiagnostic",
+  "it": "Autodiagnosi",
+  "rm": "Autodiagnosa"
+ },
  "Sende an GitHub …": {
   "en": "Sending to GitHub …",
   "fr": "Envoi à GitHub …",
@@ -10583,6 +11723,12 @@
   "fr": "L’envoi a échoué.",
   "it": "Invio non riuscito.",
   "rm": "Trametter n’è betg reussì."
+ },
+ "Senden und Steuerung %d (%s)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "sendet nicht": {
   "en": "not sending",
@@ -10650,6 +11796,12 @@
   "it": "Sicurezza / utenti",
   "rm": "Segirezza / utilisaders"
  },
+ "Sicht": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "sichtbar %d s, nicht gemeldet": {
   "en": "visible %d s, not reported",
   "fr": "visible %d s, pas signalé",
@@ -10667,6 +11819,12 @@
   "fr": "Afficher le champ de vision des caméras (pour débutants)",
   "it": "Mostrare il campo visivo delle telecamere (per principianti)",
   "rm": "Mussar il champ da vista da las cameras (per principiants)"
+ },
+ "Sieg": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Sieger": {
   "en": "Winner",
@@ -10698,6 +11856,24 @@
   "it": "Simulatore",
   "rm": "Simulatur"
  },
+ "Simulator ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Simulator %s gestartet · Godot %s · %s · Grafik «%s»": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Simulator %s · der Rest ist unbekannt": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Simulator (alle Geräte)": {
   "en": "Simulator (all devices)",
   "fr": "Simulateur (tous les appareils)",
@@ -10715,6 +11891,12 @@
   "fr": "Le simulateur se repose quand personne ne regarde (ne calcule que si la fenêtre est ouverte ou MoveEye connecté)",
   "it": "Il simulatore riposa quando nessuno guarda (calcola solo se la finestra è aperta o MoveEye è collegato)",
   "rm": "Il simulatur ruaussa, sche nagin na guarda (quinta mo, sche la fanestra è averta u MoveEye collià)"
+ },
+ "Simulator und MoveEye auf die neueste Version bringen (Updates).": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Simulator-Prüfstand": {
   "en": "Simulator test bench",
@@ -10842,6 +12024,18 @@
   "it": "Passeggiata con il cane",
   "rm": "Spassegiada cun chaun"
  },
+ "Speicherplatz für Aufnahmen": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Sperre": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Spiel": {
   "en": "Game",
   "fr": "Jeu",
@@ -10865,6 +12059,18 @@
   "fr": "Jeu chasseur de fausses alarmes",
   "it": "Gioco cacciatore di falsi allarmi",
   "rm": "Gieu chatschader da fauss alarms"
+ },
+ "Spiel geschlossen": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Spiel geöffnet": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Spiel offen – Handys scannen den QR-Code, dann nochmals «Start»": {
   "en": "Game open – phones scan the QR code, then «Start» again",
@@ -10968,6 +12174,12 @@
   "it": "Giocare",
   "rm": "Giugar"
  },
+ "Spielen und Spiel-Assistent": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Spieler": {
   "en": "Players",
   "fr": "Joueurs",
@@ -10985,6 +12197,12 @@
   "fr": "Manche en attente : terminer d’abord %s",
   "it": "Turno in attesa: prima terminare %s",
   "rm": "Runda spetga: l’emprim terminar %s"
+ },
+ "Spielrunde: ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Spielziel": {
   "en": "Game goal",
@@ -11142,6 +12360,24 @@
   "it": "Pagina iniziale con riquadro del simulatore",
   "rm": "Pagina da partenza cun platta dal simulatur"
  },
+ "Statistik": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Status-LED & Tasten": {
+  "en": "Status LED & buttons",
+  "fr": "LED d’état & boutons",
+  "it": "LED di stato & tasti",
+  "rm": "LED da status & buttuns"
+ },
+ "Status-LED oben auf dem Kopf": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Steigen": {
   "en": "Rise",
   "fr": "Monter",
@@ -11191,6 +12427,12 @@
   "it": "Scambiare gli stick (sinistra rover / camminare, destra testa / guardare)",
   "rm": "Barattar ils sticks (sanester rover / ir, dretg chau / guardar)"
  },
+ "Stopp": {
+  "en": "Stop",
+  "fr": "Stop",
+  "it": "Stop",
+  "rm": "Stop"
+ },
  "Stopp und Weiterlaufen": {
   "en": "Stop and go on",
   "fr": "Arrêt et reprise",
@@ -11202,6 +12444,12 @@
   "fr": "Panneau stop",
   "it": "Cartello di stop",
   "rm": "Signal da stop"
+ },
+ "stoppt Sirene und rotes Blinken": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Strassenlampe (geht nachts an)": {
   "en": "Street lamp (comes on at night)",
@@ -11232,6 +12480,18 @@
   "fr": "Niveau %d · %d XP (encore %d jusqu’au niveau %d)%s",
   "it": "Livello %d · %d XP (ancora %d al livello %d)%s",
   "rm": "Nivel %d · %d XP (anc %d fin nivel %d)%s"
+ },
+ "Stufe «%s» · %d Bilder/s · %s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Stufe «%s» · %s%s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Stuhl": {
   "en": "Chair",
@@ -11286,6 +12546,12 @@
   "fr": "Tester les perturbations",
   "it": "Testare i disturbi",
   "rm": "Testar disturbis"
+ },
+ "Suche": {
+  "en": "Searching",
+  "fr": "Recherche",
+  "it": "Ricerca",
+  "rm": "Tschertga"
  },
  "Suche die neuste MoveEye-Version …": {
   "en": "Searching the newest MoveEye version …",
@@ -11413,6 +12679,12 @@
   "it": "Mostrare la scena «Il mio modello»",
   "rm": "Mussar la scena «Mes model»"
  },
+ "Szene: ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Tablet": {
   "en": "Tablet",
   "fr": "Tablette",
@@ -11497,6 +12769,18 @@
   "it": "Ora del giorno",
   "rm": "Temp dal di"
  },
+ "Tags: ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Tags: camera": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "tagsüber etwa 30 m": {
   "en": "by day about 30 m",
   "fr": "le jour environ 30 m",
@@ -11563,6 +12847,12 @@
   "it": "Tastiera",
   "rm": "Tastatura"
  },
+ "Taste drücken (Test)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Tasten": {
   "en": "Keys",
   "fr": "Touches",
@@ -11611,6 +12901,12 @@
   "it": "Squadre",
   "rm": "Squadras"
  },
+ "Technische Angaben mitsenden (Version, Gerät, letzte wichtige Ereignisse – keine Bilder, keine Passwörter)": {
+  "en": "Add technical details (version, device, last important events - no pictures, no passwords)",
+  "fr": "Joindre les infos techniques (version, appareil, derniers événements importants – ni images, ni mots de passe)",
+  "it": "Allegare i dati tecnici (versione, dispositivo, ultimi eventi importanti – niente immagini, niente password)",
+  "rm": "Agiuntar las indicaziuns tecnicas (versiun, apparat, ultims eveniments impurtants – nagins maletgs, nagins pleds-clav)"
+ },
  "Teddybär": {
   "en": "Teddy bear",
   "fr": "Ours en peluche",
@@ -11622,6 +12918,12 @@
   "fr": "Téléphone et reste longtemps immobile (presque pas de mouvement)",
   "it": "Telefona e resta fermo a lungo (quasi nessun movimento)",
   "rm": "Telefonescha e stat ditg airi (strusch moviment)"
+ },
+ "Temp.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Temperatur": {
   "en": "Temperature",
@@ -11658,6 +12960,12 @@
   "fr": "Terrarium (grossier)",
   "it": "Terrarium (grossolano)",
   "rm": "Terrarium (grop)"
+ },
+ "Test": {
+  "en": "Test",
+  "fr": "Test",
+  "it": "Test",
+  "rm": "Test"
  },
  "Testen": {
   "en": "Testing",
@@ -11707,6 +13015,12 @@
   "it": "Test finito: persone rilevate %d di %d (%d %%), tempo di reazione %s, %s, sfarfallio %d, allarmi sonori %d.",
   "rm": "Test finì: persunas identifitgadas %d da %d (%d %%), temp da reacziun %s, %s, sbrigliar %d, alarms da canera %d."
  },
+ "Testlauf gestartet (Plan «%s»)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Testlauf läuft": {
   "en": "Test run running",
   "fr": "Test en cours",
@@ -11736,6 +13050,18 @@
   "fr": "Le test ne démarre pas : ",
   "it": "Il test non parte: ",
   "rm": "Il test na cumenza betg: "
+ },
+ "Testlauf und Prüfstand messen mit festen Abläufen, wie gut MoveEye Personen und Tiere erkennt – auch nachts und bei Regen.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Testlauf zu Ende · ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Testlauf: Personen %d/%d, Pushes %s, Flackern %d": {
   "en": "Test run: persons %d/%d, pushes %s, flicker %d",
@@ -11875,17 +13201,41 @@
   "it": "Tavolo + sedie",
   "rm": "Maisa + sutgas"
  },
+ "Titel: %s\n\n%s%s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Title: ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "TLS / Zertifikat": {
   "en": "TLS / certificate",
   "fr": "TLS / certificat",
   "it": "TLS / certificato",
   "rm": "TLS / certificat"
  },
+ "TLS-Fehler": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Toaster": {
   "en": "Toaster",
   "fr": "Grille-pain",
   "it": "Tostapane",
   "rm": "Tustader"
+ },
+ "Ton": {
+  "en": "sound",
+  "fr": "son",
+  "it": "suono",
+  "rm": "tun"
  },
  "Topfpflanze": {
   "en": "Potted plant",
@@ -11934,6 +13284,12 @@
   "fr": "Images d’entraînement pour ta propre IA",
   "it": "Immagini di addestramento per una propria IA",
   "rm": "Maletgs da trenament per in’atgna IA"
+ },
+ "Trainingsbilder sammeln: damit lernt MoveEye ein eigenes KI-Modell – ohne echte Nächte.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Trainingspaket (YOLO) machen": {
   "en": "Make training package (YOLO)",
@@ -12032,11 +13388,29 @@
   "it": "Usare il tunnel",
   "rm": "Utilisar il tunnel"
  },
+ "Tunnel zu MoveEye": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Tunnel zu MoveEye (Firewall ohne Adminrechte)": {
   "en": "Tunnel to MoveEye (firewall without admin rights)",
   "fr": "Tunnel vers MoveEye (pare-feu sans droits d’administrateur)",
   "it": "Tunnel verso MoveEye (firewall senza diritti di amministratore)",
   "rm": "Tunnel a MoveEye (firewall senza dretgs d’administratur)"
+ },
+ "Tunnel: ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "TV": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Töff": {
   "en": "Motorbike",
@@ -12109,6 +13483,12 @@
   "fr": "Échec de la conversion : ",
   "it": "Conversione non riuscita: ",
   "rm": "Convertir n’è betg reussì: "
+ },
+ "unbekannt · ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "unbekannte KI-Hilfe: ": {
   "en": "unknown AI help: ",
@@ -12206,11 +13586,23 @@
   "it": "Aggiornamento non riuscito: ",
   "rm": "Update n’ha betg funcziunà: "
  },
+ "Update: ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Updates": {
   "en": "Updates",
   "fr": "Mises à jour",
   "it": "Aggiornamenti",
   "rm": "Actualisaziuns"
+ },
+ "Updates: Karte System nicht gefunden": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Vase": {
   "en": "Vase",
@@ -12290,6 +13682,24 @@
   "it": "Connessione interrotta",
   "rm": "Connexiun interrutta"
  },
+ "Verbindung fehlgeschlagen": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Verbindung zu MoveEye": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Verbindung zu MoveEye unterbrochen (seit 3 s nichts mehr gehört)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Verbindung zum Browser verloren.": {
   "en": "Connection to the browser lost.",
   "fr": "Connexion au navigateur perdue.",
@@ -12313,6 +13723,18 @@
   "fr": "connecté à MoveEye (%s:%d)",
   "it": "collegato a MoveEye (%s:%d)",
   "rm": "collià cun MoveEye (%s:%d)"
+ },
+ "Verbunden mit «%s» (MoveEye %s) von %s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "verbunden mit «%s» · MoveEye %s · %s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Verbunden: %s": {
   "en": "Connected: %s",
@@ -12368,6 +13790,12 @@
   "it": "Percorso di inseguimento: lezioni",
   "rm": "Parcours da persequitar: lecziuns"
  },
+ "Vergleich": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Vergleich ": {
   "en": "Comparison ",
   "fr": "Comparaison ",
@@ -12409,6 +13837,36 @@
   "fr": "Déplacer",
   "it": "Spostare",
   "rm": "Spustar"
+ },
+ "Version %s · %s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Version %s · Elektro (alias Daniel) · Schweiz": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Version und Status": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Version und Status als Text in die Zwischenablage": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Version und Status, Geschichte, Entwickler": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Versionen vergleichen (Kurve)": {
   "en": "Compare versions (curve)",
@@ -12572,6 +14030,12 @@
   "it": "colpito dal cacciatore, non segnalato",
   "rm": "tutgà dal chatschader, betg annunzià"
  },
+ "von Hand": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Von oben": {
   "en": "From above",
   "fr": "Vue d’en haut",
@@ -12710,6 +14174,12 @@
   "it": "In attesa di giocatori",
   "rm": "Spetgar giugaders"
  },
+ "Warteraum": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "wartet auf die Nacht": {
   "en": "waiting for the night",
   "fr": "attend la nuit",
@@ -12727,6 +14197,12 @@
   "fr": "attend MoveEye (dès 2.98.6) avec de vraies images",
   "it": "aspetta MoveEye (dalla 2.98.6) con immagini reali",
   "rm": "spetga MoveEye (a partir da 2.98.6) cun maletgs vairs"
+ },
+ "wartet auf MoveEye · ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "wartet auf MoveEye …": {
   "en": "waiting for MoveEye …",
@@ -12746,6 +14222,12 @@
   "it": "Cosa c’è di nuovo?",
   "rm": "Tge è nov?"
  },
+ "was läuft und was fehlt – mit einem Tipp, was zu tun ist": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Was MoveEye sieht (im Bedienfeld)": {
   "en": "What MoveEye sees (in the control panel)",
   "fr": "Ce que voit MoveEye (dans le panneau)",
@@ -12763,6 +14245,12 @@
   "fr": "Que faut-il surveiller ?",
   "it": "Cosa deve essere sorvegliato?",
   "rm": "Tge duai vegnir surveglià?"
+ },
+ "Was wird gesendet?": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Was wäre wenn: %s nachgestellt (%02d:%02d, %s)": {
   "en": "What if: %s recreated (%02d:%02d, %s)",
@@ -12824,6 +14312,12 @@
   "it": "Togliere (test: MoveEye se ne accorge?)",
   "rm": "Prender davent (test: remartga MoveEye quai?)"
  },
+ "Wegnehmen und schauen, ob MoveEye es merkt (Referenz-Scan; Velo und Kühlbox auch Spielziel «Diebstahl»):": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Wegschicken": {
   "en": "Send away",
   "fr": "Renvoyer",
@@ -12865,6 +14359,18 @@
   "fr": "Suivant",
   "it": "Avanti",
   "rm": "Vinavant"
+ },
+ "Weiter (→ / Enter)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "weiter bei Schritt %d – das Bedienfeld Schritt für Schritt": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Weiter ›": {
   "en": "Next ›",
@@ -12997,14 +14503,19 @@
   "en": "Weather",
   "fr": "Météo",
   "it": "Meteo",
-  "rm": "Aura",
-  "?": "rm: MoveEye hat «Ora», hier «Aura» wie überall im Simulator – in MoveEye prüfen"
+  "rm": "Aura"
  },
  "Wetter und Zeit": {
   "en": "Weather and time",
   "fr": "Météo et heure",
   "it": "Meteo e ora",
   "rm": "Aura e temp"
+ },
+ "Wetter: ": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Wetter: keine Anfrage möglich": {
   "en": "Weather: no request possible",
@@ -13265,6 +14776,12 @@
   "it": "Firewall di Windows: autorizzare il simulatore (una volta, chiede diritti di amministratore)",
   "rm": "Firewall da Windows: permetter il simulatur (ina giada, dumonda dretgs d’administratur)"
  },
+ "Windows-Firewall: «3D-Simulator» (Godot) für private Netzwerke zulassen – eingehend TCP-Port %d.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Windows-Registry: %s": {
   "en": "Windows registry: %s",
   "fr": "Registre Windows : %s",
@@ -13300,6 +14817,12 @@
   "fr": "Sera volé",
   "it": "Viene rubato",
   "rm": "Vegn engulà"
+ },
+ "Wird knapp: nicht benötigte Programme schliessen.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "WLAN weg": {
   "en": "Wi-Fi gone",
@@ -13536,6 +15059,12 @@
   "it": "Ora",
   "rm": "Temp"
  },
+ "Zeit abgelaufen": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Zeit läuft x-fach": {
   "en": "Time runs x times",
   "fr": "Le temps s’écoule x fois",
@@ -13548,11 +15077,23 @@
   "it": "Tempo scaduto",
   "rm": "Surpassà il temp"
  },
+ "Zelle": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Zelt": {
   "en": "Tent",
   "fr": "Tente",
   "it": "Tenda",
   "rm": "Tenda"
+ },
+ "Zelt & Auto": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Zelt / Auto gesetzt (%d): %s": {
   "en": "Tent / car placed (%d): %s",
@@ -13746,6 +15287,12 @@
   "it": "troppo corto",
   "rm": "memia curt"
  },
+ "zu viele Umleitungen": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "zu viele Weiterleitungen": {
   "en": "too many redirects",
   "fr": "trop de redirections",
@@ -13835,6 +15382,18 @@
   "fr": "Se faufiler jusqu’à l’arrivée",
   "it": "Raggiungere il traguardo di soppiatto",
   "rm": "Sa stular a la finala"
+ },
+ "zur Karte System → Updates": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Zurück (←)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Zurück an den Anfang": {
   "en": "Back to the start",
@@ -13938,11 +15497,23 @@
   "it": "«%s» è ora lo sfondo di «%s» (%d × %d, angolo dell’immagine %d°). Direzione e angolo sotto «Scena · Il tuo posto».",
   "rm": "«%s» è ussa il fund da «%s» (%d × %d, angul dal maletg %d°). Direcziun ed angul sut «Scena · Tes plaz»."
  },
+ "«%s» ist jetzt der Hintergrund von «%s» (%d × %d, Bildwinkel %d°). Richtung und Winkel unter «Szene · Foto des Platzes».": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "«%s» nicht gefunden.": {
   "en": "«%s» not found.",
   "fr": "«%s» introuvable.",
   "it": "«%s» non trovato.",
   "rm": "«%s» betg chattà."
+ },
+ "«An MoveEye senden» ist aus": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "«Dein Platz» öffnen: Foto / Panorama, Zelt, Auto, bewachte Sachen": {
   "en": "Open «Your place»: photo / panorama, tent, car, guarded things",
@@ -13950,17 +15521,35 @@
   "it": "Aprire «Il tuo posto»: foto / panorama, tenda, auto, oggetti sorvegliati",
   "rm": "Avrir «Tes plaz»: foto / panorama, tenda, auto, objects survegliads"
  },
+ "«Einfach» zeigt nur das Wichtigste, «Experte» alle Einstellungen – wie in MoveEye. Daneben: Kinder / Erwachsene.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "«Entkomme der Kamera» mit dem Bot": {
   "en": "«Escape the camera» with the bot",
   "fr": "«Échappe à la caméra» avec le bot",
   "it": "«Sfuggi alla telecamera» con il bot",
   "rm": "«Mitscha da la camera» cun il bot"
  },
+ "«Experte» eingeschaltet – die Updates stehen unter System.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "«Gegenstände» öffnen": {
   "en": "Open «Things»",
   "fr": "Ouvrir «Objets»",
   "it": "Aprire «Oggetti»",
   "rm": "Avrir «Objects»"
+ },
+ "«Gegenstände» öffnen: Foto des Platzes, Zelt, Auto, bewachte Sachen": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "«Was wäre wenn …?» bei echten Alarmen": {
   "en": "«What if …?» for real alarms",
@@ -13979,6 +15568,12 @@
   "fr": "· hors de vue de la caméra",
   "it": "· fuori dalla vista della telecamera",
   "rm": "· ordaifer la vista da la camera"
+ },
+ "· Die Kacheln oben (Welt · Testen · Lernen · Spielen) tun das Häufigste mit einem Klick.\n· «Einfach» zeigt das Wichtigste, «Experte» alles; das Suchfeld findet jede Einstellung.\n· Die ganze Anleitung steht in MoveEye: Reiter Mehr → Anleitung (Kapitel 3D-Simulator).": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "ältere: Alle gegen die Kamera": {
   "en": "older: all against the camera",
@@ -14003,6 +15598,18 @@
   "fr": "Personne âgée avec une canne",
   "it": "Persona anziana con bastone",
   "rm": "Persuna veglia cun bastun"
+ },
+ "Öffnet die Anleitung im Browser (MoveEye muss verbunden sein)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Über den Simulator": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Übergeben an MoveEye …": {
   "en": "Handing over to MoveEye …",
@@ -14093,6 +15700,12 @@
   "fr": "Carte d’ensemble · molette : zoomer · glisser le coin en bas à droite : taille · clic : y voler · M : arrêt / marche",
   "it": "Mappa d’insieme · rotella: zoom · trascinare l’angolo in basso a destra: dimensione · clic: volare lì · M: spento / acceso",
   "rm": "Charta da survista · roda: zoom · trair il chantun giu a dretga: grondezza · clic: svolar là · M: or / en"
+ },
+ "Überspringen": {
+  "en": "Skip",
+  "fr": "Passer",
+  "it": "Salta",
+  "rm": "Siglir"
  },
  "Überwachen: %s – Runde %d m, %d Punkte": {
   "en": "Watch: %s – round %d m, %d points",

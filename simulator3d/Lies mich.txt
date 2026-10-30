@@ -608,6 +608,14 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-4.21
+3D-4.21: Status-LED auf dem Kopf (in Blinkis Augen-Ring) und Fenster «Gerät» mit den Tasten «Schutz» und «Alarm quittieren»
+(gehen wie echte Tasten an MoveEye) – neue Gruppe «Licht & Ton» wie in MoveEye. Grundlage für Sprachen (FR/IT/RM/EN folgen).
+Karte «Mehr» wie MoveEye (Rückmeldung auch ohne MoveEye, Über, Rundgang mit Blinki, Selbstdiagnose, Protokoll, Hell/Rotlicht/
+Dunkel). 57 neue Gegenstände und Umgebung (Wind, Lampen, Rauch, Lockmittel, Pfützen, Spuren, Fahrzeuge, Haustiere).
+Menü wie MoveEye: gleiche Gruppen und Namen, Entwickler-Schalter geteilt, «Gegenstände» in 5 Gruppen, «Foto des Platzes»,
+gezeichnete Symbole.
+
 NEU IN 3D-4.20
 3D-4.20: Der Simulator ist der Lautsprecher von MoveEye (Sirene, Wecker, Ansage – auch in Spielen und Tests, ins Mikrofon,
 Diebe fliehen), Servo-Störungen (Unterspannung, PCA9685-Reset, I2C-Fehler, Servo blockiert), Wärmebild wie Thermal-90

@@ -11,6 +11,11 @@ TOGGLES.extend([
     (_LEDS, "led_det_flash", "Short flash at every detection (for testing)"),
     (_LEDS, "led_heartbeat", "Blinki blink: a short double blink every few minutes = all is well (not at night)"),
     (_LEDS, "btn_on", "Buttons on the device (GPIO): «Protection» and «Acknowledge alarm»"),
+    (_LEDS, "btn_allow_arm", "Button may switch the protection on"),           # 2.98.50: the buttons may do everything,
+    (_LEDS, "btn_allow_disarm", "Button may switch the protection off"),       # each action can be switched off (Daniel)
+    (_LEDS, "btn_allow_siren", "Button may stop the siren"),
+    (_LEDS, "btn_allow_ack", "Button may acknowledge the alarm"),
+    (_LEDS, "btn_notify_off", "Message when switched off at the device"),
 ])
 SLIDERS.extend([
     (_LEDS, "led_bright", "Brightness (%)", 5, 100, 5),
@@ -30,7 +35,6 @@ TEXTS.extend([
     (_LEDS, "led_common", "LED type", "enum", "led_common"),
     (_LEDS, "btn_gpio_protect", "Button «Protection»: GPIO", "enum", "btn_gpio"),
     (_LEDS, "btn_gpio_ack", "Button «Acknowledge alarm»: GPIO", "enum", "btn_gpio"),
-    (_LEDS, "btn_pin_rule", "With a PIN for disarming", "enum", "btn_pin_rule"),
 ])
 TEXT_SPECS.update({k: (kind, extra) for s, k, l, kind, extra in TEXTS if s == _LEDS})
 SECTIONS.append(_LEDS)
@@ -47,8 +51,11 @@ SET_HELP.update({
     "btn_on": ("Two buttons on the device, each from a GPIO to ground (internal pull-up): «Protection» short = Watchful ↔ Off, long "
                "(1.5 s) = Full; «Acknowledge alarm» stops the siren and the red blinking. Every press is in the log.",
                "On once the buttons are wired. With the simulator its buttons work without this switch."),
-    "btn_pin_rule": ("With a PIN for disarming a thief at the device could otherwise switch the protection off or silence the siren "
-                     "with the buttons. «Only switch on»: the buttons arm, but switching off and silencing need the app (PIN).", "Only switch on."),
+    **{k: ("By default the buttons may do everything - also with a PIN for disarming. Switch off here what a button must not do (e.g. "
+            "switching off, so a thief at the device cannot disarm). Every switching off and every siren stop at the device is in the log "
+            "and sent as a push message.", "On (all four).") for k in ("btn_allow_arm", "btn_allow_disarm", "btn_allow_siren", "btn_allow_ack")},
+    "btn_notify_off": ("A push message «Protection switched off at the device» / «Siren stopped at the device» whenever a button "
+                       "switches off or stops the siren. In the log it is always.", "On."),
     "led_night": ("At night (dark - in the simulator its night) the LED is dimmed or off, so it does not disturb and does not show "
                   "the device. An alarm is always bright.", "Dimmed."),
 })
@@ -93,9 +100,31 @@ def text_choice_pairs(key):                               # + 599c: the choices 
         return [("cathode", tr("common cathode (–): the outputs give the colour")), ("anode", tr("common anode (+): the outputs pull to ground"))]
     if extra == "btn_gpio":
         return led_btn_gpio_pairs(key)
-    if extra == "btn_pin_rule":
-        return [("pin_arm_only", tr("buttons only switch on - off and silencing in the app")), ("always", tr("buttons may also switch off and silence"))]
     return _text_choice_pairs_led_base(key)
+
+
+_settings_migrations_before_led = _settings_migrations
+
+
+def _settings_migrations(cfg_in):                         # + 599c (2.98.50): «btn_pin_rule» -> the four switches of the buttons
+    _settings_migrations_before_led(cfg_in)
+    try:
+        if led_pin_rule_migrate(cfg_in):
+            log_event("sys", "Settings of an older version taken over: buttons with a PIN only switch on")
+    except Exception as e:
+        log_event("sys", f"Settings migration (599c): {e}"[:150])
+
+
+def led_pin_rule_migrate(cfg_in):
+    """the test build of the buttons had «btn_pin_rule» (with a PIN: buttons only switch on). Saved as «pin_arm_only» together
+    with a PIN and without the new switches: disarm and siren stop by button off - everybody else gets all four on."""
+    CFG.pop("btn_pin_rule", None)
+    if not isinstance(cfg_in, dict) or cfg_in.get("btn_pin_rule") != "pin_arm_only" or not cfg_in.get("protect_pin"):
+        return False
+    if any(k in cfg_in for k in ("btn_allow_arm", "btn_allow_disarm", "btn_allow_siren", "btn_allow_ack")):
+        return False
+    CFG.update(btn_allow_disarm=False, btn_allow_siren=False)
+    return True
 
 
 _sens_used_gpios_led_base = sens_used_gpios
@@ -286,6 +315,21 @@ WEB_PAGE = WEB_PAGE.replace("</body>", LED_JS.replace("/*LEDDE*/{}", "/*LEDDE*/"
                             .replace('/*LEDSVG*/""', json.dumps(BLINKI_SVG), 1).replace('/*LEDCSS*/""', json.dumps(LED_CSS), 1) + "</body>", 1)
 
 
+# 2.98.50 (Daniel): «Alarm quittieren» also in the alarm card of the tab «Schutz» («Was passiert bei einem Alarm?», 530) - the
+# same function as the button of the card «Status-LED & Tasten» (led_ack: red blinking, siren, escalation)
+_LED_CHAIN_KEY_OLD = 'c.escalate_on, c.escalate_siren_s, LANG].join("|");'
+_LED_CHAIN_KEY_NEW = 'c.escalate_on, c.escalate_siren_s, LANG, !!(s.led && s.led.alarm)].join("|");'
+_LED_CHAIN_OLD = '  box.appendChild(ch);\n  box.appendChild(el("div", "mut", armed ?'
+_LED_CHAIN_NEW = ('  box.appendChild(ch);\n'
+                  '  { const ak = el("button", "sec", "✓ " + t("Acknowledge alarm")); ak.type = "button"; ak.id = "chain-ack"; ak.style.marginTop = "6px";   // 599c\n'
+                  '    ak.disabled = !(s.led && s.led.alarm); ak.title = t("Stops the siren and the red blinking of the status LED");\n'
+                  '    ak.onclick = () => { ak.disabled = true; fetch("/api/led", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({action: "ack", lang: LANG})}).catch(() => {}); };\n'
+                  '    box.appendChild(ak); }\n'
+                  '  box.appendChild(el("div", "mut", armed ?')
+WEB_PAGE = WEB_PAGE.replace(_LED_CHAIN_KEY_OLD, _LED_CHAIN_KEY_NEW, 1).replace(_LED_CHAIN_OLD, _LED_CHAIN_NEW, 1)
+LED_JS_KEYS.append("Stops the siren and the red blinking of the status LED")
+
+
 def led_web_de_refresh():
     """639f adds the German texts after this part: the page dictionary is filled again then"""
     global WEB_PAGE
@@ -297,6 +341,12 @@ def led_web_de_refresh():
 # ---- window (Tkinter): the same in Settings → Light & sound → Status LED & buttons -------------------------------------
 def _led_tk_build_section(self, sec, sbody, settings_parent=None):
     _led_tk_build_section_before(self, sec, sbody, settings_parent)
+    if sec == "Camping / protection":                      # 2.98.50: «Alarm quittieren» also in the group «Schutz» (like the web card)
+        try:
+            _led_tk_ack_row(self, sbody)
+        except Exception as e:
+            log_event("sys", f"Window: acknowledge button: {e}"[:160])
+        return
     if sec != _LEDS:
         return
     try:
@@ -334,6 +384,22 @@ def _led_tk_panel(app, sbody):
     tick()
 
 
+def _led_tk_ack_row(app, sbody):
+    ack = ttk.Button(sbody, text="✓ " + tr("Acknowledge alarm"), command=lambda: led_ack("window"))
+    ack.pack(fill="x", pady=(8, 0))
+    ttk.Label(sbody, text=tr("Stops the siren and the red blinking of the status LED"), style="Mut.TLabel", wraplength=380).pack(anchor="w", pady=(2, 0))
+
+    def tick():
+        try:
+            if not ack.winfo_exists():
+                return
+            ack.state(["!disabled"] if (STATE.get("led") or {}).get("alarm") else ["disabled"])
+            app.root.after(1000, tick)
+        except Exception:
+            pass
+    tick()
+
+
 _led_tk_build_section_before = App._build_section
 # wraps: App._build_section
 App._build_section = _led_tk_build_section
@@ -346,9 +412,12 @@ _LED_HELP = (
      "während des Countdowns «atmet» die Farbe). Nach einem Alarm blinkt sie rot, bis jemand quittiert – Taste «Alarm quittieren», Knopf "
      "auf dieser Seite oder im Fenster, oder Schutz aus. Störungen (Akku schwach, Unterspannung, Kamera weg, Servo-Störung) zeigt ein "
      "kurzes violettes Pulsieren. Alle paar Minuten zwinkert sie zweimal kurz – «alles ok»; Blinki in der Kopfzeile zwinkert im selben "
-     "Moment. Nachts gedimmt oder aus. Zwei Tasten am Gerät (GPIO gegen Masse, interner Pull-up, entprellt): «Schutz» kurz = Wachsam ↔ "
-     "Aus, lang (1,5 s) = Voll; «Alarm quittieren» stoppt Sirene und Eskalation. Jeder Druck steht im Protokoll. Ist eine PIN zum "
-     "Ausschalten gesetzt, schalten die Tasten den Schutz nur ein – Ausschalten und Sirene stoppen dann nur in der App. Mit dem "
+     "Moment. Nachts gedimmt oder aus. Zwei Tasten am Gerät (GPIO gegen Masse, interner Pull-up, entprellt; Standard GPIO 16 = Pin 36 "
+     "«Schutz», GPIO 26 = Pin 37 «Alarm quittieren»): «Schutz» kurz = Wachsam ↔ Aus, lang (1,5 s) = Voll; «Alarm quittieren» stoppt "
+     "Sirene und Eskalation – dasselbe wie der Knopf «Alarm quittieren» im Alarmfenster. Jeder Druck steht im Protokoll. Die Tasten "
+     "dürfen alles, auch mit einer PIN zum Ausschalten; jede Aufgabe (Einschalten, Ausschalten, Sirene stoppen, Quittieren) lässt sich "
+     "einzeln ausschalten. Jedes Ausschalten und jedes Sirene-Stoppen am Gerät steht im Protokoll und kommt als Push-Nachricht "
+     "(«Schutz am Gerät ausgeschaltet» / «Sirene am Gerät gestoppt», abschaltbar). Mit dem "
      "3D-Simulator leuchtet die LED auf dem simulierten Kopf, und die Tasten sind im Simulator-Fenster «Gerät» (🧪). "
      "Einstellungen → Licht &amp; Ton → Status-LED &amp; Tasten.</p>"),
     ('<section id="lightsound" data-icon="💡"><h2>Light &amp; sound</h2>',
@@ -357,9 +426,12 @@ _LED_HELP = (
      "adjustable; during the countdown the colour «breathes»). After an alarm it blinks red until somebody acknowledges – button "
      "«Acknowledge alarm», the button on this page or in the window, or protection off. Faults (battery low, under-voltage, camera lost, "
      "servo fault) show as a short violet pulse. Every few minutes it blinks twice shortly – «all is well»; Blinki in the header blinks "
-     "at the same moment. Dimmed or off at night. Two buttons on the device (GPIO to ground, internal pull-up, debounced): «Protection» "
-     "short = Watchful ↔ Off, long (1.5 s) = Full; «Acknowledge alarm» stops siren and escalation. Every press is in the log. With a PIN "
-     "for disarming the buttons only switch the protection on – switching off and stopping the siren then only in the app. With the 3D "
+     "at the same moment. Dimmed or off at night. Two buttons on the device (GPIO to ground, internal pull-up, debounced; default GPIO 16 = "
+     "pin 36 «Protection», GPIO 26 = pin 37 «Acknowledge alarm»): «Protection» short = Watchful ↔ Off, long (1.5 s) = Full; «Acknowledge "
+     "alarm» stops siren and escalation – the same as the button «Acknowledge alarm» in the alarm window. Every press is in the log. The "
+     "buttons may do everything, also with a PIN for disarming; each job (switching on, switching off, stopping the siren, acknowledging) "
+     "can be switched off on its own. Every switching off and every siren stop at the device is in the log and sent as a push message "
+     "(«Protection switched off at the device» / «Siren stopped at the device», can be switched off). With the 3D "
      "simulator the LED shines on the simulated head and the buttons are in the simulator window «Gerät» (🧪). Settings → Light &amp; "
      "sound → Status LED &amp; buttons.</p>"),
 )
@@ -471,29 +543,73 @@ def led_selftest():
         led_sim_buttons({"ack": {"down": False, "seq": 2, "last_ms": 2000}}, 14.0)
         assert got[-1] == ("ack", "long", "simulator"), got
         G["led_button_event"] = keep_g["led_button_event"]
-        # the actions and the PIN rule (no real arming in the self-test)
+        # the actions (no real arming in the self-test). 2.98.50: the buttons may do everything, also with a PIN; each action
+        # can be switched off; disarm / siren stop at the device -> log + push message
         calls = []
         G["protect_set"] = lambda lv, who="web", answers=None: (calls.append(("set", lv)), CFG.update(armed=lv != "off"))
         G["led_ack"] = lambda src="web": calls.append(("ack", src))
         G["protect_cancel_escalation"] = lambda: None
         G["log_event"] = lambda kind, text: calls.append(("log", text))
-        CFG.update(armed=False, protect_pin="", btn_pin_rule="pin_arm_only")
-        led_button_event("protect", "short", "GPIO 5")
-        assert ("set", "watch") in calls and any("Button «Protection» short" in str(c[1]) for c in calls if c[0] == "log"), calls
-        calls.clear(); CFG["armed"] = True
-        led_button_event("protect", "short", "GPIO 5")
-        assert ("set", "off") in calls, calls
-        calls.clear(); CFG.update(armed=True, protect_pin="x$y")
-        led_button_event("protect", "short", "GPIO 5")
-        assert not [c for c in calls if c[0] == "set"] and LED["flash_hz"] > 0, "PIN set: the button does not switch off"
-        led_button_event("protect", "long", "GPIO 5")
-        assert ("set", "full") in calls
-        calls.clear(); LED["alarm"] = True
-        led_button_event("ack", "short", "GPIO 6")
-        assert not [c for c in calls if c[0] == "ack"] and not LED["alarm"], "PIN set: LED acknowledged, siren stays"
-        CFG["btn_pin_rule"] = "always"; calls.clear()
-        led_button_event("ack", "short", "simulator")
-        assert ("ack", "button 🧪") in calls, calls
+
+        class _N:
+            def info(self, text, link="", title="", jpg=None, fname=""):
+                calls.append(("push", text)); return True
+
+        class _W:
+            notifier = _N()
+        keep_w = WATCH_REF.get("w"); WATCH_REF["w"] = _W()
+        keep_snd = SOUND.get("playing")
+        try:
+            assert CFG["btn_gpio_protect"] == "16" and CFG["btn_gpio_ack"] == "26", "default GPIO 16 / 26 (GPIO 5 = PIR)"
+            assert all(CFG[k] for k in ("btn_allow_arm", "btn_allow_disarm", "btn_allow_siren", "btn_allow_ack", "btn_notify_off"))
+            CFG.update(armed=False, protect_pin="x$y")
+            led_button_event("protect", "short", "GPIO 16")
+            assert ("set", "watch") in calls and any("Button «Protection» short" in str(c[1]) for c in calls if c[0] == "log"), calls
+            calls.clear()
+            led_button_event("protect", "short", "GPIO 16")
+            assert ("set", "off") in calls, "PIN set: the button still switches off (Daniel 30.10.2026)"
+            assert ("push", tr("Protection switched off at the device")) in calls, calls
+            assert any("Protection switched off at the device" in str(c[1]) for c in calls if c[0] == "log"), "disarm at the device in the log"
+            calls.clear(); CFG["armed"] = True; SOUND["playing"] = True
+            led_button_event("ack", "short", "GPIO 26")
+            assert ("ack", "button") in calls and ("push", tr("Siren stopped at the device")) in calls, calls
+            calls.clear(); SOUND["playing"] = False
+            led_button_event("ack", "short", "simulator")
+            assert ("ack", "button 🧪") in calls and not [c for c in calls if c[0] == "push"], "no siren - no push"
+            # each action can be switched off
+            calls.clear(); CFG.update(btn_allow_disarm=False, armed=True)
+            led_button_event("protect", "short", "GPIO 16")
+            assert not [c for c in calls if c[0] in ("set", "push")] and LED["flash_hz"] > 0, "disarm by button switched off"
+            led_button_event("protect", "long", "GPIO 16")
+            assert ("set", "full") in calls
+            calls.clear(); CFG.update(btn_allow_arm=False, armed=False)
+            led_button_event("protect", "short", "GPIO 16"); led_button_event("protect", "long", "GPIO 16")
+            assert not [c for c in calls if c[0] == "set"], "arming by button switched off"
+            calls.clear(); CFG.update(btn_allow_siren=False, armed=True); LED["alarm"] = True; SOUND["playing"] = True
+            led_button_event("ack", "short", "GPIO 26")
+            assert not [c for c in calls if c[0] in ("ack", "push")] and not LED["alarm"], "siren stop switched off: only the LED"
+            calls.clear(); CFG["btn_allow_ack"] = False; LED["alarm"] = True
+            led_button_event("ack", "short", "GPIO 26")
+            assert LED["alarm"] and not [c for c in calls if c[0] == "ack"], "acknowledging switched off"
+            # no push message when switched off, the log line stays
+            CFG.update(btn_allow_ack=True, btn_allow_siren=True, btn_allow_disarm=True, btn_allow_arm=True, btn_notify_off=False, armed=True)
+            calls.clear(); led_button_event("protect", "short", "GPIO 16")
+            assert ("set", "off") in calls and not [c for c in calls if c[0] == "push"] and any("at the device" in str(c[1]) for c in calls if c[0] == "log")
+            # the old setting of the test build: «pin_arm_only» with a PIN -> disarm / siren off; without a PIN or new keys: all on
+            CFG.update(btn_allow_disarm=True, btn_allow_siren=True)
+            assert not led_pin_rule_migrate({"btn_pin_rule": "pin_arm_only"}) and CFG["btn_allow_disarm"]
+            assert not led_pin_rule_migrate({"btn_pin_rule": "pin_arm_only", "protect_pin": "a$b", "btn_allow_disarm": True})
+            assert led_pin_rule_migrate({"btn_pin_rule": "pin_arm_only", "protect_pin": "a$b"}) and not CFG["btn_allow_disarm"] and not CFG["btn_allow_siren"]
+            assert CFG["btn_allow_arm"] and CFG["btn_allow_ack"] and "btn_pin_rule" not in CFG
+        finally:
+            WATCH_REF["w"] = keep_w; SOUND["playing"] = keep_snd
+        # the same switches in the web page and the window (schema), the acknowledge button in the alarm card / group «Schutz»
+        keys = {x[1] for x in TOGGLES if x[0] == _LEDS}
+        assert {"btn_allow_arm", "btn_allow_disarm", "btn_allow_siren", "btn_allow_ack", "btn_notify_off"} <= keys, keys
+        assert 'id = "chain-ack"' in WEB_PAGE and "!!(s.led && s.led.alarm)].join" in WEB_PAGE, "Alarm quittieren in the alarm card"
+        assert tr("Protection switched off at the device", "de") == "Schutz am Gerät ausgeschaltet" and tr("Siren stopped at the device", "de") == "Sirene am Gerät gestoppt"
+        for L_ in ("fr", "it", "rm"):
+            assert tr("Siren stopped at the device", L_) != "Siren stopped at the device", L_
         for k, v in keep_g.items():
             G[k] = v
         # alarm hook, labels, pages, field list
@@ -506,13 +622,13 @@ def led_selftest():
         assert any(_LEDS in g[2] for g in TK_GROUPS if g[0] == "lightsound"), "window group Licht & Ton"
         assert '"Test LED": "LED testen"' in WEB_PAGE, "German texts of the web panel"
         assert "Status-LED und Tasten" in HELP_PAGE and "Status LED and buttons" in HELP_PAGE
-        assert text_choice_pairs("led_col_watch")[1][0] == "orange" and dict(text_choice_pairs("btn_gpio_protect")).get("5") == "GPIO 5"
+        assert text_choice_pairs("led_col_watch")[1][0] == "orange" and dict(text_choice_pairs("btn_gpio_protect")).get("16") == "GPIO 16"
         L = iface_list()
         if L is not None:
             assert "led" in L["state"] and "buttons" in L["world_reply"]
         sd = sim_state()
         assert sd["led"]["rgb"].startswith("#") and "hb" in sd["led"]
-        return "priority, night, heartbeat, buttons, PCA9685 channels 5-7, simulator buttons, PIN rule"
+        return "priority, night, heartbeat, buttons (GPIO 16 / 26, may do everything, each switchable, push at disarm / siren stop), PCA9685 channels 5-7, simulator buttons, acknowledge in the alarm card"
     finally:
         for k, v in keep_g.items():
             G[k] = v

@@ -1,7 +1,7 @@
 {
- "version": "3D-4.20",
+ "version": "3D-4.21",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31866685,
- "sha256": "78a6b44b4355b613109fc8dac1d8c37328be187052e9867c63d9e5f1a60f90b6",
- "notes": "Simulator als Lautsprecher, Servo-Störungen, Wärmebild Thermal-90 mit Ausrichten, Schnittstellen-Liste, Spiel-Assistent mit Bildern"
+ "size": 32281831,
+ "sha256": "6be57756c875fbeef76ff95278c2eb45b3d3e083a7b2ea3bf0688b97f21d550d",
+ "notes": "Status-LED und Tasten im Fenster «Gerät», Gruppe «Licht & Ton», Sprachen-Grundlage, Karte «Mehr» wie MoveEye, 57 neue Gegenstände, Menü wie MoveEye"
 }

@@ -1,10 +1,20 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 30.10.2026 · Simulator-Version **3D-4.20** · passende MoveEye-Version (früher Motion Watch) **2.96.2**
+Stand: 30.10.2026 · Simulator-Version **3D-4.21** · passende MoveEye-Version (früher Motion Watch) **2.96.2**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
-## NEU (Entwurf, Zweig wt-objekte): Gegenstände und Umgebung wie echt (`objekte_neu.gd`, `objekte_plus.gd`, `umgebung.gd`)
+## NEU in 3D-4.21 (MoveEye 2.98.50): Status-LED & Tasten, Gruppe «Licht & Ton», Sprachen Schritt 1, Karte «Mehr», Angleichen
+
+- `scripts/statusled.gd`: LED-Kuppel in Blinkis Augen-Ring (state `led` von MoveEye 599c), Fenster «Gerät» mit LED-Punkt und den
+  Knöpfen «Schutz» / «Alarm quittieren» (world_reply `buttons`, wie ein GPIO). Einstellung: **Licht & Ton → Status-LED & Tasten**
+  (neue Gruppe in `GROUPS`, gid `lightsound`, Symbol `sun` in ui_style.gd – wie MoveEye «Licht & Ton»). Die Regeln der Tasten
+  (dürfen alles, einzeln abschaltbar, Push bei Ausschalten / Sirene-Stopp) sind MoveEye-Einstellungen, nicht im Simulator.
+- Sprachen Schritt 1: `scripts/i18n.gd` (T.t), `i18n/texte.json` (gesammelt mit `werkzeuge/sim_texte.py`), Zustandsfeld `lang`
+  von MoveEye (292). Noch nichts sichtbar übersetzt; Texte aus wt-angl / wt-simmehr / wt-led haben noch Lücken (`--pruefen`).
+- Karte «Mehr» (wt-simmehr) und Angleichen (wt-angl): siehe Commits 2b68263 / 543271d.
+
+## NEU in 3D-4.21 (MoveEye 2.98.50): Gegenstände und Umgebung wie echt (`objekte_neu.gd`, `objekte_plus.gd`, `umgebung.gd`)
 
 - **`scripts/objekte_neu.gd`** (nur Daten, Format wie objects.gd): 57 neue Dinge in 5 neuen Katalog-Reitern (Wertsachen, Camping,
   Garten & Haus, Lockt Tiere an, Fehlalarm-Quellen) + neues Obst / Essen im Reiter «Essen» und die Strassenlampe in «Draussen».

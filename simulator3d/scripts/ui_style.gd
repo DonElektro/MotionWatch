@@ -392,6 +392,11 @@ static func _draw_group_icon(d: Control, kind: String) -> void:
 			d.draw_arc(c, 8, 0, TAU, 24, col, w, true)
 			d.draw_line(c, c + Vector2(0, -5), col, w, true)
 			d.draw_line(c, c + Vector2(4, 2), col, w, true)
+		"sun":                                        # 3D-4.21: group «Licht & Ton» (MoveEye ☀ / 💡)
+			d.draw_arc(c, 4.5, 0, TAU, 18, col, w, true)
+			for i in range(8):
+				var ang_sun := TAU * i / 8.0
+				d.draw_line(c + Vector2(cos(ang_sun), sin(ang_sun)) * 7.0, c + Vector2(cos(ang_sun), sin(ang_sun)) * 9.5, col, w, true)
 		"box":
 			d.draw_rect(Rect2(c + Vector2(-8, -3), Vector2(16, 11)), col, false, w)
 			d.draw_polyline(P.call([Vector2(-8, -3), Vector2(-5, -8), Vector2(5, -8), Vector2(8, -3)]), col, w, true)

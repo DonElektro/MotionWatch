@@ -13,9 +13,12 @@
 #   * two buttons (GPIO, internal pull-up, to ground; debounce; long press 1.5 s):
 #       «Schutz»            short: Wachsam <-> Aus, long: Voll
 #       «Alarm quittieren»  stops the siren and the escalation, ends the red blinking
-#     every press is logged. A PIN for disarming (135) is respected: then the buttons can switch the protection ON, but
-#     not off, and they do not silence the siren while protected (a thief at the device could otherwise) - setting
-#     «btn_pin_rule». The operator mode (390) does not limit arming (the operator may), so it does not limit the buttons.
+#     every press is logged. 2.98.50 (Daniel 30.10.2026: «Die beiden Tasten dürfen alles, aber es soll in den jeweiligen
+#     Menüs deaktivierbar sein»): the buttons may arm, disarm, stop the siren and acknowledge - also with a PIN for
+#     disarming; each of the four can be switched off (btn_allow_arm / _disarm / _siren / _ack). Every disarm and every
+#     siren stop at the device is in the log and goes out as a push message (btn_notify_off): «Schutz am Gerät
+#     ausgeschaltet» / «Sirene am Gerät gestoppt». (Before: «btn_pin_rule» - with a PIN only switching on; migrated in 599c.)
+#     GPIO 16 «Schutz» (pin 36) and GPIO 26 «Alarm quittieren» (pin 37) - GPIO 5 is the PIR of the housing.
 #   * simulator (sim_on and it answers): the LED is the one on the simulated head (sim_state «led», 599c) and the presses
 #     come from the simulator's buttons (world_reply «buttons», 599c) - the real GPIO / PCA channels rest meanwhile.
 # Settings, web page, window, simulator hooks, self-test: 599c. Texts: 639f.
@@ -25,11 +28,14 @@ LED_DEFAULTS = {
     "led_col_off": "green", "led_col_watch": "orange", "led_col_full": "red",
     "led_night": "dim", "led_night_bright": 8, "led_alarm_blink": True, "led_fault_pulse": True, "led_det_flash": False,
     "led_heartbeat": True, "led_hb_min": 5,
-    "btn_on": False, "btn_gpio_protect": "5", "btn_gpio_ack": "6", "btn_long_s": 1.5, "btn_debounce_ms": 50, "btn_pin_rule": "pin_arm_only",
+    "btn_on": False, "btn_gpio_protect": "16", "btn_gpio_ack": "26", "btn_long_s": 1.5, "btn_debounce_ms": 50,
+    "btn_allow_arm": True, "btn_allow_disarm": True, "btn_allow_siren": True, "btn_allow_ack": True, "btn_notify_off": True,
 }
 for _k, _v in LED_DEFAULTS.items():
     CFG.setdefault(_k, _v)
     DEFAULTS.setdefault(_k, _v)
+# 2.98.50: disarm / siren stop with a button of the device count as important (overview of the log)
+_IMP["sys"] = re.compile(_IMP["sys"].pattern + r"|switched off at the device|Siren stopped at the device")
 
 # the colours: what the RGB LED gets (0..1 per channel) and how a page draws it (hex)
 LED_RGB = {"green": (0.0, 1.0, 0.0), "orange": (1.0, 0.32, 0.0), "red": (1.0, 0.0, 0.0), "yellow": (1.0, 0.75, 0.0),
@@ -397,40 +403,63 @@ def led_btn_params():
     return max(0.005, _led_int("btn_debounce_ms", 5, 500) / 1000.0), max(0.5, min(5.0, float(CFG.get("btn_long_s") or 1.5)))
 
 
+def led_device_notice(what, src="GPIO"):
+    """2.98.50: a disarm / a siren stop with a button of the device -> the log and a push message (btn_notify_off)"""
+    txt = "Protection switched off at the device" if what == "off" else "Siren stopped at the device"
+    sim = src == "simulator"
+    log_event("sys", f"{txt} ({src}{' 🧪' if sim else ''})")
+    if not CFG.get("btn_notify_off", True):
+        return False
+    try:
+        w = WATCH_REF.get("w")
+        if w is not None and getattr(w, "notifier", None) is not None:
+            return bool(w.notifier.info(tr(txt) + (" 🧪" if sim else ""), title="{name}: " + tr("Buttons on the device")))
+    except Exception as e:
+        log_event("sys", f"Button message: {type(e).__name__}: {e}"[:160])
+    return False
+
+
 def led_button_event(name, ev, src="GPIO"):
-    """a press of a button of the device (real GPIO or the simulator) -> the action; every press is logged"""
+    """a press of a button of the device (real GPIO or the simulator) -> the action; every press is logged.
+    2.98.50: the buttons may do everything (also with a PIN); each action can be switched off in the settings."""
     if ev not in ("short", "long") or name not in LED_BTN_NAMES:
         return None
-    pin_set = bool(CFG.get("protect_pin"))
-    guard = pin_set and CFG.get("btn_pin_rule", "pin_arm_only") == "pin_arm_only"
     lv, _arming = led_level()
     what = ""
     if name == "protect":
-        if ev == "long":
-            if lv == "full" and CFG.get("armed"):
-                what = "already Full"
-            else:
-                protect_set("full", "button")
-                what = "-> Full"
-        elif CFG.get("armed"):
-            if guard:
-                what = "switching off refused: a PIN for disarming is set (use the app)"
+        if ev == "long" or not CFG.get("armed"):                # switching on: short from «Aus» = Wachsam, long = Voll
+            if not CFG.get("btn_allow_arm", True):
+                what = "switching on with the button is switched off (settings)"
                 led_flash("red", 1.0, 3.0)
+            elif ev == "long":
+                if lv == "full" and CFG.get("armed"):
+                    what = "already Full"
+                else:
+                    protect_set("full", "button")
+                    what = "-> Full"
             else:
-                protect_cancel_escalation()
-                protect_set("off", "button")
-                what = "-> Off"
+                protect_set("watch", "button")
+                what = "-> Watchful"
+        elif not CFG.get("btn_allow_disarm", True):
+            what = "switching off with the button is switched off (settings)"
+            led_flash("red", 1.0, 3.0)
         else:
-            protect_set("watch", "button")
-            what = "-> Watchful"
+            protect_cancel_escalation()
+            protect_set("off", "button")
+            what = "-> Off"
+            led_device_notice("off", src)
+    elif not CFG.get("btn_allow_ack", True):
+        what = "acknowledging with the button is switched off (settings)"
+    elif not CFG.get("btn_allow_siren", True):
+        with LED_LOCK:
+            was = LED["alarm"]; LED["alarm"] = False
+        what = "LED acknowledged; the siren stays (stopping it with the button is switched off)" if was else "nothing to acknowledge (the siren only from the app)"
     else:
-        if guard and CFG.get("armed"):
-            with LED_LOCK:
-                was = LED["alarm"]; LED["alarm"] = False
-            what = "LED acknowledged; siren / escalation stay (a PIN for disarming is set - use the app)" if was else "nothing to acknowledge (PIN set: siren only from the app)"
-        else:
-            led_ack("button" + (" 🧪" if src == "simulator" else ""))
-            what = "alarm acknowledged"
+        playing = bool(SOUND.get("playing")) if "SOUND" in globals() else False
+        led_ack("button" + (" 🧪" if src == "simulator" else ""))
+        what = "alarm acknowledged" + (", siren stopped" if playing else "")
+        if playing:
+            led_device_notice("siren", src)
     LED["presses"].append({"t": datetime.now().strftime("%H:%M:%S"), "btn": name, "ev": ev, "src": src, "what": what})
     log_event("sys", f"Button «{LED_BTN_NAMES[name]}» {ev} press ({src}{' 🧪' if src == 'simulator' else ''}): {what}")
     return what

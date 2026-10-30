@@ -40,9 +40,9 @@ func save() -> void:
 
 func add_controls() -> void:
 	main.add_control("toggle", "statusled_panel", "Fenster «Gerät»: Status-LED und die Tasten «Schutz» / «Alarm quittieren» zeigen (gehen wie echte Tasten an MoveEye)",
-			func(): return show_panel, func(v): show_panel = bool(v); save(), "Sensoren", {"sub": "Status-LED & Tasten"})
+			func(): return show_panel, func(v): show_panel = bool(v); save(), "Licht & Ton", {"sub": "Status-LED & Tasten"})
 	# für Tests (Prüfstand / Selbsttest): «protect:300» = Taste 300 ms gedrückt, «click:ack:200» = Mausklick auf den Knopf im Fenster
-	main.add_control("select", "statusled_press", "Taste drücken (Test)", func(): return "", func(v): test_press(str(v)), "Sensoren",
+	main.add_control("select", "statusled_press", "Taste drücken (Test)", func(): return "", func(v): test_press(str(v)), "Licht & Ton",
 			{"sub": "Status-LED & Tasten", "hide": true, "expert": true, "options": [["protect:200", "Schutz kurz"], ["protect:1800", "Schutz lang"], ["ack:200", "Alarm quittieren"]]})
 
 
