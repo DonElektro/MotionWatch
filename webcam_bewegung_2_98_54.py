@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_53.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_54.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.54: Live-Seite am Handy: die Status-Chips stehen in einer Zeile zum seitlichen Wischen (Schutz-Zustand, Status-LED,
+    alles ok / Probleme, Akku zuerst; Rand blendet aus, wenn weitere folgen) – die Sticks von Sim-Kompakt haben wieder ihre
+    normale Grösse
   * 2.98.53: Sim-Kompakt «Bild im Bild»: Simulator-Bild gross, Kamera klein in der Ecke (antippen = tauschen, pro Gerät
     gemerkt); Simulator 3D-4.24: Simulator-Datei heisst neu MoveEyeSim3D.exe – alte Dateien löschen und neu herunterladen;
     Simulator startet mit frischen Einstellungen; Windows fragt evtl. nochmals (SmartScreen/Firewall) (ein Update aus dem
@@ -999,10 +1002,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_53.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_54.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_53.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_53.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_54.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_54.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -1019,7 +1022,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.53"
+APP_VERSION = "2.98.54"
 
 
 def default_data_dir():
@@ -32588,7 +32591,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_53.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_54.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -48882,6 +48885,23 @@ header.hx .badge.q:not([hidden]):not(.vh){display:inline-flex}
 #btn-side,#btn-theme,#btn-lang,#btn-hdr{display:none}
 header{transition:padding .2s}
 @media(max-width:760px){header h1{order:-2}header .hdr-ctl{order:-1}}
+/* 2.98.54: phone / narrow (same breakpoint as the header layout, wider screens already have one row): the status chips in ONE
+   row that scrolls sideways by swipe (only the row, never the page), a soft fade at the edge where more chips follow;
+   order: protection state, status LED (alarm), all ok / problems, battery, then the rest as before */
+@media(max-width:760px){
+  header>.chips{display:flex;flex:1 1 100%;flex-wrap:nowrap;align-items:center;gap:6px;min-width:0;max-width:100%;
+    overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none;
+    scroll-snap-type:x proximity;touch-action:pan-x pan-y;padding:3px 2px;margin:-3px 0;scroll-padding:0 2px}
+  header>.chips::-webkit-scrollbar{display:none}
+  header>.chips>.badge{flex:none;order:20;scroll-snap-align:start}
+  header>.chips.more{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent)}
+  header>.chips.less{-webkit-mask-image:linear-gradient(90deg,transparent,#000 22px);mask-image:linear-gradient(90deg,transparent,#000 22px)}
+  header>.chips.more.less{-webkit-mask-image:linear-gradient(90deg,transparent,#000 22px,#000 calc(100% - 34px),transparent);mask-image:linear-gradient(90deg,transparent,#000 22px,#000 calc(100% - 34px),transparent)}
+  header>.chips>#b-arm{padding:2px 12px}                       /* as high as the other chips: the row stays low */
+  header>.chips>#b-arm{order:1}header>.chips>#b-led{order:2}header>.chips>#b-ok{order:3}
+  header>.chips>#b-health,header>.chips>#b-pwr,header>.chips>#b-sec,header>.chips>#b-simnet,header>.chips>#b-lock{order:4}
+  header>.chips>#b-batt{order:5}
+}
 body.hdr-small header{padding-top:6px;padding-bottom:6px}
 body.hdr-small header .nav,body.hdr-small header .ver,body.hdr-small header .badge:not(#b-arm):not(.red){display:none!important}
 .vmq{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:4px 0 10px}.vmq button{padding:7px 8px;font-size:13px}
@@ -51488,6 +51508,17 @@ function compactHeader(s, c) {
     if (hdrOpenUntil && Date.now() > hdrOpenUntil) { hdrOpenUntil = 0; H.classList.remove("hx"); }
   }
 }
+// 2.98.54: the chip row on the phone scrolls sideways - fade at the edge where more chips follow (class more / less)
+(function () {
+  const R = document.querySelector("header>.chips"); if (!R) return;
+  let q = 0;
+  const fade = () => { q = 0; const x = R.scrollLeft, m = R.scrollWidth - R.clientWidth;
+    R.classList.toggle("more", m > 2 && x < m - 2); R.classList.toggle("less", m > 2 && x > 2); };
+  const later = () => { if (!q) q = requestAnimationFrame(fade); };
+  R.addEventListener("scroll", later, {passive: true}); addEventListener("resize", later);
+  new MutationObserver(later).observe(R, {subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["hidden", "class"]});
+  later();
+})();
 // one line when scrolled down (phone): name, state, bell
 (function () {
   let small = false;
@@ -58441,7 +58472,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     let ph, pw;
     if (full) {
       pw = Math.round(mw); ph = Math.round(mw * 9 / 16);
-      const short = ph - (room - ch - 8);
+      const short = ph - (room - ch - 2);              // 2.98.54: 2 px gap is enough (was 8)
       if (short > 0 && stk > 104) {                       // smaller sticks: the tiles stay in view as far as possible
         stk = Math.max(104, stk - Math.ceil(short)); document.documentElement.style.setProperty("--sk-st", stk + "px"); ch = chOf();
       }
@@ -67370,7 +67401,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.53")
+        self.root.title("MoveEye 2.98.54")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -67737,7 +67768,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.53 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.54 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

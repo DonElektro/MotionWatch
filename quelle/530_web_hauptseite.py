@@ -88,6 +88,23 @@ header.hx .badge.q:not([hidden]):not(.vh){display:inline-flex}
 #btn-side,#btn-theme,#btn-lang,#btn-hdr{display:none}
 header{transition:padding .2s}
 @media(max-width:760px){header h1{order:-2}header .hdr-ctl{order:-1}}
+/* 2.98.54: phone / narrow (same breakpoint as the header layout, wider screens already have one row): the status chips in ONE
+   row that scrolls sideways by swipe (only the row, never the page), a soft fade at the edge where more chips follow;
+   order: protection state, status LED (alarm), all ok / problems, battery, then the rest as before */
+@media(max-width:760px){
+  header>.chips{display:flex;flex:1 1 100%;flex-wrap:nowrap;align-items:center;gap:6px;min-width:0;max-width:100%;
+    overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none;
+    scroll-snap-type:x proximity;touch-action:pan-x pan-y;padding:3px 2px;margin:-3px 0;scroll-padding:0 2px}
+  header>.chips::-webkit-scrollbar{display:none}
+  header>.chips>.badge{flex:none;order:20;scroll-snap-align:start}
+  header>.chips.more{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent)}
+  header>.chips.less{-webkit-mask-image:linear-gradient(90deg,transparent,#000 22px);mask-image:linear-gradient(90deg,transparent,#000 22px)}
+  header>.chips.more.less{-webkit-mask-image:linear-gradient(90deg,transparent,#000 22px,#000 calc(100% - 34px),transparent);mask-image:linear-gradient(90deg,transparent,#000 22px,#000 calc(100% - 34px),transparent)}
+  header>.chips>#b-arm{padding:2px 12px}                       /* as high as the other chips: the row stays low */
+  header>.chips>#b-arm{order:1}header>.chips>#b-led{order:2}header>.chips>#b-ok{order:3}
+  header>.chips>#b-health,header>.chips>#b-pwr,header>.chips>#b-sec,header>.chips>#b-simnet,header>.chips>#b-lock{order:4}
+  header>.chips>#b-batt{order:5}
+}
 body.hdr-small header{padding-top:6px;padding-bottom:6px}
 body.hdr-small header .nav,body.hdr-small header .ver,body.hdr-small header .badge:not(#b-arm):not(.red){display:none!important}
 .vmq{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:4px 0 10px}.vmq button{padding:7px 8px;font-size:13px}
@@ -2694,6 +2711,17 @@ function compactHeader(s, c) {
     if (hdrOpenUntil && Date.now() > hdrOpenUntil) { hdrOpenUntil = 0; H.classList.remove("hx"); }
   }
 }
+// 2.98.54: the chip row on the phone scrolls sideways - fade at the edge where more chips follow (class more / less)
+(function () {
+  const R = document.querySelector("header>.chips"); if (!R) return;
+  let q = 0;
+  const fade = () => { q = 0; const x = R.scrollLeft, m = R.scrollWidth - R.clientWidth;
+    R.classList.toggle("more", m > 2 && x < m - 2); R.classList.toggle("less", m > 2 && x > 2); };
+  const later = () => { if (!q) q = requestAnimationFrame(fade); };
+  R.addEventListener("scroll", later, {passive: true}); addEventListener("resize", later);
+  new MutationObserver(later).observe(R, {subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["hidden", "class"]});
+  later();
+})();
 // one line when scrolled down (phone): name, state, bell
 (function () {
   let small = false;
