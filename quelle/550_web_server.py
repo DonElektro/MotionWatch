@@ -139,7 +139,7 @@ class WebStream:
                     request.get_data()                      # read the body first, else the connection is reset
                 log_event("web", f"Blocked a request from another web page ({request.headers.get('Origin', '')[:60]}) to {request.path}")
                 return sx_err(403, "foreign")                  # in the own language (578)
-            if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/na/", "/spiele", "/tv/", "/nt/", "/info", "/almanach", "/game/")) or request.path in public:
+            if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/na/", "/spiele", "/tv/", "/nt/", "/info", "/almanach", "/game/", "/l/")) or request.path in public:
                 return None                         # guest links check their own key; app icons are not secret
             pw = CFG["web_password"]
             g.user, g.role = "", "admin"
@@ -210,8 +210,11 @@ class WebStream:
                 return None
             if request.path == "/api/sim/upload":                # only the administrator (and the body is a big video)
                 return reply({"ok": False, "error": tr("not allowed for your user", norm_lang(request.args.get("lang") or CFG["lang"]))}, 403)
+            gate = user_gate(request, g)                # 2.98.41: outside the time window / expired: a friendly page, no data (041)
+            if gate is not None:
+                return gate
             d = request.get_json(force=True, silent=True) if request.method == "POST" else None
-            if role_allows(role, request.path, request.method, d if isinstance(d, dict) else {}):
+            if role_allows(role, request.path, request.method, d if isinstance(d, dict) else {}, user_req_perms(g)):
                 return None
             lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or request.args.get("lang") or CFG["lang"])
             return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
@@ -1202,12 +1205,7 @@ class WebStream:
 
         @app.route("/api/users", methods=["GET", "POST"])
         def api_users():
-            if request.method == "GET":
-                return reply({"users": [{"name": u["name"], "role": u["role"]} for u in CFG["users"]], "pw": web_pw_active()})
-            d = body(); lang = norm_lang(d.get("lang"))
-            ok, err = users_action(d, getattr(g, "user", "") or "admin")
-            return reply({"ok": ok, "error": tr_err(err, lang) if err else None,
-                          "users": [{"name": u["name"], "role": u["role"]} for u in CFG["users"]]}, 200 if ok else 400)
+            return users_api(request, reply, body, g)     # 2.98.41: rights, time window, phones, push per user (041)
 
         @app.before_request
         def demo_guard():                           # demo: nothing that changes the computer or reaches outside
@@ -1242,6 +1240,7 @@ class WebStream:
         g2_routes(app, watch, reply, body)                 # guide 2: tours, tip of the day, factory reset (586)
         qr_routes(app, reply, body)                        # QR codes: POST /api/qr, gallery /qr, print page, no-store for secrets (587)
         servo_routes(app, reply, body)                     # 2.98.35: servos - Not-Aus, taught points, diagnosis /servo, /api/servo (539)
+        users_routes(app, reply, body)                     # 2.98.41: link a phone /l/<token>, page shows only the own rights (041)
         ginv_routes(app, reply, body)                      # game for guests online /game/<token>/ (only the game, token + expiry), «Human vs AI» (343)
 
         @app.route("/messages")
@@ -1539,7 +1538,8 @@ class WebStream:
                 st["mqtt"] = {"status": MQTT["status"], "topic": (CFG["mqtt_prefix"].strip().strip("/") or "motionwatch") + "/" + device_uid() if CFG["mqtt_on"] else ""}
                 st["web_open"] = not st["pw_set"] and WEB_OPTS["bind"] not in ("127.0.0.1", "localhost", "::1")
                 st["guest"] = guest_info(); st["report_on"] = bool(CFG["report_on"]); st["lock"] = lock_info()
-                st["me"] = {"name": getattr(g, "user", ""), "role": getattr(g, "role", "admin"), "users": len(CFG["users"])}
+                st["me"] = {"name": getattr(g, "user", ""), "role": getattr(g, "role", "admin"), "users": len(CFG["users"]),
+                            "perms": user_perms_list(getattr(g, "user", ""), getattr(g, "role", "admin"))}
                 st["pending"] = RESTART["pending"]
                 st["quick_rec"] = time.time() < QUICK["rec_until"]
                 st["games"] = {"on": party_on(), "n": len(PARTY["players"])}           # 2.98.7: quick switch «Spiele»
@@ -2833,8 +2833,9 @@ class WebStream:
         def api_webpush():
             if request.method == "GET":
                 sup = webpush_supported()
-                return reply({"supported": sup, "on": CFG["webpush_on"], "key": webpush_public() if sup else "", "count": len(webpush_subs()),
-                              "devices": [{"label": x.get("label", ""), "added": x.get("added", "")} for x in webpush_subs()],
+                mine_ = [x for x in webpush_subs() if getattr(g, "role", "admin") == "admin" or str(x.get("user", "")).lower() == str(getattr(g, "user", "")).lower()]
+                return reply({"supported": sup, "on": CFG["webpush_on"], "key": webpush_public() if sup else "", "count": len(mine_),
+                              "devices": [{"label": x.get("label", ""), "added": x.get("added", ""), "user": x.get("user", "")} for x in mine_],
                               "https_url": tailscale_https_url(), "status": WEBPUSH["status"]})
             d = body(); lang = norm_lang(d.get("lang")); a = d.get("action")
             ok, err = True, ""
@@ -2842,7 +2843,7 @@ class WebStream:
                 if not webpush_supported():
                     ok, err = False, "python3-cryptography is missing (sudo apt install python3-cryptography)"
                 else:
-                    ok, err = webpush_add(d.get("sub") or {}, d.get("label", ""))
+                    ok, err = webpush_add(d.get("sub") or {}, d.get("label", ""), "" if getattr(g, "role", "admin") == "admin" else getattr(g, "user", ""))
             elif a == "unsubscribe":
                 webpush_remove(str((d.get("sub") or {}).get("endpoint") or d.get("endpoint") or ""))
             elif a == "test":

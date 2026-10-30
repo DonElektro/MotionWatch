@@ -458,30 +458,53 @@ def _ak_tk_security(app, sbody):
 
 
 def _ak_tk_users(app, box):
+    """2.98.41: roles Kind / Freund / Familie / Nur ansehen / Eigene Rechte, «Handy verknüpfen» (QR), time window shown (041).
+    Own rights, time window and push per user are set on the web page (Settings → Security → Users)."""
     for w in box.winfo_children():
         w.destroy()
     if not web_pw_active():
         ttk.Label(box, text="⚠ " + tr("set the web password first (it is the administrator)"), style="Mut.TLabel", wraplength=330).pack(anchor="w", pady=(4, 0))
         return
-    roles = {"operate": tr("operate"), "view": tr("view only")}
+    roles = {"kid": "🧒 " + tr("Child"), "friend": "🤝 " + tr("Friend"), "family": "🏠 " + tr("Family"), "view": "👁 " + tr("View only"),
+             "custom": "⚙ " + tr("Own rights")}
+    keys = list(roles)
 
     def act(d):
         ok, err = users_action(d, "window")
         if not ok:
             app._status("App keys", "⚠ " + tr_err(err))
         _ak_tk_users(app, box)
+
+    def link(n):
+        url, sec, secure = user_link_make(n, None, "window")
+        if url is None:
+            app._status("App keys", "⚠ " + tr_err(sec)); return
+        qr_tk_dialog(app.root, url, "📱 " + tr("Link a phone") + " – " + n, secret=True,
+                     note=tr("Valid 10 minutes, only once. The phone is then logged in without a password."))
+    ttk.Label(box, text=tr("For short visits the guest link is enough. For people who come again and again, better create a user here."),
+              style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(4, 0))
     for u in CFG["users"]:
         r = tk.Frame(box, bg=C["panel"]); r.pack(fill="x", pady=(4, 0))
-        tk.Label(r, text="👤 " + u["name"] + " · " + roles.get(u["role"], u["role"]), bg=C["panel"], fg=C["txt"], anchor="w").pack(side="left", fill="x", expand=True)
+        when = user_when_text(u)
+        ndev = len(user_devices(u["name"]))
+        tk.Label(r, text="👤 " + u["name"] + " · " + roles.get(u["role"], u["role"]) + ("\n   ⏰ " + when if when else "")
+                 + ("\n   📱 " + str(ndev) + " " + tr("device(s)") if ndev else "") + ("" if user_active(u)[0] else "\n   🌙 " + tr("not active right now")),
+                 bg=C["panel"], fg=C["txt"], anchor="w", justify="left").pack(side="left", fill="x", expand=True)
         ttk.Button(r, text="✕", width=3, command=lambda n=u["name"]: act({"action": "remove", "name": n})).pack(side="right")
+        ttk.Button(r, text="📱", width=3, command=lambda n=u["name"]: link(n)).pack(side="right", padx=(0, 4))
+        rc_ = ttk.Combobox(box, state="readonly", values=[roles[k] for k in keys])
+        rc_.current(keys.index(u["role"]) if u["role"] in keys else 3); rc_.pack(fill="x", pady=(2, 0))
+        rc_.bind("<<ComboboxSelected>>", lambda e, n=u["name"], c=rc_: act({"action": "update", "name": n, "role": keys[c.current()]}))
     ent_kw = dict(bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat", highlightthickness=1, highlightbackground=C["line"])
     nv, pv = tk.StringVar(), tk.StringVar()
     f = tk.Frame(box, bg=C["panel"]); f.pack(fill="x", pady=(6, 0))
     tk.Entry(f, textvariable=nv, width=12, **ent_kw).pack(side="left", fill="x", expand=True)
     tk.Entry(f, textvariable=pv, width=12, show="•", **ent_kw).pack(side="left", fill="x", expand=True, padx=(4, 0))
-    rc = ttk.Combobox(box, state="readonly", values=[roles["operate"], roles["view"]]); rc.current(0); rc.pack(fill="x", pady=(4, 0))
-    ttk.Button(box, text="+ " + tr("Add user") + "  (" + tr("Name") + " · " + tr("Password (6–64)") + ")",
-               command=lambda: act({"action": "add", "name": nv.get(), "password": pv.get(), "role": "operate" if rc.current() == 0 else "view"})).pack(fill="x", pady=(4, 0))
+    rc = ttk.Combobox(box, state="readonly", values=[roles[k] for k in keys]); rc.current(2); rc.pack(fill="x", pady=(4, 0))
+    ttk.Button(box, text="+ " + tr("Add user") + "  (" + tr("Name") + " · " + tr("Password (optional, 6–64)") + ")",
+               command=lambda: act({"action": "add", "name": nv.get(), "password": pv.get(), "role": keys[rc.current()]})).pack(fill="x", pady=(4, 0))
+    ttk.Label(box, text=tr("Own rights, time window and push per person: on the web page (Settings → Security → Users)."),
+              style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(4, 0))
 
 
 def _ak_tk_keys(app, box):

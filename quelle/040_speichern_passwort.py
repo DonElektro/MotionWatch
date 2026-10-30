@@ -41,15 +41,34 @@ def pw_check(pw, stored=None):
     return ok
 
 
-USER_ROLES = ("operate", "view")
+# 2.98.41 (Daniel): roles = presets of rights; «custom» = own choice of rights. Old roles: «operate» → «family», «view» stays.
+USER_ROLES = ("kid", "friend", "family", "view", "custom")
+USER_PERMS = ("live", "rec", "arm", "light", "siren", "games", "talk", "head", "settings")
+ROLE_PERMS = {"kid": ("live", "games"), "friend": ("live", "games", "talk", "light"),
+              "family": ("live", "rec", "arm", "light", "siren", "games", "talk", "head"), "view": ("live", "rec")}
+ROLE_OLD = {"operate": "family"}
+USER_PUSH = ("alarm", "info", "games")                # what a user may get as push message
+ROLE_PUSH = {"kid": ("games",), "friend": ("info", "games")}      # children get no alarms unless the administrator says so
 _USER_RE = re.compile(r"^[A-Za-z0-9ÄÖÜäöüéèàç][A-Za-z0-9ÄÖÜäöüéèàç ._\-]{0,23}$")
-# what an "operate" user may change (everything else is read-only); "view" may only look
-OPERATE_POST = {"/api/follow", "/api/tunnel", "/api/disco", "/api/helper", "/api/info", "/api/nettest", "/api/tv", "/api/mode", "/api/mover", "/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/light", "/api/move", "/api/stick", "/api/talk",
-                "/api/talk/stop", "/api/tts", "/api/rec/fav", "/api/rec/false", "/api/action"}
-VIEW_POST = {"/api/webpush", "/api/time", "/api/gps", "/api/rec/prepare", "/rec/zip"}
-OPERATE_SET_KEYS = {"thermal_on", "nightvision", "show_objects", "show_mask", "track_person", "track_motion"}
+_USER_HM = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
+_USER_DAY = re.compile(r"^20\d\d-[01]\d-[0-3]\d$")
+_USER_NTFY = re.compile(r"^(https://[A-Za-z0-9.\-]+(:\d+)?/)?[A-Za-z0-9_\-]{6,64}$")
 ADMIN_GET = ("/api/settings/export", "/api/ext", "/api/wifi", "/api/qr", "/setup-card", "/api/update", "/api/guest", "/api/fleet",
              "/api/users", "/api/setup", "/api/log/file/", "/api/tools", "/tools/diag.zip", "/api/usb")
+
+
+def user_perms(u):
+    """the rights of a user (dict from CFG["users"]) as a set"""
+    if not isinstance(u, dict):
+        return set()
+    if u.get("role") == "custom":
+        return {p for p in (u.get("perms") or []) if p in USER_PERMS}
+    return set(ROLE_PERMS.get(u.get("role"), ()))
+
+
+def user_get(name):
+    n = str(name or "").strip().lower()
+    return next((u for u in CFG["users"] if u["name"].lower() == n), None) if n else None
 
 
 def users_clean(lst):
@@ -61,7 +80,23 @@ def users_clean(lst):
         if not _USER_RE.match(n) or n.lower() in seen or not str(u.get("hash", "")).startswith("pbkdf2$"):
             continue
         seen.add(n.lower())
-        out.append({"name": n, "hash": u["hash"], "role": u.get("role") if u.get("role") in USER_ROLES else "view"})
+        r = ROLE_OLD.get(u.get("role"), u.get("role"))
+        r = r if r in USER_ROLES else "view"
+        e = {"name": n, "hash": u["hash"], "role": r}
+        if r == "custom":
+            e["perms"] = [p for p in USER_PERMS if p in (u.get("perms") or [])]
+        w = u.get("win") if isinstance(u.get("win"), dict) else None
+        if w and _USER_HM.match(str(w.get("from", ""))) and _USER_HM.match(str(w.get("to", ""))):
+            days = sorted({int(x) for x in (w.get("days") or []) if isinstance(x, int) and 0 <= x <= 6}) or list(range(7))
+            e["win"] = {"from": w["from"], "to": w["to"], "days": days}
+        if _USER_DAY.match(str(u.get("until") or "")):
+            e["until"] = u["until"]
+        e["push"] = [p for p in USER_PUSH if p in u["push"]] if isinstance(u.get("push"), list) else list(ROLE_PUSH.get(r, USER_PUSH))
+        if _USER_NTFY.match(str(u.get("ntfy") or "")):
+            e["ntfy"] = u["ntfy"]
+        if u.get("nopw"):
+            e["nopw"] = True                              # no own password (only phones linked with a QR code)
+        out.append(e)
     return out
 
 
@@ -73,7 +108,7 @@ def user_login(name, pw):
     elif CFG["web_pw_hash"] and pw_check(pw):
         return (name or "admin", "admin")
     for u in CFG["users"]:
-        if u["name"].lower() == str(name or "").strip().lower() and pw_check(pw, u["hash"]):
+        if u["name"].lower() == str(name or "").strip().lower() and not u.get("nopw") and pw_check(pw, u["hash"]):
             return (u["name"], u["role"])
     return None
 
@@ -103,7 +138,7 @@ def trust_find(tok):
     return None
 
 
-def trust_add(user, role, ua, ip):
+def trust_add(user, role, ua, ip, via=""):
     """a new trusted device: returns the cookie value (only its hash is kept here)"""
     import secrets
     tok = secrets.token_urlsafe(32)
@@ -116,16 +151,24 @@ def trust_add(user, role, ua, ip):
         if k in ua:
             name += " · " + n
             break
-    lst = [e for e in (CFG.get("trusted") or [])][-29:]
+    lst = [e for e in (CFG.get("trusted") or [])][-59:]
     lst.append({"h": _trust_hash(tok), "user": user, "role": "admin" if role == "admin" else "user", "name": name, "t0": int(time.time()),
                 "seen": int(time.time()), "ip": str(ip)[:45]})
+    if via:
+        lst[-1]["via"] = via                                # «link» = linked with the QR code of the administrator (041)
     CFG["trusted"] = lst
     save_settings()
     log_event("web", f"Trusted device added: {name} ({user}, {ip})")
     return tok
 
 
+def _user_pw_ok(pw):
+    return 6 <= len(pw) <= 64 and all(32 <= ord(c) < 127 for c in pw)
+
+
 def users_action(d, who="admin"):
+    """add / remove / role / password / update (rights, time window, expiry, push) - web (550/041) and window (573)"""
+    import secrets
     a = d.get("action")
     if a == "add":
         if not web_pw_active():
@@ -135,65 +178,130 @@ def users_action(d, who="admin"):
             return False, "name: 1 to 24 letters / digits"
         if any(u["name"].lower() == n.lower() for u in CFG["users"]):
             return False, "this name exists already"
-        if not (6 <= len(pw) <= 64 and all(32 <= ord(c) < 127 for c in pw)):
+        if pw and not _user_pw_ok(pw):
             return False, "the password must have 6 to 64 characters (letters, digits, signs, no umlauts)"
         if len(CFG["users"]) >= 20:
             return False, "at most 20 users"
-        CFG["users"] = users_clean(CFG["users"] + [{"name": n, "hash": pw_hash(pw), "role": d.get("role") if d.get("role") in USER_ROLES else "view"}])
+        r = ROLE_OLD.get(d.get("role"), d.get("role"))
+        e = {"name": n, "hash": pw_hash(pw or secrets.token_urlsafe(24)), "role": r if r in USER_ROLES else "view", "perms": d.get("perms") or []}
+        if not pw:
+            e["nopw"] = True
+        CFG["users"] = users_clean(CFG["users"] + [e])
         log_event("web", f"{who}: user «{n}» added ({CFG['users'][-1]['role']})")
     else:
         u = next((x for x in CFG["users"] if x["name"] == d.get("name")), None)
         if u is None:
             return False, "unknown user"
+        logout = True
         if a == "remove":
             CFG["users"] = [x for x in CFG["users"] if x is not u]; log_event("web", f"{who}: user «{u['name']}» removed")
-        elif a == "role" and d.get("role") in USER_ROLES:
-            u["role"] = d["role"]; log_event("web", f"{who}: user «{u['name']}» now {u['role']}")
+            users_push_forget(u["name"])                    # its browsers get no messages any more (041)
+        elif a == "role" and ROLE_OLD.get(d.get("role"), d.get("role")) in USER_ROLES:
+            u["role"] = ROLE_OLD.get(d["role"], d["role"]); logout = False; log_event("web", f"{who}: user «{u['name']}» now {u['role']}")
         elif a == "password":
             pw = str(d.get("password", ""))
-            if not (6 <= len(pw) <= 64 and all(32 <= ord(c) < 127 for c in pw)):
+            if not _user_pw_ok(pw):
                 return False, "the password must have 6 to 64 characters (letters, digits, signs, no umlauts)"
-            u["hash"] = pw_hash(pw); log_event("web", f"{who}: new password for «{u['name']}»")
+            u["hash"] = pw_hash(pw); u.pop("nopw", None); log_event("web", f"{who}: new password for «{u['name']}»")
+        elif a == "update":                                 # 2.98.41: rights, time window, expiry, push - the phones stay logged in
+            logout = False; ch = []
+            if "role" in d and ROLE_OLD.get(d.get("role"), d.get("role")) in USER_ROLES and d["role"] != u["role"]:
+                u["role"] = ROLE_OLD.get(d["role"], d["role"]); ch.append("role " + u["role"])
+                if "push" not in d:
+                    u["push"] = list(ROLE_PUSH.get(u["role"], USER_PUSH))
+            if "perms" in d and isinstance(d["perms"], list):
+                u["perms"] = [p for p in USER_PERMS if p in d["perms"]]; ch.append("rights " + ",".join(u["perms"]))
+            if "win" in d:
+                w = d["win"] if isinstance(d["win"], dict) else None
+                if w and not (_USER_HM.match(str(w.get("from", ""))) and _USER_HM.match(str(w.get("to", "")))):
+                    return False, "time: hh:mm"
+                u["win"] = w; ch.append("time " + (f"{w['from']}-{w['to']}" if w else "always"))
+            if "until" in d:
+                v = str(d.get("until") or "")
+                if v and not _USER_DAY.match(v):
+                    return False, "date: yyyy-mm-dd"
+                u["until"] = v; ch.append("until " + (v or "-"))
+            if "push" in d and isinstance(d["push"], list):
+                u["push"] = [p for p in USER_PUSH if p in d["push"]]; ch.append("push " + (",".join(u["push"]) or "-"))
+            if "ntfy" in d:
+                v = str(d.get("ntfy") or "").strip()
+                if v and not _USER_NTFY.match(v):
+                    return False, "ntfy: a topic (6 to 64 letters, digits, - _) or https://server/topic"
+                u["ntfy"] = v; ch.append("own ntfy topic" if v else "no own ntfy topic")
+            log_event("web", f"{who}: user «{u['name']}»: " + ("; ".join(ch) or "no change"))
         else:
             return False, "unknown action"
-        CFG["trusted"] = [e for e in (CFG.get("trusted") or []) if e.get("user") != u["name"]]   # 2.95.33: log in again
+        if logout:
+            CFG["trusted"] = [e for e in (CFG.get("trusted") or []) if e.get("user") != u["name"]]   # 2.95.33: log in again
+        CFG["users"] = users_clean(CFG["users"])
     _PW_OK.clear(); save_settings_now()
     return True, ""
 
 
 # 2.95.35: ONE list of what users without admin rights may read. Everything else (also every new function) is only for
-# the administrator. Changing things (POST): VIEW_POST for everybody, OPERATE_POST (+ the keys below) for «operate».
-VIEW_GET_PAGES = {"/", "/cams", "/recordings", "/diary", "/help", "/quick", "/preview", "/zones", "/kino"}
-VIEW_GET = ("/api/tunnel", "/api/dataset.zip", "/api/helper", "/api/info", "/api/nettest", "/api/state", "/api/alerts", "/api/appearance", "/api/version", "/api/health", "/api/cams", "/api/frame.jpg",
-            "/video_feed", "/cam_feed/", "/snapshot.jpg", "/api/audio/live", "/api/recordings", "/api/places", "/rec/file/",
-            "/rec/play/", "/rec/thumb/", "/rec/share/", "/rec/report/", "/api/day", "/api/diary", "/diary/img/", "/api/timelapse",
-            "/timelapse/", "/api/species", "/api/loop", "/api/gps", "/api/zones", "/api/webpush", "/api/ui", "/api/report",
-            "/api/battery", "/api/sensors", "/api/qs", "/api/schedule", "/api/schema", "/api/triggers", "/api/fa", "/api/appicon",
-            "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/sim/view.jpg", "/sim/view.mjpg", "/api/kino", "/api/simbar", "/api/news")
+# the administrator. 2.98.41: by rights (USER_PERMS) instead of two roles; every user may read BASE, each right adds its part.
+VIEW_GET_PAGES = {"/", "/help", "/quick", "/more"}
+VIEW_GET = ("/api/tunnel", "/api/helper", "/api/info", "/api/nettest", "/api/state", "/api/alerts", "/api/appearance", "/api/version",
+            "/api/health", "/api/gps", "/api/zones", "/api/webpush", "/api/ui", "/api/battery", "/api/sensors", "/api/qs", "/api/schedule",
+            "/api/schema", "/api/triggers", "/api/fa", "/api/appicon", "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/api/simbar", "/api/news")
+PERM_GET = {"live": ("/cams", "/preview", "/api/cams", "/api/frame.jpg", "/video_feed", "/cam_feed/", "/snapshot.jpg", "/api/audio/live",
+                     "/sim/view.jpg", "/sim/view.mjpg"),
+            "rec": ("/recordings", "/diary", "/kino", "/api/kino", "/api/dataset.zip", "/api/recordings", "/api/places", "/rec/file/", "/rec/play/",
+                    "/rec/thumb/", "/rec/share/", "/rec/report/", "/api/day", "/api/diary", "/diary/img/", "/api/timelapse", "/timelapse/",
+                    "/api/species", "/api/loop", "/api/report"),
+            "arm": ("/protect", "/zones"),
+            "games": ("/party", "/api/party"),
+            "settings": ("/settings",)}
+VIEW_POST = {"/api/webpush", "/api/time", "/api/gps"}
+PERM_POST = {"rec": {"/api/rec/prepare", "/rec/zip", "/api/rec/fav", "/api/rec/false"},
+             "arm": {"/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/mode", "/api/tunnel", "/api/helper", "/api/info", "/api/nettest", "/api/tv"},
+             "light": {"/api/light", "/api/disco"},
+             "talk": {"/api/talk", "/api/talk/stop", "/api/tts"},
+             "head": {"/api/follow", "/api/mover", "/api/move", "/api/stick"},
+             "settings": {"/api/zones", "/api/schedule"}}
+PERM_SET_KEYS = {"arm": {"thermal_on", "nightvision", "show_objects", "show_mask"}, "head": {"track_person", "track_motion"}}
 
 
-def role_allows(role, path, method, d):
+def role_allows(role, path, method, d, perms=None):
+    """may a user with this role (and these rights - for «custom») do this? The administrator may do everything."""
     if role == "admin":
         return True
+    P = set(perms) if perms is not None else set(ROLE_PERMS.get(ROLE_OLD.get(role, role), ()))
     if method in ("GET", "HEAD"):
         if path in ("/servo", "/api/servo"):                  # 2.98.35: everybody sees the servo state (who steers, Not-Aus)
             return True
-        return (path in VIEW_GET_PAGES or path.startswith(VIEW_GET)) and not path.startswith(ADMIN_GET)
+        if path.startswith(ADMIN_GET):
+            return False
+        if path in VIEW_GET_PAGES or path.startswith(VIEW_GET):
+            return True
+        return any(path == x or (x.endswith("/") and path.startswith(x)) or (x.startswith("/api/") and path.startswith(x))
+                   for p in P for x in PERM_GET.get(p, ()))
     if path == "/api/servo":                                  # 2.98.35: Not-Aus is for everybody, the rest for the administrator
         return d.get("op") == "estop"
     if path == "/api/webpush":
         return d.get("action") in ("subscribe", "unsubscribe", "key", None)
     if path in VIEW_POST:
         return True
-    if role != "operate":
-        return False
     if path == "/api/set":
-        return d.get("key") in OPERATE_SET_KEYS
+        k = d.get("key")
+        if any(k in PERM_SET_KEYS.get(p, ()) for p in P):
+            return True
+        return "settings" in P and isinstance(k, str) and k not in USER_SETTINGS_DENY and k in CFG
+    if path == "/api/text":
+        return "settings" in P and isinstance(d.get("key"), str) and d.get("key") not in USER_SETTINGS_DENY
     if path == "/api/audio":
-        return d.get("action") in ("test", "siren", "stop")
+        return ("siren" in P and d.get("action") in ("test", "siren", "stop")) or ("talk" in P and d.get("action") == "stop")
     if path == "/api/action":
-        return d.get("action") in ("center", "patrol")
-    return path in OPERATE_POST
+        return "head" in P and d.get("action") in ("center", "patrol")
+    return any(path in PERM_POST.get(p, ()) for p in P)
+
+
+# «settings» (own rights) never reaches the security: password, users, keys, access, updates, secret addresses and channels
+USER_SETTINGS_DENY = {"login_https_only", "https_extra", "web_port", "web_bind", "lock_on", "lock_pin", "update_unsigned", "update_url",
+                      "update_token", "protect_pin", "users", "trusted", "app_keys", "shortcut_token", "web_pw_hash", "guest_token",
+                      "ext_token", "web_password", "notify_url", "notify_type", "telegram_token", "telegram_chat", "pushover_token",
+                      "pushover_user", "email_password", "email_user", "sms_numbers", "public_url", "tunnel_on", "guest_on", "ext_on",
+                      "mqtt_password", "mqtt_user", "hotspot_password", "autostart", "sim_url"}
 
 
 def web_pw_active():

@@ -721,6 +721,7 @@ body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
         <button type="button" class="sec" id="g-share" onclick="guestShare()" data-i18n="Share / copy link" hidden>Share / copy link</button>
         <button type="button" class="red" id="g-end" onclick="guestAct('end')" data-i18n="End guest access" hidden>End guest access</button></div>
       <input type="text" id="g-link" readonly hidden style="width:100%;margin-top:8px" onclick="this.select()">
+      <div class="mut" style="margin-top:8px" data-i18n="For people who come again and again, better create a user (Settings → Security → Users).">For people who come again and again, better create a user (Settings → Security → Users).</div>
     </details>
     <details class="card" data-view="batt" data-vgroup="Panels" data-vlabel="Battery">
       <summary data-i18n="Battery">Battery</summary>
@@ -1225,32 +1226,7 @@ async function hwCheck() {
   };
   show();
 }
-// ---- several users: the web password = administrator; others log in with their own name and password ----
-const ROLE_TXT = () => ({operate: t("Operate (arm, lights, camera, talk - no settings)"), view: t("View only (live picture and recordings)")});
-async function usersLoad() {
-  const box = $("#users-box"); if (!box) return;
-  let j = {users: [], pw: false}; try { j = await (await fetch("/api/users")).json(); } catch (e) { return; }
-  box.textContent = "";
-  box.appendChild(el("div", "mut", t("Each person gets an own login (user name + password). The web password stays the administrator. The log shows who armed or switched something.")));
-  if (!j.pw) { box.appendChild(el("div", "err", "⚠ " + t("set the web password first (it is the administrator)"))); return; }
-  const err = el("div", "err");
-  const roleSel = v => { const s = el("select"); Object.entries(ROLE_TXT()).forEach(([k, l]) => { const o = el("option", "", l); o.value = k; s.appendChild(o); }); s.value = v; return s; };
-  const go = async b => { b.lang = LANG; const r = await post("/api/users", b); err.textContent = r.ok ? "" : "⚠ " + (r.error || "error"); if (r.ok) usersLoad(); return r; };
-  j.users.forEach(u => {
-    const row = el("div", "sens-card"), r1 = el("div", "row"), del = el("button", "sec", "✕"), pwb = el("button", "sec", "🔑"); del.type = pwb.type = "button";
-    pwb.title = t("New password"); del.title = t("Remove");
-    del.onclick = () => { if (confirm(t("Remove this user?") + "\n" + u.name)) go({action: "remove", name: u.name}); };
-    pwb.onclick = () => { const p = prompt(t("New password for") + " " + u.name + " (6–64)"); if (p) go({action: "password", name: u.name, password: p}).then(r => { if (r.ok) toast("✓ " + t("Saved")); }); };
-    const rs = roleSel(u.role); rs.onchange = () => go({action: "role", name: u.name, role: rs.value});
-    r1.append(el("b", "", "👤 " + u.name), pwb, del); row.append(r1, rs); box.appendChild(row);
-  });
-  const add = el("div", "sens-card"), nm = el("input"), pw = el("input"), rs = roleSel("operate"), ab = el("button", "", "+ " + t("Add user"));
-  nm.type = "text"; nm.maxLength = 24; nm.placeholder = t("Name"); pw.type = "password"; pw.maxLength = 64; pw.placeholder = t("Password (6–64)"); pw.autocomplete = "new-password";
-  [nm, pw, rs].forEach(x => { x.style.cssText = "width:100%;margin-top:6px"; }); ab.type = "button"; ab.style.marginTop = "8px";
-  ab.onclick = () => go({action: "add", name: nm.value, password: pw.value, role: rs.value});
-  add.append(nm, pw, rs, ab); box.append(add, err);
-  trustLoad(box);
-}
+// ---- several users: the card «Users» (roles, phones, time window, push per user) is in part 547 (usersLoad) ----
 // ---- trusted devices (2.95.19): after a login the browser is remembered - no new login after an update ----
 async function trustLoad(parent) {
   let j = null; try { j = await (await fetch("/api/trusted")).json(); } catch (e) { return; }
@@ -1271,8 +1247,9 @@ async function trustLoad(parent) {
 }
 function applyRole(me) {
   const role = (me && me.role) || "admin";
-  document.body.classList.toggle("role-operate", role === "operate"); document.body.classList.toggle("role-view", role === "view");
-  const b = $("#b-me"); if (b) { b.hidden = !(me && me.users) || !me.name; b.textContent = "👤 " + (me && me.name || "") + (role !== "admin" ? " · " + t(role === "view" ? "view only" : "operate") : ""); }
+  const arm = role !== "admin" && ((me && me.perms) || []).includes("arm");       // 2.98.41: rights instead of two roles (040 / 547)
+  document.body.classList.toggle("role-operate", arm); document.body.classList.toggle("role-view", role !== "admin" && !arm);
+  const b = $("#b-me"); if (b) { b.hidden = !(me && me.users) || !me.name; b.textContent = "👤 " + (me && me.name || "") + (role !== "admin" ? " · " + userRoleName(role) : ""); }
 }
 function applyLock(on) {
   document.body.classList.toggle("locked", on);
