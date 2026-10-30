@@ -18,6 +18,10 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   Konzept passt (6 Reiter Live · Schutz · Verlauf · Einstellungen · Simulator · Mehr; Simulator: Leiste = Bewegen/Ansicht,
   Kacheln = Inhalte, Karte «Testen»; Zustand heisst Aus / Wachsam / Voll; eine Sperre für Simulator-Aufgaben). Passt etwas nicht
   oder gibt es eine Doppelung, das Daniel im Schlussbericht ausdrücklich melden (Abschnitt «Konzept-Check»), mit Vorschlag.
+- **Gleiches Aussehen MoveEye ↔ Simulator (Wunsch Daniel, 30.10.2026):** Bedienelemente, die es in beiden gibt (z. B. die drei
+  Aufklapp-Knöpfe «Alle zuklappen · Nur Gruppen · Alle aufklappen», Suchfeld, Schalter Einfach/Experte, Symbole, Farben, aktive
+  Zustände blau), in beiden gleich oder möglichst ähnlich bauen. Bei jeder optischen Änderung im einen Projekt das andere
+  prüfen und mitziehen; im Konzept-Check melden, wenn es (noch) abweicht.
 - **Zwischenberichte (Wunsch Daniel, bis 2.11.2026 24:00):** bei jeder Aufgabe, die länger als 3–4 Minuten dauert, jede Minute
   eine kurze Checkliste senden (✅ erledigt / ⏳ offen).
 - **Fragen immer als Fragekatalog (Wunsch Daniel, 29.10.2026):** wenn Daniel nichts anderes wünscht, jede Rückfrage als

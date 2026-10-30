@@ -2071,6 +2071,10 @@ var _slow_t := 0.0
 
 
 func _process(dt: float) -> void:
+	_fold_t += dt
+	if _fold_t > 0.3:                                     # 3D-4.18: the fold buttons show the state
+		_fold_t = 0.0
+		_fold_paint()
 	_lightning(dt)
 	_view_capture()
 	_hud_layout()
@@ -4384,15 +4388,18 @@ func _build_ui() -> void:
 	search_in = UI.search_field("Einstellung suchen …")
 	search_in.text_changed.connect(_search)
 	tb.add_child(search_in)
+	# 3D-4.18 (Daniel): same order and look as MoveEye 2.98.46 - «Alle zuklappen · Nur Gruppen · Alle aufklappen»,
+	# the button of the current fold state is blue (mixed = none)
+	var cb := UI.icon_button("close", "Alle zuklappen")
+	cb.pressed.connect(func(): _fold_all("close"))
+	tb.add_child(cb)
 	var gb := UI.icon_button("groups", "Nur Gruppen")
 	gb.pressed.connect(func(): _fold_all("groups"))
 	tb.add_child(gb)
 	var ob := UI.icon_button("open", "Alle aufklappen")
 	ob.pressed.connect(func(): _fold_all("open"))
 	tb.add_child(ob)
-	var cb := UI.icon_button("close", "Alle zuklappen")
-	cb.pressed.connect(func(): _fold_all("close"))
-	tb.add_child(cb)
+	_fold_btns = {"close": cb, "groups": gb, "open": ob}
 	search_none = UI.small("Kein Treffer")
 	search_none.visible = false
 	box_.add_child(search_none)
@@ -4882,7 +4889,55 @@ func _cam_float_input(ev: InputEvent) -> void:
 		_cam_clamp()
 
 
+var _fold_btns := {}
+var _fold_lit := "-"
+var _fold_t := 0.0
+
+
+func _fold_state() -> String:
+	"""which of the three fold buttons matches what is open now ("" = mixed)"""
+	var all_open := true
+	var all_closed := true
+	var groups := true
+	for b in fold_bodies:
+		if not is_instance_valid(b) or not b.get_parent().visible:
+			continue
+		var o: bool = b.visible
+		all_open = all_open and o
+		all_closed = all_closed and not o
+		groups = groups and o == (not b in setting_bodies and b.get_meta("title", "") in ["Kameras"])
+	for sb in sub_bodies:
+		if not is_instance_valid(sb) or not sb.has_meta("fold"):
+			continue
+		var so: bool = (sb.get_meta("fold") as Control).visible
+		all_open = all_open and so
+		all_closed = all_closed and not so
+	if all_closed:
+		return "close"
+	if all_open:
+		return "open"
+	return "groups" if groups else ""
+
+
+func _fold_paint() -> void:
+	"""light the button of the current fold state (called a few times a second, repaints only on a change)"""
+	if _fold_btns.is_empty():
+		return
+	var st := _fold_state()
+	if st == _fold_lit:
+		return
+	_fold_lit = st
+	for k in _fold_btns:
+		var b: Button = _fold_btns[k]
+		for n in ["normal", "hover", "pressed"]:
+			if k == st:
+				b.add_theme_stylebox_override(n, UI.box(UI.ACC, UI.ACC, 10))
+			else:
+				b.remove_theme_stylebox_override(n)
+
+
 func _fold_all(how: String) -> void:
+	_fold_lit = "-"
 	for b in fold_bodies:
 		var open: bool = how == "open" or (how == "groups" and not b in setting_bodies and b.get_meta("title") in ["Kameras"])   # 3D-4.12 (Daniel): «Verbindung» stays closed
 		UI.set_open(b, open)
