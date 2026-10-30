@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 04:13",
+ "generated": "2026-10-30 04:18",
  "versions": [
   {
-   "version": "2.98.38",
-   "file": "webcam_bewegung_2_98_38.py",
+   "version": "2.98.39",
+   "file": "webcam_bewegung_2_98_39.py",
    "url": "",
-   "sha256": "96698c8b8cec63c1f5e8ee63eb5da59442e609096ce081f3b391cc75801c64c6",
-   "date": "2026-10-30 04:13",
-   "notes": "Live-Bild: wird das Bild nach dem Wechseln der Reiter wieder sichtbar, holt die Seite einen frischen Bildstrom (vorher blieb es auf dem iPhone manchmal schwarz); solange kein Bild da ist, zeigt eine Sanduhr ⏳ «Bild wird geladen – tippen zum Neuladen».",
-   "sig": "8a21982ab11c382c3700a764b17a8cf9a89da2e20364d964c79f3db9f8c3b3e041d60cec8f0558580fbd23efd6351aa4ebcc833e55366288729fb32710da1d0d"
+   "sha256": "e63aca8958ab64a5cda4e98605fe05a9621644b24de2c9f733db35c707732960",
+   "date": "2026-10-30 04:17",
+   "notes": "Aufräumen: ein Eintrag «Servos» (Positionen, Test, Diagnose); alter Kurzbefehl-Schlüssel wird App-Schlüssel (/k/ geht weiter); Almanach folgt Hell/Dunkel/Rotlicht; Ausblenden überall pro Gerät; Zonen-Art «Nur melden» und Schalter «Bleibt am Platz»; Licht/Sirene zielen auf Person oder Zelt; kluge Runde nur mit Patrouille; während «Team gegen MoveEye» keine automatische Kopfbewegung; Tierart-Gruppe; «Weckton» und «Sirenenton» statt zweimal «Ton».",
+   "sig": "5f76c944ac9b3f88cb2e125a6443da5693445c953b43fef30d12af7e117c45441be977104385232a3de83185c8abb64e489e9e82fab674f666391975d48df807"
   },
   {
    "version": "2.97.1",
