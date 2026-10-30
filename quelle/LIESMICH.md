@@ -95,6 +95,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `380_updates.py` | Updates | 216 |
 | `390_protokoll_bedienermodus.py` | Protokoll, Bedienermodus, Pause, Update-Wächter | 1065 |
 | `395_code_pflege.py` | Code-Pflege im Selbsttest: fehlende Übersetzungen fr / it / rm (nur Warnung), MIGRATE_ONLY (alte Schlüssel nur zum Übernehmen), SELFTEST_EXTRA | 85 |
+| `396_kopf_abschrecken_zielen.py` | Abschrecken mit Ziel: Licht / Sirene drehen zur Person (zuletzt gesehen) oder zum Zelt aus «Platz einrichten», über den Kopf-Koordinator 162 (Schalter kopf_deter_aim) | 125 |
 | `400_ausschalten.py` | Pi ausschalten / neu starten | 53 |
 | `410_motionwatch_kern.py` | KERN: die Erkennungs-Schleife (Bewegung, Personen, Alarm) | 969 |
 | `415_entfernung_gehtest.py` | Entfernung und Richtung einer Person, Gehtest beim Einrichten | 376 |
@@ -118,9 +119,11 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `631_uebersetzungen_spielB.py` | Übersetzungen und Anleitungs-Zeilen (Kapitel «Spiele freigeben») zu 343 / 543 / 592 | 120 |
 | `633_uebersetzungen_guide2.py` | Übersetzungen und Anleitungs-Kapitel «Einrichtung, Rundgänge und Tipps» zu Guide 2 | 330 |
 | `589_blinki.py` | «Blinki», die Figur aus dem Logo für Einrichtung und Rundgänge: SVG + CSS + Skript vor /g2/ui.js (Web), kleines Bild mit cv2 (Fenster), Schalter «blinki_on» | 260 |
+| `593_fenster_aufraeumen.py` | Fenster: Gruppe «Tierart» in der KI-Erkennung (wie «KI-Modell») | 37 |
 | `635_uebersetzungen_blinki.py` | Übersetzungen und Anleitungs-Zeile zu Blinki | 60 |
 | `634_uebersetzungen_ausl.py` | Übersetzungen für den «Auslöser» (539) | 40 |
 | `637_uebersetzungen_servo.py` | Übersetzungen Servo-Bewegung, Not-Aus, Teach-in, Diagnose | 156 |
+| `632_uebersetzungen_aufr.py` | Übersetzungen der Aufräum-Runde (Servos an einem Ort, Kurzbefehl-Schlüssel = App-Schlüssel, Zonen «nur melden» / «bleibt am Platz», Tierart) + Selbsttest | 150 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |

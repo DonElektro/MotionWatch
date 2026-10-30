@@ -153,11 +153,11 @@ def weekrep_tip(L, T, Tp, R, S, now):
             return trf("{n} false alarms this week. Suggestion: {s} (History → Recordings → false alarms)", L, n=R[1], s=sg[0]["text"]), "/recordings"
         return trf("{n} false alarms this week. Draw an ignore zone over what moves (trees, road) – tab Protection → Zones.", L, n=R[1]), "/zones"
     if S["missed"] >= 2 and CFG.get("weekrep_sim", True):
-        return trf("In the simulator {n} persons were in the picture but not recognised. Run the test «Night» and the automatic optimization (Simulator → Testing).", L, n=S["missed"]), "/sim"
+        return trf("In the simulator {n} persons were in the picture but not recognised. Run the test «Night» and the automatic optimization (Simulator → Testing → Tests).", L, n=S["missed"]), "/sim"
     if T["n"] and Tp.get("score") is not None and T["score"] <= Tp["score"] - 5:
-        return tr("The test score went down. Look at what changed in the settings (Simulator → Test runs, «undo»).", L), "/sim"
+        return tr("The test score went down. Look at what changed in the settings (Simulator → Testing → Tests, «undo»).", L), "/sim"
     if not T["n"]:
-        return tr("No test run this week: switch on the nightly test run (Simulator → Testing) – then you see the trend here.", L), "/sim"
+        return tr("No test run this week: switch on the nightly test run (Simulator → Testing → Tests) – then you see the trend here.", L), "/sim"
     if not R[0]:
         return tr("A quiet week. Check now and then that the camera still looks at the right place (Live).", L), "/"
     tips = ["Mark wrong alarms with «Was nothing» – MoveEye learns from them and suggests better settings.",

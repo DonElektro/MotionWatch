@@ -3,7 +3,9 @@
 # 2.98.35 (Wunsch Daniel): one page for the servos, phone first: (1) state + ⏹ Not-Aus / ✅ Freigeben + who steers the head,
 #   a small picture and arrows to drive, (2) the taught points (Teach-in: save, go, rename, order, round, park / home,
 #   take over from «Platz einrichten»), (3) diagnosis (counters, fault memory, maintenance hints, export JSON / CSV).
-#   Reached from Mehr → Werkzeuge («Servo diagnosis»), from the live page («📍 Positionen») and the settings section.
+#   Reached from Mehr → Werkzeuge («Servos»), from the live page («📍 Positionen») and the settings section.
+# aufr (Konzept-Check): the old «Servo test» of the tools page is the tab «Test» here - ONE entry «Servos» under Werkzeuge
+#   (positions, test, diagnosis); the test itself stays servo_test() (300), started through /api/tools {"action": "servo"}.
 # The live page (530) only gets a small script at its end (like 537): a red «⏹ Stopp» in the camera controls, a red bar
 #   while stopped (with who pressed it and «Freigeben»), the line «Kopf: gesteuert von …» and a short notice when another
 #   panel (phone, PC, window, controller, simulator) takes the head. Everything from the usual state poll (st.servo).
@@ -79,8 +81,8 @@ button.sv-stop{background:#d1242f;border-color:#d1242f;color:#fff}button.sv-rel{
   </span>
 </header>
 <main>
-  <h2 style="margin:0 0 8px">🎯 <span data-i18n="Servos: safety, positions, diagnosis">Servos: safety, positions, diagnosis</span></h2>
-  <div class="sv-tabs"><a href="#teach" id="tb-teach" data-i18n="Positions">Positions</a><a href="#diag" id="tb-diag" data-i18n="Diagnosis">Diagnosis</a></div>
+  <h2 style="margin:0 0 8px">🎯 <span data-i18n="Servos: safety, positions, test, diagnosis">Servos: safety, positions, test, diagnosis</span></h2>
+  <div class="sv-tabs"><a href="#teach" id="tb-teach" data-i18n="Positions">Positions</a><a href="#test" id="tb-test" data-i18n="Test">Test</a><a href="#diag" id="tb-diag" data-i18n="Diagnosis">Diagnosis</a></div>
   <div id="sv-state" class="sv-state"></div>
   <div class="sv-big"><button type="button" class="sv-stop" id="sv-estop">⏹ <span data-i18n="Emergency stop">Emergency stop</span></button>
     <button type="button" class="sv-rel" id="sv-release" hidden>✅ <span data-i18n="Release">Release</span></button></div>
@@ -96,6 +98,11 @@ button.sv-stop{background:#d1242f;border-color:#d1242f;color:#fff}button.sv-rel{
     <div class="sv-row"><input type="text" id="sv-name" maxlength="30" data-ph="Name, e.g. «Tent» or «Entrance»"><button type="button" id="sv-add">📍 <span data-i18n="Save position">Save position</span></button></div>
     <div id="sv-list"></div>
     <div class="sv-row"><button type="button" class="sec" id="sv-place">📍 <span data-i18n="Take over from «Set up the place»">Take over from «Set up the place»</span></button></div>
+  </section>
+  <section id="p-test" class="card" hidden>
+    <div class="mut" data-i18n="servo-note">servo-note</div>
+    <div class="sv-row"><button type="button" id="sv-test">▶ <span data-i18n="Start the servo test">Start the servo test</span></button><span class="mut" id="sv-tmsg"></span></div>
+    <div id="sv-tres"></div>
   </section>
   <section id="p-diag" class="card" hidden>
     <div id="sv-hints"></div>
@@ -114,7 +121,7 @@ button.sv-stop{background:#d1242f;border-color:#d1242f;color:#fff}button.sv-rel{
 const SV = {s: null, d: null, timer: 0, img: 0};
 const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
 const tf = (s, o) => t(s).replace(/\{(\w+)\}/g, (m, k) => (o && o[k] != null) ? o[k] : m);
-const tab = () => location.hash === "#diag" ? "diag" : "teach";
+const tab = () => location.hash === "#diag" ? "diag" : location.hash === "#test" ? "test" : "teach";
 const LOC = () => ({de: "de-CH", fr: "fr-CH", it: "it-CH", rm: "de-CH"}[LANG] || "en-GB");
 const when = s => new Date(s * 1000).toLocaleString(LOC(), {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"});
 async function op(o) {
@@ -183,15 +190,29 @@ function paintDiag() {
     F.appendChild(r);
   });
 }
+function paintTest(V) {                         // the servo test (300, before: Mehr → Werkzeuge → «Servo test»)
+  const R = document.getElementById("sv-tres"); R.textContent = ""; V = V || {steps: []};
+  const b = document.getElementById("sv-test"); b.disabled = !!V.running || !!(SV.s && SV.s.blocked);
+  document.getElementById("sv-tmsg").textContent = V.running ? t("running…") : V.msg ? (V.msg === "ok" ? "✅ " + t("ok") : "⚠ " + (V.bad || "") + " " + t(V.msg)) : "";
+  if ((V.steps || []).length) {
+    const g = E("div", "sv-kv"); g.style.gridTemplateColumns = "auto auto auto auto";
+    [t("Axis"), t("To"), t("Picture change"), t("Result")].forEach(x => g.appendChild(E("b", "", x)));
+    V.steps.forEach(s => g.append(E("span", "", t(s.axis === "pan" ? "Pan" : "Tilt")), E("span", "", s.to + " %"), E("span", "", s.diff == null ? "–" : String(s.diff)),
+      E("span", "", s.ok === false ? "⚠ " + t("no change") : (s.ok ? "✅" : "…"))));
+    R.appendChild(g);
+  }
+}
 async function load() {
   clearTimeout(SV.timer);
   const tb = tab();
   try { const r = await fetch("/api/servo?lang=" + LANG + (tb === "diag" ? "&diag=1" : ""), {cache: "no-store"}); if (r.ok) { const j = await r.json(); SV.s = j; if (j.diag) SV.d = j.diag; } } catch (e) {}
-  document.getElementById("p-teach").hidden = tb !== "teach"; document.getElementById("p-diag").hidden = tb !== "diag";
-  document.getElementById("tb-teach").classList.toggle("on", tb === "teach"); document.getElementById("tb-diag").classList.toggle("on", tb === "diag");
-  if (SV.s) { paintState(); if (tb === "teach") paintTeach(); else paintDiag(); }
+  let TV = null;
+  if (tb === "test") { try { const r = await fetch("/api/tools", {cache: "no-store"}); if (r.ok) TV = (await r.json()).servo; } catch (e) {} }
+  ["teach", "test", "diag"].forEach(k => { document.getElementById("p-" + k).hidden = tb !== k; document.getElementById("tb-" + k).classList.toggle("on", tb === k); });
+  if (SV.s) { paintState(); if (tb === "teach") paintTeach(); else if (tb === "diag") paintDiag(); }
+  if (tb === "test") paintTest(TV);
   if (tb === "teach" && Date.now() - SV.img > 900) { SV.img = Date.now(); document.getElementById("sv-img").src = "/api/frame.jpg?" + Date.now(); }
-  SV.timer = setTimeout(load, tb === "teach" ? 1000 : 4000);
+  SV.timer = setTimeout(load, tb === "teach" || (TV && TV.running) ? 1000 : 4000);
 }
 document.querySelectorAll(".sv-pad button").forEach(b => b.onclick = async () => {
   const r = await post("/api/move", {dir: b.dataset.d, step: parseFloat(document.getElementById("sv-step").value) || 3, lang: LANG});
@@ -202,12 +223,14 @@ document.getElementById("sv-release").onclick = () => { if (confirm(t("Release t
 document.getElementById("sv-add").onclick = async () => { const n = document.getElementById("sv-name"); const r = await op({op: "add", name: n.value}); if (r.ok) { n.value = ""; toast("📍 " + t("Position saved")); } };
 document.getElementById("sv-place").onclick = async () => { const r = await op({op: "from_place"}); if (r.ok) toast(tf("{n} positions taken over", {n: r.n})); };
 document.getElementById("sv-svc").onclick = () => { if (confirm(t("Maintenance of both servos done? The maintenance counters start again."))) op({op: "service"}); };
+document.getElementById("sv-test").onclick = async () => { const r = await post("/api/tools", {action: "servo", lang: LANG}); if (!r.ok && r.error) toast("⚠ " + r.error); setTimeout(load, 500); };
 document.getElementById("sv-clr").onclick = () => { if (confirm(t("Clear the fault memory?"))) op({op: "clear_faults"}); };
 addEventListener("hashchange", load);
 (async () => { await initAppearance(); const n = document.getElementById("sv-name"); n.placeholder = t(n.dataset.ph); load(); })();
 </script></body></html>"""
 
-SERVO_PAGE_KEYS = ["Servos: safety, positions, diagnosis", "Positions", "Diagnosis", "Emergency stop", "Release", "Step", "teach-note",
+SERVO_PAGE_KEYS = ["Servos: safety, positions, test, diagnosis", "Positions", "Diagnosis", "Test", "servo-note", "Start the servo test", "running…", "ok",
+                   "Axis", "To", "Picture change", "Result", "no change", "steps without a change of the picture - blocked, at the end or camera not on the head?", "Emergency stop", "Release", "Step", "teach-note",
                    "Name, e.g. «Tent» or «Entrance»", "Save position", "Take over from «Set up the place»", "Counters", "Maintenance done",
                    "Fault memory", "Clear fault memory", "EMERGENCY STOP", "Ready - the servos may move", "pressed by {who}",
                    "Emergency stop - press «Release» to move again", "Pan {p}° · tilt {t}°", "moving", "The head is steered by: {who}", "you",
@@ -272,12 +295,7 @@ SERVO_LIVE_KEYS = ["EMERGENCY STOP", "Release the servos? The head may move agai
                    "pressed by {who}", "Release", "The head is steered by: {who}", "you", "The head moves by itself: {what}", "Now steered by {who}"]
 WEB_PAGE = WEB_PAGE.replace("</body>", "<!--SERVOJS--></body>", 1)          # filled by 634 (after the German texts are known)
 NAV_OF["servo"] = "more"
-# Mehr → Werkzeuge: an entry «Servo diagnosis» next to «Servo test» (opens /servo#diag)
-TOOLS_PAGE = TOOLS_PAGE.replace('  <button type="button" class="tli" data-k="audio"',
-                                '  <a class="tli" href="/servo#diag" style="text-decoration:none;color:inherit"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true">'
-                                '<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/><path d="M4 4l3 3M20 4l-3 3"/></svg><span class="tln"><b data-i18n="Servo diagnosis">'
-                                'Servo diagnosis</b><span class="tsum" data-i18n="Fault memory, hours, maintenance, Not-Aus">Fault memory, hours, maintenance, Not-Aus</span></span></a>\n'
-                                '  <button type="button" class="tli" data-k="audio"', 1)
+# Mehr → Werkzeuge: the one entry «Servos» (460) opens this page (aufr: before a second entry «Servo diagnosis» beside «Servo test»)
 
 
 def servo_page():

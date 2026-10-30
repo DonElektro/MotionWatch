@@ -10,6 +10,10 @@ ZONES = []              # [{"id", "name", "mode": "ignore"|"only"|"privacy", "po
 # 2.98.7: "sleep" = the sleeping place - a privacy zone that stays on the bed when the head turns: its corners are kept as
 # directions (degrees, "ang") and drawn into every picture for the direction the camera has (and had in the last 2 s, the
 # picture comes a little later than the servo moves). The wake-up alarm turns the camera to it.
+# aufr: "report" = «nur melden»: a person whose feet stand inside is no alarm - one log line / info push now and then (the
+# «öffentlicher Weg» of «Platz einrichten» is such a zone since aufr, alarm_gate in 317). Every zone except the black ones
+# (they always do) can «stay on its place» ("anchor": the corners are kept as directions and follow the turning head) - a
+# switch in the zone editor (520) since aufr; before only the zones of «Platz einrichten» (317) had it.
 
 
 def _num(v):
@@ -23,7 +27,7 @@ def _clean_zone(z, i):
     for p in (z.get("points") or [])[:40] if isinstance(z.get("points"), list) else []:
         if isinstance(p, (list, tuple)) and len(p) == 2 and _num(p[0]) and _num(p[1]):
             pts.append([round(min(1.0, max(0.0, float(p[0]))), 4), round(min(1.0, max(0.0, float(p[1]))), 4)])
-    mode = z.get("mode") if z.get("mode") in ("only", "privacy", "line", "loiter", "sleep") else "ignore"
+    mode = z.get("mode") if z.get("mode") in ("only", "privacy", "line", "loiter", "sleep", "report") else "ignore"
     if mode == "line":
         if len(pts) < 2:
             return None
@@ -462,9 +466,9 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Setup", "use_case", "What is MoveEye for? («Simple» shows only what fits)", "enum", "use_cases"),
     ("Wake-up alarm", "wake_time", "Wake-up time (HH:MM)", "str", None),
     ("Wake-up alarm", "wake_days", "Days", "enum", "wake_days"),
-    ("Wake-up alarm", "wake_sound", "Sound", "enum", "wake_sounds"),
+    ("Wake-up alarm", "wake_sound", "Wake-up sound", "enum", "wake_sounds"),
     ("Bless you", "sneeze_texts", "Words (several: separate with |)", "str", None),
-    ("Loudspeaker", "siren_sound", "Sound", "enum", "sounds"),
+    ("Loudspeaker", "siren_sound", "Siren sound", "enum", "sounds"),
     ("Lights", "light_white_out", "White light: connected to", "enum", "light_white_out"),
     ("Lights", "light_white_auto", "White light: Auto means", "enum", "light_auto"),
     ("Lights", "light_ir_out", "Infrared light: connected to", "enum", "light_ir_out"),

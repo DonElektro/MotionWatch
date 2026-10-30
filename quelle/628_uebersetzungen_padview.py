@@ -46,7 +46,7 @@ _HX_padview = {
                                                         'Stick destro: muovere la vista del simulatore (nessun rover)', 'Stick dretg: mover la vista dal simulatur (nagin rover)'),
     'Hold R1 + right stick: turn the simulator view': ('R1 halten + rechter Stick: Simulator-Ansicht drehen', 'Maintenir R1 + stick droit : tourner la vue du simulateur',
                                                        'Tenere R1 + stick destro: ruotare la vista del simulatore', 'Tegnair R1 + stick dretg: volver la vista dal simulatur'),
-    'Zoom out / in (L2 / R2 too)': ('Verkleinern / vergrössern (auch L2 / R2)', 'Zoom arrière / avant (aussi L2 / R2)', 'Zoom indietro / avanti (anche L2 / R2)', 'Zoom enavos / enavant (er L2 / R2)'),
+    'Zoom out / in (L2 = zoom out too)': ('Verkleinern / vergrössern (L2 verkleinert auch)', 'Zoom arrière / avant (L2 aussi en arrière)', 'Zoom indietro / avanti (anche L2 indietro)', 'Zoom enavos / enavant (er L2 enavos)'),
     'Press the right stick: next view (behind the rover, driver, from above)': ('Rechten Stick drücken: nächste Ansicht (hinter dem Rover, Fahrersicht, von oben)',
         'Appuyer sur le stick droit : vue suivante (derrière le rover, conducteur, d’en haut)', 'Premere lo stick destro: vista successiva (dietro il rover, conducente, dall’alto)',
         'Smatgar il stick dretg: proxima vista (davos il rover, manischunz, dad ensi)'),

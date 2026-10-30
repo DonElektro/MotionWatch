@@ -1000,7 +1000,7 @@ class MotionWatch:
                     if z["mode"] == "privacy":
                         continue
                     pts = np.array([(int(px * W), int(py * H)) for px, py in z["points"]], np.int32)
-                    col = {"ignore": (0, 160, 255), "line": (255, 210, 60), "loiter": (60, 220, 255)}.get(z["mode"], (80, 200, 80))
+                    col = {"ignore": (0, 160, 255), "line": (255, 210, 60), "loiter": (60, 220, 255), "report": (255, 160, 201)}.get(z["mode"], (80, 200, 80))
                     cv2.polylines(frame, [pts], z["mode"] != "line", col, 2 if z["mode"] == "line" else 1, cv2.LINE_AA)
                     if z["mode"] == "line" and z.get("dir", "both") != "both":
                         (ax, ay), (bx, by) = pts[0], pts[1]

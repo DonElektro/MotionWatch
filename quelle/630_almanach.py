@@ -205,6 +205,7 @@ Künstliches Licht stört sie beim Finden ihrer Partner. Darum: Wenn ihr Glühw�
 ALM_PAGE = r"""<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Überlebens-Almanach</title><style>
 :root{--bg:#0e1621;--panel:#16212f;--line:#24324a;--txt:#e8eef6;--mut:#8ea0b6;--acc:#e9a23b;--fs:17px}
+body.light{--bg:#f6f3ec;--panel:#ffffff;--line:#d9d2c3;--txt:#1d232b;--mut:#5d6773;--acc:#b86e0c}
 body.night{--bg:#0a0000;--panel:#160404;--line:#3a1010;--txt:#ff6a5a;--mut:#b4453a;--acc:#ff6a5a}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:var(--fs)/1.6 Georgia,"Times New Roman",serif}
 header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;z-index:2}
@@ -219,17 +220,22 @@ article h2{font:700 24px system-ui,sans-serif;margin:6px 0 10px}article p{margin
 .nav{display:flex;gap:8px;margin-top:18px}.nav button{flex:1}.mut{color:var(--mut);font:14px system-ui,sans-serif}
 </style></head><body>
 <header><h1>📖 Überlebens-Almanach</h1><input id="q" type="search" placeholder="Suchen …" style="flex:1 1 140px">
-<button id="b-home" title="Inhalt">☰</button><button id="b-big" title="Grosse Schrift">A+</button><button id="b-night" title="Rotlicht für die Nacht (schont die Nachtsicht)">🔴</button><button id="b-read" title="Vorlesen">🔊</button></header>
+<button id="b-home" title="Inhalt">☰</button><button id="b-big" title="Grosse Schrift">A+</button><button id="b-theme" title="Hell / Dunkel / Rotlicht (wie überall in MoveEye)">◐</button><button id="b-read" title="Vorlesen">🔊</button></header>
 <main id="m"></main>
 <script>
 const A = __DATA__;
 const $ = id => document.getElementById(id), m = $("m");
 const esc = s => s.replace(/[&<>"]/g, c => "&#" + c.charCodeAt(0) + ";");
 const all = []; A.forEach((c, ci) => c[3].forEach((a, ai) => all.push({ci, ai, ch: c, t: a[0], x: a[1]})));
-const S = {big: false, night: false}; try { Object.assign(S, JSON.parse(localStorage.getItem("mw-alm") || "{}")); } catch (e) {}
-function save() { try { localStorage.setItem("mw-alm", JSON.stringify(S)); } catch (e) {} }
-function apply() { document.documentElement.style.setProperty("--fs", S.big ? "21px" : "17px"); document.body.classList.toggle("night", S.night);
-  $("b-big").classList.toggle("on", S.big); $("b-night").classList.toggle("on", S.night); }
+const S = {big: false}; try { Object.assign(S, JSON.parse(localStorage.getItem("mw-alm") || "{}")); } catch (e) {}
+function save() { try { localStorage.setItem("mw-alm", JSON.stringify({big: S.big})); } catch (e) {} }
+// aufr: no own red-light switch any more - the almanac follows Hell / Dunkel / Rotlicht of MoveEye (toggleTheme, 510 / 530:
+// localStorage «mw-theme» = light | dark, «mw-night» = 1 for the red light); the button here is the same switch
+function step() { let th = "dark", n = "0"; try { th = localStorage.getItem("mw-theme") || "dark"; n = localStorage.getItem("mw-night") || "0"; } catch (e) {}
+  return n === "1" ? "red" : th === "light" ? "light" : "dark"; }
+function apply() { document.documentElement.style.setProperty("--fs", S.big ? "21px" : "17px"); const s = step();
+  document.body.classList.toggle("night", s === "red"); document.body.classList.toggle("light", s === "light");
+  $("b-big").classList.toggle("on", S.big); $("b-theme").textContent = {light: "☾", dark: "◉", red: "☀"}[s]; }
 function body(x) { return x.split("\n\n").map(b => b.split("\n").every(l => l.startsWith("- ")) ? "<ul>" + b.split("\n").map(l => "<li>" + esc(l.slice(2)) + "</li>").join("") + "</ul>" : "<p>" + esc(b).replace(/\n/g, "<br>") + "</p>").join(""); }
 function tipIdx() { const d = new Date(); return (d.getFullYear() * 400 + d.getMonth() * 31 + d.getDate()) % all.length; }
 function home(q) {
@@ -252,7 +258,11 @@ function show(i) {
 $("q").oninput = () => home($("q").value.trim().toLowerCase());
 $("b-home").onclick = () => { $("q").value = ""; location.hash = ""; home(""); };
 $("b-big").onclick = () => { S.big = !S.big; save(); apply(); };
-$("b-night").onclick = () => { S.night = !S.night; save(); apply(); };
+$("b-theme").onclick = () => { const n = {light: "dark", dark: "red", red: "light"}[step()], th = n === "light" ? "light" : "dark";
+  try { localStorage.setItem("mw-theme", th); localStorage.setItem("mw-night", n === "red" ? "1" : "0"); } catch (e) {}
+  fetch("/api/ui", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({set: {"mw-theme": th}})}).catch(() => {});   // like the other pages (guests: refused, no matter)
+  apply(); };
+addEventListener("storage", e => { if (e.key === "mw-theme" || e.key === "mw-night") apply(); });   // switched on another page of MoveEye
 $("b-read").onclick = () => { if (!window.speechSynthesis) return; if (speechSynthesis.speaking) { speechSynthesis.cancel(); return; }
   const a = all[window.cur ?? tipIdx()]; const u = new SpeechSynthesisUtterance(a.t + ". " + a.x.replace(/^- /gm, "")); u.lang = "de-CH"; u.rate = 0.95; speechSynthesis.speak(u); };
 apply(); const hm = /^#a(\d+)$/.exec(location.hash); if (hm && all[+hm[1]]) show(+hm[1]); else home("");

@@ -8,6 +8,8 @@
 # The joystick, «Centre» and «Calibrate» only when there is a pan / tilt head (PCA9685, GPIO chosen by hand, or the simulator);
 # in landscape the joystick floats see-through in a corner of the picture. Everything is stored per browser
 # (localStorage «mw-live-view», the hidden cards in the existing «mw-hidden» of the ☰ view menu) - not on the device.
+# aufr: «mw-hidden» (the ☰ menu of the other tabs) is per device now as well (WEB_UI_LOCAL) - the same rule and wording; the
+# live cards are only in «◫ Ansicht» (the ☰ menu leaves them out), so no card has two «hide» switches.
 # 530 stays as it is except the phone placement (not on the Live tab any more). Translations: part 626.
 # 2.98.29 (Wunsch Daniel): ONE edit mode for the arrangement (the separate «✏️ Anpassen» of the quick switches is gone):
 #   favourites ★, order ▲ ▼ and hidden ✕ of the quick switches and of the cards, per device; «Für alle Geräte übernehmen»
@@ -631,3 +633,4 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
 """
 WEB_PAGE = WEB_PAGE.replace("</body>", LIVE_VIEW_JS + "</body>", 1)
 WEB_UI_LOCAL.add("mw-live-view")                         # per device: the layout of the phone is not the one of the PC (not copied to the Pi)
+WEB_UI_LOCAL.add("mw-hidden")                            # aufr: the ☰ menu (fields shown / hidden) per device too - one rule for «hide» on every page

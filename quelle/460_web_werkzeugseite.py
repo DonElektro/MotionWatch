@@ -135,7 +135,7 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
   <div class="tlg" data-i18n="Device tests">Device tests</div>
   <button type="button" class="tli" data-k="focus" onclick="pick('focus')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span class="tln"><b data-i18n="Focus assistant">Focus assistant</b><span class="tsum" id="s-focus"></span></span><i class="tdot" id="d-focus"></i></button>
   <button type="button" class="tli" data-k="refscan" onclick="pick('refscan')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><circle cx="12" cy="12" r="3.5"/><path d="M12 6v2M12 16v2M6 12h2M16 12h2"/></svg><span class="tln"><b data-i18n="Reference scan">Reference scan</b><span class="tsum" id="s-refscan"></span></span><i class="tdot" id="d-refscan"></i></button>
-  <button type="button" class="tli" data-k="servo" onclick="pick('servo')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><span class="tln"><b data-i18n="Servo test">Servo test</b><span class="tsum" id="s-servo"></span></span><i class="tdot" id="d-servo"></i></button>
+  <a class="tli" data-k="servo" href="/servo#test" style="text-decoration:none;color:inherit"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><span class="tln"><b data-i18n="Servos">Servos</b><span class="tsum" id="s-servo" data-i18n="Positions, test, diagnosis, Not-Aus">Positions, test, diagnosis, Not-Aus</span></span><i class="tdot" id="d-servo"></i></a>
   <button type="button" class="tli" data-k="audio" onclick="pick('audio')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span class="tln"><b data-i18n="Speaker and microphone">Speaker and microphone</b><span class="tsum" id="s-audio"></span></span><i class="tdot" id="d-audio"></i></button>
   <button type="button" class="tli" data-k="sd" onclick="pick('sd')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M10 7v3M13 7v3M16 8v2"/></svg><span class="tln"><b data-i18n="Memory card test">Memory card test</b><span class="tsum" id="s-sd"></span></span><i class="tdot" id="d-sd"></i></button>
   <button type="button" class="tli" data-k="bt" onclick="pick('bt')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span class="tln"><b data-i18n="Bluetooth scanner">Bluetooth scanner</b><span class="tsum" id="s-bt"></span></span><i class="tdot" id="d-bt"></i></button>
@@ -322,14 +322,6 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
     <div class="mut" id="f-trend"></div>
     </div>
   </section>
-  <section class="tool" id="c-servo" data-k="servo" hidden>
-    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
-      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><h2 data-i18n="Servo test">Servo test</h2></div><div class="tact"><button id="b-servo" onclick="run('servo')" data-i18n="Start">Start</button></div></div>
-    <div class="tbd">
-    <div class="mut" data-i18n="servo-note">servo-note</div>
-    <div id="servo-res"></div>
-    </div>
-  </section>
   <section class="tool" id="c-audio" data-k="audio" hidden>
     <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
       <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><h2 data-i18n="Speaker and microphone">Speaker and microphone</h2></div><div class="tact"><button onclick="soundTest()" data-i18n="Test sound">Test sound</button></div></div>
@@ -416,7 +408,7 @@ Object.assign(I18N.de, {"Leisure": "Freizeit", "Game corner": "Spielecke",
  "Bluetooth scanner": "Bluetooth-Scanner", "Scan (10 s)": "Suchen (10 s)", "bt-note": "Geräte in der Nähe. Fremde Geräte werden nicht gespeichert – nur die, die du als «meins» markierst.",
  "Warn me about unknown trackers that stay near": "Warnen bei fremden Trackern, die lange in der Nähe bleiben", "after": "nach",
  "Focus assistant": "Fokus-Assistent", "focus-note": "Dreh am Objektiv: je höher die Zahl, desto schärfer. Gemessen wird die Bildmitte.",
- "Servo test": "Servo-Test", "servo-note": "Fährt Schwenken und Neigen langsam über den ganzen Bereich und prüft, ob sich das Bild jedes Mal bewegt. Danach zurück an die alte Stelle.",
+ "Servo test": "Servo-Test", "Servos": "Servos", "Positions, test, diagnosis, Not-Aus": "Positionen, Test, Diagnose, Not-Aus", "servo-note": "Fährt Schwenken und Neigen langsam über den ganzen Bereich und prüft, ob sich das Bild jedes Mal bewegt. Danach zurück an die alte Stelle.",
  "Speaker and microphone": "Lautsprecher und Mikrofon", "Test sound": "Testton", "Clap or speak: the bar shows what the microphone hears.": "Klatsche oder sprich: der Balken zeigt, was das Mikrofon hört.",
  "Memory card test": "Speicherkarten-Test", "Writes and reads 64 MB once, then deletes them again.": "Schreibt und liest einmal 64 MB und löscht sie danach wieder.",
  "Diagnosis package": "Diagnose-Paket", "Download": "Herunterladen", "diag-note": "Ein ZIP für die Fehlersuche: Protokoll, Systemwerte und Einstellungen – ohne Passwörter, Adressen, Themen und Bilder.",
@@ -518,11 +510,6 @@ function draw() {
   if (B.devices.length) bt.appendChild(tr_([t("Name"), t("Kind"), t("Signal"), "🏠"], true));
   B.devices.forEach(d => { const own = el("input"); own.type = "checkbox"; own.checked = mbt.has((d.addr || "").toLowerCase()); own.onchange = () => cfg("presence_bt", own.checked, {mac: d.addr});
     bt.appendChild(tr_([el("span", d.tracker ? "newdev" : "", d.name || d.addr), t(d.kind) || "", d.rssi != null ? d.rssi + " dBm" : "", own])); });
-  // servo
-  const V = S.servo; btn("servo", "Start", V.running); const sr = $("#servo-res"); sr.innerHTML = "";
-  if (V.steps.length) { const tb2 = el("table", "tl"); tb2.appendChild(tr_([t("Axis"), t("To"), t("Picture change"), t("Result")], true));
-    V.steps.forEach(s => tb2.appendChild(tr_([t(s.axis), s.to + " %", s.diff, s.ok === false ? "⚠ " + t("no change") : (s.ok ? "✅" : "…")]))); sr.appendChild(tb2); }
-  if (V.msg) sr.appendChild(el("div", V.msg === "ok" ? "" : "newdev", V.msg === "ok" ? "✅ " + t("ok") : "⚠ " + (V.bad || "") + " " + t(V.msg)));
   // sd
   const D = S.sd; btn("sd", "Start", D.running); const sd = $("#sd-res"); sd.innerHTML = ""; const R = D.res || {};
   if (D.msg) sd.append(el("span", "", "⚠"), el("span", "", D.msg));
@@ -1006,7 +993,7 @@ function drawSums() {
   sum("guard", recent ? "⚠ " + t("Wi-Fi jamming!") : G.state === "listening" ? "👂 " + t("listening") : G.state === "off" ? t("off") : t(G.state || ""), recent ? "bad" : G.state === "listening" ? "ok" : "");
   const W = S.wifi; sum("wifi", W.running ? t("running…") : W.best ? t("Best channel") + " " + W.best + " · " + W.nets.length + " " + t("networks") : "");
   const B = S.bt, tk = (B.trackers || []).length; sum("bt", B.running ? t("running…") : B.t ? B.devices.length + " " + t("devices") + (tk ? " · 📍 " + tk : "") : "", tk ? "warn" : "");
-  const V = S.servo; sum("servo", V.running ? t("running…") : V.msg ? (V.msg === "ok" ? "✅ " + t("ok") : "⚠ " + (V.bad || "")) : "", V.msg && V.msg !== "ok" ? "warn" : V.msg ? "ok" : "");
+  const V = S.servo; if (V.running || V.msg) sum("servo", V.running ? t("running…") : V.msg === "ok" ? "✅ " + t("ok") : "⚠ " + (V.bad || ""), V.msg && V.msg !== "ok" ? "warn" : V.msg ? "ok" : "");   // the test is on /servo (541)
   const R = (S.sd || {}).res || {}; sum("sd", S.sd.running ? t("running…") : R.write_mb_s != null ? "✍ " + R.write_mb_s + " · 📖 " + R.read_mb_s + " MB/s" : "", {ok: "ok", warn: "warn", bad: "bad"}[R.verdict] || "");
   if (S.power) sum("pow", S.power.watts.toFixed(1) + " W");
 }

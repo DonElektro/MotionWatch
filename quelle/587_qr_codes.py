@@ -81,11 +81,8 @@ def qr_items(lang=None, host=None):
         gi = {"active": False}
     if gi.get("active") and loc:
         add("guest", T("Guest access"), loc + gi["path"], True, T("Guests see only the live picture."))
-    tok = str(CFG.get("shortcut_token") or "")
-    if tok:
-        base = (pu.rstrip("/") or loc)
-        for a, n in QR_SHORTCUTS:
-            add("short", T("iPhone shortcuts") + " · " + T(n), f"{base}/k/{tok}/{a}", True)
+    # (the shortcut addresses /k/<key>/… have no code here any more: the key is an app key (573, aufr) and only shown once,
+    #  with its codes, on the card «iPhone shortcuts» when it is made)
     try:
         from urllib.parse import urlparse
         hn = None if page_address() else (urlparse(str(host or "")).hostname or None)

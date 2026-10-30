@@ -104,8 +104,8 @@ class NetAuto:
 # ----------------------------------------------------------------------------
 # Patrol: pendulum over waypoints  (1-2-3-2-1-2-3 ...)
 # 2.98.30: «kluge Runde» - the stops come from kopf_patrol_plan() (part 162): the places of «Platz einrichten» with a
-# longer stay at the tent and the access, hardly a stop at ignored directions; without places the waypoints. It also
-# runs by itself in Wachsam / Voll (setting «Automatic head movement»), pauses while following and gives way to every
+# longer stay at the tent and the access, hardly a stop at ignored directions; without places the waypoints. It runs only
+# when «Patrouille» is on (aufr, decision Daniel - before also by itself in Wachsam / Voll), pauses while following and gives way to every
 # mover with a higher rank (kopf_may). Battery low / deep night: it stays at the most important direction.
 # ----------------------------------------------------------------------------
 class Patrol:
