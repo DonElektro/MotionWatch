@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 00:43",
+ "generated": "2026-10-30 02:54",
  "versions": [
   {
-   "version": "2.98.34",
-   "file": "webcam_bewegung_2_98_34.py",
+   "version": "2.98.35",
+   "file": "webcam_bewegung_2_98_35.py",
    "url": "",
-   "sha256": "8f2b8f7bc197a640e50dc87b0601b0bf7b30667d2fcda8ae779e0237fffebcba",
-   "date": "2026-10-30 00:43",
-   "notes": "«Über MoveEye»: Elektro ist Robotik-Entwickler.",
-   "sig": "c9e2e241c9efe3bc6c5abdad8e6ec6d7dd4a1c23cf21eec41f568571bf744dc8e351b450ac24e8520c82e4aef1987b418021d61f13e1d57cddc78d2bb0969304"
+   "sha256": "cb41a7d800be155385e847ce40b1ba926906042bdd84e65b7d1c64394f72c8d5",
+   "date": "2026-10-30 02:54",
+   "notes": "Blinki, das Maskottchen im Guide und in den Rundgängen (blinzelt, schaut, hüpft; abschaltbar mit «Blinki zeigen»).",
+   "sig": "2d27f799392e98acfcc4150af786365c0f8ff3b521f6652b6224a9d691e824f2dac0c81f7f5fc6ea6a62aa0ae5b90936bf5ca83c3c29abf1e112c8d9cde4d70a"
   },
   {
    "version": "2.97.1",
