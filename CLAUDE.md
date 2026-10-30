@@ -60,6 +60,9 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 - Wartet auf Daniel: Hardware-Tests; Gehäuse Variante 2 (Modell-ZIP); Tailscale Funnel (eingebaut 2.98.47) im Tailnet freischalten und echt testen;
   SmallTV (2.98.48) am echten Gerät testen (Testbild, Album-Weiterblättern, Suche, Lesbarkeit); KI-Wächter bei normalem Tempo; Parcours-Noten;
   Rückmeldung schwarzes Live-Bild / Seiten-Tempo; vor KI-Training «🔍 Lernbilder prüfen».
+- **Entscheid Daniel 30.10.2026 22:00:** nach der laufenden Runde (Angleichen, Mehr-Bereich Simulator, Sprachen Schritt 1,
+  LED/Tasten) **Pause bei neuen Funktionen** → Hardware-Aufbau mit geführter Inbetriebnahme (sobald Teile da sind).
+  Gameplay-Plan und Sprachen Schritt 2 danach.
 - Als Nächstes (nach wt-objekte): Angleichungen MoveEye ↔ Simulator (Entwickler-Schalter teilen, «Dein Platz» klären, /sim
   zuklappen statt ausblenden, Fenster «Strom»/System-Knöpfe, gezeichnete Symbole statt fehlender Emoji), dann Gameplay
   (`docs/Gameplay_Ausfeilen_Plan.md`).
