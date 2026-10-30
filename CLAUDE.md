@@ -24,6 +24,7 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   prüfen und mitziehen; im Konzept-Check melden, wenn es (noch) abweicht.
 - **Zwischenberichte (Wunsch Daniel, bis 2.11.2026 24:00):** bei jeder Aufgabe, die länger als 3–4 Minuten dauert, jede Minute
   eine kurze Checkliste senden (✅ erledigt / ⏳ offen).
+  **Pausiert (Daniel, 30.10.2026 10:58):** vorerst keine Zwischenberichte, nur melden, wenn es News gibt (fertig, Problem, Frage).
 - **Fragen immer als Fragekatalog (Wunsch Daniel, 29.10.2026):** wenn Daniel nichts anderes wünscht, jede Rückfrage als
   Auswahl-Katalog stellen (AskUserQuestion: bis 4 Fragen à 4 Antworten, Mehrfachauswahl wo sinnvoll), nicht als Fliesstext.
 
