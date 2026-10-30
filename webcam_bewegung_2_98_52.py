@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_51.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_52.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.52: Logo-Schriftzug: die Pupille im Auge schaut zur gehenden Person, das Auge blinzelt ab und zu (bei «Bewegung
+    reduzieren» still); Simulator-Logo bewegt sich gleich (3D-4.23)
   * 2.98.51: Namen «MoveEye» statt «MW» / «MotionWatch»: Simulatoren heissen MoveEye Sim · 3D / Basis / Welt (Kevin);
     Push-Stichwort ab Werk «MoveEye» (MoveEye-ALARM, MoveEye-WAERME …; ein unverändertes «MW» wird einmal umgestellt –
     iPhone-Kurzbefehle auf "MoveEye-" anpassen); eigenes WLAN neu «MoveEye» (bestehende Geräte behalten «MotionWatch»);
@@ -991,10 +993,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_51.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_52.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_51.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_51.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_52.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_52.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -1011,7 +1013,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.51"
+APP_VERSION = "2.98.52"
 
 
 def default_data_dir():
@@ -13700,6 +13702,7 @@ def learn_state():
 WORDMARK_W6 = '<svg class="wm6" viewBox="0 31 320 135" role="img" aria-label="MoveEye"><defs><linearGradient id="mwfw6" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff9f43" stop-opacity=".95"/><stop offset="1" stop-color="#ff9f43" stop-opacity=".12"/></linearGradient></defs><path d="M86.0 130.6 L32.8 51.8 A95 95 0 0 1 139.1 51.8 Z" fill="url(#mwfw6)"/><g transform="translate(89.0 75.6) scale(1.0)" fill="#e8590c" stroke="#e8590c" stroke-linecap="round"><circle cx="1" cy="-15" r="5" stroke="none"/><path d="M0 -9 L-1 3" stroke-width="7"/><path d="M-1 3 L-6 13 M-1 3 L5 12" stroke-width="3.5" fill="none"/><path d="M0 -6 L-6 0 M0 -6 L6 -1" stroke-width="3" fill="none"/></g><g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M72.0 56.6 V50.6 H78.0 M99.0 50.6 H105.0 V56.6 M105.0 90.6 V96.6 H99.0 M78.0 96.6 H72.0 V90.6"/></g><path d="M49.94921875 150.0V119.9765625Q49.94921875 118.95703125 49.966796875 117.9375Q49.984375 116.91796875 50.30078125 109.18359375Q47.8046875 118.640625 46.609375 122.3671875L37.6796875 150.0H30.296875L21.3671875 122.3671875L17.60546875 109.18359375Q18.02734375 117.33984375 18.02734375 119.9765625V150.0H8.81640625V100.46484375H22.703125L31.5625 128.16796875L32.3359375 130.83984375L34.0234375 137.484375L36.23828125 129.5390625L45.34375 100.46484375H59.16015625V150.0Z M133.65625 150.0H121.84375L108.23828125 111.9609375H118.6796875L125.32421875 133.23046875Q125.8515625 134.98828125 127.8203125 142.01953125Q128.171875 140.578125 129.26171875 136.95703125Q130.3515625 133.3359375 137.34765625 111.9609375H147.68359375Z M168.6015625 150.703125Q160.0234375 150.703125 155.41796875 145.623046875Q150.8125 140.54296875 150.8125 130.8046875Q150.8125 121.3828125 155.48828125 116.3203125Q160.1640625 111.2578125 168.7421875 111.2578125Q176.93359375 111.2578125 181.2578125 116.689453125Q185.58203125 122.12109375 185.58203125 132.59765625V132.87890625H161.18359375Q161.18359375 138.43359375 163.240234375 141.263671875Q165.296875 144.09375 169.09375 144.09375Q174.33203125 144.09375 175.703125 139.55859375L185.01953125 140.3671875Q180.9765625 150.703125 168.6015625 150.703125ZM168.6015625 117.48046875Q165.12109375 117.48046875 163.240234375 119.90625Q161.359375 122.33203125 161.25390625 126.69140625H176.01953125Q175.73828125 122.0859375 173.8046875 119.783203125Q171.87109375 117.48046875 168.6015625 117.48046875Z" fill="currentColor"/><circle cx="86.0" cy="130.6" r="18.4" fill="none" stroke="#ff9f43" stroke-width="9.4"/><circle cx="86.0" cy="130.6" r="7.7" fill="currentColor"/><path d="M192.859375 150.0V100.46484375H231.8125V108.48046875H203.23046875V120.92578125H229.66796875V128.94140625H203.23046875V141.984375H233.25390625V150.0Z M246.015625 164.94140625Q242.46484375 164.94140625 239.79296875 164.484375V157.453125Q241.65625 157.734375 243.203125 157.734375Q245.3125 157.734375 246.701171875 157.06640625Q248.08984375 156.3984375 249.197265625 154.8515625Q250.3046875 153.3046875 251.67578125 149.61328125L236.62890625 111.9609375H247.0703125L253.046875 129.78515625Q254.453125 133.6171875 256.59765625 141.52734375L257.4765625 138.1875L259.76171875 129.92578125L265.38671875 111.9609375H275.72265625L260.67578125 152.00390625Q257.65234375 159.31640625 254.400390625 162.12890625Q251.1484375 164.94140625 246.015625 164.94140625Z M296.7109375 150.703125Q288.1328125 150.703125 283.52734375 145.623046875Q278.921875 140.54296875 278.921875 130.8046875Q278.921875 121.3828125 283.59765625 116.3203125Q288.2734375 111.2578125 296.8515625 111.2578125Q305.04296875 111.2578125 309.3671875 116.689453125Q313.69140625 122.12109375 313.69140625 132.59765625V132.87890625H289.29296875Q289.29296875 138.43359375 291.349609375 141.263671875Q293.40625 144.09375 297.203125 144.09375Q302.44140625 144.09375 303.8125 139.55859375L313.12890625 140.3671875Q309.0859375 150.703125 296.7109375 150.703125ZM296.7109375 117.48046875Q293.23046875 117.48046875 291.349609375 119.90625Q289.46875 122.33203125 289.36328125 126.69140625H304.12890625Q303.84765625 122.0859375 301.9140625 119.783203125Q299.98046875 117.48046875 296.7109375 117.48046875Z" fill="#ff9f43"/></svg>'
 WORDMARK_W1 = '<svg class="wm1" viewBox="0 27 197 273" role="img" aria-label="MoveEye"><defs><linearGradient id="mwfw1" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff9f43" stop-opacity=".95"/><stop offset="1" stop-color="#ff9f43" stop-opacity=".12"/></linearGradient></defs><path d="M88.2 180.0 L-4.1 61.8 A150 150 0 0 1 180.6 61.8 Z" fill="url(#mwfw1)"/><g transform="translate(106.2 90.0) scale(1.6)" fill="#e8590c" stroke="#e8590c" stroke-linecap="round"><circle cx="1" cy="-15" r="5" stroke="none"/><path d="M0 -9 L-1 3" stroke-width="7"/><path d="M-1 3 L-6 13 M-1 3 L5 12" stroke-width="3.5" fill="none"/><path d="M0 -6 L-6 0 M0 -6 L6 -1" stroke-width="3" fill="none"/></g><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M82.2 63.0 V55.0 H90.2 M122.2 55.0 H130.2 V63.0 M130.2 114.0 V122.0 H122.2 M90.2 122.0 H82.2 V114.0"/></g><path d="M51.2255859375 200.0V169.142578125Q51.2255859375 168.0947265625 51.24365234375 167.046875Q51.26171875 165.9990234375 51.5869140625 158.0498046875Q49.021484375 167.76953125 47.79296875 171.599609375L38.615234375 200.0H31.02734375L21.849609375 171.599609375L17.9833984375 158.0498046875Q18.4169921875 166.4326171875 18.4169921875 169.142578125V200.0H8.9501953125V149.0888671875H23.22265625L32.328125 177.5615234375L33.123046875 180.3076171875L34.857421875 187.13671875L37.1337890625 178.970703125L46.4921875 149.0888671875H60.6923828125V200.0Z M137.2578125 200.0H125.1171875L111.1337890625 160.904296875H121.865234375L128.6943359375 182.7646484375Q129.236328125 184.5712890625 131.259765625 191.7978515625Q131.62109375 190.31640625 132.7412109375 186.5947265625Q133.861328125 182.873046875 141.0517578125 160.904296875H151.6748046875Z M173.173828125 200.72265625Q164.357421875 200.72265625 159.6240234375 195.50146484375Q154.890625 190.2802734375 154.890625 180.271484375Q154.890625 170.587890625 159.6962890625 165.384765625Q164.501953125 160.181640625 173.318359375 160.181640625Q181.7373046875 160.181640625 186.181640625 165.76416015625Q190.6259765625 171.3466796875 190.6259765625 182.1142578125V182.4033203125H165.5498046875Q165.5498046875 188.1123046875 167.66357421875 191.02099609375Q169.77734375 193.9296875 173.6796875 193.9296875Q179.0634765625 193.9296875 180.47265625 189.2685546875L190.0478515625 190.099609375Q185.892578125 200.72265625 173.173828125 200.72265625ZM173.173828125 166.5771484375Q169.5966796875 166.5771484375 167.66357421875 169.0703125Q165.73046875 171.5634765625 165.6220703125 176.0439453125H180.7978515625Q180.5087890625 171.310546875 178.521484375 168.94384765625Q176.5341796875 166.5771484375 173.173828125 166.5771484375Z M37.69384765625 278.0V227.0888671875H77.72900390625V235.3271484375H48.35302734375V248.1181640625H75.52490234375V256.3564453125H48.35302734375V269.76171875H79.21044921875V278.0Z M92.32666015625 293.3564453125Q88.67724609375 293.3564453125 85.93115234375 292.88671875V285.66015625Q87.84619140625 285.94921875 89.43603515625 285.94921875Q91.60400390625 285.94921875 93.03125 285.2626953125Q94.45849609375 284.576171875 95.5966796875 282.986328125Q96.73486328125 281.396484375 98.14404296875 277.6025390625L82.67919921875 238.904296875H93.41064453125L99.55322265625 257.2236328125Q100.99853515625 261.162109375 103.20263671875 269.2919921875L104.10595703125 265.859375L106.45458984375 257.3681640625L112.23583984375 238.904296875H122.85888671875L107.39404296875 280.0595703125Q104.28662109375 287.5751953125 100.9443359375 290.4658203125Q97.60205078125 293.3564453125 92.32666015625 293.3564453125Z M144.43017578125 278.72265625Q135.61376953125 278.72265625 130.88037109375 273.50146484375Q126.14697265625 268.2802734375 126.14697265625 258.271484375Q126.14697265625 248.587890625 130.95263671875 243.384765625Q135.75830078125 238.181640625 144.57470703125 238.181640625Q152.99365234375 238.181640625 157.43798828125 243.76416015625Q161.88232421875 249.3466796875 161.88232421875 260.1142578125V260.4033203125H136.80615234375Q136.80615234375 266.1123046875 138.919921875 269.02099609375Q141.03369140625 271.9296875 144.93603515625 271.9296875Q150.31982421875 271.9296875 151.72900390625 267.2685546875L161.30419921875 268.099609375Q157.14892578125 278.72265625 144.43017578125 278.72265625ZM144.43017578125 244.5771484375Q140.85302734375 244.5771484375 138.919921875 247.0703125Q136.98681640625 249.5634765625 136.87841796875 254.0439453125H152.05419921875Q151.76513671875 249.310546875 149.77783203125 246.94384765625Q147.79052734375 244.5771484375 144.43017578125 244.5771484375Z" fill="currentColor"/><circle cx="88.2" cy="180.0" r="18.9" fill="none" stroke="#ff9f43" stroke-width="9.6"/><circle cx="88.2" cy="180.0" r="7.9" fill="currentColor"/></svg>'
 LOGO_RED = "#e0242b"          # 2.98.9 (wish of Daniel): the person in the logo is a red silhouette and walks to and fro
+PUPIL_X, PUPIL_UP = 4.6, 2.0  # 2.98.52: how far the pupil looks to the side / up (free room in the ring: about 6, so 5 + margin)
 
 
 def _wm_walk(svg):
@@ -13722,6 +13725,15 @@ def _wm_walk(svg):
     cone = m.group(0).replace("<path ", '<path class="wmc" style="transform-origin:%.1fpx %.1fpx;--wa:%.1fdeg" ' % (ex, ey, ang), 1)
     out = svg.replace(m.group(0), cone, 1)
     out = out.replace(f.group(0) + b.group(0), '<g class="wmw" style="--wx:%.1fpx">' % amp + person + b.group(0) + "</g>", 1)
+    # 2.98.52 (Daniel): the pupil looks at the person (same 7 s curve as the walk: x in proportion to the person's x, a little
+    # up because the person walks above the eye; at most 4.6 to the side, always inside the ring) and the eye blinks now and then
+    e = re.search(r'(<circle cx="([\d.]+)" cy="([\d.]+)" r="[\d.]+" fill="none" stroke="#ff9f43" stroke-width="[\d.]+"/>)<circle ([^>]*fill="currentColor"/>)', out)
+    if e:
+        d = tx - float(e.group(2))
+        far = max(abs(d - amp), abs(d + amp), 1.0)
+        p0, p1 = PUPIL_X * (d - amp) / far, PUPIL_X * (d + amp) / far
+        pupil = '<circle class="wmp" style="--p0:%.2fpx;--p1:%.2fpx;--py:%.1fpx" %s' % (p0, p1, -PUPIL_UP, e.group(4))
+        out = out.replace(e.group(0), '<g class="wmb">' + e.group(1) + pupil + "</g>", 1)
     return out
 
 
@@ -13735,7 +13747,14 @@ WORDMARK_CSS = ("header h1.wm .wmc,header h1.wm .wmw{transform-box:view-box}head
                 "@keyframes wmw{0%,100%{transform:translateX(calc(-1*var(--wx)))}50%{transform:translateX(var(--wx))}}"
                 "@keyframes wmc{0%,100%{transform:rotate(calc(-1*var(--wa)))}50%{transform:rotate(var(--wa))}}"
                 "@keyframes wms{0%,100%{transform:rotate(18deg)}50%{transform:rotate(-18deg)}}"
-                "@media (prefers-reduced-motion:reduce){header h1.wm .wmw,header h1.wm .wmc,header h1.wm .wl1,header h1.wm .wl2,header h1.wm .wa1,header h1.wm .wa2{animation:none}}"
+                # 2.98.52: pupil follows the person (same 7 s curve), blink twice in 23 s (after 9.2 s and 22.1 s: 13 s / 10 s apart,
+                # never in step with the walk), each about 0.2 s
+                "header h1.wm .wmp{transform:translate(var(--p0),var(--py));animation:wmp 7s ease-in-out infinite}"
+                "header h1.wm .wmb{transform-box:fill-box;transform-origin:50% 50%;animation:wmb 23s linear infinite}"
+                "@keyframes wmp{0%,100%{transform:translate(var(--p0),var(--py))}50%{transform:translate(var(--p1),var(--py))}}"
+                "@keyframes wmb{0%,39.6%,40.5%,95.6%,96.5%,100%{transform:scaleY(1)}39.85%,40.15%,95.85%,96.15%{transform:scaleY(.1)}}"
+                "@media (prefers-reduced-motion:reduce){header h1.wm .wmw,header h1.wm .wmc,header h1.wm .wl1,header h1.wm .wl2,header h1.wm .wa1,header h1.wm .wa2,header h1.wm .wmb{animation:none}"
+                "header h1.wm .wmp{animation:none;transform:none}}"
                 "header h1.wm{gap:8px}header h1.wm::before{display:none}header h1.wm svg{overflow:visible}"
                 "header h1.wm svg{display:block;color:var(--txt,#e8eef5)}header h1.wm .wm6{height:46px;width:auto}"
                 "header h1.wm .wm1{height:76px;width:auto;display:none}"
@@ -25450,8 +25469,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.22", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 32283625,
-         "sha256": "572fed0f5db470f4f80cea7abc15fee623875f774a7b210d416487fbb4c08daf"}
+SIM3D = {"version": "3D-4.23", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 32288177,
+         "sha256": "fd7262f9ead86658f769d59bf871866bd82eb55a6f5d6cbc9edad026ebf2fd9d"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -32561,7 +32580,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_51.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_52.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -67190,7 +67209,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.51")
+        self.root.title("MoveEye 2.98.52")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -67557,7 +67576,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.51 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.52 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

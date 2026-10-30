@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.22"
+const VERSION := "3D-4.23"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -4491,14 +4491,11 @@ func _build_ui() -> void:
 	var hdr := HBoxContainer.new()
 	hdr.add_theme_constant_override("separation", 8)
 	top_box.add_child(hdr)
-	var wmt: ImageTexture = preload("res://scripts/wordmark.gd").texture(44.0)   # 3D-3.87: the wordmark W6 like on the web page
-	if wmt != null:
-		var wm := TextureRect.new()
-		wm.texture = wmt
-		wm.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		wm.tooltip_text = "MoveEye"
+	var wm = preload("res://scripts/wordmark.gd").new()   # 3D-3.87: the wordmark W6 like on the web page
+	if wm.build(44.0):                                   # 3D-4.23: moving like on the web (person, cone, pupil, blink)
 		hdr.add_child(wm)
 	else:
+		wm.free()
 		var logo: Control = load("res://scripts/mw_logo.gd").new()  # (fallback) the orange MoveEye symbol
 		logo.custom_minimum_size = Vector2(30, 30)
 		hdr.add_child(logo)

@@ -1,8 +1,19 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 30.10.2026 · Simulator-Version **3D-4.22** · passende MoveEye-Version (früher Motion Watch) **2.98.51**
+Stand: 30.10.2026 · Simulator-Version **3D-4.23** · passende MoveEye-Version (früher Motion Watch) **2.98.52**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.23 (MoveEye 2.98.52): Schriftzug bewegt wie im Web (`wordmark.gd`)
+
+- `scripts/wordmark.gd` ist jetzt ein Control: `build(height)` zeichnet die Ebenen einmal (Sichtfächer, Person+Ecken,
+  4 Glieder, Buchstaben, Ring, Pupille; je 2× fein, auf den benutzten Bereich zugeschnitten), `_draw()` verschiebt / dreht nur.
+  Zeiten wie die Keyframes von MoveEye 144 (`WORDMARK_CSS`): Gehen 7 s ease-in-out (cubic-bezier .42,0,.58,1), Schritte 0.7 s
+  ±18°, Fächer ±14.1° ums Auge, Pupille x −2.96…4.6 / y −2 auf derselben Kurve, Blinzeln 23 s (bei 39.6 % und 95.6 %, auf 10 %).
+  Höchstens 30 Bilder/s, nichts, wenn unsichtbar oder minimiert. `texture(h)` (ganzes Logo still) bleibt.
+- Die Ebenen sind aus `WORDMARK_W6` von quelle/144 geschnitten (rote Person wie im Web, vorher noch die alte orange Figur).
+  Ändert sich das Logo im Web, die Konstanten in wordmark.gd neu daraus erzeugen.
+- Nur main.gd (Kopf des Bedienfelds) zeigt den Schriftzug; mehr.gd, mini.gd, gamewiz.gd zeigen das Symbol (`mw_logo.gd`).
 
 ## NEU in 3D-4.22 (MoveEye 2.98.51): Namen «MoveEye» statt «MW», Lautsprecher in «Licht & Ton», Hinweis Tasten-Regeln
 
