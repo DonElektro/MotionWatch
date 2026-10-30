@@ -43160,7 +43160,7 @@ function applyI18n() {
 function themeStep() { return document.documentElement.classList.contains("sxnight") ? "red" : THEME === "light" ? "light" : "dark"; }   // 573/578: Hell → Dunkel → Rotlicht
 function applyTheme() { document.body.classList.toggle("light", THEME === "light"); const b = $("#btn-theme"), s = themeStep();
   if (b) { b.innerHTML = s === "light" ? "&#9790;" : s === "dark" ? "&#9673;" : "&#9728;"; b.classList.toggle("thred", s === "red"); } }
-function toggleTheme() { const n = {light: "dark", dark: "red", red: "light"}[themeStep()];
+function toggleTheme() { const n = {light: "red", red: "dark", dark: "light"}[themeStep()];
   document.documentElement.classList.toggle("sxnight", n === "red"); THEME = n === "light" ? "light" : "dark";
   try { localStorage.setItem("mw-theme", THEME); localStorage.setItem("mw-night", n === "red" ? "1" : "0"); } catch (e) {} applyTheme();
   if (window.sxThemeSaid) window.sxThemeSaid(n); }
@@ -46576,7 +46576,7 @@ function applyTheme() {
   const s = themeStep(); $("#btn-theme").innerHTML = s === "light" ? "&#9790;" : s === "dark" ? "&#9673;" : "&#9728;";
   $("#btn-theme").classList.toggle("thred", s === "red");
 }
-function toggleTheme() { const n = {light: "dark", dark: "red", red: "light"}[themeStep()];
+function toggleTheme() { const n = {light: "red", red: "dark", dark: "light"}[themeStep()];
   document.documentElement.classList.toggle("sxnight", n === "red"); THEME = n === "light" ? "light" : "dark";
   try { localStorage.setItem("mw-theme", THEME); localStorage.setItem("mw-night", n === "red" ? "1" : "0"); } catch (e) {} applyTheme();
   if (window.sxThemeSaid) window.sxThemeSaid(n); }
@@ -62827,7 +62827,7 @@ try { if (typeof I18N !== "undefined" && I18N.de) Object.keys(TX.de || {}).forEa
 // ---- 4: «Rotlicht-Ansicht» = the 3rd step of the button «Hell / dunkel» (toggleTheme in 510 / 530: Hell → Dunkel → Rotlicht) ----
 const STEP = {light: "Light", dark: "Dark", red: "Red light view"};
 const stepNow = () => H.classList.contains("sxnight") ? "red" : (typeof THEME !== "undefined" && THEME === "light") ? "light" : "dark";
-function paintN() { const b = D.getElementById("btn-theme"); if (!b) return; const s = stepNow(), n = {light: "dark", dark: "red", red: "light"}[s];
+function paintN() { const b = D.getElementById("btn-theme"); if (!b) return; const s = stepNow(), n = {light: "red", red: "dark", dark: "light"}[s];
   const tt = T("Light / dark / red light") + ": " + T(STEP[s]) + " → " + T(STEP[n]);
   if (b.getAttribute("title") !== tt) { b.setAttribute("title", tt); b.setAttribute("aria-label", tt); b.dataset.sxA = tt; b.dataset.sxT = tt; }
   b.classList.toggle("thred", s === "red"); }
@@ -62944,14 +62944,14 @@ def tk_theme_step():
 
 
 def tk_theme_tip():
-    s = tk_theme_step(); n = {"light": "dark", "dark": "red", "red": "light"}[s]
+    s = tk_theme_step(); n = {"light": "red", "red": "dark", "dark": "light"}[s]
     nm = {"light": "Light", "dark": "Dark", "red": "Red light view"}
     return tr("Light / dark / red light") + ": " + tr(nm[s]) + " → " + tr(nm[n])
 
 
 def _sx_tk_toggle_theme(self):
-    """the button ◐ (and Ctrl+T): Hell → Dunkel → Rotlicht → Hell"""
-    n = {"light": "dark", "dark": "red", "red": "light"}[tk_theme_step()]
+    """the button ◐ (and Ctrl+T): Hell → Rotlicht → Dunkel → Hell (30.10.2026: nach Rot kommt Dunkel)"""
+    n = {"light": "red", "red": "dark", "dark": "light"}[tk_theme_step()]
     CFG["tk_night"] = n == "red"
     self._set("theme", "light" if n == "light" else "dark")
     save_settings()
@@ -72742,7 +72742,7 @@ _HELP_SICHER = {
           '(ab 3 kommt ein Diebstahl-Alarm). «Fehlalarm» und «Sirene» gehen weiterhin mit einem Tipp.</li>'
           '<li><b>Nach einem Stromausfall oder Absturz</b> kommt eine Push-Nachricht, wie lange MoveEye aus war und ob der Schutz wieder läuft. '
           'Nach einem Update oder Neustart nicht.</li>'
-          '<li><b>◉ Rotlicht-Ansicht</b> (die 3. Stufe des Knopfs «Hell / dunkel» oben: Hell → Dunkel → Rotlicht): die ganze Seite sehr dunkel und rot, das Livebild gedimmt – für einen kurzen Blick '
+          '<li><b>◉ Rotlicht-Ansicht</b> (die 3. Stufe des Knopfs «Hell / dunkel» oben: Hell → Rotlicht → Dunkel): die ganze Seite sehr dunkel und rot, das Livebild gedimmt – für einen kurzen Blick '
           'im Zelt, ohne die Augen zu blenden. Jeder Browser merkt es sich selbst. Im Fenster derselbe Knopf ◐.</li>'
           '<li><b>Aufnahmen nach … Tagen löschen</b> (Einstellungen → Aufnahme, 0 = nie) – zusätzlich zur Grössen-Grenze. '
           '«🧹 Ferien vorbei: alle Aufnahmen löschen» fragt nach; ⭐ Favoriten bleiben, ausser man hakt sie an.</li>'
@@ -72753,7 +72753,7 @@ _HELP_SICHER = {
           '(without a PIN: the web password). With neither, «Off» works only on the page of MoveEye. Wrong PINs lock as on the web page '
           '(from 3 on a theft alarm). «False alarm» and «Siren» still work with one tap.</li>'
           '<li><b>After a power cut or a crash</b> a push message says how long MoveEye was off and whether the protection runs again. Not after an update or restart.</li>'
-          '<li><b>◉ Red light view</b> (the 3rd step of the button «light / dark» at the top: light → dark → red light): the whole page very dark and red, the live picture dimmed – for a short look in the tent '
+          '<li><b>◉ Red light view</b> (the 3rd step of the button «light / dark» at the top: light → red light → dark): the whole page very dark and red, the live picture dimmed – for a short look in the tent '
           'without dazzling your eyes. Every browser remembers it itself. In the window the same button ◐.</li>'
           '<li><b>Delete recordings after … days</b> (Settings → Recording, 0 = never) – in addition to the size limit. '
           '«🧹 Holiday over: delete all recordings» asks first; ⭐ favourites stay unless you tick them.</li>'
@@ -72764,7 +72764,7 @@ _HELP_SICHER = {
           '(sans PIN : le mot de passe web). Sans les deux, «Arrêt» ne marche que sur la page de MoveEye. Les PIN erronés bloquent comme sur la page web '
           '(dès 3, alarme vol). «Fausse alarme» et «Sirène» marchent toujours d’un toucher.</li>'
           '<li><b>Après une coupure de courant ou un plantage</b>, une notification dit combien de temps MoveEye était éteint et si la protection tourne à nouveau. Pas après une mise à jour ou un redémarrage.</li>'
-          '<li><b>◉ Vue lumière rouge</b> (3e étape du bouton «clair / sombre» en haut : clair → sombre → lumière rouge) : toute la page très sombre et rouge, l’image en direct atténuée – pour un bref coup d’œil dans la tente. '
+          '<li><b>◉ Vue lumière rouge</b> (3e étape du bouton «clair / sombre» en haut : clair → lumière rouge → sombre) : toute la page très sombre et rouge, l’image en direct atténuée – pour un bref coup d’œil dans la tente. '
           'Chaque navigateur s’en souvient. Dans la fenêtre le même bouton ◐.</li>'
           '<li><b>Supprimer les enregistrements après … jours</b> (Réglages → Enregistrement, 0 = jamais) – en plus de la limite de taille. '
           '«🧹 Vacances finies : supprimer tous les enregistrements» demande confirmation ; les favoris ⭐ restent, sauf si tu les coches.</li>'
@@ -72775,7 +72775,7 @@ _HELP_SICHER = {
           '(senza PIN: la password web). Senza entrambi, «Spento» funziona solo sulla pagina di MoveEye. I PIN errati bloccano come sulla pagina web '
           '(da 3 allarme furto). «Falso allarme» e «Sirena» funzionano sempre con un tocco.</li>'
           '<li><b>Dopo un’interruzione di corrente o un arresto</b> una notifica dice per quanto tempo MoveEye è stato spento e se la protezione è di nuovo attiva. Non dopo un aggiornamento o un riavvio.</li>'
-          '<li><b>◉ Vista luce rossa</b> (3° passo del pulsante «chiaro / scuro» in alto: chiaro → scuro → luce rossa): tutta la pagina molto scura e rossa, l’immagine live attenuata – per un breve sguardo nella tenda. '
+          '<li><b>◉ Vista luce rossa</b> (3° passo del pulsante «chiaro / scuro» in alto: chiaro → luce rossa → scuro): tutta la pagina molto scura e rossa, l’immagine live attenuata – per un breve sguardo nella tenda. '
           'Ogni browser se lo ricorda. Nella finestra lo stesso pulsante ◐.</li>'
           '<li><b>Eliminare le registrazioni dopo … giorni</b> (Impostazioni → Registrazione, 0 = mai) – oltre al limite di dimensione. '
           '«🧹 Vacanze finite: eliminare tutte le registrazioni» chiede conferma; i preferiti ⭐ restano, a meno di spuntarli.</li>'
