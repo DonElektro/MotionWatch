@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_37.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_38.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.38: Live-Bild: wird das Bild nach dem Wechseln der Reiter wieder sichtbar, holt die Seite einen frischen Bildstrom
+    (vorher blieb es auf dem iPhone manchmal schwarz); solange kein Bild da ist, zeigt eine Sanduhr ⏳ «Bild wird geladen –
+    tippen zum Neuladen».
   * 2.98.37: Spiel: drei feste Spiele + «Eigene Regeln», Rollen reihum, Wächter-Werkzeuge mit Energie, Hinweise für Schleicher,
     Siegerbild, Fairness; «Mensch gegen KI» (Vergleich + Trainingsbilder); online mitspielen mit Einladungslink (läuft ab,
     widerrufbar, QR, Gäste sehen nur das Spiel). Knopf Hell → Rotlicht → Dunkel (mit Simulator 3D-4.12).
@@ -950,10 +953,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_37.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_38.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_37.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_37.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_38.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_38.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -970,7 +973,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.37"
+APP_VERSION = "2.98.38"
 
 
 def default_data_dir():
@@ -30599,7 +30602,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_37.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_38.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -46346,7 +46349,9 @@ body.videoonly #vo-side{display:flex;position:absolute;top:max(10px,env(safe-are
 #vo-ctl .vbtns button.lon{background:var(--grn);border-color:var(--grn)}
 #vo-ctl .vbtns button.hit{background:rgba(47,129,247,.75);border-color:#fff}
 .vwrap.vlost{min-height:180px}
-.vwrap.vlost::after{content:"↻";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#8b9bb0;font-size:34px;animation:vspin 1.2s linear infinite}
+.vwrap.vlost::after{content:"⏳";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:42px;animation:vhour 2s ease-in-out infinite;cursor:pointer}
+.vwrap.vlost::before{content:attr(data-lost);position:absolute;left:0;right:0;bottom:18%;text-align:center;color:#8b9bb0;font-size:13px;z-index:1;pointer-events:none}
+@keyframes vhour{0%,40%{transform:rotate(0)}50%,90%{transform:rotate(180deg)}100%{transform:rotate(360deg)}}
 @keyframes vspin{to{transform:rotate(360deg)}}
 /* 2.95.77: full screen - 🚜 shows / hides the mover stick (on the other side of the camera stick; ⇆ swaps both) */
 #vo-mv{display:none}
@@ -46747,11 +46752,11 @@ function keepStream(img) {
   const base = (img.dataset.src || img.getAttribute("src") || "").split("?")[0];
   let tries = 0, timer = null;
   const box = img.parentNode;
-  const lost = on => { img.style.visibility = on ? "hidden" : ""; if (box) box.classList.toggle("vlost", on); };
+  const lost = on => { img.style.visibility = on ? "hidden" : ""; if (box) { box.classList.toggle("vlost", on); box.dataset.lost = typeof t === "function" ? t("Picture is loading – tap to reload") : "Picture is loading – tap to reload"; } };
   let iv = 0;
   // 2.95.34: a picture that was removed from the page stops its stream (otherwise every rebuilt tile kept one open)
   const alive = () => { if (img.isConnected) return true; clearInterval(iv); clearTimeout(timer); document.removeEventListener("visibilitychange", vis); img.src = ""; return false; };
-  const restart = () => { clearTimeout(timer); timer = null; if (alive()) img.src = base + "?r=" + Date.now(); };
+  const restart = () => { clearTimeout(timer); timer = null; if (alive()) { lost(true); img.src = base + "?r=" + Date.now(); } };   // 2.98.38: ⏳ until the first picture
   const later = () => { if (timer) return; lost(true); timer = setTimeout(restart, Math.min(10000, 1000 * (1 + tries++))); };
   const vis = () => { if (!document.hidden) restart(); };
   img.mwRestart = restart;                  // 2.95.72: the page fetches the picture anew when the video source changes
@@ -46759,6 +46764,11 @@ function keepStream(img) {
   img.addEventListener("load", () => { tries = 0; lost(false); });
   document.addEventListener("visibilitychange", vis);
   addEventListener("pageshow", e => { if (e.persisted) restart(); });
+  // 2.98.38 (Daniel: sometimes black after swiping through the tabs): the picture was hidden (other tab / menu) and the
+  // browser (Safari) let the stream die - when it is visible again, it gets a fresh stream; a tap on ⏳ also restarts
+  let shown = true;
+  try { new IntersectionObserver(es => { const v = es.some(e => e.isIntersecting); if (v && !shown) restart(); shown = v; }).observe(img); } catch (e) {}
+  if (box) box.addEventListener("click", ev => { if (box.classList.contains("vlost")) { ev.stopPropagation(); tries = 0; restart(); } }, true);
   iv = setInterval(() => {
     if (!alive() || document.hidden) return;
     if (img.naturalWidth) { if (!timer) { tries = 0; lost(false); } }
@@ -46987,7 +46997,7 @@ Object.assign(I18N.de, {
   "Press «Battery is full now» after charging.": "Nach dem Laden «Akku ist jetzt voll» drücken.", "about": "ca.", "left": "übrig",
   "estimated": "geschätzt", "Night report sent": "Nachtbericht gesendet", "Not sent – push messages are not set up": "Nicht gesendet – Push-Nachrichten sind nicht eingerichtet",
   "End guest access? The link stops working at once.": "Gast-Zugang beenden? Der Link funktioniert sofort nicht mehr.",
-  "Link copied": "Link kopiert", "Copy the link from the field": "Link aus dem Feld kopieren", "Battery marked as full": "Akku als voll markiert",
+  "Link copied": "Link kopiert", "Picture is loading – tap to reload": "Bild wird geladen – tippen zum Neuladen", "Copy the link from the field": "Link aus dem Feld kopieren", "Battery marked as full": "Akku als voll markiert",
   "g-note": "Ein Link für Familie oder Mitcamper: Sie sehen nur das Live-Bild und können nichts verstellen. Der Gast muss den Pi erreichen können – im selben WLAN / Hotspot oder über Tailscale. Ein neuer Link macht den alten ungültig.",
   "b-note": "USV-Akku (Akku-Modul auf dem Pi): wird selbst erkannt und echt gemessen. Sonst Schätzung für die Powerbank: Kapazität minus Verbrauch seit «Akku ist jetzt voll».", "Presence": "Anwesenheit", "Security warning": "Sicherheitswarnung",
   "⚠ no password": "⚠ kein Passwort", "Saved": "Gespeichert", "Clear": "Löschen", "set": "gesetzt", "Test notification": "Test-Nachricht senden", "Test all channels": "Alle Kanäle testen", "testing …": "teste …", "No channel set up.": "Kein Kanal eingerichtet.",
@@ -58817,7 +58827,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.37")
+        self.root.title("MoveEye 2.98.38")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -59184,7 +59194,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.37 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.38 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -65791,7 +65801,7 @@ SELFTEST_EXTRA.append(("Automatic head movement (180 / 360° servos, smart round
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 168                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 169                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -78615,6 +78625,12 @@ for _k, _v in _HX_SERVO.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 WEB_PAGE = WEB_PAGE.replace("<!--SERVOJS-->", servo_live_js(), 1)       # the script of 539 with the German texts
+_HX_BILDLADE = {'Picture is loading – tap to reload': ('Bild wird geladen – tippen zum Neuladen', 'Image en cours de chargement – touchez pour recharger',
+                                                      'Immagine in caricamento – tocca per ricaricare', 'Il maletg chargia – tutgar per chargiar danovamain')}
+for _k, (_de, _fr, _it, _rm) in _HX_BILDLADE.items():
+    DE.setdefault(_k, _de)
+    for _l, _v in (("fr", _fr), ("it", _it), ("rm", _rm)):
+        TRX[_l].setdefault(_k, _v)
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

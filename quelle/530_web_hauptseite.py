@@ -341,7 +341,9 @@ body.videoonly #vo-side{display:flex;position:absolute;top:max(10px,env(safe-are
 #vo-ctl .vbtns button.lon{background:var(--grn);border-color:var(--grn)}
 #vo-ctl .vbtns button.hit{background:rgba(47,129,247,.75);border-color:#fff}
 .vwrap.vlost{min-height:180px}
-.vwrap.vlost::after{content:"↻";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#8b9bb0;font-size:34px;animation:vspin 1.2s linear infinite}
+.vwrap.vlost::after{content:"⏳";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:42px;animation:vhour 2s ease-in-out infinite;cursor:pointer}
+.vwrap.vlost::before{content:attr(data-lost);position:absolute;left:0;right:0;bottom:18%;text-align:center;color:#8b9bb0;font-size:13px;z-index:1;pointer-events:none}
+@keyframes vhour{0%,40%{transform:rotate(0)}50%,90%{transform:rotate(180deg)}100%{transform:rotate(360deg)}}
 @keyframes vspin{to{transform:rotate(360deg)}}
 /* 2.95.77: full screen - 🚜 shows / hides the mover stick (on the other side of the camera stick; ⇆ swaps both) */
 #vo-mv{display:none}
@@ -742,11 +744,11 @@ function keepStream(img) {
   const base = (img.dataset.src || img.getAttribute("src") || "").split("?")[0];
   let tries = 0, timer = null;
   const box = img.parentNode;
-  const lost = on => { img.style.visibility = on ? "hidden" : ""; if (box) box.classList.toggle("vlost", on); };
+  const lost = on => { img.style.visibility = on ? "hidden" : ""; if (box) { box.classList.toggle("vlost", on); box.dataset.lost = typeof t === "function" ? t("Picture is loading – tap to reload") : "Picture is loading – tap to reload"; } };
   let iv = 0;
   // 2.95.34: a picture that was removed from the page stops its stream (otherwise every rebuilt tile kept one open)
   const alive = () => { if (img.isConnected) return true; clearInterval(iv); clearTimeout(timer); document.removeEventListener("visibilitychange", vis); img.src = ""; return false; };
-  const restart = () => { clearTimeout(timer); timer = null; if (alive()) img.src = base + "?r=" + Date.now(); };
+  const restart = () => { clearTimeout(timer); timer = null; if (alive()) { lost(true); img.src = base + "?r=" + Date.now(); } };   // 2.98.38: ⏳ until the first picture
   const later = () => { if (timer) return; lost(true); timer = setTimeout(restart, Math.min(10000, 1000 * (1 + tries++))); };
   const vis = () => { if (!document.hidden) restart(); };
   img.mwRestart = restart;                  // 2.95.72: the page fetches the picture anew when the video source changes
@@ -754,6 +756,11 @@ function keepStream(img) {
   img.addEventListener("load", () => { tries = 0; lost(false); });
   document.addEventListener("visibilitychange", vis);
   addEventListener("pageshow", e => { if (e.persisted) restart(); });
+  // 2.98.38 (Daniel: sometimes black after swiping through the tabs): the picture was hidden (other tab / menu) and the
+  // browser (Safari) let the stream die - when it is visible again, it gets a fresh stream; a tap on ⏳ also restarts
+  let shown = true;
+  try { new IntersectionObserver(es => { const v = es.some(e => e.isIntersecting); if (v && !shown) restart(); shown = v; }).observe(img); } catch (e) {}
+  if (box) box.addEventListener("click", ev => { if (box.classList.contains("vlost")) { ev.stopPropagation(); tries = 0; restart(); } }, true);
   iv = setInterval(() => {
     if (!alive() || document.hidden) return;
     if (img.naturalWidth) { if (!timer) { tries = 0; lost(false); } }
@@ -982,7 +989,7 @@ Object.assign(I18N.de, {
   "Press «Battery is full now» after charging.": "Nach dem Laden «Akku ist jetzt voll» drücken.", "about": "ca.", "left": "übrig",
   "estimated": "geschätzt", "Night report sent": "Nachtbericht gesendet", "Not sent – push messages are not set up": "Nicht gesendet – Push-Nachrichten sind nicht eingerichtet",
   "End guest access? The link stops working at once.": "Gast-Zugang beenden? Der Link funktioniert sofort nicht mehr.",
-  "Link copied": "Link kopiert", "Copy the link from the field": "Link aus dem Feld kopieren", "Battery marked as full": "Akku als voll markiert",
+  "Link copied": "Link kopiert", "Picture is loading – tap to reload": "Bild wird geladen – tippen zum Neuladen", "Copy the link from the field": "Link aus dem Feld kopieren", "Battery marked as full": "Akku als voll markiert",
   "g-note": "Ein Link für Familie oder Mitcamper: Sie sehen nur das Live-Bild und können nichts verstellen. Der Gast muss den Pi erreichen können – im selben WLAN / Hotspot oder über Tailscale. Ein neuer Link macht den alten ungültig.",
   "b-note": "USV-Akku (Akku-Modul auf dem Pi): wird selbst erkannt und echt gemessen. Sonst Schätzung für die Powerbank: Kapazität minus Verbrauch seit «Akku ist jetzt voll».", "Presence": "Anwesenheit", "Security warning": "Sicherheitswarnung",
   "⚠ no password": "⚠ kein Passwort", "Saved": "Gespeichert", "Clear": "Löschen", "set": "gesetzt", "Test notification": "Test-Nachricht senden", "Test all channels": "Alle Kanäle testen", "testing …": "teste …", "No channel set up.": "Kein Kanal eingerichtet.",

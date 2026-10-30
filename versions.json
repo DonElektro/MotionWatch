@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 04:05",
+ "generated": "2026-10-30 04:13",
  "versions": [
   {
-   "version": "2.98.37",
-   "file": "webcam_bewegung_2_98_37.py",
+   "version": "2.98.38",
+   "file": "webcam_bewegung_2_98_38.py",
    "url": "",
-   "sha256": "48cccc848cef2904ff39b2098972ebb3e0afbb9e2c4161dff3fec9afb38d34ed",
-   "date": "2026-10-30 04:05",
-   "notes": "Spiel: drei feste Spiele + «Eigene Regeln», Rollen reihum, Wächter-Werkzeuge mit Energie, Hinweise für Schleicher, Siegerbild, Fairness; «Mensch gegen KI» (Vergleich + Trainingsbilder); online mitspielen mit Einladungslink (läuft ab, widerrufbar, QR, Gäste sehen nur das Spiel). Knopf Hell → Rotlicht → Dunkel (mit Simulator 3D-4.12).",
-   "sig": "e2d832cc8ef5eece7443c88f7b83a756ea4724f6ddc0411818ac730232f154d1c7d5698c1ad46f3bb7a07d5f377d068deb3a8a403039e560a71851ccd1d25e08"
+   "sha256": "96698c8b8cec63c1f5e8ee63eb5da59442e609096ce081f3b391cc75801c64c6",
+   "date": "2026-10-30 04:13",
+   "notes": "Live-Bild: wird das Bild nach dem Wechseln der Reiter wieder sichtbar, holt die Seite einen frischen Bildstrom (vorher blieb es auf dem iPhone manchmal schwarz); solange kein Bild da ist, zeigt eine Sanduhr ⏳ «Bild wird geladen – tippen zum Neuladen».",
+   "sig": "8a21982ab11c382c3700a764b17a8cf9a89da2e20364d964c79f3db9f8c3b3e041d60cec8f0558580fbd23efd6351aa4ebcc833e55366288729fb32710da1d0d"
   },
   {
    "version": "2.97.1",
