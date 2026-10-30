@@ -92,7 +92,7 @@ const COLORS := {
 }
 
 
-const PERSON_VARIANTS := ["child", "jogger", "cyclist", "stroller", "drunk", "courier", "police", "burglar", "elderly"]   # 3D-3.95: elderly
+const PERSON_VARIANTS := ["child", "jogger", "cyclist", "stroller", "drunk", "courier", "police", "burglar", "elderly", "escooter", "wheelchair"]   # 3D-3.95: elderly; 3D-4.x: E-Trottinett, Rollstuhl (umgebung.gd)
 var _eye_t := 0.0                          # 3D-3.95: eye shine follows where the animal looks
 var _bike_lamps := false
 var bike_lamp: Array = []                 # [spot, front material, rear material]
@@ -461,6 +461,26 @@ func _person_extras(jacket: Color, cloth_t: float) -> void:
 			_part(torso, _box(0.36, 0.06, 0.36), Vector3(0, 0.18, -0.32), Color(0.85, 0.75, 0.55), 45.0)   # warm pizza box
 			_part(torso, _box(0.34, 0.4, 0.22), Vector3(0, 0.3, 0.2), jacket.darkened(0.3), cloth_t)          # delivery bag
 			_part(head, _sph(0.125, 0.16), Vector3(0, 0.22, 0.0), jacket.lightened(0.2), 26.0)               # helmet
+		"escooter":                                                            # 3D-4.x: standing on an e-scooter (umgebung.gd)
+			var sc := _pivot(body_root, Vector3.ZERO)
+			_part(sc, _box(0.16, 0.05, 0.75), Vector3(0, 0.1, 0), Color(0.12, 0.12, 0.13), main.ambient + 3.0)
+			_part(sc, _cyl(0.02, 0.02, 1.05, 6), Vector3(0, 0.6, -0.36), Color(0.2, 0.2, 0.22), main.ambient + 1.0, Vector3(-0.12, 0, 0))
+			_part(sc, _cyl(0.014, 0.014, 0.48, 6), Vector3(0, 1.12, -0.42), Color(0.1, 0.1, 0.1), main.ambient, Vector3(0, 0, PI / 2))
+			for z in [-0.38, 0.36]:
+				var we := _pivot(sc, Vector3(0, 0.1, z))
+				_part(we, _cyl(0.1, 0.1, 0.05, 14), Vector3.ZERO, Color(0.06, 0.06, 0.06), main.ambient + 5.0, Vector3(0, 0, PI / 2))
+				wheels.append([we, 0.1])
+			body_root.position.y = 0.12
+		"wheelchair":                                                          # 3D-4.x: sitting in a wheelchair (umgebung.gd)
+			var wc := _pivot(body_root, Vector3.ZERO)
+			_part(wc, _box(0.46, 0.05, 0.45), Vector3(0, 0.5, 0.02), Color(0.15, 0.15, 0.18), main.ambient + 2.0)
+			_part(wc, _box(0.46, 0.45, 0.04), Vector3(0, 0.78, 0.24), Color(0.15, 0.15, 0.18), main.ambient + 2.0)
+			for sx in [-0.27, 0.27]:
+				var ww := _pivot(wc, Vector3(sx, 0.3, 0.1))
+				_part(ww, _cyl(0.3, 0.3, 0.03, 18), Vector3.ZERO, Color(0.08, 0.08, 0.08), main.ambient + 3.0, Vector3(0, 0, PI / 2))
+				wheels.append([ww, 0.3])
+				_part(wc, _cyl(0.06, 0.06, 0.03, 10), Vector3(sx * 0.8, 0.06, -0.3), Color(0.08, 0.08, 0.08), main.ambient + 3.0, Vector3(0, 0, PI / 2))
+			body_root.position.y = -0.38
 		"stroller":
 			var pr := _pivot(body_root, Vector3(0, 0, -0.85))
 			_part(pr, _box(0.5, 0.32, 0.75), Vector3(0, 0.62, 0), Color(0.2, 0.25, 0.32), main.ambient + 2.0)
@@ -1245,6 +1265,9 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 	if variant == "cyclist":
 		_animate_cyclist(dt, spd, k)
 		return
+	if variant in ["escooter", "wheelchair"]:
+		_animate_ride(dt, spd, k)
+		return
 	var run_f: float = clamp((spd - 1.8) / 1.5, 0.0, 1.0)
 	var jog := variant == "jogger"
 	var em: String = emote if now < emote_until else ""
@@ -1461,6 +1484,25 @@ func _dizzy(dt: float, t: float) -> void:
 		body_root.rotation = Vector3.ZERO
 		fled = false
 		scare()
+
+
+func _animate_ride(dt: float, spd: float, k: float) -> void:
+	"""3D-4.x: on the e-scooter (standing, one foot ahead, hands on the bar) or in the wheelchair (sitting, the arms push)"""
+	phase += dt * (1.5 + spd * 0.8)
+	var sit := variant == "wheelchair"
+	for l in legs:
+		var hf: float = (1.5 if sit else (0.18 if l[1] > 0 else -0.08))
+		l[0].rotation.x = lerp(l[0].rotation.x, hf, k)
+		if l[2] != null:
+			l[2].rotation.x = lerp(l[2].rotation.x, (-1.5 if sit else -0.12), k)
+	if torso != null:
+		torso.rotation.x = lerp(torso.rotation.x, -0.12 if sit else -0.05, k)
+	for a2 in arms:
+		var push: float = (0.35 + 0.45 * maxf(0.0, sin(phase))) if sit and spd > 0.1 else (0.25 if sit else 0.85)
+		a2[0].rotation.x = lerp(a2[0].rotation.x, push, k)
+		a2[0].rotation.z = lerp(a2[0].rotation.z, (0.35 if sit else 0.1) * a2[1], k)
+		if a2.size() > 2:
+			a2[2].rotation.x = lerp(a2[2].rotation.x, 0.5 if sit else 0.3, k)
 
 
 func _animate_cyclist(dt: float, spd: float, k: float) -> void:

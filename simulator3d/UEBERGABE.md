@@ -4,6 +4,43 @@ Stand: 30.10.2026 · Simulator-Version **3D-4.20** · passende MoveEye-Version (
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
+## NEU (Entwurf, Zweig wt-objekte): Gegenstände und Umgebung wie echt (`objekte_neu.gd`, `objekte_plus.gd`, `umgebung.gd`)
+
+- **`scripts/objekte_neu.gd`** (nur Daten, Format wie objects.gd): 57 neue Dinge in 5 neuen Katalog-Reitern (Wertsachen, Camping,
+  Garten & Haus, Lockt Tiere an, Fehlalarm-Quellen) + neues Obst / Essen im Reiter «Essen» und die Strassenlampe in «Draussen».
+  Neu im Format: Teil «f» = Stoff mit `flap.gdshader` (flattert im Wind), Farbe «*…» = leuchtet, 12. Feld = Rolle (bewegliches Teil:
+  «fruit» oder ein Drehpunkt aus «piv»), «w» als Zahl = °C, «steal» / «wind» / «lure» / «fx». `coco` "" = die KI kennt es nicht.
+  objects.gd: `Obj.def(kind)`, `Obj.kinds()`, `Obj.cats()`; inventar.gd nimmt diese statt `Obj.OBJ` / `Obj.CATS` (Kachel «KI: –»).
+- **`scripts/objekte_plus.gd`** (Knoten `main.objplus`, `user://objekte_plus.json`): `on_placed(n, kind)` (aus inventar.add_object) gibt
+  jedem Ding sein Verhalten: Wind (`main.wind * gust()`): Früchte fallen (ab 22 km/h, liegen dann und locken Reh / Wildschwein / Igel),
+  Hängematte, Windspiel, Ballon, Tonnendeckel, Gartentor, Plastiksack (wandert), Stoff über `main.cloth_mats`. Licht: Strassenlampe /
+  Laterne / Solarleuchten über `main.lamps` / `main.lamp_mats` (nachts an), Lampe mit Bewegungsmelder (45 s nach der letzten Bewegung
+  in 8 m), Fernseher flackert (18:30–0:40), Kerze / Lagerfeuer flackern (+ Funken). Rauch / Dampf / Bienen (CPUParticles, Gruppe «smoke»).
+  Hühner am Hühnerstall (picken, nachts im Stall). **Wertsachen** kommen in `main.test_props` (Name wie die Kachel, z. B. «Kamera»,
+  zweite «Kamera 2») → «Bewachte Sachen», Referenz-Scan, Spielziel «Diebstahl». Handy, Handtasche, Laptop (objects.gd) auch (`STEAL_OLD`).
+  **Lockmittel:** Futternapf, Abfallsack, offene Kühlbox, Obst auf dem Tisch, Mülltonne, Chipstüte → `send_lure()`: passendes Tier
+  (nachts Fuchs / Wildschwein / Marder / Dachs / Igel, tags Katze / Eichhörnchen / Reh) kommt, schnüffelt / wühlt 14–30 s, geht.
+  Von selbst nur mit «Besucher von selbst» (Schalter Besuch → Verhalten «Tiere kommen absichtlich …», Knopf in «Tiere schicken»).
+- **Spiel «Diebstahl»** (gameplus.gd / gamewiz.gd): Auswahl «was wird geklaut?» + alle Wertsachen (`gamewiz.theft_opts()`); fehlt die
+  gewählte Wertsache, stellt `objplus.ensure_valuable()` sie neben das Zelt. «zufällig» nimmt auch hingestellte Wertsachen.
+  `gameplus.theft_info(nm)` statt `THEFT_OBJ[nm]`. MoveEye merkt das Fehlen wie bisher über Referenz-Scan / Vergleich.
+- **`scripts/umgebung.gd`** (Knoten `main.umgebung`, `user://umgebung.json`, `on_scene()` nach simreal): Schalter in
+  Kamerabild → Schwierige Bedingungen (u_lamps Lampe mit Bewegungsmelder + Fenster mit Fernseher, u_reflect Pfützen spiegeln +
+  Spritzer, u_smoke Rauch / Dampf / Funken / Nebelschwaden, u_insects Mücken-Schwarm, u_doors Gartentor + Mülltonne im Bild),
+  Wetter → Natur und Wind (u_plants fallende Blätter Sep–Nov, Schnee fällt in Böen von den Ästen; u_tracks Spuren im Schnee / Matsch
+  bleiben, MultiMesh 600; u_steps Schritte auf Kies / Laub / Schnee → `add_sound`), Besuch → Von selbst (u_vehicles).
+  Was ins Bild stellt (u_lamps, u_doors, u_insects, u_vehicles) ist **aus**, damit der Prüfstand vergleichbar bleibt.
+  Neue Besucher (main.spawn → `umgebung.spawn_kind`): `e_trotti`, `rollstuhl` (Personen: actor.gd-Varianten «escooter» /
+  «wheelchair»), `delivery_bot`, `robomower` (keine Personen, eigene Fahrer), `cat_fence` (Zaun + Katze, simreal-Track «roof»),
+  `chickens` (Hühnerstall), `hedgehog_bowl` (Futternapf + Igel). Grafik «einfach»: keine Partikel, keine kleinen Lichter.
+- **Prüfstand-Plan «gegenstaende»** (testrun.gd, «props»: true): `objplus.test_place()` stellt TEST_SET (18 Dinge, 2 mit COCO-Namen: Futternapf, Campingstuhl)
+  vor die Kopfkamera, Phasen Tag mit Böen / Dämmerung / Nacht IR, Besuche «lure» (Tier zum Lockmittel) und Roboter (zählen nicht als
+  Wahrheit). Bericht `szene` = `{art: gegenstaende, dinge, ki_kennt, ki_kennt_nicht, lockmittel_tiere, lockmittel_angekommen,
+  push_falsch, push_richtig}`. pruefstand.py kennt den Plan; GitHub nur sonntags (pruefstand.yml), nicht in «quick».
+- Test-Aktionen: `{"action": "objekte", "do": info | lure | test_place | test_clear | set}`, `{"action": "umgebung", "do": info |
+  set (key, value) | spawn (kind) | snow_puff | clear_tracks}` (nicht in schnittstelle.json: MoveEye braucht sie nicht).
+- main.gd: nur Knoten, `on_scene`, `spawn`-Haken, `add_controls`, zwei Aktionen. actor.gd: zwei Personen-Varianten + `_animate_ride`.
+
 ## NEU in 3D-4.20 (MoveEye 2.98.49): Simulator «wie echt» – Lautsprecher, Servo-Störungen, Thermal-90 (`simint.gd`)
 
 - `scripts/simint.gd` (Knoten `simint` in main.gd, eigene Datei `user://simint.json`), Antwort an MoveEye über net.gd (`rep.merge(simint.reply())`, nicht in world_reply):

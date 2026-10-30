@@ -288,6 +288,8 @@ var weit                              # weitwinkel.gd (3D-4.17): camera 1 = the 
 var parcours                          # parcours.gd (3D-4.18): «Verfolgungs-Parcours» - lessons, ground truth, game «Entkomme der Kamera»
 var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Zwilling» - photo / panorama of the real place
 var fauna                             # fauna.gd (3D-3.95)
+var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»): wind, light, lures, valuables of the catalogue
+var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
 var colors_on := true
 var tracks                            # tracks.gd (3D-3.98)
@@ -396,6 +398,12 @@ func _ready() -> void:
 	zwilling = preload("res://scripts/zwilling.gd").new()    # 3D-4.4: your place as a twin (photo behind the scene)
 	zwilling.main = self
 	add_child(zwilling)
+	objplus = preload("res://scripts/objekte_plus.gd").new()  # 3D-4.x «Gegenstände»: what the new things of the catalogue do
+	objplus.main = self
+	add_child(objplus)
+	umgebung = preload("res://scripts/umgebung.gd").new()     # 3D-4.x: the surroundings like real (every part can be switched off)
+	umgebung.main = self
+	add_child(umgebung)
 	fauna = preload("res://scripts/fauna.gd").new()          # 3D-3.95: birds and bats
 	fauna.main = self
 	add_child(fauna)
@@ -935,6 +943,8 @@ func _build_scene() -> void:
 		zwilling.on_scene()                      # 3D-4.4: the photo of the real place, tent and car by hand (first: the tent moves obj["pir"])
 	if simreal != null:
 		simreal.on_scene()                       # 3D-4.4: tarp, pennant, road sign
+	if umgebung != null:
+		umgebung.on_scene()                      # 3D-4.x: neighbour's lamp, puddles, fog wisps, tracks …
 	if szenen != null:
 		szenen.on_scene()                        # 3D-4.x: the neighbours of «Voller Campingplatz»
 	if scene == "ort" and not geo.loaded and not geo.busy and ort_lat != 0.0:
@@ -2844,6 +2854,8 @@ func time_scale_visitors() -> float:
 func spawn(kind: String, from = null, to = null) -> Node3D:
 	if simreal != null and simreal.is_kind(kind):
 		return simreal.spawn_kind(kind, from, to)     # 3D-4.4: hood, backpack, phoning, groups, edge sneaker, deer lying ...
+	if umgebung != null and umgebung.is_kind(kind):
+		return umgebung.spawn_kind(kind, from, to)    # 3D-4.x: e-scooter, wheelchair, robots, cat on the fence, chickens …
 	if szenen != null and szenen.is_kind(kind):
 		return szenen.spawn_kind(kind, from, to)      # 3D-4.x: on your pitch, camouflage / crawling, bike thief (szenenplus.gd)
 	if kids_on and not kids_scary and kind in ["wolf", "lynx", "boar"]:
@@ -3395,6 +3407,8 @@ func _register_controls() -> void:
 		var key: String = cd[0]
 		add_control("toggle", "cond_" + key, cd[1], func(): return cond[key], func(v): cond[key] = bool(v), "Kamerabild")
 	simreal.add_controls()                                 # 3D-4.4: closer to the real device
+	objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
+	umgebung.add_controls()                                # 3D-4.x: surroundings like real
 	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
 	if smalltv != null:
 		smalltv.add_controls()                             # 3D-4.19: Sensoren → Zusatz-Bildschirm (virtueller SmallTV)
@@ -4094,6 +4108,10 @@ func _control(d: Dictionary) -> Dictionary:
 		return szenen.control(d)
 	elif a == "simreal":                               # 3D-4.4: {do: info | set (key, value) | sweep | bird | spawn (kind, from, to)}
 		return simreal.control(d)
+	elif a == "objekte":                               # 3D-4.x «Gegenstände»: {do: info | lure | test_place | test_clear | set}
+		return objplus.control(d)
+	elif a == "umgebung":                              # 3D-4.x: {do: info | set (key, value) | spawn (kind) | snow_puff | clear_tracks}
+		return umgebung.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
 		return weit.control(d)
 	elif a == "parcours":                              # 3D-4.18: {do: info | start (lessons, night, seed, prep_s) | stop | state | result | game | steer ...}

@@ -49,6 +49,15 @@ const PX_KEYS := ["game_wx", "game_gear", "game_theft"]
 const RX_KEYS := ["game_rotate", "game_tools", "game_fair", "game_vibe", "game_shade", "game_glevel", "game_real"]
 const Rules = preload("res://scripts/gamerules.gd")      # Balance 30.10.2026: the ONE text for levels and the guard
 const THEFT_OPTS := [["auto", "zufällig"], ["Velo", "🚲 das Velo"], ["Kühlboxen", "🧊 die Kühlbox (nur Camping-Platz)"]]
+const ObjPlus = preload("res://scripts/objekte_plus.gd")
+
+
+static func theft_opts() -> Array:
+	"""3D-4.x «Gegenstände»: + every valuable of the catalogue (it is put beside your tent if it is not in the scene)"""
+	var o: Array = THEFT_OPTS.duplicate()
+	for e in ObjPlus.steal_kinds():
+		o.append([e[0], str(e[1]) + " (wird hingestellt)"])
+	return o
 # 3D-3.77: on the last step - who plays along
 const PLAYER_OPTS := [["game_bots", "Computer-Spieler (Bots)", "select", 0, 0, "", false, [["0", "keine"], ["1", "1 Bot"], ["2", "2 Bots"], ["3", "3 Bots"]]],
 		["game_botguard", "🤖 Bot-Wächter, wenn niemand Wächter sein will (Spielart «Wächter»)", "toggle", 0, 0, "", false],
@@ -443,6 +452,8 @@ func model() -> Dictionary:
 				d["options"] = o[7] if o.size() > 7 else LIVES
 				if o[0] == "game_glevel":
 					d["options"] = Rules.glevel_options()
+				elif o[0] == "game_theft":
+					d["options"] = theft_opts()          # 3D-4.x: + the valuables of the catalogue
 			opts.append(d)
 	var summary := []
 	if step == 3:
@@ -476,7 +487,7 @@ func model() -> Dictionary:
 		if fp != "":
 			summary.append(["Fairness", fp.trim_prefix("⚖ ") + " (mit den Spielern, die jetzt dabei sind)"])
 		if str(W.get("game_goal")) == "theft":
-			for th in THEFT_OPTS:
+			for th in theft_opts():
 				if th[0] == str(W.get("game_theft", "auto")):
 					summary.append(["Wird geklaut", th[1]])
 		if jg():
