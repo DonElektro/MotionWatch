@@ -311,11 +311,16 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
     };
     TOUR.key = ev => { if (ev.key === "Escape") tourEnd(false); else if (ev.key === "ArrowRight" || ev.key === "Enter") go(1); else if (ev.key === "ArrowLeft") go(-1); };
     function go(d) {
-      if (!TOUR) return; const n = TOUR.i + d; if (n >= TOUR.steps.length) { tourEnd(true); return; } if (n < 0) return; TOUR.i = n; paint();
+      if (!TOUR) return; const n = TOUR.i + d; if (n >= TOUR.steps.length) { tourEnd(true); return; } if (n < 0) return; TOUR.i = n; paint(d);
     }
-    function paint() {
+    function paint(d0) {
       const s = TOUR.steps[TOUR.i], n = TOUR.steps.length; bub.textContent = "";
-      bub.append(E("b", "", s.t), E("p", "", s.x));
+      const BK = window.MWBlinki && MWBlinki.on() ? MWBlinki : null; bub.classList.toggle("bk-on", !!BK);
+      if (BK) {                                      // 589: Blinki sits next to the bubble and «speaks» it
+        const hi = !BK.seenHi() && TOUR.i === 0 ? E("p", "bk-hi", "👋 " + BK.t("Hello, I am Blinki!")) : null; if (hi) BK.markHi();
+        const r = BK.row(TOUR.i === 0 ? "normal" : TOUR.i === n - 1 ? "happy" : "point", s.t, [hi, s.x]); bub.appendChild(r);
+        if (TOUR.i > 0 && d0 > 0) BK.happyHop(r.fig, TOUR.i === n - 1 ? "happy" : "point");
+      } else bub.append(E("b", "", s.t), E("p", "", s.x));
       const gb = E("div", "gb"), dots = E("span", "dots");
       for (let k = 0; k < n; k++) { const i = E("i"); if (k === TOUR.i) i.className = "on"; dots.appendChild(i); }
       dots.setAttribute("aria-label", T("Step") + " " + (TOUR.i + 1) + " " + T("of") + " " + n);
@@ -406,17 +411,27 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
       if (cur !== "choose" && cur !== "done") {
         if (ctx.skip) foot.appendChild(BT(T("Skip"), "sec", async () => { await gpost({action: "skip", id: cur}); move(1); }));
         foot.appendChild(BT(T("Next") + " ›", "", async () => {
-          if (ctx.next) { const r = await ctx.next(); if (r === false) return; if (r === "stop") return; }
-          await gpost({action: "done", id: cur}); move(1); }));
+          if (ctx.fig && window.MWBlinki) MWBlinki.mood(ctx.fig, "think");
+          if (ctx.next) { const r = await ctx.next(); if (r === false) { if (ctx.fig) MWBlinki.mood(ctx.fig, "point"); return; } if (r === "stop") return; }
+          await gpost({action: "done", id: cur}); bkHop = true; move(1); }));
       }
     }
-    const H = (ctx, icon, title, text) => { ctx.body.append(E("h2", "", icon + " " + title)); if (text) ctx.body.appendChild(E("p", "mut", text)); };
+    let bkHop = false;
+    const H = (ctx, icon, title, text, extra) => {
+      const BK = window.MWBlinki && MWBlinki.on() ? MWBlinki : null;
+      if (!BK) { ctx.body.append(E("h2", "", icon + " " + title)); if (text) ctx.body.appendChild(E("p", "mut", text)); return; }
+      const m = cur === "choose" ? "normal" : cur === "done" ? "happy" : "point";          // 589: Blinki says the text of the step
+      const r = BK.row(m, icon + " " + title, [...(extra || []), text ? E("p", "mut", text) : null], true); ctx.body.appendChild(r); ctx.fig = r.fig;
+      if (bkHop || cur === "done") BK.happyHop(r.fig, m); bkHop = false;
+    };
     const setKey = (k, v) => P("/api/set", {key: k, value: v});
     const tgRow = (ctx, label, on, fn) => { const l = E("label", "tg"); l.append(E("span", "", label), sw(on, fn)); ctx.body.appendChild(l); return l; };
     const gotoWith = async (href) => { await gpost({action: "step", id: cur}); location.href = href; };
     const STEP = {
       async choose(ctx) {
-        H(ctx, "👋", T("Welcome to MoveEye"), T("Every step can be skipped. You can stop at any time and continue later (More → Setup)."));
+        const BK = window.MWBlinki && MWBlinki.on() ? MWBlinki : null; if (BK) BK.markHi();
+        H(ctx, "👋", T("Welcome to MoveEye"), T("Every step can be skipped. You can stop at any time and continue later (More → Setup)."),
+          BK ? [E("p", "bk-hi", BK.t("Hello, I am Blinki!")), E("p", "", BK.t("I am the eye of MoveEye. I show you everything step by step - and when I blink, all is well."))] : null);
         ctx.body.appendChild(E("p", "", T("Quick (about 5 min.) or thorough?")));
         const mk = (mode, ic, name, dur, text, cls) => { const b = BT("", "big " + cls); const bb = E("b", "", ic + " " + name + " · " + dur); b.append(bb, E("small", "", text));
           b.onclick = async () => { const r = await gpost({action: "start", mode}); if (!r.ok) { ctx.err.textContent = r.error || T("error"); return; } await refresh(); cur = order()[0] || "done"; render(); }; return b; };
@@ -624,6 +639,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
         H(ctx, "💡", titleOf("tours").title || "");
         tgRow(ctx, T("Tour of a page on its first visit"), S.guide.tours_auto, x => { B.tourAuto = x; setKey("tours_auto", x); });
         tgRow(ctx, T("Tip of the day"), S.guide.tip_of_day, x => setKey("tip_of_day", x));
+        if (window.MWBlinki) tgRow(ctx, MWBlinki.t("Show Blinki"), MWBlinki.on(), x => { MWBlinki.set(x); setKey("blinki_on", x); render(); });
         const l = E("label", "tg"), s = E("select"); s.style.width = "auto";
         ["off", "basic", "normal", "all"].forEach(k => { const o = E("option", "", T(k)); o.value = k; s.appendChild(o); });
         try { s.value = ["off", "basic", "normal", "all"][(window.MW_GUIDE || {}).level ?? 2]; } catch (e) {}
@@ -711,6 +727,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
     bt.append(start, rs); box.appendChild(bt);
     const row = (label, on, key) => { const l = E("label", "tg"); l.append(E("span", "", label), sw(on, v => P("/api/set", {key, value: v}))); box.appendChild(l); };
     row(T("Tour of a page on its first visit"), g.tours_auto, "tours_auto"); row(T("Tip of the day"), g.tip_of_day, "tip_of_day");
+    if (window.MWBlinki) { const l = E("label", "tg"); l.append(E("span", "", MWBlinki.t("Show Blinki")), sw(MWBlinki.on(), v => { MWBlinki.set(v); P("/api/set", {key: "blinki_on", value: v}); })); box.appendChild(l); }
     const sysb = document.getElementById("g2-sys"); if (!sysb) return;
     sysb.textContent = ""; sysb.className = "g2-card"; sysb.appendChild(E("h3", "", "⚙ " + T("System")));
     const sb = E("div", "btns"); sb.appendChild(BT(T("⚠ Reset to factory settings …"), "sec", g2Factory)); sysb.appendChild(sb);
