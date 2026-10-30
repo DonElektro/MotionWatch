@@ -1,12 +1,12 @@
 {
- "version": "3D-4.10",
+ "version": "3D-4.11",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31510004,
- "sha256": "46e39192ae1f7f39c01aabccbc12698f3cab26d27d4749fca17e43000bff631d",
- "notes": "Nacktes Bild für die Controller-Ansicht",
+ "size": 31539036,
+ "sha256": "37e9b039f4fa2d4324ececdc3609ba56dbafec6db423b4d85908d4cbb9cf2b9d",
+ "notes": "Auslöser im Spiel, Kopf mit Rampen",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24631949,
-  "sha256": "b012ed9f3d0e432ca1ae74130dc2aa4b5c1fec5451f3ebc72afd7e552a6cdc5d"
+  "size": 24660942,
+  "sha256": "20639d48a0ed10e22d0ea2a84a04b3a66699bfb91013125f64ba2275b494857b"
  }
 }
