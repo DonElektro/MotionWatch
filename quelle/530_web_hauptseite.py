@@ -1850,7 +1850,7 @@ const GROUPS = [                                            // 2.98.0: by goal -
    {sec: "Walking recognition", ic: "🚶"}, {sec: "Vehicle filter", ic: "🚗"}, {sec: "Rain", ic: "🌧️"}, {sec: "Wind", ic: "🌬️"}, {sec: "Low light", ic: "🌘"}, {sec: "Auto-tune", ic: "🎚️"}]},
   {id: "camera", tab: "settings", icon: "📷", name: "Cameras & head", items: [{sec: "Camera / Servos", ic: "🕹️"}, {sec: "Patrol", ic: "🔄"}, {sec: "Automatic head movement", ic: "🤖"}, {sec: "Servo motion & safety", ic: "🛑"}, {card: "source", sec: "Video source", ic: "🎥"},
    {sec: "Timelapse", ic: "⏱️"}, {sec: "Mover", title: "Mover (tracked vehicle)", ic: "🚜"}, {fine: true}, {sec: "Servo driver", ic: "🔌"}]},
-  {id: "lightsound", tab: "settings", icon: "🔌", name: "Devices & sensors", items: [{sec: "Lights", ic: "💡"}, {sec: "Microphone", ic: "🎤"}, {sec: "Loudspeaker", ic: "🔊"},
+  {id: "lightsound", tab: "settings", icon: "🔌", name: "Devices & sensors", items: [{sec: "Lights", ic: "💡"}, {sec: "Microphone", ic: "🎤"}, {sec: "Loudspeaker", ic: "🔊"}, {sec: "Extra display", title: "Extra display (SmallTV)", ic: "🖼️"},
    {card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {sec: "Extra sensors", ic: "📡"}, {sec: "Clap switch", ic: "👏"}, {sec: "Bless you", title: "«Bless you!»", ic: "🤧"},
    {sec: "Wake-up alarm", ic: "⏰"}, {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}]},
   {id: "power", tab: "settings", icon: "🔋", name: "Power supply", items: [{card: "batt", sec: "Battery", title: "Battery", ic: "🔋"}, {sec: "Power saving", ic: "🍃"}, {sec: "Solar panel", ic: "☀️"}]},
@@ -2227,6 +2227,7 @@ async function build() {
     if (sec.id === "Loudspeaker") spkExtras(d);
     if (sec.id === "Thermal camera") thExtras(d);
     if (sec.id === "Security") secExtras(d);
+    if (sec.id === "Extra display" && window.stvPanel) stvPanel(d);   // 552: GeekMagic SmallTV displays
     box.appendChild(d);
   });
 }
