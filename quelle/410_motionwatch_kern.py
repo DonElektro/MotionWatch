@@ -963,7 +963,8 @@ class MotionWatch:
                     if mk.any():
                         px = frame[mk].astype(np.uint16)
                         frame[mk] = ((px * 7 + np.array([40, 40, 255], np.uint16) * 3) // 10).astype(np.uint8)    # 30 % red
-                for t in candidates:
+                kih_clean = kihilfe_clean_stream()        # «Team gegen MoveEye» without «KI-Rahmen»: no boxes in the picture (542)
+                for t in ([] if kih_clean else candidates):
                     x, y, w, h = [int(v) for v in (t.box[0] * sx, t.box[1] * sy, t.box[2] * sx, t.box[3] * sy)]
                     draw_outline(frame, cnts, t.box, sx, sy, (255, 255, 255), 1)
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 1)
@@ -971,7 +972,7 @@ class MotionWatch:
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1, cv2.LINE_AA)
                 for obj in objects:
                     draw_object(frame, obj, sx, sy)
-                for t in persons:
+                for t in ([] if kih_clean else persons):
                     x, y, w, h = [int(v) for v in (t.box[0] * sx, t.box[1] * sy, t.box[2] * sx, t.box[3] * sy)]
                     if CFG["highlight_red"]:
                         roi = frame[max(0, y):y + h, max(0, x):x + w]

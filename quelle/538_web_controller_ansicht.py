@@ -297,7 +297,10 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     const shut = !!(window.mwShutCan && window.mwShutCan());              // 2.98.35: with the simulator R2 = the shutter («Auslöser», 539)
     if (shut && r2 > 0.5 && !GP.r2) window.mwShutFire();
     GP.r2 = r2 > 0.5;
-    if ((l2 > 0.4 || (!shut && r2 > 0.4)) && now - GP.zT > 250) { GP.zT = now; zoom(!shut && r2 > l2 ? 1 : -1); }
+    const kih = !!(window.mwKiOn && window.mwKiOn());                     // KI-Hilfe (542): in a round of «Team gegen MoveEye» L2 = the next help
+    if (kih && l2 > 0.5 && !GP.l2) window.mwKiCycle();
+    GP.l2 = l2 > 0.5;
+    if (((l2 > 0.4 && !kih) || (!shut && r2 > 0.4)) && now - GP.zT > 250) { GP.zT = now; zoom(!shut && r2 > l2 ? 1 : -1); }
     if (down(10)) act("center");                                           // L3
     if (down(11)) sim({view: "rnext"}).then(r => { if (r && r.ok) toastT("👁 " + T(VIEWNAME[r.view] || "Free view")); });   // R3
     const K = KEYS(), byKey = k => Object.keys(K).find(id => K[id] === k);

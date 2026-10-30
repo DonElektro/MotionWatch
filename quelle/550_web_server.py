@@ -410,6 +410,8 @@ class WebStream:
                         log_event("sim", f"False alarm marked: a shot of {q_['who'] or 'MoveEye'} into the simulation missed")
                     SIMGAME["t"] = 0.0
                     return reply(r)
+                if act_ == "kihilfe":                        # «KI-Hilfe» of the guards at MoveEye (542, simulator gamekihilfe.gd)
+                    return reply(*kihilfe_api(d, getattr(g, "user", ""), lang))
                 if act_ == "game_mwcatch":                   # «Team gegen MoveEye»: «Erwischt!» from this page (3D-3.27)
                     try:
                         q_ = {"action": "game_mwcatch", "who": str(d.get("who") or getattr(g, "user", "") or "")[:30]}
