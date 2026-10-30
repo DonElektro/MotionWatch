@@ -24,6 +24,7 @@
     "head_deg": "wo der simulierte Kopf wirklich steht -> 539 /api/servo",
     "wide": "Halterung der Weitwinkel-Kamera -> 163 weit_from_sim",
     "game_live": "das Spiel in wenigen Zahlen -> 552 SmallTV, 150 TV-Anzeige (559), Simulator tv.gd",
+    "buttons": "Tasten am Geraet (Schutz, Alarm quittieren): down / held_ms / seq / last_ms wie ein GPIO -> 163a led_sim_buttons (599c simvals_take), Simulator statusled.gd",
     "pi_temp": "CPU-Temperatur des Pi im Gehaeuse -> 285",
     "net": "Test-Schalter WLAN weg / Internet weg -> 285 sim_net_down, 110, Uebung Netz (141/565)",
     "clock": "Datum, Stunde, Zeitraffer -> 285 sim_now",
@@ -50,6 +51,7 @@
     "sound": "Sirene / Sprechen -> Simulator Ton, Tiere fliehen",
     "simtask_de": "was MoveEye gerade mit dem Simulator macht (eine Sperre, 147) -> main.gd",
     "eco": "Strom sparen -> Simulator rechnet langsamer",
+    "lang": "Sprache von MoveEye (de, fr, it, rm, en) -> Simulator i18n.gd (Texte in dieser Sprache, wenn im Simulator keine gewaehlt ist)",
     "sim_files": "Pruefsummen der Python-Simulator-Dateien -> nur Python-Simulator (Selbst-Update); an den 3D-Simulator leer",
     "mw_scheme": "http / https -> Simulator Links zu MoveEye",
     "mw_port": "Port von MoveEye -> Simulator Links zu MoveEye",
@@ -59,7 +61,9 @@
     "drive": "Mover-Ketten -> Simulator Rover",
     "zones": "Zonen -> Simulator Zwilling",
     "waypoints": "Patrouille-Punkte -> Simulator Zwilling",
-    "ups_mah": "Akku-Groesse einer Zelle (Einstellung ups_mah) -> power.gd: Kapazitaet nur lesbar «von MoveEye»"
+    "ups_mah": "Akku-Groesse einer Zelle (Einstellung ups_mah) -> power.gd: Kapazitaet nur lesbar «von MoveEye»",
+    "dev_area": "Entwickler-Bereich von MoveEye an (639d) -> main.gd: Gruppe «Entwickler» im Simulator",
+    "led": "Status-LED auf dem Kopf: rgb, br, layer (alarm / fault / heartbeat ...), hb-Zaehler, Text -> Simulator statusled.gd (Kugel auf dem Kopf, Fenster Geraet)"
   },
   "info": {
     "v": "Version",

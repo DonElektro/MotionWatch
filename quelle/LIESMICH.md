@@ -62,6 +62,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `160_netzautomatik_patrouille.py` | Netz-Automatik, Patrouille | 160 |
 | `162_kopf_auto.py` | Automatische Kopfbewegung: ein Koordinator (Hand > Alarm/Folgen > Gehtest > Wertsachen-Blick > Runde > Parken, Simulator-Sperre), kluge Runde (place_items / Wegpunkte), zum Alarm drehen (Bildrand, Wärmefleck, Geräusch mit Zugang, Übersichtskamera), Parken bei «Aus», Wertsachen-Blick, sparsam (Akku / tiefe Nacht), Wildtier-Modus, Sabotage umschauen, 180/270/360°- und Endlos-Servos | 834 |
 | `163_weitwinkel.py` | Weitwinkel-Kamera des Simulators (sim:1, 3D-4.17): Montage aus /info und der Antwort auf /state, «Übersicht lenkt den Kopf» von selbst (nur bei Montage-Wechsel, Hand bleibt), Kopf-Montage = Richtung Kopf + Versatz, Eigenbewegung der Kopf-Kamera ausblenden (440), IR-Licht breit auf PCA9685 Kanal 4 | 196 |
+| `163a_status_led.py` | Status-LED (RGB auf PCA9685 Kanal 5/6/7) oben auf dem Kopf: Farbe pro Zustand, Alarm blinkt rot bis quittiert, Störung violett, Erkennung kurz, Blinki-Zwinkern, Nacht gedimmt; zwei Tasten am Gerät (GPIO 16 / 26, entprellt, kurz / lang; dürfen alles, einzeln abschaltbar, Push bei Ausschalten / Sirene-Stopp am Gerät); im Simulator dessen LED und Tasten | 572 |
 | `170_ki_personen.py` | KI-Modell laden und herunterladen | 110 |
 | `180_ki_tierarten_helfer_tunnel.py` | Tierarten, Alarm-Rückblick, KI-Rechenhilfe, KI-Prüfung, Tunnel, AIDetector | 841 |
 | `190_relais_wetter_tracker.py` | Relais, Wetter-Analyse, Auto-Tuner, Tracker | 422 |
@@ -82,6 +83,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `280_sms_sensoren_sturm_gps_solar.py` | SMS, Sensoren, Sturmwarnung, GPS, Solar | 870 |
 | `285_simwerte.py` | Simulator-Werte: Akku (simulierter USV-HAT), Uhrzeit (sim_now), Ort, Wetter, Pi-Wärme, «WLAN weg»-Test aus dem 3D-Simulator | 230 |
 | `290_simulator_verbindung.py` | Verbindung zum Simulator | 333 |
+| `292_simulator_sprache.py` | Sprache von MoveEye an den 3D-Simulator (Zustandsfeld «lang», i18n.gd) | 8 |
 | `300_werkzeuge_simulator3d.py` | Werkzeuge, 3D-Simulator für Windows und den Pi, Simulator-Suche | 1155 |
 | `310_testlaeufe.py` | Testläufe mit Auswertung und Optimierung | 485 |
 | `312_erkennung_assistent.py` | Assistent «Erkennung verbessern» (ein Ablauf statt sechs Funktionen), Pause des Auto-Tuners | 307 |
@@ -136,6 +138,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `598_simwerte_anzeige.py` | «🧪 Simulator»-Hinweis bei Simulator-Werten (Web und Fenster), Anleitung (285) | 175 |
 | `599_uebersetzungen_simwerte.py` | Übersetzungen der Simulator-Werte (285, 598) | 55 |
 | `599b_fenster_smalltv.py` | Zusatz-Bildschirm (552): Einstellungen (Abschnitt «Extra display» in «Geräte & Sensoren»), Fenster-Abschnitt (Liste, Testbild, Suche, Einrichtung mit QR), deutsche Texte der Webseite, Selbsttest mit nachgebautem Gerät (HTTP 400, langsam) | 300 |
+| `599c_fenster_led.py` | Status-LED und Tasten (163a): Einstellungen (Abschnitt «Status LED» in «Licht & Ton»), /api/led, Blinki in der Kopfzeile zwinkert mit der LED, Fenster-Abschnitt, Simulator (state «led», world_reply «buttons»), Anleitung, Selbsttest | 640 |
 | `599a_fenster_parcours.py` | Fenster: Regler «Vorausschauen» bei Kamera / Servos (SLIDERS), Karte «Verfolgungs-Parcours» im Reiter Simulator (letzter Lauf, Start, Vorschlag übernehmen, Kachel im Browser) | 70 |
 | `598_uebersetzungen_weit.py` | Übersetzungen und Anleitungs-Absatz (Kamera & Servos) zur Weitwinkel-Kamera (163 / 591) | 50 |
 | `634_uebersetzungen_ausl.py` | Übersetzungen für den «Auslöser» (539) | 40 |
@@ -147,6 +150,11 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `571a_fenster_push.py` | Fenster: «Push-Nachrichten» gleich aufgebaut wie im Web (Kanal-Karten, Stufen, Ruhezeiten, Erweitert) | 453 |
 | `579a_push_logik.py` | Push-Logik: Kanäle (Hauptkanal ntfy/Telegram/Webhook), Stufen Nur Personen / + Tiere / Alles, Ruhezeiten (Simulator-Uhr), Bilder mit/klein/ohne, Übernahme alter Einstellungen, /api/push, Selbsttest | 577 |
 | `639a_uebersetzungen_push.py` | Übersetzungen und «?»-Texte der Push-Karten | 205 |
+| `639b_uebersetzungen_menu.py` | Übersetzungen der Menü-Struktur 2: kurze Beschriftungen (die lange im «?»), neue Gruppen | 401 |
+| `639c_menu_struktur.py` | Menü-Struktur 2: Gruppen Web = Fenster, Entwickler-Gruppe, Einfach mit «Feineinstellungen», Abschreckungs-Tabelle | 339 |
+| `639d_angleichen.py` | Angleichen MoveEye ↔ Simulator: Entwickler-Schalter an den Simulator (dev_area), Fenster «Strom» und Teil «System» (Ausschalten / Neustart / Pause) | 75 |
+| `639e_uebersetzungen_angl.py` | Übersetzungen zu 639d (Störungen-Link, Foto des Platzes) | 13 |
+| `639f_uebersetzungen_led.py` | Übersetzungen der Status-LED und Tasten (163a / 599c), Platz im Fenster (Gruppe «Licht & Ton») | 136 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |

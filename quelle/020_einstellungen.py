@@ -65,7 +65,7 @@ CFG = {
     # manual camera control (pad / arrow keys / web) pauses tracking + patrol for this many seconds
     "manual_hold": 5.0,
     # appearance
-    "theme": "dark", "lang": "en", "fullscreen": False,
+    "theme": "dark", "lang": "de", "fullscreen": False,
     "tv_key": "", "tv_auto": True,   # 2.95.51: TV view on the HDMI of the Pi (and for any other screen with the link)
     "tunnel_on": True, "tunnel_code": "", "tunnel_prev_url": "",                       # 2.95.54: the simulator connects out to the Pi (firewall without admin)
     "helper_use": True, "helper_url": "", "helper_code": "",   # 2.95.53: let a PC do the AI (address + pairing code; empty = found by itself)

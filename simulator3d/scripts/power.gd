@@ -169,7 +169,7 @@ func _process(delta: float) -> void:
 		_save_t = main.now()
 		save()
 	if info_label != null and Engine.get_process_frames() % 15 == 0:
-		info_label.text = status_text()
+		info_label.text = main.no_emoji(status_text()).replace("\n ", "\n")   # 3D-4.21: no empty boxes for 🔋 🔌 🌡 (no emoji font)
 
 
 func _fmt_h(h: float) -> String:
@@ -222,7 +222,7 @@ func add_controls() -> void:
 
 
 func add_info(parent: Control, ui) -> void:
-	info_label = ui.small(status_text())
+	info_label = ui.small(main.no_emoji(status_text()))
 	info_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	parent.add_child(info_label)
 

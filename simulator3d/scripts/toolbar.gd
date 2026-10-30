@@ -40,7 +40,8 @@ const DOCK := [["explore", "compass", "Erkunden", "Start (Controller) · mit dem
 		["invite", "people", "Mitspieler", "J beim Erkunden · QR-Code: Mitspieler mit dem Handy, frei bewegen", []],
 		["view", "lens", "Ansicht", "0 – 3, M, L · Kameras, Karte, Livebild und was angezeigt wird", ["v0", "v1", "v2", "v3", "map", "live", "to_head", "to_top", "exview", "spectate", "cams", "info", "laser", "zones3d", "det3d"]],
 		["panel", "menu", "Menü", "H · das Bedienfeld rechts ein / aus", []],
-		["help", "help", "Hilfe", "Maus und Tasten in der Ansicht", []]]
+		["theme", "theme", "Hell / Rotlicht / Dunkel", "Ansicht des Bedienfelds wie in MoveEye: Hell → Rotlicht → Dunkel (Rotlicht für die Nacht im Zelt)", []],
+		["help", "help", "Hilfe", "Maus und Tasten · Klick: Rundgang, Selbstdiagnose, Protokoll, Rückmeldung, Über (Mehr)", []]]
 
 const NAMES := {"patrol": ["Rover-Route starten", "Der Mover fährt MoveEye die Route ab, MoveEye passt die ganze Zeit auf"],
 		"points": ["Punkte setzen", "In die Welt klicken = Punkt, Rechtsklick auf einen Punkt = weg"],
@@ -164,7 +165,7 @@ func _hover(id: String, on: bool, mouse: bool) -> void:
 		tw.tween_callback(func(): if l.custom_minimum_size.x < 1.0: l.visible = false)
 	if on and b.group and mouse:
 		_open_sub(id, false)
-	if id == "help" and (mouse or not on):
+	if id == "help" and (mouse or not on) and not (main.mehr != null and main.mehr.menu_open()):
 		_help.visible = on
 		if on:
 			(_help.get_child(0) as Label).text = _help_text()
@@ -186,6 +187,13 @@ func _press_item(id: String) -> void:
 		else:
 			_sub_for = "" if _sub_for == id and _sub.visible and (_items[id] as Control).has_focus() else _sub_for
 			_open_sub(id, (_items[id] as Control).has_focus())
+		return
+	if id == "help" and main.mehr != null:             # 3D-4.2x: the menu of «Mehr» (mehr.gd)
+		_help.visible = false
+		main.mehr.help_menu(_items["help"])
+		return
+	if id == "theme" and main.mehr != null:
+		main.mehr.theme_next()
 		return
 	if id == "help":
 		_help.visible = not _help.visible

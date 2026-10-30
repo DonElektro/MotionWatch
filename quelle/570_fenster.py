@@ -777,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.49")
+        self.root.title("MoveEye 2.98.50")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1144,7 +1144,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.49 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.50 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1170,7 +1170,7 @@ class App:
             lb.config(width=3, font=("DejaVu Sans", 9, "bold")); lb.pack(side="right")
             self._ibtn(ctl, "◐", self.toggle_theme, tk_theme_tip(), on=bool(CFG.get("tk_night"))).pack(side="right", padx=(0, 6))   # Hell → Dunkel → Rotlicht (578)
             self._ibtn(ctl, "✉", self._messages_win, tr("Message list")).pack(side="right", padx=(0, 6))     # 2.98.13
-            self._ibtn(ctl, "💬", self._feedback, tr("Feedback to the developer")).pack(side="right", padx=(0, 6))   # 2.98.33 (584)
+            # 2.98.50 (Daniel): no 💬 in the header any more - feedback under System (see _feedback button below) and «About»
             self._ibtn(ctl, "◷", lambda: tk_timeline_win(self), tr("Night timeline")).pack(side="right", padx=(0, 6))   # 2.98.14 (575)
             self._ibtn(ctl, "?", lambda: self._g2_tour(self.tab, True), tr("Tour of this page")).pack(side="right", padx=(0, 6))   # 584
             self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
@@ -1844,7 +1844,7 @@ class App:
                 w_.bind("<Button-1>", lambda e, k=key: self._toggle_section(k))
             words = [tr(name)] + [tr(x) for x in real]
             for lst in (TOGGLES, SLIDERS, TEXTS):
-                words += [tr(t_[2]) for t_ in lst if t_[0] in real]
+                words += [tr(t_[2]) + " " + tr(MENU_LONG.get(t_[1], "")) for t_ in lst if t_[0] in real]   # 639c: + the long text («?»)
             self.grp_meta[key] = (arr, real, card, " ".join(words).lower())
             if len(real) == 1:
                 sb = tk.Frame(gbody, bg=C["panel"]); sb.pack(fill="x", pady=(4, 0))
@@ -1865,7 +1865,7 @@ class App:
     def _sub(self, parent, sec, default_open=False):
         """One topic of a group: thin line + title that opens / closes it (state kept in the settings)."""
         tk.Frame(parent, bg=C["line"], height=1).pack(fill="x", pady=(8, 4))
-        title = {"Camping / protection": "Protection & network", "Notifications": "Push messages"}.get(sec, sec)
+        title = MENU_TITLES.get(sec, sec)                  # 639c: the same part names as the web page
         # 2.95.71: like every menu - symbol left, name, arrow right; symbol and arrow green while the function is on
         h = tk.Frame(parent, bg=C["panel"], cursor="hand2"); h.pack(fill="x")
         ic = TK_SUB_ICONS.get(sec, "")
@@ -2227,18 +2227,7 @@ class App:
         if sec == "Setup":
             self.status_labels["Other devices"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Other devices"].pack(anchor="w", pady=(6, 0))
-            tk.Frame(sbody, bg=C["line"], height=1).pack(fill="x", pady=(10, 6))
-            tk.Label(sbody, text=tr("Power").upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").pack(fill="x")
-            bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(4, 0))
-            ttk.Button(bf, text="⏻ " + tr("Shut down Pi"), command=lambda: self._power("poweroff")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(bf, text="↻ " + tr("Restart Pi"), command=lambda: self._power("reboot")).pack(side="left", expand=True, fill="x")
-            pf = ttk.Frame(sbody); pf.pack(fill="x", pady=(6, 0))
-            ttk.Label(pf, text=tr("Pause the program for")).pack(side="left")
-            self.pause_cb = ttk.Combobox(pf, state="readonly", width=8, values=[f"{m} min" if m < 60 else f"{m // 60} h" for m in PAUSE_CHOICES])
-            self.pause_cb.current(2); self.pause_cb.pack(side="left", padx=(6, 0))
-            ttk.Button(sbody, text="⏸ " + tr("Pause program"), command=self._pause).pack(fill="x", pady=(4, 0))
-            self.status_labels["Power"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
-            self.status_labels["Power"].pack(anchor="w", pady=(4, 0))
+            # 639d: «Pi ausschalten / neu starten / Programm pausieren» moved to the part «System» of the group System (like the web)
             if CFG["lock_on"]:
                 info = lock_info()
                 ttk.Label(sbody, text="🔐 " + tr("Operator mode is on") + (f" {tr('since')} {info['since']}" if info["since"] else ""),
@@ -2401,7 +2390,7 @@ class App:
         if ok and d.get("action") == "test":
             self._toast("✓ " + tr("Test sent")) if hasattr(self, "_toast") else None
         if ok and rebuild:
-            self.open_secs.add("grp:sensors"); self._schedule_rebuild()
+            self.open_secs.add("grp:extras"); self._schedule_rebuild()
 
     def _sens_remove(self, x):
         if messagebox.askyesno(tr("Remove"), tr("Remove this sensor?") + "\n\n" + x["name"], parent=self.root):
@@ -2525,7 +2514,7 @@ class App:
     def _pause(self):
         try:
             m = PAUSE_CHOICES[self.pause_cb.current()]
-        except (IndexError, tk.TclError, TypeError):
+        except (IndexError, tk.TclError, TypeError, AttributeError):
             m = 30
         txt = f"{m} min" if m < 60 else f"{m // 60} h"
         if not messagebox.askyesno("MoveEye", tr("Switch the program off now and start it again in") + f" {txt}?\n\n"
@@ -2834,7 +2823,7 @@ class App:
 
     def _relay_add(self):
         ok, err = relay_add(); self._relay_msg("" if ok else err)
-        self.open_secs.add("grp:sensors"); self._schedule_rebuild()
+        self.open_secs.add("grp:extras"); self._schedule_rebuild()
 
     def _relay_remove(self, i):
         if not 0 <= i < len(RELAYS):

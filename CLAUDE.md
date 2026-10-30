@@ -31,6 +31,9 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 - **Vor jeder Änderung bestätigen lassen (Wunsch Daniel, 30.10.2026 11:18):** bevor eine Änderung gebaut wird (auch kleine,
   auch Helfer starten), zuerst einen kurzen Fragekatalog (AskUserQuestion) mit dem geplanten Vorgehen und den Optionen stellen
   und erst nach Daniels Antwort umsetzen. Ausnahme: reine Lese-/Prüfarbeit (Analyse, Status, Tests ohne Änderung).
+- **Kritisch hinterfragen (Wunsch Daniel, 30.10.2026 22:00):** passt ein Wunsch oder Vorschlag nicht zum Konzept oder zum
+  jetzigen Projektstand (z. B. Hardware noch nicht da, Menüs werden wieder länger, Doppelung, Nebenschauplatz), das **vor dem Bau
+  offen sagen** und begründen, damit Daniel den Weg stoppen kann – nicht einfach umsetzen.
 - **Fragen immer als Fragekatalog (Wunsch Daniel, 29.10.2026):** wenn Daniel nichts anderes wünscht, jede Rückfrage als
   Auswahl-Katalog stellen (AskUserQuestion: bis 4 Fragen à 4 Antworten, Mehrfachauswahl wo sinnvoll), nicht als Fliesstext.
 
@@ -43,6 +46,9 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   Stand 29.10.2026 17:40: **Camera Module 3 NoIR ist da und läuft** am Pi 5 (192.168.1.56, Videoquelle «Raspberry Pi camera»,
   ab 2.98.24). Noch fehlend: Wärmebild, Servos, Licht, Ton, Akku.
 
+- **Gehäuse-Erinnerung (Daniel, 30.10.2026 21:49):** sobald Daniel am Gehäuse arbeitet, daran erinnern: **Aussparung für eine
+  Farb-LED oben auf dem Kopf** (zeigt den Schutzzustand in Farbe: grün / orange / rot). Siehe `docs/Gehaeuse_Variante2_Weitwinkel.md`.
+
 ## Schwerpunkte (Antworten Daniel, 30.10.2026 11:12)
 
 - MoveEye im Alltag: keine besonderen Störungen genannt.
@@ -54,6 +60,15 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 - Wartet auf Daniel: Hardware-Tests; Gehäuse Variante 2 (Modell-ZIP); Tailscale Funnel (eingebaut 2.98.47) im Tailnet freischalten und echt testen;
   SmallTV (2.98.48) am echten Gerät testen (Testbild, Album-Weiterblättern, Suche, Lesbarkeit); KI-Wächter bei normalem Tempo; Parcours-Noten;
   Rückmeldung schwarzes Live-Bild / Seiten-Tempo; vor KI-Training «🔍 Lernbilder prüfen».
+- **Entscheid Daniel 30.10.2026 22:00:** nach der laufenden Runde (Angleichen, Mehr-Bereich Simulator, Sprachen Schritt 1,
+  LED/Tasten) **Pause bei neuen Funktionen** → Hardware-Aufbau mit geführter Inbetriebnahme (sobald Teile da sind).
+  Gameplay-Plan und Sprachen Schritt 2 danach.
+- Als Nächstes (nach wt-objekte): Angleichungen MoveEye ↔ Simulator (Entwickler-Schalter teilen, «Dein Platz» klären, /sim
+  zuklappen statt ausblenden, Fenster «Strom»/System-Knöpfe, gezeichnete Symbole statt fehlender Emoji), dann Gameplay
+  (`docs/Gameplay_Ausfeilen_Plan.md`).
+- **Erinnern (Daniel 30.10.2026 21:45):** Simulator in den Sprachen FR/IT/RM/EN wie MoveEye – Daniel wartet noch, später daran erinnern.
+- Vorgemerkt (nicht bauen, Daniel 30.10.): BME280-Erweiterungen (Taupunkt-/Frost-Warnung, Anzeige wenn Sensor fehlt, Akku-Kälte) –
+  erst wenn die Grund-Hardware läuft.
 - Später: Prüfstand-Plan «funktionen» (Kurzproben Sabotage, Wecker, Klatschen, Diebstahl, Sensoren, Akku, Sirene – Daniel 30.10.: später); Prüfstand-Rückgang ab 2.98.23; KI-Training (Token Actions-Rechte, Trainingspaket); «Vertrauenswürdige Geräte» nur
   Admin; Controller-Einstellungen als MoveEye-Einstellung statt pro Browser; Produkt-Seite (Lizenzen, Datenschutz, Kundendoku);
   mobiler MoveEye (Laufroboter, nur Notiz); Tiere mit der neuen Figur-Technik (figur.gd).

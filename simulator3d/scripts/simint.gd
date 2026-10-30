@@ -124,7 +124,7 @@ func _process(_delta: float) -> void:
 	if hand_on:
 		_hand_tick(t)
 	if info_label != null and Engine.get_process_frames() % 20 == 0:
-		info_label.text = status_text()
+		info_label.text = main.no_emoji(status_text())   # 3D-4.22: ♪ ⚡ ⚠ - no empty boxes (MoveEye gets them with the symbols)
 
 
 func _dev_pos() -> Vector3:
@@ -444,6 +444,6 @@ func add_controls() -> void:
 
 
 func add_info(parent: Control, ui) -> void:
-	info_label = ui.small(status_text())
+	info_label = ui.small(main.no_emoji(status_text()))
 	info_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	parent.add_child(info_label)

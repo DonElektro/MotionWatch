@@ -12,7 +12,7 @@
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 215                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 223                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -308,7 +308,7 @@ FBX_JS = r"""
     v.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); mwAbout(); } });
   }
   const byHash = () => { if (location.hash === "#feedback") mwFeedback(); else if (location.hash === "#about") mwAbout(); };
-  const go = () => { addBtn(); verTap(); byHash(); };
+  const go = () => { verTap(); byHash(); };     // 2.98.50 (Daniel): no 💬 in the header any more - feedback under «Mehr» and «Version und Status»
   addEventListener("hashchange", byHash);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go();
 })();

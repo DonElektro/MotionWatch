@@ -45,3 +45,31 @@ Umsetzung: nach dem Zusammenführen von Sim-Kompakt und Spiel-Balance (gleiche D
 | Prüfstand | **umgesetzt** – `--weitwinkel base,head_front,head_rear` (pruefstand/LIESMICH.md). Erster lokaler Lauf (langsamer 2-Kern-Rechner, fremde Last ~100 %, Weitwinkel-Bild < 1 Bild/s – Zahlen nur grob): Unterteil 2/3 gefunden (3,5 / 21,9 s), Kopf vorne 2/3 (2,4 / 3,8 s), Kopf hinten 3/3 (Median 4,3 s) |
 | Seiten / Spiel | **Seiten umgesetzt** – Kachel 🔭 «Weitwinkel-Kamera» in der Simulator-Zentrale (/sim) und in Sim-Kompakt: Bild (über die vorhandene Zusatzkamera, /cam_feed – kein neuer Strom vom Simulator), antippen = gross, Montage-Knöpfe. **Spiel:** die zweite Wächter-Sicht nutzt cams[1] weiter (jetzt mit der gewählten Montage); Texte «feste Kamera» im Spiel nicht angepasst (Spiel-Dateien gehören der Runde «balance») |
 
+
+## Status-LED oben auf dem Kopf (Wunsch Daniel, 30.10.2026 21:49)
+
+Aussparung oben auf dem Kopf für eine **Farb-LED** (RGB), die den Schutzzustand zeigt (grün / orange / rot, Zuordnung zu
+Aus / Wachsam / Voll noch festlegen). Lichtleiter/Diffusor einplanen, Kabel durch die Pan-Achse (zählt zur Drehgrenze /
+Schleifring wie das zweite Flachkabel). Ansteuerung offen (WS2812 an GPIO oder RGB an 3 PCA9685-Kanälen).
+
+Entscheide 30.10.2026 21:55: **RGB-LED an PCA9685 Kanälen 5/6/7** (gemeinsame Anode/Kathode noch wählen), Farben pro Zustand
+einstellbar; Diffusor **in der Form von Blinkis Auge**. Dazu **zwei Tasten am Gerät**: «Schutz» (kurz Wachsam ↔ Aus, lang Voll)
+und «Alarm quittieren» – Platz und Kabel (GPIO 16 / Pin 36 und GPIO 26 / Pin 37, je gegen Masse) im Gehäuse vorsehen.
+
+### Software umgesetzt (Zweig wt-led, 30.10.2026 – MoveEye-Teile 163a / 599c / 639f, Simulator `statusled.gd`)
+
+| Thema | Stand |
+|---|---|
+| LED-Ausgang | **umgesetzt** – RGB an PCA9685 der Servos, Kanäle 5 / 6 / 7 (einstellbar), gemeinsame Kathode oder Anode (Einstellung «LED-Typ»), Helligkeit per PWM mit Gamma 2,2; geschrieben nur bei Änderung (I2C teilt sich mit den Servos); Kanal belegt (Servo, Licht, IR breit) = Hinweis statt Ausgabe. **Nicht mit echter Hardware getestet** (nur mit nachgebautem PCA9685 im Selbsttest) |
+| Farben / Vorrang | **umgesetzt** – Aus grün, Wachsam orange, Voll rot (einstellbar: grün, orange, rot, gelb, blau, türkis, violett, weiss, aus); Countdown = Farbe «atmet». Vorrang: LED-Test > Alarm (rot blinkend bis quittiert; Schutz aus quittiert auch) > Störung (violett pulsierend: Akku schwach, Unterspannung, Kamera weg, Servo-Störung) > Erkennung (kurz weiss, Standard aus) > Zustand > Blinki-Zwinkern |
+| Nacht | **umgesetzt** – dunkel (im Simulator dessen Nacht): gedimmt (Standard 8 %), aus oder wie am Tag; Alarm bleibt hell; kein Zwinkern nachts |
+| Blinki-Zwinkern | **umgesetzt** – alle 5 Minuten (einstellbar) kurz zweimal dunkel = «alles ok» (nicht nach einer Störung); Blinki (Mini-Figur mit LED-farbiger Iris) in der Kopfzeile der Webseite zwinkert im selben Moment |
+| Tasten | **umgesetzt** – GPIO 16 «Schutz» (Pin 36), GPIO 26 «Alarm quittieren» (Pin 37) – einstellbar; GPIO 5 ist der PIR (Gehäuse-Übergabe). Interner Pull-up, Taste gegen Masse, Entprellen 50 ms, lang = 1,5 s (feuert beim Halten). Schutz kurz Wachsam ↔ Aus, lang Voll; Quittieren stoppt Sirene + Eskalation + rotes Blinken (dasselbe wie «Alarm quittieren» im Alarmfenster). Jeder Druck im Protokoll. **Ab 2.98.50 (Daniel): die Tasten dürfen alles**, auch mit PIN zum Ausschalten; einzeln abschaltbar: «Taste darf Schutz einschalten / ausschalten / Sirene stoppen / Alarm quittieren»; jedes Ausschalten und Sirene-Stoppen am Gerät steht im Protokoll und kommt als Push («Schutz am Gerät ausgeschaltet» / «Sirene am Gerät gestoppt», Schalter «Meldung bei Ausschalten am Gerät»). Standard «Tasten am Gerät» aus, bis sie verdrahtet sind. **Nicht mit echtem GPIO getestet** |
+| Simulator | **umgesetzt** – LED als leuchtende Kuppel in Blinkis Augen-Ring oben auf dem Kopf (state `led`), Fenster «Gerät» unten rechts mit LED-Punkt, Statuszeile und den Knöpfen «Schutz» / «Alarm quittieren» (world_reply `buttons`, wie ein GPIO: gedrückt / Dauer / Zähler); MoveEye nimmt dann diese statt GPIO / PCA (🧪). Einstellung im Simulator: Licht & Ton → «Status-LED & Tasten» (ab 3D-4.21) |
+| Seiten | **umgesetzt** – Einstellungen → Licht & Ton → «Status-LED & Tasten» (Web und Fenster), Statuszeile «LED: Wachsam (orange)», «LED testen», «Alarm quittieren», letzte Tastendrucke; Anleitung DE / EN; Sprachen DE / FR / IT / RM / EN |
+
+## Blindabdeckung für die Weitwinkel-Öffnung (Wunsch Daniel, 30.10.2026 22:05)
+
+Solange die Weitwinkel-Kamera nicht eingebaut ist: **einrastender Stopfen** (kleine Rastnasen, ohne Werkzeug lösbar) für die
+Kamera-Öffnung und ein zweiter kleiner Stopfen für das Loch der breiten IR-LED. Lieferung: **STL + parametrisches Python-Skript**.
+Wartet auf Daniels Gehäuse-Modell (Upload), damit die Masse der Öffnung stimmen.

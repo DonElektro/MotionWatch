@@ -46,6 +46,7 @@ const CAMO_STRONG := {"tarnen": 0.6}       # 3D-4.x «Tarnen und Kriechen»: the
 
 # ---- 3. theft --------------------------------------------------------------------------------------------------------------
 const THEFT_OBJ := {"Velo": ["🚲", "das Velo", "Velo", 0.8], "Kühlboxen": ["🧊", "die Kühlbox", "Kühlbox", 0.85]}
+const ObjPlus = preload("res://scripts/objekte_plus.gd")   # 3D-4.x: the valuables of the catalogue (Kamera, Drohne, Paket …)
 const EXIT := Vector3(0, 0, -47.0)
 const THEFT_BONUS := 500
 var theft := {}                           # {"name", "icon", "label", "short", "parts": [[node, parent, transform, visible]], "pos",
@@ -92,7 +93,8 @@ func cfg_set(d: Dictionary) -> void:
 	if d.has("game_gear"):
 		gear_on = bool(d["game_gear"])
 	if d.has("game_theft"):
-		theft_obj = str(d["game_theft"]) if str(d["game_theft"]) in ["auto", "Velo", "Kühlboxen"] else "auto"
+		var tv := str(d["game_theft"])                    # 3D-4.x: + every valuable of the catalogue (objekte_neu.gd, by kind)
+		theft_obj = tv if tv in ["auto", "Velo", "Kühlboxen"] or not ObjPlus.steal_def(tv).is_empty() else "auto"
 	DirAccess.make_dir_recursive_absolute("user://spiel")
 	var f := FileAccess.open(CFG_FILE, FileAccess.WRITE)
 	if f != null:
@@ -529,6 +531,17 @@ func _target() -> Dictionary:
 		order = ["Kühlboxen", "Velo"]
 	if main.scene == "velodieb":
 		order = ["Velo"]                                 # 3D-4.x «Velodieb»: always the bike
+	elif main.objplus != null:                           # 3D-4.x «Gegenstände»: the valuables of the catalogue
+		if not theft_obj in ["auto", "Velo", "Kühlboxen"]:
+			var nm0: String = main.objplus.ensure_valuable(theft_obj)   # chosen in the wizard: put there if it is missing
+			order = ([nm0] if nm0 != "" else []) + order
+		elif theft_obj == "auto":
+			var vh: Array = main.objplus.valuables_here()
+			vh.shuffle()
+			if not vh.is_empty() and randf() < 0.6:
+				order = vh + order
+			else:
+				order += vh
 	for nm in order:
 		var n = main.test_props.get(nm, null)
 		if n != null and is_instance_valid(n) and n.visible:
@@ -549,11 +562,19 @@ func theft_goal() -> Array:
 	var parts := _parts_of(tg["name"], tg["node"])
 	if parts.is_empty():
 		return []
-	var info: Array = THEFT_OBJ[tg["name"]]
+	var info: Array = theft_info(str(tg["name"]))
 	var pos: Vector3 = (parts[0][0] as Node3D).global_position
 	theft = {"name": tg["name"], "icon": info[0], "label": info[1], "short": info[2], "spd": info[3], "parts": parts,
 			"pos": Vector3(pos.x, 0, pos.z), "want": theft_obj, "scene": str(main.scene), "by": -1, "thief": "", "stolen": false, "mw": "", "scan": {}, "cmp": {}}
 	return [theft["pos"], theft["label"]]
+
+
+func theft_info(nm: String) -> Array:
+	"""[icon, with article, short, speed] - the bike / cool box, or a valuable of the catalogue (objekte_plus.gd)"""
+	if THEFT_OBJ.has(nm):
+		return THEFT_OBJ[nm]
+	var r: Array = main.objplus.steal_info(nm) if main.objplus != null else []
+	return r if not r.is_empty() else ["📦", nm, nm, 0.9]
 
 
 func _parts_ok() -> bool:

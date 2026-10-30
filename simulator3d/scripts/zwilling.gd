@@ -6,6 +6,8 @@ extends Node
 ## or drag a .jpg / .png into the window), settings in «Szene · Dein Platz».
 ## 3D-4.x (Aufräumen, Daniel 29.10.2026): one thing «Dein Platz» - the inventory window holds this tab, the tent and the car
 ## are tiles there; the Vorlagen window has no tab «Dein Platz» any more.
+## 3D-4.22 (Angleichen, Daniel 30.10.2026): «Dein Platz» is MoveEye's place (zones, patrol); here: «Foto des Platzes» (part of
+## «Szene»), the window is «Gegenstände» (group «Platz & Umgebung»).
 
 var main
 const FILE := "user://zwilling.json"
@@ -67,22 +69,22 @@ func set_val(k: String, v) -> void:
 
 func add_controls() -> void:
 	var m = main
-	m.add_control("toggle", "twin_on", "Dein Platz: Foto / Panorama deines echten Platzes als Hintergrund (Laden im Fenster «Dein Platz»)",
-			func(): return on, func(v): on = bool(v); save(); on_scene(), "Szene", {"sub": "Dein Platz"})
-	m.add_control("button", "twin_open", "«Dein Platz» öffnen: Foto / Panorama, Zelt, Auto, bewachte Sachen", null, func(): open_tab(), "Szene", {"sub": "Dein Platz"})
-	m.add_control("slider", "twin_yaw", "Dein Platz: Richtung der Bildmitte (0 = geradeaus)", func(): return float(gv("yaw", 0.0)), func(v): set_val("yaw", float(v)), "Szene",
-			{"sub": "Dein Platz", "min": -180, "max": 180, "step": 1, "unit": "°"})
-	m.add_control("slider", "twin_span", "Dein Platz: Bildwinkel (Handyfoto etwa 65°, Panorama bis 360°)", func(): return float(gv("span", 66.0)), func(v): set_val("span", float(v)), "Szene",
-			{"sub": "Dein Platz", "min": 30, "max": 360, "step": 1, "unit": "°"})
-	m.add_control("slider", "twin_dist", "Dein Platz: Entfernung des Hintergrunds", func(): return float(gv("dist", 60.0)), func(v): set_val("dist", float(v)), "Szene",
-			{"sub": "Dein Platz", "min": 15, "max": 300, "step": 5, "unit": "m", "expert": true})
-	m.add_control("slider", "twin_horizon", "Dein Platz: Horizont im Bild höher / tiefer", func(): return float(gv("horizon", 0.0)), func(v): set_val("horizon", float(v)), "Szene",
-			{"sub": "Dein Platz", "min": -20, "max": 20, "step": 0.5, "unit": "°", "expert": true})
-	# 3D-4.x: tent and car are tiles in the window «Dein Platz» (not twice here); for MoveEye's page they stay hidden controls
-	m.add_control("button", "twin_tent", "Zelt hierhin – danach in die Welt klicken", null, func(): main.place_kind = "twin_tent", "Szene", {"sub": "Dein Platz", "hide": true})
-	m.add_control("button", "twin_car", "Auto hierhin – danach in die Welt klicken", null, func(): main.place_kind = "twin_car", "Szene", {"sub": "Dein Platz", "hide": true})
-	m.add_control("button", "twin_turn", "Zuletzt gesetztes Zelt / Auto um 15° drehen", null, func(): turn_last(15.0), "Szene", {"sub": "Dein Platz", "expert": true})
-	m.add_control("button", "twin_clear", "Zelt und Auto dieses Platzes entfernen", null, func(): clear_items(), "Szene", {"sub": "Dein Platz", "expert": true})
+	m.add_control("toggle", "twin_on", "Foto des Platzes: Foto / Panorama deines echten Platzes als Hintergrund (laden im Fenster «Gegenstände»)",
+			func(): return on, func(v): on = bool(v); save(); on_scene(), "Szene", {"sub": "Foto des Platzes"})
+	m.add_control("button", "twin_open", "«Gegenstände» öffnen: Foto des Platzes, Zelt, Auto, bewachte Sachen", null, func(): open_tab(), "Szene", {"sub": "Foto des Platzes"})
+	m.add_control("slider", "twin_yaw", "Foto: Richtung der Bildmitte (0 = geradeaus)", func(): return float(gv("yaw", 0.0)), func(v): set_val("yaw", float(v)), "Szene",
+			{"sub": "Foto des Platzes", "min": -180, "max": 180, "step": 1, "unit": "°"})
+	m.add_control("slider", "twin_span", "Foto: Bildwinkel (Handyfoto etwa 65°, Panorama bis 360°)", func(): return float(gv("span", 66.0)), func(v): set_val("span", float(v)), "Szene",
+			{"sub": "Foto des Platzes", "min": 30, "max": 360, "step": 1, "unit": "°"})
+	m.add_control("slider", "twin_dist", "Foto: Entfernung des Hintergrunds", func(): return float(gv("dist", 60.0)), func(v): set_val("dist", float(v)), "Szene",
+			{"sub": "Foto des Platzes", "min": 15, "max": 300, "step": 5, "unit": "m", "expert": true})
+	m.add_control("slider", "twin_horizon", "Foto: Horizont im Bild höher / tiefer", func(): return float(gv("horizon", 0.0)), func(v): set_val("horizon", float(v)), "Szene",
+			{"sub": "Foto des Platzes", "min": -20, "max": 20, "step": 0.5, "unit": "°", "expert": true})
+	# 3D-4.x: tent and car are tiles in the window «Gegenstände» (3D-4.22, was «Dein Platz») (not twice here); for MoveEye's page they stay hidden controls
+	m.add_control("button", "twin_tent", "Zelt hierhin – danach in die Welt klicken", null, func(): main.place_kind = "twin_tent", "Szene", {"sub": "Foto des Platzes", "hide": true})
+	m.add_control("button", "twin_car", "Auto hierhin – danach in die Welt klicken", null, func(): main.place_kind = "twin_car", "Szene", {"sub": "Foto des Platzes", "hide": true})
+	m.add_control("button", "twin_turn", "Zuletzt gesetztes Zelt / Auto um 15° drehen", null, func(): turn_last(15.0), "Szene", {"sub": "Foto des Platzes", "expert": true})
+	m.add_control("button", "twin_clear", "Zelt und Auto dieses Platzes entfernen", null, func(): clear_items(), "Szene", {"sub": "Foto des Platzes", "expert": true})
 
 
 # ---- import ----------------------------------------------------------------------------------------------------------
@@ -119,7 +121,7 @@ func import_image(path: String) -> bool:
 	on = true
 	save()
 	on_scene()
-	_say("«%s» ist jetzt der Hintergrund von «%s» (%d × %d, Bildwinkel %d°). Richtung und Winkel unter «Szene · Dein Platz»." % [path.get_file(), place_name(), img.get_width(), img.get_height(), int(e["span"])])
+	_say("«%s» ist jetzt der Hintergrund von «%s» (%d × %d, Bildwinkel %d°). Richtung und Winkel unter «Szene · Foto des Platzes»." % [path.get_file(), place_name(), img.get_width(), img.get_height(), int(e["span"])])
 	_paint()
 	return true
 
@@ -295,15 +297,15 @@ func _build_item(it: Dictionary) -> void:
 	_nodes.append(tn)
 
 
-# ---- the photo part of the tab «Dein Platz» (inventar.gd) -------------------------------------------------------------
+# ---- the photo part «Foto des Platzes» of the group «Platz & Umgebung» (inventar.gd) -------------------------------------------------------------
 func open_tab() -> void:
 	if main.inventar != null:
-		main.inventar.open(0)
+		main.inventar.open_sec("photo")                  # 3D-4.22: window «Gegenstände», part «Foto des Platzes»
 		_paint()
 
 
 func build_tab(v: VBoxContainer) -> void:
-	"""inventar.gd: the photo / panorama part of the tab «Dein Platz»"""
+	"""inventar.gd: the photo / panorama part «Foto des Platzes»"""
 	_box = VBoxContainer.new()
 	_box.add_theme_constant_override("separation", 8)
 	v.add_child(_box)

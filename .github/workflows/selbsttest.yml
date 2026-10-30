@@ -22,6 +22,9 @@ jobs:
       - name: Quelle und Datei passen zusammen
         run: python3 werkzeuge/bauen.py --pruefen
       - name: Neuste Version testen
+        env:
+          # 2.98.50 (Daniel): work branches (integration, wt-*) are signed only at the release - check the signature only on main
+          MW_SELFTEST_NO_SIG: ${{ github.ref != 'refs/heads/main' && '1' || '' }}
         run: |
           f=$(ls webcam_bewegung_*.py | sort -V | tail -1)
           echo "Teste $f"
