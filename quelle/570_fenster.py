@@ -1844,7 +1844,7 @@ class App:
                 w_.bind("<Button-1>", lambda e, k=key: self._toggle_section(k))
             words = [tr(name)] + [tr(x) for x in real]
             for lst in (TOGGLES, SLIDERS, TEXTS):
-                words += [tr(t_[2]) for t_ in lst if t_[0] in real]
+                words += [tr(t_[2]) + " " + tr(MENU_LONG.get(t_[1], "")) for t_ in lst if t_[0] in real]   # 639c: + the long text («?»)
             self.grp_meta[key] = (arr, real, card, " ".join(words).lower())
             if len(real) == 1:
                 sb = tk.Frame(gbody, bg=C["panel"]); sb.pack(fill="x", pady=(4, 0))
@@ -1865,7 +1865,7 @@ class App:
     def _sub(self, parent, sec, default_open=False):
         """One topic of a group: thin line + title that opens / closes it (state kept in the settings)."""
         tk.Frame(parent, bg=C["line"], height=1).pack(fill="x", pady=(8, 4))
-        title = {"Camping / protection": "Protection & network", "Notifications": "Push messages"}.get(sec, sec)
+        title = MENU_TITLES.get(sec, sec)                  # 639c: the same part names as the web page
         # 2.95.71: like every menu - symbol left, name, arrow right; symbol and arrow green while the function is on
         h = tk.Frame(parent, bg=C["panel"], cursor="hand2"); h.pack(fill="x")
         ic = TK_SUB_ICONS.get(sec, "")
@@ -2401,7 +2401,7 @@ class App:
         if ok and d.get("action") == "test":
             self._toast("✓ " + tr("Test sent")) if hasattr(self, "_toast") else None
         if ok and rebuild:
-            self.open_secs.add("grp:sensors"); self._schedule_rebuild()
+            self.open_secs.add("grp:extras"); self._schedule_rebuild()
 
     def _sens_remove(self, x):
         if messagebox.askyesno(tr("Remove"), tr("Remove this sensor?") + "\n\n" + x["name"], parent=self.root):
@@ -2834,7 +2834,7 @@ class App:
 
     def _relay_add(self):
         ok, err = relay_add(); self._relay_msg("" if ok else err)
-        self.open_secs.add("grp:sensors"); self._schedule_rebuild()
+        self.open_secs.add("grp:extras"); self._schedule_rebuild()
 
     def _relay_remove(self, i):
         if not 0 <= i < len(RELAYS):
