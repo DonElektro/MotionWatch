@@ -389,7 +389,8 @@ func report_dict() -> Dictionary:
 			"sichtbar": n, "gemeldet": found, "rate": (round(100.0 * found / n) if n > 0 else -1),
 			"reaktion_median_s": (lats[lats.size() / 2] if not lats.is_empty() else -1), "baender": bands,
 			"jaeger": hunter, "verpasst": misses, "episoden": eps, "zuordnung": "rahmen" if has_boxes() else "anzahl",
-			"fehlalarme_mw": mw_false, "extras": game.plus.report() if game.plus != null else {}}
+			"fehlalarme_mw": mw_false, "extras": game.plus.report() if game.plus != null else {},
+			"ausloeser": game.shut.report() if game.shut != null else {}}   # 3D-4.x: the shots of the shutter (gameshutter.gd)
 
 
 # ---- sending (same way as the test bench: GitHub key, otherwise the desktop) -----------------------------------------

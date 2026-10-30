@@ -717,7 +717,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den Bewegungssensor", "The motion sensor needs https (iPhone / iPad)": "Der Bewegungssensor braucht https (iPhone / iPad)",
  "Turn the phone to look round. Press 📱 again to stop.": "Handy drehen zum Umschauen. Nochmals 📱 drücken zum Beenden.",
  "Team against MoveEye": "Team gegen MoveEye",
- "gw-mwhand": "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an MoveEye: sie drehen die echte Kamera mit dem Joystick auf der Live-Seite und drücken dort «🚨 Erwischt!». Stimmt es, ist der Spieler erwischt – sonst gibt es einen Fehlalarm und 4 Sekunden Pause.",
+ "gw-mwhand": "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an MoveEye: sie drehen die echte Kamera mit dem Joystick auf der Live-Seite, zielen mit der Bildmitte auf einen Spieler und drücken den Auslöser 🎯 (oder R2 am Controller). Trifft der Kreis, ist der Spieler erwischt (Foto, Alarm, Punkte) – sonst gibt es einen Fehlalarm und 3 Sekunden Sperre.",
  "A task for every round (bonus)": "Eine Aufgabe für jede Runde (Bonus)",
  "gw-tasks": "🎯 Jede Runde hat eine Aufgabe, z. B. «nur kriechend ins Ziel» oder «nie über 50 % Verdacht». Wer sie schafft, bekommt Bonuspunkte. Neben der Rangliste des Abends gibt es eine Rangliste der Woche.",
  "Task of this round": "Aufgabe dieser Runde", "Ranking of the week": "Rangliste der Woche", "week": "Woche", "task done": "Aufgabe erfüllt",

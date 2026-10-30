@@ -129,6 +129,7 @@ var bots                                 # gamebots.gd (3D-4.x): smarter bots an
 var watch                                # gamewatch.gd (3D-4.x): watchers guess and throw decoy stones
 var jaeger                               # gamejaeger.gd (3D-4.x): «Fehlalarm-Jäger» - animals and things fool MoveEye
 var plus                                 # gameplus.gd (3D-4.x): weather change, camouflage things, theft, learning points
+var shut                                 # gameshutter.gd (3D-4.x): «Auslöser» - a person steers the camera and presses the shutter
 var duel := {}                           # 3D-4.x: after a round with a guard: MoveEye against the guard
 var flag_res := {}                       # 3D-4.x: «Fahne erobern» is decided by the captures: {"caps", "win", "text"}
 var round_runners := 1                   # how many ran in this round (the score of the guard is per runner)
@@ -165,6 +166,10 @@ func _ready() -> void:
 	plus.game = self
 	plus.main = main
 	add_child(plus)
+	shut = preload("res://scripts/gameshutter.gd").new()
+	shut.game = self
+	shut.main = main
+	add_child(shut)
 
 
 func now() -> float:
@@ -1103,7 +1108,8 @@ func start_round() -> void:
 		main.set_hour(23.0)
 	_auto_handicap()
 	_pick_task()
-	mwg = {"catches": 0, "false": 0, "t": 0.0, "names": [], "who": {}}
+	mwg = {"catches": 0, "false": 0, "t": 0.0, "names": [], "who": {}, "shut_pts": 0, "shut_hits": 0, "shut_miss": 0}
+	shut.round_start()
 	last_minute = false
 	feed.clear()
 	news("▶ Die Runde beginnt")
@@ -1132,6 +1138,9 @@ func start_round() -> void:
 		p["carry"] = false
 		p["loot"].visible = false
 		p["bonus"] = 0
+		p["shut_pts"] = 0                                  # 3D-4.x: «Auslöser» (gameshutter.gd)
+		p["shut_hits"] = 0
+		p["shut_miss"] = 0
 		p["rescues"] = 0
 		p["watched"] = 0.0
 		p["hide_i"] = -1
@@ -1410,8 +1419,8 @@ func end_round() -> void:
 			info = "Fänger · %d gefunden, %d× daneben%s" % [p["catches"], p["false"], " · 🏆 alle gefunden" if seek_winner == "seeker" else ""]
 		elif p["role"] == "guard":
 			var gs := guard_score(p, missed)
-			sc = int(gs[0])
-			info = "Wächter · " + str(gs[1])
+			sc = max(0, int(gs[0]) + int(p.get("shut_pts", 0)))
+			info = "Wächter · " + str(gs[1]) + _shut_info(p)
 		elif jaeger.on():                                  # «Fehlalarm-Jäger»: 100 per false alarm, +50 per lure that fooled MoveEye
 			var js: Array = jaeger.score(p)
 			sc = int(js[0])
@@ -1492,7 +1501,8 @@ func end_round() -> void:
 	if main.game_mode == "mwhand":                         # the guards at MoveEye
 		var mn: String = ", ".join(PackedStringArray(mwg["names"])) if not mwg["names"].is_empty() else "MoveEye"
 		var gm := guard_score(mwg, missed)
-		results.append({"n": "🛡 " + mn, "c": "#3b8cff", "info": "Wächter an MoveEye · " + str(gm[1]), "score": int(gm[0])})
+		results.append({"n": "🛡 " + mn, "c": "#3b8cff", "info": "Wächter an MoveEye · " + str(gm[1]) + _shut_info(mwg),
+				"score": max(0, int(gm[0]) + int(mwg.get("shut_pts", 0)))})
 	if not bots.guard.is_empty():                          # 3D-4.x: the bot guard
 		var gb := guard_score(bots.guard, missed)
 		results.append({"n": bots.GUARD_NAME, "c": "#9aa7b8", "info": "Bot-Wächter · " + str(gb[1]), "score": int(gb[0])})
@@ -1977,7 +1987,7 @@ func _caught(p: Dictionary, by) -> void:
 		return
 	p["caught"] = int(p["caught"]) + 1
 	var fx := hit_fx(p)                                   # 3D-3.52: laser / paint / flash (each can be switched)
-	if main.game_photos:                               # the «caught» photo: what the camera saw (3D-3.25)
+	if main.game_photos and not p.get("no_pic", false):   # the «caught» photo: what the camera saw (3D-3.25; not after the «Auslöser»: it has its own)
 		main.want_snapshot(0)
 		get_tree().create_timer(0.35).timeout.connect(func(): _grab_pic(p))
 	news("🚨 %s erwischt" % p["name"] + ((" von %s" % by["name"]) if by is Dictionary else ""))
@@ -2325,8 +2335,18 @@ func shot_at(who: String, x: float, y: float) -> Dictionary:
 	return {"ok": true, "hit": true, "text": "✓ %s erwischt!" % hit["name"]}
 
 
+func _shut_info(g: Dictionary) -> String:
+	"""3D-4.x: the «Auslöser» line of a guard in the result"""
+	if int(g.get("shut_hits", 0)) + int(g.get("shut_miss", 0)) == 0:
+		return ""
+	return " · 🎯 Auslöser %d× Treffer, %d× daneben (%+d)" % [int(g.get("shut_hits", 0)), int(g.get("shut_miss", 0)), int(g.get("shut_pts", 0))]
+
+
 func _guard_catch(g: Dictionary) -> void:
 	"""the guard calls «Erwischt!»: right if the head camera sees somebody (meter at least 30 %)"""
+	if g["role"] == "guard" and shut.human_mode() == "guard":   # 3D-4.x: a person is the guard - the shutter at the middle
+		shut.fire(g, str(g["name"]))
+		return
 	if g["role"] != "guard" or round_state != "play" or now() < float(g["catch_t"]):
 		return
 	var hit = null
@@ -2443,6 +2463,7 @@ func state_for(p: Dictionary) -> Dictionary:
 		d["catch"] = int(max(0.0, float(p["catch_t"]) - now()))
 		d["catches"] = p["catches"]
 		d["pan"] = int(rad_to_deg(guard_yaw))
+		d["shut"] = shut.info_for(p)                       # 3D-4.x: «Auslöser»: crosshair and shutter on the phone
 	if round_state == "countdown":
 		d["cd"] = int(ceil(t_start - now()))
 	if round_state == "play":
@@ -2625,9 +2646,16 @@ table{border-collapse:collapse;margin:8px auto;font-size:14px}td{padding:4px 8px
 .duel span{display:block;font-size:46px;font-weight:800;line-height:1.1}.duel .win{border-color:var(--grn);background:#34c75922}.duel i{align-self:center;font-style:normal;font-size:30px;font-weight:800}
 .chips button[disabled]{opacity:.45}
 body.aim #v{outline:4px dashed var(--org);outline-offset:-4px}
+#xh{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);border:3px solid #ff3b30;border-radius:50%;pointer-events:none;box-shadow:0 0 0 1px #0007,inset 0 0 0 1px #0007;z-index:2}
+#xh[hidden]{display:none}#xh::before,#xh::after{content:"";position:absolute;left:50%;top:50%;background:#ff3b30;width:3px;height:calc(100% + 26px);transform:translate(-50%,-50%)}#xh::after{transform:translate(-50%,-50%) rotate(90deg)}
+#b-catch.shut{width:96px;height:96px;font-size:13px;background:radial-gradient(circle,#ff453a 0 58%,transparent 59%),conic-gradient(#ffd34d var(--p,0%),#ffffff33 0);border:3px solid #fff}
+#b-catch.shut i{font-size:30px}#b-catch.shut.lock{opacity:.75}#b-catch.shut .cnt{display:none}
+#shfl{position:fixed;inset:0;background:#fff;pointer-events:none;opacity:0;z-index:89}#shfl.on{animation:wf .35s ease-out}
+@media (max-height:440px){#b-catch.shut{width:80px;height:80px}#b-catch.shut i{font-size:24px}}
 #padh{position:fixed;left:50%;bottom:max(8px,env(safe-area-inset-bottom));transform:translateX(-50%);background:#111822dd;border:1px solid var(--line);border-radius:10px;padding:3px 10px;font-size:12px;color:#cfd8e3;pointer-events:none;white-space:nowrap}
 </style></head><body>
 <img id="v" alt="">
+<div id="xh" hidden></div><div id="shfl"></div>
 <div class="top"><span class="pill" id="me"><span class="dot"></span><b id="nm">…</b> <span id="lv"></span></span>
 <div id="meter"><div id="bar"></div><span id="eye">👁</span></div>
 <span class="pill" id="goal"><span id="arrow">⬆</span><span id="gd">–</span></span><span class="pill" id="tm">–</span></div>
@@ -2793,6 +2821,7 @@ function paint(m) {
   if (m.stone < 0 || J) $("#b-stone").style.display = "none"; else { $("#b-stone").style.display = "flex"; cool($("#b-stone"), m.stone); }
   $("#b-lamp").style.display = m.dark && role === "runner" && !J ? "flex" : "none"; $("#b-lamp").classList.toggle("on", !!m.lamp);
   if (role === "guard") { cool($("#b-light"), m.light); cool($("#b-catch"), m.catch); $("#gd").textContent = m.gcam === 1 ? "feste Kamera" : (m.pan > 0 ? "◀ " : "▶ ") + Math.abs(m.pan) + "°"; }
+  shutPaint(m);
   if (m.rs === "countdown" && m.mode === "seek") { GAL = []; ov(role === "guard" ? '<h1>🙈 Augen zu!</h1><div id="big">' + Math.max(1, m.cd) + '</div><p>Die anderen verstecken sich.</p>' : ''); if (role !== "guard") $("#msg").textContent = "🙈 Verstecken! Noch " + m.cd + " s"; }
   else if (m.rs === "countdown") { GAL = []; ov('<div id="big">' + Math.max(1, m.cd) + '</div>'); }
   else if ((m.rs === "lobby" || m.rs === "end") && editing) { /* the player changes the look */ }
@@ -2813,12 +2842,12 @@ function paint(m) {
     if (m.goal_mode === "flag") h += '<p>🚩 <b>Fahne erobern</b>: hol die Fahne der anderen bei ihrer Basis und bring sie zu deiner Basis (+500). Berührst du jemanden, der eure Fahne trägt, geht sie zurück (+100). Die Kamera passt auf alle auf.</p>';
     if (m.mode === "teamguard") h += '<p>⚔️ Team gegen Team · Runde ' + (m.mround + 1) + ' von 2: <b style="color:' + ["#eb2e1f", "#1f6bfa"][m.tg] + '">' + ["Team Rot", "Team Blau"][m.tg] + '</b> bewacht (Kopfkamera und feste Kamera), das andere Team schleicht. Danach wird getauscht.</p>';
     if (m.mode === "seek") h += '<p>🙈 <b>Verstecken mit dem Rover:</b> Alle starten bei der Basis. ' + (role === "guard" ? 'Du bist der <b>Fänger</b>: 30 s Augen zu, dann fährst du den Rover (Joystick links), drehst den Kopf (rechts wischen) und drückst «Erwischt!», wenn du jemanden im Bild hast.' : 'Du hast 30 s zum Verstecken. Der Fänger sieht nur die Kamera des Rovers. Berühre die Basis (Pfeil), ohne gefunden zu werden – dann gewinnen alle Verstecker!') + '</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🌳 Verstecker</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">🔎 Fänger</button>';
-    if (m.mode === "mwhand") h += '<p>🕹 <b>Team gegen MoveEye:</b> Die Wächter sitzen an MoveEye, drehen die echte Kamera mit dem Joystick und drücken dort «Erwischt!». Der Balken zeigt nur, wie gut man dich sieht.</p>';
+    if (m.mode === "mwhand") h += '<p>🕹 <b>Team gegen MoveEye:</b> Die Wächter sitzen an MoveEye, drehen die echte Kamera mit dem Joystick, zielen mit der Bildmitte auf dich und drücken den Auslöser 🎯. Der Balken zeigt nur, wie gut man dich sieht.</p>';
     if (J) h += '<p>Du bist <b>kein Mensch</b>, sondern ein Tier oder ein Ding. Schaffst du es, dass MoveEye trotzdem <b>«Person!»</b> meldet? Jeder Fehlalarm gibt Punkte – und MoveEye lernt daraus. Der Pfeil zeigt zur Kamera 📷.</p>' +
       (J.mw ? '' : '<p>⚠ <b>MoveEye ist nicht verbunden</b> – ohne MoveEye zählt kein Fehlalarm.</p>') +
       (role === "runner" ? '<div class="lab">Dein Lockvogel</div><div class="chips">' + (J.lures || []).map(l => '<button type="button" data-lure="' + l.v + '" class="' + (l.v === J.lure ? "on" : "") + '">' + l.i + ' ' + esc(l.n) + '</button>').join("") + '</div><p><small>' + esc(J.tip || "") + '</small></p>' : '');
     if (m.mode === "mw") h += '<p>' + (m.mwd ? '🛡 Diesmal entscheidet die <b>echte Erkennung von MoveEye</b>: meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht.' : '⚠ MoveEye ist nicht verbunden – der Simulator entscheidet.') + '</p>';
-    if (m.mode === "guard") h += '<p>Ein Spieler kann Wächter sein: er sieht durch die Kamera, dreht den Kopf und ruft «Erwischt!».' + (m.botg ? ' Will niemand? Dann passt der <b>🤖 Bot-Wächter</b> auf.' : '') + '</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🕵️ Schleicher</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">👁 Wächter</button><br>';
+    if (m.mode === "guard") h += '<p>Ein Spieler kann Wächter sein: er sieht durch die Kamera, dreht den Kopf, zielt mit der Bildmitte (Kreis) und drückt den Auslöser 🎯 – daneben ist ein Fehlalarm.' + (m.botg ? ' Will niemand? Dann passt der <b>🤖 Bot-Wächter</b> auf.' : '') + '</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🕵️ Schleicher</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">👁 Wächter</button><br>';
     if (m.teams) { const tm = [0, 1].map(k => '<div class="tm' + (m.team === k ? " me" : "") + '"><b style="color:' + ["#eb2e1f", "#1f6bfa"][k] + '">' + ["Team Rot", "Team Blau"][k] + '</b>' +
         (m.list || []).filter(p => p.tm === k).map(p => '<span style="color:' + p.c + '">●</span> ' + esc(p.n)).join("<br>") + '<br><button class="sec' + (m.team === k ? " on" : "") + '" data-team="' + k + '">' + (m.team === k ? "✓ dabei" : "wechseln") + '</button></div>').join("");
       h += '<div class="teams">' + tm + '</div>'; }
@@ -2903,7 +2932,22 @@ $("#b-stone").addEventListener("pointerdown", e => { e.preventDefault(); send({t
 $("#b-act").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "act"}); });
 $("#b-lamp").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "lamp"}); });
 $("#b-light").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "light"}); });
-$("#b-catch").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "catch"}); });
+$("#b-catch").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "catch"}); if ($("#b-catch").classList.contains("shut") && SH.until <= Date.now()) { const f = $("#shfl"); f.classList.remove("on"); void f.offsetWidth; f.classList.add("on"); tone(1600, 0.05, "square", 0.08); } });
+// 3D-4.x «Auslöser»: a person is the guard - crosshair in the middle (hit area by the difficulty), the round shutter, a 3 s lock ring after a miss
+const SH = {until: 0, len: 3};
+function shutPaint(m) {
+  const S = m.shut || {}, on = role === "guard" && !!S.on, b = $("#b-catch"), x = $("#xh");
+  b.classList.toggle("shut", on);
+  const lab = on ? "Auslöser" : "Erwischt!";
+  if (b.dataset.l !== lab) { b.dataset.l = lab; b.innerHTML = "<i>" + (on ? "🎯" : "🚨") + "</i>" + lab; }
+  if (on && S.lock > 0) { SH.until = Date.now() + S.lock * 1000; SH.len = S.len || 3; } else if (on && !(S.lock > 0)) SH.until = 0;
+  x.hidden = !on || !(m.rs === "play" || m.rs === "countdown");
+  if (!x.hidden) { const v = $("#v"), iw = v.naturalWidth || 16, ih = v.naturalHeight || 9, k = Math.min(innerWidth / iw, innerHeight / ih);
+    x.style.width = x.style.height = Math.max(18, 2 * (S.r || 0.1) * ih * k) + "px"; x.title = S.lv === "easy" ? "leicht" : S.lv === "hard" ? "schwer" : "normal"; }
+}
+setInterval(() => { const b = $("#b-catch"); if (!b.classList.contains("shut")) return; const left = Math.max(0, SH.until - Date.now()) / 1000;
+  b.style.setProperty("--p", (left > 0 ? Math.min(100, left / SH.len * 100) : 0) + "%"); b.classList.toggle("lock", left > 0);
+  const i = b.querySelector("i"); if (i) { const tx = left > 0 ? String(Math.ceil(left)) : "🎯"; if (i.textContent !== tx) i.textContent = tx; } }, 100);
 $("#b-vote").addEventListener("pointerdown", e => { e.preventDefault(); const W = (st && st.w) || {};       // 3D-4.x: «Wer kommt durch?»
   lvBox('<h1>🔮 Wer kommt durch?</h1><p>Tippe, wer es ins Ziel schafft. Ein richtiger Tipp gibt XP.</p><p>' + (W.vote_list || []).map(r => '<button class="lv" onclick="voteFor(' + r.s + ')"><span style="color:' + r.c + '">●</span> ' + esc(r.n) + (W.vote === r.s ? ' ✓' : '') + ((W.tally || {})[r.s] ? ' · ' + W.tally[r.s] + '🔮' : '') + '</button>').join("") + '</p><p><button class="lv" onclick="lvBox(\'\')">Schliessen</button></p>'); });
 window.voteFor = (s) => { send({t: "vote", s}); lvBox(""); };
@@ -2937,6 +2981,7 @@ function padRead() {
   const l = Math.hypot(lx_, ly_); if (l > 1) { lx_ /= l; ly_ /= l; }
   const g_ = role === "guard";
   if (hit(0)) send({t: g_ ? "catch" : st.mode === "jaeger" ? "act" : "stone"});
+  if (hit(7) && g_) send({t: "catch"});                             // 3D-4.x: R2 = the shutter («Auslöser») of the guard
   if (hit(1)) { if (g_) send({t: "light"}); else { posture = posture === 1 ? 0 : 1; btns(); } }
   if (hit(2)) { if (g_) send({t: "light"}); else { posture = posture === 2 ? 0 : 2; btns(); } }
   if (hit(3) && !g_) send({t: "lamp"});
@@ -2996,6 +3041,7 @@ func spectator_info() -> Dictionary:
 			"lives": int(main.game_lives), "ev": ev_kind, "cps_all": checkpoints.size(), "board": board_list(), "records": records,
 			"week": week_list(), "sneak": sneak_list(), "week_id": week_id, "task": task.get("text", ""), "task_bonus": int(task.get("bonus", 0)),
 			"mwg": {"catches": mwg["catches"], "false": mwg["false"], "wait": int(max(0.0, float(mwg["t"]) - now()))},
+			"shut": shut.info_for(null),                   # 3D-4.x: «Auslöser» for the guards at MoveEye (crosshair, lock)
 			"pics": gallery.map(func(g): return {"n": g["n"], "c": g["c"]}), "night": night_saved >= 0.0,
 			"url": address() if open else "", "max": int(main.game_max), "runners": runners_n()}   # 3D-3.95: for «Spiele freigeben» in MoveEye
 	if round_state == "countdown":

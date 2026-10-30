@@ -114,6 +114,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `633_uebersetzungen_guide2.py` | Übersetzungen und Anleitungs-Kapitel «Einrichtung, Rundgänge und Tipps» zu Guide 2 | 330 |
 | `589_blinki.py` | «Blinki», die Figur aus dem Logo für Einrichtung und Rundgänge: SVG + CSS + Skript vor /g2/ui.js (Web), kleines Bild mit cv2 (Fenster), Schalter «blinki_on» | 260 |
 | `635_uebersetzungen_blinki.py` | Übersetzungen und Anleitungs-Zeile zu Blinki | 60 |
+| `634_uebersetzungen_ausl.py` | Übersetzungen für den «Auslöser» (539) | 40 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |
@@ -121,6 +122,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `536_web_live_ansicht.py` | Web: Live-Seite nach Format (Hoch / Quer / nur Bild), «Ansicht» (Vorlagen, Bildgrösse, Lieblingsknöpfe, Karten, Bearbeiten), Joystick nur mit Kopf (`live_has_head`) | 488 |
 | `537_web_platz.py` | Web: Seite «Platz einrichten» (/place), Karte auf der Schutz-Seite, Angebot nach dem Hinstellen, Blickwinkel in Kamera / Servos | 420 |
 | `538_web_controller_ansicht.py` | Web: «Controller-Ansicht» der Live-Seite für Handy / Tablet (Live- + Simulator-Bild, Game-Controller, Gesten, schmale Leiste) | 383 |
+| `539_web_ausloeser.py` | «Auslöser»: ein Mensch steuert die Kamera – Fadenkreuz und runder 🎯-Knopf im Live-Bild, R2, Treffer als Alarm ins Test-Postfach | 170 |
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
 | `545_simulator_updates.py` | Simulator-Updates: ein Besitzer («Neue Versionen» im Simulator) | 72 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
