@@ -117,12 +117,6 @@ def demo_start():
     if CFG["armed"] and not CFG.get("sim_on"):
         return False, "MoveEye is armed - disarm it first (the demo uses the simulator instead of the real camera)"
     if not CFG.get("sim_on") or not SIM.get("ok"):
-        try:
-            if not SIM.get("ok") and simpi_possible() and sim3d_ready("pi"):
-                simpi_start("demo")                        # on the Pi: start the simulator first
-                sim_set(True, "demo")
-        except Exception:
-            pass
         if not CFG.get("sim_on"):
             return False, "start the simulator first (tab Simulator)"
     DEMO_RUN.update(busy=True, step="", i=0, n=len(DEMO_STEPS), t=time.time(), stop=False)

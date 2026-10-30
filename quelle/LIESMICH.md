@@ -176,6 +176,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `612_uebersetzungen_spielA.py` | Übersetzungen der Wächter-Werkzeuge (543) | 17 |
 | `613_uebersetzungen_sicher.py` | Übersetzungen und Anleitung zu 578 | 165 |
 | `614_uebersetzungen_training.py` | Übersetzungen «KI trainieren» / Modell von selbst aktualisieren | 27 |
+| `615_uebersetzungen_nopisim.py` | Übersetzung «klug: wichtige Richtungen länger anschauen» (Unterschalter von «Patrouille») | 9 |
 | `616_uebersetzungen_spiel2.py` | Übersetzungen der Spiel-Extras (Wetterwechsel, Tarn-Sachen, Diebstahl, Lern-Punkte) | 8 |
 | `617_uebersetzungen_platz.py` | Übersetzungen «Dein Platz» (früher «Zwilling deines Platzes») | 8 |
 | `618_uebersetzungen_kisicher.py` | Übersetzungen zu 197 (KI-Daten aufräumen) und 574 (Anmelden nur verschlüsselt) | 95 |

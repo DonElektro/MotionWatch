@@ -399,7 +399,6 @@ class SysMonitor:
                 MODE_RT["checked"] = time.time()
                 try:
                     mode_tick()
-                    simpi_tick()
                     helper_tick()
                 except Exception as e:
                     log_event("sys", "mode check: " + str(e)[:80])
