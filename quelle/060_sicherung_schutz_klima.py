@@ -1075,6 +1075,8 @@ class Notifier:
             return
         if CFG["webpush_on"] and webpush_subs():
             threading.Thread(target=self._webpush, args=(p,), daemon=True).start()
+        if CFG["users"]:                                 # 2.98.42: own ntfy topics of the users (041)
+            users_push_dispatch(self._title(p), self._text(p), push_cat("mw-" + self._event(p)))
         if pushover_ready():
             threading.Thread(target=self._pushover, args=(p, jpg, fname), daemon=True).start()
         ev = self._event(p)

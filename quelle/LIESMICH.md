@@ -36,6 +36,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `020_einstellungen.py` | CFG: alle Einstellungen mit Standardwerten | 435 |
 | `030_zonen_anwesenheit_zeitplaene.py` | Zonen, Anwesenheit, Text-Einstellungen, Zeitpläne | 817 |
 | `040_speichern_passwort.py` | Einstellungen speichern, Web-Passwort | 443 |
+| `041_benutzer_zugang.py` | Benutzer: Zeitfenster / Ablaufdatum, Handy verknüpfen (QR-Einmal-Link /l/), Geräte und Push pro Benutzer | 380 |
 | `050_meldungen_push.py` | Meldungen (ntfy, Telegram, Webhook), Web-Push | 289 |
 | `060_sicherung_schutz_klima.py` | Sicherung, Diebstahlschutz, Linse, Klima, Wetter, Postausgang, Notifier | 1224 |
 | `066_alarm_extras.py` | Alarm-Extras: Knöpfe in der Push-Nachricht (/na/), Akku-Prognose, Morgen-Bildstreifen, «Was war das?», doppelte Bestätigung, Ansage beim Einschalten, «Bist du's?» | 724 |
@@ -141,6 +142,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
 | `544_web_spiel_online.py` | Web: Seite Simulator, Karte «Spiel» – «Mensch gegen KI» (beide Runden, Ergebnis) und «Online-Einladung» (QR-Code, Zurückziehen, Protokoll) | 110 |
 | `545_simulator_updates.py` | Simulator-Updates: ein Besitzer («Neue Versionen» im Simulator) | 72 |
+| `547_web_benutzer.py` | Web: Karte «Benutzer» (Rollen Kind / Freund / Familie / Eigene Rechte, Handy verknüpfen, Zugangszeit, Push) | 130 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
 | `560_uebersetzungen_de.py` | Übersetzungen Deutsch | 498 |
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |
@@ -186,6 +188,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `618_uebersetzungen_kisicher.py` | Übersetzungen zu 197 (KI-Daten aufräumen) und 574 (Anmelden nur verschlüsselt) | 95 |
 | `619_uebersetzungen_simdopp.py` | Übersetzungen der Aufräum-Punkte Spiel-Karte, Bewachte Sachen, Sim-Schalter, Unsichtbar-Trank | 12 |
 | `621_uebersetzungen_sicher3.py` | Übersetzungen und Anleitung zu 573 (App-Schlüssel, Sicherheit an einem Ort) und zur Rotlicht-Ansicht (578) | 150 |
+| `611_uebersetzungen_users.py` | Übersetzungen und Anleitung «Benutzer und Handys» | 190 |
 | `624_uebersetzungen_platzein.py` | Übersetzungen und Anleitung «Platz einrichten» / «Blickwinkel der Kamera» | 200 |
 | `625_uebersetzungen_qr.py` | Übersetzungen der QR-Codes (585) | 129 |
 | `626_uebersetzungen_live.py` | Übersetzungen der neuen Live-Seite (536) und des Fensters (570) | 89 |

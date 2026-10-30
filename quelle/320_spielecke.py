@@ -89,6 +89,7 @@ def games_all_open(hours=6.0, who="web"):
                 GAMES_ALL["sim"] = False
         threading.Thread(target=_sim, daemon=True, name="games-sim").start()
     log_event("sys", f"All games open for {hours:g} h ({who})")
+    users_push_games()                                      # 2.98.42: invitation to the users who want it (041)
 
 
 def games_all_close(who="web"):

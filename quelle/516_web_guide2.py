@@ -369,7 +369,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
     if (B.lock) return true;
     mwGuide.busy = true;
     try { await loadS(); } finally { mwGuide.busy = false; }
-    if (!S || S.locked || document.getElementById("g2w")) return true;
+    if (!S || S.locked || S.ok === false || document.getElementById("g2w")) return true;      // 403 for users without admin rights (041)
     const G = S.guide || {};
     const want = /[?&]guide=1/.test(location.search);
     if (!force && !want && S.done) return true;

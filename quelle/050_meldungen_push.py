@@ -167,7 +167,7 @@ def _webpush_save(subs):
 _WP_HOST = re.compile(r"^https://[A-Za-z0-9.\-]+(:\d+)?/[^\s]{1,900}$")
 
 
-def webpush_add(sub, label=""):
+def webpush_add(sub, label="", user=""):
     try:
         ep = str(sub["endpoint"]); keys = sub.get("keys") or {}
         p256, auth = _b64u_dec(keys["p256dh"]), _b64u_dec(keys["auth"])
@@ -178,6 +178,8 @@ def webpush_add(sub, label=""):
     subs = [x for x in webpush_subs() if x["endpoint"] != ep]
     subs.append({"endpoint": ep, "p256dh": _b64u(p256), "auth": _b64u(auth), "label": str(label or "")[:60],
                  "added": datetime.now().strftime("%Y-%m-%d %H:%M")})
+    if user:
+        subs[-1]["user"] = str(user)[:24]                    # 2.98.42: this browser belongs to a user - gets only what the user chose (041)
     _webpush_save(subs)
     log_event("web", f"Web push switched on for {str(label or 'a device')[:60]}")
     return True, ""
@@ -242,7 +244,8 @@ def webpush_all(title, text, url="/", tag="mw", urgent=True):
     subs = webpush_subs()
     if not subs or not webpush_supported():
         return 0
-    ok = 0; gone = []
+    ok = 0; gone = []; cat = push_cat(tag)
+    subs = [x for x in subs if push_sub_wants(x, cat)]      # 2.98.42: users get only alarms / infos / games they chose (041)
     for sb in subs:
         try:
             code = webpush_send(sb, {"title": title[:120], "body": text[:400], "url": url or "/", "tag": tag, "urgent": bool(urgent)},
