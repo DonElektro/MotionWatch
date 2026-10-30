@@ -61293,6 +61293,25 @@ def stv_level_name(lang=None):
     return (tr("Watchful", lang), (40, 120, 230)) if lv == "watch" else (tr("Full", lang), (215, 45, 45))
 
 
+def _stv_simtimes(text, now):
+    """2.98.48 (Daniel): with the simulator the times in a message text are shown in the simulator's time too («erkannt um 13:04:40»)"""
+    if not (CFG.get("sim_on") and simval_live()):
+        return text
+    delta = now - datetime.now()
+    if abs(delta.total_seconds()) < 60:
+        return text
+    def fix(mo):
+        try:
+            h, mi, se = int(mo.group(1)), int(mo.group(2)), int(mo.group(3) or 0)
+            if h > 23 or mi > 59 or se > 59:
+                return mo.group(0)
+            t = datetime.now().replace(hour=h, minute=mi, second=se, microsecond=0) + delta
+            return t.strftime("%H:%M:%S" if mo.group(3) else "%H:%M")
+        except Exception:
+            return mo.group(0)
+    return re.sub(r"\b(\d{1,2}):(\d{2})(?::(\d{2}))?\b", fix, text)
+
+
 def stv_render_status(lang=None, red=False):
     im, d = _stv_canvas()
     now = sim_now()
@@ -61323,7 +61342,7 @@ def stv_render_status(lang=None, red=False):
         tt = re.sub(r"^[^:]{1,30}: ", "", tt) or tt                      # «MoveEye: Person» -> «Person» (the name is on top)
         d.text((10, 152), tm, font=f1, fill=(245, 154, 74))
         d.text((62, 152), _stv_fit(d, tt, f1, STV_SIZE - 72), font=f1, fill=(232, 238, 245))
-        for i, ln in enumerate(_stv_wrap(d, _stv_txt(m.get("text", "")), f2, STV_SIZE - 20, 2)):
+        for i, ln in enumerate(_stv_wrap(d, _stv_simtimes(_stv_txt(m.get("text", "")), now), f2, STV_SIZE - 20, 2)):
             d.text((10, 174 + i * 20), ln, font=f2, fill=(170, 185, 205))
     else:
         d.text((10, 160), tr("No messages yet", lang), font=_font(16, False), fill=(138, 155, 176))
@@ -61703,9 +61722,9 @@ STV_JS = r"""
     const ch = E("div", ""); ch.style.cssText = "display:flex;gap:6px 14px;flex-wrap:wrap;justify-content:flex-start;margin-top:6px";
     [["on", "On"], ["status", "Status"], ["alarm", "Alarm picture"], ["game", "Game"]].forEach(([f, lb]) => {
       const l = E("label", ""); l.style.cssText = "display:inline-flex;gap:4px;align-items:center";
-      const cb = E("input"); cb.type = "checkbox"; cb.checked = !!e[f]; cb.className = "stv-" + f;
+      const cb = E("input"); cb.type = "checkbox"; cb.checked = !!e[f]; cb.className = "sw stv-" + f;   // 2.98.48: the blue switch like everywhere
       cb.onchange = async () => { const r = await P({action: "update", id: e.id, field: f, value: cb.checked}); if (!r.ok) toast("⚠ " + (r.error || "error")); };
-      l.append(cb, E("span", "", T(lb))); ch.appendChild(l); });
+      l.style.gap = "8px"; l.append(E("span", "", T(lb)), cb); ch.appendChild(l); });
     c.appendChild(ch);
     const sl = E("div", "sl"), st = E("div", "row"), val = E("span", "val", e.brt + " %");
     st.append(E("span", "", T("Brightness (day)")), val);
@@ -63170,6 +63189,7 @@ _HELP_SMALLTV = {
            '<li><b>Alarmbild:</b> bei einem Tier der Bildausschnitt mit «Fuchs · 91 % · 6 m» (Tierart, Sicherheit der KI, Abstand geschätzt), bei einer Person '
            'nur ein Symbol mit Abstand und Uhrzeit – das Bild der Person nur mit «Bild auch bei Personen». Das Alarmbild bleibt 60 s (einstellbar), der Bildschirm ist 20 s hell.</li>'
            '<li><b>Spiel:</b> während einer Runde im 3D-Simulator Countdown bzw. Restzeit, die Punkte der Spieler und gross «Erwischt!», wenn MoveEye jemanden erwischt.</li></ul>'
+           '<p><b>Nicht verwechseln:</b> Der SmallTV ist ein kleiner eigener Bildschirm im WLAN. Die <i>TV-Anzeige</i> ist eine Webseite für einen Fernseher am HDMI des Pi, der <i>TV-Modus</i> zeigt den Spielstand des Simulators auf dem PC-Bildschirm.</p>'
            '<p><b>Nachts</b> (dunkel im Simulator oder nach Sonnenzeit) sind die Bilder rot wie die Rotlicht-Ansicht und gedimmt (Helligkeit nachts, Standard 10 %); bei Alarm kurz hell. '
            '<b>Einrichten:</b> «SmallTV einrichten (Schritt für Schritt)»: Gerät einstecken → mit dem Handy ins WLAN «GIFTV» (QR-Code) → Seite 192.168.4.1 (QR-Code) → dort das Netz von MoveEye wählen '
            '(am besten das eigene WLAN von MoveEye) → zurück und «Im Netz suchen» (fragt jede Adresse des eigenen Netzes kurz nach /v.json, nur auf Knopfdruck) oder die Adresse eintragen, '
@@ -63186,6 +63206,7 @@ _HELP_SMALLTV = {
            '<li><b>Alarm picture:</b> for an animal the picture section with «fox · 91 % · 6 m» (species, certainty of the AI, estimated distance), for a person only '
            'a symbol with distance and time – the picture of the person only with «Picture also for persons». The alarm picture stays 60 s (adjustable), the screen is bright for 20 s.</li>'
            '<li><b>Game:</b> during a round in the 3D simulator the countdown or time left, the points of the players and a big «Caught!» when MoveEye catches somebody.</li></ul>'
+           '<p><b>Not to be mixed up:</b> the SmallTV is a small display of its own in the Wi-Fi. The <i>TV display</i> is a web page for a television on the HDMI of the Pi, the <i>TV mode</i> shows the game of the simulator on the PC screen.</p>'
            '<p><b>At night</b> (dark in the simulator or by the sun) the pictures are red like the red light view and dimmed (brightness at night, 10 % by default); bright for a moment at an alarm. '
            '<b>Setup:</b> «Set up a SmallTV (step by step)»: plug it in → join the Wi-Fi «GIFTV» with the phone (QR code) → page 192.168.4.1 (QR code) → choose the network of MoveEye there '
            '(best the own Wi-Fi of MoveEye) → back and «Search in the network» (asks every address of the own network briefly for /v.json, only on the button) or enter the address '
