@@ -149,6 +149,8 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `639a_uebersetzungen_push.py` | Übersetzungen und «?»-Texte der Push-Karten | 205 |
 | `639b_uebersetzungen_menu.py` | Übersetzungen der Menü-Struktur 2: kurze Beschriftungen (die lange im «?»), neue Gruppen | 401 |
 | `639c_menu_struktur.py` | Menü-Struktur 2: Gruppen Web = Fenster, Entwickler-Gruppe, Einfach mit «Feineinstellungen», Abschreckungs-Tabelle | 339 |
+| `639d_angleichen.py` | Angleichen MoveEye ↔ Simulator: Entwickler-Schalter an den Simulator (dev_area), Fenster «Strom» und Teil «System» (Ausschalten / Neustart / Pause) | 75 |
+| `639e_uebersetzungen_angl.py` | Übersetzungen zu 639d (Störungen-Link, Foto des Platzes) | 13 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |

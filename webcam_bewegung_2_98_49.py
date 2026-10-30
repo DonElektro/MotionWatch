@@ -12169,7 +12169,7 @@ SIMHUB_JS = r"""
   async function load() { if (!document.querySelector("[data-simhub]")) return; try { H = await (await fetch("/api/simhub")).json(); } catch (e) { return; }
     if (document.querySelector('[data-simhub="full"]')) { try { LB = await (await fetch("/api/lab")).json(); LN = await (await fetch("/api/learn")).json(); } catch (e) {} }
     const ti = document.querySelector('[data-simhub="tile"] img'); if (ti && !document.hidden) ti.src = "/sim/view.jpg?w=320&r=" + Date.now();
-    if (!HASHED && location.hash === "#c-test" && document.getElementById("tr-box")) { HASHED = 1; open = "tests"; }   // 2.98.23: old links to the test run
+    if (!HASHED && (location.hash === "#c-test" || location.hash === "#c-stoer") && document.getElementById("tr-box")) { HASHED = 1; open = "tests"; }   // 2.98.23: old links to the test run
     if (!HASHED && location.hash === "#c-parc" && H.parc) { HASHED = 1; open = "parc"; }   // 416: the window opens the tile 🎯
     const ae = document.activeElement;
     if (!ae || (ae.type !== "range" && !(ae.closest && ae.closest("#tr-box")))) paintAll(); }
@@ -39344,6 +39344,7 @@ function scCss() {
 .sc-seg{display:flex;border:1px solid var(--line,#1f2b3a);border-radius:10px;overflow:hidden;margin:4px 0}.sc-seg button{flex:1;padding:9px;border:0;background:var(--panel,#111822);color:var(--txt,#e8eef5);font:inherit;cursor:pointer}
 .sc-seg button.on{background:var(--acc,#3b8cff);color:#fff}.sc-none{margin:8px 2px}
 .sc-hide{display:none!important}
+.sc-sub.sc-fine{border-top:1px dashed var(--line,#1f2b3a)}.sc-sub.sc-fine>.sc-sh{color:var(--acc2,var(--acc,#3b8cff));font-size:11px;letter-spacing:.06em;text-transform:uppercase}
 .sc-card.sc-on1>.sc-hd svg{stroke:var(--grn,#3fcf6b)}.sc-card.sc-on1>.sc-hd .sc-ar{color:var(--grn,#3fcf6b)}
 .sc-card.sc-on2>.sc-hd svg{stroke:var(--org,#f2a33a)}.sc-card.sc-on2>.sc-hd .sc-ar{color:var(--org,#f2a33a)}`;
   document.head.appendChild(s);
@@ -39362,7 +39363,11 @@ function scWizOnly(c) { return !!c.wiz || (!("gid" in c) && scGid(c) === "game" 
 // 2.98.23 (Konzept): the simulator group «Testlauf» is not shown in the Simulator control (testing has ONE place: group «Testen»,
 // tile «Tests»); there it is built with data-only="testrun" (#tr-sim, recordings of the sneak paths, Pi 5 settings)
 const SC_TEST_DUP = ["testrun_plan", "testrun_start", "testrun_stop"];   // the same as «Testlauf starten» of MoveEye right above (/api/simtest)
-try { Object.assign(I18N.de, {"from MoveEye (setting of MoveEye, only shown here)": "von MoveEye (Einstellung von MoveEye, hier nur angezeigt)"}); } catch (e) {}   // Aufräumen 2
+try { Object.assign(I18N.de, {"from MoveEye (setting of MoveEye, only shown here)": "von MoveEye (Einstellung von MoveEye, hier nur angezeigt)", "Fine-tuning": "Feineinstellungen"}); } catch (e) {}   // Aufräumen 2
+// 639d (Angleichen, Daniel 30.10.2026): «Einfach» like everywhere - the Experte settings sit in a closed «Feineinstellungen (n)» of
+// their part / card (not hidden); the group «Entwickler» (gid dev) only with MoveEye's «Entwickler-Bereich» (dev_area, also sent to
+// the simulator, which shows its group the same way)
+const scDev = c => scGid(c) === "dev";
 function simCtlBuild(G, r, ctl, fmt) {
   scCss();
   const only = G.dataset.only || "";
@@ -39390,12 +39395,13 @@ function simCtlBuild(G, r, ctl, fmt) {
     const ar = () => { hd.querySelector(".sc-ar").textContent = card.classList.contains("open") ? "▼" : "▶"; };
     hd.onclick = () => { card.classList.toggle("open"); ar(); card.classList.contains("open") ? openC.add(g) : openC.delete(g); ss("mw-sc-open", [...openC]); };
     ar(); const bd = el("div", "sc-bd"); card.append(hd, bd); G.appendChild(card); cards.push(card);
-    const subs = {};
+    const subs = {}, fines = new Map();
+    if (cs.some(scDev)) card.dataset.dev = "1";
     cs.forEach(c => {
-      let tgt = bd; const sub = c.sub || "";
+      let tgt = bd; const sub = !only && c.sub === "Feineinstellungen" ? "" : c.sub || "";   // 639d: one fold «Feineinstellungen» per card
       if (sub) {
         if (!subs[sub]) {
-          const key = g + "/" + sub, w = el("div", "sc-sub"); if (openS.has(key)) w.classList.add("open");
+          const key = g + "/" + sub, w = el("div", "sc-sub"); if (openS.has(key) || (only && sub === "Störungen" && location.hash === "#c-stoer")) w.classList.add("open");
           const sh = document.createElement("button"); sh.type = "button"; sh.className = "sc-sh";
           const p = () => { sh.textContent = (w.classList.contains("open") ? "▾  " : "▸  ") + sub; };
           sh.onclick = () => { w.classList.toggle("open"); p(); w.classList.contains("open") ? openS.add(key) : openS.delete(key); ss("mw-sc-sub2", [...openS]); };
@@ -39403,12 +39409,17 @@ function simCtlBuild(G, r, ctl, fmt) {
         }
         tgt = subs[sub];
       }
+      if (!only && (scExpert(c) || c.sub === "Feineinstellungen") && !scDev(c)) {      // 639d: into the «Feineinstellungen» of its part
+        if (!fines.has(tgt)) { const w = el("div", "sc-sub sc-fine"), sh = document.createElement("button"), sb = el("div", "sc-sb"); sh.type = "button"; sh.className = "sc-sh";
+          sh.onclick = () => { w.classList.toggle("open"); w.dataset.own = "1"; scFineP(w); }; w.append(sh, sb); tgt.appendChild(w); fines.set(tgt, w); }
+        tgt = fines.get(tgt).querySelector(".sc-sb");
+      }
       let row;
       if (c.type === "map") { row = simMap(c, v => ctl({ctl: "set", id: c.id, value: v})); row.classList.add("sc-row"); }
       else if (c.type === "button") {
         let grid = tgt.lastElementChild; if (!grid || !grid.classList.contains("sc-bt")) { grid = el("div", "sc-bt"); tgt.appendChild(grid); }
         const x = el("button", "", (c.emoji ? c.emoji + " " : "") + c.label); x.type = "button"; if (c.label.length > 26) x.className = "wide";
-        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; x.dataset.ex = scExpert(c) ? "1" : ""; grid.appendChild(x); return;
+        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; x.dataset.ex = scExpert(c) && only ? "1" : ""; grid.appendChild(x); return;
       } else if (c.type === "toggle") {
         row = el("label", "sc-row sc-tg"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sc-sw simv";
         cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked}); row.append(el("span", "", c.label), cb);
@@ -39428,8 +39439,9 @@ function simCtlBuild(G, r, ctl, fmt) {
         row = el("div", "sc-row sc-tx"); const ti = document.createElement("input"); ti.className = "simv";
         ti.onkeydown = e => { if (e.key === "Enter") ctl({ctl: "set", id: c.id, value: ti.value}); }; row.append(el("div", "", c.label), ti);
       }
-      row.dataset.cid = c.id; row.dataset.lab = c.label; row.dataset.ex = scExpert(c) ? "1" : ""; tgt.appendChild(row);
+      row.dataset.cid = c.id; row.dataset.lab = c.label; row.dataset.ex = scExpert(c) && only ? "1" : ""; tgt.appendChild(row);
     });
+    fines.forEach(w => { w.parentNode.appendChild(w); scFineP(w); });            // «Feineinstellungen» last in its part / card
   });
   const seg = el("div", "sc-seg"); const b1 = el("button", "", t("Simple")), b2 = el("button", "", t("Expert")); b1.type = b2.type = "button"; seg.append(b1, b2); G.appendChild(seg);
   const note = el("div", "mut", t("Simple: only the important settings. «Expert» shows all.")); G.appendChild(note);
@@ -39439,9 +39451,12 @@ function simCtlBuild(G, r, ctl, fmt) {
     b1.classList.toggle("on", !expert); b2.classList.toggle("on", expert); note.hidden = expert || !!only;
     cards.forEach(card => {
       let vis = 0;
+      card.querySelectorAll(".sc-fine").forEach(w => { if (!w.dataset.own) w.classList.toggle("open", expert); });   // 639d: closed in «Einfach», open in «Experte»
       card.querySelectorAll("[data-lab]").forEach(n => { const ok = (q ? n.dataset.lab.toLowerCase().includes(q) : true) && (expert || q || n.dataset.ex !== "1"); n.classList.toggle("sc-hide", !ok); if (ok) vis++; });
       card.querySelectorAll(".sc-sub").forEach(w => { const n = w.querySelectorAll("[data-lab]:not(.sc-hide)").length; w.classList.toggle("sc-hide", !n); if (q && n) w.classList.add("open"); });
       card.querySelectorAll(".sc-bt").forEach(b => b.classList.toggle("sc-hide", !b.querySelector("button:not(.sc-hide)")));
+      card.querySelectorAll(".sc-fine").forEach(scFineP);
+      if (card.dataset.dev && !window.SC_DEV) vis = 0;                         // 639d: «Entwickler» only with dev_area
       card.classList.toggle("sc-hide", !vis); if (q && vis) { card.classList.add("open"); any = true; }
       const ar = card.querySelector(".sc-ar"); ar.textContent = card.classList.contains("open") ? "▼" : "▶";
     });
@@ -39451,7 +39466,13 @@ function simCtlBuild(G, r, ctl, fmt) {
     fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !v, page: "sim"})}).catch(() => {}); };
   qi.oninput = apply; b1.onclick = () => setEx(false); b2.onclick = () => setEx(true);
   apply();
-  if (!only && window.SC_EXPERT == null) fetch("/api/ui_simple?page=sim").then(x => x.json()).then(j => { window.SC_EXPERT = !j.on; expert = window.SC_EXPERT; apply(); }).catch(() => {});
+  if (!only && window.SC_EXPERT == null) fetch("/api/ui_simple?page=sim").then(x => x.json()).then(j => { window.SC_EXPERT = !j.on; window.SC_DEV = !!j.dev; expert = window.SC_EXPERT; apply(); }).catch(() => {});
+  if (only && location.hash === "#c-stoer" && !window.SC_STOER) G.querySelectorAll(".sc-sub.open").forEach(w => {   // 639d: link «Störungen» (Entwickler)
+    if (/Störungen/.test(w.textContent.slice(0, 40))) { window.SC_STOER = 1; setTimeout(() => w.scrollIntoView({block: "start", behavior: "smooth"}), 300); } });
+}
+function scFineP(w) {                                // 639d: «▸ Feineinstellungen (n)»
+  const n = w.querySelectorAll(".sc-sb [data-lab]").length, sh = w.querySelector(":scope > .sc-sh");
+  sh.textContent = (w.classList.contains("open") ? "▾  " : "▸  ") + t("Fine-tuning") + " (" + n + ")";
 }
 
 // ---- the simulator window (3D-3.18): mouse / finger / keys on a picture of /sim/view.mjpg go to the simulator ----
@@ -50968,7 +50989,7 @@ function prExtras(d) {
 // 639c: the developer part (only with dev_area): links to what only the developer needs
 function devExtras(d) {
   const bx = el("div", "auxbox"); bx.appendChild(el("div", "mut", t("Only for the developer (switch: System → Device & help → Developer area).")));
-  [["🧪", "Test bench and test run", "/sim#c-test"], ["⚖", "A/B comparison", "/sim#c-hub"], ["📈", "Statistics & versions", "/sim#c-hub"],
+  [["🧪", "Test bench and test run", "/sim#c-test"], ["⚡", "Faults (servos, under-voltage)", "/sim#c-stoer"], ["⚖", "A/B comparison", "/sim#c-hub"], ["📈", "Statistics & versions", "/sim#c-hub"],
    ["🩺", "Diagnosis package", "/tools#diag"], ["⚗", "Settings of the simulation", "/sim"], ["🛠", "Developer area", "/dev"]].forEach(([ic, nm, u]) => {
     const a = el("a", "btn sec", ic + " " + t(nm) + " ›"); a.href = u; a.style.cssText = "display:block;margin-top:6px;text-align:left"; bx.appendChild(a); });
   d.insertBefore(bx, d.children[1] || null);
@@ -55061,7 +55082,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>🔋 USV-Akku (Waveshare UPS HAT, 2 × 18650):</b> wird selbst erkannt (I2C 0x42). Oben steht 🔌 bei Netzstrom bzw. 🔋 % und Restzeit im Akkubetrieb. Bei Stromausfall und wenn der Strom zurück ist kommt eine Push-Nachricht, bei 20 % eine Warnung, bei 8 % (einstellbar) schaltet sich der Pi sauber aus. Unter Akku die Kapazität einer Zelle eintragen (z. B. 3450 mAh).</li>
 <li><b>🔋 Akku:</b> Kapazität der Powerbank eintragen (mAh, wie aufgedruckt), nach dem Laden «Akku ist jetzt voll» drücken. Oben steht dann z. B. «🔋 62 % · 14 h». Bei 15 % kommt eine Push-Nachricht. Es ist eine Schätzung aus dem Verbrauch des Pi (Powerbanks melden ihren Ladestand nicht).</li>
 <li><b>Uhrzeit vom Handy:</b> ohne Internet holt sich der Pi die Uhrzeit vom Handy, damit Aufnahmen die richtige Zeit haben.</li></ul>
-<p><b>🧭 Referenz-Scan (ab 2.95.97):</b> Werkzeuge → «Referenz-Scan» führt in vier Schritten: Kamera aufstellen und ausrichten, Raster einstellen (Richtungen, Höhen, Fotos pro Richtung), Referenz aufnehmen, vergleichen. MoveEye fährt dabei mit dem Kopf alle Richtungen ab. Der Bericht zeigt pro Richtung Referenz und jetzt nebeneinander: rot = fehlt, blau = neu, orange = verändert. Vergleichen geht von Hand, beim Einschalten des Schutzes oder alle N Minuten (Einstellungen → Alarm &amp; Camping → Referenz-Scan), auf Wunsch mit Push-Meldung. Im 3D-Simulator starten die Knöpfe «MoveEye: Referenz-Scan» und «Mit Referenz vergleichen» dasselbe; «Testhilfe: Velo wegnehmen» zeigt, wie ein fehlender Gegenstand gemeldet wird.</p><p><b>🛡 Gegenstände bewachen, Tag und Nacht (ab 2.95.98):</b> Ein Referenz-Foto antippen und ein Rechteck über einen Gegenstand ziehen (Velo, Grill …), dann einen Namen geben. Fehlt er beim Vergleich, kommt sofort ein Alarm. Bei Dunkelheit speichert der Scan eine eigene Nacht-Referenz (Infrarot-Bild); verglichen wird immer mit der passenden. Im Simulator: «Nacht-Test» (Referenz am Tag, Vergleich in der Nacht), «Dein Platz» → «Bewachte Sachen» (Velo, Zelt, Tisch, Kühlbox, Grill wegnehmen), Sabotage-Test (Kamera abdecken, Kopf wegdrehen), und im Aufstell-Planer «Hierhin stellen + Referenz-Scan».</p></section>
+<p><b>🧭 Referenz-Scan (ab 2.95.97):</b> Werkzeuge → «Referenz-Scan» führt in vier Schritten: Kamera aufstellen und ausrichten, Raster einstellen (Richtungen, Höhen, Fotos pro Richtung), Referenz aufnehmen, vergleichen. MoveEye fährt dabei mit dem Kopf alle Richtungen ab. Der Bericht zeigt pro Richtung Referenz und jetzt nebeneinander: rot = fehlt, blau = neu, orange = verändert. Vergleichen geht von Hand, beim Einschalten des Schutzes oder alle N Minuten (Einstellungen → Alarm &amp; Camping → Referenz-Scan), auf Wunsch mit Push-Meldung. Im 3D-Simulator starten die Knöpfe «MoveEye: Referenz-Scan» und «Mit Referenz vergleichen» dasselbe; «Testhilfe: Velo wegnehmen» zeigt, wie ein fehlender Gegenstand gemeldet wird.</p><p><b>🛡 Gegenstände bewachen, Tag und Nacht (ab 2.95.98):</b> Ein Referenz-Foto antippen und ein Rechteck über einen Gegenstand ziehen (Velo, Grill …), dann einen Namen geben. Fehlt er beim Vergleich, kommt sofort ein Alarm. Bei Dunkelheit speichert der Scan eine eigene Nacht-Referenz (Infrarot-Bild); verglichen wird immer mit der passenden. Im Simulator: «Nacht-Test» (Referenz am Tag, Vergleich in der Nacht), «Gegenstände» → «Platz &amp; Umgebung» → «Bewachte Sachen» (Velo, Zelt, Tisch, Kühlbox, Grill wegnehmen), Sabotage-Test (Kamera abdecken, Kopf wegdrehen), und im Aufstell-Planer «Hierhin stellen + Referenz-Scan».</p></section>
 
 <section id="notify" data-icon="🔔"><h2>Benachrichtigungen</h2>
 <ul><li><b>📲 Web-Push (ohne App):</b> Benachrichtigungen → «Auf diesem Gerät einschalten». Braucht https: unter Benachrichtigungen «https über Tailscale einschalten» (in der Tailscale-Verwaltung einmal «HTTPS Certificates» erlauben), dann die Seite über <code>https://NAME.….ts.net/</code> öffnen. iPhone / iPad: diese https-Seite zum Home-Bildschirm hinzufügen und von dort einschalten. Funktioniert neben ntfy / Telegram.</li>
@@ -55283,7 +55304,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>🔋 UPS HAT (Waveshare, 2 × 18650):</b> found by itself (I2C 0x42). The header shows 🔌 on mains power or 🔋 % and time left on battery. A push message at a power cut and when power is back, a warning at 20 %, a clean shutdown at 8 % (adjustable). Under Battery enter the capacity of one cell (e.g. 3450 mAh).</li>
 <li><b>🔋 Battery:</b> enter the capacity of the powerbank (mAh, as on the label), press «Battery is full now» after charging. The header then shows e.g. «🔋 62 % · 14 h». At 15 % a push message comes. It is an estimate from what the Pi uses (powerbanks do not report their charge).</li>
 <li><b>Clock from the phone:</b> without internet the Pi takes the time from the phone, so recordings have the right time.</li></ul>
-<p><b>🧭 Reference scan (from 2.95.97):</b> Tools → «Reference scan» guides you in four steps: set up and align the camera, set the grid (directions, heights, photos per direction), take the reference, compare. MoveEye drives the head through all directions. The report shows reference and now side by side for every direction: red = missing, blue = new, orange = changed. Compare by hand, when armed or every N minutes (Settings → Alarm &amp; camping → Reference scan), with a push message if you like. In the 3D simulator the buttons «MoveEye: Referenz-Scan» and «Mit Referenz vergleichen» start the same; «Testhilfe: Velo wegnehmen» shows how a missing thing is reported.</p><p><b>🛡 Guard things, day and night (from 2.95.98):</b> Tap a reference photo, drag a box over a thing (bike, grill …) and name it. If it is missing at a comparison, the alarm comes at once. In the dark the scan saves its own night reference (infrared picture); the comparison always uses the fitting one. In the simulator: «Nacht-Test» (reference by day, comparison at night), «Dein Platz» → «Bewachte Sachen» (take away bike, tent, table, cool box, grill), sabotage test (cover the camera, turn the head away), and in the Aufstell-Planer «Hierhin stellen + Referenz-Scan».</p></section>
+<p><b>🧭 Reference scan (from 2.95.97):</b> Tools → «Reference scan» guides you in four steps: set up and align the camera, set the grid (directions, heights, photos per direction), take the reference, compare. MoveEye drives the head through all directions. The report shows reference and now side by side for every direction: red = missing, blue = new, orange = changed. Compare by hand, when armed or every N minutes (Settings → Alarm &amp; camping → Reference scan), with a push message if you like. In the 3D simulator the buttons «MoveEye: Referenz-Scan» and «Mit Referenz vergleichen» start the same; «Testhilfe: Velo wegnehmen» shows how a missing thing is reported.</p><p><b>🛡 Guard things, day and night (from 2.95.98):</b> Tap a reference photo, drag a box over a thing (bike, grill …) and name it. If it is missing at a comparison, the alarm comes at once. In the dark the scan saves its own night reference (infrared picture); the comparison always uses the fitting one. In the simulator: «Nacht-Test» (reference by day, comparison at night), «Gegenstände» → «Platz &amp; Umgebung» → «Bewachte Sachen» (take away bike, tent, table, cool box, grill), sabotage test (cover the camera, turn the head away), and in the Aufstell-Planer «Hierhin stellen + Referenz-Scan».</p></section>
 
 <section id="notify" data-icon="🔔"><h2>Notifications</h2>
 <ul><li><b>📲 Web push (no app):</b> Notifications → «Switch on on this device». Needs https: under Notifications «Switch on https over Tailscale» (allow «HTTPS Certificates» once in the Tailscale admin page), then open the page via <code>https://NAME.….ts.net/</code>. iPhone / iPad: add this https page to the home screen and switch it on from there. Works besides ntfy / Telegram.</li>
@@ -57544,7 +57565,7 @@ SIM_PAGE = SIM_PAGE.replace("</body>", "<!--KIGJS--></body>", 1)          # fill
 #   below   left the head stick (#stick of the controls, moved here) with ◎, the shutter 🎯 (539) and the AI help 🤖 (546)
 #           next to it; right the rover stick (#mstick, /api/mover) - in a game round only when the game mode drives the
 #           rover (seek, patrol), otherwise locked with a hint; between them the tiles: Szene, Tageszeit, Wetter, Besuch (the
-#           sheets of the Simulator-Zentrale 139), Spiel, Wildbeobachtung, Dein Platz (the simulator controls of the
+#           sheets of the Simulator-Zentrale 139), Spiel, Wildbeobachtung, Foto des Platzes (the simulator controls of the
 #           «Simulator-Steuerung», simCtlBuild of 470, one group each), KI-Wächter (simulator control game_kiguard, only when
 #           the simulator has it), Ansicht (views of the simulator window, /api/sim padview like 538), Folgen (the quick
 #           switch «Follow» of 530) and «… mehr» = the whole «Simulator-Steuerung» card (search, Simple / Expert).
@@ -57821,7 +57842,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
       ["visit", "🚶", "Visit", h.visitors != null ? h.visitors + " " + T("now") : ""],
       ["game", "🎮", "Game", R && R.game ? (R.game.open ? "🟢 " + (R.game.players || 0) : T("off")) : ""],
       ["wildlife", "🦌", "Wildlife watching", cv("rifle") ? (cv("rifle").value ? T("on") : T("off")) : ""],
-      ["place", "🪞", "Your place", cv("twin_on") ? (cv("twin_on").value ? T("on") : T("off")) : ""]];
+      ["place", "🪞", "Photo of the place", cv("twin_on") ? (cv("twin_on").value ? T("on") : T("off")) : ""]];
     if (h.wide && window.mwWide) L.splice(1, 0, ["wide", "🔭", "Wide camera", window.mwWide.sub(h)]);   // 591: the wide picture (tap = big)
     const kg = cv("game_kiguard");                      // simulator with «MoveEye as AI guard»
     if (kg) L.push(["kig", "🤖", "AI guard", kg.value ? T("on") : T("off")]);
@@ -57855,7 +57876,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
       if (!R || typeof simCtlBuild !== "function") return;
       const gid = open === "place" ? "scene" : open;
       let cs = (R.controls || []).filter(c => (c.gid || "") === gid || (!c.gid && gid === "game" && /^(Spiel|Game)$/.test(c.group || "")));
-      if (open === "place") cs = cs.filter(c => c.sub === "Dein Platz" || /^twin_/.test(c.id)).map(c => Object.assign({}, c, {sub: ""}));
+      if (open === "place") cs = cs.filter(c => c.sub === "Foto des Platzes" || c.sub === "Dein Platz" || /^twin_/.test(c.id)).map(c => Object.assign({}, c, {sub: ""}));
       const sig = JSON.stringify([open, cs.map(c => [c.id, c.type, c.label, c.options])]);
       let b = SH.firstChild;
       if (!b || SH.dataset.sig !== sig) {
@@ -57952,13 +57973,13 @@ for _a, _b in (('<section id="live" data-icon="📺"><h2>Die Live-Seite</h2>',
                 "<p><b>🧩 Sim-Kompakt (ab 2.98.46):</b> Ist der Simulator verbunden, zeigt die Live-Seite oben zwei kleine Bilder (links "
                 "die Kamera von MoveEye, rechts das Simulator-Fenster; antippen = gross, nochmals = zurück), darunter links den Kopf-Stick "
                 "(mit ◎, Auslöser 🎯 und KI-Hilfe 🤖), rechts den Rover-Stick und dazwischen die Kacheln Szene, Tageszeit, Wetter, Besuch, "
-                "Spiel, Wildbeobachtung, Dein Platz, KI-Wächter, Ansicht und Folgen; «… mehr» öffnet die ganze Simulator-Steuerung, «?» "
+                "Spiel, Wildbeobachtung, Foto des Platzes, KI-Wächter, Ansicht und Folgen; «… mehr» öffnet die ganze Simulator-Steuerung, «?» "
                 "die Erklärung. Ein- und ausschalten (pro Gerät) und die Bildqualität des Simulators unter «◫ Ansicht».</p>"),
                ('<section id="live" data-icon="📺"><h2>The live page</h2>',
                 "<p><b>🧩 Sim compact (from 2.98.46):</b> while the simulator is connected the live page shows two small pictures at the "
                 "top (left MoveEye's camera, right the simulator window; tap = big, tap again = back), below them the head stick on the "
                 "left (with ◎, shutter 🎯 and AI help 🤖), the rover stick on the right and the tiles in between: scene, time of day, "
-                "weather, visit, game, wildlife watching, your place, AI guard, view and follow; «… more» opens the whole simulator "
+                "weather, visit, game, wildlife watching, photo of the place, AI guard, view and follow; «… more» opens the whole simulator "
                 "control, «?» the explanation. On / off (per device) and the picture quality of the simulator under «◫ View».</p>")):
     if _a in HELP_PAGE:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
@@ -60332,7 +60353,8 @@ class WebStream:
                     web_ui_update({"mw-page-mode": json.dumps(m_)})
                 else:
                     CFG["ui_simple"] = bool(d.get("on")); save_settings()      # the default (the Pi window follows by itself)
-            return reply({"on": page_simple(pg) if pg else bool(CFG["ui_simple"]), "default": bool(CFG["ui_simple"]), "own": pg in page_modes()})
+            return reply({"on": page_simple(pg) if pg else bool(CFG["ui_simple"]), "default": bool(CFG["ui_simple"]), "own": pg in page_modes(),
+                          "dev": bool(CFG.get("dev_area"))})        # 639d: the group «Entwickler» of the simulator control (470)
 
         @app.route("/api/night", methods=["POST"])
         def api_night():
@@ -68025,18 +68047,7 @@ class App:
         if sec == "Setup":
             self.status_labels["Other devices"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Other devices"].pack(anchor="w", pady=(6, 0))
-            tk.Frame(sbody, bg=C["line"], height=1).pack(fill="x", pady=(10, 6))
-            tk.Label(sbody, text=tr("Power").upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").pack(fill="x")
-            bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(4, 0))
-            ttk.Button(bf, text="⏻ " + tr("Shut down Pi"), command=lambda: self._power("poweroff")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(bf, text="↻ " + tr("Restart Pi"), command=lambda: self._power("reboot")).pack(side="left", expand=True, fill="x")
-            pf = ttk.Frame(sbody); pf.pack(fill="x", pady=(6, 0))
-            ttk.Label(pf, text=tr("Pause the program for")).pack(side="left")
-            self.pause_cb = ttk.Combobox(pf, state="readonly", width=8, values=[f"{m} min" if m < 60 else f"{m // 60} h" for m in PAUSE_CHOICES])
-            self.pause_cb.current(2); self.pause_cb.pack(side="left", padx=(6, 0))
-            ttk.Button(sbody, text="⏸ " + tr("Pause program"), command=self._pause).pack(fill="x", pady=(4, 0))
-            self.status_labels["Power"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
-            self.status_labels["Power"].pack(anchor="w", pady=(4, 0))
+            # 639d: «Pi ausschalten / neu starten / Programm pausieren» moved to the part «System» of the group System (like the web)
             if CFG["lock_on"]:
                 info = lock_info()
                 ttk.Label(sbody, text="🔐 " + tr("Operator mode is on") + (f" {tr('since')} {info['since']}" if info["since"] else ""),
@@ -68323,7 +68334,7 @@ class App:
     def _pause(self):
         try:
             m = PAUSE_CHOICES[self.pause_cb.current()]
-        except (IndexError, tk.TclError, TypeError):
+        except (IndexError, tk.TclError, TypeError, AttributeError):
             m = 30
         txt = f"{m} min" if m < 60 else f"{m // 60} h"
         if not messagebox.askyesno("MoveEye", tr("Switch the program off now and start it again in") + f" {txt}?\n\n"
@@ -89992,7 +90003,7 @@ if GUI_OK:
         if sec == "Developer":
             ttk.Label(sbody, text=tr("Only for the developer (switch: System → Device & help → Developer area)."), style="Mut.TLabel",
                       wraplength=330, justify="left").pack(anchor="w")
-            for ic, lab, path in (("🧪", "Test bench and test run", "/sim#c-test"), ("⚖", "A/B comparison", "/sim#c-hub"),
+            for ic, lab, path in (("🧪", "Test bench and test run", "/sim#c-test"), ("⚡", "Faults (servos, under-voltage)", "/sim#c-stoer"), ("⚖", "A/B comparison", "/sim#c-hub"),
                                   ("📈", "Statistics & versions", "/sim#c-hub"), ("🩺", "Diagnosis package", "/tools#diag"),
                                   ("⚗", "Settings of the simulation", "/sim"), ("🛠", "Developer area", "/dev")):
                 ttk.Button(sbody, text=ic + " " + tr(lab) + " ›", command=lambda p=path: self._open_page(p)).pack(fill="x", pady=(4, 0))
@@ -90098,6 +90109,89 @@ def menu_selftest():
 
 
 SELFTEST_EXTRA.append(("Menu structure 2 (groups, Simple, developer, short labels)", menu_selftest))
+# ----------------------------------------------------------------------------
+#   * sim_state + «dev_area»: the 3D simulator shows its group «Entwickler» when the «Entwickler-Bereich» of MoveEye is on
+#     (simulator3d/schnittstelle.json, main.gd on_state) - no longer tied to «Experte»
+#   * window: the group «Stromversorgung» is called «Strom» (like the web page); «Pi ausschalten / neu starten / Programm
+#     pausieren» are in the first part «System» of the group System (the web page: card «System»), no longer under «Ort & Uhr»
+#   * the group «Entwickler» (web 530 devExtras, window 639c) links «Störungen» to the simulator control (/sim#c-stoer)
+# ----------------------------------------------------------------------------
+_sim_state_639d = sim_state
+
+
+def sim_state():                                          # + 639d: the developer switch of MoveEye (the simulator shows «Entwickler»)
+    d = _sim_state_639d()
+    d["dev_area"] = bool(CFG.get("dev_area"))
+    return d
+
+
+ANGL_SYS = "_System"                                      # a part of the window without settings (TK_PSEUDO): power off, restart, pause
+TK_PSEUDO.add(ANGL_SYS)
+MENU_TITLES[ANGL_SYS] = "System"
+TK_SUB_ICONS[ANGL_SYS] = "◉"
+for _g in TK_GROUPS:
+    if _g[0] == "sys" and ANGL_SYS not in _g[2]:
+        _g[2].insert(0, ANGL_SYS)
+ANGL_GROUP_DE = {"power": "Strom"}                         # the window group = the web group (530 I18N.de «Power supply»: «Strom»)
+
+
+if GUI_OK:
+    _angl_build_section_base = App._build_section
+    _angl_sidebar_base = App._build_sidebar
+
+    def _angl_build_section(self, sec, sbody, settings_parent=None):
+        if sec != ANGL_SYS:
+            return _angl_build_section_base(self, sec, sbody, settings_parent)
+        ttk.Label(sbody, text=tr("Switch off, restart, pause"), style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w")
+        bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(4, 0))
+        ttk.Button(bf, text="⏻ " + tr("Shut down Pi"), command=lambda: self._power("poweroff")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+        ttk.Button(bf, text="↻ " + tr("Restart Pi"), command=lambda: self._power("reboot")).pack(side="left", expand=True, fill="x")
+        pf = ttk.Frame(sbody); pf.pack(fill="x", pady=(6, 0))
+        ttk.Label(pf, text=tr("Pause the program for")).pack(side="left")
+        self.pause_cb = ttk.Combobox(pf, state="readonly", width=8, values=[f"{m} min" if m < 60 else f"{m // 60} h" for m in PAUSE_CHOICES])
+        self.pause_cb.current(2); self.pause_cb.pack(side="left", padx=(6, 0))
+        ttk.Button(sbody, text="⏸ " + tr("Pause program"), command=self._pause).pack(fill="x", pady=(4, 0))
+        self.status_labels["Power"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
+        self.status_labels["Power"].pack(anchor="w", pady=(4, 0))
+
+    def _angl_sidebar(self, body, tab="settings"):
+        r = _angl_sidebar_base(self, body, tab)
+        if cur_lang() == "de":
+            for gid, name in ANGL_GROUP_DE.items():
+                k = "grp:" + gid
+                if k in getattr(self, "group_titles", {}) and k in self.sections:
+                    self.group_titles[k] = name
+                    self._set_section(k, k in self.open_secs, save=False)
+        return r
+
+    # wraps: App._build_section (after 639c)
+    App._build_section = _angl_build_section
+    # wraps: App._build_sidebar (after 639c)
+    App._build_sidebar = _angl_sidebar
+
+
+def angl_selftest():
+    """dev_area goes to the simulator; the window part «System» holds power off / restart / pause"""
+    assert "dev_area" in sim_state(), "dev_area missing in sim_state"
+    assert any(g[0] == "sys" and g[2] and g[2][0] == ANGL_SYS for g in TK_GROUPS), "window: part «System» missing"
+    for k in ("Switch off, restart, pause", "Faults (servos, under-voltage)", "Photo of the place"):
+        assert k in DE, f"no German for {k}"
+    return "dev_area to the simulator, window part «System», «Strom»"
+
+
+SELFTEST_EXTRA.append(("Align MoveEye / simulator (developer switch, «Strom», System)", angl_selftest))
+_HX_ANGL = {
+    'Switch off, restart, pause': ('Ausschalten, neu starten, pausieren', 'Éteindre, redémarrer, pause', 'Spegnere, riavviare, pausa', 'Stizzar, reaviar, pausa'),
+    'Faults (servos, under-voltage)': ('Störungen (Servos, Unterspannung)', 'Pannes (servos, sous-tension)', 'Guasti (servo, sottotensione)', 'Disfunctions (servos, tensiun memia bassa)'),
+    'Photo of the place': ('Foto des Platzes', 'Photo de l’emplacement', 'Foto del posto', 'Foto da la plazza'),
+}
+for _k, _v in _HX_ANGL.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+# the main page has its own dictionary: German of the new link (devExtras) and of the tile of Sim-Kompakt (549)
+WEB_PAGE = WEB_PAGE.replace("</body>", "<script>Object.assign(I18N.de, " + json.dumps({_k: _v[0] for _k, _v in _HX_ANGL.items()}, ensure_ascii=False)
+                            + ");</script></body>", 1)
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

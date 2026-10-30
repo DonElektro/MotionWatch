@@ -2227,18 +2227,7 @@ class App:
         if sec == "Setup":
             self.status_labels["Other devices"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Other devices"].pack(anchor="w", pady=(6, 0))
-            tk.Frame(sbody, bg=C["line"], height=1).pack(fill="x", pady=(10, 6))
-            tk.Label(sbody, text=tr("Power").upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").pack(fill="x")
-            bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(4, 0))
-            ttk.Button(bf, text="⏻ " + tr("Shut down Pi"), command=lambda: self._power("poweroff")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(bf, text="↻ " + tr("Restart Pi"), command=lambda: self._power("reboot")).pack(side="left", expand=True, fill="x")
-            pf = ttk.Frame(sbody); pf.pack(fill="x", pady=(6, 0))
-            ttk.Label(pf, text=tr("Pause the program for")).pack(side="left")
-            self.pause_cb = ttk.Combobox(pf, state="readonly", width=8, values=[f"{m} min" if m < 60 else f"{m // 60} h" for m in PAUSE_CHOICES])
-            self.pause_cb.current(2); self.pause_cb.pack(side="left", padx=(6, 0))
-            ttk.Button(sbody, text="⏸ " + tr("Pause program"), command=self._pause).pack(fill="x", pady=(4, 0))
-            self.status_labels["Power"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
-            self.status_labels["Power"].pack(anchor="w", pady=(4, 0))
+            # 639d: «Pi ausschalten / neu starten / Programm pausieren» moved to the part «System» of the group System (like the web)
             if CFG["lock_on"]:
                 info = lock_info()
                 ttk.Label(sbody, text="🔐 " + tr("Operator mode is on") + (f" {tr('since')} {info['since']}" if info["since"] else ""),
@@ -2525,7 +2514,7 @@ class App:
     def _pause(self):
         try:
             m = PAUSE_CHOICES[self.pause_cb.current()]
-        except (IndexError, tk.TclError, TypeError):
+        except (IndexError, tk.TclError, TypeError, AttributeError):
             m = 30
         txt = f"{m} min" if m < 60 else f"{m // 60} h"
         if not messagebox.askyesno("MoveEye", tr("Switch the program off now and start it again in") + f" {txt}?\n\n"

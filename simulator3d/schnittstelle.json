@@ -59,7 +59,8 @@
     "drive": "Mover-Ketten -> Simulator Rover",
     "zones": "Zonen -> Simulator Zwilling",
     "waypoints": "Patrouille-Punkte -> Simulator Zwilling",
-    "ups_mah": "Akku-Groesse einer Zelle (Einstellung ups_mah) -> power.gd: Kapazitaet nur lesbar «von MoveEye»"
+    "ups_mah": "Akku-Groesse einer Zelle (Einstellung ups_mah) -> power.gd: Kapazitaet nur lesbar «von MoveEye»",
+    "dev_area": "Entwickler-Bereich von MoveEye an (639d) -> main.gd: Gruppe «Entwickler» im Simulator"
   },
   "info": {
     "v": "Version",

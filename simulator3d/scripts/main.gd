@@ -24,6 +24,8 @@ var Scenes = preload("res://scripts/scenes.gd")
 var Updater = preload("res://scripts/update.gd")
 var Mwpc = preload("res://scripts/mwpc.gd")
 var UI = preload("res://scripts/ui_style.gd")
+var Sym = preload("res://scripts/symbole.gd")          # 3D-4.22: drawn symbols, text without the emoji the font lacks
+var sym_node = null
 var Autostart = preload("res://scripts/autostart.gd")
 var Game = preload("res://scripts/game.gd")
 var TestRun = preload("res://scripts/testrun.gd")
@@ -475,6 +477,9 @@ func _ready() -> void:
 	simint = preload("res://scripts/simint.gd").new()      # 30.10.2026: siren on the PC + microphone, servo faults, thermal model
 	simint.main = self
 	add_child(simint)
+	sym_node = Sym.new()                               # 3D-4.22: drawn symbols instead of missing emoji (symbole.gd)
+	sym_node.main = self
+	add_child(sym_node)
 	schnitt = preload("res://scripts/schnittstelle.gd").new()   # Aufräumen 2: one field list with MoveEye (schnittstelle.json), armed / relays shown
 	schnitt.main = self
 	add_child(schnitt)
@@ -1979,14 +1984,9 @@ func is_dark() -> bool:
 
 
 static func no_emoji(t: String) -> String:
-	"""3D-3.98: emoji and pictographs away (the window shows them as empty boxes)"""
-	var o := ""
-	for i in range(t.length()):
-		var u := t.unicode_at(i)
-		if u >= 0x1F000 or (u >= 0x2600 and u <= 0x27BF) or u == 0xFE0F:
-			continue
-		o += t[i]
-	return o.strip_edges()
+	"""3D-3.98: emoji and pictographs away (the window shows them as empty boxes); 3D-4.22: symbole.gd - no gap before a
+	comma, a text that is only an emoji becomes a short word"""
+	return preload("res://scripts/symbole.gd").clean(t).strip_edges()
 
 
 func moon_phase() -> float:
@@ -2587,6 +2587,11 @@ func on_state(d: Dictionary, host: String) -> bool:
 	if not _mw_lead(d, host):
 		return false
 	var old_sound: String = str(mw.get("sound", ""))
+	if d.has("dev_area") and bool(d.get("dev_area", false)) != dev_area:   # 3D-4.22: MoveEye's developer switch -> group «Entwickler»
+		dev_area = bool(d.get("dev_area", false))
+		_settings_dirty = true
+		if dev_body != null:
+			_apply_simple.call_deferred()
 	mw = d
 	mw_t = now()
 	var dt_ = d.get("det", null)
@@ -3163,7 +3168,7 @@ func add_control(type: String, id: String, label: String, getter, setter, group:
 
 # ---- order of the settings: groups with a symbol, parts inside (from 3D-3.5) ------------------------------------------------
 # [group, symbol (window: drawn; page of MoveEye: emoji), parts in their order]
-const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Dein Platz", "Zeit"]],
+const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Foto des Platzes", "Zeit"]],
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
 		["Kamerabild", "lens", "👁", ["", "Weitwinkel-Kamera", "Wärmebild", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
@@ -4738,11 +4743,11 @@ func _build_ui() -> void:
 		gps_steal(gps_steal_t <= 0.0)
 		gsb.text = "GPS: zurückstellen" if gps_steal_t > 0.0 else "GPS: MoveEye wird weggetragen")
 	tl.add_child(gsb)
-	# 3D-4.7 («Dinge wegnehmen zusammenlegen»): ONE list of the things to take away - «Bewachte Sachen» in «Dein Platz»
+	# 3D-4.7 («Dinge wegnehmen zusammenlegen»): ONE list of the things to take away - «Bewachte Sachen» in «Gegenstände»
 	var pgb := Button.new()
 	pgb.text = "→ Bewachte Sachen: Velo, Zelt, Tisch, Kühlbox, Grill wegnehmen – merkt MoveEye, dass etwas fehlt?"
 	pgb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	pgb.pressed.connect(func(): inventar.open(0))
+	pgb.pressed.connect(func(): inventar.open_sec("guard"))   # 3D-4.22: window «Gegenstände», part «Bewachte Sachen»
 	tl.add_child(pgb)
 	tl.add_child(UI.small("Sabotage-Test für den Diebstahlschutz von MoveEye (scharf schalten):"))
 	var sg := HBoxContainer.new()
@@ -4885,6 +4890,10 @@ func _build_ui() -> void:
 		var card_body: VBoxContainer = groups[c.group]
 		var target: VBoxContainer = card_body
 		var sub := str(c.extra.get("sub", ""))
+		var to_fine: bool = c.extra.get("expert", false) and c.group != "Entwickler"
+		if sub == "Feineinstellungen":                    # 3D-4.22: a part named «Feineinstellungen» = the one fold of the card (not two)
+			sub = ""
+			to_fine = true
 		if sub != "":
 			var key: String = c.group + "/" + sub
 			if not subs.has(key):
@@ -4893,7 +4902,7 @@ func _build_ui() -> void:
 			target = subs[key]
 		# 3D-4.21 (Menü 2, same rule as MoveEye): «Einfach» shows the main switches, the rest sits in a closed «Feineinstellungen»
 		var folded := false
-		if c.extra.get("expert", false) and c.group != "Entwickler" and sub != "Feineinstellungen":
+		if to_fine:
 			var fk := str(target.get_instance_id())
 			if not fine_folds.has(fk):
 				var fb := UI.sub_fold(target, "Feineinstellungen", false)
@@ -4915,7 +4924,16 @@ func _build_ui() -> void:
 		var w: Control = fb.get_meta("wrap")
 		w.get_parent().move_child(w, -1)
 	if groups.has("Entwickler"):
-		expert_cards.append(groups["Entwickler"].get_meta("card"))
+		# 3D-4.22 (Angleichen, Daniel 30.10.2026): «Entwickler» like MoveEye - shown when MoveEye's «Entwickler-Bereich» is on
+		# (dev_area, sent by MoveEye), no longer tied to «Experte»; + «Diagnose-Paket» (built by MoveEye)
+		dev_body = groups["Entwickler"]
+		var dgb := Button.new()
+		dgb.text = "Diagnose-Paket (MoveEye)"
+		dgb.tooltip_text = "MoveEye packt Protokoll, Einstellungen ohne Passwörter und Systemwerte in ein ZIP (öffnet den Browser). Braucht ein verbundenes MoveEye."
+		dgb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		dgb.pressed.connect(_diag_pack)
+		dev_body.add_child(dgb)
+		ui_items.append([dgb, "Diagnose-Paket MoveEye", true, dev_body])
 	update_btn = Button.new()
 	update_btn.text = "Nach Updates suchen (jetzt %s)" % VERSION
 	update_btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -4988,6 +5006,23 @@ var expert_cards: Array = []
 var ui_items: Array = []              # [widget, label, expert, card body, part body] of every setting
 var sub_bodies: Array = []            # the parts inside the cards (3D-3.5)
 var fine_bodies: Array = []           # 3D-4.21: «Feineinstellungen» of a part / card (closed in «Einfach», open in «Experte»)
+var dev_body: VBoxContainer = null   # 3D-4.22: the card «Entwickler» (shown with MoveEye's «Entwickler-Bereich», dev_area)
+var dev_area := false                 # 3D-4.22: the developer switch of MoveEye (last known, saved)
+
+
+func _dev_hidden(it: Array) -> bool:
+	"""3D-4.22: a setting of the card «Entwickler» while MoveEye's «Entwickler-Bereich» is off"""
+	return dev_body != null and it[3] == dev_body and not dev_area
+
+
+func _diag_pack() -> void:
+	"""3D-4.22: «Diagnose-Paket» of the group «Entwickler»: MoveEye builds it (its page /tools/diag.zip opens in the browser)"""
+	if mw_addr == "" or now() - mw_t > 10.0:
+		status_label.text = "Diagnose-Paket: MoveEye ist nicht verbunden – das Paket macht MoveEye (Werkzeuge → Diagnose-Paket). Zuerst in MoveEye die Simulation einschalten."
+		start_info = status_label.text
+		return
+	OS.shell_open("%s://%s:%d/tools/diag.zip" % [str(mw.get("mw_scheme", "http")), mw_addr, int(mw.get("mw_port", 5000))])
+	start_info = "Diagnose-Paket: MoveEye packt es – der Browser lädt das ZIP herunter."
 
 
 func show_panel(on: bool) -> void:
@@ -5105,7 +5140,7 @@ func _search(q: String) -> void:
 		c.visible = q == "" and not (c in expert_cards and ui_simple)
 	var hit_bodies := {}
 	for it in ui_items:
-		var show_it: bool = (q == "" or str(it[1]).to_lower().contains(q)) and not (ui_simple and it[2] and q == "")
+		var show_it: bool = (q == "" or str(it[1]).to_lower().contains(q)) and not (ui_simple and it[2] and q == "") and not _dev_hidden(it)
 		it[0].visible = show_it
 		if q != "" and show_it:
 			hit_bodies[it[3]] = true
@@ -5246,6 +5281,8 @@ func _apply_simple() -> void:
 	var counts := {}
 	for it in ui_items:
 		var vis: bool = not (ui_simple and it[2])
+		if dev_body != null and it[3] == dev_body:
+			vis = dev_area                                 # 3D-4.22: «Entwickler» with MoveEye's switch, also in «Einfach»
 		it[0].visible = vis
 		if vis:
 			counts[it[3]] = true
@@ -5255,6 +5292,8 @@ func _apply_simple() -> void:
 	for it in ui_items:
 		if it.size() > 4 and it[0].visible:
 			sub_counts[it[4]] = true
+			if (it[4] as Control).has_meta("outer"):          # 3D-4.22: a part with only «Feineinstellungen» stays visible
+				sub_counts[it[4].get_meta("outer")] = true
 	for sb in sub_bodies:
 		sb.get_meta("wrap").visible = sub_counts.has(sb) or sb.has_meta("always")
 	for c in expert_cards:
@@ -5526,7 +5565,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
+		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
 var _settings_dirty := false
 
 
@@ -5683,6 +5722,8 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 			b.pressed.connect(func(): c["set"].call())
 			var tk: String = {"dogwalk": "dog", "herd": "deer", "feed": "deer", "garden_person": "person", "bench": "person", "thief": "person"}.get(
 					str(c.id), str(c.id).trim_prefix("spawn_"))
+			if not tk in VISITOR_KINDS_ALL and Sym.lead(c.label)[0] != "":
+				b.icon = Sym.tex(Sym.lead(c.label)[0])      # 3D-4.22: the drawn symbol instead of the emoji
 			if tk in VISITOR_KINDS_ALL:                    # the small picture of the visitor on its button (3D-3.38)
 				b.add_theme_constant_override("icon_max_width", 26)
 				b.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -5707,6 +5748,8 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 			var row := HBoxContainer.new()                   # text (wraps) + switch on the right, like on the page of MoveEye
 			var tl := Label.new()
 			var sh: Array = UI.short(no_emoji(c.label))          # 3D-4.21: at most ~40 characters, the rest in the tooltip
+			if Sym.lead(c.label)[0] != "":
+				row.add_child(Sym.icon_rect(Sym.lead(c.label)[0]))   # 3D-4.22: the drawn symbol in front
 			tl.text = sh[0]
 			tl.tooltip_text = sh[1]
 			tl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -5776,6 +5819,8 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 			var hb2 := HBoxContainer.new()
 			var l2 := Label.new()
 			var shl: Array = UI.short(no_emoji(c.label))
+			if Sym.lead(c.label)[0] != "":
+				hb2.add_child(Sym.icon_rect(Sym.lead(c.label)[0]))   # 3D-4.22: the drawn symbol in front
 			l2.text = shl[0]
 			l2.tooltip_text = shl[1]
 			l2.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -5906,7 +5951,7 @@ func _update_status() -> void:
 		if typeof(r_) == TYPE_DICTIONARY and int(r_.get("cmd_seen", 0)) >= int(mw_cmd["id"]):
 			start_info = ""                                  # MoveEye took the request
 	if status_label != null:
-		status_label.text = status_text()
+		status_label.text = Sym.clean(status_text())     # 3D-4.22: no empty boxes (MoveEye gets the text with its emoji)
 	if tunnel_label != null and tunnel != null:
 		var ts: Dictionary = tunnel.state()
 		tunnel_label.text = ("Ziel: %s:%d (Port von MoveEye) · " % [tunnel_host if tunnel_host != "" else "?", tunnel.PORT]) + str(ts["msg"]) + ((" · %d offen · %.1f MB" % [int(ts["pipes"]), float(ts["mb"])]) if ts["on"] else "")

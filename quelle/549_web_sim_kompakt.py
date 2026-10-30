@@ -9,7 +9,7 @@
 #   below   left the head stick (#stick of the controls, moved here) with ◎, the shutter 🎯 (539) and the AI help 🤖 (546)
 #           next to it; right the rover stick (#mstick, /api/mover) - in a game round only when the game mode drives the
 #           rover (seek, patrol), otherwise locked with a hint; between them the tiles: Szene, Tageszeit, Wetter, Besuch (the
-#           sheets of the Simulator-Zentrale 139), Spiel, Wildbeobachtung, Dein Platz (the simulator controls of the
+#           sheets of the Simulator-Zentrale 139), Spiel, Wildbeobachtung, Foto des Platzes (the simulator controls of the
 #           «Simulator-Steuerung», simCtlBuild of 470, one group each), KI-Wächter (simulator control game_kiguard, only when
 #           the simulator has it), Ansicht (views of the simulator window, /api/sim padview like 538), Folgen (the quick
 #           switch «Follow» of 530) and «… mehr» = the whole «Simulator-Steuerung» card (search, Simple / Expert).
@@ -286,7 +286,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
       ["visit", "🚶", "Visit", h.visitors != null ? h.visitors + " " + T("now") : ""],
       ["game", "🎮", "Game", R && R.game ? (R.game.open ? "🟢 " + (R.game.players || 0) : T("off")) : ""],
       ["wildlife", "🦌", "Wildlife watching", cv("rifle") ? (cv("rifle").value ? T("on") : T("off")) : ""],
-      ["place", "🪞", "Your place", cv("twin_on") ? (cv("twin_on").value ? T("on") : T("off")) : ""]];
+      ["place", "🪞", "Photo of the place", cv("twin_on") ? (cv("twin_on").value ? T("on") : T("off")) : ""]];
     if (h.wide && window.mwWide) L.splice(1, 0, ["wide", "🔭", "Wide camera", window.mwWide.sub(h)]);   // 591: the wide picture (tap = big)
     const kg = cv("game_kiguard");                      // simulator with «MoveEye as AI guard»
     if (kg) L.push(["kig", "🤖", "AI guard", kg.value ? T("on") : T("off")]);
@@ -320,7 +320,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
       if (!R || typeof simCtlBuild !== "function") return;
       const gid = open === "place" ? "scene" : open;
       let cs = (R.controls || []).filter(c => (c.gid || "") === gid || (!c.gid && gid === "game" && /^(Spiel|Game)$/.test(c.group || "")));
-      if (open === "place") cs = cs.filter(c => c.sub === "Dein Platz" || /^twin_/.test(c.id)).map(c => Object.assign({}, c, {sub: ""}));
+      if (open === "place") cs = cs.filter(c => c.sub === "Foto des Platzes" || c.sub === "Dein Platz" || /^twin_/.test(c.id)).map(c => Object.assign({}, c, {sub: ""}));
       const sig = JSON.stringify([open, cs.map(c => [c.id, c.type, c.label, c.options])]);
       let b = SH.firstChild;
       if (!b || SH.dataset.sig !== sig) {
@@ -417,13 +417,13 @@ for _a, _b in (('<section id="live" data-icon="📺"><h2>Die Live-Seite</h2>',
                 "<p><b>🧩 Sim-Kompakt (ab 2.98.46):</b> Ist der Simulator verbunden, zeigt die Live-Seite oben zwei kleine Bilder (links "
                 "die Kamera von MoveEye, rechts das Simulator-Fenster; antippen = gross, nochmals = zurück), darunter links den Kopf-Stick "
                 "(mit ◎, Auslöser 🎯 und KI-Hilfe 🤖), rechts den Rover-Stick und dazwischen die Kacheln Szene, Tageszeit, Wetter, Besuch, "
-                "Spiel, Wildbeobachtung, Dein Platz, KI-Wächter, Ansicht und Folgen; «… mehr» öffnet die ganze Simulator-Steuerung, «?» "
+                "Spiel, Wildbeobachtung, Foto des Platzes, KI-Wächter, Ansicht und Folgen; «… mehr» öffnet die ganze Simulator-Steuerung, «?» "
                 "die Erklärung. Ein- und ausschalten (pro Gerät) und die Bildqualität des Simulators unter «◫ Ansicht».</p>"),
                ('<section id="live" data-icon="📺"><h2>The live page</h2>',
                 "<p><b>🧩 Sim compact (from 2.98.46):</b> while the simulator is connected the live page shows two small pictures at the "
                 "top (left MoveEye's camera, right the simulator window; tap = big, tap again = back), below them the head stick on the "
                 "left (with ◎, shutter 🎯 and AI help 🤖), the rover stick on the right and the tiles in between: scene, time of day, "
-                "weather, visit, game, wildlife watching, your place, AI guard, view and follow; «… more» opens the whole simulator "
+                "weather, visit, game, wildlife watching, photo of the place, AI guard, view and follow; «… more» opens the whole simulator "
                 "control, «?» the explanation. On / off (per device) and the picture quality of the simulator under «◫ View».</p>")):
     if _a in HELP_PAGE:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)

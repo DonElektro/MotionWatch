@@ -234,7 +234,7 @@ if GUI_OK:
         if sec == "Developer":
             ttk.Label(sbody, text=tr("Only for the developer (switch: System → Device & help → Developer area)."), style="Mut.TLabel",
                       wraplength=330, justify="left").pack(anchor="w")
-            for ic, lab, path in (("🧪", "Test bench and test run", "/sim#c-test"), ("⚖", "A/B comparison", "/sim#c-hub"),
+            for ic, lab, path in (("🧪", "Test bench and test run", "/sim#c-test"), ("⚡", "Faults (servos, under-voltage)", "/sim#c-stoer"), ("⚖", "A/B comparison", "/sim#c-hub"),
                                   ("📈", "Statistics & versions", "/sim#c-hub"), ("🩺", "Diagnosis package", "/tools#diag"),
                                   ("⚗", "Settings of the simulation", "/sim"), ("🛠", "Developer area", "/dev")):
                 ttk.Button(sbody, text=ic + " " + tr(lab) + " ›", command=lambda p=path: self._open_page(p)).pack(fill="x", pady=(4, 0))

@@ -1264,7 +1264,7 @@ func _build_jail() -> void:
 	ring.layers = 16
 	jail_node.add_child(ring)
 	var lb := Label3D.new()
-	lb.text = "🔒 Zelle"
+	lb.text = "Zelle"                                    # 3D-4.22: no emoji (the font of the window has none)
 	lb.font_size = 64
 	lb.pixel_size = 0.006
 	lb.billboard = BaseMaterial3D.BILLBOARD_ENABLED
@@ -3876,7 +3876,7 @@ func _ghosts_start() -> void:
 		body.layers = 16                                   # only the players see the ghost - never MoveEye
 		n.add_child(body)
 		var lb := Label3D.new()
-		lb.text = "👻 %s %d:%02d" % [p["name"], int(g["t"]) / 60, int(g["t"]) % 60]
+		lb.text = "%s %d:%02d" % [p["name"], int(g["t"]) / 60, int(g["t"]) % 60]   # 3D-4.22: no emoji
 		lb.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		lb.font_size = 48
 		lb.pixel_size = 0.006
