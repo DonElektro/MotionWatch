@@ -4837,7 +4837,7 @@ func _cam_float_input(ev: InputEvent) -> void:
 
 func _fold_all(how: String) -> void:
 	for b in fold_bodies:
-		var open: bool = how == "open" or (how == "groups" and not b in setting_bodies and b.get_meta("title") in ["Kameras", "Verbindung"])
+		var open: bool = how == "open" or (how == "groups" and not b in setting_bodies and b.get_meta("title") in ["Kameras"])   # 3D-4.12 (Daniel): «Verbindung» stays closed
 		UI.set_open(b, open)
 	if how != "groups":
 		for sb in sub_bodies:
