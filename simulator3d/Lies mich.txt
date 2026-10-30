@@ -608,6 +608,12 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-4.20
+3D-4.20: Der Simulator ist der Lautsprecher von MoveEye (Sirene, Wecker, Ansage – auch in Spielen und Tests, ins Mikrofon,
+Diebe fliehen), Servo-Störungen (Unterspannung, PCA9685-Reset, I2C-Fehler, Servo blockiert), Wärmebild wie Thermal-90
+(80×62, 90°×67°) mit Hand zum Ausrichten, Schnittstellen-Liste mit MoveEye (Prüfung beim Start), Akku-Grösse kommt von
+MoveEye, Relais und Schutz in der Statuszeile, Spiel-Assistent mit Bildern, «Entkomme der Kamera» als Spiel zur Szene.
+
 NEU IN 3D-4.19
 3D-4.19: Virtueller SmallTV (GeekMagic SmallTV Ultra) für MoveEye 2.98.48 – gleiche Schnittstelle wie das echte Gerät,
 Kachel unter Karte / Livebild, Schalter «Macken wie das echte Gerät»; MoveEye zeigt dort Status, Alarmbild und Spielstand.

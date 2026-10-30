@@ -1,10 +1,10 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 30.10.2026 · Simulator-Version **3D-4.19** · passende MoveEye-Version (früher Motion Watch) **2.96.2**
+Stand: 30.10.2026 · Simulator-Version **3D-4.20** · passende MoveEye-Version (früher Motion Watch) **2.96.2**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
-## NEU (Entwurf, Zweig wt-simint, für MoveEye 2.98.49+): Simulator «wie echt» – Lautsprecher, Servo-Störungen, Thermal-90 (`simint.gd`)
+## NEU in 3D-4.20 (MoveEye 2.98.49): Simulator «wie echt» – Lautsprecher, Servo-Störungen, Thermal-90 (`simint.gd`)
 
 - `scripts/simint.gd` (Knoten `simint` in main.gd, eigene Datei `user://simint.json`), Antwort an MoveEye über net.gd (`rep.merge(simint.reply())`, nicht in world_reply):
   - **Lautsprecher:** `mw.sound` (MoveEye 554 schickt jetzt die echte Art: siren / two-tone / beeps / horn / whistle / bangs / chime / birds / marmot / tts / talk, dazu `sound_vol`) wird am PC als einfacher Ton gespielt (Sensoren → Lautsprecher: Lautstärke, «Am PC stumm»; Schalter «Geräusche» gilt auch). Das simulierte Mikrofon hört ihn am Gerät (`add_sound`, -2 dB bei 100 %), Pieps / Knall zusätzlich als `sound_ev` «clap» (n = 3, alle 2 s) – MoveEye muss das ignorieren. Fliehen bei Sirene: unverändert (on_state, _update_visitors).
