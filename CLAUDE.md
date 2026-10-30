@@ -57,6 +57,7 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 - Als Nächstes (nach wt-objekte): Angleichungen MoveEye ↔ Simulator (Entwickler-Schalter teilen, «Dein Platz» klären, /sim
   zuklappen statt ausblenden, Fenster «Strom»/System-Knöpfe, gezeichnete Symbole statt fehlender Emoji), dann Gameplay
   (`docs/Gameplay_Ausfeilen_Plan.md`).
+- **Erinnern (Daniel 30.10.2026 21:45):** Simulator in den Sprachen FR/IT/RM/EN wie MoveEye – Daniel wartet noch, später daran erinnern.
 - Später: Prüfstand-Plan «funktionen» (Kurzproben Sabotage, Wecker, Klatschen, Diebstahl, Sensoren, Akku, Sirene – Daniel 30.10.: später); Prüfstand-Rückgang ab 2.98.23; KI-Training (Token Actions-Rechte, Trainingspaket); «Vertrauenswürdige Geräte» nur
   Admin; Controller-Einstellungen als MoveEye-Einstellung statt pro Browser; Produkt-Seite (Lizenzen, Datenschutz, Kundendoku);
   mobiler MoveEye (Laufroboter, nur Notiz); Tiere mit der neuen Figur-Technik (figur.gd).
