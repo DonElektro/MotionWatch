@@ -55,3 +55,15 @@ Schleifring wie das zweite Flachkabel). Ansteuerung offen (WS2812 an GPIO oder R
 Entscheide 30.10.2026 21:55: **RGB-LED an PCA9685 Kanälen 5/6/7** (gemeinsame Anode/Kathode noch wählen), Farben pro Zustand
 einstellbar; Diffusor **in der Form von Blinkis Auge**. Dazu **zwei Tasten am Gerät**: «Schutz» (kurz Wachsam ↔ Aus, lang Voll)
 und «Alarm quittieren» – Platz und Kabel (GPIO) im Gehäuse vorsehen.
+
+### Software umgesetzt (Zweig wt-led, 30.10.2026 – MoveEye-Teile 163a / 599c / 639e, Simulator `statusled.gd`)
+
+| Thema | Stand |
+|---|---|
+| LED-Ausgang | **umgesetzt** – RGB an PCA9685 der Servos, Kanäle 5 / 6 / 7 (einstellbar), gemeinsame Kathode oder Anode (Einstellung «LED-Typ»), Helligkeit per PWM mit Gamma 2,2; geschrieben nur bei Änderung (I2C teilt sich mit den Servos); Kanal belegt (Servo, Licht, IR breit) = Hinweis statt Ausgabe. **Nicht mit echter Hardware getestet** (nur mit nachgebautem PCA9685 im Selbsttest) |
+| Farben / Vorrang | **umgesetzt** – Aus grün, Wachsam orange, Voll rot (einstellbar: grün, orange, rot, gelb, blau, türkis, violett, weiss, aus); Countdown = Farbe «atmet». Vorrang: LED-Test > Alarm (rot blinkend bis quittiert; Schutz aus quittiert auch) > Störung (violett pulsierend: Akku schwach, Unterspannung, Kamera weg, Servo-Störung) > Erkennung (kurz weiss, Standard aus) > Zustand > Blinki-Zwinkern |
+| Nacht | **umgesetzt** – dunkel (im Simulator dessen Nacht): gedimmt (Standard 8 %), aus oder wie am Tag; Alarm bleibt hell; kein Zwinkern nachts |
+| Blinki-Zwinkern | **umgesetzt** – alle 5 Minuten (einstellbar) kurz zweimal dunkel = «alles ok» (nicht nach einer Störung); Blinki (Mini-Figur mit LED-farbiger Iris) in der Kopfzeile der Webseite zwinkert im selben Moment |
+| Tasten | **umgesetzt** – GPIO 5 «Schutz», GPIO 6 «Alarm quittieren» (einstellbar), interner Pull-up, Taste gegen Masse, Entprellen 50 ms, lang = 1,5 s (feuert beim Halten). Schutz kurz Wachsam ↔ Aus, lang Voll; Quittieren stoppt Sirene + Eskalation + rotes Blinken. Jeder Druck im Protokoll. **PIN-Regel:** ist eine PIN zum Ausschalten gesetzt, schalten die Tasten standardmässig nur ein (Ausschalten / Sirene stoppen nur in der App) – Einstellung «Mit einer PIN zum Ausschalten». Standard «Tasten am Gerät» aus, bis sie verdrahtet sind. **Nicht mit echtem GPIO getestet** |
+| Simulator | **umgesetzt** – LED als leuchtende Kuppel in Blinkis Augen-Ring oben auf dem Kopf (state `led`), Fenster «Gerät» unten rechts mit LED-Punkt, Statuszeile und den Knöpfen «Schutz» / «Alarm quittieren» (world_reply `buttons`, wie ein GPIO: gedrückt / Dauer / Zähler); MoveEye nimmt dann diese statt GPIO / PCA (🧪). Einstellung im Simulator: Sensoren → «Status-LED & Tasten» |
+| Seiten | **umgesetzt** – Einstellungen → Licht & Ton → «Status-LED & Tasten» (Web und Fenster), Statuszeile «LED: Wachsam (orange)», «LED testen», «Alarm quittieren», letzte Tastendrucke; Anleitung DE / EN; Sprachen DE / FR / IT / RM / EN |

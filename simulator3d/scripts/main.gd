@@ -284,6 +284,7 @@ var realism                           # realism.gd
 var simreal                           # simreal.gd (3D-4.4): Pi 5, lens, infrared, thermal, false alarms, difficult visitors
 var szenen                            # szenenplus.gd (3D-4.x): Voller Campingplatz, Tarnen und Kriechen, Velodieb
 var smalltv                           # smalltv.gd (3D-4.19): virtueller Zusatz-Bildschirm GeekMagic SmallTV Ultra (MoveEye 552)
+var statusled                         # statusled.gd: Status-LED auf dem Kopf + Fenster «Gerät» mit den Tasten (MoveEye 163a / 599c)
 var weit                              # weitwinkel.gd (3D-4.17): camera 1 = the wide camera with its mount (mast, base, head front / rear)
 var parcours                          # parcours.gd (3D-4.18): «Verfolgungs-Parcours» - lessons, ground truth, game «Entkomme der Kamera»
 var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Zwilling» - photo / panorama of the real place
@@ -389,6 +390,9 @@ func _ready() -> void:
 	weit = preload("res://scripts/weitwinkel.gd").new()      # 3D-4.17: the wide camera (camera 1) and its mount
 	weit.main = self
 	add_child(weit)
+	statusled = preload("res://scripts/statusled.gd").new()   # Status-LED auf dem Kopf, Tasten «Schutz» / «Alarm quittieren»
+	statusled.main = self
+	add_child(statusled)
 	smalltv = preload("res://scripts/smalltv.gd").new()     # 3D-4.19: virtueller SmallTV (gleiche HTTP-Schnittstelle, Kachel im Fenster)
 	smalltv.main = self
 	add_child(smalltv)
@@ -2622,6 +2626,7 @@ func world_reply() -> Dictionary:
 			"head_deg": [snappedf(-rad_to_deg(head.rotation.y), 0.01), snappedf(rad_to_deg(head_pitch.rotation.x) + 6.0, 0.01)] if head != null else null,   # MoveEye 2.98.35: where the head really is (servo diagnosis)
 			"wide": weit.state() if weit != null else null,   # 3D-4.17: the mount of the wide camera (MoveEye 163 at once)
 			"game_live": smalltv.game_live() if smalltv != null else null}   # 3D-4.19: Spiel-Anzeige auf dem SmallTV (MoveEye 552)
+	r["buttons"] = statusled.reply() if statusled != null else null   # die Tasten des Geräts wie ein GPIO (MoveEye 163a)
 	if simwerte != null:
 		r.merge(simwerte.reply())                     # Simulator-Werte: battery, pi_temp, net, clock, place, forecast (power.gd)
 	return r
@@ -3410,6 +3415,8 @@ func _register_controls() -> void:
 	objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
 	umgebung.add_controls()                                # 3D-4.x: surroundings like real
 	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
+	if statusled != null:
+		statusled.add_controls()                           # Sensoren → Status-LED & Tasten (Fenster «Gerät»)
 	if smalltv != null:
 		smalltv.add_controls()                             # 3D-4.19: Sensoren → Zusatz-Bildschirm (virtueller SmallTV)
 	weit.add_controls()                                    # 3D-4.17: the wide camera (card «Kamerabild», part «Weitwinkel-Kamera»)
@@ -6421,6 +6428,8 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	liveview.width_px = live_size
 	liveview.visible = live_on
 	layer.add_child(liveview)
+	if statusled != null:
+		statusled.make_tile(layer)                         # das Fenster «Gerät» (LED + Tasten)
 	if smalltv != null:
 		smalltv.make_tile(layer)                           # 3D-4.19: das Bild des virtuellen SmallTV, unter Karte / Livebild
 	rover_pad = preload("res://scripts/rover_pad.gd").new()
