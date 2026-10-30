@@ -12,14 +12,19 @@ extends Node
 ## game_tool_* through CONTROL «press», part 543 of MoveEye shows the gauges and buttons on the live page).
 ## The hint markers (also from loud runners, gamerules.gd) are shown on the picture of the guard (phone, PC, MoveEye).
 ## With «Werkzeuge mit Energie» off (wizard) the old way stays: only the light, 20 s cooldown, no costs.
+## Balance 30.10.2026: the energy goes by the «Wächter-Stufe» (gamerules.glevel) - an easier guard has MORE energy and
+## the bigger circle, a harder one less and the smaller circle (before: «hard» 130 ⚡ with the smallest circle).
+## With «Wie echte Hardware» (gamerules.real) the light and the siren are not there (MoveEye has none).
 
 var game
 var main
 
 const TOOLS := [["light", "💡", "Licht", 20, 20.0], ["siren", "📢", "Sirene", 30, 25.0], ["scan", "📡", "Scan", 25, 15.0],
 		["zoom", "🔍", "Zoom", 15, 10.0], ["shut", "🎯", "Auslöser", 8, 0.0]]
-const MAX := {"easy": 70.0, "normal": 100.0, "hard": 130.0}
-const REGEN := 0.4                       # energy per second
+const MAX := {"easy": 130.0, "normal": 100.0, "hard": 70.0}     # by the Wächter-Stufe
+const REGEN_L := {"easy": 0.5, "normal": 0.4, "hard": 0.3}       # energy per second
+const REGEN := 0.4
+const REAL_NO := ["light", "siren"]      # «Wie echte Hardware»: MoveEye has no light and no siren
 const MISS_EXTRA := 10                   # a missed shot costs more
 const SIREN_S := 4.0
 const SCAN_S := 4.0
@@ -44,6 +49,14 @@ func on() -> bool:
 	return game.rules == null or game.rules.tools_on
 
 
+func _lv() -> String:
+	return game.rules.glevel() if game.rules != null else str(main.game_level)
+
+
+func _real() -> bool:
+	return game.rules != null and game.rules.real()
+
+
 func _tool(id: String) -> Array:
 	for t in TOOLS:
 		if t[0] == id:
@@ -57,7 +70,7 @@ func key(g) -> String:
 
 func _s(k: String) -> Dictionary:
 	if not st.has(k):
-		var mx: float = float(MAX.get(main.game_level, 100.0)) * (game.rules.energy_mul() if game.rules != null else 1.0)
+		var mx: float = float(MAX.get(_lv(), 100.0)) * (game.rules.energy_mul() if game.rules != null else 1.0)
 		st[k] = {"e": mx, "max": mx, "cd": {}, "used": {}}
 	return st[k]
 
@@ -81,7 +94,7 @@ func _process(dt: float) -> void:
 	if game.round_state == "play":
 		for k in st:
 			var s: Dictionary = st[k]
-			s["e"] = minf(float(s["max"]), float(s["e"]) + REGEN * dt)
+			s["e"] = minf(float(s["max"]), float(s["e"]) + float(REGEN_L.get(_lv(), REGEN)) * dt)
 	if zoom_until > 0.0 and now() >= zoom_until:
 		_zoom_off()
 	_t -= dt
@@ -99,6 +112,8 @@ func check(g, id: String) -> String:
 		return "Unbekanntes Werkzeug"
 	if game.round_state != "play":
 		return "Nur während einer Runde"
+	if id in REAL_NO and _real():
+		return "%s gibt es nur im Simulator (Profil «Wie echte Hardware»)" % T[2]
 	if not on():
 		return ""
 	var s := _s(key(g))
@@ -145,6 +160,8 @@ func use(g, id: String, who := "") -> Dictionary:
 		return {"ok": false, "error": "Die Werkzeuge an MoveEye gibt es nur in «Team gegen MoveEye»."}
 	if g != null and str(g.get("role", "")) != "guard":
 		return {"ok": false, "error": "Nur der Wächter hat Werkzeuge."}
+	if id in REAL_NO and _real():
+		return {"ok": false, "error": "%s gibt es nur im Simulator (Profil «Wie echte Hardware»)" % _tool(id)[2]}
 	if id == "light" and not on():                     # the old way: only the light, 20 s
 		if now() < float(game.light_ready):
 			return {"ok": false, "error": "Licht lädt noch %d s" % int(ceil(float(game.light_ready) - now()))}
@@ -263,14 +280,16 @@ func info_for(g) -> Dictionary:
 	var playing: bool = game.round_state == "play"
 	if not on():
 		var l := maxf(0.0, float(game.light_ready) - now())
-		return {"on": false, "t": [["light", "💡", "Licht", 0, int(ceil(l)), l <= 0.0]]}
-	var s := _s(key(g)) if playing else {"e": float(MAX.get(main.game_level, 100.0)) * (game.rules.energy_mul() if game.rules != null else 1.0), "cd": {}}
+		return {"on": false, "t": [] if _real() else [["light", "💡", "Licht", 0, int(ceil(l)), l <= 0.0]]}
+	var s := _s(key(g)) if playing else {"e": float(MAX.get(_lv(), 100.0)) * (game.rules.energy_mul() if game.rules != null else 1.0), "cd": {}}
 	if not s.has("max"):
 		s["max"] = s["e"]
 	var ts := []
 	for T in TOOLS:
 		if T[0] == "shut" and not game.shut.active():
 			continue
+		if T[0] in REAL_NO and _real():
+			continue                                       # «Wie echte Hardware»: not there
 		var left := maxf(0.0, float(s["cd"].get(T[0], 0.0)) - now())
 		ts.append([T[0], T[1], T[2], int(T[3]), int(ceil(left)), playing and left <= 0.0 and float(s["e"]) >= float(T[3])])
 	var cam: int = 0 if g == null else game.guard_cam(g)
@@ -285,6 +304,8 @@ func hud_text(g) -> String:
 	"""one line for the PC guard (localplay.gd): energy as a little bar, the tools that wait"""
 	var I := info_for(g)
 	if not bool(I["on"]):
+		if (I["t"] as Array).is_empty():
+			return ""
 		var l: int = int(I["t"][0][4])
 		return "Licht " + ("bereit" if l <= 0 else "%d s" % l)
 	var f := clampf(float(I["e"]) / maxf(1.0, float(I["max"])), 0.0, 1.0)

@@ -164,7 +164,7 @@ func start(r := "runner") -> void:
 		stop()
 	if not g.open:
 		g.set_open(true)
-	if r == "guard" and not main.game_mode in ["guard", "teamguard", "seek"]:
+	if r == "guard" and not main.game_mode in ["guard", "seek"]:
 		main.start_info = "Wächter am PC: zuerst die Spielart «Ein Spieler ist Wächter», «Team gegen Team» oder «Verstecken» wählen"
 		r = "runner"
 	p = g.add_local(r)
@@ -576,9 +576,15 @@ func _paint_card() -> void:
 	var RX: Dictionary = g.rules.state_for(p) if p != null else {}
 	if rs == "end" and not (RX.get("win", {}) as Dictionary).is_empty():   # 3D-4.x: the winner screen (gamerules.gd)
 		var W: Dictionary = RX["win"]
-		var wl := UI.heading(_plain(str(W["title"])) + " · %d Punkte" % int(W["score"]))
+		var wl := UI.heading(_plain(str(W["title"])) + (" · %d Punkte" % int(W["score"]) if int(W["score"]) >= 0 else ""))
 		wl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
 		card_v.add_child(wl)
+		var rl: Array = W.get("roles", [])
+		for ro in (rl if rl.size() > 1 else []):            # Balance: the best guard and the best sneaker, the team result
+			var rl_ := UI.small(_plain("%s: %s – %d Punkte" % [ro["label"], ro["n"], int(ro["score"])]), UI.TXT)
+			card_v.add_child(rl_)
+		if str(W.get("team", "")) != "":
+			card_v.add_child(UI.small(_plain(str(W["team"])), UI.TXT))
 		if not (W.get("hl", {}) as Dictionary).is_empty():
 			var hb := Button.new()
 			hb.text = _plain(str(W["hl"]["text"])) + " – ansehen"

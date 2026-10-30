@@ -59,10 +59,7 @@ var goal_name := "Ziel"
 var goal_node: Node3D
 var results: Array = []
 var team_results: Array = []
-# ---- 3D-3.1: team against team (robbers and guards), jail, team goal, distraction bonus ----
-var guard_team := 1                    # «Team gegen Team»: this team guards in the current round
-var match_round := 0                   # 0 = first round, 1 = second round (roles swapped)
-var match_scores := [0, 0]
+# ---- 3D-3.1: jail, team goal, distraction bonus (Balance 30.10.2026: «Team gegen Team» removed - saved teamguard → guard) ----
 var jail := Vector3(0, 0, -44)
 var jail_node: Node3D
 var bases: Array = []                  # «Fahne erobern» (3D-3.2): [base of red, base of blue]
@@ -105,6 +102,7 @@ var board := {}                         # the ranking of the evening: name -> {"
 var records := {}                       # "fast": [name, seconds], "items": [name, n], "catches": [name, n]
 var board_day := ""
 const HIDE_MAX := 8.0                   # seconds in a hiding place, then out
+const HIDE_WAIT := [4.0, 10.0]           # Balance: cooldown PER PERSON after hiding (left early, time up) - no bush hopping
 const CP_BONUS := 150
 
 
@@ -257,10 +255,6 @@ func guard2_watching() -> bool:
 		if p != null and p["role"] == "guard" and p != guard_player() and p["sock"] != null:
 			return true
 	return false
-
-
-func team_mode() -> bool:
-	return main.game_mode == "teamguard"
 
 
 func busy() -> bool:
@@ -795,7 +789,7 @@ func _assign(p: Dictionary, r: String) -> void:
 
 
 func _set_role(p: Dictionary, r: String) -> void:
-	if round_state in ["countdown", "play"] or team_mode():
+	if round_state in ["countdown", "play"]:
 		return
 	if r == "guard":
 		if not main.game_mode in ["guard", "seek"]:
@@ -839,9 +833,9 @@ func _smaller_team(me: int) -> int:
 
 
 func sync_teams() -> void:
-	"""3D-4.x (Aufräumen, Daniel 29.10.2026): Teams gibt es nur bei «Fahne erobern» (und in der alten Spielart «Team gegen
-	Team») - keine eigene Team-Wahl mehr. main.game_teams folgt dem Spielziel."""
-	var want: bool = main.game_goal == "flag" or team_mode()
+	"""3D-4.x (Aufräumen, Daniel 29.10.2026): Teams gibt es nur bei «Fahne erobern» - keine eigene Team-Wahl mehr.
+	main.game_teams folgt dem Spielziel."""
+	var want: bool = main.game_goal == "flag"
 	if main.game_teams != want and round_state not in ["countdown", "play"]:
 		main.game_teams = want
 		on_teams()
@@ -1009,7 +1003,8 @@ func runners_n() -> int:
 
 func qual() -> Array:
 	"""3D-3.95: the picture for the phones - from 5 runners on automatically «small» (every runner is an own 3D view on the PC
-	and an own video over the network)"""
+	and an own video over the network). Only the SNEAKERS: the guard always gets the full picture of the head camera
+	(_send_guard_view → main.latest_jpg, 960×540) - the hit circle is a share of the picture height anyway."""
 	return QUAL["small"] if runners_n() > 4 else QUAL.get(main.game_quality, QUAL["mid"])
 
 
@@ -1092,23 +1087,12 @@ func start_round() -> void:
 	for p in players:
 		if p != null and p["role"] == "runner":
 			runners += 1
-	if runners == 0 and not team_mode():
+	if main.game_mode == "teamguard":                      # Balance: «Team gegen Team» is gone - an old setting plays «Wächter»
+		main.game_mode = "guard"
+	if runners == 0:
 		return
-	sync_teams()                                           # 3D-4.x: teams only with «Fahne erobern» (and «Team gegen Team»)
-	if team_mode():                                        # team against team: one team guards, the other sneaks
-		var n := [0, 0]
-		for p in players:
-			if p != null and p["role"] != "watch":
-				n[int(p["team"])] += 1
-		if n[0] == 0 or n[1] == 0:
-			for p in players:
-				if p != null:
-					_say(p, "Für «Team gegen Team» braucht jedes Team mindestens einen Spieler", 4.0)
-			return
-		for p in players:
-			if p != null and p["role"] != "watch":
-				_assign(p, "guard" if int(p["team"]) == guard_team else "runner")
-	elif not main.game_mode in ["guard", "seek"]:          # no player as guard in this mode
+	sync_teams()                                           # 3D-4.x: teams only with «Fahne erobern»
+	if not main.game_mode in ["guard", "seek"]:            # no player as guard in this mode
 		for p in players:
 			if p != null and p["role"] == "guard":
 				_assign(p, "runner")
@@ -1278,7 +1262,7 @@ func _build_jail() -> void:
 
 
 func flag_mode() -> bool:
-	return main.game_goal == "flag" and not team_mode()
+	return main.game_goal == "flag"
 
 
 func _build_flags() -> void:
@@ -1443,8 +1427,8 @@ func end_round() -> void:
 			sc = max(0, 200 * int(p["catches"]) - 50 * int(p["false"]) + (300 if seek_winner == "seeker" else 0))
 			info = "Fänger · %d gefunden, %d× daneben%s" % [p["catches"], p["false"], " · 🏆 alle gefunden" if seek_winner == "seeker" else ""]
 		elif p["role"] == "guard":
-			var gs := guard_score(p, missed)
-			sc = max(0, int(gs[0]) + int(p.get("shut_pts", 0)))
+			var gs := guard_score(p, missed)                # Balance: ONE rule - the shutter is inside (gameshutter.score_catch)
+			sc = int(gs[0])
 			info = "Wächter · " + str(gs[1]) + _shut_info(p)
 		elif jaeger.on():                                  # «Fehlalarm-Jäger»: 100 per false alarm, +50 per lure that fooled MoveEye
 			var js: Array = jaeger.score(p)
@@ -1505,7 +1489,8 @@ func end_round() -> void:
 			info += " · 🧠 %d gelernt" % int(plus.teach[str(p["name"])]["n"])
 		var xr: Dictionary = {} if kih else xp.award(str(p["name"]), parts)
 		p["xpi"] = xr
-		var r := {"n": p["name"], "c": "#" + COLORS[p["slot"]].to_html(false), "info": info, "score": sc, "badges": bd}
+		var r := {"n": p["name"], "c": "#" + COLORS[p["slot"]].to_html(false), "info": info, "score": sc, "badges": bd,
+				"role": p["role"], "slot": int(p["slot"]), "goal": p["state"] == "goal", "caught": int(p["caught"])}   # Balance: winner per role
 		if not xr.is_empty():
 			r["xp"] = int(xr["gain"])
 			r["lv"] = int(xr["lv"])
@@ -1527,10 +1512,10 @@ func end_round() -> void:
 		var mn: String = ", ".join(PackedStringArray(mwg["names"])) if not mwg["names"].is_empty() else "MoveEye"
 		var gm := guard_score(mwg, missed)
 		results.append({"n": "🛡 " + mn, "c": "#3b8cff", "info": "Wächter an MoveEye · " + str(gm[1]) + _shut_info(mwg),
-				"score": max(0, int(gm[0]) + int(mwg.get("shut_pts", 0)))})
+				"score": int(gm[0]), "role": "guard"})
 	if not bots.guard.is_empty():                          # 3D-4.x: the bot guard
 		var gb := guard_score(bots.guard, missed)
-		results.append({"n": bots.GUARD_NAME, "c": "#9aa7b8", "info": "Bot-Wächter · " + str(gb[1]), "score": int(gb[0])})
+		results.append({"n": bots.GUARD_NAME, "c": "#9aa7b8", "info": "Bot-Wächter · " + str(gb[1]), "score": int(gb[0]), "role": "guard"})
 	results.sort_custom(func(x, y): return x["score"] > y["score"])
 	if kih:
 		shut.ki.mark_results(results)
@@ -1571,18 +1556,6 @@ func end_round() -> void:
 					"title": ("Unentschieden" if win < 0 else TEAM_NAMES[win] + " gewinnt" + (" (mehr Punkte)" if captures[0] == captures[1] else "!"))}
 			news("🚩 " + flag_res["text"] + " – " + flag_res["title"])
 			team_results.sort_custom(func(x, y): return int(x["caps"]) > int(y["caps"]) or (int(x["caps"]) == int(y["caps"]) and x["score"] > y["score"]))
-		elif team_mode():                                  # two rounds with swapped roles, then the winner of the match
-			match_scores[0] += sums[0]
-			match_scores[1] += sums[1]
-			var first := match_round == 0
-			team_results = [{"n": TEAM_NAMES[0], "c": "#" + TEAM_COLORS[0].to_html(false), "score": match_scores[0], "round": sums[0], "lead": first},
-					{"n": TEAM_NAMES[1], "c": "#" + TEAM_COLORS[1].to_html(false), "score": match_scores[1], "round": sums[1], "lead": first}]
-			match_round += 1
-			guard_team = 1 - guard_team                    # swap the roles for the next round
-			if match_round >= 2:
-				match_round = 0
-				match_scores = [0, 0]
-			team_results.sort_custom(func(x, y): return x["score"] > y["score"])
 		else:
 			team_results.sort_custom(func(x, y): return x["score"] > y["score"])
 	_clear_items()
@@ -1596,26 +1569,31 @@ func end_round() -> void:
 
 
 func guard_score(g: Dictionary, missed: int) -> Array:
-	"""3D-4.x: the score of a guard per runner - (catches - false alarms) / runners, so 2 or 8 runners are fair. With unlimited
-	lives only the first catch of every runner counts (else one slow runner gives many catches). Returns [score, text]."""
+	"""Balance 30.10.2026: ONE rule for every guard (a person with or without the shutter, the guards at MoveEye, the bot
+	guard): the catch points as shown during the round (gameshutter.score_catch: the shot or 150, the same sneaker again
+	50 / 25 / 0 %) − 50 per false alarm (counted once) + 200 × the share of the sneakers who did not reach the goal.
+	Returns [score, text] - the text adds up to the score."""
 	var n: int = max(1, round_runners)
 	var all := int(g.get("catches", 0))
-	var eff := all
-	if int(main.game_lives) == 0:
-		eff = (g.get("who", {}) as Dictionary).size()
+	var cp := int(g.get("cpts", 0))
 	var fa := int(g.get("false", 0))
-	var sc: int = max(0, int(round(800.0 * float(eff - fa) / float(n) + 200.0 * float(missed) / float(n))))
-	var txt := "%d von %d Läufern erwischt" % [eff, n] if int(main.game_lives) == 0 else "%d× erwischt (%d Läufer)" % [eff, n]
-	if all > eff:
-		txt += " (%d× insgesamt, zählt einmal pro Läufer)" % all
-	return [sc, txt + ", %d× Fehlalarm" % fa]
+	var nz := int(round(200.0 * float(missed) / float(n)))
+	var sc: int = max(0, cp + shut.MISS * fa + nz)
+	var txt := "%d× erwischt (%d Läufer): %+d" % [all, n, cp]
+	var rep := 0
+	for k in (g.get("cn", {}) as Dictionary):
+		rep += max(0, int(g["cn"][k]) - 1)
+	if rep > 0:
+		txt += " (%d× derselbe nochmals – zählt weniger)" % rep
+	txt += " · %d× Fehlalarm: %d · nicht im Ziel %d/%d: +%d = %d Punkte" % [fa, shut.MISS * fa, missed, n, nz, sc]
+	return [sc, txt]
 
 
 func _duel_make() -> void:
 	"""3D-4.x: «MoveEye gegen Mensch» - how often MoveEye's real detection reported a runner who was well in the picture,
 	against the catches of the guard (a person at the phone, at the PC or at MoveEye; or the bot guard)"""
 	duel = {}
-	if not main.game_mode in ["guard", "teamguard", "mwhand"] or not learn.mw_on():
+	if not main.game_mode in ["guard", "mwhand"] or not learn.mw_on():
 		return
 	var mw_n := 0
 	for e_ in learn.eps:
@@ -1662,6 +1640,8 @@ func _to_start(p: Dictionary) -> void:
 	a.rotation.y = a.heading
 	p["susp"] = 0.0
 	p["cam"].position = a.position + Vector3(sin(p["yaw"]) * 3.2, 1.95, cos(p["yaw"]) * 3.2)
+	if shut != null:
+		shut.spawn_protect(p)                              # Balance: start protection (no spawn camping)
 
 
 # ---- the referee -----------------------------------------------------------------------------------------------------
@@ -1681,9 +1661,10 @@ func light_at(pos: Vector3, i: int) -> float:
 	var head: Vector3 = main.cams[0].global_position
 	var dh := head.distance_to(pos)
 	var in_beam: bool = main.cams[0].is_position_in_frustum(pos + Vector3(0, 0.8, 0))
-	if (L.get("white", false) or now() < flash_until) and in_beam:
+	var real: bool = rules.real()                          # «Wie echte Hardware»: no white light, no infrared light
+	if (L.get("white", false) or now() < flash_until) and in_beam and not real:
 		l = max(l, clamp(1.15 - dh / 25.0, 0.0, 1.0))
-	if i == 0 and main.ir_on() and in_beam:
+	if i == 0 and main.ir_on() and in_beam and not real:
 		l = max(l, clamp(0.95 * (1.0 - dh / float(main.ir_range)), 0.0, 0.85))
 	return l
 
@@ -1730,7 +1711,7 @@ func visibility(p: Dictionary) -> float:
 	"""how well the cameras see this player right now (0 = not at all, 1 = clearly)"""
 	var best := 0.0
 	var sum := 0.0
-	for i in range(3):
+	for i in range(1 if rules.real() else 3):              # «Wie echte Hardware»: only the one camera (no fixed one, no thermal)
 		var f := cam_sees(p, i)
 		sum += f
 		best = max(best, f)
@@ -1739,7 +1720,7 @@ func visibility(p: Dictionary) -> float:
 
 func hearing(p: Dictionary) -> float:
 	"""the microphone at the head hears loud steps (running!), less in rain or wind"""
-	if not main.game_noise:
+	if not main.game_noise or rules.real():                # «Wie echte Hardware»: no microphone
 		return 0.0
 	var a = p["actor"]
 	var spd: float = a.cur_speed
@@ -2030,13 +2011,17 @@ func _caught(p: Dictionary, by) -> void:
 		plus.drop(p)
 		p["carry"] = false
 		p["loot"].visible = false
-	flash_until = now() + 3.0                             # the light goes on, like at a real alarm
+	if not rules.real():
+		flash_until = now() + 3.0                         # the light goes on, like at a real alarm («Wie echte Hardware»: no light)
 	var g = by if by != null else guard_player()
 	if g != null and g.has("catches"):
 		g["catches"] = int(g["catches"]) + 1
 		if not g.has("who"):
 			g["who"] = {}
 		g["who"][int(p["slot"])] = true                    # 3D-4.x: with unlimited lives only the first catch per runner counts
+	var sg = mwg if main.game_mode == "mwhand" and by is Dictionary and not by.has("catches") else g
+	if sg != null and sg.has("catches"):                   # Balance: the points of this catch (the one rule, gameshutter.gd)
+		shut.score_catch(sg, p, by == null)
 	_event(p, "caught", {"fx": fx})
 	p["actor"].play_emote("caught", 1.5)
 	var lives := int(main.game_lives)
@@ -2367,7 +2352,7 @@ func _shut_info(g: Dictionary) -> String:
 	"""3D-4.x: the «Auslöser» line of a guard in the result"""
 	if int(g.get("shut_hits", 0)) + int(g.get("shut_miss", 0)) == 0:
 		return ""
-	return " · 🎯 Auslöser %d× Treffer, %d× daneben (%+d)" % [int(g.get("shut_hits", 0)), int(g.get("shut_miss", 0)), int(g.get("shut_pts", 0))]
+	return " · 🎯 Auslöser %d× Treffer, %d× daneben" % [int(g.get("shut_hits", 0)), int(g.get("shut_miss", 0))]   # the points: in guard_score
 
 
 func _guard_catch(g: Dictionary) -> void:
@@ -2386,8 +2371,9 @@ func _guard_catch(g: Dictionary) -> void:
 		g["catch_t"] = now() + 4.0
 		_say(g, "Fehlalarm! (−50, 4 s warten)", 3.0)
 		return
-	_say(g, "✓ %s erwischt! (+150)" % hit["name"], 3.0)
-	_caught(hit, g)
+	hit.erase("catch_pts")
+	_caught(hit, g)                                        # Balance: the points really counted (seek: 200, else score_catch)
+	_say(g, "✓ %s erwischt! (+%d)" % [hit["name"], 200 if main.game_mode == "seek" else int(hit.get("catch_pts", 0))], 3.0)
 
 
 func _guard(dt: float) -> void:
@@ -2400,10 +2386,15 @@ func _guard(dt: float) -> void:
 		if g != null and round_state == "play":
 			seek_drive = Vector2(-float(g["my"]), float(g["mx"]))
 		return
+	if rules.real() and round_state in ["countdown", "play"]:
+		guard_auto = true                              # «Wie echte Hardware»: the camera sits fixed on its pole
+		guard_yaw = 0.0
+		guard_tilt = deg_to_rad(-9.0)
+		return
 	if g == null and not bots.guard.is_empty() and round_state in ["countdown", "play"]:
 		bots.guard_drive(dt)                           # 3D-4.x: the bot guard turns the head
 		return
-	if g != null and main.game_mode in ["guard", "teamguard"]:
+	if g != null and main.game_mode == "guard":
 		guard_auto = true
 		guard_yaw = wrapf(guard_yaw - float(g["mx"]) * 1.3 * dt, -PI, PI)
 		guard_tilt = clamp(guard_tilt - float(g["my"]) * 0.7 * dt, deg_to_rad(-40.0), deg_to_rad(15.0))
@@ -2496,7 +2487,7 @@ func state_for(p: Dictionary) -> Dictionary:
 			"msg": p["msg"] if now() < float(p["msg_until"]) else "", "has_guard": guard_player() != null, "mwd": mw_decides(),
 			"goal_mode": "flag" if flag_mode() else plus.goal_mode(), "carry": p["carry"], "gopen": goal_open(), "flag": int(p.get("flag", -1)),
 			"caps": captures, "gcam": guard_cam(p) if p["role"] == "guard" else -1,
-			"tg": guard_team, "mround": match_round, "teams": main.game_teams, "team": int(p["team"]), "look": p["look"],
+			"teams": main.game_teams, "team": int(p["team"]), "look": p["look"],
 			"tres": team_results if round_state == "end" else [],
 			"decoy": bool(p.get("decoy", false)), "decoy_ok": main.game_decoy and main.game_mode in ["camera", "mw"],
 			"lamp": bool(p.get("lamp", false)), "dark": main.is_dark(), "hid": int(p.get("hide_i", -1)) >= 0, "hc": int(p.get("hc", 0)),
@@ -2909,8 +2900,8 @@ function paint(m) {
     const WN = (m.rx || {}).win || {};
     let h = winHtml(m) + pxTop(m) + (m.rs === "end" ? (JR.text ? '<div class="big2">' + (JR.n ? '🎉 ' + JR.n : '🛡 0') + '</div><h1>' + esc(JR.text) + '</h1>' + ((JR.cases || []).length ? '<p>' + JR.cases.map(c => c[0] + ' ' + esc(c[1]) + ' <small>(' + esc(c[2]) + ', ' + Math.round(c[3]) + ' m)</small>').join(" · ") + '</p>' : '') : '') +
       (FR.text ? '<div class="big2">🚩 ' + esc(FR.text) + '</div><h1>' + esc(FR.title) + '</h1>' : '') + (m.duel && m.duel.text ? duelHtml(m.duel) : '') +
-      (m.tres && m.tres.length && !FR.text ? '<h1>' + (m.tres[0].lead ? 'Runde 1 von 2: ' + esc(m.tres[0].n) + ' führt' : esc(m.tres[0].n) + ' gewinnt!') + '</h1>' : '') +
-      (m.tres && m.tres.length ? '<p>' + m.tres.map(t => '<span style="color:' + t.c + '">●</span> ' + esc(t.n) + (t.caps !== undefined ? ' 🚩' + t.caps : '') + ' <b>' + t.score + '</b>' + (t.round !== undefined ? ' <small>(diese Runde ' + t.round + ')</small>' : '')).join(" · ") + '</p>' : '') +
+      (m.tres && m.tres.length && !FR.text ? '<h1>' + esc(m.tres[0].n) + ' gewinnt!</h1>' : '') +
+      (m.tres && m.tres.length ? '<p>' + m.tres.map(t => '<span style="color:' + t.c + '">●</span> ' + esc(t.n) + (t.caps !== undefined ? ' 🚩' + t.caps : '') + ' <b>' + t.score + '</b>').join(" · ") + '</p>' : '') +
       (XR.gain ? '<p>⭐ <b>+' + XR.gain + ' XP</b>' + (XR.up ? ' · ⬆ <b>Stufe ' + XR.lv + '!</b>' : '') + ((XR.new || []).length ? '<br>Neu für deine Figur: <b>' + XR.new.map(esc).join(", ") + '</b> (👕 Aussehen ändern)' : '') + '</p>' : '') +
       ((W.votes_res || []).length ? '<p>🔮 Tipps «Wer kommt durch?»: ' + W.votes_res.map(v => '<span style="color:' + v.c + '">' + esc(v.n) + '</span> → ' + esc(v.pick) + (v.ok ? ' ✅' : ' ❌')).join(" · ") + '</p>' : '') +
       '<h1>Rangliste</h1><table>' + (m.res || []).map((r, i) => '<tr><td>' + (i + 1) + '.</td><td><span style="color:' + r.c + '">●</span> ' + esc(r.n) + (r.lv ? ' ⭐' + r.lv : '') + '</td><td>' + esc(r.info) + '</td><td><b>' + r.score + '</b></td></tr>').join("") + '</table>'
@@ -2919,7 +2910,6 @@ function paint(m) {
     h += lvlHtml(m.xp);
     if (m.sprint) h += '<p>⏱ <b>Sprint:</b> 90 Sekunden, immer derselbe Parcours. Durch Tor 1, 2 und 3 (der Pfeil zeigt das nächste), dann ins Ziel. Je schneller, desto mehr Punkte.</p>';
     if (m.goal_mode === "flag") h += '<p>🚩 <b>Fahne erobern</b>: hol die Fahne der anderen bei ihrer Basis und bring sie zu deiner Basis (+500). Berührst du jemanden, der eure Fahne trägt, geht sie zurück (+100). Die Kamera passt auf alle auf.</p>';
-    if (m.mode === "teamguard") h += '<p>⚔️ Team gegen Team · Runde ' + (m.mround + 1) + ' von 2: <b style="color:' + ["#eb2e1f", "#1f6bfa"][m.tg] + '">' + ["Team Rot", "Team Blau"][m.tg] + '</b> bewacht (Kopfkamera und feste Kamera), das andere Team schleicht. Danach wird getauscht.</p>';
     if (m.mode === "seek") h += '<p>🙈 <b>Verstecken mit dem Rover:</b> Alle starten bei der Basis. ' + (role === "guard" ? 'Du bist der <b>Fänger</b>: 30 s Augen zu, dann fährst du den Rover (Joystick links), drehst den Kopf (rechts wischen) und drückst «Erwischt!», wenn du jemanden im Bild hast.' : 'Du hast 30 s zum Verstecken. Der Fänger sieht nur die Kamera des Rovers. Berühre die Basis (Pfeil), ohne gefunden zu werden – dann gewinnen alle Verstecker!') + '</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🌳 Verstecker</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">🔎 Fänger</button>';
     if (m.mode === "mwhand") h += '<p>🕹 <b>Team gegen MoveEye:</b> Die Wächter sitzen an MoveEye, drehen die echte Kamera mit dem Joystick, zielen mit der Bildmitte auf dich und drücken den Auslöser 🎯. Der Balken zeigt nur, wie gut man dich sieht.</p>';
     if (J) h += '<p>Du bist <b>kein Mensch</b>, sondern ein Tier oder ein Ding. Schaffst du es, dass MoveEye trotzdem <b>«Person!»</b> meldet? Jeder Fehlalarm gibt Punkte – und MoveEye lernt daraus. Der Pfeil zeigt zur Kamera 📷.</p>' +
@@ -2963,7 +2953,9 @@ function paint(m) {
 let SAWPLAY = false, LKon = false, LKt = 0;
 function winHtml(m) {
   const R = m.rx || {}, W = R.win || {}; let h = "";
-  if (m.rs === "end" && W.title) h += '<div class="win"><div class="big2">' + esc(W.title) + '</div><p><b>' + W.score + ' Punkte</b> · ' + esc(W.info || "") + '</p>' +
+  if (m.rs === "end" && W.title) h += '<div class="win"><div class="big2">' + esc(W.title) + '</div>' + (W.score >= 0 ? '<p><b>' + W.score + ' Punkte</b> · ' + esc(W.info || "") + '</p>' : '') +
+    ((W.roles || []).length > 1 ? W.roles.map(r => '<p>' + esc(r.label) + ': <b style="color:' + r.c + '">' + esc(r.n) + '</b> – <b>' + r.score + ' Punkte</b><br><small>' + esc(r.info) + '</small></p>').join("") : '') +
+    (W.team ? '<p>👥 ' + esc(W.team) + '</p>' : '') +
     (W.hl && W.hl.text ? '<p>' + esc(W.hl.text) + '</p>' : '') +
     ((W.board || []).length ? '<p><small>🏆 Abend: ' + W.board.map((b, i) => (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + ' <span style="color:' + b.c + '">' + esc(b.n) + '</span> ' + b.score).join(" · ") + '</small></p>' : '') + '</div>';
   if (R.next) h += '<p><b>' + esc(R.next) + '</b></p>';
@@ -2978,7 +2970,7 @@ function lookVib(on) {                   // the head camera looks this way: a sh
 const TB = {light: "#b-light", siren: "#b-siren", scan: "#b-scan", zoom: "#b-zoom"};
 function toolsPaint(m) {
   const T = m.tools || {}, g = role === "guard", on = g && !!T.on;
-  ["#b-siren", "#b-scan", "#b-zoom"].forEach(k => $(k).hidden = !on);
+  if (g) Object.keys(TB).forEach(k => { const b = $(TB[k]); if (b) b.hidden = !(T.t || []).some(x => x[0] === k); });   // only the tools there are («Wie echte Hardware»: no light, no siren)
   $("#en").hidden = !on;
   if (on) {
     const f = Math.max(0, Math.min(1, (T.e || 0) / Math.max(1, T.max || 1)));
@@ -3296,11 +3288,13 @@ func _hide_check(p: Dictionary) -> bool:
 	if hi >= 0:
 		if hi >= hides.size() or a.position.distance_to(hides[hi]["pos"]) > 1.3 or a.ctl_posture == 0:
 			p["hide_i"] = -1                             # left the bush
+			p["hide_cd"][-1] = t + HIDE_WAIT[0]
 			return false
 		var left: float = HIDE_MAX + rules.hide_bonus() - (t - float(p["hide_t0"]))   # 3D-4.x: fairness - longer for few sneakers
 		if left <= 0.0:
 			p["hide_i"] = -1
 			p["hide_cd"][hi] = t + 12.0
+			p["hide_cd"][-1] = t + HIDE_WAIT[1]
 			_say(p, "🌳 Zu lange im Versteck – raus da!", 2.5)
 			return false
 		_say(p, "🌳 Versteckt – noch %d s" % int(ceil(left)), 0.4)
@@ -3309,6 +3303,9 @@ func _hide_check(p: Dictionary) -> bool:
 		return false
 	for i in range(hides.size()):
 		if a.position.distance_to(hides[i]["pos"]) < 1.0 and t > float(p["hide_cd"].get(i, 0.0)):
+			if t < float(p["hide_cd"].get(-1, 0.0)):
+				_say(p, "🌳 Noch %d s, bis du dich wieder verstecken kannst" % int(ceil(float(p["hide_cd"][-1]) - t)), 0.5)
+				return false
 			p["hide_i"] = i
 			p["hide_t0"] = t
 			news("🌳 %s versteckt sich" % p["name"])
@@ -3624,7 +3621,7 @@ func add_local(role := "runner", nm := "Ich (PC)") -> Dictionary:
 	p["team"] = _smaller_team(slot)
 	players[slot] = p
 	_paint_cone(p)
-	if role == "guard" and main.game_mode in ["guard", "teamguard", "seek"]:
+	if role == "guard" and main.game_mode in ["guard", "seek"]:
 		_set_role(p, "guard")
 	(p["vp"] as SubViewport).render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	set_bots(main.game_bots)
