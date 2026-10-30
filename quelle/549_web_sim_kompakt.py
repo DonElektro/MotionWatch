@@ -1,11 +1,19 @@
-#@ MoveEye – Teil 549: Live-Seite «Sim-Kompakt»: mit verbundenem Simulator zwei kleine Bilder (Kamera, Simulator), darunter Kopf- und Rover-Stick am Rand und die Simulator-Kacheln dazwischen. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 549: Live-Seite «Sim-Kompakt»: mit verbundenem Simulator das Simulator-Bild gross, die Kamera als Bild im Bild (antippen = tauschen), darunter Kopf- und Rover-Stick am Rand und die Simulator-Kacheln dazwischen. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Wish of Daniel (30.10.2026): on the tab Live, while the simulation is on AND connected, a compact view «Sim-Kompakt»
 # (on by itself, switchable in «◫ Ansicht», stored per device in localStorage «mw-simkompakt»):
-#   top     two small pictures side by side: left MoveEye's camera (#video, the one stream), right the simulator window
-#           (the picture poll of 530/470 simViewPoll - the same <img>, moved here, no second stream; data-dock = the naked
-#           picture of the simulator when it knows dock=1). Tap = big (over both columns), tap again = back. The simulator
-#           picture when big is the simulator window (mouse / ✋ finger go to the simulator, ✕ = back).
+#   top     «Bild im Bild» (2.98.53, Daniel's variant C; before: two small pictures side by side): the simulator window big,
+#           16:9 over the whole width (the picture poll of 530/470 simViewPoll - the same <img>, moved here, no second stream;
+#           data-dock = the naked picture of the simulator when it knows dock=1), MoveEye's camera (#vcard / #video, the one
+#           stream, the same elements) small in its bottom right corner (~32 % wide, on a wide screen ~24 %, white frame,
+#           «● LIVE»; the buttons on the camera picture are hidden there). Tap the small picture = swap (camera big, simulator
+#           small; stored per device in «mw-simkompakt» .sw). Tap the big picture = as before: big view (the small one away),
+#           tap again / ✕ = back; the big simulator picture is the simulator window (mouse / ✋ finger go to the simulator).
+#           Grid: both pictures in one area «pic»; the main one .sk-pm (--sk-pw × --sk-ph), the small one .sk-pi in its corner.
+#           Phone upright (narrow): the big picture always over the full width, 16:9 (the simulator picture fills it, cut at the
+#           edges - only the big simulator window shows it whole); when the room is short the sticks get smaller (down to 104 px)
+#           so that the tiles stay in view where possible.
+#           Wider screens: as high as the room allows, centred (the controls stay in view).
 #   below   left the head stick (#stick of the controls, moved here) with ◎, the shutter 🎯 (539) and the AI help 🤖 (546)
 #           next to it; right the rover stick (#mstick, /api/mover) - in a game round only when the game mode drives the
 #           rover (seek, patrol), otherwise locked with a hint; between them the tiles: Szene, Tageszeit, Wetter, Besuch (the
@@ -26,36 +34,55 @@ body.sk.sk-wide.lv:not(.videoonly) main>section{display:grid!important;grid-temp
 body.sk.sk-wide.lv:not(.videoonly) #lv-main,body.sk.sk-wide.lv:not(.videoonly) #lv-side{height:100%;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;padding-bottom:12px}
 body.sk.lv:not(.videoonly) #lv-side{margin-top:12px}
 body.sk.sk-wide.lv:not(.videoonly) #lv-side{margin-top:0}
-body.sk.lv:not(.videoonly) #lv-main{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"cam sim" "ctl ctl" "more more";gap:8px;align-content:start;padding-bottom:0}
+body.sk.lv:not(.videoonly) #lv-main{display:grid!important;grid-template-columns:minmax(0,1fr);grid-template-areas:"pic" "ctl" "more";gap:8px;align-content:start;padding-bottom:0}
 body.sk.lv:not(.videoonly) #lv-main>*+*{margin-top:0}
 body.sk.lv:not(.videoonly) #lv-simw{display:contents}   /* also while 530 hides it for a moment (the simulator is busy): 20 s grace */
-body.sk.lv:not(.videoonly) #vcard{grid-area:cam;height:var(--sk-ph,180px);min-height:0;padding:0!important;margin:0;display:block;overflow:hidden;flex:none}
+/* 2.98.53 «Bild im Bild»: both pictures in the area «pic» - the main one (.sk-pm) 16:9 over the width, the other (.sk-pi) small in its corner */
+body.sk.lv:not(.videoonly) #vcard,body.sk.lv:not(.videoonly) #sk-sim{grid-area:pic;min-height:0;padding:0!important;margin:0;overflow:hidden;flex:none}
+body.sk.lv:not(.videoonly) #vcard{display:block}
+body.sk.lv:not(.videoonly) #vcard.sk-pm,body.sk.lv:not(.videoonly) #sk-sim.sk-pm{width:var(--sk-pw,100%);height:var(--sk-ph,200px);justify-self:center;align-self:start;border-radius:12px}
+body.sk.lv:not(.videoonly) #vcard.sk-pi,body.sk.lv:not(.videoonly) #sk-sim.sk-pi{width:var(--sk-iw,120px);height:var(--sk-ih,68px);justify-self:end;align-self:end;
+  margin:0 var(--sk-im,8px) 8px 0!important;position:relative;z-index:8;border:2px solid #fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.55);
+  background:#000;cursor:pointer;touch-action:manipulation}
 body.sk.lv:not(.videoonly) #vcard>:not(.vwrap){display:none}
-body.sk.lv:not(.videoonly) #vcard .vwrap{height:100%;border-radius:12px}
+body.sk.lv:not(.videoonly) #vcard .vwrap{height:100%;border-radius:inherit;box-shadow:none}
 body.sk.lv:not(.videoonly) #video{width:100%!important;height:100%!important;max-height:none!important;min-height:0!important;object-fit:contain;aspect-ratio:auto;cursor:zoom-in}
+body.sk.lv:not(.videoonly) #vcard.sk-pi #video{object-fit:cover;cursor:pointer}
+body.sk.lv:not(.videoonly) #vcard.sk-pi .vwrap>:not(#video):not(.vtag){display:none!important}   /* the buttons of the camera picture: only when it is big */
+body.sk.lv:not(.videoonly) #vcard.sk-pi .vtag{left:4px;bottom:4px;gap:3px}
+body.sk.lv:not(.videoonly) #vcard.sk-pi .vtag span{font-size:9px;padding:1px 5px;border-radius:5px;letter-spacing:.03em}
+body.sk.lv:not(.videoonly) #vcard.sk-pi .vtag .live::before{width:6px;height:6px;margin-right:4px}
+body.sk.lv:not(.videoonly) #vcard.sk-pi #v-src{display:none}
+body.sk.lv:not(.videoonly) #vcard.sk-pm .vtag{right:calc(var(--sk-iw,120px) + 16px);flex-wrap:nowrap;overflow:hidden}   /* not under the small picture */
+body.sk.lv:not(.videoonly) #vcard.sk-pm .vtag span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+body.sk.lv:not(.videoonly) #vcard.sk-pm .vtag .live{flex:none}
 body.sk.lv:not(.videoonly) #lv-joy,body.sk #pip{display:none!important}
 body.sk.lv:not(.videoonly) #lv-tools button{width:30px;height:30px;font-size:14px;border-radius:8px}
 body.sk.lv:not(.videoonly) #lv-tools{top:5px;right:5px;gap:4px}
 body.sk.lv:not(.videoonly) #lv-tools button svg{width:15px;height:15px}
 #sk-sim,#sk-ctl{display:none}
-body.sk.lv:not(.videoonly) #sk-sim{display:flex;grid-area:sim;height:var(--sk-ph,180px);padding:0;margin:0;align-items:center;justify-content:center;background:#000;border-radius:12px;overflow:hidden;position:relative;border:1px solid var(--line)}
+body.sk.lv:not(.videoonly) #sk-sim{display:flex;align-items:center;justify-content:center;background:#000;border-radius:12px;position:relative;border:1px solid var(--line)}
+body.sk.lv:not(.videoonly) #sk-sim.sk-pi{border:2px solid #fff;border-radius:10px;position:relative}
 #sk-sim #lv-vw{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
 #sk-sim #lv-vw[hidden]{display:none}
 #sk-sim .lv-vbox{border-radius:0;display:flex;align-items:center;justify-content:center;width:100%;height:100%}
-#sk-sim .lv-vbox img{width:auto;height:auto;max-width:100%;max-height:100%;cursor:zoom-in}
+#sk-sim .lv-vbox img{width:auto;height:auto;max-width:none;max-height:none;flex:none;cursor:zoom-in}   /* fitSim sizes it (2.98.53: fills the box) */
+#sk-sim.sk-pi .lv-vbox img{cursor:pointer}
 #sk-sim .lv-vhelp{display:none}
 #sk-sim:not(.big) .lv-vbtn,#sk-sim:not(.big) .stp{display:none!important}
 #sk-sim .lv-vbtn button{width:32px;height:32px;font-size:15px}
 #sk-sim.big .lv-vbox img{cursor:grab}
 #sk-cap{position:absolute;left:6px;bottom:5px;right:6px;font-size:10.5px;line-height:1.25;color:#fff;text-shadow:0 1px 2px #000;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:2}
+#sk-sim.sk-pm #sk-cap{right:calc(var(--sk-iw,120px) + 16px)}   /* not under the small picture */
+#sk-sim.sk-pi #sk-cap,#sk-sim.sk-pi #sk-back{display:none!important}
+#sk-tag{display:none;position:absolute;left:4px;bottom:4px;z-index:3;pointer-events:none;background:rgba(0,0,0,.62);color:#fff;border-radius:5px;padding:1px 5px;font-size:9px;font-weight:700;letter-spacing:.03em}
+#sk-sim.sk-pi #sk-tag{display:block}
 #sk-sim .sk-wait{color:var(--mut);font-size:13px}
 #sk-back{position:absolute;left:6px;top:6px;z-index:4;width:32px;height:32px;padding:0;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(8,12,20,.65);color:#fff;font-size:15px;display:none}
 #sk-sim.big #sk-back{display:block}
-/* big: one picture over both columns, the other one away until tapped back */
-body.sk.lv:not(.videoonly) #lv-main.sk-bc{grid-template-areas:"cam cam" "ctl ctl" "more more"}
-body.sk.lv:not(.videoonly) #lv-main.sk-bs{grid-template-areas:"sim sim" "ctl ctl" "more more"}
+/* big: the main picture alone (the small one away until tapped back), as high as the space allows */
 body.sk.lv:not(.videoonly) #lv-main.sk-bc #sk-sim,body.sk.lv:not(.videoonly) #lv-main.sk-bs #vcard{display:none!important}
-body.sk.lv:not(.videoonly) #lv-main.sk-bc #vcard,body.sk.lv:not(.videoonly) #lv-main.sk-bs #sk-sim{height:var(--sk-phb,320px)}
+body.sk.lv:not(.videoonly) #lv-main.sk-bc #vcard,body.sk.lv:not(.videoonly) #lv-main.sk-bs #sk-sim{height:var(--sk-phb,320px);width:100%}
 body.sk.lv:not(.videoonly) #lv-main.sk-bc #video{cursor:zoom-out}
 /* the controls: head stick | tiles | rover stick (narrow: sticks in one row, the tiles below) */
 body.sk.lv:not(.videoonly) #sk-ctl{display:grid;grid-area:ctl;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"hs tl ms";gap:8px 10px;align-items:start;
@@ -114,15 +141,15 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   if (document.body.dataset.tab !== "live") return;
   try { const D = /*SKDE*/{}; for (const k in D) if (!(k in I18N.de)) I18N.de[k] = D[k]; } catch (e) {}
   try { I18N.en = I18N.en || {}; Object.assign(I18N.en, {
-    "sk-note": "With the simulator connected: two small pictures at the top (camera and simulator), below them the head and rover sticks at the edges, the tiles of the simulator in between. Only for this device.",
-    "sk-help": "Sim compact: tap a picture = big, tap again = small. The big simulator picture is the simulator window (mouse and ✋ finger steer the simulator, ✕ = back). Left stick = MoveEye's head, right stick = rover (in a game round only when the game drives the rover). The tiles = what happens in the simulator; «… more» = all settings of the simulator. On / off and picture quality under «◫ View»."}); } catch (e) {}
+    "sk-note": "With the simulator connected: the simulator picture big at the top, MoveEye's camera small in its corner (tap = swap), below them the head and rover sticks at the edges, the tiles of the simulator in between. Only for this device.",
+    "sk-help": "Sim compact: tap the small picture in the corner = swap the two pictures (this device remembers it). Tap the big picture = big view, tap again = back; the big simulator picture is the simulator window (mouse and ✋ finger steer the simulator, ✕ = back). Left stick = MoveEye's head, right stick = rover (in a game round only when the game drives the rover). The tiles = what happens in the simulator; «… more» = all settings of the simulator. On / off and picture quality under «◫ View»."}); } catch (e) {}
   const T = x => (typeof t === "function" ? t(x) : x);
   const $i = id => document.getElementById(id);
   const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
   const W = $i("lv-simw"), D = $i("lv-sim"), VW = $i("lv-vw"), VI = $i("lv-vimg"), main = document.querySelector("main"), M0 = () => $i("lv-main");
   if (!W || !D || !VW || !VI || !main) return;
-  const KEY = "mw-simkompakt";                          // per device: {on: "auto" | "off"}
-  let P = {on: "auto"};
+  const KEY = "mw-simkompakt";                          // per device: {on: "auto" | "off", sw: "sim" | "cam" = the big picture}
+  let P = {on: "auto", sw: "sim"};
   try { Object.assign(P, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {} };
   const SQ = D.querySelector(".simq");                  // «Bildqualität» (470 simQBox) - in «◫ Ansicht» while Sim-Kompakt is on
@@ -132,7 +159,8 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   const CAP = E("div"); CAP.id = "sk-cap";
   const BK = E("button", "", "✕"); BK.id = "sk-back"; BK.type = "button";
   const WAIT = E("div", "sk-wait", "…");
-  SIM.append(WAIT, CAP, BK);
+  const TAG = E("div"); TAG.id = "sk-tag";              // «Simulator» on the small picture (2.98.53)
+  SIM.append(WAIT, CAP, TAG, BK);
   const C = E("div"); C.id = "sk-ctl";
   const HS = E("div"); HS.id = "sk-hs";
   const HSB = E("div", "sk-sb"), HSL = E("div", "sk-slot"), HLB = E("div", "sk-lb");
@@ -179,6 +207,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     ON = on; document.body.classList.toggle("sk", on);
     if (on) {
       if (VW.parentNode !== SIM) { VW.before(VWHOME); SIM.insertBefore(VW, CAP); }
+      roles();
       if (SQ) SQ.remove();
       D.open = true;                                     // 530 shows the simulator window only while its card is open
       sticks(true);
@@ -189,9 +218,26 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
       VI.style.width = VI.style.height = "";               // the size of the small picture (fitSim)                               // back from «◫ Ansicht» (also when the panel holds it right now)
       sticks(false);
       const m = M0(); if (m) m.classList.remove("sk-bc", "sk-bs");
+      const vc = $i("vcard"); if (vc) { vc.classList.remove("sk-pm", "sk-pi"); vc.removeAttribute("title"); vc.removeAttribute("tabindex"); vc.removeAttribute("role"); }
     }
     if (typeof window.lvApply === "function") try { window.lvApply(); } catch (e) {}
     layout(); paint();
+  }
+  // ---- which picture is big (2.98.53 «Bild im Bild»): P.sw = "sim" (default) or "cam"; the other one is small in its corner ----
+  const camBig = () => P.sw === "cam";
+  function roles() {
+    const vc = $i("vcard"); if (!vc) return;
+    const cb = camBig(), tip = T("Tap = swap pictures");
+    vc.classList.toggle("sk-pm", cb); vc.classList.toggle("sk-pi", !cb);
+    SIM.classList.toggle("sk-pm", !cb); SIM.classList.toggle("sk-pi", cb);
+    [[vc, !cb], [SIM, cb]].forEach(([x, small]) => {
+      if (small) { x.title = tip; x.setAttribute("role", "button"); x.tabIndex = 0; x.setAttribute("aria-label", tip); }
+      else { x.removeAttribute("title"); x.removeAttribute("role"); x.removeAttribute("tabindex"); x.removeAttribute("aria-label"); }
+    });
+    TAG.textContent = T("Simulator");
+  }
+  function swap() {
+    setBig(""); P.sw = camBig() ? "sim" : "cam"; save(); roles(); layout();
   }
   // ---- the size of the pictures and sticks ----
   function layout() {
@@ -202,28 +248,53 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     const Hh = main.clientHeight || innerHeight;
     const mw = m.clientWidth || (main.clientWidth - 24);
     const narrow = mw < 620; C.classList.toggle("sk-n", narrow);
-    const stk = Math.round(Math.max(104, Math.min(narrow ? Math.min(innerWidth * 0.36, 150) : 150, land ? Math.min(innerHeight * 0.34, 150) : 170)));
+    let stk = Math.round(Math.max(104, Math.min(narrow ? Math.min(innerWidth * 0.36, 150) : 150, land ? Math.min(innerHeight * 0.34, 150) : 170)));
     document.documentElement.style.setProperty("--sk-st", stk + "px");
-    const ch = Math.max(stk + 22, C.querySelector("#sk-tiles").offsetHeight + 16) + (narrow ? TI.offsetHeight + 8 : 0) + 20;
-    const col = (mw - 8) / 2;
-    let ph = land ? Math.min(col * 9 / 16, Hh - ch - 26) : Math.min(col * 9 / 16, Hh * 0.42);
-    ph = Math.round(Math.max(90, ph));
-    let pb = land ? Math.min(mw * 9 / 16, Hh - ch - 26) : Math.min(mw * 9 / 16, Hh * 0.62);
+    // the height of sticks + tiles (without an open sheet): measured, or estimated before the first paint
+    const est = Math.max(stk + 22, TI.offsetHeight + 16) + (narrow ? TI.offsetHeight + 8 : 0) + 20;
+    const chOf = () => C.offsetHeight ? C.offsetHeight - (SH.firstChild ? SH.offsetHeight + 8 : 0) : est;
+    let ch = chOf();
+    // the big picture 16:9 over the width, but sticks and tiles stay in view below it (measured: from the top of #lv-main to the
+    // visible bottom of the scrolling part, minus its padding)
+    const sec = m.parentNode, sr = sec.getBoundingClientRect(), mr = m.getBoundingClientRect();
+    const room = Math.min(sr.bottom, innerHeight) - (mr.top + (wide ? 0 : sec.scrollTop)) - (parseFloat(getComputedStyle(sec).paddingBottom) || 0) - 4;
+    // phone / narrow upright (Daniel 31.10.: the simulator picture over the FULL width, 16:9; fitSim fills it without black
+    // bars), the sticks get smaller (down to 104 px) when the room is short; wider screens: as high as the room allows (16:9,
+    // centred), the controls stay in view
+    const full = narrow && !land;
+    let ph, pw;
+    if (full) {
+      pw = Math.round(mw); ph = Math.round(mw * 9 / 16);
+      const short = ph - (room - ch - 8);
+      if (short > 0 && stk > 104) {                       // smaller sticks: the tiles stay in view as far as possible
+        stk = Math.max(104, stk - Math.ceil(short)); document.documentElement.style.setProperty("--sk-st", stk + "px"); ch = chOf();
+      }
+    } else {
+      ph = Math.round(Math.max(120, Math.min(mw * 9 / 16, room - ch - 8)));
+      pw = Math.round(Math.min(mw, ph * 16 / 9));
+    }
+    let pb = land ? Math.min(mw * 9 / 16, room - ch - 8) : Math.min(mw * 9 / 16, Hh * 0.62);
     pb = Math.round(Math.max(ph, pb));
-    m.style.setProperty("--sk-ph", ph + "px"); m.style.setProperty("--sk-phb", pb + "px");
+    const iw = Math.round(Math.max(96, Math.min(pw * (pw >= 600 ? 0.24 : 0.32), 300)));   // the small picture: smaller on a wide screen
+    m.style.setProperty("--sk-ph", ph + "px"); m.style.setProperty("--sk-phb", pb + "px"); m.style.setProperty("--sk-pw", pw + "px");
+    m.style.setProperty("--sk-iw", iw + "px"); m.style.setProperty("--sk-ih", Math.round(iw * 9 / 16) + "px");
+    m.style.setProperty("--sk-im", Math.round((mw - pw) / 2 + 8) + "px");
     ACT.classList.remove("two"); if (ACT.scrollHeight > stk + 24) ACT.classList.add("two");   // ◎ 🎯 🤖 ? in two columns when higher than the stick
     fitSim();
   }
   function fitSim() {                                  // the simulator picture without black edges (simViewBind maps clicks onto the element)
     const bw = SIM.clientWidth, bh = SIM.clientHeight; if (!bw || !bh) return;
     const a = (VI.naturalWidth && VI.naturalHeight) ? VI.naturalWidth / VI.naturalHeight : 16 / 9;
-    let w = bw, h = bw / a; if (h > bh) { h = bh; w = bh * a; }
+    // 2.98.53: not big = it fills the 16:9 box (cut at the edges, the box hides the rest - clicks still map onto the element);
+    // big (the simulator window to steer) = the whole picture
+    const cover = !SIM.classList.contains("big");
+    let w = bw, h = bw / a; if (cover ? h < bh : h > bh) { h = bh; w = bh * a; }
     w = Math.floor(w); h = Math.floor(h);
     if (VI.style.width !== w + "px") VI.style.width = w + "px";
     if (VI.style.height !== h + "px") VI.style.height = h + "px";
   }
   VI.addEventListener("load", () => { if (ON) { WAIT.hidden = true; fitSim(); } });
-  // ---- tap = big, tap again = back ----
+  // ---- tap the small picture = swap; tap the big one = big view, tap again / ✕ = back ----
   function setBig(k) {
     big = k; const m = M0(); if (!m) return;
     m.classList.toggle("sk-bc", k === "cam"); m.classList.toggle("sk-bs", k === "sim"); SIM.classList.toggle("big", k === "sim");
@@ -231,22 +302,41 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     requestAnimationFrame(() => { fitSim(); if (k) (k === "cam" ? $i("vcard") : SIM).scrollIntoView({block: "nearest"}); });
   }
   BK.onclick = e => { e.stopPropagation(); setBig(""); };
+  // the small picture takes every tap / click / key itself (capture: nothing reaches the camera picture, the hunter of the game
+  // or the simulator window below it) and swaps on a tap
+  const small = x => ON && x && x.classList.contains("sk-pi");
+  const vcard = $i("vcard");
+  let sp = null;
+  [[vcard, "cam"], [SIM, "sim"]].forEach(([x]) => {
+    if (!x) return;
+    x.addEventListener("pointerdown", e => { if (!small(x) || e.button > 0) return; sp = {x: e.clientX, y: e.clientY, t: Date.now(), id: e.pointerId, el: x}; e.stopPropagation(); }, true);
+    x.addEventListener("pointermove", e => { if (!small(x) || !sp || sp.id !== e.pointerId) return; e.stopPropagation(); if (Math.hypot(e.clientX - sp.x, e.clientY - sp.y) > 12) sp.moved = true; }, true);
+    ["pointerup", "pointercancel"].forEach(n => x.addEventListener(n, e => {
+      if (!small(x) || !sp || sp.id !== e.pointerId || sp.el !== x) return;
+      e.stopPropagation(); const ok = n === "pointerup" && !sp.moved && Date.now() - sp.t < 700; sp = null;
+      if (ok) { x.dataset.skSw = Date.now(); swap(); }
+    }, true));
+    ["click", "dblclick", "contextmenu", "wheel"].forEach(n => x.addEventListener(n, e => {
+      if (small(x) || Date.now() - (+x.dataset.skSw || 0) < 450) { e.stopPropagation(); if (n !== "wheel" || small(x)) e.preventDefault(); }   // the click of the swapping tap: not on to the now big picture
+    }, {capture: true, passive: false}));
+    x.addEventListener("keydown", e => { if (small(x) && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); e.stopPropagation(); swap(); } }, true);
+  });
   const v = $i("video");
   let vT = null;
   if (v) {
     v.addEventListener("click", () => {
-      if (!ON) return;
+      if (!ON || !camBig()) return;
       const g = $i("mwg"); if (g && !g.hidden) return;   // the hunter of the game taps on players (530)
       clearTimeout(vT); vT = setTimeout(() => setBig(big === "cam" ? "" : "cam"), 260);
     });
     v.addEventListener("dblclick", () => clearTimeout(vT));     // double tap = full screen (530)
   }
-  // the simulator picture: small = a tap makes it big (and does not reach the simulator); big = it is the simulator window
-  // (mouse and ✋ finger go to the simulator; a finger tap without ✋ = back)
+  // the big simulator picture: not big yet = a tap makes it big (and does not reach the simulator); big = it is the simulator
+  // window (mouse and ✋ finger go to the simulator; a finger tap without ✋ = back)
   let tp = null;
   const vbox = VI.parentNode;
   vbox.addEventListener("pointerdown", e => {
-    if (!ON || e.target !== VI) return;
+    if (!ON || e.target !== VI || small(SIM)) return;
     const ctl = $i("lv-vctl") && $i("lv-vctl").classList.contains("on");
     if (big !== "sim" || (e.pointerType !== "mouse" && !ctl)) { tp = {x: e.clientX, y: e.clientY, t: Date.now(), id: e.pointerId}; e.stopPropagation(); }
   }, true);
@@ -370,6 +460,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   MON.onclick = () => ctl({ctl: "set", id: "mover_on", value: true});
   function paint() {
     if (!ON) return;
+    if (TAG.textContent !== T("Simulator")) roles();
     HLB.textContent = "🎥 " + T("Head"); CEN.title = T("Centre"); HLP.title = T("Help"); HLP.classList.toggle("on", open === "help");
     BK.title = T("Back");
     const st = R && R.status ? String(R.status) : ""; if (CAP.textContent !== st) CAP.textContent = st;
@@ -414,14 +505,16 @@ WEB_UI_LOCAL.add("mw-simkompakt")                         # per device: a phone 
 
 # the manual (HELP_PAGE of 540): one paragraph in the section «Live-Seite», German and English
 for _a, _b in (('<section id="live" data-icon="📺"><h2>Die Live-Seite</h2>',
-                "<p><b>🧩 Sim-Kompakt (ab 2.98.46):</b> Ist der Simulator verbunden, zeigt die Live-Seite oben zwei kleine Bilder (links "
-                "die Kamera von MoveEye, rechts das Simulator-Fenster; antippen = gross, nochmals = zurück), darunter links den Kopf-Stick "
+                "<p><b>🧩 Sim-Kompakt (ab 2.98.46, Bild im Bild ab 2.98.53):</b> Ist der Simulator verbunden, zeigt die Live-Seite oben "
+                "das Simulator-Fenster gross und die Kamera von MoveEye klein in seiner Ecke («● LIVE»). Das kleine Bild antippen = die "
+                "beiden Bilder tauschen (das Gerät merkt es sich); das grosse Bild antippen = gross, nochmals = zurück. Darunter links den Kopf-Stick "
                 "(mit ◎, Auslöser 🎯 und KI-Hilfe 🤖), rechts den Rover-Stick und dazwischen die Kacheln Szene, Tageszeit, Wetter, Besuch, "
                 "Spiel, Wildbeobachtung, Foto des Platzes, KI-Wächter, Ansicht und Folgen; «… mehr» öffnet die ganze Simulator-Steuerung, «?» "
                 "die Erklärung. Ein- und ausschalten (pro Gerät) und die Bildqualität des Simulators unter «◫ Ansicht».</p>"),
                ('<section id="live" data-icon="📺"><h2>The live page</h2>',
-                "<p><b>🧩 Sim compact (from 2.98.46):</b> while the simulator is connected the live page shows two small pictures at the "
-                "top (left MoveEye's camera, right the simulator window; tap = big, tap again = back), below them the head stick on the "
+                "<p><b>🧩 Sim compact (from 2.98.46, picture in picture from 2.98.53):</b> while the simulator is connected the live page "
+                "shows the simulator window big at the top and MoveEye's camera small in its corner («● LIVE»). Tap the small picture = "
+                "swap the two pictures (this device remembers it); tap the big picture = big, tap again = back. Below them the head stick on the "
                 "left (with ◎, shutter 🎯 and AI help 🤖), the rover stick on the right and the tiles in between: scene, time of day, "
                 "weather, visit, game, wildlife watching, photo of the place, AI guard, view and follow; «… more» opens the whole simulator "
                 "control, «?» the explanation. On / off (per device) and the picture quality of the simulator under «◫ View».</p>")):

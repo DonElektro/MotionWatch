@@ -49,7 +49,9 @@ WORDMARK_CSS = ("header h1.wm .wmc,header h1.wm .wmw{transform-box:view-box}head
                 "header h1.wm .wmc{animation:wmc 7s ease-in-out infinite}"
                 "header h1.wm .wl1,header h1.wm .wl2,header h1.wm .wa1,header h1.wm .wa2{transform-box:fill-box;transform-origin:50% 0}"
                 "header h1.wm .wa1,header h1.wm .wa2{transform-origin:100% 0}"
-                "header h1.wm .wl1,header h1.wm .wa2{animation:wms .7s ease-in-out infinite}header h1.wm .wl2,header h1.wm .wa1{animation:wms .7s ease-in-out infinite reverse}"
+                # 2.98.53: a real gait - leg 1 with arm 2, leg 2 with arm 1 half a step (0.35 s of 0.7 s) later (before: «reverse» on these
+                # mirror-like keyframes gave the same angle, all four limbs swung together)
+                "header h1.wm .wl1,header h1.wm .wa2{animation:wms .7s ease-in-out infinite}header h1.wm .wl2,header h1.wm .wa1{animation:wms .7s ease-in-out -.35s infinite}"
                 "@keyframes wmw{0%,100%{transform:translateX(calc(-1*var(--wx)))}50%{transform:translateX(var(--wx))}}"
                 "@keyframes wmc{0%,100%{transform:rotate(calc(-1*var(--wa)))}50%{transform:rotate(var(--wa))}}"
                 "@keyframes wms{0%,100%{transform:rotate(18deg)}50%{transform:rotate(-18deg)}}"

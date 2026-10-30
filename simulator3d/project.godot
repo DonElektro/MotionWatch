@@ -1,11 +1,11 @@
-; Motion Watch 3D simulator (Godot 4.3)
+; MoveEye Sim 3D (Godot 4.3) - until 3D-4.23 «Motion Watch 3D Simulator»; config/name is also the folder of the user data (user://)
 config_version=5
 
 [application]
 
-config/name="Motion Watch 3D Simulator"
+config/name="MoveEye Sim 3D"
 config/icon="res://icon_sim3d.png"
-config/description="3D simulation for Motion Watch: cameras on a pan/tilt head, thermal camera, lights, weather, visitors"
+config/description="3D simulation for MoveEye: cameras on a pan/tilt head, thermal camera, lights, weather, visitors"
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.3")
 run/low_processor_mode=false

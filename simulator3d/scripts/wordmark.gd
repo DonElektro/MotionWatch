@@ -3,7 +3,8 @@ extends Control
 ## Auge mit Sichtfächer und erkannter Person. Buchstaben als Pfade (Liberation Sans Bold, SIL OFL).
 ## 3D-4.23 (Daniel): bewegt wie im Web (MoveEye 2.98.52, quelle/144_logo_schriftzug.py): die rote Person geht hin und her
 ## (7 s, mit Schritten 0.7 s), der Sichtfächer schwenkt mit, die Pupille schaut zur Person, das Auge blinzelt ab und zu
-## (23 s, nach 9.2 s und 22.1 s). Die Ebenen unten sind aus WORDMARK_W6 geschnitten (gleiche Masse wie im Web): sie werden
+## (23 s, nach 9.2 s und 22.1 s). 3D-4.24: echter Gang (Bein 1 mit Arm 2, Bein 2 mit Arm 1 einen halben Schritt später).
+## Die Ebenen unten sind aus WORDMARK_W6 geschnitten (gleiche Masse wie im Web): sie werden
 ## einmal als kleine Bilder gezeichnet, pro Bild nur verschoben / gedreht; höchstens 30 Bilder/s, still wenn nicht sichtbar.
 
 const VB := Vector2(0, 31)                 # origin and size of the viewBox
@@ -127,10 +128,10 @@ func _draw() -> void:
 		return
 	var t: float = Time.get_ticks_msec() / 1000.0 - t0
 	var s: float = swing(t, 7.0)                    # the walk: person, cone and pupil on the same curve
-	# steps (wms: 18 deg at 0 %, -18 at 50 %). On the web half the limbs run «reverse» - with these mirror-like keyframes
-	# that gives the same angle, so all four limbs swing together there; the same here (same look)
+	# steps (wms: 18 deg at 0 %, -18 at 50 %). A real gait like the web page (3D-4.24): leg 1 with arm 2, leg 2 with arm 1
+	# half a step later (animation-delay -0.35 s of the 0.7 s step there = here 0.35 s ahead)
 	var st: float = -STEP_A * swing(t, 0.7)
-	var st2: float = st
+	var st2: float = -STEP_A * swing(t + 0.35, 0.7)
 	_layer("cone", _turn(EYE, CONE_A * s))
 	var walk := Transform2D(0.0, Vector2(WALK_X * s * k, 0.0))
 	_layer("body", walk)
