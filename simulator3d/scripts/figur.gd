@@ -164,19 +164,19 @@ func build(actor, p: Dictionary) -> void:
 		var low: int = R_SKIN if short_sl else R_JACKET
 		var low_t: float = skin_t + 0.5 if short_sl else ct - 0.9
 		var arm := [[1.505, 0.05, 0.05, [[B_TORSO, 0.6], [ua, 0.4]], jk, ct + 0.2],
-				[1.47, 0.062 * lt, 0.06 * lt, [[B_TORSO, 0.3], [ua, 0.7]], jk, ct],
-				[1.40, 0.06 * lt, 0.058 * lt, [[ua, 1.0]], jk, ct - 0.3]]
+				[1.47, 0.068 * lt, 0.066 * lt, [[B_TORSO, 0.3], [ua, 0.7]], jk, ct],
+				[1.40, 0.066 * lt, 0.064 * lt, [[ua, 1.0]], jk, ct - 0.3]]
 		if short_sl:
 			arm.append_array([[1.30, 0.058 * lt, 0.057 * lt, [[ua, 1.0]], jk, ct - 0.4], [1.29, 0.05 * lt, 0.05 * lt, [[ua, 1.0]], R_SKIN, skin_t + 0.5]])
 		else:
-			arm.append([1.28, 0.054 * lt, 0.053 * lt, [[ua, 1.0]], jk, ct - 0.4])
-		arm.append_array([[1.19, 0.048 * lt, 0.048 * lt, [[ua, 0.7], [fa, 0.3]], low, low_t],
-				[1.16, 0.046 * lt, 0.047 * lt, [[ua, 0.5], [fa, 0.5]], low, low_t, 0.0, 0.006],
-				[1.12, 0.047 * lt, 0.048 * lt, [[fa, 0.8], [ua, 0.2]], low, low_t],
-				[1.03, 0.044 * lt, 0.044 * lt, [[fa, 1.0]], low, low_t - 0.2],
-				[0.93, 0.037, 0.035, [[fa, 1.0]], low, low_t - 0.4]])
+			arm.append([1.28, 0.06 * lt, 0.058 * lt, [[ua, 1.0]], jk, ct - 0.4])
+		arm.append_array([[1.19, 0.053 * lt, 0.053 * lt, [[ua, 0.7], [fa, 0.3]], low, low_t],
+				[1.16, 0.051 * lt, 0.052 * lt, [[ua, 0.5], [fa, 0.5]], low, low_t, 0.0, 0.006],
+				[1.12, 0.052 * lt, 0.052 * lt, [[fa, 0.8], [ua, 0.2]], low, low_t],
+				[1.03, 0.048 * lt, 0.047 * lt, [[fa, 1.0]], low, low_t - 0.2],
+				[0.93, 0.04, 0.038, [[fa, 1.0]], low, low_t - 0.4]])
 		if not short_sl:
-			arm.append([0.905, 0.04, 0.038, [[fa, 1.0]], R_CUFF, ct - 1.2])
+			arm.append([0.905, 0.043, 0.041, [[fa, 1.0]], R_CUFF, ct - 1.2])
 		var hr: int = R_HAND
 		arm.append_array([[0.895, 0.03, 0.028, [[fa, 0.5], [hd, 0.5]], hr, hand_t + 0.5],
 				[0.87, 0.022, 0.04, [[hd, 1.0]], hr, hand_t + 0.3, 0.004],
