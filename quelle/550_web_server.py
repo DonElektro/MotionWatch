@@ -1239,6 +1239,7 @@ class WebStream:
         alx_routes(app, watch, reply, body)                # 2.98.13: push buttons /na/, «What was it?» (066)
         sx_routes(app, watch, reply, body)                 # night view / screen reader script, «holiday over», error pages (578)
         fbx_routes(app, watch, reply, body)                # 2.98.33: feedback from every page, «About MoveEye» (584)
+        smalltv_routes(app, reply, body)                   # extra display GeekMagic SmallTV: /api/smalltv (552)
         appkey_routes(app, reply, body)                    # app keys, security check in Settings → Security (573)
         place_routes(app, watch, reply, body)              # 2.98.30: «Platz einrichten» /place, field of view per camera (537)
         g2_routes(app, watch, reply, body)                 # guide 2: tours, tip of the day, factory reset (586)

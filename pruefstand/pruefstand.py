@@ -301,6 +301,13 @@ def run(a):
                 for q in rep_.get("push_list", []):
                     log("    Push %5.0f s  %-8s %s%s" % (q.get("t", 0), q.get("ev", ""), ("richtig: " if q.get("ok") else "FALSCH: ") + str(q.get("who", "")),
                                                      "  (gleicher Besuch innert 10 s)" if q.get("dup") else ""))
+        try:                                                     # 3D-4.19: the virtual SmallTV (MoveEye 552) - pictures sent during the run
+            st_ = http_json(sim + "/control", {"action": "smalltv"}, timeout=4)
+            if st_.get("ok"):
+                info["smalltv"] = {k: st_.get(k) for k in ("uploads", "sets", "bad_size", "used", "last")}
+                log("SmallTV (virtuell): %s Bilder, %s mit falscher Grösse, %s Bytes im Speicher" % (st_.get("uploads"), st_.get("bad_size"), st_.get("used")))
+        except Exception:
+            pass
         if a.weitwinkel:
             info["weitwinkel"] = weitwinkel_messung(a, sim, web)
         if a.folgen:                                             # Plan «folgen»: the tracking parcours (last - it changes the scene)
