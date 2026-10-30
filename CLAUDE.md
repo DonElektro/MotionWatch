@@ -46,9 +46,10 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 - Nächste Wochen: vor allem **Entwicklung und Tests mit dem Simulator** (Hardware folgt).
 - Simulator: **Realismus, Spielspass und Bedienung** gleich wichtig (Tempo nicht erste Priorität).
 
-## Offene Aufträge (Stand 30.10.2026 05:30, MoveEye 2.98.45 / Simulator 3D-4.16)
+## Offene Aufträge (Stand 30.10.2026 14:00, MoveEye 2.98.48 / Simulator 3D-4.19)
 
-- Wartet auf Daniel: Hardware-Tests; Gehäuse Variante 2 (Modell-ZIP); Tailscale Funnel fürs Online-Spiel (Entscheid);
+- Wartet auf Daniel: Hardware-Tests; Gehäuse Variante 2 (Modell-ZIP); Tailscale Funnel (eingebaut 2.98.47) im Tailnet freischalten und echt testen;
+  SmallTV (2.98.48) am echten Gerät testen (Testbild, Album-Weiterblättern, Suche, Lesbarkeit); KI-Wächter bei normalem Tempo; Parcours-Noten;
   Rückmeldung schwarzes Live-Bild / Seiten-Tempo; vor KI-Training «🔍 Lernbilder prüfen».
 - Später: Prüfstand-Rückgang ab 2.98.23; KI-Training (Token Actions-Rechte, Trainingspaket); «Vertrauenswürdige Geräte» nur
   Admin; Controller-Einstellungen als MoveEye-Einstellung statt pro Browser; Produkt-Seite (Lizenzen, Datenschutz, Kundendoku);
