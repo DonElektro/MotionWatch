@@ -8,6 +8,8 @@ extends Node
 ## links im Fenster (Sensoren → Zusatz-Bildschirm → «Kachel zeigen»), gedimmt wie die eingestellte Helligkeit.
 ## «Macken wie das echte Gerät»: Upload antwortet HTTP 400, obwohl gespeichert, und jede Antwort kommt 1,2 s später.
 ## Für Tests / Prüfstand: CONTROL {"action": "smalltv"} (Zähler, letztes Bild, {"reset": true}), GET /smalltv.jpg.
+## MoveEye 553 (Daniel 30.10.2026 Abend): auch GIF (me_a.gif / me_b.gif, Alarm-Animation) – wie das Fotoalbum des
+## echten Geräts spielt die Kachel es ab (eigener kleiner GIF-Leser unten: Godot 4.3 kann kein GIF laden).
 
 const FILE := "user://smalltv.json"
 const TOTAL := 1048576 + 196608            # ca. 1,2 MB Flash für Bilder (das echte Gerät hat etwa 1 MB frei)
@@ -37,6 +39,11 @@ var _tex: TextureRect
 var _title: Label
 var _sub: Label
 var _shown := ""
+var _gifs := {}                             # "/image/name.gif" -> {"w", "h", "frames": [Image], "delays": [s]}
+var _anim: Array = []                       # die Bilder des gezeigten GIF als Texturen
+var _anim_d: Array = []
+var _anim_i := 0
+var _anim_t := 0.0
 
 
 func _ready() -> void:
@@ -70,6 +77,7 @@ func reset(all := false) -> void:
 	bad_size = 0
 	if all:
 		files = {}
+		_gifs = {}
 		img = ""
 		theme = 1
 		last_name = ""
@@ -108,6 +116,7 @@ func handle(net, c: Dictionary, method: String, path: String, query: Dictionary,
 			var f := _norm(str(query.get("file", "")))
 			if files.has(f):
 				files.erase(f)
+				_gifs.erase(f)
 				if img == f:
 					img = ""
 					_paint()
@@ -134,7 +143,7 @@ func handle(net, c: Dictionary, method: String, path: String, query: Dictionary,
 			if img == "" or not files.has(img):
 				net._json(c, {"ok": false, "error": "no picture"}, 404)
 				return
-			net._send(c, 200, files[img], "image/jpeg")
+			net._send(c, 200, files[img], "image/gif" if img.ends_with(".gif") else "image/jpeg")
 			return
 		"/doUpload":
 			if method != "POST":
@@ -162,7 +171,16 @@ func handle(net, c: Dictionary, method: String, path: String, query: Dictionary,
 						last_t = main.now()
 						last_from = host
 						var im := Image.new()
-						if im.load_jpg_from_buffer(data) == OK:
+						var gif := {}
+						if name.to_lower().ends_with(".gif"):
+							gif = gif_decode(data)
+							_gifs["/image/" + name] = gif
+						if not gif.is_empty() and not (gif["frames"] as Array).is_empty():
+							last_w = int(gif["w"])
+							last_h = int(gif["h"])
+							if last_w != 240 or last_h != 240:
+								bad_size += 1
+						elif not name.to_lower().ends_with(".gif") and im.load_jpg_from_buffer(data) == OK:
 							last_w = im.get_width()
 							last_h = im.get_height()
 							if last_w != 240 or last_h != 240:
@@ -238,6 +256,12 @@ func _process(_dt: float) -> void:
 		_pending = keep
 	if tile == null:
 		return
+	if _anim.size() > 1 and tile.visible:              # GIF abspielen wie das Fotoalbum des Geräts
+		_anim_t += _dt
+		if _anim_t >= float(_anim_d[_anim_i]):
+			_anim_t = 0.0
+			_anim_i = (_anim_i + 1) % _anim.size()
+			_tex.texture = _anim[_anim_i]
 	tile.visible = show and uploads + files.size() > 0 and main.ui_root != null
 	if not tile.visible:
 		return
@@ -312,10 +336,25 @@ func _paint() -> void:
 	if key != _shown:
 		_shown = key
 		var tx: Texture2D = null
+		_anim = []
+		_anim_d = []
+		_anim_i = 0
+		_anim_t = 0.0
 		if theme == 3 and img != "" and files.has(img):
-			var im := Image.new()
-			if im.load_jpg_from_buffer(files[img]) == OK:
-				tx = ImageTexture.create_from_image(im)
+			if img.ends_with(".gif"):
+				var g: Dictionary = _gifs.get(img, {})
+				if g.is_empty():
+					g = gif_decode(files[img])
+					_gifs[img] = g
+				for fr in g.get("frames", []):
+					_anim.append(ImageTexture.create_from_image(fr))
+				_anim_d = g.get("delays", [])
+				if not _anim.is_empty():
+					tx = _anim[0]
+			else:
+				var im := Image.new()
+				if im.load_jpg_from_buffer(files[img]) == OK:
+					tx = ImageTexture.create_from_image(im)
 		_tex.texture = tx
 		_title.text = "SmallTV (virtuell)" + ("" if theme == 3 else " · Uhr (kein Fotoalbum)")
 	var b := 0.12 + 0.88 * float(brt) / 100.0       # die Helligkeit des Geräts
@@ -340,7 +379,8 @@ func control(d: Dictionary) -> Dictionary:
 	return {"ok": true, "uploads": uploads, "sets": sets, "bad_size": bad_size, "files": names, "used": used, "free": max(0, TOTAL - used),
 			"img": img, "theme": theme, "brt": brt, "last": last_name, "last_w": last_w, "last_h": last_h,
 			"age": snappedf(main.now() - last_t, 0.1) if last_t > 0.0 else -1, "show": show, "quirks": quirks, "from": last_from,
-			"tile": tile != null and tile.visible}
+			"tile": tile != null and tile.visible, "anim_frames": _anim.size(),
+			"gif_frames": (_gifs[img]["frames"] as Array).size() if _gifs.has(img) and not (_gifs[img] as Dictionary).is_empty() else 0}
 
 
 func game_live():
@@ -367,3 +407,194 @@ func game_live():
 			top.append({"n": str(r.get("n", "")), "pt": int(r.get("score", 0))})
 		d["top"] = top
 	return d
+
+
+# ---- ein kleiner GIF-Leser (Godot 4.3 lädt kein GIF): Kopf, Farbtabellen, Grafik-Steuerung (Pause, Transparenz,
+# Entsorgung), Teilbilder mit Versatz, Zeilensprung, LZW. Ergebnis: alle Bilder ganz (RGBA) mit ihrer Dauer.
+func gif_decode(b: PackedByteArray) -> Dictionary:
+	if b.size() < 13 or b.slice(0, 3).get_string_from_ascii() != "GIF":
+		return {}
+	var w: int = b[6] | (b[7] << 8)
+	var h: int = b[8] | (b[9] << 8)
+	if w <= 0 or h <= 0 or w > 1024 or h > 1024:
+		return {}
+	var flags: int = b[10]
+	var p := 13
+	var gct := PackedByteArray()
+	if flags & 0x80:
+		var n: int = 3 * (1 << ((flags & 7) + 1))
+		gct = b.slice(p, p + n)
+		p += n
+	var canvas := PackedByteArray()
+	canvas.resize(w * h * 4)
+	canvas.fill(0)
+	var frames := []
+	var delays := []
+	var delay := 0.1
+	var transp := -1
+	var disposal := 0
+	while p < b.size() and frames.size() < 64:
+		var t: int = b[p]
+		p += 1
+		if t == 0x3B:
+			break
+		if t == 0x21:
+			if p >= b.size():
+				break
+			var label: int = b[p]
+			p += 1
+			if label == 0xF9 and p + 4 < b.size() and b[p] >= 4:
+				var pf: int = b[p + 1]
+				disposal = (pf >> 2) & 7
+				delay = maxf(0.02, float(b[p + 2] | (b[p + 3] << 8)) / 100.0)
+				transp = b[p + 4] if pf & 1 else -1
+			while p < b.size() and b[p] != 0:
+				p += b[p] + 1
+			p += 1
+		elif t == 0x2C:
+			if p + 9 > b.size():
+				break
+			var fx: int = b[p] | (b[p + 1] << 8)
+			var fy: int = b[p + 2] | (b[p + 3] << 8)
+			var fw: int = b[p + 4] | (b[p + 5] << 8)
+			var fh: int = b[p + 6] | (b[p + 7] << 8)
+			var lf: int = b[p + 8]
+			p += 9
+			var ct := gct
+			if lf & 0x80:
+				var n2: int = 3 * (1 << ((lf & 7) + 1))
+				ct = b.slice(p, p + n2)
+				p += n2
+			var inter := (lf & 0x40) != 0
+			if p >= b.size():
+				break
+			var min_code: int = b[p]
+			p += 1
+			var data := PackedByteArray()
+			while p < b.size() and b[p] != 0:
+				var n3: int = b[p]
+				data.append_array(b.slice(p + 1, p + 1 + n3))
+				p += n3 + 1
+			p += 1
+			var idx := _lzw(data, min_code, fw * fh)
+			var before := canvas.duplicate() if disposal == 3 else PackedByteArray()
+			var rows := PackedInt32Array()
+			rows.resize(fh)
+			if inter:
+				var r := 0
+				for st in [[0, 8], [4, 8], [2, 4], [1, 2]]:
+					var y0: int = st[0]
+					while y0 < fh:
+						rows[r] = y0
+						r += 1
+						y0 += int(st[1])
+			else:
+				for r in range(fh):
+					rows[r] = r
+			var ncol: int = ct.size() / 3
+			for r in range(fh):
+				var y: int = fy + rows[r]
+				if y >= h:
+					continue
+				var base: int = r * fw
+				var o: int = (y * w + fx) * 4
+				for cx in range(fw):
+					var ci: int = idx[base + cx]
+					if ci != transp and ci < ncol and fx + cx < w:
+						canvas[o] = ct[ci * 3]
+						canvas[o + 1] = ct[ci * 3 + 1]
+						canvas[o + 2] = ct[ci * 3 + 2]
+						canvas[o + 3] = 255
+					o += 4
+			frames.append(Image.create_from_data(w, h, false, Image.FORMAT_RGBA8, canvas))
+			delays.append(delay)
+			if disposal == 2:                            # Fläche wieder leer
+				for yy in range(fy, mini(h, fy + fh)):
+					for xx in range(fx, mini(w, fx + fw)):
+						var q: int = (yy * w + xx) * 4
+						canvas[q] = 0
+						canvas[q + 1] = 0
+						canvas[q + 2] = 0
+						canvas[q + 3] = 0
+			elif disposal == 3:
+				canvas = before
+			transp = -1
+			disposal = 0
+			delay = 0.1
+		else:
+			break
+	return {"w": w, "h": h, "frames": frames, "delays": delays}
+
+
+func _lzw(data: PackedByteArray, min_size: int, npix: int) -> PackedByteArray:
+	var out := PackedByteArray()
+	out.resize(npix)
+	out.fill(0)
+	if min_size < 2 or min_size > 11:
+		return out
+	var clear: int = 1 << min_size
+	var eoi: int = clear + 1
+	var size: int = min_size + 1
+	var nxt: int = eoi + 1
+	var prefix := PackedInt32Array()
+	prefix.resize(4096)
+	var suffix := PackedByteArray()
+	suffix.resize(4096)
+	var first := PackedByteArray()
+	first.resize(4096)
+	var lens := PackedInt32Array()
+	lens.resize(4096)
+	for i in range(clear):
+		prefix[i] = -1
+		suffix[i] = i
+		first[i] = i
+		lens[i] = 1
+	var prev := -1
+	var acc := 0
+	var bits := 0
+	var bp := 0
+	var nb := data.size()
+	var op := 0
+	while op < npix:
+		while bits < size:
+			if bp >= nb:
+				return out
+			acc |= data[bp] << bits
+			bp += 1
+			bits += 8
+		var code: int = acc & ((1 << size) - 1)
+		acc >>= size
+		bits -= size
+		if code == clear:
+			size = min_size + 1
+			nxt = eoi + 1
+			prev = -1
+			continue
+		if code == eoi:
+			break
+		var fb := 0
+		if code < nxt and (code < clear or code > eoi):
+			fb = first[code]
+		elif code == nxt and prev >= 0:
+			fb = first[prev]
+		else:
+			break                                         # kaputt
+		if prev >= 0 and nxt < 4096:
+			prefix[nxt] = prev
+			suffix[nxt] = fb
+			first[nxt] = first[prev]
+			lens[nxt] = lens[prev] + 1
+			nxt += 1
+			if nxt == (1 << size) and size < 12:
+				size += 1
+		var L: int = lens[code]
+		var pos: int = op + L - 1
+		var k: int = code
+		while k >= 0 and pos >= op:
+			if pos < npix:
+				out[pos] = suffix[k]
+			k = prefix[k]
+			pos -= 1
+		op += L
+		prev = code
+	return out

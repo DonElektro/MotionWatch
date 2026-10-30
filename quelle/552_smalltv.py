@@ -15,9 +15,12 @@
 # Mit dem Simulator (3D-4.19) kommt der virtuelle SmallTV von selbst dazu (🧪, Adresse = Simulator, gleiche Schnittstelle).
 # Einstellungen + Fenster: 599b, Übersetzungen + Anleitung: 562.
 # ----------------------------------------------------------------------------
-STV_CFG = {"stv_on": True, "stv_list": [], "stv_sim": {"on": True, "status": True, "alarm": True, "game": True, "brt": 60},
+STV_CFG = {"stv_on": True, "stv_list": [], "stv_sim": {"on": True, "status": True, "alarm": True, "game": True, "brt": 60, "rot": True},
            "stv_person_pic": False, "stv_animals": True, "stv_night": True, "stv_night_brt": 10, "stv_alarm_s": 60,
-           "stv_bright_s": 20, "stv_gap_s": 5, "stv_clock_min": 10}
+           "stv_bright_s": 20, "stv_gap_s": 5, "stv_clock_min": 10, "stv_alarm_keep_min": 5}
+# 30.10.2026 Abend (Daniel): per display «Live-Bild und Wechsel» («rot»): by day live picture <-> battery page every 30 s,
+# alarm as animated GIF (me_a.gif / me_b.gif) 60 s, then the still picture 5 min (553). Off = the status page as before.
+# Saved displays without «rot» stay off (no surprise), a newly added display has it on (stv_edit «add»).
 for _k, _v in STV_CFG.items():
     CFG.setdefault(_k, _v)
     DEFAULTS.setdefault(_k, _v)
@@ -59,7 +62,8 @@ def _stv_clean(e):
     except (TypeError, ValueError):
         brt = 60
     return {"id": sid, "name": str(e.get("name") or "SmallTV")[:30], "addr": addr, "on": bool(e.get("on", True)),
-            "status": bool(e.get("status", True)), "alarm": bool(e.get("alarm", True)), "game": bool(e.get("game", True)), "brt": brt}
+            "status": bool(e.get("status", True)), "alarm": bool(e.get("alarm", True)), "game": bool(e.get("game", True)), "brt": brt,
+            "rot": bool(e.get("rot", False))}
 
 
 def stv_entries(with_sim=True):
@@ -72,7 +76,8 @@ def stv_entries(with_sim=True):
         except (TypeError, ValueError):
             brt = 60
         out.append({"id": "sim", "name": "Simulator", "addr": sim_base(), "sim": True, "on": bool(s.get("on", True)),
-                    "status": bool(s.get("status", True)), "alarm": bool(s.get("alarm", True)), "game": bool(s.get("game", True)), "brt": brt})
+                    "status": bool(s.get("status", True)), "alarm": bool(s.get("alarm", True)), "game": bool(s.get("game", True)), "brt": brt,
+                    "rot": bool(s.get("rot", False))})
     return out
 
 
@@ -116,7 +121,7 @@ def stv_edit(action, d, who="web"):
         if len(lst) >= STV_MAX:
             return False, "too many displays"
         import secrets as _sec
-        e = _stv_clean({"id": _sec.token_hex(4), "name": str(d.get("name") or "").strip() or "SmallTV", "addr": addr})
+        e = _stv_clean({"id": _sec.token_hex(4), "name": str(d.get("name") or "").strip() or "SmallTV", "addr": addr, "rot": True})
         lst.append(e)
         CFG["stv_list"] = lst
         save_settings()
@@ -128,7 +133,7 @@ def stv_edit(action, d, who="web"):
         if action != "update":
             return False, "the display of the simulator comes by itself"
         f = str(d.get("field") or "")
-        if f in ("on", "status", "alarm", "game"):
+        if f in ("on", "status", "alarm", "game", "rot"):
             s[f] = bool(d.get("value"))
         elif f == "brt":
             s[f] = max(0, min(100, int(float(d.get("value") or 0))))
@@ -150,7 +155,7 @@ def stv_edit(action, d, who="web"):
     if action == "update":
         f = str(d.get("field") or "")
         v = d.get("value")
-        if f in ("on", "status", "alarm", "game"):
+        if f in ("on", "status", "alarm", "game", "rot"):
             e[f] = bool(v)
         elif f == "brt":
             try:
@@ -207,10 +212,12 @@ def stv_files(base, timeout=10.0):
 
 
 def stv_upload(base, name, jpg, timeout=30.0):
-    """POST /doUpload?dir=/image/ (multipart, field «file») -> (ok, note). HTTP 400 or a timeout: the file list decides."""
+    """POST /doUpload?dir=/image/ (multipart, field «file») -> (ok, note). HTTP 400 or a timeout: the file list decides.
+    A .gif goes the same way (the photo album of the Ultra plays GIFs, manual V9.0.18 «Picture Display»)."""
     import secrets as _sec
     bd = "----MoveEye" + _sec.token_hex(8)
-    body = (f"--{bd}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{name}\"\r\nContent-Type: image/jpeg\r\n\r\n").encode() \
+    ct = "image/gif" if name.lower().endswith(".gif") else "image/jpeg"
+    body = (f"--{bd}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{name}\"\r\nContent-Type: {ct}\r\n\r\n").encode() \
         + jpg + f"\r\n--{bd}--\r\n".encode()
     try:
         code, _b = _stv_req(base, "/doUpload?dir=/image/", body, "multipart/form-data; boundary=" + bd, timeout)
@@ -283,7 +290,23 @@ class StvDev:
                     pass
                 time.sleep(0.3)
             self.theme_t = time.time()
-        name = STV_NAMES[1] if self.shown == STV_NAMES[0] else STV_NAMES[0]   # the other one: the new picture is complete before it shows
+        ext = "gif" if w.get("ext") == "gif" else "jpg"
+        stored = getattr(self, "stored", None)
+        if stored is None:
+            stored = self.stored = {}                     # file name on the device -> sig of the picture in it
+        again = next((n for n, sg in stored.items() if sg == w["sig"]), None)
+        if again:                                         # 553: the picture is on the device already (rotation): only show it, no flash write
+            code, _b = _stv_req(base, "/set?img=" + urllib.parse.quote("/image//" + again, safe="/"), timeout=10.0)
+            if code == 200:
+                self.shown = again; self.sent_sig = w["sig"]; self.jpg = w["jpg"]; self.kind = w["kind"]
+                self.reshows = getattr(self, "reshows", 0) + 1
+                self.h.update(ok=True, err="", sent_t=time.time())
+                self.last_up = time.time()
+                return True
+            stored.pop(again, None)
+        slot = "b" if str(self.shown).startswith("me_a") else "a"   # the other one: the new picture is complete before it shows
+        name = f"me_{slot}.{ext}"
+        other = f"me_{slot}." + ("jpg" if ext == "gif" else "gif")
         ok, note = stv_upload(base, name, w["jpg"])
         time.sleep(0.3)
         if ok:
@@ -292,9 +315,12 @@ class StvDev:
             note = note or ("" if ok else f"show: HTTP {code}")
         if ok:
             self.shown = name; self.sent_sig = w["sig"]; self.ups += 1; self.bytes += len(w["jpg"]); self.jpg = w["jpg"]; self.kind = w["kind"]
+            stored[name] = w["sig"]
+            stored.pop(other, None)
             self.h.update(ok=True, err="", note=note, sent_t=time.time())
             if note:
                 self.h["note"] = note
+            self._drop(base, other)
         else:
             self.errs += 1
             self.h.update(err=note or "upload failed")
@@ -304,6 +330,24 @@ class StvDev:
             self.theme_t = 0.0
         self.last_up = time.time()
         return ok
+
+    def _drop(self, base, name):
+        """me_a.gif after me_a.jpg (and the other way round): away with the old one, so the device keeps only two pictures"""
+        try:
+            fl = getattr(self, "dev_files", None)
+            if fl is None:
+                time.sleep(0.3)
+                fl = stv_files(base) or []
+            fl = set(fl)
+            if name in fl:
+                time.sleep(0.3)
+                code, _b = _stv_req(base, "/delete?file=" + urllib.parse.quote("/image//" + name, safe="/"), timeout=10.0)
+                if code == 200:
+                    fl.discard(name)
+            fl.add(self.shown)
+            self.dev_files = fl
+        except Exception:
+            self.dev_files = None
 
     def run(self):
         while self.alive:
@@ -638,7 +682,12 @@ def stv_render_status(lang=None, red=False):
     return _stv_jpg(im, red)
 
 
-def stv_render_alarm(a, lang=None, red=False):
+def stv_render_alarm(a, lang=None, red=False, warn=False):
+    return _stv_jpg(_stv_alarm_im(a, lang, warn=warn), red)
+
+
+def _stv_alarm_im(a, lang=None, edge=4, edge_col=(255, 60, 60), warn=False, warn_col=(255, 214, 0)):
+    """the alarm picture (PIL): picture section or symbol, red frame, band «Fuchs · 91 % · 6 m»; warn: «⚠» in front (553 GIF / still)"""
     from PIL import Image
     im, d = _stv_canvas()
     band = 64
@@ -663,7 +712,7 @@ def stv_render_alarm(a, lang=None, red=False):
                 d.text((STV_SIZE - 50, 20), f"×{a['n']}", font=_font(26), fill=(255, 200, 200))
         else:
             d.ellipse((70, 40, 170, 140), outline=(245, 154, 74), width=6)
-    d.rectangle((0, 0, STV_SIZE - 1, STV_SIZE - 1), outline=(255, 60, 60), width=4)
+    d.rectangle((0, 0, STV_SIZE - 1, STV_SIZE - 1), outline=edge_col, width=edge)
     d.rectangle((0, STV_SIZE - band, STV_SIZE, STV_SIZE), fill=(160, 20, 24))
     lab = tr(a.get("label") or "", lang)
     lab = lab[:1].upper() + lab[1:]
@@ -674,13 +723,24 @@ def stv_render_alarm(a, lang=None, red=False):
         parts.append(f"{int(a['dist'])} m")
     line = " · ".join(parts)
     f = _font(24)
-    while d.textlength(line, font=f) > STV_SIZE - 16 and getattr(f, "size", 0) > 16:
+    ww = 30 if warn else 0                                 # the drawn warning sign (the fonts have no emoji)
+    while d.textlength(line, font=f) > STV_SIZE - 16 - ww and getattr(f, "size", 0) > 16:
         f = _font(f.size - 1)
-    d.text(((STV_SIZE - d.textlength(line, font=f)) / 2, STV_SIZE - band + 6), line, font=f, fill=(255, 255, 255))
+    x0 = (STV_SIZE - d.textlength(line, font=f) - ww) / 2
+    if warn:
+        _stv_warn(d, x0, STV_SIZE - band + 6, 24, warn_col)
+    d.text((x0 + ww, STV_SIZE - band + 6), line, font=f, fill=(255, 255, 255))
     sub = (tr("Alarm", lang) if kind == "person" else tr("Animal", lang)) + " · " + str(a.get("clock") or "")
     f2 = _font(16, False)
     d.text(((STV_SIZE - d.textlength(sub, font=f2)) / 2, STV_SIZE - 26), sub, font=f2, fill=(255, 215, 215))
-    return _stv_jpg(im, red)
+    return im
+
+
+def _stv_warn(d, x, y, s, col):
+    """a warning sign ⚠ (triangle with «!»), drawn - s = height in pixels"""
+    d.polygon([(x + s * 0.5, y), (x + s * 1.05, y + s), (x - s * 0.05, y + s)], fill=col, outline=(40, 0, 0))
+    d.rectangle((x + s * 0.44, y + s * 0.3, x + s * 0.56, y + s * 0.68), fill=(30, 0, 0))
+    d.rectangle((x + s * 0.44, y + s * 0.76, x + s * 0.56, y + s * 0.88), fill=(30, 0, 0))
 
 
 def stv_render_game(g, caught=None, lang=None, red=False):
@@ -774,7 +834,9 @@ def stv_plan(e, now=None):
     lang = CFG.get("lang")
     red = stv_night()
     a = STV["alarm"]
-    alarm_on = a is not None and now - a["t"] < float(CFG.get("stv_alarm_s", 60) or 60)
+    rot = bool(e.get("rot"))                               # 553: «Live-Bild und Wechsel»
+    gif_s = float(CFG.get("stv_alarm_s", 60) or 60)
+    alarm_on = a is not None and now - a["t"] < gif_s + (60.0 * float(CFG.get("stv_alarm_keep_min", 5) or 0) if rot else 0.0)
     if red:
         brt = int(CFG.get("stv_night_brt", 10))
     else:
@@ -784,14 +846,21 @@ def stv_plan(e, now=None):
     g = STV["game"]
     playing = bool(e.get("game") and g and now - STV["game_t"] < 10 and g.get("round") in ("countdown", "play"))
     if e.get("alarm") and alarm_on and not playing:        # in a round the players are the persons: the game shows «Erwischt!»
-        key = ("alarm", a["t"], red, lang)
-        return "alarm", key, lambda: stv_render_alarm(a, lang, red), brt, True
+        if rot and now - a["t"] < gif_s:                   # 553: first the animation (GIF), then the still picture
+            key = ("alarmgif", a["t"], red, lang)
+            return "gif", key, lambda: stv_render_alarm_gif(a, lang, red), brt, True
+        key = ("alarm", a["t"], red, lang, rot)
+        return "alarm", key, lambda: stv_render_alarm(a, lang, red, warn=rot), brt, True
     if playing or (e.get("game") and g and now - STV["game_t"] < 10 and g.get("round") == "end" and now - STV.get("end_t", 0.0) < 60):
         c = STV["caught"]
         cn = c[1] if c and now - c[0] < 5.0 else None
         sig_p = tuple((p.get("n"), p.get("pt"), p.get("k")) for p in (g.get("players") or [])[:4])
         key = ("game", g.get("round"), g.get("cd"), None if cn else g.get("left"), sig_p, tuple((x.get("n"), x.get("pt")) for x in g.get("top") or []), cn, g.get("mw"), red, lang)
         return "game", key, lambda: stv_render_game(g, cn, lang, red), brt, bool(cn)
+    if rot and not red:                                    # 553: by day live picture <-> battery every 30 s (night: the status page)
+        r_ = stv_rot_plan(now, lang)
+        if r_ is not None:
+            return r_[0], r_[1], r_[2], brt, False
     if e.get("status"):
         b = STATE.get("battery") or {}
         bp = int(b.get("pct") // 5 * 5) if b.get("on") and b.get("pct") is not None else None
@@ -825,7 +894,7 @@ def stv_tick():
         sig = hash(key)
         if dv.want is None or dv.want["sig"] != sig or dv.want["brt"] != brt:
             jpg = _stv_cached(key, fn)
-            dv.want = {"jpg": jpg, "sig": sig, "kind": kind, "brt": brt, "now": at_once}
+            dv.want = {"jpg": jpg, "sig": sig, "kind": kind, "brt": brt, "now": at_once, "ext": "gif" if kind == "gif" else "jpg"}
             dv.ev.set()
 
 
@@ -978,7 +1047,7 @@ def smalltv_routes(app, reply, body):
         b = stv_img(sid)
         if not b:
             return Response(b"", status=404)
-        return Response(b, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+        return Response(b, mimetype="image/gif" if b[:4] == b"GIF8" else "image/jpeg", headers={"Cache-Control": "no-store"})
 
 
 # ---- the web page: Settings → Devices & sensors → «Extra display (SmallTV)» (530 calls stvPanel) --------------------------
@@ -992,7 +1061,7 @@ STV_JS = r"""
   const P = (d) => post("/api/smalltv", Object.assign({lang: L()}, d));
   let BOX = null, TM = null, SIG = "";
   const ago = s => { if (!s) return "–"; const a = Math.max(0, Math.round(Date.now() / 1000 - s)); return a < 90 ? a + " s" : Math.round(a / 60) + " min"; };
-  const KIND = {status: "Status", alarm: "Alarm picture", game: "Game", test: "Test picture"};
+  const KIND = {status: "Status", alarm: "Alarm picture", game: "Game", test: "Test picture", live: "Live picture", batt: "Battery and power", gif: "Alarm animation"};
   function row(e) {
     const c = E("div", "sens-card stv-card"); c.dataset.id = e.id;
     const h = e.health || {};
@@ -1004,13 +1073,15 @@ STV_JS = r"""
     tx.append(E("b", "", dot + " " + (e.sim ? "🧪 " + T("Virtual SmallTV of the simulator") : e.name)));
     tx.append(E("div", "mut", e.addr.replace("http://", "") + (h.fw ? " · " + h.fw : "") + (h.free != null ? " · " + Math.round(h.free / 1024) + " KB " + T("free") : "")));
     tx.append(E("div", "mut", (h.ok === false ? "⚠ " + (h.err || T("not reachable")) : h.ok ? "✓ " + T("reachable") : T("checking …"))
-      + " · " + e.ups + " " + T("pictures") + (e.kind ? " · " + T(KIND[e.kind] || e.kind) : "") + (h.sent_t ? " · " + ago(h.sent_t) : "") + (h.note ? " · " + h.note : "")));
+      + " · " + e.ups + " " + T("pictures") + (e.kind ? " · " + T(KIND[e.kind] || e.kind) : "") + (h.sent_t ? " · " + ago(h.sent_t) : "") + (h.note ? " · " + h.note : "")
+      + (e.per_day ? " · " + T("about {n} pictures/day").replace("{n}", e.per_day) : "")));
     top.append(im, tx); c.appendChild(top);
     const ch = E("div", ""); ch.style.cssText = "display:flex;gap:6px 14px;flex-wrap:wrap;justify-content:flex-start;margin-top:6px";
-    [["on", "On"], ["status", "Status"], ["alarm", "Alarm picture"], ["game", "Game"]].forEach(([f, lb]) => {
+    [["on", "On"], ["status", "Status"], ["alarm", "Alarm picture"], ["game", "Game"], ["rot", "Live picture and rotation"]].forEach(([f, lb]) => {
       const l = E("label", ""); l.style.cssText = "display:inline-flex;gap:4px;align-items:center";
       const cb = E("input"); cb.type = "checkbox"; cb.checked = !!e[f]; cb.className = "sw stv-" + f;   // 2.98.48: the blue switch like everywhere
       cb.onchange = async () => { const r = await P({action: "update", id: e.id, field: f, value: cb.checked}); if (!r.ok) toast("⚠ " + (r.error || "error")); };
+      if (f === "rot") l.title = T("stv-rot-hint");
       l.style.gap = "8px"; l.append(E("span", "", T(lb)), cb); ch.appendChild(l); });
     c.appendChild(ch);
     const sl = E("div", "sl"), st = E("div", "row"), val = E("span", "val", e.brt + " %");

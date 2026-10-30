@@ -163,9 +163,11 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `549_web_sim_kompakt.py` | Live-Seite «Sim-Kompakt»: mit verbundenem Simulator zwei kleine Bilder, Kopf- und Rover-Stick am Rand, Simulator-Kacheln dazwischen («◫ Ansicht», pro Gerät) | 429 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
 | `552_smalltv.py` | Zusatz-Bildschirm GeekMagic SmallTV Ultra: Liste der Bildschirme (+ virtueller 🧪 des Simulators), Status / Alarmbild (Tier mit Ausschnitt, Person nur Symbol) / Spiel-Anzeige (`game_live` des Simulators), nachts gedimmt und rot, ein Faden pro Gerät, nur bei Änderung, me_a/me_b.jpg, Firmware-Macken (400), Suche im /24, /api/smalltv, Web-Teil (stvPanel); Wrapper um species_update, alarm_ctx_note, simvals_take, msglog_add | 900 |
+| `553_smalltv_wechsel.py` | SmallTV «Live-Bild und Wechsel» (Schalter `rot` pro Bildschirm): tagsüber alle 30 s Live-Bild (Hauptkamera, Personen verpixelt) ↔ «Akku und Strom», Alarm als animiertes GIF (me_a/me_b.gif) 60 s, dann Standbild 5 min, nachts nur Status; «ca. N Bilder/Tag» (stv_per_day); Wrapper um stv_tick, stv_state | 330 |
 | `556_tailscale_funnel.py` | Online-Spiel über Tailscale Funnel: nur /game/ öffentlich (eigene Tür + Sperre bei Funnel-Anfragen), Auto-Aus, Aufräumen beim Neustart, Fehler mit Abhilfe, Fenster-Zeile | 605 |
 | `560_uebersetzungen_de.py` | Übersetzungen Deutsch | 498 |
 | `562_uebersetzungen_smalltv.py` | Übersetzungen und Anleitungs-Kapitel «Zusatz-Bildschirm (SmallTV)» zu 552 / 599b | 150 |
+| `563_uebersetzungen_smalltv2.py` | Übersetzungen zu 553 (Live-Bild und Wechsel, Akku und Strom, Alarm-Animation) | 30 |
 | `561_uebersetzungen_funnel.py` | Übersetzungen und Anleitung (DE/EN) zum Tailscale Funnel (556) | 128 |
 | `569_uebersetzungen_parcours.py` | Übersetzungen und Anleitungs-Absatz (Kamera & Servos) zum Verfolgungs-Parcours (416 / 599) | 140 |
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |
