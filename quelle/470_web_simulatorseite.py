@@ -134,6 +134,7 @@ function scCss() {
 .sc-seg{display:flex;border:1px solid var(--line,#1f2b3a);border-radius:10px;overflow:hidden;margin:4px 0}.sc-seg button{flex:1;padding:9px;border:0;background:var(--panel,#111822);color:var(--txt,#e8eef5);font:inherit;cursor:pointer}
 .sc-seg button.on{background:var(--acc,#3b8cff);color:#fff}.sc-none{margin:8px 2px}
 .sc-hide{display:none!important}
+.sc-sub.sc-fine{border-top:1px dashed var(--line,#1f2b3a)}.sc-sub.sc-fine>.sc-sh{color:var(--acc2,var(--acc,#3b8cff));font-size:11px;letter-spacing:.06em;text-transform:uppercase}
 .sc-card.sc-on1>.sc-hd svg{stroke:var(--grn,#3fcf6b)}.sc-card.sc-on1>.sc-hd .sc-ar{color:var(--grn,#3fcf6b)}
 .sc-card.sc-on2>.sc-hd svg{stroke:var(--org,#f2a33a)}.sc-card.sc-on2>.sc-hd .sc-ar{color:var(--org,#f2a33a)}`;
   document.head.appendChild(s);
@@ -152,7 +153,11 @@ function scWizOnly(c) { return !!c.wiz || (!("gid" in c) && scGid(c) === "game" 
 // 2.98.23 (Konzept): the simulator group «Testlauf» is not shown in the Simulator control (testing has ONE place: group «Testen»,
 // tile «Tests»); there it is built with data-only="testrun" (#tr-sim, recordings of the sneak paths, Pi 5 settings)
 const SC_TEST_DUP = ["testrun_plan", "testrun_start", "testrun_stop"];   // the same as «Testlauf starten» of MoveEye right above (/api/simtest)
-try { Object.assign(I18N.de, {"from MoveEye (setting of MoveEye, only shown here)": "von MoveEye (Einstellung von MoveEye, hier nur angezeigt)"}); } catch (e) {}   // Aufräumen 2
+try { Object.assign(I18N.de, {"from MoveEye (setting of MoveEye, only shown here)": "von MoveEye (Einstellung von MoveEye, hier nur angezeigt)", "Fine-tuning": "Feineinstellungen"}); } catch (e) {}   // Aufräumen 2
+// 639d (Angleichen, Daniel 30.10.2026): «Einfach» like everywhere - the Experte settings sit in a closed «Feineinstellungen (n)» of
+// their part / card (not hidden); the group «Entwickler» (gid dev) only with MoveEye's «Entwickler-Bereich» (dev_area, also sent to
+// the simulator, which shows its group the same way)
+const scDev = c => scGid(c) === "dev";
 function simCtlBuild(G, r, ctl, fmt) {
   scCss();
   const only = G.dataset.only || "";
@@ -180,12 +185,13 @@ function simCtlBuild(G, r, ctl, fmt) {
     const ar = () => { hd.querySelector(".sc-ar").textContent = card.classList.contains("open") ? "▼" : "▶"; };
     hd.onclick = () => { card.classList.toggle("open"); ar(); card.classList.contains("open") ? openC.add(g) : openC.delete(g); ss("mw-sc-open", [...openC]); };
     ar(); const bd = el("div", "sc-bd"); card.append(hd, bd); G.appendChild(card); cards.push(card);
-    const subs = {};
+    const subs = {}, fines = new Map();
+    if (cs.some(scDev)) card.dataset.dev = "1";
     cs.forEach(c => {
-      let tgt = bd; const sub = c.sub || "";
+      let tgt = bd; const sub = !only && c.sub === "Feineinstellungen" ? "" : c.sub || "";   // 639d: one fold «Feineinstellungen» per card
       if (sub) {
         if (!subs[sub]) {
-          const key = g + "/" + sub, w = el("div", "sc-sub"); if (openS.has(key)) w.classList.add("open");
+          const key = g + "/" + sub, w = el("div", "sc-sub"); if (openS.has(key) || (only && sub === "Störungen" && location.hash === "#c-stoer")) w.classList.add("open");
           const sh = document.createElement("button"); sh.type = "button"; sh.className = "sc-sh";
           const p = () => { sh.textContent = (w.classList.contains("open") ? "▾  " : "▸  ") + sub; };
           sh.onclick = () => { w.classList.toggle("open"); p(); w.classList.contains("open") ? openS.add(key) : openS.delete(key); ss("mw-sc-sub2", [...openS]); };
@@ -193,12 +199,17 @@ function simCtlBuild(G, r, ctl, fmt) {
         }
         tgt = subs[sub];
       }
+      if (!only && (scExpert(c) || c.sub === "Feineinstellungen") && !scDev(c)) {      // 639d: into the «Feineinstellungen» of its part
+        if (!fines.has(tgt)) { const w = el("div", "sc-sub sc-fine"), sh = document.createElement("button"), sb = el("div", "sc-sb"); sh.type = "button"; sh.className = "sc-sh";
+          sh.onclick = () => { w.classList.toggle("open"); w.dataset.own = "1"; scFineP(w); }; w.append(sh, sb); tgt.appendChild(w); fines.set(tgt, w); }
+        tgt = fines.get(tgt).querySelector(".sc-sb");
+      }
       let row;
       if (c.type === "map") { row = simMap(c, v => ctl({ctl: "set", id: c.id, value: v})); row.classList.add("sc-row"); }
       else if (c.type === "button") {
         let grid = tgt.lastElementChild; if (!grid || !grid.classList.contains("sc-bt")) { grid = el("div", "sc-bt"); tgt.appendChild(grid); }
         const x = el("button", "", (c.emoji ? c.emoji + " " : "") + c.label); x.type = "button"; if (c.label.length > 26) x.className = "wide";
-        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; x.dataset.ex = scExpert(c) ? "1" : ""; grid.appendChild(x); return;
+        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; x.dataset.ex = scExpert(c) && only ? "1" : ""; grid.appendChild(x); return;
       } else if (c.type === "toggle") {
         row = el("label", "sc-row sc-tg"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sc-sw simv";
         cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked}); row.append(el("span", "", c.label), cb);
@@ -218,8 +229,9 @@ function simCtlBuild(G, r, ctl, fmt) {
         row = el("div", "sc-row sc-tx"); const ti = document.createElement("input"); ti.className = "simv";
         ti.onkeydown = e => { if (e.key === "Enter") ctl({ctl: "set", id: c.id, value: ti.value}); }; row.append(el("div", "", c.label), ti);
       }
-      row.dataset.cid = c.id; row.dataset.lab = c.label; row.dataset.ex = scExpert(c) ? "1" : ""; tgt.appendChild(row);
+      row.dataset.cid = c.id; row.dataset.lab = c.label; row.dataset.ex = scExpert(c) && only ? "1" : ""; tgt.appendChild(row);
     });
+    fines.forEach(w => { w.parentNode.appendChild(w); scFineP(w); });            // «Feineinstellungen» last in its part / card
   });
   const seg = el("div", "sc-seg"); const b1 = el("button", "", t("Simple")), b2 = el("button", "", t("Expert")); b1.type = b2.type = "button"; seg.append(b1, b2); G.appendChild(seg);
   const note = el("div", "mut", t("Simple: only the important settings. «Expert» shows all.")); G.appendChild(note);
@@ -229,9 +241,12 @@ function simCtlBuild(G, r, ctl, fmt) {
     b1.classList.toggle("on", !expert); b2.classList.toggle("on", expert); note.hidden = expert || !!only;
     cards.forEach(card => {
       let vis = 0;
+      card.querySelectorAll(".sc-fine").forEach(w => { if (!w.dataset.own) w.classList.toggle("open", expert); });   // 639d: closed in «Einfach», open in «Experte»
       card.querySelectorAll("[data-lab]").forEach(n => { const ok = (q ? n.dataset.lab.toLowerCase().includes(q) : true) && (expert || q || n.dataset.ex !== "1"); n.classList.toggle("sc-hide", !ok); if (ok) vis++; });
       card.querySelectorAll(".sc-sub").forEach(w => { const n = w.querySelectorAll("[data-lab]:not(.sc-hide)").length; w.classList.toggle("sc-hide", !n); if (q && n) w.classList.add("open"); });
       card.querySelectorAll(".sc-bt").forEach(b => b.classList.toggle("sc-hide", !b.querySelector("button:not(.sc-hide)")));
+      card.querySelectorAll(".sc-fine").forEach(scFineP);
+      if (card.dataset.dev && !window.SC_DEV) vis = 0;                         // 639d: «Entwickler» only with dev_area
       card.classList.toggle("sc-hide", !vis); if (q && vis) { card.classList.add("open"); any = true; }
       const ar = card.querySelector(".sc-ar"); ar.textContent = card.classList.contains("open") ? "▼" : "▶";
     });
@@ -241,7 +256,13 @@ function simCtlBuild(G, r, ctl, fmt) {
     fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !v, page: "sim"})}).catch(() => {}); };
   qi.oninput = apply; b1.onclick = () => setEx(false); b2.onclick = () => setEx(true);
   apply();
-  if (!only && window.SC_EXPERT == null) fetch("/api/ui_simple?page=sim").then(x => x.json()).then(j => { window.SC_EXPERT = !j.on; expert = window.SC_EXPERT; apply(); }).catch(() => {});
+  if (!only && window.SC_EXPERT == null) fetch("/api/ui_simple?page=sim").then(x => x.json()).then(j => { window.SC_EXPERT = !j.on; window.SC_DEV = !!j.dev; expert = window.SC_EXPERT; apply(); }).catch(() => {});
+  if (only && location.hash === "#c-stoer" && !window.SC_STOER) G.querySelectorAll(".sc-sub.open").forEach(w => {   // 639d: link «Störungen» (Entwickler)
+    if (/Störungen/.test(w.textContent.slice(0, 40))) { window.SC_STOER = 1; setTimeout(() => w.scrollIntoView({block: "start", behavior: "smooth"}), 300); } });
+}
+function scFineP(w) {                                // 639d: «▸ Feineinstellungen (n)»
+  const n = w.querySelectorAll(".sc-sb [data-lab]").length, sh = w.querySelector(":scope > .sc-sh");
+  sh.textContent = (w.classList.contains("open") ? "▾  " : "▸  ") + t("Fine-tuning") + " (" + n + ")";
 }
 
 // ---- the simulator window (3D-3.18): mouse / finger / keys on a picture of /sim/view.mjpg go to the simulator ----

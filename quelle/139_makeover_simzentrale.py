@@ -361,7 +361,7 @@ SIMHUB_JS = r"""
   async function load() { if (!document.querySelector("[data-simhub]")) return; try { H = await (await fetch("/api/simhub")).json(); } catch (e) { return; }
     if (document.querySelector('[data-simhub="full"]')) { try { LB = await (await fetch("/api/lab")).json(); LN = await (await fetch("/api/learn")).json(); } catch (e) {} }
     const ti = document.querySelector('[data-simhub="tile"] img'); if (ti && !document.hidden) ti.src = "/sim/view.jpg?w=320&r=" + Date.now();
-    if (!HASHED && location.hash === "#c-test" && document.getElementById("tr-box")) { HASHED = 1; open = "tests"; }   // 2.98.23: old links to the test run
+    if (!HASHED && (location.hash === "#c-test" || location.hash === "#c-stoer") && document.getElementById("tr-box")) { HASHED = 1; open = "tests"; }   // 2.98.23: old links to the test run
     if (!HASHED && location.hash === "#c-parc" && H.parc) { HASHED = 1; open = "parc"; }   // 416: the window opens the tile 🎯
     const ae = document.activeElement;
     if (!ae || (ae.type !== "range" && !(ae.closest && ae.closest("#tr-box")))) paintAll(); }

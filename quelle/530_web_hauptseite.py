@@ -2815,7 +2815,7 @@ function prExtras(d) {
 // 639c: the developer part (only with dev_area): links to what only the developer needs
 function devExtras(d) {
   const bx = el("div", "auxbox"); bx.appendChild(el("div", "mut", t("Only for the developer (switch: System → Device & help → Developer area).")));
-  [["🧪", "Test bench and test run", "/sim#c-test"], ["⚖", "A/B comparison", "/sim#c-hub"], ["📈", "Statistics & versions", "/sim#c-hub"],
+  [["🧪", "Test bench and test run", "/sim#c-test"], ["⚡", "Faults (servos, under-voltage)", "/sim#c-stoer"], ["⚖", "A/B comparison", "/sim#c-hub"], ["📈", "Statistics & versions", "/sim#c-hub"],
    ["🩺", "Diagnosis package", "/tools#diag"], ["⚗", "Settings of the simulation", "/sim"], ["🛠", "Developer area", "/dev"]].forEach(([ic, nm, u]) => {
     const a = el("a", "btn sec", ic + " " + t(nm) + " ›"); a.href = u; a.style.cssText = "display:block;margin-top:6px;text-align:left"; bx.appendChild(a); });
   d.insertBefore(bx, d.children[1] || null);

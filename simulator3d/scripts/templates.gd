@@ -77,7 +77,7 @@ func _ready() -> void:
 	_tab_scenes()
 	_tab_places()
 	_tab_kits()
-	_tab_own()                      # 3D-4.x: «Dein Platz» (photo of the place) is now the first tab of the window «Dein Platz» (inventar.gd)
+	_tab_own()                      # 3D-4.x: the photo of the place is in the window «Gegenstände» (inventar.gd, 3D-4.22)
 	_msg = UI.small("")
 	_msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_msg.custom_minimum_size = Vector2(580, 0)
@@ -252,7 +252,7 @@ func _on_drop(files: PackedStringArray) -> void:
 	for p in files:
 		if p.get_extension().to_lower() in ["jpg", "jpeg", "png", "webp"] and main.zwilling != null:   # 3D-4.4: a photo of the place
 			if main.zwilling.import_image(p) and main.inventar != null:
-				main.inventar.open(0)                    # 3D-4.x: shown in the window «Dein Platz»
+				main.inventar.open_sec("photo")          # 3D-4.22: window «Gegenstände», part «Foto des Platzes»
 			return
 		if p.get_extension().to_lower() in ["glb", "gltf"]:
 			if import_file(p, false):

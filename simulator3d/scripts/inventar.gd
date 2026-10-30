@@ -9,6 +9,10 @@ extends PanelContainer
 ## Hindernis), die bewachten Sachen Velo und Kühlbox (main.test_props, dieselben wie beim Spielziel «Diebstahl» in
 ## gameplus.gd: wegnehmen / zurückstellen) und das Foto / Panorama des echten Platzes (zwilling.gd). Interne Namen bleiben
 ## (inventar, control-Aktion «inventar», user://objekte.json).
+## 3D-4.22 (Angleichen, Daniel 30.10.2026): das Fenster heisst «Gegenstände» («Dein Platz» ist der Platz von MoveEye: Ort, Zonen,
+## Patrouille). Statt 14 Reitern 5 Gruppen: Menschen & Tiere · Fahrzeuge · Essen · Sachen & Wertsachen · Platz & Umgebung
+## (+ «In der Szene»); in einer Gruppe Filter-Knöpfe («Alle», Menschen, Tiere …). Die Kennungen (cat, kind, obj:…) bleiben,
+## die Suche findet alles. Zelt / Auto, «Bewachte Sachen» und «Foto des Platzes» sind Teile von «Platz & Umgebung».
 
 var main
 var Obj = preload("res://scripts/objects.gd")
@@ -24,7 +28,16 @@ var _nodes: Array = []                # the objects of this scene in the world
 var obj_thumbs := {}                  # kind -> Texture2D
 var _thumbs_done := false
 var _built := false
-var _guard_box: VBoxContainer         # 3D-4.x: «Bewachte Sachen» in the tab «Dein Platz»
+var _guard_box: VBoxContainer         # 3D-4.x: «Bewachte Sachen» (3D-4.22: a part of «Platz & Umgebung»)
+var _secs := {}                       # 3D-4.22: section id -> [group index, VBoxContainer, title]
+var _chips := {}                      # group index -> {section id ("" = Alle): Button}
+var _chip_on := {}                    # group index -> chosen section id ("" = Alle)
+# 3D-4.22: the 5 groups and their parts (section id = the category «cat» of the tiles, or platz / guard / photo); a new
+# category that is not listed goes to «Sachen & Wertsachen»
+const GROUPS := [["Menschen & Tiere", ["people", "animals", "lure"]], ["Fahrzeuge", ["vehicles"]], ["Essen", ["food"]],
+		["Sachen & Wertsachen", ["valuables", "bags", "home"]],
+		["Platz & Umgebung", ["platz", "guard", "camping", "garden", "street", "falsealarm", "photo"]]]
+const SEC_NAMES := {"platz": "Zelt & Auto", "guard": "Bewachte Sachen", "photo": "Foto des Platzes"}
 const PLATZ_TILES := [["twin_tent", "", "Zelt", "dein Zelt – Hindernis, der PIR «Zelt» und die Besucher gehen dorthin"],
 		["twin_car", "", "Auto (parkiert)", "dein Auto, steht still"]]    # [key, -, name, what] (pictures: _make_thumbs)
 
@@ -45,7 +58,7 @@ func _ready() -> void:
 	var hd := HBoxContainer.new()
 	hd.add_theme_constant_override("separation", 8)
 	v.add_child(hd)
-	var t := UI.heading("Dein Platz")
+	var t := UI.heading("Gegenstände")
 	hd.add_child(t)
 	_search = UI.search_field("Suchen (z. B. Zelt, Koffer, Hund, Auto) …")
 	_search.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -58,18 +71,7 @@ func _ready() -> void:
 	tabs = TabContainer.new()
 	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	v.add_child(tabs)
-	_tab_platz()
-	for c in Obj.cats():                               # 3D-4.x: + Wertsachen, Camping, Garten & Haus, Lockt Tiere an, Fehlalarm-Quellen
-		var sc := ScrollContainer.new()
-		sc.name = c[1]
-		sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-		tabs.add_child(sc)
-		var g := GridContainer.new()
-		g.columns = 6
-		g.add_theme_constant_override("h_separation", 6)
-		g.add_theme_constant_override("v_separation", 6)
-		sc.add_child(g)
-		_grids[c[0]] = g
+	_build_groups()
 	var ps := ScrollContainer.new()                    # the last tab: what stands in this scene
 	ps.name = "In der Szene"
 	tabs.add_child(ps)
@@ -83,28 +85,110 @@ func _ready() -> void:
 	_load()
 
 
-func _tab_platz() -> void:
-	"""3D-4.x: the first tab «Dein Platz» - your tent and car, the guarded things, the photo of the real place"""
-	var sc := ScrollContainer.new()
-	sc.name = "Dein Platz"
-	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	tabs.add_child(sc)
-	var v := VBoxContainer.new()
-	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	v.add_theme_constant_override("separation", 8)
-	sc.add_child(v)
-	v.add_child(UI.small("Dein Zeug – anklicken und in die Welt klicken (oder hineinziehen):", UI.MUT))
-	var g := GridContainer.new()
-	g.columns = 6
-	g.add_theme_constant_override("h_separation", 6)
-	v.add_child(g)
-	_grids["platz"] = g
-	v.add_child(UI.small("Bewachte Sachen – wegnehmen und schauen, ob MoveEye es merkt (Referenz-Scan; Velo und Kühlbox auch Spielziel «Diebstahl»):", UI.MUT))
-	_guard_box = VBoxContainer.new()
-	v.add_child(_guard_box)
-	v.add_child(UI.small("Foto / Panorama deines echten Platzes als Hintergrund – am besten mit dem Handy von dort, wo MoveEye steht (Panorama: ganz herum drehen). Auch: Bild einfach ins Fenster ziehen. Richtung und Winkel unter «Szene · Dein Platz».", UI.MUT))
-	if main.zwilling != null:
-		main.zwilling.build_tab(v)
+static func group_of(sec: String) -> int:
+	"""3D-4.22: the group (tab) of a part; unknown categories: «Sachen & Wertsachen»"""
+	for i in range(GROUPS.size()):
+		if sec in GROUPS[i][1]:
+			return i
+	return 3
+
+
+func _build_groups() -> void:
+	"""3D-4.22: 5 tabs (groups), in each the parts with a title; filter chips «Alle · …» when a group has several parts"""
+	var names := {}
+	for c in Obj.cats():
+		names[c[0]] = c[1]
+	var gsecs := []
+	for i in range(GROUPS.size()):
+		gsecs.append((GROUPS[i][1] as Array).duplicate())
+	for c in Obj.cats():                               # a new category that no group lists
+		if group_of(c[0]) == 3 and not c[0] in gsecs[3]:
+			gsecs[3].append(c[0])
+	for i in range(GROUPS.size()):
+		var sc := ScrollContainer.new()
+		sc.name = GROUPS[i][0]
+		sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		tabs.add_child(sc)
+		var v := VBoxContainer.new()
+		v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		v.add_theme_constant_override("separation", 8)
+		sc.add_child(v)
+		var secs: Array = gsecs[i]
+		_chip_on[i] = ""
+		_chips[i] = {}
+		if secs.size() > 1:
+			var fl := HFlowContainer.new()
+			fl.add_theme_constant_override("h_separation", 6)
+			fl.add_theme_constant_override("v_separation", 6)
+			v.add_child(fl)
+			for sid in [""] + secs:
+				var cb := Button.new()
+				cb.text = "Alle" if sid == "" else str(SEC_NAMES.get(sid, names.get(sid, sid)))
+				cb.focus_mode = Control.FOCUS_NONE
+				var gi: int = i
+				var sid_: String = sid
+				cb.pressed.connect(func(): _chip(gi, sid_))
+				fl.add_child(cb)
+				_chips[i][sid] = cb
+		for sid in secs:
+			var title := str(SEC_NAMES.get(sid, names.get(sid, sid)))
+			var box := VBoxContainer.new()
+			box.add_theme_constant_override("separation", 6)
+			v.add_child(box)
+			var hl := UI.small(title, UI.TXT)
+			hl.add_theme_font_size_override("font_size", 12)
+			box.add_child(hl)
+			_secs[sid] = [i, box, title]
+			if sid == "guard":
+				box.add_child(UI.small("Wegnehmen und schauen, ob MoveEye es merkt (Referenz-Scan; Velo und Kühlbox auch Spielziel «Diebstahl»):", UI.MUT))
+				_guard_box = VBoxContainer.new()
+				box.add_child(_guard_box)
+			elif sid == "photo":
+				box.add_child(UI.small("Foto / Panorama deines echten Platzes als Hintergrund – am besten mit dem Handy von dort, wo MoveEye steht (Panorama: ganz herum drehen). Auch: Bild einfach ins Fenster ziehen. Richtung und Winkel unter «Szene · Foto des Platzes».", UI.MUT))
+				if main.zwilling != null:
+					main.zwilling.build_tab(box)
+			else:
+				if sid == "platz":
+					box.add_child(UI.small("Dein Zelt und dein Auto – anklicken und in die Welt klicken (oder hineinziehen):", UI.MUT))
+				var g := GridContainer.new()
+				g.columns = 6
+				g.add_theme_constant_override("h_separation", 6)
+				g.add_theme_constant_override("v_separation", 6)
+				box.add_child(g)
+				_grids[sid] = g
+		_paint_chips(i)
+
+
+func _chip(gi: int, sid: String) -> void:
+	_chip_on[gi] = sid
+	_paint_chips(gi)
+	_filter()
+
+
+func _paint_chips(gi: int) -> void:
+	"""the chosen filter blue (like the segment switches and the active state of MoveEye)"""
+	for sid in _chips.get(gi, {}):
+		var b: Button = _chips[gi][sid]
+		var on: bool = str(_chip_on.get(gi, "")) == sid
+		for n in ["normal", "hover"]:
+			if on:
+				b.add_theme_stylebox_override(n, UI.box(UI.ACC, UI.ACC, 10, 6))
+			else:
+				b.remove_theme_stylebox_override(n)
+		b.add_theme_color_override("font_color", Color.WHITE if on else UI.TXT)
+
+
+func open_sec(sid: String) -> void:
+	"""3D-4.22: open the window at one part (e.g. «guard» = Bewachte Sachen, «photo» = Foto des Platzes)"""
+	if not _secs.has(sid):
+		open()
+		return
+	var gi: int = _secs[sid][0]
+	_search.text = ""
+	_chip_on[gi] = sid if _chips.get(gi, {}).has(sid) else ""
+	_paint_chips(gi)
+	open(gi)
+	_filter()
 
 
 static func guard_names(props: Dictionary) -> Array:
@@ -188,7 +272,7 @@ func _process(_dt: float) -> void:
 	if not visible:
 		return
 	var vs := get_viewport_rect().size
-	var w := minf(640.0, vs.x - (420.0 if main.ui_root.visible else 30.0))
+	var w := minf(760.0, vs.x - (420.0 if main.ui_root.visible else 30.0))
 	size = Vector2(w, minf(470.0, vs.y - 160.0))
 	position = Vector2(14, vs.y - size.y - 110)
 
@@ -245,7 +329,7 @@ func _tile(cat: String, key: String, name_: String, coco: String, tex, how: Stri
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.add_child(l)
 	var c := Label.new()
-	c.text = "KI: " + coco if coco != "" else "Dein Platz"
+	c.text = "KI: " + coco if coco != "" else "Dein Zeug"
 	c.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	c.add_theme_font_size_override("font_size", 9)
 	c.add_theme_color_override("font_color", UI.MUT)
@@ -277,19 +361,29 @@ func _paint() -> void:
 
 
 func _filter() -> void:
+	"""3D-4.22: the search finds everything (all groups; the first group with a hit opens, the chips are ignored);
+	without search the chip of the group decides which parts are shown"""
 	var q := _search.text.strip_edges().to_lower()
 	var first := -1
-	var cats: Array = [["platz"]] + Obj.cats()                 # 3D-4.x: tab 0 is «Dein Platz» (tent, car)
-	for i in range(cats.size()):
-		var g: GridContainer = _grids[cats[i][0]]
+	for sid in _secs:
+		var gi: int = _secs[sid][0]
+		var box: VBoxContainer = _secs[sid][1]
 		var n := 0
-		for b in g.get_children():
-			var ok: bool = q == "" or str(b.get_meta("search")).contains(q)
-			b.visible = ok
-			if ok:
-				n += 1
-		if n > 0 and first < 0 and q != "":
-			first = i
+		if _grids.has(sid):
+			for b in _grids[sid].get_children():
+				var ok: bool = q == "" or str(b.get_meta("search")).contains(q)
+				b.visible = ok
+				if ok:
+					n += 1
+		elif q != "" and str(_secs[sid][2]).to_lower().contains(q):
+			n = 1                                      # «Bewachte Sachen» / «Foto des Platzes» found by their title
+		var chip: String = str(_chip_on.get(gi, ""))
+		box.visible = (n > 0) if q != "" else (chip == "" or chip == sid)
+		if q != "" and n > 0 and (first < 0 or gi < first):
+			first = gi
+	for gi in _chips:                                  # while searching the chips are not in use
+		for sid in _chips[gi]:
+			_chips[gi][sid].disabled = q != ""
 	if first >= 0:
 		tabs.current_tab = first
 
@@ -447,7 +541,7 @@ func _paint_list() -> void:
 		var th := HBoxContainer.new()
 		_list.add_child(th)
 		var tl := Label.new()
-		tl.text = "Zelt / Auto von «Dein Platz»: %d" % tw.size()
+		tl.text = "Dein Zelt / Auto: %d" % tw.size()
 		tl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		th.add_child(tl)
 		var tb := Button.new()
@@ -493,6 +587,9 @@ func info() -> Dictionary:
 		var nd = main.test_props.get(nm, null)
 		if nd != null and is_instance_valid(nd):
 			guard[nm] = nd.visible
-	return {"visible": visible, "title": "Dein Platz", "tab": tabs.get_tab_title(tabs.current_tab), "guarded": guard,
+	var gl := []
+	for g in GROUPS:
+		gl.append(g[0])
+	return {"visible": visible, "title": "Gegenstände", "tab": tabs.get_tab_title(tabs.current_tab), "groups": gl, "tabs": tabs.get_tab_count(), "guarded": guard,
 			"platz_items": main.zwilling.cur().get("items", []).size() if main.zwilling != null else 0, "objects": Obj.kinds().size(), "coco": Obj.coco_count(), "scene": placed.get(main.scene, []).size(),
 			"thumbs": obj_thumbs.size(), "tiles": _tiles.size()}

@@ -2369,7 +2369,8 @@ class WebStream:
                     web_ui_update({"mw-page-mode": json.dumps(m_)})
                 else:
                     CFG["ui_simple"] = bool(d.get("on")); save_settings()      # the default (the Pi window follows by itself)
-            return reply({"on": page_simple(pg) if pg else bool(CFG["ui_simple"]), "default": bool(CFG["ui_simple"]), "own": pg in page_modes()})
+            return reply({"on": page_simple(pg) if pg else bool(CFG["ui_simple"]), "default": bool(CFG["ui_simple"]), "own": pg in page_modes(),
+                          "dev": bool(CFG.get("dev_area"))})        # 639d: the group «Entwickler» of the simulator control (470)
 
         @app.route("/api/night", methods=["POST"])
         def api_night():

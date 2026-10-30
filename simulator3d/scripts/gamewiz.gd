@@ -842,13 +842,7 @@ func _prog_input(ev: InputEvent) -> void:
 
 static func plain(t: String) -> String:
 	"""without emoji (the font of the window does not have them on every PC); MoveEye shows them"""
-	var o := ""
-	for i in range(t.length()):
-		var c := t.unicode_at(i)
-		if c >= 0x2600 and c != 0x2715 or c == 0xFE0F or c == 0x200D:
-			continue
-		o += String.chr(c)
-	return o.strip_edges()
+	return preload("res://scripts/symbole.gd").clean(t).strip_edges()   # 3D-4.22: «Auslöser 🎯, Licht» -> «Auslöser, Licht» (no gap)
 
 
 func _lab(t: String, sz := 14, col := Color(0.85, 0.88, 0.92), wrap := true) -> Label:
