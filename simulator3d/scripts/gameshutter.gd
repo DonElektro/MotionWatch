@@ -2,7 +2,7 @@ extends Node
 ## 3D-4.x «Auslöser» (wish of Daniel): when a PERSON steers the camera instead of the AI, the guard aims the middle of the
 ## camera picture at a player and presses the shutter. Used by:
 ##   · «Team gegen MoveEye» (mwhand): the guards sit at MoveEye (live page, Controller-Ansicht R2, round 🎯 button) or at
-##     the simulator PC («Kopf steuern» headpad.gd, R2) - control «shoot» with shutter = true → main.mw_shot → fire(null)
+##     the simulator PC («Kopf steuern» headpad.gd, R2 of the controller: padmap.gd) - control «shoot» with shutter = true → main.mw_shot → fire(null)
 ##   · «Wächter» / «Team gegen Team» with a person as guard: phone (button «Auslöser», game.gd page), PC (localplay.gd:
 ##     Space / A / double click / R2 / the round button) → game._guard_catch → fire(guard)
 ## Hit = a runner touches the circle in the middle of the picture (size by the difficulty: easy big, hard small).
@@ -162,7 +162,6 @@ func _process(dt: float) -> void:
 		if _ui_done.size() < 3:
 			_add_ui()
 		_track_seen()
-	_pad_r2()
 
 
 func _track_seen() -> void:
@@ -180,22 +179,6 @@ func _track_seen() -> void:
 					seen_t[k] = now()
 			else:
 				seen_t.erase(k)
-
-
-func _pad_r2() -> void:
-	"""R2 of a controller at the simulator PC (or the browser controller of MoveEye's simulator page) = the shutter:
-	the guard in the game at the PC, or «Kopf steuern» in «Team gegen MoveEye»"""
-	var ex = main.explore
-	if ex == null:
-		return
-	var r2: bool = ex._raw_axis(JOY_AXIS_TRIGGER_RIGHT) > 0.5
-	if r2 and not _r2_old:
-		var lp = main.localplay
-		if lp != null and lp.active and lp.p != null and str(lp.role) == "guard" and human_mode() == "guard":
-			fire(lp.p, str(lp.p["name"]))
-		elif main.headpad != null and main.headpad.visible and human_mode() == "mw":
-			fire(null, "Sim-PC")
-	_r2_old = r2
 
 
 func fire(g, who: String) -> Dictionary:
@@ -290,6 +273,8 @@ func _alarm(hit: Dictionary, by: String) -> void:
 	"""an alarm like a real one of MoveEye: the light, the siren; MoveEye puts the push into its test inbox (world_reply)"""
 	game.flash_until = max(float(game.flash_until), now() + 6.0)
 	_siren.play()
+	if main.padmap != null:
+		main.padmap.rumble("alarm")                           # 3D-4.13: every controller feels the alarm
 	game.news("🚨 Alarm: %s fotografiert (Auslöser von %s) – Licht und Sirene, Push ins Test-Postfach" % [hit["name"], by])
 
 
@@ -390,12 +375,12 @@ func _photo(cam_i: int, dd: float, r: float, asp: float) -> PackedByteArray:
 			var q: Vector2 = c + Vector2(cos(an), sin(an)) * (rad + float(k))
 			if q.x >= 0 and q.y >= 0 and q.x < w and q.y < h:
 				img.set_pixelv(Vector2i(q), red)
-	var arm: int = int(max(rad * 1.35, 14.0))
-	for i in range(-arm, arm + 1):                        # the cross
+	var arm: int = int(rad + 14.0)                         # the cross through the middle (3D-4.13: the one crosshair of padhud.gd)
+	for i in range(-arm, arm + 1):
 		for k in [-1, 0, 1]:
 			var px := Vector2i(int(c.x) + i, int(c.y) + k)
 			var py := Vector2i(int(c.x) + k, int(c.y) + i)
-			if absi(i) > 4:
+			if true:
 				if px.x >= 0 and px.x < w and px.y >= 0 and px.y < h:
 					img.set_pixelv(px, red)
 				if py.x >= 0 and py.x < w and py.y >= 0 and py.y < h:
@@ -505,13 +490,7 @@ class Cross extends Control:
 			return
 		var c := _pic.position + _pic.size / 2.0
 		var rad: float = shut.radius() * _pic.size.y
-		var col := Color(1.0, 0.25, 0.2, 0.95)
-		var lw: float = 3.0 if big else 2.0
-		draw_arc(c, rad, 0.0, TAU, 72, col, lw, true)
-		var arm: float = max(rad * 1.35, 12.0)
-		var gap: float = min(6.0, rad * 0.4)
-		for d in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]:
-			draw_line(c + d * gap, c + d * arm, col, lw, true)
+		preload("res://scripts/padhud.gd").draw_crosshair(self, c, rad, 3.0 if big else 2.0)   # 3D-4.13: ONE crosshair
 
 	func _btn_draw() -> void:
 		var s: Vector2 = btn.size

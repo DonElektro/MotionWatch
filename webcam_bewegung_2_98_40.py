@@ -28909,6 +28909,8 @@ class SimLink:
                     follow_set(bool(mc_.get("on")), "simulator")
                 elif op_ == "light":                        # 2.95.103: the white light from the simulator (on / off)
                     light_set("white", "on" if mc_.get("on") else "auto")
+                elif op_ == "ir":                           # 2.98.41: B of the controller in the simulator (one mapping, 542)
+                    light_set("ir", "on" if mc_.get("on") else "auto")
                 elif op_ == "feedback":                     # 2.98.33: «Rückmeldung an den Entwickler» in the simulator (584)
                     threading.Thread(target=lambda m=dict(mc_): feedback_send(m.get("kind"), m.get("text"), str(m.get("contact") or "")[:120], True, m.get("stars"),
                                      "3D-Simulator " + str(m.get("sim") or "")[:12], feedback_shot("sim") if m.get("shot") else None, "simulator"),
@@ -37703,13 +37705,13 @@ const SIMPAD = {name: "", on: false};
     if (neutral && idle) return;                     // nothing pressed: nothing to send
     if (sig === last && now - lastT < 300) return;   // unchanged: only now and then (the simulator lets go after 0.6 s)
     last = sig; lastT = now; idle = neutral;
-    post("/api/sim", {action: "pad", ax: ax, bt: bt, name: SIMPAD.name});
+    post("/api/sim", {action: "pad", ax: ax, bt: bt, name: SIMPAD.name}).then(r => { if (r && r.rumble && window.MWPad) MWPad.rumble(g, r.rumble); });   // 2.98.41: the simulator lets it vibrate (542)
   };
   setInterval(tick, 66);
-  addEventListener("gamepadconnected", e => { if (typeof window.mwPadAsk === "function" && window.mwPadAsk(e)) return; try { toast("🎮 " + t("Controller connected") + ": " + String(e.gamepad.id).replace(/\(.*?\)/g, "").trim().slice(0, 40) + " – " + t("Start = explore with the rover")); } catch (x) {} });
+  addEventListener("gamepadconnected", e => { if (typeof window.mwPadAsk === "function" && window.mwPadAsk(e)) return; try { toast("🎮 " + t("Controller connected") + ": " + String(e.gamepad.id).replace(/\(.*?\)/g, "").trim().slice(0, 40) + " – " + t("Start = menu of the simulator, left stick = head, right stick = rover")); } catch (x) {} });
 })();
 function simQBox(VP) {                             // «Bildqualität» under the picture of the simulator window
-  try { if (I18N && I18N.de) Object.assign(I18N.de, {"Controller connected": "Controller verbunden", "Start = explore with the rover": "Start = mit dem Rover erkunden", "Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig"}); } catch (e) {}
+  try { if (I18N && I18N.de) Object.assign(I18N.de, {"Controller connected": "Controller verbunden", "Start = menu of the simulator, left stick = head, right stick = rover": "Start = Menü des Simulators, linker Stick = Kopf, rechter Stick = Rover", "Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig"}); } catch (e) {}
   if (!document.getElementById("simq-css")) { const c = document.createElement("style"); c.id = "simq-css";
     c.textContent = ".simq{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;margin-top:8px}.simq select{padding:4px 8px;font-size:13px;width:auto}"; document.head.appendChild(c); }
   const box = document.createElement("div"); box.className = "simq";
@@ -37721,7 +37723,7 @@ function simQBox(VP) {                             // «Bildqualität» under th
   const st = document.createElement("span"); st.className = "mut";
   box.append(lab, sel, st);
   setInterval(() => { const I = VP.info; st.textContent = (I.w ? I.w + " px · " + (I.fmt === "webp" ? "WebP" : "JPEG") + " " + I.q + " % · " + I.kb + " kB" + (I.mode === "auto" ? " · " + t(["low", "medium", "high", "very high"][I.lvl]) : "") : "")
-    + (SIMPAD.on ? " · 🎮 " + SIMPAD.name + " (" + t("Start = explore with the rover") + ")" : ""); }, 1000);
+    + (SIMPAD.on ? " · 🎮 " + SIMPAD.name + " (" + t("Start = menu of the simulator, left stick = head, right stick = rover") + ")" : ""); }, 1000);
   return box;
 }
 """
@@ -43786,6 +43788,7 @@ ALERT_JS = r"""
     const label = a.kind === "person" ? at("Person detected") + (a.count ? " (" + a.count + ")" : "")
       : (a.kind === "warm" ? at("Warm body (thermal camera)") : (a.kind === "noise" ? at("Noise (microphone)") + (a.db != null ? " " + a.db + " dB" : "") : at("Pre-alarm: movement")));
     flash(label);
+    if (a.kind !== "prealarm" && window.MWPad) MWPad.rumble(null, "alarm");   // 2.98.41: a game controller feels the alarm (542)
     try { toast("🔔 " + label + " · " + a.time); } catch (e) {}
     if (muted()) return;
     if (a.kind === "prealarm") { if (!S.pre || Date.now() - lastPre < 8000) return; lastPre = Date.now(); }
@@ -52137,16 +52140,13 @@ SELFTEST_EXTRA.append(("Field of view per camera (cam_fov_h)", cam_fov_selftest)
 #   simulator window, 3D-3.18), double tap = next view (head camera → from above → behind the rover), long tap = swap.
 #   Slim bar (the quick switches of 530: Lamp, IR, Thermal, Night vision, Marks, Photo, Record, Follow, then Centre …),
 #   at most 8 visible (fewer on a narrow phone), the rest behind «…», hides itself after 4 s, a tap shows it again.
-#   Controller (standard mapping of the Gamepad API):
-#     left stick = head (pan / tilt, /api/stick like the joystick: real servos and simulator) · L3 = centre
-#     right stick = rover (up = forward, sideways = steer) through MoveEye's mover (/api/mover → MOVER: the real mover
-#       later, in the simulation the simulator's rover); the simulator view follows behind the rover (explore «hinterher»)
-#     without a rover: right stick = fly the simulator view (up = forward, sideways = turn)
-#     R1 held + right stick = turn the simulator view · L1 = zoom out, R1 short = zoom in, L2 = zoom out too
-#     (2.98.35: with the simulator R2 = the shutter «Auslöser», part 539; aufr: the help no longer says «L2 / R2 zoom»)
-#     R3 = next view (behind the rover → driver → from above; without rover: head camera → from above → free)
-#     A Photo · B Record · X Lamp (IR without lamp) · Y Follow · D-pad ← → choose a button of the bar, ↑ press it, ↓ help
-#     Select = swap the pictures · Start = bar on / off, held 1 s = leave
+#   Controller: the ONE mapping of MoveEye and the simulator (part 542, MWPad, mode «view») - left stick = head,
+#     right stick = rover (no rover: move the view), R1 held + right stick = turn the view, R2 = shutter (otherwise zoom in),
+#     L1 / R1 tap = zoom out / in, A B X Y = light / IR / photo / follow, L3 = head to the middle, R3 = next view,
+#     Select = swap the pictures (held 1.5 s = emergency stop), Start = the bar (held 1 s = leave), D-pad ← → = choose a
+#     button of the bar, A or ↑ = press it, B = back, ↓ = help. Help, settings (dead zone, sensitivity, invert Y, swap the
+#     sticks, vibration) and the roles of 2+ controllers (1 = head, 2 = rover) in the help (↓). Mini-map with the field of
+#     view of the head on the simulator picture; the controller vibrates on an alarm and on a shot of the shutter.
 #   While it is open the raw controller is not sent to the simulator (470 simPadLink: mwPadOwn), the small simulator
 #   window of the live page pauses (530) - one picture, one mapping. Stored per device (localStorage «mw-pad», not on
 #   the Pi): open, swapped, asked. Translations: part 628.
@@ -52171,6 +52171,9 @@ PADVIEW_JS = r"""
 #pv-pad{position:absolute;z-index:3;top:max(10px,env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);font-size:12px;color:#fff;background:rgba(8,12,20,.55);
   padding:4px 10px;border-radius:10px;pointer-events:none;transition:opacity .3s;white-space:nowrap}
 #pv.calm #pv-x,#pv.calm #pv-pad{opacity:0;pointer-events:none}
+#pv-map{position:absolute;z-index:2;left:8px;top:8px;width:110px;height:110px;pointer-events:none}#pv-map[hidden]{display:none}
+#pv .mwpad-help{border-collapse:collapse;width:100%}#pv .mwpad-help td{padding:3px 4px;vertical-align:top;border-top:1px solid rgba(255,255,255,.08)}#pv .mwpad-help td:first-child{white-space:nowrap;color:#ffd34d;padding-right:10px}
+#pv .mwpad-set input[type=range]{accent-color:#ffd34d}
 #pv-bar{position:absolute;z-index:3;left:50%;bottom:max(10px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;gap:6px;padding:6px;border-radius:16px;
   background:rgba(8,12,20,.74);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);transition:opacity .3s,transform .3s;max-width:calc(100% - 16px)}
 #pv.calm #pv-bar{opacity:0;pointer-events:none;transform:translate(-50%,24px)}
@@ -52244,7 +52247,8 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     help: {ic: "?", lb: "Help", tip: "Controller and gestures", on: () => !HELP.hidden, go: () => { help(HELP.hidden); return Promise.resolve({ok: true}); }, util: true},
     exit: {ic: "✕", lb: "Exit", tip: "Leave the controller view", on: () => false, go: () => { open(false); return Promise.resolve({ok: true}); }, util: true}};
   const ORDER = ["white", "ir", "therm", "nv", "marks", "photo", "rec", "track", "center", "patrol", "listen", "mask", "rover", "swap", "help", "exit"];
-  const KEYS = () => ({photo: "A", rec: "B", [okId("white") ? "white" : "ir"]: "X", track: "Y"});
+  const ACT2ID = {light: "white", ir: "ir", photo: "photo", follow: "track"};   // the actions of MWPad (542) -> the buttons of the bar
+  const KEYS = () => { const K = {}; ((window.MWPad && MWPad.MAP.modes.view) || []).forEach(e => { if (ACT2ID[e[1]] && /^[abxy]$/.test(e[0])) K[ACT2ID[e[1]]] = e[0].toUpperCase(); }); return K; };
   const item = id => EXTRA[id] || QD(id);
   function okId(id) { const q = item(id); if (!q) return false; const c = J().cfg || {}, s = ST(); try { return q.ok ? !!q.ok(c, s) : true; } catch (e) { return false; } }
   function act(id, btn) {
@@ -52294,17 +52298,21 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
   function help(on) {
     HELP.hidden = !on; if (!on) { paintBar(); return; }
     HELP.textContent = ""; HELP.appendChild(E("b", "", "🎮 " + T("Controller view")));
-    const tb = E("table");
-    [["L ◉", "Left stick: turn / tilt the head of MoveEye"], ["L3", "Press the left stick: head to the middle"],
-     ["R ◉", rover() ? "Right stick: drive the rover (up = forward, sideways = steer) - the view follows behind it" : "Right stick: move the simulator view (no rover)"],
-     ["R1 + R ◉", "Hold R1 + right stick: turn the simulator view"], ["L1 / R1", "Zoom out / in (L2 = zoom out too)"],
-     ["R2 🎯", "Shutter: a shot at the middle of the picture (with the simulator; in «Team gegen MoveEye» a catch)"],
-     ["R3", "Press the right stick: next view (behind the rover, driver, from above)"],
-     ["A B X Y", "A Photo · B Record · X Lamp · Y Follow"], ["✚ ← →", "Choose a button of the bar, ↑ presses it, ↓ this help"],
-     ["Select", "Swap the pictures"], ["Start", "Bar on / off · hold 1 s = leave"],
-     ["☝", "Simulator picture: one finger = turn, two fingers = zoom, double tap = next view, long tap = swap the pictures"]]
-      .forEach(([k, v]) => { const tr = E("tr"); tr.append(E("td", "", k), E("td", "", T(v))); tb.appendChild(tr); });
-    HELP.appendChild(tb); HELP.appendChild(E("div", "mut", T("Tap here to close. Stored on this device only.")));
+    if (window.MWPad) HELP.appendChild(MWPad.helpTable("view", T));         // made from the one mapping (542)
+    const tb = E("table"), tr = E("tr");
+    tr.append(E("td", "", "☝"), E("td", "", T("Simulator picture: one finger = turn, two fingers = zoom, double tap = next view, long tap = swap the pictures")));
+    tb.appendChild(tr); HELP.appendChild(tb);
+    const L = window.MWPad ? MWPad.pads() : [];
+    if (L.length > 1) {                                                     // several controllers: a role each
+      HELP.appendChild(E("b", "", T("Controllers")));
+      L.forEach((g, i) => { const row = E("div"); row.style.cssText = "display:flex;gap:8px;align-items:center;margin:3px 0";
+        const r = roleOf(i), sel = E("select"); [["guard", "Head"], ["rover", "Rover"], ["all", "everything"]].forEach(([v, l]) => { const o = E("option", "", T(l)); o.value = v; sel.appendChild(o); });
+        sel.value = r; sel.onclick = e => e.stopPropagation(); sel.onchange = () => { P.roles = Object.assign({}, P.roles || {}, {[i]: sel.value}); save(); paintPads(); };
+        const n = E("span", "", (i + 1) + " " + MWPad.name(g)); n.style.cssText = "flex:1;color:" + roleCol(r); row.append(n, sel); HELP.appendChild(row); });
+    }
+    HELP.appendChild(E("b", "", T("Settings")));
+    if (window.MWPad) MWPad.settingsUI(HELP, T);
+    HELP.appendChild(E("div", "mut", T("Tap here to close. Stored on this device only.")));
     wake();
   }
   HELP.addEventListener("click", e => { e.stopPropagation(); help(false); });
@@ -52328,7 +52336,8 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     if (!rover()) PV.followed = false;
   }
   function sim(d) { if (!simOn()) return Promise.resolve({ok: false});
-    return post("/api/sim", Object.assign({action: "padview", lang: LANG}, d)).then(r => { if (r && r.ok && r.view != null) PV.view = r.view; return r; }); }
+    return post("/api/sim", Object.assign({action: "padview", lang: LANG}, d)).then(r => { if (r && r.ok && r.view != null) PV.view = r.view;
+      if (r && r.rumble && window.MWPad) MWPad.rumble(null, r.rumble); return r; }); }
   // ---- view events into the simulator window (the protocol of simViewBind, 470: view_in) ----
   const VB = typeof simViewBind === "function" ? simViewBind(E("img"), {active: () => false}) : null;   // only its sender (queue of 70 ms)
   const vpush = (e, now) => { if (VB) VB.push(e, now); else post("/api/sim", {action: "view_in", ev: [e], lang: LANG}); };
@@ -52392,54 +52401,82 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
   gestures(PS, SI, true);
   gestures(PL, slot, false);
   // ---- the game controller (Gamepad API, standard mapping) ----
-  const GP = {mute: false, prev: [], lastHead: 0, headZero: true, lastR: 0, rZero: true, r1T: 0, r1Used: false, startT: 0, startLong: false, l1T: 0, zT: 0, name: ""};
-  function pad() { try { return [...(navigator.getGamepads ? navigator.getGamepads() : [])].find(g => g && g.connected) || null; } catch (e) { return null; } }
-  const dz = (x, y) => { const m = Math.hypot(x, y); if (m < 0.18) return [0, 0]; const k = Math.min(1, (m - 0.18) / 0.78) / m; return [x * k, y * k]; };
+  const GP = {mute: false, lastHead: 0, headZero: true, lastR: 0, rZero: true, zT: 0, R: []};
+  const pads = () => (window.MWPad ? MWPad.pads() : []);
+  function pad() { return pads()[0] || null; }
+  // several controllers: 1 = head, 2 = rover (changeable in the help); one controller does everything
+  const ROLE_ACT = {head: "guard", center: "guard", light: "guard", ir: "guard", photo: "guard", follow: "guard", shutter: "guard", estop: "guard",
+                    drive: "rover", orbit: "rover", zoom_in: "rover", zoom_out: "rover", view: "rover", swap: "rover"};
+  const roleOf = i => (pads().length < 2 ? "all" : ((P.roles || {})[i] || (i === 0 ? "guard" : i === 1 ? "rover" : "all")));
+  const okFor = (i, a) => { const r = roleOf(i); return r === "all" || !ROLE_ACT[a] || ROLE_ACT[a] === r; };
+  const roleCol = r => ((window.MWPad && MWPad.MAP.roles[r]) || ["", "", "#c0ccdd"])[2];
   const spd = () => { const s = document.getElementById("stick-speed"); return s ? parseFloat(s.value) || 30 : 30; };
   const zoom = d => sim({zoom: d});
+  const mag = v => Math.hypot(v[0], v[1]);
   function focusMove(d) { const n = BAR.children.length; if (!n) return; wake(); focus = focus < 0 ? (d > 0 ? 0 : n - 1) : (focus + d + n) % n; paintBar(); }
   function focusPress() { const b = BAR.children[focus]; if (b) b.click(); }
+  function press(id) { const b = W.querySelector('button.pvb[data-id="' + id + '"]'); act(id, b); wake(); }
+  function doAct(a) {
+    if (ACT2ID[a]) return press(ACT2ID[a]);
+    if (a === "center") return press("center");
+    if (a === "shutter") { if (window.mwShutCan && window.mwShutCan()) window.mwShutFire(); else zoom(1); return; }
+    if (a === "zoom_in") return zoom(1);
+    if (a === "zoom_out") return zoom(-1);
+    if (a === "view") return sim({view: "rnext"}).then(r => { if (r && r.ok) toastT("👁 " + T(VIEWNAME[r.view] || "Free view")); });
+    if (a === "swap") return swap();
+    if (a === "estop") { if (window.servoEstop) window.servoEstop(); else post("/api/servo", {op: "estop"}); return toastT("⛔ " + T("EMERGENCY STOP")); }
+    if (a === "menu") return barToggle();
+    if (a === "exit") { GP.mute = true; open(false); }
+  }
   function gpTick() {
-    const g = pad();
-    if (GP.mute && !(g && [...g.buttons].some(b => b && b.pressed))) GP.mute = false;   // left with Start held: let go first
-    if (!PV.open || !g || document.hidden) return;
-    const cur = [...g.buttons].map(b => !!(b && (b.pressed || b.value > 0.5))), prev = GP.prev; GP.prev = cur;
-    const down = i => cur[i] && !prev[i], up = i => !cur[i] && prev[i], val = i => (g.buttons[i] ? g.buttons[i].value || (g.buttons[i].pressed ? 1 : 0) : 0);
-    const now = Date.now();
-    const [lx, ly] = dz(g.axes[0] || 0, g.axes[1] || 0), [rx, ry] = dz(g.axes[2] || 0, g.axes[3] || 0);
+    const L = pads();
+    if (GP.mute && !L.some(g => [...g.buttons].some(b => b && b.pressed))) GP.mute = false;   // left with Start held: let go first
+    if (!PV.open || !L.length || document.hidden) return;
+    let head = [0, 0], move = [0, 0], orbit = [0, 0]; const fired = [], keys = [];
+    L.forEach((g, i) => {
+      const R = GP.R[i] || (GP.R[i] = MWPad.Pad("view")); R.read(g, "view");
+      if (okFor(i, "head") && mag(R.head) > mag(head)) head = R.head;
+      if (okFor(i, "drive") && mag(R.move) > mag(move)) move = R.move;
+      if (okFor(i, "orbit") && mag(R.orbit) > mag(orbit)) orbit = R.orbit;
+      R.keys.forEach(k => keys.push(k));
+      R.fired.forEach(a => { if (okFor(i, a)) fired.push(a); });
+    });
+    const now = Date.now(), r3 = v => Math.round(v * 1000) / 1000;
     // left stick = head (the same as the joystick of the live page: /api/stick, real servos and the simulator)
-    if (lx || ly) { if (now - GP.lastHead >= 100) { GP.lastHead = now; GP.headZero = false; post("/api/stick", {x: r3(lx), y: r3(-ly), speed: spd(), via: "pad"}); } }
+    if (head[0] || head[1]) { if (now - GP.lastHead >= 100) { GP.lastHead = now; GP.headZero = false; post("/api/stick", {x: r3(Math.max(-1, Math.min(1, head[0]))), y: r3(Math.max(-1, Math.min(1, -head[1]))), speed: spd(), via: "pad"}); } }
     else if (!GP.headZero) { GP.headZero = true; post("/api/stick", {x: 0, y: 0, speed: spd()}); }
-    // right stick = rover (MoveEye's mover: real mover or the simulator's rover) · R1 held = turn the view · no rover = fly the view
-    if (down(5)) { GP.r1T = now; GP.r1Used = false; }
-    if (rx || ry) {
+    // R1 held + right stick = turn the view · right stick = rover (MoveEye's mover) · no rover = move the view
+    if (orbit[0] || orbit[1]) { if (now - GP.lastR >= 100 && simOn()) { GP.lastR = now; sim({look: [r3(orbit[0]), r3(orbit[1])], dt: 0.1}); } }
+    if (move[0] || move[1]) {
       if (now - GP.lastR >= 100) { GP.lastR = now;
-        if (cur[5] && simOn()) { GP.r1Used = true; sim({look: [r3(rx), r3(ry)], dt: 0.1}); if (!GP.rZero) { GP.rZero = true; post("/api/mover", {v: 0, w: 0}); } }
-        else if (rover()) { GP.rZero = false; post("/api/mover", {v: r3(-ry), w: r3(rx)}); }
-        else if (simOn()) sim({fly: [r3(-ry), r3(rx)], dt: 0.1}); }
+        if (rover()) { GP.rZero = false; post("/api/mover", {v: r3(-move[1]), w: r3(move[0])}); }
+        else if (simOn()) sim({fly: [r3(-move[1]), r3(move[0])], dt: 0.1}); }
     } else if (!GP.rZero) { GP.rZero = true; post("/api/mover", {v: 0, w: 0}); }
-    if (up(5) && !GP.r1Used && now - GP.r1T < 400) zoom(1);              // R1 short = zoom in
-    if (down(4)) { GP.l1T = now; zoom(-1); }                              // L1 = zoom out (held: again and again)
-    else if (cur[4] && now - GP.l1T > 450 && now - GP.zT > 300) { GP.zT = now; zoom(-1); }
-    const l2 = val(6), r2 = val(7);                                       // L2 / R2: zoom out / in while pressed
-    const shut = !!(window.mwShutCan && window.mwShutCan());              // 2.98.35: with the simulator R2 = the shutter («Auslöser», 539)
-    if (shut && r2 > 0.5 && !GP.r2) window.mwShutFire();
-    GP.r2 = r2 > 0.5;
-    if ((l2 > 0.4 || (!shut && r2 > 0.4)) && now - GP.zT > 250) { GP.zT = now; zoom(!shut && r2 > l2 ? 1 : -1); }
-    if (down(10)) act("center");                                           // L3
-    if (down(11)) sim({view: "rnext"}).then(r => { if (r && r.ok) toastT("👁 " + T(VIEWNAME[r.view] || "Free view")); });   // R3
-    const K = KEYS(), byKey = k => Object.keys(K).find(id => K[id] === k);
-    [[0, "A"], [1, "B"], [2, "X"], [3, "Y"]].forEach(([i, k]) => { if (down(i)) { const id = byKey(k), b = W.querySelector('button.pvb[data-id="' + id + '"]'); act(id, b); wake(); } });
-    if (down(8)) { GP.selT = now; GP.selLong = false; }                   // Select: short = swap the pictures,
-    if (cur[8] && !GP.selLong && now - GP.selT > 1500) { GP.selLong = true; if (window.servoEstop) window.servoEstop(); else post("/api/servo", {op: "estop"}); toastT("⛔ " + T("EMERGENCY STOP")); }   // held 1.5 s = Not-Aus (2.98.35, 539)
-    if (up(8) && !GP.selLong) swap();
-    if (down(9)) { GP.startT = now; GP.startLong = false; }               // Start: short = bar, held 1 s = leave
-    if (cur[9] && !GP.startLong && now - GP.startT > 1000) { GP.startLong = true; GP.mute = true; open(false); return; }   // (the held Start must not reach the simulator)
-    if (up(9) && !GP.startLong) barToggle();
-    if (down(14)) focusMove(-1); if (down(15)) focusMove(1); if (down(12)) focusPress(); if (down(13)) help(HELP.hidden);
+    // the bar with the D-pad: ← → choose, ↑ or A press, B back, ↓ help (the menu of this view)
+    if (keys.includes("left")) focusMove(-1); if (keys.includes("right")) focusMove(1);
+    if (keys.includes("down")) help(HELP.hidden);
+    if (focus >= 0 || !HELP.hidden || !MORE.hidden) {
+      if (keys.includes("up") || keys.includes("a")) { if (focus >= 0) focusPress(); else if (!HELP.hidden) help(false); }
+      if (keys.includes("b")) { focus = -1; MORE.hidden = true; help(false); paintBar(); }
+      fired.filter(a => !["light", "ir"].includes(a)).forEach(doAct);      // A / B belong to the bar now
+      return;
+    }
+    if (keys.includes("up")) { focus = 0; wake(); paintBar(); }
+    fired.forEach(doAct);
   }
   setInterval(gpTick, 50);
-  window.mwPadOwn = () => (PV.open || GP.mute) && !!pad();                // 470: the raw controller does not go to the simulator meanwhile
+  window.mwPadOwn = () => (PV.open || GP.mute) && !!pad();
+  // ---- the chips of the controllers (number + role in its colour) and the mini-map of the simulator ----
+  function paintPads() {
+    const L = pads(); PADI.hidden = !L.length; if (!L.length) return;
+    const h = L.map((g, i) => '<span style="color:' + roleCol(roleOf(i)) + '">🎮' + (L.length > 1 ? (i + 1) + " " + T(({guard: "Head", rover: "Rover", all: "everything"})[roleOf(i)]) : " " + MWPad.name(g).replace(/[<>&"]/g, "")) + "</span>").join(" · ");
+    if (PADI.innerHTML !== h) PADI.innerHTML = h;
+  }
+  const MM = E("canvas"); MM.id = "pv-map"; MM.width = MM.height = 220; MM.hidden = true; PS.appendChild(MM);
+  function mapTick() {
+    if (!PV.open || !simOn() || !window.MWPad) { MM.hidden = true; return; }
+    sim({}).then(r => { const m = r && r.mm; MM.hidden = !m || !pad(); if (m && pad()) MWPad.drawMap(MM, m, 40); });
+  }                // 470: the raw controller does not go to the simulator meanwhile
   // ---- open / close ----
   let vHome = null;
   function open(on) {
@@ -52452,7 +52489,7 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
       if (typeof window.pipShow === "function") window.pipShow(false);
       const mn = document.getElementById("lv-menu"); if (mn) mn.hidden = true;
       if (v) { vHome = v.parentNode; slot.appendChild(v); }            // the same picture element (no second stream)
-      document.body.classList.add("pv-on"); W.hidden = false; GP.prev = []; PV.followed = false; focus = -1;
+      document.body.classList.add("pv-on"); W.hidden = false; GP.R = []; PV.followed = false; focus = -1;
       layout(); BSIG = ""; paintBar(); wake(); simTick();
       if (!P.help && pad()) { P.help = true; save(); help(true); }
       try { if (touchDev() && W.requestFullscreen && !document.fullscreenElement) W.requestFullscreen({navigationUI: "hide"}).catch(() => {}); } catch (e) {}
@@ -52502,7 +52539,7 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     toolBtn();
     const g = pad(); const nm = g ? String(g.id).replace(/\(.*?\)/g, "").trim().slice(0, 30) : "";
     if (PV.open) {
-      PADI.hidden = !g; if (g && PADI.textContent !== "🎮 " + nm) PADI.textContent = "🎮 " + nm;
+      paintPads(); mapTick();
       layout(); paintBar(); simTick();
     }
   }, 1000);
@@ -52594,8 +52631,7 @@ SHUT_JS = r"""
   const T = x => (typeof t === "function" ? t(x) : x);
   const E = (tag, id) => { const x = document.createElement(tag); if (id) x.id = id; return x; };
   const css = E("style"); css.textContent =
-    "#msh-x{position:absolute;z-index:58;pointer-events:none;border:3px solid #ff3b30;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 1px rgba(0,0,0,.55),inset 0 0 0 1px rgba(0,0,0,.55)}"
-    + "#msh-x::before,#msh-x::after{content:'';position:absolute;left:50%;top:50%;width:3px;height:calc(100% + 28px);background:#ff3b30;transform:translate(-50%,-50%)}#msh-x::after{transform:translate(-50%,-50%) rotate(90deg)}"
+    (window.MWPad ? MWPad.XH_CSS("#msh-x") : "") + "#msh-x{z-index:58}"     // 2.98.41: the one crosshair (542)
     + "#msh-x.hard::before,#msh-x.hard::after{height:calc(100% + 40px)}"
     + "#msh-b{position:absolute;z-index:62;border-radius:50%;padding:0;margin:0;border:3px solid #fff;color:#fff;font-size:30px;line-height:1;display:flex;align-items:center;justify-content:center;"
     + "background:radial-gradient(circle,#e5383b 0 60%,transparent 61%),conic-gradient(#ffd34d var(--p,0%),rgba(255,255,255,.28) 0);box-shadow:0 4px 18px rgba(0,0,0,.55);touch-action:manipulation;cursor:pointer;-webkit-tap-highlight-color:transparent}"
@@ -52628,6 +52664,7 @@ SHUT_JS = r"""
       else if (r.shutter && !r.hit) m = "✗ " + T("Missed - false alarm") + " (" + (r.pts || -50) + ") · " + T("shutter locked 3 s");
       else m = r.text || "";
       if (typeof toast === "function" && m) toast(m);
+      if (window.MWPad && r.shutter) MWPad.rumble(null, r.hit && r.pts > 0 ? "hit" : "seen");   // 2.98.41: the controller feels the shot
       paint();
     }).catch(() => { SH.busy = false; });
     return true;
@@ -54323,6 +54360,231 @@ def servo_routes(app, reply, body):
         fmt = "csv" if request.args.get("fmt") == "csv" else "json"
         data, mt, fn = servo_diag_export(fmt, norm_lang(request.args.get("lang") or CFG.get("lang")))
         return Response(data, mimetype=mt, headers={"Content-Disposition": f"attachment; filename={fn}", "Cache-Control": "no-store"})
+# ----------------------------------------------------------------------------
+# Wish of Daniel (30.10.2026, «einheitliches Controller-Konzept»): one base mapping everywhere - left stick = head,
+# right stick = rover / view (R1 held = turn the view), R2 = shutter, A / B / X / Y = light / IR / photo / follow,
+# Select = swap pictures, Start = menu (held = leave), L3 = head to the middle, R3 = next view; a game round puts the
+# tools of the guard and the moves of the sneaker on the same places. The table MAP (modes, keys, texts in English and
+# German), the reader of a controller (dead zone, sensitivity, invert Y, swap the sticks - stored per device in
+# localStorage «mw-padset»), the vibration (vibrationActuator / hapticActuators), the help made from MAP, ONE crosshair
+# and the mini-map with the field of view of the head are in PADMAP_JS (window.MWPad).
+# The SAME text is in simulator3d/scripts/padmap.gd (const JS, between «# <padmap-js>» and «# </padmap-js>»): the
+# simulator acts on the same MAP and serves the JS to the phones. The self-test compares both when the folder is there.
+# Translations of the texts: part 639.
+# ----------------------------------------------------------------------------
+
+PADMAP_JS = r"""window.MWPad = window.MWPad || (function () {
+  "use strict";
+  // ONE mapping of the game controller for MoveEye and its simulator (3D-4.13 / MoveEye 2.98.38, wish of Daniel 30.10.2026).
+  // The same text is in simulator3d/scripts/padmap.gd (JS) and in MoveEye part 542 (PADMAP_JS) - the self-test compares them.
+  // modes: [key, action, English, Deutsch]; the simulator acts on the action, the help overlays are made from the texts.
+  const MAP = /*MAP*/{
+    "keys": {"ls": "L ◉", "rs": "R ◉", "r1rs": "R1 + R ◉", "dpad": "✚", "a": "A", "b": "B", "x": "X", "y": "Y", "l1": "L1", "r1": "R1",
+             "l2": "L2", "r2": "R2", "select": "Select", "select_long": "Select ⏱", "start": "Start", "start_long": "Start ⏱", "l3": "L3", "r3": "R3"},
+    "modes": {
+      "sim": [["ls", "head", "Turn / tilt the head of MoveEye", "Kopf von MoveEye drehen / neigen"],
+              ["rs", "drive", "Drive the rover (without rover: move the view)", "Rover fahren (ohne Rover: Ansicht bewegen)"],
+              ["r1rs", "orbit", "Hold R1: turn the view", "R1 halten: Ansicht drehen"],
+              ["r2", "shutter", "Shutter in a game round (otherwise zoom in)", "Auslöser in einer Spielrunde (sonst hineinzoomen)"],
+              ["l1", "zoom_out", "Zoom out", "Herauszoomen"], ["r1", "zoom_in", "Tap R1: zoom in", "R1 tippen: hineinzoomen"],
+              ["a", "light", "Light on / off", "Licht ein / aus"], ["b", "ir", "IR light on / off", "IR-Licht ein / aus"],
+              ["x", "photo", "Photo", "Foto"], ["y", "follow", "Follow on / off", "Folgen ein / aus"],
+              ["l3", "center", "Head to the centre", "Kopf zur Mitte"], ["r3", "view", "Next view", "Nächste Ansicht"],
+              ["select", "swap", "Swap pictures / views", "Bilder / Ansichten tauschen"],
+              ["start", "menu", "Menu (control panel)", "Menü (Bedienfeld)"], ["start_long", "exit", "Hold 1 s: leave", "1 s halten: beenden"],
+              ["dpad", "head", "Head in small steps", "Kopf in kleinen Schritten"],
+              ["l2", "pole", "Hold L2 + ✚ ↑↓: pole longer / shorter", "L2 halten + ✚ ↑↓: Stange länger / kürzer"]],
+      "view": [["ls", "head", "Turn / tilt the head of MoveEye", "Kopf von MoveEye drehen / neigen"],
+               ["rs", "drive", "Drive the rover (without rover: move the view)", "Rover fahren (ohne Rover: Ansicht bewegen)"],
+               ["r1rs", "orbit", "Hold R1: turn the view", "R1 halten: Ansicht drehen"],
+               ["r2", "shutter", "Shutter in a game round (otherwise zoom in)", "Auslöser in einer Spielrunde (sonst hineinzoomen)"],
+               ["l1", "zoom_out", "Zoom out", "Herauszoomen"], ["r1", "zoom_in", "Tap R1: zoom in", "R1 tippen: hineinzoomen"],
+               ["a", "light", "Light on / off", "Licht ein / aus"], ["b", "ir", "IR light on / off", "IR-Licht ein / aus"],
+               ["x", "photo", "Photo", "Foto"], ["y", "follow", "Follow on / off", "Folgen ein / aus"],
+               ["l3", "center", "Head to the centre", "Kopf zur Mitte"], ["r3", "view", "Next view", "Nächste Ansicht"],
+               ["select", "swap", "Swap pictures / views", "Bilder / Ansichten tauschen"],
+               ["select_long", "estop", "Hold 1.5 s: emergency stop of the servos", "1,5 s halten: Not-Aus der Servos"],
+               ["start", "menu", "Menu (the bar)", "Menü (die Leiste)"], ["start_long", "exit", "Hold 1 s: leave", "1 s halten: beenden"],
+               ["dpad", "nav", "Choose a button of the bar (A = press, B = back)", "Knopf der Leiste wählen (A = drücken, B = zurück)"]],
+      "guard": [["ls", "head", "Turn / tilt the head (the camera)", "Kopf (die Kamera) drehen / neigen"],
+                ["rs", "fine", "Aim finely (slow)", "Fein zielen (langsam)"],
+                ["r2", "shutter", "Shutter: a shot at the middle of the picture", "Auslöser: Schuss auf die Bildmitte"],
+                ["l1", "zoom", "Zoom (tool)", "Zoom (Werkzeug)"],
+                ["a", "light", "Light", "Licht"], ["b", "scan", "Scan (tool)", "Scan (Werkzeug)"],
+                ["x", "catch", "«Caught!»", "«Erwischt!»"], ["y", "siren", "Siren (tool)", "Sirene (Werkzeug)"],
+                ["l3", "center", "Head back to the start direction", "Kopf zurück in die Startrichtung"],
+                ["select", "replay", "Replay (after the round)", "Wiederholung (nach der Runde)"],
+                ["start", "menu", "Pause menu · start the round", "Pause-Menü · Runde starten"], ["start_long", "exit", "Hold 1 s: leave the game", "1 s halten: Spiel verlassen"],
+                ["dpad", "head", "Head in steps · menus: choose", "Kopf in Schritten · Menüs: wählen"]],
+      "seek": [["ls", "head", "Turn / tilt the head (the camera)", "Kopf (die Kamera) drehen / neigen"],
+               ["rs", "drive", "Drive the rover", "Rover fahren"],
+               ["a", "light", "Light", "Licht"], ["x", "catch", "«Found!»", "«Gefunden!»"],
+               ["l3", "center", "Head back to the start direction", "Kopf zurück in die Startrichtung"],
+               ["select", "replay", "Replay (after the round)", "Wiederholung (nach der Runde)"],
+               ["start", "menu", "Pause menu · start the round", "Pause-Menü · Runde starten"], ["start_long", "exit", "Hold 1 s: leave the game", "1 s halten: Spiel verlassen"],
+               ["dpad", "head", "Head in steps · menus: choose", "Kopf in Schritten · Menüs: wählen"]],
+      "runner": [["ls", "look", "Look around", "Umschauen"], ["rs", "walk", "Walk", "Gehen"],
+                 ["r2", "run", "Run (hold)", "Rennen (halten)"],
+                 ["a", "lamp", "Lamp", "Lampe"], ["b", "crouch", "Crouch", "Ducken"],
+                 ["x", "stone", "Throw a stone (hunter: press the thing)", "Stein werfen (Jäger: Ding drücken)"], ["y", "crawl", "Crawl", "Kriechen"],
+                 ["l3", "center", "Look straight ahead", "Geradeaus schauen"],
+                 ["select", "replay", "Replay (after the round)", "Wiederholung (nach der Runde)"],
+                 ["start", "menu", "Pause menu · start the round", "Pause-Menü · Runde starten"], ["start_long", "exit", "Hold 1 s: leave the game", "1 s halten: Spiel verlassen"],
+                 ["dpad", "walk", "Walk · menus: choose", "Gehen · Menüs: wählen"]],
+      "menu": [["dpad", "nav", "Choose (left stick too)", "Wählen (auch linker Stick)"], ["a", "ok", "Select", "Auswählen"],
+               ["b", "back", "Back / close", "Zurück / schliessen"], ["l1", "area", "L1 / R1: control panel ⇄ dock", "L1 / R1: Bedienfeld ⇄ Leiste"],
+               ["start", "close", "Close the menu", "Menü schliessen"]]},
+    "roles": {"all": ["everything", "alles", "#c0ccdd"], "guard": ["guard (head)", "Wächter (Kopf)", "#ff9933"],
+              "runner": ["sneaker", "Schleicher", "#59e673"], "rover": ["rover", "Rover", "#59a6ff"]},
+    "rumble": {"caught": [1.0, 0.8, 500], "hit": [0.7, 0.5, 250], "alarm": [0.9, 0.6, 800], "seen": [0.25, 0.35, 120], "catch": [0.5, 0.7, 200]},
+    "long": {"start": 800, "select": 1500}
+  }/*END*/;
+  const IX = {a: 0, b: 1, x: 2, y: 3, l1: 4, r1: 5, l2: 6, r2: 7, select: 8, start: 9, l3: 10, r3: 11, up: 12, down: 13, left: 14, right: 15};
+  const SK = "mw-padset";                                  // dead zone, sensitivity, invert Y, swap sticks, vibration - per device
+  const S = {dead: 0.18, sens: 1, inv: false, swap: false, rumble: true};
+  try { Object.assign(S, JSON.parse(localStorage.getItem(SK) || "{}")); } catch (e) {}
+  const save = () => { try { localStorage.setItem(SK, JSON.stringify(S)); } catch (e) {} };
+  function pads() { try { return [...(navigator.getGamepads ? navigator.getGamepads() : [])].filter(g => g && g.connected); } catch (e) { return []; } }
+  const name = g => (g ? String(g.id).replace(/[(].*?[)]/g, "").trim().slice(0, 30) : "");
+  function dz(x, y) {
+    const d = Math.max(0.02, Math.min(0.5, +S.dead || 0.18)), l = Math.hypot(x, y);
+    if (l <= d) return [0, 0];
+    const k = Math.min(1, (l - d) / (1 - d)) / l; return [x * k, y * k];
+  }
+  // a reader for one controller: call read(gamepad, mode) every tick; then .head .move .orbit .dpad, .fired (actions), .btn(key)
+  function Pad(mode) {
+    const P = {mode: mode || "sim", cur: [], prev: [], fired: [], keys: [], head: [0, 0], move: [0, 0], orbit: [0, 0], dpad: [0, 0], downT: {}, longDone: {}, r1Used: false, g: null};
+    P.btn = k => !!P.cur[IX[k]];
+    P.val = k => { const b = P.g && P.g.buttons[IX[k]]; return b ? (b.value || (b.pressed ? 1 : 0)) : 0; };
+    P.read = function (g, md) {
+      if (md) P.mode = md;
+      P.g = g || null; P.prev = P.cur; P.fired = []; P.keys = [];
+      if (!g) { P.cur = []; P.head = P.move = P.orbit = P.dpad = [0, 0]; return P; }
+      P.cur = [...g.buttons].map(b => !!(b && (b.pressed || b.value > 0.5)));
+      let L = dz(g.axes[0] || 0, g.axes[1] || 0), R = dz(g.axes[2] || 0, g.axes[3] || 0);
+      if (S.swap) [L, R] = [R, L];
+      const k = Math.max(0.2, Math.min(3, +S.sens || 1)), iv = S.inv ? -1 : 1, now = Date.now();
+      const M = MAP.modes[P.mode] || [], has = key => M.some(e => e[0] === key);
+      const dn = i => P.cur[i] && !P.prev[i], up = i => !P.cur[i] && P.prev[i];
+      P.head = [L[0] * k, L[1] * k * iv];
+      P.dpad = [(P.cur[15] ? 1 : 0) - (P.cur[14] ? 1 : 0), (P.cur[13] ? 1 : 0) - (P.cur[12] ? 1 : 0)];
+      const r1 = P.cur[5] && has("r1rs");
+      if (dn(5)) { P.downT.r1 = now; P.r1Used = false; }
+      if (r1 && (R[0] || R[1])) P.r1Used = true;
+      P.orbit = r1 ? [R[0] * k, R[1] * k * iv] : [0, 0];
+      P.move = r1 ? [0, 0] : R;
+      ["a", "b", "x", "y", "l1", "l2", "r2", "l3", "r3", "up", "down", "left", "right"].forEach(key => { if (dn(IX[key])) P.keys.push(key); });
+      if (up(5) && !P.r1Used && now - (P.downT.r1 || 0) < 400) P.keys.push("r1");
+      ["start", "select"].forEach(key => {
+        const i = IX[key], ms = MAP.long[key];
+        if (dn(i)) { P.downT[key] = now; P.longDone[key] = false; }
+        if (P.cur[i] && !P.longDone[key] && now - (P.downT[key] || now) >= ms && has(key + "_long")) { P.longDone[key] = true; P.keys.push(key + "_long"); }
+        if (up(i) && !P.longDone[key]) P.keys.push(key);
+      });
+      P.keys.forEach(key => { const e = M.find(x => x[0] === key); if (e) P.fired.push(e[1]); });
+      return P;
+    };
+    return P;
+  }
+  // vibration (Gamepad API: vibrationActuator, or hapticActuators where only those exist); g = null: all controllers
+  function rumble(g, kind) {
+    if (!S.rumble) return false;
+    const r = MAP.rumble[kind] || MAP.rumble.hit; let ok = false;
+    (g ? [g] : pads()).forEach(p => {
+      try {
+        const va = p.vibrationActuator;
+        if (va && va.playEffect) { const q = va.playEffect("dual-rumble", {startDelay: 0, duration: r[2], strongMagnitude: r[0], weakMagnitude: r[1]}); if (q && q.catch) q.catch(() => {}); ok = true; }
+        else if (p.hapticActuators && p.hapticActuators[0] && p.hapticActuators[0].pulse) { p.hapticActuators[0].pulse(r[0], r[2]); ok = true; }
+      } catch (e) {}
+    });
+    return ok;
+  }
+  // the help: rows [key, text] of a mode (T = translation of the English text, de = take the German text)
+  function help(mode, T, de) { return (MAP.modes[mode] || []).map(e => [MAP.keys[e[0]] || e[0], de ? e[3] : (T ? T(e[2]) : e[2])]); }
+  function helpLine(mode, T, de, only) { return help(mode, T, de).filter((r, i) => !only || only.includes(MAP.modes[mode][i][1])).map(r => r[0] + " " + r[1]).join(" · "); }
+  function helpTable(mode, T, de) {
+    const tb = document.createElement("table"); tb.className = "mwpad-help";
+    help(mode, T, de).forEach(([k, v]) => { const tr = document.createElement("tr"), a = document.createElement("td"), b = document.createElement("td"); a.textContent = k; b.textContent = v; tr.append(a, b); tb.appendChild(tr); });
+    return tb;
+  }
+  // ONE crosshair: a red ring with a cross through it (simulator: gameshutter.gd draws the same)
+  const XH_CSS = sel => sel + "{position:absolute;pointer-events:none;border:3px solid #ff3b30;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 1px rgba(0,0,0,.55),inset 0 0 0 1px rgba(0,0,0,.55)}"
+    + sel + "::before," + sel + "::after{content:'';position:absolute;left:50%;top:50%;width:3px;height:calc(100% + 28px);background:#ff3b30;transform:translate(-50%,-50%);box-shadow:0 0 0 1px rgba(0,0,0,.4)}"
+    + sel + "::after{transform:translate(-50%,-50%) rotate(90deg)}";
+  // the mini-map: north up, the head in the middle, its field of view (yellow), the rover (green), me (white);
+  // on the rim: yellow = where the head looks, green = where the rover drives. d = {hx, hz, hy (deg), fov, rx, rz, ry (deg), me: [x, z]}
+  function drawMap(cv, d, span) {
+    if (!cv || !cv.getContext || !d) return;
+    const c = cv.getContext("2d"), W = cv.width, H = cv.height, R = Math.min(W, H) / 2 - 3, cx = W / 2, cy = H / 2, sc = R / ((span || 40) / 2);
+    const dir = deg => { const a = deg * Math.PI / 180; return [-Math.sin(a), -Math.cos(a)]; };
+    const at = (x, z) => [cx + (x - (d.hx || 0)) * sc, cy + (z - (d.hz || 0)) * sc];
+    c.clearRect(0, 0, W, H);
+    c.save(); c.beginPath(); c.arc(cx, cy, R, 0, 2 * Math.PI); c.fillStyle = "rgba(8,12,20,.72)"; c.fill(); c.clip();
+    const half = (d.fov || 66) / 2, n = 12;
+    c.beginPath(); c.moveTo(cx, cy);
+    for (let i = 0; i <= n; i++) { const v = dir((d.hy || 0) - half + 2 * half * i / n); c.lineTo(cx + v[0] * R * 0.95, cy + v[1] * R * 0.95); }
+    c.closePath(); c.fillStyle = "rgba(255,210,60,.28)"; c.fill();
+    if (d.rx != null) { const p = at(d.rx, d.rz), v = dir(d.ry || 0); c.save(); c.translate(p[0], p[1]); c.rotate(Math.atan2(v[1], v[0]) + Math.PI / 2);
+      c.beginPath(); c.moveTo(0, -7); c.lineTo(5, 5); c.lineTo(-5, 5); c.closePath(); c.fillStyle = "#59e673"; c.fill(); c.restore(); }
+    if (d.me) { const p = at(d.me[0], d.me[1]); c.beginPath(); c.arc(p[0], p[1], 4, 0, 2 * Math.PI); c.fillStyle = "#fff"; c.fill(); }
+    c.beginPath(); c.arc(cx, cy, 4, 0, 2 * Math.PI); c.fillStyle = "#ff9933"; c.fill();
+    c.restore();
+    c.lineWidth = 2; c.strokeStyle = "rgba(255,255,255,.35)"; c.beginPath(); c.arc(cx, cy, R, 0, 2 * Math.PI); c.stroke();
+    const mark = (deg, col) => { const v = dir(deg), a = Math.atan2(v[1], v[0]); c.save(); c.translate(cx + v[0] * R, cy + v[1] * R); c.rotate(a + Math.PI / 2);
+      c.beginPath(); c.moveTo(0, -1); c.lineTo(6, 9); c.lineTo(-6, 9); c.closePath(); c.fillStyle = col; c.fill(); c.restore(); };
+    mark(d.hy || 0, "#ffd34d"); if (d.ry != null) mark(d.ry, "#59e673");
+    c.fillStyle = "rgba(255,255,255,.8)"; c.font = "bold 10px system-ui,sans-serif"; c.textAlign = "center"; c.fillText("N", cx, cy - R + 12);
+  }
+  // the settings (one place per device: dead zone, sensitivity, invert Y, swap sticks, vibration)
+  function settingsUI(el, T, de) {
+    const tx = (en, dt) => (de ? dt : (T ? T(en) : en));
+    const box = document.createElement("div"); box.className = "mwpad-set";
+    const row = (lb, inp) => { const l = document.createElement("label"); l.style.cssText = "display:flex;align-items:center;gap:8px;margin:4px 0"; const s = document.createElement("span"); s.textContent = lb; s.style.flex = "1"; l.append(s, inp); box.appendChild(l); };
+    const rng = (k, min, max, step) => { const i = document.createElement("input"); i.type = "range"; i.min = min; i.max = max; i.step = step; i.value = S[k]; i.style.width = "120px"; i.oninput = () => { S[k] = parseFloat(i.value); save(); }; return i; };
+    const chk = k => { const i = document.createElement("input"); i.type = "checkbox"; i.checked = !!S[k]; i.onchange = () => { S[k] = i.checked; save(); }; return i; };
+    row(tx("Dead zone", "Totzone"), rng("dead", 0.02, 0.5, 0.01)); row(tx("Sensitivity", "Empfindlichkeit"), rng("sens", 0.3, 2.5, 0.1));
+    row(tx("Invert Y (look)", "Y umkehren (schauen)"), chk("inv")); row(tx("Swap the sticks", "Sticks tauschen"), chk("swap"));
+    row(tx("Vibration", "Vibration"), chk("rumble"));
+    box.addEventListener("click", e => e.stopPropagation());
+    el.appendChild(box); return box;
+  }
+  return {MAP, IX, S, save, pads, name, Pad, rumble, help, helpLine, helpTable, XH_CSS, drawMap, settingsUI};
+})();
+"""
+
+
+def _padmap_inject(page):
+    """the script before the first script of the page (538, 539 and the simulator part of 470 use MWPad)"""
+    i = page.find("<script")
+    return page if i < 0 else page[:i] + "<script>" + PADMAP_JS + "</script>" + page[i:]
+
+
+WEB_PAGE = _padmap_inject(WEB_PAGE)
+SIM_PAGE = _padmap_inject(SIM_PAGE)
+WEB_UI_LOCAL.add("mw-padset")                             # per device: the controller settings of the tablet are not those of the PC
+
+
+def padmap_selftest():
+    """the mapping of the simulator (simulator3d/scripts/padmap.gd) is the same as PADMAP_JS; MAP is valid JSON"""
+    m = re.search(r"/\*MAP\*/(.*?)/\*END\*/", PADMAP_JS, re.S)
+    assert m, "MAP not found in PADMAP_JS"
+    mp = json.loads(m.group(1))
+    for k in ("sim", "view", "guard", "seek", "runner", "menu"):
+        assert mp["modes"].get(k), f"mode {k} missing"
+        for e in mp["modes"][k]:
+            assert len(e) == 4 and e[0] in mp["keys"], f"bad entry {e}"
+    assert "MWPad" in WEB_PAGE and "MWPad" in SIM_PAGE, "MWPad not in the pages"
+    gd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "simulator3d", "scripts", "padmap.gd")
+    if not os.path.exists(gd):
+        return f"{len(mp['modes'])} modes (simulator folder not here)"
+    t = open(gd, encoding="utf-8").read()
+    m2 = re.search(r'# <padmap-js>\nconst JS := r"""(.*?)"""\n# </padmap-js>', t, re.S)
+    assert m2, "padmap.gd: JS not found"
+    assert m2.group(1) == PADMAP_JS, "padmap.gd (simulator) and PADMAP_JS (part 542) differ - copy the same text into both"
+    return f"{len(mp['modes'])} modes, same as the simulator"
+
+
+SELFTEST_EXTRA.append(("One controller mapping (MWPad = simulator padmap.gd)", padmap_selftest))
 # ----------------------------------------------------------------------------
 # Spielkonzept of Daniel (30.10.2026), «Wächter-Werkzeuge mit Kosten»: in the game of the 3D simulator the guard has a budget
 # of energy per round (by the difficulty) and every tool costs some and has a cooldown (simulator gametools.gd):
@@ -79022,6 +79284,81 @@ for _k, (_de, _fr, _it, _rm) in _HX_BILDLADE.items():
     DE.setdefault(_k, _de)
     for _l, _v in (("fr", _fr), ("it", _it), ("rm", _rm)):
         TRX[_l].setdefault(_k, _v)
+_HX_pad2 = {
+    'Turn / tilt the head of MoveEye': ('Kopf von MoveEye drehen / neigen', 'Tourner / incliner la tête de MoveEye', 'Ruotare / inclinare la testa di MoveEye', 'Volver / sbassar il chau da MoveEye'),
+    'Drive the rover (without rover: move the view)': ('Rover fahren (ohne Rover: Ansicht bewegen)', 'Conduire le rover (sans rover : déplacer la vue)', 'Guidare il rover (senza rover: muovere la vista)', 'Manischar il rover (senza rover: muventar la vista)'),
+    'Hold R1: turn the view': ('R1 halten: Ansicht drehen', 'Maintenir R1 : tourner la vue', 'Tenere R1: ruotare la vista', 'Tegnair R1: volver la vista'),
+    'Shutter in a game round (otherwise zoom in)': ('Auslöser in einer Spielrunde (sonst hineinzoomen)', 'Déclencheur pendant une manche (sinon zoom avant)', 'Scatto in una manche (altrimenti zoom avanti)', 'Releschader en ina runda da gieu (uschiglio zoom enavant)'),
+    'Zoom out': ('Herauszoomen', 'Zoom arrière', 'Zoom indietro', 'Zoom enavos'),
+    'Tap R1: zoom in': ('R1 tippen: hineinzoomen', 'Toucher R1 : zoom avant', 'Premere R1: zoom avanti', 'Tutgar R1: zoom enavant'),
+    'Light on / off': ('Licht ein / aus', 'Lumière marche / arrêt', 'Luce accesa / spenta', 'Glisch en / ora'),
+    'IR light on / off': ('IR-Licht ein / aus', 'Lumière IR marche / arrêt', 'Luce IR accesa / spenta', 'Glisch IR en / ora'),
+    'Photo': ('Foto', 'Photo', 'Foto', 'Foto'),
+    'Follow on / off': ('Folgen ein / aus', 'Suivre marche / arrêt', 'Seguire acceso / spento', 'Suandar en / ora'),
+    'Head to the centre': ('Kopf zur Mitte', 'Tête au centre', 'Testa al centro', 'Chau al center'),
+    'Next view': ('Nächste Ansicht', 'Vue suivante', 'Vista successiva', 'Proxima vista'),
+    'Swap pictures / views': ('Bilder / Ansichten tauschen', 'Échanger images / vues', 'Scambiare immagini / viste', 'Barattar maletgs / vistas'),
+    'Menu (control panel)': ('Menü (Bedienfeld)', 'Menu (panneau de commande)', 'Menu (pannello di comando)', 'Menu (panela da manipulaziun)'),
+    'Hold 1 s: leave': ('1 s halten: beenden', 'Maintenir 1 s : quitter', 'Tenere 1 s: uscire', 'Tegnair 1 s: terminar'),
+    'Head in small steps': ('Kopf in kleinen Schritten', 'Tête par petits pas', 'Testa a piccoli passi', 'Chau en pitschens pass'),
+    'Hold L2 + ✚ ↑↓: pole longer / shorter': ('L2 halten + ✚ ↑↓: Stange länger / kürzer', 'Maintenir L2 + ✚ ↑↓ : mât plus long / plus court', 'Tenere L2 + ✚ ↑↓: asta più lunga / più corta', 'Tegnair L2 + ✚ ↑↓: pertga pli lunga / pli curta'),
+    'Hold 1.5 s: emergency stop of the servos': ('1,5 s halten: Not-Aus der Servos', 'Maintenir 1,5 s : arrêt d’urgence des servos', 'Tenere 1,5 s: arresto d’emergenza dei servo', 'Tegnair 1,5 s: stop d’urgenza dals servos'),
+    'Menu (the bar)': ('Menü (die Leiste)', 'Menu (la barre)', 'Menu (la barra)', 'Menu (la trav)'),
+    'Choose a button of the bar (A = press, B = back)': ('Knopf der Leiste wählen (A = drücken, B = zurück)', 'Choisir un bouton de la barre (A = appuyer, B = retour)', 'Scegliere un pulsante della barra (A = premere, B = indietro)', 'Tscherner in buttun da la trav (A = smatgar, B = enavos)'),
+    'Turn / tilt the head (the camera)': ('Kopf (die Kamera) drehen / neigen', 'Tourner / incliner la tête (la caméra)', 'Ruotare / inclinare la testa (la telecamera)', 'Volver / sbassar il chau (la camera)'),
+    'Aim finely (slow)': ('Fein zielen (langsam)', 'Viser finement (lent)', 'Mirare con precisione (lento)', 'Mirar fin (plaun)'),
+    'Shutter: a shot at the middle of the picture': ('Auslöser: Schuss auf die Bildmitte', 'Déclencheur : un tir au centre de l’image', 'Scatto: un colpo al centro dell’immagine', 'Releschader: in sit sin il center dal maletg'),
+    'Zoom (tool)': ('Zoom (Werkzeug)', 'Zoom (outil)', 'Zoom (strumento)', 'Zoom (utensil)'),
+    'Light': ('Licht', 'Lumière', 'Luce', 'Glisch'),
+    'Scan (tool)': ('Scan (Werkzeug)', 'Scan (outil)', 'Scansione (strumento)', 'Scan (utensil)'),
+    '«Caught!»': ('«Erwischt!»', '« Attrapé ! »', '«Preso!»', '«Tschiffà!»'),
+    'Siren (tool)': ('Sirene (Werkzeug)', 'Sirène (outil)', 'Sirena (strumento)', 'Sirena (utensil)'),
+    'Head back to the start direction': ('Kopf zurück in die Startrichtung', 'Tête vers la direction de départ', 'Testa di nuovo nella direzione di partenza', 'Chau enavos en la direcziun da partenza'),
+    'Replay (after the round)': ('Wiederholung (nach der Runde)', 'Ralenti (après la manche)', 'Replay (dopo la manche)', 'Repetiziun (suenter la runda)'),
+    'Pause menu · start the round': ('Pause-Menü · Runde starten', 'Menu pause · lancer la manche', 'Menu pausa · avviare la manche', 'Menu da pausa · cumenzar la runda'),
+    'Hold 1 s: leave the game': ('1 s halten: Spiel verlassen', 'Maintenir 1 s : quitter le jeu', 'Tenere 1 s: lasciare il gioco', 'Tegnair 1 s: bandunar il gieu'),
+    'Head in steps · menus: choose': ('Kopf in Schritten · Menüs: wählen', 'Tête par pas · menus : choisir', 'Testa a passi · menu: scegliere', 'Chau en pass · menus: tscherner'),
+    'Drive the rover': ('Rover fahren', 'Conduire le rover', 'Guidare il rover', 'Manischar il rover'),
+    '«Found!»': ('«Gefunden!»', '« Trouvé ! »', '«Trovato!»', '«Chattà!»'),
+    'Look around': ('Umschauen', 'Regarder autour', 'Guardarsi intorno', 'Guardar enturn'),
+    'Walk': ('Gehen', 'Marcher', 'Camminare', 'Ir'),
+    'Run (hold)': ('Rennen (halten)', 'Courir (maintenir)', 'Correre (tenere)', 'Currer (tegnair)'),
+    'Lamp': ('Lampe', 'Lampe', 'Lampada', 'Lampa'),
+    'Crouch': ('Ducken', 'S’accroupir', 'Accovacciarsi', 'Sa bassar'),
+    'Throw a stone (hunter: press the thing)': ('Stein werfen (Jäger: Ding drücken)', 'Lancer une pierre (chasseur : appuyer sur l’objet)', 'Lanciare un sasso (cacciatore: premere l’oggetto)', 'Bittar in crap (chatschader: smatgar la chaussa)'),
+    'Crawl': ('Kriechen', 'Ramper', 'Strisciare', 'Ruschnar'),
+    'Look straight ahead': ('Geradeaus schauen', 'Regarder tout droit', 'Guardare dritto', 'Guardar dretg ora'),
+    'Walk · menus: choose': ('Gehen · Menüs: wählen', 'Marcher · menus : choisir', 'Camminare · menu: scegliere', 'Ir · menus: tscherner'),
+    'Choose (left stick too)': ('Wählen (auch linker Stick)', 'Choisir (aussi stick gauche)', 'Scegliere (anche stick sinistro)', 'Tscherner (er stick sanester)'),
+    'Select': ('Auswählen', 'Sélectionner', 'Selezionare', 'Tscherner'),
+    'Back / close': ('Zurück / schliessen', 'Retour / fermer', 'Indietro / chiudere', 'Enavos / serrar'),
+    'L1 / R1: control panel ⇄ dock': ('L1 / R1: Bedienfeld ⇄ Leiste', 'L1 / R1 : panneau ⇄ barre', 'L1 / R1: pannello ⇄ barra', 'L1 / R1: panela ⇄ trav'),
+    'Close the menu': ('Menü schliessen', 'Fermer le menu', 'Chiudere il menu', 'Serrar il menu'),
+    'everything': ('alles', 'tout', 'tutto', 'tut'),
+    'guard (head)': ('Wächter (Kopf)', 'gardien (tête)', 'guardiano (testa)', 'guardian (chau)'),
+    'sneaker': ('Schleicher', 'furtif', 'furtivo', 'sfugider'),
+    'rover': ('Rover', 'rover', 'rover', 'rover'),
+    # 538 / 470 (Controller-Ansicht, simulator page)
+    'Controllers': ('Controller', 'Manettes', 'Controller', 'Controllers'),
+    'Head': ('Kopf', 'Tête', 'Testa', 'Chau'),
+    'Rover': ('Rover', 'Rover', 'Rover', 'Rover'),
+    'Settings': ('Einstellungen', 'Réglages', 'Impostazioni', 'Parameters'),
+    'Dead zone': ('Totzone', 'Zone morte', 'Zona morta', 'Zona morta'),
+    'Sensitivity': ('Empfindlichkeit', 'Sensibilité', 'Sensibilità', 'Sensibilitad'),
+    'Invert Y (look)': ('Y umkehren (schauen)', 'Inverser Y (regard)', 'Invertire Y (sguardo)', 'Invertir Y (guardar)'),
+    'Swap the sticks': ('Sticks tauschen', 'Échanger les sticks', 'Scambiare gli stick', 'Barattar ils sticks'),
+    'Vibration': ('Vibration', 'Vibration', 'Vibrazione', 'Vibraziun'),
+    'Start = menu of the simulator, left stick = head, right stick = rover': (
+        'Start = Menü des Simulators, linker Stick = Kopf, rechter Stick = Rover', 'Start = menu du simulateur, stick gauche = tête, stick droit = rover',
+        'Start = menu del simulatore, stick sinistro = testa, stick destro = rover', 'Start = menu dal simulatur, stick sanester = chau, stick dretg = rover'),
+}
+for _k, _v in _HX_pad2.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+# the German texts into the main page (I18N.de, only where it has no own text yet - like 628 for 538)
+WEB_PAGE = WEB_PAGE.replace('<style id="pv-css">', '<script>try { const D = ' + json.dumps({_k: _v[0] for _k, _v in _HX_pad2.items()}, ensure_ascii=False)
+                            + '; for (const k in D) if (!(k in I18N.de)) I18N.de[k] = D[k]; } catch (e) {}</script><style id="pv-css">', 1)
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

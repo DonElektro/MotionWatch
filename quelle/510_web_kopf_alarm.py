@@ -477,6 +477,7 @@ ALERT_JS = r"""
     const label = a.kind === "person" ? at("Person detected") + (a.count ? " (" + a.count + ")" : "")
       : (a.kind === "warm" ? at("Warm body (thermal camera)") : (a.kind === "noise" ? at("Noise (microphone)") + (a.db != null ? " " + a.db + " dB" : "") : at("Pre-alarm: movement")));
     flash(label);
+    if (a.kind !== "prealarm" && window.MWPad) MWPad.rumble(null, "alarm");   // 2.98.41: a game controller feels the alarm (542)
     try { toast("🔔 " + label + " · " + a.time); } catch (e) {}
     if (muted()) return;
     if (a.kind === "prealarm") { if (!S.pre || Date.now() - lastPre < 8000) return; lastPre = Date.now(); }

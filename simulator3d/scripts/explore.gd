@@ -1,9 +1,9 @@
 extends Control
 ## 3D-3.55: «Erkunden» - drive the rover (the mover) through the world and look around, to try out and develop the
 ## simulation. Works with the keyboard (W A S D or the arrows, Shift = faster), the mouse (green stick, right button
-## drag = look round, wheel = distance), touch (green stick) and a game controller, also by Bluetooth (left stick = drive,
-## right stick = look round, RT / LT = gas / back, A = faster, Y = view, B = end, Start = explore on / off;
-## 3D-3.96: L1 + right stick or the D-pad = the camera head of MoveEye, LT + D-pad up / down = the pole).
+## drag = look round, wheel = distance), touch (green stick) and a game controller, also by Bluetooth.
+## 3D-4.13: the controller follows the ONE mapping of padmap.gd (right stick = drive, R1 + right stick = look round,
+## left stick = the head of MoveEye, R3 = view, Select = live picture, Start held = end); here only the device symbol.
 ## A symbol at the top shows what steers right now: mouse, touch, controller or keyboard.
 
 var main
@@ -144,32 +144,8 @@ func _input(ev: InputEvent) -> void:
 	if _game_pad():
 		return                                           # 3D-4.x: the controller belongs to the player at the PC (localplay.gd)
 	if ev is InputEventJoypadButton and ev.pressed:
-		if ev.button_index == JOY_BUTTON_START:
-			set_on(not on)
-			get_viewport().set_input_as_handled()
-			return
-		if not on:
-			return
-		_set_device("pad")
-		match ev.button_index:
-			JOY_BUTTON_X:
-				spectator(not main.spectate)
-			JOY_BUTTON_DPAD_RIGHT:
-				if _lt_held():                                # 3D-3.96: LT + → (→ alone turns the head)
-					set_invite(not invite.visible)
-			JOY_BUTTON_B:
-				set_on(false)
-			JOY_BUTTON_Y:
-				next_view()
-			JOY_BUTTON_BACK:
-				main.show_panel(not main.ui_root.visible)
-			JOY_BUTTON_DPAD_UP:
-				if _lt_held():
-					main.set_mast(main.mast_h + 0.1)    # 3D-3.57: the pole longer / shorter (3D-3.96: with LT held)
-			JOY_BUTTON_DPAD_DOWN:
-				if _lt_held():
-					main.set_mast(main.mast_h - 0.1)
-		get_viewport().set_input_as_handled()
+		if on:
+			_set_device("pad")                           # 3D-4.13: the keys themselves: padmap.gd
 		return
 	if not on:
 		return
@@ -244,29 +220,12 @@ func remote_pad(ax: Array, bt: Array, nm: String) -> void:
 	"""a controller at the browser (MoveEye page, e.g. a PS5 controller at the PC while the simulator runs in a VM).
 	Standard mapping: axes 0/1 left stick, 2/3 right stick; buttons 0 A/✕, 1 B/○, 3 Y/△, 6 LT/L2, 7 RT/R2, 8 Back/Create,
 	9 Start/Options, 12 / 13 pad up / down"""
-	var old: Array = rp_bt
 	rp_ax = ax
 	rp_bt = bt
 	rp_t = main.now()
 	rp_name = nm
-	var pressed := func(i: int) -> bool: return i < bt.size() and int(bt[i]) == 1 and not (i < old.size() and int(old[i]) == 1)
-	if _game_pad():
-		return                                           # 3D-4.x: in a game at the PC the pad steers that player (localplay.gd reads rp_ax / rp_bt)
-	if pressed.call(9):
-		set_on(not on)
-	if not on:
-		return
-	_set_device("pad")
-	if pressed.call(1):
-		set_on(false)
-	elif pressed.call(3):
-		next_view()
-	elif pressed.call(8):
-		main.show_panel(not main.ui_root.visible)
-	if pressed.call(12) and _lt_held():                    # 3D-3.96: LT / L2 + up / down = pole (up / down alone turn the head)
-		main.set_mast(main.mast_h + 0.1)
-	if pressed.call(13) and _lt_held():
-		main.set_mast(main.mast_h - 0.1)
+	if on and not _game_pad():
+		_set_device("pad")                               # 3D-4.13: the keys and sticks: padmap.gd (device WEB)
 
 
 func _game_pad() -> bool:
@@ -286,48 +245,6 @@ func _btn(gb: int, bi: int) -> bool:
 
 func _lt_held() -> bool:
 	return _raw_axis(JOY_AXIS_TRIGGER_LEFT) > 0.5
-
-
-var _head_t := 0.0
-var _head_ax := 0
-
-
-func _head_tick() -> bool:
-	"""3D-3.96 (wish of Daniel): the camera head of MoveEye with the controller - L1 / LB held + right stick, or the D-pad
-	(left / right = turn, up / down = tilt; with LT / L2 held up / down move the pole). Returns true while L1 is held."""
-	var t: float = main.now()
-	var l1 := _btn(JOY_BUTTON_LEFT_SHOULDER, 4)
-	var dx := 0.0
-	var dy := 0.0
-	if l1:
-		dx = _axis(JOY_AXIS_RIGHT_X)
-		dy = _axis(JOY_AXIS_RIGHT_Y)
-	if _btn(JOY_BUTTON_DPAD_LEFT, 14):
-		dx = -1.0
-	elif _btn(JOY_BUTTON_DPAD_RIGHT, 15):
-		dx = 1.0
-	if not _lt_held():
-		if _btn(JOY_BUTTON_DPAD_UP, 12):
-			dy = -1.0
-		elif _btn(JOY_BUTTON_DPAD_DOWN, 13):
-			dy = 1.0
-	if (absf(dx) > 0.0 or absf(dy) > 0.0) and t - _head_t > 0.12:
-		_head_t = t
-		_head_ax = 1 - _head_ax if absf(dx) > 0.0 and absf(dy) > 0.0 else (0 if absf(dx) > 0.0 else 1)   # both: take turns
-		if _head_ax == 0:
-			main.mw_look("right" if dx > 0.0 else "left", 0.6 + 2.0 * absf(dx))
-		else:
-			main.mw_look("down" if dy > 0.0 else "up", 0.6 + 2.0 * absf(dy))
-		_set_device("pad")
-	if not on:                                               # without exploring the D-pad pole buttons work here
-		if _lt_held() and t - _head_t > 0.25:
-			if _btn(JOY_BUTTON_DPAD_UP, 12):
-				_head_t = t
-				main.set_mast(main.mast_h + 0.1)
-			elif _btn(JOY_BUTTON_DPAD_DOWN, 13):
-				_head_t = t
-				main.set_mast(main.mast_h - 0.1)
-	return l1
 
 
 func _rp_on() -> bool:
@@ -368,21 +285,13 @@ func _axis(a: int) -> float:
 
 
 func stick_raw(st: int) -> Vector2:
-	return Vector2(_raw_axis(JOY_AXIS_LEFT_X if st == 0 else JOY_AXIS_RIGHT_X), _raw_axis(JOY_AXIS_LEFT_Y if st == 0 else JOY_AXIS_RIGHT_Y))
+	"""3D-4.13: the strongest controller (padmap.gd keeps the sticks of every controller)"""
+	return main.padmap.stick_raw(st, -1) if main.padmap != null else Vector2.ZERO
 
 
 func stick(st: int) -> Vector2:
-	if Input.get_connected_joypads().is_empty() and not _rp_on():
-		return Vector2.ZERO                                  # no controller (any more): no phantom input from the rest position
-	var r := stick_raw(st)
-	var c := Vector2(float(main.pad_center[st * 2]), float(main.pad_center[st * 2 + 1])) if main.pad_center.size() >= 4 else Vector2.ZERO
-	var v := r - c
-	var dead: float = clampf(float(main.pad_dead), 0.02, 0.5)
-	var l := v.length()
-	if l <= dead:
-		return Vector2.ZERO
-	var k := clampf((l - dead) / maxf(0.05, 1.0 - dead - c.length() * 0.5), 0.0, 1.0)
-	return v / l * k
+	"""the stick with the rest position taken off and the round dead zone (3D-3.97, now in padmap.gd)"""
+	return main.padmap.stick_clean(st, -1) if main.padmap != null else Vector2.ZERO
 
 
 var _rest := [{"v": Vector2.ZERO, "t": 0.0}, {"v": Vector2.ZERO, "t": 0.0}]
@@ -472,28 +381,19 @@ func command() -> Vector2:
 			k.y -= 1.0
 	if main.now() < test_until:
 		k += test_drive
-	var gx := _axis(JOY_AXIS_LEFT_X)
-	var gy := _axis(JOY_AXIS_LEFT_Y)
-	var gas := _axis(JOY_AXIS_TRIGGER_RIGHT) - _axis(JOY_AXIS_TRIGGER_LEFT)
-	if abs(gx) > 0.0 or abs(gy) > 0.0 or abs(gas) > 0.0:
-		k.x += clampf(-gy + gas, -1.0, 1.0)
-		k.y += gx
-		_set_device("pad")
+	if main.padmap != null and main.padmap.drive_cmd() != Vector2.ZERO:
+		_set_device("pad")                               # 3D-4.13: the right stick drives (rover_pad.gd adds padmap.drive_cmd())
 	return k.limit_length(1.0) if k.length() > 1.0 else k
 
 
 func _process(dt: float) -> void:
 	_cal_tick()                                              # 3D-3.96: calibration of the sticks
-	var l1 := false if _game_pad() else _head_tick()         # 3D-3.96: the head of MoveEye with the controller
 	if not on:
 		return
-	turbo = Input.is_key_pressed(KEY_SHIFT) or _pad_btn(JOY_BUTTON_A)
+	turbo = Input.is_key_pressed(KEY_SHIFT)
 	main.mover_max = speed * (2.2 if turbo else 1.0)
-	var rx := 0.0 if l1 else _axis(JOY_AXIS_RIGHT_X)      # right stick: look round (with L1 held: the head of MoveEye)
-	var ry := 0.0 if l1 else _axis(JOY_AXIS_RIGHT_Y)
-	if abs(rx) > 0.0 or abs(ry) > 0.0:
-		orbit -= rx * dt * 2.2
-		pitch = clampf(pitch + ry * dt * 1.2, 0.05, 1.3)
+	var pm = main.padmap                                  # 3D-4.13: R1 + right stick turns the view (padmap.gd -> padview._look)
+	if pm != null and pm.btn("r1") and pm.move() != Vector2.ZERO:
 		_set_device("pad")
 	elif not Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) and main.pad_on and view == "chase":
 		orbit = lerp_angle(orbit, 0.0, clampf(dt * 0.8, 0.0, 1.0))   # driving: the view swings back behind the rover
@@ -582,7 +482,7 @@ func _blocked(a: Vector3, b: Vector3) -> bool:
 func _help() -> String:
 	match device:
 		"pad":
-			return "Linker Stick fahren · rechter Stick umschauen · L1 + rechter Stick / Steuerkreuz = Kopf von MoveEye · A schnell · Y Ansicht · X Beobachter · LT + ↑↓ Stange, LT + → Mitspieler · B Ende"
+			return main.padmap.help_line("sim", ["drive", "orbit", "head", "view", "swap", "exit", "pole", "menu"]) if main.padmap != null else ""
 		"touch":
 			return "Grüner Stick unten rechts fahren · Ansicht und Ende oben im Feld"
 		"mouse":

@@ -77,8 +77,7 @@ SHUT_JS = r"""
   const T = x => (typeof t === "function" ? t(x) : x);
   const E = (tag, id) => { const x = document.createElement(tag); if (id) x.id = id; return x; };
   const css = E("style"); css.textContent =
-    "#msh-x{position:absolute;z-index:58;pointer-events:none;border:3px solid #ff3b30;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 1px rgba(0,0,0,.55),inset 0 0 0 1px rgba(0,0,0,.55)}"
-    + "#msh-x::before,#msh-x::after{content:'';position:absolute;left:50%;top:50%;width:3px;height:calc(100% + 28px);background:#ff3b30;transform:translate(-50%,-50%)}#msh-x::after{transform:translate(-50%,-50%) rotate(90deg)}"
+    (window.MWPad ? MWPad.XH_CSS("#msh-x") : "") + "#msh-x{z-index:58}"     // 2.98.41: the one crosshair (542)
     + "#msh-x.hard::before,#msh-x.hard::after{height:calc(100% + 40px)}"
     + "#msh-b{position:absolute;z-index:62;border-radius:50%;padding:0;margin:0;border:3px solid #fff;color:#fff;font-size:30px;line-height:1;display:flex;align-items:center;justify-content:center;"
     + "background:radial-gradient(circle,#e5383b 0 60%,transparent 61%),conic-gradient(#ffd34d var(--p,0%),rgba(255,255,255,.28) 0);box-shadow:0 4px 18px rgba(0,0,0,.55);touch-action:manipulation;cursor:pointer;-webkit-tap-highlight-color:transparent}"
@@ -111,6 +110,7 @@ SHUT_JS = r"""
       else if (r.shutter && !r.hit) m = "✗ " + T("Missed - false alarm") + " (" + (r.pts || -50) + ") · " + T("shutter locked 3 s");
       else m = r.text || "";
       if (typeof toast === "function" && m) toast(m);
+      if (window.MWPad && r.shutter) MWPad.rumble(null, r.hit && r.pts > 0 ? "hit" : "seen");   // 2.98.41: the controller feels the shot
       paint();
     }).catch(() => { SH.busy = false; });
     return true;

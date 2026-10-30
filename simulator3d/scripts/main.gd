@@ -2571,11 +2571,14 @@ func _pad_test() -> void:
 func _no_pad_ui_nav() -> void:
 	"""3D-3.97: Godot moves the focus of the menus with the sticks by itself - a drifting stick then jumps through the
 	controls. The sticks only steer what the simulator asks for (explore.gd); the D-pad still works in menus."""
-	for act in ["ui_left", "ui_right", "ui_up", "ui_down", "ui_focus_next", "ui_focus_prev"]:
+	# 3D-4.13: the buttons of the controller too - A would else press the last clicked button while it switches the light;
+	# the menus with the controller come from padmap.gd (Start = menu, ✚ / left stick, A = select, B = back)
+	for act in ["ui_left", "ui_right", "ui_up", "ui_down", "ui_focus_next", "ui_focus_prev", "ui_accept", "ui_select", "ui_cancel",
+			"ui_page_up", "ui_page_down", "ui_home", "ui_end"]:
 		if not InputMap.has_action(act):
 			continue
 		for ev in InputMap.action_get_events(act):
-			if ev is InputEventJoypadMotion:
+			if ev is InputEventJoypadMotion or ev is InputEventJoypadButton:
 				InputMap.action_erase_event(act, ev)
 
 
@@ -3082,7 +3085,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Dein Plat
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
 		["Kamerabild", "lens", "👁", ["", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
 		["Sensoren", "bell", "🔔", [""]],
-		["Mover", "track", "🚜", ["", "Patrouille"]],
+		["Mover", "track", "🚜", ["", "Patrouille", "Controller"]],
 		["Spiel", "pad", "🎮", ["", "Assistent"]],
 		["Wildbeobachtung", "target", "🎯", [""]],
 		["Testlauf", "check", "✅", [""]],
@@ -3316,10 +3319,15 @@ func _register_controls() -> void:
 			{"options": [["mw", "die echte Erkennung von MoveEye"], ["sim", "der Wächter des Simulators (geht ohne Pi)"]]})
 	add_control("button", "rover_place", "📍 Rover versetzen – danach in die Welt klicken (beim Erkunden: Strg + Klick)", null, func(): place_kind = "rover", "Mover")
 	add_control("slider", "mast_h", "Stangenlänge (Höhe des Kamerakopfs; beim Erkunden Bild auf / ab oder Steuerkreuz)", func(): return mast_h, func(v): set_mast(float(v)), "Mover", {"min": 0.4, "max": 4.0, "step": 0.1, "unit": "m"})
-	add_control("button", "pad_test", "🎮 Controller testen (zeigt Stick roh und nach der Drift-Korrektur)", null, func(): _pad_test(), "Mover")
-	add_control("toggle", "pad_auto", "Stick-Drift selbst lernen (ein Stick, der 3 s genau gleich steht, gilt als Ruhelage)", func(): return pad_auto, func(v): pad_auto = v; _settings_dirty = true, "Mover")
-	add_control("button", "pad_cal", "🎮 Controller kalibrieren (gegen Stick-Drift: Sticks 2 s nicht berühren)", null, func(): start_info = explore.calibrate() if explore != null else "", "Mover")
-	add_control("slider", "pad_dead", "Totzone der Sticks (höher = weniger Drift, aber träger)", func(): return pad_dead, func(v): pad_dead = v; _settings_dirty = true, "Mover", {"min": 0.02, "max": 0.5, "step": 0.01})
+	add_control("button", "pad_roles", "🎮 Controller zuteilen (mehrere Controller: Wächter, Schleicher, Rover)", null, func(): padmap.open_roles(), "Mover", {"sub": "Controller"})
+	add_control("button", "pad_test", "🎮 Controller testen (zeigt Stick roh und nach der Drift-Korrektur)", null, func(): _pad_test(), "Mover", {"sub": "Controller"})
+	add_control("toggle", "pad_auto", "Stick-Drift selbst lernen (ein Stick, der 3 s genau gleich steht, gilt als Ruhelage)", func(): return pad_auto, func(v): pad_auto = v; _settings_dirty = true, "Mover", {"sub": "Controller"})
+	add_control("button", "pad_cal", "🎮 Controller kalibrieren (gegen Stick-Drift: Sticks 2 s nicht berühren)", null, func(): start_info = explore.calibrate() if explore != null else "", "Mover", {"sub": "Controller"})
+	add_control("slider", "pad_dead", "Totzone der Sticks (höher = weniger Drift, aber träger)", func(): return pad_dead, func(v): pad_dead = v; _settings_dirty = true, "Mover", {"min": 0.02, "max": 0.5, "step": 0.01, "sub": "Controller"})
+	add_control("slider", "pad_sens", "Empfindlichkeit von Kopf und Ansicht (Stick)", func(): return pad_sens, func(v): pad_sens = float(v), "Mover", {"min": 0.3, "max": 2.5, "step": 0.1, "sub": "Controller"})
+	add_control("toggle", "pad_inv_y", "Y umkehren (Stick hoch = Kopf / Blick runter)", func(): return pad_inv_y, func(v): pad_inv_y = bool(v), "Mover", {"sub": "Controller"})
+	add_control("toggle", "pad_swap", "Sticks tauschen (links Rover / gehen, rechts Kopf / schauen)", func(): return pad_swap, func(v): pad_swap = bool(v), "Mover", {"sub": "Controller"})
+	add_control("toggle", "pad_rumble", "Vibration (erwischt, Treffer, Alarm, die Kamera sieht dich)", func(): return pad_rumble, func(v): pad_rumble = bool(v), "Mover", {"sub": "Controller"})
 	add_control("slider", "explore_speed", "Tempo beim Erkunden (Shift / A = schneller)", func(): return explore.speed if explore != null else 1.6, func(v): if explore != null: explore.speed = v, "Mover", {"min": 0.5, "max": 6.0, "step": 0.1, "unit": "m/s"})
 	add_control("slider", "mover_max", "Höchstgeschwindigkeit des Movers", func(): return mover_max, func(v): mover_max = v, "Mover", {"min": 0.2, "max": 2.0, "step": 0.1, "unit": "m/s"})
 	add_control("button", "mover_home", "Mover zurück an den Startplatz", null, func(): mover_home(), "Mover")
@@ -3875,7 +3883,9 @@ func _control(d: Dictionary) -> Dictionary:
 		explore.remote_pad(d.get("ax", []), d.get("bt", []), str(d.get("name", "")))
 		if d.has("hold"):                              # for tests on a slow PC: the values stay valid for «hold» s
 			explore.rp_t = now() + clampf(float(d["hold"]), 0.0, 30.0)
-		return {"ok": true, "on": explore.on, "view": explore.view}
+		return {"ok": true, "on": explore.on, "view": explore.view, "rumble": padmap.take_web_rumble() if padmap != null else ""}
+	elif a == "padmap":                                # 3D-4.13: the controller mapping (tests): state, act, menu, roles, help, rumble
+		return padmap.command(d) if padmap != null else {"ok": false, "error": "no padmap"}
 	elif a == "patrol":                                # 3D-3.61: «Patrouille» (for tests and remote): {on, points: [[x, z], …], area: [x, z, w, d], mode}
 		if patrol == null:
 			return {"ok": false, "error": "no patrol"}
@@ -5278,7 +5288,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["pad_auto", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
 var _settings_dirty := false
 
@@ -5706,6 +5716,12 @@ var toolbar                           # toolbar.gd: the tool bar at the bottom (
 var patrol_judge := "mw"              # game «Patrouille»: mw = the real detection of MoveEye decides, sim = the simulator guard
 var pad_dead := 0.12                  # 3D-3.96: dead zone of the controller sticks (stick drift; 3D-3.97: round, per stick)
 var pad_auto := true                  # 3D-3.97: learn the rest position by itself while a stick rests
+var pad_sens := 1.0                   # 3D-4.13: sensitivity of the head / view stick (padmap.gd)
+var pad_inv_y := false                # 3D-4.13: invert Y of the head / view stick
+var pad_swap := false                 # 3D-4.13: swap the sticks (left = rover / walk, right = head / look)
+var pad_rumble := true                # 3D-4.13: vibration of the controller (erwischt, Treffer, Alarm, Kamera sieht dich)
+var padmap                            # 3D-4.13: padmap.gd - ONE controller mapping for the window, explore, game, MoveEye
+var padhud                            # 3D-4.13: padhud.gd - chips of the controllers, direction, focus ring
 var padtest
 var pad_center := [0.0, 0.0, 0.0, 0.0] # 3D-3.96: rest position of the sticks (measured with «Controller kalibrieren»)
 var explore                           # explore.gd: «Erkunden» with the rover - keyboard, mouse, touch, game controller (3D-3.55)
@@ -6162,6 +6178,17 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	padview = preload("res://scripts/padview.gd").new()       # the «Controller-Ansicht» of MoveEye: views, turning, zoom, picture without buttons
 	padview.main = self
 	add_child(padview)
+	padmap = preload("res://scripts/padmap.gd").new()         # 3D-4.13: ONE controller mapping (window, explore, game, MoveEye)
+	padmap.main = self
+	add_child(padmap)
+	padhud = preload("res://scripts/padhud.gd").new()         # 3D-4.13: chips, direction, focus ring of the controller
+	padhud.main = self
+	padhud.pm = padmap
+	var phl := CanvasLayer.new()                              # above the control panel (the focus ring), below the game at the PC
+	phl.layer = 25
+	add_child(phl)
+	phl.add_child(padhud)
+	padmap.hud = padhud
 	patrol = preload("res://scripts/patrol.gd").new()         # 3D-3.61: the mover drives MoveEye round a route
 	patrol.main = self
 	add_child(patrol)

@@ -134,7 +134,7 @@ static func fold_card(parent: Control, title: String, open: bool, icon := "") ->
 	var v := card(parent)
 	var hdr := Button.new()
 	hdr.flat = true
-	hdr.focus_mode = Control.FOCUS_NONE
+	hdr.focus_mode = Control.FOCUS_ALL                  # 3D-4.13: the controller opens it too (padmap.gd menu)
 	hdr.custom_minimum_size = Vector2(0, 22)
 	var e := StyleBoxEmpty.new()
 	for st in ["normal", "hover", "pressed", "hover_pressed", "focus"]:
@@ -207,7 +207,7 @@ static func sub_fold(parent: Control, title: String, open: bool) -> VBoxContaine
 	wrap.add_child(sep)
 	var hdr := Button.new()
 	hdr.flat = true
-	hdr.focus_mode = Control.FOCUS_NONE
+	hdr.focus_mode = Control.FOCUS_ALL                  # 3D-4.13: the controller opens it too (padmap.gd menu)
 	hdr.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	hdr.add_theme_font_size_override("font_size", 13)
 	hdr.add_theme_color_override("font_color", MUT)
