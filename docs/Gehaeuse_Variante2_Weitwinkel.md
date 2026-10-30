@@ -31,3 +31,17 @@ Ziel: die Montage-Varianten im Simulator vergleichen, bevor gedruckt wird.
 | Seiten / Spiel | Weitwinkel-Bild als Kachel auf /sim und in Sim-Kompakt; im Spiel als zweite Wächter-Sicht (gleiche Regeln für den KI-Wächter) |
 
 Umsetzung: nach dem Zusammenführen von Sim-Kompakt und Spiel-Balance (gleiche Dateien), als eigene Runde.
+
+### Umgesetzt (Zweig wt-weit, 30.10.2026 – Simulator-Entwurf 3D-4.17, MoveEye auf 2.98.45)
+
+| Thema | Stand |
+|---|---|
+| Kamera / Montage | **umgesetzt** – `simulator3d/scripts/weitwinkel.gd`: cams[1] = Weitwinkel 102° × 67°, 640×360 / 8 Bilder/s (wie bisher nur gerechnet, wenn abgerufen), NoIR-Look, nachts eigenes IR-Bild; Montage Mast (Standard, alte Einstellungen bleiben) · Unterteil vorne (−12°, Regler) · Kopf vorne · Kopf hinten (180°); auf dem Kopf «auch mitneigen» wählbar. Einstellungen: Kamerabild → «Weitwinkel-Kamera» (die alte «Kamera 1: Richtung» heisst jetzt «Weitwinkel am Mast: Richtung») |
+| Schnittstelle | **umgesetzt** – `/info` cameras[1]: name «Wide camera (NoIR Wide)», `mount`, `tilt_deg`, `yaw_offset`, `pan_follow`, `tilt_follow`, `fov_h`/`fov_v`, `on_head` (+ `fisheye`, `pan_limit`, `ir_wide`); jede Antwort auf POST /state hat `wide` (Wechsel sofort bei MoveEye) |
+| Automatik (162) | **umgesetzt** – Teil `163_weitwinkel.py`: am Gerät stellt MoveEye `kopf_ov = sim:1` selbst ein (nur beim Montage-Wechsel – von Hand Gewähltes bleibt; Mast = nicht von selbst, war es automatisch, wird es wieder gelöscht); Kopf-Montage: Richtung = echte Kopfstellung + Versatz + Winkel im Bild; solange der Kopf dreht (+1,2 s im Simulator, 0,8 s echt) zählt Bewegung der Kopf-Kamera nicht (440, gleiche Signale wie die Hauptkamera); hinten: Kopf dreht hin (Rang «Zum Alarm drehen»), dann prüft die KI |
+| IR-Licht | **umgesetzt** – Schalter «IR-Licht breit (Kanal 4)» (Licht, Web und Fenster): zweite IR-LED auf PCA9685 Kanal 4, ein / aus mit dem Infrarotlicht (nicht, wenn Kanal 4 schon belegt ist); Simulator: breites IR-Licht 120° an der Montagestelle (`lights.ir_wide`) |
+| Kabel / Servo-Last | **umgesetzt im Simulator** – Kopf-Montage: Drehgrenze ± 170° (Regler, Hinweis Schleifring für 360°-Servos), Kopf 15 % träger mit «Servos wie echt». MoveEye selbst hat dafür keine eigene Grenze (die bestehende `pan_limit` gilt) |
+| Verzerrung | **umgesetzt** – Fischauge (camfx `distort` 0,16) als Schalter «Weitwinkel: leichtes Fischauge», Standard ein |
+| Prüfstand | **umgesetzt** – `--weitwinkel base,head_front,head_rear` (pruefstand/LIESMICH.md). Erster lokaler Lauf (langsamer 2-Kern-Rechner, fremde Last ~100 %, Weitwinkel-Bild < 1 Bild/s – Zahlen nur grob): Unterteil 2/3 gefunden (3,5 / 21,9 s), Kopf vorne 2/3 (2,4 / 3,8 s), Kopf hinten 3/3 (Median 4,3 s) |
+| Seiten / Spiel | **Seiten umgesetzt** – Kachel 🔭 «Weitwinkel-Kamera» in der Simulator-Zentrale (/sim) und in Sim-Kompakt: Bild (über die vorhandene Zusatzkamera, /cam_feed – kein neuer Strom vom Simulator), antippen = gross, Montage-Knöpfe. **Spiel:** die zweite Wächter-Sicht nutzt cams[1] weiter (jetzt mit der gewählten Montage); Texte «feste Kamera» im Spiel nicht angepasst (Spiel-Dateien gehören der Runde «balance») |
+

@@ -287,6 +287,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
       ["game", "🎮", "Game", R && R.game ? (R.game.open ? "🟢 " + (R.game.players || 0) : T("off")) : ""],
       ["wildlife", "🦌", "Wildlife watching", cv("rifle") ? (cv("rifle").value ? T("on") : T("off")) : ""],
       ["place", "🪞", "Your place", cv("twin_on") ? (cv("twin_on").value ? T("on") : T("off")) : ""]];
+    if (h.wide && window.mwWide) L.splice(1, 0, ["wide", "🔭", "Wide camera", window.mwWide.sub(h)]);   // 591: the wide picture (tap = big)
     const kg = cv("game_kiguard");                      // simulator with «MoveEye as AI guard»
     if (kg) L.push(["kig", "🤖", "AI guard", kg.value ? T("on") : T("off")]);
     L.push(["view", "👁", "View", VIEW ? T((VIEWS.find(x => x[0] === VIEW) || [0, 0, ""])[2]) : ""]);
@@ -310,7 +311,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   function setOpen(k) { open = k; SH.textContent = ""; SH.dataset.sig = ""; TI.dataset.sig = ""; if (ON) paint(); if (k) setTimeout(() => SH.scrollIntoView({block: "nearest", behavior: "smooth"}), 60); }
   function sheet() {
     if (!open) { if (SH.firstChild) SH.textContent = ""; return; }
-    if (["scene", "hour", "weather", "visit"].includes(open)) {           // the sheets of the Simulator-Zentrale (139)
+    if (["scene", "hour", "weather", "visit", "wide"].includes(open)) {   // the sheets of the Simulator-Zentrale (139; wide: 591)
       let b = SH.firstChild;
       if (!b || b.dataset.kind !== open) { SH.textContent = ""; b = E("div"); b.dataset.simhub = "sheet"; b.dataset.kind = open; SH.appendChild(b); const h = HUB(); if (h) h.paint(); }
       return;

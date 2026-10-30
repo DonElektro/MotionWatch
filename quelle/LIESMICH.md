@@ -61,6 +61,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `150_zweites_wlan_tv_netzcheck.py` | zweites WLAN, USB-Tethering, TV-Anzeige, Netz-Check, WLAN-Wächter | 1059 |
 | `160_netzautomatik_patrouille.py` | Netz-Automatik, Patrouille | 160 |
 | `162_kopf_auto.py` | Automatische Kopfbewegung: ein Koordinator (Hand > Alarm/Folgen > Gehtest > Wertsachen-Blick > Runde > Parken, Simulator-Sperre), kluge Runde (place_items / Wegpunkte), zum Alarm drehen (Bildrand, Wärmefleck, Geräusch mit Zugang, Übersichtskamera), Parken bei «Aus», Wertsachen-Blick, sparsam (Akku / tiefe Nacht), Wildtier-Modus, Sabotage umschauen, 180/270/360°- und Endlos-Servos | 834 |
+| `163_weitwinkel.py` | Weitwinkel-Kamera des Simulators (sim:1, 3D-4.17): Montage aus /info und der Antwort auf /state, «Übersicht lenkt den Kopf» von selbst (nur bei Montage-Wechsel, Hand bleibt), Kopf-Montage = Richtung Kopf + Versatz, Eigenbewegung der Kopf-Kamera ausblenden (440), IR-Licht breit auf PCA9685 Kanal 4 | 196 |
 | `170_ki_personen.py` | KI-Modell laden und herunterladen | 110 |
 | `180_ki_tierarten_helfer_tunnel.py` | Tierarten, Alarm-Rückblick, KI-Rechenhilfe, KI-Prüfung, Tunnel, AIDetector | 841 |
 | `190_relais_wetter_tracker.py` | Relais, Wetter-Analyse, Auto-Tuner, Tracker | 422 |
@@ -121,12 +122,14 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `631_uebersetzungen_spielB.py` | Übersetzungen und Anleitungs-Zeilen (Kapitel «Spiele freigeben») zu 343 / 543 / 592 | 120 |
 | `633_uebersetzungen_guide2.py` | Übersetzungen und Anleitungs-Kapitel «Einrichtung, Rundgänge und Tipps» zu Guide 2 | 330 |
 | `589_blinki.py` | «Blinki», die Figur aus dem Logo für Einrichtung und Rundgänge: SVG + CSS + Skript vor /g2/ui.js (Web), kleines Bild mit cv2 (Fenster), Schalter «blinki_on» | 260 |
+| `591_web_weitwinkel.py` | Weitwinkel-Bild als Kachel 🔭 (Simulator-Zentrale 139 und Sim-Kompakt 549, über /cam_feed, antippen = gross), Montage wählen, Schalter «IR-Licht breit (Kanal 4)», Zustand an den Simulator (lights.ir_wide), Selbsttest zu 163 | 167 |
 | `593_fenster_aufraeumen.py` | Fenster: Gruppe «Tierart» in der KI-Erkennung (wie «KI-Modell») | 37 |
 | `635_uebersetzungen_blinki.py` | Übersetzungen und Anleitungs-Zeile zu Blinki | 60 |
 | `594_uebersetzungen_kihilfe.py` | Übersetzungen für die «KI-Hilfe» am Auslöser (542) | 25 |
 | `595_fenster_simstopp.py` | Fenster: «⏹ Stopp» (Not-Aus) in der Simulation ausblenden | 75 |
 | `596_uebersetzungen_vier.py` | Übersetzungen für «MoveEye als KI-Wächter» (548) | 32 |
 | `597_uebersetzungen_simkompakt.py` | Übersetzungen für «Sim-Kompakt» (549) | 67 |
+| `598_uebersetzungen_weit.py` | Übersetzungen und Anleitungs-Absatz (Kamera & Servos) zur Weitwinkel-Kamera (163 / 591) | 50 |
 | `634_uebersetzungen_ausl.py` | Übersetzungen für den «Auslöser» (539) | 40 |
 | `637_uebersetzungen_servo.py` | Übersetzungen Servo-Bewegung, Not-Aus, Teach-in, Diagnose | 156 |
 | `623_uebersetzungen_pad2.py` | Übersetzungen des Controller-Konzepts (542, 538, 470) | 75 |
