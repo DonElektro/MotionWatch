@@ -12,6 +12,13 @@ extends Node
 ##   «Siegerbild»: at the end the winner, the closest moment (highest suspicion without being caught) as a short replay
 ##     (the recording of game.gd, «Knappster Moment»), the ranking of the evening (game.board: from the same day,
 ##     «Rangliste zurücksetzen» in the wizard) - on the phones and here in the window.
+##   «Zwei Stufen» (Balance 30.10.2026): the «Schleicher-Stufe» (main.game_level: how fast the camera / MoveEye notices,
+##     lives, minutes) and the «Wächter-Stufe» (guard_level: the hit circle of the shutter and the energy; «auto» = like the
+##     Schleicher-Stufe). Easier for the guard means bigger circle AND more energy - never one up and one down.
+##   «Wie echte Hardware» (real_hw, default off): the referee only uses what MoveEye really has - one Pi Camera Module 3 NoIR
+##     on a fixed pole. No turning head, no fixed second camera, no thermal camera, no microphone, no light, no siren.
+##     The game setup marks the rest «nur Simulator»; gamelearn.gd writes the profile into its reports.
+## ONE text for the difficulties and the guard (LEVEL_TXT, GLEVEL_TXT, GUARD_TXT): used by the wizard and the panel (main.gd).
 ## The settings come from the wizard (gamewiz.gd OPTIONS, like gameplus.gd: kept in user://spiel/regeln.json).
 
 var game
@@ -21,12 +28,40 @@ const CFG_FILE := "user://spiel/regeln.json"
 const UI = preload("res://scripts/ui_style.gd")
 const ROT_OPTS := [["off", "aus – jeder wählt selbst"], ["turn", "der Reihe nach"], ["best", "wer am wenigsten erwischt wurde"]]
 const HELPER_NAME := "🤖 Bot-Helfer"
+# the shared texts (kid-friendly) - wizard (gamewiz.gd) and panel (main.gd «Schleicher-Stufe», «Wächter-Stufe»)
+const LEVEL_TXT := {"easy": ["🌱", "Anfänger", "Die Kamera braucht länger, bis sie dich bemerkt, Kriechen ist fast sicher. Unbegrenzte Leben, 4 Minuten, du siehst, wohin die Kameras schauen."],
+		"normal": ["🎯", "Normal", "Die Kamera bemerkt dich nach etwa 1 Sekunde. 3 Leben, 3 Minuten."],
+		"hard": ["🔥", "Profis", "Die Kamera bemerkt dich sofort. Nur 1 Leben, 3 Minuten, kein Sichtfeld."]}
+const GLEVEL_TXT := {"auto": ["🔗", "wie die Schleicher-Stufe", "Der Wächter hat dieselbe Stufe wie die Schleicher."],
+		"easy": ["🌱", "leicht", "Grosser Treffer-Kreis, 130 ⚡ Energie, lädt schneller nach (0.5 ⚡ pro Sekunde)."],
+		"normal": ["🎯", "normal", "Mittlerer Treffer-Kreis, 100 ⚡ Energie (0.4 ⚡ pro Sekunde)."],
+		"hard": ["🔥", "schwer", "Kleiner Treffer-Kreis, nur 70 ⚡ Energie, lädt langsamer (0.3 ⚡ pro Sekunde)."]}
+const GUARD_TXT := "Ein Spieler ist Wächter – am Handy oder am PC: Er dreht die Kamera, zielt mit der Bildmitte und drückt den Auslöser 🎯. Jeder Schuss kostet Energie ⚡, ein Fehlschuss noch mehr, und wer schon erwischt wurde, ist kurz geschützt. Will niemand, passt der Bot-Wächter auf (zu zweit spielbar). Am Schluss das Duell: wer hat mehr erwischt, der Wächter oder MoveEye?"
+const REAL_TXT := "🔧 Wie echte Hardware: nur eine feste Kamera (Pi Camera Module 3 NoIR am Pfosten) – kein drehbarer Kopf, keine zweite Kamera, keine Wärmebild-Kamera, kein Mikrofon, kein Licht, keine Sirene"
+const SIM_ONLY := " (nur Simulator)"
+
+
+static func level_options() -> Array:
+	"""[[id, text]] for the select «Schleicher-Stufe» of the panel"""
+	var o := []
+	for k in ["easy", "normal", "hard"]:
+		o.append([k, "%s %s – %s" % LEVEL_TXT[k]])
+	return o
+
+
+static func glevel_options() -> Array:
+	var o := []
+	for k in ["auto", "easy", "normal", "hard"]:
+		o.append([k, "%s %s – %s" % GLEVEL_TXT[k]])
+	return o
 
 var rotate := "turn"                     # off | turn | best
 var tools_on := true                     # gametools.gd: energy and cooldowns
 var fair_on := true
 var vibe_on := true                      # vibration and noise meter on the phone
 var shade_on := true
+var guard_level := "auto"                # Wächter-Stufe: auto | easy | normal | hard
+var real_hw := false                     # «Wie echte Hardware»
 var seq := 0
 
 var fair := {}                           # this round: {"runners", "guards", "kind", "text", "e_mul", "hides", "hide_s", "rate", "helper"}
@@ -72,15 +107,33 @@ func _ready() -> void:
 
 # ---- the settings of the wizard -----------------------------------------------------------------------------------------
 func cfg_get() -> Dictionary:
-	return {"game_rotate": rotate, "game_tools": tools_on, "game_fair": fair_on, "game_vibe": vibe_on, "game_shade": shade_on}
+	return {"game_rotate": rotate, "game_tools": tools_on, "game_fair": fair_on, "game_vibe": vibe_on, "game_shade": shade_on,
+			"game_glevel": guard_level, "game_real": real_hw}
 
 
 func _take(d: Dictionary) -> void:
 	if d.has("game_rotate"):
 		rotate = str(d["game_rotate"]) if str(d["game_rotate"]) in ["off", "turn", "best"] else "turn"
-	for k in [["game_tools", "tools_on"], ["game_fair", "fair_on"], ["game_vibe", "vibe_on"], ["game_shade", "shade_on"]]:
+	if d.has("game_glevel"):
+		guard_level = str(d["game_glevel"]) if str(d["game_glevel"]) in ["auto", "easy", "normal", "hard"] else "auto"
+	for k in [["game_tools", "tools_on"], ["game_fair", "fair_on"], ["game_vibe", "vibe_on"], ["game_shade", "shade_on"], ["game_real", "real_hw"]]:
 		if d.has(k[0]):
 			set(k[1], bool(d[k[0]]))
+
+
+func glevel() -> String:
+	"""the Wächter-Stufe in force (easy | normal | hard)"""
+	return main.game_level if guard_level == "auto" else guard_level
+
+
+func real() -> bool:
+	"""«Wie echte Hardware»: only the one fixed camera counts"""
+	return real_hw
+
+
+func profile() -> String:
+	"""for gamelearn.gd: which profile the referee used (lessons of both are not mixed)"""
+	return "echt" if real_hw else "simulator"
 
 
 func cfg_set(d: Dictionary) -> void:
@@ -115,7 +168,7 @@ func calc() -> Dictionary:
 		elif p["role"] == "guard":
 			humans += 1
 	var f := {"runners": runners, "guards": max(1, humans), "kind": "", "text": "", "e_mul": 1.0, "hides": 0, "hide_s": 0.0, "rate": 1.0, "helper": false}
-	if not fair_on or main.game_mode in ["free", "jaeger", "mwhand", "teamguard"] or runners == 0 or main.game_goal == "flag":
+	if not fair_on or main.game_mode in ["free", "jaeger", "mwhand"] or runners == 0 or main.game_goal == "flag":
 		return f
 	var gs: int = max(1, humans)
 	var r := float(runners) / float(gs)
@@ -124,7 +177,7 @@ func calc() -> Dictionary:
 		f["kind"] = "guard"
 		if humans > 0:
 			f["e_mul"] = 1.5
-			f["helper"] = humans == 1 and main.game_mode == "guard"
+			f["helper"] = humans == 1 and main.game_mode == "guard" and not real_hw     # the fixed camera: only in the simulator
 			f["text"] = "⚖ %d Schleicher gegen %s: der Wächter hat 50 %% mehr Energie%s." % [runners, who, " und einen 🤖 Bot-Helfer an der festen Kamera" if f["helper"] else ""]
 		else:
 			f["rate"] = 1.15
@@ -212,7 +265,7 @@ func _process(dt: float) -> void:
 			continue
 		if rec and t >= float(p["safe_until"]):
 			samples.append([snappedf(t - game.t_start, 0.1), int(p["slot"]), int(p["susp"])])
-		if noise(p) >= 0.55 and t >= float(_noise_t.get(p["slot"], 0.0)):   # running: a hint marker, the AI looks there
+		if noise(p) >= 0.55 and not real_hw and t >= float(_noise_t.get(p["slot"], 0.0)):   # running: a hint marker, the AI looks there (the microphone)
 			_noise_t[p["slot"]] = t + 1.2
 			game.tools.add_hint(p["actor"].position, "noise", 2.5, int(p["slot"]))
 			game.attention = p["actor"].position
@@ -302,21 +355,63 @@ func round_end() -> void:
 	_show_win()
 
 
+func best_of(role: String, humans_only := false) -> Dictionary:
+	"""the best line of the results for a role ("guard" / "runner") - by the points shown (game.results is sorted)"""
+	for r in game.results:
+		if str(r.get("role", "")) != role or str(r.get("n", "")) == HELPER_NAME:
+			continue
+		if humans_only:
+			var sl := int(r.get("slot", -1))
+			var p = game.players[sl] if sl >= 0 and sl < game.players.size() else null
+			if p == null or str(p.get("kind", "phone")) == "bot":
+				continue
+		return r
+	return {}
+
+
 func _make_win() -> void:
+	"""Balance 30.10.2026: the winner PER ROLE - the best guard and the best sneaker, plus the team result"""
+	win = {}
+	if game.results.is_empty():
+		return
 	var top = null
 	for r in game.results:
 		if str(r.get("n", "")) != HELPER_NAME:
 			top = r
 			break
-	win = {}
 	if top == null:
 		return
+	var roles := []
+	var bg := best_of("guard")
+	var bs := best_of("runner")
+	if not bg.is_empty():
+		roles.append({"r": "guard", "label": "👮 Bester Wächter", "n": bg["n"], "c": bg["c"], "score": int(bg["score"]), "info": str(bg.get("info", ""))})
+	if not bs.is_empty():
+		roles.append({"r": "runner", "label": "🕵️ Bester Schleicher", "n": bs["n"], "c": bs["c"], "score": int(bs["score"]), "info": str(bs.get("info", ""))})
 	var title := "🏆 %s gewinnt!" % top["n"]
+	var score := int(top["score"])
+	if roles.size() == 2:
+		title = "🏆 Bester Wächter: %s · Bester Schleicher: %s" % [bg["n"], bs["n"]]
+		score = -1                                         # two winners: the points stand at each role
+	var team := ""
 	if not game.flag_res.is_empty():
 		title = "🚩 " + str(game.flag_res.get("title", title))
+		team = str(game.flag_res.get("text", ""))
 	elif not game.team_results.is_empty() and main.game_teams:
 		title = "🏆 %s gewinnt!" % game.team_results[0]["n"]
-	win = {"n": top["n"], "c": top["c"], "score": int(top["score"]), "info": str(top.get("info", "")), "title": title, "hl": _closest(),
+		team = " : ".join(PackedStringArray(game.team_results.map(func(t): return "%s %d" % [t["n"], int(t["score"])])))
+	elif roles.size() == 2:                                # guard against sneakers: how did the team of the sneakers do
+		var n := 0
+		var goal := 0
+		var caught := 0
+		for r in game.results:
+			if str(r.get("role", "")) == "runner":
+				n += 1
+				goal += 1 if bool(r.get("goal", false)) else 0
+				caught += int(r.get("caught", 0))
+		team = "Team Schleicher: %d von %d im Ziel · Wächter: %d× erwischt" % [goal, n, caught]
+	win = {"n": top["n"], "c": top["c"], "score": score, "info": str(top.get("info", "")) if roles.size() < 2 else "", "title": title, "hl": _closest(),
+			"roles": roles, "team": team,
 			"board": game.board_list().slice(0, 5).map(func(b): return {"n": b["n"], "c": b["c"], "score": int(b["score"]), "rounds": int(b["rounds"])}),
 			"fair": str(fair.get("text", ""))}
 
@@ -357,7 +452,7 @@ func _rotate() -> void:
 		return
 	var cur = game.guard_player()
 	var nxt = null
-	if rotate == "best":
+	if rotate == "best":                                   # fewest times caught, on a draw the points of the end screen
 		var bk := 1 << 30
 		var bs := -1
 		for p in cands:
@@ -365,7 +460,7 @@ func _rotate() -> void:
 				continue
 			var sc := 0
 			for r in game.results:
-				if r["n"] == p["name"]:
+				if int(r.get("slot", -1)) == int(p["slot"]) and str(r.get("role", "")) == "runner":
 					sc = int(r["score"])
 			if int(p["caught"]) < bk or (int(p["caught"]) == bk and sc > bs):
 				bk = int(p["caught"])
@@ -391,7 +486,7 @@ func _rotate() -> void:
 	if nxt["role"] != "guard":
 		return
 	var rn := "Fänger" if main.game_mode == "seek" else "Wächter"
-	next_txt = "🔄 Nächste Runde: %s ist %s (%s)" % [nxt["name"], rn, "der Reihe nach" if rotate == "turn" else "am wenigsten erwischt"]
+	next_txt = "🔄 Nächste Runde: %s ist %s (%s)" % [nxt["name"], rn, "der Reihe nach" if rotate == "turn" else "am wenigsten erwischt: %d×" % int(nxt["caught"])]
 	game.news(next_txt)
 	for q in game.players:
 		if q != null:
@@ -451,7 +546,7 @@ func _show_win() -> void:
 	var top := HBoxContainer.new()
 	box.add_child(top)
 	var h := Label.new()
-	h.text = P.plain(str(win["title"])) + "  ·  %d Punkte" % int(win["score"])
+	h.text = P.plain(str(win["title"])) + ("  ·  %d Punkte" % int(win["score"]) if int(win["score"]) >= 0 else "")
 	h.add_theme_font_size_override("font_size", 24)
 	h.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
 	h.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -462,6 +557,11 @@ func _show_win() -> void:
 	x.pressed.connect(_hide_win)
 	top.add_child(x)
 	var lines := [str(win.get("info", ""))]
+	for ro in win.get("roles", []):
+		if (win.get("roles", []) as Array).size() > 1:
+			lines.append("%s: %s – %d Punkte · %s" % [ro["label"], ro["n"], int(ro["score"]), ro["info"]])
+	if str(win.get("team", "")) != "":
+		lines.append(str(win["team"]))
 	var hl: Dictionary = win.get("hl", {})
 	if not hl.is_empty():
 		lines.append(str(hl["text"]))

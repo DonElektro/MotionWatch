@@ -161,7 +161,11 @@ func boxes(cam_i: int) -> Dictionary:
 			if bb.is_empty():
 				continue
 			var sure: bool = v >= 0.35 or float(p.get("susp", 0.0)) >= 30.0    # sure like the guard of the game: the meter at 30 %
-			out.append([snappedf(float(bb[0]), 0.001), snappedf(float(bb[1]), 0.001), snappedf(float(bb[2]), 0.001), snappedf(float(bb[3]), 0.001), sure])
+			out.append([snappedf(float(bb[0]), 0.001), snappedf(float(bb[1]), 0.001), snappedf(float(bb[2]), 0.001), snappedf(float(bb[3]), 0.001), sure,
+					shut.protected(p)])                    # Balance: [5] = protected (just caught, start) - the autopilot leaves him
+	if src == "mw":                                        # MoveEye's boxes: protected = it lies on a protected player
+		for bx in out:
+			bx.append(_on_protected(bx, cam_i))
 	var r := {"src": src, "b": out}
 	_cache[cam_i] = [now(), r]
 	return r
@@ -169,6 +173,25 @@ func boxes(cam_i: int) -> Dictionary:
 
 func _cam(g) -> int:
 	return 0 if g == null else game.guard_cam(g)
+
+
+func _on_protected(bx: Array, cam_i: int) -> bool:
+	"""a box of MoveEye that covers mostly a protected player (just caught, start protection)"""
+	var r := Rect2(float(bx[0]), float(bx[1]), float(bx[2]), float(bx[3]))
+	for p in game.players:
+		if p == null or p["role"] != "runner" or p["state"] != "play" or not shut.protected(p):
+			continue
+		var b: Array = shut.box_cam(p, cam_i)
+		if b.is_empty():
+			continue
+		var q := Rect2(float(b[0]), float(b[1]), float(b[2]), float(b[3]))
+		if r.intersection(q).get_area() >= 0.5 * minf(r.get_area(), q.get_area()):
+			return true
+	return false
+
+
+func _prot(bx: Array) -> bool:
+	return bx.size() > 5 and bool(bx[5])
 
 
 func _in_circle(bx: Array, cam_i: int) -> float:
@@ -186,6 +209,8 @@ func _target(bl: Array) -> Array:
 	var best: Array = []
 	var ba := -1.0
 	for bx in bl:
+		if _prot(bx):
+			continue                                       # Balance: not at a protected player
 		var a: float = float(bx[2]) * float(bx[3]) * (2.0 if bool(bx[4]) else 1.0)
 		if a > ba:
 			ba = a
@@ -238,8 +263,8 @@ func _watch_human(g) -> void:
 func _aim(g, dt: float) -> void:
 	"""«KI zielt» / Autopilot for a guard at the phone / PC: turn the head of the game to the detected person"""
 	var k := key(g)
-	if paused(g) > 0.0:
-		return
+	if paused(g) > 0.0 or (game.rules != null and game.rules.real()):
+		return                                             # «Wie echte Hardware»: the camera cannot turn
 	var bd := boxes(0)
 	var t := _target(bd["b"])
 	var cam: Camera3D = main.cams[0]
@@ -283,7 +308,7 @@ func _auto(g) -> void:
 	if kg != null:
 		still = _head_still()
 	for bx in bd["b"]:
-		if bool(bx[4]) and _in_circle(bx, cam_i) >= 0.0 and (kg == null or (kg.big_enough(bx) and not _protected_box(bx, cam_i))):
+		if bool(bx[4]) and not _prot(bx) and _in_circle(bx, cam_i) >= 0.0 and (kg == null or (kg.big_enough(bx) and not _protected_box(bx, cam_i))):
 			near = true
 			break
 	if kg != null and main.mw_det_t != _kg_det:            # KI-Wächter: count MoveEye's new pictures in a row with the target in the circle

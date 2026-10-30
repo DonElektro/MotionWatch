@@ -35,7 +35,7 @@ func mw_ok() -> bool:
 
 
 func guard_mode(m: String) -> bool:
-	return m in ["guard", "teamguard", "mwhand"]
+	return m in ["guard", "mwhand"]
 
 
 func round_start() -> void:
@@ -77,11 +77,11 @@ func _process(_dt: float) -> void:
 
 
 func hold_s() -> float:
-	return REACT + float(LEVEL.get(str(main.game_level), LEVEL["normal"])[0])
+	return REACT + float(LEVEL.get(game.rules.glevel(), LEVEL["normal"])[0])
 
 
 func big_enough(bx: Array) -> bool:
-	return float(bx[3]) >= float(LEVEL.get(str(main.game_level), LEVEL["normal"])[1])
+	return float(bx[3]) >= float(LEVEL.get(game.rules.glevel(), LEVEL["normal"])[1])
 
 
 func guard_line(gm: Array) -> Dictionary:

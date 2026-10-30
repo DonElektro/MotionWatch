@@ -121,7 +121,7 @@ func round_start() -> void:
 	wx = {}
 	wx_phase = ""
 	wx_caught = {"vor": 0, "nach": 0}
-	if wx_on and main.game_mode in ["mw", "guard", "camera", "teamguard", "mwhand", "patrol"]:
+	if wx_on and main.game_mode in ["mw", "guard", "camera", "mwhand", "patrol"]:
 		var kinds := ["storm", "fog", "dawn"] if main.is_dark() or main.game_night else ["storm", "fog", "dusk"]
 		var k: String = kinds[randi() % kinds.size()]
 		var dur: float = float(game.t_end) - float(game.t_start)
