@@ -165,6 +165,8 @@ def run(a):
               # Prüfstand 2: the pushes go into the test inbox of the simulation and are counted (MoveEye part 068);
               # the thermal camera is on - at night without light it sees the persons (part 232)
               "notify_sandbox": True, "thermal_on": a.waermebild == "an"}
+        if a.weitwinkel:                                         # «Übersicht → Kopf findet Ziel»: the wide camera as extra camera,
+            st.update(extra_cams=["sim:1"], pan_servo_range=360, pan_limit=170)   # a pan servo that can look back (cable limit ± 170°)
         with open(os.path.join(cfg, "motionwatch_settings.json"), "w") as f:
             json.dump({"cfg": st}, f)
         if a.ki_ordner:                                          # the AI model next to the program (from GitHub Actions)
@@ -286,6 +288,15 @@ def run(a):
                 for q in rep_.get("push_list", []):
                     log("    Push %5.0f s  %-8s %s%s" % (q.get("t", 0), q.get("ev", ""), ("richtig: " if q.get("ok") else "FALSCH: ") + str(q.get("who", "")),
                                                      "  (gleicher Besuch innert 10 s)" if q.get("dup") else ""))
+        if a.weitwinkel:
+            info["weitwinkel"] = weitwinkel_messung(a, sim, web)
+        if not info["plaene"] and info.get("weitwinkel"):        # only the wide-angle measurement: its own file, not in VERLAUF.md
+            os.makedirs(ERGEBNISSE, exist_ok=True)
+            fn = os.path.join(ERGEBNISSE, "weitwinkel_" + time.strftime("%Y-%m-%d_%H%M") + "_" + info["mw_version"] + ".json")
+            with open(fn, "w", encoding="utf-8") as f:
+                json.dump(info, f, ensure_ascii=False, indent=1)
+            log("gespeichert:", os.path.relpath(fn, REPO))
+            return 0, None
         if not info["plaene"]:
             return 2, None
         os.makedirs(ERGEBNISSE, exist_ok=True)
@@ -338,6 +349,8 @@ def kennzahlen(reps):
 def alle_ergebnisse():
     out = []
     for fn in sorted(glob.glob(os.path.join(ERGEBNISSE, "*.json"))):
+        if os.path.basename(fn).startswith("weitwinkel_"):        # the wide-angle measurement alone is not a test run
+            continue
         try:
             with open(fn, encoding="utf-8") as f:
                 d = json.load(f)
@@ -544,6 +557,93 @@ def fall_aus_spur(pfad, spur_id="", wetter="", wind=None, titel=""):
     return ziel
 
 
+# ---- «Übersicht → Kopf findet Ziel» (Plan Daniel 30.10.2026, docs/Gehaeuse_Variante2_Weitwinkel.md) ---------------------
+WW_MONTAGEN = {"scene": "Mast (Szene)", "base": "Unterteil vorne, fest", "head_front": "Kopf vorne", "head_rear": "Kopf hinten"}
+
+
+def _ww_probe(sim):
+    return http_json(sim + "/control", {"action": "weit", "do": "probe"}, timeout=6).get("probe") or {}
+
+
+def weitwinkel_messung(a, sim, web):
+    """per mount of the wide camera: a person enters the wide picture OUTSIDE the picture of the head camera (front mounts:
+    beside the head, rear: behind it) - how long until the head camera has it in its picture (the head turned, simulator
+    geometry), and until MoveEye reports a person. The simulator knows where everybody is (control weit/probe)."""
+    res = {}
+    try:
+        http_json(sim + "/control", {"action": "set", "id": "auto", "value": False}, timeout=6)       # only our visitors
+        http_json(web + "/api/arm", {"action": "arm_now"}, timeout=6)
+    except Exception as e:
+        log("Weitwinkel: Vorbereitung ging nicht:", e, wichtig=True)
+        return res
+    for m in a.weitwinkel:
+        http_json(sim + "/control", {"action": "weit", "mount": m}, timeout=6)
+        zeiten, ki, verpasst = [], [], 0
+        for k in range(max(1, a.ww_versuche)):
+            try:
+                http_json(sim + "/control", {"action": "press", "id": "clear"}, timeout=6)
+            except Exception:
+                pass
+            t_end = time.time() + 40                          # the head at home (it may still come back from before)
+            while time.time() < t_end:
+                try:
+                    if abs(float(_ww_probe(sim).get("head_deg") or 0)) < 6:
+                        break
+                except Exception:
+                    pass
+                time.sleep(1)
+            time.sleep(6 if k else 15)                        # the picture of the overview settles (background)
+            seite = 1 if k % 2 == 0 else -1
+            if m == "head_rear":                              # behind the head: across, 9 m away
+                b0, b1, d0, d1 = 180 - seite * 30, 180 + seite * 35, 9, 9
+            else:                                             # beside the head: in the wide picture (±51°) but not in the head's
+                b0, b1, d0, d1 = seite * 42, seite * 42, 14, 6   # (±33°) - it walks straight towards the device and stays there
+            http_json(sim + "/control", {"action": "weit", "do": "spawn", "kind": "person", "bearing": b0, "dist": d0,
+                                         "to_bearing": b1, "to_dist": d1, "speed": 0.3}, timeout=6)
+            t_wide = t_head = t_mw = None
+            t0 = time.time()
+            while time.time() - t0 < 50:
+                time.sleep(0.5)
+                try:
+                    pr = _ww_probe(sim)
+                    vs = [v for v in pr.get("visitors") or [] if v.get("kind") == "person"]
+                    now = time.time()
+                    if t_wide is None and any(v.get("wide") and not v.get("head") for v in vs):
+                        t_wide = now
+                    if t_wide is not None and t_head is None and any(v.get("head") for v in vs):
+                        t_head = now
+                    if t_wide is not None and t_mw is None and int(http_json(web + "/api/state", timeout=4)["state"].get("persons") or 0) > 0:
+                        t_mw = now
+                    if t_head is not None and (t_mw is not None or now - t_head > 10):
+                        break
+                except Exception:
+                    continue
+            if t_wide is None:
+                log("  %s, Besucher %d: kam nicht ins Weitwinkel-Bild (ausserhalb der Kopfkamera)" % (WW_MONTAGEN[m], k + 1))
+                verpasst += 1
+                continue
+            if t_head is None:
+                verpasst += 1
+                log("  %s, Besucher %d: Kopf fand ihn nicht (50 s)" % (WW_MONTAGEN[m], k + 1))
+            else:
+                zeiten.append(round(t_head - t_wide, 1))
+                if t_mw is not None:
+                    ki.append(round(t_mw - t_wide, 1))
+                log("  %s, Besucher %d: Kopfkamera sieht ihn nach %.1f s%s" % (WW_MONTAGEN[m], k + 1, t_head - t_wide,
+                    (", MoveEye meldet eine Person nach %.1f s" % (t_mw - t_wide)) if t_mw is not None else ", MoveEye meldete keine Person"))
+        med = round(sorted(zeiten)[len(zeiten) // 2] if len(zeiten) % 2 else sum(sorted(zeiten)[len(zeiten) // 2 - 1:len(zeiten) // 2 + 1]) / 2.0, 1) if zeiten else None
+        res[m] = {"versuche": max(1, a.ww_versuche), "gefunden": len(zeiten), "verpasst": verpasst, "zeiten_s": zeiten,
+                  "median_s": med, "moveeye_person_s": ki}
+        log("Übersicht → Kopf findet Ziel · %s: %d/%d gefunden%s" % (WW_MONTAGEN[m], len(zeiten), max(1, a.ww_versuche),
+            (", Median %.1f s" % med) if med is not None else ""), wichtig=True)
+    try:
+        http_json(sim + "/control", {"action": "press", "id": "clear"}, timeout=6)
+        http_json(sim + "/control", {"action": "weit", "mount": "scene"}, timeout=6)
+    except Exception:
+        pass
+    return res
+
+
 def main():
     ap = argparse.ArgumentParser(description="Prüfstand für die Erkennung von Motion Watch (3D-Simulator)")
     ap.add_argument("--mw", default="", help="die Motion-Watch-Datei (Standard: die neuste im Repository)")
@@ -573,12 +673,15 @@ def main():
     ap.add_argument("--ohne-extras", action="store_true", help="Schleichwege und echte Nächte nicht automatisch mitlaufen lassen")
     ap.add_argument("--fall-aus-spur", default="", help="eine Alarm-Spur von MoveEye (alarm_tracks.json) als echte Nacht speichern")
     ap.add_argument("--spur-id", default="", help="welche Spur aus der Datei (Standard: die neuste)")
+    ap.add_argument("--weitwinkel", default="", help="Messung «Übersicht → Kopf findet Ziel» pro Montage der Weitwinkel-Kamera: scene, base, head_front, head_rear (mit Komma)")
+    ap.add_argument("--ww-versuche", type=int, default=3, help="Weitwinkel-Messung: so viele Besucher pro Montage")
     ap.add_argument("--spur-wetter", default="", help="Wetter der echten Nacht (clear, cloudy, rain, fog, snow)")
     a = ap.parse_args()
     a.plaene = [p.strip() for p in a.plaene.split(",") if p.strip()]
     a.realismus = [m.strip() for m in a.realismus.split(",") if m.strip() in ("an", "aus")] or ["an"]
     a.roh_plaene = [p.strip() for p in a.roh_plaene.split(",") if p.strip()]
     a.mal = max(1, min(5, a.mal))
+    a.weitwinkel = [m.strip() for m in a.weitwinkel.split(",") if m.strip() in WW_MONTAGEN]
     a.seeds = max(1, min(9, a.seeds))
     if a.fall_aus_spur:
         fall_aus_spur(a.fall_aus_spur, a.spur_id, a.spur_wetter)

@@ -79,14 +79,18 @@ class ExtraCam:
         if self.n % 2 == 0 or not self.times:                  # detection on every 2nd frame is enough
             pw = 320; ph = max(1, int(H * pw / W)); sx = W / pw; sy = H / ph
             gray = cv2.GaussianBlur(cv2.cvtColor(cv2.resize(frame, (pw, ph)), cv2.COLOR_BGR2GRAY), (5, 5), 0)
-            fg = bg.apply(gray)
-            fg = cv2.dilate(cv2.erode(cv2.threshold(fg, 200, 255, cv2.THRESH_BINARY)[1], None, iterations=1), None, iterations=2)
-            cnts, _ = cv2.findContours(fg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            amin = CFG["min_area"] * (1.0 - CFG["sensitivity"] / 200.0) * (320.0 / 480.0) ** 2
-            self.boxes = [(int(x * sx), int(y * sy), int(w * sx), int(h * sy)) for x, y, w, h in
-                          (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= amin)] if self.n > 30 else []
-            self.motion = bool(self.boxes) and CFG["detection_on"]
-            self.streak = self.streak + 1 if self.motion else 0
+            if weit_cam_turning(self.spec):                    # 163: a camera on the head turns with it - its movement is not movement
+                bg.apply(gray, learningRate=1.0)               # (the picture of now is the background, like the main camera, 410)
+                self.boxes = []; self.motion = False; self.streak = 0
+            else:
+                fg = bg.apply(gray)
+                fg = cv2.dilate(cv2.erode(cv2.threshold(fg, 200, 255, cv2.THRESH_BINARY)[1], None, iterations=1), None, iterations=2)
+                cnts, _ = cv2.findContours(fg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                amin = CFG["min_area"] * (1.0 - CFG["sensitivity"] / 200.0) * (320.0 / 480.0) ** 2
+                self.boxes = [(int(x * sx), int(y * sy), int(w * sx), int(h * sy)) for x, y, w, h in
+                              (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= amin)] if self.n > 30 else []
+                self.motion = bool(self.boxes) and CFG["detection_on"]
+                self.streak = self.streak + 1 if self.motion else 0
         now = time.time()
         if self.motion and self.streak >= 3:
             self.last_motion = now

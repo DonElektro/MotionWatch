@@ -11912,6 +11912,7 @@ SIMHUB_JS = r"""
     if (kind === "hour") { [["Morning", 7], ["Noon", 13], ["Evening", 19.5], ["Night", 23]].forEach(([n, h]) => { const b = E("button", "sec", tt(n) + " " + String(Math.floor(h)).padStart(2, "0") + ":" + (h % 1 ? "30" : "00")); b.type = "button"; b.onclick = () => act("hour", h); s.appendChild(b); });
       const r = E("div", "shrow"), i = E("input"); i.type = "range"; i.min = 0; i.max = 23.75; i.step = 0.25; i.value = H.hour || 12; i.style.flex = "1"; const o = E("b", "", H.clock || "");
       i.oninput = () => { o.textContent = String(Math.floor(i.value)).padStart(2, "0") + ":" + String(Math.round(i.value % 1 * 60)).padStart(2, "0"); }; i.onchange = () => act("hour", +i.value); r.append(i, o); s.appendChild(r); }
+    if (kind === "wide" && window.mwWide) window.mwWide.sheet(s, H, act);         // 591: the wide camera (picture, mount)
     if (kind === "weather") WX.forEach(([k, ic]) => { const b = E("button", k === H.weather ? "" : "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = () => act("weather", k); s.appendChild(b); });
     if (kind === "visit") VIS.forEach(([k, ic]) => { const b = E("button", "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = async () => { const r = await act("visit", k); if (r && r.ok) say(ic + " " + tt("sent")); }; s.appendChild(b); });
     if (["inbox", "drill", "train", "ab"].includes(kind)) labSheet(s, kind);
@@ -12029,7 +12030,7 @@ SIMHUB_JS = r"""
   }
   // 2.98.14 (Konzept): the tiles in four groups - Welt (what happens in the simulator), Testen, Lernen, Spielen. «Simple»
   // shows the assistant «Erkennung verbessern» instead of the single tools for the thresholds (they stay in «Expert»).
-  const GRP = {scene: "world", hour: "world", weather: "world", visit: "world", surprise: "world", twin: "world", devices: "world", rover: "world", templates: "world",
+  const GRP = {wide: "world", scene: "world", hour: "world", weather: "world", visit: "world", surprise: "world", twin: "world", devices: "world", rover: "world", templates: "world",
     tests: "test", blind: "test", rehearsal: "test", inbox: "test", drill: "test", ab: "test", week: "test", stats: "test",
     improve: "learn", autoth: "learn", train: "learn", falearn: "learn", diary: "learn",
     game: "play", points: "play"};
@@ -12044,6 +12045,7 @@ SIMHUB_JS = r"""
       ["visit", (window.EVI || {}).person || "🚶", tt("Send a visitor"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")]
       ];
     if (full) T.push(["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]);   // 2.98.13: drills / surprise only in the Simulator tab
+    if (full && H.wide && window.mwWide) T.push(["wide", "🔭", tt("Wide camera"), window.mwWide.sub(H)]);   // 591: the wide camera of the simulator
     if (full && H.twin_ok) T.push(["twin", "🪞", tt("Your place"), tt("Place, zones, patrol")]);   // 2.98.5: zones / detection in 3D = simulator, «Ansicht»
     if (full) { const R = H.rover || {};
       T.push(["devices", "📡", tt("Several devices"), H.dev2 ? tt("2nd device") + ": " + tt("P_" + (H.dev2_place || "opposite")) : tt("off")],
@@ -16474,6 +16476,201 @@ def _kopf_ov_tick(now):
         return                                            # already in the picture of the head / an ignored direction
     KOPF["ov_t"] = now
     KOPF["turn_req"] = (pan, float(CFG["tilt"]), "movement seen by the overview camera")
+# ----------------------------------------------------------------------------
+# Plan Daniel 30.10.2026 (docs/Gehaeuse_Variante2_Weitwinkel.md, «Simulator-Einbindung der Weitwinkel-Kamera»):
+#  - The simulator (3D-4.17, weitwinkel.gd) has ONE wide camera (sim:1, 102° x 67°) with a mount: scene (mast, as before),
+#    base (lower part of the device, fixed), head_front / head_rear (turns with the pan, rear = yaw offset 180°).
+#    /info cameras[1] and the reply to every POST /state («wide») tell the mount, tilt_deg, yaw_offset, pan_follow,
+#    tilt_follow, fov_h / fov_v, on_head.
+#  - On the device (base / head_*): «Übersicht lenkt den Kopf» (162: kopf_ov) is set to sim:1 by itself - only when the
+#    mount changes (or at the first contact), so a choice by hand stays. Mast = not part of the device: not by itself
+#    (as before); when it was set by itself, it is cleared again.
+#  - Head mounts: the direction of a box = where the head REALLY is (the simulated head, else servo_pos) + yaw offset +
+#    the angle in the picture (instead of the fixed kopf_ov_offset). While the head turns (and a short settle time after),
+#    the extra camera on the head ignores its movement (the same signals the main camera uses: SRV moving, SERVO_MOVE,
+#    a change of the position) - 440 asks weit_cam_turning().
+#  - Rear mount: movement behind -> the head turns there (162 _kopf_ov_tick, same rank as «turn to the alarm»), then the
+#    AI of the main camera checks.
+#  - Second infrared LED 120° on PCA9685 channel 4 («IR-Licht breit (Kanal 4)»): on / off together with the infrared
+#    light (070 lights_tick); the simulator gets lights.ir_wide.
+# ----------------------------------------------------------------------------
+for _k, _v in {"light_ir_wide": False, "kopf_ov_simauto": False}.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+WEIT = {"mount": None, "seen": False, "hd": None, "hd_t": 0.0, "pt": None, "pt_t": 0.0}
+WEIT_DEVICE_MOUNTS = ("base", "head_front", "head_rear")
+WEIT_IR_CH = 4                                            # PCA9685 channel of the wide infrared LED (white 2, IR 3 by convention)
+
+
+# ---- what the simulator says about its wide camera -------------------------------------------------------------------
+def weit_sim_cam():
+    """cameras[1] of the simulator (dict) or None"""
+    if not CFG.get("sim_on"):
+        return None
+    try:
+        return next((c for c in (SIM.get("info") or {}).get("cameras") or [] if str(c.get("id")) == "1"), None)
+    except (AttributeError, TypeError):
+        return None
+
+
+def weit_mount():
+    c = weit_sim_cam()
+    return str(c.get("mount") or "scene") if c else ""
+
+
+def weit_on_device():
+    return weit_mount() in WEIT_DEVICE_MOUNTS
+
+
+def weit_from_sim(w):
+    """350: the reply to POST /state carries «wide» - a new mount is known at once (no new /info needed)"""
+    if not isinstance(w, dict) or not CFG.get("sim_on"):
+        return
+    c = weit_sim_cam()
+    if c is not None:
+        for k in ("mount", "tilt_deg", "yaw_offset", "pan_follow", "tilt_follow", "on_head", "fov_h", "fov_v", "pan_limit"):
+            if k in w:
+                c[k] = w[k]
+    weit_auto()
+
+
+def weit_auto():
+    """«Übersicht lenkt den Kopf» by itself when the wide camera is on the device - only at a change of the mount"""
+    m = weit_mount()
+    if not m or m == WEIT["mount"]:
+        return
+    first = WEIT["mount"] is None
+    WEIT["mount"] = m
+    cur = str(CFG.get("kopf_ov") or "")
+    changed = False
+    if m in WEIT_DEVICE_MOUNTS:
+        if cur in ("", "sim:1") and "sim:1" in (CFG.get("extra_cams") or []):
+            if cur != "sim:1" or not CFG.get("kopf_ov_simauto"):
+                log_event("servo", f"Simulator: the wide camera sits on the device ({m}) - it steers the head as overview")
+            CFG["kopf_ov"] = "sim:1"; CFG["kopf_ov_simauto"] = True; changed = True
+    elif cur == "sim:1" and CFG.get("kopf_ov_simauto"):
+        CFG["kopf_ov"] = ""; CFG["kopf_ov_simauto"] = False; changed = True
+        if not first:
+            log_event("servo", "Simulator: the wide camera is on the mast again - no longer the overview of the head")
+    if changed:
+        save_settings()
+
+
+def weit_ov_geom():
+    """(yaw_offset, on_head) when the overview is the simulator's wide camera on the device, else None"""
+    if str(CFG.get("kopf_ov") or "") != "sim:1":
+        return None
+    c = weit_sim_cam()
+    if not c or str(c.get("mount") or "scene") not in WEIT_DEVICE_MOUNTS:
+        return None
+    try:
+        return float(c.get("yaw_offset") or 0.0), bool(c.get("on_head"))
+    except (TypeError, ValueError):
+        return None
+
+
+def weit_head_deg():
+    """where the head really looks (degrees, + = right): the simulated head, else the planned position"""
+    h = SIM.get("head") if CFG.get("sim_on") else None
+    if isinstance(h, list) and h:
+        try:
+            return float(h[0])
+        except (TypeError, ValueError):
+            pass
+    return servo_pos_deg()[0]
+
+
+_kopf_ov_deg_162 = kopf_ov_deg
+
+
+def kopf_ov_deg(cx):                                      # + 163: the wide camera on the device (base: fixed, head: turns)
+    g = weit_ov_geom()
+    if g is None:
+        return _kopf_ov_deg_162(cx)
+    d = g[0] + (float(cx) - 0.5) * kopf_ov_fov() + (weit_head_deg() if g[1] else 0.0)
+    return (d + 180.0) % 360.0 - 180.0
+
+
+# ---- the camera on the head moves itself: no movement while it turns ------------------------------------------------
+def weit_cam_turning(spec):
+    """440: True while an extra camera that sits on the head turns (and a short settle time after) - the whole picture
+    «moves» then. Same signals as the main camera (410 foreground): SRV moving, SERVO_MOVE, a change of the position;
+    in the simulation also the simulated head (it follows a moment later)."""
+    try:
+        if not cam_on_head(spec):
+            return False
+    except NameError:
+        return False
+    now = time.time()
+    settle = 1.2 if CFG.get("sim_on") else 0.8
+    pt = (round(float(CFG["pan"]), 1), round(float(CFG["tilt"]), 1))
+    if pt != WEIT["pt"]:
+        WEIT["pt"] = pt; WEIT["pt_t"] = now
+    h = SIM.get("head") if CFG.get("sim_on") else None
+    if isinstance(h, list) and len(h) >= 2:
+        hd = (round(float(h[0]), 1), round(float(h[1]), 1))
+        if hd != WEIT["hd"]:
+            WEIT["hd"] = hd; WEIT["hd_t"] = now
+    moving = bool(SRV.get("moving")) or now - float(SERVO_MOVE.get("t") or 0.0) < settle
+    return moving or now - WEIT["pt_t"] < settle or now - WEIT["hd_t"] < settle
+
+
+# ---- the wide infrared light on channel 4 -----------------------------------------------------------------------------
+def weit_ir_ch_free():
+    """channel 4 is not taken by the white / infrared light or a servo"""
+    used = {str(CFG.get("light_white_out") or ""), str(CFG.get("light_ir_out") or "")}
+    return f"pca:{WEIT_IR_CH}" not in used and WEIT_IR_CH not in (int(CFG.get("pca_pan_ch", 0)), int(CFG.get("pca_tilt_ch", 1)))
+
+
+_lights_tick_070 = lights_tick
+
+
+def lights_tick():                                        # + 163: the wide infrared light follows the infrared light
+    prev = bool((STATE.get("lights") or {}).get("ir_wide"))
+    res = _lights_tick_070()
+    on = bool(res.get("ir")) and bool(CFG.get("light_ir_wide"))
+    if on != prev:
+        log_event("relay", f"Wide infrared light {'ON' if on else 'OFF'}")
+    res["ir_wide"] = on
+    STATE["lights"] = dict(STATE.get("lights") or {}, ir_wide=on)
+    return res
+
+
+_hw_lights_070 = Hardware._lights
+
+
+def _weit_hw_lights(self, wanted):
+    _hw_lights_070(self, wanted)
+    if self.pca is None:
+        return
+    on = bool((STATE.get("lights") or {}).get("ir_wide")) and weit_ir_ch_free()
+    if getattr(self, "_weit_ir", None) != on:
+        try:
+            self.pca.switch(WEIT_IR_CH, on); self._weit_ir = on
+        except Exception as e:
+            log_event("servo", f"Light error (channel {WEIT_IR_CH}): {e}")
+
+
+# wraps: Hardware._lights
+Hardware._lights = _weit_hw_lights
+_light_out_pairs_070 = light_out_pairs
+
+
+def light_out_pairs(name):                                # + 163: channel 4 belongs to the wide infrared light when it is on
+    p = _light_out_pairs_070(name)
+    if CFG.get("light_ir_wide"):
+        p = [x for x in p if x[0] != f"pca:{WEIT_IR_CH}" or x[0] == CFG.get(f"light_{name}_out")]
+    return p
+
+
+def weit_state(lang=None):
+    """for pages: the wide camera of the simulator (mount, overview, its extra camera number)"""
+    c = weit_sim_cam()
+    if not c or "mount" not in c:
+        return None
+    n = next((x.idx for x in CAMS if str(x.spec) == "sim:1"), None)
+    return {"mount": str(c.get("mount")), "on_head": bool(c.get("on_head")), "tilt": c.get("tilt_deg"), "n": n,
+            "ov": str(CFG.get("kopf_ov") or "") == "sim:1", "ov_on": bool(CFG.get("kopf_ov_on")), "fov": [c.get("fov_h"), c.get("fov_v")]}
 # ----------------------------------------------------------------------------
 # AI person detector (SSD MobileNet V2, COCO class 1 = person)
 # ----------------------------------------------------------------------------
@@ -29595,6 +29792,7 @@ class SimLink:
         # 2.98.29: another MoveEye (e.g. the AI helper on the PC, or the Pi) steers the simulator - this one only watches
         SIM["follower"] = bool(rep_.get("follower"))
         SIM["head"] = rep_.get("head_deg") if isinstance(rep_.get("head_deg"), list) else None    # 2.98.35: the simulated head (539 /api/servo)
+        weit_from_sim(rep_.get("wide"))                 # 163: the mount of the wide camera (3D-4.17) - «Übersicht lenkt den Kopf» by itself
         SIM["msg"] = "connected - only watching (another MoveEye steers the simulator)" if SIM["follower"] else "connected"
         if time.time() - SIMDIARY["t"] >= 30:                # 2.96.1: the diary of the simulator (visits)
             threading.Thread(target=simdiary_poll, daemon=True, name="simdiary").start()
@@ -36569,14 +36767,18 @@ class ExtraCam:
         if self.n % 2 == 0 or not self.times:                  # detection on every 2nd frame is enough
             pw = 320; ph = max(1, int(H * pw / W)); sx = W / pw; sy = H / ph
             gray = cv2.GaussianBlur(cv2.cvtColor(cv2.resize(frame, (pw, ph)), cv2.COLOR_BGR2GRAY), (5, 5), 0)
-            fg = bg.apply(gray)
-            fg = cv2.dilate(cv2.erode(cv2.threshold(fg, 200, 255, cv2.THRESH_BINARY)[1], None, iterations=1), None, iterations=2)
-            cnts, _ = cv2.findContours(fg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            amin = CFG["min_area"] * (1.0 - CFG["sensitivity"] / 200.0) * (320.0 / 480.0) ** 2
-            self.boxes = [(int(x * sx), int(y * sy), int(w * sx), int(h * sy)) for x, y, w, h in
-                          (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= amin)] if self.n > 30 else []
-            self.motion = bool(self.boxes) and CFG["detection_on"]
-            self.streak = self.streak + 1 if self.motion else 0
+            if weit_cam_turning(self.spec):                    # 163: a camera on the head turns with it - its movement is not movement
+                bg.apply(gray, learningRate=1.0)               # (the picture of now is the background, like the main camera, 410)
+                self.boxes = []; self.motion = False; self.streak = 0
+            else:
+                fg = bg.apply(gray)
+                fg = cv2.dilate(cv2.erode(cv2.threshold(fg, 200, 255, cv2.THRESH_BINARY)[1], None, iterations=1), None, iterations=2)
+                cnts, _ = cv2.findContours(fg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                amin = CFG["min_area"] * (1.0 - CFG["sensitivity"] / 200.0) * (320.0 / 480.0) ** 2
+                self.boxes = [(int(x * sx), int(y * sy), int(w * sx), int(h * sy)) for x, y, w, h in
+                              (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= amin)] if self.n > 30 else []
+                self.motion = bool(self.boxes) and CFG["detection_on"]
+                self.streak = self.streak + 1 if self.motion else 0
         now = time.time()
         if self.motion and self.streak >= 3:
             self.last_motion = now
@@ -56274,6 +56476,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
       ["game", "🎮", "Game", R && R.game ? (R.game.open ? "🟢 " + (R.game.players || 0) : T("off")) : ""],
       ["wildlife", "🦌", "Wildlife watching", cv("rifle") ? (cv("rifle").value ? T("on") : T("off")) : ""],
       ["place", "🪞", "Your place", cv("twin_on") ? (cv("twin_on").value ? T("on") : T("off")) : ""]];
+    if (h.wide && window.mwWide) L.splice(1, 0, ["wide", "🔭", "Wide camera", window.mwWide.sub(h)]);   // 591: the wide picture (tap = big)
     const kg = cv("game_kiguard");                      // simulator with «MoveEye as AI guard»
     if (kg) L.push(["kig", "🤖", "AI guard", kg.value ? T("on") : T("off")]);
     L.push(["view", "👁", "View", VIEW ? T((VIEWS.find(x => x[0] === VIEW) || [0, 0, ""])[2]) : ""]);
@@ -56297,7 +56500,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   function setOpen(k) { open = k; SH.textContent = ""; SH.dataset.sig = ""; TI.dataset.sig = ""; if (ON) paint(); if (k) setTimeout(() => SH.scrollIntoView({block: "nearest", behavior: "smooth"}), 60); }
   function sheet() {
     if (!open) { if (SH.firstChild) SH.textContent = ""; return; }
-    if (["scene", "hour", "weather", "visit"].includes(open)) {           // the sheets of the Simulator-Zentrale (139)
+    if (["scene", "hour", "weather", "visit", "wide"].includes(open)) {   // the sheets of the Simulator-Zentrale (139; wide: 591)
       let b = SH.firstChild;
       if (!b || b.dataset.kind !== open) { SH.textContent = ""; b = E("div"); b.dataset.simhub = "sheet"; b.dataset.kind = open; SH.appendChild(b); const h = HUB(); if (h) h.paint(); }
       return;
@@ -72082,6 +72285,172 @@ TRX['it'].update({
     '🛡 Arm all': '🛡 Inserire tutti',
     '🧭 Setup assistant': '🧭 Assistente di configurazione',
 })
+# ----------------------------------------------------------------------------
+# Plan Daniel 30.10.2026: the wide picture as a tile on /sim (Simulator-Zentrale, 139) and in Sim-Kompakt (549). No new
+# stream: the picture is the extra camera sim:1 that MoveEye already fetches (440), shown through /cam_feed/<n> only while
+# its sheet is open (the stream stops when the sheet closes). The tile sheet: the picture (tap = big, tap again / Esc =
+# back), the four mounts (simulator control wide_mount), whether it steers the head as overview (163).
+# Here (not in 163) because sim_state (290), sim_hub (139), SELFTEST_EXTRA (395) and simhub_head come before this part.
+# Translations: part 598.
+# ----------------------------------------------------------------------------
+# «IR-Licht breit (Kanal 4)» next to the infrared light in «Licht» (web and window read the same list)
+_wi = max([i for i, t_ in enumerate(TOGGLES) if t_[0] == "Lights"] or [len(TOGGLES) - 1])
+TOGGLES.insert(_wi + 1, ("Lights", "light_ir_wide", "Wide infrared light (channel 4): second IR LED 120° on PCA9685 channel 4, on / off with the infrared light"))
+_sim_state_290 = sim_state
+
+
+def sim_state():                                          # + 163: the simulator switches its wide infrared light
+    d = _sim_state_290()
+    try:
+        d["lights"]["ir_wide"] = bool((STATE.get("lights") or {}).get("ir_wide"))
+    except (KeyError, TypeError):
+        pass
+    return d
+
+
+_sim_hub_139 = sim_hub
+
+
+def sim_hub(force=False):                                 # + 591: the wide camera for its tile
+    d = _sim_hub_139(force)
+    if d.get("on"):
+        d = dict(d, wide=weit_state())
+    return d
+
+
+_sim_hub_do_139 = sim_hub_do
+
+
+def sim_hub_do(a, v=None):                                # + 591: «wide_mount» = the mount of the wide camera
+    if a != "wide_mount":
+        return _sim_hub_do_139(a, v)
+    m = str(v or "")
+    if m not in ("scene",) + WEIT_DEVICE_MOUNTS:
+        return False, "invalid value"
+    try:
+        r = sim_control({"action": "set", "id": "wide_mount", "value": m})
+    except Exception:
+        return False, "simulator not reachable"
+    if r.get("ok", True):
+        c = weit_sim_cam()
+        if c is not None:                                  # the next state reply says it too - but the tile shows it at once
+            c.update(mount=m, on_head=m.startswith("head_"), yaw_offset=180.0 if m == "head_rear" else 0.0)
+            weit_auto()
+    _SIMHUB["t"] = 0.0
+    return bool(r.get("ok", True)), str(r.get("error") or "")
+
+
+_source_label_200 = source_label
+
+
+def source_label(spec):                                   # + 591: the wide camera of the simulator has its own name
+    if str(spec) == "sim:1" and weit_sim_cam() and "mount" in (weit_sim_cam() or {}):
+        return "Simulator wide camera"
+    return _source_label_200(spec)
+
+
+WIDE_JS = r"""
+<style>
+.mwwide{position:relative;width:100%;max-width:640px;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:16/9;cursor:zoom-in}
+.mwwide img{display:block;width:100%;height:100%;object-fit:contain}
+.mwwide .mwwl{position:absolute;left:6px;bottom:6px;font:600 11px/1.3 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);padding:2px 7px;border-radius:8px}
+.mwwide .mwww{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#9aa7b8;font-size:13px}
+.mwwide.big{position:fixed;inset:0;z-index:9990;border-radius:0;aspect-ratio:auto;max-width:none;cursor:zoom-out}
+.shsheet .mwwide{flex:1 1 100%}
+.mwwnote{flex:1 1 100%;font-size:12px}
+</style>
+<script>
+(function () {
+  const DE = /*WDE*/{};
+  const M = [["scene", "Mast (scene)"], ["base", "Base front, fixed"], ["head_front", "Head front"], ["head_rear", "Head rear"]];
+  const L = () => { try { return (typeof LANG !== "undefined" && LANG) || document.documentElement.lang || "de"; } catch (e) { return "de"; } };
+  let merged = false;
+  const merge = () => { if (merged) return; try { if (typeof I18N !== "undefined" && I18N.de) { for (const k in DE) if (!(k in I18N.de)) I18N.de[k] = DE[k]; merged = true; } } catch (e) {} };
+  const tt = k => { merge(); try { if (typeof t === "function" && t(k) !== k) return t(k); } catch (e) {} return L() === "en" ? k : (DE[k] || k); };
+  const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
+  let BOX = null, IMG = null, LAB = null, WAIT = null, N = null;
+  function pic() {
+    if (!BOX) {
+      BOX = E("div", "mwwide"); IMG = E("img"); IMG.alt = ""; LAB = E("span", "mwwl"); WAIT = E("div", "mwww", "…");
+      IMG.addEventListener("load", () => { WAIT.hidden = true; });
+      BOX.append(WAIT, IMG, LAB);
+      BOX.onclick = e => { e.stopPropagation(); BOX.classList.toggle("big"); };
+      addEventListener("keydown", e => { if (e.key === "Escape" && BOX.classList.contains("big")) BOX.classList.remove("big"); });
+    }
+    return BOX;
+  }
+  let CUR = "";
+  function feed() {                                     // the stream only while the picture is on the page
+    if (!IMG) return;
+    const vis = document.contains(BOX) && !document.hidden && (BOX.offsetParent !== null || BOX.classList.contains("big"));
+    const src = N != null && vis ? "/cam_feed/" + N : "";
+    if (src === CUR) return;
+    CUR = src;
+    if (src) { WAIT.hidden = false; IMG.src = src; } else IMG.src = "data:,";      // (data: stops the running stream)
+  }
+  setInterval(feed, 1000);
+  document.addEventListener("visibilitychange", feed);
+  const name = m => tt((M.find(x => x[0] === m) || [0, m])[1]);
+  window.mwWide = {
+    tt: tt, name: name,
+    sub: H => { merge(); return H && H.wide ? name(H.wide.mount) : ""; },
+    sheet: (s, H, act) => {                            // 139 sheet(): the picture, the mounts, the overview
+      const w = H && H.wide;
+      if (!w) { s.appendChild(E("div", "mut", tt("not supported - update the simulator"))); return; }
+      N = w.n; s.appendChild(pic());
+      LAB.textContent = "🔭 " + tt("Wide camera") + " · " + name(w.mount);
+      if (N == null) WAIT.textContent = tt("The wide camera is not an extra camera of MoveEye");
+      M.forEach(([k, lb]) => { const b = E("button", k === w.mount ? "" : "sec", tt(lb)); b.type = "button"; b.onclick = () => act("wide_mount", k); s.appendChild(b); });
+      s.appendChild(E("div", "mut mwwnote", w.mount === "scene" ? tt("On the mast: not part of the device - it does not steer the head by itself.")
+        : w.ov ? "⟲ " + tt("Steers the head as overview («The overview camera steers the head»)") + (w.ov_on ? "" : " – " + tt("off"))
+        : tt("Overview chosen by hand - not changed.")));
+      setTimeout(feed, 30);
+    }
+  };
+})();
+</script>
+"""
+WIDE_KEYS = ("Wide camera", "Mast (scene)", "Base front, fixed", "Head front", "Head rear",
+             "The wide camera is not an extra camera of MoveEye", "On the mast: not part of the device - it does not steer the head by itself.",
+             "Steers the head as overview («The overview camera steers the head»)", "Overview chosen by hand - not changed.")
+_simhub_head_139 = simhub_head
+
+
+def simhub_head():                                        # + 591: the wide picture (139 tile «wide», 549 Sim-Kompakt)
+    return _simhub_head_139() + WIDE_JS.replace("/*WDE*/{}", json.dumps({k: DE[k] for k in WIDE_KEYS if k in DE}, ensure_ascii=False), 1)
+
+
+def weit_selftest():
+    keep = {k: CFG.get(k) for k in ("sim_on", "kopf_ov", "kopf_ov_simauto", "extra_cams", "kopf_ov_offset", "light_ir_wide", "light_white_out")}
+    keep_info, keep_head, keep_m = SIM.get("info"), SIM.get("head"), WEIT["mount"]
+    _ss = save_settings
+    try:
+        globals()["save_settings"] = lambda *a, **k: None
+        CFG.update(sim_on=True, kopf_ov="", kopf_ov_simauto=False, extra_cams=["sim:1"], kopf_ov_offset=0.0)
+        SIM["info"] = {"cameras": [{"id": 0, "fov_h": 66}, {"id": 1, "fov_h": 102.0, "fov_v": 67.0, "w": 640, "h": 360, "mount": "scene", "on_head": False}]}
+        WEIT["mount"] = None; weit_auto()
+        assert CFG["kopf_ov"] == "", "mast: not the overview by itself"
+        weit_from_sim({"mount": "head_rear", "yaw_offset": 180.0, "on_head": True, "pan_follow": True})
+        assert CFG["kopf_ov"] == "sim:1" and CFG["kopf_ov_simauto"]
+        SIM["head"] = [30.0, 0.0]
+        assert abs(kopf_ov_deg(0.5) - (-150.0)) < 0.01, kopf_ov_deg(0.5)          # 30 + 180 = 210 = -150
+        assert abs(kopf_ov_deg(1.0) - (-99.0)) < 0.01                              # + 51° right in the picture
+        CFG["kopf_ov"] = ""                                                         # by hand: stays as long as the mount stays
+        weit_from_sim({"mount": "head_rear"}); assert CFG["kopf_ov"] == ""
+        weit_from_sim({"mount": "base", "yaw_offset": 0.0, "on_head": False})
+        assert CFG["kopf_ov"] == "sim:1" and abs(kopf_ov_deg(0.25) + 25.5) < 0.01
+        weit_from_sim({"mount": "scene", "yaw_offset": 0.0, "on_head": False})
+        assert CFG["kopf_ov"] == "" and not CFG["kopf_ov_simauto"]
+        CFG.update(light_ir_wide=True, light_white_out="pca:4")
+        assert not weit_ir_ch_free()
+        assert "ir_wide" in sim_state()["lights"]
+        assert "mwWide" in simhub_head()
+    finally:
+        globals()["save_settings"] = _ss
+        CFG.update(keep); SIM["info"] = keep_info; SIM["head"] = keep_head; WEIT["mount"] = keep_m
+
+
+SELFTEST_EXTRA.append(("Wide camera of the simulator: mount, overview by itself, head direction (163 / 591)", weit_selftest))
 def _gonl_cmp_text(S):
     """the state of «Human vs AI» as plain lines (window)"""
     if not isinstance(S, dict):
@@ -72442,6 +72811,55 @@ for _k, _v in _HX_simkompakt.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 # the German texts into the page (I18N.de of the main page, only where it has no own text yet - see 549)
 WEB_PAGE = WEB_PAGE.replace("/*SKDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_simkompakt.items()}, ensure_ascii=False), 1)
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_weit = {
+    'Wide infrared light (channel 4): second IR LED 120° on PCA9685 channel 4, on / off with the infrared light':
+        ('IR-Licht breit (Kanal 4): zweite IR-LED 120° an PCA9685 Kanal 4, ein / aus mit dem Infrarotlicht',
+         'Lumière IR large (canal 4) : deuxième LED IR 120° sur le canal 4 du PCA9685, allumée / éteinte avec la lumière infrarouge',
+         'Luce IR ampia (canale 4): seconda LED IR 120° sul canale 4 del PCA9685, accesa / spenta con la luce infrarossa',
+         'Glisch IR largia (chanal 4): segunda LED IR 120° sin il chanal 4 dal PCA9685, en / ora cun la glisch infraritga'),
+    'Simulator wide camera': ('Simulator-Weitwinkel', 'Grand-angle du simulateur', 'Grandangolo del simulatore', 'Grond angul dal simulatur'),
+    'Wide camera': ('Weitwinkel-Kamera', 'Caméra grand-angle', 'Telecamera grandangolare', 'Camera da grond angul'),
+    'Mast (scene)': ('Mast (Szene)', 'Mât (scène)', 'Palo (scena)', 'Pal (scena)'),
+    'Base front, fixed': ('Unterteil vorne, fest', 'Socle avant, fixe', 'Base davanti, fissa', 'Part sut davant, fixa'),
+    'Head front': ('Kopf vorne', 'Tête avant', 'Testa davanti', 'Chau davant'),
+    'Head rear': ('Kopf hinten', 'Tête arrière', 'Testa dietro', 'Chau davos'),
+    'The wide camera is not an extra camera of MoveEye': ('Die Weitwinkel-Kamera ist keine Zusatzkamera von MoveEye',
+        'La caméra grand-angle n’est pas une caméra supplémentaire de MoveEye', 'La telecamera grandangolare non è una telecamera aggiuntiva di MoveEye',
+        'La camera da grond angul n’è betg ina camera supplementara da MoveEye'),
+    'On the mast: not part of the device - it does not steer the head by itself.': ('Am Mast: nicht Teil des Geräts – lenkt den Kopf nicht von selbst.',
+        'Sur le mât : ne fait pas partie de l’appareil – ne dirige pas la tête d’elle-même.', 'Sul palo: non fa parte dell’apparecchio – non guida la testa da sola.',
+        'Al pal: na fa betg part da l’apparat – na maina betg il chau da sasez.'),
+    'Steers the head as overview («The overview camera steers the head»)': ('Lenkt den Kopf als Übersicht («Übersicht lenkt den Kopf»)',
+        'Dirige la tête comme vue d’ensemble (« La vue d’ensemble dirige la tête »)', 'Guida la testa come panoramica («La panoramica guida la testa»)',
+        'Maina il chau sco survista («La survista maina il chau»)'),
+    'Overview chosen by hand - not changed.': ('Übersicht von Hand gewählt – bleibt so.', 'Vue d’ensemble choisie à la main – reste ainsi.',
+        'Panoramica scelta a mano – resta così.', 'Survista tschernida a maun – resta uschia.'),
+}
+for _k, _v in _HX_weit.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# the manual (HELP_PAGE of 540): one paragraph in the section «Kamera & Servos», German and English
+for _a, _b in (('<section id="camera" data-icon="📷"><h2>Kamera &amp; Servos</h2>',
+                "<p><b>🔭 Weitwinkel-Kamera im Simulator (Simulator 3D-4.17):</b> Die frühere «feste Kamera» des Simulators ist jetzt die "
+                "Weitwinkel-Kamera (Camera Module 3 Wide NoIR, 102° × 67°). Unter Simulator → Kamerabild → «Weitwinkel-Kamera» oder in der "
+                "Kachel 🔭 wählst du die Montage: <i>Mast (Szene)</i> wie bisher, <i>Unterteil vorne, fest</i> (10–15° nach unten), "
+                "<i>Kopf vorne</i> oder <i>Kopf hinten</i> (dreht mit). Sitzt sie am Gerät, stellt MoveEye «Übersicht lenkt den Kopf» selbst "
+                "ein: Bewegung im Weitwinkel-Bild dreht den Kopf dorthin, dann prüft die KI der Hauptkamera; solange der Kopf dreht, zählt "
+                "die Bewegung im Weitwinkel-Bild nicht. Auf dem Kopf gilt eine Drehgrenze (Kabel; 360°-Servos bräuchten einen Schleifring). "
+                "Die zweite IR-LED 120° schaltest du mit «IR-Licht breit (Kanal 4)» unter Licht.</p>"),
+               ('<section id="camera" data-icon="📷"><h2>Camera &amp; servos</h2>',
+                "<p><b>🔭 Wide camera in the simulator (simulator 3D-4.17):</b> the former «fixed camera» of the simulator is now the wide "
+                "camera (Camera Module 3 Wide NoIR, 102° × 67°). In Simulator → camera picture → «Weitwinkel-Kamera» or with the tile 🔭 "
+                "you choose its mount: <i>mast (scene)</i> as before, <i>base front, fixed</i> (10–15° down), <i>head front</i> or "
+                "<i>head rear</i> (turns with the head). On the device MoveEye sets «The overview camera steers the head» by itself: "
+                "movement in the wide picture turns the head there, then the AI of the main camera checks; while the head turns, movement "
+                "in the wide picture does not count. On the head a pan limit applies (cable; 360° servos would need a slip ring). The "
+                "second IR LED 120° is switched with «Wide infrared light (channel 4)» under Lights.</p>")):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 TRX['rm'].update({
     '(or the address from the push message).': "(u l'adressa da l'avis push).",
     '+ Add relay': '+ Agiuntar in relais',
