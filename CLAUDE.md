@@ -32,6 +32,18 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   Stand 29.10.2026 17:40: **Camera Module 3 NoIR ist da und läuft** am Pi 5 (192.168.1.56, Videoquelle «Raspberry Pi camera»,
   ab 2.98.24). Noch fehlend: Wärmebild, Servos, Licht, Ton, Akku.
 
+## Offene Aufträge (Stand 30.10.2026 03:00, Ausgabenlimit erreicht – weiter ab 31.10. 17:00)
+
+- **Auslöser im Spiel** (Helfer gestoppt, Arbeit in `/tmp/claude-0/wt_ausl`, Branch `wt-ausl`): Fadenkreuz Bildmitte, der
+  bestehende 🎯-Knopf wird der Auslöser (unten rechts im Live-Bild, nicht über dem Simulator), R2, Treffer = Foto + Alarm
+  (Test-Postfach) + Spieler raus + Punkte, daneben = Minuspunkt + 3 s Sperre, Trefferkreis nach Schwierigkeit.
+- **Servo-Industrie** (Helfer gestoppt, `/tmp/claude-0/wt_servo`, `wt-servo`): Rampen, Selbstdiagnose, Not-Aus/sichere
+  Grenzen/Watchdog, Teach-in (WAYPOINTS erweitern), Anzeige «wer steuert» auf allen Geräten + Hinweis bei Start von anderem Gerät.
+- **Spielkonzept** (alle 8 gewählt): drei feste Spiele (Schleichen, Wächter-Duell, Diebstahl) + «Eigene Regeln»; Rollen reihum;
+  Wächter-Werkzeuge mit Abklingzeit/Energie; Infos für Schleicher (Vibration, Lärm, Schatten); Mensch gegen KI vergleichen;
+  3-Min-Runden + Siegerbild + Replay + Abend-Rangliste; Fairness nach Rollen-Verhältnis; online über Tunnel/Tailscale mit Einladung.
+- Später: Gehäuse Variante 2 (ZIP fehlt), Prüfstand-Rückgang, mobiler MoveEye (Laufroboter, nur Notiz), Hardware-Tests.
+
 ## Software
 
 - **Bearbeitet wird in `quelle/`** (ab 2.95.63): das Programm in rund 65 Teilen nach Thema (Übersicht in `quelle/LIESMICH.md`).
