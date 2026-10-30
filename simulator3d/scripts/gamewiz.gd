@@ -67,6 +67,7 @@ const MODES := [["mw", "🛡", "Gegen MoveEye", "Die echte Erkennung von MoveEye
 		["guard", "👮", "Wächter", ""],   # the text: gamerules.gd GUARD_TXT (model, _rules)
 		["seek", "🙈", "Verstecken mit dem Rover", "Alle starten bei der Basis und verstecken sich 30 s lang. Der Fänger sieht nur die Kamera, fährt den Rover und drückt «Gefunden!». Wer die Basis berührt, rettet alle. Danach steht MoveEye wieder am alten Ort."],
 		["free", "🧪", "Zonen-Check", "Ohne Erwischen: geh die Grenzen deiner Zonen und die Wege ums Zelt ab. Das Handy sagt laufend, ob MoveEye dich sieht – jede Stelle, wo es dich nicht meldet, kommt auf die Karte der blinden Flecken."],
+		["escape", "🏃", "Entkomme der Kamera", "Ein Spieler steuert im Verfolgungs-Parcours eine Figur mit dem Stick (Handy, Controller oder Fenster) und versucht, aus dem Bild von MoveEye zu kommen. Eine Runde dauert 60 Sekunden. Punkte gibt es für die Zeit ausserhalb des Bilds und für jeden Verlust, den du verursachst. Die Punkte zählen in der Rangliste des Abends – und MoveEye lernt, besser zu folgen."],   # 3D-4.18 (Daniel): also in the wizard (parcours.gd)
 		["jaeger", "🦊", "Fehlalarm-Jäger", "Ihr seid keine Menschen, sondern Fuchs, Katze, Ast im Wind, Lampe, Ballon … Schafft ihr es, dass MoveEye trotzdem «Person!» meldet? Jeder Fehlalarm gibt Punkte – und MoveEye lernt daraus. Nur mit MoveEye."],
 		["camera", "🎥", "Alle gegen die Kamera (ältere Spielart)", "Wie «Gegen MoveEye», aber immer schätzt der Simulator, wer gesehen wird – auch wenn MoveEye verbunden ist.", true],
 		# 3D-4.x (Aufräumen, Daniel 29.10.2026): «Team gegen Team» is no longer offered - teams only with «Fahne erobern»
@@ -591,6 +592,19 @@ func _pick(key: String, v: String) -> void:
 
 
 func _next() -> void:
+	if str(W.get("game_mode", "")) == "escape":            # 3D-4.18: «Entkomme der Kamera» needs no goal / level - start it at once
+		var nm := "Spieler"
+		for p in main.game.players:
+			if p != null and str(p.get("name", "")) != "":
+				nm = str(p["name"])
+				break
+		error = main.parcours.game_start(nm) if main.parcours != null else "Parcours fehlt"
+		if error != "":
+			error = "⚠ " + error
+			_changed()
+			return
+		close_wiz()
+		return
 	if step < 3:
 		step += 1
 		error = ""

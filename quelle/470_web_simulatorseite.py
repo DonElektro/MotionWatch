@@ -1000,7 +1000,7 @@ async function gwGo(d) {
 let SPEC = null, SPECON = true, SPECRES = "", specT = null;
 try { SPECON = localStorage.getItem("mw-sim-spec") !== "0"; } catch (e) {}
 const MODE_TXT = {camera: "Alle gegen die Kamera", guard: "Wächter", teamguard: "Team gegen Team", mw: "Gegen MoveEye", mwhand: "Team gegen MoveEye",
-  patrol: "Patrouille", seek: "Verstecken mit dem Rover", free: "Zonen-Check", jaeger: "Fehlalarm-Jäger"};     // 2.98.0: all game types (2.98.18: Fehlalarm-Jäger)
+  patrol: "Patrouille", seek: "Verstecken mit dem Rover", free: "Zonen-Check", jaeger: "Fehlalarm-Jäger", escape: "Entkomme der Kamera"};     // 2.98.0: all game types (2.98.18: Fehlalarm-Jäger)
 const ST_IC = {play: "🏃", goal: "🎉", jail: "🔒", out: "👀", lobby: "⏳"};
 async function specPoll() {
   clearTimeout(specT);
