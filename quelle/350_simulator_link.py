@@ -74,6 +74,7 @@ class SimLink:
                    pc_cpu=rep_.get("pc_cpu"), cores=rep_.get("cores"),   # CPU of the PC the simulator runs on (3D-3.24)
                    solar=rep_.get("solar") if isinstance(rep_.get("solar"), dict) else None,   # 2.98.11: solar panel and
                    gps=rep_.get("gps") if isinstance(rep_.get("gps"), dict) else None)         # GPS module of the simulator   # CPU of the PC the simulator runs on (3D-3.24)
+        simvals_take(rep_)                                 # Simulator-Werte: battery, clock, place, forecast, Pi heat, network test (285)
         # 2.98.29: another MoveEye (e.g. the AI helper on the PC, or the Pi) steers the simulator - this one only watches
         SIM["follower"] = bool(rep_.get("follower"))
         SIM["head"] = rep_.get("head_deg") if isinstance(rep_.get("head_deg"), list) else None    # 2.98.35: the simulated head (539 /api/servo)

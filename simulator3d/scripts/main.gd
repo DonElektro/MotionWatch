@@ -68,6 +68,7 @@ var real_weather := false             # the weather of the place from open-meteo
 var surprise_on := false             # 3D-3.75: «Überraschungsnacht» (surprise.gd)
 var power_off := false               # 3D-3.75: power cut - the lamps of the place are out
 var surprise
+var simwerte                          # Simulator-Werte (30.10.2026): battery, Pi heat, network test, clock (power.gd)
 var visitlog                          # 3D-3.80: visitlog.gd
 var night_weather := false            # 3D-3.74: the weather runs through the night (dusk, showers, dew, morning fog)
 var _nw := {"day": -1, "plan": [], "last": "", "fog_lens": false}
@@ -443,6 +444,9 @@ func _ready() -> void:
 	surprise = preload("res://scripts/surprise.gd").new()   # 3D-3.75
 	surprise.main = self
 	add_child(surprise)
+	simwerte = preload("res://scripts/power.gd").new()      # Simulator-Werte: UPS HAT, Pi heat, «WLAN weg» (sent to MoveEye)
+	simwerte.main = self
+	add_child(simwerte)
 	recorder = Recorder.new()
 	recorder.main = self
 	add_child(recorder)
@@ -2549,7 +2553,7 @@ func world_reply() -> Dictionary:
 		press -= min(6.0, (now() - storm_t) / 180.0 * 6.0)
 	var t := Time.get_datetime_dict_from_system()
 	var midnight: float = now() - (t.hour * 3600 + t.minute * 60 + t.second)
-	return {"v": 1, "ok": true, "sim_time": midnight + hour() * 3600.0, "dark": is_dark(), "ambient_c": snappedf(ambient, 0.1),
+	var r := {"v": 1, "ok": true, "sim_time": midnight + hour() * 3600.0, "dark": is_dark(), "ambient_c": snappedf(ambient, 0.1),
 			"pressure_hpa": snappedf(press, 0.1), "wind_kmh": snappedf(wind, 0.1), "last_event": next_event_id - 1,
 			"pid": OS.get_process_id(), "active": sim_active, "sound_db": snappedf(sound_db(), 0.1) if sound_on else null,
 			"sound_ev": sound_events() if sound_on else null, "sound_ev_last": sound_ev_id,
@@ -2559,8 +2563,11 @@ func world_reply() -> Dictionary:
 			"sim_cpu_own": snappedf(mini_box.own["sim"], 0.1) if mini_box != null and float(mini_box.own["sim"]) >= 0.0 else null,
 			"cores": OS.get_processor_count(), "mw_cmd": mw_cmd if not mw_cmd.is_empty() else null,
 			"shut": game.shut.log_tail() if game != null and game.shut != null else null,   # 3D-4.x: «Auslöser» hits -> MoveEye's test inbox
-			"head_deg": [snappedf(-rad_to_deg(head.rotation.y), 0.01), snappedf(rad_to_deg(head_pitch.rotation.x) + 6.0, 0.01)] if head != null else null,
-			"wide": weit.state() if weit != null else null}   # 3D-4.17: the mount of the wide camera (MoveEye 163 at once)   # MoveEye 2.98.35: where the head really is (servo diagnosis)
+			"head_deg": [snappedf(-rad_to_deg(head.rotation.y), 0.01), snappedf(rad_to_deg(head_pitch.rotation.x) + 6.0, 0.01)] if head != null else null,   # MoveEye 2.98.35: where the head really is (servo diagnosis)
+			"wide": weit.state() if weit != null else null}   # 3D-4.17: the mount of the wide camera (MoveEye 163 at once)
+	if simwerte != null:
+		r.merge(simwerte.reply())                     # Simulator-Werte: battery, pi_temp, net, clock, place, forecast (power.gd)
+	return r
 
 
 var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
@@ -3098,7 +3105,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Dein Plat
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
 		["Kamerabild", "lens", "👁", ["", "Weitwinkel-Kamera", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
-		["Sensoren", "bell", "🔔", [""]],
+		["Sensoren", "bell", "🔔", ["", "Akku und Strom", "Netz-Ausfall testen"]],
 		["Mover", "track", "🚜", ["", "Patrouille", "Controller"]],
 		["Spiel", "pad", "🎮", ["", "Assistent"]],
 		["Wildbeobachtung", "target", "🎯", [""]],
@@ -3352,6 +3359,7 @@ func _register_controls() -> void:
 	add_control("toggle", "gas", "Gas / Rauch", func(): return gas_on, func(v): set_gas(v), "Sensoren")
 	add_control("button", "pir", "PIR Zelt auslösen", null, func(): add_event("PIR Zelt", "pir"), "Sensoren")
 	add_control("button", "bike", "Velo-Sensor auslösen (jemand rüttelt am Velo)", null, func(): add_event("Velo", "tag"), "Sensoren")
+	simwerte.add_controls()                            # Simulator-Werte: Akku und Strom, Netz-Ausfall testen (power.gd)
 	add_control("toggle", "rifle", "Gewehr (unblutig, nur Tiere)", func(): return rifle_on, func(v): rifle_on = v, "Wildbeobachtung")
 	add_control("button", "shoot_head", "Schuss aus der Kopfkamera", null, func(): shoot_head(), "Wildbeobachtung")
 	add_control("button", "score0", "Punkte auf 0", null, func(): reset_score(), "Wildbeobachtung")
@@ -4777,6 +4785,8 @@ func _build_ui() -> void:
 		testrun.add_info(testen_measure, UI)          # progress and result of the test run (card «Testen»)
 	elif groups.has("Testlauf"):
 		testrun.add_info(groups["Testlauf"], UI)
+	if subs.has("Sensoren/Akku und Strom"):           # Simulator-Werte: what goes to MoveEye (power.gd)
+		simwerte.add_info(subs["Sensoren/Akku und Strom"], UI)
 	if subs.has("Kamerabild/Wie echt"):              # 3D-3.94: what the real look adjustment does
 		real_label = UI.small("")
 		real_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

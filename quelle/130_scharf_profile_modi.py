@@ -148,7 +148,7 @@ NIGHT_SET = {"detection_on": True, "ai_enabled": True, "record": True, "snapshot
 
 def night_end_ts(now=None):
     """2.98.9: the end of the current / coming night time (report_hour) as a timestamp"""
-    now = now or datetime.now()
+    now = now or sim_now()                               # the simulated night while connected (285)
     end = now.replace(hour=int(CFG["report_hour"]) % 24, minute=0, second=0, microsecond=0)
     return (end if end > now else end + timedelta(days=1)).timestamp()
 
@@ -161,7 +161,7 @@ def night_guard_tick():
         return
     if not CFG["armed"]:
         CFG["night_guard_until"] = 0.0; save_settings(); return
-    if time.time() >= u:
+    if sim_now().timestamp() >= u:
         CFG["night_guard_until"] = 0.0
         disarm()
         save_settings()
@@ -432,7 +432,7 @@ def mode_tick():
         late = False
         if re.match(r"^\d{1,2}:\d{2}$", until):
             hh, mm = map(int, until.split(":"))
-            now = datetime.now(); since = datetime.fromtimestamp(float(CFG.get("mode_since") or 0))
+            now = sim_now(); since = datetime.fromtimestamp(float(CFG.get("mode_since") or 0))   # (285)
             end = now.replace(hour=hh % 24, minute=mm % 60, second=0, microsecond=0)
             late = since < end <= now or (end < since and now.date() > since.date() and now >= end)
         low = b.get("on") and b.get("on_battery") and b.get("pct") is not None and float(b["pct"]) < float(CFG["mode_fire_min_pct"])

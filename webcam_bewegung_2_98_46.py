@@ -2465,7 +2465,7 @@ def _window_start(s, dt):
     belongs to the day it starts on."""
     today, cur = dt.date(), dt.hour * 60 + dt.minute
     if s.get("sun"):
-        r = sun_times(today, CFG["latitude"], CFG["longitude"])
+        r = sun_times_here(today)                # the place of MoveEye - or of the simulated scene (285)
         light = s["sun"] == "light"
         if r in ("dark", "light"):
             return today if (r == "light") == light else None
@@ -2502,7 +2502,7 @@ def presence_ok(s):
 
 
 def schedule_active(s, dt=None):
-    return bool(s["enabled"]) and schedule_window_contains(s, dt or datetime.now()) and presence_ok(s)
+    return bool(s["enabled"]) and schedule_window_contains(s, dt or sim_now()) and presence_ok(s)   # sim_now: the simulated clock while connected (285)
 
 
 def days_text(days, names=("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")):
@@ -2520,7 +2520,7 @@ def schedule_tick():
     """Apply all schedules (called once per second by the Scheduler thread and after every edit)."""
     with LOCK:
         plans = [dict(s) for s in SCHEDULES]
-    now = datetime.now()
+    now = sim_now()                                      # the simulated clock while connected (285)
     forced, active, active_idx = {}, [], []
     for i, s in enumerate(plans):
         if schedule_active(s, now):
@@ -4600,7 +4600,9 @@ def weather_day(day):
 def weather_loop():
     time.sleep(90)
     while True:
-        if CFG["weather_on"] or (CFG["storm_on"] and CFG["storm_forecast"]):
+        if (CFG["weather_on"] or (CFG["storm_on"] and CFG["storm_forecast"])) and simval_live():
+            WEATHER["status"] = "simulator"              # the weather of the simulated scene - no internet call (285)
+        elif CFG["weather_on"] or (CFG["storm_on"] and CFG["storm_forecast"]):
             if time.time() - WEATHER["t"] > 3 * 3600:
                 weather_fetch()
         else:
@@ -4653,16 +4655,21 @@ def day_summary(day, lang="en"):
     if g is None:
         gg = gps_now(); g = [gg[0], gg[1]] if gg else None
     lat, lon = (g[0], g[1]) if g else (float(CFG["latitude"]), float(CFG["longitude"]))
-    st = sun_times(d.date(), lat, lon)
+    sim_day = simval_live() and day == sim_now().strftime("%Y-%m-%d")      # the day of the simulated scene: its place and weather (285)
+    st = sun_times_here(d.date()) if sim_day else sun_times(d.date(), lat, lon)
     sun = {"rise": f"{int(st[0] // 60):02d}:{int(st[0] % 60):02d}", "set": f"{int(st[1] // 60):02d}:{int(st[1] % 60):02d}",
            "len": f"{int((st[1] - st[0]) // 60)} h {int((st[1] - st[0]) % 60):02d}"} if isinstance(st, tuple) else {"polar": st}
     mi, mn = moon_phase(d)
     w = weather_day(day) if CFG["weather_on"] or weather_day(day) else None
+    if sim_day:
+        w = None; sw_ = sim_weather_day(lang)
     if w:
         dd = w.get("daily") or {}
         icon, key = wmo_text(dd.get("weather_code"))
         w = {"icon": icon, "text": tr(key, lang) if key else "", "tmax": dd.get("temperature_2m_max"), "tmin": dd.get("temperature_2m_min"),
              "rain": dd.get("precipitation_sum"), "wind": dd.get("wind_speed_10m_max"), "gust": dd.get("wind_gusts_10m_max"), "hourly": w.get("hourly") or {}}
+    if sim_day and sw_:
+        w = sw_
     rep_txt = ""
     if d.date() <= datetime.now().date():
         hr, fr = int(CFG["report_hour"]) % 24, int(CFG["report_from"]) % 24
@@ -4685,7 +4692,8 @@ def day_summary(day, lang="en"):
             "climate_sum": {"tmin": min(temps) if temps else None, "tmax": max(temps) if temps else None, "hmin": min(hums) if hums else None,
                             "hmax": max(hums) if hums else None, "pmin": min(press) if press else None, "pmax": max(press) if press else None},
             "weather": w, "weather_on": bool(CFG["weather_on"]), "weather_status": WEATHER["status"],
-            "sun": sun, "moon": {"icon": mi, "name": tr(mn, lang)}, "gps": g, "report": rep_txt}
+            "sun": sun, "moon": {"icon": mi, "name": tr(mn, lang)}, "gps": g, "report": rep_txt,
+            "sim": bool(sim_day), "sim_place": (sim_place() or (0, 0, ""))[2] if sim_day else ""}
 
 
 MSG_KEYWORDS = {"person": "ALARM", "warm": "WAERME", "noise": "LAERM", "tamper": "SABOTAGE", "prealarm": "VORALARM",
@@ -4796,7 +4804,8 @@ def outbox_loop():
             w = WATCH_REF.get("w"); d = _outbox_dir()
             files = sorted(f for f in os.listdir(d) if f.endswith(".json")) if os.path.isdir(d) else []
             OUTBOX["n"] = len(files)
-            if files and w is not None and Notifier.main_configured() and STATE.get("net", {}).get("online") is not False:
+            real_ok = Notifier.main_configured() and STATE.get("net", {}).get("online") is not False
+            if files and w is not None and not sim_net_down():
                 for f in files:
                     pj = os.path.join(d, f); pi = pj[:-5] + ".jpg"
                     try:
@@ -4815,6 +4824,19 @@ def outbox_loop():
                     if os.path.isfile(pi):
                         with open(pi, "rb") as fh:
                             jpg = fh.read()
+                    if m["p"].get("sandbox"):                # kept during a network test of the simulator: into the test inbox (285)
+                        p_ = dict(m["p"], late=True)
+                        sandbox_add(w.notifier._title(p_), w.notifier._text(p_), jpg, w.notifier._event(p_))
+                        msglog_add(w.notifier._title(p_), w.notifier._text(p_), w.notifier._event(p_), jpg, "test", "Test-Postfach · " + tr("sent later"))
+                        log_event("web", "Alarm from the outbox sent later into the test inbox")
+                        for x in (pj, pi):
+                            try:
+                                os.remove(x)
+                            except OSError:
+                                pass
+                        continue
+                    if not real_ok:
+                        continue
                     try:
                         code, where = w.notifier._send_main(dict(m["p"], late=True), jpg, m.get("fname") or "alarm.jpg")
                         log_event("web", f"Alarm from the outbox sent to {where} (HTTP {code})")
@@ -4828,7 +4850,11 @@ def outbox_loop():
             beat("outbox", 600, "Message outbox")
         except Exception as e:
             print(f"outbox: {e}")
-        time.sleep(60)
+        for _ in range(60):                              # every minute - at once when the network is back (285 sets «kick»)
+            if OUTBOX.get("kick"):
+                break
+            time.sleep(1.0)
+        OUTBOX["kick"] = False
 
 
 class Notifier:
@@ -5003,6 +5029,8 @@ class Notifier:
         return render_msg(msg_template(ev, 1), p)
 
     def _dispatch(self, p, jpg, fname):
+        if sim_net_down():                               # Simulator-Werte: «WLAN weg» / «Internet weg» test - nothing goes out (285)
+            return simnet_hold(self, p, jpg, fname)
         if sandbox_active() or p.get("_test"):           # 2.96.6: simulator test inbox - nobody is disturbed (141); 2.97.0: per message
             sandbox_add(self._title(p), self._text(p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
             msglog_add(self._title(p), self._text(p), self._event(p), jpg, "test", "Test-Postfach")    # 2.98.13: list «Nachrichten»
@@ -5755,7 +5783,7 @@ def arm_forecast(lang=None):
         nf = night_forecast()
     except Exception:
         nf = None
-    now = datetime.now()
+    now = sim_now()                                            # (285)
     until = now + timedelta(hours=have_h)
     if have_h >= 36:
         text = trf("Battery lasts {d} days at {level}", L, d=int(have_h // 24), level=lv)
@@ -8519,8 +8547,8 @@ def diary_thumb(name):
 # ---- night report -----------------------------------------------------------
 def report_window(now=None):
     """(start, end) of the night the report is about: from <report_from> o'clock to <report_hour> o'clock.
-    Before the report hour: the night so far."""
-    now = now or datetime.now()
+    Before the report hour: the night so far. While the simulator is connected: its clock (285)."""
+    now = now or sim_now()
     hr, fr = int(CFG["report_hour"]) % 24, int(CFG["report_from"]) % 24
     span = (hr - fr) % 24 or 24
     end = now.replace(hour=hr, minute=0, second=0, microsecond=0)
@@ -8534,7 +8562,9 @@ def report_build(lang=None, start=None, end=None):
     lang = cur_lang(lang)
     if start is None:
         start, end = report_window()
-    a, b = start.isoformat(timespec="seconds"), end.isoformat(timespec="seconds")
+        a, b = sim_to_real(start).isoformat(timespec="seconds"), sim_to_real(end).isoformat(timespec="seconds")   # the simulated night in real time (285)
+    else:
+        a, b = start.isoformat(timespec="seconds"), end.isoformat(timespec="seconds")
     sight_load()
     with SIGHT_LOCK:
         ev = [dict(e) for e in SIGHT["list"] if a <= e["start"] < b]
@@ -8648,7 +8678,7 @@ class ReportScheduler:
         while True:
             time.sleep(30)
             try:
-                now = datetime.now(); hr = int(CFG["report_hour"]) % 24
+                now = sim_now(); hr = int(CFG["report_hour"]) % 24     # the simulated morning while connected (285)
                 day = now.strftime("%Y-%m-%d")
                 if CFG["report_on"] and CFG["report_last_day"] != day and hr <= now.hour < hr + 3 and not morning_wait(now):
                     CFG["report_last_day"] = day; save_settings()
@@ -8916,6 +8946,9 @@ class BatteryMonitor:
         now = time.time(); dt = min(60.0, now - self._t); self._t = now
         if drill_active("battery"):                      # 2.96.6: drill «battery empty» (141) - never the real shutdown
             return drill_battery_tick(self)
+        sb_ = sim_sensor("battery")                      # Simulator-Werte: the simulated UPS HAT instead of the real one (285)
+        if sb_ is not None and sim_battery_tick(self, sb_):
+            return
         if CFG["ups_on"] and self.ups_tick():
             return
         cap_wh = float(CFG["batt_mah"]) * 3.7 / 1000.0 * 0.85
@@ -9101,7 +9134,16 @@ class SysMonitor:
         while True:
             time.sleep(1.0)
             cpu = self._cpu()
-            temp = self._temp()
+            temp = real_t = self._temp()
+            st_ = sim_pi_temp()                               # Simulator-Werte: the simulated Pi in its case (285)
+            if st_ is not None:
+                temp = float(st_)
+            STATE["cpu_temp_real"] = None if real_t is None else round(real_t, 1)
+            STATE["cpu_temp_src"] = "sim" if st_ is not None else "pi"
+            try:
+                simvals_tick()
+            except Exception as e:
+                STATE["simvals"] = {"on": False, "err": str(e)[:80]}
             if cpu is not None:
                 self.hist.append(round(cpu, 1))
             STATE["mem"] = mem_info()
@@ -9121,12 +9163,12 @@ class SysMonitor:
                 lim = float(CFG["temp_warn"])
                 if temp >= lim and not getattr(self, "warned", False):
                     self.warned = True
-                    log_event("sys", f"CPU hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation")
+                    log_event("sys", f"CPU hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation" + (" (simulator)" if st_ is not None else ""))
                     w = WATCH_REF["w"]
                     if w is not None:
                         de = CFG["lang"] == "de"
-                        w.notifier.info(trf("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation", temp=temp, lim=lim),
-                                        title="{name}: " + tr("temperature"))
+                        w.notifier.info(trf("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation", temp=temp, lim=lim)
+                                        + (" (🧪 " + tr("simulator") + ")" if st_ is not None else ""), title="{name}: " + tr("temperature"))
                 elif temp < lim - 5:
                     self.warned = False
 
@@ -9408,6 +9450,8 @@ class NetMonitor:
             try:
                 if drill_active("net"):                  # 2.96.6: drill «Wi-Fi / internet gone» (141)
                     res = {"online": False, "ms": None, "drill": True}
+                if sim_net_down():                       # Simulator-Werte: «WLAN weg» / «Internet weg» of the simulator (285)
+                    res = {"online": False, "ms": None, "sim": sim_net_down()}
             except NameError:
                 pass
             if STATE["net"].get("online") is not None and res["online"] != STATE["net"]["online"]:
@@ -10941,7 +10985,7 @@ NIGHT_SET = {"detection_on": True, "ai_enabled": True, "record": True, "snapshot
 
 def night_end_ts(now=None):
     """2.98.9: the end of the current / coming night time (report_hour) as a timestamp"""
-    now = now or datetime.now()
+    now = now or sim_now()                               # the simulated night while connected (285)
     end = now.replace(hour=int(CFG["report_hour"]) % 24, minute=0, second=0, microsecond=0)
     return (end if end > now else end + timedelta(days=1)).timestamp()
 
@@ -10954,7 +10998,7 @@ def night_guard_tick():
         return
     if not CFG["armed"]:
         CFG["night_guard_until"] = 0.0; save_settings(); return
-    if time.time() >= u:
+    if sim_now().timestamp() >= u:
         CFG["night_guard_until"] = 0.0
         disarm()
         save_settings()
@@ -11225,7 +11269,7 @@ def mode_tick():
         late = False
         if re.match(r"^\d{1,2}:\d{2}$", until):
             hh, mm = map(int, until.split(":"))
-            now = datetime.now(); since = datetime.fromtimestamp(float(CFG.get("mode_since") or 0))
+            now = sim_now(); since = datetime.fromtimestamp(float(CFG.get("mode_since") or 0))   # (285)
             end = now.replace(hour=hh % 24, minute=mm % 60, second=0, microsecond=0)
             late = since < end <= now or (end < since and now.date() > since.date() and now >= end)
         low = b.get("on") and b.get("on_battery") and b.get("pct") is not None and float(b["pct"]) < float(CFG["mode_fire_min_pct"])
@@ -20382,7 +20426,7 @@ def sneeze_reply():
         return
     SOUNDEV["sneeze_last"] = now
     n = sneeze_count(add=True)
-    h = datetime.now().hour
+    h = sim_now().hour                                         # the simulated night while connected (285)
     quiet = CFG.get("sneeze_night") and (h >= 22 or h < 7)
     log_event("sys", f"Sneeze recognised (today {n}×)" + (" - quiet at night" if quiet else ""))
     if quiet or not out_selected() or SOUND["playing"]:
@@ -22987,7 +23031,14 @@ STORM = {"p": deque(maxlen=480), "pulses": 0, "win": deque(maxlen=200), "cool": 
 
 
 def storm_forecast_gust():
-    """The strongest gust (km/h) expected in the next 12 hours, from the stored forecast (None = unknown)."""
+    """The strongest gust (km/h) expected in the next 12 hours, from the stored forecast (None = unknown).
+    While the simulator is connected: the gusts of the simulated weather (285), no internet forecast."""
+    sf = sim_forecast()
+    if sf is not None:
+        try:
+            return float(sf.get("gust_kmh"))
+        except (TypeError, ValueError):
+            return None
     now = datetime.now(); best = None
     for k in range(13):
         t = now + timedelta(hours=k)
@@ -23350,10 +23401,10 @@ def ina219_read(addr, shunt, bus=1):
 
 
 def next_sunrise(now=None):
-    now = now or datetime.now()
+    now = now or sim_now()                                 # the simulated clock and place while connected (285)
     for k in (0, 1):
         d = (now + timedelta(days=k)).date()
-        st = sun_times(d, float(CFG["latitude"]), float(CFG["longitude"]))
+        st = sun_times_here(d)
         if isinstance(st, str):
             return None
         t = datetime(d.year, d.month, d.day) + timedelta(minutes=st[0])
@@ -23370,11 +23421,11 @@ def night_forecast():
     sr = next_sunrise()
     if sr is None:
         return None
-    now = datetime.now(); dark = is_dark()
+    now = sim_now(); dark = is_dark()
     if dark:
         need = (sr - now).total_seconds() / 3600.0
     else:                                                  # daytime: the coming night (sunset .. sunrise), the sun still charges until then
-        st = sun_times(now.date(), float(CFG["latitude"]), float(CFG["longitude"]))
+        st = sun_times_here(now.date())
         ss = datetime(now.year, now.month, now.day) + timedelta(minutes=st[1]) if not isinstance(st, str) else now
         need = max(0.0, (sr - max(ss, now)).total_seconds() / 3600.0)
     have = b["pct"] / 100.0 * float(b["cap_wh"]) / max(0.5, float(b["use_w"]))
@@ -23394,7 +23445,7 @@ class SolarMonitor:
             time.sleep(10)
 
     def tick(self):
-        now = time.time(); day = datetime.now().strftime("%Y-%m-%d")
+        now = time.time(); day = sim_now().strftime("%Y-%m-%d")      # the day of the simulated scene while connected (285)
         if SOLAR["day"] != day:
             SOLAR.update(day=day, wh=0.0, max=0.0)
         if CFG["solar_on"]:
@@ -23429,7 +23480,7 @@ class SolarMonitor:
             STATE["solar"] = {"on": False}
         nf = night_forecast(); STATE["night"] = nf
         if nf and CFG["night_warn"] and not nf["enough"] and is_dark() and SOLAR["warned"] != day:
-            hh = datetime.now().hour
+            hh = sim_now().hour
             if hh >= 15:                                       # once in the evening (not again after midnight)
                 SOLAR["warned"] = day
                 log_event("sys", f"Battery will probably not last until sunrise ({nf['have_h']} h left, {nf['need_h']} h needed)")
@@ -23442,6 +23493,233 @@ class SolarMonitor:
 SOLARMON = None
 
 
+# ----------------------------------------------------------------------------
+# Wish of Daniel (30.10.2026): while MoveEye is connected to the 3D simulator, the «hardware» readings come from the
+# simulated world, not from the Pi. Before (kept): solar panel, GPS (+ theft), outside temperature / pressure / wind (storm),
+# sound, thermal camera, head position, door / PIR / gas / bike sensors, darkness. New here (the simulator sends them in its
+# answer to /state, simulator3d/scripts/power.gd -> SIM, taken in 350 SimLink.tick -> simvals_take):
+#   battery   the simulated UPS HAT -> 100 BatteryMonitor (charge, time left, power cut / back, «almost empty», battery
+#             saver 105, shutdown limit). «Empty» never shuts this computer down: MoveEye says what the device would do.
+#   clock     the time of the scene -> sim_now(): schedules (030), night report (090), night time / «Heute Nacht bewachen»
+#             and «Lagerfeuer bis» (130), night forecast + sunrise (280), battery forecast (066), the quiet night of the
+#             sneeze answer (250), the timeline night (425), the solar day (280).
+#             NOT for: log lines, file names, signatures, update checks, user time windows (041), backups - real time.
+#             Sightings keep their real time stamps; sim_to_real() turns a simulated night into the real time span in which
+#             the simulator ran through it (night report, timeline).
+#   place     sun times (sun_times_here: schedules «dark» / «light», night forecast, diary day) use the place of the scene.
+#   forecast  gusts and weather of the scene instead of Open-Meteo (060 weather_loop makes no internet call while connected,
+#             280 storm_forecast_gust, the diary day 060 day_summary).
+#   pi_temp   the CPU temperature of the simulated Pi -> STATE["cpu_temp"] (100 SysMonitor): heat warning, AI slower (180),
+#             servo diagnosis (072), turbo (130), MQTT / devices. STATE["cpu_temp_real"] keeps the real value (run guard 390).
+#   net       «WLAN weg» / «Internet weg» test of the simulator -> 110 online check (offline), 060 Notifier: alarms go to
+#             the outbox and are sent later («nachgeschickt»), other messages fail like for real; nothing on the real network.
+# After 10 s without an answer (simulator off / gone) everything is real again by itself (sim_live). STATE["simvals"] says
+# which values come from the simulator - the web page and the window show «🧪 Simulator» there (part 598).
+# ----------------------------------------------------------------------------
+SIMVAL = {"live": False, "map": [], "net": "", "off": False, "off_t": 0.0, "temp_warned": False}
+
+
+def simval_live():
+    """the simulator is on and answered in the last 10 s"""
+    return bool(CFG.get("sim_on")) and time.time() - float(SIM.get("t", 0.0)) <= 10      # a short hiccup (one failed request) does not count
+
+
+def simvals_take(rep):
+    """350 SimLink.tick: the new values of one answer of the simulator"""
+    for k in ("battery", "clock", "place", "forecast", "net"):
+        SIM[k] = rep.get(k) if isinstance(rep.get(k), dict) else None
+    try:
+        SIM["pi_temp"] = float(rep["pi_temp"]) if rep.get("pi_temp") is not None else None
+    except (TypeError, ValueError):
+        SIM["pi_temp"] = None
+    try:
+        st = sim_now().timestamp()
+        M = SIMVAL["map"]; now = time.time()
+        if not M or now - M[-1][0] >= 20 or abs((st - M[-1][1]) - (now - M[-1][0]) * float((SIM.get("clock") or {}).get("speed") or 1.0)) > 300:
+            M.append((now, st))
+            del M[:-3000]                                  # about 16 hours at one point per 20 s
+    except Exception:
+        pass
+
+
+def sim_now():
+    """The time of the simulated world while connected (the simulator sends date + hour; between two answers it runs on
+    with the speed of the time-lapse) - otherwise the real local time. Only for decisions about day and night (see top)."""
+    c = sim_sensor("clock")
+    if c is None:
+        return datetime.now()
+    try:
+        d = datetime.strptime(str(c["date"])[:10], "%Y-%m-%d")
+        h = float(c["hour"]) % 24.0 + max(0.0, time.time() - float(SIM.get("t", 0.0))) * float(c.get("speed") or 1.0) / 3600.0
+        return d + timedelta(hours=h)
+    except (KeyError, TypeError, ValueError):
+        return datetime.now()
+
+
+def sim_to_real(dt):
+    """A moment of the simulated clock -> the real time at which the simulator showed it (from the points of this
+    connection). Not connected / unknown: unchanged. Before the first point: the first point."""
+    if not simval_live() or not SIMVAL["map"]:
+        return dt
+    M = SIMVAL["map"]; s = dt.timestamp()
+    if float((SIM.get("clock") or {}).get("speed") or 1.0) <= 1.0 and abs(sim_now().timestamp() - time.time()) < 120:
+        return dt                                           # the simulator runs on the real clock: nothing to turn
+    if s >= M[-1][1]:
+        return datetime.fromtimestamp(min(time.time(), M[-1][0] + (s - M[-1][1]) / max(1.0, float((SIM.get("clock") or {}).get("speed") or 1.0))))
+    for i in range(len(M) - 1, 0, -1):
+        (r0, s0), (r1, s1) = M[i - 1], M[i]
+        if s0 <= s <= s1 and s1 > s0:
+            return datetime.fromtimestamp(r0 + (r1 - r0) * (s - s0) / (s1 - s0))
+        if s1 < s0:                                         # the clock was set back here: older points are another night
+            return datetime.fromtimestamp(r1)
+    return datetime.fromtimestamp(M[0][0])
+
+
+def sim_place():
+    """(lat, lon, name) of the scene while connected, else None"""
+    p = sim_sensor("place")
+    try:
+        return (float(p["lat"]), float(p["lon"]), str(p.get("name") or "")) if p else None
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def here_latlon():
+    p = sim_place()
+    return (p[0], p[1]) if p else (float(CFG["latitude"]), float(CFG["longitude"]))
+
+
+def sun_times_here(d):
+    """sun_times (030) for the place of MoveEye - or of the simulated scene, in the time zone of the scene"""
+    lat, lon = here_latlon()
+    st = sun_times(d, lat, lon)
+    c = sim_sensor("clock") if sim_place() else None
+    if c is not None and isinstance(st, tuple):
+        try:
+            loc = datetime(d.year, d.month, d.day, 12).astimezone().utcoffset().total_seconds() / 60.0
+            off = float(c.get("tz_h", 1.0)) * 60.0 - loc
+            st = (st[0] + off, st[1] + off)
+        except (OverflowError, OSError, ValueError, TypeError):
+            pass
+    return st
+
+
+def sim_forecast():
+    return sim_sensor("forecast")
+
+
+SIM_WX = {"clear": ("☀️", "clear"), "cloudy": ("☁️", "cloudy"), "fog": ("🌫", "fog"), "rain": ("🌧", "rain"), "snow": ("🌨", "snow")}
+
+
+def sim_weather_day(lang=None):
+    """the weather of the scene for the diary day (instead of Open-Meteo)"""
+    f = sim_forecast()
+    if not f:
+        return None
+    icon, key = SIM_WX.get(str(f.get("weather")), ("🌤", "partly cloudy"))
+    return {"icon": icon, "text": tr(key, lang), "tmax": f.get("tmax"), "tmin": f.get("tmin"), "rain": None,
+            "wind": round(float(SIM.get("wind") or 0.0)), "gust": f.get("gust_kmh"), "hourly": {}, "sim": True}
+
+
+def sim_pi_temp():
+    if not simval_live():
+        return None
+    return SIM.get("pi_temp")
+
+
+def sim_net_down():
+    """'wifi' / 'internet' while the simulator plays «WLAN weg» / «Internet weg», else ''"""
+    n = sim_sensor("net")
+    if not n:
+        return ""
+    return "wifi" if n.get("wifi") is False else ("internet" if n.get("internet") is False else "")
+
+
+def simnet_hold(nf, p, jpg, fname):
+    """060 Notifier._dispatch while the simulator plays a network outage: like a failed send - an alarm waits in the
+    outbox (sent later, also into the test inbox), other messages are lost (as for real). Nothing goes out."""
+    ev = nf._event(p)
+    alarm = ev in ("person", "tamper", "warm", "noise")
+    why = sim_net_down()
+    STATE["notify_status"] = "error: " + ("no Wi-Fi" if why == "wifi" else "no internet") + " (simulator)"
+    log_event("web", f"Notification not sent - {'Wi-Fi' if why == 'wifi' else 'internet'} gone (simulator test)")
+    msglog_add(nf._title(p), nf._text(p), ev, jpg, "failed", "🧪 " + ("no Wi-Fi" if why == "wifi" else "no internet"))
+    if alarm and not p.get("late"):
+        outbox_add(dict(p, sandbox=bool(sandbox_active() or p.get("_test"))), jpg, fname)
+
+
+def simvals_tick():
+    """once a second (100 SysMonitor): what comes from the simulator (STATE["simvals"]) and the change back to real"""
+    live = simval_live()
+    if live != SIMVAL["live"]:
+        SIMVAL["live"] = live
+        if live:
+            log_event("sys", "Simulator values: battery, clock, place, weather and Pi temperature come from the simulator")
+        else:
+            log_event("sys", "Simulator values ended - the real sensors and the real clock apply again")
+            SIMVAL["map"] = []
+            if SIMVAL["off"]:
+                SIMVAL["off"] = False
+    nd = sim_net_down() if live else ""
+    if nd != SIMVAL["net"]:
+        SIMVAL["net"] = nd
+        log_event("sys", ("Simulator test: Wi-Fi gone" if nd == "wifi" else "Simulator test: internet gone") if nd else "Simulator test: network back")
+        w = WATCH_REF.get("w")
+        try:
+            w.netmon.recheck = True                          # the online check (110) at once
+        except Exception:
+            pass
+        if not nd:
+            OUTBOX["kick"] = True                            # waiting alarms out at once
+            if "(simulator)" in str(STATE.get("notify_status") or ""):
+                STATE["notify_status"] = ""                  # no «push problem» afterwards: the outage was only the test
+    if not live:
+        STATE["simvals"] = {"on": False}
+        return
+    now = sim_now(); pl = sim_place(); b = sim_sensor("battery")
+    keys = [k for k, ok in (("battery", b is not None), ("clock", sim_sensor("clock") is not None), ("place", pl is not None),
+                            ("weather", sim_forecast() is not None), ("pi_temp", SIM.get("pi_temp") is not None),
+                            ("solar", bool(CFG.get("solar_on")) and sim_sensor("solar") is not None),
+                            ("gps", bool(CFG.get("gpsmod_on")) and sim_sensor("gps") is not None), ("net", sim_sensor("net") is not None)) if ok]
+    STATE["simvals"] = {"on": True, "keys": keys, "time": now.strftime("%H:%M"), "date": now.strftime("%Y-%m-%d"),
+                        "speed": float((SIM.get("clock") or {}).get("speed") or 1.0), "dark": bool(SIM.get("dark")),
+                        "place": pl[2] if pl else "", "lat": pl[0] if pl else None, "lon": pl[1] if pl else None,
+                        "weather": (sim_forecast() or {}).get("weather"), "net": nd, "pi_temp": SIM.get("pi_temp"),
+                        "off": bool(SIMVAL["off"]), "sched": [s["name"] for s in SCHEDULES if schedule_active(s, now)] if SCHEDULES else []}
+
+
+def sim_battery_tick(bm, sb):
+    """100 BatteryMonitor.tick with the simulated UPS HAT: the same display and the same reactions as the real HAT (E)"""
+    try:
+        v, a, pct = float(sb["v"]), float(sb["a"]), int(sb["pct"])
+    except (KeyError, TypeError, ValueError):
+        return False
+    on_batt = bool(sb.get("on_battery", True)) and not bool(sb.get("charging") and sb.get("mains"))
+    charging = bool(sb.get("charging"))
+    cap_wh = float(sb.get("cap_wh") or 0.0)
+    use_w = float(sb.get("load_w") or 0.0)
+    ml = sb.get("min_left")
+    hours = round(float(ml) / 60.0, 1) if on_batt and ml else (round(pct / 100.0 * cap_wh / max(0.8, use_w), 1) if on_batt and cap_wh else None)
+    STATE["battery"] = {"on": True, "src": "ups", "model": "sim", "sim": True, "pct": pct, "hours": hours, "cap_wh": round(cap_wh, 1),
+                        "use_w": round(use_w, 1), "watts": round(use_w, 1), "volt": round(v, 2), "amps": round(a, 2), "on_battery": on_batt,
+                        "charging": charging, "full": bool(sb.get("full")), "temp": sb.get("temp"), "solar_w": sb.get("solar_w"),
+                        "full_min": None}
+    if not getattr(bm, "_sim_seen", False):
+        bm._sim_seen = True
+        log_event("sys", f"Simulated UPS HAT (simulator): battery {v:.2f} V, {pct} %")
+    bm.ups_events(v, pct, hours, on_batt, False)          # volt_ok False: never the real shutdown of this computer
+    lim = int(CFG["ups_shutdown_pct"])
+    if not SIMVAL["off"] and on_batt and lim > 0 and (pct <= lim or sb.get("empty")):
+        SIMVAL["off"] = True; SIMVAL["off_t"] = time.time()
+        log_event("sys", f"Battery empty ({pct} %, {v:.2f} V) - the Pi would shut down now (simulator: this computer stays on)")
+        w = WATCH_REF.get("w")
+        if w is not None and CFG["ups_push"]:
+            w.notifier.info(tr("Battery empty – the Pi shuts down cleanly") + " (🧪 " + tr("simulator") + ")", title="{name}: " + tr("power"))
+    elif SIMVAL["off"] and (pct >= lim + 10 or not on_batt):
+        SIMVAL["off"] = False
+        log_event("sys", f"Battery charged again ({pct} %) - the Pi would start again (simulator)")
+    STATE["battery"]["sim_off"] = bool(SIMVAL["off"])
+    return True
 # ----------------------------------------------------------------------------
 # Simulator connection: a separate program (motionwatch_simulator.py, protocol in motionwatch_sim_interface.py) simulates two
 #   cameras, a thermal camera, day / night, weather and sensors. One switch: the sources change to the simulator, MoveEye
@@ -29792,6 +30070,7 @@ class SimLink:
                    pc_cpu=rep_.get("pc_cpu"), cores=rep_.get("cores"),   # CPU of the PC the simulator runs on (3D-3.24)
                    solar=rep_.get("solar") if isinstance(rep_.get("solar"), dict) else None,   # 2.98.11: solar panel and
                    gps=rep_.get("gps") if isinstance(rep_.get("gps"), dict) else None)         # GPS module of the simulator   # CPU of the PC the simulator runs on (3D-3.24)
+        simvals_take(rep_)                                 # Simulator-Werte: battery, clock, place, forecast, Pi heat, network test (285)
         # 2.98.29: another MoveEye (e.g. the AI helper on the PC, or the Pi) steers the simulator - this one only watches
         SIM["follower"] = bool(rep_.get("follower"))
         SIM["head"] = rep_.get("head_deg") if isinstance(rep_.get("head_deg"), list) else None    # 2.98.35: the simulated head (539 /api/servo)
@@ -32621,7 +32900,8 @@ def run_guard_start():
             time.sleep(10)
             sup = STATE.get("supply") or {}
             up = int(time.monotonic() - RUNGUARD["m0"])
-            state.update(up=up, cpu_temp=STATE.get("cpu_temp"), uv=bool(sup.get("uv_now") or sup.get("uv_boot")),
+            # cpu_temp: the real Pi (not the simulated one, 285)
+            state.update(up=up, cpu_temp=STATE.get("cpu_temp_real", STATE.get("cpu_temp")), uv=bool(sup.get("uv_now") or sup.get("uv_boot")),
                          throttled=bool(sup.get("throttled")), cpu=STATE.get("cpu"), ai=bool(CFG["ai_enabled"] and str(STATE.get("ai_status", "")).startswith("running")),
                          beat_txt=datetime.now().strftime("%Y-%m-%d %H:%M"))
             if up > 1800 and state.get("streak"):
@@ -60225,6 +60505,55 @@ THEMES = {
 }
 
 
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_weit = {
+    'Wide infrared light (channel 4): second IR LED 120° on PCA9685 channel 4, on / off with the infrared light':
+        ('IR-Licht breit (Kanal 4): zweite IR-LED 120° an PCA9685 Kanal 4, ein / aus mit dem Infrarotlicht',
+         'Lumière IR large (canal 4) : deuxième LED IR 120° sur le canal 4 du PCA9685, allumée / éteinte avec la lumière infrarouge',
+         'Luce IR ampia (canale 4): seconda LED IR 120° sul canale 4 del PCA9685, accesa / spenta con la luce infrarossa',
+         'Glisch IR largia (chanal 4): segunda LED IR 120° sin il chanal 4 dal PCA9685, en / ora cun la glisch infraritga'),
+    'Simulator wide camera': ('Simulator-Weitwinkel', 'Grand-angle du simulateur', 'Grandangolo del simulatore', 'Grond angul dal simulatur'),
+    'Wide camera': ('Weitwinkel-Kamera', 'Caméra grand-angle', 'Telecamera grandangolare', 'Camera da grond angul'),
+    'Mast (scene)': ('Mast (Szene)', 'Mât (scène)', 'Palo (scena)', 'Pal (scena)'),
+    'Base front, fixed': ('Unterteil vorne, fest', 'Socle avant, fixe', 'Base davanti, fissa', 'Part sut davant, fixa'),
+    'Head front': ('Kopf vorne', 'Tête avant', 'Testa davanti', 'Chau davant'),
+    'Head rear': ('Kopf hinten', 'Tête arrière', 'Testa dietro', 'Chau davos'),
+    'The wide camera is not an extra camera of MoveEye': ('Die Weitwinkel-Kamera ist keine Zusatzkamera von MoveEye',
+        'La caméra grand-angle n’est pas une caméra supplémentaire de MoveEye', 'La telecamera grandangolare non è una telecamera aggiuntiva di MoveEye',
+        'La camera da grond angul n’è betg ina camera supplementara da MoveEye'),
+    'On the mast: not part of the device - it does not steer the head by itself.': ('Am Mast: nicht Teil des Geräts – lenkt den Kopf nicht von selbst.',
+        'Sur le mât : ne fait pas partie de l’appareil – ne dirige pas la tête d’elle-même.', 'Sul palo: non fa parte dell’apparecchio – non guida la testa da sola.',
+        'Al pal: na fa betg part da l’apparat – na maina betg il chau da sasez.'),
+    'Steers the head as overview («The overview camera steers the head»)': ('Lenkt den Kopf als Übersicht («Übersicht lenkt den Kopf»)',
+        'Dirige la tête comme vue d’ensemble (« La vue d’ensemble dirige la tête »)', 'Guida la testa come panoramica («La panoramica guida la testa»)',
+        'Maina il chau sco survista («La survista maina il chau»)'),
+    'Overview chosen by hand - not changed.': ('Übersicht von Hand gewählt – bleibt so.', 'Vue d’ensemble choisie à la main – reste ainsi.',
+        'Panoramica scelta a mano – resta così.', 'Survista tschernida a maun – resta uschia.'),
+}
+for _k, _v in _HX_weit.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# the manual (HELP_PAGE of 540): one paragraph in the section «Kamera & Servos», German and English
+for _a, _b in (('<section id="camera" data-icon="📷"><h2>Kamera &amp; Servos</h2>',
+                "<p><b>🔭 Weitwinkel-Kamera im Simulator (Simulator 3D-4.17):</b> Die frühere «feste Kamera» des Simulators ist jetzt die "
+                "Weitwinkel-Kamera (Camera Module 3 Wide NoIR, 102° × 67°). Unter Simulator → Kamerabild → «Weitwinkel-Kamera» oder in der "
+                "Kachel 🔭 wählst du die Montage: <i>Mast (Szene)</i> wie bisher, <i>Unterteil vorne, fest</i> (10–15° nach unten), "
+                "<i>Kopf vorne</i> oder <i>Kopf hinten</i> (dreht mit). Sitzt sie am Gerät, stellt MoveEye «Übersicht lenkt den Kopf» selbst "
+                "ein: Bewegung im Weitwinkel-Bild dreht den Kopf dorthin, dann prüft die KI der Hauptkamera; solange der Kopf dreht, zählt "
+                "die Bewegung im Weitwinkel-Bild nicht. Auf dem Kopf gilt eine Drehgrenze (Kabel; 360°-Servos bräuchten einen Schleifring). "
+                "Die zweite IR-LED 120° schaltest du mit «IR-Licht breit (Kanal 4)» unter Licht.</p>"),
+               ('<section id="camera" data-icon="📷"><h2>Camera &amp; servos</h2>',
+                "<p><b>🔭 Wide camera in the simulator (simulator 3D-4.17):</b> the former «fixed camera» of the simulator is now the wide "
+                "camera (Camera Module 3 Wide NoIR, 102° × 67°). In Simulator → camera picture → «Weitwinkel-Kamera» or with the tile 🔭 "
+                "you choose its mount: <i>mast (scene)</i> as before, <i>base front, fixed</i> (10–15° down), <i>head front</i> or "
+                "<i>head rear</i> (turns with the head). On the device MoveEye sets «The overview camera steers the head» by itself: "
+                "movement in the wide picture turns the head there, then the AI of the main camera checks; while the head turns, movement "
+                "in the wide picture does not count. On the head a pan limit applies (cable; 360° servos would need a slip ring). The "
+                "second IR LED 120° is switched with «Wide infrared light (channel 4)» under Lights.</p>")):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 # ----------------------------------------------------------------------------
 # Desktop GUI (Tkinter) - optional, so --headless works without Tkinter/Pillow
 # ----------------------------------------------------------------------------
@@ -72814,55 +73143,237 @@ for _k, _v in _HX_simkompakt.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 # the German texts into the page (I18N.de of the main page, only where it has no own text yet - see 549)
 WEB_PAGE = WEB_PAGE.replace("/*SKDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_simkompakt.items()}, ensure_ascii=False), 1)
+# ----------------------------------------------------------------------------
+# Simulator-Werte (285): STATE["simvals"] = {"on", "keys": battery / clock / place / weather / pi_temp / solar / gps / net,
+# "time", "dark", "place", "weather", "net", "pi_temp", "off", "sched"}. Shown:
+#   web (main page: after every refresh, hook on tidyHeader of 530; Simulator page: own poll every 3 s)
+#     - one line under the simulator tile of the Live page / under the Simulator centre: which values come from the
+#       simulator, the simulated time (day / night, time-lapse), place, weather, Pi temperature, «WLAN weg» test
+#     - «🧪» + tooltip at the battery (header badge, battery line), the CPU temperature, solar, GPS, storm, schedules
+#     - a red header badge «📵 🧪 WLAN weg» / «Internet weg» while the simulator plays the outage
+#   window (Tk): the status lines Battery, Solar panel, GPS module, Storm warning, Night report, Simulator, the battery
+#     badge, the CPU temperature and the Wi-Fi line get «🧪 Simulator».
+# Texts: part 599 (German into the pages through /*SVDE*/).
+# ----------------------------------------------------------------------------
+SIMVALS_JS = r"""
+<script>
+(function () {
+  try { const de = /*SVDE*/{}; if (typeof I18N !== "undefined" && I18N.de) for (const k in de) if (!(k in I18N.de)) I18N.de[k] = de[k]; } catch (e) {}
+  try { if (typeof I18N !== "undefined") I18N.en = I18N.en || {}; if (typeof I18N !== "undefined") I18N.en["sv-note"] = I18N.en["sv-note"] || "When the simulator does not answer for 10 seconds, the real sensors and the real clock apply again. Log, file names and updates stay on the real clock."; } catch (e) {}
+  const tt = s => (typeof t === "function" ? t(s) : s);
+  const KN = {battery: "Battery", clock: "Clock", place: "Place", weather: "Weather", pi_temp: "Pi temperature", solar: "Solar panel", gps: "GPS module", net: "Network"};
+  const SIMT = () => "🧪 " + tt("from the simulator");
+  function tag(sel, sep, extra) {
+    const e = document.querySelector(sel); if (!e || e.hidden || !e.textContent) return;
+    if (!e.textContent.includes("🧪")) e.textContent += sep + "🧪" + (extra ? " " + extra : "");
+    if (!(e.title || "").includes("🧪")) e.title = ((e.title || "") + "\n" + SIMT()).trim();
+  }
+  function box() {
+    let b = document.getElementById("sv-box"); if (b) return b;
+    const at = document.getElementById("simtile") || document.getElementById("c-hub"); if (!at) return null;
+    b = document.createElement("div"); b.id = "sv-box"; b.className = "mut"; b.hidden = true;
+    b.style.cssText = "white-space:pre-wrap;font-size:13px;margin:0 0 12px;padding:8px 10px;border:1px dashed var(--line,#444);border-radius:10px";
+    at.parentNode.insertBefore(b, at.nextSibling); return b;
+  }
+  function netBadge(v) {
+    let nb = document.getElementById("b-simnet"); const ref = document.getElementById("b-sim");
+    if (!v.on || !v.net) { if (nb) nb.remove(); return; }
+    if (!nb && ref) { nb = document.createElement("span"); nb.id = "b-simnet"; nb.className = "badge red"; ref.parentNode.insertBefore(nb, ref.nextSibling); }
+    if (nb) { nb.textContent = "📵 🧪 " + tt(v.net === "wifi" ? "Wi-Fi gone" : "Internet gone"); nb.title = tt("Simulator test: push messages wait and are sent later"); }
+  }
+  function paint(s) {
+    const v = (s && s.simvals) || {}; const b = box(); netBadge(v);
+    if (!v.on) { if (b) b.hidden = true; return; }
+    const K = new Set(v.keys || []);
+    const L = ["🧪 " + tt("Values from the simulator") + ": " + [...K].map(k => tt(KN[k] || k)).join(", ")];
+    const l2 = [];
+    if (K.has("clock")) l2.push("🕑 " + v.time + " (" + tt(v.dark ? "night" : "day") + (v.speed > 1 ? ", " + tt("time-lapse") + " " + Math.round(v.speed) + "×" : "") + ")");
+    if (K.has("place") && v.place) l2.push("📍 " + v.place);
+    if (K.has("weather") && v.weather) l2.push("🌦 " + tt(v.weather));
+    if (v.pi_temp != null) l2.push("🌡 Pi " + Math.round(v.pi_temp) + " °C");
+    if (l2.length) L.push(l2.join(" · "));
+    if ((v.sched || []).length) L.push("🗓 " + tt("Schedule") + ": " + v.sched.join(", "));
+    if (v.net) L.push("📵 " + tt(v.net === "wifi" ? "Wi-Fi gone" : "Internet gone") + " – " + tt("Simulator test: push messages wait and are sent later"));
+    if (v.off) L.push("⏻ " + tt("Battery empty – the device would be off now"));
+    L.push(tt("sv-note"));
+    if (b) { b.textContent = L.join("\n"); b.hidden = false; }
+    const bs = document.getElementById("b-sim"); if (bs) bs.title = ((bs.title || "").split("\n🧪")[0] + "\n" + L.slice(0, 2).join("\n")).trim();
+    if (K.has("battery")) { tag("#b-batt", " "); tag("#batt-line", "\n", tt("from the simulator") + (v.off ? " · ⏻ " + tt("Battery empty – the device would be off now") : "")); }
+    if (K.has("pi_temp")) { tag("#b-cpu", " "); tag("#cpu-info", " · ", tt("Pi temperature from the simulator")); }
+    if (K.has("solar")) tag("#solar-st", "\n", tt("from the simulator"));
+    if (K.has("gps")) tag("#gpsm-st", "\n", tt("from the simulator"));
+    if (K.has("weather")) tag("#storm-st", "\n", tt("weather and forecast from the simulator"));
+    if (K.has("clock")) tag("#b-sched", " ", v.time);
+  }
+  window.svPaint = paint;
+  if (typeof window.tidyHeader === "function") {                 // main page: after every refresh (tidyHeader paints last)
+    const th = window.tidyHeader;
+    window.tidyHeader = function (s, c) { const r = th.apply(this, arguments); setTimeout(() => { try { paint(s); } catch (e) {} }, 0); return r; };
+  } else {                                                      // Simulator page: an own look every 3 s
+    const poll = async () => { if (document.hidden) return; try { const j = await (await fetch("/api/state", {cache: "no-store"})).json(); paint(j.state || {}); } catch (e) {} };
+    setInterval(poll, 3000); setTimeout(poll, 900);
+  }
+})();
+</script>
+"""
+WEB_PAGE = WEB_PAGE.replace("</body>", SIMVALS_JS + "</body>", 1)
+SIM_PAGE = SIM_PAGE.replace("</body>", SIMVALS_JS + "</body>", 1)
+
+
+# ---- window (Tk): «🧪 Simulator» at the status lines and badges --------------------------------------------------------
+def _sv_keys():
+    v = STATE.get("simvals") or {}
+    return set(v.get("keys") or []) if v.get("on") else set()
+
+
+_SV_STATUS_KEYS = {"Battery": "battery", "Solar panel": "solar", "GPS module": "gps", "Storm warning": "weather", "Night report": "clock"}
+_sv_status_orig = App._status
+
+
+def _sv_status(self, sec, text):
+    try:
+        K = _sv_keys()
+        if K and sec in _SV_STATUS_KEYS and _SV_STATUS_KEYS[sec] in K and "🧪" not in str(text):
+            text = str(text) + "\n🧪 " + tr("from the simulator")
+            if sec == "Battery" and SIMVAL.get("off"):
+                text += " · ⏻ " + tr("Battery empty – the device would be off now")
+        elif K and sec == "Simulator":
+            v = STATE.get("simvals") or {}
+            text = str(text) + "\n🧪 " + tr("Values from the simulator") + ": " + ", ".join(tr({"battery": "Battery", "clock": "Clock", "place": "Place",
+                    "weather": "Weather", "pi_temp": "Pi temperature", "solar": "Solar panel", "gps": "GPS module", "net": "Network"}.get(k, k)) for k in sorted(K)) \
+                + f"\n🕑 {v.get('time', '')} ({tr('night') if v.get('dark') else tr('day')})" + (f" · 📍 {v['place']}" if v.get("place") else "") \
+                + (f" · 🌡 Pi {v['pi_temp']:.0f} °C" if isinstance(v.get("pi_temp"), (int, float)) else "") \
+                + (("\n📵 " + tr("Wi-Fi gone" if v.get("net") == "wifi" else "Internet gone") + " – " + tr("Simulator test: push messages wait and are sent later")) if v.get("net") else "")
+    except Exception:
+        pass
+    return _sv_status_orig(self, sec, text)
+
+
+_sv_sb_orig = App._sb
+
+
+def _sv_sb(self, key, text, color=None, show=True):
+    try:
+        if key == "b_batt" and "battery" in _sv_keys() and "🧪" not in str(text):
+            text = str(text) + " 🧪"
+    except Exception:
+        pass
+    return _sv_sb_orig(self, key, text, color, show)
+
+
+_sv_cpu_orig = App._update_cpu
+
+
+def _sv_update_cpu(self):
+    r = _sv_cpu_orig(self)
+    try:
+        if "pi_temp" in _sv_keys() and self.l_cpu_info is not None and "🧪" not in self.l_cpu_info.cget("text"):
+            self.l_cpu_info.config(text=self.l_cpu_info.cget("text") + " · 🧪 " + tr("Pi temperature from the simulator"))
+    except Exception:
+        pass
+    return r
+
+
+_sv_wifi_orig = App._update_wifi
+
+
+def _sv_update_wifi(self):
+    r = _sv_wifi_orig(self)
+    try:
+        nd = (STATE.get("simvals") or {}).get("net")
+        if nd and self.l_wifi is not None and "🧪" not in self.l_wifi.cget("text"):
+            self.l_wifi.config(text=self.l_wifi.cget("text") + "\n📵 🧪 " + tr("Wi-Fi gone" if nd == "wifi" else "Internet gone") + " – "
+                               + tr("Simulator test: push messages wait and are sent later"), foreground=C["red"])
+    except Exception:
+        pass
+    return r
+
+
+# wraps: App._status
+App._status = _sv_status
+# wraps: App._sb
+App._sb = _sv_sb
+# wraps: App._update_cpu
+App._update_cpu = _sv_update_cpu
+# wraps: App._update_wifi
+App._update_wifi = _sv_update_wifi
+
+# ---- the manual (HELP_PAGE of 540): one paragraph in the section about the simulator, German and English ----------------
+_SV_HELP = {
+    "de": "<p><b>🧪 Werte aus dem Simulator (ab 2.98.47):</b> Ist MoveEye mit dem 3D-Simulator verbunden, kommen die «Hardware»-Werte "
+          "aus der simulierten Welt: Akku (ein simulierter USV-HAT mit 2 × 18650 – entlädt sich mit Pi, Servos, Licht und Sirene, lädt mit "
+          "dem Solarpanel oder dem Netzteil, Kälte senkt die Kapazität), Uhrzeit und Datum (Zeitpläne, Nachtbericht, «Heute Nacht bewachen», "
+          "Nacht-Prognose – auch im Zeitraffer), Ort (Sonnenauf- und -untergang), Wetter und Böen-Prognose (kein Internet-Wetter), die "
+          "Temperatur des Pi (Hitze-Warnung, KI langsamer) und der Test «WLAN weg» / «Internet weg» (Alarme warten und werden nachgeschickt). "
+          "Solar, GPS, Aussentemperatur, Wind, Geräusche, Wärmebild und Sensoren kamen schon vorher vom Simulator. Jeder solche Wert trägt "
+          "«🧪». Die Regler sind im Simulator unter Sensoren → «Akku und Strom» und «Netz-Ausfall testen». Protokoll, Dateinamen, Signaturen "
+          "und Updates bleiben auf der echten Uhr. Antwortet der Simulator 10 Sekunden nicht, gelten wieder die echten Werte.</p>",
+    "en": "<p><b>🧪 Values from the simulator (from 2.98.47):</b> while MoveEye is connected to the 3D simulator its «hardware» values come "
+          "from the simulated world: battery (a simulated UPS HAT with 2 × 18650 – drained by the Pi, servos, light and siren, charged by the "
+          "solar panel or a mains adapter, cold lowers the capacity), time and date (schedules, night report, «Guard tonight», night forecast – "
+          "also in the time-lapse), place (sunrise and sunset), weather and gust forecast (no internet weather), the temperature of the Pi "
+          "(heat warning, AI slower) and the test «Wi-Fi gone» / «Internet gone» (alarms wait and are sent later). Solar, GPS, outside "
+          "temperature, wind, sounds, thermal camera and sensors came from the simulator before. Every such value carries «🧪». The controls "
+          "are in the simulator under Sensors → «Akku und Strom» and «Netz-Ausfall testen». Log, file names, signatures and updates stay on "
+          "the real clock. When the simulator does not answer for 10 seconds the real values apply again.</p>"}
+for _a, _b in (('<section id="system" data-icon="⚙"><h2>System &amp; Netz</h2>', _SV_HELP["de"]),
+               ('<section id="system" data-icon="⚙"><h2>System &amp; network</h2>', _SV_HELP["en"])):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 # key = English text: (Deutsch, Français, Italiano, Rumantsch)
-_HX_weit = {
-    'Wide infrared light (channel 4): second IR LED 120° on PCA9685 channel 4, on / off with the infrared light':
-        ('IR-Licht breit (Kanal 4): zweite IR-LED 120° an PCA9685 Kanal 4, ein / aus mit dem Infrarotlicht',
-         'Lumière IR large (canal 4) : deuxième LED IR 120° sur le canal 4 du PCA9685, allumée / éteinte avec la lumière infrarouge',
-         'Luce IR ampia (canale 4): seconda LED IR 120° sul canale 4 del PCA9685, accesa / spenta con la luce infrarossa',
-         'Glisch IR largia (chanal 4): segunda LED IR 120° sin il chanal 4 dal PCA9685, en / ora cun la glisch infraritga'),
-    'Simulator wide camera': ('Simulator-Weitwinkel', 'Grand-angle du simulateur', 'Grandangolo del simulatore', 'Grond angul dal simulatur'),
-    'Wide camera': ('Weitwinkel-Kamera', 'Caméra grand-angle', 'Telecamera grandangolare', 'Camera da grond angul'),
-    'Mast (scene)': ('Mast (Szene)', 'Mât (scène)', 'Palo (scena)', 'Pal (scena)'),
-    'Base front, fixed': ('Unterteil vorne, fest', 'Socle avant, fixe', 'Base davanti, fissa', 'Part sut davant, fixa'),
-    'Head front': ('Kopf vorne', 'Tête avant', 'Testa davanti', 'Chau davant'),
-    'Head rear': ('Kopf hinten', 'Tête arrière', 'Testa dietro', 'Chau davos'),
-    'The wide camera is not an extra camera of MoveEye': ('Die Weitwinkel-Kamera ist keine Zusatzkamera von MoveEye',
-        'La caméra grand-angle n’est pas une caméra supplémentaire de MoveEye', 'La telecamera grandangolare non è una telecamera aggiuntiva di MoveEye',
-        'La camera da grond angul n’è betg ina camera supplementara da MoveEye'),
-    'On the mast: not part of the device - it does not steer the head by itself.': ('Am Mast: nicht Teil des Geräts – lenkt den Kopf nicht von selbst.',
-        'Sur le mât : ne fait pas partie de l’appareil – ne dirige pas la tête d’elle-même.', 'Sul palo: non fa parte dell’apparecchio – non guida la testa da sola.',
-        'Al pal: na fa betg part da l’apparat – na maina betg il chau da sasez.'),
-    'Steers the head as overview («The overview camera steers the head»)': ('Lenkt den Kopf als Übersicht («Übersicht lenkt den Kopf»)',
-        'Dirige la tête comme vue d’ensemble (« La vue d’ensemble dirige la tête »)', 'Guida la testa come panoramica («La panoramica guida la testa»)',
-        'Maina il chau sco survista («La survista maina il chau»)'),
-    'Overview chosen by hand - not changed.': ('Übersicht von Hand gewählt – bleibt so.', 'Vue d’ensemble choisie à la main – reste ainsi.',
-        'Panoramica scelta a mano – resta così.', 'Survista tschernida a maun – resta uschia.'),
+_HX_SIMWERTE = {
+    'from the simulator': ('vom Simulator', 'du simulateur', 'dal simulatore', 'dal simulatur'),
+    'Values from the simulator': ('Werte aus dem Simulator', 'Valeurs du simulateur', 'Valori dal simulatore', 'Valurs dal simulatur'),
+    'Clock': ('Uhrzeit', 'Heure', 'Ora', 'Ura'),
+    'Place': ('Ort', 'Lieu', 'Luogo', 'Lieu'),
+    'Weather': ('Wetter', 'Météo', 'Meteo', 'Aura'),
+    'Pi temperature': ('Pi-Temperatur', 'Température du Pi', 'Temperatura del Pi', 'Temperatura dal Pi'),
+    'Network': ('Netz', 'Réseau', 'Rete', 'Rait'),
+    'time-lapse': ('Zeitraffer', 'accéléré', 'accelerato', 'accelerà'),
+    'Wi-Fi gone': ('WLAN weg', 'Wi-Fi coupé', 'Wi-Fi assente', 'WLAN davent'),
+    'Internet gone': ('Internet weg', 'Internet coupé', 'Internet assente', 'Internet davent'),
+    'Simulator test: push messages wait and are sent later': (
+        'Simulator-Test: Push-Nachrichten warten und werden nachgeschickt',
+        'Test du simulateur : les messages push attendent et sont envoyés plus tard',
+        'Test del simulatore: i messaggi push aspettano e vengono inviati più tardi',
+        'Test dal simulatur: ils messadis push spetgan e vegnan tramess pli tard'),
+    'Battery empty – the device would be off now': (
+        'Akku leer – das Gerät wäre jetzt aus', 'Batterie vide – l’appareil serait éteint maintenant',
+        'Batteria scarica – l’apparecchio ora sarebbe spento', 'Accu vid – l’apparat fiss ussa stiz'),
+    'Pi temperature from the simulator': ('Pi-Temperatur vom Simulator', 'température du Pi du simulateur', 'temperatura del Pi dal simulatore',
+                                          'temperatura dal Pi dal simulatur'),
+    'weather and forecast from the simulator': ('Wetter und Prognose vom Simulator', 'météo et prévision du simulateur',
+                                                'meteo e previsione dal simulatore', 'aura e prognosa dal simulatur'),
+    'Battery': ('Akku', 'Batterie', 'Batteria', 'Accu'),
+    'Solar panel': ('Solarpanel', 'Panneau solaire', 'Pannello solare', 'Panel solar'),
+    'GPS module': ('GPS-Modul', 'Module GPS', 'Modulo GPS', 'Modul GPS'),
+    'night': ('Nacht', 'nuit', 'notte', 'notg'),
+    'day': ('Tag', 'jour', 'giorno', 'di'),
+    'Schedule': ('Zeitplan', 'Horaire', 'Orario', 'Plan da temp'),
+    'clear': ('klar', 'dégagé', 'sereno', 'serein'),
+    'cloudy': ('bewölkt', 'nuageux', 'nuvoloso', 'nivlus'),
+    'fog': ('Nebel', 'brouillard', 'nebbia', 'tschajera'),
+    'rain': ('Regen', 'pluie', 'pioggia', 'plievgia'),
+    'snow': ('Schnee', 'neige', 'neve', 'naiv'),
+    'simulator': ('Simulator', 'simulateur', 'simulatore', 'simulatur'),
+    'sent later': ('nachgeschickt', 'envoyé plus tard', 'inviato più tardi', 'tramess pli tard'),
+    'sv-note': ('Antwortet der Simulator 10 Sekunden nicht, gelten wieder die echten Sensoren und die echte Uhr. Protokoll, Dateinamen und '
+                'Updates bleiben auf der echten Uhr.',
+                'Si le simulateur ne répond pas pendant 10 secondes, les vrais capteurs et la vraie horloge s’appliquent à nouveau. Le journal, '
+                'les noms de fichiers et les mises à jour restent sur l’heure réelle.',
+                'Se il simulatore non risponde per 10 secondi valgono di nuovo i sensori veri e l’orologio vero. Protocollo, nomi dei file e '
+                'aggiornamenti restano sull’ora vera.',
+                'Sch’il simulatur na respunda betg durant 10 secundas, valan puspè ils sensurs vairs e l’ura vaira. Protocol, nums da datotecas '
+                'ed actualisaziuns restan sin l’ura vaira.'),
 }
-for _k, _v in _HX_weit.items():
+for _k, _v in _HX_SIMWERTE.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
-
-# the manual (HELP_PAGE of 540): one paragraph in the section «Kamera & Servos», German and English
-for _a, _b in (('<section id="camera" data-icon="📷"><h2>Kamera &amp; Servos</h2>',
-                "<p><b>🔭 Weitwinkel-Kamera im Simulator (Simulator 3D-4.17):</b> Die frühere «feste Kamera» des Simulators ist jetzt die "
-                "Weitwinkel-Kamera (Camera Module 3 Wide NoIR, 102° × 67°). Unter Simulator → Kamerabild → «Weitwinkel-Kamera» oder in der "
-                "Kachel 🔭 wählst du die Montage: <i>Mast (Szene)</i> wie bisher, <i>Unterteil vorne, fest</i> (10–15° nach unten), "
-                "<i>Kopf vorne</i> oder <i>Kopf hinten</i> (dreht mit). Sitzt sie am Gerät, stellt MoveEye «Übersicht lenkt den Kopf» selbst "
-                "ein: Bewegung im Weitwinkel-Bild dreht den Kopf dorthin, dann prüft die KI der Hauptkamera; solange der Kopf dreht, zählt "
-                "die Bewegung im Weitwinkel-Bild nicht. Auf dem Kopf gilt eine Drehgrenze (Kabel; 360°-Servos bräuchten einen Schleifring). "
-                "Die zweite IR-LED 120° schaltest du mit «IR-Licht breit (Kanal 4)» unter Licht.</p>"),
-               ('<section id="camera" data-icon="📷"><h2>Camera &amp; servos</h2>',
-                "<p><b>🔭 Wide camera in the simulator (simulator 3D-4.17):</b> the former «fixed camera» of the simulator is now the wide "
-                "camera (Camera Module 3 Wide NoIR, 102° × 67°). In Simulator → camera picture → «Weitwinkel-Kamera» or with the tile 🔭 "
-                "you choose its mount: <i>mast (scene)</i> as before, <i>base front, fixed</i> (10–15° down), <i>head front</i> or "
-                "<i>head rear</i> (turns with the head). On the device MoveEye sets «The overview camera steers the head» by itself: "
-                "movement in the wide picture turns the head there, then the AI of the main camera checks; while the head turns, movement "
-                "in the wide picture does not count. On the head a pan limit applies (cable; 360° servos would need a slip ring). The "
-                "second IR LED 120° is switched with «Wide infrared light (channel 4)» under Lights.</p>")):
-    if _a in HELP_PAGE:
-        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+# the German texts into the pages (main page and Simulator page, only where they have no own text yet - see 598)
+_SVDE = json.dumps({_k: DE.get(_k, _v[0]) for _k, _v in _HX_SIMWERTE.items()}, ensure_ascii=False)
+WEB_PAGE = WEB_PAGE.replace("/*SVDE*/{}", _SVDE, 1)
+SIM_PAGE = SIM_PAGE.replace("/*SVDE*/{}", _SVDE, 1)
 TRX['rm'].update({
     '(or the address from the push message).': "(u l'adressa da l'avis push).",
     '+ Add relay': '+ Agiuntar in relais',

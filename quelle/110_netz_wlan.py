@@ -161,6 +161,8 @@ class NetMonitor:
             try:
                 if drill_active("net"):                  # 2.96.6: drill «Wi-Fi / internet gone» (141)
                     res = {"online": False, "ms": None, "drill": True}
+                if sim_net_down():                       # Simulator-Werte: «WLAN weg» / «Internet weg» of the simulator (285)
+                    res = {"online": False, "ms": None, "sim": sim_net_down()}
             except NameError:
                 pass
             if STATE["net"].get("online") is not None and res["online"] != STATE["net"]["online"]:

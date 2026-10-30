@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 598: Übersetzungen und Anleitung der Weitwinkel-Kamera im Simulator (Teile 163 / 591). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 568: Übersetzungen und Anleitung der Weitwinkel-Kamera im Simulator (Teile 163 / 591). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # key = English text: (Deutsch, Français, Italiano, Rumantsch)
 _HX_weit = {
     'Wide infrared light (channel 4): second IR LED 120° on PCA9685 channel 4, on / off with the infrared light':

@@ -877,7 +877,7 @@ def _window_start(s, dt):
     belongs to the day it starts on."""
     today, cur = dt.date(), dt.hour * 60 + dt.minute
     if s.get("sun"):
-        r = sun_times(today, CFG["latitude"], CFG["longitude"])
+        r = sun_times_here(today)                # the place of MoveEye - or of the simulated scene (285)
         light = s["sun"] == "light"
         if r in ("dark", "light"):
             return today if (r == "light") == light else None
@@ -914,7 +914,7 @@ def presence_ok(s):
 
 
 def schedule_active(s, dt=None):
-    return bool(s["enabled"]) and schedule_window_contains(s, dt or datetime.now()) and presence_ok(s)
+    return bool(s["enabled"]) and schedule_window_contains(s, dt or sim_now()) and presence_ok(s)   # sim_now: the simulated clock while connected (285)
 
 
 def days_text(days, names=("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")):
@@ -932,7 +932,7 @@ def schedule_tick():
     """Apply all schedules (called once per second by the Scheduler thread and after every edit)."""
     with LOCK:
         plans = [dict(s) for s in SCHEDULES]
-    now = datetime.now()
+    now = sim_now()                                      # the simulated clock while connected (285)
     forced, active, active_idx = {}, [], []
     for i, s in enumerate(plans):
         if schedule_active(s, now):
