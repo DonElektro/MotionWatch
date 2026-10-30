@@ -189,6 +189,8 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 			return
 		var lead: bool = main.on_state(d, host)
 		var rep: Dictionary = main.world_reply()
+		if main.get("simint") != null:
+			rep.merge(main.simint.reply(), true)       # 30.10.2026: servo faults, 5 V, thermal model, warm hand (simint.gd)
 		if not lead:                                   # 3D-4.9: another MoveEye steers the simulator - this one only watches
 			rep["follower"] = true
 			rep["leader"] = main.mw_owner_name

@@ -3344,7 +3344,9 @@ function thExtras(d) {
   parts.forEach(([view, title, keys]) => {
     const S = el("details", "sub thsub"); S.dataset.view = view; S.appendChild(el("summary", "", title));
     keys.forEach(k => { const r = rowOf(k); if (r) S.appendChild(r); });
-    if (view === "th:cam") S.append(st, hint);
+    if (view === "th:cam") { Object.assign(I18N.de, {"Align the thermal picture (warm hand)": "Wärmebild ausrichten (warme Hand)"});   // 557
+      const al = el("a", "btn sec", "🖐 " + t("Align the thermal picture (warm hand)")); al.href = "/thermal_align"; al.style.marginTop = "6px";
+      S.append(st, hint, al); }
     if (S.children.length > 1) d.appendChild(S);
   });
 }

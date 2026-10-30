@@ -209,6 +209,8 @@ def sim_sound_events(evs, last, fresh=False):
             continue
         _SIM_SND["seen"] = i
         kind, n, db = str(e.get("kind") or ""), int(e.get("n") or 1), float(e.get("db") or -90.0)
+        if kind in ("clap", "sneeze") and own_sound_now():
+            own_sound_ignored(kind); continue            # 554: MoveEye plays a sound itself (siren …) - like the real microphone
         if kind == "clap" and (CFG.get("clap_on") or wake_clap_listens()):
             rise = 26.0 - 1.6 * float(CFG.get("clap_sens", 5))
             if db < max(bg + rise, -42.0):
@@ -1050,6 +1052,8 @@ def sound_samples(kind, seconds, rate=OUT_RATE):
 
 def sound_play(kind=None, seconds=None, volume=None, reason="test"):
     """Play a sound on the loudspeaker of the Pi. Returns (ok, error). Runs in the background."""
+    if sim_speaker_only(reason):                         # 554: test inbox / no loudspeaker - only the simulator plays it
+        return sim_sound_play(kind, seconds, volume, reason)
     dev = CFG["audio_out"]
     if not out_selected():
         return False, "no loudspeaker selected"
@@ -1064,6 +1068,7 @@ def sound_play(kind=None, seconds=None, volume=None, reason="test"):
     with _SOUND_LOCK:
         SOUND["gen"] += 1; gen = SOUND["gen"]
         SOUND["playing"] = True; SOUND["msg"] = ""
+        SOUND.update(kind=kind, virt=False, vol=vol * 100.0)          # 554: what plays (for the simulator)
 
     def work():
         p = None
@@ -1191,11 +1196,11 @@ def siren_quiet():
 def siren_alarm(kind):
     """Siren on the Pi at an alarm (only when armed). siren_on: off | person | alarm (person, thermal, noise) | all (+ pre-alarm)."""
     mode = CFG["siren_on"]
-    if mode == "off" or not out_selected() or not is_armed() or SOUND["playing"] or TALK["proc"] is not None:
+    if mode == "off" or not speaker_ok() or not is_armed() or SOUND["playing"] or TALK["proc"] is not None:
         return                                           # somebody talks through the loudspeaker: no siren over the voice
-    if siren_quiet():
+    if siren_quiet() and not sim_speaker():
         log_event("sys", f"Siren held back ({kind}): simulation / game / drill - into the test inbox")
-        return
+        return                                           # 554: with the simulator it plays there (sound_play), never for real
     if kind == "person" and CFG.get("escalate_on"):
         return                                           # 2.97.0: the escalation decides (light now, siren after the wait)
     if kind == "prealarm" and mode != "all":

@@ -104,8 +104,12 @@ class ThermalCam:
             cam = next((c for c in info.get("cameras") or [] if str(c.get("id")) == str(CFG["source"])[4:]), None)
             if not th or not cam or not (th.get("on_head") and cam.get("on_head")):
                 return None
+            if CFG.get("thermal_align_own"):
+                return None                              # 557: the assistant «Wärmebild ausrichten» measured it (zoom / shift)
             fx = math.tan(math.radians(float(th["fov_h"])) / 2) / math.tan(math.radians(float(cam["fov_h"])) / 2)
             fy = fx * (float(th["h"]) / float(th["w"])) / (float(cam["h"]) / float(cam["w"]))
+            if th.get("fov_v") and cam.get("fov_v"):     # 557: Thermal-90 has 90° × 67° (the pixels are not square)
+                fy = math.tan(math.radians(float(th["fov_v"])) / 2) / math.tan(math.radians(float(cam["fov_v"])) / 2)
             return fx, fy
         except (KeyError, ValueError, TypeError, ZeroDivisionError):
             return None
