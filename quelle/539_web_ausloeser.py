@@ -160,9 +160,11 @@ SHUT_JS = r"""
     XH.hidden = false;
     // the round shutter at the bottom right of the picture, moved up (then left) until nothing else is there
     const ph = vis.bottom - vis.top, sz = ph >= 300 ? 84 : ph >= 170 ? 68 : 56, m = 12;   // thumb-sized
-    const obs = obstacles(cont, v);
-    let pos = null;
-    for (const side of ["r", "l"]) {
+    const SK = window.skSlot ? window.skSlot("shut") : null;  // 549 Sim-Kompakt: next to the head stick, not on the small picture
+    if (SK && BT.parentNode !== SK) SK.appendChild(BT); else if (!SK && BT.parentNode !== cont) cont.appendChild(BT);
+    const obs = SK ? [] : obstacles(cont, v);
+    let pos = SK ? {x: cr.left, y: cr.top} : null;
+    for (const side of SK ? [] : ["r", "l"]) {
       const x = side === "r" ? vis.right - m - sz : vis.left + m;
       for (let y = vis.bottom - m - sz; y >= vis.top + m; y -= 10) {
         const c = {left: x - 4, top: y - 4, right: x + sz + 4, bottom: y + sz + 4};
@@ -172,7 +174,7 @@ SHUT_JS = r"""
     }
     if (!pos) pos = {x: vis.right - m - sz, y: vis.bottom - m - sz};
     BT.style.width = BT.style.height = sz + "px"; BT.style.fontSize = Math.round(sz * 0.38) + "px";
-    BT.style.left = (pos.x - cr.left) + "px"; BT.style.top = (pos.y - cr.top) + "px";
+    BT.style.left = SK ? "" : (pos.x - cr.left) + "px"; BT.style.top = SK ? "" : (pos.y - cr.top) + "px";
     const left = Math.max(0, SH.until - Date.now()) / 1000;
     BT.style.setProperty("--p", (left > 0 ? Math.min(100, left / SH.len * 100) : 0) + "%");
     BT.classList.toggle("lock", left > 0);

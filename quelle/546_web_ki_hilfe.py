@@ -198,7 +198,7 @@ KIH_JS = r"""
     const v = document.getElementById("video"), on = roundOn() && v && v.offsetParent !== null;
     if (!on) { CV.hidden = BT.hidden = true; return; }
     const cont = v.parentNode;
-    if (BT.parentNode !== cont) cont.append(CV, BT);
+    if (CV.parentNode !== cont) cont.append(CV, BT);   // 549: BT may sit in Sim-Kompakt (below)
     if (getComputedStyle(cont).position === "static") cont.style.position = "relative";
     const cr = cont.getBoundingClientRect(), p = picRect(v);
     const vis = {left: Math.max(p.left, cr.left), top: Math.max(p.top, cr.top), right: Math.min(p.left + p.width, cr.right), bottom: Math.min(p.top + p.height, cr.bottom)};
@@ -213,12 +213,15 @@ KIH_JS = r"""
       BT.title = T("AI help for this round: off → AI frames → AI aims → AI autopilot (L2 on the controller). With AI help the round does not count for the leaderboard."); BT.setAttribute("aria-label", BT.title); }
     BT.classList.toggle("on", md !== "off"); BT.classList.toggle("pz", md === "auto" && K.pause > 0);
     BT.hidden = false;
+    const SK = window.skSlot ? window.skSlot("kih") : null;   // 549 Sim-Kompakt: next to the head stick, not on the small picture
+    if (SK && BT.parentNode !== SK) SK.appendChild(BT); else if (!SK && BT.parentNode !== cont) cont.appendChild(BT);
+    if (SK) { BT.style.left = BT.style.top = ""; }
     const bw = BT.offsetWidth || 120, bh = BT.offsetHeight || 36, m = 10;
     const obs = [...cont.querySelectorAll("button, .vtag, #vo-ctl, #vo-mctl, #lv-tools, [role=application]")].concat([...document.querySelectorAll("#mwt, #pv-bar, #pv-x, #lv-vw .lv-vbtn, #iconhint, #pip")])
       .filter(x => x !== BT && !x.contains(v) && !x.hidden).map(x => x.getBoundingClientRect()).filter(r => r.width > 2 && r.height > 2 && r.width * r.height < 0.45 * p.width * p.height);
     let pos = {x: vis.left + m, y: vis.top + m};
     for (let y = vis.top + m; y <= vis.bottom - bh - m; y += 8) { const c = {left: vis.left + m - 2, top: y - 2, right: vis.left + m + bw + 2, bottom: y + bh + 2}; if (!obs.some(o => hits(c, o))) { pos.y = y; break; } }
-    BT.style.left = (pos.x - cr.left) + "px"; BT.style.top = (pos.y - cr.top) + "px";
+    if (!SK) { BT.style.left = (pos.x - cr.left) + "px"; BT.style.top = (pos.y - cr.top) + "px"; }
     // the boxes: MoveEye's persons in this picture (green; dashed = not confirmed by the AI)
     const S = ST(), bx = (md !== "off" && S.persons) ? (S.person_boxes || []) : [], sure = S.person_sure || [];
     CV.hidden = !bx.length;
