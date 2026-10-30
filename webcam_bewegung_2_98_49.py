@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_48.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_49.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.49: Push-Nachrichten als Kanal-Karten (Stufen, Ruhezeiten, ntfy Standard), Simulator als Lautsprecher, Servo-Störungen,
+    Wärmebild ausrichten (warme Hand), Übungen über Simulator-Werte, In 3D nachspielen aus Zeitleiste und Aufnahmen,
+    Schnittstellen-Test, SmallTV Live-Bild/Akku/Alarm-GIF, Simulator 3D-4.20
   * 2.98.48: Zusatz-Bildschirm GeekMagic SmallTV (Status, Alarmbild, Spielstand, nachts rot, mehrere Bildschirme, Einrichtung
     mit QR-Code, virtueller SmallTV im Simulator 3D-4.19)
   * 2.98.47: Weitwinkel-Kamera (Montage im Simulator, Übersicht lenkt den Kopf automatisch, IR breit Kanal 4), Werte aus dem
@@ -980,10 +983,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_48.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_49.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_48.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_48.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_49.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_49.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -1000,7 +1003,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.48"
+APP_VERSION = "2.98.49"
 
 
 def default_data_dir():
@@ -4469,7 +4472,9 @@ class EnvSensor:
 
     def read(self):
         if CFG.get("sim_on") and time.time() - SIM["t"] < 10:
-            return {"t": round(float(SIM["ambient"]), 1), "h": None, "p": round(float(SIM["pressure"]), 1), "src": "Simulator", "ds": [], "time": time.time()}
+            hs_ = SIM.get("humidity")                     # Aufräumen 2: the humidity of the scene (world_reply «humidity»)
+            return {"t": round(float(SIM["ambient"]), 1), "h": round(float(hs_)) if isinstance(hs_, (int, float)) else None,
+                    "p": round(float(SIM["pressure"]), 1), "src": "Simulator", "ds": [], "time": time.time()}
         if self.fd is None and time.time() - self.tried > 120:
             self.tried = time.time(); self._open()
         t = hum = pr = None; src = ""
@@ -7236,7 +7241,7 @@ def servo_release(by="web"):
     if isinstance(by, (tuple, list)) and len(by) == 2:
         servo_driver_note(by, "release"); by = by[1]
     if SRV["inhibit"] == "uv":
-        if SRV["test_uv"] or ((STATE.get("supply") or {}).get("uv_now") and not CFG.get("sim_on")):
+        if SRV["test_uv"] or SRV.get("sim_uv") or ((STATE.get("supply") or {}).get("uv_now") and not CFG.get("sim_on")):
             return False, "under-voltage is still there - check the power supply first"
         SRV["inhibit"] = ""; SRV["uv_last"] = 0.0           # it is over: «Freigeben» need not wait the 30 s
     was = servo_blocked()
@@ -7311,7 +7316,7 @@ def _servo_inhibit(code, on, now):
 def servo_safety_tick(now):
     """4 x per second: under-voltage, the camera loop watchdog, temperature (only noted)"""
     sup = STATE.get("supply") or {}
-    uv = (bool(sup.get("uv_now")) and not CFG.get("sim_on")) or SRV["test_uv"]
+    uv = (bool(sup.get("uv_now")) and not CFG.get("sim_on")) or SRV["test_uv"] or bool(SRV.get("sim_uv") and CFG.get("sim_on"))   # 555: the 5 V of the simulator
     if uv:
         SRV["uv_last"] = now
     if CFG.get("servo_uv_stop", True):
@@ -11570,12 +11575,12 @@ def protect_on_alert(kind):
         if CFG.get("siren_on") == "off":                 # 2.97.0: «siren off» (e.g. mode wildlife) counts here too
             log_event("sys", "Escalation: the siren is switched off - only light and push")
             return
-        if siren_quiet():
+        if siren_quiet() and not sim_speaker():
             log_event("sys", "Escalation: siren held back (simulation / game / drill)")
-            return
+            return                                       # 554: with the simulator connected it plays there (never for real)
         if time.time() - SOUND["last_alarm"] < float(CFG["siren_pause"]):
             return
-        if is_armed() and out_selected() and not SOUND["playing"]:
+        if is_armed() and speaker_ok() and not SOUND["playing"]:
             SOUND["last_alarm"] = time.time()
             log_event("sys", f"Escalation: siren after {s} s (nobody disarmed)")
             sound_play(None, None, None, reason="escalation")
@@ -14088,7 +14093,7 @@ def real_look():
 #  * MoveEye asks the simulator every 3 s ({"action": "busy"} -> busy_with("")). A test run, the test bench, training
 #    pictures, blind spots … started in the simulator window lock MoveEye's own starts with the same message
 #    «The simulator is busy: …» (simtask_busy in 141 asks sim_busy_remote()).
-#  * MoveEye tells the simulator what it does itself (sim_state: "simtask", "simtask_de"); the simulator refuses its own
+#  * MoveEye tells the simulator what it does itself (sim_state: "simtask_de" - Aufräumen 2: «simtask» in English is no longer sent); the simulator refuses its own
 #    starts then (busy_with in main.gd: «Störfall-Übung (von MoveEye)»).
 #  * Blind spots started in the simulator («Testen» card): MoveEye follows them like its own (BLIND / _blind_wait in 143),
 #    so the map in MoveEye shows the result, whoever started it. Older simulators without «busy»: blindmap info is asked.
@@ -14765,8 +14770,10 @@ function paint() {
     h += '<h2>🎮 ' + esc(G.title || "") + '</h2>';
     if (r === "countdown") h += '<div class="round"><div class="big">' + esc(G.cd) + '</div><h1>' + esc(d.t_ready) + '</h1></div>';
     else if (r === "play") h += '<div class="round"><div class="big">' + mmss(G.left || 0) + '</div><h1>' + esc(d.t_play) + (G.last_minute ? " 🔥" : "") + '</h1></div>';
-    else if (r === "end") h += '<h1>🏁 ' + esc(d.t_end) + '</h1>';
+    else if (r === "end") h += '<h1>🏁 ' + esc(d.t_end) + '</h1>' + (G.win && G.win.title ? '<h2>' + esc(G.win.title) + (G.win.score >= 0 ? " · " + esc(G.win.score) : "") + '</h2>' : "");
     else h += '<h1>' + esc(d.t_waiting) + '</h1>';
+    if ((r === "lobby" || r === "end") && G.next) h += '<div class="idle">' + esc(G.next) + '</div>';
+    if (G.mw) h += '<h2>🎯 ' + esc(String(d.t_mw || "").replace("{n}", G.mw)) + '</h2>';
     if (r !== "play" && r !== "countdown" && G.qr) h += '<div class="qr"><div class="q">' + G.qr + '</div><div class="t">' + esc(d.t_join) + '<div class="u">' + esc(G.url) + '</div></div></div>';
     if ((G.players || []).length) h += players(G.players);
     if ((G.feed || []).length) h += '<div class="feed">' + G.feed.map(x => '<div>• ' + esc(x) + '</div>').join("") + '</div>';
@@ -14872,6 +14879,24 @@ def tv_state():
             "url": tv_url(False), "auto": bool(CFG["tv_auto"]), "sim": TV["sim"], "sim_ok": bool(CFG.get("sim_on") and time.time() - SIM.get("t", 0) < 15)}
 
 
+GAME_STATE_WORDS = {"goal": "at the goal", "out": "caught", "jail": "in jail", "play": "on the way", "lobby": "ready"}
+
+
+def game_live_tv(g, T):
+    """Aufräumen 2: «game_live» of the simulator -> the game part of the TV page (the same words as tv.gd and the SmallTV)"""
+    url = str(g.get("url") or "")
+    def ps_(p):
+        k, pt = int(p.get("k", 0) or 0), p.get("pt")
+        return {"n": p.get("n"), "c": p.get("c") or "#3b8cff",
+                "s": " · ".join(x for x in (T(GAME_STATE_WORDS.get(str(p.get("s")), str(p.get("s") or ""))), f"{k}×" if k else "",
+                                            f"{int(pt)} {T('points')}" if pt is not None else "") if x)}
+    return {"open": True, "round": g.get("round"), "cd": g.get("cd"), "left": g.get("left"), "last_minute": g.get("lm"),
+            "title": T("Game in the 3D simulator") + (" · " + str(g.get("goal")) if g.get("goal") else ""), "url": url, "qr": qr_svg(url) if url else "",
+            "players": [ps_(p) for p in g.get("players") or []], "feed": [str(x)[:80] for x in (g.get("feed") or [])][:4],
+            "board": [{"n": b.get("n"), "c": b.get("c"), "score": b.get("score")} for b in (g.get("board") or [])],
+            "win": g.get("win"), "next": g.get("next") or "", "mw": g.get("mw")}
+
+
 def tv_data():
     """what the TV page shows"""
     L = norm_lang(CFG.get("lang")) or "de"
@@ -14882,7 +14907,7 @@ def tv_data():
          "state": T({"armed": "Armed", "arming": "Arming …", "disarmed": "Not armed"}.get(STATE.get("arm_state"), "")),
          "t_setup": T("The game is being set up"), "t_join": T("Join: scan the QR code with the phone (same Wi-Fi) or open"),
          "t_ready": T("Get ready"), "t_play": T("Round running"), "t_end": T("Round over"), "t_waiting": T("Waiting for players"),
-         "t_board": T("Ranking of the evening"), "t_corner": T("Game corner"), "t_idle": T("Nothing is going on at the moment - MoveEye keeps watch."),
+         "t_board": T("Ranking of the evening"), "t_mw": T("MoveEye caught {n}"), "t_corner": T("Game corner"), "t_idle": T("Nothing is going on at the moment - MoveEye keeps watch."),
          "events": [], "game": {}, "wiz": {}, "party": {}}
     try:
         d["events"] = [str(e.get("text") or e.get("msg") or "")[:90] for e in list(EVENTS)[-5:]][::-1] if "EVENTS" in globals() else []
@@ -14891,18 +14916,21 @@ def tv_data():
     if CFG.get("sim_on"):
         d["view_label"] = T("Simulator")
         try:
-            gi = sim_control({"action": "game_info"})
             wz = sim_control({"action": "gamewiz", "op": "get"})
             if isinstance(wz, dict) and wz.get("ok"):
                 d["wiz"] = {k: wz.get(k) for k in ("shown", "step", "steps", "title", "cards", "pics")}
-            if isinstance(gi, dict) and gi.get("open"):
-                url = ((wz or {}).get("game") or {}).get("url") or ""
-                st_ = {"goal": "🎉", "out": "👀", "jail": "🔒", "play": "🏃", "lobby": "⏳"}
-                d["game"] = {"open": True, "round": gi.get("round"), "cd": gi.get("cd"), "left": gi.get("left"), "last_minute": gi.get("last_minute"),
-                             "title": T("Game in the 3D simulator") + " · " + str(gi.get("goal") or ""), "url": url, "qr": qr_svg(url) if url else "",
-                             "players": [{"n": p.get("n"), "c": p.get("c"), "s": st_.get(p.get("s"), "") + " " + str(p.get("k", 0)) + "×"} for p in gi.get("players") or []],
-                             "feed": [str(x.get("x"))[:80] for x in (gi.get("feed") or [])][::-1][:4],
-                             "board": [{"n": b.get("n"), "c": b.get("c"), "score": b.get("score")} for b in (gi.get("board") or [])]}
+            # Aufräumen 2: ONE source for all game displays - «game_live» of the simulator (in every answer, 552 keeps it in
+            # STV «game»), the same as the SmallTV and the TV mode of the simulator (tv.gd); older simulators: «game_info»
+            gl = STV["game"] if "STV" in globals() and STV.get("game") and time.time() - STV.get("game_t", 0.0) < 10 else None
+            if gl is not None:
+                d["game"] = game_live_tv(gl, T)
+            else:
+                gi = sim_control({"action": "game_info"})
+                if isinstance(gi, dict) and gi.get("open"):
+                    url = ((wz or {}).get("game") or {}).get("url") or ""
+                    d["game"] = game_live_tv({"round": gi.get("round"), "cd": gi.get("cd"), "left": gi.get("left"), "lm": gi.get("last_minute"),
+                                              "goal": gi.get("goal"), "url": url, "players": gi.get("players") or [],
+                                              "feed": [str(x.get("x")) for x in (gi.get("feed") or [])][::-1][:4], "board": gi.get("board") or []}, T)
         except Exception:
             pass
     else:
@@ -19613,8 +19641,12 @@ class ThermalCam:
             cam = next((c for c in info.get("cameras") or [] if str(c.get("id")) == str(CFG["source"])[4:]), None)
             if not th or not cam or not (th.get("on_head") and cam.get("on_head")):
                 return None
+            if CFG.get("thermal_align_own"):
+                return None                              # 557: the assistant «Wärmebild ausrichten» measured it (zoom / shift)
             fx = math.tan(math.radians(float(th["fov_h"])) / 2) / math.tan(math.radians(float(cam["fov_h"])) / 2)
             fy = fx * (float(th["h"]) / float(th["w"])) / (float(cam["h"]) / float(cam["w"]))
+            if th.get("fov_v") and cam.get("fov_v"):     # 557: Thermal-90 has 90° × 67° (the pixels are not square)
+                fy = math.tan(math.radians(float(th["fov_v"])) / 2) / math.tan(math.radians(float(cam["fov_v"])) / 2)
             return fx, fy
         except (KeyError, ValueError, TypeError, ZeroDivisionError):
             return None
@@ -20311,6 +20343,8 @@ def sim_sound_events(evs, last, fresh=False):
             continue
         _SIM_SND["seen"] = i
         kind, n, db = str(e.get("kind") or ""), int(e.get("n") or 1), float(e.get("db") or -90.0)
+        if kind in ("clap", "sneeze") and own_sound_now():
+            own_sound_ignored(kind); continue            # 554: MoveEye plays a sound itself (siren …) - like the real microphone
         if kind == "clap" and (CFG.get("clap_on") or wake_clap_listens()):
             rise = 26.0 - 1.6 * float(CFG.get("clap_sens", 5))
             if db < max(bg + rise, -42.0):
@@ -21152,6 +21186,8 @@ def sound_samples(kind, seconds, rate=OUT_RATE):
 
 def sound_play(kind=None, seconds=None, volume=None, reason="test"):
     """Play a sound on the loudspeaker of the Pi. Returns (ok, error). Runs in the background."""
+    if sim_speaker_only(reason):                         # 554: test inbox / no loudspeaker - only the simulator plays it
+        return sim_sound_play(kind, seconds, volume, reason)
     dev = CFG["audio_out"]
     if not out_selected():
         return False, "no loudspeaker selected"
@@ -21166,6 +21202,7 @@ def sound_play(kind=None, seconds=None, volume=None, reason="test"):
     with _SOUND_LOCK:
         SOUND["gen"] += 1; gen = SOUND["gen"]
         SOUND["playing"] = True; SOUND["msg"] = ""
+        SOUND.update(kind=kind, virt=False, vol=vol * 100.0)          # 554: what plays (for the simulator)
 
     def work():
         p = None
@@ -21293,11 +21330,11 @@ def siren_quiet():
 def siren_alarm(kind):
     """Siren on the Pi at an alarm (only when armed). siren_on: off | person | alarm (person, thermal, noise) | all (+ pre-alarm)."""
     mode = CFG["siren_on"]
-    if mode == "off" or not out_selected() or not is_armed() or SOUND["playing"] or TALK["proc"] is not None:
+    if mode == "off" or not speaker_ok() or not is_armed() or SOUND["playing"] or TALK["proc"] is not None:
         return                                           # somebody talks through the loudspeaker: no siren over the voice
-    if siren_quiet():
+    if siren_quiet() and not sim_speaker():
         log_event("sys", f"Siren held back ({kind}): simulation / game / drill - into the test inbox")
-        return
+        return                                           # 554: with the simulator it plays there (sound_play), never for real
     if kind == "person" and CFG.get("escalate_on"):
         return                                           # 2.97.0: the escalation decides (light now, siren after the wait)
     if kind == "prealarm" and mode != "all":
@@ -23720,7 +23757,8 @@ def sim_battery_tick(bm, sb):
         log_event("sys", f"Simulated UPS HAT (simulator): battery {v:.2f} V, {pct} %")
     bm.ups_events(v, pct, hours, on_batt, False)          # volt_ok False: never the real shutdown of this computer
     lim = int(CFG["ups_shutdown_pct"])
-    if not SIMVAL["off"] and on_batt and lim > 0 and (pct <= lim or sb.get("empty")):
+    drill_ = drill_active("battery") if "drill_active" in globals() else False   # 565: the drill «battery empty» never «shuts down»
+    if not SIMVAL["off"] and on_batt and lim > 0 and (pct <= lim or sb.get("empty")) and not drill_:
         SIMVAL["off"] = True; SIMVAL["off_t"] = time.time()
         log_event("sys", f"Battery empty ({pct} %, {v:.2f} V) - the Pi would shut down now (simulator: this computer stays on)")
         w = WATCH_REF.get("w")
@@ -23763,7 +23801,11 @@ class SimThermalSource:
         return r[0]
 
     def read(self):
-        wait = (1.0 / sim_cam_fps(1) if sim_eco_now() else 0.12) - (time.time() - self.t)
+        try:                                             # 557: the model of the simulator (Thermal-90: 15 fps like the driver, 080)
+            fps_ = max(2.0, min(25.0, float(((SIM.get("info") or {}).get("thermal") or {}).get("fps") or 8.0)))
+        except (TypeError, ValueError):
+            fps_ = 8.0
+        wait = (1.0 / sim_cam_fps(1) if sim_eco_now() else 1.0 / fps_ - 0.005) - (time.time() - self.t)
         if wait > 0:
             time.sleep(wait)
         self.t = time.time()
@@ -23835,7 +23877,9 @@ def sim_state():
     L = STATE.get("lights") or {}
     rs = STATE.get("relay_states") or []
     return {"v": 1, "t": time.time(), "device": CFG["device_name"] or "MoveEye", "armed": is_armed(),
-            "uid": f"{device_uid()}:{CFG.get('web_port')}", "helper": bool(STATE.get("helper_arg")), "picture_mode": CFG["picture_mode"],   # 2.98.29: uid/helper - one MoveEye leads the simulator (3D-4.9)
+            "uid": f"{device_uid()}:{CFG.get('web_port')}", "helper": bool(STATE.get("helper_arg")),   # 2.98.29: uid/helper - one MoveEye leads the simulator (3D-4.9)
+            # Aufräumen 2 (one field list: simulator3d/schnittstelle.json, self-test 558): «picture_mode» and «simtask» are no
+            # longer sent (nobody read them: MoveEye makes the picture grey itself, the simulator shows «simtask_de»)
             "mw_version": APP_VERSION, "ai_status": str(STATE.get("ai_status") or ""),     # 2.95.67: for the test bench in the simulator
             "refscan": _sim_refscan_info(),                                                  # 2.95.97: the reference scan, for the button there
             # 2.98.35: the REAL position of the motion planner (072, ramps) + its speed (the simulator goes on with it between
@@ -23850,14 +23894,16 @@ def sim_state():
                       # 2.98.1: «Folgen» on, and following something right now - the simulator lets the head follow then (not the patrol)
                       "track": bool(CFG["track_person"] or CFG["track_motion"]), "tracking": bool(STATE.get("tracking")),
                       "track_what": str(STATE.get("track_what") or "")},
+            "ups_mah": int(CFG.get("ups_mah") or 3450),   # Aufräumen 2: the battery size - the simulator shows it «von MoveEye» (power.gd)
             "lights": {"white": bool(L.get("white")), "ir": bool(L.get("ir")), "white_level": 1.0, "ir_level": 1.0},
             "wake": {"state": WAKE["state"], "snoozes": WAKE["snoozes"], "t0": round(WAKE["t0"], 2)},       # 2.98.9: the sleeper in the bedroom scene reacts
             "relays": [{"name": r["name"], "on": bool(rs[i]) if i < len(rs) else False} for i, r in enumerate(RELAYS)],
             "sound": (CFG["siren_sound"] or "siren") if SOUND["playing"] else ("talk" if TALK["proc"] is not None else ""),
-            "simtask": (stk_ := _simtask_now()), "simtask_de": tr(stk_, "de") if stk_ else "",   # 2.98.13: one lock (147)
+            "simtask_de": tr(stk_, "de") if (stk_ := _simtask_now()) else "",   # 2.98.13: one lock (147)
             "eco": STATE.get("eco") or "off",     # power saving of MoveEye: «saving» = quiet - the simulator may calculate slower (3D-3.30)
             # automatic update: the simulator compares these checksums with its own files and fetches /sim/simulator.zip
-            "sim_files": sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
+            # (only the Python simulator updates itself with them - the 3D simulator (/info «view») gets an empty list)
+            "sim_files": {} if (SIM.get("info") or {}).get("view") else sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
             # CPU in % of the whole computer: total, MoveEye, simulator (None = not on this computer / unknown)
             "cpu": {"total": STATE.get("cpu"), "mw": STATE.get("cpu_mw"), "sim": STATE.get("cpu_sim")},
             # what MoveEye detects right now: the simulator compares it with the truth (test run, game «MoveEye decides»)
@@ -24812,8 +24858,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.19", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31836196,
-         "sha256": "180fd397ab8c0008101de7f6b971f79df43ab9a3ce651700158792963935bab1"}
+SIM3D = {"version": "3D-4.20", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31866685,
+         "sha256": "78a6b44b4355b613109fc8dac1d8c37328be187052e9867c63d9e5f1a60f90b6"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -30079,6 +30125,8 @@ class SimLink:
                    mover=bool(rep_.get("mover")),                # the simulator has a mover (3D-3.11): second stick
                    mover_pose=_mover_pose(rep_.get("mover_pose")) if rep_.get("mover") else None,   # where it is (2.95.43, optional)
                    pc_cpu=rep_.get("pc_cpu"), cores=rep_.get("cores"),   # CPU of the PC the simulator runs on (3D-3.24)
+                   sim_cpu=rep_.get("sim_cpu_own"),              # Aufräumen 2: its own share there (tile «CPU of the PC», 470)
+                   humidity=rep_.get("humidity"),                # Aufräumen 2: humidity of the scene -> climate sensor (060, field h)
                    solar=rep_.get("solar") if isinstance(rep_.get("solar"), dict) else None,   # 2.98.11: solar panel and
                    gps=rep_.get("gps") if isinstance(rep_.get("gps"), dict) else None)         # GPS module of the simulator   # CPU of the PC the simulator runs on (3D-3.24)
         simvals_take(rep_)                                 # Simulator-Werte: battery, clock, place, forecast, Pi heat, network test (285)
@@ -30086,6 +30134,7 @@ class SimLink:
         SIM["follower"] = bool(rep_.get("follower"))
         SIM["head"] = rep_.get("head_deg") if isinstance(rep_.get("head_deg"), list) else None    # 2.98.35: the simulated head (539 /api/servo)
         weit_from_sim(rep_.get("wide"))                 # 163: the mount of the wide camera (3D-4.17) - «Übersicht lenkt den Kopf» by itself
+        SIM["leader"] = str(rep_.get("leader") or "")[:40] if SIM["follower"] else ""   # Aufräumen 2: who steers (shown in the message)
         SIM["msg"] = "connected - only watching (another MoveEye steers the simulator)" if SIM["follower"] else "connected"
         if time.time() - SIMDIARY["t"] >= 30:                # 2.96.1: the diary of the simulator (visits)
             threading.Thread(target=simdiary_poll, daemon=True, name="simdiary").start()
@@ -31919,7 +31968,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_48.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_49.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -34322,6 +34371,8 @@ class MotionWatch:
                 LOOPREC.feed(frame, t0)                         # continuous recording: a copy now and then
             if t0 < self.raw_until:
                 self.frame_raw = frame.copy()
+            if t0 < getattr(self, "clean_until", 0.0):   # 553: the live picture of the SmallTV - the pure picture, without HUD and marks
+                self.frame_clean = frame.copy(); self.frame_clean_t = t0
             H, W = frame.shape[:2]
             pw = CFG["proc_width"]; ph = int(H * pw / W); sx = W / pw; sy = H / ph
             if (pw, ph) != getattr(self, "_proc_size", (pw, ph)):     # power mode / camera changed the working size
@@ -39308,6 +39359,7 @@ function scWizOnly(c) { return !!c.wiz || (!("gid" in c) && scGid(c) === "game" 
 // 2.98.23 (Konzept): the simulator group «Testlauf» is not shown in the Simulator control (testing has ONE place: group «Testen»,
 // tile «Tests»); there it is built with data-only="testrun" (#tr-sim, recordings of the sneak paths, Pi 5 settings)
 const SC_TEST_DUP = ["testrun_plan", "testrun_start", "testrun_stop"];   // the same as «Testlauf starten» of MoveEye right above (/api/simtest)
+try { Object.assign(I18N.de, {"from MoveEye (setting of MoveEye, only shown here)": "von MoveEye (Einstellung von MoveEye, hier nur angezeigt)"}); } catch (e) {}   // Aufräumen 2
 function simCtlBuild(G, r, ctl, fmt) {
   scCss();
   const only = G.dataset.only || "";
@@ -39315,7 +39367,9 @@ function simCtlBuild(G, r, ctl, fmt) {
   const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
   const ss = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"])), openS = new Set(ls("mw-sc-sub2", ["Besuch/Vorlagen", "Besuch/Menschen schicken", "Besuch/Tiere schicken", "Spiel/Runde"]));
-  let expert = only ? true : ls("mw-sc-expert", false), q = G.dataset.q || "";
+  // Aufräumen 2: Einfach / Experte is stored in the settings of MoveEye (page «sim», /api/ui_simple like the main page and the
+  // simulator centre 139) - no longer per browser; the first build asks once, later builds take the known value
+  let expert = only ? true : window.SC_EXPERT != null ? window.SC_EXPERT : false, q = G.dataset.q || "";
   if (only) (r.controls || []).forEach(c => openC.add(c.group));
   G.textContent = "";
   const top = el("div", "sc-top"); const qi = document.createElement("input"); qi.type = "search"; qi.placeholder = t("Search a setting …"); qi.value = q;
@@ -39358,6 +39412,7 @@ function simCtlBuild(G, r, ctl, fmt) {
       } else if (c.type === "slider") {
         row = el("div", "sc-row sc-sl"); const l = el("div", "sc-l"); const vv = el("span", "mut simvv"); l.append(el("span", "", c.label), vv);
         const rg = document.createElement("input"); rg.type = "range"; rg.className = "simv"; rg.min = c.min; rg.max = c.max; rg.step = c.step || 1;
+        if (c.ro) { rg.disabled = true; rg.title = t("from MoveEye (setting of MoveEye, only shown here)"); }   // Aufräumen 2: e.g. the battery size
         let lvT = 0, lvW = null;                      // «live» (simulator 3D-4.x, e.g. the height of the pole): sent while dragging, 5× a second at most
         const lvSend = () => { lvW = null; lvT = Date.now(); ctl({ctl: "set", id: c.id, value: +rg.value}); };
         rg.oninput = () => { vv.textContent = fmt(c, +rg.value); if (c.live && !lvW) lvW = setTimeout(lvSend, Math.max(0, 200 - (Date.now() - lvT))); };
@@ -39389,8 +39444,11 @@ function simCtlBuild(G, r, ctl, fmt) {
     });
     none.hidden = !q || any;
   }
-  qi.oninput = apply; b1.onclick = () => { expert = false; ss("mw-sc-expert", false); apply(); }; b2.onclick = () => { expert = true; ss("mw-sc-expert", true); apply(); };
+  const setEx = v => { expert = v; window.SC_EXPERT = v; apply();
+    fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !v, page: "sim"})}).catch(() => {}); };
+  qi.oninput = apply; b1.onclick = () => setEx(false); b2.onclick = () => setEx(true);
   apply();
+  if (!only && window.SC_EXPERT == null) fetch("/api/ui_simple?page=sim").then(x => x.json()).then(j => { window.SC_EXPERT = !j.on; expert = window.SC_EXPERT; apply(); }).catch(() => {});
 }
 
 // ---- the simulator window (3D-3.18): mouse / finger / keys on a picture of /sim/view.mjpg go to the simulator ----
@@ -39665,7 +39723,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .gw-body{padding:16px;overflow:auto}.gw-body h3{margin:0 0 4px;font-size:20px}.gw-body .lead{margin:0 0 14px}
 .gw-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
 .gw-card{text-align:left;padding:14px;border-radius:12px;border:2px solid var(--line,#1f2b3a);background:transparent;color:inherit;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:120px}
-.gw-pic{width:100%;aspect-ratio:16/9;border-radius:10px;display:block;margin-bottom:4px}.gw-card .ic:empty{display:none}
+.gw-pic{width:100%;aspect-ratio:16/9;border-radius:10px;display:block;margin-bottom:4px}.gw-card .ic:empty,.gw-q .ic:empty{display:none}
 .gw-pics2{display:flex;gap:8px;margin:2px 0 10px}.gw-pics2 img{width:calc(50% - 4px);border-radius:10px}
 .gw-card b{font-size:16px}.gw-card .ic{font-size:28px;line-height:1}.gw-card small{color:var(--mut,#8b9bb0);line-height:1.35}
 .gw-card.on{border-color:var(--acc,#3b8cff);background:rgba(59,140,255,.12)}
@@ -39983,10 +40041,10 @@ function paint() {
   const so = $("#s-on"); if (so && document.activeElement !== so) so.checked = !!S.on;
   $("#s-onnote").textContent = !S.on ? t("off - the real cameras and sensors are used") : nopic ? NP : S.ok ? t("connected") + (T.name ? ": " + T.name : "") : t("Simulator not reachable");
   $("#s-csub").textContent = nopic ? "· " + NP : S.on && S.ok ? "· " + t("connected") : "";
-  $("#s-msg").textContent = (S.msg ? t(S.msg) + " · " : "") + (S.url || "");
+  $("#s-msg").textContent = (S.msg ? t(S.msg) + (S.leader ? " (" + S.leader + ")" : "") + " · " : "") + (S.url || "");   // Aufräumen 2: who steers
   const tile = (k, v) => '<div class="tile"><div class="mut">' + k + '</div><b>' + v + '</b></div>';
   $("#s-tiles").hidden = !S.on;
-  const pcc = T.pc_cpu == null ? "–" : Math.round(T.pc_cpu) + " %";
+  const pcc = T.pc_cpu == null ? "–" : Math.round(T.pc_cpu) + " %" + (T.sim_cpu != null ? " · Sim " + Math.round(T.sim_cpu) + " %" : "");   // Aufräumen 2: «sim_cpu_own»
   $("#s-tiles").innerHTML = tile(t("CPU of the PC"), '<span style="color:' + (T.pc_cpu > 85 ? "var(--red,#ff5b4b)" : T.pc_cpu > 60 ? "#e8b33a" : "inherit") + '">' + pcc + '</span>') + tile(t("Connected for"), dur(T.since)) + tile(t("Response time"), T.rtt == null ? "–" : T.rtt + " ms") + tile(t("Camera pictures/s"), T.cam_fps == null ? "–" : T.cam_fps)
     + tile(t("Thermal pictures/s"), T.th_fps == null ? "–" : T.th_fps) + tile(t("Messages sent"), T.sent || 0) + tile(t("Sensor events"), T.events || 0) + tile(t("Errors"), T.errs || 0);
   const u = $("#s-url"); if (!URLEDIT && document.activeElement !== u) u.value = S.url || "";
@@ -40095,7 +40153,9 @@ function gwPaint(M) {
   if ((M.quick || []).length) {                      // 3D-4.x: three quick starts - one tap sets everything and opens the game
     B.appendChild(el("div", "gw-sub", "⚡ " + (M.quick_title || t("Quick start"))));
     const qg = el("div", "gw-quick");
-    M.quick.forEach(q => { const b = el("button", "gw-q"); b.type = "button"; b.append(el("span", "ic", q.icon), el("b", "", q.title), el("small", "", q.text));
+    M.quick.forEach(q => { const b = el("button", "gw-q"); b.type = "button";
+      if (q.pic) { const im = el("img", "gw-pic"); im.alt = ""; im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(q.pic); b.appendChild(im); }   // 3D-4.20: pictures again, like in the simulator
+      b.append(el("span", "ic", q.pic ? "" : q.icon), el("b", "", (q.pic ? q.icon + " " : "") + q.title), el("small", "", q.text));
       b.onclick = async () => { b.disabled = true; const r = await gwOp({op: "quick", value: q.v}); b.disabled = false;
         if (r && r.game && r.game.open) { const qq = $("#gw-qr"); if (qq && qq.firstChild) qq.scrollIntoView({behavior: "smooth", block: "center"}); } };
       qg.appendChild(b); });
@@ -50301,7 +50361,7 @@ async function build() {
     if (sec.id === "Timelapse") tlExtras(d);
     if (sec.id === "Microphone") micExtras(d);
     if (sec.id === "Updates") updExtras(d);
-    if (sec.id === "Notifications") wpExtras(d);
+    if (sec.id === "Notifications") { wpExtras(d); if (window.pushPanel) pushPanel(d, sec); }   // 531a: cards Kopf · Wohin · Was · Wann · Erweitert
     if (sec.id === "Backup") bkExtras(d);
     if (sec.id === "Theft protection") tpExtras(d);
     if (sec.id === "Reference scan") { const bx = el("div", "auxbox"); bx.append(el("div", "mut", t("refscan-note")));   // 2.95.97
@@ -51041,7 +51101,7 @@ Object.assign(I18N.de, {"iPhone shortcuts": "iPhone-Kurzbefehle",
  "Lens with waves": "Linse mit Wellen", "Light radar (green)": "Helles Radar (grün)", "Night radar (orange beam)": "Nacht-Radar (oranger Strahl)", "Forest with a find": "Wald mit Fund", "Thermal picture": "Wärmebild", "Field of view": "Blickfeld", "Tent watch": "Zelt-Wache", "Shield": "Schild", "Radar with finds": "Radar mit Treffern", "Classic (orange)": "Klassisch (orange)", "Done": "Erledigt", "Later": "Später",
  "icon-note": "Gilt für den Browser-Tab, die Kopfzeile und den Handy-Startbildschirm. Android holt das neue Symbol von selbst (kann einen Tag dauern). iPhone / iPad: das Symbol auf dem Startbildschirm löschen und die Seite neu «Zum Home-Bildschirm» hinzufügen.",
  "ios-icon-hint": "MoveEye hat ein neues Symbol. Das iPhone behält das alte: Symbol lange drücken → «App entfernen», dann in Safari «Teilen» → «Zum Home-Bildschirm».",
- "Get ready": "Gleich geht's los", "You are the guard: turn the camera and catch them": "Du bist Wächter: Kamera drehen und erwischen", "Caught!": "Erwischt!",
+ "Get ready": "Macht euch bereit", "You are the guard: turn the camera and catch them": "Du bist Wächter: Kamera drehen und erwischen", "Caught!": "Erwischt!",
  "Power mode": "Powermodus", "Power mode on: everything on the highest performance": "Powermodus ein: alles auf Höchstleistung", "Power mode off: your settings are back": "Powermodus aus: deine Einstellungen sind zurück", "active: every picture through the AI, best picture, processor at full clock": "aktiv: jedes Bild durch die KI, bestes Bild, Prozessor auf vollem Takt", "hot": "heiss", "the highest performance (uses more current and gets warmer) - switching it off restores your settings": "Höchstleistung (braucht mehr Strom und wird wärmer) – Ausschalten stellt deine Einstellungen wieder her", "Trusted devices": "Vertrauenswürdige Geräte", "A device that has logged in once is remembered (also after updates). Remove a device here if it is lost or should log in again.": "Ein Gerät, das sich einmal angemeldet hat, wird gemerkt (auch nach Updates). Entferne hier ein Gerät, wenn es verloren ist oder sich neu anmelden soll.", "since": "seit", "Remove this device? It must log in again.": "Dieses Gerät entfernen? Es muss sich neu anmelden.", "Remove all": "Alle entfernen", "Remove all trusted devices? Every device must log in again.": "Alle vertrauenswürdigen Geräte entfernen? Jedes Gerät muss sich neu anmelden.", "Update": "Update", "New update for the simulator": "Neues Update für den Simulator", "tab Simulator": "Reiter Simulator", "sim-view-help": "Das Fenster des Simulators: Maus links ziehen = verschieben, rechts ziehen = drehen, Rad = zoomen (nach einem Klick ins Bild), Doppelklick = hinfliegen. Finger: antippen = klicken, sonst scrollt die Seite; mit ✋ bedient der Finger den Simulator (ziehen = verschieben, ⟲ = drehen, zwei Finger = zoomen). Knöpfe unten wechseln die Ansicht.", "Python world simulator (ZIP)": "MW Sim · Welt (Kevin) (ZIP)", "second simulator, needs Python on the PC": "zweiter Simulator, braucht Python auf dem PC", "Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An MoveEye senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where MoveEye stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo MoveEye steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
 Object.assign(I18N.de, {"Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren", "Start simulator here": "Simulator hier starten", "Stop simulator": "Simulator beenden", "Download for a PC (ZIP)": "Für einen PC herunterladen (ZIP)", "Simulator installed": "Simulator installiert", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator beendet", "the simulator runs on this Pi": "der Simulator läuft auf diesem Pi", "Install": "Installieren", "Start": "Starten"});
 // aufr: simExtras() (the old settings section «Simulator» on this page) is gone - that section is not on this page since
@@ -51434,7 +51494,9 @@ function thExtras(d) {
   parts.forEach(([view, title, keys]) => {
     const S = el("details", "sub thsub"); S.dataset.view = view; S.appendChild(el("summary", "", title));
     keys.forEach(k => { const r = rowOf(k); if (r) S.appendChild(r); });
-    if (view === "th:cam") S.append(st, hint);
+    if (view === "th:cam") { Object.assign(I18N.de, {"Align the thermal picture (warm hand)": "Wärmebild ausrichten (warme Hand)"});   // 557
+      const al = el("a", "btn sec", "🖐 " + t("Align the thermal picture (warm hand)")); al.href = "/thermal_align"; al.style.marginTop = "6px";
+      S.append(st, hint, al); }
     if (S.children.length > 1) d.appendChild(S);
   });
 }
@@ -51759,8 +51821,8 @@ Object.assign(I18N.de, {"Shoot": "Schiessen", "Shooting on": "Schiessen an", "Sh
 // ---- modes (2.95.47): camping guard, campfire games, gamer, home, wildlife, night guard, transport ----
 Object.assign(I18N.de, {"Stop the TV mode of the simulator": "TV-Modus des Simulators beenden", "TV mode in the 3D simulator": "TV-Modus im 3D-Simulator"});
 Object.assign(I18N.de, {"Aufstell-Planer in the simulator": "Aufstell-Planer im Simulator", "open in the window of the simulator": "im Fenster des Simulators geöffnet", "Take over the patrol of the planner": "Patrouille vom Planer übernehmen", "Patrol set": "Patrouille gesetzt", "of the area in view": "des Bereichs im Blick"});
-Object.assign(I18N.de, {"Alarm replay in 3D": "Alarm-Rückblick in 3D", "Play in the simulator": "Im Simulator abspielen", "plays in the window of the simulator": "läuft im Fenster des Simulators", "no alarms yet": "noch keine Alarme", "replay-note": "Zeigt im 3D-Simulator nach, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Hilft, Fehlalarme zu verstehen. Die Positionen sind geschätzt (aus Bildposition und Grösse)."});
-Object.assign(I18N.en, {"replay-note": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Helps to understand false alarms. The positions are estimated (from the spot and size in the picture)."});
+Object.assign(I18N.de, {"Replay in 3D": "In 3D nachspielen", "replay-3d-tip": "Zeigt im 3D-Simulator, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Braucht den verbundenen Simulator.", "Alarm replay in 3D": "Alarm-Rückblick in 3D", "Play in the simulator": "Im Simulator abspielen", "plays in the window of the simulator": "läuft im Fenster des Simulators", "no alarms yet": "noch keine Alarme", "replay-note": "Zeigt im 3D-Simulator nach, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Hilft, Fehlalarme zu verstehen. Die Positionen sind geschätzt (aus Bildposition und Grösse)."});
+Object.assign(I18N.en, {"replay-3d-tip": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Needs the connected simulator.", "replay-note": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Helps to understand false alarms. The positions are estimated (from the spot and size in the picture)."});
 Object.assign(I18N.de, {"AI test with simulator pictures": "KI-Prüfung mit Simulator-Bildern", "dset-note": "Der Simulator macht Bilder mit Person oder Tier – bei Tag, Abend, Nacht mit Infrarot, Regen und Nebel, nah und fern – und weiss, wo sie sind. MoveEye lässt seine KI (oder die PC-Rechenhilfe) darüber laufen und zählt Treffer, Fehlschläge und falsche Personen. Dauert pro Bild etwa 3 Sekunden.", "Start the test": "Prüfung starten", "found": "erkannt", "false persons": "falsche Personen", "near (under 8 m)": "nah (unter 8 m)", "far (8 m and more)": "fern (ab 8 m)", "AI time per picture": "KI-Zeit pro Bild", "Training pictures (ZIP)": "Trainingsbilder (ZIP)", "Tag": "Tag", "Abend": "Abend", "Nacht (Infrarot)": "Nacht (Infrarot)", "Regen": "Regen", "Nebel": "Nebel", "Nacht + Regen": "Nacht + Regen", "person": "Person", "fox": "Fuchs", "deer": "Reh", "dog": "Hund", "cat": "Katze", "boar": "Wildschwein", "the simulator makes the pictures …": "der Simulator macht die Bilder …", "done": "fertig"});
 Object.assign(I18N.en, {"dset-note": "The simulator makes pictures with a person or an animal - by day, dusk, night with infrared, rain and fog, near and far - and knows where they are. MoveEye runs its AI (or the PC helper) on them and counts hits, misses and false persons. About 3 seconds per picture.", "Tag": "day", "Abend": "dusk", "Nacht (Infrarot)": "night (infrared)", "Regen": "rain", "Nebel": "fog", "Nacht + Regen": "night + rain"});
 Object.assign(I18N.de, {"Loudspeaker": "Lautsprecher", "built-in / none": "eingebaut / keiner", "no Bluetooth": "kein Bluetooth", "Disco light": "Disco-Licht", "Stop": "Aus", "Start": "Los", "with the music (microphone)": "mit der Musik (Mikrofon)", "fixed tempo": "fester Takt", "needs the white light (Lights)": "braucht das weisse Licht (Licht)", "No microphone: the fixed tempo is used.": "Kein Mikrofon: dann gilt der feste Takt.", "disco-note": "Musik über die Bluetooth-Box oder ein Handy laufen lassen – das Mikrofon hört den Takt und das weisse Licht blitzt mit (höchstens 3-mal pro Sekunde; Vorsicht bei Menschen mit Epilepsie, Rücksicht auf Nachbarn). Ein Alarm geht immer vor. Endet nach 2 Stunden von selbst."});
@@ -52656,8 +52718,8 @@ Object.assign(I18N.de, {"Training set for an own AI model (YOLO)": "Trainingspak
   "Variety: normal": "Vielfalt: normal", "Variety: high": "Vielfalt: hoch", "Variety: high (recommended)": "Vielfalt: hoch (empfohlen)", "Delete old AI data": "Alte KI-Daten löschen", "days": "Tage",
   "Delete all training packs on the PC of the simulator except the newest one? The AI model stays.": "Alle Trainingspakete auf dem PC des Simulators ausser dem neuesten löschen? Das KI-Modell bleibt.",
   "Cleaned up by itself: after every new pack the newest 3 stay, nothing older than 30 days (the newest always stays). The AI model is never deleted.": "Aufräumen von selbst: nach jedem neuen Paket bleiben die neuesten 3, nichts älter als 30 Tage (das neueste bleibt immer). Das KI-Modell wird nie gelöscht."});
-Object.assign(I18N.de, {"pictures": "Bilder", "Tag": "Anhänger", "Aufstell-Planer in the simulator": "Aufstell-Planer im Simulator", "open in the window of the simulator": "im Fenster des Simulators geöffnet", "Take over the patrol of the planner": "Patrouille vom Planer übernehmen", "Patrol set": "Patrouille gesetzt", "of the area in view": "des Bereichs im Blick", "Alarm replay in 3D": "Alarm-Rückblick in 3D", "Play in the simulator": "Im Simulator abspielen", "plays in the window of the simulator": "läuft im Fenster des Simulators", "no alarms yet": "noch keine Alarme", "replay-note": "Zeigt im 3D-Simulator nach, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Hilft, Fehlalarme zu verstehen. Die Positionen sind geschätzt (aus Bildposition und Grösse).", "AI test with simulator pictures": "KI-Prüfung mit Simulator-Bildern", "dset-note": "Der Simulator macht Bilder mit Person oder Tier – bei Tag, Abend, Nacht mit Infrarot, Regen und Nebel, nah und fern – und weiss, wo sie sind. MoveEye lässt seine KI (oder die PC-Rechenhilfe) darüber laufen und zählt Treffer, Fehlschläge und falsche Personen. Dauert pro Bild etwa 3 Sekunden.", "Start the test": "Prüfung starten", "found": "erkannt", "false persons": "falsche Personen", "near (under 8 m)": "nah (unter 8 m)", "far (8 m and more)": "fern (ab 8 m)", "AI time per picture": "KI-Zeit pro Bild", "Training pictures (ZIP)": "Trainingsbilder (ZIP)", "Abend": "Abend", "Nacht (Infrarot)": "Nacht (Infrarot)", "Regen": "Regen", "Nebel": "Nebel", "Nacht + Regen": "Nacht + Regen", "person": "Person", "fox": "Fuchs", "deer": "Reh", "dog": "Hund", "cat": "Katze", "boar": "Wildschwein", "the simulator makes the pictures …": "der Simulator macht die Bilder …", "done": "fertig", "Simulator tools": "Simulator-Werkzeuge"});
-I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Helps to understand false alarms. The positions are estimated (from the spot and size in the picture).", "dset-note": "The simulator makes pictures with a person or an animal - by day, dusk, night with infrared, rain and fog, near and far - and knows where they are. MoveEye runs its AI (or the PC helper) on them and counts hits, misses and false persons. About 3 seconds per picture.", "Tag": "day", "Abend": "dusk", "Nacht (Infrarot)": "night (infrared)", "Regen": "rain", "Nebel": "fog", "Nacht + Regen": "night + rain"});
+Object.assign(I18N.de, {"Replay in 3D": "In 3D nachspielen", "replay-3d-tip": "Zeigt im 3D-Simulator, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Braucht den verbundenen Simulator.", "pictures": "Bilder", "Tag": "Anhänger", "Aufstell-Planer in the simulator": "Aufstell-Planer im Simulator", "open in the window of the simulator": "im Fenster des Simulators geöffnet", "Take over the patrol of the planner": "Patrouille vom Planer übernehmen", "Patrol set": "Patrouille gesetzt", "of the area in view": "des Bereichs im Blick", "Alarm replay in 3D": "Alarm-Rückblick in 3D", "Play in the simulator": "Im Simulator abspielen", "plays in the window of the simulator": "läuft im Fenster des Simulators", "no alarms yet": "noch keine Alarme", "replay-note": "Zeigt im 3D-Simulator nach, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Hilft, Fehlalarme zu verstehen. Die Positionen sind geschätzt (aus Bildposition und Grösse).", "AI test with simulator pictures": "KI-Prüfung mit Simulator-Bildern", "dset-note": "Der Simulator macht Bilder mit Person oder Tier – bei Tag, Abend, Nacht mit Infrarot, Regen und Nebel, nah und fern – und weiss, wo sie sind. MoveEye lässt seine KI (oder die PC-Rechenhilfe) darüber laufen und zählt Treffer, Fehlschläge und falsche Personen. Dauert pro Bild etwa 3 Sekunden.", "Start the test": "Prüfung starten", "found": "erkannt", "false persons": "falsche Personen", "near (under 8 m)": "nah (unter 8 m)", "far (8 m and more)": "fern (ab 8 m)", "AI time per picture": "KI-Zeit pro Bild", "Training pictures (ZIP)": "Trainingsbilder (ZIP)", "Abend": "Abend", "Nacht (Infrarot)": "Nacht (Infrarot)", "Regen": "Regen", "Nebel": "Nebel", "Nacht + Regen": "Nacht + Regen", "person": "Person", "fox": "Fuchs", "deer": "Reh", "dog": "Hund", "cat": "Katze", "boar": "Wildschwein", "the simulator makes the pictures …": "der Simulator macht die Bilder …", "done": "fertig", "Simulator tools": "Simulator-Werkzeuge"});
+I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-3d-tip": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Needs the connected simulator.", "replay-note": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Helps to understand false alarms. The positions are estimated (from the spot and size in the picture).", "dset-note": "The simulator makes pictures with a person or an animal - by day, dusk, night with infrared, rain and fog, near and far - and knows where they are. MoveEye runs its AI (or the PC helper) on them and counts hits, misses and false persons. About 3 seconds per picture.", "Tag": "day", "Abend": "dusk", "Nacht (Infrarot)": "night (infrared)", "Regen": "rain", "Nebel": "fog", "Nacht + Regen": "night + rain"});
 (async function () {
   for (let i = 0; i < 30 && !LANG; i++) await new Promise(r => setTimeout(r, 100));     // after the language is known
   const box = document.getElementById("st-box"); if (!box) return;
@@ -52670,8 +52732,9 @@ I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D
   pl.append(plo, pla);
   const rb = el("div", ""); rb.style.marginTop = "14px"; rb.append(el("b", "", "⏪ " + t("Alarm replay in 3D")));
   const rs = document.createElement("select"); rs.style.cssText = "width:100%;margin-top:6px";
-  const rr = el("div", "btns"); const rgo = el("button", "", "▶ " + t("Play in the simulator")); rgo.type = "button";
+  const rr = el("div", "btns");
   const rsp = document.createElement("select"); [1, 2, 4].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + "×"; rsp.appendChild(o); });
+  const rgo = el("button", "r3d", "⏪ " + t("Replay in 3D")); rgo.type = "button"; rgo.title = t("replay-3d-tip");   // 559: the same button (class r3d) as in the timeline and the recordings
   rgo.onclick = async () => { if (!rs.value) return; const r = await P({action: "replay", id: rs.value, speed: +rsp.value}); toast(r.ok ? "✓ " + t("plays in the window of the simulator") : "⚠ " + (r.error || t("error"))); };
   const rst = el("button", "sec", "⏹"); rst.type = "button"; rst.onclick = () => P({action: "replay", stop: true});
   rr.append(rgo, rsp, rst); rb.append(rs, rr, el("div", "mut", t("replay-note")));
@@ -52762,6 +52825,273 @@ SIM_PAGE = SIM_PAGE.replace("/*SIMMAP*/", SIMMAP_JS + SIMTOOLS_JS + SIMTUN_JS)
 WEB_PAGE = WEB_PAGE.replace("/*SIMMAP*/", SIMMAP_JS)
 
 
+# ----------------------------------------------------------------------------
+# Wish of Daniel (30.10.2026): the push section like the slim cards of the simulator panel (card «Spiel»: name, state,
+# the main buttons; details on demand). The generic rows of the section (530 build) are MOVED into the cards - their
+# handlers and the ctrl registry stay the same, nothing is built twice. Logic + /api/push: 579a; window: 571a; texts: 639a.
+#   Kopf       «Push senden», status line («2 Kanäle · Test ✓»), «Alle testen» (results below)
+#   Wohin      a card per channel (name, state, ▶ Test, switch; tap = its fields). Unused ones behind «+ Kanal hinzufügen».
+#              SMS: the section «SMS (LTE-Stick)» moves into its card (regroup hook below).
+#   Was        level (segment), pre-alarm, pictures (segment)
+#   Wann       the two pauses, quiet hours (time windows, «Personen trotzdem melden»), night time of the night report
+#   Erweitert  keyword (one field), buttons, symbols, page address, info messages, the message texts (section «Nachrichten-
+#              texte» moves here, one row per message), iPhone shortcuts (#scbox of 530)
+#   Moved out  «Alarmton im Browser» → the bell 🔔 at the top (a switch in its panel); «Doppelte Bestätigung» → Erkennung,
+#              device name → System (both server side in 579a).
+# Fields: «Löschen» is a small ✕ inside the field (secret fields: after a confirmation).
+# ----------------------------------------------------------------------------
+
+PUSH_CARDS_JS = r"""
+<style id="px-css">
+.px-h{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:16px 0 6px}
+.px-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px}
+.px-head .px-st{flex:1 1 140px;min-width:0;font-size:13px;color:var(--mut)}
+.px-head .px-st.ok{color:var(--grn)}
+.px-res{white-space:pre-line;font-size:12.5px;margin-top:4px}
+.pxc{border:1px solid var(--line);border-radius:12px;background:var(--field);margin:6px 0;overflow:hidden}
+.pxc-hd{display:flex;align-items:center;gap:8px;padding:7px 8px 7px 10px;cursor:pointer;min-height:40px}
+.pxc-hd .pxic{width:22px;text-align:center;flex:none}
+.pxc-hd .pxnm{flex:1;min-width:0;font-size:14px;line-height:1.2}
+.pxc-hd .pxnm small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pxc-hd .pxnm small.ok{color:var(--grn)}.pxc-hd .pxnm small.warn{color:var(--yel)}
+.pxc-hd .pxar{color:var(--mut);font-size:12px;flex:none;width:12px}
+.pxc.open .pxc-hd .pxar{transform:rotate(90deg)}
+.pxc-hd button.pxtest{padding:4px 9px;font-size:12px;flex:none}
+.pxc-b{padding:2px 10px 10px;border-top:1px solid var(--line)}
+.pxc-b .sl,.pxc-b .row{margin-top:6px}
+.pxc-b .auxbox{margin-top:8px}
+.px-note{font-size:12px;color:var(--mut);margin-top:6px}
+.px-add{margin-top:6px}.px-addm{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.px-seg{display:flex;width:100%;margin-top:4px}.px-seg button{flex:1;padding:7px 4px;font-size:12.5px;white-space:nowrap}
+.px-lbl{font-size:14px;margin-top:8px}
+.pxf{position:relative;display:block;margin-top:4px}
+.pxf>input{width:100%!important;margin-top:0!important;padding-right:34px!important;box-sizing:border-box}
+.pxx{position:absolute;right:3px;top:50%;transform:translateY(-50%);width:28px;height:28px;padding:0!important;border-radius:7px;font-size:13px;line-height:1;
+  background:transparent!important;border:0!important;color:var(--mut)}
+.pxx:hover{color:var(--txt);background:var(--btn2)!important}
+.px-q{margin-top:6px}.px-qw{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.px-qw input[type=time]{width:96px;padding:4px 6px}
+.px-days{display:flex;gap:2px;flex-wrap:wrap}.px-days button{padding:3px 6px;font-size:11.5px;min-width:30px}
+.px-days button.on{background:var(--acc);color:#fff;border-color:transparent}
+details.px-adv{margin-top:14px;border-top:1px solid var(--line);padding-top:4px}
+details.px-adv>summary{cursor:pointer;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);font-weight:700;padding:8px 0;list-style:none}
+details.px-adv>summary::-webkit-details-marker{display:none}
+details.px-adv>summary::before{content:"▸ ";}details.px-adv[open]>summary::before{content:"▾ ";}
+.px-msg .msgcard{margin-top:6px;padding:0;background:transparent}
+.px-msg .msgcard>summary{padding:8px 10px;cursor:pointer}
+.px-msg .msgcard[open]{padding-bottom:8px}.px-msg .msgcard>:not(summary){margin-left:10px;margin-right:10px}
+.px-hidden{display:none!important}
+.sndpop .px-bell{border-top:1px solid var(--line);margin-top:8px;padding-top:6px}
+</style>
+<script>
+(function () {
+  try { const D = /*PXDE*/{}; Object.keys(D).forEach(k => { if (!(k in I18N.de)) I18N.de[k] = D[k]; }); } catch (e) {}   // 639a; existing texts stay
+  const CH = {
+    ntfy: {ic: "📲", nm: "ntfy", keys: ["notify_url"]},
+    webpush: {ic: "🌐", nm: "Web push (this device)", keys: []},
+    telegram: {ic: "✈️", nm: "Telegram", keys: ["telegram_token", "telegram_chat"]},
+    pushover: {ic: "🔔", nm: "Pushover", keys: ["pushover_user", "pushover_token", "pushover_emergency"]},
+    email: {ic: "✉️", nm: "E-mail", keys: ["email_to"], adv: ["email_host", "email_port", "email_user", "email_password", "email_events"]},
+    webhook: {ic: "🔗", nm: "Webhook", keys: ["notify_url"]},
+    sms: {ic: "📱", nm: "SMS", keys: []}};
+  const ORDER = ["ntfy", "webpush", "telegram", "pushover", "email", "webhook", "sms"];
+  const MAIN = ["ntfy", "telegram", "webhook"];
+  const DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+  const X = {P: null, root: null, cards: {}, added: new Set(), urlRow: null, editQ: 0, adv: null, msg: null};
+  const api = (b) => post("/api/push", Object.assign({lang: LANG}, b || {}));
+  const rowOf = (d, k) => d.querySelector('[data-key="' + k + '"]');
+
+  // a text field: «Löschen» as a small ✕ inside (secret: after a confirmation)
+  function xField(wrap) {
+    if (!wrap || wrap.dataset.pxx) return; wrap.dataset.pxx = "1";
+    const inp = wrap.querySelector("input[type=text],input[type=password]"); if (!inp) return;
+    const f = el("span", "pxf"); inp.parentNode.insertBefore(f, inp); f.appendChild(inp);
+    const clr = [...wrap.querySelectorAll(":scope > button.sec")].find(b => b.textContent === t("Clear"));
+    const x = el("button", "pxx", "✕"); x.type = "button"; x.title = t("Clear"); x.setAttribute("aria-label", t("Clear"));
+    if (clr) { clr.classList.add("px-hidden");
+      x.onclick = () => { if (!confirm(t("Clear the saved value? It cannot be shown again."))) return; clr.click(); inp.value = ""; }; }
+    else x.onclick = () => { if (!inp.value) return; inp.value = ""; inp.dispatchEvent(new Event("change")); };
+    f.appendChild(x);
+  }
+  function seg(choices, cur, onpick) {
+    const s = el("div", "seg lseg px-seg");
+    choices.forEach(([v, lab]) => { const b = el("button", v === cur ? "sel-auto" : "", t(lab)); b.type = "button"; b.dataset.v = v;
+      b.onclick = () => { [...s.children].forEach(x => x.className = x === b ? "sel-auto" : ""); onpick(v); }; s.appendChild(b); });
+    s.set = v => [...s.children].forEach(x => x.className = x.dataset.v === v ? "sel-auto" : "");
+    return s;
+  }
+  function hide(n) { if (n) n.classList.add("px-hidden"); }
+
+  function card(id, d) {
+    const C = CH[id], c = el("div", "pxc"); c.dataset.ch = id;
+    const hd = el("div", "pxc-hd"), ar = el("span", "pxar", "▸"), ic = el("span", "pxic", C.ic), nm = el("span", "pxnm"), st = el("small", "", "");
+    nm.append(document.createTextNode(t(C.nm)), st);
+    const tb = el("button", "sec pxtest", "▶ " + t("Test")); tb.type = "button"; tb.title = t("Send a test message over this channel only");
+    const sw = el("input"); sw.type = "checkbox"; sw.className = "sw"; sw.title = t("on / off");
+    hd.append(ar, ic, nm, tb, sw);
+    const body = el("div", "pxc-b"); body.hidden = true;
+    hd.onclick = e => { if (e.target === sw || e.target === tb) return; body.hidden = !body.hidden; c.classList.toggle("open", !body.hidden); };
+    sw.onchange = async () => { const r = await api({action: "channel", ch: id, on: sw.checked});
+      if (r && r.ok === false) toast("⚠ " + (r.error || "error")); paint(r && r.channels ? r : null);
+      if (sw.checked && body.children.length > 1) { body.hidden = false; c.classList.add("open"); } };
+    tb.onclick = async () => { tb.disabled = true; st.textContent = t("testing …"); st.className = "";
+      const r = await api({action: "test", ch: id}); tb.disabled = false;
+      const x = r && r.results && r.results[0];
+      if (!r || r.ok === false) toast("⚠ " + ((r && r.error) || "error"));
+      else if (x) toast((x.ok ? "✓ " : "✗ ") + x.ch + " – " + x.msg);
+      paint(r && r.channels ? r : null); };
+    C.keys.forEach(k => { const r_ = k === "notify_url" ? null : rowOf(d, k); if (r_) body.appendChild(r_); });
+    if (C.adv) { const a = el("details", "adv sblk"); a.appendChild(el("summary", "", t("Advanced")));
+      C.adv.forEach(k => { const r_ = rowOf(d, k); if (r_) a.appendChild(r_); }); if (a.children.length > 1) body.appendChild(a); }
+    if (MAIN.includes(id)) body.appendChild(el("div", "px-note", t("Only one of ntfy · Telegram · Webhook (the main channel, with repeats and the outbox).")));
+    if (id === "webpush") { const wp = d.querySelector("#wp-box"); if (wp) body.appendChild(wp); }
+    if (id === "email") body.appendChild(el("div", "px-note", t("The iPhone can start a shortcut from an e-mail (see Advanced → iPhone shortcuts).")));
+    c.append(hd, body); X.cards[id] = {c, sw, st, body, tb};
+    return c;
+  }
+
+  function quietBox(d) {
+    const box = el("div", "px-q"), list = el("div");
+    const add = el("button", "sec", "+ " + t("Time window")); add.type = "button";
+    const pre = el("button", "sec", "🏠 " + t("Day at home")); pre.type = "button"; pre.title = t("Weekdays 08:00 until the night time of the night report");
+    const bt = el("div", "btns"); bt.append(add, pre);
+    const info = el("div", "px-note");
+    box.append(list, bt, info);
+    let W = [];
+    const save = () => { X.editQ = Date.now(); api({action: "quiet", windows: W}).then(r => { if (r && r.ok) { toast(t("Saved")); paint(r); } }); };
+    const draw = () => { list.textContent = "";
+      W.forEach((w, i) => { const r = el("div", "px-qw");
+        const a = el("input"); a.type = "time"; a.value = w.from; const b = el("input"); b.type = "time"; b.value = w.to;
+        a.onchange = () => { w.from = a.value; save(); }; b.onchange = () => { w.to = b.value; save(); };
+        const ds = el("div", "px-days");
+        DAYS.forEach((dn, k) => { const x = el("button", "sec" + (w.days.includes(k) ? " on" : ""), t(dn)); x.type = "button";
+          x.onclick = () => { w.days = w.days.includes(k) ? w.days.filter(z => z !== k) : w.days.concat([k]).sort(); if (!w.days.length) w.days = [k]; draw(); save(); };
+          ds.appendChild(x); });
+        const del = el("button", "sec pxx", "✕"); del.type = "button"; del.style.position = "static"; del.style.transform = "none"; del.title = t("Remove");
+        del.onclick = () => { if (W.length <= 1) { toast(t("At least one time window - switch the quiet hours off instead.")); return; } W.splice(i, 1); draw(); save(); };
+        r.append(a, el("span", "mut", "–"), b, ds, del); list.appendChild(r); });
+      add.hidden = W.length >= 4; };
+    add.onclick = () => { W.push({from: "12:00", to: "14:00", days: [0, 1, 2, 3, 4, 5, 6]}); draw(); save(); };
+    pre.onclick = () => { const nf = (X.P && X.P.night_from) || 20; W = [{from: "08:00", to: String(nf).padStart(2, "0") + ":00", days: [0, 1, 2, 3, 4]}]; draw(); save(); };
+    box.fill = P => { if (Date.now() - X.editQ > 4000 && !box.contains(document.activeElement)) { W = JSON.parse(JSON.stringify(P.quiet.windows || [])); draw(); }
+      info.textContent = (P.quiet.now ? "🌙 " + t("Quiet hours now - alarms are only logged") + " · " : "") + t("Clock") + ": " + P.quiet.clock + (P.quiet.sim ? " (" + t("sim time") + ")" : "")
+        + " · " + t("Night time from") + " " + P.night_from + ":00 (" + t("night report") + ")"; };
+    return box;
+  }
+
+  window.pushPanel = function (d, sec) {
+    if (d.querySelector(".px")) return;
+    const root = el("div", "px"); X.root = root;
+    // the generic buttons of 530 (test, test all) - replaced by «▶ Test» per card and «Alle testen» on top
+    [...d.children].filter(c => c.tagName === "BUTTON").forEach(b => { const nx = b.nextElementSibling; b.remove(); if (nx && nx.tagName === "DIV" && nx.classList.contains("mut") && !nx.dataset.key && !nx.id) nx.remove(); });
+    // ---- Kopf ----
+    const on = rowOf(d, "notify_on"); if (on) root.appendChild(on);
+    const head = el("div", "px-head"), st = el("div", "px-st", ""), all = el("button", "sec", "🧪 " + t("Test all")); all.type = "button";
+    const res = el("div", "px-res mut"); head.append(st, all); root.append(head, res); X.st = st;
+    all.onclick = async () => { all.disabled = true; res.textContent = t("testing …");
+      const r = await api({action: "test", ch: "all"}); all.disabled = false;
+      res.textContent = !r || r.ok === false ? "⚠ " + ((r && r.error) || "error") : (r.results || []).length ? r.results.map(x => (x.ok ? "✓ " : "✗ ") + x.ch + " – " + x.msg).join("\n") : t("No channel set up.");
+      paint(r && r.channels ? r : null); };
+    // ---- Wohin ----
+    root.appendChild(el("div", "px-h", t("Where to")));
+    const cw = el("div", "px-cards"); root.appendChild(cw);
+    ORDER.forEach(id => cw.appendChild(card(id, d)));
+    X.urlRow = rowOf(d, "notify_url");
+    const addB = el("button", "sec px-add", "+ " + t("Add channel")); addB.type = "button"; const addM = el("div", "px-addm"); addM.hidden = true;
+    addB.onclick = () => { addM.hidden = !addM.hidden; }; root.append(addB, addM); X.addB = addB; X.addM = addM;
+    // ---- Was ----
+    root.appendChild(el("div", "px-h", t("What")));
+    X.lvl = seg([["persons", "Only persons"], ["animals", "Persons + animals"], ["all", "Everything"]], "all",
+      v => post("/api/text", {key: "push_level", value: v, lang: LANG}).then(r => { toast(r.ok ? t("Saved") : "⚠ " + (r.error || "error")); refreshP(); }));
+    const lvW = el("div", ""); lvW.dataset.key = "push_level"; const lvL = el("div", "row"); lvL.appendChild(el("span", "", t("What is reported"))); lvW.append(lvL, X.lvl); root.appendChild(lvW);
+    X.lvlNote = el("div", "px-note", ""); root.appendChild(X.lvlNote);
+    hide(rowOf(d, "push_level")); const pr = rowOf(d, "notify_prealarm"); if (pr) root.appendChild(pr);
+    X.pics = seg([["with", "with picture"], ["small", "small picture"], ["text", "without picture"]], "with",
+      v => post("/api/text", {key: "push_pics", value: v, lang: LANG}).then(r => toast(r.ok ? t("Saved") : "⚠ " + (r.error || "error"))));
+    const pW = el("div", ""); pW.dataset.key = "push_pics"; const pL = el("div", "row"); pL.appendChild(el("span", "", t("Pictures"))); pW.append(pL, X.pics); root.appendChild(pW);
+    hide(rowOf(d, "push_pics"));
+    // ---- Wann ----
+    root.appendChild(el("div", "px-h", t("When")));
+    ["notify_cooldown", "prealarm_cooldown", "quiet_on"].forEach(k => { const r_ = rowOf(d, k); if (r_) root.appendChild(r_); });
+    X.q = quietBox(d); root.appendChild(X.q);
+    const qp = rowOf(d, "quiet_persons"); if (qp) { X.q.insertBefore(qp, X.q.firstChild); }
+    const qcb = ctrl.quiet_on && ctrl.quiet_on.input; if (qcb) { const upd = () => { X.q.hidden = !qcb.checked; }; qcb.addEventListener("change", upd); X.qUpd = upd; }
+    // ---- Erweitert ----
+    const adv = el("details", "px-adv"); adv.appendChild(el("summary", "", t("Advanced"))); X.adv = adv;
+    const kw = el("div", "sl"); kw.dataset.key = "msg_keyword_prefix"; const kl = el("div", "row"); kl.appendChild(el("span", "", t("Keyword (empty = off)")));
+    const ki = el("input"); ki.type = "text"; ki.autocomplete = "off"; ki.placeholder = "MW"; ki.maxLength = 12; ki.style.width = "100%"; ki.style.marginTop = "4px";
+    ki.onchange = () => api({action: "keyword", value: ki.value}).then(r => { toast(r.ok ? t("Saved") : "⚠ " + (r.error || "error")); paint(r && r.channels ? r : null); });
+    kw.append(kl, ki); adv.appendChild(kw); X.kw = ki; xField(kw);
+    hide(rowOf(d, "msg_keyword_on")); hide(rowOf(d, "msg_keyword_prefix"));
+    ["webpush_on", "pushover_on", "email_on"].forEach(k => hide(rowOf(d, k)));     // = the switches of the cards
+    ["push_actions", "msg_icons", "public_url", "notify_network", "notify_remote"].forEach(k => { const r_ = rowOf(d, k); if (r_) adv.appendChild(r_); });
+    const ba = rowOf(d, "browser_alarm"); if (ba) { hide(ba); adv.appendChild(ba); }      // moved to the bell 🔔 (below)
+    X.msg = el("div", "px-msg"); adv.appendChild(X.msg);
+    root.appendChild(adv);
+    // anything left over of the section (a later version) stays below, nothing gets lost
+    [...d.children].filter(c => c.tagName !== "SUMMARY" && c !== root && !c.classList.contains("px-hidden")).forEach(c => adv.appendChild(c));
+    const sm = d.querySelector(":scope > summary"); d.insertBefore(root, sm ? sm.nextSibling : d.firstChild);
+    root.querySelectorAll(".sl[data-key]").forEach(xField);
+    refreshP(); setInterval(() => { if (X.root && X.root.offsetParent) refreshP(); pxMoveSc(); }, 5000);
+    setTimeout(pxMoveSc, 1500);
+  };
+  function pxMoveSc() { const sc = document.getElementById("scbox"); if (sc && X.adv && sc.parentNode !== X.adv) X.adv.appendChild(sc); }
+  async function refreshP() { try { paint(await (await fetch("/api/push?lang=" + LANG, {cache: "no-store"})).json()); } catch (e) {} }
+
+  function paint(P) {
+    if (!P || !P.channels) { refreshP(); return; }
+    X.P = P;
+    X.st.textContent = P.status_line; X.st.classList.toggle("ok", P.on && P.ready > 0 && (!P.test.n || P.test.ok === P.test.n));
+    const hidden = [];
+    P.channels.forEach(c => { const K = X.cards[c.id]; if (!K) return;
+      const show = c.used || c.on || X.added.has(c.id);
+      K.c.hidden = !show; if (!show) hidden.push(c.id);
+      if (K.sw !== document.activeElement) K.sw.checked = c.on;
+      K.st.textContent = !c.on ? t("switched off") : c.ready ? "✓ " + (c.id === "webpush" ? c.info + " " + t("devices") : (c.info || t("ready"))) : "⚠ " + t(c.id === "webpush" ? "no device yet" : "not set up yet");
+      K.st.className = !c.on ? "" : c.ready ? "ok" : "warn";
+      K.tb.hidden = !c.on; });
+    // the shared address field: in the card of the main channel (ntfy or Webhook)
+    if (X.urlRow) { const tgt = X.cards[P.main === "webhook" ? "webhook" : "ntfy"]; if (tgt && X.urlRow.parentNode !== tgt.body) tgt.body.insertBefore(X.urlRow, tgt.body.firstChild);
+      const lb = X.urlRow.querySelector(".row span"); if (lb) lb.textContent = t(P.main === "webhook" ? "Webhook address (JSON POST)" : "Address (server/topic)");
+      const inp = X.urlRow.querySelector("input"); if (inp && inp !== document.activeElement && inp.value !== P.url) inp.value = P.url; }
+    X.addM.textContent = "";
+    hidden.forEach(id => { const b = el("button", "sec", CH[id].ic + " " + t(CH[id].nm)); b.type = "button";
+      b.onclick = () => { X.added.add(id); api({action: "add", ch: id}); X.addM.hidden = true; paint(P); const K = X.cards[id]; K.body.hidden = false; K.c.classList.add("open"); K.c.scrollIntoView({block: "nearest"}); };
+      X.addM.appendChild(b); });
+    X.addB.hidden = !hidden.length;
+    X.lvl.set(P.level); X.pics.set(P.pics);
+    X.lvlNote.textContent = t({persons: "Only person alarms. Warm bodies and noise are only logged.", animals: "Persons and warm bodies (thermal camera). Noise is only logged.",
+      all: "Persons, warm bodies and noise (as up to now)."}[P.level] || "") + " " + t("Sabotage, theft and notes always come.");
+    if (X.kw !== document.activeElement) X.kw.value = P.keyword;
+    X.q.fill(P); if (X.qUpd) X.qUpd(); else X.q.hidden = !P.quiet.on;
+  }
+
+  // ---- sections that move into the push panel (before the groups are built, 530 regroup) ----
+  function pxRelocate() {
+    const box = document.getElementById("settings"); if (!box || !X.root) return;
+    const sms = box.querySelector(':scope > details[data-view="sec:SMS (LTE stick)"]');
+    if (sms && X.cards.sms) { const b = X.cards.sms.body; hide(sms.querySelector('[data-key="sms_on"]'));
+      [...sms.children].filter(c => c.tagName !== "SUMMARY").forEach(c => b.appendChild(c)); sms.remove();
+      b.querySelectorAll(".sl[data-key]").forEach(xField); }
+    const msg = box.querySelector(':scope > details[data-view="sec:Messages"]');
+    if (msg && X.msg) { X.msg.appendChild(el("div", "px-lbl", "💬 " + t("Message texts")));
+      [...msg.children].filter(c => c.tagName !== "SUMMARY").forEach(c => X.msg.appendChild(c)); msg.remove();
+      X.msg.querySelectorAll(".msgcard > summary > span:first-child").forEach(s => { if (!/✎/.test(s.textContent)) s.textContent += " ✎"; }); }
+  }
+  try { const _rg = regroup; regroup = function () { try { pxRelocate(); } catch (e) {} return _rg.apply(this, arguments); }; } catch (e) {}
+
+  // ---- «Alarmton in geöffneten Browsern» in the panel of the bell 🔔 (moved out of the push messages) ----
+  new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => {
+    if (!(n.classList && n.classList.contains("sndpop")) || n.querySelector(".px-bell")) return;
+    const c = ctrl.browser_alarm; if (!c || !c.input) return;
+    const row = el("label", "row px-bell"); const cb = el("input"); cb.type = "checkbox"; cb.className = "sw"; cb.checked = c.input.checked;
+    cb.onchange = () => { c.input.checked = cb.checked; post("/api/set", {key: "browser_alarm", value: cb.checked}); };
+    row.append(el("span", "", t("Alarms to all open browsers (MoveEye)")), cb); n.appendChild(row);
+  }))).observe(document.body, {childList: true});
+})();
+</script>
+"""
+WEB_PAGE = WEB_PAGE.replace("</body>", PUSH_CARDS_JS + "</body>", 1)
 # ----------------------------------------------------------------------------
 # 2.98.13: a small script at the end of the main page (530 stays as it is): the card «Gehtest» under the live picture,
 # the button «Gehtest» on the Schutz page and the line of the battery saver beside «Power saving». Asks /api/walktest
@@ -60730,9 +61060,12 @@ for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
 # Mit dem Simulator (3D-4.19) kommt der virtuelle SmallTV von selbst dazu (🧪, Adresse = Simulator, gleiche Schnittstelle).
 # Einstellungen + Fenster: 599b, Übersetzungen + Anleitung: 562.
 # ----------------------------------------------------------------------------
-STV_CFG = {"stv_on": True, "stv_list": [], "stv_sim": {"on": True, "status": True, "alarm": True, "game": True, "brt": 60},
+STV_CFG = {"stv_on": True, "stv_list": [], "stv_sim": {"on": True, "status": True, "alarm": True, "game": True, "brt": 60, "rot": True},
            "stv_person_pic": False, "stv_animals": True, "stv_night": True, "stv_night_brt": 10, "stv_alarm_s": 60,
-           "stv_bright_s": 20, "stv_gap_s": 5, "stv_clock_min": 10}
+           "stv_bright_s": 20, "stv_gap_s": 5, "stv_clock_min": 10, "stv_alarm_keep_min": 5}
+# 30.10.2026 Abend (Daniel): per display «Live-Bild und Wechsel» («rot»): by day live picture <-> battery page every 30 s,
+# alarm as animated GIF (me_a.gif / me_b.gif) 60 s, then the still picture 5 min (553). Off = the status page as before.
+# Saved displays without «rot» stay off (no surprise), a newly added display has it on (stv_edit «add»).
 for _k, _v in STV_CFG.items():
     CFG.setdefault(_k, _v)
     DEFAULTS.setdefault(_k, _v)
@@ -60774,7 +61107,8 @@ def _stv_clean(e):
     except (TypeError, ValueError):
         brt = 60
     return {"id": sid, "name": str(e.get("name") or "SmallTV")[:30], "addr": addr, "on": bool(e.get("on", True)),
-            "status": bool(e.get("status", True)), "alarm": bool(e.get("alarm", True)), "game": bool(e.get("game", True)), "brt": brt}
+            "status": bool(e.get("status", True)), "alarm": bool(e.get("alarm", True)), "game": bool(e.get("game", True)), "brt": brt,
+            "rot": bool(e.get("rot", False))}
 
 
 def stv_entries(with_sim=True):
@@ -60787,7 +61121,8 @@ def stv_entries(with_sim=True):
         except (TypeError, ValueError):
             brt = 60
         out.append({"id": "sim", "name": "Simulator", "addr": sim_base(), "sim": True, "on": bool(s.get("on", True)),
-                    "status": bool(s.get("status", True)), "alarm": bool(s.get("alarm", True)), "game": bool(s.get("game", True)), "brt": brt})
+                    "status": bool(s.get("status", True)), "alarm": bool(s.get("alarm", True)), "game": bool(s.get("game", True)), "brt": brt,
+                    "rot": bool(s.get("rot", False))})
     return out
 
 
@@ -60831,7 +61166,7 @@ def stv_edit(action, d, who="web"):
         if len(lst) >= STV_MAX:
             return False, "too many displays"
         import secrets as _sec
-        e = _stv_clean({"id": _sec.token_hex(4), "name": str(d.get("name") or "").strip() or "SmallTV", "addr": addr})
+        e = _stv_clean({"id": _sec.token_hex(4), "name": str(d.get("name") or "").strip() or "SmallTV", "addr": addr, "rot": True})
         lst.append(e)
         CFG["stv_list"] = lst
         save_settings()
@@ -60843,7 +61178,7 @@ def stv_edit(action, d, who="web"):
         if action != "update":
             return False, "the display of the simulator comes by itself"
         f = str(d.get("field") or "")
-        if f in ("on", "status", "alarm", "game"):
+        if f in ("on", "status", "alarm", "game", "rot"):
             s[f] = bool(d.get("value"))
         elif f == "brt":
             s[f] = max(0, min(100, int(float(d.get("value") or 0))))
@@ -60865,7 +61200,7 @@ def stv_edit(action, d, who="web"):
     if action == "update":
         f = str(d.get("field") or "")
         v = d.get("value")
-        if f in ("on", "status", "alarm", "game"):
+        if f in ("on", "status", "alarm", "game", "rot"):
             e[f] = bool(v)
         elif f == "brt":
             try:
@@ -60922,10 +61257,12 @@ def stv_files(base, timeout=10.0):
 
 
 def stv_upload(base, name, jpg, timeout=30.0):
-    """POST /doUpload?dir=/image/ (multipart, field «file») -> (ok, note). HTTP 400 or a timeout: the file list decides."""
+    """POST /doUpload?dir=/image/ (multipart, field «file») -> (ok, note). HTTP 400 or a timeout: the file list decides.
+    A .gif goes the same way (the photo album of the Ultra plays GIFs, manual V9.0.18 «Picture Display»)."""
     import secrets as _sec
     bd = "----MoveEye" + _sec.token_hex(8)
-    body = (f"--{bd}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{name}\"\r\nContent-Type: image/jpeg\r\n\r\n").encode() \
+    ct = "image/gif" if name.lower().endswith(".gif") else "image/jpeg"
+    body = (f"--{bd}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{name}\"\r\nContent-Type: {ct}\r\n\r\n").encode() \
         + jpg + f"\r\n--{bd}--\r\n".encode()
     try:
         code, _b = _stv_req(base, "/doUpload?dir=/image/", body, "multipart/form-data; boundary=" + bd, timeout)
@@ -60998,7 +61335,23 @@ class StvDev:
                     pass
                 time.sleep(0.3)
             self.theme_t = time.time()
-        name = STV_NAMES[1] if self.shown == STV_NAMES[0] else STV_NAMES[0]   # the other one: the new picture is complete before it shows
+        ext = "gif" if w.get("ext") == "gif" else "jpg"
+        stored = getattr(self, "stored", None)
+        if stored is None:
+            stored = self.stored = {}                     # file name on the device -> sig of the picture in it
+        again = next((n for n, sg in stored.items() if sg == w["sig"]), None)
+        if again:                                         # 553: the picture is on the device already (rotation): only show it, no flash write
+            code, _b = _stv_req(base, "/set?img=" + urllib.parse.quote("/image//" + again, safe="/"), timeout=10.0)
+            if code == 200:
+                self.shown = again; self.sent_sig = w["sig"]; self.jpg = w["jpg"]; self.kind = w["kind"]
+                self.reshows = getattr(self, "reshows", 0) + 1
+                self.h.update(ok=True, err="", sent_t=time.time())
+                self.last_up = time.time()
+                return True
+            stored.pop(again, None)
+        slot = "b" if str(self.shown).startswith("me_a") else "a"   # the other one: the new picture is complete before it shows
+        name = f"me_{slot}.{ext}"
+        other = f"me_{slot}." + ("jpg" if ext == "gif" else "gif")
         ok, note = stv_upload(base, name, w["jpg"])
         time.sleep(0.3)
         if ok:
@@ -61007,9 +61360,12 @@ class StvDev:
             note = note or ("" if ok else f"show: HTTP {code}")
         if ok:
             self.shown = name; self.sent_sig = w["sig"]; self.ups += 1; self.bytes += len(w["jpg"]); self.jpg = w["jpg"]; self.kind = w["kind"]
+            stored[name] = w["sig"]
+            stored.pop(other, None)
             self.h.update(ok=True, err="", note=note, sent_t=time.time())
             if note:
                 self.h["note"] = note
+            self._drop(base, other)
         else:
             self.errs += 1
             self.h.update(err=note or "upload failed")
@@ -61019,6 +61375,24 @@ class StvDev:
             self.theme_t = 0.0
         self.last_up = time.time()
         return ok
+
+    def _drop(self, base, name):
+        """me_a.gif after me_a.jpg (and the other way round): away with the old one, so the device keeps only two pictures"""
+        try:
+            fl = getattr(self, "dev_files", None)
+            if fl is None:
+                time.sleep(0.3)
+                fl = stv_files(base) or []
+            fl = set(fl)
+            if name in fl:
+                time.sleep(0.3)
+                code, _b = _stv_req(base, "/delete?file=" + urllib.parse.quote("/image//" + name, safe="/"), timeout=10.0)
+                if code == 200:
+                    fl.discard(name)
+            fl.add(self.shown)
+            self.dev_files = fl
+        except Exception:
+            self.dev_files = None
 
     def run(self):
         while self.alive:
@@ -61353,7 +61727,12 @@ def stv_render_status(lang=None, red=False):
     return _stv_jpg(im, red)
 
 
-def stv_render_alarm(a, lang=None, red=False):
+def stv_render_alarm(a, lang=None, red=False, warn=False):
+    return _stv_jpg(_stv_alarm_im(a, lang, warn=warn), red)
+
+
+def _stv_alarm_im(a, lang=None, edge=4, edge_col=(255, 60, 60), warn=False, warn_col=(255, 214, 0)):
+    """the alarm picture (PIL): picture section or symbol, red frame, band «Fuchs · 91 % · 6 m»; warn: «⚠» in front (553 GIF / still)"""
     from PIL import Image
     im, d = _stv_canvas()
     band = 64
@@ -61378,7 +61757,7 @@ def stv_render_alarm(a, lang=None, red=False):
                 d.text((STV_SIZE - 50, 20), f"×{a['n']}", font=_font(26), fill=(255, 200, 200))
         else:
             d.ellipse((70, 40, 170, 140), outline=(245, 154, 74), width=6)
-    d.rectangle((0, 0, STV_SIZE - 1, STV_SIZE - 1), outline=(255, 60, 60), width=4)
+    d.rectangle((0, 0, STV_SIZE - 1, STV_SIZE - 1), outline=edge_col, width=edge)
     d.rectangle((0, STV_SIZE - band, STV_SIZE, STV_SIZE), fill=(160, 20, 24))
     lab = tr(a.get("label") or "", lang)
     lab = lab[:1].upper() + lab[1:]
@@ -61389,13 +61768,24 @@ def stv_render_alarm(a, lang=None, red=False):
         parts.append(f"{int(a['dist'])} m")
     line = " · ".join(parts)
     f = _font(24)
-    while d.textlength(line, font=f) > STV_SIZE - 16 and getattr(f, "size", 0) > 16:
+    ww = 30 if warn else 0                                 # the drawn warning sign (the fonts have no emoji)
+    while d.textlength(line, font=f) > STV_SIZE - 16 - ww and getattr(f, "size", 0) > 16:
         f = _font(f.size - 1)
-    d.text(((STV_SIZE - d.textlength(line, font=f)) / 2, STV_SIZE - band + 6), line, font=f, fill=(255, 255, 255))
+    x0 = (STV_SIZE - d.textlength(line, font=f) - ww) / 2
+    if warn:
+        _stv_warn(d, x0, STV_SIZE - band + 6, 24, warn_col)
+    d.text((x0 + ww, STV_SIZE - band + 6), line, font=f, fill=(255, 255, 255))
     sub = (tr("Alarm", lang) if kind == "person" else tr("Animal", lang)) + " · " + str(a.get("clock") or "")
     f2 = _font(16, False)
     d.text(((STV_SIZE - d.textlength(sub, font=f2)) / 2, STV_SIZE - 26), sub, font=f2, fill=(255, 215, 215))
-    return _stv_jpg(im, red)
+    return im
+
+
+def _stv_warn(d, x, y, s, col):
+    """a warning sign ⚠ (triangle with «!»), drawn - s = height in pixels"""
+    d.polygon([(x + s * 0.5, y), (x + s * 1.05, y + s), (x - s * 0.05, y + s)], fill=col, outline=(40, 0, 0))
+    d.rectangle((x + s * 0.44, y + s * 0.3, x + s * 0.56, y + s * 0.68), fill=(30, 0, 0))
+    d.rectangle((x + s * 0.44, y + s * 0.76, x + s * 0.56, y + s * 0.88), fill=(30, 0, 0))
 
 
 def stv_render_game(g, caught=None, lang=None, red=False):
@@ -61489,7 +61879,9 @@ def stv_plan(e, now=None):
     lang = CFG.get("lang")
     red = stv_night()
     a = STV["alarm"]
-    alarm_on = a is not None and now - a["t"] < float(CFG.get("stv_alarm_s", 60) or 60)
+    rot = bool(e.get("rot"))                               # 553: «Live-Bild und Wechsel»
+    gif_s = float(CFG.get("stv_alarm_s", 60) or 60)
+    alarm_on = a is not None and now - a["t"] < gif_s + (60.0 * float(CFG.get("stv_alarm_keep_min", 5) or 0) if rot else 0.0)
     if red:
         brt = int(CFG.get("stv_night_brt", 10))
     else:
@@ -61499,14 +61891,21 @@ def stv_plan(e, now=None):
     g = STV["game"]
     playing = bool(e.get("game") and g and now - STV["game_t"] < 10 and g.get("round") in ("countdown", "play"))
     if e.get("alarm") and alarm_on and not playing:        # in a round the players are the persons: the game shows «Erwischt!»
-        key = ("alarm", a["t"], red, lang)
-        return "alarm", key, lambda: stv_render_alarm(a, lang, red), brt, True
+        if now - a["t"] < gif_s:                           # 553: first the animation (GIF) - on every display (Daniel 30.10.), with rotation then the still picture
+            key = ("alarmgif", a["t"], red, lang)
+            return "gif", key, lambda: stv_render_alarm_gif(a, lang, red), brt, True
+        key = ("alarm", a["t"], red, lang, rot)
+        return "alarm", key, lambda: stv_render_alarm(a, lang, red, warn=rot), brt, True
     if playing or (e.get("game") and g and now - STV["game_t"] < 10 and g.get("round") == "end" and now - STV.get("end_t", 0.0) < 60):
         c = STV["caught"]
         cn = c[1] if c and now - c[0] < 5.0 else None
         sig_p = tuple((p.get("n"), p.get("pt"), p.get("k")) for p in (g.get("players") or [])[:4])
         key = ("game", g.get("round"), g.get("cd"), None if cn else g.get("left"), sig_p, tuple((x.get("n"), x.get("pt")) for x in g.get("top") or []), cn, g.get("mw"), red, lang)
         return "game", key, lambda: stv_render_game(g, cn, lang, red), brt, bool(cn)
+    if rot and not red:                                    # 553: by day live picture <-> battery every 30 s (night: the status page)
+        r_ = stv_rot_plan(now, lang)
+        if r_ is not None:
+            return r_[0], r_[1], r_[2], brt, False
     if e.get("status"):
         b = STATE.get("battery") or {}
         bp = int(b.get("pct") // 5 * 5) if b.get("on") and b.get("pct") is not None else None
@@ -61540,7 +61939,7 @@ def stv_tick():
         sig = hash(key)
         if dv.want is None or dv.want["sig"] != sig or dv.want["brt"] != brt:
             jpg = _stv_cached(key, fn)
-            dv.want = {"jpg": jpg, "sig": sig, "kind": kind, "brt": brt, "now": at_once}
+            dv.want = {"jpg": jpg, "sig": sig, "kind": kind, "brt": brt, "now": at_once, "ext": "gif" if kind == "gif" else "jpg"}
             dv.ev.set()
 
 
@@ -61693,7 +62092,7 @@ def smalltv_routes(app, reply, body):
         b = stv_img(sid)
         if not b:
             return Response(b"", status=404)
-        return Response(b, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+        return Response(b, mimetype="image/gif" if b[:4] == b"GIF8" else "image/jpeg", headers={"Cache-Control": "no-store"})
 
 
 # ---- the web page: Settings → Devices & sensors → «Extra display (SmallTV)» (530 calls stvPanel) --------------------------
@@ -61707,7 +62106,7 @@ STV_JS = r"""
   const P = (d) => post("/api/smalltv", Object.assign({lang: L()}, d));
   let BOX = null, TM = null, SIG = "";
   const ago = s => { if (!s) return "–"; const a = Math.max(0, Math.round(Date.now() / 1000 - s)); return a < 90 ? a + " s" : Math.round(a / 60) + " min"; };
-  const KIND = {status: "Status", alarm: "Alarm picture", game: "Game", test: "Test picture"};
+  const KIND = {status: "Status", alarm: "Alarm picture", game: "Game", test: "Test picture", live: "Live picture", batt: "Battery and power", gif: "Alarm animation"};
   function row(e) {
     const c = E("div", "sens-card stv-card"); c.dataset.id = e.id;
     const h = e.health || {};
@@ -61719,13 +62118,15 @@ STV_JS = r"""
     tx.append(E("b", "", dot + " " + (e.sim ? "🧪 " + T("Virtual SmallTV of the simulator") : e.name)));
     tx.append(E("div", "mut", e.addr.replace("http://", "") + (h.fw ? " · " + h.fw : "") + (h.free != null ? " · " + Math.round(h.free / 1024) + " KB " + T("free") : "")));
     tx.append(E("div", "mut", (h.ok === false ? "⚠ " + (h.err || T("not reachable")) : h.ok ? "✓ " + T("reachable") : T("checking …"))
-      + " · " + e.ups + " " + T("pictures") + (e.kind ? " · " + T(KIND[e.kind] || e.kind) : "") + (h.sent_t ? " · " + ago(h.sent_t) : "") + (h.note ? " · " + h.note : "")));
+      + " · " + e.ups + " " + T("pictures") + (e.kind ? " · " + T(KIND[e.kind] || e.kind) : "") + (h.sent_t ? " · " + ago(h.sent_t) : "") + (h.note ? " · " + h.note : "")
+      + (e.per_day ? " · " + T("about {n} pictures/day").replace("{n}", e.per_day) : "")));
     top.append(im, tx); c.appendChild(top);
     const ch = E("div", ""); ch.style.cssText = "display:flex;gap:6px 14px;flex-wrap:wrap;justify-content:flex-start;margin-top:6px";
-    [["on", "On"], ["status", "Status"], ["alarm", "Alarm picture"], ["game", "Game"]].forEach(([f, lb]) => {
+    [["on", "On"], ["status", "Status"], ["alarm", "Alarm picture"], ["game", "Game"], ["rot", "Live picture and rotation"]].forEach(([f, lb]) => {
       const l = E("label", ""); l.style.cssText = "display:inline-flex;gap:4px;align-items:center";
       const cb = E("input"); cb.type = "checkbox"; cb.checked = !!e[f]; cb.className = "sw stv-" + f;   // 2.98.48: the blue switch like everywhere
       cb.onchange = async () => { const r = await P({action: "update", id: e.id, field: f, value: cb.checked}); if (!r.ok) toast("⚠ " + (r.error || "error")); };
+      if (f === "rot") l.title = T("stv-rot-hint");
       l.style.gap = "8px"; l.append(E("span", "", T(lb)), cb); ch.appendChild(l); });
     c.appendChild(ch);
     const sl = E("div", "sl"), st = E("div", "row"), val = E("span", "val", e.brt + " %");
@@ -61810,6 +62211,653 @@ STV_JS = r"""
 })();
 </script>
 """
+# ----------------------------------------------------------------------------
+# Pro Bildschirm ein Schalter «Live-Bild und Wechsel» (Feld «rot» in stv_list, 552). Aus = wie bisher (Statusseite).
+# Ein (nur tagsüber - nachts bleibt die rote, gedimmte Statusseite):
+#   alle STV_ROT_S = 30 s wechselt die Seite: gerade Zeitscheibe «Live-Bild» (Standbild der Hauptkamera, 240 × 240 mit
+#   Leiste Uhrzeit · Aus/Wachsam/Voll · Akku), ungerade «Akku und Strom» (grosser Akku, Laden/Solar, Verbrauch, Restlaufzeit,
+#   «SIM» bei Simulator-Werten). Das Live-Bild ist nur bei jeder zweiten Live-Zeitscheibe neu (Daniel 30.10.: halb so viele
+#   Uploads, ein neues Bild alle 2 min, beim Zeigen höchstens 60 s alt); dazwischen wird es nur wieder gezeigt;
+#   das Bild ist das reine Kamerabild ohne Leiste «Tilt … | CPU …» und ohne Rahmen (410 frame_clean, nur auf Anfrage);
+#   die Akku-Seite liegt noch auf dem Gerät (me_a / me_b, 552 StvDev.send «stored»): unverändert wird sie nur wieder gezeigt
+#   (/set?img=…, kein Schreiben in den Flash). Ohne Akku-Werte ist die zweite Seite die Statusseite.
+#   Personen im Live-Bild: Privatzonen sind schon geschwärzt (frame_out, 030 apply_privacy); ohne «Bild auch bei Personen»
+#   werden die erkannten Personen (STATE person_boxes) grob verpixelt (faces_pixelate, 375).
+# Alarm (Vorrang wie bisher: Alarm, Spielrunde): zuerst ein animiertes GIF 240 × 240 (8 Bilder, pulsierender roter Rahmen,
+#   blinkendes ⚠ + Art), stv_alarm_s (60 s), danach das Alarmbild als JPEG mit ⚠ stv_alarm_keep_min (5 min), dann zurück.
+#   Das GIF geht wie ein JPEG nach /image/ (me_a.gif / me_b.gif); die Datei mit der anderen Endung am gleichen Platz wird
+#   gelöscht (552 StvDev._drop), so liegen nie mehr als zwei Bilder auf dem Gerät.
+# Schonung: «ca. N Bilder/Tag» je Bildschirm in der Liste und im Protokoll (stv_per_day).
+# ----------------------------------------------------------------------------
+STV_ROT_S = 30
+STV_GIF_FRAMES = 8
+
+
+def stv_rot_page(now):
+    """«live» or «batt»: the page of the 30-s slot of this time (real clock, so every display switches at the same moment)"""
+    return "live" if int(now // STV_ROT_S) % 2 == 0 else "batt"
+
+
+def _stv_batt_ok():
+    b = STATE.get("battery") or {}
+    return bool(b.get("on") and b.get("pct") is not None)
+
+
+def stv_rot_plan(now, lang):
+    """(kind, key, render function) of the rotation, or None (-> the status page)"""
+    slot = int(now // STV_ROT_S)
+    if stv_rot_page(now) == "live":
+        return "live", ("live", slot // 4, lang), lambda: stv_render_live(lang)   # every second live slot new (slots 4k and 4k+2)
+    if not _stv_batt_ok():
+        return None
+    b = STATE.get("battery") or {}
+    sol = _stv_solar_w(b)
+    clock = int(sim_now().timestamp() // (60 * max(1, int(CFG.get("stv_clock_min", 10) or 10))))
+    key = ("batt", int(b.get("pct") or 0), None if sol is None else int(round(sol)), round(float(b.get("use_w") or 0) * 2) / 2,
+           None if b.get("hours") is None else round(float(b["hours"]) * 2) / 2, bool(b.get("charging")), bool(b.get("on_battery")),
+           bool(b.get("sim")), b.get("full_min"), clock, lang)
+    return "batt", key, lambda: stv_render_batt(lang)
+
+
+def _stv_solar_w(b):
+    w_ = b.get("solar_w")
+    if w_ is None and CFG.get("solar_on"):
+        w_ = (STATE.get("solar") or {}).get("w")
+    try:
+        return None if w_ is None else float(w_)
+    except (TypeError, ValueError):
+        return None
+
+
+# ---- the live still -----------------------------------------------------------------------------------------------------
+def stv_clean_frame(w, wait=1.5):
+    """the pure camera picture (after the privacy zones and the grey picture mode, before HUD, boxes and marks): 410 copies
+    it only while asked (clean_until) - None when no fresh one comes"""
+    w.clean_until = time.time() + 4.0
+    t_end = time.time() + wait
+    while True:
+        f, ft = getattr(w, "frame_clean", None), float(getattr(w, "frame_clean_t", 0.0) or 0.0)
+        if f is not None and time.time() - ft < 3.0:
+            return f
+        if time.time() >= t_end or not getattr(w, "running", True):
+            return None
+        time.sleep(0.1)
+
+
+def stv_live_frame(person_pic=None):
+    """a copy of the picture of the main camera (privacy zones already black) - persons pixelated unless «Bild auch bei Personen».
+    Daniel 30.10.: the pure picture without the strip «Tilt 50% | CPU …» and the marks of MoveEye (stv_clean_frame);
+    only when there is none, the picture of the page without its text line (as before)"""
+    w = WATCH_REF.get("w") if "WATCH_REF" in globals() else None
+    if w is None:
+        return None
+    f = stv_clean_frame(w)
+    if f is not None:
+        f = f.copy()
+    else:
+        f = getattr(w, "frame_out", None)
+        if f is None:
+            return None
+        f = f.copy()
+        if CFG.get("show_hud") and f.shape[0] > 120:
+            f = f[34:]                                    # without the text line on top of the live picture (410 HUD)
+    if not (CFG.get("stv_person_pic") if person_pic is None else person_pic):
+        stv_hide_persons(f, STATE.get("person_boxes") if STATE.get("persons") else [])
+    return f
+
+
+def stv_hide_persons(f, boxes):
+    """the person boxes (0..1 of the picture) as coarse blocks - the same helper as «Gesichter verpixeln» (375)"""
+    H, W = f.shape[:2]
+    px = []
+    for b in boxes or []:
+        try:
+            px.append((int(b[0] * W), int(b[1] * H), max(2, int(b[2] * W)), max(2, int(b[3] * H))))
+        except (TypeError, ValueError, IndexError):
+            continue
+    if px:
+        faces_pixelate(f, px, pad=0.15)
+    return len(px)
+
+
+def stv_render_live(lang=None, frame=None):
+    from PIL import Image
+    im, d = _stv_canvas()
+    f = stv_live_frame() if frame is None else frame
+    bar = 30
+    if f is not None:
+        try:
+            H, W = f.shape[:2]
+            s_ = min(H, W)
+            x0, y0 = (W - s_) // 2, (H - s_) // 2
+            sq = cv2.resize(f[y0:y0 + s_, x0:x0 + s_], (STV_SIZE, STV_SIZE), interpolation=cv2.INTER_AREA)
+            im.paste(Image.fromarray(cv2.cvtColor(sq, cv2.COLOR_BGR2RGB)), (0, 0))
+        except Exception:
+            f = None
+    if f is None:
+        d.rounded_rectangle((80, 70, 160, 130), radius=10, outline=(110, 125, 145), width=4)
+        d.ellipse((104, 84, 136, 116), outline=(110, 125, 145), width=4)
+        t_ = tr("No camera picture", lang)
+        d.text(((STV_SIZE - d.textlength(t_, font=_font(16))) / 2, 146), t_, font=_font(16), fill=(170, 185, 205))
+    # small «● LIVE» top left
+    d.rounded_rectangle((6, 6, 62, 26), radius=6, fill=(0, 0, 0))
+    d.ellipse((11, 11, 21, 21), fill=(255, 60, 60))
+    d.text((25, 7), "LIVE", font=_font(14), fill=(255, 255, 255))
+    # the bar: time · state · battery
+    d.rectangle((0, STV_SIZE - bar, STV_SIZE, STV_SIZE), fill=(8, 12, 18))
+    now = sim_now()
+    d.text((8, STV_SIZE - bar + 5), now.strftime("%H:%M"), font=_font(17), fill=(232, 238, 245))
+    name, col = stv_level_name(lang)
+    if walktest_on():
+        name, col = tr("Walk test", lang), (180, 140, 40)
+    f2 = _font(15)
+    name = _stv_fit(d, name, f2, 86)
+    tw = d.textlength(name, font=f2)
+    cx = 120
+    d.rounded_rectangle((cx - tw / 2 - 8, STV_SIZE - bar + 4, cx + tw / 2 + 8, STV_SIZE - 4), radius=8, fill=col)
+    d.text((cx - tw / 2, STV_SIZE - bar + 6), name, font=f2, fill=(255, 255, 255))
+    b = STATE.get("battery") or {}
+    if b.get("on") and b.get("pct") is not None:
+        pct = int(b["pct"])
+        x, y, w_, h_ = 178, STV_SIZE - bar + 9, 22, 12
+        c_ = (63, 207, 107) if pct > 50 else (245, 154, 74) if pct > 20 else (255, 77, 77)
+        d.rectangle((x, y, x + w_, y + h_), outline=(200, 210, 225), width=1)
+        d.rectangle((x + w_ + 1, y + 3, x + w_ + 3, y + h_ - 3), fill=(200, 210, 225))
+        fw = int((w_ - 4) * max(0, min(100, pct)) / 100)
+        if fw > 0:
+            d.rectangle((x + 2, y + 2, x + 2 + fw, y + h_ - 2), fill=c_)
+        pt = f"{pct}%"
+        d.text((STV_SIZE - 6 - d.textlength(pt, font=_font(13)), STV_SIZE - bar + 8), pt, font=_font(13), fill=(232, 238, 245))
+    return _stv_jpg(im)
+
+
+# ---- the battery page ---------------------------------------------------------------------------------------------------
+def _stv_bolt(d, x, y, s, col):
+    """a lightning bolt (charging), drawn"""
+    d.polygon([(x + s * 0.55, y), (x + s * 0.1, y + s * 0.58), (x + s * 0.45, y + s * 0.58), (x + s * 0.3, y + s),
+               (x + s * 0.9, y + s * 0.38), (x + s * 0.55, y + s * 0.38), (x + s * 0.75, y)], fill=col, outline=(20, 20, 20))
+
+
+def _stv_hours(h):
+    try:
+        h = float(h)
+    except (TypeError, ValueError):
+        return "–"
+    if h >= 48:
+        return f"{h / 24.0:.1f} d"
+    hh, mm = int(h), int(round((h - int(h)) * 60))
+    if mm == 60:
+        hh, mm = hh + 1, 0
+    return f"{hh} h {mm:02d} min" if hh else f"{mm} min"
+
+
+def stv_render_batt(lang=None):
+    im, d = _stv_canvas()
+    now = sim_now()
+    _stv_head(im, d, now.strftime("%H:%M"))
+    b = STATE.get("battery") or {}
+    t_ = tr("Battery and power", lang)
+    d.text((10, 34), _stv_fit(d, t_, _font(15), STV_SIZE - 70), font=_font(15), fill=(245, 154, 74))
+    if b.get("sim"):
+        d.rounded_rectangle((STV_SIZE - 50, 34, STV_SIZE - 10, 52), radius=5, fill=(70, 50, 120))
+        d.text((STV_SIZE - 45, 35), "SIM", font=_font(14), fill=(225, 210, 255))
+    pct = int(b.get("pct") or 0)
+    col = (63, 207, 107) if pct > 50 else (245, 154, 74) if pct > 20 else (255, 77, 77)
+    x, y, w_, h_ = 12, 60, 112, 56                         # the big drawn battery
+    d.rounded_rectangle((x, y, x + w_, y + h_), radius=8, outline=(200, 210, 225), width=3)
+    d.rounded_rectangle((x + w_ + 2, y + 16, x + w_ + 9, y + h_ - 16), radius=2, fill=(200, 210, 225))
+    fw = int((w_ - 10) * max(0, min(100, pct)) / 100)
+    if fw > 0:
+        d.rounded_rectangle((x + 5, y + 5, x + 5 + fw, y + h_ - 5), radius=4, fill=col)
+    if b.get("charging"):
+        _stv_bolt(d, x + w_ / 2 - 14, y + 8, 40, (255, 230, 80))
+    pt = f"{pct} %"
+    f = _font(40)
+    while d.textlength(pt, font=f) > STV_SIZE - (x + w_ + 18) - 6 and f.size > 24:
+        f = _font(f.size - 2)
+    d.text((x + w_ + 18, y + 4), pt, font=f, fill=(232, 238, 245))
+    rows = []
+    sol = _stv_solar_w(b)
+    if b.get("charging"):
+        v_ = trf("full in {n} min", lang, n=int(b["full_min"])) if b.get("full_min") else tr("yes", lang)
+        rows.append((tr("Charging", lang), v_))
+    elif not b.get("on_battery", True):
+        rows.append((tr("Charging", lang), tr("Mains power", lang)))
+    if sol is not None:
+        rows.append((tr("Solar", lang), f"{sol:.1f} W"))
+    if b.get("use_w") is not None:
+        rows.append((tr("Consumption", lang), f"{float(b['use_w']):.1f} W"))
+    rows.append((tr("Runtime left", lang), _stv_hours(b.get("hours")) if b.get("on_battery", True) and not b.get("charging") else "–"))
+    yy = 128
+    f1, f2 = _font(16, False), _font(17)
+    for lb, v_ in rows[:4]:
+        d.text((12, yy), _stv_fit(d, lb, f1, 110), font=f1, fill=(170, 185, 205))
+        v_ = _stv_fit(d, v_, f2, STV_SIZE - 130)
+        d.text((STV_SIZE - 12 - d.textlength(v_, font=f2), yy - 1), v_, font=f2, fill=(232, 238, 245))
+        yy += 23
+    d.text((10, STV_SIZE - 22), _stv_fit(d, tr("as of", lang) + " " + now.strftime("%H:%M") + ("  ·  " + tr("simulator", lang) if b.get("sim") else ""),
+                                         _font(14, False), STV_SIZE - 20), font=_font(14, False), fill=(110, 125, 145))
+    return _stv_jpg(im)
+
+
+# ---- the alarm animation (GIF) ------------------------------------------------------------------------------------------
+def stv_render_alarm_gif(a, lang=None, red=False, n=STV_GIF_FRAMES, ms=160):
+    """animated GIF 240 × 240: the alarm picture with a pulsing red frame and a blinking ⚠. One palette for all frames,
+    from the 2nd frame only the changed pixels (the rest transparent) - so it stays small (about 30-70 KB)."""
+    from PIL import Image
+    import io
+    fr = []
+    for k in range(n):
+        ph = (1 + math.cos(2 * math.pi * k / n)) / 2.0      # 1 -> 0 -> 1
+        edge = 4 + int(round(8 * ph))
+        ec = (int(130 + 125 * ph), int(10 + 50 * ph), int(10 + 50 * ph))
+        wc = (255, 214, 0) if k < n // 2 else (255, 120, 40)
+        im = _stv_alarm_im(a, lang, edge=edge, edge_col=ec, warn=True, warn_col=wc)
+        fr.append(_stv_red(im) if red else im)
+    strip = Image.new("RGB", (STV_SIZE, STV_SIZE * n))
+    for k, im in enumerate(fr):
+        strip.paste(im, (0, k * STV_SIZE))
+    pal = strip.quantize(colors=255, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+    idx = [np.asarray(im.quantize(palette=pal, dither=Image.Dither.NONE), np.uint8) for im in fr]
+    pl = pal.getpalette()[:255 * 3] + [0, 0, 0]
+    out = []
+    for k, ix in enumerate(idx):
+        q = ix.copy()
+        if k:
+            q[ix == idx[k - 1]] = 255                      # unchanged -> transparent (the frame before stays: disposal 1)
+        p = Image.fromarray(q, "P")
+        p.putpalette(pl)
+        out.append(p)
+    b = io.BytesIO()
+    out[0].save(b, "GIF", save_all=True, append_images=out[1:], duration=ms, loop=0, transparency=255, disposal=1, optimize=False)
+    return b.getvalue()
+
+
+# ---- how many pictures a day (flash wear) -------------------------------------------------------------------------------
+def _stv_day_hours():
+    """hours of daylight today (sun times of the place; 12 without)"""
+    try:
+        st = sun_times(datetime.now().date(), float(CFG["latitude"]), float(CFG["longitude"]))
+        if isinstance(st, str):
+            return 0.0 if st == "dark" else 24.0
+        return max(0.0, min(24.0, (st[1] - st[0]) / 60.0))
+    except Exception:
+        return 12.0
+
+
+def stv_per_day(e):
+    """about how many pictures a day go to this display (uploads = writes into its flash), without alarms / games:
+    status: the clock every stv_clock_min minutes + about one change an hour; rotation by day: the live picture every
+    120 s (every second live slot, Daniel 30.10.), the battery page when its values changed (about every third time), night: status"""
+    if not e.get("on"):
+        return 0
+    clock = max(1, int(CFG.get("stv_clock_min", 10) or 10))
+    st_h = 60.0 / clock + 1.0                              # status page per hour
+    if not e.get("rot"):
+        return int(round(24 * st_h)) if e.get("status") else 0
+    day = _stv_day_hours() if CFG.get("stv_night") else 24.0
+    batt_h = 20.0 if _stv_batt_ok() else (st_h if e.get("status") else 0.0)
+    n = day * (3600.0 / (4 * STV_ROT_S) + batt_h) + (24.0 - day) * (st_h if e.get("status") else 0.0)
+    return int(round(n / 10.0) * 10)
+
+
+_stv_tick_552 = stv_tick
+
+
+# wraps: stv_tick
+def stv_tick():                                           # + 553: the number of pictures a day in the log when it changes
+    _stv_tick_552()
+    try:
+        P = STV.setdefault("per_day", {})
+        for e in stv_entries() if CFG.get("stv_on") else []:
+            n = stv_per_day(e)
+            if P.get(e["id"]) != n:
+                if e["id"] in P or n:
+                    log_event("sys", f"SmallTV {e['name']}: about {n} pictures/day (live picture and rotation {'on' if e.get('rot') else 'off'})")
+                P[e["id"]] = n
+    except Exception:
+        pass
+
+
+_stv_state_552 = stv_state
+
+
+# wraps: stv_state
+def stv_state(lang=None):                                 # + 553: «ca. N Bilder/Tag» and «only shown again» per display
+    r = _stv_state_552(lang)
+    for x in r.get("list") or []:
+        try:
+            x["per_day"] = stv_per_day(x)
+            dv = STV["devs"].get(x["id"])
+            x["reshows"] = getattr(dv, "reshows", 0) if dv else 0
+        except Exception:
+            x["per_day"] = None
+    r["rot_s"] = STV_ROT_S
+    return r
+# ----------------------------------------------------------------------------
+# Wish of Daniel (30.10.2026, «Sirene im Test-Postfach»): siren_quiet() (250) held the siren back whenever the test inbox
+#   takes the messages (simulation with the switch, game round, drill, demo) - so the simulator never got «sound» and its
+#   visitors never fled from the siren (help 540 promises «Licht und Sirene im Simulator»). And without a loudspeaker on the
+#   PC (out_selected() False) nothing played at all. Now:
+#   * the simulator is the loudspeaker («simulated loudspeaker»): sim_speaker() = simulation on and connected. siren_alarm
+#     (250), the escalation (135) and every sound_play() go on; sound_play() plays only virtually (sim_sound_play) when the
+#     test inbox is active (the REAL loudspeaker stays silent there - also when one is connected) or when there is no real
+#     one. Exception: reason «test» (somebody pressed «Test» by hand) with a real loudspeaker plays for real.
+#   * SOUND["kind"] = what plays (siren / two-tone / chime / tts …) -> sim_state «sound» (290) + «sound_vol» (here). The
+#     simulator (simint.gd) plays simple tones on the PC (own volume, mute) and adds the sound to its microphone level and
+#     - for beeps / bangs - to its short sounds (claps).
+#   * «ignore the own siren»: the noise alarm already ignored the microphone while SOUND["playing"] and 2 s after it
+#     (AudioMonitor.mute_until, 250 - also with the virtual loudspeaker, same variables). New: the claps / sneezes of the
+#     simulator (sim_sound_events, 250) are ignored too while MoveEye plays a sound itself and 2 s after it (like the real
+#     microphone path SoundEvents.feed), counted in SOUNDEV["own_ignored"].
+# Translations: part 557 (with the other new texts of this round).
+# ----------------------------------------------------------------------------
+SOUND.setdefault("kind", "")
+SOUND.setdefault("virt", False)
+SOUNDEV_OWN = {"n": 0, "t": 0.0}
+
+
+def sim_speaker():
+    """the 3D simulator is connected: it is the loudspeaker of MoveEye (the simulated device has one)"""
+    return bool(CFG.get("sim_on")) and bool(SIM.get("ok")) and time.time() - float(SIM.get("t") or 0.0) < 5.0
+
+
+def speaker_ok():
+    """a loudspeaker to play on: a real one or the simulator"""
+    return out_selected() or sim_speaker()
+
+
+def sim_speaker_only(reason="test"):
+    """play only in the simulator (not on the real loudspeaker)?"""
+    if not sim_speaker():
+        return False
+    if not out_selected():
+        return True
+    return siren_quiet() and reason != "test"
+
+
+def own_sound_now(now=None):
+    """MoveEye plays a sound itself right now or played one in the last 2 s (echo of the room)"""
+    now = time.time() if now is None else now
+    return bool(SOUND.get("playing")) or (AUDIO is not None and now < float(getattr(AUDIO, "mute_until", 0.0)))
+
+
+def sim_sound_play(kind, seconds, volume, reason="test"):
+    """the virtual loudspeaker: the same state as a real one (SOUND playing, kind, the microphone muted), nothing reaches
+    the sound card. The simulator hears it through sim_state «sound» (290) and plays it on the PC."""
+    kind = kind or CFG["siren_sound"] or "siren"
+    if kind not in SOUND_KINDS + ("marmot", "chime", "birds", "tts", "beep1", "beep2", "beep3", "beep4", "beeplow") and not kind.startswith("file:"):
+        kind = "siren"
+    seconds = max(0.5, min(120.0, float(seconds if seconds is not None else CFG["siren_seconds"])))
+    vol = max(0.0, min(100.0, float(volume if volume is not None else CFG["siren_volume"])))
+    sound_stop(); talk_stop()
+    with _SOUND_LOCK:
+        SOUND["gen"] += 1; gen = SOUND["gen"]
+        SOUND.update(playing=True, msg="", kind=kind, virt=True, vol=vol)
+    if AUDIO is not None:
+        AUDIO.mute_until = time.time() + seconds + 2.0
+
+    def work():
+        time.sleep(seconds)
+        with _SOUND_LOCK:
+            if gen == SOUND["gen"]:
+                SOUND.update(playing=False, proc=None, virt=False)
+        if AUDIO is not None:
+            AUDIO.mute_until = max(float(AUDIO.mute_until), time.time() + 2.0)
+    threading.Thread(target=work, daemon=True, name="sound-sim").start()
+    if reason != "test":
+        log_event("sys", f"Loudspeaker (simulator only, test inbox): {kind} for {seconds:.0f} s ({reason})")
+    return True, ""
+
+
+_sim_state_290_554 = sim_state
+
+
+def sim_state():                                          # + 554: what plays, how loud (the simulator plays it and hears it)
+    d = _sim_state_290_554()
+    try:
+        if SOUND.get("playing"):
+            d["sound"] = str(SOUND.get("kind") or CFG.get("siren_sound") or "siren")
+            d["sound_vol"] = round(float(SOUND.get("vol", CFG.get("siren_volume", 80))), 1)
+            d["sound_virtual"] = bool(SOUND.get("virt"))
+    except (TypeError, ValueError):
+        pass
+    return d
+
+
+def own_sound_ignored(kind):
+    """a clap / sneeze of the simulator while MoveEye plays something itself: ignored (noted for the page and the test)"""
+    SOUNDEV_OWN["n"] += 1; SOUNDEV_OWN["t"] = time.time()
+    SOUNDEV.update(last_act=tr("own sound ignored"), last_act_t=time.time())
+
+
+_soundev_state_250 = soundev_state
+
+
+def soundev_state():                                      # + 554: how often the own sound was ignored (page, tests)
+    d = _soundev_state_250()
+    d["own_ignored"] = SOUNDEV_OWN["n"]
+    d["spk_sim"] = bool(sim_speaker()) and not out_selected()
+    return d
+
+
+def sim_sound_selftest():
+    """virtual loudspeaker: plays only in the simulator in test-inbox mode, the state goes to the simulator, the own sound
+    mutes the noise alarm and the claps of the simulator"""
+    keep = {k: CFG.get(k) for k in ("sim_on", "audio_out", "notify_sandbox")}
+    keep_sim = {k: SIM.get(k) for k in ("ok", "t")}
+    G = globals(); keep_log = G["log_event"]
+    try:
+        G["log_event"] = lambda *a, **k: None
+        CFG.update(sim_on=True, audio_out="", notify_sandbox=True); SIM.update(ok=True, t=time.time())
+        assert sim_speaker() and speaker_ok() and sim_speaker_only("person alarm")
+        ok, _ = sound_play("two-tone", 0.6, 50, reason="selftest")
+        assert ok and SOUND["playing"] and SOUND["virt"] and SOUND["kind"] == "two-tone"
+        d = sim_state()
+        assert d["sound"] == "two-tone" and d["sound_virtual"] and abs(d["sound_vol"] - 50) < 0.1
+        assert own_sound_now()
+        if AUDIO is not None and AUDIO.proc is None:
+            n0 = SOUNDEV_OWN["n"]; _SIM_SND["seen"] = 0
+            sim_sound_events([{"id": 10 ** 9, "kind": "clap", "n": 3, "db": -5.0}], 10 ** 9)
+            assert SOUNDEV_OWN["n"] == n0 + 1, "own sound not ignored"
+        sound_stop()
+        assert not SOUND["playing"]
+        CFG.update(sim_on=False)
+        assert not sim_speaker_only("person alarm")
+    finally:
+        sound_stop(); CFG.update(keep); SIM.update(keep_sim); G["log_event"] = keep_log
+        _SIM_SND["seen"] = 0
+    return True
+
+
+SELFTEST_EXTRA.append(("Loudspeaker in the simulator: siren also in test-inbox mode, own sound ignored (554)", sim_sound_selftest))
+# ----------------------------------------------------------------------------
+# Wish of Daniel (30.10.2026, «Servo-Störungen»): in the simulation MoveEye ignored the under-voltage (072 servo_release /
+#   servo_safety_tick: «and not sim_on» - the PC has no vcgencmd), the simulator only had play / overshoot («Servos wie
+#   echt»). Now the simulator (simint.gd) sends with every answer «servo_sim»:
+#     v5 / uv     the 5 V rail of the simulated UPS HAT (sags with a weak battery and the servo current, or «Unterspannung
+#                 erzwingen») -> SRV["sim_uv"]: the same lock as the real under-voltage (072: head stops and holds, moves
+#                 again by itself 30 s after it is over, fault memory, servo diagnosis counts the minutes)
+#     pca_reset   a counter: a new reset is found at the next «MODE1 check» (every 10 s like Hardware._pca_check, 080) ->
+#                 latched fault «pca_reset» (outputs off, «Freigeben» needed). After «Freigeben» the driver is set up again
+#                 (HW_REINIT) - sim_state servo «reinit» counts it, then the simulated head follows again.
+#     i2c         the bus does not answer: every write while the head moves fails (and the 10 s check) -> servo_io_error
+#                 (072): 3 in 3 s = latched fault «i2c», like a real broken cable.
+#     head_mw     the head of the simulator follows MoveEye right now (not the game guard / patrol of the simulator) - only
+#                 then the servo diagnosis compares: MoveEye drives > 6° but the head (head_deg, 350 SIM["head"]) moves < 1°
+#                 within 2-4 s = «blocked» (stuck at the end stop) -> fault (needs «Freigeben»). Real MG90S have no position
+#                 feedback - on the real device this needs the picture (servo test «steps without a change of the picture»).
+# Translations: part 557.
+# ----------------------------------------------------------------------------
+SRV.setdefault("sim_uv", False)
+SRVSIM = {"pca_seen": None, "pca_due": 0.0, "i2c": False, "reinit": 0, "hist": deque(maxlen=80), "blk_t": 0.0, "v5": None,
+          "io_t": 0.0, "last": None}
+SRV_FAULT_TEXT.setdefault("blocked", "a servo is blocked - the head does not follow (stuck at the end stop?)")
+
+
+def simservo_take(rep):
+    """350 SimLink.tick (through simvals_take): the faults of the simulated servo driver and power supply"""
+    s = rep.get("servo_sim") if isinstance(rep, dict) else None
+    if not isinstance(s, dict) or not CFG.get("sim_on"):
+        SRV["sim_uv"] = False; SRVSIM["last"] = None
+        return
+    now = time.time()
+    SRVSIM["last"] = s
+    try:
+        SRVSIM["v5"] = float(s.get("v5")) if s.get("v5") is not None else None
+    except (TypeError, ValueError):
+        SRVSIM["v5"] = None
+    SRV["sim_uv"] = bool(s.get("uv"))
+    # PCA9685 reset: found at the next check (every 10 s like the real driver loop)
+    pca = int(s.get("pca_reset") or 0)
+    if SRVSIM["pca_seen"] is None or pca < SRVSIM["pca_seen"]:
+        SRVSIM["pca_seen"] = pca                         # a (re)connect: old resets do not count
+    elif pca > SRVSIM["pca_seen"]:
+        SRVSIM["pca_seen"] = pca
+        SRVSIM["pca_due"] = now + (10.0 - now % 10.0)
+    if SRVSIM["pca_due"] and now >= SRVSIM["pca_due"]:
+        SRVSIM["pca_due"] = 0.0
+        servo_fault("pca_reset", "simulator: MODE1 / prescaler lost (brown-out)")
+    # I2C: every write fails while it moves (the real loop writes only changes), the 10 s check fails too
+    SRVSIM["i2c"] = bool(s.get("i2c"))
+    if SRVSIM["i2c"] and SRV["fault"] not in SRV_FAULT_LOCK:
+        if SRV["moving"] or now - SRVSIM["io_t"] >= 10.0:
+            SRVSIM["io_t"] = now
+            servo_io_error(OSError(121, "Remote I/O error (simulator)"))
+    elif not SRVSIM["i2c"] and SRV["io_err"] and now - SRV["io_t"] > 3.0:
+        servo_io_ok()
+    # the diagnosis: does the head follow?
+    _simservo_block_check(s, now)
+
+
+def _simservo_block_check(s, now):
+    h = SIM.get("head")
+    H = SRVSIM["hist"]
+    if (not isinstance(h, list) or len(h) < 2 or not s.get("head_mw", True) or s.get("pca_hold") or s.get("i2c") or s.get("uv")
+            or servo_blocked() or SIM.get("follower")):
+        H.clear(); return
+    try:
+        cp, ct = servo_pos_deg()
+        H.append((now, cp, float(h[0]), ct, float(h[1])))
+    except (TypeError, ValueError):
+        return
+    while H and now - H[0][0] > 4.0:
+        H.popleft()
+    if len(H) < 4 or now - H[0][0] < 2.0 or now - SRVSIM["blk_t"] < 10.0:     # a busy PC answers maybe twice a second
+        return
+    for axis, ci, hi in (("pan", 1, 2), ("tilt", 3, 4)):
+        cr = max(x[ci] for x in H) - min(x[ci] for x in H)
+        hr = max(x[hi] for x in H) - min(x[hi] for x in H)
+        if cr > 6.0 and hr < 1.0:
+            SRVSIM["blk_t"] = now
+            servo_fault("blocked", f"{axis}: {tr('Pan' if axis == 'pan' else 'Tilt', 'en')} {H[0][ci]:.0f}° → {H[-1][ci]:.0f}°, "
+                                   f"head stays at {H[-1][hi]:.0f}°")
+            H.clear()
+            return
+
+
+_simvals_take_552 = simvals_take
+
+
+def simvals_take(rep):                                    # + 555: servo faults and the 5 V rail of the simulator
+    _simvals_take_552(rep)
+    try:
+        simservo_take(rep)
+    except Exception as e:
+        log_event("servo", f"Simulator servo values: {type(e).__name__}: {e}"[:160])
+
+
+_servo_release_072 = servo_release
+
+
+def servo_release(by="web"):                              # + 555: count a new set-up of the driver (the simulator waits for it)
+    fault = SRV["fault"]
+    ok, err = _servo_release_072(by)
+    if ok and fault in SRV_FAULT_LOCK:
+        SRVSIM["reinit"] += 1
+    return ok, err
+
+
+_sim_state_554_555 = sim_state
+
+
+def sim_state():                                          # + 555: the driver was set up again / the outputs are off
+    d = _sim_state_554_555()
+    try:
+        d["servo"]["reinit"] = SRVSIM["reinit"]
+        d["servo"]["out_off"] = bool(servo_outputs_off())
+        d["servo"]["fault"] = SRV["fault"] or SRV["inhibit"] or ""
+    except (KeyError, TypeError):
+        pass
+    return d
+
+
+def simservo_info(lang=None):
+    """one line for the servo page / window: what the simulator does to the servos right now ('' = nothing)"""
+    s = SRVSIM.get("last")
+    if not s or not CFG.get("sim_on"):
+        return ""
+    out = []
+    if SRVSIM.get("v5") is not None:
+        out.append(trf("5 V rail {v} V", lang, v=f"{SRVSIM['v5']:.2f}") + (" ⚠ " + tr("under-voltage", lang) if s.get("uv") else ""))
+    if s.get("i2c"):
+        out.append(tr("I2C error", lang))
+    if s.get("pca_hold"):
+        out.append(tr("PCA9685 reset", lang))
+    if s.get("blocked"):
+        out.append(tr("servo blocked", lang))
+    return "🧪 " + tr("Simulator", lang) + ": " + " · ".join(out) if out else ""
+
+
+def simservo_selftest():
+    """under-voltage, PCA9685 reset, I2C errors and a blocked servo from the simulator values"""
+    keep = {k: CFG.get(k) for k in ("sim_on", "servo_estop", "servo_uv_stop")}
+    keep_sim = {k: SIM.get(k) for k in ("head", "follower")}
+    keep_srv = {k: SRV.get(k) for k in ("fault", "inhibit", "io_err", "io_t", "sim_uv", "pos", "moving", "push_t")}
+    G = globals()
+    keep_fn = {k: G[k] for k in ("save_settings", "servo_diag_fault", "log_event", "servo_diag_count_uv")}
+    keep_hw = dict(HW_REINIT)
+    try:
+        G.update(save_settings=lambda *a, **k: None, servo_diag_fault=lambda *a, **k: None, log_event=lambda *a, **k: None,
+                 servo_diag_count_uv=lambda *a, **k: None)
+        SRV["push_t"] = time.time()
+        CFG.update(sim_on=True, servo_estop=False, servo_uv_stop=True); SRV.update(fault="", inhibit="", io_err=0, pos=[50.0, 50.0], moving=False)
+        SRVSIM.update(pca_seen=None, pca_due=0.0); SIM["follower"] = False
+        base = {"v5": 5.1, "uv": False, "i2c": False, "pca_reset": 0, "pca_hold": False, "blocked": "", "head_mw": True}
+        simservo_take({"servo_sim": dict(base, uv=True, v5=4.5)})
+        assert SRV["sim_uv"]
+        servo_safety_tick(time.time())
+        assert SRV["inhibit"] == "uv", SRV["inhibit"]
+        SRV.update(inhibit="", sim_uv=False)
+        simservo_take({"servo_sim": dict(base, pca_reset=1)})
+        assert SRVSIM["pca_due"] > 0
+        SRVSIM["pca_due"] = time.time() - 1
+        simservo_take({"servo_sim": dict(base, pca_reset=1)})
+        assert SRV["fault"] == "pca_reset" and servo_outputs_off()
+        r0 = SRVSIM["reinit"]
+        ok, _ = servo_release("selftest")
+        assert ok and SRVSIM["reinit"] == r0 + 1 and sim_state()["servo"]["reinit"] == r0 + 1
+        SRV["moving"] = True
+        for _ in range(3):
+            simservo_take({"servo_sim": dict(base, i2c=True)})
+        assert SRV["fault"] == "i2c", SRV["fault"]
+        servo_release("selftest"); SRV["moving"] = False
+        # blocked: the planned position moves 10°, the head stays
+        SRVSIM["hist"].clear(); SRVSIM["blk_t"] = 0.0
+        t0 = time.time()
+        for i in range(12):
+            SRV["pos"] = [50.0 + i * 0.5, 50.0]
+            SIM["head"] = [0.0, 0.0]
+            _simservo_block_check(base, t0 + i * 0.25)
+        assert SRV["fault"] == "blocked", SRV["fault"]
+        servo_release("selftest")
+    finally:
+        G.update(keep_fn); HW_REINIT.update(keep_hw)
+        CFG.update(keep); SIM.update(keep_sim); SRV.update(keep_srv); SRVSIM.update(pca_seen=None, pca_due=0.0); SRVSIM["hist"].clear()
+    return True
+
+
+SELFTEST_EXTRA.append(("Servo faults of the simulator: under-voltage, PCA9685 reset, I2C, blocked (555)", simservo_selftest))
 # Daniel 30.10.2026 («Tailscale-Tunnel einbauen»): friends WITHOUT Tailscale join the online game (343) from home.
 #   Switch «Online-Spiel über Tailscale Funnel» next to the invitations (web 544, window 592). Only an administrator may switch
 #   it on (web: g.role == "admin" and no app key, else 403; window: not in operator mode).
@@ -62433,6 +63481,1088 @@ def _tk_funnel_row(self, card):
             paint()
         fr.after(5000, loop)
     fr.after(300, loop)
+# ----------------------------------------------------------------------------
+# Wish of Daniel (30.10.2026, «Wärmebild wie Thermal-90»): the simulator offers the thermal camera «Thermal-90 (Waveshare)»
+#   (80 × 62 pixels, 90° × 67°, 15 pictures/s like the driver in 080, NETD 125 mK - Waveshare / Core Electronics data sheet)
+#   or the old 45° model; /info and every answer («thermal_model») say which -> SIM["info"]["thermal"] (230 sim_geom fits the
+#   picture with fov_h / fov_v, 290 fetches at the fps of the model).
+# The assistant: somebody holds a warm hand in front of MoveEye (2-3 m, moves it slowly). MoveEye takes pairs: the top of
+#   the moving thing in the main camera (difference of two pictures) and the top of the warm spot in the RAW thermal picture.
+#   A straight line through the pairs gives the zoom (thermal_zoom: which part of the thermal width the camera sees) and the
+#   shift (thermal_dx / thermal_dy) - the same three settings as by hand (230 ThermalCam.crop). The head stands still while
+#   it measures (MANUAL pause). «Rückgängig» brings the old values back.
+#   Simulator: «🖐 Warme Hand» of the simulator (simint.gd) is switched on by itself; the result is used instead of the
+#   automatic fit by the field of view (CFG thermal_align_own, 230) - «Rückgängig» = automatic again. The page shows the
+#   values the simulator would expect (from its field of view) for comparison.
+# Pages: Settings → Thermal camera → «Camera and alignment» (button, 530) and Mehr → Werkzeuge → Geräte-Tests (link);
+#   the window: Settings → Thermal camera (button) opens a window with the same steps.
+# Translations (all new texts of 554 / 555 / 557) at the end: fr / it / rm at once, German after part 560 has made DE
+#   (_simint_late, through load_settings / self_test - this part comes before 560 and 570).
+# ----------------------------------------------------------------------------
+for _k, _v in {"thermal_align_own": False}.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+TALIGN = {"busy": False, "phase": "idle", "t0": 0.0, "dur": 25.0, "n": 0, "msg": "", "res": None, "old": None, "hand_by_us": False,
+          "pairs": [], "lock": threading.Lock(), "stop": False, "who": ""}
+TALIGN_MIN = 8
+
+
+# ---- the thermal model of the simulator -------------------------------------------------------------------------------
+def talign_take(rep):
+    tm = rep.get("thermal_model") if isinstance(rep, dict) else None
+    if isinstance(tm, dict) and tm.get("fov_h"):
+        info = SIM.get("info")
+        if isinstance(info, dict):
+            old = info.get("thermal") or {}
+            if old.get("model") != tm.get("model") or old.get("fov_h") != tm.get("fov_h"):
+                info["thermal"] = tm
+                log_event("sys", f"Simulator thermal camera: {tm.get('name', '?')} ({tm.get('fov_h')}° × {tm.get('fov_v')}°, {tm.get('fps')} fps)")
+    SIM["warm_hand"] = bool(rep.get("warm_hand")) if isinstance(rep, dict) else False
+
+
+_simvals_take_555 = simvals_take
+
+
+def simvals_take(rep):                                    # + 557: thermal model and warm hand of the simulator
+    _simvals_take_555(rep)
+    try:
+        talign_take(rep)
+    except Exception:
+        pass
+
+
+_th_wanted_230 = ThermalCam.wanted
+
+
+def _th_wanted_557(self):                                 # + 557: the assistant needs the thermal picture (also when it is off)
+    s = _th_wanted_230(self)
+    if not s and TALIGN["busy"] and CFG.get("thermal_source") and CFG["thermal_source"] != STATE.get("source_id"):
+        return CFG["thermal_source"]
+    return s
+
+
+# wraps: ThermalCam.wanted
+ThermalCam.wanted = _th_wanted_557
+
+
+def talign_sim():
+    return bool(CFG.get("sim_on")) and str(CFG.get("thermal_source")) == "sim:thermal" and str(CFG.get("source", "")).startswith("sim:")
+
+
+def talign_expected():
+    """the simulator knows both fields of view: the values the assistant should find there (None outside)"""
+    if not talign_sim():
+        return None
+    try:
+        info = SIM.get("info") or {}
+        th = info.get("thermal") or {}
+        cam = next((c for c in info.get("cameras") or [] if str(c.get("id")) == str(CFG["source"])[4:]), None)
+        z = math.tan(math.radians(float(cam["fov_h"])) / 2) / math.tan(math.radians(float(th["fov_h"])) / 2)   # part of the thermal width
+        return {"zoom": int(round(min(1.0, z) * 100)), "model": str(th.get("name") or ""), "fov": f"{th.get('fov_h')}° × {th.get('fov_v')}°"}
+    except (KeyError, TypeError, ValueError, ZeroDivisionError, StopIteration):
+        return None
+
+
+# ---- measuring ---------------------------------------------------------------------------------------------------------
+def talign_main_point(prev, cur):
+    """the top of the moving thing between two small grey pictures: (x, y) 0..1, or None"""
+    H, W = cur.shape[:2]
+    d = cv2.absdiff(cur, prev)
+    _, m = cv2.threshold(d, 16, 255, cv2.THRESH_BINARY)
+    m = cv2.dilate(m, np.ones((5, 5), np.uint8))
+    cnts = cv2.findContours(m, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+    if not cnts:
+        return None
+    big = max(cnts, key=cv2.contourArea)
+    a = cv2.contourArea(big)
+    if a < 0.0006 * W * H or a > 0.3 * W * H:
+        return None
+    x, y, w, h = cv2.boundingRect(big)
+    top = m[y:y + max(2, int(h * 0.35)), x:x + w]
+    ys, xs = np.nonzero(top)
+    if not xs.size:
+        return None
+    return (x + float(xs.mean()) + 0.5) / W, (y + float(ys.mean()) + 0.5) / H
+
+
+def _talign_gray(fr):
+    a = np.asarray(fr, dtype=np.float32)
+    return a.mean(axis=2) if a.ndim == 3 else a
+
+
+def talign_th_point(fr, prev=None):
+    """the top of the warm spot in the raw thermal picture: (u, v) 0..1 and the warmth above the background, or None.
+    With the picture before (prev): only what is warm AND moved (a grill, the sun on a wall, a lamp do not move)"""
+    a = _talign_gray(fr)
+    H, W = a.shape[:2]
+    bg = float(np.median(a))
+    moved = None
+    if prev is not None:
+        p = _talign_gray(prev)
+        if p.shape == a.shape:
+            moved = cv2.dilate((np.abs(a - p) > 1.2).astype(np.uint8), np.ones((3, 3), np.uint8), iterations=2) > 0
+            if not moved.any():
+                return None
+    hot = float(np.percentile(a[moved], 99.0)) if moved is not None else float(np.percentile(a, 99.7))
+    if hot - bg < 3.0:
+        return None
+    m = a >= bg + (hot - bg) * 0.55
+    if moved is not None:
+        m &= moved
+    m = m.astype(np.uint8)
+    n, lab, stats, _c = cv2.connectedComponentsWithStats(m, 8)
+    if n < 2:
+        return None
+    i = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
+    if stats[i, cv2.CC_STAT_AREA] > 0.25 * W * H:
+        return None                                       # half the picture is warm: no hand, the sun or a wall
+    x, y, w, h = (int(stats[i, k]) for k in (cv2.CC_STAT_LEFT, cv2.CC_STAT_TOP, cv2.CC_STAT_WIDTH, cv2.CC_STAT_HEIGHT))
+    top = (lab[y:y + max(1, int(round(h * 0.35))), x:x + w] == i)
+    ys, xs = np.nonzero(top)
+    if not xs.size:
+        return None
+    return (x + float(xs.mean()) + 0.5) / W, (y + float(ys.mean()) + 0.5) / H, hot - bg
+
+
+def talign_fit(pairs, th_w, th_h, asp, zoom_now):
+    """pairs [(x, y, u, v)]: main 0..1 -> thermal 0..1. The crop of 230: u = 0.5 + dx - z/2 + z·x, v = 0.5 - dy - zv/2 + zv·y
+    with zv = z · th_w · asp / th_h (asp = height / width of the main picture). -> dict or None"""
+    P = np.asarray(pairs, dtype=np.float64)
+    if P.shape[0] < TALIGN_MIN:
+        return None
+    keep = np.ones(P.shape[0], bool)
+    note = []
+    for _round in range(2):
+        X, Y, U, V = (P[keep, i] for i in range(4))
+        z, src = None, ""
+        if X.std() >= 0.05:
+            z, src = float(np.polyfit(X, U, 1)[0]), "x"
+        elif Y.std() >= 0.05:
+            z, src = float(np.polyfit(Y, V, 1)[0]) * th_h / (th_w * asp), "y"
+        if z is None or not (0.15 < z < 3.0):
+            z, src = zoom_now, "keep"
+        zc = max(0.3, min(1.0, z))
+        zv = zc * th_w * asp / th_h
+        b = float(np.mean(U - zc * X)); e = float(np.mean(V - zv * Y))
+        ru = (zc * P[:, 0] + b - P[:, 2]) * th_w; rv = (zv * P[:, 1] + e - P[:, 3]) * th_h
+        r = np.sqrt(ru * ru + rv * rv)
+        med = float(np.median(r[keep])) if keep.any() else 0.0
+        new = r <= max(1.5, 2.5 * med)
+        if new.sum() < TALIGN_MIN or (new == keep).all():
+            break
+        keep = new
+    dx = b + zc / 2 - 0.5
+    dy = 0.5 - (e + zv / 2)
+    if z > 1.02:
+        note.append("narrow")
+    if src == "keep":
+        note.append("still")
+    vs = None
+    if Y.std() >= 0.05 and src == "x":
+        vs = float(np.polyfit(Y, V, 1)[0]) / zv            # 1.0 = the height fits too (Thermal-90: about 1.2, the lens is not square)
+    rms = float(np.sqrt(np.mean(r[keep] ** 2))) if keep.any() else 0.0
+    return {"zoom": int(round(zc * 100)), "dx": int(round(max(-30.0, min(30.0, dx * 100)))), "dy": int(round(max(-30.0, min(30.0, dy * 100)))),
+            "dx_raw": round(dx * 100, 1), "dy_raw": round(dy * 100, 1), "zoom_raw": round(z * 100, 1), "rms_px": round(rms, 2), "n": int(keep.sum()),
+            "spread": round(float(max(X.std(), Y.std())), 3), "v_scale": round(vs, 2) if vs is not None else None, "note": note,
+            "clipped": abs(dx * 100) > 30.0 or abs(dy * 100) > 30.0}
+
+
+def talign_pairs(mtrack, ttrack, lag):
+    """pairs: every thermal point with the main point of the same moment (the thermal picture is late by «lag» s)"""
+    if len(mtrack) < 2:
+        return []
+    mt = np.asarray([m[0] for m in mtrack]); mx = np.asarray([m[1] for m in mtrack]); my = np.asarray([m[2] for m in mtrack])
+    out = []
+    for t, u, v in ttrack:
+        tm = t - lag
+        i = int(np.searchsorted(mt, tm))
+        if i <= 0 or i >= mt.size or mt[i] - mt[i - 1] > 2.2:
+            continue
+        k = (tm - mt[i - 1]) / max(1e-6, mt[i] - mt[i - 1])
+        out.append((mx[i - 1] + k * (mx[i] - mx[i - 1]), my[i - 1] + k * (my[i] - my[i - 1]), u, v))
+    return out
+
+
+def talign_best_lag(mtrack, ttrack):
+    """the delay of the thermal picture behind the main picture (0 … 1.5 s) where both tracks fit best together"""
+    best = (-9.0, 0.0, [])
+    for lag in np.arange(0.0, 1.55, 0.1):
+        P = talign_pairs(mtrack, ttrack, float(lag))
+        if len(P) < TALIGN_MIN:
+            continue
+        A = np.asarray(P)
+        sc = 0.0
+        for i, j_ in ((0, 2), (1, 3)):
+            if A[:, i].std() > 0.02 and A[:, j_].std() > 0.005:
+                sc += float(np.corrcoef(A[:, i], A[:, j_])[0, 1])
+        if sc > best[0] + 1e-3:
+            best = (sc, round(float(lag), 2), P)
+    return best[1], best[2]
+
+
+def _talign_run():
+    w = WATCH_REF.get("w")
+    prev, prev_t = None, 0.0
+    T = TALIGN
+    T["lag"] = 0.0
+    sim = talign_sim()
+    try:
+        if sim and not SIM.get("warm_hand"):
+            try:
+                sim_control({"action": "set", "id": "warm_hand", "value": True})
+                T["hand_by_us"] = True
+            except Exception:
+                pass
+        t_end = time.time() + T["dur"]
+        wait_th = time.time() + 8.0
+        prev_th, prev_th_t = None, 0.0
+        mtrack, ttrack = [], []                           # (time, x, y) of the main camera / (time, u, v) of the thermal camera
+        last_f = [None]
+        while not T["stop"] and time.time() < t_end:
+            time.sleep(0.2)
+            MANUAL["until"] = max(MANUAL.get("until", 0.0), time.time() + 2.0)     # the head stands still while measuring
+            w = WATCH_REF.get("w")
+            if w is None:
+                continue
+            w.raw_until = max(w.raw_until, time.time() + 2.0)
+            f = w.frame_raw
+            th = THERMAL
+            if th is None or th.frame is None or time.time() - th.t > 1.0:
+                if time.time() > wait_th:
+                    raise RuntimeError("no thermal picture - choose the thermal camera (Settings → Thermal camera)")
+                continue
+            if f is None:
+                continue
+            now = time.time()
+            if f is not last_f[0]:                        # a new picture of the main camera (a slow PC: maybe 1 per second)
+                last_f[0] = f
+                g = cv2.cvtColor(f, cv2.COLOR_BGR2GRAY) if f.ndim == 3 else f
+                H, W = g.shape[:2]
+                T["asp"] = H / float(W)
+                small = cv2.GaussianBlur(cv2.resize(g, (320, max(2, int(320 * H / W)))), (5, 5), 0)
+                if prev is not None and now - prev_t < 2.0:    # its own track with times (the middle of the two pictures)
+                    p = talign_main_point(prev, small)
+                    if p is not None:
+                        mtrack.append((now - (now - prev_t) / 2.0, p[0], p[1]))
+                prev, prev_t = small, now
+            thf = np.asarray(th.frame, dtype=np.float32)
+            if prev_th is not None and thf.shape == prev_th.shape and np.array_equal(thf, prev_th):
+                continue                                  # the same thermal picture again: wait for a new one
+            if prev_th is not None and now - prev_th_t < 2.0:
+                q = talign_th_point(thf, prev_th)
+                if q is not None:
+                    ttrack.append((float(th.t), q[0], q[1]))
+                    T["th_size"] = (int(thf.shape[1]), int(thf.shape[0]))
+                    T["n"] = len(talign_pairs(mtrack, ttrack, T.get("lag", 0.0)))
+                    if len(ttrack) >= 60:
+                        break
+            prev_th, prev_th_t = thf.copy(), now
+        lag, T["pairs"] = talign_best_lag(mtrack, ttrack)
+        T["lag"] = lag; T["n"] = len(T["pairs"])
+        if T["stop"]:
+            T.update(phase="idle", msg="stopped"); return
+        if T["n"] < TALIGN_MIN:
+            T.update(phase="error", msg="too few points - hold the warm hand 2-3 m in front of MoveEye and move it slowly (nobody else in the picture)")
+            return
+        tw, thh = T.get("th_size") or (80, 62)
+        r = talign_fit(T["pairs"], tw, thh, T.get("asp", 9 / 16.0), max(0.3, min(1.0, float(CFG["thermal_zoom"]) / 100.0)))
+        if r is None:
+            T.update(phase="error", msg="too few points"); return
+        r["lag_s"] = T.get("lag", 0.0)
+        talign_apply(r, sim)
+    except Exception as e:
+        T.update(phase="error", msg=str(e)[:160])
+    finally:
+        if T["hand_by_us"]:
+            try:
+                sim_control({"action": "set", "id": "warm_hand", "value": False})
+            except Exception:
+                pass
+            T["hand_by_us"] = False
+        T["busy"] = False
+
+
+def talign_apply(r, sim):
+    T = TALIGN
+    T["old"] = {k: CFG.get(k) for k in ("thermal_zoom", "thermal_dx", "thermal_dy", "thermal_align_own")}
+    CFG.update(thermal_zoom=r["zoom"], thermal_dx=r["dx"], thermal_dy=r["dy"])
+    if sim:
+        CFG["thermal_align_own"] = True
+    save_settings()
+    T.update(phase="done", res=r, msg="")
+    log_event("sys", f"Thermal alignment (warm hand): zoom {r['zoom']} %, shift {r['dx']} / {r['dy']} % ({r['n']} points, ±{r['rms_px']} px)")
+
+
+def talign_start(who="web", dur=None):
+    T = TALIGN
+    with T["lock"]:
+        if T["busy"]:
+            return False, "the assistant is already measuring"
+        if not CFG.get("thermal_source"):
+            return False, "no thermal camera selected"
+        T.update(busy=True, phase="collect", t0=time.time(), dur=float(dur or 25.0), n=0, msg="", res=None, pairs=[], stop=False, who=str(who)[:40])
+    threading.Thread(target=_talign_run, daemon=True, name="thermal-align").start()
+    log_event("sys", f"Thermal alignment started ({who})")
+    return True, ""
+
+
+def talign_undo():
+    T = TALIGN
+    if T["busy"]:
+        return False, "the assistant is measuring"
+    if T["old"]:
+        CFG.update(T["old"]); T["old"] = None
+    elif CFG.get("thermal_align_own"):
+        CFG["thermal_align_own"] = False                   # the simulator: automatic again
+    else:
+        return False, "nothing to undo"
+    save_settings()
+    T.update(phase="idle", res=None, msg="")
+    log_event("sys", "Thermal alignment: old values back")
+    return True, ""
+
+
+def talign_state(lang=None):
+    T = TALIGN
+    el_ = time.time() - T["t0"] if T["busy"] else 0.0
+    return {"ok": True, "busy": T["busy"], "phase": T["phase"], "n": T["n"], "need": TALIGN_MIN, "progress": round(min(1.0, el_ / max(1.0, T["dur"])), 3),
+            "msg": tr_err(T["msg"], lang) if T["msg"] else "", "res": T["res"], "undo": bool(T["old"]) or bool(CFG.get("thermal_align_own")),
+            "now": {"zoom": CFG.get("thermal_zoom"), "dx": CFG.get("thermal_dx"), "dy": CFG.get("thermal_dy"), "own": bool(CFG.get("thermal_align_own"))},
+            "sim": talign_sim(), "hand": bool(SIM.get("warm_hand")), "expect": talign_expected(),
+            "thermal": STATE.get("thermal") or "", "source": CFG.get("thermal_source") or "",
+            "pairs": [[round(x, 3) for x in p] for p in T["pairs"][-60:]]}
+
+
+def talign_api(d, lang=None):
+    o = str(d.get("op") or "")
+    if o == "start":
+        ok, err = talign_start("web", d.get("dur"))
+    elif o == "stop":
+        TALIGN["stop"] = True; ok, err = True, ""
+    elif o == "undo":
+        ok, err = talign_undo()
+    elif o == "hand":
+        if not talign_sim():
+            return {"ok": False, "error": tr("only in the simulation", lang)}, 400
+        try:
+            sim_control({"action": "set", "id": "warm_hand", "value": bool(d.get("on", True))}); SIM["warm_hand"] = bool(d.get("on", True))
+            ok, err = True, ""
+        except Exception:
+            ok, err = False, "simulator not reachable"
+    else:
+        return {"ok": False, "error": "unknown"}, 400
+    return dict(talign_state(lang), ok=ok, error=tr_err(err, lang) if err else None), 200 if ok else 409
+
+
+# ---- the web page -------------------------------------------------------------------------------------------------------
+TALIGN_PAGE = r"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MoveEye - Thermal alignment</title>
+<style>
+/*BASECSS*/
+main{padding:14px 16px 90px;max-width:760px;margin:0 auto}
+.ta-steps{display:flex;gap:6px;margin:0 0 10px}.ta-steps>span{flex:1;text-align:center;padding:7px 4px;border-radius:10px;border:1px solid var(--line);color:var(--mut);font-size:13.5px}
+.ta-steps>span.on{border-color:var(--acc);color:var(--txt);font-weight:700}
+#ta-img{width:100%;aspect-ratio:16/9;object-fit:cover;background:#000;border-radius:12px;display:block;margin:8px 0}
+.ta-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}.ta-row button{flex:1;min-width:140px}
+.ta-bar{height:8px;border-radius:6px;background:var(--line);overflow:hidden;margin:6px 0}.ta-bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .3s}
+.ta-kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px;margin:6px 0}.ta-kv b{font-weight:600}
+.ta-msg{padding:8px 10px;border-radius:10px;margin:6px 0;background:rgba(56,139,253,.10)}.ta-msg.warn{background:rgba(210,153,34,.14)}.ta-msg.ok{background:rgba(46,160,67,.14)}
+</style></head><body>
+<header>
+  <h1>MoveEye</h1>
+  <!--NAV-->
+  <span class="hdr-ctl">
+    <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
+    <button class="sec" id="btn-lang" onclick="toggleLang()">DE</button>
+  </span>
+</header>
+<main>
+  <h2 style="margin:0 0 8px">🖐 <span data-i18n="Align the thermal picture (warm hand)">Align the thermal picture (warm hand)</span></h2>
+  <div class="ta-steps"><span id="st1">1 · <span data-i18n="Hand in front">Hand in front</span></span><span id="st2">2 · <span data-i18n="Measure">Measure</span></span><span id="st3">3 · <span data-i18n="Result">Result</span></span></div>
+  <section class="card">
+    <div class="mut" data-i18n="talign-note">talign-note</div>
+    <img id="ta-img" alt="">
+    <div class="ta-row" id="ta-simrow" hidden><button type="button" class="sec" id="ta-hand">🖐 <span id="ta-hand-t"></span></button></div>
+    <div class="ta-row"><button type="button" id="ta-start">▶ <span data-i18n="Start measuring">Start measuring</span></button>
+      <button type="button" class="sec" id="ta-stop" hidden data-i18n="Stop">Stop</button>
+      <button type="button" class="sec" id="ta-undo" hidden>↶ <span data-i18n="Undo">Undo</span></button></div>
+    <div class="ta-bar" id="ta-bar" hidden><i></i></div>
+    <div class="mut" id="ta-prog"></div>
+    <div id="ta-msg"></div>
+    <div id="ta-res"></div>
+    <div class="mut" id="ta-now"></div>
+    <div class="ta-row"><a class="btn sec" href="/settings?open=th:cam" data-i18n="Thermal camera settings">Thermal camera settings</a></div>
+  </section>
+</main>
+<script>
+/*COMMON*/
+/*TALIGNDE*/
+const TA = {s: null, timer: 0, img: 0};
+const $$ = id => document.getElementById(id);
+const tf = (s, o) => t(s).replace(/\{(\w+)\}/g, (m, k) => (o && o[k] != null) ? o[k] : m);
+async function op(o) { const r = await post("/api/thermal_align", Object.assign({lang: LANG}, o)); if (!r.ok && r.error) toast("⚠ " + r.error); TA.s = r.phase ? r : TA.s; paint(); return r; }
+function kv(rows) { const g = el("div", "ta-kv"); rows.forEach(([a, b]) => g.append(el("b", "", a), el("span", "", b))); return g; }
+function paint() {
+  const S = TA.s; if (!S) return;
+  const step = S.busy ? 2 : (S.phase === "done" ? 3 : 1);
+  [1, 2, 3].forEach(i => $$("st" + i).classList.toggle("on", i === step));
+  $$("ta-start").hidden = S.busy; $$("ta-stop").hidden = !S.busy; $$("ta-undo").hidden = S.busy || !S.undo;
+  $$("ta-simrow").hidden = !S.sim; $$("ta-hand-t").textContent = t(S.hand ? "Simulator: take the warm hand away" : "Simulator: warm hand in front of MoveEye");
+  $$("ta-bar").hidden = !S.busy; $$("ta-bar").firstElementChild.style.width = Math.round((S.progress || 0) * 100) + "%";
+  $$("ta-prog").textContent = S.busy ? tf("{n} points (at least {need})", {n: S.n, need: S.need}) : "";
+  const M = $$("ta-msg"); M.textContent = "";
+  if (!S.source) M.appendChild(el("div", "ta-msg warn", t("no thermal camera selected")));
+  if (S.msg) M.appendChild(el("div", "ta-msg warn", S.msg));
+  const R = $$("ta-res"); R.textContent = "";
+  if (S.phase === "done" && S.res) {
+    const r = S.res;
+    R.appendChild(el("div", "ta-msg ok", "✅ " + t("Taken over - the thermal picture is laid over the camera picture with these values.")));
+    const rows = [[t("Zoom"), r.zoom + " %"], [t("Left / right"), r.dx + " %"], [t("Up / down"), r.dy + " %"],
+                  [t("Accuracy"), "± " + r.rms_px + " " + t("thermal pixels")], [t("Points"), String(r.n)]];
+    if (r.v_scale != null && Math.abs(r.v_scale - 1) > 0.08) rows.push([t("Height"), tf("fits only roughly ({p} %)", {p: Math.round((r.v_scale - 1) * 100)})]);
+    if (S.expect) rows.push([t("Simulator expects"), tf("zoom {z} % ({m}, {f})", {z: S.expect.zoom, m: S.expect.model, f: S.expect.fov})]);
+    R.appendChild(kv(rows));
+    if ((r.note || []).includes("narrow")) R.appendChild(el("div", "ta-msg warn", t("The thermal camera sees less than the main camera: zoom stays at 100 %, only the shift is set.")));
+    if ((r.note || []).includes("still")) R.appendChild(el("div", "ta-msg warn", t("The hand hardly moved: only the shift was measured, the zoom stayed.")));
+    if (r.clipped) R.appendChild(el("div", "ta-msg warn", t("The shift is bigger than ±30 %: point the thermal camera better (mechanically).")));
+  }
+  const N = S.now || {};
+  $$("ta-now").textContent = tf("Now: zoom {z} %, left / right {x} %, up / down {y} %", {z: N.zoom, x: N.dx, y: N.dy}) + (S.sim ? " · " + t(N.own ? "simulator: measured values" : "simulator: automatic by the field of view") : "");
+}
+async function load() {
+  clearTimeout(TA.timer);
+  try { const r = await fetch("/api/thermal_align?lang=" + LANG, {cache: "no-store"}); if (r.ok) TA.s = await r.json(); } catch (e) {}
+  paint();
+  if (Date.now() - TA.img > 900) { TA.img = Date.now(); $$("ta-img").src = "/api/frame.jpg?" + Date.now(); }
+  TA.timer = setTimeout(load, TA.s && TA.s.busy ? 700 : 2000);
+}
+$$("ta-start").onclick = () => op({op: "start"}).then(load);
+$$("ta-stop").onclick = () => op({op: "stop"});
+$$("ta-undo").onclick = () => op({op: "undo"});
+$$("ta-hand").onclick = () => op({op: "hand", on: !(TA.s && TA.s.hand)});
+(async () => { await initAppearance(); load(); })();
+</script></body></html>"""
+
+TALIGN_PAGE_KEYS = ["Align the thermal picture (warm hand)", "Hand in front", "Measure", "Result", "talign-note", "Start measuring", "Stop", "Undo",
+                    "Thermal camera settings", "Simulator: take the warm hand away", "Simulator: warm hand in front of MoveEye",
+                    "{n} points (at least {need})", "no thermal camera selected",
+                    "Taken over - the thermal picture is laid over the camera picture with these values.", "Zoom", "Left / right", "Up / down",
+                    "Accuracy", "thermal pixels", "Points", "Height", "fits only roughly ({p} %)", "Simulator expects", "zoom {z} % ({m}, {f})",
+                    "The thermal camera sees less than the main camera: zoom stays at 100 %, only the shift is set.",
+                    "The hand hardly moved: only the shift was measured, the zoom stayed.",
+                    "The shift is bigger than ±30 %: point the thermal camera better (mechanically).",
+                    "Now: zoom {z} %, left / right {x} %, up / down {y} %", "simulator: measured values", "simulator: automatic by the field of view"]
+
+
+def talign_page():
+    js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in TALIGN_PAGE_KEYS}, ensure_ascii=False) + ");"
+    return render_page(TALIGN_PAGE, "tools").replace("/*TALIGNDE*/", js, 1)
+
+
+def talign_routes(app, reply, body):
+    from flask import Response, request
+
+    @app.route("/thermal_align")
+    def talign_web_page():
+        return Response(talign_page(), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+    @app.route("/api/thermal_align", methods=["GET", "POST"])
+    def api_talign():
+        lang = norm_lang(request.args.get("lang") or CFG.get("lang"))
+        if request.method == "POST":
+            d = body(); lang = norm_lang(d.get("lang") or lang)
+            res, code = talign_api(d, lang)
+            return reply(res, code)
+        return reply(talign_state(lang))
+
+
+_servo_routes_541 = servo_routes
+
+
+def servo_routes(app, reply, body):                       # + 557: the routes of the thermal assistant (550 calls servo_routes)
+    _servo_routes_541(app, reply, body)
+    talign_routes(app, reply, body)
+
+
+# Mehr → Werkzeuge → Geräte-Tests: one entry (a link like «Servos»)
+_TA_TOOL = ('<a class="tli" data-k="talign" href="/thermal_align" style="text-decoration:none;color:inherit"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true">'
+            '<path d="M8 13V5a1.5 1.5 0 0 1 3 0v6M11 11V4a1.5 1.5 0 0 1 3 0v7M14 11V5a1.5 1.5 0 0 1 3 0v8M8 12a1.5 1.5 0 0 0-3 0v2c0 4 3 7 7 7s6-3 6-7v-1"/></svg>'
+            '<span class="tln"><b data-i18n="Align the thermal picture">Align the thermal picture</b><span class="tsum" data-i18n="warm hand in front of MoveEye">warm hand in front of MoveEye</span></span><i class="tdot"></i></a>\n  ')
+if 'data-k="talign"' not in TOOLS_PAGE and '<a class="tli" data-k="servo"' in TOOLS_PAGE:
+    TOOLS_PAGE = TOOLS_PAGE.replace('<a class="tli" data-k="servo"', _TA_TOOL + '<a class="tli" data-k="servo"', 1)
+    TOOLS_PAGE = TOOLS_PAGE.replace('Object.assign(I18N.de, {"All tools"', 'Object.assign(I18N.de, {"Align the thermal picture": "Wärmebild ausrichten", '
+                                    '"warm hand in front of MoveEye": "warme Hand vor MoveEye"});\nObject.assign(I18N.de, {"All tools"', 1)
+
+
+# ---- the window (Tkinter): the same steps --------------------------------------------------------------------------------
+def _talign_tk_win(app):
+    win = getattr(app, "_talign_w", None)
+    try:
+        if win is not None and win.winfo_exists():
+            win.lift(); return
+    except Exception:
+        pass
+    win = tk.Toplevel(app.root); app._talign_w = win
+    win.title("MoveEye – " + tr("Align the thermal picture (warm hand)")); win.geometry("560x560")
+    fr = ttk.Frame(win); fr.pack(fill="both", expand=True, padx=12, pady=10)
+    steps = ttk.Frame(fr); steps.pack(fill="x")
+    sl = []
+    for i, k in enumerate(("Hand in front", "Measure", "Result")):
+        lb = tk.Label(steps, text=f"{i + 1} · {tr(k)}", bg=C["panel"], fg=C["mut"], padx=6, pady=5, highlightthickness=1, highlightbackground=C["line"])
+        lb.pack(side="left", expand=True, fill="x", padx=(0 if i == 0 else 6, 0)); sl.append(lb)
+    ttk.Label(fr, text=tr("talign-note"), style="Mut.TLabel", wraplength=520, justify="left").pack(anchor="w", pady=(8, 4))
+    bf = ttk.Frame(fr); bf.pack(fill="x", pady=(6, 0))
+    b_start = ttk.Button(bf, text="▶ " + tr("Start measuring"), command=lambda: _act(lambda: talign_start("window")))
+    b_stop = ttk.Button(bf, text=tr("Stop"), command=lambda: TALIGN.update(stop=True))
+    b_undo = ttk.Button(bf, text="↶ " + tr("Undo"), command=lambda: _act(talign_undo))
+    b_hand = ttk.Button(fr, text="", command=lambda: _act(lambda: (bool(talign_api({"op": "hand", "on": not SIM.get("warm_hand")})[0].get("ok")), "simulator not reachable")))
+    bar = ttk.Progressbar(fr, maximum=100); prog = ttk.Label(fr, text="", style="Mut.TLabel")
+    msg = ttk.Label(fr, text="", wraplength=520, justify="left")
+    res = ttk.Label(fr, text="", wraplength=520, justify="left", font=("DejaVu Sans", 10))
+    now_l = ttk.Label(fr, text="", style="Mut.TLabel", wraplength=520, justify="left")
+    for w_ in (bar, prog, msg, res, now_l):
+        w_.pack(fill="x", anchor="w", pady=(6, 0))
+
+    def _act(fn):
+        def run():
+            try:
+                r = fn()
+                if isinstance(r, tuple) and not r[0] and r[1]:
+                    app.root.after(0, lambda: messagebox.showinfo("MoveEye", tr_err(r[1]), parent=win))
+            except Exception as e:
+                log_event("sys", f"Window: thermal alignment: {e}"[:160])
+        threading.Thread(target=run, daemon=True).start()
+
+    def refresh():
+        try:
+            if not win.winfo_exists():
+                return
+        except Exception:
+            return
+        S = talign_state()
+        step = 2 if S["busy"] else (3 if S["phase"] == "done" else 1)
+        for i, lb in enumerate(sl):
+            on = i + 1 == step
+            lb.configure(fg=C["txt"] if on else C["mut"], highlightbackground=C["acc"] if on else C["line"], font=("DejaVu Sans", 9, "bold" if on else "normal"))
+        for b in (b_start, b_stop, b_undo):
+            b.pack_forget()
+        (b_stop if S["busy"] else b_start).pack(side="left", expand=True, fill="x")
+        if S["undo"] and not S["busy"]:
+            b_undo.pack(side="left", expand=True, fill="x", padx=(6, 0))
+        if S["sim"]:
+            b_hand.configure(text="🖐 " + tr("Simulator: take the warm hand away" if S["hand"] else "Simulator: warm hand in front of MoveEye"))
+            if not b_hand.winfo_ismapped():
+                b_hand.pack(fill="x", pady=(6, 0), before=bar)
+        elif b_hand.winfo_ismapped():
+            b_hand.pack_forget()
+        bar.configure(value=int(S["progress"] * 100) if S["busy"] else 0)
+        prog.configure(text=trf("{n} points (at least {need})", n=S["n"], need=S["need"]) if S["busy"] else "")
+        m = S["msg"] or ("" if S["source"] else tr("no thermal camera selected"))
+        msg.configure(text=("⚠ " + m) if m else "")
+        r = S["res"]
+        if S["phase"] == "done" and r:
+            L = ["✅ " + tr("Taken over - the thermal picture is laid over the camera picture with these values."),
+                 f"{tr('Zoom')}: {r['zoom']} %   {tr('Left / right')}: {r['dx']} %   {tr('Up / down')}: {r['dy']} %",
+                 f"{tr('Accuracy')}: ± {r['rms_px']} {tr('thermal pixels')}   {tr('Points')}: {r['n']}"]
+            if r.get("v_scale") is not None and abs(r["v_scale"] - 1) > 0.08:
+                L.append(tr("Height") + ": " + trf("fits only roughly ({p} %)", p=int(round((r["v_scale"] - 1) * 100))))
+            if S["expect"]:
+                L.append(tr("Simulator expects") + ": " + trf("zoom {z} % ({m}, {f})", z=S["expect"]["zoom"], m=S["expect"]["model"], f=S["expect"]["fov"]))
+            for k_, txt in (("narrow", "The thermal camera sees less than the main camera: zoom stays at 100 %, only the shift is set."),
+                            ("still", "The hand hardly moved: only the shift was measured, the zoom stayed.")):
+                if k_ in (r.get("note") or []):
+                    L.append("⚠ " + tr(txt))
+            if r.get("clipped"):
+                L.append("⚠ " + tr("The shift is bigger than ±30 %: point the thermal camera better (mechanically)."))
+            res.configure(text="\n".join(L))
+        else:
+            res.configure(text="")
+        N = S["now"]
+        now_l.configure(text=trf("Now: zoom {z} %, left / right {x} %, up / down {y} %", z=N["zoom"], x=N["dx"], y=N["dy"])
+                        + ((" · " + tr("simulator: measured values" if N["own"] else "simulator: automatic by the field of view")) if S["sim"] else ""))
+        win.after(600, refresh)
+    refresh()
+
+
+def _talign_tk_build_section(self, sec, sbody, settings_parent=None):
+    _TALIGN_TK["before"](self, sec, sbody, settings_parent)
+    if sec == "Thermal camera":
+        try:
+            ttk.Button(sbody, text="🖐 " + tr("Align the thermal picture (warm hand)") + " …", command=lambda: _talign_tk_win(self)).pack(fill="x", pady=(6, 0))
+        except Exception as e:
+            log_event("sys", f"Window: thermal alignment button: {e}"[:160])
+
+
+_TALIGN_TK = {"before": None}
+
+
+# ---- texts (English key: German, French, Italian, Romansh) ---------------------------------------------------------------
+_HX_SIMINT = {
+    # 554
+    'own sound ignored': ('eigener Ton ignoriert', 'son propre ignoré', 'suono proprio ignorato', 'agen tun ignorà'),
+    # 555
+    'a servo is blocked - the head does not follow (stuck at the end stop?)': ('ein Servo ist blockiert – der Kopf folgt nicht (klemmt am Anschlag?)', 'un servo est bloqué – la tête ne suit pas (coincée en butée ?)', 'un servo è bloccato – la testa non segue (incastrata a fine corsa?)', 'in servo è blocà – il chau na suonda betg (sa serra a la fin?)'),
+    '5 V rail {v} V': ('5-V-Schiene {v} V', 'rail 5 V {v} V', 'linea 5 V {v} V', 'lingia da 5 V {v} V'),
+    'under-voltage': ('Unterspannung', 'sous-tension', 'sottotensione', 'tensiun memia bassa'),
+    'I2C error': ('I2C-Fehler', 'erreur I2C', 'errore I2C', 'errur I2C'),
+    'PCA9685 reset': ('PCA9685-Reset', 'réinitialisation PCA9685', 'reset PCA9685', 'reset PCA9685'),
+    'servo blocked': ('Servo blockiert', 'servo bloqué', 'servo bloccato', 'servo blocà'),
+    # 557
+    'Align the thermal picture (warm hand)': ('Wärmebild ausrichten (warme Hand)', 'Aligner l’image thermique (main chaude)', 'Allineare l’immagine termica (mano calda)', 'Drizzar il maletg termic (maun chauda)'),
+    'Align the thermal picture': ('Wärmebild ausrichten', 'Aligner l’image thermique', 'Allineare l’immagine termica', 'Drizzar il maletg termic'),
+    'warm hand in front of MoveEye': ('warme Hand vor MoveEye', 'main chaude devant MoveEye', 'mano calda davanti a MoveEye', 'maun chauda davant MoveEye'),
+    'Hand in front': ('Hand davor', 'Main devant', 'Mano davanti', 'Maun davant'),
+    'Measure': ('Messen', 'Mesurer', 'Misurare', 'Mesirar'),
+    'Result': ('Ergebnis', 'Résultat', 'Risultato', 'Resultat'),
+    'talign-note': ('Jemand hält eine warme Hand 2–3 m vor MoveEye und bewegt sie langsam hin und her, auf und ab (sonst niemand im Bild, der Kopf steht still). MoveEye sucht den warmen Fleck im Wärmebild und die Bewegung im Kamerabild und stellt Zoom und Verschiebung des Wärmebilds ein. Im Simulator hält eine warme Hand von selbst hin.',
+                    'Quelqu’un tient une main chaude à 2–3 m devant MoveEye et la bouge lentement de gauche à droite et de haut en bas (personne d’autre dans l’image, la tête reste immobile). MoveEye cherche la tache chaude dans l’image thermique et le mouvement dans l’image de la caméra et règle le zoom et le décalage. Dans le simulateur, une main chaude apparaît toute seule.',
+                    'Qualcuno tiene una mano calda a 2–3 m davanti a MoveEye e la muove lentamente a destra e sinistra, su e giù (nessun altro nell’immagine, la testa resta ferma). MoveEye cerca la macchia calda nell’immagine termica e il movimento nell’immagine della camera e imposta zoom e spostamento. Nel simulatore una mano calda appare da sola.',
+                    'Insatgi tegna ina maun chauda 2–3 m davant MoveEye e la mova plaun da vart e si e giu (nagin auter en il maletg, il chau stat airi). MoveEye tschertga il fleck chaud en il maletg termic ed il moviment en il maletg da la camera e drizza zoom e spustament. En il simulatur cumpara ina maun chauda da sasezza.'),
+    'Start measuring': ('Messen starten', 'Démarrer la mesure', 'Avviare la misura', 'Cumenzar a mesirar'),
+    'Undo': ('Rückgängig', 'Annuler', 'Annulla', 'Revocar'),
+    'Thermal camera settings': ('Einstellungen Wärmebild', 'Réglages caméra thermique', 'Impostazioni termocamera', 'Parameters camera termica'),
+    'Simulator: take the warm hand away': ('Simulator: warme Hand wegnehmen', 'Simulateur : retirer la main chaude', 'Simulatore: togliere la mano calda', 'Simulatur: prender davent la maun chauda'),
+    'Simulator: warm hand in front of MoveEye': ('Simulator: warme Hand vor MoveEye', 'Simulateur : main chaude devant MoveEye', 'Simulatore: mano calda davanti a MoveEye', 'Simulatur: maun chauda davant MoveEye'),
+    '{n} points (at least {need})': ('{n} Punkte (mindestens {need})', '{n} points (au moins {need})', '{n} punti (almeno {need})', '{n} puncts (almain {need})'),
+    'no thermal camera selected': ('keine Wärmebild-Kamera gewählt', 'aucune caméra thermique choisie', 'nessuna termocamera scelta', 'nagina camera termica tschernida'),
+    'Taken over - the thermal picture is laid over the camera picture with these values.': ('Übernommen – das Wärmebild liegt mit diesen Werten über dem Kamerabild.', 'Repris – l’image thermique est superposée à l’image de la caméra avec ces valeurs.', 'Applicato – l’immagine termica è sovrapposta all’immagine della camera con questi valori.', 'Surpiglià – il maletg termic giascha cun questas valurs sur il maletg da la camera.'),
+    'Zoom': ('Zoom', 'Zoom', 'Zoom', 'Zoom'),
+    'Left / right': ('Links / rechts', 'Gauche / droite', 'Sinistra / destra', 'Sanester / dretg'),
+    'Up / down': ('Oben / unten', 'Haut / bas', 'Su / giù', 'Si / giu'),
+    'Accuracy': ('Genauigkeit', 'Précision', 'Precisione', 'Exactadad'),
+    'thermal pixels': ('Wärmebild-Pixel', 'pixels thermiques', 'pixel termici', 'pixels termics'),
+    'Points': ('Punkte', 'Points', 'Punti', 'Puncts'),
+    'Height': ('Höhe', 'Hauteur', 'Altezza', 'Autezza'),
+    'fits only roughly ({p} %)': ('passt nur ungefähr ({p} %)', 'ne correspond qu’approximativement ({p} %)', 'corrisponde solo approssimativamente ({p} %)', 'correspunda mo circa ({p} %)'),
+    'Simulator expects': ('Simulator erwartet', 'Le simulateur attend', 'Il simulatore si aspetta', 'Il simulatur spetga'),
+    'zoom {z} % ({m}, {f})': ('Zoom {z} % ({m}, {f})', 'zoom {z} % ({m}, {f})', 'zoom {z} % ({m}, {f})', 'zoom {z} % ({m}, {f})'),
+    'The thermal camera sees less than the main camera: zoom stays at 100 %, only the shift is set.': ('Die Wärmebild-Kamera sieht weniger als die Hauptkamera: Zoom bleibt 100 %, nur die Verschiebung wird eingestellt.', 'La caméra thermique voit moins que la caméra principale : le zoom reste à 100 %, seul le décalage est réglé.', 'La termocamera vede meno della camera principale: lo zoom resta al 100 %, si imposta solo lo spostamento.', 'La camera termica vesa damain che la camera principala: il zoom resta 100 %, mo il spustament vegn drizzà.'),
+    'The hand hardly moved: only the shift was measured, the zoom stayed.': ('Die Hand hat sich kaum bewegt: nur die Verschiebung gemessen, der Zoom bleibt.', 'La main a à peine bougé : seul le décalage a été mesuré, le zoom reste.', 'La mano si è mossa appena: misurato solo lo spostamento, lo zoom resta.', 'La maun è strusch sa movida: mo il spustament mesirà, il zoom resta.'),
+    'The shift is bigger than ±30 %: point the thermal camera better (mechanically).': ('Die Verschiebung ist grösser als ±30 %: Wärmebild-Kamera besser ausrichten (mechanisch).', 'Le décalage dépasse ±30 % : orienter mieux la caméra thermique (mécaniquement).', 'Lo spostamento supera ±30 %: orientare meglio la termocamera (meccanicamente).', 'Il spustament è pli grond che ±30 %: drizzar meglier la camera termica (mecanicamain).'),
+    'Now: zoom {z} %, left / right {x} %, up / down {y} %': ('Jetzt: Zoom {z} %, links / rechts {x} %, oben / unten {y} %', 'Maintenant : zoom {z} %, gauche / droite {x} %, haut / bas {y} %', 'Ora: zoom {z} %, sinistra / destra {x} %, su / giù {y} %', 'Ussa: zoom {z} %, sanester / dretg {x} %, si / giu {y} %'),
+    'simulator: measured values': ('Simulator: gemessene Werte', 'simulateur : valeurs mesurées', 'simulatore: valori misurati', 'simulatur: valurs mesiradas'),
+    'simulator: automatic by the field of view': ('Simulator: automatisch nach dem Blickwinkel', 'simulateur : automatique selon le champ de vision', 'simulatore: automatico secondo il campo visivo', 'simulatur: automatic tenor l’angul da vista'),
+    'the assistant is already measuring': ('der Assistent misst schon', 'l’assistant mesure déjà', 'l’assistente sta già misurando', 'l’assistent mesira gia'),
+    'the assistant is measuring': ('der Assistent misst gerade', 'l’assistant est en train de mesurer', 'l’assistente sta misurando', 'l’assistent mesira gist'),
+    'nothing to undo': ('nichts zum Rückgängigmachen', 'rien à annuler', 'niente da annullare', 'nagut da revocar'),
+    'stopped': ('gestoppt', 'arrêté', 'fermato', 'fermà'),
+    'too few points': ('zu wenige Punkte', 'trop peu de points', 'troppo pochi punti', 'memia paucs puncts'),
+    'too few points - hold the warm hand 2-3 m in front of MoveEye and move it slowly (nobody else in the picture)': ('zu wenige Punkte – die warme Hand 2–3 m vor MoveEye halten und langsam bewegen (sonst niemand im Bild)', 'trop peu de points – tenir la main chaude à 2–3 m devant MoveEye et la bouger lentement (personne d’autre dans l’image)', 'troppo pochi punti – tenere la mano calda a 2–3 m davanti a MoveEye e muoverla lentamente (nessun altro nell’immagine)', 'memia paucs puncts – tegnair la maun chauda 2–3 m davant MoveEye e la mover plaun (nagin auter en il maletg)'),
+    'no thermal picture - choose the thermal camera (Settings → Thermal camera)': ('kein Wärmebild – Wärmebild-Kamera wählen (Einstellungen → Wärmebild)', 'pas d’image thermique – choisir la caméra thermique (Réglages → Caméra thermique)', 'nessuna immagine termica – scegliere la termocamera (Impostazioni → Termocamera)', 'nagin maletg termic – tscherner la camera termica (Parameters → Camera termica)'),
+    'only in the simulation': ('nur in der Simulation', 'seulement dans la simulation', 'solo nella simulazione', 'mo en la simulaziun'),
+    'simulator not reachable': ('Simulator nicht erreichbar', 'simulateur injoignable', 'simulatore non raggiungibile', 'simulatur betg cuntanschibel'),
+}
+for _k, _v in _HX_SIMINT.items():
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# the manual (DE / EN)
+_HX_SIMINT_HELP = (
+    ('<section id="thermal" data-icon="🌡"><h2>Wärmebild</h2>',
+     "<p><b>🖐 Wärmebild ausrichten (warme Hand):</b> Einstellungen → Wärmebild → «Kamera und Ausrichtung» → «Wärmebild ausrichten» (oder "
+     "Mehr → Werkzeuge → Geräte-Tests). Jemand hält eine warme Hand 2–3 m vor MoveEye und bewegt sie langsam hin und her und auf und ab. "
+     "MoveEye sucht den warmen Fleck im Wärmebild und die Bewegung im Kamerabild und stellt Zoom und Verschiebung (links / rechts, oben / "
+     "unten) selbst ein – «Rückgängig» bringt die alten Werte zurück. Wegen des Abstands der beiden Kameras stimmt die Ausrichtung am "
+     "besten in der Entfernung, in der gemessen wurde. Im 3D-Simulator hält eine warme Hand von selbst hin (Kamerabild → Wärmebild); "
+     "dort ersetzen die gemessenen Werte die automatische Anpassung nach dem Blickwinkel, «Rückgängig» = wieder automatisch. "
+     "Der Simulator kann das Wärmebild als <i>Thermal-90 (Waveshare)</i> (80 × 62 Pixel, 90° × 67°, 15 Bilder/s, Rauschen 125 mK) oder "
+     "als altes 45°-Modell zeigen.</p>"),
+    ('<section id="thermal" data-icon="🌡"><h2>Thermal camera</h2>',
+     "<p><b>🖐 Align the thermal picture (warm hand):</b> Settings → Thermal camera → «Camera and alignment» → «Align the thermal picture» "
+     "(or More → Tools → Device tests). Somebody holds a warm hand 2–3 m in front of MoveEye and moves it slowly from side to side and up and "
+     "down. MoveEye finds the warm spot in the thermal picture and the movement in the camera picture and sets zoom and shift (left / right, "
+     "up / down) by itself – «Undo» brings the old values back. Because the two cameras sit a little apart, the alignment fits best at the "
+     "distance it was measured. In the 3D simulator a warm hand appears by itself (Camera picture → Thermal picture); there the measured "
+     "values replace the automatic fit by the field of view, «Undo» = automatic again. The simulator can show the thermal picture as "
+     "<i>Thermal-90 (Waveshare)</i> (80 × 62 pixels, 90° × 67°, 15 pictures/s, noise 125 mK) or as the old 45° model.</p>"),
+    ('<section id="lightsound" data-icon="💡"><h2>Licht &amp; Ton</h2>',
+     "<p><b>🔊 Sirene im Simulator:</b> Ist der 3D-Simulator verbunden, ist er der Lautsprecher von MoveEye: Sirene, Wecker-Melodie und "
+     "Ansagen gehen an den Simulator – auch in Spielen, Übungen und Testläufen (Test-Postfach); der echte Lautsprecher bleibt dann still. "
+     "Der Simulator spielt einfache Töne am PC (Sensoren → Lautsprecher: Lautstärke, «Am PC stumm»), Besucher fliehen, und das simulierte "
+     "Mikrofon hört den Ton. MoveEye ignoriert seinen eigenen Ton für Lärm-Alarm und Klatschschalter, solange er spielt und 2 s danach. "
+     "<b>🛠 Servo-Störungen:</b> Simulator → Testen → «Störungen»: Unterspannung (der simulierte Akku liefert zu wenig, die Servos werden "
+     "schwach), PCA9685-Reset, I2C-Fehler, Servo blockiert – MoveEye stoppt die Servos wie bei echter Hardware, trägt es im Fehlerspeicher "
+     "ein (Werkzeuge → Servos → Diagnose) und braucht bei Treiber-Fehlern und blockiertem Servo «Freigeben».</p>"),
+    ('<section id="lightsound" data-icon="💡"><h2>Light &amp; sound</h2>',
+     "<p><b>🔊 Siren in the simulator:</b> while the 3D simulator is connected it is MoveEye's loudspeaker: siren, wake-up melody and "
+     "announcements go to the simulator – also in games, drills and test runs (test inbox); the real loudspeaker stays silent then. The "
+     "simulator plays simple tones on the PC (Sensors → Loudspeaker: volume, «mute on the PC»), visitors flee, and the simulated microphone "
+     "hears the sound. MoveEye ignores its own sound for the noise alarm and the clap switch while it plays and 2 s after it. "
+     "<b>🛠 Servo faults:</b> simulator → Testing → «Faults»: under-voltage (the simulated battery delivers too little, the servos get "
+     "weak), PCA9685 reset, I2C error, servo blocked – MoveEye stops the servos like with real hardware, notes it in the fault memory "
+     "(Tools → Servos → Diagnosis) and needs «Release» after driver faults and a blocked servo.</p>"),
+)
+for _a, _b in _HX_SIMINT_HELP:
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+
+_SIMINT_LATE = {"done": False}
+
+
+def _simint_late():
+    """after all parts: the German texts (DE is made in 560), the button in the window (App is made in 570), the tools page"""
+    if _SIMINT_LATE["done"]:
+        return
+    _SIMINT_LATE["done"] = True
+    G = globals()
+    try:
+        for k, v in _HX_SIMINT.items():
+            G["DE"].setdefault(k, v[0])
+        G["DE"].setdefault("Align the thermal picture", _HX_SIMINT["Align the thermal picture"][0])
+    except KeyError:
+        pass
+    try:
+        App_ = G.get("App")
+        if App_ is not None and _TALIGN_TK["before"] is None:
+            _TALIGN_TK["before"] = App_._build_section
+            App_._build_section = _talign_tk_build_section
+    except Exception:
+        pass
+
+
+_load_settings_040_557 = load_settings
+
+
+def load_settings(*a, **k):                               # + 557: the late part once (all parts are there now)
+    _simint_late()
+    return _load_settings_040_557(*a, **k)
+
+
+_self_test_390_557 = self_test
+
+
+def self_test(folder=""):                                 # + 557: the late part once, also for --self-test
+    _simint_late()
+    return _self_test_390_557(folder)
+
+
+def talign_selftest():
+    """the fit finds zoom and shift from synthetic pairs; the hot spot and the moving hand are found; page and texts"""
+    rng = np.random.default_rng(5)
+    z, dx, dy, asp, tw, thh = 0.65, 0.04, -0.03, 9 / 16.0, 80, 62
+    zv = z * tw * asp / thh
+    P = []
+    for _ in range(30):
+        x, y = rng.uniform(0.25, 0.75), rng.uniform(0.3, 0.7)
+        P.append((x, y, 0.5 + dx - z / 2 + z * x + rng.normal(0, 0.004), 0.5 - dy - zv / 2 + zv * y + rng.normal(0, 0.004)))
+    P.append((0.5, 0.5, 0.95, 0.05))                       # an outlier
+    r = talign_fit(P, tw, thh, asp, 1.0)
+    assert r and abs(r["zoom"] - 65) <= 2 and abs(r["dx"] - 4) <= 1 and abs(r["dy"] + 3) <= 1, r
+    mt = [(i * 0.2, 0.5 + 0.2 * math.sin(i * 0.2 * 0.9), 0.5 + 0.15 * math.sin(i * 0.2 * 0.6)) for i in range(120)]
+    tt = [(i * 0.3 + 0.6, 0.5 + 0.65 * (0.2 * math.sin((i * 0.3) * 0.9)), 0.5 + 0.47 * 0.15 * math.sin((i * 0.3) * 0.6)) for i in range(70)]
+    lag, LP = talign_best_lag(mt, tt)                   # the thermal picture is 0.6 s late
+    assert abs(lag - 0.6) < 0.11 and len(LP) > 40, lag
+    a = np.full((62, 80), 15.0, np.float32); a[20:30, 50:56] = 34.0
+    u, v, dt = talign_th_point(a)
+    assert abs(u * 80 - 53) < 1.5 and 20 <= v * 62 <= 25 and dt > 15
+    b = np.full((62, 80), 15.0, np.float32); b[5:12, 5:12] = 45.0                 # a hot grill that does not move
+    a2, b2 = b.copy(), b.copy(); a2[20:30, 50:56] = 34.0; b2[20:30, 46:52] = 34.0  # the hand moves
+    u2, _v2, _d2 = talign_th_point(a2, b2)
+    assert 0.55 < u2 < 0.72, u2
+    p0 = np.zeros((180, 320), np.uint8); p1 = p0.copy()
+    cv2.rectangle(p0, (100, 60), (120, 100), 200, -1); cv2.rectangle(p1, (106, 60), (126, 100), 200, -1)
+    mp = talign_main_point(p0, p1)
+    assert mp is not None and 0.3 < mp[0] < 0.42 and mp[1] < 0.5, mp
+    _simint_late()
+    assert DE.get("talign-note", "").startswith("Jemand") and 'data-k="talign"' in TOOLS_PAGE
+    html = talign_page()
+    assert "/*TALIGNDE*/" not in html and "ta-start" in html
+    assert talign_api({"op": "nonsense"})[1] == 400
+    return f"zoom {r['zoom']} %, shift {r['dx']} / {r['dy']} % from {r['n']} points"
+
+
+SELFTEST_EXTRA.append(("Thermal alignment with a warm hand: fit, hot spot, moving hand, page (557)", talign_selftest))
+# ----------------------------------------------------------------------------
+# Die Liste simulator3d/schnittstelle.json nennt jedes Feld, das die beiden austauschen: die Antwort des Simulators auf
+# /state («world_reply», main.gd + power.gd + net.gd), den Zustand von MoveEye («state», sim_state 290 + Hüllen), /info
+# und die /control-Aktionen, die MoveEye braucht. Der Selbsttest meldet:
+#   * ein Feld wird gesendet, steht aber nicht in der Liste (oder umgekehrt),
+#   * ein Feld wird gesendet, aber die andere Seite liest es nie (unbenutzt),
+#   * MoveEye liest ein Feld der Antwort, das der Simulator gar nicht sendet,
+#   * MoveEye schickt eine /control-Aktion, die der Simulator nicht kennt.
+# Ein neues Feld: eine Zeile in schnittstelle.json (ein Ort). Holt main.gd world_reply ein weiteres Teil-Wörterbuch
+# (r.merge(x.reply())), dann hier in IFACE_GD_REPLY eintragen. Der Simulator prüft dieselbe Liste beim Start
+# (scripts/schnittstelle.gd, Zeile «Schnittstelle: …» im Log).
+# ----------------------------------------------------------------------------
+IFACE_GD_REPLY = [("main.gd", "world_reply"), ("power.gd", "reply")]     # (file, function) whose dict keys are the answer
+
+
+def _gd_func(text, name):
+    m = re.search(r"\nfunc " + re.escape(name) + r"\(.*?(?=\nfunc |\Z)", text, re.S)
+    return m.group(0) if m else ""
+
+
+def _gd_top_keys(body, var="r|d|rep"):
+    """the keys of the dictionary literals right after «var x := {» or «return {» (depth 1 only) plus «r["k"] = …»"""
+    keys, stack, i, n = [], [], 0, len(body)
+    while i < n:
+        c = body[i]
+        if c == "#":
+            j = body.find("\n", i)
+            i = n if j < 0 else j
+            continue
+        if c in "\"'":
+            j = i + 1
+            while j < n and body[j] != c:
+                j += 2 if body[j] == "\\" else 1
+            s, k = body[i + 1:j], j + 1
+            while k < n and body[k] in " \t":
+                k += 1
+            if stack == ["{v"] and k < n and body[k] == ":" and re.fullmatch(r"\w+", s):
+                keys.append(s)
+            i = j + 1
+            continue
+        if c in "{[(":
+            stack.append("{v" if c == "{" and re.search(r"(var \w+\s*:?=|return)\s*$", body[max(0, i - 60):i]) else c)
+        elif c in "}])" and stack:
+            stack.pop()
+        i += 1
+    keys += re.findall(r"\b(?:" + var + r')\["(\w+)"\]\s*=', body)
+    return list(dict.fromkeys(keys))
+
+
+def iface_list(base=None):
+    base = base or os.path.dirname(os.path.abspath(__file__))
+    p = os.path.join(base, "simulator3d", "schnittstelle.json")
+    if not os.path.exists(p):
+        return None
+    with open(p, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def iface_check(base=None):
+    """(problems, counts) - compares simulator3d/schnittstelle.json with the sources of both sides; None without the folder"""
+    import inspect
+    base = base or os.path.dirname(os.path.abspath(__file__))
+    L = iface_list(base)
+    gdir = os.path.join(base, "simulator3d", "scripts")
+    if L is None or not os.path.isdir(gdir):
+        return None
+    gd = {}
+    for fn in os.listdir(gdir):
+        if fn.endswith(".gd"):
+            with open(os.path.join(gdir, fn), encoding="utf-8") as f:
+                gd[fn] = f.read()
+    own = open(os.path.abspath(__file__), encoding="utf-8").read()
+    meta = L.get("_meta") or {}
+    pyonly = set(L.get("_nur_python_simulator") or [])
+    cond = set(L.get("_bedingt") or [])
+    probs = []
+
+    def cmp(sect, sent, where):
+        lst = set((L.get(sect) or {}).keys())
+        for k in sorted(set(sent) - lst):
+            probs.append(f"{sect}: «{k}» is sent ({where}) but not in schnittstelle.json")
+        for k in sorted(lst - set(sent) - cond):
+            probs.append(f"{sect}: «{k}» is in schnittstelle.json but not sent ({where})")
+        return lst
+
+    # 1. the answer of the simulator (world_reply) - sent by the GDScript sources, read by MoveEye (350, 285, 552 …)
+    wr = []
+    for fn, func in IFACE_GD_REPLY:
+        wr += _gd_top_keys(_gd_func(gd.get(fn, ""), func))
+    wr += re.findall(r'\brep\["(\w+)"\]\s*=', _gd_func(gd.get("net.gd", ""), "_handle"))
+    wl = cmp("world_reply", wr, "main.gd world_reply / power.gd reply / net.gd")
+    rd = inspect.getsource(SimLink.tick)
+    for nm, fn_ in list(globals().items()):
+        if re.fullmatch(r"_?simvals_take(_\w+)?", nm) and callable(fn_):
+            try:
+                rd += inspect.getsource(fn_)
+            except (OSError, TypeError):
+                pass
+    lits = set(re.findall(r'"(\w+)"', rd))
+    for k in sorted(wl - set(meta.get("world_reply") or []) - lits):
+        probs.append(f"world_reply: «{k}» is sent by the simulator but MoveEye never reads it (350 SimLink.tick / simvals_take)")
+    reads = set(re.findall(r'\brep_?\.get\("(\w+)"', rd)) | set(re.findall(r'\brep_?\["(\w+)"\]', rd))
+    for k in sorted(reads - wl - set(L.get("_optional_reply") or [])):
+        probs.append(f"world_reply: MoveEye reads «{k}» but the simulator does not send it")
+    # 2. the state of MoveEye (sim_state, part 290 + wrappers) - read by the GDScript sources
+    st = list(sim_state().keys())
+    sl = cmp("state", st, "sim_state")
+    allgd = "\n".join(gd.values())
+    gread = set(re.findall(r'(?:get|has)\("(\w+)"', allgd)) | set(re.findall(r'\["(\w+)"\]', allgd))
+    for k in sorted(sl - set(meta.get("state") or []) - pyonly - gread):
+        probs.append(f"state: «{k}» is sent by MoveEye but the 3D simulator never reads it")
+    # 3. /info
+    il = cmp("info", _gd_top_keys(_gd_func(gd.get("main.gd", ""), "info")), "main.gd info")
+    for k in sorted(il - set(meta.get("info") or [])):
+        if f'.get("{k}"' not in own and f'["{k}"]' not in own:
+            probs.append(f"info: «{k}» is sent by the simulator but MoveEye never reads it")
+    # 4. /control actions MoveEye sends: in the list and known by the simulator (main.gd _control)
+    used = set(re.findall(r'sim_control\(\{"action":\s*"(\w+)"', own)) | set(re.findall(r'\bq_?\s*=\s*\{"action":\s*"(\w+)"', own))
+    cb = _gd_func(gd.get("main.gd", ""), "_control")
+    known = set(re.findall(r'\ba == "(\w+)"', cb))
+    for g in re.findall(r"\ba in \[([^\]]*)\]", cb):
+        known |= set(re.findall(r'"(\w+)"', g))
+    cl = set((L.get("control") or {}).keys())
+    for k in sorted(used - known):
+        probs.append(f"control: MoveEye sends the action «{k}» but the simulator does not know it (main.gd _control)")
+    for k in sorted(used - cl):
+        probs.append(f"control: the action «{k}» is used by MoveEye but not in schnittstelle.json")
+    for k in sorted(cl - used):
+        probs.append(f"control: «{k}» is in schnittstelle.json but MoveEye does not use it")
+    return probs, {"world_reply": len(wl), "state": len(sl), "info": len(il), "control": len(cl)}
+
+
+def iface_selftest():
+    r = iface_check()
+    if r is None:
+        return "simulator folder not here"
+    probs, n = r
+    assert not probs, f"{len(probs)} problems: " + " | ".join(probs[:12])
+    return f"{n['world_reply']} answer fields, {n['state']} state fields, {n['info']} info fields, {n['control']} actions - same on both sides"
+
+
+SELFTEST_EXTRA.append(("One field list MoveEye ↔ simulator (simulator3d/schnittstelle.json)", iface_selftest))
+
+
+_sim_status_340 = sim_status
+
+
+# wraps: sim_status
+def sim_status():                                         # + 558: who steers the simulator (world_reply «leader»)
+    r = _sim_status_340()
+    r["leader"] = SIM.get("leader") or ""
+    return r
+
+
+_sim_stats_300 = sim_stats
+
+
+# wraps: sim_stats
+def sim_stats():                                          # + 558: the share of the simulator on its PC («sim_cpu_own»)
+    r = _sim_stats_300()
+    r["sim_cpu"] = SIM.get("sim_cpu") if r.get("pc_cpu") is not None else None
+    return r
+# ----------------------------------------------------------------------------
+# Bisher gab es den Alarm-Rückblick in 3D (180 ALARM_TRACKS, /api/sim «replay», 550) nur auf der Simulator-Seite /sim (Reiter
+# Simulator → Werkzeuge: Auswahl der letzten Alarme). Jetzt zeigt jede Aufnahme und jeder Alarm der Zeitleiste, zu dem
+# eine Spur gespeichert ist, denselben Knopf «⏪ In 3D nachspielen» (mwR3d unten, gleiche Klasse «r3d» auf allen drei
+# Seiten). Die Spur gehört zur Aufnahme, wenn ihr Zeitstempel im Namen steht (person_<stamp>.mp4), sonst die nächste
+# Spur höchstens 30 s neben der Zeit.
+# ----------------------------------------------------------------------------
+def replay3d_for(t=None, name=None):
+    """the id of the alarm track (180) for a recording / an alarm, or None"""
+    try:
+        alarm_tracks_load()
+        tracks = [x for x in list(ALARM_TRACKS) if len(x.get("samples") or []) >= 2]
+    except Exception:
+        return None
+    if name:
+        for x in tracks:
+            if str(x.get("id") or "") and str(x["id"]) in str(name):
+                return x["id"]
+    if t is None:
+        return None
+    best = min(tracks, key=lambda x: abs(float(x.get("t") or 0) - float(t)), default=None)
+    return best["id"] if best is not None and abs(float(best.get("t") or 0) - float(t)) <= 30.0 else None
+
+
+_timeline_build_425 = timeline_build
+
+
+# wraps: timeline_build
+def timeline_build(day=None, mode="night", lang=None):    # + 559: «In 3D nachspielen» at recordings and alarms
+    r = _timeline_build_425(day, mode, lang)
+    try:
+        if ALARM_TRACKS or os.path.exists(_atr_file()):
+            for it in r.get("items") or []:
+                if it.get("type") == "rec" or (it.get("type") == "log" and it.get("alarm")):
+                    k = replay3d_for(it.get("t"), it.get("name"))
+                    if k:
+                        it["r3d"] = k
+    except Exception:
+        pass
+    return r
+
+
+_list_recordings_430 = list_recordings
+
+
+# wraps: list_recordings
+def list_recordings(args, watch=None):                    # + 559: the same for the page «Aufnahmen»
+    r = _list_recordings_430(args, watch)
+    try:
+        for it in r.get("items") or []:
+            if not it.get("timelapse"):
+                ts = None
+                try:
+                    ts = datetime.strptime(it["time"], "%Y-%m-%d %H:%M:%S").timestamp()
+                except (KeyError, TypeError, ValueError):
+                    pass
+                k = replay3d_for(ts, it.get("name"))
+                if k:
+                    it["r3d"] = k
+    except Exception:
+        pass
+    return r
+
+
+R3D_JS = r"""<script>
+// ---- «⏪ In 3D nachspielen» (559): one button look on the simulator page (tools), in the timeline and in the recordings ----
+(function () {
+  try { Object.assign(I18N.de, {"Replay in 3D": "In 3D nachspielen", "plays in the window of the simulator": "läuft im Fenster des Simulators",
+    "replay-3d-tip": "Zeigt im 3D-Simulator, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Braucht den verbundenen Simulator."}); } catch (e) {}
+  try { if (I18N.en) Object.assign(I18N.en, {"replay-3d-tip": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Needs the connected simulator."}); } catch (e) {}
+  const tt = k => { try { return t(k); } catch (e) { return k; } };
+  if (!document.getElementById("r3d-css")) { const st = document.createElement("style"); st.id = "r3d-css";
+    st.textContent = ".r3d{display:inline-flex;align-items:center;gap:6px;background:var(--acc,#388bfd);color:#fff;border:1px solid var(--acc,#388bfd);border-radius:10px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer}.r3d:disabled{opacity:.6}";
+    document.head.appendChild(st); }
+  // id: the track id or a function giving it; speed: a function giving 1 / 2 / 4 (optional)
+  window.mwR3d = function (id, speed) {
+    const b = document.createElement("button"); b.type = "button"; b.className = "r3d"; b.textContent = "⏪ " + tt("Replay in 3D"); b.title = tt("replay-3d-tip");
+    b.onclick = async e => { e.stopPropagation(); const k = typeof id === "function" ? id() : id; if (!k) return; b.disabled = true; let r;
+      try { r = await (await fetch("/api/sim", {method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({action: "replay", id: k, speed: speed ? speed() : 1, lang: typeof LANG !== "undefined" ? LANG : "de"})})).json(); }
+      catch (x) { r = {ok: false, error: "simulator not reachable"}; }
+      b.disabled = false; const m = r.ok ? "✓ " + tt("plays in the window of the simulator") : "⚠ " + (r.error || "error");
+      if (typeof toast === "function") toast(m); else b.title = m; };
+    return b;
+  };
+})();
+</script>"""
+
+R3D_TL_JS = r"""<script>
+// 559: the viewer of the timeline: «In 3D nachspielen» next to the other buttons when a track belongs to it
+(function () { if (typeof openIt !== "function") return; const _oi = openIt;
+  openIt = function (it) { const p = _oi(it); try { const bx = document.querySelector("#vb .vbtn"); if (it && it.r3d && bx && window.mwR3d) bx.prepend(mwR3d(it.r3d)); } catch (e) {} return p; };
+})();
+</script>"""
+
+R3D_REC_JS = r"""<script>
+// 559: the recording opened in the big view: «In 3D nachspielen» below the picture when a track belongs to it
+(function () { if (typeof openAt !== "function") return; const _oa = openAt;
+  openAt = function (i, list) { const r = _oa(i, list); try { let w = document.getElementById("m-r3d"); const it = (typeof ML !== "undefined" ? ML : [])[i];
+    if (!w) { w = document.createElement("div"); w.id = "m-r3d"; w.style.cssText = "margin:8px 0"; const b = document.getElementById("m-body"); if (b) b.after(w); }
+    w.textContent = ""; if (it && it.r3d && window.mwR3d) w.appendChild(mwR3d(it.r3d)); } catch (e) {} return r; };
+})();
+</script>"""
+
+TL_PAGE = TL_PAGE.replace("</body>", R3D_JS + R3D_TL_JS + "</body>", 1)
+REC_PAGE = REC_PAGE.replace("</body>", R3D_JS + R3D_REC_JS + "</body>", 1)
+SIM_PAGE = SIM_PAGE.replace("</body>", R3D_JS + "</body>", 1)          # the simulator tools (530 SIMTOOLS_JS on /sim): the CSS of «r3d»
+
+
+def r3d_selftest():
+    """the track of a recording (name) or an alarm (time ± 30 s); the button script on the three pages"""
+    keep = list(ALARM_TRACKS); keep_l = _ATR["loaded"]
+    try:
+        _ATR["loaded"] = True
+        ALARM_TRACKS.clear()
+        t0 = time.time() - 3600
+        ALARM_TRACKS.append({"id": "20261030_202707", "t": t0, "kind": "person", "samples": [{"t": t0}, {"t": t0 + 1}]})
+        ALARM_TRACKS.append({"id": "20261030_210000", "t": t0 + 1800, "kind": "person", "samples": [{"t": t0}]})   # one sample: no replay
+        assert replay3d_for(None, "person_20261030_202707.mp4") == "20261030_202707"
+        assert replay3d_for(t0 + 25) == "20261030_202707" and replay3d_for(t0 + 40) is None and replay3d_for(t0 + 1800) is None
+        assert "mwR3d" in TL_PAGE and "mwR3d" in REC_PAGE and "mwR3d" in SIM_PAGE and 'class="r3d"' not in WEB_PAGE
+    finally:
+        ALARM_TRACKS.clear(); ALARM_TRACKS.extend(keep); _ATR["loaded"] = keep_l
+    return "recording by name, alarm by time, one button on timeline / recordings / simulator page"
+
+
+SELFTEST_EXTRA.append(("Replay in 3D from the timeline and the recordings (559)", r3d_selftest))
 # ----------------------------------------------------------------------------
 # Translations (English text is the key; German below). tr() is used everywhere.
 # ----------------------------------------------------------------------------
@@ -63190,14 +65320,22 @@ _HELP_SMALLTV = {
            '(die Uhrzeit nur alle 10 Minuten neu – das schont den Speicher des Geräts; einstellbar).</li>'
            '<li><b>Alarmbild:</b> bei einem Tier der Bildausschnitt mit «Fuchs · 91 % · 6 m» (Tierart, Sicherheit der KI, Abstand geschätzt), bei einer Person '
            'nur ein Symbol mit Abstand und Uhrzeit – das Bild der Person nur mit «Bild auch bei Personen». Das Alarmbild bleibt 60 s (einstellbar), der Bildschirm ist 20 s hell.</li>'
-           '<li><b>Spiel:</b> während einer Runde im 3D-Simulator Countdown bzw. Restzeit, die Punkte der Spieler und gross «Erwischt!», wenn MoveEye jemanden erwischt.</li></ul>'
+           '<li><b>Spiel:</b> während einer Runde im 3D-Simulator Countdown bzw. Restzeit, die Punkte der Spieler und gross «Erwischt!», wenn MoveEye jemanden erwischt.</li>'
+           '<li><b>Live-Bild und Wechsel</b> (ein Schalter pro Bildschirm; bei neu hinzugefügten ein, bei schon eingetragenen aus): tagsüber wechseln alle 30 s '
+           '<i>Live-Bild</i> (Standbild der Hauptkamera – das reine Kamerabild ohne die Leiste «Tilt … | CPU …» und ohne Rahmen, alle 2 min neu, dazwischen nur wieder gezeigt; mit Leiste Uhrzeit · Aus / Wachsam / Voll · Akku) und <i>Akku und Strom</i> (grosser Akku, Laden / Solar, Verbrauch, '
+           'Restlaufzeit, «SIM» bei Werten des Simulators). Privatzonen sind im Live-Bild schwarz, erkannte Personen verpixelt (ausser mit «Bild auch bei Personen»). '
+           'Ein Alarm erscheint auf <b>jedem</b> Bildschirm zuerst als <b>Animation</b> (GIF mit pulsierendem rotem Rahmen und ⚠, so lange wie «Alarmbild bleibt», Standard 60 s); mit dem Schalter danach als Standbild '
+           '(«Nach der Animation bleibt das Alarmbild», Standard 5 min), dann geht der Wechsel weiter. Nachts kein Wechsel, nur die rote, gedimmte Statusseite. '
+           'Alarm und Spielrunde gehen immer vor. Schalter aus = nur die Statusseite wie bisher.</li></ul>'
            '<p><b>Nicht verwechseln:</b> Der SmallTV ist ein kleiner eigener Bildschirm im WLAN. Die <i>TV-Anzeige</i> ist eine Webseite für einen Fernseher am HDMI des Pi, der <i>TV-Modus</i> zeigt den Spielstand des Simulators auf dem PC-Bildschirm.</p>'
            '<p><b>Nachts</b> (dunkel im Simulator oder nach Sonnenzeit) sind die Bilder rot wie die Rotlicht-Ansicht und gedimmt (Helligkeit nachts, Standard 10 %); bei Alarm kurz hell. '
            '<b>Einrichten:</b> «SmallTV einrichten (Schritt für Schritt)»: Gerät einstecken → mit dem Handy ins WLAN «GIFTV» (QR-Code) → Seite 192.168.4.1 (QR-Code) → dort das Netz von MoveEye wählen '
            '(am besten das eigene WLAN von MoveEye) → zurück und «Im Netz suchen» (fragt jede Adresse des eigenen Netzes kurz nach /v.json, nur auf Knopfdruck) oder die Adresse eintragen, '
            'die der SmallTV zeigt. «Testbild senden» prüft Adresse, Bild und Helligkeit. Die Liste zeigt, ob er erreichbar ist, die Firmware und den freien Speicher.</p>'
            '<p><b>Schonend:</b> eine Anfrage nach der anderen, ein neues Bild nur bei Änderung und höchstens alle 5 s (ein Alarm sofort), immer dieselben zwei Dateien <code>me_a.jpg</code> / '
-           '<code>me_b.jpg</code> (zusammen etwa 30 KB). Antwortet die Firmware beim Hochladen fälschlich mit «400», schaut MoveEye in der Dateiliste nach. '
+           '<code>me_b.jpg</code> (zusammen etwa 30 KB; die Animation als <code>me_a.gif</code> / <code>me_b.gif</code> – die Datei mit der anderen Endung am gleichen Platz wird gelöscht). '
+           'Mit «Live-Bild und Wechsel» ein Bild höchstens alle 30 s, ein neues Live-Bild alle 2 min; das unveränderte Live-Bild und die unveränderte Akku-Seite liegen noch auf dem Gerät und werden nur wieder gezeigt (kein Schreiben). '
+           'Die Liste zeigt pro Bildschirm «ca. N Bilder/Tag» (ohne Wechsel etwa 170, mit Wechsel je nach Tageslänge etwa 500–850). Antwortet die Firmware beim Hochladen fälschlich mit «400», schaut MoveEye in der Dateiliste nach. '
            '<b>Sicherheit:</b> der SmallTV hat kein Passwort – im eigenen WLAN von MoveEye betreiben. <b>🧪 Simulator:</b> der 3D-Simulator (ab 3D-4.19) hat einen virtuellen SmallTV mit derselben '
            'Schnittstelle; MoveEye nimmt ihn von selbst in die Liste, sein Bild steht als Kachel im Simulator-Fenster (Sensoren → Zusatz-Bildschirm).</p></section>\n'),
     "en": ('<section id="smalltv" data-icon="🖼"><h2>Extra display (SmallTV)</h2>'
@@ -63207,14 +65345,22 @@ _HELP_SMALLTV = {
            '(the time only every 10 minutes – this spares the memory of the device; adjustable).</li>'
            '<li><b>Alarm picture:</b> for an animal the picture section with «fox · 91 % · 6 m» (species, certainty of the AI, estimated distance), for a person only '
            'a symbol with distance and time – the picture of the person only with «Picture also for persons». The alarm picture stays 60 s (adjustable), the screen is bright for 20 s.</li>'
-           '<li><b>Game:</b> during a round in the 3D simulator the countdown or time left, the points of the players and a big «Caught!» when MoveEye catches somebody.</li></ul>'
+           '<li><b>Game:</b> during a round in the 3D simulator the countdown or time left, the points of the players and a big «Caught!» when MoveEye catches somebody.</li>'
+           '<li><b>Live picture and rotation</b> (one switch per display; on for newly added ones, off for displays already in the list): by day <i>Live picture</i> '
+           '(a still of the main camera – the pure camera picture without the strip «Tilt … | CPU …» and without boxes, new every 2 min, shown again in between; with a bar time · Off / Watchful / Full · battery) and <i>Battery and power</i> (big battery, charging / solar, consumption, runtime left, '
+           '«SIM» for values of the simulator) alternate every 30 s. Privacy zones are black in the live picture, detected persons pixelated (unless «Picture also for persons»). '
+           'An alarm first shows on <b>every</b> display as an <b>animation</b> (GIF with a pulsing red frame and ⚠, as long as «Alarm picture stays», 60 s by default); with the switch then as a still picture '
+           '(«After the animation the alarm picture stays», 5 min by default), then the rotation goes on. At night no rotation, only the red, dimmed status page. '
+           'Alarm and game round always come first. Switch off = only the status page as before.</li></ul>'
            '<p><b>Not to be mixed up:</b> the SmallTV is a small display of its own in the Wi-Fi. The <i>TV display</i> is a web page for a television on the HDMI of the Pi, the <i>TV mode</i> shows the game of the simulator on the PC screen.</p>'
            '<p><b>At night</b> (dark in the simulator or by the sun) the pictures are red like the red light view and dimmed (brightness at night, 10 % by default); bright for a moment at an alarm. '
            '<b>Setup:</b> «Set up a SmallTV (step by step)»: plug it in → join the Wi-Fi «GIFTV» with the phone (QR code) → page 192.168.4.1 (QR code) → choose the network of MoveEye there '
            '(best the own Wi-Fi of MoveEye) → back and «Search in the network» (asks every address of the own network briefly for /v.json, only on the button) or enter the address '
            'the SmallTV shows. «Send a test picture» checks address, picture and brightness. The list shows whether it is reachable, the firmware and the free memory.</p>'
            '<p><b>Gentle:</b> one request after the other, a new picture only when something changed and at most every 5 s (an alarm at once), always the same two files <code>me_a.jpg</code> / '
-           '<code>me_b.jpg</code> (about 30 KB together). If the firmware wrongly answers «400» to an upload, MoveEye looks at the file list. '
+           '<code>me_b.jpg</code> (about 30 KB together; the animation as <code>me_a.gif</code> / <code>me_b.gif</code> – the file with the other ending at the same place is deleted). '
+           'With «Live picture and rotation» at most one picture every 30 s, a new live picture every 2 min; the unchanged live picture and battery page are still on the device and only shown again (no writing). '
+           'The list shows «about N pictures/day» per display (without rotation about 170, with rotation about 500–850 depending on the length of the day). If the firmware wrongly answers «400» to an upload, MoveEye looks at the file list. '
            '<b>Security:</b> the SmallTV has no password – run it in the own Wi-Fi of MoveEye. <b>🧪 Simulator:</b> the 3D simulator (from 3D-4.19) has a virtual SmallTV with the same '
            'interface; MoveEye adds it to the list by itself, its picture is a tile in the simulator window (Sensoren → Zusatz-Bildschirm).</p></section>\n'),
 }
@@ -63230,6 +65376,183 @@ def _help_smalltv(doc, lang):
 _hp_enstv = HELP_PAGE.find('<div lang="en">')
 if _hp_enstv > 0:
     HELP_PAGE = _help_smalltv(HELP_PAGE[:_hp_enstv], "de") + _help_smalltv(HELP_PAGE[_hp_enstv:], "en")
+_HX_STV2 = {
+    'Live picture and rotation': ('Live-Bild und Wechsel', 'Image en direct et alternance', 'Immagine dal vivo e alternanza', 'Maletg live e midada'),
+    'stv-rot-hint': ('Tagsüber wechseln alle 30 s Live-Bild (reines Kamerabild, alle 2 min neu) und «Akku und Strom», ein Alarm erscheint als Animation (60 s, auf jedem Bildschirm) und danach 5 min als Standbild. Nachts nur die rote Statusseite. Aus = nur die Statusseite.',
+                     'Le jour, l’image en direct (image pure de la caméra, nouvelle toutes les 2 min) et «Batterie et courant» alternent toutes les 30 s, une alarme apparaît en animation (60 s, sur chaque écran) puis 5 min en image fixe. La nuit seulement la page d’état rouge. Désactivé = seulement la page d’état.',
+                     'Di giorno ogni 30 s si alternano immagine dal vivo (immagine pura della telecamera, nuova ogni 2 min) e «Batteria e corrente», un allarme appare come animazione (60 s, su ogni schermo) e poi 5 min come immagine fissa. Di notte solo la pagina di stato rossa. Spento = solo la pagina di stato.',
+                     'Di sa midan mintga 30 s maletg live (maletg pur da la camera, mintga 2 min nov) ed «Accu e current», in alarm cumpara sco animaziun (60 s, sin mintga visur) e lura 5 min sco maletg fix. La notg mo la pagina da status cotschna. Deactivà = mo la pagina da status.'),
+    'Live picture': ('Live-Bild', 'Image en direct', 'Immagine dal vivo', 'Maletg live'),
+    'Battery and power': ('Akku und Strom', 'Batterie et courant', 'Batteria e corrente', 'Accu e current'),
+    'Alarm animation': ('Alarm-Animation', 'Animation d’alarme', 'Animazione d’allarme', 'Animaziun d’alarm'),
+    'about {n} pictures/day': ('ca. {n} Bilder/Tag', 'env. {n} images/jour', 'ca. {n} immagini/giorno', 'ca. {n} maletgs/di'),
+    'No camera picture': ('Kein Kamerabild', 'Pas d’image de la caméra', 'Nessuna immagine della telecamera', 'Nagin maletg da la camera'),
+    'Charging': ('Laden', 'Charge', 'Carica', 'Chargiar'),
+    'Solar': ('Solar', 'Solaire', 'Solare', 'Solar'),
+    'Consumption': ('Verbrauch', 'Consommation', 'Consumo', 'Consum'),
+    'Runtime left': ('Restlaufzeit', 'Autonomie restante', 'Autonomia residua', 'Temp restant'),
+    'full in {n} min': ('voll in {n} min', 'pleine dans {n} min', 'piena tra {n} min', 'plain en {n} min'),
+    'yes': ('ja', 'oui', 'sì', 'gea'),
+    'simulator': ('Simulator', 'simulateur', 'simulatore', 'simulatur'),
+    'After the animation the alarm picture stays (min)': ('Nach der Animation bleibt das Alarmbild (min)', 'Après l’animation, l’image d’alarme reste (min)',
+                                                          'Dopo l’animazione l’immagine d’allarme resta (min)', 'Suenter l’animaziun resta il maletg d’alarm (min)'),
+}
+for _k, _v in _HX_STV2.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX_AUFR2 = {
+    'Replay in 3D': ('In 3D nachspielen', 'Rejouer en 3D', 'Rivivere in 3D', 'Reproducir en 3D'),
+    'replay-3d-tip': ('Zeigt im 3D-Simulator, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Braucht den verbundenen Simulator.',
+                      'Montre dans le simulateur 3D qui est venu d’où et où MoveEye regardait (15 s avant à 20 s après l’alarme). Il faut le simulateur connecté.',
+                      'Mostra nel simulatore 3D chi è arrivato da dove e dove guardava MoveEye (da 15 s prima a 20 s dopo l’allarme). Serve il simulatore collegato.',
+                      'Mussa en il simulatur 3D tgi è vegnì danunder e nua che MoveEye ha guardà (15 s avant fin 20 s suenter l’alarm). Dovra il simulatur collià.'),
+    'plays in the window of the simulator': ('läuft im Fenster des Simulators', 'joue dans la fenêtre du simulateur', 'in riproduzione nella finestra del simulatore', 'gira en la fanestra dal simulatur'),
+    'from MoveEye (setting of MoveEye, only shown here)': ('von MoveEye (Einstellung von MoveEye, hier nur angezeigt)', 'de MoveEye (réglage de MoveEye, seulement affiché ici)',
+                                                           'da MoveEye (impostazione di MoveEye, qui solo mostrata)', 'da MoveEye (parameter da MoveEye, qua mo mussà)'),
+    'at the goal': ('im Ziel', 'à l’arrivée', 'al traguardo', 'en la finamira'),
+    'in jail': ('gefangen', 'en prison', 'in prigione', 'en praschun'),
+    'on the way': ('unterwegs', 'en route', 'in cammino', 'en viadi'),
+    'points': ('Punkte', 'points', 'punti', 'puncts'),
+    'Get ready': ('Macht euch bereit', 'Préparez-vous', 'Preparatevi', 'Pinai vus'),
+}
+for _k, _v in _HX_AUFR2.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# ---- the manual (HELP_PAGE of 540): one paragraph in «System & network» (after the one of 598), German and English ----
+_AUFR2_HELP = {
+    "de": "<p><b>🧪 Simulator: ein Weg für jeden Wert (Aufräumen 2):</b> Die Übungen «Akku leer» und «WLAN / Internet weg» stellen bei "
+          "verbundenem Simulator nur noch dessen Regler (Ladung, Netzteil, «Internet weg») – MoveEye liest die Werte wie sonst; ohne diese "
+          "Werte rechnet die Übung wie bisher selbst. Die <b>Akku-Grösse</b> kommt aus MoveEye (Einstellung «USV-Akku: Kapazität EINER 18650-Zelle»): "
+          "der Simulator zeigt sie bei Verbindung nur an («von MoveEye»). <b>Einfach / Experte</b> der Simulator-Steuerung gilt jetzt für alle "
+          "Geräte (in den Einstellungen von MoveEye gespeichert, wie auf der Hauptseite). Die Luftfeuchtigkeit der Szene geht in den Klima-Sensor; "
+          "Schutz an / aus und die Relais von MoveEye stehen in der Statuszeile des Simulators. <b>Spiel-Anzeigen:</b> TV-Anzeige am HDMI, "
+          "TV-Modus des Simulators und die SmallTV-Seite «Spiel» zeigen dieselben Zahlen aus einer Quelle (Runde, Zeit, Spieler, Punkte, "
+          "Rangliste, Sieger). <b>⏪ In 3D nachspielen</b> gibt es jetzt auch in der Zeitleiste und bei den Aufnahmen, wenn zum Alarm eine Spur "
+          "gespeichert ist. Für Entwickler: alle Felder zwischen MoveEye und Simulator stehen in <code>simulator3d/schnittstelle.json</code>; "
+          "der Selbsttest und der Simulator prüfen beim Start, dass beide Seiten dazu passen.</p>",
+    "en": "<p><b>🧪 Simulator: one way for every value (clean-up 2):</b> with the simulator connected, the drills «battery empty» and "
+          "«Wi-Fi / internet gone» only set its controls (charge, mains adapter, «internet gone») – MoveEye reads the values as usual; without "
+          "these values the drill calculates by itself as before. The <b>battery size</b> comes from MoveEye (setting «UPS HAT: capacity of ONE 18650 "
+          "cell»): the simulator only shows it while connected («von MoveEye»). <b>Simple / Expert</b> of the simulator control now counts for "
+          "every device (stored in the settings of MoveEye, like on the main page). The humidity of the scene goes into the climate sensor; "
+          "protection on / off and the relays of MoveEye are in the status line of the simulator. <b>Game displays:</b> the TV view on the HDMI, "
+          "the TV mode of the simulator and the SmallTV page «Game» show the same numbers from one source (round, time, players, points, "
+          "ranking, winner). <b>⏪ Replay in 3D</b> is now also in the timeline and the recordings when a track was saved for the alarm. For "
+          "developers: every field between MoveEye and the simulator is listed in <code>simulator3d/schnittstelle.json</code>; the self-test "
+          "and the simulator check at the start that both sides match.</p>",
+}
+for _a, _b in (('<section id="system" data-icon="⚙"><h2>System &amp; Netz</h2>', _AUFR2_HELP["de"]),
+               ('<section id="system" data-icon="⚙"><h2>System &amp; network</h2>', _AUFR2_HELP["en"])):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+# ----------------------------------------------------------------------------
+# Der 3D-Simulator rechnet den USV-HAT, «WLAN weg / Internet weg» und die Hitze selbst (power.gd, «battery», «net»,
+# «ambient_c»). Darum gibt es jetzt EINEN Weg: ist der Simulator verbunden und simuliert er den Wert, stellen die Übungen
+# nur seine Regler (batt_level / batt_mains, net_internet_off; die Hitze / Kälte stellte schon immer «ambient»), MoveEye
+# liest die Werte wie sonst auch (285 sim_battery_tick, sim_net_down) - gleiche Texte, gleiche Meldungen wie bisher.
+# Ohne diese Werte (älterer Simulator, Akku nicht simuliert) bleiben die eigenen Übungswerte von 141 (Rückfall).
+# Am Ende kommen die Regler zurück, wie sie waren; «Netzstrom zurück» meldet der Simulator selbst (Netzteil kurz an).
+# ----------------------------------------------------------------------------
+DRILL_SIM = {"batt": None, "net": None, "pct": None, "t": 0.0}
+
+
+def _drill_sim_set(cid, value):
+    try:
+        r = sim_control({"action": "set", "id": cid, "value": value})
+        return isinstance(r, dict) and r.get("ok", True) is not False
+    except Exception:
+        return False
+
+
+_drill_start_141 = drill_start
+
+
+# wraps: drill_start
+def drill_start(kind):                                    # + 565: battery / net through the simulator values
+    DRILL_SIM.update(batt=None, net=None, pct=None, t=0.0)
+    sb = sim_sensor("battery") if kind == "battery" else None
+    sn = sim_sensor("net") if kind == "net" else None
+    ok, err = _drill_start_141(kind)
+    if not ok:
+        return ok, err
+    if sb is not None:
+        DRILL_SIM["batt"] = {"pct": int(sb.get("pct") or 60), "mains": bool(sb.get("mains"))}
+        _drill_sim_set("batt_mains", False)               # the cable is pulled: the next tick tells «power cut» (141 sets _on_batt False)
+        _drill_sim_set("batt_level", 60)
+        DRILL_SIM["pct"] = 60; DRILL_SIM["t"] = time.time()
+    if sn is not None and sn.get("wifi") is not False and sn.get("internet") is not False:
+        if _drill_sim_set("net_internet_off", True):      # the simulator plays «Internet weg» (MoveEye: sim_net_down)
+            DRILL_SIM["net"] = True
+            time.sleep(0.5)
+            try:
+                WATCH_REF["w"].netmon.recheck = True        # check at once with the new simulator value
+            except Exception:
+                pass
+    return ok, err
+
+
+_drill_battery_tick_141 = drill_battery_tick
+
+
+# wraps: drill_battery_tick
+def drill_battery_tick(bm):                               # + 565: 60 -> 4 % in the simulator, MoveEye reads it as usual
+    sb = sim_sensor("battery")
+    if DRILL_SIM["batt"] is None or sb is None:
+        return _drill_battery_tick_141(bm)                 # without simulator values: the own drill values (fallback)
+    if DRILL_SIM["batt"].get("back"):
+        return sim_battery_tick(bm, sb)                   # the last seconds: power back / the old values, as the simulator says
+    el = time.time() - DRILL["t0"]
+    pct = max(4, int(60 - el / DRILL_KINDS["battery"] * 60))
+    if pct != DRILL_SIM["pct"]:
+        _drill_sim_set("batt_level", pct)
+        DRILL_SIM["pct"] = pct
+    return sim_battery_tick(bm, sb)                       # (285: during the drill never «the Pi would shut down now»)
+
+
+_drill_end_later_141 = _drill_end_later
+
+
+# wraps: _drill_end_later
+def _drill_end_later():                                   # + 565: the simulator controls back as they were
+    # with the simulator «power back» comes 5 s before the end: its answer takes a moment and the message must still fall
+    # into the drill (141 notes reactions until 3 s after the end), as with the own values before
+    while time.time() < DRILL["until"] - (5.0 if DRILL_SIM["batt"] is not None and not DRILL_SIM["batt"]["mains"] else 0.0):
+        time.sleep(0.5)
+    B, N = DRILL_SIM["batt"], DRILL_SIM["net"]
+    bm = getattr(WATCH_REF.get("w"), "battmon", None)
+    if B is not None:
+        B["back"] = True                                   # drill_battery_tick: no more drill values from now on
+        if not B["mains"]:
+            _drill_sim_set("batt_mains", True)              # «Mains power back» - from the simulator values, like at the end of the drill before
+            for _ in range(30):                             # the new value in the answer of the simulator (10 × a second)
+                time.sleep(0.1)
+                if (sim_sensor("battery") or {}).get("mains"):
+                    break
+            if bm is not None:
+                try:
+                    bm.tick()                               # at once (the monitor itself looks only every 10 s): the message is part of the drill
+                except Exception:
+                    pass
+        if bm is not None:
+            bm._on_batt = None                              # the way back to the old values is no power cut
+        _drill_sim_set("batt_level", B["pct"])
+        _drill_sim_set("batt_mains", B["mains"])
+        time.sleep(1.0)
+        if bm is not None:
+            bm._on_batt = None
+        while time.time() < DRILL["until"]:
+            time.sleep(0.2)
+        DRILL_SIM["batt"] = None                           # the normal path again
+        if "batt_warned" in (DRILL.get("restore") or {}):
+            CFG["batt_warned"] = bool(DRILL["restore"]["batt_warned"])
+            DRILL["restore"].pop("batt_warned", None)      # done here (141 would send its own «power back» otherwise)
+    if N:
+        DRILL_SIM["net"] = None
+        _drill_sim_set("net_internet_off", False)
+    return _drill_end_later_141()
 # key = English text: (Deutsch, Français, Italiano, Rumantsch)
 _HX_weit = {
     'Wide infrared light (channel 4): second IR LED 120° on PCA9685 channel 4, on / off with the infrared light':
@@ -64184,7 +66507,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.48")
+        self.root.title("MoveEye 2.98.49")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -64551,7 +66874,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.48 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.49 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -67082,6 +69405,458 @@ SLIDERS.extend([
     ("Camping / protection", "back_hold_s", "«Is it you?»: person alarms wait (s)", 15, 300, 15),
 ])
 # ----------------------------------------------------------------------------
+# The window builds the section «Notifications» itself (the generic list of 570 is skipped for it): the same five blocks
+# and channel cards as the web page. The sections «Nachrichtentexte» and «SMS (LTE-Stick)» are shown inside it (message
+# texts in «Erweitert», SMS in its card) and therefore leave the group «Was passiert bei Alarm?». Logic: 579a.
+# The window has no bell: «Alarmton in geöffneten Browsern» stays here in «Erweitert» (web: in the bell 🔔).
+# ----------------------------------------------------------------------------
+for _g in TK_GROUPS:
+    if _g[0] == "notify":
+        for _s in ("Messages", "SMS (LTE stick)"):
+            if _s in _g[2]:
+                _g[2].remove(_s)
+
+_PX_TK_CH = {"ntfy": ("📲", "ntfy", ("notify_url",)), "webpush": ("🌐", "Web push (this device)", ()),
+             "telegram": ("✈", "Telegram", ("telegram_token", "telegram_chat")), "pushover": ("🔔", "Pushover", ("pushover_user", "pushover_token", "pushover_emergency")),
+             "email": ("✉", "E-mail", ("email_to",)), "webhook": ("🔗", "Webhook", ("notify_url",)), "sms": ("📱", "SMS", ())}
+_PX_TK_ORDER = ("ntfy", "webpush", "telegram", "pushover", "email", "webhook", "sms")
+_PX_TK_MSG = (("person", "👤", "Person"), ("prealarm", "👀", "Pre-alarm"), ("warm", "🌡", "Thermal alarm"), ("noise", "🔊", "Noise alarm"))
+
+
+def _px_tk_label(key):
+    for lst in (TOGGLES, TEXTS, SLIDERS):
+        for x in lst:
+            if x[1] == key:
+                return x[2]
+    return key
+
+
+def _px_tk_hide(key):
+    return simple_hidden(key) or (CFG["lock_on"] and key in LOCK_DENY_KEYS)
+
+
+class _PxSeg(tk.Frame):
+    """segment switch (the active one blue) - like the segments of the web page and the simulator"""
+    def __init__(self, parent, choices, value, command):
+        super().__init__(parent, bg=C["line"], padx=1, pady=1)
+        self.command = command; self.btn = {}; self.value = None
+        for i, (v, lab) in enumerate(choices):
+            l = tk.Label(self, text=tr(lab), font=("DejaVu Sans", 9, "bold"), padx=8, pady=3, cursor="hand2")
+            l.pack(side="left", fill="x", expand=True, padx=(0 if i == 0 else 1, 0))
+            l.bind("<Button-1>", lambda e, vv=v: self._click(vv))
+            self.btn[v] = l
+        self.set(value)
+
+    def _click(self, v):
+        if v != self.value:
+            self.set(v); self.command(v)
+
+    def set(self, value):
+        self.value = value
+        for v, l in self.btn.items():
+            l.config(bg=C["acc"] if v == value else C["field"], fg="#ffffff" if v == value else C["mut"])
+
+
+def _px_tk_field(app, parent, key, err):
+    """one text field: label, entry with a small ✕ (secret: clears after a confirmation)"""
+    if key not in TEXT_SPECS or _px_tk_hide(key):
+        return None
+    kind, _x = TEXT_SPECS[key]
+    lab = ttk.Label(parent, text=tr(_px_tk_label(key)), style="Mut.TLabel", wraplength=330, justify="left"); lab.pack(anchor="w", pady=(6, 0))
+    app._g2_q(lab, key)
+    if kind == "enum":
+        pairs = text_choice_pairs(key); labs = dict(pairs); back = {l: c for c, l in pairs}
+        cb = ttk.Combobox(parent, values=[l for _c, l in pairs], state="readonly"); cb.set(labs.get(CFG[key], CFG[key])); cb.pack(fill="x", pady=(2, 0))
+        cb.bind("<<ComboboxSelected>>", lambda e: (app.root.focus_set(), app._text_set(key, back.get(cb.get(), cb.get()), err)))
+        return cb
+    var = tk.StringVar(value="" if kind == "secret" else str(text_value(key)))
+    row = tk.Frame(parent, bg=C["field"], highlightthickness=1, highlightbackground=C["line"]); row.pack(fill="x", pady=(2, 0))
+    ent = tk.Entry(row, textvariable=var, show="•" if kind == "secret" else "", bg=C["field"], fg=C["txt"], insertbackground=C["txt"],
+                   relief="flat", highlightthickness=0)
+    ent.pack(side="left", fill="x", expand=True, padx=(6, 0), pady=3)
+    if kind == "secret" and CFG.get(key):
+        tk.Label(row, text="(" + tr("set") + ")", bg=C["field"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=2)
+    for ev in ("<Return>", "<FocusOut>"):
+        ent.bind(ev, lambda e: app._text_set(key, var.get(), err) if (kind != "secret" or var.get()) else None)
+
+    def clear():
+        if kind == "secret":
+            if not messagebox.askyesno("MoveEye", tr("Clear the saved value? It cannot be shown again."), parent=app.root):
+                return
+        var.set(""); app._text_set(key, "", err)
+    x = tk.Label(row, text="✕", bg=C["field"], fg=C["mut"], cursor="hand2", font=("DejaVu Sans", 10), padx=6)
+    x.pack(side="right"); x.bind("<Button-1>", lambda e: clear())
+    return ent
+
+
+def _px_tk_toggle(app, parent, key):
+    if _px_tk_hide(key) or key not in CFG:
+        return None
+    tg = Toggle(parent, tr(_px_tk_label(key)), CFG[key], lambda val, k=key: app._set(k, val)); tg.pack(fill="x", pady=3)
+    app.vars[key] = tg; app._g2_q(tg, key)
+    return tg
+
+
+def _px_tk_slider(app, parent, spec):
+    s, key, label, lo, hi, step = spec
+    if _px_tk_hide(key):
+        return
+    row = ttk.Frame(parent); row.pack(fill="x", pady=(6, 0))
+    ttk.Label(row, text=tr(label)).pack(side="left")
+    vl = ttk.Label(row, text=str(CFG[key]), style="Mut.TLabel"); vl.pack(side="right"); app.value_labels[key] = vl
+    app._g2_q(row, key)
+    v = tk.DoubleVar(value=CFG[key]); app.vars[key] = v
+    sc = ttk.Scale(parent, from_=lo, to=hi, variable=v, orient="horizontal", command=lambda val, k=key, st=step: app._slide(k, float(val), st))
+    sc.pack(fill="x")
+    sc.bind("<ButtonPress-1>", lambda e, k=key: setattr(app, "dragging", k))
+    sc.bind("<ButtonRelease-1>", lambda e: (setattr(app, "dragging", None), app.root.focus_set()))
+
+
+def _px_tk_head(parent, text):
+    tk.Label(parent, text=tr(text).upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").pack(fill="x", pady=(12, 2))
+
+
+def _px_tk_card(app, parent, ch, err, S):
+    ic, nm, keys = _PX_TK_CH[ch]
+    box = tk.Frame(parent, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"])
+    hd = tk.Frame(box, bg=C["panel"], cursor="hand2"); hd.pack(fill="x", padx=6, pady=3)
+    ar = tk.Label(hd, text="▸", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9), cursor="hand2"); ar.pack(side="left")
+    tk.Label(hd, text=ic, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10), width=2, cursor="hand2").pack(side="left")
+    nf = tk.Frame(hd, bg=C["panel"], cursor="hand2"); nf.pack(side="left", fill="x", expand=True)
+    tk.Label(nf, text=tr(nm), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10), anchor="w", cursor="hand2").pack(fill="x")
+    st = tk.Label(nf, text="", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8), anchor="w", cursor="hand2"); st.pack(fill="x")
+    sw = Toggle(hd, "", False, lambda v, c=ch: (push_set_channel(c, v), _px_tk_paint(app)))
+    sw.pack(side="right")
+    tb = ttk.Button(hd, text="▶ " + tr("Test"), width=7, command=lambda c=ch: _px_tk_test(app, c)); tb.pack(side="right", padx=4)
+    body = tk.Frame(box, bg=C["panel"])
+    def flip(_e=None):
+        if body.winfo_ismapped():
+            body.pack_forget(); ar.config(text="▸")
+        else:
+            body.pack(fill="x", padx=10, pady=(0, 8)); ar.config(text="▾")
+    for w_ in (hd, ar, nf) + tuple(nf.winfo_children()):
+        w_.bind("<Button-1>", flip)
+    for k in keys:
+        if k == "notify_url":
+            continue
+        if TEXT_SPECS.get(k):
+            _px_tk_field(app, body, k, err)
+        else:
+            _px_tk_toggle(app, body, k)
+    if ch in ("ntfy", "webhook"):
+        S["url_" + ch] = body
+    if ch in ("ntfy", "telegram", "webhook"):
+        ttk.Label(body, text=tr("Only one of ntfy · Telegram · Webhook (the main channel, with repeats and the outbox)."), style="Mut.TLabel",
+                  wraplength=320, justify="left").pack(anchor="w", pady=(6, 0))
+    if ch == "webpush":
+        ttk.Label(body, text=tr("Switch it on in the browser of the phone (Settings → Push messages → Web push)."), style="Mut.TLabel",
+                  wraplength=320, justify="left").pack(anchor="w", pady=(4, 0))
+        ttk.Button(body, text=tr("Open in the browser"), command=lambda: app._open_page("/protect#sec:Notifications")).pack(fill="x", pady=(4, 0))
+    if ch == "email":
+        adv = tk.Frame(body, bg=C["panel"])
+        lk = tk.Label(body, text="▸ " + tr("Advanced"), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"), cursor="hand2", anchor="w")
+        lk.pack(fill="x", pady=(8, 0))
+        def fa(_e=None):
+            if adv.winfo_ismapped():
+                adv.pack_forget(); lk.config(text="▸ " + tr("Advanced"))
+            else:
+                adv.pack(fill="x", after=lk); lk.config(text="▾ " + tr("Advanced"))
+        lk.bind("<Button-1>", fa)
+        for k in ("email_host", "email_port", "email_user", "email_password", "email_events"):
+            _px_tk_field(app, adv, k, err)
+    if ch == "sms":
+        sec = "SMS (LTE stick)"
+        for s_, key_, _l in TOGGLES:
+            if s_ == sec and key_ != "sms_on":
+                _px_tk_toggle(app, body, key_)
+        for spec in SLIDERS:
+            if spec[0] == sec:
+                _px_tk_slider(app, body, spec)
+        app._build_texts(body, sec)
+        def sms_t():
+            ok, err_ = sms_send(tr("MoveEye: test SMS"), force=True)
+            app._status(sec, ("✓ " + tr("SMS sent")) if ok else "⚠ " + tr_err(err_))
+        ttk.Button(body, text=tr("Send test SMS"), command=lambda: threading.Thread(target=sms_t, daemon=True).start()).pack(fill="x", pady=(6, 0))
+        app.status_labels[sec] = ttk.Label(body, text="", style="Mut.TLabel", wraplength=320, justify="left"); app.status_labels[sec].pack(anchor="w")
+    S["cards"][ch] = {"box": box, "sw": sw, "st": st, "tb": tb, "body": body, "flip": flip}
+    return box
+
+
+def _px_tk_test(app, ch):
+    S = getattr(app, "_px", None)
+    if S:
+        S["res"].config(text=tr("testing …"))
+    def run():
+        res = push_test_one(app.watch, ch) if CFG.get("notify_on") else [{"ch": "–", "ok": False, "msg": tr("Push messages are switched off")}]
+        txt = "\n".join(("✓ " if r["ok"] else "✗ ") + r["ch"] + " – " + r["msg"] for r in res) or tr("No channel set up.")
+        try:
+            app.root.after(0, lambda: (S and S["res"].config(text=txt), _px_tk_paint(app)))
+        except Exception:
+            pass
+    threading.Thread(target=run, daemon=True).start()
+
+
+def _px_tk_quiet(app, parent, S):
+    box = tk.Frame(parent, bg=C["panel"]); box.pack(fill="x")
+    S["qbox"] = box
+    def draw():
+        for w_ in box.winfo_children():
+            w_.destroy()
+        W = quiet_clean(CFG.get("quiet_windows"))
+        def save():
+            CFG["quiet_windows"] = quiet_clean(W) or CFG["quiet_windows"]; save_settings()
+        for i, w in enumerate(W):
+            r = tk.Frame(box, bg=C["panel"]); r.pack(fill="x", pady=2)
+            for part in ("from", "to"):
+                v = tk.StringVar(value=w[part])
+                e = tk.Entry(r, textvariable=v, width=6, bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat",
+                             highlightthickness=1, highlightbackground=C["line"])
+                e.pack(side="left", padx=(0, 2))
+                def put(_e=None, ww=w, pp=part, vv=v):
+                    if _PX_HM.match(vv.get().strip()):
+                        ww[pp] = vv.get().strip(); save()
+                    else:
+                        vv.set(ww[pp])
+                e.bind("<Return>", put); e.bind("<FocusOut>", put)
+                if part == "from":
+                    tk.Label(r, text="–", bg=C["panel"], fg=C["mut"]).pack(side="left", padx=2)
+            for k, dn in enumerate(("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")):
+                on = k in w["days"]
+                l = tk.Label(r, text=tr(dn), bg=C["acc"] if on else C["field"], fg="#ffffff" if on else C["mut"], font=("DejaVu Sans", 8, "bold"),
+                             padx=3, cursor="hand2")
+                l.pack(side="left", padx=(4 if k == 0 else 1, 0))
+                def flip(_e=None, ww=w, kk=k):
+                    ww["days"] = sorted(set(ww["days"]) ^ {kk}) or [kk]; save(); draw()
+                l.bind("<Button-1>", flip)
+            def rm(ii=i):
+                if len(W) <= 1:
+                    messagebox.showinfo("MoveEye", tr("At least one time window - switch the quiet hours off instead."), parent=app.root); return
+                W.pop(ii); save(); draw()
+            x = tk.Label(r, text="✕", bg=C["panel"], fg=C["mut"], cursor="hand2", padx=6); x.pack(side="right"); x.bind("<Button-1>", lambda e, f=rm: f())
+        bf = ttk.Frame(box); bf.pack(fill="x", pady=(4, 0))
+        def add():
+            W.append({"from": "12:00", "to": "14:00", "days": [0, 1, 2, 3, 4, 5, 6]}); save(); draw()
+        def home():
+            W[:] = [{"from": "08:00", "to": "%02d:00" % int(CFG.get("report_from") or 20), "days": [0, 1, 2, 3, 4]}]; save(); draw()
+        if len(W) < 4:
+            ttk.Button(bf, text="+ " + tr("Time window"), command=add).pack(side="left", expand=True, fill="x", padx=(0, 4))
+        ttk.Button(bf, text="🏠 " + tr("Day at home"), command=home).pack(side="left", expand=True, fill="x")
+        S["qinfo"] = ttk.Label(box, text="", style="Mut.TLabel", wraplength=330, justify="left"); S["qinfo"].pack(anchor="w", pady=(4, 0))
+    draw()
+
+
+def _px_tk_msg_dialog(app, kind, nm, S):
+    win = tk.Toplevel(app.root); win.title("MoveEye"); win.configure(bg=C["panel"]); win.transient(app.root)
+    tk.Label(win, text="✎ " + tr(nm), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11, "bold")).pack(anchor="w", padx=14, pady=(12, 4))
+    std = msg_defaults()[kind]
+    vs = []
+    for i, part in enumerate(("title", "text")):
+        key = f"msg_{kind}_{part}"
+        tk.Label(win, text=tr("Title" if i == 0 else "Text") + " · " + tr("standard") + ": " + std[i], bg=C["panel"], fg=C["mut"], wraplength=380,
+                 justify="left").pack(anchor="w", padx=14, pady=(6, 0))
+        v = tk.StringVar(value=str(CFG.get(key) or "")); vs.append((key, v))
+        tk.Entry(win, textvariable=v, width=50, bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat", highlightthickness=1,
+                 highlightbackground=C["line"]).pack(fill="x", padx=14, pady=(2, 0))
+    tk.Label(win, text=tr("Empty = standard text. Placeholders:") + " " + MSG_PLACEHOLDERS, bg=C["panel"], fg=C["mut"], wraplength=380,
+             justify="left").pack(anchor="w", padx=14, pady=(6, 0))
+    err = ttk.Label(win, text="", style="Mut.TLabel", foreground=C["red"]); err.pack(anchor="w", padx=14)
+    bf = tk.Frame(win, bg=C["panel"]); bf.pack(fill="x", padx=14, pady=12)
+    def save(reset=False):
+        for key, v in vs:
+            ok, msg = set_text(key, "" if reset else v.get())
+            if not ok:
+                err.config(text="⚠ " + tr_err(msg)); return
+        win.destroy(); _px_tk_msgpaint(S)
+    ttk.Button(bf, text=tr("Cancel"), command=win.destroy).pack(side="right")
+    ttk.Button(bf, text=tr("Save"), command=save).pack(side="right", padx=(0, 6))
+    ttk.Button(bf, text="↺ " + tr("Standard text"), command=lambda: save(True)).pack(side="left")
+
+
+def _px_tk_msgpaint(S):
+    for kind, (l, ic, nm) in S.get("msgs", {}).items():
+        own = bool(CFG.get(f"msg_{kind}_title") or CFG.get(f"msg_{kind}_text"))
+        try:
+            l.config(text=f"{ic} {tr(nm)} ✎   ({tr('own text') if own else tr('standard text')})")
+        except Exception:
+            pass
+
+
+def _px_tk_paint(app):
+    S = getattr(app, "_px", None)
+    if not S:
+        return
+    try:
+        if not S["st"].winfo_exists():
+            return
+    except Exception:
+        return
+    P = push_info()
+    S["st"].config(text=P["status_line"], fg=C["grn"] if P["on"] and P["ready"] else C["mut"])
+    hidden = []
+    for c in P["channels"]:
+        K = S["cards"].get(c["id"])
+        if not K:
+            continue
+        show = c["used"] or c["on"] or c["id"] in S["added"]
+        if show and not K["box"].winfo_ismapped():
+            K["box"].pack(fill="x", pady=3, in_=S["cw"])
+        elif not show and K["box"].winfo_ismapped():
+            K["box"].pack_forget()
+        if not show:
+            hidden.append(c["id"])
+        K["sw"].set(c["on"])
+        K["st"].config(text=(tr("switched off") if not c["on"] else ("✓ " + (c["info"] or tr("ready")) if c["ready"] else "⚠ " + tr("not set up yet"))),
+                       fg=C["mut"] if not c["on"] else (C["grn"] if c["ready"] else C["yel"]))
+    tgt = S.get("url_" + ("webhook" if P["main"] == "webhook" else "ntfy"))
+    if tgt is not None and S.get("url_parent") is not tgt:
+        for w_ in S.get("url_widgets", []):
+            try:
+                w_.destroy()
+            except Exception:
+                pass
+        kids = [w_ for w_ in tgt.winfo_children() if w_.winfo_manager() == "pack"]
+        fr = tk.Frame(tgt, bg=C["panel"])
+        if kids:
+            fr.pack(fill="x", before=kids[0])
+        else:
+            fr.pack(fill="x")
+        e = _px_tk_field(app, fr, "notify_url", S["err"])
+        lab = fr.winfo_children()[0] if fr.winfo_children() else None
+        if lab is not None:
+            lab.config(text=tr("Webhook address (JSON POST)" if P["main"] == "webhook" else "Address (server/topic)"))
+        S["url_parent"], S["url_widgets"] = tgt, [fr]
+    m = S["addm"]["menu"]; m.delete(0, "end")
+    for ch in hidden:
+        m.add_command(label=_PX_TK_CH[ch][0] + " " + tr(_PX_TK_CH[ch][1]), command=lambda c=ch: _px_tk_add(app, c))
+    if hidden and not S["addm"].winfo_ismapped():
+        S["addm"].pack(fill="x", pady=(4, 0), after=S["cw"])
+    elif not hidden:
+        S["addm"].pack_forget()
+    S["lvl"].set(P["level"]); S["pics"].set(P["pics"])
+    S["lvlnote"].config(text=tr({"persons": "Only person alarms. Warm bodies and noise are only logged.",
+                                 "animals": "Persons and warm bodies (thermal camera). Noise is only logged.",
+                                 "all": "Persons, warm bodies and noise (as up to now)."}.get(P["level"], "")) + " " + tr("Sabotage, theft and notes always come."))
+    if S.get("qinfo") is not None:
+        q = P["quiet"]
+        S["qinfo"].config(text=(("🌙 " + tr("Quiet hours now - alarms are only logged") + " · ") if q["now"] else "") + tr("Clock") + ": " + q["clock"]
+                          + (" (" + tr("sim time") + ")" if q["sim"] else "") + " · " + tr("Night time from") + f" {P['night_from']}:00 (" + tr("night report") + ")")
+    if CFG.get("quiet_on") and not S["qbox"].winfo_ismapped():
+        S["qbox"].pack(fill="x", after=S["qon"])
+    elif not CFG.get("quiet_on") and S["qbox"].winfo_ismapped():
+        S["qbox"].pack_forget()
+    if app.root.focus_get() is not S["kw_e"]:
+        S["kw"].set(P["keyword"])
+
+
+def _px_tk_add(app, ch):
+    S = app._px
+    S["added"].add(ch); push_add_card(ch)
+    _px_tk_paint(app)
+    K = S["cards"][ch]
+    if not K["body"].winfo_ismapped():
+        K["flip"]()
+
+
+def _px_tk_panel(app, sbody):
+    S = {"cards": {}, "added": set(), "msgs": {}}
+    err = ttk.Label(sbody, text="", style="Mut.TLabel", foreground=C["red"], wraplength=330, justify="left")
+    S["err"] = err
+    # ---- Kopf ----
+    _px_tk_toggle(app, sbody, "notify_on")
+    hr = tk.Frame(sbody, bg=C["panel"]); hr.pack(fill="x", pady=(2, 0))
+    S["st"] = tk.Label(hr, text="", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9), anchor="w"); S["st"].pack(side="left", fill="x", expand=True)
+    ttk.Button(hr, text="🧪 " + tr("Test all"), command=lambda: _px_tk_test(app, "all")).pack(side="right")
+    S["res"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left"); S["res"].pack(anchor="w")
+    app.status_labels["Notifications"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
+    app.status_labels["Notifications"].pack(anchor="w")
+    # ---- Wohin ----
+    _px_tk_head(sbody, "Where to")
+    S["cw"] = tk.Frame(sbody, bg=C["panel"]); S["cw"].pack(fill="x")
+    for ch in _PX_TK_ORDER:
+        _px_tk_card(app, S["cw"], ch, err, S)
+    S["addm"] = tk.Menubutton(sbody, text="+ " + tr("Add channel"), bg=C["field"], fg=C["txt"], activebackground=C["line"], relief="flat",
+                              highlightthickness=1, highlightbackground=C["line"], cursor="hand2")
+    S["addm"]["menu"] = tk.Menu(S["addm"], tearoff=0)
+    # ---- Was ----
+    _px_tk_head(sbody, "What")
+    ttk.Label(sbody, text=tr("What is reported")).pack(anchor="w")
+    S["lvl"] = _PxSeg(sbody, [("persons", "Only persons"), ("animals", "Persons + animals"), ("all", "Everything")], CFG.get("push_level", "all"),
+                      lambda v: (app._text_set("push_level", v, err), _px_tk_paint(app)))
+    S["lvl"].pack(fill="x", pady=(2, 0)); app._g2_q(S["lvl"], "push_level")
+    S["lvlnote"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left"); S["lvlnote"].pack(anchor="w", pady=(2, 0))
+    _px_tk_toggle(app, sbody, "notify_prealarm")
+    ttk.Label(sbody, text=tr("Pictures")).pack(anchor="w", pady=(6, 0))
+    S["pics"] = _PxSeg(sbody, [("with", "with picture"), ("small", "small picture"), ("text", "without picture")], CFG.get("push_pics", "with"),
+                       lambda v: app._text_set("push_pics", v, err))
+    S["pics"].pack(fill="x", pady=(2, 0)); app._g2_q(S["pics"], "push_pics")
+    # ---- Wann ----
+    _px_tk_head(sbody, "When")
+    for spec in SLIDERS:
+        if spec[0] == "Notifications":
+            _px_tk_slider(app, sbody, spec)
+    S["qon"] = _px_tk_toggle(app, sbody, "quiet_on") or tk.Frame(sbody)
+    _px_tk_quiet(app, sbody, S)
+    _px_tk_toggle(app, S["qbox"], "quiet_persons")
+    # ---- Erweitert (closed) ----
+    lk = tk.Label(sbody, text="▸ " + tr("Advanced").upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w", cursor="hand2")
+    lk.pack(fill="x", pady=(12, 2))
+    adv = tk.Frame(sbody, bg=C["panel"])
+    def fa(_e=None):
+        if adv.winfo_ismapped():
+            adv.pack_forget(); lk.config(text="▸ " + tr("Advanced").upper())
+        else:
+            adv.pack(fill="x", after=lk); lk.config(text="▾ " + tr("Advanced").upper())
+    lk.bind("<Button-1>", fa)
+    ttk.Label(adv, text=tr("Keyword (empty = off)"), style="Mut.TLabel").pack(anchor="w", pady=(4, 0))
+    S["kw"] = tk.StringVar(value=push_keyword())
+    kr = tk.Frame(adv, bg=C["field"], highlightthickness=1, highlightbackground=C["line"]); kr.pack(fill="x", pady=(2, 0))
+    S["kw_e"] = tk.Entry(kr, textvariable=S["kw"], bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat", highlightthickness=0)
+    S["kw_e"].pack(side="left", fill="x", expand=True, padx=(6, 0), pady=3)
+    for ev in ("<Return>", "<FocusOut>"):
+        S["kw_e"].bind(ev, lambda e: (push_keyword_set(S["kw"].get()), _px_tk_paint(app)))
+    kx = tk.Label(kr, text="✕", bg=C["field"], fg=C["mut"], cursor="hand2", padx=6); kx.pack(side="right")
+    kx.bind("<Button-1>", lambda e: (S["kw"].set(""), push_keyword_set(""), _px_tk_paint(app)))
+    app._g2_q(kr, "msg_keyword_prefix")
+    for k in ("push_actions", "msg_icons", "notify_network", "notify_remote", "browser_alarm"):
+        _px_tk_toggle(app, adv, k)
+    _px_tk_field(app, adv, "public_url", err)
+    tk.Label(adv, text="💬 " + tr("Message texts"), bg=C["panel"], fg=C["txt"], anchor="w").pack(fill="x", pady=(10, 2))
+    for kind, ic, nm in _PX_TK_MSG:
+        if _px_tk_hide(f"msg_{kind}_title"):
+            continue
+        l = tk.Label(adv, text="", bg=C["field"], fg=C["txt"], anchor="w", cursor="hand2", padx=8, pady=4, highlightthickness=1, highlightbackground=C["line"])
+        l.pack(fill="x", pady=1); l.bind("<Button-1>", lambda e, k_=kind, n_=nm: _px_tk_msg_dialog(app, k_, n_, S))
+        S["msgs"][kind] = (l, ic, nm)
+    _px_tk_msgpaint(S)
+    ttk.Button(adv, text="📲 " + tr("iPhone shortcuts") + " (" + tr("browser") + ")", command=lambda: app._open_page("/protect#sec:Notifications")).pack(fill="x", pady=(8, 0))
+    err.pack(anchor="w", pady=(4, 0))
+    app._px = S
+    _px_tk_paint(app)
+    def tick():
+        try:
+            if S["st"].winfo_exists() and getattr(app, "_px", None) is S:
+                _px_tk_paint(app); app.root.after(4000, tick)
+        except Exception:
+            pass
+    app.root.after(4000, tick)
+
+
+def _px_tk_build_section(self, sec, sbody, settings_parent=None):
+    if sec != "Notifications":
+        return _px_tk_build_section_before(self, sec, sbody, settings_parent)
+    fr = tk.Frame(sbody, bg=C["panel"]); fr.pack(fill="x")
+    try:
+        _px_tk_panel(self, fr)
+    except Exception as e:                                  # never an empty section: the old list instead
+        log_event("sys", f"Window: push cards: {e}"[:160])
+        fr.destroy()
+        _px_tk_build_section_before(self, sec, sbody, settings_parent)
+
+
+_px_tk_build_section_before = App._build_section
+# wraps: App._build_section
+App._build_section = _px_tk_build_section
+# ----------------------------------------------------------------------------
 # 2.98.14 (Konzept): das Fenster hat dieselben 6 Reiter wie die Webseite (Live · Schutz · Verlauf · Einstellungen · Simulator
 # · Mehr). Die Teile hier hängen sich an die Klasse App (570): Knopfleisten für Verlauf und Mehr, der Kopf des Reiters
 # Simulator und das Fenster des Assistenten (dieselben 5 Schritte wie im Web, 312).
@@ -69086,7 +71861,7 @@ def sicher_selftest():
         assert sx_fmt_dur(125 * 60, "en") == "2 h 5 min." and "2 Std. 5 Min." == sx_fmt_dur(125 * 60, "de")
         CFG["push_pics"] = "text"; assert sx_push_jpg(b"x") is None
         CFG["push_pics"] = "with"; assert sx_push_jpg(b"x") == b"x"
-        assert dict(text_choice_pairs("push_pics")).keys() == {"with", "text"}
+        assert dict(text_choice_pairs("push_pics")).keys() >= {"with", "text"}     # 579a adds «small»
         assert any(x[1] == "rec_keep_days" for x in SLIDERS) and any(x[1] == "push_pics" for x in TEXTS)
         d = tempfile.mkdtemp(prefix="mw-sx-")
         CFG["record_dir"] = d
@@ -69130,6 +71905,582 @@ def sicher_selftest():
 TOGGLES.extend([
     ("AI detection", "ai_own_auto", "Own model: update by itself (checks daily, installs a new model only if its evaluation is not worse)"),
 ])
+# ----------------------------------------------------------------------------
+# Wish of Daniel (30.10.2026, menu review «Push-Nachrichten»): the section was 31 settings one below the other. Now:
+#   Kopf      «Push senden» (notify_on), a status line («2 Kanäle · Test ✓»), «Alle testen»
+#   Wohin     one card per channel: ntfy · Web-Push · Telegram · Pushover · E-Mail · Webhook · SMS. ntfy, Telegram and
+#             Webhook are the «main channel» (only one of them: CFG notify_type, they share the retries and the outbox);
+#             the select «Art der Benachrichtigung» is gone - the type follows the card that is switched on. New key
+#             main_push_on (False = none of the three). ntfy and Webhook share notify_url: switching keeps the address of
+#             the other one in push_url_<type> and brings it back (nothing is ever lost).
+#   Was       push_level: persons (only person alarms) · animals (+ warm bodies of the thermal camera) · all (+ noise,
+#             default = the behaviour up to now; the switches «Voralarm» and «Geräusch: Push» still apply on top).
+#             Sabotage, theft, sensor / system alarms and notes always pass (they are no detection class).
+#             push_pics: with · small (about 640 px) · text (without) - merges «Voralarm mit kleinem Bild».
+#   Wann      the two pauses, quiet hours (quiet_on, quiet_windows, quiet_persons): no alarm push in the windows (the alarm
+#             is still logged / recorded), on the clock of the simulator while it is connected (sim_now, 285).
+#   Erweitert keyword (one field: empty = off), buttons, symbols, page address, info messages, shortcuts, message texts.
+# The web page (531a) and the window (571a) build the same structure; translations + «?» texts in 639a.
+# ----------------------------------------------------------------------------
+
+# ---- defaults ------------------------------------------------------------------------------------------------------------
+_PX_DEF = {"main_push_on": True, "push_level": "all", "quiet_on": False, "quiet_persons": False,
+           "quiet_windows": [{"from": "08:00", "to": "18:00", "days": [0, 1, 2, 3, 4, 5, 6]}],
+           "push_url_ntfy": "", "push_url_webhook": "", "push_cards": []}
+for _k, _v in _PX_DEF.items():
+    CFG.setdefault(_k, json.loads(json.dumps(_v))); DEFAULTS.setdefault(_k, json.loads(json.dumps(_v)))
+# 6.: new installations start with ntfy (before: webhook). Old settings files always contain notify_type; a file without
+# it (very old export) gets «webhook» back in push_migrate() when it has an address.
+if DEFAULTS.get("notify_type") == "webhook" and CFG.get("notify_type") == "webhook":
+    CFG["notify_type"] = "ntfy"
+DEFAULTS["notify_type"] = "ntfy"
+try:
+    USER_SETTINGS_DENY.update({"main_push_on", "push_url_ntfy", "push_url_webhook", "quiet_windows"})
+except NameError:
+    pass
+
+PUSH_LEVELS = (("persons", "Only persons"), ("animals", "Persons + animals"), ("all", "Everything"))
+PUSH_CHANNELS = ("ntfy", "webpush", "telegram", "pushover", "email", "webhook", "sms")
+PUSH_MAIN = ("ntfy", "telegram", "webhook")
+# which detection class an event belongs to (the level decides); None = always (sabotage, sensors, notes, tests)
+PUSH_CLASS = {"person": "person", "warm": "animal", "noise": "other", "prealarm": None, "tamper": None, "info": None, "test": None}
+_PX_LEVEL_HAS = {"persons": {"person"}, "animals": {"person", "animal"}, "all": {"person", "animal", "other"}}
+
+# ---- the schema: new entries, shorter labels (≤ ~40 characters; the examples went into the «?», 639a) -----------------------
+TOGGLES.extend([
+    ("Notifications", "quiet_on", "Quiet hours (no alarm push)"),
+    ("Notifications", "quiet_persons", "Report persons anyway"),
+])
+_sx_put_after(TEXTS, "push_pics", ("Notifications", "push_level", "What is reported", "enum", "push_levels"))
+TEXT_SPECS["push_level"] = ("enum", "push_levels")
+SIMPLE_KEYS.update({"push_level", "quiet_on", "quiet_persons", "push_pics"})
+SX_PUSH_PICS = (("with", "with picture"), ("small", "small picture"), ("text", "without picture"))     # 578 reads it when the choices are asked
+
+_PX_LABELS = {   # key: short English label (the old long one is in the «?» now)
+    "notify_on": "Send push messages", "notify_prealarm": "Pre-alarm at the first movement",
+    "browser_alarm": "Alarm sound in open browsers", "notify_network": "Message when the Pi joins a network",
+    "notify_remote": "Message when somebody watches remotely", "webpush_on": "Web push (this device)", "pushover_on": "Pushover",
+    "msg_icons": "Symbols in messages (🚶 🦊 🛑)", "msg_keyword_on": "Keyword at the start", "email_on": "E-mail",
+    "pushover_emergency": "Emergency alarm (repeats until confirmed)", "push_actions": "Buttons: False alarm · Siren · Off",
+    "alarm_confirm2": "Double confirmation of person alarms",
+    "notify_url": "Address (server/topic)", "telegram_token": "Bot token", "telegram_chat": "Chat ID",
+    "pushover_user": "User key", "pushover_token": "App token", "msg_keyword_prefix": "Keyword (empty = off)",
+    "email_to": "To (your address)", "email_host": "SMTP server", "email_port": "Port", "email_user": "User name",
+    "email_password": "Password", "email_events": "Which messages", "public_url": "Address of this page for links",
+    "push_pics": "Pictures", "notify_cooldown": "Pause between alarms (s)", "prealarm_cooldown": "Pause between pre-alarms (s)",
+}
+
+
+def _px_relabel():
+    for lst in (TOGGLES, TEXTS, SLIDERS):
+        for i, x in enumerate(lst):
+            if x[1] in _PX_LABELS and x[0] in ("Notifications", "Detection"):
+                lst[i] = (x[0], x[1], _PX_LABELS[x[1]]) + tuple(x[3:])
+
+
+_px_relabel()
+# 5.: moved out - «Double confirmation» belongs to the detection, the device name to the system (Setup)
+for _i, _x in enumerate(TOGGLES):
+    if _x[1] == "alarm_confirm2":
+        TOGGLES[_i] = ("Detection",) + tuple(_x[1:])
+for _i, _x in enumerate(TEXTS):
+    if _x[1] == "device_name":
+        TEXTS[_i] = ("Setup",) + tuple(_x[1:])
+# merged: the select «notification type» (the cards decide), «pre-alarm with a small picture» (Pictures: small)
+TOGGLES[:] = [x for x in TOGGLES if x[1] != "prealarm_photo"]
+TEXTS[:] = [x for x in TEXTS if x[1] != "notify_type"]          # TEXT_SPECS keeps it: set_text("notify_type") still works (guide)
+
+_text_choice_pairs_before_px = text_choice_pairs
+
+
+def text_choice_pairs(key):                                   # + push_level
+    if TEXT_SPECS.get(key, (None, None))[1] == "push_levels":
+        return [(k, tr(l)) for k, l in PUSH_LEVELS]
+    return _text_choice_pairs_before_px(key)
+
+
+_set_text_before_px = set_text
+
+
+def set_text(key, value):
+    """+ the push cards: the guide sets notify_url, then notify_type (main channel on again, no address swap - the
+    address it just set is the one of the new type); «Pictures» covers the pre-alarm picture too"""
+    ok, err = _set_text_before_px(key, value)
+    if ok and key == "notify_type":
+        CFG["main_push_on"] = True; save_settings()
+    if ok and key == "push_pics":
+        CFG["prealarm_photo"] = True; save_settings()
+    return ok, err
+
+
+# ---- pictures: with / small / without ------------------------------------------------------------------------------------
+_sx_push_jpg_before_px = sx_push_jpg
+
+
+def sx_push_jpg(jpg):
+    jpg = _sx_push_jpg_before_px(jpg)
+    if not jpg or CFG.get("push_pics") != "small":
+        return jpg
+    try:
+        img = cv2.imdecode(np.frombuffer(jpg, np.uint8), cv2.IMREAD_COLOR)
+        if img is None:
+            return jpg
+        h, w = img.shape[:2]
+        if w > 640:
+            img = cv2.resize(img, (640, int(h * 640 / w)), interpolation=cv2.INTER_AREA)
+        ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 70])
+        return buf.tobytes() if ok else jpg
+    except Exception:
+        return jpg
+
+
+# ---- level and quiet hours -------------------------------------------------------------------------------------------------
+_PX_HM = re.compile(r"^([01]?\d|2[0-3]):([0-5]\d)$")
+
+
+def _px_min(s):
+    m = _PX_HM.match(str(s or "").strip())
+    return int(m.group(1)) * 60 + int(m.group(2)) if m else None
+
+
+def quiet_clean(lst):
+    """at most 4 windows {from, to, days[0=Mon..6=Sun]}; broken entries are dropped"""
+    out = []
+    for w in (lst if isinstance(lst, list) else [])[:4]:
+        if not isinstance(w, dict):
+            continue
+        a, b = _px_min(w.get("from")), _px_min(w.get("to"))
+        if a is None or b is None or a == b:
+            continue
+        days = sorted({int(d) for d in (w.get("days") or []) if str(d).lstrip("-").isdigit() and 0 <= int(d) <= 6})
+        out.append({"from": "%02d:%02d" % divmod(a, 60), "to": "%02d:%02d" % divmod(b, 60), "days": days or [0, 1, 2, 3, 4, 5, 6]})
+    return out
+
+
+def push_clock():
+    """the clock for the quiet hours: the simulated one while the simulator is connected (285), otherwise the real one"""
+    try:
+        return sim_now()
+    except Exception:
+        return datetime.now()
+
+
+def quiet_now(dt=None):
+    """True while a quiet window is running. A window over midnight (22:00 → 06:00) belongs to the day it starts on
+    (like the schedules)."""
+    if not CFG.get("quiet_on"):
+        return False
+    dt = dt or push_clock()
+    m, wd = dt.hour * 60 + dt.minute, dt.weekday()
+    for w in quiet_clean(CFG.get("quiet_windows")):
+        a, b = _px_min(w["from"]), _px_min(w["to"])
+        if a < b:
+            if wd in w["days"] and a <= m < b:
+                return True
+        elif (wd in w["days"] and m >= a) or (((wd - 1) % 7) in w["days"] and m < b):
+            return True
+    return False
+
+
+def push_allowed(ev, dt=None):
+    """(ok, why) - may this event go out as a push? why: "" / "level" / "quiet"."""
+    cls = PUSH_CLASS.get(ev)
+    if cls is None:
+        return True, ""
+    lv = CFG.get("push_level") if CFG.get("push_level") in _PX_LEVEL_HAS else "all"
+    if cls not in _PX_LEVEL_HAS[lv]:
+        return False, "level"
+    if quiet_now(dt) and not (cls == "person" and CFG.get("quiet_persons")):
+        return False, "quiet"
+    return True, ""
+
+
+_PX_HELD = {}
+
+
+def _px_held(ev, why):
+    STATE["notify_status"] = "quiet hours" if why == "quiet" else "not reported (level)"
+    now = time.time()
+    if now - _PX_HELD.get((ev, why), 0) > 60:                # the log once a minute per kind, the alarm itself is logged anyway
+        _PX_HELD[(ev, why)] = now
+        log_event("web", f"No push message ({'quiet hours' if why == 'quiet' else 'level ' + str(CFG.get('push_level'))}): {ev}")
+
+
+_px_person_before = Notifier.person
+_px_prealarm_before = Notifier.prealarm
+_px_main_conf_before = Notifier.main_configured
+_px_test_all_before = Notifier.test_all
+
+
+def _px_person(self, count, snapshot_path=None, frame=None):
+    if count and is_armed() and CFG["notify_on"]:
+        ok, why = push_allowed("person")
+        if not ok:
+            return _px_held("person", why)
+    return _px_person_before(self, count, snapshot_path, frame)
+
+
+def _px_prealarm(self, frame, event="prealarm"):
+    if is_armed() and CFG["notify_on"]:
+        ok, why = push_allowed(event if event in ("warm", "noise") else "prealarm")
+        if not ok:
+            _px_held(event, why)
+            return False
+    return _px_prealarm_before(self, frame, event)
+
+
+def _px_main_configured():
+    if not CFG.get("main_push_on", True):
+        return False
+    return _px_main_conf_before()
+
+
+def _px_test_all(self, frame=None):
+    res = _px_test_all_before(self, frame)
+    STATE["push_test"] = {"t": time.time(), "n": len(res), "ok": sum(1 for r in res if r.get("ok")), "res": res}
+    return res
+
+
+# wraps: Notifier.person
+Notifier.person = _px_person
+# wraps: Notifier.prealarm
+Notifier.prealarm = _px_prealarm
+# wraps: Notifier.main_configured
+Notifier.main_configured = staticmethod(_px_main_configured)
+# wraps: Notifier.test_all
+Notifier.test_all = _px_test_all
+
+
+# ---- channels -------------------------------------------------------------------------------------------------------------
+def _px_url_swap(old, new):
+    """ntfy and Webhook share notify_url: keep the address of the old one, bring back the one of the new one"""
+    if old == new:
+        return
+    if old in ("ntfy", "webhook"):
+        CFG["push_url_" + old] = str(CFG.get("notify_url") or "")
+    if new in ("ntfy", "webhook"):
+        back = str(CFG.get("push_url_" + new) or "")
+        if old in ("ntfy", "webhook") or back:           # Telegram → ntfy without a kept address: notify_url stays
+            CFG["notify_url"] = back
+
+
+def push_channels():
+    """the cards: on (switched on), ready (can send), used (has data - shown without «+ add channel»)"""
+    t_, main_on = CFG.get("notify_type"), bool(CFG.get("main_push_on", True))
+    url = str(CFG.get("notify_url") or "").strip()
+    try:
+        subs = len(webpush_subs())
+    except Exception:
+        subs = 0
+    try:
+        nums = bool(sms_numbers())
+    except Exception:
+        nums = False
+    keep = set(CFG.get("push_cards") or [])
+    def one(id_, on, ready, used, info=""):
+        return {"id": id_, "on": bool(on), "ready": bool(on and ready), "used": bool(on or used or id_ in keep), "info": info}
+    out = [
+        one("ntfy", main_on and t_ == "ntfy", bool(url), (t_ == "ntfy" and url) or CFG.get("push_url_ntfy"), _url_host(url) if t_ == "ntfy" and url else ""),
+        one("webpush", CFG.get("webpush_on"), subs > 0, subs > 0, str(subs)),
+        one("telegram", main_on and t_ == "telegram", CFG.get("telegram_token") and CFG.get("telegram_chat"), CFG.get("telegram_token") or CFG.get("telegram_chat")),
+        one("pushover", CFG.get("pushover_on"), pushover_ready(), CFG.get("pushover_user") or CFG.get("pushover_token")),
+        one("email", CFG.get("email_on"), email_ready(), CFG.get("email_to") or CFG.get("email_host"), str(CFG.get("email_to") or "")),
+        one("webhook", main_on and t_ == "webhook", bool(url), (t_ == "webhook" and url) or CFG.get("push_url_webhook"), _url_host(url) if t_ == "webhook" and url else ""),
+        one("sms", CFG.get("sms_on"), nums, nums),
+    ]
+    return out
+
+
+def push_set_channel(ch, on):
+    """switch one card on / off. ntfy, Telegram, Webhook: only one (switching one on switches the other two off)."""
+    if ch not in PUSH_CHANNELS:
+        return False, "unknown channel"
+    on = bool(on)
+    if ch in PUSH_MAIN:
+        if on:
+            _px_url_swap(CFG.get("notify_type"), ch)
+            CFG["notify_type"] = ch; CFG["main_push_on"] = True
+        elif CFG.get("notify_type") == ch:
+            CFG["main_push_on"] = False
+    else:
+        CFG[{"webpush": "webpush_on", "pushover": "pushover_on", "email": "email_on", "sms": "sms_on"}[ch]] = on
+    cards = [c for c in (CFG.get("push_cards") or []) if c in PUSH_CHANNELS]
+    if on and ch not in cards:
+        cards.append(ch)
+    CFG["push_cards"] = cards
+    save_settings()
+    log_event("web", f"Push channel {ch}: {'on' if on else 'off'}")
+    return True, ""
+
+
+def push_add_card(ch):
+    """«+ Kanal hinzufügen»: the card is shown (also while it is still off)"""
+    if ch in PUSH_CHANNELS and ch not in (CFG.get("push_cards") or []):
+        CFG["push_cards"] = [c for c in (CFG.get("push_cards") or []) if c in PUSH_CHANNELS] + [ch]
+        save_settings()
+
+
+def push_keyword():
+    return str(CFG.get("msg_keyword_prefix") or "") if CFG.get("msg_keyword_on", True) else ""
+
+
+def push_keyword_set(v):
+    """one field: empty = off; otherwise the word (letters and digits, at most 12)"""
+    v = re.sub(r"[^A-Za-z0-9]", "", str(v or ""))[:12]
+    if not v:
+        CFG["msg_keyword_on"] = False
+    else:
+        CFG["msg_keyword_on"] = True; CFG["msg_keyword_prefix"] = v
+    save_settings()
+    return True, ""
+
+
+def push_test_one(w, ch):
+    """▶ Test of one card - the same as «Test all channels», only this one; [{ch, ok, msg}]"""
+    if ch == "all":
+        return w.notifier.test_all(getattr(w, "frame_out", None))
+    n = w.notifier
+    jpg = None
+    fr = getattr(w, "frame_out", None)
+    if fr is not None:
+        ok_, buf = cv2.imencode(".jpg", fr, [cv2.IMWRITE_JPEG_QUALITY, 80]); jpg = buf.tobytes() if ok_ else None
+    pub = CFG["public_url"].strip().rstrip("/")
+    p = {"event": "test", "persons": 0, "time": datetime.now().isoformat(timespec="seconds"), "snapshot": None, "rain": False, "wind": "",
+         "source": STATE["source_label"], "link": pub + "/recordings" if pub else ""}
+    name = {"ntfy": "ntfy", "webpush": "Web-Push", "telegram": "Telegram", "pushover": "Pushover", "email": "E-Mail", "webhook": "Webhook", "sms": "SMS"}.get(ch, ch)
+    def go():
+        if ch in PUSH_MAIN:
+            if CFG.get("notify_type") != ch or not n.main_configured():
+                return False, tr("not set up")
+            code, where = n._send_main(p, jpg, "test.jpg"); return True, f"{where} · HTTP {code}"
+        if ch == "pushover":
+            return n._pushover(p, jpg, "test.jpg") if pushover_ready() else (False, tr("not set up"))
+        if ch == "email":
+            return email_send(n._title(p), n._text(p), jpg, "test.jpg") if email_ready() else (False, tr("not set up"))
+        if ch == "sms":
+            return sms_send(n._title(p) + ": " + n._text(p), force=True) if (CFG["sms_on"] and sms_numbers()) else (False, tr("not set up"))
+        if ch == "webpush":
+            k = webpush_all(n._title(p), n._text(p), "/", tag="mw-test", urgent=True) if CFG["webpush_on"] else 0
+            return k > 0, f"{k} device(s)"
+        return False, "unknown channel"
+    try:
+        ok, msg = go()
+    except Exception as e:
+        ok, msg = False, str(e)
+    msg = str(msg)
+    for sec_ in (CFG["telegram_token"], CFG["pushover_token"], CFG["pushover_user"], CFG.get("email_password", ""), CFG["notify_url"].strip()):
+        if sec_:
+            msg = msg.replace(sec_, "***")
+    res = [{"ch": name, "ok": bool(ok), "msg": msg[:160]}]
+    log_event("web", f"Test of {name}: {'ok' if ok else 'FAILED'}")
+    STATE["push_test"] = {"t": time.time(), "n": 1, "ok": 1 if ok else 0, "res": res}
+    return res
+
+
+def push_info(lang=None):
+    """everything the cards need (web 531a, window 571a)"""
+    L = cur_lang(lang)
+    ch = push_channels()
+    n_ready = sum(1 for c in ch if c["ready"])
+    te = STATE.get("push_test") or {}
+    return {"on": bool(CFG.get("notify_on")), "channels": ch, "ready": n_ready, "main": CFG.get("notify_type"),
+            "main_on": bool(CFG.get("main_push_on", True)), "url": str(CFG.get("notify_url") or ""),
+            "level": CFG.get("push_level") or "all", "pics": CFG.get("push_pics") or "with",
+            "quiet": {"on": bool(CFG.get("quiet_on")), "persons": bool(CFG.get("quiet_persons")), "windows": quiet_clean(CFG.get("quiet_windows")),
+                      "now": quiet_now(), "clock": push_clock().strftime("%H:%M"), "sim": bool(CFG.get("sim_on"))},
+            "keyword": push_keyword(), "night_from": int(CFG.get("report_from") or 20),
+            "test": {"t": te.get("t", 0), "n": te.get("n", 0), "ok": te.get("ok", 0), "res": te.get("res", [])},
+            "status_line": push_status_line(L, ch, te)}
+
+
+def push_status_line(lang=None, ch=None, te=None):
+    """«2 Kanäle · Test ✓» (or «aus», «kein Kanal», «Ruhezeit»)"""
+    L = cur_lang(lang)
+    if not CFG.get("notify_on"):
+        return tr("switched off", L)
+    ch = ch if ch is not None else push_channels()
+    te = te if te is not None else (STATE.get("push_test") or {})
+    n = sum(1 for c in ch if c["ready"])
+    parts = [trf("{n} channels", L, n=n) if n != 1 else tr("1 channel", L)] if n else [tr("no channel set up", L)]
+    if te.get("n"):
+        parts.append(tr("Test", L) + " " + ("✓" if te.get("ok") == te.get("n") else f"{te.get('ok')}/{te.get('n')} ✓"))
+    if quiet_now():
+        parts.append("🌙 " + tr("quiet hours", L))
+    return " · ".join(parts)
+
+
+# ---- migration of older settings -------------------------------------------------------------------------------------------
+def push_migrate(cfg_in):
+    """older settings files: nothing is lost - the type, the address, Telegram, Pushover, e-mail stay as they were.
+    Only: a file without notify_type (very old export) keeps the old default «webhook» when it has an address;
+    broken quiet windows are cleaned; an unknown level becomes «all»."""
+    did = []
+    if isinstance(cfg_in, dict):
+        if "notify_type" not in cfg_in and str(CFG.get("notify_url") or "").strip():
+            CFG["notify_type"] = "webhook"; did.append("push: notification type webhook (old default)")
+        if "main_push_on" not in cfg_in:
+            CFG["main_push_on"] = True
+            if CFG.get("notify_type") == "webhook" and not str(CFG.get("notify_url") or "").strip():
+                CFG["notify_type"] = "ntfy"; did.append("push: nothing set up yet - main channel ntfy (new default)")
+    if CFG.get("push_level") not in _PX_LEVEL_HAS:
+        CFG["push_level"] = "all"
+    if CFG.get("push_pics") not in ("with", "small", "text"):
+        CFG["push_pics"] = "with"
+    CFG["quiet_windows"] = quiet_clean(CFG.get("quiet_windows")) or json.loads(json.dumps(_PX_DEF["quiet_windows"]))
+    if not isinstance(CFG.get("push_cards"), list):
+        CFG["push_cards"] = []
+    return did
+
+
+_settings_migrations_before_px = _settings_migrations
+
+
+def _settings_migrations(cfg_in):
+    _settings_migrations_before_px(cfg_in)
+    try:
+        did = push_migrate(cfg_in)
+        if did:
+            log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
+    except Exception as e:
+        log_event("sys", f"Settings migration (579a): {e}"[:150])
+
+
+# ---- web: /api/push (only the administrator: the path is in no role's list, 040) -------------------------------------------
+def push_routes(app, watch, reply, body):
+    from flask import request
+
+    @app.route("/api/push", methods=["GET", "POST"])
+    def api_push():
+        if request.method == "GET":
+            return reply(push_info(request.args.get("lang")))
+        d = body(); a = d.get("action"); lang = norm_lang(d.get("lang"))
+        if a == "channel":
+            ok, err = push_set_channel(str(d.get("ch") or ""), d.get("on"))
+        elif a == "add":
+            push_add_card(str(d.get("ch") or "")); ok, err = True, ""
+        elif a == "test":
+            if not CFG.get("notify_on"):
+                return reply({"ok": False, "error": tr("Push messages are switched off", lang)}, 400)
+            res = push_test_one(watch, str(d.get("ch") or "all"))
+            return reply(dict(push_info(lang), ok=True, results=res))
+        elif a == "quiet":
+            CFG["quiet_windows"] = quiet_clean(d.get("windows")) or CFG["quiet_windows"]; save_settings(); ok, err = True, ""
+        elif a == "keyword":
+            ok, err = push_keyword_set(d.get("value"))
+        else:
+            ok, err = False, "unknown action"
+        if not ok:
+            return reply({"ok": False, "error": tr_err(err, lang)}, 400)
+        return reply(dict(push_info(lang), ok=True))
+
+
+_sx_routes_before_px = sx_routes
+
+
+def sx_routes(app, watch, reply, body):                    # + /api/push (called once by 550)
+    _sx_routes_before_px(app, watch, reply, body)
+    push_routes(app, watch, reply, body)
+
+
+# ---- --self-test: levels, quiet hours (also on the simulator clock), migration of old settings, channels, pictures ----------
+def push_selftest():
+    g_ = globals()
+    keys = ("notify_type", "notify_url", "main_push_on", "push_level", "quiet_on", "quiet_persons", "quiet_windows", "push_url_ntfy",
+            "push_url_webhook", "push_cards", "telegram_token", "telegram_chat", "pushover_on", "pushover_user", "pushover_token",
+            "email_on", "email_to", "email_host", "webpush_on", "sms_on", "push_pics", "sim_on", "msg_keyword_on", "msg_keyword_prefix", "prealarm_photo")
+    keep = {k: json.loads(json.dumps(CFG.get(k))) for k in keys}
+    sim_keep = {k: SIM.get(k) for k in ("t", "clock")}
+    save_keep = g_["save_settings"]
+    g_["save_settings"] = lambda *a, **k: None
+    try:
+        CFG["sim_on"] = False; CFG["quiet_on"] = False
+        # levels: «all» = as before (person, warm body, noise); sabotage / notes always
+        CFG["push_level"] = "all"
+        assert all(push_allowed(e)[0] for e in ("person", "warm", "noise", "prealarm", "tamper", "info", "test"))
+        CFG["push_level"] = "animals"
+        assert push_allowed("warm")[0] and push_allowed("person")[0] and push_allowed("noise") == (False, "level")
+        CFG["push_level"] = "persons"
+        assert push_allowed("person")[0] and push_allowed("warm") == (False, "level") and push_allowed("noise") == (False, "level")
+        assert push_allowed("tamper")[0] and push_allowed("info")[0] and push_allowed("prealarm")[0]
+        CFG["push_level"] = "nonsense"; assert push_allowed("noise")[0], "an unknown level counts as «all»"
+        CFG["push_level"] = "all"
+        # quiet hours: a window over midnight belongs to the day it starts on; «report persons anyway»
+        CFG["quiet_on"] = True; CFG["quiet_windows"] = [{"from": "22:00", "to": "06:00", "days": [3]}]       # Thursday night
+        thu23, fri05, fri07, wed23 = datetime(2026, 10, 29, 23, 0), datetime(2026, 10, 30, 5, 0), datetime(2026, 10, 30, 7, 0), datetime(2026, 10, 28, 23, 0)
+        assert quiet_now(thu23) and quiet_now(fri05) and not quiet_now(fri07) and not quiet_now(wed23)
+        CFG["quiet_persons"] = False
+        assert push_allowed("person", thu23) == (False, "quiet") and push_allowed("warm", thu23) == (False, "quiet")
+        assert push_allowed("tamper", thu23)[0] and push_allowed("info", thu23)[0], "sabotage and notes come in the quiet hours"
+        CFG["quiet_persons"] = True
+        assert push_allowed("person", thu23)[0] and push_allowed("warm", thu23) == (False, "quiet")
+        CFG["quiet_windows"] = [{"from": "08:00", "to": "18:00", "days": [0, 1, 2, 3, 4]}]
+        assert quiet_now(datetime(2026, 10, 30, 12, 0)) and not quiet_now(datetime(2026, 10, 31, 12, 0)) and not quiet_now(datetime(2026, 10, 30, 18, 0))
+        CFG["quiet_on"] = False; assert not quiet_now(datetime(2026, 10, 30, 12, 0))
+        assert quiet_clean([{"from": "25:00", "to": "06:00"}, {"from": "7:05", "to": "09:00", "days": [9, 1]}, "x"]) == [{"from": "07:05", "to": "09:00", "days": [1]}]
+        # the simulator clock counts while it is connected (285 sim_now)
+        CFG["quiet_on"] = True; CFG["quiet_persons"] = False; CFG["quiet_windows"] = [{"from": "02:00", "to": "04:00", "days": [0, 1, 2, 3, 4, 5, 6]}]
+        CFG["sim_on"] = True; SIM["t"] = time.time(); SIM["clock"] = {"date": "2026-10-30", "hour": 3.0, "speed": 1.0}
+        assert push_clock().hour == 3 and quiet_now() and push_allowed("person") == (False, "quiet")
+        SIM["clock"] = {"date": "2026-10-30", "hour": 13.0, "speed": 1.0}
+        assert not quiet_now()
+        CFG["sim_on"] = False; CFG["quiet_on"] = False
+        # migration: old settings with Telegram, Pushover, e-mail, webhook - nothing changes, nothing is lost
+        old = {"notify_type": "telegram", "telegram_token": "123456:ABCdef", "telegram_chat": "4242", "notify_url": "https://hook.example.ch/x",
+               "pushover_on": True, "pushover_user": "u" * 30, "pushover_token": "t" * 30, "email_on": True, "email_to": "a@b.ch",
+               "email_host": "smtp.b.ch", "webpush_on": False, "sms_on": False}
+        CFG.update(json.loads(json.dumps(old))); CFG["main_push_on"] = True; CFG["push_cards"] = []; CFG["push_url_ntfy"] = CFG["push_url_webhook"] = ""
+        push_migrate(dict(old))
+        assert all(CFG[k] == v for k, v in old.items()), "migration must not change channel settings"
+        ch = {c["id"]: c for c in push_channels()}
+        assert ch["telegram"]["on"] and ch["telegram"]["ready"] and ch["pushover"]["ready"] and ch["email"]["ready"]
+        assert not ch["ntfy"]["on"] and not ch["webhook"]["on"] and Notifier.main_configured()
+        # switching the main channel keeps every address and token
+        push_set_channel("webhook", True)
+        assert CFG["notify_type"] == "webhook" and CFG["notify_url"] == "https://hook.example.ch/x" and CFG["telegram_token"] == "123456:ABCdef"
+        push_set_channel("ntfy", True)
+        assert CFG["notify_type"] == "ntfy" and CFG["notify_url"] == "" and CFG["push_url_webhook"] == "https://hook.example.ch/x"
+        CFG["notify_url"] = "https://ntfy.sh/mw-test-topic"
+        push_set_channel("webhook", True)
+        assert CFG["notify_url"] == "https://hook.example.ch/x" and CFG["push_url_ntfy"] == "https://ntfy.sh/mw-test-topic"
+        push_set_channel("telegram", True); push_set_channel("ntfy", True)
+        assert CFG["notify_url"] == "https://ntfy.sh/mw-test-topic" and CFG["telegram_token"] == "123456:ABCdef"
+        push_set_channel("ntfy", False)
+        assert not CFG["main_push_on"] and not Notifier.main_configured() and CFG["notify_url"] == "https://ntfy.sh/mw-test-topic"
+        push_set_channel("email", False); assert not CFG["email_on"] and CFG["email_to"] == "a@b.ch"
+        # a very old file without notify_type: the old default «webhook» when it has an address; an old webhook stays webhook
+        CFG["notify_type"] = "ntfy"; CFG["notify_url"] = "https://ha.local/api/webhook/x"; CFG["main_push_on"] = True
+        push_migrate({"notify_url": "https://ha.local/api/webhook/x"}); assert CFG["notify_type"] == "webhook"
+        CFG["notify_type"] = "webhook"; push_migrate({"notify_type": "webhook", "notify_url": "https://ha.local/api/webhook/x"})
+        assert CFG["notify_type"] == "webhook" and CFG["main_push_on"] and {c["id"]: c for c in push_channels()}["webhook"]["ready"]
+        assert DEFAULTS["notify_type"] == "ntfy", "new installations start with ntfy"
+        CFG["notify_type"] = "webhook"; CFG["notify_url"] = ""; push_migrate({"notify_type": "webhook", "notify_url": ""})
+        assert CFG["notify_type"] == "ntfy", "an untouched old default (webhook without address) becomes ntfy"
+        # keyword: one field, empty = off (the word is kept)
+        push_keyword_set("MW"); assert push_keyword() == "MW" and msg_keyword("person").startswith("MW-")
+        push_keyword_set(""); assert push_keyword() == "" and msg_keyword("person") == "" and CFG["msg_keyword_prefix"] == "MW"
+        push_keyword_set("Cam-1!"); assert push_keyword() == "Cam1"
+        # pictures: small = about 640 px, without = none
+        ok_, buf = cv2.imencode(".jpg", np.zeros((720, 1280, 3), np.uint8)); big = buf.tobytes()
+        CFG["push_pics"] = "small"; sm = sx_push_jpg(big)
+        assert cv2.imdecode(np.frombuffer(sm, np.uint8), cv2.IMREAD_COLOR).shape[1] == 640
+        CFG["push_pics"] = "text"; assert sx_push_jpg(big) is None
+        CFG["push_pics"] = "with"; assert sx_push_jpg(big) == big
+        assert set(dict(text_choice_pairs("push_level"))) == {"persons", "animals", "all"}
+        assert all(len(tr(l, "de")) <= 42 for k, l in _PX_LABELS.items()), "labels at most about 40 characters"
+        assert not any(x[1] == "notify_type" for x in TEXTS) and any(x[1] == "alarm_confirm2" and x[0] == "Detection" for x in TOGGLES)
+        assert "push_status_line" and push_status_line("de")
+    finally:
+        g_["save_settings"] = save_keep
+        CFG.update(keep)
+        for k, v in sim_keep.items():
+            if v is None:
+                SIM.pop(k, None)
+            else:
+                SIM[k] = v
+    return "levels, quiet hours (sim clock), migration, channels, keyword, pictures"
+
+
+SELFTEST_EXTRA.append(("Push messages as cards: levels, quiet hours, old settings (579a)", push_selftest))
 # ----------------------------------------------------------------------------
 # Translations: French, Italian, Romansh (Rumantsch Grischun). Key = the English text of the program.
 #   Missing texts: Romansh shows German, French / Italian show English. HELP_X = the manual (help page).
@@ -71313,7 +74664,7 @@ App._refresh = _kr_tk_refresh
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 202                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 215                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -76307,6 +79658,7 @@ TOGGLES.extend([
 SLIDERS.extend([
     (_STVS, "stv_night_brt", "Brightness at night (%)", 0, 100, 5),
     (_STVS, "stv_alarm_s", "Alarm picture stays (s)", 10, 600, 10),
+    (_STVS, "stv_alarm_keep_min", "After the animation the alarm picture stays (min)", 0, 30, 1),     # 553: only with «Live-Bild und Wechsel»
     (_STVS, "stv_bright_s", "At an alarm bright for (s)", 0, 120, 5),
     (_STVS, "stv_gap_s", "At most one picture every (s) - an alarm at once", 5, 120, 5),
     (_STVS, "stv_clock_min", "Status picture: clock new every (minutes, spares the flash)", 1, 60, 1),
@@ -76328,7 +79680,8 @@ _STV_JS_KEYS = ["Virtual SmallTV of the simulator", "free", "not reachable", "re
                 "Back here: «Search in the network» or enter the address shown on the SmallTV.", "stv-security", "Name (e.g. Tent)", "Address (e.g. 192.168.1.77)",
                 "Add", "Search in the network", "searching … (about 10 s)", "No SmallTV found. Is it in the same network? Otherwise enter the address.",
                 "in the list", "Night: the displays are dimmed and red.", "No display yet.", "The simulator has a virtual SmallTV from version 3D-4.19.", "stv-note",
-                "Extra display", "Extra display (SmallTV)"]
+                "Extra display", "Extra display (SmallTV)",
+                "Live picture and rotation", "stv-rot-hint", "Live picture", "Battery and power", "Alarm animation", "about {n} pictures/day"]
 WEB_PAGE = WEB_PAGE.replace("</body>", STV_JS.replace("/*STVDE*/{}", json.dumps({_k: DE.get(_k, _k) for _k in _STV_JS_KEYS}, ensure_ascii=False), 1) + "</body>", 1)
 
 
@@ -76409,11 +79762,14 @@ def _stv_tk_panel(app, sbody):
                 info = e["addr"].replace("http://", "") + (" · " + h["fw"] if h.get("fw") else "") + \
                     (f" · {round(h['free'] / 1024)} KB " + tr("free") if h.get("free") is not None else "")
                 info2 = ("⚠ " + (h.get("err") or tr("not reachable")) if h.get("ok") is False else ("✓ " + tr("reachable") if h.get("ok") else tr("checking …"))) + \
-                    f" · {e['ups']} " + tr("pictures")
+                    f" · {e['ups']} " + tr("pictures") + (" · " + trf("about {n} pictures/day", n=e["per_day"]) if e.get("per_day") else "")
                 for t_ in (info, info2):
                     tk.Label(tf, text=t_, bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8), wraplength=240, justify="left", anchor="w").pack(anchor="w")
-                for f_, lb in (("on", "On"), ("status", "Status"), ("alarm", "Alarm picture"), ("game", "Game")):
+                for f_, lb in (("on", "On"), ("status", "Status"), ("alarm", "Alarm picture"), ("game", "Game"), ("rot", "Live picture and rotation")):
                     Toggle(card, tr(lb), e[f_], lambda v, f_=f_, sid=e["id"]: act({"action": "update", "id": sid, "field": f_, "value": v})).pack(fill="x", padx=6, pady=(2, 0))
+                    if f_ == "rot":                       # 553: what the switch does, small below it
+                        tk.Label(card, text=tr("stv-rot-hint"), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8), wraplength=300, justify="left",
+                                 anchor="w").pack(anchor="w", padx=6)
                 bf = tk.Frame(card, bg=C["panel"]); bf.pack(fill="x", padx=6, pady=(4, 0))
                 tk.Label(bf, text=tr("Brightness (day)"), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 9)).pack(side="left")
                 sc = tk.Scale(bf, from_=0, to=100, resolution=5, orient="horizontal", showvalue=True, bg=C["panel"], fg=C["txt"], troughcolor=C["field"],
@@ -76513,6 +79869,12 @@ def _stv_fake_server(quirks=True, delay=0.25):
                 return self._out(200, json.dumps({"total": 1048576, "free": 1048576 - sum(len(x) for x in S["files"].values())}), "application/json")
             if u.path == "/filelist":
                 return self._out(200, "".join(f'<a href="/image/{n}">{n}</a> {len(b)}<br>' for n, b in S["files"].items()), "text/html")
+            if u.path == "/delete":
+                n = q.get("file", "").split("/")[-1]
+                if S["files"].pop(n, None) is None:
+                    return self._out(404, "no")
+                S["deletes"] = S.get("deletes", 0) + 1
+                return self._out(200, "OK")
             if u.path == "/set":
                 if "img" in q:
                     n = q["img"].split("/")[-1]
@@ -76572,7 +79934,7 @@ def smalltv_selftest():
         assert k_ == "game" and brt == 40, (k_, brt)         # during a round the players are the persons: the game stays
         STV["game"] = {"round": "end", "players": []}; STV["end_t"] = time.time()
         k_, _s, _f, brt, now_ = stv_plan(e)
-        assert k_ == "alarm" and brt == 100 and now_
+        assert k_ == "gif" and brt == 100 and now_, k_          # Daniel 30.10.: the alarm animation on every display
         assert stv_plan(dict(e, alarm=False))[0] == "game"
         STV["end_t"] = time.time() - 61
         assert stv_plan(dict(e, alarm=False))[0] == "status"      # the end screen only 60 s
@@ -76611,6 +79973,107 @@ def smalltv_selftest():
 
 
 SELFTEST_EXTRA.append(("Extra display SmallTV: pictures, plan, device with firmware quirks (552)", smalltv_selftest))
+
+
+def smalltv_rot_selftest():
+    """553 «Live-Bild und Wechsel»: rotation with a made-up clock, night, alarm GIF -> JPEG -> rotation, game first, switch off
+    = as before, pictures a day; the GIF itself; on the device: GIF in, the JPEG at its place removes it, unchanged = only shown"""
+    from PIL import Image
+    import io
+    G = globals()
+    keep = {k: CFG.get(k) for k in STV_CFG}
+    keep_a, keep_g, keep_b = STV["alarm"], STV["game"], STATE.get("battery")
+    keep_dark = G["is_dark"]
+    srv = None
+    try:
+        CFG.update(stv_night=True, stv_alarm_s=60, stv_alarm_keep_min=5, stv_bright_s=20, stv_clock_min=10)
+        G["is_dark"] = lambda: False
+        STV["alarm"] = None; STV["game"] = None
+        STATE["battery"] = {"on": True, "pct": 64, "sim": True, "charging": True, "on_battery": False, "use_w": 4.3, "solar_w": 7.9, "hours": None, "full_min": 75}
+        e = {"id": "x", "on": True, "status": True, "alarm": True, "game": True, "brt": 40, "rot": True}
+        t0 = 30.0 * 100000                                   # an even slot: the live picture
+        ks = [stv_plan(e, t0 + dt)[0] for dt in (0, 29, 30, 59, 60, 90)]
+        assert ks == ["live", "live", "batt", "batt", "live", "batt"], ks
+        assert stv_plan(e, t0)[1] == stv_plan(e, t0 + 60)[1], "the live picture is new only at every second live slot (Daniel 30.10.)"
+        assert stv_plan(e, t0)[1] != stv_plan(e, t0 + 120)[1], "a new live picture after 2 min"
+        assert stv_plan(e, t0 + 30)[1] == stv_plan(e, t0 + 90)[1], "the battery page unchanged -> same picture (only shown again)"
+        assert stv_plan(e, t0)[1] == stv_plan(e, t0 + 29)[1], "one picture per 30 s at most"
+        assert stv_plan(dict(e, rot=False), t0)[0] == "status" and stv_plan(dict(e, rot=False), t0 + 30)[0] == "status"   # off = as before
+        STATE["battery"] = {"on": False}
+        assert stv_plan(e, t0 + 30)[0] == "status"           # no battery values: the status page instead
+        STATE["battery"] = {"on": True, "pct": 64, "sim": True, "charging": False, "on_battery": True, "use_w": 4.3, "hours": 7.6}
+        G["is_dark"] = lambda: True                          # night: no rotation, the red status page, dimmed
+        k_, _s, _f, brt, _n = stv_plan(e, t0)
+        assert k_ == "status" and brt == 10, (k_, brt)
+        G["is_dark"] = lambda: False
+        # alarm: GIF 60 s, then the still picture with ⚠ 5 min, then the rotation again; off: the JPEG 60 s as before
+        STV["alarm"] = {"t": t0, "kind": "animal", "label": "fox", "conf": 0.91, "dist": 6, "crop": np.full((90, 120, 3), 90, np.uint8), "n": 1, "clock": "14:02"}
+        k_, _s, _f, brt, now_ = stv_plan(e, t0 + 1)
+        assert k_ == "gif" and brt == 100 and now_, (k_, brt)
+        assert stv_plan(e, t0 + 61)[0] == "alarm" and stv_plan(e, t0 + 60 + 299)[0] == "alarm" and stv_plan(e, t0 + 60 + 301)[0] in ("live", "batt")
+        assert stv_plan(dict(e, rot=False), t0 + 1)[0] == "gif" and stv_plan(dict(e, rot=False), t0 + 61)[0] == "status"   # the GIF on every display
+        G["is_dark"] = lambda: True
+        assert stv_plan(e, t0 + 1)[0] == "gif" and stv_plan(e, t0 + 1)[3] == 100     # at night too, bright for a moment
+        G["is_dark"] = lambda: False
+        # a game round comes first (the players are the persons), the end screen too
+        STV["game"] = {"round": "play", "left": 50, "players": []}; STV["game_t"] = t0 + 100
+        assert stv_plan(e, t0 + 101)[0] == "game"
+        STV["alarm"] = None
+        assert stv_plan(e, t0 + 101)[0] == "game" and stv_plan(e, t0 + 112)[0] in ("live", "batt")   # 10 s without news: the game is over
+        STV["game"] = None
+        # the live picture: the pure camera picture (410 frame_clean), not the page picture with HUD / marks (Daniel 30.10.)
+        class _W: pass
+        w_ = _W(); w_.frame_out = np.full((240, 320, 3), 200, np.uint8); w_.frame_clean = np.zeros((240, 320, 3), np.uint8); w_.frame_clean_t = time.time()
+        keep_w = WATCH_REF.get("w"); WATCH_REF["w"] = w_
+        try:
+            f_ = stv_live_frame(True)
+            assert f_ is not None and f_.shape[0] == 240 and f_.mean() == 0 and getattr(w_, "clean_until", 0) > time.time(), "pure picture"
+            w_.frame_clean = None; w_.running = False
+            f_ = stv_live_frame(True)
+            assert f_ is not None and f_.mean() == 200, "without a pure picture: the page picture (as before)"
+        finally:
+            WATCH_REF["w"] = keep_w
+        # pictures a day
+        n_off, n_on = stv_per_day(dict(e, rot=False)), stv_per_day(e)
+        assert n_off == 168 and 350 <= n_on <= 1300 and n_on > n_off, (n_off, n_on)     # live picture every 2 min: about half
+        assert stv_per_day(dict(e, on=False)) == 0
+        # the GIF: 240 × 240, 6-8 frames, small; the pages
+        gif = stv_render_alarm_gif({"kind": "person", "label": "person", "conf": None, "dist": 12, "crop": None, "n": 1, "clock": "22:14"}, "de")
+        im = Image.open(io.BytesIO(gif))
+        assert gif[:6] == b"GIF89a" and im.size == (240, 240) and 6 <= getattr(im, "n_frames", 1) <= 8 and len(gif) < 150000, (im.size, len(gif))
+        gif2 = stv_render_alarm_gif({"kind": "animal", "label": "fox", "conf": 0.9, "dist": 5, "crop": np.random.randint(0, 255, (120, 160, 3), np.uint8), "clock": "1"}, "de", True)
+        assert len(gif2) < 150000, len(gif2)
+        im.seek(3); f3 = np.asarray(im.convert("RGB"), np.int32)
+        assert f3[2, 120, 0] > 100, "the red frame is there in a later frame too (transparency = the frame before)"
+        fr = np.zeros((300, 400, 3), np.uint8); fr[100:200, 150:250] = (255, 255, 255); fr[100:200:4, 150:250] = 0
+        f_ = fr.copy(); assert stv_hide_persons(f_, [[0.375, 0.333, 0.25, 0.333]]) == 1 and f_[100:200:4, 150:250].mean() > 30, "persons pixelated"
+        for jpg in (stv_render_live("de", fr), stv_render_live("de", None), stv_render_batt("de"), stv_render_alarm(STV.get("alarm") or
+                    {"kind": "person", "label": "person", "conf": None, "dist": 3, "crop": None, "n": 1, "clock": "1"}, "de", False, warn=True)):
+            im = Image.open(io.BytesIO(jpg))
+            assert im.size == (240, 240) and im.format == "JPEG", im.size
+        # on the device: GIF in me_a.gif, the JPEG at that place removes it; unchanged pictures are only shown again
+        srv, base, S = _stv_fake_server(quirks=False, delay=0)
+        dv = StvDev.__new__(StvDev)
+        dv.id = "t"; dv.shown = ""; dv.theme_t = time.time(); dv.ups = dv.bytes = dv.errs = 0; dv.h = {"ok": None, "t": 0.0}; dv.jpg = None; dv.kind = ""
+        live1, batt = stv_render_live("de", fr), stv_render_batt("de")
+        assert dv.send(base, {"jpg": gif, "sig": 1, "kind": "gif", "brt": 40, "ext": "gif"}) and S["img"] == "me_a.gif"
+        assert dv.send(base, {"jpg": batt, "sig": 2, "kind": "batt", "brt": 40}) and S["img"] == "me_b.jpg"
+        assert dv.send(base, {"jpg": live1, "sig": 3, "kind": "live", "brt": 40}) and S["img"] == "me_a.jpg"
+        assert sorted(S["files"]) == ["me_a.jpg", "me_b.jpg"] and S.get("deletes") == 1, (sorted(S["files"]), S.get("deletes"))
+        n_up = S["uploads"]
+        assert dv.send(base, {"jpg": batt, "sig": 2, "kind": "batt", "brt": 40}) and S["img"] == "me_b.jpg" and S["uploads"] == n_up and dv.reshows == 1
+        assert dv.send(base, {"jpg": live1, "sig": 4, "kind": "live", "brt": 40}) and S["img"] == "me_a.jpg" and S["uploads"] == n_up + 1
+    finally:
+        if srv is not None:
+            srv.shutdown()
+        G["is_dark"] = keep_dark
+        CFG.update(keep)
+        STV["alarm"], STV["game"] = keep_a, keep_g
+        STATE["battery"] = keep_b
+        STV["renders"].clear()
+
+
+SELFTEST_EXTRA.append(("SmallTV live picture and rotation, alarm GIF, pictures a day (553)", smalltv_rot_selftest))
 TRX['rm'].update({
     '(or the address from the push message).': "(u l'adressa da l'avis push).",
     '+ Add relay': '+ Agiuntar in relais',
@@ -85622,6 +89085,210 @@ for _k, _v in _HX_FALEARN.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX_PUSH = {
+    # schema (579a)
+    'Send push messages': ('Push senden', 'Envoyer des notifications', 'Inviare notifiche', 'Trametter avis push'),
+    'Pre-alarm at the first movement': ('Voralarm bei der ersten Bewegung', 'Pré-alarme au premier mouvement', 'Preallarme al primo movimento', 'Prealarm tar l’emprim moviment'),
+    'Alarm sound in open browsers': ('Alarmton in offenen Browsern', 'Son d’alarme dans les navigateurs ouverts', 'Suono d’allarme nei browser aperti', 'Tun d’alarm en browsers averts'),
+    'Message when the Pi joins a network': ('Meldung, wenn der Pi in ein Netz kommt', 'Message quand le Pi rejoint un réseau', 'Messaggio quando il Pi entra in una rete', 'Messadi, cur ch’il Pi vegn en ina rait'),
+    'Message when somebody watches remotely': ('Meldung, wenn jemand von aussen zuschaut', 'Message quand quelqu’un regarde à distance', 'Messaggio quando qualcuno guarda da fuori', 'Messadi, cur ch’insatgi guarda da dadora'),
+    'Web push (this device)': ('Web-Push (dieses Gerät)', 'Web push (cet appareil)', 'Web push (questo dispositivo)', 'Web push (quest apparat)'),
+    'Symbols in messages (🚶 🦊 🛑)': ('Symbole in Meldungen (🚶 🦊 🛑)', 'Symboles dans les messages (🚶 🦊 🛑)', 'Simboli nei messaggi (🚶 🦊 🛑)', 'Simbols en messadis (🚶 🦊 🛑)'),
+    'Keyword at the start': ('Stichwort am Anfang', 'Mot-clé au début', 'Parola chiave all’inizio', 'Pled-clav al cumenzament'),
+    'E-mail': ('E-Mail', 'E-mail', 'E-mail', 'E-mail'),
+    'Emergency alarm (repeats until confirmed)': ('Notfall-Alarm (wiederholt bis bestätigt)', 'Alarme d’urgence (répétée jusqu’à confirmation)', 'Allarme d’emergenza (ripete fino a conferma)', 'Alarm d’urgenza (repeta fin confermà)'),
+    'Buttons: False alarm · Siren · Off': ('Knöpfe: Fehlalarm · Sirene · Aus', 'Boutons : Fausse alarme · Sirène · Arrêt', 'Pulsanti: Falso allarme · Sirena · Spento', 'Buttuns: Fals alarm · Sirena · Ora'),
+    'Double confirmation of person alarms': ('Doppelte Bestätigung bei Personen', 'Double confirmation des alarmes personne', 'Doppia conferma degli allarmi persona', 'Dubla conferma dals alarms da persunas'),
+    'Address (server/topic)': ('Adresse (Server/Thema)', 'Adresse (serveur/sujet)', 'Indirizzo (server/argomento)', 'Adressa (server/tema)'),
+    'Bot token': ('Bot-Token', 'Jeton du bot', 'Token del bot', 'Token dal bot'),
+    'Chat ID': ('Chat-ID', 'ID du chat', 'ID della chat', 'ID dal chat'),
+    'User key': ('Benutzerschlüssel', 'Clé utilisateur', 'Chiave utente', 'Clav d’utilisader'),
+    'App token': ('App-Token', 'Jeton de l’app', 'Token dell’app', 'Token da l’app'),
+    'Keyword (empty = off)': ('Stichwort (leer = aus)', 'Mot-clé (vide = désactivé)', 'Parola chiave (vuota = spenta)', 'Pled-clav (vid = deactivà)'),
+    'To (your address)': ('An (deine Adresse)', 'À (ton adresse)', 'A (il tuo indirizzo)', 'A (tia adressa)'),
+    'SMTP server': ('SMTP-Server', 'Serveur SMTP', 'Server SMTP', 'Server SMTP'),
+    'User name': ('Benutzername', 'Nom d’utilisateur', 'Nome utente', 'Num d’utilisader'),
+    'Which messages': ('Welche Meldungen', 'Quels messages', 'Quali messaggi', 'Tge messadis'),
+    'Address of this page for links': ('Adresse dieser Seite für Links', 'Adresse de cette page pour les liens', 'Indirizzo di questa pagina per i link', 'Adressa da questa pagina per links'),
+    'Pictures': ('Bilder', 'Images', 'Immagini', 'Maletgs'),
+    'with picture': ('mit', 'avec', 'con', 'cun'),
+    'small picture': ('klein', 'petite', 'piccola', 'pitschen'),
+    'without picture': ('ohne', 'sans', 'senza', 'senza'),
+    'Pause between alarms (s)': ('Pause zwischen Alarmen (s)', 'Pause entre les alarmes (s)', 'Pausa tra gli allarmi (s)', 'Pausa tranter alarms (s)'),
+    'Pause between pre-alarms (s)': ('Pause zwischen Voralarmen (s)', 'Pause entre les pré-alarmes (s)', 'Pausa tra i preallarmi (s)', 'Pausa tranter prealarms (s)'),
+    'Quiet hours (no alarm push)': ('Ruhezeiten (kein Alarm-Push)', 'Heures calmes (pas de push d’alarme)', 'Ore di quiete (nessun push d’allarme)', 'Uras da paus (nagin push d’alarm)'),
+    'Report persons anyway': ('Personen trotzdem melden', 'Signaler quand même les personnes', 'Segnalare comunque le persone', 'Annunziar tuttina persunas'),
+    'What is reported': ('Was gemeldet wird', 'Ce qui est signalé', 'Cosa viene segnalato', 'Tge che vegn annunzià'),
+    'Only persons': ('Nur Personen', 'Seulement les personnes', 'Solo persone', 'Mo persunas'),
+    'Persons + animals': ('Personen + Tiere', 'Personnes + animaux', 'Persone + animali', 'Persunas + animals'),
+    'Everything': ('Alles', 'Tout', 'Tutto', 'Tut'),
+    # status, tests (579a)
+    'not set up': ('nicht eingerichtet', 'pas configuré', 'non configurato', 'betg endrizzà'),
+    'not set up yet': ('noch nicht eingerichtet', 'pas encore configuré', 'non ancora configurato', 'anc betg endrizzà'),
+    'no device yet': ('noch kein Gerät', 'encore aucun appareil', 'ancora nessun dispositivo', 'anc nagin apparat'),
+    'Push messages are switched off': ('Push-Nachrichten sind ausgeschaltet', 'Les notifications sont désactivées', 'Le notifiche sono spente', 'Ils avis push èn deactivads'),
+    '{n} channels': ('{n} Kanäle', '{n} canaux', '{n} canali', '{n} chanals'),
+    '1 channel': ('1 Kanal', '1 canal', '1 canale', '1 chanal'),
+    'no channel set up': ('kein Kanal eingerichtet', 'aucun canal configuré', 'nessun canale configurato', 'nagin chanal endrizzà'),
+    'quiet hours': ('Ruhezeit', 'heures calmes', 'ore di quiete', 'uras da paus'),
+    'switched off': ('aus', 'désactivé', 'spento', 'deactivà'),
+    'ready': ('bereit', 'prêt', 'pronto', 'pront'),
+    # the cards (531a, 571a)
+    'Where to': ('Wohin', 'Où', 'Dove', 'Nua'),
+    'What': ('Was', 'Quoi', 'Cosa', 'Tge'),
+    'When': ('Wann', 'Quand', 'Quando', 'Cura'),
+    'Add channel': ('Kanal hinzufügen', 'Ajouter un canal', 'Aggiungi canale', 'Agiuntar in chanal'),
+    'Test all': ('Alle testen', 'Tout tester', 'Testa tutto', 'Testar tut'),
+    'Send a test message over this channel only': ('Test-Nachricht nur über diesen Kanal', 'Message de test par ce canal seulement', 'Messaggio di prova solo su questo canale', 'Messadi da test mo sur quest chanal'),
+    'on / off': ('ein / aus', 'marche / arrêt', 'acceso / spento', 'en / ora'),
+    'Only one of ntfy · Telegram · Webhook (the main channel, with repeats and the outbox).': (
+        'Nur einer von ntfy · Telegram · Webhook (der Hauptkanal, mit Wiederholung und Postausgang).',
+        'Un seul parmi ntfy · Telegram · Webhook (le canal principal, avec répétitions et boîte d’envoi).',
+        'Solo uno tra ntfy · Telegram · Webhook (il canale principale, con ripetizioni e posta in uscita).',
+        'Mo in da ntfy · Telegram · Webhook (il chanal principal, cun repetiziun e posta da sortida).'),
+    'Switch it on in the browser of the phone (Settings → Push messages → Web push).': (
+        'Im Browser des Handys einschalten (Schutz → Push-Nachrichten → Web-Push).', 'À activer dans le navigateur du téléphone (Protection → Notifications → Web push).',
+        'Da attivare nel browser del telefono (Protezione → Notifiche → Web push).', 'Activar en il browser dal telefonin (Protecziun → Avis push → Web push).'),
+    'Open in the browser': ('Im Browser öffnen', 'Ouvrir dans le navigateur', 'Apri nel browser', 'Avrir en il browser'),
+    'The iPhone can start a shortcut from an e-mail (see Advanced → iPhone shortcuts).': (
+        'Das iPhone kann mit einer E-Mail einen Kurzbefehl starten (siehe Erweitert → iPhone-Kurzbefehle).',
+        'L’iPhone peut lancer un raccourci à partir d’un e-mail (voir Avancé → Raccourcis iPhone).',
+        'L’iPhone può avviare un comando rapido da un’e-mail (vedi Avanzate → Comandi rapidi iPhone).',
+        'L’iPhone po lantschar in cumond svelt cun in e-mail (guarda Avanzà → Cumonds svelts iPhone).'),
+    'Webhook address (JSON POST)': ('Webhook-Adresse (JSON-POST)', 'Adresse du webhook (JSON POST)', 'Indirizzo webhook (JSON POST)', 'Adressa dal webhook (JSON POST)'),
+    'Time window': ('Zeitfenster', 'Plage horaire', 'Fascia oraria', 'Fanestra da temp'),
+    'Day at home': ('Tagsüber zuhause', 'Journée à la maison', 'Di giorno a casa', 'Di a chasa'),
+    'Weekdays 08:00 until the night time of the night report': ('Werktags 08:00 bis zur Nachtzeit des Nachtberichts', 'En semaine de 08:00 jusqu’à l’heure de nuit du rapport',
+                                                               'Nei giorni feriali dalle 08:00 fino all’ora notturna del rapporto', 'Dis da lavur da las 08:00 fin a l’ura da notg dal rapport'),
+    'At least one time window - switch the quiet hours off instead.': ('Mindestens ein Zeitfenster – sonst die Ruhezeiten ausschalten.', 'Au moins une plage – sinon désactive les heures calmes.',
+                                                                       'Almeno una fascia – altrimenti spegni le ore di quiete.', 'Almain ina fanestra – uschiglio deactivar las uras da paus.'),
+    'Quiet hours now - alarms are only logged': ('Jetzt Ruhezeit – Alarme werden nur protokolliert', 'Heures calmes – les alarmes sont seulement notées',
+                                                 'Ora di quiete – gli allarmi vengono solo registrati', 'Ussa uras da paus – alarms vegnan mo protocollads'),
+    'sim time': ('Simulator-Zeit', 'heure du simulateur', 'ora del simulatore', 'ura dal simulatur'),
+    'Night time from': ('Nachtzeit ab', 'Nuit à partir de', 'Notte dalle', 'Notg a partir da'),
+    'Mo': ('Mo', 'Lu', 'Lu', 'Gli'), 'Tu': ('Di', 'Ma', 'Ma', 'Ma'), 'We': ('Mi', 'Me', 'Me', 'Me'), 'Th': ('Do', 'Je', 'Gi', 'Gie'),
+    'Fr': ('Fr', 'Ve', 'Ve', 'Ve'), 'Sa': ('Sa', 'Sa', 'Sa', 'So'), 'Su': ('So', 'Di', 'Do', 'Du'),
+    'Clear the saved value? It cannot be shown again.': ('Gespeicherten Wert löschen? Er lässt sich nicht mehr anzeigen.', 'Effacer la valeur enregistrée ? Elle ne peut plus être affichée.',
+                                                          'Cancellare il valore salvato? Non si può più mostrare.', 'Stizzar la valur memorisada? Ella na po betg pli vegnir mussada.'),
+    'Only person alarms. Warm bodies and noise are only logged.': ('Nur Personen-Alarme. Wärme und Geräusche werden nur protokolliert.', 'Seulement les alarmes personne. Chaleur et bruit sont seulement notés.',
+                                                                   'Solo allarmi persona. Calore e rumori vengono solo registrati.', 'Mo alarms da persunas. Chalur e canera vegnan mo protocollads.'),
+    'Persons and warm bodies (thermal camera). Noise is only logged.': ('Personen und Wärme (Wärmebild). Geräusche werden nur protokolliert.', 'Personnes et corps chauds (caméra thermique). Le bruit est seulement noté.',
+                                                                        'Persone e corpi caldi (termocamera). I rumori vengono solo registrati.', 'Persunas e corps chauds (camera termica). Canera vegn mo protocollada.'),
+    'Persons, warm bodies and noise (as up to now).': ('Personen, Wärme und Geräusche (wie bisher).', 'Personnes, corps chauds et bruit (comme avant).', 'Persone, corpi caldi e rumori (come finora).', 'Persunas, corps chauds e canera (sco fin ussa).'),
+    'Sabotage, theft and notes always come.': ('Sabotage, Diebstahl und Hinweise kommen immer.', 'Sabotage, vol et notes arrivent toujours.', 'Sabotaggio, furto e avvisi arrivano sempre.', 'Sabotascha, engul ed indicaziuns vegnan adina.'),
+    'Message texts': ('Nachrichtentexte', 'Textes des messages', 'Testi dei messaggi', 'Texts dals messadis'),
+    'Alarms to all open browsers (MoveEye)': ('Alarme an alle offenen Browser (MoveEye)', 'Alarmes à tous les navigateurs ouverts (MoveEye)', 'Allarmi a tutti i browser aperti (MoveEye)', 'Alarms a tut ils browsers averts (MoveEye)'),
+    'MoveEye: test SMS': ('MoveEye: Test-SMS', 'MoveEye : SMS de test', 'MoveEye: SMS di prova', 'MoveEye: SMS da test'),
+    'browser': ('Browser', 'navigateur', 'browser', 'browser'),
+    # «?» texts (SET_HELP below)
+    'Push messages to your phone at an alarm. Off: alarms only on this page.': ('Push-Nachrichten aufs Handy bei einem Alarm. Aus: Alarme nur auf dieser Seite.', 'Notifications sur le téléphone en cas d’alarme. Désactivé : alarmes seulement sur cette page.', 'Notifiche sul telefono in caso di allarme. Spento: allarmi solo su questa pagina.', 'Avis push sin il telefonin tar in alarm. Deactivà: alarms mo sin questa pagina.'),
+    'Only person alarms · persons + warm bodies of the thermal camera (mostly animals) · everything, also noise. Sabotage, theft, sensor and system alarms and notes (battery, update …) always come. The switches «Pre-alarm» and «Noise: push» still apply.': (
+        'Nur Personen-Alarme · Personen + Wärme vom Wärmebild (meist Tiere) · alles, auch Geräusche. Sabotage, Diebstahl, Sensor- und System-Alarme und Hinweise (Akku, Update …) kommen immer. Die Schalter «Voralarm» und «Geräusch: Push» gelten weiterhin.',
+        'Seulement les alarmes personne · personnes + corps chauds de la caméra thermique (surtout des animaux) · tout, aussi le bruit. Sabotage, vol, alarmes capteur et système et notes (batterie, mise à jour …) arrivent toujours. Les interrupteurs «Pré-alarme» et «Bruit : push» restent valables.',
+        'Solo allarmi persona · persone + corpi caldi della termocamera (per lo più animali) · tutto, anche i rumori. Sabotaggio, furto, allarmi di sensori e di sistema e avvisi (batteria, aggiornamento …) arrivano sempre. Gli interruttori «Preallarme» e «Rumore: push» restano validi.',
+        'Mo alarms da persunas · persunas + chalur da la camera termica (per il pli animals) · tut, er canera. Sabotascha, engul, alarms da sensurs e dal sistem ed indicaziuns (accu, actualisaziun …) vegnan adina. Ils interruptuors «Prealarm» e «Canera: push» valan vinavant.'),
+    'Default «Everything» = as before this version.': ('Standard «Alles» = wie vor dieser Version.', 'Par défaut «Tout» = comme avant cette version.', 'Predefinito «Tutto» = come prima di questa versione.', 'Standard «Tut» = sco avant questa versiun.'),
+    'With: the alarm picture. Small: about 640 px (less mobile data). Without: text only, the picture stays in MoveEye. Also for the pre-alarm.': (
+        'Mit: das Alarmbild. Klein: etwa 640 px (weniger mobile Daten). Ohne: nur Text, das Bild bleibt in MoveEye. Gilt auch für den Voralarm.',
+        'Avec : l’image de l’alarme. Petite : environ 640 px (moins de données mobiles). Sans : texte seul, l’image reste dans MoveEye. Aussi pour la pré-alarme.',
+        'Con: l’immagine dell’allarme. Piccola: circa 640 px (meno dati mobili). Senza: solo testo, l’immagine resta in MoveEye. Vale anche per il preallarme.',
+        'Cun: il maletg da l’alarm. Pitschen: var 640 px (main datas mobilas). Senza: mo text, il maletg resta en MoveEye. Vala er per il prealarm.'),
+    'Time windows without alarm push messages, e.g. during the day when you are at home. The alarms are still logged and recorded. Sabotage, theft and notes still come. With the simulator connected its clock counts.': (
+        'Zeitfenster ohne Alarm-Push, z. B. tagsüber, wenn du zuhause bist. Die Alarme werden trotzdem protokolliert und aufgenommen. Sabotage, Diebstahl und Hinweise kommen weiterhin. Mit verbundenem Simulator zählt seine Uhr.',
+        'Plages sans push d’alarme, p. ex. la journée quand tu es à la maison. Les alarmes sont quand même notées et enregistrées. Sabotage, vol et notes arrivent toujours. Avec le simulateur connecté, son horloge compte.',
+        'Fasce senza push d’allarme, p. es. di giorno quando sei a casa. Gli allarmi vengono comunque registrati. Sabotaggio, furto e avvisi arrivano lo stesso. Con il simulatore collegato conta il suo orologio.',
+        'Fanestras da temp senza push d’alarm, p. ex. di, cur che ti es a chasa. Ils alarms vegnan tuttina protocollads e registrads. Sabotascha, engul ed indicaziuns vegnan vinavant. Cun il simulatur collià quinta sia ura.'),
+    'In the quiet hours a person alarm still comes (only warm bodies and noise are held back).': ('In den Ruhezeiten kommt ein Personen-Alarm trotzdem (nur Wärme und Geräusche werden zurückgehalten).', 'Pendant les heures calmes une alarme personne arrive quand même (seuls chaleur et bruit sont retenus).',
+        'Nelle ore di quiete un allarme persona arriva comunque (solo calore e rumori vengono trattenuti).', 'Durant las uras da paus vegn in alarm da persuna tuttina (mo chalur e canera vegnan retegnids).'),
+    'From @BotFather in Telegram, e.g. 123456:ABC-DEF…': ('Von @BotFather in Telegram, z. B. 123456:ABC-DEF…', 'De @BotFather dans Telegram, p. ex. 123456:ABC-DEF…', 'Da @BotFather in Telegram, p. es. 123456:ABC-DEF…', 'Da @BotFather en Telegram, p. ex. 123456:ABC-DEF…'),
+    'Your chat id, a number like 123456789 (e.g. from @userinfobot).': ('Deine Chat-ID, eine Zahl wie 123456789 (z. B. von @userinfobot).', 'Ton ID de chat, un nombre comme 123456789 (p. ex. via @userinfobot).', 'Il tuo ID chat, un numero come 123456789 (p. es. da @userinfobot).', 'Tia ID dal chat, in dumber sco 123456789 (p. ex. da @userinfobot).'),
+    'Pushover: the user key from pushover.net (30 characters). Alarms also to the Pushover app - on the iPhone it can ring even when muted.': (
+        'Pushover: der Benutzerschlüssel (User Key) von pushover.net (30 Zeichen). Alarme auch an die Pushover-App – auf dem iPhone klingelt sie auch auf stumm.',
+        'Pushover : la clé utilisateur de pushover.net (30 caractères). Alarmes aussi vers l’app Pushover – sur l’iPhone elle sonne même en silencieux.',
+        'Pushover: la chiave utente di pushover.net (30 caratteri). Allarmi anche all’app Pushover – sull’iPhone suona anche in silenzioso.',
+        'Pushover: la clav d’utilisader da pushover.net (30 caracters). Alarms er a l’app Pushover – sin l’iPhone suna ella er sin mut.'),
+    'Pushover: the API token of your own application at pushover.net (create one there).': ('Pushover: das API-Token deiner eigenen App auf pushover.net (dort eine erstellen).', 'Pushover : le jeton API de ta propre application sur pushover.net (crée-en une là-bas).',
+        'Pushover: il token API della tua app su pushover.net (creane una lì).', 'Pushover: il token API da tia atgna app sin pushover.net (crear ina là).'),
+    'A critical alert: rings also when muted and repeats every minute until you confirm it (at most 30 minutes).': ('Kritische Mitteilung: klingelt auch auf stumm und wiederholt jede Minute, bis du sie bestätigst (höchstens 30 Minuten).',
+        'Alerte critique : sonne même en silencieux et se répète chaque minute jusqu’à confirmation (au plus 30 minutes).', 'Avviso critico: suona anche in silenzioso e si ripete ogni minuto fino alla conferma (al massimo 30 minuti).',
+        'Avis critic: suna er sin mut e repeta mintga minuta fin che ti conferms (maximalmain 30 minutas).'),
+    'Your address. The iPhone can start a shortcut from an e-mail (Shortcuts → Automation → E-mail).': ('Deine Adresse. Das iPhone kann mit einer E-Mail einen Kurzbefehl starten (Kurzbefehle → Automation → E-Mail).',
+        'Ton adresse. L’iPhone peut lancer un raccourci à partir d’un e-mail (Raccourcis → Automatisation → E-mail).', 'Il tuo indirizzo. L’iPhone può avviare un comando rapido da un’e-mail (Comandi → Automazione → E-mail).',
+        'Tia adressa. L’iPhone po lantschar in cumond svelt cun in e-mail (Cumonds svelts → Automatisaziun → E-mail).'),
+    'e.g. smtp.gmail.com, mail.gmx.net, smtp.mail.me.com': ('z. B. smtp.gmail.com, mail.gmx.net, smtp.mail.me.com', 'p. ex. smtp.gmail.com, mail.gmx.net, smtp.mail.me.com', 'p. es. smtp.gmail.com, mail.gmx.net, smtp.mail.me.com', 'p. ex. smtp.gmail.com, mail.gmx.net, smtp.mail.me.com'),
+    '587 (STARTTLS) or 465 (SSL).': ('587 (STARTTLS) oder 465 (SSL).', '587 (STARTTLS) ou 465 (SSL).', '587 (STARTTLS) o 465 (SSL).', '587 (STARTTLS) u 465 (SSL).'),
+    'Usually the e-mail address.': ('Meist die E-Mail-Adresse.', 'Le plus souvent l’adresse e-mail.', 'Di solito l’indirizzo e-mail.', 'Per il solit l’adressa d’e-mail.'),
+    'Gmail / iCloud: an app password, not the normal one.': ('Gmail / iCloud: ein App-Passwort, nicht das normale.', 'Gmail / iCloud : un mot de passe d’application, pas le normal.', 'Gmail / iCloud: una password per app, non quella normale.', 'Gmail / iCloud: in pled-clav per apps, betg il normal.'),
+    'The letters at the start of every message (MW gives MW-ALARM, MW-WAERME …) - an iPhone shortcut can react to them. Empty = off.': (
+        'Die Buchstaben am Anfang jeder Meldung (MW ergibt MW-ALARM, MW-WAERME …) – ein iPhone-Kurzbefehl kann darauf reagieren. Leer = aus.',
+        'Les lettres au début de chaque message (MW donne MW-ALARM, MW-WAERME …) – un raccourci iPhone peut y réagir. Vide = désactivé.',
+        'Le lettere all’inizio di ogni messaggio (MW dà MW-ALARM, MW-WAERME …) – un comando rapido dell’iPhone può reagire. Vuoto = spento.',
+        'Ils bustabs al cumenzament da mintga messadi (MW dat MW-ALARM, MW-WAERME …) – in cumond svelt da l’iPhone po reagir. Vid = deactivà.'),
+    'Buttons False alarm · Siren · Off in the push message. Needs the address of this page for the links.': ('Knöpfe Fehlalarm · Sirene · Aus in der Push-Nachricht. Braucht die Adresse dieser Seite für die Links.',
+        'Boutons Fausse alarme · Sirène · Arrêt dans la notification. Il faut l’adresse de cette page pour les liens.', 'Pulsanti Falso allarme · Sirena · Spento nella notifica. Serve l’indirizzo di questa pagina per i link.',
+        'Buttuns Fals alarm · Sirena · Ora en l’avis push. Basegna l’adressa da questa pagina per ils links.'),
+    '🚶 person, 🦊 animal, 🛑 sabotage … in the messages and the log.': ('🚶 Person, 🦊 Tier, 🛑 Sabotage … in den Meldungen und im Protokoll.', '🚶 personne, 🦊 animal, 🛑 sabotage … dans les messages et le journal.',
+        '🚶 persona, 🦊 animale, 🛑 sabotaggio … nei messaggi e nel registro.', '🚶 persuna, 🦊 animal, 🛑 sabotascha … en ils messadis ed en il protocol.'),
+    'e.g. https://pi.local:5000 - for the links and buttons in the messages.': ('z. B. https://pi.local:5000 – für die Links und Knöpfe in den Meldungen.', 'p. ex. https://pi.local:5000 – pour les liens et boutons des messages.',
+        'p. es. https://pi.local:5000 – per i link e i pulsanti nei messaggi.', 'p. ex. https://pi.local:5000 – per ils links e buttuns en ils messadis.'),
+    'A message with the address of the page when the Pi joins a network (e.g. the hotspot of the phone).': ('Eine Meldung mit der Adresse der Seite, wenn der Pi in ein Netz kommt (z. B. den Hotspot des Handys).',
+        'Un message avec l’adresse de la page quand le Pi rejoint un réseau (p. ex. le partage de connexion du téléphone).', 'Un messaggio con l’indirizzo della pagina quando il Pi entra in una rete (p. es. l’hotspot del telefono).',
+        'In messadi cun l’adressa da la pagina, cur ch’il Pi vegn en ina rait (p. ex. il hotspot dal telefonin).'),
+    'A message when somebody opens the page from outside (Tailscale).': ('Eine Meldung, wenn jemand die Seite von aussen öffnet (Tailscale).', 'Un message quand quelqu’un ouvre la page de l’extérieur (Tailscale).',
+        'Un messaggio quando qualcuno apre la pagina da fuori (Tailscale).', 'In messadi, cur ch’insatgi avra la pagina da dadora (Tailscale).'),
+    'Open pages get pre-alarms and person alarms live. The sound is switched on per device with the bell at the top.': ('Offene Seiten bekommen Voralarme und Personen-Alarme live. Den Ton schaltet man pro Gerät mit der Glocke oben ein.',
+        'Les pages ouvertes reçoivent les pré-alarmes et alarmes personne en direct. Le son s’active par appareil avec la cloche en haut.', 'Le pagine aperte ricevono preallarmi e allarmi persona in diretta. Il suono si attiva per dispositivo con la campanella in alto.',
+        'Paginas avertas survegnan prealarms ed alarms da persunas live. Il tun vegn activà per apparat cun la stgella sisum.'),
+    'A person alarm only when the AI and the thermal camera agree or the AI sees the person twice in a row (otherwise only a pre-alarm).': ('Ein Personen-Alarm erst, wenn KI und Wärmebild übereinstimmen oder die KI die Person zweimal nacheinander sieht (sonst nur Voralarm).',
+        'Une alarme personne seulement si l’IA et la caméra thermique concordent ou si l’IA voit la personne deux fois de suite (sinon seulement une pré-alarme).',
+        'Un allarme persona solo se IA e termocamera concordano o se l’IA vede la persona due volte di fila (altrimenti solo preallarme).',
+        'In alarm da persuna pir, cur che l’IA e la camera termica èn d’accord u che l’IA vesa la persuna duas giadas en ina retscha (uschiglio mo prealarm).'),
+    'At least this long between two alarm messages; detections in between are counted and told with the next one.': ('Mindestens so lange zwischen zwei Alarm-Meldungen; Erkennungen dazwischen werden gezählt und mit der nächsten gemeldet.',
+        'Au moins ce temps entre deux messages d’alarme ; les détections entre-temps sont comptées et signalées avec le suivant.', 'Almeno questo tempo tra due messaggi d’allarme; i rilevamenti nel frattempo vengono contati e segnalati con il prossimo.',
+        'Almain uschè ditg tranter dus messadis d’alarm; recunuschientschas en il fratemp vegnan dumbradas ed annunziadas cun il proxim.'),
+    'At least this long between two pre-alarm messages.': ('Mindestens so lange zwischen zwei Voralarm-Meldungen.', 'Au moins ce temps entre deux messages de pré-alarme.', 'Almeno questo tempo tra due messaggi di preallarme.', 'Almain uschè ditg tranter dus messadis da prealarm.'),
+}
+for _k, _v in _HX_PUSH.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# ---- «?» next to the settings (586 g2_help): the examples of the old long labels -------------------------------------------
+SET_HELP.update({
+    "notify_on": ("Push messages to your phone at an alarm. Off: alarms only on this page.", SET_HELP.get("notify_on", ("", ""))[1]),
+    "push_level": ("Only person alarms · persons + warm bodies of the thermal camera (mostly animals) · everything, also noise. Sabotage, theft, sensor and system alarms and notes (battery, update …) always come. The switches «Pre-alarm» and «Noise: push» still apply.",
+                   "Default «Everything» = as before this version."),
+    "push_pics": ("With: the alarm picture. Small: about 640 px (less mobile data). Without: text only, the picture stays in MoveEye. Also for the pre-alarm.", SET_HELP.get("push_pics", ("", ""))[1]),
+    "quiet_on": ("Time windows without alarm push messages, e.g. during the day when you are at home. The alarms are still logged and recorded. Sabotage, theft and notes still come. With the simulator connected its clock counts.", ""),
+    "quiet_persons": ("In the quiet hours a person alarm still comes (only warm bodies and noise are held back).", ""),
+    "telegram_token": ("From @BotFather in Telegram, e.g. 123456:ABC-DEF…", ""),
+    "telegram_chat": ("Your chat id, a number like 123456789 (e.g. from @userinfobot).", ""),
+    "pushover_user": ("Pushover: the user key from pushover.net (30 characters). Alarms also to the Pushover app - on the iPhone it can ring even when muted.", ""),
+    "pushover_token": ("Pushover: the API token of your own application at pushover.net (create one there).", ""),
+    "pushover_emergency": ("A critical alert: rings also when muted and repeats every minute until you confirm it (at most 30 minutes).", ""),
+    "email_to": ("Your address. The iPhone can start a shortcut from an e-mail (Shortcuts → Automation → E-mail).", ""),
+    "email_host": ("e.g. smtp.gmail.com, mail.gmx.net, smtp.mail.me.com", ""),
+    "email_port": ("587 (STARTTLS) or 465 (SSL).", ""),
+    "email_user": ("Usually the e-mail address.", ""),
+    "email_password": ("Gmail / iCloud: an app password, not the normal one.", ""),
+    "msg_keyword_prefix": ("The letters at the start of every message (MW gives MW-ALARM, MW-WAERME …) - an iPhone shortcut can react to them. Empty = off.", ""),
+    "msg_keyword_on": ("The letters at the start of every message (MW gives MW-ALARM, MW-WAERME …) - an iPhone shortcut can react to them. Empty = off.", ""),
+    "push_actions": ("Buttons False alarm · Siren · Off in the push message. Needs the address of this page for the links.", ""),
+    "msg_icons": ("🚶 person, 🦊 animal, 🛑 sabotage … in the messages and the log.", ""),
+    "public_url": ("e.g. https://pi.local:5000 - for the links and buttons in the messages.", ""),
+    "notify_network": ("A message with the address of the page when the Pi joins a network (e.g. the hotspot of the phone).", ""),
+    "notify_remote": ("A message when somebody opens the page from outside (Tailscale).", ""),
+    "browser_alarm": ("Open pages get pre-alarms and person alarms live. The sound is switched on per device with the bell at the top.", ""),
+    "alarm_confirm2": ("A person alarm only when the AI and the thermal camera agree or the AI sees the person twice in a row (otherwise only a pre-alarm).", ""),
+    "notify_cooldown": ("At least this long between two alarm messages; detections in between are counted and told with the next one.", ""),
+    "prealarm_cooldown": ("At least this long between two pre-alarm messages.", ""),
+})
+
+# ---- factory reset (586): the push channel stays - with the kept addresses and the switch of the main channel --------------
+FACTORY_KEEP.update({"main_push_on", "push_url_ntfy", "push_url_webhook", "push_cards"})
+
+# ---- the main page: German for the cards (531a; added only where the page has no text yet) -----------------------------------
+WEB_PAGE = WEB_PAGE.replace("/*PXDE*/{}", json.dumps({_k: DE.get(_k, _v[0]) for _k, _v in _HX_PUSH.items()}, ensure_ascii=False), 1)
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

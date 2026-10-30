@@ -1,8 +1,27 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 30.10.2026 · Simulator-Version **3D-4.19** · passende MoveEye-Version (früher Motion Watch) **2.96.2**
+Stand: 30.10.2026 · Simulator-Version **3D-4.20** · passende MoveEye-Version (früher Motion Watch) **2.96.2**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.20 (MoveEye 2.98.49): Simulator «wie echt» – Lautsprecher, Servo-Störungen, Thermal-90 (`simint.gd`)
+
+- `scripts/simint.gd` (Knoten `simint` in main.gd, eigene Datei `user://simint.json`), Antwort an MoveEye über net.gd (`rep.merge(simint.reply())`, nicht in world_reply):
+  - **Lautsprecher:** `mw.sound` (MoveEye 554 schickt jetzt die echte Art: siren / two-tone / beeps / horn / whistle / bangs / chime / birds / marmot / tts / talk, dazu `sound_vol`) wird am PC als einfacher Ton gespielt (Sensoren → Lautsprecher: Lautstärke, «Am PC stumm»; Schalter «Geräusche» gilt auch). Das simulierte Mikrofon hört ihn am Gerät (`add_sound`, -2 dB bei 100 %), Pieps / Knall zusätzlich als `sound_ev` «clap» (n = 3, alle 2 s) – MoveEye muss das ignorieren. Fliehen bei Sirene: unverändert (on_state, _update_visitors).
+  - **Störungen** (Karte Testen → «Störungen», Gruppe Testlauf / Teil «Störungen», auch in der Simulator-Steuerung von MoveEye): `stoer_uv` (5 V erzwingen), `stoer_pca` (PCA9685-Reset: Kopf steht, bis `mw.servo.reinit` steigt), `stoer_i2c` (5 s), `stoer_block` (pan / tilt klemmt), `stoer_off`. 5-V-Schiene aus `simwerte.volts` (unter 6.8 V sackt sie ab, Servo-Strom -0.18 V), Unterspannung unter 4.63 V: Servos 35 % Tempo und kurze Stopps (`servo_k`, `hold` in der Kopf-Nachführung von main.gd). Antwort `servo_sim` {v5, uv, i2c, pca_reset, pca_hold, blocked, head_mw}.
+  - **Wärmebild-Modell** (Kamerabild → Wärmebild): «Thermal-90 (Waveshare)» Standard (80 × 62, 90° × 67°, 15 Bilder/s, NETD 125 mK; Datenblatt Waveshare / Core Electronics: 90° H × 67° V, bis 25 fps, 125–150 mK) oder «45°-Modell (alt)» (45° × 35°, 8 Bilder/s). Gerendert 160 × 106 (nicht quadratische Pixel), `decode_thermal_img` tastet nach Bildgrösse ab, Rauschen `randfn(0, th_noise)`; /info `thermal` = `simint.thermal_info()` (mit model / name / netd_mk), jede Antwort `thermal_model`. testrun.gd nimmt fov_v des Modells.
+  - **Warme Hand** (`warm_hand`): Hand + Unterarm (34 / 33 / 32.5 °C) 2 m vor der Kopfkamera, langsame Acht – für MoveEye «Wärmebild ausrichten» (557), schaltet MoveEye selbst ein und aus.
+  - Test-Aktion `{"action": "simint", "do": info | uv (on) | pca | i2c (s) | block (axis) | off | model (m) | hand (on)}`.
+- main.gd: nur kleine Stellen (TH_FOV jetzt var + th_fps / th_noise, Knoten, Kopf-Nachführung, info(), GROUPS-Teile, Testen-Unterkarte, Aktion «simint»).
+**NEU (Entwurf, Zweig wt-aufr, Aufräumen 2):** eine Feldliste `simulator3d/schnittstelle.json` (world_reply, state, info,
+control) für beide Seiten – neue `scripts/schnittstelle.gd` prüft sie 2 s nach dem Start (Log «Schnittstelle: OK …» oder
+«SCRIPT ERROR: Schnittstelle: …»), MoveEye im Selbsttest (Teil 558). Neues Feld = eine Zeile in der Liste. world_reply sendet
+nicht mehr `sim_time` (= clock), `active` (bei Verbindung immer an), `weather` (= forecast.weather); `humidity` geht in den
+Klima-Sensor von MoveEye, `sim_cpu_own` in die Kachel «CPU des PCs», `leader` in die Meldung «schaut nur zu». Von MoveEye
+neu `ups_mah` (power.gd: «Kapazität einer Zelle» bei Verbindung nur lesbar, `controls[i]["ro"]`), nicht mehr `picture_mode`
+und `simtask`; `armed` und `relays` stehen in der Statuszeile (schnittstelle.gd `mw_extra`). `smalltv.gd game_live()` ist
+die eine Quelle für SmallTV, TV-Anzeige (MoveEye 150) und den TV-Modus (`tv.gd`); dazu Farbe, Ziel, Adresse, Verlauf,
+Rangliste, Aufgabe, Sieger, «als Nächstes». Kommentare zu Einfach/Experte (MoveEye speichert es jetzt für die Seite «sim»).
 
 ## NEU in 3D-4.19 (MoveEye 2.98.48): virtueller SmallTV (`smalltv.gd`, Plan `docs/SmallTV_Anzeige_Plan.md`) – gleiche HTTP-Schnittstelle wie das Gerät auf dem Simulator-Port, Kachel, Macken-Schalter, Zähler im Prüfstand.
 
@@ -425,6 +444,7 @@ Seit 3D-1.4 sendet der Simulator nach dem Start **nichts**. Erst der Schalter «
 - Port 8765 (Option `--port`).
 - `POST /state`: Motion Watch schickt Servos, Lichter, Ton, Gerät.
 - `GET /info`, `/events?since=`, `/cam/<n>/video.mjpg?fps=`, `/cam/<n>/snapshot.jpg`, `/thermal.bin` (float32 °C, Header X-Width/X-Height).
+- Alle ausgetauschten Felder: `simulator3d/schnittstelle.json` (eine Liste, geprüft von MoveEye-Selbsttest und `schnittstelle.gd`).
 - `GET/POST /control`: CONTROL-Protokoll 1. Das Steuerfeld der Motion-Watch-Webseite wird daraus automatisch gebaut. Neue Regler meldet man in `main.gd` mit `add_control(...)` an; sie erscheinen dann im PC-Fenster und auf der Webseite.
 - UDP-Meldung alle 2 s an Port 8764: `{"mwsim":1,"name","port","version"}`.
 

@@ -13,6 +13,7 @@ TOGGLES.extend([
 SLIDERS.extend([
     (_STVS, "stv_night_brt", "Brightness at night (%)", 0, 100, 5),
     (_STVS, "stv_alarm_s", "Alarm picture stays (s)", 10, 600, 10),
+    (_STVS, "stv_alarm_keep_min", "After the animation the alarm picture stays (min)", 0, 30, 1),     # 553: only with «Live-Bild und Wechsel»
     (_STVS, "stv_bright_s", "At an alarm bright for (s)", 0, 120, 5),
     (_STVS, "stv_gap_s", "At most one picture every (s) - an alarm at once", 5, 120, 5),
     (_STVS, "stv_clock_min", "Status picture: clock new every (minutes, spares the flash)", 1, 60, 1),
@@ -34,7 +35,8 @@ _STV_JS_KEYS = ["Virtual SmallTV of the simulator", "free", "not reachable", "re
                 "Back here: «Search in the network» or enter the address shown on the SmallTV.", "stv-security", "Name (e.g. Tent)", "Address (e.g. 192.168.1.77)",
                 "Add", "Search in the network", "searching … (about 10 s)", "No SmallTV found. Is it in the same network? Otherwise enter the address.",
                 "in the list", "Night: the displays are dimmed and red.", "No display yet.", "The simulator has a virtual SmallTV from version 3D-4.19.", "stv-note",
-                "Extra display", "Extra display (SmallTV)"]
+                "Extra display", "Extra display (SmallTV)",
+                "Live picture and rotation", "stv-rot-hint", "Live picture", "Battery and power", "Alarm animation", "about {n} pictures/day"]
 WEB_PAGE = WEB_PAGE.replace("</body>", STV_JS.replace("/*STVDE*/{}", json.dumps({_k: DE.get(_k, _k) for _k in _STV_JS_KEYS}, ensure_ascii=False), 1) + "</body>", 1)
 
 
@@ -115,11 +117,14 @@ def _stv_tk_panel(app, sbody):
                 info = e["addr"].replace("http://", "") + (" · " + h["fw"] if h.get("fw") else "") + \
                     (f" · {round(h['free'] / 1024)} KB " + tr("free") if h.get("free") is not None else "")
                 info2 = ("⚠ " + (h.get("err") or tr("not reachable")) if h.get("ok") is False else ("✓ " + tr("reachable") if h.get("ok") else tr("checking …"))) + \
-                    f" · {e['ups']} " + tr("pictures")
+                    f" · {e['ups']} " + tr("pictures") + (" · " + trf("about {n} pictures/day", n=e["per_day"]) if e.get("per_day") else "")
                 for t_ in (info, info2):
                     tk.Label(tf, text=t_, bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8), wraplength=240, justify="left", anchor="w").pack(anchor="w")
-                for f_, lb in (("on", "On"), ("status", "Status"), ("alarm", "Alarm picture"), ("game", "Game")):
+                for f_, lb in (("on", "On"), ("status", "Status"), ("alarm", "Alarm picture"), ("game", "Game"), ("rot", "Live picture and rotation")):
                     Toggle(card, tr(lb), e[f_], lambda v, f_=f_, sid=e["id"]: act({"action": "update", "id": sid, "field": f_, "value": v})).pack(fill="x", padx=6, pady=(2, 0))
+                    if f_ == "rot":                       # 553: what the switch does, small below it
+                        tk.Label(card, text=tr("stv-rot-hint"), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8), wraplength=300, justify="left",
+                                 anchor="w").pack(anchor="w", padx=6)
                 bf = tk.Frame(card, bg=C["panel"]); bf.pack(fill="x", padx=6, pady=(4, 0))
                 tk.Label(bf, text=tr("Brightness (day)"), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 9)).pack(side="left")
                 sc = tk.Scale(bf, from_=0, to=100, resolution=5, orient="horizontal", showvalue=True, bg=C["panel"], fg=C["txt"], troughcolor=C["field"],
@@ -219,6 +224,12 @@ def _stv_fake_server(quirks=True, delay=0.25):
                 return self._out(200, json.dumps({"total": 1048576, "free": 1048576 - sum(len(x) for x in S["files"].values())}), "application/json")
             if u.path == "/filelist":
                 return self._out(200, "".join(f'<a href="/image/{n}">{n}</a> {len(b)}<br>' for n, b in S["files"].items()), "text/html")
+            if u.path == "/delete":
+                n = q.get("file", "").split("/")[-1]
+                if S["files"].pop(n, None) is None:
+                    return self._out(404, "no")
+                S["deletes"] = S.get("deletes", 0) + 1
+                return self._out(200, "OK")
             if u.path == "/set":
                 if "img" in q:
                     n = q["img"].split("/")[-1]
@@ -278,7 +289,7 @@ def smalltv_selftest():
         assert k_ == "game" and brt == 40, (k_, brt)         # during a round the players are the persons: the game stays
         STV["game"] = {"round": "end", "players": []}; STV["end_t"] = time.time()
         k_, _s, _f, brt, now_ = stv_plan(e)
-        assert k_ == "alarm" and brt == 100 and now_
+        assert k_ == "gif" and brt == 100 and now_, k_          # Daniel 30.10.: the alarm animation on every display
         assert stv_plan(dict(e, alarm=False))[0] == "game"
         STV["end_t"] = time.time() - 61
         assert stv_plan(dict(e, alarm=False))[0] == "status"      # the end screen only 60 s
@@ -317,3 +328,104 @@ def smalltv_selftest():
 
 
 SELFTEST_EXTRA.append(("Extra display SmallTV: pictures, plan, device with firmware quirks (552)", smalltv_selftest))
+
+
+def smalltv_rot_selftest():
+    """553 «Live-Bild und Wechsel»: rotation with a made-up clock, night, alarm GIF -> JPEG -> rotation, game first, switch off
+    = as before, pictures a day; the GIF itself; on the device: GIF in, the JPEG at its place removes it, unchanged = only shown"""
+    from PIL import Image
+    import io
+    G = globals()
+    keep = {k: CFG.get(k) for k in STV_CFG}
+    keep_a, keep_g, keep_b = STV["alarm"], STV["game"], STATE.get("battery")
+    keep_dark = G["is_dark"]
+    srv = None
+    try:
+        CFG.update(stv_night=True, stv_alarm_s=60, stv_alarm_keep_min=5, stv_bright_s=20, stv_clock_min=10)
+        G["is_dark"] = lambda: False
+        STV["alarm"] = None; STV["game"] = None
+        STATE["battery"] = {"on": True, "pct": 64, "sim": True, "charging": True, "on_battery": False, "use_w": 4.3, "solar_w": 7.9, "hours": None, "full_min": 75}
+        e = {"id": "x", "on": True, "status": True, "alarm": True, "game": True, "brt": 40, "rot": True}
+        t0 = 30.0 * 100000                                   # an even slot: the live picture
+        ks = [stv_plan(e, t0 + dt)[0] for dt in (0, 29, 30, 59, 60, 90)]
+        assert ks == ["live", "live", "batt", "batt", "live", "batt"], ks
+        assert stv_plan(e, t0)[1] == stv_plan(e, t0 + 60)[1], "the live picture is new only at every second live slot (Daniel 30.10.)"
+        assert stv_plan(e, t0)[1] != stv_plan(e, t0 + 120)[1], "a new live picture after 2 min"
+        assert stv_plan(e, t0 + 30)[1] == stv_plan(e, t0 + 90)[1], "the battery page unchanged -> same picture (only shown again)"
+        assert stv_plan(e, t0)[1] == stv_plan(e, t0 + 29)[1], "one picture per 30 s at most"
+        assert stv_plan(dict(e, rot=False), t0)[0] == "status" and stv_plan(dict(e, rot=False), t0 + 30)[0] == "status"   # off = as before
+        STATE["battery"] = {"on": False}
+        assert stv_plan(e, t0 + 30)[0] == "status"           # no battery values: the status page instead
+        STATE["battery"] = {"on": True, "pct": 64, "sim": True, "charging": False, "on_battery": True, "use_w": 4.3, "hours": 7.6}
+        G["is_dark"] = lambda: True                          # night: no rotation, the red status page, dimmed
+        k_, _s, _f, brt, _n = stv_plan(e, t0)
+        assert k_ == "status" and brt == 10, (k_, brt)
+        G["is_dark"] = lambda: False
+        # alarm: GIF 60 s, then the still picture with ⚠ 5 min, then the rotation again; off: the JPEG 60 s as before
+        STV["alarm"] = {"t": t0, "kind": "animal", "label": "fox", "conf": 0.91, "dist": 6, "crop": np.full((90, 120, 3), 90, np.uint8), "n": 1, "clock": "14:02"}
+        k_, _s, _f, brt, now_ = stv_plan(e, t0 + 1)
+        assert k_ == "gif" and brt == 100 and now_, (k_, brt)
+        assert stv_plan(e, t0 + 61)[0] == "alarm" and stv_plan(e, t0 + 60 + 299)[0] == "alarm" and stv_plan(e, t0 + 60 + 301)[0] in ("live", "batt")
+        assert stv_plan(dict(e, rot=False), t0 + 1)[0] == "gif" and stv_plan(dict(e, rot=False), t0 + 61)[0] == "status"   # the GIF on every display
+        G["is_dark"] = lambda: True
+        assert stv_plan(e, t0 + 1)[0] == "gif" and stv_plan(e, t0 + 1)[3] == 100     # at night too, bright for a moment
+        G["is_dark"] = lambda: False
+        # a game round comes first (the players are the persons), the end screen too
+        STV["game"] = {"round": "play", "left": 50, "players": []}; STV["game_t"] = t0 + 100
+        assert stv_plan(e, t0 + 101)[0] == "game"
+        STV["alarm"] = None
+        assert stv_plan(e, t0 + 101)[0] == "game" and stv_plan(e, t0 + 112)[0] in ("live", "batt")   # 10 s without news: the game is over
+        STV["game"] = None
+        # the live picture: the pure camera picture (410 frame_clean), not the page picture with HUD / marks (Daniel 30.10.)
+        class _W: pass
+        w_ = _W(); w_.frame_out = np.full((240, 320, 3), 200, np.uint8); w_.frame_clean = np.zeros((240, 320, 3), np.uint8); w_.frame_clean_t = time.time()
+        keep_w = WATCH_REF.get("w"); WATCH_REF["w"] = w_
+        try:
+            f_ = stv_live_frame(True)
+            assert f_ is not None and f_.shape[0] == 240 and f_.mean() == 0 and getattr(w_, "clean_until", 0) > time.time(), "pure picture"
+            w_.frame_clean = None; w_.running = False
+            f_ = stv_live_frame(True)
+            assert f_ is not None and f_.mean() == 200, "without a pure picture: the page picture (as before)"
+        finally:
+            WATCH_REF["w"] = keep_w
+        # pictures a day
+        n_off, n_on = stv_per_day(dict(e, rot=False)), stv_per_day(e)
+        assert n_off == 168 and 350 <= n_on <= 1300 and n_on > n_off, (n_off, n_on)     # live picture every 2 min: about half
+        assert stv_per_day(dict(e, on=False)) == 0
+        # the GIF: 240 × 240, 6-8 frames, small; the pages
+        gif = stv_render_alarm_gif({"kind": "person", "label": "person", "conf": None, "dist": 12, "crop": None, "n": 1, "clock": "22:14"}, "de")
+        im = Image.open(io.BytesIO(gif))
+        assert gif[:6] == b"GIF89a" and im.size == (240, 240) and 6 <= getattr(im, "n_frames", 1) <= 8 and len(gif) < 150000, (im.size, len(gif))
+        gif2 = stv_render_alarm_gif({"kind": "animal", "label": "fox", "conf": 0.9, "dist": 5, "crop": np.random.randint(0, 255, (120, 160, 3), np.uint8), "clock": "1"}, "de", True)
+        assert len(gif2) < 150000, len(gif2)
+        im.seek(3); f3 = np.asarray(im.convert("RGB"), np.int32)
+        assert f3[2, 120, 0] > 100, "the red frame is there in a later frame too (transparency = the frame before)"
+        fr = np.zeros((300, 400, 3), np.uint8); fr[100:200, 150:250] = (255, 255, 255); fr[100:200:4, 150:250] = 0
+        f_ = fr.copy(); assert stv_hide_persons(f_, [[0.375, 0.333, 0.25, 0.333]]) == 1 and f_[100:200:4, 150:250].mean() > 30, "persons pixelated"
+        for jpg in (stv_render_live("de", fr), stv_render_live("de", None), stv_render_batt("de"), stv_render_alarm(STV.get("alarm") or
+                    {"kind": "person", "label": "person", "conf": None, "dist": 3, "crop": None, "n": 1, "clock": "1"}, "de", False, warn=True)):
+            im = Image.open(io.BytesIO(jpg))
+            assert im.size == (240, 240) and im.format == "JPEG", im.size
+        # on the device: GIF in me_a.gif, the JPEG at that place removes it; unchanged pictures are only shown again
+        srv, base, S = _stv_fake_server(quirks=False, delay=0)
+        dv = StvDev.__new__(StvDev)
+        dv.id = "t"; dv.shown = ""; dv.theme_t = time.time(); dv.ups = dv.bytes = dv.errs = 0; dv.h = {"ok": None, "t": 0.0}; dv.jpg = None; dv.kind = ""
+        live1, batt = stv_render_live("de", fr), stv_render_batt("de")
+        assert dv.send(base, {"jpg": gif, "sig": 1, "kind": "gif", "brt": 40, "ext": "gif"}) and S["img"] == "me_a.gif"
+        assert dv.send(base, {"jpg": batt, "sig": 2, "kind": "batt", "brt": 40}) and S["img"] == "me_b.jpg"
+        assert dv.send(base, {"jpg": live1, "sig": 3, "kind": "live", "brt": 40}) and S["img"] == "me_a.jpg"
+        assert sorted(S["files"]) == ["me_a.jpg", "me_b.jpg"] and S.get("deletes") == 1, (sorted(S["files"]), S.get("deletes"))
+        n_up = S["uploads"]
+        assert dv.send(base, {"jpg": batt, "sig": 2, "kind": "batt", "brt": 40}) and S["img"] == "me_b.jpg" and S["uploads"] == n_up and dv.reshows == 1
+        assert dv.send(base, {"jpg": live1, "sig": 4, "kind": "live", "brt": 40}) and S["img"] == "me_a.jpg" and S["uploads"] == n_up + 1
+    finally:
+        if srv is not None:
+            srv.shutdown()
+        G["is_dark"] = keep_dark
+        CFG.update(keep)
+        STV["alarm"], STV["game"] = keep_a, keep_g
+        STATE["battery"] = keep_b
+        STV["renders"].clear()
+
+
+SELFTEST_EXTRA.append(("SmallTV live picture and rotation, alarm GIF, pictures a day (553)", smalltv_rot_selftest))

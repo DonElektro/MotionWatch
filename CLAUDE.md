@@ -22,6 +22,9 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   Aufklapp-Knöpfe «Alle zuklappen · Nur Gruppen · Alle aufklappen», Suchfeld, Schalter Einfach/Experte, Symbole, Farben, aktive
   Zustände blau), in beiden gleich oder möglichst ähnlich bauen. Bei jeder optischen Änderung im einen Projekt das andere
   prüfen und mitziehen; im Konzept-Check melden, wenn es (noch) abweicht.
+  **Verschärft (Daniel, 30.10.2026 20:00):** auch die **Menüstruktur** (Gruppen, Reihenfolge, Namen, Einfach/Experte,
+  Karten) soll in beiden Projekten grosse Ähnlichkeit haben. Daniel **aktiv erinnern**, sobald etwas abweicht oder nicht ins
+  gemeinsame Schema passt (in jedem Bericht und bei jedem Vorschlag), mit Vorschlag zum Angleichen.
 - **Zwischenberichte (Wunsch Daniel, bis 2.11.2026 24:00):** bei jeder Aufgabe, die länger als 3–4 Minuten dauert, jede Minute
   eine kurze Checkliste senden (✅ erledigt / ⏳ offen).
   **Pausiert (Daniel, 30.10.2026 10:58):** vorerst keine Zwischenberichte, nur melden, wenn es News gibt (fertig, Problem, Frage).
@@ -51,7 +54,7 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 - Wartet auf Daniel: Hardware-Tests; Gehäuse Variante 2 (Modell-ZIP); Tailscale Funnel (eingebaut 2.98.47) im Tailnet freischalten und echt testen;
   SmallTV (2.98.48) am echten Gerät testen (Testbild, Album-Weiterblättern, Suche, Lesbarkeit); KI-Wächter bei normalem Tempo; Parcours-Noten;
   Rückmeldung schwarzes Live-Bild / Seiten-Tempo; vor KI-Training «🔍 Lernbilder prüfen».
-- Später: Prüfstand-Rückgang ab 2.98.23; KI-Training (Token Actions-Rechte, Trainingspaket); «Vertrauenswürdige Geräte» nur
+- Später: Prüfstand-Plan «funktionen» (Kurzproben Sabotage, Wecker, Klatschen, Diebstahl, Sensoren, Akku, Sirene – Daniel 30.10.: später); Prüfstand-Rückgang ab 2.98.23; KI-Training (Token Actions-Rechte, Trainingspaket); «Vertrauenswürdige Geräte» nur
   Admin; Controller-Einstellungen als MoveEye-Einstellung statt pro Browser; Produkt-Seite (Lizenzen, Datenschutz, Kundendoku);
   mobiler MoveEye (Laufroboter, nur Notiz); Tiere mit der neuen Figur-Technik (figur.gd).
 

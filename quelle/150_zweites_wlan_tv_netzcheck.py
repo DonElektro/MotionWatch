@@ -309,8 +309,10 @@ function paint() {
     h += '<h2>🎮 ' + esc(G.title || "") + '</h2>';
     if (r === "countdown") h += '<div class="round"><div class="big">' + esc(G.cd) + '</div><h1>' + esc(d.t_ready) + '</h1></div>';
     else if (r === "play") h += '<div class="round"><div class="big">' + mmss(G.left || 0) + '</div><h1>' + esc(d.t_play) + (G.last_minute ? " 🔥" : "") + '</h1></div>';
-    else if (r === "end") h += '<h1>🏁 ' + esc(d.t_end) + '</h1>';
+    else if (r === "end") h += '<h1>🏁 ' + esc(d.t_end) + '</h1>' + (G.win && G.win.title ? '<h2>' + esc(G.win.title) + (G.win.score >= 0 ? " · " + esc(G.win.score) : "") + '</h2>' : "");
     else h += '<h1>' + esc(d.t_waiting) + '</h1>';
+    if ((r === "lobby" || r === "end") && G.next) h += '<div class="idle">' + esc(G.next) + '</div>';
+    if (G.mw) h += '<h2>🎯 ' + esc(String(d.t_mw || "").replace("{n}", G.mw)) + '</h2>';
     if (r !== "play" && r !== "countdown" && G.qr) h += '<div class="qr"><div class="q">' + G.qr + '</div><div class="t">' + esc(d.t_join) + '<div class="u">' + esc(G.url) + '</div></div></div>';
     if ((G.players || []).length) h += players(G.players);
     if ((G.feed || []).length) h += '<div class="feed">' + G.feed.map(x => '<div>• ' + esc(x) + '</div>').join("") + '</div>';
@@ -416,6 +418,24 @@ def tv_state():
             "url": tv_url(False), "auto": bool(CFG["tv_auto"]), "sim": TV["sim"], "sim_ok": bool(CFG.get("sim_on") and time.time() - SIM.get("t", 0) < 15)}
 
 
+GAME_STATE_WORDS = {"goal": "at the goal", "out": "caught", "jail": "in jail", "play": "on the way", "lobby": "ready"}
+
+
+def game_live_tv(g, T):
+    """Aufräumen 2: «game_live» of the simulator -> the game part of the TV page (the same words as tv.gd and the SmallTV)"""
+    url = str(g.get("url") or "")
+    def ps_(p):
+        k, pt = int(p.get("k", 0) or 0), p.get("pt")
+        return {"n": p.get("n"), "c": p.get("c") or "#3b8cff",
+                "s": " · ".join(x for x in (T(GAME_STATE_WORDS.get(str(p.get("s")), str(p.get("s") or ""))), f"{k}×" if k else "",
+                                            f"{int(pt)} {T('points')}" if pt is not None else "") if x)}
+    return {"open": True, "round": g.get("round"), "cd": g.get("cd"), "left": g.get("left"), "last_minute": g.get("lm"),
+            "title": T("Game in the 3D simulator") + (" · " + str(g.get("goal")) if g.get("goal") else ""), "url": url, "qr": qr_svg(url) if url else "",
+            "players": [ps_(p) for p in g.get("players") or []], "feed": [str(x)[:80] for x in (g.get("feed") or [])][:4],
+            "board": [{"n": b.get("n"), "c": b.get("c"), "score": b.get("score")} for b in (g.get("board") or [])],
+            "win": g.get("win"), "next": g.get("next") or "", "mw": g.get("mw")}
+
+
 def tv_data():
     """what the TV page shows"""
     L = norm_lang(CFG.get("lang")) or "de"
@@ -426,7 +446,7 @@ def tv_data():
          "state": T({"armed": "Armed", "arming": "Arming …", "disarmed": "Not armed"}.get(STATE.get("arm_state"), "")),
          "t_setup": T("The game is being set up"), "t_join": T("Join: scan the QR code with the phone (same Wi-Fi) or open"),
          "t_ready": T("Get ready"), "t_play": T("Round running"), "t_end": T("Round over"), "t_waiting": T("Waiting for players"),
-         "t_board": T("Ranking of the evening"), "t_corner": T("Game corner"), "t_idle": T("Nothing is going on at the moment - MoveEye keeps watch."),
+         "t_board": T("Ranking of the evening"), "t_mw": T("MoveEye caught {n}"), "t_corner": T("Game corner"), "t_idle": T("Nothing is going on at the moment - MoveEye keeps watch."),
          "events": [], "game": {}, "wiz": {}, "party": {}}
     try:
         d["events"] = [str(e.get("text") or e.get("msg") or "")[:90] for e in list(EVENTS)[-5:]][::-1] if "EVENTS" in globals() else []
@@ -435,18 +455,21 @@ def tv_data():
     if CFG.get("sim_on"):
         d["view_label"] = T("Simulator")
         try:
-            gi = sim_control({"action": "game_info"})
             wz = sim_control({"action": "gamewiz", "op": "get"})
             if isinstance(wz, dict) and wz.get("ok"):
                 d["wiz"] = {k: wz.get(k) for k in ("shown", "step", "steps", "title", "cards", "pics")}
-            if isinstance(gi, dict) and gi.get("open"):
-                url = ((wz or {}).get("game") or {}).get("url") or ""
-                st_ = {"goal": "🎉", "out": "👀", "jail": "🔒", "play": "🏃", "lobby": "⏳"}
-                d["game"] = {"open": True, "round": gi.get("round"), "cd": gi.get("cd"), "left": gi.get("left"), "last_minute": gi.get("last_minute"),
-                             "title": T("Game in the 3D simulator") + " · " + str(gi.get("goal") or ""), "url": url, "qr": qr_svg(url) if url else "",
-                             "players": [{"n": p.get("n"), "c": p.get("c"), "s": st_.get(p.get("s"), "") + " " + str(p.get("k", 0)) + "×"} for p in gi.get("players") or []],
-                             "feed": [str(x.get("x"))[:80] for x in (gi.get("feed") or [])][::-1][:4],
-                             "board": [{"n": b.get("n"), "c": b.get("c"), "score": b.get("score")} for b in (gi.get("board") or [])]}
+            # Aufräumen 2: ONE source for all game displays - «game_live» of the simulator (in every answer, 552 keeps it in
+            # STV «game»), the same as the SmallTV and the TV mode of the simulator (tv.gd); older simulators: «game_info»
+            gl = STV["game"] if "STV" in globals() and STV.get("game") and time.time() - STV.get("game_t", 0.0) < 10 else None
+            if gl is not None:
+                d["game"] = game_live_tv(gl, T)
+            else:
+                gi = sim_control({"action": "game_info"})
+                if isinstance(gi, dict) and gi.get("open"):
+                    url = ((wz or {}).get("game") or {}).get("url") or ""
+                    d["game"] = game_live_tv({"round": gi.get("round"), "cd": gi.get("cd"), "left": gi.get("left"), "lm": gi.get("last_minute"),
+                                              "goal": gi.get("goal"), "url": url, "players": gi.get("players") or [],
+                                              "feed": [str(x.get("x")) for x in (gi.get("feed") or [])][::-1][:4], "board": gi.get("board") or []}, T)
         except Exception:
             pass
     else:

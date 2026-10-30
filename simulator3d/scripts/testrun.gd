@@ -575,7 +575,8 @@ func thermal_visible(v) -> bool:
 		return false
 	if absf(34.0 - float(main.ambient)) < 6.0:
 		return false                                       # a hot summer night: the body is hardly warmer than the ground
-	var px: float = h / (2.0 * d * tan(deg_to_rad(TH_VFOV) / 2.0)) * float(main.TH_H)
+	var vf: float = float(main.simint.th()["fov_v"]) if main.simint != null else TH_VFOV   # 30.10.2026: the chosen thermal model
+	var px: float = h / (2.0 * d * tan(deg_to_rad(vf) / 2.0)) * float(main.TH_H)
 	var need: float = (8.0 if v.kind == "person" else 4.0) * {"fog": 1.6, "rain": 1.25, "snow": 1.25}.get(main.weather, 1.0)
 	_th_px = px
 	return px >= need

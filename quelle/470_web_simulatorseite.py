@@ -152,6 +152,7 @@ function scWizOnly(c) { return !!c.wiz || (!("gid" in c) && scGid(c) === "game" 
 // 2.98.23 (Konzept): the simulator group «Testlauf» is not shown in the Simulator control (testing has ONE place: group «Testen»,
 // tile «Tests»); there it is built with data-only="testrun" (#tr-sim, recordings of the sneak paths, Pi 5 settings)
 const SC_TEST_DUP = ["testrun_plan", "testrun_start", "testrun_stop"];   // the same as «Testlauf starten» of MoveEye right above (/api/simtest)
+try { Object.assign(I18N.de, {"from MoveEye (setting of MoveEye, only shown here)": "von MoveEye (Einstellung von MoveEye, hier nur angezeigt)"}); } catch (e) {}   // Aufräumen 2
 function simCtlBuild(G, r, ctl, fmt) {
   scCss();
   const only = G.dataset.only || "";
@@ -159,7 +160,9 @@ function simCtlBuild(G, r, ctl, fmt) {
   const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
   const ss = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"])), openS = new Set(ls("mw-sc-sub2", ["Besuch/Vorlagen", "Besuch/Menschen schicken", "Besuch/Tiere schicken", "Spiel/Runde"]));
-  let expert = only ? true : ls("mw-sc-expert", false), q = G.dataset.q || "";
+  // Aufräumen 2: Einfach / Experte is stored in the settings of MoveEye (page «sim», /api/ui_simple like the main page and the
+  // simulator centre 139) - no longer per browser; the first build asks once, later builds take the known value
+  let expert = only ? true : window.SC_EXPERT != null ? window.SC_EXPERT : false, q = G.dataset.q || "";
   if (only) (r.controls || []).forEach(c => openC.add(c.group));
   G.textContent = "";
   const top = el("div", "sc-top"); const qi = document.createElement("input"); qi.type = "search"; qi.placeholder = t("Search a setting …"); qi.value = q;
@@ -202,6 +205,7 @@ function simCtlBuild(G, r, ctl, fmt) {
       } else if (c.type === "slider") {
         row = el("div", "sc-row sc-sl"); const l = el("div", "sc-l"); const vv = el("span", "mut simvv"); l.append(el("span", "", c.label), vv);
         const rg = document.createElement("input"); rg.type = "range"; rg.className = "simv"; rg.min = c.min; rg.max = c.max; rg.step = c.step || 1;
+        if (c.ro) { rg.disabled = true; rg.title = t("from MoveEye (setting of MoveEye, only shown here)"); }   // Aufräumen 2: e.g. the battery size
         let lvT = 0, lvW = null;                      // «live» (simulator 3D-4.x, e.g. the height of the pole): sent while dragging, 5× a second at most
         const lvSend = () => { lvW = null; lvT = Date.now(); ctl({ctl: "set", id: c.id, value: +rg.value}); };
         rg.oninput = () => { vv.textContent = fmt(c, +rg.value); if (c.live && !lvW) lvW = setTimeout(lvSend, Math.max(0, 200 - (Date.now() - lvT))); };
@@ -233,8 +237,11 @@ function simCtlBuild(G, r, ctl, fmt) {
     });
     none.hidden = !q || any;
   }
-  qi.oninput = apply; b1.onclick = () => { expert = false; ss("mw-sc-expert", false); apply(); }; b2.onclick = () => { expert = true; ss("mw-sc-expert", true); apply(); };
+  const setEx = v => { expert = v; window.SC_EXPERT = v; apply();
+    fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !v, page: "sim"})}).catch(() => {}); };
+  qi.oninput = apply; b1.onclick = () => setEx(false); b2.onclick = () => setEx(true);
   apply();
+  if (!only && window.SC_EXPERT == null) fetch("/api/ui_simple?page=sim").then(x => x.json()).then(j => { window.SC_EXPERT = !j.on; expert = window.SC_EXPERT; apply(); }).catch(() => {});
 }
 
 // ---- the simulator window (3D-3.18): mouse / finger / keys on a picture of /sim/view.mjpg go to the simulator ----
@@ -509,7 +516,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .gw-body{padding:16px;overflow:auto}.gw-body h3{margin:0 0 4px;font-size:20px}.gw-body .lead{margin:0 0 14px}
 .gw-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
 .gw-card{text-align:left;padding:14px;border-radius:12px;border:2px solid var(--line,#1f2b3a);background:transparent;color:inherit;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:120px}
-.gw-pic{width:100%;aspect-ratio:16/9;border-radius:10px;display:block;margin-bottom:4px}.gw-card .ic:empty{display:none}
+.gw-pic{width:100%;aspect-ratio:16/9;border-radius:10px;display:block;margin-bottom:4px}.gw-card .ic:empty,.gw-q .ic:empty{display:none}
 .gw-pics2{display:flex;gap:8px;margin:2px 0 10px}.gw-pics2 img{width:calc(50% - 4px);border-radius:10px}
 .gw-card b{font-size:16px}.gw-card .ic{font-size:28px;line-height:1}.gw-card small{color:var(--mut,#8b9bb0);line-height:1.35}
 .gw-card.on{border-color:var(--acc,#3b8cff);background:rgba(59,140,255,.12)}
@@ -827,10 +834,10 @@ function paint() {
   const so = $("#s-on"); if (so && document.activeElement !== so) so.checked = !!S.on;
   $("#s-onnote").textContent = !S.on ? t("off - the real cameras and sensors are used") : nopic ? NP : S.ok ? t("connected") + (T.name ? ": " + T.name : "") : t("Simulator not reachable");
   $("#s-csub").textContent = nopic ? "· " + NP : S.on && S.ok ? "· " + t("connected") : "";
-  $("#s-msg").textContent = (S.msg ? t(S.msg) + " · " : "") + (S.url || "");
+  $("#s-msg").textContent = (S.msg ? t(S.msg) + (S.leader ? " (" + S.leader + ")" : "") + " · " : "") + (S.url || "");   // Aufräumen 2: who steers
   const tile = (k, v) => '<div class="tile"><div class="mut">' + k + '</div><b>' + v + '</b></div>';
   $("#s-tiles").hidden = !S.on;
-  const pcc = T.pc_cpu == null ? "–" : Math.round(T.pc_cpu) + " %";
+  const pcc = T.pc_cpu == null ? "–" : Math.round(T.pc_cpu) + " %" + (T.sim_cpu != null ? " · Sim " + Math.round(T.sim_cpu) + " %" : "");   // Aufräumen 2: «sim_cpu_own»
   $("#s-tiles").innerHTML = tile(t("CPU of the PC"), '<span style="color:' + (T.pc_cpu > 85 ? "var(--red,#ff5b4b)" : T.pc_cpu > 60 ? "#e8b33a" : "inherit") + '">' + pcc + '</span>') + tile(t("Connected for"), dur(T.since)) + tile(t("Response time"), T.rtt == null ? "–" : T.rtt + " ms") + tile(t("Camera pictures/s"), T.cam_fps == null ? "–" : T.cam_fps)
     + tile(t("Thermal pictures/s"), T.th_fps == null ? "–" : T.th_fps) + tile(t("Messages sent"), T.sent || 0) + tile(t("Sensor events"), T.events || 0) + tile(t("Errors"), T.errs || 0);
   const u = $("#s-url"); if (!URLEDIT && document.activeElement !== u) u.value = S.url || "";
@@ -939,7 +946,9 @@ function gwPaint(M) {
   if ((M.quick || []).length) {                      // 3D-4.x: three quick starts - one tap sets everything and opens the game
     B.appendChild(el("div", "gw-sub", "⚡ " + (M.quick_title || t("Quick start"))));
     const qg = el("div", "gw-quick");
-    M.quick.forEach(q => { const b = el("button", "gw-q"); b.type = "button"; b.append(el("span", "ic", q.icon), el("b", "", q.title), el("small", "", q.text));
+    M.quick.forEach(q => { const b = el("button", "gw-q"); b.type = "button";
+      if (q.pic) { const im = el("img", "gw-pic"); im.alt = ""; im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(q.pic); b.appendChild(im); }   // 3D-4.20: pictures again, like in the simulator
+      b.append(el("span", "ic", q.pic ? "" : q.icon), el("b", "", (q.pic ? q.icon + " " : "") + q.title), el("small", "", q.text));
       b.onclick = async () => { b.disabled = true; const r = await gwOp({op: "quick", value: q.v}); b.disabled = false;
         if (r && r.game && r.game.open) { const qq = $("#gw-qr"); if (qq && qq.firstChild) qq.scrollIntoView({behavior: "smooth", block: "center"}); } };
       qg.appendChild(b); });

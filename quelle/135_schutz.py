@@ -170,12 +170,12 @@ def protect_on_alert(kind):
         if CFG.get("siren_on") == "off":                 # 2.97.0: «siren off» (e.g. mode wildlife) counts here too
             log_event("sys", "Escalation: the siren is switched off - only light and push")
             return
-        if siren_quiet():
+        if siren_quiet() and not sim_speaker():
             log_event("sys", "Escalation: siren held back (simulation / game / drill)")
-            return
+            return                                       # 554: with the simulator connected it plays there (never for real)
         if time.time() - SOUND["last_alarm"] < float(CFG["siren_pause"]):
             return
-        if is_armed() and out_selected() and not SOUND["playing"]:
+        if is_armed() and speaker_ok() and not SOUND["playing"]:
             SOUND["last_alarm"] = time.time()
             log_event("sys", f"Escalation: siren after {s} s (nobody disarmed)")
             sound_play(None, None, None, reason="escalation")

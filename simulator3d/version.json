@@ -1,7 +1,7 @@
 {
- "version": "3D-4.19",
+ "version": "3D-4.20",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31836196,
- "sha256": "180fd397ab8c0008101de7f6b971f79df43ab9a3ce651700158792963935bab1",
- "notes": "Virtueller SmallTV für MoveEye 2.98.48"
+ "size": 31866685,
+ "sha256": "78a6b44b4355b613109fc8dac1d8c37328be187052e9867c63d9e5f1a60f90b6",
+ "notes": "Simulator als Lautsprecher, Servo-Störungen, Wärmebild Thermal-90 mit Ausrichten, Schnittstellen-Liste, Spiel-Assistent mit Bildern"
 }

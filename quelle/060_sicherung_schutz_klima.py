@@ -529,7 +529,9 @@ class EnvSensor:
 
     def read(self):
         if CFG.get("sim_on") and time.time() - SIM["t"] < 10:
-            return {"t": round(float(SIM["ambient"]), 1), "h": None, "p": round(float(SIM["pressure"]), 1), "src": "Simulator", "ds": [], "time": time.time()}
+            hs_ = SIM.get("humidity")                     # Aufräumen 2: the humidity of the scene (world_reply «humidity»)
+            return {"t": round(float(SIM["ambient"]), 1), "h": round(float(hs_)) if isinstance(hs_, (int, float)) else None,
+                    "p": round(float(SIM["pressure"]), 1), "src": "Simulator", "ds": [], "time": time.time()}
         if self.fd is None and time.time() - self.tried > 120:
             self.tried = time.time(); self._open()
         t = hum = pr = None; src = ""

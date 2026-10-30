@@ -215,7 +215,8 @@ def sim_battery_tick(bm, sb):
         log_event("sys", f"Simulated UPS HAT (simulator): battery {v:.2f} V, {pct} %")
     bm.ups_events(v, pct, hours, on_batt, False)          # volt_ok False: never the real shutdown of this computer
     lim = int(CFG["ups_shutdown_pct"])
-    if not SIMVAL["off"] and on_batt and lim > 0 and (pct <= lim or sb.get("empty")):
+    drill_ = drill_active("battery") if "drill_active" in globals() else False   # 565: the drill «battery empty» never «shuts down»
+    if not SIMVAL["off"] and on_batt and lim > 0 and (pct <= lim or sb.get("empty")) and not drill_:
         SIMVAL["off"] = True; SIMVAL["off_t"] = time.time()
         log_event("sys", f"Battery empty ({pct} %, {v:.2f} V) - the Pi would shut down now (simulator: this computer stays on)")
         w = WATCH_REF.get("w")

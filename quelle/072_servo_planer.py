@@ -408,7 +408,7 @@ def servo_release(by="web"):
     if isinstance(by, (tuple, list)) and len(by) == 2:
         servo_driver_note(by, "release"); by = by[1]
     if SRV["inhibit"] == "uv":
-        if SRV["test_uv"] or ((STATE.get("supply") or {}).get("uv_now") and not CFG.get("sim_on")):
+        if SRV["test_uv"] or SRV.get("sim_uv") or ((STATE.get("supply") or {}).get("uv_now") and not CFG.get("sim_on")):
             return False, "under-voltage is still there - check the power supply first"
         SRV["inhibit"] = ""; SRV["uv_last"] = 0.0           # it is over: «Freigeben» need not wait the 30 s
     was = servo_blocked()
@@ -483,7 +483,7 @@ def _servo_inhibit(code, on, now):
 def servo_safety_tick(now):
     """4 x per second: under-voltage, the camera loop watchdog, temperature (only noted)"""
     sup = STATE.get("supply") or {}
-    uv = (bool(sup.get("uv_now")) and not CFG.get("sim_on")) or SRV["test_uv"]
+    uv = (bool(sup.get("uv_now")) and not CFG.get("sim_on")) or SRV["test_uv"] or bool(SRV.get("sim_uv") and CFG.get("sim_on"))   # 555: the 5 V of the simulator
     if uv:
         SRV["uv_last"] = now
     if CFG.get("servo_uv_stop", True):

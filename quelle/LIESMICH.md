@@ -143,6 +143,10 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `623_uebersetzungen_pad2.py` | Übersetzungen des Controller-Konzepts (542, 538, 470) | 75 |
 | `632_uebersetzungen_aufr.py` | Übersetzungen der Aufräum-Runde (Servos an einem Ort, Kurzbefehl-Schlüssel = App-Schlüssel, Zonen «nur melden» / «bleibt am Platz», Tierart) + Selbsttest | 150 |
 | `639_uebersetzungen_falearn.py` | Übersetzungen «Lernbilder prüfen» | 13 |
+| `531a_web_push_karten.py` | Web: «Push-Nachrichten» als Karten (Kopf · Wohin · Was · Wann · Erweitert), SMS und Nachrichtentexte hinein, Alarmton in die Glocke | 268 |
+| `571a_fenster_push.py` | Fenster: «Push-Nachrichten» gleich aufgebaut wie im Web (Kanal-Karten, Stufen, Ruhezeiten, Erweitert) | 453 |
+| `579a_push_logik.py` | Push-Logik: Kanäle (Hauptkanal ntfy/Telegram/Webhook), Stufen Nur Personen / + Tiere / Alles, Ruhezeiten (Simulator-Uhr), Bilder mit/klein/ohne, Übernahme alter Einstellungen, /api/push, Selbsttest | 577 |
+| `639a_uebersetzungen_push.py` | Übersetzungen und «?»-Texte der Push-Karten | 205 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |
@@ -162,10 +166,19 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `548_web_ki_waechter.py` | Web: «🤖 MoveEye als KI-Wächter» in der Karte «Spiel» (Schalter, Liste «gegen die KI»), Simulator-Fenster ohne Einblendungen | 80 |
 | `549_web_sim_kompakt.py` | Live-Seite «Sim-Kompakt»: mit verbundenem Simulator zwei kleine Bilder, Kopf- und Rover-Stick am Rand, Simulator-Kacheln dazwischen («◫ Ansicht», pro Gerät) | 429 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
-| `552_smalltv.py` | Zusatz-Bildschirm GeekMagic SmallTV Ultra: Liste der Bildschirme (+ virtueller 🧪 des Simulators), Status / Alarmbild (Tier mit Ausschnitt, Person nur Symbol) / Spiel-Anzeige (`game_live` des Simulators), nachts gedimmt und rot, ein Faden pro Gerät, nur bei Änderung, me_a/me_b.jpg, Firmware-Macken (400), Suche im /24, /api/smalltv, Web-Teil (stvPanel); Wrapper um species_update, alarm_ctx_note, simvals_take, msglog_add | 900 |
+| `552_smalltv.py` | Zusatz-Bildschirm GeekMagic SmallTV Ultra: Liste der Bildschirme (+ virtueller 🧪 des Simulators), Status / Alarmbild (Tier mit Ausschnitt, Person nur Symbol; Alarm-GIF auf jedem Bildschirm) / Spiel-Anzeige (`game_live` des Simulators), nachts gedimmt und rot, ein Faden pro Gerät, nur bei Änderung, me_a/me_b.jpg, Firmware-Macken (400), Suche im /24, /api/smalltv, Web-Teil (stvPanel); Wrapper um species_update, alarm_ctx_note, simvals_take, msglog_add | 900 |
+| `553_smalltv_wechsel.py` | SmallTV «Live-Bild und Wechsel» (Schalter `rot` pro Bildschirm): tagsüber alle 30 s Live-Bild (reines Kamerabild ohne OSD, 410 `frame_clean`; neu nur jede zweite Live-Zeitscheibe = alle 2 min; Personen verpixelt) ↔ «Akku und Strom», Alarm als animiertes GIF (me_a/me_b.gif) 60 s, dann Standbild 5 min, nachts nur Status; «ca. N Bilder/Tag» (stv_per_day); Wrapper um stv_tick, stv_state | 330 |
+| `558_schnittstelle.py` | Aufräumen 2: Prüfung der einen Feldliste MoveEye ↔ 3D-Simulator (`simulator3d/schnittstelle.json`: world_reply, state, info, control) im Selbsttest – liest die GDScript-Quellen und `sim_state`, meldet unbenutzte / fehlende Felder | 150 |
+| `559_nachspielen_3d.py` | Aufräumen 2: «⏪ In 3D nachspielen» (Alarm-Spur 180) auch in Zeitleiste und Aufnahmen, ein Knopf-Aussehen (`mwR3d`, Klasse r3d); Wrapper um timeline_build, list_recordings | 110 |
+| `564_uebersetzungen_aufr2.py` | Übersetzungen und Anleitungs-Absatz (System & Netz) zum Aufräumen 2 | 50 |
+| `565_uebungen_sim.py` | Aufräumen 2: Übungen «Akku leer» / «WLAN / Internet weg» (141) stellen bei verbundenem Simulator nur dessen Regler (ein Weg), sonst eigene Werte; Wrapper um drill_start, drill_battery_tick, _drill_end_later | 100 |
 | `556_tailscale_funnel.py` | Online-Spiel über Tailscale Funnel: nur /game/ öffentlich (eigene Tür + Sperre bei Funnel-Anfragen), Auto-Aus, Aufräumen beim Neustart, Fehler mit Abhilfe, Fenster-Zeile | 605 |
+| `554_sim_lautsprecher.py` | Lautsprecher im Simulator: Sirene, Wecker-Melodie, Ansage gehen auch im Test-Postfach-Betrieb (Spiel, Übung, Testlauf) an den 3D-Simulator, der echte Lautsprecher bleibt still (sim_speaker, sim_speaker_only, sim_sound_play); eigener Ton zählt nicht für Klatschschalter / Gesundheit (own_sound_now); Wrapper um sim_state, soundev_state; Texte in 557 | 140 |
+| `555_sim_servo_stoerungen.py` | Servo-Störungen aus dem Simulator («servo_sim»): Unterspannung der 5-V-Schiene (SRV sim_uv → Sperre wie echt), PCA9685-Reset (nach dem 10-s-Check, Freigeben → Treiber neu, «reinit»), I2C-Fehler (servo_io_error), blockierter Servo (Kopf head_deg folgt nicht → Störung «blocked»); Wrapper um simvals_take, servo_release, sim_state | 190 |
+| `557_waermebild_ausrichten.py` | Assistent «Wärmebild ausrichten (warme Hand)» (/thermal_align, /api/thermal_align, Fenster): Paare Bewegung im Kamerabild ↔ warmer, bewegter Fleck im Wärmebild, Verzögerung gesucht, Gerade → thermal_zoom / dx / dy, Rückgängig; Wärmebild-Modell des Simulators (thermal_model → SIM info), Knopf in Werkzeuge; alle Texte von 554 / 555 / 557 (DE nach Teil 560 über load_settings / self_test), Anleitung DE/EN; Wrapper um simvals_take, ThermalCam.wanted, servo_routes, load_settings, self_test | 800 |
 | `560_uebersetzungen_de.py` | Übersetzungen Deutsch | 498 |
 | `562_uebersetzungen_smalltv.py` | Übersetzungen und Anleitungs-Kapitel «Zusatz-Bildschirm (SmallTV)» zu 552 / 599b | 150 |
+| `563_uebersetzungen_smalltv2.py` | Übersetzungen zu 553 (Live-Bild und Wechsel, Akku und Strom, Alarm-Animation) | 30 |
 | `561_uebersetzungen_funnel.py` | Übersetzungen und Anleitung (DE/EN) zum Tailscale Funnel (556) | 128 |
 | `569_uebersetzungen_parcours.py` | Übersetzungen und Anleitungs-Absatz (Kamera & Servos) zum Verfolgungs-Parcours (416 / 599) | 140 |
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |
