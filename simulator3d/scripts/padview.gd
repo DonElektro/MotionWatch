@@ -8,9 +8,22 @@ extends Node
 ## Without the rover: head camera (view 1), from above (the «Von oben» of the view bar) and the free view.
 ## view.jpg?bare=1: the picture for MoveEye without the buttons, the map and the boxes of the window (for 3 s after the
 ## last such picture - the window at the PC shows them again by itself).
+## 3D-4.x view.jpg?dock=1 (MoveEye's simulator page, wish of Daniel 30.10.2026): only the 3D view and the dock at the bottom -
+## no camera picture, no map with the compass, no rover stick, no news box. The window at the PC stays as it is: the 3D view
+## is drawn once more without anything on it (a small picture of its own, one drawing per picture for MoveEye, the same
+## camera) and the dock is copied in from the window (compose). Window small / minimized (main.remote_vp): nobody sees it,
+## so there the layer with the buttons is hidden and the dock moves into a layer of its own (3 s after the last such
+## picture everything is back).
 
 var main
 var bare_t := -100.0
+var dock_t := -100.0                  # 3D-4.x: last picture asked for with dock=1
+var _dock_on := false
+var _dock_layer: CanvasLayer
+var _dock_moved: Array = []           # [node, index in ui_layer]
+var _cvp: SubViewport                  # the clean 3D view (compose)
+var _ccam: Camera3D
+var _cvp_t := -100.0
 var view := ""                        # the view padview set last ("" = none)
 var _ex_ours := false                 # padview switched «Erkunden» on (and switches it off again)
 var _hid := false
@@ -45,7 +58,7 @@ func state() -> Dictionary:
 	var ex = main.explore
 	var c: Vector3 = main.view_cam.global_position
 	return {"ok": true, "view": view, "rover": main.mover_on, "explore": ex != null and ex.on, "ex_view": ex.view if ex != null else "",
-			"vm": main.view_mode, "bare": _hid, "cam": [snappedf(c.x, 0.01), snappedf(c.y, 0.01), snappedf(c.z, 0.01)],
+			"vm": main.view_mode, "bare": _hid, "dock": _dock_on, "cam": [snappedf(c.x, 0.01), snappedf(c.y, 0.01), snappedf(c.z, 0.01)],
 			"cam_yaw": snappedf(rad_to_deg(main.view_cam.global_rotation.y), 0.1),
 			"orbit": snappedf(ex.orbit, 0.01) if ex != null else 0.0, "dist": snappedf(ex.dist, 0.01) if ex != null else 0.0,
 			"x": snappedf(main.rig.position.x, 0.01), "z": snappedf(main.rig.position.z, 0.01), "yaw": snappedf(rad_to_deg(main.rig.rotation.y), 0.1),
@@ -157,6 +170,13 @@ func _zoom(dir: float) -> void:
 func _process(dt: float) -> void:
 	var t: float = main.now()
 	var want := t - bare_t < 3.0
+	var want_dock := t - dock_t < 3.0 and not want and main.remote_vp != null
+	if _cvp != null and t - _cvp_t > 10.0:
+		_cvp.queue_free()                                  # not asked for a while: no second drawing any more
+		_cvp = null
+		_ccam = null
+	if want_dock != _dock_on and main.ui_layer != null:
+		_dock(want_dock)
 	if want != _hid and main.ui_layer != null:
 		if want:
 			_ui_was = main.ui_layer.visible
@@ -173,3 +193,100 @@ func _process(dt: float) -> void:
 		var dr: Dictionary = main.mw.get("drive", {})
 		if absf(float(dr.get("l", 0.0))) + absf(float(dr.get("r", 0.0))) > 0.05:
 			ex.orbit = lerp_angle(ex.orbit, 0.0, clampf(dt * 0.8, 0.0, 1.0))
+
+
+func _dock(on: bool) -> void:
+	"""3D-4.x: only the 3D view and the dock (MoveEye's simulator page asks with dock=1)"""
+	var ul: CanvasLayer = main.ui_layer
+	var tb = main.toolbar
+	if on:
+		if tb == null:
+			return
+		if _dock_layer == null:
+			_dock_layer = CanvasLayer.new()
+			_dock_layer.name = "dock_only"
+			main.add_child(_dock_layer)
+		_dock_layer.layer = ul.layer
+		_dock_moved = []
+		var nodes: Array = [tb]
+		for c in [tb._hint, tb._sub, tb._help]:
+			if c != null and c.get_parent() == ul:
+				nodes.append(c)
+		for n in nodes:
+			if n.get_parent() == ul:
+				_dock_moved.append([n, n.get_index()])
+				ul.remove_child(n)
+				_dock_layer.add_child(n)
+		_ui_was = ul.visible
+		ul.visible = false
+	else:
+		_dock_moved.sort_custom(func(a, b): return int(a[1]) < int(b[1]))
+		for e in _dock_moved:
+			var n: Node = e[0]
+			if is_instance_valid(n) and n.get_parent() == _dock_layer:
+				_dock_layer.remove_child(n)
+				ul.add_child(n)
+				ul.move_child(n, mini(int(e[1]), ul.get_child_count() - 1))
+		_dock_moved = []
+		ul.visible = _ui_was
+	_dock_on = on
+
+
+func dock_compose() -> bool:
+	"""main._view_capture: the picture for MoveEye's simulator page is composed (window open)"""
+	var t: float = main.now()
+	return t - dock_t < 3.0 and t - bare_t >= 3.0 and main.remote_vp == null
+
+
+func compose(img: Image, k: float) -> Image:
+	"""the 3D view without anything on it, the dock (and its open menu) copied in from the window picture img (k = pixels
+	of img per point of the window). null = not ready yet (keep the last picture)."""
+	_cvp_t = main.now()
+	var sz := img.get_size()
+	var src: Camera3D = main.get_viewport().get_camera_3d()
+	if src == null:
+		return img
+	if _cvp == null:
+		_cvp = SubViewport.new()
+		_cvp.name = "clean_view"
+		_cvp.world_3d = main.get_viewport().world_3d
+		_cvp.render_target_update_mode = SubViewport.UPDATE_DISABLED
+		_ccam = Camera3D.new()
+		_cvp.add_child(_ccam)
+		main.add_child(_cvp)
+	var out: Image = null
+	if _cvp.size == sz and _cvp.has_meta("drawn"):
+		out = _cvp.get_texture().get_image()
+	if _cvp.size != sz:
+		_cvp.size = sz
+		_cvp.remove_meta("drawn")
+	_ccam.current = true                                   # the next picture: the same camera as the window
+	_ccam.global_transform = src.global_transform
+	_ccam.projection = src.projection
+	_ccam.fov = src.fov
+	_ccam.size = src.size
+	_ccam.near = src.near
+	_ccam.far = src.far
+	_ccam.keep_aspect = src.keep_aspect
+	_ccam.h_offset = src.h_offset
+	_ccam.v_offset = src.v_offset
+	_ccam.cull_mask = src.cull_mask
+	_ccam.environment = src.environment
+	_ccam.attributes = src.attributes
+	_cvp.msaa_3d = main.get_viewport().msaa_3d
+	_cvp.render_target_update_mode = SubViewport.UPDATE_ONCE
+	_cvp.set_meta("drawn", true)
+	if out == null or out.is_empty():
+		return null
+	if out.get_format() != img.get_format():
+		out.convert(img.get_format())
+	var tb = main.toolbar
+	if tb != null and tb.is_visible_in_tree():
+		for c in [tb, tb._sub, tb._hint, tb._help]:
+			if c == null or not (c as Control).is_visible_in_tree():
+				continue
+			var r: Rect2 = (c as Control).get_global_rect().grow(12.0)       # with the shadow
+			var ri := Rect2i(int(r.position.x * k), int(r.position.y * k), int(r.size.x * k), int(r.size.y * k)).intersection(Rect2i(Vector2i.ZERO, sz))
+			if ri.size.x > 0 and ri.size.y > 0:
+				out.blit_rect(img, ri, ri.position)
+	return out

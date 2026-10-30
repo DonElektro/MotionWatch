@@ -1139,6 +1139,8 @@ class WebStream:
                 q_.append("clean=1")                         # 2.95.92: full screen - the simulator hides its rover stick
             if request.args.get("bare") == "1":
                 q_.append("bare=1")                          # «Controller-Ansicht» (538): the picture without the buttons of the window
+            elif request.args.get("dock") == "1":
+                q_.append("dock=1")                          # page Simulator: only the 3D view and the dock (simulator padview.gd)
             try:
                 b_, h_ = _sim_get("/view.jpg" + ("?" + "&".join(q_) if q_ else ""), 3.0)
             except Exception:
@@ -1158,7 +1160,7 @@ class WebStream:
             except ValueError:
                 fps_ = 6
             try:
-                up_ = _SIM_OPENER.open(urllib.request.Request(sim_base() + f"/view.mjpg?fps={fps_}", headers={"User-Agent": "MotionWatch"}), timeout=5)
+                up_ = _SIM_OPENER.open(urllib.request.Request(sim_base() + f"/view.mjpg?fps={fps_}" + ("&dock=1" if request.args.get("dock") == "1" else ""), headers={"User-Agent": "MotionWatch"}), timeout=5)
             except Exception:
                 return Response("simulator not reachable", 502)
             ctype_ = up_.headers.get("Content-Type") or "multipart/x-mixed-replace; boundary=mwsimframe"

@@ -38240,7 +38240,10 @@ function simCtlBuild(G, r, ctl, fmt) {
       } else if (c.type === "slider") {
         row = el("div", "sc-row sc-sl"); const l = el("div", "sc-l"); const vv = el("span", "mut simvv"); l.append(el("span", "", c.label), vv);
         const rg = document.createElement("input"); rg.type = "range"; rg.className = "simv"; rg.min = c.min; rg.max = c.max; rg.step = c.step || 1;
-        rg.oninput = () => { vv.textContent = fmt(c, +rg.value); }; rg.onchange = () => ctl({ctl: "set", id: c.id, value: +rg.value}); row.append(l, rg);
+        let lvT = 0, lvW = null;                      // «live» (simulator 3D-4.x, e.g. the height of the pole): sent while dragging, 5× a second at most
+        const lvSend = () => { lvW = null; lvT = Date.now(); ctl({ctl: "set", id: c.id, value: +rg.value}); };
+        rg.oninput = () => { vv.textContent = fmt(c, +rg.value); if (c.live && !lvW) lvW = setTimeout(lvSend, Math.max(0, 200 - (Date.now() - lvT))); };
+        rg.onchange = () => { clearTimeout(lvW); lvW = null; ctl({ctl: "set", id: c.id, value: +rg.value}); }; row.append(l, rg);
       } else if (c.type === "select") {
         row = el("div", "sc-row sc-se"); const se = document.createElement("select"); se.className = "simv";
         (c.options || []).forEach(o => { const op = document.createElement("option"); op.value = o[0]; op.textContent = o[1] || o[0]; se.appendChild(op); });
@@ -38384,7 +38387,7 @@ function simViewPoll(VI, fps) {
     info.w = w; info.q = L.q; info.fmt = SIM_WEBP ? "webp" : "jpg"; info.lvl = lvl;
     const fs = !!(document.fullscreenElement || document.webkitFullscreenElement || VI.closest(".fs"));
     const clean = fs && (typeof PVPAD === "undefined" || !PVPAD);      // 2.95.92: full screen: the simulator hides its rover stick
-    return "w=" + w + "&q=" + L.q + "&fmt=" + info.fmt + (clean ? "&clean=1" : "") + (VI.closest("[data-bare]") ? "&bare=1" : "");   // 538: without the buttons of the window
+    return "w=" + w + "&q=" + L.q + "&fmt=" + info.fmt + (clean ? "&clean=1" : "") + (VI.closest("[data-bare]") ? "&bare=1" : "") + (VI.closest("[data-dock]") ? "&dock=1" : "");   // 538: without the buttons of the window; /sim: only the 3D view + dock
   };
   const step = async (g) => {
     if (!on || g !== gen) return;
@@ -38648,7 +38651,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <summary><h2><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg><span data-i18n="Live picture">Live picture</span></h2></summary>
     <div class="fb">
     <div class="pvmode" id="s-pvmode" hidden><button type="button" data-m="view">🗺 <span data-i18n="Simulator window">Simulator window</span></button><button type="button" data-m="cam">📷 <span data-i18n="Camera picture">Camera picture</span></button></div>
-    <div class="pvw" id="s-pvw"><img id="s-prev" alt="" draggable="false" tabindex="0"><span class="pvlive" id="s-pvlive" hidden>● LIVE</span>
+    <div class="pvw" id="s-pvw"><img id="s-prev" data-dock="1" alt="" draggable="false" tabindex="0"><span class="pvlive" id="s-pvlive" hidden>● LIVE</span>
       <div class="pvcam" id="s-pvcam" hidden title="Kamera gross zeigen"><img id="s-pvcimg" alt=""><span>📷 LIVE</span></div>
       <div class="spec" id="s-spec" hidden><div class="spec-h" id="s-spech"></div><div class="spec-p" id="s-specp"></div><div class="spec-f" id="s-specf"></div></div>
       <div class="specres" id="s-specres" hidden></div>
@@ -54717,7 +54720,10 @@ def servo_client_state(request, lang=None):
     drv = servo_driver(lang)
     return {"blocked": servo_blocked(), "text": servo_blocked_text(lang), "estop": bool(CFG.get("servo_estop")),
             "estop_by": CFG.get("servo_estop_by") or "", "driver": drv, "me": key, "mine": bool(drv.get("key")) and drv.get("key") == key,
-            "me_label": label, "moving": bool(SRV["moving"]), "deg": [round(x, 1) for x in servo_pos_deg()]}
+            "me_label": label, "moving": bool(SRV["moving"]), "deg": [round(x, 1) for x in servo_pos_deg()],
+            # 2.98.43: «⏹ Stopp» only with a head and when not switched off; (vier) never in the simulation - no real servos then
+            "stop_btn": bool(CFG.get("servo_stop_btn", True)) and bool(globals().get("live_has_head", lambda: True)()),
+            "sim": bool(CFG.get("sim_on"))}
 
 
 SERVO_PAGE = r"""<!doctype html>
@@ -54955,7 +54961,7 @@ SERVO_LIVE_JS = r"""<script>
       bar.appendChild(tx);
       if (s.blocked !== "inhibit") { const r = document.createElement("button"); r.type = "button"; r.textContent = "✅ " + T("Release"); r.style.cssText = "background:#fff;color:#b62324;font-weight:700"; r.onclick = release; bar.appendChild(r); }
     } else if (bar) bar.hidden = true;
-    const st = document.getElementById("srv-stop"); if (st) { st.disabled = s.blocked === "estop"; st.parentNode.hidden = s.stop_btn === false; }
+    const st = document.getElementById("srv-stop"); if (st) { st.disabled = s.blocked === "estop"; st.parentNode.hidden = s.stop_btn === false; st.hidden = !!s.sim; }   // simulation: the real servos are not used
     const d = s.driver || {};
     if (line) line.textContent = d.kind === "manual" ? "🎮 " + TF("The head is steered by: {who}", {who: d.label}) + (s.mine ? " (" + T("you") + ")" : "")
       : d.kind === "auto" ? "🤖 " + TF("The head moves by itself: {what}", {what: d.label}) : "";
@@ -55879,6 +55885,84 @@ async function usersLoad() {
 </script>
 """
 WEB_PAGE = WEB_PAGE.replace("</body>", USERS_JS + "</body>", 1)
+# ----------------------------------------------------------------------------
+# Wishes of Daniel (30.10.2026):
+#  · «MoveEye überwacht automatisch» (for his tests in online games): a switch on the game card of the page Simulator. When it is
+#    on and a round with a guard role runs (Wächter / Wächter-Duell, Team gegen Team, Team gegen MoveEye, online rounds), the
+#    simulator lets MoveEye be the guard (simulator gamekiwaechter.gd): every player sneaks, the round runs as «Team gegen
+#    MoveEye» with the «KI-Autopilot» of the shutter (gamekihilfe.gd + gameshutter.gd + gametools.gd) - MoveEye's real
+#    detection, the head follows (542 kihilfe_follow, so the pause of 2.98.39 does not stop it), the autopilot fires.
+#    Results «Wächter: MoveEye (KI)», kept in an own list «gegen die KI» (not in the ranking of the evening). The Bot-Wächter
+#    stays out (the round is no «Wächter» round any more). Switched through the simulator control «game_kiguard»
+#    (/api/sim ctl set), read from game_info «kig» (/api/sim action game). Not saved in the simulator: off after its restart.
+#  · The picture «Simulator-Fenster» on this page asks the simulator with dock=1 (470 simViewPoll, 550): only the 3D view and the
+#    dock - no camera picture, map, compass, rover stick (simulator padview.gd). MoveEye's own buttons on the picture stay; they
+#    fade while the mouse / finger is away (they come back on a move or a tap) so they do not cover the picture.
+# Texts: German here (I18N.de of the page), all languages in 596.
+# ----------------------------------------------------------------------------
+
+KIG_KEYS = ["MoveEye as AI guard", "In rounds with a guard role (guard, team against team, team against MoveEye, online rounds) MoveEye itself is the guard: everybody sneaks, MoveEye's real detection watches, the head follows and the shutter fires by itself. Such rounds go into their own list «against the AI», not into the ranking.", "On: MoveEye guards rounds with a guard role itself", "This round: MoveEye guards (AI)",
+            "MoveEye is not connected to the simulator game", "Against the AI", "rounds", "caught", "at the goal", "never caught",
+            "The AI", "catches", "false alarms", "shots", "Reset the list «against the AI»", "Reset the list «against the AI»?",
+            "not supported - update the simulator", "no rounds against the AI yet"]
+
+KIG_JS = r"""<script>
+Object.assign(I18N.de, /*KIGDE*/{});
+(function () {
+  const B = document.getElementById("g-kig"); if (!B) return;
+  let SIG = "", busy = false, D = null;
+  const send = async (v) => { busy = true; try { const r = await post("/api/sim", {action: "ctl", ctl: "set", id: "game_kiguard", value: v, lang: LANG});
+      if (r && r.ok === false) toast("⚠ " + (r.error || t("not supported - update the simulator"))); } finally { busy = false; SIG = ""; poll(true); } };
+  function paint(K) {
+    const sig = JSON.stringify(K || null); if (sig === SIG) return; SIG = sig;
+    B.textContent = ""; if (!K) return;
+    if (!D) { D = el("details", "sub"); D.open = true; }
+    D.textContent = ""; B.appendChild(D);
+    D.appendChild(el("summary", "", "🤖 " + t("MoveEye as AI guard")));
+    D.appendChild(el("div", "mut", t("In rounds with a guard role (guard, team against team, team against MoveEye, online rounds) MoveEye itself is the guard: everybody sneaks, MoveEye's real detection watches, the head follows and the shutter fires by itself. Such rounds go into their own list «against the AI», not into the ranking.")));
+    const lb = el("label", "sc-row"); lb.style.cssText = "display:flex;gap:10px;align-items:center;margin:8px 0;cursor:pointer";
+    const cb = document.createElement("input"); cb.type = "checkbox"; cb.id = "g-kig-on"; cb.checked = !!K.on; cb.disabled = !K.mw && !K.on;
+    cb.onchange = () => send(cb.checked);
+    lb.append(cb, el("span", "", "🤖 " + t("On: MoveEye guards rounds with a guard role itself"))); D.appendChild(lb);
+    if (K.active) { const a = el("div", ""); a.style.fontWeight = "700"; a.textContent = "🛡 " + t("This round: MoveEye guards (AI)"); D.appendChild(a); }
+    if (!K.mw) D.appendChild(el("div", "mut", "⚠ " + t("MoveEye is not connected to the simulator game")));
+    const h = el("div", "", "🤖 " + t("Against the AI")); h.style.cssText = "margin-top:8px;font-weight:600"; D.appendChild(h);
+    const k = K.ki || {};
+    D.appendChild(el("div", "mut", t("The AI") + ": " + (k.rounds || 0) + " " + t("rounds") + " · " + (k.catches || 0) + " " + t("catches") + " · " + (k.false || 0) + " " + t("false alarms") + " · " + (k.shots || 0) + " " + t("shots")));
+    if (!(K.board || []).length) D.appendChild(el("div", "mut", t("no rounds against the AI yet")));
+    else { const tb = el("table", "gw-board");
+      K.board.forEach((b, i) => { const tr = el("tr"); const n = el("td", "", (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + " " + b.n + (b.bot ? " 🤖" : "")); n.style.color = b.c;
+        tr.append(n, el("td", "", String(b.score)), el("td", "mut", b.rounds + " " + t("rounds") + " · " + b.caught + "× " + t("caught") + (b.goal ? " · " + b.goal + "× " + t("at the goal") : "") + (b.clean ? " · " + b.clean + "× " + t("never caught") : ""))); tb.appendChild(tr); });
+      D.appendChild(tb);
+      const rb = el("button", "sec", t("Reset the list «against the AI»")); rb.type = "button"; rb.style.marginTop = "6px";
+      rb.onclick = async () => { if (!confirm(t("Reset the list «against the AI»?"))) return; await post("/api/sim", {action: "ctl", ctl: "press", id: "game_kig_reset", lang: LANG}); SIG = ""; poll(true); };
+      D.appendChild(rb); }
+  }
+  let tm = null;
+  async function poll(now) {
+    clearTimeout(tm);
+    const g = document.getElementById("c-game");
+    if (!busy && g && !g.hidden && !document.hidden && typeof S !== "undefined" && S && S.on) {
+      try { const r = await post("/api/sim", {action: "game", lang: LANG}); paint(r && r.ok !== false && r.kig ? r.kig : null); } catch (e) {}
+    } else if (!(typeof S !== "undefined" && S && S.on)) paint(null);
+    tm = setTimeout(poll, 4000);
+  }
+  setTimeout(poll, 1200);
+  // ---- the picture «Simulator-Fenster»: MoveEye's buttons fade while nobody uses them (they stay working) ----
+  const W = document.getElementById("s-pvw");
+  if (W) {
+    const cs = document.createElement("style");
+    cs.textContent = "#s-pvw .pvbtn{transition:opacity .35s}#s-pvw.view.kig-idle>.pvbtn{opacity:.22}#s-pvw.view.kig-idle>.pvbtn:hover,#s-pvw.view.kig-idle>.pvbtn:focus-within{opacity:1}";
+    document.head.appendChild(cs);
+    let it = null;
+    const wake = () => { W.classList.remove("kig-idle"); clearTimeout(it); it = setTimeout(() => W.classList.add("kig-idle"), 3000); };
+    ["pointermove", "pointerdown", "touchstart", "keydown"].forEach(n => W.addEventListener(n, wake, {passive: true}));
+    wake();
+  }
+})();
+</script>"""
+SIM_PAGE = SIM_PAGE.replace('<div id="g-cmp"></div>', '<div id="g-kig"></div><div id="g-cmp"></div>', 1)
+SIM_PAGE = SIM_PAGE.replace("</body>", "<!--KIGJS--></body>", 1)          # filled by 596 (after the German texts are known)
 _GZ_CACHE = {}                         # 2.98.40: gzip of the big pages (blake2b of the page -> gzip)
 
 
@@ -57019,6 +57103,8 @@ class WebStream:
                 q_.append("clean=1")                         # 2.95.92: full screen - the simulator hides its rover stick
             if request.args.get("bare") == "1":
                 q_.append("bare=1")                          # «Controller-Ansicht» (538): the picture without the buttons of the window
+            elif request.args.get("dock") == "1":
+                q_.append("dock=1")                          # page Simulator: only the 3D view and the dock (simulator padview.gd)
             try:
                 b_, h_ = _sim_get("/view.jpg" + ("?" + "&".join(q_) if q_ else ""), 3.0)
             except Exception:
@@ -57038,7 +57124,7 @@ class WebStream:
             except ValueError:
                 fps_ = 6
             try:
-                up_ = _SIM_OPENER.open(urllib.request.Request(sim_base() + f"/view.mjpg?fps={fps_}", headers={"User-Agent": "MotionWatch"}), timeout=5)
+                up_ = _SIM_OPENER.open(urllib.request.Request(sim_base() + f"/view.mjpg?fps={fps_}" + ("&dock=1" if request.args.get("dock") == "1" else ""), headers={"User-Agent": "MotionWatch"}), timeout=5)
             except Exception:
                 return Response("simulator not reachable", 502)
             ctype_ = up_.headers.get("Content-Type") or "multipart/x-mixed-replace; boundary=mwsimframe"
@@ -71736,6 +71822,111 @@ for _k, _v in _HX_KIHILFE.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 WEB_PAGE = WEB_PAGE.replace("/*KIHDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_KIHILFE.items()}, ensure_ascii=False), 1)
+# ----------------------------------------------------------------------------
+# Wish of Daniel (30.10.2026): the emergency stop «⏹ Stopp» is hidden while MoveEye runs in simulation mode - the real servos
+# are not used then. The web side is in 541 (servo_client_state "sim" → #srv-stop hidden); the setting servo_stop_btn stays for
+# the real hardware. Here the window: every «⏹ Stopp» made by App._fbtn with the command _srv_estop_btn (570, all three
+# layouts of the camera bar) is remembered and taken off / put back by App._refresh (it runs every few seconds).
+# ----------------------------------------------------------------------------
+
+_ss_fbtn_before = App._fbtn
+
+
+def _ss_fbtn(self, parent, text, cmd, *a, **k):
+    b = _ss_fbtn_before(self, parent, text, cmd, *a, **k)
+    try:
+        if cmd == self._srv_estop_btn:
+            self.__dict__.setdefault("_ss_stop_btns", []).append(b)
+    except Exception:
+        pass
+    return b
+
+
+def _ss_stop_show(self):
+    """the «⏹ Stopp» buttons: hidden in the simulation, back with the real hardware"""
+    hide = bool(CFG.get("sim_on"))
+    keep = []
+    for b in getattr(self, "_ss_stop_btns", []):
+        try:
+            if not b.winfo_exists():
+                continue
+        except Exception:
+            continue
+        keep.append(b)
+        st = getattr(b, "_ss_gone", None)
+        if hide and st is None:
+            mgr = b.winfo_manager()
+            if mgr == "pack":
+                sl = b.master.pack_slaves()
+                i = sl.index(b) if b in sl else -1
+                nxt = sl[i + 1] if 0 <= i < len(sl) - 1 else None
+                b._ss_gone = ("pack", {k_: v_ for k_, v_ in b.pack_info().items() if k_ != "in"}, nxt)
+                b.pack_forget()
+            elif mgr == "grid":
+                b._ss_gone = ("grid", None, None)
+                b.grid_remove()
+        elif not hide and st is not None:
+            b._ss_gone = None
+            if st[0] == "pack":
+                kw = dict(st[1])
+                try:
+                    if st[2] is not None and st[2].winfo_exists() and st[2].winfo_manager() == "pack" and st[2].master is b.master:
+                        kw["before"] = st[2]
+                except Exception:
+                    pass
+                b.pack(**kw)
+            else:
+                b.grid()
+    self._ss_stop_btns = keep
+
+
+_ss_refresh_before = App._refresh
+
+
+def _ss_refresh(self, *a, **k):
+    r = _ss_refresh_before(self, *a, **k)
+    try:
+        _ss_stop_show(self)
+    except Exception:
+        pass
+    return r
+
+
+# wraps: App._fbtn
+App._fbtn = _ss_fbtn
+# wraps: App._refresh
+App._refresh = _ss_refresh
+# ----------------------------------------------------------------------------
+# Key = English text: (Deutsch, Français, Italiano, Rumantsch). German also into I18N.de of the page Simulator (/*KIGDE*/ of 548).
+# ----------------------------------------------------------------------------
+
+_HX_VIER = {
+    'MoveEye as AI guard': ('MoveEye als KI-Wächter', 'MoveEye comme gardien IA', 'MoveEye come guardiano IA', 'MoveEye sco guardian IA'),
+    "In rounds with a guard role (guard, team against team, team against MoveEye, online rounds) MoveEye itself is the guard: everybody sneaks, MoveEye's real detection watches, the head follows and the shutter fires by itself. Such rounds go into their own list «against the AI», not into the ranking.": (
+        'In Runden mit Wächter (Wächter, Team gegen Team, Team gegen MoveEye, Online-Runden) ist MoveEye selbst der Wächter: alle schleichen, die echte Erkennung von MoveEye passt auf, der Kopf folgt und der Auslöser löst selbst aus. Solche Runden kommen in eine eigene Liste «gegen die KI», nicht in die Rangliste.',
+        'Dans les manches avec un gardien (gardien, équipe contre équipe, équipe contre MoveEye, manches en ligne), MoveEye est lui-même le gardien : tout le monde se faufile, la vraie détection de MoveEye surveille, la tête suit et le déclencheur se déclenche tout seul. Ces manches vont dans leur propre liste «contre l’IA», pas dans le classement.',
+        'Nei turni con un guardiano (guardiano, squadra contro squadra, squadra contro MoveEye, turni online) MoveEye stesso fa il guardiano: tutti si intrufolano, il vero rilevamento di MoveEye sorveglia, la testa segue e lo scatto parte da solo. Questi turni finiscono in una lista propria «contro l’IA», non nella classifica.',
+        'En rundas cun in guardian (guardian, team cunter team, team cunter MoveEye, rundas online) è MoveEye sez il guardian: tuts sa stgaffan, la vaira identificaziun da MoveEye fa attenziun, il chau suonda ed il declenchader declegna sez. Talas rundas vegnan en ina glista atgna «cunter la IA», betg en la classificaziun.'),
+    'On: MoveEye guards rounds with a guard role itself': ('Ein: MoveEye bewacht Runden mit Wächter selbst', 'Activé : MoveEye garde lui-même les manches avec gardien', 'Attivo: MoveEye sorveglia da sé i turni con guardiano', 'En: MoveEye survegl sez rundas cun guardian'),
+    'This round: MoveEye guards (AI)': ('Diese Runde: MoveEye bewacht (KI)', 'Cette manche : MoveEye garde (IA)', 'Questo turno: MoveEye sorveglia (IA)', 'Questa runda: MoveEye survegl (IA)'),
+    'MoveEye is not connected to the simulator game': ('MoveEye ist nicht mit dem Spiel des Simulators verbunden', 'MoveEye n’est pas connecté au jeu du simulateur', 'MoveEye non è collegato al gioco del simulatore', 'MoveEye n’è betg collià cun il gieu dal simulatur'),
+    'Against the AI': ('Gegen die KI', 'Contre l’IA', 'Contro l’IA', 'Cunter la IA'),
+    'caught': ('erwischt', 'attrapé', 'preso', 'tschiffà'),
+    'at the goal': ('am Ziel', 'au but', 'al traguardo', 'a la mira'),
+    'The AI': ('Die KI', 'L’IA', 'L’IA', 'La IA'),
+    'catches': ('erwischt', 'prises', 'catture', 'tschiffads'),
+    'false alarms': ('Fehlalarme', 'fausses alarmes', 'falsi allarmi', 'fals alarms'),
+    'shots': ('Auslösungen', 'déclenchements', 'scatti', 'declenchaments'),
+    'Reset the list «against the AI»': ('Liste «gegen die KI» zurücksetzen', 'Réinitialiser la liste «contre l’IA»', 'Azzerare la lista «contro l’IA»', 'Reinizialisar la glista «cunter la IA»'),
+    'Reset the list «against the AI»?': ('Liste «gegen die KI» zurücksetzen?', 'Réinitialiser la liste «contre l’IA» ?', 'Azzerare la lista «contro l’IA»?', 'Reinizialisar la glista «cunter la IA»?'),
+    'no rounds against the AI yet': ('noch keine Runden gegen die KI', 'encore aucune manche contre l’IA', 'ancora nessun turno contro l’IA', 'anc naginas rundas cunter la IA'),
+}
+for _k, _v in _HX_VIER.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+SIM_PAGE = SIM_PAGE.replace("<!--KIGJS-->", KIG_JS.replace("/*KIGDE*/{}", json.dumps({k: DE[k] for k in KIG_KEYS if k in DE and DE[k] != k}, ensure_ascii=False)), 1)
 TRX['rm'].update({
     '(or the address from the push message).': "(u l'adressa da l'avis push).",
     '+ Add relay': '+ Agiuntar in relais',
