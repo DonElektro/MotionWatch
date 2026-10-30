@@ -608,6 +608,12 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-4.12
+3D-4.12: Spiel: drei feste Spiele (Schleichen, Wächter-Duell, Diebstahl) + «Eigene Regeln»; Rollen reihum; Wächter-Werkzeuge
+mit Energie und Abklingzeit; Hinweise für Schleicher (Vibration, Lärm, Schatten); 3-Minuten-Runden mit Siegerbild und
+knappstem Moment; Fairness nach Rollen-Verhältnis; «Mensch gegen KI» (dieselbe Runde mit Mensch und mit MoveEye, Trainingsbilder);
+online mitspielen über eine Einladung von MoveEye. «Nur Gruppen» lässt «Verbindung» zu.
+
 NEU IN 3D-4.11
 3D-4.11: Auslöser – steuert ein Mensch die Kamera, zielt er mit der Bildmitte (Kreis je nach Schwierigkeit) und drückt den runden
 Knopf oder R2: Treffer = Foto, Licht/Sirene, Spieler zurück zum Start, Punkte; daneben = Minuspunkte und 3 s Sperre.

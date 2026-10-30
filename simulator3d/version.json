@@ -1,12 +1,12 @@
 {
- "version": "3D-4.11",
+ "version": "3D-4.12",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31539036,
- "sha256": "37e9b039f4fa2d4324ececdc3609ba56dbafec6db423b4d85908d4cbb9cf2b9d",
- "notes": "Auslöser im Spiel, Kopf mit Rampen",
+ "size": 31595904,
+ "sha256": "28d554afb1b0800a1a13e43f0cce439852b24eb27ea52bad7baad7ad377ac4fa",
+ "notes": "Spielkonzept (3 feste Spiele, Rollen reihum, Energie, Mensch gegen KI, online), Nur Gruppen ohne Verbindung",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24660942,
-  "sha256": "20639d48a0ed10e22d0ea2a84a04b3a66699bfb91013125f64ba2275b494857b"
+  "size": 24718582,
+  "sha256": "a6fdf1dfd6ff1e342b7f54abdfa470032a2c7bf18099b3109157f0e48794fd20"
  }
 }

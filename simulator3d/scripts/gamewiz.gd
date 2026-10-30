@@ -14,6 +14,7 @@ var step := 0
 var W := {}                      # the choice being made
 var lvl := "normal"
 var extras_open := false
+var own_open := false                    # 3D-4.x: step 1 shows the three games; «Eigene Regeln» opens all game types
 var error := ""
 var seq := 0                     # every change counts up: MoveEye repaints only when it changed
 
@@ -44,6 +45,8 @@ const JG_FIXED := {"game_goal": "reach", "game_lives": "0", "game_items": 0, "ga
 		"game_heart": false, "game_botguard": false, "game_wx": false, "game_gear": false}
 # 3D-4.x: the extras of gameplus.gd - not controls of the card «Spiel», only here in the wizard (kept by gameplus.gd)
 const PX_KEYS := ["game_wx", "game_gear", "game_theft"]
+# 3D-4.x Spielkonzept: roles in turn, tools with energy, fairness, infos for sneakers - kept by gamerules.gd (only here)
+const RX_KEYS := ["game_rotate", "game_tools", "game_fair", "game_vibe", "game_shade"]
 const THEFT_OPTS := [["auto", "zufällig"], ["Velo", "🚲 das Velo"], ["Kühlboxen", "🧊 die Kühlbox (nur Camping-Platz)"]]
 # 3D-3.77: on the last step - who plays along
 const PLAYER_OPTS := [["game_bots", "Computer-Spieler (Bots)", "select", 0, 0, "", false, [["0", "keine"], ["1", "1 Bot"], ["2", "2 Bots"], ["3", "3 Bots"]]],
@@ -73,12 +76,12 @@ const GOALS := [["reach", "🟢", "Zum Ziel schleichen", "Ziel: zum grünen Lich
 		["flag", "🚩", "Fahne erobern (zwei Teams)", "Ziel: zwei Teams. Holt die Fahne der anderen und bringt sie zur eigenen Basis. Wer mit der Fahne erwischt wird, verliert sie. Es gewinnt das Team mit mehr eroberten Fahnen (z. B. Rot 2 : 1 Blau)."],
 		["sprint", "⏱", "Sprint (90 Sekunden)", "Für Kinder und kurze Runden: immer derselbe Parcours mit 3 Toren. Durch die Tore, dann ins Ziel – je schneller, desto mehr Punkte."],
 		["theft", "🚲", "Diebstahl (Velo oder Kühlbox)", "Ziel: das Velo oder die Kühlbox unbemerkt zum orangen Ausgang tragen. Wer sie trägt, ist langsamer. Am Schluss schaut MoveEye nach, ob es merkt, dass etwas fehlt."]]
-const LEVELS := [["easy", "🌱", "Anfänger", "Wächter leicht, unbegrenzte Leben, 8 Minuten, Sichtfeld der Kameras sichtbar."],
-		["normal", "🎯", "Normal", "Wächter normal, 3 Leben, 5 Minuten."],
-		["hard", "🔥", "Profis", "Wächter schwer, nur 1 Leben, 4 Minuten, kein Sichtfeld."]]
-const LEVEL_SET := {"easy": {"game_level": "easy", "game_lives": "0", "game_minutes": 8, "game_cones": true},
-		"normal": {"game_level": "normal", "game_lives": "3", "game_minutes": 5, "game_cones": false},
-		"hard": {"game_level": "hard", "game_lives": "1", "game_minutes": 4, "game_cones": false}}
+const LEVELS := [["easy", "🌱", "Anfänger", "Wächter leicht (70 Energie), unbegrenzte Leben, 4 Minuten, Sichtfeld der Kameras sichtbar."],
+		["normal", "🎯", "Normal", "Wächter normal (100 Energie), 3 Leben, 3 Minuten."],
+		["hard", "🔥", "Profis", "Wächter schwer (130 Energie), nur 1 Leben, 3 Minuten, kein Sichtfeld."]]
+const LEVEL_SET := {"easy": {"game_level": "easy", "game_lives": "0", "game_minutes": 4, "game_cones": true},
+		"normal": {"game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_cones": false},
+		"hard": {"game_level": "hard", "game_lives": "1", "game_minutes": 3, "game_cones": false}}
 # [key, label, type, min, max, unit, extra]
 const OPTIONS := [["game_minutes", "Dauer einer Runde", "range", 1, 15, " min", true], ["game_lives", "Leben", "select", 0, 0, "", true],
 		["game_items", "Kristalle zum Sammeln", "range", 0, 6, "", true],
@@ -92,6 +95,12 @@ const OPTIONS := [["game_minutes", "Dauer einer Runde", "range", 1, 15, " min", 
 		["game_theft", "🚲 Diebstahl: was wird geklaut?", "select", 0, 0, "", false, THEFT_OPTS],
 		["game_wx", "⛅ Wetterwechsel mitten in der Runde (Gewitter, Nebel oder Dämmerung – 10 s vorher warnt das Handy)", "toggle", 0, 0, "", true],
 		["game_gear", "🎒 Tarn-Sachen zum Auswählen: Tarnkleidung, Wärmedecke, Karton, Regenschirm", "toggle", 0, 0, "", true],
+		# 3D-4.x Spielkonzept (gamerules.gd, gametools.gd)
+		["game_rotate", "🔄 Rollen wechseln: wer ist nach jeder Runde Wächter?", "select", 0, 0, "", false, [["off", "aus – jeder wählt selbst"], ["turn", "der Reihe nach"], ["best", "wer am wenigsten erwischt wurde"]]],
+		["game_tools", "⚡ Wächter-Werkzeuge mit Energie: Licht, Sirene, Scan, Zoom, Auslöser kosten Energie und laden nach", "toggle", 0, 0, "", true],
+		["game_fair", "⚖ Fairness nach Rollen: viele Schleicher – der Wächter bekommt Hilfe; wenige – mehr Verstecke", "toggle", 0, 0, "", true],
+		["game_vibe", "📳 Infos für Schleicher: Handy vibriert, wenn die Kamera zu dir schaut · Lärm-Anzeige beim Rennen", "toggle", 0, 0, "", true],
+		["game_shade", "🌑 Schatten verstecken: am Tag sieht dich die Kamera im Schatten schlechter", "toggle", 0, 0, "", true],
 		# 3D-4.7: from the card «Spiel» (former «Experte»): rules, hit effects, what the game teaches MoveEye
 		["game_teamgoal", "Team-Ziel: das Ziel öffnet erst, wenn alle Kristalle gefunden sind", "toggle", 0, 0, "", true],
 		["game_noise", "Mikrofon hört laute Schritte", "toggle", 0, 0, "", true], ["game_random", "Start und Ziel zufällig", "toggle", 0, 0, "", true],
@@ -131,14 +140,28 @@ const RULES := {"tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter
 		"jg_score": "🎉 Punkte: Meldet MoveEye eine Person, obwohl nur dein Lockvogel im Bild ist, gibt es 100 Punkte (+50 für jeden neuen Lockvogel). Ist ein echter Mensch im Bild, zählt es nicht.",
 		"jg_learn": "🧠 Jeder Fehlalarm wird ein Lernfall: MoveEye bekommt das Bild und die Lage (was, wie weit, Licht, Wetter) und lässt sich beim nächsten Mal weniger täuschen.",
 		"jg_night": "🌙 Nacht-Runde: Lampen-Strahl und Insekten am Licht wirken im Dunkeln am besten.",
-		"jg_nomw": "⚠ MoveEye ist gerade nicht verbunden. Ohne MoveEye zählt kein Fehlalarm – zuerst in MoveEye den Simulator verbinden."}
+		"jg_nomw": "⚠ MoveEye ist gerade nicht verbunden. Ohne MoveEye zählt kein Fehlalarm – zuerst in MoveEye den Simulator verbinden.",
+		"rotate": "🔄 Rollen reihum: Nach jeder Runde ist ein anderer Wächter – das steht vor der nächsten Runde auf allen Handys.",
+		"tools": "⚡ Wächter-Werkzeuge: 💡 Licht, 📢 Sirene (wer sich bewegt, fällt auf), 📡 Scan (zeigt, wo jemand ist), 🔍 Zoom und der 🎯 Auslöser kosten Energie. Sie lädt langsam nach – gut einteilen!",
+		"fair": "⚖ Fairness: Viele Schleicher gegen einen Wächter – er bekommt mehr Energie und einen Bot-Helfer. Wenige Schleicher – mehr Verstecke, die länger halten.",
+		"infos": "📳 Für Schleicher: Das Handy vibriert, wenn die Kamera zu dir schaut. Rennen ist laut – der Wächter sieht dann eine Markierung. Im Schatten sieht dich die Kamera am Tag schlechter.",
+		"short": "🏆 Kurze Runden: Am Schluss das Siegerbild mit dem knappsten Moment als Wiederholung und die Rangliste des Abends (sie beginnt nach Mitternacht neu)."}
 # 3D-4.x: the quick starts and the presets for the kids mode and «Mitspieler einladen» - every key of KEYS is set
-const BASE := {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 5, "game_items": 3,
+const BASE := {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_items": 3,
 		"game_rescue": false, "game_stones": true, "game_cones": false, "game_powers": true, "game_spectate": true, "game_photos": true, "game_hides": 3,
 		"game_decoy": true, "game_night": false, "game_events": true, "game_checkpoints": 0, "game_autohandicap": false, "game_tasks": true, "game_bots": "0",
 		"game_tutorial": false, "game_daily": false, "game_ghost": true, "game_heart": true, "game_botguard": true,
-		"game_wx": false, "game_gear": true, "game_theft": "auto"}
-const PRESETS := {"kids": {"game_mode": "mw", "game_level": "easy", "game_lives": "0", "game_minutes": 5, "game_cones": true, "game_events": false,
+		"game_wx": false, "game_gear": true, "game_theft": "auto",
+		"game_rotate": "turn", "game_tools": true, "game_fair": true, "game_vibe": true, "game_shade": true}
+# 3D-4.x Spielkonzept (Daniel, 30.10.2026): the three fixed games of the quick start; the older presets stay for the kids mode,
+# «Zonen-Check» and old saved choices
+const PRESETS := {"sneak": {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_bots": "1",
+			"game_hides": 3, "game_items": 2},
+		"duel": {"game_mode": "guard", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_botguard": true,
+			"game_rotate": "turn", "game_tools": true, "game_hides": 3, "game_items": 2},
+		"theft": {"game_mode": "mw", "game_goal": "theft", "game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_theft": "auto",
+			"game_items": 0, "game_hides": 3, "game_bots": "1"},
+		"kids": {"game_mode": "mw", "game_level": "easy", "game_lives": "0", "game_minutes": 5, "game_cones": true, "game_events": false,
 			"game_tasks": false, "game_decoy": false, "game_heart": false, "game_bots": "1", "game_items": 3, "game_hides": 4, "game_wx": false},
 		"family": {"game_mode": "guard", "game_level": "normal", "game_lives": "3", "game_minutes": 5, "game_botguard": true, "game_autohandicap": true},
 		"pro": {"game_mode": "mw", "game_level": "hard", "game_lives": "1", "game_minutes": 4, "game_powers": false, "game_items": 2, "game_hides": 2,
@@ -148,10 +171,11 @@ const PRESETS := {"kids": {"game_mode": "mw", "game_level": "easy", "game_lives"
 		"free": {"game_mode": "free", "game_lives": "0", "game_items": 0, "game_hides": 0, "game_powers": false, "game_events": false, "game_tasks": false,
 			"game_decoy": false, "game_checkpoints": 0, "game_bots": "0", "game_botguard": false, "game_spectate": false, "game_photos": false,
 			"game_wx": false, "game_gear": false}}
-const QUICK := [["kids", "🧒", "Kinder · 5 Min.", "Leicht: unbegrenzte Leben, Sichtfeld sichtbar, Verstecke, 1 Bot läuft mit. Ohne Aufgaben und Zufallsereignisse."],
-		["family", "👪", "Familie", "Einer ist Wächter (sonst der Bot-Wächter), 3 Leben, 5 Minuten, Aufgaben und Zufallsereignisse. Am Schluss das Duell gegen MoveEye."],
-		["pro", "🔥", "Profis", "Gegen MoveEye, schwer: nur 1 Leben, 4 Minuten, Checkpoints, Handicap für den Ersten, keine Power-ups, mit Wetterwechsel."]]
-const LEVEL_OF := {"kids": "easy", "family": "normal", "pro": "hard", "kids_pc": "easy", "free": "normal"}
+const QUICK := [["sneak", "🕵️", "Schleichen", "Unentdeckt zum grünen Ziel – MoveEye passt auf (ohne MoveEye die Kamera des Simulators). 3 Minuten, 3 Leben, Verstecke und Schatten, 1 Bot läuft mit."],
+		["duel", "👮", "Wächter-Duell", "Einer ist Wächter: Auslöser 🎯, Licht, Sirene, Scan und Zoom – mit Energie. Die anderen schleichen. Nach jeder Runde ist der Nächste Wächter (will niemand: der Bot-Wächter)."],
+		["theft", "🚲", "Diebstahl", "Das Velo oder die Kühlbox unbemerkt zum orangen Ausgang tragen. Am Schluss schaut MoveEye nach, ob es merkt, dass etwas fehlt."]]
+const LEVEL_OF := {"sneak": "normal", "duel": "normal", "theft": "normal", "kids": "easy", "family": "normal", "pro": "hard", "kids_pc": "easy", "free": "normal"}
+const OWN_LABEL := "⚙ Eigene Regeln – alle Spielarten, Ziele und Extras"
 
 
 # ---- the model (the same for this window and for MoveEye) ------------------------------------------------------
@@ -162,6 +186,7 @@ func _cur() -> Dictionary:
 			o[c.id] = c["get"].call()
 	o["game_lures"] = main.game.jaeger.allowed_str()        # «Fehlalarm-Jäger»: which lures (not a control of the card)
 	o.merge(main.game.plus.cfg_get(), true)                 # 3D-4.x: weather change, camouflage things, theft (only here)
+	o.merge(main.game.rules.cfg_get(), true)                # 3D-4.x: roles in turn, tools, fairness, infos for sneakers
 	return o
 
 
@@ -178,6 +203,7 @@ func open_wiz() -> void:
 	lvl = str(W.get("game_level", "normal"))
 	step = 0
 	error = ""
+	own_open = false
 	shown = true
 	visible = true
 	get_parent().move_child(self, -1)
@@ -241,6 +267,15 @@ func _rules() -> Array:
 		out.append(RULES["botguard"])
 	if str(W.get("game_goal")) == "theft":
 		out.append(RULES["theft"])
+	if str(W.get("game_mode")) in ["guard", "seek"] and str(W.get("game_rotate", "off")) != "off":
+		out.append(RULES["rotate"])
+	if str(W.get("game_mode")) in ["guard", "teamguard", "mwhand"] and W.get("game_tools", true):
+		out.append(RULES["tools"])
+	if W.get("game_fair", true):
+		out.append(RULES["fair"])
+	if W.get("game_vibe", true) or W.get("game_shade", true):
+		out.append(RULES["infos"])
+	out.append(RULES["short"])
 	out.append(RULES["teach"])
 	out.append(RULES["new"])
 	out.append(RULES["watch"])
@@ -265,6 +300,7 @@ func apply_preset(id: String, open_game := true) -> Array:
 			if not r.get("ok", false):
 				errs.append(k)
 	main.game.plus.cfg_set(d)
+	main.game.rules.cfg_set(d)
 	if open_game:
 		main.game.set_open(true)
 	return errs
@@ -292,9 +328,9 @@ func model() -> Dictionary:
 	match step:
 		0:
 			title = "Welches Spiel?"
-			lead = "Bis zu 12 Spieler laufen mit dem Handy mit (einstellbar, Standard 6), weitere schauen zu. Wähle die Spielart – der Assistent erklärt die Regeln und stellt alles ein."
+			lead = "Drei feste Spiele – ein Tipp, alles eingestellt (3 Minuten pro Runde). Bis zu 12 Spieler laufen mit dem Handy mit, weitere schauen zu. Alles andere unter «Eigene Regeln»."
 			key = "game_mode"
-			src = MODES
+			src = MODES if own_open else []                # 3D-4.x: the game types only under «Eigene Regeln»
 		1:
 			title = "Was ist das Ziel?"
 			lead = "Sprint: 90 Sekunden, immer derselbe Parcours – gut für Kinder und kurze Runden."
@@ -330,6 +366,8 @@ func model() -> Dictionary:
 		if key == "game_mode" and c[0] == "jaeger" and not main.game.jaeger.mw_on():
 			tx += " ⚠ MoveEye ist gerade nicht verbunden."
 		cards.append({"v": c[0], "icon": c[1], "title": c[2], "text": tx, "on": on, "pic": Pics.PICS.get(c[0], "")})
+	if key == "game_mode" and g.cmp != null:              # 3D-4.x: «Mensch gegen KI» (gamecompare.gd)
+		cards.append(g.cmp.wiz_card(str(W.get("game_mode", "")) == "compare"))
 	var quick := []
 	if step == 0:                                          # 3D-4.x: one tap - everything set
 		for q in QUICK:
@@ -344,10 +382,12 @@ func model() -> Dictionary:
 			if jg() and o[0] == "game_night":
 				opts.append({"id": o[0], "label": "🌙 Nacht-Runde (Lampe und Insekten wirken besser)", "type": "toggle", "value": W[o[0]], "extra": false})
 				continue
-			if o[0] == "game_botguard" and str(W.get("game_mode")) != "guard":
+			if o[0] == "game_botguard" and not str(W.get("game_mode")) in ["guard", "compare"]:
 				continue
 			if o[0] == "game_theft" and str(W.get("game_goal")) != "theft":
 				continue                                       # 3D-4.x: which thing - only with the goal «Diebstahl»
+			if o[0] == "game_rotate" and not str(W.get("game_mode")) in ["guard", "seek"]:
+				continue                                       # 3D-4.x: roles in turn - only where a person guards
 			var d := {"id": o[0], "label": o[1], "type": o[2], "value": W[o[0]], "extra": o[6]}
 			if o[2] == "range":
 				d["min"] = o[3]
@@ -363,6 +403,8 @@ func model() -> Dictionary:
 		for m in MODES:
 			if m[0] == str(W.get("game_mode")):
 				md = m[1] + " " + m[2]
+		if str(W.get("game_mode")) == "compare" and g.cmp != null:
+			md = g.cmp.WIZ[1] + " " + g.cmp.WIZ[2]
 		for x in GOALS:
 			if x[0] == str(W.get("game_goal")):
 				gl = x[1] + " " + x[2]
@@ -371,6 +413,15 @@ func model() -> Dictionary:
 				["Teams", "Rot gegen Blau (nur bei «Fahne erobern»)" if str(W.get("game_goal")) == "flag" else "nein"],
 				["Wetterwechsel", "ja – Gewitter, Nebel oder Dämmerung" if W.get("game_wx", false) else "nein"],
 				["Tarn-Sachen", "ja – jeder wählt auf dem Handy" if W.get("game_gear", false) else "nein"]]
+		if str(W.get("game_mode")) in ["guard", "seek"]:
+			for ro in OPTIONS:
+				if ro[0] == "game_rotate":
+					for oo in ro[7]:
+						if oo[0] == str(W.get("game_rotate", "turn")):
+							summary.append(["Rollen wechseln", oo[1]])
+		var fp: String = str(main.game.rules.calc().get("text", "")) if W.get("game_fair", true) else ""
+		if fp != "":
+			summary.append(["Fairness", fp.trim_prefix("⚖ ") + " (mit den Spielern, die jetzt dabei sind)"])
 		if str(W.get("game_goal")) == "theft":
 			for th in THEFT_OPTS:
 				if th[0] == str(W.get("game_theft", "auto")):
@@ -389,7 +440,8 @@ func model() -> Dictionary:
 		nl = "▶ Runde starten" if g.open else "✓ Spiel öffnen & QR-Code zeigen"
 	return {"ok": true, "shown": shown, "seq": seq, "step": step, "steps": steps(), "title": title, "lead": lead, "key": key, "cards": cards,
 			"options": opts, "extras_open": extras_open, "summary": summary, "quick": quick, "quick_title": "Schnellstart – ein Tipp, alles eingestellt" if step == 0 else "",
-			"own_title": "Oder selbst zusammenstellen:" if step == 0 else "",
+			"own_title": ("Eigene Regeln – wähle die Spielart:" if own_open else "") if step == 0 else "",
+			"own_btn": (("▾ " if own_open else "▸ ") + OWN_LABEL) if step == 0 else "", "own_open": own_open,
 			"extras_label": EXTRAS_LABEL[1] if step == 2 else (EXTRAS_LABEL[0] if step == 3 else ""),
 			"pics": ([Pics.PICS.get(str(W.get("game_mode")), ""), "" if jg() else Pics.PICS.get(str(W.get("game_goal")), "")]) if step == 3 else [], "rules": _rules() if step == 3 else [],
 			"last": _summary(last) if last != null and step == 0 else "", "error": error, "next": nl, "back": step > 0,
@@ -445,6 +497,9 @@ func op(d: Dictionary) -> Dictionary:
 				_changed()
 		"extras":
 			extras_open = bool(d.get("value", not extras_open))
+			_changed()
+		"own":                                          # 3D-4.x: «Eigene Regeln» - all game types, goals and extras
+			own_open = bool(d.get("value", not own_open))
 			_changed()
 		"act":                                          # 3D-4.7: a button of the last step (TV mode, ranking …)
 			var aid := str(d.get("value", ""))
@@ -508,7 +563,13 @@ func _next() -> void:
 	var g = main.game
 	if g.open:                                         # the game is open: take over the settings, start the round
 		_apply()
-		g.start_round()
+		if g.cmp != null and g.cmp.armed:              # 3D-4.x: «Mensch gegen KI» - both rounds
+			error = g.cmp.start()
+			if error != "":
+				_changed()
+				return
+		else:
+			g.start_round()
 		close_wiz()
 		return
 	_apply()
@@ -530,11 +591,17 @@ func _apply() -> void:
 		W.merge(JG_FIXED, true)
 		g.jaeger.set_allowed(str(W.get("game_lures", "")))
 	g.plus.cfg_set(W)                                      # 3D-4.x: weather change, camouflage things, theft
+	g.rules.cfg_set(W)                                     # 3D-4.x: roles in turn, tools, fairness, infos for sneakers
+	var cmp_on: bool = str(W.get("game_mode", "")) == "compare"
+	if g.cmp != null:
+		g.cmp.wiz_apply(W)                                 # 3D-4.x: «Mensch gegen KI» is played as «Wächter», then MoveEye
 	for k in KEYS:
 		if W.has(k):
 			var r: Dictionary = main.control_set(k, W[k])
 			if not r.get("ok", false):
 				errs.append(k)
+	if cmp_on:
+		W["game_mode"] = "compare"
 	g.set_open(true)
 	if not g.open:
 		errs.append("Spiel öffnen")
@@ -845,7 +912,14 @@ func _paint() -> void:
 			var qv: String = q["v"]
 			qb.pressed.connect(func(): op({"op": "quick", "value": qv}))
 			qg.add_child(qb)
-		body.add_child(_lab(M["own_title"], 13, Color(0.6, 0.66, 0.74), false))
+		var ob := Button.new()                             # 3D-4.x: «Eigene Regeln»
+		ob.text = plain(str(M["own_btn"]))
+		ob.flat = true
+		ob.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		ob.pressed.connect(func(): op({"op": "own", "value": not own_open}))
+		body.add_child(ob)
+		if str(M["own_title"]) != "":
+			body.add_child(_lab(M["own_title"], 13, Color(0.6, 0.66, 0.74), false))
 	if M["last"] != "":
 		var lb := Button.new()
 		lb.text = plain("Wie letztes Mal: " + M["last"])

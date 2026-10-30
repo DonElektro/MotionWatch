@@ -207,6 +207,11 @@ func fire(g, who: String) -> Dictionary:
 	var left := lock_left(g)
 	if left > 0.0:
 		return {"ok": false, "locked": true, "lock": snappedf(left, 0.1), "error": "Auslöser gesperrt – noch %d s (Fehlalarm)" % int(ceil(left))}
+	var pe: String = game.tools.pay_shot(g) if game.tools != null else ""     # 3D-4.x: a shot costs energy (gametools.gd)
+	if pe != "":
+		if g != null:
+			game._say(g, "⏳ " + pe, 2.0)
+		return {"ok": false, "energy": true, "error": pe}
 	var cam_i: int = 0 if g == null else game.guard_cam(g)
 	var vs := Vector2(main.vps[cam_i].size)
 	var asp: float = vs.x / max(1.0, vs.y)
@@ -237,6 +242,8 @@ func fire(g, who: String) -> Dictionary:
 		gd["shut_miss"] = int(gd.get("shut_miss", 0)) + 1
 		lock[k] = now() + LOCK
 		lock_len[k] = LOCK
+		if game.tools != null:
+			game.tools.miss(g)                             # 3D-4.x: a miss costs more energy
 		if main.shot_sound != null:
 			main.shot_sound.play()
 		game.news("❌ Auslöser daneben – Fehlalarm (%s, %d)" % [by, MISS])

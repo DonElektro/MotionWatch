@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 03:11",
+ "generated": "2026-10-30 04:05",
  "versions": [
   {
-   "version": "2.98.36",
-   "file": "webcam_bewegung_2_98_36.py",
+   "version": "2.98.37",
+   "file": "webcam_bewegung_2_98_37.py",
    "url": "",
-   "sha256": "93eb22b10142ae7f9df4a391c385bdbf39b58ec9f630d0b00e0be8c63dddaff1",
-   "date": "2026-10-30 03:11",
-   "notes": "Auslöser im Spiel (Fadenkreuz in der Bildmitte, 🎯-Knopf / R2: Treffer = Foto, Alarm ins Test-Postfach, Spieler raus, Punkte; daneben = Minuspunkte und 3 s Sperre). Servos wie bei Industrierobotern: Rampen aus einem Bewegungsplaner, Selbstdiagnose mit Fehlerspeicher und Betriebsstunden, Not-Aus mit Freigeben, sichere Grenzen und Watchdog, Teach-in mit benannten Positionen, Anzeige «wer steuert» auf allen Geräten (mit Simulator 3D-4.11).",
-   "sig": "c098e15087107d7967506f7a20519dd8af7983280e60ab97394fa66b24c5925b688abd4d5669f7ff181f2f51bd562fb1ea95922c3668806c71d2583447a9f706"
+   "sha256": "48cccc848cef2904ff39b2098972ebb3e0afbb9e2c4161dff3fec9afb38d34ed",
+   "date": "2026-10-30 04:05",
+   "notes": "Spiel: drei feste Spiele + «Eigene Regeln», Rollen reihum, Wächter-Werkzeuge mit Energie, Hinweise für Schleicher, Siegerbild, Fairness; «Mensch gegen KI» (Vergleich + Trainingsbilder); online mitspielen mit Einladungslink (läuft ab, widerrufbar, QR, Gäste sehen nur das Spiel). Knopf Hell → Rotlicht → Dunkel (mit Simulator 3D-4.12).",
+   "sig": "e2d832cc8ef5eece7443c88f7b83a756ea4724f6ddc0411818ac730232f154d1c7d5698c1ad46f3bb7a07d5f377d068deb3a8a403039e560a71851ccd1d25e08"
   },
   {
    "version": "2.97.1",

@@ -42,6 +42,7 @@ OEFFENTLICH_ANFANG = {
     "/nt/": "Netz-Test fürs Handy (keine Daten)",
     "/info": "Info-Seite für Nachbarn (nur wenn eingeschaltet)",
     "/almanach": "Almanach (keine Daten)",
+    "/game/": "Online-Spiel über Einladung (Token im Link, Ablauf, widerrufbar)",
 }
 OEFFENTLICH_GENAU = {
     "/i18n/fr.js": "Übersetzung", "/i18n/it.js": "Übersetzung", "/i18n/rm.js": "Übersetzung",

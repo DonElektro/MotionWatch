@@ -1036,7 +1036,7 @@ function applyTheme() {
   const s = themeStep(); $("#btn-theme").innerHTML = s === "light" ? "&#9790;" : s === "dark" ? "&#9673;" : "&#9728;";
   $("#btn-theme").classList.toggle("thred", s === "red");
 }
-function toggleTheme() { const n = {light: "dark", dark: "red", red: "light"}[themeStep()];
+function toggleTheme() { const n = {light: "red", red: "dark", dark: "light"}[themeStep()];
   document.documentElement.classList.toggle("sxnight", n === "red"); THEME = n === "light" ? "light" : "dark";
   try { localStorage.setItem("mw-theme", THEME); localStorage.setItem("mw-night", n === "red" ? "1" : "0"); } catch (e) {} applyTheme();
   if (window.sxThemeSaid) window.sxThemeSaid(n); }

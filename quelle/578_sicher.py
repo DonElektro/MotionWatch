@@ -479,7 +479,7 @@ try { if (typeof I18N !== "undefined" && I18N.de) Object.keys(TX.de || {}).forEa
 // ---- 4: «Rotlicht-Ansicht» = the 3rd step of the button «Hell / dunkel» (toggleTheme in 510 / 530: Hell → Dunkel → Rotlicht) ----
 const STEP = {light: "Light", dark: "Dark", red: "Red light view"};
 const stepNow = () => H.classList.contains("sxnight") ? "red" : (typeof THEME !== "undefined" && THEME === "light") ? "light" : "dark";
-function paintN() { const b = D.getElementById("btn-theme"); if (!b) return; const s = stepNow(), n = {light: "dark", dark: "red", red: "light"}[s];
+function paintN() { const b = D.getElementById("btn-theme"); if (!b) return; const s = stepNow(), n = {light: "red", red: "dark", dark: "light"}[s];
   const tt = T("Light / dark / red light") + ": " + T(STEP[s]) + " → " + T(STEP[n]);
   if (b.getAttribute("title") !== tt) { b.setAttribute("title", tt); b.setAttribute("aria-label", tt); b.dataset.sxA = tt; b.dataset.sxT = tt; }
   b.classList.toggle("thred", s === "red"); }
@@ -596,14 +596,14 @@ def tk_theme_step():
 
 
 def tk_theme_tip():
-    s = tk_theme_step(); n = {"light": "dark", "dark": "red", "red": "light"}[s]
+    s = tk_theme_step(); n = {"light": "red", "red": "dark", "dark": "light"}[s]
     nm = {"light": "Light", "dark": "Dark", "red": "Red light view"}
     return tr("Light / dark / red light") + ": " + tr(nm[s]) + " → " + tr(nm[n])
 
 
 def _sx_tk_toggle_theme(self):
-    """the button ◐ (and Ctrl+T): Hell → Dunkel → Rotlicht → Hell"""
-    n = {"light": "dark", "dark": "red", "red": "light"}[tk_theme_step()]
+    """the button ◐ (and Ctrl+T): Hell → Rotlicht → Dunkel → Hell (30.10.2026: nach Rot kommt Dunkel)"""
+    n = {"light": "red", "red": "dark", "dark": "light"}[tk_theme_step()]
     CFG["tk_night"] = n == "red"
     self._set("theme", "light" if n == "light" else "dark")
     save_settings()

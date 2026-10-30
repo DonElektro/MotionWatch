@@ -941,6 +941,8 @@ function gwPaint(M) {
         if (r && r.game && r.game.open) { const qq = $("#gw-qr"); if (qq && qq.firstChild) qq.scrollIntoView({behavior: "smooth", block: "center"}); } };
       qg.appendChild(b); });
     B.appendChild(qg);
+    if (M.own_btn) { const ob = el("button", "sec", M.own_btn); ob.type = "button"; ob.style.cssText = "width:100%;text-align:left;white-space:normal;margin:2px 0 8px";   // 2.98.37: «Eigene Regeln» (3D-4.x: three fixed games first)
+      ob.onclick = () => gwOp({op: "own", value: !M.own_open}); B.appendChild(ob); }
     if (M.own_title) B.appendChild(el("div", "gw-sub mut", M.own_title)); }
   if ((M.cards || []).length) { const g = el("div", "gw-cards");
     M.cards.forEach(c => { const b = el("button", "gw-card" + (c.on ? " on" : "")); b.type = "button";
@@ -1074,6 +1076,10 @@ function specPaint() {
   if (G.round === "end" && G.res && G.res.length) {
     const sig = JSON.stringify(G.res) + JSON.stringify((G.px || {}).lines || []);   // 3D-4.x: the theft answer of MoveEye comes later
     if (SPECRES !== sig && SPECRES !== "closed:" + sig) { SPECRES = sig; R.innerHTML = ""; const bx = el("div", "bx"); bx.appendChild(el("h3", "", "🏆 " + t("Result")));
+      const RU = G.rules || {}, RW = RU.win || {};      // 2.98.37 (3D-4.x): winner, closest moment, fairness, the next guard
+      if (RW.title) { const w = el("div", "", RW.title + " · " + RW.score); w.style.cssText = "font-size:24px;font-weight:800;margin:4px 0 2px;color:#ffd166"; bx.appendChild(w);
+        if (RW.hl && RW.hl.text) bx.appendChild(el("div", "", RW.hl.text)); }
+      ["fair", "next"].forEach(k => { if (RU[k]) bx.appendChild(el("div", "mut", RU[k])); });
       if (G.jres && G.jres.text) { const jr = el("div", "", (G.jres.n ? "🎉 " : "🛡 ") + G.jres.text); jr.style.cssText = "font-size:22px;font-weight:800;margin:4px 0 8px"; bx.appendChild(jr);   // 2.98.18: «Fehlalarm-Jäger»
         if ((G.jres.cases || []).length) bx.appendChild(el("div", "mut", G.jres.cases.map(c => c[0] + " " + c[1] + " (" + c[2] + ", " + Math.round(c[3]) + " m)").join(" · "))); }
       if (G.fres && G.fres.text) { const fr = el("div", "", "🚩 " + G.fres.text + " – " + G.fres.title); fr.style.cssText = "font-size:26px;font-weight:800;margin:4px 0 8px"; bx.appendChild(fr); }   // 3D-4.x

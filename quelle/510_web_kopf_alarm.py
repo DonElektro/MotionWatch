@@ -543,7 +543,7 @@ function applyI18n() {
 function themeStep() { return document.documentElement.classList.contains("sxnight") ? "red" : THEME === "light" ? "light" : "dark"; }   // 573/578: Hell → Dunkel → Rotlicht
 function applyTheme() { document.body.classList.toggle("light", THEME === "light"); const b = $("#btn-theme"), s = themeStep();
   if (b) { b.innerHTML = s === "light" ? "&#9790;" : s === "dark" ? "&#9673;" : "&#9728;"; b.classList.toggle("thred", s === "red"); } }
-function toggleTheme() { const n = {light: "dark", dark: "red", red: "light"}[themeStep()];
+function toggleTheme() { const n = {light: "red", red: "dark", dark: "light"}[themeStep()];
   document.documentElement.classList.toggle("sxnight", n === "red"); THEME = n === "light" ? "light" : "dark";
   try { localStorage.setItem("mw-theme", THEME); localStorage.setItem("mw-night", n === "red" ? "1" : "0"); } catch (e) {} applyTheme();
   if (window.sxThemeSaid) window.sxThemeSaid(n); }
