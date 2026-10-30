@@ -33290,7 +33290,10 @@ def self_test(folder=""):
                     bad.append(e["version"])
             assert not bad, f"bad checksum / signature: {bad}"
             return f"{len(m.get('versions', []))} versions signed and checked"
-        chk("versions.json signatures", manifest)
+        if os.environ.get("MW_SELFTEST_NO_SIG"):         # 2.98.50 (Daniel): work branches are not signed yet - GitHub checks it only on main
+            chk("versions.json signatures", lambda: "skipped (MW_SELFTEST_NO_SIG: work branch, signed only at the release)")
+        else:
+            chk("versions.json signatures", manifest)
     ok = all(r[1] for r in res)
     for name, good, note in res:
         print(("✓ " if good else "✗ ") + name + (f" – {note}" if note else ""))
