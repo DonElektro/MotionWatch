@@ -576,8 +576,8 @@ func _credit(p: Dictionary, box: Array) -> void:
 	cases.append(c)
 	# MoveEye keeps this spot of its picture as a «no person» example, with the situation (2.98.18: «info»)
 	main.mw_cmd = {"id": max(int(Time.get_unix_time_from_system() * 1000.0), int(main.mw_cmd.get("id", 0)) + 1), "op": "fa_box", "box": box,
-			"info": {"game": "jaeger", "lure": id, "dist": c["dist"], "dark": c["dark"], "hour": c["hour"], "light": c["light"],
-				"weather": c["weather"], "wind": c["wind"], "scene": c["scene"]}}
+			"info": game.learn.fa_info(box, {"game": "jaeger", "lure": id, "dist": c["dist"], "dark": c["dark"], "hour": c["hour"], "light": c["light"],
+				"weather": c["weather"], "wind": c["wind"], "scene": c["scene"]})}   # 3D-4.x: + the persons near (MoveEye checks)
 	_pic(c)
 	var bonus := " +%d" % (POINTS + (NEW_KIND if first else 0))
 	game._say(p, "🎉 Fehlalarm! MoveEye hält %s %s für einen Menschen (%s)" % [li[1], li[2], bonus.strip_edges()], 3.5)
