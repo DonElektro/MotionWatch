@@ -106,10 +106,15 @@ def sim_state():
             "uid": f"{device_uid()}:{CFG.get('web_port')}", "helper": bool(STATE.get("helper_arg")), "picture_mode": CFG["picture_mode"],   # 2.98.29: uid/helper - one MoveEye leads the simulator (3D-4.9)
             "mw_version": APP_VERSION, "ai_status": str(STATE.get("ai_status") or ""),     # 2.95.67: for the test bench in the simulator
             "refscan": _sim_refscan_info(),                                                  # 2.95.97: the reference scan, for the button there
-            "servo": {"pan": round(CFG["pan"], 2), "tilt": round(CFG["tilt"], 2), "pan_deg": round((CFG["pan"] - 50) / 50 * hp, 2),
-                      "tilt_deg": round((CFG["tilt"] - 50) / 50 * ht, 2), "pan_limit": pl, "tilt_limit": tl,
+            # 2.98.35: the REAL position of the motion planner (072, ramps) + its speed (the simulator goes on with it between
+            # two packets) and the goal (it never goes past it)
+            "servo": {"pan": round((sp_ := servo_pos())[0], 2), "tilt": round(sp_[1], 2), "pan_deg": round((sp_[0] - 50) / 50 * hp, 2),
+                      "tilt_deg": round((sp_[1] - 50) / 50 * ht, 2), "pan_limit": pl, "tilt_limit": tl,
+                      "pan_dps": round((sv_ := servo_speed_deg())[0], 1), "tilt_dps": round(sv_[1], 1),
+                      "pan_goal": round((CFG["pan"] - 50) / 50 * hp, 2), "tilt_goal": round((CFG["tilt"] - 50) / 50 * ht, 2),
+                      "estop": bool(servo_blocked()),
                       "pan_range": round(2 * hp, 1),             # the whole turning range of the pan servo (2.95.24, for the Python simulator)
-                      "moving": time.time() - SERVO_MOVE["t"] < 0.5,
+                      "moving": bool(SRV["moving"]) or time.time() - SERVO_MOVE["t"] < 0.5,
                       # 2.98.1: «Folgen» on, and following something right now - the simulator lets the head follow then (not the patrol)
                       "track": bool(CFG["track_person"] or CFG["track_motion"]), "tracking": bool(STATE.get("tracking")),
                       "track_what": str(STATE.get("track_what") or "")},

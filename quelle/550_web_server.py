@@ -373,7 +373,8 @@ class WebStream:
                 if act_ == "shoot":                          # 2.95.96: a shot / trigger into the simulation (tap on the live picture)
                     try:
                         q_ = {"action": "shoot", "who": str(d.get("who") or getattr(g, "user", "") or "")[:30],
-                              "x": max(0.0, min(1.0, float(d.get("x", 0.5)))), "y": max(0.0, min(1.0, float(d.get("y", 0.5))))}
+                              "x": max(0.0, min(1.0, float(d.get("x", 0.5)))), "y": max(0.0, min(1.0, float(d.get("y", 0.5)))),
+                              "shutter": bool(d.get("shutter"))}      # 2.98.35: «Auslöser» - a shot at the middle (539, gameshutter.gd)
                         r = sim_control(q_)
                     except Exception:
                         return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
@@ -1214,6 +1215,7 @@ class WebStream:
         place_routes(app, watch, reply, body)              # 2.98.30: «Platz einrichten» /place, field of view per camera (537)
         g2_routes(app, watch, reply, body)                 # guide 2: tours, tip of the day, factory reset (586)
         qr_routes(app, reply, body)                        # QR codes: POST /api/qr, gallery /qr, print page, no-store for secrets (587)
+        servo_routes(app, reply, body)                     # 2.98.35: servos - Not-Aus, taught points, diagnosis /servo, /api/servo (539)
 
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
@@ -1542,6 +1544,7 @@ class WebStream:
                                "msg": tr(MOVER["msg"], lang_), "mode": CFG["mover_mode"],
                                "pose": SIM.get("mover_pose") if MOVER["sim"] else None}
                 st["soundev"] = soundev_state()
+                st["servo"] = servo_client_state(request, lang_)      # 2.98.35: Not-Aus, who steers the head (539)
                 st["wake"] = dict(wake_state(), text=wake_text(norm_lang(request.args.get("lang") or CFG["lang"])))   # 2.98.7
                 st["light_cfg"].update({n + "_auto_label": dict(text_choice_pairs("light_white_auto")).get(CFG[f"light_{n}_auto"], "")
                                         for n in ("white", "ir")})
@@ -1627,7 +1630,9 @@ class WebStream:
         @app.route("/api/move", methods=["POST"])
         def api_move():
             d = body()
-            if not move_camera(d.get("dir"), d.get("step", 3)):
+            if not move_camera(d.get("dir"), d.get("step", 3), servo_client(request, d)):
+                if servo_blocked():                        # 2.98.35: Not-Aus / fault (072)
+                    return reply({"ok": False, "error": servo_blocked_text(norm_lang(d.get("lang") or CFG["lang"])), "blocked": servo_blocked()}, 423)
                 return reply({"ok": False, "error": "unknown direction"}, 400)
             return reply({"ok": True, "pan": CFG["pan"], "tilt": CFG["tilt"]})
 
@@ -1640,7 +1645,9 @@ class WebStream:
         @app.route("/api/stick", methods=["POST"])
         def api_stick():
             d = body()
-            if not stick_camera(d.get("x", 0), d.get("y", 0), d.get("speed", 30)):
+            if not stick_camera(d.get("x", 0), d.get("y", 0), d.get("speed", 30), servo_client(request, d)):
+                if servo_blocked():
+                    return reply({"ok": False, "error": servo_blocked_text(norm_lang(d.get("lang") or CFG["lang"])), "blocked": servo_blocked()}, 423)
                 return reply({"ok": False, "error": "invalid values"}, 400)
             return reply({"ok": True, "pan": CFG["pan"], "tilt": CFG["tilt"]})
 

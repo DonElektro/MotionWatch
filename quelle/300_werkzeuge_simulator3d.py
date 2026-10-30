@@ -442,7 +442,7 @@ def servo_test():
             prev = grab()
             for axis, v in plan:
                 CFG[axis] = float(v)
-                time.sleep(1.2)
+                servo_wait(10.0, 0.8)                     # 2.98.35: the planner drives (ramps), then the picture settles
                 cur = grab()
                 diff = None if prev is None or cur is None else round(float(np.mean(np.abs(cur - prev))), 1)
                 S["steps"].append({"axis": axis, "to": v, "real": round(CFG[axis], 1), "diff": diff})
@@ -672,8 +672,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.10", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31510004,
-         "sha256": "46e39192ae1f7f39c01aabccbc12698f3cab26d27d4749fca17e43000bff631d"}
+SIM3D = {"version": "3D-4.11", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31539036,
+         "sha256": "37e9b039f4fa2d4324ececdc3609ba56dbafec6db423b4d85908d4cbb9cf2b9d"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -814,8 +814,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-4.10", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24631949,
-           "sha256": "b012ed9f3d0e432ca1ae74130dc2aa4b5c1fec5451f3ebc72afd7e552a6cdc5d", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-4.11", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24660942,
+           "sha256": "20639d48a0ed10e22d0ea2a84a04b3a66699bfb91013125f64ba2275b494857b", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 

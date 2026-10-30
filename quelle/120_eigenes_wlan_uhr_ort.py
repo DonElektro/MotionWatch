@@ -346,6 +346,8 @@ def health_check(lang=None):
     if sb.startswith("simulation") or not sb:
         add("servo", "🎯", "Servos (pan / tilt)", "warn", T("not found - the camera does not move"),
             "Check wiring and power of the servos; for the PCA9685 switch on I2C (raspi-config).")
+    elif servo_blocked():                                  # 2.98.35: Not-Aus / fault / lock (072)
+        add("servo", "🎯", "Servos (pan / tilt)", "bad" if servo_blocked() == "fault" else "warn", servo_blocked_text(L))
     else:
         add("servo", "🎯", "Servos (pan / tilt)", "ok", sb)
     th = str(STATE.get("thermal") or "off")

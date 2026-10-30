@@ -154,7 +154,18 @@ class Hardware:
     def _us(self, pct):
         return CFG["servo_min_us"] + (CFG["servo_max_us"] - CFG["servo_min_us"]) * pct / 100.0
 
-    def _servos(self, pan, tilt):
+    def _servos(self, pan, tilt, cont=False):
+        # 2.98.35: the software limits once more right here, the lowest level before the PWM (072) - whatever came before
+        # (an error, NaN, a wrong value) never drives past them. cont: pan is a speed (continuous servo), not a position.
+        lim = self.limits()
+        vals = []
+        for i, v in enumerate((pan, tilt)):
+            v = float(v)
+            if not math.isfinite(v):
+                raise ValueError("servo value is not a number")
+            lo, hi = (0.0, 100.0) if (cont and i == 0) else lim[i]
+            vals.append(max(lo, min(hi, max(0.0, min(100.0, v)))))
+        pan, tilt = vals
         if CFG["invert_pan"]: pan = 100 - pan
         if CFG["invert_tilt"]: tilt = 100 - tilt
         if self.pca is not None:
@@ -256,8 +267,24 @@ class Hardware:
         CFG["cont_est"] = round(est + sp * pct_s * dt, 2)
         return 50.0 + sp * 50.0
 
+    def _pca_check(self):
+        """2.98.35: every 10 s - does the PCA9685 still have its settings? After a brown-out (servos draw too much current)
+        it starts again asleep with outputs off: that is a latched fault (072) - set up again, outputs only after «Freigeben»"""
+        now = time.monotonic()
+        if self.pca is None or now - getattr(self, "_pca_t", 0.0) < 10.0:
+            return
+        self._pca_t = now
+        try:
+            ok = self.pca.healthy()
+        except OSError as e:
+            servo_io_error(e); return
+        if not ok:
+            servo_fault("pca_reset", "MODE1 / prescaler lost")
+            HW_REINIT["want"] = True
+
     def loop(self):
         """50 Hz: push pan/tilt, all relay states and the lights to the hardware when they change."""
+        servo_watchdog_start()                             # 2.98.35: the watchdog of this loop (072)
         while True:
             if HW_REINIT["want"]:
                 HW_REINIT["want"] = False
@@ -266,20 +293,41 @@ class Hardware:
                 except Exception as e:
                     log_event("servo", f"Servo driver: {e}")
             (plo, phi), (tlo, thi) = self.limits()
-            pan = max(plo, min(phi, float(CFG["pan"])))
-            tilt = max(tlo, min(thi, float(CFG["tilt"])))
+            try:
+                want = (float(CFG["pan"]), float(CFG["tilt"]))
+                if not all(math.isfinite(x) for x in want):
+                    raise ValueError
+            except (TypeError, ValueError):
+                want = servo_pos(); CFG["pan"], CFG["tilt"] = want    # 2.98.35: nonsense as target -> stays where it is
+            pan = max(plo, min(phi, want[0]))
+            tilt = max(tlo, min(thi, want[1]))
+            servo_limit_note(0, abs(pan - want[0]) > 0.05); servo_limit_note(1, abs(tilt - want[1]) > 0.05)
             if abs(pan - CFG["pan"]) > 0.05:
                 CFG["pan"] = round(pan, 2)                # the page / window shows where the camera really is
             if abs(tilt - CFG["tilt"]) > 0.05:
                 CFG["tilt"] = round(tilt, 2)
+            # 2.98.35: the motion planner (072) - ramps instead of jumps; only its position reaches the servos
+            mono = time.monotonic(); dt_ = mono - getattr(self, "_plan_t", mono - 0.02); self._plan_t = mono
+            try:
+                pan, tilt = servo_plan_tick(dt_)
+            except Exception as e:
+                pan, tilt = servo_pos()
+                log_event("servo", f"Motion planner: {type(e).__name__}: {e}"[:160])
             pan = self._cont_pan(pan)                      # 2.98.30: continuous rotation servo: speed instead of position (162)
-            cur = (round(pan, 1), round(tilt, 1))
-            if cur != self._last_servo:
+            cur = (round(pan, 2), round(tilt, 2))
+            if servo_outputs_off():
+                self._last_servo = None                    # 2.98.35: latched driver fault: outputs stay off until «Freigeben»
+            elif cur != self._last_servo:
                 try:
-                    self._servos(pan, tilt)
+                    self._servos(pan, tilt, cont=CFG.get("servo_kind") == "continuous" and not CFG.get("sim_on"))
+                    if self.pca is not None:
+                        servo_io_ok()
                 except Exception as e:
                     log_event("servo", f"Servo error: {e}")
+                    if self.pca is not None:
+                        servo_io_error(e)                  # 2.98.35: 3 in a row = fault, safe state (072)
                 self._last_servo = cur; SERVO_MOVE["t"] = time.time()
+            self._pca_check()
             wanted = {g: (on, al) for g, on, al in STATE["relay_out"]}
             try:
                 self._lights(wanted)

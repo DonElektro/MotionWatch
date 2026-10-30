@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 02:54",
+ "generated": "2026-10-30 03:11",
  "versions": [
   {
-   "version": "2.98.35",
-   "file": "webcam_bewegung_2_98_35.py",
+   "version": "2.98.36",
+   "file": "webcam_bewegung_2_98_36.py",
    "url": "",
-   "sha256": "cb41a7d800be155385e847ce40b1ba926906042bdd84e65b7d1c64394f72c8d5",
-   "date": "2026-10-30 02:54",
-   "notes": "Blinki, das Maskottchen im Guide und in den Rundgängen (blinzelt, schaut, hüpft; abschaltbar mit «Blinki zeigen»).",
-   "sig": "2d27f799392e98acfcc4150af786365c0f8ff3b521f6652b6224a9d691e824f2dac0c81f7f5fc6ea6a62aa0ae5b90936bf5ca83c3c29abf1e112c8d9cde4d70a"
+   "sha256": "93eb22b10142ae7f9df4a391c385bdbf39b58ec9f630d0b00e0be8c63dddaff1",
+   "date": "2026-10-30 03:11",
+   "notes": "Auslöser im Spiel (Fadenkreuz in der Bildmitte, 🎯-Knopf / R2: Treffer = Foto, Alarm ins Test-Postfach, Spieler raus, Punkte; daneben = Minuspunkte und 3 s Sperre). Servos wie bei Industrierobotern: Rampen aus einem Bewegungsplaner, Selbstdiagnose mit Fehlerspeicher und Betriebsstunden, Not-Aus mit Freigeben, sichere Grenzen und Watchdog, Teach-in mit benannten Positionen, Anzeige «wer steuert» auf allen Geräten (mit Simulator 3D-4.11).",
+   "sig": "c098e15087107d7967506f7a20519dd8af7983280e60ab97394fa66b24c5925b688abd4d5669f7ff181f2f51bd562fb1ea95922c3668806c71d2583447a9f706"
   },
   {
    "version": "2.97.1",

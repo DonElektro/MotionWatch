@@ -429,7 +429,8 @@ func _input(ev: InputEvent) -> void:
 
 
 func _over_card(pos: Vector2) -> bool:
-	return (card.visible and card.get_global_rect().has_point(pos)) or (menu_box != null and menu_box.get_global_rect().has_point(pos))
+	return (card.visible and card.get_global_rect().has_point(pos)) or (menu_box != null and menu_box.get_global_rect().has_point(pos)) \
+			or (main.game != null and main.game.shut != null and main.game.shut.over_button(pos))      # 3D-4.x: the round shutter button
 
 
 # ---- the picture on top -------------------------------------------------------------------------------------------------
@@ -471,11 +472,11 @@ func _paint_hud(vs: Vector2) -> void:
 	if role == "guard" and main.game_mode == "seek":
 		msg_l.text = ("AUGEN ZU! Noch %d s" % int(S.get("cd", 0))) if rs == "countdown" else msg_l.text
 	help_l.text = ("W A S D: Rover fahren · Maus ziehen / Q E: Kopf drehen · Leertaste oder Doppelklick: «Gefunden!» · G: Licht · Esc: Menü" if role == "guard" and main.game_mode == "seek"
-			else "Maus ziehen / Q E: umschauen · Leertaste oder Doppelklick: «Erwischt!» · G: Licht · W S: Kopf hoch / runter · Esc: Menü" if role == "guard"
+			else "Maus ziehen / Q E: umschauen · Bildmitte auf einen Spieler, dann Leertaste, Doppelklick oder runder Knopf: Auslöser · G: Licht · W S: Kopf hoch / runter · Esc: Menü" if role == "guard"
 			else "W A S D: gehen · Maus ziehen / Q E: umschauen · Shift: rennen · C: ducken · X: kriechen · F: Stein · L: Lampe · Esc: Menü")
 	if pad_on():                                          # 3D-4.x: the controller
 		help_l.text = ("Controller: linker Stick Rover · rechter Stick Kopf · A «Gefunden!» · B Licht · Start Menü" if role == "guard" and main.game_mode == "seek"
-				else "Controller: Sticks Kopf drehen · A «Erwischt!» · B Licht · Start Menü" if role == "guard"
+				else "Controller: Sticks Kopf drehen · R2 oder A Auslöser (Bildmitte) · B Licht · Start Menü" if role == "guard"
 				else "Controller: linker Stick gehen · rechter Stick umschauen · RT rennen · A Stein · B ducken · X kriechen · Y Lampe · Start Menü") + "\n" + help_l.text
 	help_l.position = Vector2(16, vs.y - 30 - (20 if pad_on() else 0))
 

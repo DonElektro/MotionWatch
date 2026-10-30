@@ -1861,7 +1861,7 @@ const GROUPS = [                                            // 2.98.0: by goal -
   {id: "sched", tab: "protect", icon: "🗓", name: "Zones, schedule, presence", items: [{card: "schedule", sec: "Schedule", title: "Schedule", ic: "🗓️"}]},
   {id: "detect", tab: "settings", icon: "🎯", name: "Detection", items: [{card: "tune", title: "Improve detection", ic: "🎯"}, {sec: "Detection", ic: "👁️"}, {sec: "AI detection", ic: "🤖"}, {sec: "Thermal camera", ic: "🌡"}, {fine: true},
    {sec: "Walking recognition", ic: "🚶"}, {sec: "Vehicle filter", ic: "🚗"}, {sec: "Rain", ic: "🌧️"}, {sec: "Wind", ic: "🌬️"}, {sec: "Low light", ic: "🌘"}, {sec: "Auto-tune", ic: "🎚️"}]},
-  {id: "camera", tab: "settings", icon: "📷", name: "Cameras & head", items: [{sec: "Camera / Servos", ic: "🕹️"}, {sec: "Patrol", ic: "🔄"}, {sec: "Automatic head movement", ic: "🤖"}, {card: "source", sec: "Video source", ic: "🎥"},
+  {id: "camera", tab: "settings", icon: "📷", name: "Cameras & head", items: [{sec: "Camera / Servos", ic: "🕹️"}, {sec: "Patrol", ic: "🔄"}, {sec: "Automatic head movement", ic: "🤖"}, {sec: "Servo motion & safety", ic: "🛑"}, {card: "source", sec: "Video source", ic: "🎥"},
    {sec: "Timelapse", ic: "⏱️"}, {sec: "Mover", title: "Mover (tracked vehicle)", ic: "🚜"}, {fine: true}, {sec: "Servo driver", ic: "🔌"}]},
   {id: "lightsound", tab: "settings", icon: "🔌", name: "Devices & sensors", items: [{sec: "Lights", ic: "💡"}, {sec: "Microphone", ic: "🎤"}, {sec: "Loudspeaker", ic: "🔊"},
    {card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {sec: "Extra sensors", ic: "📡"}, {sec: "Clap switch", ic: "👏"}, {sec: "Bless you", title: "«Bless you!»", ic: "🤧"},
@@ -1873,7 +1873,7 @@ const GROUPS = [                                            // 2.98.0: by goal -
   {id: "sys", tab: "settings", icon: "⚙", name: "System", items: [{card: "system", ic: "🖥️"}, {sec: "Setup", ic: "📍"}, {sec: "Updates", ic: "⬆️"},
    {card: "log", ic: "📜"}]},
 ];
-Object.assign(I18N.de, {"Improve detection": "Erkennung verbessern", "Automatic head movement": "Automatische Kopfbewegung",
+Object.assign(I18N.de, {"Improve detection": "Erkennung verbessern", "Automatic head movement": "Automatische Kopfbewegung", "Servo motion & safety": "Servo-Bewegung & Sicherheit",
   "paused (the head is busy)": "Pause (der Kopf ist beschäftigt)", "saving: stays at the most important direction": "sparsam: bleibt bei der wichtigsten Richtung"});   // 2.98.14: the assistant (312); the simulator settings are on the page Simulator
 function toBlock(d) {                                        // a settings section -> its controls (without its own title)
   const b = el("div", "blk");
@@ -3841,52 +3841,14 @@ function mwgPaint(s) {
     document.head.appendChild(st2); }
   b.hidden = false;
   const w = (G.mwg || {}).wait || 0;
-  $("#mwg-t").textContent = "🕹 " + (G.round === "countdown" ? t("Get ready") + " " + (G.cd || "") : t("You are the guard: turn the camera and tap the players in the picture")) + " · " + ((G.mwg || {}).catches || 0) + "× ✓ · " + ((G.mwg || {}).false || 0) + "× ✗";
+  const sh_ = G.shut;                                    // 2.98.35: the simulator has the «Auslöser» (539) - it replaces «Erwischt!»
+  $("#mwg-t").textContent = "🕹 " + (G.round === "countdown" ? t("Get ready") + " " + (G.cd || "") : sh_ ? t("You are the guard: aim the middle of the picture (circle) at a player and press 🎯") : t("You are the guard: turn the camera and tap the players in the picture")) + " · " + ((G.mwg || {}).catches || 0) + "× ✓ · " + ((G.mwg || {}).false || 0) + "× ✗" + (sh_ ? " · " + (sh_.pts || 0) + " " + t("points") : "");
+  $("#mwg-b").style.display = sh_ ? "none" : "";
   $("#mwg-b").disabled = G.round !== "play" || w > 0; $("#mwg-b span").textContent = w > 0 ? w + " s" : t("Caught!");
 }
-// ---- 2.95.96: shoot / trigger into the simulation from the live picture (outside «Team gegen MoveEye» too) ----
-const SHOOT = {on: false, hits: 0, miss: 0, vis: null, io: null};
-function simShootPaint(s) {
-  const S_ = s.sim || {}, G = S_.game, mwhand = !!(G && G.mode === "mwhand" && (G.round === "play" || G.round === "countdown"));
-  const live = !!(S_.on && S_.ok && S_.pic !== false) && String(((QSJ && QSJ.cfg) || {}).source || "sim:").startsWith("sim:");
-  let b = $("#mws");
-  // 2.96.9: only while the live picture can be seen, and «off» is just a small round button at the side (it covered the settings)
-  if (!SHOOT.io && $("#video") && window.IntersectionObserver) { SHOOT.io = new IntersectionObserver(es => { SHOOT.vis = es[0].isIntersecting; simShootPaint(QSJ ? QSJ.state : s); }, {threshold: 0.25}); SHOOT.io.observe($("#video")); }
-  if (!live || mwhand || (!SHOOT.on && SHOOT.vis === false)) { if (b) b.hidden = true; return; }
-  if (!b) {
-    b = el("div"); b.id = "mws"; b.innerHTML = '<button type="button" id="mws-b">🎯 <span></span></button><span id="mws-t"></span>'; document.body.appendChild(b);
-    const st = document.createElement("style");
-    st.textContent = "#mws{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:79;display:flex;align-items:center;gap:10px;background:rgba(10,14,20,.88);border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 6px;box-shadow:0 4px 18px rgba(0,0,0,.45);color:#fff;font-size:13px;max-width:calc(100vw - 24px)}"
-      + "#mws[hidden]{display:none}#mws:not(.on){left:auto;right:12px;transform:none;padding:4px;bottom:calc(84px + env(safe-area-inset-bottom,0px))}#mws:not(.on) #mws-b span{display:none}#mws button{border-radius:999px;padding:8px 14px;font-weight:700;background:var(--panel2,#1a2433);color:#fff;border:1px solid var(--line)}#mws.on button{background:#ff3b30;border-color:#ff3b30}#mws:not(.on) #mws-t{display:none}"
-      + ".mwg-shot{position:fixed;z-index:85;width:64px;height:64px;margin:-32px 0 0 -32px;border:3px solid #ff3b30;border-radius:50%;pointer-events:none;animation:mwgs .5s ease-in forwards}"
-      + ".mwg-shot::before,.mwg-shot::after{content:'';position:absolute;left:50%;top:-10px;width:2px;height:80px;margin-left:-1px;background:#ff3b30}.mwg-shot::after{transform:rotate(90deg)}"
-      + ".mwg-shot.hit{border-color:#3fcf6b;box-shadow:0 0 16px #3fcf6b}.mwg-shot.miss{opacity:.4}@keyframes mwgs{0%{transform:scale(1.8);opacity:0}100%{transform:scale(.6);opacity:1}}";
-    document.head.appendChild(st);
-    $("#mws-b").onclick = () => { SHOOT.on = !SHOOT.on; simShootPaint(QSJ ? QSJ.state : s); toast(SHOOT.on ? "🎯 " + t("Tap into the live picture to shoot - a miss is marked as a false alarm") : t("Shooting off")); };
-    const v = $("#video"); let down = null;
-    v.addEventListener("pointerdown", e => { down = [e.clientX, e.clientY, Date.now()]; });
-    v.addEventListener("pointerup", async e => {
-      const b_ = $("#mws"); if (!SHOOT.on || !b_ || b_.hidden || !down) return;
-      const [x0, y0, t0] = down; down = null;
-      if (Math.hypot(e.clientX - x0, e.clientY - y0) > 12 || Date.now() - t0 > 600) return;      // a drag, not a tap
-      const r_ = v.getBoundingClientRect(), nw = v.naturalWidth || 16, nh = v.naturalHeight || 9;
-      const sc = Math.min(r_.width / nw, r_.height / nh), w = nw * sc, h = nh * sc;
-      const x = (e.clientX - r_.left - (r_.width - w) / 2) / w, y = (e.clientY - r_.top - (r_.height - h) / 2) / h;
-      if (x < 0 || x > 1 || y < 0 || y > 1) return;
-      const m = el("div", "mwg-shot"); m.style.left = e.clientX + "px"; m.style.top = e.clientY + "px"; document.body.appendChild(m);
-      setTimeout(() => m.remove(), 900);
-      const q = await post("/api/sim", {action: "shoot", x: x, y: y, lang: LANG});
-      m.classList.add(q.hit ? "hit" : "miss");
-      if (q.ok) { q.hit ? SHOOT.hits++ : SHOOT.miss++; }
-      toast(q.ok ? (q.text || "") : "⚠ " + (q.error || t("error")));
-      simShootPaint(QSJ ? QSJ.state : s);
-    });
-  }
-  b.hidden = false; b.classList.toggle("on", SHOOT.on);
-  $("#mws-b span").textContent = SHOOT.on ? t("Shooting on") + " · ✕" : t("Shoot");
-  $("#mws-b").title = SHOOT.on ? t("Shooting off") : t("Shoot");
-  $("#mws-t").textContent = t("Tap the picture") + " · " + SHOOT.hits + "× ✓ · " + SHOOT.miss + "× ✗ " + t("false alarm");
-}
+// ---- 2.95.96: shoot / trigger into the simulation: from 2.98.35 the «Auslöser» (539) - one round 🎯 inside the live picture
+// during «Team gegen MoveEye», a shot at the middle (crosshair); R2 in the Controller-Ansicht also outside a round
+function simShootPaint(s) { const b = $("#mws"); if (b) b.remove(); }
 Object.assign(I18N.de, {"Training set for an own AI model (YOLO)": "Trainingspaket für ein eigenes KI-Modell (YOLO)", "pictures": "Bilder", "The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).": "Der Simulator macht die Bilder und legt ein ZIP auf den Schreibtisch seines PCs (etwa 2 s pro Bild)."});
 Object.assign(I18N.de, {"Reference scan": "Referenz-Scan", "Open the assistant": "Assistent öffnen", "refscan-note": "Der Kopf fährt ein Raster von Richtungen ab und speichert Fotos als Referenz. Später vergleicht MoveEye dieselben Richtungen und zeigt im Bericht, was fehlt, neu ist oder sich verändert hat."});
 Object.assign(I18N.de, {"Shoot": "Schiessen", "Shooting on": "Schiessen an", "Shooting off": "Schiessen aus", "Tap the picture": "Ins Bild tippen", "false alarm": "Fehlalarm",
@@ -4439,6 +4401,7 @@ async function refresh() {
   applyRole(s.me);
   if (s.me && s.me.role === "admin" && !window.USERS_DONE && $("#users-box")) { window.USERS_DONE = true; usersLoad(); }
   try { mainPaint(j); } catch (e) {}
+  try { if (window.servoPaint) window.servoPaint(j); } catch (e) {}      // 2.98.35: Not-Aus, who steers the head (539)
   try { qsPaint(j); } catch (e) {}
   try { chainPaint(c, s); } catch (e) {}
   badge("#b-person", s.persons ? s.persons + " " + (s.persons > 1 ? t("PERSONS DETECTED") : t("PERSON DETECTED")) : t("No person"), s.persons ? "red" : "");

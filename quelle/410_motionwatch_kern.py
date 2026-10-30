@@ -459,7 +459,7 @@ class MotionWatch:
         """2.98.1: aim at the object - turn by the angle it has from the middle of the picture (field of view of the camera),
         a part of the way (no overshoot), then wait until the picture shows the new direction. Before, it moved a fixed
         bit per picture: slow at a low frame rate and swinging past the object when the picture came late."""
-        if wake_hold() or kopf_track_blocked():    # 2.98.7: the wake-up alarm holds the head (sleeping place); 2.98.30: parked (Aus, 162)
+        if wake_hold() or kopf_track_blocked() or servo_blocked():    # 2.98.7: the wake-up alarm holds the head (sleeping place); 2.98.30: parked (Aus, 162); 2.98.35: Not-Aus (072)
             return
         x, y, w, h = target_box[:4]
         ex = (x + w / 2.0) / pw - 0.5          # -0.5 .. 0.5  (right = positive)
@@ -473,10 +473,11 @@ class MotionWatch:
         hf, vf = cam_fov()
         k = max(0.2, min(1.0, 0.75 * float(CFG["track_gain"]) / 0.6 * gain))
         moved = False
+        p0, t0 = servo_pos()                   # 2.98.35: from where the picture was taken (the planner may still drive, 072)
         if abs(ex) > dz:
-            CFG["pan"] = max(0.0, min(100.0, CFG["pan"] + ex * hf / (2.0 * servo_half("pan")) * 100.0 * k)); moved = True
+            CFG["pan"] = max(0.0, min(100.0, p0 + ex * hf / (2.0 * servo_half("pan")) * 100.0 * k)); moved = True
         if abs(ey) > dz:
-            CFG["tilt"] = max(0.0, min(100.0, CFG["tilt"] - ey * vf / (2.0 * servo_half("tilt")) * 100.0 * k)); moved = True
+            CFG["tilt"] = max(0.0, min(100.0, t0 - ey * vf / (2.0 * servo_half("tilt")) * 100.0 * k)); moved = True
         if moved:
             self._trk_t = now
 
