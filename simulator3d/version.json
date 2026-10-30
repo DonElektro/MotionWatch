@@ -1,7 +1,7 @@
 {
- "version": "3D-4.12",
+ "version": "3D-4.13",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31595904,
- "sha256": "28d554afb1b0800a1a13e43f0cce439852b24eb27ea52bad7baad7ad377ac4fa",
- "notes": "Spielkonzept (3 feste Spiele, Rollen reihum, Energie, Mensch gegen KI, online), Nur Gruppen ohne Verbindung"
+ "size": 31604291,
+ "sha256": "27eb0430623d2d9e961e359b344ba69daaea24f6f9da2de5b32ed2ea39e6bb12",
+ "notes": "Fehlalarm-Zählung im Spiel repariert"
 }
