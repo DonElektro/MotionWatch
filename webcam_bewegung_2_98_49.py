@@ -24185,6 +24185,13 @@ def sim_autoupdate():
     return True
 
 
+_sim_state_290_292 = sim_state
+
+
+def sim_state():                                          # + 292: «lang» - the simulator shows its texts in the language of MoveEye (i18n.gd)
+    d = _sim_state_290_292()
+    d["lang"] = cur_lang()
+    return d
 # ----------------------------------------------------------------------------
 # Tools (page /tools): network scanner, Wi-Fi surroundings, internet test, security check, Bluetooth scanner with
 # tracker warning and presence, focus assistant, servo test, speaker / microphone test, memory card test,

@@ -50,6 +50,7 @@
     "sound": "Sirene / Sprechen -> Simulator Ton, Tiere fliehen",
     "simtask_de": "was MoveEye gerade mit dem Simulator macht (eine Sperre, 147) -> main.gd",
     "eco": "Strom sparen -> Simulator rechnet langsamer",
+    "lang": "Sprache von MoveEye (de, fr, it, rm, en) -> Simulator i18n.gd (Texte in dieser Sprache, wenn im Simulator keine gewaehlt ist)",
     "sim_files": "Pruefsummen der Python-Simulator-Dateien -> nur Python-Simulator (Selbst-Update); an den 3D-Simulator leer",
     "mw_scheme": "http / https -> Simulator Links zu MoveEye",
     "mw_port": "Port von MoveEye -> Simulator Links zu MoveEye",

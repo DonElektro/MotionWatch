@@ -82,6 +82,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `280_sms_sensoren_sturm_gps_solar.py` | SMS, Sensoren, Sturmwarnung, GPS, Solar | 870 |
 | `285_simwerte.py` | Simulator-Werte: Akku (simulierter USV-HAT), Uhrzeit (sim_now), Ort, Wetter, Pi-Wärme, «WLAN weg»-Test aus dem 3D-Simulator | 230 |
 | `290_simulator_verbindung.py` | Verbindung zum Simulator | 333 |
+| `292_simulator_sprache.py` | Sprache von MoveEye an den 3D-Simulator (Zustandsfeld «lang», i18n.gd) | 8 |
 | `300_werkzeuge_simulator3d.py` | Werkzeuge, 3D-Simulator für Windows und den Pi, Simulator-Suche | 1155 |
 | `310_testlaeufe.py` | Testläufe mit Auswertung und Optimierung | 485 |
 | `312_erkennung_assistent.py` | Assistent «Erkennung verbessern» (ein Ablauf statt sechs Funktionen), Pause des Auto-Tuners | 307 |
