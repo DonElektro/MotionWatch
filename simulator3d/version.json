@@ -1,7 +1,7 @@
 {
- "version": "3D-4.16",
+ "version": "3D-4.17",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31706847,
- "sha256": "65d2e232642de4422351076d8851529bae10495f17bbf538657f207f9ffedb18",
- "notes": "KI-Hilfe für den Wächter"
+ "size": 31728413,
+ "sha256": "d9df10ca32b9a1e7c4c06de6cd535447517abb308d862d7af51a5b7573f2511a",
+ "notes": "MoveEye als KI-Wächter, Stange-Regler, /sim-Bild ohne Einblendungen, Spiel-Balance (neutrale Schüsse, eine Punkte-Regel, Startschutz, zwei Stufen, Verzögerungsausgleich, Profil echte Hardware, Sieger pro Rolle)"
 }

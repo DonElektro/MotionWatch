@@ -13,3 +13,21 @@ Grundlage: Modell v4 (`docs/Projektstand_PanTilt_Kamera.md`) bzw. die neuere Ver
 | Fenster | offen (kein Schutzfenster gewählt) |
 
 Offen: Masse der 120°-Linse / des Halters nachmessen; Lage gegenüber der Lüftung und dem Lautsprecher prüfen; Neigung als Parameter.
+
+## Simulator-Einbindung der Weitwinkel-Kamera (Entscheide Daniel, 30.10.2026 09:35)
+
+Ziel: die Montage-Varianten im Simulator vergleichen, bevor gedruckt wird.
+
+| Thema | Entscheid |
+|---|---|
+| Kamera im Simulator | Die heutige «Feste Kamera» (Simulator-Kamera 1, Mast 3 m neben dem Gerät) wird **zur Weitwinkel-Kamera zusammengelegt**: eine Kamera mit Montage-Wahl, 102° × 67°, NoIR-Look, ca. 640×360 / 8 Bilder/s, nur gerechnet wenn abgerufen |
+| Montage-Wahl | **Mast (Szene)** wie bisher · **Unterteil vorne, fest** (10–15° nach unten) · **Kopf vorne** · **Kopf hinten** (dreht mit, Versatz 180°); auf dem Kopf wählbar: **nur mitschwenken oder auch mitneigen**; Neigung als Regler |
+| Schnittstelle | `/info` → `cameras[1]` meldet `mount` (`scene`/`base`/`head_front`/`head_rear`), `tilt_deg`, `yaw_offset`, `pan_follow`, `tilt_follow`, `fov_h`/`fov_v`; MoveEye stellt daraus «Übersicht lenkt den Kopf» (162) selbst ein |
+| Automatik (162) | Kamera auf dem Kopf: Richtung = Kopfstellung + Versatz (statt fest); Bewegung im Weitwinkel-Bild **unterdrücken, solange der Kopf dreht** (Eigenbewegung); hinten montiert: Bewegung hinten → **Kopf dreht hin** (Rang wie «Zum Alarm drehen»), dann prüft die KI der Hauptkamera |
+| IR-Licht | zweite IR-LED 120° auf **PCA9685 Kanal 4**, im Simulator als breites IR-Licht an der Montagestelle, schaltbar wie die Hardware |
+| Kabel / Servo-Last | Kamera auf dem Kopf: **Drehgrenze** (zweites Flachkabel, wichtig für spätere 360°-Servos → Schleifring nötig) und **trägerer Kopf** (Mehrlast MG90S) |
+| Verzerrung | leichtes **Fischauge** am Bildrand (Shader), abschaltbar |
+| Prüfstand | neue Messung «Übersicht → Kopf findet Ziel» (Zeit bis die Hauptkamera das Ziel sieht) **pro Montage-Variante** |
+| Seiten / Spiel | Weitwinkel-Bild als Kachel auf /sim und in Sim-Kompakt; im Spiel als zweite Wächter-Sicht (gleiche Regeln für den KI-Wächter) |
+
+Umsetzung: nach dem Zusammenführen von Sim-Kompakt und Spiel-Balance (gleiche Dateien), als eigene Runde.

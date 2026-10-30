@@ -202,7 +202,10 @@ function simCtlBuild(G, r, ctl, fmt) {
       } else if (c.type === "slider") {
         row = el("div", "sc-row sc-sl"); const l = el("div", "sc-l"); const vv = el("span", "mut simvv"); l.append(el("span", "", c.label), vv);
         const rg = document.createElement("input"); rg.type = "range"; rg.className = "simv"; rg.min = c.min; rg.max = c.max; rg.step = c.step || 1;
-        rg.oninput = () => { vv.textContent = fmt(c, +rg.value); }; rg.onchange = () => ctl({ctl: "set", id: c.id, value: +rg.value}); row.append(l, rg);
+        let lvT = 0, lvW = null;                      // «live» (simulator 3D-4.x, e.g. the height of the pole): sent while dragging, 5× a second at most
+        const lvSend = () => { lvW = null; lvT = Date.now(); ctl({ctl: "set", id: c.id, value: +rg.value}); };
+        rg.oninput = () => { vv.textContent = fmt(c, +rg.value); if (c.live && !lvW) lvW = setTimeout(lvSend, Math.max(0, 200 - (Date.now() - lvT))); };
+        rg.onchange = () => { clearTimeout(lvW); lvW = null; ctl({ctl: "set", id: c.id, value: +rg.value}); }; row.append(l, rg);
       } else if (c.type === "select") {
         row = el("div", "sc-row sc-se"); const se = document.createElement("select"); se.className = "simv";
         (c.options || []).forEach(o => { const op = document.createElement("option"); op.value = o[0]; op.textContent = o[1] || o[0]; se.appendChild(op); });
@@ -346,7 +349,7 @@ function simViewPoll(VI, fps) {
     info.w = w; info.q = L.q; info.fmt = SIM_WEBP ? "webp" : "jpg"; info.lvl = lvl;
     const fs = !!(document.fullscreenElement || document.webkitFullscreenElement || VI.closest(".fs"));
     const clean = fs && (typeof PVPAD === "undefined" || !PVPAD);      // 2.95.92: full screen: the simulator hides its rover stick
-    return "w=" + w + "&q=" + L.q + "&fmt=" + info.fmt + (clean ? "&clean=1" : "") + (VI.closest("[data-bare]") ? "&bare=1" : "");   // 538: without the buttons of the window
+    return "w=" + w + "&q=" + L.q + "&fmt=" + info.fmt + (clean ? "&clean=1" : "") + (VI.closest("[data-bare]") ? "&bare=1" : "") + (VI.closest("[data-dock]") ? "&dock=1" : "");   // 538: without the buttons of the window; /sim: only the 3D view + dock
   };
   const step = async (g) => {
     if (!on || g !== gen) return;
@@ -610,7 +613,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <summary><h2><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg><span data-i18n="Live picture">Live picture</span></h2></summary>
     <div class="fb">
     <div class="pvmode" id="s-pvmode" hidden><button type="button" data-m="view">🗺 <span data-i18n="Simulator window">Simulator window</span></button><button type="button" data-m="cam">📷 <span data-i18n="Camera picture">Camera picture</span></button></div>
-    <div class="pvw" id="s-pvw"><img id="s-prev" alt="" draggable="false" tabindex="0"><span class="pvlive" id="s-pvlive" hidden>● LIVE</span>
+    <div class="pvw" id="s-pvw"><img id="s-prev" data-dock="1" alt="" draggable="false" tabindex="0"><span class="pvlive" id="s-pvlive" hidden>● LIVE</span>
       <div class="pvcam" id="s-pvcam" hidden title="Kamera gross zeigen"><img id="s-pvcimg" alt=""><span>📷 LIVE</span></div>
       <div class="spec" id="s-spec" hidden><div class="spec-h" id="s-spech"></div><div class="spec-p" id="s-specp"></div><div class="spec-f" id="s-specf"></div></div>
       <div class="specres" id="s-specres" hidden></div>

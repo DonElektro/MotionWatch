@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 05:30",
+ "generated": "2026-10-30 09:58",
  "versions": [
   {
-   "version": "2.98.45",
-   "file": "webcam_bewegung_2_98_45.py",
+   "version": "2.98.46",
+   "file": "webcam_bewegung_2_98_46.py",
    "url": "",
-   "sha256": "d735f3c27c0ed69d573cca89833b4ee3e50a4bfea38dbfe02eaacf2cf440ae49",
-   "date": "2026-10-30 05:30",
-   "notes": "KI-Hilfe für den Menschen am Auslöser (Knopf 🤖 im Bild, L2): KI-Rahmen, KI zielt, KI-Autopilot; solche Runden zählen nicht für die Rangliste (mit Simulator 3D-4.16).",
-   "sig": "e74197d999dcb724c5cf524635631b2d5a80c2180e8d43945afbe2d53cf81a98a10e9ab9618d73e05286bb3b09045b99cc19507461c64c5a980d73c14915fd04"
+   "sha256": "1234f3afd65bdbd893afb16c19c13bc20779578b187d43681f6842b1eb9c6cf4",
+   "date": "2026-10-30 09:57",
+   "notes": "Sim-Kompakt (Live-Seite mit Simulator: zwei Bilder, Kopf- und Rover-Stick, Kacheln), MoveEye als KI-Wächter, Stopp im Simulator ausgeblendet, Stange-Regler, Aufklapp-Knöpfe zeigen den Zustand blau (Reihenfolge zu · Gruppen · auf), Simulator 3D-4.17 mit Spiel-Balance",
+   "sig": "5e33c4e225ff8141059dea33e94d8ee92c2adfaf20c07d5b394e7ee26d69a9a66ba16180d604787d1a8020974c2250e627b0fdecbdc38f5689fd382d44a22b00"
   },
   {
    "version": "2.97.1",

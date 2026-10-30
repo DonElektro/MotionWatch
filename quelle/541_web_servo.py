@@ -44,7 +44,10 @@ def servo_client_state(request, lang=None):
     drv = servo_driver(lang)
     return {"blocked": servo_blocked(), "text": servo_blocked_text(lang), "estop": bool(CFG.get("servo_estop")),
             "estop_by": CFG.get("servo_estop_by") or "", "driver": drv, "me": key, "mine": bool(drv.get("key")) and drv.get("key") == key,
-            "me_label": label, "moving": bool(SRV["moving"]), "deg": [round(x, 1) for x in servo_pos_deg()]}
+            "me_label": label, "moving": bool(SRV["moving"]), "deg": [round(x, 1) for x in servo_pos_deg()],
+            # 2.98.43: «⏹ Stopp» only with a head and when not switched off; (vier) never in the simulation - no real servos then
+            "stop_btn": bool(CFG.get("servo_stop_btn", True)) and bool(globals().get("live_has_head", lambda: True)()),
+            "sim": bool(CFG.get("sim_on"))}
 
 
 SERVO_PAGE = r"""<!doctype html>
@@ -282,7 +285,7 @@ SERVO_LIVE_JS = r"""<script>
       bar.appendChild(tx);
       if (s.blocked !== "inhibit") { const r = document.createElement("button"); r.type = "button"; r.textContent = "✅ " + T("Release"); r.style.cssText = "background:#fff;color:#b62324;font-weight:700"; r.onclick = release; bar.appendChild(r); }
     } else if (bar) bar.hidden = true;
-    const st = document.getElementById("srv-stop"); if (st) { st.disabled = s.blocked === "estop"; st.parentNode.hidden = s.stop_btn === false; }
+    const st = document.getElementById("srv-stop"); if (st) { st.disabled = s.blocked === "estop"; st.parentNode.hidden = s.stop_btn === false; st.hidden = !!s.sim; }   // simulation: the real servos are not used
     const d = s.driver || {};
     if (line) line.textContent = d.kind === "manual" ? "🎮 " + TF("The head is steered by: {who}", {who: d.label}) + (s.mine ? " (" + T("you") + ")" : "")
       : d.kind === "auto" ? "🤖 " + TF("The head moves by itself: {what}", {what: d.label}) : "";

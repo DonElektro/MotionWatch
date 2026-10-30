@@ -11,10 +11,23 @@ extends Node
 ##     MoveEye puts a push into its TEST INBOX only (world_reply «shut» → MoveEye 539, never a real push).
 ##     Points for the guard: 100 + up to 100 for near + up to 100 for fast (since the runner came into the picture).
 ## Miss = a false alarm: −50 points, one false alarm more, the shutter is locked 3 s (ring on the button).
+## Balance 30.10.2026 (review, approved by Daniel):
+##   · ONE scoring rule for every guard (score_catch, guard_points): a catch gives its points at once - with the shutter
+##     the shot (100 + near + fast), otherwise CATCH_PTS - × REPEAT for the same sneaker again in this round (100/50/25/0 %);
+##     every false alarm −50 (once - not again in game.guard_score); at the end + «nicht im Ziel» (200 × share of the
+##     sneakers who did not reach the goal). What the phone / PC shows during the round is exactly what counts.
+##   · a shot on a protected player (just caught, start protection) is neutral: no points, no energy, «schon erwischt».
+##   · start protection (spawn_protect): after (re)starting a sneaker is safe until SPAWN_M away from the start or SPAWN_S.
+##   · the guard at the phone sees the picture late: a shot is judged against where everything was LAG s ago (_hist).
 
-const RADIUS := {"easy": 0.17, "normal": 0.10, "hard": 0.05}   # of the picture height
+const RADIUS := {"easy": 0.17, "normal": 0.10, "hard": 0.05}   # of the picture height (by the Wächter-Stufe)
 const LOCK := 3.0
 const MISS := -50
+const CATCH_PTS := 150                  # a catch without the shutter («Erwischt!», MoveEye, the bot guard, the camera meter)
+const REPEAT := [1.0, 0.5, 0.25, 0.0]   # the same sneaker caught again in this round: less (no spawn camping)
+const LAG := 0.25                       # s: the picture on the phone of the guard is about this old
+const SPAWN_S := 6.0                    # start protection: at most this long …
+const SPAWN_M := 6.0                    # … or until this far away from the start
 
 var game
 var main
@@ -31,6 +44,7 @@ var _siren: AudioStreamPlayer
 var _ui: Array = []                     # the overlays (crosshair + button) in the windows of the simulator
 var ki                                  # gamekihilfe.gd: «KI-Rahmen», «KI zielt», «KI-Autopilot» for the person with the shutter
 var _ki_tag := ""
+var _hist: Array = []                   # [t, transform of the head camera, {slot: position}] - the last second (LAG)
 
 
 func _ready() -> void:
@@ -82,8 +96,12 @@ func now() -> float:
 	return game.now()
 
 
+func glevel() -> String:
+	return game.rules.glevel() if game.rules != null else str(main.game_level)
+
+
 func radius() -> float:
-	return float(RADIUS.get(main.game_level, 0.10))
+	return float(RADIUS.get(glevel(), 0.10))
 
 
 func human_mode() -> String:
@@ -92,7 +110,7 @@ func human_mode() -> String:
 		return ""
 	if main.game_mode == "mwhand":
 		return "mw"
-	if main.game_mode in ["guard", "teamguard"]:
+	if main.game_mode == "guard":
 		var g = game.guard_player()
 		if g != null and str(g.get("kind", "phone")) != "bot":
 			return "guard"
@@ -116,8 +134,8 @@ func info_for(g) -> Dictionary:
 	var k := _key(g)
 	var gd: Dictionary = game.mwg if g == null else g
 	return {"on": (human_mode() == "mw") if g == null else (human_mode() == "guard" and g["role"] == "guard"), "r": radius(),
-			"lv": main.game_level, "lock": snappedf(lock_left(g), 0.1), "len": float(lock_len.get(k, LOCK)),
-			"pts": int(gd.get("shut_pts", 0)), "hits": int(gd.get("shut_hits", 0)), "miss": int(gd.get("shut_miss", 0)),
+			"lv": glevel(), "lock": snappedf(lock_left(g), 0.1), "len": float(lock_len.get(k, LOCK)),
+			"pts": guard_points(gd), "hits": int(gd.get("shut_hits", 0)), "miss": int(gd.get("shut_miss", 0)),
 			"ki": ki.info_for(g, g != null) if ki != null else {}}   # KI-Hilfe (gamekihilfe.gd); the boxes for the phone
 
 
@@ -170,12 +188,104 @@ func visible_to(p: Dictionary, cam_i: int) -> bool:
 
 
 func _process(dt: float) -> void:
+	_record()
 	_t -= dt
 	if _t <= 0.0:
 		_t = 0.2
 		if _ui_done.size() < 3:
 			_add_ui()
 		_track_seen()
+		_spawn_tick()
+
+
+# ---- Balance: one scoring rule for the guards -----------------------------------------------------------------------------
+func score_catch(g: Dictionary, p: Dictionary, by_meter := false) -> int:
+	"""game._caught: the points of this catch for the guard g (a player, mwg, the bot guard). With the shutter the shot
+	(p["shot_base"]), otherwise CATCH_PTS; the same sneaker again in this round counts less (REPEAT)."""
+	var cn: Dictionary = g.get("cn", {})
+	var sl := int(p["slot"])
+	var n := int(cn.get(sl, 0))
+	var pts := int(round(float(p.get("shot_base", CATCH_PTS)) * float(REPEAT[mini(n, REPEAT.size() - 1)])))
+	cn[sl] = n + 1
+	g["cn"] = cn
+	g["cpts"] = int(g.get("cpts", 0)) + pts
+	p["catch_pts"] = pts
+	p["catch_n"] = n + 1
+	if by_meter and g.has("sock") and g.get("sock") != null:
+		game._say(g, "📷 Die Kamera hat %s erwischt: +%d%s" % [p["name"], pts, _rep_txt(n + 1)], 3.0)
+	return pts
+
+
+func _rep_txt(n: int) -> String:
+	return "" if n <= 1 else " (%d. Mal – zählt %d %%)" % [n, int(REPEAT[mini(n - 1, REPEAT.size() - 1)] * 100.0)]
+
+
+func guard_points(g: Dictionary) -> int:
+	"""the points of a guard so far (without the end bonus «nicht im Ziel»): catches − 50 per false alarm"""
+	return int(g.get("cpts", 0)) + MISS * int(g.get("false", 0))
+
+
+# ---- Balance: start protection --------------------------------------------------------------------------------------------
+func spawn_protect(p: Dictionary) -> void:
+	"""game._to_start during a round: safe until SPAWN_M away from the start or SPAWN_S over (counted from the start of play)"""
+	if not game.round_state in ["countdown", "play"] or p["role"] != "runner":
+		return
+	p["spawn_pos"] = p["actor"].position
+	p["spawn_until"] = maxf(now(), float(game.t_start)) + SPAWN_S
+	p["safe_until"] = maxf(float(p["safe_until"]), float(p["spawn_until"]))
+	if game.round_state == "play":
+		game._say(p, "🛡 Startschutz: %d s oder %d m vom Start weg – so lange kann dich niemand erwischen" % [int(SPAWN_S), int(SPAWN_M)], 2.5)
+
+
+func _spawn_tick() -> void:
+	"""the protection ends early when the sneaker has left the start"""
+	if game.round_state != "play":
+		return
+	for p in game.players:
+		if p == null or not p.has("spawn_pos"):
+			continue
+		var t := now()
+		if t >= float(p["spawn_until"]) or p["state"] != "play":
+			p.erase("spawn_pos")
+			continue
+		if p["actor"].position.distance_to(p["spawn_pos"]) > SPAWN_M:
+			if float(p["safe_until"]) <= float(p["spawn_until"]) + 0.01:
+				p["safe_until"] = t
+			p.erase("spawn_pos")
+
+
+func protected(p: Dictionary) -> bool:
+	return now() < float(p["safe_until"])
+
+
+func _why_safe(p: Dictionary) -> String:
+	return "Startschutz" if p.has("spawn_pos") else "schon erwischt"
+
+
+# ---- Balance: what the guard at the phone saw (LAG s ago) ------------------------------------------------------------------
+func _record() -> void:
+	if game == null or game.round_state != "play":
+		if not _hist.is_empty():
+			_hist.clear()
+		return
+	var pos := {}
+	for p in game.players:
+		if p != null and p["role"] == "runner":
+			pos[int(p["slot"])] = p["actor"].position
+	var t := now()
+	_hist.append([t, main.cams[0].global_transform, pos])
+	while _hist.size() > 2 and t - float(_hist[0][0]) > 1.0:
+		_hist.pop_front()
+
+
+func _past(lag: float) -> Array:
+	"""the newest record at least lag s old ([] = none)"""
+	var want := now() - lag
+	var best: Array = []
+	for h in _hist:
+		if float(h[0]) <= want:
+			best = h
+	return best
 
 
 func _track_seen() -> void:
@@ -207,7 +317,7 @@ func fire(g, who: String) -> Dictionary:
 	var left := lock_left(g)
 	if left > 0.0:
 		return {"ok": false, "locked": true, "lock": snappedf(left, 0.1), "error": "Auslöser gesperrt – noch %d s (Fehlalarm)" % int(ceil(left))}
-	var pe: String = game.tools.pay_shot(g) if game.tools != null else ""     # 3D-4.x: a shot costs energy (gametools.gd)
+	var pe: String = game.tools.check(g, "shut") if game.tools != null and game.tools.on() else ""   # 3D-4.x: a shot costs energy (gametools.gd)
 	if pe != "":
 		if g != null:
 			game._say(g, "⏳ " + pe, 2.0)
@@ -216,10 +326,24 @@ func fire(g, who: String) -> Dictionary:
 	var vs := Vector2(main.vps[cam_i].size)
 	var asp: float = vs.x / max(1.0, vs.y)
 	var r := radius()
+	# Balance: the guard at the phone saw the picture LAG s ago - judge against the head camera and the sneakers of then
+	var lag: float = LAG if g != null and str(g.get("kind", "phone")) == "phone" and g.get("sock") != null and not (ki != null and ki.firing) else 0.0
+	var past: Array = _past(lag) if lag > 0.0 else []
+	var keep := {}
+	var cam_keep: Transform3D = main.cams[0].global_transform
+	if not past.is_empty():
+		if cam_i == 0:
+			main.cams[0].global_transform = past[1]
+		for p in game.players:
+			if p != null and (past[2] as Dictionary).has(int(p["slot"])):
+				keep[int(p["slot"])] = p["actor"].position
+				p["actor"].position = past[2][int(p["slot"])]
 	var hit = null
+	var prot = null                                        # Balance: a protected player in the circle (just caught, start)
 	var best := 9.0
+	var bestp := 9.0
 	for p in game.players:
-		if p == null or p["role"] != "runner" or p["state"] != "play" or now() < float(p["safe_until"]) or not visible_to(p, cam_i):
+		if p == null or p["role"] != "runner" or p["state"] != "play" or not visible_to(p, cam_i):
 			continue
 		var b := box_cam(p, cam_i)
 		if b.is_empty():
@@ -227,9 +351,28 @@ func fire(g, who: String) -> Dictionary:
 		var nx := clampf(0.5, float(b[0]), float(b[0]) + float(b[2]))      # the point of the figure nearest to the middle
 		var ny := clampf(0.5, float(b[1]), float(b[1]) + float(b[3]))
 		var dd := Vector2((nx - 0.5) * asp, ny - 0.5).length()
-		if dd <= r and dd < best:
+		if dd > r:
+			continue
+		if protected(p):
+			if dd < bestp:
+				bestp = dd
+				prot = p
+		elif dd < best:
 			best = dd
 			hit = p
+	if not past.is_empty():                                # back to now
+		main.cams[0].global_transform = cam_keep
+		for sl in keep:
+			game.players[sl]["actor"].position = keep[sl]
+	if hit == null and prot != null:                       # Balance: neutral - no penalty, no energy, a short hint
+		lock[k] = now() + 0.8
+		lock_len[k] = 0.8
+		var why := _why_safe(prot)
+		if g != null:
+			game._say(g, "🛡 %s – %s" % [prot["name"], why], 1.5)
+		return {"ok": true, "hit": false, "neutral": true, "shutter": true, "pts": 0, "name": prot["name"], "text": "🛡 %s – %s (zählt nicht)" % [prot["name"], why]}
+	if game.tools != null:
+		game.tools.pay_shot(g)
 	var gd: Dictionary = game.mwg if g == null else g
 	if g == null and who != "" and not (who in game.mwg["names"]) and not (ki != null and ki.firing):
 		game.mwg["names"].append(who)
@@ -257,42 +400,55 @@ func fire(g, who: String) -> Dictionary:
 	var pts: int = 100 + int(clampf(100.0 - dist * 5.0, 0.0, 100.0)) + int(clampf(100.0 - rt * 12.0, 0.0, 100.0))
 	if main.game_tutorial or game._practising(hit):
 		pts = 0                                            # practice: nobody is really caught (game._caught says so)
+	var base_pts := pts
+	var rep_n := int((gd.get("cn", {}) as Dictionary).get(int(hit["slot"]), 0))        # Balance: caught before in this round
+	if pts > 0:
+		pts = int(round(float(pts) * float(REPEAT[mini(rep_n, REPEAT.size() - 1)])))
 	var cap := "🎯 %s · %d:%02d · %d m · +%d" % [hit["name"], int(t_round) / 60, int(t_round) % 60, int(round(dist)), pts]
 	var jpg := _photo(cam_i, best, r, asp)
-	if not jpg.is_empty() and pts > 0:
+	if not jpg.is_empty() and base_pts > 0:
 		game.gallery.append({"n": cap, "c": "#" + game.COLORS[hit["slot"]].to_html(false), "jpg": jpg})
 		if game.gallery.size() > 8:
 			game.gallery.pop_front()
 		if hit["sock"] != null:
 			hit["sock"]["ws"].send_text(JSON.stringify({"t": "pic", "b64": Marshalls.raw_to_base64(jpg), "txt": "🎯 Erwischt vom Auslöser von %s" % by}))
 	gd["shut_pts"] = int(gd.get("shut_pts", 0)) + pts
-	gd["shut_hits"] = int(gd.get("shut_hits", 0)) + (1 if pts > 0 else 0)
+	gd["shut_hits"] = int(gd.get("shut_hits", 0)) + (1 if base_pts > 0 else 0)
 	lock[k] = now() + 0.8                                  # no double shot with a held button
 	lock_len[k] = 0.8
-	if g == null and pts > 0:                              # the guards at MoveEye: like mw_catch
+	if g == null and base_pts > 0:                         # the guards at MoveEye: like mw_catch
 		game.mwg["catches"] = int(game.mwg["catches"]) + 1
 		game.mwg["who"][int(hit["slot"])] = true
 	hit["no_pic"] = true                                   # the photo of the shutter is the proof (no second photo)
+	hit.erase("catch_pts")
+	hit["shot_base"] = base_pts                            # Balance: game._caught → score_catch (× REPEAT) - the one rule
 	game._say(hit, "🎯 %s hat dich mit dem Auslöser erwischt!" % by, 3.0)
 	game._caught(hit, g if g != null else {"name": by})
 	hit.erase("no_pic")
-	if pts <= 0:
+	hit.erase("shot_base")
+	if base_pts <= 0:
 		return {"ok": true, "hit": true, "shutter": true, "pts": 0, "name": hit["name"], "text": "Übung: %s wäre erwischt" % hit["name"]}
+	pts = int(hit.get("catch_pts", pts))
+	var rep := _rep_txt(int(hit.get("catch_n", rep_n + 1)))
 	_alarm(hit, by)
 	if g != null:
-		game._say(g, "✓ %s erwischt! +%d (%d m, %.1f s)" % [hit["name"], pts, int(round(dist)), rt], 3.0)
+		game._say(g, "✓ %s erwischt! +%d (%d m, %.1f s)%s" % [hit["name"], pts, int(round(dist)), rt, rep], 3.0)
 	_log(true, str(hit["name"]), pts, dist, rt, by, t_round, jpg)
+	if lag > 0.0:
+		log_[log_.size() - 1]["lag"] = lag
 	return {"ok": true, "hit": true, "shutter": true, "pts": pts, "name": hit["name"], "dist": snappedf(dist, 0.1), "rt": snappedf(rt, 0.1),
-			"text": "✓ %s erwischt! +%d Punkte (%d m, %.1f s)" % [hit["name"], pts, int(round(dist)), rt]}
+			"rep": int(hit.get("catch_n", 1)), "text": "✓ %s erwischt! +%d Punkte (%d m, %.1f s)%s" % [hit["name"], pts, int(round(dist)), rt, rep]}
 
 
 func _alarm(hit: Dictionary, by: String) -> void:
 	"""an alarm like a real one of MoveEye: the light, the siren; MoveEye puts the push into its test inbox (world_reply)"""
-	game.flash_until = max(float(game.flash_until), now() + 6.0)
-	_siren.play()
+	var real: bool = game.rules != null and game.rules.real()
+	if not real:                                          # «Wie echte Hardware»: MoveEye has no light and no siren
+		game.flash_until = max(float(game.flash_until), now() + 6.0)
+		_siren.play()
 	if main.padmap != null:
 		main.padmap.rumble("alarm")                           # 3D-4.13: every controller feels the alarm
-	game.news("🚨 Alarm: %s fotografiert (Auslöser von %s) – Licht und Sirene, Push ins Test-Postfach" % [hit["name"], by])
+	game.news("🚨 Alarm: %s fotografiert (Auslöser von %s) – %sPush ins Test-Postfach" % [hit["name"], by, "" if real else "Licht und Sirene, "])
 
 
 func _log(is_hit: bool, nm: String, pts: int, dist: float, rt: float, by: String, t_round: float, jpg: PackedByteArray) -> void:
@@ -313,7 +469,15 @@ func _log(is_hit: bool, nm: String, pts: int, dist: float, rt: float, by: String
 
 func round_start() -> void:
 	lock.clear()
+	lock_len.clear()                                       # Balance (point 12): nothing of the last round stays
+	log_.clear()
 	shots.clear()
+	_hist.clear()
+	for p in game.players:                                 # Balance: the catch points of this round (score_catch)
+		if p != null:
+			p.erase("cn")
+			p.erase("cpts")
+			p.erase("spawn_pos")
 	if ki != null:
 		ki.round_start()
 
@@ -323,12 +487,13 @@ func report() -> Dictionary:
 	var h := 0
 	for s_ in shots:
 		h += 1 if bool(s_["hit"]) else 0
-	return {"schuesse": shots.size(), "treffer": h, "daneben": shots.size() - h, "radius": radius(), "stufe": main.game_level, "liste": shots,
+	return {"schuesse": shots.size(), "treffer": h, "daneben": shots.size() - h, "radius": radius(), "stufe": glevel(), "liste": shots,
 			"ki_hilfe": ki.report() if ki != null else {}}
 
 
 func command(d: Dictionary) -> Dictionary:
-	"""control «game_shut» (for tests): op info | aim {slot, dist, off} (a runner in front of the head camera) | fire {slot = guard}"""
+	"""control «game_shut» (for tests): op info | aim {slot, dist, off, posture, hold, safe (s protected), spawn (start
+	protection here)} (a runner in front of the head camera) | fire {slot = guard}"""
 	var op := str(d.get("op", "info"))
 	if op == "ki" and ki != null:                          # KI-Hilfe (gamekihilfe.gd)
 		return ki.command(d)
@@ -349,6 +514,11 @@ func command(d: Dictionary) -> Dictionary:
 		ac.position = Vector3(at.x, main.ground_y(at.x, at.z), at.z)
 		ac.ctl_posture = int(d.get("posture", 0))
 		p["safe_until"] = 0.0
+		p.erase("spawn_pos")
+		if bool(d.get("spawn", false)):                    # Balance tests: here is his start (start protection)
+			spawn_protect(p)
+		elif float(d.get("safe", 0.0)) > 0.0:              # Balance tests: just caught (protected)
+			p["safe_until"] = now() + float(d["safe"])
 		if float(d.get("hold", 0.0)) > 0.0:                # a bot stands still for a moment (tests)
 			ac.frozen = true
 			get_tree().create_timer(float(d["hold"])).timeout.connect(func(): ac.frozen = false)

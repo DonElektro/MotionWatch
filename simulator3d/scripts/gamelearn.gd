@@ -146,7 +146,8 @@ func tick(dt: float) -> void:
 				var off: Vector3 = a.position - hp
 				var fw3: Vector3 = -(main.cams[0] as Camera3D).global_transform.basis.z      # like blindmap.gd: az relative to the head
 				var az := rad_to_deg(wrapf(atan2(off.x, -off.z) - atan2(fw3.x, -fw3.z), -PI, PI))
-				blind_pts.append({"az": snappedf(az, 1.0), "d": snappedf(Vector2(off.x, off.z).length(), 0.1), "dark": main.is_dark(), "scene": str(main.scene)})
+				blind_pts.append({"az": snappedf(az, 1.0), "d": snappedf(Vector2(off.x, off.z).length(), 0.1), "dark": main.is_dark(), "scene": str(main.scene),
+						"profil": _profile()})             # Balance: «Wie echte Hardware» or the simulator (not mixed)
 				if blind_pts.size() > 400:
 					blind_pts.pop_front()
 		if main.game_mode == "free" and t > float(_zc_t.get(s, 0.0)):   # 3D-3.90: «Zonen-Check» - the player hears what MoveEye sees
@@ -492,7 +493,7 @@ func _miss_pic(p: Dictionary, why: String) -> void:
 		return
 	var a = p["actor"]
 	var rec := {"n": p["name"], "box": b, "why": why, "dist": snappedf(_dist(a), 0.1), "post": int(a.ctl_posture),
-			"dark": main.is_dark(), "weather": str(main.weather), "t": snappedf(now() - game.t_start, 0.1)}
+			"dark": main.is_dark(), "weather": str(main.weather), "t": snappedf(now() - game.t_start, 0.1), "profil": _profile()}
 	rec.merge(_tags(p))
 	main.want_snapshot(0)
 	get_tree().create_timer(0.35).timeout.connect(func():
@@ -559,7 +560,7 @@ func round_end() -> void:
 			if reached and unseen and paths[int(p["slot"])].size() >= 6:
 				var w := {"v": 1, "name": p["name"], "date": Time.get_datetime_string_from_system(false, true), "scene": main.scene,
 						"hour": snappedf(main.hour(), 0.1), "weather": str(main.weather), "wind": snappedf(float(main.wind), 1.0),
-						"blind_s": blind_s(p), "points": paths[int(p["slot"])]}
+						"blind_s": blind_s(p), "points": paths[int(p["slot"])], "profil": _profile()}
 				var fw := FileAccess.open(dir + "/schleichweg_%s.json" % _safe(p["name"]), FileAccess.WRITE)
 				if fw != null:
 					fw.store_string(JSON.stringify(w))
@@ -584,6 +585,12 @@ func _safe(s: String) -> String:
 	return o.left(20)
 
 
+func _profile() -> String:
+	"""Balance 30.10.2026: which referee profile was on (gamerules.real: «echt» = only the one fixed camera) - the lessons
+	of the two are kept apart (every report, missed picture, sneaking way and blind spot says it)"""
+	return game.rules.profile() if game != null and game.rules != null else "simulator"
+
+
 func report_dict() -> Dictionary:
 	var n := 0
 	var found := 0
@@ -600,7 +607,7 @@ func report_dict() -> Dictionary:
 		if ok:
 			bands[bd][1] += 1
 	lats.sort()
-	return {"v": 1, "quelle": "Spiel", "datum": Time.get_datetime_string_from_system(false, true), "runde": round_id,
+	return {"v": 1, "quelle": "Spiel", "datum": Time.get_datetime_string_from_system(false, true), "runde": round_id, "profil": _profile(),
 			"simulator": main.VERSION, "mw_version": str(main.mw.get("mw_version", "")), "ki": str(main.mw.get("ai_status", "")),
 			"spielart": main.game_mode, "szene": main.scene, "wetter": str(main.weather), "dunkel": main.is_dark(),
 			"sichtbar": n, "gemeldet": found, "rate": (round(100.0 * found / n) if n > 0 else -1),

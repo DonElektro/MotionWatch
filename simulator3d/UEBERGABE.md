@@ -1,8 +1,31 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 29.10.2026 · Simulator-Version **3D-4.16** · passende MoveEye-Version (früher Motion Watch) **2.96.2**
+Stand: 30.10.2026 · Simulator-Version **3D-4.17** · passende MoveEye-Version (früher Motion Watch) **2.96.2**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.17 (MoveEye 2.98.46): Balance-Paket 30.10.2026 + KI-Wächter, Stange-Regler, nacktes /sim-Bild
+
+Spiel-Balance nach dem Code-Review (von Daniel freigegeben, Punkte 1, 3–11 und 12 teilweise):
+- **Eine Punkte-Regel für alle Wächter** (`gameshutter.score_catch`, `game.guard_score`): jeder Fang zählt sofort so, wie er
+  angezeigt wird (Auslöser 100–300, sonst 150), derselbe Schleicher nochmals in der Runde 50 % / 25 % / 0 %, jeder Fehlalarm
+  einmal −50, am Schluss + 200 × Anteil «nicht im Ziel». Die Endzeile rechnet es vor («… = N Punkte»). Kein doppelter Abzug mehr.
+- **Schuss auf Geschützte** (gerade erwischt, Startschutz) ist neutral: keine Punkte, keine Energie, Hinweis «schon erwischt» /
+  «Startschutz». Der KI-Autopilot zielt nicht auf Geschützte (Rahmen-Feld 5 in `gamekihilfe.boxes`).
+- **Startschutz** (`spawn_protect`): nach Start/Neustart geschützt, bis 6 m vom Start weg oder 6 s um.
+- **Zwei Stufen:** Schleicher-Stufe = `game_level`, Wächter-Stufe = `game_glevel` (gamerules, «auto» = wie Schleicher-Stufe).
+  Leichter Wächter = grosser Kreis **und** 130 ⚡ (0.5/s), schwer = kleiner Kreis **und** 70 ⚡ (0.3/s); normal unverändert.
+- **Verzögerung Handy-Wächter:** Treffer werden gegen Kopf und Schleicher von vor 0.25 s geprüft (`_hist`). Der Wächter bekam
+  nie das kleine 320×180-Bild (das gilt nur für Schleicher-Ansichten), jetzt im Code vermerkt.
+- **Busch-Hüpfen:** Verstecken hat eine Wartezeit pro Person (4 s nach früh raus, 10 s nach «zu lange»), für alle Büsche.
+- **Ein Text** für Stufen und Wächter (`gamerules.LEVEL_TXT`, `GLEVEL_TXT`, `GUARD_TXT`) im Assistenten und in den Einstellungen.
+- **Profil «Wie echte Hardware»** (`game_real`, Standard aus): nur die eine feste Kamera zählt – kein Drehen, keine feste
+  zweite Kamera, keine Wärmebild-Kamera, kein Mikrofon, kein Licht/IR, keine Sirene; im Assistenten «nur Simulator».
+  `gamelearn` schreibt `"profil": "echt" | "simulator"` in Bericht, verpasste Bilder, Schleichwege und blinde Flecken.
+- **Sieger pro Rolle:** Endbild mit bestem Wächter und bestem Schleicher plus Team-Ergebnis (`win.roles`, `win.team`);
+  «Rollen reihum – wer am wenigsten erwischt wurde» vergleicht jetzt per Platz (nicht Name) und nennt die Anzahl.
+- **«Team gegen Team» entfernt**; gespeichertes `teamguard` wird beim Laden zu `guard`.
+- Beim Rundenstart werden auch die Sperr-Ringe und das Schuss-Protokoll für MoveEye geleert.
 
 ## Wer und wie
 
