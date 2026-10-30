@@ -296,6 +296,7 @@ func _export(n: int, scenes_too: bool, hi: bool) -> void:
 				info["post"] = 1 if randf() < 0.6 else 2      # crouching / crawling, like a sneaking person
 				V.set_posture(v, int(info["post"]))
 			if hi and v.kind == "person":
+				info["build"] = V.vary_person(v)               # 3D-4.12: height, build, hood, backpack, umbrella
 				if randf() < 0.7:
 					info["clothes"] = V.dress(v)
 				if v.variant not in ["cyclist", "stroller", "courier"] and randf() < 0.25:
@@ -443,7 +444,7 @@ func _cut(v: Node3D, box: Array) -> float:
 		var mi := m as MeshInstance3D
 		if not mi.visible or mi.mesh == null or not (mi.layers & 1):
 			continue
-		var ab: AABB = mi.get_aabb()
+		var ab: AABB = mi.get_meta("pose_aabb") if mi.has_meta("pose_aabb") else mi.get_aabb()   # 3D-4.12: skinned figure: its pose
 		for c in 8:
 			var w: Vector3 = mi.global_transform * ab.get_endpoint(c)
 			if cam.is_position_behind(w):
@@ -531,7 +532,7 @@ func _box(v: Node3D) -> Array:
 		var mi := m as MeshInstance3D
 		if not mi.visible or mi.mesh == null:
 			continue
-		var ab: AABB = mi.get_aabb()
+		var ab: AABB = mi.get_meta("pose_aabb") if mi.has_meta("pose_aabb") else mi.get_aabb()   # 3D-4.12: skinned figure: its pose
 		for c in 8:
 			var w: Vector3 = mi.global_transform * ab.get_endpoint(c)
 			if cam.is_position_behind(w):

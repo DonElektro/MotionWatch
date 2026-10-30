@@ -4169,6 +4169,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return game.debug_info()
 	elif a == "gameplus":                              # 3D-4.x: weather change, camouflage things, theft (gameplus.gd, tests)
 		return game.plus.op(d)
+	elif a == "figuren":                               # 3D-4.12: for tests - figures in a row, a picture, frames per second (figur.gd)
+		return preload("res://scripts/figur.gd").op(self, d)
 	elif a == "set" or a == "press":
 		var c = null
 		for x in controls:
