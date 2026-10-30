@@ -265,7 +265,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     let ph, pw;
     if (full) {
       pw = Math.round(mw); ph = Math.round(mw * 9 / 16);
-      const short = ph - (room - ch - 8);
+      const short = ph - (room - ch - 2);              // 2.98.54: 2 px gap is enough (was 8)
       if (short > 0 && stk > 104) {                       // smaller sticks: the tiles stay in view as far as possible
         stk = Math.max(104, stk - Math.ceil(short)); document.documentElement.style.setProperty("--sk-st", stk + "px"); ch = chOf();
       }

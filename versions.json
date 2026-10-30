@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 00:16",
+ "generated": "2026-10-31 00:42",
  "versions": [
   {
-   "version": "2.98.53",
-   "file": "webcam_bewegung_2_98_53.py",
+   "version": "2.98.54",
+   "file": "webcam_bewegung_2_98_54.py",
    "url": "",
-   "sha256": "ca26b49132e649ac99c80683f493e03f6809428b6a3d96c09dd9a7a11f4f671d",
-   "date": "2026-10-31 00:16",
-   "notes": "Sim-Kompakt «Bild im Bild»: Simulator-Bild gross, Kamera klein in der Ecke (antippen = tauschen, pro Gerät gemerkt); Simulator 3D-4.24: Simulator-Datei heisst neu MoveEyeSim3D.exe – alte Dateien löschen und neu herunterladen; Simulator startet mit frischen Einstellungen; Windows fragt evtl. nochmals (SmartScreen/Firewall) (ein Update aus dem Simulator erledigt den Wechsel von selbst); Logo-Person geht mit echtem Gang (Bein und Gegenarm zusammen, Web und Simulator); Falsche Meldung «Servo blockiert» in der Simulation behoben; Prüfung ab Werk aus (neue Einstellung «Blockierten Servo im Simulator",
-   "sig": "5059aa1284b17d122c487383be0b72e518f743f31a5ba22a95438b8e252d50babbbec09e0d6aca793bc8d7b72d9a568e0c7f71f2e1c03d905ef2b6af996efc01"
+   "sha256": "fc22a66924b3a192821a1f25f41eb1c2ec123f4426d95fcd8371d25e6410678e",
+   "date": "2026-10-31 00:42",
+   "notes": "Live-Seite am Handy: die Status-Chips stehen in einer Zeile zum seitlichen Wischen (Schutz-Zustand, Status-LED, alles ok / Probleme, Akku zuerst; Rand blendet aus, wenn weitere folgen) – die Sticks von Sim-Kompakt haben wieder ihre normale Grösse",
+   "sig": "45ca26b23286261d3521b71f254c1e940e5db9799397795fe3cd14c86352feb6d7147f3ec8ff34d784d4b8a8cbadd3de419182cede7935e91321aabf1bec7302"
   },
   {
    "version": "2.97.1",
