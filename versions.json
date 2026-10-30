@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 04:18",
+ "generated": "2026-10-30 04:22",
  "versions": [
   {
-   "version": "2.98.39",
-   "file": "webcam_bewegung_2_98_39.py",
+   "version": "2.98.40",
+   "file": "webcam_bewegung_2_98_40.py",
    "url": "",
-   "sha256": "e63aca8958ab64a5cda4e98605fe05a9621644b24de2c9f733db35c707732960",
-   "date": "2026-10-30 04:17",
-   "notes": "Aufräumen: ein Eintrag «Servos» (Positionen, Test, Diagnose); alter Kurzbefehl-Schlüssel wird App-Schlüssel (/k/ geht weiter); Almanach folgt Hell/Dunkel/Rotlicht; Ausblenden überall pro Gerät; Zonen-Art «Nur melden» und Schalter «Bleibt am Platz»; Licht/Sirene zielen auf Person oder Zelt; kluge Runde nur mit Patrouille; während «Team gegen MoveEye» keine automatische Kopfbewegung; Tierart-Gruppe; «Weckton» und «Sirenenton» statt zweimal «Ton».",
-   "sig": "5f76c944ac9b3f88cb2e125a6443da5693445c953b43fef30d12af7e117c45441be977104385232a3de83185c8abb64e489e9e82fab674f666391975d48df807"
+   "sha256": "6f82fa43e45216411502c43d0c2ff825c92601d5ccf12cc3450745621986d4cf",
+   "date": "2026-10-30 04:22",
+   "notes": "Schnellere Seiten: MoveEye schickt Seiten, Skripte und Daten komprimiert (gzip, die Hauptseite 810 KB → 250 KB); die grossen Seiten werden fertig komprimiert vorgehalten.",
+   "sig": "179063a803b23053153850c3ef70021598c43d1d985c9673bad68f25a6d883d66062e5fd70328d42ea21a195e76402f8e13b8ce0fa230198459b2ff2d7a93505"
   },
   {
    "version": "2.97.1",

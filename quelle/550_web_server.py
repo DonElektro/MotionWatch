@@ -1,4 +1,7 @@
 #@ Motion Watch – Teil 550: Web: der Server (alle Adressen). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+_GZ_CACHE = {}                         # 2.98.40: gzip of the big pages (blake2b of the page -> gzip)
+
+
 class WebStream:
     def __init__(self, watch):
         self.watch = watch; self.started = False
@@ -212,6 +215,32 @@ class WebStream:
                 return None
             lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or request.args.get("lang") or CFG["lang"])
             return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
+
+        @app.after_request
+        def gzip_text(resp):                        # 2.98.40 (Daniel: menus build up slowly): pages are ~800 KB - gzip makes
+            try:                                    # ~5× less over Wi-Fi / Tailscale; registered first = runs last
+                if (request.method == "GET" or request.method == "POST") and resp.status_code == 200 and not resp.direct_passthrough \
+                        and not resp.is_streamed and "gzip" in (request.headers.get("Accept-Encoding") or "").lower() \
+                        and not resp.headers.get("Content-Encoding") \
+                        and (resp.mimetype or "").startswith(("text/", "application/javascript", "application/json", "image/svg")):
+                    raw = resp.get_data()
+                    if len(raw) >= 2048:
+                        import hashlib, gzip as _gz
+                        k_ = hashlib.blake2b(raw, digest_size=16).digest()
+                        z_ = _GZ_CACHE.get(k_)
+                        if z_ is None:
+                            z_ = _gz.compress(raw, compresslevel=5)
+                            if len(raw) > 50000:          # the big pages come again and again: keep a few
+                                if len(_GZ_CACHE) > 12:
+                                    _GZ_CACHE.pop(next(iter(_GZ_CACHE)))
+                                _GZ_CACHE[k_] = z_
+                        resp.set_data(z_)
+                        resp.headers["Content-Encoding"] = "gzip"
+                        resp.headers["Content-Length"] = str(len(z_))
+                        resp.vary.add("Accept-Encoding")
+            except Exception:
+                pass
+            return resp
 
         @app.after_request
         def trust_cookie(resp):                     # a device that just logged in gets its «trusted» cookie (one year)
