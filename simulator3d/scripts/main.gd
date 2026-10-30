@@ -2533,7 +2533,8 @@ func world_reply() -> Dictionary:
 			"weather": weather, "humidity": humidity, "mover": mover_on,
 			"pc_cpu": snappedf(mini_box.own["pc"], 0.1) if mini_box != null and float(mini_box.own["pc"]) >= 0.0 else null,
 			"sim_cpu_own": snappedf(mini_box.own["sim"], 0.1) if mini_box != null and float(mini_box.own["sim"]) >= 0.0 else null,
-			"cores": OS.get_processor_count(), "mw_cmd": mw_cmd if not mw_cmd.is_empty() else null}
+			"cores": OS.get_processor_count(), "mw_cmd": mw_cmd if not mw_cmd.is_empty() else null,
+			"shut": game.shut.log_tail() if game != null and game.shut != null else null}   # 3D-4.x: «Auslöser» hits -> MoveEye's test inbox
 
 
 var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
@@ -3829,6 +3830,8 @@ func _control(d: Dictionary) -> Dictionary:
 		view_cam.rotation = Vector3(pt, yw, 0)
 		view_want_t = now()
 		return {"ok": true}
+	elif a == "game_shut":                             # 3D-4.x: «Auslöser» (gameshutter.gd) - info / aim / fire, for tests
+		return game.shut.command(d) if game != null and game.shut != null else {"ok": false, "error": "no game"}
 	elif a == "game_test":                             # 3D-3.52: for tests - where a player is in the head camera / move him there
 		if game == null or not d.has("slot") or int(d["slot"]) < 0 or int(d["slot"]) >= game.players.size() or game.players[int(d["slot"])] == null:
 			return {"ok": false, "error": "no player"}
@@ -4032,6 +4035,8 @@ func _control(d: Dictionary) -> Dictionary:
 			home_editor.open(bool(d.get("on", true)))
 		return {"ok": true, "items": home_items, "kinds": Scenes.HOME_KINDS, "scene": scene}
 	elif a == "shoot":                                 # 3D-3.70: a shot / trigger from MoveEye at a spot of the head camera picture
+		if bool(d.get("shutter", false)) and game != null and game.shut.human_mode() == "mw":   # 3D-4.x: «Auslöser» (gameshutter.gd)
+			return game.shut.fire(null, str(d.get("who", "")).left(30))
 		return mw_shot(float(d.get("x", 0.5)), float(d.get("y", 0.5)), str(d.get("who", "")).left(30))
 	elif a == "game_mwcatch":                          # «Team gegen MoveEye»: «Erwischt!» pressed at MoveEye (3D-3.27)
 		if game == null:

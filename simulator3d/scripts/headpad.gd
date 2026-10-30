@@ -99,6 +99,8 @@ func _process(dt: float) -> void:
 	info.text = ("Den Kopf steuert gerade: %s – deine Befehle wirken erst danach." % own if con and own != ""
 			else ("MoveEye dreht den Kopf (auch Tracking und Patrouille pausieren kurz)." if con
 			else "MoveEye ist nicht verbunden – zuerst «An MoveEye senden» und MoveEye verbinden."))
+	if main.game != null and main.game.shut != null and main.game.shut.human_mode() == "mw":   # 3D-4.x: «Auslöser»
+		info.text += "\nAuslöser: Bildmitte (Kreis) auf einen Spieler, dann der runde Knopf im Bild oder R2 am Controller."
 	if main.localplay != null and main.localplay.pad_on():    # 3D-4.x: the controller turns the head too (explore.gd _head_tick)
 		info.text += "\nController: Steuerkreuz oder L1 + rechter Stick drehen den Kopf."
 	if _hold != "":

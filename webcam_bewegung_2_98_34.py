@@ -26885,7 +26885,7 @@ def _simgame_fetch():
         if isinstance(r, dict) and r.get("ok") and r.get("open"):
             SIMGAME["g"] = {"round": r.get("round"), "mode": r.get("mode"), "left": r.get("left"), "cd": r.get("cd"),
                             "mwg": r.get("mwg"), "task": r.get("task") or "", "url": r.get("url") or "", "max": r.get("max"),
-                            "runners": r.get("runners")}
+                            "runners": r.get("runners"), "shut": r.get("shut")}      # 2.98.35: «Auslöser» (539)
         else:
             SIMGAME["g"] = None
     except Exception:
@@ -27211,6 +27211,7 @@ class SimLink:
                     threading.Thread(target=lambda m=dict(mc_): feedback_send(m.get("kind"), m.get("text"), str(m.get("contact") or "")[:120], True, m.get("stars"),
                                      "3D-Simulator " + str(m.get("sim") or "")[:12], feedback_shot("sim") if m.get("shot") else None, "simulator"),
                                      daemon=True, name="simfeedback").start()
+        shut_feed(rep_.get("shut"), first)               # 2.98.35: «Auslöser» hits -> alarm into the test inbox (539)
         le = int(rep_.get("last_event") or 0)
         if le > SIM["seen_event"]:
             data, _ = _sim_get(f"/events?since={SIM['seen_event']}")
@@ -36215,7 +36216,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den Bewegungssensor", "The motion sensor needs https (iPhone / iPad)": "Der Bewegungssensor braucht https (iPhone / iPad)",
  "Turn the phone to look round. Press 📱 again to stop.": "Handy drehen zum Umschauen. Nochmals 📱 drücken zum Beenden.",
  "Team against MoveEye": "Team gegen MoveEye",
- "gw-mwhand": "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an MoveEye: sie drehen die echte Kamera mit dem Joystick auf der Live-Seite und drücken dort «🚨 Erwischt!». Stimmt es, ist der Spieler erwischt – sonst gibt es einen Fehlalarm und 4 Sekunden Pause.",
+ "gw-mwhand": "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an MoveEye: sie drehen die echte Kamera mit dem Joystick auf der Live-Seite, zielen mit der Bildmitte auf einen Spieler und drücken den Auslöser 🎯 (oder R2 am Controller). Trifft der Kreis, ist der Spieler erwischt (Foto, Alarm, Punkte) – sonst gibt es einen Fehlalarm und 3 Sekunden Sperre.",
  "A task for every round (bonus)": "Eine Aufgabe für jede Runde (Bonus)",
  "gw-tasks": "🎯 Jede Runde hat eine Aufgabe, z. B. «nur kriechend ins Ziel» oder «nie über 50 % Verdacht». Wer sie schafft, bekommt Bonuspunkte. Neben der Rangliste des Abends gibt es eine Rangliste der Woche.",
  "Task of this round": "Aufgabe dieser Runde", "Ranking of the week": "Rangliste der Woche", "week": "Woche", "task done": "Aufgabe erfüllt",
@@ -48229,52 +48230,14 @@ function mwgPaint(s) {
     document.head.appendChild(st2); }
   b.hidden = false;
   const w = (G.mwg || {}).wait || 0;
-  $("#mwg-t").textContent = "🕹 " + (G.round === "countdown" ? t("Get ready") + " " + (G.cd || "") : t("You are the guard: turn the camera and tap the players in the picture")) + " · " + ((G.mwg || {}).catches || 0) + "× ✓ · " + ((G.mwg || {}).false || 0) + "× ✗";
+  const sh_ = G.shut;                                    // 2.98.35: the simulator has the «Auslöser» (539) - it replaces «Erwischt!»
+  $("#mwg-t").textContent = "🕹 " + (G.round === "countdown" ? t("Get ready") + " " + (G.cd || "") : sh_ ? t("You are the guard: aim the middle of the picture (circle) at a player and press 🎯") : t("You are the guard: turn the camera and tap the players in the picture")) + " · " + ((G.mwg || {}).catches || 0) + "× ✓ · " + ((G.mwg || {}).false || 0) + "× ✗" + (sh_ ? " · " + (sh_.pts || 0) + " " + t("points") : "");
+  $("#mwg-b").style.display = sh_ ? "none" : "";
   $("#mwg-b").disabled = G.round !== "play" || w > 0; $("#mwg-b span").textContent = w > 0 ? w + " s" : t("Caught!");
 }
-// ---- 2.95.96: shoot / trigger into the simulation from the live picture (outside «Team gegen MoveEye» too) ----
-const SHOOT = {on: false, hits: 0, miss: 0, vis: null, io: null};
-function simShootPaint(s) {
-  const S_ = s.sim || {}, G = S_.game, mwhand = !!(G && G.mode === "mwhand" && (G.round === "play" || G.round === "countdown"));
-  const live = !!(S_.on && S_.ok && S_.pic !== false) && String(((QSJ && QSJ.cfg) || {}).source || "sim:").startsWith("sim:");
-  let b = $("#mws");
-  // 2.96.9: only while the live picture can be seen, and «off» is just a small round button at the side (it covered the settings)
-  if (!SHOOT.io && $("#video") && window.IntersectionObserver) { SHOOT.io = new IntersectionObserver(es => { SHOOT.vis = es[0].isIntersecting; simShootPaint(QSJ ? QSJ.state : s); }, {threshold: 0.25}); SHOOT.io.observe($("#video")); }
-  if (!live || mwhand || (!SHOOT.on && SHOOT.vis === false)) { if (b) b.hidden = true; return; }
-  if (!b) {
-    b = el("div"); b.id = "mws"; b.innerHTML = '<button type="button" id="mws-b">🎯 <span></span></button><span id="mws-t"></span>'; document.body.appendChild(b);
-    const st = document.createElement("style");
-    st.textContent = "#mws{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:79;display:flex;align-items:center;gap:10px;background:rgba(10,14,20,.88);border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 6px;box-shadow:0 4px 18px rgba(0,0,0,.45);color:#fff;font-size:13px;max-width:calc(100vw - 24px)}"
-      + "#mws[hidden]{display:none}#mws:not(.on){left:auto;right:12px;transform:none;padding:4px;bottom:calc(84px + env(safe-area-inset-bottom,0px))}#mws:not(.on) #mws-b span{display:none}#mws button{border-radius:999px;padding:8px 14px;font-weight:700;background:var(--panel2,#1a2433);color:#fff;border:1px solid var(--line)}#mws.on button{background:#ff3b30;border-color:#ff3b30}#mws:not(.on) #mws-t{display:none}"
-      + ".mwg-shot{position:fixed;z-index:85;width:64px;height:64px;margin:-32px 0 0 -32px;border:3px solid #ff3b30;border-radius:50%;pointer-events:none;animation:mwgs .5s ease-in forwards}"
-      + ".mwg-shot::before,.mwg-shot::after{content:'';position:absolute;left:50%;top:-10px;width:2px;height:80px;margin-left:-1px;background:#ff3b30}.mwg-shot::after{transform:rotate(90deg)}"
-      + ".mwg-shot.hit{border-color:#3fcf6b;box-shadow:0 0 16px #3fcf6b}.mwg-shot.miss{opacity:.4}@keyframes mwgs{0%{transform:scale(1.8);opacity:0}100%{transform:scale(.6);opacity:1}}";
-    document.head.appendChild(st);
-    $("#mws-b").onclick = () => { SHOOT.on = !SHOOT.on; simShootPaint(QSJ ? QSJ.state : s); toast(SHOOT.on ? "🎯 " + t("Tap into the live picture to shoot - a miss is marked as a false alarm") : t("Shooting off")); };
-    const v = $("#video"); let down = null;
-    v.addEventListener("pointerdown", e => { down = [e.clientX, e.clientY, Date.now()]; });
-    v.addEventListener("pointerup", async e => {
-      const b_ = $("#mws"); if (!SHOOT.on || !b_ || b_.hidden || !down) return;
-      const [x0, y0, t0] = down; down = null;
-      if (Math.hypot(e.clientX - x0, e.clientY - y0) > 12 || Date.now() - t0 > 600) return;      // a drag, not a tap
-      const r_ = v.getBoundingClientRect(), nw = v.naturalWidth || 16, nh = v.naturalHeight || 9;
-      const sc = Math.min(r_.width / nw, r_.height / nh), w = nw * sc, h = nh * sc;
-      const x = (e.clientX - r_.left - (r_.width - w) / 2) / w, y = (e.clientY - r_.top - (r_.height - h) / 2) / h;
-      if (x < 0 || x > 1 || y < 0 || y > 1) return;
-      const m = el("div", "mwg-shot"); m.style.left = e.clientX + "px"; m.style.top = e.clientY + "px"; document.body.appendChild(m);
-      setTimeout(() => m.remove(), 900);
-      const q = await post("/api/sim", {action: "shoot", x: x, y: y, lang: LANG});
-      m.classList.add(q.hit ? "hit" : "miss");
-      if (q.ok) { q.hit ? SHOOT.hits++ : SHOOT.miss++; }
-      toast(q.ok ? (q.text || "") : "⚠ " + (q.error || t("error")));
-      simShootPaint(QSJ ? QSJ.state : s);
-    });
-  }
-  b.hidden = false; b.classList.toggle("on", SHOOT.on);
-  $("#mws-b span").textContent = SHOOT.on ? t("Shooting on") + " · ✕" : t("Shoot");
-  $("#mws-b").title = SHOOT.on ? t("Shooting off") : t("Shoot");
-  $("#mws-t").textContent = t("Tap the picture") + " · " + SHOOT.hits + "× ✓ · " + SHOOT.miss + "× ✗ " + t("false alarm");
-}
+// ---- 2.95.96: shoot / trigger into the simulation: from 2.98.35 the «Auslöser» (539) - one round 🎯 inside the live picture
+// during «Team gegen MoveEye», a shot at the middle (crosshair); R2 in the Controller-Ansicht also outside a round
+function simShootPaint(s) { const b = $("#mws"); if (b) b.remove(); }
 Object.assign(I18N.de, {"Training set for an own AI model (YOLO)": "Trainingspaket für ein eigenes KI-Modell (YOLO)", "pictures": "Bilder", "The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).": "Der Simulator macht die Bilder und legt ein ZIP auf den Schreibtisch seines PCs (etwa 2 s pro Bild)."});
 Object.assign(I18N.de, {"Reference scan": "Referenz-Scan", "Open the assistant": "Assistent öffnen", "refscan-note": "Der Kopf fährt ein Raster von Richtungen ab und speichert Fotos als Referenz. Später vergleicht MoveEye dieselben Richtungen und zeigt im Bericht, was fehlt, neu ist oder sich verändert hat."});
 Object.assign(I18N.de, {"Shoot": "Schiessen", "Shooting on": "Schiessen an", "Shooting off": "Schiessen aus", "Tap the picture": "Ins Bild tippen", "false alarm": "Fehlalarm",
@@ -50482,6 +50445,7 @@ SELFTEST_EXTRA.append(("Field of view per camera (cam_fov_h)", cam_fov_selftest)
 #       later, in the simulation the simulator's rover); the simulator view follows behind the rover (explore «hinterher»)
 #     without a rover: right stick = fly the simulator view (up = forward, sideways = turn)
 #     R1 held + right stick = turn the simulator view · L1 = zoom out, R1 short = zoom in, L2 / R2 = zoom out / in
+#     (2.98.35: with the simulator R2 = the shutter «Auslöser», part 539)
 #     R3 = next view (behind the rover → driver → from above; without rover: head camera → from above → free)
 #     A Photo · B Record · X Lamp (IR without lamp) · Y Follow · D-pad ← → choose a button of the bar, ↑ press it, ↓ help
 #     Select = swap the pictures · Start = bar on / off, held 1 s = leave
@@ -50636,6 +50600,7 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     [["L ◉", "Left stick: turn / tilt the head of MoveEye"], ["L3", "Press the left stick: head to the middle"],
      ["R ◉", rover() ? "Right stick: drive the rover (up = forward, sideways = steer) - the view follows behind it" : "Right stick: move the simulator view (no rover)"],
      ["R1 + R ◉", "Hold R1 + right stick: turn the simulator view"], ["L1 / R1", "Zoom out / in (L2 / R2 too)"],
+     ["R2 🎯", "Shutter: a shot at the middle of the picture (with the simulator; in «Team gegen MoveEye» a catch)"],
      ["R3", "Press the right stick: next view (behind the rover, driver, from above)"],
      ["A B X Y", "A Photo · B Record · X Lamp · Y Follow"], ["✚ ← →", "Choose a button of the bar, ↑ presses it, ↓ this help"],
      ["Select", "Swap the pictures"], ["Start", "Bar on / off · hold 1 s = leave"],
@@ -50759,7 +50724,10 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     if (down(4)) { GP.l1T = now; zoom(-1); }                              // L1 = zoom out (held: again and again)
     else if (cur[4] && now - GP.l1T > 450 && now - GP.zT > 300) { GP.zT = now; zoom(-1); }
     const l2 = val(6), r2 = val(7);                                       // L2 / R2: zoom out / in while pressed
-    if ((l2 > 0.4 || r2 > 0.4) && now - GP.zT > 250) { GP.zT = now; zoom(r2 > l2 ? 1 : -1); }
+    const shut = !!(window.mwShutCan && window.mwShutCan());              // 2.98.35: with the simulator R2 = the shutter («Auslöser», 539)
+    if (shut && r2 > 0.5 && !GP.r2) window.mwShutFire();
+    GP.r2 = r2 > 0.5;
+    if ((l2 > 0.4 || (!shut && r2 > 0.4)) && now - GP.zT > 250) { GP.zT = now; zoom(!shut && r2 > l2 ? 1 : -1); }
     if (down(10)) act("center");                                           // L3
     if (down(11)) sim({view: "rnext"}).then(r => { if (r && r.ok) toastT("👁 " + T(VIEWNAME[r.view] || "Free view")); });   // R3
     const K = KEYS(), byKey = k => Object.keys(K).find(id => K[id] === k);
@@ -50848,6 +50816,195 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
 """
 WEB_PAGE = WEB_PAGE.replace("</body>", PADVIEW_JS + "</body>", 1)
 WEB_UI_LOCAL.add("mw-pad")                                # per device: the controller view of the tablet is not the one of the PC
+# ----------------------------------------------------------------------------
+# Wish of Daniel (30.10.2026): when a PERSON steers the camera instead of the AI («Team gegen MoveEye», the game of the
+# 3D simulator where the guards sit at MoveEye), the guard aims the MIDDLE of the live picture at a player and presses the
+# shutter. The simulator decides (simulator3d/scripts/gameshutter.gd): a hit = the player touches the circle in the middle
+# (its size by the difficulty of the game: easy big, hard small), a miss = a false alarm (−50, the shutter locked 3 s).
+#   Web (live page and «Controller-Ansicht» 538): crosshair over the live picture and ONE big round 🎯 button at the
+#     bottom right of the live picture (thumb) - the former 🎯 «Schiessen» button of 2.95.96 (530 simShootPaint), now only
+#     during such a round, inside the picture and moved away from other controls (no overlap in any layout).
+#     R2 of the controller in the Controller-Ansicht = the shutter whenever the simulator is there (outside a round: the
+#     shot into the world of 2.95.96, at the middle). Request: /api/sim {action: shoot, x: .5, y: .5, shutter: true}.
+#   A hit is a real alarm of MoveEye like with the AI: the simulator switches its light on and sounds its siren, and puts the
+#     hit into world_reply «shut»; MoveEye (350 → shut_feed) then writes a push with the photo (crosshair, time, name) into
+#     its TEST INBOX only (sandbox_add + msglog_add «Test-Postfach») - never a real push - and the alarm light (light_alarm).
+#   The phone of a guard and the game at the simulator PC have the same (game.gd, localplay.gd, headpad.gd).
+# Translations: part 634.
+# ----------------------------------------------------------------------------
+
+SHUT = {"seen": 0, "n": 0, "last": None}
+
+
+def shut_feed(lst, first=False):
+    """world_reply «shut» of the simulator: new hits of the shutter become an alarm in the test inbox (never a real push)"""
+    if not isinstance(lst, list):
+        return
+    for it in lst[-6:]:
+        if not isinstance(it, dict):
+            continue
+        try:
+            id_ = int(it.get("id") or 0)
+        except (TypeError, ValueError):
+            continue
+        if id_ <= SHUT["seen"]:
+            continue
+        SHUT["seen"] = id_
+        if first:                                         # old shots of before the connection do not count
+            continue
+        if it.get("hit"):
+            threading.Thread(target=shut_alarm, args=(dict(it),), daemon=True, name="shutalarm").start()
+        else:
+            log_event("sim", f"Shutter: {str(it.get('by') or 'guard')[:30]} missed - counted as a false alarm")
+
+
+def shut_alarm(it):
+    """a hit of the shutter: like a person alarm of the AI - alarm light, the push with the photo into the TEST INBOX"""
+    jpg = None
+    try:
+        jpg, _h = _sim_get(f"/shut_pic/{int(it.get('id') or 0)}.jpg", 3.0)
+        if not jpg or jpg[:2] != b"\xff\xd8":
+            jpg = None
+    except Exception:
+        jpg = None
+    try:
+        light_alarm()                                     # the light as at an alarm (what «Licht bei Alarm» says)
+    except Exception:
+        pass
+    nm, by = str(it.get("n") or "?")[:30], str(it.get("by") or "MoveEye")[:30]
+    t_ = int(it.get("t") or 0)
+    title = ("[SIM] " if CFG.get("sim_on") else "") + "🎯 " + trf("Shutter: {name} caught", name=nm)
+    text = trf("Photo by {by} · {m}:{s} in the round · {d} m · +{pts} points", by=by, m=t_ // 60, s=f"{t_ % 60:02d}",
+               d=int(round(float(it.get("d") or 0))), pts=int(it.get("pts") or 0))
+    try:
+        sandbox_add(title, text, jpg, "person")
+        msglog_add(title, text, "person", jpg, "test", "Test-Postfach")
+    except Exception as e:
+        log_event("sim", f"Shutter: test inbox failed: {e}"[:160])
+    SHUT["n"] += 1
+    SHUT["last"] = {"t": time.time(), "name": nm, "pts": int(it.get("pts") or 0)}
+    log_event("sim", f"Shutter: {by} caught {nm} (+{int(it.get('pts') or 0)}) - alarm into the test inbox")
+
+
+SHUT_JS = r"""
+<script>
+(function () {
+  if (document.body.dataset.tab !== "live") return;
+  try { const D = /*AUSLDE*/{}; for (const k in D) if (!(k in I18N.de)) I18N.de[k] = D[k]; } catch (e) {}
+  const T = x => (typeof t === "function" ? t(x) : x);
+  const E = (tag, id) => { const x = document.createElement(tag); if (id) x.id = id; return x; };
+  const css = E("style"); css.textContent =
+    "#msh-x{position:absolute;z-index:58;pointer-events:none;border:3px solid #ff3b30;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 1px rgba(0,0,0,.55),inset 0 0 0 1px rgba(0,0,0,.55)}"
+    + "#msh-x::before,#msh-x::after{content:'';position:absolute;left:50%;top:50%;width:3px;height:calc(100% + 28px);background:#ff3b30;transform:translate(-50%,-50%)}#msh-x::after{transform:translate(-50%,-50%) rotate(90deg)}"
+    + "#msh-x.hard::before,#msh-x.hard::after{height:calc(100% + 40px)}"
+    + "#msh-b{position:absolute;z-index:62;border-radius:50%;padding:0;margin:0;border:3px solid #fff;color:#fff;font-size:30px;line-height:1;display:flex;align-items:center;justify-content:center;"
+    + "background:radial-gradient(circle,#e5383b 0 60%,transparent 61%),conic-gradient(#ffd34d var(--p,0%),rgba(255,255,255,.28) 0);box-shadow:0 4px 18px rgba(0,0,0,.55);touch-action:manipulation;cursor:pointer;-webkit-tap-highlight-color:transparent}"
+    + "#msh-b:active{transform:scale(.94)}#msh-b.lock{opacity:.85;cursor:not-allowed}#msh-b span{font-weight:800;text-shadow:0 1px 3px rgba(0,0,0,.6)}"
+    + "#msh-x[hidden],#msh-b[hidden]{display:none}"
+    + "#msh-fl{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:57}#msh-fl.on{animation:mshfl .35s ease-out}@keyframes mshfl{0%{opacity:.85}100%{opacity:0}}";
+  document.head.appendChild(css);
+  const XH = E("div", "msh-x"), BT = E("button", "msh-b"), FL = E("div", "msh-fl"), IC = E("span");
+  XH.hidden = true; BT.hidden = true; BT.type = "button"; BT.appendChild(IC); IC.textContent = "🎯";
+  const SH = {until: 0, len: 3, busy: false};
+  const J = () => (typeof QSJ !== "undefined" && QSJ) || {};
+  const ST = () => J().state || {};
+  const game = () => (ST().sim || {}).game || null;
+  const simLive = () => { const s = ST().sim || {}; return !!(s.on && s.ok); };
+  // a round of «Team gegen MoveEye»: the guards at MoveEye steer the real head - the shutter is theirs
+  const roundOn = () => { const G = game(); return !!(G && G.mode === "mwhand" && (G.round === "play" || G.round === "countdown") && (!G.shut || G.shut.on !== false)); };
+  function flash() { const c = FL.parentNode; if (!c) return; FL.classList.remove("on"); void FL.offsetWidth; FL.classList.add("on"); }
+  function fire() {
+    if (!simLive()) return false;
+    const now = Date.now();
+    if (now < SH.until) { if (typeof toast === "function") toast("⏳ " + T("Shutter locked") + " – " + Math.ceil((SH.until - now) / 1000) + " s"); return true; }
+    if (SH.busy) return true;
+    SH.busy = true; flash();
+    post("/api/sim", {action: "shoot", x: 0.5, y: 0.5, shutter: true, lang: LANG}).then(r => {
+      SH.busy = false; r = r || {};
+      if (r.lock > 0) { SH.until = Date.now() + r.lock * 1000; SH.len = r.hit ? r.lock : Math.max(r.lock, 3); }
+      let m;
+      if (!r.ok) m = "⚠ " + (r.error || T("error"));
+      else if (r.shutter && r.hit && r.pts > 0) m = "🎯 " + r.name + " " + T("caught!") + " +" + r.pts + " " + T("points") + " (" + Math.round(r.dist || 0) + " m) · 🚨 " + T("alarm into the test inbox");
+      else if (r.shutter && !r.hit) m = "✗ " + T("Missed - false alarm") + " (" + (r.pts || -50) + ") · " + T("shutter locked 3 s");
+      else m = r.text || "";
+      if (typeof toast === "function" && m) toast(m);
+      paint();
+    }).catch(() => { SH.busy = false; });
+    return true;
+  }
+  BT.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); fire(); });
+  ["pointerdown", "pointerup", "dblclick"].forEach(k => BT.addEventListener(k, e => e.stopPropagation()));
+  window.mwShutCan = () => simLive();                     // 538: R2 = the shutter while the simulator is there
+  window.mwShutFire = fire;
+  window.mwShutOn = roundOn;
+  // where the picture really is inside the element (object-fit: contain = black edges)
+  function picRect(v) {
+    const r = v.getBoundingClientRect(), nw = v.naturalWidth || 16, nh = v.naturalHeight || 9;
+    const fit = getComputedStyle(v).objectFit, k = fit === "cover" ? Math.max(r.width / nw, r.height / nh) : fit === "fill" ? 0 : Math.min(r.width / nw, r.height / nh);
+    const w = k ? nw * k : r.width, h = k ? nh * k : r.height;
+    return {left: r.left + (r.width - w) / 2, top: r.top + (r.height - h) / 2, width: w, height: h};
+  }
+  const hits = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+  function obstacles(cont, v) {
+    const L = [...cont.querySelectorAll("button, .vtag, #vo-ctl, #vo-mctl, #lv-tools, #lv-joy > *, [role=application]")]
+      .concat([...document.querySelectorAll("#pv-bar, #pv-x, #pv-pad, #pv-more, #mwg, #lv-vw .lv-vbtn, #iconhint, #pip")]);
+    const vr = v.getBoundingClientRect(), out = [];
+    L.forEach(x => {
+      if (x === BT || x.contains(v) || BT.contains(x) || x.hidden) return;
+      const r = x.getBoundingClientRect(); if (r.width < 2 || r.height < 2) return;
+      if (r.width * r.height > 0.45 * vr.width * vr.height) return;      // a big layer over the whole picture, not a control
+      const cs = getComputedStyle(x); if (cs.display === "none" || cs.visibility === "hidden") return;
+      out.push(r);
+    });
+    return out;
+  }
+  let lastSig = "";
+  function paint() {
+    const v = document.getElementById("video"), on = roundOn() && simLive() && v && v.offsetParent !== null;
+    if (!on) { XH.hidden = BT.hidden = true; return; }
+    const cont = v.parentNode;
+    if (XH.parentNode !== cont) { cont.append(FL, XH, BT); }
+    if (getComputedStyle(cont).position === "static") cont.style.position = "relative";
+    const cr = cont.getBoundingClientRect(), p = picRect(v);
+    // the visible part of the picture (the container cuts it off)
+    const vis = {left: Math.max(p.left, cr.left), top: Math.max(p.top, cr.top), right: Math.min(p.left + p.width, cr.right), bottom: Math.min(p.top + p.height, cr.bottom)};
+    if (vis.right - vis.left < 60 || vis.bottom - vis.top < 60) { XH.hidden = BT.hidden = true; return; }
+    const G = game() || {}, S = G.shut || {}, rr = +S.r || 0.1;
+    const d = Math.max(16, 2 * rr * p.height);
+    XH.style.width = XH.style.height = d + "px";
+    XH.style.left = (p.left + p.width / 2 - cr.left) + "px"; XH.style.top = (p.top + p.height / 2 - cr.top) + "px";
+    XH.classList.toggle("hard", S.lv === "hard"); XH.title = T("Hit area") + ": " + T(S.lv === "easy" ? "easy" : S.lv === "hard" ? "hard" : "normal");
+    XH.hidden = false;
+    // the round shutter at the bottom right of the picture, moved up (then left) until nothing else is there
+    const ph = vis.bottom - vis.top, sz = ph >= 300 ? 84 : ph >= 170 ? 68 : 56, m = 12;   // thumb-sized
+    const obs = obstacles(cont, v);
+    let pos = null;
+    for (const side of ["r", "l"]) {
+      const x = side === "r" ? vis.right - m - sz : vis.left + m;
+      for (let y = vis.bottom - m - sz; y >= vis.top + m; y -= 10) {
+        const c = {left: x - 4, top: y - 4, right: x + sz + 4, bottom: y + sz + 4};
+        if (!obs.some(o => hits(c, o)) && !(d > 0 && hits(c, {left: p.left + p.width / 2 - d / 2, right: p.left + p.width / 2 + d / 2, top: p.top + p.height / 2 - d / 2, bottom: p.top + p.height / 2 + d / 2}))) { pos = {x, y}; break; }
+      }
+      if (pos) break;
+    }
+    if (!pos) pos = {x: vis.right - m - sz, y: vis.bottom - m - sz};
+    BT.style.width = BT.style.height = sz + "px"; BT.style.fontSize = Math.round(sz * 0.38) + "px";
+    BT.style.left = (pos.x - cr.left) + "px"; BT.style.top = (pos.y - cr.top) + "px";
+    const left = Math.max(0, SH.until - Date.now()) / 1000;
+    BT.style.setProperty("--p", (left > 0 ? Math.min(100, left / SH.len * 100) : 0) + "%");
+    BT.classList.toggle("lock", left > 0);
+    const tx = left > 0 ? String(Math.ceil(left)) : "🎯"; if (IC.textContent !== tx) IC.textContent = tx;
+    const sig = LANG + (S.pts || 0);
+    if (sig !== lastSig) { lastSig = sig; BT.title = T("Shutter: a shot at the middle of the picture (R2 on the controller)") + " · " + (S.pts || 0) + " " + T("points"); BT.setAttribute("aria-label", BT.title); }
+    BT.hidden = false;
+  }
+  setInterval(paint, 120);
+  addEventListener("resize", paint); addEventListener("scroll", paint, {passive: true});
+  addEventListener("keydown", e => { if (e.code === "Enter" && e.shiftKey && roundOn()) { e.preventDefault(); fire(); } });   // PC: Shift + Enter
+})();
+</script>
+"""
+WEB_PAGE = WEB_PAGE.replace("</body>", SHUT_JS + "</body>", 1)
 HELP_PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -50905,7 +51062,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <div class="tip">💡 <b>Tipp:</b> Lege die Seite als Lesezeichen oder als Symbol auf den Startbildschirm des Handys («Zum Home-Bildschirm»). Dann ist sie mit einem Tipp offen.</div>
 </section>
 
-<section id="live" data-icon="📺"><h2>Die Live-Seite</h2><p><b>Die 6 Reiter (ab 2.98.0):</b> <b>Live</b> (Bild, Joystick, Schnellschalter) · <b>Schutz</b> (Aus / Wachsam / Voll, «Heute Nacht bewachen», was bei Alarm passiert, Diebstahlschutz, Zeitplan, darunter «Zonen») · <b>Verlauf</b> (Aufnahmen, Tagebuch, Protokoll) · <b>Einstellungen</b> (Erkennung, Kameras &amp; Kopf, Geräte &amp; Sensoren, Strom, Netz &amp; Zugang, System; darunter «Kameras») · <b>Simulator</b> · <b>Mehr</b> (Anleitung, Spielecke, Werkzeuge, Infoseite, Almanach, Rückmeldung). Oben im Schutz zeigt die Kette «Person → Push → Licht → Aufnahme → Sirene», was eingeschaltet ist; antippen öffnet die Einstellung. «Einfach / Experte» steht oben in den Einstellungen.</p><p><b>🎯 Folgen (ab 2.98.1):</b> ein Schalter für alles: Die Kamera hält, was erkannt wird, in der Bildmitte – Personen zuerst, sonst Tiere und was sich wirklich bewegt. Sie dreht um den Winkel, den das Objekt von der Mitte hat, und wartet kurz auf das neue Bild (kein Hin- und Herpendeln). Im Simulator heisst derselbe Schalter «Verfolgen». Von Hand steuern pausiert das Folgen kurz.</p><p><b>◫ Ansicht (ab 2.98.29):</b> der Knopf oben rechts im Bild. Fertige Ansichten (Nur schauen / Bedienen / Einrichten), Hoch- oder Querformat, Bildgrösse und «Grösse von Schrift und Knöpfen» (60–160 %, wie eine Auflösung – das Bild bleibt immer ganz sichtbar). «✏️ Bearbeiten» ist der eine Weg zum Ordnen: Karten mit ▲ ▼ verschieben oder mit ✕ ausblenden, Schnellschalter antippen = Liebling ★ (höchstens 8, die anderen hinter «… mehr»), in der Liste darunter Reihenfolge und Ausblenden. Das gilt für dieses Gerät; «Für alle Geräte übernehmen» speichert die Anordnung auf MoveEye als Standard für Geräte ohne eigene. Ohne Schwenk-/Neigekopf gibt es keinen Joystick, «Kalibrieren» steht dann unter «… mehr». Im Fenster: ◫ in der Kamerasteuerung oder Rechtsklick ins Bild.</p><p><b>🎮 Controller-Ansicht (Handy und Tablet):</b> der Knopf 🎮 oben rechts im Bild oder «◫ Ansicht → Controller-Ansicht öffnen». Verbindet sich ein Bluetooth- oder USB-Controller mit dem Handy oder Tablet, fragt MoveEye, ob die Ansicht aufgehen soll. Vollbild: hochkant das Live-Bild oben und das Simulator-Bild unten, quer nebeneinander; lange auf ein Bild tippen oder <b>Select</b> tauscht die Bilder. Ohne Simulator nur das Live-Bild. Im Simulator-Bild: ein Finger = Ansicht drehen, zwei Finger = zoomen, Doppeltipp = nächste Ansicht (Kopfkamera → von oben → hinter dem Rover). Die schmale Leiste unten (Licht, IR, Wärmebild, Nachtsicht, Markieren, Foto, Aufnahme, Folgen; der Rest hinter «…») verschwindet nach 4 s, ein Tipp zeigt sie wieder. <b>Controller:</b> linker Stick = Kopf schwenken / neigen (wie der Joystick, echte Servos und Simulator), L3 = Mitte · rechter Stick = Rover fahren (hoch = vorwärts, seitlich = lenken) über den Mover von MoveEye – später ein echter Mover, in der Simulation der Rover; die Ansicht fährt hinter dem Rover her. Ohne Rover bewegt der rechte Stick die Simulator-Ansicht · R1 halten + rechter Stick = Ansicht drehen · L1 / R1 kurz (oder L2 / R2) = verkleinern / vergrössern · R3 = nächste Ansicht (hinter dem Rover, Fahrersicht, von oben) · A Foto, B Aufnahme, X Licht, Y Folgen · Steuerkreuz ← → Knopf wählen, ↑ drücken, ↓ Hilfe · Start = Leiste ein / aus, 1 s halten = beenden. Gespeichert nur auf diesem Gerät.</p>
+<section id="live" data-icon="📺"><h2>Die Live-Seite</h2><p><b>Die 6 Reiter (ab 2.98.0):</b> <b>Live</b> (Bild, Joystick, Schnellschalter) · <b>Schutz</b> (Aus / Wachsam / Voll, «Heute Nacht bewachen», was bei Alarm passiert, Diebstahlschutz, Zeitplan, darunter «Zonen») · <b>Verlauf</b> (Aufnahmen, Tagebuch, Protokoll) · <b>Einstellungen</b> (Erkennung, Kameras &amp; Kopf, Geräte &amp; Sensoren, Strom, Netz &amp; Zugang, System; darunter «Kameras») · <b>Simulator</b> · <b>Mehr</b> (Anleitung, Spielecke, Werkzeuge, Infoseite, Almanach, Rückmeldung). Oben im Schutz zeigt die Kette «Person → Push → Licht → Aufnahme → Sirene», was eingeschaltet ist; antippen öffnet die Einstellung. «Einfach / Experte» steht oben in den Einstellungen.</p><p><b>🎯 Folgen (ab 2.98.1):</b> ein Schalter für alles: Die Kamera hält, was erkannt wird, in der Bildmitte – Personen zuerst, sonst Tiere und was sich wirklich bewegt. Sie dreht um den Winkel, den das Objekt von der Mitte hat, und wartet kurz auf das neue Bild (kein Hin- und Herpendeln). Im Simulator heisst derselbe Schalter «Verfolgen». Von Hand steuern pausiert das Folgen kurz.</p><p><b>◫ Ansicht (ab 2.98.29):</b> der Knopf oben rechts im Bild. Fertige Ansichten (Nur schauen / Bedienen / Einrichten), Hoch- oder Querformat, Bildgrösse und «Grösse von Schrift und Knöpfen» (60–160 %, wie eine Auflösung – das Bild bleibt immer ganz sichtbar). «✏️ Bearbeiten» ist der eine Weg zum Ordnen: Karten mit ▲ ▼ verschieben oder mit ✕ ausblenden, Schnellschalter antippen = Liebling ★ (höchstens 8, die anderen hinter «… mehr»), in der Liste darunter Reihenfolge und Ausblenden. Das gilt für dieses Gerät; «Für alle Geräte übernehmen» speichert die Anordnung auf MoveEye als Standard für Geräte ohne eigene. Ohne Schwenk-/Neigekopf gibt es keinen Joystick, «Kalibrieren» steht dann unter «… mehr». Im Fenster: ◫ in der Kamerasteuerung oder Rechtsklick ins Bild.</p><p><b>🎮 Controller-Ansicht (Handy und Tablet):</b> der Knopf 🎮 oben rechts im Bild oder «◫ Ansicht → Controller-Ansicht öffnen». Verbindet sich ein Bluetooth- oder USB-Controller mit dem Handy oder Tablet, fragt MoveEye, ob die Ansicht aufgehen soll. Vollbild: hochkant das Live-Bild oben und das Simulator-Bild unten, quer nebeneinander; lange auf ein Bild tippen oder <b>Select</b> tauscht die Bilder. Ohne Simulator nur das Live-Bild. Im Simulator-Bild: ein Finger = Ansicht drehen, zwei Finger = zoomen, Doppeltipp = nächste Ansicht (Kopfkamera → von oben → hinter dem Rover). Die schmale Leiste unten (Licht, IR, Wärmebild, Nachtsicht, Markieren, Foto, Aufnahme, Folgen; der Rest hinter «…») verschwindet nach 4 s, ein Tipp zeigt sie wieder. <b>Controller:</b> linker Stick = Kopf schwenken / neigen (wie der Joystick, echte Servos und Simulator), L3 = Mitte · rechter Stick = Rover fahren (hoch = vorwärts, seitlich = lenken) über den Mover von MoveEye – später ein echter Mover, in der Simulation der Rover; die Ansicht fährt hinter dem Rover her. Ohne Rover bewegt der rechte Stick die Simulator-Ansicht · R1 halten + rechter Stick = Ansicht drehen · L1 / R1 kurz (oder L2 / R2) = verkleinern / vergrössern · R3 = nächste Ansicht (hinter dem Rover, Fahrersicht, von oben) · A Foto, B Aufnahme, X Licht, Y Folgen · Steuerkreuz ← → Knopf wählen, ↑ drücken, ↓ Hilfe · Start = Leiste ein / aus, 1 s halten = beenden. Gespeichert nur auf diesem Gerät.</p><p><b>🎯 Auslöser (ab 2.98.35):</b> Steuert ein Mensch statt der KI die Kamera («Team gegen MoveEye» im 3D-Simulator, der Wächter am Handy oder am Simulator-PC), zeigt das Bild ein Fadenkreuz in der Mitte – der Kreis ist der Trefferbereich (leicht = gross, schwer = klein). Bildmitte auf einen Spieler richten und den runden Knopf 🎯 unten rechts im Bild drücken (oder <b>R2</b> am Controller). Treffer: Foto mit Fadenkreuz, Zeit und Name im Spielbericht, Alarm wie bei der KI (Licht und Sirene im Simulator, Push nur ins Test-Postfach), der Spieler muss zurück zum Start, Punkte für den Wächter (mehr für nah und schnell). Daneben: Fehlalarm, −50 Punkte und der Auslöser ist 3 s gesperrt (Ring). Mit dem Simulator ist R2 in der Controller-Ansicht auch ausserhalb einer Runde ein Schuss auf die Bildmitte.</p>
 <h3>Kopfzeile</h3>
 <p>Oben links stehen Name und <b>Version</b>. Daneben zeigen kleine Anzeigen nur, was gerade wichtig ist. Was im Normalzustand ist (kein Regen, Licht ok …), wird nicht angezeigt.</p>
 <table><tr><td>🛡 Schutz ein / aus</td><td>Alarme an oder aus. Antippen schaltet um.</td></tr>
@@ -51125,7 +51282,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <div class="tip">💡 <b>Tip:</b> save the page as a bookmark or as an icon on the home screen of the phone («Add to Home Screen»).</div>
 </section>
 
-<section id="live" data-icon="📺"><h2>The live page</h2><p><b>The 6 tabs (from 2.98.0):</b> <b>Live</b> (picture, joystick, quick switches) · <b>Protection</b> (Off / Watchful / Full, «Guard tonight», what happens at an alarm, theft protection, schedule, below it «Zones») · <b>History</b> (recordings, diary, log) · <b>Settings</b> (detection, cameras &amp; head, devices &amp; sensors, power, network &amp; access, system; below it «Cameras») · <b>Simulator</b> · <b>More</b> (manual, game corner, tools, info page, almanac, feedback). On top of Protection the chain «person → push → light → recording → siren» shows what is switched on; tap a step to change it. «Simple / Expert» is at the top of the settings.</p><p><b>🎯 Follow (from 2.98.1):</b> one switch for everything: the camera keeps what is detected in the middle of the picture – persons first, otherwise animals and things that really go somewhere. It turns by the angle the object has from the middle and waits for the new picture (no swinging). In the simulator the same switch is called «Verfolgen». Steering by hand pauses following for a moment.</p><p><b>◫ View (from 2.98.29):</b> the button at the top right of the picture. Ready-made views (just watching / operating / setting up), portrait or landscape, picture size and «size of text and buttons» (60–160 %, like a resolution – the picture always stays fully visible). «✏️ Edit» is the one way to arrange: move cards with ▲ ▼ or hide them with ✕, tap a quick switch = favourite ★ (max. 8, the others behind «… more»), order and hide in the list below. This is stored for this device; «Use for all devices» stores the arrangement on MoveEye as the default for devices without their own. Without a pan / tilt head there is no joystick and «Calibrate» is under «… more». In the window: ◫ in the camera control or right click on the picture.</p><p><b>🎮 Controller view (phone and tablet):</b> the button 🎮 at the top right of the picture or «◫ View → Open the controller view». When a Bluetooth or USB controller connects to the phone or tablet, MoveEye asks whether to open it. Full screen: upright the live picture on top and the simulator picture below, sideways next to each other; a long tap on a picture or <b>Select</b> swaps them. Without the simulator only the live picture. In the simulator picture: one finger = turn the view, two fingers = zoom, double tap = next view (head camera → from above → behind the rover). The slim bar at the bottom (lamp, IR, thermal, night vision, marks, photo, record, follow; the rest behind «…») hides after 4 s, a tap shows it again. <b>Controller:</b> left stick = turn / tilt the head (like the joystick, real servos and the simulator), L3 = centre · right stick = drive the rover (up = forward, sideways = steer) through the mover of MoveEye – a real mover later, the rover in the simulation; the view follows behind the rover. Without a rover the right stick moves the simulator view · hold R1 + right stick = turn the view · L1 / R1 short (or L2 / R2) = zoom out / in · R3 = next view (behind the rover, driver, from above) · A photo, B record, X lamp, Y follow · D-pad ← → choose a button, ↑ press it, ↓ help · Start = bar on / off, hold 1 s = leave. Stored on this device only.</p>
+<section id="live" data-icon="📺"><h2>The live page</h2><p><b>The 6 tabs (from 2.98.0):</b> <b>Live</b> (picture, joystick, quick switches) · <b>Protection</b> (Off / Watchful / Full, «Guard tonight», what happens at an alarm, theft protection, schedule, below it «Zones») · <b>History</b> (recordings, diary, log) · <b>Settings</b> (detection, cameras &amp; head, devices &amp; sensors, power, network &amp; access, system; below it «Cameras») · <b>Simulator</b> · <b>More</b> (manual, game corner, tools, info page, almanac, feedback). On top of Protection the chain «person → push → light → recording → siren» shows what is switched on; tap a step to change it. «Simple / Expert» is at the top of the settings.</p><p><b>🎯 Follow (from 2.98.1):</b> one switch for everything: the camera keeps what is detected in the middle of the picture – persons first, otherwise animals and things that really go somewhere. It turns by the angle the object has from the middle and waits for the new picture (no swinging). In the simulator the same switch is called «Verfolgen». Steering by hand pauses following for a moment.</p><p><b>◫ View (from 2.98.29):</b> the button at the top right of the picture. Ready-made views (just watching / operating / setting up), portrait or landscape, picture size and «size of text and buttons» (60–160 %, like a resolution – the picture always stays fully visible). «✏️ Edit» is the one way to arrange: move cards with ▲ ▼ or hide them with ✕, tap a quick switch = favourite ★ (max. 8, the others behind «… more»), order and hide in the list below. This is stored for this device; «Use for all devices» stores the arrangement on MoveEye as the default for devices without their own. Without a pan / tilt head there is no joystick and «Calibrate» is under «… more». In the window: ◫ in the camera control or right click on the picture.</p><p><b>🎮 Controller view (phone and tablet):</b> the button 🎮 at the top right of the picture or «◫ View → Open the controller view». When a Bluetooth or USB controller connects to the phone or tablet, MoveEye asks whether to open it. Full screen: upright the live picture on top and the simulator picture below, sideways next to each other; a long tap on a picture or <b>Select</b> swaps them. Without the simulator only the live picture. In the simulator picture: one finger = turn the view, two fingers = zoom, double tap = next view (head camera → from above → behind the rover). The slim bar at the bottom (lamp, IR, thermal, night vision, marks, photo, record, follow; the rest behind «…») hides after 4 s, a tap shows it again. <b>Controller:</b> left stick = turn / tilt the head (like the joystick, real servos and the simulator), L3 = centre · right stick = drive the rover (up = forward, sideways = steer) through the mover of MoveEye – a real mover later, the rover in the simulation; the view follows behind the rover. Without a rover the right stick moves the simulator view · hold R1 + right stick = turn the view · L1 / R1 short (or L2 / R2) = zoom out / in · R3 = next view (behind the rover, driver, from above) · A photo, B record, X lamp, Y follow · D-pad ← → choose a button, ↑ press it, ↓ help · Start = bar on / off, hold 1 s = leave. Stored on this device only.</p><p><b>🎯 Shutter (from 2.98.35):</b> when a person instead of the AI steers the camera («Team gegen MoveEye» in the 3D simulator, the guard at the phone or at the simulator PC), the picture shows a crosshair in the middle – the circle is the hit area (easy = big, hard = small). Aim the middle of the picture at a player and press the round 🎯 button at the bottom right of the picture (or <b>R2</b> on the controller). Hit: a photo with crosshair, time and name in the game report, an alarm like with the AI (light and siren in the simulator, a push only into the test inbox), the player goes back to the start, points for the guard (more for near and fast). Miss: a false alarm, −50 points and the shutter is locked for 3 s (ring). With the simulator R2 in the controller view is a shot at the middle outside a round too.</p>
 <h3>Header</h3>
 <p>Top left: name and <b>version</b>. Small badges show only what matters right now; things in their normal state (no rain, light ok …) are not shown.</p>
 <table><tr><td>🛡 Armed / disarmed</td><td>Alarms on or off. Tap to switch.</td></tr>
@@ -52514,7 +52671,8 @@ class WebStream:
                 if act_ == "shoot":                          # 2.95.96: a shot / trigger into the simulation (tap on the live picture)
                     try:
                         q_ = {"action": "shoot", "who": str(d.get("who") or getattr(g, "user", "") or "")[:30],
-                              "x": max(0.0, min(1.0, float(d.get("x", 0.5)))), "y": max(0.0, min(1.0, float(d.get("y", 0.5))))}
+                              "x": max(0.0, min(1.0, float(d.get("x", 0.5)))), "y": max(0.0, min(1.0, float(d.get("y", 0.5)))),
+                              "shutter": bool(d.get("shutter"))}      # 2.98.35: «Auslöser» - a shot at the middle (539, gameshutter.gd)
                         r = sim_control(q_)
                     except Exception:
                         return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
@@ -75206,6 +75364,44 @@ if _hp_en2 > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_guide2(HELP_X[_L], _L)
+# ----------------------------------------------------------------------------
+# Key = English text: (Deutsch, Français, Italiano, Rumantsch). German also into I18N.de of the live page (/*AUSLDE*/).
+# ----------------------------------------------------------------------------
+
+_HX_AUSL = {
+    'Shutter locked': ('Auslöser gesperrt', 'Déclencheur bloqué', 'Scatto bloccato', 'Sbrinzlader bloccà'),
+    'caught!': ('erwischt!', 'attrapé !', 'preso!', 'tschiffà!'),
+    'points': ('Punkte', 'points', 'punti', 'puncts'),
+    'alarm into the test inbox': ('Alarm ins Test-Postfach', 'alarme dans la boîte de test', 'allarme nella casella di prova', 'alarm en la chascha da test'),
+    'Missed - false alarm': ('Daneben – Fehlalarm', 'Raté – fausse alarme', 'Mancato – falso allarme', 'Fallà – fauss alarm'),
+    'shutter locked 3 s': ('Auslöser 3 s gesperrt', 'déclencheur bloqué 3 s', 'scatto bloccato 3 s', 'sbrinzlader bloccà 3 s'),
+    'Hit area': ('Trefferkreis', 'Zone de tir', 'Area di tiro', 'Cirquel da tour'),
+    'easy': ('leicht', 'facile', 'facile', 'levet'),
+    'hard': ('schwer', 'difficile', 'difficile', 'difficil'),
+    'normal': ('normal', 'normal', 'normale', 'normal'),
+    'Shutter: a shot at the middle of the picture (R2 on the controller)': (
+        'Auslöser: Schuss auf die Bildmitte (R2 am Controller)', 'Déclencheur : un tir au milieu de l’image (R2 sur la manette)',
+        'Scatto: un colpo al centro dell’immagine (R2 sul controller)', 'Sbrinzlader: in tir en il center dal maletg (R2 al controller)'),
+    'You are the guard: aim the middle of the picture (circle) at a player and press 🎯': (
+        'Du bist Wächter: Bildmitte (Kreis) auf einen Spieler richten und 🎯 drücken',
+        'Tu es le gardien : vise un joueur avec le milieu de l’image (cercle) et appuie sur 🎯',
+        'Sei la guardia: punta il centro dell’immagine (cerchio) su un giocatore e premi 🎯',
+        'Ti es il guardian: drizza il center dal maletg (cirquel) sin in giugader e smatga 🎯'),
+    'Shutter: a shot at the middle of the picture (with the simulator; in «Team gegen MoveEye» a catch)': (
+        'Auslöser: Schuss auf die Bildmitte (mit dem Simulator; bei «Team gegen MoveEye» ein Fang)',
+        'Déclencheur : un tir au milieu de l’image (avec le simulateur ; dans «Team gegen MoveEye» une capture)',
+        'Scatto: un colpo al centro dell’immagine (con il simulatore; in «Team gegen MoveEye» una cattura)',
+        'Sbrinzlader: in tir en il center dal maletg (cun il simulatur; en «Team gegen MoveEye» ina tschiffada)'),
+    'Shutter: {name} caught': ('Auslöser: {name} erwischt', 'Déclencheur : {name} attrapé', 'Scatto: {name} preso', 'Sbrinzlader: {name} tschiffà'),
+    'Photo by {by} · {m}:{s} in the round · {d} m · +{pts} points': (
+        'Foto von {by} · {m}:{s} in der Runde · {d} m · +{pts} Punkte', 'Photo de {by} · {m}:{s} dans la manche · {d} m · +{pts} points',
+        'Foto di {by} · {m}:{s} nel turno · {d} m · +{pts} punti', 'Foto da {by} · {m}:{s} en la runda · {d} m · +{pts} puncts'),
+}
+for _k, _v in _HX_AUSL.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+WEB_PAGE = WEB_PAGE.replace("/*AUSLDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_AUSL.items()}, ensure_ascii=False), 1)
 # All parts have added their settings now (CFG.setdefault in later parts), the start (640) loads the file only after this.
 import copy as _copy_g2
 FACTORY_CFG = _copy_g2.deepcopy(CFG)

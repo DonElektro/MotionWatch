@@ -15,6 +15,7 @@
 #       later, in the simulation the simulator's rover); the simulator view follows behind the rover (explore «hinterher»)
 #     without a rover: right stick = fly the simulator view (up = forward, sideways = turn)
 #     R1 held + right stick = turn the simulator view · L1 = zoom out, R1 short = zoom in, L2 / R2 = zoom out / in
+#     (2.98.35: with the simulator R2 = the shutter «Auslöser», part 539)
 #     R3 = next view (behind the rover → driver → from above; without rover: head camera → from above → free)
 #     A Photo · B Record · X Lamp (IR without lamp) · Y Follow · D-pad ← → choose a button of the bar, ↑ press it, ↓ help
 #     Select = swap the pictures · Start = bar on / off, held 1 s = leave
@@ -169,6 +170,7 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     [["L ◉", "Left stick: turn / tilt the head of MoveEye"], ["L3", "Press the left stick: head to the middle"],
      ["R ◉", rover() ? "Right stick: drive the rover (up = forward, sideways = steer) - the view follows behind it" : "Right stick: move the simulator view (no rover)"],
      ["R1 + R ◉", "Hold R1 + right stick: turn the simulator view"], ["L1 / R1", "Zoom out / in (L2 / R2 too)"],
+     ["R2 🎯", "Shutter: a shot at the middle of the picture (with the simulator; in «Team gegen MoveEye» a catch)"],
      ["R3", "Press the right stick: next view (behind the rover, driver, from above)"],
      ["A B X Y", "A Photo · B Record · X Lamp · Y Follow"], ["✚ ← →", "Choose a button of the bar, ↑ presses it, ↓ this help"],
      ["Select", "Swap the pictures"], ["Start", "Bar on / off · hold 1 s = leave"],
@@ -292,7 +294,10 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     if (down(4)) { GP.l1T = now; zoom(-1); }                              // L1 = zoom out (held: again and again)
     else if (cur[4] && now - GP.l1T > 450 && now - GP.zT > 300) { GP.zT = now; zoom(-1); }
     const l2 = val(6), r2 = val(7);                                       // L2 / R2: zoom out / in while pressed
-    if ((l2 > 0.4 || r2 > 0.4) && now - GP.zT > 250) { GP.zT = now; zoom(r2 > l2 ? 1 : -1); }
+    const shut = !!(window.mwShutCan && window.mwShutCan());              // 2.98.35: with the simulator R2 = the shutter («Auslöser», 539)
+    if (shut && r2 > 0.5 && !GP.r2) window.mwShutFire();
+    GP.r2 = r2 > 0.5;
+    if ((l2 > 0.4 || (!shut && r2 > 0.4)) && now - GP.zT > 250) { GP.zT = now; zoom(!shut && r2 > l2 ? 1 : -1); }
     if (down(10)) act("center");                                           // L3
     if (down(11)) sim({view: "rnext"}).then(r => { if (r && r.ok) toastT("👁 " + T(VIEWNAME[r.view] || "Free view")); });   // R3
     const K = KEYS(), byKey = k => Object.keys(K).find(id => K[id] === k);

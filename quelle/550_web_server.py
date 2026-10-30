@@ -373,7 +373,8 @@ class WebStream:
                 if act_ == "shoot":                          # 2.95.96: a shot / trigger into the simulation (tap on the live picture)
                     try:
                         q_ = {"action": "shoot", "who": str(d.get("who") or getattr(g, "user", "") or "")[:30],
-                              "x": max(0.0, min(1.0, float(d.get("x", 0.5)))), "y": max(0.0, min(1.0, float(d.get("y", 0.5))))}
+                              "x": max(0.0, min(1.0, float(d.get("x", 0.5)))), "y": max(0.0, min(1.0, float(d.get("y", 0.5)))),
+                              "shutter": bool(d.get("shutter"))}      # 2.98.35: «Auslöser» - a shot at the middle (539, gameshutter.gd)
                         r = sim_control(q_)
                     except Exception:
                         return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
