@@ -48,7 +48,7 @@ func _ready() -> void:
 	x.text = "Schliessen"
 	x.pressed.connect(func(): open(false))
 	hd.add_child(x)
-	var lead := UI.small("Grün: sieht die Kopfkamera (mit Drehen) · Blau: die feste Kamera · Rot: tote Winkel im wichtigen Bereich (Kreis um Zelt und Wohnwagen). Den Punkt von MoveEye auf der Karte ziehen, um andere Plätze auszuprobieren; Rechtsklick dreht die Blickrichtung.")
+	var lead := UI.small("Grün: sieht die Kopfkamera (mit Drehen) · Blau: die Weitwinkel-Kamera · Rot: tote Winkel im wichtigen Bereich (Kreis um Zelt und Wohnwagen). Den Punkt von MoveEye auf der Karte ziehen, um andere Plätze auszuprobieren; Rechtsklick dreht die Blickrichtung.")
 	lead.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(lead)
 	map = Control.new()

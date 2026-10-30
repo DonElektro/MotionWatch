@@ -708,7 +708,7 @@ class Cross extends Control:
 		if m == "auto" and pz > 0.0:
 			tx += " · Pause %d s" % int(ceil(pz))
 		elif m != "off" and m != "frame" and s[1] != null and ki._cam(s[1]) != 0:
-			tx += " (feste Kamera)"
+			tx += " (Weitwinkel-Kamera)"
 		if m != "off" and str(ki.boxes(_cam)["src"]) == "sim":
 			tx += " · Sim-KI"
 		if kib.text != tx:

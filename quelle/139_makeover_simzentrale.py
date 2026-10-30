@@ -163,6 +163,7 @@ SIMHUB_JS = r"""
       const r = E("div", "shrow"), i = E("input"); i.type = "range"; i.min = 0; i.max = 23.75; i.step = 0.25; i.value = H.hour || 12; i.style.flex = "1"; const o = E("b", "", H.clock || "");
       i.oninput = () => { o.textContent = String(Math.floor(i.value)).padStart(2, "0") + ":" + String(Math.round(i.value % 1 * 60)).padStart(2, "0"); }; i.onchange = () => act("hour", +i.value); r.append(i, o); s.appendChild(r); }
     if (kind === "wide" && window.mwWide) window.mwWide.sheet(s, H, act);         // 591: the wide camera (picture, mount)
+    if (kind === "parc" && window.mwParc) window.mwParc.sheet(s, H, act);         // 416: the tracking parcours
     if (kind === "weather") WX.forEach(([k, ic]) => { const b = E("button", k === H.weather ? "" : "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = () => act("weather", k); s.appendChild(b); });
     if (kind === "visit") VIS.forEach(([k, ic]) => { const b = E("button", "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = async () => { const r = await act("visit", k); if (r && r.ok) say(ic + " " + tt("sent")); }; s.appendChild(b); });
     if (["inbox", "drill", "train", "ab"].includes(kind)) labSheet(s, kind);
@@ -281,7 +282,7 @@ SIMHUB_JS = r"""
   // 2.98.14 (Konzept): the tiles in four groups - Welt (what happens in the simulator), Testen, Lernen, Spielen. «Simple»
   // shows the assistant «Erkennung verbessern» instead of the single tools for the thresholds (they stay in «Expert»).
   const GRP = {wide: "world", scene: "world", hour: "world", weather: "world", visit: "world", surprise: "world", twin: "world", devices: "world", rover: "world", templates: "world",
-    tests: "test", blind: "test", rehearsal: "test", inbox: "test", drill: "test", ab: "test", week: "test", stats: "test",
+    tests: "test", parc: "test", blind: "test", rehearsal: "test", inbox: "test", drill: "test", ab: "test", week: "test", stats: "test",
     improve: "learn", autoth: "learn", train: "learn", falearn: "learn", diary: "learn",
     game: "play", points: "play"};
   // 2.98.24 («Sim-Schalter nur einmal»): Trainings-Nacht, Fehlalarm-Lernen and Wochen-Check are switched only in their tile
@@ -304,7 +305,9 @@ SIMHUB_JS = r"""
     if (full) { const TU = H.tune || {};
       T.push(["improve", "🎯", tt("Improve detection"), TU.busy ? "⏳ " + (TU.step === "night" ? tt("Night") : tt("Day")) : tt("step by step")]); }
     if (full) { const N = LN || {}; const bl = N.blind || {}, au = N.autoth || {}, re = bl.rehearsal;
-      T.push(["tests", "🧪", tt("Tests"), tt("Test run, test bench")],
+      T.push(["tests", "🧪", tt("Tests"), tt("Test run, test bench")]);
+      if (window.mwParc && H.parc) T.push(["parc", "🎯", tt("Tracking parcours"), window.mwParc.sub(H)]);   // 416: the tracking parcours
+      T.push(
         ["blind", "🗺", tt("Blind spots"), bl.busy && bl.kind === "map" ? "⏳ " + (bl.prog || "") : bl.last ? bl.last.found + "/" + bl.last.inview + " " + tt("recognised") : tt("find them")],
         ["rehearsal", "🌙", tt("Night rehearsal"), bl.busy && bl.kind === "rehearsal" ? "⏳ " + (bl.prog || "") : re ? (re.max_found ? tt("up to") + " " + re.max_found + " m" : "–") : tt("before arming")],
         ["autoth", "🎚", tt("Thresholds automatic"), au.busy ? "⏳ " + au.step : au.last ? "✓" : tt("day and night")],
@@ -358,6 +361,7 @@ SIMHUB_JS = r"""
     if (document.querySelector('[data-simhub="full"]')) { try { LB = await (await fetch("/api/lab")).json(); LN = await (await fetch("/api/learn")).json(); } catch (e) {} }
     const ti = document.querySelector('[data-simhub="tile"] img'); if (ti && !document.hidden) ti.src = "/sim/view.jpg?w=320&r=" + Date.now();
     if (!HASHED && location.hash === "#c-test" && document.getElementById("tr-box")) { HASHED = 1; open = "tests"; }   // 2.98.23: old links to the test run
+    if (!HASHED && location.hash === "#c-parc" && H.parc) { HASHED = 1; open = "parc"; }   // 416: the window opens the tile 🎯
     const ae = document.activeElement;
     if (!ae || (ae.type !== "range" && !(ae.closest && ae.closest("#tr-box")))) paintAll(); }
   document.addEventListener("DOMContentLoaded", () => { load(); setInterval(load, 6000); });

@@ -812,7 +812,7 @@ func _make_report() -> void:
 			"latency_s": snappedf(lat_avg, 0.1), "false_alarms": falses.size(), "false_list": falses, "missed_list": all_missed, "noise_alarms": noises,
 			"phases": phs, "truth_cams": truth_cams, "visitors": each, "mult": mult,
 			"realism": {"fx": bool(main.realism.fx_on), "look": bool(main.realism.real_on)} if main.realism != null else {},
-			"note": ("Wahrheit: sichtbar für Kopf- oder feste Kamera" if truth_cams.size() > 1 else "Wahrheit: sichtbar für die Kopfkamera") + " (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug)."}
+			"note": ("Wahrheit: sichtbar für Kopf- oder Weitwinkel-Kamera" if truth_cams.size() > 1 else "Wahrheit: sichtbar für die Kopfkamera") + " (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug)."}
 	info = "Testlauf fertig: Personen erkannt %d von %d (%d %%), Reaktionszeit %s, %s, Flackern %d, Geräuschalarme %d." % [
 			td, tp, int(report["rate"]), ("%.1f s" % lat_avg) if lat_avg >= 0.0 else "–",
 			("Pushes richtig %d / falsch %d" % [pa["ok"], pa["false"]]) if _push_known else "Pushes unbekannt (MoveEye zu alt)", falses.size(), noises.size()]

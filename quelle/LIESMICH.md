@@ -102,6 +102,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `400_ausschalten.py` | Pi ausschalten / neu starten | 53 |
 | `410_motionwatch_kern.py` | KERN: die Erkennungs-Schleife (Bewegung, Personen, Alarm) | 969 |
 | `415_entfernung_gehtest.py` | Entfernung und Richtung einer Person, Gehtest beim Einrichten | 376 |
+| `416_verfolgung_parcours.py` | Verfolgungs-Parcours des Simulators (3D-4.18): Lektionen starten (Steuerbefehl `parcours`), Läufe mit den Werten der Verfolgung speichern (`parcours_runs.json`), A/B-Vergleich, Auto-Tuning (nur Vorschlag, «übernehmen»), mit / ohne Weitwinkel-Übergabe, Spiel «Entkomme der Kamera»; neuer Regler `track_lead` (Vorausschauen, 0 = wie bisher) als Wrapper um `MotionWatch.track`; Kachel 🎯 (139, Gruppe «Testen»); eine Sperre (147) | 600 |
 | `420_webzugang_aufnahmen.py` | Web-Zugang, Aufnahmen, Speicher, Bild für andere Programme | 630 |
 | `425_zeitleiste.py` | Zeitleiste der Nacht: Daten für /api/timeline | 230 |
 | `426_wochenbericht.py` | Wochenbericht der Erkennung (Push + Karte) | 200 |
@@ -129,6 +130,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `595_fenster_simstopp.py` | Fenster: «⏹ Stopp» (Not-Aus) in der Simulation ausblenden | 75 |
 | `596_uebersetzungen_vier.py` | Übersetzungen für «MoveEye als KI-Wächter» (548) | 32 |
 | `597_uebersetzungen_simkompakt.py` | Übersetzungen für «Sim-Kompakt» (549) | 67 |
+| `599_fenster_parcours.py` | Fenster: Regler «Vorausschauen» bei Kamera / Servos (SLIDERS), Karte «Verfolgungs-Parcours» im Reiter Simulator (letzter Lauf, Start, Vorschlag übernehmen, Kachel im Browser) | 70 |
 | `598_uebersetzungen_weit.py` | Übersetzungen und Anleitungs-Absatz (Kamera & Servos) zur Weitwinkel-Kamera (163 / 591) | 50 |
 | `634_uebersetzungen_ausl.py` | Übersetzungen für den «Auslöser» (539) | 40 |
 | `637_uebersetzungen_servo.py` | Übersetzungen Servo-Bewegung, Not-Aus, Teach-in, Diagnose | 156 |
@@ -155,6 +157,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `549_web_sim_kompakt.py` | Live-Seite «Sim-Kompakt»: mit verbundenem Simulator zwei kleine Bilder, Kopf- und Rover-Stick am Rand, Simulator-Kacheln dazwischen («◫ Ansicht», pro Gerät) | 429 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
 | `560_uebersetzungen_de.py` | Übersetzungen Deutsch | 498 |
+| `569_uebersetzungen_parcours.py` | Übersetzungen und Anleitungs-Absatz (Kamera & Servos) zum Verfolgungs-Parcours (416 / 599) | 140 |
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |
 | `576_fenster_zeitleiste.py` | Fenster: Zeitleiste als Liste, Wochenbericht | 130 |
 | `577_nachlauf_konzept.py` | Nachlauf Konzept-Check: ein Wochenbericht, Rückkehr des Handys (ausschalten / fragen / nichts), Akku-Schwellen zusammen, Auto-Tuner ±20 %, Übernahme alter Einstellungen | 201 |

@@ -41,7 +41,7 @@ const GEAR := [["", "🙂", "Nichts", "Ganz normal, ohne Tarnung."],
 const FX := {"camo": {"ai": 0.8, "spd": 0.9}, "blanket": {"th": 0.15, "loud": 2.2, "ai": 1.1, "spd": 0.95},
 		"box": {"ai": 0.3, "th": 0.5, "spd": 0.55, "run": false, "pmin": 1, "pmax": 1, "loud": 1.3},
 		"umbrella": {"ai": 0.55, "mo": 1.2, "th": 0.6, "spd": 0.85, "pmax": 1}}
-const GREEN_SCENES := ["camping", "wald", "garten", "wild", "bauernhof", "seeufer", "verstecken", "lustig"]
+const GREEN_SCENES := ["camping", "wald", "garten", "wild", "bauernhof", "seeufer", "verstecken", "lustig", "parcours"]
 
 # ---- 3. theft --------------------------------------------------------------------------------------------------------------
 const THEFT_OBJ := {"Velo": ["🚲", "das Velo", "Velo", 0.8], "Kühlboxen": ["🧊", "die Kühlbox", "Kühlbox", 0.85]}

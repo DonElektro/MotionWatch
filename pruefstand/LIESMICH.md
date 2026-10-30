@@ -54,12 +54,23 @@ Bild hat** (der Kopf drehte hin; der Simulator weiss es, Steuerbefehl `weit` / `
 und Drehgrenze ± 170° (Kabel). Lokal nur aussagekräftig, wenn der Rechner frei ist (das Weitwinkel-Bild kommt sonst mit unter
 1 Bild/s, die Bewegung braucht dann Sekunden, bis sie zählt).
 
+## Plan «folgen»: Verfolgungs-Parcours (ab Simulator 3D-4.18, MoveEye 2.98.47 Entwurf)
+
+`--plaene folgen` (oder `--folgen 1,3,4,5,6,7`) lässt die Lektionen des Verfolgungs-Parcours laufen (Szene «parcours», feste Wege,
+Zufall 1 … `--seeds`): MoveEye folgt, der Simulator misst Zielfehler, Zeit im Bild, Verluste und Wiederfinde-Zeit, Pendeln /
+Überschwingen, Servo-Weg und Verwechslungen → Note 1–6. `8` in der Liste = dieselben Lektionen nochmals nachts mit Infrarot.
+`--folgen-weitwinkel base,head_rear` vergleicht pro Montage **mit und ohne Weitwinkel-Übergabe** («Übersicht lenkt den Kopf»,
+MoveEye mit `sim:1`, Schutz an). Läuft nach den anderen Plänen (wechselt die Szene); Ergebnis in `ergebnisse/folgen_*.json`
+(nicht in `VERLAUF.md`), auf GitHub in der Zusammenfassung. Dauer etwa 3 Min. pro Durchgang – **nicht im «quick»-Budget**:
+auf GitHub nur sonntags (oder von Hand mit «folgen» in den Testläufen). Lokal nur aussagekräftig mit mindestens ~3 Bildern/s
+bei MoveEye und einem KI-Modell (ohne Modell folgt MoveEye nur der Bewegung).
+
 ## Wann läuft was auf GitHub?
 
 | Anlass | Testläufe | Dauer |
 |---|---|---|
 | neue Version (versions.json) | quick, night, standard, ganze Nacht; quick auch ohne Kamera-Effekte; Zufall 1 | etwa 40 Min. |
-| jeden Sonntag in der Nacht | dazu **hard** (Gegenlicht, Nebel, Schnee, Tropfen, Spinnennetz, Scheinwerfer, Wolkenschatten), 3 Zufallsstarts | etwa 2½ Std. |
+| jeden Sonntag in der Nacht | dazu **hard** (Gegenlicht, Nebel, Schnee, Tropfen, Spinnennetz, Scheinwerfer, Wolkenschatten) und **folgen** (Verfolgungs-Parcours), 3 Zufallsstarts | etwa 2½ Std. |
 | von Hand (Run workflow) | frei wählbar: Testläufe, «hard» ankreuzen, Zufallsstarts, Besucher ×1–5, Kamera-Effekte | |
 
 ## Verlässlichere Zahlen (ab MoveEye 2.98.13 / Simulator 3D-4.0)

@@ -30,3 +30,31 @@ Offene Wiese mit Distanzmarken 5 / 10 / 20 / 40 m, Hindernisse (Busch, Zelt, Aut
 
 ## Realismus
 MG90S-Tempo, 180°-Grenze (bzw. Drehgrenze bei Kamera auf dem Kopf), Verzögerung und Nachschwingen wie «realistische Servos».
+
+## Umgesetzt (Entwurf, Branch wt-parcours, 30.10.2026 – Simulator 3D-4.18 / MoveEye 2.98.47, Nummern setzt der Lead)
+- **Szene «Verfolgungs-Parcours»** (`simulator3d/scripts/parcours.gd`, in `scenes.gd` angemeldet): Wiese, Distanzmarken 5 / 10 / 20 / 40 m
+  (Bögen ±60° mit Schild), Busch 2 m, Familienzelt 2,2 m, Auto, Baum; Ring 8 m ums Gerät schaltbar. Auch in `GREEN_SCENES`
+  (Tarnung), `EXPORT_SCENES` (Trainingsbilder) und den Vorlagen.
+- **Lektionen 1–7** mit festen Wegen (Figuren = Besucher aus `actor.gd` als Puppen, Aussehen fest pro Zufallszahl), **Lektion 8** =
+  die gewählten Lektionen nachts (23:20) mit Infrarot. Vor jeder Lektion fährt der Kopf zur Mitte (MoveEye «center»).
+- **Messung** (Wahrheit aus dem Simulator): Zielfehler (Grad, Mitte der Figur gegen Bildmitte der Kopfkamera), Zeit im Bild,
+  Verdeckt-Anteil, Verluste (≥ 0,3 s draussen) und Wiederfinde-Zeit, Pendeln (kleine Hin-und-her-Bewegungen) und Überschwingen
+  (im Stand), Servo-Weg, Verwechslungen (Lektion 6, nur solange MoveEye folgt) → **Note 1–6** und **Ergebniskarte** im Fenster.
+  **Einblendung** (nur für den Bediener): geplanter Weg (blau), echter Weg (gelb), Blickstrahl + Bildränder (`laser.gd`),
+  Fehlerkurve der letzten 30 s.
+- **Prüfstand-Plan «folgen»** (`--plaene folgen`, `--folgen 1,3,…,8`, `--folgen-weitwinkel base,head_rear` = mit / ohne
+  Weitwinkel-Übergabe); auf GitHub nur sonntags.
+- **MoveEye** (Teile 416 / 569 / 599): Kachel 🎯 in der Simulator-Zentrale (Gruppe «Testen»): Lektionen, Start / Nacht / Stopp,
+  Regler live (Tempo `servo_vmax_pan`, Verstärkung `track_gain`, Totzone `track_deadzone`, **neu Vorausschauen `track_lead`**,
+  0 = wie bisher), letzter Lauf mit Fehlerkurven, **A/B** (Lauf A = jetzt, B = eine Änderung, oder zwei gespeicherte Läufe),
+  **Auto-Tuning** (probiert Sätze, schlägt nur vor, Knopf «Vorschlag übernehmen»), **mit / ohne Weitwinkel-Übergabe**
+  (braucht Schutz an). Fenster: Regler «Vorausschauen» und eine Karte im Reiter Simulator.
+- **Spiel «Entkomme der Kamera»** (60 s): Figur mit dem Mover-Stick von MoveEye, dem Stick im Simulator oder per Steuerbefehl;
+  10 Punkte/s ausserhalb des Bilds, 5 verdeckt, 100 pro Verlust, nur 4–25 m vom Gerät; Bot zum Ausprobieren; zählt in der
+  Rangliste des Abends (`game.board_add_extra`, eigener Rekord «escape»), die Punkte-Regeln der Runden bleiben unverändert.
+- **Lernbilder**: schnelle (> 2,5 m/s oder Kopf > 40°/s) oder weite (> 18 m) Figuren, höchstens 40 pro Lauf, nur Bild + Rahmen,
+  Abstand, Tempo, geschätzte Unschärfe – keine Kartendaten; kommen ins Trainingsbilder-Paket (`dataset.gd`).
+- **Realismus**: während eines Laufs «Servos wie echt» an (MG90S 200°/s, Spiel, Nachschwingen), Drehgrenze der Kopf-Montage der
+  Weitwinkel-Kamera, Bildverzögerung von `simreal.gd`; die Ergebniskarte nennt es.
+- Offen / nicht getestet: echte Hardware; Windows-Export; aussagekräftige Noten erst auf einem freien Rechner mit KI-Modell (hier
+  2 Bilder/s, ohne Modell).

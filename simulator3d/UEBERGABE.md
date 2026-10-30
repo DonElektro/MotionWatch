@@ -4,6 +4,19 @@ Stand: 30.10.2026 · Simulator-Version **3D-4.17** · passende MoveEye-Version (
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
+## NEU (Entwurf, Branch wt-parcours): Verfolgungs-Parcours (`parcours.gd`, Plan `docs/Verfolgungs_Parcours.md`)
+
+- Szene `parcours` (Wiese, Distanzmarken 5/10/20/40 m, Busch, Zelt, Auto, Baum, Ring 8 m schaltbar), gebaut von
+  `parcours.build_scene` (Aufruf in `scenes.gd`). Lektionen 1–7 als Puppen-Besucher (`actor.puppet`) mit festen Wegen, 8 = nachts mit IR.
+- Wahrheit pro Lektion (20 Hz, Echtzeit über `main.now()`): Zielfehler, Zeit im Bild, Verluste / Wiederfinden, Pendeln /
+  Überschwingen, Servo-Weg, Verwechslungen → Note 1–6, Ergebniskarte, Einblendung (Weg, Blickstrahl `laser.gd`, Fehlerkurve).
+- Steuerbefehl `{"action": "parcours", "do": info | start (lessons, night, seed, prep_s) | stop | state | result | overlay | ring |
+  pics | card | game (name, bot, secs) | steer (x, z, run) | game_stop}`. `busy_with()` meldet «Verfolgungs-Parcours».
+- Spiel «Entkomme der Kamera» (Punkte in `game.board_add_extra`), Lernbilder unter `user://parcours/lernbilder/` →
+  `dataset.gd` (`add_to_pack`). Fenster: Karte «Testlauf» → Teil «Verfolgungs-Parcours».
+- Texte «feste Kamera» für die zweite Wächter-Ansicht heissen jetzt «Weitwinkel-Kamera» (game, gamerules, gameshutter,
+  planner, testrun).
+
 ## NEU in 3D-4.17 (MoveEye 2.98.46): Balance-Paket 30.10.2026 + KI-Wächter, Stange-Regler, nacktes /sim-Bild
 
 Spiel-Balance nach dem Code-Review (von Daniel freigegeben, Punkte 1, 3–11 und 12 teilweise):

@@ -165,7 +165,7 @@ def run(a):
               # Prüfstand 2: the pushes go into the test inbox of the simulation and are counted (MoveEye part 068);
               # the thermal camera is on - at night without light it sees the persons (part 232)
               "notify_sandbox": True, "thermal_on": a.waermebild == "an"}
-        if a.weitwinkel:                                         # «Übersicht → Kopf findet Ziel»: the wide camera as extra camera,
+        if a.weitwinkel or a.folgen_weitwinkel:                  # «Übersicht → Kopf findet Ziel»: the wide camera as extra camera,
             st.update(extra_cams=["sim:1"], pan_servo_range=360, pan_limit=170)   # a pan servo that can look back (cable limit ± 170°)
         with open(os.path.join(cfg, "motionwatch_settings.json"), "w") as f:
             json.dump({"cfg": st}, f)
@@ -214,7 +214,7 @@ def run(a):
         s = http_json(web + "/api/state", timeout=4)["state"]
         info = {"datum": time.strftime("%Y-%m-%d %H:%M"), "mw_version": mw_version(mw), "ki": s.get("ai_status", "?"),
                 "rechner": a.rechner or ("%s %s, %d Kerne" % (platform.system(), platform.machine(), os.cpu_count() or 0)),
-                "qualitaet": a.qualitaet, "szene": a.szene, "kameras": "Kopfkamera" if a.kameras == [0] else "Kopf- und feste Kamera", "plaene": {}}
+                "qualitaet": a.qualitaet, "szene": a.szene, "kameras": "Kopfkamera" if a.kameras == [0] else "Kopf- und Weitwinkel-Kamera", "plaene": {}}
         try:
             info["sim_version"] = str(http_json(sim + "/info", timeout=4).get("name", "?")).split()[-1]
         except Exception:
@@ -290,6 +290,19 @@ def run(a):
                                                      "  (gleicher Besuch innert 10 s)" if q.get("dup") else ""))
         if a.weitwinkel:
             info["weitwinkel"] = weitwinkel_messung(a, sim, web)
+        if a.folgen:                                             # Plan «folgen»: the tracking parcours (last - it changes the scene)
+            info["folgen"] = folgen_messung(a, sim, web)
+            fn = os.path.join(ERGEBNISSE, "folgen_" + time.strftime("%Y-%m-%d_%H%M") + "_" + info["mw_version"] + ".json")
+            os.makedirs(ERGEBNISSE, exist_ok=True)
+            with open(fn, "w", encoding="utf-8") as f:
+                json.dump({k: info[k] for k in info if k != "plaene"}, f, ensure_ascii=False, indent=1)
+            log("gespeichert:", os.path.relpath(fn, REPO))
+            summ = os.environ.get("GITHUB_STEP_SUMMARY")
+            if summ:
+                with open(summ, "a", encoding="utf-8") as f:
+                    f.write("## Verfolgungs-Parcours (Plan «folgen»)\n\n" + "\n".join("- " + z for z in folgen_zeilen(info["folgen"])) + "\n\n")
+            if not info["plaene"]:
+                return (0 if info["folgen"].get("laeufe") else 2), None
         if not info["plaene"] and info.get("weitwinkel"):        # only the wide-angle measurement: its own file, not in VERLAUF.md
             os.makedirs(ERGEBNISSE, exist_ok=True)
             fn = os.path.join(ERGEBNISSE, "weitwinkel_" + time.strftime("%Y-%m-%d_%H%M") + "_" + info["mw_version"] + ".json")
@@ -349,7 +362,7 @@ def kennzahlen(reps):
 def alle_ergebnisse():
     out = []
     for fn in sorted(glob.glob(os.path.join(ERGEBNISSE, "*.json"))):
-        if os.path.basename(fn).startswith("weitwinkel_"):        # the wide-angle measurement alone is not a test run
+        if os.path.basename(fn).startswith(("weitwinkel_", "folgen_")):      # the wide-angle measurement alone is not a test run
             continue
         try:
             with open(fn, encoding="utf-8") as f:
@@ -644,6 +657,85 @@ def weitwinkel_messung(a, sim, web):
     return res
 
 
+# ---- Plan «folgen»: the tracking parcours (Plan Daniel 30.10.2026, docs/Verfolgungs_Parcours.md) --------------------------
+FOLGEN_STD = [1, 3, 4, 5, 6, 7]          # all day lessons (about 3 minutes); 8 = the same again at night with infrared
+
+
+def _folgen_lauf(sim, lektionen, nacht, seed, titel):
+    r = http_json(sim + "/control", {"action": "parcours", "do": "start", "lessons": lektionen, "night": nacht, "seed": seed, "prep_s": 6.0}, timeout=10)
+    if not r.get("ok"):
+        log("  %s: startet nicht – %s" % (titel, r.get("error")), wichtig=True)
+        return None
+    soll = float((r.get("run") or {}).get("est") or 200)
+    t0 = time.time()
+    while time.time() - t0 < soll * 3 + 120:
+        time.sleep(4)
+        try:
+            st = http_json(sim + "/control", {"action": "parcours", "do": "state"}, timeout=6)
+        except Exception:
+            continue
+        if not st.get("running"):
+            rep = st.get("report") or {}
+            for l in rep.get("lessons") or []:
+                l.pop("curve", None)
+            return rep or None
+    http_json(sim + "/control", {"action": "parcours", "do": "stop"}, timeout=6)
+    log("  %s: Zeit abgelaufen" % titel, wichtig=True)
+    return None
+
+
+def folgen_messung(a, sim, web):
+    """the lessons of the tracking parcours with MoveEye following (fixed seeds); with --folgen-weitwinkel per mount once
+    with and once without the hand-over of the wide camera («Übersicht lenkt den Kopf», needs the protection on)"""
+    out = {"lektionen": a.folgen, "laeufe": []}
+    nacht = 8 in a.folgen
+    L = [x for x in a.folgen if x != 8] or FOLGEN_STD
+    try:
+        http_json(sim + "/control", {"action": "set", "id": "auto", "value": False}, timeout=6)
+    except Exception:
+        pass
+    plan = [("tag", False, None)] + ([("nacht", True, None)] if nacht else [])
+    if a.folgen_weitwinkel:
+        try:
+            http_json(web + "/api/arm", {"action": "arm_now"}, timeout=6)
+        except Exception as e:
+            log("Folgen: Schutz einschalten ging nicht:", e, wichtig=True)
+        plan = [("ww_" + m + ("_mit" if on else "_ohne"), False, (m, on)) for m in a.folgen_weitwinkel for on in (True, False)]
+    for sd in range(1, a.seeds + 1):
+        for name, n_, ww in plan:
+            if ww:
+                http_json(sim + "/control", {"action": "weit", "mount": ww[0]}, timeout=6)
+                # MoveEye 163 sets «Übersicht lenkt den Kopf» by itself for a mount on the device; «ohne» = switched off by hand
+                try:
+                    http_json(web + "/api/set", {"key": "kopf_ov_on", "value": bool(ww[1])}, timeout=6)
+                except Exception:
+                    pass
+                time.sleep(4)
+            titel = "Parcours %s (Zufall %d)" % (name, sd)
+            log(titel + " …")
+            rep = _folgen_lauf(sim, L, n_, sd, titel)
+            if rep:
+                rep["name"] = name
+                out["laeufe"].append(rep)
+                log("%s: Note %.1f · " % (titel, float(rep.get("note") or 0)) + " · ".join(
+                    "L%d %.1f (%.1f°, %.0f %%, %d×)" % (int(l["id"]), float(l["note"]), float(l["err_mean"]), float(l["in_pic_pct"]), int(l["losses"]))
+                    for l in rep.get("lessons") or []), wichtig=True)
+    if a.folgen_weitwinkel:
+        try:
+            http_json(sim + "/control", {"action": "weit", "mount": "scene"}, timeout=6)
+        except Exception:
+            pass
+    return out
+
+
+def folgen_zeilen(res):
+    z = []
+    for r in res.get("laeufe") or []:
+        z.append("%s: Note %.1f – " % (r.get("name"), float(r.get("note") or 0)) + ", ".join(
+            "%d %s %.1f" % (int(l["id"]), l.get("name", ""), float(l["note"])) for l in r.get("lessons") or []))
+    return z or ["kein Ergebnis"]
+
+
 def main():
     ap = argparse.ArgumentParser(description="Prüfstand für die Erkennung von Motion Watch (3D-Simulator)")
     ap.add_argument("--mw", default="", help="die Motion-Watch-Datei (Standard: die neuste im Repository)")
@@ -675,6 +767,8 @@ def main():
     ap.add_argument("--spur-id", default="", help="welche Spur aus der Datei (Standard: die neuste)")
     ap.add_argument("--weitwinkel", default="", help="Messung «Übersicht → Kopf findet Ziel» pro Montage der Weitwinkel-Kamera: scene, base, head_front, head_rear (mit Komma)")
     ap.add_argument("--ww-versuche", type=int, default=3, help="Weitwinkel-Messung: so viele Besucher pro Montage")
+    ap.add_argument("--folgen", default="", help="Plan «folgen» (Verfolgungs-Parcours): Lektionen mit Komma, 1–7, 8 = nachts mit IR (Standard bei «folgen» in --plaene: 1,3,4,5,6,7)")
+    ap.add_argument("--folgen-weitwinkel", default="", help="Plan «folgen» je Montage mit und ohne Weitwinkel-Übergabe: base, head_front, head_rear (mit Komma)")
     ap.add_argument("--spur-wetter", default="", help="Wetter der echten Nacht (clear, cloudy, rain, fog, snow)")
     a = ap.parse_args()
     a.plaene = [p.strip() for p in a.plaene.split(",") if p.strip()]
@@ -682,6 +776,13 @@ def main():
     a.roh_plaene = [p.strip() for p in a.roh_plaene.split(",") if p.strip()]
     a.mal = max(1, min(5, a.mal))
     a.weitwinkel = [m.strip() for m in a.weitwinkel.split(",") if m.strip() in WW_MONTAGEN]
+    a.folgen = [int(x) for x in a.folgen.split(",") if x.strip().isdigit() and 1 <= int(x) <= 8]
+    if "folgen" in a.plaene:                                   # «folgen» is not a test run of the simulator: the parcours
+        a.plaene.remove("folgen")
+        a.folgen = a.folgen or list(FOLGEN_STD)
+    a.folgen_weitwinkel = [m.strip() for m in a.folgen_weitwinkel.split(",") if m.strip() in WW_MONTAGEN and m.strip() != "scene"]
+    if a.folgen_weitwinkel and not a.folgen:
+        a.folgen = [1]
     a.seeds = max(1, min(9, a.seeds))
     if a.fall_aus_spur:
         fall_aus_spur(a.fall_aus_spur, a.spur_id, a.spur_wetter)
