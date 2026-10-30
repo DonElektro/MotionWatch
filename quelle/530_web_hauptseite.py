@@ -100,6 +100,7 @@ body.locked .l-hide,body.locked .l-off,body.locked #srch:not(.withall),body.lock
 #srch .ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.6;pointer-events:none}
 #srch .x{position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:4px 10px;border:0;background:none;color:var(--mut);font-size:18px;cursor:pointer}
 #srch-none{margin-top:8px}
+#allbtns button.cur{background:var(--acc,#3b8cff);color:#fff;border-color:transparent}
 #allbtns button svg{display:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 /* tablet / computer: "expand all" and "collapse all" as two small symbols right of the settings search */
 #srch.withall{padding-right:152px}
@@ -558,9 +559,9 @@ body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
   <button type="button" id="side-open" onclick="toggleHidden('sidebar')" title="Settings"><span>⟨</span><b data-i18n="Settings">Settings</b></button>
   <aside data-view="sidebar" data-vgroup="Panels" data-vlabel="Settings panel">
     <div class="btns" id="allbtns" style="margin:0 0 12px">
+      <button class="sec" id="all-close" onclick="allSections(false)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l5 5 5-5M7 20l5-5 5 5"/></svg><span data-i18n="Collapse all">Collapse all</span></button>
       <button class="sec" id="all-groups" onclick="allGroups()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v5H4zM4 14h16v5H4z"/></svg><span data-i18n="Groups only">Groups only</span></button>
       <button class="sec" id="all-open" onclick="allSections(true)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></svg><span data-i18n="Expand all">Expand all</span></button>
-      <button class="sec" id="all-close" onclick="allSections(false)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l5 5 5-5M7 20l5-5 5 5"/></svg><span data-i18n="Collapse all">Collapse all</span></button>
     </div>
     <div id="simtile" data-simhub="tile" hidden style="margin-bottom:12px"></div>
     <details class="card" open data-view="protect" data-vgroup="Panels" data-vlabel="Camping / protection" id="pr-card">
@@ -4519,6 +4520,18 @@ function allGroups() {                     // overview: every group open, the to
   document.querySelectorAll("#settings details.sub:not(.inline), #settings details.adv").forEach(d => { if (d.open) d.open = false; });
 }
 function allSections(open) { document.querySelectorAll("details.card, details.sub:not(.inline)").forEach(d => { if (d.open !== open) d.open = open; }); }
+// 2.98.46 (Daniel): order «Collapse all | Groups only | Expand all»; the button of the current fold state is blue – all closed = «Collapse all», all open = «Expand all», groups open / topics closed = «Groups only»; mixed = none
+function allBtnState() {
+  const all = [...document.querySelectorAll("details.card, details.sub:not(.inline)")];
+  const grp = [...document.querySelectorAll("#settings details.grp")];
+  const subs = [...document.querySelectorAll("#settings details.sub:not(.inline), #settings details.adv")];
+  const st = all.length && all.every(d => d.open) ? "open" : all.every(d => !d.open) ? "close"
+    : grp.length && grp.every(d => d.open) && subs.every(d => !d.open) ? "groups" : "";
+  [["#all-groups", "groups"], ["#all-open", "open"], ["#all-close", "close"]].forEach(([id, k]) => {
+    const b = $(id); if (b) { b.classList.toggle("cur", st === k); b.setAttribute("aria-pressed", st === k ? "true" : "false"); } });
+}
+let _allBtnRaf = 0;
+document.addEventListener("toggle", e => { if (e.target.tagName === "DETAILS" && !_allBtnRaf) _allBtnRaf = requestAnimationFrame(() => { _allBtnRaf = 0; allBtnState(); }); }, true);
 
 $("#video").addEventListener("dblclick", () => setVideoOnly(!videoOnly));
 keepStream($("#video"));
@@ -4537,7 +4550,7 @@ document.addEventListener("webkitfullscreenchange", fsChange);
     catch (e) { LANG = LANG || "en"; THEME = THEME || "dark"; }
   }
   applyTheme(); applyI18n();
-  await build(); regroup(); applyHidden(); initSections(); refresh(); setInterval(refresh, 700);
+  await build(); regroup(); applyHidden(); initSections(); allBtnState(); refresh(); setInterval(refresh, 700);
   setTimeout(() => setupWizard(false), 600);
 })();
 /*ALERTS*/
