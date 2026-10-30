@@ -427,7 +427,8 @@ static func _draw_group_icon(d: Control, kind: String) -> void:
 			d.draw_polyline(P.call([Vector2(-5, -1), Vector2(0, 9), Vector2(5, -1)]), col, w, true)
 			d.draw_circle(c + Vector2(0, -3), 1.8, col)
 		_:
-			d.draw_circle(c, 4, col)
+			if not preload("res://scripts/mehr_icons.gd").draw(d, kind, c, col, w):   # «Mehr»: more drawn symbols (mehr_icons.gd)
+				d.draw_circle(c, 4, col)
 
 
 static func set_open(body: Control, open: bool) -> void:
@@ -552,3 +553,23 @@ static func small(text: String, col := MUT) -> Label:
 	l.add_theme_font_size_override("font_size", 12)
 	l.add_theme_color_override("font_color", col)
 	return l
+
+
+# ---- 3D-4.2x «Mehr» (Wunsch Daniel 30.10.2026): the look of the panel like MoveEye – Hell → Rotlicht → Dunkel ----------------
+# (the order of the button of MoveEye, 510 / 578). The colours below are those of MoveEye (450 :root / body.light /
+# html.sxnight); farbschema.gd applies them to the panel and the windows, the 3D view stays as it is.
+const THEMES := ["light", "red", "dark"]
+const THEME_NAMES := {"light": "Hell", "red": "Rotlicht", "dark": "Dunkel"}
+static var theme_now := "dark"
+
+
+static func theme_next(cur: String) -> String:
+	return {"light": "red", "red": "dark", "dark": "light"}.get(cur, "dark")
+
+
+static func palette(name: String) -> Dictionary:
+	if name == "light":
+		return {"bg": Color("#eef2f7"), "panel": Color("#ffffff"), "line": Color("#d7dfea"), "txt": Color("#18212d"), "mut": Color("#5a6b80"), "acc": Color("#1f6feb")}
+	if name == "red":
+		return {"bg": Color("#000000"), "panel": Color("#070000"), "line": Color("#2a0606"), "txt": Color("#c0392b"), "mut": Color("#7d1f1a"), "acc": Color("#7a160e")}
+	return {"bg": BG, "panel": PANEL, "line": LINE, "txt": TXT, "mut": MUT, "acc": ACC}
