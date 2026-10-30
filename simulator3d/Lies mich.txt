@@ -608,6 +608,13 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-4.17
+3D-4.17: MoveEye als KI-Wächter (Schalter in der Karte «Spiel» auf /sim, eigene Liste «gegen die KI», gleiche Energie,
+0.5 s Reaktion, zielt nie auf Geschützte). Stange per Schieberegler im Dock. /sim-Bild ohne Einblendungen (nur 3D + Dock).
+Spiel-Balance: Schuss auf gerade Erwischte ist neutral, eine Punkte-Regel (Anzeige = echte Punkte), Startschutz und weniger
+Punkte für wiederholte Fänge, eigene Wächter- und Schleicher-Stufe, Verzögerungsausgleich 0.25 s, Wartezeit beim Verstecken
+pro Person, Profil «Wie echte Hardware», Sieger pro Rolle, «Team gegen Team» entfernt.
+
 NEU IN 3D-4.16
 3D-4.16: KI-Hilfe für den Wächter am Auslöser (umschaltbar: KI-Rahmen → KI zielt → KI-Autopilot, Knopf 🤖, Taste K, L2);
 Runden mit KI-Hilfe zählen nicht für die Rangliste.

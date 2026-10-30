@@ -1,10 +1,10 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 29.10.2026 · Simulator-Version **3D-4.16** · passende MoveEye-Version (früher Motion Watch) **2.96.2**
+Stand: 30.10.2026 · Simulator-Version **3D-4.17** · passende MoveEye-Version (früher Motion Watch) **2.96.2**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
-## NEU (Entwurf, Balance-Paket 30.10.2026 – Version setzt der Lead)
+## NEU in 3D-4.17 (MoveEye 2.98.46): Balance-Paket 30.10.2026 + KI-Wächter, Stange-Regler, nacktes /sim-Bild
 
 Spiel-Balance nach dem Code-Review (von Daniel freigegeben, Punkte 1, 3–11 und 12 teilweise):
 - **Eine Punkte-Regel für alle Wächter** (`gameshutter.score_catch`, `game.guard_score`): jeder Fang zählt sofort so, wie er
