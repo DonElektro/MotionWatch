@@ -131,6 +131,9 @@ def web_schema(lang=None, only=None):
                     x["fine"] = True
                 if x["key"] in MENU_LONG:
                     x["help"] = tr(MENU_LONG[x["key"]], lang)
+        if simple and s["id"] in ("Notifications",):          # the push cards (531a) have their own «Erweitert»: as before, only «Simple» keys
+            for k_ in ("toggles", "sliders", "texts"):
+                s[k_] = [x for x in s.get(k_) or [] if not _simple_hidden_menu_base(x["key"])]
         if simple and s["id"] in MENU_NO_FOLD:
             for k_ in ("toggles", "sliders", "texts"):
                 s[k_] = [x for x in s.get(k_) or [] if not x.get("fine")]

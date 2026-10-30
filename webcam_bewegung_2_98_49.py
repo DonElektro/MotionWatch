@@ -51791,10 +51791,11 @@ function scPick() {
 }
 // ---- app icon (2.95.23): choose it here; on an iPhone / iPad the home screen keeps the old one - a hint says what to do ----
 function iconPick() {
-  const d = document.querySelector('details[data-view="sec:Setup"]') || document.querySelector('details[data-view="sec:Web stream"]');
+  // 639c: in «Gerät & Hilfe», closed (was open in «Einrichtung» - 700 px on the phone)
+  const d = document.querySelector('details[data-view="sec:Device & help"]') || document.querySelector('details[data-view="sec:Setup"]') || document.querySelector('details[data-view="sec:Web stream"]');
   if (!d || d.querySelector("#appicon")) return;
-  const box = el("div"); box.id = "appicon"; box.style.cssText = "margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px";
-  box.appendChild(el("div", "", "📱 " + t("App icon")));
+  const box = el("details", "sub ffold"); box.id = "appicon";
+  box.appendChild(el("summary", "", "📱 " + t("App icon")));
   const row = el("div"); row.style.cssText = "display:flex;flex-wrap:wrap;gap:10px;margin:8px 0";
   const note = el("div", "mut", ""); note.style.fontSize = "13px";
   const paint = cur => row.querySelectorAll("button").forEach(b => { const on = b.dataset.i === cur; b.style.outline = on ? "3px solid var(--acc,#3b8cff)" : "none"; b.setAttribute("aria-pressed", on); });
@@ -89885,6 +89886,9 @@ def web_schema(lang=None, only=None):
                     x["fine"] = True
                 if x["key"] in MENU_LONG:
                     x["help"] = tr(MENU_LONG[x["key"]], lang)
+        if simple and s["id"] in ("Notifications",):          # the push cards (531a) have their own «Erweitert»: as before, only «Simple» keys
+            for k_ in ("toggles", "sliders", "texts"):
+                s[k_] = [x for x in s.get(k_) or [] if not _simple_hidden_menu_base(x["key"])]
         if simple and s["id"] in MENU_NO_FOLD:
             for k_ in ("toggles", "sliders", "texts"):
                 s[k_] = [x for x in s.get(k_) or [] if not x.get("fine")]
