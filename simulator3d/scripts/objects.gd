@@ -220,6 +220,24 @@ const OBJ := {
 		["b", 0.012, 0.012, 0.18, 0, 0.006, 0, "00cec9", 0, 0, 0], ["b", 0.012, 0.02, 0.03, 0, 0.016, 0.075, "ffffff", 0, 0, 0]]},
 }
 
+# 3D-4.x «Gegenstände»: the new things (fruit, valuables, camping, garden, lures, false-alarm sources) - objekte_neu.gd
+const Neu = preload("res://scripts/objekte_neu.gd")
+
+
+static func def(kind: String) -> Dictionary:
+	"""the entry of a thing - the 80 COCO things here or the new ones of objekte_neu.gd"""
+	return OBJ.get(kind, Neu.OBJ.get(kind, {}))
+
+
+static func kinds() -> Array:
+	return OBJ.keys() + Neu.OBJ.keys()
+
+
+static func cats() -> Array:
+	"""the tabs: the categories here + the new ones (Wertsachen, Camping, Garten & Haus, Lockt Tiere an, Fehlalarm-Quellen)"""
+	return CATS + Neu.CATS
+
+
 # COCO classes that are already visitors (they walk): name -> visitor kind
 const COCO_VISITORS := {"person": "person", "bicycle": "cyclist", "car": "car", "motorcycle": "moto", "cat": "cat", "dog": "dog",
 		"horse": "horse", "sheep": "sheep", "cow": "cow", "bird": "", "truck": "van", "bench": ""}
@@ -236,13 +254,70 @@ static func coco_count() -> int:
 
 static func build(main, kind: String) -> Node3D:
 	"""the object as a node (not yet in the world)"""
-	var d: Dictionary = OBJ.get(kind, {})
+	var d: Dictionary = def(kind)
 	var n := Node3D.new()
 	n.name = "obj_" + kind
 	if d.is_empty():
 		return n
-	var warm: bool = d.get("w", false)
+	var wv = d.get("w", false)
+	var warm: bool = typeof(wv) == TYPE_BOOL and bool(wv)
+	var tk = float(wv) if typeof(wv) in [TYPE_FLOAT, TYPE_INT] else (30.0 if warm else "stone")
+	var pivs := {}                                         # 3D-4.x: moving parts (objekte_plus.gd): role -> Node3D
+	var nfruit := 0
 	for p in d["p"]:
+		var parent: Node3D = n
+		var off := Vector3.ZERO
+		if p.size() > 11:                                  # a part with a role: under its pivot (a fruit: its own)
+			var role := str(p[11])
+			if role == "fruit":
+				var fp := Node3D.new()
+				fp.name = "fruit_%d" % nfruit
+				nfruit += 1
+				fp.position = Vector3(p[4], p[5], p[6])
+				fp.set_meta("role", "fruit")
+				n.add_child(fp)
+				parent = fp
+				off = fp.position
+			else:
+				if not pivs.has(role):
+					var pv := Node3D.new()
+					pv.name = "piv_" + role
+					var pp: Array = (d.get("piv", {}) as Dictionary).get(role, [0, 0, 0])
+					pv.position = Vector3(pp[0], pp[1], pp[2])
+					pv.set_meta("role", role)
+					n.add_child(pv)
+					pivs[role] = pv
+				parent = pivs[role]
+				off = (pivs[role] as Node3D).position
+		var col := str(p[7])
+		if str(p[0]) == "f":                               # cloth that flaps in the wind (objekte_plus gives it the wind)
+			var q := QuadMesh.new()
+			q.size = Vector2(p[1], p[2])
+			q.subdivide_width = 8
+			q.subdivide_depth = 6
+			var sm := ShaderMaterial.new()
+			sm.shader = load("res://shaders/flap.gdshader")
+			sm.set_shader_parameter("color", Color("#" + col.trim_prefix("*")))
+			sm.set_shader_parameter("seed", randf() * 10.0)
+			sm.set_shader_parameter("hang", 1.0 if float(p[3]) > 0.5 else 0.0)
+			sm.set_shader_parameter("strength", 0.8)
+			sm.set_shader_parameter("wind", 10.0)
+			var fm := MeshInstance3D.new()
+			fm.mesh = q
+			fm.position = Vector3(p[4], p[5], p[6]) - off
+			fm.rotation = Vector3(deg_to_rad(p[8]), deg_to_rad(p[9]), deg_to_rad(p[10]))
+			fm.material_override = sm
+			fm.set_meta("flap", sm)
+			parent.add_child(fm)
+			var fth := MeshInstance3D.new()                # the thermal twin
+			fth.mesh = q
+			fth.position = fm.position
+			fth.rotation = fm.rotation
+			fth.material_override = main.tmat("tent")
+			fth.layers = 2
+			fth.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			parent.add_child(fth)
+			continue
 		var mesh: Mesh
 		match str(p[0]):
 			"b":
@@ -280,10 +355,16 @@ static func build(main, kind: String) -> Node3D:
 				t.outer_radius = p[2]
 				mesh = t
 		var m := StandardMaterial3D.new()
-		m.albedo_color = Color("#" + str(p[7]))
+		m.albedo_color = Color("#" + col.trim_prefix("*"))
 		m.roughness = 0.75
+		if col.begins_with("*"):                           # 3D-4.x: it glows (lamp, flame, screen) - objekte_plus switches it
+			m.emission_enabled = true
+			m.emission = m.albedo_color
+			m.emission_energy_multiplier = 2.0
 		var rot := Vector3(deg_to_rad(p[8]), deg_to_rad(p[9]), deg_to_rad(p[10]))
-		main.add_mesh(n, mesh, Vector3(p[4], p[5], p[6]), m, 30.0 if warm else "stone", rot)
+		var mi: MeshInstance3D = main.add_mesh(parent, mesh, Vector3(p[4], p[5], p[6]) - off, m, tk, rot)
+		if col.begins_with("*"):
+			mi.set_meta("glow", m)
 	if d.has("scl"):
 		var sc: Array = d["scl"]
 		n.scale = Vector3(sc[0], sc[1], sc[2])

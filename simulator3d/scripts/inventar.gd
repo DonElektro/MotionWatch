@@ -59,7 +59,7 @@ func _ready() -> void:
 	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	v.add_child(tabs)
 	_tab_platz()
-	for c in Obj.CATS:
+	for c in Obj.cats():                               # 3D-4.x: + Wertsachen, Camping, Garten & Haus, Lockt Tiere an, Fehlalarm-Quellen
 		var sc := ScrollContainer.new()
 		sc.name = c[1]
 		sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -121,7 +121,7 @@ static func guard_names(props: Dictionary) -> Array:
 
 
 static func guard_label(nm: String) -> String:
-	return str(Plus.THEFT_OBJ[nm][2]) if Plus.THEFT_OBJ.has(nm) else nm
+	return str(Plus.THEFT_OBJ[nm][2]) if Plus.THEFT_OBJ.has(nm) else nm    # 3D-4.x: valuables of the catalogue are named like their tile
 
 
 func _paint_guard() -> void:
@@ -206,9 +206,12 @@ func _fill() -> void:
 		_tile(cat, kind, k[1], coco, main.thumbs.get(kind), "läuft")
 	for k in VEHICLE_VISITORS:
 		_tile("vehicles", k[0], k[1], k[2], main.thumbs.get(k[0]), "fährt")
-	for kind in Obj.OBJ:
-		var d: Dictionary = Obj.OBJ[kind]
-		_tile(d["cat"], "obj:" + kind, d["n"], d["coco"], null, "steht")
+	for kind in Obj.kinds():
+		var d: Dictionary = Obj.def(kind)
+		var how := "steht"
+		if main.objplus != null:
+			how = main.objplus.tile_how(kind)          # 3D-4.x: «kann gestohlen werden», «bewegt sich im Wind», «lockt Tiere an» …
+		_tile(d["cat"], "obj:" + kind, d["n"], str(d["coco"]) if str(d["coco"]) != "" else "–", null, how)
 
 
 func _tile(cat: String, key: String, name_: String, coco: String, tex, how: String) -> void:
@@ -217,6 +220,8 @@ func _tile(cat: String, key: String, name_: String, coco: String, tex, how: Stri
 	b.clip_text = true
 	b.focus_mode = Control.FOCUS_NONE
 	b.tooltip_text = ("%s · KI: %s · %s" % [name_, coco, how] if coco != "" else "%s · %s" % [name_, how]) + " – anklicken und in die Welt klicken, oder hineinziehen"
+	if coco == "–":
+		b.tooltip_text += "\nKI: – = die KI von MoveEye kennt es nicht (Prüfstand: darf keinen Alarm auslösen)"
 	b.set_meta("search", (name_ + " " + coco + " " + key).to_lower())
 	var v := VBoxContainer.new()
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -274,7 +279,7 @@ func _paint() -> void:
 func _filter() -> void:
 	var q := _search.text.strip_edges().to_lower()
 	var first := -1
-	var cats: Array = [["platz"]] + Obj.CATS                 # 3D-4.x: tab 0 is «Dein Platz» (tent, car)
+	var cats: Array = [["platz"]] + Obj.cats()                 # 3D-4.x: tab 0 is «Dein Platz» (tent, car)
 	for i in range(cats.size()):
 		var g: GridContainer = _grids[cats[i][0]]
 		var n := 0
@@ -310,7 +315,7 @@ func _make_thumbs() -> void:
 	sun_.rotation = Vector3(deg_to_rad(-45), deg_to_rad(-35), 0)
 	sun_.light_energy = 1.3
 	vp.add_child(sun_)
-	for kind in ["_tent", "_car"] + Obj.OBJ.keys():
+	for kind in ["_tent", "_car"] + Obj.kinds():
 		var n: Node3D = _platz_model(kind) if kind.begins_with("_") else Obj.build(main, kind)   # 3D-4.x: + tent / car of «Dein Platz»
 		for ch in n.get_children():                    # the thermal twins are not needed here
 			if ch is MeshInstance3D and (ch as MeshInstance3D).layers != 1:
@@ -318,9 +323,9 @@ func _make_thumbs() -> void:
 		vp.add_child(n)
 		var box := AABB()
 		var first := true
-		for ch in n.get_children():
-			if ch is MeshInstance3D and ch.visible:
-				var a: AABB = (ch as MeshInstance3D).transform * (ch as MeshInstance3D).mesh.get_aabb()
+		for ch in n.find_children("*", "MeshInstance3D", true, false):   # 3D-4.x: also the parts under a pivot (objekte_neu.gd)
+			if ch.visible and (ch as MeshInstance3D).layers == 1:
+				var a: AABB = n.global_transform.affine_inverse() * (ch as MeshInstance3D).global_transform * (ch as MeshInstance3D).mesh.get_aabb() if ch.is_inside_tree() else (ch as MeshInstance3D).transform * (ch as MeshInstance3D).mesh.get_aabb()
 				box = a if first else box.merge(a)
 				first = false
 		box = AABB(box.position * n.scale, box.size * n.scale)
@@ -378,16 +383,18 @@ func place_at_screen(key: String, sp: Vector2) -> void:
 
 
 func add_object(kind: String, p: Vector3, rot_deg: float, save := true) -> void:
-	if not Obj.OBJ.has(kind):
+	if Obj.def(kind).is_empty():
 		return
 	var n: Node3D = Obj.build(main, kind)
 	n.position = Vector3(p.x, main.ground_y(p.x, p.z), p.z)
 	n.rotation.y = deg_to_rad(rot_deg)
 	main.scene_parent.add_child(n)
 	_nodes.append(n)
-	var o = Obj.OBJ[kind].get("o")
+	var o = Obj.def(kind).get("o")
 	if o != null:
 		main.add_obstacle_box(n.position, float(o[0]), float(o[1]), n.rotation.y)
+	if main.objplus != null:
+		main.objplus.on_placed(n, kind)                # 3D-4.x: wind, light, smoke, lures, valuables (objekte_plus.gd)
 	if save:
 		var arr: Array = placed.get(main.scene, [])
 		arr.append({"k": kind, "x": snappedf(p.x, 0.01), "z": snappedf(p.z, 0.01), "r": snappedf(rot_deg, 0.1)})
@@ -457,7 +464,7 @@ func _paint_list() -> void:
 		var r := HBoxContainer.new()
 		_list.add_child(r)
 		var t := Label.new()
-		t.text = "%s  ·  %.0f / %.0f m" % [Obj.OBJ.get(e["k"], {}).get("n", e["k"]), float(e["x"]), float(e["z"])]
+		t.text = "%s  ·  %.0f / %.0f m" % [Obj.def(str(e["k"])).get("n", e["k"]), float(e["x"]), float(e["z"])]
 		t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		r.add_child(t)
 		var x := Button.new()
@@ -487,5 +494,5 @@ func info() -> Dictionary:
 		if nd != null and is_instance_valid(nd):
 			guard[nm] = nd.visible
 	return {"visible": visible, "title": "Dein Platz", "tab": tabs.get_tab_title(tabs.current_tab), "guarded": guard,
-			"platz_items": main.zwilling.cur().get("items", []).size() if main.zwilling != null else 0, "objects": Obj.OBJ.size(), "coco": Obj.coco_count(), "scene": placed.get(main.scene, []).size(),
+			"platz_items": main.zwilling.cur().get("items", []).size() if main.zwilling != null else 0, "objects": Obj.kinds().size(), "coco": Obj.coco_count(), "scene": placed.get(main.scene, []).size(),
 			"thumbs": obj_thumbs.size(), "tiles": _tiles.size()}

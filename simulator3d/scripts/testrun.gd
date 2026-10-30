@@ -24,7 +24,7 @@ const STANDARD := [
 	{"name": "Nacht, Regen", "hour": 23.5, "weather": "rain", "wind": 20.0, "visits": ["person", "cat", "person"]},
 ]
 # 3D-3.27: more test runs. «cond» = difficult conditions of main.gd (switched on only during the phase)
-const DAUER := {"quick": 150, "night": 230, "standard": 300, "hard": 520, "nacht": 650, "camping_voll": 290, "tarnen": 270, "velodieb": 230}   # 3D-3.90: the one place for names and times (also the test bench)
+const DAUER := {"quick": 150, "night": 230, "standard": 300, "hard": 520, "nacht": 650, "camping_voll": 290, "tarnen": 270, "velodieb": 230, "gegenstaende": 290}   # 3D-3.90: the one place for names and times (also the test bench)
 # Prüfstand 2: a whole night in time-lapse. «until» = the hour at the end of the phase (the clock runs faster meanwhile),
 # «every» = a visitor every … s, "-" = a quiet slot (nobody comes: wind and rain alone must not give a push).
 # Realistic numbers: about 20 animals, 2 persons in 10 hours; «fixed»: --mal does not multiply it.
@@ -63,6 +63,13 @@ const PLANS := {
 		{"name": "Tag", "hour": 14.0, "weather": "clear", "wind": 10.0, "visits": ["velodieb", "-", "velodieb"]},
 		{"name": "Dämmerung", "hour": 20.4, "weather": "cloudy", "wind": 15.0, "visits": ["velodieb", "-"]},
 		{"name": "Nacht mit Infrarot", "hour": 23.5, "weather": "clear", "wind": 10.0, "cond": ["ir"], "visits": ["velodieb", "-", "velodieb"]}]},
+	# 3D-4.x «Gegenstände» (objekte_plus.gd TEST_SET): things in front of the head camera - fluttering, swinging, glowing, luring.
+	# Persons and animals count as truth; the things the AI does not know must not give a push («lure» = an animal goes to a lure,
+	# robots = no persons). Only on Sundays / by hand (not in «quick»).
+	"gegenstaende": {"name": "Gegenstände (Wind, Lampen, Feuer, Lockmittel, Wertsachen vor der Kamera – unbekannte Dinge dürfen nicht alarmieren · etwa 5 Min.)", "props": true, "every": 16.0, "phases": [
+		{"name": "Tag, Böen (Fahne, Plastiksack, Ballon, Wäsche, Tor, Obstbaum)", "hour": 13.0, "weather": "cloudy", "wind": 55.0, "visits": ["person", "-", "lure", "robomower", "person"]},
+		{"name": "Dämmerung, Tiere am Lockmittel", "hour": 20.6, "weather": "clear", "wind": 25.0, "visits": ["lure", "-", "person", "lure"]},
+		{"name": "Nacht mit Infrarot (Lampe mit Bewegungsmelder, Feuer, Kerze, Solarleuchten)", "hour": 23.0, "weather": "clear", "wind": 30.0, "cond": ["ir"], "visits": ["lure", "person", "-", "delivery_bot", "e_trotti"]}]},
 	"night": {"name": "Nacht (dunkel, Infrarot, Tiere · etwa 4 Min.)", "phases": [
 		{"name": "Nacht, ohne Licht", "hour": 1.0, "weather": "clear", "wind": 5.0, "visits": ["person", "fox", "person", "hedgehog"]},
 		{"name": "Nacht, Infrarot an", "hour": 2.0, "weather": "clear", "wind": 10.0, "cond": ["ir"], "visits": ["person", "boar", "child", "badger"]},
@@ -76,6 +83,7 @@ var seed_n := 1                         # Prüfstand 2: 1 = the fixed visitors o
 var truth_cams := [0, 1]                # 3D-3.48: which cameras count for the truth (the test bench: only the head camera, 0)
 var PHASES: Array = STANDARD
 var _cond_saved := {}
+var _props_rep := {}                    # 3D-4.x plan «gegenstaende»: objekte_plus.report_extra (made before the things go away)
 const EVERY := 13.0                     # a new visitor every ... seconds
 const SETTLE := 15.0                    # quiet time at the start of a phase (MoveEye and the exposure of the camera adapt - 3D-4.0: 8 → 15 s)
 const GRACE := 2.5                      # a report counts for a visitor up to ... s after it was last visible
@@ -401,6 +409,9 @@ func start(which := "", cams: Array = [], times: int = 1, seed_: int = 1) -> Str
 	_cond_saved = main.cond.duplicate()
 	main.auto_visitors = false
 	main.clear_visitors()
+	_props_rep = {}
+	if bool(PLANS.get(plan, {}).get("props", false)) and main.objplus != null:
+		main.objplus.test_place()                        # 3D-4.x «Gegenstände»: the fixed set in front of the head camera
 	running = true
 	truth.clear()
 	falses.clear()
@@ -435,6 +446,9 @@ func stop(finished := false) -> void:
 	main.clear_visitors()
 	if main.szenen != null:
 		main.szenen.restore()                            # 3D-4.x: a bike thief had the bike
+	if main.objplus != null and bool(PLANS.get(plan, {}).get("props", false)):
+		_props_rep = main.objplus.report_extra(self)
+		main.objplus.test_clear()
 	if finished:
 		_make_report()
 	else:
@@ -493,12 +507,18 @@ func _process(dt: float) -> void:
 			var v
 			if k.begins_with("way:"):
 				v = _spawn_way(int(k.substr(4)))
+			elif k == "lure" and main.objplus != null:
+				v = main.objplus.lure_visit()                # 3D-4.x: an animal goes to a lure of the set
+			elif k in ["delivery_bot", "robomower"]:
+				main.spawn(k)                                # 3D-4.x: no person - only robustness (no push expected)
+				v = null
 			else:
 				var rt: Array = _route(visit_i, ph)
 				v = main.spawn(k, rt[0], rt[1])
 			if k.begins_with("way:"):
 				k = "person"
-			_note_visitor(v, k)
+			if v != null and v.get("kind") != null:
+				_note_visitor(v, v.kind if k == "lure" else k)
 		visit_i += 1
 		next_visit = t + max(_every(), float(ph.get("way_s", 0.0)) + 2.0)
 	elif visit_i >= n_vis and t >= next_visit + 6.0:
@@ -839,7 +859,7 @@ func _make_report() -> void:
 			"latency_s": snappedf(lat_avg, 0.1), "false_alarms": falses.size(), "false_list": falses, "missed_list": all_missed, "noise_alarms": noises,
 			"phases": phs, "truth_cams": truth_cams, "visitors": each, "mult": mult,
 			"realism": {"fx": bool(main.realism.fx_on), "look": bool(main.realism.real_on)} if main.realism != null else {},
-			"szene": main.szenen.report_extra(self) if main.szenen != null else {},
+			"szene": _props_rep if not _props_rep.is_empty() else (main.szenen.report_extra(self) if main.szenen != null else {}),
 			"note": ("Wahrheit: sichtbar für Kopf- oder Weitwinkel-Kamera" if truth_cams.size() > 1 else "Wahrheit: sichtbar für die Kopfkamera") + " (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug)."}
 	info = "Testlauf fertig: Personen erkannt %d von %d (%d %%), Reaktionszeit %s, %s, Flackern %d, Geräuschalarme %d." % [
 			td, tp, int(report["rate"]), ("%.1f s" % lat_avg) if lat_avg >= 0.0 else "–",
