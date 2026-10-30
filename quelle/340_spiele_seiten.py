@@ -592,7 +592,8 @@ def _simgame_fetch():
         if isinstance(r, dict) and r.get("ok") and r.get("open"):
             SIMGAME["g"] = {"round": r.get("round"), "mode": r.get("mode"), "left": r.get("left"), "cd": r.get("cd"),
                             "mwg": r.get("mwg"), "task": r.get("task") or "", "url": r.get("url") or "", "max": r.get("max"),
-                            "runners": r.get("runners"), "shut": r.get("shut")}      # 2.98.35: «Auslöser» (539)
+                            "runners": r.get("runners"), "shut": r.get("shut"),      # 2.98.35: «Auslöser» (539)
+                            "tools": r.get("tools")}                                 # 2.98.37: tools of the guards at MoveEye (543)
         else:
             SIMGAME["g"] = None
     except Exception:

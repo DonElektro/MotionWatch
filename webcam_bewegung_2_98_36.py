@@ -28010,7 +28010,8 @@ def _simgame_fetch():
         if isinstance(r, dict) and r.get("ok") and r.get("open"):
             SIMGAME["g"] = {"round": r.get("round"), "mode": r.get("mode"), "left": r.get("left"), "cd": r.get("cd"),
                             "mwg": r.get("mwg"), "task": r.get("task") or "", "url": r.get("url") or "", "max": r.get("max"),
-                            "runners": r.get("runners"), "shut": r.get("shut")}      # 2.98.35: «Auslöser» (539)
+                            "runners": r.get("runners"), "shut": r.get("shut"),      # 2.98.35: «Auslöser» (539)
+                            "tools": r.get("tools")}                                 # 2.98.37: tools of the guards at MoveEye (543)
         else:
             SIMGAME["g"] = None
     except Exception:
@@ -37567,6 +37568,8 @@ function gwPaint(M) {
         if (r && r.game && r.game.open) { const qq = $("#gw-qr"); if (qq && qq.firstChild) qq.scrollIntoView({behavior: "smooth", block: "center"}); } };
       qg.appendChild(b); });
     B.appendChild(qg);
+    if (M.own_btn) { const ob = el("button", "sec", M.own_btn); ob.type = "button"; ob.style.cssText = "width:100%;text-align:left;white-space:normal;margin:2px 0 8px";   // 2.98.37: «Eigene Regeln» (3D-4.x: three fixed games first)
+      ob.onclick = () => gwOp({op: "own", value: !M.own_open}); B.appendChild(ob); }
     if (M.own_title) B.appendChild(el("div", "gw-sub mut", M.own_title)); }
   if ((M.cards || []).length) { const g = el("div", "gw-cards");
     M.cards.forEach(c => { const b = el("button", "gw-card" + (c.on ? " on" : "")); b.type = "button";
@@ -37700,6 +37703,10 @@ function specPaint() {
   if (G.round === "end" && G.res && G.res.length) {
     const sig = JSON.stringify(G.res) + JSON.stringify((G.px || {}).lines || []);   // 3D-4.x: the theft answer of MoveEye comes later
     if (SPECRES !== sig && SPECRES !== "closed:" + sig) { SPECRES = sig; R.innerHTML = ""; const bx = el("div", "bx"); bx.appendChild(el("h3", "", "🏆 " + t("Result")));
+      const RU = G.rules || {}, RW = RU.win || {};      // 2.98.37 (3D-4.x): winner, closest moment, fairness, the next guard
+      if (RW.title) { const w = el("div", "", RW.title + " · " + RW.score); w.style.cssText = "font-size:24px;font-weight:800;margin:4px 0 2px;color:#ffd166"; bx.appendChild(w);
+        if (RW.hl && RW.hl.text) bx.appendChild(el("div", "", RW.hl.text)); }
+      ["fair", "next"].forEach(k => { if (RU[k]) bx.appendChild(el("div", "mut", RU[k])); });
       if (G.jres && G.jres.text) { const jr = el("div", "", (G.jres.n ? "🎉 " : "🛡 ") + G.jres.text); jr.style.cssText = "font-size:22px;font-weight:800;margin:4px 0 8px"; bx.appendChild(jr);   // 2.98.18: «Fehlalarm-Jäger»
         if ((G.jres.cases || []).length) bx.appendChild(el("div", "mut", G.jres.cases.map(c => c[0] + " " + c[1] + " (" + c[2] + ", " + Math.round(c[3]) + " m)").join(" · "))); }
       if (G.fres && G.fres.text) { const fr = el("div", "", "🚩 " + G.fres.text + " – " + G.fres.title); fr.style.cssText = "font-size:26px;font-weight:800;margin:4px 0 8px"; bx.appendChild(fr); }   // 3D-4.x
@@ -53750,6 +53757,79 @@ def servo_routes(app, reply, body):
         fmt = "csv" if request.args.get("fmt") == "csv" else "json"
         data, mt, fn = servo_diag_export(fmt, norm_lang(request.args.get("lang") or CFG.get("lang")))
         return Response(data, mimetype=mt, headers={"Content-Disposition": f"attachment; filename={fn}", "Cache-Control": "no-store"})
+# ----------------------------------------------------------------------------
+# Spielkonzept of Daniel (30.10.2026), «Wächter-Werkzeuge mit Kosten»: in the game of the 3D simulator the guard has a budget
+# of energy per round (by the difficulty) and every tool costs some and has a cooldown (simulator gametools.gd):
+# 💡 light, 📢 siren (whoever moves is noticed), 📡 scan (hint markers where runners are), 🔍 zoom of the head camera and
+# the 🎯 shutter (part 539). The guard at the phone and at the simulator PC have their own gauges (game.gd, localplay.gd).
+# Here: the guards at MoveEye in «Team gegen MoveEye» (they steer the real head on the live page or in the
+# «Controller-Ansicht» 538) get a small gauge row at the top of the live picture: the energy, the four tools with their
+# price and cooldown (tap = use: the simulator controls game_tool_* through /api/sim «ctl press»), and the hint markers
+# (👣 a runner runs = loud, 📡 found by the scan) at their direction in the picture. Only during such a round.
+# Data: the simulator's game_info «tools» (340 sim_game → state.sim.game.tools). Translations: part 612.
+# ----------------------------------------------------------------------------
+
+WAECHTER_JS = r"""
+<script>
+(function () {
+  if (document.body.dataset.tab !== "live") return;
+  try { const D = /*WAECHTERDE*/{}; for (const k in D) if (!(k in I18N.de)) I18N.de[k] = D[k]; } catch (e) {}
+  const T = x => (typeof t === "function" ? t(x) : x);
+  const E = (tag, id, cls) => { const x = document.createElement(tag); if (id) x.id = id; if (cls) x.className = cls; return x; };
+  const css = E("style"); css.textContent =
+    "#mwt{position:absolute;z-index:61;display:flex;gap:6px;align-items:center;transform:translateX(-50%);background:rgba(10,14,20,.78);border:1px solid #2a3646;border-radius:12px;padding:4px 6px;color:#e8eef5;font:600 12px/1.1 system-ui,sans-serif}"
+    + "#mwt[hidden],#mwt-h[hidden]{display:none}#mwt .en{min-width:74px}#mwt .en i{display:block;height:6px;border-radius:9px;background:#1f2b3a;overflow:hidden;margin-top:3px}#mwt .en i b{display:block;height:100%;background:linear-gradient(90deg,#ffd166,#34c759)}"
+    + "#mwt button{min-width:44px;height:40px;border-radius:10px;border:1px solid #3a4658;background:#151e2b;color:#fff;font-size:17px;padding:0 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;cursor:pointer;touch-action:manipulation}"
+    + "#mwt button small{font-size:9px;font-weight:600;opacity:.85;margin-top:2px}#mwt button.off{opacity:.4;filter:grayscale(1)}#mwt button.cd small{color:#ffd166}"
+    + "#mwt-h{position:absolute;z-index:60;pointer-events:none;inset:0}#mwt-h span{position:absolute;transform:translateX(-50%);font-size:22px;text-shadow:0 0 6px #000}#mwt-h span b{display:block;font-size:10px;text-align:center;color:#fff}";
+  document.head.appendChild(css);
+  const BOX = E("div", "mwt"), HB = E("div", "mwt-h"), EN = E("div", "", "en"); BOX.hidden = true; HB.hidden = true; BOX.appendChild(EN);
+  const NAMES = {light: "Light", siren: "Siren", scan: "Scan", zoom: "Zoom"}, BTN = {};
+  Object.keys(NAMES).forEach(k => { const b = E("button"); b.type = "button"; b.dataset.k = k; BTN[k] = b; BOX.appendChild(b);
+    b.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); use(k); });
+    ["pointerdown", "pointerup", "dblclick"].forEach(x => b.addEventListener(x, ev => ev.stopPropagation())); });
+  const J = () => (typeof QSJ !== "undefined" && QSJ) || {};
+  const game = () => ((J().state || {}).sim || {}).game || null;
+  const simLive = () => { const s = (J().state || {}).sim || {}; return !!(s.on && s.ok); };
+  const roundOn = () => { const G = game(); return !!(G && G.mode === "mwhand" && (G.round === "play" || G.round === "countdown") && G.tools && G.tools.on); };
+  let lastMsg = "";
+  function use(k) {
+    const G = game() || {}, Tl = (G.tools || {}).t || [], x = Tl.find(y => y[0] === k);
+    if (x && !x[5]) { if (typeof toast === "function") toast("⏳ " + T(NAMES[k]) + ": " + (x[4] > 0 ? x[4] + " s" : T("not enough energy"))); return; }
+    post("/api/sim", {action: "ctl", ctl: "press", id: "game_tool_" + k, lang: LANG}).then(() => { if (typeof toast === "function") toast(BTN[k].firstChild.textContent + " " + T(NAMES[k])); }).catch(() => {});
+  }
+  function picRect(v) {
+    const r = v.getBoundingClientRect(), nw = v.naturalWidth || 16, nh = v.naturalHeight || 9;
+    const fit = getComputedStyle(v).objectFit, k = fit === "cover" ? Math.max(r.width / nw, r.height / nh) : fit === "fill" ? 0 : Math.min(r.width / nw, r.height / nh);
+    const w = k ? nw * k : r.width, h = k ? nh * k : r.height;
+    return {left: r.left + (r.width - w) / 2, top: r.top + (r.height - h) / 2, width: w, height: h};
+  }
+  function paint() {
+    const v = document.getElementById("video"), on = roundOn() && simLive() && v && v.offsetParent !== null;
+    if (!on) { BOX.hidden = HB.hidden = true; return; }
+    const cont = v.parentNode;
+    if (BOX.parentNode !== cont) cont.append(HB, BOX);
+    if (getComputedStyle(cont).position === "static") cont.style.position = "relative";
+    const cr = cont.getBoundingClientRect(), p = picRect(v), G = game() || {}, TL = G.tools || {};
+    const top = Math.max(p.top, cr.top) - cr.top + (p.width < 520 ? 54 : 30);      // under the text line of the picture (phone: under the corner buttons)
+    BOX.style.left = (p.left + p.width / 2 - cr.left) + "px"; BOX.style.top = top + "px";
+    const f = Math.max(0, Math.min(1, (TL.e || 0) / Math.max(1, TL.max || 1)));
+    EN.innerHTML = "⚡ " + T("Energy") + " " + (TL.e || 0) + "<i><b style=\"width:" + Math.round(f * 100) + "%\"></b></i>";
+    (TL.t || []).forEach(x => { const b = BTN[x[0]]; if (!b) return; const sig = x.join("|") + LANG; if (b.dataset.s === sig) return; b.dataset.s = sig;
+      b.innerHTML = x[1] + "<small>" + (x[4] > 0 ? x[4] + " s" : x[3] + " ⚡") + "</small>"; b.classList.toggle("off", !x[5] && !(x[4] > 0)); b.classList.toggle("cd", x[4] > 0);
+      b.title = T(NAMES[x[0]]) + " · " + x[3] + " " + T("energy") + (x[4] > 0 ? " · " + x[4] + " s" : ""); b.setAttribute("aria-label", b.title); });
+    BOX.hidden = false;
+    const H = TL.hints || [];
+    HB.innerHTML = H.map(x => "<span style=\"left:" + Math.round(p.left - cr.left + x[0] * p.width) + "px;top:" + Math.round(top + 52) + "px\">" + (x[3] ? (x[0] < 0.5 ? "◀" : "▶") : "") + (x[1] === "scan" ? "📡" : "👣") + "<b>" + x[2] + " m</b></span>").join("");
+    HB.hidden = !H.length;
+    if (TL.msg && TL.msg !== lastMsg) { lastMsg = TL.msg; if (typeof toast === "function") toast(TL.msg); }
+  }
+  setInterval(paint, 250);
+  addEventListener("resize", paint);
+})();
+</script>
+"""
+WEB_PAGE = WEB_PAGE.replace("</body>", WAECHTER_JS + "</body>", 1)
 # ---- 2.98.13: simulator updates have one owner - the simulator's own setting «Neue Versionen» (update_mode) -----------------
 # MoveEye's switch «Update the simulator by itself» (sim_autoupd, web and window) shows and sets that setting through
 # /control when the connected simulator has it; MoveEye then no longer presses «update_now» itself (300). For the Python
@@ -72555,6 +72635,21 @@ if _hp_en > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_298(HELP_X[_L], _L)
+# Key = English text: (Deutsch, Français, Italiano, Rumantsch). German also into I18N.de of the live page (/*WAECHTERDE*/).
+_HX_SPIELA = {
+    'Light': ('Licht', 'Lumière', 'Luce', 'Glisch'),
+    'Siren': ('Sirene', 'Sirène', 'Sirena', 'Sirena'),
+    'Scan': ('Scan', 'Scan', 'Scansione', 'Scan'),
+    'Zoom': ('Zoom', 'Zoom', 'Zoom', 'Zoom'),
+    'Energy': ('Energie', 'Énergie', 'Energia', 'Energia'),
+    'energy': ('Energie', 'énergie', 'energia', 'energia'),
+    'not enough energy': ('zu wenig Energie', 'pas assez d’énergie', 'energia insufficiente', 'memia pauca energia'),
+}
+for _k, _v in _HX_SPIELA.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+WEB_PAGE = WEB_PAGE.replace("/*WAECHTERDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_SPIELA.items()}, ensure_ascii=False), 1)
 _HX_SICHER = {
     # settings
     'Delete recordings after … days (0 = never)': ('Aufnahmen nach … Tagen löschen (0 = nie)', 'Supprimer les enregistrements après … jours (0 = jamais)', 'Eliminare le registrazioni dopo … giorni (0 = mai)', 'Stizzar las registraziuns suenter … dis (0 = mai)'),

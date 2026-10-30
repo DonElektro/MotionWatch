@@ -3,7 +3,7 @@ extends Control
 ##   Schleicher: W A S D / arrows = go, mouse drag (left button) or Q / E = look round, Shift = run, C = crouch,
 ##               X = crawl, F = throw a stone, L = torch
 ##   Wächter:    the picture of the head camera; mouse drag or A / D / arrows = turn the head, Space = «Erwischt!»,
-##               G = light
+##               G = light, V = siren, N = scan, Z = zoom (3D-4.x: with energy, gametools.gd; controller B Y X LB)
 ##   Enter = start the round, R = replay after the round, B = one more / fewer bot (Shift+B), Esc = menu (leave)
 ## 3D-4.x (wish of Daniel): a game controller works too - at this PC or at the browser of MoveEye's simulator page (both
 ## through explore.gd: same rest position / dead zone, stick() / _btn()). Left stick = go (guard: turn / tilt the head),
@@ -38,6 +38,7 @@ var _drag := false
 var _card_sig := ""
 var _rp_t := 0.0
 var _rp_play := true
+var _rp_only := []                    # 3D-4.x: only this part of the replay [t0, t1] (the closest moment, gamerules.gd)
 
 const UI = preload("res://scripts/ui_style.gd")
 
@@ -317,8 +318,14 @@ func _pad(dt: float) -> void:
 	if role == "guard":
 		if hit["a"]:
 			g._guard_catch(p)
-		if hit["b"] or hit["x"]:
+		if hit["b"]:
 			g._guard_light(p)
+		if hit["x"]:
+			g.tools.use(p, "scan")                         # 3D-4.x: the tools of the guard (gametools.gd)
+		if hit["y"]:
+			g.tools.use(p, "siren")
+		if _pad_hit("lb", JOY_BUTTON_LEFT_SHOULDER, 4):
+			g.tools.use(p, "zoom")
 		if main.game_mode == "seek":                       # the seeker drives the rover, the right stick turns the head
 			if mv != Vector2.ZERO:
 				p["mx"] = mv.x
@@ -414,11 +421,15 @@ func _input(ev: InputEvent) -> void:
 		KEY_G:
 			if role == "guard":
 				g._guard_light(p)
+		KEY_V, KEY_N, KEY_Z:                               # 3D-4.x: siren, scan, zoom of the guard (gametools.gd)
+			if role == "guard":
+				g.tools.use(p, {KEY_V: "siren", KEY_N: "scan", KEY_Z: "zoom"}[ev.keycode])
 		KEY_R:
 			if g.round_state == "end" and not g.replay.is_empty():
 				rp_view.visible = not rp_view.visible
 				_rp_t = 0.0
 				_rp_play = true
+				_rp_only = []
 		KEY_P:
 			_rp_play = not _rp_play
 		KEY_B:
@@ -449,7 +460,11 @@ func _paint_hud(vs: Vector2) -> void:
 		if int(S.get("items_all", 0)) > 0:
 			t += " · Kristalle %d" % int(S.get("items", 0))
 	else:
-		t += " · %d× erwischt · Licht %s" % [int(S.get("catches", 0)), "bereit" if int(S.get("light", 0)) <= 0 else "%d s" % int(S.get("light", 0))]
+		t += " · %d× erwischt · %s" % [int(S.get("catches", 0)), main.game.tools.hud_text(p)]   # 3D-4.x: energy and tools
+	var SX: Dictionary = (S.get("rx", {}) as Dictionary).get("sx", {})     # 3D-4.x: infos for the sneaker (gamerules.gd)
+	if role == "runner" and not SX.is_empty():
+		var nz := int(round(float(SX.get("nz", 0.0)) * 5.0))
+		t += " · Lärm " + "■".repeat(nz) + "□".repeat(5 - nz) + (" · im Schatten" if bool(SX.get("sh", false)) else "") + (" · KAMERA SCHAUT HER" if bool(SX.get("lk", false)) else "")
 	top_l.text = _plain(t)
 	var su := int(S.get("susp", 0))
 	meter.value = su
@@ -472,11 +487,11 @@ func _paint_hud(vs: Vector2) -> void:
 	if role == "guard" and main.game_mode == "seek":
 		msg_l.text = ("AUGEN ZU! Noch %d s" % int(S.get("cd", 0))) if rs == "countdown" else msg_l.text
 	help_l.text = ("W A S D: Rover fahren · Maus ziehen / Q E: Kopf drehen · Leertaste oder Doppelklick: «Gefunden!» · G: Licht · Esc: Menü" if role == "guard" and main.game_mode == "seek"
-			else "Maus ziehen / Q E: umschauen · Bildmitte auf einen Spieler, dann Leertaste, Doppelklick oder runder Knopf: Auslöser · G: Licht · W S: Kopf hoch / runter · Esc: Menü" if role == "guard"
+			else "Maus ziehen / Q E: umschauen · Bildmitte auf einen Spieler, dann Leertaste, Doppelklick oder runder Knopf: Auslöser · G Licht · V Sirene · N Scan · Z Zoom · W S: Kopf hoch / runter · Esc: Menü" if role == "guard"
 			else "W A S D: gehen · Maus ziehen / Q E: umschauen · Shift: rennen · C: ducken · X: kriechen · F: Stein · L: Lampe · Esc: Menü")
 	if pad_on():                                          # 3D-4.x: the controller
 		help_l.text = ("Controller: linker Stick Rover · rechter Stick Kopf · A «Gefunden!» · B Licht · Start Menü" if role == "guard" and main.game_mode == "seek"
-				else "Controller: Sticks Kopf drehen · R2 oder A Auslöser (Bildmitte) · B Licht · Start Menü" if role == "guard"
+				else "Controller: Sticks Kopf drehen · R2 oder A Auslöser (Bildmitte) · B Licht · Y Sirene · X Scan · LB Zoom · Start Menü" if role == "guard"
 				else "Controller: linker Stick gehen · rechter Stick umschauen · RT rennen · A Stein · B ducken · X kriechen · Y Lampe · Start Menü") + "\n" + help_l.text
 	help_l.position = Vector2(16, vs.y - 30 - (20 if pad_on() else 0))
 
@@ -515,7 +530,7 @@ func _paint_card() -> void:
 	card.visible = show
 	if not show:
 		return
-	var sig := "%s|%d|%d|%d|%s|%d" % [rs, g.results.size(), g.count(), main.game_bots, str(_st.get("daily", {})), int(g.plus.seq)]
+	var sig := "%s|%d|%d|%d|%s|%d|%d" % [rs, g.results.size(), g.count(), main.game_bots, str(_st.get("daily", {})), int(g.plus.seq), int(g.rules.seq)]
 	if sig == _card_sig:
 		_center(card)
 		return
@@ -524,6 +539,23 @@ func _paint_card() -> void:
 		c.queue_free()
 	var h := UI.heading("Runde fertig" if rs == "end" else "Bereit?")
 	card_v.add_child(h)
+	var RX: Dictionary = g.rules.state_for(p) if p != null else {}
+	if rs == "end" and not (RX.get("win", {}) as Dictionary).is_empty():   # 3D-4.x: the winner screen (gamerules.gd)
+		var W: Dictionary = RX["win"]
+		var wl := UI.heading(_plain(str(W["title"])) + " · %d Punkte" % int(W["score"]))
+		wl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
+		card_v.add_child(wl)
+		if not (W.get("hl", {}) as Dictionary).is_empty():
+			var hb := Button.new()
+			hb.text = _plain(str(W["hl"]["text"])) + " – ansehen"
+			hb.pressed.connect(func(): rp_view.visible = true; _rp_t = 0.0; _rp_play = true; _rp_only = [float(W["hl"]["t0"]), float(W["hl"]["t1"])]; _paint_card())
+			card_v.add_child(hb)
+	for k in ["fair", "next"]:
+		if str(RX.get(k, "")) != "":
+			var fl_ := UI.small(_plain(str(RX[k])), UI.TXT)
+			fl_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			fl_.custom_minimum_size.x = 480
+			card_v.add_child(fl_)
 	if rs == "end":
 		if not g.flag_res.is_empty():                       # 3D-4.x: «Fahne erobern» - decided by the captures
 			var fl := UI.heading("%s – %s" % [g.flag_res["text"], g.flag_res["title"]])
@@ -586,7 +618,7 @@ func _paint_card() -> void:
 	if rs == "end" and not g.replay.is_empty():
 		var rb := Button.new()
 		rb.text = "Wiederholung (R)"
-		rb.pressed.connect(func(): rp_view.visible = true; _rp_t = 0.0; _rp_play = true; _paint_card())
+		rb.pressed.connect(func(): rp_view.visible = true; _rp_t = 0.0; _rp_play = true; _rp_only = []; _paint_card())
 		row.add_child(rb)
 	var bb := Button.new()
 	bb.text = "+ Bot"
@@ -678,6 +710,8 @@ func _draw_replay() -> void:
 		rp_view.draw_circle(to.call(float(o[0]), float(o[1])), max(2.0, float(o[2]) * sc), Color(0.3, 0.33, 0.36, 0.8))
 	var t_max: float = float(pts[-1][0]) if not pts.is_empty() else 1.0
 	var tnow: float = fmod(_rp_t, t_max + 3.0)
+	if _rp_only.size() == 2:                               # 3D-4.x: the closest moment only (slower)
+		tnow = float(_rp_only[0]) + fmod(_rp_t * 0.5, float(_rp_only[1]) - float(_rp_only[0]) + 1.5)
 	var k := 0
 	while k < pts.size() - 1 and float(pts[k][0]) < tnow:
 		k += 1
