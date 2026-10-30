@@ -250,11 +250,19 @@ def _funnel_remove(port, legacy=False):
     return ok
 
 
+def funnel_pw_set():
+    """a web password (or a password per user) is set - otherwise everybody in the network is administrator"""
+    return bool(CFG.get("web_password") or CFG.get("web_pw_hash"))
+
+
 def funnel_on(hours=None, source="web"):
     """(True, None) or (False, error dict)"""
     with FUNNEL["lock"]:
         if CFG.get("lock_on"):
             return False, {"code": "locked", "msg": "Not possible in operator mode", "steps": [], "cmd": "", "links": [], "raw": ""}
+        if not funnel_pw_set():                           # 2.98.47 (Daniel): only with a web password - without one everybody is admin
+            return False, {"code": "nopw", "msg": "Set a web password first - without one everybody in the network is administrator",
+                           "steps": ["Settings → 🔒 Password: set a web password, then switch the funnel on."], "cmd": "", "links": [], "raw": ""}
         h = float(hours if hours is not None else CFG.get("game_funnel_hours") or 6)
         h = max(0.05, min(24.0, h))                       # the switch: 1-24 h; inside (moving the port) also the rest of an hour
         if hours is not None:
@@ -388,7 +396,7 @@ def funnel_state(lang=None, admin=True):
             "left_s": max(0, int(FUNNEL["until"] - time.time())) if on else 0, "hours": CFG.get("game_funnel_hours") or 6, "choices": list(FUNNEL_HOURS),
             "avail": av == "", "why": av, "err": e, "need": need, "why_off": tr(FUNNEL["why_off"], lang) if FUNNEL["why_off"] else "",
             "grace_s": max(0, int(FUNNEL_GRACE_S - (time.time() - FUNNEL["t_on"]))) if on and not FUNNEL["had_inv"] else 0,
-            "can": bool(admin) and not CFG.get("lock_on"), "docs": FUNNEL_DOCS}
+            "can": bool(admin) and not CFG.get("lock_on") and (on or funnel_pw_set()), "nopw": not funnel_pw_set(), "docs": FUNNEL_DOCS}
 
 
 def funnel_status_line(lang=None):

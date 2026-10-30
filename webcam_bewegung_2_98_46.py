@@ -56512,7 +56512,7 @@ GONL_DE = {"Human vs AI": "Mensch gegen KI", "online-note": "Freunde spielen von
            "local-warn-funnel": "Dieser Link geht nur im eigenen Netz. Für Freunde ohne Tailscale: Funnel einschalten – dann ist nur das Spiel öffentlich.",
            "switches off at the latest after": "geht spätestens aus nach", "Funnel on": "Funnel an – öffentlich", "Funnel off": "Funnel aus",
            "Make an invitation now - without one the funnel switches off after 15 minutes.": "Jetzt eine Einladung erstellen – ohne Einladung geht der Funnel nach 15 Minuten wieder aus.",
-           "Only the administrator can switch the funnel on.": "Nur der Administrator kann den Funnel einschalten.", "Only for the administrator": "Nur für den Administrator",
+           "Only the administrator can switch the funnel on.": "Nur der Administrator kann den Funnel einschalten.", "Set a web password first (Settings → 🔒 Password) - without one everybody in the network is administrator.": "Zuerst ein Web-Passwort setzen (Einstellungen → 🔒 Passwort) – ohne Passwort ist jeder im Netz Administrator.", "Only for the administrator": "Nur für den Administrator",
            "Who caught more?": "Wer hat mehr erwischt?", "wins": "gewinnt", "Draw": "Gleichstand", "h": "h", "no invitation yet": "noch keine Einladung"}
 
 GONL_JS = r"""<script>
@@ -56564,8 +56564,7 @@ Object.assign(I18N.de, /*GONLDE*/{});
   const paintF = (box, S) => { const F = S.funnel; if (!F) { if (!S.public) box.appendChild(el("div", "mut", "⚠ " + t("local-warn"))); return; }
     const w = el("div", ""); w.id = "g-funnel"; w.style.cssText = "border:1px solid " + (F.on ? "var(--acc)" : "var(--line)") + ";border-radius:10px;padding:8px;margin:6px 0";
     if (!S.public && !F.on) { const r = el("div", "mut", "⚠ " + t(F.avail ? "local-warn-funnel" : "local-warn"));
-      if (F.avail && F.can) { const b = el("button", "", "🌍 " + t("Switch the funnel on")); b.type = "button"; b.style.cssText = "display:block;margin-top:6px";
-        b.onclick = () => { b.disabled = true; fSet({action: "on", hours: +(F.hours || 6)}); }; r.appendChild(b); }
+      // 2.98.47 (Daniel): no extra button «Funnel einschalten» - the switch is right below
       w.appendChild(r); }
     const lab = el("label", "opt"), cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.id = "g-funnel-sw"; cb.checked = !!F.on; cb.disabled = !F.can;
     lab.append(el("span", "", "🌍 " + t("Online game over Tailscale Funnel")), cb); if (!F.can) { lab.style.opacity = ".5"; lab.title = t("Only for the administrator"); }
@@ -56579,7 +56578,7 @@ Object.assign(I18N.de, /*GONLDE*/{});
     st.style.marginTop = "6px"; w.appendChild(st);
     if (F.on) { const u = el("div", "mut", F.url); u.style.cssText = "word-break:break-all;font-size:12px"; w.appendChild(u); }
     if (F.on && F.grace_s) w.appendChild(el("div", "mut", "⏳ " + t("Make an invitation now - without one the funnel switches off after 15 minutes.")));
-    if (!F.can) w.appendChild(el("div", "mut", "🔒 " + t("Only the administrator can switch the funnel on.")));
+    if (!F.can) w.appendChild(el("div", "mut", "🔒 " + t(F.nopw && !F.on ? "Set a web password first (Settings → 🔒 Password) - without one everybody in the network is administrator." : "Only the administrator can switch the funnel on.")));
     const E = F.err || F.need; if (E) w.appendChild(fErr(E));
     box.appendChild(w); };
   // ---- invitations ----
@@ -60914,11 +60913,19 @@ def _funnel_remove(port, legacy=False):
     return ok
 
 
+def funnel_pw_set():
+    """a web password (or a password per user) is set - otherwise everybody in the network is administrator"""
+    return bool(CFG.get("web_password") or CFG.get("web_pw_hash"))
+
+
 def funnel_on(hours=None, source="web"):
     """(True, None) or (False, error dict)"""
     with FUNNEL["lock"]:
         if CFG.get("lock_on"):
             return False, {"code": "locked", "msg": "Not possible in operator mode", "steps": [], "cmd": "", "links": [], "raw": ""}
+        if not funnel_pw_set():                           # 2.98.47 (Daniel): only with a web password - without one everybody is admin
+            return False, {"code": "nopw", "msg": "Set a web password first - without one everybody in the network is administrator",
+                           "steps": ["Settings → 🔒 Password: set a web password, then switch the funnel on."], "cmd": "", "links": [], "raw": ""}
         h = float(hours if hours is not None else CFG.get("game_funnel_hours") or 6)
         h = max(0.05, min(24.0, h))                       # the switch: 1-24 h; inside (moving the port) also the rest of an hour
         if hours is not None:
@@ -61052,7 +61059,7 @@ def funnel_state(lang=None, admin=True):
             "left_s": max(0, int(FUNNEL["until"] - time.time())) if on else 0, "hours": CFG.get("game_funnel_hours") or 6, "choices": list(FUNNEL_HOURS),
             "avail": av == "", "why": av, "err": e, "need": need, "why_off": tr(FUNNEL["why_off"], lang) if FUNNEL["why_off"] else "",
             "grace_s": max(0, int(FUNNEL_GRACE_S - (time.time() - FUNNEL["t_on"]))) if on and not FUNNEL["had_inv"] else 0,
-            "can": bool(admin) and not CFG.get("lock_on"), "docs": FUNNEL_DOCS}
+            "can": bool(admin) and not CFG.get("lock_on") and (on or funnel_pw_set()), "nopw": not funnel_pw_set(), "docs": FUNNEL_DOCS}
 
 
 def funnel_status_line(lang=None):
@@ -61797,6 +61804,21 @@ _HX_FUNNEL = {
         'Fa ussa ina invitaziun – senza invitaziun sa stizza il Funnel suenter 15 minutas.'),
     'Only the administrator can switch the funnel on.': ('Nur der Administrator kann den Funnel einschalten.', 'Seul l’administrateur peut activer le Funnel.',
                                                          'Solo l’amministratore può attivare il Funnel.', 'Mo l’administratur po activar il Funnel.'),
+    'Set a web password first - without one everybody in the network is administrator': (
+        'Zuerst ein Web-Passwort setzen – ohne Passwort ist jeder im Netz Administrator',
+        'Définir d’abord un mot de passe web – sans lui, tout le monde dans le réseau est administrateur',
+        'Impostare prima una password web – senza, chiunque nella rete è amministratore',
+        'Definir l’emprim in pled-clav web – senza el è mintgin en la rait administratur'),
+    'Settings → 🔒 Password: set a web password, then switch the funnel on.': (
+        'Einstellungen → 🔒 Passwort: ein Web-Passwort setzen, dann den Funnel einschalten.',
+        'Réglages → 🔒 Mot de passe : définir un mot de passe web, puis activer le Funnel.',
+        'Impostazioni → 🔒 Password: impostare una password web, poi attivare il Funnel.',
+        'Parameters → 🔒 Pled-clav: definir in pled-clav web, lura activar il Funnel.'),
+    'Set a web password first (Settings → 🔒 Password) - without one everybody in the network is administrator.': (
+        'Zuerst ein Web-Passwort setzen (Einstellungen → 🔒 Passwort) – ohne Passwort ist jeder im Netz Administrator.',
+        'Définir d’abord un mot de passe web (Réglages → 🔒 Mot de passe) – sans lui, tout le monde dans le réseau est administrateur.',
+        'Impostare prima una password web (Impostazioni → 🔒 Password) – senza, chiunque nella rete è amministratore.',
+        'Definir l’emprim in pled-clav web (Parameters → 🔒 Pled-clav) – senza el è mintgin en la rait administratur.'),
     'Not possible in operator mode': ('Im Bedienmodus nicht möglich', 'Impossible en mode opérateur', 'Non possibile in modalità operatore', 'Betg pussaivel en il modus da manaschar'),
     'Online game public': ('Online-Spiel öffentlich', 'Jeu en ligne public', 'Gioco online pubblico', 'Gieu online public'),
     'The online game is public on the internet for {h} h (only the game, through Tailscale Funnel)': (

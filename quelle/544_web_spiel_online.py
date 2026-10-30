@@ -22,7 +22,7 @@ GONL_DE = {"Human vs AI": "Mensch gegen KI", "online-note": "Freunde spielen von
            "local-warn-funnel": "Dieser Link geht nur im eigenen Netz. Für Freunde ohne Tailscale: Funnel einschalten – dann ist nur das Spiel öffentlich.",
            "switches off at the latest after": "geht spätestens aus nach", "Funnel on": "Funnel an – öffentlich", "Funnel off": "Funnel aus",
            "Make an invitation now - without one the funnel switches off after 15 minutes.": "Jetzt eine Einladung erstellen – ohne Einladung geht der Funnel nach 15 Minuten wieder aus.",
-           "Only the administrator can switch the funnel on.": "Nur der Administrator kann den Funnel einschalten.", "Only for the administrator": "Nur für den Administrator",
+           "Only the administrator can switch the funnel on.": "Nur der Administrator kann den Funnel einschalten.", "Set a web password first (Settings → 🔒 Password) - without one everybody in the network is administrator.": "Zuerst ein Web-Passwort setzen (Einstellungen → 🔒 Passwort) – ohne Passwort ist jeder im Netz Administrator.", "Only for the administrator": "Nur für den Administrator",
            "Who caught more?": "Wer hat mehr erwischt?", "wins": "gewinnt", "Draw": "Gleichstand", "h": "h", "no invitation yet": "noch keine Einladung"}
 
 GONL_JS = r"""<script>
@@ -74,8 +74,7 @@ Object.assign(I18N.de, /*GONLDE*/{});
   const paintF = (box, S) => { const F = S.funnel; if (!F) { if (!S.public) box.appendChild(el("div", "mut", "⚠ " + t("local-warn"))); return; }
     const w = el("div", ""); w.id = "g-funnel"; w.style.cssText = "border:1px solid " + (F.on ? "var(--acc)" : "var(--line)") + ";border-radius:10px;padding:8px;margin:6px 0";
     if (!S.public && !F.on) { const r = el("div", "mut", "⚠ " + t(F.avail ? "local-warn-funnel" : "local-warn"));
-      if (F.avail && F.can) { const b = el("button", "", "🌍 " + t("Switch the funnel on")); b.type = "button"; b.style.cssText = "display:block;margin-top:6px";
-        b.onclick = () => { b.disabled = true; fSet({action: "on", hours: +(F.hours || 6)}); }; r.appendChild(b); }
+      // 2.98.47 (Daniel): no extra button «Funnel einschalten» - the switch is right below
       w.appendChild(r); }
     const lab = el("label", "opt"), cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.id = "g-funnel-sw"; cb.checked = !!F.on; cb.disabled = !F.can;
     lab.append(el("span", "", "🌍 " + t("Online game over Tailscale Funnel")), cb); if (!F.can) { lab.style.opacity = ".5"; lab.title = t("Only for the administrator"); }
@@ -89,7 +88,7 @@ Object.assign(I18N.de, /*GONLDE*/{});
     st.style.marginTop = "6px"; w.appendChild(st);
     if (F.on) { const u = el("div", "mut", F.url); u.style.cssText = "word-break:break-all;font-size:12px"; w.appendChild(u); }
     if (F.on && F.grace_s) w.appendChild(el("div", "mut", "⏳ " + t("Make an invitation now - without one the funnel switches off after 15 minutes.")));
-    if (!F.can) w.appendChild(el("div", "mut", "🔒 " + t("Only the administrator can switch the funnel on.")));
+    if (!F.can) w.appendChild(el("div", "mut", "🔒 " + t(F.nopw && !F.on ? "Set a web password first (Settings → 🔒 Password) - without one everybody in the network is administrator." : "Only the administrator can switch the funnel on.")));
     const E = F.err || F.need; if (E) w.appendChild(fErr(E));
     box.appendChild(w); };
   // ---- invitations ----

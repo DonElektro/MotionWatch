@@ -18,6 +18,21 @@ _HX_FUNNEL = {
         'Fa ussa ina invitaziun – senza invitaziun sa stizza il Funnel suenter 15 minutas.'),
     'Only the administrator can switch the funnel on.': ('Nur der Administrator kann den Funnel einschalten.', 'Seul l’administrateur peut activer le Funnel.',
                                                          'Solo l’amministratore può attivare il Funnel.', 'Mo l’administratur po activar il Funnel.'),
+    'Set a web password first - without one everybody in the network is administrator': (
+        'Zuerst ein Web-Passwort setzen – ohne Passwort ist jeder im Netz Administrator',
+        'Définir d’abord un mot de passe web – sans lui, tout le monde dans le réseau est administrateur',
+        'Impostare prima una password web – senza, chiunque nella rete è amministratore',
+        'Definir l’emprim in pled-clav web – senza el è mintgin en la rait administratur'),
+    'Settings → 🔒 Password: set a web password, then switch the funnel on.': (
+        'Einstellungen → 🔒 Passwort: ein Web-Passwort setzen, dann den Funnel einschalten.',
+        'Réglages → 🔒 Mot de passe : définir un mot de passe web, puis activer le Funnel.',
+        'Impostazioni → 🔒 Password: impostare una password web, poi attivare il Funnel.',
+        'Parameters → 🔒 Pled-clav: definir in pled-clav web, lura activar il Funnel.'),
+    'Set a web password first (Settings → 🔒 Password) - without one everybody in the network is administrator.': (
+        'Zuerst ein Web-Passwort setzen (Einstellungen → 🔒 Passwort) – ohne Passwort ist jeder im Netz Administrator.',
+        'Définir d’abord un mot de passe web (Réglages → 🔒 Mot de passe) – sans lui, tout le monde dans le réseau est administrateur.',
+        'Impostare prima una password web (Impostazioni → 🔒 Password) – senza, chiunque nella rete è amministratore.',
+        'Definir l’emprim in pled-clav web (Parameters → 🔒 Pled-clav) – senza el è mintgin en la rait administratur.'),
     'Not possible in operator mode': ('Im Bedienmodus nicht möglich', 'Impossible en mode opérateur', 'Non possibile in modalità operatore', 'Betg pussaivel en il modus da manaschar'),
     'Online game public': ('Online-Spiel öffentlich', 'Jeu en ligne public', 'Gioco online pubblico', 'Gieu online public'),
     'The online game is public on the internet for {h} h (only the game, through Tailscale Funnel)': (
