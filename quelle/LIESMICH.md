@@ -143,6 +143,10 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `623_uebersetzungen_pad2.py` | Übersetzungen des Controller-Konzepts (542, 538, 470) | 75 |
 | `632_uebersetzungen_aufr.py` | Übersetzungen der Aufräum-Runde (Servos an einem Ort, Kurzbefehl-Schlüssel = App-Schlüssel, Zonen «nur melden» / «bleibt am Platz», Tierart) + Selbsttest | 150 |
 | `639_uebersetzungen_falearn.py` | Übersetzungen «Lernbilder prüfen» | 13 |
+| `531a_web_push_karten.py` | Web: «Push-Nachrichten» als Karten (Kopf · Wohin · Was · Wann · Erweitert), SMS und Nachrichtentexte hinein, Alarmton in die Glocke | 268 |
+| `571a_fenster_push.py` | Fenster: «Push-Nachrichten» gleich aufgebaut wie im Web (Kanal-Karten, Stufen, Ruhezeiten, Erweitert) | 453 |
+| `579a_push_logik.py` | Push-Logik: Kanäle (Hauptkanal ntfy/Telegram/Webhook), Stufen Nur Personen / + Tiere / Alles, Ruhezeiten (Simulator-Uhr), Bilder mit/klein/ohne, Übernahme alter Einstellungen, /api/push, Selbsttest | 577 |
+| `639a_uebersetzungen_push.py` | Übersetzungen und «?»-Texte der Push-Karten | 205 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |

@@ -2211,7 +2211,7 @@ async function build() {
     if (sec.id === "Timelapse") tlExtras(d);
     if (sec.id === "Microphone") micExtras(d);
     if (sec.id === "Updates") updExtras(d);
-    if (sec.id === "Notifications") wpExtras(d);
+    if (sec.id === "Notifications") { wpExtras(d); if (window.pushPanel) pushPanel(d, sec); }   // 531a: cards Kopf · Wohin · Was · Wann · Erweitert
     if (sec.id === "Backup") bkExtras(d);
     if (sec.id === "Theft protection") tpExtras(d);
     if (sec.id === "Reference scan") { const bx = el("div", "auxbox"); bx.append(el("div", "mut", t("refscan-note")));   // 2.95.97
