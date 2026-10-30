@@ -3,7 +3,7 @@ MoveEye Sim · 3D – 3D-3.94 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 
 
 STARTEN
 1. Den ganzen Ordner entpacken (nicht direkt aus der ZIP-Datei starten).
-2. MotionWatch3D.exe doppelklicken.
+2. MoveEyeSim3D.exe doppelklicken (bis 3D-4.23 hiess die Datei MotionWatch3D.exe).
    - Windows zeigt vielleicht "Der Computer wurde durch Windows geschützt":
      auf "Weitere Informationen" und dann "Trotzdem ausführen" klicken (das Programm ist nicht signiert).
    - Die Windows-Firewall fragt nach dem Netzwerkzugriff: "Private Netzwerke" erlauben,
@@ -360,7 +360,7 @@ NACH EINEM UPDATE (ab 3D-3.16)
 - Auch wenn das Update gleich beim Start kommt (vor dem Einschalten des Sendens), bleibt "--stream" erhalten.
 
 PORT / START-OPTIONEN
-MotionWatch3D.exe -- --port 8766 --hour 22.5 --quality simple --stream --scene wald
+MoveEyeSim3D.exe -- --port 8766 --hour 22.5 --quality simple --stream --scene wald
   --scene: mit dieser Szene starten (camping, wald, parkplatz, garten, lustig, wild)
   --no-update: beim Start nicht nach einer neuen Version suchen
   --no-angle: in einer virtuellen Maschine nicht von selbst auf ANGLE umschalten
@@ -607,6 +607,14 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-4.24
+3D-4.24: Die Simulator-Datei heisst neu MoveEyeSim3D.exe (vorher MotionWatch3D.exe), der Ordner im ZIP MoveEyeSim3D.
+Wer von einer alten Version aus aktualisiert, braucht nichts zu tun: die alte Datei startet einmal die neue und wird
+danach entfernt; der Eintrag «Mit dem PC starten» zeigt von selbst auf die neue Datei. Verknüpfungen auf dem Desktop zur
+alten Datei bitte neu anlegen. Der Simulator beginnt mit frischen Einstellungen (die alten bleiben unbenutzt liegen),
+und Windows fragt vielleicht nochmals nach (SmartScreen, Firewall). Ausserdem: die Person im Schriftzug «MoveEye» geht
+jetzt richtig – Bein und gegenüberliegender Arm schwingen zusammen, das andere Paar einen halben Schritt später.
 
 NEU IN 3D-4.23
 3D-4.23: Der Schriftzug «MoveEye» oben im Bedienfeld bewegt sich jetzt wie in der Kopfzeile von MoveEye: die rote Person

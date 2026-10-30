@@ -146,6 +146,11 @@ _HX_SERVO = {
     'Under-voltage: stop the servos (they move again by themselves 30 s after it is over)': (
         'Unterspannung: Servos stoppen (sie bewegen sich 30 s danach wieder von selbst)', 'Sous-tension : arrêter les servos (ils repartent seuls 30 s après)',
         'Sottotensione: fermare i servo (ripartono da soli 30 s dopo)', 'Sutatensiun: fermar ils servos (els sa movan puspè sez 30 s suenter)'),
+    'Simulation: report a blocked servo (the simulated head does not follow - off by default)': (
+        'Simulation: blockierten Servo melden (der Kopf im Simulator folgt nicht – ab Werk aus)',
+        'Simulation : signaler un servo bloqué (la tête du simulateur ne suit pas – désactivé par défaut)',
+        'Simulazione: segnalare un servo bloccato (la testa del simulatore non segue – spento di fabbrica)',
+        'Simulaziun: annunziar in servo bloccà (il chau dal simulatur na suonda betg – deactivà da fabrica)'),
     'Parking position: a taught point (instead of pan / tilt above)': ('Parkposition: ein gespeicherter Punkt (statt Schwenken / Neigen oben)', 'Position de parcage : un point enregistré (au lieu de pan / inclinaison ci-dessus)', 'Posizione di parcheggio: un punto salvato (invece di pan / inclinazione sopra)', 'Posiziun da parcar: in punct memorisà (empè da sviar / inclinar survart)'),
     'Home position: a taught point (the head comes back there)': ('Grundstellung: ein gespeicherter Punkt (dorthin kehrt der Kopf zurück)', 'Position de base : un point enregistré (la tête y revient)', 'Posizione base: un punto salvato (la testa ci ritorna)', 'Posiziun da basa: in punct memorisà (il chau turna là)'),
 }

@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.23"
+const VERSION := "3D-4.24"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -342,6 +342,9 @@ var flee_sound := true                # ... and from the siren
 
 
 func _ready() -> void:
+	if Updater.old_name_forward():               # 3D-4.24: started as MotionWatch3D.exe - MoveEyeSim3D.exe takes over
+		get_tree().quit()
+		return
 	randomize()
 	_no_pad_ui_nav()
 	colors = preload("res://scripts/colors.gd").new()        # 3D-3.97: natural colours, materials, seasons (before the world is built)
@@ -516,7 +519,12 @@ func _ready() -> void:
 			_stream_retry(60)                     # 3D-3.65: after an update the old simulator still holds the port for a moment
 	autostart_on = Autostart.is_on()
 	if autostart_on:
-		Autostart.repair()                         # the folder of the program was moved: the autostart follows it
+		Autostart.repair()                         # the folder of the program was moved: the autostart follows it (3D-4.24: also the old name)
+	if Autostart.current(true) == "":              # 3D-4.24: MotionWatch3D.exe (.old) is not needed any more - removed a little later
+		for d in [4.0, 20.0, 90.0]:                # (the old simulator may still be closing)
+			get_tree().create_timer(d).timeout.connect(func(): Updater.remove_old_name_files())
+	if "--renamed" in args:
+		start_info = "Neu heisst die Datei MoveEyeSim3D.exe (die alte MotionWatch3D.exe wird entfernt). Der Simulator beginnt mit frischen Einstellungen."
 	if at_boot:
 		if autostart_mwpc and not "--mwpc" in args:
 			mwpc.start.call_deferred()

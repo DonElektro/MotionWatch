@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 23:41",
+ "generated": "2026-10-31 00:16",
  "versions": [
   {
-   "version": "2.98.52",
-   "file": "webcam_bewegung_2_98_52.py",
+   "version": "2.98.53",
+   "file": "webcam_bewegung_2_98_53.py",
    "url": "",
-   "sha256": "c01393bf2087ee76c05126ebe186a79b8f0e985621619f61e37bc1389a9e458d",
-   "date": "2026-10-30 23:40",
-   "notes": "Logo-Schriftzug: die Pupille im Auge schaut zur gehenden Person, das Auge blinzelt ab und zu (bei «Bewegung reduzieren» still); Simulator-Logo bewegt sich gleich (3D-4.23)",
-   "sig": "4f6dfcebc5aedb951d8ddbb163aea5513f1276e30370d651f10d5e79f8d0fd53bc9e4e14870ed23d751fd549519932bd867da1f25e5927696ce68b408d661901"
+   "sha256": "ca26b49132e649ac99c80683f493e03f6809428b6a3d96c09dd9a7a11f4f671d",
+   "date": "2026-10-31 00:16",
+   "notes": "Sim-Kompakt «Bild im Bild»: Simulator-Bild gross, Kamera klein in der Ecke (antippen = tauschen, pro Gerät gemerkt); Simulator 3D-4.24: Simulator-Datei heisst neu MoveEyeSim3D.exe – alte Dateien löschen und neu herunterladen; Simulator startet mit frischen Einstellungen; Windows fragt evtl. nochmals (SmartScreen/Firewall) (ein Update aus dem Simulator erledigt den Wechsel von selbst); Logo-Person geht mit echtem Gang (Bein und Gegenarm zusammen, Web und Simulator); Falsche Meldung «Servo blockiert» in der Simulation behoben; Prüfung ab Werk aus (neue Einstellung «Blockierten Servo im Simulator",
+   "sig": "5059aa1284b17d122c487383be0b72e518f743f31a5ba22a95438b8e252d50babbbec09e0d6aca793bc8d7b72d9a568e0c7f71f2e1c03d905ef2b6af996efc01"
   },
   {
    "version": "2.97.1",

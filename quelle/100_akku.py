@@ -293,7 +293,7 @@ class SysMonitor:
             p = getattr(self, "sim_p", None)
             if p is None or p.pid != pid:
                 p = self.ps.Process(pid)
-                if "motionwatch3d" not in p.name().lower():      # same number on another computer: not our simulator
+                if not any(k in p.name().lower() for k in ("moveeyesim3d", "motionwatch3d")):   # same number on another computer: not our simulator (2.98.53: new file name MoveEyeSim3D.exe)
                     raise ValueError("other process")
                 self.sim_p = p
                 p.cpu_percent(None)

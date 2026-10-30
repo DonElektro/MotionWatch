@@ -15,6 +15,7 @@ SLIDERS.extend([
 TOGGLES.extend([
     (_SVS, "servo_estop_park", "Emergency stop: brake, then drive slowly to the parking position (otherwise: hold where it stopped)"),
     (_SVS, "servo_uv_stop", "Under-voltage: stop the servos (they move again by themselves 30 s after it is over)"),
+    (_SVS, "sim_servo_block_check", "Simulation: report a blocked servo (the simulated head does not follow - off by default)"),
     (_SVS, "servo_stop_btn", "Show the «⏹ Stop» button on the live page (only with a pan / tilt head)"),
 ])
 TEXTS.extend([

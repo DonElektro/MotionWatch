@@ -15,9 +15,19 @@
 #                 then the servo diagnosis compares: MoveEye drives > 6° but the head (head_deg, 350 SIM["head"]) moves < 1°
 #                 within 2-4 s = «blocked» (stuck at the end stop) -> fault (needs «Freigeben»). Real MG90S have no position
 #                 feedback - on the real device this needs the picture (servo test «steps without a change of the picture»).
+# 2.98.53 (Daniel: «Servo blockiert» all the time on 2.98.52 - false alarm): the check compared the range of the planned angle
+#   with the range of the head over the last 2-4 s. After 2 s at rest, the first move of a new command (e.g. 7° in 0.3 s) was
+#   already «> 6°», while the head angle came from the reply BEFORE (simvals_take runs before 350 stores head_deg, and the
+#   simulator answers at most every few 100 ms, slower with «Sparen» / low FPS) -> «blocked» within about one second of any
+#   move; the head followed a moment later. Now: setting «sim_servo_block_check» (off by default), the head angle of THIS
+#   reply, only fresh replies, and «blocked» only when the planned angle is > 6° away from the head for >= 3 s over >= 4 fresh
+#   replies and the head moved < 1° in that time - and not when the planned angle is at / over the end of the simulated head
+#   (MoveEye's own limit or the cable limit «pan_limit» of a wide camera on the head).
 # Translations: part 557.
 # ----------------------------------------------------------------------------
 SRV.setdefault("sim_uv", False)
+CFG.setdefault("sim_servo_block_check", False)            # 2.98.53: «Blockierten Servo im Simulator melden» (588), off by default
+DEFAULTS.setdefault("sim_servo_block_check", False)
 SRVSIM = {"pca_seen": None, "pca_due": 0.0, "i2c": False, "reinit": 0, "hist": deque(maxlen=80), "blk_t": 0.0, "v5": None,
           "io_t": 0.0, "last": None}
 SRV_FAULT_TEXT.setdefault("blocked", "a servo is blocked - the head does not follow (stuck at the end stop?)")
@@ -54,34 +64,68 @@ def simservo_take(rep):
             servo_io_error(OSError(121, "Remote I/O error (simulator)"))
     elif not SRVSIM["i2c"] and SRV["io_err"] and now - SRV["io_t"] > 3.0:
         servo_io_ok()
-    # the diagnosis: does the head follow?
-    _simservo_block_check(s, now)
+    # the diagnosis: does the head follow? (the head angle of this reply - 350 stores it in SIM["head"] only afterwards)
+    _simservo_block_check(s, now, rep.get("head_deg") if isinstance(rep, dict) else None)
 
 
-def _simservo_block_check(s, now):
-    h = SIM.get("head")
+SIMBLK_GAP, SIMBLK_STILL, SIMBLK_SECS, SIMBLK_N, SIMBLK_FRESH = 6.0, 1.0, 3.0, 4, 1.5
+
+
+def _simservo_limit(axis):
+    """how far the simulated head can turn on this axis (degrees from the middle)"""
+    try:
+        lim = min(servo_half(axis), float(CFG["pan_limit" if axis == "pan" else "tilt_limit"]))   # MoveEye's own end (072 limits_deg)
+    except (KeyError, TypeError, ValueError):
+        lim = servo_half(axis)
+    if axis == "pan":
+        try:
+            pl = (weit_sim_cam() or {}).get("pan_limit") if "weit_sim_cam" in globals() else None
+            if pl:
+                lim = min(lim, float(pl))                  # a wide camera on the head: the cable stops the head earlier
+        except (TypeError, ValueError):
+            pass
+    return lim
+
+
+def _simservo_block_check(s, now, h=None, t_rep=None):
+    """«blocked»: the planned angle stays > 6° away from the head of the simulator for >= 3 s (>= 4 fresh replies) and the
+    head does not move (< 1°). Only with the setting «sim_servo_block_check» (off by default, 2.98.53)."""
     H = SRVSIM["hist"]
-    if (not isinstance(h, list) or len(h) < 2 or not s.get("head_mw", True) or s.get("pca_hold") or s.get("i2c") or s.get("uv")
-            or servo_blocked() or SIM.get("follower")):
+    if h is None:
+        h = SIM.get("head")
+    if (not CFG.get("sim_servo_block_check", False) or not isinstance(h, list) or len(h) < 2 or not s.get("head_mw", True)
+            or s.get("pca_hold") or s.get("i2c") or s.get("uv") or servo_blocked() or SIM.get("follower")):
         H.clear(); return
+    t_rep = now if t_rep is None else t_rep
+    if now - t_rep > SIMBLK_FRESH:                        # an old answer (busy PC, «Sparen»): not a sample
+        return
     try:
         cp, ct = servo_pos_deg()
         H.append((now, cp, float(h[0]), ct, float(h[1])))
     except (TypeError, ValueError):
         return
-    while H and now - H[0][0] > 4.0:
+    while H and now - H[0][0] > 8.0:
         H.popleft()
-    if len(H) < 4 or now - H[0][0] < 2.0 or now - SRVSIM["blk_t"] < 10.0:     # a busy PC answers maybe twice a second
+    if now - SRVSIM["blk_t"] < 10.0:
         return
     for axis, ci, hi in (("pan", 1, 2), ("tilt", 3, 4)):
-        cr = max(x[ci] for x in H) - min(x[ci] for x in H)
-        hr = max(x[hi] for x in H) - min(x[hi] for x in H)
-        if cr > 6.0 and hr < 1.0:
-            SRVSIM["blk_t"] = now
-            servo_fault("blocked", f"{axis}: {tr('Pan' if axis == 'pan' else 'Tilt', 'en')} {H[0][ci]:.0f}° → {H[-1][ci]:.0f}°, "
-                                   f"head stays at {H[-1][hi]:.0f}°")
-            H.clear()
-            return
+        run = []                                           # the newest replies in a row with a big gap (planned <-> head)
+        for x in reversed(H):
+            if abs(x[ci] - x[hi]) <= SIMBLK_GAP:
+                break
+            run.append(x)
+        if len(run) < SIMBLK_N or run[0][0] - run[-1][0] < SIMBLK_SECS:
+            continue
+        if max(x[hi] for x in run) - min(x[hi] for x in run) >= SIMBLK_STILL:
+            continue                                       # the head moves - only slower than planned
+        lim = _simservo_limit(axis)
+        if abs(run[0][ci]) >= lim - 1.0 or abs(run[0][hi]) >= lim - 1.0:
+            continue                                       # at the end of the simulated head: not a fault of the servo
+        SRVSIM["blk_t"] = now
+        servo_fault("blocked", f"{axis}: {tr('Pan' if axis == 'pan' else 'Tilt', 'en')} {run[-1][ci]:.0f}° → {run[0][ci]:.0f}°, "
+                               f"head stays at {run[0][hi]:.0f}°")
+        H.clear()
+        return
 
 
 _simvals_take_552 = simvals_take
@@ -139,7 +183,7 @@ def simservo_info(lang=None):
 
 def simservo_selftest():
     """under-voltage, PCA9685 reset, I2C errors and a blocked servo from the simulator values"""
-    keep = {k: CFG.get(k) for k in ("sim_on", "servo_estop", "servo_uv_stop")}
+    keep = {k: CFG.get(k) for k in ("sim_on", "servo_estop", "servo_uv_stop", "sim_servo_block_check")}
     keep_sim = {k: SIM.get(k) for k in ("head", "follower")}
     keep_srv = {k: SRV.get(k) for k in ("fault", "inhibit", "io_err", "io_t", "sim_uv", "pos", "moving", "push_t")}
     G = globals()
@@ -170,15 +214,31 @@ def simservo_selftest():
             simservo_take({"servo_sim": dict(base, i2c=True)})
         assert SRV["fault"] == "i2c", SRV["fault"]
         servo_release("selftest"); SRV["moving"] = False
-        # blocked: the planned position moves 10°, the head stays
-        SRVSIM["hist"].clear(); SRVSIM["blk_t"] = 0.0
-        t0 = time.time()
-        for i in range(12):
-            SRV["pos"] = [50.0 + i * 0.5, 50.0]
-            SIM["head"] = [0.0, 0.0]
-            _simservo_block_check(base, t0 + i * 0.25)
-        assert SRV["fault"] == "blocked", SRV["fault"]
+        # blocked (2.98.53): a) off by default -> nothing; b) on + the head stays while MoveEye drives -> fault;
+        # c) on + slow answers (the head follows one reply late, 0.8 s apart) -> nothing; d) on + stale answers -> nothing;
+        # e) on + planned angle at the end of the head -> nothing
+        def run_(pos_head, dt, on, t_rep_late=0.0):
+            CFG["sim_servo_block_check"] = on
+            SRVSIM["hist"].clear(); SRVSIM["blk_t"] = 0.0; SRV["fault"] = ""
+            t0 = time.time()
+            for i, (p_, h_) in enumerate(pos_head):
+                SRV["pos"] = [p_, 50.0]
+                _simservo_block_check(base, t0 + i * dt, [h_, 0.0], t0 + i * dt - t_rep_late)
+            return SRV["fault"]
+        stuck = [(50.0 + min(i, 6) * 2.0, 0.0) for i in range(20)]                  # 0° -> about 22° planned, head stays at 0°
+        assert DEFAULTS.get("sim_servo_block_check") is False
+        assert run_(stuck, 0.25, False) == "", "off by default"
+        assert run_(stuck, 0.25, True) == "blocked", SRV["fault"]
         servo_release("selftest")
+        hd = lambda p_: (p_ - 50.0) / 50.0 * servo_half("pan")
+        slow = []
+        for i in range(12):                                # a big jump, the answers 0.8 s apart and one step behind
+            p_ = 50.0 + min(i, 3) * 6.0
+            slow.append((p_, hd(50.0 + min(max(i - 1, 0), 3) * 6.0)))
+        assert run_(slow, 0.8, True) == "", "slow answers: " + SRV["fault"]
+        assert run_(stuck, 0.25, True, t_rep_late=2.0) == "", "stale answers"
+        edge = [(100.0, servo_half("pan") - 3.0) for _ in range(20)]               # planned 90° (the end), head at 87°
+        assert run_(edge, 0.25, True) == "", "at the end stop"
     finally:
         G.update(keep_fn); HW_REINIT.update(keep_hw)
         CFG.update(keep); SIM.update(keep_sim); SRV.update(keep_srv); SRVSIM.update(pca_seen=None, pca_due=0.0); SRVSIM["hist"].clear()

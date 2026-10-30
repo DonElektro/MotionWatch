@@ -1,8 +1,30 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 30.10.2026 · Simulator-Version **3D-4.23** · passende MoveEye-Version (früher Motion Watch) **2.98.52**
+Stand: 31.10.2026 · Simulator-Version **3D-4.24** · passende MoveEye-Version (früher Motion Watch) **2.98.53**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.24 (MoveEye 2.98.53): Datei heisst MoveEyeSim3D.exe, frischer Start; Schriftzug mit echtem Gang
+
+- **Neuer Dateiname:** export_presets `MoveEyeSim3D.exe` / `MoveEyeSim3D.x86_64` / `MoveEyeSim3D.arm64`, Datei-Eigenschaften
+  «MoveEye Sim 3D» / Firma «MoveEye» (wirken erst mit `application/modify_resources=true` + rcedit – ist aus, also noch
+  Godot-Standardangaben in der .exe). project.godot `config/name="MoveEye Sim 3D"` → **neuer Ordner der Benutzerdaten** (user://),
+  die alten Einstellungen bleiben unbenutzt liegen (Entscheid Daniel: frischer Start, keine Übernahme).
+- **Alte Installationen (bis 3D-4.23, MotionWatch3D.exe):** ihr Updater sucht im ZIP `MotionWatch3D.exe`. Darum enthält das
+  ZIP (Ordner `MoveEyeSim3D/`) **übergangsweise dieselbe Datei zweimal**: `MoveEyeSim3D.exe` und `MotionWatch3D.exe`
+  (ZIP ~64 MB statt ~32 MB; `simpack.sh` mit `TRANSITION=0` lässt die Kopie weg). Ablauf: alter Updater legt beide hin,
+  ersetzt die laufende Datei durch die neue `MotionWatch3D.exe` und startet sie mit `--updated`; die merkt am alten Namen
+  (`update.gd old_name_forward()`, ganz am Anfang von `main._ready`), dass `MoveEyeSim3D.exe` daneben liegt, startet diese mit
+  denselben Argumenten + `--renamed` und beendet sich. `MoveEyeSim3D.exe` biegt den Autostart um (`autostart.gd repair()`:
+  alter Wert «MotionWatch3D» / `motionwatch3d.desktop` → neuer «MoveEyeSim3D» / `moveeyesim3d.desktop`, alter entfernt) und
+  löscht nach 4 / 20 / 90 s `MotionWatch3D.exe` und `MotionWatch3D.exe.old*` (`remove_old_name_files()`, nur wenn kein
+  Autostart mehr auf den alten Namen zeigt). Der neue Updater überspringt die Kopie im ZIP. Unter Linux mit der echten
+  3D-4.23-Datei geprüft, unter Windows ungetestet.
+- Bleibt (Kennungen für Entferntes): ZIP-Pfad `simulator3d/MotionWatch3D_Simulator.zip` (alte Simulatoren und ältere
+  MoveEye-Versionen holen ihn dort), User-Agent «MotionWatch3D…», Repo-URLs. MoveEye 100 erkennt den Simulator-Prozess an
+  «moveeyesim3d» oder «motionwatch3d». Firewall-Regel «MoveEye Simulator» gilt pro Datei: Windows fragt für die neue nochmals.
+- `wordmark.gd`: echter Gang wie im Web (MoveEye 144): Bein 1 + Arm 2 im Takt, Bein 2 + Arm 1 einen halben Schritt
+  (0.35 s von 0.7 s) später.
 
 ## NEU in 3D-4.23 (MoveEye 2.98.52): Schriftzug bewegt wie im Web (`wordmark.gd`)
 
@@ -28,6 +50,7 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
   (nur sichtbar, solange MoveEye verbunden ist; öffnet `/settings?open=sec:Status LED`).
 - Nicht umbenannt (technisch): project.godot `config/name` (= Ordner der Benutzerdaten), export_presets (Exe-Name
   MotionWatch3D.exe, Firmenname), ZIP `simulator3d/MotionWatch3D_Simulator.zip` und Ordner im ZIP, User-Agent, Repo-URLs.
+  (3D-4.24: Exe-Name, config/name, Ordner im ZIP und Autostart doch umbenannt, siehe oben.)
 
 ## NEU in 3D-4.21 (MoveEye 2.98.50): Status-LED & Tasten, Gruppe «Licht & Ton», Sprachen Schritt 1, Karte «Mehr», Angleichen
 
@@ -545,9 +568,9 @@ Seit 3D-1.4 sendet der Simulator nach dem Start **nichts**. Erst der Schalter «
 ## Bauen
 
 - Godot 4.3 stable plus Export-Templates 4.3.
-- Windows-Version: `godot --headless --path . --export-release "Windows Desktop" /tmp/…/MotionWatch3D.exe`
+- Windows-Version: `godot --headless --path . --export-release "Windows Desktop" /tmp/…/MoveEyeSim3D.exe` (ab 3D-4.24; vorher MotionWatch3D.exe)
   (Zielordner **ausserhalb** des Repositorys wählen; `../mwsim3d_build` liegt sonst im Repository).
-- ZIP: das alte ZIP entpacken, `MotionWatch3D.exe` und `Lies mich.txt` ersetzen (die .bat-Dateien bleiben), mit `zip -9 -r` packen.
+- ZIP: das alte ZIP entpacken, Ordner `MoveEyeSim3D/`, `MoveEyeSim3D.exe` (und übergangsweise dieselbe Datei als `MotionWatch3D.exe`) und `Lies mich.txt` ersetzen (die .bat-Dateien bleiben, rufen `MoveEyeSim3D.exe` auf), mit `zip -9 -r` packen.
 - **Danach `simulator3d/version.json` mit neuer Version, Grösse und sha256 des ZIP schreiben** – sonst erfahren die Simulatoren
   nichts vom Update. (`VERSION` in main.gd, version.json und `SIM3D` in Motion Watch müssen zusammenpassen.)
 - Linux-Version zum Testen: Preset «Linux». Starten mit `--rendering-driver opengl3` auf einem virtuellen Bildschirm (Xvfb), damit es auch ohne echte Grafikkarte läuft.

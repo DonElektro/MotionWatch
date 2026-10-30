@@ -8,6 +8,12 @@ signal chosen(update: bool)
 
 const BASE := "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
 const INFO_FILE := "simulator3d/version.json"
+# 3D-4.24: the program file is called MoveEyeSim3D.exe (Linux MoveEyeSim3D.x86_64), before MotionWatch3D.exe. The ZIP (path
+# in the repository unchanged, old installs and older MoveEye versions fetch it there) holds for the change both files: the old
+# updater of an install looks for MotionWatch3D.exe, puts it in place of the running file and starts it - that one sees its
+# old name and starts MoveEyeSim3D.exe (written next to it from the same ZIP) instead, see old_name_forward().
+const EXE_STEM := "MoveEyeSim3D"
+const OLD_STEM := "MotionWatch3D"
 
 var base := BASE
 var info := {}
@@ -287,6 +293,8 @@ func _install(zip_path: String, exe: String) -> String:
 	for name in z.get_files():
 		if name.ends_with("/") or name.get_file() == "":
 			continue
+		if name.get_file().begins_with(OLD_STEM + "."):
+			continue                                # 3D-4.24: the copy under the old name is only for old updaters
 		var target := dir.path_join(name.get_file())
 		var data := z.read_file(name)
 		if name.get_file() == me:
@@ -337,6 +345,48 @@ func _remove_old() -> void:
 	for f in DirAccess.get_files_at(exe.get_base_dir()):
 		if f.begins_with(exe.get_file() + ".old"):
 			DirAccess.remove_absolute(exe.get_base_dir().path_join(f))   # fails quietly while it still runs
+
+
+static func old_name_forward() -> bool:
+	"""3D-4.24: started under the old name MotionWatch3D.exe (an old install updated itself, the autostart or a link of the
+	old name, the .bat files of an old ZIP) and MoveEyeSim3D.exe is next to it: start that one with the same arguments
+	(plus --renamed) and return true - the caller ends this one at once, before it opens ports or reads any setting"""
+	if not OS.has_feature("template"):
+		return false
+	var exe := real_exe()
+	if not exe.get_file().begins_with(OLD_STEM + "."):
+		return false
+	var nf := exe.get_base_dir().path_join(EXE_STEM + "." + exe.get_extension())
+	if not FileAccess.file_exists(nf):
+		return false
+	if OS.get_name() != "Windows":
+		OS.execute("chmod", ["+x", nf])
+	var a := OS.get_cmdline_args()
+	a.append("--")
+	a.append_array(OS.get_cmdline_user_args())
+	if not "--renamed" in a:
+		a.append("--renamed")
+	print("old file name %s: starting %s" % [exe.get_file(), nf.get_file()])
+	return OS.create_process(nf, a) > 0
+
+
+static func remove_old_name_files() -> int:
+	"""3D-4.24: removes MotionWatch3D.exe / .old* next to MoveEyeSim3D.exe (only when this one runs under the new name and no
+	autostart entry still points to the old file). Fails quietly while one of them still runs; returns how many are left."""
+	if not OS.has_feature("template"):
+		return 0
+	var exe := real_exe()
+	if not exe.get_file().begins_with(EXE_STEM + "."):
+		return 0
+	var left := 0
+	var dir := exe.get_base_dir()
+	for f in DirAccess.get_files_at(dir):
+		if f.begins_with(OLD_STEM + "." + exe.get_extension()):
+			if DirAccess.remove_absolute(dir.path_join(f)) != OK:
+				left += 1
+			else:
+				print("removed the old file %s" % f)
+	return left
 
 
 static func real_exe() -> String:

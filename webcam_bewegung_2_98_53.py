@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_52.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_53.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,12 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.53: Sim-Kompakt «Bild im Bild»: Simulator-Bild gross, Kamera klein in der Ecke (antippen = tauschen, pro Gerät
+    gemerkt); Simulator 3D-4.24: Simulator-Datei heisst neu MoveEyeSim3D.exe – alte Dateien löschen und neu herunterladen;
+    Simulator startet mit frischen Einstellungen; Windows fragt evtl. nochmals (SmartScreen/Firewall) (ein Update aus dem
+    Simulator erledigt den Wechsel von selbst); Logo-Person geht mit echtem Gang (Bein und Gegenarm zusammen, Web und
+    Simulator); Falsche Meldung «Servo blockiert» in der Simulation behoben; Prüfung ab Werk aus (neue Einstellung «Blockierten
+    Servo im Simulator melden»)
   * 2.98.52: Logo-Schriftzug: die Pupille im Auge schaut zur gehenden Person, das Auge blinzelt ab und zu (bei «Bewegung
     reduzieren» still); Simulator-Logo bewegt sich gleich (3D-4.23)
   * 2.98.51: Namen «MoveEye» statt «MW» / «MotionWatch»: Simulatoren heissen MoveEye Sim · 3D / Basis / Welt (Kevin);
@@ -993,10 +999,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_52.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_53.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_52.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_52.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_53.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_53.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -1013,7 +1019,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.52"
+APP_VERSION = "2.98.53"
 
 
 def default_data_dir():
@@ -9063,7 +9069,7 @@ class SysMonitor:
             p = getattr(self, "sim_p", None)
             if p is None or p.pid != pid:
                 p = self.ps.Process(pid)
-                if "motionwatch3d" not in p.name().lower():      # same number on another computer: not our simulator
+                if not any(k in p.name().lower() for k in ("moveeyesim3d", "motionwatch3d")):   # same number on another computer: not our simulator (2.98.53: new file name MoveEyeSim3D.exe)
                     raise ValueError("other process")
                 self.sim_p = p
                 p.cpu_percent(None)
@@ -13743,7 +13749,9 @@ WORDMARK_CSS = ("header h1.wm .wmc,header h1.wm .wmw{transform-box:view-box}head
                 "header h1.wm .wmc{animation:wmc 7s ease-in-out infinite}"
                 "header h1.wm .wl1,header h1.wm .wl2,header h1.wm .wa1,header h1.wm .wa2{transform-box:fill-box;transform-origin:50% 0}"
                 "header h1.wm .wa1,header h1.wm .wa2{transform-origin:100% 0}"
-                "header h1.wm .wl1,header h1.wm .wa2{animation:wms .7s ease-in-out infinite}header h1.wm .wl2,header h1.wm .wa1{animation:wms .7s ease-in-out infinite reverse}"
+                # 2.98.53: a real gait - leg 1 with arm 2, leg 2 with arm 1 half a step (0.35 s of 0.7 s) later (before: «reverse» on these
+                # mirror-like keyframes gave the same angle, all four limbs swung together)
+                "header h1.wm .wl1,header h1.wm .wa2{animation:wms .7s ease-in-out infinite}header h1.wm .wl2,header h1.wm .wa1{animation:wms .7s ease-in-out -.35s infinite}"
                 "@keyframes wmw{0%,100%{transform:translateX(calc(-1*var(--wx)))}50%{transform:translateX(var(--wx))}}"
                 "@keyframes wmc{0%,100%{transform:rotate(calc(-1*var(--wa)))}50%{transform:rotate(var(--wa))}}"
                 "@keyframes wms{0%,100%{transform:rotate(18deg)}50%{transform:rotate(-18deg)}}"
@@ -25469,8 +25477,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.23", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 32288177,
-         "sha256": "fd7262f9ead86658f769d59bf871866bd82eb55a6f5d6cbc9edad026ebf2fd9d"}
+SIM3D = {"version": "3D-4.24", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 64545642,
+         "sha256": "df77d39c319dfdd3cb9bfbccd197364330f11ba44a535d3621191cdf0c69ed97"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -32580,7 +32588,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_52.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_53.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -40622,7 +40630,7 @@ Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den 
  "Catch fast persons": "Schnelle Personen erwischen", "{n} fast persons (joggers) were missed: fewer pictures needed to recognise walking, the AI looks at every picture.": "{n} schnelle Personen (Jogger) verpasst: weniger Bilder bis das Gehen erkannt ist, die KI prüft jedes Bild.",
  "More sensitive by day": "Am Tag empfindlicher", "{n} persons were missed by day: more sensitive and the AI accepts less sure persons.": "{n} Personen am Tag verpasst: empfindlicher, und die KI nimmt auch weniger sichere Personen an.",
  "React faster": "Schneller reagieren", "MoveEye needed {n} s on average: the AI looks at every picture and walking is recognised sooner.": "MoveEye brauchte im Mittel {n} s: die KI prüft jedes Bild und das Gehen wird früher erkannt."});
-I18N.en = I18N.en || {}; Object.assign(I18N.en, {"upd-owner-note": "This is the setting «Neue Versionen» of the simulator – the same here and there.", "simset-note": "What MoveEye does by itself in the simulation. Connection, computing power and the tiles have their switches above.", "conn-note": "Address of the simulator program. Usually not needed: the simulator announces itself in the network and is found by itself.", "autostart-note": "And off again (back to the real cameras and sensors) when none is there for a minute. Switched off by hand: stays off until a new simulator appears.", "sim-missing": "A simulator is missing? Switch on «Send to MoveEye» in the simulator. On a PC the Windows firewall must allow its port (8765; a second simulator e.g. 8767).", "sim-view-help": "The window of the simulator: drag with the left mouse button = move, right = turn, wheel = zoom (after a click into the picture), double click = fly there. Finger: tap = click, otherwise the page scrolls; with ✋ the finger controls the simulator (drag = move, ⟲ = turn, two fingers = zoom). The buttons below change the view."});  // 2.97.0: no raw keys in English
+I18N.en = I18N.en || {}; Object.assign(I18N.en, {"how-1": "Download MoveEye Sim · 3D for Windows, unzip it on the PC and start MoveEyeSim3D.exe (until 3D-4.23 it was called MotionWatch3D.exe).", "how-2": "In the simulator window, top right, switch on «Send to MoveEye».", "how-3": "The simulator appears here under «Simulators in the network» – tap «Use» if needed.", "how-4": "«Switch the simulation on»: MoveEye now works with the pictures and sensors of the simulator instead of the real hardware. Switching it off = back to the real hardware.", "upd-owner-note": "This is the setting «Neue Versionen» of the simulator – the same here and there.", "simset-note": "What MoveEye does by itself in the simulation. Connection, computing power and the tiles have their switches above.", "conn-note": "Address of the simulator program. Usually not needed: the simulator announces itself in the network and is found by itself.", "autostart-note": "And off again (back to the real cameras and sensors) when none is there for a minute. Switched off by hand: stays off until a new simulator appears.", "sim-missing": "A simulator is missing? Switch on «Send to MoveEye» in the simulator. On a PC the Windows firewall must allow its port (8765; a second simulator e.g. 8767).", "sim-view-help": "The window of the simulator: drag with the left mouse button = move, right = turn, wheel = zoom (after a click into the picture), double click = fly there. Finger: tap = click, otherwise the page scrolls; with ✋ the finger controls the simulator (drag = move, ⟲ = turn, two fingers = zoom). The buttons below change the view."});  // 2.97.0: no raw keys in English
 Object.assign(I18N.de, {"Settings of the simulation": "Einstellungen der Simulation", "simset-note": "Was MoveEye in der Simulation selbst tut. Verbindung, Rechenleistung und die Kacheln haben ihre Schalter oben.", "Simulator centre": "Simulator-Zentrale", "Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig", "best sneaker": "bester Schleicher", "unreported": "unerkannt", "Best sneaker of the week": "Bester Schleicher der Woche", "visible, but not reported by MoveEye": "sichtbar, aber von MoveEye nicht gemeldet", "Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
  "Save": "Speichern", "Find the simulator in the network by itself": "Simulator im Netz selbst finden", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen",
  "Picture": "Bild", "Simulator control": "Simulator-Steuerung", "ctl-note": "Erscheint, sobald der Simulator verbunden ist: Szenarien, Tageszeit, Wetter, Besucher und mehr.",
@@ -40633,7 +40641,7 @@ Object.assign(I18N.de, {"Settings of the simulation": "Einstellungen der Simulat
  "simple simulator directly on the Pi": "einfacher Simulator direkt auf dem Pi", "Start simulator here": "Simulator hier starten", "on the Pi (uses its CPU)": "auf dem Pi (braucht seine Rechenleistung)",
  "Stop simulator": "Simulator stoppen", "on the Pi": "auf dem Pi", "Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren",
  "How it works": "So funktioniert es",
- "how-1": "MoveEye Sim · 3D für Windows herunterladen, auf dem PC entpacken und MotionWatch3D.exe starten.",
+ "how-1": "MoveEye Sim · 3D für Windows herunterladen, auf dem PC entpacken und MoveEyeSim3D.exe starten (bis 3D-4.23 hiess sie MotionWatch3D.exe).",
  "how-2": "Im Simulator-Fenster oben rechts den Schalter «An MoveEye senden» einschalten.",
  "how-3": "Der Simulator erscheint hier unter «Simulatoren im Netz» – bei Bedarf «Verwenden» antippen.",
  "how-4": "«Simulation einschalten»: MoveEye arbeitet jetzt mit den Bildern und Sensoren des Simulators statt mit der echten Hardware. Ausschalten = zurück zur echten Hardware.",
@@ -58170,10 +58178,18 @@ SIM_PAGE = SIM_PAGE.replace("</body>", "<!--KIGJS--></body>", 1)          # fill
 # ----------------------------------------------------------------------------
 # Wish of Daniel (30.10.2026): on the tab Live, while the simulation is on AND connected, a compact view «Sim-Kompakt»
 # (on by itself, switchable in «◫ Ansicht», stored per device in localStorage «mw-simkompakt»):
-#   top     two small pictures side by side: left MoveEye's camera (#video, the one stream), right the simulator window
-#           (the picture poll of 530/470 simViewPoll - the same <img>, moved here, no second stream; data-dock = the naked
-#           picture of the simulator when it knows dock=1). Tap = big (over both columns), tap again = back. The simulator
-#           picture when big is the simulator window (mouse / ✋ finger go to the simulator, ✕ = back).
+#   top     «Bild im Bild» (2.98.53, Daniel's variant C; before: two small pictures side by side): the simulator window big,
+#           16:9 over the whole width (the picture poll of 530/470 simViewPoll - the same <img>, moved here, no second stream;
+#           data-dock = the naked picture of the simulator when it knows dock=1), MoveEye's camera (#vcard / #video, the one
+#           stream, the same elements) small in its bottom right corner (~32 % wide, on a wide screen ~24 %, white frame,
+#           «● LIVE»; the buttons on the camera picture are hidden there). Tap the small picture = swap (camera big, simulator
+#           small; stored per device in «mw-simkompakt» .sw). Tap the big picture = as before: big view (the small one away),
+#           tap again / ✕ = back; the big simulator picture is the simulator window (mouse / ✋ finger go to the simulator).
+#           Grid: both pictures in one area «pic»; the main one .sk-pm (--sk-pw × --sk-ph), the small one .sk-pi in its corner.
+#           Phone upright (narrow): the big picture always over the full width, 16:9 (the simulator picture fills it, cut at the
+#           edges - only the big simulator window shows it whole); when the room is short the sticks get smaller (down to 104 px)
+#           so that the tiles stay in view where possible.
+#           Wider screens: as high as the room allows, centred (the controls stay in view).
 #   below   left the head stick (#stick of the controls, moved here) with ◎, the shutter 🎯 (539) and the AI help 🤖 (546)
 #           next to it; right the rover stick (#mstick, /api/mover) - in a game round only when the game mode drives the
 #           rover (seek, patrol), otherwise locked with a hint; between them the tiles: Szene, Tageszeit, Wetter, Besuch (the
@@ -58194,36 +58210,55 @@ body.sk.sk-wide.lv:not(.videoonly) main>section{display:grid!important;grid-temp
 body.sk.sk-wide.lv:not(.videoonly) #lv-main,body.sk.sk-wide.lv:not(.videoonly) #lv-side{height:100%;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;padding-bottom:12px}
 body.sk.lv:not(.videoonly) #lv-side{margin-top:12px}
 body.sk.sk-wide.lv:not(.videoonly) #lv-side{margin-top:0}
-body.sk.lv:not(.videoonly) #lv-main{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"cam sim" "ctl ctl" "more more";gap:8px;align-content:start;padding-bottom:0}
+body.sk.lv:not(.videoonly) #lv-main{display:grid!important;grid-template-columns:minmax(0,1fr);grid-template-areas:"pic" "ctl" "more";gap:8px;align-content:start;padding-bottom:0}
 body.sk.lv:not(.videoonly) #lv-main>*+*{margin-top:0}
 body.sk.lv:not(.videoonly) #lv-simw{display:contents}   /* also while 530 hides it for a moment (the simulator is busy): 20 s grace */
-body.sk.lv:not(.videoonly) #vcard{grid-area:cam;height:var(--sk-ph,180px);min-height:0;padding:0!important;margin:0;display:block;overflow:hidden;flex:none}
+/* 2.98.53 «Bild im Bild»: both pictures in the area «pic» - the main one (.sk-pm) 16:9 over the width, the other (.sk-pi) small in its corner */
+body.sk.lv:not(.videoonly) #vcard,body.sk.lv:not(.videoonly) #sk-sim{grid-area:pic;min-height:0;padding:0!important;margin:0;overflow:hidden;flex:none}
+body.sk.lv:not(.videoonly) #vcard{display:block}
+body.sk.lv:not(.videoonly) #vcard.sk-pm,body.sk.lv:not(.videoonly) #sk-sim.sk-pm{width:var(--sk-pw,100%);height:var(--sk-ph,200px);justify-self:center;align-self:start;border-radius:12px}
+body.sk.lv:not(.videoonly) #vcard.sk-pi,body.sk.lv:not(.videoonly) #sk-sim.sk-pi{width:var(--sk-iw,120px);height:var(--sk-ih,68px);justify-self:end;align-self:end;
+  margin:0 var(--sk-im,8px) 8px 0!important;position:relative;z-index:8;border:2px solid #fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.55);
+  background:#000;cursor:pointer;touch-action:manipulation}
 body.sk.lv:not(.videoonly) #vcard>:not(.vwrap){display:none}
-body.sk.lv:not(.videoonly) #vcard .vwrap{height:100%;border-radius:12px}
+body.sk.lv:not(.videoonly) #vcard .vwrap{height:100%;border-radius:inherit;box-shadow:none}
 body.sk.lv:not(.videoonly) #video{width:100%!important;height:100%!important;max-height:none!important;min-height:0!important;object-fit:contain;aspect-ratio:auto;cursor:zoom-in}
+body.sk.lv:not(.videoonly) #vcard.sk-pi #video{object-fit:cover;cursor:pointer}
+body.sk.lv:not(.videoonly) #vcard.sk-pi .vwrap>:not(#video):not(.vtag){display:none!important}   /* the buttons of the camera picture: only when it is big */
+body.sk.lv:not(.videoonly) #vcard.sk-pi .vtag{left:4px;bottom:4px;gap:3px}
+body.sk.lv:not(.videoonly) #vcard.sk-pi .vtag span{font-size:9px;padding:1px 5px;border-radius:5px;letter-spacing:.03em}
+body.sk.lv:not(.videoonly) #vcard.sk-pi .vtag .live::before{width:6px;height:6px;margin-right:4px}
+body.sk.lv:not(.videoonly) #vcard.sk-pi #v-src{display:none}
+body.sk.lv:not(.videoonly) #vcard.sk-pm .vtag{right:calc(var(--sk-iw,120px) + 16px);flex-wrap:nowrap;overflow:hidden}   /* not under the small picture */
+body.sk.lv:not(.videoonly) #vcard.sk-pm .vtag span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+body.sk.lv:not(.videoonly) #vcard.sk-pm .vtag .live{flex:none}
 body.sk.lv:not(.videoonly) #lv-joy,body.sk #pip{display:none!important}
 body.sk.lv:not(.videoonly) #lv-tools button{width:30px;height:30px;font-size:14px;border-radius:8px}
 body.sk.lv:not(.videoonly) #lv-tools{top:5px;right:5px;gap:4px}
 body.sk.lv:not(.videoonly) #lv-tools button svg{width:15px;height:15px}
 #sk-sim,#sk-ctl{display:none}
-body.sk.lv:not(.videoonly) #sk-sim{display:flex;grid-area:sim;height:var(--sk-ph,180px);padding:0;margin:0;align-items:center;justify-content:center;background:#000;border-radius:12px;overflow:hidden;position:relative;border:1px solid var(--line)}
+body.sk.lv:not(.videoonly) #sk-sim{display:flex;align-items:center;justify-content:center;background:#000;border-radius:12px;position:relative;border:1px solid var(--line)}
+body.sk.lv:not(.videoonly) #sk-sim.sk-pi{border:2px solid #fff;border-radius:10px;position:relative}
 #sk-sim #lv-vw{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
 #sk-sim #lv-vw[hidden]{display:none}
 #sk-sim .lv-vbox{border-radius:0;display:flex;align-items:center;justify-content:center;width:100%;height:100%}
-#sk-sim .lv-vbox img{width:auto;height:auto;max-width:100%;max-height:100%;cursor:zoom-in}
+#sk-sim .lv-vbox img{width:auto;height:auto;max-width:none;max-height:none;flex:none;cursor:zoom-in}   /* fitSim sizes it (2.98.53: fills the box) */
+#sk-sim.sk-pi .lv-vbox img{cursor:pointer}
 #sk-sim .lv-vhelp{display:none}
 #sk-sim:not(.big) .lv-vbtn,#sk-sim:not(.big) .stp{display:none!important}
 #sk-sim .lv-vbtn button{width:32px;height:32px;font-size:15px}
 #sk-sim.big .lv-vbox img{cursor:grab}
 #sk-cap{position:absolute;left:6px;bottom:5px;right:6px;font-size:10.5px;line-height:1.25;color:#fff;text-shadow:0 1px 2px #000;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:2}
+#sk-sim.sk-pm #sk-cap{right:calc(var(--sk-iw,120px) + 16px)}   /* not under the small picture */
+#sk-sim.sk-pi #sk-cap,#sk-sim.sk-pi #sk-back{display:none!important}
+#sk-tag{display:none;position:absolute;left:4px;bottom:4px;z-index:3;pointer-events:none;background:rgba(0,0,0,.62);color:#fff;border-radius:5px;padding:1px 5px;font-size:9px;font-weight:700;letter-spacing:.03em}
+#sk-sim.sk-pi #sk-tag{display:block}
 #sk-sim .sk-wait{color:var(--mut);font-size:13px}
 #sk-back{position:absolute;left:6px;top:6px;z-index:4;width:32px;height:32px;padding:0;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(8,12,20,.65);color:#fff;font-size:15px;display:none}
 #sk-sim.big #sk-back{display:block}
-/* big: one picture over both columns, the other one away until tapped back */
-body.sk.lv:not(.videoonly) #lv-main.sk-bc{grid-template-areas:"cam cam" "ctl ctl" "more more"}
-body.sk.lv:not(.videoonly) #lv-main.sk-bs{grid-template-areas:"sim sim" "ctl ctl" "more more"}
+/* big: the main picture alone (the small one away until tapped back), as high as the space allows */
 body.sk.lv:not(.videoonly) #lv-main.sk-bc #sk-sim,body.sk.lv:not(.videoonly) #lv-main.sk-bs #vcard{display:none!important}
-body.sk.lv:not(.videoonly) #lv-main.sk-bc #vcard,body.sk.lv:not(.videoonly) #lv-main.sk-bs #sk-sim{height:var(--sk-phb,320px)}
+body.sk.lv:not(.videoonly) #lv-main.sk-bc #vcard,body.sk.lv:not(.videoonly) #lv-main.sk-bs #sk-sim{height:var(--sk-phb,320px);width:100%}
 body.sk.lv:not(.videoonly) #lv-main.sk-bc #video{cursor:zoom-out}
 /* the controls: head stick | tiles | rover stick (narrow: sticks in one row, the tiles below) */
 body.sk.lv:not(.videoonly) #sk-ctl{display:grid;grid-area:ctl;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"hs tl ms";gap:8px 10px;align-items:start;
@@ -58282,15 +58317,15 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   if (document.body.dataset.tab !== "live") return;
   try { const D = /*SKDE*/{}; for (const k in D) if (!(k in I18N.de)) I18N.de[k] = D[k]; } catch (e) {}
   try { I18N.en = I18N.en || {}; Object.assign(I18N.en, {
-    "sk-note": "With the simulator connected: two small pictures at the top (camera and simulator), below them the head and rover sticks at the edges, the tiles of the simulator in between. Only for this device.",
-    "sk-help": "Sim compact: tap a picture = big, tap again = small. The big simulator picture is the simulator window (mouse and ✋ finger steer the simulator, ✕ = back). Left stick = MoveEye's head, right stick = rover (in a game round only when the game drives the rover). The tiles = what happens in the simulator; «… more» = all settings of the simulator. On / off and picture quality under «◫ View»."}); } catch (e) {}
+    "sk-note": "With the simulator connected: the simulator picture big at the top, MoveEye's camera small in its corner (tap = swap), below them the head and rover sticks at the edges, the tiles of the simulator in between. Only for this device.",
+    "sk-help": "Sim compact: tap the small picture in the corner = swap the two pictures (this device remembers it). Tap the big picture = big view, tap again = back; the big simulator picture is the simulator window (mouse and ✋ finger steer the simulator, ✕ = back). Left stick = MoveEye's head, right stick = rover (in a game round only when the game drives the rover). The tiles = what happens in the simulator; «… more» = all settings of the simulator. On / off and picture quality under «◫ View»."}); } catch (e) {}
   const T = x => (typeof t === "function" ? t(x) : x);
   const $i = id => document.getElementById(id);
   const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
   const W = $i("lv-simw"), D = $i("lv-sim"), VW = $i("lv-vw"), VI = $i("lv-vimg"), main = document.querySelector("main"), M0 = () => $i("lv-main");
   if (!W || !D || !VW || !VI || !main) return;
-  const KEY = "mw-simkompakt";                          // per device: {on: "auto" | "off"}
-  let P = {on: "auto"};
+  const KEY = "mw-simkompakt";                          // per device: {on: "auto" | "off", sw: "sim" | "cam" = the big picture}
+  let P = {on: "auto", sw: "sim"};
   try { Object.assign(P, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {} };
   const SQ = D.querySelector(".simq");                  // «Bildqualität» (470 simQBox) - in «◫ Ansicht» while Sim-Kompakt is on
@@ -58300,7 +58335,8 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   const CAP = E("div"); CAP.id = "sk-cap";
   const BK = E("button", "", "✕"); BK.id = "sk-back"; BK.type = "button";
   const WAIT = E("div", "sk-wait", "…");
-  SIM.append(WAIT, CAP, BK);
+  const TAG = E("div"); TAG.id = "sk-tag";              // «Simulator» on the small picture (2.98.53)
+  SIM.append(WAIT, CAP, TAG, BK);
   const C = E("div"); C.id = "sk-ctl";
   const HS = E("div"); HS.id = "sk-hs";
   const HSB = E("div", "sk-sb"), HSL = E("div", "sk-slot"), HLB = E("div", "sk-lb");
@@ -58347,6 +58383,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     ON = on; document.body.classList.toggle("sk", on);
     if (on) {
       if (VW.parentNode !== SIM) { VW.before(VWHOME); SIM.insertBefore(VW, CAP); }
+      roles();
       if (SQ) SQ.remove();
       D.open = true;                                     // 530 shows the simulator window only while its card is open
       sticks(true);
@@ -58357,9 +58394,26 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
       VI.style.width = VI.style.height = "";               // the size of the small picture (fitSim)                               // back from «◫ Ansicht» (also when the panel holds it right now)
       sticks(false);
       const m = M0(); if (m) m.classList.remove("sk-bc", "sk-bs");
+      const vc = $i("vcard"); if (vc) { vc.classList.remove("sk-pm", "sk-pi"); vc.removeAttribute("title"); vc.removeAttribute("tabindex"); vc.removeAttribute("role"); }
     }
     if (typeof window.lvApply === "function") try { window.lvApply(); } catch (e) {}
     layout(); paint();
+  }
+  // ---- which picture is big (2.98.53 «Bild im Bild»): P.sw = "sim" (default) or "cam"; the other one is small in its corner ----
+  const camBig = () => P.sw === "cam";
+  function roles() {
+    const vc = $i("vcard"); if (!vc) return;
+    const cb = camBig(), tip = T("Tap = swap pictures");
+    vc.classList.toggle("sk-pm", cb); vc.classList.toggle("sk-pi", !cb);
+    SIM.classList.toggle("sk-pm", !cb); SIM.classList.toggle("sk-pi", cb);
+    [[vc, !cb], [SIM, cb]].forEach(([x, small]) => {
+      if (small) { x.title = tip; x.setAttribute("role", "button"); x.tabIndex = 0; x.setAttribute("aria-label", tip); }
+      else { x.removeAttribute("title"); x.removeAttribute("role"); x.removeAttribute("tabindex"); x.removeAttribute("aria-label"); }
+    });
+    TAG.textContent = T("Simulator");
+  }
+  function swap() {
+    setBig(""); P.sw = camBig() ? "sim" : "cam"; save(); roles(); layout();
   }
   // ---- the size of the pictures and sticks ----
   function layout() {
@@ -58370,28 +58424,53 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     const Hh = main.clientHeight || innerHeight;
     const mw = m.clientWidth || (main.clientWidth - 24);
     const narrow = mw < 620; C.classList.toggle("sk-n", narrow);
-    const stk = Math.round(Math.max(104, Math.min(narrow ? Math.min(innerWidth * 0.36, 150) : 150, land ? Math.min(innerHeight * 0.34, 150) : 170)));
+    let stk = Math.round(Math.max(104, Math.min(narrow ? Math.min(innerWidth * 0.36, 150) : 150, land ? Math.min(innerHeight * 0.34, 150) : 170)));
     document.documentElement.style.setProperty("--sk-st", stk + "px");
-    const ch = Math.max(stk + 22, C.querySelector("#sk-tiles").offsetHeight + 16) + (narrow ? TI.offsetHeight + 8 : 0) + 20;
-    const col = (mw - 8) / 2;
-    let ph = land ? Math.min(col * 9 / 16, Hh - ch - 26) : Math.min(col * 9 / 16, Hh * 0.42);
-    ph = Math.round(Math.max(90, ph));
-    let pb = land ? Math.min(mw * 9 / 16, Hh - ch - 26) : Math.min(mw * 9 / 16, Hh * 0.62);
+    // the height of sticks + tiles (without an open sheet): measured, or estimated before the first paint
+    const est = Math.max(stk + 22, TI.offsetHeight + 16) + (narrow ? TI.offsetHeight + 8 : 0) + 20;
+    const chOf = () => C.offsetHeight ? C.offsetHeight - (SH.firstChild ? SH.offsetHeight + 8 : 0) : est;
+    let ch = chOf();
+    // the big picture 16:9 over the width, but sticks and tiles stay in view below it (measured: from the top of #lv-main to the
+    // visible bottom of the scrolling part, minus its padding)
+    const sec = m.parentNode, sr = sec.getBoundingClientRect(), mr = m.getBoundingClientRect();
+    const room = Math.min(sr.bottom, innerHeight) - (mr.top + (wide ? 0 : sec.scrollTop)) - (parseFloat(getComputedStyle(sec).paddingBottom) || 0) - 4;
+    // phone / narrow upright (Daniel 31.10.: the simulator picture over the FULL width, 16:9; fitSim fills it without black
+    // bars), the sticks get smaller (down to 104 px) when the room is short; wider screens: as high as the room allows (16:9,
+    // centred), the controls stay in view
+    const full = narrow && !land;
+    let ph, pw;
+    if (full) {
+      pw = Math.round(mw); ph = Math.round(mw * 9 / 16);
+      const short = ph - (room - ch - 8);
+      if (short > 0 && stk > 104) {                       // smaller sticks: the tiles stay in view as far as possible
+        stk = Math.max(104, stk - Math.ceil(short)); document.documentElement.style.setProperty("--sk-st", stk + "px"); ch = chOf();
+      }
+    } else {
+      ph = Math.round(Math.max(120, Math.min(mw * 9 / 16, room - ch - 8)));
+      pw = Math.round(Math.min(mw, ph * 16 / 9));
+    }
+    let pb = land ? Math.min(mw * 9 / 16, room - ch - 8) : Math.min(mw * 9 / 16, Hh * 0.62);
     pb = Math.round(Math.max(ph, pb));
-    m.style.setProperty("--sk-ph", ph + "px"); m.style.setProperty("--sk-phb", pb + "px");
+    const iw = Math.round(Math.max(96, Math.min(pw * (pw >= 600 ? 0.24 : 0.32), 300)));   // the small picture: smaller on a wide screen
+    m.style.setProperty("--sk-ph", ph + "px"); m.style.setProperty("--sk-phb", pb + "px"); m.style.setProperty("--sk-pw", pw + "px");
+    m.style.setProperty("--sk-iw", iw + "px"); m.style.setProperty("--sk-ih", Math.round(iw * 9 / 16) + "px");
+    m.style.setProperty("--sk-im", Math.round((mw - pw) / 2 + 8) + "px");
     ACT.classList.remove("two"); if (ACT.scrollHeight > stk + 24) ACT.classList.add("two");   // ◎ 🎯 🤖 ? in two columns when higher than the stick
     fitSim();
   }
   function fitSim() {                                  // the simulator picture without black edges (simViewBind maps clicks onto the element)
     const bw = SIM.clientWidth, bh = SIM.clientHeight; if (!bw || !bh) return;
     const a = (VI.naturalWidth && VI.naturalHeight) ? VI.naturalWidth / VI.naturalHeight : 16 / 9;
-    let w = bw, h = bw / a; if (h > bh) { h = bh; w = bh * a; }
+    // 2.98.53: not big = it fills the 16:9 box (cut at the edges, the box hides the rest - clicks still map onto the element);
+    // big (the simulator window to steer) = the whole picture
+    const cover = !SIM.classList.contains("big");
+    let w = bw, h = bw / a; if (cover ? h < bh : h > bh) { h = bh; w = bh * a; }
     w = Math.floor(w); h = Math.floor(h);
     if (VI.style.width !== w + "px") VI.style.width = w + "px";
     if (VI.style.height !== h + "px") VI.style.height = h + "px";
   }
   VI.addEventListener("load", () => { if (ON) { WAIT.hidden = true; fitSim(); } });
-  // ---- tap = big, tap again = back ----
+  // ---- tap the small picture = swap; tap the big one = big view, tap again / ✕ = back ----
   function setBig(k) {
     big = k; const m = M0(); if (!m) return;
     m.classList.toggle("sk-bc", k === "cam"); m.classList.toggle("sk-bs", k === "sim"); SIM.classList.toggle("big", k === "sim");
@@ -58399,22 +58478,41 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     requestAnimationFrame(() => { fitSim(); if (k) (k === "cam" ? $i("vcard") : SIM).scrollIntoView({block: "nearest"}); });
   }
   BK.onclick = e => { e.stopPropagation(); setBig(""); };
+  // the small picture takes every tap / click / key itself (capture: nothing reaches the camera picture, the hunter of the game
+  // or the simulator window below it) and swaps on a tap
+  const small = x => ON && x && x.classList.contains("sk-pi");
+  const vcard = $i("vcard");
+  let sp = null;
+  [[vcard, "cam"], [SIM, "sim"]].forEach(([x]) => {
+    if (!x) return;
+    x.addEventListener("pointerdown", e => { if (!small(x) || e.button > 0) return; sp = {x: e.clientX, y: e.clientY, t: Date.now(), id: e.pointerId, el: x}; e.stopPropagation(); }, true);
+    x.addEventListener("pointermove", e => { if (!small(x) || !sp || sp.id !== e.pointerId) return; e.stopPropagation(); if (Math.hypot(e.clientX - sp.x, e.clientY - sp.y) > 12) sp.moved = true; }, true);
+    ["pointerup", "pointercancel"].forEach(n => x.addEventListener(n, e => {
+      if (!small(x) || !sp || sp.id !== e.pointerId || sp.el !== x) return;
+      e.stopPropagation(); const ok = n === "pointerup" && !sp.moved && Date.now() - sp.t < 700; sp = null;
+      if (ok) { x.dataset.skSw = Date.now(); swap(); }
+    }, true));
+    ["click", "dblclick", "contextmenu", "wheel"].forEach(n => x.addEventListener(n, e => {
+      if (small(x) || Date.now() - (+x.dataset.skSw || 0) < 450) { e.stopPropagation(); if (n !== "wheel" || small(x)) e.preventDefault(); }   // the click of the swapping tap: not on to the now big picture
+    }, {capture: true, passive: false}));
+    x.addEventListener("keydown", e => { if (small(x) && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); e.stopPropagation(); swap(); } }, true);
+  });
   const v = $i("video");
   let vT = null;
   if (v) {
     v.addEventListener("click", () => {
-      if (!ON) return;
+      if (!ON || !camBig()) return;
       const g = $i("mwg"); if (g && !g.hidden) return;   // the hunter of the game taps on players (530)
       clearTimeout(vT); vT = setTimeout(() => setBig(big === "cam" ? "" : "cam"), 260);
     });
     v.addEventListener("dblclick", () => clearTimeout(vT));     // double tap = full screen (530)
   }
-  // the simulator picture: small = a tap makes it big (and does not reach the simulator); big = it is the simulator window
-  // (mouse and ✋ finger go to the simulator; a finger tap without ✋ = back)
+  // the big simulator picture: not big yet = a tap makes it big (and does not reach the simulator); big = it is the simulator
+  // window (mouse and ✋ finger go to the simulator; a finger tap without ✋ = back)
   let tp = null;
   const vbox = VI.parentNode;
   vbox.addEventListener("pointerdown", e => {
-    if (!ON || e.target !== VI) return;
+    if (!ON || e.target !== VI || small(SIM)) return;
     const ctl = $i("lv-vctl") && $i("lv-vctl").classList.contains("on");
     if (big !== "sim" || (e.pointerType !== "mouse" && !ctl)) { tp = {x: e.clientX, y: e.clientY, t: Date.now(), id: e.pointerId}; e.stopPropagation(); }
   }, true);
@@ -58538,6 +58636,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   MON.onclick = () => ctl({ctl: "set", id: "mover_on", value: true});
   function paint() {
     if (!ON) return;
+    if (TAG.textContent !== T("Simulator")) roles();
     HLB.textContent = "🎥 " + T("Head"); CEN.title = T("Centre"); HLP.title = T("Help"); HLP.classList.toggle("on", open === "help");
     BK.title = T("Back");
     const st = R && R.status ? String(R.status) : ""; if (CAP.textContent !== st) CAP.textContent = st;
@@ -58582,14 +58681,16 @@ WEB_UI_LOCAL.add("mw-simkompakt")                         # per device: a phone 
 
 # the manual (HELP_PAGE of 540): one paragraph in the section «Live-Seite», German and English
 for _a, _b in (('<section id="live" data-icon="📺"><h2>Die Live-Seite</h2>',
-                "<p><b>🧩 Sim-Kompakt (ab 2.98.46):</b> Ist der Simulator verbunden, zeigt die Live-Seite oben zwei kleine Bilder (links "
-                "die Kamera von MoveEye, rechts das Simulator-Fenster; antippen = gross, nochmals = zurück), darunter links den Kopf-Stick "
+                "<p><b>🧩 Sim-Kompakt (ab 2.98.46, Bild im Bild ab 2.98.53):</b> Ist der Simulator verbunden, zeigt die Live-Seite oben "
+                "das Simulator-Fenster gross und die Kamera von MoveEye klein in seiner Ecke («● LIVE»). Das kleine Bild antippen = die "
+                "beiden Bilder tauschen (das Gerät merkt es sich); das grosse Bild antippen = gross, nochmals = zurück. Darunter links den Kopf-Stick "
                 "(mit ◎, Auslöser 🎯 und KI-Hilfe 🤖), rechts den Rover-Stick und dazwischen die Kacheln Szene, Tageszeit, Wetter, Besuch, "
                 "Spiel, Wildbeobachtung, Foto des Platzes, KI-Wächter, Ansicht und Folgen; «… mehr» öffnet die ganze Simulator-Steuerung, «?» "
                 "die Erklärung. Ein- und ausschalten (pro Gerät) und die Bildqualität des Simulators unter «◫ Ansicht».</p>"),
                ('<section id="live" data-icon="📺"><h2>The live page</h2>',
-                "<p><b>🧩 Sim compact (from 2.98.46):</b> while the simulator is connected the live page shows two small pictures at the "
-                "top (left MoveEye's camera, right the simulator window; tap = big, tap again = back), below them the head stick on the "
+                "<p><b>🧩 Sim compact (from 2.98.46, picture in picture from 2.98.53):</b> while the simulator is connected the live page "
+                "shows the simulator window big at the top and MoveEye's camera small in its corner («● LIVE»). Tap the small picture = "
+                "swap the two pictures (this device remembers it); tap the big picture = big, tap again = back. Below them the head stick on the "
                 "left (with ◎, shutter 🎯 and AI help 🤖), the rover stick on the right and the tiles in between: scene, time of day, "
                 "weather, visit, game, wildlife watching, photo of the place, AI guard, view and follow; «… more» opens the whole simulator "
                 "control, «?» the explanation. On / off (per device) and the picture quality of the simulator under «◫ View».</p>")):
@@ -63389,9 +63490,19 @@ SELFTEST_EXTRA.append(("Loudspeaker in the simulator: siren also in test-inbox m
 #                 then the servo diagnosis compares: MoveEye drives > 6° but the head (head_deg, 350 SIM["head"]) moves < 1°
 #                 within 2-4 s = «blocked» (stuck at the end stop) -> fault (needs «Freigeben»). Real MG90S have no position
 #                 feedback - on the real device this needs the picture (servo test «steps without a change of the picture»).
+# 2.98.53 (Daniel: «Servo blockiert» all the time on 2.98.52 - false alarm): the check compared the range of the planned angle
+#   with the range of the head over the last 2-4 s. After 2 s at rest, the first move of a new command (e.g. 7° in 0.3 s) was
+#   already «> 6°», while the head angle came from the reply BEFORE (simvals_take runs before 350 stores head_deg, and the
+#   simulator answers at most every few 100 ms, slower with «Sparen» / low FPS) -> «blocked» within about one second of any
+#   move; the head followed a moment later. Now: setting «sim_servo_block_check» (off by default), the head angle of THIS
+#   reply, only fresh replies, and «blocked» only when the planned angle is > 6° away from the head for >= 3 s over >= 4 fresh
+#   replies and the head moved < 1° in that time - and not when the planned angle is at / over the end of the simulated head
+#   (MoveEye's own limit or the cable limit «pan_limit» of a wide camera on the head).
 # Translations: part 557.
 # ----------------------------------------------------------------------------
 SRV.setdefault("sim_uv", False)
+CFG.setdefault("sim_servo_block_check", False)            # 2.98.53: «Blockierten Servo im Simulator melden» (588), off by default
+DEFAULTS.setdefault("sim_servo_block_check", False)
 SRVSIM = {"pca_seen": None, "pca_due": 0.0, "i2c": False, "reinit": 0, "hist": deque(maxlen=80), "blk_t": 0.0, "v5": None,
           "io_t": 0.0, "last": None}
 SRV_FAULT_TEXT.setdefault("blocked", "a servo is blocked - the head does not follow (stuck at the end stop?)")
@@ -63428,34 +63539,68 @@ def simservo_take(rep):
             servo_io_error(OSError(121, "Remote I/O error (simulator)"))
     elif not SRVSIM["i2c"] and SRV["io_err"] and now - SRV["io_t"] > 3.0:
         servo_io_ok()
-    # the diagnosis: does the head follow?
-    _simservo_block_check(s, now)
+    # the diagnosis: does the head follow? (the head angle of this reply - 350 stores it in SIM["head"] only afterwards)
+    _simservo_block_check(s, now, rep.get("head_deg") if isinstance(rep, dict) else None)
 
 
-def _simservo_block_check(s, now):
-    h = SIM.get("head")
+SIMBLK_GAP, SIMBLK_STILL, SIMBLK_SECS, SIMBLK_N, SIMBLK_FRESH = 6.0, 1.0, 3.0, 4, 1.5
+
+
+def _simservo_limit(axis):
+    """how far the simulated head can turn on this axis (degrees from the middle)"""
+    try:
+        lim = min(servo_half(axis), float(CFG["pan_limit" if axis == "pan" else "tilt_limit"]))   # MoveEye's own end (072 limits_deg)
+    except (KeyError, TypeError, ValueError):
+        lim = servo_half(axis)
+    if axis == "pan":
+        try:
+            pl = (weit_sim_cam() or {}).get("pan_limit") if "weit_sim_cam" in globals() else None
+            if pl:
+                lim = min(lim, float(pl))                  # a wide camera on the head: the cable stops the head earlier
+        except (TypeError, ValueError):
+            pass
+    return lim
+
+
+def _simservo_block_check(s, now, h=None, t_rep=None):
+    """«blocked»: the planned angle stays > 6° away from the head of the simulator for >= 3 s (>= 4 fresh replies) and the
+    head does not move (< 1°). Only with the setting «sim_servo_block_check» (off by default, 2.98.53)."""
     H = SRVSIM["hist"]
-    if (not isinstance(h, list) or len(h) < 2 or not s.get("head_mw", True) or s.get("pca_hold") or s.get("i2c") or s.get("uv")
-            or servo_blocked() or SIM.get("follower")):
+    if h is None:
+        h = SIM.get("head")
+    if (not CFG.get("sim_servo_block_check", False) or not isinstance(h, list) or len(h) < 2 or not s.get("head_mw", True)
+            or s.get("pca_hold") or s.get("i2c") or s.get("uv") or servo_blocked() or SIM.get("follower")):
         H.clear(); return
+    t_rep = now if t_rep is None else t_rep
+    if now - t_rep > SIMBLK_FRESH:                        # an old answer (busy PC, «Sparen»): not a sample
+        return
     try:
         cp, ct = servo_pos_deg()
         H.append((now, cp, float(h[0]), ct, float(h[1])))
     except (TypeError, ValueError):
         return
-    while H and now - H[0][0] > 4.0:
+    while H and now - H[0][0] > 8.0:
         H.popleft()
-    if len(H) < 4 or now - H[0][0] < 2.0 or now - SRVSIM["blk_t"] < 10.0:     # a busy PC answers maybe twice a second
+    if now - SRVSIM["blk_t"] < 10.0:
         return
     for axis, ci, hi in (("pan", 1, 2), ("tilt", 3, 4)):
-        cr = max(x[ci] for x in H) - min(x[ci] for x in H)
-        hr = max(x[hi] for x in H) - min(x[hi] for x in H)
-        if cr > 6.0 and hr < 1.0:
-            SRVSIM["blk_t"] = now
-            servo_fault("blocked", f"{axis}: {tr('Pan' if axis == 'pan' else 'Tilt', 'en')} {H[0][ci]:.0f}° → {H[-1][ci]:.0f}°, "
-                                   f"head stays at {H[-1][hi]:.0f}°")
-            H.clear()
-            return
+        run = []                                           # the newest replies in a row with a big gap (planned <-> head)
+        for x in reversed(H):
+            if abs(x[ci] - x[hi]) <= SIMBLK_GAP:
+                break
+            run.append(x)
+        if len(run) < SIMBLK_N or run[0][0] - run[-1][0] < SIMBLK_SECS:
+            continue
+        if max(x[hi] for x in run) - min(x[hi] for x in run) >= SIMBLK_STILL:
+            continue                                       # the head moves - only slower than planned
+        lim = _simservo_limit(axis)
+        if abs(run[0][ci]) >= lim - 1.0 or abs(run[0][hi]) >= lim - 1.0:
+            continue                                       # at the end of the simulated head: not a fault of the servo
+        SRVSIM["blk_t"] = now
+        servo_fault("blocked", f"{axis}: {tr('Pan' if axis == 'pan' else 'Tilt', 'en')} {run[-1][ci]:.0f}° → {run[0][ci]:.0f}°, "
+                               f"head stays at {run[0][hi]:.0f}°")
+        H.clear()
+        return
 
 
 _simvals_take_552 = simvals_take
@@ -63513,7 +63658,7 @@ def simservo_info(lang=None):
 
 def simservo_selftest():
     """under-voltage, PCA9685 reset, I2C errors and a blocked servo from the simulator values"""
-    keep = {k: CFG.get(k) for k in ("sim_on", "servo_estop", "servo_uv_stop")}
+    keep = {k: CFG.get(k) for k in ("sim_on", "servo_estop", "servo_uv_stop", "sim_servo_block_check")}
     keep_sim = {k: SIM.get(k) for k in ("head", "follower")}
     keep_srv = {k: SRV.get(k) for k in ("fault", "inhibit", "io_err", "io_t", "sim_uv", "pos", "moving", "push_t")}
     G = globals()
@@ -63544,15 +63689,31 @@ def simservo_selftest():
             simservo_take({"servo_sim": dict(base, i2c=True)})
         assert SRV["fault"] == "i2c", SRV["fault"]
         servo_release("selftest"); SRV["moving"] = False
-        # blocked: the planned position moves 10°, the head stays
-        SRVSIM["hist"].clear(); SRVSIM["blk_t"] = 0.0
-        t0 = time.time()
-        for i in range(12):
-            SRV["pos"] = [50.0 + i * 0.5, 50.0]
-            SIM["head"] = [0.0, 0.0]
-            _simservo_block_check(base, t0 + i * 0.25)
-        assert SRV["fault"] == "blocked", SRV["fault"]
+        # blocked (2.98.53): a) off by default -> nothing; b) on + the head stays while MoveEye drives -> fault;
+        # c) on + slow answers (the head follows one reply late, 0.8 s apart) -> nothing; d) on + stale answers -> nothing;
+        # e) on + planned angle at the end of the head -> nothing
+        def run_(pos_head, dt, on, t_rep_late=0.0):
+            CFG["sim_servo_block_check"] = on
+            SRVSIM["hist"].clear(); SRVSIM["blk_t"] = 0.0; SRV["fault"] = ""
+            t0 = time.time()
+            for i, (p_, h_) in enumerate(pos_head):
+                SRV["pos"] = [p_, 50.0]
+                _simservo_block_check(base, t0 + i * dt, [h_, 0.0], t0 + i * dt - t_rep_late)
+            return SRV["fault"]
+        stuck = [(50.0 + min(i, 6) * 2.0, 0.0) for i in range(20)]                  # 0° -> about 22° planned, head stays at 0°
+        assert DEFAULTS.get("sim_servo_block_check") is False
+        assert run_(stuck, 0.25, False) == "", "off by default"
+        assert run_(stuck, 0.25, True) == "blocked", SRV["fault"]
         servo_release("selftest")
+        hd = lambda p_: (p_ - 50.0) / 50.0 * servo_half("pan")
+        slow = []
+        for i in range(12):                                # a big jump, the answers 0.8 s apart and one step behind
+            p_ = 50.0 + min(i, 3) * 6.0
+            slow.append((p_, hd(50.0 + min(max(i - 1, 0), 3) * 6.0)))
+        assert run_(slow, 0.8, True) == "", "slow answers: " + SRV["fault"]
+        assert run_(stuck, 0.25, True, t_rep_late=2.0) == "", "stale answers"
+        edge = [(100.0, servo_half("pan") - 3.0) for _ in range(20)]               # planned 90° (the end), head at 87°
+        assert run_(edge, 0.25, True) == "", "at the end stop"
     finally:
         G.update(keep_fn); HW_REINIT.update(keep_hw)
         CFG.update(keep); SIM.update(keep_sim); SRV.update(keep_srv); SRVSIM.update(pca_seen=None, pca_due=0.0); SRVSIM["hist"].clear()
@@ -67209,7 +67370,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.52")
+        self.root.title("MoveEye 2.98.53")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -67576,7 +67737,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.52 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.53 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -77574,6 +77735,7 @@ SLIDERS.extend([
 TOGGLES.extend([
     (_SVS, "servo_estop_park", "Emergency stop: brake, then drive slowly to the parking position (otherwise: hold where it stopped)"),
     (_SVS, "servo_uv_stop", "Under-voltage: stop the servos (they move again by themselves 30 s after it is over)"),
+    (_SVS, "sim_servo_block_check", "Simulation: report a blocked servo (the simulated head does not follow - off by default)"),
     (_SVS, "servo_stop_btn", "Show the «⏹ Stop» button on the live page (only with a pan / tilt head)"),
 ])
 TEXTS.extend([
@@ -80009,30 +80171,38 @@ _HX_simkompakt = {
     'Sim compact': ('Sim-Kompakt', 'Sim compact', 'Sim compatto', 'Sim cumpact'),
     'On when connected': ('Ein, wenn verbunden', 'Actif si connecté', 'Attivo se collegato', 'Activ, sch’el è collià'),
     'Off': ('Aus', 'Désactivé', 'Spento', 'Deactivà'),
-    'sk-note': ('Mit verbundenem Simulator: oben zwei kleine Bilder (Kamera und Simulator), darunter Kopf- und Rover-Stick am Rand, '
-                'dazwischen die Kacheln des Simulators. Gilt nur für dieses Gerät.',
-                'Avec le simulateur connecté : en haut deux petites images (caméra et simulateur), dessous le stick de la tête et '
-                'celui du rover sur les bords, entre eux les tuiles du simulateur. Seulement pour cet appareil.',
-                'Con il simulatore collegato: in alto due piccole immagini (telecamera e simulatore), sotto lo stick della testa e '
-                'quello del rover ai bordi, in mezzo le piastrelle del simulatore. Solo per questo apparecchio.',
-                'Cun il simulatur collià: sisum duas pitschnas maletgs (camera e simulatur), sutvart il stick dal chau e quel dal '
-                'rover a l’ur, tranter els las plattinas dal simulatur. Mo per quest apparat.'),
-    'sk-help': ('Sim-Kompakt: ein Bild antippen = gross, nochmals = klein. Das grosse Simulator-Bild ist das Simulator-Fenster '
+    'sk-note': ('Mit verbundenem Simulator: oben das Simulator-Bild gross, die Kamera von MoveEye klein in seiner Ecke (antippen = '
+                'tauschen), darunter Kopf- und Rover-Stick am Rand, dazwischen die Kacheln des Simulators. Gilt nur für dieses Gerät.',
+                'Avec le simulateur connecté : en haut l’image du simulateur en grand, la caméra de MoveEye en petit dans son coin '
+                '(toucher = échanger), dessous le stick de la tête et celui du rover sur les bords, entre eux les tuiles du simulateur. '
+                'Seulement pour cet appareil.',
+                'Con il simulatore collegato: in alto l’immagine del simulatore grande, la telecamera di MoveEye piccola nel suo angolo '
+                '(toccare = scambiare), sotto lo stick della testa e quello del rover ai bordi, in mezzo le piastrelle del simulatore. '
+                'Solo per questo apparecchio.',
+                'Cun il simulatur collià: sisum il maletg dal simulatur grond, la camera da MoveEye pitschna en ses chantun (tutgar = '
+                'barattar), sutvart il stick dal chau e quel dal rover a l’ur, tranter els las plattinas dal simulatur. Mo per quest apparat.'),
+    'sk-help': ('Sim-Kompakt: das kleine Bild in der Ecke antippen = die beiden Bilder tauschen (dieses Gerät merkt es sich). Das grosse '
+                'Bild antippen = gross, nochmals = zurück; das grosse Simulator-Bild ist das Simulator-Fenster '
                 '(Maus und ✋ Finger steuern den Simulator, ✕ = zurück). Linker Stick = Kopf von MoveEye, rechter Stick = Rover '
                 '(in einer Spielrunde nur, wenn das Spiel den Rover fährt). Die Kacheln = was im Simulator passiert; «… mehr» = alle '
                 'Einstellungen des Simulators. Ein / aus und Bildqualität unter «◫ Ansicht».',
-                'Sim compact : toucher une image = grande, encore une fois = petite. La grande image du simulateur est la fenêtre du '
+                'Sim compact : toucher la petite image dans le coin = échanger les deux images (cet appareil s’en souvient). Toucher la '
+                'grande image = en grand, encore une fois = retour ; la grande image du simulateur est la fenêtre du '
                 'simulateur (souris et doigt ✋ pilotent le simulateur, ✕ = retour). Stick gauche = tête de MoveEye, stick droit = '
                 'rover (pendant une partie seulement si le jeu utilise le rover). Les tuiles = ce qui se passe dans le simulateur ; '
                 '« … plus » = tous les réglages du simulateur. Activer / désactiver et qualité d’image sous « ◫ Affichage ».',
-                'Sim compatto: toccare un’immagine = grande, di nuovo = piccola. L’immagine grande del simulatore è la finestra del '
+                'Sim compatto: toccare l’immagine piccola nell’angolo = scambiare le due immagini (questo apparecchio lo ricorda). Toccare '
+                'l’immagine grande = grande, di nuovo = indietro; l’immagine grande del simulatore è la finestra del '
                 'simulatore (mouse e dito ✋ comandano il simulatore, ✕ = indietro). Stick sinistro = testa di MoveEye, stick destro = '
                 'rover (durante una partita solo se il gioco usa il rover). Le piastrelle = ciò che succede nel simulatore; «… altro» = '
                 'tutte le impostazioni del simulatore. Attivare / disattivare e qualità dell’immagine sotto «◫ Vista».',
-                'Sim cumpact: tutgar in maletg = grond, anc ina giada = pitschen. Il grond maletg dal simulatur è la fanestra dal '
+                'Sim cumpact: tutgar il pitschen maletg en il chantun = barattar ils dus maletgs (quest apparat sa regorda). Tutgar il '
+                'grond maletg = grond, anc ina giada = enavos; il grond maletg dal simulatur è la fanestra dal '
                 'simulatur (mieur e det ✋ commondan il simulatur, ✕ = enavos). Stick sanester = chau da MoveEye, stick dretg = rover '
                 '(durant in gieu mo sch’il gieu dovra il rover). Las plattinas = quai che capita en il simulatur; «… dapli» = tut ils '
                 'parameters dal simulatur. Activar / deactivar e qualitad dal maletg sut «◫ Vista».'),
+    'Tap = swap pictures': ('Antippen = Bilder tauschen', 'Toucher = échanger les images', 'Toccare = scambiare le immagini',
+                            'Tutgar = barattar ils maletgs'),
     'Visit': ('Besuch', 'Visite', 'Visita', 'Visita'),
     'Switch on': ('Einschalten', 'Activer', 'Accendere', 'Activar'),
     'Head': ('Kopf', 'Tête', 'Testa', 'Chau'),
@@ -80063,12 +80233,32 @@ _HX_simkompakt = {
     'less': ('weniger', 'moins', 'meno', 'damain'),
     'now': ('jetzt', 'maintenant', 'adesso', 'ussa'),
 }
+# 2.98.53: the four steps «So funktioniert es» of the simulator page (470, keys how-1 … how-4; German and English there)
+_HX_simkompakt.update({
+    'how-1': ('', 'Télécharger MoveEye Sim · 3D pour Windows, le décompresser sur le PC et lancer MoveEyeSim3D.exe (jusqu’à 3D-4.23 : '
+                  'MotionWatch3D.exe).',
+              'Scaricare MoveEye Sim · 3D per Windows, decomprimerlo sul PC e avviare MoveEyeSim3D.exe (fino a 3D-4.23: MotionWatch3D.exe).',
+              'Chargiar giu MoveEye Sim · 3D per Windows, al decumprimer sin il PC ed aviar MoveEyeSim3D.exe (fin 3D-4.23: MotionWatch3D.exe).'),
+    'how-2': ('', 'Dans la fenêtre du simulateur, en haut à droite, activer « Envoyer à MoveEye ».',
+              'Nella finestra del simulatore, in alto a destra, attivare «Invia a MoveEye».',
+              'En la fanestra dal simulatur, sisum a dretga, activar «Trametter a MoveEye».'),
+    'how-3': ('', 'Le simulateur apparaît ici sous « Simulateurs dans le réseau » – au besoin toucher « Utiliser ».',
+              'Il simulatore appare qui sotto «Simulatori nella rete» – se necessario toccare «Usa».',
+              'Il simulatur cumpara qua sut «Simulaturs en la rait» – sche necessari tutgar «Utilisar».'),
+    'how-4': ('', '« Activer la simulation » : MoveEye travaille maintenant avec les images et les capteurs du simulateur au lieu du vrai '
+                  'matériel. Désactiver = retour au vrai matériel.',
+              '«Attivare la simulazione»: MoveEye lavora ora con le immagini e i sensori del simulatore invece del vero hardware. '
+              'Disattivare = ritorno al vero hardware.',
+              '«Activar la simulaziun»: MoveEye lavura ussa cun ils maletgs ed ils sensurs dal simulatur empè da la vaira hardware. '
+              'Deactivar = enavos a la vaira hardware.'),
+})
 for _k, _v in _HX_simkompakt.items():
-    DE.setdefault(_k, _v[0])
+    if _v[0]:
+        DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 # the German texts into the page (I18N.de of the main page, only where it has no own text yet - see 549)
-WEB_PAGE = WEB_PAGE.replace("/*SKDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_simkompakt.items()}, ensure_ascii=False), 1)
+WEB_PAGE = WEB_PAGE.replace("/*SKDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_simkompakt.items() if _v[0]}, ensure_ascii=False), 1)
 # ----------------------------------------------------------------------------
 # Simulator-Werte (285): STATE["simvals"] = {"on", "keys": battery / clock / place / weather / pi_temp / solar / gps / net,
 # "time", "dark", "place", "weather", "net", "pi_temp", "off", "sched"}. Shown:
@@ -90417,6 +90607,11 @@ _HX_SERVO = {
     'Under-voltage: stop the servos (they move again by themselves 30 s after it is over)': (
         'Unterspannung: Servos stoppen (sie bewegen sich 30 s danach wieder von selbst)', 'Sous-tension : arrêter les servos (ils repartent seuls 30 s après)',
         'Sottotensione: fermare i servo (ripartono da soli 30 s dopo)', 'Sutatensiun: fermar ils servos (els sa movan puspè sez 30 s suenter)'),
+    'Simulation: report a blocked servo (the simulated head does not follow - off by default)': (
+        'Simulation: blockierten Servo melden (der Kopf im Simulator folgt nicht – ab Werk aus)',
+        'Simulation : signaler un servo bloqué (la tête du simulateur ne suit pas – désactivé par défaut)',
+        'Simulazione: segnalare un servo bloccato (la testa del simulatore non segue – spento di fabbrica)',
+        'Simulaziun: annunziar in servo bloccà (il chau dal simulatur na suonda betg – deactivà da fabrica)'),
     'Parking position: a taught point (instead of pan / tilt above)': ('Parkposition: ein gespeicherter Punkt (statt Schwenken / Neigen oben)', 'Position de parcage : un point enregistré (au lieu de pan / inclinaison ci-dessus)', 'Posizione di parcheggio: un punto salvato (invece di pan / inclinazione sopra)', 'Posiziun da parcar: in punct memorisà (empè da sviar / inclinar survart)'),
     'Home position: a taught point (the head comes back there)': ('Grundstellung: ein gespeicherter Punkt (dorthin kehrt der Kopf zurück)', 'Position de base : un point enregistré (la tête y revient)', 'Posizione base: un punto salvato (la testa ci ritorna)', 'Posiziun da basa: in punct memorisà (il chau turna là)'),
 }
@@ -90695,6 +90890,7 @@ MENU_SHORT = {
     'Tour of a page on its first visit (dims the screen and shows the controls one after another)': 'Tour of a page on its first visit',
     'Tip of the day (a function you have not used yet)': 'Tip of the day',
     'Under-voltage: stop the servos (they move again by themselves 30 s after it is over)': 'Under-voltage: stop the servos',
+    'Simulation: report a blocked servo (the simulated head does not follow - off by default)': 'Simulation: report a blocked servo',
     'Show Blinki (the little figure that explains the setup and the tours)': 'Show Blinki',
     'Wide infrared light (channel 4): second IR LED 120° on PCA9685 channel 4, on / off with the infrared light': 'Wide infrared light',
     'Alarm picture also for animals (picture section with species, certainty and distance)': 'Alarm picture also for animals',
@@ -90866,6 +91062,7 @@ _HX_MENU_SHORT = {
     'Tour of a page on its first visit': ('Rundgang beim ersten Besuch einer Seite', 'Visite d’une page à la première ouverture', 'Tour di una pagina alla prima visita', 'Gir tras ina pagina a l’emprima visita'),
     'Tip of the day': ('Tipp des Tages', 'Astuce du jour', 'Consiglio del giorno', 'Cussegl dal di'),
     'Under-voltage: stop the servos': ('Unterspannung: Servos stoppen', 'Sous-tension : arrêter les servos', 'Sottotensione: fermare i servo', 'Sutatensiun: fermar ils servos'),
+    'Simulation: report a blocked servo': ('Blockierten Servo im Simulator melden', 'Signaler un servo bloqué dans le simulateur', 'Segnalare un servo bloccato nel simulatore', 'Annunziar in servo bloccà en il simulatur'),
     'Show Blinki': ('Blinki zeigen', 'Afficher Blinki', 'Mostra Blinki', 'Mussar Blinki'),
     'Wide infrared light': ('IR-Licht breit', 'Lumière IR large', 'Luce IR ampia', 'Glisch IR largia'),
     'Alarm picture also for animals': ('Alarmbild auch bei Tieren', 'Image d’alarme aussi pour les animaux', 'Immagine d’allarme anche per gli animali', 'Maletg d’alarm er per animals'),

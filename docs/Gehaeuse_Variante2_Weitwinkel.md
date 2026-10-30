@@ -73,3 +73,18 @@ und «Alarm quittieren» – Platz und Kabel (GPIO 16 / Pin 36 und GPIO 26 / Pin
 Solange die Weitwinkel-Kamera nicht eingebaut ist: **einrastender Stopfen** (kleine Rastnasen, ohne Werkzeug lösbar) für die
 Kamera-Öffnung und ein zweiter kleiner Stopfen für das Loch der breiten IR-LED. Lieferung: **STL + parametrisches Python-Skript**.
 Wartet auf Daniels Gehäuse-Modell (Upload), damit die Masse der Öffnung stimmen.
+
+## Umgesetzt in v5.2 (Gehäuse-Modell, 30.10.2026)
+
+Grundlage: Gehäuse v5.1 (parametrisches Python-Modell). Unverändert bleiben alle Teile ausser **01_Unterteil** und **06_Kamerakopf**. Neu sind die Kleinteile 12–15. Details: `LIESMICH_Montage_v5-2.md` im Gehäuse-Paket v5.2.
+
+| Thema | Umsetzung v5.2 |
+|---|---|
+| Weitwinkel-Kamera | CM3 Wide an der Stirnwand (PIR-Seite), mittig über dem PIR, Linse z 56 mm, **12° nach unten** (Parameter `WC_TILT`). 4 M2-Halter auf zwei Rippen mit 45°-Unterseite. Fenster aus dem Sichtfeld berechnet (Trapez ca. 26/15 × 16 mm, 120° diagonal frei, ca. 10 % Reserve), kleines Regendach. Sichtstrahlen-Test: frei bei allen Kopf-Stellungen |
+| Kabel | Pi-5-Kabel 22 → 15 polig, 200 mm, an **CAM1** (Länge geschätzt) |
+| Breite IR-LED | 5-mm-LED 850 nm, Loch Ø 5,2 links vom PIR (y 26, z 40), Spitze bündig, **PCA9685 Kanal 4** über MOSFET. Statt eines Moduls mit 120°-Linse vorerst eine 5-mm-LED (Masse der Linse waren offen) |
+| MOSFET-Modul | neuer Platz unten an der Lüftungswand unter dem PCA9685 (vorne war es der Kamera im Weg) |
+| Status-LED | 5-mm-RGB-LED auf dem Kopfdach (Kipp-Koordinaten x +3, y +8), Sockel Ø 14,4 für Diffusor **«Blinki-Auge»** (Kuppel Ø 14 + schwarzer Pupillenring, 7,8 mm hoch). Kippen ±70° frei. **Kanäle 5/6/7**, Empfehlung **gemeinsame Kathode** (Adafruit-Board hat 220 Ω, 3,3 V) |
+| Tasten | 2 × 12-mm-Taster IP67 an der **Rückwand** (y 10,5 und 50,5, z 33), mit Dach und Seitenwangen gegen versehentliches Drücken; 12 mm Einbautiefe geprüft. GPIO noch festlegen (frei: nicht 4, 5, 22) |
+| Blindabdeckung | **12_Blindstopfen_Weitwinkel** (2 Rastzungen, 45°-Rastfläche, ohne Werkzeug lösbar) und **13_Stopfen_IR_LED** (geschlitzter Rastzapfen); STL + Generator `kleinteile52.py` (Parameter `BLIND_TOL` 0,2 mm, `BLIND_NOSE`) |
+| Offen | Linsenhöhe / Frontlinse der CM3 Wide, Taster-Masse und Kabelweg nachmessen; Helligkeit der RGB-LED am echten Board prüfen |
