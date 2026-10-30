@@ -25,6 +25,7 @@ import glob
 import json
 import os
 import re
+import signal
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -37,8 +38,7 @@ SKIP_FILES = {"neu_data.gd", "i18n.gd"}
 
 # short German words that appear as pieces of composed texts (an / aus …) - kept, marked «dynamisch»
 DE_SHORT = {"an", "aus", "ein", "und", "oder", "von", "bis", "mit", "ohne", "nein", "ja", "keine", "kein", "zu", "offen",
-            "läuft", "fertig", "nie", "immer", "heute", "gestern", "morgen", "jetzt", "voll", "leer", "links", "rechts",
-            "oben", "unten", "mitte", "tag", "nacht", "sek", "min", "std"}
+            "läuft", "fertig", "nie", "immer", "heute", "gestern", "jetzt"}
 DE_WORDS = set("""der die das den dem des und oder nicht ist sind ein eine einen einem einer kein keine mit für von zu zum zur auf
 im in an aus bei nach vor über unter wird werden wurde hat haben kann können muss soll noch schon nur auch wenn dann als wie
 was wer wo hier jetzt alle alles neu neue neuer bitte du dich dir dein deine ihr sie es er man sich bis ohne gegen ab mehr
@@ -65,8 +65,12 @@ HTML_RE = re.compile(r"</?[a-zA-Z][a-zA-Z0-9]*[\s>/]|function\s*\(|=>|document\.
 SHADER_RE = re.compile(r"\b(uniform|varying|shader_type|render_mode|vec[234]|void\s+\w+\()")
 PATH_RE = re.compile(r"^(res|user|https?|wss?|file)://|^[\w.\-]+/[\w.\-/]*$|\.(png|jpe?g|json|gd|tscn|tres|glb|gltf|ogg|wav|mp3|txt|zip|exe|cfg|html|js|css|svg|py|sh|md|csv|webp|bin|pck|bmp|tga|obj)$", re.I)
 TECH_RE = re.compile(r"^(Authorization|Accept|User-Agent|Content-Type|Content-Length|Connection|Cache-Control|Location|Host|X-[\w-]+):|"
-                     r"^[a-z]+/[\w.+-]+(;|$)|\$\w|Start-Process|Write-Output|Get-CimInstance|\\d|^\[out:|^\{\"|^--\w|\s--\w|"
+                     r"^[a-z]+/[\w.+-]+(;|$)|HTTP/1\.[01]|\n[a-z]+: [a-z.]|\$\w|Start-Process|Write-Output|Get-CimInstance|\\d|^\[out:|^\{\"|^--\w|\s--\w|"
                      r"^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|Bad Request|Not Found|Forbidden|Unauthorized|Internal Server Error|Method Not Allowed)$")
+# technical words that look like text (key names, Godot classes, device ids, file dialog filters …)
+TECH_WORDS = {"Backspace", "Enter", "Tab", "Escape", "Delete", "Hidden", "TRACE", "CONNECT", "COMPUTERNAME", "HOSTNAME",
+              "Button", "Label", "VScrollBar", "DTM2", "COMB", "DTM25", "SmallTV-Ultra", "Ultra-V9.0.40", "MoveEye-Simulator",
+              "webcam_bewegung_*.py ; MoveEye", "*.py ; Python", "|sprint"}
 ID_RE = re.compile(r"^[a-z0-9_.\-:/#+%]*$")
 CLASSNAME_RE = re.compile(r"^[A-Z][A-Za-z0-9]*(2D|3D|Container|Button|Label|Rect|Edit|Box|Panel|Slider|Instance|Mesh|Material|Texture|Light|Shape|Body|Player|Popup|Dialog|Timer|Tween|Node|Viewport|Camera)$")
 
@@ -149,7 +153,8 @@ def classify(v, triple, prefix, before, after, line):
         return "kennung"
     if b.endswith("[") and not re.search(r"[=(,\[]\s*\[$", b) and re.search(r"[\w\])]\[$", b):
         return "index"
-    if TECH_RE.search(t) or (" " not in t and ("_" in t or "\\" in t or re.search(r"[a-z]\.[A-Za-z]", t) or t[:1] in "/?")):
+    if t in TECH_WORDS or re.fullmatch(r"\*[0-9a-fA-F]{6}|-[A-Z]\w+|[a-z]+[A-Z]\w*|\w+=.*|MWTUN\d.*|import .*", t) \
+            or t.startswith(("Mozilla/", "advfirewall", "kind: ", "ort:")) or TECH_RE.search(t) or (" " not in t and ("_" in t or "\\" in t or re.search(r"[A-Za-z0-9]\.[A-Za-z]", t) or t[:1] in "/?")):
         return "technisch"
     if PATH_RE.search(t) and " " not in t:
         return "pfad"
@@ -298,6 +303,8 @@ def report(found, d, skipped, html, obsolete):
 
 
 def main():
+    if hasattr(signal, "SIGPIPE"):
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)      # «| head» without a traceback
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--pruefen", action="store_true", help="nur prüfen (Exit 1 bei neuen Texten oder Lücken)")
     ap.add_argument("--aufraeumen", action="store_true", help="Texte entfernen, die nicht mehr im Code stehen")
