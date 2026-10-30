@@ -4180,6 +4180,8 @@ func _control(d: Dictionary) -> Dictionary:
 		elif op_ == "morning":
 			surprise.morning()
 		return {"ok": true, "surprise": surprise.info()}
+	elif a == "mehr":                                  # 3D-4.2x: «Mehr» (tests): {"do": open | theme | tour | diag | log | fb_* | shot}
+		return mehr.control(d) if mehr != null else {"ok": false, "error": "not ready"}
 	elif a == "feedback":                              # MoveEye 2.98.33: the dialog «Rückmeldung» (tests: {text, kind, stars, shot})
 		_feedback_open()
 		if feedback_dlg != null and str(d.get("text", "")) != "" and feedback_dlg.visible:
@@ -4941,6 +4943,10 @@ func _build_ui() -> void:
 	keys.add_child(info_label)
 	expert_cards.append(keys.get_meta("card"))
 	top_cards.append(keys.get_meta("card"))
+	mehr = preload("res://scripts/mehr.gd").new()      # 3D-4.2x: card «Mehr» like MoveEye (Hilfe, Rundgang, Diagnose, Protokoll, Ansicht, Rückmeldung, Über)
+	mehr.main = self
+	add_child(mehr)
+	mehr.build(box_)
 	# Simple | Expert and Kinder | Erwachsene: on top, next to the search (3D-3.90)
 	var se := UI.segment("Einfach", "Experte", not ui_simple, func(expert): set_simple(not expert), true)
 	simple_seg = se
@@ -5572,6 +5578,8 @@ func _save_settings() -> void:
 	d["hour_now"] = snappedf(hour(), 0.001)               # 3D-3.76: the time of the scene stays after a restart
 	d["hour_at"] = int(Time.get_unix_time_from_system())
 	d["speed_now"] = speed
+	if mehr != null:
+		d.merge(mehr.keep(), true)                        # 3D-4.2x: look (Hell / Rotlicht / Dunkel) and the tour
 	_hour_saved_t = now()
 	var f := FileAccess.open(SETTINGS_FILE, FileAccess.WRITE)
 	if f != null:
@@ -5652,7 +5660,8 @@ func _toggle_phone() -> void:
 		phone.open()
 
 
-var feedback_dlg = null                # MoveEye 2.98.33: feedback.gd (made at the first use)
+var feedback_dlg = null                # MoveEye 2.98.33: feedback.gd (made at the first use; from 3D-4.2x by mehr.gd)
+var mehr = null                        # 3D-4.2x: mehr.gd («Mehr»: feedback, tour, self-check, log, look)
 
 
 func _feedback_open() -> void:
