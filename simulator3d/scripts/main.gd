@@ -3,12 +3,12 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.17"
+const VERSION := "3D-4.18"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
-const CAM_FOV := [66.0, 100.0]
+const CAM_FOV := [66.0, 102.0]            # 3D-4.17: camera 1 = the wide camera (Camera Module 3 Wide NoIR, weitwinkel.gd)
 const TH_W := 80
 const TH_H := 62
 const TH_FOV := 45.0
@@ -68,6 +68,7 @@ var real_weather := false             # the weather of the place from open-meteo
 var surprise_on := false             # 3D-3.75: «Überraschungsnacht» (surprise.gd)
 var power_off := false               # 3D-3.75: power cut - the lamps of the place are out
 var surprise
+var simwerte                          # Simulator-Werte (30.10.2026): battery, Pi heat, network test, clock (power.gd)
 var visitlog                          # 3D-3.80: visitlog.gd
 var night_weather := false            # 3D-3.74: the weather runs through the night (dusk, showers, dew, morning fog)
 var _nw := {"day": -1, "plan": [], "last": "", "fog_lens": false}
@@ -278,6 +279,9 @@ var lens_mats: Array = []
 var camfx_mats: Array = []            # 3D-3.94: camfx.gdshader per camera (realism.gd sets it)
 var realism                           # realism.gd
 var simreal                           # simreal.gd (3D-4.4): Pi 5, lens, infrared, thermal, false alarms, difficult visitors
+var szenen                            # szenenplus.gd (3D-4.x): Voller Campingplatz, Tarnen und Kriechen, Velodieb
+var weit                              # weitwinkel.gd (3D-4.17): camera 1 = the wide camera with its mount (mast, base, head front / rear)
+var parcours                          # parcours.gd (3D-4.18): «Verfolgungs-Parcours» - lessons, ground truth, game «Entkomme der Kamera»
 var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Zwilling» - photo / panorama of the real place
 var fauna                             # fauna.gd (3D-3.95)
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
@@ -371,6 +375,15 @@ func _ready() -> void:
 	simreal = preload("res://scripts/simreal.gd").new()      # 3D-4.4: closer to the real device (every part can be switched off)
 	simreal.main = self
 	add_child(simreal)
+	szenen = preload("res://scripts/szenenplus.gd").new()   # 3D-4.x: the new scenes (neighbours, camouflage, bike thief)
+	szenen.main = self
+	add_child(szenen)
+	weit = preload("res://scripts/weitwinkel.gd").new()      # 3D-4.17: the wide camera (camera 1) and its mount
+	weit.main = self
+	add_child(weit)
+	parcours = preload("res://scripts/parcours.gd").new()   # 3D-4.18: the tracking parcours (scene «parcours»)
+	parcours.main = self
+	add_child(parcours)
 	zwilling = preload("res://scripts/zwilling.gd").new()    # 3D-4.4: your place as a twin (photo behind the scene)
 	zwilling.main = self
 	add_child(zwilling)
@@ -439,6 +452,9 @@ func _ready() -> void:
 	surprise = preload("res://scripts/surprise.gd").new()   # 3D-3.75
 	surprise.main = self
 	add_child(surprise)
+	simwerte = preload("res://scripts/power.gd").new()      # Simulator-Werte: UPS HAT, Pi heat, «WLAN weg» (sent to MoveEye)
+	simwerte.main = self
+	add_child(simwerte)
 	recorder = Recorder.new()
 	recorder.main = self
 	add_child(recorder)
@@ -904,6 +920,8 @@ func _build_scene() -> void:
 		zwilling.on_scene()                      # 3D-4.4: the photo of the real place, tent and car by hand (first: the tent moves obj["pir"])
 	if simreal != null:
 		simreal.on_scene()                       # 3D-4.4: tarp, pennant, road sign
+	if szenen != null:
+		szenen.on_scene()                        # 3D-4.x: the neighbours of «Voller Campingplatz»
 	if scene == "ort" and not geo.loaded and not geo.busy and ort_lat != 0.0:
 		geo.load_place(ort_lat, ort_lon, ort_name)      # from the cache or the internet; then place_loaded()
 	if scene == "wild":
@@ -1793,6 +1811,8 @@ func busy_with(except_ := "") -> String:
 		w = "Fehlalarm nachstellen"
 	elif game != null and game.round_state in ["countdown", "play"]:
 		w = "Spielrunde"
+	elif parcours != null and (parcours.running or bool(parcours.game.get("on", false))):
+		w = "Verfolgungs-Parcours"                    # 3D-4.18 (the head follows - not «measuring»: MoveEye steers it)
 	elif recorder != null and recorder.playing:
 		w = "Wiedergabe"
 	elif _mw_task() != "":                             # 3D-4.x: one lock with MoveEye (a drill, a protection test … there)
@@ -2067,6 +2087,10 @@ var _slow_t := 0.0
 
 
 func _process(dt: float) -> void:
+	_fold_t += dt
+	if _fold_t > 0.3:                                     # 3D-4.18: the fold buttons show the state
+		_fold_t = 0.0
+		_fold_paint()
 	_lightning(dt)
 	_view_capture()
 	_hud_layout()
@@ -2125,7 +2149,8 @@ func _process(dt: float) -> void:
 	if replay != null and replay.on:                     # Alarm-Rückblick: the head turns like it did then
 		want_pan = -deg_to_rad(replay.servo.x)
 		want_tilt = deg_to_rad(replay.servo.y - 6.0)
-	var step := deg_to_rad(SERVO_DEG_S) * dt
+	var step: float = deg_to_rad(SERVO_DEG_S) * dt * weit.servo_k()     # 3D-4.17: wide camera on the head = a bit heavier
+	want_pan = weit.pan_clamp(want_pan)                   # ... and the cable allows only ± pan limit
 	if dataset != null and dataset.servo != null:
 		step *= 8.0                                      # the pictures: no need to wait for the slow servo
 	_drive(dt)
@@ -2158,8 +2183,7 @@ func _process(dt: float) -> void:
 	cams[2].global_transform = head_pitch.global_transform.translated_local(Vector3(0.12, 0.0, -0.12))
 	if _cover_mesh != null and sabotage_cover:           # 3D-3.72: the cloth hangs right in front of the lenses
 		_cover_mesh.global_transform = head_pitch.global_transform.translated_local(Vector3(0.05, 0.0, -0.36))   # beyond the near plane of the cameras (0.1 m)
-	var c1 := Transform3D(Basis.from_euler(Vector3(deg_to_rad(-10.0), -deg_to_rad(cam1_yaw), 0)), Vector3(-3.0, 2.4, 3.0))
-	cams[1].global_transform = c1
+	weit.place()                                         # 3D-4.17: camera 1 = the wide camera (mast / base / head front / head rear)
 	var L: Dictionary = mw.get("lights", {})
 	var wl_on: bool = L.get("white", false) or (game != null and game.now() < game.flash_until)
 	if wl_on and white_light.light_energy == 0.0 and look_at_light:
@@ -2281,10 +2305,12 @@ func _capture(i: int) -> void:
 			realism.before_capture(i)
 		if simreal != null:
 			simreal.before_capture(i)            # 3D-4.4: lens, rolling shutter, noise, infrared, reflectors
+		weit.before_capture(i)                   # 3D-4.17: NoIR Wide - infrared picture, fisheye, the wide infrared light
 	vps[i].render_target_update_mode = SubViewport.UPDATE_ONCE
 	await RenderingServer.frame_post_draw
 	var img: Image = vps[i].get_texture().get_image()
 	ir_light.light_energy = 0.0
+	weit.after_capture(i, img)
 	if img != null and not img.is_empty():
 		if i < 2:
 			_auto_exposure(i, img)
@@ -2539,7 +2565,7 @@ func world_reply() -> Dictionary:
 		press -= min(6.0, (now() - storm_t) / 180.0 * 6.0)
 	var t := Time.get_datetime_dict_from_system()
 	var midnight: float = now() - (t.hour * 3600 + t.minute * 60 + t.second)
-	return {"v": 1, "ok": true, "sim_time": midnight + hour() * 3600.0, "dark": is_dark(), "ambient_c": snappedf(ambient, 0.1),
+	var r := {"v": 1, "ok": true, "sim_time": midnight + hour() * 3600.0, "dark": is_dark(), "ambient_c": snappedf(ambient, 0.1),
 			"pressure_hpa": snappedf(press, 0.1), "wind_kmh": snappedf(wind, 0.1), "last_event": next_event_id - 1,
 			"pid": OS.get_process_id(), "active": sim_active, "sound_db": snappedf(sound_db(), 0.1) if sound_on else null,
 			"sound_ev": sound_events() if sound_on else null, "sound_ev_last": sound_ev_id,
@@ -2549,7 +2575,11 @@ func world_reply() -> Dictionary:
 			"sim_cpu_own": snappedf(mini_box.own["sim"], 0.1) if mini_box != null and float(mini_box.own["sim"]) >= 0.0 else null,
 			"cores": OS.get_processor_count(), "mw_cmd": mw_cmd if not mw_cmd.is_empty() else null,
 			"shut": game.shut.log_tail() if game != null and game.shut != null else null,   # 3D-4.x: «Auslöser» hits -> MoveEye's test inbox
-			"head_deg": [snappedf(-rad_to_deg(head.rotation.y), 0.01), snappedf(rad_to_deg(head_pitch.rotation.x) + 6.0, 0.01)] if head != null else null}   # MoveEye 2.98.35: where the head really is (servo diagnosis)
+			"head_deg": [snappedf(-rad_to_deg(head.rotation.y), 0.01), snappedf(rad_to_deg(head_pitch.rotation.x) + 6.0, 0.01)] if head != null else null,   # MoveEye 2.98.35: where the head really is (servo diagnosis)
+			"wide": weit.state() if weit != null else null}   # 3D-4.17: the mount of the wide camera (MoveEye 163 at once)
+	if simwerte != null:
+		r.merge(simwerte.reply())                     # Simulator-Werte: battery, pi_temp, net, clock, place, forecast (power.gd)
+	return r
 
 
 var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
@@ -2748,7 +2778,7 @@ func refscan_text() -> String:
 func info() -> Dictionary:
 	return {"v": 1, "name": "MW Sim · 3D %s" % VERSION, "host": host_name(),
 			"cameras": [{"id": 0, "name": "Head camera (NoIR)", "w": CAM_W[0], "h": CAM_H[0], "fps": CAM_FPS[0], "fov_h": CAM_FOV[0], "fov_v": 41.0, "on_head": true, "noir": true},
-						{"id": 1, "name": "Fixed camera", "w": CAM_W[1], "h": CAM_H[1], "fps": CAM_FPS[1], "fov_h": CAM_FOV[1], "fov_v": 62.0, "on_head": false, "noir": false}],
+						weit.cam_info()],          # 3D-4.17: the wide camera with its mount (weitwinkel.gd)
 			"thermal": {"w": TH_W, "h": TH_H, "fps": 8.0, "fov_h": TH_FOV, "fov_v": 35.0, "unit": "C", "on_head": true},
 			"view": {"input": 1, "path": "/view.mjpg", "padview": 1},
 			"sensors": [{"name": "Wohnwagen-Tür", "kind": "door"}, {"name": "PIR Zelt", "kind": "pir"}, {"name": "Gas Wohnwagen", "kind": "gas"}, {"name": "Velo", "kind": "tag"}],
@@ -2778,6 +2808,8 @@ func time_scale_visitors() -> float:
 func spawn(kind: String, from = null, to = null) -> Node3D:
 	if simreal != null and simreal.is_kind(kind):
 		return simreal.spawn_kind(kind, from, to)     # 3D-4.4: hood, backpack, phoning, groups, edge sneaker, deer lying ...
+	if szenen != null and szenen.is_kind(kind):
+		return szenen.spawn_kind(kind, from, to)      # 3D-4.x: on your pitch, camouflage / crawling, bike thief (szenenplus.gd)
 	if kids_on and not kids_scary and kind in ["wolf", "lynx", "boar"]:
 		kind = "hare"                             # 3D-3.69: Kinder-Modus without wild animals if so set
 	if kids_on and not kids_thief and kind in ["thief", "burglar", "drunk"]:
@@ -3086,19 +3118,19 @@ func add_control(type: String, id: String, label: String, getter, setter, group:
 const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Dein Platz", "Zeit"]],
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
-		["Kamerabild", "lens", "👁", ["", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
-		["Sensoren", "bell", "🔔", [""]],
+		["Kamerabild", "lens", "👁", ["", "Weitwinkel-Kamera", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
+		["Sensoren", "bell", "🔔", ["", "Akku und Strom", "Netz-Ausfall testen"]],
 		["Mover", "track", "🚜", ["", "Patrouille", "Controller"]],
 		["Spiel", "pad", "🎮", ["", "Assistent"]],
 		["Wildbeobachtung", "target", "🎯", [""]],
-		["Testlauf", "check", "✅", [""]],
+		["Testlauf", "check", "✅", ["", "Verfolgungs-Parcours"]],
 		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates", "Kinder-Modus"]]]
 # id -> [group, part]; not listed: the group given in add_control, no part
 const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "Patrouille"], "patrol_points": ["Mover", "Patrouille"], "patrol_area": ["Mover", "Patrouille"],
 		"patrol_random": ["Mover", "Patrouille"], "patrol_clear": ["Mover", "Patrouille"], "patrol_speed": ["Mover", "Patrouille"], "patrol_dwell": ["Mover", "Patrouille"],
 		"patrol_sweep": ["Mover", "Patrouille"], "patrol_follow": ["Mover", "Patrouille"], "patrol_judge": ["Mover", "Patrouille"],
 "ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort von der Karte"], "speed": ["Szene", "Zeit"], "moon": ["Szene", "Zeit"], "moon_auto": ["Szene", "Zeit"], "season": ["Szene", "Zeit"],
-		"cam1_yaw": ["Kamerabild", "Feineinstellungen"], "humidity": ["Wetter", "Mehr Wetter"], "pressure": ["Wetter", "Mehr Wetter"],
+		"cam1_yaw": ["Kamerabild", "Weitwinkel-Kamera"], "humidity": ["Wetter", "Mehr Wetter"], "pressure": ["Wetter", "Mehr Wetter"],
 		"storm": ["Wetter", "Mehr Wetter"], "thunder": ["Wetter", "Mehr Wetter"], "cloud_shadows": ["Wetter", "Mehr Wetter"], "gusts": ["Wetter", "Natur und Wind"],
 		"world_cloth": ["Wetter", "Natur und Wind"], "world_smoke": ["Wetter", "Natur und Wind"], "world_fireflies": ["Wetter", "Natur und Wind"],
 		"meadow": ["Wetter", "Natur und Wind"], "car": ["Besuch", "Fahrzeuge"], "thief": ["Besuch", "Abläufe"], "burglar": ["Besuch", "Abläufe"], "sneaker": ["Besuch", "Abläufe"], "bbq": ["Besuch", "Abläufe"], "homecoming": ["Besuch", "Abläufe"], "parcel": ["Besuch", "Abläufe"], "fox_trash": ["Besuch", "Abläufe"], "boar_group": ["Besuch", "Abläufe"], "kids_tag": ["Besuch", "Abläufe"], "mowing": ["Besuch", "Abläufe"], "night_lapse": ["Besuch", "Von selbst"], "calendar": ["Besuch", "Von selbst"],
@@ -3209,7 +3241,7 @@ func _register_controls() -> void:
 	add_control("slider", "moon", "Mond", func(): return moon, func(v):
 		moon = v
 		moon_auto = false, "Szene", {"min": 0, "max": 1, "step": 0.1, "expert": true})
-	add_control("slider", "cam1_yaw", "Kamera 1: Richtung", func(): return cam1_yaw, func(v): cam1_yaw = v, "Szene", {"min": -90, "max": 90, "step": 1, "unit": "°", "expert": true})
+	add_control("slider", "cam1_yaw", "Weitwinkel am Mast: Richtung", func(): return cam1_yaw, func(v): cam1_yaw = v, "Szene", {"min": -90, "max": 90, "step": 1, "unit": "°", "expert": true})
 	add_control("select", "weather", "Wetter", func(): return weather, func(v): weather = v, "Wetter",
 			{"options": [["clear", "klar"], ["cloudy", "bewölkt"], ["rain", "Regen"], ["fog", "Nebel"], ["snow", "Schnee"]]})
 	add_control("toggle", "world_cloth", "Fahnen und Wäsche im Wind", func(): return world_cloth, func(v): set_cloth(v), "Wetter", ex)
@@ -3303,6 +3335,9 @@ func _register_controls() -> void:
 		var key: String = cd[0]
 		add_control("toggle", "cond_" + key, cd[1], func(): return cond[key], func(v): cond[key] = bool(v), "Kamerabild")
 	simreal.add_controls()                                 # 3D-4.4: closer to the real device
+	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
+	weit.add_controls()                                    # 3D-4.17: the wide camera (card «Kamerabild», part «Weitwinkel-Kamera»)
+	parcours.add_controls()                                # 3D-4.18: card «Testlauf», part «Verfolgungs-Parcours»
 	zwilling.add_controls()
 	add_control("toggle", "dev2_on", "Zweites MoveEye-Gerät in der Welt (eigene Adresse: Port des Simulators + 20, meist 8785)", func(): return dev2.on, func(v): dev2.set_on(v), "Mover")
 	add_control("select", "dev2_place", "Platz des zweiten Geräts", func(): return dev2.place, func(v): dev2.set_place(str(v)), "Mover",
@@ -3340,6 +3375,7 @@ func _register_controls() -> void:
 	add_control("toggle", "gas", "Gas / Rauch", func(): return gas_on, func(v): set_gas(v), "Sensoren")
 	add_control("button", "pir", "PIR Zelt auslösen", null, func(): add_event("PIR Zelt", "pir"), "Sensoren")
 	add_control("button", "bike", "Velo-Sensor auslösen (jemand rüttelt am Velo)", null, func(): add_event("Velo", "tag"), "Sensoren")
+	simwerte.add_controls()                            # Simulator-Werte: Akku und Strom, Netz-Ausfall testen (power.gd)
 	add_control("toggle", "rifle", "Gewehr (unblutig, nur Tiere)", func(): return rifle_on, func(v): rifle_on = v, "Wildbeobachtung")
 	add_control("button", "shoot_head", "Schuss aus der Kopfkamera", null, func(): shoot_head(), "Wildbeobachtung")
 	add_control("button", "score0", "Punkte auf 0", null, func(): reset_score(), "Wildbeobachtung")
@@ -3986,8 +4022,14 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "rover": patrol.rover_info()}
 	elif a == "overlay":
 		return {"ok": true, "overlay": overlay.info()}
+	elif a == "szenen":                                # 3D-4.x: the new scenes {do: info | spawn (kind) | restore}
+		return szenen.control(d)
 	elif a == "simreal":                               # 3D-4.4: {do: info | set (key, value) | sweep | bird | spawn (kind, from, to)}
 		return simreal.control(d)
+	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
+		return weit.control(d)
+	elif a == "parcours":                              # 3D-4.18: {do: info | start (lessons, night, seed, prep_s) | stop | state | result | game | steer ...}
+		return parcours.control(d)
 	elif a == "zwilling":                              # 3D-4.4: {do: info | import (path) | set (key, value) | item (k, x, z, r) | clear | remove | on}
 		return zwilling.control(d)
 	elif a == "whatif":                                # 3D-3.83: makeover 8 - MoveEye re-enacts a real recording
@@ -4224,7 +4266,7 @@ func status_text() -> String:
 func scenarios() -> Array:
 	var out := []
 	for s in Scenes.LIST:
-		out.append({"id": s[0], "name": s[1] + " (3D)", "kind": "world", "deletable": false})
+		out.append({"id": s[0], "name": s[1] + " (3D)", "kind": "world", "deletable": false, "en": Scenes.EN.get(s[0], "")})
 	return out
 
 
@@ -4374,15 +4416,18 @@ func _build_ui() -> void:
 	search_in = UI.search_field("Einstellung suchen …")
 	search_in.text_changed.connect(_search)
 	tb.add_child(search_in)
+	# 3D-4.18 (Daniel): same order and look as MoveEye 2.98.46 - «Alle zuklappen · Nur Gruppen · Alle aufklappen»,
+	# the button of the current fold state is blue (mixed = none)
+	var cb := UI.icon_button("close", "Alle zuklappen")
+	cb.pressed.connect(func(): _fold_all("close"))
+	tb.add_child(cb)
 	var gb := UI.icon_button("groups", "Nur Gruppen")
 	gb.pressed.connect(func(): _fold_all("groups"))
 	tb.add_child(gb)
 	var ob := UI.icon_button("open", "Alle aufklappen")
 	ob.pressed.connect(func(): _fold_all("open"))
 	tb.add_child(ob)
-	var cb := UI.icon_button("close", "Alle zuklappen")
-	cb.pressed.connect(func(): _fold_all("close"))
-	tb.add_child(cb)
+	_fold_btns = {"close": cb, "groups": gb, "open": ob}
 	search_none = UI.small("Kein Treffer")
 	search_none.visible = false
 	box_.add_child(search_none)
@@ -4760,6 +4805,8 @@ func _build_ui() -> void:
 		testrun.add_info(testen_measure, UI)          # progress and result of the test run (card «Testen»)
 	elif groups.has("Testlauf"):
 		testrun.add_info(groups["Testlauf"], UI)
+	if subs.has("Sensoren/Akku und Strom"):           # Simulator-Werte: what goes to MoveEye (power.gd)
+		simwerte.add_info(subs["Sensoren/Akku und Strom"], UI)
 	if subs.has("Kamerabild/Wie echt"):              # 3D-3.94: what the real look adjustment does
 		real_label = UI.small("")
 		real_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -4872,7 +4919,55 @@ func _cam_float_input(ev: InputEvent) -> void:
 		_cam_clamp()
 
 
+var _fold_btns := {}
+var _fold_lit := "-"
+var _fold_t := 0.0
+
+
+func _fold_state() -> String:
+	"""which of the three fold buttons matches what is open now ("" = mixed)"""
+	var all_open := true
+	var all_closed := true
+	var groups := true
+	for b in fold_bodies:
+		if not is_instance_valid(b) or not b.get_parent().visible:
+			continue
+		var o: bool = b.visible
+		all_open = all_open and o
+		all_closed = all_closed and not o
+		groups = groups and o == (not b in setting_bodies and b.get_meta("title", "") in ["Kameras"])
+	for sb in sub_bodies:
+		if not is_instance_valid(sb) or not sb.has_meta("fold"):
+			continue
+		var so: bool = (sb.get_meta("fold") as Control).visible
+		all_open = all_open and so
+		all_closed = all_closed and not so
+	if all_closed:
+		return "close"
+	if all_open:
+		return "open"
+	return "groups" if groups else ""
+
+
+func _fold_paint() -> void:
+	"""light the button of the current fold state (called a few times a second, repaints only on a change)"""
+	if _fold_btns.is_empty():
+		return
+	var st := _fold_state()
+	if st == _fold_lit:
+		return
+	_fold_lit = st
+	for k in _fold_btns:
+		var b: Button = _fold_btns[k]
+		for n in ["normal", "hover", "pressed"]:
+			if k == st:
+				b.add_theme_stylebox_override(n, UI.box(UI.ACC, UI.ACC, 10))
+			else:
+				b.remove_theme_stylebox_override(n)
+
+
 func _fold_all(how: String) -> void:
+	_fold_lit = "-"
 	for b in fold_bodies:
 		var open: bool = how == "open" or (how == "groups" and not b in setting_bodies and b.get_meta("title") in ["Kameras"])   # 3D-4.12 (Daniel): «Verbindung» stays closed
 		UI.set_open(b, open)

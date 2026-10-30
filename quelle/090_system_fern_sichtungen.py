@@ -313,8 +313,8 @@ def diary_thumb(name):
 # ---- night report -----------------------------------------------------------
 def report_window(now=None):
     """(start, end) of the night the report is about: from <report_from> o'clock to <report_hour> o'clock.
-    Before the report hour: the night so far."""
-    now = now or datetime.now()
+    Before the report hour: the night so far. While the simulator is connected: its clock (285)."""
+    now = now or sim_now()
     hr, fr = int(CFG["report_hour"]) % 24, int(CFG["report_from"]) % 24
     span = (hr - fr) % 24 or 24
     end = now.replace(hour=hr, minute=0, second=0, microsecond=0)
@@ -328,7 +328,9 @@ def report_build(lang=None, start=None, end=None):
     lang = cur_lang(lang)
     if start is None:
         start, end = report_window()
-    a, b = start.isoformat(timespec="seconds"), end.isoformat(timespec="seconds")
+        a, b = sim_to_real(start).isoformat(timespec="seconds"), sim_to_real(end).isoformat(timespec="seconds")   # the simulated night in real time (285)
+    else:
+        a, b = start.isoformat(timespec="seconds"), end.isoformat(timespec="seconds")
     sight_load()
     with SIGHT_LOCK:
         ev = [dict(e) for e in SIGHT["list"] if a <= e["start"] < b]
@@ -442,7 +444,7 @@ class ReportScheduler:
         while True:
             time.sleep(30)
             try:
-                now = datetime.now(); hr = int(CFG["report_hour"]) % 24
+                now = sim_now(); hr = int(CFG["report_hour"]) % 24     # the simulated morning while connected (285)
                 day = now.strftime("%Y-%m-%d")
                 if CFG["report_on"] and CFG["report_last_day"] != day and hr <= now.hour < hr + 3 and not morning_wait(now):
                     CFG["report_last_day"] = day; save_settings()

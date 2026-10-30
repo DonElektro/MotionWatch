@@ -335,7 +335,7 @@ def sneeze_reply():
         return
     SOUNDEV["sneeze_last"] = now
     n = sneeze_count(add=True)
-    h = datetime.now().hour
+    h = sim_now().hour                                         # the simulated night while connected (285)
     quiet = CFG.get("sneeze_night") and (h >= 22 or h < 7)
     log_event("sys", f"Sneeze recognised (today {n}×)" + (" - quiet at night" if quiet else ""))
     if quiet or not out_selected() or SOUND["playing"]:

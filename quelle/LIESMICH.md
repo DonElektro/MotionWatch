@@ -61,6 +61,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `150_zweites_wlan_tv_netzcheck.py` | zweites WLAN, USB-Tethering, TV-Anzeige, Netz-Check, WLAN-Wächter | 1059 |
 | `160_netzautomatik_patrouille.py` | Netz-Automatik, Patrouille | 160 |
 | `162_kopf_auto.py` | Automatische Kopfbewegung: ein Koordinator (Hand > Alarm/Folgen > Gehtest > Wertsachen-Blick > Runde > Parken, Simulator-Sperre), kluge Runde (place_items / Wegpunkte), zum Alarm drehen (Bildrand, Wärmefleck, Geräusch mit Zugang, Übersichtskamera), Parken bei «Aus», Wertsachen-Blick, sparsam (Akku / tiefe Nacht), Wildtier-Modus, Sabotage umschauen, 180/270/360°- und Endlos-Servos | 834 |
+| `163_weitwinkel.py` | Weitwinkel-Kamera des Simulators (sim:1, 3D-4.17): Montage aus /info und der Antwort auf /state, «Übersicht lenkt den Kopf» von selbst (nur bei Montage-Wechsel, Hand bleibt), Kopf-Montage = Richtung Kopf + Versatz, Eigenbewegung der Kopf-Kamera ausblenden (440), IR-Licht breit auf PCA9685 Kanal 4 | 196 |
 | `170_ki_personen.py` | KI-Modell laden und herunterladen | 110 |
 | `180_ki_tierarten_helfer_tunnel.py` | Tierarten, Alarm-Rückblick, KI-Rechenhilfe, KI-Prüfung, Tunnel, AIDetector | 841 |
 | `190_relais_wetter_tracker.py` | Relais, Wetter-Analyse, Auto-Tuner, Tracker | 422 |
@@ -79,6 +80,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `260_mehrere_geraete.py` | mehrere Motion-Watch-Geräte | 164 |
 | `270_mqtt.py` | MQTT / Home Assistant | 250 |
 | `280_sms_sensoren_sturm_gps_solar.py` | SMS, Sensoren, Sturmwarnung, GPS, Solar | 870 |
+| `285_simwerte.py` | Simulator-Werte: Akku (simulierter USV-HAT), Uhrzeit (sim_now), Ort, Wetter, Pi-Wärme, «WLAN weg»-Test aus dem 3D-Simulator | 230 |
 | `290_simulator_verbindung.py` | Verbindung zum Simulator | 333 |
 | `300_werkzeuge_simulator3d.py` | Werkzeuge, 3D-Simulator für Windows und den Pi, Simulator-Suche | 1155 |
 | `310_testlaeufe.py` | Testläufe mit Auswertung und Optimierung | 485 |
@@ -101,6 +103,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `400_ausschalten.py` | Pi ausschalten / neu starten | 53 |
 | `410_motionwatch_kern.py` | KERN: die Erkennungs-Schleife (Bewegung, Personen, Alarm) | 969 |
 | `415_entfernung_gehtest.py` | Entfernung und Richtung einer Person, Gehtest beim Einrichten | 376 |
+| `416_verfolgung_parcours.py` | Verfolgungs-Parcours des Simulators (3D-4.18): Lektionen starten (Steuerbefehl `parcours`), Läufe mit den Werten der Verfolgung speichern (`parcours_runs.json`), A/B-Vergleich, Auto-Tuning (nur Vorschlag, «übernehmen»), mit / ohne Weitwinkel-Übergabe, Spiel «Entkomme der Kamera»; neuer Regler `track_lead` (Vorausschauen, 0 = wie bisher) als Wrapper um `MotionWatch.track`; Kachel 🎯 (139, Gruppe «Testen»); eine Sperre (147) | 600 |
 | `420_webzugang_aufnahmen.py` | Web-Zugang, Aufnahmen, Speicher, Bild für andere Programme | 630 |
 | `425_zeitleiste.py` | Zeitleiste der Nacht: Daten für /api/timeline | 230 |
 | `426_wochenbericht.py` | Wochenbericht der Erkennung (Push + Karte) | 200 |
@@ -121,12 +124,19 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `631_uebersetzungen_spielB.py` | Übersetzungen und Anleitungs-Zeilen (Kapitel «Spiele freigeben») zu 343 / 543 / 592 | 120 |
 | `633_uebersetzungen_guide2.py` | Übersetzungen und Anleitungs-Kapitel «Einrichtung, Rundgänge und Tipps» zu Guide 2 | 330 |
 | `589_blinki.py` | «Blinki», die Figur aus dem Logo für Einrichtung und Rundgänge: SVG + CSS + Skript vor /g2/ui.js (Web), kleines Bild mit cv2 (Fenster), Schalter «blinki_on» | 260 |
+| `591_web_weitwinkel.py` | Weitwinkel-Bild als Kachel 🔭 (Simulator-Zentrale 139 und Sim-Kompakt 549, über /cam_feed, antippen = gross), Montage wählen, Schalter «IR-Licht breit (Kanal 4)», Zustand an den Simulator (lights.ir_wide), Selbsttest zu 163 | 167 |
 | `593_fenster_aufraeumen.py` | Fenster: Gruppe «Tierart» in der KI-Erkennung (wie «KI-Modell») | 37 |
 | `635_uebersetzungen_blinki.py` | Übersetzungen und Anleitungs-Zeile zu Blinki | 60 |
 | `594_uebersetzungen_kihilfe.py` | Übersetzungen für die «KI-Hilfe» am Auslöser (542) | 25 |
 | `595_fenster_simstopp.py` | Fenster: «⏹ Stopp» (Not-Aus) in der Simulation ausblenden | 75 |
 | `596_uebersetzungen_vier.py` | Übersetzungen für «MoveEye als KI-Wächter» (548) | 32 |
 | `597_uebersetzungen_simkompakt.py` | Übersetzungen für «Sim-Kompakt» (549) | 67 |
+| `551_uebersetzungen_szenen.py` | Namen der Simulator-Szenen in FR / IT / RM / EN (der Simulator schickt «en» mit; 139 / 470 / 549 zeigen sie) und Anleitungs-Absatz zu den neuen Szenen (Erkennung) | 50 |
+| `568_uebersetzungen_weit.py` | Übersetzungen und Anleitungs-Absatz (Kamera & Servos) zur Weitwinkel-Kamera (163 / 591) | 50 |
+| `598_simwerte_anzeige.py` | «🧪 Simulator»-Hinweis bei Simulator-Werten (Web und Fenster), Anleitung (285) | 175 |
+| `599_uebersetzungen_simwerte.py` | Übersetzungen der Simulator-Werte (285, 598) | 55 |
+| `599a_fenster_parcours.py` | Fenster: Regler «Vorausschauen» bei Kamera / Servos (SLIDERS), Karte «Verfolgungs-Parcours» im Reiter Simulator (letzter Lauf, Start, Vorschlag übernehmen, Kachel im Browser) | 70 |
+| `598_uebersetzungen_weit.py` | Übersetzungen und Anleitungs-Absatz (Kamera & Servos) zur Weitwinkel-Kamera (163 / 591) | 50 |
 | `634_uebersetzungen_ausl.py` | Übersetzungen für den «Auslöser» (539) | 40 |
 | `637_uebersetzungen_servo.py` | Übersetzungen Servo-Bewegung, Not-Aus, Teach-in, Diagnose | 156 |
 | `623_uebersetzungen_pad2.py` | Übersetzungen des Controller-Konzepts (542, 538, 470) | 75 |
@@ -151,7 +161,10 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `548_web_ki_waechter.py` | Web: «🤖 MoveEye als KI-Wächter» in der Karte «Spiel» (Schalter, Liste «gegen die KI»), Simulator-Fenster ohne Einblendungen | 80 |
 | `549_web_sim_kompakt.py` | Live-Seite «Sim-Kompakt»: mit verbundenem Simulator zwei kleine Bilder, Kopf- und Rover-Stick am Rand, Simulator-Kacheln dazwischen («◫ Ansicht», pro Gerät) | 429 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
+| `556_tailscale_funnel.py` | Online-Spiel über Tailscale Funnel: nur /game/ öffentlich (eigene Tür + Sperre bei Funnel-Anfragen), Auto-Aus, Aufräumen beim Neustart, Fehler mit Abhilfe, Fenster-Zeile | 605 |
 | `560_uebersetzungen_de.py` | Übersetzungen Deutsch | 498 |
+| `561_uebersetzungen_funnel.py` | Übersetzungen und Anleitung (DE/EN) zum Tailscale Funnel (556) | 128 |
+| `569_uebersetzungen_parcours.py` | Übersetzungen und Anleitungs-Absatz (Kamera & Servos) zum Verfolgungs-Parcours (416 / 599) | 140 |
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |
 | `576_fenster_zeitleiste.py` | Fenster: Zeitleiste als Liste, Wochenbericht | 130 |
 | `577_nachlauf_konzept.py` | Nachlauf Konzept-Check: ein Wochenbericht, Rückkehr des Handys (ausschalten / fragen / nichts), Akku-Schwellen zusammen, Auto-Tuner ±20 %, Übernahme alter Einstellungen | 201 |

@@ -1000,7 +1000,7 @@ async function gwGo(d) {
 let SPEC = null, SPECON = true, SPECRES = "", specT = null;
 try { SPECON = localStorage.getItem("mw-sim-spec") !== "0"; } catch (e) {}
 const MODE_TXT = {camera: "Alle gegen die Kamera", guard: "Wächter", teamguard: "Team gegen Team", mw: "Gegen MoveEye", mwhand: "Team gegen MoveEye",
-  patrol: "Patrouille", seek: "Verstecken mit dem Rover", free: "Zonen-Check", jaeger: "Fehlalarm-Jäger"};     // 2.98.0: all game types (2.98.18: Fehlalarm-Jäger)
+  patrol: "Patrouille", seek: "Verstecken mit dem Rover", free: "Zonen-Check", jaeger: "Fehlalarm-Jäger", escape: "Entkomme der Kamera"};     // 2.98.0: all game types (2.98.18: Fehlalarm-Jäger)
 const ST_IC = {play: "🏃", goal: "🎉", jail: "🔒", out: "👀", lobby: "⏳"};
 async function specPoll() {
   clearTimeout(specT);
@@ -1158,7 +1158,7 @@ function showCtl(r) {
   });
   const sel = $("#s-sel"), cur = sel.value; sel.textContent = "";
   (r.scenarios || []).forEach(o => { const op = document.createElement("option"); op.value = o.id; op.dataset.del = o.deletable ? "1" : "";
-    op.textContent = o.name + (o.id === r.scenario ? "  ◀ " + t("running") : ""); sel.appendChild(op); });
+    op.textContent = (o.en && LANG !== "de" ? t(o.en) + " (3D)" : o.name) + (o.id === r.scenario ? "  ◀ " + t("running") : ""); sel.appendChild(op); });
   $("#s-scn").hidden = !(r.scenarios || []).length;
   sel.value = [...sel.options].some(o => o.value === cur) ? cur : (r.scenario || (sel.options[0] && sel.options[0].value) || "");
   const o = sel.options[sel.selectedIndex]; $("#s-del").hidden = !(o && o.dataset.del === "1");

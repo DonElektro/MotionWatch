@@ -67,6 +67,7 @@ const MODES := [["mw", "🛡", "Gegen MoveEye", "Die echte Erkennung von MoveEye
 		["guard", "👮", "Wächter", ""],   # the text: gamerules.gd GUARD_TXT (model, _rules)
 		["seek", "🙈", "Verstecken mit dem Rover", "Alle starten bei der Basis und verstecken sich 30 s lang. Der Fänger sieht nur die Kamera, fährt den Rover und drückt «Gefunden!». Wer die Basis berührt, rettet alle. Danach steht MoveEye wieder am alten Ort."],
 		["free", "🧪", "Zonen-Check", "Ohne Erwischen: geh die Grenzen deiner Zonen und die Wege ums Zelt ab. Das Handy sagt laufend, ob MoveEye dich sieht – jede Stelle, wo es dich nicht meldet, kommt auf die Karte der blinden Flecken."],
+		["escape", "🏃", "Entkomme der Kamera", "Ein Spieler steuert im Verfolgungs-Parcours eine Figur mit dem Stick (Handy, Controller oder Fenster) und versucht, aus dem Bild von MoveEye zu kommen. Eine Runde dauert 60 Sekunden. Punkte gibt es für die Zeit ausserhalb des Bilds und für jeden Verlust, den du verursachst. Die Punkte zählen in der Rangliste des Abends – und MoveEye lernt, besser zu folgen."],   # 3D-4.18 (Daniel): also in the wizard (parcours.gd)
 		["jaeger", "🦊", "Fehlalarm-Jäger", "Ihr seid keine Menschen, sondern Fuchs, Katze, Ast im Wind, Lampe, Ballon … Schafft ihr es, dass MoveEye trotzdem «Person!» meldet? Jeder Fehlalarm gibt Punkte – und MoveEye lernt daraus. Nur mit MoveEye."],
 		["camera", "🎥", "Alle gegen die Kamera (ältere Spielart)", "Wie «Gegen MoveEye», aber immer schätzt der Simulator, wer gesehen wird – auch wenn MoveEye verbunden ist.", true],
 		# 3D-4.x (Aufräumen, Daniel 29.10.2026): «Team gegen Team» is no longer offered - teams only with «Fahne erobern»
@@ -180,11 +181,18 @@ const PRESETS := {"sneak": {"game_mode": "mw", "game_goal": "reach", "game_level
 			"game_tasks": false, "game_decoy": false, "game_heart": false, "game_bots": "2", "game_tutorial": true, "game_hides": 4, "game_wx": false},
 		"free": {"game_mode": "free", "game_lives": "0", "game_items": 0, "game_hides": 0, "game_powers": false, "game_events": false, "game_tasks": false,
 			"game_decoy": false, "game_checkpoints": 0, "game_bots": "0", "game_botguard": false, "game_spectate": false, "game_photos": false,
-			"game_wx": false, "game_gear": false}}
+			"game_wx": false, "game_gear": false},
+		# 3D-4.x: the games of the new scenes (szenenplus.gd GAME - only offered in their scene)
+		"szene_voll": {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_bots": "2",
+			"game_hides": 2, "game_items": 0, "game_gear": false},
+		"szene_tarnen": {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_bots": "2",
+			"game_hides": 2, "game_items": 0, "game_gear": true},
+		"szene_velo": {"game_mode": "guard", "game_goal": "theft", "game_level": "normal", "game_lives": "3", "game_minutes": 2, "game_theft": "Velo",
+			"game_botguard": true, "game_rotate": "turn", "game_tools": true, "game_items": 0, "game_hides": 2, "game_bots": "1"}}
 const QUICK := [["sneak", "🕵️", "Schleichen", "Unentdeckt zum grünen Ziel – MoveEye passt auf (ohne MoveEye die Kamera des Simulators). 3 Minuten, 3 Leben, Verstecke und Schatten, 1 Bot läuft mit."],
 		["duel", "👮", "Wächter-Duell", "Einer ist Wächter: Auslöser 🎯, Licht, Sirene, Scan und Zoom – mit Energie. Die anderen schleichen. Nach jeder Runde ist der Nächste Wächter (will niemand: der Bot-Wächter)."],
 		["theft", "🚲", "Diebstahl", "Das Velo oder die Kühlbox unbemerkt zum orangen Ausgang tragen. Am Schluss schaut MoveEye nach, ob es merkt, dass etwas fehlt."]]
-const LEVEL_OF := {"sneak": "normal", "duel": "normal", "theft": "normal", "kids": "easy", "family": "normal", "pro": "hard", "kids_pc": "easy", "free": "normal"}
+const LEVEL_OF := {"szene_voll": "normal", "szene_tarnen": "normal", "szene_velo": "normal", "sneak": "normal", "duel": "normal", "theft": "normal", "kids": "easy", "family": "normal", "pro": "hard", "kids_pc": "easy", "free": "normal"}
 const OWN_LABEL := "⚙ Eigene Regeln – alle Spielarten, Ziele und Extras"
 
 
@@ -393,6 +401,9 @@ func model() -> Dictionary:
 		cards.append(g.cmp.wiz_card(str(W.get("game_mode", "")) == "compare"))
 	var quick := []
 	if step == 0:                                          # 3D-4.x: one tap - everything set
+		var sg: Dictionary = main.szenen.game_card() if main.szenen != null else {}
+		if not sg.is_empty():
+			quick.append(sg)                               # 3D-4.x: the game that fits the scene (szenenplus.gd) first
 		for q in QUICK:
 			quick.append({"v": q[0], "icon": q[1], "title": q[2], "text": q[3]})
 	var opts := []
@@ -591,6 +602,19 @@ func _pick(key: String, v: String) -> void:
 
 
 func _next() -> void:
+	if str(W.get("game_mode", "")) == "escape":            # 3D-4.18: «Entkomme der Kamera» needs no goal / level - start it at once
+		var nm := "Spieler"
+		for p in main.game.players:
+			if p != null and str(p.get("name", "")) != "":
+				nm = str(p["name"])
+				break
+		error = main.parcours.game_start(nm) if main.parcours != null else "Parcours fehlt"
+		if error != "":
+			error = "⚠ " + error
+			_changed()
+			return
+		close_wiz()
+		return
 	if step < 3:
 		step += 1
 		error = ""

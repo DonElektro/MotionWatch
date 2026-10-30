@@ -18,8 +18,16 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   Konzept passt (6 Reiter Live · Schutz · Verlauf · Einstellungen · Simulator · Mehr; Simulator: Leiste = Bewegen/Ansicht,
   Kacheln = Inhalte, Karte «Testen»; Zustand heisst Aus / Wachsam / Voll; eine Sperre für Simulator-Aufgaben). Passt etwas nicht
   oder gibt es eine Doppelung, das Daniel im Schlussbericht ausdrücklich melden (Abschnitt «Konzept-Check»), mit Vorschlag.
+- **Gleiches Aussehen MoveEye ↔ Simulator (Wunsch Daniel, 30.10.2026):** Bedienelemente, die es in beiden gibt (z. B. die drei
+  Aufklapp-Knöpfe «Alle zuklappen · Nur Gruppen · Alle aufklappen», Suchfeld, Schalter Einfach/Experte, Symbole, Farben, aktive
+  Zustände blau), in beiden gleich oder möglichst ähnlich bauen. Bei jeder optischen Änderung im einen Projekt das andere
+  prüfen und mitziehen; im Konzept-Check melden, wenn es (noch) abweicht.
 - **Zwischenberichte (Wunsch Daniel, bis 2.11.2026 24:00):** bei jeder Aufgabe, die länger als 3–4 Minuten dauert, jede Minute
   eine kurze Checkliste senden (✅ erledigt / ⏳ offen).
+  **Pausiert (Daniel, 30.10.2026 10:58):** vorerst keine Zwischenberichte, nur melden, wenn es News gibt (fertig, Problem, Frage).
+- **Vor jeder Änderung bestätigen lassen (Wunsch Daniel, 30.10.2026 11:18):** bevor eine Änderung gebaut wird (auch kleine,
+  auch Helfer starten), zuerst einen kurzen Fragekatalog (AskUserQuestion) mit dem geplanten Vorgehen und den Optionen stellen
+  und erst nach Daniels Antwort umsetzen. Ausnahme: reine Lese-/Prüfarbeit (Analyse, Status, Tests ohne Änderung).
 - **Fragen immer als Fragekatalog (Wunsch Daniel, 29.10.2026):** wenn Daniel nichts anderes wünscht, jede Rückfrage als
   Auswahl-Katalog stellen (AskUserQuestion: bis 4 Fragen à 4 Antworten, Mehrfachauswahl wo sinnvoll), nicht als Fliesstext.
 
@@ -31,6 +39,12 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   in `feedback/` hochladen lassen. Bei jeder grösseren Antwort kurz nachfragen, ob die Hardware inzwischen bereit ist.
   Stand 29.10.2026 17:40: **Camera Module 3 NoIR ist da und läuft** am Pi 5 (192.168.1.56, Videoquelle «Raspberry Pi camera»,
   ab 2.98.24). Noch fehlend: Wärmebild, Servos, Licht, Ton, Akku.
+
+## Schwerpunkte (Antworten Daniel, 30.10.2026 11:12)
+
+- MoveEye im Alltag: keine besonderen Störungen genannt.
+- Nächste Wochen: vor allem **Entwicklung und Tests mit dem Simulator** (Hardware folgt).
+- Simulator: **Realismus, Spielspass und Bedienung** gleich wichtig (Tempo nicht erste Priorität).
 
 ## Offene Aufträge (Stand 30.10.2026 05:30, MoveEye 2.98.45 / Simulator 3D-4.16)
 

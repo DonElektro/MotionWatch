@@ -779,7 +779,8 @@ def run_guard_start():
             time.sleep(10)
             sup = STATE.get("supply") or {}
             up = int(time.monotonic() - RUNGUARD["m0"])
-            state.update(up=up, cpu_temp=STATE.get("cpu_temp"), uv=bool(sup.get("uv_now") or sup.get("uv_boot")),
+            # cpu_temp: the real Pi (not the simulated one, 285)
+            state.update(up=up, cpu_temp=STATE.get("cpu_temp_real", STATE.get("cpu_temp")), uv=bool(sup.get("uv_now") or sup.get("uv_boot")),
                          throttled=bool(sup.get("throttled")), cpu=STATE.get("cpu"), ai=bool(CFG["ai_enabled"] and str(STATE.get("ai_status", "")).startswith("running")),
                          beat_txt=datetime.now().strftime("%Y-%m-%d %H:%M"))
             if up > 1800 and state.get("streak"):

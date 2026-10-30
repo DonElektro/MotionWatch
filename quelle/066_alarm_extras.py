@@ -404,7 +404,7 @@ def arm_forecast(lang=None):
         nf = night_forecast()
     except Exception:
         nf = None
-    now = datetime.now()
+    now = sim_now()                                            # (285)
     until = now + timedelta(hours=have_h)
     if have_h >= 36:
         text = trf("Battery lasts {d} days at {level}", L, d=int(have_h // 24), level=lv)

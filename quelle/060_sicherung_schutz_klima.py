@@ -666,7 +666,9 @@ def weather_day(day):
 def weather_loop():
     time.sleep(90)
     while True:
-        if CFG["weather_on"] or (CFG["storm_on"] and CFG["storm_forecast"]):
+        if (CFG["weather_on"] or (CFG["storm_on"] and CFG["storm_forecast"])) and simval_live():
+            WEATHER["status"] = "simulator"              # the weather of the simulated scene - no internet call (285)
+        elif CFG["weather_on"] or (CFG["storm_on"] and CFG["storm_forecast"]):
             if time.time() - WEATHER["t"] > 3 * 3600:
                 weather_fetch()
         else:
@@ -719,16 +721,21 @@ def day_summary(day, lang="en"):
     if g is None:
         gg = gps_now(); g = [gg[0], gg[1]] if gg else None
     lat, lon = (g[0], g[1]) if g else (float(CFG["latitude"]), float(CFG["longitude"]))
-    st = sun_times(d.date(), lat, lon)
+    sim_day = simval_live() and day == sim_now().strftime("%Y-%m-%d")      # the day of the simulated scene: its place and weather (285)
+    st = sun_times_here(d.date()) if sim_day else sun_times(d.date(), lat, lon)
     sun = {"rise": f"{int(st[0] // 60):02d}:{int(st[0] % 60):02d}", "set": f"{int(st[1] // 60):02d}:{int(st[1] % 60):02d}",
            "len": f"{int((st[1] - st[0]) // 60)} h {int((st[1] - st[0]) % 60):02d}"} if isinstance(st, tuple) else {"polar": st}
     mi, mn = moon_phase(d)
     w = weather_day(day) if CFG["weather_on"] or weather_day(day) else None
+    if sim_day:
+        w = None; sw_ = sim_weather_day(lang)
     if w:
         dd = w.get("daily") or {}
         icon, key = wmo_text(dd.get("weather_code"))
         w = {"icon": icon, "text": tr(key, lang) if key else "", "tmax": dd.get("temperature_2m_max"), "tmin": dd.get("temperature_2m_min"),
              "rain": dd.get("precipitation_sum"), "wind": dd.get("wind_speed_10m_max"), "gust": dd.get("wind_gusts_10m_max"), "hourly": w.get("hourly") or {}}
+    if sim_day and sw_:
+        w = sw_
     rep_txt = ""
     if d.date() <= datetime.now().date():
         hr, fr = int(CFG["report_hour"]) % 24, int(CFG["report_from"]) % 24
@@ -751,7 +758,8 @@ def day_summary(day, lang="en"):
             "climate_sum": {"tmin": min(temps) if temps else None, "tmax": max(temps) if temps else None, "hmin": min(hums) if hums else None,
                             "hmax": max(hums) if hums else None, "pmin": min(press) if press else None, "pmax": max(press) if press else None},
             "weather": w, "weather_on": bool(CFG["weather_on"]), "weather_status": WEATHER["status"],
-            "sun": sun, "moon": {"icon": mi, "name": tr(mn, lang)}, "gps": g, "report": rep_txt}
+            "sun": sun, "moon": {"icon": mi, "name": tr(mn, lang)}, "gps": g, "report": rep_txt,
+            "sim": bool(sim_day), "sim_place": (sim_place() or (0, 0, ""))[2] if sim_day else ""}
 
 
 MSG_KEYWORDS = {"person": "ALARM", "warm": "WAERME", "noise": "LAERM", "tamper": "SABOTAGE", "prealarm": "VORALARM",
@@ -862,7 +870,8 @@ def outbox_loop():
             w = WATCH_REF.get("w"); d = _outbox_dir()
             files = sorted(f for f in os.listdir(d) if f.endswith(".json")) if os.path.isdir(d) else []
             OUTBOX["n"] = len(files)
-            if files and w is not None and Notifier.main_configured() and STATE.get("net", {}).get("online") is not False:
+            real_ok = Notifier.main_configured() and STATE.get("net", {}).get("online") is not False
+            if files and w is not None and not sim_net_down():
                 for f in files:
                     pj = os.path.join(d, f); pi = pj[:-5] + ".jpg"
                     try:
@@ -881,6 +890,19 @@ def outbox_loop():
                     if os.path.isfile(pi):
                         with open(pi, "rb") as fh:
                             jpg = fh.read()
+                    if m["p"].get("sandbox"):                # kept during a network test of the simulator: into the test inbox (285)
+                        p_ = dict(m["p"], late=True)
+                        sandbox_add(w.notifier._title(p_), w.notifier._text(p_), jpg, w.notifier._event(p_))
+                        msglog_add(w.notifier._title(p_), w.notifier._text(p_), w.notifier._event(p_), jpg, "test", "Test-Postfach · " + tr("sent later"))
+                        log_event("web", "Alarm from the outbox sent later into the test inbox")
+                        for x in (pj, pi):
+                            try:
+                                os.remove(x)
+                            except OSError:
+                                pass
+                        continue
+                    if not real_ok:
+                        continue
                     try:
                         code, where = w.notifier._send_main(dict(m["p"], late=True), jpg, m.get("fname") or "alarm.jpg")
                         log_event("web", f"Alarm from the outbox sent to {where} (HTTP {code})")
@@ -894,7 +916,11 @@ def outbox_loop():
             beat("outbox", 600, "Message outbox")
         except Exception as e:
             print(f"outbox: {e}")
-        time.sleep(60)
+        for _ in range(60):                              # every minute - at once when the network is back (285 sets «kick»)
+            if OUTBOX.get("kick"):
+                break
+            time.sleep(1.0)
+        OUTBOX["kick"] = False
 
 
 class Notifier:
@@ -1069,6 +1095,8 @@ class Notifier:
         return render_msg(msg_template(ev, 1), p)
 
     def _dispatch(self, p, jpg, fname):
+        if sim_net_down():                               # Simulator-Werte: «WLAN weg» / «Internet weg» test - nothing goes out (285)
+            return simnet_hold(self, p, jpg, fname)
         if sandbox_active() or p.get("_test"):           # 2.96.6: simulator test inbox - nobody is disturbed (141); 2.97.0: per message
             sandbox_add(self._title(p), self._text(p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
             msglog_add(self._title(p), self._text(p), self._event(p), jpg, "test", "Test-Postfach")    # 2.98.13: list «Nachrichten»

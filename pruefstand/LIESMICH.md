@@ -42,12 +42,35 @@ Der Prüfstand beantwortet bei jeder neuen Version die Frage: **Erkennt MoveEye 
   dem Schreibtisch, die Dateien im Chat anhängen).
 - **Echte Nächte nachspielen** (`echtenaechte`): siehe unten.
 
+## Übersicht → Kopf findet Ziel (Weitwinkel-Kamera, ab Simulator 3D-4.17)
+
+`--weitwinkel base,head_front,head_rear` (auch `scene` als Vergleich ohne Übersicht am Gerät) misst pro Montage der
+Weitwinkel-Kamera: ein Besucher kommt **ausserhalb des Bildes der Kopfkamera** ins Weitwinkel-Bild (vorne: 42° neben der Mitte,
+von 14 m auf 6 m auf das Gerät zu – im Weitwinkel-Bild ±51°, nicht im Kopfbild ±33°; hinten: quer hinter dem Kopf, 150° → 215°,
+9 m), langsam (0,3 m/s). Gemessen wird die Zeit, bis die **Kopfkamera ihn im
+Bild hat** (der Kopf drehte hin; der Simulator weiss es, Steuerbefehl `weit` / `probe`) und bis MoveEye eine Person meldet.
+`--ww-versuche 3` Besucher pro Montage. Nur diese Messung: `--plaene "" --ohne-extras --weitwinkel …` – das Ergebnis kommt nach
+`ergebnisse/weitwinkel_*.json` (nicht in `VERLAUF.md`). MoveEye läuft dafür mit `sim:1` als Zusatzkamera, Schwenk-Servo 360°
+und Drehgrenze ± 170° (Kabel). Lokal nur aussagekräftig, wenn der Rechner frei ist (das Weitwinkel-Bild kommt sonst mit unter
+1 Bild/s, die Bewegung braucht dann Sekunden, bis sie zählt).
+
+## Plan «folgen»: Verfolgungs-Parcours (ab Simulator 3D-4.18, MoveEye 2.98.47 Entwurf)
+
+`--plaene folgen` (oder `--folgen 1,3,4,5,6,7`) lässt die Lektionen des Verfolgungs-Parcours laufen (Szene «parcours», feste Wege,
+Zufall 1 … `--seeds`): MoveEye folgt, der Simulator misst Zielfehler, Zeit im Bild, Verluste und Wiederfinde-Zeit, Pendeln /
+Überschwingen, Servo-Weg und Verwechslungen → Note 1–6. `8` in der Liste = dieselben Lektionen nochmals nachts mit Infrarot.
+`--folgen-weitwinkel base,head_rear` vergleicht pro Montage **mit und ohne Weitwinkel-Übergabe** («Übersicht lenkt den Kopf»,
+MoveEye mit `sim:1`, Schutz an). Läuft nach den anderen Plänen (wechselt die Szene); Ergebnis in `ergebnisse/folgen_*.json`
+(nicht in `VERLAUF.md`), auf GitHub in der Zusammenfassung. Dauer etwa 3 Min. pro Durchgang – **nicht im «quick»-Budget**:
+auf GitHub nur sonntags (oder von Hand mit «folgen» in den Testläufen). Lokal nur aussagekräftig mit mindestens ~3 Bildern/s
+bei MoveEye und einem KI-Modell (ohne Modell folgt MoveEye nur der Bewegung).
+
 ## Wann läuft was auf GitHub?
 
 | Anlass | Testläufe | Dauer |
 |---|---|---|
 | neue Version (versions.json) | quick, night, standard, ganze Nacht; quick auch ohne Kamera-Effekte; Zufall 1 | etwa 40 Min. |
-| jeden Sonntag in der Nacht | dazu **hard** (Gegenlicht, Nebel, Schnee, Tropfen, Spinnennetz, Scheinwerfer, Wolkenschatten), 3 Zufallsstarts | etwa 2½ Std. |
+| jeden Sonntag in der Nacht | dazu **hard** (Gegenlicht, Nebel, Schnee, Tropfen, Spinnennetz, Scheinwerfer, Wolkenschatten) und **folgen** (Verfolgungs-Parcours), 3 Zufallsstarts | etwa 2½ Std. |
 | von Hand (Run workflow) | frei wählbar: Testläufe, «hard» ankreuzen, Zufallsstarts, Besucher ×1–5, Kamera-Effekte | |
 
 ## Verlässlichere Zahlen (ab MoveEye 2.98.13 / Simulator 3D-4.0)
@@ -71,8 +94,23 @@ Der Prüfstand beantwortet bei jeder neuen Version die Frage: **Erkennt MoveEye 
 | `night` | Nacht ohne Licht, mit Infrarot, mit Regen | ca. 4 Min. |
 | `hard` | Gegenlicht, Nebel, Schnee, Tropfen, Spinnennetz, Scheinwerfer, Wolkenschatten | ca. 9 Min. |
 | `nacht` | Ganze Nacht 20–6 Uhr im Zeitraffer: Tiere, Wind, Regenschauer, 2 Personen | ca. 11 Min. |
+| `camping_voll` | **Voller Campingplatz** (eigene Szene): Nachbarn bewegen sich dauernd im Bild, Fremde kommen vom Weg an deinen Platz; Nachmittag und Nacht | ca. 3 Min. (×1) |
+| `tarnen` | **Tarnen und Kriechen** (eigene Szene): Tarnkleidung + Robben, Schirm, Karton – nah (5–10 m); Tag, Dämmerung, Nacht | ca. 4½ Min. (×1) |
+| `velodieb` | **Velodieb** (eigene Szene): rennt hin, greift das Velo (Velo-Sensor), rennt weg; Tag, Dämmerung, Nacht | ca. 4 Min. (×1) |
 | `spielwege` | Schleichwege aus dem Spiel (läuft automatisch mit, wenn es welche gibt) | je Weg |
 | `echtenaechte` | Alarm-Spuren echter Nächte, wie aufgenommen und mit anderem Wetter (automatisch, wenn es welche gibt) | je Fall ca. 2 Min. |
+
+### Neue Szenen (Simulator 3D-4.x, `szenenplus.gd`)
+
+Die drei Pläne `camping_voll`, `tarnen`, `velodieb` laden ihre **eigene Szene** (`--szene` gilt für sie nicht) und stellen
+danach die alte wieder her. Sie sind **nicht** im kurzen Lauf «quick» (Wunsch Daniel: Prüfstand sparsam) – sie laufen
+sonntags mit den grossen Läufen oder von Hand: `--plaene camping_voll,tarnen,velodieb`. Feste Zufallszahlen wie alle Pläne.
+Hauptzahlen sind die echten **Pushes richtig / falsch** und die Reaktionszeit; dazu im Bericht `szene`:
+- `camping_voll`: wie viele Fremde an deinen Platz kamen, mit / ohne Push, **Reaktion ab Betreten des Platzes**, und
+  **falsche Pushes wegen Nachbarn** (ein Push, während nur Nachbarn im Bild waren). Die Quote «Personen erkannt» ist hier
+  wenig aussagekräftig, weil fast immer Nachbarn im Bild sind.
+- `tarnen`: pro Art (robben, schirm, karton) sichtbar / erkannt / mit Push.
+- `velodieb`: Griffe, Push vor / nach dem Griff, ohne Push, **Reaktion ab Griff** (negativ = schon vorher gemeldet).
 
 ## Starten
 

@@ -77,6 +77,7 @@ var gear_speed := 1.0         # players: a camouflage thing or the stolen bike m
 var gear_norun := false       # ... the cardboard box: no running
 var gear_pmin := 0            # ... the postures it allows (box: only crouching, umbrella: no crawling)
 var gear_pmax := 2
+static var npc_camo := false   # szenenplus.gd «Tarnen»: the next figure built wears the camouflage clothes of the players
 var power_until := 0.0
 var emote := ""               # players: caught / goal / throw (game.gd)
 var emote_until := 0.0
@@ -235,7 +236,7 @@ func _build_person() -> void:
 	var wet: bool = main.weather == "rain"
 	var kid := variant == "child"
 	var jog := variant == "jogger"
-	var camo: bool = controlled and bool(look.get("camo", false))
+	var camo: bool = (controlled and bool(look.get("camo", false))) or (npc_camo and not controlled)
 	var jacket: Color = Color(0.33, 0.38, 0.22) if camo else (player_color if player_color.a > 0.0 else (_pick("sport") if jog else _pick("jacket")))
 	if variant == "police":
 		jacket = Color(0.1, 0.13, 0.25)

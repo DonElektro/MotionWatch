@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_46.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_47.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,10 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.47: Weitwinkel-Kamera (Montage im Simulator, Übersicht lenkt den Kopf automatisch, IR breit Kanal 4), Werte aus dem
+    Simulator (Akku, Uhr, Ort/Wetter, Pi-Wärme, Netz-Ausfall, 🧪), Verfolgungs-Parcours (Kachel 🎯: Regler, A/B,
+    Auto-Tuning-Vorschlag), Online-Spiel über Tailscale Funnel (nur Spiel öffentlich, nur Admin mit Passwort, geht von selbst
+    aus), neue Szenen, Simulator 3D-4.18
   * 2.98.46: Sim-Kompakt (Live-Seite mit Simulator: zwei Bilder, Kopf- und Rover-Stick, Kacheln), MoveEye als KI-Wächter, Stopp
     im Simulator ausgeblendet, Stange-Regler, Aufklapp-Knöpfe zeigen den Zustand blau (Reihenfolge zu · Gruppen · auf),
     Simulator 3D-4.17 mit Spiel-Balance
@@ -974,10 +978,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_46.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_47.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_46.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_46.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_47.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_47.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -994,7 +998,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.46"
+APP_VERSION = "2.98.47"
 
 
 def default_data_dir():
@@ -2465,7 +2469,7 @@ def _window_start(s, dt):
     belongs to the day it starts on."""
     today, cur = dt.date(), dt.hour * 60 + dt.minute
     if s.get("sun"):
-        r = sun_times(today, CFG["latitude"], CFG["longitude"])
+        r = sun_times_here(today)                # the place of MoveEye - or of the simulated scene (285)
         light = s["sun"] == "light"
         if r in ("dark", "light"):
             return today if (r == "light") == light else None
@@ -2502,7 +2506,7 @@ def presence_ok(s):
 
 
 def schedule_active(s, dt=None):
-    return bool(s["enabled"]) and schedule_window_contains(s, dt or datetime.now()) and presence_ok(s)
+    return bool(s["enabled"]) and schedule_window_contains(s, dt or sim_now()) and presence_ok(s)   # sim_now: the simulated clock while connected (285)
 
 
 def days_text(days, names=("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")):
@@ -2520,7 +2524,7 @@ def schedule_tick():
     """Apply all schedules (called once per second by the Scheduler thread and after every edit)."""
     with LOCK:
         plans = [dict(s) for s in SCHEDULES]
-    now = datetime.now()
+    now = sim_now()                                      # the simulated clock while connected (285)
     forced, active, active_idx = {}, [], []
     for i, s in enumerate(plans):
         if schedule_active(s, now):
@@ -4600,7 +4604,9 @@ def weather_day(day):
 def weather_loop():
     time.sleep(90)
     while True:
-        if CFG["weather_on"] or (CFG["storm_on"] and CFG["storm_forecast"]):
+        if (CFG["weather_on"] or (CFG["storm_on"] and CFG["storm_forecast"])) and simval_live():
+            WEATHER["status"] = "simulator"              # the weather of the simulated scene - no internet call (285)
+        elif CFG["weather_on"] or (CFG["storm_on"] and CFG["storm_forecast"]):
             if time.time() - WEATHER["t"] > 3 * 3600:
                 weather_fetch()
         else:
@@ -4653,16 +4659,21 @@ def day_summary(day, lang="en"):
     if g is None:
         gg = gps_now(); g = [gg[0], gg[1]] if gg else None
     lat, lon = (g[0], g[1]) if g else (float(CFG["latitude"]), float(CFG["longitude"]))
-    st = sun_times(d.date(), lat, lon)
+    sim_day = simval_live() and day == sim_now().strftime("%Y-%m-%d")      # the day of the simulated scene: its place and weather (285)
+    st = sun_times_here(d.date()) if sim_day else sun_times(d.date(), lat, lon)
     sun = {"rise": f"{int(st[0] // 60):02d}:{int(st[0] % 60):02d}", "set": f"{int(st[1] // 60):02d}:{int(st[1] % 60):02d}",
            "len": f"{int((st[1] - st[0]) // 60)} h {int((st[1] - st[0]) % 60):02d}"} if isinstance(st, tuple) else {"polar": st}
     mi, mn = moon_phase(d)
     w = weather_day(day) if CFG["weather_on"] or weather_day(day) else None
+    if sim_day:
+        w = None; sw_ = sim_weather_day(lang)
     if w:
         dd = w.get("daily") or {}
         icon, key = wmo_text(dd.get("weather_code"))
         w = {"icon": icon, "text": tr(key, lang) if key else "", "tmax": dd.get("temperature_2m_max"), "tmin": dd.get("temperature_2m_min"),
              "rain": dd.get("precipitation_sum"), "wind": dd.get("wind_speed_10m_max"), "gust": dd.get("wind_gusts_10m_max"), "hourly": w.get("hourly") or {}}
+    if sim_day and sw_:
+        w = sw_
     rep_txt = ""
     if d.date() <= datetime.now().date():
         hr, fr = int(CFG["report_hour"]) % 24, int(CFG["report_from"]) % 24
@@ -4685,7 +4696,8 @@ def day_summary(day, lang="en"):
             "climate_sum": {"tmin": min(temps) if temps else None, "tmax": max(temps) if temps else None, "hmin": min(hums) if hums else None,
                             "hmax": max(hums) if hums else None, "pmin": min(press) if press else None, "pmax": max(press) if press else None},
             "weather": w, "weather_on": bool(CFG["weather_on"]), "weather_status": WEATHER["status"],
-            "sun": sun, "moon": {"icon": mi, "name": tr(mn, lang)}, "gps": g, "report": rep_txt}
+            "sun": sun, "moon": {"icon": mi, "name": tr(mn, lang)}, "gps": g, "report": rep_txt,
+            "sim": bool(sim_day), "sim_place": (sim_place() or (0, 0, ""))[2] if sim_day else ""}
 
 
 MSG_KEYWORDS = {"person": "ALARM", "warm": "WAERME", "noise": "LAERM", "tamper": "SABOTAGE", "prealarm": "VORALARM",
@@ -4796,7 +4808,8 @@ def outbox_loop():
             w = WATCH_REF.get("w"); d = _outbox_dir()
             files = sorted(f for f in os.listdir(d) if f.endswith(".json")) if os.path.isdir(d) else []
             OUTBOX["n"] = len(files)
-            if files and w is not None and Notifier.main_configured() and STATE.get("net", {}).get("online") is not False:
+            real_ok = Notifier.main_configured() and STATE.get("net", {}).get("online") is not False
+            if files and w is not None and not sim_net_down():
                 for f in files:
                     pj = os.path.join(d, f); pi = pj[:-5] + ".jpg"
                     try:
@@ -4815,6 +4828,19 @@ def outbox_loop():
                     if os.path.isfile(pi):
                         with open(pi, "rb") as fh:
                             jpg = fh.read()
+                    if m["p"].get("sandbox"):                # kept during a network test of the simulator: into the test inbox (285)
+                        p_ = dict(m["p"], late=True)
+                        sandbox_add(w.notifier._title(p_), w.notifier._text(p_), jpg, w.notifier._event(p_))
+                        msglog_add(w.notifier._title(p_), w.notifier._text(p_), w.notifier._event(p_), jpg, "test", "Test-Postfach · " + tr("sent later"))
+                        log_event("web", "Alarm from the outbox sent later into the test inbox")
+                        for x in (pj, pi):
+                            try:
+                                os.remove(x)
+                            except OSError:
+                                pass
+                        continue
+                    if not real_ok:
+                        continue
                     try:
                         code, where = w.notifier._send_main(dict(m["p"], late=True), jpg, m.get("fname") or "alarm.jpg")
                         log_event("web", f"Alarm from the outbox sent to {where} (HTTP {code})")
@@ -4828,7 +4854,11 @@ def outbox_loop():
             beat("outbox", 600, "Message outbox")
         except Exception as e:
             print(f"outbox: {e}")
-        time.sleep(60)
+        for _ in range(60):                              # every minute - at once when the network is back (285 sets «kick»)
+            if OUTBOX.get("kick"):
+                break
+            time.sleep(1.0)
+        OUTBOX["kick"] = False
 
 
 class Notifier:
@@ -5003,6 +5033,8 @@ class Notifier:
         return render_msg(msg_template(ev, 1), p)
 
     def _dispatch(self, p, jpg, fname):
+        if sim_net_down():                               # Simulator-Werte: «WLAN weg» / «Internet weg» test - nothing goes out (285)
+            return simnet_hold(self, p, jpg, fname)
         if sandbox_active() or p.get("_test"):           # 2.96.6: simulator test inbox - nobody is disturbed (141); 2.97.0: per message
             sandbox_add(self._title(p), self._text(p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
             msglog_add(self._title(p), self._text(p), self._event(p), jpg, "test", "Test-Postfach")    # 2.98.13: list «Nachrichten»
@@ -5755,7 +5787,7 @@ def arm_forecast(lang=None):
         nf = night_forecast()
     except Exception:
         nf = None
-    now = datetime.now()
+    now = sim_now()                                            # (285)
     until = now + timedelta(hours=have_h)
     if have_h >= 36:
         text = trf("Battery lasts {d} days at {level}", L, d=int(have_h // 24), level=lv)
@@ -8519,8 +8551,8 @@ def diary_thumb(name):
 # ---- night report -----------------------------------------------------------
 def report_window(now=None):
     """(start, end) of the night the report is about: from <report_from> o'clock to <report_hour> o'clock.
-    Before the report hour: the night so far."""
-    now = now or datetime.now()
+    Before the report hour: the night so far. While the simulator is connected: its clock (285)."""
+    now = now or sim_now()
     hr, fr = int(CFG["report_hour"]) % 24, int(CFG["report_from"]) % 24
     span = (hr - fr) % 24 or 24
     end = now.replace(hour=hr, minute=0, second=0, microsecond=0)
@@ -8534,7 +8566,9 @@ def report_build(lang=None, start=None, end=None):
     lang = cur_lang(lang)
     if start is None:
         start, end = report_window()
-    a, b = start.isoformat(timespec="seconds"), end.isoformat(timespec="seconds")
+        a, b = sim_to_real(start).isoformat(timespec="seconds"), sim_to_real(end).isoformat(timespec="seconds")   # the simulated night in real time (285)
+    else:
+        a, b = start.isoformat(timespec="seconds"), end.isoformat(timespec="seconds")
     sight_load()
     with SIGHT_LOCK:
         ev = [dict(e) for e in SIGHT["list"] if a <= e["start"] < b]
@@ -8648,7 +8682,7 @@ class ReportScheduler:
         while True:
             time.sleep(30)
             try:
-                now = datetime.now(); hr = int(CFG["report_hour"]) % 24
+                now = sim_now(); hr = int(CFG["report_hour"]) % 24     # the simulated morning while connected (285)
                 day = now.strftime("%Y-%m-%d")
                 if CFG["report_on"] and CFG["report_last_day"] != day and hr <= now.hour < hr + 3 and not morning_wait(now):
                     CFG["report_last_day"] = day; save_settings()
@@ -8916,6 +8950,9 @@ class BatteryMonitor:
         now = time.time(); dt = min(60.0, now - self._t); self._t = now
         if drill_active("battery"):                      # 2.96.6: drill «battery empty» (141) - never the real shutdown
             return drill_battery_tick(self)
+        sb_ = sim_sensor("battery")                      # Simulator-Werte: the simulated UPS HAT instead of the real one (285)
+        if sb_ is not None and sim_battery_tick(self, sb_):
+            return
         if CFG["ups_on"] and self.ups_tick():
             return
         cap_wh = float(CFG["batt_mah"]) * 3.7 / 1000.0 * 0.85
@@ -9101,7 +9138,16 @@ class SysMonitor:
         while True:
             time.sleep(1.0)
             cpu = self._cpu()
-            temp = self._temp()
+            temp = real_t = self._temp()
+            st_ = sim_pi_temp()                               # Simulator-Werte: the simulated Pi in its case (285)
+            if st_ is not None:
+                temp = float(st_)
+            STATE["cpu_temp_real"] = None if real_t is None else round(real_t, 1)
+            STATE["cpu_temp_src"] = "sim" if st_ is not None else "pi"
+            try:
+                simvals_tick()
+            except Exception as e:
+                STATE["simvals"] = {"on": False, "err": str(e)[:80]}
             if cpu is not None:
                 self.hist.append(round(cpu, 1))
             STATE["mem"] = mem_info()
@@ -9121,12 +9167,12 @@ class SysMonitor:
                 lim = float(CFG["temp_warn"])
                 if temp >= lim and not getattr(self, "warned", False):
                     self.warned = True
-                    log_event("sys", f"CPU hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation")
+                    log_event("sys", f"CPU hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation" + (" (simulator)" if st_ is not None else ""))
                     w = WATCH_REF["w"]
                     if w is not None:
                         de = CFG["lang"] == "de"
-                        w.notifier.info(trf("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation", temp=temp, lim=lim),
-                                        title="{name}: " + tr("temperature"))
+                        w.notifier.info(trf("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation", temp=temp, lim=lim)
+                                        + (" (🧪 " + tr("simulator") + ")" if st_ is not None else ""), title="{name}: " + tr("temperature"))
                 elif temp < lim - 5:
                     self.warned = False
 
@@ -9408,6 +9454,8 @@ class NetMonitor:
             try:
                 if drill_active("net"):                  # 2.96.6: drill «Wi-Fi / internet gone» (141)
                     res = {"online": False, "ms": None, "drill": True}
+                if sim_net_down():                       # Simulator-Werte: «WLAN weg» / «Internet weg» of the simulator (285)
+                    res = {"online": False, "ms": None, "sim": sim_net_down()}
             except NameError:
                 pass
             if STATE["net"].get("online") is not None and res["online"] != STATE["net"]["online"]:
@@ -10941,7 +10989,7 @@ NIGHT_SET = {"detection_on": True, "ai_enabled": True, "record": True, "snapshot
 
 def night_end_ts(now=None):
     """2.98.9: the end of the current / coming night time (report_hour) as a timestamp"""
-    now = now or datetime.now()
+    now = now or sim_now()                               # the simulated night while connected (285)
     end = now.replace(hour=int(CFG["report_hour"]) % 24, minute=0, second=0, microsecond=0)
     return (end if end > now else end + timedelta(days=1)).timestamp()
 
@@ -10954,7 +11002,7 @@ def night_guard_tick():
         return
     if not CFG["armed"]:
         CFG["night_guard_until"] = 0.0; save_settings(); return
-    if time.time() >= u:
+    if sim_now().timestamp() >= u:
         CFG["night_guard_until"] = 0.0
         disarm()
         save_settings()
@@ -11225,7 +11273,7 @@ def mode_tick():
         late = False
         if re.match(r"^\d{1,2}:\d{2}$", until):
             hh, mm = map(int, until.split(":"))
-            now = datetime.now(); since = datetime.fromtimestamp(float(CFG.get("mode_since") or 0))
+            now = sim_now(); since = datetime.fromtimestamp(float(CFG.get("mode_since") or 0))   # (285)
             end = now.replace(hour=hh % 24, minute=mm % 60, second=0, microsecond=0)
             late = since < end <= now or (end < since and now.date() > since.date() and now >= end)
         low = b.get("on") and b.get("on_battery") and b.get("pct") is not None and float(b["pct"]) < float(CFG["mode_fire_min_pct"])
@@ -11783,7 +11831,7 @@ def sim_hub(force=False):
         h = float(vals.get("hour") or 0)
         wx = str(vals.get("weather") or "")
         d.update(ok=True, name=str(r.get("name") or ""), scene=str(r.get("scenario") or ""), status=st,
-                 scenes=[{"id": s.get("id"), "name": str(s.get("name") or "").replace(" (3D)", "")} for s in r.get("scenarios") or []][:40],
+                 scenes=[{"id": s.get("id"), "name": str(s.get("name") or "").replace(" (3D)", ""), "en": str(s.get("en") or "")} for s in r.get("scenarios") or []][:40],
                  hour=h, clock="%02d:%02d" % (int(h), int(round((h % 1) * 60)) % 60), dark=" Nacht " in st or st.find("· Nacht ·") >= 0,
                  weather=wx, ambient=vals.get("ambient"), visitors=int(m.group(1)) if m else None, surprise=bool(vals.get("surprise_on")), dev2=bool(vals.get("dev2_on")), dev2_place=str(vals.get("dev2_place") or ""), zones3d=bool(vals.get("show_zones3d")), det3d=bool(vals.get("show_det3d")),
                  twin_ok="show_zones3d" in vals,
@@ -11901,6 +11949,7 @@ SIMHUB_JS = r"""
     "Faster decision": "Schneller entscheiden", "B is better – kept": "B ist besser – übernommen", "A stays": "A bleibt", "Place, zones, patrol": "Ort, Zonen, Patrouille",
     "Zones in 3D": "Zonen in 3D", "mast": "Stange", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"});
   const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : (L() === "en" ? k : (DE[k] || k));
+  const scn = x => !x ? "" : (x.en && L() !== "de" ? tt(x.en) : x.name);     // 551: scene names in the language of the page (German from the simulator)
   const WX = [["clear", "☀"], ["cloudy", "☁"], ["rain", "🌧"], ["fog", "🌫"], ["snow", "❄"]];
   const VIS = __VIS__;
   const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
@@ -11911,10 +11960,12 @@ SIMHUB_JS = r"""
   const wxIcon = w => (WX.find(x => x[0] === w) || ["", "☁"])[1];
   function sheet(box, kind) {
     const s = E("div", "shsheet");
-    if (kind === "scene") (H.scenes || []).forEach(x => { const b = E("button", x.id === H.scene ? "" : "sec", x.name); b.type = "button"; b.onclick = () => act("scene", x.id); s.appendChild(b); });
+    if (kind === "scene") (H.scenes || []).forEach(x => { const b = E("button", x.id === H.scene ? "" : "sec", scn(x)); b.type = "button"; b.onclick = () => act("scene", x.id); s.appendChild(b); });
     if (kind === "hour") { [["Morning", 7], ["Noon", 13], ["Evening", 19.5], ["Night", 23]].forEach(([n, h]) => { const b = E("button", "sec", tt(n) + " " + String(Math.floor(h)).padStart(2, "0") + ":" + (h % 1 ? "30" : "00")); b.type = "button"; b.onclick = () => act("hour", h); s.appendChild(b); });
       const r = E("div", "shrow"), i = E("input"); i.type = "range"; i.min = 0; i.max = 23.75; i.step = 0.25; i.value = H.hour || 12; i.style.flex = "1"; const o = E("b", "", H.clock || "");
       i.oninput = () => { o.textContent = String(Math.floor(i.value)).padStart(2, "0") + ":" + String(Math.round(i.value % 1 * 60)).padStart(2, "0"); }; i.onchange = () => act("hour", +i.value); r.append(i, o); s.appendChild(r); }
+    if (kind === "wide" && window.mwWide) window.mwWide.sheet(s, H, act);         // 591: the wide camera (picture, mount)
+    if (kind === "parc" && window.mwParc) window.mwParc.sheet(s, H, act);         // 416: the tracking parcours
     if (kind === "weather") WX.forEach(([k, ic]) => { const b = E("button", k === H.weather ? "" : "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = () => act("weather", k); s.appendChild(b); });
     if (kind === "visit") VIS.forEach(([k, ic]) => { const b = E("button", "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = async () => { const r = await act("visit", k); if (r && r.ok) say(ic + " " + tt("sent")); }; s.appendChild(b); });
     if (["inbox", "drill", "train", "ab"].includes(kind)) labSheet(s, kind);
@@ -12032,8 +12083,8 @@ SIMHUB_JS = r"""
   }
   // 2.98.14 (Konzept): the tiles in four groups - Welt (what happens in the simulator), Testen, Lernen, Spielen. «Simple»
   // shows the assistant «Erkennung verbessern» instead of the single tools for the thresholds (they stay in «Expert»).
-  const GRP = {scene: "world", hour: "world", weather: "world", visit: "world", surprise: "world", twin: "world", devices: "world", rover: "world", templates: "world",
-    tests: "test", blind: "test", rehearsal: "test", inbox: "test", drill: "test", ab: "test", week: "test", stats: "test",
+  const GRP = {wide: "world", scene: "world", hour: "world", weather: "world", visit: "world", surprise: "world", twin: "world", devices: "world", rover: "world", templates: "world",
+    tests: "test", parc: "test", blind: "test", rehearsal: "test", inbox: "test", drill: "test", ab: "test", week: "test", stats: "test",
     improve: "learn", autoth: "learn", train: "learn", falearn: "learn", diary: "learn",
     game: "play", points: "play"};
   // 2.98.24 («Sim-Schalter nur einmal»): Trainings-Nacht, Fehlalarm-Lernen and Wochen-Check are switched only in their tile
@@ -12041,12 +12092,13 @@ SIMHUB_JS = r"""
   const EXPERT_K = ["autoth", "ab"];
   function tiles(box, full) {
     const G = {world: E("div", "shub"), test: E("div", "shub"), learn: E("div", "shub"), play: E("div", "shub")}, g = G.world;
-    const T = [["scene", "🗺", tt("Scene"), ((H.scenes || []).find(x => x.id === H.scene) || {}).name || H.scene || "–"],
+    const T = [["scene", "🗺", tt("Scene"), scn((H.scenes || []).find(x => x.id === H.scene)) || H.scene || "–"],
       ["hour", H.dark ? "🌙" : "☀", tt("Time of day"), H.clock || "–"],
       ["weather", wxIcon(H.weather), tt("Weather"), tt(H.weather || "–") + (H.ambient != null ? " · " + Math.round(H.ambient) + " °C" : "")],
       ["visit", (window.EVI || {}).person || "🚶", tt("Send a visitor"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")]
       ];
     if (full) T.push(["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]);   // 2.98.13: drills / surprise only in the Simulator tab
+    if (full && H.wide && window.mwWide) T.push(["wide", "🔭", tt("Wide camera"), window.mwWide.sub(H)]);   // 591: the wide camera of the simulator
     if (full && H.twin_ok) T.push(["twin", "🪞", tt("Your place"), tt("Place, zones, patrol")]);   // 2.98.5: zones / detection in 3D = simulator, «Ansicht»
     if (full) { const R = H.rover || {};
       T.push(["devices", "📡", tt("Several devices"), H.dev2 ? tt("2nd device") + ": " + tt("P_" + (H.dev2_place || "opposite")) : tt("off")],
@@ -12055,7 +12107,9 @@ SIMHUB_JS = r"""
     if (full) { const TU = H.tune || {};
       T.push(["improve", "🎯", tt("Improve detection"), TU.busy ? "⏳ " + (TU.step === "night" ? tt("Night") : tt("Day")) : tt("step by step")]); }
     if (full) { const N = LN || {}; const bl = N.blind || {}, au = N.autoth || {}, re = bl.rehearsal;
-      T.push(["tests", "🧪", tt("Tests"), tt("Test run, test bench")],
+      T.push(["tests", "🧪", tt("Tests"), tt("Test run, test bench")]);
+      if (window.mwParc && H.parc) T.push(["parc", "🎯", tt("Tracking parcours"), window.mwParc.sub(H)]);   // 416: the tracking parcours
+      T.push(
         ["blind", "🗺", tt("Blind spots"), bl.busy && bl.kind === "map" ? "⏳ " + (bl.prog || "") : bl.last ? bl.last.found + "/" + bl.last.inview + " " + tt("recognised") : tt("find them")],
         ["rehearsal", "🌙", tt("Night rehearsal"), bl.busy && bl.kind === "rehearsal" ? "⏳ " + (bl.prog || "") : re ? (re.max_found ? tt("up to") + " " + re.max_found + " m" : "–") : tt("before arming")],
         ["autoth", "🎚", tt("Thresholds automatic"), au.busy ? "⏳ " + au.step : au.last ? "✓" : tt("day and night")],
@@ -12093,7 +12147,7 @@ SIMHUB_JS = r"""
   function paintTile(el_) {
     el_.hidden = !(H && H.on); if (!H || !H.on) return; el_.textContent = "";
     const top = E("div", "stile"), im = E("img"); im.alt = ""; im.src = "/sim/view.jpg?w=320&r=" + Date.now();
-    const i = E("div", "sti"); i.append(E("b", "", "🧪 " + tt("Simulation") + (H.ok ? "" : " ⚠")), E("div", "", H.ok ? (((H.scenes || []).find(x => x.id === H.scene) || {}).name || H.scene) : tt("Simulator not reachable")),
+    const i = E("div", "sti"); i.append(E("b", "", "🧪 " + tt("Simulation") + (H.ok ? "" : " ⚠")), E("div", "", H.ok ? (scn((H.scenes || []).find(x => x.id === H.scene)) || H.scene) : tt("Simulator not reachable")),
       E("span", "", H.ok ? (H.dark ? "🌙 " : "☀ ") + H.clock + " · " + wxIcon(H.weather) + " " + tt(H.weather || "") + (H.visitors != null ? " · " + H.visitors + " " + tt("visitors") : "") : ""), E("span", "", tt("Tap = control")));
     top.append(im, i); top.onclick = () => { el_.dataset.open = el_.dataset.open ? "" : "1"; paintAll(); }; el_.appendChild(top);
     if (el_.dataset.open && H.ok) { const w = E("div"); w.style.marginTop = "8px"; tiles(w, false); el_.appendChild(w); }
@@ -12104,11 +12158,12 @@ SIMHUB_JS = r"""
   function paintSheet(el_) { if (el_.contains(document.activeElement) && document.activeElement.type === "range") return;   // 549 Sim-Kompakt: one sheet alone
     el_.textContent = ""; if (H && H.ok && el_.dataset.kind) sheet(el_, el_.dataset.kind); }
   function paintAll() { parkTr(); document.querySelectorAll("[data-simhub]").forEach(x => x.dataset.simhub === "full" ? paintFull(x) : x.dataset.simhub === "sheet" ? paintSheet(x) : paintTile(x)); }
-  window.mwSimHub = {H: () => H, tt: tt, paint: () => paintAll(), load: () => load()};   // 549: the tiles of the live page «Sim-Kompakt»
+  window.mwSimHub = {H: () => H, tt: tt, scn: scn, paint: () => paintAll(), load: () => load()};   // 549: the tiles of the live page «Sim-Kompakt»
   async function load() { if (!document.querySelector("[data-simhub]")) return; try { H = await (await fetch("/api/simhub")).json(); } catch (e) { return; }
     if (document.querySelector('[data-simhub="full"]')) { try { LB = await (await fetch("/api/lab")).json(); LN = await (await fetch("/api/learn")).json(); } catch (e) {} }
     const ti = document.querySelector('[data-simhub="tile"] img'); if (ti && !document.hidden) ti.src = "/sim/view.jpg?w=320&r=" + Date.now();
     if (!HASHED && location.hash === "#c-test" && document.getElementById("tr-box")) { HASHED = 1; open = "tests"; }   // 2.98.23: old links to the test run
+    if (!HASHED && location.hash === "#c-parc" && H.parc) { HASHED = 1; open = "parc"; }   // 416: the window opens the tile 🎯
     const ae = document.activeElement;
     if (!ae || (ae.type !== "range" && !(ae.closest && ae.closest("#tr-box")))) paintAll(); }
   document.addEventListener("DOMContentLoaded", () => { load(); setInterval(load, 6000); });
@@ -16478,6 +16533,201 @@ def _kopf_ov_tick(now):
     KOPF["ov_t"] = now
     KOPF["turn_req"] = (pan, float(CFG["tilt"]), "movement seen by the overview camera")
 # ----------------------------------------------------------------------------
+# Plan Daniel 30.10.2026 (docs/Gehaeuse_Variante2_Weitwinkel.md, «Simulator-Einbindung der Weitwinkel-Kamera»):
+#  - The simulator (3D-4.17, weitwinkel.gd) has ONE wide camera (sim:1, 102° x 67°) with a mount: scene (mast, as before),
+#    base (lower part of the device, fixed), head_front / head_rear (turns with the pan, rear = yaw offset 180°).
+#    /info cameras[1] and the reply to every POST /state («wide») tell the mount, tilt_deg, yaw_offset, pan_follow,
+#    tilt_follow, fov_h / fov_v, on_head.
+#  - On the device (base / head_*): «Übersicht lenkt den Kopf» (162: kopf_ov) is set to sim:1 by itself - only when the
+#    mount changes (or at the first contact), so a choice by hand stays. Mast = not part of the device: not by itself
+#    (as before); when it was set by itself, it is cleared again.
+#  - Head mounts: the direction of a box = where the head REALLY is (the simulated head, else servo_pos) + yaw offset +
+#    the angle in the picture (instead of the fixed kopf_ov_offset). While the head turns (and a short settle time after),
+#    the extra camera on the head ignores its movement (the same signals the main camera uses: SRV moving, SERVO_MOVE,
+#    a change of the position) - 440 asks weit_cam_turning().
+#  - Rear mount: movement behind -> the head turns there (162 _kopf_ov_tick, same rank as «turn to the alarm»), then the
+#    AI of the main camera checks.
+#  - Second infrared LED 120° on PCA9685 channel 4 («IR-Licht breit (Kanal 4)»): on / off together with the infrared
+#    light (070 lights_tick); the simulator gets lights.ir_wide.
+# ----------------------------------------------------------------------------
+for _k, _v in {"light_ir_wide": False, "kopf_ov_simauto": False}.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+WEIT = {"mount": None, "seen": False, "hd": None, "hd_t": 0.0, "pt": None, "pt_t": 0.0}
+WEIT_DEVICE_MOUNTS = ("base", "head_front", "head_rear")
+WEIT_IR_CH = 4                                            # PCA9685 channel of the wide infrared LED (white 2, IR 3 by convention)
+
+
+# ---- what the simulator says about its wide camera -------------------------------------------------------------------
+def weit_sim_cam():
+    """cameras[1] of the simulator (dict) or None"""
+    if not CFG.get("sim_on"):
+        return None
+    try:
+        return next((c for c in (SIM.get("info") or {}).get("cameras") or [] if str(c.get("id")) == "1"), None)
+    except (AttributeError, TypeError):
+        return None
+
+
+def weit_mount():
+    c = weit_sim_cam()
+    return str(c.get("mount") or "scene") if c else ""
+
+
+def weit_on_device():
+    return weit_mount() in WEIT_DEVICE_MOUNTS
+
+
+def weit_from_sim(w):
+    """350: the reply to POST /state carries «wide» - a new mount is known at once (no new /info needed)"""
+    if not isinstance(w, dict) or not CFG.get("sim_on"):
+        return
+    c = weit_sim_cam()
+    if c is not None:
+        for k in ("mount", "tilt_deg", "yaw_offset", "pan_follow", "tilt_follow", "on_head", "fov_h", "fov_v", "pan_limit"):
+            if k in w:
+                c[k] = w[k]
+    weit_auto()
+
+
+def weit_auto():
+    """«Übersicht lenkt den Kopf» by itself when the wide camera is on the device - only at a change of the mount"""
+    m = weit_mount()
+    if not m or m == WEIT["mount"]:
+        return
+    first = WEIT["mount"] is None
+    WEIT["mount"] = m
+    cur = str(CFG.get("kopf_ov") or "")
+    changed = False
+    if m in WEIT_DEVICE_MOUNTS:
+        if cur in ("", "sim:1") and "sim:1" in (CFG.get("extra_cams") or []):
+            if cur != "sim:1" or not CFG.get("kopf_ov_simauto"):
+                log_event("servo", f"Simulator: the wide camera sits on the device ({m}) - it steers the head as overview")
+            CFG["kopf_ov"] = "sim:1"; CFG["kopf_ov_simauto"] = True; changed = True
+    elif cur == "sim:1" and CFG.get("kopf_ov_simauto"):
+        CFG["kopf_ov"] = ""; CFG["kopf_ov_simauto"] = False; changed = True
+        if not first:
+            log_event("servo", "Simulator: the wide camera is on the mast again - no longer the overview of the head")
+    if changed:
+        save_settings()
+
+
+def weit_ov_geom():
+    """(yaw_offset, on_head) when the overview is the simulator's wide camera on the device, else None"""
+    if str(CFG.get("kopf_ov") or "") != "sim:1":
+        return None
+    c = weit_sim_cam()
+    if not c or str(c.get("mount") or "scene") not in WEIT_DEVICE_MOUNTS:
+        return None
+    try:
+        return float(c.get("yaw_offset") or 0.0), bool(c.get("on_head"))
+    except (TypeError, ValueError):
+        return None
+
+
+def weit_head_deg():
+    """where the head really looks (degrees, + = right): the simulated head, else the planned position"""
+    h = SIM.get("head") if CFG.get("sim_on") else None
+    if isinstance(h, list) and h:
+        try:
+            return float(h[0])
+        except (TypeError, ValueError):
+            pass
+    return servo_pos_deg()[0]
+
+
+_kopf_ov_deg_162 = kopf_ov_deg
+
+
+def kopf_ov_deg(cx):                                      # + 163: the wide camera on the device (base: fixed, head: turns)
+    g = weit_ov_geom()
+    if g is None:
+        return _kopf_ov_deg_162(cx)
+    d = g[0] + (float(cx) - 0.5) * kopf_ov_fov() + (weit_head_deg() if g[1] else 0.0)
+    return (d + 180.0) % 360.0 - 180.0
+
+
+# ---- the camera on the head moves itself: no movement while it turns ------------------------------------------------
+def weit_cam_turning(spec):
+    """440: True while an extra camera that sits on the head turns (and a short settle time after) - the whole picture
+    «moves» then. Same signals as the main camera (410 foreground): SRV moving, SERVO_MOVE, a change of the position;
+    in the simulation also the simulated head (it follows a moment later)."""
+    try:
+        if not cam_on_head(spec):
+            return False
+    except NameError:
+        return False
+    now = time.time()
+    settle = 1.2 if CFG.get("sim_on") else 0.8
+    pt = (round(float(CFG["pan"]), 1), round(float(CFG["tilt"]), 1))
+    if pt != WEIT["pt"]:
+        WEIT["pt"] = pt; WEIT["pt_t"] = now
+    h = SIM.get("head") if CFG.get("sim_on") else None
+    if isinstance(h, list) and len(h) >= 2:
+        hd = (round(float(h[0]), 1), round(float(h[1]), 1))
+        if hd != WEIT["hd"]:
+            WEIT["hd"] = hd; WEIT["hd_t"] = now
+    moving = bool(SRV.get("moving")) or now - float(SERVO_MOVE.get("t") or 0.0) < settle
+    return moving or now - WEIT["pt_t"] < settle or now - WEIT["hd_t"] < settle
+
+
+# ---- the wide infrared light on channel 4 -----------------------------------------------------------------------------
+def weit_ir_ch_free():
+    """channel 4 is not taken by the white / infrared light or a servo"""
+    used = {str(CFG.get("light_white_out") or ""), str(CFG.get("light_ir_out") or "")}
+    return f"pca:{WEIT_IR_CH}" not in used and WEIT_IR_CH not in (int(CFG.get("pca_pan_ch", 0)), int(CFG.get("pca_tilt_ch", 1)))
+
+
+_lights_tick_070 = lights_tick
+
+
+def lights_tick():                                        # + 163: the wide infrared light follows the infrared light
+    prev = bool((STATE.get("lights") or {}).get("ir_wide"))
+    res = _lights_tick_070()
+    on = bool(res.get("ir")) and bool(CFG.get("light_ir_wide"))
+    if on != prev:
+        log_event("relay", f"Wide infrared light {'ON' if on else 'OFF'}")
+    res["ir_wide"] = on
+    STATE["lights"] = dict(STATE.get("lights") or {}, ir_wide=on)
+    return res
+
+
+_hw_lights_070 = Hardware._lights
+
+
+def _weit_hw_lights(self, wanted):
+    _hw_lights_070(self, wanted)
+    if self.pca is None:
+        return
+    on = bool((STATE.get("lights") or {}).get("ir_wide")) and weit_ir_ch_free()
+    if getattr(self, "_weit_ir", None) != on:
+        try:
+            self.pca.switch(WEIT_IR_CH, on); self._weit_ir = on
+        except Exception as e:
+            log_event("servo", f"Light error (channel {WEIT_IR_CH}): {e}")
+
+
+# wraps: Hardware._lights
+Hardware._lights = _weit_hw_lights
+_light_out_pairs_070 = light_out_pairs
+
+
+def light_out_pairs(name):                                # + 163: channel 4 belongs to the wide infrared light when it is on
+    p = _light_out_pairs_070(name)
+    if CFG.get("light_ir_wide"):
+        p = [x for x in p if x[0] != f"pca:{WEIT_IR_CH}" or x[0] == CFG.get(f"light_{name}_out")]
+    return p
+
+
+def weit_state(lang=None):
+    """for pages: the wide camera of the simulator (mount, overview, its extra camera number)"""
+    c = weit_sim_cam()
+    if not c or "mount" not in c:
+        return None
+    n = next((x.idx for x in CAMS if str(x.spec) == "sim:1"), None)
+    return {"mount": str(c.get("mount")), "on_head": bool(c.get("on_head")), "tilt": c.get("tilt_deg"), "n": n,
+            "ov": str(CFG.get("kopf_ov") or "") == "sim:1", "ov_on": bool(CFG.get("kopf_ov_on")), "fov": [c.get("fov_h"), c.get("fov_v")]}
+# ----------------------------------------------------------------------------
 # AI person detector (SSD MobileNet V2, COCO class 1 = person)
 # ----------------------------------------------------------------------------
 AI_MODEL = {"busy": False, "msg": "", "pct": 0}
@@ -20185,7 +20435,7 @@ def sneeze_reply():
         return
     SOUNDEV["sneeze_last"] = now
     n = sneeze_count(add=True)
-    h = datetime.now().hour
+    h = sim_now().hour                                         # the simulated night while connected (285)
     quiet = CFG.get("sneeze_night") and (h >= 22 or h < 7)
     log_event("sys", f"Sneeze recognised (today {n}×)" + (" - quiet at night" if quiet else ""))
     if quiet or not out_selected() or SOUND["playing"]:
@@ -22790,7 +23040,14 @@ STORM = {"p": deque(maxlen=480), "pulses": 0, "win": deque(maxlen=200), "cool": 
 
 
 def storm_forecast_gust():
-    """The strongest gust (km/h) expected in the next 12 hours, from the stored forecast (None = unknown)."""
+    """The strongest gust (km/h) expected in the next 12 hours, from the stored forecast (None = unknown).
+    While the simulator is connected: the gusts of the simulated weather (285), no internet forecast."""
+    sf = sim_forecast()
+    if sf is not None:
+        try:
+            return float(sf.get("gust_kmh"))
+        except (TypeError, ValueError):
+            return None
     now = datetime.now(); best = None
     for k in range(13):
         t = now + timedelta(hours=k)
@@ -23153,10 +23410,10 @@ def ina219_read(addr, shunt, bus=1):
 
 
 def next_sunrise(now=None):
-    now = now or datetime.now()
+    now = now or sim_now()                                 # the simulated clock and place while connected (285)
     for k in (0, 1):
         d = (now + timedelta(days=k)).date()
-        st = sun_times(d, float(CFG["latitude"]), float(CFG["longitude"]))
+        st = sun_times_here(d)
         if isinstance(st, str):
             return None
         t = datetime(d.year, d.month, d.day) + timedelta(minutes=st[0])
@@ -23173,11 +23430,11 @@ def night_forecast():
     sr = next_sunrise()
     if sr is None:
         return None
-    now = datetime.now(); dark = is_dark()
+    now = sim_now(); dark = is_dark()
     if dark:
         need = (sr - now).total_seconds() / 3600.0
     else:                                                  # daytime: the coming night (sunset .. sunrise), the sun still charges until then
-        st = sun_times(now.date(), float(CFG["latitude"]), float(CFG["longitude"]))
+        st = sun_times_here(now.date())
         ss = datetime(now.year, now.month, now.day) + timedelta(minutes=st[1]) if not isinstance(st, str) else now
         need = max(0.0, (sr - max(ss, now)).total_seconds() / 3600.0)
     have = b["pct"] / 100.0 * float(b["cap_wh"]) / max(0.5, float(b["use_w"]))
@@ -23197,7 +23454,7 @@ class SolarMonitor:
             time.sleep(10)
 
     def tick(self):
-        now = time.time(); day = datetime.now().strftime("%Y-%m-%d")
+        now = time.time(); day = sim_now().strftime("%Y-%m-%d")      # the day of the simulated scene while connected (285)
         if SOLAR["day"] != day:
             SOLAR.update(day=day, wh=0.0, max=0.0)
         if CFG["solar_on"]:
@@ -23232,7 +23489,7 @@ class SolarMonitor:
             STATE["solar"] = {"on": False}
         nf = night_forecast(); STATE["night"] = nf
         if nf and CFG["night_warn"] and not nf["enough"] and is_dark() and SOLAR["warned"] != day:
-            hh = datetime.now().hour
+            hh = sim_now().hour
             if hh >= 15:                                       # once in the evening (not again after midnight)
                 SOLAR["warned"] = day
                 log_event("sys", f"Battery will probably not last until sunrise ({nf['have_h']} h left, {nf['need_h']} h needed)")
@@ -23245,6 +23502,233 @@ class SolarMonitor:
 SOLARMON = None
 
 
+# ----------------------------------------------------------------------------
+# Wish of Daniel (30.10.2026): while MoveEye is connected to the 3D simulator, the «hardware» readings come from the
+# simulated world, not from the Pi. Before (kept): solar panel, GPS (+ theft), outside temperature / pressure / wind (storm),
+# sound, thermal camera, head position, door / PIR / gas / bike sensors, darkness. New here (the simulator sends them in its
+# answer to /state, simulator3d/scripts/power.gd -> SIM, taken in 350 SimLink.tick -> simvals_take):
+#   battery   the simulated UPS HAT -> 100 BatteryMonitor (charge, time left, power cut / back, «almost empty», battery
+#             saver 105, shutdown limit). «Empty» never shuts this computer down: MoveEye says what the device would do.
+#   clock     the time of the scene -> sim_now(): schedules (030), night report (090), night time / «Heute Nacht bewachen»
+#             and «Lagerfeuer bis» (130), night forecast + sunrise (280), battery forecast (066), the quiet night of the
+#             sneeze answer (250), the timeline night (425), the solar day (280).
+#             NOT for: log lines, file names, signatures, update checks, user time windows (041), backups - real time.
+#             Sightings keep their real time stamps; sim_to_real() turns a simulated night into the real time span in which
+#             the simulator ran through it (night report, timeline).
+#   place     sun times (sun_times_here: schedules «dark» / «light», night forecast, diary day) use the place of the scene.
+#   forecast  gusts and weather of the scene instead of Open-Meteo (060 weather_loop makes no internet call while connected,
+#             280 storm_forecast_gust, the diary day 060 day_summary).
+#   pi_temp   the CPU temperature of the simulated Pi -> STATE["cpu_temp"] (100 SysMonitor): heat warning, AI slower (180),
+#             servo diagnosis (072), turbo (130), MQTT / devices. STATE["cpu_temp_real"] keeps the real value (run guard 390).
+#   net       «WLAN weg» / «Internet weg» test of the simulator -> 110 online check (offline), 060 Notifier: alarms go to
+#             the outbox and are sent later («nachgeschickt»), other messages fail like for real; nothing on the real network.
+# After 10 s without an answer (simulator off / gone) everything is real again by itself (sim_live). STATE["simvals"] says
+# which values come from the simulator - the web page and the window show «🧪 Simulator» there (part 598).
+# ----------------------------------------------------------------------------
+SIMVAL = {"live": False, "map": [], "net": "", "off": False, "off_t": 0.0, "temp_warned": False}
+
+
+def simval_live():
+    """the simulator is on and answered in the last 10 s"""
+    return bool(CFG.get("sim_on")) and time.time() - float(SIM.get("t", 0.0)) <= 10      # a short hiccup (one failed request) does not count
+
+
+def simvals_take(rep):
+    """350 SimLink.tick: the new values of one answer of the simulator"""
+    for k in ("battery", "clock", "place", "forecast", "net"):
+        SIM[k] = rep.get(k) if isinstance(rep.get(k), dict) else None
+    try:
+        SIM["pi_temp"] = float(rep["pi_temp"]) if rep.get("pi_temp") is not None else None
+    except (TypeError, ValueError):
+        SIM["pi_temp"] = None
+    try:
+        st = sim_now().timestamp()
+        M = SIMVAL["map"]; now = time.time()
+        if not M or now - M[-1][0] >= 20 or abs((st - M[-1][1]) - (now - M[-1][0]) * float((SIM.get("clock") or {}).get("speed") or 1.0)) > 300:
+            M.append((now, st))
+            del M[:-3000]                                  # about 16 hours at one point per 20 s
+    except Exception:
+        pass
+
+
+def sim_now():
+    """The time of the simulated world while connected (the simulator sends date + hour; between two answers it runs on
+    with the speed of the time-lapse) - otherwise the real local time. Only for decisions about day and night (see top)."""
+    c = sim_sensor("clock")
+    if c is None:
+        return datetime.now()
+    try:
+        d = datetime.strptime(str(c["date"])[:10], "%Y-%m-%d")
+        h = float(c["hour"]) % 24.0 + max(0.0, time.time() - float(SIM.get("t", 0.0))) * float(c.get("speed") or 1.0) / 3600.0
+        return d + timedelta(hours=h)
+    except (KeyError, TypeError, ValueError):
+        return datetime.now()
+
+
+def sim_to_real(dt):
+    """A moment of the simulated clock -> the real time at which the simulator showed it (from the points of this
+    connection). Not connected / unknown: unchanged. Before the first point: the first point."""
+    if not simval_live() or not SIMVAL["map"]:
+        return dt
+    M = SIMVAL["map"]; s = dt.timestamp()
+    if float((SIM.get("clock") or {}).get("speed") or 1.0) <= 1.0 and abs(sim_now().timestamp() - time.time()) < 120:
+        return dt                                           # the simulator runs on the real clock: nothing to turn
+    if s >= M[-1][1]:
+        return datetime.fromtimestamp(min(time.time(), M[-1][0] + (s - M[-1][1]) / max(1.0, float((SIM.get("clock") or {}).get("speed") or 1.0))))
+    for i in range(len(M) - 1, 0, -1):
+        (r0, s0), (r1, s1) = M[i - 1], M[i]
+        if s0 <= s <= s1 and s1 > s0:
+            return datetime.fromtimestamp(r0 + (r1 - r0) * (s - s0) / (s1 - s0))
+        if s1 < s0:                                         # the clock was set back here: older points are another night
+            return datetime.fromtimestamp(r1)
+    return datetime.fromtimestamp(M[0][0])
+
+
+def sim_place():
+    """(lat, lon, name) of the scene while connected, else None"""
+    p = sim_sensor("place")
+    try:
+        return (float(p["lat"]), float(p["lon"]), str(p.get("name") or "")) if p else None
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def here_latlon():
+    p = sim_place()
+    return (p[0], p[1]) if p else (float(CFG["latitude"]), float(CFG["longitude"]))
+
+
+def sun_times_here(d):
+    """sun_times (030) for the place of MoveEye - or of the simulated scene, in the time zone of the scene"""
+    lat, lon = here_latlon()
+    st = sun_times(d, lat, lon)
+    c = sim_sensor("clock") if sim_place() else None
+    if c is not None and isinstance(st, tuple):
+        try:
+            loc = datetime(d.year, d.month, d.day, 12).astimezone().utcoffset().total_seconds() / 60.0
+            off = float(c.get("tz_h", 1.0)) * 60.0 - loc
+            st = (st[0] + off, st[1] + off)
+        except (OverflowError, OSError, ValueError, TypeError):
+            pass
+    return st
+
+
+def sim_forecast():
+    return sim_sensor("forecast")
+
+
+SIM_WX = {"clear": ("☀️", "clear"), "cloudy": ("☁️", "cloudy"), "fog": ("🌫", "fog"), "rain": ("🌧", "rain"), "snow": ("🌨", "snow")}
+
+
+def sim_weather_day(lang=None):
+    """the weather of the scene for the diary day (instead of Open-Meteo)"""
+    f = sim_forecast()
+    if not f:
+        return None
+    icon, key = SIM_WX.get(str(f.get("weather")), ("🌤", "partly cloudy"))
+    return {"icon": icon, "text": tr(key, lang), "tmax": f.get("tmax"), "tmin": f.get("tmin"), "rain": None,
+            "wind": round(float(SIM.get("wind") or 0.0)), "gust": f.get("gust_kmh"), "hourly": {}, "sim": True}
+
+
+def sim_pi_temp():
+    if not simval_live():
+        return None
+    return SIM.get("pi_temp")
+
+
+def sim_net_down():
+    """'wifi' / 'internet' while the simulator plays «WLAN weg» / «Internet weg», else ''"""
+    n = sim_sensor("net")
+    if not n:
+        return ""
+    return "wifi" if n.get("wifi") is False else ("internet" if n.get("internet") is False else "")
+
+
+def simnet_hold(nf, p, jpg, fname):
+    """060 Notifier._dispatch while the simulator plays a network outage: like a failed send - an alarm waits in the
+    outbox (sent later, also into the test inbox), other messages are lost (as for real). Nothing goes out."""
+    ev = nf._event(p)
+    alarm = ev in ("person", "tamper", "warm", "noise")
+    why = sim_net_down()
+    STATE["notify_status"] = "error: " + ("no Wi-Fi" if why == "wifi" else "no internet") + " (simulator)"
+    log_event("web", f"Notification not sent - {'Wi-Fi' if why == 'wifi' else 'internet'} gone (simulator test)")
+    msglog_add(nf._title(p), nf._text(p), ev, jpg, "failed", "🧪 " + ("no Wi-Fi" if why == "wifi" else "no internet"))
+    if alarm and not p.get("late"):
+        outbox_add(dict(p, sandbox=bool(sandbox_active() or p.get("_test"))), jpg, fname)
+
+
+def simvals_tick():
+    """once a second (100 SysMonitor): what comes from the simulator (STATE["simvals"]) and the change back to real"""
+    live = simval_live()
+    if live != SIMVAL["live"]:
+        SIMVAL["live"] = live
+        if live:
+            log_event("sys", "Simulator values: battery, clock, place, weather and Pi temperature come from the simulator")
+        else:
+            log_event("sys", "Simulator values ended - the real sensors and the real clock apply again")
+            SIMVAL["map"] = []
+            if SIMVAL["off"]:
+                SIMVAL["off"] = False
+    nd = sim_net_down() if live else ""
+    if nd != SIMVAL["net"]:
+        SIMVAL["net"] = nd
+        log_event("sys", ("Simulator test: Wi-Fi gone" if nd == "wifi" else "Simulator test: internet gone") if nd else "Simulator test: network back")
+        w = WATCH_REF.get("w")
+        try:
+            w.netmon.recheck = True                          # the online check (110) at once
+        except Exception:
+            pass
+        if not nd:
+            OUTBOX["kick"] = True                            # waiting alarms out at once
+            if "(simulator)" in str(STATE.get("notify_status") or ""):
+                STATE["notify_status"] = ""                  # no «push problem» afterwards: the outage was only the test
+    if not live:
+        STATE["simvals"] = {"on": False}
+        return
+    now = sim_now(); pl = sim_place(); b = sim_sensor("battery")
+    keys = [k for k, ok in (("battery", b is not None), ("clock", sim_sensor("clock") is not None), ("place", pl is not None),
+                            ("weather", sim_forecast() is not None), ("pi_temp", SIM.get("pi_temp") is not None),
+                            ("solar", bool(CFG.get("solar_on")) and sim_sensor("solar") is not None),
+                            ("gps", bool(CFG.get("gpsmod_on")) and sim_sensor("gps") is not None), ("net", sim_sensor("net") is not None)) if ok]
+    STATE["simvals"] = {"on": True, "keys": keys, "time": now.strftime("%H:%M"), "date": now.strftime("%Y-%m-%d"),
+                        "speed": float((SIM.get("clock") or {}).get("speed") or 1.0), "dark": bool(SIM.get("dark")),
+                        "place": pl[2] if pl else "", "lat": pl[0] if pl else None, "lon": pl[1] if pl else None,
+                        "weather": (sim_forecast() or {}).get("weather"), "net": nd, "pi_temp": SIM.get("pi_temp"),
+                        "off": bool(SIMVAL["off"]), "sched": [s["name"] for s in SCHEDULES if schedule_active(s, now)] if SCHEDULES else []}
+
+
+def sim_battery_tick(bm, sb):
+    """100 BatteryMonitor.tick with the simulated UPS HAT: the same display and the same reactions as the real HAT (E)"""
+    try:
+        v, a, pct = float(sb["v"]), float(sb["a"]), int(sb["pct"])
+    except (KeyError, TypeError, ValueError):
+        return False
+    on_batt = bool(sb.get("on_battery", True)) and not bool(sb.get("charging") and sb.get("mains"))
+    charging = bool(sb.get("charging"))
+    cap_wh = float(sb.get("cap_wh") or 0.0)
+    use_w = float(sb.get("load_w") or 0.0)
+    ml = sb.get("min_left")
+    hours = round(float(ml) / 60.0, 1) if on_batt and ml else (round(pct / 100.0 * cap_wh / max(0.8, use_w), 1) if on_batt and cap_wh else None)
+    STATE["battery"] = {"on": True, "src": "ups", "model": "sim", "sim": True, "pct": pct, "hours": hours, "cap_wh": round(cap_wh, 1),
+                        "use_w": round(use_w, 1), "watts": round(use_w, 1), "volt": round(v, 2), "amps": round(a, 2), "on_battery": on_batt,
+                        "charging": charging, "full": bool(sb.get("full")), "temp": sb.get("temp"), "solar_w": sb.get("solar_w"),
+                        "full_min": None}
+    if not getattr(bm, "_sim_seen", False):
+        bm._sim_seen = True
+        log_event("sys", f"Simulated UPS HAT (simulator): battery {v:.2f} V, {pct} %")
+    bm.ups_events(v, pct, hours, on_batt, False)          # volt_ok False: never the real shutdown of this computer
+    lim = int(CFG["ups_shutdown_pct"])
+    if not SIMVAL["off"] and on_batt and lim > 0 and (pct <= lim or sb.get("empty")):
+        SIMVAL["off"] = True; SIMVAL["off_t"] = time.time()
+        log_event("sys", f"Battery empty ({pct} %, {v:.2f} V) - the Pi would shut down now (simulator: this computer stays on)")
+        w = WATCH_REF.get("w")
+        if w is not None and CFG["ups_push"]:
+            w.notifier.info(tr("Battery empty – the Pi shuts down cleanly") + " (🧪 " + tr("simulator") + ")", title="{name}: " + tr("power"))
+    elif SIMVAL["off"] and (pct >= lim + 10 or not on_batt):
+        SIMVAL["off"] = False
+        log_event("sys", f"Battery charged again ({pct} %) - the Pi would start again (simulator)")
+    STATE["battery"]["sim_off"] = bool(SIMVAL["off"])
+    return True
 # ----------------------------------------------------------------------------
 # Simulator connection: a separate program (motionwatch_simulator.py, protocol in motionwatch_sim_interface.py) simulates two
 #   cameras, a thermal camera, day / night, weather and sensors. One switch: the sources change to the simulator, MoveEye
@@ -24326,8 +24810,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.17", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31728413,
-         "sha256": "d9df10ca32b9a1e7c4c06de6cd535447517abb308d862d7af51a5b7573f2511a"}
+SIM3D = {"version": "3D-4.18", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31824294,
+         "sha256": "72a78258f5646011f945d8f3c156b6acab54c5351ddbd383ffee9709407188ef"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -29595,9 +30079,11 @@ class SimLink:
                    pc_cpu=rep_.get("pc_cpu"), cores=rep_.get("cores"),   # CPU of the PC the simulator runs on (3D-3.24)
                    solar=rep_.get("solar") if isinstance(rep_.get("solar"), dict) else None,   # 2.98.11: solar panel and
                    gps=rep_.get("gps") if isinstance(rep_.get("gps"), dict) else None)         # GPS module of the simulator   # CPU of the PC the simulator runs on (3D-3.24)
+        simvals_take(rep_)                                 # Simulator-Werte: battery, clock, place, forecast, Pi heat, network test (285)
         # 2.98.29: another MoveEye (e.g. the AI helper on the PC, or the Pi) steers the simulator - this one only watches
         SIM["follower"] = bool(rep_.get("follower"))
         SIM["head"] = rep_.get("head_deg") if isinstance(rep_.get("head_deg"), list) else None    # 2.98.35: the simulated head (539 /api/servo)
+        weit_from_sim(rep_.get("wide"))                 # 163: the mount of the wide camera (3D-4.17) - «Übersicht lenkt den Kopf» by itself
         SIM["msg"] = "connected - only watching (another MoveEye steers the simulator)" if SIM["follower"] else "connected"
         if time.time() - SIMDIARY["t"] >= 30:                # 2.96.1: the diary of the simulator (visits)
             threading.Thread(target=simdiary_poll, daemon=True, name="simdiary").start()
@@ -31431,7 +31917,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_46.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_47.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -32423,7 +32909,8 @@ def run_guard_start():
             time.sleep(10)
             sup = STATE.get("supply") or {}
             up = int(time.monotonic() - RUNGUARD["m0"])
-            state.update(up=up, cpu_temp=STATE.get("cpu_temp"), uv=bool(sup.get("uv_now") or sup.get("uv_boot")),
+            # cpu_temp: the real Pi (not the simulated one, 285)
+            state.update(up=up, cpu_temp=STATE.get("cpu_temp_real", STATE.get("cpu_temp")), uv=bool(sup.get("uv_now") or sup.get("uv_boot")),
                          throttled=bool(sup.get("throttled")), cpu=STATE.get("cpu"), ai=bool(CFG["ai_enabled"] and str(STATE.get("ai_status", "")).startswith("running")),
                          beat_txt=datetime.now().strftime("%Y-%m-%d %H:%M"))
             if up > 1800 and state.get("streak"):
@@ -34566,6 +35053,625 @@ def walktest_draw(frame):
     except cv2.error:
         pass
 # ----------------------------------------------------------------------------
+# Plan Daniel 30.10.2026 (docs/Verfolgungs_Parcours.md). The simulator (3D-4.18, parcours.gd) knows where the figures really
+# are and measures: aim error, time in the picture, losses, swinging, servo travel, identity switches -> grade. MoveEye
+# only starts the lessons (sim control «parcours»), keeps the runs with the values of the following that were used, and
+# compares them. Nothing is changed by itself: the auto-tuning only PROPOSES a set (button «übernehmen»).
+#  * The regulators of the following are the normal settings (same CFG keys as in Settings → Camera / Servos and «Servo
+#    motion & safety»): track_gain, track_deadzone, track_lead (new, 0 = as before), servo_vmax_pan. The tile shows them
+#    again as a shortcut (live).
+#  * track_lead («look ahead»): the head aims where the target will be in track_lead seconds (speed of the direction of
+#    the target, measured from the servo position + where it is in the picture). 0 = exactly the behaviour of before.
+#  * During a run (only then): following on, smart round off, manual hold 1 s, back home after 5 s - restored afterwards.
+#  * One lock (147): «tracking parcours» while it runs.
+# Translations: part 569. Window: part 599.
+# ----------------------------------------------------------------------------
+for _k, _v in {"track_lead": 0.0}.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+
+PARC_KEYS = ("servo_vmax_pan", "track_gain", "track_deadzone", "track_lead")
+PARC_LIM = {"servo_vmax_pan": (10.0, 400.0), "track_gain": (0.1, 2.0), "track_deadzone": (0.02, 0.3), "track_lead": (0.0, 1.0)}
+PARC_RUN_KEYS = ("track_person", "track_motion", "kopf_round", "manual_hold", "kopf_return_s")
+PARC = {"busy": False, "kind": "", "step": "", "stop": False, "runs": None, "ab": None, "tune": None, "ww": None, "err": "", "sim": {}}
+PARC_FILE = "parcours_runs.json"
+PARC_AB = {"lead": ("Look ahead 0.3 s", {"track_lead": 0.3}), "gain": ("Gain +40 %", {"track_gain": "*1.4"}),
+           "dead": ("Dead zone 0.05", {"track_deadzone": 0.05}), "fast": ("Speed 200 °/s", {"servo_vmax_pan": 200.0})}
+
+
+def parc_params():
+    return {k: float(CFG.get(k) or 0.0) for k in PARC_KEYS}
+
+
+def parc_clip(k, v):
+    lo, hi = PARC_LIM[k]
+    return round(max(lo, min(hi, float(v))), 3)
+
+
+# ---- look ahead (prediction) for the following of 410 -------------------------------------------------------------------
+_PRED = {"hist": deque(maxlen=16)}
+
+
+def parc_lead_shift(now, bear, hf, pw, lead, hist=None):
+    """how many pixels to shift the target box: the direction of the target (degrees, world) moves with v °/s -> aim
+    where it is in `lead` s. hist: [(t, bearing)] (kept here). Returns 0 until there is a short history."""
+    H = _PRED["hist"] if hist is None else hist
+    if H and (now - H[-1][0] > 1.0 or abs(bear - H[-1][1]) > 25.0):
+        H.clear()                                         # another target / a jump: start again
+    H.append((now, bear))
+    pts = [p for p in H if now - p[0] <= 0.8]
+    if lead <= 0.0 or len(pts) < 3 or pts[-1][0] - pts[0][0] < 0.25:
+        return 0.0
+    v = (pts[-1][1] - pts[0][1]) / (pts[-1][0] - pts[0][0])
+    v = max(-120.0, min(120.0, v))
+    return max(-0.35 * pw, min(0.35 * pw, v * lead / max(10.0, hf) * pw))
+
+
+_track_410 = MotionWatch.track
+
+
+def _track_lead(self, target_box, pw, ph, gain=1.0):
+    lead = float(CFG.get("track_lead") or 0.0)
+    if lead <= 0.0:
+        return _track_410(self, target_box, pw, ph, gain)   # 0 = exactly as before
+    try:
+        x, y, w, h = [float(v) for v in target_box[:4]]
+        hf, _vf = cam_fov()
+        p0, _t0 = servo_pos()
+        bear = (p0 - 50.0) / 50.0 * servo_half("pan") + ((x + w / 2.0) / pw - 0.5) * hf
+        sh = parc_lead_shift(time.time(), bear, hf, pw, lead)
+        if sh:
+            target_box = (int(x + sh), int(y), int(w), int(h)) + tuple(target_box[4:])
+    except Exception:
+        pass
+    return _track_410(self, target_box, pw, ph, gain)
+
+
+# wraps: MotionWatch.track
+MotionWatch.track = _track_lead
+
+
+# ---- runs -----------------------------------------------------------------------------------------------------------
+def _parc_path():
+    return os.path.join(DATA_DIR, PARC_FILE)
+
+
+def parc_runs():
+    if PARC["runs"] is None:
+        try:
+            with open(_parc_path(), encoding="utf-8") as f:
+                d = json.load(f)
+            PARC["runs"] = d.get("runs") if isinstance(d.get("runs"), list) else []
+            PARC["tune"] = d.get("tune") if isinstance(d.get("tune"), dict) else None
+            PARC["ab"] = d.get("ab") if isinstance(d.get("ab"), dict) else None
+            PARC["ww"] = d.get("ww") if isinstance(d.get("ww"), list) else None
+        except (OSError, ValueError):
+            PARC["runs"] = []
+    return PARC["runs"]
+
+
+def _parc_save():
+    try:
+        tmp = _parc_path() + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump({"runs": parc_runs()[-24:], "tune": PARC["tune"], "ab": PARC["ab"], "ww": PARC["ww"]}, f, ensure_ascii=False)
+        os.replace(tmp, _parc_path())
+    except OSError:
+        pass
+
+
+def parc_run_by(rid):
+    for r in parc_runs():
+        if r.get("id") == rid:
+            return r
+    return None
+
+
+def _parc_short(rep):
+    """a run report of the simulator without the long error curves (only 2 per lesson are kept small)"""
+    out = {k: rep.get(k) for k in ("id", "t", "seed", "night", "score", "note", "mount", "pics", "realism")}
+    out["lessons"] = [{k: v for k, v in l.items() if k != "curve"} for l in rep.get("lessons") or []]
+    out["curves"] = {str(l.get("id")): (l.get("curve") or [])[:120] for l in rep.get("lessons") or []}
+    return out
+
+
+def _parc_one(lessons, params=None, label="", night=False, seed=1, extra=None):
+    """one run in the simulator with these values of the following (None = as they are). Returns the run or raises."""
+    keep = {k: CFG.get(k) for k in PARC_KEYS + PARC_RUN_KEYS}
+    keep.update({k: CFG.get(k) for k in (extra or {})})
+    try:
+        if params:
+            for k, v in params.items():
+                if k in PARC_KEYS:
+                    CFG[k] = parc_clip(k, v)
+        CFG.update(track_person=True, track_motion=True, kopf_round=False, manual_hold=1.0, kopf_return_s=5.0)
+        CFG.update(extra or {})
+        used = parc_params()
+        old = (sim_control({"action": "parcours", "do": "result"}) or {}).get("report") or {}
+        r = sim_control({"action": "parcours", "do": "start", "lessons": list(lessons), "night": bool(night), "seed": int(seed), "prep_s": 2.5})
+        if not r.get("ok"):
+            raise RuntimeError(str(r.get("error") or "the simulator did not start the parcours"))
+        est = float((r.get("run") or {}).get("est") or 120.0)
+        t_end = time.time() + est * 3.0 + 120.0
+        rep = None
+        while time.time() < t_end:
+            if PARC["stop"]:
+                sim_control({"action": "parcours", "do": "stop"})
+                raise RuntimeError("stopped")
+            time.sleep(2.0)
+            try:
+                st = sim_control({"action": "parcours", "do": "state"})
+            except Exception:
+                continue
+            ru = st.get("run") or {}
+            if st.get("running"):
+                PARC["step"] = (label + " · " if label else "") + "%d/%d · %s %s" % (int(ru.get("done") or 0) + 1, len(ru.get("lessons") or [1]),
+                                                                                tr("lesson"), ru.get("lesson", ""))
+                continue
+            rp = st.get("report") or {}
+            if rp.get("id") and rp.get("id") != old.get("id"):
+                rep = rp
+            break
+        if rep is None:
+            raise RuntimeError("no result from the simulator")
+        run = {"id": "%d" % int(time.time() * 1000), "t": time.strftime("%Y-%m-%d %H:%M"), "label": label or "", "params": used,
+               "lessons": list(lessons), "night": bool(night), "seed": int(seed), "ov": bool(CFG.get("kopf_ov_on")) and bool(CFG.get("kopf_ov")),
+               "report": _parc_short(rep)}
+        parc_runs().append(run)
+        del parc_runs()[:-24]
+        _parc_save()
+        return run
+    finally:
+        for k, v in keep.items():
+            CFG[k] = v
+
+
+def _parc_thread(kind, fn):
+    if PARC["busy"]:
+        return False, "the tracking parcours is running"
+    if not sim_ready():
+        return False, "only with the simulator"
+    if simtask_busy():
+        return False, simtask_refuse("tracking parcours") or "already running"
+    PARC.update(busy=True, kind=kind, step="…", stop=False, err="")
+    _SIMHUB["t"] = 0.0
+
+    def run():
+        try:
+            fn()
+        except Exception as e:
+            PARC["err"] = str(e)[:160]
+            log_event("servo", "Tracking parcours: " + str(e)[:120])
+        finally:
+            PARC.update(busy=False, step="", kind="")
+            _SIMHUB["t"] = 0.0
+    threading.Thread(target=run, daemon=True, name="parcours").start()
+    return True, ""
+
+
+def parc_start(lessons, night=False):
+    L = [int(x) for x in lessons or [] if str(x).isdigit() and 1 <= int(x) <= 8] or [1, 5, 6]
+    return _parc_thread("run", lambda: _parc_one(L, None, tr("now"), night=night or 8 in L))
+
+
+def _ab_params(preset):
+    base = parc_params()
+    p = dict(base)
+    for k, v in PARC_AB.get(preset, PARC_AB["lead"])[1].items():
+        p[k] = parc_clip(k, base[k] * float(v[1:]) if isinstance(v, str) and v.startswith("*") else v)
+    return p
+
+
+def parc_ab(lessons, preset):
+    """A = the values now, B = A with one change - one run each, shown side by side (nothing is kept by itself)"""
+    L = [int(x) for x in lessons or [] if str(x).isdigit() and 1 <= int(x) <= 7] or [1, 4]
+    bp = _ab_params(preset)
+
+    def go():
+        a = _parc_one(L, None, "A")
+        b = _parc_one(L, bp, "B " + tr(PARC_AB.get(preset, PARC_AB["lead"])[0]))
+        PARC["ab"] = {"a": a["id"], "b": b["id"], "t": time.strftime("%Y-%m-%d %H:%M")}
+        _parc_save()
+        log_event("servo", "Tracking parcours A/B: A %.1f · B %.1f" % (float(a["report"].get("note") or 0), float(b["report"].get("note") or 0)))
+    return _parc_thread("ab", go)
+
+
+def parc_tune_cands(base, n=5):
+    """the sets the auto-tuning tries: the values now and one change at a time around them"""
+    c = [dict(base)]
+    for k, f in (("track_gain", 1.4), ("track_lead", None), ("track_deadzone", None), ("track_gain", 0.7), ("servo_vmax_pan", 1.5)):
+        p = dict(base)
+        if k == "track_lead":
+            p[k] = 0.3 if base[k] < 0.15 else 0.0
+        elif k == "track_deadzone":
+            p[k] = 0.05 if base[k] > 0.065 else 0.1
+        else:
+            p[k] = parc_clip(k, base[k] * f)
+        if p not in c:
+            c.append(p)
+    return c[:max(2, min(6, int(n)))]
+
+
+def parc_tune(lessons, n=4):
+    """tries some sets on short lessons and PROPOSES the best - it never applies one (button «übernehmen»)"""
+    L = [int(x) for x in lessons or [] if str(x).isdigit() and 1 <= int(x) <= 7] or [4]
+    cands = parc_tune_cands(parc_params(), n)
+
+    def go():
+        res = []
+        for i, p in enumerate(cands):
+            r = _parc_one(L, p, "%s %d/%d" % (tr("Auto-tuning"), i + 1, len(cands)))
+            res.append({"params": p, "score": float(r["report"].get("score") or 0), "note": float(r["report"].get("note") or 0), "run": r["id"]})
+        best = max(range(len(res)), key=lambda i: res[i]["score"]) if res else 0
+        PARC["tune"] = {"t": time.strftime("%Y-%m-%d %H:%M"), "lessons": L, "cands": res, "best": best, "base": 0, "applied": False}
+        _parc_save()
+        log_event("servo", "Tracking parcours auto-tuning: best set %d of %d (score %.0f, now %.0f) - only proposed"
+                  % (best + 1, len(res), res[best]["score"] if res else 0, res[0]["score"] if res else 0))
+    return _parc_thread("tune", go)
+
+
+def parc_apply():
+    """«übernehmen»: the proposed set of the auto-tuning becomes the setting"""
+    tu = PARC.get("tune") or {}
+    try:
+        p = tu["cands"][int(tu["best"])]["params"]
+    except (KeyError, IndexError, TypeError, ValueError):
+        return False, "no proposal"
+    for k in PARC_KEYS:
+        if k in p:
+            CFG[k] = parc_clip(k, p[k])
+    save_settings()
+    tu["applied"] = True
+    _parc_save()
+    log_event("servo", "Tracking: proposal of the auto-tuning taken over (" + ", ".join("%s %s" % (k, p.get(k)) for k in PARC_KEYS) + ")")
+    return True, ""
+
+
+def parc_ww(lessons, mounts):
+    """with / without the hand-over of the wide camera (163: «The overview camera steers the head»), per mount"""
+    L = [int(x) for x in lessons or [] if str(x).isdigit() and 1 <= int(x) <= 7] or [1]
+    M = [m for m in mounts or [] if m in WEIT_DEVICE_MOUNTS] or ["base"]
+    if not (CFG.get("armed") and STATE.get("arm_state") == "armed"):
+        return False, "the overview steers the head only when the protection is on (Wachsam / Voll)"
+    if "sim:1" not in (CFG.get("extra_cams") or []):
+        return False, "the wide camera is not an extra camera of MoveEye"
+
+    def go():
+        out = []
+        try:
+            for m in M:
+                sim_control({"action": "weit", "mount": m})
+                time.sleep(3.0)
+                on = _parc_one(L, None, "🔭 " + m + " · " + tr("with hand-over"), extra={"kopf_ov": "sim:1", "kopf_ov_on": True})
+                off = _parc_one(L, None, "🔭 " + m + " · " + tr("without hand-over"), extra={"kopf_ov": "", "kopf_ov_on": False})
+                out.append({"mount": m, "on": on["id"], "off": off["id"]})
+        finally:
+            PARC["ww"] = out
+            _parc_save()
+    return _parc_thread("ww", go)
+
+
+def parc_game(name, bot=False):
+    try:
+        r = sim_control({"action": "parcours", "do": "game", "name": str(name or "")[:20] or "Spieler", "bot": bool(bot), "secs": 60})
+    except Exception:
+        return False, "simulator not reachable"
+    if not CFG.get("track_person") or not CFG.get("track_motion"):
+        CFG.update(track_person=True, track_motion=True)     # «Folgen» on for the game (like the button in the simulator)
+    return bool(r.get("ok")), str(r.get("error") or "")
+
+
+def parc_compare(a, b):
+    """side by side: per lesson [id, name, A, B] with the main numbers (the page draws it)"""
+    ra, rb = parc_run_by(a), parc_run_by(b)
+    if not ra or not rb:
+        return None
+    la = {int(x["id"]): x for x in ra["report"].get("lessons") or []}
+    lb = {int(x["id"]): x for x in rb["report"].get("lessons") or []}
+    rows = []
+    for i in sorted(set(la) | set(lb)):
+        x, y = la.get(i), lb.get(i)
+        pick = lambda l: None if l is None else {k: l.get(k) for k in ("note", "score", "err_mean", "in_pic_pct", "losses", "reacq_s", "osc", "overshoot_deg", "servo_deg", "switches")}
+        rows.append({"id": i, "name": (x or y or {}).get("name", ""), "a": pick(x), "b": pick(y)})
+    win = "A" if float(ra["report"].get("score") or 0) > float(rb["report"].get("score") or 0) + 1.0 else (
+        "B" if float(rb["report"].get("score") or 0) > float(ra["report"].get("score") or 0) + 1.0 else "=")
+    side = lambda r: dict({k: r.get(k) for k in ("id", "t", "label", "params", "night", "ov")}, note=r["report"].get("note"), score=r["report"].get("score"))
+    return {"a": side(ra), "b": side(rb),
+            "rows": rows, "winner": win}
+
+
+def parc_hub():
+    """the tile 🎯: state, values, the last runs, A/B, auto-tuning, the simulator side (pictures, game)"""
+    runs = parc_runs()
+    sim = {}
+    try:
+        st = sim_control({"action": "parcours", "do": "state"})
+        if st.get("ok"):
+            sim = {"running": bool(st.get("running")), "run": st.get("run"), "pics_n": st.get("pics_n"), "pics": st.get("pics"),
+                   "overlay": st.get("overlay"), "ring": st.get("ring"), "game": st.get("game"), "lessons": [[x.get("id"), x.get("name"), x.get("icon")] for x in st.get("lessons") or []]}
+    except Exception:
+        sim = {"old": True}
+    ab = PARC.get("ab") or {}
+    cmp_ = parc_compare(ab.get("a"), ab.get("b")) if ab.get("a") else None
+    ww = []
+    for w in PARC.get("ww") or []:
+        c = parc_compare(w.get("on"), w.get("off"))
+        if c:
+            ww.append({"mount": w.get("mount"), "cmp": c})
+    return {"busy": PARC["busy"], "kind": PARC["kind"], "step": PARC["step"], "err": PARC["err"], "params": parc_params(), "lim": PARC_LIM,
+            "runs": [{"id": r["id"], "t": r["t"], "label": r.get("label"), "note": r["report"].get("note"), "score": r["report"].get("score"),
+                      "lessons": r.get("lessons"), "night": r.get("night"), "params": r.get("params")} for r in runs[-10:]][::-1],
+            "last": runs[-1]["report"] if runs else None, "ab": cmp_, "ab_presets": [[k, v[0]] for k, v in PARC_AB.items()],
+            "tune": PARC.get("tune"), "ww": ww, "sim": sim, "armed": bool(CFG.get("armed") and STATE.get("arm_state") == "armed")}
+
+
+# ---- tile and lock --------------------------------------------------------------------------------------------------
+_simtask_busy_416 = simtask_busy
+
+
+def simtask_busy(except_=""):                              # + 416: one lock
+    if PARC["busy"] and except_ != "tracking parcours":
+        return "tracking parcours"
+    return _simtask_busy_416(except_)
+
+
+_simtask_local_416 = simtask_local
+
+
+def simtask_local():                                       # + 416: the simulator refuses its own starts meanwhile
+    return "tracking parcours" if PARC["busy"] else _simtask_local_416()
+
+
+SIM_BUSY_NAMES.setdefault("Verfolgungs-Parcours", "tracking parcours")
+_sim_hub_416 = sim_hub
+
+
+def sim_hub(force=False):                                  # + 416: the tile 🎯 (Simulator centre, group «Testen»)
+    d = _sim_hub_416(force)
+    if d.get("ok"):
+        try:
+            d = dict(d, parc=parc_hub())
+        except Exception as e:
+            d = dict(d, parc={"err": str(e)[:80]})
+    return d
+
+
+_sim_hub_do_416 = sim_hub_do
+
+
+def sim_hub_do(a, v=None):                                 # + 416: «parc» = {do: start | stop | set | ab | pick | tune | apply | ww | game | sim}
+    if a != "parc":
+        return _sim_hub_do_416(a, v)
+    v = v if isinstance(v, dict) else {}
+    op = str(v.get("do") or "")
+    _SIMHUB["t"] = 0.0
+    if op == "start":
+        return parc_start(v.get("lessons"), bool(v.get("night")))
+    if op == "stop":
+        PARC["stop"] = True
+        try:
+            sim_control({"action": "parcours", "do": "stop"})
+            sim_control({"action": "parcours", "do": "game_stop"})
+        except Exception:
+            pass
+        return True, ""
+    if op == "set":                                        # the regulators live (the same settings as in «Einstellungen»)
+        k = str(v.get("k") or "")
+        if k not in PARC_KEYS:
+            return False, "invalid value"
+        try:
+            CFG[k] = parc_clip(k, v.get("v"))
+        except (TypeError, ValueError):
+            return False, "invalid value"
+        save_settings()
+        return True, ""
+    if op == "ab":
+        return parc_ab(v.get("lessons"), str(v.get("preset") or "lead"))
+    if op == "pick":                                       # compare two kept runs
+        if not parc_run_by(v.get("a")) or not parc_run_by(v.get("b")):
+            return False, "invalid value"
+        PARC["ab"] = {"a": v.get("a"), "b": v.get("b"), "t": time.strftime("%Y-%m-%d %H:%M")}
+        _parc_save()
+        return True, ""
+    if op == "tune":
+        return parc_tune(v.get("lessons"), int(v.get("n") or 4))
+    if op == "apply":
+        return parc_apply()
+    if op == "ww":
+        return parc_ww(v.get("lessons"), v.get("mounts") or [str((weit_sim_cam() or {}).get("mount") or "base")])
+    if op == "game":
+        return parc_game(v.get("name"), bool(v.get("bot")))
+    if op in ("overlay", "ring", "pics"):
+        try:
+            r = sim_control({"action": "parcours", "do": op, "on": bool(v.get("on"))})
+        except Exception:
+            return False, "simulator not reachable"
+        return bool(r.get("ok", True)), ""
+    return False, "unknown action"
+
+
+PARC_JS = r"""
+<style>
+.mwpc{flex:1 1 100%;display:flex;flex-direction:column;gap:8px;min-width:0;max-width:100%;box-sizing:border-box}
+.mwpc *{box-sizing:border-box;max-width:100%}
+.mwpc .row>button{flex:1 1 auto;min-width:0}.mwpc .chip{flex:0 1 auto!important}
+.mwpc select{min-width:0;flex:1 1 140px}.mwpc td{overflow-wrap:anywhere}
+.mwpc .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.mwpc .chip{padding:6px 10px;border-radius:99px;font-size:13px}
+.mwpc .sl{display:grid;grid-template-columns:minmax(90px,30%) 1fr 54px;gap:6px;align-items:center;font-size:13px}
+.mwpc .sl input{width:100%}
+.mwpc table{width:100%;border-collapse:collapse;font-size:12px}
+.mwpc td,.mwpc th{padding:3px 4px;border-bottom:1px solid #1f2b3a;text-align:left;vertical-align:top}
+.mwpc th{color:#8a9bb0;font-weight:600}
+.mwpc .g{color:#3fcf6b}.mwpc .o{color:#f59a4a}.mwpc .r{color:#ff4d4d}
+.mwpc .box{border:1px solid #1f2b3a;border-radius:10px;padding:8px}
+.mwpc h4{margin:0 0 4px;font-size:13px}
+.mwpc svg{width:100%;height:42px;background:#0c121a;border-radius:6px}
+</style>
+<script>
+(function () {
+  const DE = /*PDE*/{};
+  const L = () => { try { return (typeof LANG !== "undefined" && LANG) || document.documentElement.lang || "de"; } catch (e) { return "de"; } };
+  let merged = false;                                  // (like 591: the page's own dictionary learns these words, for 139 too)
+  const merge = () => { if (merged) return; try { if (typeof I18N !== "undefined" && I18N.de) { for (const k in DE) if (!(k in I18N.de)) I18N.de[k] = DE[k]; merged = true; } } catch (e) {} };
+  const tt = k => { merge(); try { if (typeof t === "function" && t(k) !== k) return t(k); } catch (e) {} return L() === "en" ? k : (DE[k] || k); };
+  const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
+  const B = (txt, fn, cls) => { const b = E("button", cls == null ? "sec" : cls, txt); b.type = "button"; b.onclick = fn; return b; };
+  const LN = {1: "Slowly across the picture", 2: "Towards the camera / away", 3: "Zigzag and changes of speed", 4: "Stop and go on", 5: "Hidden behind obstacles",
+    6: "Two persons cross", 7: "Animal: fox / deer, fast and irregular", 8: "Night run with infrared"};
+  const ln = id => tt(LN[id] || String(id));
+  const SEL = new Set([1, 5, 6]); let AB = "lead", GNAME = "";
+  const nc = n => n == null ? "" : (n >= 4.5 ? "g" : n >= 3.5 ? "o" : "r");
+  const SL = [["servo_vmax_pan", "Speed (°/s)", 5], ["track_gain", "Gain", 0.05], ["track_deadzone", "Dead zone", 0.01], ["track_lead", "Look ahead (s)", 0.05]];
+  function spark(curve) {                               // the error curve of one lesson (0 … 30°), red where it was not in the picture
+    const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", "0 0 100 30"); s.setAttribute("preserveAspectRatio", "none");
+    if (!curve || curve.length < 2) return s; const t1 = curve[curve.length - 1][0] || 1;
+    for (let i = 1; i < curve.length; i++) { const a = curve[i - 1], b = curve[i]; const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      l.setAttribute("x1", a[0] / t1 * 100); l.setAttribute("x2", b[0] / t1 * 100); l.setAttribute("y1", 30 - Math.min(30, a[1])); l.setAttribute("y2", 30 - Math.min(30, b[1]));
+      l.setAttribute("stroke", b[2] ? "#3fcf6b" : "#ff4d4d"); l.setAttribute("stroke-width", "1.2"); l.setAttribute("vector-effect", "non-scaling-stroke"); s.appendChild(l); }
+    return s;
+  }
+  function cell(x) { if (!x) return "–"; return x.note.toFixed(1) + " · " + x.err_mean.toFixed(1) + "° · " + Math.round(x.in_pic_pct) + " %" + (x.losses ? " · " + x.losses + "×" : ""); }
+  function cmpTable(c, ha, hb) {
+    const tb = E("table"), h = E("tr"); h.append(E("th", "", tt("Lesson")), E("th", "", ha || "A"), E("th", "", hb || "B")); tb.appendChild(h);
+    c.rows.forEach(r => { const tr = E("tr"), a = E("td", nc(r.a && r.a.note), cell(r.a)), b = E("td", nc(r.b && r.b.note), cell(r.b));
+      tr.append(E("td", "", r.id + " " + ln(r.id)), a, b); tb.appendChild(tr); });
+    const f = E("tr"); f.append(E("td", "", "Ø " + tt("grade")), E("td", nc(c.a.note), (c.a.note || 0).toFixed(1)), E("td", nc(c.b.note), (c.b.note || 0).toFixed(1))); tb.appendChild(f);
+    const p = E("tr"); const pv = x => x ? "v " + Math.round(x.servo_vmax_pan) + " · g " + x.track_gain + " · dz " + x.track_deadzone + " · la " + x.track_lead : "";
+    p.append(E("td", "", tt("Values")), E("td", "", pv(c.a.params)), E("td", "", pv(c.b.params))); tb.appendChild(p);
+    return tb;
+  }
+  merge();
+  window.mwParc = {
+    sub: H => { merge(); const P = H && H.parc; if (!P || P.err && !P.params) return ""; if (P.busy) return "⏳ " + (P.step || ""); const S = P.sim || {};
+      if (S.running) return "⏳ " + tt("lesson") + " " + ((S.run || {}).lesson || ""); if (S.game && S.game.on) return "🏃 " + S.game.score;
+      return P.last ? tt("grade") + " " + P.last.note.toFixed(1) : tt("Train the following"); },
+    sheet: (s, H, act) => {
+      const P = H && H.parc, w = E("div", "mwpc"); s.appendChild(w);
+      if (!P || !P.params) { w.appendChild(E("div", "mut", tt("not supported - update the simulator"))); return; }
+      const S = P.sim || {};
+      if (S.old) w.appendChild(E("div", "mut", "⚠ " + tt("not supported - update the simulator")));
+      const pa = (d) => act("parc", d);
+      // lessons
+      const lr = E("div", "row"); (S.lessons || [[1, "Langsam quer durchs Bild", "🚶"], [2, "", "↕"], [3, "", "〰"], [4, "", "⏸"], [5, "", "🌳"], [6, "", "👥"], [7, "", "🦊"]]).filter(x => x[0] < 8).forEach(([id, nm, ic]) => {
+        const b = B(ic + " " + id, () => { SEL.has(id) ? SEL.delete(id) : SEL.add(id); b.className = "chip" + (SEL.has(id) ? "" : " sec"); }, "chip" + (SEL.has(id) ? "" : " sec")); b.title = ln(id); lr.appendChild(b); });
+      w.appendChild(lr);
+      const busy = P.busy || S.running || (S.game && S.game.on);
+      const r1 = E("div", "row");
+      // the same buttons in the same order as in the simulator window (card «Testlauf» → «Verfolgungs-Parcours»)
+      r1.append(B("▶ " + tt("Start"), () => pa({do: "start", lessons: [...SEL]}), busy ? "sec" : ""), B("🌙 " + tt("Night (lesson 8)"), () => pa({do: "start", lessons: [...SEL], night: true})),
+        B("⏹ " + tt("Stop"), () => pa({do: "stop"})));
+      if (busy) r1.appendChild(E("span", "mut", "⏳ " + (P.step || (S.run ? tt("lesson") + " " + S.run.lesson + (S.run.t != null ? " · " + Math.round(S.run.t) + " s" : "") : ""))));
+      if (P.err) r1.appendChild(E("span", "r", "⚠ " + tt(P.err)));
+      w.appendChild(r1);
+      const sw = E("div", "row"); [["overlay", "Overlay in the simulator"], ["ring", "Ring round the device"], ["pics", "Collect learning pictures"]].forEach(([k, n]) => {
+        sw.appendChild(B((S[k] ? "✓ " : "") + tt(n), () => pa({do: k, on: !S[k]}), S[k] ? "" : "sec")); });
+      w.appendChild(sw);
+      // the regulators (live: the same settings as in «Einstellungen»)
+      const bx = E("div", "box"); bx.appendChild(E("h4", "", "🎚 " + tt("Regulators of the following (live)")));
+      SL.forEach(([k, n, st]) => { const lim = (P.lim || {})[k] || [0, 1]; const r = E("div", "sl"), i = E("input"), o = E("b", "", String(P.params[k]));
+        i.type = "range"; i.min = lim[0]; i.max = lim[1]; i.step = st; i.value = P.params[k]; i.oninput = () => o.textContent = i.value; i.onchange = () => pa({do: "set", k: k, v: +i.value});
+        r.append(E("span", "", tt(n)), i, o); bx.appendChild(r); });
+      bx.appendChild(E("div", "mut", tt("parc-reg-note"))); w.appendChild(bx);
+      // last run
+      if (P.last) { const lb = E("div", "box"); lb.appendChild(E("h4", "", "🎯 " + tt("Last run") + " · " + tt("grade") + " " + P.last.note.toFixed(1) + (P.last.night ? " · 🌙" : "")));
+        (P.last.lessons || []).forEach(l => { const d = E("div"); d.appendChild(E("div", nc(l.note), l.id + " " + ln(l.id) + ": " + l.note.toFixed(1) + " · " + tt("aim error") + " " + l.err_mean.toFixed(1) + "° · "
+          + tt("in the picture") + " " + Math.round(l.in_pic_pct) + " % · " + tt("losses") + " " + l.losses + (l.losses ? " (" + l.reacq_s + " s)" : "") + " · " + tt("swinging") + " " + l.osc + " · " + tt("servo travel") + " " + l.servo_deg + "°"
+          + (l.id === 6 ? " · " + tt("switches") + " " + l.switches : "")));
+          d.appendChild(spark(((P.last.curves || {})[String(l.id)]) || [])); lb.appendChild(d); });
+        if (P.last.pics) lb.appendChild(E("div", "mut", "📷 " + P.last.pics + " " + tt("learning pictures (picture data only)")));
+        w.appendChild(lb); }
+      // A/B
+      const ab = E("div", "box"); ab.appendChild(E("h4", "", "⚖ " + tt("A/B comparison")));
+      const ar = E("div", "row"), sel = E("select"); (P.ab_presets || []).forEach(([k, n]) => { const o = E("option", "", "B = " + tt(n)); o.value = k; if (k === AB) o.selected = true; sel.appendChild(o); });
+      sel.onchange = () => AB = sel.value; ar.append(sel, B("▶ " + tt("A/B run"), () => pa({do: "ab", preset: AB, lessons: [...SEL].filter(x => x < 8)}))); ab.appendChild(ar);
+      if ((P.runs || []).length >= 2) { const pr = E("div", "row"), sa = E("select"), sb = E("select");
+        P.runs.forEach((r, i) => { [sa, sb].forEach((x, j) => { const o = E("option", "", r.t.slice(5) + " · " + (r.label || "") + " · " + (r.note != null ? r.note.toFixed(1) : "–")); o.value = r.id;
+          if ((P.ab && ((j === 0 && P.ab.a.id === r.id) || (j === 1 && P.ab.b.id === r.id))) || (!P.ab && i === j)) o.selected = true; x.appendChild(o); }); });
+        pr.append(E("span", "", "A"), sa, E("span", "", "B"), sb, B(tt("Compare"), () => pa({do: "pick", a: sa.value, b: sb.value}))); ab.appendChild(pr); }
+      if (P.ab) { ab.appendChild(cmpTable(P.ab, "A · " + (P.ab.a.label || ""), "B · " + (P.ab.b.label || "")));
+        ab.appendChild(E("div", "mut", P.ab.winner === "=" ? tt("No clear difference.") : (P.ab.winner === "B" ? tt("B is better.") : tt("A is better.")) + " " + tt("Nothing is changed by itself."))); }
+      w.appendChild(ab);
+      // auto-tuning
+      const tu = E("div", "box"); tu.appendChild(E("h4", "", "🤖 " + tt("Auto-tuning")));
+      tu.appendChild(B("▶ " + tt("Try values (short, lessons as chosen)"), () => pa({do: "tune", lessons: [...SEL].filter(x => x < 8).slice(0, 2), n: 4})));
+      const T = P.tune; if (T && T.cands) { const tb = E("table"), h = E("tr"); h.append(E("th", "", "#"), E("th", "", tt("Values")), E("th", "", tt("grade"))); tb.appendChild(h);
+        T.cands.forEach((c, i) => { const tr = E("tr"), p = c.params; tr.append(E("td", "", (i === T.best ? "★ " : "") + (i === 0 ? tt("now") : String(i))),
+          E("td", "", "v " + Math.round(p.servo_vmax_pan) + " · g " + p.track_gain + " · dz " + p.track_deadzone + " · la " + p.track_lead), E("td", nc(c.note), c.note.toFixed(1) + " (" + Math.round(c.score) + ")")); tb.appendChild(tr); });
+        tu.appendChild(tb);
+        if (T.best > 0 && !T.applied) tu.appendChild(B("✓ " + tt("take over proposal ★"), () => pa({do: "apply"}), ""));
+        tu.appendChild(E("div", "mut", T.applied ? "✓ " + tt("taken over") : T.best === 0 ? tt("The values now are the best - nothing to change.") : tt("Only a proposal - nothing was changed."))); }
+      w.appendChild(tu);
+      // wide camera hand-over
+      const ww = E("div", "box"); ww.appendChild(E("h4", "", "🔭 " + tt("With / without wide-angle hand-over")));
+      ww.appendChild(B("▶ " + tt("Compare (mount now)"), () => pa({do: "ww", lessons: [...SEL].filter(x => x < 8).slice(0, 2)})));
+      if (!P.armed) ww.appendChild(E("div", "mut", tt("the overview steers the head only when the protection is on (Wachsam / Voll)")));
+      (P.ww || []).forEach(x => { ww.appendChild(E("div", "", "🔭 " + x.mount)); ww.appendChild(cmpTable(x.cmp, tt("with hand-over"), tt("without hand-over"))); });
+      w.appendChild(ww);
+      // the game and the switches of the simulator
+      const g = E("div", "box"); g.appendChild(E("h4", "", "🏃 " + tt("Game «Escape the camera»")));
+      const gi = E("input"); gi.placeholder = tt("Name"); gi.value = GNAME; gi.maxLength = 20; gi.oninput = () => GNAME = gi.value; gi.style.cssText = "flex:1;min-width:100px";
+      const gr = E("div", "row"); gr.append(gi, B("▶ " + tt("Play (60 s)"), () => pa({do: "game", name: GNAME}), ""), B("🤖 " + tt("Bot"), () => pa({do: "game", name: "Bot", bot: true})));
+      g.appendChild(gr); g.appendChild(E("div", "mut", tt("parc-game-note")));
+      const GS = S.game || {}; if (GS.on) g.appendChild(E("div", "", "⏳ " + GS.name + " · " + GS.score + " " + tt("points") + " · " + Math.round(GS.left || 0) + " s"));
+      else if (GS.result) g.appendChild(E("div", "", "🏁 " + GS.result.name + ": " + GS.result.score + " " + tt("points") + " · " + GS.result.out_s + " s " + tt("out of the picture") + " · " + GS.result.losses + "× " + tt("lost")));
+      w.appendChild(g);
+      w.appendChild(E("div", "mut", tt("parc-note")));
+    }
+  };
+})();
+</script>
+"""
+PARC_KEYS_TXT = ("not supported - update the simulator", "Night (lesson 8)", "Start", "Stop", "lesson", "Regulators of the following (live)", "Speed (°/s)",
+                 "Gain", "Dead zone", "Look ahead (s)", "parc-reg-note", "Last run", "grade", "aim error", "in the picture", "losses", "swinging",
+                 "servo travel", "switches", "learning pictures (picture data only)", "A/B comparison", "A/B run", "Compare", "No clear difference.",
+                 "B is better.", "A is better.", "Nothing is changed by itself.", "Auto-tuning", "Try values (short, lessons as chosen)", "Values", "now",
+                 "take over proposal ★", "taken over", "The values now are the best - nothing to change.", "Only a proposal - nothing was changed.",
+                 "With / without wide-angle hand-over", "Compare (mount now)", "the overview steers the head only when the protection is on (Wachsam / Voll)",
+                 "with hand-over", "without hand-over", "Game «Escape the camera»", "Name", "Play (60 s)", "Bot", "parc-game-note", "points",
+                 "out of the picture", "lost", "Overlay in the simulator", "Ring round the device", "Collect learning pictures", "parc-note",
+                 "Train the following", "Lesson", "Tracking parcours", "Look ahead 0.3 s", "Gain +40 %", "Dead zone 0.05", "Speed 200 °/s",
+                 "Slowly across the picture", "Towards the camera / away", "Zigzag and changes of speed", "Stop and go on", "Hidden behind obstacles",
+                 "Two persons cross", "Animal: fox / deer, fast and irregular", "Night run with infrared", "stopped",
+                 "the tracking parcours is running", "no result from the simulator", "no proposal", "the simulator did not start the parcours")
+_simhub_head_416 = simhub_head
+
+
+def simhub_head():                                        # + 416: the tile 🎯 «Verfolgungs-Parcours»
+    return _simhub_head_416() + PARC_JS.replace("/*PDE*/{}", json.dumps({k: DE[k] for k in PARC_KEYS_TXT if k in DE}, ensure_ascii=False), 1)
+
+
+def parc_selftest():
+    H = deque(maxlen=16)
+    assert parc_lead_shift(0.0, 10.0, 66.0, 640, 0.3, H) == 0.0                 # no history yet
+    for i in range(1, 6):
+        sh = parc_lead_shift(0.1 * i, 10.0 + 2.0 * i, 66.0, 640, 0.3, H)         # 20 °/s to the right
+    assert abs(sh - 20.0 * 0.3 / 66.0 * 640) < 0.5, sh
+    assert parc_lead_shift(0.6, 12.0, 66.0, 640, 0.0, H) == 0.0                 # 0 = off
+    assert parc_lead_shift(5.0, 50.0, 66.0, 640, 0.3, H) == 0.0                 # a pause: new start
+    base = {"servo_vmax_pan": 120.0, "track_gain": 0.6, "track_deadzone": 0.08, "track_lead": 0.0}
+    c = parc_tune_cands(base, 5)
+    assert c[0] == base and len(c) == 5 and any(x["track_lead"] == 0.3 for x in c) and all(PARC_LIM[k][0] <= x[k] <= PARC_LIM[k][1] for x in c for k in PARC_KEYS)
+    keep = {k: CFG.get(k) for k in PARC_KEYS}
+    try:
+        CFG.update(base)
+        assert _ab_params("gain")["track_gain"] == 0.84 and _ab_params("dead")["track_deadzone"] == 0.05
+        assert parc_clip("track_lead", 5) == 1.0 and parc_clip("servo_vmax_pan", 1) == 10.0
+    finally:
+        CFG.update(keep)
+    keep_runs = PARC["runs"]
+    try:
+        PARC["runs"] = [{"id": "1", "t": "x", "label": "A", "params": base, "report": {"score": 80, "note": 5.0, "lessons": [{"id": 1, "name": "n", "note": 5.0, "score": 80, "err_mean": 2.0, "in_pic_pct": 95, "losses": 0}]}},
+                        {"id": "2", "t": "y", "label": "B", "params": base, "report": {"score": 60, "note": 4.0, "lessons": [{"id": 1, "name": "n", "note": 4.0, "score": 60, "err_mean": 5.0, "in_pic_pct": 80, "losses": 1}]}}]
+        cm = parc_compare("1", "2")
+        assert cm["winner"] == "A" and cm["rows"][0]["a"]["note"] == 5.0 and cm["rows"][0]["b"]["losses"] == 1
+    finally:
+        PARC["runs"] = keep_runs
+    assert "mwParc" in simhub_head()
+
+
+SELFTEST_EXTRA.append(("Tracking parcours: look ahead, auto-tuning sets, A/B (416)", parc_selftest))
+# ----------------------------------------------------------------------------
 # 2.98.16 (Fehlalarme durch Tiere, Prüfstand): auf ebenem Boden steht eine Person weiter unten im Bild (näher) grösser da
 # als weiter oben (weiter weg) – die Höhe im Bild wächst fast linear mit dem Abstand der Füsse vom Horizont. MoveEye lernt
 # diese Gerade aus den Personen, die die KI sicher bestätigt hat (pro Neigung des Kopfes). Ein Ding, das nur durch seine
@@ -36572,14 +37678,18 @@ class ExtraCam:
         if self.n % 2 == 0 or not self.times:                  # detection on every 2nd frame is enough
             pw = 320; ph = max(1, int(H * pw / W)); sx = W / pw; sy = H / ph
             gray = cv2.GaussianBlur(cv2.cvtColor(cv2.resize(frame, (pw, ph)), cv2.COLOR_BGR2GRAY), (5, 5), 0)
-            fg = bg.apply(gray)
-            fg = cv2.dilate(cv2.erode(cv2.threshold(fg, 200, 255, cv2.THRESH_BINARY)[1], None, iterations=1), None, iterations=2)
-            cnts, _ = cv2.findContours(fg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            amin = CFG["min_area"] * (1.0 - CFG["sensitivity"] / 200.0) * (320.0 / 480.0) ** 2
-            self.boxes = [(int(x * sx), int(y * sy), int(w * sx), int(h * sy)) for x, y, w, h in
-                          (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= amin)] if self.n > 30 else []
-            self.motion = bool(self.boxes) and CFG["detection_on"]
-            self.streak = self.streak + 1 if self.motion else 0
+            if weit_cam_turning(self.spec):                    # 163: a camera on the head turns with it - its movement is not movement
+                bg.apply(gray, learningRate=1.0)               # (the picture of now is the background, like the main camera, 410)
+                self.boxes = []; self.motion = False; self.streak = 0
+            else:
+                fg = bg.apply(gray)
+                fg = cv2.dilate(cv2.erode(cv2.threshold(fg, 200, 255, cv2.THRESH_BINARY)[1], None, iterations=1), None, iterations=2)
+                cnts, _ = cv2.findContours(fg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                amin = CFG["min_area"] * (1.0 - CFG["sensitivity"] / 200.0) * (320.0 / 480.0) ** 2
+                self.boxes = [(int(x * sx), int(y * sy), int(w * sx), int(h * sy)) for x, y, w, h in
+                              (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= amin)] if self.n > 30 else []
+                self.motion = bool(self.boxes) and CFG["detection_on"]
+                self.streak = self.streak + 1 if self.motion else 0
         now = time.time()
         if self.motion and self.streak >= 3:
             self.last_motion = now
@@ -39044,7 +40154,7 @@ async function gwGo(d) {
 let SPEC = null, SPECON = true, SPECRES = "", specT = null;
 try { SPECON = localStorage.getItem("mw-sim-spec") !== "0"; } catch (e) {}
 const MODE_TXT = {camera: "Alle gegen die Kamera", guard: "Wächter", teamguard: "Team gegen Team", mw: "Gegen MoveEye", mwhand: "Team gegen MoveEye",
-  patrol: "Patrouille", seek: "Verstecken mit dem Rover", free: "Zonen-Check", jaeger: "Fehlalarm-Jäger"};     // 2.98.0: all game types (2.98.18: Fehlalarm-Jäger)
+  patrol: "Patrouille", seek: "Verstecken mit dem Rover", free: "Zonen-Check", jaeger: "Fehlalarm-Jäger", escape: "Entkomme der Kamera"};     // 2.98.0: all game types (2.98.18: Fehlalarm-Jäger)
 const ST_IC = {play: "🏃", goal: "🎉", jail: "🔒", out: "👀", lobby: "⏳"};
 async function specPoll() {
   clearTimeout(specT);
@@ -39202,7 +40312,7 @@ function showCtl(r) {
   });
   const sel = $("#s-sel"), cur = sel.value; sel.textContent = "";
   (r.scenarios || []).forEach(o => { const op = document.createElement("option"); op.value = o.id; op.dataset.del = o.deletable ? "1" : "";
-    op.textContent = o.name + (o.id === r.scenario ? "  ◀ " + t("running") : ""); sel.appendChild(op); });
+    op.textContent = (o.en && LANG !== "de" ? t(o.en) + " (3D)" : o.name) + (o.id === r.scenario ? "  ◀ " + t("running") : ""); sel.appendChild(op); });
   $("#s-scn").hidden = !(r.scenarios || []).length;
   sel.value = [...sel.options].some(o => o.value === cur) ? cur : (r.scenario || (sel.options[0] && sel.options[0].value) || "");
   const o = sel.options[sel.selectedIndex]; $("#s-del").hidden = !(o && o.dataset.del === "1");
@@ -55402,6 +56512,12 @@ GONL_DE = {"Human vs AI": "Mensch gegen KI", "online-note": "Freunde spielen von
            "The game is open - guests can join": "Das Spiel ist offen – Gäste können beitreten", "through the tunnel": "über den Tunnel",
            "the game is not open in the simulator": "das Spiel ist im Simulator nicht offen", "simulator not reachable": "Simulator nicht erreichbar",
            "Only the game: the guest sees no camera picture and no settings. Whoever has the link can play until it expires.": "Nur das Spiel: der Gast sieht kein Kamerabild und keine Einstellungen. Wer den Link hat, kann bis zum Ablauf mitspielen.",
+           "Online game over Tailscale Funnel": "Online-Spiel über Tailscale Funnel", "Switch the funnel on": "Funnel einschalten",
+           "funnel-note": "Macht nur das Spiel (/game/…) über Tailscale Funnel im Internet erreichbar – für Freunde ohne Tailscale. Alles andere von MoveEye bleibt privat. Geht von selbst aus, wenn die letzte Einladung abläuft oder zurückgezogen wird, spätestens nach der gewählten Zeit und beim Neustart.",
+           "local-warn-funnel": "Dieser Link geht nur im eigenen Netz. Für Freunde ohne Tailscale: Funnel einschalten – dann ist nur das Spiel öffentlich.",
+           "switches off at the latest after": "geht spätestens aus nach", "Funnel on": "Funnel an – öffentlich", "Funnel off": "Funnel aus",
+           "Make an invitation now - without one the funnel switches off after 15 minutes.": "Jetzt eine Einladung erstellen – ohne Einladung geht der Funnel nach 15 Minuten wieder aus.",
+           "Only the administrator can switch the funnel on.": "Nur der Administrator kann den Funnel einschalten.", "Set a web password first (Settings → 🔒 Password) - without one everybody in the network is administrator.": "Zuerst ein Web-Passwort setzen (Einstellungen → 🔒 Passwort) – ohne Passwort ist jeder im Netz Administrator.", "Only for the administrator": "Nur für den Administrator",
            "Who caught more?": "Wer hat mehr erwischt?", "wins": "gewinnt", "Draw": "Gleichstand", "h": "h", "no invitation yet": "noch keine Einladung"}
 
 GONL_JS = r"""<script>
@@ -55442,13 +56558,41 @@ Object.assign(I18N.de, /*GONLDE*/{});
     b1.onclick = async () => { b1.disabled = true; busyC = true; const q = await post("/api/game_compare?" + L(), {op: "start", bots: +sb.value, minutes: +sm.value, source: wc.checked ? "ways" : "rec", lang: LANG}); busyC = false; CK = ""; paintC(q); };
     const b2 = el("button", "sec", t("Stop the comparison")); b2.type = "button"; b2.hidden = !run; b2.onclick = async () => { CK = ""; paintC(await post("/api/game_compare?" + L(), {op: "stop", lang: LANG})); };
     if (!run) r.append(sb, sm); r.append(b1, b2); cb.appendChild(r); if (!run) cb.appendChild(wl); };
+  // ---- 556: «Online-Spiel über Tailscale Funnel» (only the game public; only the administrator switches) ----
+  const fErr = E => { const d = el("div", ""); d.style.margin = "4px 0"; d.appendChild(el("div", "err", "⚠ " + E.msg));
+    (E.steps || []).forEach(x => d.appendChild(el("div", "", "• " + x)));
+    if (E.cmd) { const c = el("pre", "", E.cmd); c.style.cssText = "white-space:pre-wrap;word-break:break-all;background:var(--field,#0c121a);border:1px solid var(--line);padding:6px 8px;border-radius:8px;font-size:12px;margin:4px 0;user-select:all"; d.appendChild(c); }
+    (E.links || []).forEach(l => { const a = el("a", "", "🔗 " + l.t); a.href = l.u; a.target = "_blank"; a.rel = "noopener noreferrer"; a.style.cssText = "display:block;margin:2px 0;font-size:13px;color:var(--acc)"; d.appendChild(a); });
+    return d; };
+  const fSet = async b => { b.lang = LANG; await post("/api/game_funnel?" + L(), b); VK = "";
+    try { paintV(await (await fetch("/api/game_invite?" + L(), {cache: "no-store"})).json()); } catch (e) {} };
+  const paintF = (box, S) => { const F = S.funnel; if (!F) { if (!S.public) box.appendChild(el("div", "mut", "⚠ " + t("local-warn"))); return; }
+    const w = el("div", ""); w.id = "g-funnel"; w.style.cssText = "border:1px solid " + (F.on ? "var(--acc)" : "var(--line)") + ";border-radius:10px;padding:8px;margin:6px 0";
+    if (!S.public && !F.on) { const r = el("div", "mut", "⚠ " + t(F.avail ? "local-warn-funnel" : "local-warn"));
+      // 2.98.47 (Daniel): no extra button «Funnel einschalten» - the switch is right below
+      w.appendChild(r); }
+    const lab = el("label", "opt"), cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.id = "g-funnel-sw"; cb.checked = !!F.on; cb.disabled = !F.can;
+    lab.append(el("span", "", "🌍 " + t("Online game over Tailscale Funnel")), cb); if (!F.can) { lab.style.opacity = ".5"; lab.title = t("Only for the administrator"); }
+    const hs = document.createElement("select"); hs.setAttribute("aria-label", t("switches off at the latest after")); hs.style.width = "auto"; hs.disabled = !F.can;
+    (F.choices || [1, 2, 3, 6, 12, 24]).forEach(h => { const o = el("option", "", t("switches off at the latest after") + " " + h + " " + t("h")); o.value = h; hs.appendChild(o); }); hs.value = String(F.hours || 6);
+    hs.onchange = () => fSet({action: F.on ? "on" : "hours", hours: +hs.value});
+    cb.onchange = () => { cb.disabled = true; fSet({action: cb.checked ? "on" : "off", hours: +hs.value}); };
+    w.appendChild(lab); w.appendChild(el("div", "mut", t("funnel-note")));
+    const hr = el("div", "btns"); hr.style.cssText = "align-items:center;flex-wrap:wrap;margin-top:6px"; hr.appendChild(hs); w.appendChild(hr);
+    const st = el("div", "", F.on ? "🌍 " + t("Funnel on") + " · " + t("time left") + " " + fmtS(F.left_s) : "⚪ " + t("Funnel off") + (F.why_off ? " (" + F.why_off + ")" : ""));
+    st.style.marginTop = "6px"; w.appendChild(st);
+    if (F.on) { const u = el("div", "mut", F.url); u.style.cssText = "word-break:break-all;font-size:12px"; w.appendChild(u); }
+    if (F.on && F.grace_s) w.appendChild(el("div", "mut", "⏳ " + t("Make an invitation now - without one the funnel switches off after 15 minutes.")));
+    if (!F.can) w.appendChild(el("div", "mut", "🔒 " + t(F.nopw && !F.on ? "Set a web password first (Settings → 🔒 Password) - without one everybody in the network is administrator." : "Only the administrator can switch the funnel on.")));
+    const E = F.err || F.need; if (E) w.appendChild(fErr(E));
+    box.appendChild(w); };
   // ---- invitations ----
   let vb = null, sel = {h: 3, p: 6};
   const paintV = j => { const k = JSON.stringify(j); if (k === VK) return; VK = k; if (!vb) vb = head(V, "🌐", "Online beyond the WLAN", "online-note"); vb.textContent = "";
     const S = j || {};
     if (S.ok === false) { vb.appendChild(el("div", "", "⚠ " + (S.error || "?"))); return; }
     vb.appendChild(el("div", S.game_open ? "" : "mut", S.game_open ? "🟢 " + t("The game is open - guests can join") + (S.tunnel ? " (" + t("through the tunnel") + ")" : "") : "⚪ " + (S.why || t("the game is not open in the simulator"))));
-    if (!S.public) vb.appendChild(el("div", "mut", "⚠ " + t("local-warn")));
+    paintF(vb, S);
     const act = (S.invites || []).filter(x => x.active), old = (S.invites || []).filter(x => !x.active);
     if (!act.length) vb.appendChild(el("div", "mut", t("no invitation yet")));
     act.forEach(x => { const row = el("div", ""); row.style.cssText = "border:1px solid var(--line);border-radius:10px;padding:8px;margin:6px 0";
@@ -56270,13 +57414,14 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   let VIEW = "";
   function tiles() {
     const h = H() || {}, sc = (h.scenes || []).find(x => x.id === h.scene) || {};
-    const L = [["scene", "🗺", "Scene", sc.name || h.scene || (R && R.scenario) || ""],
+    const L = [["scene", "🗺", "Scene", (HUB() && HUB().scn ? HUB().scn(sc) : sc.name) || h.scene || (R && R.scenario) || ""],
       ["hour", h.dark ? "🌙" : "☀", "Time of day", h.clock || ""],
       ["weather", WXI[h.weather] || "☁", "Weather", h.weather ? TT(h.weather) : ""],
       ["visit", "🚶", "Visit", h.visitors != null ? h.visitors + " " + T("now") : ""],
       ["game", "🎮", "Game", R && R.game ? (R.game.open ? "🟢 " + (R.game.players || 0) : T("off")) : ""],
       ["wildlife", "🦌", "Wildlife watching", cv("rifle") ? (cv("rifle").value ? T("on") : T("off")) : ""],
       ["place", "🪞", "Your place", cv("twin_on") ? (cv("twin_on").value ? T("on") : T("off")) : ""]];
+    if (h.wide && window.mwWide) L.splice(1, 0, ["wide", "🔭", "Wide camera", window.mwWide.sub(h)]);   // 591: the wide picture (tap = big)
     const kg = cv("game_kiguard");                      // simulator with «MoveEye as AI guard»
     if (kg) L.push(["kig", "🤖", "AI guard", kg.value ? T("on") : T("off")]);
     L.push(["view", "👁", "View", VIEW ? T((VIEWS.find(x => x[0] === VIEW) || [0, 0, ""])[2]) : ""]);
@@ -56300,7 +57445,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   function setOpen(k) { open = k; SH.textContent = ""; SH.dataset.sig = ""; TI.dataset.sig = ""; if (ON) paint(); if (k) setTimeout(() => SH.scrollIntoView({block: "nearest", behavior: "smooth"}), 60); }
   function sheet() {
     if (!open) { if (SH.firstChild) SH.textContent = ""; return; }
-    if (["scene", "hour", "weather", "visit"].includes(open)) {           // the sheets of the Simulator-Zentrale (139)
+    if (["scene", "hour", "weather", "visit", "wide"].includes(open)) {   // the sheets of the Simulator-Zentrale (139; wide: 591)
       let b = SH.firstChild;
       if (!b || b.dataset.kind !== open) { SH.textContent = ""; b = E("div"); b.dataset.simhub = "sheet"; b.dataset.kind = open; SH.appendChild(b); const h = HUB(); if (h) h.paint(); }
       return;
@@ -59522,6 +60667,672 @@ class WebStream:
         self.app = app
 
 
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_szenen = {
+    'Campsite': ('Camping-Platz', 'Camping', 'Campeggio', 'Plaz da campadi'),
+    'Forest': ('Wald', 'Forêt', 'Bosco', 'Guaud'),
+    'Car park': ('Parkplatz', 'Parking', 'Parcheggio', 'Plaz da parcar'),
+    'Garden / house': ('Garten / Haus', 'Jardin / maison', 'Giardino / casa', 'Curtin / chasa'),
+    'Funny place': ('Lustiger Platz', 'Endroit amusant', 'Posto divertente', 'Plaz legher'),
+    'Hide and seek (many hiding places)': ('Versteckspiel (viele Verstecke)', 'Cache-cache (beaucoup de cachettes)', 'Nascondino (molti nascondigli)', 'Giu da zuppar (bleras zuppadas)'),
+    'Place from the map (Switzerland)': ('Ort von der Karte (Schweiz)', 'Lieu de la carte (Suisse)', 'Luogo dalla mappa (Svizzera)', 'Lieu da la charta (Svizra)'),
+    'My home (self-built)': ('Mein Zuhause (selbst gebaut)', 'Ma maison (construite moi-même)', 'La mia casa (costruita da me)', 'Mia chasa (construida sez)'),
+    'Farm': ('Bauernhof', 'Ferme', 'Fattoria', 'Bain puril'),
+    'Lake shore with jetty': ('Seeufer mit Steg', 'Rive du lac avec ponton', 'Riva del lago con pontile', 'Riva dal lai cun punt'),
+    'Building site': ('Baustelle', 'Chantier', 'Cantiere', 'Plazza da construcziun'),
+    'Camper van site': ('Wohnmobil-Stellplatz', 'Aire de camping-cars', 'Area camper', 'Plaz per autos da campadi'),
+    'My template (3D file)': ('Meine Vorlage (3D-Datei)', 'Mon modèle (fichier 3D)', 'Il mio modello (file 3D)', 'Mes model (datoteca 3D)'),
+    'Bedroom (wake-up alarm)': ('Schlafzimmer (Wecker)', 'Chambre (réveil)', 'Camera da letto (sveglia)', 'Stanza da durmir (svegliarin)'),
+    'Full campsite': ('Voller Campingplatz', 'Camping plein', 'Campeggio pieno', 'Plaz da campadi plain'),
+    'Camouflage and crawling': ('Tarnen und Kriechen', 'Camouflage et ramper', 'Mimetizzarsi e strisciare', 'Camuflar e sa trair'),
+    'Bike thief': ('Velodieb', 'Voleur de vélo', 'Ladro di bici', 'Lader da velo'),
+    'Tracking course': ('Verfolgungs-Parcours', 'Parcours de suivi', 'Percorso di inseguimento', 'Parcours da persequitar'),
+}
+# German comes from the simulator itself (and DE is only made in part 560, after this part) - here only fr / it / rm
+for _k, _v in _HX_szenen.items():
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# the manual (DE / EN): the three new scenes of the simulator, in the section «Erkennung» / «Detection»
+for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
+                "<p><b>🏕 Neue Simulator-Szenen (Simulator 3D-4.x):</b> Drei Szenen üben gezielt Schwächen der Erkennung. "
+                "<i>Voller Campingplatz</i>: viele harmlose Nachbarn kochen, gehen zum WC, Kinder spielen, jemand führt den Hund aus – nur "
+                "wer an <i>deinen</i> Platz kommt, zählt (gut zum Einstellen der Zonen und von «Dein Platz»). <i>Tarnen und Kriechen</i>: "
+                "Tarnkleidung in der Farbe des Bodens, Robben, Schirm und Karton. <i>Velodieb</i>: schnell hin, Velo greifen (der Velo-Sensor "
+                "meldet sich), weg – gemessen wird die Reaktionszeit. Jede Szene hat einen festen Prüfstand-Lauf (camping_voll, tarnen, "
+                "velodieb; nicht im kurzen Lauf, sondern sonntags oder von Hand) und im Spiel-Assistenten ein passendes Spiel.</p>"),
+               ('<section id="detect" data-icon="🎯"><h2>Detection</h2>',
+                "<p><b>🏕 New simulator scenes (simulator 3D-4.x):</b> three scenes train weak points of the detection. "
+                "<i>Full campsite</i>: many harmless neighbours cook, walk to the toilets, children play, someone walks the dog – only who "
+                "comes to <i>your</i> pitch counts (good for setting up zones and «Your place»). <i>Camouflage and crawling</i>: camouflage "
+                "clothes in the colour of the ground, crawling, umbrella and cardboard box. <i>Bike thief</i>: fast in, grab the bike (the "
+                "bike sensor reports), away – the reaction time is measured. Every scene has a fixed test-bench run (camping_voll, tarnen, "
+                "velodieb; not in the short run but on Sundays or by hand) and a matching game in the game assistant.</p>")):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+# Daniel 30.10.2026 («Tailscale-Tunnel einbauen»): friends WITHOUT Tailscale join the online game (343) from home.
+#   Switch «Online-Spiel über Tailscale Funnel» next to the invitations (web 544, window 592). Only an administrator may switch
+#   it on (web: g.role == "admin" and no app key, else 403; window: not in operator mode).
+#   How it is built (three walls, each one alone keeps the rest of MoveEye private):
+#     1. Tailscale publishes only the path /game:  tailscale funnel --bg --https=<443|8443|10000> --set-path=/game http://127.0.0.1:<door>/game
+#        (443 only when it is not used by «https über Tailscale» / other serve settings, else 8443, else 10000).
+#     2. <door> is an own small web server on 127.0.0.1 (random free port, only while the funnel is on) in front of the same
+#        Flask app: it lets through only /game/<token>/, /game/<token>/info, /manifest.json and /ws (GET), everything else -> 404.
+#     3. MoveEye itself (all doors): a request with the header «Tailscale-Funnel-Request» (Tailscale sets it on funnel traffic)
+#        gets 404 for anything but the game paths - before the login, independent of it.
+#   Auto-off: the last invitation expired / revoked, no invitation within 15 min, the maximum time (CFG game_funnel_hours,
+#   default 6, 1-24 h). The state is saved before the funnel goes on, so a restart (also after a crash) switches it off.
+#   Every on / off is in the log and in the protocol of the invitations (GINV log), switching on sends a push «Online-Spiel öffentlich».
+_FUN_CFG = {"game_funnel_hours": 6, "game_funnel_state": {}}
+for _k, _v in _FUN_CFG.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+FUNNEL_PORTS = (443, 8443, 10000)
+FUNNEL_HOURS = (1, 2, 3, 6, 12, 24)
+FUNNEL_GRACE_S = 900                               # switched on without an invitation: 15 min to make one
+FUNNEL_PATH_RE = re.compile(r"^/game/[A-Za-z0-9_-]{1,64}(/|/info|/manifest\.json|/ws)?$")
+FUNNEL_DOCS = "https://tailscale.com/kb/1223/funnel"
+FUNNEL_LINKS = {"install": ("Install Tailscale (official guide)", "https://tailscale.com/download/linux"),
+                "login": ("Tailscale: log in a device", "https://tailscale.com/kb/1017/install"),
+                "dns": ("Tailscale admin console → DNS", "https://login.tailscale.com/admin/dns"),
+                "https": ("Docs: enabling HTTPS certificates", "https://tailscale.com/kb/1153/enabling-https"),
+                "acl": ("Tailscale admin console → Access controls", "https://login.tailscale.com/admin/acls/file"),
+                "funnel": ("Docs: Tailscale Funnel", FUNNEL_DOCS),
+                "cli": ("Docs: tailscale funnel command", "https://tailscale.com/kb/1311/tailscale-funnel"),
+                "operator": ("Docs: tailscale set --operator", "https://tailscale.com/kb/1080/cli")}
+FUNNEL = {"lock": threading.RLock(), "on": False, "port": 0, "door": 0, "url": "", "t_on": 0.0, "until": 0.0, "srv": None,
+          "had_inv": False, "err": None, "why_off": "", "legacy": False, "gen": 0, "ts": {"t": 0.0, "v": None}}
+
+
+def _fun_exe():
+    return shutil.which("tailscale")
+
+
+def _fun_run1(cmd, timeout):
+    """(rc, text) - also the text printed before a timeout (Tailscale prints the «enable» link and then waits)"""
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        return r.returncode, ((r.stdout or "") + "\n" + (r.stderr or "")).strip()
+    except subprocess.TimeoutExpired as e:
+        parts = []
+        for x in (e.stdout, e.stderr):
+            if isinstance(x, bytes):
+                x = x.decode("utf-8", "replace")
+            parts.append(x or "")
+        return 124, ("\n".join(parts).strip() + "\n(timeout)").strip()
+    except OSError as e:
+        return 127, str(e)
+
+
+def _fun_denied(txt):
+    return bool(re.search(r"access denied|permission denied|not permitted|operator|must be root|requires root|use 'sudo", txt or "", re.I))
+
+
+def _fun_run(args, timeout=25):
+    """tailscale <args>: first as this user, then with «sudo -n» when Tailscale says no rights (like tailscale_https)"""
+    exe = _fun_exe()
+    if not exe:
+        return 127, "Tailscale is not installed"
+    rc, txt = _fun_run1([exe] + list(args), timeout)
+    if rc != 0 and _fun_denied(txt) and shutil.which("sudo"):
+        rc2, txt2 = _fun_run1(["sudo", "-n", exe] + list(args), timeout)
+        if rc2 == 0 or not re.search(r"password is required|a terminal is required|not in the sudoers", txt2, re.I):
+            return rc2, txt2
+    return rc, txt
+
+
+def _fun_save_now():
+    """the funnel state is written at once (save_settings waits up to 15 s - a crash then would forget the public path)"""
+    try:
+        save_settings_now()
+    except Exception:
+        save_settings()
+
+
+def funnel_ts(force=False):
+    """tailscale_status() (090), at most every 20 s"""
+    now = time.time()
+    if force or FUNNEL["ts"]["v"] is None or now - FUNNEL["ts"]["t"] > 20:
+        try:
+            v = tailscale_status()
+        except Exception:
+            v = {"state": "error", "name": ""}
+        FUNNEL["ts"] = {"t": now, "v": v}
+    return FUNNEL["ts"]["v"]
+
+
+def funnel_serve_cfg():
+    """the serve / funnel settings of Tailscale as dict (ServeConfig: TCP, Web, AllowFunnel) or None"""
+    rc, txt = _fun_run(["serve", "status", "--json"], timeout=10)
+    if rc != 0:
+        return None
+    i = txt.find("{")
+    try:
+        j = json.loads(txt[i:]) if i >= 0 else {}
+    except ValueError:
+        return None
+    return j if isinstance(j, dict) else None
+
+
+def _fun_ours(h):
+    """a serve handler made by this feature: the path /game to 127.0.0.1:<port>/game"""
+    return bool(re.match(r"^http://127\.0\.0\.1:\d+/game/?$", str((h or {}).get("Proxy") or "")))
+
+
+def funnel_pick_port(cfg):
+    """443 if free, else 8443, else 10000 (only these three are allowed for Funnel); 0 = all used"""
+    used = set()
+    for k in ((cfg or {}).get("TCP") or {}):
+        used.add(str(k))
+    for hp, w in ((cfg or {}).get("Web") or {}).items():
+        hs = (w or {}).get("Handlers") or {}
+        if any(not (p.rstrip("/") == "/game" and _fun_ours(h)) for p, h in hs.items()):
+            used.add(str(hp).rsplit(":", 1)[-1])
+    if cfg is None:                                      # no status: at least keep «https über Tailscale» (443) free
+        try:
+            if _tailscale_https_url_base():
+                used.add("443")
+        except Exception:
+            pass
+    for p in FUNNEL_PORTS:
+        if str(p) not in used:
+            return p
+    return 0
+
+
+def funnel_explain(txt, code=""):
+    """the error as {"code", "msg", "steps": [..], "cmd": "...", "links": [(label, url)], "raw"} - what exactly to do"""
+    t_ = str(txt or "")
+    low = t_.lower()
+    enable = re.findall(r"https://login\.tailscale\.com/f/[^\s\"'<>]+", t_)
+    E = {"code": code, "msg": "", "steps": [], "cmd": "", "links": [], "raw": t_.strip()[-300:]}
+    L = lambda *ks: [FUNNEL_LINKS[k] for k in ks]
+    if code == "notinstalled" or (not code and "not installed" in low):
+        E.update(code="notinstalled", msg="Tailscale is not installed on this device.",
+                 steps=["Install it on the Pi and log in once:"], cmd="curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up", links=L("install", "funnel"))
+    elif code == "login" or (not code and re.search(r"needslogin|not logged in|logged out|tailscale up|stopped", low)):
+        E.update(code="login", msg="Tailscale is not logged in or stopped.",
+                 steps=["On the Pi start Tailscale and log in with your account (it shows a link):"], cmd="sudo tailscale up", links=L("login"))
+    elif re.search(r"funnel", low) and re.search(r"not enabled|not available|node ?attr|nodeattrs|not allowed|policy|/f/funnel|no-funnel", low):
+        E.update(code="funnel", msg="Funnel is not allowed in your tailnet policy.",
+                 steps=["Tailscale admin console → Access controls: add the node attribute «funnel» (lines below) and save.",
+                        "Also needed: DNS → MagicDNS on and «HTTPS Certificates» enabled.", "Then switch the funnel on again here."],
+                 cmd='"nodeAttrs": [\n  {"target": ["autogroup:member"], "attr": ["funnel"]}\n]', links=L("acl", "funnel"))
+        if enable:
+            E["steps"].insert(0, "Easiest: open this link once – Tailscale enables Funnel for this device:")
+            E["links"] = [("Enable Funnel (Tailscale link)", enable[0])] + E["links"]
+    elif re.search(r"https", low) and re.search(r"not enabled|disabled|cert|/f/serve|serve is not enabled", low) or "serve is not enabled" in low:
+        E.update(code="https", msg="HTTPS certificates are not enabled in your tailnet.",
+                 steps=["Tailscale admin console → DNS: switch on MagicDNS.", "On the same page under «HTTPS Certificates» click «Enable HTTPS».",
+                        "Then switch the funnel on again here."], links=L("dns", "https"))
+        if enable:
+            E["links"] = [("Enable HTTPS (Tailscale link)", enable[0])] + E["links"]
+    elif _fun_denied(t_) or re.search(r"password is required|sudoers", low):
+        E.update(code="perm", msg="MoveEye may not change the Tailscale settings.",
+                 steps=["Once on the Pi (as the user MoveEye runs as), then switch on again:"], cmd="sudo tailscale set --operator=$USER", links=L("operator"))
+    elif code == "ports":
+        E.update(code="ports", msg="All three Funnel ports (443, 8443, 10000) are already used by other Tailscale serve settings.",
+                 steps=["Look at them and switch one off:"], cmd="tailscale serve status", links=L("cli"))
+    elif code == "door":
+        E.update(code="door", msg="The game door of MoveEye could not start.", steps=["Restart MoveEye and try again."])
+    elif "(timeout)" in low or code == "timeout":
+        E.update(code="timeout", msg="Tailscale did not answer in time.", steps=["Check «tailscale status» on the Pi and try again."], cmd="tailscale status", links=L("funnel"))
+    else:
+        E.update(code=code or "other", msg="Tailscale refused the funnel.", steps=["Message of Tailscale:"], cmd=t_.strip()[-300:], links=L("funnel", "cli"))
+    return E
+
+
+def funnel_avail():
+    """'' when Tailscale is ready for the funnel, else the error code (notinstalled / login)"""
+    if not _fun_exe():
+        return "notinstalled"
+    st = funnel_ts()
+    if str(st.get("state")) != "Running" or not st.get("name"):
+        return "login"
+    return ""
+
+
+# ---- the own door for the funnel: only the game paths, only 127.0.0.1, only while the funnel is on ----------------------------
+def _funnel_door_app(app):
+    def door(environ, start_response):
+        p = environ.get("PATH_INFO") or "/"
+        if p.startswith("/game/game/"):                     # an old Tailscale that does not strip the mount path
+            p = p[5:]; environ["PATH_INFO"] = p
+        environ["HTTP_TAILSCALE_FUNNEL_REQUEST"] = environ.get("HTTP_TAILSCALE_FUNNEL_REQUEST") or "?1"   # all here is funnel traffic
+        environ["mw.funnel"] = True
+        if not FUNNEL["on"] or environ.get("REQUEST_METHOD", "GET") not in ("GET", "HEAD") or not FUNNEL_PATH_RE.match(p):
+            start_response("404 Not Found", [("Content-Type", "text/plain; charset=utf-8"), ("Cache-Control", "no-store"), ("X-Robots-Tag", "noindex")])
+            return [b"Not found"]
+        return app(environ, start_response)
+    return door
+
+
+def funnel_door_start():
+    app = FUNNEL.get("app")
+    if app is None:
+        return 0
+    if FUNNEL["srv"] is not None:
+        return FUNNEL["door"]
+    try:
+        from werkzeug.serving import make_server
+        srv = make_server("127.0.0.1", 0, _funnel_door_app(app), threaded=True)
+    except Exception as e:
+        log_event("web", f"Funnel game door could not start: {e}"[:200])
+        return 0
+    FUNNEL["srv"], FUNNEL["door"] = srv, int(srv.server_port)
+    threading.Thread(target=srv.serve_forever, daemon=True, name="funnel-door").start()
+    return FUNNEL["door"]
+
+
+def funnel_door_stop():
+    srv, FUNNEL["srv"], FUNNEL["door"] = FUNNEL["srv"], None, 0
+    if srv is not None:
+        threading.Thread(target=srv.shutdown, daemon=True).start()
+
+
+def _funnel_url(name, port):
+    return f"https://{name}" + ("" if int(port) == 443 else f":{int(port)}")
+
+
+def _fun_off_cmds(port, legacy=False):
+    new = [["funnel", f"--https={port}", "--set-path=/game", "off"]]
+    old = [["funnel", str(port), "off"], ["serve", f"https:{port}", "/game", "off"]]
+    return (old + new) if legacy else (new + old)
+
+
+def _funnel_remove(port, legacy=False):
+    """removes the path /game on <port> again; True when Tailscale shows no handler of ours there any more"""
+    ok = False
+    if legacy:                                          # Tailscale before 1.52: funnel off, then the serve path
+        ok = all([_fun_run(c, timeout=20)[0] == 0 for c in _fun_off_cmds(port, True)[:2]])
+    else:
+        for c in _fun_off_cmds(port):
+            rc, txt = _fun_run(c, timeout=20)
+            if rc == 0:
+                ok = True
+                break
+            if not re.search(r"flag provided but not defined|unknown|usage|invalid", txt, re.I):
+                break
+    cfg = funnel_serve_cfg()
+    if cfg is not None:
+        left = [hp for hp, w in (cfg.get("Web") or {}).items() if str(hp).endswith(f":{port}")
+                and any(p.rstrip("/") == "/game" and _fun_ours(h) for p, h in ((w or {}).get("Handlers") or {}).items())]
+        ok = not left
+    return ok
+
+
+def funnel_pw_set():
+    """a web password (or a password per user) is set - otherwise everybody in the network is administrator"""
+    return bool(CFG.get("web_password") or CFG.get("web_pw_hash"))
+
+
+def funnel_on(hours=None, source="web"):
+    """(True, None) or (False, error dict)"""
+    with FUNNEL["lock"]:
+        if CFG.get("lock_on"):
+            return False, {"code": "locked", "msg": "Not possible in operator mode", "steps": [], "cmd": "", "links": [], "raw": ""}
+        if not funnel_pw_set():                           # 2.98.47 (Daniel): only with a web password - without one everybody is admin
+            return False, {"code": "nopw", "msg": "Set a web password first - without one everybody in the network is administrator",
+                           "steps": ["Settings → 🔒 Password: set a web password, then switch the funnel on."], "cmd": "", "links": [], "raw": ""}
+        h = float(hours if hours is not None else CFG.get("game_funnel_hours") or 6)
+        h = max(0.05, min(24.0, h))                       # the switch: 1-24 h; inside (moving the port) also the rest of an hour
+        if hours is not None:
+            CFG["game_funnel_hours"] = int(h) if h == int(h) else h
+        if FUNNEL["on"]:
+            FUNNEL["until"] = time.time() + h * 3600
+            CFG["game_funnel_state"] = dict(CFG.get("game_funnel_state") or {}, until=int(FUNNEL["until"])); save_settings()
+            return True, None
+        av = funnel_avail()
+        if av == "login":
+            funnel_ts(force=True); av = funnel_avail()
+        if av:
+            FUNNEL["err"] = funnel_explain("", av); return False, FUNNEL["err"]
+        name = funnel_ts()["name"]
+        cfg = funnel_serve_cfg()
+        port = funnel_pick_port(cfg)
+        if not port:
+            FUNNEL["err"] = funnel_explain("", "ports"); return False, FUNNEL["err"]
+        door = funnel_door_start()
+        if not door:
+            FUNNEL["err"] = funnel_explain("", "door"); return False, FUNNEL["err"]
+        until = time.time() + h * 3600
+        CFG["game_funnel_state"] = {"port": port, "door": door, "until": int(until), "name": name}   # first saved: a crash is cleaned up too
+        _fun_save_now()
+        tgt = f"http://127.0.0.1:{door}/game"
+        rc, txt = _fun_run(["funnel", "--bg", f"--https={port}", "--set-path=/game", tgt], timeout=25)
+        legacy = False
+        if rc != 0 and re.search(r"flag provided but not defined|unknown flag", txt, re.I):     # Tailscale before 1.52
+            legacy = True
+            rc, txt = _fun_run(["serve", f"https:{port}", "/game", tgt], timeout=25)
+            if rc == 0:
+                rc, txt = _fun_run(["funnel", str(port), "on"], timeout=25)
+                if rc != 0:
+                    _fun_run(["serve", f"https:{port}", "/game", "off"], timeout=15)
+        if rc != 0:
+            funnel_door_stop()
+            CFG["game_funnel_state"] = {}; _fun_save_now()
+            FUNNEL["err"] = funnel_explain(txt)
+            log_event("web", f"Online game over Tailscale Funnel could not be switched on: {FUNNEL['err']['msg']} ({txt.strip()[:120]})")
+            return False, FUNNEL["err"]
+        act = [x for x in ginv_list() if ginv_valid(x)]
+        FUNNEL.update(on=True, port=port, url=_funnel_url(name, port), t_on=time.time(), until=until, had_inv=bool(act), err=None, why_off="",
+                      legacy=legacy, gen=FUNNEL["gen"] + 1)
+        gen = FUNNEL["gen"]
+    msg = f"Online game public over Tailscale Funnel: switched on ({source}, {h:g} h, {FUNNEL['url']}/game/…)"
+    log_event("web", msg)
+    ginv_note("MoveEye", f"Funnel on: {FUNNEL['url']}/game/… ({h:g} h)", None, False)
+    try:
+        w = WATCH_REF["w"]
+        if w is not None:
+            w.notifier.info(trf("The online game is public on the internet for {h} h (only the game, through Tailscale Funnel)", h=f"{h:g}"),
+                            title="{name}: " + tr("Online game public"))
+    except Exception:
+        pass
+    threading.Thread(target=_funnel_watch, args=(gen,), daemon=True, name="funnel-watch").start()
+    return True, None
+
+
+def funnel_off(reason="switched off", source="web"):
+    with FUNNEL["lock"]:
+        st = dict(CFG.get("game_funnel_state") or {})
+        was = FUNNEL["on"] or bool(st.get("port"))
+        port = FUNNEL["port"] or int(st.get("port") or 0)
+        FUNNEL.update(on=False, gen=FUNNEL["gen"] + 1, why_off=reason if source == "auto" else "")
+        ok = _funnel_remove(port, FUNNEL["legacy"]) if port else True
+        funnel_door_stop()
+        CFG["game_funnel_state"] = {}; _fun_save_now()
+        FUNNEL.update(port=0, url="", until=0.0, t_on=0.0)
+    if was:
+        log_event("web", f"Online game over Tailscale Funnel: switched off ({source}: {reason})" + ("" if ok else " - Tailscale still shows the path, check «tailscale serve status»"))
+        ginv_note("MoveEye", f"Funnel off ({reason})", None, False)
+    return ok
+
+
+def funnel_check():
+    """auto-off: maximum time, the last invitation gone, no invitation in 15 min"""
+    if not FUNNEL["on"]:
+        return
+    now = time.time()
+    act = [x for x in ginv_list() if ginv_valid(x)]
+    if act:
+        FUNNEL["had_inv"] = True
+    if now >= FUNNEL["until"]:
+        funnel_off("maximum time over", "auto")
+    elif not act and FUNNEL["had_inv"]:
+        funnel_off("the last invitation expired or was revoked", "auto")
+    elif not act and now - FUNNEL["t_on"] > FUNNEL_GRACE_S:
+        funnel_off("no invitation within 15 minutes", "auto")
+
+
+def _funnel_watch(gen):
+    n = 0
+    while FUNNEL["on"] and FUNNEL["gen"] == gen:
+        time.sleep(5)
+        if not FUNNEL["on"] or FUNNEL["gen"] != gen:
+            return
+        try:
+            funnel_check()
+            n += 1
+            if n % 12 == 0 and FUNNEL["on"]:                # every minute: still there? (e.g. «tailscale serve reset»)
+                cfg = funnel_serve_cfg()
+                if cfg is not None and not any(str(hp).endswith(f":{FUNNEL['port']}") and "/game" in ((w or {}).get("Handlers") or {})
+                                               for hp, w in (cfg.get("Web") or {}).items()):
+                    funnel_off("removed in Tailscale", "auto")
+        except Exception as e:
+            log_event("web", f"Funnel check: {e}"[:160])
+
+
+def funnel_cleanup():
+    """at the start of MoveEye: a funnel of the last run is switched off (no forgotten public access)"""
+    st = CFG.get("game_funnel_state") or {}
+    if not st.get("port"):
+        return False
+    port = int(st["port"])
+    ok = _funnel_remove(port)
+    CFG["game_funnel_state"] = {}; _fun_save_now()
+    log_event("web", f"Online game: the Tailscale Funnel of the last run (port {port}) was switched off at the start" + ("" if ok else " - check «tailscale serve status»"))
+    ginv_note("MoveEye", "Funnel of the last run switched off at the start", None, False)
+    return ok
+
+
+def funnel_state(lang=None, admin=True):
+    on = FUNNEL["on"]
+    av = funnel_avail() if not on else ""
+    def tx(e):
+        return {"code": e["code"], "msg": tr_err(e["msg"], lang), "steps": [tr(s, lang) for s in e["steps"]], "cmd": e["cmd"],
+                "links": [{"t": tr(a, lang), "u": b} for a, b in e["links"]], "raw": e.get("raw", "")} if e else None
+    e = tx(FUNNEL["err"])
+    need = tx(funnel_explain("", av)) if (av and not e) else None          # what is missing before the switch can work
+    return {"on": on, "url": (FUNNEL["url"] + "/game/…/") if on else "", "base": FUNNEL["url"], "port": FUNNEL["port"],
+            "left_s": max(0, int(FUNNEL["until"] - time.time())) if on else 0, "hours": CFG.get("game_funnel_hours") or 6, "choices": list(FUNNEL_HOURS),
+            "avail": av == "", "why": av, "err": e, "need": need, "why_off": tr(FUNNEL["why_off"], lang) if FUNNEL["why_off"] else "",
+            "grace_s": max(0, int(FUNNEL_GRACE_S - (time.time() - FUNNEL["t_on"]))) if on and not FUNNEL["had_inv"] else 0,
+            "can": bool(admin) and not CFG.get("lock_on") and (on or funnel_pw_set()), "nopw": not funnel_pw_set(), "docs": FUNNEL_DOCS}
+
+
+def funnel_status_line(lang=None):
+    """one line for the window / the page: on/off, address, time left"""
+    s = funnel_state(lang)
+    if s["on"]:
+        m = s["left_s"] // 60
+        return f"🌍 {tr('Funnel on', lang)} · {s['url']} · {tr('time left', lang)} {m // 60}:{m % 60:02d} {tr('h', lang)}"
+    return "⚪ " + tr("Funnel off", lang) + (f" ({s['why_off']})" if s["why_off"] else "")
+
+
+# ---- wrapped functions of 050 / 343 ----------------------------------------------------------------------------------------------
+_tailscale_https_url_base = tailscale_https_url
+
+
+def tailscale_https_url():
+    """«https über Tailscale» only when «/» is served on 443 (the funnel path /game alone is not the page)"""
+    st = CFG.get("game_funnel_state") or {}
+    if not (FUNNEL["on"] or st.get("port")):
+        return _tailscale_https_url_base()
+    ts = funnel_ts()
+    cfg = funnel_serve_cfg()
+    if cfg is None or not ts.get("name"):
+        return _tailscale_https_url_base()
+    hs = ((cfg.get("Web") or {}).get(f"{ts['name']}:443") or {}).get("Handlers") or {}
+    return f"https://{ts['name']}/" if "/" in hs else ""
+
+
+_tailscale_https_base = tailscale_https
+
+
+def tailscale_https(on=True):
+    """«https über Tailscale» on / off keeps the funnel: a funnel on 443 moves (off, then on again with the same end time)"""
+    if not (FUNNEL["on"] and FUNNEL["port"] == 443):
+        return _tailscale_https_base(on)
+    left_h = max(0.05, (FUNNEL["until"] - time.time()) / 3600)
+    keep_h = CFG.get("game_funnel_hours")
+    funnel_off("moved for «https über Tailscale»", "sys")
+    r = _tailscale_https_base(on)
+    funnel_on(left_h, "sys")
+    CFG["game_funnel_hours"] = keep_h
+    return r
+
+
+_ginv_base_base = ginv_base
+
+
+def ginv_base(host_url=""):
+    """with the funnel on, the invitations use the public address https://<name>.ts.net[:port]"""
+    if FUNNEL["on"] and FUNNEL["url"]:
+        return FUNNEL["url"]
+    return _ginv_base_base(host_url)
+
+
+_ginv_revoke_base = ginv_revoke
+
+
+def ginv_revoke(iid):
+    n = _ginv_revoke_base(iid)
+    try:
+        funnel_check()
+    except Exception:
+        pass
+    return n
+
+
+_ginv_state_base = ginv_state
+
+
+def ginv_state(host_url=""):
+    st = _ginv_state_base(host_url)
+    st["funnel"] = funnel_state()
+    if FUNNEL["on"]:
+        st["public"] = True
+    return st
+
+
+_ginv_routes_base = ginv_routes
+
+
+def ginv_routes(app, reply, body):
+    from flask import request, Response, g as g_
+    _ginv_routes_base(app, reply, body)
+    FUNNEL["app"] = app
+
+    def funnel_guard():
+        """wall 3: funnel traffic reaches only the game, before and independent of the login"""
+        if request.headers.get("Tailscale-Funnel-Request") is None and not request.environ.get("mw.funnel"):
+            return None
+        if request.method in ("GET", "HEAD") and FUNNEL_PATH_RE.match(request.path or ""):
+            return None
+        ip = request.headers.get("X-Forwarded-For", "").split(",")[0].strip()[:45] or request.remote_addr or "?"
+        ginv_note(ip, "refused through the funnel: " + (request.path or "/")[:60])
+        return Response("Not found", 404, mimetype="text/plain", headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
+    app.before_request_funcs.setdefault(None, []).insert(0, funnel_guard)
+
+    def admin_ok():
+        return getattr(g_, "role", "admin") == "admin" and not getattr(g_, "appkey", None)
+
+    @app.route("/api/game_funnel", methods=["GET", "POST"])
+    def api_game_funnel():
+        lang = norm_lang(request.args.get("lang"))
+        if not admin_ok():
+            return reply({"ok": False, "error": tr("Only for the administrator", lang)}, 403)
+        if request.method == "POST":
+            d = body(); lang = norm_lang(d.get("lang") or lang)
+            a_ = str(d.get("action") or "")
+            if a_ == "on":
+                try:
+                    hh = max(1, min(24, int(d.get("hours") or CFG.get("game_funnel_hours") or 6)))
+                except (TypeError, ValueError):
+                    hh = 6
+                ok, err = funnel_on(hh, "web")
+                st = funnel_state(lang)
+                st["ok"] = ok
+                if not ok:
+                    st["error"] = st["err"]["msg"] if st.get("err") else tr_err(str((err or {}).get("msg") or "error"), lang)
+                return reply(st, 200 if ok else 400)
+            if a_ == "off":
+                FUNNEL["err"] = None
+                funnel_off("switched off by hand", "web")
+            elif a_ == "hours":
+                try:
+                    CFG["game_funnel_hours"] = max(1, min(24, int(d.get("hours") or 6))); save_settings()
+                except (TypeError, ValueError):
+                    return reply({"ok": False, "error": "bad hours"}, 400)
+            else:
+                return reply({"ok": False, "error": "unknown action"}, 400)
+        st = funnel_state(lang)
+        st["ok"] = True
+        return reply(st)
+
+    if (CFG.get("game_funnel_state") or {}).get("port"):
+        threading.Thread(target=funnel_cleanup, daemon=True, name="funnel-cleanup").start()
+
+
+LOCK_DENY_PATHS.add("/api/game_funnel")              # operator mode (390): no public access
+DEMO_BLOCK = tuple(DEMO_BLOCK) + ("/api/game_funnel",)
+
+
+# ---- window (592): the switch row in the card «Online» ---------------------------------------------------------------------------
+def _tk_funnel_row(self, card):
+    """the same as on the page: switch, hours, status line, error with the fix and links"""
+    import webbrowser
+    fr = tk.Frame(card, bg=C["panel"]); fr.pack(fill="x", pady=(8, 0))
+    busy = {"b": False}
+
+    def toggled(val):
+        if busy["b"]:
+            return
+        if CFG.get("lock_on"):
+            tg.set(FUNNEL["on"]); self._status("Simulator", tr("Not possible in operator mode")); return
+        busy["b"] = True
+        stl.configure(text="⏳ …")
+
+        def work():
+            if val:
+                funnel_on(int(hv.get() or 6), "window")
+            else:
+                FUNNEL["err"] = None
+                funnel_off("switched off by hand", "window")
+            busy["b"] = False
+            try:
+                self.root.after(0, paint)
+            except (tk.TclError, RuntimeError):
+                pass
+        threading.Thread(target=work, daemon=True, name="funnel").start()
+
+    tg = Toggle(fr, "🌍 " + tr("Online game over Tailscale Funnel"), FUNNEL["on"], toggled); tg.pack(fill="x")
+    ttk.Label(fr, text=tr("funnel-note"), style="Mut.TLabel", wraplength=520, justify="left").pack(anchor="w", pady=(2, 2))
+    hf = tk.Frame(fr, bg=C["panel"]); hf.pack(fill="x")
+    tk.Label(hf, text=tr("switches off at the latest after"), bg=C["panel"], fg=C["mut"]).pack(side="left", padx=(0, 4))
+    hv = tk.StringVar(value=str(CFG.get("game_funnel_hours") or 6))
+    cb = ttk.Combobox(hf, textvariable=hv, values=[str(h) for h in FUNNEL_HOURS], width=3, state="readonly"); cb.pack(side="left", padx=(0, 4))
+    tk.Label(hf, text=tr("h"), bg=C["panel"], fg=C["mut"]).pack(side="left")
+
+    def hours_set(_e=None):
+        try:
+            CFG["game_funnel_hours"] = max(1, min(24, int(hv.get()))); save_settings()
+        except ValueError:
+            pass
+    cb.bind("<<ComboboxSelected>>", hours_set)
+    stl = ttk.Label(fr, text="–", wraplength=520, justify="left"); stl.pack(anchor="w", pady=(4, 0))
+    ef = tk.Frame(fr, bg=C["panel"]); ef.pack(fill="x")
+
+    def paint():
+        try:
+            if not fr.winfo_exists():
+                return
+        except tk.TclError:
+            return
+        s = funnel_state()
+        tg.set(s["on"])
+        lk = CFG.get("lock_on")
+        tg.lbl.configure(fg=C["mut"] if lk else (C["txt"] if s["on"] else C["mut"]))
+        txt = funnel_status_line()
+        if s["on"] and s["grace_s"]:
+            txt += "\n" + tr("Make an invitation now - without one the funnel switches off after 15 minutes.")
+        if lk:
+            txt += "\n🔒 " + tr("Not possible in operator mode")
+        stl.configure(text=txt)
+        for w in ef.winfo_children():
+            w.destroy()
+        e = s["err"] or s["need"]
+        if e:
+            tk.Label(ef, text="⚠ " + e["msg"], bg=C["panel"], fg=C.get("red", "#ff6b6b"), anchor="w", justify="left", wraplength=520).pack(anchor="w")
+            for st_ in e["steps"]:
+                tk.Label(ef, text="• " + st_, bg=C["panel"], fg=C["txt"], anchor="w", justify="left", wraplength=520).pack(anchor="w")
+            if e["cmd"]:
+                en = tk.Text(ef, height=min(4, e["cmd"].count("\n") + 1), width=60, bg=C["bg"], fg=C["txt"], relief="flat", font=("DejaVu Sans Mono", 9))
+                en.insert("1.0", e["cmd"]); en.configure(state="disabled"); en.pack(anchor="w", fill="x", pady=2)
+            for ln in e["links"]:
+                lb = tk.Label(ef, text="🔗 " + ln["t"], bg=C["panel"], fg=C["acc"], cursor="hand2", anchor="w")
+                lb.pack(anchor="w"); lb.bind("<Button-1>", lambda _e, u=ln["u"]: webbrowser.open(u))
+
+    def loop():
+        try:
+            if not fr.winfo_exists():
+                return
+        except tk.TclError:
+            return
+        if not busy["b"]:
+            paint()
+        fr.after(5000, loop)
+    fr.after(300, loop)
 # ----------------------------------------------------------------------------
 # Translations (English text is the key; German below). tr() is used everywhere.
 # ----------------------------------------------------------------------------
@@ -60022,6 +61833,324 @@ THEMES = {
 }
 
 
+_HX_FUNNEL = {
+    'Online game over Tailscale Funnel': ('Online-Spiel über Tailscale Funnel', 'Jeu en ligne via Tailscale Funnel', 'Gioco online tramite Tailscale Funnel', 'Gieu online via Tailscale Funnel'),
+    'Switch the funnel on': ('Funnel einschalten', 'Activer le Funnel', 'Attivare il Funnel', 'Activar il Funnel'),
+    'funnel-note': ('Macht nur das Spiel (/game/…) über Tailscale Funnel im Internet erreichbar – für Freunde ohne Tailscale. Alles andere von MoveEye bleibt privat. Geht von selbst aus, wenn die letzte Einladung abläuft oder zurückgezogen wird, spätestens nach der gewählten Zeit und beim Neustart.',
+                    'Rend seulement le jeu (/game/…) accessible sur Internet via Tailscale Funnel – pour des amis sans Tailscale. Tout le reste de MoveEye reste privé. Se coupe tout seul quand la dernière invitation expire ou est retirée, au plus tard après la durée choisie et au redémarrage.',
+                    'Rende raggiungibile su Internet solo il gioco (/game/…) tramite Tailscale Funnel – per amici senza Tailscale. Tutto il resto di MoveEye resta privato. Si spegne da solo quando l’ultimo invito scade o viene ritirato, al più tardi dopo il tempo scelto e al riavvio.',
+                    'Renda accessibel en l’internet mo il gieu (/game/…) via Tailscale Funnel – per amis senza Tailscale. Tut il auter da MoveEye resta privat. Sa stizza sez, cur che l’ultima invitaziun scada u vegn retratga, il pli tard suenter il temp tschernì e cun reaviar.'),
+    'local-warn-funnel': ('Dieser Link geht nur im eigenen Netz. Für Freunde ohne Tailscale: Funnel einschalten – dann ist nur das Spiel öffentlich.',
+                          'Ce lien ne marche que dans le réseau local. Pour des amis sans Tailscale : activer le Funnel – seul le jeu devient public.',
+                          'Questo link funziona solo nella rete locale. Per amici senza Tailscale: attivare il Funnel – solo il gioco diventa pubblico.',
+                          'Questa colliaziun funcziuna mo en la rait locala. Per amis senza Tailscale: activar il Funnel – lura è mo il gieu public.'),
+    'switches off at the latest after': ('geht spätestens aus nach', 'se coupe au plus tard après', 'si spegne al più tardi dopo', 'sa stizza il pli tard suenter'),
+    'Funnel on': ('Funnel an – öffentlich', 'Funnel actif – public', 'Funnel attivo – pubblico', 'Funnel activ – public'),
+    'Funnel off': ('Funnel aus', 'Funnel coupé', 'Funnel spento', 'Funnel deactivà'),
+    'Make an invitation now - without one the funnel switches off after 15 minutes.': ('Jetzt eine Einladung erstellen – ohne Einladung geht der Funnel nach 15 Minuten wieder aus.',
+        'Crée maintenant une invitation – sans invitation, le Funnel se coupe après 15 minutes.', 'Crea ora un invito – senza invito il Funnel si spegne dopo 15 minuti.',
+        'Fa ussa ina invitaziun – senza invitaziun sa stizza il Funnel suenter 15 minutas.'),
+    'Only the administrator can switch the funnel on.': ('Nur der Administrator kann den Funnel einschalten.', 'Seul l’administrateur peut activer le Funnel.',
+                                                         'Solo l’amministratore può attivare il Funnel.', 'Mo l’administratur po activar il Funnel.'),
+    'Set a web password first - without one everybody in the network is administrator': (
+        'Zuerst ein Web-Passwort setzen – ohne Passwort ist jeder im Netz Administrator',
+        'Définir d’abord un mot de passe web – sans lui, tout le monde dans le réseau est administrateur',
+        'Impostare prima una password web – senza, chiunque nella rete è amministratore',
+        'Definir l’emprim in pled-clav web – senza el è mintgin en la rait administratur'),
+    'Settings → 🔒 Password: set a web password, then switch the funnel on.': (
+        'Einstellungen → 🔒 Passwort: ein Web-Passwort setzen, dann den Funnel einschalten.',
+        'Réglages → 🔒 Mot de passe : définir un mot de passe web, puis activer le Funnel.',
+        'Impostazioni → 🔒 Password: impostare una password web, poi attivare il Funnel.',
+        'Parameters → 🔒 Pled-clav: definir in pled-clav web, lura activar il Funnel.'),
+    'Set a web password first (Settings → 🔒 Password) - without one everybody in the network is administrator.': (
+        'Zuerst ein Web-Passwort setzen (Einstellungen → 🔒 Passwort) – ohne Passwort ist jeder im Netz Administrator.',
+        'Définir d’abord un mot de passe web (Réglages → 🔒 Mot de passe) – sans lui, tout le monde dans le réseau est administrateur.',
+        'Impostare prima una password web (Impostazioni → 🔒 Password) – senza, chiunque nella rete è amministratore.',
+        'Definir l’emprim in pled-clav web (Parameters → 🔒 Pled-clav) – senza el è mintgin en la rait administratur.'),
+    'Not possible in operator mode': ('Im Bedienmodus nicht möglich', 'Impossible en mode opérateur', 'Non possibile in modalità operatore', 'Betg pussaivel en il modus da manaschar'),
+    'Online game public': ('Online-Spiel öffentlich', 'Jeu en ligne public', 'Gioco online pubblico', 'Gieu online public'),
+    'The online game is public on the internet for {h} h (only the game, through Tailscale Funnel)': (
+        'Das Online-Spiel ist für {h} h öffentlich im Internet (nur das Spiel, über Tailscale Funnel)', 'Le jeu en ligne est public sur Internet pendant {h} h (seulement le jeu, via Tailscale Funnel)',
+        'Il gioco online è pubblico su Internet per {h} h (solo il gioco, tramite Tailscale Funnel)', 'Il gieu online è public en l’internet per {h} h (mo il gieu, via Tailscale Funnel)'),
+    'maximum time over': ('Höchstzeit vorbei', 'durée maximale écoulée', 'tempo massimo scaduto', 'temp maximal passà'),
+    'the last invitation expired or was revoked': ('die letzte Einladung ist abgelaufen oder zurückgezogen', 'la dernière invitation a expiré ou a été retirée',
+                                                   'l’ultimo invito è scaduto o è stato ritirato', 'l’ultima invitaziun è scadida u retratga'),
+    'no invitation within 15 minutes': ('15 Minuten lang keine Einladung', 'aucune invitation pendant 15 minutes', 'nessun invito per 15 minuti', 'naginas invitaziuns durant 15 minutas'),
+    'removed in Tailscale': ('in Tailscale entfernt', 'supprimé dans Tailscale', 'rimosso in Tailscale', 'allontanà en Tailscale'),
+    # errors with the fix (556 funnel_explain)
+    'Tailscale is not installed on this device.': ('Tailscale ist auf diesem Gerät nicht installiert.', 'Tailscale n’est pas installé sur cet appareil.',
+                                                   'Tailscale non è installato su questo dispositivo.', 'Tailscale n’è betg installà sin quest apparat.'),
+    'Install it on the Pi and log in once:': ('Auf dem Pi installieren und einmal anmelden:', 'L’installer sur le Pi et se connecter une fois :',
+                                              'Installarlo sul Pi e accedere una volta:', 'L’installar sin il Pi e s’annunziar ina giada:'),
+    'Tailscale is not logged in or stopped.': ('Tailscale ist nicht angemeldet oder gestoppt.', 'Tailscale n’est pas connecté ou est arrêté.',
+                                               'Tailscale non ha effettuato l’accesso o è fermo.', 'Tailscale n’è betg annunzià u è fermà.'),
+    'On the Pi start Tailscale and log in with your account (it shows a link):': ('Auf dem Pi Tailscale starten und mit deinem Konto anmelden (es zeigt einen Link):',
+        'Sur le Pi, démarrer Tailscale et se connecter avec ton compte (un lien s’affiche) :', 'Sul Pi avviare Tailscale e accedere con il tuo account (mostra un link):',
+        'Sin il Pi aviar Tailscale e s’annunziar cun tes conto (i cumpara ina colliaziun):'),
+    'Funnel is not allowed in your tailnet policy.': ('Funnel ist in den Regeln deines Tailnets nicht erlaubt.', 'Le Funnel n’est pas autorisé dans les règles de ton tailnet.',
+                                                      'Il Funnel non è permesso nelle regole del tuo tailnet.', 'Il Funnel n’è betg permess en las reglas da tes tailnet.'),
+    'Tailscale admin console → Access controls: add the node attribute «funnel» (lines below) and save.': (
+        'Tailscale-Verwaltung (Admin console) → Access controls: das Geräte-Attribut «funnel» eintragen (Zeilen unten) und speichern.',
+        'Console d’administration Tailscale → Access controls : ajouter l’attribut «funnel» (lignes ci-dessous) et enregistrer.',
+        'Console di amministrazione Tailscale → Access controls: aggiungere l’attributo «funnel» (righe sotto) e salvare.',
+        'Console d’administraziun Tailscale → Access controls: agiuntar l’attribut «funnel» (lingias sutvart) e memorisar.'),
+    'Also needed: DNS → MagicDNS on and «HTTPS Certificates» enabled.': ('Ebenfalls nötig: DNS → MagicDNS an und «HTTPS Certificates» eingeschaltet.',
+        'Aussi nécessaire : DNS → MagicDNS actif et «HTTPS Certificates» activé.', 'Serve anche: DNS → MagicDNS attivo e «HTTPS Certificates» attivato.',
+        'Era necessari: DNS → MagicDNS activ e «HTTPS Certificates» activà.'),
+    'Then switch the funnel on again here.': ('Dann hier den Funnel nochmals einschalten.', 'Puis réactiver le Funnel ici.', 'Poi riattivare qui il Funnel.', 'Lura activar puspè il Funnel qua.'),
+    'Easiest: open this link once – Tailscale enables Funnel for this device:': ('Am einfachsten: diesen Link einmal öffnen – Tailscale erlaubt Funnel für dieses Gerät:',
+        'Le plus simple : ouvrir une fois ce lien – Tailscale autorise le Funnel pour cet appareil :', 'Il modo più semplice: aprire una volta questo link – Tailscale abilita il Funnel per questo dispositivo:',
+        'Il pli simpel: avrir ina giada questa colliaziun – Tailscale permetta il Funnel per quest apparat:'),
+    'Enable Funnel (Tailscale link)': ('Funnel erlauben (Link von Tailscale)', 'Autoriser le Funnel (lien Tailscale)', 'Abilitare il Funnel (link di Tailscale)', 'Permetter il Funnel (colliaziun da Tailscale)'),
+    'Enable HTTPS (Tailscale link)': ('HTTPS einschalten (Link von Tailscale)', 'Activer HTTPS (lien Tailscale)', 'Attivare HTTPS (link di Tailscale)', 'Activar HTTPS (colliaziun da Tailscale)'),
+    'HTTPS certificates are not enabled in your tailnet.': ('HTTPS-Zertifikate sind in deinem Tailnet nicht eingeschaltet.', 'Les certificats HTTPS ne sont pas activés dans ton tailnet.',
+                                                            'I certificati HTTPS non sono attivati nel tuo tailnet.', 'Ils certificats HTTPS n’èn betg activads en tes tailnet.'),
+    'Tailscale admin console → DNS: switch on MagicDNS.': ('Tailscale-Verwaltung (Admin console) → DNS: MagicDNS einschalten.', 'Console d’administration Tailscale → DNS : activer MagicDNS.',
+                                                           'Console di amministrazione Tailscale → DNS: attivare MagicDNS.', 'Console d’administraziun Tailscale → DNS: activar MagicDNS.'),
+    'On the same page under «HTTPS Certificates» click «Enable HTTPS».': ('Auf derselben Seite unter «HTTPS Certificates» auf «Enable HTTPS» klicken.',
+        'Sur la même page, sous «HTTPS Certificates», cliquer sur «Enable HTTPS».', 'Nella stessa pagina, sotto «HTTPS Certificates», cliccare «Enable HTTPS».',
+        'Sin la medema pagina sut «HTTPS Certificates» cliccar «Enable HTTPS».'),
+    'MoveEye may not change the Tailscale settings.': ('MoveEye darf die Tailscale-Einstellungen nicht ändern.', 'MoveEye ne peut pas modifier les réglages de Tailscale.',
+                                                       'MoveEye non può modificare le impostazioni di Tailscale.', 'MoveEye na dastga betg midar ils parameters da Tailscale.'),
+    'Once on the Pi (as the user MoveEye runs as), then switch on again:': ('Einmal auf dem Pi (als der Benutzer, unter dem MoveEye läuft), dann nochmals einschalten:',
+        'Une fois sur le Pi (avec l’utilisateur de MoveEye), puis réactiver :', 'Una volta sul Pi (con l’utente di MoveEye), poi riattivare:',
+        'Ina giada sin il Pi (sco l’utilisader da MoveEye), lura activar puspè:'),
+    'All three Funnel ports (443, 8443, 10000) are already used by other Tailscale serve settings.': (
+        'Alle drei Funnel-Ports (443, 8443, 10000) sind schon von anderen Tailscale-serve-Einstellungen belegt.',
+        'Les trois ports Funnel (443, 8443, 10000) sont déjà utilisés par d’autres réglages Tailscale serve.',
+        'Tutte e tre le porte Funnel (443, 8443, 10000) sono già usate da altre impostazioni Tailscale serve.',
+        'Tut ils trais ports Funnel (443, 8443, 10000) èn gia occupads dad auters parameters Tailscale serve.'),
+    'Look at them and switch one off:': ('Anschauen und eine davon ausschalten:', 'Les consulter et en couper une :', 'Controllarle e spegnerne una:', 'Las guardar e stizzar ina:'),
+    'The game door of MoveEye could not start.': ('Die Spiel-Tür von MoveEye konnte nicht starten.', 'La porte du jeu de MoveEye n’a pas pu démarrer.',
+                                                  'La porta del gioco di MoveEye non è partita.', 'La porta dal gieu da MoveEye n’ha betg pudì cumenzar.'),
+    'Restart MoveEye and try again.': ('MoveEye neu starten und nochmals versuchen.', 'Redémarrer MoveEye et réessayer.', 'Riavviare MoveEye e riprovare.', 'Reaviar MoveEye e empruvar anc ina giada.'),
+    'Tailscale did not answer in time.': ('Tailscale hat nicht rechtzeitig geantwortet.', 'Tailscale n’a pas répondu à temps.', 'Tailscale non ha risposto in tempo.', 'Tailscale n’ha betg respundì a temp.'),
+    'Check «tailscale status» on the Pi and try again.': ('Auf dem Pi «tailscale status» prüfen und nochmals versuchen.', 'Vérifier «tailscale status» sur le Pi et réessayer.',
+                                                          'Controllare «tailscale status» sul Pi e riprovare.', 'Controllar «tailscale status» sin il Pi ed empruvar anc ina giada.'),
+    'Tailscale refused the funnel.': ('Tailscale hat den Funnel abgelehnt.', 'Tailscale a refusé le Funnel.', 'Tailscale ha rifiutato il Funnel.', 'Tailscale ha refusà il Funnel.'),
+    'Message of Tailscale:': ('Meldung von Tailscale:', 'Message de Tailscale :', 'Messaggio di Tailscale:', 'Messadi da Tailscale:'),
+    'Install Tailscale (official guide)': ('Tailscale installieren (offizielle Anleitung)', 'Installer Tailscale (guide officiel)', 'Installare Tailscale (guida ufficiale)', 'Installar Tailscale (instrucziun uffiziala)'),
+    'Tailscale: log in a device': ('Tailscale: ein Gerät anmelden', 'Tailscale : connecter un appareil', 'Tailscale: collegare un dispositivo', 'Tailscale: annunziar in apparat'),
+    'Tailscale admin console → DNS': ('Tailscale-Verwaltung → DNS', 'Console Tailscale → DNS', 'Console Tailscale → DNS', 'Console Tailscale → DNS'),
+    'Docs: enabling HTTPS certificates': ('Anleitung: HTTPS-Zertifikate einschalten', 'Doc : activer les certificats HTTPS', 'Guida: attivare i certificati HTTPS', 'Instrucziun: activar ils certificats HTTPS'),
+    'Tailscale admin console → Access controls': ('Tailscale-Verwaltung → Access controls', 'Console Tailscale → Access controls', 'Console Tailscale → Access controls', 'Console Tailscale → Access controls'),
+    'Docs: Tailscale Funnel': ('Anleitung: Tailscale Funnel', 'Doc : Tailscale Funnel', 'Guida: Tailscale Funnel', 'Instrucziun: Tailscale Funnel'),
+    'Docs: tailscale funnel command': ('Anleitung: Befehl tailscale funnel', 'Doc : commande tailscale funnel', 'Guida: comando tailscale funnel', 'Instrucziun: cumond tailscale funnel'),
+    'Docs: tailscale set --operator': ('Anleitung: tailscale set --operator', 'Doc : tailscale set --operator', 'Guida: tailscale set --operator', 'Instrucziun: tailscale set --operator'),
+}
+for _k, _v in _HX_FUNNEL.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# the manual (HELP_PAGE of 540): one point in «System & Netz» after «Fernzugriff (Tailscale)», German and English
+_HELP_FUNNEL = {
+    "de": ('<li><b>🌍 Online-Spiel über Tailscale Funnel</b> (Simulator → Karte «Spiel» → «Online über das WLAN hinaus»): für Freunde <i>ohne</i> Tailscale. '
+           'Der Schalter macht <b>nur das Spiel</b> (<code>https://NAME.….ts.net/game/…/</code>) im Internet erreichbar; die Einladungslinks nehmen diese Adresse dann von selbst. '
+           'Alles andere von MoveEye (Bild, Einstellungen, /api) antwortet über den Funnel mit «nicht gefunden» – auch mit Passwort. Er geht von selbst aus, wenn die letzte '
+           'Einladung abläuft oder zurückgezogen wird, ohne Einladung nach 15 Minuten, spätestens nach 6 h (einstellbar 1–24 h) und beim Neustart von MoveEye. '
+           'Einschalten darf nur der Administrator; jedes Ein / Aus und jeder Gast steht im Protokoll, beim Einschalten kommt eine Push-Nachricht. '
+           '«https über Tailscale» (Port 443) bleibt, der Funnel weicht dann auf Port 8443 aus. Einmal in der Tailscale-Verwaltung nötig: '
+           '<i>DNS</i> → MagicDNS und «HTTPS Certificates» einschalten, <i>Access controls</i> → <code>"nodeAttrs": [{"target": ["autogroup:member"], "attr": ["funnel"]}]</code>. '
+           'Fehlt etwas, zeigt MoveEye genau, was zu tun ist (Anleitung: <a href="https://tailscale.com/kb/1223/funnel" target="_blank" rel="noopener">tailscale.com/kb/1223/funnel</a>).</li>'),
+    "en": ('<li><b>🌍 Online game over Tailscale Funnel</b> (Simulator → card «Game» → «Online beyond the WLAN»): for friends <i>without</i> Tailscale. '
+           'The switch makes <b>only the game</b> (<code>https://NAME.….ts.net/game/…/</code>) reachable on the internet; the invitation links then use this address by themselves. '
+           'Everything else of MoveEye (picture, settings, /api) answers «not found» through the funnel – even with the password. It switches off by itself when the last '
+           'invitation expires or is revoked, without an invitation after 15 minutes, at the latest after 6 h (1–24 h) and when MoveEye restarts. '
+           'Only the administrator may switch it on; every on / off and every guest is logged, switching on sends a push message. '
+           '«https over Tailscale» (port 443) stays, the funnel then uses port 8443. Needed once in the Tailscale admin console: '
+           '<i>DNS</i> → switch on MagicDNS and «HTTPS Certificates», <i>Access controls</i> → <code>"nodeAttrs": [{"target": ["autogroup:member"], "attr": ["funnel"]}]</code>. '
+           'If something is missing, MoveEye shows exactly what to do (docs: <a href="https://tailscale.com/kb/1223/funnel" target="_blank" rel="noopener">tailscale.com/kb/1223/funnel</a>).</li>'),
+}
+
+
+def _help_funnel(doc, lang):
+    i = doc.find("<li><b>🌐 " + ("Fernzugriff (Tailscale):" if lang == "de" else "Remote access (Tailscale):"))
+    j = doc.find("</li>", i) if i >= 0 else -1
+    if j < 0 or "Tailscale Funnel</b>" in doc:
+        return doc
+    return doc[:j + 5] + _HELP_FUNNEL[lang] + doc[j + 5:]
+
+
+_hp_enfn = HELP_PAGE.find('<div lang="en">')
+if _hp_enfn > 0:
+    HELP_PAGE = _help_funnel(HELP_PAGE[:_hp_enfn], "de") + _help_funnel(HELP_PAGE[_hp_enfn:], "en")
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_weit = {
+    'Wide infrared light (channel 4): second IR LED 120° on PCA9685 channel 4, on / off with the infrared light':
+        ('IR-Licht breit (Kanal 4): zweite IR-LED 120° an PCA9685 Kanal 4, ein / aus mit dem Infrarotlicht',
+         'Lumière IR large (canal 4) : deuxième LED IR 120° sur le canal 4 du PCA9685, allumée / éteinte avec la lumière infrarouge',
+         'Luce IR ampia (canale 4): seconda LED IR 120° sul canale 4 del PCA9685, accesa / spenta con la luce infrarossa',
+         'Glisch IR largia (chanal 4): segunda LED IR 120° sin il chanal 4 dal PCA9685, en / ora cun la glisch infraritga'),
+    'Simulator wide camera': ('Simulator-Weitwinkel', 'Grand-angle du simulateur', 'Grandangolo del simulatore', 'Grond angul dal simulatur'),
+    'Wide camera': ('Weitwinkel-Kamera', 'Caméra grand-angle', 'Telecamera grandangolare', 'Camera da grond angul'),
+    'Mast (scene)': ('Mast (Szene)', 'Mât (scène)', 'Palo (scena)', 'Pal (scena)'),
+    'Base front, fixed': ('Unterteil vorne, fest', 'Socle avant, fixe', 'Base davanti, fissa', 'Part sut davant, fixa'),
+    'Head front': ('Kopf vorne', 'Tête avant', 'Testa davanti', 'Chau davant'),
+    'Head rear': ('Kopf hinten', 'Tête arrière', 'Testa dietro', 'Chau davos'),
+    'The wide camera is not an extra camera of MoveEye': ('Die Weitwinkel-Kamera ist keine Zusatzkamera von MoveEye',
+        'La caméra grand-angle n’est pas une caméra supplémentaire de MoveEye', 'La telecamera grandangolare non è una telecamera aggiuntiva di MoveEye',
+        'La camera da grond angul n’è betg ina camera supplementara da MoveEye'),
+    'On the mast: not part of the device - it does not steer the head by itself.': ('Am Mast: nicht Teil des Geräts – lenkt den Kopf nicht von selbst.',
+        'Sur le mât : ne fait pas partie de l’appareil – ne dirige pas la tête d’elle-même.', 'Sul palo: non fa parte dell’apparecchio – non guida la testa da sola.',
+        'Al pal: na fa betg part da l’apparat – na maina betg il chau da sasez.'),
+    'Steers the head as overview («The overview camera steers the head»)': ('Lenkt den Kopf als Übersicht («Übersicht lenkt den Kopf»)',
+        'Dirige la tête comme vue d’ensemble (« La vue d’ensemble dirige la tête »)', 'Guida la testa come panoramica («La panoramica guida la testa»)',
+        'Maina il chau sco survista («La survista maina il chau»)'),
+    'Overview chosen by hand - not changed.': ('Übersicht von Hand gewählt – bleibt so.', 'Vue d’ensemble choisie à la main – reste ainsi.',
+        'Panoramica scelta a mano – resta così.', 'Survista tschernida a maun – resta uschia.'),
+}
+for _k, _v in _HX_weit.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# the manual (HELP_PAGE of 540): one paragraph in the section «Kamera & Servos», German and English
+for _a, _b in (('<section id="camera" data-icon="📷"><h2>Kamera &amp; Servos</h2>',
+                "<p><b>🔭 Weitwinkel-Kamera im Simulator (Simulator 3D-4.17):</b> Die frühere «feste Kamera» des Simulators ist jetzt die "
+                "Weitwinkel-Kamera (Camera Module 3 Wide NoIR, 102° × 67°). Unter Simulator → Kamerabild → «Weitwinkel-Kamera» oder in der "
+                "Kachel 🔭 wählst du die Montage: <i>Mast (Szene)</i> wie bisher, <i>Unterteil vorne, fest</i> (10–15° nach unten), "
+                "<i>Kopf vorne</i> oder <i>Kopf hinten</i> (dreht mit). Sitzt sie am Gerät, stellt MoveEye «Übersicht lenkt den Kopf» selbst "
+                "ein: Bewegung im Weitwinkel-Bild dreht den Kopf dorthin, dann prüft die KI der Hauptkamera; solange der Kopf dreht, zählt "
+                "die Bewegung im Weitwinkel-Bild nicht. Auf dem Kopf gilt eine Drehgrenze (Kabel; 360°-Servos bräuchten einen Schleifring). "
+                "Die zweite IR-LED 120° schaltest du mit «IR-Licht breit (Kanal 4)» unter Licht.</p>"),
+               ('<section id="camera" data-icon="📷"><h2>Camera &amp; servos</h2>',
+                "<p><b>🔭 Wide camera in the simulator (simulator 3D-4.17):</b> the former «fixed camera» of the simulator is now the wide "
+                "camera (Camera Module 3 Wide NoIR, 102° × 67°). In Simulator → camera picture → «Weitwinkel-Kamera» or with the tile 🔭 "
+                "you choose its mount: <i>mast (scene)</i> as before, <i>base front, fixed</i> (10–15° down), <i>head front</i> or "
+                "<i>head rear</i> (turns with the head). On the device MoveEye sets «The overview camera steers the head» by itself: "
+                "movement in the wide picture turns the head there, then the AI of the main camera checks; while the head turns, movement "
+                "in the wide picture does not count. On the head a pan limit applies (cable; 360° servos would need a slip ring). The "
+                "second IR LED 120° is switched with «Wide infrared light (channel 4)» under Lights.</p>")):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_parc = {
+    'Tracking parcours': ('Verfolgungs-Parcours', 'Parcours de suivi', 'Percorso di inseguimento', 'Parcours da persequitar'),
+    'tracking parcours': ('Verfolgungs-Parcours', 'parcours de suivi', 'percorso di inseguimento', 'parcours da persequitar'),
+    'Train the following': ('Folgen üben', 'Entraîner le suivi', 'Allenare l’inseguimento', 'Exercitar il suandar'),
+    'Tracking: look ahead (seconds, 0 = off)': ('Folgen: vorausschauen (Sekunden, 0 = aus)', 'Suivi : anticiper (secondes, 0 = désactivé)',
+                                                'Inseguimento: anticipare (secondi, 0 = spento)', 'Suandar: guardar ordavant (secundas, 0 = ora)'),
+    'not supported - update the simulator': ('nicht unterstützt – Simulator aktualisieren', 'non pris en charge – mets à jour le simulateur',
+                                             'non supportato – aggiorna il simulatore', 'betg sustegnì – actualisescha il simulatur'),
+    'Night (lesson 8)': ('Nacht (Lektion 8)', 'Nuit (leçon 8)', 'Notte (lezione 8)', 'Notg (lecziun 8)'),
+    'Start': ('Starten', 'Démarrer', 'Avvia', 'Cumenzar'),
+    'Stop': ('Stopp', 'Stop', 'Stop', 'Stop'),
+    'lesson': ('Lektion', 'leçon', 'lezione', 'lecziun'),
+    'Lesson': ('Lektion', 'Leçon', 'Lezione', 'Lecziun'),
+    'Regulators of the following (live)': ('Regler der Verfolgung (live)', 'Réglages du suivi (en direct)', 'Regolazioni dell’inseguimento (dal vivo)', 'Reguladers dal suandar (live)'),
+    'Speed (°/s)': ('Tempo (°/s)', 'Vitesse (°/s)', 'Velocità (°/s)', 'Sveltezza (°/s)'),
+    'Gain': ('Verstärkung', 'Gain', 'Guadagno', 'Rinforz'),
+    'Dead zone': ('Totzone', 'Zone morte', 'Zona morta', 'Zona morta'),
+    'Look ahead (s)': ('Vorausschauen (s)', 'Anticiper (s)', 'Anticipare (s)', 'Guardar ordavant (s)'),
+    'parc-reg-note': ('Dieselben Einstellungen wie unter Einstellungen → Kamera / Servos und «Servo-Bewegung & Sicherheit». Vorausschauen 0 = wie bisher.',
+                      'Les mêmes réglages que sous Réglages → Caméra / servos et «Mouvement des servos & sécurité». Anticiper 0 = comme avant.',
+                      'Le stesse impostazioni di Impostazioni → Telecamera / servo e «Movimento servo & sicurezza». Anticipare 0 = come prima.',
+                      'Ils medems parameters sco sut Parameters → Camera / servos e «Moviment dals servos & segirezza». Guardar ordavant 0 = sco fin ussa.'),
+    'Last run': ('Letzter Lauf', 'Dernier essai', 'Ultima prova', 'Ultima prova'),
+    'grade': ('Note', 'note', 'voto', 'nota'),
+    'aim error': ('Zielfehler', 'erreur de visée', 'errore di mira', 'sbagl da mira'),
+    'in the picture': ('im Bild', 'dans l’image', 'nell’immagine', 'en il maletg'),
+    'losses': ('Verluste', 'pertes', 'perdite', 'perditas'),
+    'swinging': ('Pendeln', 'oscillation', 'oscillazione', 'pendular'),
+    'servo travel': ('Servo-Weg', 'course des servos', 'corsa dei servo', 'via dals servos'),
+    'switches': ('Verwechslungen', 'confusions', 'scambi', 'confusiuns'),
+    'learning pictures (picture data only)': ('Lernbilder (nur Bilddaten)', 'images d’apprentissage (données d’image seulement)',
+                                              'immagini di apprendimento (solo dati d’immagine)', 'maletgs d’emprender (mo datas da maletg)'),
+    'A/B comparison': ('A/B-Vergleich', 'Comparaison A/B', 'Confronto A/B', 'Cumparegliaziun A/B'),
+    'A/B run': ('A/B-Lauf', 'Essai A/B', 'Prova A/B', 'Prova A/B'),
+    'Compare': ('Vergleichen', 'Comparer', 'Confronta', 'Cumparegliar'),
+    'No clear difference.': ('Kein klarer Unterschied.', 'Pas de différence nette.', 'Nessuna differenza chiara.', 'Nagina differenza clera.'),
+    'B is better.': ('B ist besser.', 'B est meilleur.', 'B è migliore.', 'B è meglier.'),
+    'A is better.': ('A ist besser.', 'A est meilleur.', 'A è migliore.', 'A è meglier.'),
+    'Nothing is changed by itself.': ('Es wird nichts von selbst geändert.', 'Rien n’est modifié tout seul.', 'Niente viene cambiato da solo.', 'Nagut na vegn midà da sasez.'),
+    'Auto-tuning': ('Auto-Tuning', 'Réglage automatique', 'Taratura automatica', 'Reglaziun automatica'),
+    'Try values (short, lessons as chosen)': ('Werte durchprobieren (kurz, gewählte Lektionen)', 'Essayer des valeurs (court, leçons choisies)',
+                                              'Provare valori (breve, lezioni scelte)', 'Empruvar valurs (curt, lecziuns tschernidas)'),
+    'Values': ('Werte', 'Valeurs', 'Valori', 'Valurs'),
+    'now': ('jetzt', 'maintenant', 'ora', 'ussa'),
+    'take over proposal ★': ('Vorschlag ★ übernehmen', 'reprendre la proposition ★', 'adottare la proposta ★', 'surpigliar la proposta ★'),
+    'taken over': ('übernommen', 'repris', 'adottato', 'surpiglià'),
+    'The values now are the best - nothing to change.': ('Die jetzigen Werte sind die besten – nichts zu ändern.', 'Les valeurs actuelles sont les meilleures – rien à changer.',
+                                                         'I valori attuali sono i migliori – niente da cambiare.', 'Las valurs actualas èn las meglras – nagut da midar.'),
+    'Only a proposal - nothing was changed.': ('Nur ein Vorschlag – es wurde nichts geändert.', 'Seulement une proposition – rien n’a été modifié.',
+                                               'Solo una proposta – niente è stato cambiato.', 'Mo ina proposta – nagut n’è vegnì midà.'),
+    'With / without wide-angle hand-over': ('Mit / ohne Weitwinkel-Übergabe', 'Avec / sans relais grand-angle', 'Con / senza passaggio grandangolo', 'Cun / senza surdada grond angul'),
+    'Compare (mount now)': ('Vergleichen (jetzige Montage)', 'Comparer (montage actuel)', 'Confronta (montaggio attuale)', 'Cumparegliar (montascha actuala)'),
+    'the overview steers the head only when the protection is on (Wachsam / Voll)': (
+        'die Übersicht lenkt den Kopf nur bei eingeschaltetem Schutz (Wachsam / Voll)', 'la vue d’ensemble ne dirige la tête que si la protection est active (Wachsam / Voll)',
+        'la panoramica guida la testa solo con la protezione attiva (Wachsam / Voll)', 'la survista maina il chau mo cun la protecziun activa (Wachsam / Voll)'),
+    'the wide camera is not an extra camera of MoveEye': ('die Weitwinkel-Kamera ist keine Zusatzkamera von MoveEye', 'la caméra grand-angle n’est pas une caméra supplémentaire de MoveEye',
+                                                          'la telecamera grandangolare non è una telecamera aggiuntiva di MoveEye', 'la camera da grond angul n’è nagina camera supplementara da MoveEye'),
+    'with hand-over': ('mit Übergabe', 'avec relais', 'con passaggio', 'cun surdada'),
+    'without hand-over': ('ohne Übergabe', 'sans relais', 'senza passaggio', 'senza surdada'),
+    'Game «Escape the camera»': ('Spiel «Entkomme der Kamera»', 'Jeu «Échappe à la caméra»', 'Gioco «Sfuggi alla telecamera»', 'Gieu «Fugia da la camera»'),
+    'Name': ('Name', 'Nom', 'Nome', 'Num'),
+    'Play (60 s)': ('Spielen (60 s)', 'Jouer (60 s)', 'Gioca (60 s)', 'Giugar (60 s)'),
+    'Bot': ('Bot', 'Bot', 'Bot', 'Bot'),
+    'parc-game-note': ('Steuere die Figur mit dem Mover-Stick (Live-Seite; ohne Mover «Stick zum Testen» einschalten) oder im Simulator mit dem Stick. 10 Punkte pro Sekunde ausserhalb des Bilds, 5 verdeckt, 100 pro Verlust – nur 4 bis 25 m vom Gerät. Zählt in der Rangliste des Abends.',
+                       'Dirige la silhouette avec le stick du Mover (page Live ; sans Mover, active «stick pour tester») ou avec le stick du simulateur. 10 points par seconde hors de l’image, 5 caché, 100 par perte – seulement de 4 à 25 m de l’appareil. Compte dans le classement de la soirée.',
+                       'Guida la figura con lo stick del Mover (pagina Live; senza Mover attiva «stick per provare») o con lo stick nel simulatore. 10 punti al secondo fuori dall’immagine, 5 nascosto, 100 per perdita – solo da 4 a 25 m dall’apparecchio. Conta nella classifica della serata.',
+                       'Maina la figura cun il stick dal Mover (pagina Live; senza Mover activar «stick per empruvar») u cun il stick en il simulatur. 10 puncts per secunda ordaifer il maletg, 5 zuppà, 100 per perdita – mo 4 fin 25 m da l’apparat. Quinta en la glista da rang da la saira.'),
+    'points': ('Punkte', 'points', 'punti', 'puncts'),
+    'out of the picture': ('aus dem Bild', 'hors de l’image', 'fuori dall’immagine', 'ordaifer il maletg'),
+    'lost': ('verloren', 'perdu', 'perso', 'pers'),
+    'Overlay in the simulator': ('Einblendung im Simulator', 'Superposition dans le simulateur', 'Sovrapposizione nel simulatore', 'Surposiziun en il simulatur'),
+    'Ring round the device': ('Ring rund ums Gerät', 'Anneau autour de l’appareil', 'Anello intorno all’apparecchio', 'Rintg enturn l’apparat'),
+    'Collect learning pictures': ('Lernbilder sammeln', 'Collecter des images d’apprentissage', 'Raccogliere immagini di apprendimento', 'Rimnar maletgs d’emprender'),
+    'parc-note': ('Der Simulator kennt die echten Wege der Figuren und misst genau: Zielfehler (Mitte der Figur gegen Bildmitte der Kopfkamera), Zeit im Bild, Verluste und Wiederfinde-Zeit, Pendeln / Überschwingen, Servo-Weg, Verwechslungen → Note 1–6. Während eines Laufs: Folgen ein, schlaue Runde aus – danach wie vorher.',
+                  'Le simulateur connaît les vrais chemins des silhouettes et mesure exactement : erreur de visée, temps dans l’image, pertes et temps pour retrouver, oscillation / dépassement, course des servos, confusions → note 1–6. Pendant un essai : suivi activé, ronde intelligente désactivée – ensuite comme avant.',
+                  'Il simulatore conosce i veri percorsi delle figure e misura con precisione: errore di mira, tempo nell’immagine, perdite e tempo per ritrovare, oscillazione / superamento, corsa dei servo, scambi → voto 1–6. Durante una prova: inseguimento attivo, giro intelligente spento – poi come prima.',
+                  'Il simulatur enconuscha las vias veras da las figuras e mesira exactamain: sbagl da mira, temp en il maletg, perditas e temp per chattar puspè, pendular / surpassar, via dals servos, confusiuns → nota 1–6. Durant ina prova: suandar en, runda intelligenta ora – suenter sco avant.'),
+    'Look ahead 0.3 s': ('Vorausschauen 0,3 s', 'Anticiper 0,3 s', 'Anticipare 0,3 s', 'Guardar ordavant 0,3 s'),
+    'Gain +40 %': ('Verstärkung +40 %', 'Gain +40 %', 'Guadagno +40 %', 'Rinforz +40 %'),
+    'Dead zone 0.05': ('Totzone 0,05', 'Zone morte 0,05', 'Zona morta 0,05', 'Zona morta 0,05'),
+    'Speed 200 °/s': ('Tempo 200 °/s', 'Vitesse 200 °/s', 'Velocità 200 °/s', 'Sveltezza 200 °/s'),
+    'Slowly across the picture': ('Langsam quer durchs Bild', 'Lentement à travers l’image', 'Lentamente attraverso l’immagine', 'Plaun traversond il maletg'),
+    'Towards the camera / away': ('Auf die Kamera zu / weg', 'Vers la caméra / s’éloigner', 'Verso la telecamera / via', 'Vers la camera / davent'),
+    'Zigzag and changes of speed': ('Zickzack und Tempowechsel', 'Zigzag et changements de vitesse', 'Zigzag e cambi di velocità', 'Zigzag e midadas da sveltezza'),
+    'Stop and go on': ('Stopp und Weiterlaufen', 'Arrêt et reprise', 'Stop e ripartenza', 'Fermar e cuntinuar'),
+    'Hidden behind obstacles': ('Verdeckung hinter Hindernissen', 'Caché derrière des obstacles', 'Nascosto dietro ostacoli', 'Zuppà davos impediments'),
+    'Two persons cross': ('Zwei Personen kreuzen sich', 'Deux personnes se croisent', 'Due persone si incrociano', 'Duas persunas sa cruschan'),
+    'Animal: fox / deer, fast and irregular': ('Tier: Fuchs / Reh, schnell und unregelmässig', 'Animal : renard / chevreuil, rapide et irrégulier',
+                                               'Animale: volpe / capriolo, veloce e irregolare', 'Animal: vulp / chaura, svelt e irregular'),
+    'Night run with infrared': ('Nacht-Durchgang mit Infrarot', 'Passage de nuit avec infrarouge', 'Passaggio notturno con infrarossi', 'Passadi da notg cun infracotschen'),
+    'stopped': ('abgebrochen', 'interrompu', 'interrotto', 'interrut'),
+    'the tracking parcours is running': ('der Verfolgungs-Parcours läuft', 'le parcours de suivi est en cours', 'il percorso di inseguimento è in corso', 'il parcours da persequitar è en funcziun'),
+    'no result from the simulator': ('kein Ergebnis vom Simulator', 'pas de résultat du simulateur', 'nessun risultato dal simulatore', 'nagin resultat dal simulatur'),
+    'no proposal': ('kein Vorschlag', 'pas de proposition', 'nessuna proposta', 'nagina proposta'),
+    'the simulator did not start the parcours': ('der Simulator hat den Parcours nicht gestartet', 'le simulateur n’a pas démarré le parcours',
+                                                 'il simulatore non ha avviato il percorso', 'il simulatur n’ha betg cumenzà il parcours'),
+    'Train following in the simulator: lessons, A/B comparison, auto-tuning (proposal only).': (
+        'Folgen im Simulator üben: Lektionen, A/B-Vergleich, Auto-Tuning (nur Vorschlag).', 'Entraîner le suivi dans le simulateur : leçons, comparaison A/B, réglage automatique (proposition seulement).',
+        'Allenare l’inseguimento nel simulatore: lezioni, confronto A/B, taratura automatica (solo proposta).', 'Exercitar il suandar en il simulatur: lecziuns, cumparegliaziun A/B, reglaziun automatica (mo proposta).'),
+    'browser': ('Browser', 'navigateur', 'browser', 'navigatur'),
+}
+for _k, _v in _HX_parc.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# the manual (HELP_PAGE of 540): one paragraph in the section «Kamera & Servos», German and English
+for _a, _b in (('<section id="camera" data-icon="📷"><h2>Kamera &amp; Servos</h2>',
+                "<p><b>🎯 Verfolgungs-Parcours (Simulator):</b> In der Simulator-Zentrale (Gruppe «Testen», Kachel 🎯) oder im Simulator-Fenster "
+                "(Karte «Testlauf» → «Verfolgungs-Parcours») übst du das Folgen des Kopfs: Lektionen 1–7 (langsam quer, zu / weg, Zickzack mit "
+                "Tempowechsel bis Velo, Stopp und Weiterlaufen, Verdeckung hinter Busch und Zelt, zwei Personen kreuzen, Fuchs / Reh) und Lektion 8 "
+                "= dieselben nachts mit Infrarot. Der Simulator kennt die echten Wege und misst Zielfehler, Zeit im Bild, Verluste, Pendeln, "
+                "Servo-Weg und Verwechslungen → Note 1–6. Die Regler (Tempo, Verstärkung, Totzone, Vorausschauen) sind dieselben wie unter "
+                "Kamera / Servos; <i>Vorausschauen 0</i> = wie bisher. Der A/B-Vergleich zeigt zwei Läufe nebeneinander, das Auto-Tuning probiert "
+                "Werte durch und <b>schlägt nur vor</b> («übernehmen»). Spiel «Entkomme der Kamera»: mit dem Stick raus aus dem Bild – Punkte in der "
+                "Rangliste des Abends.</p>"),
+               ('<section id="camera" data-icon="📷"><h2>Camera &amp; servos</h2>',
+                "<p><b>🎯 Tracking parcours (simulator):</b> in the Simulator centre (group «Testen», tile 🎯) or in the simulator window (card "
+                "«Testlauf» → «Verfolgungs-Parcours») you train the following of the head: lessons 1–7 (slowly across, towards / away, zigzag with "
+                "changes of speed up to the bike, stop and go, hidden behind bush and tent, two persons crossing, fox / deer) and lesson 8 = the same "
+                "at night with infrared. The simulator knows the real paths and measures aim error, time in the picture, losses, swinging, servo "
+                "travel and identity switches → grade 1–6. The regulators (speed, gain, dead zone, look ahead) are the same as under Camera / servos; "
+                "<i>look ahead 0</i> = as before. The A/B comparison shows two runs side by side, the auto-tuning tries values and <b>only "
+                "proposes</b> («take over»). Game «Escape the camera»: get out of the picture with the stick – points in the ranking of the evening.</p>")):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 # ----------------------------------------------------------------------------
 # Desktop GUI (Tkinter) - optional, so --headless works without Tkinter/Pillow
 # ----------------------------------------------------------------------------
@@ -60800,7 +62929,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.46")
+        self.root.title("MoveEye 2.98.47")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -61167,7 +63296,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.46 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.47 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -67929,7 +70058,7 @@ App._refresh = _kr_tk_refresh
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 187                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 199                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -72085,6 +74214,172 @@ TRX['it'].update({
     '🛡 Arm all': '🛡 Inserire tutti',
     '🧭 Setup assistant': '🧭 Assistente di configurazione',
 })
+# ----------------------------------------------------------------------------
+# Plan Daniel 30.10.2026: the wide picture as a tile on /sim (Simulator-Zentrale, 139) and in Sim-Kompakt (549). No new
+# stream: the picture is the extra camera sim:1 that MoveEye already fetches (440), shown through /cam_feed/<n> only while
+# its sheet is open (the stream stops when the sheet closes). The tile sheet: the picture (tap = big, tap again / Esc =
+# back), the four mounts (simulator control wide_mount), whether it steers the head as overview (163).
+# Here (not in 163) because sim_state (290), sim_hub (139), SELFTEST_EXTRA (395) and simhub_head come before this part.
+# Translations: part 598.
+# ----------------------------------------------------------------------------
+# «IR-Licht breit (Kanal 4)» next to the infrared light in «Licht» (web and window read the same list)
+_wi = max([i for i, t_ in enumerate(TOGGLES) if t_[0] == "Lights"] or [len(TOGGLES) - 1])
+TOGGLES.insert(_wi + 1, ("Lights", "light_ir_wide", "Wide infrared light (channel 4): second IR LED 120° on PCA9685 channel 4, on / off with the infrared light"))
+_sim_state_290 = sim_state
+
+
+def sim_state():                                          # + 163: the simulator switches its wide infrared light
+    d = _sim_state_290()
+    try:
+        d["lights"]["ir_wide"] = bool((STATE.get("lights") or {}).get("ir_wide"))
+    except (KeyError, TypeError):
+        pass
+    return d
+
+
+_sim_hub_139 = sim_hub
+
+
+def sim_hub(force=False):                                 # + 591: the wide camera for its tile
+    d = _sim_hub_139(force)
+    if d.get("on"):
+        d = dict(d, wide=weit_state())
+    return d
+
+
+_sim_hub_do_139 = sim_hub_do
+
+
+def sim_hub_do(a, v=None):                                # + 591: «wide_mount» = the mount of the wide camera
+    if a != "wide_mount":
+        return _sim_hub_do_139(a, v)
+    m = str(v or "")
+    if m not in ("scene",) + WEIT_DEVICE_MOUNTS:
+        return False, "invalid value"
+    try:
+        r = sim_control({"action": "set", "id": "wide_mount", "value": m})
+    except Exception:
+        return False, "simulator not reachable"
+    if r.get("ok", True):
+        c = weit_sim_cam()
+        if c is not None:                                  # the next state reply says it too - but the tile shows it at once
+            c.update(mount=m, on_head=m.startswith("head_"), yaw_offset=180.0 if m == "head_rear" else 0.0)
+            weit_auto()
+    _SIMHUB["t"] = 0.0
+    return bool(r.get("ok", True)), str(r.get("error") or "")
+
+
+_source_label_200 = source_label
+
+
+def source_label(spec):                                   # + 591: the wide camera of the simulator has its own name
+    if str(spec) == "sim:1" and weit_sim_cam() and "mount" in (weit_sim_cam() or {}):
+        return "Simulator wide camera"
+    return _source_label_200(spec)
+
+
+WIDE_JS = r"""
+<style>
+.mwwide{position:relative;width:100%;max-width:640px;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:16/9;cursor:zoom-in}
+.mwwide img{display:block;width:100%;height:100%;object-fit:contain}
+.mwwide .mwwl{position:absolute;left:6px;bottom:6px;font:600 11px/1.3 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);padding:2px 7px;border-radius:8px}
+.mwwide .mwww{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#9aa7b8;font-size:13px}
+.mwwide.big{position:fixed;inset:0;z-index:9990;border-radius:0;aspect-ratio:auto;max-width:none;cursor:zoom-out}
+.shsheet .mwwide{flex:1 1 100%}
+.mwwnote{flex:1 1 100%;font-size:12px}
+</style>
+<script>
+(function () {
+  const DE = /*WDE*/{};
+  const M = [["scene", "Mast (scene)"], ["base", "Base front, fixed"], ["head_front", "Head front"], ["head_rear", "Head rear"]];
+  const L = () => { try { return (typeof LANG !== "undefined" && LANG) || document.documentElement.lang || "de"; } catch (e) { return "de"; } };
+  let merged = false;
+  const merge = () => { if (merged) return; try { if (typeof I18N !== "undefined" && I18N.de) { for (const k in DE) if (!(k in I18N.de)) I18N.de[k] = DE[k]; merged = true; } } catch (e) {} };
+  const tt = k => { merge(); try { if (typeof t === "function" && t(k) !== k) return t(k); } catch (e) {} return L() === "en" ? k : (DE[k] || k); };
+  const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
+  let BOX = null, IMG = null, LAB = null, WAIT = null, N = null;
+  function pic() {
+    if (!BOX) {
+      BOX = E("div", "mwwide"); IMG = E("img"); IMG.alt = ""; LAB = E("span", "mwwl"); WAIT = E("div", "mwww", "…");
+      IMG.addEventListener("load", () => { WAIT.hidden = true; });
+      BOX.append(WAIT, IMG, LAB);
+      BOX.onclick = e => { e.stopPropagation(); BOX.classList.toggle("big"); };
+      addEventListener("keydown", e => { if (e.key === "Escape" && BOX.classList.contains("big")) BOX.classList.remove("big"); });
+    }
+    return BOX;
+  }
+  let CUR = "";
+  function feed() {                                     // the stream only while the picture is on the page
+    if (!IMG) return;
+    const vis = document.contains(BOX) && !document.hidden && (BOX.offsetParent !== null || BOX.classList.contains("big"));
+    const src = N != null && vis ? "/cam_feed/" + N : "";
+    if (src === CUR) return;
+    CUR = src;
+    if (src) { WAIT.hidden = false; IMG.src = src; } else IMG.src = "data:,";      // (data: stops the running stream)
+  }
+  setInterval(feed, 1000);
+  document.addEventListener("visibilitychange", feed);
+  const name = m => tt((M.find(x => x[0] === m) || [0, m])[1]);
+  window.mwWide = {
+    tt: tt, name: name,
+    sub: H => { merge(); return H && H.wide ? name(H.wide.mount) : ""; },
+    sheet: (s, H, act) => {                            // 139 sheet(): the picture, the mounts, the overview
+      const w = H && H.wide;
+      if (!w) { s.appendChild(E("div", "mut", tt("not supported - update the simulator"))); return; }
+      N = w.n; s.appendChild(pic());
+      LAB.textContent = "🔭 " + tt("Wide camera") + " · " + name(w.mount);
+      if (N == null) WAIT.textContent = tt("The wide camera is not an extra camera of MoveEye");
+      M.forEach(([k, lb]) => { const b = E("button", k === w.mount ? "" : "sec", tt(lb)); b.type = "button"; b.onclick = () => act("wide_mount", k); s.appendChild(b); });
+      s.appendChild(E("div", "mut mwwnote", w.mount === "scene" ? tt("On the mast: not part of the device - it does not steer the head by itself.")
+        : w.ov ? "⟲ " + tt("Steers the head as overview («The overview camera steers the head»)") + (w.ov_on ? "" : " – " + tt("off"))
+        : tt("Overview chosen by hand - not changed.")));
+      setTimeout(feed, 30);
+    }
+  };
+})();
+</script>
+"""
+WIDE_KEYS = ("Wide camera", "Mast (scene)", "Base front, fixed", "Head front", "Head rear",
+             "The wide camera is not an extra camera of MoveEye", "On the mast: not part of the device - it does not steer the head by itself.",
+             "Steers the head as overview («The overview camera steers the head»)", "Overview chosen by hand - not changed.")
+_simhub_head_139 = simhub_head
+
+
+def simhub_head():                                        # + 591: the wide picture (139 tile «wide», 549 Sim-Kompakt)
+    return _simhub_head_139() + WIDE_JS.replace("/*WDE*/{}", json.dumps({k: DE[k] for k in WIDE_KEYS if k in DE}, ensure_ascii=False), 1)
+
+
+def weit_selftest():
+    keep = {k: CFG.get(k) for k in ("sim_on", "kopf_ov", "kopf_ov_simauto", "extra_cams", "kopf_ov_offset", "light_ir_wide", "light_white_out")}
+    keep_info, keep_head, keep_m = SIM.get("info"), SIM.get("head"), WEIT["mount"]
+    _ss = save_settings
+    try:
+        globals()["save_settings"] = lambda *a, **k: None
+        CFG.update(sim_on=True, kopf_ov="", kopf_ov_simauto=False, extra_cams=["sim:1"], kopf_ov_offset=0.0)
+        SIM["info"] = {"cameras": [{"id": 0, "fov_h": 66}, {"id": 1, "fov_h": 102.0, "fov_v": 67.0, "w": 640, "h": 360, "mount": "scene", "on_head": False}]}
+        WEIT["mount"] = None; weit_auto()
+        assert CFG["kopf_ov"] == "", "mast: not the overview by itself"
+        weit_from_sim({"mount": "head_rear", "yaw_offset": 180.0, "on_head": True, "pan_follow": True})
+        assert CFG["kopf_ov"] == "sim:1" and CFG["kopf_ov_simauto"]
+        SIM["head"] = [30.0, 0.0]
+        assert abs(kopf_ov_deg(0.5) - (-150.0)) < 0.01, kopf_ov_deg(0.5)          # 30 + 180 = 210 = -150
+        assert abs(kopf_ov_deg(1.0) - (-99.0)) < 0.01                              # + 51° right in the picture
+        CFG["kopf_ov"] = ""                                                         # by hand: stays as long as the mount stays
+        weit_from_sim({"mount": "head_rear"}); assert CFG["kopf_ov"] == ""
+        weit_from_sim({"mount": "base", "yaw_offset": 0.0, "on_head": False})
+        assert CFG["kopf_ov"] == "sim:1" and abs(kopf_ov_deg(0.25) + 25.5) < 0.01
+        weit_from_sim({"mount": "scene", "yaw_offset": 0.0, "on_head": False})
+        assert CFG["kopf_ov"] == "" and not CFG["kopf_ov_simauto"]
+        CFG.update(light_ir_wide=True, light_white_out="pca:4")
+        assert not weit_ir_ch_free()
+        assert "ir_wide" in sim_state()["lights"]
+        assert "mwWide" in simhub_head()
+    finally:
+        globals()["save_settings"] = _ss
+        CFG.update(keep); SIM["info"] = keep_info; SIM["head"] = keep_head; WEIT["mount"] = keep_m
+
+
+SELFTEST_EXTRA.append(("Wide camera of the simulator: mount, overview by itself, head direction (163 / 591)", weit_selftest))
 def _gonl_cmp_text(S):
     """the state of «Human vs AI» as plain lines (window)"""
     if not isinstance(S, dict):
@@ -72152,7 +74447,7 @@ def _tk_gonl_card(self, inner):
         if not act:
             lines.append(tr("no invitation yet"))
         if not st["public"]:
-            lines.append("⚠ " + tr("local-warn"))
+            lines.append("⚠ " + tr("local-warn-funnel" if (st.get("funnel") or {}).get("avail") else "local-warn"))
         return "\n".join(lines), act, st
 
     def make():
@@ -72169,6 +74464,7 @@ def _tk_gonl_card(self, inner):
 
     self._fbtn(bf2, "➕ " + tr("Make the invitation"), make).pack(side="left", padx=(0, 6))
     self._fbtn(bf2, tr("Revoke all"), revoke_all).pack(side="left")
+    _tk_funnel_row(self, card)                       # 556: «Online-Spiel über Tailscale Funnel» (the same switch as on the page)
 
     def refresh():
         def work():
@@ -72445,6 +74741,303 @@ for _k, _v in _HX_simkompakt.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 # the German texts into the page (I18N.de of the main page, only where it has no own text yet - see 549)
 WEB_PAGE = WEB_PAGE.replace("/*SKDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_simkompakt.items()}, ensure_ascii=False), 1)
+# ----------------------------------------------------------------------------
+# Simulator-Werte (285): STATE["simvals"] = {"on", "keys": battery / clock / place / weather / pi_temp / solar / gps / net,
+# "time", "dark", "place", "weather", "net", "pi_temp", "off", "sched"}. Shown:
+#   web (main page: after every refresh, hook on tidyHeader of 530; Simulator page: own poll every 3 s)
+#     - one line under the simulator tile of the Live page / under the Simulator centre: which values come from the
+#       simulator, the simulated time (day / night, time-lapse), place, weather, Pi temperature, «WLAN weg» test
+#     - «🧪» + tooltip at the battery (header badge, battery line), the CPU temperature, solar, GPS, storm, schedules
+#     - a red header badge «📵 🧪 WLAN weg» / «Internet weg» while the simulator plays the outage
+#   window (Tk): the status lines Battery, Solar panel, GPS module, Storm warning, Night report, Simulator, the battery
+#     badge, the CPU temperature and the Wi-Fi line get «🧪 Simulator».
+# Texts: part 599 (German into the pages through /*SVDE*/).
+# ----------------------------------------------------------------------------
+SIMVALS_JS = r"""
+<script>
+(function () {
+  try { const de = /*SVDE*/{}; if (typeof I18N !== "undefined" && I18N.de) for (const k in de) if (!(k in I18N.de)) I18N.de[k] = de[k]; } catch (e) {}
+  try { if (typeof I18N !== "undefined") I18N.en = I18N.en || {}; if (typeof I18N !== "undefined") I18N.en["sv-note"] = I18N.en["sv-note"] || "When the simulator does not answer for 10 seconds, the real sensors and the real clock apply again. Log, file names and updates stay on the real clock."; } catch (e) {}
+  const tt = s => (typeof t === "function" ? t(s) : s);
+  const KN = {battery: "Battery", clock: "Clock", place: "Place", weather: "Weather", pi_temp: "Pi temperature", solar: "Solar panel", gps: "GPS module", net: "Network"};
+  const SIMT = () => "🧪 " + tt("from the simulator");
+  function tag(sel, sep, extra) {
+    const e = document.querySelector(sel); if (!e || e.hidden || !e.textContent) return;
+    if (!e.textContent.includes("🧪")) e.textContent += sep + "🧪" + (extra ? " " + extra : "");
+    if (!(e.title || "").includes("🧪")) e.title = ((e.title || "") + "\n" + SIMT()).trim();
+  }
+  function box() {
+    let b = document.getElementById("sv-box"); if (b) return b;
+    const at = document.getElementById("simtile") || document.getElementById("c-hub"); if (!at) return null;
+    b = document.createElement("div"); b.id = "sv-box"; b.className = "mut"; b.hidden = true;
+    b.style.cssText = "white-space:pre-wrap;font-size:13px;margin:0 0 12px;padding:8px 10px;border:1px dashed var(--line,#444);border-radius:10px";
+    at.parentNode.insertBefore(b, at.nextSibling); return b;
+  }
+  function netBadge(v) {
+    let nb = document.getElementById("b-simnet"); const ref = document.getElementById("b-sim");
+    if (!v.on || !v.net) { if (nb) nb.remove(); return; }
+    if (!nb && ref) { nb = document.createElement("span"); nb.id = "b-simnet"; nb.className = "badge red"; ref.parentNode.insertBefore(nb, ref.nextSibling); }
+    if (nb) { nb.textContent = "📵 🧪 " + tt(v.net === "wifi" ? "Wi-Fi gone" : "Internet gone"); nb.title = tt("Simulator test: push messages wait and are sent later"); }
+  }
+  function paint(s) {
+    const v = (s && s.simvals) || {}; const b = box(); netBadge(v);
+    if (!v.on) { if (b) b.hidden = true; return; }
+    const K = new Set(v.keys || []);
+    const L = ["🧪 " + tt("Values from the simulator") + ": " + [...K].map(k => tt(KN[k] || k)).join(", ")];
+    const l2 = [];
+    if (K.has("clock")) l2.push("🕑 " + v.time + " (" + tt(v.dark ? "night" : "day") + (v.speed > 1 ? ", " + tt("time-lapse") + " " + Math.round(v.speed) + "×" : "") + ")");
+    if (K.has("place") && v.place) l2.push("📍 " + v.place);
+    if (K.has("weather") && v.weather) l2.push("🌦 " + tt(v.weather));
+    if (v.pi_temp != null) l2.push("🌡 Pi " + Math.round(v.pi_temp) + " °C");
+    if (l2.length) L.push(l2.join(" · "));
+    if ((v.sched || []).length) L.push("🗓 " + tt("Schedule") + ": " + v.sched.join(", "));
+    if (v.net) L.push("📵 " + tt(v.net === "wifi" ? "Wi-Fi gone" : "Internet gone") + " – " + tt("Simulator test: push messages wait and are sent later"));
+    if (v.off) L.push("⏻ " + tt("Battery empty – the device would be off now"));
+    L.push(tt("sv-note"));
+    if (b) { b.textContent = L.join("\n"); b.hidden = false; }
+    const bs = document.getElementById("b-sim"); if (bs) bs.title = ((bs.title || "").split("\n🧪")[0] + "\n" + L.slice(0, 2).join("\n")).trim();
+    if (K.has("battery")) { tag("#b-batt", " "); tag("#batt-line", "\n", tt("from the simulator") + (v.off ? " · ⏻ " + tt("Battery empty – the device would be off now") : "")); }
+    if (K.has("pi_temp")) { tag("#b-cpu", " "); tag("#cpu-info", " · ", tt("Pi temperature from the simulator")); }
+    if (K.has("solar")) tag("#solar-st", "\n", tt("from the simulator"));
+    if (K.has("gps")) tag("#gpsm-st", "\n", tt("from the simulator"));
+    if (K.has("weather")) tag("#storm-st", "\n", tt("weather and forecast from the simulator"));
+    if (K.has("clock")) tag("#b-sched", " ", v.time);
+  }
+  window.svPaint = paint;
+  if (typeof window.tidyHeader === "function") {                 // main page: after every refresh (tidyHeader paints last)
+    const th = window.tidyHeader;
+    window.tidyHeader = function (s, c) { const r = th.apply(this, arguments); setTimeout(() => { try { paint(s); } catch (e) {} }, 0); return r; };
+  } else {                                                      // Simulator page: an own look every 3 s
+    const poll = async () => { if (document.hidden) return; try { const j = await (await fetch("/api/state", {cache: "no-store"})).json(); paint(j.state || {}); } catch (e) {} };
+    setInterval(poll, 3000); setTimeout(poll, 900);
+  }
+})();
+</script>
+"""
+WEB_PAGE = WEB_PAGE.replace("</body>", SIMVALS_JS + "</body>", 1)
+SIM_PAGE = SIM_PAGE.replace("</body>", SIMVALS_JS + "</body>", 1)
+
+
+# ---- window (Tk): «🧪 Simulator» at the status lines and badges --------------------------------------------------------
+def _sv_keys():
+    v = STATE.get("simvals") or {}
+    return set(v.get("keys") or []) if v.get("on") else set()
+
+
+_SV_STATUS_KEYS = {"Battery": "battery", "Solar panel": "solar", "GPS module": "gps", "Storm warning": "weather", "Night report": "clock"}
+_sv_status_orig = App._status
+
+
+def _sv_status(self, sec, text):
+    try:
+        K = _sv_keys()
+        if K and sec in _SV_STATUS_KEYS and _SV_STATUS_KEYS[sec] in K and "🧪" not in str(text):
+            text = str(text) + "\n🧪 " + tr("from the simulator")
+            if sec == "Battery" and SIMVAL.get("off"):
+                text += " · ⏻ " + tr("Battery empty – the device would be off now")
+        elif K and sec == "Simulator":
+            v = STATE.get("simvals") or {}
+            text = str(text) + "\n🧪 " + tr("Values from the simulator") + ": " + ", ".join(tr({"battery": "Battery", "clock": "Clock", "place": "Place",
+                    "weather": "Weather", "pi_temp": "Pi temperature", "solar": "Solar panel", "gps": "GPS module", "net": "Network"}.get(k, k)) for k in sorted(K)) \
+                + f"\n🕑 {v.get('time', '')} ({tr('night') if v.get('dark') else tr('day')})" + (f" · 📍 {v['place']}" if v.get("place") else "") \
+                + (f" · 🌡 Pi {v['pi_temp']:.0f} °C" if isinstance(v.get("pi_temp"), (int, float)) else "") \
+                + (("\n📵 " + tr("Wi-Fi gone" if v.get("net") == "wifi" else "Internet gone") + " – " + tr("Simulator test: push messages wait and are sent later")) if v.get("net") else "")
+    except Exception:
+        pass
+    return _sv_status_orig(self, sec, text)
+
+
+_sv_sb_orig = App._sb
+
+
+def _sv_sb(self, key, text, color=None, show=True):
+    try:
+        if key == "b_batt" and "battery" in _sv_keys() and "🧪" not in str(text):
+            text = str(text) + " 🧪"
+    except Exception:
+        pass
+    return _sv_sb_orig(self, key, text, color, show)
+
+
+_sv_cpu_orig = App._update_cpu
+
+
+def _sv_update_cpu(self):
+    r = _sv_cpu_orig(self)
+    try:
+        if "pi_temp" in _sv_keys() and self.l_cpu_info is not None and "🧪" not in self.l_cpu_info.cget("text"):
+            self.l_cpu_info.config(text=self.l_cpu_info.cget("text") + " · 🧪 " + tr("Pi temperature from the simulator"))
+    except Exception:
+        pass
+    return r
+
+
+_sv_wifi_orig = App._update_wifi
+
+
+def _sv_update_wifi(self):
+    r = _sv_wifi_orig(self)
+    try:
+        nd = (STATE.get("simvals") or {}).get("net")
+        if nd and self.l_wifi is not None and "🧪" not in self.l_wifi.cget("text"):
+            self.l_wifi.config(text=self.l_wifi.cget("text") + "\n📵 🧪 " + tr("Wi-Fi gone" if nd == "wifi" else "Internet gone") + " – "
+                               + tr("Simulator test: push messages wait and are sent later"), foreground=C["red"])
+    except Exception:
+        pass
+    return r
+
+
+# wraps: App._status
+App._status = _sv_status
+# wraps: App._sb
+App._sb = _sv_sb
+# wraps: App._update_cpu
+App._update_cpu = _sv_update_cpu
+# wraps: App._update_wifi
+App._update_wifi = _sv_update_wifi
+
+# ---- the manual (HELP_PAGE of 540): one paragraph in the section about the simulator, German and English ----------------
+_SV_HELP = {
+    "de": "<p><b>🧪 Werte aus dem Simulator (ab 2.98.47):</b> Ist MoveEye mit dem 3D-Simulator verbunden, kommen die «Hardware»-Werte "
+          "aus der simulierten Welt: Akku (ein simulierter USV-HAT mit 2 × 18650 – entlädt sich mit Pi, Servos, Licht und Sirene, lädt mit "
+          "dem Solarpanel oder dem Netzteil, Kälte senkt die Kapazität), Uhrzeit und Datum (Zeitpläne, Nachtbericht, «Heute Nacht bewachen», "
+          "Nacht-Prognose – auch im Zeitraffer), Ort (Sonnenauf- und -untergang), Wetter und Böen-Prognose (kein Internet-Wetter), die "
+          "Temperatur des Pi (Hitze-Warnung, KI langsamer) und der Test «WLAN weg» / «Internet weg» (Alarme warten und werden nachgeschickt). "
+          "Solar, GPS, Aussentemperatur, Wind, Geräusche, Wärmebild und Sensoren kamen schon vorher vom Simulator. Jeder solche Wert trägt "
+          "«🧪». Die Regler sind im Simulator unter Sensoren → «Akku und Strom» und «Netz-Ausfall testen». Protokoll, Dateinamen, Signaturen "
+          "und Updates bleiben auf der echten Uhr. Antwortet der Simulator 10 Sekunden nicht, gelten wieder die echten Werte.</p>",
+    "en": "<p><b>🧪 Values from the simulator (from 2.98.47):</b> while MoveEye is connected to the 3D simulator its «hardware» values come "
+          "from the simulated world: battery (a simulated UPS HAT with 2 × 18650 – drained by the Pi, servos, light and siren, charged by the "
+          "solar panel or a mains adapter, cold lowers the capacity), time and date (schedules, night report, «Guard tonight», night forecast – "
+          "also in the time-lapse), place (sunrise and sunset), weather and gust forecast (no internet weather), the temperature of the Pi "
+          "(heat warning, AI slower) and the test «Wi-Fi gone» / «Internet gone» (alarms wait and are sent later). Solar, GPS, outside "
+          "temperature, wind, sounds, thermal camera and sensors came from the simulator before. Every such value carries «🧪». The controls "
+          "are in the simulator under Sensors → «Akku und Strom» and «Netz-Ausfall testen». Log, file names, signatures and updates stay on "
+          "the real clock. When the simulator does not answer for 10 seconds the real values apply again.</p>"}
+for _a, _b in (('<section id="system" data-icon="⚙"><h2>System &amp; Netz</h2>', _SV_HELP["de"]),
+               ('<section id="system" data-icon="⚙"><h2>System &amp; network</h2>', _SV_HELP["en"])):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_SIMWERTE = {
+    'from the simulator': ('vom Simulator', 'du simulateur', 'dal simulatore', 'dal simulatur'),
+    'Values from the simulator': ('Werte aus dem Simulator', 'Valeurs du simulateur', 'Valori dal simulatore', 'Valurs dal simulatur'),
+    'Clock': ('Uhrzeit', 'Heure', 'Ora', 'Ura'),
+    'Place': ('Ort', 'Lieu', 'Luogo', 'Lieu'),
+    'Weather': ('Wetter', 'Météo', 'Meteo', 'Aura'),
+    'Pi temperature': ('Pi-Temperatur', 'Température du Pi', 'Temperatura del Pi', 'Temperatura dal Pi'),
+    'Network': ('Netz', 'Réseau', 'Rete', 'Rait'),
+    'time-lapse': ('Zeitraffer', 'accéléré', 'accelerato', 'accelerà'),
+    'Wi-Fi gone': ('WLAN weg', 'Wi-Fi coupé', 'Wi-Fi assente', 'WLAN davent'),
+    'Internet gone': ('Internet weg', 'Internet coupé', 'Internet assente', 'Internet davent'),
+    'Simulator test: push messages wait and are sent later': (
+        'Simulator-Test: Push-Nachrichten warten und werden nachgeschickt',
+        'Test du simulateur : les messages push attendent et sont envoyés plus tard',
+        'Test del simulatore: i messaggi push aspettano e vengono inviati più tardi',
+        'Test dal simulatur: ils messadis push spetgan e vegnan tramess pli tard'),
+    'Battery empty – the device would be off now': (
+        'Akku leer – das Gerät wäre jetzt aus', 'Batterie vide – l’appareil serait éteint maintenant',
+        'Batteria scarica – l’apparecchio ora sarebbe spento', 'Accu vid – l’apparat fiss ussa stiz'),
+    'Pi temperature from the simulator': ('Pi-Temperatur vom Simulator', 'température du Pi du simulateur', 'temperatura del Pi dal simulatore',
+                                          'temperatura dal Pi dal simulatur'),
+    'weather and forecast from the simulator': ('Wetter und Prognose vom Simulator', 'météo et prévision du simulateur',
+                                                'meteo e previsione dal simulatore', 'aura e prognosa dal simulatur'),
+    'Battery': ('Akku', 'Batterie', 'Batteria', 'Accu'),
+    'Solar panel': ('Solarpanel', 'Panneau solaire', 'Pannello solare', 'Panel solar'),
+    'GPS module': ('GPS-Modul', 'Module GPS', 'Modulo GPS', 'Modul GPS'),
+    'night': ('Nacht', 'nuit', 'notte', 'notg'),
+    'day': ('Tag', 'jour', 'giorno', 'di'),
+    'Schedule': ('Zeitplan', 'Horaire', 'Orario', 'Plan da temp'),
+    'clear': ('klar', 'dégagé', 'sereno', 'serein'),
+    'cloudy': ('bewölkt', 'nuageux', 'nuvoloso', 'nivlus'),
+    'fog': ('Nebel', 'brouillard', 'nebbia', 'tschajera'),
+    'rain': ('Regen', 'pluie', 'pioggia', 'plievgia'),
+    'snow': ('Schnee', 'neige', 'neve', 'naiv'),
+    'simulator': ('Simulator', 'simulateur', 'simulatore', 'simulatur'),
+    'sent later': ('nachgeschickt', 'envoyé plus tard', 'inviato più tardi', 'tramess pli tard'),
+    'sv-note': ('Antwortet der Simulator 10 Sekunden nicht, gelten wieder die echten Sensoren und die echte Uhr. Protokoll, Dateinamen und '
+                'Updates bleiben auf der echten Uhr.',
+                'Si le simulateur ne répond pas pendant 10 secondes, les vrais capteurs et la vraie horloge s’appliquent à nouveau. Le journal, '
+                'les noms de fichiers et les mises à jour restent sur l’heure réelle.',
+                'Se il simulatore non risponde per 10 secondi valgono di nuovo i sensori veri e l’orologio vero. Protocollo, nomi dei file e '
+                'aggiornamenti restano sull’ora vera.',
+                'Sch’il simulatur na respunda betg durant 10 secundas, valan puspè ils sensurs vairs e l’ura vaira. Protocol, nums da datotecas '
+                'ed actualisaziuns restan sin l’ura vaira.'),
+}
+for _k, _v in _HX_SIMWERTE.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+# the German texts into the pages (main page and Simulator page, only where they have no own text yet - see 598)
+_SVDE = json.dumps({_k: DE.get(_k, _v[0]) for _k, _v in _HX_SIMWERTE.items()}, ensure_ascii=False)
+WEB_PAGE = WEB_PAGE.replace("/*SVDE*/{}", _SVDE, 1)
+SIM_PAGE = SIM_PAGE.replace("/*SVDE*/{}", _SVDE, 1)
+# ----------------------------------------------------------------------------
+# Plan Daniel 30.10.2026 (docs/Verfolgungs_Parcours.md). Here (not in 416) because SLIDERS (570) and the tab Simulator of the
+# window (572 / 592) come after 416. The full tile (A/B side by side, auto-tuning, game) is the web page; the window shows
+# the short form and opens the tile in the browser (like the other single tools of the Simulator centre).
+# ----------------------------------------------------------------------------
+_pi = max([i for i, s_ in enumerate(SLIDERS) if s_[1] == "track_deadzone"] or [len(SLIDERS) - 1])
+SLIDERS.insert(_pi + 1, ("Camera / Servos", "track_lead", "Tracking: look ahead (seconds, 0 = off)", 0.0, 1.0, 0.05))
+_tk_sim_head_599 = _tk_sim_head
+
+
+def _tk_parc_txt():
+    runs = parc_runs()
+    out = []
+    if PARC["busy"]:
+        out.append("⏳ " + str(PARC.get("step") or ""))
+    if runs:
+        r = runs[-1]["report"]
+        out.append("🎯 " + tr("Last run") + " (" + runs[-1]["t"] + "): " + tr("grade") + " %.1f" % float(r.get("note") or 0) + " · "
+                   + " · ".join("%s %.1f" % (l.get("id"), float(l.get("note") or 0)) for l in r.get("lessons") or []))
+    tu = PARC.get("tune") or {}
+    if tu.get("cands"):
+        b = tu["cands"][int(tu.get("best") or 0)]
+        out.append("🤖 " + tr("Auto-tuning") + ": ★ " + ", ".join("%s %s" % (k, b["params"].get(k)) for k in PARC_KEYS) + " · " + tr("grade") + " %.1f" % float(b["note"])
+                   + (" · ✓ " + tr("taken over") if tu.get("applied") else ""))
+    return "\n".join(out) or tr("Train the following")
+
+
+def _tk_sim_head(self, inner):
+    """+ 599: a short card «Verfolgungs-Parcours» under the cards of 572 / 592"""
+    _tk_sim_head_599(self, inner)
+    card = self._panel(inner); card.pack(fill="x", pady=(0, 8))
+    tk.Label(card, text="🎯 " + tr("Tracking parcours"), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10, "bold"), anchor="w").pack(fill="x")
+    ttk.Label(card, text=tr("Train following in the simulator: lessons, A/B comparison, auto-tuning (proposal only)."), style="Mut.TLabel",
+              wraplength=520, justify="left").pack(anchor="w", pady=(2, 4))
+    lab = ttk.Label(card, text=_tk_parc_txt(), style="Mut.TLabel", wraplength=520, justify="left"); lab.pack(anchor="w", pady=(0, 6))
+    bf = tk.Frame(card, bg=C["panel"]); bf.pack(fill="x")
+
+    def start():
+        ok, err = parc_start([1, 5, 6])
+        if not ok:
+            messagebox.showinfo(tr("Tracking parcours"), tr_err(err), parent=card)
+        lab.config(text=_tk_parc_txt())
+
+    def take():
+        ok, err = parc_apply()
+        if not ok:
+            messagebox.showinfo(tr("Tracking parcours"), tr_err(err), parent=card)
+        lab.config(text=_tk_parc_txt())
+    # the same buttons and order as on the page / in the simulator window: ▶ Start · ⏹ Stopp, then the tile
+    self._fbtn(bf, "▶ " + tr("Start") + " (1, 5, 6)", start, primary=True).pack(side="left", padx=(0, 6))
+    self._fbtn(bf, "⏹ " + tr("Stop"), lambda: sim_hub_do("parc", {"do": "stop"})).pack(side="left", padx=(0, 6))
+    self._fbtn(bf, "✓ " + tr("take over proposal ★"), take).pack(side="left", padx=(0, 6))
+    self._fbtn(bf, "🎯 " + tr("Tracking parcours") + " (" + tr("browser") + ")", lambda: self._open_page("/sim#c-parc")).pack(side="left")
+
+    def loop():
+        try:
+            if not card.winfo_exists():
+                return
+            lab.config(text=_tk_parc_txt())
+        except tk.TclError:
+            return
+        card.after(5000, loop)
+    card.after(5000, loop)
+
+
+setattr(App, "_tk_sim_head", _tk_sim_head)
 TRX['rm'].update({
     '(or the address from the push message).': "(u l'adressa da l'avis push).",
     '+ Add relay': '+ Agiuntar in relais',

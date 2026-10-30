@@ -201,6 +201,9 @@ class BatteryMonitor:
         now = time.time(); dt = min(60.0, now - self._t); self._t = now
         if drill_active("battery"):                      # 2.96.6: drill «battery empty» (141) - never the real shutdown
             return drill_battery_tick(self)
+        sb_ = sim_sensor("battery")                      # Simulator-Werte: the simulated UPS HAT instead of the real one (285)
+        if sb_ is not None and sim_battery_tick(self, sb_):
+            return
         if CFG["ups_on"] and self.ups_tick():
             return
         cap_wh = float(CFG["batt_mah"]) * 3.7 / 1000.0 * 0.85
@@ -386,7 +389,16 @@ class SysMonitor:
         while True:
             time.sleep(1.0)
             cpu = self._cpu()
-            temp = self._temp()
+            temp = real_t = self._temp()
+            st_ = sim_pi_temp()                               # Simulator-Werte: the simulated Pi in its case (285)
+            if st_ is not None:
+                temp = float(st_)
+            STATE["cpu_temp_real"] = None if real_t is None else round(real_t, 1)
+            STATE["cpu_temp_src"] = "sim" if st_ is not None else "pi"
+            try:
+                simvals_tick()
+            except Exception as e:
+                STATE["simvals"] = {"on": False, "err": str(e)[:80]}
             if cpu is not None:
                 self.hist.append(round(cpu, 1))
             STATE["mem"] = mem_info()
@@ -406,12 +418,12 @@ class SysMonitor:
                 lim = float(CFG["temp_warn"])
                 if temp >= lim and not getattr(self, "warned", False):
                     self.warned = True
-                    log_event("sys", f"CPU hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation")
+                    log_event("sys", f"CPU hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation" + (" (simulator)" if st_ is not None else ""))
                     w = WATCH_REF["w"]
                     if w is not None:
                         de = CFG["lang"] == "de"
-                        w.notifier.info(trf("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation", temp=temp, lim=lim),
-                                        title="{name}: " + tr("temperature"))
+                        w.notifier.info(trf("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation", temp=temp, lim=lim)
+                                        + (" (🧪 " + tr("simulator") + ")" if st_ is not None else ""), title="{name}: " + tr("temperature"))
                 elif temp < lim - 5:
                     self.warned = False
 

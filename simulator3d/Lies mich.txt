@@ -608,6 +608,14 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-4.18
+3D-4.18: Weitwinkel-Kamera (102°, NoIR) statt fester Kamera – Montage Mast, Unterteil vorne, Kopf vorne oder hinten, mit
+Neigung, Fischauge, breitem IR-Licht (Kanal 4), Drehgrenze; MoveEye stellt «Übersicht lenkt den Kopf» selbst ein.
+Simulator-Werte für MoveEye: Akku (Verbrauch, Solar, Netzteil, Kälte), Uhrzeit und Zeitraffer, Ort und Wetter, Pi-Wärme,
+Netz-Ausfall (WLAN / Internet weg) – Karte Sensoren. Szene «Verfolgungs-Parcours» mit 8 Lektionen, Note, Einblendung und
+dem Spiel «Entkomme der Kamera» (auch im Spiel-Assistenten). Neue Szenen «Voller Campingplatz», «Tarnen und Kriechen»,
+«Velodieb» mit Prüfstand-Plänen und Spielidee. Aufklapp-Knöpfe wie in MoveEye (zu · Gruppen · auf, aktiver Zustand blau).
+
 NEU IN 3D-4.17
 3D-4.17: MoveEye als KI-Wächter (Schalter in der Karte «Spiel» auf /sim, eigene Liste «gegen die KI», gleiche Energie,
 0.5 s Reaktion, zielt nie auf Geschützte). Stange per Schieberegler im Dock. /sim-Bild ohne Einblendungen (nur 3D + Dock).

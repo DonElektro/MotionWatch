@@ -73,7 +73,7 @@ func _place(bar: MeshInstance3D, a: Vector3, b: Vector3) -> void:
 
 
 func _process(_dt: float) -> void:
-	visible = bool(main.show_laser) and main.cams.size() > 0
+	visible = (bool(main.show_laser) or (main.parcours != null and main.parcours.overlay_on())) and main.cams.size() > 0   # 3D-4.18: also the aim ray of the parcours overlay
 	if not visible:
 		return
 	var cam: Camera3D = main.cams[0]

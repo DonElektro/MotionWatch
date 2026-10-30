@@ -286,6 +286,8 @@ func on_scene() -> void:
 func _pick_goal(random: bool) -> void:
 	var o: Dictionary = main.obj
 	var keys := ["bike" if main.scene in ["camping", "parkplatz"] else "door"]
+	if main.szenen != null and main.szenen.goal_key() != "":
+		keys = [main.szenen.goal_key()]                    # 3D-4.x: the new scenes (your tent, the bike)
 	if random:
 		keys = []
 		for k in ["bike", "door", "pir"]:
@@ -2901,7 +2903,7 @@ function paint(m) {
   $("#sig").hidden = !(m.rs === "play" && role === "runner" && m.ps === "play");
   if (m.stone < 0 || J) $("#b-stone").style.display = "none"; else { $("#b-stone").style.display = "flex"; cool($("#b-stone"), m.stone); }
   $("#b-lamp").style.display = m.dark && role === "runner" && !J ? "flex" : "none"; $("#b-lamp").classList.toggle("on", !!m.lamp);
-  if (role === "guard") { cool($("#b-light"), m.light); cool($("#b-catch"), m.catch); $("#gd").textContent = m.gcam === 1 ? "feste Kamera" : (m.pan > 0 ? "◀ " : "▶ ") + Math.abs(m.pan) + "°"; }
+  if (role === "guard") { cool($("#b-light"), m.light); cool($("#b-catch"), m.catch); $("#gd").textContent = m.gcam === 1 ? "Weitwinkel-Kamera" : (m.pan > 0 ? "◀ " : "▶ ") + Math.abs(m.pan) + "°"; }
   toolsPaint(m);
   if (m.rs === "play") SAWPLAY = true;
   if (m.rs === "countdown") { const rb_ = document.getElementById("rpbox"); if (rb_) { cancelAnimationFrame(rb_.__raf); rb_.remove(); } }   // a new round: the replay goes away
@@ -3511,6 +3513,26 @@ func _board_add() -> void:
 		if bl > 0:
 			w["blind"] = int(w.get("blind", 0)) + bl
 		week[key] = w
+	_board_save()
+
+
+func board_add_extra(name_: String, score: int, rec_key: String, what: String) -> void:
+	"""3D-4.18: a short game outside the round (parcours.gd «Entkomme der Kamera») into the ranking of the evening and of the
+	week, and its own record - the scores of the rounds and the balance rules (gamerules.gd) stay as they are"""
+	_board_load()
+	var key := name_.to_lower()
+	var b: Dictionary = board.get(key, {"n": name_, "c": "#f59a4a", "score": 0, "rounds": 0, "wins": 0, "best": 0, "clean": 0})
+	b["score"] = int(b["score"]) + score
+	b["rounds"] = int(b["rounds"]) + 1
+	b[rec_key] = maxi(int(b.get(rec_key, 0)), score)
+	board[key] = b
+	var w: Dictionary = week.get(key, {"n": name_, "c": b["c"], "score": 0, "rounds": 0, "wins": 0, "tasks": 0})
+	w["score"] = int(w["score"]) + score
+	w["rounds"] = int(w["rounds"]) + 1
+	week[key] = w
+	if not records.has(rec_key) or score > int(records[rec_key][1]):
+		records[rec_key] = [name_, score]
+	news("%s: %s – %d Punkte" % [what, name_, score])
 	_board_save()
 
 
