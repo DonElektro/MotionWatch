@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 05:28",
+ "generated": "2026-10-30 05:30",
  "versions": [
   {
-   "version": "2.98.44",
-   "file": "webcam_bewegung_2_98_44.py",
+   "version": "2.98.45",
+   "file": "webcam_bewegung_2_98_45.py",
    "url": "",
-   "sha256": "dea61ffb3e5c54b46813ca1221324e43ba54b8ece27ecb61ce11e396350c5fa4",
-   "date": "2026-10-30 05:28",
-   "notes": "Mit Simulator 3D-4.15: neue Menschen-Figuren mit Skelett (echtere Bewegungen, Wärmebild, Avatar am Handy, Namen nur für Spieler).",
-   "sig": "528d385c255d8c88d8c8c2ae6e29881a9abad6c27abd55c7c247e63ac43755baf8783dfcedb0abeabe3b924b84f2162cb3f7ff645005d2c2bdc8b0ee77b5e506"
+   "sha256": "d735f3c27c0ed69d573cca89833b4ee3e50a4bfea38dbfe02eaacf2cf440ae49",
+   "date": "2026-10-30 05:30",
+   "notes": "KI-Hilfe für den Menschen am Auslöser (Knopf 🤖 im Bild, L2): KI-Rahmen, KI zielt, KI-Autopilot; solche Runden zählen nicht für die Rangliste (mit Simulator 3D-4.16).",
+   "sig": "e74197d999dcb724c5cf524635631b2d5a80c2180e8d43945afbe2d53cf81a98a10e9ab9618d73e05286bb3b09045b99cc19507461c64c5a980d73c14915fd04"
   },
   {
    "version": "2.97.1",
