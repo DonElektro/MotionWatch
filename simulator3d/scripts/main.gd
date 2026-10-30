@@ -11,7 +11,9 @@ const CAM_FPS := [12.0, 8.0]
 const CAM_FOV := [66.0, 102.0]            # 3D-4.17: camera 1 = the wide camera (Camera Module 3 Wide NoIR, weitwinkel.gd)
 const TH_W := 80
 const TH_H := 62
-const TH_FOV := 45.0
+var TH_FOV := 90.0                # 30.10.2026: the model of the thermal camera decides (simint.gd: Thermal-90 or the old 45°)
+var th_fps := 15.0
+var th_noise := 0.125             # °C noise per pixel (NETD of the module)
 const HEAD_H := 1.6
 const HELPER_LAYER := 128         # 3D-3.64: marks for the operator only - the cameras of MoveEye do not see them
 
@@ -68,6 +70,7 @@ var real_weather := false             # the weather of the place from open-meteo
 var surprise_on := false             # 3D-3.75: «Überraschungsnacht» (surprise.gd)
 var power_off := false               # 3D-3.75: power cut - the lamps of the place are out
 var surprise
+var simint                            # simint.gd (30.10.2026): loudspeaker of MoveEye, servo faults, thermal model, warm hand
 var simwerte                          # Simulator-Werte (30.10.2026): battery, Pi heat, network test, clock (power.gd)
 var visitlog                          # 3D-3.80: visitlog.gd
 var night_weather := false            # 3D-3.74: the weather runs through the night (dusk, showers, dew, morning fog)
@@ -310,6 +313,7 @@ var _group_state := {}
 var conn_body: Control                # the card «Verbindung» (symbol and title show the state)
 var cam_body: Control                 # 3D-3.50: the cards «Kameras» and «Werkzeuge» (symbol + arrow green while working)
 var tools_body: Control
+var testen_stoer: VBoxContainer       # 30.10.2026: card «Testen» → «Störungen» (simint.gd: servos, 5 V, I2C)
 var testen_measure: VBoxContainer     # 3D-4.x: card «Testen» → «Erkennung messen» (also the test run controls)
 var testen_rec: VBoxContainer         # 3D-4.x: card «Testen» → «Aufnahme …» (the recorder)
 var _conn_state := -1
@@ -459,6 +463,9 @@ func _ready() -> void:
 	simwerte = preload("res://scripts/power.gd").new()      # Simulator-Werte: UPS HAT, Pi heat, «WLAN weg» (sent to MoveEye)
 	simwerte.main = self
 	add_child(simwerte)
+	simint = preload("res://scripts/simint.gd").new()      # 30.10.2026: siren on the PC + microphone, servo faults, thermal model
+	simint.main = self
+	add_child(simint)
 	recorder = Recorder.new()
 	recorder.main = self
 	add_child(recorder)
@@ -2154,6 +2161,8 @@ func _process(dt: float) -> void:
 		want_pan = -deg_to_rad(replay.servo.x)
 		want_tilt = deg_to_rad(replay.servo.y - 6.0)
 	var step: float = deg_to_rad(SERVO_DEG_S) * dt * weit.servo_k()     # 3D-4.17: wide camera on the head = a bit heavier
+	if simint != null:
+		step *= simint.servo_k()                          # 30.10.2026: under-voltage - weak and stuttering servos
 	want_pan = weit.pan_clamp(want_pan)                   # ... and the cable allows only ± pan limit
 	if dataset != null and dataset.servo != null:
 		step *= 8.0                                      # the pictures: no need to wait for the slow servo
@@ -2162,9 +2171,9 @@ func _process(dt: float) -> void:
 	var x0: float = head_pitch.rotation.x
 	var sreal: bool = realism != null and realism.servo_real
 	var dead := deg_to_rad(0.6) if sreal else 0.0          # 3D-3.94: an MG90S does not move for less than about half a degree
-	if absf(want_pan + sabotage_turn - head.rotation.y) > dead:
+	if absf(want_pan + sabotage_turn - head.rotation.y) > dead and not (simint != null and simint.hold("pan") and sabotage_turn == 0.0):
 		head.rotation.y = move_toward(head.rotation.y, want_pan + sabotage_turn, step * (6.0 if absf(sabotage_turn) > 0.0 else 1.0))
-	if absf(want_tilt - head_pitch.rotation.x) > dead:
+	if absf(want_tilt - head_pitch.rotation.x) > dead and not (simint != null and simint.hold("tilt")):
 		head_pitch.rotation.x = move_toward(head_pitch.rotation.x, want_tilt, step)
 	var vy: float = (head.rotation.y - y0) / maxf(dt, 0.0001)
 	tilt_vel = (head_pitch.rotation.x - x0) / maxf(dt, 0.0001)
@@ -2261,7 +2270,7 @@ func _wanted_fps(i: int) -> float:
 	if i == 1 and game != null and game.guard2_watching():
 		f = max(f, 6.0)                                  # a second guard sees through the fixed camera
 	if i == 2 and now() - _th_asked < 3.0:
-		f = max(f, 8.0)
+		f = max(f, th_fps)                               # 30.10.2026: the model (Thermal-90: 15 fps like the driver of MoveEye)
 	if preview_on and win_open:
 		f = max(f, (2.0 if in_vm else 4.0) if i < 2 else (1.5 if in_vm else 3.0))
 	return simreal.fps_cap(i, f) if simreal != null else f   # 3D-4.4: «Wie ein echter Pi 5»
@@ -2446,14 +2455,16 @@ func decode_thermal_img(img: Image, fx: bool = true) -> PackedFloat32Array:
 		img.convert(Image.FORMAT_RGBA8)
 	var d := img.get_data()
 	var w := img.get_width()
+	var h := img.get_height()                          # 30.10.2026: Thermal-90 renders 160 × 106 (90° × 67°, pixels not square)
 	var out := PackedFloat32Array()
 	out.resize(TH_W * TH_H)
 	for y in range(TH_H):
+		var yy := clampi(int((y + 0.5) * h / TH_H - 0.5), 0, h - 2)
 		for x in range(TH_W):
-			var a := ((2 * y) * w + 2 * x) * 4
+			var a := (yy * w + clampi(int((x + 0.5) * w / TH_W - 0.5), 0, w - 2)) * 4
 			var b := a + w * 4
 			var t := (th_lut[d[a]] + th_lut[d[a + 4]] + th_lut[d[b]] + th_lut[d[b + 4]]) * 0.25
-			out[y * TH_W + x] = t + randf_range(-0.08, 0.08)
+			out[y * TH_W + x] = t + randfn(0.0, th_noise)
 	if fx and realism != null and realism.fx_on:       # 3D-3.98: like a real thermal module - see realism.thermal_fx()
 		out = realism.thermal_fx(out, TH_W, TH_H)
 	return out
@@ -2784,7 +2795,7 @@ func info() -> Dictionary:
 	return {"v": 1, "name": "MW Sim · 3D %s" % VERSION, "host": host_name(),
 			"cameras": [{"id": 0, "name": "Head camera (NoIR)", "w": CAM_W[0], "h": CAM_H[0], "fps": CAM_FPS[0], "fov_h": CAM_FOV[0], "fov_v": 41.0, "on_head": true, "noir": true},
 						weit.cam_info()],          # 3D-4.17: the wide camera with its mount (weitwinkel.gd)
-			"thermal": {"w": TH_W, "h": TH_H, "fps": 8.0, "fov_h": TH_FOV, "fov_v": 35.0, "unit": "C", "on_head": true},
+			"thermal": simint.thermal_info() if simint != null else {"w": TH_W, "h": TH_H, "fps": th_fps, "fov_h": TH_FOV, "fov_v": 35.0, "unit": "C", "on_head": true},
 			"view": {"input": 1, "path": "/view.mjpg", "padview": 1},
 			"sensors": [{"name": "Wohnwagen-Tür", "kind": "door"}, {"name": "PIR Zelt", "kind": "pir"}, {"name": "Gas Wohnwagen", "kind": "gas"}, {"name": "Velo", "kind": "tag"}],
 			"helper": {"port": mwpc.HELPER_PORT, "code": str(mwpc.helper.get("code", "")), "accel": str(mwpc.helper.get("accel", ""))} if mwpc != null and mwpc.helper.has("code") else null}
@@ -3123,12 +3134,12 @@ func add_control(type: String, id: String, label: String, getter, setter, group:
 const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Dein Platz", "Zeit"]],
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
-		["Kamerabild", "lens", "👁", ["", "Weitwinkel-Kamera", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
-		["Sensoren", "bell", "🔔", ["", "Akku und Strom", "Netz-Ausfall testen", "Zusatz-Bildschirm"]],
+		["Kamerabild", "lens", "👁", ["", "Weitwinkel-Kamera", "Wärmebild", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
+		["Sensoren", "bell", "🔔", ["", "Akku und Strom", "Lautsprecher", "Netz-Ausfall testen", "Zusatz-Bildschirm"]],
 		["Mover", "track", "🚜", ["", "Patrouille", "Controller"]],
 		["Spiel", "pad", "🎮", ["", "Assistent"]],
 		["Wildbeobachtung", "target", "🎯", [""]],
-		["Testlauf", "check", "✅", ["", "Verfolgungs-Parcours"]],
+		["Testlauf", "check", "✅", ["", "Verfolgungs-Parcours", "Störungen"]],
 		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates", "Kinder-Modus"]]]
 # id -> [group, part]; not listed: the group given in add_control, no part
 const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "Patrouille"], "patrol_points": ["Mover", "Patrouille"], "patrol_area": ["Mover", "Patrouille"],
@@ -3382,6 +3393,7 @@ func _register_controls() -> void:
 	add_control("toggle", "gas", "Gas / Rauch", func(): return gas_on, func(v): set_gas(v), "Sensoren")
 	add_control("button", "pir", "PIR Zelt auslösen", null, func(): add_event("PIR Zelt", "pir"), "Sensoren")
 	add_control("button", "bike", "Velo-Sensor auslösen (jemand rüttelt am Velo)", null, func(): add_event("Velo", "tag"), "Sensoren")
+	simint.add_controls()                              # 30.10.2026: Lautsprecher, Störungen, Wärmebild (simint.gd)
 	simwerte.add_controls()                            # Simulator-Werte: Akku und Strom, Netz-Ausfall testen (power.gd)
 	add_control("toggle", "rifle", "Gewehr (unblutig, nur Tiere)", func(): return rifle_on, func(v): rifle_on = v, "Wildbeobachtung")
 	add_control("button", "shoot_head", "Schuss aus der Kopfkamera", null, func(): shoot_head(), "Wildbeobachtung")
@@ -4146,6 +4158,8 @@ func _control(d: Dictionary) -> Dictionary:
 		gr["steal"] = gps_steal_t > 0.0
 		gr["solar"] = solar_reading()
 		return gr
+	elif a == "simint":                                # 30.10.2026: {do: info | uv | pca | i2c | block (axis) | off | model (m) | hand (on)} (simint.gd)
+		return simint.op(d)
 	elif a == "sound":                                 # 3D-3.98: {kind: clap | sneeze | voice | shout, n, x, z}
 		var sp = null
 		if d.has("x") and d.has("z"):
@@ -4622,6 +4636,11 @@ func _build_ui() -> void:
 		snb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		snb.pressed.connect(func(): emit_sound(b_[1], b_[2]))
 		sgr.add_child(snb)
+	testen_stoer = UI.sub_fold(tl_main, "Störungen (Servos, Unterspannung, I2C – reagiert MoveEye richtig?)", false)   # 30.10.2026 (simint.gd)
+	testen_stoer.set_meta("always", true)
+	sub_bodies.append(testen_stoer)
+	testen_stoer.add_child(UI.small("Wie bei echter Hardware: MoveEye stoppt die Servos, meldet die Störung im Fehlerspeicher (Servo-Diagnose) und braucht bei Treiber-Fehlern «Freigeben»."))
+	simint.add_info(testen_stoer, UI)
 	tl = UI.sub_fold(tl_main, "Diebstahlschutz prüfen (Referenz-Scan, Sabotage, Überraschung)", false)
 	tl.set_meta("always", true)
 	sub_bodies.append(tl)
@@ -4762,7 +4781,7 @@ func _build_ui() -> void:
 		if c.group == "Testlauf" and testen_measure != null:   # 3D-4.x: into the card «Testen» (no own card «Testlauf» any more)
 			if c.id in ["testrun_plan", "testrun_start"]:
 				continue                                 # the card has its own row «plan + Testlauf starten»
-			var tgt: VBoxContainer = testen_rec if c.id.begins_with("rec_") else testen_measure
+			var tgt: VBoxContainer = testen_rec if c.id.begins_with("rec_") else (testen_stoer if c.id.begins_with("stoer_") and testen_stoer != null else testen_measure)
 			var k0 := ui_items.size()
 			_ui_control(tgt, c)
 			for i in range(k0, ui_items.size()):

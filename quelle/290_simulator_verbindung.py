@@ -31,7 +31,11 @@ class SimThermalSource:
         return r[0]
 
     def read(self):
-        wait = (1.0 / sim_cam_fps(1) if sim_eco_now() else 0.12) - (time.time() - self.t)
+        try:                                             # 557: the model of the simulator (Thermal-90: 15 fps like the driver, 080)
+            fps_ = max(2.0, min(25.0, float(((SIM.get("info") or {}).get("thermal") or {}).get("fps") or 8.0)))
+        except (TypeError, ValueError):
+            fps_ = 8.0
+        wait = (1.0 / sim_cam_fps(1) if sim_eco_now() else 1.0 / fps_ - 0.005) - (time.time() - self.t)
         if wait > 0:
             time.sleep(wait)
         self.t = time.time()
