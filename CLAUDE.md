@@ -37,6 +37,12 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   Stand 29.10.2026 17:40: **Camera Module 3 NoIR ist da und läuft** am Pi 5 (192.168.1.56, Videoquelle «Raspberry Pi camera»,
   ab 2.98.24). Noch fehlend: Wärmebild, Servos, Licht, Ton, Akku.
 
+## Schwerpunkte (Antworten Daniel, 30.10.2026 11:12)
+
+- MoveEye im Alltag: keine besonderen Störungen genannt.
+- Nächste Wochen: vor allem **Entwicklung und Tests mit dem Simulator** (Hardware folgt).
+- Simulator: **Realismus, Spielspass und Bedienung** gleich wichtig (Tempo nicht erste Priorität).
+
 ## Offene Aufträge (Stand 30.10.2026 05:30, MoveEye 2.98.45 / Simulator 3D-4.16)
 
 - Wartet auf Daniel: Hardware-Tests; Gehäuse Variante 2 (Modell-ZIP); Tailscale Funnel fürs Online-Spiel (Entscheid);
