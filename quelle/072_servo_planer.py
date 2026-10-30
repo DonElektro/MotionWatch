@@ -26,7 +26,7 @@
 # Fault memory, operating hours, degrees and moves per axis: part 074 (servo_diag_*).
 # ----------------------------------------------------------------------------
 for _k, _v in {"servo_vmax_pan": 120.0, "servo_vmax_tilt": 90.0, "servo_acc_pan": 360.0, "servo_acc_tilt": 300.0,
-               "servo_estop": False, "servo_estop_by": "", "servo_estop_park": False, "servo_uv_stop": True,
+               "servo_estop": False, "servo_estop_by": "", "servo_stop_btn": True, "servo_estop_park": False, "servo_uv_stop": True,
                "servo_wd_s": 10.0}.items():
     CFG.setdefault(_k, _v)
     DEFAULTS.setdefault(_k, _v)
@@ -548,6 +548,8 @@ def servo_state(lang=None):
             "target": [round(float(CFG["pan"]), 2), round(float(CFG["tilt"]), 2)], "moving": SRV["moving"],
             "blocked": servo_blocked(), "text": servo_blocked_text(lang), "estop": bool(CFG.get("servo_estop")),
             "estop_by": CFG.get("servo_estop_by") or "", "fault": SRV["fault"], "inhibit": SRV["inhibit"],
+            # 2.98.43 (Daniel): «⏹ Stopp» on the live page only with a head and when not switched off
+            "stop_btn": bool(CFG.get("servo_stop_btn", True)) and bool(globals().get("live_has_head", lambda: True)()),
             "limits": [[round(plo, 1), round(phi, 1)], [round(tlo, 1), round(thi, 1)]],
             "limits_deg": [float(CFG["pan_limit"]), float(CFG["tilt_limit"])],
             "vmax": [float(CFG["servo_vmax_pan"]), float(CFG["servo_vmax_tilt"])], "acc": [float(CFG["servo_acc_pan"]), float(CFG["servo_acc_tilt"])],

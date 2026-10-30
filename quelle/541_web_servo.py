@@ -282,7 +282,7 @@ SERVO_LIVE_JS = r"""<script>
       bar.appendChild(tx);
       if (s.blocked !== "inhibit") { const r = document.createElement("button"); r.type = "button"; r.textContent = "✅ " + T("Release"); r.style.cssText = "background:#fff;color:#b62324;font-weight:700"; r.onclick = release; bar.appendChild(r); }
     } else if (bar) bar.hidden = true;
-    const st = document.getElementById("srv-stop"); if (st) st.disabled = s.blocked === "estop";
+    const st = document.getElementById("srv-stop"); if (st) { st.disabled = s.blocked === "estop"; st.parentNode.hidden = s.stop_btn === false; }
     const d = s.driver || {};
     if (line) line.textContent = d.kind === "manual" ? "🎮 " + TF("The head is steered by: {who}", {who: d.label}) + (s.mine ? " (" + T("you") + ")" : "")
       : d.kind === "auto" ? "🤖 " + TF("The head moves by itself: {what}", {what: d.label}) : "";

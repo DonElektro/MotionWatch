@@ -6267,7 +6267,7 @@ def thermal_gpios():
 # Fault memory, operating hours, degrees and moves per axis: part 074 (servo_diag_*).
 # ----------------------------------------------------------------------------
 for _k, _v in {"servo_vmax_pan": 120.0, "servo_vmax_tilt": 90.0, "servo_acc_pan": 360.0, "servo_acc_tilt": 300.0,
-               "servo_estop": False, "servo_estop_by": "", "servo_estop_park": False, "servo_uv_stop": True,
+               "servo_estop": False, "servo_estop_by": "", "servo_stop_btn": True, "servo_estop_park": False, "servo_uv_stop": True,
                "servo_wd_s": 10.0}.items():
     CFG.setdefault(_k, _v)
     DEFAULTS.setdefault(_k, _v)
@@ -6789,6 +6789,8 @@ def servo_state(lang=None):
             "target": [round(float(CFG["pan"]), 2), round(float(CFG["tilt"]), 2)], "moving": SRV["moving"],
             "blocked": servo_blocked(), "text": servo_blocked_text(lang), "estop": bool(CFG.get("servo_estop")),
             "estop_by": CFG.get("servo_estop_by") or "", "fault": SRV["fault"], "inhibit": SRV["inhibit"],
+            # 2.98.43 (Daniel): «⏹ Stopp» on the live page only with a head and when not switched off
+            "stop_btn": bool(CFG.get("servo_stop_btn", True)) and bool(globals().get("live_has_head", lambda: True)()),
             "limits": [[round(plo, 1), round(phi, 1)], [round(tlo, 1), round(thi, 1)]],
             "limits_deg": [float(CFG["pan_limit"]), float(CFG["tilt_limit"])],
             "vmax": [float(CFG["servo_vmax_pan"]), float(CFG["servo_vmax_tilt"])], "acc": [float(CFG["servo_acc_pan"]), float(CFG["servo_acc_tilt"])],
@@ -54381,7 +54383,7 @@ SERVO_LIVE_JS = r"""<script>
       bar.appendChild(tx);
       if (s.blocked !== "inhibit") { const r = document.createElement("button"); r.type = "button"; r.textContent = "✅ " + T("Release"); r.style.cssText = "background:#fff;color:#b62324;font-weight:700"; r.onclick = release; bar.appendChild(r); }
     } else if (bar) bar.hidden = true;
-    const st = document.getElementById("srv-stop"); if (st) st.disabled = s.blocked === "estop";
+    const st = document.getElementById("srv-stop"); if (st) { st.disabled = s.blocked === "estop"; st.parentNode.hidden = s.stop_btn === false; }
     const d = s.driver || {};
     if (line) line.textContent = d.kind === "manual" ? "🎮 " + TF("The head is steered by: {who}", {who: d.label}) + (s.mine ? " (" + T("you") + ")" : "")
       : d.kind === "auto" ? "🤖 " + TF("The head moves by itself: {what}", {what: d.label}) : "";
@@ -68392,6 +68394,7 @@ SLIDERS.extend([
 TOGGLES.extend([
     (_SVS, "servo_estop_park", "Emergency stop: brake, then drive slowly to the parking position (otherwise: hold where it stopped)"),
     (_SVS, "servo_uv_stop", "Under-voltage: stop the servos (they move again by themselves 30 s after it is over)"),
+    (_SVS, "servo_stop_btn", "Show the «⏹ Stop» button on the live page (only with a pan / tilt head)"),
 ])
 TEXTS.extend([
     (_KS, "kopf_park_point", "Parking position: a taught point (instead of pan / tilt above)", "enum", "kopf_park_point"),
@@ -79215,7 +79218,10 @@ for _k, _v in _HX_SERVO.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 WEB_PAGE = WEB_PAGE.replace("<!--SERVOJS-->", servo_live_js(), 1)       # the script of 539 with the German texts
 _HX_BILDLADE = {'Picture is loading – tap to reload': ('Bild wird geladen – tippen zum Neuladen', 'Image en cours de chargement – touchez pour recharger',
-                                                      'Immagine in caricamento – tocca per ricaricare', 'Il maletg chargia – tutgar per chargiar danovamain')}
+                                                      'Immagine in caricamento – tocca per ricaricare', 'Il maletg chargia – tutgar per chargiar danovamain'),
+                'Show the «⏹ Stop» button on the live page (only with a pan / tilt head)': ('«⏹ Stopp» auf der Live-Seite zeigen (nur mit Schwenkkopf)',
+                    'Afficher le bouton «⏹ Stop» sur la page en direct (seulement avec tête orientable)', 'Mostra il pulsante «⏹ Stop» nella pagina live (solo con testa orientabile)',
+                    'Mussar il buttun «⏹ Stop» sin la pagina live (mo cun chau pivotabel)')}
 for _k, (_de, _fr, _it, _rm) in _HX_BILDLADE.items():
     DE.setdefault(_k, _de)
     for _l, _v in (("fr", _fr), ("it", _it), ("rm", _rm)):
