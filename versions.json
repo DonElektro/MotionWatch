@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 09:58",
+ "generated": "2026-10-30 12:42",
  "versions": [
   {
-   "version": "2.98.46",
-   "file": "webcam_bewegung_2_98_46.py",
+   "version": "2.98.47",
+   "file": "webcam_bewegung_2_98_47.py",
    "url": "",
-   "sha256": "1234f3afd65bdbd893afb16c19c13bc20779578b187d43681f6842b1eb9c6cf4",
-   "date": "2026-10-30 09:57",
-   "notes": "Sim-Kompakt (Live-Seite mit Simulator: zwei Bilder, Kopf- und Rover-Stick, Kacheln), MoveEye als KI-Wächter, Stopp im Simulator ausgeblendet, Stange-Regler, Aufklapp-Knöpfe zeigen den Zustand blau (Reihenfolge zu · Gruppen · auf), Simulator 3D-4.17 mit Spiel-Balance",
-   "sig": "5e33c4e225ff8141059dea33e94d8ee92c2adfaf20c07d5b394e7ee26d69a9a66ba16180d604787d1a8020974c2250e627b0fdecbdc38f5689fd382d44a22b00"
+   "sha256": "1a0284258846106258f8c6bf717ca21551c22cc34f8e7b3623905857b1cf0b63",
+   "date": "2026-10-30 12:42",
+   "notes": "Weitwinkel-Kamera (Montage im Simulator, Übersicht lenkt den Kopf automatisch, IR breit Kanal 4), Werte aus dem Simulator (Akku, Uhr, Ort/Wetter, Pi-Wärme, Netz-Ausfall, 🧪), Verfolgungs-Parcours (Kachel 🎯: Regler, A/B, Auto-Tuning-Vorschlag), Online-Spiel über Tailscale Funnel (nur Spiel öffentlich, nur Admin mit Passwort, geht von selbst aus), neue Szenen, Simulator 3D-4.18",
+   "sig": "ec34551c47456045411f45e7a5a26e86a1c96d93b007784f857e69d4a5afff5da3bc39aea5bf80644e6351b753aaf02cfe7abdb469eac324c5acce6bd646ca0a"
   },
   {
    "version": "2.97.1",

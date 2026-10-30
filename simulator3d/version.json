@@ -1,7 +1,7 @@
 {
- "version": "3D-4.17",
+ "version": "3D-4.18",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31728413,
- "sha256": "d9df10ca32b9a1e7c4c06de6cd535447517abb308d862d7af51a5b7573f2511a",
- "notes": "MoveEye als KI-Wächter, Stange-Regler, /sim-Bild ohne Einblendungen, Spiel-Balance (neutrale Schüsse, eine Punkte-Regel, Startschutz, zwei Stufen, Verzögerungsausgleich, Profil echte Hardware, Sieger pro Rolle)"
+ "size": 31824294,
+ "sha256": "72a78258f5646011f945d8f3c156b6acab54c5351ddbd383ffee9709407188ef",
+ "notes": "Weitwinkel-Kamera mit Montage, Simulator-Werte (Akku, Uhr, Ort/Wetter, Pi-Wärme, Netz-Ausfall), Verfolgungs-Parcours mit «Entkomme der Kamera», neue Szenen Voller Campingplatz / Tarnen und Kriechen / Velodieb, Aufklapp-Knöpfe wie MoveEye"
 }

@@ -1,10 +1,10 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 30.10.2026 · Simulator-Version **3D-4.17** · passende MoveEye-Version (früher Motion Watch) **2.96.2**
+Stand: 30.10.2026 · Simulator-Version **3D-4.18** · passende MoveEye-Version (früher Motion Watch) **2.96.2**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
-## NEU (Entwurf): Neue Szenen (szenenplus.gd, Branch wt-szenen)
+## NEU in 3D-4.18 (MoveEye 2.98.47): Neue Szenen (szenenplus.gd, Branch wt-szenen)
 
 - `scripts/szenenplus.gd` (Knoten `szenen` in main.gd) baut drei Szenen (statisch `build_scene`, aus scenes.gd): **Voller
   Campingplatz** (`camping_voll`: dein Platz mit Pfosten und Seil vorne, Weg, Nachbarreihe, WC-Haus, Spielwiese),
@@ -22,7 +22,7 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
   `szene_tarnen`, `szene_velo`); Tarnkleidung wirkt in «Tarnen» stärker (0.6 statt 0.8), Bots nehmen dort immer ein Ding;
   in «Velodieb» immer das Velo, beim Greifen meldet der Velo-Sensor.
 
-## NEU (Entwurf): Simulator-Werte für MoveEye (power.gd, Branch wt-simwerte)
+## NEU in 3D-4.18 (MoveEye 2.98.47): Simulator-Werte für MoveEye (power.gd, Branch wt-simwerte)
 
 - `scripts/power.gd` (Knoten `simwerte` in main.gd): simulierter USV-HAT (2 × 18650, Kapazität pro Zelle, Ladung jetzt,
   Netzteil, Solarpanel-Watt; Verbrauch aus Pi + CPU von MoveEye + Servos + Licht + Ton, Laden mit `solar_reading()`, Kälte senkt
@@ -31,7 +31,7 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
 - `world_reply()` hängt `simwerte.reply()` an: `battery`, `pi_temp`, `net`, `clock` (date, hour, speed, tz_h), `place`
   (lat, lon, name wie `sun_pos`), `forecast` (gust_kmh, weather, storm, tmax, tmin). MoveEye: Teil 285.
 - Regler: Karte Sensoren → «Akku und Strom» (mit Statuszeile) und «Netz-Ausfall testen» (auch in der Simulator-Steuerung von MoveEye).
-## NEU (Entwurf, Branch wt-parcours): Verfolgungs-Parcours (`parcours.gd`, Plan `docs/Verfolgungs_Parcours.md`)
+## NEU in 3D-4.18 (MoveEye 2.98.47): Verfolgungs-Parcours (`parcours.gd`, Plan `docs/Verfolgungs_Parcours.md`)
 
 - Szene `parcours` (Wiese, Distanzmarken 5/10/20/40 m, Busch, Zelt, Auto, Baum, Ring 8 m schaltbar), gebaut von
   `parcours.build_scene` (Aufruf in `scenes.gd`). Lektionen 1–7 als Puppen-Besucher (`actor.puppet`) mit festen Wegen, 8 = nachts mit IR.
