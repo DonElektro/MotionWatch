@@ -125,8 +125,11 @@ def _app_srv_win(self, page="teach"):
     tv.pack(fill="both", expand=True, pady=(6, 4))
 
     def sel():
-        s = tv.selection()
-        return int(s[0]) if s else None
+        try:
+            s = tv.selection()
+            return int(s[0]) if s else None
+        except (TypeError, ValueError, IndexError):
+            return None
 
     def ed(op_, val=None):
         i = sel()

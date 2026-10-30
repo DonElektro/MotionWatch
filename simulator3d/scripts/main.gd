@@ -2544,7 +2544,8 @@ func world_reply() -> Dictionary:
 			"weather": weather, "humidity": humidity, "mover": mover_on,
 			"pc_cpu": snappedf(mini_box.own["pc"], 0.1) if mini_box != null and float(mini_box.own["pc"]) >= 0.0 else null,
 			"sim_cpu_own": snappedf(mini_box.own["sim"], 0.1) if mini_box != null and float(mini_box.own["sim"]) >= 0.0 else null,
-			"cores": OS.get_processor_count(), "mw_cmd": mw_cmd if not mw_cmd.is_empty() else null}
+			"cores": OS.get_processor_count(), "mw_cmd": mw_cmd if not mw_cmd.is_empty() else null,
+			"head_deg": [snappedf(-rad_to_deg(head.rotation.y), 0.01), snappedf(rad_to_deg(head_pitch.rotation.x) + 6.0, 0.01)] if head != null else null}   # MoveEye 2.98.35: where the head really is (servo diagnosis)
 
 
 var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}

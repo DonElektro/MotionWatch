@@ -349,7 +349,8 @@ def servo_routes(app, reply, body):
             d = body(); lang = norm_lang(d.get("lang") or lang)
             res, code = servo_api_op(d, servo_client(request, d), getattr(g, "role", "admin") == "admin", lang)
             return reply(res, code)
-        out = dict(servo_state(lang), ok=True, points=teach_list(lang), me=servo_client(request)[0], me_label=servo_client(request)[1])
+        out = dict(servo_state(lang), ok=True, points=teach_list(lang), me=servo_client(request)[0], me_label=servo_client(request)[1],
+                   sim_head=SIM.get("head") if CFG.get("sim_on") else None)
         if request.args.get("diag") == "1":
             out["diag"] = servo_diag_state(lang)
         if request.args.get("trace") is not None:

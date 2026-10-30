@@ -42,6 +42,9 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `067_speicherkarte.py` | Speicherkarte schonen: Schreibmenge pro Tag, Dateisystem-Fehler, Schreibschutz (Overlay) | 267 |
 | `068_pruefstand_pushes.py` | Prüfstand: die letzten Push-Nachrichten für den Simulator (echte Pushes zählen statt Flackern) | 17 |
 | `070_hardware_servos_licht.py` | Servos, PCA9685, Mover, Licht, Disco-Licht | 398 |
+| `072_servo_planer.py` | Ein Bewegungsplaner für die Servos (Rampen, beide Achsen gemeinsam), Not-Aus / Freigeben, Störung, Unterspannung, Watchdog, Grenzen, wer steuert | 595 |
+| `074_servo_diagnose.py` | Servo-Diagnose: Fehlerspeicher, Betriebsstunden, Grad und Bewegungen pro Achse, Wartungshinweise, Export | 260 |
+| `076_teach_punkte.py` | Teach-in: benannte Positionen (= Wegpunkte), genau anfahren, ordnen, Park- / Grundstellung | 205 |
 | `080_waermebild_modul.py` | Treiber Wärmebild-Modul, Klasse Hardware | 281 |
 | `090_system_fern_sichtungen.py` | System, Fernzugriff, Sichtungen, Nachtbericht, Gast-Zugang | 465 |
 | `100_akku.py` | Akku / USV, Systemüberwachung | 417 |
@@ -112,12 +115,14 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `585_fenster_guide2.py` | Fenster: Guide 2 – Einrichtung, Rundgang pro Reiter (Rahmen + Textfeld), «?» bei Einstellungen, Tipp des Tages, Werkseinstellungen | 420 |
 | `586_guide2.py` | Guide 2: Zustand der Einrichtung (CFG guide2), Schritte und Hardware, Einfach/Experte pro Seite, Hilfetexte, Tipp des Tages, «Auf Werkseinstellungen zurücksetzen» (Kopie, was bleibt / gelöscht wird) | 480 |
 | `633_uebersetzungen_guide2.py` | Übersetzungen und Anleitungs-Kapitel «Einrichtung, Rundgänge und Tipps» zu Guide 2 | 330 |
+| `634_uebersetzungen_servo.py` | Übersetzungen Servo-Bewegung, Not-Aus, Teach-in, Diagnose | 156 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |
 | `535_web_erkennung.py` | Web: Gehtest (Live, Schutz), Akku-Sparen auf der Schutz-Seite | 119 |
 | `536_web_live_ansicht.py` | Web: Live-Seite nach Format (Hoch / Quer / nur Bild), «Ansicht» (Vorlagen, Bildgrösse, Lieblingsknöpfe, Karten, Bearbeiten), Joystick nur mit Kopf (`live_has_head`) | 488 |
 | `537_web_platz.py` | Web: Seite «Platz einrichten» (/place), Karte auf der Schutz-Seite, Angebot nach dem Hinstellen, Blickwinkel in Kamera / Servos | 420 |
+| `539_web_servo.py` | Web: Seite «Servos» (/servo, /api/servo): Not-Aus / Freigeben, wer steuert, Teach-in, Diagnose mit Export; Not-Aus auf der Live-Seite | 368 |
 | `538_web_controller_ansicht.py` | Web: «Controller-Ansicht» der Live-Seite für Handy / Tablet (Live- + Simulator-Bild, Game-Controller, Gesten, schmale Leiste) | 383 |
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
 | `545_simulator_updates.py` | Simulator-Updates: ein Besitzer («Neue Versionen» im Simulator) | 72 |
@@ -132,6 +137,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `573_app_schluessel.py` | «App-Schlüssel» für andere Programme (nur als Hash gespeichert, auch über http, nie Sicherheits-Funktionen) und «Sicherheit an einem Ort» (Passwort, Benutzer, App-Schlüssel, Sicherheits-Check unter Einstellungen → Sicherheit; Web und Fenster) | 380 |
 | `574_anmelden_verschluesselt.py` | «Anmelden nur verschlüsselt»: das Web-Passwort nur über https, vom Gerät selbst oder Tailscale; Hinweis-Seite, Rückfall ohne https (Web und Fenster) | 235 |
 | `583_kopf_auto_einstellungen.py` | Einstellungen «Automatische Kopfbewegung» (Web und Fenster), Servo-Art, Übersichtskamera, Selbsttest | 92 |
+| `588_fenster_servo.py` | Einstellungen «Servo-Bewegung & Sicherheit», Fenster «Servos» (Not-Aus, Teach-in, Diagnose), Not-Aus in der Kamerasteuerung | 296 |
 | `584_info_rueckmeldung.py` | Rückmeldung von überall (💬 auf jeder Seite /fbx/ui.js, Fenster, 3D-Simulator; Art, Sterne, Bildschirmfoto, wartende Nachrichten, Test-Feedback) und «Über MoveEye» (Geschichte, Zeitleiste, Zahlen) | 420 |
 | `622_uebersetzungen_info.py` | Übersetzungen und Anleitung (fr / it / rm) zu 584 | 110 |
 | `587_qr_codes.py` | QR-Codes neben Links (qrBtn / qrShow für alle Seiten, POST /api/qr), «QR-Codes» unter Mehr (/qr), Druckseite A4, Fenster-Dialog und -Galerie | 628 |

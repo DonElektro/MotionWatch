@@ -408,7 +408,9 @@ def servo_release(by="web"):
     if isinstance(by, (tuple, list)) and len(by) == 2:
         servo_driver_note(by, "release"); by = by[1]
     if SRV["inhibit"] == "uv":
-        return False, "under-voltage is still there - check the power supply first"
+        if SRV["test_uv"] or ((STATE.get("supply") or {}).get("uv_now") and not CFG.get("sim_on")):
+            return False, "under-voltage is still there - check the power supply first"
+        SRV["inhibit"] = ""; SRV["uv_last"] = 0.0           # it is over: «Freigeben» need not wait the 30 s
     was = servo_blocked()
     if not was:
         return True, ""
