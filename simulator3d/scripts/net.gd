@@ -245,6 +245,7 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 			c["fps"] = clampf(fv, 1.0, 12.0)
 			main.view_fps = c["fps"]
 			c["stream_cam"] = 3
+			c["dock"] = str(query.get("dock", "")) == "1"   # 3D-4.x: MoveEye's simulator page: only the 3D view and the dock (padview.gd)
 			var hv := "HTTP/1.1 200 OK\r\nContent-Type: multipart/x-mixed-replace; boundary=%s\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n" % BOUNDARY
 			var ov: PackedByteArray = c["out"]
 			ov.append_array(hv.to_utf8_buffer())
@@ -294,6 +295,8 @@ func _stream_tick(c: Dictionary) -> void:
 		return
 	if cam == 3:
 		main.view_want_t = main.now()
+		if bool(c.get("dock", false)) and main.padview != null:
+			main.padview.dock_t = main.now()
 	var n: int = main.view_no if cam == 3 else main.frame_no[cam]
 	if n == c["last_frame"]:
 		return

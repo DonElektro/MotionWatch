@@ -347,6 +347,8 @@ func _rotate() -> void:
 	next_txt = ""
 	if rotate == "off" or not main.game_mode in ["guard", "seek"]:
 		return
+	if game.kig != null and (game.kig.active or bool(main.game_kiguard)):
+		return                                             # «MoveEye als KI-Wächter»: everybody stays sneaker (roles in turn pause)
 	var cands := []
 	for p in game.players:
 		if p != null and str(p.get("kind", "phone")) != "bot" and p["role"] in ["runner", "guard"]:

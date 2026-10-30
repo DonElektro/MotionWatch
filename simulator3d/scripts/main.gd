@@ -58,6 +58,7 @@ var game_daily := false               # 3D-3.77: the challenge of the day
 var game_ghost := true                # 3D-3.77: the ghost of the own best way
 var game_heart := true                # 3D-3.77: heartbeat when the camera nearly sees you
 var game_botguard := true             # 3D-4.x: «Wächter» without a person as guard: a bot guards (gamebots.gd)
+var game_kiguard := false            # 3D-4.x: «MoveEye als KI-Wächter» (gamekiwaechter.gd) - not saved, only for this session
 var localplay                         # 3D-3.77: localplay.gd - play here at the PC
 var headpad                           # 3D-3.77: headpad.gd - steer the head of MoveEye
 var templates                         # 3D-3.82: templates.gd - «Vorlagen»: scenes, places, kits, own 3D files
@@ -214,6 +215,8 @@ var detail_nrm: NoiseTexture2D
 var head: Node3D
 var rig: Node3D                       # from 3D-3.11: the base of MoveEye - stands still, or drives as the mover
 var chassis: Node3D
+const MAST_MIN := 0.4                  # 3D-4.x: the limits of the pole (dock slider toolbar.gd, set_mast, the page of MoveEye)
+const MAST_MAX := 4.0
 var mast_h := HEAD_H                  # 3D-3.57: length of the pole with the camera head (m), adjustable (Mover, Erkunden)
 var mast_pole: MeshInstance3D
 var mover_on := false                 # «Mover simulieren»: a tracked vehicle under MoveEye, driven by its second stick
@@ -1056,7 +1059,7 @@ func _build_head() -> void:
 
 func set_mast(h: float) -> void:
 	"""3D-3.57: the length of the pole (height of the camera head above the ground / the rover)"""
-	mast_h = clampf(h, 0.4, 4.0)
+	mast_h = clampf(h, MAST_MIN, MAST_MAX)
 	if head != null:
 		head.position.y = mast_h
 	if mast_pole != null:
@@ -3140,6 +3143,8 @@ func _simple_ok(c: Dictionary) -> bool:
 	the game assistant; everything else is «Experte»"""
 	if c.group == "Spiel":
 		return c.id in GAME_MAIN
+	if c.id == "mast_h":
+		return true                                   # 3D-4.x: the height of the pole - easy to find (wish of Daniel)
 	if c.group == "System":
 		return c.id in ["update_mode", "kids_ask"]
 	if not c.group in SIMPLE_GROUPS:
@@ -3318,7 +3323,7 @@ func _register_controls() -> void:
 	add_control("select", "patrol_judge", "Spiel «Patrouille»: wer erwischt", func(): return patrol_judge, func(v): patrol_judge = str(v), "Mover",
 			{"options": [["mw", "die echte Erkennung von MoveEye"], ["sim", "der Wächter des Simulators (geht ohne Pi)"]]})
 	add_control("button", "rover_place", "📍 Rover versetzen – danach in die Welt klicken (beim Erkunden: Strg + Klick)", null, func(): place_kind = "rover", "Mover")
-	add_control("slider", "mast_h", "Stangenlänge (Höhe des Kamerakopfs; beim Erkunden Bild auf / ab oder Steuerkreuz)", func(): return mast_h, func(v): set_mast(float(v)), "Mover", {"min": 0.4, "max": 4.0, "step": 0.1, "unit": "m"})
+	add_control("slider", "mast_h", "Stangenlänge (Höhe des Kamerakopfs; beim Erkunden Bild auf / ab oder Steuerkreuz)", func(): return mast_h, func(v): set_mast(float(v)), "Mover", {"min": MAST_MIN, "max": MAST_MAX, "step": 0.05, "unit": "m", "live": true})
 	add_control("button", "pad_roles", "🎮 Controller zuteilen (mehrere Controller: Wächter, Schleicher, Rover)", null, func(): padmap.open_roles(), "Mover", {"sub": "Controller"})
 	add_control("button", "pad_test", "🎮 Controller testen (zeigt Stick roh und nach der Drift-Korrektur)", null, func(): _pad_test(), "Mover", {"sub": "Controller"})
 	add_control("toggle", "pad_auto", "Stick-Drift selbst lernen (ein Stick, der 3 s genau gleich steht, gilt als Ruhelage)", func(): return pad_auto, func(v): pad_auto = v; _settings_dirty = true, "Mover", {"sub": "Controller"})
@@ -3401,6 +3406,9 @@ func _register_controls() -> void:
 	add_control("toggle", "game_ghost", "Geisterläufer: der eigene beste Weg läuft als Geist mit (nur die Spieler sehen ihn)", func(): return game_ghost, func(v): game_ghost = v, "Spiel")
 	add_control("toggle", "game_heart", "Herzschlag, wenn die Kamera dich gleich sieht (Handy vibriert)", func(): return game_heart, func(v): game_heart = v, "Spiel")
 	add_control("toggle", "game_botguard", "Bot-Wächter, wenn niemand Wächter sein will (Spielart «Wächter»)", func(): return game_botguard, func(v): game_botguard = v, "Spiel")
+	add_control("toggle", "game_kiguard", "🤖 MoveEye als KI-Wächter (Runden mit Wächter: MoveEye bewacht selbst – echte Erkennung, Kopf folgt, Auslöser-Autopilot; braucht MoveEye)",
+			func(): return game_kiguard, func(v): game_kiguard = bool(v), "Spiel")
+	add_control("button", "game_kig_reset", "Liste «gegen die KI» zurücksetzen", null, func(): if game != null: game.kig.command({"op": "reset"}), "Spiel")
 	add_control("button", "game_local", "Hier am PC mitspielen (Tastatur, Maus oder Controller)", null, func(): localplay.start("runner"), "Spiel")
 	add_control("button", "game_local_guard", "Hier am PC Wächter sein (Kopf drehen, «Erwischt!»)", null, func(): localplay.start("guard"), "Spiel")
 	add_control("toggle", "game_tasks", "Aufgabe für jede Runde (z. B. nur kriechend ins Ziel, Bonus)", func(): return game_tasks, func(v): game_tasks = v, "Spiel")
@@ -3855,6 +3863,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true}
 	elif a == "game_compare":                          # 3D-4.x: «Mensch gegen KI» (gamecompare.gd) - state / start / stop
 		return game.cmp.command(d) if game != null and game.cmp != null else {"ok": false, "error": "not supported"}
+	elif a == "game_kig":                              # 3D-4.x: «MoveEye als KI-Wächter» (gamekiwaechter.gd): info / set / reset
+		return game.kig.command(d) if game != null and game.kig != null else {"ok": false, "error": "no game"}
 	elif a == "game_shut":                             # 3D-4.x: «Auslöser» (gameshutter.gd) - info / aim / fire, for tests
 		return game.shut.command(d) if game != null and game.shut != null else {"ok": false, "error": "no game"}
 	elif a == "game_tool":                             # 3D-4.x: a tool of the guard (gametools.gd): {tool, slot} or {op: "info"}
@@ -6959,6 +6969,8 @@ func view_request(q: Dictionary) -> void:
 		view_clean_t = now()                    # 3D-3.67: MoveEye shows the picture in full screen: no rover stick
 	if str(q.get("bare", "")) == "1" and padview != null:
 		padview.bare_t = now()                  # «Controller-Ansicht»: the picture without the buttons of the window
+	if str(q.get("dock", "")) == "1" and padview != null:
+		padview.dock_t = now()                  # 3D-4.x: MoveEye's simulator page: only the 3D view and the dock (padview.gd)
 const VIEW_KEYS := {"ArrowUp": KEY_UP, "ArrowDown": KEY_DOWN, "ArrowLeft": KEY_LEFT, "ArrowRight": KEY_RIGHT, "w": KEY_W, "a": KEY_A,
 		"s": KEY_S, "d": KEY_D, "q": KEY_Q, "e": KEY_E, "r": KEY_R, "f": KEY_F, "PageUp": KEY_PAGEUP, "PageDown": KEY_PAGEDOWN,
 		"0": KEY_0, "1": KEY_1, "2": KEY_2, "3": KEY_3, "4": KEY_4, "5": KEY_5, "+": KEY_PLUS, "-": KEY_MINUS, "Shift": KEY_SHIFT, "p": KEY_P}
@@ -6993,6 +7005,10 @@ func _view_capture() -> void:
 		return
 	var vs: Vector2 = Vector2(remote_vp.size) if remote_vp != null else get_viewport().get_visible_rect().size
 	var k: float = float(img.get_width()) / maxf(1.0, vs.x)
+	if padview != null and padview.dock_compose():      # 3D-4.x: MoveEye's simulator page: only the 3D view and the dock
+		img = padview.compose(img, k)
+		if img == null:
+			return
 	var r := view_rect()
 	var rr := Rect2i(int(r.position.x * k), int(r.position.y * k), int(r.size.x * k), int(r.size.y * k)).intersection(Rect2i(Vector2i.ZERO, img.get_size()))
 	if rr.size.x < 16 or rr.size.y < 16:

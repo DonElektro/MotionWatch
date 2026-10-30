@@ -133,6 +133,7 @@ var cmp                                  # gamecompare.gd (3D-4.x): «Mensch geg
 var shut                                 # gameshutter.gd (3D-4.x): «Auslöser» - a person steers the camera and presses the shutter
 var rules                                # gamerules.gd (3D-4.x): roles in turn, fairness, infos for sneakers, winner screen
 var tools                                # gametools.gd (3D-4.x): the tools of the guard with energy and cooldowns
+var kig                                  # gamekiwaechter.gd (3D-4.x): «MoveEye als KI-Wächter» - MoveEye's AI takes the guard role
 var duel := {}                           # 3D-4.x: after a round with a guard: MoveEye against the guard
 var flag_res := {}                       # 3D-4.x: «Fahne erobern» is decided by the captures: {"caps", "win", "text"}
 var round_runners := 1                   # how many ran in this round (the score of the guard is per runner)
@@ -185,6 +186,10 @@ func _ready() -> void:
 	cmp.game = self
 	cmp.main = main
 	add_child(cmp)
+	kig = preload("res://scripts/gamekiwaechter.gd").new()
+	kig.game = self
+	kig.main = main
+	add_child(kig)
 
 
 func now() -> float:
@@ -1088,11 +1093,16 @@ func start_round() -> void:
 	if _b != "":                                           # 3D-3.88: no round in the middle of a measurement
 		main.start_info = "Spielrunde wartet: zuerst %s beenden" % _b
 		return
+	kig.round_start()                                      # «MoveEye als KI-Wächter»: the round becomes «Team gegen MoveEye»
 	var runners := 0
 	for p in players:
 		if p != null and p["role"] == "runner":
 			runners += 1
 	if runners == 0 and not team_mode():
+		if kig.active:                                     # nobody sneaks: the game type back
+			kig.active = false
+			main.game_mode = kig.mode_was
+			kig.mode_was = ""
 		return
 	sync_teams()                                           # 3D-4.x: teams only with «Fahne erobern» (and «Team gegen Team»)
 	if team_mode():                                        # team against team: one team guards, the other sneaks
@@ -1133,6 +1143,7 @@ func start_round() -> void:
 	_pick_task()
 	mwg = {"catches": 0, "false": 0, "t": 0.0, "names": [], "who": {}, "shut_pts": 0, "shut_hits": 0, "shut_miss": 0}
 	shut.round_start()
+	kig.after_start()                                      # the KI-Autopilot for the guards at MoveEye
 	last_minute = false
 	feed.clear()
 	news("▶ Die Runde beginnt")
@@ -1428,7 +1439,7 @@ func end_round() -> void:
 		voted[v[0]["slot"]] = v[1]
 	_board_load()
 	var day := daily_id()
-	var kih: bool = shut.ki.used_round()                  # KI-Hilfe (gamekihilfe.gd): no badges, XP, leaderboard
+	var kih: bool = shut.ki.used_round() or kig.active    # KI-Hilfe (gamekihilfe.gd) / KI-Wächter: no badges, XP, leaderboard
 	for p in players:
 		if p == null:
 			continue
@@ -1523,7 +1534,9 @@ func end_round() -> void:
 		p["susp"] = 0.0
 	if jaeger.on():                                        # the cases, the text of the end screen, the person figures back
 		jaeger.round_end()
-	if main.game_mode == "mwhand":                         # the guards at MoveEye
+	if main.game_mode == "mwhand" and kig.active:          # «MoveEye als KI-Wächter»
+		results.append(kig.guard_line(guard_score(mwg, missed)))
+	elif main.game_mode == "mwhand":                       # the guards at MoveEye
 		var mn: String = ", ".join(PackedStringArray(mwg["names"])) if not mwg["names"].is_empty() else "MoveEye"
 		var gm := guard_score(mwg, missed)
 		results.append({"n": "🛡 " + mn, "c": "#3b8cff", "info": "Wächter an MoveEye · " + str(gm[1]) + _shut_info(mwg),
@@ -1532,7 +1545,9 @@ func end_round() -> void:
 		var gb := guard_score(bots.guard, missed)
 		results.append({"n": bots.GUARD_NAME, "c": "#9aa7b8", "info": "Bot-Wächter · " + str(gb[1]), "score": int(gb[0])})
 	results.sort_custom(func(x, y): return x["score"] > y["score"])
-	if kih:
+	if kig.active:
+		kig.mark_results(results)                          # its own list «gegen die KI»
+	elif kih:
 		shut.ki.mark_results(results)
 	var adapt: Array = bots.round_end(results)             # 3D-4.x: the bots adapt their skill
 	for ad in adapt:
@@ -3188,6 +3203,7 @@ func spectator_info() -> Dictionary:
 	if not bots.guard.is_empty():
 		d["botg"] = {"catches": int(bots.guard["catches"]), "false": int(bots.guard["false"])}
 	d["sprint"] = sprint()
+	d["kig"] = kig.info()                                  # «MoveEye als KI-Wächter»: switch, list «gegen die KI»
 	d["px"] = plus.spec_info()                             # 3D-4.x: weather change, theft, learning points
 	d["rules"] = rules.spec_info()                         # 3D-4.x: fairness, next guard, winner screen
 	if main.game_mode == "mwhand":

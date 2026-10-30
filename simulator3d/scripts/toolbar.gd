@@ -20,6 +20,8 @@ var _sub: PanelContainer               # the open group menu
 var _sub_box: VBoxContainer
 var _sub_for := ""
 var _sub_btns := {}                    # id -> Button of the open menu
+var _mast_sl: HSlider                  # 3D-4.x: «Stange» - the height with the mouse (live)
+var _mast_l: Label
 var _sub_out_t := 0.0
 var _help: PanelContainer
 var _st := {}
@@ -46,7 +48,7 @@ const NAMES := {"patrol": ["Rover-Route starten", "Der Mover fährt MoveEye die 
 		"random": ["Zufällige Route", "Zufällige Route rund um MoveEye"],
 		"clear": ["Route löschen", "Route und Bereich löschen"],
 		"route": ["Route anzeigen", "Route und Bereich in der Welt zeigen"],
-		"mast_up": ["Stange + (höher)", "Kamerakopf 10 cm höher"], "mast_dn": ["Stange − (tiefer)", "Kamerakopf 10 cm tiefer"],
+		"mast_up": ["Stange + (höher)", "Kamerakopf 10 cm höher"], "mast_dn": ["Stange − (tiefer)", "Kamerakopf 10 cm tiefer"],  # + slider (_mast_row)
 		"v0": ["Frei (0)", "Frei herumfliegen"], "v1": ["Kamera 1 (1)", "Durch die Kopfkamera schauen"],
 		"v2": ["Kamera 2 (2)", "Durch die zweite Kamera schauen"], "v3": ["Wärmebild (3)", "Das Wärmebild gross"],
 		"map": ["Karte (M)", "Übersichtskarte oben links"], "live": ["Livebild (L)", "Livebild einer Kamera unter der Karte"],
@@ -219,6 +221,9 @@ func _open_sub(id: String, focus: bool) -> void:
 			b.set_meta("pad_back", func(): _close_sub(true))           # B of the controller (padmap.gd)
 			_sub_box.add_child(b)
 			_sub_btns[k] = b
+		_mast_sl = null
+		if id == "mast":
+			_mast_row()
 		_paint_sub()
 		_sub.visible = true
 		_sub.reset_size()
@@ -234,6 +239,50 @@ func _open_sub(id: String, focus: bool) -> void:
 		(_sub_btns.values()[0] as Button).grab_focus.call_deferred()
 
 
+func _mast_row() -> void:
+	"""3D-4.x (wish of Daniel): a slider for the height of the pole - drag with the mouse (or ◀ ▶ of the controller), the
+	head moves along live; the value in m. Limits = main.MAST_MIN … MAST_MAX (like set_mast and the page of MoveEye)."""
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 2)
+	_mast_l = Label.new()
+	_mast_l.add_theme_font_size_override("font_size", 13)
+	_mast_l.add_theme_color_override("font_color", Color.WHITE)
+	box.add_child(_mast_l)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	for tx in ["%.1f" % main.MAST_MIN, "", "%.1f m" % main.MAST_MAX]:
+		if tx == "":
+			_mast_sl = HSlider.new()
+			_mast_sl.min_value = main.MAST_MIN
+			_mast_sl.max_value = main.MAST_MAX
+			_mast_sl.step = 0.05
+			_mast_sl.value = main.mast_h
+			_mast_sl.custom_minimum_size = Vector2(170, 26)
+			_mast_sl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			_mast_sl.focus_mode = Control.FOCUS_ALL
+			_mast_sl.tooltip_text = "Höhe des Kamerakopfs: ziehen (oder ◀ ▶ am Controller)"
+			_mast_sl.value_changed.connect(func(v: float):
+				main.set_mast(v)
+				main._settings_dirty = true
+				_mast_text())
+			_mast_sl.set_meta("pad_back", func(): _close_sub(true))
+			row.add_child(_mast_sl)
+		else:
+			var l := Label.new()
+			l.text = tx
+			l.add_theme_font_size_override("font_size", 11)
+			l.add_theme_color_override("font_color", OFF)
+			row.add_child(l)
+	box.add_child(row)
+	_sub_box.add_child(box)
+	_mast_text()
+
+
+func _mast_text() -> void:
+	if _mast_l != null and is_instance_valid(_mast_l):
+		_mast_l.text = "Höhe: %.2f m" % main.mast_h
+
+
 func _close_sub(refocus: bool) -> void:
 	var id := _sub_for
 	_sub.visible = false
@@ -244,6 +293,11 @@ func _close_sub(refocus: bool) -> void:
 
 func _paint_sub() -> void:
 	_paint()
+	if _mast_sl != null and is_instance_valid(_mast_sl) and absf(_mast_sl.value - main.mast_h) > 0.001 and not _mast_sl.has_focus():
+		_mast_sl.set_value_no_signal(main.mast_h)       # changed elsewhere (Bild ↑↓, L2 + ✚, the page of MoveEye)
+		_mast_text()
+	elif _mast_sl != null and is_instance_valid(_mast_sl):
+		_mast_text()
 	for k in _sub_btns:
 		var b: Button = _sub_btns[k]
 		var on := bool(_st.get(k, false))
