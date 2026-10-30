@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.36"
+APP_VERSION = "2.98.37"
 
 
 def default_data_dir():
