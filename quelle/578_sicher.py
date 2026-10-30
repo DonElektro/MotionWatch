@@ -693,7 +693,7 @@ def sicher_selftest():
         assert sx_fmt_dur(125 * 60, "en") == "2 h 5 min." and "2 Std. 5 Min." == sx_fmt_dur(125 * 60, "de")
         CFG["push_pics"] = "text"; assert sx_push_jpg(b"x") is None
         CFG["push_pics"] = "with"; assert sx_push_jpg(b"x") == b"x"
-        assert dict(text_choice_pairs("push_pics")).keys() == {"with", "text"}
+        assert dict(text_choice_pairs("push_pics")).keys() >= {"with", "text"}     # 579a adds «small»
         assert any(x[1] == "rec_keep_days" for x in SLIDERS) and any(x[1] == "push_pics" for x in TEXTS)
         d = tempfile.mkdtemp(prefix="mw-sx-")
         CFG["record_dir"] = d

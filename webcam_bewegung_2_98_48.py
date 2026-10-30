@@ -50316,7 +50316,7 @@ async function build() {
     if (sec.id === "Timelapse") tlExtras(d);
     if (sec.id === "Microphone") micExtras(d);
     if (sec.id === "Updates") updExtras(d);
-    if (sec.id === "Notifications") wpExtras(d);
+    if (sec.id === "Notifications") { wpExtras(d); if (window.pushPanel) pushPanel(d, sec); }   // 531a: cards Kopf · Wohin · Was · Wann · Erweitert
     if (sec.id === "Backup") bkExtras(d);
     if (sec.id === "Theft protection") tpExtras(d);
     if (sec.id === "Reference scan") { const bx = el("div", "auxbox"); bx.append(el("div", "mut", t("refscan-note")));   // 2.95.97
@@ -52779,6 +52779,273 @@ SIM_PAGE = SIM_PAGE.replace("/*SIMMAP*/", SIMMAP_JS + SIMTOOLS_JS + SIMTUN_JS)
 WEB_PAGE = WEB_PAGE.replace("/*SIMMAP*/", SIMMAP_JS)
 
 
+# ----------------------------------------------------------------------------
+# Wish of Daniel (30.10.2026): the push section like the slim cards of the simulator panel (card «Spiel»: name, state,
+# the main buttons; details on demand). The generic rows of the section (530 build) are MOVED into the cards - their
+# handlers and the ctrl registry stay the same, nothing is built twice. Logic + /api/push: 579a; window: 571a; texts: 639a.
+#   Kopf       «Push senden», status line («2 Kanäle · Test ✓»), «Alle testen» (results below)
+#   Wohin      a card per channel (name, state, ▶ Test, switch; tap = its fields). Unused ones behind «+ Kanal hinzufügen».
+#              SMS: the section «SMS (LTE-Stick)» moves into its card (regroup hook below).
+#   Was        level (segment), pre-alarm, pictures (segment)
+#   Wann       the two pauses, quiet hours (time windows, «Personen trotzdem melden»), night time of the night report
+#   Erweitert  keyword (one field), buttons, symbols, page address, info messages, the message texts (section «Nachrichten-
+#              texte» moves here, one row per message), iPhone shortcuts (#scbox of 530)
+#   Moved out  «Alarmton im Browser» → the bell 🔔 at the top (a switch in its panel); «Doppelte Bestätigung» → Erkennung,
+#              device name → System (both server side in 579a).
+# Fields: «Löschen» is a small ✕ inside the field (secret fields: after a confirmation).
+# ----------------------------------------------------------------------------
+
+PUSH_CARDS_JS = r"""
+<style id="px-css">
+.px-h{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:16px 0 6px}
+.px-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px}
+.px-head .px-st{flex:1 1 140px;min-width:0;font-size:13px;color:var(--mut)}
+.px-head .px-st.ok{color:var(--grn)}
+.px-res{white-space:pre-line;font-size:12.5px;margin-top:4px}
+.pxc{border:1px solid var(--line);border-radius:12px;background:var(--field);margin:6px 0;overflow:hidden}
+.pxc-hd{display:flex;align-items:center;gap:8px;padding:7px 8px 7px 10px;cursor:pointer;min-height:40px}
+.pxc-hd .pxic{width:22px;text-align:center;flex:none}
+.pxc-hd .pxnm{flex:1;min-width:0;font-size:14px;line-height:1.2}
+.pxc-hd .pxnm small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pxc-hd .pxnm small.ok{color:var(--grn)}.pxc-hd .pxnm small.warn{color:var(--yel)}
+.pxc-hd .pxar{color:var(--mut);font-size:12px;flex:none;width:12px}
+.pxc.open .pxc-hd .pxar{transform:rotate(90deg)}
+.pxc-hd button.pxtest{padding:4px 9px;font-size:12px;flex:none}
+.pxc-b{padding:2px 10px 10px;border-top:1px solid var(--line)}
+.pxc-b .sl,.pxc-b .row{margin-top:6px}
+.pxc-b .auxbox{margin-top:8px}
+.px-note{font-size:12px;color:var(--mut);margin-top:6px}
+.px-add{margin-top:6px}.px-addm{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.px-seg{display:flex;width:100%;margin-top:4px}.px-seg button{flex:1;padding:7px 4px;font-size:12.5px;white-space:nowrap}
+.px-lbl{font-size:14px;margin-top:8px}
+.pxf{position:relative;display:block;margin-top:4px}
+.pxf>input{width:100%!important;margin-top:0!important;padding-right:34px!important;box-sizing:border-box}
+.pxx{position:absolute;right:3px;top:50%;transform:translateY(-50%);width:28px;height:28px;padding:0!important;border-radius:7px;font-size:13px;line-height:1;
+  background:transparent!important;border:0!important;color:var(--mut)}
+.pxx:hover{color:var(--txt);background:var(--btn2)!important}
+.px-q{margin-top:6px}.px-qw{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.px-qw input[type=time]{width:96px;padding:4px 6px}
+.px-days{display:flex;gap:2px;flex-wrap:wrap}.px-days button{padding:3px 6px;font-size:11.5px;min-width:30px}
+.px-days button.on{background:var(--acc);color:#fff;border-color:transparent}
+details.px-adv{margin-top:14px;border-top:1px solid var(--line);padding-top:4px}
+details.px-adv>summary{cursor:pointer;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);font-weight:700;padding:8px 0;list-style:none}
+details.px-adv>summary::-webkit-details-marker{display:none}
+details.px-adv>summary::before{content:"▸ ";}details.px-adv[open]>summary::before{content:"▾ ";}
+.px-msg .msgcard{margin-top:6px;padding:0;background:transparent}
+.px-msg .msgcard>summary{padding:8px 10px;cursor:pointer}
+.px-msg .msgcard[open]{padding-bottom:8px}.px-msg .msgcard>:not(summary){margin-left:10px;margin-right:10px}
+.px-hidden{display:none!important}
+.sndpop .px-bell{border-top:1px solid var(--line);margin-top:8px;padding-top:6px}
+</style>
+<script>
+(function () {
+  try { const D = /*PXDE*/{}; Object.keys(D).forEach(k => { if (!(k in I18N.de)) I18N.de[k] = D[k]; }); } catch (e) {}   // 639a; existing texts stay
+  const CH = {
+    ntfy: {ic: "📲", nm: "ntfy", keys: ["notify_url"]},
+    webpush: {ic: "🌐", nm: "Web push (this device)", keys: []},
+    telegram: {ic: "✈️", nm: "Telegram", keys: ["telegram_token", "telegram_chat"]},
+    pushover: {ic: "🔔", nm: "Pushover", keys: ["pushover_user", "pushover_token", "pushover_emergency"]},
+    email: {ic: "✉️", nm: "E-mail", keys: ["email_to"], adv: ["email_host", "email_port", "email_user", "email_password", "email_events"]},
+    webhook: {ic: "🔗", nm: "Webhook", keys: ["notify_url"]},
+    sms: {ic: "📱", nm: "SMS", keys: []}};
+  const ORDER = ["ntfy", "webpush", "telegram", "pushover", "email", "webhook", "sms"];
+  const MAIN = ["ntfy", "telegram", "webhook"];
+  const DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+  const X = {P: null, root: null, cards: {}, added: new Set(), urlRow: null, editQ: 0, adv: null, msg: null};
+  const api = (b) => post("/api/push", Object.assign({lang: LANG}, b || {}));
+  const rowOf = (d, k) => d.querySelector('[data-key="' + k + '"]');
+
+  // a text field: «Löschen» as a small ✕ inside (secret: after a confirmation)
+  function xField(wrap) {
+    if (!wrap || wrap.dataset.pxx) return; wrap.dataset.pxx = "1";
+    const inp = wrap.querySelector("input[type=text],input[type=password]"); if (!inp) return;
+    const f = el("span", "pxf"); inp.parentNode.insertBefore(f, inp); f.appendChild(inp);
+    const clr = [...wrap.querySelectorAll(":scope > button.sec")].find(b => b.textContent === t("Clear"));
+    const x = el("button", "pxx", "✕"); x.type = "button"; x.title = t("Clear"); x.setAttribute("aria-label", t("Clear"));
+    if (clr) { clr.classList.add("px-hidden");
+      x.onclick = () => { if (!confirm(t("Clear the saved value? It cannot be shown again."))) return; clr.click(); inp.value = ""; }; }
+    else x.onclick = () => { if (!inp.value) return; inp.value = ""; inp.dispatchEvent(new Event("change")); };
+    f.appendChild(x);
+  }
+  function seg(choices, cur, onpick) {
+    const s = el("div", "seg lseg px-seg");
+    choices.forEach(([v, lab]) => { const b = el("button", v === cur ? "sel-auto" : "", t(lab)); b.type = "button"; b.dataset.v = v;
+      b.onclick = () => { [...s.children].forEach(x => x.className = x === b ? "sel-auto" : ""); onpick(v); }; s.appendChild(b); });
+    s.set = v => [...s.children].forEach(x => x.className = x.dataset.v === v ? "sel-auto" : "");
+    return s;
+  }
+  function hide(n) { if (n) n.classList.add("px-hidden"); }
+
+  function card(id, d) {
+    const C = CH[id], c = el("div", "pxc"); c.dataset.ch = id;
+    const hd = el("div", "pxc-hd"), ar = el("span", "pxar", "▸"), ic = el("span", "pxic", C.ic), nm = el("span", "pxnm"), st = el("small", "", "");
+    nm.append(document.createTextNode(t(C.nm)), st);
+    const tb = el("button", "sec pxtest", "▶ " + t("Test")); tb.type = "button"; tb.title = t("Send a test message over this channel only");
+    const sw = el("input"); sw.type = "checkbox"; sw.className = "sw"; sw.title = t("on / off");
+    hd.append(ar, ic, nm, tb, sw);
+    const body = el("div", "pxc-b"); body.hidden = true;
+    hd.onclick = e => { if (e.target === sw || e.target === tb) return; body.hidden = !body.hidden; c.classList.toggle("open", !body.hidden); };
+    sw.onchange = async () => { const r = await api({action: "channel", ch: id, on: sw.checked});
+      if (r && r.ok === false) toast("⚠ " + (r.error || "error")); paint(r && r.channels ? r : null);
+      if (sw.checked && body.children.length > 1) { body.hidden = false; c.classList.add("open"); } };
+    tb.onclick = async () => { tb.disabled = true; st.textContent = t("testing …"); st.className = "";
+      const r = await api({action: "test", ch: id}); tb.disabled = false;
+      const x = r && r.results && r.results[0];
+      if (!r || r.ok === false) toast("⚠ " + ((r && r.error) || "error"));
+      else if (x) toast((x.ok ? "✓ " : "✗ ") + x.ch + " – " + x.msg);
+      paint(r && r.channels ? r : null); };
+    C.keys.forEach(k => { const r_ = k === "notify_url" ? null : rowOf(d, k); if (r_) body.appendChild(r_); });
+    if (C.adv) { const a = el("details", "adv sblk"); a.appendChild(el("summary", "", t("Advanced")));
+      C.adv.forEach(k => { const r_ = rowOf(d, k); if (r_) a.appendChild(r_); }); if (a.children.length > 1) body.appendChild(a); }
+    if (MAIN.includes(id)) body.appendChild(el("div", "px-note", t("Only one of ntfy · Telegram · Webhook (the main channel, with repeats and the outbox).")));
+    if (id === "webpush") { const wp = d.querySelector("#wp-box"); if (wp) body.appendChild(wp); }
+    if (id === "email") body.appendChild(el("div", "px-note", t("The iPhone can start a shortcut from an e-mail (see Advanced → iPhone shortcuts).")));
+    c.append(hd, body); X.cards[id] = {c, sw, st, body, tb};
+    return c;
+  }
+
+  function quietBox(d) {
+    const box = el("div", "px-q"), list = el("div");
+    const add = el("button", "sec", "+ " + t("Time window")); add.type = "button";
+    const pre = el("button", "sec", "🏠 " + t("Day at home")); pre.type = "button"; pre.title = t("Weekdays 08:00 until the night time of the night report");
+    const bt = el("div", "btns"); bt.append(add, pre);
+    const info = el("div", "px-note");
+    box.append(list, bt, info);
+    let W = [];
+    const save = () => { X.editQ = Date.now(); api({action: "quiet", windows: W}).then(r => { if (r && r.ok) { toast(t("Saved")); paint(r); } }); };
+    const draw = () => { list.textContent = "";
+      W.forEach((w, i) => { const r = el("div", "px-qw");
+        const a = el("input"); a.type = "time"; a.value = w.from; const b = el("input"); b.type = "time"; b.value = w.to;
+        a.onchange = () => { w.from = a.value; save(); }; b.onchange = () => { w.to = b.value; save(); };
+        const ds = el("div", "px-days");
+        DAYS.forEach((dn, k) => { const x = el("button", "sec" + (w.days.includes(k) ? " on" : ""), t(dn)); x.type = "button";
+          x.onclick = () => { w.days = w.days.includes(k) ? w.days.filter(z => z !== k) : w.days.concat([k]).sort(); if (!w.days.length) w.days = [k]; draw(); save(); };
+          ds.appendChild(x); });
+        const del = el("button", "sec pxx", "✕"); del.type = "button"; del.style.position = "static"; del.style.transform = "none"; del.title = t("Remove");
+        del.onclick = () => { if (W.length <= 1) { toast(t("At least one time window - switch the quiet hours off instead.")); return; } W.splice(i, 1); draw(); save(); };
+        r.append(a, el("span", "mut", "–"), b, ds, del); list.appendChild(r); });
+      add.hidden = W.length >= 4; };
+    add.onclick = () => { W.push({from: "12:00", to: "14:00", days: [0, 1, 2, 3, 4, 5, 6]}); draw(); save(); };
+    pre.onclick = () => { const nf = (X.P && X.P.night_from) || 20; W = [{from: "08:00", to: String(nf).padStart(2, "0") + ":00", days: [0, 1, 2, 3, 4]}]; draw(); save(); };
+    box.fill = P => { if (Date.now() - X.editQ > 4000 && !box.contains(document.activeElement)) { W = JSON.parse(JSON.stringify(P.quiet.windows || [])); draw(); }
+      info.textContent = (P.quiet.now ? "🌙 " + t("Quiet hours now - alarms are only logged") + " · " : "") + t("Clock") + ": " + P.quiet.clock + (P.quiet.sim ? " (" + t("sim time") + ")" : "")
+        + " · " + t("Night time from") + " " + P.night_from + ":00 (" + t("night report") + ")"; };
+    return box;
+  }
+
+  window.pushPanel = function (d, sec) {
+    if (d.querySelector(".px")) return;
+    const root = el("div", "px"); X.root = root;
+    // the generic buttons of 530 (test, test all) - replaced by «▶ Test» per card and «Alle testen» on top
+    [...d.children].filter(c => c.tagName === "BUTTON").forEach(b => { const nx = b.nextElementSibling; b.remove(); if (nx && nx.tagName === "DIV" && nx.classList.contains("mut") && !nx.dataset.key && !nx.id) nx.remove(); });
+    // ---- Kopf ----
+    const on = rowOf(d, "notify_on"); if (on) root.appendChild(on);
+    const head = el("div", "px-head"), st = el("div", "px-st", ""), all = el("button", "sec", "🧪 " + t("Test all")); all.type = "button";
+    const res = el("div", "px-res mut"); head.append(st, all); root.append(head, res); X.st = st;
+    all.onclick = async () => { all.disabled = true; res.textContent = t("testing …");
+      const r = await api({action: "test", ch: "all"}); all.disabled = false;
+      res.textContent = !r || r.ok === false ? "⚠ " + ((r && r.error) || "error") : (r.results || []).length ? r.results.map(x => (x.ok ? "✓ " : "✗ ") + x.ch + " – " + x.msg).join("\n") : t("No channel set up.");
+      paint(r && r.channels ? r : null); };
+    // ---- Wohin ----
+    root.appendChild(el("div", "px-h", t("Where to")));
+    const cw = el("div", "px-cards"); root.appendChild(cw);
+    ORDER.forEach(id => cw.appendChild(card(id, d)));
+    X.urlRow = rowOf(d, "notify_url");
+    const addB = el("button", "sec px-add", "+ " + t("Add channel")); addB.type = "button"; const addM = el("div", "px-addm"); addM.hidden = true;
+    addB.onclick = () => { addM.hidden = !addM.hidden; }; root.append(addB, addM); X.addB = addB; X.addM = addM;
+    // ---- Was ----
+    root.appendChild(el("div", "px-h", t("What")));
+    X.lvl = seg([["persons", "Only persons"], ["animals", "Persons + animals"], ["all", "Everything"]], "all",
+      v => post("/api/text", {key: "push_level", value: v, lang: LANG}).then(r => { toast(r.ok ? t("Saved") : "⚠ " + (r.error || "error")); refreshP(); }));
+    const lvW = el("div", ""); lvW.dataset.key = "push_level"; const lvL = el("div", "row"); lvL.appendChild(el("span", "", t("What is reported"))); lvW.append(lvL, X.lvl); root.appendChild(lvW);
+    X.lvlNote = el("div", "px-note", ""); root.appendChild(X.lvlNote);
+    hide(rowOf(d, "push_level")); const pr = rowOf(d, "notify_prealarm"); if (pr) root.appendChild(pr);
+    X.pics = seg([["with", "with picture"], ["small", "small picture"], ["text", "without picture"]], "with",
+      v => post("/api/text", {key: "push_pics", value: v, lang: LANG}).then(r => toast(r.ok ? t("Saved") : "⚠ " + (r.error || "error"))));
+    const pW = el("div", ""); pW.dataset.key = "push_pics"; const pL = el("div", "row"); pL.appendChild(el("span", "", t("Pictures"))); pW.append(pL, X.pics); root.appendChild(pW);
+    hide(rowOf(d, "push_pics"));
+    // ---- Wann ----
+    root.appendChild(el("div", "px-h", t("When")));
+    ["notify_cooldown", "prealarm_cooldown", "quiet_on"].forEach(k => { const r_ = rowOf(d, k); if (r_) root.appendChild(r_); });
+    X.q = quietBox(d); root.appendChild(X.q);
+    const qp = rowOf(d, "quiet_persons"); if (qp) { X.q.insertBefore(qp, X.q.firstChild); }
+    const qcb = ctrl.quiet_on && ctrl.quiet_on.input; if (qcb) { const upd = () => { X.q.hidden = !qcb.checked; }; qcb.addEventListener("change", upd); X.qUpd = upd; }
+    // ---- Erweitert ----
+    const adv = el("details", "px-adv"); adv.appendChild(el("summary", "", t("Advanced"))); X.adv = adv;
+    const kw = el("div", "sl"); kw.dataset.key = "msg_keyword_prefix"; const kl = el("div", "row"); kl.appendChild(el("span", "", t("Keyword (empty = off)")));
+    const ki = el("input"); ki.type = "text"; ki.autocomplete = "off"; ki.placeholder = "MW"; ki.maxLength = 12; ki.style.width = "100%"; ki.style.marginTop = "4px";
+    ki.onchange = () => api({action: "keyword", value: ki.value}).then(r => { toast(r.ok ? t("Saved") : "⚠ " + (r.error || "error")); paint(r && r.channels ? r : null); });
+    kw.append(kl, ki); adv.appendChild(kw); X.kw = ki; xField(kw);
+    hide(rowOf(d, "msg_keyword_on")); hide(rowOf(d, "msg_keyword_prefix"));
+    ["webpush_on", "pushover_on", "email_on"].forEach(k => hide(rowOf(d, k)));     // = the switches of the cards
+    ["push_actions", "msg_icons", "public_url", "notify_network", "notify_remote"].forEach(k => { const r_ = rowOf(d, k); if (r_) adv.appendChild(r_); });
+    const ba = rowOf(d, "browser_alarm"); if (ba) { hide(ba); adv.appendChild(ba); }      // moved to the bell 🔔 (below)
+    X.msg = el("div", "px-msg"); adv.appendChild(X.msg);
+    root.appendChild(adv);
+    // anything left over of the section (a later version) stays below, nothing gets lost
+    [...d.children].filter(c => c.tagName !== "SUMMARY" && c !== root && !c.classList.contains("px-hidden")).forEach(c => adv.appendChild(c));
+    const sm = d.querySelector(":scope > summary"); d.insertBefore(root, sm ? sm.nextSibling : d.firstChild);
+    root.querySelectorAll(".sl[data-key]").forEach(xField);
+    refreshP(); setInterval(() => { if (X.root && X.root.offsetParent) refreshP(); pxMoveSc(); }, 5000);
+    setTimeout(pxMoveSc, 1500);
+  };
+  function pxMoveSc() { const sc = document.getElementById("scbox"); if (sc && X.adv && sc.parentNode !== X.adv) X.adv.appendChild(sc); }
+  async function refreshP() { try { paint(await (await fetch("/api/push?lang=" + LANG, {cache: "no-store"})).json()); } catch (e) {} }
+
+  function paint(P) {
+    if (!P || !P.channels) { refreshP(); return; }
+    X.P = P;
+    X.st.textContent = P.status_line; X.st.classList.toggle("ok", P.on && P.ready > 0 && (!P.test.n || P.test.ok === P.test.n));
+    const hidden = [];
+    P.channels.forEach(c => { const K = X.cards[c.id]; if (!K) return;
+      const show = c.used || c.on || X.added.has(c.id);
+      K.c.hidden = !show; if (!show) hidden.push(c.id);
+      if (K.sw !== document.activeElement) K.sw.checked = c.on;
+      K.st.textContent = !c.on ? t("switched off") : c.ready ? "✓ " + (c.id === "webpush" ? c.info + " " + t("devices") : (c.info || t("ready"))) : "⚠ " + t(c.id === "webpush" ? "no device yet" : "not set up yet");
+      K.st.className = !c.on ? "" : c.ready ? "ok" : "warn";
+      K.tb.hidden = !c.on; });
+    // the shared address field: in the card of the main channel (ntfy or Webhook)
+    if (X.urlRow) { const tgt = X.cards[P.main === "webhook" ? "webhook" : "ntfy"]; if (tgt && X.urlRow.parentNode !== tgt.body) tgt.body.insertBefore(X.urlRow, tgt.body.firstChild);
+      const lb = X.urlRow.querySelector(".row span"); if (lb) lb.textContent = t(P.main === "webhook" ? "Webhook address (JSON POST)" : "Address (server/topic)");
+      const inp = X.urlRow.querySelector("input"); if (inp && inp !== document.activeElement && inp.value !== P.url) inp.value = P.url; }
+    X.addM.textContent = "";
+    hidden.forEach(id => { const b = el("button", "sec", CH[id].ic + " " + t(CH[id].nm)); b.type = "button";
+      b.onclick = () => { X.added.add(id); api({action: "add", ch: id}); X.addM.hidden = true; paint(P); const K = X.cards[id]; K.body.hidden = false; K.c.classList.add("open"); K.c.scrollIntoView({block: "nearest"}); };
+      X.addM.appendChild(b); });
+    X.addB.hidden = !hidden.length;
+    X.lvl.set(P.level); X.pics.set(P.pics);
+    X.lvlNote.textContent = t({persons: "Only person alarms. Warm bodies and noise are only logged.", animals: "Persons and warm bodies (thermal camera). Noise is only logged.",
+      all: "Persons, warm bodies and noise (as up to now)."}[P.level] || "") + " " + t("Sabotage, theft and notes always come.");
+    if (X.kw !== document.activeElement) X.kw.value = P.keyword;
+    X.q.fill(P); if (X.qUpd) X.qUpd(); else X.q.hidden = !P.quiet.on;
+  }
+
+  // ---- sections that move into the push panel (before the groups are built, 530 regroup) ----
+  function pxRelocate() {
+    const box = document.getElementById("settings"); if (!box || !X.root) return;
+    const sms = box.querySelector(':scope > details[data-view="sec:SMS (LTE stick)"]');
+    if (sms && X.cards.sms) { const b = X.cards.sms.body; hide(sms.querySelector('[data-key="sms_on"]'));
+      [...sms.children].filter(c => c.tagName !== "SUMMARY").forEach(c => b.appendChild(c)); sms.remove();
+      b.querySelectorAll(".sl[data-key]").forEach(xField); }
+    const msg = box.querySelector(':scope > details[data-view="sec:Messages"]');
+    if (msg && X.msg) { X.msg.appendChild(el("div", "px-lbl", "💬 " + t("Message texts")));
+      [...msg.children].filter(c => c.tagName !== "SUMMARY").forEach(c => X.msg.appendChild(c)); msg.remove();
+      X.msg.querySelectorAll(".msgcard > summary > span:first-child").forEach(s => { if (!/✎/.test(s.textContent)) s.textContent += " ✎"; }); }
+  }
+  try { const _rg = regroup; regroup = function () { try { pxRelocate(); } catch (e) {} return _rg.apply(this, arguments); }; } catch (e) {}
+
+  // ---- «Alarmton in geöffneten Browsern» in the panel of the bell 🔔 (moved out of the push messages) ----
+  new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => {
+    if (!(n.classList && n.classList.contains("sndpop")) || n.querySelector(".px-bell")) return;
+    const c = ctrl.browser_alarm; if (!c || !c.input) return;
+    const row = el("label", "row px-bell"); const cb = el("input"); cb.type = "checkbox"; cb.className = "sw"; cb.checked = c.input.checked;
+    cb.onchange = () => { c.input.checked = cb.checked; post("/api/set", {key: "browser_alarm", value: cb.checked}); };
+    row.append(el("span", "", t("Alarms to all open browsers (MoveEye)")), cb); n.appendChild(row);
+  }))).observe(document.body, {childList: true});
+})();
+</script>
+"""
+WEB_PAGE = WEB_PAGE.replace("</body>", PUSH_CARDS_JS + "</body>", 1)
 # ----------------------------------------------------------------------------
 # 2.98.13: a small script at the end of the main page (530 stays as it is): the card «Gehtest» under the live picture,
 # the button «Gehtest» on the Schutz page and the line of the battery saver beside «Power saving». Asks /api/walktest
@@ -68627,6 +68894,458 @@ SLIDERS.extend([
     ("Camping / protection", "back_hold_s", "«Is it you?»: person alarms wait (s)", 15, 300, 15),
 ])
 # ----------------------------------------------------------------------------
+# The window builds the section «Notifications» itself (the generic list of 570 is skipped for it): the same five blocks
+# and channel cards as the web page. The sections «Nachrichtentexte» and «SMS (LTE-Stick)» are shown inside it (message
+# texts in «Erweitert», SMS in its card) and therefore leave the group «Was passiert bei Alarm?». Logic: 579a.
+# The window has no bell: «Alarmton in geöffneten Browsern» stays here in «Erweitert» (web: in the bell 🔔).
+# ----------------------------------------------------------------------------
+for _g in TK_GROUPS:
+    if _g[0] == "notify":
+        for _s in ("Messages", "SMS (LTE stick)"):
+            if _s in _g[2]:
+                _g[2].remove(_s)
+
+_PX_TK_CH = {"ntfy": ("📲", "ntfy", ("notify_url",)), "webpush": ("🌐", "Web push (this device)", ()),
+             "telegram": ("✈", "Telegram", ("telegram_token", "telegram_chat")), "pushover": ("🔔", "Pushover", ("pushover_user", "pushover_token", "pushover_emergency")),
+             "email": ("✉", "E-mail", ("email_to",)), "webhook": ("🔗", "Webhook", ("notify_url",)), "sms": ("📱", "SMS", ())}
+_PX_TK_ORDER = ("ntfy", "webpush", "telegram", "pushover", "email", "webhook", "sms")
+_PX_TK_MSG = (("person", "👤", "Person"), ("prealarm", "👀", "Pre-alarm"), ("warm", "🌡", "Thermal alarm"), ("noise", "🔊", "Noise alarm"))
+
+
+def _px_tk_label(key):
+    for lst in (TOGGLES, TEXTS, SLIDERS):
+        for x in lst:
+            if x[1] == key:
+                return x[2]
+    return key
+
+
+def _px_tk_hide(key):
+    return simple_hidden(key) or (CFG["lock_on"] and key in LOCK_DENY_KEYS)
+
+
+class _PxSeg(tk.Frame):
+    """segment switch (the active one blue) - like the segments of the web page and the simulator"""
+    def __init__(self, parent, choices, value, command):
+        super().__init__(parent, bg=C["line"], padx=1, pady=1)
+        self.command = command; self.btn = {}; self.value = None
+        for i, (v, lab) in enumerate(choices):
+            l = tk.Label(self, text=tr(lab), font=("DejaVu Sans", 9, "bold"), padx=8, pady=3, cursor="hand2")
+            l.pack(side="left", fill="x", expand=True, padx=(0 if i == 0 else 1, 0))
+            l.bind("<Button-1>", lambda e, vv=v: self._click(vv))
+            self.btn[v] = l
+        self.set(value)
+
+    def _click(self, v):
+        if v != self.value:
+            self.set(v); self.command(v)
+
+    def set(self, value):
+        self.value = value
+        for v, l in self.btn.items():
+            l.config(bg=C["acc"] if v == value else C["field"], fg="#ffffff" if v == value else C["mut"])
+
+
+def _px_tk_field(app, parent, key, err):
+    """one text field: label, entry with a small ✕ (secret: clears after a confirmation)"""
+    if key not in TEXT_SPECS or _px_tk_hide(key):
+        return None
+    kind, _x = TEXT_SPECS[key]
+    lab = ttk.Label(parent, text=tr(_px_tk_label(key)), style="Mut.TLabel", wraplength=330, justify="left"); lab.pack(anchor="w", pady=(6, 0))
+    app._g2_q(lab, key)
+    if kind == "enum":
+        pairs = text_choice_pairs(key); labs = dict(pairs); back = {l: c for c, l in pairs}
+        cb = ttk.Combobox(parent, values=[l for _c, l in pairs], state="readonly"); cb.set(labs.get(CFG[key], CFG[key])); cb.pack(fill="x", pady=(2, 0))
+        cb.bind("<<ComboboxSelected>>", lambda e: (app.root.focus_set(), app._text_set(key, back.get(cb.get(), cb.get()), err)))
+        return cb
+    var = tk.StringVar(value="" if kind == "secret" else str(text_value(key)))
+    row = tk.Frame(parent, bg=C["field"], highlightthickness=1, highlightbackground=C["line"]); row.pack(fill="x", pady=(2, 0))
+    ent = tk.Entry(row, textvariable=var, show="•" if kind == "secret" else "", bg=C["field"], fg=C["txt"], insertbackground=C["txt"],
+                   relief="flat", highlightthickness=0)
+    ent.pack(side="left", fill="x", expand=True, padx=(6, 0), pady=3)
+    if kind == "secret" and CFG.get(key):
+        tk.Label(row, text="(" + tr("set") + ")", bg=C["field"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=2)
+    for ev in ("<Return>", "<FocusOut>"):
+        ent.bind(ev, lambda e: app._text_set(key, var.get(), err) if (kind != "secret" or var.get()) else None)
+
+    def clear():
+        if kind == "secret":
+            if not messagebox.askyesno("MoveEye", tr("Clear the saved value? It cannot be shown again."), parent=app.root):
+                return
+        var.set(""); app._text_set(key, "", err)
+    x = tk.Label(row, text="✕", bg=C["field"], fg=C["mut"], cursor="hand2", font=("DejaVu Sans", 10), padx=6)
+    x.pack(side="right"); x.bind("<Button-1>", lambda e: clear())
+    return ent
+
+
+def _px_tk_toggle(app, parent, key):
+    if _px_tk_hide(key) or key not in CFG:
+        return None
+    tg = Toggle(parent, tr(_px_tk_label(key)), CFG[key], lambda val, k=key: app._set(k, val)); tg.pack(fill="x", pady=3)
+    app.vars[key] = tg; app._g2_q(tg, key)
+    return tg
+
+
+def _px_tk_slider(app, parent, spec):
+    s, key, label, lo, hi, step = spec
+    if _px_tk_hide(key):
+        return
+    row = ttk.Frame(parent); row.pack(fill="x", pady=(6, 0))
+    ttk.Label(row, text=tr(label)).pack(side="left")
+    vl = ttk.Label(row, text=str(CFG[key]), style="Mut.TLabel"); vl.pack(side="right"); app.value_labels[key] = vl
+    app._g2_q(row, key)
+    v = tk.DoubleVar(value=CFG[key]); app.vars[key] = v
+    sc = ttk.Scale(parent, from_=lo, to=hi, variable=v, orient="horizontal", command=lambda val, k=key, st=step: app._slide(k, float(val), st))
+    sc.pack(fill="x")
+    sc.bind("<ButtonPress-1>", lambda e, k=key: setattr(app, "dragging", k))
+    sc.bind("<ButtonRelease-1>", lambda e: (setattr(app, "dragging", None), app.root.focus_set()))
+
+
+def _px_tk_head(parent, text):
+    tk.Label(parent, text=tr(text).upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").pack(fill="x", pady=(12, 2))
+
+
+def _px_tk_card(app, parent, ch, err, S):
+    ic, nm, keys = _PX_TK_CH[ch]
+    box = tk.Frame(parent, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"])
+    hd = tk.Frame(box, bg=C["panel"], cursor="hand2"); hd.pack(fill="x", padx=6, pady=3)
+    ar = tk.Label(hd, text="▸", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9), cursor="hand2"); ar.pack(side="left")
+    tk.Label(hd, text=ic, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10), width=2, cursor="hand2").pack(side="left")
+    nf = tk.Frame(hd, bg=C["panel"], cursor="hand2"); nf.pack(side="left", fill="x", expand=True)
+    tk.Label(nf, text=tr(nm), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10), anchor="w", cursor="hand2").pack(fill="x")
+    st = tk.Label(nf, text="", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8), anchor="w", cursor="hand2"); st.pack(fill="x")
+    sw = Toggle(hd, "", False, lambda v, c=ch: (push_set_channel(c, v), _px_tk_paint(app)))
+    sw.pack(side="right")
+    tb = ttk.Button(hd, text="▶ " + tr("Test"), width=7, command=lambda c=ch: _px_tk_test(app, c)); tb.pack(side="right", padx=4)
+    body = tk.Frame(box, bg=C["panel"])
+    def flip(_e=None):
+        if body.winfo_ismapped():
+            body.pack_forget(); ar.config(text="▸")
+        else:
+            body.pack(fill="x", padx=10, pady=(0, 8)); ar.config(text="▾")
+    for w_ in (hd, ar, nf) + tuple(nf.winfo_children()):
+        w_.bind("<Button-1>", flip)
+    for k in keys:
+        if k == "notify_url":
+            continue
+        if TEXT_SPECS.get(k):
+            _px_tk_field(app, body, k, err)
+        else:
+            _px_tk_toggle(app, body, k)
+    if ch in ("ntfy", "webhook"):
+        S["url_" + ch] = body
+    if ch in ("ntfy", "telegram", "webhook"):
+        ttk.Label(body, text=tr("Only one of ntfy · Telegram · Webhook (the main channel, with repeats and the outbox)."), style="Mut.TLabel",
+                  wraplength=320, justify="left").pack(anchor="w", pady=(6, 0))
+    if ch == "webpush":
+        ttk.Label(body, text=tr("Switch it on in the browser of the phone (Settings → Push messages → Web push)."), style="Mut.TLabel",
+                  wraplength=320, justify="left").pack(anchor="w", pady=(4, 0))
+        ttk.Button(body, text=tr("Open in the browser"), command=lambda: app._open_page("/protect#sec:Notifications")).pack(fill="x", pady=(4, 0))
+    if ch == "email":
+        adv = tk.Frame(body, bg=C["panel"])
+        lk = tk.Label(body, text="▸ " + tr("Advanced"), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"), cursor="hand2", anchor="w")
+        lk.pack(fill="x", pady=(8, 0))
+        def fa(_e=None):
+            if adv.winfo_ismapped():
+                adv.pack_forget(); lk.config(text="▸ " + tr("Advanced"))
+            else:
+                adv.pack(fill="x", after=lk); lk.config(text="▾ " + tr("Advanced"))
+        lk.bind("<Button-1>", fa)
+        for k in ("email_host", "email_port", "email_user", "email_password", "email_events"):
+            _px_tk_field(app, adv, k, err)
+    if ch == "sms":
+        sec = "SMS (LTE stick)"
+        for s_, key_, _l in TOGGLES:
+            if s_ == sec and key_ != "sms_on":
+                _px_tk_toggle(app, body, key_)
+        for spec in SLIDERS:
+            if spec[0] == sec:
+                _px_tk_slider(app, body, spec)
+        app._build_texts(body, sec)
+        def sms_t():
+            ok, err_ = sms_send(tr("MoveEye: test SMS"), force=True)
+            app._status(sec, ("✓ " + tr("SMS sent")) if ok else "⚠ " + tr_err(err_))
+        ttk.Button(body, text=tr("Send test SMS"), command=lambda: threading.Thread(target=sms_t, daemon=True).start()).pack(fill="x", pady=(6, 0))
+        app.status_labels[sec] = ttk.Label(body, text="", style="Mut.TLabel", wraplength=320, justify="left"); app.status_labels[sec].pack(anchor="w")
+    S["cards"][ch] = {"box": box, "sw": sw, "st": st, "tb": tb, "body": body, "flip": flip}
+    return box
+
+
+def _px_tk_test(app, ch):
+    S = getattr(app, "_px", None)
+    if S:
+        S["res"].config(text=tr("testing …"))
+    def run():
+        res = push_test_one(app.watch, ch) if CFG.get("notify_on") else [{"ch": "–", "ok": False, "msg": tr("Push messages are switched off")}]
+        txt = "\n".join(("✓ " if r["ok"] else "✗ ") + r["ch"] + " – " + r["msg"] for r in res) or tr("No channel set up.")
+        try:
+            app.root.after(0, lambda: (S and S["res"].config(text=txt), _px_tk_paint(app)))
+        except Exception:
+            pass
+    threading.Thread(target=run, daemon=True).start()
+
+
+def _px_tk_quiet(app, parent, S):
+    box = tk.Frame(parent, bg=C["panel"]); box.pack(fill="x")
+    S["qbox"] = box
+    def draw():
+        for w_ in box.winfo_children():
+            w_.destroy()
+        W = quiet_clean(CFG.get("quiet_windows"))
+        def save():
+            CFG["quiet_windows"] = quiet_clean(W) or CFG["quiet_windows"]; save_settings()
+        for i, w in enumerate(W):
+            r = tk.Frame(box, bg=C["panel"]); r.pack(fill="x", pady=2)
+            for part in ("from", "to"):
+                v = tk.StringVar(value=w[part])
+                e = tk.Entry(r, textvariable=v, width=6, bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat",
+                             highlightthickness=1, highlightbackground=C["line"])
+                e.pack(side="left", padx=(0, 2))
+                def put(_e=None, ww=w, pp=part, vv=v):
+                    if _PX_HM.match(vv.get().strip()):
+                        ww[pp] = vv.get().strip(); save()
+                    else:
+                        vv.set(ww[pp])
+                e.bind("<Return>", put); e.bind("<FocusOut>", put)
+                if part == "from":
+                    tk.Label(r, text="–", bg=C["panel"], fg=C["mut"]).pack(side="left", padx=2)
+            for k, dn in enumerate(("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")):
+                on = k in w["days"]
+                l = tk.Label(r, text=tr(dn), bg=C["acc"] if on else C["field"], fg="#ffffff" if on else C["mut"], font=("DejaVu Sans", 8, "bold"),
+                             padx=3, cursor="hand2")
+                l.pack(side="left", padx=(4 if k == 0 else 1, 0))
+                def flip(_e=None, ww=w, kk=k):
+                    ww["days"] = sorted(set(ww["days"]) ^ {kk}) or [kk]; save(); draw()
+                l.bind("<Button-1>", flip)
+            def rm(ii=i):
+                if len(W) <= 1:
+                    messagebox.showinfo("MoveEye", tr("At least one time window - switch the quiet hours off instead."), parent=app.root); return
+                W.pop(ii); save(); draw()
+            x = tk.Label(r, text="✕", bg=C["panel"], fg=C["mut"], cursor="hand2", padx=6); x.pack(side="right"); x.bind("<Button-1>", lambda e, f=rm: f())
+        bf = ttk.Frame(box); bf.pack(fill="x", pady=(4, 0))
+        def add():
+            W.append({"from": "12:00", "to": "14:00", "days": [0, 1, 2, 3, 4, 5, 6]}); save(); draw()
+        def home():
+            W[:] = [{"from": "08:00", "to": "%02d:00" % int(CFG.get("report_from") or 20), "days": [0, 1, 2, 3, 4]}]; save(); draw()
+        if len(W) < 4:
+            ttk.Button(bf, text="+ " + tr("Time window"), command=add).pack(side="left", expand=True, fill="x", padx=(0, 4))
+        ttk.Button(bf, text="🏠 " + tr("Day at home"), command=home).pack(side="left", expand=True, fill="x")
+        S["qinfo"] = ttk.Label(box, text="", style="Mut.TLabel", wraplength=330, justify="left"); S["qinfo"].pack(anchor="w", pady=(4, 0))
+    draw()
+
+
+def _px_tk_msg_dialog(app, kind, nm, S):
+    win = tk.Toplevel(app.root); win.title("MoveEye"); win.configure(bg=C["panel"]); win.transient(app.root)
+    tk.Label(win, text="✎ " + tr(nm), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11, "bold")).pack(anchor="w", padx=14, pady=(12, 4))
+    std = msg_defaults()[kind]
+    vs = []
+    for i, part in enumerate(("title", "text")):
+        key = f"msg_{kind}_{part}"
+        tk.Label(win, text=tr("Title" if i == 0 else "Text") + " · " + tr("standard") + ": " + std[i], bg=C["panel"], fg=C["mut"], wraplength=380,
+                 justify="left").pack(anchor="w", padx=14, pady=(6, 0))
+        v = tk.StringVar(value=str(CFG.get(key) or "")); vs.append((key, v))
+        tk.Entry(win, textvariable=v, width=50, bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat", highlightthickness=1,
+                 highlightbackground=C["line"]).pack(fill="x", padx=14, pady=(2, 0))
+    tk.Label(win, text=tr("Empty = standard text. Placeholders:") + " " + MSG_PLACEHOLDERS, bg=C["panel"], fg=C["mut"], wraplength=380,
+             justify="left").pack(anchor="w", padx=14, pady=(6, 0))
+    err = ttk.Label(win, text="", style="Mut.TLabel", foreground=C["red"]); err.pack(anchor="w", padx=14)
+    bf = tk.Frame(win, bg=C["panel"]); bf.pack(fill="x", padx=14, pady=12)
+    def save(reset=False):
+        for key, v in vs:
+            ok, msg = set_text(key, "" if reset else v.get())
+            if not ok:
+                err.config(text="⚠ " + tr_err(msg)); return
+        win.destroy(); _px_tk_msgpaint(S)
+    ttk.Button(bf, text=tr("Cancel"), command=win.destroy).pack(side="right")
+    ttk.Button(bf, text=tr("Save"), command=save).pack(side="right", padx=(0, 6))
+    ttk.Button(bf, text="↺ " + tr("Standard text"), command=lambda: save(True)).pack(side="left")
+
+
+def _px_tk_msgpaint(S):
+    for kind, (l, ic, nm) in S.get("msgs", {}).items():
+        own = bool(CFG.get(f"msg_{kind}_title") or CFG.get(f"msg_{kind}_text"))
+        try:
+            l.config(text=f"{ic} {tr(nm)} ✎   ({tr('own text') if own else tr('standard text')})")
+        except Exception:
+            pass
+
+
+def _px_tk_paint(app):
+    S = getattr(app, "_px", None)
+    if not S:
+        return
+    try:
+        if not S["st"].winfo_exists():
+            return
+    except Exception:
+        return
+    P = push_info()
+    S["st"].config(text=P["status_line"], fg=C["grn"] if P["on"] and P["ready"] else C["mut"])
+    hidden = []
+    for c in P["channels"]:
+        K = S["cards"].get(c["id"])
+        if not K:
+            continue
+        show = c["used"] or c["on"] or c["id"] in S["added"]
+        if show and not K["box"].winfo_ismapped():
+            K["box"].pack(fill="x", pady=3, in_=S["cw"])
+        elif not show and K["box"].winfo_ismapped():
+            K["box"].pack_forget()
+        if not show:
+            hidden.append(c["id"])
+        K["sw"].set(c["on"])
+        K["st"].config(text=(tr("switched off") if not c["on"] else ("✓ " + (c["info"] or tr("ready")) if c["ready"] else "⚠ " + tr("not set up yet"))),
+                       fg=C["mut"] if not c["on"] else (C["grn"] if c["ready"] else C["yel"]))
+    tgt = S.get("url_" + ("webhook" if P["main"] == "webhook" else "ntfy"))
+    if tgt is not None and S.get("url_parent") is not tgt:
+        for w_ in S.get("url_widgets", []):
+            try:
+                w_.destroy()
+            except Exception:
+                pass
+        kids = [w_ for w_ in tgt.winfo_children() if w_.winfo_manager() == "pack"]
+        fr = tk.Frame(tgt, bg=C["panel"])
+        if kids:
+            fr.pack(fill="x", before=kids[0])
+        else:
+            fr.pack(fill="x")
+        e = _px_tk_field(app, fr, "notify_url", S["err"])
+        lab = fr.winfo_children()[0] if fr.winfo_children() else None
+        if lab is not None:
+            lab.config(text=tr("Webhook address (JSON POST)" if P["main"] == "webhook" else "Address (server/topic)"))
+        S["url_parent"], S["url_widgets"] = tgt, [fr]
+    m = S["addm"]["menu"]; m.delete(0, "end")
+    for ch in hidden:
+        m.add_command(label=_PX_TK_CH[ch][0] + " " + tr(_PX_TK_CH[ch][1]), command=lambda c=ch: _px_tk_add(app, c))
+    if hidden and not S["addm"].winfo_ismapped():
+        S["addm"].pack(fill="x", pady=(4, 0), after=S["cw"])
+    elif not hidden:
+        S["addm"].pack_forget()
+    S["lvl"].set(P["level"]); S["pics"].set(P["pics"])
+    S["lvlnote"].config(text=tr({"persons": "Only person alarms. Warm bodies and noise are only logged.",
+                                 "animals": "Persons and warm bodies (thermal camera). Noise is only logged.",
+                                 "all": "Persons, warm bodies and noise (as up to now)."}.get(P["level"], "")) + " " + tr("Sabotage, theft and notes always come."))
+    if S.get("qinfo") is not None:
+        q = P["quiet"]
+        S["qinfo"].config(text=(("🌙 " + tr("Quiet hours now - alarms are only logged") + " · ") if q["now"] else "") + tr("Clock") + ": " + q["clock"]
+                          + (" (" + tr("sim time") + ")" if q["sim"] else "") + " · " + tr("Night time from") + f" {P['night_from']}:00 (" + tr("night report") + ")")
+    if CFG.get("quiet_on") and not S["qbox"].winfo_ismapped():
+        S["qbox"].pack(fill="x", after=S["qon"])
+    elif not CFG.get("quiet_on") and S["qbox"].winfo_ismapped():
+        S["qbox"].pack_forget()
+    if app.root.focus_get() is not S["kw_e"]:
+        S["kw"].set(P["keyword"])
+
+
+def _px_tk_add(app, ch):
+    S = app._px
+    S["added"].add(ch); push_add_card(ch)
+    _px_tk_paint(app)
+    K = S["cards"][ch]
+    if not K["body"].winfo_ismapped():
+        K["flip"]()
+
+
+def _px_tk_panel(app, sbody):
+    S = {"cards": {}, "added": set(), "msgs": {}}
+    err = ttk.Label(sbody, text="", style="Mut.TLabel", foreground=C["red"], wraplength=330, justify="left")
+    S["err"] = err
+    # ---- Kopf ----
+    _px_tk_toggle(app, sbody, "notify_on")
+    hr = tk.Frame(sbody, bg=C["panel"]); hr.pack(fill="x", pady=(2, 0))
+    S["st"] = tk.Label(hr, text="", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9), anchor="w"); S["st"].pack(side="left", fill="x", expand=True)
+    ttk.Button(hr, text="🧪 " + tr("Test all"), command=lambda: _px_tk_test(app, "all")).pack(side="right")
+    S["res"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left"); S["res"].pack(anchor="w")
+    app.status_labels["Notifications"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
+    app.status_labels["Notifications"].pack(anchor="w")
+    # ---- Wohin ----
+    _px_tk_head(sbody, "Where to")
+    S["cw"] = tk.Frame(sbody, bg=C["panel"]); S["cw"].pack(fill="x")
+    for ch in _PX_TK_ORDER:
+        _px_tk_card(app, S["cw"], ch, err, S)
+    S["addm"] = tk.Menubutton(sbody, text="+ " + tr("Add channel"), bg=C["field"], fg=C["txt"], activebackground=C["line"], relief="flat",
+                              highlightthickness=1, highlightbackground=C["line"], cursor="hand2")
+    S["addm"]["menu"] = tk.Menu(S["addm"], tearoff=0)
+    # ---- Was ----
+    _px_tk_head(sbody, "What")
+    ttk.Label(sbody, text=tr("What is reported")).pack(anchor="w")
+    S["lvl"] = _PxSeg(sbody, [("persons", "Only persons"), ("animals", "Persons + animals"), ("all", "Everything")], CFG.get("push_level", "all"),
+                      lambda v: (app._text_set("push_level", v, err), _px_tk_paint(app)))
+    S["lvl"].pack(fill="x", pady=(2, 0)); app._g2_q(S["lvl"], "push_level")
+    S["lvlnote"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left"); S["lvlnote"].pack(anchor="w", pady=(2, 0))
+    _px_tk_toggle(app, sbody, "notify_prealarm")
+    ttk.Label(sbody, text=tr("Pictures")).pack(anchor="w", pady=(6, 0))
+    S["pics"] = _PxSeg(sbody, [("with", "with picture"), ("small", "small picture"), ("text", "without picture")], CFG.get("push_pics", "with"),
+                       lambda v: app._text_set("push_pics", v, err))
+    S["pics"].pack(fill="x", pady=(2, 0)); app._g2_q(S["pics"], "push_pics")
+    # ---- Wann ----
+    _px_tk_head(sbody, "When")
+    for spec in SLIDERS:
+        if spec[0] == "Notifications":
+            _px_tk_slider(app, sbody, spec)
+    S["qon"] = _px_tk_toggle(app, sbody, "quiet_on") or tk.Frame(sbody)
+    _px_tk_quiet(app, sbody, S)
+    _px_tk_toggle(app, S["qbox"], "quiet_persons")
+    # ---- Erweitert (closed) ----
+    lk = tk.Label(sbody, text="▸ " + tr("Advanced").upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w", cursor="hand2")
+    lk.pack(fill="x", pady=(12, 2))
+    adv = tk.Frame(sbody, bg=C["panel"])
+    def fa(_e=None):
+        if adv.winfo_ismapped():
+            adv.pack_forget(); lk.config(text="▸ " + tr("Advanced").upper())
+        else:
+            adv.pack(fill="x", after=lk); lk.config(text="▾ " + tr("Advanced").upper())
+    lk.bind("<Button-1>", fa)
+    ttk.Label(adv, text=tr("Keyword (empty = off)"), style="Mut.TLabel").pack(anchor="w", pady=(4, 0))
+    S["kw"] = tk.StringVar(value=push_keyword())
+    kr = tk.Frame(adv, bg=C["field"], highlightthickness=1, highlightbackground=C["line"]); kr.pack(fill="x", pady=(2, 0))
+    S["kw_e"] = tk.Entry(kr, textvariable=S["kw"], bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat", highlightthickness=0)
+    S["kw_e"].pack(side="left", fill="x", expand=True, padx=(6, 0), pady=3)
+    for ev in ("<Return>", "<FocusOut>"):
+        S["kw_e"].bind(ev, lambda e: (push_keyword_set(S["kw"].get()), _px_tk_paint(app)))
+    kx = tk.Label(kr, text="✕", bg=C["field"], fg=C["mut"], cursor="hand2", padx=6); kx.pack(side="right")
+    kx.bind("<Button-1>", lambda e: (S["kw"].set(""), push_keyword_set(""), _px_tk_paint(app)))
+    app._g2_q(kr, "msg_keyword_prefix")
+    for k in ("push_actions", "msg_icons", "notify_network", "notify_remote", "browser_alarm"):
+        _px_tk_toggle(app, adv, k)
+    _px_tk_field(app, adv, "public_url", err)
+    tk.Label(adv, text="💬 " + tr("Message texts"), bg=C["panel"], fg=C["txt"], anchor="w").pack(fill="x", pady=(10, 2))
+    for kind, ic, nm in _PX_TK_MSG:
+        if _px_tk_hide(f"msg_{kind}_title"):
+            continue
+        l = tk.Label(adv, text="", bg=C["field"], fg=C["txt"], anchor="w", cursor="hand2", padx=8, pady=4, highlightthickness=1, highlightbackground=C["line"])
+        l.pack(fill="x", pady=1); l.bind("<Button-1>", lambda e, k_=kind, n_=nm: _px_tk_msg_dialog(app, k_, n_, S))
+        S["msgs"][kind] = (l, ic, nm)
+    _px_tk_msgpaint(S)
+    ttk.Button(adv, text="📲 " + tr("iPhone shortcuts") + " (" + tr("browser") + ")", command=lambda: app._open_page("/protect#sec:Notifications")).pack(fill="x", pady=(8, 0))
+    err.pack(anchor="w", pady=(4, 0))
+    app._px = S
+    _px_tk_paint(app)
+    def tick():
+        try:
+            if S["st"].winfo_exists() and getattr(app, "_px", None) is S:
+                _px_tk_paint(app); app.root.after(4000, tick)
+        except Exception:
+            pass
+    app.root.after(4000, tick)
+
+
+def _px_tk_build_section(self, sec, sbody, settings_parent=None):
+    if sec != "Notifications":
+        return _px_tk_build_section_before(self, sec, sbody, settings_parent)
+    fr = tk.Frame(sbody, bg=C["panel"]); fr.pack(fill="x")
+    try:
+        _px_tk_panel(self, fr)
+    except Exception as e:                                  # never an empty section: the old list instead
+        log_event("sys", f"Window: push cards: {e}"[:160])
+        fr.destroy()
+        _px_tk_build_section_before(self, sec, sbody, settings_parent)
+
+
+_px_tk_build_section_before = App._build_section
+# wraps: App._build_section
+App._build_section = _px_tk_build_section
+# ----------------------------------------------------------------------------
 # 2.98.14 (Konzept): das Fenster hat dieselben 6 Reiter wie die Webseite (Live · Schutz · Verlauf · Einstellungen · Simulator
 # · Mehr). Die Teile hier hängen sich an die Klasse App (570): Knopfleisten für Verlauf und Mehr, der Kopf des Reiters
 # Simulator und das Fenster des Assistenten (dieselben 5 Schritte wie im Web, 312).
@@ -70631,7 +71350,7 @@ def sicher_selftest():
         assert sx_fmt_dur(125 * 60, "en") == "2 h 5 min." and "2 Std. 5 Min." == sx_fmt_dur(125 * 60, "de")
         CFG["push_pics"] = "text"; assert sx_push_jpg(b"x") is None
         CFG["push_pics"] = "with"; assert sx_push_jpg(b"x") == b"x"
-        assert dict(text_choice_pairs("push_pics")).keys() == {"with", "text"}
+        assert dict(text_choice_pairs("push_pics")).keys() >= {"with", "text"}     # 579a adds «small»
         assert any(x[1] == "rec_keep_days" for x in SLIDERS) and any(x[1] == "push_pics" for x in TEXTS)
         d = tempfile.mkdtemp(prefix="mw-sx-")
         CFG["record_dir"] = d
@@ -70675,6 +71394,582 @@ def sicher_selftest():
 TOGGLES.extend([
     ("AI detection", "ai_own_auto", "Own model: update by itself (checks daily, installs a new model only if its evaluation is not worse)"),
 ])
+# ----------------------------------------------------------------------------
+# Wish of Daniel (30.10.2026, menu review «Push-Nachrichten»): the section was 31 settings one below the other. Now:
+#   Kopf      «Push senden» (notify_on), a status line («2 Kanäle · Test ✓»), «Alle testen»
+#   Wohin     one card per channel: ntfy · Web-Push · Telegram · Pushover · E-Mail · Webhook · SMS. ntfy, Telegram and
+#             Webhook are the «main channel» (only one of them: CFG notify_type, they share the retries and the outbox);
+#             the select «Art der Benachrichtigung» is gone - the type follows the card that is switched on. New key
+#             main_push_on (False = none of the three). ntfy and Webhook share notify_url: switching keeps the address of
+#             the other one in push_url_<type> and brings it back (nothing is ever lost).
+#   Was       push_level: persons (only person alarms) · animals (+ warm bodies of the thermal camera) · all (+ noise,
+#             default = the behaviour up to now; the switches «Voralarm» and «Geräusch: Push» still apply on top).
+#             Sabotage, theft, sensor / system alarms and notes always pass (they are no detection class).
+#             push_pics: with · small (about 640 px) · text (without) - merges «Voralarm mit kleinem Bild».
+#   Wann      the two pauses, quiet hours (quiet_on, quiet_windows, quiet_persons): no alarm push in the windows (the alarm
+#             is still logged / recorded), on the clock of the simulator while it is connected (sim_now, 285).
+#   Erweitert keyword (one field: empty = off), buttons, symbols, page address, info messages, shortcuts, message texts.
+# The web page (531a) and the window (571a) build the same structure; translations + «?» texts in 639a.
+# ----------------------------------------------------------------------------
+
+# ---- defaults ------------------------------------------------------------------------------------------------------------
+_PX_DEF = {"main_push_on": True, "push_level": "all", "quiet_on": False, "quiet_persons": False,
+           "quiet_windows": [{"from": "08:00", "to": "18:00", "days": [0, 1, 2, 3, 4, 5, 6]}],
+           "push_url_ntfy": "", "push_url_webhook": "", "push_cards": []}
+for _k, _v in _PX_DEF.items():
+    CFG.setdefault(_k, json.loads(json.dumps(_v))); DEFAULTS.setdefault(_k, json.loads(json.dumps(_v)))
+# 6.: new installations start with ntfy (before: webhook). Old settings files always contain notify_type; a file without
+# it (very old export) gets «webhook» back in push_migrate() when it has an address.
+if DEFAULTS.get("notify_type") == "webhook" and CFG.get("notify_type") == "webhook":
+    CFG["notify_type"] = "ntfy"
+DEFAULTS["notify_type"] = "ntfy"
+try:
+    USER_SETTINGS_DENY.update({"main_push_on", "push_url_ntfy", "push_url_webhook", "quiet_windows"})
+except NameError:
+    pass
+
+PUSH_LEVELS = (("persons", "Only persons"), ("animals", "Persons + animals"), ("all", "Everything"))
+PUSH_CHANNELS = ("ntfy", "webpush", "telegram", "pushover", "email", "webhook", "sms")
+PUSH_MAIN = ("ntfy", "telegram", "webhook")
+# which detection class an event belongs to (the level decides); None = always (sabotage, sensors, notes, tests)
+PUSH_CLASS = {"person": "person", "warm": "animal", "noise": "other", "prealarm": None, "tamper": None, "info": None, "test": None}
+_PX_LEVEL_HAS = {"persons": {"person"}, "animals": {"person", "animal"}, "all": {"person", "animal", "other"}}
+
+# ---- the schema: new entries, shorter labels (≤ ~40 characters; the examples went into the «?», 639a) -----------------------
+TOGGLES.extend([
+    ("Notifications", "quiet_on", "Quiet hours (no alarm push)"),
+    ("Notifications", "quiet_persons", "Report persons anyway"),
+])
+_sx_put_after(TEXTS, "push_pics", ("Notifications", "push_level", "What is reported", "enum", "push_levels"))
+TEXT_SPECS["push_level"] = ("enum", "push_levels")
+SIMPLE_KEYS.update({"push_level", "quiet_on", "quiet_persons", "push_pics"})
+SX_PUSH_PICS = (("with", "with picture"), ("small", "small picture"), ("text", "without picture"))     # 578 reads it when the choices are asked
+
+_PX_LABELS = {   # key: short English label (the old long one is in the «?» now)
+    "notify_on": "Send push messages", "notify_prealarm": "Pre-alarm at the first movement",
+    "browser_alarm": "Alarm sound in open browsers", "notify_network": "Message when the Pi joins a network",
+    "notify_remote": "Message when somebody watches remotely", "webpush_on": "Web push (this device)", "pushover_on": "Pushover",
+    "msg_icons": "Symbols in messages (🚶 🦊 🛑)", "msg_keyword_on": "Keyword at the start", "email_on": "E-mail",
+    "pushover_emergency": "Emergency alarm (repeats until confirmed)", "push_actions": "Buttons: False alarm · Siren · Off",
+    "alarm_confirm2": "Double confirmation of person alarms",
+    "notify_url": "Address (server/topic)", "telegram_token": "Bot token", "telegram_chat": "Chat ID",
+    "pushover_user": "User key", "pushover_token": "App token", "msg_keyword_prefix": "Keyword (empty = off)",
+    "email_to": "To (your address)", "email_host": "SMTP server", "email_port": "Port", "email_user": "User name",
+    "email_password": "Password", "email_events": "Which messages", "public_url": "Address of this page for links",
+    "push_pics": "Pictures", "notify_cooldown": "Pause between alarms (s)", "prealarm_cooldown": "Pause between pre-alarms (s)",
+}
+
+
+def _px_relabel():
+    for lst in (TOGGLES, TEXTS, SLIDERS):
+        for i, x in enumerate(lst):
+            if x[1] in _PX_LABELS and x[0] in ("Notifications", "Detection"):
+                lst[i] = (x[0], x[1], _PX_LABELS[x[1]]) + tuple(x[3:])
+
+
+_px_relabel()
+# 5.: moved out - «Double confirmation» belongs to the detection, the device name to the system (Setup)
+for _i, _x in enumerate(TOGGLES):
+    if _x[1] == "alarm_confirm2":
+        TOGGLES[_i] = ("Detection",) + tuple(_x[1:])
+for _i, _x in enumerate(TEXTS):
+    if _x[1] == "device_name":
+        TEXTS[_i] = ("Setup",) + tuple(_x[1:])
+# merged: the select «notification type» (the cards decide), «pre-alarm with a small picture» (Pictures: small)
+TOGGLES[:] = [x for x in TOGGLES if x[1] != "prealarm_photo"]
+TEXTS[:] = [x for x in TEXTS if x[1] != "notify_type"]          # TEXT_SPECS keeps it: set_text("notify_type") still works (guide)
+
+_text_choice_pairs_before_px = text_choice_pairs
+
+
+def text_choice_pairs(key):                                   # + push_level
+    if TEXT_SPECS.get(key, (None, None))[1] == "push_levels":
+        return [(k, tr(l)) for k, l in PUSH_LEVELS]
+    return _text_choice_pairs_before_px(key)
+
+
+_set_text_before_px = set_text
+
+
+def set_text(key, value):
+    """+ the push cards: the guide sets notify_url, then notify_type (main channel on again, no address swap - the
+    address it just set is the one of the new type); «Pictures» covers the pre-alarm picture too"""
+    ok, err = _set_text_before_px(key, value)
+    if ok and key == "notify_type":
+        CFG["main_push_on"] = True; save_settings()
+    if ok and key == "push_pics":
+        CFG["prealarm_photo"] = True; save_settings()
+    return ok, err
+
+
+# ---- pictures: with / small / without ------------------------------------------------------------------------------------
+_sx_push_jpg_before_px = sx_push_jpg
+
+
+def sx_push_jpg(jpg):
+    jpg = _sx_push_jpg_before_px(jpg)
+    if not jpg or CFG.get("push_pics") != "small":
+        return jpg
+    try:
+        img = cv2.imdecode(np.frombuffer(jpg, np.uint8), cv2.IMREAD_COLOR)
+        if img is None:
+            return jpg
+        h, w = img.shape[:2]
+        if w > 640:
+            img = cv2.resize(img, (640, int(h * 640 / w)), interpolation=cv2.INTER_AREA)
+        ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 70])
+        return buf.tobytes() if ok else jpg
+    except Exception:
+        return jpg
+
+
+# ---- level and quiet hours -------------------------------------------------------------------------------------------------
+_PX_HM = re.compile(r"^([01]?\d|2[0-3]):([0-5]\d)$")
+
+
+def _px_min(s):
+    m = _PX_HM.match(str(s or "").strip())
+    return int(m.group(1)) * 60 + int(m.group(2)) if m else None
+
+
+def quiet_clean(lst):
+    """at most 4 windows {from, to, days[0=Mon..6=Sun]}; broken entries are dropped"""
+    out = []
+    for w in (lst if isinstance(lst, list) else [])[:4]:
+        if not isinstance(w, dict):
+            continue
+        a, b = _px_min(w.get("from")), _px_min(w.get("to"))
+        if a is None or b is None or a == b:
+            continue
+        days = sorted({int(d) for d in (w.get("days") or []) if str(d).lstrip("-").isdigit() and 0 <= int(d) <= 6})
+        out.append({"from": "%02d:%02d" % divmod(a, 60), "to": "%02d:%02d" % divmod(b, 60), "days": days or [0, 1, 2, 3, 4, 5, 6]})
+    return out
+
+
+def push_clock():
+    """the clock for the quiet hours: the simulated one while the simulator is connected (285), otherwise the real one"""
+    try:
+        return sim_now()
+    except Exception:
+        return datetime.now()
+
+
+def quiet_now(dt=None):
+    """True while a quiet window is running. A window over midnight (22:00 → 06:00) belongs to the day it starts on
+    (like the schedules)."""
+    if not CFG.get("quiet_on"):
+        return False
+    dt = dt or push_clock()
+    m, wd = dt.hour * 60 + dt.minute, dt.weekday()
+    for w in quiet_clean(CFG.get("quiet_windows")):
+        a, b = _px_min(w["from"]), _px_min(w["to"])
+        if a < b:
+            if wd in w["days"] and a <= m < b:
+                return True
+        elif (wd in w["days"] and m >= a) or (((wd - 1) % 7) in w["days"] and m < b):
+            return True
+    return False
+
+
+def push_allowed(ev, dt=None):
+    """(ok, why) - may this event go out as a push? why: "" / "level" / "quiet"."""
+    cls = PUSH_CLASS.get(ev)
+    if cls is None:
+        return True, ""
+    lv = CFG.get("push_level") if CFG.get("push_level") in _PX_LEVEL_HAS else "all"
+    if cls not in _PX_LEVEL_HAS[lv]:
+        return False, "level"
+    if quiet_now(dt) and not (cls == "person" and CFG.get("quiet_persons")):
+        return False, "quiet"
+    return True, ""
+
+
+_PX_HELD = {}
+
+
+def _px_held(ev, why):
+    STATE["notify_status"] = "quiet hours" if why == "quiet" else "not reported (level)"
+    now = time.time()
+    if now - _PX_HELD.get((ev, why), 0) > 60:                # the log once a minute per kind, the alarm itself is logged anyway
+        _PX_HELD[(ev, why)] = now
+        log_event("web", f"No push message ({'quiet hours' if why == 'quiet' else 'level ' + str(CFG.get('push_level'))}): {ev}")
+
+
+_px_person_before = Notifier.person
+_px_prealarm_before = Notifier.prealarm
+_px_main_conf_before = Notifier.main_configured
+_px_test_all_before = Notifier.test_all
+
+
+def _px_person(self, count, snapshot_path=None, frame=None):
+    if count and is_armed() and CFG["notify_on"]:
+        ok, why = push_allowed("person")
+        if not ok:
+            return _px_held("person", why)
+    return _px_person_before(self, count, snapshot_path, frame)
+
+
+def _px_prealarm(self, frame, event="prealarm"):
+    if is_armed() and CFG["notify_on"]:
+        ok, why = push_allowed(event if event in ("warm", "noise") else "prealarm")
+        if not ok:
+            _px_held(event, why)
+            return False
+    return _px_prealarm_before(self, frame, event)
+
+
+def _px_main_configured():
+    if not CFG.get("main_push_on", True):
+        return False
+    return _px_main_conf_before()
+
+
+def _px_test_all(self, frame=None):
+    res = _px_test_all_before(self, frame)
+    STATE["push_test"] = {"t": time.time(), "n": len(res), "ok": sum(1 for r in res if r.get("ok")), "res": res}
+    return res
+
+
+# wraps: Notifier.person
+Notifier.person = _px_person
+# wraps: Notifier.prealarm
+Notifier.prealarm = _px_prealarm
+# wraps: Notifier.main_configured
+Notifier.main_configured = staticmethod(_px_main_configured)
+# wraps: Notifier.test_all
+Notifier.test_all = _px_test_all
+
+
+# ---- channels -------------------------------------------------------------------------------------------------------------
+def _px_url_swap(old, new):
+    """ntfy and Webhook share notify_url: keep the address of the old one, bring back the one of the new one"""
+    if old == new:
+        return
+    if old in ("ntfy", "webhook"):
+        CFG["push_url_" + old] = str(CFG.get("notify_url") or "")
+    if new in ("ntfy", "webhook"):
+        back = str(CFG.get("push_url_" + new) or "")
+        if old in ("ntfy", "webhook") or back:           # Telegram → ntfy without a kept address: notify_url stays
+            CFG["notify_url"] = back
+
+
+def push_channels():
+    """the cards: on (switched on), ready (can send), used (has data - shown without «+ add channel»)"""
+    t_, main_on = CFG.get("notify_type"), bool(CFG.get("main_push_on", True))
+    url = str(CFG.get("notify_url") or "").strip()
+    try:
+        subs = len(webpush_subs())
+    except Exception:
+        subs = 0
+    try:
+        nums = bool(sms_numbers())
+    except Exception:
+        nums = False
+    keep = set(CFG.get("push_cards") or [])
+    def one(id_, on, ready, used, info=""):
+        return {"id": id_, "on": bool(on), "ready": bool(on and ready), "used": bool(on or used or id_ in keep), "info": info}
+    out = [
+        one("ntfy", main_on and t_ == "ntfy", bool(url), (t_ == "ntfy" and url) or CFG.get("push_url_ntfy"), _url_host(url) if t_ == "ntfy" and url else ""),
+        one("webpush", CFG.get("webpush_on"), subs > 0, subs > 0, str(subs)),
+        one("telegram", main_on and t_ == "telegram", CFG.get("telegram_token") and CFG.get("telegram_chat"), CFG.get("telegram_token") or CFG.get("telegram_chat")),
+        one("pushover", CFG.get("pushover_on"), pushover_ready(), CFG.get("pushover_user") or CFG.get("pushover_token")),
+        one("email", CFG.get("email_on"), email_ready(), CFG.get("email_to") or CFG.get("email_host"), str(CFG.get("email_to") or "")),
+        one("webhook", main_on and t_ == "webhook", bool(url), (t_ == "webhook" and url) or CFG.get("push_url_webhook"), _url_host(url) if t_ == "webhook" and url else ""),
+        one("sms", CFG.get("sms_on"), nums, nums),
+    ]
+    return out
+
+
+def push_set_channel(ch, on):
+    """switch one card on / off. ntfy, Telegram, Webhook: only one (switching one on switches the other two off)."""
+    if ch not in PUSH_CHANNELS:
+        return False, "unknown channel"
+    on = bool(on)
+    if ch in PUSH_MAIN:
+        if on:
+            _px_url_swap(CFG.get("notify_type"), ch)
+            CFG["notify_type"] = ch; CFG["main_push_on"] = True
+        elif CFG.get("notify_type") == ch:
+            CFG["main_push_on"] = False
+    else:
+        CFG[{"webpush": "webpush_on", "pushover": "pushover_on", "email": "email_on", "sms": "sms_on"}[ch]] = on
+    cards = [c for c in (CFG.get("push_cards") or []) if c in PUSH_CHANNELS]
+    if on and ch not in cards:
+        cards.append(ch)
+    CFG["push_cards"] = cards
+    save_settings()
+    log_event("web", f"Push channel {ch}: {'on' if on else 'off'}")
+    return True, ""
+
+
+def push_add_card(ch):
+    """«+ Kanal hinzufügen»: the card is shown (also while it is still off)"""
+    if ch in PUSH_CHANNELS and ch not in (CFG.get("push_cards") or []):
+        CFG["push_cards"] = [c for c in (CFG.get("push_cards") or []) if c in PUSH_CHANNELS] + [ch]
+        save_settings()
+
+
+def push_keyword():
+    return str(CFG.get("msg_keyword_prefix") or "") if CFG.get("msg_keyword_on", True) else ""
+
+
+def push_keyword_set(v):
+    """one field: empty = off; otherwise the word (letters and digits, at most 12)"""
+    v = re.sub(r"[^A-Za-z0-9]", "", str(v or ""))[:12]
+    if not v:
+        CFG["msg_keyword_on"] = False
+    else:
+        CFG["msg_keyword_on"] = True; CFG["msg_keyword_prefix"] = v
+    save_settings()
+    return True, ""
+
+
+def push_test_one(w, ch):
+    """▶ Test of one card - the same as «Test all channels», only this one; [{ch, ok, msg}]"""
+    if ch == "all":
+        return w.notifier.test_all(getattr(w, "frame_out", None))
+    n = w.notifier
+    jpg = None
+    fr = getattr(w, "frame_out", None)
+    if fr is not None:
+        ok_, buf = cv2.imencode(".jpg", fr, [cv2.IMWRITE_JPEG_QUALITY, 80]); jpg = buf.tobytes() if ok_ else None
+    pub = CFG["public_url"].strip().rstrip("/")
+    p = {"event": "test", "persons": 0, "time": datetime.now().isoformat(timespec="seconds"), "snapshot": None, "rain": False, "wind": "",
+         "source": STATE["source_label"], "link": pub + "/recordings" if pub else ""}
+    name = {"ntfy": "ntfy", "webpush": "Web-Push", "telegram": "Telegram", "pushover": "Pushover", "email": "E-Mail", "webhook": "Webhook", "sms": "SMS"}.get(ch, ch)
+    def go():
+        if ch in PUSH_MAIN:
+            if CFG.get("notify_type") != ch or not n.main_configured():
+                return False, tr("not set up")
+            code, where = n._send_main(p, jpg, "test.jpg"); return True, f"{where} · HTTP {code}"
+        if ch == "pushover":
+            return n._pushover(p, jpg, "test.jpg") if pushover_ready() else (False, tr("not set up"))
+        if ch == "email":
+            return email_send(n._title(p), n._text(p), jpg, "test.jpg") if email_ready() else (False, tr("not set up"))
+        if ch == "sms":
+            return sms_send(n._title(p) + ": " + n._text(p), force=True) if (CFG["sms_on"] and sms_numbers()) else (False, tr("not set up"))
+        if ch == "webpush":
+            k = webpush_all(n._title(p), n._text(p), "/", tag="mw-test", urgent=True) if CFG["webpush_on"] else 0
+            return k > 0, f"{k} device(s)"
+        return False, "unknown channel"
+    try:
+        ok, msg = go()
+    except Exception as e:
+        ok, msg = False, str(e)
+    msg = str(msg)
+    for sec_ in (CFG["telegram_token"], CFG["pushover_token"], CFG["pushover_user"], CFG.get("email_password", ""), CFG["notify_url"].strip()):
+        if sec_:
+            msg = msg.replace(sec_, "***")
+    res = [{"ch": name, "ok": bool(ok), "msg": msg[:160]}]
+    log_event("web", f"Test of {name}: {'ok' if ok else 'FAILED'}")
+    STATE["push_test"] = {"t": time.time(), "n": 1, "ok": 1 if ok else 0, "res": res}
+    return res
+
+
+def push_info(lang=None):
+    """everything the cards need (web 531a, window 571a)"""
+    L = cur_lang(lang)
+    ch = push_channels()
+    n_ready = sum(1 for c in ch if c["ready"])
+    te = STATE.get("push_test") or {}
+    return {"on": bool(CFG.get("notify_on")), "channels": ch, "ready": n_ready, "main": CFG.get("notify_type"),
+            "main_on": bool(CFG.get("main_push_on", True)), "url": str(CFG.get("notify_url") or ""),
+            "level": CFG.get("push_level") or "all", "pics": CFG.get("push_pics") or "with",
+            "quiet": {"on": bool(CFG.get("quiet_on")), "persons": bool(CFG.get("quiet_persons")), "windows": quiet_clean(CFG.get("quiet_windows")),
+                      "now": quiet_now(), "clock": push_clock().strftime("%H:%M"), "sim": bool(CFG.get("sim_on"))},
+            "keyword": push_keyword(), "night_from": int(CFG.get("report_from") or 20),
+            "test": {"t": te.get("t", 0), "n": te.get("n", 0), "ok": te.get("ok", 0), "res": te.get("res", [])},
+            "status_line": push_status_line(L, ch, te)}
+
+
+def push_status_line(lang=None, ch=None, te=None):
+    """«2 Kanäle · Test ✓» (or «aus», «kein Kanal», «Ruhezeit»)"""
+    L = cur_lang(lang)
+    if not CFG.get("notify_on"):
+        return tr("switched off", L)
+    ch = ch if ch is not None else push_channels()
+    te = te if te is not None else (STATE.get("push_test") or {})
+    n = sum(1 for c in ch if c["ready"])
+    parts = [trf("{n} channels", L, n=n) if n != 1 else tr("1 channel", L)] if n else [tr("no channel set up", L)]
+    if te.get("n"):
+        parts.append(tr("Test", L) + " " + ("✓" if te.get("ok") == te.get("n") else f"{te.get('ok')}/{te.get('n')} ✓"))
+    if quiet_now():
+        parts.append("🌙 " + tr("quiet hours", L))
+    return " · ".join(parts)
+
+
+# ---- migration of older settings -------------------------------------------------------------------------------------------
+def push_migrate(cfg_in):
+    """older settings files: nothing is lost - the type, the address, Telegram, Pushover, e-mail stay as they were.
+    Only: a file without notify_type (very old export) keeps the old default «webhook» when it has an address;
+    broken quiet windows are cleaned; an unknown level becomes «all»."""
+    did = []
+    if isinstance(cfg_in, dict):
+        if "notify_type" not in cfg_in and str(CFG.get("notify_url") or "").strip():
+            CFG["notify_type"] = "webhook"; did.append("push: notification type webhook (old default)")
+        if "main_push_on" not in cfg_in:
+            CFG["main_push_on"] = True
+            if CFG.get("notify_type") == "webhook" and not str(CFG.get("notify_url") or "").strip():
+                CFG["notify_type"] = "ntfy"; did.append("push: nothing set up yet - main channel ntfy (new default)")
+    if CFG.get("push_level") not in _PX_LEVEL_HAS:
+        CFG["push_level"] = "all"
+    if CFG.get("push_pics") not in ("with", "small", "text"):
+        CFG["push_pics"] = "with"
+    CFG["quiet_windows"] = quiet_clean(CFG.get("quiet_windows")) or json.loads(json.dumps(_PX_DEF["quiet_windows"]))
+    if not isinstance(CFG.get("push_cards"), list):
+        CFG["push_cards"] = []
+    return did
+
+
+_settings_migrations_before_px = _settings_migrations
+
+
+def _settings_migrations(cfg_in):
+    _settings_migrations_before_px(cfg_in)
+    try:
+        did = push_migrate(cfg_in)
+        if did:
+            log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
+    except Exception as e:
+        log_event("sys", f"Settings migration (579a): {e}"[:150])
+
+
+# ---- web: /api/push (only the administrator: the path is in no role's list, 040) -------------------------------------------
+def push_routes(app, watch, reply, body):
+    from flask import request
+
+    @app.route("/api/push", methods=["GET", "POST"])
+    def api_push():
+        if request.method == "GET":
+            return reply(push_info(request.args.get("lang")))
+        d = body(); a = d.get("action"); lang = norm_lang(d.get("lang"))
+        if a == "channel":
+            ok, err = push_set_channel(str(d.get("ch") or ""), d.get("on"))
+        elif a == "add":
+            push_add_card(str(d.get("ch") or "")); ok, err = True, ""
+        elif a == "test":
+            if not CFG.get("notify_on"):
+                return reply({"ok": False, "error": tr("Push messages are switched off", lang)}, 400)
+            res = push_test_one(watch, str(d.get("ch") or "all"))
+            return reply(dict(push_info(lang), ok=True, results=res))
+        elif a == "quiet":
+            CFG["quiet_windows"] = quiet_clean(d.get("windows")) or CFG["quiet_windows"]; save_settings(); ok, err = True, ""
+        elif a == "keyword":
+            ok, err = push_keyword_set(d.get("value"))
+        else:
+            ok, err = False, "unknown action"
+        if not ok:
+            return reply({"ok": False, "error": tr_err(err, lang)}, 400)
+        return reply(dict(push_info(lang), ok=True))
+
+
+_sx_routes_before_px = sx_routes
+
+
+def sx_routes(app, watch, reply, body):                    # + /api/push (called once by 550)
+    _sx_routes_before_px(app, watch, reply, body)
+    push_routes(app, watch, reply, body)
+
+
+# ---- --self-test: levels, quiet hours (also on the simulator clock), migration of old settings, channels, pictures ----------
+def push_selftest():
+    g_ = globals()
+    keys = ("notify_type", "notify_url", "main_push_on", "push_level", "quiet_on", "quiet_persons", "quiet_windows", "push_url_ntfy",
+            "push_url_webhook", "push_cards", "telegram_token", "telegram_chat", "pushover_on", "pushover_user", "pushover_token",
+            "email_on", "email_to", "email_host", "webpush_on", "sms_on", "push_pics", "sim_on", "msg_keyword_on", "msg_keyword_prefix", "prealarm_photo")
+    keep = {k: json.loads(json.dumps(CFG.get(k))) for k in keys}
+    sim_keep = {k: SIM.get(k) for k in ("t", "clock")}
+    save_keep = g_["save_settings"]
+    g_["save_settings"] = lambda *a, **k: None
+    try:
+        CFG["sim_on"] = False; CFG["quiet_on"] = False
+        # levels: «all» = as before (person, warm body, noise); sabotage / notes always
+        CFG["push_level"] = "all"
+        assert all(push_allowed(e)[0] for e in ("person", "warm", "noise", "prealarm", "tamper", "info", "test"))
+        CFG["push_level"] = "animals"
+        assert push_allowed("warm")[0] and push_allowed("person")[0] and push_allowed("noise") == (False, "level")
+        CFG["push_level"] = "persons"
+        assert push_allowed("person")[0] and push_allowed("warm") == (False, "level") and push_allowed("noise") == (False, "level")
+        assert push_allowed("tamper")[0] and push_allowed("info")[0] and push_allowed("prealarm")[0]
+        CFG["push_level"] = "nonsense"; assert push_allowed("noise")[0], "an unknown level counts as «all»"
+        CFG["push_level"] = "all"
+        # quiet hours: a window over midnight belongs to the day it starts on; «report persons anyway»
+        CFG["quiet_on"] = True; CFG["quiet_windows"] = [{"from": "22:00", "to": "06:00", "days": [3]}]       # Thursday night
+        thu23, fri05, fri07, wed23 = datetime(2026, 10, 29, 23, 0), datetime(2026, 10, 30, 5, 0), datetime(2026, 10, 30, 7, 0), datetime(2026, 10, 28, 23, 0)
+        assert quiet_now(thu23) and quiet_now(fri05) and not quiet_now(fri07) and not quiet_now(wed23)
+        CFG["quiet_persons"] = False
+        assert push_allowed("person", thu23) == (False, "quiet") and push_allowed("warm", thu23) == (False, "quiet")
+        assert push_allowed("tamper", thu23)[0] and push_allowed("info", thu23)[0], "sabotage and notes come in the quiet hours"
+        CFG["quiet_persons"] = True
+        assert push_allowed("person", thu23)[0] and push_allowed("warm", thu23) == (False, "quiet")
+        CFG["quiet_windows"] = [{"from": "08:00", "to": "18:00", "days": [0, 1, 2, 3, 4]}]
+        assert quiet_now(datetime(2026, 10, 30, 12, 0)) and not quiet_now(datetime(2026, 10, 31, 12, 0)) and not quiet_now(datetime(2026, 10, 30, 18, 0))
+        CFG["quiet_on"] = False; assert not quiet_now(datetime(2026, 10, 30, 12, 0))
+        assert quiet_clean([{"from": "25:00", "to": "06:00"}, {"from": "7:05", "to": "09:00", "days": [9, 1]}, "x"]) == [{"from": "07:05", "to": "09:00", "days": [1]}]
+        # the simulator clock counts while it is connected (285 sim_now)
+        CFG["quiet_on"] = True; CFG["quiet_persons"] = False; CFG["quiet_windows"] = [{"from": "02:00", "to": "04:00", "days": [0, 1, 2, 3, 4, 5, 6]}]
+        CFG["sim_on"] = True; SIM["t"] = time.time(); SIM["clock"] = {"date": "2026-10-30", "hour": 3.0, "speed": 1.0}
+        assert push_clock().hour == 3 and quiet_now() and push_allowed("person") == (False, "quiet")
+        SIM["clock"] = {"date": "2026-10-30", "hour": 13.0, "speed": 1.0}
+        assert not quiet_now()
+        CFG["sim_on"] = False; CFG["quiet_on"] = False
+        # migration: old settings with Telegram, Pushover, e-mail, webhook - nothing changes, nothing is lost
+        old = {"notify_type": "telegram", "telegram_token": "123456:ABCdef", "telegram_chat": "4242", "notify_url": "https://hook.example.ch/x",
+               "pushover_on": True, "pushover_user": "u" * 30, "pushover_token": "t" * 30, "email_on": True, "email_to": "a@b.ch",
+               "email_host": "smtp.b.ch", "webpush_on": False, "sms_on": False}
+        CFG.update(json.loads(json.dumps(old))); CFG["main_push_on"] = True; CFG["push_cards"] = []; CFG["push_url_ntfy"] = CFG["push_url_webhook"] = ""
+        push_migrate(dict(old))
+        assert all(CFG[k] == v for k, v in old.items()), "migration must not change channel settings"
+        ch = {c["id"]: c for c in push_channels()}
+        assert ch["telegram"]["on"] and ch["telegram"]["ready"] and ch["pushover"]["ready"] and ch["email"]["ready"]
+        assert not ch["ntfy"]["on"] and not ch["webhook"]["on"] and Notifier.main_configured()
+        # switching the main channel keeps every address and token
+        push_set_channel("webhook", True)
+        assert CFG["notify_type"] == "webhook" and CFG["notify_url"] == "https://hook.example.ch/x" and CFG["telegram_token"] == "123456:ABCdef"
+        push_set_channel("ntfy", True)
+        assert CFG["notify_type"] == "ntfy" and CFG["notify_url"] == "" and CFG["push_url_webhook"] == "https://hook.example.ch/x"
+        CFG["notify_url"] = "https://ntfy.sh/mw-test-topic"
+        push_set_channel("webhook", True)
+        assert CFG["notify_url"] == "https://hook.example.ch/x" and CFG["push_url_ntfy"] == "https://ntfy.sh/mw-test-topic"
+        push_set_channel("telegram", True); push_set_channel("ntfy", True)
+        assert CFG["notify_url"] == "https://ntfy.sh/mw-test-topic" and CFG["telegram_token"] == "123456:ABCdef"
+        push_set_channel("ntfy", False)
+        assert not CFG["main_push_on"] and not Notifier.main_configured() and CFG["notify_url"] == "https://ntfy.sh/mw-test-topic"
+        push_set_channel("email", False); assert not CFG["email_on"] and CFG["email_to"] == "a@b.ch"
+        # a very old file without notify_type: the old default «webhook» when it has an address; an old webhook stays webhook
+        CFG["notify_type"] = "ntfy"; CFG["notify_url"] = "https://ha.local/api/webhook/x"; CFG["main_push_on"] = True
+        push_migrate({"notify_url": "https://ha.local/api/webhook/x"}); assert CFG["notify_type"] == "webhook"
+        CFG["notify_type"] = "webhook"; push_migrate({"notify_type": "webhook", "notify_url": "https://ha.local/api/webhook/x"})
+        assert CFG["notify_type"] == "webhook" and CFG["main_push_on"] and {c["id"]: c for c in push_channels()}["webhook"]["ready"]
+        assert DEFAULTS["notify_type"] == "ntfy", "new installations start with ntfy"
+        CFG["notify_type"] = "webhook"; CFG["notify_url"] = ""; push_migrate({"notify_type": "webhook", "notify_url": ""})
+        assert CFG["notify_type"] == "ntfy", "an untouched old default (webhook without address) becomes ntfy"
+        # keyword: one field, empty = off (the word is kept)
+        push_keyword_set("MW"); assert push_keyword() == "MW" and msg_keyword("person").startswith("MW-")
+        push_keyword_set(""); assert push_keyword() == "" and msg_keyword("person") == "" and CFG["msg_keyword_prefix"] == "MW"
+        push_keyword_set("Cam-1!"); assert push_keyword() == "Cam1"
+        # pictures: small = about 640 px, without = none
+        ok_, buf = cv2.imencode(".jpg", np.zeros((720, 1280, 3), np.uint8)); big = buf.tobytes()
+        CFG["push_pics"] = "small"; sm = sx_push_jpg(big)
+        assert cv2.imdecode(np.frombuffer(sm, np.uint8), cv2.IMREAD_COLOR).shape[1] == 640
+        CFG["push_pics"] = "text"; assert sx_push_jpg(big) is None
+        CFG["push_pics"] = "with"; assert sx_push_jpg(big) == big
+        assert set(dict(text_choice_pairs("push_level"))) == {"persons", "animals", "all"}
+        assert all(len(tr(l, "de")) <= 42 for k, l in _PX_LABELS.items()), "labels at most about 40 characters"
+        assert not any(x[1] == "notify_type" for x in TEXTS) and any(x[1] == "alarm_confirm2" and x[0] == "Detection" for x in TOGGLES)
+        assert "push_status_line" and push_status_line("de")
+    finally:
+        g_["save_settings"] = save_keep
+        CFG.update(keep)
+        for k, v in sim_keep.items():
+            if v is None:
+                SIM.pop(k, None)
+            else:
+                SIM[k] = v
+    return "levels, quiet hours (sim clock), migration, channels, keyword, pictures"
+
+
+SELFTEST_EXTRA.append(("Push messages as cards: levels, quiet hours, old settings (579a)", push_selftest))
 # ----------------------------------------------------------------------------
 # Translations: French, Italian, Romansh (Rumantsch Grischun). Key = the English text of the program.
 #   Missing texts: Romansh shows German, French / Italian show English. HELP_X = the manual (help page).
@@ -87266,6 +88561,210 @@ for _k, _v in _HX_FALEARN.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX_PUSH = {
+    # schema (579a)
+    'Send push messages': ('Push senden', 'Envoyer des notifications', 'Inviare notifiche', 'Trametter avis push'),
+    'Pre-alarm at the first movement': ('Voralarm bei der ersten Bewegung', 'Pré-alarme au premier mouvement', 'Preallarme al primo movimento', 'Prealarm tar l’emprim moviment'),
+    'Alarm sound in open browsers': ('Alarmton in offenen Browsern', 'Son d’alarme dans les navigateurs ouverts', 'Suono d’allarme nei browser aperti', 'Tun d’alarm en browsers averts'),
+    'Message when the Pi joins a network': ('Meldung, wenn der Pi in ein Netz kommt', 'Message quand le Pi rejoint un réseau', 'Messaggio quando il Pi entra in una rete', 'Messadi, cur ch’il Pi vegn en ina rait'),
+    'Message when somebody watches remotely': ('Meldung, wenn jemand von aussen zuschaut', 'Message quand quelqu’un regarde à distance', 'Messaggio quando qualcuno guarda da fuori', 'Messadi, cur ch’insatgi guarda da dadora'),
+    'Web push (this device)': ('Web-Push (dieses Gerät)', 'Web push (cet appareil)', 'Web push (questo dispositivo)', 'Web push (quest apparat)'),
+    'Symbols in messages (🚶 🦊 🛑)': ('Symbole in Meldungen (🚶 🦊 🛑)', 'Symboles dans les messages (🚶 🦊 🛑)', 'Simboli nei messaggi (🚶 🦊 🛑)', 'Simbols en messadis (🚶 🦊 🛑)'),
+    'Keyword at the start': ('Stichwort am Anfang', 'Mot-clé au début', 'Parola chiave all’inizio', 'Pled-clav al cumenzament'),
+    'E-mail': ('E-Mail', 'E-mail', 'E-mail', 'E-mail'),
+    'Emergency alarm (repeats until confirmed)': ('Notfall-Alarm (wiederholt bis bestätigt)', 'Alarme d’urgence (répétée jusqu’à confirmation)', 'Allarme d’emergenza (ripete fino a conferma)', 'Alarm d’urgenza (repeta fin confermà)'),
+    'Buttons: False alarm · Siren · Off': ('Knöpfe: Fehlalarm · Sirene · Aus', 'Boutons : Fausse alarme · Sirène · Arrêt', 'Pulsanti: Falso allarme · Sirena · Spento', 'Buttuns: Fals alarm · Sirena · Ora'),
+    'Double confirmation of person alarms': ('Doppelte Bestätigung bei Personen', 'Double confirmation des alarmes personne', 'Doppia conferma degli allarmi persona', 'Dubla conferma dals alarms da persunas'),
+    'Address (server/topic)': ('Adresse (Server/Thema)', 'Adresse (serveur/sujet)', 'Indirizzo (server/argomento)', 'Adressa (server/tema)'),
+    'Bot token': ('Bot-Token', 'Jeton du bot', 'Token del bot', 'Token dal bot'),
+    'Chat ID': ('Chat-ID', 'ID du chat', 'ID della chat', 'ID dal chat'),
+    'User key': ('Benutzerschlüssel', 'Clé utilisateur', 'Chiave utente', 'Clav d’utilisader'),
+    'App token': ('App-Token', 'Jeton de l’app', 'Token dell’app', 'Token da l’app'),
+    'Keyword (empty = off)': ('Stichwort (leer = aus)', 'Mot-clé (vide = désactivé)', 'Parola chiave (vuota = spenta)', 'Pled-clav (vid = deactivà)'),
+    'To (your address)': ('An (deine Adresse)', 'À (ton adresse)', 'A (il tuo indirizzo)', 'A (tia adressa)'),
+    'SMTP server': ('SMTP-Server', 'Serveur SMTP', 'Server SMTP', 'Server SMTP'),
+    'User name': ('Benutzername', 'Nom d’utilisateur', 'Nome utente', 'Num d’utilisader'),
+    'Which messages': ('Welche Meldungen', 'Quels messages', 'Quali messaggi', 'Tge messadis'),
+    'Address of this page for links': ('Adresse dieser Seite für Links', 'Adresse de cette page pour les liens', 'Indirizzo di questa pagina per i link', 'Adressa da questa pagina per links'),
+    'Pictures': ('Bilder', 'Images', 'Immagini', 'Maletgs'),
+    'with picture': ('mit', 'avec', 'con', 'cun'),
+    'small picture': ('klein', 'petite', 'piccola', 'pitschen'),
+    'without picture': ('ohne', 'sans', 'senza', 'senza'),
+    'Pause between alarms (s)': ('Pause zwischen Alarmen (s)', 'Pause entre les alarmes (s)', 'Pausa tra gli allarmi (s)', 'Pausa tranter alarms (s)'),
+    'Pause between pre-alarms (s)': ('Pause zwischen Voralarmen (s)', 'Pause entre les pré-alarmes (s)', 'Pausa tra i preallarmi (s)', 'Pausa tranter prealarms (s)'),
+    'Quiet hours (no alarm push)': ('Ruhezeiten (kein Alarm-Push)', 'Heures calmes (pas de push d’alarme)', 'Ore di quiete (nessun push d’allarme)', 'Uras da paus (nagin push d’alarm)'),
+    'Report persons anyway': ('Personen trotzdem melden', 'Signaler quand même les personnes', 'Segnalare comunque le persone', 'Annunziar tuttina persunas'),
+    'What is reported': ('Was gemeldet wird', 'Ce qui est signalé', 'Cosa viene segnalato', 'Tge che vegn annunzià'),
+    'Only persons': ('Nur Personen', 'Seulement les personnes', 'Solo persone', 'Mo persunas'),
+    'Persons + animals': ('Personen + Tiere', 'Personnes + animaux', 'Persone + animali', 'Persunas + animals'),
+    'Everything': ('Alles', 'Tout', 'Tutto', 'Tut'),
+    # status, tests (579a)
+    'not set up': ('nicht eingerichtet', 'pas configuré', 'non configurato', 'betg endrizzà'),
+    'not set up yet': ('noch nicht eingerichtet', 'pas encore configuré', 'non ancora configurato', 'anc betg endrizzà'),
+    'no device yet': ('noch kein Gerät', 'encore aucun appareil', 'ancora nessun dispositivo', 'anc nagin apparat'),
+    'Push messages are switched off': ('Push-Nachrichten sind ausgeschaltet', 'Les notifications sont désactivées', 'Le notifiche sono spente', 'Ils avis push èn deactivads'),
+    '{n} channels': ('{n} Kanäle', '{n} canaux', '{n} canali', '{n} chanals'),
+    '1 channel': ('1 Kanal', '1 canal', '1 canale', '1 chanal'),
+    'no channel set up': ('kein Kanal eingerichtet', 'aucun canal configuré', 'nessun canale configurato', 'nagin chanal endrizzà'),
+    'quiet hours': ('Ruhezeit', 'heures calmes', 'ore di quiete', 'uras da paus'),
+    'switched off': ('aus', 'désactivé', 'spento', 'deactivà'),
+    'ready': ('bereit', 'prêt', 'pronto', 'pront'),
+    # the cards (531a, 571a)
+    'Where to': ('Wohin', 'Où', 'Dove', 'Nua'),
+    'What': ('Was', 'Quoi', 'Cosa', 'Tge'),
+    'When': ('Wann', 'Quand', 'Quando', 'Cura'),
+    'Add channel': ('Kanal hinzufügen', 'Ajouter un canal', 'Aggiungi canale', 'Agiuntar in chanal'),
+    'Test all': ('Alle testen', 'Tout tester', 'Testa tutto', 'Testar tut'),
+    'Send a test message over this channel only': ('Test-Nachricht nur über diesen Kanal', 'Message de test par ce canal seulement', 'Messaggio di prova solo su questo canale', 'Messadi da test mo sur quest chanal'),
+    'on / off': ('ein / aus', 'marche / arrêt', 'acceso / spento', 'en / ora'),
+    'Only one of ntfy · Telegram · Webhook (the main channel, with repeats and the outbox).': (
+        'Nur einer von ntfy · Telegram · Webhook (der Hauptkanal, mit Wiederholung und Postausgang).',
+        'Un seul parmi ntfy · Telegram · Webhook (le canal principal, avec répétitions et boîte d’envoi).',
+        'Solo uno tra ntfy · Telegram · Webhook (il canale principale, con ripetizioni e posta in uscita).',
+        'Mo in da ntfy · Telegram · Webhook (il chanal principal, cun repetiziun e posta da sortida).'),
+    'Switch it on in the browser of the phone (Settings → Push messages → Web push).': (
+        'Im Browser des Handys einschalten (Schutz → Push-Nachrichten → Web-Push).', 'À activer dans le navigateur du téléphone (Protection → Notifications → Web push).',
+        'Da attivare nel browser del telefono (Protezione → Notifiche → Web push).', 'Activar en il browser dal telefonin (Protecziun → Avis push → Web push).'),
+    'Open in the browser': ('Im Browser öffnen', 'Ouvrir dans le navigateur', 'Apri nel browser', 'Avrir en il browser'),
+    'The iPhone can start a shortcut from an e-mail (see Advanced → iPhone shortcuts).': (
+        'Das iPhone kann mit einer E-Mail einen Kurzbefehl starten (siehe Erweitert → iPhone-Kurzbefehle).',
+        'L’iPhone peut lancer un raccourci à partir d’un e-mail (voir Avancé → Raccourcis iPhone).',
+        'L’iPhone può avviare un comando rapido da un’e-mail (vedi Avanzate → Comandi rapidi iPhone).',
+        'L’iPhone po lantschar in cumond svelt cun in e-mail (guarda Avanzà → Cumonds svelts iPhone).'),
+    'Webhook address (JSON POST)': ('Webhook-Adresse (JSON-POST)', 'Adresse du webhook (JSON POST)', 'Indirizzo webhook (JSON POST)', 'Adressa dal webhook (JSON POST)'),
+    'Time window': ('Zeitfenster', 'Plage horaire', 'Fascia oraria', 'Fanestra da temp'),
+    'Day at home': ('Tagsüber zuhause', 'Journée à la maison', 'Di giorno a casa', 'Di a chasa'),
+    'Weekdays 08:00 until the night time of the night report': ('Werktags 08:00 bis zur Nachtzeit des Nachtberichts', 'En semaine de 08:00 jusqu’à l’heure de nuit du rapport',
+                                                               'Nei giorni feriali dalle 08:00 fino all’ora notturna del rapporto', 'Dis da lavur da las 08:00 fin a l’ura da notg dal rapport'),
+    'At least one time window - switch the quiet hours off instead.': ('Mindestens ein Zeitfenster – sonst die Ruhezeiten ausschalten.', 'Au moins une plage – sinon désactive les heures calmes.',
+                                                                       'Almeno una fascia – altrimenti spegni le ore di quiete.', 'Almain ina fanestra – uschiglio deactivar las uras da paus.'),
+    'Quiet hours now - alarms are only logged': ('Jetzt Ruhezeit – Alarme werden nur protokolliert', 'Heures calmes – les alarmes sont seulement notées',
+                                                 'Ora di quiete – gli allarmi vengono solo registrati', 'Ussa uras da paus – alarms vegnan mo protocollads'),
+    'sim time': ('Simulator-Zeit', 'heure du simulateur', 'ora del simulatore', 'ura dal simulatur'),
+    'Night time from': ('Nachtzeit ab', 'Nuit à partir de', 'Notte dalle', 'Notg a partir da'),
+    'Mo': ('Mo', 'Lu', 'Lu', 'Gli'), 'Tu': ('Di', 'Ma', 'Ma', 'Ma'), 'We': ('Mi', 'Me', 'Me', 'Me'), 'Th': ('Do', 'Je', 'Gi', 'Gie'),
+    'Fr': ('Fr', 'Ve', 'Ve', 'Ve'), 'Sa': ('Sa', 'Sa', 'Sa', 'So'), 'Su': ('So', 'Di', 'Do', 'Du'),
+    'Clear the saved value? It cannot be shown again.': ('Gespeicherten Wert löschen? Er lässt sich nicht mehr anzeigen.', 'Effacer la valeur enregistrée ? Elle ne peut plus être affichée.',
+                                                          'Cancellare il valore salvato? Non si può più mostrare.', 'Stizzar la valur memorisada? Ella na po betg pli vegnir mussada.'),
+    'Only person alarms. Warm bodies and noise are only logged.': ('Nur Personen-Alarme. Wärme und Geräusche werden nur protokolliert.', 'Seulement les alarmes personne. Chaleur et bruit sont seulement notés.',
+                                                                   'Solo allarmi persona. Calore e rumori vengono solo registrati.', 'Mo alarms da persunas. Chalur e canera vegnan mo protocollads.'),
+    'Persons and warm bodies (thermal camera). Noise is only logged.': ('Personen und Wärme (Wärmebild). Geräusche werden nur protokolliert.', 'Personnes et corps chauds (caméra thermique). Le bruit est seulement noté.',
+                                                                        'Persone e corpi caldi (termocamera). I rumori vengono solo registrati.', 'Persunas e corps chauds (camera termica). Canera vegn mo protocollada.'),
+    'Persons, warm bodies and noise (as up to now).': ('Personen, Wärme und Geräusche (wie bisher).', 'Personnes, corps chauds et bruit (comme avant).', 'Persone, corpi caldi e rumori (come finora).', 'Persunas, corps chauds e canera (sco fin ussa).'),
+    'Sabotage, theft and notes always come.': ('Sabotage, Diebstahl und Hinweise kommen immer.', 'Sabotage, vol et notes arrivent toujours.', 'Sabotaggio, furto e avvisi arrivano sempre.', 'Sabotascha, engul ed indicaziuns vegnan adina.'),
+    'Message texts': ('Nachrichtentexte', 'Textes des messages', 'Testi dei messaggi', 'Texts dals messadis'),
+    'Alarms to all open browsers (MoveEye)': ('Alarme an alle offenen Browser (MoveEye)', 'Alarmes à tous les navigateurs ouverts (MoveEye)', 'Allarmi a tutti i browser aperti (MoveEye)', 'Alarms a tut ils browsers averts (MoveEye)'),
+    'MoveEye: test SMS': ('MoveEye: Test-SMS', 'MoveEye : SMS de test', 'MoveEye: SMS di prova', 'MoveEye: SMS da test'),
+    'browser': ('Browser', 'navigateur', 'browser', 'browser'),
+    # «?» texts (SET_HELP below)
+    'Push messages to your phone at an alarm. Off: alarms only on this page.': ('Push-Nachrichten aufs Handy bei einem Alarm. Aus: Alarme nur auf dieser Seite.', 'Notifications sur le téléphone en cas d’alarme. Désactivé : alarmes seulement sur cette page.', 'Notifiche sul telefono in caso di allarme. Spento: allarmi solo su questa pagina.', 'Avis push sin il telefonin tar in alarm. Deactivà: alarms mo sin questa pagina.'),
+    'Only person alarms · persons + warm bodies of the thermal camera (mostly animals) · everything, also noise. Sabotage, theft, sensor and system alarms and notes (battery, update …) always come. The switches «Pre-alarm» and «Noise: push» still apply.': (
+        'Nur Personen-Alarme · Personen + Wärme vom Wärmebild (meist Tiere) · alles, auch Geräusche. Sabotage, Diebstahl, Sensor- und System-Alarme und Hinweise (Akku, Update …) kommen immer. Die Schalter «Voralarm» und «Geräusch: Push» gelten weiterhin.',
+        'Seulement les alarmes personne · personnes + corps chauds de la caméra thermique (surtout des animaux) · tout, aussi le bruit. Sabotage, vol, alarmes capteur et système et notes (batterie, mise à jour …) arrivent toujours. Les interrupteurs «Pré-alarme» et «Bruit : push» restent valables.',
+        'Solo allarmi persona · persone + corpi caldi della termocamera (per lo più animali) · tutto, anche i rumori. Sabotaggio, furto, allarmi di sensori e di sistema e avvisi (batteria, aggiornamento …) arrivano sempre. Gli interruttori «Preallarme» e «Rumore: push» restano validi.',
+        'Mo alarms da persunas · persunas + chalur da la camera termica (per il pli animals) · tut, er canera. Sabotascha, engul, alarms da sensurs e dal sistem ed indicaziuns (accu, actualisaziun …) vegnan adina. Ils interruptuors «Prealarm» e «Canera: push» valan vinavant.'),
+    'Default «Everything» = as before this version.': ('Standard «Alles» = wie vor dieser Version.', 'Par défaut «Tout» = comme avant cette version.', 'Predefinito «Tutto» = come prima di questa versione.', 'Standard «Tut» = sco avant questa versiun.'),
+    'With: the alarm picture. Small: about 640 px (less mobile data). Without: text only, the picture stays in MoveEye. Also for the pre-alarm.': (
+        'Mit: das Alarmbild. Klein: etwa 640 px (weniger mobile Daten). Ohne: nur Text, das Bild bleibt in MoveEye. Gilt auch für den Voralarm.',
+        'Avec : l’image de l’alarme. Petite : environ 640 px (moins de données mobiles). Sans : texte seul, l’image reste dans MoveEye. Aussi pour la pré-alarme.',
+        'Con: l’immagine dell’allarme. Piccola: circa 640 px (meno dati mobili). Senza: solo testo, l’immagine resta in MoveEye. Vale anche per il preallarme.',
+        'Cun: il maletg da l’alarm. Pitschen: var 640 px (main datas mobilas). Senza: mo text, il maletg resta en MoveEye. Vala er per il prealarm.'),
+    'Time windows without alarm push messages, e.g. during the day when you are at home. The alarms are still logged and recorded. Sabotage, theft and notes still come. With the simulator connected its clock counts.': (
+        'Zeitfenster ohne Alarm-Push, z. B. tagsüber, wenn du zuhause bist. Die Alarme werden trotzdem protokolliert und aufgenommen. Sabotage, Diebstahl und Hinweise kommen weiterhin. Mit verbundenem Simulator zählt seine Uhr.',
+        'Plages sans push d’alarme, p. ex. la journée quand tu es à la maison. Les alarmes sont quand même notées et enregistrées. Sabotage, vol et notes arrivent toujours. Avec le simulateur connecté, son horloge compte.',
+        'Fasce senza push d’allarme, p. es. di giorno quando sei a casa. Gli allarmi vengono comunque registrati. Sabotaggio, furto e avvisi arrivano lo stesso. Con il simulatore collegato conta il suo orologio.',
+        'Fanestras da temp senza push d’alarm, p. ex. di, cur che ti es a chasa. Ils alarms vegnan tuttina protocollads e registrads. Sabotascha, engul ed indicaziuns vegnan vinavant. Cun il simulatur collià quinta sia ura.'),
+    'In the quiet hours a person alarm still comes (only warm bodies and noise are held back).': ('In den Ruhezeiten kommt ein Personen-Alarm trotzdem (nur Wärme und Geräusche werden zurückgehalten).', 'Pendant les heures calmes une alarme personne arrive quand même (seuls chaleur et bruit sont retenus).',
+        'Nelle ore di quiete un allarme persona arriva comunque (solo calore e rumori vengono trattenuti).', 'Durant las uras da paus vegn in alarm da persuna tuttina (mo chalur e canera vegnan retegnids).'),
+    'From @BotFather in Telegram, e.g. 123456:ABC-DEF…': ('Von @BotFather in Telegram, z. B. 123456:ABC-DEF…', 'De @BotFather dans Telegram, p. ex. 123456:ABC-DEF…', 'Da @BotFather in Telegram, p. es. 123456:ABC-DEF…', 'Da @BotFather en Telegram, p. ex. 123456:ABC-DEF…'),
+    'Your chat id, a number like 123456789 (e.g. from @userinfobot).': ('Deine Chat-ID, eine Zahl wie 123456789 (z. B. von @userinfobot).', 'Ton ID de chat, un nombre comme 123456789 (p. ex. via @userinfobot).', 'Il tuo ID chat, un numero come 123456789 (p. es. da @userinfobot).', 'Tia ID dal chat, in dumber sco 123456789 (p. ex. da @userinfobot).'),
+    'Pushover: the user key from pushover.net (30 characters). Alarms also to the Pushover app - on the iPhone it can ring even when muted.': (
+        'Pushover: der Benutzerschlüssel (User Key) von pushover.net (30 Zeichen). Alarme auch an die Pushover-App – auf dem iPhone klingelt sie auch auf stumm.',
+        'Pushover : la clé utilisateur de pushover.net (30 caractères). Alarmes aussi vers l’app Pushover – sur l’iPhone elle sonne même en silencieux.',
+        'Pushover: la chiave utente di pushover.net (30 caratteri). Allarmi anche all’app Pushover – sull’iPhone suona anche in silenzioso.',
+        'Pushover: la clav d’utilisader da pushover.net (30 caracters). Alarms er a l’app Pushover – sin l’iPhone suna ella er sin mut.'),
+    'Pushover: the API token of your own application at pushover.net (create one there).': ('Pushover: das API-Token deiner eigenen App auf pushover.net (dort eine erstellen).', 'Pushover : le jeton API de ta propre application sur pushover.net (crée-en une là-bas).',
+        'Pushover: il token API della tua app su pushover.net (creane una lì).', 'Pushover: il token API da tia atgna app sin pushover.net (crear ina là).'),
+    'A critical alert: rings also when muted and repeats every minute until you confirm it (at most 30 minutes).': ('Kritische Mitteilung: klingelt auch auf stumm und wiederholt jede Minute, bis du sie bestätigst (höchstens 30 Minuten).',
+        'Alerte critique : sonne même en silencieux et se répète chaque minute jusqu’à confirmation (au plus 30 minutes).', 'Avviso critico: suona anche in silenzioso e si ripete ogni minuto fino alla conferma (al massimo 30 minuti).',
+        'Avis critic: suna er sin mut e repeta mintga minuta fin che ti conferms (maximalmain 30 minutas).'),
+    'Your address. The iPhone can start a shortcut from an e-mail (Shortcuts → Automation → E-mail).': ('Deine Adresse. Das iPhone kann mit einer E-Mail einen Kurzbefehl starten (Kurzbefehle → Automation → E-Mail).',
+        'Ton adresse. L’iPhone peut lancer un raccourci à partir d’un e-mail (Raccourcis → Automatisation → E-mail).', 'Il tuo indirizzo. L’iPhone può avviare un comando rapido da un’e-mail (Comandi → Automazione → E-mail).',
+        'Tia adressa. L’iPhone po lantschar in cumond svelt cun in e-mail (Cumonds svelts → Automatisaziun → E-mail).'),
+    'e.g. smtp.gmail.com, mail.gmx.net, smtp.mail.me.com': ('z. B. smtp.gmail.com, mail.gmx.net, smtp.mail.me.com', 'p. ex. smtp.gmail.com, mail.gmx.net, smtp.mail.me.com', 'p. es. smtp.gmail.com, mail.gmx.net, smtp.mail.me.com', 'p. ex. smtp.gmail.com, mail.gmx.net, smtp.mail.me.com'),
+    '587 (STARTTLS) or 465 (SSL).': ('587 (STARTTLS) oder 465 (SSL).', '587 (STARTTLS) ou 465 (SSL).', '587 (STARTTLS) o 465 (SSL).', '587 (STARTTLS) u 465 (SSL).'),
+    'Usually the e-mail address.': ('Meist die E-Mail-Adresse.', 'Le plus souvent l’adresse e-mail.', 'Di solito l’indirizzo e-mail.', 'Per il solit l’adressa d’e-mail.'),
+    'Gmail / iCloud: an app password, not the normal one.': ('Gmail / iCloud: ein App-Passwort, nicht das normale.', 'Gmail / iCloud : un mot de passe d’application, pas le normal.', 'Gmail / iCloud: una password per app, non quella normale.', 'Gmail / iCloud: in pled-clav per apps, betg il normal.'),
+    'The letters at the start of every message (MW gives MW-ALARM, MW-WAERME …) - an iPhone shortcut can react to them. Empty = off.': (
+        'Die Buchstaben am Anfang jeder Meldung (MW ergibt MW-ALARM, MW-WAERME …) – ein iPhone-Kurzbefehl kann darauf reagieren. Leer = aus.',
+        'Les lettres au début de chaque message (MW donne MW-ALARM, MW-WAERME …) – un raccourci iPhone peut y réagir. Vide = désactivé.',
+        'Le lettere all’inizio di ogni messaggio (MW dà MW-ALARM, MW-WAERME …) – un comando rapido dell’iPhone può reagire. Vuoto = spento.',
+        'Ils bustabs al cumenzament da mintga messadi (MW dat MW-ALARM, MW-WAERME …) – in cumond svelt da l’iPhone po reagir. Vid = deactivà.'),
+    'Buttons False alarm · Siren · Off in the push message. Needs the address of this page for the links.': ('Knöpfe Fehlalarm · Sirene · Aus in der Push-Nachricht. Braucht die Adresse dieser Seite für die Links.',
+        'Boutons Fausse alarme · Sirène · Arrêt dans la notification. Il faut l’adresse de cette page pour les liens.', 'Pulsanti Falso allarme · Sirena · Spento nella notifica. Serve l’indirizzo di questa pagina per i link.',
+        'Buttuns Fals alarm · Sirena · Ora en l’avis push. Basegna l’adressa da questa pagina per ils links.'),
+    '🚶 person, 🦊 animal, 🛑 sabotage … in the messages and the log.': ('🚶 Person, 🦊 Tier, 🛑 Sabotage … in den Meldungen und im Protokoll.', '🚶 personne, 🦊 animal, 🛑 sabotage … dans les messages et le journal.',
+        '🚶 persona, 🦊 animale, 🛑 sabotaggio … nei messaggi e nel registro.', '🚶 persuna, 🦊 animal, 🛑 sabotascha … en ils messadis ed en il protocol.'),
+    'e.g. https://pi.local:5000 - for the links and buttons in the messages.': ('z. B. https://pi.local:5000 – für die Links und Knöpfe in den Meldungen.', 'p. ex. https://pi.local:5000 – pour les liens et boutons des messages.',
+        'p. es. https://pi.local:5000 – per i link e i pulsanti nei messaggi.', 'p. ex. https://pi.local:5000 – per ils links e buttuns en ils messadis.'),
+    'A message with the address of the page when the Pi joins a network (e.g. the hotspot of the phone).': ('Eine Meldung mit der Adresse der Seite, wenn der Pi in ein Netz kommt (z. B. den Hotspot des Handys).',
+        'Un message avec l’adresse de la page quand le Pi rejoint un réseau (p. ex. le partage de connexion du téléphone).', 'Un messaggio con l’indirizzo della pagina quando il Pi entra in una rete (p. es. l’hotspot del telefono).',
+        'In messadi cun l’adressa da la pagina, cur ch’il Pi vegn en ina rait (p. ex. il hotspot dal telefonin).'),
+    'A message when somebody opens the page from outside (Tailscale).': ('Eine Meldung, wenn jemand die Seite von aussen öffnet (Tailscale).', 'Un message quand quelqu’un ouvre la page de l’extérieur (Tailscale).',
+        'Un messaggio quando qualcuno apre la pagina da fuori (Tailscale).', 'In messadi, cur ch’insatgi avra la pagina da dadora (Tailscale).'),
+    'Open pages get pre-alarms and person alarms live. The sound is switched on per device with the bell at the top.': ('Offene Seiten bekommen Voralarme und Personen-Alarme live. Den Ton schaltet man pro Gerät mit der Glocke oben ein.',
+        'Les pages ouvertes reçoivent les pré-alarmes et alarmes personne en direct. Le son s’active par appareil avec la cloche en haut.', 'Le pagine aperte ricevono preallarmi e allarmi persona in diretta. Il suono si attiva per dispositivo con la campanella in alto.',
+        'Paginas avertas survegnan prealarms ed alarms da persunas live. Il tun vegn activà per apparat cun la stgella sisum.'),
+    'A person alarm only when the AI and the thermal camera agree or the AI sees the person twice in a row (otherwise only a pre-alarm).': ('Ein Personen-Alarm erst, wenn KI und Wärmebild übereinstimmen oder die KI die Person zweimal nacheinander sieht (sonst nur Voralarm).',
+        'Une alarme personne seulement si l’IA et la caméra thermique concordent ou si l’IA voit la personne deux fois de suite (sinon seulement une pré-alarme).',
+        'Un allarme persona solo se IA e termocamera concordano o se l’IA vede la persona due volte di fila (altrimenti solo preallarme).',
+        'In alarm da persuna pir, cur che l’IA e la camera termica èn d’accord u che l’IA vesa la persuna duas giadas en ina retscha (uschiglio mo prealarm).'),
+    'At least this long between two alarm messages; detections in between are counted and told with the next one.': ('Mindestens so lange zwischen zwei Alarm-Meldungen; Erkennungen dazwischen werden gezählt und mit der nächsten gemeldet.',
+        'Au moins ce temps entre deux messages d’alarme ; les détections entre-temps sont comptées et signalées avec le suivant.', 'Almeno questo tempo tra due messaggi d’allarme; i rilevamenti nel frattempo vengono contati e segnalati con il prossimo.',
+        'Almain uschè ditg tranter dus messadis d’alarm; recunuschientschas en il fratemp vegnan dumbradas ed annunziadas cun il proxim.'),
+    'At least this long between two pre-alarm messages.': ('Mindestens so lange zwischen zwei Voralarm-Meldungen.', 'Au moins ce temps entre deux messages de pré-alarme.', 'Almeno questo tempo tra due messaggi di preallarme.', 'Almain uschè ditg tranter dus messadis da prealarm.'),
+}
+for _k, _v in _HX_PUSH.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# ---- «?» next to the settings (586 g2_help): the examples of the old long labels -------------------------------------------
+SET_HELP.update({
+    "notify_on": ("Push messages to your phone at an alarm. Off: alarms only on this page.", SET_HELP.get("notify_on", ("", ""))[1]),
+    "push_level": ("Only person alarms · persons + warm bodies of the thermal camera (mostly animals) · everything, also noise. Sabotage, theft, sensor and system alarms and notes (battery, update …) always come. The switches «Pre-alarm» and «Noise: push» still apply.",
+                   "Default «Everything» = as before this version."),
+    "push_pics": ("With: the alarm picture. Small: about 640 px (less mobile data). Without: text only, the picture stays in MoveEye. Also for the pre-alarm.", SET_HELP.get("push_pics", ("", ""))[1]),
+    "quiet_on": ("Time windows without alarm push messages, e.g. during the day when you are at home. The alarms are still logged and recorded. Sabotage, theft and notes still come. With the simulator connected its clock counts.", ""),
+    "quiet_persons": ("In the quiet hours a person alarm still comes (only warm bodies and noise are held back).", ""),
+    "telegram_token": ("From @BotFather in Telegram, e.g. 123456:ABC-DEF…", ""),
+    "telegram_chat": ("Your chat id, a number like 123456789 (e.g. from @userinfobot).", ""),
+    "pushover_user": ("Pushover: the user key from pushover.net (30 characters). Alarms also to the Pushover app - on the iPhone it can ring even when muted.", ""),
+    "pushover_token": ("Pushover: the API token of your own application at pushover.net (create one there).", ""),
+    "pushover_emergency": ("A critical alert: rings also when muted and repeats every minute until you confirm it (at most 30 minutes).", ""),
+    "email_to": ("Your address. The iPhone can start a shortcut from an e-mail (Shortcuts → Automation → E-mail).", ""),
+    "email_host": ("e.g. smtp.gmail.com, mail.gmx.net, smtp.mail.me.com", ""),
+    "email_port": ("587 (STARTTLS) or 465 (SSL).", ""),
+    "email_user": ("Usually the e-mail address.", ""),
+    "email_password": ("Gmail / iCloud: an app password, not the normal one.", ""),
+    "msg_keyword_prefix": ("The letters at the start of every message (MW gives MW-ALARM, MW-WAERME …) - an iPhone shortcut can react to them. Empty = off.", ""),
+    "msg_keyword_on": ("The letters at the start of every message (MW gives MW-ALARM, MW-WAERME …) - an iPhone shortcut can react to them. Empty = off.", ""),
+    "push_actions": ("Buttons False alarm · Siren · Off in the push message. Needs the address of this page for the links.", ""),
+    "msg_icons": ("🚶 person, 🦊 animal, 🛑 sabotage … in the messages and the log.", ""),
+    "public_url": ("e.g. https://pi.local:5000 - for the links and buttons in the messages.", ""),
+    "notify_network": ("A message with the address of the page when the Pi joins a network (e.g. the hotspot of the phone).", ""),
+    "notify_remote": ("A message when somebody opens the page from outside (Tailscale).", ""),
+    "browser_alarm": ("Open pages get pre-alarms and person alarms live. The sound is switched on per device with the bell at the top.", ""),
+    "alarm_confirm2": ("A person alarm only when the AI and the thermal camera agree or the AI sees the person twice in a row (otherwise only a pre-alarm).", ""),
+    "notify_cooldown": ("At least this long between two alarm messages; detections in between are counted and told with the next one.", ""),
+    "prealarm_cooldown": ("At least this long between two pre-alarm messages.", ""),
+})
+
+# ---- factory reset (586): the push channel stays - with the kept addresses and the switch of the main channel --------------
+FACTORY_KEEP.update({"main_push_on", "push_url_ntfy", "push_url_webhook", "push_cards"})
+
+# ---- the main page: German for the cards (531a; added only where the page has no text yet) -----------------------------------
+WEB_PAGE = WEB_PAGE.replace("/*PXDE*/{}", json.dumps({_k: DE.get(_k, _v[0]) for _k, _v in _HX_PUSH.items()}, ensure_ascii=False), 1)
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")
