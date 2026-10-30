@@ -28225,6 +28225,468 @@ def sim_set(on, who="web", confirm=False):
     return True, ""
 
 
+# Daniel 30.10.2026:
+#   1. «Mensch gegen KI vergleichen»: the simulator (gamecompare.gd, control «game_compare») plays the same round twice -
+#      a person (or the Bot-Wächter) guards, then the real detection of MoveEye. Here: start / state / result for the page
+#      Simulator (543) and the window (592), GET / POST /api/game_compare.
+#   2. «Online über das WLAN hinaus»: friends at home play along. MoveEye makes an invitation link with an expiry
+#      (1-24 h, revocable, at most N players). The link opens /game/<token>/ on MoveEye: MoveEye fetches the phone page of
+#      the game from the simulator (its game port, HTTP) and passes its WebSocket on (byte for byte). The simulator may be
+#      reached directly or through the tunnel (180: extra doors 18770 / 18771, simulator tunnel.gd 3D-4.x). MoveEye itself
+#      is reached from outside through Tailscale (serve / funnel) or the «Address of this page» (public_url).
+#      Security: only these 4 addresses below /game/<token>/ are open without login (auth() in 550), every one checks the
+#      token (compare_digest), the expiry and the revocation on every request and every 1 s on an open WebSocket; wrong
+#      tokens are counted per address (20 in 5 min -> 429), requests per address are limited, the WebSocket gets at most
+#      256 KB from the guest in 10 s, every join / leave / refusal is logged. The guest never sees anything else of MoveEye
+#      (no camera, no settings): the page and the WebSocket are the ones of the simulator's game.
+import select as _gselect
+
+_GINV_CFG = {"game_invites": []}     # [{"id", "tok", "name", "t0", "until", "max", "revoked", "uses"}]
+for _k, _v in _GINV_CFG.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+TUN_LOCAL.update({18770: 8770, 18771: 8771})    # 180: the tunnel also carries the game (page / WebSocket) of the simulator
+GINV_HOURS = (1, 3, 6, 12, 24)
+GINV_MAX = 8                                    # invitations at the same time
+GINV = {"lock": threading.Lock(), "conns": {}, "hits": {}, "bad": {}, "log": deque(maxlen=200), "tgt": None, "tgt_t": 0.0,
+        "logged": {}, "rtt": {}}
+GINV_HTTP_PER_MIN = 120
+GINV_WS_PER_MIN = 30
+GINV_IN_10S = 256 * 1024
+
+
+def ginv_list():
+    """the invitations (expired / revoked ones are kept a day for the list, then dropped)"""
+    now = time.time()
+    lst = [x for x in (CFG.get("game_invites") or []) if isinstance(x, dict) and x.get("tok")]
+    keep = [x for x in lst if now - float(x.get("until") or 0) < 86400]
+    if len(keep) != len(lst):
+        CFG["game_invites"] = keep; save_settings()
+    return keep
+
+
+def ginv_valid(inv):
+    return bool(inv) and not inv.get("revoked") and time.time() < float(inv.get("until") or 0)
+
+
+def ginv_find(tok):
+    tok = str(tok or "")
+    if not tok or len(tok) > 64:
+        return None
+    for x in ginv_list():
+        if secrets.compare_digest(str(x["tok"]), tok):
+            return x
+    return None
+
+
+def ginv_create(hours=3, players=6, name=""):
+    hours = min(GINV_HOURS, key=lambda h: abs(h - float(hours or 3)))
+    act = [x for x in ginv_list() if ginv_valid(x)]
+    if len(act) >= GINV_MAX:
+        return None, "too many invitations - revoke an old one first"
+    inv = {"id": secrets.token_hex(3), "tok": secrets.token_urlsafe(18), "name": re.sub(r"[^\w .,'!?\-]", "", str(name or ""))[:30],
+           "t0": int(time.time()), "until": int(time.time() + hours * 3600), "max": max(1, min(12, int(players or 6))), "revoked": False, "uses": 0}
+    CFG["game_invites"] = ginv_list() + [inv]; save_settings()
+    log_event("web", f"Game invitation made ({hours} h, at most {inv['max']} players{', ' + inv['name'] if inv['name'] else ''})")
+    return inv, ""
+
+
+def ginv_revoke(iid):
+    n = 0
+    for x in ginv_list():
+        if (iid == "all" or x["id"] == iid) and not x.get("revoked") and time.time() < float(x["until"]):
+            x["revoked"] = True; n += 1
+    if n:
+        save_settings()
+        log_event("web", f"Game invitation revoked ({'all' if iid == 'all' else iid})")
+    return n
+
+
+def ginv_base(host_url=""):
+    """the address guests use: «Address of this page» (public_url), else https of Tailscale, else the address asked with"""
+    pu = str(CFG.get("public_url") or "").strip()
+    if pu.startswith(("http://", "https://")):
+        return pu.rstrip("/")
+    try:
+        ts = tailscale_https_url()
+    except Exception:
+        ts = ""
+    if ts:
+        return ts.rstrip("/")
+    return (host_url or f"http://{local_ip()}:{CFG['web_port']}").rstrip("/")
+
+
+def ginv_url(inv, base):
+    return f"{base}/game/{inv['tok']}/"
+
+
+def ginv_note(ip, what, inv=None, important=True):
+    """the protocol: the list for the page (last 200) and the MoveEye log (a refused address at most once a minute)"""
+    e = {"t": int(time.time()), "ip": str(ip)[:45], "what": what, "inv": (inv or {}).get("id", ""), "name": (inv or {}).get("name", "")}
+    GINV["log"].append(e)
+    k = (ip, what)
+    if important and time.time() - GINV["logged"].get(k, 0) > 60:
+        GINV["logged"][k] = time.time()
+        if len(GINV["logged"]) > 400:
+            GINV["logged"].clear()
+        log_event("web", f"Game guest {ip}: {what}" + (f" (invitation {e['inv']}{' ' + e['name'] if e['name'] else ''})" if inv else ""))
+
+
+def ginv_players(inv):
+    return int(GINV["conns"].get(inv["id"], 0)) if inv else 0
+
+
+def ginv_state(host_url=""):
+    base = ginv_base(host_url)
+    now = time.time()
+    out = []
+    for x in ginv_list():
+        a = ginv_valid(x)
+        out.append({"id": x["id"], "name": x.get("name", ""), "url": ginv_url(x, base) if a else "", "until": x["until"], "left_s": max(0, int(x["until"] - now)),
+                    "max": x["max"], "players": ginv_players(x), "uses": int(x.get("uses", 0)), "active": a, "revoked": bool(x.get("revoked"))})
+    tgt, err = ginv_target()
+    return {"ok": True, "invites": out, "log": list(GINV["log"])[-15:][::-1], "base": base, "public": not base.startswith(("http://192.168.", "http://10.", "http://127.", "http://172.")),
+            "game_open": tgt is not None, "why": err, "tunnel": bool(tgt and tgt[3]), "hours": list(GINV_HOURS)}
+
+
+def ginv_target():
+    """(host, http port, websocket port, through the tunnel) of the game in the simulator, or (None, reason)"""
+    now = time.time()
+    if now - GINV["tgt_t"] < 5:
+        return GINV["tgt"]
+    from urllib.parse import urlparse
+    res = (None, "simulator not reachable")
+    try:
+        r = sim_control(None)
+        gm = r.get("game") or {}
+        if not gm.get("open"):
+            res = (None, "the game is not open in the simulator")
+        else:
+            tun = str(CFG.get("sim_url") or "").startswith("http://127.0.0.1:18765")
+            if tun:
+                res = (("127.0.0.1", 18770, 18771, True), "")
+            else:
+                hp = int(urlparse(str(gm.get("url") or "")).port or 0)
+                host = urlparse(sim_base()).hostname or "127.0.0.1"
+                res = ((host, hp, hp + 1, False), "") if hp else (None, "the simulator gives no game address")
+    except Exception:
+        pass
+    GINV["tgt"], GINV["tgt_t"] = res, now
+    return res
+
+
+def _ginv_rate(ip, kind, per_min):
+    now = time.time()
+    with GINV["lock"]:
+        lst = [x for x in GINV["hits"].get((ip, kind), []) if now - x < 60]
+        lst.append(now)
+        GINV["hits"][(ip, kind)] = lst
+        if len(GINV["hits"]) > 1000:
+            GINV["hits"] = {k: v for k, v in GINV["hits"].items() if v and now - v[-1] < 60}
+    return len(lst) <= per_min
+
+
+def _ginv_bad(ip, add=False):
+    """wrong / old tokens per address: 20 in 5 minutes, then the address waits (no guessing)"""
+    now = time.time()
+    with GINV["lock"]:
+        lst = [x for x in GINV["bad"].get(ip, []) if now - x < 300]
+        if add:
+            lst.append(now)
+        GINV["bad"][ip] = lst
+    return len(lst) >= 20
+
+
+GINV_PAGE_JS = r"""<script>/* MoveEye: game for guests (window.__mwExit: no way back into MoveEye) */
+(function () {
+  var base = location.pathname.replace(/[^\/]*$/, ""), WSU = (location.protocol === "https:" ? "wss://" : "ws://") + location.host + base + "ws";
+  var W = window.WebSocket, tq = 0, rtt = [], full = false;
+  function Px(u, p) { var w = new W(WSU); var s = w.send.bind(w);
+    w.send = function (d) { if (d === '{"t":"frame"}' && !tq) tq = performance.now(); return s(d); };
+    w.addEventListener("message", function (e) { if (typeof e.data !== "string" && tq) { rtt.push(performance.now() - tq); if (rtt.length > 12) rtt.shift(); tq = 0; } });
+    w.addEventListener("close", function () { tq = 0; });
+    return w; }
+  Px.prototype = W.prototype; Px.CONNECTING = 0; Px.OPEN = 1; Px.CLOSING = 2; Px.CLOSED = 3; window.WebSocket = Px;
+  var bar = null, left = -1, t0 = Date.now();
+  function fmt(s) { var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60); return h > 0 ? h + ":" + String(m).padStart(2, "0") + " h" : m + " min"; }
+  function paint() { if (!document.body) return; if (!bar) { bar = document.createElement("div"); bar.id = "mwg-bar";
+      bar.style.cssText = "position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top) + 44px);z-index:60;background:#000a;color:#e6edf3;font:12px system-ui,sans-serif;padding:3px 10px;border-radius:12px;pointer-events:none;white-space:nowrap;max-width:94vw;overflow:hidden;text-overflow:ellipsis";
+      document.body.appendChild(bar); }
+    var ms = 0; if (rtt.length) { var a = rtt.slice().sort(function (x, y) { return x - y; }); ms = Math.round(a[Math.floor(a.length / 2)]); }
+    var l = left < 0 ? -1 : Math.max(0, left - Math.round((Date.now() - t0) / 1000)), t = "🌐 Online";
+    if (ms) t += " · 📶 " + ms + " ms" + (ms > 700 ? " langsam – «Bild auf dem Handy: klein» hilft" : (ms > 350 ? " verzögert" : ""));
+    if (l >= 0) t += " · ⏳ " + fmt(l);
+    if (full) t = "⚠ Die Einladung ist voll – warte, bis jemand aufhört";
+    if (l === 0) t = "⏳ Die Einladung ist abgelaufen";
+    bar.textContent = t; bar.style.color = ms > 700 || full || l === 0 ? "#ff9f0a" : "#e6edf3"; }
+  function info() { fetch(base + "info", {cache: "no-store"}).then(function (r) { return r.json(); }).then(function (j) { left = j.left_s; t0 = Date.now(); full = !!j.full; paint(); })
+      .catch(function () { left = 0; paint(); }); }
+  info(); setInterval(info, 30000); setInterval(paint, 2000);
+})();
+</script>"""
+
+GINV_DENY = ("<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+             "<title>Spiel</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0e14;color:#e6edf3;"
+             "font:16px system-ui,sans-serif;text-align:center;padding:20px;box-sizing:border-box}</style></head><body><div><h1 style=\"font-size:22px\">__T__</h1>"
+             "<p style=\"color:#8b98a8\">__P__</p></div><!-- window.__mwExit --></body></html>")
+GINV_TEXTS = {403: ("Diese Einladung gilt nicht (mehr)", "Der Link ist abgelaufen oder wurde zurückgezogen. Frag den Gastgeber nach einer neuen Einladung."),
+              429: ("Zu viele Anfragen", "Bitte einen Moment warten und dann neu laden."),
+              503: ("Das Spiel ist gerade nicht offen", "Der Gastgeber muss das Spiel im Simulator öffnen. Dann diese Seite neu laden."),
+              409: ("Die Einladung ist voll", "Alle Plätze dieser Einladung sind besetzt. Warte, bis jemand aufhört.")}
+
+
+def ginv_routes(app, reply, body):
+    from flask import request, Response, g as g_, redirect
+    import http.client
+
+    SEC = {"Cache-Control": "no-store", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow", "X-Content-Type-Options": "nosniff",
+           "X-Frame-Options": "DENY", "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
+           "img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' ws: wss:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"}
+
+    def gip():
+        ip = request.remote_addr or "?"
+        if ip in ("127.0.0.1", "::1") and request.headers.get("X-Forwarded-For"):
+            ip = request.headers["X-Forwarded-For"].split(",")[0].strip()[:45] or ip      # behind Tailscale serve / funnel
+        return ip
+
+    def deny(code, extra=None):
+        t_, p_ = GINV_TEXTS.get(code, GINV_TEXTS[403])
+        h = dict(SEC)
+        if code == 429:
+            h["Retry-After"] = "60"
+        h.update(extra or {})
+        return Response(GINV_DENY.replace("__T__", t_).replace("__P__", p_), code, mimetype="text/html", headers=h)
+
+    def check(tok, kind):
+        """(invitation, None) or (None, response)"""
+        ip = gip()
+        if _ginv_bad(ip):
+            ginv_note(ip, "blocked (too many wrong links)")
+            return None, deny(429)
+        if not _ginv_rate(ip, kind, GINV_WS_PER_MIN if kind == "ws" else GINV_HTTP_PER_MIN):
+            ginv_note(ip, "too many requests")
+            return None, deny(429)
+        inv = ginv_find(tok)
+        if inv is None or not ginv_valid(inv):
+            _ginv_bad(ip, True)
+            ginv_note(ip, "refused: " + ("expired or revoked invitation" if inv else "unknown link"), inv)
+            return None, deny(403)
+        return inv, None
+
+    def nope():
+        if getattr(g_, "role", "admin") != "admin" or getattr(g_, "appkey", None):
+            return reply({"ok": False, "error": tr("Only for the administrator", norm_lang(request.args.get("lang")))}, 403)
+        return None
+
+    def fetch(path):
+        tgt, why = ginv_target()
+        if tgt is None:
+            return None, why
+        try:
+            con = http.client.HTTPConnection(tgt[0], tgt[1], timeout=6)
+            con.request("GET", path, headers={"User-Agent": "MotionWatch", "Host": f"{tgt[0]}:{tgt[1]}"})
+            r = con.getresponse()
+            data = r.read(3_000_000)
+            con.close()
+            return (data if r.status == 200 else None), ("" if r.status == 200 else f"simulator {r.status}")
+        except (OSError, http.client.HTTPException) as e:
+            GINV["tgt_t"] = 0.0
+            return None, str(e)[:60]
+
+    @app.route("/game/<tok>")
+    def ginv_noslash(tok):
+        inv, bad = check(tok, "http")
+        return bad if bad is not None else redirect(f"/game/{tok}/", 302)
+
+    @app.route("/game/<tok>/")
+    def ginv_page(tok):
+        inv, bad = check(tok, "http")
+        if bad is not None:
+            return bad
+        data, why = fetch("/")
+        if data is None:
+            ginv_note(gip(), "game not reachable: " + why, inv, False)
+            return deny(503)
+        txt = data.decode("utf-8", "replace").replace('href="/manifest.json"', 'href="manifest.json"')
+        i = txt.find("<head>")
+        txt = (txt[:i + 6] + GINV_PAGE_JS + txt[i + 6:]) if i >= 0 else GINV_PAGE_JS + txt
+        ginv_note(gip(), "opened the game page", inv)
+        return Response(txt, mimetype="text/html", headers=SEC)
+
+    @app.route("/game/<tok>/manifest.json")
+    def ginv_manifest(tok):
+        inv, bad = check(tok, "http")
+        if bad is not None:
+            return bad
+        return Response(json.dumps({"name": "Unentdeckt ans Ziel", "short_name": "Unentdeckt", "start_url": f"/game/{tok}/", "scope": f"/game/{tok}/",
+                                    "display": "fullscreen", "orientation": "landscape", "background_color": "#0a0e14", "theme_color": "#0a0e14"}),
+                        mimetype="application/manifest+json", headers=SEC)
+
+    @app.route("/game/<tok>/info")
+    def ginv_info(tok):
+        inv, bad = check(tok, "http")
+        if bad is not None:
+            return Response(json.dumps({"ok": False, "left_s": 0}), bad.status_code, mimetype="application/json", headers=SEC)
+        tgt, _w = ginv_target()
+        return Response(json.dumps({"ok": True, "left_s": max(0, int(inv["until"] - time.time())), "players": ginv_players(inv), "max": inv["max"],
+                                    "full": ginv_players(inv) >= int(inv["max"]), "open": tgt is not None}), mimetype="application/json", headers=SEC)
+
+    @app.route("/game/<tok>/ws", websocket=True)       # werkzeug: a WebSocket request only matches a websocket rule
+    def ginv_ws(tok):
+        inv, bad = check(tok, "ws")
+        if bad is not None:
+            return bad
+        ip = gip()
+        key = request.headers.get("Sec-WebSocket-Key", "")
+        sock = request.environ.get("werkzeug.socket")
+        if request.headers.get("Upgrade", "").lower() != "websocket" or not re.match(r"^[A-Za-z0-9+/]{22}==$", key):
+            return Response("WebSocket only", 400, headers=SEC)
+        if sock is None:
+            return Response("not supported", 501, headers=SEC)
+        tgt, why = ginv_target()
+        if tgt is None:
+            return deny(503)
+        with GINV["lock"]:
+            n = int(GINV["conns"].get(inv["id"], 0))
+            if n >= int(inv["max"]):
+                full = True
+            else:
+                full = False
+                GINV["conns"][inv["id"]] = n + 1
+        if full:
+            ginv_note(ip, f"refused: the invitation is full ({inv['max']} players)", inv)
+            return deny(409)
+        up = None
+        t0 = time.time(); nin = 0; nout = 0; why_end = "left"
+        try:
+            try:
+                up = _socket.create_connection((tgt[0], tgt[2]), timeout=6)
+                up.sendall((f"GET / HTTP/1.1\r\nHost: {tgt[0]}:{tgt[2]}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n"
+                            f"Sec-WebSocket-Key: {key}\r\nSec-WebSocket-Version: 13\r\n\r\n").encode())
+                resp = b""
+                while b"\r\n\r\n" not in resp and len(resp) < 8192:
+                    ch = up.recv(4096)
+                    if not ch:
+                        break
+                    resp += ch
+            except OSError as e:
+                GINV["tgt_t"] = 0.0
+                ginv_note(ip, "game not reachable: " + str(e)[:60], inv, False)
+                return deny(503)
+            head_, _s, rest = resp.partition(b"\r\n\r\n")
+            m_ = re.search(rb"(?im)^sec-websocket-accept:\s*([A-Za-z0-9+/=]{20,40})\s*$", head_)
+            if not head_.startswith(b"HTTP/1.1 101") or not m_:
+                ginv_note(ip, "the game refused the connection", inv, False)
+                return deny(503)
+            inv["uses"] = int(inv.get("uses", 0)) + 1
+            ginv_note(ip, "joined the game", inv)
+            sock.sendall(b"HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: " + m_.group(1) + b"\r\n\r\n")
+            if rest:
+                sock.sendall(rest)
+            up.settimeout(None)
+            sock.settimeout(None)
+            win = deque()                                   # (time, bytes) from the guest in the last 10 s
+            last_chk = 0.0
+            while True:
+                now = time.time()
+                if now - last_chk > 1.0:                    # expiry / revocation also ends open games
+                    last_chk = now
+                    cur = ginv_find(tok)
+                    if cur is None or not ginv_valid(cur):
+                        why_end = "invitation expired or revoked - disconnected"; break
+                pend = hasattr(sock, "pending") and sock.pending() > 0
+                rd = [sock] if pend else _gselect.select([sock, up], [], [], 1.0)[0]
+                if up in rd:
+                    d_ = up.recv(65536)
+                    if not d_:
+                        why_end = "the game closed the connection"; break
+                    sock.sendall(d_); nout += len(d_)
+                if sock in rd:
+                    try:
+                        d_ = sock.recv(65536)
+                    except (BlockingIOError, InterruptedError):
+                        continue
+                    except OSError as e:
+                        if e.__class__.__name__ == "SSLWantReadError":
+                            continue
+                        raise
+                    if not d_:
+                        break
+                    win.append((now, len(d_))); nin += len(d_)
+                    while win and now - win[0][0] > 10.0:
+                        win.popleft()
+                    if sum(x[1] for x in win) > GINV_IN_10S:
+                        why_end = "too much data from the guest - disconnected"; break
+                    up.sendall(d_)
+        except OSError:
+            pass
+        finally:
+            with GINV["lock"]:
+                GINV["conns"][inv["id"]] = max(0, int(GINV["conns"].get(inv["id"], 1)) - 1)
+            for z in (up, sock):
+                if z is None:
+                    continue
+                try:
+                    z.shutdown(_socket.SHUT_RDWR)
+                except OSError:
+                    pass
+            if up is not None:
+                try:
+                    up.close()
+                except OSError:
+                    pass
+        ginv_note(ip, f"{why_end} after {int(time.time() - t0)} s ({nout // 1024} KB to the guest, {nin // 1024} KB from the guest)", inv,
+                  why_end != "left")
+        return Response("", 200)                            # never reaches the guest: the connection was taken over
+
+    @app.route("/api/game_invite", methods=["GET", "POST"])
+    def api_game_invite():
+        n_ = nope()
+        if n_ is not None:
+            return n_
+        lang = norm_lang(request.args.get("lang"))
+        if request.method == "POST":
+            d = body(); lang = norm_lang(d.get("lang") or lang)
+            a_ = str(d.get("action") or "")
+            if a_ == "create":
+                inv, err = ginv_create(d.get("hours", 3), d.get("players", 6), d.get("name", ""))
+                if inv is None:
+                    return reply({"ok": False, "error": tr_err(err, lang)}, 400)
+                st = ginv_state(request.host_url)
+                st["new"] = ginv_url(inv, st["base"])
+                return reply(st)
+            if a_ == "revoke":
+                ginv_revoke("all" if d.get("all") else str(d.get("id") or ""))
+            else:
+                return reply({"ok": False, "error": "unknown action"}, 400)
+        st = ginv_state(request.host_url)
+        st["why"] = tr(st["why"], lang) if st.get("why") else ""
+        return reply(st)
+
+    @app.route("/api/game_compare", methods=["GET", "POST"])
+    def api_game_compare():
+        n_ = nope()
+        if n_ is not None and request.method == "POST":
+            return n_
+        lang = norm_lang(request.args.get("lang"))
+        q = {"action": "game_compare", "op": "state"}
+        if request.method == "POST":
+            d = body(); lang = norm_lang(d.get("lang") or lang)
+            op = str(d.get("op") or "")
+            if op not in ("start", "stop"):
+                return reply({"ok": False, "error": "unknown action"}, 400)
+            q["op"] = op
+            if op == "start":
+                q.update(bots=max(0, min(3, int(d.get("bots", 2) or 0))), minutes=max(1, min(15, int(d.get("minutes", 3) or 3))),
+                         source="ways" if d.get("source") == "ways" else "rec")
+                log_event("sys", f"Game «Human vs AI» started from the web page ({q['bots']} bots, {q['minutes']} min)")
+        try:
+            r = sim_control(q)
+        except Exception:
+            return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+        if not isinstance(r, dict) or r.get("error") == "unknown action":
+            return reply({"ok": False, "error": tr_err("not supported - update the simulator", lang)}, 400)
+        return reply(r, 200 if r.get("ok", True) or request.method == "GET" else 400)
 def follow_set(on, who="web"):
     """2.98.1: one «Folgen»: the camera keeps what it detects in the middle of the picture - a person first, otherwise an
     animal the AI knows or something that really goes somewhere. (Before, «Folgen» only followed persons; «Bewegung folgen»
@@ -53830,6 +54292,106 @@ WAECHTER_JS = r"""
 </script>
 """
 WEB_PAGE = WEB_PAGE.replace("</body>", WAECHTER_JS + "</body>", 1)
+LOCK_DENY_PATHS.add("/api/game_invite")         # operator mode (390): no new invitations to the outside
+# wraps: DEMO_BLOCK
+DEMO_BLOCK = tuple(DEMO_BLOCK) + ("/api/game_invite", "/api/game_compare")
+
+GONL_DE = {"Human vs AI": "Mensch gegen KI", "online-note": "Freunde spielen von zu Hause mit: ein Link mit Ablaufzeit. Er öffnet nur das Spiel (kein Kamerabild, keine Einstellungen) und gilt nur, solange er nicht abgelaufen oder zurückgezogen ist.",
+           "cmp-note": "Dieselbe Runde zweimal: zuerst bewacht ein Mensch (Wächter am Handy oder PC, sonst der Bot-Wächter), dann die echte Erkennung von MoveEye – mit denselben Wegen und denselben Kamerabildern. Mit Bots läuft es von selbst.",
+           "Online beyond the WLAN": "Online über das WLAN hinaus", "Bots": "Bots", "Duration": "Dauer", "Start both rounds": "Beide Runden starten", "Stop the comparison": "Vergleich abbrechen",
+           "Round 1 of 2: a person guards": "Runde 1 von 2: ein Mensch bewacht", "Round 2 of 2: MoveEye guards the same round": "Runde 2 von 2: MoveEye bewacht dieselbe Runde",
+           "Short break between the rounds": "Kurze Pause zwischen den Runden", "time left": "noch", "MoveEye is not connected to the simulator game": "MoveEye ist nicht mit dem Spiel des Simulators verbunden",
+           "Learning pictures": "Lernbilder", "Test bench ways": "Prüfstand-Wege", "Human saw, MoveEye missed": "Mensch sah, MoveEye nicht", "False alarms": "Fehlalarme",
+           "faster": "schneller", "nobody caught him": "keiner hat ihn erwischt", "same speed": "gleich schnell", "Human": "Mensch", "Bot guard": "Bot-Wächter",
+           "Saved ways instead of free bots": "Gespeicherte Schleichwege statt freier Bots", "New invitation": "Neue Einladung", "valid for": "gültig für", "players at most": "Spieler höchstens",
+           "Name (optional)": "Name (freiwillig)", "Make the invitation": "Einladung erstellen", "Revoke": "Zurückziehen", "Revoke all": "Alle zurückziehen", "Copy": "Kopieren", "copied": "kopiert",
+           "expired": "abgelaufen", "revoked": "zurückgezogen", "players": "Spieler", "valid for another": "noch gültig", "Game invitation": "Spiel-Einladung", "Protocol": "Protokoll",
+           "local-warn": "Dieser Link geht nur im eigenen Netz. Für Freunde zu Hause: Tailscale einrichten (Funnel für Gäste ohne Tailscale) oder unter Einstellungen → Meldungen die «Adresse dieser Seite» eintragen.",
+           "The game is open - guests can join": "Das Spiel ist offen – Gäste können beitreten", "through the tunnel": "über den Tunnel",
+           "the game is not open in the simulator": "das Spiel ist im Simulator nicht offen", "simulator not reachable": "Simulator nicht erreichbar",
+           "Only the game: the guest sees no camera picture and no settings. Whoever has the link can play until it expires.": "Nur das Spiel: der Gast sieht kein Kamerabild und keine Einstellungen. Wer den Link hat, kann bis zum Ablauf mitspielen.",
+           "Who caught more?": "Wer hat mehr erwischt?", "wins": "gewinnt", "Draw": "Gleichstand", "h": "h", "no invitation yet": "noch keine Einladung"}
+
+GONL_JS = r"""<script>
+Object.assign(I18N.de, /*GONLDE*/{});
+(function () {
+  const C = document.getElementById("g-cmp"), V = document.getElementById("g-inv"); if (!C || !V) return;
+  const L = () => "lang=" + encodeURIComponent(LANG || "");
+  const fmtS = s => { s = Math.max(0, s | 0); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60); return h ? h + ":" + String(m).padStart(2, "0") + " " + t("h") : (m || 1) + " " + t("min"); };
+  let CK = "", VK = "", busyC = false;
+  const head = (box, ic, ttl, note) => { const d = el("details", "sub"); d.open = true; const s = el("summary", "", ic + " " + t(ttl)); d.appendChild(s); d.appendChild(el("div", "mut", t(note))); const b = el("div", ""); d.appendChild(b); box.appendChild(d); return b; };
+  // ---- «Mensch gegen KI» ----
+  let cb = null;
+  const paintC = j => { const k = JSON.stringify(j); if (k === CK) return; CK = k; if (!cb) cb = head(C, "⚖", "Human vs AI", "cmp-note"); cb.textContent = "";
+    const S = j || {};
+    if (S.ok === false && S.error) cb.appendChild(el("div", "", "⚠ " + S.error));
+    const run = ["r1", "pause", "r2"].includes(S.state);
+    if (run) { cb.appendChild(el("div", "", "⏳ " + t(S.state === "r1" ? "Round 1 of 2: a person guards" : S.state === "r2" ? "Round 2 of 2: MoveEye guards the same round" : "Short break between the rounds") + " · " + t("time left") + " " + fmtS(S.left_s)));
+      if (S.info) cb.appendChild(el("div", "mut", S.info)); }
+    if (!S.mw && !run) cb.appendChild(el("div", "mut", "⚠ " + t("MoveEye is not connected to the simulator game")));
+    const R = S.result || {};
+    if (R.title && !run) { const b = el("div", ""); b.style.cssText = "font-size:18px;font-weight:700;margin:6px 0 2px";
+      b.textContent = "⚖ " + t("Who caught more?") + " " + (R.guard_human ? t("Human") : t("Bot guard")) + " " + R.human + " · MoveEye " + R.mw; cb.appendChild(b);
+      cb.appendChild(el("div", "", R.human === R.mw ? t("Draw") : ((R.human > R.mw ? (R.guard_human ? t("Human") : t("Bot guard")) : "MoveEye") + " " + t("wins"))));
+      const ul = el("ul", ""); ul.style.cssText = "margin:6px 0;padding-left:18px;font-size:14px";
+      (R.per || []).forEach(p => { const li = el("li", ""); const dot = el("span", "", "● "); dot.style.color = p.c; li.appendChild(dot);
+        const who = p.faster === "human" ? (R.guard_human ? t("Human") : t("Bot guard")) + " " + t("faster") : p.faster === "mw" ? "MoveEye " + t("faster") : p.faster === "same" ? t("same speed") : t("nobody caught him");
+        li.appendChild(document.createTextNode(p.n + ": " + p.human + " · " + p.mw + " – " + who + (p.human > 0 || p.mw > 0 ? " (" + (p.human > 0 ? p.rt_human + " s" : "–") + " / " + (p.mw > 0 ? p.rt_mw + " s" : "–") + ")" : ""))); ul.appendChild(li); });
+      cb.appendChild(ul);
+      cb.appendChild(el("div", "mut", t("False alarms") + ": " + (R.guard_human ? t("Human") : t("Bot guard")) + " " + R.false_human + " · MoveEye " + R.false_mw));
+      if (R.missed) cb.appendChild(el("div", "", "🧠 " + t("Human saw, MoveEye missed") + ": " + R.missed + " → " + R.pics + " " + t("Learning pictures") + ", " + R.ways + " " + t("Test bench ways"))); }
+    const r = el("div", "btns"); r.style.cssText = "align-items:center;flex-wrap:wrap;margin-top:6px";
+    const sb = document.createElement("select"); [1, 2, 3].forEach(n => { const o = el("option", "", t("Bots") + ": " + n); o.value = n; sb.appendChild(o); }); sb.value = String(Math.max(1, Math.min(3, S.bots || 2)));
+    const sm = document.createElement("select"); [2, 3, 5].forEach(n => { const o = el("option", "", n + " " + t("min")); o.value = n; sm.appendChild(o); }); sm.value = String([2, 3, 5].includes(S.minutes) ? S.minutes : 3);
+    sb.setAttribute("aria-label", t("Bots")); sm.setAttribute("aria-label", t("Duration")); sb.style.width = sm.style.width = "auto";
+    const wl = el("label", "mut"); const wc = document.createElement("input"); wc.type = "checkbox"; wc.id = "gc-ways"; wl.append(wc, document.createTextNode(" " + t("Saved ways instead of free bots")));
+    wl.style.fontSize = "13px"; if (!S.ways_n) wl.hidden = true;
+    const b1 = el("button", "", "▶ " + t("Start both rounds")); b1.type = "button"; b1.disabled = run || !S.mw;
+    b1.onclick = async () => { b1.disabled = true; busyC = true; const q = await post("/api/game_compare?" + L(), {op: "start", bots: +sb.value, minutes: +sm.value, source: wc.checked ? "ways" : "rec", lang: LANG}); busyC = false; CK = ""; paintC(q); };
+    const b2 = el("button", "sec", t("Stop the comparison")); b2.type = "button"; b2.hidden = !run; b2.onclick = async () => { CK = ""; paintC(await post("/api/game_compare?" + L(), {op: "stop", lang: LANG})); };
+    if (!run) r.append(sb, sm); r.append(b1, b2); cb.appendChild(r); if (!run) cb.appendChild(wl); };
+  // ---- invitations ----
+  let vb = null, sel = {h: 3, p: 6};
+  const paintV = j => { const k = JSON.stringify(j); if (k === VK) return; VK = k; if (!vb) vb = head(V, "🌐", "Online beyond the WLAN", "online-note"); vb.textContent = "";
+    const S = j || {};
+    if (S.ok === false) { vb.appendChild(el("div", "", "⚠ " + (S.error || "?"))); return; }
+    vb.appendChild(el("div", S.game_open ? "" : "mut", S.game_open ? "🟢 " + t("The game is open - guests can join") + (S.tunnel ? " (" + t("through the tunnel") + ")" : "") : "⚪ " + (S.why || t("the game is not open in the simulator"))));
+    if (!S.public) vb.appendChild(el("div", "mut", "⚠ " + t("local-warn")));
+    const act = (S.invites || []).filter(x => x.active), old = (S.invites || []).filter(x => !x.active);
+    if (!act.length) vb.appendChild(el("div", "mut", t("no invitation yet")));
+    act.forEach(x => { const row = el("div", ""); row.style.cssText = "border:1px solid var(--line);border-radius:10px;padding:8px;margin:6px 0";
+      row.appendChild(el("div", "", "🎟 " + (x.name || t("Game invitation")) + " · " + t("valid for another") + " " + fmtS(x.left_s) + " · " + x.players + "/" + x.max + " " + t("players")));
+      const u = el("div", "mut", x.url); u.style.cssText = "word-break:break-all;font-size:12px;user-select:all"; row.appendChild(u);
+      const br = el("div", "btns");
+      const cp = el("button", "sec", t("Copy")); cp.type = "button"; cp.onclick = () => { try { navigator.clipboard.writeText(x.url); cp.textContent = "✓ " + t("copied"); } catch (e) {} };
+      const rv = el("button", "sec", t("Revoke")); rv.type = "button"; rv.onclick = async () => { VK = ""; paintV(await post("/api/game_invite?" + L(), {action: "revoke", id: x.id, lang: LANG})); };
+      br.append(cp, rv); if (window.qrBtn) br.appendChild(qrBtn(x.url, t("Game invitation"), {secret: true, note: t("Only the game: the guest sees no camera picture and no settings. Whoever has the link can play until it expires.")}));
+      row.appendChild(br); vb.appendChild(row); });
+    const f = el("div", "btns"); f.style.cssText = "align-items:center;flex-wrap:wrap;margin-top:6px";
+    const sh = document.createElement("select"); (S.hours || [1, 3, 6, 12, 24]).forEach(h => { const o = el("option", "", t("valid for") + " " + h + " " + t("h")); o.value = h; sh.appendChild(o); }); sh.value = String(sel.h);
+    const sp = document.createElement("select"); [2, 4, 6, 8, 12].forEach(n => { const o = el("option", "", n + " " + t("players at most")); o.value = n; sp.appendChild(o); }); sp.value = String(sel.p);
+    sh.onchange = () => sel.h = +sh.value; sp.onchange = () => sel.p = +sp.value; sh.style.width = sp.style.width = "auto";
+    const nm = document.createElement("input"); nm.type = "text"; nm.maxLength = 30; nm.placeholder = t("Name (optional)"); nm.style.cssText = "flex:1 1 140px;min-width:0;width:auto";
+    const mk = el("button", "", "➕ " + t("Make the invitation")); mk.type = "button";
+    mk.onclick = async () => { mk.disabled = true; const q = await post("/api/game_invite?" + L(), {action: "create", hours: +sh.value, players: +sp.value, name: nm.value, lang: LANG}); VK = ""; paintV(q);
+      if (q && q.new && window.qrShow) qrShow(q.new, t("Game invitation"), {secret: true, note: t("Only the game: the guest sees no camera picture and no settings. Whoever has the link can play until it expires.")}); };
+    vb.appendChild(el("div", "", "")).appendChild(el("b", "", t("New invitation")));
+    f.append(sh, sp, nm, mk); vb.appendChild(f);
+    if (act.length > 1) { const ra = el("button", "sec", t("Revoke all")); ra.type = "button"; ra.onclick = async () => { VK = ""; paintV(await post("/api/game_invite?" + L(), {action: "revoke", all: true, lang: LANG})); }; vb.appendChild(ra); }
+    if (old.length) vb.appendChild(el("div", "mut", old.map(x => "🎟 " + (x.name || x.id) + ": " + t(x.revoked ? "revoked" : "expired")).join(" · ")));
+    if ((S.log || []).length) { const d = el("details", "sub"); d.appendChild(el("summary", "", t("Protocol")));
+      (S.log || []).forEach(e => d.appendChild(el("div", "mut", new Date(e.t * 1000).toLocaleTimeString() + " · " + e.ip + " · " + e.what))); vb.appendChild(d); } };
+  const poll = async () => { const g = document.getElementById("c-game");
+    if (g && !g.hidden && !document.hidden) {
+      if (!busyC) { try { paintC(await (await fetch("/api/game_compare?" + L(), {cache: "no-store"})).json()); } catch (e) {} }
+      try { paintV(await (await fetch("/api/game_invite?" + L(), {cache: "no-store"})).json()); } catch (e) {} }
+    setTimeout(poll, 4000); };
+  setTimeout(poll, 800);
+})();
+</script>"""
+GONL_JS = GONL_JS.replace("/*GONLDE*/{}", json.dumps(GONL_DE, ensure_ascii=False))
+SIM_PAGE = SIM_PAGE.replace('<div id="g-more"></div>', '<div id="g-more"></div><div id="g-cmp"></div><div id="g-inv"></div>', 1)
+SIM_PAGE = SIM_PAGE.replace("</body>", GONL_JS + "</body>", 1)
 # ---- 2.98.13: simulator updates have one owner - the simulator's own setting «Neue Versionen» (update_mode) -----------------
 # MoveEye's switch «Update the simulator by itself» (sim_autoupd, web and window) shows and sets that setting through
 # /control when the connected simulator has it; MoveEye then no longer presses «update_now» itself (300). For the Python
@@ -54030,7 +54592,7 @@ class WebStream:
                     request.get_data()                      # read the body first, else the connection is reset
                 log_event("web", f"Blocked a request from another web page ({request.headers.get('Origin', '')[:60]}) to {request.path}")
                 return sx_err(403, "foreign")                  # in the own language (578)
-            if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/na/", "/spiele", "/tv/", "/nt/", "/info", "/almanach")) or request.path in public:
+            if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/na/", "/spiele", "/tv/", "/nt/", "/info", "/almanach", "/game/")) or request.path in public:
                 return None                         # guest links check their own key; app icons are not secret
             pw = CFG["web_password"]
             g.user, g.role = "", "admin"
@@ -55110,6 +55672,7 @@ class WebStream:
         g2_routes(app, watch, reply, body)                 # guide 2: tours, tip of the day, factory reset (586)
         qr_routes(app, reply, body)                        # QR codes: POST /api/qr, gallery /qr, print page, no-store for secrets (587)
         servo_routes(app, reply, body)                     # 2.98.35: servos - Not-Aus, taught points, diagnosis /servo, /api/servo (539)
+        ginv_routes(app, reply, body)                      # game for guests online /game/<token>/ (only the game, token + expiry), «Human vs AI» (343)
 
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
@@ -69351,6 +69914,135 @@ TRX['it'].update({
     '🛡 Arm all': '🛡 Inserire tutti',
     '🧭 Setup assistant': '🧭 Assistente di configurazione',
 })
+def _gonl_cmp_text(S):
+    """the state of «Human vs AI» as plain lines (window)"""
+    if not isinstance(S, dict):
+        return "–"
+    if S.get("ok") is False and S.get("error"):
+        return "⚠ " + tr(str(S["error"]))
+    st = S.get("state")
+    if st in ("r1", "pause", "r2"):
+        lab = {"r1": "Round 1 of 2: a person guards", "r2": "Round 2 of 2: MoveEye guards the same round", "pause": "Short break between the rounds"}[st]
+        return "⏳ " + tr(lab) + f" · {tr('time left')} {max(1, int(S.get('left_s') or 0) // 60)} {tr('min')}"
+    R = S.get("result") or {}
+    if R.get("title"):
+        g = tr("Human") if R.get("guard_human") else tr("Bot guard")
+        out = [f"⚖ {tr('Who caught more?')} {g} {R.get('human', 0)} · MoveEye {R.get('mw', 0)}"]
+        for p in R.get("per") or []:
+            f = {"human": g + " " + tr("faster"), "mw": "MoveEye " + tr("faster"), "same": tr("same speed")}.get(p.get("faster"), tr("nobody caught him"))
+            out.append(f"  {p.get('n')}: {p.get('human')} · {p.get('mw')} – {f}")
+        out.append(f"{tr('False alarms')}: {g} {R.get('false_human', 0)} · MoveEye {R.get('false_mw', 0)}")
+        if R.get("missed"):
+            out.append(f"🧠 {tr('Human saw, MoveEye missed')}: {R['missed']} → {R.get('pics', 0)} {tr('Learning pictures')}, {R.get('ways', 0)} {tr('Test bench ways')}")
+        return "\n".join(out)
+    return ("" if S.get("mw") else "⚠ " + tr("MoveEye is not connected to the simulator game"))
+
+
+def _tk_gonl_card(self, inner):
+    card = self._panel(inner); card.pack(fill="x", pady=(0, 8))
+    tk.Label(card, text="🎮 " + tr("Human vs AI") + " · " + tr("Online beyond the WLAN"), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10, "bold"), anchor="w").pack(fill="x")
+    ttk.Label(card, text=tr("cmp-note"), style="Mut.TLabel", wraplength=520, justify="left").pack(anchor="w", pady=(2, 4))
+    cmp_l = ttk.Label(card, text="–", wraplength=520, justify="left"); cmp_l.pack(anchor="w")
+    bf = tk.Frame(card, bg=C["panel"]); bf.pack(fill="x", pady=(4, 6))
+    nb = tk.StringVar(value="2")
+    ttk.Combobox(bf, textvariable=nb, values=["1", "2", "3"], width=3, state="readonly").pack(side="left", padx=(0, 4))
+    tk.Label(bf, text=tr("Bots"), bg=C["panel"], fg=C["mut"]).pack(side="left", padx=(0, 8))
+
+    def bg(fn, done):
+        def run():
+            try:
+                r = fn()
+            except Exception as e:
+                r = {"ok": False, "error": tr("simulator not reachable") + f" ({str(e)[:40]})"}
+            try:
+                self.root.after(0, lambda: done(r))
+            except (tk.TclError, RuntimeError):
+                pass
+        threading.Thread(target=run, daemon=True, name="gonl").start()
+
+    def start():
+        log_event("sys", "Game «Human vs AI» started from the window")
+        bg(lambda: sim_control({"action": "game_compare", "op": "start", "bots": int(nb.get() or 2), "minutes": 3}), lambda r: cmp_l.configure(text=_gonl_cmp_text(r)))
+
+    self._fbtn(bf, "▶ " + tr("Start both rounds"), start, primary=True).pack(side="left", padx=(0, 6))
+    self._fbtn(bf, tr("Stop the comparison"), lambda: bg(lambda: sim_control({"action": "game_compare", "op": "stop"}), lambda r: cmp_l.configure(text=_gonl_cmp_text(r)))).pack(side="left")
+    ttk.Label(card, text=tr("online-note"), style="Mut.TLabel", wraplength=520, justify="left").pack(anchor="w", pady=(6, 2))
+    inv_l = ttk.Label(card, text="–", wraplength=520, justify="left"); inv_l.pack(anchor="w")
+    bf2 = tk.Frame(card, bg=C["panel"]); bf2.pack(fill="x", pady=(4, 0))
+    hv = tk.StringVar(value="3")
+    ttk.Combobox(bf2, textvariable=hv, values=[str(h) for h in GINV_HOURS], width=3, state="readonly").pack(side="left", padx=(0, 4))
+    tk.Label(bf2, text=tr("h"), bg=C["panel"], fg=C["mut"]).pack(side="left", padx=(0, 8))
+
+    def paint_inv():
+        st = ginv_state()
+        act = [x for x in st["invites"] if x["active"]]
+        lines = [("🟢 " + tr("The game is open - guests can join")) if st["game_open"] else ("⚪ " + tr(st["why"] or "the game is not open in the simulator"))]
+        lines += [f"🎟 {x['name'] or tr('Game invitation')} · {tr('valid for another')} {max(1, x['left_s'] // 60)} {tr('min')} · {x['players']}/{x['max']} {tr('players')}" for x in act]
+        if not act:
+            lines.append(tr("no invitation yet"))
+        if not st["public"]:
+            lines.append("⚠ " + tr("local-warn"))
+        return "\n".join(lines), act, st
+
+    def make():
+        inv, err = ginv_create(int(hv.get() or 3), 6, "")
+        if inv is None:
+            self._status("Simulator", tr(err)); return
+        url = ginv_url(inv, ginv_base())
+        qr_tk_dialog(self.root, url, tr("Game invitation"), secret=True,
+                     note=tr("Only the game: the guest sees no camera picture and no settings. Whoever has the link can play until it expires."))
+        refresh()
+
+    def revoke_all():
+        ginv_revoke("all"); refresh()
+
+    self._fbtn(bf2, "➕ " + tr("Make the invitation"), make).pack(side="left", padx=(0, 6))
+    self._fbtn(bf2, tr("Revoke all"), revoke_all).pack(side="left")
+
+    def refresh():
+        def work():
+            try:
+                c_ = sim_control({"action": "game_compare", "op": "state"})
+            except Exception:
+                c_ = None
+            try:
+                i_ = paint_inv()
+            except Exception:
+                i_ = ("–", [], {})
+            def show():
+                if not card.winfo_exists():
+                    return
+                cmp_l.configure(text=_gonl_cmp_text(c_) if c_ else tr("simulator not reachable"))
+                inv_l.configure(text=i_[0])
+            try:
+                self.root.after(0, show)
+            except (tk.TclError, RuntimeError):
+                pass
+        threading.Thread(target=work, daemon=True, name="gonl").start()
+
+    def loop():
+        try:
+            if not card.winfo_exists():
+                return
+        except tk.TclError:
+            return
+        if CFG.get("sim_on"):
+            refresh()
+        card.after(6000, loop)
+    card.after(500, loop)
+
+
+_tk_sim_head_base = _tk_sim_head
+
+
+def _tk_sim_head(self, inner):
+    """2.98.x: the card «Human vs AI · Online» right under «Improve detection» (the same as on the page Simulator, 543)"""
+    _tk_sim_head_base(self, inner)
+    _tk_gonl_card(self, inner)
+
+
+setattr(App, "_tk_sim_head", _tk_sim_head)
+setattr(App, "_tk_gonl_card", _tk_gonl_card)
 TRX['rm'].update({
     '(or the address from the push message).': "(u l'adressa da l'avis push).",
     '+ Add relay': '+ Agiuntar in relais',
@@ -77108,6 +77800,125 @@ def almanac_tip():
     return {"i": i, "icon": ic, "chapter": ch, "title": t, "text": first[:400]}
 
 
+_HX_SPIELB = {
+    'Human vs AI': ('Mensch gegen KI', 'Humain contre IA', 'Umano contro IA', 'Uman cunter IA'),
+    'Online beyond the WLAN': ('Online über das WLAN hinaus', 'En ligne au-delà du Wi-Fi', 'Online oltre il Wi-Fi', 'Online sur il WLAN ora'),
+    'cmp-note': ('Dieselbe Runde zweimal: zuerst bewacht ein Mensch (Wächter am Handy oder PC, sonst der Bot-Wächter), dann die echte Erkennung von MoveEye – mit denselben Wegen und denselben Kamerabildern. Mit Bots läuft es von selbst.',
+                 'La même manche deux fois : d’abord un humain surveille (gardien sur le portable ou le PC, sinon le gardien-bot), puis la vraie détection de MoveEye – avec les mêmes chemins et les mêmes images. Avec des bots, cela tourne tout seul.',
+                 'Lo stesso turno due volte: prima sorveglia una persona (guardiano sul telefono o sul PC, altrimenti il guardiano bot), poi il vero rilevamento di MoveEye – con gli stessi percorsi e le stesse immagini. Con i bot funziona da solo.',
+                 'Il medem turn duas giadas: l’emprim surveglia in uman (guardian sin il telefonin u il PC, uschiglio il guardian-bot), lura la vaira reconuschientscha da MoveEye – cun las medemas vias ed ils medems maletgs. Cun bots va quai da sez.'),
+    'online-note': ('Freunde spielen von zu Hause mit: ein Link mit Ablaufzeit. Er öffnet nur das Spiel (kein Kamerabild, keine Einstellungen) und gilt nur, solange er nicht abgelaufen oder zurückgezogen ist.',
+                    'Des amis jouent depuis chez eux : un lien avec une durée. Il n’ouvre que le jeu (pas d’image de caméra, pas de réglages) et ne vaut que tant qu’il n’est pas expiré ou retiré.',
+                    'Gli amici giocano da casa: un link con scadenza. Apre solo il gioco (nessuna immagine della telecamera, nessuna impostazione) e vale solo finché non è scaduto o revocato.',
+                    'Amis giogan da chasa: ina colliaziun cun scadenza. Ella avra mo il gieu (nagin maletg da la camera, nagins parameters) e vala mo uschè ditg ch’ella n’è betg scadida u revocada.'),
+    'Bots': ('Bots', 'Bots', 'Bot', 'Bots'),
+    'Duration': ('Dauer', 'Durée', 'Durata', 'Durada'),
+    'Start both rounds': ('Beide Runden starten', 'Lancer les deux manches', 'Avviare i due turni', 'Cumenzar omadus turns'),
+    'Stop the comparison': ('Vergleich abbrechen', 'Arrêter la comparaison', 'Interrompere il confronto', 'Interrumper la cumparegliaziun'),
+    'Round 1 of 2: a person guards': ('Runde 1 von 2: ein Mensch bewacht', 'Manche 1 sur 2 : un humain surveille', 'Turno 1 di 2: sorveglia una persona', 'Turn 1 da 2: in uman surveglia'),
+    'Round 2 of 2: MoveEye guards the same round': ('Runde 2 von 2: MoveEye bewacht dieselbe Runde', 'Manche 2 sur 2 : MoveEye surveille la même manche', 'Turno 2 di 2: MoveEye sorveglia lo stesso turno', 'Turn 2 da 2: MoveEye surveglia il medem turn'),
+    'Short break between the rounds': ('Kurze Pause zwischen den Runden', 'Courte pause entre les manches', 'Breve pausa tra i turni', 'Curta pausa tranter ils turns'),
+    'time left': ('noch', 'encore', 'ancora', 'anc'),
+    'MoveEye is not connected to the simulator game': ('MoveEye ist nicht mit dem Spiel des Simulators verbunden', 'MoveEye n’est pas relié au jeu du simulateur', 'MoveEye non è collegato al gioco del simulatore', 'MoveEye n’è betg collià cun il gieu dal simulatur'),
+    'Learning pictures': ('Lernbilder', 'images d’apprentissage', 'immagini di apprendimento', 'maletgs d’emprender'),
+    'Test bench ways': ('Prüfstand-Wege', 'chemins du banc d’essai', 'percorsi del banco di prova', 'vias dal banc da prova'),
+    'Human saw, MoveEye missed': ('Mensch sah, MoveEye nicht', 'L’humain a vu, MoveEye non', 'La persona ha visto, MoveEye no', 'L’uman ha vis, MoveEye betg'),
+    'False alarms': ('Fehlalarme', 'Fausses alarmes', 'Falsi allarmi', 'Fauss alarms'),
+    'faster': ('schneller', 'plus rapide', 'più veloce', 'pli svelt'),
+    'nobody caught him': ('keiner hat ihn erwischt', 'personne ne l’a attrapé', 'nessuno l’ha preso', 'nagin n’al ha tschiffà'),
+    'same speed': ('gleich schnell', 'aussi rapide', 'stessa velocità', 'tuttina svelt'),
+    'Human': ('Mensch', 'Humain', 'Persona', 'Uman'),
+    'Bot guard': ('Bot-Wächter', 'Gardien-bot', 'Guardiano bot', 'Guardian-bot'),
+    'Saved ways instead of free bots': ('Gespeicherte Schleichwege statt freier Bots', 'Chemins enregistrés au lieu de bots libres', 'Percorsi salvati invece di bot liberi', 'Vias memorisadas empè da bots libers'),
+    'New invitation': ('Neue Einladung', 'Nouvelle invitation', 'Nuovo invito', 'Nova invitaziun'),
+    'valid for': ('gültig für', 'valable', 'valido per', 'valaivel per'),
+    'players at most': ('Spieler höchstens', 'joueurs au plus', 'giocatori al massimo', 'giugaders al pli'),
+    'Name (optional)': ('Name (freiwillig)', 'Nom (facultatif)', 'Nome (facoltativo)', 'Num (facultativ)'),
+    'Make the invitation': ('Einladung erstellen', 'Créer l’invitation', 'Creare l’invito', 'Far l’invitaziun'),
+    'Revoke': ('Zurückziehen', 'Retirer', 'Revocare', 'Revocar'),
+    'Revoke all': ('Alle zurückziehen', 'Tout retirer', 'Revocare tutti', 'Revocar tut'),
+    'Copy': ('Kopieren', 'Copier', 'Copia', 'Copiar'),
+    'copied': ('kopiert', 'copié', 'copiato', 'copià'),
+    'expired': ('abgelaufen', 'expirée', 'scaduto', 'scadì'),
+    'revoked': ('zurückgezogen', 'retirée', 'revocato', 'revocà'),
+    'players': ('Spieler', 'joueurs', 'giocatori', 'giugaders'),
+    'valid for another': ('noch gültig', 'encore valable', 'ancora valido', 'anc valaivel'),
+    'Game invitation': ('Spiel-Einladung', 'Invitation au jeu', 'Invito al gioco', 'Invitaziun al gieu'),
+    'Protocol': ('Protokoll', 'Journal', 'Registro', 'Protocol'),
+    'local-warn': ('Dieser Link geht nur im eigenen Netz. Für Freunde zu Hause: Tailscale einrichten (Funnel für Gäste ohne Tailscale) oder unter Einstellungen → Meldungen die «Adresse dieser Seite» eintragen.',
+                   'Ce lien ne marche que dans le propre réseau. Pour des amis chez eux : configurer Tailscale (Funnel pour les invités sans Tailscale) ou saisir l’«adresse de cette page» sous Réglages → Notifications.',
+                   'Questo link funziona solo nella propria rete. Per amici a casa: configurare Tailscale (Funnel per ospiti senza Tailscale) o inserire l’«indirizzo di questa pagina» in Impostazioni → Notifiche.',
+                   'Questa colliaziun va mo en l’agen rait. Per amis a chasa: installar Tailscale (Funnel per giasts senza Tailscale) u endatar l’«adressa da questa pagina» sut Parameters → Avis.'),
+    'The game is open - guests can join': ('Das Spiel ist offen – Gäste können beitreten', 'Le jeu est ouvert – les invités peuvent rejoindre', 'Il gioco è aperto – gli ospiti possono entrare', 'Il gieu è avert – giasts pon sa participar'),
+    'through the tunnel': ('über den Tunnel', 'par le tunnel', 'attraverso il tunnel', 'tras il tunnel'),
+    'the game is not open in the simulator': ('das Spiel ist im Simulator nicht offen', 'le jeu n’est pas ouvert dans le simulateur', 'il gioco non è aperto nel simulatore', 'il gieu n’è betg avert en il simulatur'),
+    'the simulator gives no game address': ('der Simulator nennt keine Spiel-Adresse', 'le simulateur ne donne pas d’adresse de jeu', 'il simulatore non dà un indirizzo di gioco', 'il simulatur na dat nagina adressa da gieu'),
+    'too many invitations - revoke an old one first': ('zu viele Einladungen – zuerst eine alte zurückziehen', 'trop d’invitations – retirer d’abord une ancienne', 'troppi inviti – revocare prima uno vecchio', 'memia bleras invitaziuns – revocar l’emprim ina veglia'),
+    'Only the game: the guest sees no camera picture and no settings. Whoever has the link can play until it expires.': (
+        'Nur das Spiel: der Gast sieht kein Kamerabild und keine Einstellungen. Wer den Link hat, kann bis zum Ablauf mitspielen.',
+        'Seulement le jeu : l’invité ne voit ni image de caméra ni réglages. Qui a le lien peut jouer jusqu’à l’expiration.',
+        'Solo il gioco: l’ospite non vede immagini della telecamera né impostazioni. Chi ha il link può giocare fino alla scadenza.',
+        'Mo il gieu: il giast na vesa nagin maletg da camera e nagins parameters. Tgi che ha la colliaziun po giugar fin a la scadenza.'),
+    'Who caught more?': ('Wer hat mehr erwischt?', 'Qui en a attrapé le plus ?', 'Chi ne ha presi di più?', 'Tgi ha tschiffà dapli?'),
+    'wins': ('gewinnt', 'gagne', 'vince', 'gudogna'),
+    'Draw': ('Gleichstand', 'Égalité', 'Pareggio', 'Pari'),
+    'h': ('h', 'h', 'h', 'h'),
+    'no invitation yet': ('noch keine Einladung', 'pas encore d’invitation', 'ancora nessun invito', 'anc nagina invitaziun'),
+}
+for _k, _v in _HX_SPIELB.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# ---- the manual: two lines in the chapter «Spiele freigeben» (610) --------------------------------------------------------
+_HELP_SPIELB = {
+    "de": '<li><b>⚖ Mensch gegen KI</b> (Simulator → Karte «Spiel» oder Spiel-Assistent → «Mensch gegen KI»): dieselbe Runde zweimal – zuerst bewacht ein Mensch '
+          '(Wächter am Handy oder PC mit dem Auslöser; ist keiner da, der Bot-Wächter), dann die echte Erkennung von MoveEye. Die Schleicher laufen in Runde 2 genau ihren Weg '
+          'aus Runde 1, der Kopf dreht sich gleich – MoveEye bekommt also dieselben Bilder. Am Schluss: «Wer hat mehr erwischt? Mensch 4 · MoveEye 3», pro Schleicher, wer schneller war, '
+          'und die Fehlalarme. Was der Mensch sah und MoveEye verpasste, wird ein <b>Lernbild</b> (kommt ins Trainingspaket) und ein <b>Prüfstand-Weg</b> (Testlauf «Schleichwege»). '
+          'Mit Bots läuft der Vergleich ohne Mitspieler.</li>'
+          '<li><b>🌐 Online über das WLAN hinaus</b> (Simulator → Karte «Spiel» → «Neue Einladung»): ein Link mit Ablauf (1 bis 24 Stunden, Standard 3), höchstens N Spieler, '
+          'jederzeit zurückziehbar, mit QR-Code. Er öffnet bei MoveEye nur das Spiel des Simulators (<code>/game/…/</code>) – kein Kamerabild, keine Einstellungen. Abgelaufen oder '
+          'zurückgezogen: «gilt nicht mehr» (auch laufende Spiele werden getrennt). Jeder Beitritt steht im Protokoll; zu viele Anfragen oder falsche Links werden gebremst. '
+          'Damit Freunde von zu Hause hineinkommen, muss MoveEye von aussen erreichbar sein: Tailscale (für Gäste ohne Tailscale: <i>Funnel</i>) oder eine eigene Adresse unter '
+          '«Adresse dieser Seite». Läuft der Simulator hinter einer Firewall, geht das Spiel durch den Tunnel. Oben auf dem Handy steht die Verzögerung (ms) und wie lange die Einladung noch gilt.</li>',
+    "en": '<li><b>⚖ Human vs AI</b> (Simulator → card «Game» or the game wizard → «Mensch gegen KI»): the same round twice – first a person guards (the guard on the phone or PC '
+          'with the shutter; without one the bot guard), then the real detection of MoveEye. In round 2 the sneakers walk exactly their way of round 1 and the head turns the same – '
+          'MoveEye gets the same pictures. At the end: «Who caught more? Human 4 · MoveEye 3», per sneaker who was faster, and the false alarms. What the person saw and MoveEye missed '
+          'becomes a <b>learning picture</b> (into the training pack) and a <b>test bench way</b> (test run «Schleichwege»). With bots it runs without players.</li>'
+          '<li><b>🌐 Online beyond the WLAN</b> (Simulator → card «Game» → «New invitation»): a link with an expiry (1 to 24 hours, default 3), at most N players, revocable, with a QR code. '
+          'It opens only the simulator game on MoveEye (<code>/game/…/</code>) – no camera picture, no settings. Expired or revoked: «no longer valid» (running games are disconnected too). '
+          'Every join is logged; too many requests or wrong links are slowed down. For friends at home MoveEye must be reachable from outside: Tailscale (guests without Tailscale: '
+          '<i>Funnel</i>) or an own address under «Address of this page». A simulator behind a firewall sends the game through the tunnel. The phone shows the delay (ms) and how long the invitation is still valid.</li>',
+    "fr": '<li><b>⚖ Humain contre IA</b> : la même manche deux fois – d’abord un humain surveille (ou le gardien-bot), puis la vraie détection de MoveEye, avec les mêmes chemins et les mêmes images. '
+          'Résultat : qui en a attrapé le plus, qui était plus rapide. Ce que l’humain a vu et MoveEye non devient une image d’apprentissage et un chemin du banc d’essai.</li>'
+          '<li><b>🌐 En ligne au-delà du Wi-Fi</b> : un lien d’invitation avec durée (1 à 24 h), nombre de joueurs limité, révocable, avec code QR. Il n’ouvre que le jeu (<code>/game/…/</code>), '
+          'pas de caméra ni de réglages. MoveEye doit être joignable de l’extérieur (Tailscale / Funnel ou «adresse de cette page»).</li>',
+    "it": '<li><b>⚖ Umano contro IA</b>: lo stesso turno due volte – prima sorveglia una persona (o il guardiano bot), poi il vero rilevamento di MoveEye, con gli stessi percorsi e le stesse immagini. '
+          'Risultato: chi ne ha presi di più, chi è stato più veloce. Ciò che la persona ha visto e MoveEye no diventa un’immagine di apprendimento e un percorso del banco di prova.</li>'
+          '<li><b>🌐 Online oltre il Wi-Fi</b>: un link d’invito con scadenza (da 1 a 24 h), numero di giocatori limitato, revocabile, con codice QR. Apre solo il gioco (<code>/game/…/</code>), '
+          'nessuna telecamera né impostazione. MoveEye deve essere raggiungibile dall’esterno (Tailscale / Funnel o «indirizzo di questa pagina»).</li>',
+    "rm": '<li><b>⚖ Uman cunter IA</b>: il medem turn duas giadas – l’emprim surveglia in uman (u il guardian-bot), lura la vaira reconuschientscha da MoveEye, cun las medemas vias ed ils medems maletgs. '
+          'Resultat: tgi ha tschiffà dapli, tgi è stà pli svelt. Quai che l’uman ha vis e MoveEye betg daventa in maletg d’emprender ed ina via dal banc da prova.</li>'
+          '<li><b>🌐 Online sur il WLAN ora</b>: ina colliaziun d’invitaziun cun scadenza (1 fin 24 h), dumber da giugaders limità, revocabla, cun code QR. Ella avra mo il gieu (<code>/game/…/</code>), '
+          'nagina camera e nagins parameters. MoveEye sto esser cuntanschibel dador (Tailscale / Funnel u «adressa da questa pagina»).</li>',
+}
+
+
+def _help_spielb(doc, lang):
+    i = doc.find('<section id="games"')
+    j = doc.find("</ul>", i) if i >= 0 else -1
+    if j < 0 or "/game/…/" in doc[i:j]:
+        return doc
+    return doc[:j] + _HELP_SPIELB[lang] + doc[j:]
+
+
+_hp_ensb = HELP_PAGE.find('<div lang="en">')
+if _hp_ensb > 0:
+    HELP_PAGE = _help_spielb(HELP_PAGE[:_hp_ensb], "de") + _help_spielb(HELP_PAGE[_hp_ensb:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_spielb(HELP_X[_L], _L)
 _HX_GUIDE2 = {
     "Tour of this page": ("Rundgang durch diese Seite", "Visite de cette page", "Tour di questa pagina", "Gir tras questa pagina"),
     "Continue later": ("Später weitermachen", "Continuer plus tard", "Continuare più tardi", "Cuntinuar pli tard"),

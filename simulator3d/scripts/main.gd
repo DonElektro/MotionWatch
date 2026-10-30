@@ -3845,6 +3845,8 @@ func _control(d: Dictionary) -> Dictionary:
 		view_cam.rotation = Vector3(pt, yw, 0)
 		view_want_t = now()
 		return {"ok": true}
+	elif a == "game_compare":                          # 3D-4.x: «Mensch gegen KI» (gamecompare.gd) - state / start / stop
+		return game.cmp.command(d) if game != null and game.cmp != null else {"ok": false, "error": "not supported"}
 	elif a == "game_shut":                             # 3D-4.x: «Auslöser» (gameshutter.gd) - info / aim / fire, for tests
 		return game.shut.command(d) if game != null and game.shut != null else {"ok": false, "error": "no game"}
 	elif a == "game_tool":                             # 3D-4.x: a tool of the guard (gametools.gd): {tool, slot} or {op: "info"}
