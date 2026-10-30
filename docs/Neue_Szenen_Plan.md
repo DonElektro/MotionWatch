@@ -15,3 +15,12 @@ Ziel: Szenen, die gezielt Schwächen von MoveEye üben; je ein fester **Prüfsta
 Sturmnacht, Insekten am IR-Licht, Scheinwerfer-Strasse, Hof mit Haustieren, Winter / Nebel, Dämmerung / Spiegelungen.
 
 Reihenfolge: nach Weitwinkel-Kamera; parallel oder nach dem Verfolgungs-Parcours (`docs/Verfolgungs_Parcours.md`).
+
+## Umgesetzt (Branch wt-szenen, 30.10.2026 – Entwurf, Version vergibt der Lead)
+- Alle drei Szenen in `simulator3d/scripts/szenenplus.gd` (Details: `simulator3d/UEBERGABE.md`, «NEU (Entwurf): Neue Szenen»).
+- Prüfstand: Pläne `camping_voll`, `tarnen`, `velodieb` (eigene Szene, feste Zufallszahlen; Pushes richtig / falsch,
+  Reaktion ab Platz bzw. ab Griff, Pushes wegen Nachbarn) – nicht in «quick», sonntags mit den grossen Läufen
+  (`.github/workflows/pruefstand.yml`) oder von Hand (`pruefstand/LIESMICH.md`).
+- Spiel: im Spiel-Assistenten die Karte «Spiel zur Szene» (Unter den Nachbarn · Tarnen und Kriechen · Velodieb gegen Wächter),
+  gleiche Regeln und Werkzeuge wie sonst (gameplus.gd / gamerules.gd / gametools.gd).
+- MoveEye: Szenen-Namen in allen Sprachen (Teil 551, Kacheln 139 / 549, Simulator-Seite 470), Anleitung (Erkennung).

@@ -280,7 +280,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   let VIEW = "";
   function tiles() {
     const h = H() || {}, sc = (h.scenes || []).find(x => x.id === h.scene) || {};
-    const L = [["scene", "🗺", "Scene", sc.name || h.scene || (R && R.scenario) || ""],
+    const L = [["scene", "🗺", "Scene", (HUB() && HUB().scn ? HUB().scn(sc) : sc.name) || h.scene || (R && R.scenario) || ""],
       ["hour", h.dark ? "🌙" : "☀", "Time of day", h.clock || ""],
       ["weather", WXI[h.weather] || "☁", "Weather", h.weather ? TT(h.weather) : ""],
       ["visit", "🚶", "Visit", h.visitors != null ? h.visitors + " " + T("now") : ""],

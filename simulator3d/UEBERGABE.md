@@ -4,6 +4,24 @@ Stand: 30.10.2026 · Simulator-Version **3D-4.17** · passende MoveEye-Version (
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
+## NEU (Entwurf): Neue Szenen (szenenplus.gd, Branch wt-szenen)
+
+- `scripts/szenenplus.gd` (Knoten `szenen` in main.gd) baut drei Szenen (statisch `build_scene`, aus scenes.gd): **Voller
+  Campingplatz** (`camping_voll`: dein Platz mit Pfosten und Seil vorne, Weg, Nachbarreihe, WC-Haus, Spielwiese),
+  **Tarnen und Kriechen** (`tarnen`: trockene Wiese in den Farben der Tarnkleidung, hohes Gras, Büsche), **Velodieb**
+  (`velodieb`: Veloständer im Bild, Hecke mit Lücke zur Strasse). Liste `Scenes.LIST`, `AUTO`, `EXTRA_HIDE`, `Scenes.EN`
+  (englische Namen, MoveEye übersetzt sie, Teil 551), templates.gd (grün = neu).
+- Nachbarn (`camping_voll`): Figuren von actor.gd / figur.gd **unter dem Szenen-Knoten** (nicht in `visitors`): bleiben bei
+  Testläufen und Spielrunden, sind nie «Wahrheit»; 22:30–6:30 schlafen sie, nur die WC-Gänge (mit Lampe) gehen weiter.
+- Besuch-Arten (`main.spawn`, Knöpfe unter «Besuch → Abläufe»): `platz_besuch`, `tarn_robben` (Tarnkleidung über
+  `Actor.npc_camo`), `tarn_schirm` / `tarn_karton` (dieselben Dinge wie im Spiel, `gameplus.dress`), `velodieb` (löst
+  `add_event("Velo", "tag")` aus, schiebt eine Kopie des Velos weg, das echte ist so lange versteckt).
+- Testläufe (testrun.gd): Pläne mit `"scene"` (laden die Szene, danach zurück) und `"dists"`; `_cause` meldet «Nachbar»;
+  Bericht `szene` (Reaktion ab Platz / ab Griff, Pushes wegen Nachbarn, pro Tarn-Art). CONTROL `{"action": "szenen"}`.
+- Spiel: Ziel pro Szene (`szenen.goal_key`), im Assistenten eine Karte «Spiel zur Szene» (Presets `szene_voll`,
+  `szene_tarnen`, `szene_velo`); Tarnkleidung wirkt in «Tarnen» stärker (0.6 statt 0.8), Bots nehmen dort immer ein Ding;
+  in «Velodieb» immer das Velo, beim Greifen meldet der Velo-Sensor.
+
 ## NEU (Entwurf): Simulator-Werte für MoveEye (power.gd, Branch wt-simwerte)
 
 - `scripts/power.gd` (Knoten `simwerte` in main.gd): simulierter USV-HAT (2 × 18650, Kapazität pro Zelle, Ladung jetzt,

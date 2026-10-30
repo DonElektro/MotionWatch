@@ -1158,7 +1158,7 @@ function showCtl(r) {
   });
   const sel = $("#s-sel"), cur = sel.value; sel.textContent = "";
   (r.scenarios || []).forEach(o => { const op = document.createElement("option"); op.value = o.id; op.dataset.del = o.deletable ? "1" : "";
-    op.textContent = o.name + (o.id === r.scenario ? "  ◀ " + t("running") : ""); sel.appendChild(op); });
+    op.textContent = (o.en && LANG !== "de" ? t(o.en) + " (3D)" : o.name) + (o.id === r.scenario ? "  ◀ " + t("running") : ""); sel.appendChild(op); });
   $("#s-scn").hidden = !(r.scenarios || []).length;
   sel.value = [...sel.options].some(o => o.value === cur) ? cur : (r.scenario || (sel.options[0] && sel.options[0].value) || "");
   const o = sel.options[sel.selectedIndex]; $("#s-del").hidden = !(o && o.dataset.del === "1");

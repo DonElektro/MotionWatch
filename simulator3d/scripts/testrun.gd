@@ -24,7 +24,7 @@ const STANDARD := [
 	{"name": "Nacht, Regen", "hour": 23.5, "weather": "rain", "wind": 20.0, "visits": ["person", "cat", "person"]},
 ]
 # 3D-3.27: more test runs. «cond» = difficult conditions of main.gd (switched on only during the phase)
-const DAUER := {"quick": 150, "night": 230, "standard": 300, "hard": 520, "nacht": 650}   # 3D-3.90: the one place for names and times (also the test bench)
+const DAUER := {"quick": 150, "night": 230, "standard": 300, "hard": 520, "nacht": 650, "camping_voll": 290, "tarnen": 270, "velodieb": 230}   # 3D-3.90: the one place for names and times (also the test bench)
 # Prüfstand 2: a whole night in time-lapse. «until» = the hour at the end of the phase (the clock runs faster meanwhile),
 # «every» = a visitor every … s, "-" = a quiet slot (nobody comes: wind and rain alone must not give a push).
 # Realistic numbers: about 20 animals, 2 persons in 10 hours; «fixed»: --mal does not multiply it.
@@ -50,6 +50,19 @@ const PLANS := {
 		{"name": "Scheinwerfer in der Nacht", "hour": 22.0, "weather": "clear", "wind": 5.0, "cond": ["headlights"], "visits": ["person", "badger", "person"]},
 		{"name": "Wolkenschatten und Wind", "hour": 14.0, "weather": "cloudy", "wind": 55.0, "cond": ["shadows"], "visits": ["person", "cat", "jogger"]}]},
 	"nacht": {"name": "Ganze Nacht (20–6 Uhr im Zeitraffer, Tiere, Wind, Regenschauer, 2 Personen · etwa 11 Min.)", "phases": NACHT, "every": 20.0, "fixed": true},
+	# 3D-4.x «Neue Szenen» (szenenplus.gd): each plan loads its own scene («scene») and puts it back at the end; «dists» =
+	# the distances of the ways through the picture (crawling: near); «-» = a quiet slot (only the neighbours move)
+	"camping_voll": {"name": "Voller Campingplatz (Nachbarn bewegen sich, Fremde kommen an deinen Platz · etwa 5 Min.)", "scene": "camping_voll", "every": 24.0, "phases": [
+		{"name": "Nachmittag, Nachbarn kochen, Kinder spielen", "hour": 15.5, "weather": "clear", "wind": 10.0, "visits": ["platz_besuch", "-", "platz_besuch"]},
+		{"name": "Nacht mit Infrarot, Nachbarn gehen zum WC", "hour": 23.0, "weather": "clear", "wind": 10.0, "cond": ["ir"], "visits": ["-", "platz_besuch", "-"]}]},
+	"tarnen": {"name": "Tarnen und Kriechen (Tarnkleidung, robben, Schirm, Karton · etwa 4½ Min.)", "scene": "tarnen", "every": 16.0, "phases": [
+		{"name": "Tag, Tarnkleidung und Robben", "hour": 13.0, "weather": "clear", "wind": 10.0, "dists": [6.0, 8.0, 10.0, 7.0], "visits": ["tarn_robben", "tarn_schirm", "tarn_karton", "tarn_robben"]},
+		{"name": "Dämmerung", "hour": 20.3, "weather": "cloudy", "wind": 15.0, "dists": [6.0, 8.0, 10.0], "visits": ["tarn_robben", "tarn_karton", "tarn_schirm"]},
+		{"name": "Nacht mit Infrarot", "hour": 23.0, "weather": "clear", "wind": 10.0, "cond": ["ir"], "dists": [5.0, 6.5, 8.0], "visits": ["tarn_robben", "tarn_schirm", "tarn_karton"]}]},
+	"velodieb": {"name": "Velodieb (schnell hin, Velo greifen, weg – Reaktionszeit · etwa 4 Min.)", "scene": "velodieb", "every": 18.0, "phases": [
+		{"name": "Tag", "hour": 14.0, "weather": "clear", "wind": 10.0, "visits": ["velodieb", "-", "velodieb"]},
+		{"name": "Dämmerung", "hour": 20.4, "weather": "cloudy", "wind": 15.0, "visits": ["velodieb", "-"]},
+		{"name": "Nacht mit Infrarot", "hour": 23.5, "weather": "clear", "wind": 10.0, "cond": ["ir"], "visits": ["velodieb", "-", "velodieb"]}]},
 	"night": {"name": "Nacht (dunkel, Infrarot, Tiere · etwa 4 Min.)", "phases": [
 		{"name": "Nacht, ohne Licht", "hour": 1.0, "weather": "clear", "wind": 5.0, "visits": ["person", "fox", "person", "hedgehog"]},
 		{"name": "Nacht, Infrarot an", "hour": 2.0, "weather": "clear", "wind": 10.0, "cond": ["ir"], "visits": ["person", "boar", "child", "badger"]},
@@ -311,6 +324,8 @@ func _route(i: int, ph: Dictionary) -> Array:
 	var lit: bool = "ir" in ph.get("cond", []) or bool(main.mw.get("lights", {}).get("white", false))
 	var ds: Array = [7.0, 11.0, 15.0, 9.0, 19.0, 13.0, 24.0] if float(ph["hour"]) > 6.5 and float(ph["hour"]) < 19.5 else \
 			([4.0, 6.5, 9.0, 5.5, 11.0, 7.5] if lit else [5.0, 8.0, 12.0])
+	if ph.has("dists"):
+		ds = ph["dists"]                                  # 3D-4.x: the plan sets the distances (crawling persons: near)
 	var d: float = ds[i % ds.size()] * randf_range(0.92, 1.08)
 	var half: float = d * 0.68 + 5.0
 	var side := 1.0 if i % 2 == 0 else -1.0
@@ -379,6 +394,10 @@ func start(which := "", cams: Array = [], times: int = 1, seed_: int = 1) -> Str
 		paint()
 		return info
 	saved = {"hour": main.hour(), "weather": main.weather, "wind": main.wind, "auto": main.auto_visitors, "speed": main.speed}
+	var psc := str(PLANS.get(plan, {}).get("scene", ""))
+	if psc != "" and psc != main.scene:                  # 3D-4.x: a plan with its own scene (szenenplus.gd) - back at the end
+		saved["scene"] = main.scene
+		main.set_scene(psc)
 	_cond_saved = main.cond.duplicate()
 	main.auto_visitors = false
 	main.clear_visitors()
@@ -414,10 +433,14 @@ func stop(finished := false) -> void:
 	if not _cond_saved.is_empty():
 		main.cond = _cond_saved.duplicate()
 	main.clear_visitors()
+	if main.szenen != null:
+		main.szenen.restore()                            # 3D-4.x: a bike thief had the bike
 	if finished:
 		_make_report()
 	else:
 		info = "Testlauf abgebrochen."
+	if saved.has("scene") and str(saved["scene"]) != main.scene:
+		main.set_scene(str(saved["scene"]))
 	paint()
 
 
@@ -561,6 +584,9 @@ func thermal_visible(v) -> bool:
 func _cause(animals_vis: Array) -> String:
 	"""the probable cause of a report without a visible person"""
 	var conds: Array = PHASES[phase].get("cond", [])
+	var nbc: String = main.szenen.cause(self) if main.szenen != null else ""
+	if nbc != "":
+		return nbc                                         # 3D-4.x «Voller Campingplatz»: a neighbour was in the picture
 	if not animals_vis.is_empty():
 		return "Tier (%s)" % ", ".join(PackedStringArray(animals_vis))
 	if "web" in conds:
@@ -812,6 +838,7 @@ func _make_report() -> void:
 			"latency_s": snappedf(lat_avg, 0.1), "false_alarms": falses.size(), "false_list": falses, "missed_list": all_missed, "noise_alarms": noises,
 			"phases": phs, "truth_cams": truth_cams, "visitors": each, "mult": mult,
 			"realism": {"fx": bool(main.realism.fx_on), "look": bool(main.realism.real_on)} if main.realism != null else {},
+			"szene": main.szenen.report_extra(self) if main.szenen != null else {},
 			"note": ("Wahrheit: sichtbar für Kopf- oder feste Kamera" if truth_cams.size() > 1 else "Wahrheit: sichtbar für die Kopfkamera") + " (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug)."}
 	info = "Testlauf fertig: Personen erkannt %d von %d (%d %%), Reaktionszeit %s, %s, Flackern %d, Geräuschalarme %d." % [
 			td, tp, int(report["rate"]), ("%.1f s" % lat_avg) if lat_avg >= 0.0 else "–",

@@ -11827,7 +11827,7 @@ def sim_hub(force=False):
         h = float(vals.get("hour") or 0)
         wx = str(vals.get("weather") or "")
         d.update(ok=True, name=str(r.get("name") or ""), scene=str(r.get("scenario") or ""), status=st,
-                 scenes=[{"id": s.get("id"), "name": str(s.get("name") or "").replace(" (3D)", "")} for s in r.get("scenarios") or []][:40],
+                 scenes=[{"id": s.get("id"), "name": str(s.get("name") or "").replace(" (3D)", ""), "en": str(s.get("en") or "")} for s in r.get("scenarios") or []][:40],
                  hour=h, clock="%02d:%02d" % (int(h), int(round((h % 1) * 60)) % 60), dark=" Nacht " in st or st.find("· Nacht ·") >= 0,
                  weather=wx, ambient=vals.get("ambient"), visitors=int(m.group(1)) if m else None, surprise=bool(vals.get("surprise_on")), dev2=bool(vals.get("dev2_on")), dev2_place=str(vals.get("dev2_place") or ""), zones3d=bool(vals.get("show_zones3d")), det3d=bool(vals.get("show_det3d")),
                  twin_ok="show_zones3d" in vals,
@@ -11945,6 +11945,7 @@ SIMHUB_JS = r"""
     "Faster decision": "Schneller entscheiden", "B is better – kept": "B ist besser – übernommen", "A stays": "A bleibt", "Place, zones, patrol": "Ort, Zonen, Patrouille",
     "Zones in 3D": "Zonen in 3D", "mast": "Stange", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"});
   const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : (L() === "en" ? k : (DE[k] || k));
+  const scn = x => !x ? "" : (x.en && L() !== "de" ? tt(x.en) : x.name);     // 551: scene names in the language of the page (German from the simulator)
   const WX = [["clear", "☀"], ["cloudy", "☁"], ["rain", "🌧"], ["fog", "🌫"], ["snow", "❄"]];
   const VIS = __VIS__;
   const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
@@ -11955,7 +11956,7 @@ SIMHUB_JS = r"""
   const wxIcon = w => (WX.find(x => x[0] === w) || ["", "☁"])[1];
   function sheet(box, kind) {
     const s = E("div", "shsheet");
-    if (kind === "scene") (H.scenes || []).forEach(x => { const b = E("button", x.id === H.scene ? "" : "sec", x.name); b.type = "button"; b.onclick = () => act("scene", x.id); s.appendChild(b); });
+    if (kind === "scene") (H.scenes || []).forEach(x => { const b = E("button", x.id === H.scene ? "" : "sec", scn(x)); b.type = "button"; b.onclick = () => act("scene", x.id); s.appendChild(b); });
     if (kind === "hour") { [["Morning", 7], ["Noon", 13], ["Evening", 19.5], ["Night", 23]].forEach(([n, h]) => { const b = E("button", "sec", tt(n) + " " + String(Math.floor(h)).padStart(2, "0") + ":" + (h % 1 ? "30" : "00")); b.type = "button"; b.onclick = () => act("hour", h); s.appendChild(b); });
       const r = E("div", "shrow"), i = E("input"); i.type = "range"; i.min = 0; i.max = 23.75; i.step = 0.25; i.value = H.hour || 12; i.style.flex = "1"; const o = E("b", "", H.clock || "");
       i.oninput = () => { o.textContent = String(Math.floor(i.value)).padStart(2, "0") + ":" + String(Math.round(i.value % 1 * 60)).padStart(2, "0"); }; i.onchange = () => act("hour", +i.value); r.append(i, o); s.appendChild(r); }
@@ -12086,7 +12087,7 @@ SIMHUB_JS = r"""
   const EXPERT_K = ["autoth", "ab"];
   function tiles(box, full) {
     const G = {world: E("div", "shub"), test: E("div", "shub"), learn: E("div", "shub"), play: E("div", "shub")}, g = G.world;
-    const T = [["scene", "🗺", tt("Scene"), ((H.scenes || []).find(x => x.id === H.scene) || {}).name || H.scene || "–"],
+    const T = [["scene", "🗺", tt("Scene"), scn((H.scenes || []).find(x => x.id === H.scene)) || H.scene || "–"],
       ["hour", H.dark ? "🌙" : "☀", tt("Time of day"), H.clock || "–"],
       ["weather", wxIcon(H.weather), tt("Weather"), tt(H.weather || "–") + (H.ambient != null ? " · " + Math.round(H.ambient) + " °C" : "")],
       ["visit", (window.EVI || {}).person || "🚶", tt("Send a visitor"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")]
@@ -12139,7 +12140,7 @@ SIMHUB_JS = r"""
   function paintTile(el_) {
     el_.hidden = !(H && H.on); if (!H || !H.on) return; el_.textContent = "";
     const top = E("div", "stile"), im = E("img"); im.alt = ""; im.src = "/sim/view.jpg?w=320&r=" + Date.now();
-    const i = E("div", "sti"); i.append(E("b", "", "🧪 " + tt("Simulation") + (H.ok ? "" : " ⚠")), E("div", "", H.ok ? (((H.scenes || []).find(x => x.id === H.scene) || {}).name || H.scene) : tt("Simulator not reachable")),
+    const i = E("div", "sti"); i.append(E("b", "", "🧪 " + tt("Simulation") + (H.ok ? "" : " ⚠")), E("div", "", H.ok ? (scn((H.scenes || []).find(x => x.id === H.scene)) || H.scene) : tt("Simulator not reachable")),
       E("span", "", H.ok ? (H.dark ? "🌙 " : "☀ ") + H.clock + " · " + wxIcon(H.weather) + " " + tt(H.weather || "") + (H.visitors != null ? " · " + H.visitors + " " + tt("visitors") : "") : ""), E("span", "", tt("Tap = control")));
     top.append(im, i); top.onclick = () => { el_.dataset.open = el_.dataset.open ? "" : "1"; paintAll(); }; el_.appendChild(top);
     if (el_.dataset.open && H.ok) { const w = E("div"); w.style.marginTop = "8px"; tiles(w, false); el_.appendChild(w); }
@@ -12150,7 +12151,7 @@ SIMHUB_JS = r"""
   function paintSheet(el_) { if (el_.contains(document.activeElement) && document.activeElement.type === "range") return;   // 549 Sim-Kompakt: one sheet alone
     el_.textContent = ""; if (H && H.ok && el_.dataset.kind) sheet(el_, el_.dataset.kind); }
   function paintAll() { parkTr(); document.querySelectorAll("[data-simhub]").forEach(x => x.dataset.simhub === "full" ? paintFull(x) : x.dataset.simhub === "sheet" ? paintSheet(x) : paintTile(x)); }
-  window.mwSimHub = {H: () => H, tt: tt, paint: () => paintAll(), load: () => load()};   // 549: the tiles of the live page «Sim-Kompakt»
+  window.mwSimHub = {H: () => H, tt: tt, scn: scn, paint: () => paintAll(), load: () => load()};   // 549: the tiles of the live page «Sim-Kompakt»
   async function load() { if (!document.querySelector("[data-simhub]")) return; try { H = await (await fetch("/api/simhub")).json(); } catch (e) { return; }
     if (document.querySelector('[data-simhub="full"]')) { try { LB = await (await fetch("/api/lab")).json(); LN = await (await fetch("/api/learn")).json(); } catch (e) {} }
     const ti = document.querySelector('[data-simhub="tile"] img'); if (ti && !document.hidden) ti.src = "/sim/view.jpg?w=320&r=" + Date.now();
@@ -39684,7 +39685,7 @@ function showCtl(r) {
   });
   const sel = $("#s-sel"), cur = sel.value; sel.textContent = "";
   (r.scenarios || []).forEach(o => { const op = document.createElement("option"); op.value = o.id; op.dataset.del = o.deletable ? "1" : "";
-    op.textContent = o.name + (o.id === r.scenario ? "  ◀ " + t("running") : ""); sel.appendChild(op); });
+    op.textContent = (o.en && LANG !== "de" ? t(o.en) + " (3D)" : o.name) + (o.id === r.scenario ? "  ◀ " + t("running") : ""); sel.appendChild(op); });
   $("#s-scn").hidden = !(r.scenarios || []).length;
   sel.value = [...sel.options].some(o => o.value === cur) ? cur : (r.scenario || (sel.options[0] && sel.options[0].value) || "");
   const o = sel.options[sel.selectedIndex]; $("#s-del").hidden = !(o && o.dataset.del === "1");
@@ -56752,7 +56753,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   let VIEW = "";
   function tiles() {
     const h = H() || {}, sc = (h.scenes || []).find(x => x.id === h.scene) || {};
-    const L = [["scene", "🗺", "Scene", sc.name || h.scene || (R && R.scenario) || ""],
+    const L = [["scene", "🗺", "Scene", (HUB() && HUB().scn ? HUB().scn(sc) : sc.name) || h.scene || (R && R.scenario) || ""],
       ["hour", h.dark ? "🌙" : "☀", "Time of day", h.clock || ""],
       ["weather", WXI[h.weather] || "☁", "Weather", h.weather ? TT(h.weather) : ""],
       ["visit", "🚶", "Visit", h.visitors != null ? h.visitors + " " + T("now") : ""],
@@ -60005,6 +60006,48 @@ class WebStream:
         self.app = app
 
 
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_szenen = {
+    'Campsite': ('Camping-Platz', 'Camping', 'Campeggio', 'Plaz da campadi'),
+    'Forest': ('Wald', 'Forêt', 'Bosco', 'Guaud'),
+    'Car park': ('Parkplatz', 'Parking', 'Parcheggio', 'Plaz da parcar'),
+    'Garden / house': ('Garten / Haus', 'Jardin / maison', 'Giardino / casa', 'Curtin / chasa'),
+    'Funny place': ('Lustiger Platz', 'Endroit amusant', 'Posto divertente', 'Plaz legher'),
+    'Hide and seek (many hiding places)': ('Versteckspiel (viele Verstecke)', 'Cache-cache (beaucoup de cachettes)', 'Nascondino (molti nascondigli)', 'Giu da zuppar (bleras zuppadas)'),
+    'Place from the map (Switzerland)': ('Ort von der Karte (Schweiz)', 'Lieu de la carte (Suisse)', 'Luogo dalla mappa (Svizzera)', 'Lieu da la charta (Svizra)'),
+    'My home (self-built)': ('Mein Zuhause (selbst gebaut)', 'Ma maison (construite moi-même)', 'La mia casa (costruita da me)', 'Mia chasa (construida sez)'),
+    'Farm': ('Bauernhof', 'Ferme', 'Fattoria', 'Bain puril'),
+    'Lake shore with jetty': ('Seeufer mit Steg', 'Rive du lac avec ponton', 'Riva del lago con pontile', 'Riva dal lai cun punt'),
+    'Building site': ('Baustelle', 'Chantier', 'Cantiere', 'Plazza da construcziun'),
+    'Camper van site': ('Wohnmobil-Stellplatz', 'Aire de camping-cars', 'Area camper', 'Plaz per autos da campadi'),
+    'My template (3D file)': ('Meine Vorlage (3D-Datei)', 'Mon modèle (fichier 3D)', 'Il mio modello (file 3D)', 'Mes model (datoteca 3D)'),
+    'Bedroom (wake-up alarm)': ('Schlafzimmer (Wecker)', 'Chambre (réveil)', 'Camera da letto (sveglia)', 'Stanza da durmir (svegliarin)'),
+    'Full campsite': ('Voller Campingplatz', 'Camping plein', 'Campeggio pieno', 'Plaz da campadi plain'),
+    'Camouflage and crawling': ('Tarnen und Kriechen', 'Camouflage et ramper', 'Mimetizzarsi e strisciare', 'Camuflar e sa trair'),
+    'Bike thief': ('Velodieb', 'Voleur de vélo', 'Ladro di bici', 'Lader da velo'),
+}
+# German comes from the simulator itself (and DE is only made in part 560, after this part) - here only fr / it / rm
+for _k, _v in _HX_szenen.items():
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# the manual (DE / EN): the three new scenes of the simulator, in the section «Erkennung» / «Detection»
+for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
+                "<p><b>🏕 Neue Simulator-Szenen (Simulator 3D-4.x):</b> Drei Szenen üben gezielt Schwächen der Erkennung. "
+                "<i>Voller Campingplatz</i>: viele harmlose Nachbarn kochen, gehen zum WC, Kinder spielen, jemand führt den Hund aus – nur "
+                "wer an <i>deinen</i> Platz kommt, zählt (gut zum Einstellen der Zonen und von «Dein Platz»). <i>Tarnen und Kriechen</i>: "
+                "Tarnkleidung in der Farbe des Bodens, Robben, Schirm und Karton. <i>Velodieb</i>: schnell hin, Velo greifen (der Velo-Sensor "
+                "meldet sich), weg – gemessen wird die Reaktionszeit. Jede Szene hat einen festen Prüfstand-Lauf (camping_voll, tarnen, "
+                "velodieb; nicht im kurzen Lauf, sondern sonntags oder von Hand) und im Spiel-Assistenten ein passendes Spiel.</p>"),
+               ('<section id="detect" data-icon="🎯"><h2>Detection</h2>',
+                "<p><b>🏕 New simulator scenes (simulator 3D-4.x):</b> three scenes train weak points of the detection. "
+                "<i>Full campsite</i>: many harmless neighbours cook, walk to the toilets, children play, someone walks the dog – only who "
+                "comes to <i>your</i> pitch counts (good for setting up zones and «Your place»). <i>Camouflage and crawling</i>: camouflage "
+                "clothes in the colour of the ground, crawling, umbrella and cardboard box. <i>Bike thief</i>: fast in, grab the bike (the "
+                "bike sensor reports), away – the reaction time is measured. Every scene has a fixed test-bench run (camping_voll, tarnen, "
+                "velodieb; not in the short run but on Sundays or by hand) and a matching game in the game assistant.</p>")):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 # ----------------------------------------------------------------------------
 # Translations (English text is the key; German below). tr() is used everywhere.
 # ----------------------------------------------------------------------------

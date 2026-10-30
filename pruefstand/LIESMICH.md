@@ -83,8 +83,23 @@ und Drehgrenze ± 170° (Kabel). Lokal nur aussagekräftig, wenn der Rechner fre
 | `night` | Nacht ohne Licht, mit Infrarot, mit Regen | ca. 4 Min. |
 | `hard` | Gegenlicht, Nebel, Schnee, Tropfen, Spinnennetz, Scheinwerfer, Wolkenschatten | ca. 9 Min. |
 | `nacht` | Ganze Nacht 20–6 Uhr im Zeitraffer: Tiere, Wind, Regenschauer, 2 Personen | ca. 11 Min. |
+| `camping_voll` | **Voller Campingplatz** (eigene Szene): Nachbarn bewegen sich dauernd im Bild, Fremde kommen vom Weg an deinen Platz; Nachmittag und Nacht | ca. 3 Min. (×1) |
+| `tarnen` | **Tarnen und Kriechen** (eigene Szene): Tarnkleidung + Robben, Schirm, Karton – nah (5–10 m); Tag, Dämmerung, Nacht | ca. 4½ Min. (×1) |
+| `velodieb` | **Velodieb** (eigene Szene): rennt hin, greift das Velo (Velo-Sensor), rennt weg; Tag, Dämmerung, Nacht | ca. 4 Min. (×1) |
 | `spielwege` | Schleichwege aus dem Spiel (läuft automatisch mit, wenn es welche gibt) | je Weg |
 | `echtenaechte` | Alarm-Spuren echter Nächte, wie aufgenommen und mit anderem Wetter (automatisch, wenn es welche gibt) | je Fall ca. 2 Min. |
+
+### Neue Szenen (Simulator 3D-4.x, `szenenplus.gd`)
+
+Die drei Pläne `camping_voll`, `tarnen`, `velodieb` laden ihre **eigene Szene** (`--szene` gilt für sie nicht) und stellen
+danach die alte wieder her. Sie sind **nicht** im kurzen Lauf «quick» (Wunsch Daniel: Prüfstand sparsam) – sie laufen
+sonntags mit den grossen Läufen oder von Hand: `--plaene camping_voll,tarnen,velodieb`. Feste Zufallszahlen wie alle Pläne.
+Hauptzahlen sind die echten **Pushes richtig / falsch** und die Reaktionszeit; dazu im Bericht `szene`:
+- `camping_voll`: wie viele Fremde an deinen Platz kamen, mit / ohne Push, **Reaktion ab Betreten des Platzes**, und
+  **falsche Pushes wegen Nachbarn** (ein Push, während nur Nachbarn im Bild waren). Die Quote «Personen erkannt» ist hier
+  wenig aussagekräftig, weil fast immer Nachbarn im Bild sind.
+- `tarnen`: pro Art (robben, schirm, karton) sichtbar / erkannt / mit Push.
+- `velodieb`: Griffe, Push vor / nach dem Griff, ohne Push, **Reaktion ab Griff** (negativ = schon vorher gemeldet).
 
 ## Starten
 

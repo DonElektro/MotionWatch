@@ -20,14 +20,16 @@ const UI = preload("res://scripts/ui_style.gd")
 const DIR := "user://vorlagen"
 const MAX_OBST := 250
 
-const NEW_SCENES := ["bauernhof", "seeufer", "baustelle", "stellplatz", "vorlage"]
+const NEW_SCENES := ["bauernhof", "seeufer", "baustelle", "stellplatz", "vorlage", "camping_voll", "tarnen", "velodieb"]
 const SCENE_INFO := {
 	"camping": "Zelt, Wohnwagen, Feuer – der Klassiker", "wald": "Dichter Wald, viele Wildtiere", "parkplatz": "Autos, Leute, Lieferwagen",
 	"garten": "Haus mit Garten, Katzen und Igel", "lustig": "Bunter Platz zum Ausprobieren", "wild": "Hochsitz, Wildwechsel",
 	"verstecken": "Viele Verstecke – fürs Spiel", "ort": "Ein echter Ort aus der Karte", "zuhause": "Selbst gebaut im Haus-Editor",
 	"bauernhof": "Scheune, Heuballen, Weide mit Zaun", "seeufer": "Wasser, Steg mit Boot, Schilf, Zelt",
 	"baustelle": "Bauzaun, Container, Bagger, Werkzeugkiste", "stellplatz": "Wohnmobile, Stromsäulen, Hecken",
-	"vorlage": "Deine eigene 3D-Datei (Reiter «Eigene Datei»)"}
+	"vorlage": "Deine eigene 3D-Datei (Reiter «Eigene Datei»)",
+	"camping_voll": "Viele Nachbarn – nur wer an deinen Platz kommt, zählt", "tarnen": "Tarnkleidung, Robben, Schirm, Karton",
+	"velodieb": "Schnell hin, Velo greifen, weg – Reaktionszeit"}
 
 # [name, what, licence, link]
 const KITS := [

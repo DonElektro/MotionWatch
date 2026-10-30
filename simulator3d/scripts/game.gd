@@ -286,6 +286,8 @@ func on_scene() -> void:
 func _pick_goal(random: bool) -> void:
 	var o: Dictionary = main.obj
 	var keys := ["bike" if main.scene in ["camping", "parkplatz"] else "door"]
+	if main.szenen != null and main.szenen.goal_key() != "":
+		keys = [main.szenen.goal_key()]                    # 3D-4.x: the new scenes (your tent, the bike)
 	if random:
 		keys = []
 		for k in ["bike", "door", "pir"]:
