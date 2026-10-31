@@ -198,7 +198,7 @@ details.px-adv>summary::before{content:"▸ ";}details.px-adv[open]>summary::bef
     kw.append(kl, ki); adv.appendChild(kw); X.kw = ki; xField(kw);
     hide(rowOf(d, "msg_keyword_on")); hide(rowOf(d, "msg_keyword_prefix"));
     ["webpush_on", "pushover_on", "email_on"].forEach(k => hide(rowOf(d, k)));     // = the switches of the cards
-    ["push_actions", "msg_icons", "public_url", "notify_network", "notify_remote"].forEach(k => { const r_ = rowOf(d, k); if (r_) adv.appendChild(r_); });
+    ["push_actions", "msg_icons", "public_url", "notify_network", "sim_info_push", "notify_remote"].forEach(k => { const r_ = rowOf(d, k); if (r_) adv.appendChild(r_); });
     const ba = rowOf(d, "browser_alarm"); if (ba) { hide(ba); adv.appendChild(ba); }      // moved to the bell 🔔 (below)
     X.msg = el("div", "px-msg"); adv.appendChild(X.msg);
     root.appendChild(adv);
