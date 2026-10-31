@@ -200,11 +200,11 @@ func plan() -> void:
 
 
 func energy_mul() -> float:
-	return float(fair.get("e_mul", 1.0))
+	return float(fair.get("e_mul", 1.0)) * (game.more.energy_mul() if game.more != null else 1.0)   # + «Fairness automatisch»
 
 
 func extra_hides() -> int:
-	return int(fair.get("hides", 0))
+	return int(fair.get("hides", 0)) + (game.more.extra_hides() if game.more != null else 0)
 
 
 func hide_bonus() -> float:
@@ -212,7 +212,7 @@ func hide_bonus() -> float:
 
 
 func rate_mul() -> float:
-	return float(fair.get("rate", 1.0))
+	return float(fair.get("rate", 1.0)) * (game.more.rate_mul() if game.more != null else 1.0)
 
 
 # ---- round ----------------------------------------------------------------------------------------------------------------
@@ -413,7 +413,7 @@ func _make_win() -> void:
 	win = {"n": top["n"], "c": top["c"], "score": score, "info": str(top.get("info", "")) if roles.size() < 2 else "", "title": title, "hl": _closest(),
 			"roles": roles, "team": team,
 			"board": game.board_list().slice(0, 5).map(func(b): return {"n": b["n"], "c": b["c"], "score": int(b["score"]), "rounds": int(b["rounds"])}),
-			"fair": str(fair.get("text", ""))}
+			"fair": str(fair.get("text", "")) + ((" · " if str(fair.get("text", "")) != "" else "") + game.more.nacht.bal_txt if game.more != null and game.more.nacht.af_on() and game.more.nacht.bal_txt != "" else "")}
 
 
 func _closest() -> Dictionary:
@@ -538,7 +538,7 @@ func _hide_win() -> void:
 
 
 func _show_win() -> void:
-	if win.is_empty() or (main.localplay != null and main.localplay.active) or (main.tv != null and main.tv.on) or DisplayServer.get_name() == "headless":
+	if win.is_empty() or not win.has("title") or (main.localplay != null and main.localplay.active) or (main.tv != null and main.tv.on) or DisplayServer.get_name() == "headless":
 		return
 	for c in box.get_children():
 		c.queue_free()
@@ -563,11 +563,17 @@ func _show_win() -> void:
 	if str(win.get("team", "")) != "":
 		lines.append(str(win["team"]))
 	var hl: Dictionary = win.get("hl", {})
-	if not hl.is_empty():
+	var rl: Array = game.more.reel_lines() if game.more != null else []   # «Gameplay ausfeilen»: the highlights (gamemore.gd)
+	if not hl.is_empty() and rl.is_empty():
 		lines.append(str(hl["text"]))
+	if not rl.is_empty():
+		lines.append("🎬 " + " · ".join(PackedStringArray(rl)))
+		game.more.show_reel_here()
 	for k in ["fair", "next"]:
 		if str(win.get(k, "")) != "":
 			lines.append(str(win[k]))
+	if game.more != null:                                  # «Gameplay ausfeilen»: tournament, tower, scene badges, «Schwitzen»
+		lines.append_array(game.more.win_lines())
 	var bl := PackedStringArray()
 	var i := 0
 	for b in win.get("board", []):

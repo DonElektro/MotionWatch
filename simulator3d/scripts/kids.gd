@@ -191,7 +191,13 @@ func _kids_game() -> void:
 
 
 func _next_world() -> void:
-	var L: Array = Scenes.LIST.filter(func(s): return s[0] != "ort")
+	var W = preload("res://scripts/worlds.gd")   # 3D-4.x Welten: the worlds and their places in turn
+	var L: Array = []
+	for w in W.SHOWN:
+		if w != "ort":
+			L.append([w, Scenes.name_of(w)])
+			for pl in W.places_of(w):
+				L.append([pl[0], str(pl[1])])
 	var i := 0
 	for k in range(L.size()):
 		if L[k][0] == main.scene:

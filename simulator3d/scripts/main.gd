@@ -3,8 +3,9 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.24"
+const VERSION := "3D-4.34"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
+const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -51,6 +52,23 @@ var ort_cars := true
 var ort_forest := 1
 var ort_camp := 0
 var terrain := false                  # the scene has hills (ground_y), else the ground is flat at y = 0
+var ground_fn := Callable()            # 3D-4.x: a scene with its own ground (ferienpark.gd): height in world coordinates
+var fp_spot := "zelt"                  # 3D-4.x: where MoveEye stands in the «Ferienpark am See» (ferienpark.gd SPOTS)
+const Worlds := preload("res://scripts/worlds.gd")   # 3D-4.x Welten: the old scenes are places in a few worlds
+var welt_solo := false                # «allein»: old scenes without their world (--solo, Prüfstand: comparable measurements)
+var solo_scene := ""                  # this one scene alone ({"action": "scenario", "id": …, "solo": true}, e.g. the training night)
+var bt_spot := "huette"                # 3D-4.x «Bergtal» (bergtal.gd): the sleeping spot (SPOTS, viewpoints or «frei»)
+var bt_bed := "tent"                   # tent | mat (Isomatte + Schlafsack)
+var bt_season := "auto"                # auto (from the month) | fruehling | sommer | herbst | winter
+var bt_free: Array = []                # the own spot: [x, z, looking] in valley coordinates
+var bt_events := true                  # random events in the valley (rockfall, stranger, animal at the food, weather)
+var bt_mount := "stativ"               # MoveEye's mount at the spot: stativ | rucksack | stein | zelt | baum (height of the head)
+var bt_bag := "sommer"                 # sleeping bag: sommer | winter
+var bt_stove := true                   # a stove at the spot (hot while cooking: thermal picture)
+var bt_wall := false                   # a wind wall of stones on the side of the main wind
+var bt_orient := "leicht"              # orientation: leicht (map + marks + position) | mittel (map only) | schwer (signposts only)
+var bt_marks: Array = []               # own marks on the map [[name, x, z]] (valley coordinates)
+var bt_visited: Array = []             # places already visited (quick travel only goes there)
 var ground_mats: Array = []           # ground materials of the place (snow, wet)
 var flat_nodes: Array = []            # flat meadow and the hills far away: hidden at a real place
 var geo_note := ""
@@ -199,6 +217,12 @@ var quality := "nice"
 var view_scale := 1.0                 # 3D-3.75: sharpness of the big view on the screen (the pictures for MoveEye stay sharp)
 var win_fps := 0                     # 3D-3.75: frames per second of the big view (0 = as fast as it goes)
 var auto_perf := true                 # 3D-3.75: too slow? the graphics get lighter by themselves
+var grafik_mode := "auto"             # 3D-4.25: «Grafik-Modus» auto | lite | normal (quality.gd; later «hoch»)
+var lite_why := ""                    # why Lite is on («Raspberry Pi 5 …», «von Hand», «wenige Bilder/s») - for «Leistung»
+var _lite_slow := false               # auto: the first seconds were very slow -> Lite for this session
+var _lite_fps: Array = []
+var _lite_t0 := 0.0
+var _lite_auto_ok := true             # «--quality» given (Prüfstand): no automatic Lite from the frames per second
 var _slow_n := 0
 var _perf_t := 0.0
 var cam1_yaw := -12.0
@@ -288,11 +312,14 @@ var realism                           # realism.gd
 var simreal                           # simreal.gd (3D-4.4): Pi 5, lens, infrared, thermal, false alarms, difficult visitors
 var szenen                            # szenenplus.gd (3D-4.x): Voller Campingplatz, Tarnen und Kriechen, Velodieb
 var smalltv                           # smalltv.gd (3D-4.19): virtueller Zusatz-Bildschirm GeekMagic SmallTV Ultra (MoveEye 552)
+var fenster                           # fenster.gd (Paket «Fenster»): ein Rahmen für alle schwebenden Fenster (ziehen, Grösse, ✕, Liste «Fenster»)
 var statusled                         # statusled.gd: Status-LED auf dem Kopf + Fenster «Gerät» mit den Tasten (MoveEye 163a / 599c)
 var weit                              # weitwinkel.gd (3D-4.17): camera 1 = the wide camera with its mount (mast, base, head front / rear)
+var nacht                             # nachtlauf.gd (Paket «Nacht-Testlauf»): eine ganze Nacht mit Wahrheit, von MoveEye gestartet
 var parcours                          # parcours.gd (3D-4.18): «Verfolgungs-Parcours» - lessons, ground truth, game «Entkomme der Kamera»
 var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Zwilling» - photo / panorama of the real place
 var fauna                             # fauna.gd (3D-3.95)
+var entdecken                         # entdecken.gd (Erlebniswelt 20–23): register() / mark_found() / is_found() / count() of the scenes
 var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»): wind, light, lures, valuables of the catalogue
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
@@ -369,6 +396,9 @@ func _ready() -> void:
 			quality = args[i + 1]
 		elif args[i] == "--scene" and i + 1 < args.size():
 			scene = args[i + 1]
+		elif args[i] == "--solo":
+			welt_solo = true                         # 3D-4.x: the old scenes alone, without their world (Prüfstand)
+	_lite_auto_ok = not "--quality" in args
 	set_process(false)
 	set_process_unhandled_input(false)
 	if _vm_needs_angle(args):
@@ -411,6 +441,9 @@ func _ready() -> void:
 	parcours = preload("res://scripts/parcours.gd").new()   # 3D-4.18: the tracking parcours (scene «parcours»)
 	parcours.main = self
 	add_child(parcours)
+	nacht = preload("res://scripts/nachtlauf.gd").new()     # Nacht-Testlauf: plan, truth (MoveEye starts it, part 579b)
+	nacht.main = self
+	add_child(nacht)
 	zwilling = preload("res://scripts/zwilling.gd").new()    # 3D-4.4: your place as a twin (photo behind the scene)
 	zwilling.main = self
 	add_child(zwilling)
@@ -459,6 +492,9 @@ func _ready() -> void:
 	geo = Geo.new()
 	geo.main = self
 	add_child(geo)
+	entdecken = preload("res://scripts/entdecken.gd").new()   # Erlebniswelt 20–23: Entdeckungsbuch, Blinki-Hinweise, Fotomodus (before the scene registers)
+	entdecken.main = self
+	add_child(entdecken)
 	_build_world()
 	_build_head()
 	_build_viewports()
@@ -512,6 +548,12 @@ func _ready() -> void:
 	mwpc.main = self
 	add_child(mwpc)
 	_build_ui()
+	fenster = preload("res://scripts/fenster.gd").new()   # Paket «Fenster»: Karte, Kompass, Livebild … in einem gemeinsamen Rahmen
+	fenster.main = self
+	add_child(fenster)
+	fenster.setup_sim()
+	if entdecken != null:
+		entdecken.join_fenster(fenster)              # 3D-4.27: the Blinki hint in the same frame
 	mwpc.changed.connect(_on_mwpc)
 	_on_mwpc()
 	next_update_check = now() + UPDATE_EVERY
@@ -545,6 +587,11 @@ func _ready() -> void:
 	_apply_quality()
 	if view_scale < 1.0:
 		set_view_scale(view_scale)
+	var gi := args.find("--grafik")                   # 3D-4.25: --grafik auto | lite | normal (for tests)
+	if gi >= 0 and gi + 1 < args.size():
+		grafik_mode = Quality.mode_id(args[gi + 1])
+	_lite_t0 = now()
+	lite_update()
 	_calibrate_thermal()
 	next_auto = now() + 20.0
 	for i in range(args.size()):
@@ -947,6 +994,7 @@ func _build_world() -> void:
 
 func _build_scene() -> void:
 	"""everything of the chosen scene (scenes.gd)"""
+	scene = Worlds.default_place(scene)          # 3D-4.x: a world without its own build -> its first place
 	if Scenes.name_of(scene) == scene:
 		scene = "camping"                        # unknown name
 	foliage_mats.clear()
@@ -957,10 +1005,15 @@ func _build_scene() -> void:
 	anims.clear()
 	door_open = false
 	terrain = false
+	ground_fn = Callable()
 	_horizon.clear()
 	ground_mats.clear()
 	geo_note = ""
+	if entdecken != null:
+		entdecken.begin_scene(scene)             # Erlebniswelt: the discoveries of the old scene go, the new scene registers its own
 	scenes.build(scene, scene_parent)
+	if entdecken != null:
+		entdecken.on_scene()                     # ... and the demo set of «Camping-Platz»
 	for n in flat_nodes:
 		n.visible = not terrain
 	if zwilling != null:
@@ -975,6 +1028,8 @@ func _build_scene() -> void:
 		geo.load_place(ort_lat, ort_lon, ort_name)      # from the cache or the internet; then place_loaded()
 	if scene == "wild":
 		rifle_on = true                          # wildlife watching: the rifle is on by itself
+	if Quality.lite():
+		_lite_scene.call_deferred(true)          # 3D-4.25: Lite - thin grass, far small things not drawn
 
 
 func place_loaded() -> void:
@@ -1031,7 +1086,9 @@ func open_map() -> void:
 
 
 func ground_y(x: float, z: float) -> float:
-	"""height of the ground (0 everywhere except at a real place)"""
+	"""height of the ground (0 everywhere except at a real place or a scene with its own ground)"""
+	if ground_fn.is_valid():
+		return ground_fn.call(x, z)
 	return geo.height(x, z) if terrain else 0.0
 
 
@@ -1059,6 +1116,9 @@ func ground_hit(from: Vector3, d: Vector3):
 
 
 func set_scene(id: String) -> bool:
+	id = Worlds.default_place(id)                # 3D-4.x: «Zuhause» = its garden (worlds.gd)
+	if id != solo_scene:
+		solo_scene = ""
 	var ok := false
 	for s in Scenes.LIST:
 		if s[0] == id:
@@ -1084,8 +1144,121 @@ func set_scene(id: String) -> bool:
 	next_auto = now() + 8.0
 	_update_sky()
 	_update_temps()
+	_only_refresh()                                # 3D-4.28: settings shown only in one scene
 	_sync_ui()
 	return true
+
+
+func _fp_seek() -> void:
+	"""Erlebniswelt 12 (erlebniswelt.gd): the children of the Ferienpark hide near MoveEye - MoveEye must report them"""
+	if scene != "ferienpark":
+		set_scene("ferienpark")
+	var r: Dictionary = preload("res://scripts/ferienpark.gd").control(self, {"do": "verstecken"})
+	if entdecken != null and r.get("ok", false):
+		entdecken._say_small(preload("res://scripts/i18n.gd").t("Verstecken: vier Kinder verstecken sich bei MoveEye – findet MoveEye alle?"))
+
+
+const BT_MONTH := {"fruehling": "5", "sommer": "7", "herbst": "10", "winter": "1"}
+
+
+func set_bt(key: String, v) -> void:
+	"""3D-4.x «Bergtal»: sleeping spot, bed, season - the valley is built again around the spot (MoveEye stays at the origin)"""
+	set(key, v)
+	if key == "bt_season" and BT_MONTH.has(str(v)):
+		season = BT_MONTH[str(v)]                        # the path of the sun and the moon fit the season
+		_sun_cache = [-1.0, Vector2.ZERO]
+	_settings_dirty = true
+	if Worlds.world_of(scene) == "bergtal":
+		set_scene("bergtal" if key == "bt_spot" or not Worlds.is_place(scene) else scene)   # 3D-4.x: a sleeping spot leaves the place
+	else:
+		_sync_ui()
+
+
+func bt_here() -> Dictionary:
+	"""«Hier übernachten»: the place in the middle of the view (or where the rover stands) - flat enough? then sleep there"""
+	var bt = scenes.data.get("bergtal", null)
+	if bt == null:
+		start_info = preload("res://scripts/i18n.gd").t("«Hier übernachten» geht nur in der Szene Bergtal.")
+		return {"ok": false, "error": "not bergtal"}
+	return bt_take(bt.pick_here())
+
+
+func bt_take(r: Dictionary) -> Dictionary:
+	if not bool(r.get("ok", false)):
+		start_info = preload("res://scripts/i18n.gd").t(str(r.get("error", "")))
+		return r
+	bt_free = [snappedf(float(r["x"]), 0.01), snappedf(float(r["z"]), 0.01), snappedf(float(r.get("yaw", 0.0)), 0.1)]
+	bt_spot = "frei"
+	_settings_dirty = true
+	mover_home()
+	set_scene("bergtal")
+	start_info = "%s %s" % [preload("res://scripts/i18n.gd").t("Neuer Schlafplatz:"), preload("res://scripts/i18n.gd").t(str(r.get("note", "")))]
+	r["rating"] = scenes.data["bergtal"].rating if scenes.data.has("bergtal") else {}
+	return r
+
+
+func bt_goto(v: String) -> Dictionary:
+	"""quick travel in the Bergtal: «s:<spot>» = sleep there (MoveEye moves), «p:<place>» = the view flies there"""
+	var bt = scenes.data.get("bergtal", null)
+	if bt == null or v == "":
+		return {"ok": false}
+	if v.begins_with("s:"):
+		set_bt("bt_spot", v.substr(2))
+		return {"ok": true, "spot": bt_spot}
+	var nm := v.substr(2)
+	var Bt = preload("res://scripts/bergtal.gd")
+	var all: Array = Bt.all_places()
+	for mk in bt_marks:
+		all.append(mk)
+	for pl in all:
+		if str(pl[0]) == nm:
+			if not nm in bt_visited and not bt_marks.any(func(x): return str(x[0]) == nm):
+				start_info = "%s %s" % [preload("res://scripts/i18n.gd").t("Noch nicht besucht – zuerst hingehen oder hinfliegen:"), nm]
+				return {"ok": false, "error": "not visited", "place": nm}
+			var wp: Vector3 = bt.WG(float(pl[1]), float(pl[2]))
+			fly_to(wp + Vector3(0, 2, 0), 45.0)
+			return {"ok": true, "place": nm, "at": wp}
+	return {"ok": false, "error": "unknown place"}
+
+
+func bt_mark(nm: String) -> Dictionary:
+	"""an own mark on the map at the place in the middle of the view"""
+	var bt = scenes.data.get("bergtal", null)
+	if bt == null or nm.strip_edges() == "":
+		return {"ok": false}
+	var r: Dictionary = bt.pick_here()
+	if not r.has("x"):
+		return r
+	bt_marks.append([nm.strip_edges().left(30), snappedf(float(r["x"]), 0.1), snappedf(float(r["z"]), 0.1)])
+	_settings_dirty = true
+	bt._publish()
+	return {"ok": true, "marks": bt_marks}
+
+
+func _bt_do(what: String) -> void:
+	var bt = scenes.data.get("bergtal", null)
+	if bt == null:
+		start_info = preload("res://scripts/i18n.gd").t("Das geht nur in der Szene Bergtal.")
+		return
+	match what:
+		"ride":
+			bt.ride(true)
+		"morning":
+			bt.morning()
+		_:
+			bt.spawn_kind("berg_" + what)
+
+
+func set_fp_spot(v: String) -> void:
+	"""3D-4.x: where MoveEye stands in the «Ferienpark am See»: the park is built again around this place"""
+	if not preload("res://scripts/ferienpark.gd").SPOTS.has(v):
+		return
+	fp_spot = v
+	_settings_dirty = true
+	if Worlds.world_of(scene) == "ferienpark":
+		set_scene("ferienpark")                    # 3D-4.x: also from a place of the park (worlds.gd)
+	else:
+		_sync_ui()
 
 
 func _build_head() -> void:
@@ -1852,6 +2025,8 @@ func busy_with(except_ := "") -> String:
 		w = "Testlauf"
 	elif pruef != null and pruef.running:
 		w = "Prüfstand"
+	elif nacht != null and nacht.running:
+		w = "Nacht-Testlauf"                          # Paket «Nacht-Testlauf»: the night has the world (clock, weather, visitors)
 	elif dataset != null and dataset.busy:
 		w = "Trainingsbilder"
 	elif blindmap != null and blindmap.busy:
@@ -2178,6 +2353,7 @@ func _process(dt: float) -> void:
 		_update_status()
 		_night_weather_tick()
 		_perf_tick()
+		_lite_tick()
 		_stream_watch()
 		if now() - _hour_saved_t > 20.0:
 			_settings_dirty = true                         # 3D-3.76: the time of the scene is saved now and then
@@ -2301,11 +2477,16 @@ func _check_active() -> void:
 	get_viewport().disable_3d = not win_open      # the big 3D view only when it can be seen
 	# 3D-3.30: MoveEye saves power (nothing happens there): the simulator calculates slower too (window closed)
 	var mw_saving: bool = conn and str(mw.get("eco", "")) == "saving" and not playing and not (testrun != null and testrun.running)
-	Engine.max_fps = (win_fps if win_fps > 0 else _fps0) if win_open else (60 if playing else ((12 if mw_saving else 30) if sim_active else 5))
+	var cap: int = (win_fps if win_fps > 0 else _fps0) if win_open else (60 if playing else ((12 if mw_saving else 30) if sim_active else 5))
+	if Quality.lite():
+		cap = Quality.FPS if cap <= 0 else mini(cap, Quality.FPS)    # 3D-4.25: Lite - at most 25 pictures per second
+	Engine.max_fps = cap
 
 
 # ---- pictures for MoveEye -------------------------------------------------------------------------------------
 func _wanted_fps(i: int) -> float:
+	if i == 1 and weit != null and not weit.installed():
+		return 0.0                                       # P9: blind cover instead of the wide camera - nothing to render
 	var d: Dictionary = net.stream_demand() if net != null else {}
 	var f: float = float(d.get(i, 0.0))
 	if i < 2 and now() - snap_want[i] < 3.0:
@@ -2877,6 +3058,9 @@ func time_scale_visitors() -> float:
 
 
 func spawn(kind: String, from = null, to = null) -> Node3D:
+	if kind.begins_with("berg_"):
+		var bt = scenes.data.get("bergtal", null)                  # 3D-4.x: the animals and events of the «Bergtal» (bergtal.gd)
+		return bt.spawn_kind(kind, from, to) if bt != null else null
 	if simreal != null and simreal.is_kind(kind):
 		return simreal.spawn_kind(kind, from, to)     # 3D-4.4: hood, backpack, phoning, groups, edge sneaker, deer lying ...
 	if umgebung != null and umgebung.is_kind(kind):
@@ -3195,7 +3379,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Foto des 
 		["Sensoren", "bell", "🔔", ["", "Strom", "Netz", "Zusatz-Bildschirm (SmallTV)"]],
 		["Mover", "track", "🚜", ["", "Patrouille", "Controller"]],
 		["Licht & Ton", "sun", "💡", ["", "Status-LED & Tasten", "Lautsprecher"]],      # 3D-4.22: «Lautsprecher» here like MoveEye (was «Sensoren»)
-		["Spiel", "pad", "🎮", ["", "Assistent"]],
+		["Spiel", "pad", "🎮", ["", "Entdecken", "Assistent"]],        # Erlebniswelt 20–23: «Entdecken» (entdecken.gd) on the card
 		["Wildtier", "target", "🎯", [""]],
 		["Testen", "check", "✅", ["", "Verfolgungs-Parcours", "Störungen"]],
 		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates", "Sicherheit / Benutzer"]],
@@ -3232,7 +3416,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"game_night": ["Spiel", "Extras"], "game_events": ["Spiel", "Extras"], "game_checkpoints": ["Spiel", "Extras"], "game_tasks": ["Spiel", "Extras"], "game_autohandicap": ["Spiel", "Extras"],
 		"game_board_reset": ["Spiel", "Extras"], "spectate_now": ["Spiel", "Anzeige"], "game_noise": ["Spiel", "Regeln"],
 		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"], "game_max": ["Spiel", "Runde"],
-		"quality": ["System", "Grafik"], "view_scale": ["System", "Grafik"], "win_fps": ["System", "Grafik"], "auto_perf": ["System", "Grafik"], "map_on": ["System", "Ansicht"], "live_on": ["System", "Ansicht"], "live_cam": ["System", "Ansicht"], "live_size": ["System", "Ansicht"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
+		"grafik_mode": ["System", "Grafik"], "quality": ["System", "Grafik"], "view_scale": ["System", "Grafik"], "win_fps": ["System", "Grafik"], "auto_perf": ["System", "Grafik"], "map_on": ["System", "Ansicht"], "live_on": ["System", "Ansicht"], "live_cam": ["System", "Ansicht"], "live_size": ["System", "Ansicht"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
 		"autostart_min": ["System", "Start mit dem PC"], "autostart_mwpc": ["System", "Start mit dem PC"], "autostart_lock": ["System", "Start mit dem PC"],
 		"cond_glare": ["Kamerabild", "Schwierige Bedingungen"], "cond_drops": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_web": ["Kamerabild", "Schwierige Bedingungen"], "cond_headlights": ["Kamerabild", "Schwierige Bedingungen"],
@@ -3245,6 +3429,9 @@ const SIMPLE_GROUPS := ["Szene", "Wetter", "Besuch", "Testen", "Spiel"]
 # setting of the game is only in the assistant (gamewiz.gd). Those controls stay (control API, saved settings) but get
 # extra «wiz»: not in this panel and not in the Simulator control of MoveEye.
 const GAME_MAIN := ["game_wizard", "game_start", "game_stop"]
+# Erlebniswelt 20–23 (entdecken.gd): the part «Entdecken» stays on the card «Spiel» (not in the assistant); the first three in «Einfach»
+const DISC_IDS := ["disc_book", "disc_photo", "disc_hints", "disc_hint_min", "disc_demo", "disc_seek"]
+const DISC_SIMPLE := ["disc_book", "disc_photo", "disc_hints"]
 # 3D-4.7: a fixed id per group for MoveEye (the visible names may change); sent as «gid» with every control
 const GROUP_IDS := {"Szene": "scene", "Wetter": "weather", "Besuch": "visit", "Kamerabild": "camera", "Sensoren": "sensors", "Mover": "mover", "Licht & Ton": "lightsound",
 		"Spiel": "game", "Wildtier": "wildlife", "Testen": "testrun", "System": "system", "Entwickler": "dev"}
@@ -3255,11 +3442,11 @@ func _simple_ok(c: Dictionary) -> bool:
 	"""3D-3.90: what «Einfach» shows - scene, time, weather, visitors (the inventory picks the single ones), the test run and
 	the game assistant; everything else is «Experte»"""
 	if c.group == "Spiel":
-		return c.id in GAME_MAIN
+		return c.id in GAME_MAIN or c.id in DISC_SIMPLE
 	if c.id == "mast_h":
 		return true                                   # 3D-4.x: the height of the pole - easy to find (wish of Daniel)
 	if c.group == "System":
-		return c.id in ["update_mode", "kids_ask"]
+		return c.id in ["update_mode", "kids_ask", "grafik_mode"]
 	if not c.group in SIMPLE_GROUPS:
 		return false
 	return not str(c.extra.get("sub", "")) in SIMPLE_HIDE_SUBS
@@ -3288,7 +3475,9 @@ func _order_controls() -> void:
 		if c.id in DEV_IDS:
 			c.extra["sub"] = "Updates" if c.id == "dev_updates" else ""
 		if c.group == "Spiel":                            # 3D-4.7: only open / start / stop on the card, the rest in the assistant
-			if c.id in GAME_MAIN:
+			if c.id in DISC_IDS:
+				c.extra["sub"] = "Entdecken"           # Erlebniswelt 20–23: its own part on the card
+			elif c.id in GAME_MAIN:
 				c.extra["sub"] = ""                    # straight on the card (no part «Runde» any more)
 			else:
 				c.extra["wiz"] = true
@@ -3322,11 +3511,52 @@ func _register_controls() -> void:
 	extra "expert": true = only shown with «Experte» - in the window and on the page of MoveEye (its switch Einfach / Experte
 	is stored in the settings of MoveEye, page «sim», like on its main page)."""
 	var sc := []
-	for s in Scenes.LIST:
-		sc.append([s[0], s[1]])
+	for s in Worlds.SHOWN:                        # 3D-4.x Welten: only the worlds and the tools (the old scenes are places in them)
+		sc.append([s, Scenes.name_of(s)])
 	var ex := {"expert": true}
-	add_control("select", "scene", "Szene", func(): return scene, func(v): set_scene(v), "Szene", {"options": sc})
+	add_control("select", "scene", "Szene", func(): return Worlds.world_of(scene), func(v): set_scene(v), "Szene", {"options": sc})
+	for w in Worlds.WORLDS:                       # «Ort in dieser Welt»: the old scenes of this world (one select per world)
+		add_control("select", "welt_ort_" + w, "Ort in dieser Welt", func(): return scene if Worlds.is_place(scene) else "",
+				func(v): set_scene(str(v) if str(v) != "" else w), "Szene", {"options": Worlds.place_options(w)})
+		controls[-1]["only"] = func(): return Worlds.world_of(scene) == w
+	add_control("toggle", "welt_solo", "Alte Szenen allein laden (ohne Welt drumherum – für Prüfstand-Vergleiche)", func(): return welt_solo,
+			func(v): welt_solo = bool(v); set_scene(scene), "Szene", {"expert": true})
 	add_control("button", "home_edit", "Mein Zuhause bauen (Baukasten mit der Maus)", null, func(): home_editor.open(true), "Szene")
+	add_control("select", "fp_spot", "Standort im Ferienpark am See", func(): return fp_spot, func(v): set_fp_spot(str(v)), "Szene",
+			{"options": preload("res://scripts/ferienpark.gd").spot_options()})
+	controls[-1]["only"] = func(): return scene == "ferienpark"   # 3D-4.28: only shown in its scene (window and MoveEye; not in a place of the park)
+	var Bt = preload("res://scripts/bergtal.gd")
+	add_control("select", "bt_spot", "Schlafplatz im Bergtal", func(): return bt_spot, func(v): set_bt("bt_spot", str(v)), "Szene", {"options": Bt.spot_options()})
+	add_control("select", "bt_bed", "Übernachten im Bergtal", func(): return bt_bed, func(v): set_bt("bt_bed", str(v)), "Szene", {"options": Bt.BEDS})
+	var mo := []
+	for k in Bt.MOUNTS:
+		mo.append([k, Bt.MOUNTS[k][0]])
+	add_control("select", "bt_mount", "MoveEye-Halterung am Schlafplatz (Bergtal)", func(): return bt_mount, func(v): set_bt("bt_mount", str(v)), "Szene", {"options": mo})
+	add_control("select", "bt_bag", "Schlafsack (Bergtal)", func(): return bt_bag, func(v): set_bt("bt_bag", str(v)), "Szene", {"options": [["sommer", "Sommerschlafsack"], ["winter", "Winterschlafsack"]], "expert": true})
+	add_control("toggle", "bt_stove", "Kocher am Schlafplatz (Bergtal)", func(): return bt_stove, func(v): set_bt("bt_stove", bool(v)), "Szene", {"expert": true})
+	add_control("toggle", "bt_wall", "Windschutzmauer aus Steinen bauen (Bergtal)", func(): return bt_wall, func(v): set_bt("bt_wall", bool(v)), "Szene")
+	add_control("select", "bt_orient", "Orientierung im Bergtal", func(): return bt_orient, func(v): set_bt("bt_orient", str(v)), "Szene",
+			{"options": [["leicht", "leicht (Karte, Kompass, eigener Standort)"], ["mittel", "mittel (Karte und Kompass)"], ["schwer", "schwer (nur Wegweiser)"]], "expert": true})
+	add_control("text", "bt_mark", "Eigene Markierung auf der Karte (Name; wird in der Bildmitte gesetzt)", func(): return "", func(v): bt_mark(str(v)), "Szene", {"expert": true})
+	add_control("button", "bt_here", "Hier übernachten (Bergtal: der Platz in der Bildmitte oder beim Rover)", null, func(): bt_here(), "Szene")
+	add_control("select", "bt_goto", "Schnellreise im Bergtal (Ort wählen)", func(): return "", func(v): bt_goto(str(v)), "Szene", {"options": Bt.place_options()})
+	add_control("select", "bt_season", "Jahreszeit im Bergtal", func(): return bt_season, func(v): set_bt("bt_season", str(v)), "Szene",
+			{"options": [["auto", "nach dem Monat (Jahreszeit)"], ["fruehling", "Frühling"], ["sommer", "Sommer"], ["herbst", "Herbst (Lärchen gelb, Nebel)"], ["winter", "Winter (Schnee, Eis)"]]})
+	add_control("button", "bt_ride", "Mit der Materialseilbahn fahren (Bergtal)", null, func(): _bt_do("ride"), "Szene", {"expert": true})
+	add_control("button", "bt_morning", "Wie gut war dein Platz? (Bergtal: Bewertung jetzt)", null, func(): _bt_do("morning"), "Szene", {"expert": true})
+	add_control("toggle", "bt_events", "Bergtal: Ereignisse von selbst (Steinschlag, Fremder, Tier am Proviant, Wetterumschwung)", func(): return bt_events, func(v): bt_events = bool(v), "Besuch", {"sub": "Von selbst"})
+	add_control("button", "bt_ev_rockfall", "Steinschlag (Bergtal)", null, func(): _bt_do("rockfall"), "Besuch", {"sub": "Abläufe"})
+	add_control("button", "bt_ev_stranger", "Fremder am Rucksack (Bergtal)", null, func(): _bt_do("stranger"), "Besuch", {"sub": "Abläufe"})
+	add_control("button", "bt_ev_food", "Tier am Proviant (Bergtal)", null, func(): _bt_do("fox_food"), "Besuch", {"sub": "Abläufe"})
+	add_control("button", "bt_ev_storm", "Gewitter zieht auf (Bergtal)", null, func(): _bt_do("storm"), "Wetter", {"sub": "Mehr Wetter"})
+	add_control("button", "bt_ev_fog", "Nebel kommt schnell (Bergtal)", null, func(): _bt_do("fog"), "Wetter", {"sub": "Mehr Wetter"})
+	add_control("button", "bt_ev_fogsea", "Nebelmeer (Bergtal: das Tal im Nebel, oben Sonne)", null, func(): _bt_do("fogsea"), "Wetter", {"sub": "Mehr Wetter"})
+	for _c in controls:   # Bergtal-only controls: only shown in its scene (like fp_spot); season, quick travel, events also in its places
+		if str(_c.id).begins_with("bt_"):
+			if str(_c.id) in ["bt_season", "bt_goto", "bt_events", "bt_orient", "bt_mark"] or str(_c.id).begins_with("bt_ev_"):
+				_c["only"] = func(): return Worlds.world_of(scene) == "bergtal"
+			else:
+				_c["only"] = func(): return scene == "bergtal"
 	add_control("map", "ort_map", "Ort auf der Karte wählen (Schweiz)", func(): return "%.6f, %.6f" % [ort_lat, ort_lon] if ort_lat != 0.0 else "",
 			func(v): set_place_text(str(v)), "Ort von der Karte")
 	add_control("text", "ort", "Ort (Name oder Koordinaten, z. B. «Zermatt» oder «46.0207, 7.7491»)", func(): return place_label(), func(v): set_place_text(str(v)), "Ort von der Karte")
@@ -3403,7 +3633,7 @@ func _register_controls() -> void:
 	add_control("select", "mix", "Wer kommt", func(): return mix, func(v): mix = v, "Besuch",
 			{"options": [["mixed", "Tiere und Menschen"], ["more_animals", "mehr Tiere"], ["more_people", "mehr Menschen"], ["animals", "nur Tiere"], ["people", "nur Menschen"]]})
 	add_control("slider", "visit_rate", "Wie oft Besuch kommt", func(): return visit_rate, func(v): visit_rate = v, "Besuch", {"min": 0.25, "max": 4.0, "step": 0.25, "unit": "×"})
-	add_control("slider", "max_visitors", "Höchstens gleichzeitig", func(): return max_visitors, func(v): max_visitors = int(v), "Besuch", {"min": 1, "max": 30, "step": 1, "expert": true})
+	add_control("slider", "max_visitors", "Höchstens gleichzeitig", func(): return max_visitors, func(v): max_visitors = int(v); _perf_orig.erase("max_visitors"), "Besuch", {"min": 1, "max": 30, "step": 1, "expert": true})
 	add_control("slider", "visitor_speed", "Tempo der Besucher", func(): return visitor_speed, func(v): visitor_speed = v, "Besuch", {"min": 0.25, "max": 2.5, "step": 0.05, "unit": "×", "expert": true})
 	add_control("toggle", "flee_light", "Tiere flüchten nachts vor dem weissen Licht", func(): return flee_light, func(v): flee_light = v, "Besuch", ex)
 	add_control("toggle", "flee_sound", "Tiere flüchten vor der Sirene", func(): return flee_sound, func(v): flee_sound = v, "Besuch", ex)
@@ -3512,6 +3742,9 @@ func _register_controls() -> void:
 	add_control("toggle", "game_open", "Spiel öffnen (Handys können mitspielen)", func(): return game.open, func(v): game.set_open(v), "Spiel")
 	add_control("button", "game_start", "▶ Start", null, func(): _game_card_start(), "Spiel")
 	add_control("button", "game_stop", "⏹ Stopp", null, func(): _game_card_stop(), "Spiel")
+	entdecken.register_controls()                       # Erlebniswelt 20–23: Spiel → Entdecken (Buch, Foto, Blinki-Hinweise)
+	add_control("button", "disc_seek", "🙈 Verstecken mit MoveEye", null, func(): _fp_seek(), "Spiel")   # Erlebniswelt 12
+	controls[-1]["only"] = func(): return scene == "ferienpark"   # 3D-4.30: only in the Ferienpark (like «Standort im Ferienpark»)
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
 			{"options": [["mw", "Gegen MoveEye (echte Erkennung)"], ["guard", "Wächter (ein Spieler oder der Bot-Wächter)"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"], ["free", "Zonen-Check – ohne Erwischen (zum Testen der Erkennung)"], ["jaeger", "Fehlalarm-Jäger – Tiere und Dinge täuschen MoveEye (nur mit MoveEye)"], ["camera", "ältere: Alle gegen die Kamera"], ["mwhand", "ältere: Team gegen MoveEye (Wächter steuern MoveEye)"], ["patrol", "ältere: Patrouille mit dem Mover"]]})
@@ -3528,7 +3761,8 @@ func _register_controls() -> void:
 	add_control("toggle", "game_rescue", "Befreien: Erwischte kommen in die Zelle, ein Teamkollege befreit sie", func(): return game_rescue, func(v): game_rescue = v, "Spiel")
 	add_control("toggle", "game_teamgoal", "Team-Ziel: das Ziel öffnet erst, wenn alle Kristalle gefunden sind", func(): return game_teamgoal, func(v): game_teamgoal = v, "Spiel", ex)
 	add_control("select", "game_goal", "Spielziel", func(): return game_goal, func(v): game_goal = v, "Spiel",
-			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"], ["flag", "Fahne erobern (zwei Teams)"], ["sprint", "Sprint: 90 s, fester Parcours"], ["theft", "Diebstahl: Velo oder Kühlbox zum Ausgang tragen"]]})
+			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"], ["flag", "Fahne erobern (zwei Teams)"], ["sprint", "Sprint: 90 s, fester Parcours"], ["theft", "Diebstahl: Velo oder Kühlbox zum Ausgang tragen"],
+				["mission", "Mission mit Gegenständen (Portemonnaie, Früchte, Paket)"], ["sweat", "Bring MoveEye ins Schwitzen"]]})
 	add_control("toggle", "game_stones", "Steine werfen zum Ablenken", func(): return game_stones, func(v): game_stones = v, "Spiel")
 	add_control("toggle", "game_powers", "Power-ups: Unsichtbar-Trank (lila) und Turbo (gelb)", func(): return game_powers, func(v): game_powers = v, "Spiel")
 	add_control("toggle", "game_photos", "Erwischt-Fotos (Bild der Kamera beim Erwischen, Galerie am Schluss)", func(): return game_photos, func(v): game_photos = v, "Spiel")
@@ -3587,6 +3821,8 @@ func _register_controls() -> void:
 	add_control("toggle", "kids_laser", "Kinder-Modus: Laser-Treffer im Spiel", func(): return kids_laser, func(v): kids_laser = v, "Kinder-Modus")
 	add_control("toggle", "kids_sound", "Kinder-Modus: Töne bei den Knöpfen", func(): return kids_sound, func(v): kids_sound = v, "Kinder-Modus")
 	add_control("toggle", "kids_ask", "Kinder-Modus: zum Verlassen eine Rechenaufgabe stellen (aus = ein Klick auf «Erwachsene» genügt)", func(): return kids_ask, func(v): kids_ask = bool(v), "Kinder-Modus")
+	add_control("select", "grafik_mode", "Grafik-Modus", func(): return grafik_mode, func(v): set_grafik_mode(str(v)), "Grafik",
+			{"options": Quality.MODES})
 	add_control("select", "quality", "Grafik", func(): return quality, func(v): _set_quality(v), "Grafik",
 			{"options": [["simple", "einfach (schnell)"], ["medium", "mittel"], ["nice", "schön (Schatten, Leuchten, Wolken)"],
 						 ["ultra", "ultra (für starke Grafikkarten; mit Vulkan noch mehr Effekte)"]]})
@@ -3595,7 +3831,7 @@ func _register_controls() -> void:
 	add_control("toggle", "grafik_dof", "Hoch: Tiefenschärfe in der freien Ansicht (die Kamerabilder für MoveEye bleiben scharf)", func(): return hoch.dof_free, func(v): hoch.set_dof(bool(v)), "System",
 			{"sub": "Grafik", "expert": true})
 	add_control("slider", "view_scale", "Schärfe der Ansicht im Fenster (weniger = schneller; die Bilder für MoveEye bleiben scharf)", func(): return view_scale, func(v): set_view_scale(float(v)), "Grafik", {"min": 0.4, "max": 1.0, "step": 0.05, "unit": "×"})
-	add_control("select", "win_fps", "Bilder pro Sekunde im Fenster", func(): return str(win_fps), func(v): win_fps = int(v); _settings_dirty = true, "Grafik",
+	add_control("select", "win_fps", "Bilder pro Sekunde im Fenster", func(): return str(win_fps), func(v): win_fps = int(v); _perf_orig.erase("win_fps"); _settings_dirty = true, "Grafik",
 			{"options": [["0", "so viele wie möglich"], ["60", "60"], ["30", "30 (spart Strom)"], ["20", "20 (schwacher PC)"]]})
 	add_control("toggle", "auto_perf", "Automatisch leichter, wenn der PC zu langsam ist", func(): return auto_perf, func(v): auto_perf = v; _slow_n = 0, "Grafik")
 	add_control("toggle", "eco_idle", "Simulator ruht, wenn niemand zuschaut (rechnet nur, wenn das Fenster offen oder MoveEye verbunden ist)", func(): return eco_idle, func(v): eco_idle = v, "Grafik", ex)
@@ -3743,6 +3979,129 @@ func _apply_quality() -> void:
 		hoch.after_quality()                       # F1: «Hoch» on top of the chosen level (or away again)
 
 
+# ---- 3D-4.25 «Lite» (Wunsch Daniel 31.10.2026): the same simulator, lighter for the Raspberry Pi 5 ---------------------------
+# «Grafik-Modus» Automatisch (Lite on a Pi / ARM computer or when the first seconds are very slow) / Lite / Normal. Lite: graphics
+# level «einfach» (no shadows, no glow, no SSAO / SSR / fog volumes), the big view 60 % sharp, at most 25 pictures per second,
+# rain / snow / smoke / fire with about a third of the particles, a third of the grass, small things far away not drawn, at
+# most 6 visitors at once, a smaller picture of the window for MoveEye. The camera pictures for MoveEye keep their size.
+# The own choices (Grafik, Schärfe, Bilder/s, Besucher) stay saved (_perf_orig) and come back with «Normal».
+const LITE_KEYS := ["quality", "view_scale", "win_fps", "max_visitors"]
+
+
+func set_grafik_mode(v: String) -> void:
+	grafik_mode = Quality.mode_id(v)
+	lite_update()
+
+
+func lite_update() -> void:
+	"""Lite on or off - from «Grafik-Modus» and the hardware (quality.gd)"""
+	var why := ""
+	if grafik_mode == "lite":
+		why = "von Hand"
+	elif grafik_mode == "auto":
+		var w := Quality.weak_reason()
+		if w != "":
+			why = "automatisch: " + w
+		elif _lite_slow:
+			why = "automatisch: wenige Bilder pro Sekunde beim Start"
+	lite_why = why
+	var on := why != ""
+	if Engine.has_meta("lite") and on == Quality.lite():
+		return
+	Quality.set_lite(on)
+	_lite_apply(on)
+	print("graphics mode %s -> Lite %s%s" % [grafik_mode, "on" if on else "off", (" (" + why + ")") if on else ""])
+
+
+func _lite_apply(on: bool) -> void:
+	if on:
+		for k_ in LITE_KEYS:
+			if not _perf_orig.has(k_):
+				_perf_orig[k_] = get(k_)
+		_perf_auto = true                                  # not the own choice: the setters keep _perf_orig
+		_set_quality("simple")
+		set_view_scale(minf(view_scale, Quality.SCALE))
+		if win_fps <= 0 or win_fps > Quality.FPS:
+			win_fps = Quality.FPS
+		max_visitors = mini(max_visitors, Quality.VISITORS)
+		_perf_auto = false
+		view_w = mini(view_w, Quality.VIEW_W)
+		view_q = minf(view_q, Quality.VIEW_Q)
+	else:
+		for k_ in LITE_KEYS:
+			if _perf_orig.has(k_):
+				var v = _perf_orig[k_]
+				_perf_orig.erase(k_)
+				if k_ == "quality":
+					quality = str(v)
+					_apply_quality()
+				elif k_ == "view_scale":
+					set_view_scale(float(v))
+				else:
+					set(k_, int(v))
+	for pa in [[rain, 2500], [snow, 3000], [splashes, 700]]:
+		if pa[0] != null:
+			pa[0].amount = Quality.n(pa[1])
+	_lite_scene(on)
+	_settings_dirty = true
+
+
+func _lite_scene(on: bool) -> void:
+	"""the things of the scene: fewer particles, thinner grass, small things far away not drawn (visibility range)"""
+	if scene_parent == null:
+		return
+	var todo: Array = [scene_parent]
+	while not todo.is_empty():
+		var n = todo.pop_back()
+		todo.append_array(n.get_children())
+		if n is CPUParticles3D or n is GPUParticles3D:
+			if not n.has_meta("full_n"):
+				n.set_meta("full_n", n.amount)
+			n.amount = maxi(1, roundi(int(n.get_meta("full_n")) * Quality.KEEP)) if on else int(n.get_meta("full_n"))
+		elif n is MultiMeshInstance3D and n.is_in_group("meadow"):
+			if n.multimesh != null:
+				n.multimesh.visible_instance_count = roundi(n.multimesh.instance_count * Quality.KEEP) if on else -1
+		elif n is GeometryInstance3D:
+			if on:
+				var sz: Vector3 = n.get_aabb().size * n.global_transform.basis.get_scale()
+				if maxf(sz.x, maxf(sz.y, sz.z)) < 1.5 and n.visibility_range_end == 0.0:
+					n.visibility_range_end = Quality.FAR
+					n.set_meta("lite_far", true)
+			elif n.has_meta("lite_far"):
+				n.visibility_range_end = 0.0
+				n.remove_meta("lite_far")
+
+
+func _lite_tick() -> void:
+	"""«Automatisch» on a normal PC: are the first seconds very slow (under 12 pictures per second)? Then Lite for this session"""
+	if grafik_mode != "auto" or Quality.lite() or _lite_slow or not _lite_auto_ok:
+		return
+	var age := now() - _lite_t0
+	if age < 6.0 or age > 40.0 or not win_open or not sim_active or busy_with() != "":
+		return
+	_lite_fps.append(Engine.get_frames_per_second())
+	if _lite_fps.size() < 16:
+		return
+	var avg := 0.0
+	for f in _lite_fps:
+		avg += float(f) / _lite_fps.size()
+	_lite_fps.clear()
+	_lite_t0 = -1000.0                                   # decided once per start
+	if avg < 12.0:
+		_lite_slow = true
+		lite_update()
+		start_info = "Der Rechner ist langsam (%d Bilder/s) – «Grafik-Modus: Automatisch» hat Lite eingeschaltet (System → Grafik)." % roundi(avg)
+
+
+func perf_info() -> Dictionary:
+	"""for «Leistung» in the self-diagnosis and «Über»: frames per second, renderer, Lite, resolution"""
+	var vs: Vector2 = get_viewport().get_visible_rect().size
+	var k: float = get_viewport().scaling_3d_scale
+	return {"fps": Engine.get_frames_per_second(), "renderer": Quality.renderer(), "lite": Quality.lite(), "why": lite_why,
+			"mode": grafik_mode, "res": "%d × %d" % [roundi(vs.x * k), roundi(vs.y * k)], "scale": roundi(k * 100.0),
+			"cams": "%d × %d" % [CAM_W[0], CAM_H[0]], "max_fps": Engine.max_fps}
+
+
 func _game_card_start() -> void:
 	"""3D-4.7: the button «Start» of the card «Spiel»: the game closed = open it (QR code for the phones), otherwise start the round"""
 	if not game.open:
@@ -3766,6 +4125,8 @@ func _game_card_stop() -> void:
 func control_info() -> Dictionary:
 	var out := []
 	for c in controls:
+		if c.has("only") and not bool(c["only"].call()):
+			continue                                     # 3D-4.28: e.g. «Standort im Ferienpark» only in that scene
 		var d := {"type": c.type, "id": c.id, "label": c.label, "group": c.group}
 		d.merge(c.extra)
 		if c["get"] != null:
@@ -3775,7 +4136,7 @@ func control_info() -> Dictionary:
 			d["ro"] = bool(c["ro"].call())            # Aufräumen 2: the page of MoveEye shows it read-only too
 		out.append(d)
 	return {"ok": true, "v": 1, "name": "MoveEye Sim · 3D %s" % VERSION,
-				"scenarios": scenarios(), "scenario": scene,
+				"scenarios": scenarios(), "scenario": Worlds.world_of(scene), "place": scene if Worlds.is_place(scene) else "",
 			"controls": out, "status": status_text(), "upload": null, "groups_on": _groups_on(),
 			"game": {"open": game != null and game.open, "url": game.address() if game != null and game.open else "", "players": game.count() if game != null else 0}}
 
@@ -3791,8 +4152,11 @@ func _control(d: Dictionary) -> Dictionary:
 	var a := str(d.get("action", "get"))
 	var cid := str(d.get("id", ""))
 	if a == "scenario":
+		solo_scene = cid if bool(d.get("solo", false)) else ""   # 3D-4.x: this scene alone, without its world (training night)
 		if not set_scene(cid):
 			return {"ok": false, "error": "unknown scenario"}
+	elif a == "welt":                                  # 3D-4.x Welten: the worlds, their places and what is loaded (worlds.gd)
+		return Worlds.info(self)
 	elif a == "delete":
 		return {"ok": false, "error": "cannot be deleted"}
 	elif a == "lang":                                  # Sprachen (i18n.gd): switch / translate, for tests
@@ -4025,6 +4389,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return game.kig.command(d) if game != null and game.kig != null else {"ok": false, "error": "no game"}
 	elif a == "game_shut":                             # 3D-4.x: «Auslöser» (gameshutter.gd) - info / aim / fire, for tests
 		return game.shut.command(d) if game != null and game.shut != null else {"ok": false, "error": "no game"}
+	elif a == "game_more":                             # «Gameplay ausfeilen» (gamemore.gd): info / set / probe … (tests, MoveEye)
+		return game.more.command(d) if game != null and game.more != null else {"ok": false, "error": "no game"}
 	elif a == "game_tool":                             # 3D-4.x: a tool of the guard (gametools.gd): {tool, slot} or {op: "info"}
 		return game.tools.command(d) if game != null and game.tools != null else {"ok": false, "error": "no game"}
 	elif a == "game_rules":                            # 3D-4.x: for tests - fairness, next guard, winner (gamerules.gd)
@@ -4140,6 +4506,10 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "rover": patrol.rover_info()}
 	elif a == "overlay":
 		return {"ok": true, "overlay": overlay.info()}
+	elif a == "bergtal":                               # 3D-4.x: {do: info | spot | bed | season | here | goto | event | ride | morning | rate | horn | perf} (bergtal.gd)
+		return preload("res://scripts/bergtal.gd").control(self, d)
+	elif a == "ferienpark":                            # 3D-4.x: {do: info | spot (value) | kinds | perf} (ferienpark.gd)
+		return preload("res://scripts/ferienpark.gd").control(self, d)
 	elif a == "szenen":                                # 3D-4.x: the new scenes {do: info | spawn (kind) | restore}
 		return szenen.control(d)
 	elif a == "simreal":                               # 3D-4.4: {do: info | set (key, value) | sweep | bird | spawn (kind, from, to)}
@@ -4150,6 +4520,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return umgebung.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
 		return weit.control(d)
+	elif a == "nacht":                                 # Nacht-Testlauf: {do: info | start | stop | state | truth | plan} (nachtlauf.gd)
+		return nacht.control(d)
 	elif a == "parcours":                              # 3D-4.18: {do: info | start (lessons, night, seed, prep_s) | stop | state | result | game | steer ...}
 		return parcours.control(d)
 	elif a == "zwilling":                              # 3D-4.4: {do: info | import (path) | set (key, value) | item (k, x, z, r) | clear | remove | on}
@@ -4216,6 +4588,8 @@ func _control(d: Dictionary) -> Dictionary:
 		elif op_ == "morning":
 			surprise.morning()
 		return {"ok": true, "surprise": surprise.info()}
+	elif a == "entdecken":                             # Erlebniswelt 20–23: {do: info | open | close | photo | mark (id) | reset | hint | set | where (id)}
+		return entdecken.control(d) if entdecken != null else {"ok": false, "error": "no entdecken"}
 	elif a == "mehr":                                  # 3D-4.2x: «Mehr» (tests): {"do": open | theme | tour | diag | log | fb_* | shot}
 		return mehr.control(d) if mehr != null else {"ok": false, "error": "not ready"}
 	elif a == "feedback":                              # MoveEye 2.98.33: the dialog «Rückmeldung» (tests: {text, kind, stars, shot})
@@ -4274,6 +4648,8 @@ func _control(d: Dictionary) -> Dictionary:
 		if sleeper == null:
 			return {"ok": false, "error": "no sleeper"}
 		return sleeper.command(d)
+	elif a == "fenster":                               # Paket «Fenster» (fenster.gd): info / drag / resize / close / list / check / reset
+		return fenster.control(d) if fenster != null else {"ok": false, "error": "no fenster"}
 	elif a == "smalltv":                               # 3D-4.19: virtueller SmallTV - Zähler, letztes Bild (Tests, Prüfstand)
 		return smalltv.control(d) if smalltv != null else {"ok": false, "error": "no smalltv"}
 	elif a == "game_info":                             # the spectators in MoveEye: the game in numbers (3D-3.22)
@@ -4392,13 +4768,13 @@ func status_text() -> String:
 	if schnitt != null:
 		mwc += schnitt.mw_extra()                 # Aufräumen 2: «Schutz an · Relais …» from MoveEye
 	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
-	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
+	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Worlds.full_name(scene) if Worlds.is_place(scene) and not Worlds.solo(self, scene) else Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + nacht.status() if nacht != null and nacht.running else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
 
 
 func scenarios() -> Array:
 	var out := []
-	for s in Scenes.LIST:
-		out.append({"id": s[0], "name": s[1] + " (3D)", "kind": "world", "deletable": false, "en": Scenes.EN.get(s[0], "")})
+	for s in Worlds.SHOWN:                        # 3D-4.x Welten: the worlds and tools (old ids still work for «scenario»)
+		out.append({"id": s, "name": Scenes.name_of(s) + " (3D)", "kind": "world", "deletable": false, "en": Scenes.EN.get(s, "")})
 	return out
 
 
@@ -4973,6 +5349,7 @@ func _build_ui() -> void:
 	(subs.get("System/Updates", tl) as Control).add_child(update_btn)
 	if testen_measure != null:
 		testrun.add_info(testen_measure, UI)          # progress and result of the test run (card «Testen»)
+		nacht.add_info(testen_measure, UI)            # Nacht-Testlauf: progress, «abbrechen»
 	elif groups.has("Testen"):
 		testrun.add_info(groups["Testen"], UI)
 	if subs.has("Licht & Ton/Status-LED & Tasten") and statusled != null:   # 3D-4.22: the rules of the buttons are in MoveEye - hint + link
@@ -5049,8 +5426,24 @@ var dev_area := false                 # 3D-4.22: the developer switch of MoveEye
 
 
 func _dev_hidden(it: Array) -> bool:
-	"""3D-4.22: a setting of the card «Entwickler» while MoveEye's «Entwickler-Bereich» is off"""
-	return dev_body != null and it[3] == dev_body and not dev_area
+	"""3D-4.22: a setting of the card «Entwickler» while MoveEye's «Entwickler-Bereich» is off;
+	3D-4.28: or a setting with «only» (add_control … controls[-1]["only"]) that does not fit now (e.g. not in its scene)"""
+	if dev_body != null and it[3] == dev_body and not dev_area:
+		return true
+	for c in controls:
+		if c.has("only") and c.label == it[1]:
+			return not bool(c["only"].call())
+	return false
+
+
+func _only_refresh() -> void:
+	"""3D-4.28: after a change of the scene the settings with «only» appear / go (search field: its filter stays)"""
+	if ui_items.is_empty():
+		return
+	if search_in != null and search_in.text.strip_edges() != "":
+		_search(search_in.text)
+	else:
+		_apply_simple()
 
 
 func _diag_pack() -> void:
@@ -5078,9 +5471,12 @@ func show_panel(on: bool) -> void:
 		cam_card.custom_minimum_size.x = w
 		cam_float.add_child(cam_card)
 		cam_float.visible = true
-		cam_float.size = Vector2.ZERO
-		cam_float.position = Vector2(cam_fx, cam_fy) if cam_fx >= 0.0 else gp - Vector2(0, 26)
-		_cam_clamp()
+		if fenster != null:                                # Paket «Fenster»: where the card was (until moved by hand)
+			fenster.home_at(cam_float, gp - Vector2(6, 26))
+		else:
+			cam_float.size = Vector2.ZERO
+			cam_float.position = Vector2(cam_fx, cam_fy) if cam_fx >= 0.0 else gp - Vector2(0, 26)
+			_cam_clamp()
 	elif on and cam_card != null and cam_card.get_parent() == cam_float:
 		var home: Control = cam_card.get_meta("home")
 		cam_float.remove_child(cam_card)
@@ -5321,6 +5717,8 @@ func _apply_simple() -> void:
 		var vis: bool = not (ui_simple and it[2])
 		if dev_body != null and it[3] == dev_body:
 			vis = dev_area                                 # 3D-4.22: «Entwickler» with MoveEye's switch, also in «Einfach»
+		elif vis and _dev_hidden(it):
+			vis = false                                    # 3D-4.28: «only» (e.g. «Standort im Ferienpark» only in that scene)
 		it[0].visible = vis
 		if vis:
 			counts[it[3]] = true
@@ -5602,8 +6000,8 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
+const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+		"avoid_on", "grafik_mode", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
 var _settings_dirty := false
 
 
@@ -5628,6 +6026,7 @@ func _load_settings() -> void:
 			else:
 				v = str(v)
 			set(k, v)
+	grafik_mode = Quality.mode_id(grafik_mode)            # 3D-4.25: unknown / older names -> «Automatisch»
 	if game_mode == "teamguard":                          # Balance 30.10.2026: «Team gegen Team» is gone
 		game_mode = "guard"
 	if d.has("hour_now") and not "--hour" in OS.get_cmdline_user_args() and not "--hour" in OS.get_cmdline_args() and not real_time:
@@ -6084,7 +6483,7 @@ func _over_hud(p: Vector2) -> bool:
 	for c in [ui_root, show_btn, view_bar, minimap, liveview, rover_pad, sel_box, karte, toolbar, cam_card, home_editor, smalltv.tile if smalltv != null else null]:
 		if c != null and is_instance_valid(c) and c is Control and (c as Control).is_visible_in_tree() and (c as Control).modulate.a > 0.01 and (c as Control).get_global_rect().has_point(p):
 			return true
-	return false
+	return fenster != null and fenster.over(p)        # Paket «Fenster»: alle Fenster im gemeinsamen Rahmen
 
 
 func _unhandled_input(ev: InputEvent) -> void:
@@ -6457,7 +6856,7 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	compass.size = Vector2(54, 54)
 	compass.tooltip_text = "Norden – anklicken: nach Norden schauen"
 	compass.draw.connect(func():
-		var c := Vector2(27, 27)
+		var c := compass.size / 2.0                        # Paket «Fenster»: in the middle of its frame (room for the «N»)
 		compass.draw_circle(c, 25, Color(0.05, 0.07, 0.1, 0.75))
 		compass.draw_arc(c, 25, 0, TAU, 32, Color(1, 1, 1, 0.35), 1.5, true)
 		var fwd := -view_cam.global_transform.basis.z
@@ -6970,7 +7369,33 @@ func clear_obstacles() -> void:
 	ob_grid.clear()
 
 
+# 3D-4.x Welten (worlds.gd): while a place is built inside a world: obstacles beyond ob_clip (local) are left out, ob_xf moves
+# them (a neighbour), none in ob_excl ([[centre (world), r], …]: the active place)
+var ob_xf := Transform3D.IDENTITY
+var ob_clip := 0.0
+var ob_excl: Array = []
+var _ob_skip := false
+
+
+func _ob_place(p: Vector3):
+	"""the obstacle point in the world, or null (left out)"""
+	_ob_skip = false
+	if ob_clip > 0.0 and Vector2(p.x, p.z).length() > ob_clip:
+		_ob_skip = true
+		return null
+	var q := ob_xf * p
+	for e in ob_excl:
+		if Vector2(q.x, q.z).distance_to(e[0]) < float(e[1]):
+			_ob_skip = true
+			return null
+	return q
+
+
 func add_obstacle(p: Vector3, r: float, people_only := false) -> void:
+	var pw = _ob_place(p)
+	if pw == null:
+		return
+	p = pw
 	var o := {"c": Vector2(p.x, p.z), "r": r, "po": people_only, "id": obstacles.size()}
 	obstacles.append(o)
 	_ob_insert(o, Vector2(p.x - r, p.z - r), Vector2(p.x + r, p.z + r))
@@ -6978,6 +7403,11 @@ func add_obstacle(p: Vector3, r: float, people_only := false) -> void:
 
 func add_obstacle_box(p: Vector3, sx: float, sz: float, rot_y: float, people_only := false) -> void:
 	"""a box of sx × sz metres around p, turned like a node with rotation.y = rot_y"""
+	var pw = _ob_place(p)
+	if pw == null:
+		return
+	p = pw
+	rot_y += ob_xf.basis.get_euler().y
 	var b := Basis(Vector3.UP, rot_y)
 	var o := {"c": Vector2(p.x, p.z), "h": Vector2(sx / 2.0, sz / 2.0), "b": b, "bi": b.inverse(), "po": people_only, "id": obstacles.size()}
 	obstacles.append(o)
@@ -7134,7 +7564,7 @@ func line_blocker(a: Vector3, b: Vector3) -> Dictionary:
 
 func set_obstacle_height(ht: float) -> void:
 	"""the height of the object added last (for the line of sight of the game)"""
-	if not obstacles.is_empty():
+	if not obstacles.is_empty() and not _ob_skip:
 		obstacles[-1]["ht"] = ht
 
 
@@ -7293,6 +7723,9 @@ func view_request(q: Dictionary) -> void:
 		view_w = clampi(int(q["w"]), 320, 2560)
 	if q.has("q") and str(q["q"]).is_valid_float():
 		view_q = clampf(float(q["q"]) / 100.0, 0.3, 0.95)
+	if Quality.lite():                          # 3D-4.25: Lite - a smaller picture of the window (the cameras for MoveEye stay)
+		view_w = mini(view_w, Quality.VIEW_W)
+		view_q = minf(view_q, Quality.VIEW_Q)
 	if q.has("fmt"):
 		view_webp = str(q["fmt"]) == "webp"
 	if str(q.get("clean", "")) == "1":
@@ -7327,7 +7760,7 @@ func _view_capture() -> void:
 			Input.parse_input_event(ku)
 	# the window is the small box (or minimized): the view for MoveEye is drawn in a picture of its own (3D-3.19)
 	_remote_set(t - view_want_t < (10.0 if remote_vp != null else 3.0) and not win_open)
-	if t - view_want_t > 3.0 or t - _view_t < 1.0 / max(1.0, view_fps):
+	if t - view_want_t > 3.0 or t - _view_t < 1.0 / max(1.0, minf(view_fps, Quality.VIEW_FPS) if Quality.lite() else view_fps):
 		return
 	_view_t = t
 	var img := (remote_vp.get_texture() if remote_vp != null else get_viewport().get_texture()).get_image()
@@ -7829,8 +8262,9 @@ func _cpu_pill_tick(dt: float) -> void:
 	var vw: float = get_viewport().get_visible_rect().size.x
 	var right: float = ui_root.get_global_rect().position.x if ui_root != null and ui_root.visible else vw
 	var left: float = phone.get_global_rect().end.x if phone != null and phone.visible else 0.0
-	cpu_pill.reset_size()
-	cpu_pill.position = Vector2((left + right - cpu_pill.size.x) / 2.0, 10.0)
+	if fenster == null:                                   # Paket «Fenster»: the frame places it (fenster.gd)
+		cpu_pill.reset_size()
+		cpu_pill.position = Vector2((left + right - cpu_pill.size.x) / 2.0, 10.0)
 
 
 func _hud_layout() -> void:
@@ -7845,9 +8279,10 @@ func _hud_layout() -> void:
 		return
 	_hud_key = key
 	if ph:
-		compass.position = Vector2(right - 68.0, 26.0)
-		if minimap != null:
-			minimap.position = Vector2(right - minimap.size.x - 14.0, 92.0)
+		if fenster == null:                              # Paket «Fenster»: the frames place compass and map (fenster.gd)
+			compass.position = Vector2(right - 68.0, 26.0)
+			if minimap != null:
+				minimap.position = Vector2(right - minimap.size.x - 14.0, 92.0)
 		view_bar.offset_left = left + 12.0
 		view_bar.offset_right = -(vw - right) - 12.0
 		view_bar.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -7860,9 +8295,10 @@ func _hud_layout() -> void:
 			if b is Button:
 				b.add_theme_font_size_override("font_size", fs)
 	else:
-		compass.position = Vector2(14, 26)
-		if minimap != null:
-			minimap.position = Vector2(14, 92)
+		if fenster == null:
+			compass.position = Vector2(14, 26)
+			if minimap != null:
+				minimap.position = Vector2(14, 92)
 		view_bar.offset_left = 12.0
 		view_bar.offset_right = -404.0
 		view_bar.alignment = BoxContainer.ALIGNMENT_BEGIN

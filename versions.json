@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 00:42",
+ "generated": "2026-10-31 06:12",
  "versions": [
   {
-   "version": "2.98.54",
-   "file": "webcam_bewegung_2_98_54.py",
+   "version": "2.98.65",
+   "file": "webcam_bewegung_2_98_65.py",
    "url": "",
-   "sha256": "fc22a66924b3a192821a1f25f41eb1c2ec123f4426d95fcd8371d25e6410678e",
-   "date": "2026-10-31 00:42",
-   "notes": "Live-Seite am Handy: die Status-Chips stehen in einer Zeile zum seitlichen Wischen (Schutz-Zustand, Status-LED, alles ok / Probleme, Akku zuerst; Rand blendet aus, wenn weitere folgen) – die Sticks von Sim-Kompakt haben wieder ihre normale Grösse",
-   "sig": "45ca26b23286261d3521b71f254c1e940e5db9799397795fe3cd14c86352feb6d7147f3ec8ff34d784d4b8a8cbadd3de419182cede7935e91321aabf1bec7302"
+   "sha256": "8de67c8ef6b380f9c08e1822eacc8d2313ebf924180cf8e20db30ad0b725c7d6",
+   "date": "2026-10-31 06:12",
+   "notes": "Simulator 3D-4.34: neue Welt «Bergtal» (2 × 2 km) und Szenen zusammengefasst – Welten Bergtal, Ferienpark, Zuhause mit den alten Szenen als Orte; alte Kennungen gehen weiter, Trainingsnacht lädt Orte allein.",
+   "sig": "ad42de7d0bde3ba7ca001ec914719dc16a575c2e3f975fe182ee4f530064cc0258f23fedaea1186847b2334346a2198e3e960735d3b387ec50a8135388ab730c"
   },
   {
    "version": "2.97.1",

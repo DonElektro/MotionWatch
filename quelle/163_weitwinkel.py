@@ -14,6 +14,10 @@
 #    a change of the position) - 440 asks weit_cam_turning().
 #  - Rear mount: movement behind -> the head turns there (162 _kopf_ov_tick, same rank as «turn to the alarm»), then the
 #    AI of the main camera checks.
+#  - P9 (31.10.2026, simulator: weitwinkel.gd): mount «case» = built into case v5.2 (front wall above the PIR, fixed, 12°
+#    down, the head turns above it) - a device mount like «base"; «none» = not built in, blind cover: no picture (the
+#    simulator answers /cam/1 with 404), not the overview; 591 says «not installed» instead of «simulator not reachable».
+#    The picture is an equidistant fisheye (angle linear in the picture) - kopf_ov_deg's (cx - 0.5) * fov is exact for it.
 #  - Second infrared LED 120° on PCA9685 channel 4 («IR-Licht breit (Kanal 4)»): on / off together with the infrared
 #    light (070 lights_tick); the simulator gets lights.ir_wide.
 # ----------------------------------------------------------------------------
@@ -21,7 +25,7 @@ for _k, _v in {"light_ir_wide": False, "kopf_ov_simauto": False}.items():
     CFG.setdefault(_k, _v)
     DEFAULTS.setdefault(_k, _v)
 WEIT = {"mount": None, "seen": False, "hd": None, "hd_t": 0.0, "pt": None, "pt_t": 0.0}
-WEIT_DEVICE_MOUNTS = ("base", "head_front", "head_rear")
+WEIT_DEVICE_MOUNTS = ("case", "base", "head_front", "head_rear")   # P9: + «case» (case v5.2)
 WEIT_IR_CH = 4                                            # PCA9685 channel of the wide infrared LED (white 2, IR 3 by convention)
 
 
@@ -45,13 +49,19 @@ def weit_on_device():
     return weit_mount() in WEIT_DEVICE_MOUNTS
 
 
+def weit_missing():
+    """P9: the simulator says its wide camera is not built in (blind cover)"""
+    c = weit_sim_cam()
+    return bool(c) and (str(c.get("mount") or "") == "none" or c.get("installed") is False)
+
+
 def weit_from_sim(w):
     """350: the reply to POST /state carries «wide» - a new mount is known at once (no new /info needed)"""
     if not isinstance(w, dict) or not CFG.get("sim_on"):
         return
     c = weit_sim_cam()
     if c is not None:
-        for k in ("mount", "tilt_deg", "yaw_offset", "pan_follow", "tilt_follow", "on_head", "fov_h", "fov_v", "pan_limit"):
+        for k in ("mount", "tilt_deg", "yaw_offset", "pan_follow", "tilt_follow", "on_head", "fov_h", "fov_v", "pan_limit", "installed"):
             if k in w:
                 c[k] = w[k]
     weit_auto()
@@ -74,7 +84,8 @@ def weit_auto():
     elif cur == "sim:1" and CFG.get("kopf_ov_simauto"):
         CFG["kopf_ov"] = ""; CFG["kopf_ov_simauto"] = False; changed = True
         if not first:
-            log_event("servo", "Simulator: the wide camera is on the mast again - no longer the overview of the head")
+            log_event("servo", "Simulator: the wide camera is not built in (blind cover) - no overview of the head" if m == "none"
+                      else "Simulator: the wide camera is on the mast again - no longer the overview of the head")
     if changed:
         save_settings()
 
@@ -192,5 +203,5 @@ def weit_state(lang=None):
     if not c or "mount" not in c:
         return None
     n = next((x.idx for x in CAMS if str(x.spec) == "sim:1"), None)
-    return {"mount": str(c.get("mount")), "on_head": bool(c.get("on_head")), "tilt": c.get("tilt_deg"), "n": n,
+    return {"mount": str(c.get("mount")), "on_head": bool(c.get("on_head")), "tilt": c.get("tilt_deg"), "n": n, "missing": weit_missing(),
             "ov": str(CFG.get("kopf_ov") or "") == "sim:1", "ov_on": bool(CFG.get("kopf_ov_on")), "fov": [c.get("fov_h"), c.get("fov_v")]}

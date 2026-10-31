@@ -4,32 +4,32 @@ _HX_simkompakt = {
     'Sim compact': ('Sim-Kompakt', 'Sim compact', 'Sim compatto', 'Sim cumpact'),
     'On when connected': ('Ein, wenn verbunden', 'Actif si connecté', 'Attivo se collegato', 'Activ, sch’el è collià'),
     'Off': ('Aus', 'Désactivé', 'Spento', 'Deactivà'),
-    'sk-note': ('Mit verbundenem Simulator: oben das Simulator-Bild gross, die Kamera von MoveEye klein in seiner Ecke (antippen = '
-                'tauschen), darunter Kopf- und Rover-Stick am Rand, dazwischen die Kacheln des Simulators. Gilt nur für dieses Gerät.',
-                'Avec le simulateur connecté : en haut l’image du simulateur en grand, la caméra de MoveEye en petit dans son coin '
-                '(toucher = échanger), dessous le stick de la tête et celui du rover sur les bords, entre eux les tuiles du simulateur. '
+    'sk-note': ('Mit verbundenem Simulator: oben das Simulator-Bild gross, die Kamera von MoveEye daneben (schmaler Bildschirm: klein in '
+                'seiner Ecke; antippen = tauschen), darunter Kopf- und Rover-Stick am Rand, dazwischen die Kacheln des Simulators. Gilt nur für dieses Gerät.',
+                'Avec le simulateur connecté : en haut l’image du simulateur en grand, la caméra de MoveEye à côté (écran étroit : '
+                'en petit dans son coin ; toucher = échanger), dessous le stick de la tête et celui du rover sur les bords, entre eux les tuiles du simulateur. '
                 'Seulement pour cet appareil.',
-                'Con il simulatore collegato: in alto l’immagine del simulatore grande, la telecamera di MoveEye piccola nel suo angolo '
-                '(toccare = scambiare), sotto lo stick della testa e quello del rover ai bordi, in mezzo le piastrelle del simulatore. '
+                'Con il simulatore collegato: in alto l’immagine del simulatore grande, la telecamera di MoveEye accanto (schermo stretto: '
+                'piccola nel suo angolo; toccare = scambiare), sotto lo stick della testa e quello del rover ai bordi, in mezzo le piastrelle del simulatore. '
                 'Solo per questo apparecchio.',
-                'Cun il simulatur collià: sisum il maletg dal simulatur grond, la camera da MoveEye pitschna en ses chantun (tutgar = '
-                'barattar), sutvart il stick dal chau e quel dal rover a l’ur, tranter els las plattinas dal simulatur. Mo per quest apparat.'),
-    'sk-help': ('Sim-Kompakt: das kleine Bild in der Ecke antippen = die beiden Bilder tauschen (dieses Gerät merkt es sich). Das grosse '
+                'Cun il simulatur collià: sisum il maletg dal simulatur grond, la camera da MoveEye dasper (visur stretg: pitschna en ses '
+                'chantun; tutgar = barattar), sutvart il stick dal chau e quel dal rover a l’ur, tranter els las plattinas dal simulatur. Mo per quest apparat.'),
+    'sk-help': ('Sim-Kompakt: das kleine Bild daneben oder in der Ecke antippen = die beiden Bilder tauschen (dieses Gerät merkt es sich). Das grosse '
                 'Bild antippen = gross, nochmals = zurück; das grosse Simulator-Bild ist das Simulator-Fenster '
                 '(Maus und ✋ Finger steuern den Simulator, ✕ = zurück). Linker Stick = Kopf von MoveEye, rechter Stick = Rover '
                 '(in einer Spielrunde nur, wenn das Spiel den Rover fährt). Die Kacheln = was im Simulator passiert; «… mehr» = alle '
                 'Einstellungen des Simulators. Ein / aus und Bildqualität unter «◫ Ansicht».',
-                'Sim compact : toucher la petite image dans le coin = échanger les deux images (cet appareil s’en souvient). Toucher la '
+                'Sim compact : toucher la petite image à côté ou dans le coin = échanger les deux images (cet appareil s’en souvient). Toucher la '
                 'grande image = en grand, encore une fois = retour ; la grande image du simulateur est la fenêtre du '
                 'simulateur (souris et doigt ✋ pilotent le simulateur, ✕ = retour). Stick gauche = tête de MoveEye, stick droit = '
                 'rover (pendant une partie seulement si le jeu utilise le rover). Les tuiles = ce qui se passe dans le simulateur ; '
                 '« … plus » = tous les réglages du simulateur. Activer / désactiver et qualité d’image sous « ◫ Affichage ».',
-                'Sim compatto: toccare l’immagine piccola nell’angolo = scambiare le due immagini (questo apparecchio lo ricorda). Toccare '
+                'Sim compatto: toccare l’immagine piccola accanto o nell’angolo = scambiare le due immagini (questo apparecchio lo ricorda). Toccare '
                 'l’immagine grande = grande, di nuovo = indietro; l’immagine grande del simulatore è la finestra del '
                 'simulatore (mouse e dito ✋ comandano il simulatore, ✕ = indietro). Stick sinistro = testa di MoveEye, stick destro = '
                 'rover (durante una partita solo se il gioco usa il rover). Le piastrelle = ciò che succede nel simulatore; «… altro» = '
                 'tutte le impostazioni del simulatore. Attivare / disattivare e qualità dell’immagine sotto «◫ Vista».',
-                'Sim cumpact: tutgar il pitschen maletg en il chantun = barattar ils dus maletgs (quest apparat sa regorda). Tutgar il '
+                'Sim cumpact: tutgar il pitschen maletg dasper u en il chantun = barattar ils dus maletgs (quest apparat sa regorda). Tutgar il '
                 'grond maletg = grond, anc ina giada = enavos; il grond maletg dal simulatur è la fanestra dal '
                 'simulatur (mieur e det ✋ commondan il simulatur, ✕ = enavos). Stick sanester = chau da MoveEye, stick dretg = rover '
                 '(durant in gieu mo sch’il gieu dovra il rover). Las plattinas = quai che capita en il simulatur; «… dapli» = tut ils '

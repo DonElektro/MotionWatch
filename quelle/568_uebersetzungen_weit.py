@@ -8,6 +8,11 @@ _HX_weit = {
          'Glisch IR largia (chanal 4): segunda LED IR 120° sin il chanal 4 dal PCA9685, en / ora cun la glisch infraritga'),
     'Simulator wide camera': ('Simulator-Weitwinkel', 'Grand-angle du simulateur', 'Grandangolo del simulatore', 'Grond angul dal simulatur'),
     'Wide camera': ('Weitwinkel-Kamera', 'Caméra grand-angle', 'Telecamera grandangolare', 'Camera da grond angul'),
+    'In the case (v5.2)': ('Im Gehäuse (v5.2)', 'Dans le boîtier (v5.2)', 'Nella custodia (v5.2)', 'En la chaschetta (v5.2)'),
+    'Not installed (blind cover)': ('Nicht verbaut (Blindstopfen)', 'Non montée (cache)', 'Non montata (tappo cieco)', 'Betg montada (zaffer)'),
+    'Not installed (blind cover) - no wide picture': ('Nicht verbaut (Blindstopfen) – kein Weitwinkel-Bild',
+        'Non montée (cache) – pas d’image grand-angle', 'Non montata (tappo cieco) – nessuna immagine grandangolare',
+        'Betg montada (zaffer) – nagin maletg da grond angul'),
     'Mast (scene)': ('Mast (Szene)', 'Mât (scène)', 'Palo (scena)', 'Pal (scena)'),
     'Base front, fixed': ('Unterteil vorne, fest', 'Socle avant, fixe', 'Base davanti, fissa', 'Part sut davant, fixa'),
     'Head front': ('Kopf vorne', 'Tête avant', 'Testa davanti', 'Chau davant'),
@@ -37,7 +42,11 @@ for _a, _b in (('<section id="camera" data-icon="📷"><h2>Kamera &amp; Servos</
                 "<i>Kopf vorne</i> oder <i>Kopf hinten</i> (dreht mit). Sitzt sie am Gerät, stellt MoveEye «Übersicht lenkt den Kopf» selbst "
                 "ein: Bewegung im Weitwinkel-Bild dreht den Kopf dorthin, dann prüft die KI der Hauptkamera; solange der Kopf dreht, zählt "
                 "die Bewegung im Weitwinkel-Bild nicht. Auf dem Kopf gilt eine Drehgrenze (Kabel; 360°-Servos bräuchten einen Schleifring). "
-                "Die zweite IR-LED 120° schaltest du mit «IR-Licht breit (Kanal 4)» unter Licht.</p>"),
+                "Die zweite IR-LED 120° schaltest du mit «IR-Licht breit (Kanal 4)» unter Licht.</p>"
+                "<p><b>Im Gehäuse (v5.2):</b> Standard-Montage im Simulator – wie das echte Gehäuse v5.2: fest in der Stirnwand über "
+                "dem PIR, 12° nach unten, der Kopf dreht darüber. Das Bild ist ein Fischauge (120° diagonal, gebogene Linien am Rand, "
+                "dunklere Ecken); nachts beleuchtet die kleine 5-mm-IR-LED (Kanal 4) nur die Nähe (ca. 4 m). "
+                "<i>Nicht verbaut (Blindstopfen)</i>: kein Weitwinkel-Bild, die Zusatzkamera meldet «nicht verbaut».</p>"),
                ('<section id="camera" data-icon="📷"><h2>Camera &amp; servos</h2>',
                 "<p><b>🔭 Wide camera in the simulator (simulator 3D-4.17):</b> the former «fixed camera» of the simulator is now the wide "
                 "camera (Camera Module 3 Wide NoIR, 102° × 67°). In Simulator → camera picture → «Weitwinkel-Kamera» or with the tile 🔭 "
@@ -45,6 +54,10 @@ for _a, _b in (('<section id="camera" data-icon="📷"><h2>Kamera &amp; Servos</
                 "<i>head rear</i> (turns with the head). On the device MoveEye sets «The overview camera steers the head» by itself: "
                 "movement in the wide picture turns the head there, then the AI of the main camera checks; while the head turns, movement "
                 "in the wide picture does not count. On the head a pan limit applies (cable; 360° servos would need a slip ring). The "
-                "second IR LED 120° is switched with «Wide infrared light (channel 4)» under Lights.</p>")):
+                "second IR LED 120° is switched with «Wide infrared light (channel 4)» under Lights.</p>"
+                "<p><b>In the case (v5.2):</b> the default mount in the simulator - like the real case v5.2: fixed in the front wall "
+                "above the PIR, 12° down, the head turns above it. The picture is a fisheye (120° diagonal, bent lines at the edges, "
+                "darker corners); at night the small 5 mm IR LED (channel 4) lights only the near field (about 4 m). "
+                "<i>Not installed (blind cover)</i>: no wide picture, the extra camera says «not installed».</p>")):
     if _a in HELP_PAGE:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)

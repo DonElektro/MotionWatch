@@ -24,8 +24,8 @@ func _ready() -> void:
 
 
 func _apply_size() -> void:
-	size = Vector2(size_px, size_px)
-	custom_minimum_size = size
+	custom_minimum_size = Vector2(size_px, size_px)     # first: a smaller size would be held by the old minimum
+	size = custom_minimum_size
 
 
 func _process(dt: float) -> void:
@@ -60,11 +60,22 @@ func _draw() -> void:
 	var k := s / span
 	var c := center()
 	# real place: the aerial picture below
-	if main.terrain and main.geo.photo_near != null:
+	if main.terrain and main.scene == "ort" and main.geo.photo_near != null:
 		var rn: Rect2 = main.geo.rect_near
 		var a := w2m(Vector3(rn.position.x, 0, rn.position.y))
 		var tex: Texture2D = main.geo.photo_near
 		draw_texture_rect(tex, Rect2(a, rn.size * k), false, Color(1, 1, 1, 0.85))
+	# 3D-4.x: the map of a scene in the style of the Landeskarte (bergtal.gd), turned with the scene; orientation «schwer»: none
+	var md0: Dictionary = main.scenes.data
+	var orient := str(md0.get("orientation", "leicht"))
+	if md0.has("map_img") and orient != "schwer":
+		var mi: Array = md0["map_img"]
+		var o2 := w2m(mi[1])
+		var ax := (w2m(mi[2]) - o2) / float(mi[4])
+		var ay := (w2m(mi[3]) - o2) / float(mi[4])
+		draw_set_transform_matrix(Transform2D(ax, ay, o2))
+		draw_texture(mi[0], Vector2.ZERO, Color(1, 1, 1, 0.92))
+		draw_set_transform_matrix(Transform2D.IDENTITY)
 	# roads of the drawn scenes
 	if not main.terrain and main.scenes.data.has("road_z"):
 		var rz: float = float(main.scenes.data["road_z"]) - 1.2
@@ -93,6 +104,23 @@ func _draw() -> void:
 			draw_colored_polygon(pts, col)
 			pts.append(pts[0])
 			draw_polyline(pts, Color(0.1, 0.1, 0.1, 0.6), 1.0)
+	# 3D-4.x: a scene with its own map (bergtal.gd): road, trails, lakes, and marks (sleeping spots, viewpoints, places)
+	var md: Dictionary = main.scenes.data
+	if md.has("map_lines") and orient != "schwer":
+		for ln in md["map_lines"]:
+			var pl := PackedVector2Array()
+			for q in ln[0]:
+				pl.append(w2m(Vector3(q.x, 0, q.y)))
+			if pl.size() > 1:
+				draw_polyline(pl, ln[1], float(ln[2]))
+	if md.has("map_marks") and orient == "leicht":
+		for mk in md["map_marks"]:
+			var mp2 := w2m(mk[0])
+			if not rect.grow(4).has_point(mp2):
+				continue
+			draw_circle(mp2, 4.5 if mk[3] else 3.0, mk[2])
+			if mk[3] or span < 450.0:
+				draw_string(ThemeDB.fallback_font, mp2 + Vector2(5, 4), str(mk[1]), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 1, 0.85))
 	# what the cameras see
 	for i in [1, 0]:
 		var cam: Camera3D = main.cams[i]
@@ -152,16 +180,17 @@ func _draw() -> void:
 			break
 	draw_line(Vector2(8, s - 10), Vector2(8 + bar * k, s - 10), Color(1, 1, 1, 0.9), 2.0)
 	draw_string(ThemeDB.fallback_font, Vector2(8, s - 14), "%d m" % int(bar), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.9))
-	for j in range(3):
-		var o2 := 4.0 + j * 4.0
-		draw_line(Vector2(s - o2, s - 2), Vector2(s - 2, s - o2), Color(1, 1, 1, 0.7), 1.0)
+	if not has_meta("fenster"):                     # in a window frame (fenster.gd) the frame draws the corner
+		for j in range(3):
+			var o2 := 4.0 + j * 4.0
+			draw_line(Vector2(s - o2, s - 2), Vector2(s - 2, s - o2), Color(1, 1, 1, 0.7), 1.0)
 
 
 func _gui_input(ev: InputEvent) -> void:
 	if ev is InputEventMouseButton:
 		if ev.button_index == MOUSE_BUTTON_LEFT:
 			if ev.pressed:
-				if ev.position.x > size_px - 18 and ev.position.y > size_px - 18:
+				if ev.position.x > size_px - 18 and ev.position.y > size_px - 18 and not has_meta("fenster"):   # framed: the corner of the frame
 					resizing = true
 					res_from = ev.global_position
 					res_size = size_px
