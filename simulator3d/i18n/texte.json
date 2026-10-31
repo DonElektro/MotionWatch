@@ -342,6 +342,12 @@
   "it": " da %s",
   "rm": " da %s"
  },
+ " · %.1f Blenden zu dunkel": {
+  "en": " · %.1f stops too dark",
+  "fr": " · %.1f IL trop sombre",
+  "it": " · %.1f stop troppo scura",
+  "rm": " · %.1f stops memia stgira"
+ },
  " · %d Bilder erkannt, %d ms": {
   "en": " · %d pictures detected, %d ms",
   "fr": " · %d images analysées, %d ms",
@@ -2905,6 +2911,12 @@
   "it": "si muove al vento",
   "rm": "sa mova en il vent"
  },
+ "Bewegungsunschärfe (aus der Belichtungszeit: nachts bis 1/10 s)": {
+  "en": "Motion blur (from the exposure time: up to 1/10 s at night)",
+  "fr": "Flou de mouvement (selon le temps de pose : jusqu'à 1/10 s la nuit)",
+  "it": "Mosso (dal tempo di esposizione: di notte fino a 1/10 s)",
+  "rm": "Nunclerezza da moviment (tenor il temp d'exposiziun: da notg fin 1/10 s)"
+ },
  "Bewertung jetzt": {
   "en": "Rate now",
   "fr": "Évaluer maintenant",
@@ -3324,6 +3336,18 @@
   "fr": "Ours",
   "it": "Orso",
   "rm": "Urs"
+ },
+ "Camera Module 3 NoIR": {
+  "en": "Camera Module 3 NoIR",
+  "fr": "Camera Module 3 NoIR",
+  "it": "Camera Module 3 NoIR",
+  "rm": "Camera Module 3 NoIR"
+ },
+ "Camera Module 3 Wide NoIR": {
+  "en": "Camera Module 3 Wide NoIR",
+  "fr": "Camera Module 3 Wide NoIR",
+  "it": "Camera Module 3 Wide NoIR",
+  "rm": "Camera Module 3 Wide NoIR"
  },
  "Camping": {
   "en": "Camping",
@@ -7549,6 +7573,12 @@
   "it": "La telecamera trema al vento (palo, asta)",
   "rm": "La camera trembla en il vent (pal, stanga)"
  },
+ "Kamera wie echt (Camera Module 3 NoIR): Belichtung und Verstärkung mit echten Grenzen, Rauschen bei wenig Licht, Bewegungsunschärfe, NoIR-Farben, Blendung nachts": {
+  "en": "Camera like the real one (Camera Module 3 NoIR): exposure and gain with real limits, noise in low light, motion blur, NoIR colours, glare at night",
+  "fr": "Caméra comme la vraie (Camera Module 3 NoIR) : exposition et gain avec les vraies limites, bruit en faible lumière, flou de mouvement, couleurs NoIR, éblouissement la nuit",
+  "it": "Telecamera come quella vera (Camera Module 3 NoIR): esposizione e guadagno con limiti reali, rumore con poca luce, mosso, colori NoIR, abbagliamento di notte",
+  "rm": "Camera sco la vaira (Camera Module 3 NoIR): exposiziun ed amplificaziun cun limitas realas, ramur cun pauca glisch, nunclerezza da moviment, colurs NoIR, sbarlattim da notg"
+ },
  "Kamera wie echt: Bewegungsunschärfe (nachts stärker), Farben des Sensors, NoIR-Rosastich am Tag, langsamere Belichtung": {
   "en": "Camera like real: motion blur (stronger at night), sensor colours, NoIR pink tint by day, slower exposure",
   "fr": "Caméra réaliste : flou de mouvement (plus fort la nuit), couleurs du capteur, teinte rose NoIR le jour, exposition plus lente",
@@ -8239,6 +8269,12 @@
   "fr": "Caméra de la tête",
   "it": "Telecamera della testa",
   "rm": "Camera dal chau"
+ },
+ "Kopfkamera: Belichtung %s · Verstärkung %.1f× · Licht %s": {
+  "en": "Head camera: exposure %s · gain %.1f× · light %s",
+  "fr": "Caméra de tête : pose %s · gain %.1f× · lumière %s",
+  "it": "Telecamera della testa: esposizione %s · guadagno %.1f× · luce %s",
+  "rm": "Camera dal chau: exposiziun %s · amplificaziun %.1f× · glisch %s"
  },
  "Kopieren": {
   "en": "Copy",
@@ -10386,6 +10422,12 @@
   "it": "Controlla di nuovo",
   "rm": "Controllar danovamain"
  },
+ "NoIR-Farben (ohne Infrarot-Filter: Rosastich am Tag, helle Pflanzen)": {
+  "en": "NoIR colours (no infrared filter: pink cast by day, light plants)",
+  "fr": "Couleurs NoIR (sans filtre infrarouge : dominante rose le jour, plantes claires)",
+  "it": "Colori NoIR (senza filtro infrarosso: dominante rosa di giorno, piante chiare)",
+  "rm": "Colurs NoIR (senza filter infracotschen: tun rosa di, plantas cleras)"
+ },
  "Norden – anklicken: nach Norden schauen": {
   "en": "North – click: look north",
   "fr": "Nord – cliquer : regarder vers le nord",
@@ -11232,6 +11274,12 @@
   "fr": "fume / dégage de la vapeur",
   "it": "fuma / emette vapore",
   "rm": "fima / vapurescha"
+ },
+ "Rauschen (wie der Sensor: mehr Verstärkung = mehr Rauschen, am Tag sauber)": {
+  "en": "Noise (like the sensor: more gain = more noise, clean by day)",
+  "fr": "Bruit (comme le capteur : plus de gain = plus de bruit, net le jour)",
+  "it": "Rumore (come il sensore: più guadagno = più rumore, pulito di giorno)",
+  "rm": "Ramur (sco il sensur: dapli amplificaziun = dapli ramur, net di)"
  },
  "Realismus: MG90S %.0f°/s · Servos wie echt · Drehbereich %.0f°%s · Bild mit Verzögerung · Simulator %.0f Bilder/s": {
   "en": "Realism: MG90S %.0f°/s · servos like real · turning range %.0f°%s · picture with delay · simulator %.0f frames/s",
