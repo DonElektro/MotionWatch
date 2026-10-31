@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 5860 (Stellen: 8013)
-Übersetzt: en 5860, fr 5860, it 5860, rm 5860
+Texte gesamt: 5939 (Stellen: 8092)
+Übersetzt: en 5939, fr 5939, it 5939, rm 5939
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 394 Stellen
 Nicht mehr im Code (noch in texte.json): 68
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 67 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 19860, schlüssel 14755, keine Wörter 9073, index 7357, technisch 2575, doc 1618, einheit 234, englisch 105, log 78, pfad 67, html 67, klasse 24, shader 4
+Übersprungen (Grund: Anzahl): kennung 20081, schlüssel 14978, keine Wörter 9168, index 7507, technisch 2601, doc 1639, einheit 234, englisch 105, log 79, pfad 67, html 67, klasse 25, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  671    29
@@ -30,6 +30,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   gameplus.gd               83     5
   objects.gd                81     0
   objekte_neu.gd            80     0
+  maggie_gefahr.gd          79     0
   kids.gd                   74     1
   mehr.gd                   72    13
   pruefstand.gd             72     8
@@ -302,24 +303,24 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main.gd:3376  '\n🚨 Bewacht und weg: '
   main.gd:4185  'keine'
   main.gd:4211  'Wächter an MoveEye: '
-  main.gd:4974  'Dein Platz: '
-  main.gd:5213  ' · schaut nur zu: '
-  main.gd:5216  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:5217  ' · Update: '
-  main.gd:5551  'Blinde Flecken: '
-  main.gd:6218  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6524  'Autostart: '
-  main.gd:6535  'Autologon: '
-  main.gd:6696  'Karte öffnen: '
-  main.gd:6842  'Echt-Abgleich: '
-  main.gd:6852  'Trainingspaket: '
-  main.gd:6861  ' · %d offen · %.1f MB'
-  main.gd:6861  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6870  'Verbindung · '
-  main.gd:6870  'aus'
-  main.gd:6874  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6874  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6877  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:4976  'Dein Platz: '
+  main.gd:5215  ' · schaut nur zu: '
+  main.gd:5218  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:5219  ' · Update: '
+  main.gd:5553  'Blinde Flecken: '
+  main.gd:6220  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6526  'Autostart: '
+  main.gd:6537  'Autologon: '
+  main.gd:6698  'Karte öffnen: '
+  main.gd:6844  'Echt-Abgleich: '
+  main.gd:6854  'Trainingspaket: '
+  main.gd:6863  ' · %d offen · %.1f MB'
+  main.gd:6863  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6872  'Verbindung · '
+  main.gd:6872  'aus'
+  main.gd:6876  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6876  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6879  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:581  ' (automatisch von oben)'
   explore.gd:581  ' · schnell'
   fahrzeuge.gd:90  'nie'
@@ -509,7 +510,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   tv.gd:305  ' · %d Punkte'
   tv.gd:305  ' · %d×'
   tv.gd:319  'Mehr über MoveEye:\nQR-Code scannen\n'
-  maggie_story.gd:1141  'Mit'
+  maggie_story.gd:1142  'Mit'
   mwpc.gd:22  'Aus'
   mwpc.gd:75  'MoveEye hat sich beendet. Protokoll: '
   mwpc.gd:107  ' · %d Bilder erkannt, %d ms'
