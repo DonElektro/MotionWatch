@@ -385,7 +385,9 @@ func card(s: Dictionary, w: float) -> Control:
 		var b := _btn(br, T.t("Öffnen (Passwort)"), func(): unlock(id), true)
 		b.tooltip_text = T.t("Passwortgeschützt – unheimlich, mit Schreckmomenten")
 		if id == "horror" and bool(main.horror.knopf_erlaubt()):   # the second button (only the owner, never the children)
-			var bo := _btn(br, T.t("Ohne Passwort starten"), func(): ohne_passwort(id))
+			var br2 := HBoxContainer.new()                       # own row: fits the narrow card in every language
+			tv.add_child(br2)
+			var bo := _btn(br2, T.t("Ohne Passwort starten"), func(): ohne_passwort(id))
 			bo.tooltip_text = T.t("Nur für den Besitzer (nicht im Kinder-Modus). Das Passwort bleibt, die Warnung kommt trotzdem.")
 		return p
 	var can := bool(s["started"]) and (not bool(s["done"]) or id == "grossvater")
