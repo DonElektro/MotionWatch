@@ -82,7 +82,7 @@ const ACTIONS := [["tv_mode", "📺 TV-Modus für den Spielabend (Taste T)"], ["
 # 3D-3.90: four game types with a use for MoveEye first; the others (true = old) only with «Experte»
 const MODES := [["mw", "🛡", "Gegen MoveEye", "Die echte Erkennung von MoveEye passt auf: Meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht. Was MoveEye verpasst, kommt ins Training und auf die Karte der blinden Flecken."],
 		["guard", "👮", "Wächter", ""],   # the text: gamerules.gd GUARD_TXT (model, _rules)
-		["seek", "🙈", "Verstecken mit dem Rover", "Alle starten bei der Basis und verstecken sich 30 s lang. Der Fänger sieht nur die Kamera, fährt den Rover und drückt «Gefunden!». Wer die Basis berührt, rettet alle. Danach steht MoveEye wieder am alten Ort."],
+		["seek", "🙈", "Verstecken mit dem Mover", "Alle starten bei der Basis und verstecken sich 30 s lang. Der Fänger sieht nur die Kamera, fährt den Mover und drückt «Gefunden!». Wer die Basis berührt, rettet alle. Danach steht MoveEye wieder am alten Ort."],
 		["free", "🧪", "Zonen-Check", "Ohne Erwischen: geh die Grenzen deiner Zonen und die Wege ums Zelt ab. Das Handy sagt laufend, ob MoveEye dich sieht – jede Stelle, wo es dich nicht meldet, kommt auf die Karte der blinden Flecken."],
 		["escape", "🏃", "Entkomme der Kamera", "Ein Spieler steuert im Verfolgungs-Parcours eine Figur mit dem Stick (Handy, Controller oder Fenster) und versucht, aus dem Bild von MoveEye zu kommen. Eine Runde dauert 60 Sekunden. Punkte gibt es für die Zeit ausserhalb des Bilds und für jeden Verlust, den du verursachst. Die Punkte zählen in der Rangliste des Abends – und MoveEye lernt, besser zu folgen."],   # 3D-4.18 (Daniel): also in the wizard (parcours.gd)
 		["jaeger", "🦊", "Fehlalarm-Jäger", "Ihr seid keine Menschen, sondern Fuchs, Katze, Ast im Wind, Lampe, Ballon … Schafft ihr es, dass MoveEye trotzdem «Person!» meldet? Jeder Fehlalarm gibt Punkte – und MoveEye lernt daraus. Nur mit MoveEye."],
@@ -468,7 +468,7 @@ func model() -> Dictionary:
 		if key == "game_mode" and c[0] == "guard":
 			tx = Rules.GUARD_TXT                           # Balance: the one guard text (shutter, energy)
 		if key == "game_mode" and c[0] in ["mwhand", "patrol", "seek"] and _real():
-			tx += " ⚠ Nur Simulator: braucht einen drehbaren Kopf, den Mover oder den Rover."
+			tx += " ⚠ Nur Simulator: braucht einen drehbaren Kopf oder den Mover."
 		if key == "game_mode" and c[0] == "jaeger" and not main.game.jaeger.mw_on():
 			tx += " ⚠ MoveEye ist gerade nicht verbunden."
 		cards.append({"v": c[0], "icon": c[1], "title": c[2], "text": tx, "on": on, "pic": Pics.PICS.get(c[0], "")})

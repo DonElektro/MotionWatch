@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.9.0"
+const VERSION := "3.9.1"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const T := preload("res://scripts/i18n.gd")              # Menüs A: new texts of the panel in the language (Sprachen)
@@ -4214,7 +4214,7 @@ func _register_controls() -> void:
 	preload("res://scripts/ferienpark_leben.gd").add_controls(self)   # Ferienpark-Leben: 3 tasks (Spiel → Entdecken) + «Leben nach Uhrzeit» (Besuch → Von selbst)
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
-			{"options": [["mw", "Gegen MoveEye (echte Erkennung)"], ["guard", "Wächter (ein Spieler oder der Bot-Wächter)"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"], ["free", "Zonen-Check – ohne Erwischen (zum Testen der Erkennung)"], ["jaeger", "Fehlalarm-Jäger – Tiere und Dinge täuschen MoveEye (nur mit MoveEye)"], ["camera", "ältere: Alle gegen die Kamera"], ["mwhand", "ältere: Team gegen MoveEye (Wächter steuern MoveEye)"], ["patrol", "ältere: Patrouille mit dem Mover"]]})
+			{"options": [["mw", "Gegen MoveEye (echte Erkennung)"], ["guard", "Wächter (ein Spieler oder der Bot-Wächter)"], ["seek", "Verstecken mit dem Mover (Fänger sieht nur die Kamera)"], ["free", "Zonen-Check – ohne Erwischen (zum Testen der Erkennung)"], ["jaeger", "Fehlalarm-Jäger – Tiere und Dinge täuschen MoveEye (nur mit MoveEye)"], ["camera", "ältere: Alle gegen die Kamera"], ["mwhand", "ältere: Team gegen MoveEye (Wächter steuern MoveEye)"], ["patrol", "ältere: Patrouille mit dem Mover"]]})
 	# Balance 30.10.2026: two levels, ONE text (gamerules.gd LEVEL_TXT / GLEVEL_TXT - the same as in the wizard)
 	add_control("select", "game_level", "Schleicher-Stufe (wie schnell die Kamera / MoveEye dich bemerkt)", func(): return game_level, func(v): game_level = v, "Spiel",
 			{"options": preload("res://scripts/gamerules.gd").level_options()})
@@ -7806,7 +7806,7 @@ var place_kind := ""                  # chosen in the pictures of the visitors: 
 
 
 func _place(p: Vector2) -> void:
-	if place_kind == "rover":                          # 3D-3.60: «Rover versetzen» - the next click puts it there
+	if place_kind == "rover":                          # 3D-3.60: «Mover versetzen» - the next click puts it there
 		place_rover_at(p)
 		place_kind = ""
 		_paint_palette()
@@ -8857,7 +8857,7 @@ func _spec_free(pos: Vector3, at: Vector3) -> Vector3:
 
 func _spec_targets() -> Array:
 	"""what the spectator can show while exploring: the rover and the players moving freely - [name, node, moving]"""
-	var out := [["Rover", rig, abs(_pad_l) + abs(_pad_r) > 0.05]]
+	var out := [["Mover", rig, abs(_pad_l) + abs(_pad_r) > 0.05]]
 	if game != null:
 		for p in game.players:
 			if p != null and p["state"] == "play":

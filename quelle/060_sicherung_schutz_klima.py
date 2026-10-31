@@ -342,6 +342,13 @@ class TamperGuard:
         if not is_armed() or now - self.cool < 120:
             return
         self.cool = now
+        if what in ("moved", "knocked", "power"):           # the device itself moves: + its position, if the GPS has a fix (280)
+            try:
+                mp_ = gps_map_link()
+            except NameError:
+                mp_ = ""
+            if mp_:
+                full += " · " + tr("Position") + ": " + mp_   # 635b sends the map link complete (never cut)
         w = WATCH_REF["w"]
         if w is not None:
             w.notifier.tamper(full, w.frame_out)
@@ -1081,20 +1088,25 @@ class Notifier:
     def _text(p):
         return push_short(p)["text"]                      # 635b: at most one line (distance, «+n», «late» included)
 
+    @staticmethod
+    def _sms(p):
+        return push_sms_text(Notifier._title(p), Notifier._text(p), p)    # 635b: with the complete map link (theft, position)
+
     def _dispatch(self, p, jpg, fname):
         if sim_net_down():                               # Simulator-Werte: «WLAN weg» / «Internet weg» test - nothing goes out (285)
             return simnet_hold(self, p, jpg, fname)
         if sandbox_active() or p.get("_test"):           # 2.96.6: simulator test inbox - nobody is disturbed (141); 2.97.0: per message
-            sandbox_add(self._title(p), self._text(p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
-            msglog_add(self._title(p), self._text(p), self._event(p), jpg, "test", "Test-Postfach")    # 2.98.13: list «Nachrichten»
+            sandbox_add(self._title(p), push_with_map(self._text(p), p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
+            msglog_add(self._title(p), push_with_map(self._text(p), p, " · "), self._event(p), jpg, "test", "Test-Postfach")    # 2.98.13: list «Nachrichten»
             return
         if push_sim_hold(p):                             # 635b: in the simulation only alarms to the phone (switch sim_info_push)
-            msglog_add(self._title(p), self._text(p), "info", jpg, "none", "🧪 Simulator")
+            msglog_add(self._title(p), push_with_map(self._text(p), p, " · "), "info", jpg, "none", "🧪 Simulator")
             return
         if CFG["webpush_on"] and webpush_subs():
             threading.Thread(target=self._webpush, args=(p,), daemon=True).start()
         if CFG["users"]:                                 # 2.98.42: own ntfy topics of the users (041)
-            users_push_dispatch(self._title(p), self._text(p), push_cat("mw-" + self._event(p)))
+            mp_ = push_map(p)                            # 635b: the map - Click + a short line (like ntfy)
+            users_push_dispatch(self._title(p), self._text(p) + ("\n" + push_map_line() if mp_ else ""), push_cat("mw-" + self._event(p)), mp_)
         if pushover_ready():
             threading.Thread(target=self._pushover, args=(p, jpg, fname), daemon=True).start()
         ev = self._event(p)
@@ -1106,9 +1118,9 @@ class Notifier:
         if CFG["sms_on"] and ev in ("person", "tamper", "warm", "noise", "test") and sms_numbers():
             offline = STATE.get("net", {}).get("online") is False
             if not CFG["sms_only_offline"] or offline or not self.main_configured() or ev == "test":
-                threading.Thread(target=lambda: sms_send(self._title(p) + ": " + self._text(p), force=ev == "test"), daemon=True).start()
+                threading.Thread(target=lambda: sms_send(self._sms(p), force=ev == "test"), daemon=True).start()
         if not self.main_configured():
-            msglog_add(self._title(p), self._text(p), ev, jpg, "none", "")
+            msglog_add(self._title(p), push_with_map(self._text(p), p, " · "), ev, jpg, "none", "")
             return
         kind, secret = CFG["notify_type"], CFG["telegram_token"]
         alarm = ev in ("person", "tamper", "warm", "noise")
@@ -1118,7 +1130,7 @@ class Notifier:
                 code, where = self._send_main(p, jpg, fname)
                 STATE["notify_status"] = f"sent {datetime.now().strftime('%H:%M:%S')} (HTTP {code})"
                 log_event("web", f"Notification sent to {where} (HTTP {code})" + (f" - attempt {k_ + 1}" if k_ else ""))
-                msglog_add(self._title(p), self._text(p), ev, jpg, "sent", where.split(" ")[0])
+                msglog_add(self._title(p), push_with_map(self._text(p), p, " · "), ev, jpg, "sent", where.split(" ")[0])
                 return
             except Exception as e:
                 msg = str(e).replace(secret, "***") if secret else str(e)
@@ -1131,11 +1143,11 @@ class Notifier:
                     pass
                 if k_ + 1 < tries:
                     time.sleep(5 if k_ == 0 else 10)
-        msglog_add(self._title(p), self._text(p), ev, jpg, "failed", kind)
+        msglog_add(self._title(p), push_with_map(self._text(p), p, " · "), ev, jpg, "failed", kind)
         # all attempts failed: the SMS (if it was held back for "only when offline") goes out now
         if alarm and CFG["sms_on"] and CFG["sms_only_offline"] and sms_numbers() and STATE.get("net", {}).get("online") is not False:
             log_event("web", "Push message could not be sent - SMS instead")
-            sms_send(self._title(p) + ": " + self._text(p))
+            sms_send(self._sms(p))
         if alarm and not p.get("late"):
             outbox_add(p, jpg, fname)                    # 2.95.35: kept on the card and sent as soon as it works
 
@@ -1151,7 +1163,7 @@ class Notifier:
         if push_url_is_ntfy(url):                        # 635b: an ntfy address in the webhook card - as ntfy, not as JSON
             return self._ntfy(p, jpg, fname), "ntfy " + _url_host(url)
         body_ = dict(p, title=self._title(p), text=self._text(p), info_title=self._title(p) if p.get("info_title") else "",
-                     text_full=push_long(p))              # K2: the short form in «text», the complete text for own automations
+                     text_full=push_long(p), map=push_map(p))    # K2: the short form in «text», the complete text for own automations
         req = urllib.request.Request(url, data=json.dumps(body_, ensure_ascii=False).encode(),
                                      headers={"Content-Type": "application/json", "Title": _hdr(self._title(p))})
         with urllib.request.urlopen(req, timeout=8) as r:
@@ -1163,10 +1175,12 @@ class Notifier:
         alarm = ev in ("person", "warm", "noise", "tamper")
         prio = 2 if alarm and CFG["pushover_emergency"] else (1 if alarm or ev == "test" else (-1 if ev == "info" else 0))
         f = {"token": CFG["pushover_token"].strip(), "user": CFG["pushover_user"].strip(), "title": self._title(p)[:250],
-             "message": self._text(p)[:1000] or self._title(p), "priority": str(prio)}
+             "message": push_with_map(self._text(p), p)[:1000] or self._title(p), "priority": str(prio)}
         if prio == 2:
             f.update(retry="60", expire="1800")                 # every minute again, at most 30 minutes, until confirmed
-        if p.get("link"):
+        if push_map(p):                                         # 635b: the map is the link of a message with a position
+            f.update(url=push_map(p)[:500], url_title=push_map_line()[:100])
+        elif p.get("link"):
             f.update(url=p["link"][:500], url_title="MoveEye")
         b = uuid.uuid4().hex; parts = []
         for k, v in f.items():
@@ -1223,7 +1237,7 @@ class Notifier:
         if email_ready():
             run("E-Mail", lambda: email_send(self._title(p), push_long(p), jpg, "test.jpg"))
         if CFG["sms_on"] and sms_numbers():
-            run("SMS", lambda: sms_send(self._title(p) + ": " + self._text(p), force=True))
+            run("SMS", lambda: sms_send(self._sms(p), force=True))
         if CFG["webpush_on"] and webpush_subs():
             def wp_():
                 n = webpush_all(self._title(p), self._text(p), "/", tag="mw-test", urgent=True); return n > 0, f"{n} device(s)"
@@ -1241,7 +1255,7 @@ class Notifier:
     def _webpush(self, p):
         ev = self._event(p)
         try:
-            n = webpush_all(self._title(p), self._text(p), "/" if ev != "info" else (p.get("link") or "/"), tag="mw-" + ev,
+            n = webpush_all(self._title(p), push_with_map(self._text(p), p), push_map(p) or ("/" if ev != "info" else (p.get("link") or "/")), tag="mw-" + ev,
                             urgent=ev in ("person", "warm", "noise", "test", "tamper"))
             log_event("web", f"Web push sent to {n} device(s)")
         except Exception as e:
@@ -1254,8 +1268,9 @@ class Notifier:
              "Priority": {"person": "high", "warm": "high", "noise": "high", "prealarm": "default", "tamper": "urgent"}.get(ev, "default")}
         if CFG.get("msg_icons", True):                   # 635b: the symbol is in the title - no second emoji from the tags
             h.pop("Tags")
-        if p["link"]:
-            h["Click"] = p["link"]
+        mp_ = push_map(p)
+        if mp_ or p["link"]:
+            h["Click"] = mp_ or p["link"]                # 635b: a message with a position opens the map
         try:
             acts = alx_ntfy_actions(p)                   # 2.98.13: buttons «False alarm · Siren · Off» (066)
         except Exception:
@@ -1263,6 +1278,8 @@ class Notifier:
         if acts:
             h["Actions"] = _hdr(acts)
         text = self._text(p)
+        if mp_:                                          # 635b: + a short line «📍 Open map» (in the header: one line, « · »)
+            text += (" · " if jpg else "\n") + push_map_line()
         if jpg:
             h["Filename"] = fname; h["Message"] = _hdr(text); h["Content-Type"] = "image/jpeg"
             req = urllib.request.Request(CFG["notify_url"].strip(), data=jpg, headers=h, method="PUT")
@@ -1273,7 +1290,7 @@ class Notifier:
 
     def _telegram(self, p, jpg, fname):
         base = f"{TELEGRAM_API}/bot{CFG['telegram_token']}"
-        body_txt = self._text(p)
+        body_txt = push_with_map(self._text(p), p)        # 635b: the complete map link of a message with a position
         text = self._title(p) + "\n" + body_txt + (("\n" + p["link"]) if p["link"] and p["link"] not in body_txt else "")
         try:
             mk = None if p.get("_no_kb") else alx_telegram_markup(p)    # 2.98.13: link buttons (066)

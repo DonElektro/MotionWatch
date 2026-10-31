@@ -352,7 +352,7 @@ def push_test_one(w, ch):
         if ch == "email":
             return email_send(n._title(p), n._text(p), jpg, "test.jpg") if email_ready() else (False, tr("not set up"))
         if ch == "sms":
-            return sms_send(n._title(p) + ": " + n._text(p), force=True) if (CFG["sms_on"] and sms_numbers()) else (False, tr("not set up"))
+            return sms_send(n._sms(p), force=True) if (CFG["sms_on"] and sms_numbers()) else (False, tr("not set up"))
         if ch == "webpush":
             k = webpush_all(n._title(p), n._text(p), "/", tag="mw-test", urgent=True) if CFG["webpush_on"] else 0
             return k > 0, f"{k} device(s)"

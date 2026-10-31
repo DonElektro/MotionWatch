@@ -784,7 +784,7 @@ const JS := r"""window.MWPad = window.MWPad || (function () {
              "l2": "L2", "r2": "R2", "select": "Select", "select_long": "Select ⏱", "start": "Start", "start_long": "Start ⏱", "l3": "L3", "r3": "R3"},
     "modes": {
       "sim": [["ls", "head", "Turn / tilt the head of MoveEye", "Kopf von MoveEye drehen / neigen"],
-              ["rs", "drive", "Drive the rover (without rover: move the view)", "Rover fahren (ohne Rover: Ansicht bewegen)"],
+              ["rs", "drive", "Drive the mover (without mover: move the view)", "Mover fahren (ohne Mover: Ansicht bewegen)"],
               ["r1rs", "orbit", "Hold R1: turn the view", "R1 halten: Ansicht drehen"],
               ["r2", "shutter", "Shutter in a game round (otherwise zoom in)", "Auslöser in einer Spielrunde (sonst hineinzoomen)"],
               ["l1", "zoom_out", "Zoom out", "Herauszoomen"], ["r1", "zoom_in", "Tap R1: zoom in", "R1 tippen: hineinzoomen"],
@@ -796,7 +796,7 @@ const JS := r"""window.MWPad = window.MWPad || (function () {
               ["dpad", "head", "Head in small steps", "Kopf in kleinen Schritten"],
               ["l2", "pole", "Hold L2 + ✚ ↑↓: camera higher / lower", "L2 halten + ✚ ↑↓: Höhe der Kamera + / −"]],
       "view": [["ls", "head", "Turn / tilt the head of MoveEye", "Kopf von MoveEye drehen / neigen"],
-               ["rs", "drive", "Drive the rover (without rover: move the view)", "Rover fahren (ohne Rover: Ansicht bewegen)"],
+               ["rs", "drive", "Drive the mover (without mover: move the view)", "Mover fahren (ohne Mover: Ansicht bewegen)"],
                ["r1rs", "orbit", "Hold R1: turn the view", "R1 halten: Ansicht drehen"],
                ["r2", "shutter", "Shutter in a game round (otherwise zoom in)", "Auslöser in einer Spielrunde (sonst hineinzoomen)"],
                ["l1", "zoom_out", "Zoom out", "Herauszoomen"], ["r1", "zoom_in", "Tap R1: zoom in", "R1 tippen: hineinzoomen"],
@@ -818,7 +818,7 @@ const JS := r"""window.MWPad = window.MWPad || (function () {
                 ["start", "menu", "Pause menu · start the round", "Pause-Menü · Runde starten"], ["start_long", "exit", "Hold 1 s: leave the game", "1 s halten: Spiel verlassen"],
                 ["dpad", "head", "Head in steps · menus: choose", "Kopf in Schritten · Menüs: wählen"]],
       "seek": [["ls", "head", "Turn / tilt the head (the camera)", "Kopf (die Kamera) drehen / neigen"],
-               ["rs", "drive", "Drive the rover", "Rover fahren"],
+               ["rs", "drive", "Drive the mover", "Mover fahren"],
                ["a", "light", "Light", "Licht"], ["x", "catch", "«Found!»", "«Gefunden!»"],
                ["l3", "center", "Head back to the start direction", "Kopf zurück in die Startrichtung"],
                ["select", "replay", "Replay (after the round)", "Wiederholung (nach der Runde)"],
@@ -836,7 +836,7 @@ const JS := r"""window.MWPad = window.MWPad || (function () {
                ["b", "back", "Back / close", "Zurück / schliessen"], ["l1", "area", "L1 / R1: control panel ⇄ dock", "L1 / R1: Bedienfeld ⇄ Leiste"],
                ["start", "close", "Close the menu", "Menü schliessen"]]},
     "roles": {"all": ["everything", "alles", "#c0ccdd"], "guard": ["guard (head)", "Wächter (Kopf)", "#ff9933"],
-              "runner": ["sneaker", "Schleicher", "#59e673"], "rover": ["rover", "Rover", "#59a6ff"]},
+              "runner": ["sneaker", "Schleicher", "#59e673"], "rover": ["mover", "Mover", "#59a6ff"]},
     "rumble": {"caught": [1.0, 0.8, 500], "hit": [0.7, 0.5, 250], "alarm": [0.9, 0.6, 800], "seen": [0.25, 0.35, 120], "catch": [0.5, 0.7, 200]},
     "long": {"start": 800, "select": 1500}
   }/*END*/;
