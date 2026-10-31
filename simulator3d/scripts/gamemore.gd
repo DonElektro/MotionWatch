@@ -899,7 +899,7 @@ const PHONE_JS := r"""<style>
 #gmpr ol{margin:4px 0 0;padding-left:18px}#gmpr li.ok{color:#34c759}#gmpr li.now{color:#ffd966;font-weight:700}
 #gmpr button{background:#151e2b;color:#e6edf3;border:1px solid #1f2b3a;border-radius:10px;padding:6px 10px;font-size:13px;margin-top:4px}
 .gmbk{width:46px;flex:none;line-height:0}.gmbk svg{width:100%;height:auto;display:block;overflow:visible}
-.gmbk .f{fill:#ff9f43;opacity:.85}.gmbk .s{fill:#fff}.gmbk .i{fill:#ff9f43}.gmbk .p{fill:#0a0e14}.gmbk .r{fill:none;stroke:#e8590c;stroke-width:2.6}
+.gmbk .ft{fill:#e8590c}.gmbk .s{fill:#fff}.gmbk .i{fill:#ff9f43}.gmbk .p{fill:#0a0e14}.gmbk .r{fill:none;stroke:#e8590c;stroke-width:2.6}
 .gmbk .l{fill:#e8590c;transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0);animation:gmbl 4.8s infinite}
 @keyframes gmbl{0%,90%,100%{transform:scaleY(0)}93%,94.5%{transform:scaleY(1)}}
 @media (prefers-reduced-motion:reduce){.gmbk .l{animation:none}}
@@ -910,7 +910,7 @@ const PHONE_JS := r"""<style>
 // «Gameplay ausfeilen» (gamemore.gd): Probe-Runde mit Blinki, Wiederholung beim Erwischen, Höhepunkte - one script more
 (function () {
   const G = window.GM = window.GM || {};
-  const BK = '<svg viewBox="0 0 100 112"><path class="f" d="M50 80 L10.6 29.6 A64 64 0 0 1 89.4 29.6 Z"/><circle class="s" cx="50" cy="80" r="17"/><circle class="i" cx="50" cy="80" r="10.5"/><circle class="p" cx="50" cy="80" r="5.2"/><rect class="l" x="32" y="62" width="36" height="36"/><circle class="r" cx="50" cy="80" r="17"/></svg>';
+  const BK = '<svg viewBox="26 59 48 52"><ellipse class="ft" cx="39" cy="105.5" rx="7.5" ry="3.8"/><ellipse class="ft" cx="61" cy="105.5" rx="7.5" ry="3.8"/><circle class="s" cx="50" cy="80" r="17"/><circle class="i" cx="50" cy="80" r="10.5"/><circle class="p" cx="50" cy="80" r="5.2"/><circle class="l" cx="50" cy="80" r="16.6"/><circle class="r" cx="50" cy="80" r="17"/></svg>';
   G.blinki = BK;
   let prSig = "";
   function probe(m) {
