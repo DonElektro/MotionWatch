@@ -57,8 +57,9 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   - los: nach halt weiter
   - bild: aktuelle Bilder vom letzten Paket
   - lang: nächste Antwort ausführlich
+  - x: die Liste der Kurzzeichen kurz anzeigen (ohne Nachfrage)
 
-  Ausser bei st kurz nachfragen, was genau gemeint ist, bevor gehandelt wird.
+  Ausser bei st und x kurz nachfragen, was genau gemeint ist, bevor gehandelt wird.
 - **Arbeit verteilen (Daniel, 31.10.2026 04:24):** grössere Aufträge in möglichst viele unabhängige Pakete aufteilen und
   parallel an Helfer geben – bevorzugt Helfer auf eigenen Cloud-Rechnern (Agent mit isolation "remote"), damit der lokale
   Rechner nicht überlastet. Jeder Helfer: eigener Zweig, kein Release, keine Rückfragen bei bestätigten Paketen; zusammengeführt

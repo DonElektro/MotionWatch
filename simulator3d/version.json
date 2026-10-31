@@ -1,9 +1,9 @@
 {
- "version": "3D-5.17.0",
- "ver": "3.17.0",
- "name": "MoveEye Sim 3.17.0",
+ "version": "3D-5.18.0",
+ "ver": "3.18.0",
+ "name": "MoveEye Sim 3.18.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35521369,
- "sha256": "9d19893a617f5c61c843f1b550d0b62bd125c56869fa1399e610fc6533c468fd",
- "notes": "MoveEye Sim 3.17.0: Notfall-Start, Fehlerbericht sammeln, weniger Grafikspeicher, zweiter Simulator auf Port 8768."
+ "size": 35526200,
+ "sha256": "cd1173ea38171c90dac65357451544e38e98d5864d4caebc1346617d5c239789",
+ "notes": "MoveEye Sim 3.18.0: Figuren und Tiere mit echten Gelenken und natürlicherem Gang."
 }
