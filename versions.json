@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 21:06",
+ "generated": "2026-10-31 21:47",
  "versions": [
   {
-   "version": "3.15.0",
-   "file": "webcam_bewegung_3_15_0.py",
+   "version": "3.15.1",
+   "file": "webcam_bewegung_3_15_1.py",
    "url": "",
-   "sha256": "e0e0c97323434e0b32b5f4f8e9c787c527849886189d75ea79915570b8c6a219",
-   "date": "2026-10-31 21:05",
-   "notes": "Simulator 3.15.0: Maggie sieht aus wie das echte Vorbild (weiss mit brauner Rückenplatte, brauner Kopf mit Blesse, Kippohren, wedelnder Schwanz, hohe Beine), bei jedem Start gleich.",
-   "size": 4416027,
-   "sig": "9fc14dd2a1e592b56967e2c6fe90ecec4bca07f90bcbea65cd094bb5e7c2493dc154acc2c6247fe6508c3c3ebf14c65278b1b69c95aab796024ffe7cf262740e",
+   "sha256": "3799a900bdeb602ca132554bdafbcd676cfe9ab0ec759ea6c928f736421436bc",
+   "date": "2026-10-31 21:47",
+   "notes": "Live → Bedienung: in der Simulation sind Tempo, ⇆, 🚜, Mitte, Kalibrieren und Wegpunkte ausgeblendet (auch im Pi-Fenster), beim echten Live-Bild sichtbar; das Simulations-Band erscheint sofort.",
+   "size": 4417225,
+   "sig": "849622d0db218415d5d061a5edd03288ea9e6e45ec8e45210b8f154967ddbf4275a90e8795d3255162cb9005fd36613b5cfa0b7f03477c603d27e357bc8a0b09",
    "data": {
-    "file": "moveeye_daten_3_15_0.zip",
+    "file": "moveeye_daten_3_15_1.zip",
     "url": "",
-    "sha256": "2491b76c3fb81810c3b98eb7471865b8a1acfcd669afb87f61fa36a83636bc65",
-    "size": 1612621,
-    "sig": "4f55d99d77df5c87aa78c3d9a37ef24e35e2aa0f12df0110668eb70bf3a5e71ce5d2e58a0c27fd5e01ac3b7c4f1e361cd85f27975893ff3770070c1427db600f"
+    "sha256": "c64a903dec79fafc9b39b90794385bc97f07cdccca3a0431f83e32fd33eb766f",
+    "size": 1612903,
+    "sig": "0b14ddda50f7a09e375aa0e060c043f1481dab3c5117504d5b1620cff1e3397f9d62671aec6ca1aa3d428757e8caf74976bffdf7d750d629d50b59e7f22c3c08"
    }
   },
   {

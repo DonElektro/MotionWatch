@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.15.1: Live → Bedienung: in der Simulation sind Tempo, ⇆, 🚜, Mitte, Kalibrieren und Wegpunkte ausgeblendet (auch im
+    Pi-Fenster), beim echten Live-Bild sichtbar; das Simulations-Band erscheint sofort.
   * 3.15.0: Simulator 3.15.0: Maggie sieht aus wie das echte Vorbild (weiss mit brauner Rückenplatte, brauner Kopf mit Blesse,
     Kippohren, wedelnder Schwanz, hohe Beine), bei jedem Start gleich.
   * 3.14.0: Simulator 3.14.0: Karte des Grossvaters – Geheimnisse (Steinmännchen mit Geheimwort, doppelter Boden, Licht auf der
@@ -91,8 +93,6 @@ Features
     Kopie, dann zurücksetzen und neu starten; Horror-Passwort, Sprache, Inhalte und Entwicklerdaten bleiben.
   * 2.98.113: Simulator 3D-4.82: Bergtal-Abenteuer – Tagebuch wird vorgelesen, Kamerafahrt, Jahreszeit wählbar, 3 Spielstände
     mit Weiterspielen, Blinki-Tipps, gemeinsames Level, Kinder-Modus, Ausblick auf Teil 2.
-  * 2.98.112: Simulator 3D-4.81: Figuren ziehen sich nach Jahreszeit an (Winter, Nacht, Berg, Regen lang mit Jacke; Sommer
-    gemischt), Paket-Figuren ohne durchscheinende Beine, im Wärmebild ist Haut wärmer als Kleidung.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -101,10 +101,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_15_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_15_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_15_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_15_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_15_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_15_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -121,7 +121,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.15.0"
+APP_VERSION = "3.15.1"
 
 
 def default_data_dir():
@@ -243,8 +243,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_15_0.zip"
-ZD_SHA256 = "2491b76c3fb81810c3b98eb7471865b8a1acfcd669afb87f61fa36a83636bc65"
+ZD_FILE = "moveeye_daten_3_15_1.zip"
+ZD_SHA256 = "c64a903dec79fafc9b39b90794385bc97f07cdccca3a0431f83e32fd33eb766f"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -11008,6 +11008,8 @@ def makeover_head():
           "if(on&&!b&&document.body){b=document.createElement('div');b.className='mwsimbar';b.title='MoveEye';const s=document.createElement('span');b.appendChild(s);document.body.prepend(b);}"
           "if(b){b.hidden=!on;b.firstChild.textContent='🧪 '+(TX[L()]||TX.en);}};"
           "document.addEventListener('DOMContentLoaded',paint);"
+          # 3.16: the main page knows sim_on from its state every few seconds -> the stripe follows at once (not only every 15 s)
+          "window.mwSimMark=v=>{v=!!v;if(v!==on){on=v;paint();}};"
           "setInterval(async()=>{try{const r=await (await fetch('/api/simbar')).json();if(r.on!==on){on=r.on;}paint();}catch(e){}},15000);setTimeout(paint,1500);"
           # 2.97.0: switch the simulation; armed -> ask «disarm and simulate?» first (sim_set needs confirm)
           "window.mwSimSet=async(v,lang)=>{const P=b=>fetch('/api/sim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(x=>x.json()).catch(()=>({}));"
@@ -24553,8 +24555,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.15.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 35410825,
-         "sha256": "ee021219fe9c004cccb86fc8f3d30d91651a6ab6e633bebdf8db38837a516eb3"}
+SIM3D = {"version": "3.15.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 35411002,
+         "sha256": "7067cc3638fb2d9c5f89867473bc35e1c84a51769f70a67c31e6b3a96be718a0"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -30562,7 +30564,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_15_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_15_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -48603,7 +48605,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.15.0")
+        self.root.title("MoveEye 3.15.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -48974,7 +48976,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.15.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.15.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -49314,6 +49316,7 @@ class App:
         wide = self._lay[2] and not side_col             # wide: stick | small things | quick switches in one row
         left_w = self._win_w() - self._lay[1] - 60
         tiny = side_col or (not wide and left_w < 520)   # very narrow: small things beside the stick, switches below both
+        self._ctl_sim = simh = bool(CFG.get("sim_on"))  # 3.16: simulation = no speed, ⇆, centre, calibrate, waypoints (like the web page)
         head = self._tk_head()                           # 2.98.26: joystick, centre, calibrate, waypoints only with a pan / tilt head (2.98.29: «Ansicht» → Joystick always / never)
         u = self._tk_ui()
         bar = tk.Frame(f, bg=C["panel"]); bar.pack(fill="x")
@@ -49373,14 +49376,17 @@ class App:
             for _, short, cmd, tip in btns:
                 self._fbtn(side, short, cmd, tip).pack(side="left", padx=(6, 0))
             swb(side).pack(side="left", padx=(6, 0))
-        if not head:
+        if not head or simh:
             side.grid_remove()
+        if not head and not simh:
             tk.Label(bar, text=tr("no pan / tilt head - joystick hidden (Settings → Camera / Servos → Servo driver)"), bg=C["panel"], fg=C["mut"],
                      font=("DejaVu Sans", 8), wraplength=360, justify="left").grid(row=3, column=0, columnspan=4, sticky="w")
-        self.l_ctl_status = tk.Label(side if wide else bar, text="", bg=C["panel"], fg=C["yel"], font=("DejaVu Sans", 8), wraplength=200 if wide else 400,
+        self.l_ctl_status = tk.Label(side if wide and not simh else bar, text="", bg=C["panel"], fg=C["yel"], font=("DejaVu Sans", 8), wraplength=200 if wide else 400,
                                      justify="left")
-        if wide:
+        if wide and not simh:
             self.l_ctl_status.pack(anchor="w", pady=(6, 0))
+        elif wide:
+            self.l_ctl_status.grid(row=1, column=0, columnspan=4, sticky="w")
         else:
             self.l_ctl_status.grid(row=2, column=0, columnspan=4, sticky="w")
         # 3) quick switches, the waypoints below
@@ -49390,7 +49396,7 @@ class App:
         elif tiny:
             qf.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(8, 0)); bar.columnconfigure(c_sd, weight=1); cols = 5
         else:
-            qf.grid(row=1, column=c_sd, sticky="new", padx=(0, 14) if swap else (14, 0), pady=(8, 0)); bar.columnconfigure(c_sd, weight=1)
+            qf.grid(row=0 if simh else 1, rowspan=2 if simh else 1, column=c_sd, sticky="new", padx=(0, 14) if swap else (14, 0), pady=(8, 0)); bar.columnconfigure(c_sd, weight=1)
             cols = 5 if left_w - 170 >= 380 else 4
         grid = tk.Frame(qf, bg=C["panel"]); grid.pack(fill="x")
         for k in range(cols):
@@ -58791,6 +58797,8 @@ WEB_PAGE = WEB_PAGE.replace("/*KIHDE*/{}", json.dumps({_k: _v[0] for _k, _v in _
 # are not used then. The web side is in 541 (servo_client_state "sim" → #srv-stop hidden); the setting servo_stop_btn stays for
 # the real hardware. Here the window: every «⏹ Stopp» made by App._fbtn with the command _srv_estop_btn (570, all three
 # layouts of the camera bar) is remembered and taken off / put back by App._refresh (it runs every few seconds).
+# 3.16 (Daniel 31.10.2026): in the simulation the whole small column (speed, ⇆, centre, calibrate, waypoints) is left out
+# (570 _build_controls, flag self._ctl_sim); _refresh builds the tab again when the simulation is switched.
 # ----------------------------------------------------------------------------
 
 _ss_fbtn_before = App._fbtn
@@ -58851,6 +58859,13 @@ def _ss_refresh(self, *a, **k):
     r = _ss_refresh_before(self, *a, **k)
     try:
         _ss_stop_show(self)
+    except Exception:
+        pass
+    try:                                                 # 3.16: simulation switched -> build the camera bar again (570 _build_controls)
+        if hasattr(self, "_ctl_sim") and self._ctl_sim != bool(CFG.get("sim_on")) and self.tab is not None:
+            self._ctl_sim = bool(CFG.get("sim_on"))
+            tid, self.tab = self.tab, None
+            self.root.after(10, lambda: self._tab(tid))
     except Exception:
         pass
     return r

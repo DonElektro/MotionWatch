@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.15.0** · MoveEye **3.15.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.15.1** · MoveEye **3.15.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.15.1 (MoveEye 3.15.1): Live-Bedienung in der Simulation (nur MoveEye)
+
+- Simulator-Code unverändert. MoveEye 530 / 536 / 138 / 570 / 595: in der Simulation Tempo, ⇆, 🚜, Mitte, Kalibrieren und
+  Wegpunkte ausgeblendet (Web und Pi-Fenster), beim echten Live-Bild sichtbar; Simulations-Band sofort.
 
 ## NEU in 3.15.0 (MoveEye 3.15.0): Maggie sieht aus wie Daniels Hund
 
