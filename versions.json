@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 22:19",
+ "generated": "2026-10-31 22:33",
  "versions": [
+  {
+   "version": "3.19.0",
+   "file": "webcam_bewegung_3_19_0.py",
+   "url": "",
+   "sha256": "69f4a59753183be6f5e7dca70f359ccdfc0216283870f7bab8c0cc5c6c8806df",
+   "date": "2026-10-31 22:33",
+   "notes": "Simulator 3.19.0: Trailer (ca. 3 Min.) zu «Die Karte des Grossvaters» und «Maggie und der Bergkristall»; Karte «🛠 Entwickler» oben im Reiter «Sim» mit Trailer Grossvater, Trailer Maggie und Vorführung (live im Browser).",
+   "size": 4432151,
+   "sig": "da56334db7bfb7312fb5f9ebf36c1640d7f66e00ccc0e78c225507406f7ed702cedbf03a8f7ba77445b3a125473c2db818a32e524a494c5f963b0bbbd2964f08",
+   "data": {
+    "file": "moveeye_daten_3_19_0.zip",
+    "url": "",
+    "sha256": "85a695cbf71ac72368c299b3a8ddcd153704c32404df5cc177dc7c123d9ab947",
+    "size": 1614162,
+    "sig": "cabdbd72f5fcf1325d58cfc1c01a9838dbaa237544683d4d1a3f4b635f7ab999ab6dcf733ec000f7bed09fb02021cc535ace96ac9f8f118d6c78f99e650ec10d"
+   }
+  },
   {
    "version": "3.18.0",
    "file": "webcam_bewegung_3_18_0.py",
    "url": "",
    "sha256": "c7529050a3d1a2c698585cc0a99ce436a05583e1997fc5be9aeb267e07857bdd",
-   "date": "2026-10-31 22:19",
+   "date": "2026-10-31 22:23",
    "notes": "Simulator 3.18.0: Figuren und Tiere mit echten Gelenken (Knie, Ellbogen, Schultern, Hüfte, Sprunggelenk) und natürlicherem Gang, Füsse bleiben am Boden.",
    "size": 4421404,
    "sig": "006fb23f3e3f9ecd4c4472925d55cd0e9649ff415398954c8540e6263b07f74b21fe2c07e2292b12099dc05252fad31921574cfb33db2e7b3724d93433c8dc0c",
@@ -75,7 +92,7 @@
    "file": "webcam_bewegung_3_14_0.py",
    "url": "",
    "sha256": "0ca50d51d6b70b9123dc21f86c1549d6e31838b26b86ecfc077246a882f174b1",
-   "date": "2026-10-31 20:52",
+   "date": "2026-10-31 22:24",
    "notes": "Simulator 3.14.0: Karte des Grossvaters – Geheimnisse (Steinmännchen mit Geheimwort, doppelter Boden, Licht auf der Nachtaufnahme), Nacht mit Geräuschen und je ein Action-Teil pro Kapitel.",
    "size": 4416066,
    "sig": "d1410bda049ee3670ac6b28ba0c6626a16d945c303ef062329ff682d95b698c0f347f04c9649e2552011d6b2b4cda9d03216b31c271e6738127ca28f58a7110a",
@@ -136,23 +153,6 @@
     "sha256": "922467ca7435ce7e56d1f1407585431f8aa8e542c3ae1abd735612686568153d",
     "size": 1612089,
     "sig": "27e202df6beeb424b3a4dd2d45104003120278395adc8d986559e96534aaf4fec564322982bfd0f52070f7936df98c568f33ca031a6997eb78bcba1938f61201"
-   }
-  },
-  {
-   "version": "3.10.1",
-   "file": "webcam_bewegung_3_10_1.py",
-   "url": "",
-   "sha256": "b50c7ace073baab12449fd5299836334c71939b7c72a89b4152386664267944e",
-   "date": "2026-10-31 19:42",
-   "notes": "Simulator 3.10.1: Vorführung mit Schalter «Spiel-Knöpfe zeigen» – die Knöpfe bleiben sichtbar und leuchten auf, wenn der Autopilot sie drückt.",
-   "size": 4416453,
-   "sig": "62d50610eb70771f0fa2221ae51f625da9807b229605b4c4ca31f1386c806cec8799541db216c298d13572a2984758843571a6d655621d66f4b22e5fb536350b",
-   "data": {
-    "file": "moveeye_daten_3_10_1.zip",
-    "url": "",
-    "sha256": "cf32ac8d4496ccea21715bec1a600cdec55ef1b1288cfa57155ee052331313b0",
-    "size": 1611913,
-    "sig": "0fc6959356d16b057836ce2168a0e1c3ffbd441184c7f1ace91788deb3094dbe48ebaa664bd1c341a0242f8e82aadc2eae29885ad6f6f260579e5735e323240b"
    }
   },
   {

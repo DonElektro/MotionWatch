@@ -477,6 +477,18 @@ func _build() -> void:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 8)
 	panel.add_child(v)
+	# ganz oben (Daniel 31.10.2026): die Trailer der Geschichten schnell ansehen (trailer.gd) – Esc / Klick = zurück
+	var tr_row := HBoxContainer.new()
+	tr_row.add_theme_constant_override("separation", 8)
+	v.add_child(tr_row)
+	for it in [["grossvater", T.t("Trailer Grossvater")], ["maggie", T.t("Trailer Maggie")]]:
+		var tb := Button.new()
+		tb.text = str(it[1])
+		tb.focus_mode = Control.FOCUS_NONE
+		tb.tooltip_text = T.t("Etwa 3 Minuten · Esc oder Klick = zurück")
+		var tid: String = it[0]
+		tb.pressed.connect(func(): preload("res://scripts/trailer.gd").inst(main).starten.call_deferred(tid, {"von": "dev"}))
+		tr_row.add_child(tb)
 	var top := HBoxContainer.new()
 	top.add_theme_constant_override("separation", 8)
 	v.add_child(top)

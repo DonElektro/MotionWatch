@@ -583,6 +583,9 @@ func control(d: Dictionary) -> Dictionary:
 				"unlock":
 					regal.unlock(str(d.get("id", "")))
 					return {"ok": true}
+				"trailer":                                 # «Trailer ansehen» (trailer.gd), wie der Knopf auf der Karte
+					regal.trailer(str(d.get("id", "")))
+					return {"ok": true}
 			return regal.weiter(str(d.get("id", "")))
 		"gs":                                          # a button of the common start (tests)
 			return regal.gs(d)

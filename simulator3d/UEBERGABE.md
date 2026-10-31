@@ -1,8 +1,16 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.18.0** · MoveEye **3.18.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.19.0** · MoveEye **3.19.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.19.0 (MoveEye 3.19.0): Trailer der Geschichten (`trailer.gd`)
+
+- `trailer.gd` (Ablauf, Kamerafahrt, Texttafeln, Erzähler), `trailer_buehne.gd` (Szenen), `trailer_ton.gd` (Musik/Klänge
+  erzeugt): je ca. 3 Min. zu «Die Karte des Grossvaters» und «Maggie und der Bergkristall». Knopf «Trailer ansehen» auf der
+  Story-Karte (`geschichten.gd`), oben im Entwickler-Fenster (`devtool.gd`); Steuerbefehl `trailer` {do: start|stop|info},
+  Start mit `--trailer grossvater|maggie` (`werkzeuge/trailer_aufnehmen.sh` für die MP4). MoveEye Teil 639n: /sim/trailer,
+  /api/trailer, Karte «🛠 Entwickler» oben im Reiter «Sim». Test `werkzeuge/trailer_test.gd` (headless, in der Release-Kette).
 
 ## NEU in 3.18.0 (MoveEye 3.18.0): Gelenke (`actor.gd`)
 
