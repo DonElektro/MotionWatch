@@ -315,7 +315,7 @@ func start_run(seed_v := 0) -> Dictionary:
 	main.weather = "clear"
 	R["sunset"] = sunset_h()
 	R["sunrise"] = sunrise_h()
-	_log("start", T.t(str(ch["title"])), T.t(str(D.FLAVOR[R["mood"]]["start"])))
+	_diary("start", T.t(str(ch["title"])), T.t(str(D.FLAVOR[R["mood"]]["start"])))
 	_karte_update()
 	step = 4
 	_snap_later("Start: " + T.t(str(ch["start"][0])), "view")
@@ -386,13 +386,13 @@ func _advance() -> void:
 		var kind := str(st["clue"])
 		if kind == "terrain":
 			R["clues"]["terrain"] = true
-			_log("clue", T.t("Hinweis im Gelände"), T.t(str(st["text"])))
+			_diary("clue", T.t("Hinweis im Gelände"), T.t(str(st["text"])))
 			_snap_later(T.t("Hinweis im Gelände"), "view")
 			_ask("info", T.t("Hinweis im Gelände"), T.t(str(st["text"])), [["ok", T.t("Weiter")]])
 		elif kind == "person":
 			R["clues"]["person"] = true
 			var pe: Array = ch["person"]
-			_log("person", T.t(str(pe[0])), T.t(str(pe[1])))
+			_diary("person", T.t(str(pe[0])), T.t(str(pe[1])))
 			_snap_later(T.t(str(pe[0])), "view")
 			_ask("info", T.t(str(pe[0])), T.t(str(pe[1])), [["ok", T.t("Danke - weiter")]])
 		elif kind == "sun":
@@ -403,7 +403,7 @@ func _advance() -> void:
 				tx = T.t("Die Sonne steht jetzt im %s (%d°), %d° über dem Horizont. Am Morgen geht sie im Osten auf - der Schatten eines Steins zeigt dann nach Westen.") % [T.t(dir_word(sp.y)), int(sp.y), int(sp.x)]
 			else:
 				tx = T.t("Die Sonne ist schon untergegangen. Sie geht im Osten auf - am Morgen bekommt zuerst Licht, was hoch steht und gegen Osten frei ist.")
-			_log("sun", T.t("Karte mit der Sonne lesen"), tx)
+			_diary("sun", T.t("Karte mit der Sonne lesen"), tx)
 			_ask("info", T.t("Karte mit der Sonne lesen"), tx, [["ok", T.t("Weiter")]])
 	elif st.has("read"):
 		var rd: Dictionary = st["read"]
@@ -455,7 +455,7 @@ func _pre_leg(i: int, pts: Array, flags: Array, nm: String) -> void:
 		R["events_done"]["warn%d" % i] = true
 		R["mw_warn"] = int(R["mw_warn"]) + 1
 		var w := T.t("MoveEye: Der Luftdruck fällt (−3 hPa in einer Stunde). Gewitter möglich - ausgesetzte Wege meiden.") if wx == "storm" else T.t("MoveEye: Die Luftfeuchtigkeit steigt stark. Nebel kommt - Kompass bereithalten.")
-		_log("mw", T.t("MoveEye warnt"), w)
+		_diary("mw", T.t("MoveEye warnt"), w)
 		_ask("info", T.t("MoveEye warnt"), w, [["ok", T.t("Verstanden")]], {"then_leg": [i, pts, flags, nm]})
 		return
 	_start_leg(i, pts, flags, nm)
@@ -472,7 +472,7 @@ func _start_leg(i: int, pts: Array, flags: Array, nm: String) -> void:
 			R["events_done"]["nolamp"] = true
 			R["dark_walk"] = true
 			R["notes"].append("nolamp")
-			_log("forgot", T.t("Keine Stirnlampe"), T.t("Es ist dunkel - und die Stirnlampe liegt zu Hause. Jeder Schritt ist unsicher, alles dauert doppelt so lange."))
+			_diary("forgot", T.t("Keine Stirnlampe"), T.t("Es ist dunkel - und die Stirnlampe liegt zu Hause. Jeder Schritt ist unsicher, alles dauert doppelt so lange."))
 	elif dark0:
 		t_h *= 1.3
 	if bool(R.get("hurt", false)):
@@ -566,7 +566,7 @@ func _end_leg() -> void:
 		R["events_done"]["nojacket"] = true
 		R["cold"] = int(R["cold"]) + 1
 		R["notes"].append("nojacket")
-		_log("forgot", T.t("Keine Jacke"), T.t("Der Wind wird kalt, und die warme Jacke fehlt. Du frierst - jeder Schritt kostet mehr Kraft."))
+		_diary("forgot", T.t("Keine Jacke"), T.t("Der Wind wird kalt, und die warme Jacke fehlt. Du frierst - jeder Schritt kostet mehr Kraft."))
 	if float(R["stamina"]) <= 0.0 and not was_detour:
 		_ask("tired", T.t("Erschöpft"), T.t("Du kannst nicht mehr. Du musst dich hinsetzen und lange ausruhen (45 Minuten)."), [["rest", T.t("Ausruhen")]])
 		return
@@ -589,7 +589,7 @@ func _post_leg(i: int) -> void:
 			else:
 				b.storm()
 		var tx := T.t("Nebel steigt aus dem Tal - in wenigen Minuten sieht man keine 30 Meter weit.") if wx == "fog" else T.t("Ein Gewitter zieht auf. Die ersten Blitze über dem Grat, der Donner kommt näher.")
-		_log("weather", T.t("Wetterumschwung"), tx)
+		_diary("weather", T.t("Wetterumschwung"), tx)
 		_snap_later(T.t("Wetterumschwung"), "view")
 		_ask("weather", T.t("Wetterumschwung"), tx, [["go", T.t("Weitergehen")], ["wait", T.t("Warten, bis es vorbei ist (45 Min.)")], ["back", T.t("Umkehren zum letzten Ort")]], {"wx": wx})
 		return
@@ -597,7 +597,7 @@ func _post_leg(i: int) -> void:
 		R["events_done"]["meet" + key] = true
 		var mk: String = R["meet"][key]
 		var me: Array = D.MEET[mk]
-		_log("meet", T.t(str(me[0])), T.t(str(me[1])))
+		_diary("meet", T.t(str(me[0])), T.t(str(me[1])))
 		_snap_later(T.t(str(me[0])), "view")
 		match str(me[2]):
 			"food":
@@ -660,25 +660,25 @@ func choose(v: String) -> Dictionary:
 		"fork":
 			var side: Array = ch["stages"][st_i]["fork"][int(v)]
 			R["fork_" + str(st_i)] = int(v)
-			_log("fork", T.t("Weggabelung"), T.t(str(side[0])))
+			_diary("fork", T.t("Weggabelung"), T.t(str(side[0])))
 			var fl: Array = side[2]
 			if "wet" in fl:
 				R["wet"] = true
 			if "steep" in fl and not has("apotheke") and str(R["level"]) == "schwer" and rng.randf() < 0.35:
 				R["hurt"] = true
 				R["notes"].append("hurt")
-				_log("forgot", T.t("Fuss verstaucht"), T.t("Im Geröll knickst du um. Ohne Erste Hilfe tut jeder Schritt weh - du bist langsamer."))
+				_diary("forgot", T.t("Fuss verstaucht"), T.t("Im Geröll knickst du um. Ohne Erste Hilfe tut jeder Schritt weh - du bist langsamer."))
 			_start_leg(st_i, side[1], fl, str(side[0]))
 		"read":
 			var rd: Dictionary = ch["stages"][st_i]["read"]
 			if bool(rd["options"][int(v)][1]):
-				_log("read", T.t("Karte gelesen"), T.t("Richtig: %s") % T.t(str(rd["options"][int(v)][0])))
+				_diary("read", T.t("Karte gelesen"), T.t("Richtig: %s") % T.t(str(rd["options"][int(v)][0])))
 				R["read_ok"] = int(R.get("read_ok", 0)) + (1 if int(R["reads_wrong"]) == 0 else 0)
 				R["stage"] = st_i + 1
 				_advance()
 			else:
 				R["reads_wrong"] = int(R["reads_wrong"]) + 1
-				_log("read", T.t("Falscher Ort"), T.t("Hier ist nichts. %s") % T.t(str(rd["hint"])))
+				_diary("read", T.t("Falscher Ort"), T.t("Hier ist nichts. %s") % T.t(str(rd["hint"])))
 				_ask("info", T.t("Falscher Ort - ein Umweg"), T.t("Hier ist nichts. %s") % T.t(str(rd["hint"])), [["ok", T.t("Zurück und nochmals lesen")]], {"detour": true})
 		"weather":
 			var wx: String = str(pe.get("wx", "fog"))
@@ -693,23 +693,23 @@ func choose(v: String) -> Dictionary:
 						if not has("jacke"):
 							R["cold"] = int(R["cold"]) + 1
 						R["storm_go"] = true
-						_log("weather", T.t("Weiter im Gewitter"), T.t("Nass bis auf die Haut. Am Grat wäre das gefährlich - Blitze treffen zuerst hohe Punkte.") if exposed else T.t("Nass bis auf die Haut, aber weiter."))
+						_diary("weather", T.t("Weiter im Gewitter"), T.t("Nass bis auf die Haut. Am Grat wäre das gefährlich - Blitze treffen zuerst hohe Punkte.") if exposed else T.t("Nass bis auf die Haut, aber weiter."))
 					else:
 						R["fog_go"] = true
 						if str(R["level"]) == "schwer":
-							_log("weather", T.t("Weiter im Nebel"), T.t("Ohne Kompass im Nebel - du verlierst kurz den Weg."))
+							_diary("weather", T.t("Weiter im Nebel"), T.t("Ohne Kompass im Nebel - du verlierst kurz den Weg."))
 							_pause(0.4, false)
 					_post_leg(st_i)
 				"wait":
 					_pause(0.75, false)
 					main.weather = "clear"
 					main.thunder = false
-					_log("weather", T.t("Gewartet"), T.t("Nach einer Dreiviertelstunde ist es vorbei."))
+					_diary("weather", T.t("Gewartet"), T.t("Nach einer Dreiviertelstunde ist es vorbei."))
 					_post_leg(st_i)
 				"back":
 					var walked: Array = R["walked"]
 					var back_to: Vector2 = walked[maxi(0, walked.size() - 3)]
-					_log("weather", T.t("Umgekehrt"), T.t("Sicher ist sicher. Zurück und abwarten, dann nochmals."))
+					_diary("weather", T.t("Umgekehrt"), T.t("Sicher ist sicher. Zurück und abwarten, dann nochmals."))
 					_pause(0.6, false)
 					main.weather = "clear"
 					main.thunder = false
@@ -722,7 +722,7 @@ func choose(v: String) -> Dictionary:
 			if v == "take":
 				R["food"] = minf(100.0, float(R["food"]) + 35.0)
 				R["found_kg"] = float(R["found_kg"]) + 0.3
-				_log("meet", T.t("Alpkäse"), T.t("Der beste Käse, den du je gegessen hast."))
+				_diary("meet", T.t("Alpkäse"), T.t("Der beste Käse, den du je gegessen hast."))
 			_post_leg(st_i)
 		"wait_cows":
 			_pause(0.17, false)
@@ -732,7 +732,7 @@ func choose(v: String) -> Dictionary:
 				var fk: String = pe["find"]
 				R["found"].append(fk)
 				R["found_kg"] = float(R["found_kg"]) + float(D.FINDS[fk][1])
-				_log("find", T.t("Fundstück"), T.t(str(D.FINDS[fk][0])))
+				_diary("find", T.t("Fundstück"), T.t(str(D.FINDS[fk][0])))
 				_snap_later(T.t(str(D.FINDS[fk][0])), "view")
 			_post_leg(st_i)
 		"tired":
@@ -773,7 +773,7 @@ func do_pause() -> Dictionary:
 		return {"ok": false}
 	_pause(0.25)
 	choices.append([int(R["stage"]), "pause", "15"])
-	_log("pause", T.t("Pause"), T.t("Eine Viertelstunde Pause%s.") % (T.t(" auf der Bank mit Aussicht") if bool(R.get("bank", false)) else ""))
+	_diary("pause", T.t("Pause"), T.t("Eine Viertelstunde Pause%s.") % (T.t(" auf der Bank mit Aussicht") if bool(R.get("bank", false)) else ""))
 	_changed()
 	return {"ok": true, "stamina": R["stamina"]}
 
@@ -783,13 +783,13 @@ func do_refill() -> Dictionary:
 		return {"ok": false, "error": "kein Bach hier"}
 	var cap := float(maxi(1, int(R["items"].get("wasser", 0))))
 	if str(R["season"]) == "winter" and not has("kocher"):
-		_log("forgot", T.t("Bach gefroren"), T.t("Der Bach ist gefroren - ohne Kocher kann man keinen Schnee schmelzen."))
+		_diary("forgot", T.t("Bach gefroren"), T.t("Der Bach ist gefroren - ohne Kocher kann man keinen Schnee schmelzen."))
 		_changed()
 		return {"ok": false, "error": "gefroren"}
 	R["water"] = cap
 	main.set_hour(main.hour() + 0.08)
 	choices.append([int(R["stage"]), "refill", "1"])
-	_log("water", T.t("Wasser aufgefüllt"), T.t("Kaltes, klares Bergwasser."))
+	_diary("water", T.t("Wasser aufgefüllt"), T.t("Kaltes, klares Bergwasser."))
 	_changed()
 	return {"ok": true, "water": R["water"]}
 
@@ -807,7 +807,7 @@ func _arrive(early := false) -> void:
 	R["arrived"] = not early
 	R["arrive_h"] = main.hour()
 	if not early:
-		_log("found", T.t("Am Ziel"), T.t(str(ch["found"])))
+		_diary("found", T.t("Am Ziel"), T.t(str(ch["found"])))
 		var pc: Array = P.get("pieces", [])
 		var nxt: int = int(ch["piece"]) + 1
 		if nxt <= 4 and not nxt in pc:
@@ -878,14 +878,14 @@ func set_camp(mount: String, wall: bool) -> Dictionary:
 		var p: Vector2 = R["camp_xz"]
 		var b = bt()
 		if b == null:
-			return {"ok": false, "error": "no Bergtal"}
+			return {"ok": false, "error": "not bergtal"}
 		b.bed = main.bt_bed
 		var chk: Dictionary = b.check_place(p.x, p.y, Vector3.ZERO, float(R.get("look", 0.0)), "abenteuer")
 		if not bool(chk.get("ok", false)):
 			chk = {"ok": true, "x": p.x + 8.0, "z": p.y + 8.0, "yaw": 0.0, "note": ""}
 		res = main.bt_take(chk)
 	R["sunset_ok"] = float(R["camp"]["set_h"]) <= float(R["sunset"]) + 0.02
-	_log("camp", T.t("Lager aufgeschlagen"), T.t(str(D.FLAVOR[R["mood"]]["camp"])) + " " + T.t("(%s, MoveEye: %s)") % [T.t(_bed_name(bed_of())), T.t(str(Bt.MOUNTS.get(mount, ["?"])[0]))])
+	_diary("camp", T.t("Lager aufgeschlagen"), T.t(str(D.FLAVOR[R["mood"]]["camp"])) + " " + T.t("(%s, MoveEye: %s)") % [T.t(_bed_name(bed_of())), T.t(str(Bt.MOUNTS.get(mount, ["?"])[0]))])
 	if not has("isomatte") and bed_of() != "mat":
 		R["notes"].append("nomat")
 	step = 6
@@ -1007,7 +1007,7 @@ func start_night() -> Dictionary:
 		_changed()
 		return r
 	R["night"] = {"from": from_h, "to": to_h, "speed": speed, "plan": plan.size(), "run": r.get("run", {})}
-	_log("night", T.t("Die Nacht beginnt"), T.t(str(D.FLAVOR[R["mood"]]["night"])))
+	_diary("night", T.t("Die Nacht beginnt"), T.t(str(D.FLAVOR[R["mood"]]["night"])))
 	_changed()
 	return {"ok": true, "plan": plan, "speed": speed}
 
@@ -1131,7 +1131,7 @@ func _morning() -> void:
 		R["summit_h"] = main.hour()
 		summit_ok = main.hour() <= sr + 0.1
 		R["walked"].append(to)
-		_log("summit", T.t("Gipfel zum Sonnenaufgang"), (T.t("Oben um %s - die Sonne kommt um %s. Geschafft!") if summit_ok else T.t("Oben um %s - die Sonne war schon um %s da.")) % [hm(float(R["summit_h"])), hm(sr)])
+		_diary("summit", T.t("Gipfel zum Sonnenaufgang"), (T.t("Oben um %s - die Sonne kommt um %s. Geschafft!") if summit_ok else T.t("Oben um %s - die Sonne war schon um %s da.")) % [hm(float(R["summit_h"])), hm(sr)])
 		if b != null and not fast:
 			var wp: Vector3 = b.WG(to.x, to.y, 1.7)
 			main.fly_to(wp, 6.0)
@@ -1176,7 +1176,7 @@ func _morning() -> void:
 	R["result"] = {"stars": stars, "xp": xp, "level": lv1, "level_up": lv1 > lv0, "unlocked": unlocked, "rating": mr, "seen": seen,
 			"missed": missed, "hidden": hidden, "hits": hits, "summit_ok": summit_ok, "sunset_ok": bool(R.get("sunset_ok", false)),
 			"sleep": snappedf(sleep, 0.01), "source": _night_src, "battery_h": battery_h, "finale": finale, "notes": notes}
-	_log("morning", T.t("Der Morgen"), T.t(str(D.FLAVOR[R["mood"]]["morning"])))
+	_diary("morning", T.t("Der Morgen"), T.t(str(D.FLAVOR[R["mood"]]["morning"])))
 	P["runs"].append({"id": R["id"], "chapter": R["chapter"], "stars": stars, "date": Time.get_datetime_string_from_system().substr(0, 16), "seed": R["seed"]})
 	P["runs"] = (P["runs"] as Array).slice(-30)
 	_save()
@@ -1347,14 +1347,14 @@ func _write_report() -> void:
 # =======================================================================================================================
 # diary (pictures of the day and the night)
 # =======================================================================================================================
-func _log(kind: String, title: String, text: String) -> void:
+func _diary(kind: String, title: String, text: String) -> void:
 	if R.is_empty():
 		return
 	(R["log"] as Array).append({"k": kind, "h": snappedf(main.hour(), 0.01), "title": title, "text": text})
 
 
 func _snap_later(cap: String, src: String) -> void:
-	if fast or _snaps.size() >= 14:
+	if _snaps.size() >= 14:
 		return
 	_snap.call_deferred(cap, src)
 
@@ -2271,6 +2271,9 @@ func op(d: Dictionary) -> Dictionary:
 			out = {"ok": not (R.get("report", {}) as Dictionary).is_empty(), "report": R.get("report", {})}
 		"fast":
 			fast = bool(d.get("value", true))
+		"dev":
+			dev_open = bool(d.get("value", not dev_open))
+			_changed()
 		"reset":
 			P = {"chapter": 1, "xp": 0, "stars": {}, "finds": [], "finale": false, "runs": [], "pieces": []}
 			if d.has("chapter"):
