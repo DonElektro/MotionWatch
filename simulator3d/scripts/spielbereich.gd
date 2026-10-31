@@ -337,7 +337,7 @@ func _paint() -> void:
 			+ "\n" + T.t("Dazu die Erfahrung aus «Die Karte des Grossvaters» (%d) - ein Level für alles, pro Spielstand.", [int(lv.ab_xp)])
 	lx.mouse_filter = Control.MOUSE_FILTER_PASS
 	lh.add_child(lx)
-	var sn := UI.small("👤 " + (SS.name_of(SS.slot()) if SS.name_of(SS.slot()) != "" else T.t("Spielstand %d", [SS.slot()])), UI.TXT)
+	var sn := UI.small(T.t("Spielstand: %s", [SS.name_of(SS.slot()) if SS.name_of(SS.slot()) != "" else str(SS.slot())]), UI.TXT)
 	sn.autowrap_mode = TextServer.AUTOWRAP_OFF
 	sn.add_theme_font_size_override("font_size", int(13 * fz))
 	sn.size_flags_vertical = Control.SIZE_SHRINK_CENTER

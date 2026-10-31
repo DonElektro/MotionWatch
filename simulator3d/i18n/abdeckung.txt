@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6283 (Stellen: 8571)
+Texte gesamt: 6283 (Stellen: 8572)
 Übersetzt: en 6283, fr 6283, it 6283, rm 6283
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 429 Stellen
-Nicht mehr im Code (noch in texte.json): 121
+Nicht mehr im Code (noch in texte.json): 123
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 21492, schlüssel 16243, keine Wörter 10063, index 8334, technisch 2714, doc 1787, einheit 247, englisch 112, log 79, pfad 75, html 68, klasse 26, shader 6
+Übersprungen (Grund: Anzahl): kennung 21493, schlüssel 16244, keine Wörter 10062, index 8334, technisch 2714, doc 1788, einheit 247, englisch 112, log 79, pfad 75, html 68, klasse 26, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  669    29
@@ -48,7 +48,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   abenteuer_figuren.gd      58     5
   quick.gd                  57     2
   spielbereich.gd           57     0
-  entdecken.gd              56     0
+  entdecken.gd              57     0
   bergtal_erleben_b.gd      55     0
   abenteuer_rucksack.gd     48     3
   scenes.gd                 47     0

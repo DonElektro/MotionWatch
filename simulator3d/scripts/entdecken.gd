@@ -898,9 +898,16 @@ func _refresh_book() -> void:
 		var o := UI.small(" · ".join(others))
 		o.custom_minimum_size = Vector2(560, 0)
 		_book_list.add_child(o)
-	if main.spielbereich != null:                   # Geschichten-Menü: the badges live here now (not on «Spielen»)
-		_book_list.add_child(UI.heading(T.t("Abzeichen")))
-		_book_list.add_child(main.spielbereich.badge_grid(560.0))
+	if main.spielbereich != null:                   # Geschichten-Menü: the badges live here now (not on «Spielen») - on top
+		var bh := UI.heading(T.t("Abzeichen"))
+		var bg: Control = main.spielbereich.badge_grid(560.0)
+		_book_list.add_child(bh)
+		_book_list.add_child(bg)
+		_book_list.move_child(bh, 0)
+		_book_list.move_child(bg, 1)
+		var lh := UI.heading(T.t("Entdeckungen"))
+		_book_list.add_child(lh)
+		_book_list.move_child(lh, 2)
 
 
 func _scene_name(s: String) -> String:

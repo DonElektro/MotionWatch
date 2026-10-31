@@ -63,7 +63,8 @@ static func name_of(n: int) -> String:
 	return s
 
 
-static func set_name(n: int, s: String) -> void:
+static func set_slot_name(n: int, s: String) -> void:
+	"""(not «set_name»: that is Resource.set_name of the script itself - the call never arrived here)"""
 	_load()
 	_d["names"][clampi(n, 1, N) - 1] = s.strip_edges().left(24)
 	save()

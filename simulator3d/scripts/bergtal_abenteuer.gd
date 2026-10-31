@@ -2830,7 +2830,7 @@ func op(d: Dictionary) -> Dictionary:
 						"test": T.t("Der Kapitel-Sprung (Entwickler) läuft - zuerst «Test beenden».")}.get(str(out.get("error", "")), str(out.get("error", "")))
 			_changed()
 		"slot_name":
-			SS.set_name(SS.slot(), str(d.get("value", "")))
+			SS.set_slot_name(SS.slot(), str(d.get("value", "")))
 			_changed()
 		"resume":
 			out = resume()

@@ -205,16 +205,17 @@ func _process(dt: float) -> void:
 
 
 func _snap_maggie() -> void:
-	"""one picture of the region for Maggie's card: the window view without Maggie's buttons, the middle of it"""
-	var mg = main.maggie
-	var lay: CanvasLayer = mg._layer
-	var was := lay != null and lay.visible
-	if lay != null:
-		lay.visible = false
+	"""one picture of the region for Maggie's card: the 3D view without any buttons or windows (one frame), the middle of it"""
+	var hidden := []                                   # all buttons, windows and notes off for this one picture
+	for n in get_tree().root.find_children("*", "CanvasLayer", true, false):
+		if (n as CanvasLayer).visible:
+			(n as CanvasLayer).visible = false
+			hidden.append(n)
 	await RenderingServer.frame_post_draw
 	var img := get_viewport().get_texture().get_image()
-	if lay != null and is_instance_valid(lay):
-		lay.visible = was
+	for n in hidden:
+		if is_instance_valid(n):
+			(n as CanvasLayer).visible = true
 	if img == null or img.is_empty():
 		return
 	var w := img.get_width()
@@ -334,7 +335,7 @@ func card(s: Dictionary, w: float) -> Control:
 		chip = T.t("Kommt bald")
 		cc = UI.MUT
 	elif bool(s["locked"]):
-		chip = T.t("🔒 Gesperrt")
+		chip = T.t("Gesperrt")
 		cc = UI.ORG
 	elif bool(s["done"]):
 		chip = T.t("✓ Geschafft")
@@ -378,7 +379,7 @@ func card(s: Dictionary, w: float) -> Control:
 		b.tooltip_text = T.t("Nach Kapitel 5 der «Karte des Grossvaters» gibt es einen Hinweis auf die zweite Karte.")
 		return p
 	if bool(s["locked"]):
-		var b := _btn(br, T.t("🔒 Öffnen"), func(): unlock(id), true)
+		var b := _btn(br, T.t("Öffnen (Passwort)"), func(): unlock(id), true)
 		b.tooltip_text = T.t("Passwortgeschützt – unheimlich, mit Schreckmomenten")
 		return p
 	var can := bool(s["started"]) and (not bool(s["done"]) or id == "grossvater")
@@ -439,12 +440,11 @@ func picture(id: String, sz: Vector2, locked := false) -> Control:
 		d.set_anchors_preset(Control.PRESET_FULL_RECT)
 		d.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		c.add_child(d)
-	if locked:
-		var lk := Label.new()
-		lk.text = "🔒"
-		lk.add_theme_font_size_override("font_size", 34)
-		lk.set_anchors_preset(Control.PRESET_CENTER)
-		lk.position = sz / 2.0 - Vector2(20, 24)
+	if locked:                                         # a drawn lock (the emoji has no glyph in the default font)
+		var lk := Bild.new()
+		lk.kind = "lock"
+		lk.set_anchors_preset(Control.PRESET_FULL_RECT)
+		lk.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		c.add_child(lk)
 	return c
 
@@ -506,6 +506,14 @@ class Bild extends Control:
 				for k in range(6):                          # fog
 					draw_rect(Rect2(-20 + k * 37 % int(maxf(w, 1.0)), h * (0.55 + 0.07 * k), w * 0.7, 10 + k * 2), Color(0.8, 0.85, 0.9, 0.06))
 				draw_rect(Rect2(0, h * 0.82, w, h * 0.18), Color(0.7, 0.75, 0.8, 0.08))
+			"lock":
+				var m := size / 2.0
+				draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.35))
+				draw_arc(m + Vector2(0, -6), 11.0, PI, TAU, 16, Color(0.95, 0.8, 0.45), 4.0)
+				draw_line(m + Vector2(-11, -6), m + Vector2(-11, 2), Color(0.95, 0.8, 0.45), 4.0)
+				draw_line(m + Vector2(11, -6), m + Vector2(11, 2), Color(0.95, 0.8, 0.45), 4.0)
+				draw_rect(Rect2(m + Vector2(-17, 0), Vector2(34, 26)), Color(0.95, 0.8, 0.45))
+				draw_circle(m + Vector2(0, 11), 3.5, Color(0.2, 0.15, 0.08))
 			"teil2":
 				draw_rect(r, Color(0.86, 0.78, 0.6).darkened(0.35))
 				for k in range(1, 4):
@@ -804,7 +812,7 @@ func _page_level(W: float) -> void:
 		g2.add_theme_constant_override("v_separation", 8)
 		_body.add_child(g2)
 		for sn in Ab.SEASONS:
-			g2.add_child(_pick_card(T.t(str(sn[1])), _first(T.t(str(sn[2]))), str(_fl["season"]) == str(sn[0]), false, "season", str(sn[0]), (W - 24.0) / 4.0))
+			g2.add_child(_pick_card(T.t(str(sn[1])), _first(T.t(str(sn[2]))), str(_fl["season"]) == str(sn[0]), false, "season", str(sn[0]), (W - 24.0) / 4.0, 104.0))
 
 
 static func _first(s: String) -> String:
@@ -812,9 +820,9 @@ static func _first(s: String) -> String:
 	return s.substr(0, i + 1) if i > 0 else s
 
 
-func _pick_card(title: String, text: String, on: bool, off: bool, key: String, val: String, w: float) -> Control:
+func _pick_card(title: String, text: String, on: bool, off: bool, key: String, val: String, w: float, h := 74.0) -> Control:
 	var b := Button.new()
-	b.custom_minimum_size = Vector2(w, 70)
+	b.custom_minimum_size = Vector2(w, h * (1.2 if kids() else 1.0))
 	b.text = title + "\n" + text
 	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	b.add_theme_font_size_override("font_size", fs(12))
@@ -902,7 +910,7 @@ func gs(d: Dictionary) -> Dictionary:
 			if _step() == "slot":
 				var n := int(_fl["slot"])
 				if _fl.has("slot_name"):
-					SS.set_name(n, str(_fl["slot_name"]))
+					SS.set_slot_name(n, str(_fl["slot_name"]))
 				if n != SS.slot():
 					var r: Dictionary = SS.switch(main, n)
 					if not bool(r.get("ok", false)):

@@ -28848,6 +28848,12 @@
   "it": "Cambia partita",
   "rm": "Midar il stadi dal gieu"
  },
+ "Spielstand: %s": {
+  "en": "Game state: %s",
+  "fr": "Partie : %s",
+  "it": "Partita: %s",
+  "rm": "Stadi dal gieu: %s"
+ },
  "Spieltest": {
   "en": "Play test",
   "fr": "Test de jeu",
@@ -35572,6 +35578,12 @@
   "fr": "Ouvrir",
   "it": "Apri",
   "rm": "Avrir"
+ },
+ "Öffnen (Passwort)": {
+  "en": "Open (password)",
+  "fr": "Ouvrir (mot de passe)",
+  "it": "Apri (password)",
+  "rm": "Avrir (pled-clav)"
  },
  "Öffnet die Anleitung im Browser (MoveEye muss verbunden sein)": {
   "en": "Opens the manual in the browser (MoveEye must be connected)",
