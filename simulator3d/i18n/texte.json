@@ -11772,6 +11772,12 @@
   "it": "Nuovo torneo",
   "rm": "Nov turnier"
  },
+ "Nicht als Warnung gezählt: %d Sabotage-Pushes (tamper), %d Pushes ohne Dieb im Bild.": {
+  "en": "Not counted as a warning: %d sabotage pushes (tamper), %d pushes without a thief in the picture.",
+  "fr": "Non comptés comme avertissement : %d push de sabotage (tamper), %d push sans voleur dans l'image.",
+  "it": "Non contati come avviso: %d push di sabotaggio (tamper), %d push senza ladro nell'immagine.",
+  "rm": "Betg quintà sco avertiment: %d push da sabotascha (tamper), %d push senza lader en il maletg."
+ },
  "Nicht auf Menschen! Nur Tiere.": {
   "en": "Not at people! Only animals.",
   "fr": "Pas sur les gens ! Seulement les animaux.",
@@ -12924,6 +12930,18 @@
   "fr": "Push de MoveEye (%s)",
   "it": "Push di MoveEye (%s)",
   "rm": "Push da MoveEye (%s)"
+ },
+ "Push von MoveEye (%s) – kein Dieb im Bild (Fehlalarm?)": {
+  "en": "Push from MoveEye (%s) – no thief in the picture (false alarm?)",
+  "fr": "Push de MoveEye (%s) – aucun voleur dans l'image (fausse alerte ?)",
+  "it": "Push di MoveEye (%s) – nessun ladro nell'immagine (falso allarme?)",
+  "rm": "Push da MoveEye (%s) – nagin lader en il maletg (fals alarm?)"
+ },
+ "Push von MoveEye (tamper) – Sabotage-Meldung, zählt nicht als Warnung": {
+  "en": "Push from MoveEye (tamper) – sabotage report, does not count as a warning",
+  "fr": "Push de MoveEye (tamper) – alerte sabotage, ne compte pas comme avertissement",
+  "it": "Push di MoveEye (tamper) – segnalazione di sabotaggio, non conta come avviso",
+  "rm": "Push da MoveEye (tamper) – annunzia da sabotascha, na quinta betg sco avertiment"
  },
  "Pushes richtig %d / falsch %d": {
   "en": "Pushes right %d / wrong %d",

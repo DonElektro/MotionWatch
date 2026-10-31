@@ -46,7 +46,7 @@ const ORDER := ["kundschaft", "ablenkung", "velo", "rucksack", "kuehlbox", "auto
 const SEC := {"kundschaft": "Auskundschaften", "beobachten": "Beobachten", "ablenken": "Ablenken", "annaehern": "Annähern",
 		"pruefen": "Autos / Zelte prüfen", "griff": "Griff", "flucht": "Weg / Flucht"}
 const SEC_ORDER := ["kundschaft", "beobachten", "ablenken", "annaehern", "pruefen", "griff", "flucht"]
-const ALARM_EVS := ["person", "prealarm", "warm", "tamper"]
+const ALARM_EVS := ["person", "prealarm", "warm"]   # «tamper» is counted apart (_sample)
 const HOLD := 99999.0                 # a standing actor waits «for ever» - the next step comes from here (never deletes itself)
 const SETTLE := 12.0                  # after a jump of the clock: MoveEye and the exposure adapt
 const GRACE := 2.5                    # a detection counts for an actor up to … s after it was last visible
@@ -83,6 +83,7 @@ var _prev_sound := false
 var _prev_pre := false
 var _grab_t := -1.0
 var _cur_sec := ""
+var _pic_last := -100.0               # the last time somebody of the run was in the picture (a push then is about them)
 
 
 func now() -> float:
@@ -525,6 +526,7 @@ func _reset_run() -> void:
 	secs = {}
 	events = []
 	_grab_t = -1.0
+	_pic_last = -100.0
 	_cur_sec = ""
 	_prev_light = bool(main.mw.get("lights", {}).get("white", false))
 	_prev_sound = str(main.mw.get("sound", "")) != ""
@@ -584,6 +586,14 @@ func _next_act() -> void:
 	var a: Dictionary = acts[act_i]
 	if use_time and not embedded and float(a.get("hour", -1.0)) >= 0.0:
 		main.set_hour(float(a["hour"]))
+		if ABL.has(ablauf) and is_equal_approx(float(a["hour"]), float(ABL[ablauf][2])):
+			# a day act in autumn / winter: 17:30 or 20:36 is already dark - earlier until it is real daylight (the sun
+			# of the scene's date and place, main.sun_el); the night acts stay as they are
+			var h := float(a["hour"])
+			while main.light_level() < 0.5 and h > 11.5:
+				h -= 0.5
+				main.set_hour(h)
+			a["hour"] = h
 		_note(T.t("Uhr: %s", ["%02d:%02d" % [int(a["hour"]), int(fmod(float(a["hour"]), 1.0) * 60.0)]]))
 	act_t0 = now() + (float(a.get("settle", 0.0)) if act_i > 0 and not embedded else 0.0)
 	roles = a["roles"]
@@ -932,6 +942,7 @@ func _sample(dt: float) -> void:
 			S["th_s"] = float(S["th_s"]) + dt
 	if any_pic:
 		S["pic_s"] = float(S["pic_s"]) + dt
+		_pic_last = t
 	if any_vis and float(S["first_vis"]) < 0.0:
 		S["first_vis"] = snappedf(t, 0.1)
 	if not _mw_on():
@@ -962,9 +973,18 @@ func _sample(dt: float) -> void:
 			continue
 		_push_seen[str(x[0])] = true
 		var ev := str(x[2])
-		if ev in ALARM_EVS or ev == "noise":
-			S["pushes"] = int(S["pushes"]) + 1
-			_first(S, "push_t", t, T.t("Push von MoveEye (%s)", [ev]), true)
+		if ev == "tamper":
+			# «Kamera verdeckt / verdreht»: no scenario touches the camera - at night after the clock jump or in a dark,
+			# noisy picture it is a false alarm of MoveEye, not a warning about the thief (counted apart, shown in the report)
+			S["tamper"] = int(S.get("tamper", 0)) + 1
+			_note(T.t("Push von MoveEye (tamper) – Sabotage-Meldung, zählt nicht als Warnung"))
+		elif ev in ALARM_EVS or ev == "noise":
+			if any_vis or any_pic or t - _pic_last <= 6.0:
+				S["pushes"] = int(S["pushes"]) + 1
+				_first(S, "push_t", t, T.t("Push von MoveEye (%s)", [ev]), true)
+			else:
+				S["fehl"] = int(S.get("fehl", 0)) + 1          # nobody of the run in the picture: not about the thief
+				_note(T.t("Push von MoveEye (%s) – kein Dieb im Bild (Fehlalarm?)", [ev]))
 
 
 func _first(S: Dictionary, key: String, t: float, what: String, always_note := false) -> void:
@@ -1032,13 +1052,18 @@ func _make_report(finished: bool) -> void:
 		var react := minf(light_t if light_t >= 0.0 else 1e9, sound_t if sound_t >= 0.0 else 1e9)
 		if react < 1e9 and (grab < 0.0 or react <= grab):
 			score += 10.0                               # light / siren before the grab: the thief is disturbed
+	var n_tamper := 0
+	var n_fehl := 0
+	for k2 in secs:
+		n_tamper += int(secs[k2].get("tamper", 0))
+		n_fehl += int(secs[k2].get("fehl", 0))
 	var note := clampf(snappedf(1.0 + 5.0 * score / 100.0, 0.5), 1.0, 6.0)
 	rep.merge({"fertig": finished, "dauer_s": snappedf(now() - t0, 0.1), "abschnitte": parts, "ereignisse": events.duplicate(),
 			"griff_s": snappedf(grab, 0.1), "erkannt_s": det_t, "push_s": push_t, "licht_s": light_t, "sirene_s": sound_t,
 			"vorsprung_s": snappedf(grab - push_t, 0.1) if grab >= 0.0 and push_t >= 0.0 else null,
 			"verpasst": missed, "urteil": verdict, "punkte": snappedf(score, 0.1), "note": note, "moveeye": mw_on,
 			"schutz_an": bool(main.mw_det.get("armed", main.mw.get("armed", false))), "lite": Quality.lite(),
-			"simulator": str(main.VERSION), "beute": _loot_of_run()}, true)
+			"simulator": str(main.VERSION), "beute": _loot_of_run(), "sabotage_pushes": n_tamper, "pushes_ohne_dieb": n_fehl}, true)
 	_save()
 	info = _summary(rep)
 	main.start_info = T.t("Einbruch-Ablauf: %s", [info])
@@ -1123,6 +1148,8 @@ func html(r: Dictionary) -> String:
 			body += _one_html(x)
 	else:
 		body = _one_html(r)
+		if int(r.get("sabotage_pushes", 0)) + int(r.get("pushes_ohne_dieb", 0)) > 0:
+			body += "<p class=mut>%s</p>" % T.t("Nicht als Warnung gezählt: %d Sabotage-Pushes (tamper), %d Pushes ohne Dieb im Bild.", [int(r.get("sabotage_pushes", 0)), int(r.get("pushes_ohne_dieb", 0))])
 		if not bool(r.get("moveeye", false)):
 			body += "<p class=mut>%s</p>" % T.t("MoveEye war nicht verbunden – nur Ablauf und Sichtbarkeit")
 		elif not bool(r.get("schutz_an", false)):
