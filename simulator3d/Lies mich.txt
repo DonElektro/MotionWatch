@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.14.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.15.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -436,6 +436,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.15.0
+3.15.0: Maggie sieht jetzt aus wie das echte Vorbild: weiss mit brauner Rückenplatte, brauner Kopf mit Blesse, Kippohren, ein
+nach oben gebogener Schwanz, der bei Erfolgen wedelt, und schlanke, hohe Beine. Sie ist bei jedem Start gleich.
+So testest du: 1) Spielen → Maggie und der Bergkristall → eine Region wählen. 2) Maggie von der Seite und von vorne anschauen.
+3) «Graben» drücken: Maggie wedelt kräftig.
 
 NEU IN 3.14.0
 3.14.0: Karte des Grossvaters: Geheimnisse (5 versteckte Steinmännchen mit Geheimwort, doppelter Boden im Biwak, Licht auf der

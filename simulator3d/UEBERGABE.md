@@ -1,8 +1,19 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.14.0** · MoveEye **3.14.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.15.0** · MoveEye **3.15.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.15.0 (MoveEye 3.15.0): Maggie sieht aus wie Daniels Hund
+
+- `maggie_hund.gd` `_maggie_koerper()`: baut Maggie nach der Grundform «dog» neu (andere Hunde unverändert): schlank,
+  hochbeinig (Schulter ≈ 31 cm), Beine mit Gelenk (`legs[i][2]`), feste Kippohren, Schwanz aus 3 Teilen nach oben gebogen,
+  Farben fest (Liste im Kopf der Datei: WEISS, BRAUN, NASENR, NASE, AUGE, GLANZ; 6 Materialien über `m.mat()`).
+  Schnittstelle bleibt: `body_root` (scale 0.6, innen Knoten `maggie_koerper` in Metern), `head`, `tail`, `legs`.
+  `freuen(sek)`: wedelt kräftig (Rätsel gelöst/Fund, Graben-Erfolg, Kristall); sonst läuft der Schwanz leicht mit.
+  `_schwanz()` senkt beim Laufen den Körper um die Höhe der tiefsten Pfote (Pfoten bleiben am Boden).
+- `actor.gd`: neues Feld `tail_wag` (≥ 0 = Ausschlag von aussen, −1 = wie bisher; nur Maggie setzt es).
+- `zwei_bausteine.gd`: die übrigen Emoji (📸 🙌 💎) durch Text ersetzt.
 
 ## NEU in 3.14.0 (MoveEye 3.14.0): Geheimnisse und Action im Grossvater-Abenteuer
 

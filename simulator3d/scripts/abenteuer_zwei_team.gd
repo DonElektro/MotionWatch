@@ -547,7 +547,7 @@ func paint_choice(gg: Control) -> void:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 8)
 		gg.add_child(row)
-		var l: Label = ab._lab("%d · %s: %s %s - %s" % [i + 1, zb_name(i), str(r["icon"]), zb.rolle_name(i), T.t(str(r["text"]))], 13, z.COLS[i])
+		var l: Label = ab._lab("%d · %s: %s - %s" % [i + 1, zb_name(i), zb.rolle_name(i), T.t(str(r["text"]))], 13, z.COLS[i])
 		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(l)
 		var ii := i

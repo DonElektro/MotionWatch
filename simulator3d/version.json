@@ -1,9 +1,9 @@
 {
- "version": "3D-5.14.0",
- "ver": "3.14.0",
- "name": "MoveEye Sim 3.14.0",
+ "version": "3D-5.15.0",
+ "ver": "3.15.0",
+ "name": "MoveEye Sim 3.15.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35404300,
- "sha256": "1b69bfbf3db72dc6193aaf0e1ca68ef8557df0b08ab2ce8c604b828671b8d15a",
- "notes": "MoveEye Sim 3.14.0: Grossvater-Abenteuer mit Geheimnissen, Nacht-Geräuschen und Action-Teilen."
+ "size": 35410825,
+ "sha256": "ee021219fe9c004cccb86fc8f3d30d91651a6ab6e633bebdf8db38837a516eb3",
+ "notes": "MoveEye Sim 3.15.0: Maggie sieht aus wie das echte Vorbild und wedelt bei Erfolgen."
 }

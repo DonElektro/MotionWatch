@@ -53,6 +53,8 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   und veröffentlicht wird nur im Haupt-Chat, ein Paket nach dem anderen.
 - **Kurz schreiben (Daniel, 31.10.2026 04:36):** Text, den Daniel lesen muss, möglichst knapp halten – nur Ergebnis,
   Entscheid, nicht getestet; keine langen Aufzählungen.
+- **Kurz fürs Handy (Daniel, 31.10.2026 21:08):** Nachrichten so kurz halten, dass Daniel auf dem Handy nicht scrollen muss:
+  wenige Zeilen, Tabellen oder kurze Listen, Details nur auf Nachfrage.
 - **Pause für Realismus aufgehoben (Daniel, 31.10.2026 00:53):** bis die Hardware da ist, Realismus/Szenen in kleinen Paketen,
   je Paket eine Version mit «So testest du». Danach Pause und Hardware-Aufbau.
 

@@ -1153,6 +1153,12 @@
   "it": "%d segnalati · %d mancati · %d fuori dall'immagine",
   "rm": "%d annunziads · %d manchentads · %d betg en il maletg"
  },
+ "%d High-Fives": {
+  "en": "%d high fives",
+  "fr": "%d high fives",
+  "it": "%d high five",
+  "rm": "%d high fives"
+ },
  "%d Hinweise": {
   "en": "%d notes",
   "fr": "%d remarques",
@@ -14297,6 +14303,12 @@
   "it": "Foto per il diario",
   "rm": "Foto per il cudesch"
  },
+ "Foto gemacht - aber kein Tier im Bild": {
+  "en": "Photo taken - but no animal in it",
+  "fr": "Photo prise - mais pas d'animal dessus",
+  "it": "Foto scattata - ma nessun animale",
+  "rm": "Foto fatga - ma nagin animal sin il maletg"
+ },
  "Foto gespeichert: ": {
   "en": "Photo saved: ",
   "fr": "Photo enregistrée : ",
@@ -14482,6 +14494,12 @@
   "fr": "Villes photoréalistes – seulement pour usage personnel (conditions d’utilisation de Google).",
   "it": "Città fotorealistiche – solo per uso personale (condizioni d’uso di Google).",
   "rm": "Citads fotorealisticas – mo per l’agen diever (cundiziuns d’utilisaziun da Google)."
+ },
+ "Fotowettbewerb: das schönste Tierfoto": {
+  "en": "Photo contest: the most beautiful animal photo",
+  "fr": "Concours photo : la plus belle photo d'animal",
+  "it": "Concorso fotografico: la foto d'animale più bella",
+  "rm": "Concurrenza da fotos: la pli bella foto d'animal"
  },
  "Frag %s, wo es hingeht!": {
   "en": "Ask %s where to go!",
@@ -17436,6 +17454,18 @@
   "fr": "Placer ici + scan de référence",
   "it": "Mettere qui + scansione di riferimento",
   "rm": "Metter qua + scan da referenza"
+ },
+ "High-Five!": {
+  "en": "High five!",
+  "fr": "High five !",
+  "it": "High five!",
+  "rm": "High five!"
+ },
+ "High-Five! Beide gleichzeitig %s": {
+  "en": "High five! Both press %s at the same time",
+  "fr": "High five ! Tous les deux en même temps %s",
+  "it": "High five! Tutti e due insieme %s",
+  "rm": "High five! Omadus a medem temp %s"
  },
  "High-Fives: %d": {
   "en": "High fives: %d",
@@ -32599,6 +32629,12 @@
   "it": "Ben fatto!",
   "rm": "Fatg bain!"
  },
+ "Super Team!": {
+  "en": "Great team!",
+  "fr": "Super équipe !",
+  "it": "Super squadra!",
+  "rm": "Super team!"
+ },
  "Super!": {
   "en": "Great!",
   "fr": "Super !",
@@ -33564,6 +33600,12 @@
   "fr": "Animaux : grillons, oiseaux, chouette, chien au loin, cloches de vaches",
   "it": "Animali: grilli, uccelli, gufo, cane in lontananza, campanacci",
   "rm": "Animals: grils, utschels, tschuetta, chaun en la distanza, zampuns"
+ },
+ "Tierfoto: %d Punkte": {
+  "en": "Animal photo: %d points",
+  "fr": "Photo d'animal : %d points",
+  "it": "Foto di animale: %d punti",
+  "rm": "Foto d'animal: %d puncts"
  },
  "Tierfotograf": {
   "en": "Wildlife photographer",

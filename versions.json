@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 20:47",
+ "generated": "2026-10-31 21:06",
  "versions": [
+  {
+   "version": "3.15.0",
+   "file": "webcam_bewegung_3_15_0.py",
+   "url": "",
+   "sha256": "e0e0c97323434e0b32b5f4f8e9c787c527849886189d75ea79915570b8c6a219",
+   "date": "2026-10-31 21:05",
+   "notes": "Simulator 3.15.0: Maggie sieht aus wie das echte Vorbild (weiss mit brauner Rückenplatte, brauner Kopf mit Blesse, Kippohren, wedelnder Schwanz, hohe Beine), bei jedem Start gleich.",
+   "size": 4416027,
+   "sig": "9fc14dd2a1e592b56967e2c6fe90ecec4bca07f90bcbea65cd094bb5e7c2493dc154acc2c6247fe6508c3c3ebf14c65278b1b69c95aab796024ffe7cf262740e",
+   "data": {
+    "file": "moveeye_daten_3_15_0.zip",
+    "url": "",
+    "sha256": "2491b76c3fb81810c3b98eb7471865b8a1acfcd669afb87f61fa36a83636bc65",
+    "size": 1612621,
+    "sig": "4f55d99d77df5c87aa78c3d9a37ef24e35e2aa0f12df0110668eb70bf3a5e71ce5d2e58a0c27fd5e01ac3b7c4f1e361cd85f27975893ff3770070c1427db600f"
+   }
+  },
   {
    "version": "3.14.0",
    "file": "webcam_bewegung_3_14_0.py",
    "url": "",
    "sha256": "0ca50d51d6b70b9123dc21f86c1549d6e31838b26b86ecfc077246a882f174b1",
-   "date": "2026-10-31 20:47",
+   "date": "2026-10-31 20:52",
    "notes": "Simulator 3.14.0: Karte des Grossvaters – Geheimnisse (Steinmännchen mit Geheimwort, doppelter Boden, Licht auf der Nachtaufnahme), Nacht mit Geräuschen und je ein Action-Teil pro Kapitel.",
    "size": 4416066,
    "sig": "d1410bda049ee3670ac6b28ba0c6626a16d945c303ef062329ff682d95b698c0f347f04c9649e2552011d6b2b4cda9d03216b31c271e6738127ca28f58a7110a",
@@ -130,16 +147,6 @@
    "notes": "Simulator 3.7.1: Maggie – der Pfeil zeigt jetzt auf die Stationen, jede Jahreszeit etwa 25–28 Min. mit 3 Rastplätzen und 4 Rätseln, Rastplatz-Anzeige und Tipps korrigiert.",
    "size": 7860693,
    "sig": "213fefae1ad69017233bcda545ad9199567b3edd2600ed87db0ef08dbf13966632b6790cdfd6c24c1faddb0cd534602e9fb17f7e5f6b4089b324a1fdec34ae01"
-  },
-  {
-   "version": "3.6.2",
-   "file": "webcam_bewegung_3_6_2.py",
-   "url": "",
-   "sha256": "ddac53d8de9771bd104389659da803a1f93541101cf565d5a02e891d57e366f0",
-   "date": "2026-10-31 17:33",
-   "notes": "Fehlerkorrekturen: Spieltest-Push höchstens 1 pro Minute und nur von MoveEye einschaltbar; Schwachlicht nach einer Taschenlampe in höchstens 10 s wieder an; ohne KI wird ein warmer, flacher Körper «Person?»; Hospiz nur für den Besitzer; echte Pi-Warnungen auch im Simulator-Betrieb; Fragen der Produktseite ganz aufs Handy; «Schutz ein» nicht doppelt; Übersetzungen.",
-   "size": 7859536,
-   "sig": "1e5680ecc3043d0bd618a595a7a1498eada03f7c8f60bcedfdd0abfde2ca584f45dfd52700ca077a8f3c66a0d53f3f649f7fc228f7f460a58ffc86b842ab2601"
   },
   {
    "version": "3.0.2",

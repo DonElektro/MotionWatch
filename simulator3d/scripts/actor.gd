@@ -27,6 +27,7 @@ var torch: SpotLight3D = null
 var body_root: Node3D
 var head: Node3D              # head (and neck) pivot: grazing, looking round
 var tail: Node3D = null
+var tail_wag := -1.0          # >= 0: Ausschlag des Schwanzes von aussen gesetzt (Maggie, maggie_hund.gd); -1 = wie bisher
 var body_h := 0.9             # height of the body (for the rifle and the words above it)
 var body_r := 0.5
 var radius := 0.3             # keeps this far from obstacles
@@ -1336,7 +1337,10 @@ func _animate(dt: float, spd: float, now: float) -> void:
 			hyaw = clamp(wrapf(want_heading - heading, -PI, PI), -0.75, 0.75)   # the head turns first, the body follows
 		head.rotation.y = lerp(head.rotation.y, hyaw, clamp(dt * (6.0 if controlled else 3.0), 0.0, 1.0))
 	if tail != null:
-		tail.rotation.y = sin(now * (9.0 if kind == "dog" else 2.0)) * (0.5 if kind == "dog" else 0.15)
+		if tail_wag >= 0.0:
+			tail.rotation.y = sin(now * 11.0 + seed_t) * tail_wag
+		else:
+			tail.rotation.y = sin(now * (9.0 if kind == "dog" else 2.0)) * (0.5 if kind == "dog" else 0.15)
 
 
 func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k: float, idle: String) -> void:
