@@ -37159,7 +37159,9 @@ SELFTEST_EXTRA.append(("Thermal picture: animal or person from the foot point (2
 #    - it never walked there: no moving track (a person walking in) was at that place shortly before or when it appeared,
 #    - it stands still: middle within FIX_STILL of its height, height within FIX_SIZE (a few jumps of the AI box are allowed),
 #    - for FIX_LEARN_S (3 min) - or only FIX_LEARN_START_S when it was there already at the start (camera / scene new),
-#    - it is not warm like a body (only with a thermal camera in °C).
+#    - Entscheid Daniel (31.10.2026): only a THERMAL CAMERA that sees it NOT warm (FIX_COLD_N looks, never warm) makes it a
+#      thing by itself. Without a thermal camera (or no clear reading) it only gets the card below and STAYS A PERSON (push,
+#      the head follows) until «Ignorieren» is tapped; warm like a body: nothing (a person).
 #    A learned spot: its AI box and a person track standing on it are no person (no push, the head does not follow, drawn
 #    grey «OBJECT?»). It is a person again at once when the box moves clearly or another person comes onto it. A card on
 #    the Live / Schutz page shows the picture: «Hier steht etwas, das wie eine Person aussieht – ignorieren?» → a mask
@@ -37183,6 +37185,7 @@ FIX_SIZE = 1.33             # (3 pictures in a row outside = it moved: the learn
 FIX_CONF_SURE = 0.75        # the AI is sure it is a person (score >= 0.75 in half of the looks): never learnt («im Zweifel Person»).
                             # Offline with the test model (test-coco640) on the pictures of the test: the spruce 0.30 / 0.56, the
                             # trunk 0.27, the stump in the dusk 0.25 - real persons near the camera are mostly far above.
+FIX_COLD_N = 3              # «not warm» in at least 3 looks of the thermal camera (and in at least half of its looks, never warm)
 FIX_GAP_S = 25.0            # not seen for 25 s while learning: forgotten (the AI misses a thing now and then, not for that long)
 FIX_KEEP_S = 1800.0         # a learnt spot not seen for 30 min is forgotten (light changed, head somewhere else)
 FIX_WALK_LOOK_S = 60.0      # «walked in»: a moving track at that place in the last 60 s before the spot appeared (or 5 s after) -
@@ -37240,25 +37243,61 @@ def _fixp_came(s, t0, why):
     """a person walked onto the spot: a person (not learnt) as long as it stays - learnt again only after it left (fixp_track)"""
     if s["learned"]:
         log_event("person", f"Still object #{s['id']}: a person {why} - a person again")
-    s.update(learned=False, came=True, first=t0, a0=s["a"], out=0, at_start=False)
+    s.update(learned=False, suggest=False, came=True, first=t0, a0=s["a"], out=0, at_start=False)
 
 
-def _fixp_warm(b, pw, ph):
-    """the box is warm like a body in the thermal picture (only a camera in °C; never for a tree) - then it is not learnt"""
+def fixp_thermal_judge(region, scene, celsius, delta_pct=None):
+    """True = warm like a body, False = clearly not warm, None = not clear. region / scene: arrays of the thermal picture.
+    °C: warm = 3 °C over the scene and 25 … 42 °C (a body through clothes); cold = less than 1.5 °C over the scene.
+    8-bit picture (the simulator): the step of ThermalCam.detect (thermal_delta of the warm side of the scale); cold = below half
+    of that step."""
+    if region is None or region.size < 2 or scene is None or scene.size < 4:
+        return None
+    body, med = float(np.percentile(region, 80)), float(np.median(scene))
+    if celsius:
+        if body - med >= 3.0 and 25.0 <= body <= 42.0:
+            return True
+        return False if body - med < 1.5 else None
+    lo, hi = float(np.percentile(scene, 2)), float(np.percentile(scene, 99.5))
+    sc = 255.0 / max(1e-3, hi - lo)
+    b_, m_ = (body - lo) * sc, (med - lo) * sc
+    step = (float(CFG.get("thermal_delta", 30)) if delta_pct is None else delta_pct) / 100.0 * max(min(255.0, 2.0 * (255.0 - m_)), 64.0)
+    if b_ > m_ + step:
+        return True
+    return False if b_ < m_ + 0.5 * step else None
+
+
+def _fixp_thermal(b, pw, ph):
+    """what the thermal camera says about the box (x, y, w, h working pixels): True warm / False not warm / None no camera or unclear"""
+    th = THERMAL
+    if th is None or not CFG.get("thermal_source") or getattr(th, "frame", None) is None or time.time() - float(getattr(th, "t", 0.0) or 0.0) > 3.0:
+        return None
     try:
-        tt = _thermal_temps((b[0] / pw, b[1] / ph, b[2] / pw, b[3] / ph)) if THERMAL is not None else None
+        f = th.crop(th.frame)
+        celsius = f.dtype != np.uint8
+        f = f.astype(np.float32)
+        if f.ndim == 3:
+            f = f.mean(axis=2)
+        H, W = f.shape[:2]
+        x0, y0 = max(0, int(b[0] / pw * W)), max(0, int(b[1] / ph * H))
+        x1, y1 = min(W, int(math.ceil((b[0] + b[2]) / pw * W))), min(H, int(math.ceil((b[1] + b[3]) / ph * H)))
+        return fixp_thermal_judge(f[y0:y1, x0:x1], f, celsius)
     except Exception:
-        tt = None
-    return bool(tt and tt[0] - tt[1] >= 3.0 and 25.0 <= tt[0] <= 42.0)
+        return None
 
 
-def fixp_spot_step(s, a, t0, start_t, walked, warm=False, conf=0.0):
-    """one observation a (angle box) of the spot s at t0 - the decision without the camera (self-test). Returns "learned" when
-    the spot just became a thing, "moved" when a learned spot moved (a person again), else None."""
+def fixp_spot_step(s, a, t0, start_t, walked, warm=None, conf=0.0):
+    """one observation a (angle box) of the spot s at t0 - the decision without the camera (self-test). warm = the thermal
+    camera: True warm / False not warm / None none or unclear. Returns "learned" when the spot just became a thing (thermal:
+    not warm), "suggest" when only the card comes (no thermal camera: stays a person), "moved" when a learned spot moved."""
     if walked:
         s["walked"] = True                                   # walked in: for good never a thing
     if warm:
         s["warm"] = True
+    elif warm is False:
+        s["cold"] = s.get("cold", 0) + 1
+    if warm is not None:
+        s["th_n"] = s.get("th_n", 0) + 1
     s["last"] = t0; s["n"] += 1
     s["sure"] = s.get("sure", 0) + (1 if conf >= FIX_CONF_SURE else 0)
     still = (math.hypot(a[0] - s["a0"][0], a[1] - s["a0"][1]) <= FIX_STILL * s["a0"][3]
@@ -37267,19 +37306,23 @@ def fixp_spot_step(s, a, t0, start_t, walked, warm=False, conf=0.0):
     s["a"] = tuple(0.8 * p + 0.2 * q for p, q in zip(s["a"], a))      # the AI box jitters: a slow average
     if s["out"] >= 3:                                        # it moved (not one jump of the AI box)
         was = s["learned"]
-        s.update(a0=tuple(a), first=t0, out=0, learned=False, at_start=False)
+        s.update(a0=tuple(a), first=t0, out=0, learned=False, suggest=False, at_start=False)
         return "moved" if was else None
     need = FIX_LEARN_START_S if s["at_start"] else FIX_LEARN_S
     if (not s["learned"] and not s["walked"] and not s.get("came") and not s["warm"] and not s["never"] and t0 - s["first"] >= need
             and s["sure"] * 2 < s["n"]):
-        s["learned"] = True
-        return "learned"
+        if s.get("cold", 0) >= FIX_COLD_N and s["cold"] * 2 >= s.get("th_n", 0):
+            s["learned"] = True                              # the thermal camera says: not warm -> a thing by itself
+            return "learned"
+        if not s.get("suggest"):
+            s["suggest"] = True                              # no thermal camera: only the card, it stays a person
+            return "suggest"
     return None
 
 
 def fixp_new_spot(a, t0, start_t):
     s = {"id": FIXP["next"], "a": tuple(a), "a0": tuple(a), "first": t0, "last": t0, "n": 0, "out": 0, "learned": False,
-         "walked": False, "came": False, "warm": False, "never": False, "at_start": t0 - start_t <= FIX_START_WIN_S, "offered": False}
+         "walked": False, "came": False, "warm": False, "never": False, "suggest": False, "cold": 0, "th_n": 0, "at_start": t0 - start_t <= FIX_START_WIN_S, "offered": False}
     FIXP["next"] += 1
     return s
 
@@ -37311,12 +37354,16 @@ def fixp_filter_ai(ai_boxes, pw, ph, t0, small=None):
             _fixp_came(s, t0, "walks there")                 # the box of a walking person (the AI box sits on the thing)
         if still or s["learned"]:
             walked = t0 - s["first"] <= FIX_WALK_AFTER_S and _fixp_walked(a, s["first"], t0)
-            r = fixp_spot_step(s, a, t0, FIXP["start_t"], walked, _fixp_warm(b, pw, ph) if not s["learned"] else False,
+            r = fixp_spot_step(s, a, t0, FIXP["start_t"], walked, _fixp_thermal(b, pw, ph) if not s["learned"] else None,
                                float(b[4]) if len(b) > 4 else 0.0) if still else None
             if r == "learned":
                 FIXP["learned_n"] += 1
                 log_event("person", f"Still object #{s['id']}: a «person» that has not moved for {int(t0 - s['first'])} s and did not walk "
                                     f"there - from now on a thing (no alarm, the head does not follow)")
+                _fixp_offer(s, b, small, pw, ph, t0)
+            elif r == "suggest":
+                log_event("person", f"Still object #{s['id']}: a «person» that has not moved for {int(t0 - s['first'])} s - no thermal camera "
+                                    f"confirms it is not warm: it stays a person, the card «ignore it?» is shown")
                 _fixp_offer(s, b, small, pw, ph, t0)
             elif r == "moved":
                 log_event("person", f"Still object #{s['id']} moved - a person again")
@@ -37442,13 +37489,14 @@ def _fixp_offer(s, b, small, pw, ph, t0):
 def fixp_state():
     now = time.time()
     return {"ok": True, "learned": sum(1 for s in FIXP["spots"] if s["learned"]), "learning": sum(1 for s in FIXP["spots"] if not s["learned"]),
-            "offers": [{"id": o["id"], "age": int(now - o["t"]), "pic": bool(o["jpg"])} for o in FIXP["offers"]
-                       if not o["state"] and any(s["id"] == o["sid"] and s["learned"] for s in FIXP["spots"])]}
+            "offers": [{"id": o["id"], "age": int(now - o["t"]), "pic": bool(o["jpg"]), "auto": bool(sp["learned"])}
+                       for o in FIXP["offers"] if not o["state"] for sp in FIXP["spots"] if sp["id"] == o["sid"] and (sp["learned"] or sp.get("suggest"))]}
 
 
 def fixp_answer(oid, op):
     """«mask» = an anchored ignore zone for persons over the spot (stays when the head turns, editable in the zone editor),
-    «person» = it is a person: never learnt there again, «later» = the card goes away (the spot stays a thing for now)"""
+    «person» = it is a person: never learnt there again, «later» = the card goes away (the spot stays as it is: a thing only
+    when the thermal camera said «not warm», else a person)"""
     o = next((o for o in FIXP["offers"] if o["id"] == oid), None)
     if o is None:
         return False, "gone"
@@ -37456,7 +37504,7 @@ def fixp_answer(oid, op):
     o["state"] = op
     if op == "person":
         if s:
-            s.update(learned=False, never=True)
+            s.update(learned=False, suggest=False, never=True)
         log_event("person", "Still object: «it is a person» - not learnt there again")
         return True, ""
     if op != "mask" or s is None:
@@ -37471,6 +37519,7 @@ def fixp_answer(oid, op):
          "anchor": True, "id": uuid.uuid4().hex[:8]}
     ok, err = zones_set([dict(z_) for z_ in ZONES] + [z])
     if ok:
+        s.update(learned=True, suggest=False)                # at once (the zone does it from now on too)
         log_event("person", "Still object: taken as a mask (ignore zone for persons)")
     return ok, err
 
@@ -37534,7 +37583,8 @@ FIXP_MAIN_JS = r"""
     o = E("div", "card"); o.id = "fx-offer"; o.dataset.id = f.id; o.style.cssText = "border:2px solid var(--acc);margin:0 0 12px";
     o.appendChild(E("b", "", "🌲 " + T("Something here looks like a person - ignore it?")));
     if (f.pic) { const im = E("img"); im.src = "/api/fixp/pic/" + f.id; im.alt = ""; im.style.cssText = "display:block;max-width:100%;max-height:220px;margin:8px 0;border-radius:8px"; o.appendChild(im); }
-    o.appendChild(E("div", "mut", T("It has not moved for minutes. MoveEye treats it as a thing for now (no alarm, the head does not follow); a mask keeps it so.")));
+    o.appendChild(E("div", "mut", T(f.auto ? "It has not moved for minutes. MoveEye treats it as a thing for now (no alarm, the head does not follow); a mask keeps it so."
+                                            : "It has not moved for minutes. It still counts as a person (alarm, the head follows) until you tap «Ignore».")));
     const r = E("div", "btns");
     const ans = async op => { try { await post("/api/fixp", {op: op, id: f.id}); } catch (e) {} o.remove(); if (op === "mask") toast("✓ " + T("Mask made")); };
     const a = E("button", "", T("Ignore (make a mask)")); a.type = "button"; a.onclick = () => ans("mask");
@@ -37554,6 +37604,7 @@ FIXP_MAIN_JS = r"""
 """
 FIXP_MAIN_KEYS = ["Something here looks like a person - ignore it?",
                   "It has not moved for minutes. MoveEye treats it as a thing for now (no alarm, the head does not follow); a mask keeps it so.",
+                  "It has not moved for minutes. It still counts as a person (alarm, the head follows) until you tap «Ignore».",
                   "Ignore (make a mask)", "It is a person", "Later", "Mask made"]
 
 
@@ -37562,34 +37613,49 @@ def fixp_main_js():
 
 
 def fixp_selftest():
-    """a spruce there from the start becomes a thing after 45 s, one appearing later after 3 min; a person who walked in and
+    """a spruce there from the start becomes a thing after 45 s (thermal: not warm; without thermal only the card), one
+    appearing later after 3 min; a person who walked in and
     then stands still for 10 min never does; a learnt thing that moves is a person again; animal tracks keep their class"""
-    # 1) the spruce: there from the start, the AI box jitters ±10 %
+    # 1) the spruce: there from the start, the AI box jitters ±10 %, the thermal camera sees it not warm -> a thing after 45 s
     s = fixp_new_spot((10.0, 2.0, 4.0, 9.0), 100.0, 100.0)
     res = []
     for i in range(1, 60):
         j = 0.1 * (1 if i % 2 else -1)
-        res.append(fixp_spot_step(s, (10.0 + j, 2.0, 4.0, 9.0 * (1 + j)), 100.0 + i, 100.0, False))
+        res.append(fixp_spot_step(s, (10.0 + j, 2.0, 4.0, 9.0 * (1 + j)), 100.0 + i, 100.0, False, False))
     assert "learned" in res and res.index("learned") + 1 == int(FIX_LEARN_START_S), res.index("learned") if "learned" in res else res
+    # 1b) Entscheid Daniel: the same spruce WITHOUT a thermal camera - only the card («suggest»), it stays a person
+    s1 = fixp_new_spot((10.0, 2.0, 4.0, 9.0), 100.0, 100.0)
+    r1 = [fixp_spot_step(s1, (10.0, 2.0, 4.0, 9.0), 100.0 + i, 100.0, False, None) for i in range(1, 400)]
+    assert r1.count("suggest") == 1 and "learned" not in r1 and not s1["learned"] and r1.index("suggest") + 1 == int(FIX_LEARN_START_S)
+    # 1c) thermal unclear most of the time (only 2 «not warm» looks): no thing either
+    s1 = fixp_new_spot((10.0, 2.0, 4.0, 9.0), 100.0, 100.0)
+    assert "learned" not in [fixp_spot_step(s1, (10.0, 2.0, 4.0, 9.0), 100.0 + i, 100.0, False, False if i < 3 else None) for i in range(1, 200)]
+    # thermal judgement (8-bit like the simulator, °C): a body warm, the tree as the scene not warm
+    sc = np.full((60, 80), 100.0, np.float32); sc[0:10] = 20.0; sc[50:] = 140.0
+    assert fixp_thermal_judge(np.full((8, 4), 230.0), sc, False, 30) is True and fixp_thermal_judge(np.full((8, 4), 101.0), sc, False, 30) is False
+    assert fixp_thermal_judge(np.full((8, 4), 31.0), np.full((60, 80), 12.0), True) is True
+    assert fixp_thermal_judge(np.full((8, 4), 12.5), np.full((60, 80), 12.0), True) is False
     # 2) a thing that appears later (patrol looks there): only after FIX_LEARN_S
     s2 = fixp_new_spot((-20.0, 1.0, 3.0, 8.0), 1000.0, 100.0)
     assert not s2["at_start"]
-    r2 = [fixp_spot_step(s2, (-20.0, 1.0, 3.0, 8.0), 1000.0 + i * 2, 100.0, False) for i in range(1, 100)]
+    r2 = [fixp_spot_step(s2, (-20.0, 1.0, 3.0, 8.0), 1000.0 + i * 2, 100.0, False, False) for i in range(1, 100)]
     assert r2.index("learned") * 2 + 2 >= FIX_LEARN_S
     # 3) Gegenprobe: a person walked in, then stands still 10 min - never a thing (also at the start)
     s3 = fixp_new_spot((5.0, 0.0, 2.0, 7.0), 100.0, 100.0)
-    r3 = [fixp_spot_step(s3, (5.0, 0.0, 2.0, 7.0), 100.0 + i, 100.0, i == 1) for i in range(1, 600)]
-    assert "learned" not in r3 and s3["walked"]
+    r3 = [fixp_spot_step(s3, (5.0, 0.0, 2.0, 7.0), 100.0 + i, 100.0, i == 1, False) for i in range(1, 600)]
+    assert "learned" not in r3 and "suggest" not in r3 and s3["walked"]
     # 4) warm like a body (thermal camera in °C): never learnt
     s4 = fixp_new_spot((5.0, 0.0, 2.0, 7.0), 100.0, 100.0)
-    assert "learned" not in [fixp_spot_step(s4, (5.0, 0.0, 2.0, 7.0), 100.0 + i, 100.0, False, i == 3) for i in range(1, 200)]
+    r4 = [fixp_spot_step(s4, (5.0, 0.0, 2.0, 7.0), 100.0 + i, 100.0, False, True if i == 3 else False) for i in range(1, 200)]
+    assert "learned" not in r4 and "suggest" not in r4
     # 4b) the AI is sure it is a person (0.9): never learnt
     s5 = fixp_new_spot((5.0, 0.0, 2.0, 7.0), 100.0, 100.0)
-    assert "learned" not in [fixp_spot_step(s5, (5.0, 0.0, 2.0, 7.0), 100.0 + i, 100.0, False, False, 0.9) for i in range(1, 200)]
+    r5 = [fixp_spot_step(s5, (5.0, 0.0, 2.0, 7.0), 100.0 + i, 100.0, False, False, 0.9) for i in range(1, 200)]
+    assert "learned" not in r5 and "suggest" not in r5
     # 5) the learnt spruce moves clearly (it was a person after all): a person again; one jump of the AI box is not enough
-    assert fixp_spot_step(s, (13.0, 2.0, 4.0, 9.0), 200.0, 100.0, False) is None and s["learned"]
-    assert fixp_spot_step(s, (10.0, 2.0, 4.0, 9.0), 201.0, 100.0, False) is None and s["learned"]
-    out = [fixp_spot_step(s, (14.0, 2.0, 4.0, 9.0), 202.0 + i, 100.0, False) for i in range(3)]
+    assert fixp_spot_step(s, (13.0, 2.0, 4.0, 9.0), 200.0, 100.0, False, False) is None and s["learned"]
+    assert fixp_spot_step(s, (10.0, 2.0, 4.0, 9.0), 201.0, 100.0, False, False) is None and s["learned"]
+    out = [fixp_spot_step(s, (14.0, 2.0, 4.0, 9.0), 202.0 + i, 100.0, False, False) for i in range(3)]
     assert out[-1] == "moved" and not s["learned"]
     # 6) matching: same place / size yes, two steps away or half the height no
     sp = {"a": (0.0, 0.0, 3.0, 8.0)}
@@ -84414,6 +84480,88 @@ for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
                 "everything is as before. Only the owner may start and stop it – in operator mode only the reports.</p>")):
     if _a in HELP_PAGE:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+# ----------------------------------------------------------------------------
+# Entscheid Daniel (31.10.2026): the card comes into the desktop window too. App._refresh (every few seconds) looks at
+# fixp_state(); a new card opens a small window (like the walk test, 575) with the picture of the spot and the buttons
+# «Ignorieren (Maske übernehmen)» / «Ist eine Person» / «Später» - the same answer as the web card (fixp_answer, 418).
+# ----------------------------------------------------------------------------
+def _app_fixp_card(self, f):
+    import base64
+    old = getattr(self, "_fx_win", None)
+    try:
+        if old is not None and old.winfo_exists():
+            old.destroy()
+    except Exception:
+        pass
+    win = tk.Toplevel(self.root); self._fx_win = win
+    win.title("MoveEye – " + tr("Something here looks like a person - ignore it?"))
+    ttk.Label(win, text="🌲 " + tr("Something here looks like a person - ignore it?"), font=("TkDefaultFont", 12, "bold"),
+              wraplength=520, justify="left").pack(anchor="w", padx=12, pady=(12, 6))
+    o = next((o for o in FIXP["offers"] if o["id"] == f["id"]), None)
+    if o and o.get("jpg"):
+        try:
+            im = cv2.imdecode(np.frombuffer(o["jpg"], np.uint8), cv2.IMREAD_COLOR)
+            if im is not None and im.shape[1] > 520:
+                im = cv2.resize(im, (520, int(im.shape[0] * 520 / im.shape[1])))
+            ok, buf = cv2.imencode(".png", im)
+            if ok:
+                ph_ = tk.PhotoImage(data=base64.b64encode(buf.tobytes()).decode())
+                lb = ttk.Label(win, image=ph_); lb.image = ph_; lb.pack(padx=12, pady=4)
+        except Exception:
+            pass
+    ttk.Label(win, text=tr("It has not moved for minutes. MoveEye treats it as a thing for now (no alarm, the head does not follow); a mask keeps it so."
+                           if f.get("auto") else "It has not moved for minutes. It still counts as a person (alarm, the head follows) until you tap «Ignore»."),
+              style="Mut.TLabel", wraplength=520, justify="left").pack(anchor="w", padx=12, pady=(4, 8))
+    bf = ttk.Frame(win); bf.pack(fill="x", padx=12, pady=(0, 12))
+
+    def ans(op):
+        ok, err = fixp_answer(f["id"], op)
+        try:
+            self._status("Detection", ("✓ " + tr("Mask made")) if ok and op == "mask" else ("" if ok else "⚠ " + tr(err or "error")))
+        except Exception:
+            pass
+        try:
+            win.destroy()
+        except Exception:
+            pass
+    ttk.Button(bf, text=tr("Ignore (make a mask)"), command=lambda: ans("mask")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+    ttk.Button(bf, text=tr("It is a person"), command=lambda: ans("person")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+    ttk.Button(bf, text=tr("Later"), command=lambda: ans("later")).pack(side="left", expand=True, fill="x")
+
+
+App._fixp_card = _app_fixp_card
+_fx_tk_refresh_before = App._refresh
+
+
+def _fx_tk_refresh(self, *a, **k):
+    r = _fx_tk_refresh_before(self, *a, **k)
+    try:
+        offs = fixp_state()["offers"]
+        f = offs[0] if offs else None
+        if f and getattr(self, "_fx_shown", None) != f["id"]:
+            self._fx_shown = f["id"]
+            self._fixp_card(f)
+    except Exception:
+        pass
+    return r
+
+
+# wraps: App._refresh
+App._refresh = _fx_tk_refresh
+
+
+def fixp_tk_selftest():
+    """the window card has the same texts and the same three answers as the web card (418)"""
+    import inspect
+    src = inspect.getsource(_app_fixp_card)
+    for k in FIXP_MAIN_KEYS:
+        assert k in src and k in FIXP_MAIN_JS, k
+    for op in ("mask", "person", "later"):
+        assert f'ans("{op}")' in src and f'ans("{op}")' in FIXP_MAIN_JS, op
+    return True
+
+
+SELFTEST_EXTRA.append(("Card «ignore it?» in the window = web (599f / 418)", fixp_tk_selftest))
 TRX['rm'].update({
     '(or the address from the push message).': "(u l'adressa da l'avis push).",
     '+ Add relay': '+ Agiuntar in relais',
@@ -95906,6 +96054,11 @@ _HX_FIXP = {
          'Cela n’a pas bougé depuis des minutes. MoveEye le traite pour l’instant comme un objet (pas d’alarme, la tête ne suit pas) ; un masque le garde ainsi.',
          'Non si muove da minuti. MoveEye lo tratta per ora come un oggetto (nessun allarme, la testa non lo segue); una maschera lo ricorda per sempre.',
          'Igl na s’ha betg movì dapi minutas. MoveEye al tracta per ussa sco object (nagin alarm, il chau na suonda betg); ina mascra al tegna uschia.'),
+    'It has not moved for minutes. It still counts as a person (alarm, the head follows) until you tap «Ignore».':
+        ('Es hat sich seit Minuten nicht bewegt. Es gilt weiter als Person (Alarm, der Kopf folgt), bis du «Ignorieren» drückst.',
+         'Cela n’a pas bougé depuis des minutes. Cela compte toujours comme une personne (alarme, la tête suit) jusqu’à ce que tu touches «Ignorer».',
+         'Non si muove da minuti. Conta ancora come una persona (allarme, la testa segue) finché non tocchi «Ignora».',
+         'Igl na s’ha betg movì dapi minutas. Igl vala vinavant sco persuna (alarm, il chau suonda) fin che ti tutgas «Ignorar».'),
     'Ignore (make a mask)': ('Ignorieren (Maske übernehmen)', 'Ignorer (créer un masque)', 'Ignora (crea una maschera)', 'Ignorar (far ina mascra)'),
     'It is a person': ('Ist eine Person', 'C’est une personne', 'È una persona', 'Igl è ina persuna'),
     'Mask made': ('Maske gemacht', 'Masque créé', 'Maschera creata', 'Mascra fatga'),
@@ -95922,9 +96075,10 @@ WEB_PAGE = WEB_PAGE.replace("</body>", fixp_main_js() + "</body>", 1)     # the 
 # the manual (HELP_PAGE of 540): one paragraph in the section «Erkennung», German and English
 for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
                 "<p><b>🌲 Feste Fehl-Personen, Fahrzeuge und Tiere:</b> Sieht die KI an einer Stelle über Minuten eine «Person», die sich nicht "
-                "bewegt und nie dorthin gegangen ist (eine kleine Fichte, ein Baumstamm im Infrarot-Licht), merkt sich MoveEye sie als "
-                "Gegenstand: kein Alarm, der Kopf folgt ihr nicht (war sie schon beim Start da: nach etwa 45 s, sonst nach 3 Min.). Auf der Seite "
-                "Live / Schutz erscheint ein Bild mit «Hier steht etwas, das wie eine Person aussieht – ignorieren?»: «Ignorieren» macht eine Maske "
+                "bewegt und nie dorthin gegangen ist (eine kleine Fichte, ein Baumstamm im Infrarot-Licht), zeigt MoveEye nach etwa "
+                "45 s (war sie schon beim Start da) bzw. 3 Min. einen Vorschlag. Nur wenn eine Wärmekamera bestätigt, dass sie nicht warm ist, "
+                "wird sie von selbst zum Gegenstand (kein Alarm, der Kopf folgt nicht); ohne Wärmekamera bleibt sie eine Person, bis du "
+                "«Ignorieren» drückst. Auf der Seite Live / Schutz (und im Fenster) erscheint ein Bild mit «Hier steht etwas, das wie eine Person aussieht – ignorieren?»: «Ignorieren» macht eine Maske "
                 "(nur für Personen, bleibt beim Drehen des Kopfs am Platz), «Ist eine Person» lernt die Stelle nie mehr. Bewegt sich der Kasten "
                 "deutlich oder kommt jemand dazu, gilt er sofort wieder als Person. Eine Person, die hingegangen ist und dann lange still steht, "
                 "wird nie ignoriert. «Person (Wärmebild)» kommt nicht mehr bei einem fahrenden Auto (breiter, warmer Fleck, viel zu schnell für "
@@ -95932,8 +96086,10 @@ for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
                 "Katze, Schaf, Vogel …), bleibt die Spur ein Tier – keine Person aus Bewegung, «Person?» oder Wärmebild.</p>"),
                ('<section id="detect" data-icon="🎯"><h2>Detection</h2>',
                 "<p><b>🌲 Still false persons, vehicles and animals:</b> when the AI sees a «person» at one place for minutes that does not move "
-                "and never walked there (a small spruce, a tree trunk in the infrared light), MoveEye remembers it as a thing: no alarm, the head "
-                "does not follow it (there at the start already: after about 45 s, else after 3 min). The Live / Schutz page shows a picture "
+                "and never walked there (a small spruce, a tree trunk in the infrared light), MoveEye makes a suggestion after about 45 s (there "
+                "at the start already) or 3 min. Only when a thermal camera confirms it is not warm does it become a thing by itself (no "
+                "alarm, the head does not follow); without a thermal camera it stays a person until you tap «Ignore». The Live / Schutz "
+                "page (and the window) shows a picture "
                 "with «Something here looks like a person - ignore it?»: «Ignore» makes a mask (persons only, stays on its place when the head "
                 "turns), «It is a person» never learns that place again. When the box moves clearly or somebody comes onto it, it is a person "
                 "again at once. A person who walked there and then stands still for a long time is never ignored. «Person (thermal)» no longer "
