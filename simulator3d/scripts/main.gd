@@ -326,7 +326,8 @@ var tracks                            # tracks.gd (3D-3.98)
 var seasons_on := true
 var sleeper                           # sleeper.gd (3D-3.96): the person in the bed of the bedroom scene
 var fauna_on := true
-var pan_vel := 0.0                    # rad/s of the head (for the blur while turning)
+var servo                             # servo.gd («Servo-Mechanik»): the two MG90S of the head with «Servos wie echt»
+var pan_vel := 0.0                    # rad/s of the head (for the blur while turning; with «Servo-Mechanik» incl. overshoot)
 var tilt_vel := 0.0
 var _srv := {"v": 0.0, "wob": 0.0, "t": 0.0, "dir": 1.0}
 var expo_mats: Array = []             # exposure quads (multiply) in front of camera 0 / 1
@@ -520,6 +521,9 @@ func _ready() -> void:
 	simint = preload("res://scripts/simint.gd").new()      # 30.10.2026: siren on the PC + microphone, servo faults, thermal model
 	simint.main = self
 	add_child(simint)
+	servo = preload("res://scripts/servo.gd").new()        # «Servo-Mechanik»: MG90S model of the head (with «Servos wie echt»)
+	servo.main = self
+	add_child(servo)
 	sym_node = Sym.new()                               # 3D-4.22: drawn symbols instead of missing emoji (symbole.gd)
 	sym_node.main = self
 	add_child(sym_node)
@@ -2387,16 +2391,23 @@ func _process(dt: float) -> void:
 	var x0: float = head_pitch.rotation.x
 	var sreal: bool = realism != null and realism.servo_real
 	var dead := deg_to_rad(0.6) if sreal else 0.0          # 3D-3.94: an MG90S does not move for less than about half a degree
-	if absf(want_pan + sabotage_turn - head.rotation.y) > dead and not (simint != null and simint.hold("pan") and sabotage_turn == 0.0):
-		head.rotation.y = move_toward(head.rotation.y, want_pan + sabotage_turn, step * (6.0 if absf(sabotage_turn) > 0.0 else 1.0))
-	if absf(want_tilt - head_pitch.rotation.x) > dead and not (simint != null and simint.hold("tilt")):
-		head_pitch.rotation.x = move_toward(head_pitch.rotation.x, want_tilt, step)
-	var vy: float = (head.rotation.y - y0) / maxf(dt, 0.0001)
-	tilt_vel = (head_pitch.rotation.x - x0) / maxf(dt, 0.0001)
-	if sreal and absf(float(_srv["v"])) > 0.3 and absf(vy) < 0.05:    # it stops: the light head swings a little
-		_srv = {"v": vy, "wob": clampf(absf(float(_srv["v"])) * 0.012, 0.004, 0.02), "t": now(), "dir": signf(float(_srv["v"]))}
-	_srv["v"] = vy
-	pan_vel = vy
+	var mech: bool = sreal and servo != null and sabotage_turn == 0.0 and not (dataset != null and dataset.servo != null)
+	if mech:                                             # «Servo-Mechanik» (servo.gd): MG90S with voltage, inertia, play, overshoot, current
+		servo.step(dt, want_pan, want_tilt)
+		_srv["wob"] = 0.0                                # the overshoot is in the model now (no extra camera swing)
+	else:
+		if servo != null:
+			servo.reset()
+		if absf(want_pan + sabotage_turn - head.rotation.y) > dead and not (simint != null and simint.hold("pan") and sabotage_turn == 0.0):
+			head.rotation.y = move_toward(head.rotation.y, want_pan + sabotage_turn, step * (6.0 if absf(sabotage_turn) > 0.0 else 1.0))
+		if absf(want_tilt - head_pitch.rotation.x) > dead and not (simint != null and simint.hold("tilt")):
+			head_pitch.rotation.x = move_toward(head_pitch.rotation.x, want_tilt, step)
+		var vy: float = (head.rotation.y - y0) / maxf(dt, 0.0001)
+		tilt_vel = (head_pitch.rotation.x - x0) / maxf(dt, 0.0001)
+		if sreal and absf(float(_srv["v"])) > 0.3 and absf(vy) < 0.05:    # it stops: the light head swings a little
+			_srv = {"v": vy, "wob": clampf(absf(float(_srv["v"])) * 0.012, 0.004, 0.02), "t": now(), "dir": signf(float(_srv["v"]))}
+		_srv["v"] = vy
+		pan_vel = vy
 	cams[0].global_transform = head_pitch.global_transform.translated_local(Vector3(0, 0.0, -0.13))
 	if sreal and float(_srv["wob"]) > 0.0:
 		var k_: float = now() - float(_srv["t"])
@@ -3638,7 +3649,9 @@ func _register_controls() -> void:
 	# 3D-3.94: the camera like a real one - and like the real one of MoveEye
 	add_control("toggle", "real_fx", "Kamera wie echt: Bewegungsunschärfe (nachts stärker), Farben des Sensors, NoIR-Rosastich am Tag, langsamere Belichtung", func(): return realism.fx_on, func(v): realism.fx_on = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
 	add_control("toggle", "real_look", "Echt-Abgleich: Helligkeit, Farbe, Schärfe und Rauschen an die echten Bilder von MoveEye angleichen", func(): return realism.real_on, func(v): realism.real_on = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
-	add_control("toggle", "real_servo", "Servos wie echt: kleines Spiel, Nachschwingen nach dem Drehen", func(): return realism.servo_real, func(v): realism.servo_real = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
+	add_control("toggle", "real_servo", "Servos wie echt: MG90S-Tempo nach Spannung, Getriebespiel, Nachschwingen, Anlaufstrom", func(): return realism.servo_real, func(v): realism.servo_real = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
+	if servo != null:
+		servo.add_controls()                           # «Servo-Mechanik»: head weight, gear play; Störung «Schwaches Servosignal»
 	add_control("button", "real_reset", "Echt-Abgleich zurücksetzen", null, func(): realism.reset(), "Kamerabild", {"sub": "Wie echt", "expert": true})
 	add_control("toggle", "colors_on", "Natürliche Farben und Materialien (Metall, Glas, Stoff, nass bei Regen) – wirkt nach dem Szenenwechsel", func(): return colors_on, func(v): colors_on = v; colors.on = v; _settings_dirty = true, "Kamerabild", {"sub": "Wie echt"})
 	add_control("toggle", "seasons_on", "Jahreszeiten: Gras und Laub nach dem Monat (Frühling, Sommer, Herbst, Winter)", func(): return seasons_on, func(v): seasons_on = v; colors.seasons_on = v; colors._month = -1; _update_sky(); _settings_dirty = true, "Szene", {"sub": "Zeit"})
@@ -4624,6 +4637,8 @@ func _control(d: Dictionary) -> Dictionary:
 		gr["steal"] = gps_steal_t > 0.0
 		gr["solar"] = solar_reading()
 		return gr
+	elif a == "servo":                                 # «Servo-Mechanik»: {do: info | set (key, value) | sim (deg, mass, play, v)} (servo.gd)
+		return servo.control(d)
 	elif a == "simint":                                # 30.10.2026: {do: info | uv | pca | i2c | block (axis) | off | model (m) | hand (on)} (simint.gd)
 		return simint.op(d)
 	elif a == "sound":                                 # 3D-3.98: {kind: clap | sneeze | voice | shout, n, x, z}

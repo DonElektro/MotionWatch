@@ -208,9 +208,22 @@ func _make(fam: String) -> AudioStreamWAV:
 # ======================================================================================================================
 func v5() -> float:
 	"""the 5 V rail of the UPS HAT (what the Pi and the servos get): sags with a weak battery and with the servo current"""
+	var v := v5_base()
+	var srv = main.get("servo")
+	if srv != null and srv.active():
+		v -= srv.rail_drop()                          # «Servo-Mechanik»: the real current of both MG90S (start peaks ~0.7 A each)
+	else:
+		var sv: Dictionary = main.mw.get("servo", {}) if main.mw.get("servo") is Dictionary else {}
+		if bool(sv.get("moving", false)) and main.now() - main.mw_t < 3.0:
+			v -= 0.18                                 # two MG90S starting: a short current peak (old estimate)
+	if uv_force:
+		v = minf(v, 4.55)
+	return v
+
+
+func v5_base() -> float:
+	"""the rail without the servo current (battery, boost converter) - servo.gd takes its speed and current from it"""
 	var v := 5.12
-	var sv: Dictionary = main.mw.get("servo", {}) if main.mw.get("servo") is Dictionary else {}
-	var moving: bool = bool(sv.get("moving", false)) and main.now() - main.mw_t < 3.0
 	var sw = main.simwerte
 	if sw != null and sw.batt_on and not sw.mains:
 		var vb: float = float(sw.volts)
@@ -218,8 +231,6 @@ func v5() -> float:
 			v -= (6.8 - vb) * 0.9                     # the boost converter cannot hold 5 V any more
 		if sw.empty:
 			v = 4.3
-	if moving:
-		v -= 0.18                                     # two MG90S starting: a short current peak
 	if uv_force:
 		v = minf(v, 4.55)
 	return v
@@ -290,6 +301,8 @@ func clear_faults() -> void:
 	i2c_until = 0.0
 	pca_hold = false
 	block_axis = ""
+	if main.get("servo") != null:
+		main.servo.weak_signal = false
 	main.start_info = "Störungen aus – alles normal"
 
 
@@ -369,8 +382,11 @@ func _hand_tick(t: float) -> void:
 # ======================================================================================================================
 func reply() -> Dictionary:
 	"""added to world_reply in net.gd (MoveEye 554 / 555 / 557)"""
-	return {"servo_sim": {"v5": snappedf(v5(), 0.01), "uv": _uv, "i2c": main.now() < i2c_until, "pca_reset": pca_id,
-			"pca_hold": pca_hold, "blocked": block_axis, "head_mw": head_follows_mw()},
+	var ss := {"v5": snappedf(v5(), 0.01), "uv": _uv, "i2c": main.now() < i2c_until, "pca_reset": pca_id,
+			"pca_hold": pca_hold, "blocked": block_axis, "head_mw": head_follows_mw()}
+	if main.get("servo") != null:
+		ss.merge(main.servo.reply())                  # «Servo-Mechanik»: i_a, i_peak, head_dps, weak_sig (MoveEye reads it not yet)
+	return {"servo_sim": ss,
 			"thermal_model": thermal_info(), "warm_hand": hand_on}
 
 
@@ -408,6 +424,11 @@ func status_text() -> String:
 	if _cur != "":
 		s += " · am PC %s" % ("stumm" if spk_mute or not main.sound_on else "%d %%" % int(spk_vol))
 	s += "\n⚡ 5-V-Schiene %.2f V%s" % [v5(), " · ⚠ Unterspannung (Servos schwach)" if _uv else ""]
+	var srv = main.get("servo")
+	if srv != null and srv.active():
+		s += " · Servos %.2f A (Spitze %.2f A)" % [srv.current(), float(srv._i_peak)]
+		if srv.signal_weak():
+			s += " · Servosignal schwach (Kopf zittert)"
 	var f := []
 	if main.now() < i2c_until:
 		f.append("I2C-Fehler")
