@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.79** · passende MoveEye-Version (früher Motion Watch) **2.98.110**
+Stand: 31.10.2026 · Simulator-Version **3D-4.80** · passende MoveEye-Version (früher Motion Watch) **2.98.111**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.80 (MoveEye 2.98.111): Ein «Entwickler» (`devtool_schalter.gd`)
+
+- `devtool_schalter.gd` (neu): Reiter «Schalter» im Fenster Mehr → Entwickler (Prüfstand, Störungen testen, Diagnose-Paket).
+  Die Bedienfeld-Karte «Entwickler» (`main.gd`) öffnet nur noch dieses Fenster; Spieltest-Schalter nur noch einmal
+  (`spieltest.gd`, `devtool_extra.gd`, `mehr.gd`).
 
 ## NEU in 3D-4.79 (MoveEye 2.98.110): «Maggie und der Bergkristall» (`maggie_*.gd`)
 

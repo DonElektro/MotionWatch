@@ -421,6 +421,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.80
+3D-4.80: Simulator: Nur noch ein «Entwickler». Das Fenster Mehr → Entwickler hat einen neuen Reiter «Schalter» (Prüfstand,
+Störungen testen, Diagnose-Paket). Die Bedienfeld-Karte «Entwickler» öffnet nur noch dieses Fenster. Den Spieltest-Schalter
+gibt es nur noch einmal.
+So testest du: 1) Mehr → Entwickler → Schalter → «Prüfstand öffnen». 2) In MoveEye den Entwickler-Bereich einschalten, dann
+im Bedienfeld die Karte «Entwickler» öffnen.
+
 NEU IN 3D-4.79
 3D-4.79: Neue Geschichte unter Spielen: «Maggie und der Bergkristall». Maggie, ein kleiner Terrier, gräbt einen leuchtenden
 Kristall aus, der kurze Bilder der Zukunft zeigt. Bring ihn durch vier Jahreszeiten-Täler zur Bergkapelle auf dem Gipfel.
