@@ -8,14 +8,15 @@ const LIST := [["camping", "Camping-Platz"], ["wald", "Wald"], ["parkplatz", "Pa
 		["zuhause", "Mein Zuhause (selbst gebaut)"], ["bauernhof", "Bauernhof"], ["seeufer", "Seeufer mit Steg"], ["baustelle", "Baustelle"],
 		["stellplatz", "Wohnmobil-Stellplatz"], ["vorlage", "Meine Vorlage (3D-Datei)"], ["schlafzimmer", "Schlafzimmer (Wecker)"],
 		["camping_voll", "Voller Campingplatz"], ["tarnen", "Tarnen und Kriechen"], ["velodieb", "Velodieb"], ["parcours", "Verfolgungs-Parcours"],
-		["ferienpark", "Ferienpark am See"], ["bergtal", "Bergtal (Alp, See, Pass)"]]   # 3D-4.x: szenenplus.gd
+		["ferienpark", "Ferienpark am See"], ["bergtal", "Bergtal (Alp, See, Pass)"], ["daheim", "Zuhause (Haus, Garten, Baustelle)"]]   # 3D-4.x: szenenplus.gd
+# 3D-4.x Welten (worlds.gd): every id stays valid; the scene list shows only worlds.gd SHOWN, the old scenes are places in them
 # 3D-4.x: the English names for MoveEye (it translates them into its languages; without a name MoveEye shows the German one)
 const EN := {"camping": "Campsite", "wald": "Forest", "parkplatz": "Car park", "garten": "Garden / house", "lustig": "Funny place",
 		"wild": "Wildlife watching", "verstecken": "Hide and seek (many hiding places)", "ort": "Place from the map (Switzerland)",
 		"zuhause": "My home (self-built)", "bauernhof": "Farm", "seeufer": "Lake shore with jetty", "baustelle": "Building site",
 		"stellplatz": "Camper van site", "vorlage": "My template (3D file)", "schlafzimmer": "Bedroom (wake-up alarm)",
 		"camping_voll": "Full campsite", "tarnen": "Camouflage and crawling", "velodieb": "Bike thief", "parcours": "Tracking course",
-		"ferienpark": "Holiday park by the lake", "bergtal": "Mountain valley (alp, lake, pass)"}
+		"ferienpark": "Holiday park by the lake", "bergtal": "Mountain valley (alp, lake, pass)", "daheim": "At home (house, garden, building site)"}
 
 # visitors that come by themselves, and how often (seconds from .. to)
 const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox", "boar", "deer", "herd", "cat", "badger", "hare", "hedgehog", "marten", "squirrel", "cyclist", "couple", "stroller", "courier", "police", "drunk", "bats", "owl", "burglar", "bbq", "homecoming", "fox_trash", "kids_tag", "boar_group"], 35.0, 110.0],
@@ -62,6 +63,45 @@ func build(id: String, parent: Node3D) -> void:
 	data = {}
 	m.test_props = {}                            # 3D-3.72: things the test aids can take away (name -> node)
 	m.bike_node = null
+	clip = 0.0
+	excl = []
+	no_road = false
+	decor = false
+	if Worlds.is_place(id) and not Worlds.solo(m, id):
+		Worlds.build(self, id)                   # 3D-4.x: an old scene as a place in its world (worlds.gd)
+		return
+	build_legacy(id)
+
+
+# 3D-4.x Welten: building a place inside a world - clip = radius of its flat area (0 = all), excl = [[centre, r], …] stays free
+# (the neighbours), no_road = no road across, decor = only scenery (a neighbour)
+const Worlds = preload("res://scripts/worlds.gd")
+const Quality = preload("res://scripts/quality.gd")
+var clip := 0.0
+var excl: Array = []
+var no_road := false
+var decor := false
+
+
+func _out(p: Vector3) -> bool:
+	"""outside the flat area of the place or on a neighbour"""
+	if clip > 0.0 and Vector2(p.x, p.z).length() > clip:
+		return true
+	for e in excl:
+		if Vector2(p.x - (e[0] as Vector3).x, p.z - (e[0] as Vector3).z).length() < float(e[1]):
+			return true
+	return false
+
+
+func prune(n: Node3D, r: float) -> void:
+	"""things of the old scene farther away than r: gone (the world is there)"""
+	for c in n.get_children():
+		if c is Node3D and Vector2((c as Node3D).position.x, (c as Node3D).position.z).length() > r:
+			c.free()
+
+
+func build_legacy(id: String, extras := true) -> void:
+	"""the old scenes (from 3D-1.5) - alone, or as a place in a world (worlds.gd)"""
 	match id:
 		"wald":
 			_wald()
@@ -101,7 +141,7 @@ func build(id: String, parent: Node3D) -> void:
 			preload("res://scripts/szenenplus.gd").build_scene(self, id)     # 3D-4.x: the new scenes (szenenplus.gd)
 		_:
 			_camping()
-	if EXTRA_HIDE.has(id):                                        # more places to hide (3D-3.13)
+	if extras and EXTRA_HIDE.has(id):                             # more places to hide (3D-3.13)
 		var e: Array = EXTRA_HIDE[id]
 		hide_props(int(e[0]), float(e[1]), float(e[2]), e[3])
 
@@ -123,6 +163,20 @@ const EXTRA_HIDE := {
 
 # ---- small helpers -------------------------------------------------------------------------------------------------
 func put(parent: Node3D, mesh: Mesh, p: Vector3, c, tkey, rot := Vector3.ZERO, scl := Vector3.ONE) -> MeshInstance3D:
+	if clip > 0.0 and parent == root and mesh is BoxMesh and (mesh as BoxMesh).size.y <= 0.12 and absf(rot.y) < 0.01:
+		var bs: Vector3 = (mesh as BoxMesh).size        # 3D-4.x: a flat thing (road, gravel, water) only on the flat area
+		if bs.x > clip or bs.z > clip:
+			var x0 := maxf(p.x - bs.x / 2.0, -clip)
+			var x1 := minf(p.x + bs.x / 2.0, clip)
+			var z0 := maxf(p.z - bs.z / 2.0, -clip)
+			var z1 := minf(p.z + bs.z / 2.0, clip)
+			if x1 - x0 < 0.2 or z1 - z0 < 0.2:
+				x0 = 0.0
+				x1 = 0.01
+				z0 = 0.0
+				z1 = 0.01
+			mesh = m.box(x1 - x0, bs.y, z1 - z0)
+			p = Vector3((x0 + x1) / 2.0, p.y, (z0 + z1) / 2.0)
 	return m.add_mesh(parent, mesh, p, m.mat(c) if typeof(c) == TYPE_COLOR else c, tkey, rot, scl)
 
 
@@ -196,6 +250,9 @@ func foliage(k: int) -> ShaderMaterial:
 
 
 func tree(parent: Node3D, p: Vector3, sc: float, conifer := -1) -> void:
+	if (parent == root and _out(p)) or (decor and Quality.lite()):
+		rng.randf()                                  # 3D-4.x: outside the place (worlds.gd) - the same random numbers after it
+		return
 	var tr := node(parent, p, rng.randf() * TAU)
 	tr.scale = Vector3.ONE * sc
 	var bark := Color(0.3, 0.22, 0.15).lerp(Color(0.38, 0.3, 0.22), rng.randf())
@@ -238,11 +295,21 @@ func trees(n: int, dmin: float, dmax: float, keep_clear: Callable) -> void:
 
 func road(z: float, width := 5.0) -> void:
 	data["road_z"] = z + 1.2
+	if no_road:
+		return
 	put(root, m.box(400, 0.04, width), Vector3(0, 0.02, z), Color(0.42, 0.4, 0.37), "road")
 
 
 func meadow(n: int, dmin: float, dmax: float, keep_clear := Callable()) -> void:
 	"""grass tufts and flowers scattered on the meadow - one MultiMesh each (cheap even for thousands)"""
+	if decor and Quality.lite():
+		return
+	if clip > 0.0:
+		dmax = minf(dmax, clip)
+		dmin = minf(dmin, dmax * 0.5)
+	if not excl.is_empty():
+		var kc0 := keep_clear
+		keep_clear = func(p: Vector3): return _out(p) or (kc0.is_valid() and kc0.call(p))
 	var blade := PrismMesh.new()
 	blade.size = Vector3(0.12, 0.28, 0.02)
 	var gm := StandardMaterial3D.new()
@@ -295,6 +362,9 @@ func meadow(n: int, dmin: float, dmax: float, keep_clear := Callable()) -> void:
 
 
 func stones(n: int, dmin: float, dmax: float) -> void:
+	if clip > 0.0:
+		dmax = minf(dmax, clip)
+		dmin = minf(dmin, dmax * 0.5)
 	for i in range(n):
 		var r := rng.randf_range(0.15, 0.35)
 		put(root, sph(r, r * 1.2), m.pos_of(rng.randf_range(-60, 60), rng.randf_range(dmin, dmax), 0.05), Color(0.48, 0.48, 0.46), "stone")
@@ -1159,12 +1229,15 @@ func prop(kind: String, p: Vector3, rot_y: float) -> void:
 
 func hide_props(n: int, dmin: float, dmax: float, kinds: Array, keep_clear := Callable()) -> int:
 	"""n hiding places between dmin and dmax from MoveEye, away from each other and from obstacles; returns how many"""
+	if clip > 0.0:
+		dmax = minf(dmax, clip - 2.0)
+		dmin = minf(dmin, dmax * 0.5)
 	var made := 0
 	var tries := 0
 	while made < n and tries < n * 12:
 		tries += 1
 		var p: Vector3 = m.pos_of(rng.randf_range(-180, 180), rng.randf_range(dmin, dmax))
-		if keep_clear.is_valid() and keep_clear.call(p):
+		if (keep_clear.is_valid() and keep_clear.call(p)) or _out(p):
 			continue
 		var ok := true
 		for o in m._ob_near(Vector2(p.x, p.z)):

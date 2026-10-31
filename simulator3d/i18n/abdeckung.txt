@@ -1,21 +1,21 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 3431 (Stellen: 4957)
-Übersetzt: en 3200, fr 3199, it 3199, rm 3199
+Texte gesamt: 3453 (Stellen: 4983)
+Übersetzt: en 3222, fr 3221, it 3221, rm 3221
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 342 Stellen
 Nicht mehr im Code (noch in texte.json): 28
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 42 Stellen in wizpics.gd 16, wordmark.gd 10, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 11970, schlüssel 8068, keine Wörter 6296, index 3926, technisch 1460, doc 929, einheit 135, englisch 65, log 59, pfad 55, html 42, klasse 22
+Übersprungen (Grund: Anzahl): kennung 12041, schlüssel 8123, keine Wörter 6322, index 3939, technisch 1468, doc 946, einheit 136, englisch 66, log 59, pfad 55, html 42, klasse 22
 
 Pro Datei (Texte / davon dynamische Stellen):
-  main.gd                  647    29
+  main.gd                  649    29
   gamewiz.gd               213    14
   game.gd                  211    32
   bergtal.gd               199     5
   bib_objekte.gd           108     0
   ferienpark.gd             89     0
-  templates.gd              88     6
+  templates.gd              89     6
   toolbar.gd                87     3
   gameplus.gd               83     5
   testrun.gd                81     3
@@ -34,7 +34,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   karte.gd                  46     8
   gamerules.gd              45     4
   symbole.gd                44     1
-  scenes.gd                 42     0
+  scenes.gd                 43     0
   protokoll.gd              42    16
   inventar.gd               41     4
   localplay.gd              41    13
@@ -57,6 +57,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   fenster.gd                22     0
   explore.gd                22     2
   mini.gd                   21     1
+  worlds.gd                 20     0
   patrol.gd                 20     0
   phone.gd                  20     4
   tv.gd                     19     8
@@ -135,11 +136,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   b3d.gd:86  'Kachel leer: '
   b3d.gd:186  'glTF nicht lesbar: '
   b3d.gd:208  'Kachel ohne Dreiecke: '
-  bergtal.gd:228  'Aussicht: '
-  bergtal.gd:237  'Schlafplatz: '
-  bergtal.gd:239  'Aussicht: '
-  bergtal.gd:2108  'Schlafplatz: '
-  bergtal.gd:2110  'Aussicht: '
+  bergtal.gd:231  'Aussicht: '
+  bergtal.gd:240  'Schlafplatz: '
+  bergtal.gd:242  'Aussicht: '
+  bergtal.gd:2144  'Schlafplatz: '
+  bergtal.gd:2146  'Aussicht: '
   dataset.gd:54  'Spiel: '
   dataset.gd:319  ' · Vielfalt hoch'
   dataset.gd:434  ' · alte KI-Daten gelöscht: %d (%.0f MB)'
@@ -187,35 +188,35 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   karte.gd:503  'Dazu kommen: '
   karte.gd:511  'ja'
   karte.gd:511  'keine'
-  main.gd:1352  '  %.0f Mbit/s'
-  main.gd:2025  ' (von MoveEye)'
-  main.gd:2058  'Der Simulator ist belegt: '
-  main.gd:2859  'aus'
-  main.gd:2859  'ein'
-  main.gd:2936  'Sabotage-Test: '
-  main.gd:2936  'aus'
-  main.gd:2990  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:2993  '\n🚨 Bewacht und weg: '
-  main.gd:3740  'keine'
-  main.gd:3766  'Wächter an MoveEye: '
-  main.gd:4482  'Dein Platz: '
-  main.gd:4707  ' · schaut nur zu: '
-  main.gd:4710  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:4711  ' · Update: '
-  main.gd:5041  'Blinde Flecken: '
-  main.gd:5696  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6002  'Autostart: '
-  main.gd:6013  'Autologon: '
-  main.gd:6174  'Karte öffnen: '
-  main.gd:6320  'Echt-Abgleich: '
-  main.gd:6327  'Trainingspaket: '
-  main.gd:6336  ' · %d offen · %.1f MB'
-  main.gd:6336  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6345  'Verbindung · '
-  main.gd:6345  'aus'
-  main.gd:6349  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6349  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6352  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:1361  '  %.0f Mbit/s'
+  main.gd:2034  ' (von MoveEye)'
+  main.gd:2067  'Der Simulator ist belegt: '
+  main.gd:2868  'aus'
+  main.gd:2868  'ein'
+  main.gd:2945  'Sabotage-Test: '
+  main.gd:2945  'aus'
+  main.gd:2999  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3002  '\n🚨 Bewacht und weg: '
+  main.gd:3758  'keine'
+  main.gd:3784  'Wächter an MoveEye: '
+  main.gd:4504  'Dein Platz: '
+  main.gd:4729  ' · schaut nur zu: '
+  main.gd:4732  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:4733  ' · Update: '
+  main.gd:5063  'Blinde Flecken: '
+  main.gd:5718  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6024  'Autostart: '
+  main.gd:6035  'Autologon: '
+  main.gd:6196  'Karte öffnen: '
+  main.gd:6342  'Echt-Abgleich: '
+  main.gd:6349  'Trainingspaket: '
+  main.gd:6358  ' · %d offen · %.1f MB'
+  main.gd:6358  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6367  'Verbindung · '
+  main.gd:6367  'aus'
+  main.gd:6371  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6371  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6374  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:446  ' (automatisch von oben)'
   explore.gd:446  ' · schnell'
   feedback.gd:266  ' · TESTMODUS: geht nur an '
@@ -368,7 +369,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inventar.gd:306  ' – anklicken und in die Welt klicken, oder hineinziehen'
   inventar.gd:308  '\nKI: – = die KI von MoveEye kennt es nicht (Prüfstand: darf keinen Alarm auslösen)'
   inventar.gd:332  'KI: '
-  kids.gd:332  ' Du hast jetzt %d Sterne.'
+  kids.gd:338  ' Du hast jetzt %d Sterne.'
   kitrain.gd:93  '1/3 Paket: '
   kitrain.gd:157  'Ohne GitHub-Schlüssel: die ZIP liegt hier: %s\nSo kommt sie ins Training: 1. GitHub → Releases → «ki-daten» → Edit → ZIP hineinziehen → Update release '
   kitrain.gd:158  '(beim ersten Mal «Draft a new release», Tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye holt das neue Modell danach selbst.\n'
@@ -457,12 +458,12 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   simint.gd:417  '-Servo blockiert'
   surprise.gd:113  'Überraschung: '
   szenenplus.gd:735  'Spiel zur Szene: '
-  templates.gd:212  'Lizenz: '
-  templates.gd:283  'Datei nicht lesbar: '
-  templates.gd:287  'Kann nicht speichern: '
-  templates.gd:295  'Datei nicht lesbar: '
-  templates.gd:304  'Umwandeln ging nicht: '
-  templates.gd:309  'Datei enthält kein 3D-Modell: '
+  templates.gd:219  'Lizenz: '
+  templates.gd:290  'Datei nicht lesbar: '
+  templates.gd:294  'Kann nicht speichern: '
+  templates.gd:302  'Datei nicht lesbar: '
+  templates.gd:311  'Umwandeln ging nicht: '
+  templates.gd:316  'Datei enthält kein 3D-Modell: '
   zwilling.gd:94  'Bild nicht lesbar: '
   zwilling.gd:104  'Kann nicht speichern: '
   zwilling.gd:168  'Foto fehlt: '

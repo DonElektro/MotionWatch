@@ -19,6 +19,7 @@ extends RefCounted
 const Bib = preload("res://scripts/bib_berg.gd")
 const T = preload("res://scripts/i18n.gd")
 const Szenen = preload("res://scripts/szenenplus.gd")
+const Worlds = preload("res://scripts/worlds.gd")      # 3D-4.x Welten: the old scenes as places in the valley
 
 const ALT0 := 1500.0                 # metres above sea level at the north end (height 0)
 const LO := -1024.0                  # the height map: from LO to -LO in both directions
@@ -178,6 +179,8 @@ var rng := RandomNumberGenerator.new()
 var lite := false
 var info := {}
 var spot_xz := Vector2.ZERO
+var place := ""                              # 3D-4.x Welten: the old scene that is the place now ("" = a sleeping spot)
+var place_r := 0.0
 var spot_yaw := 0.0
 var rating := {}                             # the evaluation of the sleeping spot
 var night_log: Array = []                    # what happened at the spot this night (morning rating)
@@ -394,6 +397,8 @@ static func generate() -> void:
 	for i in range(STREAMS.size()):
 		_carve_stream(STREAMS[i][0], float(STREAMS[i][1]), i == 0)
 	_road_flatten()
+	for pl in Worlds.places_of("bergtal"):                 # 3D-4.x Welten: the flat areas of the old scenes (worlds.gd)
+		_pad(Vector2(pl[2], pl[3]), float(pl[5]), pl[0] == "seeufer")
 	for sp in SPOTS.values():                              # the suggested spots: flat enough for a tent
 		_flatten(Vector2(sp[1], sp[2]), 7.0, 1.0)
 	for vp in VIEWPOINTS:
@@ -491,6 +496,27 @@ static func _flatten(c: Vector2, r: float, k: float) -> void:
 		for i in range(i0.x, i1.x + 1):
 			var d := Vector2(LO + i * STEP, LO + j * STEP).distance_to(c)
 			var w := k * (1.0 - smoothstep(r, r * 1.6, d))
+			if w > 0.0:
+				_hm[j * N + i] = lerpf(_hm[j * N + i], target, w)
+
+
+static func _pad(c: Vector2, r: float, shore := false) -> void:
+	"""3D-4.x Welten: a flat area for an old scene (radius r, edge to 1.5 r); the lakes stay (shore: just above the water)"""
+	var target := H(c.x, c.y)
+	if shore:
+		target = level_of(LAKE1) + 0.45
+	var i0 := _idx(c.x - r * 1.5, c.y - r * 1.5)
+	var i1 := _idx(c.x + r * 1.5, c.y + r * 1.5)
+	for j in range(i0.y, i1.y + 1):
+		for i in range(i0.x, i1.x + 1):
+			var q := Vector2(LO + i * STEP, LO + j * STEP)
+			var lake := false
+			for lk in LAKES:
+				if _ell(q, lk) < 1.04:
+					lake = true
+			if lake:
+				continue
+			var w := 1.0 - smoothstep(r, r * 1.5, q.distance_to(c))
 			if w > 0.0:
 				_hm[j * N + i] = lerpf(_hm[j * N + i], target, w)
 
@@ -889,7 +915,14 @@ func _build(sc) -> void:
 	bed = str(m.get("bt_bed")) if m.get("bt_bed") != null else "tent"
 	spot = str(m.get("bt_spot")) if m.get("bt_spot") != null else "huette"
 	var fr: Array = m.get("bt_free") if m.get("bt_free") is Array else []
-	if spot == "frei" and fr.size() >= 3:
+	place = Worlds.active(m, "bergtal")
+	if place != "":                                      # 3D-4.x Welten: an old scene is the place (worlds.gd builds it)
+		var pl: Array = Worlds.PLACES[place]
+		spot = place
+		spot_xz = Vector2(float(pl[2]), float(pl[3]))
+		spot_yaw = float(pl[4])
+		place_r = float(pl[5])
+	elif spot == "frei" and fr.size() >= 3:
 		spot_xz = Vector2(float(fr[0]), float(fr[1]))
 		spot_yaw = float(fr[2])
 	else:
@@ -908,6 +941,8 @@ func _build(sc) -> void:
 	m.terrain = true
 	m.ground_fn = Callable(self, "gy")
 	bib = Bib.new(m, s, tal, tal.transform)
+	if place != "":
+		bib.clear = [[spot_xz, place_r + 8.0]]          # nothing of the valley on the flat area of the place
 	_ground()
 	_apron()
 	_far_mountains()
@@ -924,7 +959,8 @@ func _build(sc) -> void:
 	_viewpoints()
 	_vignette_pieces()
 	_signs_and_cairns()
-	_own_spot()
+	if place == "":
+		_own_spot()
 	bib.finish()
 	_lights_and_fx()
 	_labels()
@@ -932,7 +968,7 @@ func _build(sc) -> void:
 		s.meadow(160 if lite else 420, 3.0, 35.0, func(p: Vector3):
 			var q := inv * p
 			var z := zone(q.x, q.z)
-			return z in ["lake", "shore", "scree", "glacier"] or slope_deg(q.x, q.z) > 30.0)
+			return z in ["lake", "shore", "scree", "glacier"] or slope_deg(q.x, q.z) > 30.0 or (place != "" and p.length() < place_r))
 	rating = evaluate(spot_xz.x, spot_xz.y)
 	_publish()
 	_need_residents = true                                # (at the start of the program the visitors node is not there yet)
@@ -1399,7 +1435,7 @@ func way_dist(x: float, z: float, maxd := 80.0) -> float:
 
 func _vegetation() -> void:
 	_busy_pts = [[HUT, 30.0], [UPPER_HUT, 12.0], [HOSPICE, 30.0], [Vector2(100, 775), 22.0], [CHAPEL, 18.0], [RUIN, 10.0], [BIVOUAC, 8.0],
-			[BUNKER, 10.0], [spot_xz, 9.0], [GORGE_BRIDGE, 14.0], [Vector2(-700, -130), 10.0], [Vector2(-650, 430), 32.0]]
+			[BUNKER, 10.0], [spot_xz, maxf(9.0, place_r + 6.0)], [GORGE_BRIDGE, 14.0], [Vector2(-700, -130), 10.0], [Vector2(-650, 430), 32.0]]
 	for v in VIGNETTES:
 		_busy_pts.append([Vector2(v[3], v[4]), float(v[5]) + 2.0])
 	for vp in VIEWPOINTS:
@@ -1416,7 +1452,7 @@ func _vegetation() -> void:
 	var near_r := 220.0                                 # obstacles (people, animals, rover) only near the spot
 	for e in raw["trees"]:                                 # [kind, x, z, rot, scale]
 		var q := Vector2(e[1], e[2])
-		if q.distance_to(spot_xz) < 9.0:
+		if q.distance_to(spot_xz) < maxf(9.0, place_r + 4.0):
 			continue
 		var it := [P(q.x, q.y, -0.15), e[3], e[4]]
 		if q.distance_to(spot_xz) < near_r:
@@ -1425,7 +1461,7 @@ func _vegetation() -> void:
 			trees_far[e[0]].append(it)
 	for e in raw["rocks"]:                                 # [type|variant, x, z, rot, scale]
 		var q := Vector2(e[1], e[2])
-		if q.distance_to(spot_xz) < 9.0:
+		if q.distance_to(spot_xz) < maxf(9.0, place_r + 4.0):
 			continue
 		var key := "%s|%s" % [e[0], "n" if q.distance_to(spot_xz) < near_r else "f"]
 		if not rocks.has(key):
@@ -2295,6 +2331,8 @@ func _publish() -> void:
 		marks.append([WG(vp_xz(vp).x, vp_xz(vp).y), str(vp[1]), Color(0.5, 0.8, 1.0), vp[0] == spot])
 	for pl in PLACES:
 		marks.append([WG(pl[1], pl[2]), str(pl[0]), Color(0.95, 0.95, 0.9), false])
+	for pl in Worlds.places_of("bergtal"):               # 3D-4.x Welten: the old scenes (green)
+		marks.append([WG(pl[2], pl[3]), str(pl[1]), Color(0.45, 0.9, 0.5), pl[0] == spot])
 	for mk in (m.get("bt_marks") if m.get("bt_marks") is Array else []):
 		marks.append([WG(float(mk[1]), float(mk[2])), str(mk[0]), Color(0.95, 0.35, 0.85), false])
 	s.data["map_marks"] = marks
@@ -2993,6 +3031,8 @@ var _vis_t := 0.0
 
 static func all_places() -> Array:
 	var out: Array = PLACES.duplicate()
+	for pl in Worlds.places_of("bergtal"):               # 3D-4.x Welten: the old scenes (map, quick travel, visited)
+		out.append([pl[1], pl[2], pl[3]])
 	for vp in VIEWPOINTS:
 		out.append([vp[1], vp_xz(vp).x, vp_xz(vp).y])
 	return out

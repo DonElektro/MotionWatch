@@ -52,6 +52,9 @@ var ort_camp := 0
 var terrain := false                  # the scene has hills (ground_y), else the ground is flat at y = 0
 var ground_fn := Callable()            # 3D-4.x: a scene with its own ground (ferienpark.gd): height in world coordinates
 var fp_spot := "zelt"                  # 3D-4.x: where MoveEye stands in the «Ferienpark am See» (ferienpark.gd SPOTS)
+const Worlds := preload("res://scripts/worlds.gd")   # 3D-4.x Welten: the old scenes are places in a few worlds
+var welt_solo := false                # «allein»: old scenes without their world (--solo, Prüfstand: comparable measurements)
+var solo_scene := ""                  # this one scene alone ({"action": "scenario", "id": …, "solo": true}, e.g. the training night)
 var bt_spot := "huette"                # 3D-4.x «Bergtal» (bergtal.gd): the sleeping spot (SPOTS, viewpoints or «frei»)
 var bt_bed := "tent"                   # tent | mat (Isomatte + Schlafsack)
 var bt_season := "auto"                # auto (from the month) | fruehling | sommer | herbst | winter
@@ -390,6 +393,8 @@ func _ready() -> void:
 			quality = args[i + 1]
 		elif args[i] == "--scene" and i + 1 < args.size():
 			scene = args[i + 1]
+		elif args[i] == "--solo":
+			welt_solo = true                         # 3D-4.x: the old scenes alone, without their world (Prüfstand)
 	_lite_auto_ok = not "--quality" in args
 	set_process(false)
 	set_process_unhandled_input(false)
@@ -978,6 +983,7 @@ func _build_world() -> void:
 
 func _build_scene() -> void:
 	"""everything of the chosen scene (scenes.gd)"""
+	scene = Worlds.default_place(scene)          # 3D-4.x: a world without its own build -> its first place
 	if Scenes.name_of(scene) == scene:
 		scene = "camping"                        # unknown name
 	foliage_mats.clear()
@@ -1099,6 +1105,9 @@ func ground_hit(from: Vector3, d: Vector3):
 
 
 func set_scene(id: String) -> bool:
+	id = Worlds.default_place(id)                # 3D-4.x: «Zuhause» = its garden (worlds.gd)
+	if id != solo_scene:
+		solo_scene = ""
 	var ok := false
 	for s in Scenes.LIST:
 		if s[0] == id:
@@ -1139,8 +1148,8 @@ func set_bt(key: String, v) -> void:
 		season = BT_MONTH[str(v)]                        # the path of the sun and the moon fit the season
 		_sun_cache = [-1.0, Vector2.ZERO]
 	_settings_dirty = true
-	if scene == "bergtal":
-		set_scene("bergtal")
+	if Worlds.world_of(scene) == "bergtal":
+		set_scene("bergtal" if key == "bt_spot" or not Worlds.is_place(scene) else scene)   # 3D-4.x: a sleeping spot leaves the place
 	else:
 		_sync_ui()
 
@@ -1226,8 +1235,8 @@ func set_fp_spot(v: String) -> void:
 		return
 	fp_spot = v
 	_settings_dirty = true
-	if scene == "ferienpark":
-		set_scene("ferienpark")
+	if Worlds.world_of(scene) == "ferienpark":
+		set_scene("ferienpark")                    # 3D-4.x: also from a place of the park (worlds.gd)
 	else:
 		_sync_ui()
 
@@ -3478,14 +3487,20 @@ func _register_controls() -> void:
 	extra "expert": true = only shown with «Experte» - in the window and on the page of MoveEye (its switch Einfach / Experte
 	is stored in the settings of MoveEye, page «sim», like on its main page)."""
 	var sc := []
-	for s in Scenes.LIST:
-		sc.append([s[0], s[1]])
+	for s in Worlds.SHOWN:                        # 3D-4.x Welten: only the worlds and the tools (the old scenes are places in them)
+		sc.append([s, Scenes.name_of(s)])
 	var ex := {"expert": true}
-	add_control("select", "scene", "Szene", func(): return scene, func(v): set_scene(v), "Szene", {"options": sc})
+	add_control("select", "scene", "Szene", func(): return Worlds.world_of(scene), func(v): set_scene(v), "Szene", {"options": sc})
+	for w in Worlds.WORLDS:                       # «Ort in dieser Welt»: the old scenes of this world (one select per world)
+		add_control("select", "welt_ort_" + w, "Ort in dieser Welt", func(): return scene if Worlds.is_place(scene) else "",
+				func(v): set_scene(str(v) if str(v) != "" else w), "Szene", {"options": Worlds.place_options(w)})
+		controls[-1]["only"] = func(): return Worlds.world_of(scene) == w
+	add_control("toggle", "welt_solo", "Alte Szenen allein laden (ohne Welt drumherum – für Prüfstand-Vergleiche)", func(): return welt_solo,
+			func(v): welt_solo = bool(v); set_scene(scene), "Szene", {"expert": true})
 	add_control("button", "home_edit", "Mein Zuhause bauen (Baukasten mit der Maus)", null, func(): home_editor.open(true), "Szene")
 	add_control("select", "fp_spot", "Standort im Ferienpark am See", func(): return fp_spot, func(v): set_fp_spot(str(v)), "Szene",
 			{"options": preload("res://scripts/ferienpark.gd").spot_options()})
-	controls[-1]["only"] = func(): return scene == "ferienpark"   # 3D-4.28: only shown in its scene (window and MoveEye)
+	controls[-1]["only"] = func(): return scene == "ferienpark"   # 3D-4.28: only shown in its scene (window and MoveEye; not in a place of the park)
 	var Bt = preload("res://scripts/bergtal.gd")
 	add_control("select", "bt_spot", "Schlafplatz im Bergtal", func(): return bt_spot, func(v): set_bt("bt_spot", str(v)), "Szene", {"options": Bt.spot_options()})
 	add_control("select", "bt_bed", "Übernachten im Bergtal", func(): return bt_bed, func(v): set_bt("bt_bed", str(v)), "Szene", {"options": Bt.BEDS})
@@ -3512,9 +3527,12 @@ func _register_controls() -> void:
 	add_control("button", "bt_ev_storm", "Gewitter zieht auf (Bergtal)", null, func(): _bt_do("storm"), "Wetter", {"sub": "Mehr Wetter"})
 	add_control("button", "bt_ev_fog", "Nebel kommt schnell (Bergtal)", null, func(): _bt_do("fog"), "Wetter", {"sub": "Mehr Wetter"})
 	add_control("button", "bt_ev_fogsea", "Nebelmeer (Bergtal: das Tal im Nebel, oben Sonne)", null, func(): _bt_do("fogsea"), "Wetter", {"sub": "Mehr Wetter"})
-	for _c in controls:   # Bergtal-only controls: only shown in its scene (like fp_spot)
+	for _c in controls:   # Bergtal-only controls: only shown in its scene (like fp_spot); season, quick travel, events also in its places
 		if str(_c.id).begins_with("bt_"):
-			_c["only"] = func(): return scene == "bergtal"
+			if str(_c.id) in ["bt_season", "bt_goto", "bt_events", "bt_orient", "bt_mark"] or str(_c.id).begins_with("bt_ev_"):
+				_c["only"] = func(): return Worlds.world_of(scene) == "bergtal"
+			else:
+				_c["only"] = func(): return scene == "bergtal"
 	add_control("map", "ort_map", "Ort auf der Karte wählen (Schweiz)", func(): return "%.6f, %.6f" % [ort_lat, ort_lon] if ort_lat != 0.0 else "",
 			func(v): set_place_text(str(v)), "Ort von der Karte")
 	add_control("text", "ort", "Ort (Name oder Koordinaten, z. B. «Zermatt» oder «46.0207, 7.7491»)", func(): return place_label(), func(v): set_place_text(str(v)), "Ort von der Karte")
@@ -4085,7 +4103,7 @@ func control_info() -> Dictionary:
 			d["ro"] = bool(c["ro"].call())            # Aufräumen 2: the page of MoveEye shows it read-only too
 		out.append(d)
 	return {"ok": true, "v": 1, "name": "MoveEye Sim · 3D %s" % VERSION,
-				"scenarios": scenarios(), "scenario": scene,
+				"scenarios": scenarios(), "scenario": Worlds.world_of(scene), "place": scene if Worlds.is_place(scene) else "",
 			"controls": out, "status": status_text(), "upload": null, "groups_on": _groups_on(),
 			"game": {"open": game != null and game.open, "url": game.address() if game != null and game.open else "", "players": game.count() if game != null else 0}}
 
@@ -4101,8 +4119,11 @@ func _control(d: Dictionary) -> Dictionary:
 	var a := str(d.get("action", "get"))
 	var cid := str(d.get("id", ""))
 	if a == "scenario":
+		solo_scene = cid if bool(d.get("solo", false)) else ""   # 3D-4.x: this scene alone, without its world (training night)
 		if not set_scene(cid):
 			return {"ok": false, "error": "unknown scenario"}
+	elif a == "welt":                                  # 3D-4.x Welten: the worlds, their places and what is loaded (worlds.gd)
+		return Worlds.info(self)
 	elif a == "delete":
 		return {"ok": false, "error": "cannot be deleted"}
 	elif a == "lang":                                  # Sprachen (i18n.gd): switch / translate, for tests
@@ -4708,13 +4729,13 @@ func status_text() -> String:
 	if schnitt != null:
 		mwc += schnitt.mw_extra()                 # Aufräumen 2: «Schutz an · Relais …» from MoveEye
 	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
-	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
+	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Worlds.full_name(scene) if Worlds.is_place(scene) and not Worlds.solo(self, scene) else Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
 
 
 func scenarios() -> Array:
 	var out := []
-	for s in Scenes.LIST:
-		out.append({"id": s[0], "name": s[1] + " (3D)", "kind": "world", "deletable": false, "en": Scenes.EN.get(s[0], "")})
+	for s in Worlds.SHOWN:                        # 3D-4.x Welten: the worlds and tools (old ids still work for «scenario»)
+		out.append({"id": s, "name": Scenes.name_of(s) + " (3D)", "kind": "world", "deletable": false, "en": Scenes.EN.get(s, "")})
 	return out
 
 
@@ -7308,7 +7329,33 @@ func clear_obstacles() -> void:
 	ob_grid.clear()
 
 
+# 3D-4.x Welten (worlds.gd): while a place is built inside a world: obstacles beyond ob_clip (local) are left out, ob_xf moves
+# them (a neighbour), none in ob_excl ([[centre (world), r], …]: the active place)
+var ob_xf := Transform3D.IDENTITY
+var ob_clip := 0.0
+var ob_excl: Array = []
+var _ob_skip := false
+
+
+func _ob_place(p: Vector3):
+	"""the obstacle point in the world, or null (left out)"""
+	_ob_skip = false
+	if ob_clip > 0.0 and Vector2(p.x, p.z).length() > ob_clip:
+		_ob_skip = true
+		return null
+	var q := ob_xf * p
+	for e in ob_excl:
+		if Vector2(q.x, q.z).distance_to(e[0]) < float(e[1]):
+			_ob_skip = true
+			return null
+	return q
+
+
 func add_obstacle(p: Vector3, r: float, people_only := false) -> void:
+	var pw = _ob_place(p)
+	if pw == null:
+		return
+	p = pw
 	var o := {"c": Vector2(p.x, p.z), "r": r, "po": people_only, "id": obstacles.size()}
 	obstacles.append(o)
 	_ob_insert(o, Vector2(p.x - r, p.z - r), Vector2(p.x + r, p.z + r))
@@ -7316,6 +7363,11 @@ func add_obstacle(p: Vector3, r: float, people_only := false) -> void:
 
 func add_obstacle_box(p: Vector3, sx: float, sz: float, rot_y: float, people_only := false) -> void:
 	"""a box of sx × sz metres around p, turned like a node with rotation.y = rot_y"""
+	var pw = _ob_place(p)
+	if pw == null:
+		return
+	p = pw
+	rot_y += ob_xf.basis.get_euler().y
 	var b := Basis(Vector3.UP, rot_y)
 	var o := {"c": Vector2(p.x, p.z), "h": Vector2(sx / 2.0, sz / 2.0), "b": b, "bi": b.inverse(), "po": people_only, "id": obstacles.size()}
 	obstacles.append(o)
@@ -7472,7 +7524,7 @@ func line_blocker(a: Vector3, b: Vector3) -> Dictionary:
 
 func set_obstacle_height(ht: float) -> void:
 	"""the height of the object added last (for the line of sight of the game)"""
-	if not obstacles.is_empty():
+	if not obstacles.is_empty() and not _ob_skip:
 		obstacles[-1]["ht"] = ht
 
 

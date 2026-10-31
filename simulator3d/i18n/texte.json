@@ -2191,6 +2191,12 @@
   "it": "Alte Sennerei Chäsgaden",
   "rm": "Alte Sennerei Chäsgaden"
  },
+ "Alte Szenen allein laden (ohne Welt drumherum – für Prüfstand-Vergleiche)": {
+  "en": "Load old scenes alone (without the world around – for test-bench comparisons)",
+  "fr": "Charger les anciennes scènes seules (sans le monde autour – pour comparer au banc d’essai)",
+  "it": "Caricare le vecchie scene da sole (senza il mondo intorno – per confronti al banco di prova)",
+  "rm": "Chargiar las veglias scenas sulettas (senza il mund enturn – per cumparegliar al banc da test)"
+ },
  "Alter Holzski im Eis": {
   "en": "Old wooden ski in the ice",
   "fr": "Vieux ski en bois dans la glace",
@@ -2976,6 +2982,12 @@
   "fr": "Chantier",
   "it": "Cantiere",
   "rm": "Plazza da construcziun"
+ },
+ "Baustelle nebenan": {
+  "en": "Building site next door",
+  "fr": "Chantier à côté",
+  "it": "Cantiere accanto",
+  "rm": "Plazza da construcziun sper casa"
  },
  "Bausätze": {
   "en": "Kits",
@@ -5547,11 +5559,11 @@
   "it": "Tenda monoposto",
   "rm": "Tenda per ina persuna"
  },
- "Einsames Bergtal 2 × 2 km: Alp, Bergsee, Pass, Gletscher – Zelt oder Isomatte, Schlafplatz frei wählbar": {
-  "en": "Lonely mountain valley 2 × 2 km: alp, lake, pass, glacier – tent or sleeping mat, choose your own spot",
-  "fr": "Vallée isolée 2 × 2 km : alpage, lac, col, glacier – tente ou matelas, emplacement au choix",
-  "it": "Valle solitaria 2 × 2 km: alpe, lago, passo, ghiacciaio – tenda o materassino, posto a scelta",
-  "rm": "Val solitaria 2 × 2 km: alp, lai, pass, glatscher – tenda u matratscha, plazza libra da tscherner"
+ "Einsames Bergtal 2 × 2 km: Alp, Bergsee, Pass, Gletscher – Schlafplatz frei wählbar, 7 Orte": {
+  "en": "Lonely mountain valley 2 × 2 km: alp, mountain lake, pass, glacier – choose your sleeping spot, 7 places",
+  "fr": "Vallée isolée 2 × 2 km : alpage, lac, col, glacier – lieu de bivouac au choix, 7 lieux",
+  "it": "Valle solitaria 2 × 2 km: alpe, lago, passo, ghiacciaio – posto per dormire a scelta, 7 luoghi",
+  "rm": "Val solitari 2 × 2 km: alp, lai da muntogna, pass, glatscher – plaz da durmir libramain, 7 lieus"
  },
  "Einst.": {
   "en": "Sett.",
@@ -6905,6 +6917,12 @@
   "it": "Giardino / casa",
   "rm": "Curtin / chasa"
  },
+ "Garten und Haus": {
+  "en": "Garden and house",
+  "fr": "Jardin et maison",
+  "it": "Giardino e casa",
+  "rm": "Curtin e chasa"
+ },
  "Gartenhaus": {
   "en": "Garden shed",
   "fr": "Cabanon de jardin",
@@ -7632,11 +7650,17 @@
   "it": "Grande e alto – quasi come una persona? Prova.",
   "rm": "Grond ed aut – quasi sco in uman? Emprova."
  },
- "Grosser Campingplatz am See: Terrassen, Strand, Steg, Wald – 5 Standorte": {
-  "en": "Big campsite by the lake: terraces, beach, jetty, forest – 5 positions",
-  "fr": "Grand camping au bord du lac : terrasses, plage, ponton, forêt – 5 emplacements",
-  "it": "Grande campeggio sul lago: terrazze, spiaggia, pontile, bosco – 5 posizioni",
-  "rm": "Grond plaz da campadi al lai: terrassas, riva, punt, guaud – 5 lieus"
+ "Grosser Campingplatz am See: Terrassen, Strand, Steg, Wald – 5 Standorte, 5 Orte": {
+  "en": "Big campsite by the lake: terraces, beach, jetty, forest – 5 positions, 5 places",
+  "fr": "Grand camping au bord du lac : terrasses, plage, ponton, forêt – 5 emplacements, 5 lieux",
+  "it": "Grande campeggio sul lago: terrazze, spiaggia, pontile, bosco – 5 posizioni, 5 luoghi",
+  "rm": "Grond plaz da campadi al lai: terrassas, spiaggia, punt, guaud – 5 posiziuns, 5 lieus"
+ },
+ "Grosser Parkplatz beim Eingang": {
+  "en": "Big car park at the entrance",
+  "fr": "Grand parking à l’entrée",
+  "it": "Grande parcheggio all’ingresso",
+  "rm": "Grond plaz da parcar a l’entrada"
  },
  "Grosser Treffer-Kreis, 130 ⚡ Energie, lädt schneller nach (0.5 ⚡ pro Sekunde).": {
   "en": "Big hit circle, 130 ⚡ energy, recharges faster (0.5 ⚡ per second).",
@@ -7721,6 +7745,12 @@
   "fr": "Gumpisee %d m",
   "it": "Gumpisee %d m s.l.m.",
   "rm": "Gumpisee %d m s.m."
+ },
+ "Gumpisee-Ufer mit Steg": {
+  "en": "Gumpisee shore with jetty",
+  "fr": "Rive du Gumpisee avec ponton",
+  "it": "Riva del Gumpisee con pontile",
+  "rm": "Riva dal Gumpisee cun punt"
  },
  "Gut geschützt vor Wind": {
   "en": "Well sheltered from the wind",
@@ -7835,6 +7865,12 @@
   "fr": "Maison avec jardin, chats et hérisson",
   "it": "Casa con giardino, gatti e riccio",
   "rm": "Chasa cun curtin, giats ed ischi"
+ },
+ "Haus mit Garten, Schlafzimmer (Wecker) und Baustelle nebenan": {
+  "en": "House with garden, bedroom (alarm clock) and building site next door",
+  "fr": "Maison avec jardin, chambre (réveil) et chantier à côté",
+  "it": "Casa con giardino, camera (sveglia) e cantiere accanto",
+  "rm": "Chasa cun curtin, stanza da durmir (svegliarin) e plazza da construcziun sper casa"
  },
  "Head camera (NoIR)": {
   "en": "Head camera (NoIR)",
@@ -8010,6 +8046,12 @@
   "fr": "Suivre derrière",
   "it": "Seguire dietro",
   "rm": "Suandar davos"
+ },
+ "Hinterstafel (Bauernhof der Alp)": {
+  "en": "Hinterstafel (farm of the alp)",
+  "fr": "Hinterstafel (ferme de l’alpage)",
+  "it": "Hinterstafel (fattoria dell’alpe)",
+  "rm": "Hinterstafel (bain puril da l’alp)"
  },
  "Hinweis schliessen (Blinki-Hinweise ausschalten: Spiel → Entdecken)": {
   "en": "Close the hint (switch Blinki hints off: Game → Discover)",
@@ -12336,6 +12378,12 @@
   "it": "Scegliere un luogo sulla mappa (Svizzera)",
   "rm": "Tscherner in lieu sin la charta (Svizra)"
  },
+ "Ort in dieser Welt": {
+  "en": "Place in this world",
+  "fr": "Lieu dans ce monde",
+  "it": "Luogo in questo mondo",
+  "rm": "Lieu en quest mund"
+ },
  "Ort suchen, z. B. Zermatt, Bahnhofstrasse 1 Zürich …": {
   "en": "Search place, e.g. Zermatt, Bahnhofstrasse 1 Zürich …",
   "fr": "Chercher un lieu, p. ex. Zermatt, Bahnhofstrasse 1 Zürich …",
@@ -13664,6 +13712,12 @@
   "it": "Schattwald",
   "rm": "Schattwald"
  },
+ "Schattwald (Wald mit Feuerstelle)": {
+  "en": "Schattwald (forest with fire place)",
+  "fr": "Schattwald (forêt avec foyer)",
+  "it": "Schattwald (bosco con focolare)",
+  "rm": "Schattwald (guaud cun fueugna)"
+ },
  "Schatzkiste": {
   "en": "Treasure chest",
   "fr": "Coffre au trésor",
@@ -13777,6 +13831,12 @@
   "fr": "Chambre (réveil)",
   "it": "Camera da letto (sveglia)",
   "rm": "Stanza da durmir (svegliarin)"
+ },
+ "Schlafzimmer im Haus (Wecker)": {
+  "en": "Bedroom in the house (alarm clock)",
+  "fr": "Chambre dans la maison (réveil)",
+  "it": "Camera da letto in casa (sveglia)",
+  "rm": "Stanza da durmir en chasa (svegliarin)"
  },
  "Schlechtes WLAN: das Bild ruckelt und bleibt hängen": {
   "en": "Bad Wi-Fi: the picture stutters and freezes",
@@ -14868,6 +14928,12 @@
   "it": "",
   "rm": ""
  },
+ "Spielwiese am Strand (lustiger Platz)": {
+  "en": "Play meadow at the beach (funny place)",
+  "fr": "Pré de jeux à la plage (endroit amusant)",
+  "it": "Prato giochi in spiaggia (posto divertente)",
+  "rm": "Prà da giugar a la spiaggia (plaz legher)"
+ },
  "Spielziel": {
   "en": "Game goal",
   "fr": "But du jeu",
@@ -15660,6 +15726,12 @@
   "fr": "Camouflage : ",
   "it": "Mimetizzazione: ",
   "rm": "Camuflascha: "
+ },
+ "Tarnwiese (Tarnen und Kriechen)": {
+  "en": "Camouflage meadow (camouflage and crawling)",
+  "fr": "Pré de camouflage (camouflage et ramper)",
+  "it": "Prato mimetico (mimetizzarsi e strisciare)",
+  "rm": "Prà da camuflar (camuflar e sa trair)"
  },
  "Tarp mit Isomatte": {
   "en": "Tarp with sleeping mat",
@@ -16526,6 +16598,12 @@
   "it": "Bici (parcheggiata)",
   "rm": "Velo (parcà)"
  },
+ "Velo am Parkrand (Velodieb)": {
+  "en": "Bike at the edge of the park (bike thief)",
+  "fr": "Vélo au bord du parc (voleur de vélo)",
+  "it": "Bici al margine del parco (ladro di bici)",
+  "rm": "Velo a l’ur dal parc (lader da velo)"
+ },
  "Velo-Anhänger": {
   "en": "Bike trailer",
   "fr": "Remorque de vélo",
@@ -16669,6 +16747,12 @@
   "fr": "Parcours de suivi",
   "it": "Percorso di inseguimento",
   "rm": "Parcours da persequitar"
+ },
+ "Verfolgungs-Parcours (Hochebene)": {
+  "en": "Tracking course (high plateau)",
+  "fr": "Parcours de suivi (haut plateau)",
+  "it": "Percorso di inseguimento (altopiano)",
+  "rm": "Parcours da persequitar (aultipiaun)"
  },
  "Verfolgungs-Parcours abgebrochen": {
   "en": "Tracking course cancelled",
@@ -16843,6 +16927,12 @@
   "fr": "Cache-cache (beaucoup de cachettes)",
   "it": "Nascondino (molti nascondigli)",
   "rm": "Giu da zuppar (bleras zuppadas)"
+ },
+ "Versteckspiel beim Murmelboden": {
+  "en": "Hide and seek at the Murmelboden",
+  "fr": "Cache-cache au Murmelboden",
+  "it": "Nascondino al Murmelboden",
+  "rm": "Giu da zuppar al Murmelboden"
  },
  "Versteckt deinen Oberkörper. Aber: kein Kriechen, etwas langsamer, und der grosse Schirm bewegt sich auffällig.": {
   "en": "Hides your upper body. But: no crawling, a bit slower, and the big umbrella moves conspicuously.",
@@ -17782,6 +17872,12 @@
   "it": "Osservazione animali",
   "rm": "Observaziun d'animals"
  },
+ "Wildbeobachtung (Hochsitz, Futterkrippe)": {
+  "en": "Wildlife watching (high seat, feeder)",
+  "fr": "Observation de la faune (mirador, mangeoire)",
+  "it": "Osservazione della fauna (altana, mangiatoia)",
+  "rm": "Observaziun da selvaschina (pulpit, parsepen)"
+ },
  "Wildschwein": {
   "en": "Boar",
   "fr": "Sanglier",
@@ -17955,6 +18051,12 @@
   "fr": "Aire de camping-cars",
   "it": "Area camper",
   "rm": "Plaz per autos da campadi"
+ },
+ "Wohnmobil-Stellplatz (Ost)": {
+  "en": "Camper van site (east)",
+  "fr": "Aire de camping-cars (est)",
+  "it": "Area camper (est)",
+  "rm": "Plaz per autos da campadi (ost)"
  },
  "Wohnmobil-Terrasse": {
   "en": "Motorhome terrace",
@@ -18323,6 +18425,12 @@
   "it": "Prato delle tende",
   "rm": "Prà da tendas"
  },
+ "Zeltwiese in der Hochsaison (voller Platz)": {
+  "en": "Tent meadow in high season (full site)",
+  "fr": "Pré des tentes en haute saison (camping plein)",
+  "it": "Prato delle tende in alta stagione (pieno)",
+  "rm": "Prà da tendas en l’autezza da la stagiun (plaz plain)"
+ },
  "Zickzack und Tempowechsel": {
   "en": "Zigzag and changes of speed",
   "fr": "Zigzag et changements de vitesse",
@@ -18568,6 +18676,18 @@
   "fr": "Regardé",
   "it": "Guardato",
   "rm": "Guardà"
+ },
+ "Zuhause": {
+  "en": "At home",
+  "fr": "À la maison",
+  "it": "A casa",
+  "rm": "A chasa"
+ },
+ "Zuhause (Haus, Garten, Baustelle)": {
+  "en": "At home (house, garden, building site)",
+  "fr": "À la maison (maison, jardin, chantier)",
+  "it": "A casa (casa, giardino, cantiere)",
+  "rm": "A chasa (chasa, curtin, plazza da construcziun)"
  },
  "Zuletzt gesetztes Zelt / Auto um 15° drehen": {
   "en": "Turn the last placed tent / car by 15°",
@@ -18982,6 +19102,18 @@
   "fr": "– choisir un lieu –",
   "it": "– scegli un luogo –",
   "rm": "– tscherner in lieu –"
+ },
+ "– Schlafplatz im Bergtal (oben wählen) –": {
+  "en": "– sleeping spot in the valley (choose above) –",
+  "fr": "– lieu de bivouac dans la vallée (choisir ci-dessus) –",
+  "it": "– posto per dormire nella valle (scegli sopra) –",
+  "rm": "– plaz da durmir en la val (tscherner survart) –"
+ },
+ "– Standort im Ferienpark (oben wählen) –": {
+  "en": "– position in the holiday park (choose above) –",
+  "fr": "– emplacement dans le parc (choisir ci-dessus) –",
+  "it": "– posizione nel parco (scegli sopra) –",
+  "rm": "– posiziun en il parc (tscherner survart) –"
  },
  "– Vorlage wählen –": {
   "en": "– choose template –",

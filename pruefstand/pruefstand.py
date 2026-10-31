@@ -154,7 +154,7 @@ def run(a):
         # --- the simulator: own home folder, so its settings and reports do not mix with the normal ones
         senv = dict(env, HOME=os.path.join(tmp, "home"))
         os.makedirs(senv["HOME"], exist_ok=True)
-        sim_args = ["--no-update", "--stream", "--scene", a.szene, "--hour", "12", "--port", str(a.sim_port), "--quality", a.qualitaet]
+        sim_args = ["--no-update", "--stream", "--solo", "--scene", a.szene, "--hour", "12", "--port", str(a.sim_port), "--quality", a.qualitaet]
         if a.sim_bin:
             cmd = [a.sim_bin, "--"] + sim_args
         else:

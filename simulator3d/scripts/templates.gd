@@ -30,8 +30,9 @@ const SCENE_INFO := {
 	"vorlage": "Deine eigene 3D-Datei (Reiter «Eigene Datei»)",
 	"camping_voll": "Viele Nachbarn – nur wer an deinen Platz kommt, zählt", "tarnen": "Tarnkleidung, Robben, Schirm, Karton",
 	"velodieb": "Schnell hin, Velo greifen, weg – Reaktionszeit", "parcours": "Wiese mit Distanzmarken, Busch, Zelt, Auto, Baum – Verfolgen üben",
-	"ferienpark": "Grosser Campingplatz am See: Terrassen, Strand, Steg, Wald – 5 Standorte",
-	"bergtal": "Einsames Bergtal 2 × 2 km: Alp, Bergsee, Pass, Gletscher – Zelt oder Isomatte, Schlafplatz frei wählbar"}
+	"ferienpark": "Grosser Campingplatz am See: Terrassen, Strand, Steg, Wald – 5 Standorte, 5 Orte",
+	"bergtal": "Einsames Bergtal 2 × 2 km: Alp, Bergsee, Pass, Gletscher – Schlafplatz frei wählbar, 7 Orte",
+	"daheim": "Haus mit Garten, Schlafzimmer (Wecker) und Baustelle nebenan"}
 
 # [name, what, licence, link]
 const KITS := [
@@ -167,13 +168,19 @@ func _paint_scenes() -> void:
 	for c in _scene_box.get_children():
 		c.queue_free()
 	var q := _search.text.strip_edges().to_lower()
-	for s in main.Scenes.LIST:
+	var W = preload("res://scripts/worlds.gd")
+	var L := []                                    # 3D-4.x Welten: the worlds and tools, then the places of each world
+	for w in W.SHOWN:
+		L.append([w, main.Scenes.name_of(w)])
+		for pl in W.places_of(w):
+			L.append([pl[0], "   ↳ " + str(pl[1])])
+	for s in L:
 		var id: String = s[0]
 		var info: String = SCENE_INFO.get(id, "")
 		if q != "" and not (s[1].to_lower().contains(q) or info.to_lower().contains(q)):
 			continue
 		var b := Button.new()
-		b.text = ("● " if id == main.scene else "") + s[1] + "\n" + info
+		b.text = ("● " if id == main.scene or (id == W.world_of(main.scene) and not W.is_place(id)) else "") + s[1] + "\n" + info
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.custom_minimum_size = Vector2(285, 54)
 		b.add_theme_font_size_override("font_size", 12)
