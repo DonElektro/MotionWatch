@@ -428,7 +428,9 @@ func _input(ev: InputEvent) -> void:
 			else:
 				_open_menu()
 		KEY_ENTER, KEY_KP_ENTER:
-			if g.round_state in ["lobby", "end"]:
+			if g.more != null and g.more.probe_on():       # «Gameplay ausfeilen»: skip the probe round with Blinki
+				g.more.probe_skip(p)
+			elif g.round_state in ["lobby", "end"]:
 				rp_view.visible = false
 				g.start_round()
 		KEY_C:

@@ -132,6 +132,7 @@ var shut                                 # gameshutter.gd (3D-4.x): «Auslöser�
 var rules                                # gamerules.gd (3D-4.x): roles in turn, fairness, infos for sneakers, winner screen
 var tools                                # gametools.gd (3D-4.x): the tools of the guard with energy and cooldowns
 var kig                                  # gamekiwaechter.gd (3D-4.x): «MoveEye als KI-Wächter» - MoveEye's AI takes the guard role
+var more                                 # gamemore.gd («Gameplay ausfeilen» 31.10.2026): probe round, replay when caught, highlights, missions …
 var duel := {}                           # 3D-4.x: after a round with a guard: MoveEye against the guard
 var flag_res := {}                       # 3D-4.x: «Fahne erobern» is decided by the captures: {"caps", "win", "text"}
 var round_runners := 1                   # how many ran in this round (the score of the guard is per runner)
@@ -188,6 +189,10 @@ func _ready() -> void:
 	kig.game = self
 	kig.main = main
 	add_child(kig)
+	more = preload("res://scripts/gamemore.gd").new()
+	more.game = self
+	more.main = main
+	add_child(more)
 
 
 func now() -> float:
@@ -621,7 +626,7 @@ func _net() -> void:
 		var txt: String = (h[1] as PackedByteArray).get_string_from_utf8()
 		if txt.contains("\r\n\r\n"):
 			var path := txt.get_slice(" ", 1)
-			var body := PAGE.replace("%WSPORT%", str(ws_port)).replace("/*PADMAP*/", main.padmap.JS if main.padmap != null else "").replace("</body>", shut.ki.PHONE_JS + "</body>").to_utf8_buffer() if path == "/" or path.begins_with("/?") else "nicht gefunden".to_utf8_buffer()   # KI-Hilfe (gamekihilfe.gd)
+			var body := PAGE.replace("%WSPORT%", str(ws_port)).replace("/*PADMAP*/", main.padmap.JS if main.padmap != null else "").replace("</body>", shut.ki.PHONE_JS + more.PHONE_JS + "</body>").to_utf8_buffer() if path == "/" or path.begins_with("/?") else "nicht gefunden".to_utf8_buffer()   # KI-Hilfe (gamekihilfe.gd)
 			var ctype := "text/html; charset=utf-8"
 			if path == "/manifest.json":                   # «Zum Home-Bildschirm»: then the game runs without the address bar (3D-3.23)
 				body = JSON.stringify({"name": "Unentdeckt ans Ziel", "short_name": "Unentdeckt", "start_url": "/", "display": "fullscreen",
@@ -711,6 +716,8 @@ func _message(s: Dictionary, m: Dictionary) -> void:
 	if slot2 < 0 or players[slot2] == null:
 		return
 	var p2: Dictionary = players[slot2]
+	if more.message(p2, t, m):                             # «Gameplay ausfeilen» (gamemore.gd): probe round, tools, missions …
+		return
 	match t:
 		"in":
 			p2["mx"] = clamp(float(m.get("mx", 0.0)), -1.0, 1.0)
@@ -1218,6 +1225,7 @@ func start_round() -> void:
 	_ghosts_start()
 	if main.game_mode == "seek":
 		_seek_start()
+	more.round_start()                                     # «Gameplay ausfeilen»: the probe round with Blinki, missions, rules (gamemore.gd)
 	paint()
 
 
@@ -1482,6 +1490,9 @@ func end_round() -> void:
 			info += " · %d× erwischt" % p["caught"] + (" · 💎 %d" % p["items"] if int(p["items"]) > 0 else "")
 			if int(p.get("rescues", 0)) > 0:
 				info += " · %d× befreit" % p["rescues"]
+		var mo: Array = more.score_line(p, sc, info)        # «Gameplay ausfeilen»: missions, noises, scene badges (gamemore.gd)
+		sc = int(mo[0])
+		info = str(mo[1])
 		var bd := [] if kih else _badges_of(p)             # 3D-3.77: badges
 		var nb := []
 		if not bd.is_empty():
@@ -1581,6 +1592,7 @@ func end_round() -> void:
 	if jail_node != null:
 		jail_node.queue_free()
 		jail_node = null
+	more.round_end()                                       # «Gameplay ausfeilen»: highlights, tournament, tower, balance (gamemore.gd)
 	rules.round_end()                                      # 3D-4.x: winner screen, closest moment, the next guard (roles in turn)
 	paint()
 
@@ -1885,7 +1897,10 @@ func _referee(dt: float) -> void:
 				paint()
 		if flag_mode() and flags.size() == 2:
 			_flag_rules(p)
-		var near_goal: bool = a.position.distance_to(goal) < 1.7 and not flag_mode()
+		var own_goal: int = more.goal_tick(p)              # «Gameplay ausfeilen»: missions, «MoveEye ins Schwitzen» have their own goal
+		if own_goal == 2:
+			continue
+		var near_goal: bool = a.position.distance_to(goal) < 1.7 and not flag_mode() and own_goal == 0
 		if near_goal and not goal_open():
 			_say(p, "🔒 Ziel noch zu – zuerst alle Kristalle finden", 1.0)
 			near_goal = false
@@ -2040,6 +2055,7 @@ func _caught(p: Dictionary, by) -> void:
 	if sg != null and sg.has("catches"):                   # Balance: the points of this catch (the one rule, gameshutter.gd)
 		shut.score_catch(sg, p, by == null)
 	_event(p, "caught", {"fx": fx})
+	more.on_caught(p, by)                                  # «Gameplay ausfeilen»: the replay of the last 3 s, the best shot (gamemore.gd)
 	p["actor"].play_emote("caught", 1.5)
 	var lives := int(main.game_lives)
 	if lives > 0 and int(p["caught"]) >= lives:
@@ -2374,6 +2390,9 @@ func _shut_info(g: Dictionary) -> String:
 
 func _guard_catch(g: Dictionary) -> void:
 	"""the guard calls «Erwischt!»: right if the head camera sees somebody (meter at least 30 %)"""
+	if more.probe_on() and g["role"] == "guard":           # «Gameplay ausfeilen»: the probe round - a shot at Blinki's target
+		more.probe_shot(g)
+		return
 	if g["role"] == "guard" and shut.human_mode() == "guard":   # 3D-4.x: a person is the guard - the shutter at the middle
 		shut.fire(g, str(g["name"]))
 		return
@@ -2479,6 +2498,7 @@ func state_for(p: Dictionary) -> Dictionary:
 		target = checkpoints[p["cps"].size()]["pos"]          # 3D-4.x: Sprint - the next gate
 	if jaeger.on():
 		target = main.cams[0].global_position              # «Fehlalarm-Jäger»: the arrow points to the camera
+	target = more.target_of(p, target)                     # «Gameplay ausfeilen»: missions
 	var ti := int(p.get("tut", 0))
 	if bool(p.get("tut_on", false)) and ti < TUT.size() and TUT[ti][1] == "bush" and not hides.is_empty():
 		var bd := 1e9                                          # the practice step «bush»: the arrow shows the nearest bush
@@ -2539,6 +2559,7 @@ func state_for(p: Dictionary) -> Dictionary:
 	d["px"] = plus.state_for(p)                            # 3D-4.x: camouflage things, weather change, theft, learning points
 	d["mm"] = _minimap(p)                                  # 3D-4.13: the mini-map of the controller player (padmap.gd MWPad.drawMap)
 	d["rx"] = rules.state_for(p)                           # 3D-4.x: vibration, noise, shadow, fairness, next guard, winner
+	d["gm"] = more.state_for(p)                            # «Gameplay ausfeilen» (gamemore.gd)
 	if jaeger.on():
 		d["jg"] = jaeger.state_for(p)
 		if round_state == "end":
@@ -2851,6 +2872,7 @@ function connect() {
     else if (m.t === "gal") { GAL = m.pics || []; lastOv = null; if (st && st.rs) paint(st); }
     else if (m.t === "sig") { const t = $("#sigt"); t.innerHTML = '<span style="color:' + m.c + '">●</span> ' + esc(m.n) + ': ' + esc(m.txt) + ' <span class="ar" style="transform:rotate(' + (-m.ga) + 'deg)">⬆</span> ' + m.d + ' m';
       t.style.opacity = 1; clearTimeout(window.__sigT); window.__sigT = setTimeout(() => t.style.opacity = 0, 3000); tone(880, 0.08, "triangle", 0.12); tone(1175, 0.1, "triangle", 0.12, 0.09); if (navigator.vibrate) navigator.vibrate(60); }
+    else if (window.GM && typeof GM[m.t] === "function") GM[m.t](m);   // «Gameplay ausfeilen» (gamemore.gd)
     else if (m.t === "ev") { if (m.k === "caught") { hitFx(m.fx || []); if (navigator.vibrate) navigator.vibrate([300, 100, 300]); if (window.MWPad) MWPad.rumble(null, "caught"); document.body.classList.remove("redfl"); void document.body.offsetWidth; document.body.classList.add("redfl"); }
       if (sfx[m.k]) sfx[m.k](); }
   };
@@ -3720,7 +3742,7 @@ func _target_of(p: Dictionary) -> Vector3:
 		target = checkpoints[p["cps"].size()]["pos"]
 	if jaeger.on():
 		target = jaeger.target_of(p)                       # «Fehlalarm-Jäger»: the bots wander in front of the camera
-	return target
+	return more.target_of(p, target)                       # «Gameplay ausfeilen»: missions
 
 
 func _bots_tick(dt: float) -> void:

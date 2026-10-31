@@ -47,6 +47,9 @@ const JG_FIXED := {"game_goal": "reach", "game_lives": "0", "game_items": 0, "ga
 const PX_KEYS := ["game_wx", "game_gear", "game_theft"]
 # 3D-4.x Spielkonzept: roles in turn, tools with energy, fairness, infos for sneakers - kept by gamerules.gd (only here)
 const RX_KEYS := ["game_rotate", "game_tools", "game_fair", "game_vibe", "game_shade", "game_glevel", "game_real"]
+# «Gameplay ausfeilen» (31.10.2026): probe round, replay when caught, highlights … - kept by gamemore.gd (only here)
+const MX_KEYS := ["game_probe", "game_clip", "game_hl", "game_mission"]
+const Mission = preload("res://scripts/gamemission.gd")
 const Rules = preload("res://scripts/gamerules.gd")      # Balance 30.10.2026: the ONE text for levels and the guard
 const THEFT_OPTS := [["auto", "zufällig"], ["Velo", "🚲 das Velo"], ["Kühlboxen", "🧊 die Kühlbox (nur Camping-Platz)"]]
 const ObjPlus = preload("res://scripts/objekte_plus.gd")
@@ -61,6 +64,7 @@ static func theft_opts() -> Array:
 # 3D-3.77: on the last step - who plays along
 const PLAYER_OPTS := [["game_bots", "Computer-Spieler (Bots)", "select", 0, 0, "", false, [["0", "keine"], ["1", "1 Bot"], ["2", "2 Bots"], ["3", "3 Bots"]]],
 		["game_botguard", "🤖 Bot-Wächter, wenn niemand Wächter sein will (Spielart «Wächter»)", "toggle", 0, 0, "", false],
+		["game_probe", "👁 Probe-Runde mit Blinki (30 s vor der Runde: ducken, verstecken, 🎯 üben – überspringbar)", "select", 0, 0, "", false, [["first", "für neue Spieler"], ["always", "vor jeder Runde"], ["off", "aus"]]],
 		["game_tutorial", "Übungsrunde für alle: Schritt für Schritt erklärt, niemand wird erwischt (wer zum ersten Mal spielt, bekommt sie von selbst)", "toggle", 0, 0, "", true],
 		["game_daily", "Tagesaufgabe: heute für alle dieselbe Szene, dasselbe Ziel, dieselben Startpunkte", "toggle", 0, 0, "", true],
 		["game_ghost", "Geisterläufer: der eigene beste Weg läuft als Geist mit", "toggle", 0, 0, "", true],
@@ -86,7 +90,8 @@ const GOALS := [["reach", "🟢", "Zum Ziel schleichen", "Ziel: zum grünen Lich
 		["return", "💰", "Beute holen und zurückbringen", "Ziel: die Beute beim grünen Licht holen und zurück zum Start bringen."],
 		["flag", "🚩", "Fahne erobern (zwei Teams)", "Ziel: zwei Teams. Holt die Fahne der anderen und bringt sie zur eigenen Basis. Wer mit der Fahne erwischt wird, verliert sie. Es gewinnt das Team mit mehr eroberten Fahnen (z. B. Rot 2 : 1 Blau)."],
 		["sprint", "⏱", "Sprint (90 Sekunden)", "Für Kinder und kurze Runden: immer derselbe Parcours mit 3 Toren. Durch die Tore, dann ins Ziel – je schneller, desto mehr Punkte."],
-		["theft", "🚲", "Diebstahl (Velo oder Kühlbox)", "Ziel: das Velo oder die Kühlbox unbemerkt zum orangen Ausgang tragen. Wer sie trägt, ist langsamer. Am Schluss schaut MoveEye nach, ob es merkt, dass etwas fehlt."]]
+		["theft", "🚲", "Diebstahl (Velo oder Kühlbox)", "Ziel: das Velo oder die Kühlbox unbemerkt zum orangen Ausgang tragen. Wer sie trägt, ist langsamer. Am Schluss schaut MoveEye nach, ob es merkt, dass etwas fehlt."],
+		["mission", "🎒", "Mission mit Gegenständen", "Ziel: eine Aufgabe mit echten Dingen – das Portemonnaie vom Tisch holen, 5 Früchte sammeln oder ein Paket wegbringen. Wer erwischt wird, verliert das Ding."]]
 # the cards of «Wie schwierig?» = the Schleicher-Stufe (texts: gamerules.gd LEVEL_TXT); the Wächter-Stufe is the option game_glevel
 func levels() -> Array:
 	var o := []
@@ -109,6 +114,7 @@ const OPTIONS := [["game_minutes", "Dauer einer Runde", "range", 1, 15, " min", 
 		["game_events", "⛈ Zufallsereignisse (Gewitter, Hund, Auto)", "toggle", 0, 0, "", true], ["game_checkpoints", "🚩 Checkpoints (+150 Punkte je)", "range", 0, 3, "", true],
 		["game_autohandicap", "🎯 Handicap für den Ersten der Rangliste", "toggle", 0, 0, "", true], ["game_tasks", "✅ Eine Aufgabe für jede Runde (Bonus)", "toggle", 0, 0, "", true],
 		["game_theft", "🚲 Diebstahl: was wird geklaut?", "select", 0, 0, "", false, THEFT_OPTS],
+		["game_mission", "🎒 Mission: welche Aufgabe?", "select", 0, 0, "", false, []],   # options: Mission.options() (model)
 		["game_wx", "⛅ Wetterwechsel mitten in der Runde (Gewitter, Nebel oder Dämmerung – 10 s vorher warnt das Handy)", "toggle", 0, 0, "", true],
 		["game_gear", "🎒 Tarn-Sachen zum Auswählen: Tarnkleidung, Wärmedecke, Karton, Regenschirm", "toggle", 0, 0, "", true],
 		# Balance 30.10.2026: the Wächter-Stufe (own level for the guard), the profile «Wie echte Hardware» (gamerules.gd)
@@ -165,6 +171,7 @@ const RULES := {"tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter
 		"fair": "⚖ Fairness: Viele Schleicher gegen einen Wächter – er bekommt mehr Energie und einen Bot-Helfer. Wenige Schleicher – mehr Verstecke, die länger halten.",
 		"infos": "📳 Für Schleicher: Das Handy vibriert, wenn die Kamera zu dir schaut. Rennen ist laut – der Wächter sieht dann eine Markierung. Im Schatten sieht dich die Kamera am Tag schlechter.",
 		"score": "🏅 Punkte für den Wächter: Was beim Erwischen auf dem Bildschirm steht, zählt – mit dem Auslöser 100 bis 300, sonst 150. Wer denselben Schleicher nochmals erwischt, bekommt die Hälfte, dann ein Viertel, dann nichts. Jeder Fehlalarm −50. Am Schluss + für jeden, der nicht ins Ziel kam. Wer gerade erwischt wurde oder neu startet, ist kurz geschützt (Startschutz).",
+		"probe": "👁 Probe-Runde mit Blinki: 30 Sekunden vor der Runde üben – ducken, in einen Busch, in Deckung gehen; der Wächter dreht die Kamera und übt den Auslöser 🎯 an Blinkis Zielscheibe. Niemand wird erwischt, «Überspringen» geht immer.",
 		"short": "🏆 Kurze Runden: Am Schluss der beste Wächter und der beste Schleicher, das Siegerbild mit dem knappsten Moment als Wiederholung und die Rangliste des Abends (sie beginnt nach Mitternacht neu)."}
 # 3D-4.x: the quick starts and the presets for the kids mode and «Mitspieler einladen» - every key of KEYS is set
 const BASE := {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_items": 3,
@@ -172,7 +179,8 @@ const BASE := {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", 
 		"game_decoy": true, "game_night": false, "game_events": true, "game_checkpoints": 0, "game_autohandicap": false, "game_tasks": true, "game_bots": "0",
 		"game_tutorial": false, "game_daily": false, "game_ghost": true, "game_heart": true, "game_botguard": true,
 		"game_wx": false, "game_gear": true, "game_theft": "auto",
-		"game_rotate": "turn", "game_tools": true, "game_fair": true, "game_vibe": true, "game_shade": true, "game_glevel": "auto"}
+		"game_rotate": "turn", "game_tools": true, "game_fair": true, "game_vibe": true, "game_shade": true, "game_glevel": "auto",
+		"game_probe": "first", "game_clip": true, "game_hl": true, "game_mission": "auto"}
 # 3D-4.x Spielkonzept (Daniel, 30.10.2026): the three fixed games of the quick start; the older presets stay for the kids mode,
 # «Zonen-Check» and old saved choices
 const PRESETS := {"sneak": {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_bots": "1",
@@ -196,14 +204,17 @@ const PRESETS := {"sneak": {"game_mode": "mw", "game_goal": "reach", "game_level
 			"game_hides": 2, "game_items": 0, "game_gear": false},
 		"szene_tarnen": {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_bots": "2",
 			"game_hides": 2, "game_items": 0, "game_gear": true},
+		"mission": {"game_mode": "mw", "game_goal": "mission", "game_mission": "auto", "game_level": "normal", "game_lives": "3", "game_minutes": 4,
+			"game_bots": "1", "game_items": 0, "game_hides": 3},
 		"szene_velo": {"game_mode": "guard", "game_goal": "theft", "game_level": "normal", "game_lives": "3", "game_minutes": 2, "game_theft": "Velo",
 			"game_botguard": true, "game_rotate": "turn", "game_tools": true, "game_items": 0, "game_hides": 2, "game_bots": "1"}}
 const QUICK := [["sneak", "🕵️", "Schleichen", "Unentdeckt zum grünen Ziel – MoveEye passt auf (ohne MoveEye die Kamera des Simulators). 3 Minuten, 3 Leben, Verstecke und Schatten, 1 Bot läuft mit."],
 		["duel", "👮", "Wächter-Duell", "Einer ist Wächter: Auslöser 🎯, Licht, Sirene, Scan und Zoom – mit Energie. Die anderen schleichen. Nach jeder Runde ist der Nächste Wächter (will niemand: der Bot-Wächter)."],
-		["theft", "🚲", "Diebstahl", "Das Velo oder die Kühlbox unbemerkt zum orangen Ausgang tragen. Am Schluss schaut MoveEye nach, ob es merkt, dass etwas fehlt."]]
-const LEVEL_OF := {"szene_voll": "normal", "szene_tarnen": "normal", "szene_velo": "normal", "sneak": "normal", "duel": "normal", "theft": "normal", "kids": "easy", "family": "normal", "pro": "hard", "kids_pc": "easy", "free": "normal"}
+		["theft", "🚲", "Diebstahl", "Das Velo oder die Kühlbox unbemerkt zum orangen Ausgang tragen. Am Schluss schaut MoveEye nach, ob es merkt, dass etwas fehlt."],
+		["mission", "🎒", "Mission", "Portemonnaie vom Tisch holen, 5 Früchte sammeln oder ein Paket wegbringen – ohne erwischt zu werden. 4 Minuten, 3 Leben."]]
+const LEVEL_OF := {"mission": "normal", "szene_voll": "normal", "szene_tarnen": "normal", "szene_velo": "normal", "sneak": "normal", "duel": "normal", "theft": "normal", "kids": "easy", "family": "normal", "pro": "hard", "kids_pc": "easy", "free": "normal"}
 # 3D-4.20 (Daniel): the quick start cards have pictures again (wizpics.gd) - quick card -> picture
-const QUICK_PIC := {"sneak": "mw", "duel": "guard", "theft": "theft", "szene_voll": "mw", "szene_tarnen": "free", "szene_velo": "theft", "escape_quick": "escape"}
+const QUICK_PIC := {"mission": "mission", "sneak": "mw", "duel": "guard", "theft": "theft", "szene_voll": "mw", "szene_tarnen": "free", "szene_velo": "theft", "escape_quick": "escape"}
 const OWN_LABEL := "⚙ Eigene Regeln – alle Spielarten, Ziele und Extras"
 
 
@@ -216,6 +227,7 @@ func _cur() -> Dictionary:
 	o["game_lures"] = main.game.jaeger.allowed_str()        # «Fehlalarm-Jäger»: which lures (not a control of the card)
 	o.merge(main.game.plus.cfg_get(), true)                 # 3D-4.x: weather change, camouflage things, theft (only here)
 	o.merge(main.game.rules.cfg_get(), true)                # 3D-4.x: roles in turn, tools, fairness, infos for sneakers
+	o.merge(main.game.more.cfg_get(), true)                 # «Gameplay ausfeilen»: probe round, replay, highlights …
 	return o
 
 
@@ -304,6 +316,8 @@ func _rules() -> Array:
 		out.append(RULES["rotate"])
 	if str(W.get("game_mode")) in ["guard", "mwhand"] and W.get("game_tools", true):
 		out.append(RULES["tools"])
+	if str(W.get("game_probe", "first")) != "off":
+		out.append(RULES["probe"])
 	if W.get("game_fair", true):
 		out.append(RULES["fair"])
 	if W.get("game_vibe", true) or W.get("game_shade", true):
@@ -334,6 +348,7 @@ func apply_preset(id: String, open_game := true) -> Array:
 				errs.append(k)
 	main.game.plus.cfg_set(d)
 	main.game.rules.cfg_set(d)
+	main.game.more.cfg_set(d)
 	if open_game:
 		main.game.set_open(true)
 	return errs
@@ -435,6 +450,8 @@ func model() -> Dictionary:
 				continue
 			if o[0] == "game_theft" and str(W.get("game_goal")) != "theft":
 				continue                                       # 3D-4.x: which thing - only with the goal «Diebstahl»
+			if o[0] == "game_mission" and str(W.get("game_goal")) != "mission":
+				continue                                       # «Gameplay ausfeilen»: which mission - only with the goal «Mission»
 			if o[0] == "game_rotate" and not str(W.get("game_mode")) in ["guard", "seek"]:
 				continue                                       # 3D-4.x: roles in turn - only where a person guards
 			if o[0] == "game_glevel" and not str(W.get("game_mode")) in ["guard", "mwhand", "compare"]:
@@ -454,6 +471,8 @@ func model() -> Dictionary:
 					d["options"] = Rules.glevel_options()
 				elif o[0] == "game_theft":
 					d["options"] = theft_opts()          # 3D-4.x: + the valuables of the catalogue
+				elif o[0] == "game_mission":
+					d["options"] = Mission.options()
 			opts.append(d)
 	var summary := []
 	if step == 3:
@@ -486,6 +505,10 @@ func model() -> Dictionary:
 		var fp: String = str(main.game.rules.calc().get("text", "")) if W.get("game_fair", true) else ""
 		if fp != "":
 			summary.append(["Fairness", fp.trim_prefix("⚖ ") + " (mit den Spielern, die jetzt dabei sind)"])
+		if str(W.get("game_goal")) == "mission":
+			for mo in Mission.options():
+				if mo[0] == str(W.get("game_mission", "auto")):
+					summary.append(["Mission", mo[1]])
 		if str(W.get("game_goal")) == "theft":
 			for th in theft_opts():
 				if th[0] == str(W.get("game_theft", "auto")):
@@ -673,6 +696,7 @@ func _apply() -> void:
 		g.jaeger.set_allowed(str(W.get("game_lures", "")))
 	g.plus.cfg_set(W)                                      # 3D-4.x: weather change, camouflage things, theft
 	g.rules.cfg_set(W)                                     # 3D-4.x: roles in turn, tools, fairness, infos for sneakers
+	g.more.cfg_set(W)                                      # «Gameplay ausfeilen» (gamemore.gd)
 	var cmp_on: bool = str(W.get("game_mode", "")) == "compare"
 	if g.cmp != null:
 		g.cmp.wiz_apply(W)                                 # 3D-4.x: «Mensch gegen KI» is played as «Wächter», then MoveEye

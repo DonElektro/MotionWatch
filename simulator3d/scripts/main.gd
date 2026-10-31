@@ -4012,6 +4012,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return game.kig.command(d) if game != null and game.kig != null else {"ok": false, "error": "no game"}
 	elif a == "game_shut":                             # 3D-4.x: «Auslöser» (gameshutter.gd) - info / aim / fire, for tests
 		return game.shut.command(d) if game != null and game.shut != null else {"ok": false, "error": "no game"}
+	elif a == "game_more":                             # «Gameplay ausfeilen» (gamemore.gd): info / set / probe … (tests, MoveEye)
+		return game.more.command(d) if game != null and game.more != null else {"ok": false, "error": "no game"}
 	elif a == "game_tool":                             # 3D-4.x: a tool of the guard (gametools.gd): {tool, slot} or {op: "info"}
 		return game.tools.command(d) if game != null and game.tools != null else {"ok": false, "error": "no game"}
 	elif a == "game_rules":                            # 3D-4.x: for tests - fairness, next guard, winner (gamerules.gd)

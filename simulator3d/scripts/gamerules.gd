@@ -538,7 +538,7 @@ func _hide_win() -> void:
 
 
 func _show_win() -> void:
-	if win.is_empty() or (main.localplay != null and main.localplay.active) or (main.tv != null and main.tv.on) or DisplayServer.get_name() == "headless":
+	if win.is_empty() or not win.has("title") or (main.localplay != null and main.localplay.active) or (main.tv != null and main.tv.on) or DisplayServer.get_name() == "headless":
 		return
 	for c in box.get_children():
 		c.queue_free()
@@ -563,8 +563,12 @@ func _show_win() -> void:
 	if str(win.get("team", "")) != "":
 		lines.append(str(win["team"]))
 	var hl: Dictionary = win.get("hl", {})
-	if not hl.is_empty():
+	var rl: Array = game.more.reel_lines() if game.more != null else []   # «Gameplay ausfeilen»: the highlights (gamemore.gd)
+	if not hl.is_empty() and rl.is_empty():
 		lines.append(str(hl["text"]))
+	if not rl.is_empty():
+		lines.append("🎬 " + " · ".join(PackedStringArray(rl)))
+		game.more.show_reel_here()
 	for k in ["fair", "next"]:
 		if str(win.get(k, "")) != "":
 			lines.append(str(win[k]))
