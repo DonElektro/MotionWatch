@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 14:40",
+ "generated": "2026-10-31 14:47",
  "versions": [
   {
-   "version": "2.98.112",
-   "file": "webcam_bewegung_2_98_112.py",
+   "version": "2.98.113",
+   "file": "webcam_bewegung_2_98_113.py",
    "url": "",
-   "sha256": "7af86c079662e7e4e33a5c04074969f6588130c5087b0d7b20611db93ff9993a",
-   "date": "2026-10-31 14:40",
-   "notes": "Simulator 3D-4.81: Figuren ziehen sich nach Jahreszeit an (Winter, Nacht, Berg, Regen lang mit Jacke; Sommer gemischt), Paket-Figuren ohne durchscheinende Beine, im Wärmebild ist Haut wärmer als Kleidung.",
-   "sig": "7fd9dfee66361cd19cf703ca6442d1042948205c500f0bff4a8e2de6ceddf50ffdced718b16bcc3b36423a54bdf28e77ccd5efa9a732c8888800b6f717078406"
+   "sha256": "113639bb48f8203f29414c15a12c1fc288c272a3e732bb810797aceda76e387e",
+   "date": "2026-10-31 14:47",
+   "notes": "Simulator 3D-4.82: Bergtal-Abenteuer – Tagebuch wird vorgelesen, Kamerafahrt, Jahreszeit wählbar, 3 Spielstände mit Weiterspielen, Blinki-Tipps, gemeinsames Level, Kinder-Modus, Ausblick auf Teil 2.",
+   "sig": "9f767f89feca8063690ab295e597cbcc711253b61dd75a890859481f6e821c217d1e1c97f1de9485fe67114293ea5e76e05c4f8fa423efda58e74e362e9a4202"
   },
   {
    "version": "2.97.1",

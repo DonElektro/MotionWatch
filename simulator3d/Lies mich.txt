@@ -421,6 +421,19 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.82
+3D-4.82: Bergtal-Abenteuer:
+- Das Tagebuch wird vorgelesen (abschaltbar).
+- Kurze Kamerafahrt beim Kapitelstart.
+- Jahreszeit vor dem Start wählbar.
+- 3 Spielstände für die Familie und automatisches Speichern an Hütte und Lager («Weiterspielen»).
+- Blinki gibt Tipps.
+- Ein gemeinsames Level für Abenteuer, Spielbereich und Entdecken.
+- Kinder-Modus: immer Leicht, keine Gefahren, kein Hunger.
+- Nach Kapitel 5 deutet die letzte Seite auf Teil 2.
+So testest du: 1) Abenteuer öffnen, Spielstand 1–3 wählen, Namen eingeben. 2) Winter wählen, Erzählerstimme an. 3) Am
+Nachtlager den Simulator schliessen, wieder starten, dann «Weiterspielen».
+
 NEU IN 3D-4.81
 3D-4.81: Figuren ziehen sich nach Jahreszeit an. Im Winter, nachts, in den Bergen und bei Regen tragen sie lange Kleidung mit
 Jacke. Im Sommer ist es gemischt, mit kurzen Hosen und kurzen Ärmeln. Der Fehler mit den durchscheinenden Beinen bei den

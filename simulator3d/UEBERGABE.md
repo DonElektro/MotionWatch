@@ -1,8 +1,16 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.81** · passende MoveEye-Version (früher Motion Watch) **2.98.112**
+Stand: 31.10.2026 · Simulator-Version **3D-4.82** · passende MoveEye-Version (früher Motion Watch) **2.98.113**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.82 (MoveEye 2.98.113): Abenteuer A6 (`spielstand.gd`, `abenteuer_stimme.gd`, `abenteuer_blinki.gd`)
+
+- `spielstand.gd` (neu): 3 Familien-Spielstände, Autosave an Hütte und Lager, «Weiterspielen»; gemeinsames Level für
+  Abenteuer, Spielbereich und Entdecken (`entdecken.gd`, `spielbereich.gd`).
+- `abenteuer_stimme.gd` (neu): Tagebuch vorlesen (TTS) – `project.godot` `[audio] general/text_to_speech=true`.
+- `abenteuer_blinki.gd` (neu): Blinki-Tipps. `bergtal_abenteuer.gd`: Kamerafahrt beim Kapitelstart, Jahreszeit wählbar,
+  Kinder-Modus (Leicht, keine Gefahren, kein Hunger), Seite zu Teil 2 nach Kapitel 5.
 
 ## NEU in 3D-4.81 (MoveEye 2.98.112): Kleidung nach Jahreszeit (`kleidung.gd`)
 

@@ -17,7 +17,15 @@ extends PanelContainer
 ## Steuerbefehl: {"action": "abenteuer", "do": state | open | close | pick (key, value) | next | back | choose (value) | go |
 ##                pause | refill | eat | camp_here | night | save (name) | situations | replay (name) | report | fast | reset |
 ##                a3 (Paket A3: Rätsel, Tagebuch, Grossvaters Sachen, Wege, Abzeichen, Hilfe - abenteuer_raetsel.gd) |
-##                a2 (Figuren, Gespräche, Nebenaufgaben: abenteuer_figuren.gd)}
+##                a2 (Figuren, Gespräche, Nebenaufgaben: abenteuer_figuren.gd) |
+##                A6: slot (value 1–3) | slot_name (value) | resume | intro_skip | stimme (value) | szenen (value) |
+##                    vorlesen | stopp | kinder_test (value)}
+## Paket A6 (Daniel 31.10.2026): Erzählerstimme (abenteuer_stimme.gd liest Grossvaters Tagebuchseiten vor), Zwischenszene
+## (Kamerafahrt beim Start jedes Kapitels, überspringbar), Jahreszeit vor dem Start (gilt für die ganze Runde: Eis, Lawinenkegel,
+## gefrorene Bäche, im Winter kein Gewitter), Speichern (spielstand.gd: 3 Plätze, automatisch an Hütte und Lager), Andeutung
+## «Teil 2» auf der letzten Seite nach Kapitel 5, Blinki als Helfer (abenteuer_blinki.gd), ein Level für alles (spielbereich.gd
+## level() zählt die Abenteuer-Erfahrung mit), Kinder-Modus (main.kids_on: immer Leicht, kein Eis / keine Felsstufe /
+## kein Steinschlag / kein Gewitter, kein Hunger, kurze Texte).
 
 const D = preload("res://scripts/bergtal_abenteuer_daten.gd")
 const T = preload("res://scripts/i18n.gd")
@@ -26,6 +34,17 @@ const Karte = preload("res://scripts/bergtal_abenteuer_karte.gd")
 const Inv = preload("res://scripts/abenteuer_inventar.gd")   # A4: gemeinsames Inventar (hat / gib / nimm / anzahl)
 const Ruck = preload("res://scripts/abenteuer_rucksack.gd")  # A4: Essen/Trinken mild, Ausrüstung finden, Tausch
 const A1 = preload("res://scripts/abenteuer_moveeye.gd")   # Paket A1: MoveEye am Lager, Wildkamera, seltene Tiere
+const SS = preload("res://scripts/spielstand.gd")          # A6: Spielstand-Plätze, ein Level für alles, Lauf an Hütte / Lager
+const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # A6: Erzählerstimme (Sprachausgabe)
+const BlinkiH = preload("res://scripts/abenteuer_blinki.gd")  # A6: Blinki als Helfer
+
+# A6: die letzte Seite nach Kapitel 5 deutet auf Teil 2 (Kapitel 6–8 gibt es noch nicht)
+const TEIL2_PAGE := "«Auf der Rückseite der letzten Seite hat der Grossvater noch etwas gezeichnet: den Rand einer zweiten Karte, über den Pass hinaus ins nächste Tal. Darunter steht: Wer das Seeli gefunden hat, findet auch die zweite Karte. Sie liegt dort, wo die Sonne am Abend zuletzt hinscheint.»"
+const TEIL2_NOTE := "Fortsetzung folgt: Teil 2 - Die zweite Karte."
+const SEASONS := [["fruehling", "Frühling", "Schneereste oben: vereiste Rinnen (Pickel), kühle Nächte."],
+		["sommer", "Sommer", "Lange Tage, Gewitter möglich, der Lawinenkegel trägt."],
+		["herbst", "Herbst", "Kurze Tage, Lärchen gelb, Nebel, Blankeis am Gipfel, Hirsche in der Nacht."],
+		["winter", "Winter", "Schnee und Eis, Bäche gefroren (Kocher), kalte Nächte, kein Gewitter."]]
 
 const STEPS := ["Kapitel", "Stimmung", "Schwierigkeit & Ziel", "Rucksack", "Unterwegs", "Nachtlager", "Nacht", "Morgen"]
 const SAVE_FILE := "user://bergtal_abenteuer/fortschritt.json"
@@ -77,6 +96,10 @@ var raetsel                          # A3: abenteuer_raetsel.gd (Rätsel, Tagebu
 var title_lab: Label
 var a2                               # A2: Figuren, Gespräche, Nebenaufgaben (abenteuer_figuren.gd)
 var a1                               # abenteuer_moveeye.gd (Paket A1)
+var blinki                           # A6: abenteuer_blinki.gd (Blinki als Helfer: Tipps, Funde)
+var kids_test := false               # A6, nur für Tests (/control kinder_test): Kinder-Modus ohne main.kids_on
+var _lv_c := [-1, -1, 1]             # A6: level() je Bild zwischengespeichert [frame, xp, lv]
+var _last_read := ""                 # A6: die zuletzt vorgelesene Seite («Nochmals vorlesen»)
 
 
 # =======================================================================================================================
@@ -98,6 +121,8 @@ func _load() -> void:
 		(a3s as Dictionary).erase("hilfe")
 	if D.LEVELS.has(str(P.get("schwierigkeit", ""))):
 		W["level"] = str(P["schwierigkeit"])
+	if str(P.get("season", "")) in ["fruehling", "sommer", "herbst", "winter"]:
+		W["season"] = str(P["season"])                   # A6: die Jahreszeit bleibt im Spielstand
 
 
 func _save() -> void:
@@ -108,11 +133,47 @@ func _save() -> void:
 
 
 func level() -> int:
-	var lv := 1
-	for i in range(D.LEVEL_XP.size()):
-		if int(P.get("xp", 0)) >= int(D.LEVEL_XP[i]):
-			lv = i + 1
+	"""A6 «Ein Level für alles»: Abenteuer, Spielbereich und Entdecken zusammen (spielstand.gd / spielbereich.gd level())"""
+	var fr := Engine.get_process_frames()
+	var xp := int(P.get("xp", 0))
+	if int(_lv_c[0]) == fr and int(_lv_c[1]) == xp:
+		return int(_lv_c[2])
+	var lv := int(SS.level(main)["lv"]) if main != null else 1
+	_lv_c = [fr, xp, lv]
 	return lv
+
+
+func kinder() -> bool:
+	"""A6: Kinder-Modus des Simulators (main.kids_on) - unterwegs der Wert beim Start des Laufs"""
+	if not R.is_empty() and R.has("kids"):
+		return bool(R["kids"])
+	if kids_test:
+		return true
+	return main != null and bool(main.get("kids_on"))
+
+
+func kurz(t: String) -> String:
+	"""A6 Kinder-Modus: kurze Texte - von jeder Zeile nur der erste Satz"""
+	if not kinder():
+		return t
+	var out := []
+	for line in t.split("\n"):
+		out.append(_first_sentence(line))
+	return "\n".join(out)
+
+
+static func _first_sentence(s: String) -> String:
+	var best := -1
+	for sep in [". ", "! ", "? "]:
+		var i := s.find(sep, 25)
+		if i >= 0 and (best < 0 or i < best):
+			best = i + 1
+	if best < 0:
+		return s
+	var r := s.substr(0, best).strip_edges()
+	if r.count("«") > r.count("»"):
+		r += "»"
+	return r
 
 
 func item_unlocked(id: String) -> bool:
@@ -295,6 +356,9 @@ func start_run(seed_v := 0) -> Dictionary:
 		return {"ok": false, "error": error}
 	var sd: int = seed_v if seed_v > 0 else randi() % 900000 + 1000
 	rng.seed = sd
+	var kid: bool = kids_test or bool(main.get("kids_on"))
+	if kid:
+		W["level"] = "leicht"                            # A6 Kinder-Modus: Schwierigkeit Leicht wird erzwungen (nicht gespeichert)
 	var ch: Dictionary = D.CHAPTERS[int(W["chapter"]) - 1]
 	var goal := str(W["goal"])
 	if goal == "zufall":
@@ -307,8 +371,10 @@ func start_run(seed_v := 0) -> Dictionary:
 			"walked": [Vector2(ch["start"][1], ch["start"][2])], "log": [], "notes": [], "clues": {}, "reads_wrong": 0, "mw_warn": 0,
 			"wet": false, "cold": 0, "hurt": false, "dark_walk": false, "pending": {}, "weather": {}, "meet": {}, "finds": {},
 			"choices": [], "camp": {}, "night": {}, "result": {}, "events_done": {}, "bank": false, "bach": false,
-			"mw_version": str(main.mw.get("mw_version", "")) if main.now() - main.mw_t < 30.0 else ""}
+			"mw_version": str(main.mw.get("mw_version", "")) if main.now() - main.mw_t < 30.0 else "", "kids": kid}
 	choices = []
+	if not replaying:
+		SS.lauf_delete()                                 # A6: ein neuer Lauf ersetzt den gespeicherten
 	_snaps = []
 	_plan_events(ch)
 	if a2 != null:
@@ -350,8 +416,78 @@ func start_run(seed_v := 0) -> Dictionary:
 		raetsel.on_start()
 	_changed()
 	_say(T.t("Los geht's: %s") % T.t(str(ch["start"][0])))
-	_advance()
+	_intro()                                             # A6: Zwischenszene (Kamerafahrt), danach _advance()
 	return {"ok": true, "seed": sd, "goal": goal, "start_h": R["start_h"]}
+
+
+# =======================================================================================================================
+# A6: the cut scene at the start of a chapter (a short camera flight, can be skipped)
+# =======================================================================================================================
+func _intro() -> void:
+	var b = bt()
+	if fast or replaying or b == null or not bool(SS.setting("szenen", true)) or main.view_cam == null:
+		_advance()
+		return
+	var ch := chapter()
+	var st: Array = ch["stages"]
+	var start := Vector2(float(ch["start"][1]), float(ch["start"][2]))
+	var last: Dictionary = st[-1]
+	var goal: Vector2 = start + Vector2(0, 300)
+	if last.has("walk"):
+		goal = last["walk"][-1]
+	elif last.has("fork"):
+		goal = last["fork"][0][1][-1]
+	var first: Vector2 = start + Vector2(0, -50)
+	if st[0].has("walk") and (st[0]["walk"] as Array).size() > 1:
+		first = st[0]["walk"][1]
+	var ws: Vector3 = b.WG(start.x, start.y, 1.7)
+	var wg: Vector3 = b.WG(goal.x, goal.y, 1.7)
+	var wf: Vector3 = b.WG(first.x, first.y, 1.7)
+	var d := wg - ws
+	d.y = 0.0
+	d = d.normalized() if d.length() > 1.0 else Vector3(0, 0, -1)
+	var side := d.cross(Vector3.UP).normalized()
+	var df := wf - ws
+	df.y = 0.0
+	df = df.normalized() if df.length() > 0.5 else d
+	var ps := [ws - d * 260.0 + Vector3(0, 190.0, 0),          # wide: behind the start, the whole way to the goal
+			wg - d * 110.0 + side * 50.0 + Vector3(0, 70.0, 0),     # the goal close: «there we go»
+			ws - df * 14.0 + Vector3(0, 7.0, 0)]                    # behind the walker, like on the way (_fly_view)
+	for j in range(ps.size()):
+		var p: Vector3 = ps[j]
+		p.y = maxf(p.y, main.ground_y(p.x, p.z) + 3.0)
+		ps[j] = p
+	var k1 := Transform3D(Basis(), ps[0]).looking_at(wg, Vector3.UP)
+	var k2 := Transform3D(Basis(), ps[1]).looking_at(wg + Vector3(0, 2.0, 0), Vector3.UP)
+	var k3 := Transform3D(Basis(), ps[2]).looking_at(wf + Vector3(0, 1.0, 0), Vector3.UP)
+	main._to_free_view()
+	if main.fly_tw != null:
+		main.fly_tw.kill()
+	main.view_cam.global_transform = k1
+	R["intro"] = true
+	R["intro_end"] = k3
+	main.fly_tw = main.create_tween()
+	main.fly_tw.tween_interval(1.0)
+	main.fly_tw.tween_method(func(x: float): main.view_cam.global_transform = k1.interpolate_with(k2, x), 0.0, 1.0, 3.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	main.fly_tw.tween_interval(0.6)
+	main.fly_tw.tween_method(func(x: float): main.view_cam.global_transform = k2.interpolate_with(k3, x), 0.0, 1.0, 3.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	main.fly_tw.tween_callback(func(): intro_end(false))
+	_changed()
+
+
+func intro_end(skip := true) -> void:
+	if R.is_empty() or not bool(R.get("intro", false)):
+		return
+	var k3 = R.get("intro_end", null)
+	R.erase("intro")
+	R.erase("intro_end")
+	if skip:
+		if main.fly_tw != null:
+			main.fly_tw.kill()
+		if k3 is Transform3D and main.view_cam != null:
+			main.view_cam.global_transform = k3
+	_changed()
+	_advance()
 
 
 func _plan_events(ch: Dictionary) -> void:
@@ -377,7 +513,9 @@ func _plan_events(ch: Dictionary) -> void:
 		var pw: float = 0.22 * float(md[2]) * float(lv[3])
 		if rng.randf() < pw and (not wx_done or rng.randf() < 0.3):
 			wx_done = true
-			R["weather"][str(i)] = "fog" if rng.randf() < float(md[4]) else "storm"
+			# A6: im Winter und im Kinder-Modus kein Gewitter (Nebel / Schneetreiben statt dessen; gleiche Zufallsfolge)
+			var fog_p: float = 1.0 if str(R["season"]) == "winter" or bool(R.get("kids", false)) else float(md[4])
+			R["weather"][str(i)] = "fog" if rng.randf() < fog_p else "storm"
 		if rng.randf() < 0.42 * float(md[3]) and not meets.is_empty():
 			R["meet"][str(i)] = meets[rng.randi() % meets.size()]
 		if rng.randf() < 0.28 and not finds.is_empty():
@@ -398,6 +536,12 @@ func _advance() -> void:
 	if i >= stages.size():
 		_arrive()
 		return
+	if not replaying and not R["events_done"].has("save_h%d" % i):
+		for h in Ruck.HUETTEN:                            # A6: automatisch speichern an der Hütte
+			if (R["pos"] as Vector2).distance_to(Vector2(float(h[1]), float(h[2]))) < float(Ruck.HUETTE_R):
+				R["events_done"]["save_h%d" % i] = true
+				_autosave("huette", T.t(str(h[0])))
+				break
 	var st: Dictionary = stages[i]
 	if st.has("walk"):
 		_pre_leg(i, st["walk"], [] if not st.has("bach") else ["bach"], str(st.get("name", "")))
@@ -662,6 +806,8 @@ func _ask(kind: String, title: String, text: String, opts: Array, extra := {}) -
 		R["pending"][k] = extra[k]
 	if raetsel != null:
 		raetsel.on_ask()                                 # A3: help level, far hints, pocket watch, ice, ways
+	if kinder():
+		R["pending"]["text"] = kurz(str(R["pending"]["text"]))   # A6 Kinder-Modus: kurze Texte
 	_replay_t = 0.7
 	_changed()
 
@@ -871,6 +1017,7 @@ func _arrive(early := false) -> void:
 	R["camp_xz"] = R["pos"] if early or str(ch["camp"][0]) == "frei" else Vector2(float(ch["camp"][1]), float(ch["camp"][2]))
 	R["camp_spot"] = "frei" if early else str(ch["camp"][0])
 	step = 5
+	_autosave("lager", T.t("Nachtlager - %s") % T.t(str(ch["title"])))   # A6
 	_changed()
 
 
@@ -943,6 +1090,7 @@ func set_camp(mount: String, wall: bool) -> Dictionary:
 	if not has("isomatte") and bed_of() != "mat":
 		R["notes"].append("nomat")
 	step = 6
+	_autosave("lager", T.t("Nachtlager - %s") % T.t(str(chapter()["title"])))   # A6 (weiter am Nachtlager)
 	_changed()
 	_snap_later(T.t("Das Lager"), "view")
 	return res
@@ -1011,7 +1159,7 @@ func night_plan(from_h: float, to_h: float, speed: float) -> Array:
 		add.call("bt_deer", r.randf_range(0.2, 0.7))
 	if float(rt.get("strangers", 0.2)) > 0.25 or r.randf() < 0.35 * an:
 		add.call("bt_stranger", r.randf_range(0.25, 0.75))
-	if float(rt.get("rockfall", 0.0)) > 0.3 or r.randf() < 0.15 * an:
+	if (float(rt.get("rockfall", 0.0)) > 0.3 or r.randf() < 0.15 * an) and not bool(R.get("kids", false)):   # A6: Kinder ohne Steinschlag
 		add.call("bt_rockfall", r.randf_range(0.2, 0.85))
 	var wx: float = 0.35 * float(md[2]) * float(lv[3])
 	if r.randf() < wx:
@@ -1238,6 +1386,8 @@ func _morning() -> void:
 			main._settings_dirty = true
 		if b != null:
 			b._publish()
+		P["teil2"] = true                                # A6: die letzte Seite deutet auf Teil 2
+		_diary("a6_teil2", T.t("Die letzte Seite"), T.t(TEIL2_PAGE))
 	R["result"] = {"stars": stars, "xp": xp, "level": lv1, "level_up": lv1 > lv0, "unlocked": unlocked, "rating": mr, "seen": seen,
 			"missed": missed, "hidden": hidden, "hits": hits, "summit_ok": summit_ok, "sunset_ok": bool(R.get("sunset_ok", false)),
 			"sleep": snappedf(sleep, 0.01), "source": _night_src, "battery_h": battery_h, "finale": finale, "notes": notes}
@@ -1249,6 +1399,7 @@ func _morning() -> void:
 	if zweit != null:
 		zweit.on_morning()                              # A5: Familien-Bestenliste
 	_save()
+	SS.lauf_delete()                                     # A6: der Lauf ist fertig - nichts mehr zum Weiterspielen
 	_write_report()
 	_restore()
 	step = 7
@@ -1427,12 +1578,81 @@ func _write_report() -> void:
 
 
 # =======================================================================================================================
+# A6: saving - the running tour at the hut and at the camp (spielstand.gd lauf_*), «Weiterspielen»
+# =======================================================================================================================
+func _autosave(where: String, txt: String) -> void:
+	if R.is_empty() or replaying or save_file != SS.path_ab():
+		return                                           # (no auto-save in a replay or on the test file of the developer tool)
+	_save()
+	var d := {"v": 1, "where": where, "where_txt": txt, "date": Time.get_datetime_string_from_system().substr(0, 16).replace("T", " "),
+			"step": 5 if step >= 5 else 4, "hour": main.hour(), "W": W.duplicate(true), "R": R.duplicate(true), "choices": choices.duplicate(true)}
+	if SS.lauf_save(d):
+		R["saved_at"] = txt
+		_say(T.t("Automatisch gespeichert: %s") % txt)
+
+
+func resume() -> Dictionary:
+	"""«Weiterspielen»: the tour saved at the hut / the camp of this Spielstand"""
+	var d := SS.lauf_load()
+	if d.is_empty():
+		return {"ok": false, "error": T.t("Kein gespeicherter Lauf.")}
+	var b: String = main.busy_with("Bergtal-Abenteuer")
+	if b != "":
+		error = main.busy_msg(b)
+		_changed()
+		return {"ok": false, "error": error}
+	for k in d["W"]:
+		W[k] = d["W"][k]
+	R = d["R"]
+	choices = d.get("choices", [])
+	leg = {}
+	_snaps = []
+	replaying = false
+	replay_q = []
+	R.erase("intro")
+	R["walking"] = false
+	main.bt_season = str(R["season"])
+	if main.BT_MONTH.has(str(R["season"])):
+		main.season = main.BT_MONTH[str(R["season"])]
+		main._sun_cache = [-1.0, Vector2.ZERO]
+	var lv: Array = D.LEVELS.get(str(R["level"]), D.LEVELS["mittel"])
+	main.bt_orient = str(lv[5])
+	main.bt_events = false
+	main.auto_visitors = false
+	main.set_scene("bergtal")
+	main.set_hour(float(d.get("hour", 15.0)))
+	main._set_speed(1.0)
+	main.weather = "clear"
+	step = clampi(int(d.get("step", 4)), 4, 5)
+	if step == 5:
+		R["camp"] = {}
+		R["night"] = {}
+		R["result"] = {}
+	if R.get("a3") is Dictionary:
+		R["a3"]["ask_t"] = main.now()                    # (the clock of the program started again)
+	shown = true
+	_karte_update()
+	_changed()
+	_say(T.t("Weiter geht's: %s") % str(d.get("where_txt", "")))
+	if step == 4 and (R["pending"] as Dictionary).is_empty():
+		_advance()
+	return {"ok": true, "step": step, "where": d.get("where", ""), "chapter": R["chapter"]}
+
+
+# =======================================================================================================================
 # diary (pictures of the day and the night)
 # =======================================================================================================================
 func _diary(kind: String, title: String, text: String) -> void:
 	if R.is_empty():
 		return
+	text = kurz(text)                                    # A6 Kinder-Modus: kurze Texte
 	(R["log"] as Array).append({"k": kind, "h": snappedf(main.hour(), 0.01), "title": title, "text": text})
+	if blinki != null and not replaying:
+		blinki.on_diary(kind, title, text)               # A6: Blinki kommentiert Funde
+	if kind in ["a3_page", "a6_teil2"] and not replaying:
+		_last_read = text
+		if not fast:
+			Stimme.sprich(text)                          # A6: die Erzählerstimme liest die Tagebuchseite vor
 
 
 func _snap_later(cap: String, src: String) -> void:
@@ -1491,6 +1711,8 @@ func _changed() -> void:
 
 func _ready() -> void:
 	Inv.verbinde(self)                                   # A4
+	blinki = BlinkiH.new(self)                           # A6
+	save_file = SS.path_ab()                             # A6: the file of the active Spielstand (place 1 = SAVE_FILE)
 	_load()
 	W["items"] = blinki_suggest()
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1593,6 +1815,10 @@ func _layout() -> void:
 
 func _unhandled_key_input(ev: InputEvent) -> void:
 	if visible and ev is InputEventKey and ev.pressed and ev.keycode == KEY_ESCAPE:
+		if not R.is_empty() and bool(R.get("intro", false)):
+			intro_end(true)                              # A6: Esc überspringt die Zwischenszene
+			get_viewport().set_input_as_handled()
+			return
 		close_ab()
 		get_viewport().set_input_as_handled()
 
@@ -1912,11 +2138,12 @@ func _paint_chapter() -> void:
 	var mapbox := VBoxContainer.new()
 	row.add_child(mapbox)
 	_karte_in(mapbox, 300.0)
-	var lv := level()
-	var nx: int = D.LEVEL_XP[mini(lv, D.LEVEL_XP.size() - 1)]
-	var g := _group(T.t("Stufe %d · %d Erfahrung") % [lv, int(P["xp"])], left)
-	_bar(g, T.t("Erfahrung"), float(P["xp"]) - float(D.LEVEL_XP[lv - 1]), float(nx - int(D.LEVEL_XP[lv - 1])) if lv < D.LEVEL_XP.size() else 1.0, ACC,
-			T.t("noch %d") % maxi(0, nx - int(P["xp"])) if lv < D.LEVEL_XP.size() else T.t("höchste Stufe"))
+	_paint_slots(left)                                   # A6: Spielstand-Plätze, Weiterspielen
+	var L: Dictionary = SS.level(main)                   # A6: ein Level für alles
+	var lv := int(L["lv"])
+	var g := _group(T.t("Stufe %d · %d Erfahrung") % [lv, int(L["xp"])], left)
+	_bar(g, T.t("Erfahrung"), float(L["xp"]) - float(L["from"]), maxf(1.0, float(L["to"]) - float(L["from"])), ACC, T.t("noch %d") % maxi(0, int(L["to"]) - int(L["xp"])))
+	g.add_child(_lab(T.t("Ein Level für alles: Abenteuer, Spielbereich und Entdecken zählen zusammen (%d aus dem Abenteuer).") % int(P.get("xp", 0)), 11, Color(0.6, 0.66, 0.74)))
 	var nexts := []
 	for l in D.UNLOCKS:
 		if int(l) > lv:
@@ -1933,8 +2160,10 @@ func _paint_chapter() -> void:
 		var st: int = int(P["stars"].get(str(n), 0))
 		var stars := T.t("%d von 3 Sternen") % st
 		var nn := n
-		gc.add_child(_card(T.t(str(ch["title"])), T.t(str(ch["intro"])) if n == int(W["chapter"]) else "", n == int(W["chapter"]),
+		gc.add_child(_card(T.t(str(ch["title"])), kurz(T.t(str(ch["intro"]))) if n == int(W["chapter"]) else "", n == int(W["chapter"]),
 				func(): op({"do": "pick", "key": "chapter", "value": nn}), not open, stars if open else T.t("noch nicht frei")))
+	if bool(P.get("teil2", false)):                      # A6: nach Kapitel 5 - die zweite Karte (noch nicht gebaut)
+		gc.add_child(_card(T.t("Teil 2 - Die zweite Karte"), kurz(T.t(TEIL2_PAGE)), false, func(): pass, true, T.t(TEIL2_NOTE)))
 	if a1 != null:
 		a1.paint_sammlung(left)                           # A1: the collection of rare animals
 	if raetsel != null:
@@ -1945,6 +2174,43 @@ func _paint_chapter() -> void:
 		_dev_box(left)
 	if zweit != null:
 		zweit.paint_board(left, true)                  # A5: Familien-Bestenliste (kurz)
+
+
+func _paint_slots(parent: Control) -> void:
+	"""A6: three places for the family; the active one has a name; «Weiterspielen» for a tour saved at the hut / camp"""
+	var g := _group(T.t("Spielstand"), parent)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	g.add_child(row)
+	for n in range(1, SS.N + 1):
+		var inf := SS.info(n)
+		var nm := str(inf["name"]) if str(inf["name"]) != "" else T.t("Spielstand %d") % n
+		var lvn: int = level() if bool(inf["active"]) else int(inf["lv"])
+		var tx: String = (T.t("Kapitel %d · %d Sterne") % [int(inf["chapter"]), int(inf["stars"])] + (" · " + T.t("Stufe %d") % lvn if lvn > 0 else "")) if bool(inf["used"]) else T.t("leer")
+		var nn := n
+		var c := _card(nm, tx, bool(inf["active"]), func(): op({"do": "slot", "value": nn}), false, T.t("Lauf gespeichert") if str(inf["lauf"]) != "" else "")
+		c.custom_minimum_size = Vector2(110, 0)
+		row.add_child(c)
+	var nr := HBoxContainer.new()
+	nr.add_theme_constant_override("separation", 8)
+	g.add_child(nr)
+	nr.add_child(_lab(T.t("Name:"), 13, Color(0.75, 0.8, 0.86), false))
+	var le := LineEdit.new()
+	le.text = SS.name_of(SS.slot())
+	le.placeholder_text = T.t("z. B. Lea")
+	le.max_length = 24
+	le.custom_minimum_size = Vector2(160, 0)
+	le.text_submitted.connect(func(t): op({"do": "slot_name", "value": t}))
+	le.focus_exited.connect(func():
+		if le.text != SS.name_of(SS.slot()):
+			op({"do": "slot_name", "value": le.text}))
+	nr.add_child(le)
+	var lh := SS.lauf_head()
+	if not lh.is_empty() and R.is_empty():
+		var rg := _group(T.t("Gespeicherter Lauf"), parent)
+		rg.add_child(_lab(T.t("Kapitel %d · %s · %s") % [int(lh["chapter"]), str(lh["where_txt"]), str(lh["date"])], 13, Color.WHITE))
+		_btn(rg, T.t("▶ Weiterspielen"), func(): op({"do": "resume"}), true)
+		rg.add_child(_lab(T.t("Automatisch gespeichert an Hütten und am Nachtlager. Ein neuer Lauf ersetzt ihn."), 11, Color(0.6, 0.66, 0.74)))
 
 
 func _dev_box(parent: Control) -> void:
@@ -1992,29 +2258,26 @@ func _paint_mood() -> void:
 
 func _paint_level() -> void:
 	body.add_child(_lab(T.t("Wie schwierig - und was ist dein Ziel?"), 22, Color.WHITE))
+	var kid := kinder()
+	if kid:                                              # A6: Kinder-Modus des Simulators
+		body.add_child(_lab(T.t("Kinder-Modus: immer Leicht, keine Gefahren (Eis, Fels), kein Hunger, kurze Texte."), 13, ORG))
 	var g := _grid(3)
 	for k in D.LEVEL_ORDER:
 		var kk: String = k
-		g.add_child(_card(T.t(str(D.LEVELS[k][0])), T.t(str(D.LEVELS[k][1])), str(W["level"]) == k, func(): op({"do": "pick", "key": "level", "value": kk})))
+		var on: bool = (k == "leicht") if kid else str(W["level"]) == k
+		g.add_child(_card(T.t(str(D.LEVELS[k][0])), T.t(str(D.LEVELS[k][1])), on, func(): op({"do": "pick", "key": "level", "value": kk}), kid and k != "leicht"))
 	body.add_child(_lab(T.t("Ziel"), 15, Color.WHITE, false))
 	var g2 := _grid(3)
 	for k in D.GOAL_ORDER:
 		var kk: String = k
 		g2.add_child(_card(T.t(str(D.GOALS[k][0])), T.t(str(D.GOALS[k][1])), str(W["goal"]) == k, func(): op({"do": "pick", "key": "goal", "value": kk})))
+	# A6: die Jahreszeit vor dem Start - sie gilt für die ganze Runde, die Rätsel passen sich an
+	body.add_child(_lab(T.t("Jahreszeit (gilt für die ganze Runde)"), 15, Color.WHITE, false))
+	var g3 := _grid(4)
+	for sn in SEASONS:
+		var sk: String = sn[0]
+		g3.add_child(_card(T.t(str(sn[1])), kurz(T.t(str(sn[2]))), str(W["season"]) == sk, func(): op({"do": "pick", "key": "season", "value": sk})))
 	var gg := _group(T.t("Einstellungen"))
-	var row := HBoxContainer.new()
-	gg.add_child(row)
-	var l := _lab(T.t("Jahreszeit im Bergtal"), 14)
-	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(l)
-	var ob := OptionButton.new()
-	var opts := [["fruehling", "Frühling"], ["sommer", "Sommer"], ["herbst", "Herbst (Lärchen gelb, Nebel)"], ["winter", "Winter (Schnee, Eis)"]]
-	for i in range(opts.size()):
-		ob.add_item(T.t(opts[i][1]))
-		if opts[i][0] == str(W["season"]):
-			ob.select(i)
-	ob.item_selected.connect(func(i): op({"do": "pick", "key": "season", "value": opts[i][0]}))
-	row.add_child(ob)
 	var row2 := HBoxContainer.new()
 	gg.add_child(row2)
 	var l2 := _lab(T.t("Die Nacht im Zeitraffer dauert"), 14)
@@ -2030,10 +2293,26 @@ func _paint_level() -> void:
 	row2.add_child(ob2)
 	var ss := sunset_h()
 	gg.add_child(_lab(T.t("Sonnenuntergang heute im Bergtal: %s · Sonnenaufgang: %s") % [hm(ss), hm(sunrise_h())], 12, Color(0.6, 0.66, 0.74)))
+	_toggle_row(gg, T.t("Erzählerstimme: Grossvaters Tagebuchseiten vorlesen"), Stimme.an(), func(x): op({"do": "stimme", "value": x}))
+	if not Stimme.moeglich():
+		gg.add_child(_lab(T.t("Auf diesem PC wurde keine Sprachausgabe gefunden - die Seiten stehen dann nur im Tagebuch."), 11, Color(0.6, 0.66, 0.74)))
+	_toggle_row(gg, T.t("Zwischenszene beim Start jedes Kapitels (kurze Kamerafahrt)"), bool(SS.setting("szenen", true)), func(x): op({"do": "szenen", "value": x}))
 	if raetsel != null:
 		raetsel.paint_level(gg)                          # A3: was die Schwierigkeit für die Rätsel-Hilfe heisst
 	if zweit != null:
 		zweit.paint_choice(body)                       # A5: Mitspieler (Spielart, Namen, Handy)
+
+
+func _toggle_row(parent: Control, text: String, on: bool, cb: Callable) -> void:
+	var row := HBoxContainer.new()
+	parent.add_child(row)
+	var l := _lab(text, 14)
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(l)
+	var c := CheckButton.new()
+	c.button_pressed = on
+	c.toggled.connect(cb)
+	row.add_child(c)
 
 
 func _paint_pack() -> void:
@@ -2101,6 +2380,9 @@ func _stat_box(parent: Control) -> void:
 	var h: float = main.hour()
 	var sp: Vector2 = main.sun_pos()
 	var line := T.t("%s Uhr · Sonnenuntergang %s · Höhe %d m") % [hm(h), hm(float(R["sunset"])), int(Bt.H(R["pos"].x, R["pos"].y) + Bt.ALT0)]
+	for sn in SEASONS:
+		if sn[0] == str(R["season"]):
+			line = T.t(str(sn[1])) + " · " + line         # A6: die Jahreszeit der Runde
 	if sp.x > 0.0 and main.bt_orient != "schwer":
 		line += " · " + T.t("Sonne im %s") % T.t(dir_word(sp.y))
 	g.add_child(_lab(line, 12, Color(0.75, 0.8, 0.86)))
@@ -2131,6 +2413,10 @@ func _paint_hud() -> void:
 	body.add_child(_lab(T.t(str(ch["title"])), 18, Color.WHITE))
 	if R.has("replay_of"):
 		body.add_child(_lab(T.t("Wiedergabe: %s") % str(R["replay_of"]), 12, ORG))
+	if bool(R.get("intro", false)):                      # A6: Zwischenszene
+		var ig := _group(T.t("Zwischenszene"))
+		ig.add_child(_lab(kurz(T.t(str(ch["intro"]))), 13, Color(0.95, 0.85, 0.6)))
+		_btn(ig, T.t("Überspringen ›"), func(): op({"do": "intro_skip"}), true)
 	_stat_box(body)
 	_karte_in(body, 260.0)
 	var pe: Dictionary = R["pending"]
@@ -2146,6 +2432,8 @@ func _paint_hud() -> void:
 			b.custom_minimum_size = Vector2(0, 40)
 		if raetsel != null:
 			raetsel.paint_pending(g, pe)
+	if blinki != null:
+		blinki.paint(body)                               # A6: Blinki kommentiert Funde
 	var acts := HFlowContainer.new()
 	acts.add_theme_constant_override("h_separation", 8)
 	acts.add_theme_constant_override("v_separation", 8)
@@ -2156,6 +2444,9 @@ func _paint_hud() -> void:
 		_btn(acts, T.t("Wasser auffüllen (Bach)"), func(): op({"do": "refill"}), false, not idle)
 	_btn(acts, T.t("Hier übernachten"), func(): op({"do": "camp_here"}), false, not idle or not pe.is_empty())
 	Ruck.hud_buttons(self, acts, idle and pe.is_empty())   # A4: Essen, Quelle, Kochen, Tauschen
+	if _last_read != "" and Stimme.an() and Stimme.moeglich():   # A6: Erzählerstimme
+		_btn(acts, T.t("Seite nochmals vorlesen"), func(): op({"do": "vorlesen"}))
+		_btn(acts, T.t("Vorlesen stoppen"), func(): op({"do": "stopp"}))
 	Ruck.paint_tausch(self, body)                        # A4: Tausch-Fenster
 	if raetsel != null:
 		raetsel.paint_hud(body)
@@ -2252,7 +2543,12 @@ func _paint_morning() -> void:
 	if bool(res.get("finale", false)):
 		var fg := _group(T.t("Die Überraschung"))
 		for line in D.FINALE:
-			fg.add_child(_lab(T.t(line), 15, Color(0.97, 0.9, 0.7)))
+			fg.add_child(_lab(kurz(T.t(line)), 15, Color(0.97, 0.9, 0.7)))
+		var tg2 := _group(T.t("Die letzte Seite"))               # A6: die Andeutung auf Teil 2
+		tg2.add_child(_lab(kurz(T.t(TEIL2_PAGE)), 14, Color(0.95, 0.85, 0.6)))
+		tg2.add_child(_lab(T.t(TEIL2_NOTE), 13, ACC))
+		if Stimme.an() and Stimme.moeglich():
+			_btn(tg2, T.t("Seite nochmals vorlesen"), func(): op({"do": "vorlesen"}))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 14)
 	body.add_child(row)
@@ -2369,8 +2665,13 @@ func op(d: Dictionary) -> Dictionary:
 					W["chapter"] = int(v)
 			elif k == "tempo":
 				W["tempo"] = int(v)
+			elif k == "level" and kinder():
+				pass                                         # A6 Kinder-Modus: immer Leicht
 			elif k in ["mood", "level", "goal", "season", "pack"]:
 				W[k] = str(v)
+				if k == "season":
+					P["season"] = str(v)                     # A6: bleibt im Spielstand
+					_save()
 				if k == "level" and D.LEVELS.has(str(v)):
 					P["schwierigkeit"] = str(v)             # bleibt gespeichert (steuert auch die Hilfe bei Rätseln, A3)
 					_save()
@@ -2455,6 +2756,32 @@ func op(d: Dictionary) -> Dictionary:
 			out = {"ok": not (R.get("report", {}) as Dictionary).is_empty(), "report": R.get("report", {})}
 		"fast":
 			fast = bool(d.get("value", true))
+		"slot":                                        # A6: Spielstand-Platz 1–3
+			out = SS.switch(main, int(d.get("value", 1)))
+			if not bool(out.get("ok", false)):
+				error = {"tour": T.t("Während einer Tour bleibt der Spielstand - zuerst die Nacht fertig spielen."),
+						"test": T.t("Der Kapitel-Sprung (Entwickler) läuft - zuerst «Test beenden».")}.get(str(out.get("error", "")), str(out.get("error", "")))
+			_changed()
+		"slot_name":
+			SS.set_name(SS.slot(), str(d.get("value", "")))
+			_changed()
+		"resume":
+			out = resume()
+		"intro_skip":
+			intro_end(true)
+		"stimme":
+			Stimme.set_an(bool(d.get("value", true)))
+			_changed()
+		"szenen":
+			SS.set_setting("szenen", bool(d.get("value", true)))
+			_changed()
+		"vorlesen":
+			out = {"ok": Stimme.sprich(_last_read if _last_read != "" else str(d.get("value", "")))}
+		"stopp":
+			Stimme.stopp()
+		"kinder_test":                                 # A6, tests: Kinder-Modus im Abenteuer ohne den Schalter des Simulators
+			kids_test = bool(d.get("value", true))
+			_changed()
 		"a2":
 			out = a2.op(d) if a2 != null else {"ok": false}
 		"a1":
@@ -2502,7 +2829,11 @@ func state() -> Dictionary:
 				"sunrise": R["sunrise"], "pending": {"kind": pe.get("kind", ""), "title": pe.get("title", ""), "options": pe.get("options", [])} if not pe.is_empty() else {},
 				"notes": R["notes"], "found": R["found"], "arrived": R.get("arrived", false), "night": R["night"], "result_stars": R.get("result", {}).get("stars", -1),
 				"log": (R["log"] as Array).slice(-6), "choices": choices.size(), "replaying": replaying},
-			"a5_zweit": zweit.state() if zweit != null else {}, "a3": raetsel.state() if raetsel != null else {}, "error": error}
+			"a5_zweit": zweit.state() if zweit != null else {}, "a3": raetsel.state() if raetsel != null else {}, "error": error,
+			"a6": {"slot": SS.slot(), "slot_name": SS.name_of(SS.slot()), "file": save_file, "kids": kinder(), "intro": bool(R.get("intro", false)),
+				"lauf": SS.lauf_head(), "stimme": Stimme.state(), "last_read": _last_read, "blinki": blinki.state() if blinki != null else {},
+				"season": str(R.get("season", W["season"])), "level": SS.level(main), "teil2": bool(P.get("teil2", false)),
+				"szenen": bool(SS.setting("szenen", true)), "text": str(pe.get("text", ""))}}
 
 
 var _night_starting := false

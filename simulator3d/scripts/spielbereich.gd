@@ -7,8 +7,9 @@ extends Node
 ##     ist offen, wenn das vorherige zur Hälfte entdeckt ist (oder man schon dort war); «Neu» = offen, noch nie besucht.
 ##     Fortschritt pro Kapitel: «12 von 34 entdeckt» aus main.entdecken (zählt, was dort schon angemeldet wurde).
 ##   * Abzeichen-Sammlung: die Spiel-Abzeichen (game.gd BADGES, alle Namen dieses PCs zusammen) und je ein Kapitel-Abzeichen.
-##   * Stufe des Spielers (pro Gerät, user://spiel/spielbereich.json): steigt mit Entdeckungen, Abzeichen, geschafften
-##     Abenteuern. Keine Rangliste.
+##   * Stufe des Spielers (pro Spielstand, A6: user://spiel/spielbereich.json = Platz 1, sonst user://spielstand/<n>/):
+##     steigt mit Entdeckungen, Abzeichen, geschafften Abenteuern und der Erfahrung aus dem Bergtal-Abenteuer (ein Level
+##     für alles, spielstand.gd). Keine Rangliste.
 ##   * Knöpfe: «Abenteuer starten» (Szene wechseln – Haken adventure_hooks[id] für das spätere Bergtal-Abenteuer),
 ##     «Spiel-Assistent» (gamewiz.gd), «Entdeckungsbuch» (entdecken.gd).
 ## /control {"action": "spielbereich", "do": "info" | "open" | "close" | "start" (id) | "seen" | "reset"} – MoveEye zeigt info().
@@ -50,6 +51,7 @@ static func level_of(xp: int) -> int:
 
 
 func _ready() -> void:
+	save_path = preload("res://scripts/spielstand.gd").path_sb()   # A6: the file of the active Spielstand (place 1 = SAVE)
 	_load()
 
 
@@ -176,10 +178,13 @@ func level() -> Dictionary:
 	var nb := 0
 	for b in badges():
 		nb += 1 if int(b.n) > 0 else 0
-	var xp := disc * XP_DISC + nb * XP_BADGE + done * XP_DONE + vis * XP_VISIT
+	# A6 «Ein Level für alles» (Daniel 31.10.2026): the experience of the Bergtal adventure counts too (same Spielstand)
+	var ab_xp: int = int(main.abenteuer.P.get("xp", 0)) if main != null and main.abenteuer != null else 0
+	var xp := disc * XP_DISC + nb * XP_BADGE + done * XP_DONE + vis * XP_VISIT + ab_xp
 	var lv := level_of(xp)
-	return {"lv": lv, "xp": xp, "from": need(lv), "to": need(lv + 1), "disc": disc, "badges": nb, "done": done,
-			"parts": [["Entdeckungen", disc * XP_DISC], ["Abzeichen", nb * XP_BADGE], ["Abenteuer geschafft", done * XP_DONE], ["Abenteuer begonnen", vis * XP_VISIT]]}
+	return {"lv": lv, "xp": xp, "from": need(lv), "to": need(lv + 1), "disc": disc, "badges": nb, "done": done, "ab_xp": ab_xp,
+			"parts": [["Entdeckungen", disc * XP_DISC], ["Abzeichen", nb * XP_BADGE], ["Abenteuer geschafft", done * XP_DONE], ["Abenteuer begonnen", vis * XP_VISIT],
+				["Bergtal-Abenteuer", ab_xp]]}
 
 
 func blinki(mark := false) -> Dictionary:
@@ -331,12 +336,16 @@ func _paint() -> void:
 	_body.add_child(lh)
 	var ll := Label.new()
 	ll.text = T.t("⭐ Stufe %d", [int(lv.lv)])
+	var SS = preload("res://scripts/spielstand.gd")
+	if SS.slot() != 1 or SS.name_of(1) != "":
+		ll.text += "  ·  " + (SS.name_of(SS.slot()) if SS.name_of(SS.slot()) != "" else T.t("Spielstand %d", [SS.slot()]))
 	ll.add_theme_font_override("font", UI.heading_font())
 	ll.add_theme_font_size_override("font_size", 15)
 	lh.add_child(ll)
 	var lx := UI.small(T.t("%d Punkte · noch %d bis Stufe %d", [int(lv.xp), int(lv.to) - int(lv.xp), int(lv.lv) + 1]))
 	lx.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	lx.tooltip_text = T.t("Entdeckung +%d · Abzeichen +%d · Abenteuer geschafft +%d · Abenteuer begonnen +%d", [XP_DISC, XP_BADGE, XP_DONE, XP_VISIT])
+	lx.tooltip_text = T.t("Entdeckung +%d · Abzeichen +%d · Abenteuer geschafft +%d · Abenteuer begonnen +%d", [XP_DISC, XP_BADGE, XP_DONE, XP_VISIT]) \
+			+ "\n" + T.t("Dazu die Erfahrung aus dem Bergtal-Abenteuer (%d) - ein Level für alles, pro Spielstand.", [int(lv.ab_xp)])
 	lx.mouse_filter = Control.MOUSE_FILTER_PASS
 	lh.add_child(lx)
 	var lb := ProgressBar.new()
