@@ -421,6 +421,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.32
+3D-4.32: Gameplay ausgefeilt: Probe-Runde mit Blinki, Wiederholung beim Erwischen, Höhepunkte am Schluss, Missionen,
+Nacht-Spiel mit Geräuschen, neue Werkzeuge, Spielabend-Turnier, Fairness automatisch, «MoveEye ins Schwitzen», KI-Turm,
+Abzeichen pro Szene. Alles im Spiel-Assistenten (Schnellstart und Extras).
+So testest du: 1) Spiel → Assistent → «Wächter-Duell» mit zwei Handys: Blinki zeigt die Probe-Runde. 2) Schleicher
+erwischen: auf seinem Handy kommt der 3-s-Film. 3) Schnellstart «🎒 Mission» oder «🌙 Nacht-Spiel» ausprobieren.
+
 NEU IN 3D-4.31
 3D-4.31: Nacht-Testlauf – eine ganze Nacht im Simulator (WC-Gänge, Tiere, Auto, Regen, genau ein echter Vorfall) mit
 Wahrheit; MoveEye vergleicht und zeigt den Bericht auf /nacht. Starten nur in MoveEye (Besitzer), im Simulator unter

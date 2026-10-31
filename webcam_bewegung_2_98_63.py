@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_62.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_63.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.63: Simulator 3D-4.32: Gameplay ausgefeilt – Probe-Runde mit Blinki, Wiederholung und Höhepunkte, Missionen,
+    Nacht-Spiel, neue Werkzeuge, Turnier, Fairness, «MoveEye ins Schwitzen», KI-Turm (Rangliste auch in MoveEye), Abzeichen pro
+    Szene.
   * 2.98.62: Simulator 3D-4.31: Nacht-Testlauf – ganze Nacht im Simulator mit Wahrheit, Abgleich in MoveEye, Bericht /nacht (nur
     der Besitzer startet); Trainings-Nacht 🏋 und Nacht-Generalprobe 🎭 mit eigenen Symbolen.
   * 2.98.61: Simulator 3D-4.30: Erlebniswelt im «Ferienpark am See» – 19 kleine Szenen mit Tieren und Menschen im
@@ -1022,10 +1025,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_62.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_63.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_62.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_62.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_63.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_63.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -1042,7 +1045,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.62"
+APP_VERSION = "2.98.63"
 
 
 def default_data_dir():
@@ -25549,8 +25552,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.31", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 65220826,
-         "sha256": "ffcbe1af006abfb14247dbd0eb6d33f8752a56ead4d425c018426d718e56e311"}
+SIM3D = {"version": "3D-4.32", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 65444156,
+         "sha256": "059b99f92d1faf4053cd687e3bb145346e550f7e9395633da14af7746d9ebde2"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -32660,7 +32663,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_62.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_63.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -58220,7 +58223,8 @@ WEB_PAGE = WEB_PAGE.replace("</body>", USERS_JS + "</body>", 1)
 KIG_KEYS = ["MoveEye as AI guard", "In rounds with a guard role (guard, team against team, team against MoveEye, online rounds) MoveEye itself is the guard: everybody sneaks, MoveEye's real detection watches, the head follows and the shutter fires by itself. Such rounds go into their own list «against the AI», not into the ranking.", "On: MoveEye guards rounds with a guard role itself", "This round: MoveEye guards (AI)",
             "MoveEye is not connected to the simulator game", "Against the AI", "rounds", "caught", "at the goal", "never caught",
             "The AI", "catches", "false alarms", "shots", "Reset the list «against the AI»", "Reset the list «against the AI»?",
-            "not supported - update the simulator", "no rounds against the AI yet"]
+            "not supported - update the simulator", "no rounds against the AI yet",
+            "AI tower", "floor", "highest floor", "towers", "AI tower now: floor", "Start the AI tower: quick start «KI-Turm» in the game wizard"]
 
 KIG_JS = r"""<script>
 Object.assign(I18N.de, /*KIGDE*/{});
@@ -58253,6 +58257,15 @@ Object.assign(I18N.de, /*KIGDE*/{});
       const rb = el("button", "sec", t("Reset the list «against the AI»")); rb.type = "button"; rb.style.marginTop = "6px";
       rb.onclick = async () => { if (!confirm(t("Reset the list «against the AI»?"))) return; await post("/api/sim", {action: "ctl", ctl: "press", id: "game_kig_reset", lang: LANG}); SIG = ""; poll(true); };
       D.appendChild(rb); }
+    // Gameplay ausfeilen (simulator 31.10.2026): the AI tower - the highest floor per player, also «against the AI»
+    const TW = K.turm || [];
+    const th = el("div", "", "🗼 " + t("AI tower")); th.style.cssText = "margin-top:8px;font-weight:600"; D.appendChild(th);
+    if (K.turm_on) D.appendChild(el("div", "", "🗼 " + t("AI tower now: floor") + " " + K.turm_floor));
+    if (!TW.length) D.appendChild(el("div", "mut", t("Start the AI tower: quick start «KI-Turm» in the game wizard")));
+    else { const tb2 = el("table", "gw-board");
+      TW.forEach((b, i) => { const tr = el("tr"); tr.append(el("td", "", (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + " " + b.n), el("td", "", t("floor") + " " + b.best + (b.ki ? " 🛡" : "")),
+        el("td", "mut", (b.towers || 0) + " " + t("towers"))); tb2.appendChild(tr); });
+      D.appendChild(tb2); }
   }
   let tm = null;
   async function poll(now) {
@@ -67531,7 +67544,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.62")
+        self.root.title("MoveEye 2.98.63")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -67898,7 +67911,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.62 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.63 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -81269,6 +81282,13 @@ _HX_VIER = {
     'Reset the list «against the AI»': ('Liste «gegen die KI» zurücksetzen', 'Réinitialiser la liste «contre l’IA»', 'Azzerare la lista «contro l’IA»', 'Reinizialisar la glista «cunter la IA»'),
     'Reset the list «against the AI»?': ('Liste «gegen die KI» zurücksetzen?', 'Réinitialiser la liste «contre l’IA» ?', 'Azzerare la lista «contro l’IA»?', 'Reinizialisar la glista «cunter la IA»?'),
     'no rounds against the AI yet': ('noch keine Runden gegen die KI', 'encore aucune manche contre l’IA', 'ancora nessun turno contro l’IA', 'anc naginas rundas cunter la IA'),
+    # Gameplay ausfeilen (31.10.2026): the AI tower of the simulator (gameturm.gd)
+    'AI tower': ('KI-Turm', 'Tour de l’IA', 'Torre dell’IA', 'Tur da la IA'),
+    'floor': ('Stufe', 'étage', 'livello', 'stgalim'),
+    'highest floor': ('höchste Stufe', 'étage le plus haut', 'livello più alto', 'il stgalim il pli aut'),
+    'towers': ('Türme', 'tours', 'torri', 'turs'),
+    'AI tower now: floor': ('KI-Turm läuft: Stufe', 'Tour de l’IA en cours : étage', 'Torre dell’IA in corso: livello', 'Tur da la IA en curs: stgalim'),
+    'Start the AI tower: quick start «KI-Turm» in the game wizard': ('KI-Turm starten: Schnellstart «KI-Turm» im Spiel-Assistenten', 'Lancer la tour de l’IA : départ rapide «KI-Turm» dans l’assistant de jeu', 'Avviare la torre dell’IA: avvio rapido «KI-Turm» nell’assistente di gioco', 'Lantschar la tur da la IA: start svelt «KI-Turm» en l’assistent da gieu'),
 }
 for _k, _v in _HX_VIER.items():
     DE.setdefault(_k, _v[0])
