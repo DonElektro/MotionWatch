@@ -33,6 +33,7 @@ const MAX_LV := 30
 var main
 var adventure_hooks := {}                  # id -> Callable: «Abenteuer starten» of a chapter (later: bergtal.gd); none = set_scene
 var data := {"visited": [], "seen_lv": 1, "greeted": false, "done_seen": []}
+var save_path := SAVE                      # Entwicklertool 3 (devtool_kapitel.gd): the test state goes to its own file (only until restart)
 var _body: VBoxContainer = null
 var _t := 0.0
 
@@ -53,9 +54,9 @@ func _ready() -> void:
 
 
 func _load() -> void:
-	if not FileAccess.file_exists(SAVE):
+	if not FileAccess.file_exists(save_path):
 		return
-	var d = JSON.parse_string(FileAccess.get_file_as_string(SAVE))
+	var d = JSON.parse_string(FileAccess.get_file_as_string(save_path))
 	if typeof(d) == TYPE_DICTIONARY:
 		for k in data:
 			if d.has(k) and typeof(d[k]) == typeof(data[k]):
@@ -64,8 +65,8 @@ func _load() -> void:
 
 
 func save() -> void:
-	DirAccess.make_dir_recursive_absolute("user://spiel")
-	var f := FileAccess.open(SAVE, FileAccess.WRITE)
+	DirAccess.make_dir_recursive_absolute(save_path.get_base_dir())
+	var f := FileAccess.open(save_path, FileAccess.WRITE)
 	if f != null:
 		f.store_string(JSON.stringify(data))
 		f.close()

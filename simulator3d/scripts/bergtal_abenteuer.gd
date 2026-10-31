@@ -40,6 +40,7 @@ var _pulse := 0.0
 var _prog_f := 0.0
 var error := ""
 var dev_open := false
+var save_file := SAVE_FILE           # Entwicklertool 3 (devtool_kapitel.gd): the test progress goes to its own file (only until restart)
 
 # the choice being made (the wizard steps)
 var W := {"chapter": 1, "mood": "abenteuerlich", "level": "mittel", "goal": "dunkel", "season": "sommer", "pack": "50",
@@ -74,8 +75,8 @@ var title_lab: Label
 # =======================================================================================================================
 func _load() -> void:
 	P = {"chapter": 1, "xp": 0, "stars": {}, "finds": [], "finale": false, "runs": [], "pieces": []}
-	if FileAccess.file_exists(SAVE_FILE):
-		var d = JSON.parse_string(FileAccess.get_file_as_string(SAVE_FILE))
+	if FileAccess.file_exists(save_file):
+		var d = JSON.parse_string(FileAccess.get_file_as_string(save_file))
 		if d is Dictionary:
 			for k in d:
 				P[k] = d[k]
@@ -83,8 +84,8 @@ func _load() -> void:
 
 
 func _save() -> void:
-	DirAccess.make_dir_recursive_absolute(DIR)
-	var f := FileAccess.open(SAVE_FILE, FileAccess.WRITE)
+	DirAccess.make_dir_recursive_absolute(save_file.get_base_dir())
+	var f := FileAccess.open(save_file, FileAccess.WRITE)
 	if f != null:
 		f.store_string(JSON.stringify(P, " "))
 
