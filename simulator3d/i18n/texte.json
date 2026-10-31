@@ -8198,6 +8198,12 @@
   "it": "Il formaggio del 1897",
   "rm": "Il chaschiel da 1897"
  },
+ "Der letzte Start brach beim Einlesen der Foto-Inhalte ab – sie sind jetzt aus (System › Grafik › Experte: «Echte Oberflächen und Himmel»).": {
+  "en": "The last start stopped while loading the photo contents – they are off now (System › Graphics › Expert: «Real surfaces and sky»).",
+  "fr": "Le dernier démarrage s'est interrompu au chargement des contenus photo – ils sont désactivés (Système › Graphisme › Expert : «Surfaces et ciel réels»).",
+  "it": "L'ultimo avvio si è interrotto durante il caricamento dei contenuti foto – ora sono disattivati (Sistema › Grafica › Esperto: «Superfici e cielo reali»).",
+  "rm": "L'ultim start è sa interrut cun chargiar ils cuntegns da fotografias – els èn ussa deactivads (Sistem › Grafica › Expert: «Surfatschas e tschiel reals»)."
+ },
  "Der Luchs (Wildkamera am Wildwechsel, nachts)": {
   "en": "The lynx (camera trap at the game trail, at night)",
   "fr": "Le lynx (piège photo sur le passage, la nuit)",

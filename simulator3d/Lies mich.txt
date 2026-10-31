@@ -16,6 +16,16 @@ STARTEN
    und wieder auf. Geht das nicht von selbst: "Start in virtueller Maschine (ANGLE).bat" benutzen.
    In der virtuellen Maschine muss die 3D-Beschleunigung eingeschaltet sein (VMware: Einstellungen -> Anzeige).
 
+SCHLIESST SICH DAS FENSTER GLEICH NACH DEM START? (MoveEye Sim 3.8.0)
+- In 3.8.0 stürzte der Simulator nach dem Godot-Startbild ab, während er nach Updates suchte (die Foto-Inhalte
+  wurden angewendet, bevor die Welt stand). Ab der Korrektur nicht mehr. Bis dahin: so starten
+  (Verknüpfung oder .bat neben der .exe):   MoveEyeSim3D.exe -- --no-update
+  oder                                       MoveEyeSim3D.exe -- --no-inhalte
+- Schutz: Bricht ein Start beim Einlesen der Foto-Inhalte ab, startet der nächste ohne sie und sagt es in der
+  Statuszeile. Wieder einschalten: System › Grafik › Experte: "Echte Oberflächen und Himmel".
+- Das Protokoll des letzten Starts: %APPDATA%\Godot\app_userdata\MoveEye Sim 3D\logs\godot.log
+  (ältere daneben im Ordner "logs").
+
 UPDATES (ab 3D-1.7)
 - Versionsnummer: ab 3.0.0 heisst der Simulator "MoveEye Sim" und hat immer dieselbe Nummer wie MoveEye (z. B. MoveEye 3.0.0 und
   MoveEye Sim 3.0.0). Ein Simulator bis 3D-4.8x zeigt das erste Update dorthin als "3D-5.0.0" an - das ist MoveEye Sim 3.0.0.
@@ -366,6 +376,7 @@ MoveEyeSim3D.exe -- --port 8766 --hour 22.5 --quality simple --stream --scene wa
   --scene: mit dieser Szene starten (camping, wald, parkplatz, garten, lustig, wild)
   --no-update: beim Start nicht nach einer neuen Version suchen
   --no-angle: in einer virtuellen Maschine nicht von selbst auf ANGLE umschalten
+  --no-inhalte: ohne Foto-Inhalte starten (echte Oberflächen und Foto-Himmel aus)
   --stream: gleich beim Start an MoveEye senden
   --win X,Y,BREITE,HOEHE: Fenster an diese Stelle und in diese Grösse
   --mini: gleich als kleines Kästchen in der Ecke starten (--mini-tiny: als kleines Symbol)

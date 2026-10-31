@@ -758,7 +758,8 @@ func _vm_needs_angle(args: Array) -> bool:
 		a.append(x)
 	a.append_array(OS.get_cmdline_user_args())
 	a.append("--angle-tried")
-	release_ports()
+	# Startfix 31.10.2026: kein release_ports() hier - noch ist nichts offen, und dessen _save_settings() hätte VOR
+	# _load_settings die gespeicherten Einstellungen mit den Standardwerten überschrieben (bei jedem Start in einer VM)
 	OS.create_process(OS.get_executable_path(), a)
 	get_tree().quit()
 	return true

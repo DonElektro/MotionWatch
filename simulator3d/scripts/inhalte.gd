@@ -28,6 +28,7 @@ const DIR := "user://inhalte"
 const MODES := [["an", "An: Fotos für Boden, Wege, Zelt, Bäume und Himmel"], ["boden", "Nur Oberflächen (Himmel wie bisher)"],
 		["aus", "Aus (bisherige Code-Materialien)"]]
 const HDRI_MAX_W := 4096               # Startfix: breitere HDRIs werden beim Einlesen verkleinert (Grafikspeicher, ANGLE)
+const MARK := "user://inhalte_merker.json"   # Startfix: liegt da, solange Foto-Inhalte eingelesen / angewendet werden
 const RETRY_S := 86400.0              # nach einem Fehlschlag frühestens nach einem Tag wieder von selbst laden
 const SKY_DAY := "himmel_tag"
 const SKY_DUSK := "himmel_daemmerung"
@@ -70,6 +71,7 @@ func _ready() -> void:
 	elif "--quality" in args:
 		_off = "Prüfstand (--quality): Bilder bleiben vergleichbar"
 	_load_settings()
+	_crash_check()
 	_read_katalog()
 	_lite_was = Quality.lite()
 	call_deferred("on_scene")                 # (kommt die Welt erst nach der Update-Suche: on_scene wartet, siehe _world_ready)
@@ -82,6 +84,34 @@ func _load_settings() -> void:
 	var d = JSON.parse_string(FileAccess.get_file_as_string(FILE))
 	if typeof(d) == TYPE_DICTIONARY and str(d.get("mode", "")) in ["an", "boden", "aus"]:
 		mode = str(d["mode"])
+
+
+func _crash_check() -> void:
+	"""Startfix 31.10.2026: liegt der Merker noch da, ist der letzte Start beim Einlesen / Anwenden der Foto-Inhalte
+	abgestürzt. Dann diesmal (und bis man sie wieder einschaltet) ohne Foto-Inhalte, mit Hinweis."""
+	if not FileAccess.file_exists(MARK):
+		return
+	DirAccess.remove_absolute(MARK)
+	print("inhalte: the last start crashed while loading the photo contents - switched off (inhalte_merker.json)")
+	if mode != "aus":
+		mode = "aus"
+		_save_settings()
+	if main != null:
+		main.start_info = T.t("Der letzte Start brach beim Einlesen der Foto-Inhalte ab – sie sind jetzt aus (System › Grafik › Experte: «Echte Oberflächen und Himmel»).")
+
+
+func _exit_tree() -> void:
+	_mark(false)                                          # normal beendet (auch mitten im Laden): kein Absturz
+
+
+func _mark(on: bool) -> void:
+	if on:
+		var f := FileAccess.open(MARK, FileAccess.WRITE)
+		if f != null:
+			f.store_string(JSON.stringify({"t": Time.get_unix_time_from_system()}))
+			f.close()                                 # gleich schreiben: ein harter Absturz soll ihn hinterlassen
+	elif FileAccess.file_exists(MARK):
+		DirAccess.remove_absolute(MARK)
 
 
 func _save_settings() -> void:
@@ -334,6 +364,7 @@ func laden(force := false) -> void:
 		_toast(T.t("Foto-Inhalte sind aus: %s", [_off]))
 		return
 	_loading = true
+	_mark(true)
 	state = "laden"
 	_scan_zips()
 	var mis := missing()
@@ -365,6 +396,7 @@ func laden(force := false) -> void:
 	_mats.clear()
 	_reset_global()                                       # neu eingelesene Bilder: alles frisch anwenden
 	_apply_now()
+	_mark(false)                                          # eingelesen und angewendet: kein Absturz
 
 
 # ---- Bilder einlesen ----------------------------------------------------------------------------------------------------
@@ -506,9 +538,12 @@ func on_scene() -> void:
 	if not active_here():
 		_reset_global()
 		return
+	_mark(true)
 	if _loaded_ids.is_empty() or not missing().is_empty() and not _auto_tried:
 		laden(false)                                      # lädt im Hintergrund, wendet danach an
 	_apply_now()
+	if not _loading:
+		_mark(false)
 
 
 func _apply_now() -> void:
