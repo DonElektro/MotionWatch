@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_54.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_62.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,26 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.62: Simulator 3D-4.31: Nacht-Testlauf – ganze Nacht im Simulator mit Wahrheit, Abgleich in MoveEye, Bericht /nacht (nur
+    der Besitzer startet); Trainings-Nacht 🏋 und Nacht-Generalprobe 🎭 mit eigenen Symbolen.
+  * 2.98.61: Simulator 3D-4.30: Erlebniswelt im «Ferienpark am See» – 19 kleine Szenen mit Tieren und Menschen im
+    Entdeckungsbuch, «Verstecken mit MoveEye» (nur im Ferienpark).
+  * 2.98.60: Simulator 3D-4.29: Fenster «Neu in dieser Version» scrollt, OK immer sichtbar, Esc schliesst.
+  * 2.98.59: Simulator 3D-4.28: neue Szene «Ferienpark am See» mit fünf MoveEye-Standorten (Zelt, Wohnmobil, Bungalow,
+    Bootssteg, Rezeption); die Auswahl «Standort im Ferienpark am See» erscheint in der Simulator-Steuerung nur, wenn diese
+    Szene gewählt ist. Szenen-Name in allen Sprachen.
+  * 2.98.58: Simulator-Zentrale: neue Kachel «📖 Entdeckungen» (Spielen) – Stand des Entdeckungsbuchs im Simulator, Liste, «📷
+    Foto für Entdeckungsbuch», «Im Simulator öffnen», «Blinki-Hinweis». Simulator 3D-4.27: Entdecken (Buch, Fund per Ansicht
+    oder Foto der Kopfkamera, Tageszeit-/Wetter-Geheimnisse, Blinki-Hinweise, Demo im Camping-Platz).
+  * 2.98.57: Simulator 3D-4.26: alle schwebenden Fenster (Kompass, Karte, Livebild, SmallTV, Gerät, Mover, Kopf, Kameras, CPU)
+    in einem gemeinsamen Rahmen – verschieben, Grösse ändern, ✕ ausblenden, Schnappen, neuer Knopf «Fenster» in der Leiste unten
+    (Liste, «Anordnung zurücksetzen»), Anordnung pro PC gespeichert.
+  * 2.98.56: Sim-Kompakt: hat es neben dem Hauptbild Platz (PC, Tablet quer), steht das zweite Bild (Simulator bzw. Kamera)
+    rechts daneben statt darüber – nichts wird mehr verdeckt; am Handy hochkant bleibt Bild im Bild. Das Simulator-Bild wächst
+    nicht mehr mit dem Zoom «Grösse» aus seinem Platz.
+  * 2.98.55: «MoveEye Sim · Basis» (alter Python-Simulator) nur noch mit dem neuen Schalter «Basis-Simulator anzeigen»
+    (Simulator, Experte, Standard aus): ohne ihn kein Download, keine Knöpfe zum Installieren / Starten auf dem Pi (bestehende
+    Installationen bleiben). Simulator 3D-4.25: Grafik-Stufe «Lite» für den Raspberry Pi 5 und «Leistung» in der Selbstdiagnose.
   * 2.98.54: Live-Seite am Handy: die Status-Chips stehen in einer Zeile zum seitlichen Wischen (Schutz-Zustand, Status-LED,
     alles ok / Probleme, Akku zuerst; Rand blendet aus, wenn weitere folgen) – die Sticks von Sim-Kompakt haben wieder ihre
     normale Grösse
@@ -1002,10 +1022,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_54.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_62.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_54.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_54.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_62.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_62.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -1022,7 +1042,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.54"
+APP_VERSION = "2.98.62"
 
 
 def default_data_dir():
@@ -1333,7 +1353,7 @@ CFG = {
     "sim_autostart": True, "sim_autostart_v2": False,   # v2 (2.95.26): on a Raspberry Pi off by default (it guards the real place)
     # 2.95.25: a simulator announces itself -> the simulation goes on by itself (and off again when it is gone)
     "sim_auto_on": False,        # ... it was switched on by that (only then it is switched off again by itself)
-    "sim_autoupd": True, "sim_separate": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
+    "sim_autoupd": True, "sim_separate": True, "sim_basis_show": False, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
     "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
     "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
     "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True,
@@ -11877,6 +11897,11 @@ def sim_hub(force=False):
         except Exception:
             d["rover"] = None
         d["rover_alarm"] = bool(CFG.get("rover_alarm"))
+        try:                                                # Erlebniswelt 20–23 (simulator entdecken.gd): the Entdeckungsbuch of the scene
+            dz = sim_control({"action": "entdecken"}) or {}
+            d["disc"] = {k: dz.get(k) for k in ("found", "total", "photo", "scene_name", "hint_text", "items")} if dz.get("ok") and "total" in dz else None
+        except Exception:
+            d["disc"] = None
     d["demo"] = {"busy": DEMO_RUN["busy"], "i": DEMO_RUN["i"], "n": DEMO_RUN["n"]}
     d["simple"] = page_simple("sim")                      # 2.98.14: «Simple» shows the assistant instead of the single tools
     d["tune"] = {"busy": TUNEA["busy"], "step": TUNEA["step"], "last": bool(TUNEA.get("last"))}
@@ -11917,6 +11942,13 @@ def sim_hub_do(a, v=None):
                 r = sim_control({"action": "rover", "do": str(v)[:10], "on": True}) if v != "patrol_off" else sim_control({"action": "rover", "do": "patrol", "on": False})
         elif a == "twin":
             r = sim_twin()
+        elif a == "disc":                                    # Erlebniswelt 20–23: open the book in the simulator, photo, Blinki hint
+            r = sim_control({"action": "entdecken", "do": str(v) if v in ("open", "close", "photo", "hint") else "info"})
+            if v == "photo" and r.get("ok") and not r.get("found"):
+                _SIMHUB["t"] = 0.0
+                return False, tr("nothing special in the picture of the camera")
+            if v == "hint" and not r.get("ok"):
+                return False, tr("nothing more to find here right now")
         elif a == "overlay":
             r = sim_control({"action": "set", "id": str(v.get("id")), "value": bool(v.get("on"))}) if isinstance(v, dict) and v.get("id") in ("show_zones3d", "show_det3d") else {"ok": False}
         else:
@@ -11936,6 +11968,12 @@ SIMHUB_CSS = r"""
 .shub .st:hover{border-color:var(--acc,#3b8cff)}.shub .st:active{transform:scale(.97)}
 .shub .st i{font-style:normal;font-size:24px;line-height:1}.shub .st b{font-size:13px;hyphens:auto;overflow-wrap:anywhere}.shub .st small{font-size:11px;color:var(--mut,#8a9bb0)}
 .shub .st.on{border-color:#f59a4a;box-shadow:0 0 0 1px #f59a4a inset}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:8px}
+.dgrid .dit{display:flex;gap:8px;align-items:flex-start;padding:8px;border-radius:12px;border:1px solid var(--line,#1f2b3a);background:var(--panel2,#151e2b)}
+.dgrid .dit.no{background:transparent;color:var(--mut,#8a9bb0)}
+.dgrid img,.dgrid .dph{width:96px;height:54px;border-radius:8px;object-fit:cover;flex:0 0 auto;background:#0006}
+.dgrid .dph{display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--mut,#8a9bb0)}
+.dgrid .dtx{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:12px}.dgrid .dtx b{font-size:13px}.dgrid .dtx small{color:var(--mut,#8a9bb0)}
 .shsheet{margin-top:8px;padding:10px;border-radius:14px;background:var(--panel,#111822);border:1px solid var(--line,#1f2b3a);display:flex;flex-wrap:wrap;gap:6px}
 .shsheet.trs{display:block}.shsheet #tr-box button{flex:0 1 auto}
 .shsheet button{flex:1 1 auto;min-width:84px}.shsheet .shrow{display:flex;gap:6px;width:100%;align-items:center}
@@ -11980,6 +12018,11 @@ SIMHUB_JS = r"""
     "More sensitive": "Empfindlicher", "Less sensitive": "Weniger empfindlich", "AI stricter": "KI strenger", "AI more generous": "KI grosszügiger", "Also small objects": "Auch kleine Objekte",
     "Faster decision": "Schneller entscheiden", "B is better – kept": "B ist besser – übernommen", "A stays": "A bleibt", "Place, zones, patrol": "Ort, Zonen, Patrouille",
     "Zones in 3D": "Zonen in 3D", "mast": "Stange", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"});
+  Object.assign(DE, {"Discoveries": "Entdeckungen", "{f} of {n} discovered": "{f} von {n} entdeckt", "Photo for the discovery book": "Foto für Entdeckungsbuch",
+    "Open in the simulator": "Im Simulator öffnen", "Blinki hint": "Blinki-Hinweis", "a place": "ein Ort", "a scene": "eine Szene", "an animal": "ein Tier", "a person": "ein Mensch",
+    "Found!": "Entdeckt!", "Something special is in the picture – take the photo now!": "Etwas Besonderes ist im Bild – jetzt fotografieren!",
+    "Come close enough in the 3D view to discover places, animals and funny scenes. 📷 = take a photo with MoveEye’s camera: aim the head, then «Photo for the discovery book». 🌙 🌧 🌅 = only at night, in the rain, in the morning.": "Wer in der 3D-Ansicht nahe genug kommt, entdeckt Orte, Tiere und lustige Szenen. 📷 = mit MoveEyes Kamera fotografieren: Kopf hinrichten, dann «Foto für Entdeckungsbuch». 🌙 🌧 🌅 = nur nachts, bei Regen, am Morgen.",
+    "nothing special in the picture of the camera": "nichts Besonderes im Bild der Kamera", "nothing more to find here right now": "gerade gibt es hier nichts mehr zu finden"});   // Erlebniswelt 20–23
   const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : (L() === "en" ? k : (DE[k] || k));
   const scn = x => !x ? "" : (x.en && L() !== "de" ? tt(x.en) : x.name);     // 551: scene names in the language of the page (German from the simulator)
   const WX = [["clear", "☀"], ["cloudy", "☁"], ["rain", "🌧"], ["fog", "🌫"], ["snow", "❄"]];
@@ -11998,6 +12041,7 @@ SIMHUB_JS = r"""
       i.oninput = () => { o.textContent = String(Math.floor(i.value)).padStart(2, "0") + ":" + String(Math.round(i.value % 1 * 60)).padStart(2, "0"); }; i.onchange = () => act("hour", +i.value); r.append(i, o); s.appendChild(r); }
     if (kind === "wide" && window.mwWide) window.mwWide.sheet(s, H, act);         // 591: the wide camera (picture, mount)
     if (kind === "parc" && window.mwParc) window.mwParc.sheet(s, H, act);         // 416: the tracking parcours
+    if (kind === "nacht" && window.mwNacht) window.mwNacht.sheet(s, H, act);      // 579b: the night test run
     if (kind === "weather") WX.forEach(([k, ic]) => { const b = E("button", k === H.weather ? "" : "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = () => act("weather", k); s.appendChild(b); });
     if (kind === "visit") VIS.forEach(([k, ic]) => { const b = E("button", "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = async () => { const r = await act("visit", k); if (r && r.ok) say(ic + " " + tt("sent")); }; s.appendChild(b); });
     if (["inbox", "drill", "train", "ab"].includes(kind)) labSheet(s, kind);
@@ -12012,10 +12056,32 @@ SIMHUB_JS = r"""
       s.appendChild(E("div", "mut", "🔋 " + (R.batt != null ? R.batt + " %" : "–") + (R.charging ? " · " + tt("charging") : "") + " · " + tt("rover-note")));
     }
     if (kind === "stats") statsSheet(s);
+    if (kind === "disc") discSheet(s);
     if (kind === "tests") { const tb = document.getElementById("tr-box") || window._trBox;   // 2.98.23: the test run (470) lives here, no own card
       if (tb) { window._trBox = tb; s.classList.add("trs"); s.appendChild(tb); } else s.appendChild(E("div", "mut", "–")); }
     if (["blind", "rehearsal", "autoth", "falearn", "week", "points"].includes(kind)) learnSheet(s, kind);
     box.appendChild(s);
+  }
+  // Erlebniswelt 20–23: the Entdeckungsbuch of the simulator (entdecken.gd) - count, pictures, «???» with kind and time
+  const WHEN_I = {night: "🌙", rain: "🌧", morning: "🌅", evening: "🌇", day: "☀", snow: "❄", fog: "🌫"};
+  function discSheet(s) {
+    const D = H.disc || {}; s.classList.add("trs");
+    s.appendChild(E("b", "", (D.scene_name ? D.scene_name + ": " : "") + tt("{f} of {n} discovered").replace("{f}", D.found || 0).replace("{n}", D.total || 0)));
+    const g = E("div", "dgrid");
+    (D.items || []).forEach((x, i) => {
+      const c = E("div", "dit" + (x.found ? "" : " no"));
+      if (x.found && x.pic) { const im = E("img"); im.alt = ""; im.loading = "lazy"; im.src = "/sim/disc_pic/" + i + ".jpg?t=" + x.t; c.appendChild(im); }
+      else c.appendChild(E("div", "dph", x.found ? (x.icon || "✓") : "?"));
+      const w = (x.when || []).map(k => WHEN_I[k] || "").join(" ") + (x.photo ? " 📷" : "");
+      const tx = E("div", "dtx"); tx.append(E("b", "", x.found ? ((x.icon ? x.icon + " " : "") + x.title) : "???"),
+        E("small", "", x.found ? (x.short || "") : tt(({ort: "a place", szene: "a scene", tier: "an animal", mensch: "a person"})[x.kind] || "a place") + (w.trim() ? " · " + w.trim() : "")));
+      c.appendChild(tx); g.appendChild(c); });
+    s.appendChild(g);
+    const r = E("div", "shrow"); r.style.cssText = "margin-top:8px;flex-wrap:wrap";
+    r.append(B("📷 " + tt("Photo for the discovery book"), () => act("disc", "photo").then(x => x && x.ok && say("📷 " + tt("Found!"))), D.photo ? "" : "sec"),
+      B("📖 " + tt("Open in the simulator"), () => act("disc", "open")), B("💡 " + tt("Blinki hint"), () => act("disc", "hint")));
+    s.appendChild(r);
+    s.appendChild(E("div", "mut", D.photo ? "📷 " + tt("Something special is in the picture – take the photo now!") : tt("Come close enough in the 3D view to discover places, animals and funny scenes. 📷 = take a photo with MoveEye’s camera: aim the head, then «Photo for the discovery book». 🌙 🌧 🌅 = only at night, in the rain, in the morning.")));
   }
   let LB = null, ST = null, LN = null;
   const learn = async (d) => { try { const r = d ? await (await fetch("/api/learn", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: L()}, d))})).json()
@@ -12037,7 +12103,7 @@ SIMHUB_JS = r"""
       if (bl.last) { const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg(bl.last, bl.game); s.append(c, E("div", "mut", "🟢 " + tt("recognised") + " · 🔴 " + tt("in the picture, not recognised") + " · ⚪ " + tt("outside the picture") + ((bl.game || []).length ? " · 🟣 " + tt("found by players in the games") : "")), E("b", "", "💡 " + (bl.last.tip || ""))); }
       else if ((bl.game || []).length) { const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg({points: []}, bl.game); s.append(c, E("div", "mut", "🟣 " + tt("found by players in the games"))); } }
     if (kind === "rehearsal") { s.append(B("▶ " + tt("Rehearsal now (2 min)"), () => learn({do: "rehearsal"})), B((LN.rehearsal_on_arm ? "✓ " : "") + tt("By itself when arming"), () => learn({do: "set", key: "rehearsal_on_arm", on: !LN.rehearsal_on_arm}), LN.rehearsal_on_arm ? "" : "sec"));
-      if (bl.rehearsal) { s.appendChild(E("b", "", "🌙 " + (bl.rehearsal.text || ""))); const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg(bl.rehearsal); s.appendChild(c); } }
+      if (bl.rehearsal) { s.appendChild(E("b", "", "🎭 " + (bl.rehearsal.text || ""))); const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg(bl.rehearsal); s.appendChild(c); } }
     if (kind === "autoth") { s.append(B("▶ " + tt("Set the thresholds now (day + night)"), () => learn({do: "autoth"})), E("div", "mut", tt("autoth-note")));
       const l = LN.autoth.last; if (l) l.res.forEach(r => s.appendChild(E("div", "mut", (r.plan === "night" ? "🌙 " : "☀ ") + (r.base != null ? r.base : "–") + " → " + (r.best != null ? r.best : "–") + " · " + tt("kept") + ": " + (r.kept.join(", ") || "–")))); }
     if (kind === "falearn") { s.append(B((LN.fa_learn_auto ? "✓ " : "") + tt("Re-enact every 👎 in the simulator"), () => learn({do: "set", key: "fa_learn_auto", on: !LN.fa_learn_auto}), LN.fa_learn_auto ? "" : "sec"), E("div", "mut", tt("fa-note")));
@@ -12116,9 +12182,9 @@ SIMHUB_JS = r"""
   // 2.98.14 (Konzept): the tiles in four groups - Welt (what happens in the simulator), Testen, Lernen, Spielen. «Simple»
   // shows the assistant «Erkennung verbessern» instead of the single tools for the thresholds (they stay in «Expert»).
   const GRP = {wide: "world", scene: "world", hour: "world", weather: "world", visit: "world", surprise: "world", twin: "world", devices: "world", rover: "world", templates: "world",
-    tests: "test", parc: "test", blind: "test", rehearsal: "test", inbox: "test", drill: "test", ab: "test", week: "test", stats: "test",
+    tests: "test", parc: "test", nacht: "test", blind: "test", rehearsal: "test", inbox: "test", drill: "test", ab: "test", week: "test", stats: "test",
     improve: "learn", autoth: "learn", train: "learn", falearn: "learn", diary: "learn",
-    game: "play", points: "play"};
+    game: "play", points: "play", disc: "play"};
   // 2.98.24 («Sim-Schalter nur einmal»): Trainings-Nacht, Fehlalarm-Lernen and Wochen-Check are switched only in their tile
   // (no longer also in the assistant «Erkennung verbessern» and in «Einstellungen der Simulation») - so always shown
   const EXPERT_K = ["autoth", "ab"];
@@ -12141,19 +12207,21 @@ SIMHUB_JS = r"""
     if (full) { const N = LN || {}; const bl = N.blind || {}, au = N.autoth || {}, re = bl.rehearsal;
       T.push(["tests", "🧪", tt("Testing"), tt("Test run, test bench")]);   // 639c: «Testen» like the simulator
       if (window.mwParc && H.parc) T.push(["parc", "🎯", tt("Tracking parcours"), window.mwParc.sub(H)]);   // 416: the tracking parcours
+      if (window.mwNacht && H.nacht) T.push(["nacht", "🌙", window.mwNacht.name(), window.mwNacht.sub(H)]);   // 579b: only with the simulator connected
       T.push(
         ["blind", "🗺", tt("Blind spots"), bl.busy && bl.kind === "map" ? "⏳ " + (bl.prog || "") : bl.last ? bl.last.found + "/" + bl.last.inview + " " + tt("recognised") : tt("find them")],
-        ["rehearsal", "🌙", tt("Night rehearsal"), bl.busy && bl.kind === "rehearsal" ? "⏳ " + (bl.prog || "") : re ? (re.max_found ? tt("up to") + " " + re.max_found + " m" : "–") : tt("before arming")],
+        ["rehearsal", "🎭", tt("Night rehearsal"), bl.busy && bl.kind === "rehearsal" ? "⏳ " + (bl.prog || "") : re ? (re.max_found ? tt("up to") + " " + re.max_found + " m" : "–") : tt("before arming")],
         ["autoth", "🎚", tt("Thresholds automatic"), au.busy ? "⏳ " + au.step : au.last ? "✓" : tt("day and night")],
         ["falearn", "👎", tt("False alarm learning"), N.fa_learn_auto ? tt("on") : tt("off")],
         ["week", "📅", tt("Weekly check"), N.week && N.week.on ? tt("on") : tt("off")],
         ["points", "🏅", tt("MoveEye points"), N.points ? String(N.points.total) : "–"]); }
     if (full) T.push(["inbox", "📨", tt("Test inbox"), LB ? (LB.sandbox ? tt("on") : tt("off")) + " · " + (LB.inbox || []).length : ""],
       ["drill", "⚡", tt("Drills"), LB && LB.drill.busy ? "⏳ " + LB.drill.left + " s" : tt("Battery, Wi-Fi, heat, cold")],
-      ["train", "🌙", tt("Training night"), LB ? (LB.train.busy ? "⏳ " + (LB.train.step || "") : LB.train.on ? tt("on") + " · " + String(LB.train.hour).padStart(2, "0") + ":00" : tt("off")) : ""],
+      ["train", "🏋", tt("Training night"), LB ? (LB.train.busy ? "⏳ " + (LB.train.step || "") : LB.train.on ? tt("on") + " · " + String(LB.train.hour).padStart(2, "0") + ":00" : tt("off")) : ""],
       ["ab", "⚖", tt("A/B comparison"), LB && LB.ab.busy ? "⏳ " + LB.ab.step : tt("Which setting is better?")],
       ["stats", "📈", tt("Statistics & versions"), tt("4 weeks, per version")]);
     if (full) T.push(["game", "🎮", tt("Game"), tt("Play on the phone")], ["diary", "📔", tt("Diary"), tt("Visits and detection")]);
+    if (full && H.disc) T.push(["disc", "📖", tt("Discoveries"), (H.disc.found || 0) + " / " + (H.disc.total || 0) + (H.disc.photo ? " · 📷" : "")]);   // Erlebniswelt 20–23
     T.forEach(([k, ic, n, sub]) => { if (full && H.simple && EXPERT_K.includes(k)) return;
       const b = E("button", "st" + (open === k || (k === "surprise" && H.surprise) ? " on" : "")); b.type = "button";
       b.append(E("i", "", ic), E("b", "", n), E("small", "", sub));
@@ -12196,6 +12264,7 @@ SIMHUB_JS = r"""
     const ti = document.querySelector('[data-simhub="tile"] img'); if (ti && !document.hidden) ti.src = "/sim/view.jpg?w=320&r=" + Date.now();
     if (!HASHED && (location.hash === "#c-test" || location.hash === "#c-stoer") && document.getElementById("tr-box")) { HASHED = 1; open = "tests"; }   // 2.98.23: old links to the test run
     if (!HASHED && location.hash === "#c-parc" && H.parc) { HASHED = 1; open = "parc"; }   // 416: the window opens the tile 🎯
+    if (!HASHED && location.hash === "#c-nacht" && H.nacht) { HASHED = 1; open = "nacht"; }   // 579b: the tile 🌙
     const ae = document.activeElement;
     if (!ae || (ae.type !== "range" && !(ae.closest && ae.closest("#tr-box")))) paintAll(); }
   document.addEventListener("DOMContentLoaded", () => { load(); setInterval(load, 6000); });
@@ -25480,8 +25549,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.24", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 64545642,
-         "sha256": "df77d39c319dfdd3cb9bfbccd197364330f11ba44a535d3621191cdf0c69ed97"}
+SIM3D = {"version": "3D-4.31", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 65220826,
+         "sha256": "ffcbe1af006abfb14247dbd0eb6d33f8752a56ead4d425c018426d718e56e311"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -32591,7 +32660,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_54.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_62.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -40085,7 +40154,7 @@ function simCtlBuild(G, r, ctl, fmt) {
     });
     none.hidden = !q || any;
   }
-  const setEx = v => { expert = v; window.SC_EXPERT = v; apply();
+  const setEx = v => { expert = v; window.SC_EXPERT = v; apply(); if (typeof simsetLoad === "function") simsetLoad();
     fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !v, page: "sim"})}).catch(() => {}); };
   qi.oninput = apply; b1.onclick = () => setEx(false); b2.onclick = () => setEx(true);
   apply();
@@ -40556,10 +40625,10 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div class="dl">
       <a class="btn main" id="d-3d" href="/sim/simulator3d.zip"><span><img class="dlic" src="/sim-icon/sim3d.png" alt=""> <span data-i18n="3D simulator for Windows (ZIP)">3D simulator for Windows (ZIP)</span></span><small id="d-3dn"></small></a>
       <a class="btn main" id="d-py" href="/sim/simulator_py.zip"><span><img class="dlic" src="/sim-icon/simwelt.png" alt=""> <span data-i18n="Python world simulator (ZIP)">Python world simulator (ZIP)</span></span><small id="d-pyn"></small></a>
-      <a class="btn sec" href="/sim/simulator.zip"><span><img class="dlic" src="/sim-icon/simbasis.png" alt=""> <span data-i18n="Simple simulator (ZIP)">Simple simulator (ZIP)</span></span><small data-i18n="Python, for a PC or the Pi">Python, for a PC or the Pi</small></a>
+      <a class="btn sec" id="d-basis" hidden href="/sim/simulator.zip"><span><img class="dlic" src="/sim-icon/simbasis.png" alt=""> <span data-i18n="Simple simulator (ZIP)">Simple simulator (ZIP)</span></span><small data-i18n="Python, for a PC or the Pi">Python, for a PC or the Pi</small></a>
       <a class="btn sec" href="/preview" target="_blank"><span>📱 <span data-i18n="Phone / tablet view">Phone / tablet view</span></span><small data-i18n="this page as on a phone">this page as on a phone</small></a>
-      <button type="button" class="sec" id="p-inst" onclick="piAct('install')"><span id="p-instt">📦</span><small data-i18n="simple simulator directly on the Pi">simple simulator directly on the Pi</small></button>
-      <button type="button" class="sec" id="p-start" onclick="piAct('start')"><span>▶ <span data-i18n="Start simulator here">Start simulator here</span></span><small data-i18n="on the Pi (uses its CPU)">on the Pi (uses its CPU)</small></button>
+      <button type="button" class="sec" id="p-inst" hidden onclick="piAct('install')"><span id="p-instt">📦</span><small data-i18n="simple simulator directly on the Pi">simple simulator directly on the Pi</small></button>
+      <button type="button" class="sec" id="p-start" hidden onclick="piAct('start')"><span>▶ <span data-i18n="Start simulator here">Start simulator here</span></span><small data-i18n="on the Pi (uses its CPU)">on the Pi (uses its CPU)</small></button>
       <button type="button" class="sec" id="p-stop" onclick="piAct('stop')" hidden><span>⏹ <span data-i18n="Stop simulator">Stop simulator</span></span><small data-i18n="on the Pi">on the Pi</small></button>
     </div>
     <div class="mut" id="d-link"></div>
@@ -40726,7 +40795,9 @@ function paint() {
   if (!S.ok) { CS = ""; $("#s-groups").textContent = ""; $("#s-scn").hidden = true; $("#s-up").hidden = true; $("#s-cname").textContent = ""; $("#s-cst").textContent = t("ctl-note"); }
   // pi programs
   $("#p-instt").textContent = "📦 " + t(S.installed ? "Install simulator again" : "Install simulator on the Pi");
-  $("#p-start").hidden = !!S.running; $("#p-stop").hidden = !S.running;
+  // 2.98.55: «MoveEye Sim · Basis» only with «Basis-Simulator anzeigen» (639h); a running one can always be stopped
+  $("#d-basis").hidden = $("#p-inst").hidden = !S.basis_show;
+  $("#p-start").hidden = !S.basis_show || !!S.running; $("#p-stop").hidden = !S.running;
 }
 // ---- button «Update the simulator» (2.95.5): the simulator's own update (control «update_now»), newest version shown ----
 const vnum = v => (String(v || "").match(/(\d+)\.(\d+)/) || [0, 0, 0]).slice(1).map(Number);
@@ -40984,10 +41055,12 @@ async function simsetLoad() {
   let sch; try { sch = await (await fetch("/api/schema?sec=Simulator&lang=" + LANG)).json(); } catch (e) { return; }
   // 2.98.24 («Sim-Schalter nur einmal», Daniel): the switches of the tiles of the Simulator centre (Test-Postfach, Trainings-Nacht,
   // Rover, Fehlalarm-Lernen, Generalprobe, Wochen-Check) are only in their tile sheet (139), not here a second time
-  const S = sch[0] || {toggles: [], sliders: [], texts: []}, own = k => !!document.getElementById("k-" + k) || k === "sim_url" || SIM_TILE_KEYS.indexOf(k) >= 0;
+  // 2.98.55: «Basis-Simulator anzeigen» only in «Experte» (the switch Einfach / Experte of this page)
+  if (window.SC_EXPERT == null) { try { const j = await (await fetch("/api/ui_simple?page=sim")).json(); window.SC_EXPERT = !j.on; } catch (e) {} }
+  const S = sch[0] || {toggles: [], sliders: [], texts: []}, own = k => !!document.getElementById("k-" + k) || k === "sim_url" || SIM_TILE_KEYS.indexOf(k) >= 0 || (k === "sim_basis_show" && !window.SC_EXPERT);
   box.textContent = "";
   S.toggles.filter(x => !own(x.key)).forEach(x => { const l = el("label", "opt"), cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.checked = !!x.value;
-    cb.onchange = () => post("/api/set", {key: x.key, value: cb.checked}).then(r => { if (!r.ok) toast(r.error || t("not possible")); }); l.append(el("span", "", x.label), cb); box.appendChild(l); });
+    cb.onchange = () => post("/api/set", {key: x.key, value: cb.checked}).then(r => { if (!r.ok) toast(r.error || t("not possible")); if (x.key === "sim_basis_show") load(); }); l.append(el("span", "", x.label), cb); box.appendChild(l); });
   S.sliders.filter(x => !own(x.key)).forEach(x => { const w = el("div"), top = el("div", "rng"), v = el("b", "", String(x.value)), r = document.createElement("input");
     r.type = "range"; r.min = x.min; r.max = x.max; r.step = x.step; r.value = x.value; r.oninput = () => { v.textContent = r.value; };
     r.onchange = () => post("/api/set", {key: x.key, value: +r.value}); top.append(el("span", "", x.label), v); w.append(top, r); box.appendChild(w); });
@@ -58229,6 +58302,12 @@ SIM_PAGE = SIM_PAGE.replace("</body>", "<!--KIGJS--></body>", 1)          # fill
 #           the simulator has it), Ansicht (views of the simulator window, /api/sim padview like 538), Folgen (the quick
 #           switch «Follow» of 530) and «… mehr» = the whole «Simulator-Steuerung» card (search, Simple / Expert).
 #   The explanation of the simulator window is behind «?», «Bildqualität» is in «◫ Ansicht».
+#   2.98.56 «adaptiv» (Daniel 31.10.: on a PC the small picture covered the camera picture, on ~1000 px the big one was small
+#           and centred): is there room BESIDE the main picture (the second one >= 220 px wide, the main one ~64 % of the row,
+#           at least 60 %; height limit as above, phone sideways up to half the height), the second picture stands next to it
+#           (#lv-main.sk-side: grid areas "pic pi", top-aligned, the same card look, «Simulator» / «Kamera» + LIVE dot), the pair
+#           centred by --sk-off when the height limits it. Otherwise (phone upright) the inset as before. ResizeObserver on <main>.
+#           The simulator picture is undone from the zoom «Grösse» of 536 (it grew out of its place on a big screen).
 # Nothing changes when the simulator is not connected (or Sim-Kompakt is off): every element goes back to its place.
 # Hooks: 536 (placeStick leaves the stick alone, menuBuild calls skMenu), 539 / 546 (window.skSlot), 139 (mwSimHub, sheets
 # with data-simhub="sheet"). Window (Tk): no live sticks / simulator window there - nothing to do. Translations: part 597.
@@ -58260,14 +58339,31 @@ body.sk.lv:not(.videoonly) #vcard.sk-pi .vtag{left:4px;bottom:4px;gap:3px}
 body.sk.lv:not(.videoonly) #vcard.sk-pi .vtag span{font-size:9px;padding:1px 5px;border-radius:5px;letter-spacing:.03em}
 body.sk.lv:not(.videoonly) #vcard.sk-pi .vtag .live::before{width:6px;height:6px;margin-right:4px}
 body.sk.lv:not(.videoonly) #vcard.sk-pi #v-src{display:none}
-body.sk.lv:not(.videoonly) #vcard.sk-pm .vtag{right:calc(var(--sk-iw,120px) + 16px);flex-wrap:nowrap;overflow:hidden}   /* not under the small picture */
+body.sk.lv:not(.videoonly) #lv-main:not(.sk-side) #vcard.sk-pm .vtag{right:calc(var(--sk-iw,120px) + 16px);flex-wrap:nowrap;overflow:hidden}   /* not under the small picture */
 body.sk.lv:not(.videoonly) #vcard.sk-pm .vtag span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 body.sk.lv:not(.videoonly) #vcard.sk-pm .vtag .live{flex:none}
+/* 2.98.56 «adaptiv»: room beside the main picture = the second picture next to it (top right, ~1/3 of the row, the same card
+   look, no overlap; --sk-off centres the pair when the height limits the main picture); else the inset in the corner as above */
+body.sk.lv:not(.videoonly) #lv-main.sk-side{grid-template-columns:minmax(0,1fr) calc(var(--sk-iw,240px) + var(--sk-off,0px));grid-template-areas:"pic pi" "ctl ctl" "more more"}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #vcard.sk-pm,body.sk.lv:not(.videoonly) #lv-main.sk-side #sk-sim.sk-pm{justify-self:end}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #vcard.sk-pi,body.sk.lv:not(.videoonly) #lv-main.sk-side #sk-sim.sk-pi{grid-area:pi;justify-self:start;align-self:start;
+  margin:0!important;border:1px solid var(--line);border-radius:12px;box-shadow:none}
+body.sk.lv:not(.videoonly) #lv-main.sk-side.sk-bc #vcard,body.sk.lv:not(.videoonly) #lv-main.sk-side.sk-bs #sk-sim{grid-column:1/-1;justify-self:stretch}
+.vtag .sk-cl{display:none}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #vcard.sk-pi .vtag{left:6px;bottom:6px;gap:4px}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #vcard.sk-pi .vtag span{font-size:10.5px;padding:2px 7px}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #vcard.sk-pi .vtag .sk-cl{display:inline-block}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #sk-sim.sk-pi #sk-tag{left:6px;bottom:6px;font-size:10.5px;padding:2px 7px;border-radius:7px}
+#lv-main.sk-side #sk-sim.sk-pi #sk-tag::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#3fcf6b;margin-right:5px;animation:pulse 1.6s infinite}
 body.sk.lv:not(.videoonly) #lv-joy,body.sk #pip{display:none!important}
 body.sk.lv:not(.videoonly) #lv-tools button{width:30px;height:30px;font-size:14px;border-radius:8px}
 body.sk.lv:not(.videoonly) #lv-tools{top:5px;right:5px;gap:4px}
 body.sk.lv:not(.videoonly) #lv-tools button svg{width:15px;height:15px}
 #sk-sim,#sk-ctl{display:none}
+/* 2.98.56: 536 zooms everything but the camera card by «Grösse» (--lv-ui, a big screen 115 %) - the simulator picture is sized in
+   real pixels like the camera picture (otherwise it grows out of its place beside / under the other one); its labels keep the zoom */
+body.sk.lv:not(.videoonly) #sk-sim{zoom:calc(1 / var(--lv-ui,1))}
+body.sk.lv:not(.videoonly) #sk-sim>:not(#lv-vw){zoom:var(--lv-ui,1)}
 body.sk.lv:not(.videoonly) #sk-sim{display:flex;align-items:center;justify-content:center;background:#000;border-radius:12px;position:relative;border:1px solid var(--line)}
 body.sk.lv:not(.videoonly) #sk-sim.sk-pi{border:2px solid #fff;border-radius:10px;position:relative}
 #sk-sim #lv-vw{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
@@ -58280,7 +58376,7 @@ body.sk.lv:not(.videoonly) #sk-sim.sk-pi{border:2px solid #fff;border-radius:10p
 #sk-sim .lv-vbtn button{width:32px;height:32px;font-size:15px}
 #sk-sim.big .lv-vbox img{cursor:grab}
 #sk-cap{position:absolute;left:6px;bottom:5px;right:6px;font-size:10.5px;line-height:1.25;color:#fff;text-shadow:0 1px 2px #000;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:2}
-#sk-sim.sk-pm #sk-cap{right:calc(var(--sk-iw,120px) + 16px)}   /* not under the small picture */
+#lv-main:not(.sk-side) #sk-sim.sk-pm #sk-cap{right:calc(var(--sk-iw,120px) + 16px)}   /* not under the small picture */
 #sk-sim.sk-pi #sk-cap,#sk-sim.sk-pi #sk-back{display:none!important}
 #sk-tag{display:none;position:absolute;left:4px;bottom:4px;z-index:3;pointer-events:none;background:rgba(0,0,0,.62);color:#fff;border-radius:5px;padding:1px 5px;font-size:9px;font-weight:700;letter-spacing:.03em}
 #sk-sim.sk-pi #sk-tag{display:block}
@@ -58348,8 +58444,8 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   if (document.body.dataset.tab !== "live") return;
   try { const D = /*SKDE*/{}; for (const k in D) if (!(k in I18N.de)) I18N.de[k] = D[k]; } catch (e) {}
   try { I18N.en = I18N.en || {}; Object.assign(I18N.en, {
-    "sk-note": "With the simulator connected: the simulator picture big at the top, MoveEye's camera small in its corner (tap = swap), below them the head and rover sticks at the edges, the tiles of the simulator in between. Only for this device.",
-    "sk-help": "Sim compact: tap the small picture in the corner = swap the two pictures (this device remembers it). Tap the big picture = big view, tap again = back; the big simulator picture is the simulator window (mouse and ✋ finger steer the simulator, ✕ = back). Left stick = MoveEye's head, right stick = rover (in a game round only when the game drives the rover). The tiles = what happens in the simulator; «… more» = all settings of the simulator. On / off and picture quality under «◫ View»."}); } catch (e) {}
+    "sk-note": "With the simulator connected: the simulator picture big at the top, MoveEye's camera beside it (narrow screen: small in its corner; tap = swap), below them the head and rover sticks at the edges, the tiles of the simulator in between. Only for this device.",
+    "sk-help": "Sim compact: tap the small picture beside it or in the corner = swap the two pictures (this device remembers it). Tap the big picture = big view, tap again = back; the big simulator picture is the simulator window (mouse and ✋ finger steer the simulator, ✕ = back). Left stick = MoveEye's head, right stick = rover (in a game round only when the game drives the rover). The tiles = what happens in the simulator; «… more» = all settings of the simulator. On / off and picture quality under «◫ View»."}); } catch (e) {}
   const T = x => (typeof t === "function" ? t(x) : x);
   const $i = id => document.getElementById(id);
   const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
@@ -58368,6 +58464,8 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   const WAIT = E("div", "sk-wait", "…");
   const TAG = E("div"); TAG.id = "sk-tag";              // «Simulator» on the small picture (2.98.53)
   SIM.append(WAIT, CAP, TAG, BK);
+  const CL = E("span", "sk-cl");                        // «Kamera» on the camera picture beside the main one (2.98.56)
+  { const vt = document.querySelector("#vcard .vtag"); if (vt) vt.appendChild(CL); }
   const C = E("div"); C.id = "sk-ctl";
   const HS = E("div"); HS.id = "sk-hs";
   const HSB = E("div", "sk-sb"), HSL = E("div", "sk-slot"), HLB = E("div", "sk-lb");
@@ -58425,6 +58523,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
       VI.style.width = VI.style.height = "";               // the size of the small picture (fitSim)                               // back from «◫ Ansicht» (also when the panel holds it right now)
       sticks(false);
       const m = M0(); if (m) m.classList.remove("sk-bc", "sk-bs");
+      if (m) m.classList.remove("sk-side");
       const vc = $i("vcard"); if (vc) { vc.classList.remove("sk-pm", "sk-pi"); vc.removeAttribute("title"); vc.removeAttribute("tabindex"); vc.removeAttribute("role"); }
     }
     if (typeof window.lvApply === "function") try { window.lvApply(); } catch (e) {}
@@ -58441,7 +58540,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
       if (small) { x.title = tip; x.setAttribute("role", "button"); x.tabIndex = 0; x.setAttribute("aria-label", tip); }
       else { x.removeAttribute("title"); x.removeAttribute("role"); x.removeAttribute("tabindex"); x.removeAttribute("aria-label"); }
     });
-    TAG.textContent = T("Simulator");
+    TAG.textContent = T("Simulator"); CL.textContent = T("Camera");
   }
   function swap() {
     setBig(""); P.sw = camBig() ? "sim" : "cam"; save(); roles(); layout();
@@ -58469,7 +58568,10 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     // bars), the sticks get smaller (down to 104 px) when the room is short; wider screens: as high as the room allows (16:9,
     // centred), the controls stay in view
     const full = narrow && !land;
-    let ph, pw;
+    // 2.98.56 «adaptiv» (Daniel 31.10.): enough room beside the main picture (the second one >= 220 px, the main one ~64 % of the
+    // row, at least 60 %) = both side by side, top-aligned, together over the row; not enough (phone upright) = the inset
+    const GAP = 8, SMIN = 220;
+    let ph, pw, side = false, sw = 0, off = 0;
     if (full) {
       pw = Math.round(mw); ph = Math.round(mw * 9 / 16);
       const short = ph - (room - ch - 2);              // 2.98.54: 2 px gap is enough (was 8)
@@ -58477,15 +58579,24 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
         stk = Math.max(104, stk - Math.ceil(short)); document.documentElement.style.setProperty("--sk-st", stk + "px"); ch = chOf();
       }
     } else {
-      ph = Math.round(Math.max(120, Math.min(mw * 9 / 16, room - ch - 8)));
-      pw = Math.round(Math.min(mw, ph * 16 / 9));
+      // phone sideways (lv-low: the header scrolls away): the pictures may take half of the height, the sticks then scroll
+      const hMax = Math.max(B.classList.contains("lv-low") ? Math.round(innerHeight * 0.5) : 120, room - ch - 8);
+      const pwS = Math.min(Math.round((mw - GAP) * 0.64), Math.floor(hMax * 16 / 9));
+      sw = Math.min(Math.floor(mw - GAP - pwS), Math.round(pwS * 0.66));
+      side = sw >= SMIN;
+      if (side) { pw = pwS; ph = Math.round(pw * 9 / 16); off = Math.max(0, Math.floor((mw - pw - GAP - sw) / 2)); }
+      else {
+        ph = Math.round(Math.max(120, Math.min(mw * 9 / 16, room - ch - 8)));
+        pw = Math.round(Math.min(mw, ph * 16 / 9));
+      }
     }
+    m.classList.toggle("sk-side", side);
     let pb = land ? Math.min(mw * 9 / 16, room - ch - 8) : Math.min(mw * 9 / 16, Hh * 0.62);
     pb = Math.round(Math.max(ph, pb));
-    const iw = Math.round(Math.max(96, Math.min(pw * (pw >= 600 ? 0.24 : 0.32), 300)));   // the small picture: smaller on a wide screen
+    const iw = side ? sw : Math.round(Math.max(96, Math.min(pw * (pw >= 600 ? 0.24 : 0.32), 300)));   // the inset: smaller on a wide screen
     m.style.setProperty("--sk-ph", ph + "px"); m.style.setProperty("--sk-phb", pb + "px"); m.style.setProperty("--sk-pw", pw + "px");
     m.style.setProperty("--sk-iw", iw + "px"); m.style.setProperty("--sk-ih", Math.round(iw * 9 / 16) + "px");
-    m.style.setProperty("--sk-im", Math.round((mw - pw) / 2 + 8) + "px");
+    m.style.setProperty("--sk-im", Math.round((mw - pw) / 2 + 8) + "px"); m.style.setProperty("--sk-off", off + "px");
     ACT.classList.remove("two"); if (ACT.scrollHeight > stk + 24) ACT.classList.add("two");   // ◎ 🎯 🤖 ? in two columns when higher than the stick
     fitSim();
   }
@@ -58696,6 +58807,10 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     if (ON) { sticks(true); layout(); paint(); }
   }
   addEventListener("resize", () => { if (ON) requestAnimationFrame(layout); });
+  if (window.ResizeObserver) {                          // 2.98.56: also when the room changes without a window resize (side panel, scroll bar)
+    let rw = 0, rh = 0;
+    new ResizeObserver(() => { const w = main.clientWidth, h = main.clientHeight; if (w === rw && h === rh) return; rw = w; rh = h; if (ON) requestAnimationFrame(layout); }).observe(main);
+  }
   if (window.visualViewport) visualViewport.addEventListener("resize", () => { if (ON) layout(); });
   let lastCls = "";
   new MutationObserver(() => { const c = document.body.className; if (c === lastCls) return; lastCls = c; tick(); })
@@ -58712,15 +58827,15 @@ WEB_UI_LOCAL.add("mw-simkompakt")                         # per device: a phone 
 
 # the manual (HELP_PAGE of 540): one paragraph in the section «Live-Seite», German and English
 for _a, _b in (('<section id="live" data-icon="📺"><h2>Die Live-Seite</h2>',
-                "<p><b>🧩 Sim-Kompakt (ab 2.98.46, Bild im Bild ab 2.98.53):</b> Ist der Simulator verbunden, zeigt die Live-Seite oben "
-                "das Simulator-Fenster gross und die Kamera von MoveEye klein in seiner Ecke («● LIVE»). Das kleine Bild antippen = die "
+                "<p><b>🧩 Sim-Kompakt (ab 2.98.46, Bild im Bild ab 2.98.53, daneben ab 2.98.56):</b> Ist der Simulator verbunden, zeigt die Live-Seite oben "
+                "das Simulator-Fenster gross und die Kamera von MoveEye daneben – auf einem schmalen Bildschirm (Handy hochkant) klein in seiner Ecke («● LIVE»). Das kleine Bild antippen = die "
                 "beiden Bilder tauschen (das Gerät merkt es sich); das grosse Bild antippen = gross, nochmals = zurück. Darunter links den Kopf-Stick "
                 "(mit ◎, Auslöser 🎯 und KI-Hilfe 🤖), rechts den Rover-Stick und dazwischen die Kacheln Szene, Tageszeit, Wetter, Besuch, "
                 "Spiel, Wildbeobachtung, Foto des Platzes, KI-Wächter, Ansicht und Folgen; «… mehr» öffnet die ganze Simulator-Steuerung, «?» "
                 "die Erklärung. Ein- und ausschalten (pro Gerät) und die Bildqualität des Simulators unter «◫ Ansicht».</p>"),
                ('<section id="live" data-icon="📺"><h2>The live page</h2>',
-                "<p><b>🧩 Sim compact (from 2.98.46, picture in picture from 2.98.53):</b> while the simulator is connected the live page "
-                "shows the simulator window big at the top and MoveEye's camera small in its corner («● LIVE»). Tap the small picture = "
+                "<p><b>🧩 Sim compact (from 2.98.46, picture in picture from 2.98.53, side by side from 2.98.56):</b> while the simulator is connected the live page "
+                "shows the simulator window big at the top and MoveEye's camera beside it - on a narrow screen (phone upright) small in its corner («● LIVE»). Tap the small picture = "
                 "swap the two pictures (this device remembers it); tap the big picture = big, tap again = back. Below them the head stick on the "
                 "left (with ◎, shutter 🎯 and AI help 🤖), the rover stick on the right and the tiles in between: scene, time of day, "
                 "weather, visit, game, wildlife watching, photo of the place, AI guard, view and follow; «… more» opens the whole simulator "
@@ -59255,6 +59370,8 @@ class WebStream:
                     log_event("sys", f"Simulator address set to {CFG['sim_url']} (web)")
                     if CFG["sim_on"] and WATCH_REF.get("w") is not None and str(CFG["source"]).startswith("sim:"):
                         w_ = WATCH_REF["w"]; w_._open_gen += 1; w_._start_opener(CFG["source"])
+                if act_ in ("install", "start") and not CFG.get("sim_basis_show"):   # 2.98.55: «Basis-Simulator anzeigen» off (639h)
+                    return reply({"ok": False, "error": tr_err("Switch on «Show the basic simulator» first (Simulator, Expert)", lang)}, 400)
                 if act_ in ("install", "start", "stop"):
                     try:
                         ok, msg = {"install": sim_install, "start": sim_start, "stop": sim_stop}[act_]()
@@ -59839,6 +59956,17 @@ class WebStream:
             except Exception:
                 return Response("no picture", 404)
             return Response(b_, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+
+        @app.route("/sim/disc_pic/<int:i>.jpg")
+        def sim_disc_pic(i):
+            """Erlebniswelt 20–23: the picture of entry i of the Entdeckungsbuch of the simulator (this scene)"""
+            if not CFG["sim_on"]:
+                return Response("simulation off", 404)
+            try:
+                b_, _h = _sim_get(f"/disc_pic/{int(i)}.jpg", 3.0)
+            except Exception:
+                return Response("no picture", 404)
+            return Response(b_, mimetype="image/jpeg", headers={"Cache-Control": "max-age=60"})
 
         @app.route("/sim/game_qr.png")
         def sim_game_qr():
@@ -66791,6 +66919,7 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
     ("Simulator", "sim_autoupd", "Update the simulator by itself (the setting «Neue Versionen» of the simulator)"),
     ("Simulator", "sim_separate", "The simulation has its own settings (when switching back: ask which changes to take over)"),
+    ("Simulator", "sim_basis_show", "Show the basic simulator (MoveEye Sim · Basis, the old Python simulator)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
     ("Setup", "desktop_notice", "Small message on the Pi's desktop when MoveEye starts in the background"),
     ("Solar panel", "solar_on", "Solar panel with current meter (INA219 on I2C)"),
@@ -67403,7 +67532,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.54")
+        self.root.title("MoveEye 2.98.62")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -67770,7 +67899,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.54 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.62 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -68711,9 +68840,11 @@ class App:
                     ok, m = fn()
                     self._status("Simulator", ("✓ " + tr(done)) if ok else "⚠ " + tr_err(m))
                 threading.Thread(target=run, daemon=True).start()
-            ttk.Button(sf, text=tr("Install"), command=lambda: sim_do(sim_install, "Simulator installed")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(sf, text=tr("Start"), command=lambda: sim_do(sim_start, "Simulator started")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(sf, text=tr("Stop"), command=lambda: sim_do(sim_stop, "Simulator stopped")).pack(side="left", expand=True, fill="x")
+            if CFG.get("sim_basis_show"):                 # 2.98.55: «MoveEye Sim · Basis» only with «Basis-Simulator anzeigen» (639h)
+                ttk.Button(sf, text=tr("Install"), command=lambda: sim_do(sim_install, "Simulator installed")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+                ttk.Button(sf, text=tr("Start"), command=lambda: sim_do(sim_start, "Simulator started")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+            if CFG.get("sim_basis_show") or sim_running():    # a running one can always be stopped
+                ttk.Button(sf, text=tr("Stop"), command=lambda: sim_do(sim_stop, "Simulator stopped")).pack(side="left", expand=True, fill="x")
             kidata_tk_build(self, sbody)                  # training pack with «Vielfalt», «Delete old AI data» (197)
             falearn_tk_build(self, sbody)                 # 2.98.38: «Lernbilder prüfen» (148)
         if sec == "Security":                             # «Log in only encrypted» (574)
@@ -73398,6 +73529,953 @@ def push_selftest():
 
 SELFTEST_EXTRA.append(("Push messages as cards: levels, quiet hours, old settings (579a)", push_selftest))
 # ----------------------------------------------------------------------------
+# Paket «Nacht-Testlauf» (Daniel 31.10.2026). The simulator (nachtlauf.gd, control «nacht») plays a seeded night: toilet
+# trips (some with a torch), cat / fox / hedgehog, a late car, one hour of rain, wind, fog in the morning and EXACTLY ONE
+# real incident (somebody sneaks to the tent / bike / caravan). It writes down every event with start / end and place
+# («Wahrheit»). MoveEye logs what it did: its alarms (Notifier.person / prealarm, before the push rules: quiet hours and
+# the 60 s pause do not hide an alarm), the pushes (list «Nachrichten»), what it detected (persons / animals / motion),
+# battery, Pi temperature and pictures per second, and small pictures of the key moments. At the end both are matched
+# (nacht_match: time window + kind) -> incident detected yes / no + seconds, false alarms by cause, misses.
+#  * Only the owner (role admin, not in operator mode 390) starts / stops it and sets the schedule; in operator mode the
+#    page shows the reports only (nacht_may). The schedule (nacht_auto_on, default off) starts it once a night at
+#    nacht_auto_hour (real clock), not in operator mode.
+#  * Safety: only with the simulator connected. During the run protection «Voll» (protect_set, 135) - the previous state
+#    and the touched settings come back afterwards (also after a restart: CFG «nacht_restore»). The test inbox is
+#    forced (SANDBOX force, 141) -> no push reaches the phone as a real alarm and the siren plays only in the simulator
+#    (siren_quiet / sim_speaker_only, 554); relays stay off (relays_on False). The report push at the end is an info
+#    message, marked «[SIM]» / 🧪 (Notifier._title adds [SIM] in the simulation).
+#  * One lock (147): «night test run» while it runs - the simulator refuses its own tests meanwhile and its automatics
+#    (real weather, surprise night …) rest (busy_with «Nacht-Testlauf»).
+# Window: part 599d. Translations and the manual: part 599e.
+# ----------------------------------------------------------------------------
+for _k, _v in {"nacht_auto_on": False, "nacht_auto_hour": 23, "nacht_auto_day": "", "nacht_restore": {},
+               "nacht_opts": {"scene": "", "busy": "normal", "tempo": "schnell", "from": "20:00", "to": "07:00"}}.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+
+NACHT = {"busy": False, "stop": False, "step": "", "err": "", "runs": None, "live": None, "prog": ""}
+NACHT_FILE = "nacht_runs.json"
+NACHT_KEEP_RUNS = 10
+NACHT_BUSY = ("ruhig", "normal", "viel")
+NACHT_TEMPO = {"echt": 1.0, "schnell": 8.0}
+# the settings the run touches (protect_set «full» + relays) - put back afterwards
+NACHT_KEYS = ("armed", "protect_level", "notify_on", "tamper_on", "gps_theft", "refscan_on_arm", "escalate_on", "siren_on",
+              "light_white_auto", "relays_on")
+NACHT_ALARM_EVS = ("person", "warm", "prealarm", "noise", "tamper")
+NACHT_PRIO = {"incident": 0, "people": 1, "animal": 2, "vehicle": 3, "weather": 4}
+# cause keys of the simulator (nachtlauf.gd KINDS) -> English text (translated in 599e)
+NACHT_CAUSES = {"wc": "Toilet trip (own people)", "wc_torch": "Toilet trip with torch", "cat": "Cat", "fox": "Fox", "hedgehog": "Hedgehog",
+                "car": "Headlights (late car)", "rain": "Rain", "wind": "Wind", "fog": "Fog", "unknown": "nothing in the plan (unknown)",
+                "incident": "Incident"}
+NACHT_TARGETS = {"tent": "Somebody sneaks to the tent", "bike": "Somebody sneaks to the bike", "door": "Somebody sneaks to the caravan / car"}
+
+
+# ---- who may ----------------------------------------------------------------------------------------------------------
+def nacht_may(role="admin", locked=None):
+    """start / stop / schedule: only the owner (administrator), never in operator mode"""
+    lk = bool(CFG.get("lock_on")) if locked is None else bool(locked)
+    return role == "admin" and not lk
+
+
+def _nacht_role():
+    try:
+        from flask import g as _g, has_request_context
+        return getattr(_g, "role", "admin") if has_request_context() else "admin"
+    except Exception:
+        return "admin"
+
+
+# ---- times ------------------------------------------------------------------------------------------------------------
+def nacht_hm(s, dflt):
+    """«20:00» / «7» / 20.5 -> hours (float)"""
+    try:
+        if isinstance(s, (int, float)):
+            return max(0.0, min(23.99, float(s)))
+        m = re.fullmatch(r"\s*(\d{1,2})(?::(\d{2}))?\s*", str(s))
+        if not m or int(m.group(1)) > 23 or int(m.group(2) or 0) > 59:
+            return dflt
+        return int(m.group(1)) + int(m.group(2) or 0) / 60.0
+    except (TypeError, ValueError):
+        return dflt
+
+
+def nacht_clock(h):
+    if h is None:
+        return "–"
+    h = float(h) % 24.0
+    return "%02d:%02d" % (int(h), int(round((h % 1) * 60)) % 60)
+
+
+def nacht_opts(d=None):
+    """the options of a run, checked (scene, liveliness, tempo, start / end)"""
+    d = dict(CFG.get("nacht_opts") or {}, **(d or {}))
+    busy = str(d.get("busy") or "normal")
+    tempo = str(d.get("tempo") or "schnell")
+    o = {"scene": re.sub(r"[^A-Za-z0-9_\-]", "", str(d.get("scene") or ""))[:40], "busy": busy if busy in NACHT_BUSY else "normal",
+         "tempo": tempo if tempo in NACHT_TEMPO else "schnell", "from": nacht_clock(nacht_hm(d.get("from"), 20.0)), "to": nacht_clock(nacht_hm(d.get("to"), 7.0))}
+    try:
+        if d.get("speed") is not None:                     # tests: another clock speed (1 … 60)
+            o["speed"] = max(1.0, min(60.0, float(d["speed"])))
+        if d.get("seed") is not None:
+            o["seed"] = max(1, min(999999, int(d["seed"])))
+    except (TypeError, ValueError):
+        pass
+    return o
+
+
+# ---- the matching (pure: tested in the self-test) ------------------------------------------------------------------------
+def nacht_dedupe(alarms, same=10.0):
+    """the alarms sorted; one within `same` s after the one before counts as a repeat (the same event, like the test bench)"""
+    out, last = [], -1e9
+    for a in sorted(alarms or [], key=lambda x: float(x.get("t", 0))):
+        if str(a.get("ev")) not in NACHT_ALARM_EVS:
+            continue
+        a = dict(a, rep=float(a["t"]) - last < same)
+        last = float(a["t"])
+        out.append(a)
+    return out
+
+
+def _nacht_seen_near(e, t, pre=3.0, post=6.0):
+    """0 = the event was visible for the camera just before the alarm (vis_iv of the simulator), 1 = it was not,
+    0.5 = unknown (no intervals) - an alarm belongs first to what the camera could see"""
+    iv = e.get("vis_iv")
+    if not isinstance(iv, list):
+        return 0.5
+    return 0 if any(float(a) - pre <= t <= float(b) + post for a, b in iv) else 1
+
+
+def nacht_match(truth, alarms, dets=None, pre=3.0, post=10.0, same=10.0):
+    """truth = events of the simulator [{id, kind, cat, cause, t0, t1, first_vis, vis_s}], alarms = [{t, ev}] of MoveEye,
+    dets = detection segments [{k: person|animal|motion, t0, t1}] (all in seconds since the start of the run).
+    An alarm belongs to an event that runs at that time (t0 - pre … t1 + post); several: the most important one
+    (incident > own people > animal > vehicle > weather), then the nearest. The incident with an alarm = detected; every
+    other alarm (not a repeat within `same` s) is a false alarm with the cause of its event, without one «unknown»."""
+    T = [dict(e) for e in truth or [] if isinstance(e, dict)]
+    for e in T:
+        e["t1"] = float(e["t1"]) if e.get("t1") is not None and float(e["t1"]) >= float(e.get("t0", 0)) else float(e.get("t0", 0))
+    A = nacht_dedupe(alarms, same)
+    hits, false_, reps = [], [], 0
+    for a in A:
+        t = float(a["t"])
+        cand = [e for e in T if float(e["t0"]) - pre <= t <= float(e["t1"]) + post
+                and not (a.get("ev") == "tamper" and e.get("cat") == "incident")]   # a sabotage alarm is never the detection of the incident
+        cand.sort(key=lambda e: (_nacht_seen_near(e, t, pre), NACHT_PRIO.get(e.get("cat"), 5), 0 if float(e["t0"]) <= t <= float(e["t1"]) else 1,
+                                 min(abs(t - float(e["t0"])), abs(t - float(e["t1"])))))
+        e = cand[0] if cand else None
+        if e is not None and e.get("cat") == "incident":
+            hits.append({"t": round(t, 1), "ev": a.get("ev"), "id": e.get("id"), "rep": bool(a["rep"])})
+            continue
+        if a["rep"]:
+            reps += 1
+            continue
+        false_.append({"t": round(t, 1), "ev": a.get("ev"), "cause": (e or {}).get("cause") or "unknown", "id": (e or {}).get("id"),
+                       "img": a.get("img"), "h": a.get("h")})
+    by = {}
+    for f in false_:
+        by[f["cause"]] = by.get(f["cause"], 0) + 1
+    inc = next((e for e in T if e.get("cat") == "incident"), None)
+    D = [dict(x) for x in dets or [] if isinstance(x, dict)]
+
+    def det_in(e, kinds):
+        """the first detection of these kinds while the event runs (seconds) or None"""
+        s = [float(x["t0"]) for x in D if x.get("k") in kinds and float(x["t0"]) <= float(e["t1"]) + post
+             and float(x.get("t1", x["t0"])) >= float(e["t0"]) - pre]
+        return max(float(e["t0"]), min(s)) if s else None
+    I = None
+    if inc is not None:
+        ref = float(inc["first_vis"]) if inc.get("first_vis") is not None and float(inc["first_vis"]) >= 0 else float(inc["t0"])
+        first = min((h["t"] for h in hits), default=None)
+        d0 = det_in(inc, ("person",))
+        I = {"id": inc.get("id"), "target": inc.get("target") or "", "t0": inc["t0"], "t1": inc["t1"], "h0": inc.get("h0"),
+             "first_vis": inc.get("first_vis"), "vis_s": inc.get("vis_s"), "detected": first is not None,
+             "ttd_s": round(max(0.0, first - ref), 1) if first is not None else None,
+             "alarm_after_start_s": round(first - float(inc["t0"]), 1) if first is not None else None,
+             "det_s": round(max(0.0, d0 - ref), 1) if d0 is not None else None, "alarms": len(hits)}
+    misses = []                                         # visible for the camera, but MoveEye detected nothing of it
+    for e in T:
+        if e.get("cat") in ("weather",) or float(e.get("vis_s") or 0) < 1.0:
+            continue
+        kinds = ("person",) if e.get("cat") in ("people", "incident") else (("person", "animal", "motion") if e.get("cat") == "animal" else ("person", "animal", "motion", "vehicle"))
+        if e.get("cat") == "incident" and I and I["detected"]:
+            continue
+        if det_in(e, kinds) is None and not (e.get("cat") == "incident" and I and I["detected"]):
+            misses.append({"id": e.get("id"), "kind": e.get("kind"), "cat": e.get("cat"), "cause": e.get("cause"), "t0": e["t0"],
+                           "h0": e.get("h0"), "vis_s": e.get("vis_s"), "incident": e.get("cat") == "incident"})
+    return {"incident": I, "false": len(false_), "false_by": by, "false_list": false_, "repeats": reps, "hits": hits,
+            "alarms": len(A), "misses": misses, "missed_incident": bool(I and not I["detected"])}
+
+
+def nacht_segments(samples, gap=1.5):
+    """[(t, {person, animal, motion})] every ~0.5 s -> segments [{k, t0, t1}] (a gap below `gap` s joins them)"""
+    out, cur = [], {}
+    for t, ks in samples:
+        for k in ("person", "animal", "motion"):
+            if k in ks:
+                if k in cur and t - cur[k]["t1"] <= gap:
+                    cur[k]["t1"] = t
+                else:
+                    if k in cur:
+                        out.append(cur[k])
+                    cur[k] = {"k": k, "t0": t, "t1": t}
+    out.extend(cur.values())
+    return sorted(out, key=lambda x: x["t0"])
+
+
+# ---- runs on disk -----------------------------------------------------------------------------------------------------
+def _nacht_path():
+    return os.path.join(DATA_DIR, NACHT_FILE)
+
+
+def _nacht_pic_dir(rid=""):
+    return os.path.join(DATA_DIR, "nacht", re.sub(r"[^0-9]", "", str(rid))) if rid else os.path.join(DATA_DIR, "nacht")
+
+
+def nacht_runs():
+    if NACHT["runs"] is None:
+        try:
+            with open(_nacht_path(), encoding="utf-8") as f:
+                d = json.load(f)
+            NACHT["runs"] = d.get("runs") if isinstance(d.get("runs"), list) else []
+        except (OSError, ValueError):
+            NACHT["runs"] = []
+    return NACHT["runs"]
+
+
+def _nacht_save():
+    runs = nacht_runs()
+    del runs[:-NACHT_KEEP_RUNS]
+    try:
+        tmp = _nacht_path() + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump({"runs": runs}, f, ensure_ascii=False)
+        os.replace(tmp, _nacht_path())
+    except OSError:
+        pass
+    try:                                                # pictures of older runs away
+        keep = {str(r.get("id")) for r in runs}
+        base = _nacht_pic_dir()
+        if os.path.isdir(base):
+            for n in os.listdir(base):
+                if n not in keep:
+                    import shutil
+                    shutil.rmtree(os.path.join(base, n), ignore_errors=True)
+    except OSError:
+        pass
+
+
+def nacht_run_by(rid):
+    for r in nacht_runs():
+        if str(r.get("id")) == str(rid):
+            return r
+    return None
+
+
+def nacht_summary(r):
+    """one line of the comparison (last 10 runs, per MoveEye version)"""
+    res = r.get("result") or {}
+    I = res.get("incident") or {}
+    return {"id": r.get("id"), "t": r.get("t"), "mw": r.get("mw_version"), "sim": r.get("sim_version"), "scene": (r.get("opts") or {}).get("scene"),
+            "busy": (r.get("opts") or {}).get("busy"), "tempo": (r.get("opts") or {}).get("tempo"), "from": (r.get("opts") or {}).get("from"),
+            "to": (r.get("opts") or {}).get("to"), "inc": bool(I.get("detected")), "ttd": I.get("ttd_s"), "fa": res.get("false", 0),
+            "miss": len(res.get("misses") or []), "stopped": bool(r.get("stopped")), "auto": bool(r.get("auto")), "seed": r.get("seed")}
+
+
+# ---- what MoveEye does during the run (alarms, pictures) -----------------------------------------------------------------
+def _nacht_thumb(frame, rid, n):
+    """a small picture of a key moment (320 px wide) -> the file name, or None"""
+    if frame is None or n > 14:
+        return None
+    try:
+        h, w = frame.shape[:2]
+        img = cv2.resize(frame, (320, max(1, int(h * 320 / max(1, w)))), interpolation=cv2.INTER_AREA) if w > 320 else frame
+        ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 70])
+        if not ok:
+            return None
+        d = _nacht_pic_dir(rid)
+        os.makedirs(d, exist_ok=True)
+        name = "m%02d.jpg" % n
+        with open(os.path.join(d, name), "wb") as f:
+            f.write(buf.tobytes())
+        return name
+    except Exception:
+        return None
+
+
+def _nacht_moment(label, kind, frame=None):
+    L = NACHT.get("live")
+    if not L:
+        return
+    if frame is None:
+        try:
+            frame = WATCH_REF["w"].frame_out
+        except Exception:
+            frame = None
+    n = len(L["moments"]) + 1
+    img = _nacht_thumb(frame, L["id"], n)
+    L["moments"].append({"t": round(time.time() - L["T0"] - L["off"], 1), "h": L.get("hour"), "label": label, "kind": kind, "img": img})
+
+
+def _nacht_alarm(ev, frame=None):
+    """an alarm decision of MoveEye during the run (before the push rules)"""
+    L = NACHT.get("live")
+    if not L or not is_armed():
+        return
+    t = time.time() - L["T0"] - L["off"]
+    if L["alarms"] and t - L["alarms"][-1]["t"] < 2.0 and L["alarms"][-1]["ev"] == ev:
+        return                                          # the same decision twice in a frame or two
+    a = {"t": round(t, 1), "ev": ev, "h": L.get("hour")}
+    L["alarms"].append(a)
+    if sum(1 for m in L["moments"] if m["kind"] == "alarm") < 8:
+        _nacht_moment(ev, "alarm", frame)
+        a["img"] = L["moments"][-1].get("img")
+
+
+_nacht_person_before = Notifier.person
+_nacht_prealarm_before = Notifier.prealarm
+
+
+def _nacht_person(self, count, snapshot_path=None, frame=None):
+    if count and NACHT.get("live"):
+        _nacht_alarm("person", frame)
+    return _nacht_person_before(self, count, snapshot_path, frame)
+
+
+def _nacht_prealarm(self, frame, event="prealarm"):
+    if NACHT.get("live"):
+        _nacht_alarm(event if event in ("warm", "noise") else "prealarm", frame)
+    return _nacht_prealarm_before(self, frame, event)
+
+
+# wraps: Notifier.person
+Notifier.person = _nacht_person
+# wraps: Notifier.prealarm
+Notifier.prealarm = _nacht_prealarm
+
+
+# ---- the run ------------------------------------------------------------------------------------------------------------
+def _nacht_restore(snap):
+    """put back what the run changed (protection, its settings, relays)"""
+    if not snap:
+        return
+    was = bool(snap.get("armed"))
+    for k in NACHT_KEYS:
+        if k in snap and k != "armed":
+            CFG[k] = snap[k]
+    if not was and CFG.get("armed"):
+        disarm()
+    elif was and not CFG.get("armed"):
+        arm(0)
+    CFG["nacht_restore"] = {}
+    save_settings()
+
+
+def nacht_start(o=None, auto=False, role="admin", locked=None):
+    if not auto and not nacht_may(role, locked):
+        return False, "only the owner (not in operator mode)"
+    if NACHT["busy"]:
+        return False, "a night test run is already running"
+    if not _sim_reachable():                            # (147: a slow simulator PC may miss a few frames)
+        return False, "only with the simulator"
+    if simtask_busy():
+        return False, simtask_refuse("night test run") or "already running"
+    opts = nacht_opts(o)
+    CFG["nacht_opts"] = {k: opts[k] for k in ("scene", "busy", "tempo", "from", "to")}
+    save_settings()
+    NACHT.update(busy=True, stop=False, step="…", err="", prog="")
+    _SIMHUB["t"] = 0.0
+    threading.Thread(target=_nacht_thread, args=(opts, auto), daemon=True, name="night-test").start()
+    return True, ""
+
+
+def nacht_stop(role="admin", locked=None):
+    if not nacht_may(role, locked):
+        return False, "only the owner (not in operator mode)"
+    NACHT["stop"] = True
+    try:
+        sim_control({"action": "nacht", "do": "stop"})
+    except Exception:
+        pass
+    return True, ""
+
+
+def _nacht_thread(opts, auto):
+    snap = {k: CFG.get(k) for k in NACHT_KEYS}
+    run, stopped, err = None, False, ""
+    L = None
+    SANDBOX["force"] += 1                               # nothing reaches the phone as a real alarm, the siren only in the simulator
+    try:
+        CFG["nacht_restore"] = snap; CFG["relays_on"] = False; save_settings()
+        q = {"action": "nacht", "do": "start", "scene": opts["scene"], "busy": opts["busy"], "tempo": opts["tempo"],
+             "from": nacht_hm(opts["from"], 20.0), "to": nacht_hm(opts["to"], 7.0), "by": "MoveEye " + APP_VERSION}
+        for k in ("speed", "seed"):
+            if k in opts:
+                q[k] = opts[k]
+        r = sim_control(q)
+        if not r.get("ok"):
+            if r.get("error") == "unknown action":
+                raise RuntimeError("the simulator does not know the night test run - update the simulator")
+            raise RuntimeError(str(r.get("error") or "the simulator did not start the night test run"))
+        ri = r.get("run") or {}
+        rid = str(ri.get("id") or int(time.time() * 1000))
+        L = {"id": rid, "T0": time.time(), "off": 0.0, "offs": [], "alarms": [], "moments": [], "samples": [], "batt": [], "temp": [],
+             "fps": [], "hour": ri.get("from"), "msg0": None, "pushes": [], "inc_seen": False, "run": ri}
+        try:
+            with MSGLOG["lock"]:
+                L["msg0"] = {str(x.get("id")) for x in _msglog_load()}
+        except Exception:
+            L["msg0"] = set()
+        NACHT["live"] = L
+        protect_set("full", who="night test run")      # protection «Voll» - in the simulation only
+        arm(0)                                          # at once (no countdown): the night starts now
+        log_event("sys", "Night test run started (simulation, protection Full; seed %s, %s, %s → %s)" % (ri.get("seed"), opts["tempo"], opts["from"], opts["to"]))
+        est = float(ri.get("est_s") or 3600.0)
+        t_end = time.time() + est + 600.0
+        last_poll, last_res, done = 0.0, 0.0, False
+        while time.time() < t_end:
+            if NACHT["stop"]:
+                stopped = True
+                break
+            if not CFG.get("sim_on"):
+                raise RuntimeError("only with the simulator")
+            now = time.time()
+            p = STATE.get("present") or []
+            ks = set(p) & {"animal", "motion"}
+            if int(STATE.get("persons") or 0) > 0:
+                ks.add("person")
+            if ks:
+                L["samples"].append((round(now - L["T0"] - L["off"], 1), sorted(ks)))
+            if now - last_res >= max(5.0, est / 240.0):   # battery, Pi temperature, pictures/s - about 240 points a night
+                last_res = now
+                b = STATE.get("battery") or {}
+                h = L.get("hour")
+                if b.get("pct") is not None:
+                    L["batt"].append([h, round(float(b["pct"]), 1)])
+                if STATE.get("cpu_temp") is not None:
+                    L["temp"].append([h, round(float(STATE["cpu_temp"]), 1)])
+                L["fps"].append([h, round(float(STATE.get("fps") or 0.0), 1)])
+            if now - last_poll >= 2.0:
+                last_poll = now
+                try:
+                    st = sim_control({"action": "nacht", "do": "state"})
+                except Exception:
+                    st = None
+                if st and st.get("ok"):
+                    if st.get("running") and str(st.get("id")) == rid:
+                        L["offs"].append((time.time() - L["T0"]) - float(st.get("t") or 0.0))
+                        L["offs"] = L["offs"][-30:]
+                        L["off"] = sorted(L["offs"])[len(L["offs"]) // 2]
+                        L["hour"] = st.get("hour")
+                        NACHT["prog"] = "%s · %d/%d · %d min" % (nacht_clock(st.get("hour")), int(st.get("n_done") or 0), int(st.get("n_plan") or 0),
+                                                              int(round(float(st.get("left_s") or 0) / 60.0)))
+                        NACHT["step"] = NACHT["prog"]
+                        for a in st.get("active") or []:
+                            if a.get("cat") == "incident" and a.get("vis") and not L["inc_seen"]:
+                                L["inc_seen"] = True
+                                _nacht_moment("Incident visible", "incident")
+                    elif str(st.get("done_id") or "") == rid:
+                        done = True
+                        break
+                    elif not st.get("running"):
+                        done = True                     # stopped in the simulator window
+                        break
+            time.sleep(0.5)
+        if not done and not stopped:
+            err = "no result from the simulator"
+        try:
+            sim_control({"action": "nacht", "do": "stop"}) if not done else None
+        except Exception:
+            pass
+        time.sleep(1.0)
+        tr_ = {}
+        for _ in range(5):
+            try:
+                tr_ = sim_control({"action": "nacht", "do": "truth", "id": rid}) or {}
+            except Exception:
+                tr_ = {}
+            if tr_.get("ok") and str((tr_.get("run") or {}).get("id")) == rid:
+                break
+            time.sleep(1.0)
+        sr = tr_.get("run") or {}
+        truth = sr.get("truth") or []
+        stopped = stopped or bool(sr.get("stopped"))
+        dets = nacht_segments(L["samples"])
+        try:
+            with MSGLOG["lock"]:
+                items = list(_msglog_load())
+            L["pushes"] = [{"t": round(float(x.get("t", 0)) - L["T0"] - L["off"], 1), "ev": x.get("ev"), "status": x.get("status")}
+                           for x in items if str(x.get("id")) not in L["msg0"] and float(x.get("t", 0)) >= L["T0"]]
+        except Exception:
+            pass
+        # sabotage alarms do not go through Notifier.person / prealarm: from the message list
+        sp_, h0_ = float(ri.get("speed") or 8.0), float(ri.get("from") or 0.0)
+        L["alarms"].extend({"t": p_["t"], "ev": "tamper", "h": round((h0_ + p_["t"] * sp_ / 3600.0) % 24.0, 3)} for p_ in L["pushes"] if p_.get("ev") == "tamper")
+        res = nacht_match(truth, L["alarms"], dets)
+        meta = sr.get("meta") or {}
+        run = {"id": rid, "t": time.strftime("%Y-%m-%d %H:%M"), "mw_version": APP_VERSION, "sim_version": meta.get("sim_version") or "",
+               "opts": dict(opts, scene=meta.get("scene") or ri.get("scene") or opts.get("scene")), "seed": meta.get("seed", ri.get("seed")),
+               "speed": meta.get("speed", ri.get("speed")), "real_min": round((time.time() - L["T0"]) / 60.0, 1), "auto": bool(auto),
+               "stopped": stopped, "err": err, "result": res, "truth": truth, "alarms": L["alarms"], "pushes": L["pushes"], "dets": dets[:400],
+               "batt": L["batt"], "temp": L["temp"], "fps": L["fps"], "moments": L["moments"],
+               "quiet": bool(CFG.get("quiet_on")), "ai": str(STATE.get("ai_status") or "")}
+        if stopped and not truth:
+            run = None                                      # stopped before anything happened: nothing to keep
+    except Exception as e:
+        err = str(e)[:160]
+        log_event("sys", "Night test run: " + err)
+    finally:
+        NACHT["live"] = None
+        SANDBOX["force"] = max(0, SANDBOX["force"] - 1)
+        try:
+            _nacht_restore(snap)
+        except Exception as e:
+            log_event("sys", "Night test run: restore " + str(e)[:100])
+        NACHT.update(busy=False, step="", prog="", err=err)
+        _SIMHUB["t"] = 0.0
+    if run is not None:
+        nacht_runs().append(run)
+        _nacht_save()
+        log_event("sys", "Night test run finished: " + nacht_push_text(run, "en"))
+        if not stopped:
+            nacht_push(run)
+
+
+def nacht_push_text(run, lang=None):
+    res = run.get("result") or {}
+    I = res.get("incident") or {}
+    inc = (trf("detected after {s} s", lang, s=I.get("ttd_s")) if I.get("detected") else tr("NOT detected", lang)) if I else "–"
+    by = ", ".join("%s %d" % (tr(NACHT_CAUSES.get(k, k), lang), n) for k, n in sorted((res.get("false_by") or {}).items(), key=lambda x: -x[1]))
+    return "🧪 " + trf("Incident: {inc} · false alarms: {fa}{by} · misses: {mi}", lang, inc=inc, fa=res.get("false", 0),
+                       by=(" (" + by + ")") if by else "", mi=len(res.get("misses") or []))
+
+
+def nacht_push(run):
+    """the morning report: an info message (marked simulation), with the link to the report page"""
+    w = WATCH_REF.get("w")
+    if w is None:
+        return
+    pub = (CFG.get("public_url") or "").strip().rstrip("/")
+    try:
+        w.notifier.info(nacht_push_text(run), pub + "/nacht?id=" + str(run["id"]) if pub else "", title="{name}: 🧪 " + tr("Night test run (simulation)"))
+    except Exception as e:
+        log_event("sys", "Night test run: push " + str(e)[:100])
+
+
+def nacht_auto_loop():
+    """the schedule: once a night at nacht_auto_hour (real clock), when the simulator is there and free"""
+    while True:
+        time.sleep(60)
+        try:
+            if not CFG.get("nacht_auto_on") or NACHT["busy"] or CFG.get("lock_on"):
+                continue
+            now = datetime.now(); day = now.strftime("%Y-%m-%d")
+            if now.hour != int(CFG.get("nacht_auto_hour", 23)) or CFG.get("nacht_auto_day") == day:
+                continue
+            if not _sim_reachable() or simtask_busy():
+                continue
+            CFG["nacht_auto_day"] = day; save_settings()
+            nacht_start(None, auto=True)
+        except Exception as e:
+            log_event("sys", "Night test run (schedule): " + str(e)[:150])
+
+
+def _nacht_boot():
+    """a run was cut by a restart of MoveEye: put the protection back as it was"""
+    time.sleep(20)
+    if CFG.get("nacht_restore") and not NACHT["busy"]:
+        log_event("sys", "Night test run was interrupted (restart) - protection put back as before")
+        _nacht_restore(CFG.get("nacht_restore"))
+
+
+threading.Thread(target=nacht_auto_loop, daemon=True, name="night-test-auto").start()
+threading.Thread(target=_nacht_boot, daemon=True, name="night-test-boot").start()
+
+
+# ---- one lock (147) ----------------------------------------------------------------------------------------------------
+_simtask_busy_nacht_base = simtask_busy
+
+
+def simtask_busy(except_=""):                              # + 579b: one lock
+    if NACHT["busy"] and except_ != "night test run":
+        return "night test run"
+    return _simtask_busy_nacht_base(except_)
+
+
+_simtask_local_nacht_base = simtask_local
+
+
+def simtask_local():                                       # + 579b: the simulator refuses its own starts meanwhile
+    return "night test run" if NACHT["busy"] else _simtask_local_nacht_base()
+
+
+SIM_BUSY_NAMES.setdefault("Nacht-Testlauf", "night test run")
+
+
+# ---- the page data -----------------------------------------------------------------------------------------------------
+def nacht_state(role="admin", rid=None):
+    runs = nacht_runs()
+    sel = nacht_run_by(rid) if rid else (runs[-1] if runs else None)
+    o = nacht_opts()
+    return {"ok": True, "owner": nacht_may(role), "locked": bool(CFG.get("lock_on")), "busy": NACHT["busy"], "step": NACHT["step"],
+            "err": NACHT["err"], "sim": bool(_sim_reachable()), "opts": o, "busy_opts": list(NACHT_BUSY), "tempo_opts": list(NACHT_TEMPO),
+            "auto": {"on": bool(CFG.get("nacht_auto_on")), "hour": int(CFG.get("nacht_auto_hour", 23))},
+            "runs": [nacht_summary(r) for r in runs][::-1], "run": sel, "causes": NACHT_CAUSES, "targets": NACHT_TARGETS,
+            "live": {"alarms": len((NACHT.get("live") or {}).get("alarms") or []), "hour": (NACHT.get("live") or {}).get("hour")} if NACHT.get("live") else None}
+
+
+def nacht_api(d, role="admin", locked=None):
+    """POST /api/nacht -> (reply, http code): start / stop / auto (schedule) - only the owner"""
+    op = str(d.get("do") or "")
+    if op not in ("start", "stop", "auto"):
+        return {"ok": False, "error": "unknown action"}, 400
+    if not nacht_may(role, locked):
+        return {"ok": False, "error": "only the owner (not in operator mode)"}, 403
+    if op == "start":
+        ok, err = nacht_start(d, role=role, locked=locked)
+    elif op == "stop":
+        ok, err = nacht_stop(role, locked)
+    else:
+        if "on" in d:
+            CFG["nacht_auto_on"] = bool(d.get("on"))
+        if d.get("hour") is not None:
+            try:
+                CFG["nacht_auto_hour"] = max(0, min(23, int(d["hour"])))
+            except (TypeError, ValueError):
+                return {"ok": False, "error": "invalid value"}, 400
+        save_settings(); ok, err = True, ""
+    return {"ok": ok, "error": err}, 200 if ok else 409
+
+
+_ginv_routes_nacht_base = ginv_routes
+
+
+def ginv_routes(app, reply, body):                         # + 579b: /nacht, /api/nacht (550 calls ginv_routes)
+    _ginv_routes_nacht_base(app, reply, body)
+    from flask import request, Response, send_file
+
+    @app.route("/api/nacht", methods=["GET", "POST"])
+    def api_nacht():
+        role = _nacht_role()
+        if request.method == "POST":
+            d = body()
+            rep, code = nacht_api(d, role)
+            if rep.get("error"):
+                rep["error"] = tr_err(rep["error"], norm_lang(d.get("lang")))
+            rep["state"] = nacht_state(role)
+            _SIMHUB["t"] = 0.0
+            return reply(rep, code)
+        return reply(nacht_state(role, request.args.get("id")))
+
+    @app.route("/api/nacht/img/<rid>/<name>")
+    def api_nacht_img(rid, name):
+        if not re.fullmatch(r"\d{1,16}", rid) or not re.fullmatch(r"m\d{2}\.jpg", name):
+            return Response("no", 404)
+        p = os.path.join(_nacht_pic_dir(rid), name)
+        if not os.path.isfile(p):
+            return Response("no", 404)
+        return send_file(p, mimetype="image/jpeg", max_age=3600)
+
+    @app.route("/api/nacht/export/<rid>")
+    def api_nacht_export(rid):
+        r = nacht_run_by(rid)
+        if r is None:
+            return Response("no", 404)
+        return Response(json.dumps(dict(r, app="MoveEye", kind="night test run (simulation)"), ensure_ascii=False, indent=1),
+                        mimetype="application/json", headers={"Content-Disposition": 'attachment; filename="nacht_testlauf_%s.json"' % re.sub(r"\D", "", rid)})
+
+    @app.route("/nacht")
+    def nacht_page_route():
+        return Response(nacht_page(), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+
+# ---- tile 🌙 (Simulator centre, group «Testen») and the page /nacht -------------------------------------------------------
+_sim_hub_nacht_base = sim_hub
+
+
+def sim_hub(force=False):                                  # + 579b: the tile 🌙 «Nacht-Testlauf» (not per user: no owner flag here)
+    d = _sim_hub_nacht_base(force)
+    if d.get("ok"):
+        runs = nacht_runs()
+        s = nacht_summary(runs[-1]) if runs else None
+        d = dict(d, nacht={"busy": NACHT["busy"], "prog": NACHT["prog"], "last": {"inc": s["inc"], "fa": s["fa"], "ttd": s["ttd"]} if s else None})
+    return d
+
+
+NACHT_JS = r"""
+<style>
+.mwnt{flex:1 1 100%;display:flex;flex-direction:column;gap:8px;min-width:0;max-width:100%;box-sizing:border-box}
+.mwnt *{box-sizing:border-box;max-width:100%}
+.mwnt .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.mwnt .row>button{flex:1 1 auto;min-width:0}
+.mwnt select,.mwnt input{min-width:0;flex:1 1 90px}
+.mwnt label{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--mut,#8a9bb0);flex:1 1 120px;min-width:0}
+.mwnt .box{border:1px solid var(--line,#1f2b3a);border-radius:10px;padding:8px}
+.mwnt h4{margin:0 0 4px;font-size:13px}
+.mwnt .big{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.mwnt .big div{background:var(--panel2,#151e2b);border:1px solid var(--line,#1f2b3a);border-radius:12px;padding:8px 10px;font-size:12px;color:var(--mut,#8a9bb0)}
+.mwnt .big b{display:block;font-size:20px;color:var(--txt,#e8eef5)}
+.mwnt .g{color:#3fcf6b!important}.mwnt .r{color:#ff4d4d!important}.mwnt .o{color:#f59a4a!important}
+.mwnt table{width:100%;border-collapse:collapse;font-size:12px}
+.mwnt td,.mwnt th{padding:3px 4px;border-bottom:1px solid var(--line,#1f2b3a);text-align:left;vertical-align:top;overflow-wrap:anywhere}
+.mwnt th{color:var(--mut,#8a9bb0);font-weight:600}
+.mwnt tr.sel td{background:rgba(59,140,255,.12)}
+.mwnt svg{width:100%;height:56px;background:var(--panel2,#0c121a);border-radius:6px}
+.mwnt .pics{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px}
+.mwnt .pics figure{margin:0;font-size:11px;color:var(--mut,#8a9bb0)}
+.mwnt .pics img{width:100%;border-radius:8px;display:block;background:#000;aspect-ratio:16/9;object-fit:cover}
+.mwnt .lock{padding:8px 10px;border-radius:10px;background:rgba(245,154,74,.12);font-size:13px}
+</style>
+<script>
+(function () {
+  const DE = /*NDE*/{};
+  const L = () => { try { return (typeof LANG !== "undefined" && LANG) || document.documentElement.lang || "de"; } catch (e) { return "de"; } };
+  let merged = false;
+  const merge = () => { if (merged) return; try { if (typeof I18N !== "undefined" && I18N.de) { for (const k in DE) if (!(k in I18N.de)) I18N.de[k] = DE[k]; merged = true; } } catch (e) {} };
+  const tt = k => { merge(); try { if (typeof t === "function" && t(k) !== k) return t(k); } catch (e) {} return L() === "en" ? k : (DE[k] || k); };
+  const tf = (k, o) => tt(k).replace(/\{(\w+)\}/g, (m, x) => (o && o[x] != null) ? o[x] : m);
+  const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
+  const B = (txt, fn, cls) => { const b = E("button", cls == null ? "sec" : cls, txt); b.type = "button"; b.onclick = fn; return b; };
+  const clk = h => h == null ? "–" : String(Math.floor(h % 24)).padStart(2, "0") + ":" + String(Math.round(h % 1 * 60) % 60).padStart(2, "0");
+  const say = m => { if (typeof toast === "function") toast(m); };
+  let D = null, DT = 0, O = null, SEL = null;
+  const repaint = () => { if (window.mwSimHub) window.mwSimHub.paint(); if (window._ntPage) window._ntPage(); };
+  async function load(id) { try { D = await (await fetch("/api/nacht" + (id ? "?id=" + encodeURIComponent(id) : ""))).json(); DT = Date.now(); } catch (e) {} return D; }
+  async function post(d) { try { const r = await (await fetch("/api/nacht", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: L()}, d))})).json();
+      if (r.state) { D = r.state; DT = Date.now(); } if (!r.ok) say("⚠ " + (r.error || "")); repaint(); return r; } catch (e) { say("⚠ " + tt("Simulator not reachable")); } }
+  const cause = k => tt((D && D.causes && D.causes[k]) || k);
+  const EVN = {person: "Person alarm", warm: "Warmth alarm", prealarm: "Pre-alarm", noise: "Noise alarm", tamper: "Sabotage alarm", incident: "Incident visible"};
+  const evn = k => tt(EVN[k] || k);
+  const BN = {ruhig: "calm", normal: "normal (some going on)", viel: "lots going on"};
+  function curve(pts, lo, hi, col, unit) {                // one small line chart over the night (x = order of the points)
+    const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", "0 0 100 30"); s.setAttribute("preserveAspectRatio", "none");
+    const P = (pts || []).filter(p => p && p[1] != null); if (P.length < 2) { const w = E("div", "mut", "–"); return w; }
+    const vs = P.map(p => p[1]); lo = lo == null ? Math.min(...vs) - 1 : lo; hi = hi == null ? Math.max(...vs) + 1 : hi;
+    const pl = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+    pl.setAttribute("points", P.map((p, i) => (i / (P.length - 1) * 100).toFixed(2) + "," + (30 - (p[1] - lo) / Math.max(0.01, hi - lo) * 28 - 1).toFixed(2)).join(" "));
+    pl.setAttribute("fill", "none"); pl.setAttribute("stroke", col); pl.setAttribute("stroke-width", "1.5"); pl.setAttribute("vector-effect", "non-scaling-stroke"); s.appendChild(pl);
+    const w = E("div"); w.appendChild(s);
+    w.appendChild(E("div", "mut", clk(P[0][0]) + " " + P[0][1] + unit + " → " + clk(P[P.length - 1][0]) + " " + P[P.length - 1][1] + unit + " · min " + Math.min(...vs) + unit + " · max " + Math.max(...vs) + unit));
+    return w;
+  }
+  function report(w, R, full) {
+    if (!R) { w.appendChild(E("div", "mut", tt("No night test run yet."))); return; }
+    const res = R.result || {}, I = res.incident || {}, o = R.opts || {};
+    w.appendChild(E("div", "mut", "🧪 " + R.t + " · MoveEye " + R.mw_version + " · " + tt("Simulator") + " " + (R.sim_version || "–") + " · " + (o.scene || "") + " · " + tt(BN[o.busy] || o.busy || "") + " · "
+      + (o.tempo === "echt" ? "1×" : "8×") + " · " + o.from + "–" + o.to + " · seed " + R.seed + (R.stopped ? " · ⏹ " + tt("stopped") : "") + (R.auto ? " · ⏰" : "")));
+    const big = E("div", "big");
+    const tile = (lbl, val, cls) => { const d = E("div", "", lbl); d.appendChild(E("b", cls || "", val)); big.appendChild(d); };
+    tile(tt("Incident detected"), I.id ? (I.detected ? "✅ " + tf("after {s} s", {s: I.ttd_s}) : "❌ " + tt("not detected")) : "–", I.detected ? "g" : "r");
+    tile(tt("False alarms"), String(res.false || 0), (res.false || 0) ? "o" : "g");
+    tile(tt("Misses"), String((res.misses || []).length), (res.misses || []).length ? "o" : "g");
+    tile(tt("Alarms in all"), String(res.alarms || 0) + (res.repeats ? " (" + res.repeats + " " + tt("repeats") + ")" : ""));
+    w.appendChild(big);
+    if (I.id) { const b = E("div", "box"); b.appendChild(E("h4", "", "🥷 " + tt((D && D.targets && D.targets[I.target]) || "Incident") + " · " + clk(I.h0)));
+      b.appendChild(E("div", "mut", (I.first_vis != null && I.first_vis >= 0 ? tf("visible for the camera after {s} s", {s: Math.round(I.first_vis - I.t0)}) + " · " + tf("{s} s visible", {s: I.vis_s}) : tt("never visible for the camera"))
+        + " · " + (I.det_s != null ? tf("first detection after {s} s", {s: I.det_s}) : tt("no detection")) + " · " + (I.detected ? tf("first alarm after {s} s", {s: I.ttd_s}) : tt("no alarm"))));
+      w.appendChild(b); }
+    const fb = E("div", "box"); fb.appendChild(E("h4", "", "⚠ " + tt("False alarms by cause")));
+    const by = Object.entries(res.false_by || {}).sort((a, b) => b[1] - a[1]);
+    if (!by.length) fb.appendChild(E("div", "g", "✓ " + tt("none – fine")));
+    by.forEach(([k, n]) => fb.appendChild(E("div", "", n + " × " + cause(k))));
+    if (full) (res.false_list || []).slice(0, 30).forEach(f => fb.appendChild(E("div", "mut", clk(f.h) + " · " + evn(f.ev) + " · " + cause(f.cause))));
+    w.appendChild(fb);
+    const mb = E("div", "box"); mb.appendChild(E("h4", "", "👁 " + tt("Misses (visible, nothing detected)")));
+    if (!(res.misses || []).length) mb.appendChild(E("div", "g", "✓ " + tt("none – fine")));
+    (res.misses || []).slice(0, full ? 40 : 6).forEach(m => mb.appendChild(E("div", m.incident ? "r" : "", clk(m.h0) + " · " + cause(m.cause) + " · " + tf("{s} s visible", {s: m.vis_s}))));
+    w.appendChild(mb);
+    if (!full) return;
+    const cb = E("div", "box"); cb.appendChild(E("h4", "", "🔋 " + tt("Battery"))); cb.appendChild(curve(R.batt, 0, 100, "#3fcf6b", " %"));
+    cb.appendChild(E("h4", "", "🌡 " + tt("Pi temperature"))); cb.appendChild(curve(R.temp, null, null, "#f59a4a", " °C"));
+    cb.appendChild(E("h4", "", "🎞 " + tt("Pictures per second"))); cb.appendChild(curve(R.fps, 0, null, "#3b8cff", "")); w.appendChild(cb);
+    const pb = E("div", "box"); pb.appendChild(E("h4", "", "📷 " + tt("Key moments"))); const pics = E("div", "pics");
+    (R.moments || []).forEach(m => { const f = E("figure"); if (m.img) { const im = E("img"); im.loading = "lazy"; im.alt = ""; im.src = "/api/nacht/img/" + R.id + "/" + m.img; f.appendChild(im); }
+      f.appendChild(E("figcaption", "", clk(m.h) + " · " + evn(m.label))); pics.appendChild(f); });
+    if (!(R.moments || []).length) pics.appendChild(E("div", "mut", "–")); pb.appendChild(pics); w.appendChild(pb);
+    const ev = E("div", "box"); ev.appendChild(E("h4", "", "📋 " + tt("The night (truth of the simulator)")));
+    const tb = E("table"), h = E("tr"); [tt("Time"), tt("Event"), tt("visible (s)"), tt("Alarms")].forEach(x => h.appendChild(E("th", "", x))); tb.appendChild(h);
+    const al = (res.false_list || []).concat((res.hits || []).map(x => Object.assign({cause: "incident"}, x)));
+    (R.truth || []).forEach(e => { const tr = E("tr"); const n = al.filter(a => a.id === e.id).length;
+      tr.append(E("td", "", clk(e.h0) + (e.h1 >= 0 ? "–" + clk(e.h1) : "")), E("td", e.cat === "incident" ? "r" : "", cause(e.cause)), E("td", "", e.cat === "weather" ? "" : (e.vis_s ? String(e.vis_s) : "–")), E("td", n ? (e.cat === "incident" ? "g" : "o") : "", n ? String(n) : ""));
+      tb.appendChild(tr); }); ev.appendChild(tb); w.appendChild(ev);
+    const ex = E("div", "row"); const a = E("a", "btn sec", "⬇ " + tt("Export (JSON)")); a.href = "/api/nacht/export/" + R.id; a.setAttribute("download", ""); ex.appendChild(a); w.appendChild(ex);
+  }
+  function compare(w, cur) {
+    const runs = (D && D.runs) || []; if (!runs.length) return;
+    const b = E("div", "box"); b.appendChild(E("h4", "", "📊 " + tt("Comparison: last 10 runs")));
+    const tb = E("table"), h = E("tr"); [tt("Date"), "MoveEye", tt("Incident"), tt("False alarms"), tt("Misses"), ""].forEach(x => h.appendChild(E("th", "", x))); tb.appendChild(h);
+    runs.forEach(r => { const tr = E("tr", cur && cur.id === r.id ? "sel" : ""); tr.style.cursor = "pointer";
+      tr.append(E("td", "", (r.t || "").slice(5)), E("td", "", r.mw || ""), E("td", r.inc ? "g" : "r", r.inc ? "✅ " + r.ttd + " s" : "❌"), E("td", r.fa ? "o" : "g", String(r.fa)), E("td", "", String(r.miss)),
+        E("td", "mut", (r.tempo === "echt" ? "1×" : "8×") + " · " + tt(BN[r.busy] || r.busy || "") + (r.stopped ? " · ⏹" : "") + (r.auto ? " · ⏰" : "")));
+      tr.onclick = () => { if (window._ntPage) { SEL = r.id; load(r.id).then(repaint); } else location.href = "/nacht?id=" + r.id; }; tb.appendChild(tr); });
+    b.appendChild(tb); w.appendChild(b);
+  }
+  function controls(w) {
+    if (!D.owner) { w.appendChild(E("div", "lock", "🔒 " + tt(D.locked ? "Operator mode: only the owner can start or stop the night test run – the reports can be viewed." : "Only the owner can start or stop the night test run – the reports can be viewed."))); return; }
+    if (!O) O = Object.assign({}, D.opts);
+    const sc = (window.mwSimHub && window.mwSimHub.H() && window.mwSimHub.H().scenes) || [];
+    const lab = (n, el) => { const l = E("label", "", n); l.appendChild(el); return l; };
+    const sel = (opts, key) => { const s = E("select"); opts.forEach(([v, n]) => { const o = E("option", "", n); o.value = v; if (String(O[key]) === String(v)) o.selected = true; s.appendChild(o); }); s.onchange = () => O[key] = s.value; return s; };
+    const inp = key => { const i = E("input"); i.type = "time"; i.value = O[key]; i.onchange = () => O[key] = i.value; return i; };
+    const r1 = E("div", "row");
+    r1.append(lab(tt("Scene"), sel([["", tt("as now")]].concat(sc.map(x => [x.id, window.mwSimHub.scn(x)])), "scene")),
+      lab(tt("Liveliness"), sel([["ruhig", tt("calm")], ["normal", tt("normal (some going on)")], ["viel", tt("lots going on")]], "busy")),
+      lab(tt("Tempo"), sel([["echt", tt("real (1×)")], ["schnell", tt("fast (8 h in about 1 h)")]], "tempo")),
+      lab(tt("Start time"), inp("from")), lab(tt("End time"), inp("to")));
+    w.appendChild(r1);
+    const r2 = E("div", "row");
+    if (D.busy) r2.append(B("⏹ " + tt("Abort the night test run"), () => post({do: "stop"}), ""), E("span", "mut", "⏳ " + (D.step || "")));
+    else r2.appendChild(B("🌙 " + tt("Start night test run"), () => post(Object.assign({do: "start"}, O)), ""));
+    w.appendChild(r2);
+    const A = D.auto || {}, r3 = E("div", "row"), hs = E("select");
+    for (let i = 0; i < 24; i++) { const o = E("option", "", String(i).padStart(2, "0") + ":00"); o.value = i; if (i === A.hour) o.selected = true; hs.appendChild(o); }
+    hs.onchange = () => post({do: "auto", hour: +hs.value});
+    r3.append(B((A.on ? "✓ " : "") + tt("Every night by itself"), () => post({do: "auto", on: !A.on}), A.on ? "" : "sec"), hs);
+    w.appendChild(r3);
+    w.appendChild(E("div", "mut", tt("nacht-note")));
+  }
+  merge();
+  window.mwNacht = {
+    name: () => tt("Night test run"),
+    sub: H => { const N = H && H.nacht; if (!N) return ""; if (N.busy) return "⏳ " + (N.prog || ""); if (N.last) return (N.last.inc ? "✅ " : "❌ ") + tt("false alarms") + " " + N.last.fa;
+      return tt("whole night with truth"); },
+    sheet: (s, H) => { const w = E("div", "mwnt"); s.appendChild(w);
+      if (!D || Date.now() - DT > 5000) { load().then(() => { if (window.mwSimHub) window.mwSimHub.paint(); }); if (!D) { w.appendChild(E("div", "mut", "…")); return; } }
+      if (D.err) w.appendChild(E("div", "r", "⚠ " + tt(D.err)));
+      controls(w); report(w, D.run, false);
+      if (D.run) { const a = E("a", "btn sec", "📄 " + tt("Open the report")); a.href = "/nacht?id=" + D.run.id; w.appendChild(a); } },
+    page: el => { window._ntPage = () => { el.textContent = ""; const w = E("div", "mwnt"); el.appendChild(w); if (!D) { w.appendChild(E("div", "mut", "…")); return; }
+        if (D.busy) w.appendChild(E("div", "o", "⏳ " + tt("Night test run is running") + " · " + (D.step || "")));
+        report(w, D.run, true); compare(w, D.run); };
+      const id = new URLSearchParams(location.search).get("id"); load(id).then(() => window._ntPage()); setInterval(() => { if (D && D.busy) load(SEL || id).then(() => window._ntPage()); }, 10000); }
+  };
+})();
+</script>
+"""
+NACHT_KEYS_TXT = ("Night test run", "Night test run (simulation)", "whole night with truth", "Start night test run", "Abort the night test run",
+                  "Scene", "as now", "Liveliness", "calm", "normal (some going on)", "lots going on", "Tempo", "real (1×)", "fast (8 h in about 1 h)",
+                  "Start time", "End time", "Every night by itself", "nacht-note", "Open the report", "No night test run yet.", "Incident detected",
+                  "after {s} s", "not detected", "False alarms", "false alarms", "Misses", "Alarms in all", "repeats", "Incident",
+                  "visible for the camera after {s} s", "{s} s visible", "never visible for the camera", "first detection after {s} s", "no detection",
+                  "first alarm after {s} s", "no alarm", "False alarms by cause", "none – fine", "Misses (visible, nothing detected)", "Battery",
+                  "Pi temperature", "Pictures per second", "Key moments", "The night (truth of the simulator)", "Time", "Event", "visible (s)", "Alarms",
+                  "Export (JSON)", "Comparison: last 10 runs", "Date", "stopped", "Night test run is running", "Simulator", "Incident visible",
+                  "Person alarm", "Warmth alarm", "Pre-alarm", "Noise alarm", "Sabotage alarm", "Simulator not reachable",
+                  "Operator mode: only the owner can start or stop the night test run – the reports can be viewed.",
+                  "Only the owner can start or stop the night test run – the reports can be viewed.",
+                  "only the owner (not in operator mode)", "a night test run is already running", "only with the simulator",
+                  "the simulator does not know the night test run - update the simulator", "no result from the simulator",
+                  "the simulator did not start the night test run", "night test run", "Night test run: report") + tuple(NACHT_CAUSES.values()) + tuple(NACHT_TARGETS.values())
+
+
+def nacht_js():
+    return NACHT_JS.replace("/*NDE*/{}", json.dumps({k: DE[k] for k in NACHT_KEYS_TXT if k in DE}, ensure_ascii=False), 1)
+
+
+_simhub_head_nacht_base = simhub_head
+
+
+def simhub_head():                                        # + 579b: the tile 🌙 «Nacht-Testlauf»
+    return _simhub_head_nacht_base() + nacht_js()
+
+
+NACHT_PAGE = r"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MoveEye - Night test run</title>
+<style>
+/*BASECSS*/
+main{padding:14px 16px 90px;max-width:980px;margin:0 auto}
+</style></head><body>
+<header>
+  <h1>MoveEye</h1>
+  <!--NAV-->
+  <span class="hdr-ctl">
+    <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
+    <button class="sec" id="btn-lang" onclick="toggleLang()">DE</button>
+  </span>
+</header>
+<main>
+  <h2 style="margin:0 0 8px">🌙 <span data-i18n="Night test run: report">Night test run: report</span></h2>
+  <div class="mut" style="margin:0 0 10px">🧪 <span data-i18n="SIMULATION – alarms are not real">SIMULATION – alarms are not real</span> · <a href="/sim" data-i18n="Simulator centre">Simulator centre</a></div>
+  <div id="nt-page"></div>
+</main>
+<script>
+/*COMMON*/
+</script>
+<!--NTJS-->
+<script>(async () => { try { await initAppearance(); } catch (e) {} window.mwNacht.page(document.getElementById("nt-page")); })();</script>
+</body></html>"""
+NAV_OF["nacht"] = "sim"
+
+
+def nacht_page():
+    js = "<script>Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in ("Night test run: report", "Simulator centre", "SIMULATION – alarms are not real")},
+                                                        ensure_ascii=False) + ");</script>"
+    return render_page(NACHT_PAGE, "nacht").replace("<!--NTJS-->", js + nacht_js(), 1)
+
+
+# ---- self-test: the matching, the owner lock, the options -----------------------------------------------------------
+def nacht_selftest():
+    truth = [{"id": 1, "kind": "wc", "cat": "people", "cause": "wc_torch", "t0": 10.0, "t1": 60.0, "first_vis": 12.0, "vis_s": 8.0},
+             {"id": 2, "kind": "fox", "cat": "animal", "cause": "fox", "t0": 100.0, "t1": 120.0, "first_vis": 104.0, "vis_s": 6.0},
+             {"id": 3, "kind": "rain", "cat": "weather", "cause": "rain", "t0": 90.0, "t1": 300.0, "first_vis": -1, "vis_s": 0},
+             {"id": 4, "kind": "incident", "cat": "incident", "cause": "incident", "target": "bike", "t0": 200.0, "t1": 260.0, "first_vis": 210.0, "vis_s": 20.0},
+             {"id": 5, "kind": "cat", "cat": "animal", "cause": "cat", "t0": 400.0, "t1": 420.0, "first_vis": 405.0, "vis_s": 5.0}]
+    alarms = [{"t": 20.0, "ev": "person"}, {"t": 24.0, "ev": "person"},          # toilet trip + a repeat within 10 s
+              {"t": 110.0, "ev": "prealarm"},                                     # fox during the rain: the fox (animal > weather)
+              {"t": 150.0, "ev": "person"},                                       # only the rain runs: rain
+              {"t": 214.5, "ev": "person"}, {"t": 218.0, "ev": "person"},         # the incident (and a repeat - still the incident)
+              {"t": 500.0, "ev": "noise"}, {"t": 600.0, "ev": "info"}]            # nothing in the plan: unknown; info is no alarm
+    dets = nacht_segments([(12.5, ["person"]), (13.0, ["person"]), (212.0, ["person"]), (212.5, ["person"]), (106.0, ["animal"])])
+    r = nacht_match(truth, alarms, dets)
+    I = r["incident"]
+    assert I["detected"] and I["ttd_s"] == 4.5 and I["det_s"] == 2.0 and I["alarms"] == 2, I
+    assert r["false"] == 4 and r["repeats"] == 1, r
+    assert r["false_by"] == {"wc_torch": 1, "fox": 1, "rain": 1, "unknown": 1}, r["false_by"]
+    assert [m["kind"] for m in r["misses"]] == ["cat"], r["misses"]          # the cat was visible, nothing detected
+    r2 = nacht_match(truth, [{"t": 20.0, "ev": "person"}], [])
+    assert r2["missed_incident"] and not r2["incident"]["detected"] and r2["incident"]["ttd_s"] is None
+    assert any(m["incident"] for m in r2["misses"])
+    r3 = nacht_match(truth, [{"t": 199.0, "ev": "person"}, {"t": 268.0, "ev": "person"}, {"t": 285.0, "ev": "person"}], [])
+    assert r3["incident"]["detected"] and r3["incident"]["ttd_s"] == 0.0 and r3["false"] == 1 and r3["false_by"] == {"rain": 1}, r3
+    # two events at the same time: the alarm belongs to the one the camera saw (vis_iv), not simply to the incident
+    tv = [dict(truth[0], t0=150.0, t1=300.0, vis_iv=[[160.0, 175.0]]), dict(truth[3], t0=100.0, t1=300.0, vis_iv=[])]
+    r4 = nacht_match(tv, [{"t": 170.0, "ev": "person"}], [])
+    assert r4["false_by"] == {"wc_torch": 1} and not r4["incident"]["detected"], r4
+    r5 = nacht_match(tv, [{"t": 250.0, "ev": "person"}], [])
+    assert r5["incident"]["detected"], r5                  # nobody seen at 250: the most important running event
+    r6 = nacht_match(tv, [{"t": 250.0, "ev": "tamper"}], [])
+    assert not r6["incident"]["detected"] and r6["false_by"] == {"wc_torch": 1}, r6   # sabotage: not the incident
+    # segments: a gap of more than 1.5 s splits
+    sg = nacht_segments([(1.0, ["person"]), (1.5, ["person", "animal"]), (5.0, ["person"])])
+    assert [(x["k"], x["t0"], x["t1"]) for x in sg] == [("person", 1.0, 1.5), ("animal", 1.5, 1.5), ("person", 5.0, 5.0)], sg
+    # only the owner, never in operator mode
+    assert nacht_may("admin", False) and not nacht_may("admin", True) and not nacht_may("family", False) and not nacht_may("kid", False)
+    rep, code = nacht_api({"do": "start"}, "admin", True)
+    assert code == 403 and not rep["ok"], rep
+    rep, code = nacht_api({"do": "auto", "on": True}, "friend", False)
+    assert code == 403, rep
+    rep, code = nacht_api({"do": "stop"}, "admin", True)
+    assert code == 403, rep
+    keep = (CFG.get("nacht_auto_on"), CFG.get("nacht_auto_hour"), CFG.get("lock_on"))
+    try:
+        CFG["lock_on"] = True
+        assert not nacht_state("admin")["owner"] and nacht_state("admin")["locked"]
+        CFG["lock_on"] = False
+        assert nacht_state("admin")["owner"] and not nacht_state("family")["owner"]
+        rep, code = nacht_api({"do": "auto", "hour": 2}, "admin", False)
+        assert code == 200 and CFG["nacht_auto_hour"] == 2
+    finally:
+        CFG["nacht_auto_on"], CFG["nacht_auto_hour"], CFG["lock_on"] = keep
+    o = nacht_opts({"from": "23:30", "to": "6", "busy": "x", "tempo": "echt", "scene": "camping;rm"})
+    assert o["from"] == "23:30" and o["to"] == "06:00" and o["busy"] == "normal" and o["tempo"] == "echt" and o["scene"] == "campingrm", o
+    assert nacht_hm("25:00", 7.0) == 7.0 and nacht_clock(7.5) == "07:30"
+    assert "mwNacht" in simhub_head() and "nt-page" in nacht_page()
+    assert "🧪" in nacht_push_text({"result": r}, "en") and "4.5" in nacht_push_text({"result": r}, "en")
+
+
+SELFTEST_EXTRA.append(("Night test run: matching, owner only, options (579b)", nacht_selftest))
+# ----------------------------------------------------------------------------
 # Translations: French, Italian, Romansh (Rumantsch Grischun). Key = the English text of the program.
 #   Missing texts: Romansh shows German, French / Italian show English. HELP_X = the manual (help page).
 # ----------------------------------------------------------------------------
@@ -75580,7 +76658,7 @@ App._refresh = _kr_tk_refresh
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 223                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 228                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -80204,32 +81282,32 @@ _HX_simkompakt = {
     'Sim compact': ('Sim-Kompakt', 'Sim compact', 'Sim compatto', 'Sim cumpact'),
     'On when connected': ('Ein, wenn verbunden', 'Actif si connecté', 'Attivo se collegato', 'Activ, sch’el è collià'),
     'Off': ('Aus', 'Désactivé', 'Spento', 'Deactivà'),
-    'sk-note': ('Mit verbundenem Simulator: oben das Simulator-Bild gross, die Kamera von MoveEye klein in seiner Ecke (antippen = '
-                'tauschen), darunter Kopf- und Rover-Stick am Rand, dazwischen die Kacheln des Simulators. Gilt nur für dieses Gerät.',
-                'Avec le simulateur connecté : en haut l’image du simulateur en grand, la caméra de MoveEye en petit dans son coin '
-                '(toucher = échanger), dessous le stick de la tête et celui du rover sur les bords, entre eux les tuiles du simulateur. '
+    'sk-note': ('Mit verbundenem Simulator: oben das Simulator-Bild gross, die Kamera von MoveEye daneben (schmaler Bildschirm: klein in '
+                'seiner Ecke; antippen = tauschen), darunter Kopf- und Rover-Stick am Rand, dazwischen die Kacheln des Simulators. Gilt nur für dieses Gerät.',
+                'Avec le simulateur connecté : en haut l’image du simulateur en grand, la caméra de MoveEye à côté (écran étroit : '
+                'en petit dans son coin ; toucher = échanger), dessous le stick de la tête et celui du rover sur les bords, entre eux les tuiles du simulateur. '
                 'Seulement pour cet appareil.',
-                'Con il simulatore collegato: in alto l’immagine del simulatore grande, la telecamera di MoveEye piccola nel suo angolo '
-                '(toccare = scambiare), sotto lo stick della testa e quello del rover ai bordi, in mezzo le piastrelle del simulatore. '
+                'Con il simulatore collegato: in alto l’immagine del simulatore grande, la telecamera di MoveEye accanto (schermo stretto: '
+                'piccola nel suo angolo; toccare = scambiare), sotto lo stick della testa e quello del rover ai bordi, in mezzo le piastrelle del simulatore. '
                 'Solo per questo apparecchio.',
-                'Cun il simulatur collià: sisum il maletg dal simulatur grond, la camera da MoveEye pitschna en ses chantun (tutgar = '
-                'barattar), sutvart il stick dal chau e quel dal rover a l’ur, tranter els las plattinas dal simulatur. Mo per quest apparat.'),
-    'sk-help': ('Sim-Kompakt: das kleine Bild in der Ecke antippen = die beiden Bilder tauschen (dieses Gerät merkt es sich). Das grosse '
+                'Cun il simulatur collià: sisum il maletg dal simulatur grond, la camera da MoveEye dasper (visur stretg: pitschna en ses '
+                'chantun; tutgar = barattar), sutvart il stick dal chau e quel dal rover a l’ur, tranter els las plattinas dal simulatur. Mo per quest apparat.'),
+    'sk-help': ('Sim-Kompakt: das kleine Bild daneben oder in der Ecke antippen = die beiden Bilder tauschen (dieses Gerät merkt es sich). Das grosse '
                 'Bild antippen = gross, nochmals = zurück; das grosse Simulator-Bild ist das Simulator-Fenster '
                 '(Maus und ✋ Finger steuern den Simulator, ✕ = zurück). Linker Stick = Kopf von MoveEye, rechter Stick = Rover '
                 '(in einer Spielrunde nur, wenn das Spiel den Rover fährt). Die Kacheln = was im Simulator passiert; «… mehr» = alle '
                 'Einstellungen des Simulators. Ein / aus und Bildqualität unter «◫ Ansicht».',
-                'Sim compact : toucher la petite image dans le coin = échanger les deux images (cet appareil s’en souvient). Toucher la '
+                'Sim compact : toucher la petite image à côté ou dans le coin = échanger les deux images (cet appareil s’en souvient). Toucher la '
                 'grande image = en grand, encore une fois = retour ; la grande image du simulateur est la fenêtre du '
                 'simulateur (souris et doigt ✋ pilotent le simulateur, ✕ = retour). Stick gauche = tête de MoveEye, stick droit = '
                 'rover (pendant une partie seulement si le jeu utilise le rover). Les tuiles = ce qui se passe dans le simulateur ; '
                 '« … plus » = tous les réglages du simulateur. Activer / désactiver et qualité d’image sous « ◫ Affichage ».',
-                'Sim compatto: toccare l’immagine piccola nell’angolo = scambiare le due immagini (questo apparecchio lo ricorda). Toccare '
+                'Sim compatto: toccare l’immagine piccola accanto o nell’angolo = scambiare le due immagini (questo apparecchio lo ricorda). Toccare '
                 'l’immagine grande = grande, di nuovo = indietro; l’immagine grande del simulatore è la finestra del '
                 'simulatore (mouse e dito ✋ comandano il simulatore, ✕ = indietro). Stick sinistro = testa di MoveEye, stick destro = '
                 'rover (durante una partita solo se il gioco usa il rover). Le piastrelle = ciò che succede nel simulatore; «… altro» = '
                 'tutte le impostazioni del simulatore. Attivare / disattivare e qualità dell’immagine sotto «◫ Vista».',
-                'Sim cumpact: tutgar il pitschen maletg en il chantun = barattar ils dus maletgs (quest apparat sa regorda). Tutgar il '
+                'Sim cumpact: tutgar il pitschen maletg dasper u en il chantun = barattar ils dus maletgs (quest apparat sa regorda). Tutgar il '
                 'grond maletg = grond, anc ina giada = enavos; il grond maletg dal simulatur è la fanestra dal '
                 'simulatur (mieur e det ✋ commondan il simulatur, ✕ = enavos). Stick sanester = chau da MoveEye, stick dretg = rover '
                 '(durant in gieu mo sch’il gieu dovra il rover). Las plattinas = quai che capita en il simulatur; «… dapli» = tut ils '
@@ -81658,6 +82736,191 @@ def led_selftest():
 
 
 SELFTEST_EXTRA.append(("Status LED and buttons: priority, night, heartbeat, debounce, PCA9685 5-7, simulator (163a / 599c)", led_selftest))
+# ----------------------------------------------------------------------------
+# Paket «Nacht-Testlauf» (579b). Like the tracking parcours (599a): the window shows the short form, the full report with
+# pictures, curves and the comparison of the last 10 runs is the page /nacht (browser). The window on the Pi counts as the
+# owner - but in operator mode (390) only the report is shown (no start / stop), like on the page.
+# ----------------------------------------------------------------------------
+_tk_sim_head_nacht_base = _tk_sim_head
+
+
+def _tk_nacht_txt():
+    out = []
+    if NACHT["busy"]:
+        out.append("⏳ " + tr("Night test run is running") + " · " + str(NACHT.get("step") or ""))
+    runs = nacht_runs()
+    if runs:
+        r = runs[-1]
+        out.append("🌙 " + tr("Last run") + " (" + str(r.get("t")) + ", MoveEye " + str(r.get("mw_version")) + "): " + nacht_push_text(r))
+    if NACHT.get("err"):
+        out.append("⚠ " + tr_err(NACHT["err"]))
+    return "\n".join(out) or tr("whole night with truth")
+
+
+def _tk_sim_head(self, inner):
+    """+ 599d: a short card «Nacht-Testlauf» under the other cards of the tab Simulator"""
+    _tk_sim_head_nacht_base(self, inner)
+    card = self._panel(inner); card.pack(fill="x", pady=(0, 8))
+    tk.Label(card, text="🌙 " + tr("Night test run"), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10, "bold"), anchor="w").pack(fill="x")
+    ttk.Label(card, text=tr("nacht-note"), style="Mut.TLabel", wraplength=520, justify="left").pack(anchor="w", pady=(2, 4))
+    lab = ttk.Label(card, text=_tk_nacht_txt(), style="Mut.TLabel", wraplength=520, justify="left"); lab.pack(anchor="w", pady=(0, 6))
+    bf = tk.Frame(card, bg=C["panel"]); bf.pack(fill="x")
+
+    def start():
+        ok, err = nacht_start(None)
+        if not ok:
+            messagebox.showinfo(tr("Night test run"), tr_err(err), parent=card)
+        lab.config(text=_tk_nacht_txt())
+
+    def stop():
+        nacht_stop()
+        lab.config(text=_tk_nacht_txt())
+    if nacht_may("admin"):                                 # the same buttons and order as on the page: start / abort, then the report
+        self._fbtn(bf, "🌙 " + tr("Start night test run"), start, primary=True).pack(side="left", padx=(0, 6))
+        self._fbtn(bf, "⏹ " + tr("Abort the night test run"), stop).pack(side="left", padx=(0, 6))
+    else:
+        ttk.Label(bf, text="🔒 " + tr("Operator mode: only the owner can start or stop the night test run – the reports can be viewed."),
+                  style="Mut.TLabel", wraplength=360, justify="left").pack(side="left", padx=(0, 6))
+    self._fbtn(bf, "📄 " + tr("Open the report") + " (" + tr("browser") + ")", lambda: self._open_page("/nacht")).pack(side="left")
+
+    def loop():
+        try:
+            if not card.winfo_exists():
+                return
+            lab.config(text=_tk_nacht_txt())
+        except tk.TclError:
+            return
+        card.after(5000, loop)
+    card.after(5000, loop)
+
+
+setattr(App, "_tk_sim_head", _tk_sim_head)
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_nacht = {
+    'Night test run': ('Nacht-Testlauf', 'Test de nuit', 'Test notturno', 'Test da notg'),
+    'night test run': ('Nacht-Testlauf', 'test de nuit', 'test notturno', 'test da notg'),
+    'Night test run (simulation)': ('Nacht-Testlauf (Simulation)', 'Test de nuit (simulation)', 'Test notturno (simulazione)', 'Test da notg (simulaziun)'),
+    'Night test run: report': ('Nacht-Testlauf: Bericht', 'Test de nuit : rapport', 'Test notturno: rapporto', 'Test da notg: rapport'),
+    'whole night with truth': ('ganze Nacht mit Wahrheit', 'nuit entière avec la vérité', 'notte intera con la verità', 'notg entira cun la vardad'),
+    'Start night test run': ('Nacht-Testlauf starten', 'Lancer le test de nuit', 'Avvia il test notturno', 'Cumenzar il test da notg'),
+    'Abort the night test run': ('Nacht-Testlauf abbrechen', 'Interrompre le test de nuit', 'Interrompi il test notturno', 'Interrumper il test da notg'),
+    'Night test run is running': ('Nacht-Testlauf läuft', 'Le test de nuit est en cours', 'Il test notturno è in corso', 'Il test da notg è en funcziun'),
+    'as now': ('wie jetzt', 'comme maintenant', 'come ora', 'sco ussa'),
+    'Liveliness': ('Belebtheit', 'Animation', 'Movimento', 'Moviment'),
+    'calm': ('ruhig', 'calme', 'tranquillo', 'quiet'),
+    'normal (some going on)': ('normal', 'normal', 'normale', 'normal'),
+    'lots going on': ('viel los', 'très animé', 'molto movimento', 'blera activitad'),
+    'Tempo': ('Tempo', 'Vitesse', 'Velocità', 'Tempo'),
+    'real (1×)': ('echt (1×)', 'réel (1×)', 'reale (1×)', 'real (1×)'),
+    'fast (8 h in about 1 h)': ('schnell (8 Std. in etwa 1 Std.)', 'rapide (8 h en env. 1 h)', 'veloce (8 h in circa 1 h)', 'svelt (8 uras en var 1 ura)'),
+    'Start time': ('Beginn', 'Début', 'Inizio', 'Entschatta'),
+    'End time': ('Ende', 'Fin', 'Fine', 'Fin'),
+    'not detected': ('nicht erkannt', 'pas détecté', 'non rilevato', 'betg identifitgà'),
+    'Every night by itself': ('Jede Nacht von selbst', 'Chaque nuit automatiquement', 'Ogni notte da solo', 'Mintga notg sez'),
+    'nacht-note': ('Eine ganze Nacht im Simulator: WC-Gänge (manche mit Taschenlampe), Katze, Fuchs, Igel, ein spätes Auto, eine Stunde Regen, Wind, Morgennebel und genau ein echter Vorfall zu zufälliger Zeit. Der Simulator kennt die Wahrheit; MoveEye vergleicht seine Alarme damit. Nur in der Simulation: Schutz «Voll» während des Laufs, Handy, Sirene und Relais bleiben still (Test-Postfach) – danach alles wie vorher. Am Morgen kommt der Bericht als Push (🧪 Simulation).',
+                   'Une nuit entière dans le simulateur : passages aux WC (certains avec une lampe de poche), chat, renard, hérisson, une voiture tardive, une heure de pluie, du vent, du brouillard le matin et exactement un vrai incident à une heure au hasard. Le simulateur connaît la vérité ; MoveEye y compare ses alarmes. Seulement en simulation : protection «Voll» pendant le test, téléphone, sirène et relais restent muets (boîte de test) – ensuite tout comme avant. Le matin, le rapport arrive en push (🧪 simulation).',
+                   'Una notte intera nel simulatore: visite al WC (alcune con la torcia), gatto, volpe, riccio, un’auto tardiva, un’ora di pioggia, vento, nebbia al mattino ed esattamente un vero incidente a un’ora casuale. Il simulatore conosce la verità; MoveEye vi confronta i suoi allarmi. Solo in simulazione: protezione «Voll» durante il test, telefono, sirena e relè restano muti (casella di prova) – poi tutto come prima. Al mattino il rapporto arriva come push (🧪 simulazione).',
+                   'Ina notg entira en il simulatur: ir al WC (inqual cun glischina), giat, vulp, gieriun, in auto tard, in’ura plievgia, vent, tschajera la damaun ed exact in incident ver ad in’ura casuala. Il simulatur enconuscha la vardad; MoveEye cumpareglia ses alarms cun quella. Mo en la simulaziun: protecziun «Voll» durant il test, telefonin, sirena e relais restan quiets (chascha da test) – suenter tut sco avant. La damaun vegn il rapport sco push (🧪 simulaziun).'),
+    'Open the report': ('Bericht öffnen', 'Ouvrir le rapport', 'Apri il rapporto', 'Avrir il rapport'),
+    'No night test run yet.': ('Noch kein Nacht-Testlauf.', 'Encore aucun test de nuit.', 'Ancora nessun test notturno.', 'Anc nagin test da notg.'),
+    'Incident detected': ('Vorfall erkannt', 'Incident détecté', 'Incidente rilevato', 'Incident identifitgà'),
+    'after {s} s': ('nach {s} s', 'après {s} s', 'dopo {s} s', 'suenter {s} s'),
+    'Misses': ('Verpasst', 'Manqués', 'Mancati', 'Mancads'),
+    'Alarms in all': ('Alarme insgesamt', 'Alarmes au total', 'Allarmi in totale', 'Alarms en tut'),
+    'repeats': ('Wiederholungen', 'répétitions', 'ripetizioni', 'repetiziuns'),
+    'Incident': ('Vorfall', 'Incident', 'Incidente', 'Incident'),
+    'Incident visible': ('Vorfall sichtbar', 'Incident visible', 'Incidente visibile', 'Incident visibel'),
+    'visible for the camera after {s} s': ('für die Kamera sichtbar nach {s} s', 'visible pour la caméra après {s} s', 'visibile per la telecamera dopo {s} s', 'visibel per la camera suenter {s} s'),
+    '{s} s visible': ('{s} s sichtbar', '{s} s visible', '{s} s visibile', '{s} s visibel'),
+    'never visible for the camera': ('für die Kamera nie sichtbar', 'jamais visible pour la caméra', 'mai visibile per la telecamera', 'mai visibel per la camera'),
+    'first detection after {s} s': ('erste Erkennung nach {s} s', 'première détection après {s} s', 'primo rilevamento dopo {s} s', 'emprima identificaziun suenter {s} s'),
+    'no detection': ('keine Erkennung', 'aucune détection', 'nessun rilevamento', 'nagina identificaziun'),
+    'first alarm after {s} s': ('erster Alarm nach {s} s', 'première alarme après {s} s', 'primo allarme dopo {s} s', 'emprim alarm suenter {s} s'),
+    'no alarm': ('kein Alarm', 'aucune alarme', 'nessun allarme', 'nagin alarm'),
+    'False alarms by cause': ('Fehlalarme nach Ursache', 'Fausses alarmes par cause', 'Falsi allarmi per causa', 'Fals alarms tenor la chaschun'),
+    'none – fine': ('keine – gut', 'aucune – bien', 'nessuno – bene', 'nagins – bun'),
+    'Misses (visible, nothing detected)': ('Verpasst (sichtbar, nichts erkannt)', 'Manqués (visible, rien détecté)', 'Mancati (visibile, niente rilevato)', 'Mancads (visibel, nagut identifitgà)'),
+    'Pi temperature': ('Pi-Temperatur', 'Température du Pi', 'Temperatura del Pi', 'Temperatura dal Pi'),
+    'Pictures per second': ('Bilder pro Sekunde', 'Images par seconde', 'Immagini al secondo', 'Maletgs per secunda'),
+    'Key moments': ('Wichtige Momente', 'Moments clés', 'Momenti chiave', 'Muments impurtants'),
+    'The night (truth of the simulator)': ('Die Nacht (Wahrheit des Simulators)', 'La nuit (vérité du simulateur)', 'La notte (verità del simulatore)', 'La notg (vardad dal simulatur)'),
+    'Event': ('Ereignis', 'Événement', 'Evento', 'Eveniment'),
+    'visible (s)': ('sichtbar (s)', 'visible (s)', 'visibile (s)', 'visibel (s)'),
+    'Alarms': ('Alarme', 'Alarmes', 'Allarmi', 'Alarms'),
+    'Export (JSON)': ('Export (JSON)', 'Export (JSON)', 'Esporta (JSON)', 'Export (JSON)'),
+    'Comparison: last 10 runs': ('Vergleich: letzte 10 Läufe', 'Comparaison : 10 derniers tests', 'Confronto: ultimi 10 test', 'Cumparegliaziun: ultims 10 tests'),
+    'Person alarm': ('Personen-Alarm', 'Alarme personne', 'Allarme persona', 'Alarm persuna'),
+    'Warmth alarm': ('Wärme-Alarm', 'Alarme chaleur', 'Allarme calore', 'Alarm chalur'),
+    'Pre-alarm': ('Voralarm', 'Pré-alarme', 'Preallarme', 'Prealarm'),
+    'Noise alarm': ('Lärm-Alarm', 'Alarme bruit', 'Allarme rumore', 'Alarm canera'),
+    'Sabotage alarm': ('Sabotage-Alarm', 'Alarme sabotage', 'Allarme sabotaggio', 'Alarm sabotascha'),
+    'Operator mode: only the owner can start or stop the night test run – the reports can be viewed.': (
+        'Bedienermodus: nur der Besitzer kann den Nacht-Testlauf starten oder stoppen – die Berichte kannst du ansehen.',
+        'Mode opérateur : seul le propriétaire peut lancer ou arrêter le test de nuit – les rapports sont consultables.',
+        'Modalità operatore: solo il proprietario può avviare o fermare il test notturno – i rapporti si possono vedere.',
+        'Modus d’operatur: mo il possessur po cumenzar u fermar il test da notg – ils rapports pos ti guardar.'),
+    'Only the owner can start or stop the night test run – the reports can be viewed.': (
+        'Nur der Besitzer kann den Nacht-Testlauf starten oder stoppen – die Berichte kannst du ansehen.',
+        'Seul le propriétaire peut lancer ou arrêter le test de nuit – les rapports sont consultables.',
+        'Solo il proprietario può avviare o fermare il test notturno – i rapporti si possono vedere.',
+        'Mo il possessur po cumenzar u fermar il test da notg – ils rapports pos ti guardar.'),
+    'only the owner (not in operator mode)': ('nur der Besitzer (nicht im Bedienermodus)', 'seulement le propriétaire (pas en mode opérateur)',
+                                              'solo il proprietario (non in modalità operatore)', 'mo il possessur (betg en il modus d’operatur)'),
+    'a night test run is already running': ('es läuft schon ein Nacht-Testlauf', 'un test de nuit est déjà en cours', 'un test notturno è già in corso', 'in test da notg è gia en funcziun'),
+    'the simulator does not know the night test run - update the simulator': ('der Simulator kennt den Nacht-Testlauf nicht – Simulator aktualisieren',
+        'le simulateur ne connaît pas le test de nuit – mets à jour le simulateur', 'il simulatore non conosce il test notturno – aggiorna il simulatore',
+        'il simulatur n’enconuscha betg il test da notg – actualisescha il simulatur'),
+    'the simulator did not start the night test run': ('der Simulator hat den Nacht-Testlauf nicht gestartet', 'le simulateur n’a pas lancé le test de nuit',
+                                                       'il simulatore non ha avviato il test notturno', 'il simulatur n’ha betg cumenzà il test da notg'),
+    'detected after {s} s': ('erkannt nach {s} s', 'détecté après {s} s', 'rilevato dopo {s} s', 'identifitgà suenter {s} s'),
+    'NOT detected': ('NICHT erkannt', 'PAS détecté', 'NON rilevato', 'BETG identifitgà'),
+    'Incident: {inc} · false alarms: {fa}{by} · misses: {mi}': ('Vorfall: {inc} · Fehlalarme: {fa}{by} · verpasst: {mi}',
+        'Incident : {inc} · fausses alarmes : {fa}{by} · manqués : {mi}', 'Incidente: {inc} · falsi allarmi: {fa}{by} · mancati: {mi}',
+        'Incident: {inc} · fals alarms: {fa}{by} · mancads: {mi}'),
+    'Toilet trip (own people)': ('WC-Gang (eigene Leute)', 'Passage aux WC (les siens)', 'Visita al WC (i propri)', 'Ir al WC (atgna glieud)'),
+    'Toilet trip with torch': ('WC-Gang mit Taschenlampe', 'Passage aux WC avec lampe de poche', 'Visita al WC con torcia', 'Ir al WC cun glischina'),
+    'Cat': ('Katze', 'Chat', 'Gatto', 'Giat'),
+    'Fox': ('Fuchs', 'Renard', 'Volpe', 'Vulp'),
+    'Hedgehog': ('Igel', 'Hérisson', 'Riccio', 'Gieriun'),
+    'Headlights (late car)': ('Scheinwerfer (spätes Auto)', 'Phares (voiture tardive)', 'Fari (auto tardiva)', 'Reflectur (auto tard)'),
+    'Rain': ('Regen', 'Pluie', 'Pioggia', 'Plievgia'),
+    'Wind': ('Wind', 'Vent', 'Vento', 'Vent'),
+    'Fog': ('Nebel', 'Brouillard', 'Nebbia', 'Tschajera'),
+    'nothing in the plan (unknown)': ('nichts im Ablauf (unbekannt)', 'rien dans le plan (inconnu)', 'niente nel piano (sconosciuto)', 'nagut en il plan (nunenconuschent)'),
+    'Somebody sneaks to the tent': ('Jemand schleicht zum Zelt', 'Quelqu’un se faufile vers la tente', 'Qualcuno si avvicina furtivo alla tenda', 'Insatgi sa stgaffa a la tenda'),
+    'Somebody sneaks to the bike': ('Jemand schleicht zum Velo', 'Quelqu’un se faufile vers le vélo', 'Qualcuno si avvicina furtivo alla bici', 'Insatgi sa stgaffa al velo'),
+    'Somebody sneaks to the caravan / car': ('Jemand schleicht zum Wohnwagen / Auto', 'Quelqu’un se faufile vers la caravane / la voiture',
+                                             'Qualcuno si avvicina furtivo alla roulotte / all’auto', 'Insatgi sa stgaffa a la rulotta / a l’auto'),
+    'SIMULATION – alarms are not real': ('SIMULATION – Alarme sind nicht echt', 'SIMULATION – alarmes non réelles', 'SIMULAZIONE – allarmi non reali', 'SIMULAZIUN – alarms betg reals'),
+}
+for _k, _v in _HX_nacht.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# the manual (HELP_PAGE of 540): one paragraph in the section «Erkennung», German and English
+for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
+                "<p><b>🌙 Nacht-Testlauf (Simulator):</b> In der Simulator-Zentrale (Gruppe «Testen», Kachel 🌙) spielt der Simulator eine ganze "
+                "Nacht: WC-Gänge (manche mit Taschenlampe), Katze, Fuchs, Igel, ein spätes Auto, eine Stunde Regen, Wind, Morgennebel und "
+                "<b>genau ein echter Vorfall</b> (jemand schleicht zu Zelt, Velo oder Wohnwagen). Wählbar: Szene, Belebtheit (ruhig / normal / "
+                "viel los), Tempo (echt oder schnell: 8 Std. in etwa 1 Std.), Start und Ende (20:00–07:00), auf Wunsch jede Nacht von selbst. "
+                "Der Simulator schreibt jedes Ereignis mit Zeit und Ort auf (Wahrheit), MoveEye vergleicht seine Alarme damit: Vorfall erkannt "
+                "ja / nein und nach wie vielen Sekunden, Fehlalarme nach Ursache, Verpasstes, Akku, Pi-Temperatur, Bilder pro Sekunde und kleine "
+                "Bilder der wichtigen Momente. Der Bericht kommt am Morgen als Push (🧪) und steht unter <a href=\"/nacht\">/nacht</a> (die "
+                "letzten 10 Läufe zum Vergleichen, JSON-Export). Nur in der Simulation: Schutz «Voll» während des Laufs, Handy, Sirene und Relais "
+                "bleiben still; danach ist alles wie vorher. Starten und stoppen darf nur der Besitzer – im Bedienermodus nur Berichte ansehen.</p>"),
+               ('<section id="detect" data-icon="🎯"><h2>Detection</h2>',
+                "<p><b>🌙 Night test run (simulator):</b> in the Simulator centre (group «Testen», tile 🌙) the simulator plays a whole night: "
+                "toilet trips (some with a torch), cat, fox, hedgehog, a late car, an hour of rain, wind, fog in the morning and <b>exactly one "
+                "real incident</b> (somebody sneaks to the tent, the bike or the caravan). Choose the scene, the liveliness (calm / normal / lots "
+                "going on), the tempo (real or fast: 8 h in about 1 h), start and end (20:00–07:00), and if you like every night by itself. The "
+                "simulator writes down every event with time and place (truth), MoveEye compares its alarms with it: incident detected yes / no "
+                "and after how many seconds, false alarms by cause, misses, battery, Pi temperature, pictures per second and small pictures of the "
+                "key moments. The report comes in the morning as a push (🧪) and is under <a href=\"/nacht\">/nacht</a> (the last 10 runs to "
+                "compare, JSON export). Simulation only: protection «Voll» during the run, phone, siren and relays stay quiet; afterwards "
+                "everything is as before. Only the owner may start and stop it – in operator mode only the reports.</p>")):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 TRX['rm'].update({
     '(or the address from the push message).': "(u l'adressa da l'avis push).",
     '+ Add relay': '+ Agiuntar in relais',
@@ -91839,6 +93102,73 @@ for _g in TK_GROUPS:
         _g[2].insert(_g[2].index("Lights") + 1 if "Lights" in _g[2] else len(_g[2]), "Status LED")
 MENU_TITLES.setdefault("Status LED", "Status LED & buttons")
 led_web_de_refresh()                                      # the German texts of the web panel (599c), now that they exist
+_HX_DISC = {
+    'Discoveries': ('Entdeckungen', 'Découvertes', 'Scoperte', 'Scuvertas'),
+    '{f} of {n} discovered': ('{f} von {n} entdeckt', '{f} sur {n} découverts', '{f} di {n} scoperti', '{f} da {n} scuvrids'),
+    'Photo for the discovery book': ('Foto für Entdeckungsbuch', 'Photo pour le carnet de découvertes', 'Foto per il diario delle scoperte', 'Foto per il cudesch da scuvertas'),
+    'Open in the simulator': ('Im Simulator öffnen', 'Ouvrir dans le simulateur', 'Apri nel simulatore', 'Avrir en il simulatur'),
+    'Blinki hint': ('Blinki-Hinweis', 'Indice de Blinki', 'Suggerimento di Blinki', 'Indicaziun da Blinki'),
+    'a place': ('ein Ort', 'un lieu', 'un luogo', 'in lieu'),
+    'a scene': ('eine Szene', 'une scène', 'una scena', 'ina scena'),
+    'an animal': ('ein Tier', 'un animal', 'un animale', 'in animal'),
+    'a person': ('ein Mensch', 'une personne', 'una persona', 'ina persuna'),
+    'Found!': ('Entdeckt!', 'Découvert !', 'Scoperto!', 'Scuvrì!'),
+    'Something special is in the picture – take the photo now!': ('Etwas Besonderes ist im Bild – jetzt fotografieren!',
+        'Quelque chose de spécial est dans l’image – prends la photo maintenant !', 'C’è qualcosa di speciale nell’immagine – scatta la foto ora!',
+        'Insatge spezial è en il maletg – fa ussa la foto!'),
+    'Come close enough in the 3D view to discover places, animals and funny scenes. 📷 = take a photo with MoveEye’s camera: aim the head, then «Photo for the discovery book». 🌙 🌧 🌅 = only at night, in the rain, in the morning.': ('Wer in der 3D-Ansicht nahe genug kommt, entdeckt Orte, Tiere und lustige Szenen. 📷 = mit MoveEyes Kamera fotografieren: Kopf hinrichten, dann «Foto für Entdeckungsbuch». 🌙 🌧 🌅 = nur nachts, bei Regen, am Morgen.',
+        'En s’approchant assez dans la vue 3D, on découvre des lieux, des animaux et des scènes drôles. 📷 = photographier avec la caméra de MoveEye : orienter la tête, puis « Photo pour le carnet de découvertes ». 🌙 🌧 🌅 = seulement la nuit, sous la pluie, le matin.',
+        'Avvicinandosi abbastanza nella vista 3D si scoprono luoghi, animali e scene buffe. 📷 = fotografare con la camera di MoveEye: puntare la testa, poi «Foto per il diario delle scoperte». 🌙 🌧 🌅 = solo di notte, con la pioggia, al mattino.',
+        'Tgi che vegn avunda datiers en la vista 3D, scuvra lieus, animals e scenas legras. 📷 = fotografar cun la camera da MoveEye: drizzar il chau, lura «Foto per il cudesch da scuvertas». 🌙 🌧 🌅 = mo la notg, cun plievgia, la damaun.'),
+    'nothing special in the picture of the camera': ('nichts Besonderes im Bild der Kamera', 'rien de spécial dans l’image de la caméra',
+        'niente di speciale nell’immagine della camera', 'nagut spezial en il maletg da la camera'),
+    'nothing more to find here right now': ('gerade gibt es hier nichts mehr zu finden', 'plus rien à trouver ici pour l’instant',
+        'per ora qui non c’è più niente da trovare', 'per il mument na datti qua nagut pli da chattar'),
+}
+for _k, _v in _HX_DISC.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+# Ohne den Schalter: kein Download-Link, keine Knöpfe «Simulator auf dem Pi installieren / hier starten» (Web 470, Fenster 570).
+# Der Code bleibt; /sim/simulator.zip bleibt erreichbar (bestehende Basis-Simulatoren holen dort ihre Updates); eine
+# bestehende Installation auf dem Pi bleibt unberührt (nichts wird gelöscht), ein laufender lässt sich weiter stoppen.
+_HX_BASIS = {
+    'Show the basic simulator (MoveEye Sim · Basis, the old Python simulator)':
+        ('Basis-Simulator anzeigen (MoveEye Sim · Basis, der alte Python-Simulator)',
+         'Afficher le simulateur de base (MoveEye Sim · Basis, l’ancien simulateur Python)',
+         'Mostra il simulatore di base (MoveEye Sim · Basis, il vecchio simulatore Python)',
+         'Mussar il simulatur da basa (MoveEye Sim · Basis, il vegl simulatur Python)'),
+    'Shows the download of the old Python simulator and the buttons to install and start it on the Pi (page Simulator → Programs and downloads, window → Simulator). An installation on the Pi stays as it is, also when this is off.':
+        ('Zeigt den Download des alten Python-Simulators und die Knöpfe zum Installieren und Starten auf dem Pi (Seite Simulator → Programme und Downloads, Fenster → Simulator). Eine Installation auf dem Pi bleibt, wie sie ist, auch wenn dies aus ist.',
+         'Affiche le téléchargement de l’ancien simulateur Python et les boutons pour l’installer et le démarrer sur le Pi (page Simulateur → Programmes et téléchargements, fenêtre → Simulateur). Une installation sur le Pi reste telle quelle, même si c’est désactivé.',
+         'Mostra il download del vecchio simulatore Python e i pulsanti per installarlo e avviarlo sul Pi (pagina Simulatore → Programmi e download, finestra → Simulatore). Un’installazione sul Pi resta com’è, anche se questo è spento.',
+         'Mussa la telechargiada dal vegl simulatur Python ed ils buttuns per l’installar e aviar sin il Pi (pagina Simulatur → Programs e telechargiadas, fanestra → Simulatur). Ina installaziun sin il Pi resta sco ch’ella è, er sche quai è stizzà.'),
+    'Switch on «Show the basic simulator» first (Simulator, Expert)':
+        ('Zuerst «Basis-Simulator anzeigen» einschalten (Simulator, Experte)',
+         'Activez d’abord «Afficher le simulateur de base» (Simulateur, Expert)',
+         'Prima attiva «Mostra il simulatore di base» (Simulatore, Esperto)',
+         'Avant enconuschent «Mussar il simulatur da basa» (Simulatur, Expert)'),
+    'Off: MoveEye Sim · 3D is the simulator.': ('Aus: MoveEye Sim · 3D ist der Simulator.', 'Désactivé : MoveEye Sim · 3D est le simulateur.',
+                                                'Spento: MoveEye Sim · 3D è il simulatore.', 'Stizzà: MoveEye Sim · 3D è il simulatur.'),
+}
+for _k, _v in _HX_BASIS.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+SET_HELP["sim_basis_show"] = ("Shows the download of the old Python simulator and the buttons to install and start it on the Pi (page Simulator → "
+                              "Programs and downloads, window → Simulator). An installation on the Pi stays as it is, also when this is off.",
+                              "Off: MoveEye Sim · 3D is the simulator.")
+
+
+_sim_status_558 = sim_status
+
+
+# wraps: sim_status
+def sim_status():                                         # + 639h: show «MoveEye Sim · Basis» (download, install / start on the Pi)?
+    r = _sim_status_558()
+    r["basis_show"] = bool(CFG.get("sim_basis_show"))
+    return r
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

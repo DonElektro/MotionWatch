@@ -149,12 +149,17 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `531a_web_push_karten.py` | Web: «Push-Nachrichten» als Karten (Kopf · Wohin · Was · Wann · Erweitert), SMS und Nachrichtentexte hinein, Alarmton in die Glocke | 268 |
 | `571a_fenster_push.py` | Fenster: «Push-Nachrichten» gleich aufgebaut wie im Web (Kanal-Karten, Stufen, Ruhezeiten, Erweitert) | 453 |
 | `579a_push_logik.py` | Push-Logik: Kanäle (Hauptkanal ntfy/Telegram/Webhook), Stufen Nur Personen / + Tiere / Alles, Ruhezeiten (Simulator-Uhr), Bilder mit/klein/ohne, Übernahme alter Einstellungen, /api/push, Selbsttest | 577 |
+| `579b_nacht_testlauf.py` | Nacht-Testlauf mit dem 3D-Simulator (Steuerbefehl `nacht`, nachtlauf.gd): Optionen, Schutz «Voll» nur in der Simulation (danach zurück, auch nach Neustart), Test-Postfach erzwungen, Relais aus; Alarme (Wrapper um Notifier.person / prealarm), Erkennungen, Akku / Pi-Temperatur / Bilder/s, Bilder; Abgleich `nacht_match` (Zeitfenster + Art, Sichtbarkeit) → Vorfall erkannt + Sekunden, Fehlalarme nach Ursache, Verpasstes; Bericht als Push (🧪), Verlauf der letzten 10 Läufe, JSON-Export; nur Besitzer (nicht im Bedienermodus); Zeitplan; Kachel 🌙 (139), Seite /nacht, /api/nacht; eine Sperre (147); Selbsttest | 900 |
+| `599d_fenster_nacht.py` | Fenster: Karte «Nacht-Testlauf» im Reiter Simulator (Stand, letzter Bericht, Start / Abbrechen nur Besitzer, Bericht im Browser) | 60 |
+| `599e_uebersetzungen_nacht.py` | Übersetzungen (DE/FR/IT/RM) und Anleitungs-Absatz (Erkennung, DE/EN) zum Nacht-Testlauf | 120 |
 | `639a_uebersetzungen_push.py` | Übersetzungen und «?»-Texte der Push-Karten | 205 |
 | `639b_uebersetzungen_menu.py` | Übersetzungen der Menü-Struktur 2: kurze Beschriftungen (die lange im «?»), neue Gruppen | 401 |
 | `639c_menu_struktur.py` | Menü-Struktur 2: Gruppen Web = Fenster, Entwickler-Gruppe, Einfach mit «Feineinstellungen», Abschreckungs-Tabelle | 339 |
 | `639d_angleichen.py` | Angleichen MoveEye ↔ Simulator: Entwickler-Schalter an den Simulator (dev_area), Fenster «Strom» und Teil «System» (Ausschalten / Neustart / Pause) | 75 |
 | `639e_uebersetzungen_angl.py` | Übersetzungen zu 639d (Störungen-Link, Foto des Platzes) | 13 |
 | `639f_uebersetzungen_led.py` | Übersetzungen der Status-LED und Tasten (163a / 599c), Platz im Fenster (Gruppe «Licht & Ton») | 136 |
+| `639h_basis_simulator.py` | «MoveEye Sim · Basis» (alter Python-Simulator) nur mit Schalter «Basis-Simulator anzeigen» (Simulator, Experte, Standard aus): Download und Pi-Knöpfe (auch /api/sim gesperrt), Übersetzungen | 41 |
+| `639g_uebersetzungen_entdecken.py` | Übersetzungen der Kachel «Entdeckungen» (Entdeckungsbuch des Simulators, 139) | 29 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |

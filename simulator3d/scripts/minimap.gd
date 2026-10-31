@@ -24,8 +24,8 @@ func _ready() -> void:
 
 
 func _apply_size() -> void:
-	size = Vector2(size_px, size_px)
-	custom_minimum_size = size
+	custom_minimum_size = Vector2(size_px, size_px)     # first: a smaller size would be held by the old minimum
+	size = custom_minimum_size
 
 
 func _process(dt: float) -> void:
@@ -180,16 +180,17 @@ func _draw() -> void:
 			break
 	draw_line(Vector2(8, s - 10), Vector2(8 + bar * k, s - 10), Color(1, 1, 1, 0.9), 2.0)
 	draw_string(ThemeDB.fallback_font, Vector2(8, s - 14), "%d m" % int(bar), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.9))
-	for j in range(3):
-		var o2 := 4.0 + j * 4.0
-		draw_line(Vector2(s - o2, s - 2), Vector2(s - 2, s - o2), Color(1, 1, 1, 0.7), 1.0)
+	if not has_meta("fenster"):                     # in a window frame (fenster.gd) the frame draws the corner
+		for j in range(3):
+			var o2 := 4.0 + j * 4.0
+			draw_line(Vector2(s - o2, s - 2), Vector2(s - 2, s - o2), Color(1, 1, 1, 0.7), 1.0)
 
 
 func _gui_input(ev: InputEvent) -> void:
 	if ev is InputEventMouseButton:
 		if ev.button_index == MOUSE_BUTTON_LEFT:
 			if ev.pressed:
-				if ev.position.x > size_px - 18 and ev.position.y > size_px - 18:
+				if ev.position.x > size_px - 18 and ev.position.y > size_px - 18 and not has_meta("fenster"):   # framed: the corner of the frame
 					resizing = true
 					res_from = ev.global_position
 					res_size = size_px

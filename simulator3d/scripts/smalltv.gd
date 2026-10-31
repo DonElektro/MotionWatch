@@ -265,12 +265,13 @@ func _process(_dt: float) -> void:
 	tile.visible = show and uploads + files.size() > 0 and main.ui_root != null
 	if not tile.visible:
 		return
-	var y := 92.0
-	if main.minimap != null and main.minimap.visible:
-		y = main.minimap.position.y + main.minimap.size.y + 8.0
-	if main.liveview != null and main.liveview.visible:
-		y = main.liveview.position.y + main.liveview.size.y + 8.0
-	tile.position = Vector2(14, y)
+	if not tile.has_meta("fenster"):                   # in a window frame (fenster.gd) the frame places it
+		var y := 92.0
+		if main.minimap != null and main.minimap.visible:
+			y = main.minimap.position.y + main.minimap.size.y + 8.0
+		if main.liveview != null and main.liveview.visible:
+			y = main.liveview.position.y + main.liveview.size.y + 8.0
+		tile.position = Vector2(14, y)
 	var age := int(main.now() - last_t) if last_t > 0.0 else -1
 	_sub.text = "%d Bilder · Hell %d %%%s%s" % [uploads, brt, (" · vor %d s" % age) if age >= 0 and age < 600 else "", " · Macken" if quirks else ""]
 

@@ -128,8 +128,8 @@ func _process(dt: float) -> void:
 			var feet := _ground(cam, Vector2(float(bx[0]) + float(bx[2]) / 2.0, float(bx[1]) + float(bx[3])) * vs)
 			var best = null
 			var bd := 3.0
-			for v in main.visitors.get_children():
-				if not (v is Node3D) or used.has(v):
+			for v in main.visitors.get_children() + get_tree().get_nodes_in_group("erleben_fig"):   # + the figures of the Erlebniswelt (erlebniswelt.gd)
+				if not (v is Node3D) or used.has(v) or not v.is_visible_in_tree():
 					continue
 				var d: float = Vector2(v.global_position.x - feet.x, v.global_position.z - feet.z).length()
 				if d < bd:

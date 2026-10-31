@@ -362,6 +362,10 @@ static func _draw_group_icon(d: Control, kind: String) -> void:
 			d.draw_line(c + Vector2(-4, -2), c + Vector2(-4, 2), col, w, true)
 			d.draw_circle(c + Vector2(3, -1), 1.3, col)
 			d.draw_circle(c + Vector2(6, 1.5), 1.3, col)
+		"book":                                       # open book (Entdeckungsbuch, like 📖 of MoveEye; shape of symbole.gd «book»)
+			d.draw_polyline(P.call([Vector2(0, -5), Vector2(-4, -6.5), Vector2(-8, -6), Vector2(-8, 6), Vector2(-4, 5.5), Vector2(0, 7),
+					Vector2(4, 5.5), Vector2(8, 6), Vector2(8, -6), Vector2(4, -6.5), Vector2(0, -5)]), col, w, true)
+			d.draw_line(c + Vector2(0, -5), c + Vector2(0, 7), col, w, true)
 		"target":
 			d.draw_arc(c, 7.5, 0, TAU, 24, col, w, true)
 			d.draw_arc(c, 3.5, 0, TAU, 16, col, w, true)
