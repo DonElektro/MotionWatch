@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.51** · passende MoveEye-Version (früher Motion Watch) **2.98.82**
+Stand: 31.10.2026 · Simulator-Version **3D-4.52** · passende MoveEye-Version (früher Motion Watch) **2.98.83**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.52 (MoveEye 2.98.83): PIR AS312, Mikrofon und Umgebungsgeräusche (`pir.gd`, `mikrofon.gd`)
+
+- `pir.gd` (AS312: Fächer, Reichweite nach Temperatur, Fehlauslösung), `mikrofon.gd` + `mikrofon_*.gd` (Pegel, Umgebungsgeräusche),
+  `simint.gd`; Feld `mic` (schnittstelle.json). MoveEye 558p (Mithören im Simulator), 250/350/530/550/570.
+  `mikrofon._lite()` = `Quality.lite()`.
 
 ## NEU in 3D-4.51 (MoveEye 2.98.82): Wetter physikalisch (`wetter.gd`, `linse.gd`)
 

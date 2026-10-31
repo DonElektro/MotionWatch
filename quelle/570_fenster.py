@@ -778,7 +778,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.82")
+        self.root.title("MoveEye 2.98.83")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1145,7 +1145,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.82 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.83 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -3216,10 +3216,10 @@ class App:
 
     def _update_audio(self):
         a = STATE.get("audio") or {}
-        on = a.get("level") is not None and a.get("status") == "listening"
+        on = a.get("level") is not None and a.get("status") in ("listening", "simulated")     # real-pir-ton: the simulator's microphone too
         st = a.get("status") or ""
         txt = (tr("no microphone selected") if not a.get("mic") else
-               (f"{tr('microphone on')} · {a['level']:.0f} dB" + (f" · {tr('background')} {a['bg']:.0f} dB · {tr('noise alarm from')} {a['thr']:.0f} dB"
+               (f"{'🧪 ' + tr('simulated') if st == 'simulated' else tr('microphone on')} · {a['level']:.0f} dB" + (f" · {tr('background')} {a['bg']:.0f} dB · {tr('noise alarm from')} {a['thr']:.0f} dB"
                                                                 if a.get("bg") is not None else "") if on else
                 ("⚠ " + st[7:] if st.startswith("error: ") else tr("starting …"))))
         self._status("Microphone", txt)

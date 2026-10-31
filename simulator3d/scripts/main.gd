@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.51"
+const VERSION := "3D-4.52"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -95,6 +95,8 @@ var surprise_on := false             # 3D-3.75: «Überraschungsnacht» (surpris
 var power_off := false               # 3D-3.75: power cut - the lamps of the place are out
 var surprise
 var simint                            # simint.gd (30.10.2026): loudspeaker of MoveEye, servo faults, thermal model, warm hand
+var pir                               # pir.gd (real-pir-ton): the AS312 PIR at the front of the housing
+var mikro                             # mikrofon.gd (real-pir-ton): the USB microphone like real + the sounds of the surroundings
 var simwerte                          # Simulator-Werte (30.10.2026): battery, Pi heat, network test, clock (power.gd)
 var visitlog                          # 3D-3.80: visitlog.gd
 var night_weather := false            # 3D-3.74: the weather runs through the night (dusk, showers, dew, morning fog)
@@ -304,7 +306,7 @@ var sound_on := true                  # the sounds of the world go to the microp
 var sounds: Array = []                # [dB at 1 m, position, until]
 var sound_ev: Array = []              # 3D-3.98: short sounds for MoveEye [{id, kind: clap | sneeze | voice | shout, n, db, t}]
 var sound_ev_id := 0
-const SOUND_EV_DB := {"clap": -4.0, "sneeze": -10.0, "voice": -18.0, "shout": -4.0}   # loudness at 1 m
+const SOUND_EV_DB := {"clap": -13.0, "sneeze": -16.0, "voice": -36.0, "shout": -12.0}   # loudness at 1 m (dBFS ≈ SPL − 100; real-pir-ton: was -4 / -10 / -18 / -4)
 var mw_det := {}                      # what MoveEye detects right now (from 2.93.3: persons, present, noise)
 var mw_det_t := 0.0
 var lens_mats: Array = []
@@ -568,6 +570,12 @@ func _ready() -> void:
 	simint = preload("res://scripts/simint.gd").new()      # 30.10.2026: siren on the PC + microphone, servo faults, thermal model
 	simint.main = self
 	add_child(simint)
+	pir = preload("res://scripts/pir.gd").new()             # real-pir-ton: PIR at the device (AS312, 100°, 3–5 m)
+	pir.main = self
+	add_child(pir)
+	mikro = preload("res://scripts/mikrofon.gd").new()      # real-pir-ton: microphone (1/r, direction, ground) + sounds of the surroundings
+	mikro.main = self
+	add_child(mikro)
 	sym_node = Sym.new()                               # 3D-4.22: drawn symbols instead of missing emoji (symbole.gd)
 	sym_node.main = self
 	add_child(sym_node)
@@ -1968,9 +1976,9 @@ func _build_lens() -> void:
 
 
 # ---- sounds of the world (for the microphone of MoveEye) --------------------------------------------------------
-func add_sound(db1m: float, pos: Vector3, secs: float) -> void:
-	"""a sound: loudness at 1 m (dB, 0 = very loud), where, how long"""
-	sounds.append([db1m, pos, now() + secs])
+func add_sound(db1m: float, pos: Vector3, secs: float, kind := "noise") -> void:
+	"""a sound: loudness at 1 m (dB, 0 = very loud), where, how long, what (mikrofon.gd: how the ground dampens it)"""
+	sounds.append([db1m, pos, now() + secs, kind])
 
 
 func emit_sound(kind: String, n: int = 1, pos = null) -> Dictionary:
@@ -1993,10 +2001,12 @@ func emit_sound(kind: String, n: int = 1, pos = null) -> Dictionary:
 				p = (v as Node3D).global_position + Vector3(0, 1.5, 0)
 	var d: float = maxf(1.0, p.distance_to(ear))
 	var db: float = float(SOUND_EV_DB[kind]) - 20.0 * log(d) / log(10.0)
+	if mikro != null and mikro.real_on:
+		db = mikro.level(float(SOUND_EV_DB[kind]), p, kind)   # real-pir-ton: 1/r + ground + housing (2 m: -19.5, 15 m: -43.5)
 	sound_ev_id += 1
 	n = clampi(n, 1, 6)
 	sound_ev.append({"id": sound_ev_id, "kind": kind, "n": n, "db": snappedf(db, 0.1), "t": now()})
-	add_sound(float(SOUND_EV_DB[kind]), p, {"clap": 0.45 * n, "sneeze": 0.6, "voice": 2.5, "shout": 3.5}[kind])
+	add_sound(float(SOUND_EV_DB[kind]), p, {"clap": 0.45 * n, "sneeze": 0.6, "voice": 2.5, "shout": 3.5}[kind], kind)
 	_sound_play(kind, n)
 	return {"ok": true, "id": sound_ev_id, "db": snappedf(db, 0.1), "dist": snappedf(d, 0.1)}
 
@@ -2091,6 +2101,8 @@ func sound_events() -> Array:
 
 func sound_db() -> float:
 	"""what the microphone at the head hears now (dB): quiet background + weather + wind + the sounds, weaker with distance"""
+	if mikro != null and mikro.real_on:
+		return mikro.sound_db()                         # real-pir-ton: the microphone like real (mikrofon.gd)
 	var base := -62.0 if is_dark() else -56.0
 	if weather == "rain":
 		base = -40.0 + (wetter.rain_db() if wetter != null else 0.0)   # real-wetter: louder in heavy rain
@@ -3095,6 +3107,7 @@ func world_reply() -> Dictionary:
 			"pressure_hpa": snappedf(press, 0.1), "wind_kmh": snappedf(wind, 0.1), "last_event": next_event_id - 1,
 			"pid": OS.get_process_id(), "sound_db": snappedf(sound_db(), 0.1) if sound_on else null,
 			"sound_ev": sound_events() if sound_on else null, "sound_ev_last": sound_ev_id,
+			"mic": mikro.reply() if mikro != null and mikro.real_on and sound_on else null,   # real-pir-ton: level, background, sources -> MoveEye 558p (listening)
 			"solar": solar_reading(), "gps": gps_reading(),
 			"humidity": snappedf(humidity, 1.0), "mover": mover_on,   # humidity: MoveEye's climate sensor (060, field h)
 			"pc_cpu": snappedf(mini_box.own["pc"], 0.1) if mini_box != null and float(mini_box.own["pc"]) >= 0.0 else null,
@@ -3314,7 +3327,8 @@ func info() -> Dictionary:
 						weit.cam_info()],          # 3D-4.17: the wide camera with its mount (weitwinkel.gd)
 			"thermal": simint.thermal_info() if simint != null else {"w": TH_W, "h": TH_H, "fps": th_fps, "fov_h": TH_FOV, "fov_v": 35.0, "unit": "C", "on_head": true},
 			"view": {"input": 1, "path": "/view.mjpg", "padview": 1},
-			"sensors": [{"name": "Wohnwagen-Tür", "kind": "door"}, {"name": "PIR Zelt", "kind": "pir"}, {"name": "Gas Wohnwagen", "kind": "gas"}, {"name": "Velo", "kind": "tag"}],
+			"sensors": [{"name": "Wohnwagen-Tür", "kind": "door"}, {"name": "PIR Zelt", "kind": "pir"}, {"name": "Gas Wohnwagen", "kind": "gas"}, {"name": "Velo", "kind": "tag"},
+						{"name": "PIR Gerät", "kind": "pir"}],     # real-pir-ton: AS312 at the front of the housing (pir.gd)
 			"helper": {"port": mwpc.HELPER_PORT, "code": str(mwpc.helper.get("code", "")), "accel": str(mwpc.helper.get("accel", ""))} if mwpc != null and mwpc.helper.has("code") else null}
 
 
@@ -3677,9 +3691,9 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Bergtal", "Ort von der Karte",
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
 		["Kamerabild", "lens", "👁", ["", "Weitwinkel-Kamera", "Wärmebild", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
-		["Sensoren", "bell", "🔔", ["", "Strom", "Netz", "Zusatz-Bildschirm (SmallTV)"]],
+		["Sensoren", "bell", "🔔", ["", "Bewegungsmelder (PIR)", "Strom", "Netz", "Zusatz-Bildschirm (SmallTV)"]],
 		["Mover", "track", "🚜", ["", "Patrouille", "Controller"]],
-		["Licht & Ton", "sun", "💡", ["", "Status-LED & Tasten", "Lautsprecher"]],      # 3D-4.22: «Lautsprecher» here like MoveEye (was «Sensoren»)
+		["Licht & Ton", "sun", "💡", ["", "Status-LED & Tasten", "Lautsprecher", "Mikrofon", "Umgebungsgeräusche"]],      # 3D-4.22: «Lautsprecher» here like MoveEye (was «Sensoren»)
 		["Spiel", "pad", "🎮", ["", "Entdecken", "Assistent"]],        # Erlebniswelt 20–23: «Entdecken» (entdecken.gd) on the card
 		["Wildtier", "target", "🎯", [""]],
 		["Testen", "check", "✅", ["", "Verfolgungs-Parcours", "Störungen", "Einbruch-Abläufe"]],
@@ -4030,6 +4044,8 @@ func _register_controls() -> void:
 	add_control("button", "bike", "Velo-Sensor auslösen (jemand rüttelt am Velo)", null, func(): add_event("Velo", "tag"), "Sensoren")
 	simint.add_controls()                              # 30.10.2026: Lautsprecher, Störungen, Wärmebild (simint.gd)
 	thermsensor.add_controls()                         # 3D-4.26: Kamerabild → Wärmebild (palette, sensor, tent, warm car)
+	pir.add_controls()                                 # real-pir-ton: Sensoren → Bewegungsmelder (PIR)
+	mikro.add_controls()                               # real-pir-ton: Licht & Ton → Mikrofon, Umgebungsgeräusche
 	simwerte.add_controls()                            # Simulator-Werte: Akku und Strom, Netz-Ausfall testen (power.gd)
 	add_control("toggle", "rifle", "Gewehr (unblutig, nur Tiere)", func(): return rifle_on, func(v): rifle_on = v, "Wildbeobachtung")
 	add_control("button", "shoot_head", "Schuss aus der Kopfkamera", null, func(): shoot_head(), "Wildbeobachtung")
@@ -4976,6 +4992,10 @@ func _control(d: Dictionary) -> Dictionary:
 		gr["steal"] = gps_steal_t > 0.0
 		gr["solar"] = solar_reading()
 		return gr
+	elif a == "pir":                                   # real-pir-ton: {do: info | fire | set (key, value) | reset} (pir.gd)
+		return pir.op(d)
+	elif a == "mikro":                                 # real-pir-ton: {do: info | set (key, value) | probe (kind, db1m, x, z)} (mikrofon.gd)
+		return mikro.op(d)
 	elif a == "simint":                                # 30.10.2026: {do: info | uv | pca | i2c | block (axis) | off | model (m) | hand (on)} (simint.gd)
 		return simint.op(d)
 	elif a == "sound":                                 # 3D-3.98: {kind: clap | sneeze | voice | shout, n, x, z}
@@ -5702,6 +5722,10 @@ func _build_ui() -> void:
 		testrun.add_info(groups["Testen"], UI)
 	if subs.has("Licht & Ton/Status-LED & Tasten") and statusled != null:   # 3D-4.22: the rules of the buttons are in MoveEye - hint + link
 		statusled.add_info(subs["Licht & Ton/Status-LED & Tasten"], UI)
+	if subs.has("Sensoren/Bewegungsmelder (PIR)"):    # real-pir-ton: state, reach, triggers (pir.gd)
+		pir.add_info(subs["Sensoren/Bewegungsmelder (PIR)"], UI)
+	if subs.has("Licht & Ton/Mikrofon"):              # real-pir-ton: level, background, the loudest sources (mikrofon.gd)
+		mikro.add_info(subs["Licht & Ton/Mikrofon"], UI)
 	if subs.has("Sensoren/Strom"):                    # Simulator-Werte: what goes to MoveEye (power.gd)
 		simwerte.add_info(subs["Sensoren/Strom"], UI)
 	if subs.has("Kamerabild/Wie echt"):              # 3D-3.94: what the real look adjustment does

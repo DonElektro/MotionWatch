@@ -57,7 +57,7 @@ class SimLink:
         first = not SIM["ok"]
         if rep_.get("sound_db") is not None and AUDIO is not None:
             try:
-                AUDIO.feed_sim(float(rep_["sound_db"]))      # the sound of the simulated world for the noise alarm
+                AUDIO.feed_sim(float(rep_["sound_db"]), rep_.get("mic"))   # the sound of the simulated world for the noise alarm (+ «mic»: listening, 558p)
             except Exception:
                 pass
         if rep_.get("sound_ev") is not None and AUDIO is not None:   # 2.98.11: claps, sneezes, voices of the simulated world

@@ -1,7 +1,7 @@
 {
- "version": "3D-4.51",
+ "version": "3D-4.52",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 67701915,
- "sha256": "ec4777cf87825ce16bf87cbd47400e3c8dc2301dcd2f6e75bd104fabd4febbd1",
- "notes": "Wetter näher an der Physik: Regenstärke, Sichtweite, Bodennebel, Schneedecke, Tropfen und Beschlag auf der Linse, Blitze."
+ "size": 67783630,
+ "sha256": "ad2a5e2f3cbdf472a3d4a1fc8ecb4c6e2dc32687f41291cd0fe01b38a179f16d",
+ "notes": "Bewegungsmelder wie der echte AS312, Mikrofon mit Umgebungsgeräuschen; in MoveEye «Mithören» auch im Simulator."
 }
