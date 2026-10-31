@@ -2176,6 +2176,8 @@ func _paint_chapter() -> void:
 		_dev_box(left)
 	if zweit != null:
 		zweit.paint_board(left, true)                  # A5: Familien-Bestenliste (kurz)
+		if zweit.team != null:
+			zweit.team.paint_chapter(left)             # Zwei-Spieler-Bausteine: Reisetagebuch
 
 
 func _paint_slots(parent: Control) -> void:
@@ -2579,6 +2581,8 @@ func _paint_camp() -> void:
 		raetsel.paint_camp(body)
 	if a2 != null:
 		a2.paint_camp(body)                              # A2: people at the camp, the talk
+	if zweit != null and zweit.team != null:
+		zweit.team.paint_camp(body)                    # Zwei-Spieler-Bausteine: Lagerfeuer, Fotowettbewerb
 
 
 func _paint_night() -> void:
@@ -2703,6 +2707,8 @@ func _paint_morning() -> void:
 		dg.add_child(_lab("%s  %s - %s" % [hm(float(e["h"])), str(e["title"]), str(e["text"])], 12))
 	if zweit != null:
 		zweit.paint_board(body)                        # A5: Familien-Bestenliste
+		if zweit.team != null:
+			zweit.team.paint_morning(body)             # Zwei-Spieler-Bausteine: Auszeichnungen, Reisetagebuch
 	# test ground
 	var eb := Button.new()
 	eb.text = ("▾ " if dev_open else "▸ ") + T.t("Testgelände (Situation speichern, nochmals abspielen, Bericht)")

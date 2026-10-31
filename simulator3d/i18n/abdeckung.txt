@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6479 (Stellen: 8981)
-Übersetzt: en 6479, fr 6479, it 6479, rm 6479
+Texte gesamt: 6643 (Stellen: 9208)
+Übersetzt: en 6643, fr 6643, it 6643, rm 6643
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 460 Stellen
-Nicht mehr im Code (noch in texte.json): 230
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 462 Stellen
+Nicht mehr im Code (noch in texte.json): 234
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 22647, schlüssel 16996, keine Wörter 10636, index 8695, technisch 2894, doc 1903, einheit 263, log 146, englisch 120, pfad 98, html 68, klasse 26, shader 6
+Übersprungen (Grund: Anzahl): kennung 23062, schlüssel 17365, keine Wörter 10978, index 8929, technisch 2967, doc 1937, einheit 290, log 146, englisch 120, pfad 98, html 68, klasse 26, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  691    42
@@ -22,6 +22,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   abenteuer_moveeye.gd     110    14
   bergtal_orte.gd          108     0
   bib_objekte.gd           108     0
+  zwei_bausteine.gd        106     2
   spieltest.gd              97    20
   bergtal_aussicht.gd       94     4
   testrun.gd                94     3
@@ -47,6 +48,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   erlebniswelt.gd           62     0
   bib_berg.gd               60     0
   abenteuer_figuren.gd      58     5
+  abenteuer_zwei_team.gd    57     0
   spielbereich.gd           57     0
   entdecken.gd              57     0
   quick.gd                  55     2
@@ -54,6 +56,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   abenteuer_rucksack.gd     48     3
   scenes.gd                 47     0
   karte.gd                  46     8
+  maggie_zwei_team.gd       46     0
   mwpc.gd                   46    12
   gamerules.gd              45     4
   horror_raetsel.gd         44     0
@@ -70,8 +73,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   kitrain.gd                39     9
   gamejaeger.gd             38     1
   fotomodus.gd              38     0
-  simreal.gd                37     0
   mikrofon.gd               37     0
+  simreal.gd                37     0
   update.gd                 36     4
   geo.gd                    36     7
   gamemore.gd               36     1
@@ -218,7 +221,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   ferienpark_leben.gd:925  'fertig'
   ferienpark_leben.gd:992  'fertig'
   maggie_story.gd:406  'fertig'
-  maggie_story.gd:1267  'Mit'
+  maggie_story.gd:1273  'Mit'
   maggie_vorfuehrung.gd:565  'fertig'
   maggie_vorfuehrung.gd:933  'ja'
   maggie_vorfuehrung.gd:933  'nein'
@@ -262,6 +265,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   spieltest.gd:1290  '\n| Start | Einheit | Min. | Ergebnis | Tipps | Falsch | Umwege | Erwischt | Fest | Kreis | Ruckeln s | Bewertung |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n'
   spieltest.gd:1305  'Noch keine Runden notiert.\n\n'
   spieltest.gd:1322  'Spieltest-Daten aus dem MoveEye-Simulator (Mehr → Entwickler → Spieltest).\nbericht.md = Zusammenfassung mit Vorschlägen, runden/ = Rohdaten (JSON pro Runde).\nVersion %s.\n'
+  zwei_bausteine.gd:613  'fertig'
+  zwei_bausteine.gd:1415  ' %.1f kg'
   gamewiz.gd:63  ' (wird hingestellt)'
   gamewiz.gd:66  'keine'
   gamewiz.gd:71  'aus'
@@ -319,10 +324,10 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal_abenteuer.gd:415  'Start: '
   bergtal_abenteuer.gd:972  ' auf der Bank mit Aussicht'
   bergtal_abenteuer.gd:2154  'Wird frei: '
-  bergtal_abenteuer.gd:2375  'aus'
-  bergtal_abenteuer.gd:2376  'keine'
-  bergtal_abenteuer.gd:2431  '  · %.1f kg'
-  bergtal_abenteuer.gd:2525  ' - Bank'
+  bergtal_abenteuer.gd:2377  'aus'
+  bergtal_abenteuer.gd:2378  'keine'
+  bergtal_abenteuer.gd:2433  '  · %.1f kg'
+  bergtal_abenteuer.gd:2527  ' - Bank'
   gamekiwaechter.gd:100  ' · 🤖 gegen die KI – eigene Liste, zählt nicht für die Rangliste'
   gamekiwaechter.gd:147  'aus'
   gamekiwaechter.gd:147  'ein'

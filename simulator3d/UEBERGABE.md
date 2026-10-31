@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.12.0** · MoveEye **3.12.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.13.0** · MoveEye **3.13.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.13.0 (MoveEye 3.13.0): Team-Bausteine zu zweit (`zwei_bausteine.gd`)
+
+- `zwei_bausteine.gd` (neu, zehn Bausteine), `abenteuer_zwei_team.gd` (Karte des Grossvaters), `maggie_zwei_team.gd` (Maggie);
+  eingehängt in `abenteuer_zweit.gd`, `bergtal_abenteuer.gd`, `maggie_zwei.gd`, `maggie_story.gd`.
+- Konzept-Check: 🎮 in `abenteuer_zwei_team.gd` durch Text «(Controller)» ersetzt; die Kategorie-Zeichen 💎 🐾 🗿 👣 📖 in
+  `zwei_bausteine.gd` sind noch Emoji (ob die Schrift sie hat, offen).
 
 ## NEU in 3.12.0 (MoveEye 3.12.0): Blinki ohne Sichtfächer
 
