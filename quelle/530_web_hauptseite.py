@@ -372,6 +372,8 @@ body.videoonly.moveravail #vo-mv{display:flex;position:absolute;top:max(10px,env
   width:44px;height:44px;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,.35);
   background:rgba(0,0,0,.55);color:#fff;font-size:20px;padding:0;cursor:pointer}
 body.videoonly.moveravail.mover #vo-mv{background:rgba(63,207,107,.55);border-color:var(--grn)}
+/* 3.15.x (Daniel 31.10.2026): simulation (body.sim-on = CFG sim_on, like the stripe) - full screen without ◎, ⇆ and 🚜 (the mover stick is off, moverPaint) */
+body.sim-on #vo-mv,body.sim-on #vo-center,body.sim-on #vo-side{display:none!important}
 #vo-exit{display:none}
 body.videoonly #vo-exit{display:flex;position:absolute;top:max(10px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));z-index:60;
  width:44px;height:44px;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,.35);
@@ -4456,7 +4458,7 @@ function moverBars(l, r) {
 function moverPaint(s) {
   const m = s.mover || {}, av = !!m.avail;
   let show = false; try { show = localStorage.getItem("mw-mover-show") === "1"; } catch (e) {}   // 2.95.73: hidden unless switched on
-  const on = av && show;
+  const on = av && show && !(s.sim && s.sim.on);           // 3.15.x: no mover stick in the simulation (card and full screen); comes back without it
   if (document.body.classList.contains("moveravail") !== av) document.body.classList.toggle("moveravail", av);
   const mt = $("#mv-tog"); if (mt) { mt.classList.toggle("on", show); if (!mt.onclick) mt.onclick = () => {
     let v = false; try { v = localStorage.getItem("mw-mover-show") !== "1"; localStorage.setItem("mw-mover-show", v ? "1" : "0"); } catch (e) {}

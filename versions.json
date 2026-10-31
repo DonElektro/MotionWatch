@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 21:47",
+ "generated": "2026-10-31 21:55",
  "versions": [
   {
-   "version": "3.15.1",
-   "file": "webcam_bewegung_3_15_1.py",
+   "version": "3.15.2",
+   "file": "webcam_bewegung_3_15_2.py",
    "url": "",
-   "sha256": "3799a900bdeb602ca132554bdafbcd676cfe9ab0ec759ea6c928f736421436bc",
-   "date": "2026-10-31 21:47",
-   "notes": "Live → Bedienung: in der Simulation sind Tempo, ⇆, 🚜, Mitte, Kalibrieren und Wegpunkte ausgeblendet (auch im Pi-Fenster), beim echten Live-Bild sichtbar; das Simulations-Band erscheint sofort.",
-   "size": 4417225,
-   "sig": "849622d0db218415d5d061a5edd03288ea9e6e45ec8e45210b8f154967ddbf4275a90e8795d3255162cb9005fd36613b5cfa0b7f03477c603d27e357bc8a0b09",
+   "sha256": "5f7608aaf472923fb93629887d8aab9e78b30500ae6a59737cfe2634bb4ad3c5",
+   "date": "2026-10-31 21:55",
+   "notes": "Vollbild: in der Simulation auch ◎, ⇆, 🚜 und der Mover-Stick ausgeblendet; beim echten Live-Bild bleiben sie.",
+   "size": 4417133,
+   "sig": "e670d946407f3ef5a67d61f20acf4f80a1f42b7770721a2dd76e439c0fb2372f746393f8450298491cbb353a19aba3eda26214b95edd23ad444a86f61d5beb0d",
    "data": {
-    "file": "moveeye_daten_3_15_1.zip",
+    "file": "moveeye_daten_3_15_2.zip",
     "url": "",
-    "sha256": "c64a903dec79fafc9b39b90794385bc97f07cdccca3a0431f83e32fd33eb766f",
-    "size": 1612903,
-    "sig": "0b14ddda50f7a09e375aa0e060c043f1481dab3c5117504d5b1620cff1e3397f9d62671aec6ca1aa3d428757e8caf74976bffdf7d750d629d50b59e7f22c3c08"
+    "sha256": "017bde7bbffff8f97f294fcda2e70e437068392364c2ec523e32758c6faf245f",
+    "size": 1613094,
+    "sig": "5dea6bd448f07276ad70b64444bb7c6a4ef9cc62e1706b91a3335437507b1f39c745e2889a0817766ec62c3635877c2d0316f537b0b0bdd81b1ed7d18d582f01"
    }
   },
   {
