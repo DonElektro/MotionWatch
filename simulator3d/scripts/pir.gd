@@ -6,7 +6,7 @@ extends Node
 ##   30 s Aufwärmen nach dem Einschalten, ~0,2 s bis das Signal reicht.
 ##   Modell pro Körper (10 × pro s): Signal = Temperaturunterschied × Grösse × Bewegung × (R0 / Abstand)²
 ##     - quer zur Linse zählt voll, auf die Linse zu / weg nur ~ein Viertel (PIR sieht Wechsel zwischen den Linsen-Zonen)
-##     - warme Umgebung = weniger Unterschied zur Haut / zum Fell = kürzere Reichweite (bei 31 °C fast blind)
+##     - warme Umgebung = weniger Unterschied zur Haut / zum Fell = kürzere Reichweite (bei 31 °C quer nur noch ~2,7 m)
 ##     - Hindernisse (Bäume, Wände, Autos – main.obstacles) verdecken, die Linse sieht höchstens 7 m
 ##   Fehlauslösungen: warme Luft in Böen über sonnigem Boden, Sonne bricht durch die Wolken / tiefe Sonne in der Linse,
 ##   Rauch / Feuer / Grill im Fächer (im Wind).
@@ -107,7 +107,7 @@ func forward() -> Vector3:
 
 func temp_factor(surface_c: float) -> float:
 	"""weniger Unterschied zur Umgebung = schwächeres Signal (AS312 hat eine Temperatur-Kompensation: nur ^0.7)"""
-	var dt: float = absf(surface_c - float(main.ambient))
+	var dt: float = maxf(1.0, absf(surface_c - float(main.ambient)))   # Gesicht / Hände sind immer etwas wärmer (≥ 1 K)
 	return pow(clampf(dt / T_REF, 0.0, 2.0), 0.7)
 
 
