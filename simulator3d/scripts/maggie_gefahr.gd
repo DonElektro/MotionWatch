@@ -196,6 +196,7 @@ static func hole(m) -> Node:
 
 
 func _ready() -> void:
+	process_priority = 100                               # nach main und bergtal.gd (Nebel: das Maximum gilt)
 	_load()
 	_amb = AudioStreamPlayer.new()
 	_amb.volume_db = -60.0
@@ -379,6 +380,7 @@ func start(id: String) -> void:
 	_amb_next = now + 6.0
 	_last_pos = _spieler()
 	_build_region()
+	_fog = _fog_basis()                                  # die Stimmung gleich da (nur der Gefahr-Anteil kommt langsam)
 	_amb.stream = _snd["amb_" + id]
 	_amb.volume_db = -26.0
 	_amb.play()
@@ -1018,10 +1020,13 @@ func _ev(key: String, text: String) -> void:
 
 func _tick_fog(dt: float) -> void:
 	# Grusel-Stimmung: Nebel je Jahreszeit (Herbst dicht, Sommer kaum), dichter, wenn Gefahr nah ist
-	var base: float = {"herbst": 0.018, "winter": 0.012, "fruehling": 0.008, "sommer": 0.004}.get(region, 0.0)
-	_fog = move_toward(_fog, base + 0.012 * _grusel, dt * 0.004)
+	_fog = move_toward(_fog, _fog_basis() + 0.012 * _grusel, dt * 0.004)
 	if main.env != null:
 		main.env.fog_density = maxf(main.env.fog_density, _fog)
+
+
+func _fog_basis() -> float:
+	return {"herbst": 0.018, "winter": 0.012, "fruehling": 0.008, "sommer": 0.004}.get(region, 0.0)
 
 
 func _ambient(sp: Vector3) -> void:
@@ -1420,6 +1425,8 @@ func _unter_baeumen(wp: Vector3) -> bool:
 	if bt == null:
 		return false
 	var q: Vector3 = bt.V(wp)
+	if Bergtal.zone(q.x, q.z) in ["lake", "shore", "moor", "flowers", "pasture", "glacier"]:
+		return false
 	return Bergtal.forest_k(q.x, q.z, Bergtal.H(q.x, q.z)) > 0.55
 
 
