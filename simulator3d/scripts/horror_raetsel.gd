@@ -19,7 +19,8 @@ extends Node
 ## Lite: nichts Teures (keine Lichter; der Hinweis-Lichtpunkt ist ein leuchtendes Kügelchen nur fürs Fenster).
 ## Eingehängt in bergtal_horror.gd an 6 Stellen (alle mit «raetsel» markiert): _ready, begin (Beats + Abendkarte), _beat,
 ## _morning, Pause/_reshow_phase, command («r_…»).
-## Zustand in user://bergtal_horror.json unter «raetsel» (neben dem Fortschritt; der Passwort-Hash bleibt unberührt).
+## Zustand in user://bergtal_horror.json unter «raetsel» (pro Spielstand: «raetsel_2» / «raetsel_3», spielstand.gd raetsel_key;
+## im Kapitel-Sprung-Test «raetsel_test») (neben dem Fortschritt; der Passwort-Hash bleibt unberührt).
 ## Test: /control {"action": "horror", "do": "r_info" | "r_code" (code) | "r_hint" | "r_find" | "r_go"}.
 
 const T = preload("res://scripts/i18n.gd")
@@ -57,12 +58,12 @@ func _strength() -> float:
 # state (in the horror's store, next to «progress»)
 # =======================================================================================================================
 func _load() -> void:
-	var s = h._store.get("raetsel", {})
+	var s = h._store.get(h.raetsel_key(), {})
 	st = (s as Dictionary).duplicate(true) if s is Dictionary else {}
 
 
 func _save() -> void:
-	h._store["raetsel"] = st
+	h._store[h.raetsel_key()] = st
 	h._save()
 
 

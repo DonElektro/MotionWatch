@@ -16,7 +16,7 @@ Brücke (Entscheid Daniel 31.10.2026): BRUECKE (3.0.2, eine Datei unter 8 MiB, b
 versions.json und im Repository. Geräte bis 2.98.x nehmen nur Dateien bis 8 MiB an. Die neueste Hauptdatei bleibt darum
 auch unter 8 MiB (grosse Teile in moveeye_daten_X_Y_Z.zip, bauen.py) - dann gehen alte Geräte direkt auf die neueste.
 Wäre eine Datei je grösser, schreibt --make-manifest «needs»: "3.0.0" in ihren Eintrag; Geräte ab dem Verkleinern-Paket
-nehmen dann zuerst die Brücke (update_pick, Teil 397), Geräte bis 3.4.0 / 2.98.x wählen 3.0.2 von Hand in der Liste.
+nehmen dann zuerst die Brücke (update_pick, Teil 397); ältere Geräte (2.98.x bis zur letzten Version ohne Zusatzdatei) wählen 3.0.2 von Hand.
 """
 import argparse
 import hashlib

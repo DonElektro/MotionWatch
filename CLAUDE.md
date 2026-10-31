@@ -170,7 +170,7 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   **für immer** im Repository und in versions.json (`"bridge": true`, `BRUECKE` in `versionen.py`, `UPD_BRIDGE` in Teil 397).
   Beim Aufräumen («höchstens 10») nie löschen – `python3 werkzeuge/versionen.py --aufraeumen` lässt sie stehen (sie zählt mit).
   Wäre eine Hauptdatei je über 8 MiB, schreibt `--make-manifest` `"needs": "3.0.0"` in ihren Eintrag: Geräte ab dieser Fassung
-  nehmen dann zuerst die Brücke und danach die neueste (`update_pick`, Teil 397). Geräte bis 3.4.0 / 2.98.x wählen immer die
+  nehmen dann zuerst die Brücke und danach die neueste (`update_pick`, Teil 397). Ältere Geräte (2.98.x bis zur letzten Version ohne Zusatzdatei) wählen immer die
   neueste – für sie ist die 8-MiB-Grenze der Hauptdatei die eigentliche Sicherung, 3.0.2 von Hand in der Liste der Rückweg.
 - **Release-Ablauf ab 3.0.0** (nur der Koordinator, Schlüssel nur bei Daniel):
   1. Nummer wählen (Regeln oben); `VERSION := "X.Y.Z"` in `simulator3d/scripts/main.gd`, Block `NEU IN X.Y.Z` in

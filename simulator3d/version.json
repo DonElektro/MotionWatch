@@ -1,9 +1,9 @@
 {
- "version": "3D-5.4.0",
- "ver": "3.4.0",
- "name": "MoveEye Sim 3.4.0",
+ "version": "3D-5.6.2",
+ "ver": "3.6.2",
+ "name": "MoveEye Sim 3.6.2",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35078912,
- "sha256": "04737d71a4fa41c5b5ca19ff5ffc2dcffb90e1a80f4654a91ac065ae42075cc8",
- "notes": "MoveEye Sim 3.4.0: zusammen mit MoveEye 3.4.0 (Nebel-Modus, weniger Fehlalarme in Dämmerung und Wind); im Simulator selbst nichts geändert."
+ "size": 35084865,
+ "sha256": "fe30b43a2b32ebac383e955914f72926a207150363ca4b30fd349d3470d76cdb",
+ "notes": "MoveEye Sim 3.6.2: zusammen mit MoveEye 3.6.2 (Fehlerkorrekturen); im Simulator selbst nichts geändert."
 }

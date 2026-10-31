@@ -206,6 +206,7 @@ class MotionWatch:
         self.bg = cv2.createBackgroundSubtractorMOG2(history=400, varThreshold=28, detectShadows=False)
         self.weather = WeatherAnalyzer(); self.tracker = Tracker()
         self.mask_buf.clear(); self.color_bg = None; self.preroll.clear()
+        fixp_reset()                                      # real-erk-e1: still «persons» are learnt again for the new picture (418)
         self.tuner.reset()
         self.read_failures = 0
 
@@ -232,8 +233,11 @@ class MotionWatch:
         hist = getattr(self, "_ll_hist", None)
         if hist is None:
             hist = self._ll_hist = deque(maxlen=900)       # 10 s at up to 90 pictures/s
+        slow = getattr(self, "_ll_slow", None)
+        if slow is None:
+            slow = self._ll_slow = deque(maxlen=200)      # the smoothed value, twice a second over the last 60 s (M2)
         if not CFG["lowlight_auto"]:
-            hist.clear(); self._ll_since = None; self._ll_seen = False   # switched on again later: decide at once
+            hist.clear(); slow.clear(); self._ll_since = None; self._ll_seen = False   # switched on again later: decide at once
             return False
         hold = max(0.0, float(CFG.get("lowlight_hold", 30.0)))
         win = min(10.0, hold)
@@ -242,6 +246,10 @@ class MotionWatch:
             hist.popleft()
         vals = sorted(v for _, v in hist) or [bright]
         smooth = vals[len(vals) // 2]
+        if not slow or t0 - slow[-1][0] >= 0.5:
+            slow.append((t0, smooth))
+        while slow and slow[0][0] < t0 - 60.0:
+            slow.popleft()
         cur = bool(STATE["lowlight"])
         on_thr = float(CFG["lowlight_threshold"]); gap = max(0.0, float(CFG.get("lowlight_gap", 15)))
         first = not getattr(self, "_ll_seen", False); self._ll_seen = True
@@ -255,8 +263,12 @@ class MotionWatch:
         # far on the other side (white light on / off, lens cover, camera switched): a real jump, not the dusk ->
         # 3 s more are enough (plus ~5 s until the median follows). "Far" = two gaps (at least 2 x 10) beyond the
         # threshold, i.e. < 30 or > 105 with 60 / 15.
+        # Code-Prüfung M2: back to dark after a long light (torch, white light > 8 s) - an IR night picture is often 30 … 59,
+        # never below 30, so the fixed limit did not help (35 s without CLAHE). Now also «far» = the smoothed value fell
+        # by more than two gaps below the brightest smoothed value of the last minute (dusk: a few points a minute only).
         far = 2.0 * max(gap, 10.0)
-        if (want and smooth < on_thr - far) or (not want and smooth > on_thr + gap + far):
+        top = max((v for _, v in slow), default=smooth)
+        if (want and (smooth < on_thr - far or top - smooth > far)) or (not want and smooth > on_thr + gap + far):
             hold = min(hold, 3.0)
         since = getattr(self, "_ll_since", None)
         if since is None:
@@ -376,11 +388,14 @@ class MotionWatch:
         # 2.98.14: the AI sees an animal there (fox, cat, boar ...), or the thing is much wider than high while the AI runs and
         # does not call it a person: no person (test bench: most false alarms were animals walking through the picture)
         ai_on = self.ai.net is not None and CFG["ai_enabled"]
-        if not t.ai_confirmed and any(iou(t.box, a) > 0.15 for a in getattr(self, "_animal_boxes", [])):
-            t.animal_like = True                            # the AI called it an animal: stays so (until the AI says person)
-        if t.ai_confirmed:
+        # real-erk-e1 «Tier vor Person» (418): the AI called it an animal (now or a moment ago on this place): the track keeps
+        # that class - no person from the movement, not «sticky» from before; only the AI saying «person» on it for
+        # FIX_ANIMAL_AI_S makes it a person (test: dog correctly «dog», 14 s later push «Person»)
+        now_ = time.time()
+        animal = animal_track_decide(t, t.ai_confirmed, fixp_animal_of(t.box, now_, same=t.ai_confirmed), now_)
+        if t.ai_confirmed and not animal:
             walking = True                                  # AI says person -> person
-        elif getattr(t, "animal_like", False) or (ai_on and aspect > 1.4 and not t.is_person):
+        elif animal or (ai_on and aspect > 1.4 and not t.is_person):
             walking = False                                 # (wide and flat: only as long as it was no person before - crawling)
         elif walking and not size_ok(t, getattr(self, "_ph", 0)):
             walking = False                                 # 2.98.16: far too small for a person at this place (417)
@@ -395,7 +410,7 @@ class MotionWatch:
             walking = False
         elif CFG["ai_require"] and self.ai.net is not None and CFG["ai_enabled"]:
             walking = False                                 # needs AI confirmation
-        elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k:
+        elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k and not animal and not getattr(t, "fixp", False):
             walking = True                                  # keep flag while tracked (may stand still)
         walking = strict_gate(self, t, walking, time.time())   # 411: at dusk / in wind a new person only after 2-3 hits in a row
         if walking and not t.is_person:
@@ -841,6 +856,7 @@ class MotionWatch:
                 self._reset_models()
             self._proc_size = (pw, ph)
             small = cv2.resize(frame, (pw, ph))
+            full_ = frame                                 # (the overlays below make new pictures - this one stays as it is)
             if TAMPER is not None:
                 TAMPER.feed(small, t0)
             if LENS is not None:
@@ -883,9 +899,15 @@ class MotionWatch:
             if CFG["detection_on"]:
                 g = self.preprocess(fog_gray(gray, t0), rain_mode)       # 411: in fog with the contrast lifted
                 fg = self.foreground(g, small, rain_mode, wind_boost)
+                self.ai.full = full_                       # real-erk-e3: the camera pixels for the AI / the Lupe (418z)
                 ai_boxes = [b for b in self.ai.detect(small) if zone_box_ok(b, pw, ph, "person")]     # 2.98.13: zones by kind (066)
                 ai_objs = [o for o in self.ai.objects if zone_box_ok(o, pw, ph, "animal" if COCO_LABELS.get(o[5]) in ANIMALS else "other")]
                 rec_animals = [o for o in ai_objs if COCO_LABELS.get(o[5]) in ANIMALS]
+                try:                                        # real-erk-e1: still «persons» (a spruce, a trunk) = things; animals remembered (418)
+                    ai_boxes = fixp_filter_ai(ai_boxes, pw, ph, t0, small)
+                    fixp_animal_note(rec_animals, pw, ph, t0)
+                except Exception as e:
+                    log_event("sys", f"Still object: {e}"[:160])
                 objects = ai_objs if (CFG["show_objects"] and CFG["ai_enabled"]) else []
                 counts = {}
                 for o in objects:
@@ -900,6 +922,12 @@ class MotionWatch:
                 if any(b[2] * b[3] >= min_area for b in boxes):
                     present.add("prealarm")              # pre-alarm: anything at all moves in the picture (before it is judged to be a person)
                 raw_boxes = list(boxes)
+                try:                                        # real-erk-e3: small movement that comes back = a far hint of the Lupe (418z)
+                    zoom_far_feed(self.ai, [b for b in (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) < small_area)
+                                            if zone_box_ok(b, pw, ph, "person")],
+                                  small_area, self.tracker.tracks, pw, ph, t0, STATE.get("wind_level", "calm"))
+                except Exception as e:
+                    log_event("sys", f"AI magnifier: {e}"[:160])
                 # 2.98.13: a motion box over a quarter of the picture is no person (light change, turn) - it must not
                 # swallow the persons of the AI when merging
                 boxes = [b for b in boxes if b[2] * b[3] <= 0.25 * pw * ph] if ai_boxes else boxes
@@ -915,9 +943,9 @@ class MotionWatch:
                 for t in tracks:
                     if t.lost:
                         continue
-                    self._animal_boxes = [o[:4] for o in rec_animals]
                     self._ph = ph
                     self.classify(t, pw * ph, wind_boost, ai_boxes)
+                    fixp_track(t, pw, ph, t0)                   # real-erk-e1: standing on a learnt still object -> no person (418)
                     if t.is_person and not t.ai_confirmed and t.box[2] * t.box[3] < min_area * 0.8:
                         t.is_person = False                     # too small for a person (only seen for following movement)
                     if t.is_person:
@@ -1017,10 +1045,12 @@ class MotionWatch:
                     x, y, w, h = [int(v) for v in (t.box[0] * sx, t.box[1] * sy, t.box[2] * sx, t.box[3] * sy)]
                     draw_outline(frame, cnts, t.box, sx, sy, (255, 255, 255), 1)
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 1)
-                    cv2.putText(frame, "vehicle" if t.is_vehicle else "motion", (x, max(14, y - 5)),
+                    cv2.putText(frame, "vehicle" if t.is_vehicle else ("animal" if getattr(t, "animal_like", False) else "motion"), (x, max(14, y - 5)),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1, cv2.LINE_AA)
                 for obj in objects:
                     draw_object(frame, obj, sx, sy)
+                if not kih_clean:
+                    fixp_draw(frame, sx, sy, pw, ph)            # real-erk-e1: the learnt still objects, thin grey (418)
                 for t in ([] if kih_clean else persons):
                     x, y, w, h = [int(v) for v in (t.box[0] * sx, t.box[1] * sy, t.box[2] * sx, t.box[3] * sy)]
                     if CFG["highlight_red"]:
@@ -1061,17 +1091,31 @@ class MotionWatch:
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.42, col, 1, cv2.LINE_AA)
             warm_boxes = []
             th_pers = THERMAL is not None and not person_boxes and thermal_person_active()   # 2.98.13: persons in the thermal picture (232)
-            if (CFG["thermal_alarm"] or th_pers) and CFG["detection_on"] and THERMAL is not None:
+            # real-erk-e3: at night the crawling check needs the warm bodies also when a person box is there elsewhere (a fixed
+            # false «person» in the picture must not hide a crawling one, 418k)
+            th_crawl = THERMAL is not None and bool(person_boxes) and thermal_person_active() and _foot_night()
+            if (CFG["thermal_alarm"] or th_pers or th_crawl) and CFG["detection_on"] and THERMAL is not None:
                 warm_boxes = THERMAL.detect()                 # (x, y, w, h) 0..1 of the picture, already checked against the zones
             maybe_ = []
+            veto_ = []
+            if not person_boxes and CFG["detection_on"]:      # real-erk-e1: where the camera / AI sees an animal or a vehicle (418)
+                try:
+                    veto_ = fixp_veto(persons + candidates, ai_objs, pw, ph, t0)
+                except Exception:
+                    veto_ = []
             if not person_boxes and CFG["detection_on"]:      # real-reh-fusspunkt: «Person?» - flat + weak AI + movement / warmth (232)
                 try:
-                    maybe_ = weak_person_feed(self.ai, persons + candidates, warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0)
+                    maybe_ = weak_person_feed(self.ai, persons + candidates, warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, veto_)
                 except Exception as e:
                     log_event("sys", f"Person?: {e}"[:160])
-            if (CFG["thermal_alarm"] or th_pers) and CFG["detection_on"] and THERMAL is not None:
+            if (CFG["thermal_alarm"] or th_pers or th_crawl) and CFG["detection_on"] and THERMAL is not None:
                 if th_pers and warm_boxes and not maybe_:                 # a «Person?» is there: no animal under it (232)
-                    warm_boxes = thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, maybe_)
+                    warm_boxes = thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, maybe_, veto_)
+                try:                                          # real-erk-e3: crawling at night - warm + moving + near (418k)
+                    cb_ = crawl_feed(warm_boxes, persons + candidates, rec_animals, person_boxes, present, frame, pw, ph, W, H, t0, self.notifier)
+                    warm_boxes = [b_ for b_ in warm_boxes if b_ not in cb_]    # «Person?» now, no longer «warm»
+                except Exception as e:
+                    log_event("sys", f"Crawling at night: {e}"[:160])
                 if not CFG["thermal_alarm"]:
                     warm_boxes = []
                 if warm_boxes:
@@ -1176,3 +1220,45 @@ class MotionWatch:
                     self.jpeg = buf.tobytes(); self.jpeg_seq += 1
 
 
+
+
+def lowlight_selftest():
+    """Code-Prüfung M2: low-light mode (MotionWatch._lowlight_decide) at 10 pictures/s - after a long light (torch, white
+    light 20 s) back to low light within ~10 s, also for an IR night picture of 30 … 59; dusk with noise switches once;
+    a cloud in the morning (80 -> 58 for 20 s) does not switch back"""
+    keys = ("lowlight_auto", "lowlight_threshold", "lowlight_gap", "lowlight_hold")
+    keep = ({k: CFG.get(k) for k in keys}, STATE.get("lowlight"))
+
+    class _W:
+        pass
+
+    def run(seq, start=None):
+        """seq = brightness per picture (10/s) -> list of (time, new state) of the switches"""
+        w = _W(); out = []
+        STATE["lowlight"] = bool(start) if start is not None else False
+        if start is not None:
+            w._ll_seen = True
+        for i, b in enumerate(seq):
+            t = 1000.0 + 0.1 * i
+            v = MotionWatch._lowlight_decide(w, float(b), t)
+            if v != STATE["lowlight"]:
+                STATE["lowlight"] = v; out.append((round(t - 1000.0, 1), v))
+        return out
+    try:
+        CFG.update(lowlight_auto=True, lowlight_threshold=60, lowlight_gap=15, lowlight_hold=30.0)
+        for night in (30, 45, 55):
+            sw = run([night] * 600 + [120] * 200 + [night] * 400, start=True)
+            assert len(sw) == 2 and sw[0][1] is False and 60.0 < sw[0][0] <= 70.0, (night, sw)      # light: off after ~8 s
+            back = sw[1][0] - 80.0
+            assert sw[1][1] is True and back <= 10.0, f"night {night}: low light back only after {back:.1f} s ({sw})"
+        dusk = [90 - 50 * i / 6000.0 + 8 * math.sin(i * 0.7) for i in range(6000)]        # 10 min, 90 -> 40, noise ±8
+        sw = run(dusk, start=False)
+        assert len(sw) == 1 and sw[0][1] is True, f"dusk flickers: {sw}"
+        sw = run([80] * 1200 + [58] * 200 + [80] * 300, start=False)
+        assert not sw, f"a cloud in the morning switched: {sw}"
+    finally:
+        CFG.update(keep[0]); STATE["lowlight"] = keep[1]
+    return "back to low light within 10 s after a long light (night 30 / 45 / 55), dusk switches once, a cloud not"
+
+
+SELFTEST_EXTRA.append(("Low-light mode: hysteresis, back fast after a light (410)", lowlight_selftest))

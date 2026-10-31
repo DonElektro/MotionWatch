@@ -270,20 +270,33 @@ def helper_detect(frame):
         sc = min(1.0, 640.0 / max(1, w))
         small = cv2.resize(frame, (int(w * sc), int(h * sc))) if sc < 1.0 else frame
         ok, buf = cv2.imencode(".jpg", small, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        jpg_h, jpg_w = small.shape[:2]
         if ok:
             HELPER["busy"] = True
 
             def work(jpg=buf.tobytes(), sc=sc, u=u, code=code):
                 t0 = time.time()
                 try:
-                    d = _helper_post(u, code, jpg, float(CFG["ai_conf"]), float(CFG["object_conf"]))
+                    # Code-Prüfung M3: «Person?» (232) also with the PC helper - with the standard model (SSD, the score is the
+                    # same on both sides) the helper is asked with the low person threshold WEAK_AI_MIN and the boxes are split
+                    # here exactly like AIDetector.detect does it; another model: as before, without weak boxes
+                    need = float(CFG["ai_conf"])
+                    ssd = str(HELPER.get("model") or "") == "SSD MobileNet V2"
+                    ask = min(need, WEAK_AI_MIN) if ssd else need
+                    d = _helper_post(u, code, jpg, ask, float(CFG["object_conf"]))
                     if not d.get("ok"):
                         raise ValueError(str(d.get("error") or "no answer"))
                     k = 1.0 / sc
                     boxes = [(int(b[0] * k), int(b[1] * k), int(b[2] * k), int(b[3] * k), float(b[4])) for b in d.get("boxes", [])]
                     objs = [(int(b[0] * k), int(b[1] * k), int(b[2] * k), int(b[3] * k), float(b[4]), int(b[5])) for b in d.get("objects", [])]
+                    weak_ok = ssd and str(d.get("model") or "SSD MobileNet V2") == "SSD MobileNet V2"
+                    weak = [b for b in boxes if b[4] < need] if weak_ok else []
+                    boxes = [b for b in boxes if b[4] >= need]
+                    if d.get("model") and str(d.get("model")) != str(HELPER.get("model") or ""):
+                        HELPER["model"] = str(d["model"])[:40]     # the helper changed its model: from the next picture
                     HELPER.update(res=(boxes, objs), res_t=time.time(), ms=int(d.get("ms") or 0), rtt=int((time.time() - t0) * 1000),
-                                  n=HELPER["n"] + 1, fails=0, last_ok=time.time(), msg="")
+                                  n=HELPER["n"] + 1, fails=0, last_ok=time.time(), msg="", res_weak=weak, res_weak_ok=weak_ok,
+                                  res_size=(int(round(jpg_w / sc)), int(round(jpg_h / sc))))
                 except Exception as e:
                     HELPER["fails"] += 1; HELPER["msg"] = str(e)[:80]
                     if HELPER["fails"] >= 3:
@@ -896,6 +909,7 @@ class AIDetector:
         self.boxes = []          # last persons, in processing-frame coordinates
         self.objects = []        # last non-person objects (x, y, w, h, conf, cls)
         self.weak = []; self.weak_t = 0.0   # real-reh-fusspunkt: persons below ai_conf, raw score >= WEAK_AI_MIN, 0..1 (232 «Person?»)
+        self.weak_ok_t = 0.0                # Code-Prüfung M3: when the AI last looked for weak persons (232: else no «animal»)
         self.frame_counter = 0
         STATE["ai_model_note"] = ""
         if CFG.get("ai_model") == "own" and not force_ssd:
@@ -959,6 +973,11 @@ class AIDetector:
             got = helper_detect(frame if HELPER["busy"] else fog_ai_input(frame))   # 411: in fog with the contrast lifted (only when sent)
             if got is not None:
                 self.boxes, self.objects = got
+                if HELPER.get("res_weak_ok"):                # M3: the weak person boxes of the helper (SSD) for «Person?» (232)
+                    fw, fh = HELPER.get("res_size") or (frame.shape[1], frame.shape[0])
+                    self.weak = [(b[0] / max(1, fw), b[1] / max(1, fh), b[2] / max(1, fw), b[3] / max(1, fh), b[4])
+                                 for b in HELPER.get("res_weak") or []]
+                    self.weak_t = self.weak_ok_t = float(HELPER.get("res_t") or 0.0)
                 STATE["ai_persons"] = len(self.boxes)
                 STATE["ai_status"] = f"PC · {HELPER['ms']} ms"
                 return self.boxes
@@ -987,9 +1006,11 @@ class AIDetector:
             need = own_ai_thresholds(self.meta, float(CFG["ai_conf"]), 0.5)[self.meta["classes"].index("person")] \
                 if self.kind == "yolo" and "person" in (self.meta or {}).get("classes", []) else float(CFG["ai_conf"])
             low = (0.5 + (WEAK_AI_MIN - float(self.meta["conf"].get("person", 0.35)))) if self.kind == "yolo" else WEAK_AI_MIN
-            boxes, objects = self.infer(frame, min(float(CFG["ai_conf"]), low), CFG["object_conf"])
+            img_, k_ = ai_view(self, frame)                 # real-erk-e3: the own YOLO model sees the camera picture (418z)
+            boxes, objects = self.infer(img_, min(float(CFG["ai_conf"]), low), CFG["object_conf"])
+            boxes, objects = ai_unscale(boxes, k_), ai_unscale(objects, k_)
             self.weak = [(b[0] / w, b[1] / h, b[2] / w, b[3] / h, b[4]) for b in boxes if b[4] < need]
-            self.weak_t = time.time()
+            self.weak_t = self.weak_ok_t = time.time()
             boxes = [b for b in boxes if b[4] >= need]
         except Exception as e:
             if self.kind != "yolo":
@@ -999,23 +1020,12 @@ class AIDetector:
             note = STATE["ai_model_note"]; self.__init__(force_ssd=True); STATE["ai_model_note"] = note
             return self.boxes
         # 2.98.13: «KI-Lupe» - something small moves (a person far away, 20-30 pixels in the 300 x 300 picture of the AI):
-        # look at that part once more, enlarged. Far persons were found by the AI only rarely before.
-        if CFG.get("ai_zoom", True):
-            for hb in sorted(getattr(self, "hints", []), key=lambda b: -b[2] * b[3])[:1]:
-                if any(iou(hb, b[:4]) > 0.1 for b in boxes):
-                    continue
-                side = int(min(min(w, h), max(110, 3.2 * hb[3])))
-                cx, cy = hb[0] + hb[2] // 2, hb[1] + hb[3] // 2
-                x0 = max(0, min(w - side, cx - side // 2)); y0 = max(0, min(h - side, cy - side // 2))
-                crop = frame[y0:y0 + side, x0:x0 + side]
-                if crop.size == 0:
-                    continue
-                for a1, b1, bw, bh, conf in self.infer(crop, CFG["ai_conf"], 2.0)[0]:      # only persons
-                    bx = (x0 + a1, y0 + b1, max(1, bw), max(1, bh), conf)
-                    if bx[3] >= 0.6 * side and side > 0.8 * min(w, h):
-                        continue                               # the whole crop as one «person»: not trusted
-                    if not any(iou(bx[:4], b[:4]) > 0.3 for b in boxes):
-                        boxes.append(bx); STATE["ai_zoom_hits"] = STATE.get("ai_zoom_hits", 0) + 1
+        # look at that part once more, enlarged. real-erk-e3: also far movement without a track, with the camera pixels, the
+        # hints in turn, up to 4 tiles in one run with the own model (418z ai_zoom_run).
+        try:
+            boxes = ai_zoom_run(self, frame, boxes, w, h)
+        except Exception as e:                              # never break the camera loop because of the Lupe
+            log_event("ai", f"AI magnifier: {e}"[:160])
         self.boxes = boxes; self.objects = objects
         STATE["ai_ms"] = int((time.time() - t0) * 1000)
         STATE["ai_status"] = f"running · {STATE['ai_ms']} ms"

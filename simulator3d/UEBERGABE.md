@@ -1,8 +1,32 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.4.0** · MoveEye **3.4.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.6.2** · MoveEye **3.6.2** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.6.2 (MoveEye 3.6.2): Fehlerkorrekturen MoveEye (nur MoveEye)
+
+- Simulator-Code unverändert. MoveEye: 060, 130, 139, 180, 232 (`thermal_ai_checked`, Signatur `veto=(), ai=None` neben
+  E1 `thermal_vehicle_step`), 410, 417, 635a, 635b, 639i; `bauen.py` bricht über 8 MiB ab und warnt ab 7,5 MiB.
+
+## NEU in 3.6.1 (MoveEye 3.6.1): Sicherheit und Fehler im Simulator
+
+- `net.gd`: gefährliche /control-Befehle (werk reset, spieltest clear, set_password) und /dev/… nur von diesem PC oder vom
+  verbundenen MoveEye (sonst `--fernsteuerung-offen` / `MWSIM_FERNSTEUERUNG_OFFEN=1`). Hospiz-Rätsel und Maggie-Bild pro
+  Spielstand (`spielstand.gd`, `horror_raetsel.gd`, `geschichten.gd`), Kapitel-Sprung ohne echten Spielstand
+  (`devtool_kapitel.gd`). `werk.gd`: sicherer Neustart, `KEEP_COPIES` 3, `parcours/lernbilder/` in KEEP.
+
+## NEU in 3.6.0 (MoveEye 3.6.0): Feste Fehl-Personen (nur MoveEye)
+
+- Simulator-Code unverändert. MoveEye: neue Teile `418_feste_fehlperson.py` (Personen-Kasten, der sich nie bewegt → Karte
+  «ignorieren?», Kopf folgt nicht; warme Motoren keine Person; KI-Tier bleibt Tier), `599f_fenster_fehlperson.py`,
+  `639l_uebersetzungen_fehlperson.py`; 232, 410 (`veto_` neben dem Kriech-Block von 418k), 550.
+
+## NEU in 3.5.0 (MoveEye 3.5.0): Kriechende nachts, KI-Lupe weit (nur MoveEye)
+
+- Simulator-Code unverändert. MoveEye: neue Teile `418k_kriechende_nacht.py` (Voralarm «⚠ Etwas Grosses am Boden», nach 6 s
+  «Person? (kriecht)»; Fuchs/Igel nicht), `418z_ki_zoom_weit.py` (KI-Lupe auch für kleine, weite Bewegungen, nicht bei
+  starkem Wind), `639x_uebersetzungen_kriechende.py`; 180, 410.
 
 ## NEU in 3.4.0 (MoveEye 3.4.0): Nebel-Modus und Dämmerung/Wind (nur MoveEye)
 
