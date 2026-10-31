@@ -2528,6 +2528,12 @@ func control(d: Dictionary) -> Dictionary:
 			var v = by_id[id]
 			var w: Vector3 = v.where()
 			return {"ok": true, "pos": [snappedf(w.x, 0.01), snappedf(w.y, 0.01), snappedf(w.z, 0.01)], "tal": [snappedf(v.c.x, 0.1), snappedf(v.c.y, 0.1), snappedf(v.c.z, 0.1)]}
+		"go":                                            # the view flies to the vignette (tests, screenshots)
+			if not by_id.has(id):
+				return {"ok": false, "error": "unknown", "ids": by_id.keys()}
+			var gw: Vector3 = by_id[id].where()
+			m.fly_to(gw + Vector3(0, 1.0, 0), float(d.get("dist", 9.0)))
+			return {"ok": true, "pos": [snappedf(gw.x, 0.01), snappedf(gw.y, 0.01), snappedf(gw.z, 0.01)]}
 		"state":                                         # tests: jump a vignette to a state (and hold it)
 			if by_id.has(id):
 				if d.has("state"):
