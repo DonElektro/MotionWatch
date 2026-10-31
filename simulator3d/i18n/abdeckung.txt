@@ -1,25 +1,25 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 5023 (Stellen: 6972)
-Übersetzt: en 5023, fr 5023, it 5023, rm 5023
+Texte gesamt: 5081 (Stellen: 7040)
+Übersetzt: en 5081, fr 5081, it 5081, rm 5081
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 380 Stellen
-Nicht mehr im Code (noch in texte.json): 52
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 383 Stellen
+Nicht mehr im Code (noch in texte.json): 56
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 56 Stellen in wizpics.gd 21, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 17881, schlüssel 12648, keine Wörter 8148, index 6381, technisch 2302, doc 1460, einheit 193, englisch 86, log 78, pfad 66, html 56, klasse 23, shader 4
+Übersprungen (Grund: Anzahl): kennung 18033, schlüssel 12791, keine Wörter 8189, index 6461, technisch 2337, doc 1477, einheit 196, englisch 86, log 78, pfad 66, html 56, klasse 23, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  669    29
   gamewiz.gd               252    15
-  bergtal_abenteuer.gd     240     5
+  bergtal_abenteuer.gd     238     5
   game.gd                  211    32
-  bergtal.gd               199     5
   bergtal_abenteuer_daten.gd   199     0
+  bergtal.gd               199     5
   bergtal_horror.gd        154     3
   bib_objekte.gd           108     0
   bergtal_orte.gd          108     0
-  testrun.gd                94     3
   bergtal_aussicht.gd       94     4
+  testrun.gd                94     3
   templates.gd              93     6
   einbruch.gd               91     0
   ferienpark.gd             89     0
@@ -37,6 +37,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   erlebniswelt.gd           62     0
   bib_berg.gd               60     0
   quick.gd                  57     2
+  abenteuer_rucksack.gd     55     3
   bergtal_erleben_b.gd      55     0
   entdecken.gd              55     0
   spielbereich.gd           51     0
@@ -75,8 +76,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   wetter.gd                 23     0
   worlds.gd                 23     0
   kompakt_festival.gd       23     0
-  dataset.gd                22     3
   fenster.gd                22     0
+  dataset.gd                22     3
   explore.gd                22     2
   mini.gd                   21     1
   patrol.gd                 20     0
@@ -99,6 +100,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamesneak.gd              15     0
   grafik_hoch.gd            15     1
   home_editor.gd            14     3
+  abenteuer_inventar.gd     13     0
   life.gd                   13     0
   fahrzeuge.gd              13     1
   gamekihilfe.gd            13     4
@@ -174,6 +176,13 @@ Unsicher:
   'Wide camera (NoIR Wide)': Kameraname an MoveEye (/info) – nicht umhüllen
 
 Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {name} machen:
+  abenteuer_rucksack.gd:224  'keine Wunschliste: '
+  abenteuer_rucksack.gd:412  ' und '
+  abenteuer_rucksack.gd:468  'Fertig'
+  bergtal_horror.gd:40  'offen'
+  bergtal_horror.gd:58  'offen'
+  bergtal_horror.gd:1093  'Fertig'
+  tour.gd:187  'Fertig'
   b3d.gd:86  'Kachel leer: '
   b3d.gd:186  'glTF nicht lesbar: '
   b3d.gd:208  'Kachel ohne Dreiecke: '
@@ -182,19 +191,15 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:246  'Aussicht: '
   bergtal.gd:2180  'Schlafplatz: '
   bergtal.gd:2182  'Aussicht: '
-  bergtal_abenteuer.gd:321  'Start: '
-  bergtal_abenteuer.gd:776  ' auf der Bank mit Aussicht'
-  bergtal_abenteuer.gd:1834  'Wird frei: '
-  bergtal_abenteuer.gd:1966  '  · %.1f kg'
-  bergtal_abenteuer.gd:2050  ' - Bank'
+  bergtal_abenteuer.gd:325  'Start: '
+  bergtal_abenteuer.gd:783  ' auf der Bank mit Aussicht'
+  bergtal_abenteuer.gd:1848  'Wird frei: '
+  bergtal_abenteuer.gd:1980  '  · %.1f kg'
+  bergtal_abenteuer.gd:2063  ' - Bank'
   bergtal_aussicht.gd:357  'von'
   bergtal_aussicht.gd:536  'von'
   bergtal_aussicht.gd:1159  'Abzeichen: '
   bergtal_aussicht.gd:1160  'von'
-  bergtal_horror.gd:40  'offen'
-  bergtal_horror.gd:58  'offen'
-  bergtal_horror.gd:1093  'Fertig'
-  tour.gd:187  'Fertig'
   camphys.gd:153  ' · %.1f Blenden zu dunkel'
   dataset.gd:54  'Spiel: '
   dataset.gd:319  ' · Vielfalt hoch'
@@ -298,11 +303,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   smalltv.gd:276  ' · vor %d s'
   smalltv.gd:360  ' · Uhr (kein Fotoalbum)'
   smalltv.gd:360  'SmallTV (virtuell)'
-  figur_paket.gd:104  'Paket lässt sich nicht öffnen: '
-  figur_paket.gd:122  'Datei im Paket kaputt: '
-  figur_paket.gd:150  'Skeleton3D:'
-  figur_paket.gd:713  ' – Fehler: '
-  figur_paket.gd:731  'Figuren-Paket ist schon da: '
+  figur_paket.gd:111  'Paket lässt sich nicht öffnen: '
+  figur_paket.gd:129  'Datei im Paket kaputt: '
+  figur_paket.gd:157  'Skeleton3D:'
+  figur_paket.gd:735  ' – Fehler: '
+  figur_paket.gd:753  'Figuren-Paket ist schon da: '
   game.gd:1449  ' · 🏆 alle gefunden'
   game.gd:1453  'Wächter · '
   game.gd:1479  ' · 🦆 %d s beobachtet'
