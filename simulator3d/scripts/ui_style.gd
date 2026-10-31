@@ -16,6 +16,12 @@ const FIELD := Color("#0c121a")
 const BTN2 := Color("#1a2433")
 
 
+# real-layout-leiste: «Symbole farbig | schlicht» like MoveEye. schlicht (true): grey, green while on (the look up to 3.19);
+# farbig: every symbol in its own colour, a green dot while on (orange: something to watch)
+static var icons_plain := true
+const ICON_COL := {"link": Color("#3b8cff"), "keys": Color("#b38cff")}
+
+
 static func box(bg: Color, border := LINE, r := 10, pad := 8, bw := 1) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
 	s.bg_color = bg
@@ -307,6 +313,10 @@ static func group_icon(kind: String) -> Control:
 static func _draw_group_icon(d: Control, kind: String) -> void:
 	var c := Vector2(10, 10)
 	var col: Color = d.get_meta("col", ACC)             # a symbol can change its colour (connection: green)
+	if not icons_plain:                                 # «farbig»: own colour, the state as a dot in the corner
+		if col == GRN or col == ORG:
+			d.draw_circle(Vector2(18, 3), 3.0, col)
+		col = ICON_COL.get(kind, Color.from_hsv(float(absi(hash(kind)) % 360) / 360.0, 0.55, 0.95))
 	var w := 1.8
 	var P := func(pts: Array) -> PackedVector2Array:
 		var out := PackedVector2Array()

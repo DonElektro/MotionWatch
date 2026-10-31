@@ -241,7 +241,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_19_3.zip"
-ZD_SHA256 = "a90bee6a76f1689722375ae004ff5505d440298d4ac9ff49f3b94d55abec4abf"
+ZD_SHA256 = "850bf598225a88430eaa0e0864f977967f9561066da84b3c0f52cb07b48a171d"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -1869,7 +1869,7 @@ _save_timer = None
 
 
 WEB_UI_KEY = re.compile(r"^mw-[A-Za-z0-9_:\-./ ]{1,90}$")
-WEB_UI_LOCAL = {"mw-sound", "mw-hdr", "mw-listen-vol"}                      # per device on purpose (sound on the phone, not on the PC)
+WEB_UI_LOCAL = {"mw-sound", "mw-hdr", "mw-listen-vol", "mw-hdr-tabs", "mw-hdr-chips"}   # per device on purpose (sound on the phone, not on the PC; 639o: header folds)
 
 
 # ---- web password set on the page / in the window: stored as a salted PBKDF2 hash; checked passwords are remembered
@@ -38764,7 +38764,7 @@ G2_TOURS = {
                 ("#btn-fav", "Favourites", "⭐ keeps a recording for ever; the others are deleted when the memory is full."),
                 ("nav.subnav", "More history", "Night timeline, animal diary, message list and log.")],
     "settings": [("#srch", "Search", "Type a word - every setting is found, sorted by topic."),
-                 ("#simplebar", "Simple or Expert", "«Simple» shows only the important settings - for this page. «Expert» shows all."),
+                 ("#mwbar .mwb-mode", "Simple or Expert", "«Simple» shows only the important settings - for this page. «Expert» shows all."),
                  ("#settings", "Topics", "Open a topic to change it. Changes are saved at once."),
                  ("#settings .g2-q", "The «?»", "Next to a setting: what it does and what we recommend."),
                  ("nav.subnav a[href='/cams']", "Cameras", "Choose the camera, add a second one, check the thermal picture.")],
@@ -46819,7 +46819,7 @@ DE = {
     "FPS": "FPS", "PERSONS NOW": "PERSONEN JETZT", "DETECTIONS": "ERKENNUNGEN", "VEHICLES IGNORED": "FAHRZEUGE IGNORIERT",
     "SHADOW % REMOVED": "SCHATTEN % ENTFERNT", "SYSTEM · CPU": "SYSTEM · CPU", "WEATHER": "WETTER",
     "Rain score": "Regen-Wert", "Wind score": "Wind-Wert", "Trigger multiplier (wind)": "Auslöse-Faktor (Wind)",
-    "EVENT LOG": "EREIGNISPROTOKOLL", "important": "Wichtiges", "Expand all": "Alle öffnen", "Collapse all": "Alle schliessen",
+    "EVENT LOG": "EREIGNISPROTOKOLL", "important": "Wichtiges", "Expand all": "Alle aufklappen", "Collapse all": "Alle zuklappen",
     "Centre camera": "Kamera zentrieren", "Snapshot": "Schnappschuss", "Add current pan as waypoint": "Aktuelle Position als Wegpunkt",
     "Clear": "Löschen", "Recalibrate (scene empty)": "Neu kalibrieren (Szene leer)", "Reset all settings": "Alle Einstellungen zurücksetzen",
     "Test notification": "Test-Benachrichtigung", "Test all channels": "Alle Kanäle testen", "testing …": "teste …", "No channel set up.": "Kein Kanal eingerichtet.", "Webhook URL (POST JSON on person; e.g. https://ntfy.sh/my-topic)":
@@ -48230,7 +48230,7 @@ DE.update({    # window in the look of the web page (2.25.0)
     "show / hide fields": "Felder ein-/ausblenden", "All quiet – I'm keeping watch!": "Alles ruhig – ich halte Wache!",
     "Happy Swiss National Day!": "Schöne Bundesfeier!", "Swap stick and buttons (left- / right-handed)": "Stick und Knöpfe tauschen (Links- / Rechtshänder)", "moving to waypoint": "fährt zu Wegpunkt", "waiting at": "wartet bei",
     "need 2+ waypoints": "mindestens 2 Wegpunkte nötig", "paused (tracking person)": "Pause (verfolgt Person)",
-    "paused (manual control)": "Pause (Handsteuerung)", "System": "System", "Log": "Protokoll", "Expand all": "Alle öffnen", "Collapse all": "Alle schliessen",
+    "paused (manual control)": "Pause (Handsteuerung)", "System": "System", "Log": "Protokoll", "Expand all": "Alle aufklappen", "Collapse all": "Alle zuklappen",
 })
 DE.update({    # texts that were written twice in the code (German / English) - now one English text + translations
     "not possible in the demo": "In der Demo nicht möglich",
@@ -48422,6 +48422,11 @@ TK_AI_MODEL_KEYS = ("ai_model", "ai_own_url", "ai_own_auto")   # 2.98.23 (Konzep
 TK_SPECIES_KEYS = ("species_on", "species_model", "species_norm", "species_conf")   # aufr (Konzept): the group «Tierart» (like «KI-Modell»)
 SECTIONS = ["Wake-up alarm", "Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup", "Security"]
+
+
+def tk_icons():
+    """639o: symbols «color» or «plain» (web_ui mw-icons, the switch of the web pages)"""
+    return "plain" if str(CFG.get("web_ui", {}).get("mw-icons", "")) == "plain" else "color"
 
 
 class Toggle(tk.Frame):
@@ -49687,11 +49692,8 @@ class App:
         inner = ttk.Frame(canvas, style="Bg.TFrame"); win = canvas.create_window((0, 0), window=inner, anchor="nw")
         inner.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
         canvas.bind("<Configure>", lambda e: canvas.itemconfigure(win, width=min(e.width, 860)))     # readable lines on a wide screen
+        lb = self._mwbar(right, tab); lb.pack(side="top", fill="x", pady=(0, 8), before=sb)    # 639o: the bar like on every web page
         bar = tk.Frame(right, bg=C["bg"]); bar.pack(side="top", fill="x", pady=(0, 10), before=sb)   # stays at the top while scrolling
-        # like the web page: search field, then «Collapse all · Groups only · Expand all» with the same drawn symbols (nurgruppen)
-        self._fold_btn(bar, "open", lambda: self._all_sections(True), tr("Expand all")).pack(side="right")
-        self._fold_btn(bar, "groups", self._groups_only, tr("Groups only")).pack(side="right", padx=(0, 6))
-        self._fold_btn(bar, "close", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
         sf = tk.Frame(bar, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"]); sf.pack(side="left", fill="x", expand=True, padx=(0, 8))
         tk.Label(sf, text="⚲", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 11)).pack(side="left", padx=(8, 0))
         self.search_var = tk.StringVar()
@@ -49704,27 +49706,11 @@ class App:
         self.search_var.trace_add("write", lambda *a: self._search())
         if tab == "sim":                                   # 2.98.14: tab Simulator - status, the assistant, the simulator settings
             self._tk_sim_head(inner)
-        # Simple / Expert (like the web page)
-        mrow = tk.Frame(inner, bg=C["line"], padx=1, pady=1)
-        if tab != "sim":
-            mrow.pack(fill="x", pady=(0, 10))
         self._simple_seen = bool(CFG["ui_simple"])
         _G2_SIMPLE.v = page_simple(tab)                    # 586: Simple / Expert of this tab (simple_hidden in the window thread)
-        for i, (val, lab) in enumerate(((True, tr("Simple")), (False, tr("Expert")))):
-            on = page_simple(tab) == val
-            l = tk.Label(mrow, text=lab, font=("DejaVu Sans", 9, "bold"), pady=4, cursor="hand2",
-                         bg=C["acc"] if on else C["field"], fg="#ffffff" if on else C["mut"])
-            l.pack(side="left", fill="x", expand=True, padx=(0 if i == 0 else 1, 0))
-            l.bind("<Button-1>", lambda e, v=val: self._set_simple(v))
         if page_simple(tab) and tab != "sim":
             tk.Label(inner, text=tr("Simple: only the important settings. «Expert» shows all of them."), bg=C["bg"], fg=C["mut"],
                      font=("DejaVu Sans", 8), anchor="w", justify="left", wraplength=330).pack(fill="x", pady=(0, 8))
-        # nurgruppen: «On start: groups only» next to Simple / Expert (same switch as on the web page, CFG ui_start_groups)
-        sg_ = Toggle(inner, tr("On start: groups only"), CFG.get("ui_start_groups", True), self._set_start_groups)
-        for w_ in (sg_, sg_.cv, sg_.lbl):
-            w_.config(bg=C["bg"])
-        sg_.lbl.config(font=("DejaVu Sans", 9)); sg_.pack(fill="x", pady=(0, 10)); self.start_groups_tg = sg_
-        Tip(sg_.lbl, tr("On every start the settings show only the groups. Off: the menus open as you left them."))
         self.grp_meta = {}; self._open_before = None
         self.no_match = tk.Label(inner, text=tr("No match"), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9))
         # 9 groups (same as the web page). Inside a group every topic opens / closes the same way (the first one is open);
@@ -49821,8 +49807,9 @@ class App:
             if m[0].cget("fg") != col:
                 m[0].config(fg=col)
             ic_ = getattr(self, "grp_icons", {}).get(key)
-            if ic_ is not None and ic_.cget("fg") != (C["grn"] if on else C["txt"]):
-                ic_.config(fg=C["grn"] if on else C["txt"])
+            icol = C["grn"] if on else (C["mut"] if tk_icons() == "plain" else C["txt"])     # 639o: «schlicht» = grey until on
+            if ic_ is not None and ic_.cget("fg") != icol:
+                ic_.config(fg=icol)
 
     def _sub_open(self, k):
         return self._shown.get(k, k in self.open_secs)
@@ -50918,6 +50905,45 @@ class App:
     def _set_start_groups(self, v):
         CFG["ui_start_groups"] = bool(v); save_settings()
         self._groups_only(save=False) if v else self._own_view()
+
+    def _mwbar(self, parent, tab):
+        """639o: the bar of every web page in the window - Simple / Expert · Symbols coloured / plain · On start: groups only ·
+        Collapse all / Groups only / Expand all (same order, texts and symbols; a narrow window: two lines)"""
+        f = tk.Frame(parent, bg=C["bg"]); small = self._lay[0]
+        r1 = tk.Frame(f, bg=C["bg"]); r1.pack(fill="x")
+        r2 = tk.Frame(f, bg=C["bg"]) if small else r1
+        if small:
+            r2.pack(fill="x", pady=(6, 0))
+
+        def seg(host, items, cur, cmd, dis=False):
+            w = tk.Frame(host, bg=C["line"], padx=1, pady=1)
+            for i, (val, lab) in enumerate(items):
+                on = cur == val
+                l = tk.Label(w, text=lab, font=("DejaVu Sans", 9, "bold"), pady=3, padx=8, cursor="" if dis else "hand2",
+                             bg=C["acc"] if on and not dis else C["field"], fg="#ffffff" if on and not dis else C["mut"])
+                l.pack(side="left", padx=(0 if i == 0 else 1, 0))
+                if not dis:
+                    l.bind("<Button-1>", lambda e, v=val: cmd(v))
+            return w
+        nosimple = tab == "sim"                             # the tab Simulator has only one view (the window shows all its groups)
+        m = seg(r1, ((True, tr("Simple")), (False, tr("Expert"))), page_simple(tab), self._set_simple, nosimple)
+        m.pack(side="left"); Tip(m, tr("This page has only one view") if nosimple else tr("Simple: only the important settings. «Expert» shows all of them."))
+        ic = seg(r1, (("color", "🎨 " + tr("Symbols coloured")), ("plain", "◯ " + tr("plain"))), tk_icons(), self._set_icons)
+        ic.pack(side="left", padx=(8, 0)); Tip(ic, tr("Symbols: green dot or green symbol = switched on"))
+        sg_ = Toggle(r2, tr("On start: groups only"), CFG.get("ui_start_groups", True), self._set_start_groups)
+        for w_ in (sg_, sg_.cv, sg_.lbl):
+            w_.config(bg=C["bg"])
+        sg_.lbl.config(font=("DejaVu Sans", 9), wraplength=0); sg_.pack(side="left", padx=(0 if small else 10, 0)); self.start_groups_tg = sg_
+        Tip(sg_.lbl, tr("On every start the settings show only the groups. Off: the menus open as you left them."))
+        self._fold_btn(r2, "open", lambda: self._all_sections(True), tr("Expand all")).pack(side="right")
+        self._fold_btn(r2, "groups", self._groups_only, tr("Groups only")).pack(side="right", padx=(0, 6))
+        self._fold_btn(r2, "close", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
+        return f
+
+    def _set_icons(self, v):
+        """639o: symbols «color» | «plain» - the same value as the web pages (web_ui mw-icons, so every device and the window agree)"""
+        if v != tk_icons():
+            web_ui_update({"mw-icons": "plain" if v == "plain" else "color"}); self.root.after(30, self._rebuild)
 
     def _fold_btn(self, parent, kind, cmd, tip):
         """the three fold buttons with the drawn symbols of the web page (530: arrows in · two bars · arrows out)"""
@@ -60721,7 +60747,7 @@ for _k, _v in _HX17.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
-_HX18 = {'Groups only': ('Nur Gruppen öffnen', 'Ouvrir seulement les groupes', 'Aprire solo i gruppi', 'Avrir mo las gruppas')}
+_HX18 = {'Groups only': ('Nur Gruppen', 'Ouvrir seulement les groupes', 'Aprire solo i gruppi', 'Avrir mo las gruppas')}
 for _k, _v in _HX18.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
@@ -68031,6 +68057,99 @@ def trl_selftest():
 
 
 SELFTEST_EXTRA.append(("Trailer der Geschichten (page /sim/trailer, owner only)", trl_selftest))
+# Daniel (31.10.2026, Screenshots iPad): «Kopfbereich einklappbar, beide Teile einzeln» und «eine einheitliche Bedienleiste oben auf jeder Seite»
+# (bisher nur in Einstellungen: Suche mit drei Knöpfen, darunter Einfach / Experte, Symbole, Beim Start). Der Baustein kommt über
+# render_page() auf JEDE Seite mit Reitern (nav.nav); die Seite kann ihn über window.MWB_PAGE anpassen:
+#   simplePage() -> Seitenschlüssel für /api/ui_simple ("" = auf dieser Seite gibt es nur eine Ansicht: Einfach / Experte grau)
+#   simple(on)   -> eigene Umschaltung (sonst: speichern und neu laden)
+#   startGroups(on) -> eigener Schalter «Beim Start: Nur Gruppen» (sonst: speichern, bei «ein» sofort «Nur Gruppen»)
+# Die drei Klapp-Knöpfe wirken auf alle sichtbaren Klappkarten der Seite (<details>, dazu die Karten der Simulator-Steuerung
+# .sc-card / .sc-sub; ohne Hilfe- und Statuskarten: #g2-tt, [data-mwb-skip]); «Nur Gruppen» = oberste Karten offen, die Themen darin zu. Keine Klappkarten: grau. Gleiche Ids wie früher
+# (#all-close, #all-groups, #all-open, #start-groups), damit Hilfe, Rundgang und Bildschirmleser sie weiter finden.
+# Simulator (Godot): derselbe Baustein in scripts/bedienleiste.gd; Pi-Fenster: App._mwbar() in 570.
+
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_MWB = {
+    'Hide the tabs': ('Reiter einklappen', 'Replier les onglets', 'Comprimi le schede', 'Zuppentar ils registers'),
+    'Show the tabs': ('Reiter ausklappen', 'Afficher les onglets', 'Mostra le schede', 'Mussar ils registers'),
+    'Hide the status line': ('Statuszeile einklappen', 'Replier la ligne d’état', 'Comprimi la riga di stato', 'Zuppentar la lingia da status'),
+    'Show the status line': ('Statuszeile ausklappen', 'Afficher la ligne d’état', 'Mostra la riga di stato', 'Mussar la lingia da status'),
+    'Status': ('Status', 'État', 'Stato', 'Status'),
+    'This page has only one view': ('Diese Seite hat nur eine Ansicht', 'Cette page n’a qu’une seule vue', 'Questa pagina ha una sola vista',
+                                    'Questa pagina ha mo ina vista'),
+    'Nothing to fold on this page': ('Auf dieser Seite gibt es nichts zum Klappen', 'Rien à replier sur cette page', 'Niente da comprimere in questa pagina',
+                                     'Nagut da zuppentar sin questa pagina'),
+    'Symbols coloured': ('Symbole farbig', 'Symboles en couleur', 'Simboli a colori', 'Simbols colurads'),
+    'plain': ('schlicht', 'sobres', 'semplici', 'simpels'),
+}
+for _k, _v in _HX_MWB.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+MWB_KEYS = sorted(set(_HX_MWB) | {
+    "Simple", "Expert", "On start: groups only", "Collapse all", "Groups only", "Expand all",
+    "Simple: only the important settings. «Expert» shows all of them.", "Symbols: green dot or green symbol = switched on",
+    "On every start the settings show only the groups. Off: the menus open as you left them."})
+
+
+def mwb_tx():
+    """the texts of the bar in de / fr / it / rm (English = the key)"""
+    out = {"de": {k: DE.get(k, k) for k in MWB_KEYS}}
+    for L in ("fr", "it", "rm"):
+        out[L] = {k: TRX[L].get(k) or (DE.get(k, k) if L == "rm" else k) for k in MWB_KEYS}
+    return out
+
+
+MWB_CSS = _zd('639o_bedienleiste/MWB_CSS', "")
+
+
+MWB_JS = _zd('639o_bedienleiste/MWB_JS', "")
+
+
+# the manual (HELP_PAGE of 540): one paragraph in «Tipps & Tricks», German and English
+for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>',
+                "<p><b>▴ Kopf einklappen und Bedienleiste:</b> Die Reiterzeile und die Statuszeile oben klappst du je mit dem kleinen Pfeil "
+                "▴ ein und mit dem Griff ▾ wieder aus. Jedes Gerät merkt sich das selbst. Ist die Statuszeile eingeklappt und gibt es einen "
+                "Alarm, einen Fehler oder zu wenige Bilder pro Sekunde, zeigt der Griff einen roten Punkt und eine Kurzinfo. Unter den Reitern "
+                "steht auf jeder Seite dieselbe Leiste: Einfach / Experte, Symbole farbig / schlicht, «Beim Start: Nur Gruppen» und die drei "
+                "Knöpfe Alle zuklappen · Nur Gruppen · Alle aufklappen. Was auf einer Seite nichts bewirkt, ist grau.</p>"),
+               ('<section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>',
+                "<p><b>▴ Fold the header and the bar:</b> fold the tabs and the status line at the top one by one with the small arrow ▴ "
+                "and open them again with the grip ▾. Every device remembers it by itself. With the status line folded, an alarm, an error "
+                "or too few pictures per second show a red dot and a short note on the grip. Under the tabs every page has the same bar: "
+                "Simple / Expert, symbols coloured / plain, «On start: groups only» and the three buttons Collapse all · Groups only · "
+                "Expand all. What does nothing on a page is grey.</p>")):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+
+
+_render_page_before_mwb = render_page
+
+
+# wraps: render_page
+def render_page(page, active):
+    """+ 639o: the header folds and the bar under the tabs on every page with tabs (not on guest / kiosk pages)"""
+    out = _render_page_before_mwb(page, active)
+    if '<nav class="nav">' not in out or "<header" not in out:
+        return out
+    out = out.replace("</head>", MWB_CSS + "</head>", 1)
+    i = out.rfind("</body>")
+    tag = ("<script>window.MWB_TX=" + json.dumps(mwb_tx(), ensure_ascii=False).replace("</", "<\\/") + ";</script>" + MWB_JS)
+    return out[:i] + tag + out[i:] if i >= 0 else out + tag
+
+
+def _mwb_selftest():
+    p = render_page("<html><head></head><body><header><h1>MoveEye</h1><!--NAV--></header><main></main></body></html>", "live")
+    assert p.count('id="mwb-css"') == 1 and "window.MWB_TX=" in p and p.count("window.MWB)") == 1, "639o: bar missing / twice"
+    assert "mwbar" not in render_page("<html><head></head><body><main></main></body></html>", "guest"), "639o: bar on a page without tabs"
+    tx = mwb_tx()
+    for L in ("de", "fr", "it", "rm"):
+        assert all(tx[L].get(k) for k in _HX_MWB), "639o: text missing in " + L
+    assert {"mw-hdr-tabs", "mw-hdr-chips"} <= WEB_UI_LOCAL, "639o: header folds must stay per device"
+
+
+SELFTEST_EXTRA.append(("Header folds and bar (639o)", _mwb_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------

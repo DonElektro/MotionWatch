@@ -1,15 +1,15 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6823 (Stellen: 9475)
-Übersetzt: en 6823, fr 6823, it 6823, rm 6823
+Texte gesamt: 6827 (Stellen: 9479)
+Übersetzt: en 6827, fr 6827, it 6827, rm 6827
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 470 Stellen
 Nicht mehr im Code (noch in texte.json): 243
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 24248, schlüssel 18188, keine Wörter 11477, index 9251, technisch 3155, doc 2030, einheit 288, log 153, englisch 126, pfad 98, html 68, klasse 25, shader 6
+Übersprungen (Grund: Anzahl): kennung 24273, schlüssel 18190, keine Wörter 11477, index 9251, technisch 3156, doc 2033, einheit 288, log 153, englisch 126, pfad 98, html 68, klasse 25, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
-  main.gd                  692    42
+  main.gd                  685    42
   bergtal_abenteuer.gd     272     7
   gamewiz.gd               252    15
   abenteuer_figuren_daten.gd   238     0
@@ -139,6 +139,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   gameturm.gd               13     0
   devtool_kontakt.gd        12     0
   geschichten_faden.gd      12     0
+  bedienleiste.gd           11     0
   replay.gd                 11     1
   objekte_plus.gd           11     0
   smalltv.gd                11     4
@@ -388,7 +389,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main.gd:5400  ' · schaut nur zu: '
   main.gd:5403  ' · Treffer %d von %d Schüssen, %d Punkte'
   main.gd:5404  ' · Update: '
-  main.gd:5748  'Blinde Flecken: '
+  main.gd:5735  'Blinde Flecken: '
   main.gd:6491  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
   main.gd:6802  'Autostart: '
   main.gd:6813  'Autologon: '
