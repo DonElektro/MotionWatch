@@ -21,6 +21,11 @@ extends RefCounted
 ##          Schlafsack 4–8 clo) – je mehr Isolation, desto näher liegt die Oberfläche an der Lufttemperatur.
 ##  [Hou]   Houdas Y., Ring E.F.J. (1982): «Human Body Temperature» (Haut 32–35 °C, Gesicht ~34 °C, Hände 28–33 °C, in der
 ##          Kälte ziehen sich die Gefässe der Hände und der Nase zusammen: 20–25 °C bei 0 °C).
+##  [Choi97] Choi J.K., Miki K., Sagawa S., Shiraki K. (1997): «Evaluation of mean skin temperature formulas by infrared
+##          thermography», Int. J. Biometeorology 41: 68–75 (Hautstellen bei 22–28 °C Luft: Stirn ~34–35 °C, Brust ~34 °C,
+##          Unterarm ~32–33 °C, Oberschenkel ~31–33 °C, Unterschenkel ~30–32 °C, Fuss am kühlsten).
+##  [ISO9886] ISO 9886:2004 Bewertung der thermischen Beanspruchung (mittlere Hauttemperatur aus 4–14 Messstellen):
+##          Beine und Füsse kühlen in der Kälte am stärksten ab (Gefässverengung), der Rumpf am wenigsten.
 ##  [FLIR]  FLIR-Anwendungsbeispiele «Thermal imaging for security / automotive» (Motorhaube nach der Fahrt 40–60 °C,
 ##          Auspuff >100 °C, kühlt in 1–2 h auf Lufttemperatur ab) – Schätzwerte, keine Datenblattwerte.
 ##  [ASPH]  Studien zu städtischen Wärmeinseln (z. B. US EPA «Reducing Urban Heat Islands», Kapitel Cool Pavements):
@@ -65,22 +70,33 @@ static func skin(part: String, amb: float, active := false) -> float:
 			return 34.0 - 1.0 * ck + 0.4 * a
 		"hand":
 			return 31.5 - 6.5 * ck + 1.5 * a       # Hände: bei 0 °C ohne Handschuhe ~26 °C, nach dem Rennen wärmer
-		"arm", "leg":
-			return 31.5 - 2.0 * ck + 1.0 * a
+		"arm":
+			return 32.0 - 4.0 * ck + 1.0 * a       # nackter Unterarm (kurze Ärmel): ~32 °C bei 22 °C Luft [Choi97]
+		"leg":
+			return 31.0 - 5.0 * ck + 1.0 * a       # nacktes Bein (kurze Hose): ~31 °C, kühlt in der Kälte stärker [Choi97, ISO9886]
 	return CORE_SKIN
+# Kleidung nach Jahreszeit (kleidung.gd, 31.10.2026): nackte Haut ist im Wärmebild WÄRMER als Kleidung - bei 22 °C Luft
+# Bein nackt ~31 °C, lange Hose (light, k 0.55) ~28 °C, T-Shirt ~30 °C; bei 5 °C Bein nackt ~29 °C, Winterjacke ~12 °C.
+# Darum zeigt das Wärmebild im Sommer helle Arme und Beine, im Winter nur Gesicht und Hände hell.
 
 
-static func cloth_level(amb: float, variant := "") -> String:
-	"""was jemand bei dieser Temperatur typischerweise trägt (Schweiz, draussen)"""
+static func cloth_level(amb: float, variant := "", stufe := "") -> String:
+	"""was jemand bei dieser Temperatur typischerweise trägt (Schweiz, draussen); stufe aus kleidung.gd:
+	warm (Winter, unter 10 °C) = mindestens Jacke, lang (Nacht, Berg, Regen) = mindestens Pullover / leichte Jacke"""
 	if variant == "hooded":
 		return "thick"
+	var lvl := "thick"
 	if amb >= 22.0:
-		return "shirt"
-	if amb >= 14.0:
-		return "light"
-	if amb >= 4.0:
-		return "jacket"
-	return "thick"
+		lvl = "shirt"
+	elif amb >= 14.0:
+		lvl = "light"
+	elif amb >= 4.0:
+		lvl = "jacket"
+	if stufe == "warm" and lvl in ["shirt", "light"]:
+		lvl = "jacket"                             # Winter: Winterjacke auch an einem milden Tag
+	elif stufe == "lang" and lvl == "shirt":
+		lvl = "light"                              # am Abend / in den Bergen: Pullover über dem T-Shirt
+	return lvl
 
 
 static func cloth(amb: float, level := "jacket", wet := false, active := false) -> float:

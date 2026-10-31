@@ -111,6 +111,7 @@ var _lie_k := 0.0             # 3D-4.4: 0 standing … 1 lying (deer bedded down
 # ---- 3D-4.12 «Figuren»: a real figure with a skeleton (figur.gd) on «mittel» and better, the old one on «einfach» ----
 const Figur = preload("res://scripts/figur.gd")
 const FigurPaket = preload("res://scripts/figur_paket.gd")
+const Kleidung = preload("res://scripts/kleidung.gd")   # «Kleidung nach Jahreszeit» (31.10.2026)
 var fig = null                # the figure with a skeleton (null = built from shapes)
 var demo := -1.0              # tests (figur.gd «row»): walks on the spot at this speed
 var tag_p = null              # players: the dictionary of game.gd (name, role, team above the head)
@@ -126,6 +127,8 @@ var _want_p := 0.0
 var _post_smooth := false
 var _jacket_c := Color(0.3, 0.3, 0.3)
 var _cloth_t := 26.0
+var _short_sl := false            # kleidung.gd: short sleeves (summer)
+var _kleid_stufe := ""            # kleidung.gd: warm | lang | gemischt
 
 
 func setup(m, k: String, from: Vector3, to: Vector3, spd: float) -> void:
@@ -241,10 +244,12 @@ func _pick(key: String) -> Color:
 func _build_person() -> void:
 	"""a person (from 3D-2.7): hips and upper body as own joints (they swing against each other when walking), a face,
 	different builds and clothes, hood or cap in the cold, at night now and then a headlamp or a phone light"""
-	var cold: bool = main.ambient < 10.0
-	var wet: bool = main.weather == "rain"
 	var kid := variant == "child"
 	var jog := variant == "jogger"
+	# «Kleidung nach Jahreszeit» (kleidung.gd): Winter / Nacht / Berg lang, Sommer gemischt - für alle Figuren
+	var kw: Dictionary = Kleidung.wahl(main, variant, kid, variant == "elderly", jog)
+	var cold: bool = main.ambient < 10.0 or bool(kw["cold"])
+	var wet: bool = main.weather == "rain"
 	var camo: bool = (controlled and bool(look.get("camo", false))) or (npc_camo and not controlled)
 	var jacket: Color = Color(0.33, 0.38, 0.22) if camo else (player_color if player_color.a > 0.0 else (_pick("sport") if jog else _pick("jacket")))
 	if variant == "police":
@@ -264,7 +269,9 @@ func _build_person() -> void:
 	if main.simreal != null:
 		cloth_t = main.simreal.cloth_t(cloth_t, jog, variant)           # 3D-4.4: clothes insulate (3D-4.26: waerme.gd)
 	var old_ := variant == "elderly"                                      # 3D-3.95: more kinds of people
-	var shorts: bool = main.ambient > 21.0 and not wet and not kid and not old_ and variant not in ["police", "burglar", "courier"] and randf() < 0.45
+	var shorts: bool = bool(kw["shorts"]) and not wet                 # bis 3D-4.79: ab 21 °C, egal welche Jahreszeit / Uhrzeit
+	_short_sl = bool(kw["short_sleeves"]) and not cold and not wet
+	_kleid_stufe = str(kw["stufe"])
 	var coat: bool = cold and not jog and not kid and variant == "" and randf() < 0.3
 	if old_:
 		hair = Color(0.78, 0.78, 0.76) if randf() < 0.7 else Color(0.55, 0.55, 0.53)
@@ -397,7 +404,7 @@ func _shape_body(jacket: Color, shirt: Color, trousers: Color, skin: Color, hair
 		var hip := _pivot(hips, Vector3(0.1 * s, -0.03, 0))
 		_part(hip, _caps(0.078, 0.5), Vector3(0, -0.22, 0), trousers, cloth_t - 1.0)            # thigh
 		var knee := _pivot(hip, Vector3(0, -0.46, 0))
-		_part(knee, _caps(0.062, 0.46), Vector3(0, -0.21, 0), skin if shorts else trousers, 31.0 if shorts else cloth_t - 1.5)   # shin (bare with shorts)
+		_part(knee, _caps(0.062, 0.46), Vector3(0, -0.21, 0), skin if shorts else trousers, Waerme.skin("leg", main.ambient) if shorts else cloth_t - 1.5)   # shin (bare with shorts)
 		_part(knee, _box(0.11, 0.06, 0.27), Vector3(0, -0.43, -0.06), shoe, cloth_t - 4.0)       # shoe
 		_part(knee, _box(0.115, 0.02, 0.28), Vector3(0, -0.465, -0.06), shoe.darkened(0.5), cloth_t - 5.0)   # sole
 		legs.append([hip, s, knee])
@@ -414,7 +421,7 @@ func _shape_body(jacket: Color, shirt: Color, trousers: Color, skin: Color, hair
 		var sh := _pivot(torso, Vector3(0.245 * s, 0.48, 0))
 		_part(sh, _caps(0.058, 0.34), Vector3(0, -0.15, 0), jacket, cloth_t)
 		var el := _pivot(sh, Vector3(0, -0.3, 0))
-		_part(el, _caps(0.05, 0.32), Vector3(0, -0.14, 0), jacket if cold or not jog else skin, cloth_t if cold or not jog else 32.0)
+		_part(el, _caps(0.05, 0.32), Vector3(0, -0.14, 0), skin if _short_sl else jacket, Waerme.skin("arm", main.ambient) if _short_sl else cloth_t)
 		_part(el, _caps(0.045, 0.11), Vector3(0, -0.32, -0.01), hand_c, 31.5 if not cold else 22.0, Vector3.ZERO, Vector3(1.0, 1.0, 0.7))  # hand
 		arms.append([sh, s, el])
 	# ---- head ----
@@ -448,7 +455,7 @@ func _figure_body(jacket: Color, shirt: Color, trousers: Color, skin: Color, hai
 	var q: String = str(main.quality)
 	var strong := wide > 1.06
 	var p := {"skin": skin, "jacket": jacket, "shirt": shirt, "trousers": trousers, "shoe": shoe, "hand": hand_c, "hair": hair,
-			"shorts": shorts, "open": open_jacket, "short_sleeves": jog and not cold, "gloves": cold, "cloth_t": cloth_t, "active": jog,
+			"shorts": shorts, "open": open_jacket, "short_sleeves": _short_sl, "gloves": cold, "stufe": _kleid_stufe, "cloth_t": cloth_t, "active": jog,
 			"seg": {"medium": 8, "nice": 10, "ultra": 12}.get(q, 10),
 			"sh": 1.0 if kid else randf_range(0.93, 1.07), "hp": 1.0 if kid else randf_range(0.94, 1.1),
 			"bl": 0.0 if kid or jog else (randf_range(0.012, 0.045) if randf() < (0.5 if old_ or strong else 0.25) else 0.0),

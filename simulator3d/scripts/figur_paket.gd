@@ -15,6 +15,7 @@ extends Node3D
 ## Same interface as figur.gd: build(actor, p), sync(dt), recolour(jacket, trousers), mi / th.
 
 const T = preload("res://scripts/i18n.gd")
+const Waerme = preload("res://scripts/waerme.gd")
 const PACK := "figuren_v1.zip"
 const PACK_URL := "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/simulator3d/pakete/figuren_v1.zip"
 const PACK_SIZE := 3817330
@@ -31,6 +32,17 @@ const CHAINS := ["root", "pelvis", "spine_01", "spine_02", "spine_03", "neck_01"
 const STRAIGHT := {"pelvis": ["spine_01", 1.0], "spine_01": ["spine_03", 1.0], "Head": ["", 1.0],
 		"thigh_l": ["calf_l", -1.0], "calf_l": ["foot_l", -1.0], "thigh_r": ["calf_r", -1.0], "calf_r": ["foot_r", -1.0],
 		"upperarm_l": ["lowerarm_l", -1.0], "lowerarm_l": ["hand_l", -1.0], "upperarm_r": ["lowerarm_r", -1.0], "lowerarm_r": ["hand_r", -1.0]}
+# «Kleidung nach Jahreszeit» (kleidung.gd, 31.10.2026): the pack has only long clothes (trousers, long sleeves, boots), but
+# the body under them (Superhero_*, from kopf_*.glb) is a little bigger than the clothes of the women - its bare legs, hips
+# and arms showed through the trousers. Now the body keeps only the head and the neck (_cut_body). Short clothes (summer,
+# kleidung.gd «gemischt») are made from the long ones: the triangles of the trousers below SHORTS_Y, of the boots above
+# ANKLE_Y and of the sleeves beyond SLEEVE_X become bare skin (own surface «Bare_*», warm in the thermal picture).
+# Heights in the rest pose of the pack (T-pose, metres, figures ~1.77-1.81 m): knee ~0.5, ankle ~0.1, shoulder |x| ~0.17,
+# elbow |x| ~0.47 (measured from the meshes, 31.10.2026).
+const SHORTS_Y := 0.60                   # hem of the shorts (a hand above the knee)
+const ANKLE_Y := 0.13                    # above this the boots become bare legs (low shoes)
+const SLEEVE_X := 0.33                   # hem of the short sleeves (T-pose)
+static var _cut := {}                    # "mesh id|kind" -> ArrayMesh (made once, shared by all figures)
 const ARM_BONES := ["clavicle_l", "upperarm_l", "lowerarm_l", "hand_l", "clavicle_r", "upperarm_r", "lowerarm_r", "hand_r"]
 
 static var setting := "auto"             # «Figuren»: auto (pack if there) | paket (same, tells when missing) | eigen (never)
@@ -197,6 +209,7 @@ static func reset() -> void:
 	"""a new pack was put in place: load it again with the next figure"""
 	_st = {}
 	_tried = ""
+	_cut = {}
 
 
 # ---- building --------------------------------------------------------------------------------------------------------
@@ -217,7 +230,8 @@ func build(actor, p: Dictionary) -> void:
 	var kid: bool = v == "child"
 	sex = "f" if randf() < (0.45 if not v in ["police", "burglar", "courier"] else 0.25) else "m"
 	var hooded: bool = v == "burglar"                              # the hood of the ranger only for the burglar
-	var kl := "ranger" if (hooded or (v in ["", "elderly"] and randf() < 0.25)) else "peasant"
+	var warm: bool = str(p.get("stufe", "")) == "warm"                   # Winter: the ranger (jacket, belts) more often
+	var kl := "ranger" if (hooded or (v in ["", "elderly"] and randf() < (0.5 if warm else 0.25))) else "peasant"
 	outfit = "kleid_%s_%s" % [sex, kl]
 	if not man["kleider"].has(outfit):
 		outfit = man["kleider"].keys()[0]
@@ -248,6 +262,7 @@ func build(actor, p: Dictionary) -> void:
 	ap.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
 	ap.playback_default_blend_time = 0.25
 	_reference()
+	_clothes(p)
 	_dress(p)
 	_thermal(p)
 	_bone_boxes()
@@ -338,7 +353,10 @@ func _dress(p: Dictionary) -> void:
 			mt.metallic_specular = 0.3
 			var mn := str(src.resource_name)
 			var key := "skin"
-			if mn.contains("Hair"):
+			if mn.begins_with("Bare"):                                    # kleidung.gd: bare legs / arms (short clothes)
+				mt.albedo_color = skin
+				mt.roughness = 0.6
+			elif mn.contains("Hair"):
 				key = "hair"
 				mt.albedo_color = _hair_c.lightened(0.1)
 			elif mn.contains("Eye"):
@@ -365,6 +383,10 @@ func _thermal(p: Dictionary) -> void:
 	"""the twin for the thermal camera: skin warm, clothes as warm as actor.gd says, hair cooler"""
 	var ct: float = p.get("cloth_t", 26.0)
 	var main = a.main
+	var amb: float = float(main.ambient)
+	var act: bool = p.get("active", false)
+	var gloves: bool = p.get("gloves", false)
+	var real: bool = main.simreal != null and main.simreal.th_real
 	for m in meshes:
 		var t := MeshInstance3D.new()
 		t.mesh = m.mesh
@@ -378,15 +400,129 @@ func _thermal(p: Dictionary) -> void:
 			var src = m.mesh.surface_get_material(si)
 			var mn := str(src.resource_name) if src != null else ""
 			var temp := ct
-			if mn.contains("Hair"):
-				temp = 30.0 if not bool(p.get("gloves", false)) else 27.0
-			elif mn.contains("Eye") or mn.contains("Superhero"):
+			if mn == "Bare_Leg":                                         # bare skin is warmer than clothes (waerme.gd)
+				temp = Waerme.skin("leg", amb, act)
+			elif mn == "Bare_Arm":
+				temp = Waerme.skin("arm", amb, act)
+			elif mn.contains("Hair"):
+				temp = 30.0 if not gloves else 27.0
+			elif mn.contains("Eye"):
 				temp = 34.5
-			elif mn.contains("Regular"):
-				temp = 32.0 if not bool(p.get("gloves", false)) else 24.0
+			elif mn.contains("Superhero"):                               # the body: head and neck only (_cut_body)
+				temp = Waerme.skin("face", amb, act) if real else 34.5
+			elif mn.contains("Regular"):                                 # hands (and forearms of some outfits)
+				temp = (Waerme.skin("hand", amb, act) if real else 32.0) if not gloves else 24.0
 			t.set_surface_override_material(si, main.tmat_fixed(temp))
 		twins.append(t)
 	th = twins[meshes.find(mi)] if mi != null and not twins.is_empty() else null
+
+
+func _clothes(p: Dictionary) -> void:
+	"""kleidung.gd: the body under the clothes away (head and neck stay); short trousers / sleeves from the long ones"""
+	var shorts: bool = p.get("shorts", false)
+	var short_sl: bool = p.get("short_sleeves", false)
+	for c in skel.get_children():
+		if not (c is MeshInstance3D) or (c as MeshInstance3D).mesh == null:
+			continue
+		var m3 := c as MeshInstance3D
+		var nm := str(m3.name)
+		var body := false
+		for si in range(m3.mesh.get_surface_count()):
+			var mt = m3.mesh.surface_get_material(si)
+			if mt != null and str(mt.resource_name).contains("Superhero"):
+				body = true
+		if body:
+			m3.mesh = _cut_mesh(m3.mesh, "body")
+		elif shorts and nm.contains("Legs"):
+			m3.mesh = _cut_mesh(m3.mesh, "legs")
+		elif shorts and nm.contains("Feet"):
+			m3.mesh = _cut_mesh(m3.mesh, "feet")
+		elif short_sl and nm.contains("Bracer"):
+			m3.visible = false                                         # no bracers on bare forearms
+			skel.remove_child(m3)
+			m3.queue_free()
+		elif short_sl and nm.contains("Arms"):
+			m3.mesh = _cut_mesh(m3.mesh, "arms")
+
+
+static func _cut_mesh(src: Mesh, kind: String) -> Mesh:
+	"""a copy of the mesh with the triangles split: body = only head and neck; legs / feet / arms = the bare part as an
+	own surface «Bare_Leg» / «Bare_Arm» (same vertices, bones and weights - only the index lists differ)"""
+	var key := "%d|%s" % [src.get_instance_id(), kind]
+	if _cut.has(key):
+		return _cut[key]
+	var out := ArrayMesh.new()
+	if src is ArrayMesh:
+		out.blend_shape_mode = (src as ArrayMesh).blend_shape_mode
+	var nbs: int = src.get_blend_shape_count()
+	if src is ArrayMesh:
+		for b in range(nbs):
+			out.add_blend_shape((src as ArrayMesh).get_blend_shape_name(b))
+	var neck := _neck_y(src) if kind == "body" else 0.0
+	var bare_mat := StandardMaterial3D.new()
+	bare_mat.resource_name = "Bare_Arm" if kind == "arms" else "Bare_Leg"
+	for si in range(src.get_surface_count()):
+		var arr: Array = src.surface_get_arrays(si)
+		var mat: Material = src.surface_get_material(si)
+		var V: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+		var I = arr[Mesh.ARRAY_INDEX]
+		if I == null or (I as PackedInt32Array).is_empty():
+			I = PackedInt32Array(range(V.size()))
+		var skin_surf: bool = mat != null and str(mat.resource_name).contains("Regular")    # already skin: leave it
+		var keep := PackedInt32Array()
+		var bare := PackedInt32Array()
+		for t in range(0, I.size() - 2, 3):
+			var a0: Vector3 = V[I[t]]
+			var a1: Vector3 = V[I[t + 1]]
+			var a2: Vector3 = V[I[t + 2]]
+			var is_bare := false
+			match kind:
+				"body":
+					is_bare = minf(a0.y, minf(a1.y, a2.y)) < neck              # below the neck: away (under the clothes)
+				"legs":
+					is_bare = maxf(a0.y, maxf(a1.y, a2.y)) < SHORTS_Y
+				"feet":
+					is_bare = minf(a0.y, minf(a1.y, a2.y)) > ANKLE_Y
+				"arms":
+					is_bare = minf(absf(a0.x), minf(absf(a1.x), absf(a2.x))) > SLEEVE_X
+			if is_bare and not skin_surf:
+				bare.append_array([I[t], I[t + 1], I[t + 2]])
+			else:
+				keep.append_array([I[t], I[t + 1], I[t + 2]])
+		var W = arr[Mesh.ARRAY_WEIGHTS]
+		var flags := 0
+		if W != null and V.size() > 0 and (W as PackedFloat32Array).size() >= V.size() * 8:
+			flags = Mesh.ARRAY_FLAG_USE_8_BONE_WEIGHTS
+		var bsa: Array = src.surface_get_blend_shape_arrays(si) if nbs > 0 else []
+		for part in [[keep, mat], [bare, null if kind == "body" else bare_mat]]:
+			var idx: PackedInt32Array = part[0]
+			if idx.is_empty() or (kind == "body" and part[1] == null):
+				continue
+			var a2r := arr.duplicate()
+			a2r[Mesh.ARRAY_INDEX] = idx
+			out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a2r, bsa, {}, flags)
+			out.surface_set_material(out.get_surface_count() - 1, part[1])
+	_cut[key] = out
+	return out
+
+
+static func _neck_y(src: Mesh) -> float:
+	"""the narrowest place between the shoulders and the head (rest pose) minus 4 cm: there the body is cut"""
+	var w := {}
+	for si in range(src.get_surface_count()):
+		var V: PackedVector3Array = src.surface_get_arrays(si)[Mesh.ARRAY_VERTEX]
+		for v in V:
+			if v.y < 1.38 or v.y > 1.72 or absf(v.x) > 0.3:
+				continue
+			var b := int((v.y - 1.38) / 0.02)
+			w[b] = maxf(float(w.get(b, 0.0)), absf(v.x))
+	var best := 1.5
+	var bw := 9.0
+	for b in w:
+		if float(w[b]) < bw:
+			bw = float(w[b])
+			best = 1.38 + (int(b) + 0.5) * 0.02
+	return best - 0.04
 
 
 func _bone_boxes() -> void:

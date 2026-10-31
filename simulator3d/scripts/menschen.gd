@@ -235,7 +235,7 @@ func before_build(kind: String) -> void:
 	if kind in ["person", "child", "elderly"]:
 		var dark: bool = main.is_dark()
 		var wet: bool = main.weather == "rain"
-		var cold: bool = main.ambient < 10.0
+		var cold: bool = main.ambient < 10.0 or preload("res://scripts/kleidung.gd").stufe(main) == "warm"   # Winter: Mütze / Kapuze
 		if randf() < (0.5 if dark else 0.2):
 			nl["jacket"] = DARK[randi() % DARK.size()]
 		else:
