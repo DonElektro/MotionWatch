@@ -366,7 +366,8 @@ func update() -> void:
 	main.moonlight.light_energy = (f * share * 0.6 / maxf(sin(deg_to_rad(maxf(malt, 0.0))), 0.25)) * (1.0 - day) if malt > -1.0 else 0.0
 	# twilight: the sky stays the brightest thing for a while after sunset - deep blue above, orange-red at the horizon
 	# (before: it got dark with the ground and looked black in the night picture of the cameras)
-	var twk := smoothstep(-11.0, -0.5, el) * (1.0 - smoothstep(0.0, 6.0, el))
+	# (only from shortly before sunset: with the sun still 1° up the sky was already night-blue - live test 31.10.)
+	var twk := smoothstep(-11.0, -0.5, el) * (1.0 - smoothstep(-1.0, 2.5, el))
 	if twk > 0.0:
 		var hor0: Color = smat.get_shader_parameter("horizon_color")
 		var top0: Color = smat.get_shader_parameter("top_color")
