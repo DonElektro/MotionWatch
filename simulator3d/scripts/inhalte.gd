@@ -57,6 +57,7 @@ var _t := 0.0
 var _lite_was := false
 var _http: HTTPRequest
 var _sky_on := false
+var _crash_note := ""                 # Startfix: Hinweis nach einem Absturz beim Laden (einmal als Meldung zeigen)
 
 
 func _ready() -> void:
@@ -96,8 +97,9 @@ func _crash_check() -> void:
 	if mode != "aus":
 		mode = "aus"
 		_save_settings()
+	_crash_note = T.t("Der letzte Start brach beim Einlesen der Foto-Inhalte ab – sie sind jetzt aus (System › Grafik › Experte: «Echte Oberflächen und Himmel»).")
 	if main != null:
-		main.start_info = T.t("Der letzte Start brach beim Einlesen der Foto-Inhalte ab – sie sind jetzt aus (System › Grafik › Experte: «Echte Oberflächen und Himmel»).")
+		main.start_info = _crash_note                     # Statuszeile; dazu eine Meldung, sobald die Welt steht (on_scene)
 
 
 func _exit_tree() -> void:
@@ -122,9 +124,9 @@ func _unmark_soon() -> void:
 	Absturz beim ersten Zeichnen (Grafiktreiber, ANGLE) soll den nächsten Start auch ohne Foto-Inhalte starten lassen"""
 	_unmark_n += 1
 	var n := _unmark_n
-	await get_tree().create_timer(3.0).timeout
-	for i in range(30):
+	for i in range(5):                                    # einige Bilder (auf einem langsamen PC 1 Bild/s: nicht zu viele)
 		await get_tree().process_frame
+	await get_tree().create_timer(3.0).timeout
 	if n == _unmark_n and not _loading and is_inside_tree():
 		_mark(false)
 
@@ -547,6 +549,9 @@ func on_scene() -> void:
 	"""nach jedem Aufbau einer Szene (main._build_scene) und bei Änderungen"""
 	if not _world_ready():
 		return
+	if _crash_note != "":
+		_toast(_crash_note)
+		_crash_note = ""
 	_swapped.clear()
 	_extras = _extras.filter(func(n): return is_instance_valid(n))
 	applied = false
