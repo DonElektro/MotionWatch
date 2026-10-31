@@ -51,6 +51,29 @@ float fbm(vec2 p) {
 	return s;
 }
 
+// F2 «echte Inhalte» (inhalte.gd, 31.10.2026): Foto-Himmel (HDRI, CC0) am Tag (a) und in der Dämmerung (b).
+// hdri_mix_* = 0: genau wie bisher. Der Himmel wird so gedreht, dass die Sonne des Fotos dort steht, wo die Sonne
+// der Simulation steht; zu helle Stellen (die Sonne des Fotos) werden gekappt – die Sonne zeichnet der Shader selbst.
+uniform sampler2D hdri_a : filter_linear, repeat_enable, hint_default_black;
+uniform sampler2D hdri_b : filter_linear, repeat_enable, hint_default_black;
+uniform float hdri_mix_a = 0.0;
+uniform float hdri_mix_b = 0.0;
+uniform float hdri_rot_a = 0.0;       // Drehung (Anteil einer Runde)
+uniform float hdri_rot_b = 0.0;
+uniform float hdri_gain_a = 1.0;      // Helligkeit angleichen
+uniform float hdri_gain_b = 1.0;
+uniform float hdri_cap_a = 3.0;       // höchstens so hell (nach gain)
+uniform float hdri_cap_b = 3.0;
+uniform float hdri_low_a = -0.06;    // erst ab dieser Höhe (sin) das Foto: Bäume / Häuser am Horizont des Fotos bleiben weg
+uniform float hdri_low_b = -0.06;
+
+vec3 hdri_at(sampler2D t, vec3 d, float rot, float gain, float cap) {
+	float u = atan(d.x, -d.z) / 6.2831853 + 0.5;
+	float v = acos(clamp(d.y, -1.0, 1.0)) / 3.1415927;
+	vec3 c = textureLod(t, vec2(fract(u + rot), v), 0.0).rgb * gain;
+	return min(c, vec3(cap));
+}
+
 void sky() {
 	vec3 d = normalize(EYEDIR);
 	float h = d.y;
@@ -59,6 +82,22 @@ void sky() {
 		col = mix(horizon_color, top_color, pow(clamp(h, 0.0, 1.0), 0.45));
 	} else {
 		col = mix(horizon_color, ground_color, clamp(-h * 5.0, 0.0, 1.0));
+	}
+	float hs = 0.0;                                          // how much of the photo sky
+	float wa = hdri_mix_a * smoothstep(hdri_low_a, hdri_low_a + 0.18, h);
+	float wb = hdri_mix_b * smoothstep(hdri_low_b, hdri_low_b + 0.18, h);
+	float hw = wa + wb;
+	if (hw > 0.001) {
+		vec3 hc = vec3(0.0);
+		if (wa > 0.001) {
+			hc += hdri_at(hdri_a, d, hdri_rot_a, hdri_gain_a, hdri_cap_a) * wa;
+		}
+		if (wb > 0.001) {
+			hc += hdri_at(hdri_b, d, hdri_rot_b, hdri_gain_b, hdri_cap_b) * wb;
+		}
+		hc /= max(hw, 0.001);
+		hs = min(hw, 1.0);
+		col = mix(col, hc, hs);
 	}
 	float sun_vis = 0.0;
 	vec3 sun_col = vec3(0.0);
@@ -121,7 +160,7 @@ void sky() {
 		vec3 cc = mix(cloud_shadow, cloud_light, clamp(0.55 + (n - shade) * 3.0, 0.0, 1.0));
 		cc += sun_col * sun_vis * 0.25 * pow(max(dot(d, LIGHT0_DIRECTION), 0.0), 8.0);
 		float fade = smoothstep(0.0, 0.12, h);
-		col = mix(col, cc * energy, c * fade * (0.55 + 0.45 * cov));
+		col = mix(col, cc * energy, c * fade * (0.55 + 0.45 * cov) * (1.0 - hs * 0.9));
 	}
 	COLOR = col;
 }

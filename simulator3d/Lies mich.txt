@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.57
+3D-4.57: Echte Oberflächen und Himmel (CC0-Fotos): Wiese, Fels, Asphalt, Zeltstoff und ein Foto-Himmel im Camping-Platz.
+Das Paket (10,5 MB) wird beim ersten Start nachgeladen; nicht in «Lite». Schalter System → Grafik → «Echte Oberflächen und Himmel».
+So testest du: 1) Camping-Platz, 13 Uhr: beim ersten Mal kurz «Lade …». 2) Boden wie echte Wiese, Himmel wie ein Foto.
+3) «Echte Oberflächen und Himmel» aus: alles wie früher.
+
 NEU IN 3D-4.56
 3D-4.56: Echtere Menschen aus einem Figuren-Paket (Quaternius, CC0: Gesicht, Haare, Kleider, 22 Bewegungen; 3,8 MB, wird
 nachgeladen, nicht im ZIP) und Wind in Gras, Büschen, Baumkronen und Zelten. Bekannt: kriechende Paket-Figuren erkennt

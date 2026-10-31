@@ -1,7 +1,7 @@
 {
- "version": "3D-4.56",
+ "version": "3D-4.57",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 67966155,
- "sha256": "d55b21abf78ceac8dce9f1a07f34b1a3e516f20cb44e34611b4457f7509b87fb",
- "notes": "Echtere Menschen aus einem nachladbaren Figuren-Paket (CC0) und Wind in Gras, Bäumen und Zelten. Bekannt: Kriechende werden schlechter erkannt."
+ "size": 68028797,
+ "sha256": "a63c07928cfa7f57d1558f1eed79b1aa014539e710dd87106b4856e89bc39637",
+ "notes": "Echte Oberflächen und Foto-Himmel (CC0) im Camping-Platz – wird nachgeladen, nicht in Lite."
 }

@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.56"
+const VERSION := "3D-4.57"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -331,6 +331,7 @@ var entdecken                         # entdecken.gd (Erlebniswelt 20–23): reg
 var spielbereich                      # spielbereich.gd (Paket «Spielbereich»): start screen «Spielen» - adventures, badges, level, Blinki
 var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»): wind, light, lures, valuables of the catalogue
 var gelaende                          # gelaende.gd (3D-4.x real-gelaende): hills and hollows, paths, cloud shadows (vegetation.gd: plants)
+var inhalte                           # inhalte.gd (F2): Foto-Texturen und HDRI-Himmel (CC0), nachgeladen, nicht in Lite
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
 var menschen                          # menschen.gd (P10): people behave like real ones - gaits, groups, the day of a campsite, API for scenarios
 var tiere                             # tiere.gd (Paket «Tiere»): animals behave like real ones (flee, curl up, pounce …)
@@ -489,6 +490,9 @@ func _ready() -> void:
 	wind_fx = preload("res://scripts/wind_fx.gd").new()       # F6: wind in grass, bushes, crowns, tents (before the scene is built)
 	wind_fx.main = self
 	add_child(wind_fx)
+	inhalte = preload("res://scripts/inhalte.gd").new()       # F2: real photo surfaces and sky (downloaded once, fallback = code)
+	inhalte.main = self
+	add_child(inhalte)
 	umgebung = preload("res://scripts/umgebung.gd").new()     # 3D-4.x: the surroundings like real (every part can be switched off)
 	umgebung.main = self
 	add_child(umgebung)
@@ -1222,6 +1226,8 @@ func _build_scene() -> void:
 		geo.load_place(ort_lat, ort_lon, ort_name)      # from the cache or the internet; then place_loaded()
 	if scene == "wild":
 		rifle_on = true                          # wildlife watching: the rifle is on by itself
+	if inhalte != null:
+		inhalte.on_scene()                       # F2: photo textures / HDRI sky for this scene (or back to the code materials)
 	if Quality.lite():
 		_lite_scene.call_deferred(true)          # 3D-4.25: Lite - thin grass, far small things not drawn
 
@@ -4023,6 +4029,7 @@ func _register_controls() -> void:
 		add_control("toggle", "cond_" + key, cd[1], func(): return cond[key], func(v): cond[key] = bool(v), "Kamerabild")
 	simreal.add_controls()                                 # 3D-4.4: closer to the real device
 	objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
+	inhalte.add_controls()                                 # F2: System → Grafik «Echte Oberflächen und Himmel»
 	umgebung.add_controls()                                # 3D-4.x: surroundings like real
 	menschen.add_controls()                                # P10: people like real (Besuch → Verhalten / Von selbst / Menschen schicken)
 	tiere.add_controls()                                   # Paket «Tiere»: free dog, birds on the ground
@@ -4899,6 +4906,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return objplus.control(d)
 	elif a == "wind_fx":                               # F6: {do: info | set (on)}
 		return wind_fx.control(d)
+	elif a == "inhalte":                               # F2: {do: info | set (value) | laden | anwenden | zuruecksetzen}
+		return inhalte.control(d)
 	elif a == "umgebung":                              # 3D-4.x: {do: info | set (key, value) | spawn (kind) | snow_puff | clear_tracks}
 		return umgebung.control(d)
 	elif a == "menschen":                              # P10: {do: info | set (key, value) | spawn (kind) | api (id, fn, args) | probe (gait, dist, dark)}
