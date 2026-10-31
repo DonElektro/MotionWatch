@@ -121,6 +121,7 @@ var _chapel: Node3D = null
 var _me_next := 0.0
 var _region_t0 := 0.0
 var _resume_phase := ""
+var _cam_fix = null                   # tests: Transform3D of a fixed view (/control maggie kamera), null = follow the figure
 # camera
 var cam_yaw := 0.0
 var cam_pitch := 0.42
@@ -639,6 +640,7 @@ func _load_modules() -> void:
 
 func stop() -> void:
 	"""leave the story: everything back as before (the progress stays saved)"""
+	_cam_fix = null
 	if not running:
 		_close_cards()
 		return
@@ -1501,6 +1503,9 @@ func _follow_xform() -> Transform3D:
 func _cam(dt: float) -> void:
 	var cam: Camera3D = main.view_cam
 	main.view_mode = 0
+	if _cam_fix != null:                                 # tests (/control maggie kamera): a fixed view for photos
+		cam.global_transform = _cam_fix
+		return
 	var want := _follow_xform()
 	cam.global_transform = cam.global_transform.interpolate_with(want, clampf(dt * 5.0, 0.0, 1.0))
 
@@ -1944,6 +1949,23 @@ func control(d: Dictionary) -> Dictionary:
 			var i := int(d.get("i", 0))
 			if i >= 0 and i < _rests.size():
 				_place_player(_rests[i]["pos"])
+		"kamera":                                       # tests / photos: {at: [x, y, z], look: [x, y, z]} (Welt) = fixed view;
+			# {yaw, pitch, dist} = follow view turned; {} = follow again (Paket «Dauer»)
+			_cam_fix = null
+			if d.has("at") and d.has("look"):
+				var at_: Array = d["at"]
+				var lk: Array = d["look"]
+				_cam_fix = Transform3D(Basis(), Vector3(float(at_[0]), float(at_[1]), float(at_[2]))).looking_at(
+						Vector3(float(lk[0]), float(lk[1]), float(lk[2])), Vector3.UP)
+			if d.has("yaw"):
+				cam_yaw = deg_to_rad(float(d["yaw"]))
+				_drag_t = main.now() + 3600.0
+			if d.has("pitch"):
+				cam_pitch = float(d["pitch"])
+			if d.has("dist"):
+				cam_dist = float(d["dist"])
+			if (d.has("yaw") or d.has("pitch") or d.has("dist")) and spieler() != null:
+				main.view_cam.global_transform = _follow_xform()
 		"gehe_tal":                                     # tests: to a point in valley coordinates (x, z)
 			_place_player(tal_punkt(float(d.get("x", 0.0)), float(d.get("z", 0.0))))
 		"gehe":
