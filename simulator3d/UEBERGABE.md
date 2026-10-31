@@ -1,8 +1,17 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.78** · passende MoveEye-Version (früher Motion Watch) **2.98.109**
+Stand: 31.10.2026 · Simulator-Version **3D-4.79** · passende MoveEye-Version (früher Motion Watch) **2.98.110**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.79 (MoveEye 2.98.110): «Maggie und der Bergkristall» (`maggie_*.gd`)
+
+- `maggie_story.gd` (Rahmen, `main.maggie`), `maggie_welt.gd` (4 Regionen), `maggie_hund.gd` (S2: Maggie, Rätsel),
+  `maggie_gefahr.gd` (S3: böse Tiere, Gruppe `maggie_boese`), `maggie_helfer.gd` (Eule, Steinbock, Murmeltier, Fuchs).
+- `main.gd`: `spieltest` und `maggie` werden nebeneinander angelegt.
+- Spieltest-Haken (`Spieltest.ereignis("maggie", …)`): `start` + `ort` (Region gestartet), `ende` (Region fertig),
+  `erwischt`, `fortschritt` (Rätsel gelöst, maggie_hund), `hilfe` (Eule). Kein `tipp`: Maggie hat keinen Tipp-Knopf, und
+  `story.tipp()` zeigt alle Hinweise (auch Erfolgsmeldungen) – das würde falsch zählen.
 
 ## NEU in 3D-4.78 (MoveEye 2.98.109): Kamera für Sprung und Kontaktbogen (`devtool_kamera.gd`)
 

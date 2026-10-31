@@ -346,11 +346,16 @@ func _paint() -> void:
 	lb.max_value = float(lv.to)
 	lb.value = float(lv.xp)
 	_body.add_child(lb)
+	# the story «Maggie und der Bergkristall» (maggie_story.gd): its own tile
+	var story = main.get("maggie")
+	if story != null:
+		_body.add_child(UI.heading(T.t("Geschichte")))
+		_body.add_child(story.kachel(W))
 	# the adventures
 	_body.add_child(UI.heading(T.t("Abenteuer")))
 	var sc := ScrollContainer.new()
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	sc.custom_minimum_size = Vector2(W + 14.0, clampf(vh - 430.0, 150.0, 4 * 78.0))
+	sc.custom_minimum_size = Vector2(W + 14.0, clampf(vh - 430.0 - (100.0 if story != null else 0.0), 150.0, 4 * 78.0))
 	_body.add_child(sc)
 	var list := VBoxContainer.new()
 	list.add_theme_constant_override("separation", 6)
