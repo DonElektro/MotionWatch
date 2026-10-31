@@ -164,7 +164,7 @@ SIMHUB_JS = r"""
     "ab-note": "Zweimal derselbe Testlauf: A mit den jetzigen Einstellungen, B mit der Änderung. B bleibt nur, wenn es klar besser ist (+3 Punkte).",
     "More sensitive": "Empfindlicher", "Less sensitive": "Weniger empfindlich", "AI stricter": "KI strenger", "AI more generous": "KI grosszügiger", "Also small objects": "Auch kleine Objekte",
     "Faster decision": "Schneller entscheiden", "B is better – kept": "B ist besser – übernommen", "A stays": "A bleibt", "Place, zones, patrol": "Ort, Zonen, Patrouille",
-    "Zones in 3D": "Zonen in 3D", "mast": "Stange", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"});
+    "Zones in 3D": "Zonen in 3D", "camera height": "Höhe der Kamera", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"});
   Object.assign(DE, {"Discoveries": "Entdeckungen", "{f} of {n} discovered": "{f} von {n} entdeckt", "Photo for the discovery book": "Foto für Entdeckungsbuch",
     "Open in the simulator": "Im Simulator öffnen", "Blinki hint": "Blinki-Hinweis", "a place": "ein Ort", "a scene": "eine Szene", "an animal": "ein Tier", "a person": "ein Mensch",
     "Found!": "Entdeckt!", "Something special is in the picture – take the photo now!": "Etwas Besonderes ist im Bild – jetzt fotografieren!",
@@ -388,7 +388,7 @@ SIMHUB_JS = r"""
     if (open && full && G[GRP[open] || "world"].parentNode) { const hold = E("div"); G[GRP[open] || "world"].after(hold); sheet(hold, open); }   // the sheet right under its group
     else if (open) sheet(box, open);
     if (full && H.handover && H.handover.length) { const w = E("div", "mut", "🔁 " + H.handover.map(x => x.t + " " + x.from + " → " + x.to).join(" · ")); w.style.cssText = "margin-top:6px;font-size:12px"; box.appendChild(w); }
-    if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("mast") + " " + H.twin.mast.toFixed(2) + " m" : "")
+    if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("camera height") + " " + H.twin.mast.toFixed(2) + " m" : "")
       + (H.twin.zones != null ? " · " + H.twin.zones + " " + tt("zones") : "") + (H.twin.waypoints != null ? " · " + H.twin.waypoints + " " + tt("patrol points") : "")); w.style.cssText = "margin-top:8px;font-size:12px"; box.appendChild(w); }
   }
   function paintTile(el_) {

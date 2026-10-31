@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 11:31",
+ "generated": "2026-10-31 12:06",
  "versions": [
   {
-   "version": "2.98.91",
-   "file": "webcam_bewegung_2_98_91.py",
+   "version": "2.98.95",
+   "file": "webcam_bewegung_2_98_95.py",
    "url": "",
-   "sha256": "d65a71a83e7367217e4f0ab8bf3ea3d4ebbc6d7eecfa449ef83a4e1597321d6b",
-   "date": "2026-10-31 11:31",
-   "notes": "Simulator 3D-4.60: alle Simulator-Texte jetzt auch auf Englisch, Französisch, Italienisch, Rätoromanisch (Rätoromanisch noch prüfen lassen).",
-   "sig": "85f96ac4cc3d4ec118b2837239f83c0cf22af1e39947262c99a638d7d982c758d5f9e200d4ff7c912e6deb70164e6c083459fe08f9f73635e2741c2965920206"
+   "sha256": "70575fbe189b57782fc9ed3018fbb88cd73d560f00d214eb452886299ab4d497",
+   "date": "2026-10-31 12:06",
+   "notes": "Wärmebild: Reh oder Fuchs seitlich gilt nicht mehr als Person (aufrechte Formen bleiben Person); kriechende Personen als «Person?» (flache Box + schwache KI + Spur/Wärme); Feld «Höhe der Kamera» in Platz einrichten. Simulator 3D-4.64: «Stange» heisst «Höhe der Kamera».",
+   "sig": "24e079ad0c2112d0d2b7d364148dfbcffe6fdca5ac55f543adf34367f07c387580cffa82683d5ed0f5aaa0dd89b595aead2479ce040c33af72e3360a0cf06304"
   },
   {
    "version": "2.97.1",

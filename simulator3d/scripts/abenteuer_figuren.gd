@@ -1028,7 +1028,7 @@ func paint_overview(parent: Control) -> void:
 			open.append("• " + T.t(str(FD.QUESTS[qid]["kurz"])))
 	if not open.is_empty():
 		g.add_child(ab._lab(T.t("Nebenaufgaben:") + "\n" + "\n".join(open), 12, Color(0.95, 0.85, 0.6)))
-	if _inv() == null:                                         # until the grandfather's things exist (A3 / A4)
+	if _inv() == null or not _inv().hat("hut") or bool(m.get("test_hut", false)):   # until the hat can be found (A3)
 		var cb := CheckButton.new()
 		cb.text = T.t("Test: Hut des Grossvaters tragen")
 		cb.button_pressed = bool(m.get("test_hut", false))

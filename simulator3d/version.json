@@ -1,7 +1,7 @@
 {
- "version": "3D-4.60",
+ "version": "3D-4.64",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34098093,
- "sha256": "56bd7d9cdeabcac87726cb3166c27a439d26f81ddd179e464daa71e2fd84b0cb",
- "notes": "Alle Simulator-Texte jetzt auch auf Englisch, Französisch, Italienisch, Rätoromanisch (Rätoromanisch noch prüfen lassen)."
+ "size": 34159557,
+ "sha256": "9ba9211aef02e6953646017a792988ab899de104a4ddf39b0e0adea870c71959",
+ "notes": "MoveEye 2.98.95: Reh/Fuchs im Wärmebild nicht mehr Person, «Person?» für Kriechende, «Höhe der Kamera» statt «Stange»."
 }

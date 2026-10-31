@@ -3,7 +3,7 @@ extends Node
 ## 589 / 510 / 578) – gleiche Namen, gleiche Reihenfolge, gleiches Aussehen:
 ##   Karte «Mehr» ganz unten im Bedienfeld: Hilfe · Rundgang mit Blinki · Selbstdiagnose · Protokoll · Updates (führt zur
 ##   Karte System → Updates, keine zweite) · Ansicht Hell / Rotlicht / Dunkel · Rückmeldung an den Entwickler · Über den
-##   Simulator (mit «Version und Status»). Das «?» der Leiste unten öffnet ein kleines Menü mit denselben Punkten, der Knopf
+##   Simulator (mit «Version und Status»). Dazu «Entwickler» (devtool.gd: Karte aller Orte, Sprung, Flugkamera; nur der Besitzer). Das «?» der Leiste unten öffnet ein kleines Menü mit denselben Punkten, der Knopf
 ##   ◐ daneben schaltet Hell → Rotlicht → Dunkel (wie MoveEye). Die Teile: feedback.gd, tour.gd, diagnose.gd, protokoll.gd,
 ##   farbschema.gd, Symbole mehr_icons.gd. main.gd ruft nur build() auf, speichert keep() mit und gibt /control «mehr» weiter.
 
@@ -29,6 +29,8 @@ var _rows := {}
 var _about_vals := {}
 var _t := 0.0
 var _auto_t := 6.0
+var dev                                # devtool.gd: Entwicklertool 1 «Karte, Sprung, Kamera» (row «Entwickler», only the owner)
+var _dev_row: Control = null
 
 const UI = preload("res://scripts/ui_style.gd")
 const Icons = preload("res://scripts/mehr_icons.gd")
@@ -40,6 +42,7 @@ const ITEMS := [["help", "help", "Hilfe", "Maus, Tasten, Leiste – und die Anle
 		["updates", "update", "Updates", ""],
 		["theme", "theme", "Ansicht", ""],
 		["feedback", "chat", "Rückmeldung an den Entwickler", "Fehler, Wünsche, Lob, Fragen – anonym"],
+		["dev", "bug", "Entwickler", "Karte aller Orte, hinspringen, Flugkamera – nur für den Besitzer"],
 		["about", "info", "Über den Simulator", "Version und Status, Geschichte, Entwickler"]]
 
 
@@ -65,6 +68,9 @@ func _ready() -> void:
 	tour.main = main
 	tour.mehr = self
 	add_child(tour)
+	dev = preload("res://scripts/devtool.gd").new()
+	dev.main = main
+	add_child(dev)
 	_toast = PanelContainer.new()
 	_toast.theme = feedback.theme
 	_toast.add_theme_stylebox_override("panel", UI.box(Color(UI.PANEL, 0.97), UI.GRN.darkened(0.2), 12, 10, 1))
@@ -125,6 +131,8 @@ func build(box_: VBoxContainer) -> void:
 			continue
 		var r := _row(it[0], it[1], it[2], it[3])
 		body.add_child(r)
+		if it[0] == "dev":
+			_dev_row = r
 	_paint_rows()
 
 
@@ -253,6 +261,9 @@ func act(id: String) -> void:
 			feedback.open("Mehr")
 		"theme":
 			theme_next()
+		"dev":
+			close_window()
+			dev.open()
 		"mehr":
 			show_card()
 
@@ -609,6 +620,8 @@ func toast(t: String) -> void:
 
 
 func _process(dt: float) -> void:
+	if _dev_row != null and _dev_row.visible != dev.is_owner(main):
+		_dev_row.visible = dev.is_owner(main)          # Entwicklertool: only the owner (not in the children's mode)
 	if _toast_t > 0.0:
 		_toast_t -= dt
 		if _toast_t <= 0.0:

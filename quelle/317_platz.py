@@ -695,7 +695,7 @@ def place_state(lang=None):
             "scan": sc, "record": {"t": rec.get("t"), "items": rec.get("items") or [], "public_report": rec.get("public_report", True),
                                    "watched": rec.get("watched", 0), "zones": len(rec.get("zones") or []), "wps": len(rec.get("wps") or [])} if rec else None,
             "offer": place_offer(), "why_not": tr(place_busy_reason(), lang) if not PLACE["busy"] else "",
-            "info": place_info()}
+            "info": place_info(), "cam_h": cam_height_info()}
 
 
 # ---- the alarm: a person on the public path is only reported, a person at the tent counts more ---------------------------
