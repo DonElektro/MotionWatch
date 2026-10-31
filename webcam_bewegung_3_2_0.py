@@ -4340,18 +4340,22 @@ class TamperGuard:
         covered = mean < 18 and std < 7 and self.ref_mean > 35 and self.ref_std > 8
         # 2.98.30: a cloth over the lens is not always black - the camera brightens it (auto exposure, the simulator too):
         # a flat picture without edges where there were many is covered as well
-        if not covered and std < 7 and self.ref_std > 12 and float(e.mean()) < 0.25 * max(1e-3, float(self.ref_e.mean())):
+        # (411: in fog the edges fade to ~25 % - then only a picture with almost no edges left (< 8 %) is a cloth)
+        fogq = fog_tamper_quiet(t0)
+        if not covered and std < 7 and self.ref_std > 12 and float(e.mean()) < (0.08 if fogq else 0.25) * max(1e-3, float(self.ref_e.mean())):
             covered = True
         a, b = e - e.mean(), self.ref_e - self.ref_e.mean()
         corr = float((a * b).sum() / (math.sqrt(float((a * a).sum()) * float((b * b).sum())) + 1e-6))
-        moved = (not covered) and self.ref_std > 10 and std > 8 and corr < 0.3 and not STATE.get("persons")
+        # 411: fog takes the edges away, so they no longer match the reference - no «camera turned» in fog (detection test,
+        # Schattwald: a false sabotage push). The reference stays as it was before the fog.
+        moved = (not covered) and not fogq and self.ref_std > 10 and std > 8 and corr < 0.3 and not STATE.get("persons")
         self.n_cov = self.n_cov + 1 if covered else 0
         self.n_mov = self.n_mov + 1 if moved else 0
         if self.n_cov >= 3:
             self.alarm("covered"); self.ref = None; self.n_cov = 0; self.settle = t0 + 10
         elif self.n_mov >= 5:
             self.alarm("turned"); self.ref = None; self.n_mov = 0; self.settle = t0 + 10
-        elif not covered and corr > 0.6:                      # slowly follow the light of the day
+        elif not covered and corr > 0.6 and not fogq:         # slowly follow the light of the day (not the fog, 411)
             self.ref = self.ref * 0.9 + g * 0.1; self.ref_e = self.ref_e * 0.9 + e * 0.1
             self.ref_mean = self.ref_mean * 0.9 + mean * 0.1; self.ref_std = self.ref_std * 0.9 + std * 0.1
 
@@ -4485,6 +4489,8 @@ class LensCheck:
         g = cv2.resize(cv2.cvtColor(small, cv2.COLOR_BGR2GRAY) if small.ndim == 3 else small, (160, 120), interpolation=cv2.INTER_AREA)
         if float(g.mean()) < 12:
             return                                        # black: covered (theft protection) or no light at all
+        if fog_on() and fog_weather():
+            return                                        # 411: the weather says fog too - the blur is the fog, not the lens
         sharp = float(cv2.Laplacian(g, cv2.CV_32F).var()); con = float(g.std())
         self.add(t0, sharp, con, bool(is_dark()))
 
@@ -6065,6 +6071,8 @@ def alarm_gate(w, frame, persons, now):
         why = "the AI saw the person twice in a row"
     elif warm and not ai_on:
         why = "thermal camera (the AI is off)"
+    elif warm and STATE.get("fog"):
+        why = "thermal camera (fog: the camera sees little, 411)"
     if why:
         G["ok"] = True
         log_event("person", f"Double confirmation: {why} - alarm")
@@ -18645,7 +18653,7 @@ class AIDetector:
             self.boxes = []; self.objects = []
             return self.boxes
         if hp:
-            got = helper_detect(frame)
+            got = helper_detect(frame if HELPER["busy"] else fog_ai_input(frame))   # 411: in fog with the contrast lifted (only when sent)
             if got is not None:
                 self.boxes, self.objects = got
                 STATE["ai_persons"] = len(self.boxes)
@@ -18667,6 +18675,7 @@ class AIDetector:
             return self.boxes
         self._last_run = time.time()
         t0 = time.time()
+        frame = fog_ai_input(frame)                              # 411: in fog the contrast lifted - only when the AI really runs
         h, w = frame.shape[:2]
         try:
             # real-reh-fusspunkt: one run with a lower person threshold (raw score WEAK_AI_MIN, 232); the boxes below the normal
@@ -20846,8 +20855,8 @@ def thermal_person_active():
     """thermal persons are looked for now: the option is on, a thermal camera is chosen, and it is night (or by day too)"""
     if not CFG.get("thermal_person") or not CFG.get("thermal_source") or not CFG.get("detection_on"):
         return False
-    if CFG.get("thermal_person_day"):
-        return True
+    if CFG.get("thermal_person_day") or STATE.get("fog"):
+        return True                                       # 411: in fog the camera sees little - the thermal camera by day too
     try:
         return bool(is_dark() or STATE.get("lowlight"))
     except Exception:
@@ -35127,6 +35136,7 @@ class MotionWatch:
             walking = False                                 # needs AI confirmation
         elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k:
             walking = True                                  # keep flag while tracked (may stand still)
+        walking = strict_gate(self, t, walking, time.time())   # 411: at dusk / in wind a new person only after 2-3 hits in a row
         if walking and not t.is_person:
             STATE["detections_total"] += 1
             log_event("person", f"Person #{t.id} {'AI-confirmed' if t.ai_confirmed else 'walking'}, speed {sp:.1f} px/f")
@@ -35584,6 +35594,7 @@ class MotionWatch:
             if lowlight != STATE["lowlight"]:
                 log_event("auto", f"Low-light mode {'ON' if lowlight else 'OFF'} (brightness {bright:.0f})")
                 STATE["lowlight"] = lowlight
+            fog_twi_frame(self, small, gray, bright, lowlight, t0)   # 411: fog mode, dusk / wind stricter (before the CLAHE)
             if lowlight:
                 gray = self.clahe.apply(cv2.medianBlur(gray, 5))   # denoise, then boost contrast so dark figures separate
             if lowlight and CFG["lowlight_view"] and bright > 1.5:
@@ -35609,7 +35620,7 @@ class MotionWatch:
             persons, candidates, person_boxes = [], [], []
             present = set()                      # what is in view right now -> relay triggers
             if CFG["detection_on"]:
-                g = self.preprocess(gray, rain_mode)
+                g = self.preprocess(fog_gray(gray, t0), rain_mode)       # 411: in fog with the contrast lifted
                 fg = self.foreground(g, small, rain_mode, wind_boost)
                 ai_boxes = [b for b in self.ai.detect(small) if zone_box_ok(b, pw, ph, "person")]     # 2.98.13: zones by kind (066)
                 ai_objs = [o for o in self.ai.objects if zone_box_ok(o, pw, ph, "animal" if COCO_LABELS.get(o[5]) in ANIMALS else "other")]
@@ -35904,6 +35915,413 @@ class MotionWatch:
                     self.jpeg = buf.tobytes(); self.jpeg_seq += 1
 
 
+# ----------------------------------------------------------------------------
+# Detection test 31.10.2026 (REAL_ERKENNUNG.md, Schattwald, day, fog): nothing recognised, not even «movement» - and in the
+# empty fog picture a sabotage push «Kamera verdreht / Bild verändert». Dusk with wind 55 km/h: person pushes without a person.
+#
+# Fog mode (part of the low-light automatic «lowlight_auto» - both lift the contrast, so no new switch):
+#   detect    a bright, grey picture with little contrast: fog_measure() on a small copy (80 x 45) every 0.5 s.
+#             Optional: the weather says fog (simulator scene, or Open-Meteo weather code 45 / 48 when «weather_on») ->
+#             the limits are a bit wider. On after 10 s, off after 30 s (hysteresis like the low light, 410 _lowlight_decide).
+#   then      the picture for the AI and for the movement gets its contrast back (fog_ai_input / fog_gray: stretch the
+#             brightness p1..p99 to 0..255, then CLAHE), the thermal persons (232) run by day too and the double
+#             confirmation (066) takes the thermal camera alone - the camera sees little in fog.
+#   sabotage  TamperGuard (060) gives no «camera turned» while it is foggy (or was in the last 60 s) and «covered» by a
+#             flat picture only when nearly every edge is gone (a cloth, not fog). Black = covered stays as before.
+#   hint      STATE["fog"] -> the light chip on the page and in the window: «🌫 Nebel – Sicht eingeschränkt».
+#
+# Stricter at dusk / in wind (strict_gate, called by 410 classify): a track becomes a person only after 2 hits in a row
+#   (dusk OR wind) or 3 (dusk AND wind); after 2 hits and 1 s it counts anyway, so a walking person is reported at most
+#   about 1 s later. An AI hit counts once per new AI result (the AI keeps its boxes between runs), a movement hit once per
+#   picture; one missed picture in between is allowed (a real person in the noise flickers too).
+#   dusk      the camera changes from day to night exposure: the smoothed brightness of the low-light mode (410) is in
+#             the band lowlight_threshold - gap .. + 2 x gap (45..90 with 60 / 15), or the picture noise is 1.6 x the
+#             noise of this camera by day (up to + 3 x gap = 105). Not darker and not in a grey (infrared) night picture -
+#             there «nachts strenger» applies.
+#   wind      measured: wind meter / simulator (280 StormWatch: 60-s mean >= 20 km/h or gust >= 39 km/h), or the wind seen
+#             in the picture is «strong» / «storm» (410).
+#   Bound to the existing switch «nachts strenger» (night_strict), no new control.
+# ----------------------------------------------------------------------------
+FOG = {"on": False, "raw": False, "raw_t": 0.0, "t": 0.0, "hist": deque(maxlen=200), "since": None, "score": None,
+       "sat": None, "mean": None, "wx": False, "wx_t": 0.0, "lim_g": None, "lim_l": None, "clahe": None}
+TWI = {"on": False, "t": 0.0, "noise": None, "base": None, "last_why": 0.0, "why": ""}
+STRICT = {"n": 1, "why": ""}
+STATE.setdefault("fog", False); STATE.setdefault("strict", {"n": 1, "why": ""})
+
+# Why these limits (measured on the pictures of the detection test, 80 x 45 grey, rel = (p95 - p5) / mean):
+#   fog (Schattwald)  mean 215, rel 0.20-0.23, saturation 9-10; live run E2 (thinner fog): mean 190, rel 0.33, saturation 16
+#   snow (Stellplatz) mean 187, rel 0.50, saturation 20      rain (Camping) mean 175, rel 0.64, saturation 37
+#   clear day         rel 0.7-1.0, saturation 48-85          dusk / night   mean < 130, rel > 0.9
+# 0.40 / 30 lie between fog and snow (first 0.32: the thinner fog of the live run needed 4 min); with fog in the weather
+# 0.46 / 40 (still below snow 0.50). mean >= 90: fog by day
+# is bright grey; below that it is dusk / night, where the low-light mode lifts the contrast already.
+FOG_REL, FOG_SAT, FOG_REL_WX, FOG_SAT_WX, FOG_MEAN = 0.40, 30.0, 0.46, 40.0, 90.0
+FOG_ON_S, FOG_OFF_S = 10.0, 30.0          # fog comes and goes in minutes; 10 s: a white van filling the picture (2-5 s) is no fog
+TWI_NOISE_K = 1.6                         # noise dusk / day in the test: 1.8-2.2 (three places); rain 0.85, snow 0.6
+WIND_MEAN_KMH, WIND_GUST_KMH = 20.0, 39.0  # Beaufort 4 (20-28 km/h): twigs move; Beaufort 6 (39-49 km/h): big branches move
+
+
+def fog_weather(now=None):
+    """the weather says fog: the simulated scene, or Open-Meteo (weather code 45 / 48) for this hour - cached 5 min"""
+    now = now or time.time()
+    if now - FOG["wx_t"] < 300:
+        return FOG["wx"]
+    FOG["wx_t"] = now; wx = False
+    try:
+        if simval_live():
+            wx = str((sim_forecast() or {}).get("weather") or "") == "fog"
+        elif CFG.get("weather_on"):
+            d = datetime.now(); day = weather_day(d.strftime("%Y-%m-%d")) or {}
+            row = (day.get("hourly") or {}).get(d.strftime("%H"))
+            wx = bool(row) and len(row) > 3 and row[3] in (45, 48)
+    except Exception:
+        wx = False
+    FOG["wx"] = wx
+    return wx
+
+
+def fog_look(small):
+    """(fog-like now, rel contrast, saturation, mean) of one picture"""
+    s = cv2.resize(small, (80, 45), interpolation=cv2.INTER_AREA)
+    g = cv2.cvtColor(s, cv2.COLOR_BGR2GRAY) if s.ndim == 3 else s
+    mean = float(g.mean())
+    p5, p95 = np.percentile(g, (5, 95))
+    rel = float(p95 - p5) / max(1.0, mean)
+    sat = float(cv2.cvtColor(s, cv2.COLOR_BGR2HSV)[:, :, 1].mean()) if s.ndim == 3 else 0.0
+    wx = fog_weather()
+    raw = mean >= FOG_MEAN and rel < (FOG_REL_WX if wx else FOG_REL) and sat < (FOG_SAT_WX if wx else FOG_SAT)
+    return raw, rel, sat, mean
+
+
+def fog_decide(raw, t0, lowlight):
+    """hysteresis: on when >= 70 % of the last 10 s looked like fog for FOG_ON_S, off when <= 30 % for FOG_OFF_S"""
+    h = FOG["hist"]; h.append((t0, bool(raw)))
+    while h and h[0][0] < t0 - 10.0:
+        h.popleft()
+    if not CFG.get("lowlight_auto", True) or lowlight:
+        FOG["since"] = None
+        return False
+    frac = sum(1 for _, r in h if r) / float(len(h))
+    cur = FOG["on"]
+    want = frac >= 0.3 if cur else frac >= 0.7
+    if want == cur:
+        FOG["since"] = None
+        return cur
+    if FOG["since"] is None:
+        FOG["since"] = t0
+    if t0 - FOG["since"] >= (FOG_ON_S if want else FOG_OFF_S):
+        FOG["since"] = None
+        return want
+    return cur
+
+
+def fog_frame(small, t0, lowlight):
+    """410: every picture (cheap: the real work every 0.5 s on 80 x 45)"""
+    if t0 - FOG["t"] >= 0.5:
+        FOG["t"] = t0
+        raw, rel, sat, mean = fog_look(small)
+        FOG.update(raw=raw, score=round(rel, 3), sat=round(sat, 1), mean=round(mean))
+        if raw:
+            FOG["raw_t"] = t0
+        on = fog_decide(raw, t0, lowlight)
+        if on != FOG["on"]:
+            FOG["on"] = on; FOG["lim_g"] = FOG["lim_l"] = None
+            log_event("auto", f"Fog mode {'ON - contrast lifted, thermal camera counts more, no «camera turned»' if on else 'OFF'}"
+                              f" (contrast {rel:.2f}, brightness {mean:.0f}{', weather: fog' if FOG['wx'] else ''})")
+    STATE["fog"] = FOG["on"]
+
+
+def fog_on():
+    return bool(FOG["on"])
+
+
+def fog_tamper_quiet(t0=None):
+    """060 TamperGuard: fog now or in the last 60 s (fog lifts and comes back in patches) - the picture loses its edges"""
+    return bool(FOG["on"] or (FOG["raw_t"] and (t0 or time.time()) - FOG["raw_t"] < 60.0))
+
+
+def _fog_lut(img, which):
+    """brightness p1..p99 -> 0..255, from a histogram of every picture (~0.1 ms). Every picture: the fog gets thicker and
+    thinner all the time - with a fixed curve each small change of the whole picture would be lifted x4 and «move» (test with
+    two fog pictures 25 s apart: 27'000 instead of 6'000 moving pixels). The limits follow smoothly (EMA 0.3) so the curve
+    does not jump; a person (a few hundred pixels) hardly moves p1 / p99 (1 % = 1'300 pixels at 480 x 270)."""
+    hist = cv2.calcHist([img], [0], None, [256], [0, 256]).ravel()
+    c = np.cumsum(hist); n = c[-1] or 1.0
+    lo = float(np.searchsorted(c, 0.01 * n)); hi = float(np.searchsorted(c, 0.99 * n))
+    old = FOG.get("lim_" + which)
+    if old is not None:
+        lo, hi = old[0] * 0.7 + lo * 0.3, old[1] * 0.7 + hi * 0.3
+    FOG["lim_" + which] = (lo, hi)
+    span = max(24.0, hi - lo)                              # at most x10: thin fog is not blown up into pure noise
+    if FOG["clahe"] is None:
+        FOG["clahe"] = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))   # 2.0: less than the low light (2.5) - stretched already
+    return np.clip((np.arange(256, dtype=np.float32) - lo) * 255.0 / span, 0, 255).astype(np.uint8)
+
+
+def fog_gray(gray, t0=None):
+    """the grey picture for the movement detection in fog (410), else unchanged. Median 5 first like the low light (410):
+    fewer specks of lifted noise (test: 4'800 instead of 6'300 moving pixels away from the person, the person stays whole)."""
+    if not FOG["on"]:
+        FOG["lim_g"] = None
+        return gray
+    g = cv2.medianBlur(gray, 5)
+    lut = _fog_lut(g, "g")
+    return FOG["clahe"].apply(cv2.LUT(g, lut))
+
+
+def fog_ai_input(small, t0=None):
+    """the colour picture for the AI in fog: the same on the lightness (LAB L), colours kept, no median (the AI needs the
+    details) - ~2 ms at 480 x 270 on a Pi 5"""
+    if not FOG["on"] or small is None or small.ndim != 3:
+        FOG["lim_l"] = None
+        return small
+    lab = cv2.cvtColor(small, cv2.COLOR_BGR2LAB)
+    l_ = lab[:, :, 0].copy()
+    lut = _fog_lut(l_, "l")
+    lab[:, :, 0] = FOG["clahe"].apply(cv2.LUT(l_, lut))
+    return cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+
+
+# ---- dusk and wind: stricter --------------------------------------------------
+def picture_noise(gray):
+    """noise sigma of a grey picture (Immerkær 1996, «Fast noise variance estimation»), on 320 pixels width"""
+    h, w = gray.shape[:2]
+    g = cv2.resize(gray, (320, max(8, int(h * 320 / max(1, w)))), interpolation=cv2.INTER_AREA).astype(np.float32)
+    m = np.array([[1, -2, 1], [-2, 4, -2], [1, -2, 1]], np.float32)
+    s = np.abs(cv2.filter2D(g, -1, m))[1:-1, 1:-1]
+    return float(math.sqrt(math.pi / 2.0) / 6.0 * s.mean())
+
+
+def twilight_decide(smooth, noise, base, mono, dark):
+    """(dusk now, why) - smooth = brightness of the low-light mode (median of 10 s), noise / base = now / by day"""
+    thr = float(CFG.get("lowlight_threshold", 60)); gap = max(0.0, float(CFG.get("lowlight_gap", 15)))
+    if mono:                                    # grey picture: infrared at night (or «grey» picture mode) - no colour test
+        return (not dark and thr - gap <= smooth <= thr + 2 * gap), "brightness"
+    if thr - gap <= smooth <= thr + 2 * gap:
+        return True, "brightness"
+    if base and noise is not None and noise >= TWI_NOISE_K * base and thr - gap <= smooth < thr + 3 * gap:   # darker: night rules
+        return True, "noise"
+    return False, ""
+
+
+def twilight_frame(w, gray, bright, t0):
+    """410: every picture, the work every 0.5 s. gray = the picture before CLAHE."""
+    if t0 - TWI["t"] < 0.5:
+        return
+    TWI["t"] = t0
+    thr = float(CFG.get("lowlight_threshold", 60)); gap = max(0.0, float(CFG.get("lowlight_gap", 15)))
+    hist = getattr(w, "_ll_hist", None)
+    vals = sorted(v for _, v in hist) if hist else []
+    smooth = vals[len(vals) // 2] if vals else bright
+    nz = picture_noise(gray); TWI["noise"] = round(nz, 2)
+    if smooth >= thr + 3 * gap and not FOG["on"]:        # clearly day: learn the noise of this camera (time constant ~50 s)
+        TWI["base"] = nz if TWI["base"] is None else TWI["base"] * 0.99 + nz * 0.01
+    mono = FOG["sat"] is not None and FOG["sat"] < 4.0
+    try:
+        dark = bool(is_dark())
+    except Exception:
+        dark = False
+    on, why = twilight_decide(smooth, nz, TWI["base"], mono, dark)
+    if on:
+        TWI["last_why"] = t0; TWI["why"] = why
+    was = TWI["on"]
+    TWI["on"] = on or (was and t0 - TWI["last_why"] < 20.0)      # off only after 20 s without a reason (no flapping)
+    if TWI["on"] != was:
+        log_event("auto", f"Dusk: {'stricter - a person only after hits in a row' if TWI['on'] else 'over'}"
+                          f" (brightness {smooth:.0f}, noise {nz:.1f}" + (f" / day {TWI['base']:.1f}" if TWI["base"] else "") + ")")
+
+
+def wind_strong():
+    """measured wind (wind meter / simulator, 280) or the wind seen in the picture (410) is strong"""
+    st = STATE.get("storm") or {}
+    try:
+        if st.get("wind") is not None and float(st["wind"]) >= WIND_MEAN_KMH:
+            return True
+        if st.get("gust") is not None and float(st["gust"]) >= WIND_GUST_KMH:
+            return True
+    except (TypeError, ValueError):
+        pass
+    return STATE.get("wind_level") in ("strong", "storm")
+
+
+def strict_update():
+    """how many hits in a row a new person needs now (1 = as before)"""
+    if not CFG.get("night_strict", True) or not CFG.get("detection_on", True):
+        n, why = 1, ""
+    else:
+        d, wd = bool(TWI["on"]), wind_strong()
+        n = 1 + int(d) + int(wd)
+        why = " + ".join(x for x, on in (("dusk", d), ("wind", wd)) if on)
+    STRICT["n"] = n; STRICT["why"] = why
+    STATE["strict"] = {"n": n, "why": why}
+    return n
+
+
+def strict_gate(w, t, walking, t0):
+    """410 classify: a NEW person only after STRICT["n"] hits in a row (see the top). Returns the new «walking»."""
+    n = STRICT["n"]
+    sg = getattr(t, "_sg", None)
+    if t.is_person or n <= 1:
+        t._sg = None
+        return walking
+    if not walking:
+        if sg is not None:
+            sg["miss"] += 1
+            if sg["miss"] >= 2:                              # two pictures without a hit: start again
+                t._sg = None
+        return False
+    if sg is None:
+        sg = t._sg = {"n": 0, "key": None, "t": t0, "miss": 0}
+    ai = getattr(w, "ai", None)
+    key = (("ai", getattr(ai, "_last_run", 0.0), id(getattr(ai, "boxes", None))) if t.ai_confirmed
+           else ("f", STATE.get("frames", 0)))
+    if key != sg["key"]:
+        sg["key"] = key; sg["n"] += 1; sg["miss"] = 0
+    if sg["n"] >= n or (sg["n"] >= 2 and t0 - sg["t"] >= 1.0):
+        log_event("person", f"Person #{t.id}: {sg['n']} hits in a row ({STRICT['why']}) - confirmed")
+        t._sg = None
+        return True
+    return False
+
+
+def fog_twi_frame(w, small, gray, bright, lowlight, t0):
+    """410: once per picture, before the contrast boost"""
+    try:
+        fog_frame(small, t0, lowlight)
+        twilight_frame(w, gray, bright, t0)
+        strict_update()
+    except Exception as e:
+        if t0 - FOG.get("err_t", 0.0) > 600:
+            FOG["err_t"] = t0; log_event("sys", f"Fog / dusk: {e}"[:160])
+
+
+# ---- self-test ------------------------------------------------------------------
+def fog_selftest():
+    rng = np.random.RandomState(7)
+    keep = {k: CFG.get(k) for k in ("lowlight_auto", "night_strict", "detection_on", "lowlight_threshold", "lowlight_gap", "tamper_on")}
+    fkeep = {k: (v.copy() if isinstance(v, deque) else v) for k, v in FOG.items()}
+    tkeep, skeep, stkeep = dict(TWI), dict(STRICT), STATE.get("storm")
+    try:
+        CFG.update(lowlight_auto=True, night_strict=True, detection_on=True, lowlight_threshold=60, lowlight_gap=15, tamper_on=True)
+        FOG.update(wx=False, wx_t=time.time() + 3600)        # no weather in the test
+        # a structured day scene: dark trees / bright sky / green meadow
+        day = np.zeros((270, 480, 3), np.uint8); day[:] = (60, 140, 70)
+        day[:110] = (230, 190, 150)
+        for x in range(20, 480, 60):
+            cv2.rectangle(day, (x, 60), (x + 18, 230), (30, 50, 40), -1)
+        day = cv2.add(day, rng.randint(0, 12, day.shape).astype(np.uint8))
+        fog = cv2.addWeighted(day, 0.15, np.full_like(day, 225), 0.85, 0)            # thick fog: grey-white, edges faint
+        snow = day.copy(); snow[110:] = (225, 228, 230); snow = cv2.addWeighted(snow, 0.8, np.full_like(snow, 200), 0.2, 0)
+        dusk = (day * 0.35).astype(np.uint8)
+        assert fog_look(fog)[0], fog_look(fog)
+        assert not fog_look(day)[0] and not fog_look(snow)[0] and not fog_look(dusk)[0], (fog_look(day), fog_look(snow), fog_look(dusk))
+        # hysteresis: on after ~10 s of fog, not after 5 s; off only after ~30 s without
+        FOG.update(on=False, since=None); FOG["hist"].clear(); FOG["t"] = 0.0
+        t = 1000.0
+        for _ in range(10):                                  # 5 s
+            t += 0.5; fog_frame(fog, t, False)
+        assert not FOG["on"], "fog after 5 s"
+        for _ in range(30):
+            t += 0.5; fog_frame(fog, t, False)
+        assert FOG["on"] and STATE["fog"], "no fog mode after 20 s of fog"
+        g_ai = fog_ai_input(fog, t); g_gr = fog_gray(cv2.cvtColor(fog, cv2.COLOR_BGR2GRAY), t)
+        assert g_ai.shape == fog.shape and float(g_gr.std()) > 2.5 * float(cv2.cvtColor(fog, cv2.COLOR_BGR2GRAY).std()), "contrast not lifted"
+        for _ in range(20):                                  # 10 s clear: still fog (patchy fog)
+            t += 0.5; fog_frame(day, t, False)
+        assert FOG["on"], "fog off too early"
+        for _ in range(60):
+            t += 0.5; fog_frame(day, t, False)
+        assert not FOG["on"], "fog mode stays on"
+        for _ in range(40):                                  # low light wins: no fog mode in the dark
+            t += 0.5; fog_frame(fog, t, True)
+        assert not FOG["on"]
+        # sabotage: fog rolls in -> no «turned»; a really turned camera without fog -> «turned»
+        tg = object.__new__(TamperGuard); fired = []
+        tg.alarm = lambda what, looked=None: fired.append(what)
+        def tg_reset():
+            tg.ref = None; tg.settle = 0.0; tg.t_last = 0.0; tg.pos = (round(CFG["pan"], 1), round(CFG["tilt"], 1)); tg.n_cov = tg.n_mov = 0
+        STATE.setdefault("tamper", {"sensor": False, "last": "", "state": "learning"})
+        st_keep = {k: STATE.get(k) for k in ("tracking", "patrol_moving", "persons")}
+        STATE.update(tracking=False, patrol_moving=False, persons=0)
+        try:
+            tg_reset(); FOG.update(on=False, raw_t=0.0, since=None); FOG["hist"].clear(); FOG["t"] = 0.0
+            t = 2000.0; tg.feed(day, t)
+            for i in range(12):                              # the camera sees fog (as in the Schattwald test)
+                t += 1.0; fog_frame(fog, t, False); tg.feed(fog, t)
+            assert not fired, f"sabotage in fog: {fired}"
+            turned = np.ascontiguousarray(day[:, ::-1]); turned = np.roll(turned, 97, axis=1)
+            tg_reset(); FOG.update(on=False, raw_t=0.0); FOG["hist"].clear(); t = 3000.0; tg.feed(day, t)
+            for i in range(8):
+                t += 1.0; fog_frame(turned, t, False); tg.feed(turned, t)
+            assert "turned" in fired, f"turned camera not found: {fired}"
+            fired.clear(); tg_reset(); FOG.update(on=True, raw_t=t); t += 1.0; tg.feed(day, t)
+            for i in range(5):                               # a white cloth in fog (no edges at all): still covered
+                t += 1.0; tg.feed(np.full_like(day, 200), t)
+            assert "covered" in fired, f"cloth in fog: {fired}"
+        finally:
+            STATE.update(st_keep)
+        # dusk: band of the low-light brightness, noise against the day
+        assert twilight_decide(70, 2.0, 2.0, False, False)[0] and twilight_decide(50, 2.0, 2.0, False, False)[0]
+        assert not twilight_decide(160, 5.0, 2.0, False, False)[0], "bright day is no dusk"
+        assert twilight_decide(100, 4.0, 2.0, False, False) == (True, "noise") and not twilight_decide(100, 2.4, 2.0, False, False)[0]
+        assert not twilight_decide(30, 5.0, 2.0, False, False)[0] and not twilight_decide(70, 5.0, 2.0, True, True)[0], "night"
+        n0 = picture_noise(cv2.cvtColor(day, cv2.COLOR_BGR2GRAY))
+        noisy = cv2.add(dusk, rng.randint(0, 22, dusk.shape).astype(np.uint8))
+        assert picture_noise(cv2.cvtColor(noisy, cv2.COLOR_BGR2GRAY)) > 1.6 * n0
+        # strict gate: hits in a row
+        class _T:
+            def __init__(s):
+                s.is_person = False; s.ai_confirmed = False; s.id = 1
+        class _AI:
+            _last_run = 0.0; boxes = []
+        class _W:
+            ai = _AI()
+        w = _W()
+        def run(n, seq, ai=False, dt=0.33):
+            """seq of True / False per picture -> index of the picture at which the person counts (None = never)"""
+            STRICT["n"] = n; tr_ = _T(); tr_.ai_confirmed = ai; t_ = 5000.0
+            for i, hit in enumerate(seq):
+                t_ += dt; STATE["frames"] = STATE.get("frames", 0) + 1
+                if ai:
+                    w.ai._last_run = t_; w.ai.boxes = [i]            # a new AI result in every picture
+                r = strict_gate(w, tr_, hit, t_)
+                tr_.is_person = r
+                if r:
+                    return i
+            return None
+        assert run(1, [True]) == 0, "normal: at once"
+        assert run(2, [True, True]) == 1 and run(3, [True, True, True]) == 2
+        assert run(2, [True, False, True, False, False, True]) == 2, "one miss allowed"
+        assert run(3, [True, False, False, True, False, False, True, False, False]) is None, "single flickers never count"
+        # the walking person at dusk + wind, 3 pictures/s like the simulator, the AI each time: <= 1 s later
+        assert run(3, [True] * 6, ai=True, dt=0.33) == 2
+        # Pi 5, 12 pictures/s, the AI only every 0.3 s: the cached AI boxes count once per run
+        STRICT["n"] = 3; tr_ = _T(); tr_.ai_confirmed = True; t_ = 6000.0; got = None
+        for i in range(40):
+            t_ += 1 / 12.0; STATE["frames"] = STATE.get("frames", 0) + 1
+            if i % 4 == 0:
+                w.ai._last_run = t_; w.ai.boxes = [i]
+            if strict_gate(w, tr_, True, t_):
+                got = t_ - 6000.0; break
+        assert got is not None and 0.5 < got <= 1.1, f"Pi: confirmed after {got} s"
+        # reasons: wind from the wind meter / simulator, switch «nachts strenger» off = as before
+        TWI["on"] = True; STATE["storm"] = {"wind": 55.0, "gust": 70.0}
+        assert strict_update() == 3 and STRICT["why"] == "dusk + wind"
+        TWI["on"] = False; STATE["storm"] = {"wind": 5.0, "gust": 10.0}; wl = STATE.get("wind_level"); STATE["wind_level"] = "calm"
+        assert strict_update() == 1
+        STATE["wind_level"] = wl
+        CFG["night_strict"] = False; TWI["on"] = True
+        assert strict_update() == 1
+        return None
+    finally:
+        CFG.update(keep)
+        for k, v in fkeep.items():
+            FOG[k] = v
+        TWI.clear(); TWI.update(tkeep); STRICT.clear(); STRICT.update(skeep)
+        STATE["storm"] = stkeep; STATE["fog"] = bool(FOG["on"]); STATE["strict"] = dict(STRICT)
+
+
+SELFTEST_EXTRA.append(("Fog mode (contrast, no «camera turned»), dusk / wind: person after hits in a row (411)", fog_selftest))
 # ----------------------------------------------------------------------------
 # 2.98.13 (Wunsch Daniel)
 # 1. Distance: a person is about 1.7 m tall - from the height of its box and the vertical field of view of the camera
@@ -52098,7 +52516,7 @@ function tidyHeader(s, c) {
   hb("#b-rec", !!s.recording);
   hb("#b-rain", !!s.rain_mode);
   hb("#b-wind", s.wind_level && s.wind_level !== "calm" && s.wind_level !== "off");
-  hb("#b-light", !!s.lowlight, "🌙 " + t("LOW LIGHT"), "yel");
+  hb("#b-light", !!(s.lowlight || s.fog), s.fog ? "🌫 " + t("Fog – view limited") : "🌙 " + t("LOW LIGHT"), "yel");   // 411: fog mode
   hb("#b-relay", (s.relay_states || []).some(Boolean));
   hb("#b-sched", (s.sched_active || []).length > 0);
   const srcOk = (s.source_status || "") === "connected"; hb("#b-src", !srcOk);
@@ -52134,7 +52552,7 @@ function compactHeader(s, c) {
   // short symbols instead of long words (the full text stays as tooltip)
   const m = /^next photo in (\d+) min$/.exec(s.timelapse || "");
   sh("#b-tl", "⏱" + (m ? " " + m[1] + "′" : ""));
-  sh("#b-light", "🌙"); sh("#b-camp", "⛺"); sh("#b-view", "👁 " + ((s.viewers || {}).n || 0), $("#b-view") && $("#b-view").title); sh("#b-eco", "🍃" + (s.eco === "saving" ? " " + c.eco_fps + " FPS" : ""));
+  sh("#b-light", s.fog ? "🌫" : "🌙"); sh("#b-camp", "⛺"); sh("#b-view", "👁 " + ((s.viewers || {}).n || 0), $("#b-view") && $("#b-view").title); sh("#b-eco", "🍃" + (s.eco === "saving" ? " " + c.eco_fps + " FPS" : ""));
   const L = s.lights || {}; sh("#b-lights", (L.white ? "💡" : "") + (L.ir ? " IR" : ""));
   sh("#b-pat", s.manual ? "✋" : (s.tracking ? "🎯" : "🔄"));
   const hs = s.hotspot || {}; sh("#b-hs", "📡" + (hs.clients ? " " + hs.clients : ""));
@@ -52382,6 +52800,7 @@ function sensPaint(c, s) {
   if (st) { const p = []; if (c.rf433_on) p.push("📻 433 MHz: " + t(S.rf || "off")); if (c.zigbee_on) p.push("🐝 Zigbee: " + t(S.zb || "off")); if (c.ble_on) p.push("🔵 Bluetooth: " + t(S.ble || "off"));
     if (!c.sens_on) p.unshift("⚠ " + t("Extra sensors are switched off")); st.textContent = p.join(" · "); }
 }
+Object.assign(I18N.de, {"Fog – view limited": "Nebel – Sicht eingeschränkt"});   // 411
 Object.assign(I18N.de, {"Storm warning": "Sturmwarnung", "Storm warning (push message)": "Sturmwarnung (Push-Nachricht)", "Also from the weather forecast: gusts in the next 12 hours (sends the location to Open-Meteo)": "Auch aus der Wetterprognose: Böen in den nächsten 12 Stunden (schickt den Standort an Open-Meteo)", "Warn when the air pressure falls by (hPa in 3 hours)": "Warnen, wenn der Luftdruck fällt um (hPa in 3 Stunden)", "Warn from wind / gusts of (km/h)": "Warnen ab Wind / Böen von (km/h)", "Wind meter: km/h per pulse per second": "Windmesser: km/h pro Impuls pro Sekunde", "Wind meter (anemometer) connected to": "Windmesser (Anemometer) angeschlossen an", "STORM WARNING": "STURMWARNUNG", "the air pressure falls fast": "der Luftdruck fällt schnell", "strong wind or a thunderstorm may come. Secure the awning and the tent.": "es kann starker Wind oder ein Gewitter kommen. Markise und Zelt sichern.", "strong wind measured": "starker Wind gemessen", "secure the awning and the tent.": "Markise und Zelt sichern.", "gusts expected in the next 12 hours": "Böen erwartet in den nächsten 12 Stunden", "secure the awning and the tent in time.": "Markise und Zelt rechtzeitig sichern.", "Air pressure from the BME280 temperature sensor. A wind meter: the two wires of the cup anemometer to a GPIO and GND.": "Luftdruck vom Temperaturfühler BME280. Windmesser: die zwei Drähte des Schalenanemometers an einen GPIO und GND.", "Air pressure": "Luftdruck", "trend after 1 hour": "Tendenz nach 1 Stunde", "no BME280 sensor": "kein BME280-Fühler", "Wind meter": "Windmesser", "gusts": "Böen", "Forecast, next 12 h": "Prognose, nächste 12 h", "no forecast yet": "noch keine Prognose", "Last warning": "Letzte Warnung"});
 // ---- storm warning ----
 function stormExtras(d) {
@@ -53764,7 +54183,7 @@ async function refresh() {
   badge("#b-rec", s.recording ? "● " + t("REC") : t("Idle"), s.recording ? "red" : "");
   const on = rs.filter(Boolean).length;
   badge("#b-relay", t("Relays") + ": " + on + "/" + rel.length, on ? "grn" : "");
-  badge("#b-light", s.lowlight ? t("LOW LIGHT") : t("Light ok") + " (" + s.brightness + ")", s.lowlight ? "yel" : "");
+  badge("#b-light", s.fog ? t("Fog – view limited") : s.lowlight ? t("LOW LIGHT") : t("Light ok") + " (" + s.brightness + ")", (s.lowlight || s.fog) ? "yel" : "");
   $("#sys-info").textContent = t("Settings") + ": " + (s.settings_status_txt || s.settings_status) + " · " + t("recordings") + ": " + s.rec_dir_mb + " MB · " + t("viewers") + ": " + s.web_viewers
       + (s.notify_status !== "off" ? " · " + t("notify") + ": " + s.notify_status : "");
   $("#v-pan").textContent = Math.round(c.pan); $("#v-tilt").textContent = Math.round(c.tilt);
@@ -56486,7 +56905,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>🧠 Eigenes KI-Modell</b> (Einstellungen → KI-Erkennung → «KI-Modell»): <i>Standard (SSD)</i> ist das bekannte Modell (≈ 70 MB, kennt 90 Dinge). <i>Eigenes (MoveEye-Modell)</i> ist ein kleines YOLO-Modell (≈ 12 MB), das auf GitHub nur für MoveEye trainiert wird: aus Trainingspaketen des Simulators und deinen beschrifteten Alarmbildern («Was war das?» – Person / Tier / Nichts). Es kennt drei Klassen: Person, Tier, Fahrzeug. «Eigenes Modell herunterladen» holt die neueste Fassung vom GitHub-Release «ki-modell» und prüft sie mit der Prüfsumme (sha256); danach läuft sie gleich. Darunter steht, welches Modell gerade läuft, die Version und die gemessene Güte (mAP50: 1,0 = perfekt, ab etwa 0,6 brauchbar). Fehlt die Datei oder läuft sie auf dem Pi nicht, nimmt MoveEye von selbst wieder das Standard-Modell (Meldung im Selbstcheck). Die Regler «Sicherheit» behalten ihre Bedeutung: 0,5 = die beste Schwelle aus dem Training. Mit «KI-Prüfung mit Simulator-Bildern» (Reiter Simulator) lassen sich beide Modelle vergleichen. Neu trainieren: auf GitHub Actions → «KI-Modell» → «Run workflow» (Anleitung im Ordner <code>ki_training/</code>).</li>
 <li><b>Zonen</b> (Reiter <i>Zonen</i>): «Ignorieren» für Bäume, Strasse, Zeltwand; «Nur hier» wenn nur ein Bereich zählen soll.</li>
 <li><b>Privatsphäre-Zone</b> (Reiter <i>Zonen</i>): der Bereich wird gleich nach der Kamera schwarz abgedeckt – im Live-Bild, in Aufnahmen, Fotos, Zeitraffer und für Gäste. Für Nachbarzelt, Weg, fremde Fenster. Wichtig für den Datenschutz: fremde Personen und öffentlichen Grund nicht dauernd filmen.</li>
-<li>Regen, Wind, Schatten und Schwachlicht werden automatisch erkannt und ausgeglichen (Feineinstellungen). Schwachlicht schaltet in der Dämmerung erst nach einer Wartezeit um (Standard 30 s) und erst etwas heller wieder aus – so flackert es nicht hin und her.</li>
+<li>Regen, Wind, Schatten und Schwachlicht werden automatisch erkannt und ausgeglichen (Feineinstellungen). Schwachlicht schaltet in der Dämmerung erst nach einer Wartezeit um (Standard 30 s) und erst etwas heller wieder aus – so flackert es nicht hin und her. <b>Nebel</b> (helles, graues Bild mit wenig Kontrast) erkennt MoveEye selbst (mit Wetterdaten sicherer): dann hebt es den Kontrast vor der KI an, das Wärmebild zählt auch tagsüber, oben steht «🌫 Nebel – Sicht eingeschränkt» und es gibt keinen Sabotage-Alarm «Kamera verdreht». In der <b>Dämmerung</b> und bei <b>starkem Wind</b> meldet MoveEye eine Person erst nach 2–3 Treffern in Folge (höchstens etwa 1 s später; Schalter «Nachts strenger»).</li>
 <li><b>Auto-Abstimmung</b> lernt die Szene selbst; «Neu kalibrieren», wenn sich die Umgebung stark geändert hat (Szene dabei leer lassen).</li></ul>
 </section>
 
@@ -56708,7 +57127,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>🧠 Own AI model</b> (Settings → AI detection → «AI model»): <i>Standard (SSD)</i> is the well-known model (≈ 70 MB, 90 things). <i>Own (MoveEye model)</i> is a small YOLO model (≈ 12 MB) trained on GitHub only for MoveEye, from simulator training packs and your labelled alarm pictures («What was that?»): person, animal, vehicle. «Download own model» fetches the newest one from the GitHub release «ki-modell» and checks its sha256. Below it: which model runs, its version and quality (mAP50). If the file is missing or does not run on the Pi, MoveEye goes back to the standard model by itself. The certainty sliders keep their meaning (0.5 = the best threshold of the training). Train again: GitHub Actions → «KI-Modell» → «Run workflow» (see the folder <code>ki_training/</code>).</li>
 <li><b>Zones</b> (tab <i>Zones</i>): «Ignore» for trees, road, tent wall; «Only here» when only one area counts.</li>
 <li><b>Privacy zone</b> (tab <i>Zones</i>): the area is painted black right after the camera – in the live picture, recordings, photos, timelapse and for guests. For a neighbour's tent, a path, other people's windows. Important for data protection: do not film strangers and public ground all the time.</li>
-<li>Rain, wind, shadows and low light are detected and handled automatically (fine-tuning). At dusk, low light only switches after a waiting time (default 30 s) and only switches off again when it is a little brighter – so it does not flip to and fro.</li>
+<li>Rain, wind, shadows and low light are detected and handled automatically (fine-tuning). At dusk, low light only switches after a waiting time (default 30 s) and only switches off again when it is a little brighter – so it does not flip to and fro. MoveEye recognises <b>fog</b> by itself (bright, grey picture with little contrast; surer with weather data): it then lifts the contrast before the AI, the thermal camera counts by day too, the header shows «🌫 Fog – view limited» and there is no sabotage alarm «camera turned». At <b>dusk</b> and in <b>strong wind</b> a person is reported only after 2–3 hits in a row (at most about 1 s later; switch «At night stricter»).</li>
 <li><b>Auto-tune</b> learns the scene; «Recalibrate» after big changes (scene empty).</li></ul>
 </section>
 
@@ -70954,7 +71373,7 @@ class App:
                  (f"{tr('Patrol')}: {tr(st['patrol_status'])}" if CFG["patrol"] else tr("Patrol off"))),
                  C["yel"] if manual else (C["acc"] if (st["tracking"] or CFG["patrol"]) else None))
         self._sb("b_auto", f"{tr('Auto')}: {st['auto_status']}", C["org"])
-        self._sb("b_light", tr("LOW LIGHT") if st["lowlight"] else tr("Light ok"), C["yel"] if st["lowlight"] else None)
+        self._sb("b_light", tr("Fog – view limited") if st.get("fog") else (tr("LOW LIGHT") if st["lowlight"] else tr("Light ok")), C["yel"] if (st["lowlight"] or st.get("fog")) else None)
         fps = float(st["fps"] or 0)
         self._sb("b_fps", ("💤 " if st.get("eco") == "saving" else "") + f"{fps:.0f} FPS",     # 2.95.64: real pictures per second
                  C["blu"] if st.get("eco") == "saving" else (C["grn"] if fps >= 12 else (C["yel"] if fps >= 6 else C["red"])))
@@ -70968,7 +71387,7 @@ class App:
         self._sb("b_wind", f"{tr('Wind')}: {tr(wl)}", C["yel"], show=wl not in ("calm", "off"))
         self._sb("b_rec", "● " + tr("REC"), C["red"], show=st["recording"])
         self._sb("b_relays", f"{tr('Relays')}: {on}/{len(RELAYS)} {tr('on')}", C["grn"], show=on > 0)
-        self._sb("b_light", "🌙 " + tr("LOW LIGHT"), C["yel"], show=st["lowlight"])
+        self._sb("b_light", ("🌫 " + tr("Fog – view limited")) if st.get("fog") else "🌙 " + tr("LOW LIGHT"), C["yel"], show=bool(st["lowlight"] or st.get("fog")))   # 411
         self._sb("b_auto", f"{tr('Auto')}: {st['auto_status']}", C["org"], show=str(st["auto_status"]).startswith("calibrat"))
         kt = kopf_text()                           # 2.98.30: automatic head movement (162): parked, quick look, saving, estimated position
         self._sb("b_patrol", tr("MANUAL") if manual else (tr("TRACKING") if st["tracking"] else (f"{tr('Patrol')}: {patrol_status_text(st['patrol_status'])}" if CFG["patrol"] or KOPF["round_on"] else "⟲ " + kt)),
@@ -95311,6 +95730,13 @@ for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp
                 "page Simulator the cards and the groups of the simulator control start closed (only «Controls» stays open).</p>")):
     if _a in HELP_PAGE:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+_HX_NEBEL = {
+    'Fog – view limited': ('Nebel – Sicht eingeschränkt', 'Brouillard – visibilité réduite', 'Nebbia – visibilità ridotta', 'Tschajera – vista limitada'),
+}
+for _k, _v in _HX_NEBEL.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")
