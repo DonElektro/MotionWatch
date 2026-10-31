@@ -115,6 +115,12 @@ func _run() -> void:
 		await get_tree().create_timer((1.5 if lite else 0.6) if loaded else (0.5 if lite else 0.15)).timeout
 		if main.fly_tw != null and main.fly_tw.is_valid():
 			main.fly_tw.custom_step(10.0)
+		if loaded:                                   # K1: the scene is built now - choose the camera once more (devtool_kamera.gd)
+			var ra: Dictionary = dev.reaim(cur)
+			if ra.has("cam"):
+				r["cam"] = ra["cam"]
+			await _wait_frames(2 if not lite else 4)
+		item["cam"] = r.get("cam", {})
 		if _cancel:
 			break
 		# the view from outside is blocked (a room, the bedroom in the house): the picture of MoveEye's camera instead
