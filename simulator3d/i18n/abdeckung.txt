@@ -1,16 +1,16 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 2899 (Stellen: 4157)
-Übersetzt: en 2663, fr 2663, it 2663, rm 2663
+Texte gesamt: 3099 (Stellen: 4381)
+Übersetzt: en 2863, fr 2863, it 2863, rm 2863
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 335 Stellen
-Nicht mehr im Code (noch in texte.json): 22
-HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 33 Stellen in wizpics.gd 16, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1, wordmark.gd 1
-Übersprungen (Grund: Anzahl): kennung 9007, schlüssel 6539, keine Wörter 5333, index 3685, technisch 1211, doc 785, einheit 110, pfad 54, englisch 52, log 46, html 33, klasse 18
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 337 Stellen
+Nicht mehr im Code (noch in texte.json): 24
+HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 47 Stellen in wizpics.gd 21, wordmark.gd 10, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1
+Übersprungen (Grund: Anzahl): kennung 9432, schlüssel 6975, keine Wörter 5612, index 4055, technisch 1274, doc 838, einheit 122, pfad 57, englisch 53, log 52, html 47, klasse 21
 
 Pro Datei (Texte / davon dynamische Stellen):
-  main.gd                  606    29
-  gamewiz.gd               213    14
+  main.gd                  609    29
+  gamewiz.gd               250    15
   game.gd                  211    32
   templates.gd              86     6
   toolbar.gd                85     3
@@ -39,15 +39,18 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamejaeger.gd             38     1
   update.gd                 37     4
   geo.gd                    36     7
+  gamemore.gd               36     1
   simreal.gd                36     0
+  gameziele.gd              34     0
+  gametools.gd              33     2
   tour.gd                   31     1
+  gamemission.gd            29     0
   zwilling.gd               29     3
   news.gd                   29     1
   power.gd                  28    10
   padmap.gd                 27    19
   gameshutter.gd            25     5
   umgebung.gd               25     0
-  gametools.gd              24     2
   dataset.gd                22     3
   explore.gd                22     2
   mini.gd                   21     1
@@ -59,16 +62,21 @@ Pro Datei (Texte / davon dynamische Stellen):
   planner.gd                18     0
   gamelearn.gd              18     0
   szenenplus.gd             17     1
+  gameturnier.gd            17     0
   b3d.gd                    15     3
+  gamesneak.gd              15     0
   home_editor.gd            14     3
   life.gd                   13     0
   gamekihilfe.gd            13     4
+  gameturm.gd               13     0
   weitwinkel.gd             13     0
   replay.gd                 11     1
+  gamenacht.gd              11     0
   objekte_plus.gd           11     0
   smalltv.gd                11     4
   recorder.gd               11     2
   schnittstelle.gd          10     7
+  gameschwitzen.gd           9     0
   padroles.gd                9     1
   realism.gd                 8     0
   gamekiwaechter.gd          8     4
@@ -151,20 +159,21 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   mehr.gd:526  'frei %s von %s · '
   mehr.gd:527  ' (zuletzt %s)'
   mehr.gd:527  'nicht verbunden'
-  gamewiz.gd:59  ' (wird hingestellt)'
-  gamewiz.gd:62  'keine'
-  gamewiz.gd:407  ' ⚠ Nur Simulator: braucht einen drehbaren Kopf, den Mover oder den Rover.'
-  gamewiz.gd:409  ' ⚠ MoveEye ist gerade nicht verbunden.'
-  gamewiz.gd:446  ' – 💡 Licht und 📢 Sirene'
-  gamewiz.gd:474  'nein'
-  gamewiz.gd:475  'nein'
-  gamewiz.gd:476  'nein'
-  gamewiz.gd:488  ' (mit den Spielern, die jetzt dabei sind)'
-  gamewiz.gd:499  'ja'
-  gamewiz.gd:499  'nein'
-  gamewiz.gd:689  '⚠ Nicht übernommen: '
-  gamewiz.gd:1006  'Wie letztes Mal: '
-  gamewiz.gd:1105  ' Regeln (%d)'
+  gamewiz.gd:63  ' (wird hingestellt)'
+  gamewiz.gd:66  'keine'
+  gamewiz.gd:71  'aus'
+  gamewiz.gd:471  ' ⚠ Nur Simulator: braucht einen drehbaren Kopf, den Mover oder den Rover.'
+  gamewiz.gd:473  ' ⚠ MoveEye ist gerade nicht verbunden.'
+  gamewiz.gd:514  ' – 💡 Licht und 📢 Sirene'
+  gamewiz.gd:544  'nein'
+  gamewiz.gd:545  'nein'
+  gamewiz.gd:546  'nein'
+  gamewiz.gd:558  ' (mit den Spielern, die jetzt dabei sind)'
+  gamewiz.gd:573  'ja'
+  gamewiz.gd:573  'nein'
+  gamewiz.gd:765  '⚠ Nicht übernommen: '
+  gamewiz.gd:1082  'Wie letztes Mal: '
+  gamewiz.gd:1181  ' Regeln (%d)'
   karte.gd:249  ' – ist der PC mit dem Internet verbunden?'
   karte.gd:249  'Karte: '
   karte.gd:334  'Nichts gefunden'
@@ -173,35 +182,35 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   karte.gd:503  'Dazu kommen: '
   karte.gd:511  'ja'
   karte.gd:511  'keine'
-  main.gd:1193  '  %.0f Mbit/s'
-  main.gd:1866  ' (von MoveEye)'
-  main.gd:1899  'Der Simulator ist belegt: '
-  main.gd:2696  'aus'
-  main.gd:2696  'ein'
-  main.gd:2773  'Sabotage-Test: '
-  main.gd:2773  'aus'
-  main.gd:2827  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:2830  '\n🚨 Bewacht und weg: '
-  main.gd:3536  'keine'
-  main.gd:3562  'Wächter an MoveEye: '
-  main.gd:4147  'Dein Platz: '
-  main.gd:4368  ' · schaut nur zu: '
-  main.gd:4371  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:4372  ' · Update: '
-  main.gd:4705  'Blinde Flecken: '
-  main.gd:5339  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:5644  'Autostart: '
-  main.gd:5655  'Autologon: '
-  main.gd:5816  'Karte öffnen: '
-  main.gd:5962  'Echt-Abgleich: '
-  main.gd:5969  'Trainingspaket: '
-  main.gd:5978  ' · %d offen · %.1f MB'
-  main.gd:5978  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:5987  'Verbindung · '
-  main.gd:5987  'aus'
-  main.gd:5991  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:5991  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:5994  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:1201  '  %.0f Mbit/s'
+  main.gd:1874  ' (von MoveEye)'
+  main.gd:1907  'Der Simulator ist belegt: '
+  main.gd:2704  'aus'
+  main.gd:2704  'ein'
+  main.gd:2781  'Sabotage-Test: '
+  main.gd:2781  'aus'
+  main.gd:2835  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:2838  '\n🚨 Bewacht und weg: '
+  main.gd:3545  'keine'
+  main.gd:3571  'Wächter an MoveEye: '
+  main.gd:4158  'Dein Platz: '
+  main.gd:4379  ' · schaut nur zu: '
+  main.gd:4382  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:4383  ' · Update: '
+  main.gd:4713  'Blinde Flecken: '
+  main.gd:5347  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:5652  'Autostart: '
+  main.gd:5663  'Autologon: '
+  main.gd:5824  'Karte öffnen: '
+  main.gd:5970  'Echt-Abgleich: '
+  main.gd:5977  'Trainingspaket: '
+  main.gd:5986  ' · %d offen · %.1f MB'
+  main.gd:5986  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:5995  'Verbindung · '
+  main.gd:5995  'aus'
+  main.gd:5999  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:5999  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6002  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:446  ' (automatisch von oben)'
   explore.gd:446  ' · schnell'
   feedback.gd:266  ' · TESTMODUS: geht nur an '
@@ -221,38 +230,38 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   feedback.gd:532  'Bildschirmfoto zur Rückmeldung von '
   feedback.gd:532  'Message: '
   feedback.gd:547  ' – Testmodus: '
-  game.gd:1441  ' · 🏆 alle gefunden'
-  game.gd:1445  'Wächter · '
-  game.gd:1471  ' · 🦆 %d s beobachtet'
-  game.gd:1477  ' · ✅ Aufgabe (+%d)'
-  game.gd:1480  ' · 🙈 %d s unerkannt (+%d)'
-  game.gd:1482  ' · %d× erwischt'
-  game.gd:1484  ' · %d× befreit'
-  game.gd:1491  ' · NEU: '
-  game.gd:1502  ' · 🧠 %d gelernt'
-  game.gd:1512  ' · ⬆ Stufe %d!'
-  game.gd:1512  ' · ⭐ +%d XP'
-  game.gd:1513  ' Neu: '
-  game.gd:1529  'Wächter an MoveEye · '
-  game.gd:1533  'Bot-Wächter · '
-  game.gd:1573  ' (mehr Punkte)'
-  game.gd:1604  ' (%d× derselbe nochmals – zählt weniger)'
-  game.gd:1605  ' · %d× Fehlalarm: %d · nicht im Ziel %d/%d: +%d = %d Punkte'
-  game.gd:2022  ' von %s'
-  game.gd:2252  '🔊 Geräusch '
-  game.gd:2330  '❌ Fehlalarm von MoveEye'
-  game.gd:2359  '❌ Fehlschuss von MoveEye – Fehlalarm'
-  game.gd:2372  ' · 🎯 Auslöser %d× Treffer, %d× daneben'
-  game.gd:2586  ' · Ziel: '
-  game.gd:2593  ' – ausgeschieden'
-  game.gd:2593  ' – im Ziel'
-  game.gd:2594  ' – Wächter'
-  game.gd:2595  ' · getrennt'
-  game.gd:2599  'Rangliste: '
-  game.gd:3417  ' – Vorsicht, Scheinwerfer!'
-  game.gd:3417  ' – der Motor übertönt die Schritte'
-  game.gd:3417  '🚗 Ein Auto fährt vorbei'
-  game.gd:3576  '🎯 Aufgabe dieser Runde: '
+  game.gd:1449  ' · 🏆 alle gefunden'
+  game.gd:1453  'Wächter · '
+  game.gd:1479  ' · 🦆 %d s beobachtet'
+  game.gd:1485  ' · ✅ Aufgabe (+%d)'
+  game.gd:1488  ' · 🙈 %d s unerkannt (+%d)'
+  game.gd:1490  ' · %d× erwischt'
+  game.gd:1492  ' · %d× befreit'
+  game.gd:1502  ' · NEU: '
+  game.gd:1513  ' · 🧠 %d gelernt'
+  game.gd:1523  ' · ⬆ Stufe %d!'
+  game.gd:1523  ' · ⭐ +%d XP'
+  game.gd:1524  ' Neu: '
+  game.gd:1540  'Wächter an MoveEye · '
+  game.gd:1544  'Bot-Wächter · '
+  game.gd:1584  ' (mehr Punkte)'
+  game.gd:1616  ' (%d× derselbe nochmals – zählt weniger)'
+  game.gd:1617  ' · %d× Fehlalarm: %d · nicht im Ziel %d/%d: +%d = %d Punkte'
+  game.gd:2037  ' von %s'
+  game.gd:2268  '🔊 Geräusch '
+  game.gd:2346  '❌ Fehlalarm von MoveEye'
+  game.gd:2375  '❌ Fehlschuss von MoveEye – Fehlalarm'
+  game.gd:2388  ' · 🎯 Auslöser %d× Treffer, %d× daneben'
+  game.gd:2607  ' · Ziel: '
+  game.gd:2614  ' – ausgeschieden'
+  game.gd:2614  ' – im Ziel'
+  game.gd:2615  ' – Wächter'
+  game.gd:2616  ' · getrennt'
+  game.gd:2620  'Rangliste: '
+  game.gd:3439  ' – Vorsicht, Scheinwerfer!'
+  game.gd:3439  ' – der Motor übertönt die Schritte'
+  game.gd:3439  '🚗 Ein Auto fährt vorbei'
+  game.gd:3598  '🎯 Aufgabe dieser Runde: '
   gamecompare.gd:134  'Vergleich '
   gamecompare.gd:138  '⚖ Mensch gegen KI: '
   gamecompare.gd:525  '\n%s: %s %d · MoveEye %d – %s'
@@ -265,9 +274,9 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   gamekihilfe.gd:91  ' – Runde zählt nicht für die Rangliste'
   gamekihilfe.gd:402  ' · 🤖 mit KI-Hilfe (%s) – zählt nicht für Rangliste und Abzeichen'
   gamekiwaechter.gd:100  ' · 🤖 gegen die KI – eigene Liste, zählt nicht für die Rangliste'
-  gamekiwaechter.gd:145  'aus'
-  gamekiwaechter.gd:145  'ein'
-  gamekiwaechter.gd:145  '🤖 MoveEye als KI-Wächter: '
+  gamekiwaechter.gd:147  'aus'
+  gamekiwaechter.gd:147  'ein'
+  gamekiwaechter.gd:147  '🤖 MoveEye als KI-Wächter: '
   padmap.gd:64  ' – mehrere Controller: Bedienfeld Mover › Controller › «Controller zuteilen»'
   padmap.gd:86  'Browser'
   padmap.gd:405  'Licht '
@@ -303,6 +312,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   protokoll.gd:92  'ein'
   protokoll.gd:128  'Godot: '
   protokoll.gd:131  'Godot: '
+  gamemore.gd:23  'aus'
   mini.gd:195  'aus'
   quick.gd:147  ' · Vorlagen'
   quick.gd:156  'aus'
@@ -323,14 +333,14 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   gamerules.gd:41  ' (nur Simulator)'
   gamerules.gd:181  ' und einen 🤖 Bot-Helfer an der Weitwinkel-Kamera'
   gamerules.gd:549  '  ·  %d Punkte'
-  gamerules.gd:577  'Rangliste des Abends: '
+  gamerules.gd:583  'Rangliste des Abends: '
   gameshutter.gd:220  ' (%d. Mal – zählt %d %%)'
   gameshutter.gd:451  'Licht und Sirene, '
   gameshutter.gd:709  ' · Pause %d s'
   gameshutter.gd:711  ' (Weitwinkel-Kamera)'
   gameshutter.gd:713  ' · Sim-KI'
-  gametools.gd:310  'Licht '
-  gametools.gd:313  'Energie ['
+  gametools.gd:343  'Licht '
+  gametools.gd:346  'Energie ['
   geo.gd:205  'Ortssuche: '
   geo.gd:303  'way[landuse];relation[landuse~"forest|orchard"];way[waterway];node[natural=tree];way[barrier];way[leisure~"pitch|swimming_pool|park"];way[amenity=parking];);out geom;'
   geo.gd:324  ' – Internet da?'
@@ -360,19 +370,19 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   kitrain.gd:245  '✅ Paket %s hochgeladen, Training gestartet (dauert etwa 30 Minuten bis 2 Stunden). '
   kitrain.gd:246  '\nLauf: '
   kitrain.gd:247  'KI-Training gestartet: '
-  localplay.gd:487  ' · Start in %d'
-  localplay.gd:489  ' · erwischt %d%s'
-  localplay.gd:491  ' · Kristalle %d'
-  localplay.gd:493  ' · %d× erwischt · %s'
-  localplay.gd:497  ' · KAMERA SCHAUT HER'
-  localplay.gd:497  ' · Lärm '
-  localplay.gd:497  ' · im Schatten'
-  localplay.gd:525  'Controller: '
-  localplay.gd:579  ' · %d Punkte'
-  localplay.gd:590  ' – ansehen'
-  localplay.gd:632  ' · als Nächstes: '
-  localplay.gd:638  ' · Beste: '
-  localplay.gd:677  'Tarnung: '
+  localplay.gd:492  ' · Start in %d'
+  localplay.gd:494  ' · erwischt %d%s'
+  localplay.gd:496  ' · Kristalle %d'
+  localplay.gd:504  ' · %d× erwischt · %s'
+  localplay.gd:508  ' · KAMERA SCHAUT HER'
+  localplay.gd:508  ' · Lärm '
+  localplay.gd:508  ' · im Schatten'
+  localplay.gd:536  'Controller: '
+  localplay.gd:590  ' · %d Punkte'
+  localplay.gd:601  ' – ansehen'
+  localplay.gd:643  ' · als Nächstes: '
+  localplay.gd:649  ' · Beste: '
+  localplay.gd:688  'Tarnung: '
   tv.gd:239  'Gewählt: '
   tv.gd:259  'Mitspielen: QR-Code mit dem Handy scannen\n(gleiches WLAN)\n'
   tv.gd:276  '  letzte Minute!'
@@ -456,7 +466,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   testrun.gd:863  ' (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).'
   testrun.gd:914  'FALSCH: '
   tour.gd:187  'Fertig'
-  update.gd:89  '\n\n(Im Godot-Editor wird nicht aktualisiert.)'
-  update.gd:93  '\n\nDer Simulator startet nach dem Update neu. Läuft MoveEye auf diesem PC, danach bitte wieder starten.'
-  update.gd:104  '\n\nWird in %d s automatisch installiert, danach startet der Simulator neu.'
-  update.gd:198  'Update hat nicht geklappt: '
+  update.gd:95  '\n\n(Im Godot-Editor wird nicht aktualisiert.)'
+  update.gd:99  '\n\nDer Simulator startet nach dem Update neu. Läuft MoveEye auf diesem PC, danach bitte wieder starten.'
+  update.gd:110  '\n\nWird in %d s automatisch installiert, danach startet der Simulator neu.'
+  update.gd:204  'Update hat nicht geklappt: '

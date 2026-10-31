@@ -58147,7 +58147,8 @@ WEB_PAGE = WEB_PAGE.replace("</body>", USERS_JS + "</body>", 1)
 KIG_KEYS = ["MoveEye as AI guard", "In rounds with a guard role (guard, team against team, team against MoveEye, online rounds) MoveEye itself is the guard: everybody sneaks, MoveEye's real detection watches, the head follows and the shutter fires by itself. Such rounds go into their own list «against the AI», not into the ranking.", "On: MoveEye guards rounds with a guard role itself", "This round: MoveEye guards (AI)",
             "MoveEye is not connected to the simulator game", "Against the AI", "rounds", "caught", "at the goal", "never caught",
             "The AI", "catches", "false alarms", "shots", "Reset the list «against the AI»", "Reset the list «against the AI»?",
-            "not supported - update the simulator", "no rounds against the AI yet"]
+            "not supported - update the simulator", "no rounds against the AI yet",
+            "AI tower", "floor", "highest floor", "towers", "AI tower now: floor", "Start the AI tower: quick start «KI-Turm» in the game wizard"]
 
 KIG_JS = r"""<script>
 Object.assign(I18N.de, /*KIGDE*/{});
@@ -58180,6 +58181,15 @@ Object.assign(I18N.de, /*KIGDE*/{});
       const rb = el("button", "sec", t("Reset the list «against the AI»")); rb.type = "button"; rb.style.marginTop = "6px";
       rb.onclick = async () => { if (!confirm(t("Reset the list «against the AI»?"))) return; await post("/api/sim", {action: "ctl", ctl: "press", id: "game_kig_reset", lang: LANG}); SIG = ""; poll(true); };
       D.appendChild(rb); }
+    // Gameplay ausfeilen (simulator 31.10.2026): the AI tower - the highest floor per player, also «against the AI»
+    const TW = K.turm || [];
+    const th = el("div", "", "🗼 " + t("AI tower")); th.style.cssText = "margin-top:8px;font-weight:600"; D.appendChild(th);
+    if (K.turm_on) D.appendChild(el("div", "", "🗼 " + t("AI tower now: floor") + " " + K.turm_floor));
+    if (!TW.length) D.appendChild(el("div", "mut", t("Start the AI tower: quick start «KI-Turm» in the game wizard")));
+    else { const tb2 = el("table", "gw-board");
+      TW.forEach((b, i) => { const tr = el("tr"); tr.append(el("td", "", (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + " " + b.n), el("td", "", t("floor") + " " + b.best + (b.ki ? " 🛡" : "")),
+        el("td", "mut", (b.towers || 0) + " " + t("towers"))); tb2.appendChild(tr); });
+      D.appendChild(tb2); }
   }
   let tm = null;
   async function poll(now) {
@@ -80190,6 +80200,13 @@ _HX_VIER = {
     'Reset the list «against the AI»': ('Liste «gegen die KI» zurücksetzen', 'Réinitialiser la liste «contre l’IA»', 'Azzerare la lista «contro l’IA»', 'Reinizialisar la glista «cunter la IA»'),
     'Reset the list «against the AI»?': ('Liste «gegen die KI» zurücksetzen?', 'Réinitialiser la liste «contre l’IA» ?', 'Azzerare la lista «contro l’IA»?', 'Reinizialisar la glista «cunter la IA»?'),
     'no rounds against the AI yet': ('noch keine Runden gegen die KI', 'encore aucune manche contre l’IA', 'ancora nessun turno contro l’IA', 'anc naginas rundas cunter la IA'),
+    # Gameplay ausfeilen (31.10.2026): the AI tower of the simulator (gameturm.gd)
+    'AI tower': ('KI-Turm', 'Tour de l’IA', 'Torre dell’IA', 'Tur da la IA'),
+    'floor': ('Stufe', 'étage', 'livello', 'stgalim'),
+    'highest floor': ('höchste Stufe', 'étage le plus haut', 'livello più alto', 'il stgalim il pli aut'),
+    'towers': ('Türme', 'tours', 'torri', 'turs'),
+    'AI tower now: floor': ('KI-Turm läuft: Stufe', 'Tour de l’IA en cours : étage', 'Torre dell’IA in corso: livello', 'Tur da la IA en curs: stgalim'),
+    'Start the AI tower: quick start «KI-Turm» in the game wizard': ('KI-Turm starten: Schnellstart «KI-Turm» im Spiel-Assistenten', 'Lancer la tour de l’IA : départ rapide «KI-Turm» dans l’assistant de jeu', 'Avviare la torre dell’IA: avvio rapido «KI-Turm» nell’assistente di gioco', 'Lantschar la tur da la IA: start svelt «KI-Turm» en l’assistent da gieu'),
 }
 for _k, _v in _HX_VIER.items():
     DE.setdefault(_k, _v[0])

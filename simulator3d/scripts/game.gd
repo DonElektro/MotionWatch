@@ -1741,7 +1741,7 @@ func visibility(p: Dictionary) -> float:
 	var best := 0.0
 	var sum := 0.0
 	for i in range(1 if rules.real() else 3):              # «Wie echte Hardware»: only the one camera (no fixed one, no thermal)
-		var f := cam_sees(p, i)
+		var f: float = cam_sees(p, i) * more.night_k(p, i)  # «Gameplay ausfeilen»: Nacht-Spiel - only the IR cone, the thermal camera
 		sum += f
 		best = max(best, f)
 	return best + 0.35 * (sum - best)
@@ -1950,8 +1950,8 @@ func _referee(dt: float) -> void:
 			p["heard"] = 0.0
 			continue
 		var v := visibility(p)
-		var hr := hearing(p)
-		var hid := _hide_check(p)
+		var hr := maxf(hearing(p), more.hear(p))           # «Gameplay ausfeilen»: gravel is loud (Geräusche zählen)
+		var hid: bool = _hide_check(p) or more.hidden(p)  # «Gameplay ausfeilen»: hidden at the washing line / in the tent
 		if hid:
 			v = 0.0
 			hr = 0.0
@@ -3020,7 +3020,7 @@ function toolsPaint(m) {
   const H = $("#hints"), L = g && m.rs === "play" ? (T.hints || []) : [];
   if (!L.length) { if (H.innerHTML) H.innerHTML = ""; return; }
   const v = $("#v"), r = v.getBoundingClientRect(), nw = v.naturalWidth || 16, nh = v.naturalHeight || 9, k = Math.min(r.width / nw, r.height / nh), w = nw * k, x0 = r.left + (r.width - w) / 2, y0 = r.top + (r.height - nh * k) / 2;
-  H.innerHTML = L.map(x => '<span style="left:' + Math.round(x0 + x[0] * w) + 'px;top:' + Math.round(y0 + 46) + 'px">' + (x[3] ? (x[0] < 0.5 ? "◀" : "▶") : "") + (x[1] === "scan" ? "📡" : "👣") + '<b>' + x[2] + ' m</b></span>').join("");
+  H.innerHTML = L.map(x => '<span style="left:' + Math.round(x0 + x[0] * w) + 'px;top:' + Math.round(y0 + 46) + 'px">' + (x[3] ? (x[0] < 0.5 ? "◀" : "▶") : "") + (x[1] === "scan" ? "📡" : x[1] === "lure" ? "🐾" : "👣") + '<b>' + x[2] + ' m</b></span>').join("");
 }
 let hbT = 0;
 function heart(m) {                      // 3D-3.77: the phone vibrates like a heartbeat (the sound comes from sfx.beat)

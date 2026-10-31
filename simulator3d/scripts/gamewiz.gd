@@ -48,7 +48,8 @@ const PX_KEYS := ["game_wx", "game_gear", "game_theft"]
 # 3D-4.x Spielkonzept: roles in turn, tools with energy, fairness, infos for sneakers - kept by gamerules.gd (only here)
 const RX_KEYS := ["game_rotate", "game_tools", "game_fair", "game_vibe", "game_shade", "game_glevel", "game_real"]
 # «Gameplay ausfeilen» (31.10.2026): probe round, replay when caught, highlights … - kept by gamemore.gd (only here)
-const MX_KEYS := ["game_probe", "game_clip", "game_hl", "game_mission"]
+const MX_KEYS := ["game_probe", "game_clip", "game_hl", "game_mission", "game_nightrule", "game_noisecount", "game_autofair",
+		"game_badges", "game_tour_n", "game_tour_rounds", "game_runtools"]
 const Mission = preload("res://scripts/gamemission.gd")
 const Rules = preload("res://scripts/gamerules.gd")      # Balance 30.10.2026: the ONE text for levels and the guard
 const THEFT_OPTS := [["auto", "zufällig"], ["Velo", "🚲 das Velo"], ["Kühlboxen", "🧊 die Kühlbox (nur Camping-Platz)"]]
@@ -64,6 +65,9 @@ static func theft_opts() -> Array:
 # 3D-3.77: on the last step - who plays along
 const PLAYER_OPTS := [["game_bots", "Computer-Spieler (Bots)", "select", 0, 0, "", false, [["0", "keine"], ["1", "1 Bot"], ["2", "2 Bots"], ["3", "3 Bots"]]],
 		["game_botguard", "🤖 Bot-Wächter, wenn niemand Wächter sein will (Spielart «Wächter»)", "toggle", 0, 0, "", false],
+		["game_tour_n", "🏆 Turnier: wie viele Spieler nacheinander auf einem Gerät", "range", 2, 8, "", false],
+		["game_tour_rounds", "🏆 Turnier: Runden pro Spieler", "range", 1, 3, "", false],
+		["game_badges", "🏅 Abzeichen pro Szene (kleine Ziele, auf diesem Gerät gespeichert)", "toggle", 0, 0, "", true],
 		["game_probe", "👁 Probe-Runde mit Blinki (30 s vor der Runde: ducken, verstecken, 🎯 üben – überspringbar)", "select", 0, 0, "", false, [["first", "für neue Spieler"], ["always", "vor jeder Runde"], ["off", "aus"]]],
 		["game_tutorial", "Übungsrunde für alle: Schritt für Schritt erklärt, niemand wird erwischt (wer zum ersten Mal spielt, bekommt sie von selbst)", "toggle", 0, 0, "", true],
 		["game_daily", "Tagesaufgabe: heute für alle dieselbe Szene, dasselbe Ziel, dieselben Startpunkte", "toggle", 0, 0, "", true],
@@ -91,6 +95,7 @@ const GOALS := [["reach", "🟢", "Zum Ziel schleichen", "Ziel: zum grünen Lich
 		["flag", "🚩", "Fahne erobern (zwei Teams)", "Ziel: zwei Teams. Holt die Fahne der anderen und bringt sie zur eigenen Basis. Wer mit der Fahne erwischt wird, verliert sie. Es gewinnt das Team mit mehr eroberten Fahnen (z. B. Rot 2 : 1 Blau)."],
 		["sprint", "⏱", "Sprint (90 Sekunden)", "Für Kinder und kurze Runden: immer derselbe Parcours mit 3 Toren. Durch die Tore, dann ins Ziel – je schneller, desto mehr Punkte."],
 		["theft", "🚲", "Diebstahl (Velo oder Kühlbox)", "Ziel: das Velo oder die Kühlbox unbemerkt zum orangen Ausgang tragen. Wer sie trägt, ist langsamer. Am Schluss schaut MoveEye nach, ob es merkt, dass etwas fehlt."],
+		["sweat", "🥵", "Bring MoveEye ins Schwitzen", "Ziel: MoveEye möglichst viel Arbeit machen – viele Personen gleichzeitig im Bild, auftauchen und verschwinden, die Erkennung verwirren –, ohne erwischt zu werden. Gemessen wird, was MoveEye selbst meldet (Personen, Spurwechsel, CPU). Nur Simulation: keine echten Alarme."],
 		["mission", "🎒", "Mission mit Gegenständen", "Ziel: eine Aufgabe mit echten Dingen – das Portemonnaie vom Tisch holen, 5 Früchte sammeln oder ein Paket wegbringen. Wer erwischt wird, verliert das Ding."]]
 # the cards of «Wie schwierig?» = the Schleicher-Stufe (texts: gamerules.gd LEVEL_TXT); the Wächter-Stufe is the option game_glevel
 func levels() -> Array:
@@ -115,6 +120,11 @@ const OPTIONS := [["game_minutes", "Dauer einer Runde", "range", 1, 15, " min", 
 		["game_autohandicap", "🎯 Handicap für den Ersten der Rangliste", "toggle", 0, 0, "", true], ["game_tasks", "✅ Eine Aufgabe für jede Runde (Bonus)", "toggle", 0, 0, "", true],
 		["game_theft", "🚲 Diebstahl: was wird geklaut?", "select", 0, 0, "", false, THEFT_OPTS],
 		["game_mission", "🎒 Mission: welche Aufgabe?", "select", 0, 0, "", false, []],   # options: Mission.options() (model)
+		["game_nightrule", "🌙 Nacht-Spiel: nachts sieht der Wächter nur im Infrarot-Kegel oder im Wärmebild", "toggle", 0, 0, "", true],
+		["game_noisecount", "🔊 Geräusche zählen: Kies und Rennen hört der Wächter (Richtungs-Ping, −15 je Geräusch)", "toggle", 0, 0, "", true],
+		["game_autofair", "⚖ Fairness automatisch: gewinnt eine Seite zu leicht, hilft die nächste Runde der anderen (wird angezeigt)", "toggle", 0, 0, "", true],
+		["game_clip", "🎬 Wiederholung beim Erwischen (3 s aus der Sicht des Wächters)", "toggle", 0, 0, "", true],
+		["game_hl", "🎬 Höhepunkte am Schluss (knappster Moment, längste Zeit unentdeckt, bester Schuss)", "toggle", 0, 0, "", true],
 		["game_wx", "⛅ Wetterwechsel mitten in der Runde (Gewitter, Nebel oder Dämmerung – 10 s vorher warnt das Handy)", "toggle", 0, 0, "", true],
 		["game_gear", "🎒 Tarn-Sachen zum Auswählen: Tarnkleidung, Wärmedecke, Karton, Regenschirm", "toggle", 0, 0, "", true],
 		# Balance 30.10.2026: the Wächter-Stufe (own level for the guard), the profile «Wie echte Hardware» (gamerules.gd)
@@ -122,7 +132,8 @@ const OPTIONS := [["game_minutes", "Dauer einer Runde", "range", 1, 15, " min", 
 		["game_real", Rules.REAL_TXT, "toggle", 0, 0, "", true],
 		# 3D-4.x Spielkonzept (gamerules.gd, gametools.gd)
 		["game_rotate", "🔄 Rollen wechseln: wer ist nach jeder Runde Wächter?", "select", 0, 0, "", false, [["off", "aus – jeder wählt selbst"], ["turn", "der Reihe nach"], ["best", "wer am wenigsten erwischt wurde"]]],
-		["game_tools", "⚡ Wächter-Werkzeuge mit Energie: Licht, Sirene, Scan, Zoom, Auslöser kosten Energie und laden nach", "toggle", 0, 0, "", true],
+		["game_tools", "⚡ Wächter-Werkzeuge mit Energie: Licht, Sirene, Scan, Zoom, Licht-Schwenk, Geräusch-Ping, Auslöser kosten Energie und laden nach", "toggle", 0, 0, "", true],
+		["game_runtools", "🐾 Werkzeuge für Schleicher mit Energie: Lockmittel (ein Tier lenkt ab) und Verstecken an Wäscheleine oder Zelt", "toggle", 0, 0, "", true],
 		["game_fair", "⚖ Fairness nach Rollen: viele Schleicher – der Wächter bekommt Hilfe; wenige – mehr Verstecke", "toggle", 0, 0, "", true],
 		["game_vibe", "📳 Infos für Schleicher: Handy vibriert, wenn die Kamera zu dir schaut · Lärm-Anzeige beim Rennen", "toggle", 0, 0, "", true],
 		["game_shade", "🌑 Schatten verstecken: am Tag sieht dich die Kamera im Schatten schlechter", "toggle", 0, 0, "", true],
@@ -167,11 +178,19 @@ const RULES := {"tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter
 		"jg_night": "🌙 Nacht-Runde: Lampen-Strahl und Insekten am Licht wirken im Dunkeln am besten.",
 		"jg_nomw": "⚠ MoveEye ist gerade nicht verbunden. Ohne MoveEye zählt kein Fehlalarm – zuerst in MoveEye den Simulator verbinden.",
 		"rotate": "🔄 Rollen reihum: Nach jeder Runde ist ein anderer Wächter – das steht vor der nächsten Runde auf allen Handys.",
-		"tools": "⚡ Wächter-Werkzeuge: 💡 Licht, 📢 Sirene (wer sich bewegt, fällt auf), 📡 Scan (zeigt, wo jemand ist), 🔍 Zoom und der 🎯 Auslöser kosten Energie. Sie lädt langsam nach – gut einteilen!",
+		"tools": "⚡ Wächter-Werkzeuge: 💡 Licht, 📢 Sirene (wer sich bewegt, fällt auf), 📡 Scan (zeigt, wo jemand ist), 🔍 Zoom, 💫 Licht-Schwenk (der Kopf schwenkt mit Licht), 🔊 Geräusch-Ping (zeigt, wer sich gerade bewegt) und der 🎯 Auslöser kosten Energie. Sie lädt langsam nach – gut einteilen!",
+		"runtools": "🐾 Werkzeuge für Schleicher (60 ⚡, lädt nach): 🐾 Lockmittel – ein Napf fliegt 6 m nach vorn, ein Tier kommt und lenkt die Kamera ab (30 ⚡) · 🧺 Verstecken – geduckt an der Wäscheleine oder am kleinen Zelt 6 s unsichtbar, aber nicht bewegen (20 ⚡).",
 		"fair": "⚖ Fairness: Viele Schleicher gegen einen Wächter – er bekommt mehr Energie und einen Bot-Helfer. Wenige Schleicher – mehr Verstecke, die länger halten.",
 		"infos": "📳 Für Schleicher: Das Handy vibriert, wenn die Kamera zu dir schaut. Rennen ist laut – der Wächter sieht dann eine Markierung. Im Schatten sieht dich die Kamera am Tag schlechter.",
 		"score": "🏅 Punkte für den Wächter: Was beim Erwischen auf dem Bildschirm steht, zählt – mit dem Auslöser 100 bis 300, sonst 150. Wer denselben Schleicher nochmals erwischt, bekommt die Hälfte, dann ein Viertel, dann nichts. Jeder Fehlalarm −50. Am Schluss + für jeden, der nicht ins Ziel kam. Wer gerade erwischt wurde oder neu startet, ist kurz geschützt (Startschutz).",
 		"probe": "👁 Probe-Runde mit Blinki: 30 Sekunden vor der Runde üben – ducken, in einen Busch, in Deckung gehen; der Wächter dreht die Kamera und übt den Auslöser 🎯 an Blinkis Zielscheibe. Niemand wird erwischt, «Überspringen» geht immer.",
+		"nightrule": "🌙 Nacht-Spiel: Es ist Nacht. Die Kamera am Kopf sieht nur, was in ihrem Infrarot-Kegel liegt (etwa 40°, so weit das IR-Licht reicht) – die Weitwinkel-Kamera sieht nachts nichts. Das Wärmebild sieht warme Körper immer. Eine eigene Taschenlampe verrät dich.",
+		"noisecount": "🔊 Geräusche zählen: Auf dem Kies (graue Flecken) knirscht jeder Schritt – geduckt leiser, kriechend fast lautlos. Rennen ist überall laut. Der Wächter hört jedes Geräusch als Richtungs-Ping; jedes kostet 15 Punkte.",
+		"autofair": "⚖ Fairness automatisch: Gewinnt eine Seite zu leicht, hilft die nächste Runde der anderen (Energie, Aufmerksamkeit der Kamera, Büsche). Was gilt, steht vor und nach der Runde auf allen Handys.",
+		"sweat": "🥵 MoveEye ins Schwitzen: Punkte gibt es pro Sekunde, in der MoveEye mit euch zu tun hat – jede gemeldete Person, jede neue oder verlorene Spur, mehr CPU. Die Punkte gehen an die, die die Kamera gerade sieht. Erwischt = −150. Ohne MoveEye schätzt der Simulator.",
+		"turm": "🗼 KI-Turm: Kommt mindestens einer ins Ziel, geht es eine Stufe höher (schlauerer Wächter, weniger Büsche, weniger Leben). Verliert ihr, ist der Turm zu Ende – die höchste Stufe kommt in die Liste «gegen die KI».",
+		"turnier": "🏆 Turnier: Vor jeder Runde steht auf dem Gerät, wer dran ist – Gerät weitergeben. Die Punkte kommen in die Tabelle, am Schluss gibt es das Siegerbild.",
+		"badges": "🏅 Abzeichen pro Szene: Jede Szene hat eigene kleine Ziele (z. B. «Unsichtbar im vollen Campingplatz», «Velodieb-Profi») – sie bleiben auf diesem Gerät gespeichert.",
 		"short": "🏆 Kurze Runden: Am Schluss der beste Wächter und der beste Schleicher, das Siegerbild mit dem knappsten Moment als Wiederholung und die Rangliste des Abends (sie beginnt nach Mitternacht neu)."}
 # 3D-4.x: the quick starts and the presets for the kids mode and «Mitspieler einladen» - every key of KEYS is set
 const BASE := {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_items": 3,
@@ -180,7 +199,9 @@ const BASE := {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", 
 		"game_tutorial": false, "game_daily": false, "game_ghost": true, "game_heart": true, "game_botguard": true,
 		"game_wx": false, "game_gear": true, "game_theft": "auto",
 		"game_rotate": "turn", "game_tools": true, "game_fair": true, "game_vibe": true, "game_shade": true, "game_glevel": "auto",
-		"game_probe": "first", "game_clip": true, "game_hl": true, "game_mission": "auto"}
+		"game_probe": "first", "game_clip": true, "game_hl": true, "game_mission": "auto", "game_nightrule": false, "game_noisecount": false,
+		"game_autofair": true,
+		"game_badges": true, "game_tour_n": 3, "game_tour_rounds": 2, "game_runtools": true}
 # 3D-4.x Spielkonzept (Daniel, 30.10.2026): the three fixed games of the quick start; the older presets stay for the kids mode,
 # «Zonen-Check» and old saved choices
 const PRESETS := {"sneak": {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_bots": "1",
@@ -204,6 +225,14 @@ const PRESETS := {"sneak": {"game_mode": "mw", "game_goal": "reach", "game_level
 			"game_hides": 2, "game_items": 0, "game_gear": false},
 		"szene_tarnen": {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_bots": "2",
 			"game_hides": 2, "game_items": 0, "game_gear": true},
+		"turm": {"game_mode": "guard", "game_goal": "reach", "game_botguard": true, "game_rotate": "off", "game_tools": true, "game_items": 0,
+			"game_bots": "0", "game_autofair": false},
+		"turnier": {"game_mode": "camera", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 2, "game_bots": "1",
+			"game_hides": 3, "game_items": 2, "game_probe": "first"},
+		"sweat": {"game_mode": "mw", "game_goal": "sweat", "game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_bots": "2",
+			"game_hides": 2, "game_items": 0, "game_gear": false},
+		"night": {"game_mode": "guard", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_botguard": true,
+			"game_rotate": "turn", "game_tools": true, "game_hides": 3, "game_items": 0, "game_nightrule": true, "game_noisecount": true, "game_bots": "1"},
 		"mission": {"game_mode": "mw", "game_goal": "mission", "game_mission": "auto", "game_level": "normal", "game_lives": "3", "game_minutes": 4,
 			"game_bots": "1", "game_items": 0, "game_hides": 3},
 		"szene_velo": {"game_mode": "guard", "game_goal": "theft", "game_level": "normal", "game_lives": "3", "game_minutes": 2, "game_theft": "Velo",
@@ -211,10 +240,14 @@ const PRESETS := {"sneak": {"game_mode": "mw", "game_goal": "reach", "game_level
 const QUICK := [["sneak", "🕵️", "Schleichen", "Unentdeckt zum grünen Ziel – MoveEye passt auf (ohne MoveEye die Kamera des Simulators). 3 Minuten, 3 Leben, Verstecke und Schatten, 1 Bot läuft mit."],
 		["duel", "👮", "Wächter-Duell", "Einer ist Wächter: Auslöser 🎯, Licht, Sirene, Scan und Zoom – mit Energie. Die anderen schleichen. Nach jeder Runde ist der Nächste Wächter (will niemand: der Bot-Wächter)."],
 		["theft", "🚲", "Diebstahl", "Das Velo oder die Kühlbox unbemerkt zum orangen Ausgang tragen. Am Schluss schaut MoveEye nach, ob es merkt, dass etwas fehlt."],
+		["turm", "🗼", "KI-Turm", "Runde um Runde gegen den KI-Wächter (MoveEye, sonst der Bot-Wächter) – jede Stufe schwerer. Eigene Rangliste «gegen die KI»."],
+		["turnier", "🏆", "Spielabend-Turnier", "Mehrere spielen nacheinander auf einem Gerät (Handy oder PC). Punktetabelle, am Schluss das Siegerbild."],
+		["sweat", "🥵", "MoveEye ins Schwitzen", "Gebt MoveEye so viel Arbeit wie möglich – ohne erwischt zu werden. Nur Simulation, keine echten Alarme."],
+		["night", "🌙", "Nacht-Spiel", "Dunkel: der Wächter sieht nur im Infrarot-Kegel des Kopfs oder im Wärmebild. Kies knirscht – er hört dich (Richtungs-Ping). Will niemand Wächter sein: der Bot-Wächter."],
 		["mission", "🎒", "Mission", "Portemonnaie vom Tisch holen, 5 Früchte sammeln oder ein Paket wegbringen – ohne erwischt zu werden. 4 Minuten, 3 Leben."]]
-const LEVEL_OF := {"mission": "normal", "szene_voll": "normal", "szene_tarnen": "normal", "szene_velo": "normal", "sneak": "normal", "duel": "normal", "theft": "normal", "kids": "easy", "family": "normal", "pro": "hard", "kids_pc": "easy", "free": "normal"}
+const LEVEL_OF := {"mission": "normal", "night": "normal", "turm": "easy", "turnier": "normal", "sweat": "normal", "szene_voll": "normal", "szene_tarnen": "normal", "szene_velo": "normal", "sneak": "normal", "duel": "normal", "theft": "normal", "kids": "easy", "family": "normal", "pro": "hard", "kids_pc": "easy", "free": "normal"}
 # 3D-4.20 (Daniel): the quick start cards have pictures again (wizpics.gd) - quick card -> picture
-const QUICK_PIC := {"mission": "mission", "sneak": "mw", "duel": "guard", "theft": "theft", "szene_voll": "mw", "szene_tarnen": "free", "szene_velo": "theft", "escape_quick": "escape"}
+const QUICK_PIC := {"mission": "mission", "night": "night", "turm": "turm", "turnier": "turnier", "sweat": "sweat", "sneak": "mw", "duel": "guard", "theft": "theft", "szene_voll": "mw", "szene_tarnen": "free", "szene_velo": "theft", "escape_quick": "escape"}
 const OWN_LABEL := "⚙ Eigene Regeln – alle Spielarten, Ziele und Extras"
 
 
@@ -318,6 +351,22 @@ func _rules() -> Array:
 		out.append(RULES["tools"])
 	if str(W.get("game_probe", "first")) != "off":
 		out.append(RULES["probe"])
+	if W.get("game_nightrule", false):
+		out.append(RULES["nightrule"])
+	if W.get("game_noisecount", false) and not _real():
+		out.append(RULES["noisecount"])
+	if W.get("game_autofair", true) and not main.game.more.turm.on:
+		out.append(RULES["autofair"])
+	if str(W.get("game_goal")) == "sweat":
+		out.append(RULES["sweat"])
+	if main.game.more.turm.on:
+		out.append(RULES["turm"])
+	if main.game.more.turnier.on:
+		out.append(RULES["turnier"])
+	if W.get("game_badges", true):
+		out.append(RULES["badges"])
+	if W.get("game_runtools", true):
+		out.append(RULES["runtools"])
 	if W.get("game_fair", true):
 		out.append(RULES["fair"])
 	if W.get("game_vibe", true) or W.get("game_shade", true):
@@ -448,6 +497,8 @@ func model() -> Dictionary:
 				continue
 			if o[0] == "game_botguard" and not str(W.get("game_mode")) in ["guard", "compare"]:
 				continue
+			if o[0] in ["game_tour_n", "game_tour_rounds"] and not main.game.more.turnier.on:
+				continue                                       # «Gameplay ausfeilen»: only when the tournament is chosen
 			if o[0] == "game_theft" and str(W.get("game_goal")) != "theft":
 				continue                                       # 3D-4.x: which thing - only with the goal «Diebstahl»
 			if o[0] == "game_mission" and str(W.get("game_goal")) != "mission":
@@ -456,7 +507,7 @@ func model() -> Dictionary:
 				continue                                       # 3D-4.x: roles in turn - only where a person guards
 			if o[0] == "game_glevel" and not str(W.get("game_mode")) in ["guard", "mwhand", "compare"]:
 				continue                                       # Balance: the Wächter-Stufe - only where a person has the shutter
-			if o[0] == "game_noise" and _real():
+			if o[0] in ["game_noise", "game_noisecount"] and _real():
 				continue                                       # «Wie echte Hardware»: MoveEye has no microphone
 			var d := {"id": o[0], "label": o[1], "type": o[2], "value": W[o[0]], "extra": o[6]}
 			if o[0] == "game_tools" and _real():
@@ -612,6 +663,7 @@ func op(d: Dictionary) -> Dictionary:
 				step = 3
 				error = ""
 				_apply()
+				main.game.more.quick_started(qv)            # «Gameplay ausfeilen»: KI-Turm, Turnier start here; others end them
 		"last":
 			var l = _last()
 			if l != null:

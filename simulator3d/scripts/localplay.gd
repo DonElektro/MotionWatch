@@ -453,9 +453,12 @@ func _input(ev: InputEvent) -> void:
 		KEY_G:
 			if role == "guard":
 				g._guard_light(p)
-		KEY_V, KEY_N, KEY_Z:                               # 3D-4.x: siren, scan, zoom of the guard (gametools.gd)
+		KEY_V, KEY_N, KEY_Z, KEY_K, KEY_J:                 # 3D-4.x: siren, scan, zoom of the guard (gametools.gd); K Licht-Schwenk, J Geräusch-Ping
 			if role == "guard":
-				g.tools.use(p, {KEY_V: "siren", KEY_N: "scan", KEY_Z: "zoom"}[ev.keycode])
+				g.tools.use(p, {KEY_V: "siren", KEY_N: "scan", KEY_Z: "zoom", KEY_K: "sweep", KEY_J: "ping"}[ev.keycode])
+		KEY_T, KEY_H:                                      # «Gameplay ausfeilen»: the tools of the sneakers (gamesneak.gd)
+			if role != "guard" and g.more != null:
+				g.more.sneak.use(p, "lure" if ev.keycode == KEY_T else "hide")
 		KEY_R:
 			if g.round_state == "end" and not g.replay.is_empty():
 				rp_view.visible = not rp_view.visible
@@ -491,6 +494,12 @@ func _paint_hud(vs: Vector2) -> void:
 		t += " · erwischt %d%s" % [int(S.get("caught", 0)), (" / %d" % lives) if lives > 0 else ""]
 		if int(S.get("items_all", 0)) > 0:
 			t += " · Kristalle %d" % int(S.get("items", 0))
+		var sh: String = main.game.more.sneak.hud_text(p) if main.game.more != null and rs == "play" else ""
+		if sh != "":
+			t += " · " + sh + " (T / H)"                   # «Gameplay ausfeilen»: Lockmittel, Verstecken
+		var gmt: String = str((S.get("gm", {}) as Dictionary).get("ms", ""))
+		if gmt != "":
+			t += " · " + gmt
 	else:
 		t += " · %d× erwischt · %s" % [int(S.get("catches", 0)), main.game.tools.hud_text(p)]   # 3D-4.x: energy and tools
 	var SX: Dictionary = (S.get("rx", {}) as Dictionary).get("sx", {})     # 3D-4.x: infos for the sneaker (gamerules.gd)

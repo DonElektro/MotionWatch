@@ -25,8 +25,17 @@ const RUN_STEPS := [["crouch", "🧎 Duck dich: «Ducken» (PC: C)"], ["hide", "
 		["cover", "🎯 Blinki zielt gleich auf dich – geh in Deckung: hinter ein Ding, in einen Busch oder flach kriechen"]]
 const GUARD_STEPS := [["turn", "👀 Dreh die Kamera zu Blinki (die orange Zielscheibe)"], ["shot", "🎯 Kreis auf Blinki – und drück den Auslöser"]]
 
-var cfg := {"game_probe": "first", "game_clip": true, "game_hl": true, "game_mission": "auto"}
+var cfg := {"game_probe": "first", "game_clip": true, "game_hl": true, "game_mission": "auto", "game_nightrule": false,
+		"game_noisecount": false, "game_autofair": true, "game_badges": true, "game_tour_n": 3, "game_tour_rounds": 2,
+		"game_runtools": true}
 var mission                              # gamemission.gd (Punkt 4): the goal «🎒 Mission»
+var nacht                                # gamenacht.gd (Punkte 5, 6, 8): Nacht-Spiel, Geräusche zählen, Fairness automatisch
+var _ntick := 0.0
+var turnier                              # gameturnier.gd (Punkt 8): Spielabend-Turnier on one device
+var turm                                 # gameturm.gd (Punkt 9): KI-Turm
+var ziele                                # gameziele.gd (Punkt 10): Abzeichen pro Szene
+var sweat                                # gameschwitzen.gd (Punkt 8): «Bring MoveEye ins Schwitzen»
+var sneak                                # gamesneak.gd (Punkt 7): the tools of the sneakers (Lockmittel, Verstecken)
 var seq := 0
 
 # ---- 1 Probe-Runde -------------------------------------------------------------------------------------------------------
@@ -71,6 +80,17 @@ func _ready() -> void:
 	mission = preload("res://scripts/gamemission.gd").new()
 	mission.game = game
 	mission.main = main
+	nacht = preload("res://scripts/gamenacht.gd").new()
+	nacht.game = game
+	nacht.main = main
+	nacht.more = self
+	for k in [["turnier", "res://scripts/gameturnier.gd"], ["turm", "res://scripts/gameturm.gd"], ["ziele", "res://scripts/gameziele.gd"],
+			["sweat", "res://scripts/gameschwitzen.gd"], ["sneak", "res://scripts/gamesneak.gd"]]:
+		var o = load(k[1]).new()
+		o.game = game
+		o.main = main
+		o.more = self
+		set(k[0], o)
 	pip_layer = CanvasLayer.new()
 	pip_layer.layer = 31                               # over the game at the PC (localplay, 30): the caught one sees it too
 	add_child(pip_layer)
@@ -111,7 +131,12 @@ func _take(d: Dictionary) -> void:
 
 
 func cfg_set(d: Dictionary) -> void:
+	var tn := [int(cfg["game_tour_n"]), int(cfg["game_tour_rounds"])]
 	_take(d)
+	cfg["game_tour_n"] = clampi(int(cfg["game_tour_n"]), 2, 8)
+	cfg["game_tour_rounds"] = clampi(int(cfg["game_tour_rounds"]), 1, 3)
+	if turnier != null and turnier.on and turnier.turn == 0 and tn != [int(cfg["game_tour_n"]), int(cfg["game_tour_rounds"])]:
+		turnier.start(int(cfg["game_tour_n"]), int(cfg["game_tour_rounds"]), turnier.names)
 	DirAccess.make_dir_recursive_absolute("user://spiel")
 	var f := FileAccess.open(CFG_FILE, FileAccess.WRITE)
 	if f != null:
@@ -137,6 +162,12 @@ func round_start() -> void:
 	ring = [[], []]
 	clips.clear()
 	mission.start(str(cfg["game_mission"]))
+	nacht.round_start()
+	turnier.round_start()
+	turm.round_start()
+	ziele.round_start()
+	sweat.round_start()
+	sneak.round_start()
 	_probe_start()
 	seq += 1
 
@@ -146,6 +177,11 @@ func round_end() -> void:
 	_probe_stop(false)
 	_make_reel()
 	mission.clear()
+	nacht.round_end()
+	nacht.judge(game.results)
+	sneak.round_end()
+	turnier.after_round(game.results)
+	turm.after_round(game.results)
 
 
 func _process(dt: float) -> void:
@@ -156,6 +192,13 @@ func _process(dt: float) -> void:
 		if _ptick <= 0.0:
 			_ptick = 0.25
 			_probe_tick()
+	if game.round_state == "play":
+		_ntick -= dt
+		if _ntick <= 0.0:
+			_ntick = 0.25
+			nacht.tick()
+		sweat.tick(dt)                                     # real time (a slow PC has few frames)
+		sneak.tick(dt)
 	if game.round_state == "play" and on("game_clip"):
 		_rt -= dt
 		if _rt <= 0.0:
@@ -167,6 +210,8 @@ func _process(dt: float) -> void:
 # ---- hooks of the referee (game.gd) ---------------------------------------------------------------------------------------
 func goal_tick(p: Dictionary) -> int:
 	"""game._referee per runner: 0 = the normal goal, 1 = an own goal (mission …), 2 = reached just now (skip the rest)"""
+	if sweat.active():
+		return 1                                           # «MoveEye ins Schwitzen»: there is no goal to reach
 	return mission.tick(p)
 
 
@@ -176,11 +221,73 @@ func target_of(p: Dictionary, t: Vector3) -> Vector3:
 
 
 func score_line(p: Dictionary, sc: int, info: String) -> Array:
-	"""game.end_round: the points and the line of a player - the missions add their part"""
+	"""game.end_round: the points and the line of a player - the missions, the noises, the scene badges add their part"""
+	if sweat.active():
+		var sw: Array = sweat.score(p, sc, info)
+		sc = int(sw[0])
+		info = str(sw[1])
 	var mi: String = mission.score_info(p)
 	if mi != "":
 		info += " · " + mi
+	var nz: Array = nacht.score_info(p)
+	if str(nz[1]) != "":
+		sc = maxi(0, sc + int(nz[0]))
+		info += " · " + str(nz[1])
+	var zb: Array = ziele.check(p) if not (game.shut.ki.used_round() or game.kig.active) else []
+	if not zb.is_empty():
+		info += " · " + ziele.line_for(zb)
 	return [sc, info]
+
+
+func win_lines() -> Array:
+	"""gamerules._show_win (this window): tournament, tower, scene badges, «Schwitzen»"""
+	var out: Array = turnier.lines() + turm.lines() + ziele.lines()
+	var sw: String = sweat.summary() if sweat.active() else ""
+	if sw != "":
+		out.append(sw)
+	return out
+
+
+func quick_started(id: String) -> void:
+	"""gamewiz «quick»: a quick start - the tower / the tournament start here, every other quick start ends them"""
+	if id == "turm":
+		turnier.stop()
+		turm.start()
+	elif id == "turnier":
+		turm.stop()
+		turnier.start(int(cfg["game_tour_n"]), int(cfg["game_tour_rounds"]))
+	else:
+		turm.stop()
+		turnier.stop()
+
+
+func hidden(p: Dictionary) -> bool:
+	"""game._referee: hidden with the tool «Verstecken» (washing line, tent)"""
+	return sneak.hidden(p)
+
+
+func night_k(p: Dictionary, i: int) -> float:
+	return nacht.night_k(p, i)
+
+
+func hear(p: Dictionary) -> float:
+	return nacht.hear(p)
+
+
+func energy_mul() -> float:
+	return nacht.energy_mul()
+
+
+func rate_mul() -> float:
+	return nacht.rate_mul()
+
+
+func extra_hides() -> int:
+	return nacht.extra_hides()
+
+
+func tower_on() -> bool:
+	return turm != null and turm.on and not turm.over
 
 
 # ==== 1 Probe-Runde mit Blinki =============================================================================================
@@ -659,6 +766,16 @@ func message(p: Dictionary, t: String, m: Dictionary) -> bool:
 				probe_skip(p)
 			elif k == "reel":
 				send_reel(p)
+			elif k == "tour_names":
+				var nm = m.get("names", [])
+				if typeof(nm) == TYPE_ARRAY:
+					turnier.set_names(nm)
+			elif k == "tour_new":
+				turnier.start(int(cfg["game_tour_n"]), int(cfg["game_tour_rounds"]), turnier.names)
+			elif k == "turm_new":
+				turm.start()
+			elif k == "rt":
+				sneak.use(p, str(m.get("v", "")))
 			return true
 		"hl":                                           # the closest moment (gamerules.send_hl): now all highlights
 			if on("game_hl") and send_reel(p):
@@ -671,6 +788,29 @@ func state_for(p: Dictionary) -> Dictionary:
 	var pr := _probe_state(p)
 	if not pr.is_empty():
 		d["pr"] = pr
+	if game.round_state in ["lobby", "end", "countdown"] and nacht.af_on() and nacht.bal != 0 and nacht.bal_txt != "":
+		d["af"] = nacht.bal_txt
+	var rs: String = game.round_state
+	if turnier.on and rs in ["lobby", "end", "countdown"]:
+		d["tour"] = turnier.state()
+	if turm.on and rs in ["lobby", "end", "countdown"]:
+		d["turm"] = turm.state()
+	if rs == "play":
+		var si: Dictionary = sneak.info_for(p)
+		if not si.is_empty():
+			d["rt"] = si
+	var sw: Dictionary = sweat.state_for(p)
+	if not sw.is_empty():
+		d["sw"] = sw
+	if rs == "end" and ziele.on() and p["role"] == "runner" and str(p.get("kind", "phone")) != "bot":
+		var zp: Dictionary = ziele.progress()
+		zp["got"] = (ziele.fresh.get(str(p["name"]), []) as Array).map(func(b): return [b[1], b[2], b[3]])
+		zp["new"] = T.t("neu")
+		d["zg"] = zp
+	if rs == "end":
+		var wl: Array = turm.lines() + ([sweat.summary()] if sweat.active() else [])
+		if not wl.is_empty():
+			d["wl"] = wl
 	var mt: String = mission.text_for(p) if game.round_state == "play" else ""
 	if mt != "":
 		d["ms"] = mt
@@ -689,6 +829,9 @@ func info() -> Dictionary:
 			"probed": probed.keys(), "round": game.round_state, "ring": [ring[0].size(), ring[1].size()],
 			"clips": clips.map(func(c): return [c["n"], c["by"], c["t"], c["pts"], (c["fr"] as Array).size()]),
 			"mission": mission.debug(),
+			"nacht": nacht.debug(),
+			"nk": game.players.filter(func(q): return q != null and q["role"] == "runner").map(func(q): return [q["name"], snappedf(nacht.night_k(q, 0), 0.01), snappedf(nacht.night_k(q, 1), 0.01), snappedf(nacht.night_k(q, 2), 0.01), snappedf(game.visibility(q), 0.02), int(q.get("nz_n", 0))]),
+			"tour": turnier.state(), "turm": turm.state(), "ziele": ziele.debug(), "sweat": sweat.debug(), "sneak": sneak.debug(),
 			"reel": reel.map(func(r): return [r["k"], r["title"], r["text"]]),
 			"pip": pip != null and (pip.get_parent().get_parent() as Control).visible,
 			"players": game.players.filter(func(q): return q != null).map(func(q): return [q["slot"], q["name"], q["role"], q["state"], str(q.get("kind", "phone")), q.get("sock") != null])}
@@ -709,6 +852,34 @@ func command(d: Dictionary) -> Dictionary:
 				probe_shot(game.players[sg])
 		"probe_forget":
 			probed.clear()
+		"tour_start":
+			quick_started("turnier")
+			if d.has("names"):
+				turnier.start(int(d.get("n", cfg["game_tour_n"])), int(d.get("rounds", cfg["game_tour_rounds"])), d["names"])
+		"tour_stop":
+			turnier.stop()
+		"turm_start":
+			quick_started("turm")
+		"turm_stop":
+			turm.stop()
+		"post":                                         # tests: the posture of a player {slot, pos 0..2}
+			var sp3 := int(d.get("slot", -1))
+			if sp3 >= 0 and sp3 < game.players.size() and game.players[sp3] != null:
+				game.players[sp3]["actor"].ctl_posture = clampi(int(d.get("pos", 0)), 0, 2)
+		"aim_dummy":                                    # tests: turn the head of the guard onto Blinki's target
+			if dummy != null and is_instance_valid(dummy):
+				var to: Vector3 = dummy.global_position - main.cams[0].global_position
+				game.guard_yaw = atan2(-to.x, -to.z)
+		"rt":                                           # tests: a tool of a sneaker {slot, v: lure | hide}
+			var sr2 := int(d.get("slot", -1))
+			if sr2 >= 0 and sr2 < game.players.size() and game.players[sr2] != null:
+				return sneak.use(game.players[sr2], str(d.get("v", "")))
+		"start_of":                                     # tests: the start point of a player, the goal
+			var so := int(d.get("slot", 0))
+			var sp: Vector3 = game.start_point(so)
+			return {"ok": true, "x": sp.x, "z": sp.z}
+		"goal":
+			return {"ok": true, "x": game.goal.x, "z": game.goal.z}
 		"role":                                         # tests: a role like the phone button
 			var sr := int(d.get("slot", -1))
 			if sr >= 0 and sr < game.players.size() and game.players[sr] != null:
@@ -720,7 +891,8 @@ func command(d: Dictionary) -> Dictionary:
 # ---- the phone page: one script more (game.gd PAGE, before </body>) ---------------------------------------------------------
 const PHONE_JS := r"""<style>
 #gmpr{position:fixed;left:50%;top:calc(max(8px,env(safe-area-inset-top)) + 40px);transform:translateX(-50%);width:min(92vw,520px);z-index:12;display:flex;gap:10px;align-items:flex-start;background:#111822ee;border:1px solid #ff9f43;border-radius:14px;padding:8px 10px;pointer-events:auto}
-#gmpr[hidden]{display:none}.gmreel{border:1px solid #1f2b3a;border-radius:12px;padding:4px 10px;margin:0 0 8px;background:#3b8cff14}#pic.gmclip{border-color:#ffd166}#pic.gmclip #pictxt::before{content:"⏪ ";}#gmpr .say{flex:1;min-width:0;font-size:13px;line-height:1.35}#gmpr .say b{display:block;font-size:15px;margin-bottom:2px}
+#gmpr[hidden]{display:none}.pod{display:flex;gap:8px;justify-content:center;align-items:flex-end;margin:8px 0}.pod>div{display:flex;flex-direction:column;align-items:center;min-width:84px;border-radius:10px 10px 0 0;padding:6px}.pod span{font-size:28px}.pod i{font-style:normal;font-weight:800}.pod .p0{background:#ffd16633;height:120px}.pod .p1{background:#c0c7d033;height:96px}.pod .p2{background:#c9922e33;height:80px}
+.gmzg{border:1px solid #1f2b3a;border-radius:12px;padding:6px 10px;margin:0 0 8px;text-align:left}.gmzg .zl{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.gmzg .zl span{font-size:12px;border:1px solid #1f2b3a;border-radius:999px;padding:2px 8px;opacity:.45}.gmzg .zl span.on{opacity:1;border-color:#34c759}.gmzg .nw{color:#ffd166;font-size:11px}#gmping{position:fixed;top:30%;transform:translateX(-50%);background:#111822ee;border:1px solid #ffd166;border-radius:12px;padding:4px 10px;font-size:14px;font-weight:700;pointer-events:none;opacity:0;transition:opacity .3s;z-index:8;white-space:nowrap}#gmping b{color:#ffd166;margin-right:6px}.gmreel{border:1px solid #1f2b3a;border-radius:12px;padding:4px 10px;margin:0 0 8px;background:#3b8cff14}#pic.gmclip{border-color:#ffd166}#pic.gmclip #pictxt::before{content:"⏪ ";}#gmpr .say{flex:1;min-width:0;font-size:13px;line-height:1.35}#gmpr .say b{display:block;font-size:15px;margin-bottom:2px}
 #gmpr ol{margin:4px 0 0;padding-left:18px}#gmpr li.ok{color:#34c759}#gmpr li.now{color:#ffd966;font-weight:700}
 #gmpr button{background:#151e2b;color:#e6edf3;border:1px solid #1f2b3a;border-radius:10px;padding:6px 10px;font-size:13px;margin-top:4px}
 .gmbk{width:46px;flex:none;line-height:0}.gmbk svg{width:100%;height:auto;display:block;overflow:visible}
@@ -800,6 +972,62 @@ const PHONE_JS := r"""<style>
   }
   G.paints = G.paints || [];
   G.paints.push(reelPaint);
+  // 7 Neue Werkzeuge: two buttons for the sneaker (energy), two for the guard (in the bar of the guard tools, TB of the page)
+  function btn(id, parent, before) { let b = document.getElementById(id); if (!b) { b = document.createElement("div"); b.className = "b"; b.id = id; b.hidden = true; parent.insertBefore(b, before || parent.firstChild); } return b; }
+  const RTB = {lure: btn("b-rt-lure", $("#rb")), hide: btn("b-rt-hide", $("#rb"))};
+  Object.keys(RTB).forEach(k => RTB[k].addEventListener("pointerdown", e => { e.preventDefault(); send({t: "gm", k: "rt", v: k}); }));
+  ["sweep", "ping"].forEach(k => { const b = btn("b-" + k, $("#gb"), $("#b-light")); TB[k] = "#b-" + k; b.addEventListener("pointerdown", e => { e.preventDefault(); send({t: "tool", k}); }); });
+  G.paints.push(function (m) {
+    const R = (m.gm || {}).rt, show = !!R && role === "runner" && m.rs === "play" && m.ps === "play";
+    Object.keys(RTB).forEach(k => RTB[k].hidden = !show);
+    if (!show) return;
+    (R.t || []).forEach(x => { const b = RTB[x[0]]; if (!b) return; cool(b, x[4]); b.classList.toggle("noen", !x[5] && !(x[4] > 0));
+      b.classList.toggle("on", x[0] === "hide" && (R.hid || !!R.near));
+      const lab = x[1] + "|" + x[3]; if (b.dataset.l !== lab) { b.dataset.l = lab; b.innerHTML = "<i>" + x[1] + "</i>" + esc(x[2]) + "<small>" + x[3] + " ⚡</small>"; } });
+    const e = document.getElementById("extra"), t = R.lab + " " + R.e + "/" + R.max + (R.hid ? " · 🧺 ✓" : (R.near ? " · 🧺 " + R.near : ""));
+    if (!e.textContent.startsWith(t)) e.textContent = t + " · " + e.textContent;
+  });
+  // 6 Geräusche zählen: the guard hears a noise - an arrow at the edge of his picture
+  G.gmping = function (m) {
+    let e = document.getElementById("gmping"); if (!e) { e = document.createElement("div"); e.id = "gmping"; document.body.appendChild(e); }
+    const a = m.a || 0, x = Math.max(6, Math.min(94, 50 + a / 1.2));
+    e.style.left = x + "%"; e.innerHTML = '<b>' + (Math.abs(a) > 8 ? (a > 0 ? "▶" : "◀") : "▲") + '</b>' + esc(m.txt || "");
+    e.style.opacity = 1; clearTimeout(G._pingT); G._pingT = setTimeout(() => e.style.opacity = 0, 2200);
+    try { if (navigator.vibrate) navigator.vibrate(40); } catch (er) {}
+  };
+  // 8 Fairness automatisch: the balance line before / after the round
+  G.paints.push(function (m) { const t = (m.gm || {}).af, card = document.querySelector("#ov .card"); if (!t || !card || card.querySelector(".gmaf")) return;
+    const d = document.createElement("p"); d.className = "gmaf"; d.innerHTML = "<small><b>" + esc(t) + "</b></small>"; card.prepend(d); });
+  // 8 Turnier / 9 KI-Turm / 10 Abzeichen: a block on the card before and after the round
+  function card(m) { return document.querySelector("#ov .card"); }
+  G.paints.push(function (m) {
+    const X = m.gm || {}, c = card(m); if (!c || c.querySelector(".gmx")) return;
+    let h = "";
+    const U = X.tour;
+    if (U) {
+      if (U.done && U.podium.length) h += '<div class="win"><div class="big2">🏆 ' + esc(U.podium[0].n) + '</div><p>' + esc(U.t_win) + '</p><div class="pod">' +
+        [1, 0, 2].filter(i => U.podium[i]).map(i => '<div class="p' + i + '"><b>' + esc(U.podium[i].n) + '</b><span>' + ["🥇", "🥈", "🥉"][i] + '</span><i>' + U.podium[i].pts + '</i></div>').join("") + '</div></div>';
+      else h += '<div class="win"><p>' + esc(U.t_head) + ' · ' + U.turn + '/' + U.total + '</p><div class="big2">' + esc(U.cur) + '</div><p>' + esc(U.t_next) + ' <b>' + esc(U.cur) + '</b> – ' + esc(U.t_pass) + '</p></div>';
+      h += '<h1>' + esc(U.t_table) + '</h1><table class="brd">' + U.table.map((e, i) => '<tr><td>' + (i + 1) + '.</td><td class="n">' + esc(e.n) + '</td><td><b>' + e.pts + '</b></td><td class="rec">' + e.list.join(" + ") + '</td></tr>').join("") + '</table>';
+      if (U.edit) h += '<div class="lab">' + esc(U.t_names) + '</div><textarea id="gmtn" rows="4" style="width:100%;background:#0a0e14;color:#e6edf3;border:1px solid #1f2b3a;border-radius:10px;padding:8px;font-size:15px">' + esc(U.names.join("\n")) + '</textarea><button class="sec" id="gmtns">' + esc(U.t_save) + '</button>';
+      if (U.done) h += '<button class="sec" id="gmtnew">' + esc(U.t_again) + '</button>';
+    }
+    const K = X.turm;
+    if (K) h += '<div class="win"><p>' + esc(K.t_head) + '</p><div class="big2">' + esc(K.t_floor) + ' ' + K.floor + ' / ' + K.of + '</div>' + (K.last ? '<p>' + esc(K.last) + '</p>' : '') +
+      ((K.board || []).length ? '<p><small>' + esc(K.t_board) + ': ' + K.board.map((e, i) => (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + ' ' + esc(e.n) + ' ' + e.best).join(" · ") + '</small></p>' : '') + '</div>';
+    const Z = X.zg;
+    if (Z) h += '<div class="gmzg"><b>' + esc(Z.head) + '</b>' + ((Z.got || []).length ? '<p>' + Z.got.map(b => b[0] + ' <b>' + esc(b[1]) + '</b>' + (b[2] ? ' <span class="nw">' + esc(Z.new) + '</span>' : '')).join(" · ") + '</p>' : '') +
+      '<div class="zl">' + Z.list.map(b => '<span class="' + (b[3] ? "on" : "") + '" title="' + esc(b[2]) + '">' + b[0] + ' ' + esc(b[1]) + '</span>').join("") + '</div></div>';
+    if ((X.wl || []).length && !K) h += '<p><small>' + X.wl.map(esc).join("<br>") + '</small></p>';
+    if (!h) return;
+    const d = document.createElement("div"); d.className = "gmx"; d.innerHTML = h; c.prepend(d);
+    const sb = d.querySelector("#gmtns"); if (sb) sb.onclick = () => send({t: "gm", k: "tour_names", names: d.querySelector("#gmtn").value.split("\n").map(x => x.trim()).filter(x => x)});
+    const nb = d.querySelector("#gmtnew"); if (nb) nb.onclick = () => send({t: "gm", k: "tour_new"});
+    const ta = d.querySelector("#gmtn"); if (ta) { ta.addEventListener("focus", () => editing = true); ta.addEventListener("blur", () => setTimeout(() => editing = false, 300)); }
+  });
+  // 8 «MoveEye ins Schwitzen»: the points while playing
+  G.paints.push(function (m) { const S = (m.gm || {}).sw; if (!S || role !== "runner") return; const e = document.getElementById("extra");
+    const t = S.t + " " + S.pts + (S.seen ? " 📷" : "") + (S.est ? " ≈" : ""); if (!e.textContent.startsWith(t)) e.textContent = t + " · " + e.textContent; });
   // 4 Missionen: what to do now, in the line of the extras
   G.paints.push(function (m) { const t = (m.gm || {}).ms; if (t && role === "runner") { const e = document.getElementById("extra"); if (!e.textContent.startsWith(t)) e.textContent = t + " · " + e.textContent; } });
   G.paints.push(probe);

@@ -73,6 +73,11 @@ func _ring(pos: Vector3, c: Color) -> Node3D:
 
 func start(choice: String) -> void:
 	clear()
+	for p in game.players:                                 # a new round: nothing carried, nothing done (also without a mission)
+		if p != null:
+			p["ms_n"] = 0
+			p["ms_carry"] = false
+			p["ms_ok"] = false
 	if main.game_goal != "mission":
 		return
 	var ks := ["wallet", "fruit", "parcel"]
