@@ -1,7 +1,7 @@
 {
- "version": "3D-4.31",
+ "version": "3D-4.32",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 65220826,
- "sha256": "ffcbe1af006abfb14247dbd0eb6d33f8752a56ead4d425c018426d718e56e311",
- "notes": "Nacht-Testlauf: eine ganze Nacht im Simulator mit Wahrheit, MoveEye vergleicht und zeigt den Bericht /nacht; im Simulator Fortschritt und Abbrechen."
+ "size": 65444156,
+ "sha256": "059b99f92d1faf4053cd687e3bb145346e550f7e9395633da14af7746d9ebde2",
+ "notes": "Gameplay ausgefeilt: Probe-Runde mit Blinki, Wiederholung und Höhepunkte, Missionen, Nacht-Spiel, neue Werkzeuge, Turnier, Fairness, KI-Turm, Abzeichen pro Szene."
 }

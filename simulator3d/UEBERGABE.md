@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.31** · passende MoveEye-Version (früher Motion Watch) **2.98.62**
+Stand: 31.10.2026 · Simulator-Version **3D-4.32** · passende MoveEye-Version (früher Motion Watch) **2.98.63**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.32 (MoveEye 2.98.63): Gameplay ausfeilen (12 Punkte, `gamemore.gd` u. a.)
+
+- Neu: `gamemission.gd`, `gamenacht.gd`, `gamesneak.gd`, `gameschwitzen.gd`, `gameturm.gd`, `gameturnier.gd`, `gameziele.gd`,
+  gemeinsamer Teil `gamemore.gd` (Probe, Wiederholung, Höhepunkte, Werkzeuge). Geändert: game.gd, gamewiz.gd, gamerules.gd,
+  gametools.gd, localplay.gd. MoveEye 548/596: Rangliste KI-Turm. Plan: `docs/Gameplay_Ausfeilen_Plan.md`.
+- `gamemore._lite()` = `Quality.lite()` (keine Leucht-Materialien, kein Kies-Schmuck, Film 4 statt 8 Bilder).
 
 ## NEU in 3D-4.31 (MoveEye 2.98.62): Nacht-Testlauf (`nachtlauf.gd`, MoveEye /nacht)
 

@@ -428,7 +428,9 @@ func _input(ev: InputEvent) -> void:
 			else:
 				_open_menu()
 		KEY_ENTER, KEY_KP_ENTER:
-			if g.round_state in ["lobby", "end"]:
+			if g.more != null and g.more.probe_on():       # «Gameplay ausfeilen»: skip the probe round with Blinki
+				g.more.probe_skip(p)
+			elif g.round_state in ["lobby", "end"]:
 				rp_view.visible = false
 				g.start_round()
 		KEY_C:
@@ -451,9 +453,12 @@ func _input(ev: InputEvent) -> void:
 		KEY_G:
 			if role == "guard":
 				g._guard_light(p)
-		KEY_V, KEY_N, KEY_Z:                               # 3D-4.x: siren, scan, zoom of the guard (gametools.gd)
+		KEY_V, KEY_N, KEY_Z, KEY_K, KEY_J:                 # 3D-4.x: siren, scan, zoom of the guard (gametools.gd); K Licht-Schwenk, J Geräusch-Ping
 			if role == "guard":
-				g.tools.use(p, {KEY_V: "siren", KEY_N: "scan", KEY_Z: "zoom"}[ev.keycode])
+				g.tools.use(p, {KEY_V: "siren", KEY_N: "scan", KEY_Z: "zoom", KEY_K: "sweep", KEY_J: "ping"}[ev.keycode])
+		KEY_T, KEY_H:                                      # «Gameplay ausfeilen»: the tools of the sneakers (gamesneak.gd)
+			if role != "guard" and g.more != null:
+				g.more.sneak.use(p, "lure" if ev.keycode == KEY_T else "hide")
 		KEY_R:
 			if g.round_state == "end" and not g.replay.is_empty():
 				rp_view.visible = not rp_view.visible
@@ -489,6 +494,12 @@ func _paint_hud(vs: Vector2) -> void:
 		t += " · erwischt %d%s" % [int(S.get("caught", 0)), (" / %d" % lives) if lives > 0 else ""]
 		if int(S.get("items_all", 0)) > 0:
 			t += " · Kristalle %d" % int(S.get("items", 0))
+		var sh: String = main.game.more.sneak.hud_text(p) if main.game.more != null and rs == "play" else ""
+		if sh != "":
+			t += " · " + sh + " (T / H)"                   # «Gameplay ausfeilen»: Lockmittel, Verstecken
+		var gmt: String = str((S.get("gm", {}) as Dictionary).get("ms", ""))
+		if gmt != "":
+			t += " · " + gmt
 	else:
 		t += " · %d× erwischt · %s" % [int(S.get("catches", 0)), main.game.tools.hud_text(p)]   # 3D-4.x: energy and tools
 	var SX: Dictionary = (S.get("rx", {}) as Dictionary).get("sx", {})     # 3D-4.x: infos for the sneaker (gamerules.gd)
@@ -564,7 +575,8 @@ func _paint_card() -> void:
 	card.visible = show
 	if not show:
 		return
-	var sig := "%s|%d|%d|%d|%s|%d|%d" % [rs, g.results.size(), g.count(), main.game_bots, str(_st.get("daily", {})), int(g.plus.seq), int(g.rules.seq)]
+	var sig := "%s|%d|%d|%d|%s|%d|%d|%d" % [rs, g.results.size(), g.count(), main.game_bots, str(_st.get("daily", {})), int(g.plus.seq), int(g.rules.seq),
+			int(g.more.seq) if g.more != null else 0]
 	if sig == _card_sig:
 		_center(card)
 		return
@@ -596,6 +608,13 @@ func _paint_card() -> void:
 			fl_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			fl_.custom_minimum_size.x = 480
 			card_v.add_child(fl_)
+	if g.more != null and rs in ["lobby", "end"]:          # «Gameplay ausfeilen»: tournament (who is next, table), tower, badges, highlights
+		var ml: Array = g.more.turnier.lines() + g.more.turm.lines() + (g.more.ziele.lines() + g.more.reel_lines() if rs == "end" else [])
+		for ln in ml:
+			var mlb := UI.small(_plain(str(ln)), UI.TXT)
+			mlb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			mlb.custom_minimum_size.x = 480
+			card_v.add_child(mlb)
 	if rs == "end":
 		if not g.flag_res.is_empty():                       # 3D-4.x: «Fahne erobern» - decided by the captures
 			var fl := UI.heading("%s – %s" % [g.flag_res["text"], g.flag_res["title"]])
