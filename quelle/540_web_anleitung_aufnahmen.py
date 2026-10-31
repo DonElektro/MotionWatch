@@ -1083,7 +1083,7 @@ function mapDraw() {
         const k = z + "/" + (((tx % N) + N) % N) + "/" + ty;
         let im = have[k + "@" + tx];
         if (!im) { im = el("img"); im.alt = ""; im.dataset.k = k + "@" + tx; im.onerror = () => { im.style.visibility = "hidden"; MAP.bad++; mapNote(); };
-          im.src = "https://tile.openstreetmap.org/" + k + ".png"; T.appendChild(im); }
+          im.referrerPolicy = "origin"; im.src = "https://tile.openstreetmap.org/" + k + ".png"; T.appendChild(im); }
         im.style.left = Math.round(tx * 256 - x0) + "px"; im.style.top = Math.round(ty * 256 - y0) + "px"; im.dataset.keep = "1";
       }
     }

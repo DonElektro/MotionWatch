@@ -33,6 +33,7 @@ const AbD = preload("res://scripts/bergtal_abenteuer_daten.gd")
 const Ab = preload("res://scripts/bergtal_abenteuer.gd")
 const Mg = preload("res://scripts/maggie_story.gd")
 const Figur = preload("res://scripts/figur.gd")
+const MZ = preload("res://scripts/maggie_zwei.gd")      # Maggie für zwei Spieler: «1 oder 2 Spieler» auf der Seite «Figur»
 
 const IDS := ["grossvater", "maggie", "horror", "teil2"]
 const AGE := {"grossvater": 8, "maggie": 10, "horror": 16, "teil2": 8}
@@ -636,6 +637,7 @@ func _fill_from_slot() -> void:
 		_fl["name"] = str(f["name"]) if str(f["name"]) != "" else SS.name_of(SS.slot())
 		if not (f["look"] as Dictionary).is_empty():
 			_fl["look"] = f["look"]
+		MZ.wahl_laden(main, _fl)
 	if id == "grossvater":
 		_fl["level"] = str(main.abenteuer.W.get("level", "mittel"))
 		_fl["season"] = str(main.abenteuer.W.get("season", "sommer"))
@@ -783,6 +785,8 @@ func _page_figur(W: float) -> void:
 	var note := str(_def(_fl["id"]).get("figur_note", ""))
 	if note != "":
 		_say(note, 13, UI.MUT)
+	if str(_fl["id"]) == "maggie":
+		MZ.seite_figur(self, _fl)                         # 1 oder 2 Spieler, Rolle und Figur von Spieler 2
 	le.grab_focus.call_deferred()
 
 
@@ -878,6 +882,7 @@ func _finish() -> Dictionary:
 		"grossvater":
 			main.abenteuer.neu("leicht" if kids() else str(_fl["level"]), str(_fl["season"]), true)
 		"maggie":
+			MZ.wahl_merken(main, _fl)
 			main.maggie.beginnen(str(_fl["name"]), _fl["look"])
 		"horror":
 			main.horror.neu_beginnen()
@@ -901,6 +906,9 @@ func gs(d: Dictionary) -> Dictionary:
 	if _fl.is_empty():
 		return {"ok": false, "error": "no start"}
 	_fl["err"] = ""
+	if MZ.gs_taste(_fl, d):                             # Maggie: zwei (1 | 2), rolle, name2, col2
+		_paint_start()
+		return gs_info()
 	match str(d.get("k", "info")):
 		"slot":
 			_fl["slot"] = clampi(int(d.get("v", 1)), 1, SS.N)
@@ -956,4 +964,5 @@ func gs_info() -> Dictionary:
 	if _fl.is_empty():
 		return {"ok": true, "open": false}
 	return {"ok": true, "open": start_open(), "id": _fl["id"], "what": _fl["what"], "step": _step(), "steps": _fl["steps"], "slot": _fl["slot"],
-			"level": _fl["level"], "season": _fl["season"], "name": _fl["name"], "look": _fl["look"], "err": _fl["err"]}
+			"level": _fl["level"], "season": _fl["season"], "name": _fl["name"], "look": _fl["look"], "err": _fl["err"],
+			"zwei": _fl.get("zwei", {})}

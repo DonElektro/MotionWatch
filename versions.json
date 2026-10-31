@@ -1,13 +1,47 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 19:37",
+ "generated": "2026-10-31 20:29",
  "versions": [
+  {
+   "version": "3.12.0",
+   "file": "webcam_bewegung_3_12_0.py",
+   "url": "",
+   "sha256": "0164b81126fd108936373e059b3f18babca67b65a410ba5204c5e4ddf2ff2f79",
+   "date": "2026-10-31 20:29",
+   "notes": "Blinki überall ohne den orangen Sichtfächer; bei einem Stimmungswechsel zeigt er das Zeichen kurz in einer kleinen Sprechblase; Logo und Fensterkopf unverändert.",
+   "size": 4415983,
+   "sig": "1a1ed57d8dc74dee73bbc58e38eade07a4c4505bbe1475e3092983be01a444211930a345095d15e3182c96d97e200546d58ba3e168cc26f988895ab226625b07",
+   "data": {
+    "file": "moveeye_daten_3_12_0.zip",
+    "url": "",
+    "sha256": "1df702a002f8141100ddb384722e2d342eaba057107a002ec5d0911051de4d02",
+    "size": 1612272,
+    "sig": "b7a92efce514606c5eff0296e84c67596b84ef1f5440471ef194cabcd2f7e59cf4025b35d405deb42f2335aac383dd2b62ff347b306deb3e197d1379fdd61d07"
+   }
+  },
+  {
+   "version": "3.11.1",
+   "file": "webcam_bewegung_3_11_1.py",
+   "url": "",
+   "sha256": "3177e92808a3805ef9a093d41fc9bf1dc7b40421b0fd9e8f8c4c70739ffcb5f1",
+   "date": "2026-10-31 20:25",
+   "notes": "Karte (Standort, Aufnahmen) zeigt wieder die OpenStreetMap-Kacheln statt «Access blocked»: die Kachel-Bilder senden den Ursprung als Referer (referrerPolicy origin), die Seiten bleiben no-referrer.",
+   "size": 4416412,
+   "sig": "784c10b6f46ae7166a3fc007bad39a73bef6b19ec75f48973af6ed39172f958573ee9b3350063ca972bf7d38fec1f31039c3fe2e9ef21792d3ed0571f353d20b",
+   "data": {
+    "file": "moveeye_daten_3_11_1.zip",
+    "url": "",
+    "sha256": "922467ca7435ce7e56d1f1407585431f8aa8e542c3ae1abd735612686568153d",
+    "size": 1612089,
+    "sig": "27e202df6beeb424b3a4dd2d45104003120278395adc8d986559e96534aaf4fec564322982bfd0f52070f7936df98c568f33ca031a6997eb78bcba1938f61201"
+   }
+  },
   {
    "version": "3.10.1",
    "file": "webcam_bewegung_3_10_1.py",
    "url": "",
    "sha256": "b50c7ace073baab12449fd5299836334c71939b7c72a89b4152386664267944e",
-   "date": "2026-10-31 19:37",
+   "date": "2026-10-31 19:42",
    "notes": "Simulator 3.10.1: Vorführung mit Schalter «Spiel-Knöpfe zeigen» – die Knöpfe bleiben sichtbar und leuchten auf, wenn der Autopilot sie drückt.",
    "size": 4416453,
    "sig": "62d50610eb70771f0fa2221ae51f625da9807b229605b4c4ca31f1386c806cec8799541db216c298d13572a2984758843571a6d655621d66f4b22e5fb536350b",
@@ -92,26 +126,6 @@
    "notes": "Nebel-Modus: Nebel erkennen, Kontrast anheben, mehr Wärmebild, Hinweis «🌫 Nebel – Sicht eingeschränkt», kein falsches «Kamera verdreht» im Nebel; in Dämmerung und Wind 2–3 Treffer in Folge vor einer Personen-Meldung.",
    "size": 7737437,
    "sig": "8130371892411ea77f99bab8ca5102080048285aa12deab4dfcc12943cd08431e6f2c0a54800f4815d894e4b4b64cc90a42e66be2b285f891cc1209e1554cd07"
-  },
-  {
-   "version": "3.3.0",
-   "file": "webcam_bewegung_3_3_0.py",
-   "url": "",
-   "sha256": "c4fab0fb537df5f612bef02ae834aff6839e4df35b8027084131fc55b9fd04a0",
-   "date": "2026-10-31 16:54",
-   "notes": "MoveEye Sim 3.3.0: Roter Faden – Die Karte des Grossvaters und Maggie kennen sich, neues Abzeichen «Beide Geschichten geschafft».",
-   "size": 7711358,
-   "sig": "664f602b7f58cf7317eaad4b188121a63ec0e8bd25be048f29cf228b4fb648458ff0276e34ea643862d0afacf5f0edc4020b4ac0da2856a2b3f5f42964c14e0d"
-  },
-  {
-   "version": "3.2.0",
-   "file": "webcam_bewegung_3_2_0.py",
-   "url": "",
-   "sha256": "1f0f2eabaab921fa7d443e91be5c3012c5d033fcbeb11ed3945c75dabdc57955",
-   "date": "2026-10-31 16:48",
-   "notes": "MoveEye Sim 3.2.0: Statisten im Hintergrund (Ziele, Tätigkeiten, Gruppen, grüssen, weichen aus, abends heim; Menge wenig / normal / belebt).",
-   "size": 7711209,
-   "sig": "a05bc44a78d6734ec551d28202bd4679eb818446d008e8894622308dc7c0a586391f1ec401d5e33de460db3de7989c9888a18713a19e9854eba4511fccfcd505"
   },
   {
    "version": "3.0.2",
