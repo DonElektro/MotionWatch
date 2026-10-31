@@ -6,6 +6,7 @@ extends Node3D
 const VERSION := "3D-4.27"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
+const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -52,6 +53,7 @@ var ort_camp := 0
 var terrain := false                  # the scene has hills (ground_y), else the ground is flat at y = 0
 var ground_fn := Callable()            # 3D-4.x: a scene with its own ground (ferienpark.gd): height in world coordinates
 var fp_spot := "zelt"                  # 3D-4.x: where MoveEye stands in the «Ferienpark am See» (ferienpark.gd SPOTS)
+var szene_spot := ""                   # 3D-4.x: where MoveEye stands in the compact scenes (kompakt.gd): "szene=standort;…"
 var ground_mats: Array = []           # ground materials of the place (snow, wet)
 var flat_nodes: Array = []            # flat meadow and the hills far away: hidden at a real place
 var geo_note := ""
@@ -1112,8 +1114,58 @@ func set_scene(id: String) -> bool:
 	next_auto = now() + 8.0
 	_update_sky()
 	_update_temps()
+	_spot_refresh()
 	_sync_ui()
 	return true
+
+
+func scene_spot(id: String) -> String:
+	"""3D-4.x: the chosen place of MoveEye in a scene with several places («» = the first one)"""
+	if id == "ferienpark":
+		return fp_spot
+	for e in szene_spot.split(";", false):
+		var kv := e.split("=")
+		if kv.size() == 2 and kv[0] == id:
+			return kv[1]
+	return ""
+
+
+func set_scene_spot(v: String) -> void:
+	"""3D-4.x: one setting «Standort in der Szene» for every scene with several places (Ferienpark, kompakt.gd)"""
+	if scene == "ferienpark":
+		set_fp_spot(v)
+		return
+	if not Kompakt.spots_of(scene).has(v):
+		return
+	var keep := []
+	for e in szene_spot.split(";", false):
+		if not e.begins_with(scene + "="):
+			keep.append(e)
+	keep.append(scene + "=" + v)
+	szene_spot = ";".join(keep)
+	_settings_dirty = true
+	set_scene(scene)
+
+
+func _spot_options() -> Array:
+	"""the choices of «Standort in der Szene» for the scene that is there now"""
+	if scene == "ferienpark":
+		return preload("res://scripts/ferienpark.gd").spot_options()
+	var o: Array = Kompakt.spot_options(scene)
+	return o if not o.is_empty() else [["", "nur ein Standort in dieser Szene"]]
+
+
+func _spot_refresh() -> void:
+	"""a new scene: new choices for «Standort in der Szene» (window and the page of MoveEye)"""
+	for c in controls:
+		if c.id == "szene_spot":
+			c.extra["options"] = _spot_options()
+			var ob = ui_rows.get("szene_spot")
+			if ob is OptionButton:
+				ob.clear()
+				for o in c.extra["options"]:
+					ob.add_item(str(o[1]))
+					ob.set_item_metadata(ob.item_count - 1, o[0])
 
 
 func set_fp_spot(v: String) -> void:
@@ -3376,8 +3428,8 @@ func _register_controls() -> void:
 	var ex := {"expert": true}
 	add_control("select", "scene", "Szene", func(): return scene, func(v): set_scene(v), "Szene", {"options": sc})
 	add_control("button", "home_edit", "Mein Zuhause bauen (Baukasten mit der Maus)", null, func(): home_editor.open(true), "Szene")
-	add_control("select", "fp_spot", "Standort im Ferienpark am See", func(): return fp_spot, func(v): set_fp_spot(str(v)), "Szene",
-			{"options": preload("res://scripts/ferienpark.gd").spot_options()})
+	add_control("select", "szene_spot", "Standort in der Szene (Ferienpark, Pfadilager, Hofladen, Bergdorf, Festival)", func(): return scene_spot(scene),
+			func(v): set_scene_spot(str(v)), "Szene", {"options": _spot_options()})     # 3D-4.x: one choice for every scene with several places
 	add_control("map", "ort_map", "Ort auf der Karte wählen (Schweiz)", func(): return "%.6f, %.6f" % [ort_lat, ort_lon] if ort_lat != 0.0 else "",
 			func(v): set_place_text(str(v)), "Ort von der Karte")
 	add_control("text", "ort", "Ort (Name oder Koordinaten, z. B. «Zermatt» oder «46.0207, 7.7491»)", func(): return place_label(), func(v): set_place_text(str(v)), "Ort von der Karte")
@@ -4311,6 +4363,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "rover": patrol.rover_info()}
 	elif a == "overlay":
 		return {"ok": true, "overlay": overlay.info()}
+	elif a == "kompakt":                               # 3D-4.x: the four compact scenes {do: info | spot (value) | perf} (kompakt.gd)
+		return Kompakt.control(self, d)
 	elif a == "ferienpark":                            # 3D-4.x: {do: info | spot (value) | kinds | perf} (ferienpark.gd)
 		return preload("res://scripts/ferienpark.gd").control(self, d)
 	elif a == "szenen":                                # 3D-4.x: the new scenes {do: info | spawn (kind) | restore}
@@ -5780,7 +5834,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "grafik_mode", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
 var _settings_dirty := false
 

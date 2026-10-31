@@ -8,14 +8,16 @@ const LIST := [["camping", "Camping-Platz"], ["wald", "Wald"], ["parkplatz", "Pa
 		["zuhause", "Mein Zuhause (selbst gebaut)"], ["bauernhof", "Bauernhof"], ["seeufer", "Seeufer mit Steg"], ["baustelle", "Baustelle"],
 		["stellplatz", "Wohnmobil-Stellplatz"], ["vorlage", "Meine Vorlage (3D-Datei)"], ["schlafzimmer", "Schlafzimmer (Wecker)"],
 		["camping_voll", "Voller Campingplatz"], ["tarnen", "Tarnen und Kriechen"], ["velodieb", "Velodieb"], ["parcours", "Verfolgungs-Parcours"],
-		["ferienpark", "Ferienpark am See"]]   # 3D-4.x: szenenplus.gd
+		["ferienpark", "Ferienpark am See"], ["pfadilager", "Pfadilager im Wald"], ["hofladen", "Bauernhof mit Hofladen und Stellplätzen"],
+		["bergdorf", "Bergdorf mit Stellplatz"], ["festival", "Festival-Gelände"]]   # 3D-4.x: szenenplus.gd, ferienpark.gd, kompakt.gd
 # 3D-4.x: the English names for MoveEye (it translates them into its languages; without a name MoveEye shows the German one)
 const EN := {"camping": "Campsite", "wald": "Forest", "parkplatz": "Car park", "garten": "Garden / house", "lustig": "Funny place",
 		"wild": "Wildlife watching", "verstecken": "Hide and seek (many hiding places)", "ort": "Place from the map (Switzerland)",
 		"zuhause": "My home (self-built)", "bauernhof": "Farm", "seeufer": "Lake shore with jetty", "baustelle": "Building site",
 		"stellplatz": "Camper van site", "vorlage": "My template (3D file)", "schlafzimmer": "Bedroom (wake-up alarm)",
 		"camping_voll": "Full campsite", "tarnen": "Camouflage and crawling", "velodieb": "Bike thief", "parcours": "Tracking course",
-		"ferienpark": "Holiday park by the lake"}
+		"ferienpark": "Holiday park by the lake", "pfadilager": "Scout camp in the forest", "hofladen": "Farm with farm shop and camper pitches",
+		"bergdorf": "Mountain village with camper pitch", "festival": "Festival grounds"}
 
 # visitors that come by themselves, and how often (seconds from .. to)
 const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox", "boar", "deer", "herd", "cat", "badger", "hare", "hedgehog", "marten", "squirrel", "cyclist", "couple", "stroller", "courier", "police", "drunk", "bats", "owl", "burglar", "bbq", "homecoming", "fox_trash", "kids_tag", "boar_group"], 35.0, 110.0],
@@ -39,6 +41,14 @@ const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox"
 		"velodieb": [["person", "cyclist", "dogwalk", "child", "couple", "cat", "fox", "courier", "velodieb", "velodieb"], 30.0, 90.0],
 		"ferienpark": [["person", "person", "child", "jogger", "dogwalk", "couple", "cyclist", "stroller", "cat", "fox", "hedgehog", "badger", "hare", "marten",
 			"squirrel", "deer", "bats", "owl", "drunk", "burglar", "bbq", "kids_tag", "homecoming", "courier", "fox_trash", "platz_besuch", "car"], 30.0, 90.0],   # 3D-4.x: ferienpark.gd
+		"pfadilager": [["child", "child", "kids_tag", "kids_tag", "person", "jogger", "dogwalk", "deer", "deer", "herd", "fox", "fox", "boar", "boar_group", "badger",
+			"hare", "hedgehog", "marten", "squirrel", "squirrel", "lynx", "owl", "bats", "drunk", "burglar"], 25.0, 75.0],   # 3D-4.x: kompakt_pfadi.gd
+		"hofladen": [["person", "person", "couple", "child", "stroller", "cyclist", "dogwalk", "car", "car", "tractor", "cows", "sheep_flock", "cat", "cat", "dog",
+			"fox", "marten", "badger", "hare", "hedgehog", "owl", "bats", "courier", "parcel", "burglar", "bbq", "homecoming", "platz_besuch"], 25.0, 80.0],   # 3D-4.x: kompakt_hof.gd
+		"bergdorf": [["person", "person", "couple", "child", "jogger", "dogwalk", "stroller", "cyclist", "car", "car", "moto", "van", "courier", "cat", "fox", "deer",
+			"chamois", "marten", "hare", "owl", "bats", "drunk", "burglar", "homecoming", "bbq", "platz_besuch"], 30.0, 90.0],   # 3D-4.x: kompakt_dorf.gd
+		"festival": [["person", "person", "person", "couple", "couple", "child", "drunk", "drunk", "jogger", "cyclist", "police", "courier", "kids_tag", "fox", "cat",
+			"hedgehog", "bats", "burglar", "homecoming", "platz_besuch"], 12.0, 35.0],   # 3D-4.x: kompakt_festival.gd (Stresstest: oft Besuch)
 		"wild": [["feed_deer", "feed_deer", "feed_boar", "feed_fox", "feed_badger", "feed_hare", "herd", "deer", "chamois", "ibex", "lynx", "owl"], 15.0, 40.0]}
 
 var m                     # main.gd
@@ -94,6 +104,8 @@ func build(id: String, parent: Node3D) -> void:
 			m.parcours.build_scene(self)                    # 3D-4.18: parcours.gd (fixed obstacles for the lessons)
 		"ferienpark":
 			preload("res://scripts/ferienpark.gd").build_scene(self)       # 3D-4.x: big terraced campsite (bib_objekte.gd)
+		"pfadilager", "hofladen", "bergdorf", "festival":
+			preload("res://scripts/kompakt.gd").build_scene(self, id)          # 3D-4.x: four compact scenes (bib_objekte.gd)
 		"camping_voll", "tarnen", "velodieb":
 			preload("res://scripts/szenenplus.gd").build_scene(self, id)     # 3D-4.x: the new scenes (szenenplus.gd)
 		_:
