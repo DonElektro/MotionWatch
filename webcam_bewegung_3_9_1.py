@@ -244,7 +244,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_9_1.zip"
-ZD_SHA256 = "c25b13b6451c166d9313dfc930d59fff170d7618341833fac9af6ce6267f5c5a"
+ZD_SHA256 = "fbe8e4bf36008bb7bbc98650fdc0731f1b58f53acb2d0ee5728d68dd6c429e4e"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -67516,7 +67516,9 @@ def vf_info():
     except Exception as e:
         return {"ok": False, "error": str(e)[:80]}
     if not r.get("ok") and "laeuft" not in r:
-        return {"ok": False, "error": tr("This simulator has no Vorführung yet – update it.")}
+        if "unknown" in str(r.get("error") or "").lower():     # an older simulator (before the Vorführung)
+            return {"ok": False, "error": tr("This simulator has no Vorführung yet – update it.")}
+        return {"ok": False, "error": str(r.get("error") or tr("The 3D simulator is not connected."))[:120]}
     return r
 
 
@@ -67565,7 +67567,7 @@ _HX_VF = {
     'Next chapter': ('Nächstes Kapitel', 'Chapitre suivant', 'Capitolo successivo', 'Proxim chapitel'),
     'Chapter': ('Kapitel', 'Chapitre', 'Capitolo', 'Chapitel'),
     'Full screen': ('Vollbild', 'Plein écran', 'Schermo intero', 'Maletg entir'),
-    'End': ('Beenden', 'Terminer', 'Termina', 'Terminar'),
+    'End the show': ('Beenden', 'Terminer', 'Termina', 'Terminar'),
     'Paused': ('Pause', 'En pause', 'In pausa', 'Pausa'),
     'BLOCKED': ('BLOCKIERT', 'BLOQUÉ', 'BLOCCATO', 'BLOCCÀ'),
     'Last run': ('Letzter Durchlauf', 'Dernier passage', 'Ultimo passaggio', 'Ultim passagi'),

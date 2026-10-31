@@ -27,7 +27,9 @@ def vf_info():
     except Exception as e:
         return {"ok": False, "error": str(e)[:80]}
     if not r.get("ok") and "laeuft" not in r:
-        return {"ok": False, "error": tr("This simulator has no Vorführung yet – update it.")}
+        if "unknown" in str(r.get("error") or "").lower():     # an older simulator (before the Vorführung)
+            return {"ok": False, "error": tr("This simulator has no Vorführung yet – update it.")}
+        return {"ok": False, "error": str(r.get("error") or tr("The 3D simulator is not connected."))[:120]}
     return r
 
 
@@ -90,7 +92,7 @@ html,body{height:100%;margin:0;background:#000;overflow:hidden}
   <div class="vf-row">
     <button type="button" onclick="vfDo({do:'start',len:'kurz'})" data-i18n="Short version (15–20 min)">Short version (15–20 min)</button>
     <button type="button" class="sec" onclick="vfDo({do:'start',len:'ganz'})" data-i18n="The whole story">The whole story</button>
-    <a class="btn sec" href="/sim" data-i18n="Back">Back</a>
+    <a class="btn sec" href="/sim" data-mw-exit data-i18n="Back">Back</a>
   </div>
   <div class="mut" id="vf-err" style="margin-top:10px"></div>
 </div></div>
@@ -102,7 +104,7 @@ html,body{height:100%;margin:0;background:#000;overflow:hidden}
     <select id="vf-kap" onchange="vfDo({do:'kapitel',n:+this.value})"></select>
     <button type="button" class="sec" onclick="vfDo({do:'kapitel',n:Math.min(5,(S.kapitel||0)+1)})" data-i18n="Next chapter">Next chapter</button>
     <button type="button" class="sec" onclick="vfFull()" data-i18n="Full screen">Full screen</button>
-    <button type="button" class="sec" onclick="vfDo({do:'stop'})" data-i18n="End">End</button>
+    <button type="button" class="sec" onclick="vfDo({do:'stop'})" data-i18n="End the show">End the show</button>
   </div>
 </div>
 <script>
@@ -170,7 +172,7 @@ _HX_VF = {
     'Next chapter': ('Nächstes Kapitel', 'Chapitre suivant', 'Capitolo successivo', 'Proxim chapitel'),
     'Chapter': ('Kapitel', 'Chapitre', 'Capitolo', 'Chapitel'),
     'Full screen': ('Vollbild', 'Plein écran', 'Schermo intero', 'Maletg entir'),
-    'End': ('Beenden', 'Terminer', 'Termina', 'Terminar'),
+    'End the show': ('Beenden', 'Terminer', 'Termina', 'Terminar'),
     'Paused': ('Pause', 'En pause', 'In pausa', 'Pausa'),
     'BLOCKED': ('BLOCKIERT', 'BLOQUÉ', 'BLOCCATO', 'BLOCCÀ'),
     'Last run': ('Letzter Durchlauf', 'Dernier passage', 'Ultimo passaggio', 'Ultim passagi'),
