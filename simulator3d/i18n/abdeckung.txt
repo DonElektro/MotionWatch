@@ -1,15 +1,15 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6823 (Stellen: 9475)
-Übersetzt: en 6823, fr 6823, it 6823, rm 6823
+Texte gesamt: 6827 (Stellen: 9483)
+Übersetzt: en 6827, fr 6827, it 6827, rm 6827
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 470 Stellen
 Nicht mehr im Code (noch in texte.json): 243
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 24248, schlüssel 18188, keine Wörter 11477, index 9251, technisch 3155, doc 2030, einheit 288, log 153, englisch 126, pfad 98, html 68, klasse 25, shader 6
+Übersprungen (Grund: Anzahl): kennung 24416, schlüssel 18290, keine Wörter 11519, index 9256, technisch 3160, doc 2042, einheit 288, log 153, englisch 126, stringname 102, pfad 98, html 68, klasse 25, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
-  main.gd                  692    42
+  main.gd                  694    42
   bergtal_abenteuer.gd     272     7
   gamewiz.gd               252    15
   abenteuer_figuren_daten.gd   238     0
@@ -175,6 +175,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   padtest.gd                 3     1
   ui_style.gd                3     0
   abenteuer_bestenliste.gd     2     0
+  anim_mensch.gd             2     0
   kidaten.gd                 2     0
   versionen.gd               2     0
   abenteuer_stimme.gd        1     0
@@ -219,15 +220,15 @@ Unsicher:
 
 Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {name} machen:
   abenteuer_action.gd:365  'fertig'
-  abenteuer_figuren.gd:698  'fertig'
-  abenteuer_figuren.gd:783  'nein'
-  abenteuer_figuren.gd:793  'nein'
-  abenteuer_figuren.gd:806  'ja'
-  abenteuer_figuren.gd:806  'nein'
+  abenteuer_figuren.gd:700  'fertig'
+  abenteuer_figuren.gd:785  'nein'
+  abenteuer_figuren.gd:795  'nein'
+  abenteuer_figuren.gd:808  'ja'
+  abenteuer_figuren.gd:808  'nein'
   ferienpark_leben.gd:925  'fertig'
   ferienpark_leben.gd:992  'fertig'
-  maggie_story.gd:406  'fertig'
-  maggie_story.gd:1273  'Mit'
+  maggie_story.gd:407  'fertig'
+  maggie_story.gd:1274  'Mit'
   maggie_vorfuehrung.gd:595  'fertig'
   maggie_vorfuehrung.gd:963  'ja'
   maggie_vorfuehrung.gd:963  'nein'
@@ -278,8 +279,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   trailer.gd:868  'fertig'
   trailer.gd:999  'fertig'
   trailer.gd:1079  'fertig'
-  zwei_bausteine.gd:614  'fertig'
-  zwei_bausteine.gd:1415  ' %.1f kg'
+  zwei_bausteine.gd:617  'fertig'
+  zwei_bausteine.gd:1435  ' %.1f kg'
   gamewiz.gd:63  ' (wird hingestellt)'
   gamewiz.gd:66  'keine'
   gamewiz.gd:71  'aus'
@@ -360,48 +361,48 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inhalte.gd:347  'Paket: '
   inhalte.gd:871  'an'
   licht.gd:42  'aus'
-  main.gd:705  ' (Port %d)'
-  main.gd:1682  '  %.0f Mbit/s'
-  main.gd:2385  ' (von MoveEye)'
-  main.gd:2418  'Der Simulator ist belegt: '
-  main.gd:3281  'aus'
-  main.gd:3281  'ein'
-  main.gd:3358  'Sabotage-Test: '
-  main.gd:3358  'aus'
-  main.gd:3412  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3415  '\n🚨 Bewacht und weg: '
-  main.gd:4281  'keine'
-  main.gd:4307  'Wächter an MoveEye: '
-  main.gd:4366  'immer'
-  main.gd:4368  'aus'
-  main.gd:4375  'aus'
-  main.gd:4375  'aus'
-  main.gd:4376  'immer'
-  main.gd:4381  'aus'
-  main.gd:4385  'aus'
-  main.gd:4385  'aus'
-  main.gd:4392  'ohne'
-  main.gd:4394  'ohne'
-  main.gd:4411  'aus'
-  main.gd:4415  'aus'
-  main.gd:5159  'Dein Platz: '
-  main.gd:5400  ' · schaut nur zu: '
-  main.gd:5403  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:5404  ' · Update: '
-  main.gd:5748  'Blinde Flecken: '
-  main.gd:6491  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6802  'Autostart: '
-  main.gd:6813  'Autologon: '
-  main.gd:6976  'Karte öffnen: '
-  main.gd:7127  'Echt-Abgleich: '
-  main.gd:7137  'Trainingspaket: '
-  main.gd:7146  ' · %d offen · %.1f MB'
-  main.gd:7146  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:7155  'Verbindung · '
-  main.gd:7155  'aus'
-  main.gd:7159  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:7159  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:7162  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:706  ' (Port %d)'
+  main.gd:1683  '  %.0f Mbit/s'
+  main.gd:2386  ' (von MoveEye)'
+  main.gd:2419  'Der Simulator ist belegt: '
+  main.gd:3282  'aus'
+  main.gd:3282  'ein'
+  main.gd:3359  'Sabotage-Test: '
+  main.gd:3359  'aus'
+  main.gd:3413  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3416  '\n🚨 Bewacht und weg: '
+  main.gd:4282  'keine'
+  main.gd:4308  'Wächter an MoveEye: '
+  main.gd:4369  'immer'
+  main.gd:4371  'aus'
+  main.gd:4378  'aus'
+  main.gd:4378  'aus'
+  main.gd:4379  'immer'
+  main.gd:4384  'aus'
+  main.gd:4388  'aus'
+  main.gd:4388  'aus'
+  main.gd:4395  'ohne'
+  main.gd:4397  'ohne'
+  main.gd:4414  'aus'
+  main.gd:4418  'aus'
+  main.gd:5162  'Dein Platz: '
+  main.gd:5405  ' · schaut nur zu: '
+  main.gd:5408  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:5409  ' · Update: '
+  main.gd:5753  'Blinde Flecken: '
+  main.gd:6496  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6807  'Autostart: '
+  main.gd:6818  'Autologon: '
+  main.gd:6981  'Karte öffnen: '
+  main.gd:7132  'Echt-Abgleich: '
+  main.gd:7142  'Trainingspaket: '
+  main.gd:7151  ' · %d offen · %.1f MB'
+  main.gd:7151  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:7160  'Verbindung · '
+  main.gd:7160  'aus'
+  main.gd:7164  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:7164  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:7167  ' – versucht es weiter (gleich auf einem freien Port)'
   mehr.gd:255  ' · Leistung: %d Bilder/s, Lite %s'
   mehr.gd:255  'an'
   mehr.gd:255  'aus'

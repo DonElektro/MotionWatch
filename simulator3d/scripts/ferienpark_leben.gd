@@ -541,7 +541,7 @@ class Grillabend extends EW.Vig:
 				ew.place(a, e[1])
 				ew.face(a, c - (e[1] as Vector3))
 				var ph := fmod(t, 14.0)
-				ew.idle(a, "bend" if ph < 3.0 else ("talk" if ph > 9.0 else "look"), 1.0)
+				ew.idle(a, "grillen" if ph < 6.0 else ("talk" if ph > 9.0 else "look"), 1.0)   # anim_mensch.gd: «grillen»
 
 	func info() -> Dictionary:
 		var d := super.info()

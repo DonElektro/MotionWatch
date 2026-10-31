@@ -62,6 +62,7 @@ extends Node
 ##   "aufgabe" (id, text) | "erledigt" (id) | "fertig" | "erwischt" (von) | "zukunft" | "finale" | "rast" (i) | "gehe" (x, z
 ##   = Welt) | "pause" | "weiter" | "stop" | "reset"}
 
+const AnimKamera = preload("res://scripts/anim_kamera.gd")
 const T = preload("res://scripts/i18n.gd")
 const UI = preload("res://scripts/ui_style.gd")
 const Welt = preload("res://scripts/maggie_welt.gd")
@@ -1547,6 +1548,7 @@ func _follow_xform() -> Transform3D:
 
 func _cam(dt: float) -> void:
 	var cam: Camera3D = main.view_cam
+	AnimKamera.weg(cam)                                  # «Animationen»: the bob of the last frame back
 	main.view_mode = 0
 	if demo and vf != null and vf.kamera(cam, dt):     # Vorführung: the camera of the film
 		return
@@ -1555,6 +1557,7 @@ func _cam(dt: float) -> void:
 		return
 	var want := _follow_xform()
 	cam.global_transform = cam.global_transform.interpolate_with(want, clampf(dt * 5.0, 0.0, 1.0))
+	AnimKamera.wippen(main, cam, spieler(), dt)          # anim_kamera.gd: a little up and down with the steps
 
 
 func _cam_snap() -> void:
