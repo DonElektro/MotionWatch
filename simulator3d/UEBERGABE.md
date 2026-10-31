@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.37** · passende MoveEye-Version (früher Motion Watch) **2.98.68**
+Stand: 31.10.2026 · Simulator-Version **3D-4.38** · passende MoveEye-Version (früher Motion Watch) **2.98.69**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.38 (MoveEye 2.98.69): Orte zum Erkunden im Bergtal (`bergtal_orte.gd`)
+
+- `bergtal_orte.gd` (neu): Innenräume, Wasser, Grat, Geschichte; ersetzt in `bergtal.gd` die einfachen Gebäude (`REPLACES`,
+  `orte.replaces()`), Steuerung `{"action":"bergtal","do":"orte"}`, Hooks `hospiz_door` / `hospiz_light` (für den Horror-Modus).
+  Lite: `Bib.lite()` = `Quality.lite()`.
+- Vignette 31 (Sennerei) nutzt den Käse im Gestell der Sennerei (`s.data["bt_dairy_cheese"]`), kein zweiter Käse mehr.
 
 ## NEU in 3D-4.37 (MoveEye 2.98.68): Erlebnisse im Bergtal 18–34, gemeinsame Basis (`bergtal_erleben_b.gd`, `bergtal_erleben_base.gd`)
 

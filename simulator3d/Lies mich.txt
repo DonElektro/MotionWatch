@@ -421,6 +421,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.38
+3D-4.38: Orte zum Erkunden im Bergtal: begehbare Innenräume (Alphütte, Biwak, Kapelle, Hospiz mit 5 Räumen – geschlossen
+und dunkel, Bunker, Sennerei, Baracke, Seilbahn-Stationen), Wasserstellen, Gumpizahn, Schafgrat, Säumerweg, Altstafel.
+Die Hütte steht 8 m weiter westlich (vorher am Schluchtrand).
+So testest du: 1) Szene «Bergtal», zur Alp Tschuggen fliegen. 2) Teil «Bergtal» → Schnellreise «Alp Tschuggen –
+Hüttenstube (innen)». 3) Zum Furggapass, dann «Hospiz – Gaststube (innen)».
+
 NEU IN 3D-4.37
 3D-4.37: Weitere Erlebnisse im Bergtal (18–34): Schneehase im Herbst, Hermelin in der Mauer, Salamander nach Regen,
 Kuhglocken im Nebel, Gämse auf dem Hospiz-Dach, Gleitschirm auf der Kuhweide, Postauto mit Dreiklang, Nordlicht …
