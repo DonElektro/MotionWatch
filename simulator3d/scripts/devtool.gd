@@ -142,10 +142,10 @@ static func alle_orte(m = null) -> Array:
 	for w in Worlds.SHOWN:
 		var wp := _world_pose(m, w)
 		var nm := Scenes.name_of(w)
-		_add(out, seen, "szene." + w, nm, w, "szene", wp.x, wp.y, w, 30.0, "worlds.gd SHOWN", {"at_mw": true})
+		_add(out, seen, "szene." + w, nm, w, "szene", wp.x, wp.y, w, 30.0, "worlds.gd:SHOWN", {"at_mw": true})
 		for k in Worlds.ORDER.get(w, []):
 			var p: Array = Worlds.PLACES[k]
-			_add(out, seen, "szene." + k, str(p[1]), w, "szene", float(p[2]), float(p[3]), k, float(p[5]), "worlds.gd PLACES", {"at_mw": true})
+			_add(out, seen, "szene." + k, str(p[1]), w, "szene", float(p[2]), float(p[3]), k, float(p[5]), "worlds.gd:PLACES", {"at_mw": true})
 	if Worlds.PLACES.has("schlafzimmer"):                      # the bedroom: in the house of the garden (worlds._home_xf)
 		for e in out:
 			if e["id"] == "szene.schlafzimmer":
@@ -154,34 +154,34 @@ static func alle_orte(m = null) -> Array:
 				e["z"] = snappedf(o.z, 0.1)
 	# Bergtal: named places, viewpoints, sleeping spots, vignettes (bergtal.gd), places to explore and rooms (bergtal_orte.gd)
 	for p in Bt.PLACES:
-		_add(out, seen, "bergtal.ort." + _slug(str(p[0])), str(p[0]), "bergtal", "ort", float(p[1]), float(p[2]), "", 25.0, "bergtal.gd PLACES")
+		_add(out, seen, "bergtal.ort." + _slug(str(p[0])), str(p[0]), "bergtal", "ort", float(p[1]), float(p[2]), "", 25.0, "bergtal.gd:PLACES")
 	for vp in Bt.VIEWPOINTS:
 		var c := Bt.vp_xz(vp)
-		_add(out, seen, "bergtal.aussicht." + str(vp[0]), str(vp[1]), "bergtal", "aussicht", c.x, c.y, "", 20.0, "bergtal.gd VIEWPOINTS")
+		_add(out, seen, "bergtal.aussicht." + str(vp[0]), str(vp[1]), "bergtal", "aussicht", c.x, c.y, "", 20.0, "bergtal.gd:VIEWPOINTS")
 	for k in Bt.SPOT_ORDER:
 		if Bt.SPOTS.has(k):
 			var sp: Array = Bt.SPOTS[k]
-			_add(out, seen, "bergtal.schlafplatz." + k, str(sp[0]), "bergtal", "schlafplatz", float(sp[1]), float(sp[2]), "", 8.0, "bergtal.gd SPOTS")
+			_add(out, seen, "bergtal.schlafplatz." + k, str(sp[0]), "bergtal", "schlafplatz", float(sp[1]), float(sp[2]), "", 8.0, "bergtal.gd:SPOTS")
 	for v in Bt.VIGNETTES:
 		var at0: bool = absf(float(v[3])) < 0.01 and absf(float(v[4])) < 0.01
 		_add(out, seen, "bergtal.vignette." + str(v[1]), str(v[2]), "bergtal", "vignette", float(v[3]), float(v[4]), "",
-				maxf(6.0, float(v[5]) * 2.0), "bergtal.gd VIGNETTES", {"at_mw": true} if at0 else {})
+				maxf(6.0, float(v[5]) * 2.0), "bergtal.gd:VIGNETTES", {"at_mw": true} if at0 else {})
 	var rooms := {}
 	for e in Orte.INSIDE:
 		rooms[str(e[0])] = true
 	for p in Orte.all_places():
 		var room := rooms.has(str(p[0]))
 		_add(out, seen, ("bergtal.raum." if room else "bergtal.ort.") + _slug(str(p[0])), str(p[0]), "bergtal", "raum" if room else "ort",
-				float(p[1]), float(p[2]), "", 6.0 if room else 25.0, "bergtal_orte.gd " + ("INSIDE" if room else "PLACES"), {"room": true} if room else {})
+				float(p[1]), float(p[2]), "", 6.0 if room else 25.0, "bergtal_orte.gd:INSIDE" if room else "bergtal_orte.gd:PLACES", {"room": true} if room else {})
 	# Ferienpark: named places, MoveEye spots, the vignettes of the Erlebniswelt (ferienpark.gd ERLEBNIS)
 	for p in Fp.PLACES:
-		_add(out, seen, "ferienpark.ort." + _slug(str(p[0])), str(p[0]), "ferienpark", "ort", float(p[1]), float(p[2]), "", 20.0, "ferienpark.gd PLACES")
+		_add(out, seen, "ferienpark.ort." + _slug(str(p[0])), str(p[0]), "ferienpark", "ort", float(p[1]), float(p[2]), "", 20.0, "ferienpark.gd:PLACES")
 	for k in Fp.SPOT_ORDER:
 		var sp: Array = Fp.SPOTS[k]
-		_add(out, seen, "ferienpark.standort." + k, str(sp[0]), "ferienpark", "standort", float(sp[1]), float(sp[2]), "", 8.0, "ferienpark.gd SPOTS")
+		_add(out, seen, "ferienpark.standort." + k, str(sp[0]), "ferienpark", "standort", float(sp[1]), float(sp[2]), "", 8.0, "ferienpark.gd:SPOTS")
 	for v in Fp.ERLEBNIS:
 		_add(out, seen, "ferienpark.erlebnis." + str(v[1]), str(v[2]), "ferienpark", "erlebnis", float(v[3]), float(v[4]), "",
-				maxf(6.0, float(v[5]) * 2.0), "ferienpark.gd ERLEBNIS")
+				maxf(6.0, float(v[5]) * 2.0), "ferienpark.gd:ERLEBNIS")
 	# the compact scenes (kompakt_*.gd PLACES / SPOTS): in their world (centre of the place + park coordinates) or own world
 	for sid in Kompakt.SCENES:
 		var c := Vector2.ZERO
@@ -192,11 +192,11 @@ static func alle_orte(m = null) -> Array:
 		var cm := Kompakt._consts(str(sid))
 		for p in cm.get("PLACES", []):
 			_add(out, seen, "%s.ort.%s" % [sid, _slug(str(p[0]))], str(p[0]), w, "ort", c.x + float(p[1]), c.y + float(p[2]), sid, 15.0,
-					"kompakt %s PLACES" % sid, {"lx": float(p[1]), "lz": float(p[2])})
+					"kompakt_%s.gd:PLACES" % sid, {"lx": float(p[1]), "lz": float(p[2])})
 		for k in cm.get("SPOT_ORDER", []):
 			var sp: Array = cm["SPOTS"][k]
 			_add(out, seen, "%s.standort.%s" % [sid, k], str(sp[0]), w, "standort", c.x + float(sp[1]), c.y + float(sp[2]), sid, 8.0,
-					"kompakt %s SPOTS" % sid, {"lx": float(sp[1]), "lz": float(sp[2])})
+					"kompakt_%s.gd:SPOTS" % sid, {"lx": float(sp[1]), "lz": float(sp[2])})
 	return out
 
 
@@ -308,17 +308,20 @@ func goto(id: String) -> Dictionary:
 	var p = scene_pos(e)
 	if p == null:
 		return {"ok": false, "error": "not in this scene", "scene": main.scene, "world": loaded_world()}
+	if loaded and panel != null:
+		_all = alle_orte(main)                               # (a new sleeping spot / park spot moves the markers «Szene»)
+		if world != str(e["world"]):
+			set_world(str(e["world"]))
+	if _map != null:
+		_map.sel = id
+		_map.queue_redraw()
+	_say(T.t("Sprung: %s") % T.t(str(e["name"])))
 	var ex = main.explore
 	if bool(e.get("room", false)) and not (ex != null and ex.on):
 		var bt = main.scenes.data.get("bergtal")
 		if bt != null and bt.get("orte") != null and bt.orte.fly(str(e["name"])):
-			_say(T.t("Sprung: %s") % T.t(str(e["name"])))
 			return {"ok": true, "id": id, "loaded": need, "room": true, "pos": _v(p)}
 	view_at(p, _dist(e), loaded)
-	_say(T.t("Sprung: %s") % T.t(str(e["name"])))
-	if _map != null:
-		_map.sel = id
-		_map.queue_redraw()
 	return {"ok": true, "id": id, "loaded": need, "pos": _v(p), "scene": main.scene}
 
 
@@ -417,20 +420,21 @@ func _build() -> void:
 	wl.text = T.t("Welt")
 	top.add_child(wl)
 	_world_opt = OptionButton.new()
-	_world_opt.custom_minimum_size = Vector2(190, 34)
+	_world_opt.custom_minimum_size = Vector2(170, 34)
 	for w in Worlds.SHOWN:
 		_world_opt.add_item(world_name(w))
 		_world_opt.set_item_metadata(_world_opt.item_count - 1, w)
 	_world_opt.item_selected.connect(func(i): set_world(str(_world_opt.get_item_metadata(i))))
 	top.add_child(_world_opt)
 	_search = UI.search_field(T.t("Ort suchen …"))
+	_search.custom_minimum_size = Vector2(200, 34)
 	_search.text_changed.connect(func(_t): _fill())
 	top.add_child(_search)
 	var mid := HBoxContainer.new()
 	mid.add_theme_constant_override("separation", 8)
 	v.add_child(mid)
 	_list = ItemList.new()
-	_list.custom_minimum_size = Vector2(270, 400)
+	_list.custom_minimum_size = Vector2(230, 380)
 	_list.add_theme_font_size_override("font_size", 13)
 	_list.item_clicked.connect(func(i, _p, b):
 		if b == MOUSE_BUTTON_LEFT and i < _items.size():
@@ -438,17 +442,18 @@ func _build() -> void:
 	mid.add_child(_list)
 	_map = DevMap.new()
 	_map.dev = self
-	_map.custom_minimum_size = Vector2(420, 400)
+	_map.custom_minimum_size = Vector2(360, 380)
 	_map.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	mid.add_child(_map)
 	var leg := UI.small(T.t("Blau Szene · Weiss Ort · Gelb Aussicht · Grün Schlaf- / Standort · Rosa Vignette · Braun Raum · ▲ Ansicht · ● MoveEye — Klick = hinspringen, Rad = zoomen, ziehen = verschieben"))
-	leg.custom_minimum_size = Vector2(690, 0)
+	leg.custom_minimum_size = Vector2(598, 0)
 	v.add_child(leg)
 	var bot := HBoxContainer.new()
 	bot.add_theme_constant_override("separation", 10)
 	v.add_child(bot)
 	_fly_chk = CheckButton.new()
 	_fly_chk.text = T.t("Flugkamera (durch Wände)")
+	_fly_chk.tooltip_text = T.t("W A S D fliegen · Q / E runter / hoch · Shift schneller · rechte Maustaste umschauen · Rad oder + / − Tempo · Esc zurück")
 	_fly_chk.toggled.connect(func(on): set_fly(on))
 	bot.add_child(_fly_chk)
 	var sl := Label.new()
@@ -466,14 +471,20 @@ func _build() -> void:
 	_status.clip_text = true
 	bot.add_child(_status)
 	if main.fenster != null:
-		main.fenster.add("dev", "Entwickler", panel, {"on": func(): return shown, "set_on": func(x): shown = bool(x), "list": false,
-				"home": func(w): return Vector2(maxf(14.0, (main.fenster.view_size().x - w.size.x) * 0.5 - 160.0), 60.0)})
+		main.fenster.add("dev", "Entwickler", panel, {"on": func(): return shown, "set_on": func(x): shown = bool(x),
+				"shown": func(): return shown, "list": false, "home": _home})
 	else:
 		main.ui_layer.add_child(panel)
 	var mh = get_parent()
 	if mh != null and mh.get("farben") != null:
 		mh.farben.register(panel, "all")                     # Hell / Rotlicht / Dunkel like the other windows of «Mehr»
 	_paint()
+
+
+func _home(w) -> Vector2:
+	"""in the middle of the free view (left of the control panel), under the CPU line"""
+	var lr: Vector2 = main.fenster.free_lr()
+	return Vector2(maxf(lr.x + 14.0, (lr.x + lr.y - w.size.x) * 0.5), 60.0)
 
 
 func set_world(w: String) -> void:
