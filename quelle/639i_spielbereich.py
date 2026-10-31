@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639i: Reiter «Spielen» (Paket «Spielbereich», Daniel 31.10.2026) – Abenteuer der Reihe nach (Szenen als Kapitel), Entdeckungen pro Kapitel, Abzeichen-Sammlung, Stufe, Blinki als Begleiter; Web /play und Fenster-Reiter, Daten vom 3D-Simulator (spielbereich.gd). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639i: Reiter «Spielen» (Paket «Spielbereich», Daniel 31.10.2026; Geschichten-Menü) – Kopfzeile (Stufe, Spielstand), «Weiterspielen»-Hinweis, Regal «Geschichten» (Karten nur zum Anschauen), «Entdecken» (Orte der Reihe nach), Blinki; Web /play und Fenster-Reiter, Daten vom 3D-Simulator (spielbereich.gd). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Same structure as the start screen «Spielen» of the simulator (simulator3d/scripts/spielbereich.gd): Blinki on top
 # (greets, a tip, happy about a new level / a finished adventure), the level with its bar, the adventures (Camping-Platz →
@@ -7,7 +7,13 @@
 # {"action": "spielbereich", "do": "start", "id"} – the simulator has the hook for the later Bergtal adventure).
 # The state lives in the simulator (per PC: user://spiel/spielbereich.json); MoveEye keeps the last answer in
 # DATA_DIR/spielbereich.json so the tab shows it when the simulator is off. No ranking, no music, no animations besides
-# Blinki's blink. Here (after 639h, before 640) because NAV_ITEMS (470), render_page (510/584), blinki_js (589),
+# Blinki's blink.
+# Geschichten-Menü (Daniel 31.10.2026): the same cards as the simulator (geschichten.gd) - only to look at here: picture
+# (/sim/story_pic/<id>.jpg from the simulator, else a drawn placeholder), one sentence, duration, «from X years», progress
+# in %; on top «Continue: <story>, <chapter> (x %)» as information; the head line has level and Spielstand. «Adventures»
+# is now «Discover». The badges moved into the discovery book (139 sheet 📖). «Das Hospiz» only for the owner (nacht_may:
+# administrator, not in operator mode) - for everybody else the card and its picture do not exist.
+# Here (after 639h, before 640) because NAV_ITEMS (470), render_page (510/584), blinki_js (589),
 # smalltv_routes (552/599c), App (570) and the tables DE / TRX come before.
 # ----------------------------------------------------------------------------
 # 2.98.85 (Koordinator, bis Daniel entscheidet): «Spielen» steht unter «Mehr» (zweite Zeile nach «Übersicht») statt als 7. Reiter -
@@ -33,7 +39,7 @@ def play_state(force=False):
         try:
             r = sim_control({"action": "spielbereich", "do": "info"}) or {}
             if r.get("ok") and isinstance(r.get("chapters"), list):
-                d = {k: r.get(k) for k in ("chapters", "badges", "level", "blinki", "current", "scene")}
+                d = {k: r.get(k) for k in ("chapters", "badges", "level", "blinki", "current", "scene", "stories", "resume", "slot", "kids")}
                 d.update(ok=True, offline=False, t=now)
                 try:
                     with open(_play_file(), "w", encoding="utf-8") as f:
@@ -54,6 +60,29 @@ def play_state(force=False):
     return d
 
 
+def play_for(d, owner=True):
+    """the answer for one viewer: «Das Hospiz» only for the owner (administrator, not in operator mode)"""
+    if owner or not d:
+        return d
+    d = dict(d)
+    d["stories"] = [x for x in (d.get("stories") or []) if x.get("id") != "horror"]
+    if (d.get("resume") or {}).get("id") == "horror":
+        d["resume"] = {}
+    return d
+
+
+def play_story_pic(sid, owner=True):
+    """the picture of a story card from the simulator (JPEG bytes) or None"""
+    sid = str(sid or "")
+    if not CFG.get("sim_on") or not re.fullmatch(r"[a-z0-9]{1,16}", sid) or (sid == "horror" and not owner):
+        return None
+    try:
+        b_, _h = _sim_get(f"/story_pic/{sid}.jpg", 3.0)
+        return b_ or None
+    except Exception:
+        return None
+
+
 def play_do(action, cid=""):
     """«Start the adventure» (id) / open or close the start screen in the simulator / «seen» (Blinki's joy shown)"""
     if not CFG.get("sim_on"):
@@ -67,7 +96,7 @@ def play_do(action, cid=""):
         return {"ok": False, "error": str(e)[:80]}
     _PLAY["t"] = 0.0
     if not r.get("ok"):
-        return {"ok": False, "error": {"locked": tr("This adventure is still locked."), "soon": tr("This adventure comes with a next version.")}.get(r.get("error"), str(r.get("error") or ""))}
+        return {"ok": False, "error": {"locked": tr("This place is still locked."), "soon": tr("This place comes with a next version.")}.get(r.get("error"), str(r.get("error") or ""))}
     return {"ok": True, "state": play_state(True)}
 
 
@@ -91,12 +120,21 @@ main{padding:16px;max-width:720px;margin:0 auto}
 .pl-chip.done{border-color:var(--grn);color:var(--grn)}.pl-chip.mut{border-color:var(--line);color:var(--mut)}
 .pl-p{display:flex;gap:8px;align-items:center;margin-top:5px;font-size:13px}.pl-p .pl-bar{flex:0 0 110px;margin:0}
 .pl-ch button{flex:none}
-.pl-bd{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px}
-.pl-b{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:8px 4px;text-align:center}
-.pl-b i{font-style:normal;font-size:22px;display:block;line-height:1.3}.pl-b small{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pl-b.got{border-color:var(--acc)}.pl-b:not(.got) i{opacity:.35;filter:grayscale(1)}.pl-b:not(.got) small{color:var(--mut)}
 .pl-btns{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}
-@media(max-width:520px){.pl-ch{flex-wrap:wrap}.pl-ch button{width:100%}.pl-t{flex-basis:calc(100% - 44px)}}
+.pl-who{margin-left:auto;font-size:13px;color:var(--txt)}
+.pl-go{border:1px solid var(--acc);border-radius:14px;background:var(--glow);padding:12px 14px;margin:0 0 12px;font-weight:600}.pl-go small{display:block;font-weight:400;color:var(--mut);margin-top:2px}
+.pl-st{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pl-s{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden;display:flex;flex-direction:column}
+.pl-s.last{border-color:var(--acc)}.pl-s.off{opacity:.62}
+.pl-pic{height:120px;background:#223 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:44px}
+.pl-pic.grossvater{background-color:#a8946d;background-image:repeating-linear-gradient(90deg,transparent 0 24%,rgba(80,50,20,.2) 24% 25%)}
+.pl-pic.maggie{background-image:linear-gradient(#5c94db,#c7e0f7 55%,#52803f 56%)}
+.pl-pic.horror{background-image:linear-gradient(#05070c,#1a1e26 60%,#2a2f38)}
+.pl-pic.teil2{background-color:#8c7c5c;filter:grayscale(.4)}
+.pl-sb{padding:10px 12px 12px;display:flex;flex-direction:column;gap:4px}.pl-sb b{font-size:15px}.pl-sb .mut{font-size:12px}
+.pl-m{font-size:12px}.pl-sp{display:flex;gap:8px;align-items:center;font-size:12px}.pl-sp .pl-bar{flex:1;margin:0}
+body.kids .pl-sb b{font-size:18px}body.kids .pl-sb .mut,body.kids .pl-m,body.kids .pl-sp{font-size:15px}
+@media(max-width:520px){.pl-st{grid-template-columns:1fr}.pl-ch{flex-wrap:wrap}.pl-ch button{width:100%}.pl-t{flex-basis:calc(100% - 44px)}}
 </style></head><body>
 <header>
   <h1>MoveEye</h1>
@@ -107,12 +145,14 @@ main{padding:16px;max-width:720px;margin:0 auto}
   </span>
 </header>
 <main>
-  <div id="pl-bk"></div>
   <div class="pl-card" id="pl-lv" hidden></div>
-  <div class="pl-h" data-i18n="Adventures">Adventures</div>
+  <div id="pl-go"></div>
+  <div class="pl-h" data-i18n="Stories">Stories</div>
+  <div class="pl-st" id="pl-st"></div>
+  <p class="mut" style="font-size:12px;margin:6px 2px 0" data-i18n="Stories are played in the simulator – here you see the progress.">Stories are played in the simulator – here you see the progress.</p>
+  <div class="pl-h" data-i18n="Discover">Discover</div>
+  <div id="pl-bk"></div>
   <div id="pl-ch"></div>
-  <div class="pl-h" data-i18n="Badges">Badges</div>
-  <div class="pl-bd" id="pl-bd"></div>
   <div class="pl-btns">
     <a class="btn" href="/sim#gw">🎮 <span data-i18n="Game wizard">Game wizard</span></a>
     <a class="btn sec" href="/sim#c-disc">📖 <span data-i18n="Discovery book">Discovery book</span></a>
@@ -135,7 +175,7 @@ async function plLoad() {
 }
 function el(tag, cls, txt) { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
 function plPaint(j) {
-  const B = window.MWBlinki, bk = j.blinki || (j.offline ? {mood: "think", title: t("Hello, I am Blinki!"), text: t("The 3D simulator is not connected. Switch on the simulation (tab Simulator) – then you play the adventures here.")} : null);
+  const B = window.MWBlinki, bk = j.blinki || (j.offline ? {mood: "think", title: t("Hello, I am Blinki!"), text: t("The 3D simulator is not connected. Switch on the simulation (tab Simulator) – then you see your stories and places here.")} : null);
   if (j.offline && j.blinki) bk.text = t("The 3D simulator is not connected – this is the state of last time.");
   const key = bk ? bk.mood + bk.title + bk.text : "";
   if (key !== LASTB) {
@@ -148,12 +188,33 @@ function plPaint(j) {
   if (L) {
     lv.textContent = ""; const h = el("div", "pl-lv"); h.append(el("b", "", "⭐ " + t("Level") + " " + L.lv),
       el("small", "", t("{xp} points · {n} more to level {l}").replace("{xp}", L.xp).replace("{n}", L.to - L.xp).replace("{l}", L.lv + 1)));
+    if (j.slot) h.appendChild(el("span", "pl-who", "👤 " + (j.slot.name || t("Game state {n}").replace("{n}", j.slot.n))));
     h.title = (L.parts || []).map(p => p[0] + " " + p[1]).join(" · ");
     const b = el("div", "pl-bar"), i = el("i"); i.style.width = Math.max(0, Math.min(100, 100 * (L.xp - L.from) / Math.max(1, L.to - L.from))) + "%"; b.appendChild(i);
     lv.append(h, b);
   }
+  document.body.classList.toggle("kids", !!j.kids);
+  const go = document.getElementById("pl-go"), R = j.resume || {}; go.textContent = "";
+  if (R.id) { const g = el("div", "pl-go", "▶ " + (R.where ? t("Continue: {t}, {w} ({p} %)").replace("{w}", R.where) : t("Continue: {t} ({p} %)")).replace("{t}", R.title).replace("{p}", R.pct));
+    g.appendChild(el("small", "", t("The button «Continue» is in the simulator (window «Playing»).")));
+    go.appendChild(g); }
+  const sg = document.getElementById("pl-st"); sg.textContent = "";
+  if (!(j.stories || []).length) sg.appendChild(el("p", "mut", t("No stories yet – they come from the 3D simulator.")));
+  const EMO = {grossvater: "🗺", maggie: "🐕", horror: "🔒", teil2: "🔒"};
+  (j.stories || []).forEach(x => {
+    const c = el("div", "pl-s" + (x.last && x.started ? " last" : "") + (x.soon ? " off" : "")), pic = el("div", "pl-pic " + x.id);
+    if (x.pic && !j.offline && !x.locked) pic.style.backgroundImage = "url('/sim/story_pic/" + x.id + ".jpg?p=" + x.pct + "')";
+    else pic.textContent = x.locked || x.soon ? "🔒" : (EMO[x.id] || "📖");
+    const b = el("div", "pl-sb"), ti = el("b", "", x.title);
+    const chip = x.soon ? t("Coming soon") : x.locked ? t("🔒 Locked") : x.done ? t("✓ Done") : !x.started ? t("New") : "";
+    if (chip) ti.appendChild(el("span", "pl-chip" + (x.done ? " done" : x.soon || x.locked ? " mut" : ""), chip));
+    const p = el("div", "pl-sp"), br = el("div", "pl-bar"), i = el("i"); i.style.width = Math.max(0, Math.min(100, x.pct)) + "%"; br.appendChild(i);
+    p.append(br, el("span", "", x.pct + " %" + (x.where && !x.done ? " · " + x.where : "")));
+    b.append(ti, el("div", "mut", x.short || ""), el("div", "pl-m", "⏱ " + (x.dauer || "") + " · " + t("from {n} years").replace("{n}", x.age)), p);
+    c.append(pic, b); sg.appendChild(c);
+  });
   const ch = document.getElementById("pl-ch"); ch.textContent = "";
-  if (!(j.chapters || []).length) ch.appendChild(el("p", "mut", t("No adventures yet – they come from the 3D simulator.")));
+  if (!(j.chapters || []).length) ch.appendChild(el("p", "mut", t("No places yet – they come from the 3D simulator.")));
   (j.chapters || []).forEach(c => {
     const off = c.state === "locked" || c.state === "soon", r = el("div", "pl-ch st-" + c.state + (c.current ? " cur" : "") + (off ? " off" : ""));
     const tx = el("div", "pl-t"), ti = el("b", "", c.name); tx.appendChild(ti);
@@ -162,19 +223,16 @@ function plPaint(j) {
     if (c.current) tx.appendChild(el("span", "pl-chip", t("You are here")));
     tx.appendChild(el("div", "mut", c.short || ""));
     const p = el("div", "pl-p");
-    if (c.state === "soon") p.appendChild(el("span", "mut", t("This adventure comes with a next version.")));
-    else if (c.state === "locked") p.appendChild(el("span", "mut", t("Opens when half of the adventure before is discovered.")));
+    if (c.state === "soon") p.appendChild(el("span", "mut", t("This place comes with a next version.")));
+    else if (c.state === "locked") p.appendChild(el("span", "mut", t("Opens when half of the place before is discovered.")));
     else if (c.total > 0) { p.appendChild(el("span", "", t("{f} of {n} discovered").replace("{f}", c.found).replace("{n}", c.total)));
       const b = el("div", "pl-bar"), i = el("i"); i.style.width = (100 * c.found / c.total) + "%"; b.appendChild(i); p.appendChild(b); }
     else p.appendChild(el("span", "mut", c.visited ? t("Nothing to discover here (yet).") : t("Not visited yet – what there is to discover shows on the spot.")));
     tx.appendChild(p);
-    const n = el("div", "pl-n", String(c.n)), bt = el("button", off || c.current ? "sec" : "", off ? (c.state === "soon" ? t("Coming soon") : t("Locked")) : c.current ? t("Keep playing") : t("Start the adventure"));
+    const n = el("div", "pl-n", String(c.n)), bt = el("button", off || c.current ? "sec" : "", off ? (c.state === "soon" ? t("Coming soon") : t("Locked")) : c.current ? t("Keep discovering") : t("Travel there"));
     bt.type = "button"; bt.disabled = off || j.offline; if (!off) bt.onclick = () => plDo("start", c.id, bt);
     r.append(n, tx, bt); ch.appendChild(r);
   });
-  const bd = document.getElementById("pl-bd"); bd.textContent = "";
-  (j.badges || []).forEach(b => { const x = el("div", "pl-b" + (b.n > 0 ? " got" : "")); x.append(el("i", "", b.n > 0 ? b.sym : "?"), el("small", "", b.name));
-    x.title = b.name + (b.n > 1 && b.kind === "game" ? " × " + b.n : "") + (b.n > 0 ? "" : " – " + t("not yet")); bd.appendChild(x); });
   document.getElementById("pl-sim").disabled = !!j.offline;
   document.getElementById("pl-msg").textContent = j.offline && j.t ? t("Last state from the simulator") + ": " + new Date(j.t * 1000).toLocaleString() : "";
 }
@@ -182,7 +240,7 @@ async function plDo(a, id, b) {
   if (b) b.disabled = true;
   const r = await post("/api/play", {action: a, id: id || ""});
   if (r && r.ok && r.state) plPaint(r.state);
-  document.getElementById("pl-msg").textContent = r && !r.ok ? "⚠ " + (r.error || "") : (a === "start" && r && r.ok ? "✓ " + t("The adventure starts in the simulator.") : "");
+  document.getElementById("pl-msg").textContent = r && !r.ok ? "⚠ " + (r.error || "") : (a === "start" && r && r.ok ? "✓ " + t("The simulator travels there.") : "");
   if (b) b.disabled = false;
 }
 /*ALERTS*/
@@ -193,7 +251,6 @@ async function plDo(a, id, b) {
 _HX_PLAY = {
     'Play area': ('Spielen', 'Jouer', 'Giocare', 'Giugar'),
     'Playing': ('Spielen', 'Jouer', 'Giocare', 'Giugar'),
-    'Adventures': ('Abenteuer', 'Aventures', 'Avventure', 'Aventuras'),
     'Badges': ('Abzeichen', 'Badges', 'Distintivi', 'Insignas'),
     'Level': ('Stufe', 'Niveau', 'Livello', 'Stgalim'),
     '{xp} points · {n} more to level {l}': ('{xp} Punkte · noch {n} bis Stufe {l}', '{xp} points · encore {n} jusqu’au niveau {l}',
@@ -204,40 +261,55 @@ _HX_PLAY = {
     'Locked': ('Gesperrt', 'Verrouillé', 'Bloccato', 'Bloccà'),
     'Coming soon': ('Kommt bald', 'Bientôt', 'Presto', 'Vegn prest'),
     'You are here': ('Hier bist du', 'Tu es ici', 'Sei qui', 'Ti es qua'),
-    'Start the adventure': ('Abenteuer starten', 'Commencer l’aventure', 'Inizia l’avventura', 'Cumenzar l’aventura'),
     'Keep playing': ('Weiter spielen', 'Continuer à jouer', 'Continua a giocare', 'Giugar vinavant'),
-    'This adventure comes with a next version.': ('Dieses Abenteuer kommt mit einer nächsten Version.', 'Cette aventure arrive avec une prochaine version.',
-                                                  'Questa avventura arriva con una prossima versione.', 'Questa aventura vegn cun ina proxima versiun.'),
-    'This adventure is still locked.': ('Dieses Abenteuer ist noch gesperrt.', 'Cette aventure est encore verrouillée.', 'Questa avventura è ancora bloccata.',
-                                        'Questa aventura è anc bloccada.'),
-    'Opens when half of the adventure before is discovered.': ('Öffnet sich, wenn das Abenteuer davor zur Hälfte entdeckt ist.',
-                                                               'S’ouvre quand la moitié de l’aventure précédente est découverte.',
-                                                               'Si apre quando metà dell’avventura precedente è scoperta.',
-                                                               'S’avra, cura che la mesadad da l’aventura avant è scuvrida.'),
     'Nothing to discover here (yet).': ('Hier gibt es (noch) nichts zu entdecken.', 'Rien à découvrir ici (pour l’instant).', 'Qui non c’è (ancora) niente da scoprire.',
                                         'Qua na datti (anc) nagut da scuvrir.'),
     'Not visited yet – what there is to discover shows on the spot.': ('Noch nicht besucht – was es zu entdecken gibt, zeigt sich vor Ort.',
                                                                        'Pas encore visité – ce qu’il y a à découvrir se montre sur place.',
                                                                        'Non ancora visitato – cosa c’è da scoprire si vede sul posto.',
                                                                        'Anc betg visità – tge ch’i dat da scuvrir sa mussa al lieu.'),
+    'Stories': ('Geschichten', 'Histoires', 'Storie', 'Istorgias'),
+    'Discover': ('Entdecken', 'Découvrir', 'Scoprire', 'Scuvrir'),
+    'Travel there': ('Hinreisen', 'Y aller', 'Andarci', 'Ir là'),
+    'Keep discovering': ('Weiter entdecken', 'Continuer à découvrir', 'Continua a scoprire', 'Cuntinuar a scuvrir'),
+    'This place comes with a next version.': ('Dieser Ort kommt mit einer nächsten Version.', 'Ce lieu arrive avec une prochaine version.',
+                                              'Questo luogo arriva con una prossima versione.', 'Quest lieu vegn cun ina proxima versiun.'),
+    'This place is still locked.': ('Dieser Ort ist noch gesperrt.', 'Ce lieu est encore verrouillé.', 'Questo luogo è ancora bloccato.', 'Quest lieu è anc bloccà.'),
+    'Opens when half of the place before is discovered.': ('Öffnet sich, wenn der Ort davor zur Hälfte entdeckt ist.',
+                                                           'S’ouvre quand la moitié du lieu précédent est découverte.',
+                                                           'Si apre quando metà del luogo precedente è scoperta.',
+                                                           'S’avra, cura che la mesadad dal lieu avant è scuvrida.'),
+    'No places yet – they come from the 3D simulator.': ('Noch keine Orte – sie kommen vom 3D-Simulator.', 'Pas encore de lieux – ils viennent du simulateur 3D.',
+                                                         'Ancora nessun luogo – arrivano dal simulatore 3D.', 'Anc nagins lieus – els vegnan dal simulatur 3D.'),
+    'No stories yet – they come from the 3D simulator.': ('Noch keine Geschichten – sie kommen vom 3D-Simulator.', 'Pas encore d’histoires – elles viennent du simulateur 3D.',
+                                                          'Ancora nessuna storia – arrivano dal simulatore 3D.', 'Anc naginas istorgias – ellas vegnan dal simulatur 3D.'),
+    'The simulator travels there.': ('Der Simulator reist hin.', 'Le simulateur y va.', 'Il simulatore ci va.', 'Il simulatur va là.'),
+    'Continue: {t}, {w} ({p} %)': ('Weiterspielen: {t}, {w} ({p} %)', 'Continuer : {t}, {w} ({p} %)', 'Continua: {t}, {w} ({p} %)', 'Giugar vinavant: {t}, {w} ({p} %)'),
+    'Continue: {t} ({p} %)': ('Weiterspielen: {t} ({p} %)', 'Continuer : {t} ({p} %)', 'Continua: {t} ({p} %)', 'Giugar vinavant: {t} ({p} %)'),
+    'The button «Continue» is in the simulator (window «Playing»).': ('Den Knopf «Weiterspielen» gibt es im Simulator (Fenster «Spielen»).',
+                                                                     'Le bouton «Continuer» se trouve dans le simulateur (fenêtre «Jouer»).',
+                                                                     'Il pulsante «Continua» è nel simulatore (finestra «Giocare»).',
+                                                                     'Il buttun «Giugar vinavant» è en il simulatur (fanestra «Giugar»).'),
+    'from {n} years': ('ab {n} Jahren', 'dès {n} ans', 'da {n} anni', 'a partir da {n} onns'),
+    'Game state {n}': ('Spielstand {n}', 'Partie {n}', 'Partita {n}', 'Stadi dal gieu {n}'),
+    'Stories are played in the simulator – here you see the progress.': ('Gespielt wird im Simulator – hier siehst du den Fortschritt.',
+                                                                         'On joue dans le simulateur – ici tu vois la progression.',
+                                                                         'Si gioca nel simulatore – qui vedi i progressi.',
+                                                                         'I vegn giugà en il simulatur – qua vesas ti il progress.'),
     'not yet': ('noch nicht', 'pas encore', 'non ancora', 'anc betg'),
     'Discovery book': ('Entdeckungsbuch', 'Carnet de découvertes', 'Diario delle scoperte', 'Cudesch da scuvertas'),
-    'No adventures yet – they come from the 3D simulator.': ('Noch keine Abenteuer – sie kommen vom 3D-Simulator.', 'Pas encore d’aventures – elles viennent du simulateur 3D.',
-                                                            'Ancora nessuna avventura – arrivano dal simulatore 3D.', 'Anc naginas aventuras – ellas vegnan dal simulatur 3D.'),
     'The 3D simulator is not connected.': ('Der 3D-Simulator ist nicht verbunden.', 'Le simulateur 3D n’est pas connecté.', 'Il simulatore 3D non è collegato.',
                                            'Il simulatur 3D n’è betg collià.'),
-    'The 3D simulator is not connected. Switch on the simulation (tab Simulator) – then you play the adventures here.': (
-        'Der 3D-Simulator ist nicht verbunden. Schalte die Simulation ein (Reiter Simulator) – dann spielst du hier die Abenteuer.',
-        'Le simulateur 3D n’est pas connecté. Active la simulation (onglet Simulateur) – ensuite tu joues ici les aventures.',
-        'Il simulatore 3D non è collegato. Attiva la simulazione (scheda Simulatore) – poi qui giochi le avventure.',
-        'Il simulatur 3D n’è betg collià. Activescha la simulaziun (register Simulatur) – lura giogas ti qua las aventuras.'),
+    'The 3D simulator is not connected. Switch on the simulation (tab Simulator) – then you see your stories and places here.': (
+        'Der 3D-Simulator ist nicht verbunden. Schalte die Simulation ein (Reiter Simulator) – dann siehst du hier deine Geschichten und Orte.',
+        'Le simulateur 3D n’est pas connecté. Active la simulation (onglet Simulateur) – ensuite tu vois ici tes histoires et tes lieux.',
+        'Il simulatore 3D non è collegato. Attiva la simulazione (scheda Simulatore) – poi qui vedi le tue storie e i tuoi luoghi.',
+        'Il simulatur 3D n’è betg collià. Activescha la simulaziun (register Simulatur) – lura vesas ti qua tias istorgias e tes lieus.'),
     'The 3D simulator is not connected – this is the state of last time.': ('Der 3D-Simulator ist nicht verbunden – das ist der Stand vom letzten Mal.',
                                                                             'Le simulateur 3D n’est pas connecté – voici l’état de la dernière fois.',
                                                                             'Il simulatore 3D non è collegato – questo è lo stato dell’ultima volta.',
                                                                             'Il simulatur 3D n’è betg collià – quai è il stadi da l’ultima giada.'),
     'Last state from the simulator': ('Letzter Stand vom Simulator', 'Dernier état du simulateur', 'Ultimo stato dal simulatore', 'Ultim stadi dal simulatur'),
-    'The adventure starts in the simulator.': ('Das Abenteuer startet im Simulator.', 'L’aventure commence dans le simulateur.', 'L’avventura inizia nel simulatore.',
-                                               'L’aventura cumenza en il simulatur.'),
     'Refresh': ('Aktualisieren', 'Actualiser', 'Aggiorna', 'Actualisar'),
     'Game wizard (browser)': ('Spiel-Assistent (Browser)', 'Assistant de jeu (navigateur)', 'Assistente di gioco (browser)', 'Assistent da gieu (navigatur)'),
     'Discovery book (browser)': ('Entdeckungsbuch (Browser)', 'Carnet de découvertes (navigateur)', 'Diario delle scoperte (browser)', 'Cudesch da scuvertas (navigatur)'),
@@ -276,12 +348,24 @@ def smalltv_routes(app, reply, body):                     # + 639i: /play and /a
 
     @app.route("/api/play", methods=["GET", "POST"])
     def api_play():
+        own = nacht_may(_nacht_role())                    # «Das Hospiz»: only the owner (administrator, not operator mode)
         if request.method == "GET":
-            return reply(play_state())
+            return reply(play_for(play_state(), own))
         d = body(); a = str(d.get("action") or "")
         if a not in ("start", "open", "close", "seen"):
             return reply({"ok": False, "error": "unknown action"}, 400)
-        return reply(play_do(a, d.get("id") or ""))
+        r = play_do(a, d.get("id") or "")
+        if r.get("state"):
+            r["state"] = play_for(r["state"], own)
+        return reply(r)
+
+    @app.route("/sim/story_pic/<sid>.jpg")
+    def play_story_pic_(sid):
+        """Geschichten-Menü: the picture of a story card (a picture from the story itself, from the simulator)"""
+        b_ = play_story_pic(sid, nacht_may(_nacht_role()))
+        if not b_:
+            return Response("no picture", 404)
+        return Response(b_, mimetype="image/jpeg", headers={"Cache-Control": "max-age=120"})
 
 
 # ---- the window: the same tab «Spielen» --------------------------------------------------------------------------------
@@ -300,7 +384,7 @@ def _tk_play_tab(self, left):
                               ("📖 " + tr("Discovery book (browser)"), lambda: self._open_page("/sim#c-disc")),
                               ("🖥 " + tr("Open in the simulator"), lambda: self._play_act("open"))])
     bar.grid(row=1, column=0, sticky="ew", pady=(10, 0))
-    self._play_paint(play_state() if _PLAY["d"] is not None else {"ok": True, "offline": True, "chapters": [], "badges": []})
+    self._play_paint(play_state() if _PLAY["d"] is not None else {"ok": True, "offline": True, "chapters": [], "badges": [], "stories": []})
     self._play_poll()
 
 
@@ -322,7 +406,7 @@ def _tk_play_act(self, a, cid=""):
     def work():
         r = play_do(a, cid)
         try:
-            self.root.after(0, lambda: (self._status("Playing", ("✓ " + tr("The adventure starts in the simulator.")) if r.get("ok") and a == "start"
+            self.root.after(0, lambda: (self._status("Playing", ("✓ " + tr("The simulator travels there.")) if r.get("ok") and a == "start"
                                                      else ("⚠ " + str(r.get("error") or "")) if not r.get("ok") else tr("Open in the simulator")),
                                         r.get("ok") and self._play_paint(r["state"])))
         except Exception:
@@ -334,7 +418,8 @@ def _tk_play_paint(self, d):
     inner = getattr(self, "_play_inner", None)
     if inner is None or not inner.winfo_exists():
         return
-    sig = json.dumps([d.get(k) for k in ("chapters", "badges", "level", "blinki", "offline")], sort_keys=True, default=str)
+    d = play_for(d, nacht_may("admin"))                    # the window = the owner (unless operator mode)
+    sig = json.dumps([d.get(k) for k in ("chapters", "stories", "resume", "slot", "level", "blinki", "offline")], sort_keys=True, default=str)
     if sig == self._play_sig:
         return
     self._play_sig = sig
@@ -344,7 +429,7 @@ def _tk_play_paint(self, d):
     if d.get("offline"):
         bk = {"mood": "think", "title": (bk or {}).get("title") or tr("Hello, I am Blinki!"),
               "text": tr("The 3D simulator is not connected – this is the state of last time.") if bk else
-              tr("The 3D simulator is not connected. Switch on the simulation (tab Simulator) – then you play the adventures here.")}
+              tr("The 3D simulator is not connected. Switch on the simulation (tab Simulator) – then you see your stories and places here.")}
     if bk and not blinki_tk_say(inner, bk.get("mood") or "normal", bk.get("title") or "", bk.get("text") or "", C["bg"]):
         tk.Label(inner, text=bk.get("title") or "", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12, "bold"), anchor="w").pack(fill="x")
         tk.Label(inner, text=bk.get("text") or "", bg=C["bg"], fg=C["mut"], anchor="w", justify="left", wraplength=520).pack(fill="x")
@@ -357,10 +442,42 @@ def _tk_play_paint(self, d):
         tk.Label(hl, text="⭐ " + tr("Level") + " " + str(L["lv"]), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 12, "bold")).pack(side="left")
         tk.Label(hl, text=tr("{xp} points · {n} more to level {l}").replace("{xp}", str(L["xp"])).replace("{n}", str(L["to"] - L["xp"])).replace("{l}", str(L["lv"] + 1)),
                  bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9)).pack(side="left", padx=(10, 0))
+        sl = d.get("slot") or {}
+        if sl:
+            tk.Label(hl, text="👤 " + (sl.get("name") or tr("Game state {n}").replace("{n}", str(sl.get("n")))), bg=C["panel"], fg=C["txt"],
+                     font=("DejaVu Sans", 10)).pack(side="right")
         pb = ttk.Progressbar(lc, maximum=max(1, L["to"] - L["from"])); pb.pack(fill="x", pady=(6, 0)); pb["value"] = max(0, L["xp"] - L["from"])
-    ttk.Label(inner, text=tr("Adventures").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
+    R = d.get("resume") or {}
+    if R.get("id"):
+        txt = (tr("Continue: {t}, {w} ({p} %)").replace("{w}", str(R.get("where"))) if R.get("where") else tr("Continue: {t} ({p} %)"))
+        rf = tk.Frame(inner, bg=C["panel"], highlightthickness=1, highlightbackground=C["acc"], padx=10, pady=8); rf.pack(fill="x", pady=(8, 0))
+        tk.Label(rf, text="▶ " + txt.replace("{t}", str(R.get("title"))).replace("{p}", str(R.get("pct"))), bg=C["panel"], fg=C["txt"],
+                 font=("DejaVu Sans", 11, "bold"), anchor="w").pack(fill="x")
+        tk.Label(rf, text=tr("The button «Continue» is in the simulator (window «Playing»)."), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9),
+                 anchor="w").pack(fill="x")
+    ttk.Label(inner, text=tr("Stories").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
+    sg = tk.Frame(inner, bg=C["bg"]); sg.pack(fill="x")
+    if not d.get("stories"):
+        ttk.Label(sg, text=tr("No stories yet – they come from the 3D simulator."), style="Mut.TLabel").grid(row=0, column=0, sticky="w")
+    emo = {"grossvater": "🗺", "maggie": "🐕", "horror": "🔒", "teil2": "🔒"}
+    for i, x in enumerate(d.get("stories") or []):
+        off = bool(x.get("soon"))
+        f = tk.Frame(sg, bg=C["panel"], highlightthickness=1, highlightbackground=C["acc"] if x.get("last") and x.get("started") else C["line"], padx=10, pady=8)
+        f.grid(row=i // 2, column=i % 2, sticky="nsew", padx=(0, 8), pady=(0, 8)); sg.columnconfigure(i % 2, weight=1, uniform="st")
+        chip = tr("Coming soon") if off else tr("🔒 Locked") if x.get("locked") else tr("✓ Done") if x.get("done") else tr("New") if not x.get("started") else ""
+        tk.Label(f, text=("🔒" if x.get("locked") or off else emo.get(x.get("id"), "📖")) + "  " + str(x.get("title")) + ("   " + chip if chip else ""), bg=C["panel"],
+                 fg=C["mut"] if off else C["txt"], font=("DejaVu Sans", 11, "bold"), anchor="w", justify="left", wraplength=250).pack(fill="x")
+        tk.Label(f, text=str(x.get("short") or ""), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9), anchor="w", justify="left", wraplength=250).pack(fill="x")
+        tk.Label(f, text="⏱ " + str(x.get("dauer") or "") + " · " + tr("from {n} years").replace("{n}", str(x.get("age"))), bg=C["panel"], fg=C["txt"],
+                 font=("DejaVu Sans", 9), anchor="w").pack(fill="x", pady=(3, 0))
+        pr = tk.Frame(f, bg=C["panel"]); pr.pack(fill="x", pady=(3, 0))
+        pb = ttk.Progressbar(pr, maximum=100, length=120); pb.pack(side="left"); pb["value"] = int(x.get("pct") or 0)
+        tk.Label(pr, text=f"{int(x.get('pct') or 0)} %" + (" · " + str(x.get("where")) if x.get("where") and not x.get("done") else ""), bg=C["panel"], fg=C["txt"],
+                 font=("DejaVu Sans", 9)).pack(side="left", padx=(8, 0))
+    ttk.Label(inner, text=tr("Stories are played in the simulator – here you see the progress."), style="Mut.TLabel").pack(anchor="w")
+    ttk.Label(inner, text=tr("Discover").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
     if not d.get("chapters"):
-        ttk.Label(inner, text=tr("No adventures yet – they come from the 3D simulator."), style="Mut.TLabel").pack(anchor="w")
+        ttk.Label(inner, text=tr("No places yet – they come from the 3D simulator."), style="Mut.TLabel").pack(anchor="w")
     for c in d.get("chapters") or []:
         off = c.get("state") in ("locked", "soon")
         f = tk.Frame(inner, bg=C["panel"], highlightthickness=1, highlightbackground=C["acc"] if c.get("current") else C["line"], padx=10, pady=8)
@@ -374,9 +491,9 @@ def _tk_play_paint(self, d):
         tk.Label(tx, text=str(c.get("name")) + ("   " + st if st else ""), bg=C["panel"], fg=C["mut"] if off else C["txt"], font=("DejaVu Sans", 11, "bold"), anchor="w").pack(fill="x")
         tk.Label(tx, text=str(c.get("short") or ""), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9), anchor="w", justify="left", wraplength=420).pack(fill="x")
         if c.get("state") == "soon":
-            pt = tr("This adventure comes with a next version.")
+            pt = tr("This place comes with a next version.")
         elif c.get("state") == "locked":
-            pt = tr("Opens when half of the adventure before is discovered.")
+            pt = tr("Opens when half of the place before is discovered.")
         elif int(c.get("total") or 0) > 0:
             pt = tr("{f} of {n} discovered").replace("{f}", str(c.get("found"))).replace("{n}", str(c.get("total")))
         else:
@@ -388,18 +505,9 @@ def _tk_play_paint(self, d):
         if off:
             b = self._fbtn(f, tr("Coming soon") if c.get("state") == "soon" else tr("Locked"), lambda: None); b.config(fg=C["mut"], cursor="arrow")
         else:
-            b = self._fbtn(f, tr("Keep playing") if c.get("current") else tr("Start the adventure"), lambda i=c.get("id"): self._play_act("start", i),
+            b = self._fbtn(f, tr("Keep discovering") if c.get("current") else tr("Travel there"), lambda i=c.get("id"): self._play_act("start", i),
                            primary=not c.get("current"))
         b.pack(side="right")
-    ttk.Label(inner, text=tr("Badges").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
-    g = tk.Frame(inner, bg=C["bg"]); g.pack(fill="x")
-    for i, b in enumerate(d.get("badges") or []):
-        got = int(b.get("n") or 0) > 0
-        x = tk.Frame(g, bg=C["panel"], highlightthickness=1, highlightbackground=C["acc"] if got else C["line"], padx=4, pady=4)
-        x.grid(row=i // 7, column=i % 7, sticky="nsew", padx=(0, 6), pady=(0, 6)); g.columnconfigure(i % 7, weight=1)
-        tk.Label(x, text=b.get("sym") if got else "?", bg=C["panel"], fg=C["txt"] if got else C["mut"], font=("DejaVu Sans", 14)).pack()
-        tk.Label(x, text=str(b.get("name") or ""), bg=C["panel"], fg=C["txt"] if got else C["mut"], font=("DejaVu Sans", 8)).pack()
-        Tip(x, str(b.get("name") or "") + ("" if got else " – " + tr("not yet")))
     if d.get("offline") and d.get("t"):
         ttk.Label(inner, text=tr("Last state from the simulator") + ": " + datetime.fromtimestamp(float(d["t"])).strftime("%d.%m. %H:%M"),
                   style="Mut.TLabel").pack(anchor="w", pady=(8, 0))
@@ -418,8 +526,12 @@ def play_selftest():
         assert d["ok"] and d["offline"] and isinstance(d.get("chapters"), list)
         assert not play_do("start", "camping")["ok"]
         html = play_page()
-        assert 'href="/play"' in html and "/api/play" in html and "Abenteuer" in html and "MWBlinki" in html
-        assert tr("Start the adventure", "fr") != "Start the adventure" and tr("Adventures", "rm") == "Aventuras"
+        assert 'href="/play"' in html and "/api/play" in html and "Geschichten" in html and "Entdecken" in html and "MWBlinki" in html
+        assert 'id="pl-bd"' not in html and "/sim/story_pic/" in html             # Geschichten-Menü: badges in the discovery book
+        st = {"stories": [{"id": "horror"}, {"id": "maggie"}], "resume": {"id": "horror"}}
+        assert [x["id"] for x in play_for(st, False)["stories"]] == ["maggie"] and not play_for(st, False)["resume"]
+        assert len(play_for(st, True)["stories"]) == 2 and play_story_pic("horror", False) is None and play_story_pic("../x") is None
+        assert tr("Travel there", "fr") != "Travel there" and tr("Stories", "rm") == "Istorgias" and tr("Discover", "it") == "Scoprire"
         assert hasattr(App, "_tk_play_tab")
     finally:
         CFG["sim_on"] = keep[0]; _PLAY.clear(); _PLAY.update(keep[1])

@@ -1,9 +1,13 @@
 extends Node
 ## Spielbereich (Daniel 31.10.2026, Paket «Spielbereich»): ein eigener Startbildschirm «Spielen» – wie der Reiter «Spielen»
-## von MoveEye (Teil 639i, gleicher Aufbau):
+## von MoveEye (Teil 639i, gleicher Aufbau). Geschichten-Menü (Daniel 31.10.2026): Kopfzeile (Stufe, Spielstand, «Spielstand
+## wechseln»), ganz oben «Weiterspielen: <Geschichte>, <Kapitel/Region> (x %)», dann zwei Bereiche:
+##   * «Geschichten» = Storys mit Kapiteln als grosse Karten (geschichten.gd: Regal, gemeinsamer Start, Bilder).
+##   * «Entdecken» = die Orte der Reihe nach (früher «Abenteuer»): Camping-Platz → Ferienpark → Bergtal → Zuhause.
+##   Die Abzeichen stehen im Entdeckungsbuch (entdecken.gd ruft badge_grid() auf), nicht mehr auf dieser Seite.
 ##   * Blinki oben als Begleiter: begrüsst beim ersten Mal, gibt einen Tipp (das Nächste, das jetzt zu finden ist), freut sich
 ##     über eine neue Stufe oder ein geschafftes Abenteuer. Keine Musik, keine besonderen Animationen (nur Blinkis Blinzeln).
-##   * Abenteuer = die Szenen als Kapitel, eins nach dem anderen: Camping-Platz → Ferienpark → Bergtal → Zuhause. Ein Kapitel
+##   * Entdecken (früher «Abenteuer») = die Szenen als Kapitel, eins nach dem anderen: Camping-Platz → Ferienpark → Bergtal → Zuhause. Ein Kapitel
 ##     ist offen, wenn das vorherige zur Hälfte entdeckt ist (oder man schon dort war); «Neu» = offen, noch nie besucht.
 ##     Fortschritt pro Kapitel: «12 von 34 entdeckt» aus main.entdecken (zählt, was dort schon angemeldet wurde).
 ##   * Abzeichen-Sammlung: die Spiel-Abzeichen (game.gd BADGES, alle Namen dieses PCs zusammen) und je ein Kapitel-Abzeichen.
@@ -37,6 +41,7 @@ var data := {"visited": [], "seen_lv": 1, "greeted": false, "done_seen": []}
 var save_path := SAVE                      # Entwicklertool 3 (devtool_kapitel.gd): the test state goes to its own file (only until restart)
 var _body: VBoxContainer = null
 var _t := 0.0
+var regal                                  # geschichten.gd: the shelf «Geschichten» and the common start of the stories
 
 
 static func need(lv: int) -> int:
@@ -53,6 +58,11 @@ static func level_of(xp: int) -> int:
 func _ready() -> void:
 	save_path = preload("res://scripts/spielstand.gd").path_sb()   # A6: the file of the active Spielstand (place 1 = SAVE)
 	_load()
+	regal = preload("res://scripts/geschichten.gd").new()          # Geschichten-Menü
+	regal.main = main
+	regal.sb = self
+	regal.name = "Geschichten"
+	add_child(regal)
 
 
 func _load() -> void:
@@ -183,8 +193,8 @@ func level() -> Dictionary:
 	var xp := disc * XP_DISC + nb * XP_BADGE + done * XP_DONE + vis * XP_VISIT + ab_xp
 	var lv := level_of(xp)
 	return {"lv": lv, "xp": xp, "from": need(lv), "to": need(lv + 1), "disc": disc, "badges": nb, "done": done, "ab_xp": ab_xp,
-			"parts": [["Entdeckungen", disc * XP_DISC], ["Abzeichen", nb * XP_BADGE], ["Abenteuer geschafft", done * XP_DONE], ["Abenteuer begonnen", vis * XP_VISIT],
-				["Bergtal-Abenteuer", ab_xp]]}
+			"parts": [["Entdeckungen", disc * XP_DISC], ["Abzeichen", nb * XP_BADGE], ["Orte ganz entdeckt", done * XP_DONE], ["Orte besucht", vis * XP_VISIT],
+				["Die Karte des Grossvaters", ab_xp]]}
 
 
 func blinki(mark := false) -> Dictionary:
@@ -201,10 +211,10 @@ func blinki(mark := false) -> Dictionary:
 	if int(lv.lv) > int(data["seen_lv"]):
 		r = {"mood": "happy", "title": T.t("Juhu, Stufe %d!", [int(lv.lv)]), "text": T.t("Du hast %d Erfahrungspunkte gesammelt. Weiter so!", [int(lv.xp)])}
 	elif fresh_done != "":
-		r = {"mood": "happy", "title": T.t("Geschafft: %s!", [fresh_done]), "text": T.t("Alles entdeckt – das nächste Abenteuer wartet schon.")}
+		r = {"mood": "happy", "title": T.t("Geschafft: %s!", [fresh_done]), "text": T.t("Alles entdeckt – der nächste Ort wartet schon.")}
 	elif not bool(data["greeted"]):
 		r = {"mood": "normal", "title": T.t("Hallo, ich bin Blinki!"),
-				"text": T.t("Hier spielst du die Abenteuer der Reihe nach. Entdecke alles, sammle Abzeichen – so steigt deine Stufe.")}
+				"text": T.t("Hier spielst du Geschichten und entdeckst die Orte der Reihe nach. Entdecke alles, sammle Abzeichen – so steigt deine Stufe.")}
 	else:
 		r = {"mood": "point", "title": T.t("Schön, bist du wieder da!"), "text": _tip(ch)}
 	if mark:
@@ -227,7 +237,7 @@ func _tip(ch: Array) -> String:
 			return T.t("Neu: «%s» wartet auf dich!", [c.name])
 	for c in ch:
 		if c.state == "open":
-			return T.t("Weiter geht es im Abenteuer «%s».", [c.name])
+			return T.t("Weiter geht es mit dem Entdecken: «%s».", [c.name])
 	return T.t("Spiel eine Runde mit Freunden – jedes neue Abzeichen gibt Punkte.")
 
 
@@ -237,13 +247,16 @@ func info() -> Dictionary:
 	for c in ch:
 		if c.current:
 			cur = c.id
+	var SS = preload("res://scripts/spielstand.gd")
 	return {"ok": true, "chapters": ch, "badges": badges(), "level": level(), "blinki": blinki(false), "current": cur,
-			"open": is_open(), "scene": main.scene}
+			"open": is_open(), "scene": main.scene, "stories": regal.stories() if regal != null else [],
+			"resume": regal.resume_info() if regal != null else {}, "slot": {"n": SS.slot(), "name": SS.name_of(SS.slot())},
+			"kids": bool(main.get("kids_on"))}
 
 
 # ---- actions -------------------------------------------------------------------------------------------------------------
 func start_adventure(id: String) -> Dictionary:
-	"""«Abenteuer starten»: the hook of the chapter (later the Bergtal adventure), otherwise into its scene"""
+	"""«Hinreisen» (section «Entdecken»): the hook of the chapter (later the Bergtal adventure), otherwise into its scene"""
 	var c := {}
 	for x in chapters():
 		if x.id == id:
@@ -262,7 +275,7 @@ func start_adventure(id: String) -> Dictionary:
 	close()
 	preload("res://scripts/spieltest.gd").ereignis("spielbereich", "start", {"einheit": str(CHAPTERS[int(c.n) - 1][1]), "szene": id, "id": id})   # Spieltest-Assistent
 	if main.mehr != null:
-		main.mehr.toast(T.t("Abenteuer «%s» – viel Spass beim Entdecken!", [str(c.name)]))
+		main.mehr.toast(T.t("«%s» – viel Spass beim Entdecken!", [str(c.name)]))
 	return {"ok": true, "id": id}
 
 
@@ -276,7 +289,7 @@ func is_open() -> bool:
 
 
 func close() -> void:
-	if is_open():
+	if is_open() or (main.mehr != null and main.mehr.win_id == "gstart"):
 		main.mehr.close_window()
 
 
@@ -302,20 +315,80 @@ func _paint() -> void:
 		return
 	for c in _body.get_children():
 		c.queue_free()
-	var W := 600.0
+	var W := 620.0
+	var kid := bool(main.get("kids_on"))
+	var fz := 1.25 if kid else 1.0
 	var vh: float = get_viewport().get_visible_rect().size.y
-	# Blinki and what it says
+	var SS = preload("res://scripts/spielstand.gd")
+	# the head line: level, Spielstand, «Spielstand wechseln»
+	var lv := level()
+	var lh := HBoxContainer.new()
+	lh.add_theme_constant_override("separation", 10)
+	_body.add_child(lh)
+	var ll := Label.new()
+	ll.text = T.t("⭐ Stufe %d", [int(lv.lv)])
+	ll.add_theme_font_override("font", UI.heading_font())
+	ll.add_theme_font_size_override("font_size", int(16 * fz))
+	lh.add_child(ll)
+	var lx := UI.small(T.t("%d Punkte · noch %d bis Stufe %d", [int(lv.xp), int(lv.to) - int(lv.xp), int(lv.lv) + 1]))
+	lx.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lx.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	lx.tooltip_text = T.t("Entdeckung +%d · Abzeichen +%d · Ort ganz entdeckt +%d · Ort besucht +%d", [XP_DISC, XP_BADGE, XP_DONE, XP_VISIT]) \
+			+ "\n" + T.t("Dazu die Erfahrung aus «Die Karte des Grossvaters» (%d) - ein Level für alles, pro Spielstand.", [int(lv.ab_xp)])
+	lx.mouse_filter = Control.MOUSE_FILTER_PASS
+	lh.add_child(lx)
+	var sn := UI.small(T.t("Spielstand: %s", [SS.name_of(SS.slot()) if SS.name_of(SS.slot()) != "" else str(SS.slot())]), UI.TXT)
+	sn.autowrap_mode = TextServer.AUTOWRAP_OFF
+	sn.add_theme_font_size_override("font_size", int(13 * fz))
+	sn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	lh.add_child(sn)
+	var sw := Button.new()
+	sw.text = T.t("Spielstand wechseln")
+	sw.add_theme_font_size_override("font_size", int(13 * fz))
+	sw.pressed.connect(func(): regal.open_slots())
+	lh.add_child(sw)
+	var lb := ProgressBar.new()
+	lb.show_percentage = false
+	lb.custom_minimum_size = Vector2(W, 6)
+	lb.min_value = float(lv.from)
+	lb.max_value = float(lv.to)
+	lb.value = float(lv.xp)
+	_body.add_child(lb)
+	# «Weiterspielen: <Geschichte>, <Kapitel/Region> (x %)» - the story played last
+	var rs: Dictionary = regal.resume_info()
+	if not rs.is_empty():
+		var rb := Button.new()
+		rb.text = "▶  " + str(rs["text"])
+		rb.custom_minimum_size = Vector2(W, 46 if not kid else 54)
+		rb.add_theme_font_size_override("font_size", int(15 * fz))
+		UI.primary(rb)
+		var rid: String = rs["id"]
+		rb.pressed.connect(func(): regal.weiter(rid))
+		_body.add_child(rb)
+	var sc := ScrollContainer.new()
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc.custom_minimum_size = Vector2(W + 14.0, clampf(vh - 300.0 - (50.0 if not rs.is_empty() else 0.0), 220.0, 720.0))
+	_body.add_child(sc)
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", 8)
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sc.add_child(list)
+	# the stories (geschichten.gd)
+	list.add_child(_head(T.t("Geschichten"), fz))
+	list.add_child(regal.shelf(W))
+	# discovering: the places one after the other, with Blinki's tip
+	list.add_child(_head(T.t("Entdecken"), fz))
 	var bk: Dictionary = blinki(true)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
-	_body.add_child(row)
+	list.add_child(row)
 	var fig = Tour.BlinkiView.new()
 	fig.mood = str(bk.mood)
-	fig.custom_minimum_size = Vector2(50, 56)
+	fig.custom_minimum_size = Vector2(40, 46)
 	fig.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	row.add_child(fig)
 	var say := PanelContainer.new()
-	say.add_theme_stylebox_override("panel", UI.box(UI.FIELD, UI.LINE, 14, 10, 1))
+	say.add_theme_stylebox_override("panel", UI.box(UI.FIELD, UI.LINE, 14, 8, 1))
 	say.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(say)
 	var sv := VBoxContainer.new()
@@ -324,61 +397,52 @@ func _paint() -> void:
 	var st := Label.new()
 	st.text = str(bk.title)
 	st.add_theme_font_override("font", UI.heading_font())
-	st.add_theme_font_size_override("font_size", 15)
+	st.add_theme_font_size_override("font_size", int(14 * fz))
 	sv.add_child(st)
 	var sx := UI.small(str(bk.text), UI.TXT)
-	sx.custom_minimum_size = Vector2(W - 100.0, 0)
+	sx.add_theme_font_size_override("font_size", int(12 * fz))
+	sx.custom_minimum_size = Vector2(W - 90.0, 0)
 	sv.add_child(sx)
-	# the level
-	var lv := level()
-	var lh := HBoxContainer.new()
-	lh.add_theme_constant_override("separation", 8)
-	_body.add_child(lh)
-	var ll := Label.new()
-	ll.text = T.t("⭐ Stufe %d", [int(lv.lv)])
-	var SS = preload("res://scripts/spielstand.gd")
-	if SS.slot() != 1 or SS.name_of(1) != "":
-		ll.text += "  ·  " + (SS.name_of(SS.slot()) if SS.name_of(SS.slot()) != "" else T.t("Spielstand %d", [SS.slot()]))
-	ll.add_theme_font_override("font", UI.heading_font())
-	ll.add_theme_font_size_override("font_size", 15)
-	lh.add_child(ll)
-	var lx := UI.small(T.t("%d Punkte · noch %d bis Stufe %d", [int(lv.xp), int(lv.to) - int(lv.xp), int(lv.lv) + 1]))
-	lx.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	lx.tooltip_text = T.t("Entdeckung +%d · Abzeichen +%d · Abenteuer geschafft +%d · Abenteuer begonnen +%d", [XP_DISC, XP_BADGE, XP_DONE, XP_VISIT]) \
-			+ "\n" + T.t("Dazu die Erfahrung aus dem Bergtal-Abenteuer (%d) - ein Level für alles, pro Spielstand.", [int(lv.ab_xp)])
-	lx.mouse_filter = Control.MOUSE_FILTER_PASS
-	lh.add_child(lx)
-	var lb := ProgressBar.new()
-	lb.show_percentage = false
-	lb.custom_minimum_size = Vector2(W, 6)
-	lb.min_value = float(lv.from)
-	lb.max_value = float(lv.to)
-	lb.value = float(lv.xp)
-	_body.add_child(lb)
-	# the story «Maggie und der Bergkristall» (maggie_story.gd): its own tile
-	var story = main.get("maggie")
-	if story != null:
-		_body.add_child(UI.heading(T.t("Geschichte")))
-		_body.add_child(story.kachel(W))
-	# the adventures
-	_body.add_child(UI.heading(T.t("Abenteuer")))
-	var sc := ScrollContainer.new()
-	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	sc.custom_minimum_size = Vector2(W + 14.0, clampf(vh - 430.0 - (100.0 if story != null else 0.0), 150.0, 4 * 78.0))
-	_body.add_child(sc)
-	var list := VBoxContainer.new()
-	list.add_theme_constant_override("separation", 6)
-	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	sc.add_child(list)
 	for c in chapters():
 		list.add_child(_chapter_row(c, W))
-	# the badges
-	_body.add_child(UI.heading(T.t("Abzeichen")))
+	# the buttons
+	var bt := HBoxContainer.new()
+	bt.add_theme_constant_override("separation", 8)
+	bt.alignment = BoxContainer.ALIGNMENT_END
+	_body.add_child(bt)
+	var gw := Button.new()
+	gw.text = T.t("Spiel-Assistent")
+	gw.tooltip_text = T.t("Team gegen MoveEye: Mitspieler mit dem Handy")
+	gw.pressed.connect(func():
+		close()
+		if main.gamewiz != null:
+			main.gamewiz.open_wiz())
+	bt.add_child(gw)
+	var bb := Button.new()
+	bb.text = T.t("Entdeckungsbuch")
+	bb.tooltip_text = T.t("Alles Entdeckte und die Abzeichen")
+	bb.pressed.connect(func():
+		if main.entdecken != null:
+			main.entdecken.open_book())
+	bt.add_child(bb)
+	var cl := Button.new()
+	cl.text = T.t("Schliessen")
+	cl.pressed.connect(close)
+	bt.add_child(cl)
+
+
+func _head(t: String, fz: float) -> Label:
+	var h := UI.heading(t)
+	h.add_theme_font_size_override("font_size", int(12 * fz))
+	return h
+
+
+func badge_grid(W: float) -> Control:
+	"""the badges (game and places) - shown in the Entdeckungsbuch (entdecken.gd), no longer on «Spielen»"""
 	var g := GridContainer.new()
-	g.columns = 7
+	g.columns = maxi(3, int(W / 86.0))
 	g.add_theme_constant_override("h_separation", 6)
 	g.add_theme_constant_override("v_separation", 6)
-	_body.add_child(g)
 	for b in badges():
 		var p := PanelContainer.new()
 		var got := int(b.n) > 0
@@ -402,29 +466,7 @@ func _paint() -> void:
 		n.clip_text = true
 		v.add_child(n)
 		g.add_child(p)
-	# the buttons
-	var bt := HBoxContainer.new()
-	bt.add_theme_constant_override("separation", 8)
-	bt.alignment = BoxContainer.ALIGNMENT_END
-	_body.add_child(bt)
-	var gw := Button.new()
-	gw.text = T.t("Spiel-Assistent")
-	gw.tooltip_text = T.t("Team gegen MoveEye: Mitspieler mit dem Handy")
-	gw.pressed.connect(func():
-		close()
-		if main.gamewiz != null:
-			main.gamewiz.open_wiz())
-	bt.add_child(gw)
-	var bb := Button.new()
-	bb.text = T.t("Entdeckungsbuch")
-	bb.pressed.connect(func():
-		if main.entdecken != null:
-			main.entdecken.open_book())
-	bt.add_child(bb)
-	var cl := Button.new()
-	cl.text = T.t("Schliessen")
-	cl.pressed.connect(close)
-	bt.add_child(cl)
+	return g
 
 
 func _chapter_row(c: Dictionary, W: float) -> Control:
@@ -472,9 +514,9 @@ func _chapter_row(c: Dictionary, W: float) -> Control:
 	v.add_child(sh)
 	var prog := ""
 	if c.state == "soon":
-		prog = T.t("Dieses Abenteuer kommt mit einer nächsten Version.")
+		prog = T.t("Dieser Ort kommt mit einer nächsten Version.")
 	elif c.state == "locked":
-		prog = T.t("Öffnet sich, wenn das Abenteuer davor zur Hälfte entdeckt ist.")
+		prog = T.t("Öffnet sich, wenn der Ort davor zur Hälfte entdeckt ist.")
 	elif int(c.total) > 0:
 		prog = T.t("%d von %d entdeckt", [int(c.found), int(c.total)])
 	elif c.visited:
@@ -502,7 +544,7 @@ func _chapter_row(c: Dictionary, W: float) -> Control:
 		b.text = T.t("Gesperrt") if c.state == "locked" else T.t("Kommt bald")
 		b.disabled = true
 	else:
-		b.text = T.t("Weiter spielen") if cur else T.t("Abenteuer starten")
+		b.text = T.t("Weiter entdecken") if cur else T.t("Hinreisen")
 		if not cur:
 			UI.primary(b)
 		var id: String = c.id
@@ -528,4 +570,19 @@ func control(d: Dictionary) -> Dictionary:
 			return r
 		"reset":                                       # tests: only the state of the play area (not the discoveries)
 			reset()
+		"stories":                                     # Geschichten-Menü: the cards (as MoveEye shows them)
+			return {"ok": true, "stories": regal.stories(), "resume": regal.resume_info(), "start": regal.gs_info()}
+		"story":                                       # a button of a card: weiter | neu | slots | unlock
+			match str(d.get("what", "weiter")):
+				"neu":
+					return regal.neu(str(d.get("id", "")))
+				"slots":
+					regal.open_slots()
+					return regal.gs_info()
+				"unlock":
+					regal.unlock(str(d.get("id", "")))
+					return {"ok": true}
+			return regal.weiter(str(d.get("id", "")))
+		"gs":                                          # a button of the common start (tests)
+			return regal.gs(d)
 	return info()

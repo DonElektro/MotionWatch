@@ -421,6 +421,17 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.85
+3D-4.85: Neues Fenster «Spielen»: oben Stufe, Spielstand und «Weiterspielen», darunter zwei Bereiche:
+- Geschichten als grosse Karten: Die Karte des Grossvaters (neuer Name des Bergtal-Abenteuers), Maggie und der
+  Bergkristall, Das Hospiz (nur Besitzer, mit Schloss), Teil 2 (gesperrt). Jede Karte zeigt Bild, Dauer, Alter und
+  Fortschritt.
+- Entdecken.
+Alle Geschichten starten gleich: Spielstand, dann Figur, dann Schwierigkeit und Jahreszeit. Die Abzeichen sind jetzt im
+Entdeckungsbuch. Der Reiter «Spielen» in MoveEye ist gleich aufgebaut.
+So testest du: 1) Spielen öffnen. 2) Maggie → Neu beginnen. 3) Hospiz → Öffnen mit Passwort. 4) In MoveEye unter Mehr →
+Spielen.
+
 NEU IN 3D-4.84
 3D-4.84: MoveEye und Simulator öffnen die Einstellungen beim Start immer in der Ansicht «Nur Gruppen» (Gruppen offen, Themen
 zu). Neuer Schalter «Beim Start: Nur Gruppen» bei «Einfach / Experte», ab Werk ein. Schaltet man ihn aus, kommen die eigenen

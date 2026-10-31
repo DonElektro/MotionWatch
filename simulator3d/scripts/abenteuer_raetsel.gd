@@ -534,7 +534,7 @@ func _ensure_badges() -> void:
 	for bd in BADGES:
 		var id := "berg.abenteuer.a3." + str(bd[0])
 		if not ed.items.has(id):
-			ed.register(id, {"scene": "bergtal", "title": T.t(str(bd[1])), "short_text": T.t(str(bd[2])), "hint": T.t("Ein Abzeichen aus dem Bergtal-Abenteuer."),
+			ed.register(id, {"scene": "bergtal", "title": T.t(str(bd[1])), "short_text": T.t(str(bd[2])), "hint": T.t("Ein Abzeichen aus «Die Karte des Grossvaters»."),
 					"icon": "🏅", "position": Vector3.ZERO, "radius": 1.0, "kind": "szene", "los": false, "active": never})
 
 
