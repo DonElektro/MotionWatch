@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.78
+3D-4.78: Entwickler-Fenster: Sprung und Kontaktbogen suchen jetzt eine freie Sicht (Kamera nicht mehr im Hang, im Wasser oder
+hinter Bäumen). Aussichtspunkte schauen in ihre gespeicherte Richtung. 38 von 55 Problem-Orten sind jetzt gut, Schluchten
+bleiben schwierig.
+So testest du: 1) Entwickler → Bergtal → «Gumpisee» anklicken. 2) Kontaktbogen Bergtal, Übersicht öffnen.
+
 NEU IN 3D-4.77
 3D-4.77: Spieltest-Assistent (nur Besitzer, Mehr → Entwickler → Spieltest): beobachtet alle Spielmodi (Dauer, Feststecken,
 Tipps, Erwischt, Abbruch, Ruckeln), fragt nach jeder Runde mit Smileys und macht Vorschläge, was man am Spiel anpassen
