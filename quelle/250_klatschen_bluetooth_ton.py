@@ -484,20 +484,41 @@ class AudioMonitor:
                           "thr": None if bg is None else round(max(bg + CFG["noise_threshold"], -70.0), 1),
                           "peak": self.peak if time.time() - self.peak_t < 3 else lv, "loud": time.time() < self.noisy_until,
                           "listeners": len(self.listeners), "playing": SOUND["playing"], "sound_msg": SOUND["msg"],
-                          "rec": self.rec is not None, "mic": bool(CFG["audio_in"]), "spk": out_selected(),
+                          "rec": self.rec is not None, "mic": bool(CFG["audio_in"]) or status == "simulated", "spk": out_selected(),
                           "bt": {"avail": bt_available(), "scanning": BT["scanning"], "busy": BT["busy"], "msg": BT["msg"]},
                           "talk": TALK["proc"] is not None, "https_port": STATE.get("https_port")}
 
     def noisy(self):
         return (self.proc is not None or time.time() - self.sim_t < 1.5) and time.time() < self.noisy_until
 
-    def feed_sim(self, lvl):
-        """the sound level (dB) of the simulated world - only when no real microphone runs: noise alarm like with a microphone"""
+    def feed_sim(self, lvl, mic=None):
+        """the sound level (dB) of the simulated world - only when no real microphone runs: noise alarm like with a microphone.
+        mic (3D simulator, real-pir-ton): background and the loudest sources - «listen» then gets a made-up sound of this
+        loudness (558p sim_mic_pcm), so listening in works in the simulation too"""
         if self.proc is not None:
             return
         now = time.time()
         if now - self.sim_t > 5.0:
             self._started = now; self.bg = None          # a new start: learn the background again
+            self._sim_pcm_t = now
+        if self.listeners and isinstance(mic, dict):
+            secs = min(0.5, max(0.0, now - getattr(self, "_sim_pcm_t", now)))
+            n = int(secs * AUDIO_RATE) // AUDIO_CHUNK * AUDIO_CHUNK
+            if n > 0:
+                self._sim_pcm_t = getattr(self, "_sim_pcm_t", now) + n / AUDIO_RATE
+                try:
+                    data = sim_mic_pcm(mic, n)
+                except Exception:
+                    data = bytes(n * 2)
+                with self.lk:
+                    for i in range(0, len(data), AUDIO_CHUNK * 2):
+                        for q in list(self.listeners):
+                            try:
+                                q.put_nowait(data[i:i + AUDIO_CHUNK * 2])
+                            except queue.Full:
+                                pass
+        else:
+            self._sim_pcm_t = now
         self.sim_t = now
         self.level = float(lvl)
         if self.level >= self.peak or now - self.peak_t > 3:

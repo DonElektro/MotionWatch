@@ -114,7 +114,7 @@ func _process(_delta: float) -> void:
 		_player.volume_db = -80.0 if (spk_mute or not main.sound_on) else linear_to_db(maxf(0.001, spk_vol / 100.0)) - 6.0
 		if t - _snd_t > 0.4:                          # the simulated microphone at the device hears it
 			_snd_t = t
-			main.add_sound(db_1m(), _dev_pos(), 0.7)
+			main.add_sound(db_1m(), _dev_pos(), 0.7, "speaker")
 		var fam := _family(k)
 		if fam in ["beeps", "bangs", "marmot"] and t - _clap_t > 2.0 and main.sound_on:
 			_clap_t = t                               # short loud pulses: a clap switch could take them for claps

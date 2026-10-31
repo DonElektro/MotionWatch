@@ -2136,7 +2136,7 @@ class WebStream:
         @app.route("/api/audio/live")
         def api_audio_live():
             """Live sound of the microphone: raw 16 bit / 16 kHz mono (the page plays it with WebAudio, works on every phone)."""
-            if AUDIO is None or AUDIO.proc is None:
+            if AUDIO is None or (AUDIO.proc is None and time.time() - AUDIO.sim_t > 3.0):   # real-pir-ton: also the simulated microphone (558p)
                 return reply({"ok": False, "error": "no microphone"}, 404)
             q = AUDIO.listen()
 
@@ -2146,7 +2146,7 @@ class WebStream:
                         try:
                             yield q.get(timeout=1.0)
                         except queue.Empty:
-                            if AUDIO.proc is None and not CFG["audio_in"]:
+                            if AUDIO.proc is None and not CFG["audio_in"] and time.time() - AUDIO.sim_t > 3.0:
                                 break
                             yield bytes(AUDIO_CHUNK * 2)          # silence keeps the connection (and the timing) alive
                 finally:

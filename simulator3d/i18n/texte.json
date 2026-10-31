@@ -1402,6 +1402,12 @@
   "it": "",
   "rm": ""
  },
+ "(still während Prüfstand / Testlauf)": {
+  "en": "(silent during test bench / test run)",
+  "fr": "(muet pendant le banc d'essai / le test)",
+  "it": "(muto durante banco di prova / test)",
+  "rm": "(quiet durant banc da prova / test)"
+ },
  "*.glb, *.gltf ; 3D-Modell (glTF)": {
   "en": "*.glb, *.gltf ; 3D model (glTF)",
   "fr": "*.glb, *.gltf ; modèle 3D (glTF)",
@@ -2071,6 +2077,12 @@
   "it": "Elimina i vecchi dati IA",
   "rm": "Stizzar las datas IA veglias"
  },
+ "Am PC hören (so laut, wie das Mikrofon es hört)": {
+  "en": "Hear it on the PC (as loud as the microphone hears it)",
+  "fr": "Écouter sur le PC (aussi fort que le micro l'entend)",
+  "it": "Ascoltare sul PC (forte come lo sente il microfono)",
+  "rm": "Tadlar sin il PC (uschè ferm sco il microfon tadla)"
+ },
  "Am PC stumm (das simulierte Mikrofon hört es trotzdem)": {
   "en": "Muted on the PC (the simulated microphone still hears it)",
   "fr": "Muet sur le PC (le micro simulé l’entend quand même)",
@@ -2461,6 +2473,12 @@
   "it": "Scatto: colpo al centro dell’immagine (R2)",
   "rm": "Sajet: sajettar en il center dal maletg (R2)"
  },
+ "Auslösungen: %d echt · %d Fehlauslösungen": {
+  "en": "Triggers: %d real · %d false",
+  "fr": "Déclenchements : %d réels · %d faux",
+  "it": "Attivazioni: %d vere · %d false",
+  "rm": "Activaziuns: %d veras · %d falsas"
+ },
  "Auto": {
   "en": "Auto",
   "fr": "Auto",
@@ -2550,6 +2568,18 @@
   "fr": "Démarrage auto : ",
   "it": "Avvio automatico: ",
   "rm": "Autostart: "
+ },
+ "Bach 10 m links": {
+  "en": "Stream 10 m to the left",
+  "fr": "Ruisseau à 10 m à gauche",
+  "it": "Ruscello a 10 m a sinistra",
+  "rm": "Ual 10 m a sanestra"
+ },
+ "Bach 30 m hinten": {
+  "en": "Stream 30 m behind",
+  "fr": "Ruisseau à 30 m derrière",
+  "it": "Ruscello a 30 m dietro",
+  "rm": "Ual 30 m davos"
  },
  "Ball": {
   "en": "Ball",
@@ -2874,6 +2904,18 @@
   "fr": "bouge au vent",
   "it": "si muove al vento",
   "rm": "sa mova en il vent"
+ },
+ "BEWEGUNG": {
+  "en": "MOTION",
+  "fr": "MOUVEMENT",
+  "it": "MOVIMENTO",
+  "rm": "MOVIMENT"
+ },
+ "Bewegungsmelder (PIR)": {
+  "en": "Motion detector (PIR)",
+  "fr": "Détecteur de mouvement (PIR)",
+  "it": "Rilevatore di movimento (PIR)",
+  "rm": "Detectur da moviment (PIR)"
  },
  "Bewertung jetzt": {
   "en": "Rate now",
@@ -4815,6 +4857,12 @@
   "it": "Semplice: l’essenziale (scena, ora, meteo, visite, testare, assistente di gioco). «Esperto» mostra tutto.",
   "rm": "Simpel: l’impurtant (scena, temp, aura, visita, testar, assistent da gieu). «Expert» mussa tut."
  },
+ "einfaches Modell": {
+  "en": "simple model",
+  "fr": "modèle simple",
+  "it": "modello semplice",
+  "rm": "model simpel"
+ },
  "Einheitliche Ereignis-Symbole": {
   "en": "Uniform event icons",
   "fr": "Icônes d’événements uniformes",
@@ -4971,6 +5019,12 @@
   "fr": "Fraises (bol)",
   "it": "Fragole (ciotola)",
   "rm": "Frajas (cuppa)"
+ },
+ "Erfassungsfächer am Boden zeigen": {
+  "en": "Show the detection fan on the ground",
+  "fr": "Montrer l'éventail de détection au sol",
+  "it": "Mostrare il ventaglio di rilevamento a terra",
+  "rm": "Mussar il ventagl da registraziun sin il terren"
  },
  "Ergebnis senden": {
   "en": "Send result",
@@ -5163,6 +5217,12 @@
   "fr": "Table à manger",
   "it": "Tavolo da pranzo",
   "rm": "Maisa da mangiar"
+ },
+ "Eule": {
+  "en": "Owl",
+  "fr": "Chouette",
+  "it": "Gufo",
+  "rm": "Tschuetta"
  },
  "Eule fliegt vorbei": {
   "en": "Owl flies past",
@@ -5367,6 +5427,30 @@
   "fr": "Fausses alarmes",
   "it": "Falsi allarmi",
   "rm": "Fals alarms"
+ },
+ "Fehlauslösung: Sonne (Wolken / tiefe Sonne)": {
+  "en": "False trigger: sun (clouds / low sun)",
+  "fr": "Faux déclenchement : soleil (nuages / soleil bas)",
+  "it": "Falsa attivazione: sole (nuvole / sole basso)",
+  "rm": "Activaziun falsa: sulegl (nivels / sulegl bass)"
+ },
+ "Fehlauslösung: warme Luft (Böe)": {
+  "en": "False trigger: warm air (gust)",
+  "fr": "Faux déclenchement : air chaud (rafale)",
+  "it": "Falsa attivazione: aria calda (raffica)",
+  "rm": "Activaziun falsa: aria chauda (sbuffada)"
+ },
+ "Fehlauslösung: warmer Rauch / Feuer": {
+  "en": "False trigger: warm smoke / fire",
+  "fr": "Faux déclenchement : fumée chaude / feu",
+  "it": "Falsa attivazione: fumo caldo / fuoco",
+  "rm": "Activaziun falsa: fim chaud / fieu"
+ },
+ "Fehlauslösungen (warme Luft, Sonne, Rauch)": {
+  "en": "False triggers (warm air, sun, smoke)",
+  "fr": "Faux déclenchements (air chaud, soleil, fumée)",
+  "it": "False attivazioni (aria calda, sole, fumo)",
+  "rm": "Activaziuns falsas (aria chauda, sulegl, fim)"
  },
  "Fehler": {
   "en": "Error",
@@ -5585,6 +5669,12 @@
   "it": "Bottiglia",
   "rm": "Buttiglia"
  },
+ "Fledermaus": {
+  "en": "Bat",
+  "fr": "Chauve-souris",
+  "it": "Pipistrello",
+  "rm": "Mez-sorica"
+ },
  "Fledermäuse am Licht (nachts)": {
   "en": "Bats at the light (at night)",
   "fr": "Chauves-souris à la lumière (la nuit)",
@@ -5800,6 +5890,12 @@
   "fr": "Frisbee",
   "it": "Frisbee",
   "rm": "Frisbee"
+ },
+ "Frösche": {
+  "en": "Frogs",
+  "fr": "Grenouilles",
+  "it": "Rane",
+  "rm": "Raunas"
  },
  "Fuchs": {
   "en": "Fox",
@@ -6480,6 +6576,12 @@
   "it": "Serata grigliata – ospiti, griglia, bambini",
   "rm": "Saira da grill – giasts, grill, uffants"
  },
+ "Grillen": {
+  "en": "Crickets",
+  "fr": "Grillons",
+  "it": "Grilli",
+  "rm": "Grils"
+ },
  "Grillwürste (Teller)": {
   "en": "Grilled sausages (plate)",
   "fr": "Saucisses grillées (assiette)",
@@ -6503,6 +6605,12 @@
   "fr": "Grand cercle de tir, 130 ⚡ d’énergie, se recharge plus vite (0.5 ⚡ par seconde).",
   "it": "Cerchio di tiro grande, 130 ⚡ di energia, si ricarica più in fretta (0.5 ⚡ al secondo).",
   "rm": "Grond rintg da tutgar, 130 ⚡ energia, chargia pli svelt (0.5 ⚡ per secunda)."
+ },
+ "Grundrauschen": {
+  "en": "Background noise",
+  "fr": "Bruit de fond",
+  "it": "Rumore di fondo",
+  "rm": "Ramur da fund"
  },
  "Gruppe zu dritt": {
   "en": "Group of three",
@@ -6853,6 +6961,12 @@
   "it": "Cane",
   "rm": "Chaun"
  },
+ "Hund (fern)": {
+  "en": "Dog (far away)",
+  "fr": "Chien (au loin)",
+  "it": "Cane (lontano)",
+  "rm": "Chaun (lontan)"
+ },
  "Hund an der Leine mit seinem Menschen": {
   "en": "Dog on the lead with its human",
   "fr": "Chien en laisse avec son humain",
@@ -7188,6 +7302,12 @@
   "fr": "différent selon le modèle – vérifier la licence !",
   "it": "diverso per ogni modello – controllare la licenza!",
   "rm": "different per mintga model – controllar la licenza!"
+ },
+ "je nach Szene": {
+  "en": "depending on the scene",
+  "fr": "selon la scène",
+  "it": "secondo la scena",
+  "rm": "tenor la scena"
  },
  "Jeden Testlauf so oft:": {
   "en": "Each test run this often:",
@@ -7856,6 +7976,12 @@
   "it": "Sereno",
   "rm": "Cler"
  },
+ "Klatschen": {
+  "en": "Clapping",
+  "fr": "Applaudissement",
+  "it": "Battito di mani",
+  "rm": "Batter las mauns"
+ },
  "Klatschen 2×": {
   "en": "Clap 2×",
   "fr": "Claquer 2×",
@@ -7939,6 +8065,12 @@
   "fr": "Moment le plus serré  %d:%02d  ·  rouge = vu",
   "it": "Momento più stretto  %d:%02d  ·  rosso = visto",
   "rm": "Il mument il pli stretg  %d:%02d  ·  cotschen = vis"
+ },
+ "Knopf": {
+  "en": "Button",
+  "fr": "Bouton",
+  "it": "Pulsante",
+  "rm": "Buttun"
  },
  "Knopf «Kopf» unten": {
   "en": "button «Head» at the bottom",
@@ -8113,6 +8245,12 @@
   "fr": "Vache",
   "it": "Mucca",
   "rm": "Vatga"
+ },
+ "Kuhglocken": {
+  "en": "Cowbells",
+  "fr": "Cloches de vaches",
+  "it": "Campanacci",
+  "rm": "Zampuns"
  },
  "Kurz (Tag und Nacht · etwa 2½ Min., für die automatische Optimierung)": {
   "en": "Short (day and night · about 2½ min, for automatic optimisation)",
@@ -8300,11 +8438,23 @@
   "it": "Latifoglia",
   "rm": "Planta da feglia"
  },
+ "Laut: %s": {
+  "en": "Loud: %s",
+  "fr": "Fort : %s",
+  "it": "Forte: %s",
+  "rm": "Ferm: %s"
+ },
  "Lautsprecher": {
   "en": "Loudspeaker",
   "fr": "Haut-parleur",
   "it": "Altoparlante",
   "rm": "Autpledader"
+ },
+ "Lautstärke am PC": {
+  "en": "Volume on the PC",
+  "fr": "Volume sur le PC",
+  "it": "Volume sul PC",
+  "rm": "Volumen sin il PC"
  },
  "Leben": {
   "en": "Lives",
@@ -8926,6 +9076,12 @@
   "it": "Inviare persone",
   "rm": "Trametter persunas"
  },
+ "Menschen: Strasse in der Ferne, Stimmen der Nachbarn": {
+  "en": "People: road in the distance, voices of the neighbours",
+  "fr": "Gens : route au loin, voix des voisins",
+  "it": "Persone: strada in lontananza, voci dei vicini",
+  "rm": "Umans: via en la distanza, vuschs dals vischins"
+ },
  "Menü": {
   "en": "Menu",
   "fr": "Menu",
@@ -8974,11 +9130,29 @@
   "it": "Miao! Passa un gatto.",
   "rm": "Miau! In giat passa."
  },
+ "Mikrofon": {
+  "en": "Microphone",
+  "fr": "Micro",
+  "it": "Microfono",
+  "rm": "Microfon"
+ },
+ "Mikrofon am Gerät: %.0f dB · Hintergrund %.0f dB": {
+  "en": "Microphone on the device: %.0f dB · background %.0f dB",
+  "fr": "Micro de l'appareil : %.0f dB · fond %.0f dB",
+  "it": "Microfono del dispositivo: %.0f dB · fondo %.0f dB",
+  "rm": "Microfon da l'apparat: %.0f dB · fund %.0f dB"
+ },
  "Mikrofon hört laute Schritte": {
   "en": "Microphone hears loud steps",
   "fr": "Le micro entend les pas bruyants",
   "it": "Il microfono sente i passi rumorosi",
   "rm": "Il microfon auda pass ferms"
+ },
+ "Mikrofon wie echt (Abstand, Richtung, Boden dämpft)": {
+  "en": "Microphone like real (distance, direction, ground dampens)",
+  "fr": "Micro comme en vrai (distance, direction, le sol amortit)",
+  "it": "Microfono come reale (distanza, direzione, il suolo attenua)",
+  "rm": "Microfon sco en realitad (distanza, direcziun, il terren stgatscha)"
  },
  "Mikrowelle": {
   "en": "Microwave",
@@ -10614,6 +10788,36 @@
   "it": "Pi 5: ritardo finché l’immagine arriva a MoveEye (elaborazione, Wi-Fi)",
   "rm": "Pi 5: retard fin ch’il maletg è tar MoveEye (elavuraziun, WLAN)"
  },
+ "PIR am Gerät (AS312, 100°): %s": {
+  "en": "PIR on the device (AS312, 100°): %s",
+  "fr": "PIR de l'appareil (AS312, 100°) : %s",
+  "it": "PIR del dispositivo (AS312, 100°): %s",
+  "rm": "PIR da l'apparat (AS312, 100°): %s"
+ },
+ "PIR am Gerät (AS312, vorne, 100°, 3–5 m)": {
+  "en": "PIR on the device (AS312, front, 100°, 3–5 m)",
+  "fr": "PIR de l'appareil (AS312, devant, 100°, 3–5 m)",
+  "it": "PIR del dispositivo (AS312, davanti, 100°, 3–5 m)",
+  "rm": "PIR da l'apparat (AS312, davant, 100°, 3–5 m)"
+ },
+ "PIR am Gerät auslösen": {
+  "en": "Trigger the PIR on the device",
+  "fr": "Déclencher le PIR de l'appareil",
+  "it": "Attivare il PIR del dispositivo",
+  "rm": "Activar il PIR da l'apparat"
+ },
+ "PIR am Gerät: aus": {
+  "en": "PIR on the device: off",
+  "fr": "PIR de l'appareil : arrêt",
+  "it": "PIR del dispositivo: spento",
+  "rm": "PIR da l'apparat: deactivà"
+ },
+ "PIR Gerät": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "PIR Zelt": {
   "en": "PIR tent",
   "fr": "PIR tente",
@@ -11052,6 +11256,12 @@
   "fr": "Portée de la lumière infrarouge",
   "it": "Portata della luce infrarossa",
   "rm": "Tschernadad da la glisch infracotschna"
+ },
+ "Reichweite jetzt bei %.0f °C: quer %.1f m · frontal %.1f m": {
+  "en": "Range now at %.0f °C: across %.1f m · head-on %.1f m",
+  "fr": "Portée à %.0f °C : en travers %.1f m · de face %.1f m",
+  "it": "Portata ora a %.0f °C: di traverso %.1f m · frontale %.1f m",
+  "rm": "Distanza ussa tar %.0f °C: a travers %.1f m · frontal %.1f m"
  },
  "Release «ki-daten» anlegen": {
   "en": "Create release «ki-daten»",
@@ -11837,6 +12047,12 @@
   "fr": "Lac / rivière",
   "it": "Lago / fiume",
   "rm": "Lai / flum"
+ },
+ "Seeufer": {
+  "en": "Lake shore",
+  "fr": "Rive du lac",
+  "it": "Riva del lago",
+  "rm": "Riva dal lai"
  },
  "Seeufer mit Steg": {
   "en": "Lake shore with jetty",
@@ -12637,6 +12853,18 @@
   "it": "Scambiare gli stick (sinistra rover / camminare, destra testa / guardare)",
   "rm": "Barattar ils sticks (sanester rover / ir, dretg chau / guardar)"
  },
+ "Stimme": {
+  "en": "Voice",
+  "fr": "Voix",
+  "it": "Voce",
+  "rm": "Vusch"
+ },
+ "Stimmen": {
+  "en": "Voices",
+  "fr": "Voix",
+  "it": "Voci",
+  "rm": "Vuschs"
+ },
  "Stopp": {
   "en": "Stop",
   "fr": "Stop",
@@ -12660,6 +12888,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Strasse": {
+  "en": "Road",
+  "fr": "Route",
+  "it": "Strada",
+  "rm": "Via"
  },
  "Strassenlampe (geht nachts an)": {
   "en": "Street lamp (comes on at night)",
@@ -13399,6 +13633,12 @@
   "it": "Contare gli animali",
   "rm": "Dumbrar animals"
  },
+ "Tiere: Grillen, Vögel, Eule, Hund in der Ferne, Kuhglocken": {
+  "en": "Animals: crickets, birds, owl, dog in the distance, cowbells",
+  "fr": "Animaux : grillons, oiseaux, chouette, chien au loin, cloches de vaches",
+  "it": "Animali: grilli, uccelli, gufo, cane in lontananza, campanacci",
+  "rm": "Animals: grils, utschels, tschuetta, chaun en la distanza, zampuns"
+ },
  "Tipp richtig": {
   "en": "Guessed right",
   "fr": "Bien deviné",
@@ -13705,6 +13945,18 @@
   "fr": "Environnement : %s – maintenant quelques préréglages pour les objets :",
   "it": "Dintorni: %s – ora qualche preimpostazione per gli oggetti:",
   "rm": "Conturns: %s – ussa anc in pèr preparameters per ils objects:"
+ },
+ "Umgebungsgeräusche": {
+  "en": "Sounds of the surroundings",
+  "fr": "Bruits ambiants",
+  "it": "Suoni dell'ambiente",
+  "rm": "Ramurs da l'ambient"
+ },
+ "Umgebungsgeräusche (Wind, Regen, Wasser, Tiere, Strasse, Stimmen)": {
+  "en": "Sounds of the surroundings (wind, rain, water, animals, road, voices)",
+  "fr": "Bruits ambiants (vent, pluie, eau, animaux, route, voix)",
+  "it": "Suoni dell'ambiente (vento, pioggia, acqua, animali, strada, voci)",
+  "rm": "Ramurs da l'ambient (vent, plievgia, aua, animals, via, vuschs)"
  },
  "Umwandeln ging nicht: ": {
   "en": "Conversion failed: ",
@@ -14318,6 +14570,12 @@
   "it": "Furtivo prudente (da riparo a riparo, striscia, si blocca alla luce, lampada spenta)",
   "rm": "Sfugider precaut (da cuvrida a cuvrida, sa tira, s’inschelescha en la glisch, lampa stizzada)"
  },
+ "Vögel": {
+  "en": "Birds",
+  "fr": "Oiseaux",
+  "it": "Uccelli",
+  "rm": "Utschels"
+ },
  "Vögel am Tag, Fledermäuse in der Nacht (warm im Wärmebild, typische Fehlalarm-Ursache)": {
   "en": "Birds by day, bats at night (warm in the thermal image, typical cause of false alarms)",
   "fr": "Oiseaux le jour, chauves-souris la nuit (chauds dans l’image thermique, cause typique de fausses alarmes)",
@@ -14486,11 +14744,29 @@
   "it": "E se: %s riprodotto (%02d:%02d, %s)",
   "rm": "Tge fiss sche: %s reproducì (%02d:%02d, %s)"
  },
+ "Wasser": {
+  "en": "Water",
+  "fr": "Eau",
+  "it": "Acqua",
+  "rm": "Aua"
+ },
+ "Wasser in der Nähe": {
+  "en": "Water nearby",
+  "fr": "Eau à proximité",
+  "it": "Acqua nelle vicinanze",
+  "rm": "Aua en la vischinanza"
+ },
  "Wasser, Steg mit Boot, Schilf, Zelt": {
   "en": "Water, jetty with boat, reeds, tent",
   "fr": "Eau, ponton avec bateau, roseaux, tente",
   "it": "Acqua, pontile con barca, canneto, tenda",
   "rm": "Aua, punt cun barca, channa, tenda"
+ },
+ "Wasser: Bach, Seeufer, Frösche": {
+  "en": "Water: stream, lake shore, frogs",
+  "fr": "Eau : ruisseau, rive du lac, grenouilles",
+  "it": "Acqua: ruscello, riva del lago, rane",
+  "rm": "Aua: ual, riva dal lai, raunas"
  },
  "Wassermelone": {
   "en": "Watermelon",
@@ -14768,6 +15044,12 @@
   "fr": "Météo : réponse inattendue",
   "it": "Meteo: risposta inattesa",
   "rm": "Aura: resposta nunspetgada"
+ },
+ "Wetter: Wind am Mikrofon, Regen": {
+  "en": "Weather: wind at the microphone, rain",
+  "fr": "Météo : vent sur le micro, pluie",
+  "it": "Meteo: vento sul microfono, pioggia",
+  "rm": "Aura: vent vi dal microfon, plievgia"
  },
  "Wetterverlauf über die Nacht (Dämmerung, Regenschauer, Tau auf der Linse, Morgennebel)": {
   "en": "Weather over the night (dusk, rain showers, dew on the lens, morning fog)",
@@ -15251,6 +15533,12 @@
   "it": "Coperta termica",
   "rm": "Cuverta termica"
  },
+ "wärmt auf (%d s)": {
+  "en": "warming up (%d s)",
+  "fr": "préchauffage (%d s)",
+  "it": "in riscaldamento (%d s)",
+  "rm": "sa stgauda (%d s)"
+ },
  "Wäscheleine mit Wäsche": {
   "en": "Washing line with laundry",
   "fr": "Corde à linge avec linge",
@@ -15616,6 +15904,12 @@
   "fr": "Tourner de 15° la dernière tente / voiture placée",
   "it": "Girare di 15° l’ultima tenda / auto posata",
   "rm": "Volver per 15° l’ultima tenda / auto messa"
+ },
+ "Zuletzt: %s": {
+  "en": "Last: %s",
+  "fr": "Dernier : %s",
+  "it": "Ultimo: %s",
+  "rm": "L'ultim: %s"
  },
  "Zum Kopf": {
   "en": "To the head",

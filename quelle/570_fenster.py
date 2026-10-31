@@ -3216,10 +3216,10 @@ class App:
 
     def _update_audio(self):
         a = STATE.get("audio") or {}
-        on = a.get("level") is not None and a.get("status") == "listening"
+        on = a.get("level") is not None and a.get("status") in ("listening", "simulated")     # real-pir-ton: the simulator's microphone too
         st = a.get("status") or ""
         txt = (tr("no microphone selected") if not a.get("mic") else
-               (f"{tr('microphone on')} · {a['level']:.0f} dB" + (f" · {tr('background')} {a['bg']:.0f} dB · {tr('noise alarm from')} {a['thr']:.0f} dB"
+               (f"{'🧪 ' + tr('simulated') if st == 'simulated' else tr('microphone on')} · {a['level']:.0f} dB" + (f" · {tr('background')} {a['bg']:.0f} dB · {tr('noise alarm from')} {a['thr']:.0f} dB"
                                                                 if a.get("bg") is not None else "") if on else
                 ("⚠ " + st[7:] if st.startswith("error: ") else tr("starting …"))))
         self._status("Microphone", txt)
