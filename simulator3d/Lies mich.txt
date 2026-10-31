@@ -421,6 +421,11 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.60
+3D-4.60: Alle Simulator-Texte jetzt auch auf Englisch, Französisch, Italienisch, Rätoromanisch; Rätoromanisch bitte von
+jemandem prüfen lassen.
+So testest du: 1) Sprache im Simulator auf Français stellen. 2) Menüs durchklicken. 3) Deutsche Reste melden.
+
 NEU IN 3D-4.59
 3D-4.59: MoveEye 2.98.90 schaltet den Schwachlicht-Modus in der Dämmerung nur noch einmal um statt hin und her: die
 Helligkeit wird über 10 s geglättet, «aus» erst deutlich über der Schwelle, und sie muss 30 s auf der anderen Seite bleiben
