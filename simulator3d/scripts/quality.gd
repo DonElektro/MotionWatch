@@ -7,14 +7,15 @@ extends RefCounted
 ##     if Quality.lite(): …
 ## oder ohne preload:
 ##     if Engine.has_meta("lite") and Engine.get_meta("lite"): …
-## main.gd setzt die Meta beim Start und bei jedem Wechsel (Einstellung «Grafik-Modus»: Automatisch / Lite / Normal).
+## main.gd setzt die Meta beim Start und bei jedem Wechsel (Einstellung «Grafik-Modus»: Automatisch / Lite / Normal / Hoch).
 ##
-## Stufen: Lite < Normal (= Grafik wie bis 3D-4.24) < Hoch (kommt mit dem Zweig «foto-hoch», scripts/grafik_hoch.gd).
+## Stufen: Lite < Normal (= Grafik wie bis 3D-4.24) < Hoch (scripts/grafik_hoch.gd: Forward+ / Vulkan, Neustart nötig).
 ## Neue Stufe: einen Eintrag in MODES anhängen (Kennung, Text) – mode_id() / mode_name() und das Menü nehmen sie dann
 ## von selbst; «lite» bleibt die einzige Stufe, die Engine-Meta «lite» = true setzt.
 
 const MODES := [["auto", "Automatisch (Lite auf Raspberry Pi und sehr langsamen PCs, sonst Normal)"],
-		["lite", "Lite (für Raspberry Pi 5: schneller, etwas einfacher)"], ["normal", "Normal"]]
+		["lite", "Lite (für Raspberry Pi 5: schneller, etwas einfacher)"], ["normal", "Normal"],
+		["hoch", "Hoch (fotorealistisch – braucht eine gute Grafikkarte)"]]   # F1: grafik_hoch.gd, nur von Hand (nie automatisch)
 const SCALE := 0.6          # Schärfe der grossen Ansicht im Fenster (die Bilder für MoveEye bleiben scharf)
 const FPS := 25             # höchstens so viele Bilder pro Sekunde im Fenster
 const KEEP := 0.35          # so viel bleibt von Partikeln (Rauch, Feuer, Regen, Schnee) und Gras

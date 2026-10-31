@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 08:34",
+ "generated": "2026-10-31 08:39",
  "versions": [
   {
-   "version": "2.98.85",
-   "file": "webcam_bewegung_2_98_85.py",
+   "version": "2.98.86",
+   "file": "webcam_bewegung_2_98_86.py",
    "url": "",
-   "sha256": "06f4c4588f38cc3a6f729c4e7a1da4a85cf2123cf0b90613024fff1d6dc4faca",
-   "date": "2026-10-31 08:34",
-   "notes": "Simulator 3D-4.54: Spielbereich «Spielen» – Abenteuer als Kapitel, Entdeckungen, Abzeichen, Stufe, Blinki; in MoveEye unter Mehr → Spielen (/play).",
-   "sig": "f0b7d342b1c42fa6e24958dea9dff237509d72e1abf9ad317b18760f4096f82cb549952552533bd2afc35205494a6a292cec2388d94db2ed89e2d6ca8497020f"
+   "sha256": "1875d80d3a5558897e9e5c9af9d7e156c8192a229f25a51655bf85056daf0abb",
+   "date": "2026-10-31 08:39",
+   "notes": "Simulator 3D-4.55: neue Grafikstufe «Hoch» (Vulkan, weiche Schatten, Spiegelungen) und eine einzige Wahl «Grafik-Modus»: Automatisch / Lite / Normal / Hoch.",
+   "sig": "6d53d51c0affffc5a2bf3ad4c6579257edea6e6ad2722bb7234d8d920e534cc94680f479f05251b9ad499196d6c956ee653279ebb80cb28b3ab7e6c8065b680c"
   },
   {
    "version": "2.97.1",

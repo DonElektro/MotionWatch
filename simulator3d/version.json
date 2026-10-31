@@ -1,7 +1,7 @@
 {
- "version": "3D-4.54",
+ "version": "3D-4.55",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 67844456,
- "sha256": "a5e905262d48002333b6eb887dd1d2f505bccab4f66d23638fd72e3c6a70bf9f",
- "notes": "Spielbereich ⭐ «Spielen»: Abenteuer als Kapitel, Entdeckungen, Abzeichen, Stufe, Blinki – auch in MoveEye unter Mehr."
+ "size": 67898650,
+ "sha256": "f979a71153279ef5825034b1bbe69446e14b3aaa7273be81a88df77a69b76d86",
+ "notes": "Neue Grafikstufe «Hoch» (weiche Schatten, Dunst, Spiegelungen) – eine Wahl «Grafik-Modus»: Automatisch / Lite / Normal / Hoch."
 }
