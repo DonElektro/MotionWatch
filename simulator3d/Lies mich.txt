@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.20.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.21.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.21.0
+3.21.0: Bergtal: Tuffwasserfall im Schattwald (Moos, Wasserfäden, Gumpen, Plätschern), Kalkgipfel Chalchstock mit Antenne
+und Aussichtsplattform über der Materialseilbahn-Bergstation, gesichertes Schlussstück mit Drahtseil, gelbe Wegweiser mit
+Wegzeiten aus dem echten Wegnetz.
+So testest du: 1. Im Bergtal per Schnellreise «Tuffwasserfall» bzw. «Chalchstock» wählen. 2. An einer Weggabelung die
+Wegweiser anschauen.
 
 NEU IN 3.20.0
 3.20.0: Figuren leben mehr: Menschen atmen, schauen zu Geräuschen und Tieren, blinzeln, sprechen sichtbar, zittern in der

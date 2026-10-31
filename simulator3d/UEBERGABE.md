@@ -1,8 +1,16 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.20.0** · MoveEye **3.20.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.21.0** · MoveEye **3.21.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.21.0 (MoveEye 3.21.0): Berg-Orte (`bergtal_ziele.gd`, `bergtal_wegweiser.gd`)
+
+- `bergtal_ziele.gd`: Tuffwasserfall im Schattwald, Chalchstock (Kalkgipfel, Antenne, Plattform, Drahtseil) über der
+  bestehenden Bergstation der Materialseilbahn; Wege Tobelweg / Gipfelweg Chalchstock, Gelände (`sculpt`), Schnellreise,
+  Entdecken `berg.ort.tuffwasserfall|chalchstock|bergstation`, Steuerung `{"action":"bergtal","do":"ziele"}`.
+- `bergtal_wegweiser.gd`: Wegweiser an allen Gabelungen, Zeiten aus dem Wegnetz (Schweizer Formel), Tafeln je Richtung;
+  ersetzt die feste Liste in `bergtal.gd` (dort nur Anschlüsse; die Wege von 3.16.0 bleiben). `bib_berg.gd`: Richtungstafeln.
 
 ## NEU in 3.20.0 (MoveEye 3.20.0): Animationen (`anim_mensch.gd`, `anim_tier.gd`)
 
