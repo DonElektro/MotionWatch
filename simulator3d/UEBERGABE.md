@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.41** · passende MoveEye-Version (früher Motion Watch) **2.98.72**
+Stand: 31.10.2026 · Simulator-Version **3D-4.42** · passende MoveEye-Version (früher Motion Watch) **2.98.73**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.42 (MoveEye 2.98.73): Menschen-Verhalten (`menschen.gd`)
+
+- `menschen.gd` (neu): Gangarten, Vielfalt, Gruppen, Tagesablauf, Schnittstelle für Szenarien (`main.menschen.spawn_kind`);
+  Knöpfe `m_send_*` unter Besuch → Menschen schicken. `actor.gd`: Feld `hold_post`. Lite: `Quality.lite()`.
 
 ## NEU in 3D-4.41 (MoveEye 2.98.72): Pfadilager, Bergdorf, Hofladen, Festival (`kompakt*.gd`)
 

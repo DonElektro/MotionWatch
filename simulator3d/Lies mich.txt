@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.42
+3D-4.42: Menschen verhalten sich echter: Gangarten (gehen, eilen, rennen, schleichen, kriechen), Familien mit kleineren
+Kindern, Gruppen, die stehen bleiben und reden, Draussen sitzen, WC-Gang nachts mit Taschenlampe, Tagesablauf auf dem Platz.
+So testest du: 1) Besuch → Menschen schicken → «Familie». 2) «Gangarten nacheinander»: erkennt MoveEye alle? 3) 1 Uhr:
+«Gang zum WC» – Person mit Taschenlampe.
+
 NEU IN 3D-4.41
 3D-4.41: Neue Orte: Pfadilager und Bergdorf im Bergtal, Bauernhof mit Hofladen im Ferienpark, Festival-Gelände als eigene
 Welt (2 Bühnen, Foodtrucks, Zeltstadt, viele Leute, 14–3 Uhr). In diesen Orten: «Standort an diesem Ort» (mehrere Plätze).

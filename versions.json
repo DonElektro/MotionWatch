@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 07:18",
+ "generated": "2026-10-31 07:23",
  "versions": [
   {
-   "version": "2.98.72",
-   "file": "webcam_bewegung_2_98_72.py",
+   "version": "2.98.73",
+   "file": "webcam_bewegung_2_98_73.py",
    "url": "",
-   "sha256": "1aa9b92525c1ff41c9744d9120f53cc58feb56b11ed24b4454e81edfba20a85c",
-   "date": "2026-10-31 07:18",
-   "notes": "Simulator 3D-4.41: neue Orte – Pfadilager und Bergdorf im Bergtal, Bauernhof mit Hofladen im Ferienpark, Festival-Gelände als eigene Welt; mehrere MoveEye-Standorte pro Ort.",
-   "sig": "b84cee2e7a06a6cda9306cde8bb7110966d498a44fab7577c3b4a14eb09df9c584ebbd0f83558affbfde6f61db59b83dde7c92aa54bd338db959c2b20631f601"
+   "sha256": "886800cf8d1ecdb6e918608905138a9e9d914002953dd2c01f12396fb0ecae16",
+   "date": "2026-10-31 07:23",
+   "notes": "Simulator 3D-4.42: Menschen verhalten sich echter – Gangarten, Familien, Gruppen, Draussen sitzen, WC-Gang mit Taschenlampe, Tagesablauf.",
+   "sig": "1df71e2719ded92369d99d88ce69506e5bc32c34291885831908311cb986e3a2f868b93e79adbb446701fdc1bf4d73b41841a07dcc64ff8d2e29359bd8252d0d"
   },
   {
    "version": "2.97.1",
