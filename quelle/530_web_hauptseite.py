@@ -1691,7 +1691,7 @@ function miniMap(o) {
       if (ty < 0 || ty >= N) continue;
       for (let tx = Math.floor(x0 / 256); tx <= Math.floor((x0 + w) / 256); tx++) {
         const k = z + "/" + (((tx % N) + N) % N) + "/" + ty, key = k + "@" + tx;
-        let im = have[key]; if (!im) { im = el("img"); im.alt = ""; im.dataset.k = key; im.onerror = () => { im.style.visibility = "hidden"; }; im.src = "https://tile.openstreetmap.org/" + k + ".png"; T.appendChild(im); }
+        let im = have[key]; if (!im) { im = el("img"); im.alt = ""; im.dataset.k = key; im.onerror = () => { im.style.visibility = "hidden"; }; im.referrerPolicy = "origin"; im.src = "https://tile.openstreetmap.org/" + k + ".png"; T.appendChild(im); }
         im.style.left = Math.round(tx * 256 - x0) + "px"; im.style.top = Math.round(ty * 256 - y0) + "px"; im.dataset.keep = "1";
       }
     }

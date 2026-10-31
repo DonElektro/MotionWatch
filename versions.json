@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 19:48",
+ "generated": "2026-10-31 20:05",
  "versions": [
   {
-   "version": "3.11.0",
-   "file": "webcam_bewegung_3_11_0.py",
+   "version": "3.11.1",
+   "file": "webcam_bewegung_3_11_1.py",
    "url": "",
-   "sha256": "d45f226744ea710f63bde96b88cd47243e5b5b39e6954e8f2589761c1eaa5a3e",
-   "date": "2026-10-31 19:48",
-   "notes": "Simulator 3.11.0: «Maggie und der Bergkristall» zu zweit – 1 oder 2 Spieler, Rolle wählbar, Bildschirm geteilt oder gemeinsam, je Region ein Teamrätsel, Partner kann retten.",
-   "size": 4416420,
-   "sig": "7fa6d1d232e02177c85869437b66a5afc98cfbf8d6b52a97e6032576220c71465fe6462198692fc2348c5738fb2853e463b446b92def8ea8556ad38861d9600c",
+   "sha256": "3177e92808a3805ef9a093d41fc9bf1dc7b40421b0fd9e8f8c4c70739ffcb5f1",
+   "date": "2026-10-31 20:05",
+   "notes": "Karte (Standort, Aufnahmen) zeigt wieder die OpenStreetMap-Kacheln statt «Access blocked»: die Kachel-Bilder senden den Ursprung als Referer (referrerPolicy origin), die Seiten bleiben no-referrer.",
+   "size": 4416412,
+   "sig": "784c10b6f46ae7166a3fc007bad39a73bef6b19ec75f48973af6ed39172f958573ee9b3350063ca972bf7d38fec1f31039c3fe2e9ef21792d3ed0571f353d20b",
    "data": {
-    "file": "moveeye_daten_3_11_0.zip",
+    "file": "moveeye_daten_3_11_1.zip",
     "url": "",
-    "sha256": "e968853c33000df19fe9bb075ed3450eacd336e8f079eab1596af95c5a466129",
-    "size": 1611965,
-    "sig": "2339f5a766de55496f73e03dfdfec6984d25d18e64dbe1681820213df599e3cfb8934d88cc238472860f026057345631dc520a40784ac07fcb5b2dd7c763d403"
+    "sha256": "922467ca7435ce7e56d1f1407585431f8aa8e542c3ae1abd735612686568153d",
+    "size": 1612089,
+    "sig": "27e202df6beeb424b3a4dd2d45104003120278395adc8d986559e96534aaf4fec564322982bfd0f52070f7936df98c568f33ca031a6997eb78bcba1938f61201"
    }
   },
   {
