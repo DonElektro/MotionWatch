@@ -6,7 +6,7 @@ Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 340 Stellen
 Nicht mehr im Code (noch in texte.json): 22
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 42 Stellen in wizpics.gd 16, wordmark.gd 10, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 12494, schlüssel 7879, keine Wörter 6259, index 3919, technisch 1467, doc 903, einheit 132, englisch 59, log 56, pfad 54, html 42, klasse 22
+Übersprungen (Grund: Anzahl): kennung 12502, schlüssel 7893, keine Wörter 6259, index 3919, technisch 1467, doc 904, einheit 132, englisch 59, log 56, pfad 54, html 42, klasse 22
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  642    29

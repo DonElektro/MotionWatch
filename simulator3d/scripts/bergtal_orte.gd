@@ -140,9 +140,14 @@ func _init(bt_) -> void:
 	full = not lite
 
 
+static func off() -> bool:
+	"""for measurements only (control «orte» what «off»): the valley without the places of this file"""
+	return Engine.has_meta("bt_orte_off") and bool(Engine.get_meta("bt_orte_off"))
+
+
 func replaces(kind: String) -> bool:
 	"""bergtal.gd leaves these out: built here with their inside"""
-	return kind in REPLACES
+	return kind in REPLACES and not off()
 
 
 static func building(key: String) -> Array:
@@ -532,6 +537,9 @@ func _sign(b: Dictionary, text: String, lp: Vector3, ry := 0.0, w := 0.9, col :=
 # building all
 # =============================================================================================================================
 func build() -> void:
+	if off():
+		info = {"off": true}
+		return
 	var t0 := Time.get_ticks_msec()
 	var n0: int = m.obstacles.size()
 	_hut()
@@ -553,8 +561,8 @@ func build() -> void:
 	_alp_ruins()
 	_register()
 	m.anims.append(Callable(self, "_tick"))
-	info = {"ms": Time.get_ticks_msec() - t0, "lite": lite, "obstacles": m.obstacles.size() - n0, "decks": bt.decks.size(),
-			"lights": _flames.size(), "places": PLACES.size(), "inside": INSIDE.size(), "discoveries": ENT.size()}
+	info.merge({"ms": Time.get_ticks_msec() - t0, "lite": lite, "obstacles": m.obstacles.size() - n0, "decks": bt.decks.size(),
+			"lights": _flames.size(), "places": PLACES.size(), "inside": INSIDE.size(), "discoveries": ENT.size()}, true)
 
 
 # ---- Selbstversorgerhütte Alp Tschuggen ---------------------------------------------------------------------------------------------
@@ -1779,6 +1787,32 @@ func control(d: Dictionary) -> Dictionary:
 					m.fly_to(bt.WG(float(pl[1]), float(pl[2])) + Vector3(0, 2, 0), 40.0)
 					return {"ok": true, "place": nm}
 			return {"ok": fly(nm), "place": nm}
+		"cam":                                                               # tests / pictures: the view at a valley position
+			var f: Array = d.get("from", [0, 0, 0])
+			var t: Array = d.get("to", [0, 0, 0])
+			var p := Vector3(float(f[0]), float(f[1]), float(f[2]))
+			var q := Vector3(float(t[0]), float(t[1]), float(t[2]))
+			if bool(d.get("ground", true)):
+				p.y += bt.H(p.x, p.z)
+				q.y += bt.H(q.x, q.z)
+			m._to_free_view()
+			if m.fly_tw != null:
+				m.fly_tw.kill()
+			m.view_cam.global_transform = Transform3D(Basis(), bt.W(p)).looking_at(bt.W(q), Vector3.UP)
+			return {"ok": true}
+		"check":                                                             # tests: floors, decks, ground in each building
+			var out := {}
+			for k in _xf:
+				var xf: Transform3D = _xf[k]
+				var o: Vector3 = xf.origin
+				var w: Vector3 = bt.W(o)
+				out[k] = {"floor": snappedf(o.y, 0.01), "ground": snappedf(bt.H(o.x, o.z), 0.01), "walk": snappedf(bt.gy(w.x, w.z) + bt.h0, 0.01),
+						"blocked_at_centre": m.blocked(Vector2(w.x, w.z), 0.3)}
+			return {"ok": true, "buildings": out, "info": info}
+		"off":
+			Engine.set_meta("bt_orte_off", bool(d.get("value", true)))
+			m.set_scene("bergtal")
+			return {"ok": true, "off": off()}
 		"door":
 			return hospiz_door(str(d.get("name", "eingang")), float(d.get("deg", 0.0)), float(d.get("secs", 2.5)))
 		"light":
