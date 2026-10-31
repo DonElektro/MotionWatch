@@ -126,9 +126,12 @@ func pack_l() -> float:
 
 
 func has(id: String) -> bool:
-	if id == "fernglas" and raetsel != null and raetsel.hat("feldstecher"):
-		return true                                      # A3: Grossvaters Feldstecher wirkt wie das Fernglas
 	return int((R.get("items", W["items"]) as Dictionary).get(id, 0)) > 0
+
+
+func hilfe_stufe() -> String:
+	"""A3: die Hilfe-Stufe «leicht» | «normal» | «schwer» (für A4 und andere Pakete)"""
+	return raetsel.hilfe() if raetsel != null else "normal"
 
 
 func blinki_suggest() -> Dictionary:

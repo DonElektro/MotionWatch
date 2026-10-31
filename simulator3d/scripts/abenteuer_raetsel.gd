@@ -21,10 +21,10 @@ extends RefCounted
 ##   * Hilfe-Stufen: Leicht (Pfeile: richtige Antwort markiert, Pfeil auf der Karte), Normal (Tipp nach 20 s oder nach einem
 ##     Fehler), Schwer (keine Tipps). Vor dem Start (Schritt «Schwierigkeit & Ziel» → Einstellungen) und unterwegs wählbar.
 ## Gespeichert im Spielstand des Abenteuers: P["a3_raetsel"] (fortschritt.json), der laufende Lauf in R["a3"].
-## Gegenstände: hat(id) / gib(id) / nimm(id). TODO verbinden mit abenteuer_inventar.gd (Paket A4): solange es kein Inventar
-## gibt (ab.inventar mit hat/gib), merkt sich dieses Paket die Gegenstände selbst in P["a3_raetsel"]["items"]; die Ausrüstung
-## im Rucksack (R["items"]) zählt immer mit.
-## Für andere Pakete: ab.raetsel.hilfe() -> "leicht" | "normal" | "schwer" (z. B. A4: Essen/Trinken in Leicht aus).
+## Gegenstände: hat(id) / gib(id) / nimm(id) gehen an das gemeinsame Inventar von Paket A4 (scripts/abenteuer_inventar.gd:
+## Inv.hat / gib / finde / nimm; «feldstecher» liegt dort als «fernglas» → wirkt auch für die Wetterwarnung). Das Inventar
+## wird geladen, wenn die Datei da ist (vor dem Zusammenführen mit A4: eigener Speicher P["a3_raetsel"]["items"] + Rucksack).
+## Für andere Pakete: ab.hilfe_stufe() bzw. ab.raetsel.hilfe() -> "leicht" | "normal" | "schwer" (A4: Essen/Trinken in Leicht aus).
 ## Steuerbefehl: {"action": "abenteuer", "do": "a3", "what": state | hilfe (value) | zoom | stern (value A/B/C) | nord |
 ##                gib (value) | badges}
 
@@ -168,18 +168,30 @@ func set_hilfe(h: String) -> void:
 		ab._changed()
 
 
-# ---- the inventory (TODO verbinden mit abenteuer_inventar.gd, Paket A4) ----------------------------------------------------
+func hilfe_stufe() -> String:
+	return hilfe()
+
+
+# ---- the inventory: abenteuer_inventar.gd of package A4 (static hat / gib / finde / nimm) ---------------------------------
+const INV_PATH := "res://scripts/abenteuer_inventar.gd"
+static var _inv_s = null
+static var _inv_tried := false
+
+
 func _inv():
-	var iv = ab.get("inventar")
-	if iv != null and iv is Object and iv.has_method("hat") and iv.has_method("gib"):
-		return iv
-	return null
+	if not _inv_tried:
+		_inv_tried = true
+		if ResourceLoader.exists(INV_PATH):
+			_inv_s = load(INV_PATH)
+	if _inv_s != null and _inv_s.get("ab") == null and _inv_s.has_method("verbinde"):
+		_inv_s.verbinde(ab)
+	return _inv_s
 
 
 func hat(id: String) -> bool:
 	var iv = _inv()
-	if iv != null and bool(iv.hat(id)):
-		return true
+	if iv != null:
+		return bool(iv.hat(id))
 	if int((S()["items"] as Dictionary).get(id, 0)) > 0:
 		return true
 	return not ab.R.is_empty() and int((ab.R.get("items", {}) as Dictionary).get(id, 0)) > 0
@@ -188,8 +200,12 @@ func hat(id: String) -> bool:
 func gib(id: String) -> void:
 	var iv = _inv()
 	if iv != null:
-		iv.gib(id)
-	S()["items"][id] = 1
+		if id == "ersatzteil":
+			iv.gib(id, 1)                                # used up at the footbridge (Rucksack of this tour)
+		elif not bool(iv.hat(id)):
+			iv.finde(id)                                 # stays for all chapters (feldstecher / seil / grandfather's things / pages)
+	else:
+		S()["items"][id] = 1
 	if not ab.R.is_empty() and not id in RR()["items"]:
 		RR()["items"].append(id)
 	ab._save()
@@ -197,11 +213,12 @@ func gib(id: String) -> void:
 
 func nimm(id: String) -> void:
 	var iv = _inv()
-	if iv != null and iv.has_method("nimm"):
-		iv.nimm(id)
-	S()["items"].erase(id)
-	if not ab.R.is_empty() and int((ab.R["items"] as Dictionary).get(id, 0)) > 0:
-		ab.R["items"][id] = int(ab.R["items"][id]) - 1
+	if iv != null:
+		iv.nimm(id, 1)
+	else:
+		S()["items"].erase(id)
+		if not ab.R.is_empty() and int((ab.R["items"] as Dictionary).get(id, 0)) > 0:
+			ab.R["items"][id] = int(ab.R["items"][id]) - 1
 	ab._save()
 
 
