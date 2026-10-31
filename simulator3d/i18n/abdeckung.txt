@@ -1,10 +1,10 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 3261 (Stellen: 4690)
-Übersetzt: en 3030, fr 3030, it 3030, rm 3030
+Texte gesamt: 3259 (Stellen: 4690)
+Übersetzt: en 3028, fr 3028, it 3028, rm 3028
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 337 Stellen
-Nicht mehr im Code (noch in texte.json): 29
+Nicht mehr im Code (noch in texte.json): 31
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 42 Stellen in wizpics.gd 16, wordmark.gd 10, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1
 Übersprungen (Grund: Anzahl): kennung 11397, schlüssel 7888, keine Wörter 6082, index 4020, technisch 1357, doc 894, einheit 117, englisch 64, pfad 57, log 56, html 42, klasse 21
 
@@ -29,7 +29,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   erlebniswelt.gd           62     0
   quick.gd                  57     2
   entdecken.gd              55     0
-  spielbereich.gd           52     0
+  spielbereich.gd           51     0
   mwpc.gd                   46    12
   karte.gd                  46     8
   gamerules.gd              45     4

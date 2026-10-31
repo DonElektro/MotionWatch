@@ -392,7 +392,7 @@ func _paint() -> void:
 	bt.alignment = BoxContainer.ALIGNMENT_END
 	_body.add_child(bt)
 	var gw := Button.new()
-	gw.text = T.t("🎮 Spiel-Assistent")
+	gw.text = T.t("Spiel-Assistent")
 	gw.tooltip_text = T.t("Team gegen MoveEye: Mitspieler mit dem Handy")
 	gw.pressed.connect(func():
 		close()
@@ -400,7 +400,7 @@ func _paint() -> void:
 			main.gamewiz.open_wiz())
 	bt.add_child(gw)
 	var bb := Button.new()
-	bb.text = T.t("📖 Entdeckungsbuch")
+	bb.text = T.t("Entdeckungsbuch")
 	bb.pressed.connect(func():
 		if main.entdecken != null:
 			main.entdecken.open_book())
@@ -442,15 +442,18 @@ func _chapter_row(c: Dictionary, W: float) -> Control:
 	t.add_theme_font_size_override("font_size", 14)
 	t.add_theme_color_override("font_color", UI.MUT if c.state in ["locked", "soon"] else UI.TXT)
 	tl.add_child(t)
-	var chip: Array = {"new": [T.t("Neu"), UI.ACC], "done": [T.t("✓ Geschafft"), UI.GRN], "locked": [T.t("🔒 Gesperrt"), UI.MUT],
+	var chip: Array = {"new": [T.t("Neu"), UI.ACC], "done": [T.t("✓ Geschafft"), UI.GRN], "locked": [T.t("Gesperrt"), UI.MUT],
 			"soon": [T.t("Kommt bald"), UI.MUT], "open": [T.t("Hier bist du") if cur else "", UI.ACC]}.get(c.state, ["", UI.MUT])
 	if cur and c.state != "open":
 		chip = [str(chip[0]) + " · " + T.t("Hier bist du"), chip[1]]
 	if str(chip[0]) != "":
 		var ch := UI.small(str(chip[0]), chip[1])
+		ch.autowrap_mode = TextServer.AUTOWRAP_OFF
 		ch.add_theme_font_size_override("font_size", 11)
 		tl.add_child(ch)
-	v.add_child(UI.small(str(c.short), UI.MUT))
+	var sh := UI.small(str(c.short), UI.MUT)
+	sh.custom_minimum_size = Vector2(W - 230.0, 0)
+	v.add_child(sh)
 	var prog := ""
 	if c.state == "soon":
 		prog = T.t("Dieses Abenteuer kommt mit einer nächsten Version.")
@@ -466,6 +469,7 @@ func _chapter_row(c: Dictionary, W: float) -> Control:
 	ph.add_theme_constant_override("separation", 8)
 	v.add_child(ph)
 	var pl := UI.small(prog, UI.TXT if int(c.total) > 0 else UI.MUT)
+	pl.custom_minimum_size = Vector2(W - 230.0 - (130.0 if int(c.total) > 0 else 0.0), 0)
 	ph.add_child(pl)
 	if int(c.total) > 0:
 		var bar := ProgressBar.new()

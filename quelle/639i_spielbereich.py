@@ -10,7 +10,7 @@
 # Blinki's blink. Here (after 639h, before 640) because NAV_ITEMS (470), render_page (510/584), blinki_js (589),
 # smalltv_routes (552/599c), App (570) and the tables DE / TRX come before.
 # ----------------------------------------------------------------------------
-NAV_ITEMS.insert([k for k, *_r in NAV_ITEMS].index("more"), ("play", "/play", "Play", "Play"))
+NAV_ITEMS.insert([k for k, *_r in NAV_ITEMS].index("more"), ("play", "/play", "Play area", "Playing"))   # not «Play» (= «Abspielen» / «Lire» of videos)
 _PLAY = {"t": 0.0, "d": None}
 PLAY_STATES = {"new": "New", "done": "✓ Done", "locked": "🔒 Locked", "soon": "Coming soon", "open": ""}
 
@@ -57,6 +57,9 @@ def play_do(action, cid=""):
     try:
         r = sim_control({"action": "spielbereich", "do": action, "id": str(cid)[:24]}) or {}
     except Exception as e:
+        _PLAY["t"] = 0.0
+        if action == "start" and "timed out" in str(e):       # a big scene (Ferienpark) takes longer to build than the 8 s
+            return {"ok": True, "loading": True, "state": _PLAY["d"] or play_state(True)}
         return {"ok": False, "error": str(e)[:80]}
     _PLAY["t"] = 0.0
     if not r.get("ok"):
@@ -184,7 +187,8 @@ async function plDo(a, id, b) {
 """
 
 _HX_PLAY = {
-    'Play': ('Spielen', 'Jouer', 'Giocare', 'Giugar'),
+    'Play area': ('Spielen', 'Jouer', 'Giocare', 'Giugar'),
+    'Playing': ('Spielen', 'Jouer', 'Giocare', 'Giugar'),
     'Adventures': ('Abenteuer', 'Aventures', 'Avventure', 'Aventuras'),
     'Badges': ('Abzeichen', 'Badges', 'Distintivi', 'Insignas'),
     'Level': ('Stufe', 'Niveau', 'Livello', 'Stgalim'),
@@ -314,7 +318,7 @@ def _tk_play_act(self, a, cid=""):
     def work():
         r = play_do(a, cid)
         try:
-            self.root.after(0, lambda: (self._status("Play", ("✓ " + tr("The adventure starts in the simulator.")) if r.get("ok") and a == "start"
+            self.root.after(0, lambda: (self._status("Playing", ("✓ " + tr("The adventure starts in the simulator.")) if r.get("ok") and a == "start"
                                                      else ("⚠ " + str(r.get("error") or "")) if not r.get("ok") else tr("Open in the simulator")),
                                         r.get("ok") and self._play_paint(r["state"])))
         except Exception:
@@ -402,7 +406,7 @@ for _n, _f in (("_tk_play_tab", _tk_play_tab), ("_play_poll", _tk_play_poll), ("
 
 
 def play_selftest():
-    assert ("play", "/play", "Play", "Play") in NAV_ITEMS and [k for k, *_r in NAV_ITEMS].index("play") == [k for k, *_r in NAV_ITEMS].index("more") - 1
+    assert ("play", "/play", "Play area", "Playing") in NAV_ITEMS and [k for k, *_r in NAV_ITEMS].index("play") == [k for k, *_r in NAV_ITEMS].index("more") - 1
     keep = (CFG.get("sim_on"), dict(_PLAY))
     try:
         CFG["sim_on"] = False; _PLAY["d"] = None
