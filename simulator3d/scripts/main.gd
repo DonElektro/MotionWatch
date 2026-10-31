@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.21.0"
+const VERSION := "3.22.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const T := preload("res://scripts/i18n.gd")              # Menüs A: new texts of the panel in the language (Sprachen)
@@ -5552,7 +5552,16 @@ func _build_ui() -> void:
 	ver.autowrap_mode = TextServer.AUTOWRAP_OFF
 	ver.size_flags_vertical = Control.SIZE_SHRINK_END
 	hdr.add_child(ver)
-	# toolbar like above the settings of MoveEye
+	# Paket real-layout-leiste (Daniel 31.10.2026): the bar under the header like on every page of MoveEye (639o) -
+	# Einfach | Experte · Symbole farbig | schlicht · Beim Start: Nur Gruppen · Alle zuklappen / Nur Gruppen / Alle aufklappen
+	UI.icons_plain = ui_icons == "plain"
+	leiste = preload("res://scripts/bedienleiste.gd").new()
+	leiste.build(self)
+	top_box.add_child(leiste)
+	simple_seg = leiste.simple_seg
+	_sg_cb = leiste.sg_cb
+	_fold_btns = leiste.fold_btns
+	# toolbar like above the settings of MoveEye: hide and search (the fold buttons are in the bar)
 	var tb := HBoxContainer.new()
 	ui_tb = tb
 	tb.add_theme_constant_override("separation", 6)
@@ -5563,35 +5572,13 @@ func _build_ui() -> void:
 	search_in = UI.search_field("Einstellung suchen …")
 	search_in.text_changed.connect(_search)
 	tb.add_child(search_in)
-	# 3D-4.18 (Daniel): same order and look as MoveEye 2.98.46 - «Alle zuklappen · Nur Gruppen · Alle aufklappen»,
-	# the button of the current fold state is blue (mixed = none)
-	var cb := UI.icon_button("close", "Alle zuklappen")
-	cb.pressed.connect(func(): _fold_all("close", true))
-	tb.add_child(cb)
-	var gb := UI.icon_button("groups", "Nur Gruppen")
-	gb.pressed.connect(func(): _fold_all("groups", true))
-	tb.add_child(gb)
-	var ob := UI.icon_button("open", "Alle aufklappen")
-	ob.pressed.connect(func(): _fold_all("open", true))
-	tb.add_child(ob)
-	_fold_btns = {"close": cb, "groups": gb, "open": ob}
 	search_none = UI.small("Kein Treffer")
 	search_none.visible = false
 	box_.add_child(search_none)
-	_mode_row = HBoxContainer.new()                 # 3D-3.94: one small line; 3D-3.90: Einfach | Experte and Kinder | Erwachsene on top (were at the very bottom)
+	_mode_row = HBoxContainer.new()                 # 3D-3.94: one small line; Kinder | Erwachsene (Einfach | Experte is in the bar, real-layout-leiste)
 	_mode_row.add_theme_constant_override("separation", 6)
 	box_.add_child(_mode_row)
 	top_cards.append(_mode_row)
-	# Paket nurgruppen (Daniel, 31.10.2026): «Beim Start: Nur Gruppen» right below Einfach | Experte - like MoveEye (530 / 570)
-	_sg_cb = CheckButton.new()
-	_sg_cb.text = "Beim Start: Nur Gruppen"
-	_sg_cb.tooltip_text = "Bei jedem Start zeigen die Einstellungen nur die Gruppen. Aus: Die Menüs sind auf- und zugeklappt, wie du sie verlassen hast."
-	_sg_cb.add_theme_font_size_override("font_size", 13)
-	_sg_cb.focus_mode = Control.FOCUS_NONE
-	_sg_cb.button_pressed = start_groups
-	_sg_cb.toggled.connect(set_start_groups)
-	box_.add_child(_sg_cb)
-	top_cards.append(_sg_cb)
 	quick = preload("res://scripts/quick.gd").new()            # 3D-3.86: the quick tiles, at the very top
 	quick.main = self
 	box_.add_child(quick)
@@ -6013,11 +6000,8 @@ func _build_ui() -> void:
 	mehr.main = self
 	add_child(mehr)
 	mehr.build(box_)
-	# Simple | Expert and Kinder | Erwachsene: on top, next to the search (3D-3.90)
-	var se := UI.segment("Einfach", "Experte", not ui_simple, func(expert): set_simple(not expert), true)
-	simple_seg = se
-	se.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_mode_row.add_child(se)
+	# Kinder | Erwachsene: on top (3D-3.90); Einfach | Experte is in the bar (leiste)
+	var se: Control = simple_seg
 	kids_seg = UI.segment("Kinder", "Erwachsene", not kids_on, func(adult): _kids_switch(adult), true)   # 3D-3.69
 	kids_seg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_mode_row.add_child(kids_seg)
@@ -6052,6 +6036,8 @@ var kids: Control
 var kids_seg: Control
 var _mode_row: HBoxContainer
 var simple_seg: Control
+var leiste: Node                       # real-layout-leiste: the bar (bedienleiste.gd), the same as on every page of MoveEye
+var ui_icons := "plain"                # «Symbole farbig | schlicht» ("color" | "plain", saved); plain = the look up to 3.19
 var ui_tb: Control
 var fold_bodies: Array = []           # every card that opens / closes
 var setting_bodies: Array = []        # the cards of the settings groups
@@ -6375,6 +6361,8 @@ func _apply_kids() -> void:
 		kids_on = keep
 	if ui_tb != null:
 		ui_tb.visible = not kids_on
+	if leiste != null:
+		leiste.visible = not kids_on
 	if toolbar != null:
 		toolbar.visible = not kids_on
 	if kids_seg != null and kids_seg.has_meta("paint"):
@@ -6441,6 +6429,18 @@ func ask_adult(done: Callable) -> void:
 	var vs := get_viewport().get_visible_rect().size
 	pc.position = (vs - pc.size) / 2.0
 	le.grab_focus()
+
+
+func set_icons(v: String) -> void:
+	"""real-layout-leiste: symbols «color» (own colour, a green dot while on) or «plain» (grey, green while on) - the one switch"""
+	ui_icons = "plain" if v == "plain" else "color"
+	UI.icons_plain = ui_icons == "plain"
+	_settings_dirty = true
+	for b in fold_bodies:
+		if is_instance_valid(b) and b.has_meta("icon"):
+			(b.get_meta("icon") as Control).queue_redraw()
+	if leiste != null:
+		leiste.paint(ui_simple, ui_icons, start_groups)
 
 
 func set_simple(on: bool) -> void:
@@ -6739,7 +6739,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "start_groups", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "start_groups", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "grafik_mode", "cam_wippen", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
 var _settings_dirty := false
 

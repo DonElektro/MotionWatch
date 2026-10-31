@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.21.0** · MoveEye **3.21.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.22.0** · MoveEye **3.22.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.22.0 (MoveEye 3.22.0): eine Bedienleiste (`bedienleiste.gd`, Teil 639o)
+
+- Ein Baustein für Web, Pi-Fenster und Simulator: Einfach/Experte, Symbole farbig/schlicht (`ui_icons`, in KEEP),
+  Nur Gruppen, Alle zuklappen · Nur Gruppen · Alle aufklappen. Reiter- und Statuszeile einzeln einklappbar (pro Gerät,
+  roter Punkt bei Warnungen). MoveEye Teil 639o, Simulator `bedienleiste.gd` + `ui_style.gd`.
 
 ## NEU in 3.21.0 (MoveEye 3.21.0): Berg-Orte (`bergtal_ziele.gd`, `bergtal_wegweiser.gd`)
 

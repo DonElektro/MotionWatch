@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 23:53",
+ "generated": "2026-11-01 00:12",
  "versions": [
+  {
+   "version": "3.22.0",
+   "file": "webcam_bewegung_3_22_0.py",
+   "url": "",
+   "sha256": "df45d7aa5e86816ac9c487a86acc07634259b7d4f2ae2925d6dafdd594cf4800",
+   "date": "2026-11-01 00:12",
+   "notes": "Reiter- und Statuszeile einzeln einklappbar (pro Gerät gemerkt, roter Punkt bei Warnungen); auf jeder Seite dieselbe Bedienleiste (Einfach/Experte, Symbole farbig/schlicht, Nur Gruppen, Alle zuklappen · Nur Gruppen · Alle aufklappen) – Web, Pi-Fenster und Simulator; Live: Gehtest ganz unten.",
+   "size": 4448328,
+   "sig": "486bd2fbe8f184c08e8d6e9681886afc4b231699e5454eaa7fbb8aa20a55e16ebea8a62d98771fb9104d7579057fc53ef721fb3e42bc786a156104eac790ef0f",
+   "data": {
+    "file": "moveeye_daten_3_22_0.zip",
+    "url": "",
+    "sha256": "bac55ca09b0b3fda58fb0ce920c8f158a7ce653ab34b56d186908726d03ac713",
+    "size": 1625230,
+    "sig": "330409f5be080c406122e92b34c09c8b4535c84506051f004a3a303f704598921bad33fbefd0305f9dc6657993f791c462f2ec5d6df35ee02f249506b3139b00"
+   }
+  },
   {
    "version": "3.21.0",
    "file": "webcam_bewegung_3_21_0.py",
    "url": "",
    "sha256": "5a0865e3889c5fe81b062bac8511200a4980db39b99bfa96a0dd6c9841e9884e",
-   "date": "2026-10-31 23:53",
+   "date": "2026-10-31 23:59",
    "notes": "Simulator 3.21.0: Bergtal mit Tuffwasserfall im Schattwald, Kalkgipfel Chalchstock mit Antenne und Aussichtsplattform, Drahtseil-Schlussstück, gelbe Wegweiser mit Wegzeiten aus dem Wegnetz.",
    "size": 4440142,
    "sig": "4104c8006224dc1472ab0e3ed8904363442b24cd91639ca146cb1dc3023b1caa2379d1e7f0051a64778888af09d01e4dc9502460e34af3652ed60ecadf76a404",
@@ -41,7 +58,7 @@
    "file": "webcam_bewegung_3_19_3.py",
    "url": "",
    "sha256": "34cb330790c7cd527ae836915c656373996e7d805595e8aa60bd85eec4635df0",
-   "date": "2026-10-31 23:27",
+   "date": "2026-11-01 00:09",
    "notes": "Trailer/Vorführung: Stopp am iPad lässt den Simulator nicht mehr schwarz (Kamera und Knöpfe kommen zurück, Knopf «× Zurück», Esc); am iPad Ton mit einem Tippen (Erzähler, Musik, Geräusche).",
    "size": 4439968,
    "sig": "c4a39873ca2d7bdc4f4a7fd89292c563e9fa86c9ffe1230e488f1aebc0825a0b3f285644b0488ad66e9c686e97f5caa451c43d5ede1975fa9eefba585b7b720c",
@@ -136,23 +153,6 @@
     "sha256": "4008bd96ef386c063a18dd5cfe9aa31344ea477ee7b816698ee16e4a886f79fb",
     "size": 1612524,
     "sig": "17bb4a2b1287edf52cd4b32ca846d51742afc73ed3e2dc27a43fc3aaa8762ef6673167592bf67e018422e11455f010cd851f66d71d922d4e2e9916afd2a2ea0c"
-   }
-  },
-  {
-   "version": "3.13.0",
-   "file": "webcam_bewegung_3_13_0.py",
-   "url": "",
-   "sha256": "aa751a5e9714b7ddbfb145888589f3c72cdfd48f085ef8ca7f09e8ac36495c29",
-   "date": "2026-10-31 20:43",
-   "notes": "Simulator 3.13.0: zu zweit zehn Team-Bausteine in der Karte des Grossvaters und bei Maggie (geteiltes Wissen, Räuberleiter, Rucksack teilen, Rücken an Rücken, Wer findet mehr, Fotowettbewerb, Lagerfeuer-Tagebuch, High-Five, Rollen, Gummiband).",
-   "size": 4416062,
-   "sig": "5fdb116c2d9dec8148e894d349f866a14bd5caec83580d3c5c4049e0a38e031441f88f4d785c72ce1c6e99ddfa4e77fdf39381d7133dee75359a083397751609",
-   "data": {
-    "file": "moveeye_daten_3_13_0.zip",
-    "url": "",
-    "sha256": "5fc36d6339ba37cc9f1e78f3ab91f1c8433e390d32a2ceaa850a346480b9dc71",
-    "size": 1612449,
-    "sig": "be4e317ba51f85503889cbea3984a0def72e8549b0cc534a634b527a7c34358d3ed45ac201792ed8a796860b3ec990349ae7e97ab83f38cfa7e858a6bfcaec05"
    }
   },
   {

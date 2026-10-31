@@ -241,9 +241,10 @@ function simCtlBuild(G, r, ctl, fmt) {
   const seg = el("div", "sc-seg"); const b1 = el("button", "", t("Simple")), b2 = el("button", "", t("Expert")); b1.type = b2.type = "button"; seg.append(b1, b2); G.appendChild(seg);
   const note = el("div", "mut", t("Simple: only the important settings. «Expert» shows all.")); G.appendChild(note);
   if (only) { top.hidden = true; seg.hidden = true; }
+  if (window.MWB_SIMPAGE) { seg.hidden = true; note.hidden = true; }   // 639o: on the page Simulator Simple / Expert is in the bar under the tabs
   function apply() {
     q = qi.value.trim().toLowerCase(); G.dataset.q = qi.value; let any = false;
-    b1.classList.toggle("on", !expert); b2.classList.toggle("on", expert); note.hidden = expert || !!only;
+    b1.classList.toggle("on", !expert); b2.classList.toggle("on", expert); note.hidden = expert || !!only || !!window.MWB_SIMPAGE;
     cards.forEach(card => {
       let vis = 0;
       card.querySelectorAll(".sc-fine").forEach(w => { if (!w.dataset.own) w.classList.toggle("open", expert); });   // 639d: closed in «Einfach», open in «Experte»
@@ -260,6 +261,7 @@ function simCtlBuild(G, r, ctl, fmt) {
   const setEx = v => { expert = v; window.SC_EXPERT = v; apply(); if (typeof simsetLoad === "function") simsetLoad();
     fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !v, page: "sim"})}).catch(() => {}); };
   qi.oninput = apply; b1.onclick = () => setEx(false); b2.onclick = () => setEx(true);
+  if (!only) window.scSetEx = setEx;                 // 639o: the bar (#mwbar) switches Simple / Expert of the simulator control
   apply();
   if (!only && window.SC_EXPERT == null) fetch("/api/ui_simple?page=sim").then(x => x.json()).then(j => { window.SC_EXPERT = !j.on; window.SC_DEV = !!j.dev; expert = window.SC_EXPERT; apply(); }).catch(() => {});
   if (only && location.hash === "#c-stoer" && !window.SC_STOER) G.querySelectorAll(".sc-sub.open").forEach(w => {   // 639d: link «Störungen» (Entwickler)
@@ -1522,6 +1524,10 @@ $("#d-link").textContent = t("Link for the PC browser") + ": " + location.origin
     d.addEventListener("toggle", () => { if (d._mwSkip) { d._mwSkip = false; return; }
       o[d.dataset.k] = d.open; try { localStorage.setItem("mw-sim-fold", JSON.stringify(o)); } catch (e) {} }); });
   if (sg && window.SC_SHOWN == null) window.SC_SHOWN = new Set(); })();
+// 639o: the bar under the tabs (#mwbar): Simple / Expert of this page = the one of the simulator control (page «sim»)
+window.MWB_SIMPAGE = true;
+window.MWB_PAGE = {simplePage: () => "sim", simple: v => { if (window.scSetEx) window.scSetEx(!v);
+  else fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: v, page: "sim"})}).catch(() => {}); }};
 (async () => { await initAppearance(); load(); if (location.hash === "#gw") setTimeout(() => gwOpen(), 400); })();   // 639i: «Spielen» → game wizard
 /*ALERTS*/
 </script></body></html>
