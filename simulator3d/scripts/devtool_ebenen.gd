@@ -90,6 +90,8 @@ var fov_world: Array = []             # [PackedVector2Array head, PackedVector2A
 var _rows := {}                       # quick id -> [widget, value label]
 var _chk := {}                        # layer -> CheckBox
 var _syncing := false
+var _scan_n := 0
+var _parts: Array = []                # the two folding parts (Schnellregler, Ebenen)
 var stats := {"lines": 0, "us": 0}
 
 
@@ -134,7 +136,11 @@ func section() -> Control:
 				set_layer(k, x))
 		l.add_child(c)
 		_chk[k] = c
-	l.add_child(UI.small(T.t("Nur im Fenster sichtbar, nie im Bild von MoveEye. Horror-Auslöser nur, wenn «Das Hospiz» entsperrt ist.")))
+	var ln := UI.small(T.t("Nur im Fenster sichtbar, nie im Bild von MoveEye. Horror-Auslöser nur, wenn «Das Hospiz» entsperrt ist."))
+	ln.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	ln.custom_minimum_size = Vector2(240, 0)
+	l.add_child(ln)
+	_parts = [q, l]
 	for b in [q, l]:                                        # the window gets smaller again when a part is closed
 		var hdr = (b.get_meta("wrap") as Control).get_child(1)
 		if hdr is Button:
@@ -158,6 +164,12 @@ func _ctrl(id: String) -> Dictionary:
 
 
 func _build_quick(box: VBoxContainer) -> void:
+	var g := GridContainer.new()                            # compact: name | control, one row each
+	g.columns = 2
+	g.add_theme_constant_override("h_separation", 8)
+	g.add_theme_constant_override("v_separation", 4)
+	box.add_child(g)
+	var same := T.t("Gleiche Regler wie im Bedienfeld (Szene · Zeit, Wetter, System · Grafik) – beide bleiben gleich.")
 	for qd in QUICK:
 		var c: Dictionary = _ctrl(str(qd[1]))
 		if c.is_empty():
@@ -166,19 +178,22 @@ func _build_quick(box: VBoxContainer) -> void:
 		var lab := Label.new()
 		lab.text = T.t(str(c.label))
 		lab.add_theme_font_size_override("font_size", 13)
-		box.add_child(lab)
+		lab.tooltip_text = same
+		lab.mouse_filter = Control.MOUSE_FILTER_PASS
+		g.add_child(lab)
 		if c.type == "slider":
 			var h := HBoxContainer.new()
 			h.add_theme_constant_override("separation", 6)
-			box.add_child(h)
+			h.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			g.add_child(h)
 			var s := HSlider.new()
 			s.min_value = float(c.extra.get("min", 0))
 			s.max_value = float(c.extra.get("max", 1))
 			s.step = float(c.extra.get("step", 0.01))
-			s.custom_minimum_size = Vector2(150, 24)
+			s.custom_minimum_size = Vector2(110, 24)
 			s.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			var vl := UI.small("", UI.TXT)
-			vl.custom_minimum_size = Vector2(46, 0)
+			vl.custom_minimum_size = Vector2(40, 0)
 			s.value_changed.connect(func(v):
 				vl.text = _fmt(cid, v)
 				if not _syncing:
@@ -187,9 +202,10 @@ func _build_quick(box: VBoxContainer) -> void:
 			h.add_child(vl)
 			_rows[cid] = [s, vl]
 			if cid == "hour":
+				g.add_child(Control.new())
 				var hb := HBoxContainer.new()
 				hb.add_theme_constant_override("separation", 4)
-				box.add_child(hb)
+				g.add_child(hb)
 				for hh in HOURS:
 					var b := Button.new()
 					b.text = T.t(str(hh[0]))
@@ -201,6 +217,7 @@ func _build_quick(box: VBoxContainer) -> void:
 		else:
 			var o := OptionButton.new()
 			o.custom_minimum_size = Vector2(150, 30)
+			o.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			o.clip_text = true
 			for op in c.extra.get("options", []):
 				o.add_item(T.t(str(op[1])))
@@ -212,11 +229,12 @@ func _build_quick(box: VBoxContainer) -> void:
 						_paint_ui())
 			if c.extra.has("tip"):
 				o.tooltip_text = T.t(str(c.extra["tip"]))
-			box.add_child(o)
+			g.add_child(o)
 			_rows[cid] = [o, null]
-			if cid == "grafik_mode":
-				box.add_child(UI.small(T.t("«Hoch» (und zurück von «Hoch») startet den Simulator neu. Automatisch, Lite und Normal wirken sofort.")))
-	box.add_child(UI.small(T.t("Gleiche Regler wie im Bedienfeld (Szene · Zeit, Wetter, System · Grafik) – beide bleiben gleich.")))
+	var nt := UI.small(T.t("«Hoch» (und zurück von «Hoch») startet den Simulator neu. Automatisch, Lite und Normal wirken sofort."))
+	nt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	nt.custom_minimum_size = Vector2(240, 0)
+	box.add_child(nt)
 	_paint_ui()
 
 
@@ -256,6 +274,7 @@ func set_layer(k: String, v: bool) -> void:
 		return
 	on[k] = v
 	_key = ""                                               # rebuild the cached lines
+	_scan_n = 0
 	_t_slow = 0.0
 	_t_fast = 0.0
 	if not any_on():
@@ -312,7 +331,7 @@ func _process(dt: float) -> void:
 	var lite := _lite()
 	_t_fast -= dt
 	if _t_fast <= 0.0:
-		_t_fast = 0.3 if lite else 0.1
+		_t_fast = 0.4 if lite else 0.15
 		_fast()
 	_t_slow -= dt
 	if _t_slow <= 0.0:
@@ -415,7 +434,7 @@ func _rebuild_cache() -> void:
 				if absf(float(v[3])) < 0.01 and absf(float(v[4])) < 0.01:
 					continue                               # «at MoveEye»: no own place
 				var p := _scene_of(Vector2(float(v[3]), float(v[4])))
-				_ring(V2, C2, p, ErlBase.ACTIVE_R, Color(C_TRIG, 0.45), seg)
+				_ring(V2, C2, p, ErlBase.ACTIVE_R, Color(C_TRIG, 0.3), seg, false)   # flat: on a slope it would be a wall of lines
 				_ring(V2, C2, p, maxf(2.0, float(v[5])), C_TRIG, 12)
 				_cache_names.append([p + Vector3(0, 2.5, 0), T.t(str(v[2])), C_TRIG])
 			for ch in AD.CHAPTERS:
@@ -439,7 +458,7 @@ func _rebuild_cache() -> void:
 		elif lw == "ferienpark":
 			for v in Fp.ERLEBNIS:
 				var p3 := _scene_of(Vector2(float(v[3]), float(v[4])))
-				_ring(V2, C2, p3, Erl.ACTIVE_R, Color(C_TRIG, 0.45), seg)
+				_ring(V2, C2, p3, Erl.ACTIVE_R, Color(C_TRIG, 0.3), seg, false)
 				_ring(V2, C2, p3, maxf(2.0, float(v[5])), C_TRIG, 12)
 				_cache_names.append([p3 + Vector3(0, 2.5, 0), T.t(str(v[2])), C_TRIG])
 		var pir = main.obj.get("pir", Vector3.ZERO)
@@ -525,7 +544,9 @@ func _slow() -> void:
 	var lite := _lite()
 	var cp: Vector3 = main.view_cam.global_position
 	var near := 300.0 if lite else 700.0
-	if on["lights"]:
+	_scan_n -= 1
+	if on["lights"] and _scan_n <= 0:
+		_scan_n = 3                                            # the tree is big (Bergtal): look for lamps every 3rd time
 		_scan_lights()
 	_im_slow.clear_surfaces()
 	var n := 0
@@ -618,10 +639,10 @@ func _place_labels(cp: Vector3, lite: bool) -> void:
 	if on["triggers"]:
 		for e in _cache_names:
 			var d: float = (e[0] as Vector3).distance_to(cp)
-			if d < (250.0 if lite else 600.0):
+			if d < (150.0 if lite else 300.0):
 				L.append([d, e])
 	L.sort_custom(func(a, b): return a[0] < b[0])
-	var cap := 8 if lite else 24
+	var cap := 6 if lite else 14
 	for i in range(maxi(cap, _labels.size())):
 		if i >= _labels.size():
 			if i >= cap or i >= L.size():
@@ -710,11 +731,38 @@ func _ray_dir(ax: float, ay: float, fisheye: bool) -> Vector3:
 	return Vector3(tan(ax), tan(ay), -1.0).normalized()
 
 
+func _hit(o: Vector3, d: Vector3, L: float) -> Vector3:
+	"""where the ray meets the ground, at most L m (cheaper than main.ground_hit, which looks up to 400 m)"""
+	if not main.hilly() and not main.ground_fn.is_valid():
+		if d.y < -0.0001:
+			var t: float = (main.ground_y(o.x, o.z) - o.y) / d.y
+			if t > 0.0 and t < L:
+				return o + d * t
+		return o + d * L
+	var prev := o
+	var t2 := 0.0
+	while t2 < L:
+		t2 = minf(L, t2 + 1.0)
+		var p := o + d * t2
+		if p.y <= main.ground_y(p.x, p.z):
+			var a := prev
+			var b := p
+			for i in 4:                                         # a little finer between the last two steps
+				var m := (a + b) * 0.5
+				if m.y <= main.ground_y(m.x, m.z):
+					b = m
+				else:
+					a = m
+			return b
+		prev = p
+	return o + d * L
+
+
 func _cone(V: PackedVector3Array, C: PackedColorArray, cam: Camera3D, hh: float, hv: float, fisheye: bool, L: float, col: Color, lite: bool) -> PackedVector2Array:
 	"""the cone of one camera: rays from the lens to the ground (at most L m), the edge of the picture on the ground"""
 	var o := cam.global_position
 	var bs := cam.global_transform.basis
-	var per := 1 if lite else 4                            # points per picture side
+	var per := 1 if lite else 3                            # points per picture side
 	var edge: Array = []
 	for k in range(per):                                    # clockwise round the picture: top, right, bottom, left
 		edge.append(Vector2(-1.0 + 2.0 * k / per, 1.0))
@@ -727,14 +775,10 @@ func _cone(V: PackedVector3Array, C: PackedColorArray, cam: Camera3D, hh: float,
 	var hits: Array = []
 	for s in edge:
 		var d: Vector3 = (bs * _ray_dir(s.x * hh, s.y * hv, fisheye)).normalized()
-		var h = main.ground_hit(o, d)
-		var p: Vector3 = o + d * L
-		if h != null and (h as Vector3).distance_to(o) < L:
-			p = h
-		hits.append(p)
+		hits.append(_hit(o, d, L))
 	var corners := [0, per, 2 * per, 3 * per]
 	for i in hits.size():
-		if lite or i in corners or i % 2 == 0:
+		if lite or i in corners:
 			V.append(o)
 			V.append(hits[i])
 			C.append(Color(col, col.a * (0.9 if i in corners else 0.4)))
@@ -744,8 +788,7 @@ func _cone(V: PackedVector3Array, C: PackedColorArray, cam: Camera3D, hh: float,
 		C.append(col)
 		C.append(col)
 	var mid: Vector3 = (bs * Vector3(0, 0, -1)).normalized()      # the middle of the picture
-	var mh = main.ground_hit(o, mid)
-	var me: Vector3 = mh if mh != null and (mh as Vector3).distance_to(o) < L else o + mid * L
+	var me := _hit(o, mid, L)
 	V.append(o)
 	V.append(me)
 	C.append(Color(col, 0.35))
@@ -931,7 +974,12 @@ func control(d: Dictionary) -> Dictionary:
 			return res
 		"regler", "values":
 			return {"ok": true, "values": values()}
-	return {"ok": false, "error": "unknown do - the values: layer (name, on), set (time, weather, season, quality), regler"}
+		"parts":                                              # tests: open / close both parts of the window
+			for b in _parts:
+				UI.set_sub_open(b, bool(d.get("on", true)))
+			_shrink()
+			return {"ok": not _parts.is_empty()}
+	return {"ok": false, "error": "unknown do - the values: layer (name, on), set (time, weather, season, quality), regler, parts (on)"}
 
 
 func info() -> Dictionary:

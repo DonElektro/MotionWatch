@@ -583,7 +583,7 @@ func control(d: Dictionary) -> Dictionary:
 		"close":
 			close()
 			return {"ok": true}
-		"layer", "layers", "set", "regler", "values":   # Teil 2 (devtool_ebenen.gd)
+		"layer", "layers", "set", "regler", "values", "parts":   # Teil 2 (devtool_ebenen.gd)
 			return eb().control(d)
 	var ex = main.explore
 	var cam: Camera3D = main.view_cam
