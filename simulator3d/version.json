@@ -1,7 +1,7 @@
 {
- "version": "3D-4.64",
+ "version": "3D-4.65",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34159557,
- "sha256": "9ba9211aef02e6953646017a792988ab899de104a4ddf39b0e0adea870c71959",
- "notes": "MoveEye 2.98.95: Reh/Fuchs im Wärmebild nicht mehr Person, «Person?» für Kriechende, «Höhe der Kamera» statt «Stange»."
+ "size": 34195835,
+ "sha256": "0f7290d27b29ec425c9c5826774d9d76adfded8022d46bacfc4d652152f0d364",
+ "notes": "Entwickler-Fenster: Schnellregler und Ebenen (Sichtfeld, Wege, Startpunkte, Auslöser, Lampen)."
 }

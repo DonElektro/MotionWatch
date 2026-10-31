@@ -28,7 +28,7 @@ extends Node
 ##   Dev.ort(main, id) -> ein Eintrag oder {} · main.mehr.dev.scene_pos(e) -> Vector3 in der geladenen Szene oder null
 ##   main.mehr.dev.goto(id) -> {ok, …} springt hin (lädt nötigenfalls).
 ## Steuerbefehl /control {"action": "dev", "do": "places" (world, kind) | "goto" (id) | "fly" (on, speed) | "open" | "close"
-##   | "info"} - damit Tests automatisch springen können. MoveEye nutzt ihn nicht (nicht in schnittstelle.json).
+##   | "info" | Teil 2: "layer" (name, on) | "set" (time, weather, season, quality) | "regler"} - damit Tests automatisch springen können. MoveEye nutzt ihn nicht (nicht in schnittstelle.json).
 ## Lite: _lite() (Quality.lite()) - die Karte ohne Landeskarten-Bild und ohne Wege, nur 2 × pro Sekunde neu gezeichnet.
 
 const T = preload("res://scripts/i18n.gd")
@@ -67,11 +67,22 @@ var _fly_chk: CheckButton
 var _speed_opt: OptionButton
 var _all: Array = []                   # alle_orte() of the last refresh
 var _t := 0.0
+var ebenen = null                      # Entwicklertool 2 «Regler + Ebenen» (devtool_ebenen.gd): eb()
 
 
 static func _lite() -> bool:
 	"""the central question «Lite?» (Quality.lite(); the coordinator connects the Lite package)"""
 	return Quality.lite()
+
+
+func eb():
+	"""Teil 2 (devtool_ebenen.gd): Schnellregler und Ebenen - eigene Datei, hier nur eingehängt"""
+	if ebenen == null:
+		ebenen = preload("res://scripts/devtool_ebenen.gd").new()
+		ebenen.main = main
+		ebenen.dev = self
+		add_child(ebenen)
+	return ebenen
 
 
 static func is_owner(m) -> bool:
@@ -470,6 +481,7 @@ func _build() -> void:
 	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_status.clip_text = true
 	bot.add_child(_status)
+	v.add_child(eb().section())                          # Teil 2: Schnellregler + Ebenen
 	if main.fenster != null:
 		main.fenster.add("dev", "Entwickler", panel, {"on": func(): return shown, "set_on": func(x): shown = bool(x),
 				"shown": func(): return shown, "list": false, "home": _home})
@@ -571,12 +583,14 @@ func control(d: Dictionary) -> Dictionary:
 		"close":
 			close()
 			return {"ok": true}
+		"layer", "layers", "set", "regler", "values", "parts":   # Teil 2 (devtool_ebenen.gd)
+			return eb().control(d)
 	var ex = main.explore
 	var cam: Camera3D = main.view_cam
 	return {"ok": true, "owner": is_owner(main), "open": shown, "world": world, "loaded": loaded_world(), "scene": main.scene,
 			"fly": ex.fly if ex != null else false, "speed": ex.fly_speed if ex != null else 0.0, "cam": _v(cam.global_position),
 			"cam_world": _w2(to_world(cam.global_position)),
-			"n": alle_orte(main).size()}
+			"n": alle_orte(main).size(), "ebenen": eb().info()}
 
 
 # =============================================================================================================================
@@ -685,6 +699,8 @@ class DevMap extends Control:
 		draw_string(get_theme_default_font(), Vector2(6, size.y - 6), "%s m" % str(g).trim_suffix(".0"), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.5))
 		if w == "bergtal" and (lite or Bt._hm.is_empty()):
 			_draw_valley(lite)
+		if dev.ebenen != null:
+			dev.ebenen.draw_map(self)                        # Teil 2: die Ebenen auch auf der Karte
 		# the markers (scenes last: on top)
 		_pts = []
 		var font := get_theme_default_font()
