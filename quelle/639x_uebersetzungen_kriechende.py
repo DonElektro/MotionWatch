@@ -10,6 +10,7 @@ _HX_E3 = {
                                                           "circa {d} m, lungo circa {l} m – una persona che striscia?",
                                                           "ca. {d} m, ca. {l} m lung – ina persuna che sa splattira?"),
 }
+PK_TITLES.setdefault(CRAWL_PK_TITLE[1], CRAWL_PK_TITLE)      # the short push form of 3.1.0 (635b): «⚠ Etwas Grosses am Boden» + picture
 for _k, _v in _HX_E3.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):

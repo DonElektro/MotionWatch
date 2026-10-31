@@ -14,8 +14,8 @@
 #      CRAWL_ESC_TOP_M) und hat die KI dort kein Tier gesehen: «PERSON? (KRIECHT)» = eine Person für die normale Alarm-Logik (Push, Aufnahme,
 #      Sirene). Die «Person?»-Regel von 2.98.95 (232 weak_person_feed: schwache KI + flach + Bewegung / Wärme) bleibt und
 #      greift oft schon früher - dann ist es sofort eine Person.
-# Kurzer Push-Text: Notifier.info mit Titel «{name}: Something big at the ground»; das neue Push-Format (635b push_short, 3.1.0)
-# kennt den Titel über PK_TITLES, sobald es auf main ist (crawl_push trägt ihn dort ein, wenn es PK_TITLES gibt).
+# Kurzer Push-Text: Notifier.info mit Titel «{name}: Something big at the ground»; im Push-Format von 3.1.0 (635b push_short)
+# steht der Titel in PK_TITLES (eingetragen in 639x): «⚠ Etwas Grosses am Boden», eine Zeile «ca. 5 m, ca. 1.2 m lang – …», Bild.
 # Abgrenzung zu Tieren (Daniel: Igel und Fuchs sind kleiner und wärmer):
 #   - KLEINER ist das sichere Merkmal, darum die Länge: Igel 0.2-0.3 m, Katze ~0.45 m, Marder ~0.5 m, Feldhase ~0.55 m,
 #     Dachs ~0.75 m, Fuchs Kopf-Rumpf 0.6-0.9 m (Wildtier Schweiz; Körperlängen auch in simulator3d/scripts/waerme.gd ANIMALS);
@@ -96,9 +96,6 @@ def crawl_decide(m, box, night, moving, t0, st=None, animal=False):
 
 def crawl_push(notifier, frame, d, ln):
     """the short push «Something big at the ground» (info, with a small picture) - only with the protection on, own cool-down"""
-    pk = globals().get("PK_TITLES")
-    if isinstance(pk, dict):
-        pk.setdefault(CRAWL_PK_TITLE[1], CRAWL_PK_TITLE)    # 3.1.0 push format (635b): symbol + short title, one line
     now = time.time()
     if notifier is None or not is_armed() or not CFG.get("notify_on") or now - CRAWL["push_t"] < float(CFG.get("prealarm_cooldown", 120.0)):
         return False
@@ -234,6 +231,9 @@ def crawl_selftest():
     b = box(5.5, 0.4, 1.7); mm = crawl_measure(b, cam_h, pitch, vf, hf)
     seq = [crawl_decide(mm, b, True, True, t, st) for t in (0.0, 1.0, 2.0, 5.0, 6.0, 7.0, 8.0, 10.0, 11.5)]
     assert seq[:7] == ["pre"] * 7 and seq[-1] == "person", seq             # after the gap the 6 s count from 5.0
+    pk = push_kind({"event": "info", "info_title": "{name}: " + tr("Something big at the ground"),
+                    "text": trf("about {d} m, about {l} m long - a crawling person?", d=5, l="1.2")})
+    assert pk["ic"] == CRAWL_PK_TITLE[0] and pk["pic"] and pk["cls"] == "info", pk          # the short push form (635b)
     cut = crawl_measure((0.1, 0.8, 0.45, 0.2), cam_h, pitch, vf, hf)      # cut off at the lower edge: near, length an upper bound
     assert cut and cut["cut"] and cut["top"] is None and cut["d"] < 4.0 and cut["len"] > 1.0, cut
     return True

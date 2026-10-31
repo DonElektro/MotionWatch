@@ -18677,7 +18677,9 @@ class AIDetector:
             need = own_ai_thresholds(self.meta, float(CFG["ai_conf"]), 0.5)[self.meta["classes"].index("person")] \
                 if self.kind == "yolo" and "person" in (self.meta or {}).get("classes", []) else float(CFG["ai_conf"])
             low = (0.5 + (WEAK_AI_MIN - float(self.meta["conf"].get("person", 0.35)))) if self.kind == "yolo" else WEAK_AI_MIN
-            boxes, objects = self.infer(frame, min(float(CFG["ai_conf"]), low), CFG["object_conf"])
+            img_, k_ = ai_view(self, frame)                 # real-erk-e3: the own YOLO model sees the camera picture (418z)
+            boxes, objects = self.infer(img_, min(float(CFG["ai_conf"]), low), CFG["object_conf"])
+            boxes, objects = ai_unscale(boxes, k_), ai_unscale(objects, k_)
             self.weak = [(b[0] / w, b[1] / h, b[2] / w, b[3] / h, b[4]) for b in boxes if b[4] < need]
             self.weak_t = time.time()
             boxes = [b for b in boxes if b[4] >= need]
@@ -18689,23 +18691,12 @@ class AIDetector:
             note = STATE["ai_model_note"]; self.__init__(force_ssd=True); STATE["ai_model_note"] = note
             return self.boxes
         # 2.98.13: «KI-Lupe» - something small moves (a person far away, 20-30 pixels in the 300 x 300 picture of the AI):
-        # look at that part once more, enlarged. Far persons were found by the AI only rarely before.
-        if CFG.get("ai_zoom", True):
-            for hb in sorted(getattr(self, "hints", []), key=lambda b: -b[2] * b[3])[:1]:
-                if any(iou(hb, b[:4]) > 0.1 for b in boxes):
-                    continue
-                side = int(min(min(w, h), max(110, 3.2 * hb[3])))
-                cx, cy = hb[0] + hb[2] // 2, hb[1] + hb[3] // 2
-                x0 = max(0, min(w - side, cx - side // 2)); y0 = max(0, min(h - side, cy - side // 2))
-                crop = frame[y0:y0 + side, x0:x0 + side]
-                if crop.size == 0:
-                    continue
-                for a1, b1, bw, bh, conf in self.infer(crop, CFG["ai_conf"], 2.0)[0]:      # only persons
-                    bx = (x0 + a1, y0 + b1, max(1, bw), max(1, bh), conf)
-                    if bx[3] >= 0.6 * side and side > 0.8 * min(w, h):
-                        continue                               # the whole crop as one «person»: not trusted
-                    if not any(iou(bx[:4], b[:4]) > 0.3 for b in boxes):
-                        boxes.append(bx); STATE["ai_zoom_hits"] = STATE.get("ai_zoom_hits", 0) + 1
+        # look at that part once more, enlarged. real-erk-e3: also far movement without a track, with the camera pixels, the
+        # hints in turn, up to 4 tiles in one run with the own model (418z ai_zoom_run).
+        try:
+            boxes = ai_zoom_run(self, frame, boxes, w, h)
+        except Exception as e:                              # never break the camera loop because of the Lupe
+            log_event("ai", f"AI magnifier: {e}"[:160])
         self.boxes = boxes; self.objects = objects
         STATE["ai_ms"] = int((time.time() - t0) * 1000)
         STATE["ai_status"] = f"running · {STATE['ai_ms']} ms"
@@ -35572,6 +35563,7 @@ class MotionWatch:
                 self._reset_models()
             self._proc_size = (pw, ph)
             small = cv2.resize(frame, (pw, ph))
+            full_ = frame                                 # (the overlays below make new pictures - this one stays as it is)
             if TAMPER is not None:
                 TAMPER.feed(small, t0)
             if LENS is not None:
@@ -35613,6 +35605,7 @@ class MotionWatch:
             if CFG["detection_on"]:
                 g = self.preprocess(gray, rain_mode)
                 fg = self.foreground(g, small, rain_mode, wind_boost)
+                self.ai.full = full_                       # real-erk-e3: the camera pixels for the AI / the Lupe (418z)
                 ai_boxes = [b for b in self.ai.detect(small) if zone_box_ok(b, pw, ph, "person")]     # 2.98.13: zones by kind (066)
                 ai_objs = [o for o in self.ai.objects if zone_box_ok(o, pw, ph, "animal" if COCO_LABELS.get(o[5]) in ANIMALS else "other")]
                 rec_animals = [o for o in ai_objs if COCO_LABELS.get(o[5]) in ANIMALS]
@@ -35630,6 +35623,12 @@ class MotionWatch:
                 if any(b[2] * b[3] >= min_area for b in boxes):
                     present.add("prealarm")              # pre-alarm: anything at all moves in the picture (before it is judged to be a person)
                 raw_boxes = list(boxes)
+                try:                                        # real-erk-e3: small movement that comes back = a far hint of the Lupe (418z)
+                    zoom_far_feed(self.ai, [b for b in (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) < small_area)
+                                            if zone_box_ok(b, pw, ph, "person")],
+                                  small_area, self.tracker.tracks, pw, ph, t0, STATE.get("wind_level", "calm"))
+                except Exception as e:
+                    log_event("sys", f"AI magnifier: {e}"[:160])
                 # 2.98.13: a motion box over a quarter of the picture is no person (light change, turn) - it must not
                 # swallow the persons of the AI when merging
                 boxes = [b for b in boxes if b[2] * b[3] <= 0.25 * pw * ph] if ai_boxes else boxes
@@ -35791,7 +35790,10 @@ class MotionWatch:
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.42, col, 1, cv2.LINE_AA)
             warm_boxes = []
             th_pers = THERMAL is not None and not person_boxes and thermal_person_active()   # 2.98.13: persons in the thermal picture (232)
-            if (CFG["thermal_alarm"] or th_pers) and CFG["detection_on"] and THERMAL is not None:
+            # real-erk-e3: at night the crawling check needs the warm bodies also when a person box is there elsewhere (a fixed
+            # false «person» in the picture must not hide a crawling one, 418k)
+            th_crawl = THERMAL is not None and bool(person_boxes) and thermal_person_active() and _foot_night()
+            if (CFG["thermal_alarm"] or th_pers or th_crawl) and CFG["detection_on"] and THERMAL is not None:
                 warm_boxes = THERMAL.detect()                 # (x, y, w, h) 0..1 of the picture, already checked against the zones
             maybe_ = []
             if not person_boxes and CFG["detection_on"]:      # real-reh-fusspunkt: «Person?» - flat + weak AI + movement / warmth (232)
@@ -35799,9 +35801,14 @@ class MotionWatch:
                     maybe_ = weak_person_feed(self.ai, persons + candidates, warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0)
                 except Exception as e:
                     log_event("sys", f"Person?: {e}"[:160])
-            if (CFG["thermal_alarm"] or th_pers) and CFG["detection_on"] and THERMAL is not None:
+            if (CFG["thermal_alarm"] or th_pers or th_crawl) and CFG["detection_on"] and THERMAL is not None:
                 if th_pers and warm_boxes and not maybe_:                 # a «Person?» is there: no animal under it (232)
                     warm_boxes = thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, maybe_)
+                try:                                          # real-erk-e3: crawling at night - warm + moving + near (418k)
+                    cb_ = crawl_feed(warm_boxes, persons + candidates, rec_animals, person_boxes, present, frame, pw, ph, W, H, t0, self.notifier)
+                    warm_boxes = [b_ for b_ in warm_boxes if b_ not in cb_]    # «Person?» now, no longer «warm»
+                except Exception as e:
+                    log_event("sys", f"Crawling at night: {e}"[:160])
                 if not CFG["thermal_alarm"]:
                     warm_boxes = []
                 if warm_boxes:
@@ -37051,6 +37058,554 @@ def foot_selftest():
     return True
 
 SELFTEST_EXTRA.append(("Thermal picture: animal or person from the foot point (232)", foot_selftest))
+# ----------------------------------------------------------------------------
+# real-erk-e3 (31.10.2026, grosser Erkennungstest REAL_ERKENNUNG.md, Schwachstelle 3): nachts wurde nur 1 von 3 kriechenden /
+# geduckten Personen erkannt; auf dem Stellplatz robbte jemand auf 5 m gut sichtbar durchs Infrarot-Licht und MoveEye meldete
+# nur «Bewegung». Die KI kennt kaum liegende Menschen (COCO), das Wärmebild sah einen flachen warmen Körper - und die Reh-Regel
+# (232, real-reh-fusspunkt) nennt einen flachen warmen Körper am Boden nachts «Tier».
+# Neu (erweitert 232, ohne die Reh-Regel zu ändern): nachts ein warmer Körper (Wärmebild) an derselben Stelle wie Bewegung
+# (Kamera), NAH (Fusspunkt unter CRAWL_NEAR_M), am Boden (oberer Rand unter CRAWL_TOP_M) und GROSS (CRAWL_MIN_LEN_M lang, oder
+# kommt er gerade auf die Kamera zu: CRAWL_HEADON_W_M breit) gibt
+#   1. sofort den Voralarm «etwas Grosses am Boden» (Info): Eintrag im Protokoll, Browser-Voralarm, eine kurze Push-Nachricht
+#      mit Bild (Titel «Etwas Grosses am Boden», eigene Abkühlzeit prealarm_cooldown) - nur wenn der Schutz an ist,
+#   2. hält es CRAWL_ESC_S an (dieselbe Stelle, kurze Lücken erlaubt), war es dabei einmal LANG (CRAWL_MIN_LEN_M - von vorne
+#      sehen eine kriechende Person und ein schräg kommender Fuchs gleich breit aus), ist es niedrig (oberer Rand unter
+#      CRAWL_ESC_TOP_M) und hat die KI dort kein Tier gesehen: «PERSON? (KRIECHT)» = eine Person für die normale Alarm-Logik (Push, Aufnahme,
+#      Sirene). Die «Person?»-Regel von 2.98.95 (232 weak_person_feed: schwache KI + flach + Bewegung / Wärme) bleibt und
+#      greift oft schon früher - dann ist es sofort eine Person.
+# Kurzer Push-Text: Notifier.info mit Titel «{name}: Something big at the ground»; im Push-Format von 3.1.0 (635b push_short)
+# steht der Titel in PK_TITLES (eingetragen in 639x): «⚠ Etwas Grosses am Boden», eine Zeile «ca. 5 m, ca. 1.2 m lang – …», Bild.
+# Abgrenzung zu Tieren (Daniel: Igel und Fuchs sind kleiner und wärmer):
+#   - KLEINER ist das sichere Merkmal, darum die Länge: Igel 0.2-0.3 m, Katze ~0.45 m, Marder ~0.5 m, Feldhase ~0.55 m,
+#     Dachs ~0.75 m, Fuchs Kopf-Rumpf 0.6-0.9 m (Wildtier Schweiz; Körperlängen auch in simulator3d/scripts/waerme.gd ANIMALS);
+#     eine kriechende / robbende Person ist 1.2 m (auf Knien) bis 1.9 m (flach mit Armen vorne) lang -> CRAWL_MIN_LEN_M 1.0.
+#     Der Fuchsschwanz (0.35-0.45 m) ist im Wärmebild kühl (Fell, kaum durchblutet) und zählt kaum zur warmen Fläche.
+#   - WÄRMER ist im Wärmebild kein sicheres Merkmal: Fell-Oberfläche Fuchs bei 8 °C Luft ~17 °C, Igel ~19 °C, Kleider einer
+#     Person mit Jacke ~19 °C, Daunenjacke ~15 °C, das Gesicht 33 °C (waerme.gd nach McCafferty 2007 / ISO 9920). Ein kleines
+#     Tier ist zwar als GANZES warm (kein kalter Stoff), eine Person hat kühle Kleider und heisse Stellen - bei 80 x 62 Pixeln
+#     (Thermal-90, ~1.1° pro Pixel: ein Fuchs auf 5 m sind ~7 x 4 Pixel) lässt sich das nicht verlässlich messen. Darum keine
+#     Temperatur-Grenze; zu heiss (Motor, Feuer) fällt schon in 232 heraus (thermal_person_check: über 45 °C kein Mensch).
+#   - Reh / Wildschwein (0.95-1.35 m) sind so lang wie eine kriechende Person: sie bekommen den Voralarm («im Zweifel
+#     Person», es ist nur eine Info), aber KEIN «Person?»: ein stehendes Reh ist mit Kopf 0.9-1.1 m hoch, ein Wildschwein
+#     0.8-0.95 m (Schulter 0.55-1.0 m) - über CRAWL_ESC_TOP_M 0.85; eine robbende Person ist 0.3-0.5 m hoch, auf Knien ~0.75 m.
+#     Rest-Risiko: ein äsendes Reh (Kopf unten, Rücken ~0.75 m) 6 s nahe am Zelt - dann «Person?» (Daniel: im Zweifel Person).
+#   - sieht die KI dort ein Tier (dog, sheep, cat, horse, cow, bird, animal), gibt es kein «Person?» (nur den Voralarm).
+# Gegenprobe Wind (leerer Wald): ohne warmen Körper nichts (Äste sind im Wärmebild Lufttemperatur) - ohne Wärmebild-Kamera
+# ist die Regel aus. Tags gilt sie nicht (Tags sieht die KI liegende Menschen besser, und Sonne wärmt den Boden).
+# Selbsttest: crawl_selftest (Fuchs, Igel, Reh, Wildschwein, kriechende Person seitlich und von vorne, Tag, zu weit, ohne Bewegung).
+# ----------------------------------------------------------------------------
+CRAWL_NEAR_M = 8.0       # «nah»: unter 8 m (Erkennungstest: Kriechende auf 5-7 m; das Infrarot-Licht reicht ~8-10 m, dahinter
+                         # sieht die Kamera keine Bewegung mehr am Boden)
+CRAWL_MIN_LEN_M = 1.0    # «gross»: mindestens 1.0 m lang (Fuchs höchstens 0.9 m ohne Schwanz, Person kriechend 1.2-1.9 m)
+CRAWL_HEADON_W_M = 0.4   # von vorne (kommt näher): Schulterbreite einer Person 0.4-0.5 m (mit Armen mehr); Fuchs / Reh von vorne
+                         # 0.15-0.35 m - nur zusammen mit «kommt näher» (CRAWL_COMING_M), sonst ist ein seitlicher Fuchs 0.6 m auch breit
+CRAWL_COMING_M = 0.5     # «kommt auf die Kamera zu»: der Fusspunkt ist seit dem ersten Bild mindestens 0.5 m näher gekommen
+CRAWL_TOP_M = 1.1        # «am Boden»: der obere Rand liegt unter 1.1 m (wie FOOT_ANIMAL_MAX_H_M der Reh-Regel; stehend > 1.45 m)
+CRAWL_FLAT = 1.0         # und es ist nicht aufrecht: echte Höhe / echte Länge höchstens 1.0 (Aufrechte prüft 232 als Person)
+CRAWL_ESC_S = 6.0        # «hält an»: 6 s an derselben Stelle (kriechend 0.2-0.5 m/s = 1-3 m; ein Tier, das vorbeiläuft, ist weg)
+CRAWL_GAP_S = 2.0        # Lücken bis 2 s gehören dazu (das Wärmebild meldet 3 von 5 Bildern, die KI / Bewegung setzt aus)
+CRAWL_SAME = 0.2         # «dieselbe Stelle»: Mitte / Fusspunkt höchstens 0.2 Bildbreite / -höhe vom letzten Bild entfernt
+CRAWL_ESC_TOP_M = 0.85   # «Person?» nur niedrig: robbend 0.3-0.5 m, auf Knien ~0.75 m; Reh mit Kopf 0.9-1.1 m, Wildschwein 0.8-0.95 m
+CRAWL_REPEAT_S = 30.0    # ein neuer Voralarm (Protokoll / Push) frühestens nach 30 s Ruhe - nicht in jedem Bild
+CRAWL = {"since": 0.0, "last": 0.0, "pos": None, "d0": None, "esc": False, "long": False, "said": 0.0, "push_t": 0.0, "n_pre": 0, "n_esc": 0, "info": None}
+CRAWL_PK_TITLE = ("⚠", "Something big at the ground", "info", True)    # (symbol, short title, class, picture) for 635b PK_TITLES
+
+
+def crawl_measure(box, cam_h=None, pitch=None, vf=None, hf=None):
+    """{"d": foot distance m, "len": real length m, "top": height of the upper edge m or None, "cut": feet cut off} of a warm
+    body (x, y, w, h 0..1 of the main picture) on flat ground - or None (feet at the horizon / too far up)"""
+    x, y, w, h = box
+    hf = cam_fov()[0] if hf is None else float(hf)
+    cut = y + h > 0.985
+    fe = foot_estimate((x, y, w, (0.98 - y) if cut else h), cam_h, pitch, vf)
+    if fe is None:
+        return None
+    d = fe[0]                                            # cut off at the lower edge: it is NEARER than the lowest row - an upper
+    ln = w * 2.0 * d * math.tan(math.radians(hf) / 2.0)  # bound for the distance and the length (the safe side: more «big»)
+    return {"d": d, "len": ln, "top": None if cut else max(0.0, fe[1]), "cut": cut}
+
+
+def crawl_decide(m, box, night, moving, t0, st=None, animal=False):
+    """the decision without the camera (self-test): None / "pre" (Voralarm «something big at the ground») / "person" («Person?»).
+    m = crawl_measure, box = (x, y, w, h) 0..1, moving = movement of the camera at the same place, animal = the AI sees an
+    animal there. st = the state (CRAWL)."""
+    st = CRAWL if st is None else st
+    if not night or not moving or m is None or m["d"] > CRAWL_NEAR_M:
+        return None
+    top = m["top"]
+    if top is not None and (top > CRAWL_TOP_M or top / max(0.05, m["len"]) > CRAWL_FLAT):
+        return None                                      # not at the ground / upright (upright warm bodies: 232)
+    cx, fy = box[0] + box[2] / 2.0, box[1] + box[3]
+    same = st["pos"] is not None and t0 - st["last"] <= CRAWL_GAP_S and abs(cx - st["pos"][0]) <= CRAWL_SAME and abs(fy - st["pos"][1]) <= CRAWL_SAME
+    if not same:                                         # a new thing (or after a gap): start again
+        st.update(since=t0, d0=m["d"], esc=False, long=False)
+    st.update(pos=(cx, fy), last=t0)
+    long_ = m["len"] >= CRAWL_MIN_LEN_M
+    st["long"] = bool(st.get("long")) or long_
+    if not (long_ or (m["len"] >= CRAWL_HEADON_W_M and st["d0"] - m["d"] >= CRAWL_COMING_M)):
+        return None                                      # small (fox, hedgehog, cat) - or turned for a moment: no alarm now
+    low = top is None or top <= CRAWL_ESC_TOP_M
+    # «Person?» only when it was LONG at least once (from the front a crawling person and a fox coming diagonally look alike:
+    # 0.55 vs 0.6-0.7 m wide - then only the Voralarm; the «Person?» rule of 232 / turning sideways decides)
+    if (st["esc"] or (t0 - st["since"] >= CRAWL_ESC_S and low and st["long"])) and not animal:
+        st["esc"] = True
+        return "person"
+    return "pre"
+
+
+def crawl_push(notifier, frame, d, ln):
+    """the short push «Something big at the ground» (info, with a small picture) - only with the protection on, own cool-down"""
+    now = time.time()
+    if notifier is None or not is_armed() or not CFG.get("notify_on") or now - CRAWL["push_t"] < float(CFG.get("prealarm_cooldown", 120.0)):
+        return False
+    jpg = None
+    if frame is not None and CFG.get("prealarm_photo", True):
+        h_, w_ = frame.shape[:2]
+        sm = cv2.resize(frame, (640, int(h_ * 640 / w_)), interpolation=cv2.INTER_AREA) if w_ > 640 else frame
+        ok, buf = cv2.imencode(".jpg", sm, [cv2.IMWRITE_JPEG_QUALITY, 70])
+        jpg = buf.tobytes() if ok else None
+    txt = trf("about {d} m, about {l} m long - a crawling person?", d=dist_round(d), l=f"{ln:.1f}")
+    if notifier.info(txt, title="{name}: " + tr("Something big at the ground"), jpg=jpg, fname="prealarm.jpg"):
+        CRAWL["push_t"] = now
+        return True
+    return False
+
+
+def crawl_feed(warm_boxes, tracks, animals, person_boxes, present, frame, pw, ph, W, H, t0, notifier=None):
+    """410, at night: warm bodies (0..1) that are not under a person box already at the same place as movement (tracks / candidates, working
+    picture) -> Voralarm or «Person?» (person_boxes). Returns the boxes that became «Person?» (0..1)."""
+    STATE["crawl"] = 0
+    if not warm_boxes:
+        return []
+    night = _foot_night()
+    if not night:
+        return []
+    if person_boxes:                                     # a person elsewhere (maybe a fixed false one): only the warm bodies beside it
+        pb = [(b[0] / pw, b[1] / ph, b[2] / pw, b[3] / ph) for b in person_boxes]
+        warm_boxes = [b for b in warm_boxes if not any(_ov(b, q) > 0.3 for q in pb)]
+    mv = [(t.box[0] / pw, t.box[1] / ph, t.box[2] / pw, t.box[3] / ph) for t in tracks if getattr(t, "box", None) and not getattr(t, "lost", 0)]
+    an = [(o[0] / pw, o[1] / ph, o[2] / pw, o[3] / ph) for o in animals or []]
+    best = None
+    for b in warm_boxes:
+        moving = any(_ov(b, q) > 0.3 for q in mv)
+        if not moving:
+            continue
+        try:
+            m = crawl_measure(b)
+        except Exception:
+            m = None
+        if m is None:
+            continue
+        if best is None or m["len"] > best[1]["len"]:
+            best = (b, m, any(_ov(b, q) > 0.3 for q in an))
+    if best is None:
+        return []
+    b, m, animal = best
+    c = crawl_decide(m, b, night, True, t0, CRAWL, animal)
+    if c is None:
+        return []
+    CRAWL["info"] = {"d": round(m["d"], 1), "len": round(m["len"], 2), "top": None if m["top"] is None else round(m["top"], 2), "cut": m["cut"], "what": c}
+    bx, by, bw, bh = b
+    p1 = (int(bx * W), int(by * H)); p2 = (int((bx + bw) * W), int((by + bh) * H))
+    near = f"~{dist_round(m['d'])}m" if not m["cut"] else f"<{dist_round(m['d'])}m"
+    if c == "pre":
+        STATE["crawl"] = 1
+        present.add("prealarm")
+        cv2.rectangle(frame, p1, p2, (0, 165, 255), 2)
+        cv2.putText(frame, f"BIG AT THE GROUND? {near} {m['len']:.1f}m", (p1[0], max(18, p1[1] - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 165, 255), 2)
+        if t0 - CRAWL["said"] > CRAWL_REPEAT_S:
+            CRAWL["said"] = t0; CRAWL["n_pre"] += 1
+            log_event("person", f"Something big at the ground, {near.lstrip('~')}, about {m['len']:.1f} m long - warm and moving "
+                                f"(night): a crawling person? (pre-alarm)")
+            push_alert("prealarm", "crawl", source=STATE.get("source_label", ""))
+            try:
+                crawl_push(notifier, frame, m["d"], m["len"])
+            except Exception as e:
+                log_event("sys", f"Push «something big at the ground»: {e}"[:160])
+        return []
+    STATE["crawl"] = 2
+    person_boxes.append((int(bx * pw), int(by * ph), max(1, int(bw * pw)), max(1, int(bh * ph))))
+    present.add("person")
+    cv2.rectangle(frame, p1, p2, (60, 0, 255), 3)
+    cv2.putText(frame, f"PERSON? (CRAWLING) {near}", (p1[0], max(18, p1[1] - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (60, 0, 255), 2)
+    if not CRAWL.get("esc_said") or t0 - CRAWL.get("esc_said", 0.0) > CRAWL_REPEAT_S:
+        CRAWL["n_esc"] += 1
+        log_event("person", f"Person? crawling - something big, warm and moving at the ground for {CRAWL_ESC_S:.0f} s, "
+                            f"{near.lstrip('~')}, about {m['len']:.1f} m long")
+    CRAWL["esc_said"] = t0
+    return [b]
+
+
+def crawl_selftest():
+    """fox, hedgehog, roe deer, wild boar, crawling person from the side and from the front, by day, too far, without movement.
+    Camera 1.6 m high, 6° down, head camera of the simulator (field of view of this camera) - boxes from the flat-ground geometry."""
+    vf, cam_h, pitch = erk_vfov(), 1.6, -6.0
+    hf = cam_fov()[0]
+    k = math.tan(math.radians(vf) / 2.0)
+
+    def box(dist, height, length, cx=0.5):
+        def row(z):
+            return 0.5 + math.tan(math.atan((cam_h - z) / dist) + math.radians(pitch)) / (2.0 * k)
+        y0, y1 = row(height), row(0.0)
+        w = length / (2.0 * dist * math.tan(math.radians(hf) / 2.0))
+        return (cx - w / 2.0, y0, w, y1 - y0)
+
+    def run(seq, night=True, moving=True, animal=False, dt=0.5):
+        """seq = [(dist, height, length)], one picture each dt s -> the decisions"""
+        st = {"since": 0.0, "last": 0.0, "pos": None, "d0": None, "esc": False, "long": False}
+        out = []
+        for n, (dist, height, length) in enumerate(seq):
+            b = box(dist, height, length)
+            out.append(crawl_decide(crawl_measure(b, cam_h, pitch, vf, hf), b, night, moving, 100.0 + dt * n, st, animal))
+        return out
+    m = crawl_measure(box(5.0, 0.4, 1.7), cam_h, pitch, vf, hf)
+    assert m and abs(m["d"] - 5.0) < 0.3 and abs(m["len"] - 1.7) < 0.15 and abs(m["top"] - 0.4) < 0.1, m
+    crawl = [(5.5 - 0.1 * i, 0.4, 1.7) for i in range(16)]               # robbing from the side, 0.2 m/s, 8 s
+    r = run(crawl)
+    assert r[0] == "pre" and r[-1] == "person" and r.index("person") == 12, r      # Voralarm at once, «Person?» after 6 s
+    assert run(crawl, night=False) == [None] * 16                          # by day: not this rule
+    assert run(crawl, moving=False) == [None] * 16                         # warm but nothing moves (a warm stone, a sleeper)
+    assert set(run(crawl, animal=True)) == {"pre"}                         # the AI sees an animal there: only the Voralarm
+    knees = [(6.0 - 0.1 * i, 0.75, 1.2) for i in range(16)]                # on hands and knees, 0.75 m high
+    assert run(knees)[-1] == "person"
+    assert run([(10.0, 0.4, 1.7)] * 16) == [None] * 16                     # 10 m: too far for this rule
+    fox = [(5.0, 0.45, 0.8)] * 16                                         # fox from the side 0.8 m, 0.45 m high, walks across
+    hedgehog = [(3.0 - 0.05 * i, 0.15, 0.25) for i in range(16)]
+    assert set(run(fox)) == {None} and set(run(hedgehog)) == {None}, (run(fox), run(hedgehog))
+    fox_front = [(7.0 - 0.3 * i, 0.45, 0.2) for i in range(16)]           # fox straight at the camera: 0.2 m wide
+    assert set(run(fox_front)) == {None}
+    fox_diag = [(7.0 - 0.3 * i, 0.45, 0.65) for i in range(16)]           # fox coming diagonally (0.65 m wide): never «Person?»
+    assert "person" not in run(fox_diag)
+    front = [(7.5 - 0.15 * i, 0.4, 0.55) for i in range(16)]              # a person crawling straight at the camera, 0.55 m wide
+    rf = run(front)
+    assert rf[0] is None and "pre" in rf and "person" not in rf, rf       # Voralarm once it came 0.5 m nearer …
+    rt = run(front + [(5.0, 0.4, 1.6)] * 2)                               # … «Person?» once it is seen long (turns sideways)
+    assert rt[-1] == "person", rt
+    deer = [(6.0 - 0.1 * i, 1.0, 1.3) for i in range(16)]                  # roe deer, head up 1.0 m: Voralarm, never «Person?»
+    boar = [(6.0 - 0.1 * i, 0.9, 1.3) for i in range(16)]
+    assert set(run(deer)) == {"pre"} and set(run(boar)) == {"pre"}, (run(deer), run(boar))
+    assert run([(6.0, 1.75, 0.5)] * 4) == [None] * 4                       # standing person: upright - 232 does it
+    gap = [(5.5, 0.4, 1.7)] * 6 + [(5.5, 0.4, 1.7)] * 10                  # 3 s gap after the 6th picture: starts again
+    st = {"since": 0.0, "last": 0.0, "pos": None, "d0": None, "esc": False, "long": False}
+    b = box(5.5, 0.4, 1.7); mm = crawl_measure(b, cam_h, pitch, vf, hf)
+    seq = [crawl_decide(mm, b, True, True, t, st) for t in (0.0, 1.0, 2.0, 5.0, 6.0, 7.0, 8.0, 10.0, 11.5)]
+    assert seq[:7] == ["pre"] * 7 and seq[-1] == "person", seq             # after the gap the 6 s count from 5.0
+    pk = push_kind({"event": "info", "info_title": "{name}: " + tr("Something big at the ground"),
+                    "text": trf("about {d} m, about {l} m long - a crawling person?", d=5, l="1.2")})
+    assert pk["ic"] == CRAWL_PK_TITLE[0] and pk["pic"] and pk["cls"] == "info", pk          # the short push form (635b)
+    cut = crawl_measure((0.1, 0.8, 0.45, 0.2), cam_h, pitch, vf, hf)      # cut off at the lower edge: near, length an upper bound
+    assert cut and cut["cut"] and cut["top"] is None and cut["d"] < 4.0 and cut["len"] > 1.0, cut
+    return True
+
+
+SELFTEST_EXTRA.append(("Crawling at night: «something big at the ground», then «Person?» (418k)", crawl_selftest))
+# ----------------------------------------------------------------------------
+# real-erk-e3 (31.10.2026, grosser Erkennungstest REAL_ERKENNUNG.md, Schwachstelle 8): im Schattwald fand MoveEye stehende /
+# gehende Personen nur auf 5 von 15 Plätzen, nie über 10 m (offener Stellplatz: 13 von 14 bis 25 m). Drei Gründe im Code:
+#   1. Die KI sah nur das kleine Arbeitsbild (proc_width, ab Werk 480 px). Das eigene YOLO-Modell (Eingang 640 px) bekam es
+#      VERGRÖSSERT (480 -> 640: keine Einzelheit mehr), die «KI-Lupe» (2.98.13) schnitt ihre Kachel aus demselben 480-px-Bild.
+#      Jetzt nehmen beide das Kamerabild selbst (Kopfkamera des Simulators 960 x 540, Camera Module 3 je nach Einstellung):
+#      ai_view gibt dem YOLO-Modell das ganze Kamerabild (es verkleinert selbst auf seinen Eingang: 960 -> 640 = 1.33 x mehr
+#      Pixel pro Person als vorher, gleiche Rechenzeit), die Lupe schneidet ihre Kachel aus dem Kamerabild (2 x mehr Pixel).
+#      Das Standardmodell SSD (300 x 300) bekommt wie bisher das Arbeitsbild (mehr Pixel bringen ihm nichts), aber auch seine
+#      Lupe-Kachel aus dem Kamerabild. In der Infrarot-Nacht (AI_FULL_MIN_BRIGHT) bleibt alles beim Arbeitsbild (Rauschen).
+#   2. Eine Person ab ~12 m bewegt im Wald (Stämme, Schatten) nur kleine Flecken, kleiner als die Mindestfläche einer Spur
+#      (min_area, mit Empfindlichkeit / Wind): keine Spur -> kein Hinweis -> keine Lupe. Jetzt ist auch kleine Bewegung ein
+#      Hinweis («weit»), wenn sie am selben Ort wiederkommt (ZOOM_FAR_N in ZOOM_FAR_S) und noch kein KI-Kasten dort ist.
+#   3. Die Lupe nahm immer den GRÖSSTEN Hinweis - im Wald mit Wind ist das fast immer ein Ast. Jetzt kommen die Hinweise der
+#      Reihe nach dran (der am längsten nicht angeschaute zuerst), ein offener Treffer (Bestätigung) hat Vorrang.
+# Gegen Fehlalarme (leerer Wald mit Wind): eine Person der Lupe auf einem «weiten» Hinweis (ohne Spur) zählt erst, wenn ein
+# zweiter Lupe-Lauf sie am selben Ort wieder findet (ZOOM_CONFIRM_S), und nur aufrecht (ZOOM_UPRIGHT, weit weg geht oder steht
+# eine Person); bei starkem Wind / Sturm (Wind-Messung 190) gibt es keine «weiten» Hinweise (da bewegt sich alles - so viel wie
+# vorher, nicht weniger: vorher gab es sie gar nicht). Hinweise aus Spuren zählen wie bisher sofort.
+# Leistung (Pi 5): weiterhin höchstens EIN zusätzlicher KI-Lauf pro KI-Lauf, nur wenn es einen Hinweis gibt; «weite» Hinweise
+# nur bei jedem ZOOM_FAR_EVERY-ten KI-Lauf. Mit dem YOLO-Modell kommen bis zu 4 Kacheln in EINEN Lauf (2 x 2, je 320 px).
+# Der Takt der KI (180: Pause = 2 x Laufzeit, heiss / Akku langsamer) enthält die Lupe, die Kamera-Schleife bleibt geschützt.
+#
+# Grössere KI-Eingabe (960 px) geprüft - NICHT eingebaut, nur der Zoom:
+#   - Das ONNX-Modell hat einen festen Eingang (ki_training/trainieren.py: export dynamic=False, imgsz 320; Testmodell 640).
+#     960 px hiesse ein eigenes Modell, das mit --imgsz 960 trainiert / exportiert wird (Einstellung gäbe es dafür keine).
+#   - Rechenzeit: YOLOv8n 8.7 GFLOPs bei 640 px, bei 960 px 2.25 x so viel (19.6). Gemessen mit OpenCV-DNN (cv2 5.0, wie am
+#     Pi): 640 px 325 ms auf diesem Entwicklungsrechner (2 Kerne, Last ~5). Ultralytics «Raspberry Pi 5» Benchmark YOLOv8n
+#     640 px ONNX ~120-130 ms (onnxruntime, 4 Kerne); OpenCV-DNN ist erfahrungsgemäss 1.5-2 x langsamer -> Pi 5 ~200-250 ms
+#     bei 640, ~450-560 ms bei 960. Die KI läuft in der Kamera-Schleife: ein Lauf von 0.5 s hält das Bild eine halbe Sekunde
+#     an - bei 10-15 Bildern/s (66-100 ms pro Bild) fehlen dann 5-8 Bilder pro KI-Lauf, die Bewegungs-Erkennung (Spuren,
+#     Voralarm) leidet. Darum: kein 960-Modell, sondern die Lupe mit den echten Kamera-Pixeln (Kachel 110 px Arbeitsbild =
+#     220 px Kamerabild -> 640 px Eingang: 2.9 x vergrössert, wie ein 1800-px-Modell an dieser Stelle).
+# Schalter: der bestehende «KI-Lupe» (ai_zoom, KI-Erkennung) - kein neuer Regler. Selbsttest: zoom_selftest.
+# ----------------------------------------------------------------------------
+ZOOM_FAR_MIN = 0.00025   # kleinste Bewegung als Hinweis (Anteil am Arbeitsbild; 480 x 270: 32 px², z. B. 4 x 8 px). Eine
+                         # Person auf 25 m ist mit der Kopfkamera (41° hoch) ~24 x 7 px gross; Rauschen einzelner Pixel ist kleiner.
+ZOOM_FAR_N, ZOOM_FAR_S = 3, 2.0    # «kommt am selben Ort wieder»: 3 Bilder mit Bewegung in derselben Zelle in 2 s (bei 2 Bildern/s
+                         # im Simulator 3 von 4 Bildern; ein einzelnes Flackern / Rauschen kommt nicht 3 x an denselben Ort)
+ZOOM_GRID = (16, 9)      # Zellen des Arbeitsbilds für «am selben Ort» (480 x 270: 30 x 30 px = auf 20 m etwa 1.5 m)
+ZOOM_FAR_MAX = 8         # höchstens so viele «weite» Hinweise auf einmal (Wind: viele - es kommen ohnehin nur 4 pro Lauf dran)
+ZOOM_FAR_EVERY = 2       # «weite» Hinweise nur bei jedem 2. KI-Lauf: höchstens +50 % KI-Zeit im Mittel (Hinweise aus Spuren wie bisher)
+ZOOM_CONFIRM_S = 5.0     # ein Lupe-Treffer auf einem «weiten» Hinweis zählt erst, wenn ein zweiter Lauf ihn in 5 s am selben Ort findet
+                         # (eine gehende Person auf 20 m legt in 5 s ~7 m zurück = ~100 px - darum «am selben Ort» grosszügig, s. unten)
+ZOOM_UPRIGHT = 1.2       # weit weg: nur ein aufrechter Kasten (Höhe >= 1.2 x Breite) - gehend ~2.5, stehend ~3.5; Äste / Büsche quer
+ZOOM_TILES_YOLO = 4      # mit dem eigenen YOLO-Modell: bis 4 Kacheln in einem Lauf (2 x 2), mit SSD (300 px) nur eine
+AI_FULL_MIN_BRIGHT = 30  # die Kamera-Pixel nur, wenn das Bild nicht Infrarot-Nacht ist (mittlere Helligkeit des Arbeitsbilds ab 30).
+                         # Gemessen mit den Bildern des Erkennungstests (test-coco640): Tag / Dämmerung (Helligkeit 38-190) mit den
+                         # Kamera-Pixeln gleich gut oder besser (Kind 0.40 -> 0.54, Wald Dämmerung 0.33 -> 0.47, eine gehende
+                         # Person neu 0.44); Infrarot-Nacht (19-22) schlechter (Stellplatz gehend 0.66 -> nichts, Kind 0.38 ->
+                         # nichts): das Rauschen der hohen Verstärkung - das Verkleinern auf 480 px mittelt es weg (wie bisher).
+ZOOM = {"seen": {}, "far": [], "looked": {}, "pend": [], "runs": 0, "far_hits": 0, "pend_n": 0}
+
+
+def ai_view(ai, frame):
+    """(picture for the main AI run, scale picture / working picture): the own YOLO model gets the camera picture itself when it
+    is bigger than the working picture (it letterboxes to its input anyway), SSD the working picture as before"""
+    full = ai_full(ai, frame)
+    if ai.kind != "yolo" or full is frame:
+        return frame, 1.0
+    return full, full.shape[1] / float(frame.shape[1])
+
+
+def ai_full(ai, frame):
+    """the camera picture for the AI when it is bigger than the working picture and it is not an infrared night (noise), else
+    the working picture itself"""
+    full = getattr(ai, "full", None)
+    if full is None or full.shape[1] <= frame.shape[1] or float(STATE.get("brightness") or 0) < AI_FULL_MIN_BRIGHT:
+        return frame
+    return full
+
+
+def ai_unscale(boxes, k, n=4):
+    """boxes of the camera picture back into the working picture (the first n values are x, y, w, h)"""
+    if k == 1.0:
+        return boxes
+    return [tuple(int(round(v / k)) if i < 4 else v for i, v in enumerate(b)) for b in boxes]
+
+
+def _zcell(b, pw, ph):
+    return (int((b[0] + b[2] / 2.0) * ZOOM_GRID[0] / max(1, pw)), int((b[1] + b[3] / 2.0) * ZOOM_GRID[1] / max(1, ph)))
+
+
+def zoom_far_feed(ai, boxes, small_area, tracks, pw, ph, t0, wind_level="calm"):
+    """410, every picture: movement boxes (x, y, w, h of the working picture) smaller than a track that come back at the same
+    place become «far» hints of the Lupe (ai.far). Not in strong wind / storm, not where a track or an AI box already is."""
+    seen = ZOOM["seen"]
+    if wind_level in ("strong", "storm"):
+        seen.clear(); ai.far = []; return []
+    amin = ZOOM_FAR_MIN * pw * ph
+    taken = [t.box for t in tracks if not getattr(t, "lost", 0)] + [b[:4] for b in getattr(ai, "boxes", []) or []]
+    for b in boxes:
+        a = b[2] * b[3]
+        if a < amin or a >= small_area or any(iou(b, tb) > 0.05 for tb in taken):
+            continue
+        c = _zcell(b, pw, ph)
+        dq = seen.get(c)
+        if dq is None:
+            dq = seen[c] = deque(maxlen=12)
+        dq.append((t0, tuple(int(v) for v in b[:4])))
+    for c in list(seen):
+        dq = seen[c]
+        while dq and t0 - dq[0][0] > ZOOM_FAR_S:
+            dq.popleft()
+        if not dq:
+            del seen[c]
+    # a cell and its 8 neighbours together (a far person walks from cell to cell: ~25 px/s at 20 m, a cell is 30 px);
+    # the strongest place first, its neighbours are then the same place
+    tot = {c: sum(len(seen.get((c[0] + dx, c[1] + dy), ())) for dx in (-1, 0, 1) for dy in (-1, 0, 1)) for c in seen}
+    out, used = [], []
+    for c in sorted(tot, key=lambda c: (-tot[c], -seen[c][-1][0])):
+        if tot[c] < ZOOM_FAR_N or any(abs(c[0] - u[0]) <= 1 and abs(c[1] - u[1]) <= 1 for u in used):
+            continue
+        used.append(c); out.append((tot[c], seen[c][-1][1]))
+    ai.far = [b for _n, b in sorted(out, key=lambda o: -o[0])[:ZOOM_FAR_MAX]]
+    return ai.far
+
+
+def zoom_pick(track_hints, far_hints, boxes, now, k_max, far_ok):
+    """the hints for this Lupe run: [(box, kind)] - open far hits (to confirm) first, then the track hints (biggest first, as
+    before), then the far hints, each in turn by «looked at longest ago»; never where the AI already has a person box"""
+    cand = []
+    ZOOM["pend"] = [p for p in ZOOM["pend"] if now - p[0] <= ZOOM_CONFIRM_S]
+    for p in ZOOM["pend"]:
+        cand.append((p[2], "far"))                        # the box of the open hit (its tile is made around it again)
+    for hb in sorted(track_hints, key=lambda b: -b[2] * b[3]):
+        cand.append((tuple(hb[:4]), "track"))
+    if far_ok:
+        lk = ZOOM["looked"]
+        for hb in sorted(far_hints, key=lambda b: lk.get((b[0] // 24, b[1] // 24), 0.0)):
+            cand.append((tuple(hb[:4]), "far"))
+    out = []
+    for hb, kind in cand:
+        if any(iou(hb, b[:4]) > 0.1 for b in boxes) or any(iou(hb, o[0]) > 0.3 for o in out):
+            continue
+        out.append((hb, kind))
+        if len(out) >= k_max:
+            break
+    for hb, kind in out:
+        ZOOM["looked"][(hb[0] // 24, hb[1] // 24)] = now
+    if len(ZOOM["looked"]) > 400:
+        ZOOM["looked"] = {k: v for k, v in ZOOM["looked"].items() if now - v < 30.0}
+    return out
+
+
+def zoom_tile(hb, w, h):
+    """the square tile (x0, y0, side) around a hint in the working picture (w x h): 3.2 x its height, at least 110 px (2.98.13)"""
+    side = int(min(min(w, h), max(110, 3.2 * hb[3])))
+    cx, cy = hb[0] + hb[2] // 2, hb[1] + hb[3] // 2
+    return max(0, min(w - side, cx - side // 2)), max(0, min(h - side, cy - side // 2)), side
+
+
+def zoom_accept(bx, kind, now, side, wh):
+    """a person box of the Lupe (working picture): True = counts now. Track hints at once (as before); far hints only upright
+    and when a second run finds it at the same place (the first hit waits in ZOOM["pend"] and is looked at first next time)"""
+    if bx[3] >= 0.6 * side and side > 0.8 * wh:
+        return False                                     # the whole tile as one «person»: not trusted (2.98.13)
+    if kind != "far":
+        return True
+    if bx[3] < ZOOM_UPRIGHT * bx[2]:
+        return False
+    cx, cy = bx[0] + bx[2] / 2.0, bx[1] + bx[3] / 2.0
+    for p in ZOOM["pend"]:
+        q = p[2]
+        if now - p[0] <= ZOOM_CONFIRM_S and now - p[0] > 0.05 and abs(cx - (q[0] + q[2] / 2.0)) < max(side * 0.6, 3 * q[2]) \
+                and abs(cy - (q[1] + q[3] / 2.0)) < max(side * 0.4, q[3]):
+            ZOOM["pend"].remove(p)
+            ZOOM["far_hits"] += 1
+            return True
+    ZOOM["pend"].append((now, (int(cx - side / 2), int(cy - side / 2), side, side), tuple(bx[:4])))
+    ZOOM["pend_n"] += 1
+    return False
+
+
+def ai_zoom_run(ai, frame, boxes, w, h, now=None):
+    """the «KI-Lupe» (2.98.13, extended real-erk-e3): look at the hints once more, enlarged, with the pixels of the camera
+    picture. Adds the persons found to boxes (working picture) and returns boxes."""
+    if not CFG.get("ai_zoom", True):
+        return boxes
+    now = time.time() if now is None else now
+    ZOOM["runs"] += 1
+    full = ai_full(ai, frame)
+    k = full.shape[1] / float(w)
+    yolo = ai.kind == "yolo"
+    picks = zoom_pick(getattr(ai, "hints", []) or [], getattr(ai, "far", []) or [], boxes, now,
+                      ZOOM_TILES_YOLO if yolo else 1, ZOOM["runs"] % ZOOM_FAR_EVERY == 0 or bool(ZOOM["pend"]))
+    if not picks:
+        return boxes
+    tiles = []
+    for hb, kind in picks:
+        x0, y0, side = zoom_tile(hb, w, h)
+        fx0, fy0, fs = int(x0 * k), int(y0 * k), int(side * k)
+        crop = full[fy0:fy0 + fs, fx0:fx0 + fs]
+        if crop.size:
+            tiles.append((x0, y0, side, crop, kind))
+    if not tiles:
+        return boxes
+    found = []                                           # (x, y, w, h, conf) of the working picture, kind, side
+    if yolo and len(tiles) > 1:                          # 2 x 2 in one run: each tile 320 px of the 640 px input
+        n = int(ai.meta["input"]); q = n // 2
+        mos = np.full((n, n, 3), 114, np.uint8)
+        for i, (x0, y0, side, crop, kind) in enumerate(tiles):
+            mos[(i // 2) * q:(i // 2) * q + q, (i % 2) * q:(i % 2) * q + q] = cv2.resize(crop, (q, q), interpolation=cv2.INTER_LINEAR)
+        for a1, b1, bw, bh, conf in ai.infer(mos, CFG["ai_conf"], 2.0)[0]:      # only persons
+            i = int(b1 + bh / 2.0) // q * 2 + int(a1 + bw / 2.0) // q
+            if i >= len(tiles):
+                continue
+            ox, oy = (i % 2) * q, (i // 2) * q
+            if a1 < ox - 4 or b1 < oy - 4 or a1 + bw > ox + q + 4 or b1 + bh > oy + q + 4:
+                continue                                 # crosses the border of its tile: half of two pictures
+            x0, y0, side, _c, kind = tiles[i]
+            s = side / float(q)
+            found.append(((x0 + (a1 - ox) * s, y0 + (b1 - oy) * s, max(1, bw * s), max(1, bh * s), conf), kind, side))
+    else:
+        for x0, y0, side, crop, kind in tiles:
+            s = side / float(crop.shape[1])
+            for a1, b1, bw, bh, conf in ai.infer(crop, CFG["ai_conf"], 2.0)[0]:
+                found.append(((x0 + a1 * s, y0 + b1 * s, max(1, bw * s), max(1, bh * s), conf), kind, side))
+    for bx, kind, side in found:
+        bx = (int(bx[0]), int(bx[1]), max(1, int(bx[2])), max(1, int(bx[3])), bx[4])
+        if any(iou(bx[:4], b[:4]) > 0.3 for b in boxes):
+            continue
+        if zoom_accept(bx, kind, now, side, min(w, h)):
+            boxes.append(bx); STATE["ai_zoom_hits"] = STATE.get("ai_zoom_hits", 0) + 1
+    STATE["ai_zoom"] = {"tiles": len(tiles), "far": len(getattr(ai, "far", []) or []), "far_hits": ZOOM["far_hits"], "open": len(ZOOM["pend"])}
+    return boxes
+
+
+def zoom_selftest():
+    """far hints (small movement that comes back), their order, the confirmation of far hits and the 2 x 2 tiles"""
+    class _T:
+        def __init__(self, b):
+            self.box = b; self.lost = 0
+
+    class _AI:
+        kind = "yolo"; meta = {"input": 640}; boxes = []; hints = []; far = []; full = None
+
+        def __init__(self, hits):
+            self.hits = hits; self.calls = []
+
+        def infer(self, img, cp, co):
+            self.calls.append(img.shape)
+            return list(self.hits), []
+    try:
+        ZOOM.update(seen={}, far=[], looked={}, pend=[], runs=0, far_hits=0, pend_n=0)
+        ai = _AI([])
+        pw, ph = 480, 270
+        for i in range(3):                                # a small thing (10 x 24 px) three times at the same place
+            zoom_far_feed(ai, [(300 + i, 100, 10, 24)], 1125, [], pw, ph, 10.0 + 0.5 * i)
+        assert len(ai.far) == 1, ai.far
+        assert zoom_far_feed(ai, [(300, 100, 10, 24)], 1125, [], pw, ph, 11.5, "strong") == []     # strong wind: no far hints
+        ZOOM["seen"].clear(); ai.far = []
+        zoom_far_feed(ai, [(50, 50, 10, 24)], 1125, [], pw, ph, 20.0)
+        assert ai.far == []                               # once only: no hint
+        for i in range(3):                                # under a track: no far hint (the track is a hint itself)
+            zoom_far_feed(ai, [(200, 150, 10, 24)], 1125, [_T((195, 145, 30, 40))], pw, ph, 30.0 + 0.3 * i)
+        assert ai.far == [], ai.far
+        for i in range(3):                                # big enough for a track: not a far hint
+            zoom_far_feed(ai, [(100, 100, 40, 60)], 1125, [], pw, ph, 40.0 + 0.3 * i)
+        assert ai.far == []
+        # order: the far hint looked at longest ago comes first
+        ZOOM["looked"] = {(10, 4): 5.0, (2, 4): 1.0}
+        p = zoom_pick([], [(240, 100, 10, 24), (48, 100, 10, 24)], [], 50.0, 1, True)
+        assert p and p[0][0][0] == 48, p
+        assert zoom_pick([], [(240, 100, 10, 24)], [], 50.0, 1, False) == []           # not this run (every 2nd)
+        assert zoom_pick([], [(240, 100, 10, 24)], [(238, 95, 16, 34, 0.9)], 50.0, 1, True) == []   # the AI has it already
+        # confirmation: a far hit counts only the second time at about the same place, and only upright
+        ZOOM["pend"] = []
+        assert not zoom_accept((300, 100, 10, 26, 0.6), "far", 60.0, 110, 270)
+        assert len(ZOOM["pend"]) == 1
+        assert zoom_pick([], [], [], 61.0, 1, False)[0][1] == "far"                   # the open hit is looked at again first
+        assert zoom_accept((306, 101, 10, 25, 0.6), "far", 61.0, 110, 270)            # second run, a few px on: counts
+        assert not zoom_accept((300, 100, 30, 12, 0.7), "far", 62.0, 110, 270)        # lying / a branch across: never
+        assert zoom_accept((300, 100, 30, 12, 0.7), "track", 62.0, 110, 270)          # track hints as before: at once
+        assert not zoom_accept((0, 0, 200, 250, 0.9), "track", 62.0, 260, 270)        # the whole tile: not trusted
+        ZOOM["pend"] = []
+        assert not zoom_accept((300, 100, 10, 26, 0.6), "far", 70.0, 110, 270)
+        assert not zoom_accept((300, 100, 10, 26, 0.6), "far", 76.0, 110, 270)        # 6 s later: too late, a new first hit
+        # 2 x 2 tiles in one run (YOLO), boxes back in the working picture; camera picture 2 x bigger
+        ZOOM.update(pend=[], looked={}, runs=1)
+        br0 = STATE.get("brightness"); STATE["brightness"] = 120
+        frame = np.zeros((270, 480, 3), np.uint8); full = np.zeros((540, 960, 3), np.uint8)
+        ai = _AI([(320 + 100, 50, 20, 60, 0.8)])           # a person in the 2nd tile (top right), 320 px tile
+        ai.full = full; ai.hints = [(40, 40, 10, 24), (300, 120, 10, 24)]
+        out = ai_zoom_run(ai, frame, [], 480, 270, 80.0)
+        assert ai.calls == [(640, 640, 3)], ai.calls       # one run for both tiles
+        assert len(out) == 1 and 250 < out[0][0] + out[0][2] / 2 < 360 and out[0][3] < 40, out
+        ai = _AI([(5, 5, 30, 300, 0.8)])                   # one tile alone: the crop itself, from the camera picture (220 px)
+        ai.full = full; ai.hints = [(40, 40, 10, 24)]
+        ZOOM.update(pend=[], looked={})
+        ai_zoom_run(ai, frame, [], 480, 270, 90.0)
+        assert ai.calls == [(220, 220, 3)], ai.calls
+        assert ai_unscale([(100, 50, 20, 40, 0.7)], 2.0) == [(50, 25, 10, 20, 0.7)]
+        STATE["brightness"] = 20                            # infrared night: the working picture (noise), as before
+        assert ai_view(ai, frame) == (frame, 1.0)
+        STATE["brightness"] = 120
+        v, k = ai_view(ai, frame)
+        assert v is full and k == 2.0
+        ai.kind = "ssd"
+        assert ai_view(ai, frame)[0] is frame              # SSD: the working picture as before
+    finally:
+        STATE["brightness"] = br0 if "br0" in locals() else STATE.get("brightness", 0)
+        ZOOM.update(seen={}, far=[], looked={}, pend=[], runs=0, far_hits=0, pend_n=0)
+    return True
+
+
+SELFTEST_EXTRA.append(("AI magnifier: far movement, camera pixels, 2 x 2 tiles (418z)", zoom_selftest))
 # ----------------------------------------------------------------------------
 # Web access options (set on the command line) + self-signed certificate + systemd unit
 # ----------------------------------------------------------------------------
@@ -95313,6 +95868,43 @@ for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp
                 "page Simulator the cards and the groups of the simulator control start closed (only «Controls» stays open).</p>")):
     if _a in HELP_PAGE:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+# ----------------------------------------------------------------------------
+# real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
+# ----------------------------------------------------------------------------
+_HX_E3 = {
+    "Something big at the ground": ("Etwas Grosses am Boden", "Quelque chose de grand au sol", "Qualcosa di grande a terra",
+                                    "Insatge grond per terra"),
+    "about {d} m, about {l} m long - a crawling person?": ("ca. {d} m, ca. {l} m lang – eine kriechende Person?",
+                                                          "env. {d} m, env. {l} m de long – une personne qui rampe ?",
+                                                          "circa {d} m, lungo circa {l} m – una persona che striscia?",
+                                                          "ca. {d} m, ca. {l} m lung – ina persuna che sa splattira?"),
+}
+PK_TITLES.setdefault(CRAWL_PK_TITLE[1], CRAWL_PK_TITLE)      # the short push form of 3.1.0 (635b): «⚠ Etwas Grosses am Boden» + picture
+for _k, _v in _HX_E3.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# the manual (chapter «Platz einrichten», the camera height / foot point of 624): one sentence about crawling at night (418k)
+_HELP_E3 = {
+    "de": ("(Reh / Fuchs = Tier statt Person)", "(Reh / Fuchs = Tier statt Person; etwas Grosses, Warmes, das sich nachts nah am Boden "
+           "bewegt, gibt den Voralarm «Etwas Grosses am Boden» und nach 6 s «Person?» – eine kriechende Person)"),
+    "en": ("(roe deer / fox = animal instead of person)", "(roe deer / fox = animal instead of person; something big and warm that moves "
+           "near the ground at night gives the pre-alarm «Something big at the ground» and after 6 s «Person?» – a crawling person)"),
+    "fr": ("(chevreuil / renard = animal au lieu de personne)", "(chevreuil / renard = animal au lieu de personne ; quelque chose de grand et "
+           "chaud qui bouge la nuit près du sol donne la pré-alarme « Quelque chose de grand au sol » et après 6 s « Personne ? » – une "
+           "personne qui rampe)"),
+    "it": ("(capriolo / volpe = animale invece di persona)", "(capriolo / volpe = animale invece di persona; qualcosa di grande e caldo che "
+           "di notte si muove vicino a terra dà il preallarme «Qualcosa di grande a terra» e dopo 6 s «Persona?» – una persona che striscia)"),
+    "rm": ("(chavriel / vulp = animal empè da persuna)", "(chavriel / vulp = animal empè da persuna; insatge grond e chaud che sa mova la "
+           "notg datiers dal terren dat il preallarm «Insatge grond per terra» e suenter 6 s «Persuna?» – ina persuna che sa splattira)"),
+}
+_hp_en = HELP_PAGE.find('<div lang="en">')
+if _hp_en > 0:
+    HELP_PAGE = HELP_PAGE[:_hp_en].replace(*_HELP_E3["de"], 1) + HELP_PAGE[_hp_en:].replace(*_HELP_E3["en"], 1)
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = HELP_X[_L].replace(*_HELP_E3[_L], 1)
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")
