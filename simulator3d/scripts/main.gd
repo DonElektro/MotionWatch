@@ -625,6 +625,9 @@ func _ready() -> void:
 	horror = preload("res://scripts/bergtal_horror.gd").new()   # Bergtal · Horror-Modus «Das Hospiz» (mit Passwort, bergtal_horror.gd)
 	horror.main = self
 	add_child(horror)
+	maggie = preload("res://scripts/maggie_story.gd").new()    # «Maggie und der Bergkristall» (Geschichte unter «Spielen», maggie_story.gd)
+	maggie.main = self
+	add_child(maggie)
 	_register_controls()
 	_order_controls()
 	mwpc = Mwpc.new()
@@ -2324,6 +2327,8 @@ func busy_with(except_ := "") -> String:
 		w = "Wiedergabe"
 	elif horror != null and horror.running:
 		w = "Horror-Modus"                             # the nights of «Das Hospiz» (bergtal_horror.gd)
+	elif maggie != null and maggie.running:
+		w = "Maggie-Geschichte"                        # «Maggie und der Bergkristall» (maggie_story.gd)
 	elif preload("res://scripts/ferienpark_leben.gd").task_busy(self) != "":
 		w = "Ferienpark-Aufgabe"                       # Ferienpark-Leben: lost child / bike thief (the tent task: «Nacht-Testlauf»)
 	elif _mw_task() != "":                             # 3D-4.x: one lock with MoveEye (a drill, a protection test … there)
@@ -3177,6 +3182,7 @@ func world_reply() -> Dictionary:
 
 
 var schnitt = null                     # schnittstelle.gd (Aufräumen 2)
+var maggie = null                      # maggie_story.gd: «Maggie und der Bergkristall» (API für maggie_hund / maggie_gefahr)
 var horror = null                      # bergtal_horror.gd: Bergtal · Horror-Modus (Hook für die Stimmungswahl: horror.mood_slot / open_from_mood)
 var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
 var bike_node: Node3D = null
@@ -4906,6 +4912,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return Kompakt.control(self, d)
 	elif a == "bergtal":                               # 3D-4.x: {do: info | spot | bed | season | here | goto | event | ride | morning | rate | horn | perf} (bergtal.gd)
 		return preload("res://scripts/bergtal.gd").control(self, d)
+	elif a == "maggie":                                # «Maggie und der Bergkristall» (maggie_story.gd): {do: info | open | start | region …}
+		return maggie.control(d) if maggie != null else {"ok": false, "error": "no maggie"}
 	elif a == "horror":                                # Bergtal · Horror-Modus: {do: info | open | unlock | start | skip | pause | stop …} (bergtal_horror.gd)
 		return horror.command(d) if horror != null else {"ok": false, "error": "no horror"}
 	elif a == "ferienpark":                            # 3D-4.x: {do: info | spot (value) | kinds | perf} (ferienpark.gd)
@@ -7522,6 +7530,8 @@ func _fly(dt: float) -> void:
 		return                                   # keys go to the phone
 	if explore != null and (explore.on or explore.fly):
 		return                                   # exploring: W A S D drive the rover (Entwicklertool: the fly camera, explore.gd)
+	if maggie != null and maggie.walking():
+		return                                   # «Maggie und der Bergkristall»: W A S D move the figure (maggie_story.gd)
 	if typing():
 		return                                   # 3D-3.88: letters typed into a search field do not fly the view
 	var mv := Vector3.ZERO
