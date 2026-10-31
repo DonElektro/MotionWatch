@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.71** · passende MoveEye-Version (früher Motion Watch) **2.98.102**
+Stand: 31.10.2026 · Simulator-Version **3D-4.72** · passende MoveEye-Version (früher Motion Watch) **2.98.103**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.72 (MoveEye 2.98.103): Leben im Ferienpark (`ferienpark_leben.gd`)
+
+- `ferienpark_leben.gd` (neu): Tagesablauf nach Uhrzeit (Grillabend mit Glut im Wärmebild, WC-Gänge, Jogger, Bäcker) und
+  3 Aufgaben mit MoveEye (Kind finden, Velo-Dieb, Zeltwache) unter Spiel → Entdecken (Experte).
+- `erlebniswelt.gd`: der Rahmen-Abgleich ist jetzt gemeinsam (Erlebnisse und Ferienpark-Aufgaben); `ferienpark.gd`,
+  `szenenplus.gd`, `waerme.gd`, `main.gd` angepasst.
 
 ## NEU in 3D-4.71 (MoveEye 2.98.102): Tiere im Schlafzimmer (`zimmertiere.gd`)
 

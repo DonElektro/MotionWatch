@@ -421,6 +421,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.72
+3D-4.72: Ferienpark: Leben nach Uhrzeit (Grillabend mit Glut im Wärmebild, nachts WC-Gänge mit Taschenlampe, morgens Jogger
+und Bäcker). Dazu 3 Aufgaben mit MoveEye unter Spiel → Entdecken (Experte): verlorenes Kind finden, Velo-Dieb bemerken,
+Zeltplatz nachts bewachen.
+So testest du: 1) Ferienpark, Standort «Beim Zelt», 19 Uhr, Kopf nach rechts drehen. 2) Aufgabe «Velo-Dieb bemerken»
+starten. 3) Aufgabe «Zeltplatz nachts bewachen» starten.
+
 NEU IN 3D-4.71
 3D-4.71: Szene Schlafzimmer: Hamster im Laufrad (nachts), Wellensittich im Käfig, Hauswinkelspinne an Wand und Decke, die
 sich nachts vor die Linse abseilt. Das sind gute Fehlalarm-Tests. Knopf unter Wildtier: «Spinne vor die Linse – jetzt».

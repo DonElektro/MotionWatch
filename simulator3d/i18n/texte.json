@@ -3109,11 +3109,23 @@
   "it": "Altstafel",
   "rm": "Altstafel"
  },
+ "Am Abend grillt eine Gruppe vor MoveEye. Im Wärmebild leuchtet die Glut noch lange nach dem Essen.": {
+  "en": "In the evening a group has a barbecue in front of MoveEye. In the thermal picture the embers glow long after the meal.",
+  "fr": "Le soir, un groupe fait une grillade devant MoveEye. Dans l'image thermique, les braises brillent encore longtemps après le repas.",
+  "it": "La sera un gruppo fa la grigliata davanti a MoveEye. Nell'immagine termica la brace brilla ancora a lungo dopo la cena.",
+  "rm": "La saira grillescha ina gruppa davant MoveEye. En il maletg termic splendura la burnida anc ditg suenter la tschaina."
+ },
  "Am Abend kommt der Nebel. Irgendwo im Grau läutet eine Kuhglocke. Seit Jahren sind keine Kühe mehr auf dieser Alp.": {
   "en": "In the evening the fog comes. Somewhere in the grey a cowbell rings. There have been no cows on this alp for years.",
   "fr": "Le soir, le brouillard arrive. Quelque part dans le gris, une cloche de vache sonne. Il n'y a plus de vaches sur cet alpage depuis des années.",
   "it": "La sera arriva la nebbia. Da qualche parte nel grigio suona un campanaccio. Da anni non ci sono più mucche su quest'alpe.",
   "rm": "La saira vegn la tschajera. Insanua en il grisch tuna ina stgella da vatga. Dapi onns n'hai nagina vatga pli sin quest'alp."
+ },
+ "Am Abend riecht es vor MoveEye nach Grillwurst.": {
+  "en": "In the evening it smells of grilled sausages in front of MoveEye.",
+  "fr": "Le soir, ça sent la saucisse grillée devant MoveEye.",
+  "it": "La sera davanti a MoveEye c'è profumo di salsiccia alla griglia.",
+  "rm": "La saira savura igl davant MoveEye da liongia grillada."
  },
  "Am Abend, bevor du zum Lager zurückgehst, stehst du vor dem alten Hospiz am Pass. Die Tür ist verschlossen. Das Schloss hat Räder wie eine Uhr: Stunden und Minuten.": {
   "en": "In the evening, before you go back to your camp, you stand in front of the old hospice on the pass. The door is locked. The lock has wheels like a clock: hours and minutes.",
@@ -3810,6 +3822,12 @@
   "fr": "Très bien aussi. Le sentier a la plus belle vue.",
   "it": "Va bene anche così. Il sentiero ha la vista più bella.",
   "rm": "Er bain. La senda ha la pli bella vista."
+ },
+ "Auch mit dem Velo in den Händen erkannt.": {
+  "en": "Also recognised with the bike in his hands.",
+  "fr": "Reconnu aussi avec le vélo dans les mains.",
+  "it": "Riconosciuto anche con la bici in mano.",
+  "rm": "Renconuschì er cun il velo en ils mauns."
  },
  "Auf das Gipfelkreuz": {
   "en": "On the summit cross",
@@ -7670,6 +7688,12 @@
   "it": "La vista segue il mover da dietro",
   "rm": "La vista suonda il mover davos"
  },
+ "Die Aufgaben gibt es nur im Ferienpark am See (bei einem Standort im Park).": {
+  "en": "The tasks are only in the holiday park by the lake (at a spot of the park).",
+  "fr": "Les missions n'existent que dans le parc de vacances au bord du lac (à un emplacement du parc).",
+  "it": "I compiti ci sono solo nel parco vacanze sul lago (in un punto del parco).",
+  "rm": "Las incumbensas datti mo en il parc da vacanzas al lai (en in lieu dal parc)."
+ },
  "Die Aufnahme dazu fehlt (Nacht übersprungen).": {
   "en": "The recording for it is missing (night skipped).",
   "fr": "L'enregistrement manque (nuit sautée).",
@@ -9249,6 +9273,12 @@
   "it": "Completato un capitolo al livello di aiuto Difficile, senza una risposta sbagliata.",
   "rm": "In chapitel cun il nivel d'agid Grev, senza ina sulet'a resposta sbagliada."
  },
+ "Ein Kind ist weg: rote Jacke, etwa 6 Jahre. Es spielt irgendwo um MoveEye – findet MoveEye es? (5 Min.)": {
+  "en": "A child is missing: red jacket, about 6 years old. It is playing somewhere around MoveEye – will MoveEye find it? (5 min)",
+  "fr": "Un enfant a disparu : veste rouge, environ 6 ans. Il joue quelque part autour de MoveEye – MoveEye le trouvera-t-il ? (5 min)",
+  "it": "Un bambino è sparito: giacca rossa, circa 6 anni. Gioca da qualche parte intorno a MoveEye – MoveEye lo troverà? (5 min)",
+  "rm": "In uffant è davent: giacca cotschna, var 6 onns. El giauga insanua enturn MoveEye – chatta MoveEye el? (5 min.)"
+ },
  "Ein Kind kommt zum Spielen!": {
   "en": "A child comes to play!",
   "fr": "Un enfant vient jouer !",
@@ -9548,6 +9578,24 @@
   "fr": "Tentative de cambriolage (se faufile, essaie la porte – fuit devant la lumière et la sirène)",
   "it": "Tentato scasso (si avvicina di soppiatto, prova la porta – fugge davanti a luce e sirena)",
   "rm": "Emprova d’invasiun (sa stula, emprova l’isch – fugia davant glisch e sirena)"
+ },
+ "Eindringling erkannt": {
+  "en": "intruder recognised",
+  "fr": "intrus reconnu",
+  "it": "intruso riconosciuto",
+  "rm": "intrus renconuschì"
+ },
+ "Eindringling NICHT erkannt": {
+  "en": "intruder NOT recognised",
+  "fr": "intrus NON reconnu",
+  "it": "intruso NON riconosciuto",
+  "rm": "intrus BETG renconuschì"
+ },
+ "Eindringling war nicht im Bild": {
+  "en": "intruder was not in the picture",
+  "fr": "l'intrus n'était pas dans l'image",
+  "it": "l'intruso non era nell'immagine",
+  "rm": "l'intrus n'era betg en il maletg"
  },
  "Eine alte Holzbaracke, rundherum rostige Stacheldraht-Reste aus dem Aktivdienst.": {
   "en": "An old wooden barrack, surrounded by rusty barbed wire left from wartime service.",
@@ -10450,6 +10498,12 @@
   "it": "Un test è già in corso.",
   "rm": "In test è gia en cursa."
  },
+ "Es läuft schon eine Aufgabe.": {
+  "en": "A task is already running.",
+  "fr": "Une mission est déjà en cours.",
+  "it": "Un compito è già in corso.",
+  "rm": "Ina incumbensa è gia en funcziun."
+ },
  "Es raucht immer mehr – bis der Nachbar mit dem Wassereimer kommt. Im Wärmebild ist die Glut sehr heiss.": {
   "en": "It smokes more and more – until the neighbour comes with a bucket of water. In the thermal picture the embers are very hot.",
   "fr": "Ça fume de plus en plus – jusqu’à ce que le voisin arrive avec un seau d’eau. Dans l’image thermique, la braise est très chaude.",
@@ -10943,6 +10997,12 @@
   "it": "Errori, desideri, lodi, domande – anonimo",
   "rm": "Sbagls, giavischs, laud, dumondas – anonim"
  },
+ "Fehlmeldungen (Rahmen ohne Person): %d": {
+  "en": "False reports (box without a person): %d",
+  "fr": "Fausses détections (cadre sans personne) : %d",
+  "it": "Segnalazioni errate (riquadro senza persona): %d",
+  "rm": "Annunzias faussas (rom senza persuna): %d"
+ },
  "feine Höhen von swisstopo fehlen, grobe genommen": {
   "en": "fine heights from swisstopo missing, coarse ones taken",
   "fr": "altitudes fines de swisstopo manquantes, grossières utilisées",
@@ -11068,6 +11128,18 @@
   "fr": "Parc de vacances au bord du lac",
   "it": "Parco vacanze sul lago",
   "rm": "Parc da vacanzas al lai"
+ },
+ "Ferienpark-Aufgabe": {
+  "en": "Holiday park task",
+  "fr": "Mission du parc de vacances",
+  "it": "Compito del parco vacanze",
+  "rm": "Incumbensa dal parc da vacanzas"
+ },
+ "Ferienpark: Leben nach Uhrzeit (Grillabend mit Rauch und Glut, Nachtruhe mit WC-Gängen und Taschenlampe, früh Jogger und Bäcker-Lieferwagen)": {
+  "en": "Holiday park: life by the clock (barbecue evening with smoke and embers, quiet night with torch-lit toilet walks, joggers and the bakery van early)",
+  "fr": "Parc de vacances : la vie selon l'heure (soirée grillade avec fumée et braises, nuit calme avec trajets aux WC à la lampe, tôt le matin joggeurs et camionnette du boulanger)",
+  "it": "Parco vacanze: vita secondo l'ora (grigliata serale con fumo e brace, quiete notturna con passaggi al WC con torcia, al mattino presto jogger e furgone del panettiere)",
+  "rm": "Parc da vacanzas: vita tenor l'ura (saira da grillar cun fim e burnida, ruaus da notg cun ir al WC cun glisch da maun, a bun'ura cursaders ed il char dal pancunesch)"
  },
  "Fernbedienung": {
   "en": "Remote control",
@@ -13248,6 +13320,12 @@
   "it": "Griglia / forno",
   "rm": "Grill / furn"
  },
+ "Grillabend": {
+  "en": "Barbecue evening",
+  "fr": "Soirée grillade",
+  "it": "Grigliata serale",
+  "rm": "Saira da grillar"
+ },
  "Grillabend (Grill, Rauch, Freunde kommen)": {
   "en": "Barbecue evening (grill, smoke, friends come)",
   "fr": "Soirée grillades (gril, fumée, des amis arrivent)",
@@ -13987,6 +14065,12 @@
   "it": "Sei qui",
   "rm": "Ti es qua"
  },
+ "Hier findet das Kind keinen Platz zum Spielen.": {
+  "en": "The child finds no place to play here.",
+  "fr": "Ici l'enfant ne trouve pas d'endroit pour jouer.",
+  "it": "Qui il bambino non trova un posto per giocare.",
+  "rm": "Qua na chatta l'uffant nagin plaz per giugar."
+ },
  "Hier gibt es (noch) nichts zu entdecken.": {
   "en": "Nothing to discover here (yet).",
   "fr": "Rien à découvrir ici (pour l’instant).",
@@ -14070,6 +14154,12 @@
   "fr": "Ici tu joues les aventures l’une après l’autre. Découvre tout, collectionne des badges – ainsi ton niveau monte.",
   "it": "Qui giochi le avventure una dopo l’altra. Scopri tutto, raccogli distintivi – così sale il tuo livello.",
   "rm": "Qua giogas ti las aventuras ina suenter l’autra. Scuvra tut, rimna insignas – uschia crescha tes stgalim."
+ },
+ "Hier steht kein Velo.": {
+  "en": "There is no bike here.",
+  "fr": "Il n'y a pas de vélo ici.",
+  "it": "Qui non c'è nessuna bici.",
+  "rm": "Qua na stat nagin velo."
  },
  "Hier übernachten": {
   "en": "Sleep here",
@@ -15438,6 +15528,12 @@
   "fr": "Trouvé l'étoile Polaire dans la nuit - elle indique toujours le nord.",
   "it": "Trovata la stella polare di notte - indica sempre il nord.",
   "rm": "Chattà la staila polara la notg - ella mussa adina vers nord."
+ },
+ "In der Nacht hat MoveEye den Eindringling erkannt und kein Tier für eine Person gehalten.": {
+  "en": "During the night MoveEye recognised the intruder and took no animal for a person.",
+  "fr": "Pendant la nuit, MoveEye a reconnu l'intrus et n'a pris aucun animal pour une personne.",
+  "it": "Durante la notte MoveEye ha riconosciuto l'intruso e non ha scambiato nessun animale per una persona.",
+  "rm": "Durant la notg ha MoveEye renconuschì l'intrus e n'ha tegnì nagin animal per ina persuna."
  },
  "in der Nähe": {
   "en": "nearby",
@@ -19186,6 +19282,12 @@
   "it": "Girare nei dintorni con il rover: W A S D / frecce, stick verde o un controller (anche Bluetooth; Start = acceso / spento). Esc termina.",
   "rm": "Charrar cun il rover tras la regiun: W A S D / frizzas, stick verd u in controller da gieu (er Bluetooth; Start = en / or). Esc termina."
  },
+ "Mit dem Velo in den Händen nicht mehr erkannt.": {
+  "en": "No longer recognised with the bike in his hands.",
+  "fr": "Plus reconnu avec le vélo dans les mains.",
+  "it": "Non più riconosciuto con la bici in mano.",
+  "rm": "Cun il velo en ils mauns betg pli renconuschì."
+ },
  "Mit der Materialseilbahn fahren (Bergtal)": {
   "en": "Ride the goods cable car (mountain valley)",
   "fr": "Monter dans le téléphérique de service (vallée)",
@@ -19612,6 +19714,18 @@
   "it": "MoveEye ha trovato tutti e quattro i bambini a nascondino.",
   "rm": "MoveEye ha chattà tuts quatter uffants cun zuppar."
  },
+ "MoveEye hat das Kind gefunden – nach %d s. Das Bild von MoveEye ist im Entdeckungsbuch.": {
+  "en": "MoveEye found the child – after %d s. MoveEye's picture is in the discovery book.",
+  "fr": "MoveEye a retrouvé l'enfant – après %d s. L'image de MoveEye est dans le carnet des découvertes.",
+  "it": "MoveEye ha trovato il bambino – dopo %d s. L'immagine di MoveEye è nel libro delle scoperte.",
+  "rm": "MoveEye ha chattà l'uffant – suenter %d s. Il maletg da MoveEye è en il cudesch da scuvertas."
+ },
+ "MoveEye hat das Kind mit der roten Jacke entdeckt – das Bild ist von MoveEyes Kamera.": {
+  "en": "MoveEye spotted the child in the red jacket – the picture is from MoveEye's camera.",
+  "fr": "MoveEye a repéré l'enfant à la veste rouge – l'image vient de la caméra de MoveEye.",
+  "it": "MoveEye ha scoperto il bambino con la giacca rossa – l'immagine è della telecamera di MoveEye.",
+  "rm": "MoveEye ha scuvrì l'uffant cun la giacca cotschna – il maletg è da la camera da MoveEye."
+ },
  "MoveEye hat dich erkannt!": {
   "en": "MoveEye detected you!",
   "fr": "MoveEye t’a détecté !",
@@ -19635,6 +19749,12 @@
   "fr": "MoveEye a perdu la connexion – test annulé.",
   "it": "MoveEye ha perso la connessione – test annullato.",
   "rm": "MoveEye ha pers la connexiun – test interrut."
+ },
+ "MoveEye hat gesehen, wie jemand dein Velo wegträgt.": {
+  "en": "MoveEye saw somebody carry your bike away.",
+  "fr": "MoveEye a vu quelqu'un emporter ton vélo.",
+  "it": "MoveEye ha visto qualcuno portare via la tua bici.",
+  "rm": "MoveEye ha vis co insatgi porta davent tes velo."
  },
  "MoveEye hat in der Nacht {n} Aufnahmen gemacht – im Kamerabild ist niemand, nur im Wärmebild. Schau in MoveEyes Verlauf (Nachrichten) oder hier unter «Aufnahmen».": {
   "en": "MoveEye made {n} recordings during the night – nobody in the camera picture, only in the thermal picture. Look in MoveEye's history (Messages) or here under «Recordings».",
@@ -25452,6 +25572,24 @@
   "it": "Aprire il gioco (i telefonini possono partecipare)",
   "rm": "Avrir il gieu (telefonins pon far cun)"
  },
+ "Spiel → Entdecken → «Aufgabe: Velo-Dieb bemerken».": {
+  "en": "Game → Discover → «Task: notice the bike thief».",
+  "fr": "Jeu → Découvrir → « Mission : repérer le voleur de vélo ».",
+  "it": "Gioco → Scoprire → «Compito: accorgersi del ladro di bici».",
+  "rm": "Gieu → Scuvrir → «Incumbensa: badar il lader da velo»."
+ },
+ "Spiel → Entdecken → «Aufgabe: Verlorenes Kind finden».": {
+  "en": "Game → Discover → «Task: find the lost child».",
+  "fr": "Jeu → Découvrir → « Mission : retrouver l'enfant perdu ».",
+  "it": "Gioco → Scoprire → «Compito: trovare il bambino smarrito».",
+  "rm": "Gieu → Scuvrir → «Incumbensa: chattar l'uffant pers»."
+ },
+ "Spiel → Entdecken → «Aufgabe: Zeltplatz nachts bewachen».": {
+  "en": "Game → Discover → «Task: guard the tent pitch at night».",
+  "fr": "Jeu → Découvrir → « Mission : surveiller la tente la nuit ».",
+  "it": "Gioco → Scoprire → «Compito: sorvegliare la tenda di notte».",
+  "rm": "Gieu → Scuvrir → «Incumbensa: survegliar la tenda la notg»."
+ },
  "Spiel-Assistent": {
   "en": "Game wizard",
   "fr": "Assistant de jeu",
@@ -27199,6 +27337,12 @@
   "it": "Animali",
   "rm": "Animals"
  },
+ "Tiere als Person gemeldet: %d": {
+  "en": "animals reported as a person: %d",
+  "fr": "animaux signalés comme personne : %d",
+  "it": "animali segnalati come persona: %d",
+  "rm": "animals annunziads sco persuna: %d"
+ },
  "Tiere flüchten nachts vor dem weissen Licht": {
   "en": "Animals flee from the white light at night",
   "fr": "Les animaux fuient la lumière blanche la nuit",
@@ -28040,6 +28184,36 @@
   "it": "Rimorchio per bici",
   "rm": "Char da velo"
  },
+ "Velo-Dieb bemerkt": {
+  "en": "Bike thief noticed",
+  "fr": "Voleur de vélo repéré",
+  "it": "Ladro di bici notato",
+  "rm": "Lader da velo badà"
+ },
+ "Velo-Dieb: er war im Bild, aber MoveEye hat ihn nicht erkannt.": {
+  "en": "Bike thief: he was in the picture, but MoveEye did not recognise him.",
+  "fr": "Voleur de vélo : il était dans l'image, mais MoveEye ne l'a pas reconnu.",
+  "it": "Ladro di bici: era nell'immagine, ma MoveEye non l'ha riconosciuto.",
+  "rm": "Lader da velo: el era en il maletg, ma MoveEye n'al ha betg renconuschì."
+ },
+ "Velo-Dieb: er war nie richtig im Bild der Kamera.": {
+  "en": "Bike thief: he was never properly in the camera's picture.",
+  "fr": "Voleur de vélo : il n'a jamais vraiment été dans l'image de la caméra.",
+  "it": "Ladro di bici: non è mai stato davvero nell'immagine della telecamera.",
+  "rm": "Lader da velo: el n'era mai propi en il maletg da la camera."
+ },
+ "Velo-Dieb: gleich kommt jemand und trägt dein Velo weg. Bemerkt MoveEye es?": {
+  "en": "Bike thief: in a moment somebody will come and carry your bike away. Will MoveEye notice?",
+  "fr": "Voleur de vélo : dans un instant, quelqu'un va venir emporter ton vélo. MoveEye le remarquera-t-il ?",
+  "it": "Ladro di bici: tra poco arriva qualcuno e porta via la tua bici. MoveEye se ne accorgerà?",
+  "rm": "Lader da velo: immediat vegn insatgi e porta davent tes velo. Bada MoveEye quai?"
+ },
+ "Velo-Dieb: MoveEye hat ihn erkannt, %.1f s nachdem er im Bild war.": {
+  "en": "Bike thief: MoveEye recognised him %.1f s after he was in the picture.",
+  "fr": "Voleur de vélo : MoveEye l'a reconnu %.1f s après son entrée dans l'image.",
+  "it": "Ladro di bici: MoveEye l'ha riconosciuto %.1f s dopo che era nell'immagine.",
+  "rm": "Lader da velo: MoveEye al ha renconuschì %.1f s suenter ch'el era en il maletg."
+ },
  "Velo-Diebstahl in der Nacht": {
   "en": "Bike theft at night",
   "fr": "Vol de vélo la nuit",
@@ -28291,6 +28465,12 @@
   "fr": "Signaler le randonneur blessé (gardienne de cabane ou garde-faune)",
   "it": "Segnalare l'escursionista ferito (custode della capanna o guardiacaccia)",
   "rm": "Annunziar il viandant blessà (chamonera u guardiaselvaschina)"
+ },
+ "Verlorenes Kind gefunden": {
+  "en": "Lost child found",
+  "fr": "Enfant perdu retrouvé",
+  "it": "Bambino smarrito trovato",
+  "rm": "Uffant pers chattà"
  },
  "Verluste": {
   "en": "Losses",
@@ -29215,6 +29395,12 @@
   "fr": "Conteneurs WC",
   "it": "Container WC",
   "rm": "Containers WC"
+ },
+ "WC-Gänge erkannt %d von %d": {
+  "en": "toilet walks recognised %d of %d",
+  "fr": "trajets aux WC reconnus %d sur %d",
+  "it": "passaggi al WC riconosciuti %d su %d",
+  "rm": "ir al WC renconuschì %d da %d"
  },
  "Wechselnde Kamera-Einstellungen von Rover und Spielern": {
   "en": "Changing camera angles on rover and players",
@@ -30713,6 +30899,12 @@
   "it": "Tempo scaduto (15 minuti) – interrotto.",
   "rm": "Il temp è passà (15 minutas) – interrut."
  },
+ "Zeit um: MoveEye hat das Kind nicht gefunden. Tipp: Kopf schwenken lassen (Patrouille) oder näher.": {
+  "en": "Time is up: MoveEye did not find the child. Tip: let the head pan (patrol) or come closer.",
+  "fr": "Temps écoulé : MoveEye n'a pas trouvé l'enfant. Astuce : faire pivoter la tête (patrouille) ou se rapprocher.",
+  "it": "Tempo scaduto: MoveEye non ha trovato il bambino. Consiglio: far ruotare la testa (pattuglia) o avvicinarsi.",
+  "rm": "Il temp è passà: MoveEye n'ha betg chattà l'uffant. Tip: laschar sviar il chau (patrulla) u pli datiers."
+ },
  "Zeitlicher Filter des Moduls (wie der Treiber von MoveEye: weniger Rauschen, kurzer Nachzieh-Schatten)": {
   "en": "Temporal filter of the module (like MoveEye's driver: less noise, short trailing shadow)",
   "fr": "Filtre temporel du module (comme le pilote de MoveEye : moins de bruit, courte traînée)",
@@ -30791,6 +30983,18 @@
   "it": "Tenda, roulotte, fuoco – il classico",
   "rm": "Tenda, rulotta, fieu – il classic"
  },
+ "Zelt-Wache:": {
+  "en": "Tent watch:",
+  "fr": "Garde de la tente :",
+  "it": "Guardia alla tenda:",
+  "rm": "Guardia da la tenda:"
+ },
+ "Zelt-Wache: 23–1 Uhr im Zeitraffer (4 Min.). Zwei WC-Gänge, Tiere und ein Eindringling – erkennt MoveEye den Richtigen?": {
+  "en": "Tent watch: 11 pm – 1 am in time-lapse (4 min). Two toilet walks, animals and an intruder – will MoveEye pick the right one?",
+  "fr": "Garde de la tente : 23 h – 1 h en accéléré (4 min). Deux trajets aux WC, des animaux et un intrus – MoveEye reconnaîtra-t-il le bon ?",
+  "it": "Guardia alla tenda: 23–1 in time-lapse (4 min). Due passaggi al WC, animali e un intruso – MoveEye riconoscerà quello giusto?",
+  "rm": "Guardia da la tenda: 23–1 en il temp accelerà (4 min.). Dus giadas al WC, animals ed in intrus – renconuscha MoveEye il dretg?"
+ },
  "Zeltaufbau-Chaos": {
   "en": "Tent-pitching chaos",
   "fr": "Chaos au montage de tente",
@@ -30814,6 +31018,12 @@
   "fr": "Les toiles de tente gonflent et claquent au vent, linge et drapeaux sans à-coups",
   "it": "I teli delle tende si gonfiano e sbattono al vento, bucato e bandiere senza scatti",
   "rm": "Las tailas da tenda sa gonfian e flattereschan en il vent, la resgia e las bandieras senza sbittads"
+ },
+ "Zeltplatz bewacht": {
+  "en": "Tent pitch guarded",
+  "fr": "Tente surveillée",
+  "it": "Tenda sorvegliata",
+  "rm": "Tenda survegliada"
  },
  "Zeltplatz-Schleicher": {
   "en": "Campsite sneaker",
@@ -32398,6 +32608,12 @@
   "fr": "⛈ Événements aléatoires : orage (on t’entend à peine), un chien qui aboie, une voiture avec phares.",
   "it": "⛈ Eventi casuali: temporale (quasi non ti si sente), un cane che abbaia, un’auto con i fari.",
   "rm": "⛈ Eveniments casuals: urizi (ins auda tai strusch), in chaun che bauja, in auto cun cazzolas."
+ },
+ "⛺ Aufgabe: Zeltplatz nachts bewachen (4 Min., mit MoveEye)": {
+  "en": "⛺ Task: guard the tent pitch at night (4 min, with MoveEye)",
+  "fr": "⛺ Mission : surveiller la tente la nuit (4 min, avec MoveEye)",
+  "it": "⛺ Compito: sorvegliare la tenda di notte (4 min, con MoveEye)",
+  "rm": "⛺ Incumbensa: survegliar la tenda la notg (4 min., cun MoveEye)"
  },
  "✅ Eine Aufgabe für jede Runde (Bonus)": {
   "en": "✅ A task for every round (bonus)",
@@ -34091,6 +34307,12 @@
   "it": "🚩 Prima attraverso tutte le porte (%d/%d)",
   "rm": "🚩 L’emprim tras tut las portas (%d/%d)"
  },
+ "🚲 Aufgabe: Velo-Dieb bemerken (mit MoveEye)": {
+  "en": "🚲 Task: notice the bike thief (with MoveEye)",
+  "fr": "🚲 Mission : repérer le voleur de vélo (avec MoveEye)",
+  "it": "🚲 Compito: accorgersi del ladro di bici (con MoveEye)",
+  "rm": "🚲 Incumbensa: badar il lader da velo (cun MoveEye)"
+ },
  "🚲 das Velo": {
   "en": "🚲 the bike",
   "fr": "🚲 le vélo",
@@ -34345,6 +34567,12 @@
   "fr": "🧎 Baisse-toi : «Se baisser» (PC : C) – la caméra te voit moins bien",
   "it": "🧎 Abbassati: «Abbassarsi» (PC: C) – la telecamera ti vede peggio",
   "rm": "🧎 Sa bassa: «Sa bassar» (PC: C) – uschia vesa la camera tai mender"
+ },
+ "🧒 Aufgabe: Verlorenes Kind finden (mit MoveEye)": {
+  "en": "🧒 Task: find the lost child (with MoveEye)",
+  "fr": "🧒 Mission : retrouver l'enfant perdu (avec MoveEye)",
+  "it": "🧒 Compito: trovare il bambino smarrito (con MoveEye)",
+  "rm": "🧒 Incumbensa: chattar l'uffant pers (cun MoveEye)"
  },
  "🧘 Nie über 50 % Verdacht": {
   "en": "🧘 Never above 50 % suspicion",

@@ -1,7 +1,7 @@
 {
- "version": "3D-4.71",
+ "version": "3D-4.72",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34509645,
- "sha256": "4222afb3b0af948be0d1e3bfcb0554d5b1858d7ea09e31265dae7ea18b96dd92",
- "notes": "Schlafzimmer: Hamster, Wellensittich, Spinne vor der Linse (Fehlalarm-Tests)."
+ "size": 34551400,
+ "sha256": "dfd258dcd35c0dc4f7ef6eb8c86c69d6b09cdd3ee82880382bcaf892ba266dfd",
+ "notes": "Ferienpark: Leben nach Uhrzeit und 3 Aufgaben mit MoveEye."
 }
