@@ -1,0 +1,4 @@
+camping|tag|gehen camping|tag|kind camping|daemmerung|kind camping|nacht|gehen camping|regen|gehen camping|regen|kind
+wald|tag|gehen wald|tag|kriechen wald|tag|kind wald|daemmerung|kriechen wald|daemmerung|kind
+stellplatz|tag|kriechen stellplatz|daemmerung|kind stellplatz|schnee|kriechen
+camping|tag|fahrzeug camping|daemmerung|tier camping|daemmerung|fahrzeug wald|tag|tier wald|nacht|tier stellplatz|nacht|tier
