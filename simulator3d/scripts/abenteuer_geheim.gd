@@ -885,6 +885,16 @@ func _dachs_spawn(_ev) -> Array:
 	var a := o + f.rotated(Vector3.UP, side * 0.9) * 16.0         # out of the picture first: rustling round about
 	a.y = b.gy(a.x, a.z)
 	var m := o + f.rotated(Vector3.UP, side * 0.3) * 9.0
+	for cand in [[0.3, 9.0], [-0.3, 9.0], [0.1, 7.0], [0.45, 8.0], [-0.45, 8.0], [0.0, 11.0]]:
+		var q: Vector3 = o + f.rotated(Vector3.UP, side * float(cand[0])) * float(cand[1])
+		var vq: Vector3 = b.V(q)
+		var dry := true
+		for lk in Bt.LAKES:
+			if Bt._ell(Vector2(vq.x, vq.z), lk) < 1.05:
+				dry = false                               # (am Seeufer: nicht ins Wasser)
+		if dry and Bt.slope_deg(vq.x, vq.z, 1.5) < 35.0:
+			m = q
+			break
 	m.y = b.gy(m.x, m.z)
 	var at: Vector3 = o + f * 3.0
 	var fn: Node3D = b._food_node
