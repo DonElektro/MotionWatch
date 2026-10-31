@@ -149,9 +149,11 @@ func _opts(d: Dictionary) -> Dictionary:
 	var tempo := str(d.get("tempo", "schnell"))
 	var sp: float = float(d.get("speed", TEMPO.get(tempo, 8.0)))
 	return {"scene": str(d.get("scene", "")).left(40), "busy": str(d.get("busy", "normal")) if BUSY.has(str(d.get("busy", ""))) else "normal",
-			"tempo": tempo if TEMPO.has(tempo) else "schnell", "speed": clampf(sp, 1.0, 60.0),
+			"tempo": tempo if TEMPO.has(tempo) else "schnell", "speed": clampf(sp, 1.0, 240.0 if bool(d.get("free", false)) else 60.0),
 			"from": fposmod(float(d.get("from", 20.0)), 24.0), "to": fposmod(float(d.get("to", 7.0)), 24.0),
-			"seed": clampi(int(d.get("seed", randi() % 9000 + 1)), 1, 999999), "by": str(d.get("by", "")).left(40)}
+			"seed": clampi(int(d.get("seed", randi() % 9000 + 1)), 1, 999999), "by": str(d.get("by", "")).left(40),
+			# Bergtal-Abenteuer (bergtal_abenteuer.gd): its own plan, runs also without MoveEye («free»), up to 240× fast
+			"free": bool(d.get("free", false))}
 
 
 # ---- start / stop -----------------------------------------------------------------------------------------------------
@@ -180,7 +182,7 @@ func start(d: Dictionary) -> Dictionary:
 	main.set_hour(float(o["from"]))
 	main._set_speed(speed_x)
 	main.set_hour(float(o["from"]))
-	plan = make_plan(o)
+	plan = d["plan"] if d.get("plan") is Array else make_plan(o)
 	truth = []
 	active = {}
 	next_i = 0
@@ -389,7 +391,7 @@ func _process(dt: float) -> void:
 	if not running:
 		return
 	var t := elapsed()
-	if main.now() - main.mw_t > 60.0:
+	if main.now() - main.mw_t > 60.0 and not bool(opts.get("free", false)):
 		info = T.t("MoveEye hat die Verbindung verloren – Nacht-Testlauf abgebrochen.")
 		stop(false)
 		return

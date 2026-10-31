@@ -41,6 +41,7 @@ var Karte = preload("res://scripts/karte.gd")
 var geo                               # geo.gd: a real place in Switzerland (scene «ort», from 3D-3.4)
 var karte                             # karte.gd: the map to choose the place
 var gamewiz                           # gamewiz.gd: the game wizard (3D-3.41), also worked from MoveEye
+var abenteuer                         # bergtal_abenteuer.gd: Bergtal-Abenteuer «Die Karte des Bergführers» (Rucksack, Tour, Nacht, Morgen)
 var ort_lat := 0.0                    # the chosen place (kept)
 var ort_lon := 0.0
 var ort_name := ""
@@ -2011,6 +2012,8 @@ func busy_with(except_ := "") -> String:
 		w = "Prüfstand"
 	elif nacht != null and nacht.running:
 		w = "Nacht-Testlauf"                          # Paket «Nacht-Testlauf»: the night has the world (clock, weather, visitors)
+	elif abenteuer != null and abenteuer.status() != "":
+		w = abenteuer.status()                        # Bergtal-Abenteuer: on the way the tour sets the clock and the weather
 	elif dataset != null and dataset.busy:
 		w = "Trainingsbilder"
 	elif blindmap != null and blindmap.busy:
@@ -3709,6 +3712,7 @@ func _register_controls() -> void:
 	add_control("button", "testrun_open", "Letzten Bericht öffnen", null, func(): testrun.open_report(), "Testlauf")
 	add_control("button", "tv_mode", "📺 TV-Modus für den Spielabend (Taste T, ganzer Bildschirm)", null, func(): tv.set_on(not tv.on), "Spiel")
 	add_control("button", "game_wizard", "🎮 Assistent öffnen: Spiel einrichten und starten", null, func(): gamewiz.open_wiz(), "Spiel")
+	add_control("button", "bt_adventure", "🎒 Bergtal-Abenteuer: Rucksack packen, Schatzkarte, Nacht mit MoveEye", null, func(): abenteuer.open_ab(), "Spiel")
 	add_control("toggle", "game_open", "Spiel öffnen (Handys können mitspielen)", func(): return game.open, func(v): game.set_open(v), "Spiel")
 	add_control("button", "game_start", "▶ Start", null, func(): _game_card_start(), "Spiel")
 	add_control("button", "game_stop", "⏹ Stopp", null, func(): _game_card_stop(), "Spiel")
@@ -4480,6 +4484,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return weit.control(d)
 	elif a == "nacht":                                 # Nacht-Testlauf: {do: info | start | stop | state | truth | plan} (nachtlauf.gd)
 		return nacht.control(d)
+	elif a == "abenteuer":                             # Bergtal-Abenteuer: {do: state | open | start | pick | next | choose | night | save | replay | report …}
+		return abenteuer.op(d)
 	elif a == "parcours":                              # 3D-4.18: {do: info | start (lessons, night, seed, prep_s) | stop | state | result | game | steer ...}
 		return parcours.control(d)
 	elif a == "zwilling":                              # 3D-4.4: {do: info | import (path) | set (key, value) | item (k, x, z, r) | clear | remove | on}
@@ -4799,6 +4805,10 @@ func _build_ui() -> void:
 	gamewiz.main = self
 	gamewiz.theme = th
 	layer.add_child(gamewiz)
+	abenteuer = preload("res://scripts/bergtal_abenteuer.gd").new()   # Bergtal-Abenteuer (same look as the wizard)
+	abenteuer.main = self
+	abenteuer.theme = th
+	layer.add_child(abenteuer)
 	var panel := PanelContainer.new()
 	panel.theme = th
 	panel.anchor_left = 1.0
