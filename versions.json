@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 13:47",
+ "generated": "2026-10-31 13:53",
  "versions": [
   {
-   "version": "2.98.107",
-   "file": "webcam_bewegung_2_98_107.py",
+   "version": "2.98.108",
+   "file": "webcam_bewegung_2_98_108.py",
    "url": "",
-   "sha256": "b7401bfba8fba2cffe211fe44bb3e4ef281fe4965240284d64a6ce2c8b69a7e4",
-   "date": "2026-10-31 13:47",
-   "notes": "Simulator 3D-4.76: Bergtal – Innenräume ohne Gras und Bäume, Sennerei mit Dach, keine Geländelöcher, Steinbrücke, runde Tarnwiese, Arvenhain, Herbstblumen, Gletscherspalten und Felsen auf dem Boden.",
-   "sig": "dc4fa9a445ecf1dfd998c5bb7bbeb507037b3d99bdcf7e6c689120fbe29088a202adf7885c2658ba6ca2d5a057210b6a71d538f82169c10c308266d26d28760d"
+   "sha256": "598fabf3e30eb6d5602bd8d19f9dcdb7758413fab8e6a8e5f49dc568a86bd1f0",
+   "date": "2026-10-31 13:53",
+   "notes": "Spieltest-Meldungen: Push aufs Handy für den Spieltest-Assistenten des Simulators (Schalter in Entwickler, Standard aus). Simulator 3D-4.77: Spieltest-Assistent beobachtet alle Spielmodi, fragt mit Smileys, macht Vorschläge, ZIP für Claude.",
+   "sig": "b78068fc28d25b01f6e144e0a61723e99008c3f39b916a41d46f9718d274006ec4bb3698540e7f5a5d592c9d47f5a8fd088e6f0b10d0e51594eaaabce4fe3403"
   },
   {
    "version": "2.97.1",

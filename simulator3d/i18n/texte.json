@@ -102,6 +102,12 @@
   "it": "\nUltimo errore · %s: %s",
   "rm": "\nUltima errur · %s: %s"
  },
+ "\n| Start | Einheit | Min. | Ergebnis | Tipps | Falsch | Umwege | Erwischt | Fest | Kreis | Ruckeln s | Bewertung |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n": {
+  "en": "\n| Start | Unit | Min. | Result | Tips | Wrong | Detours | Caught | Stuck | Circles | Judder s | Rating |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n",
+  "fr": "\n| Début | Unité | Min. | Résultat | Indices | Faux | Détours | Pris | Bloqué | Cercles | Saccades s | Note |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n",
+  "it": "\n| Inizio | Unità | Min. | Risultato | Suggerimenti | Sbagli | Deviazioni | Preso | Bloccato | Cerchi | Scatti s | Voto |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n",
+  "rm": "\n| Cumenzament | Unitad | Min. | Resultat | Tips | Fallà | Sviaments | Tschiffà | Fermà | Circuls | Sgrattinar s | Valitaziun |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n"
+ },
  "\n⏻ Akku leer – das Gerät wäre jetzt aus": {
   "en": "\n⏻ Battery empty – the device would now be off",
   "fr": "\n⏻ Batterie vide – l’appareil serait maintenant éteint",
@@ -179,6 +185,12 @@
   "fr": " (%d× le même encore – compte moins)",
   "it": " (%d× lo stesso di nuovo – conta meno)",
   "rm": " (%d× il medem anc ina giada – quinta main)"
+ },
+ " (%d× Programm zu)": {
+  "en": " (%d× program closed)",
+  "fr": " (%d× programme fermé)",
+  "it": " (%d× programma chiuso)",
+  "rm": " (%d× program serrà)"
  },
  " (automatisch nach dem Update von MoveEye)": {
   "en": " (automatically after the MoveEye update)",
@@ -527,6 +539,12 @@
   "fr": " · dernière comparaison : %d manquants, %d nouveaux, %d modifiés",
   "it": " · ultimo confronto: %d mancanti, %d nuovi, %d cambiati",
   "rm": " · ultima cumparegliaziun: %d mancan, %d novs, %d midads"
+ },
+ " · Lite": {
+  "en": " · Lite",
+  "fr": " · Lite",
+  "it": " · Lite",
+  "rm": " · Lite"
  },
  " · Lärm ": {
   "en": " · noise ",
@@ -924,6 +942,12 @@
   "it": " – 💡 luce e 📢 sirena",
   "rm": " – 💡 glisch e 📢 sirena"
  },
+ " → Anfang oder diese Stelle anschauen": {
+  "en": " → look at the start or this spot",
+  "fr": " → regarder le début ou cet endroit",
+  "it": " → controllare l’inizio o questo punto",
+  "rm": " → guardar il cumenzament u quest lieu"
+ },
  " ⚠ MoveEye ist gerade nicht verbunden.": {
   "en": " ⚠ MoveEye is not connected right now.",
   "fr": " ⚠ MoveEye n’est pas connecté pour l’instant.",
@@ -942,6 +966,18 @@
   "it": "!Il download non ha potuto essere avviato.",
   "rm": "!La telechargiada n’ha betg pudì vegnir cumenzada.",
   "?": "«!» am Anfang ist ein Fehler-Merker (behalten)"
+ },
+ "# Spieltest-Bericht MoveEye-Simulator\n\n": {
+  "en": "# Play test report MoveEye simulator\n\n",
+  "fr": "# Rapport de test de jeu simulateur MoveEye\n\n",
+  "it": "# Rapporto del test di gioco simulatore MoveEye\n\n",
+  "rm": "# Rapport dal test da gieu simulatur MoveEye\n\n"
+ },
+ "## %s (%d Runden)\n\n": {
+  "en": "## %s (%d rounds)\n\n",
+  "fr": "## %s (%d parties)\n\n",
+  "it": "## %s (%d partite)\n\n",
+  "rm": "## %s (%d rundas)\n\n"
  },
  "%.0f Bilder/s": {
   "en": "%.0f frames/s",
@@ -1152,6 +1188,24 @@
   "fr": "%d justes / %d faux",
   "it": "%d giusti / %d sbagliati",
   "rm": "%d gists / %d fallads"
+ },
+ "%d Runde": {
+  "en": "%d round",
+  "fr": "%d partie",
+  "it": "%d partita",
+  "rm": "%d runda"
+ },
+ "%d Runden": {
+  "en": "%d rounds",
+  "fr": "%d parties",
+  "it": "%d partite",
+  "rm": "%d rundas"
+ },
+ "%d Runden gelöscht.": {
+  "en": "%d rounds deleted.",
+  "fr": "%d parties supprimées.",
+  "it": "%d partite eliminate.",
+  "rm": "%d rundas stizzadas."
  },
  "%d Schleicher": {
   "en": "%d sneakers",
@@ -1573,11 +1627,23 @@
   "it": "%s · %s\n%s\n%s\nCliccare: riquadro di nuovo grande · trascinare: spostare",
   "rm": "%s · %s\n%s\n%s\nCliccar: stgatletta puspè gronda · trair: spustar"
  },
+ "%s · %s – %d Min.": {
+  "en": "%s · %s – %d min",
+  "fr": "%s · %s – %d min",
+  "it": "%s · %s – %d min",
+  "rm": "%s · %s – %d min."
+ },
  "%s · KI: %s · %s": {
   "en": "%s · AI: %s · %s",
   "fr": "%s · IA : %s · %s",
   "it": "%s · IA: %s · %s",
   "rm": "%s · IA: %s · %s"
+ },
+ "%s · Rätsel %s": {
+  "en": "%s · puzzle %s",
+  "fr": "%s · énigme %s",
+  "it": "%s · enigma %s",
+  "rm": "%s · enigma %s"
  },
  "%s · Sonnenaufgang %s · Sonnenuntergang %s · Tag %d h %02d min · Dämmerung %s–%s · Campingplatz zu %d %% belegt": {
   "en": "%s · sunrise %s · sunset %s · day %d h %02d min · twilight %s–%s · campsite %d %% occupied",
@@ -1792,6 +1858,18 @@
   "it": "(sussurri, proprio dietro di te)",
   "rm": "(chischugnem, directamain davos tai)"
  },
+ "(Grundlage: %d Runde)": {
+  "en": "(based on %d round)",
+  "fr": "(base : %d partie)",
+  "it": "(base: %d partita)",
+  "rm": "(basa: %d runda)"
+ },
+ "(Grundlage: %d Runden)": {
+  "en": "(based on %d rounds)",
+  "fr": "(base : %d parties)",
+  "it": "(base: %d partite)",
+  "rm": "(basa: %d rundas)"
+ },
  "(hat nichts mehr für dich)": {
   "en": "(has nothing more for you)",
   "fr": "(n'a plus rien pour toi)",
@@ -1930,6 +2008,12 @@
   "it": ", %d non riusciti (controllare la chiave)",
   "rm": ", %d n’èn betg reussidas (controllar la clav)"
  },
+ ", %d× erwischt": {
+  "en": ", caught %d×",
+  "fr": ", pris %d×",
+  "it": ", preso %d×",
+  "rm": ", tschiffà %d×"
+ },
  ", der Wächter hat etwas weniger Energie": {
   "en": ", the guard has a bit less energy",
   "fr": ", le gardien a un peu moins d’énergie",
@@ -1948,6 +2032,12 @@
   "it": ", finito",
   "rm": ", finì"
  },
+ ", meist bei «%s»": {
+  "en": ", mostly at «%s»",
+  "fr": ", surtout à « %s »",
+  "it": ", di solito a «%s»",
+  "rm": ", per il pli tar «%s»"
+ },
  ", mit Bild von /view.jpg": {
   "en": ", with picture from /view.jpg",
   "fr": ", avec image de /view.jpg",
@@ -1965,6 +2055,12 @@
   "fr": ", départ",
   "it": ", partenza",
   "rm": ", start"
+ },
+ "- Noch nichts Auffälliges.\n": {
+  "en": "- Nothing striking yet.\n",
+  "fr": "- Rien de frappant pour l’instant.\n",
+  "it": "- Ancora niente di particolare.\n",
+  "rm": "- Anc nagut special.\n"
  },
  "--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n": {
   "en": "--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n",
@@ -2407,6 +2503,12 @@
   "it": "Cestino",
   "rm": "Ruttamenta"
  },
+ "abgebrochen": {
+  "en": "stopped",
+  "fr": "interrompu",
+  "it": "interrotto",
+  "rm": "interrut"
+ },
  "abgebrochen (Spiel geschlossen)": {
   "en": "cancelled (game closed)",
   "fr": "annulé (jeu fermé)",
@@ -2490,6 +2592,12 @@
   "fr": "Étape",
   "it": "Fase",
   "rm": "Part"
+ },
+ "Abschnitt %d": {
+  "en": "Section %d",
+  "fr": "Section %d",
+  "it": "Tratto %d",
+  "rm": "Tschancun %d"
  },
  "Absperrgitter": {
   "en": "Crowd barrier",
@@ -2809,6 +2917,12 @@
   "it": "tutti trovati",
   "rm": "tuts chattads"
  },
+ "Alle gegen die Kamera": {
+  "en": "Everyone against the camera",
+  "fr": "Tous contre la caméra",
+  "it": "Tutti contro la telecamera",
+  "rm": "Tuts cunter la camera"
+ },
  "Alle gegen die Kamera (ältere Spielart)": {
   "en": "All against the camera (older game type)",
   "fr": "Tous contre la caméra (ancien type de jeu)",
@@ -2832,6 +2946,12 @@
   "fr": "Tout le monde à la maison",
   "it": "Tutti a casa",
   "rm": "Tuts a chasa"
+ },
+ "Alle notierten Runden löschen (zweimal klicken)": {
+  "en": "Delete all noted rounds (click twice)",
+  "fr": "Supprimer toutes les parties notées (cliquer deux fois)",
+  "it": "Elimina tutte le partite annotate (clicca due volte)",
+  "rm": "Stizzar tut las rundas notadas (cliccar duas giadas)"
  },
  "Alle Notizen exportieren": {
   "en": "Export all notes",
@@ -3607,6 +3727,12 @@
   "it": "Inviare a MoveEye: acceso (porta %d)",
   "rm": "Trametter a MoveEye: activà (port %d)"
  },
+ "an MoveEye übergeben": {
+  "en": "handed to MoveEye",
+  "fr": "transmis à MoveEye",
+  "it": "passato a MoveEye",
+  "rm": "dà vinavant a MoveEye"
+ },
  "An: Fotos für Boden, Wege, Zelt, Bäume und Himmel": {
   "en": "On: photos for ground, paths, tent, trees and sky",
   "fr": "Activé : photos pour le sol, les chemins, la tente, les arbres et le ciel",
@@ -4057,6 +4183,24 @@
   "it": "Compito: %s (+%d)",
   "rm": "Incumbensa: %s (+%d)"
  },
+ "Aufgabe: Velo-Dieb": {
+  "en": "Task: bike thief",
+  "fr": "Tâche : voleur de vélo",
+  "it": "Compito: ladro di bici",
+  "rm": "Incumbensa: lader da velo"
+ },
+ "Aufgabe: Verlorenes Kind": {
+  "en": "Task: lost child",
+  "fr": "Tâche : enfant perdu",
+  "it": "Compito: bambino perso",
+  "rm": "Incumbensa: uffant pers"
+ },
+ "Aufgabe: Zeltplatz nachts": {
+  "en": "Task: campsite at night",
+  "fr": "Tâche : camping la nuit",
+  "it": "Compito: campeggio di notte",
+  "rm": "Incumbensa: plazza da tenda la notg"
+ },
  "Aufhängen": {
   "en": "Hang it up",
   "fr": "Suspendre",
@@ -4206,6 +4350,12 @@
   "fr": "désactivé – nécessaire seulement si MoveEye est dans un autre réseau",
   "it": "spento – serve solo se MoveEye è in un’altra rete",
   "rm": "deactivà – mo necessari, sche MoveEye è en in’autra rait"
+ },
+ "Aus. Einschalten: dann werden alle Runden notiert (nur auf diesem PC).": {
+  "en": "Off. Switch on: then every round is noted (only on this PC).",
+  "fr": "Arrêt. Allumer : chaque partie est alors notée (seulement sur ce PC).",
+  "it": "Spento. Accendi: ogni partita viene annotata (solo su questo PC).",
+  "rm": "Stizzà. Envidar: lura vegn mintga runda notada (mo sin quest PC)."
  },
  "AUSGANG": {
   "en": "EXIT",
@@ -4909,6 +5059,18 @@
   "it": "Niente a «%s». Rileva di nuovo.",
   "rm": "Tar «%s» n'è nagut. Relevar anc ina giada."
  },
+ "Bei «%s»: %d× im Kreis gegangen → Weg oder Ziel unklar?": {
+  "en": "At «%s»: walked in circles %d× → way or goal unclear?",
+  "fr": "À « %s » : tourné en rond %d× → chemin ou but pas clair ?",
+  "it": "A «%s»: girato in tondo %d× → strada o meta poco chiara?",
+  "rm": "Tar «%s»: %d× ì en rudè → via u finamira betg clera?"
+ },
+ "Bei «%s»: %d× lange nichts Neues gefunden → Hinweis früher oder Weg klarer?": {
+  "en": "At «%s»: %d× nothing new for a long time → hint earlier or clearer way?",
+  "fr": "À « %s » : %d× rien de nouveau longtemps → indice plus tôt ou chemin plus clair ?",
+  "it": "A «%s»: %d× niente di nuovo a lungo → suggerimento prima o strada più chiara?",
+  "rm": "Tar «%s»: %d× ditg nagut nov chattà → tip pli baud u via pli clera?"
+ },
  "Beim Bungalow (Bungalow-Reihe)": {
   "en": "At the bungalow (bungalow row)",
   "fr": "Au bungalow (rangée de bungalows)",
@@ -5052,6 +5214,12 @@
   "fr": "Observateur (C)",
   "it": "Osservatore (C)",
   "rm": "Observatur (C)"
+ },
+ "Beobachtet Abenteuer, Spielbereich, Horror (nur entsperrt), Ferienpark-Aufgaben, Erlebniswelt und das Spiel – bis du ihn ausschaltest, auch nach einem Neustart.": {
+  "en": "Watches the adventure, play area, horror (only unlocked), holiday park tasks, adventure world and the game – until you switch it off, also after a restart.",
+  "fr": "Observe l’aventure, l’espace de jeu, l’horreur (seulement déverrouillé), les tâches du parc de vacances, le monde d’aventures et le jeu – jusqu’à ce que tu l’éteignes, même après un redémarrage.",
+  "it": "Osserva l’avventura, l’area giochi, l’horror (solo sbloccato), i compiti del parco vacanze, il mondo delle esperienze e il gioco – finché lo spegni, anche dopo un riavvio.",
+  "rm": "Observa l’aventura, il champ da gieu, il horror (mo deblocà), las incumbensas dal parc da vacanzas, il mund d’aventuras ed il gieu – fin che ti al stizzas, er suenter in reaviar."
  },
  "Bereich aufziehen": {
   "en": "Drag out area",
@@ -6926,6 +7094,12 @@
   "it": "File troppo grande",
   "rm": "Datoteca memia gronda"
  },
+ "Daten löschen": {
+  "en": "Delete data",
+  "fr": "Supprimer les données",
+  "it": "Elimina dati",
+  "rm": "Stizzar las datas"
+ },
  "Dauer": {
   "en": "Duration",
   "fr": "Durée",
@@ -7555,6 +7729,12 @@
   "fr": "La visite explique le panneau des adultes – d’abord choisir «Adultes» en haut.",
   "it": "Il tour spiega il pannello degli adulti – prima scegliere «Adulti» in alto.",
   "rm": "Il gir explitga la panela dals creschids – l’emprim tscherner sisum «Creschids»."
+ },
+ "Der Schalter «Spieltest-Meldungen» von MoveEye (Einstellungen → Entwickler): nach jeder Runde eine kurze Push-Nachricht über die Push-Einstellung von MoveEye.": {
+  "en": "The switch «Play test messages» of MoveEye (Settings → Developer): after every round a short push through MoveEye’s push setting.",
+  "fr": "L’interrupteur « Messages du test de jeu » de MoveEye (Réglages → Développeur) : après chaque partie un court push via le réglage push de MoveEye.",
+  "it": "L’interruttore «Messaggi del test di gioco» di MoveEye (Impostazioni → Sviluppatore): dopo ogni partita un breve push tramite l’impostazione push di MoveEye.",
+  "rm": "Il cumutatur «Messadis dal test da gieu» da MoveEye (Parameters → Sviluppader): suenter mintga runda in curt push sur il parameter push da MoveEye."
  },
  "Der Schlafplatz ist ausgesetzt – jetzt runter vom Grat!": {
   "en": "The sleeping spot is exposed – get off the ridge now!",
@@ -10077,6 +10257,12 @@
   "it": "Ridurre: solo una piccola icona",
   "rm": "Reducir: mo anc in pitschen simbol"
  },
+ "Einleitung": {
+  "en": "Introduction",
+  "fr": "Introduction",
+  "it": "Introduzione",
+  "rm": "Introducziun"
+ },
  "Einmal am Tag beisst etwas Grosses an – und zieht den Angler ins Wasser. Fotografiert mit MoveEyes Kamera.": {
   "en": "Once a day something big bites – and pulls the angler into the water. Photographed with MoveEye’s camera.",
   "fr": "Une fois par jour, quelque chose de gros mord – et tire le pêcheur dans l’eau. Photographié avec la caméra de MoveEye.",
@@ -10214,6 +10400,12 @@
   "fr": "Découvrir",
   "it": "Scoprire",
   "rm": "Scuvrir"
+ },
+ "Entdecken · Blinki-Hinweis": {
+  "en": "Discover · Blinki hint",
+  "fr": "Découvrir · indice de Blinki",
+  "it": "Scoprire · suggerimento di Blinki",
+  "rm": "Scuvrir · tip da Blinki"
  },
  "Entdeckt: %s": {
   "en": "Discovered: %s",
@@ -10576,6 +10768,12 @@
   "it": "Scoperta",
   "rm": "Experientscha"
  },
+ "Erlebniswelt": {
+  "en": "Adventure world",
+  "fr": "Monde d’aventures",
+  "it": "Mondo delle esperienze",
+  "rm": "Mund d’aventuras"
+ },
  "Ersatzteil": {
   "en": "Spare part",
   "fr": "Pièce de rechange",
@@ -10629,6 +10827,12 @@
   "fr": "Première nuit – La cloche sans vache",
   "it": "Prima notte – La campana senza mucca",
   "rm": "Emprima notg – La stgella senza vatga"
+ },
+ "Erstellt %s · Simulator %s%s · %d Runden · beobachtet seit %s\n\n": {
+  "en": "Made %s · simulator %s%s · %d rounds · watched since %s\n\n",
+  "fr": "Créé %s · simulateur %s%s · %d parties · observé depuis %s\n\n",
+  "it": "Creato %s · simulatore %s%s · %d partite · osservato da %s\n\n",
+  "rm": "Creà %s · simulatur %s%s · %d rundas · observà dapi %s\n\n"
  },
  "Erster Push": {
   "en": "First push",
@@ -11176,6 +11380,12 @@
   "it": "errore di scrittura",
   "rm": "errur cun scriver"
  },
+ "Fehler beim Senden": {
+  "en": "sending failed",
+  "fr": "erreur d’envoi",
+  "it": "errore di invio",
+  "rm": "errur cun trametter"
+ },
  "Fehler beim Speichern": {
   "en": "error while saving",
   "fr": "erreur d’enregistrement",
@@ -11362,6 +11572,12 @@
   "fr": "Mission du parc de vacances",
   "it": "Compito del parco vacanze",
   "rm": "Incumbensa dal parc da vacanzas"
+ },
+ "Ferienpark-Aufgaben": {
+  "en": "Holiday park tasks",
+  "fr": "Tâches du parc de vacances",
+  "it": "Compiti del parco vacanze",
+  "rm": "Incumbensas dal parc da vacanzas"
  },
  "Ferienpark: Leben nach Uhrzeit (Grillabend mit Rauch und Glut, Nachtruhe mit WC-Gängen und Taschenlampe, früh Jogger und Bäcker-Lieferwagen)": {
   "en": "Holiday park: life by the clock (barbecue evening with smoke and embers, quiet night with torch-lit toilet walks, joggers and the bakery van early)",
@@ -12010,6 +12226,12 @@
   "fr": "Question",
   "it": "Domanda",
   "rm": "Dumonda"
+ },
+ "Frage beantwortet": {
+  "en": "question answered",
+  "fr": "question répondue",
+  "it": "domanda risposta",
+  "rm": "dumonda respundida"
  },
  "Frage für Erwachsene": {
   "en": "Question for adults",
@@ -12672,6 +12894,12 @@
   "it": "passa normalmente, prende lo zaino, prosegue tranquillo",
   "rm": "passa normal, prenda il rucsac, va quietamain vinavant"
  },
+ "geht so": {
+  "en": "so-so",
+  "fr": "bof",
+  "it": "così così",
+  "rm": "uschè e uschè"
+ },
  "Geisterläufer: der eigene beste Weg läuft als Geist mit": {
   "en": "Ghost runner: your own best path runs along as a ghost",
   "fr": "Coureur fantôme : ton meilleur chemin court avec toi en fantôme",
@@ -12791,6 +13019,12 @@
   "fr": "Rien ne se passe pour l’instant",
   "it": "Al momento non succede niente",
   "rm": "Ussa na capita nagut"
+ },
+ "Gerade keine Runde.": {
+  "en": "No round right now.",
+  "fr": "Aucune partie en ce moment.",
+  "it": "Nessuna partita in questo momento.",
+  "rm": "Gist nagina runda."
  },
  "Gerade läuft keine Runde «Team gegen MoveEye» oder «Verstecken».": {
   "en": "No round «Team against MoveEye» or «Hide and seek» is running right now.",
@@ -12917,6 +13151,12 @@
   "fr": "VU !",
   "it": "VISTO!",
   "rm": "VIS!"
+ },
+ "gesendet": {
+  "en": "sent",
+  "fr": "envoyé",
+  "it": "inviato",
+  "rm": "tramess"
  },
  "Gespeichert als Prüfstand-Fall (läuft hier im Testlauf «Echte Nächte» mit): %s – für GitHub den Schlüssel oben eintragen und nochmals drücken.": {
   "en": "Saved as a test bench case (runs here in the test run «Real nights»): %s – for GitHub enter the key above and press again.",
@@ -14887,6 +15127,12 @@
   "it": "L’horror è bloccato – sbloccalo prima con la password (Avventura → Atmosfera → Horror).",
   "rm": "Horror è bloccà – l’emprim cun il pled-clav deblocar (Aventura → Atmosfera → Horror)."
  },
+ "Horror «Das Hospiz»": {
+  "en": "Horror «The Hospice»",
+  "fr": "Horreur « L’Hospice »",
+  "it": "Horror «L’ospizio»",
+  "rm": "Horror «L’ospizi»"
+ },
  "Horror-Modus": {
   "en": "Horror mode",
   "fr": "Mode horreur",
@@ -16657,6 +16903,12 @@
   "it": "Conoscevi mio nonno?",
   "rm": "Has ti enconuschì mes tat?"
  },
+ "Kap. %d": {
+  "en": "Ch. %d",
+  "fr": "Chap. %d",
+  "it": "Cap. %d",
+  "rm": "Cap. %d"
+ },
  "Kapazität einer Zelle (verbunden: von MoveEye)": {
   "en": "Capacity of one cell (connected: from MoveEye)",
   "fr": "Capacité d’une cellule (connecté : de MoveEye)",
@@ -17064,6 +17316,30 @@
   "fr": "Plus de provisions ni de fromage dans le sac.",
   "it": "Niente più provviste né formaggio nello zaino.",
   "rm": "Nagin provediment e nagin chaschiel pli en il sac."
+ },
+ "Kein Push: dieses MoveEye kennt die Spieltest-Meldungen noch nicht (älter).": {
+  "en": "No push: this MoveEye does not know the play test messages yet (older).",
+  "fr": "Pas de push : ce MoveEye ne connaît pas encore les messages du test de jeu (plus ancien).",
+  "it": "Nessun push: questo MoveEye non conosce ancora i messaggi del test di gioco (più vecchio).",
+  "rm": "Nagin push: quest MoveEye na enconuscha anc betg ils messadis dal test da gieu (pli vegl)."
+ },
+ "Kein Push: in MoveEye ist «Spieltest-Meldungen» aus (Einstellungen → Entwickler).": {
+  "en": "No push: «Play test messages» is off in MoveEye (Settings → Developer).",
+  "fr": "Pas de push : « Messages du test de jeu » est désactivé dans MoveEye (Réglages → Développeur).",
+  "it": "Nessun push: «Messaggi del test di gioco» è spento in MoveEye (Impostazioni → Sviluppatore).",
+  "rm": "Nagin push: en MoveEye è «Messadis dal test da gieu» stizzà (Parameters → Sviluppader)."
+ },
+ "Kein Push: MoveEye ist nicht verbunden (die Runden werden trotzdem notiert).": {
+  "en": "No push: MoveEye is not connected (the rounds are noted anyway).",
+  "fr": "Pas de push : MoveEye n’est pas connecté (les parties sont quand même notées).",
+  "it": "Nessun push: MoveEye non è collegato (le partite vengono comunque annotate).",
+  "rm": "Nagin push: MoveEye n’è betg collià (las rundas vegnan tuttina notadas)."
+ },
+ "kein Push: MoveEye nicht verbunden": {
+  "en": "no push: MoveEye not connected",
+  "fr": "pas de push : MoveEye non connecté",
+  "it": "nessun push: MoveEye non collegato",
+  "rm": "nagin push: MoveEye betg collià"
  },
  "Kein Stress heute. Das Tal läuft nicht davon.": {
   "en": "No stress today. The valley won't run away.",
@@ -18542,11 +18818,23 @@
   "it": "Imparare",
   "rm": "Emprender"
  },
+ "letzte Meldung: %s": {
+  "en": "last message: %s",
+  "fr": "dernier message : %s",
+  "it": "ultimo messaggio: %s",
+  "rm": "ultim messadi: %s"
+ },
  "Letzte Minute: Die Kamera passt dann besser auf – jetzt wird es spannend!": {
   "en": "Last minute: the camera then pays more attention – now it gets exciting!",
   "fr": "Dernière minute : la caméra fait alors plus attention – ça devient passionnant !",
   "it": "Ultimo minuto: la telecamera fa più attenzione – ora si fa emozionante!",
   "rm": "Ultima minuta: la camera fa lura dapli attenziun – ussa vegni stimulant!"
+ },
+ "Letzte: «%s» – %s": {
+  "en": "Last: «%s» – %s",
+  "fr": "Dernier : « %s » – %s",
+  "it": "Ultimo: «%s» – %s",
+  "rm": "Ultim: «%s» – %s"
  },
  "Letzten Alarm-Rückblick als Prüfstand-Fall": {
   "en": "Last alarm review as a test bench case",
@@ -19012,6 +19300,12 @@
   "it": "già in corso",
   "rm": "gia en lavur"
  },
+ "Läuft seit %s.": {
+  "en": "Running since %s.",
+  "fr": "En marche depuis %s.",
+  "it": "Attivo da %s.",
+  "rm": "Funcziuna dapi %s."
+ },
  "Läuft: %s (Lauf %d von %d) · %s · noch etwa %d Min.": {
   "en": "Running: %s (run %d of %d) · %s · about %d min left",
   "fr": "En cours : %s (passage %d sur %d) · %s · encore environ %d min",
@@ -19065,6 +19359,18 @@
   "fr": "macOS : Réglages Système → Réseau → Pare-feu : autoriser les connexions entrantes pour le simulateur (port %d).",
   "it": "macOS: Impostazioni di Sistema → Rete → Firewall: consentire le connessioni in entrata per il simulatore (porta %d).",
   "rm": "macOS: Configuraziuns dal sistem → Rait → Firewall: permetter colliaziuns entrantas per il simulatur (port %d)."
+ },
+ "Maggie": {
+  "en": "Maggie",
+  "fr": "Maggie",
+  "it": "Maggie",
+  "rm": "Maggie"
+ },
+ "Maggie und der Bergkristall": {
+  "en": "Maggie and the rock crystal",
+  "fr": "Maggie et le cristal de roche",
+  "it": "Maggie e il cristallo di rocca",
+  "rm": "Maggie ed il cristal da muntogna"
  },
  "Mai": {
   "en": "May",
@@ -19293,6 +19599,12 @@
   "fr": "Ma chèvre Flocke s'est enfuie. On l'a vue la dernière fois au Fondueplätzli près du Gumpisee. Tu la ramènes si tu la vois ?",
   "it": "La mia capra Flocke è scappata. L'ultima volta l'hanno vista al Fondueplätzli vicino al Gumpisee. Me la riporti se la vedi?",
   "rm": "Mia chaura Flocke è fugida. L'ultima giada l'han ins vesida tar il Fondueplätzli al Gumpisee. La portas ti enavos, sche ti la vesas?"
+ },
+ "Meldung aufs Handy": {
+  "en": "Message to the phone",
+  "fr": "Message sur le téléphone",
+  "it": "Messaggio sul telefono",
+  "rm": "Messadi sin il telefonin"
  },
  "Mensch": {
   "en": "Human",
@@ -20146,6 +20458,12 @@
   "it": "MoveEye ha fatto {n} registrazioni nella notte – nessuno nell'immagine della telecamera, solo in quella termica. Guarda nella cronologia di MoveEye (Messaggi) o qui sotto «Registrazioni».",
   "rm": "MoveEye ha fatg {n} registraziuns la notg – en il maletg da la camera nagin, mo en il maletg termic. Guarda en il decurs da MoveEye (Messadis) u qua sut «Registraziuns»."
  },
+ "MoveEye hat keinen Push eingerichtet": {
+  "en": "MoveEye has no push set up",
+  "fr": "MoveEye n’a pas de push configuré",
+  "it": "MoveEye non ha push configurato",
+  "rm": "MoveEye n’ha nagin push endrizzà"
+ },
  "MoveEye hat noch keine echten Bilder (Tagebuch, Alarmbilder)": {
   "en": "MoveEye has no real pictures yet (diary, alarm pictures)",
   "fr": "MoveEye n’a pas encore de vraies images (journal, images d’alarme)",
@@ -20211,6 +20529,12 @@
   "fr": "MoveEye n'est pas connecté - le simulateur estime ce que MoveEye aurait vu.",
   "it": "MoveEye non è connesso - il simulatore stima ciò che MoveEye avrebbe visto.",
   "rm": "MoveEye n'è betg collià - il simulatur stima tge che MoveEye avess vis."
+ },
+ "MoveEye ist nicht verbunden – der Schalter «Spieltest-Meldungen» ist in MoveEye (Einstellungen → Entwickler).": {
+  "en": "MoveEye is not connected – the switch «Play test messages» is in MoveEye (Settings → Developer).",
+  "fr": "MoveEye n’est pas connecté – l’interrupteur « Messages du test de jeu » est dans MoveEye (Réglages → Développeur).",
+  "it": "MoveEye non è collegato – l’interruttore «Messaggi del test di gioco» è in MoveEye (Impostazioni → Sviluppatore).",
+  "rm": "MoveEye n’è betg collià – il cumutatur «Messadis dal test da gieu» è en MoveEye (Parameters → Sviluppader)."
  },
  "MoveEye ist nicht verbunden – die Anleitung steht in MoveEye unter Mehr → Anleitung.": {
   "en": "MoveEye is not connected – the manual is in MoveEye under More → Manual.",
@@ -20680,6 +21004,12 @@
   "fr": "Tu veux échanger quelque chose ?",
   "it": "Vuoi scambiare qualcosa?",
   "rm": "Vuls ti barattar insatge?"
+ },
+ "Möchtest du noch etwas sagen? (freiwillig)": {
+  "en": "Anything else you want to say? (optional)",
+  "fr": "Tu veux encore dire quelque chose ? (facultatif)",
+  "it": "Vuoi dire ancora qualcosa? (facoltativo)",
+  "rm": "Vuls ti anc dir insatge? (facultativ)"
  },
  "Möwe auf der Restaurant-Terrasse": {
   "en": "Gull on the restaurant terrace",
@@ -21396,6 +21726,12 @@
   "it": "Nuovo",
   "rm": "Nov"
  },
+ "Neu auswerten": {
+  "en": "Evaluate again",
+  "fr": "Réévaluer",
+  "it": "Rivaluta",
+  "rm": "Evaluar da nov"
+ },
  "Neu frei: %s": {
   "en": "Newly unlocked: %s",
   "fr": "Nouveau : %s",
@@ -21569,6 +21905,12 @@
   "fr": "Ne plus suivre",
   "it": "Non seguire più",
   "rm": "Betg pli suandar"
+ },
+ "nicht so": {
+  "en": "not really",
+  "fr": "pas trop",
+  "it": "non tanto",
+  "rm": "betg uschè"
  },
  "Nicht verbaut (Blindstopfen) – kein Weitwinkel-Bild": {
   "en": "Not installed (blind cover) – no wide picture",
@@ -21816,6 +22158,18 @@
   "it": "Ancora nessun riferimento",
   "rm": "Anc nagina referenza"
  },
+ "Noch keine Runden notiert.\n\n": {
+  "en": "No rounds noted yet.\n\n",
+  "fr": "Aucune partie notée pour l’instant.\n\n",
+  "it": "Ancora nessuna partita annotata.\n\n",
+  "rm": "Anc naginas rundas notadas.\n\n"
+ },
+ "Noch keine Runden notiert. Spiel eine Runde (z. B. Spielbereich oder Abenteuer) – danach stehen hier die Vorschläge.": {
+  "en": "No rounds noted yet. Play a round (e.g. play area or adventure) – then the suggestions are here.",
+  "fr": "Aucune partie notée pour l’instant. Joue une partie (p. ex. espace de jeu ou aventure) – ensuite les suggestions apparaissent ici.",
+  "it": "Ancora nessuna partita annotata. Gioca una partita (p. es. area giochi o avventura) – poi qui ci sono i suggerimenti.",
+  "rm": "Anc naginas rundas notadas. Gioga ina runda (p. ex. champ da gieu u aventura) – lura stattan qua las propostas."
+ },
  "Noch keine Schleichwege – zuerst eine Spielrunde mit MoveEye spielen.": {
   "en": "No sneak paths yet – first play a game round with MoveEye.",
   "fr": "Pas encore de chemins furtifs – jouer d’abord une manche avec MoveEye.",
@@ -21869,6 +22223,12 @@
   "fr": "pas encore vérifié",
   "it": "non ancora controllato",
   "rm": "anc betg controllà"
+ },
+ "Noch nichts Auffälliges.": {
+  "en": "Nothing striking yet.",
+  "fr": "Rien de frappant pour l’instant.",
+  "it": "Ancora niente di particolare.",
+  "rm": "Anc nagut special."
  },
  "noch nichts zu prüfen (Senden aus oder gerade gestartet)": {
   "en": "nothing to check yet (sending off or just started)",
@@ -21978,6 +22338,12 @@
   "it": "Voto",
   "rm": "Nota"
  },
+ "Notiert gerade: %s": {
+  "en": "Noting now: %s",
+  "fr": "Note en ce moment : %s",
+  "it": "Sta annotando: %s",
+  "rm": "Nota gist: %s"
+ },
  "Notiz gespeichert (%d)": {
   "en": "Note saved (%d)",
   "fr": "Note enregistrée (%d)",
@@ -22073,6 +22439,12 @@
   "fr": "Seul le gardien a des outils.",
   "it": "Solo il guardiano ha strumenti.",
   "rm": "Mo il guardian ha utensils."
+ },
+ "Nur dieser PC. Keine Passwörter, keine Spielernamen, keine Einstellungen. Zeiten = aktive Zeit.\n\n": {
+  "en": "Only this PC. No passwords, no player names, no settings. Times = active time.\n\n",
+  "fr": "Seulement ce PC. Pas de mots de passe, pas de noms de joueurs, pas de réglages. Temps = temps actif.\n\n",
+  "it": "Solo questo PC. Nessuna password, nessun nome di giocatore, nessuna impostazione. Tempi = tempo attivo.\n\n",
+  "rm": "Mo quest PC. Nagins pleds-clav, nagins nums da giugaders, nagins parameters. Temps = temp activ.\n\n"
  },
  "Nur durchs Münzfernrohr zu sehen.": {
   "en": "Only visible through the coin telescope.",
@@ -23473,6 +23845,12 @@
   "it": "Push di MoveEye (tamper) – segnalazione di sabotaggio, non conta come avviso",
   "rm": "Push da MoveEye (tamper) – annunzia da sabotascha, na quinta betg sco avertiment"
  },
+ "Push über MoveEye ist an.": {
+  "en": "Push through MoveEye is on.",
+  "fr": "Le push via MoveEye est activé.",
+  "it": "Il push tramite MoveEye è attivo.",
+  "rm": "Push sur MoveEye è envidà."
+ },
  "Pushes richtig %d / falsch %d": {
   "en": "Pushes right %d / wrong %d",
   "fr": "Push justes %d / faux %d",
@@ -23900,6 +24278,12 @@
   "it": "Anello intorno all’apparecchio (8 m)",
   "rm": "Rintg enturn l’apparat (8 m)"
  },
+ "Rohdaten (eine JSON-Datei pro Runde) und der Bericht mit den Vorschlägen (Markdown) in einer ZIP-Datei": {
+  "en": "Raw data (one JSON file per round) and the report with the suggestions (Markdown) in one ZIP file",
+  "fr": "Données brutes (un fichier JSON par partie) et le rapport avec les suggestions (Markdown) dans un fichier ZIP",
+  "it": "Dati grezzi (un file JSON per partita) e il rapporto con i suggerimenti (Markdown) in un file ZIP",
+  "rm": "Datas brutas (ina datoteca JSON per runda) ed il rapport cun las propostas (Markdown) en ina datoteca ZIP"
+ },
  "Rollen": {
   "en": "Roles",
   "fr": "Rôles",
@@ -24097,6 +24481,12 @@
   "fr": "Rover : poursuit la patrouille",
   "it": "Rover: continua la pattuglia",
   "rm": "Rover: vinavant cun la patrulla"
+ },
+ "Ruckeln bei «%s»: %d s unter %d Bilder/s (tiefste %d, in %d Runden)": {
+  "en": "Judder at «%s»: %d s below %d frames/s (lowest %d, in %d rounds)",
+  "fr": "Saccades à « %s » : %d s sous %d images/s (minimum %d, en %d parties)",
+  "it": "Scatti a «%s»: %d s sotto %d fotogrammi/s (minimo %d, in %d partite)",
+  "rm": "Sgrattinar tar «%s»: %d s sut %d maletgs/s (il pli bass %d, en %d rundas)"
  },
  "Rucksack": {
   "en": "Backpack",
@@ -24307,6 +24697,30 @@
   "fr": "Énigmes et traces du grand-père",
   "it": "Enigmi e tracce del nonno",
   "rm": "Enigmas e fastizs dal tat"
+ },
+ "Rätsel weiter": {
+  "en": "puzzle on",
+  "fr": "énigme suivante",
+  "it": "enigma avanti",
+  "rm": "enigma vinavant"
+ },
+ "Rätsel «%s»: %s Runden brauchten den Tipp → evtl. zu schwer": {
+  "en": "Puzzle «%s»: %s rounds needed the tip → maybe too hard",
+  "fr": "Énigme « %s » : %s parties ont eu besoin de l’indice → peut-être trop difficile",
+  "it": "Enigma «%s»: %s partite hanno avuto bisogno del suggerimento → forse troppo difficile",
+  "rm": "Enigma «%s»: %s rundas han duvrà il tip → forsa memia grev"
+ },
+ "Rätsel «%s»: %s Runden lange ohne Antwort → Hinweis früher zeigen?": {
+  "en": "Puzzle «%s»: %s rounds long without an answer → show the hint earlier?",
+  "fr": "Énigme « %s » : %s parties longtemps sans réponse → montrer l’indice plus tôt ?",
+  "it": "Enigma «%s»: %s partite a lungo senza risposta → mostrare il suggerimento prima?",
+  "rm": "Enigma «%s»: %s rundas ditg senza resposta → mussar il tip pli baud?"
+ },
+ "Rätsel «%s»: im Schnitt %s falsche Antworten → Frage oder Hinweise klarer?": {
+  "en": "Puzzle «%s»: on average %s wrong answers → question or hints clearer?",
+  "fr": "Énigme « %s » : en moyenne %s mauvaises réponses → question ou indices plus clairs ?",
+  "it": "Enigma «%s»: in media %s risposte sbagliate → domanda o suggerimenti più chiari?",
+  "rm": "Enigma «%s»: en media %s respostas fallidas → dumonda u tips pli clers?"
  },
  "Rätsel: Das Schloss am Hospiz": {
   "en": "Riddle: The lock at the hospice",
@@ -24541,6 +24955,12 @@
   "fr": "Bouchon de moutons sur la route du col",
   "it": "Ingorgo di pecore sulla strada del passo",
   "rm": "Stausch da nursas sin la via dal pass"
+ },
+ "Schalter aus": {
+  "en": "switch off",
+  "fr": "interrupteur désactivé",
+  "it": "interruttore spento",
+  "rm": "cumutatur stizzà"
  },
  "Schattwald": {
   "en": "Schattwald",
@@ -25998,6 +26418,12 @@
   "it": "Gioco (guardiano)",
   "rm": "Gieu (guardian)"
  },
+ "Spiel (Wächter, Rangliste)": {
+  "en": "Game (guard, ranking)",
+  "fr": "Jeu (gardien, classement)",
+  "it": "Gioco (guardiano, classifica)",
+  "rm": "Gieu (guardian, classament)"
+ },
  "Spiel am PC – ": {
   "en": "Game on the PC – ",
   "fr": "Jeu sur le PC – ",
@@ -26136,6 +26562,12 @@
   "it": "Tipo di gioco impostato su «Controllo zone» (invitare giocatori)",
   "rm": "Gener da gieu mess sin «Controlla da zonas» (envidar giugaders)"
  },
+ "Spielbereich": {
+  "en": "Play area",
+  "fr": "Espace de jeu",
+  "it": "Area giochi",
+  "rm": "Champ da gieu"
+ },
  "Spielbereich (Kapitel der Szenen)": {
   "en": "Play area (chapters of the scenes)",
   "fr": "Espace de jeu (chapitres des scènes)",
@@ -26219,6 +26651,54 @@
   "fr": "Manche : ",
   "it": "Turno di gioco: ",
   "rm": "Runda da gieu: "
+ },
+ "Spieltest": {
+  "en": "Play test",
+  "fr": "Test de jeu",
+  "it": "Test di gioco",
+  "rm": "Test da gieu"
+ },
+ "Spieltest-Assistent": {
+  "en": "Play test assistant",
+  "fr": "Assistant de test de jeu",
+  "it": "Assistente test di gioco",
+  "rm": "Assistent da test da gieu"
+ },
+ "Spieltest-Assistent läuft (Mehr → Entwickler → Spieltest)": {
+  "en": "Play test assistant is running (More → Developer → Play test)",
+  "fr": "L’assistant de test de jeu tourne (Plus → Développeur → Test de jeu)",
+  "it": "L’assistente test di gioco è attivo (Altro → Sviluppatore → Test di gioco)",
+  "rm": "L’assistent da test da gieu funcziuna (Dapli → Sviluppader → Test da gieu)"
+ },
+ "Spieltest-Assistent: beobachtet die Spiele und macht Vorschläge (Mehr → Entwickler → Spieltest)": {
+  "en": "Play test assistant: watches the games and makes suggestions (More → Developer → Play test)",
+  "fr": "Assistant de test de jeu : observe les jeux et fait des suggestions (Plus → Développeur → Test de jeu)",
+  "it": "Assistente test di gioco: osserva i giochi e fa suggerimenti (Altro → Sviluppatore → Test di gioco)",
+  "rm": "Assistent da test da gieu: observa ils gieus e fa propostas (Dapli → Sviluppader → Test da gieu)"
+ },
+ "Spieltest-Daten aus dem MoveEye-Simulator (Mehr → Entwickler → Spieltest).\nbericht.md = Zusammenfassung mit Vorschlägen, runden/ = Rohdaten (JSON pro Runde).\nVersion %s.\n": {
+  "en": "Play test data from the MoveEye simulator (More → Developer → Play test).\nbericht.md = summary with suggestions, runden/ = raw data (JSON per round).\nVersion %s.\n",
+  "fr": "Données du test de jeu du simulateur MoveEye (Plus → Développeur → Test de jeu).\nbericht.md = résumé avec suggestions, runden/ = données brutes (JSON par partie).\nVersion %s.\n",
+  "it": "Dati del test di gioco dal simulatore MoveEye (Altro → Sviluppatore → Test di gioco).\nbericht.md = riassunto con suggerimenti, runden/ = dati grezzi (JSON per partita).\nVersione %s.\n",
+  "rm": "Datas dal test da gieu dal simulatur MoveEye (Dapli → Sviluppader → Test da gieu).\nbericht.md = resumaziun cun propostas, runden/ = datas brutas (JSON per runda).\nVersiun %s.\n"
+ },
+ "Spieltest-Daten exportiert.": {
+  "en": "Play test data exported.",
+  "fr": "Données du test de jeu exportées.",
+  "it": "Dati del test di gioco esportati.",
+  "rm": "Datas dal test da gieu exportadas."
+ },
+ "Spieltest-Meldungen aufs Handy (Schalter in MoveEye, über dessen Push)": {
+  "en": "Play test messages to the phone (switch in MoveEye, through its push)",
+  "fr": "Messages du test de jeu sur le téléphone (interrupteur dans MoveEye, via son push)",
+  "it": "Messaggi del test di gioco sul telefono (interruttore in MoveEye, tramite il suo push)",
+  "rm": "Messadis dal test da gieu sin il telefonin (cumutatur en MoveEye, sur ses push)"
+ },
+ "Spieltest: %s %s %s, %d Min., %d Tipps": {
+  "en": "Play test: %s %s %s, %d min, %d tips",
+  "fr": "Test de jeu : %s %s %s, %d min, %d indices",
+  "it": "Test di gioco: %s %s %s, %d min, %d suggerimenti",
+  "rm": "Test da gieu: %s %s %s, %d min., %d tips"
  },
  "Spielwiese am Strand (lustiger Platz)": {
   "en": "Play meadow at the beach (funny place)",
@@ -27060,6 +27540,12 @@
   "fr": "Planche SUP",
   "it": "Tavola SUP",
   "rm": "Aissa SUP"
+ },
+ "super": {
+  "en": "great",
+  "fr": "super",
+  "it": "super",
+  "rm": "super"
  },
  "Super gemacht!": {
   "en": "Well done!",
@@ -28544,6 +29030,12 @@
   "it": "Pareggio",
   "rm": "Pari"
  },
+ "unerwartet (beim nächsten Start bemerkt)": {
+  "en": "unexpected (noticed at the next start)",
+  "fr": "inattendu (remarqué au prochain démarrage)",
+  "it": "inatteso (notato al prossimo avvio)",
+  "rm": "nunspetgà (remartgà al proxim start)"
+ },
  "Unerwartete Datei in versions.json: ": {
   "en": "Unexpected file in versions.json: ",
   "fr": "Fichier inattendu dans versions.json : ",
@@ -28982,6 +29474,12 @@
   "it": "Lasciare",
   "rm": "Bandunar"
  },
+ "verlassen": {
+  "en": "left",
+  "fr": "quitté",
+  "it": "lasciato",
+  "rm": "bandunà"
+ },
  "Verlassene Sennerei mit uraltem Käselaib": {
   "en": "Abandoned dairy with an ancient cheese wheel",
   "fr": "Fromagerie abandonnée avec une très vieille meule",
@@ -29005,6 +29503,12 @@
   "fr": "Signaler le randonneur blessé (gardienne de cabane ou garde-faune)",
   "it": "Segnalare l'escursionista ferito (custode della capanna o guardiacaccia)",
   "rm": "Annunziar il viandant blessà (chamonera u guardiaselvaschina)"
+ },
+ "verloren": {
+  "en": "lost",
+  "fr": "perdu",
+  "it": "perso",
+  "rm": "pers"
  },
  "Verlorenes Kind gefunden": {
   "en": "Lost child found",
@@ -30622,6 +31126,12 @@
   "it": "Com'era il tuo posto? (valle alpina: valuta ora)",
   "rm": "Co era tia plazza? (val: valitar ussa)"
  },
+ "Wie hat es dir gefallen?": {
+  "en": "How did you like it?",
+  "fr": "Ça t’a plu ?",
+  "it": "Ti è piaciuto?",
+  "rm": "Co t’ha quai plaschì?"
+ },
  "wie heute (echtes Datum)": {
   "en": "like today (real date)",
   "fr": "comme aujourd’hui (date réelle)",
@@ -31035,6 +31545,12 @@
   "fr": "Ça devient juste : fermer les programmes inutiles.",
   "it": "Diventa scarso: chiudere i programmi non necessari.",
   "rm": "I vegn stretg: serrar programs betg necessaris."
+ },
+ "Wirklich löschen?": {
+  "en": "Really delete?",
+  "fr": "Vraiment supprimer ?",
+  "it": "Eliminare davvero?",
+  "rm": "Propi stizzar?"
  },
  "WLAN weg": {
   "en": "Wi-Fi gone",
@@ -31775,6 +32291,12 @@
   "it": "Errore di mira",
   "rm": "Sbagl da mira"
  },
+ "ZIP für Claude": {
+  "en": "ZIP for Claude",
+  "fr": "ZIP pour Claude",
+  "it": "ZIP per Claude",
+  "rm": "ZIP per Claude"
+ },
  "ZIP hochladen": {
   "en": "Upload ZIP",
   "fr": "Envoyer le ZIP",
@@ -32237,6 +32759,30 @@
   "it": "«%s» nascosto – per mostrarlo di nuovo: «Finestre» nella barra in basso",
   "rm": "«%s» zuppentà – mussar puspè: «Fanestras» en la trav giusut"
  },
+ "«%s» dauert im Schnitt %s× so lang wie die anderen (Ø %s Min., andere %s Min.)": {
+  "en": "«%s» takes on average %s× as long as the others (avg %s min, others %s min)",
+  "fr": "« %s » dure en moyenne %s× plus que les autres (moy. %s min, autres %s min)",
+  "it": "«%s» dura in media %s× più delle altre (media %s min, altre %s min)",
+  "rm": "«%s» dura en media %s× uschè ditg sco ils auters (Ø %s min., auters %s min.)"
+ },
+ "«%s» dauert im Schnitt %s× so lang wie geplant (Ø %s Min., geplant %s Min.)": {
+  "en": "«%s» takes on average %s× as long as planned (avg %s min, planned %s min)",
+  "fr": "« %s » dure en moyenne %s× plus que prévu (moy. %s min, prévu %s min)",
+  "it": "«%s» dura in media %s× più del previsto (media %s min, previsto %s min)",
+  "rm": "«%s» dura en media %s× uschè ditg sco planisà (Ø %s min., planisà %s min.)"
+ },
+ "«%s» gefällt: %d× «super»": {
+  "en": "«%s» is liked: %d× «great»",
+  "fr": "« %s » plaît : %d× « super »",
+  "it": "«%s» piace: %d× «super»",
+  "rm": "«%s» plascha: %d× «super»"
+ },
+ "«%s» geht viel schneller als geplant (Ø %s Min., geplant %s Min.) → evtl. zu leicht": {
+  "en": "«%s» is much faster than planned (avg %s min, planned %s min) → maybe too easy",
+  "fr": "« %s » va beaucoup plus vite que prévu (moy. %s min, prévu %s min) → peut-être trop facile",
+  "it": "«%s» è molto più veloce del previsto (media %s min, previsto %s min) → forse troppo facile",
+  "rm": "«%s» va bler pli svelt che planisà (Ø %s min., planisà %s min.) → forsa memia lev"
+ },
  "«%s» geladen (%s).": {
   "en": "«%s» loaded (%s).",
   "fr": "«%s» chargé (%s).",
@@ -32260,6 +32806,42 @@
   "fr": "«%s» introuvable.",
   "it": "«%s» non trovato.",
   "rm": "«%s» betg chattà."
+ },
+ "«%s»: %d× erwischt in %d Runden → Wächter oder Gegner zu schnell / zu streng?": {
+  "en": "«%s»: caught %d× in %d rounds → guard or opponents too fast / too strict?",
+  "fr": "« %s » : pris %d× en %d parties → gardien ou adversaires trop rapides / trop sévères ?",
+  "it": "«%s»: preso %d× in %d partite → guardiano o avversari troppo veloci / troppo severi?",
+  "rm": "«%s»: %d× tschiffà en %d rundas → guardian u adversaris memia svelts / memia severs?"
+ },
+ "«%s»: %d× neu gestartet → Anfang zu schwer?": {
+  "en": "«%s»: restarted %d× → start too hard?",
+  "fr": "« %s » : recommencé %d× → début trop difficile ?",
+  "it": "«%s»: ricominciato %d× → inizio troppo difficile?",
+  "rm": "«%s»: %d× cumenzà da nov → cumenzament memia grev?"
+ },
+ "«%s»: %s Bewertungen «nicht so» → anschauen, was nicht gefällt": {
+  "en": "«%s»: %s ratings «not really» → look at what is not liked",
+  "fr": "« %s » : %s notes « pas trop » → regarder ce qui ne plaît pas",
+  "it": "«%s»: %s voti «non tanto» → guardare cosa non piace",
+  "rm": "«%s»: %s valitaziuns «betg uschè» → guardar tge che na plascha betg"
+ },
+ "«%s»: %s Runden abgebrochen": {
+  "en": "«%s»: %s rounds stopped",
+  "fr": "« %s » : %s parties interrompues",
+  "it": "«%s»: %s partite interrotte",
+  "rm": "«%s»: %s rundas interruttas"
+ },
+ "«%s»: im Schnitt %s Tipps pro Runde → evtl. zu schwer": {
+  "en": "«%s»: on average %s tips per round → maybe too hard",
+  "fr": "« %s » : en moyenne %s indices par partie → peut-être trop difficile",
+  "it": "«%s»: in media %s suggerimenti per partita → forse troppo difficile",
+  "rm": "«%s»: en media %s tips per runda → forsa memia grev"
+ },
+ "«%s»: im Schnitt %s Umwege pro Runde → Hinweise klarer?": {
+  "en": "«%s»: on average %s detours per round → clearer hints?",
+  "fr": "« %s » : en moyenne %s détours par partie → indices plus clairs ?",
+  "it": "«%s»: in media %s deviazioni per partita → suggerimenti più chiari?",
+  "rm": "«%s»: en media %s sviaments per runda → tips pli clers?"
  },
  "«18. Januar 1936. Sturm. Zwei Wanderer über den Pass geholt. Die Glocke hilft im Nebel. Wer sie hört, soll ihr folgen. – B.»": {
   "en": "«18 January 1936. Storm. Brought two hikers over the pass. The bell helps in the fog. Whoever hears it should follow it. – B.»",
@@ -32662,6 +33244,12 @@
   "fr": "Passer",
   "it": "Salta",
   "rm": "Siglir"
+ },
+ "übersprungen": {
+  "en": "skipped",
+  "fr": "passé",
+  "it": "saltato",
+  "rm": "siglì"
  },
  "Überwachen: %s – Runde %d m, %d Punkte": {
   "en": "Watch: %s – round %d m, %d points",

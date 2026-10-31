@@ -1,7 +1,7 @@
 {
- "version": "3D-4.76",
+ "version": "3D-4.77",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34626270,
- "sha256": "08d07a09fab555d4f45923c7bbffa87f38ffc6532a85ba3bcfd59b902752e787",
- "notes": "Bergtal: weitere Weltfehler behoben (Innenräume, Sennerei, Geländelöcher, Steinbrücke, Tarnwiese, Arvenhain, Felsen)."
+ "size": 34687863,
+ "sha256": "9510f940a9da73971d5990f2ad5b288666d2ad8d85aaae529adfb6fcae02bfdf",
+ "notes": "Spieltest-Assistent: beobachtet alle Spielmodi, Smileys, Vorschläge, ZIP für Claude, Push über MoveEye."
 }
