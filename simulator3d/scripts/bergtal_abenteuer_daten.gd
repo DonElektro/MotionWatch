@@ -118,6 +118,7 @@ const CHAPTERS := [
 				["Lang und flach: der Strasse nach", [Vector2(190, -500), Vector2(190, -400), Vector2(182, -300), Vector2(178, -200)], []]]},
 			{"clue": "terrain", "text": "An einem Wegweiser ist eine Kerbe in den Pfosten geschnitten - sie zeigt nicht zum See, sondern hinauf zu den Kuhweiden."},
 			{"walk": [Vector2(178, -200), Vector2(178, -40), Vector2(110, -20)], "name": "Hinauf zu den Weiden", "bach": true},
+			{"clue": "person"},
 			{"read": {"q": "Auf dem Kartenstück: eine Glocke über einem Brunnen. Wo ist das?",
 				"options": [["Alp Tschuggen (Brunnen beim Stall)", true], ["Kapelle St. Jodern (Glockenturm)", false], ["Tüfelsschlund (Wasserfall)", false]],
 				"hint": "Glocke = Kuhglocke, nicht Kirchenglocke. Der Senner hat es gesagt.",

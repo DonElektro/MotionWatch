@@ -291,8 +291,8 @@ func start_run(seed_v := 0) -> Dictionary:
 	if main.BT_MONTH.has(str(W["season"])):
 		main.season = main.BT_MONTH[str(W["season"])]
 		main._sun_cache = [-1.0, Vector2.ZERO]
-	main.bt_orient = str(lv[5])
-	R["saved"] = {"bt_events": main.bt_events, "auto": main.auto_visitors, "speed": main.speed}
+	R["saved"] = {"bt_events": main.bt_events, "auto": main.auto_visitors, "speed": main.speed, "orient": main.bt_orient}
+	main.bt_orient = str(lv[5])                          # the level sets the orientation (restored in the morning)
 	main.bt_events = false                               # only the adventure's events (the night truth is complete)
 	main.auto_visitors = false
 	main.set_scene("bergtal")                            # (again: built with the season)
@@ -1191,6 +1191,8 @@ func _restore() -> void:
 	var sv: Dictionary = R.get("saved", {})
 	main.bt_events = bool(sv.get("bt_events", true))
 	main.auto_visitors = bool(sv.get("auto", true))
+	if sv.has("orient"):
+		main.bt_orient = str(sv["orient"])
 
 
 func _forgot_text(k: String) -> String:
@@ -1625,6 +1627,38 @@ func _card(title: String, text: String, on: bool, cb: Callable, locked := false,
 	return pc
 
 
+func _stars(n: int, of: int, sz: float) -> Control:
+	"""stars drawn as shapes (the font of the window has no ★ on every PC): gold = got, grey outline = not"""
+	var c := Control.new()
+	c.custom_minimum_size = Vector2(of * sz * 1.12, sz)
+	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	c.draw.connect(func():
+		for i in range(of):
+			var ctr := Vector2(sz * 0.56 + i * sz * 1.12, sz * 0.52)
+			var pts := PackedVector2Array()
+			for k in range(10):
+				var a := -PI / 2.0 + k * PI / 5.0
+				var r := sz * (0.5 if k % 2 == 0 else 0.21)
+				pts.append(ctr + Vector2(cos(a), sin(a)) * r)
+			if i < n:
+				c.draw_colored_polygon(pts, Color("#ffd166"))
+			else:
+				pts.append(pts[0])
+				c.draw_polyline(pts, Color(0.45, 0.5, 0.58), 1.5, true))
+	return c
+
+
+func _rating(parent: Control, title: String, sich: int, aus: int, ruhe: int) -> void:
+	var fl := HFlowContainer.new()
+	fl.add_theme_constant_override("h_separation", 8)
+	parent.add_child(fl)
+	if title != "":
+		fl.add_child(_lab(title, 13, Color(0.75, 0.8, 0.86), false))
+	for e in [[T.t("Sicherheit"), sich], [T.t("Aussicht"), aus], [T.t("Ruhe"), ruhe]]:
+		fl.add_child(_lab(str(e[0]), 13, Color(0.85, 0.88, 0.92), false))
+		fl.add_child(_stars(int(e[1]), 5, 14.0))
+
+
 func _grid(n: int) -> GridContainer:
 	var g := GridContainer.new()
 	g.columns = n
@@ -1666,7 +1700,8 @@ func _bar(parent: Control, label: String, v: float, vmax: float, col: Color, txt
 func _btn(parent: Control, text: String, cb: Callable, primary := false, disabled := false) -> Button:
 	var b := Button.new()
 	b.text = preload("res://scripts/gamewiz.gd").plain(text)
-	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if parent is VBoxContainer:                          # (in a row the text would get no width)
+		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	b.disabled = disabled
 	b.pressed.connect(cb)
 	if primary and main.UI.has_method("primary"):
@@ -1800,7 +1835,7 @@ func _paint_chapter() -> void:
 		var n: int = int(ch["id"])
 		var open: bool = n <= int(P["chapter"])
 		var st: int = int(P["stars"].get(str(n), 0))
-		var stars := "★".repeat(st) + "☆".repeat(3 - st)
+		var stars := T.t("%d von 3 Sternen") % st
 		var nn := n
 		gc.add_child(_card(T.t(str(ch["title"])), T.t(str(ch["intro"])) if n == int(W["chapter"]) else "", n == int(W["chapter"]),
 				func(): op({"do": "pick", "key": "chapter", "value": nn}), not open, stars if open else T.t("noch nicht frei")))
@@ -2017,8 +2052,7 @@ func _paint_camp() -> void:
 	var p: Vector2 = R["camp_xz"]
 	if b != null:
 		var ev: Dictionary = b.evaluate(p.x, p.y)
-		var stx := func(n): return "★".repeat(int(n)) + "☆".repeat(5 - int(n))
-		body.add_child(_lab(T.t("Der Platz: Sicherheit %s · Aussicht %s · Ruhe %s") % [stx.call(ev.get("sicherheit", 3)), stx.call(ev.get("aussicht", 3)), stx.call(ev.get("ruhe", 3))], 13))
+		_rating(body, T.t("Der Platz:"), int(ev.get("sicherheit", 3)), int(ev.get("aussicht", 3)), int(ev.get("ruhe", 3)))
 	body.add_child(_lab(T.t("Wo soll MoveEye stehen? (Höhe und Blickwinkel ändern, was MoveEye sieht)"), 15, Color.WHITE, false))
 	var g := _grid(3)
 	var cur := str(R.get("mount_pick", "rucksack"))
@@ -2069,7 +2103,7 @@ func _paint_morning() -> void:
 	var ch := chapter()
 	var st: int = int(res["stars"])
 	body.add_child(_lab(T.t("Der Morgen - %s") % T.t(str(ch["title"])), 22, Color.WHITE))
-	body.add_child(_lab("★".repeat(st) + "☆".repeat(3 - st), 34, Color("#ffd166"), false))
+	body.add_child(_stars(st, 3, 34.0))
 	var why := []
 	why.append(T.t("Ziel erreicht") if bool(R.get("arrived", false)) else T.t("Ziel nicht erreicht"))
 	if str(R["goal"]) == "gipfel":
@@ -2089,9 +2123,8 @@ func _paint_morning() -> void:
 	left.add_theme_constant_override("separation", 8)
 	row.add_child(left)
 	var rt: Dictionary = res["rating"]
-	var stx := func(n): return "★".repeat(int(n)) + "☆".repeat(5 - int(n))
 	var g := _group(T.t("Wie gut war dein Platz?"), left)
-	g.add_child(_lab(T.t("Sicherheit %s · Aussicht %s · Ruhe %s") % [stx.call(rt.get("sicherheit", 3)), stx.call(rt.get("aussicht", 3)), stx.call(rt.get("ruhe", 3))], 14))
+	_rating(g, "", int(rt.get("sicherheit", 3)), int(rt.get("aussicht", 3)), int(rt.get("ruhe", 3)))
 	var g2 := _group(T.t("Bericht von MoveEye"), left)
 	g2.add_child(_lab(T.t("%d gemeldet · %d verpasst · %d nicht im Bild") % [int(res["seen"]), int(res["missed"]), int(res["hidden"])], 14, Color.WHITE))
 	if str(res["source"]) != "moveeye":
@@ -2274,6 +2307,15 @@ func op(d: Dictionary) -> Dictionary:
 		"dev":
 			dev_open = bool(d.get("value", not dev_open))
 			_changed()
+		"probe":                                       # tests: who is near MoveEye now, and does a camera see it?
+			var lst := []
+			for v in main.visitors.get_children():
+				if v.has_method("add_torch") or "kind" in v:
+					lst.append({"kind": str(v.kind), "pos": [snappedf(v.position.x, 0.1), snappedf(v.position.z, 0.1)], "cam": main.testrun.visible(v),
+							"thermal": main.testrun.thermal_visible(v), "done": bool(v.done)})
+			var cf: Vector3 = -(main.cams[0] as Camera3D).global_transform.basis.z if not main.cams.is_empty() else Vector3.ZERO
+			out = {"ok": true, "visitors": lst, "cam_fwd": [snappedf(cf.x, 0.01), snappedf(cf.z, 0.01)], "dark": main.is_dark(), "hour": main.hour(),
+					"head": [snappedf(main.head.global_position.y, 0.01)] if main.head != null else []}
 		"reset":
 			P = {"chapter": 1, "xp": 0, "stars": {}, "finds": [], "finale": false, "runs": [], "pieces": []}
 			if d.has("chapter"):

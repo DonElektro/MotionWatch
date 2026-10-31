@@ -1093,6 +1093,12 @@
   "it": "%d di %d scoperti",
   "rm": "%d da %d scuvrids"
  },
+ "%d von 3 Sternen": {
+  "en": "%d of 3 stars",
+  "fr": "%d étoiles sur 3",
+  "it": "%d stelle su 3",
+  "rm": "%d da 3 stailas"
+ },
  "%d von 5": {
   "en": "%d of 5",
   "fr": "%d sur 5",
@@ -5077,6 +5083,12 @@
   "fr": "l’endroit du détecteur de mouvement",
   "it": "il posto vicino al sensore di movimento",
   "rm": "il lieu tar il sensur da moviment"
+ },
+ "Der Platz:": {
+  "en": "The place:",
+  "fr": "L'endroit :",
+  "it": "Il posto:",
+  "rm": "Il lieu:"
  },
  "Der Platz: Sicherheit %s · Aussicht %s · Ruhe %s": {
   "en": "The place: safety %s · view %s · quiet %s",

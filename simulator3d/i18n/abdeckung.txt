@@ -1,16 +1,16 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 3896 (Stellen: 5492)
+Texte gesamt: 3896 (Stellen: 5495)
 Übersetzt: en 3658, fr 3657, it 3657, rm 3657
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 347 Stellen
-Nicht mehr im Code (noch in texte.json): 30
+Nicht mehr im Code (noch in texte.json): 32
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 42 Stellen in wizpics.gd 16, wordmark.gd 10, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 13092, schlüssel 9087, keine Wörter 6557, index 4675, technisch 1549, doc 969, einheit 147, englisch 71, log 59, pfad 58, html 42, klasse 22
+Übersprungen (Grund: Anzahl): kennung 13095, schlüssel 9089, keine Wörter 6551, index 4676, technisch 1549, doc 970, einheit 147, englisch 71, log 59, pfad 58, html 42, klasse 22
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  651    29
-  bergtal_abenteuer.gd     235     5
+  bergtal_abenteuer.gd     238     5
   gamewiz.gd               213    14
   game.gd                  211    32
   bergtal.gd               199     5
@@ -146,9 +146,9 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:2110  'Aussicht: '
   bergtal_abenteuer.gd:321  'Start: '
   bergtal_abenteuer.gd:776  ' auf der Bank mit Aussicht'
-  bergtal_abenteuer.gd:1794  'Wird frei: '
-  bergtal_abenteuer.gd:1915  '  · %.1f kg'
-  bergtal_abenteuer.gd:1999  ' - Bank'
+  bergtal_abenteuer.gd:1829  'Wird frei: '
+  bergtal_abenteuer.gd:1950  '  · %.1f kg'
+  bergtal_abenteuer.gd:2034  ' - Bank'
   dataset.gd:54  'Spiel: '
   dataset.gd:319  ' · Vielfalt hoch'
   dataset.gd:434  ' · alte KI-Daten gelöscht: %d (%.0f MB)'
