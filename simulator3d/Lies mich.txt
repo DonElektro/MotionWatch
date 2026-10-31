@@ -423,6 +423,14 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.83
+3D-4.83: Simulator: «⚠ Auf Werkseinstellungen zurücksetzen …» unter Mehr (nur Besitzer), wie bei MoveEye: zuerst wird eine
+Kopie angelegt, dann alles zurückgesetzt und neu gestartet. Es bleiben: Horror-Passwort, Sprache, heruntergeladene Inhalte,
+Entwickler-Notizen, Kontaktbogen, Spieltest-Daten, eigene Vorlagen und Messdaten. Gelöscht werden: Einstellungen,
+Spielstände, Level, Ranglisten, Fenster und Zuhause.
+So testest du: 1) Mehr → «Auf Werkseinstellungen zurücksetzen». 2) ZURÜCKSETZEN eintippen, dann «Jetzt zurücksetzen».
+3) Nach dem Neustart ist das Horror-Passwort noch da.
+
 NEU IN 3D-4.82
 3D-4.82: Bergtal-Abenteuer:
 - Das Tagebuch wird vorgelesen (abschaltbar).

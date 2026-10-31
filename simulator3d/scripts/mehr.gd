@@ -31,8 +31,11 @@ var _t := 0.0
 var _auto_t := 6.0
 var dev                                # devtool.gd: Entwicklertool 1 «Karte, Sprung, Kamera» (row «Entwickler», only the owner)
 var _dev_row: Control = null
+var werk                               # werk.gd: «⚠ Auf Werkseinstellungen zurücksetzen …» (row «werk», only the owner, like «Entwickler»)
+var _werk_row: Control = null
 
 const UI = preload("res://scripts/ui_style.gd")
+const T = preload("res://scripts/i18n.gd")
 const Icons = preload("res://scripts/mehr_icons.gd")
 const Diagnose = preload("res://scripts/diagnose.gd")
 const ITEMS := [["help", "help", "Hilfe", "Maus, Tasten, Leiste – und die Anleitung von MoveEye"],
@@ -43,6 +46,7 @@ const ITEMS := [["help", "help", "Hilfe", "Maus, Tasten, Leiste – und die Anle
 		["theme", "theme", "Ansicht", ""],
 		["feedback", "chat", "Rückmeldung an den Entwickler", "Fehler, Wünsche, Lob, Fragen – anonym"],
 		["dev", "bug", "Entwickler", "Karte aller Orte, Flugkamera, Prüfstand, Störungen, Spieltest – nur für den Besitzer"],
+		["werk", "trash", "⚠ Auf Werkseinstellungen zurücksetzen …", "vorher eine Kopie der alten Einstellungen – nur für den Besitzer"],
 		["about", "info", "Über den Simulator", "Version und Status, Geschichte, Entwickler"]]
 
 
@@ -71,6 +75,10 @@ func _ready() -> void:
 	dev = preload("res://scripts/devtool.gd").new()
 	dev.main = main
 	add_child(dev)
+	werk = preload("res://scripts/werk.gd").new()
+	werk.main = main
+	werk.mehr = self
+	add_child(werk)
 	_toast = PanelContainer.new()
 	_toast.theme = feedback.theme
 	_toast.add_theme_stylebox_override("panel", UI.box(Color(UI.PANEL, 0.97), UI.GRN.darkened(0.2), 12, 10, 1))
@@ -133,6 +141,8 @@ func build(box_: VBoxContainer) -> void:
 		body.add_child(r)
 		if it[0] == "dev":
 			_dev_row = r
+		elif it[0] == "werk":
+			_werk_row = r
 	_paint_rows()
 
 
@@ -160,12 +170,12 @@ func _row(id: String, icon: String, title: String, sub: String) -> Button:
 	v.add_theme_constant_override("separation", 0)
 	h.add_child(v)
 	var tl := Label.new()
-	tl.text = title
+	tl.text = T.t(title)
 	tl.add_theme_font_override("font", UI.heading_font())
 	tl.add_theme_font_size_override("font_size", 14)
 	tl.clip_text = true
 	v.add_child(tl)
-	var sl := UI.small(sub)
+	var sl := UI.small(T.t(sub))
 	sl.autowrap_mode = TextServer.AUTOWRAP_OFF
 	sl.clip_text = true
 	sl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -264,6 +274,8 @@ func act(id: String) -> void:
 		"dev":
 			close_window()
 			dev.open()
+		"werk":
+			werk.open()
 		"mehr":
 			show_card()
 
@@ -622,6 +634,10 @@ func toast(t: String) -> void:
 func _process(dt: float) -> void:
 	if _dev_row != null and _dev_row.visible != dev.is_owner(main):
 		_dev_row.visible = dev.is_owner(main)          # Entwicklertool: only the owner (not in the children's mode)
+	if _werk_row != null and _werk_row.visible != dev.is_owner(main):
+		_werk_row.visible = dev.is_owner(main)         # factory reset: the same check
+		if not _werk_row.visible and win_id == "werk":
+			close_window()
 	if _toast_t > 0.0:
 		_toast_t -= dt
 		if _toast_t <= 0.0:
