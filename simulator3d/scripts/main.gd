@@ -1094,6 +1094,15 @@ func set_scene(id: String) -> bool:
 	return true
 
 
+func _fp_seek() -> void:
+	"""Erlebniswelt 12 (erlebniswelt.gd): the children of the Ferienpark hide near MoveEye - MoveEye must report them"""
+	if scene != "ferienpark":
+		set_scene("ferienpark")
+	var r: Dictionary = preload("res://scripts/ferienpark.gd").control(self, {"do": "verstecken"})
+	if entdecken != null and r.get("ok", false):
+		entdecken._say_small(preload("res://scripts/i18n.gd").t("Verstecken: vier Kinder verstecken sich bei MoveEye – findet MoveEye alle?"))
+
+
 func set_fp_spot(v: String) -> void:
 	"""3D-4.x: where MoveEye stands in the «Ferienpark am See»: the park is built again around this place"""
 	if not preload("res://scripts/ferienpark.gd").SPOTS.has(v):
@@ -3264,7 +3273,7 @@ const SIMPLE_GROUPS := ["Szene", "Wetter", "Besuch", "Testen", "Spiel"]
 # extra «wiz»: not in this panel and not in the Simulator control of MoveEye.
 const GAME_MAIN := ["game_wizard", "game_start", "game_stop"]
 # Erlebniswelt 20–23 (entdecken.gd): the part «Entdecken» stays on the card «Spiel» (not in the assistant); the first three in «Einfach»
-const DISC_IDS := ["disc_book", "disc_photo", "disc_hints", "disc_hint_min", "disc_demo"]
+const DISC_IDS := ["disc_book", "disc_photo", "disc_hints", "disc_hint_min", "disc_demo", "disc_seek"]
 const DISC_SIMPLE := ["disc_book", "disc_photo", "disc_hints"]
 # 3D-4.7: a fixed id per group for MoveEye (the visible names may change); sent as «gid» with every control
 const GROUP_IDS := {"Szene": "scene", "Wetter": "weather", "Besuch": "visit", "Kamerabild": "camera", "Sensoren": "sensors", "Mover": "mover", "Licht & Ton": "lightsound",
@@ -3538,6 +3547,7 @@ func _register_controls() -> void:
 	add_control("button", "game_start", "▶ Start", null, func(): _game_card_start(), "Spiel")
 	add_control("button", "game_stop", "⏹ Stopp", null, func(): _game_card_stop(), "Spiel")
 	entdecken.register_controls()                       # Erlebniswelt 20–23: Spiel → Entdecken (Buch, Foto, Blinki-Hinweise)
+	add_control("button", "disc_seek", "🙈 Verstecken mit MoveEye (nur Ferienpark am See)", null, func(): _fp_seek(), "Spiel")   # Erlebniswelt 12
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
 			{"options": [["mw", "Gegen MoveEye (echte Erkennung)"], ["guard", "Wächter (ein Spieler oder der Bot-Wächter)"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"], ["free", "Zonen-Check – ohne Erwischen (zum Testen der Erkennung)"], ["jaeger", "Fehlalarm-Jäger – Tiere und Dinge täuschen MoveEye (nur mit MoveEye)"], ["camera", "ältere: Alle gegen die Kamera"], ["mwhand", "ältere: Team gegen MoveEye (Wächter steuern MoveEye)"], ["patrol", "ältere: Patrouille mit dem Mover"]]})
