@@ -42,6 +42,7 @@ const NAMEN := {"seil": "Seil", "stirnlampe": "Stirnlampe", "feldstecher": "Feld
 
 static var ab = null                 # bergtal_abenteuer.gd (verbinde() in dessen _ready)
 static var _lose := {}               # Speicher ohne Abenteuer
+static var replay_box = null         # «Genau gleich nochmals»: die bleibenden Dinge wie beim gespeicherten Lauf (nicht P)
 
 
 static func verbinde(node) -> void:
@@ -56,14 +57,27 @@ static func bleibend(id: String) -> bool:
 	return id in BLEIBEND or id.begins_with("tagebuchseite_")
 
 
+static func _ok() -> bool:
+	return ab != null and is_instance_valid(ab)
+
+
+static func bleib_box() -> Dictionary:
+	"""die bleibenden Dinge (Fortschritt P["a4_inventar"]; bei einer Wiedergabe die gespeicherten)"""
+	if not _ok():
+		return _lose
+	if bool(ab.replaying) and replay_box is Dictionary:
+		return replay_box
+	if not ab.P.has("a4_inventar") or not (ab.P["a4_inventar"] is Dictionary):
+		ab.P["a4_inventar"] = {}
+	return ab.P["a4_inventar"]
+
+
 static func _box(id: String) -> Dictionary:
 	"""das Dictionary, in dem dieser Gegenstand liegt"""
-	if ab == null or not is_instance_valid(ab):
+	if not _ok():
 		return _lose
 	if bleibend(id):
-		if not ab.P.has("a4_inventar") or not (ab.P["a4_inventar"] is Dictionary):
-			ab.P["a4_inventar"] = {}
-		return ab.P["a4_inventar"]
+		return bleib_box()
 	if not ab.R.is_empty() and ab.R.has("items"):
 		return ab.R["items"]
 	return ab.W["items"]
@@ -73,8 +87,8 @@ static func anzahl(id: String) -> int:
 	var k := _id(id)
 	var n := int(_box(id).get(k, 0))
 	# eine gefundene Stirnlampe / ein gefundener Feldstecher bleiben auch, wenn sie nicht eingepackt sind
-	if not bleibend(id) and ab != null and is_instance_valid(ab) and ab.P.has("a4_inventar"):
-		n += int((ab.P["a4_inventar"] as Dictionary).get("fund_" + k, 0))
+	if not bleibend(id) and _ok():
+		n += int(bleib_box().get("fund_" + k, 0))
 	return n
 
 
@@ -100,8 +114,8 @@ static func nimm(id: String, n := 1) -> bool:
 	var take := mini(here, rest)
 	b[k] = here - take
 	rest -= take
-	if rest > 0 and ab != null and is_instance_valid(ab) and ab.P.has("a4_inventar"):
-		var inv: Dictionary = ab.P["a4_inventar"]
+	if rest > 0 and _ok():
+		var inv: Dictionary = bleib_box()
 		inv["fund_" + k] = maxi(0, int(inv.get("fund_" + k, 0)) - rest)
 	if int(b.get(k, 0)) <= 0:
 		b.erase(k)
@@ -114,12 +128,10 @@ static func finde(id: String) -> void:
 	if bleibend(id):
 		gib(id, 1)
 		return
-	if ab == null or not is_instance_valid(ab):
+	if not _ok():
 		gib(id, 1)
 		return
-	if not ab.P.has("a4_inventar"):
-		ab.P["a4_inventar"] = {}
-	var inv: Dictionary = ab.P["a4_inventar"]
+	var inv: Dictionary = bleib_box()
 	inv["fund_" + _id(id)] = 1
 	_geaendert(id)
 
@@ -146,8 +158,8 @@ static func name_of(id: String) -> String:
 static func extra_kg() -> float:
 	"""Gewicht, das zusätzlich zur Packliste im Rucksack liegt: bleibende Dinge und neue Verbrauchs-IDs (kaese, brief …)"""
 	var kg := 0.0
-	if ab != null and is_instance_valid(ab) and ab.P.has("a4_inventar"):
-		var inv: Dictionary = ab.P["a4_inventar"]
+	if _ok():
+		var inv: Dictionary = bleib_box()
 		for k in inv:
 			var kk := str(k)
 			if kk.begins_with("fund_"):
