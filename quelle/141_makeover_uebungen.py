@@ -286,7 +286,7 @@ def _train_thread(manual):
                     break
                 TRAIN["step"] = f"{sc} · {plan}"
                 try:
-                    sim_control({"action": "scenario", "id": sc})
+                    sim_control({"action": "scenario", "id": sc, "solo": True})   # Simulator-Welten: der alte Ort allein (vergleichbar)
                 except Exception:
                     pass
                 time.sleep(4)
@@ -300,7 +300,7 @@ def _train_thread(manual):
             worst = min(res, key=lambda x: x["score"] if x["score"] is not None else 999)
             TRAIN["step"] = "optimizing: " + worst["scene"] + " · " + worst["plan"]
             try:
-                sim_control({"action": "scenario", "id": worst["scene"]})
+                sim_control({"action": "scenario", "id": worst["scene"], "solo": True})
             except Exception:
                 pass
             time.sleep(4)

@@ -1,8 +1,16 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.33** · passende MoveEye-Version (früher Motion Watch) **2.98.64**
+Stand: 31.10.2026 · Simulator-Version **3D-4.34** · passende MoveEye-Version (früher Motion Watch) **2.98.65**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.34 (MoveEye 2.98.65): Welt «Bergtal» und Szenen zusammengefasst (`bergtal.gd`, `worlds.gd`)
+
+- `bergtal.gd` + `bib_berg.gd` (erbt von Bib → `Quality.lite()`), Bodenshader `bergtal_boden.gdshader`, Karte mit Höhenlinien
+  (`minimap.gd`). Regler `bt_*` mit `controls[…]["only"]`: nur im Bergtal (Jahreszeit, Schnellreise, Ereignisse auch in seinen Orten).
+- `worlds.gd` (neu): alte Szenen sind Orte in Welten (`Worlds.world_of`, `is_place`, `solo`); `main.scene` bleibt die alte
+  Kennung. Steuerung `{"action":"welt"}`, `{"action":"scenario","solo":true}`, Schalter `welt_solo`, Start `--solo`
+  (Prüfstand). MoveEye 141 (Trainingsnacht allein), 551 (Name «Zuhause»). Details: REAL_BERGTAL, REAL_KONSOL.
 
 ## NEU in 3D-4.33 (MoveEye 2.98.64): Weitwinkel wie Gehäuse v5.2 (`weitwinkel.gd`, `camfx.gdshader`)
 

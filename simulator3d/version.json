@@ -1,7 +1,7 @@
 {
- "version": "3D-4.33",
+ "version": "3D-4.34",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 65459298,
- "sha256": "dccc1c2f2be2df56ee7434a1f0a8d22001090e347c840ec1c0692be85b365d26",
- "notes": "Weitwinkel-Kamera wie im Gehäuse v5.2: Montage «Im Gehäuse» (Standard) und «Nicht verbaut», Fischauge wie das echte Objektiv, kleine IR-LED."
+ "size": 65843704,
+ "sha256": "b91ad36a479476cff167c96643a1c6160c8c97439b80d7a308a02590cc632fc8",
+ "notes": "Neue Welt «Bergtal» (2 × 2 km); Szenen zusammengefasst zu den Welten Bergtal, Ferienpark und Zuhause (alte Szenen als Orte); Bergtal-Regler nur im Bergtal."
 }
