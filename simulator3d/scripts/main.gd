@@ -549,8 +549,11 @@ func _ready() -> void:
 	if not ("--no-update" in args or "--updated" in args or (at_boot and not auto_update)):   # at the autostart nobody is there to answer      # first: is there a newer version? (update.gd)
 		var up = Updater.new()
 		up.auto = auto_update
+		var held := _hold_children()             # Startfix 31.10.2026: während der Suche läuft noch keine Welt - die Teile warten
+		up.process_mode = Node.PROCESS_MODE_ALWAYS
 		add_child(up)
 		await up.check(VERSION, update_url)
+		_release_children(held)
 		up.queue_free()
 	_make_lut(true)
 	noise_tex = NoiseTexture2D.new()
@@ -707,6 +710,24 @@ func _ready() -> void:
 		get_tree().create_timer(5.0).timeout.connect(func(): print("RESTART_ARGS: ", " ".join(restart_args())))
 	set_process(true)
 	set_process_unhandled_input(true)
+
+
+func _hold_children() -> Dictionary:
+	"""Startfix 31.10.2026: _ready wartet auf die Update-Suche (await), die Welt (Szene, Boden, Kopf, Kameras) entsteht erst
+	danach. In dieser Zeit liefen _process / _physics_process der schon angehängten Teile gegen eine halbe Welt - in der
+	exportierten .exe wird ein Aufruf auf einer typisierten null-Variablen zum harten Absturz (kein Skriptfehler wie im
+	Editor). Darum ruhen die Teile, bis die Suche fertig ist; gibt den alten process_mode je Teil zurück."""
+	var held := {}
+	for ch in get_children():
+		held[ch] = ch.process_mode
+		ch.process_mode = Node.PROCESS_MODE_DISABLED
+	return held
+
+
+func _release_children(held: Dictionary) -> void:
+	for ch in held:
+		if is_instance_valid(ch):
+			ch.process_mode = held[ch]
 
 
 func _in_vm() -> bool:

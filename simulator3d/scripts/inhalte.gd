@@ -27,6 +27,7 @@ const FILE := "user://inhalte.json"
 const DIR := "user://inhalte"
 const MODES := [["an", "An: Fotos für Boden, Wege, Zelt, Bäume und Himmel"], ["boden", "Nur Oberflächen (Himmel wie bisher)"],
 		["aus", "Aus (bisherige Code-Materialien)"]]
+const HDRI_MAX_W := 4096               # Startfix: breitere HDRIs werden beim Einlesen verkleinert (Grafikspeicher, ANGLE)
 const RETRY_S := 86400.0              # nach einem Fehlschlag frühestens nach einem Tag wieder von selbst laden
 const SKY_DAY := "himmel_tag"
 const SKY_DUSK := "himmel_daemmerung"
@@ -71,7 +72,7 @@ func _ready() -> void:
 	_load_settings()
 	_read_katalog()
 	_lite_was = Quality.lite()
-	call_deferred("on_scene")
+	call_deferred("on_scene")                 # (kommt die Welt erst nach der Update-Suche: on_scene wartet, siehe _world_ready)
 
 
 # ---- Einstellung -------------------------------------------------------------------------------------------------------
@@ -373,6 +374,10 @@ func _img_job(path: String, rolle: String, can_compress: bool) -> Image:
 	if img == null or img.is_empty():
 		return null
 	if rolle == "hdri":
+		if img.get_width() > HDRI_MAX_W:                  # Startfix: ein sehr grosses HDRI (8k) vor dem Hochladen verkleinern
+			if img.get_format() == Image.FORMAT_RGBE9995:
+				img.convert(Image.FORMAT_RGBH)
+			img.resize(HDRI_MAX_W, maxi(1, HDRI_MAX_W * img.get_height() / img.get_width()), Image.INTERPOLATE_BILINEAR)
 		return img
 	if img.get_width() > 2048:
 		img.resize(2048, 2048 * img.get_height() / img.get_width(), Image.INTERPOLATE_LANCZOS)
@@ -382,14 +387,14 @@ func _img_job(path: String, rolle: String, can_compress: bool) -> Image:
 		return img
 	img.convert(Image.FORMAT_RGB8)
 	img.generate_mipmaps()
-	if can_compress:
+	if can_compress and OS.has_feature("editor"):
 		img.compress(Image.COMPRESS_S3TC, Image.COMPRESS_SOURCE_SRGB if rolle == "albedo" else Image.COMPRESS_SOURCE_GENERIC)
 	return img
 
 
 func _load_textures() -> void:
 	var t0 := Time.get_ticks_msec()
-	var can := RenderingServer.has_os_feature("s3tc") and not Quality.lite()
+	var can := _can_compress() and not Quality.lite()
 	var jobs := []
 	for e in entries():
 		for rolle in e["dateien"]:                        # was da ist (z. B. Asphalt ohne Normal-Karte: trotzdem nutzen)
@@ -477,9 +482,23 @@ func active_here() -> bool:
 	return _off == "" and mode != "aus" and not Quality.lite() and main != null and str(main.scene) in szenen
 
 
+static func _can_compress() -> bool:
+	"""Startfix 31.10.2026: Image.compress(S3TC) gibt es in Godot 4.3 nur im Editor - in der exportierten .exe fehlt der
+	BC-Kompressor («_image_compress_bc_func is null»). Darum dort ohne Kompression (mehr Grafikspeicher, sonst gleich)."""
+	return OS.has_feature("editor") and RenderingServer.has_os_feature("s3tc")
+
+
+func _world_ready() -> bool:
+	"""Startfix 31.10.2026: main baut die Welt erst NACH der Update-Suche (main._ready wartet dort). Der verzögerte erste
+	Aufruf von on_scene kam vorher - grass_mat und scene_parent waren noch null. In der exportierten .exe ist ein Aufruf
+	auf einer typisierten null-Variablen kein Skriptfehler, sondern ein harter Absturz (Fenster weg, Log bricht ab).
+	main._build_scene ruft on_scene ohnehin, sobald die Welt steht."""
+	return main != null and main.grass_mat != null and main.scene_parent != null and is_instance_valid(main.scene_parent)
+
+
 func on_scene() -> void:
 	"""nach jedem Aufbau einer Szene (main._build_scene) und bei Änderungen"""
-	if main == null:
+	if not _world_ready():
 		return
 	_swapped.clear()
 	_extras = _extras.filter(func(n): return is_instance_valid(n))
@@ -493,6 +512,8 @@ func on_scene() -> void:
 
 
 func _apply_now() -> void:
+	if not _world_ready():
+		return
 	if not active_here():
 		_reset_global()
 		return
@@ -524,6 +545,8 @@ func _reset_global() -> void:
 
 func _apply_ground() -> void:
 	var gm: ShaderMaterial = main.grass_mat
+	if gm == null:
+		return
 	var a := "gras" if _loaded_ids.has("gras") else "wiese"
 	var b := "wiese" if _loaded_ids.has("wiese") else "gras"
 	if not _loaded_ids.has(a) or gm.shader == null or not _has_uniform(gm, "tex_on"):
@@ -654,6 +677,8 @@ func _meshes(root: Node) -> Array:
 	var stack := [root]
 	while not stack.is_empty():
 		var nd: Node = stack.pop_back()
+		if nd == null or not is_instance_valid(nd):
+			continue
 		for ch in nd.get_children():
 			stack.append(ch)
 			if ch is MeshInstance3D and (ch as MeshInstance3D).layers & 1 and (ch as MeshInstance3D).mesh != null:
@@ -718,7 +743,7 @@ func _process(dt: float) -> void:
 	if _t < 0.5:
 		return
 	_t = 0.0
-	if main == null or main.sky_mat == null:
+	if main == null or main.sky_mat == null or main.sun == null or not _world_ready():
 		return
 	if Quality.lite() != _lite_was:                       # Lite an / aus
 		_lite_was = Quality.lite()
