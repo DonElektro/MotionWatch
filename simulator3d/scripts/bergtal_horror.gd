@@ -122,6 +122,7 @@ var _scare: ColorRect
 var _pw1: LineEdit
 var _pw2: LineEdit
 var _msg: Label
+var raetsel = null                     # horror_raetsel.gd: the riddles of the 3 chapters (key, code on the wall, time)
 
 
 static func _lite() -> bool:
@@ -131,6 +132,9 @@ static func _lite() -> bool:
 
 func _ready() -> void:
 	_load()
+	raetsel = preload("res://scripts/horror_raetsel.gd").new()     # raetsel
+	raetsel.h = self
+	add_child(raetsel)
 	strength = clampf(float(_store.get("strength", 0.6)), 0.0, 1.0)
 	var rs = _store.get("restore", null)
 	if rs is Dictionary and not (rs as Dictionary).is_empty():      # the simulator was closed in the middle of a night
@@ -624,7 +628,7 @@ func begin(n: int) -> void:
 	_t = 0.0
 	_bi = 0
 	_jumps = 0
-	_beats = _chapter_beats(n)
+	_beats = raetsel.add_beats(n, _chapter_beats(n))              # raetsel: + the recordings with the clues
 	_amb_next = randf_range(20.0, 35.0)
 	main.set_hour(H_START)
 	main._set_speed(0.0)
@@ -642,7 +646,8 @@ func begin(n: int) -> void:
 	if n == 3 and str(choices.get("d2", "")) == "back" and _lantern != null and is_instance_valid(_lantern):
 		_lantern.queue_free()                                   # it is back in the hut
 		_lantern = null
-	_intro_card()
+	if not raetsel.evening(n, _intro_card):                     # raetsel: chapter 3 – the lock at the hospice first
+		_intro_card()
 
 
 func _intro_card() -> void:
@@ -754,7 +759,7 @@ func _set_pause(on: bool) -> void:
 			main._set_speed(float(_saved.get("speed_run", H_HOURS * 3600.0 / NIGHT_SECS)))
 		if _drone != null and phase == "night":
 			_drone.volume_db = _amb_db()
-		if phase == "morning" or phase == "ending" or phase == "intro":
+		if phase == "morning" or phase == "ending" or phase == "intro" or phase == "raetsel":
 			_reshow_phase()
 
 
@@ -766,6 +771,8 @@ func _reshow_phase() -> void:
 			_ending_card()
 		"intro":
 			_intro_card()
+		"raetsel":
+			raetsel.reshow()
 
 
 func _process(dt: float) -> void:
@@ -949,6 +956,8 @@ func _beat(b: Array) -> void:
 			_clip_later(ct[0], ct[1], 1.2)
 		"end":
 			_end_beat()
+		"raetsel":
+			raetsel.beat(a)
 
 
 func _ambient() -> void:
@@ -1014,7 +1023,7 @@ func _morning() -> void:
 	if chapter >= 3:
 		phase = "ending"
 		_ending_card()
-	else:
+	elif not raetsel.morning(chapter, _morning_card):           # raetsel: chapter 1 key / chapter 2 box first
 		_morning_card()
 
 
@@ -1905,6 +1914,8 @@ func _s_drone() -> PackedFloat32Array:
 # =======================================================================================================================
 func command(d: Dictionary) -> Dictionary:
 	var what := str(d.get("do", "info"))
+	if what.begins_with("r_"):                                  # raetsel
+		return raetsel.command(d)
 	match what:
 		"info":
 			return {"ok": true, "unlocked": unlocked, "has_password": has_password(), "phase": phase, "running": running,

@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.68
+3D-4.68: Horror «Das Hospiz»: In jedem Kapitel ein Rätsel (Schlüssel, Zahlenschloss, Uhrzeit). Die Lösung sieht man nur auf
+MoveEye-Aufnahmen. Ein Hinweis-Knopf hilft, unter 25 % Schreck gibt es keine Schreckmomente.
+So testest du: 1) Horror starten, Schreck auf 10 % stellen. 2) Nach der 1. Nacht die Aufnahme ansehen, auf «Suchen gehen»
+drücken und den Schlüssel holen. 3) Den Code aus «Zahlen an der Wand» eingeben.
+
 NEU IN 3D-4.67
 3D-4.67: Entwickler-Fenster: Notizen an Claude mit Bild und ZIP-Export, Kontaktbogen (fotografiert alle Orte einer Welt),
 Kapitel-Sprung in einem Test-Spielstand. Der Horror-Modus bleibt mit Passwort geschützt.

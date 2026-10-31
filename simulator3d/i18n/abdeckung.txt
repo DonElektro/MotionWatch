@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 5225 (Stellen: 7231)
-Übersetzt: en 5225, fr 5225, it 5225, rm 5225
+Texte gesamt: 5262 (Stellen: 7279)
+Übersetzt: en 5262, fr 5262, it 5262, rm 5262
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 384 Stellen
 Nicht mehr im Code (noch in texte.json): 67
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 67 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 18673, schlüssel 13352, keine Wörter 8570, index 6829, technisch 2424, doc 1530, einheit 228, englisch 101, log 78, html 67, pfad 66, klasse 24, shader 4
+Übersprungen (Grund: Anzahl): kennung 18721, schlüssel 13390, keine Wörter 8674, index 6847, technisch 2425, doc 1542, einheit 229, englisch 101, log 78, html 67, pfad 66, klasse 24, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  669    29
@@ -47,6 +47,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   karte.gd                  46     8
   gamerules.gd              45     4
   symbole.gd                44     1
+  horror_raetsel.gd         44     0
   protokoll.gd              42    16
   pir.gd                    41     0
   simint.gd                 41     6
@@ -189,7 +190,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   abenteuer_rucksack.gd:468  'Fertig'
   bergtal_horror.gd:40  'offen'
   bergtal_horror.gd:58  'offen'
-  bergtal_horror.gd:1093  'Fertig'
+  bergtal_horror.gd:1102  'Fertig'
   tour.gd:187  'Fertig'
   b3d.gd:86  'Kachel leer: '
   b3d.gd:186  'glTF nicht lesbar: '
