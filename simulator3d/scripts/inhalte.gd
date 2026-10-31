@@ -114,6 +114,21 @@ func _mark(on: bool) -> void:
 		DirAccess.remove_absolute(MARK)
 
 
+var _unmark_n := 0
+
+
+func _unmark_soon() -> void:
+	"""Startfix: den Merker erst wegnehmen, wenn mit den Fotos (Boden, Himmel) schon einige Bilder gezeichnet sind - ein
+	Absturz beim ersten Zeichnen (Grafiktreiber, ANGLE) soll den nächsten Start auch ohne Foto-Inhalte starten lassen"""
+	_unmark_n += 1
+	var n := _unmark_n
+	await get_tree().create_timer(3.0).timeout
+	for i in range(30):
+		await get_tree().process_frame
+	if n == _unmark_n and not _loading and is_inside_tree():
+		_mark(false)
+
+
 func _save_settings() -> void:
 	var f := FileAccess.open(FILE, FileAccess.WRITE)
 	if f != null:
@@ -396,7 +411,7 @@ func laden(force := false) -> void:
 	_mats.clear()
 	_reset_global()                                       # neu eingelesene Bilder: alles frisch anwenden
 	_apply_now()
-	_mark(false)                                          # eingelesen und angewendet: kein Absturz
+	_unmark_soon()                                        # eingelesen und angewendet: nach den ersten Bildern kein Absturz
 
 
 # ---- Bilder einlesen ----------------------------------------------------------------------------------------------------
@@ -543,7 +558,7 @@ func on_scene() -> void:
 		laden(false)                                      # lädt im Hintergrund, wendet danach an
 	_apply_now()
 	if not _loading:
-		_mark(false)
+		_unmark_soon()
 
 
 func _apply_now() -> void:
