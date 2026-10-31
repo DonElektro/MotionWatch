@@ -164,6 +164,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `541_web_servo.py` | Web: Seite «Servos» (/servo, /api/servo): Not-Aus / Freigeben, wer steuert, Teach-in, Diagnose mit Export; Not-Aus auf der Live-Seite | 368 |
 | `538_web_controller_ansicht.py` | Web: «Controller-Ansicht» der Live-Seite für Handy / Tablet (Live- + Simulator-Bild, Game-Controller, Gesten, schmale Leiste) | 383 |
 | `539_web_ausloeser.py` | «Auslöser»: ein Mensch steuert die Kamera – Fadenkreuz und runder 🎯-Knopf im Live-Bild, R2, Treffer als Alarm ins Test-Postfach | 170 |
+| `539a_sim_horror.py` | Bergtal · Horror-Modus des 3D-Simulators: seine «Aufnahmen» (Bild + Text) als Test-Einträge in den Verlauf → Nachrichten | 50 |
 | `542_web_padmap.py` | EIN Controller-Konzept (MWPad): Belegung für Controller-Ansicht, Simulator-Seite, Handy-Spiel und 3D-Simulator (gleicher Text wie simulator3d/scripts/padmap.gd, Selbsttest vergleicht), Vibration, Hilfe, Fadenkreuz, Mini-Karte | 230 |
 | `546_web_ki_hilfe.py` | «KI-Hilfe» am Auslöser (KI-Rahmen, KI zielt, KI-Autopilot): Knopf und Erkennungsrahmen im Live-Bild, Kopf folgt in «Team gegen MoveEye», /api/sim kihilfe, Runde «mit KI-Hilfe» | 230 |
 | `543_web_spiel_waechter.py` | Spiel des Simulators: Wächter-Werkzeuge der Wächter an MoveEye («Team gegen MoveEye») – Energie, Licht, Sirene, Scan, Zoom, Hinweis-Marken im Live-Bild | 75 |
