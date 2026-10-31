@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.0.2** · MoveEye **3.0.2** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.1.0** · MoveEye **3.1.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.1.0 (MoveEye 3.1.0): Kurze Push-Nachrichten (nur MoveEye)
+
+- Simulator-Code unverändert. MoveEye: neuer Teil `635b_push_kurz.py` (ein Aufbau für alle Meldungen: Titel mit Symbol,
+  eine Zeile, Bild; «🛡 Schutz ein»; im Simulator nur Alarme, Info per Schalter unter Push → Erweitert), 060, 130, 531a, 571a.
 
 ## NEU in 3.0.2 (MoveEye 3.0.2): Angleichungen
 
