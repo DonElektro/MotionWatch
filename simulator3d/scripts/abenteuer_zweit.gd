@@ -79,6 +79,7 @@ var _pend_sig := ""
 var _flag: Node3D
 var _fps: Array = []                  # [time, fps] the last seconds (measurement)
 var _frame := 0
+var team                              # Zwei-Spieler-Bausteine (abenteuer_zwei_team.gd -> zwei_bausteine.gd)
 
 
 func setup(a) -> void:
@@ -92,6 +93,7 @@ func setup(a) -> void:
 	for i in range(2):
 		pl.append({"pos": Vector2.ZERO, "off": Vector2(-1.6 if i == 0 else 1.6, 2.0), "yaw": 0.0, "pitch": -0.12, "idle": 0.0, "dev": -1,
 				"node": null, "vp": null, "cam": null, "box": null, "chip": null, "far_said": 0.0})
+	team = load("res://scripts/abenteuer_zwei_team.gd").new(self)      # Zwei-Spieler-Bausteine (Einhänge-Punkt)
 
 
 func _lite() -> bool:
@@ -131,11 +133,13 @@ func pad_devs() -> Array:
 
 func holds_leg() -> bool:
 	"""bergtal_abenteuer._tick_leg: the leg waits while the race runs"""
-	return not race.is_empty()
+	return not race.is_empty() or (team != null and team.holds())     # (Bausteine: Felsstufe, Gummiband)
 
 
 func on_leg(lg: Dictionary) -> void:
 	"""bergtal_abenteuer._start_leg: a new leg - in «Wettrennen» first a race"""
+	if team != null:
+		team.on_leg(lg)                                     # Bausteine: Fundstücke, Felsstufe
 	if mode != "wettrennen" or ab.fast or ab.replaying or lg.is_empty() or ab.bt() == null:
 		return
 	var pts: Array = lg["pts"]
@@ -162,6 +166,8 @@ func on_morning() -> void:
 	var who: Array = [names[0]] if mode == "allein" else [names[0], names[1]]
 	Board.record_run(who, ab, wins)
 	_keep()
+	if team != null:
+		team.on_morning()                                   # Bausteine: der Tag ins Reisetagebuch
 
 
 func on_a1_fotos(fs: Array) -> void:
@@ -279,6 +285,8 @@ func _process(dt: float) -> void:
 		_phone_tick()
 	_pending_tick()
 	_pins_tick()
+	if team != null:
+		team.tick(dt)                                       # Bausteine
 	var want := _want_on()
 	if want != on:
 		_set_on(want)
@@ -398,6 +406,8 @@ func _walk(i: int, dt: float, anchor: Vector2, frozen: bool) -> void:
 	var rt := Vector2(cos(yaw), -sin(yaw))
 	var racing := not race.is_empty()
 	var sp: float = (7.0 if bool(inp["run"]) else 4.0) if racing else (5.5 if bool(inp["run"]) else 2.8)   # (game time: a bit faster than real)
+	if team != null:
+		sp *= team.tempo(i)                                 # Bausteine: viel mehr im Rucksack = etwas langsamer
 	var step: Vector2 = (fw * -mv.y + rt * mv.x) * sp * dt
 	if racing:
 		p["pos"] = _clamp_valley((p["pos"] as Vector2) + step)
@@ -557,7 +567,7 @@ func _layout() -> void:
 func _cam_xf(b, i: int) -> Transform3D:
 	var p: Dictionary = pl[i]
 	var q: Vector2 = p["pos"]
-	var wp: Vector3 = b.WG(q.x, q.y, 1.6)
+	var wp: Vector3 = b.WG(q.x, q.y, 1.6 + (float(team.hoehe[i]) if team != null else 0.0))
 	var wy: float = b.wrot(float(p["yaw"]))
 	var fw := Vector3(-sin(wy), 0.0, -cos(wy))
 	var eye := wp - fw * 5.5 + Vector3(0, 1.9, 0)
@@ -725,7 +735,7 @@ func _place_fig(i: int, b) -> void:
 	if n == null or b == null:
 		return
 	var q: Vector2 = pl[i]["pos"]
-	n.global_position = b.WG(q.x, q.y, 0.0)
+	n.global_position = b.WG(q.x, q.y, float(team.hoehe[i]) if team != null else 0.0)   # (Bausteine: oben auf der Felsstufe)
 	n.rotation.y = b.wrot(float(pl[i]["yaw"]))
 
 
@@ -1007,6 +1017,8 @@ func paint_choice(body: Control) -> void:
 			eds.append(e)
 		for e in eds:
 			e.text_changed.connect(func(_t): set_names(eds[0].text, eds[1].text))
+		if team != null:
+			team.paint_choice(gg)                               # Bausteine: Rollen, Knöpfe
 		var nd: int = main.padmap.devices().size() if main.padmap != null else 0
 		var need := 1 if mode == "rollen" else 2
 		var tx := T.t("%d Controller verbunden.") % nd
@@ -1101,6 +1113,8 @@ func paint_board(body: Control, compact := false) -> void:
 # =======================================================================================================================
 func op(d: Dictionary) -> Dictionary:
 	var k := str(d.get("k", "state"))
+	if k == "zb" and team != null:
+		return team.op(d)                                       # Bausteine
 	var out := {"ok": true}
 	match k:
 		"mode":

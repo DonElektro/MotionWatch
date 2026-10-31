@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.12.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.13.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -436,6 +436,22 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.13.0
+3.13.0: Zu zweit: zehn Team-Bausteine in der Karte des Grossvaters und bei Maggie:
+- geteiltes Wissen
+- Räuberleiter
+- Rucksack teilen
+- Rücken an Rücken
+- Wer findet mehr
+- Fotowettbewerb
+- Lagerfeuer-Tagebuch
+- High-Five
+- Rollen mit Fähigkeiten
+- Gummiband
+So testest du: 1) Grossvater → Kapitel 1 → Mitspieler «Gemeinsam», zwei Controller anschliessen. 2) An der Felsstufe A
+drücken, nach dem Rätsel High-Five (beide gleichzeitig A). 3) Bei der Peilung sieht nur der Späher die Zahlen. 4) Maggie zu
+zweit: LB = Team, Steuerkreuz unten = Fähigkeit, am ersten Rastplatz kommt das Lagerfeuer.
 
 NEU IN 3.12.0
 3.12.0: Blinki erscheint überall ohne den orangen Sichtfächer. Ändert sich seine Stimmung, zeigt er das Zeichen (Ecken, Pfeil,

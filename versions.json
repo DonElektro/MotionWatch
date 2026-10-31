@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 20:29",
+ "generated": "2026-10-31 20:38",
  "versions": [
+  {
+   "version": "3.13.0",
+   "file": "webcam_bewegung_3_13_0.py",
+   "url": "",
+   "sha256": "aa751a5e9714b7ddbfb145888589f3c72cdfd48f085ef8ca7f09e8ac36495c29",
+   "date": "2026-10-31 20:38",
+   "notes": "Simulator 3.13.0: zu zweit zehn Team-Bausteine in der Karte des Grossvaters und bei Maggie (geteiltes Wissen, Räuberleiter, Rucksack teilen, Rücken an Rücken, Wer findet mehr, Fotowettbewerb, Lagerfeuer-Tagebuch, High-Five, Rollen, Gummiband).",
+   "size": 4416062,
+   "sig": "5fdb116c2d9dec8148e894d349f866a14bd5caec83580d3c5c4049e0a38e031441f88f4d785c72ce1c6e99ddfa4e77fdf39381d7133dee75359a083397751609",
+   "data": {
+    "file": "moveeye_daten_3_13_0.zip",
+    "url": "",
+    "sha256": "5fc36d6339ba37cc9f1e78f3ab91f1c8433e390d32a2ceaa850a346480b9dc71",
+    "size": 1612449,
+    "sig": "be4e317ba51f85503889cbea3984a0def72e8549b0cc534a634b527a7c34358d3ed45ac201792ed8a796860b3ec990349ae7e97ab83f38cfa7e858a6bfcaec05"
+   }
+  },
   {
    "version": "3.12.0",
    "file": "webcam_bewegung_3_12_0.py",
    "url": "",
    "sha256": "0164b81126fd108936373e059b3f18babca67b65a410ba5204c5e4ddf2ff2f79",
-   "date": "2026-10-31 20:29",
+   "date": "2026-10-31 20:34",
    "notes": "Blinki überall ohne den orangen Sichtfächer; bei einem Stimmungswechsel zeigt er das Zeichen kurz in einer kleinen Sprechblase; Logo und Fensterkopf unverändert.",
    "size": 4415983,
    "sig": "1a1ed57d8dc74dee73bbc58e38eade07a4c4505bbe1475e3092983be01a444211930a345095d15e3182c96d97e200546d58ba3e168cc26f988895ab226625b07",
@@ -116,16 +133,6 @@
    "notes": "Kriechende nachts: Voralarm «⚠ Etwas Grosses am Boden», nach 6 s «Person? (kriecht)» mit Alarm; Fuchs und Igel lösen nichts aus; KI-Lupe schaut auch kleine, weite Bewegungen an (nicht bei starkem Wind).",
    "size": 7780206,
    "sig": "f79f98014727f9778348be9f028d6d809a8a1b4ec5123d3ca292b5723908c90ffa671e98d47b3be7f8bfbf16325cc9861d72dde9e4d8aed4135f59904a050c03"
-  },
-  {
-   "version": "3.4.0",
-   "file": "webcam_bewegung_3_4_0.py",
-   "url": "",
-   "sha256": "0b7cdb82af8a0e0da5f087632fa68d82d270fc63b2b2ac6bec3d2a2ab9e992bd",
-   "date": "2026-10-31 17:00",
-   "notes": "Nebel-Modus: Nebel erkennen, Kontrast anheben, mehr Wärmebild, Hinweis «🌫 Nebel – Sicht eingeschränkt», kein falsches «Kamera verdreht» im Nebel; in Dämmerung und Wind 2–3 Treffer in Folge vor einer Personen-Meldung.",
-   "size": 7737437,
-   "sig": "8130371892411ea77f99bab8ca5102080048285aa12deab4dfcc12943cd08431e6f2c0a54800f4815d894e4b4b64cc90a42e66be2b285f891cc1209e1554cd07"
   },
   {
    "version": "3.0.2",

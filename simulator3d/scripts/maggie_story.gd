@@ -1041,12 +1041,18 @@ func _region_tick() -> void:
 		_play("chime")
 		tipp(T.t("Das Jahreszeiten-Tor leuchtet! Geh hindurch."))
 		moveeye_sagt(T.t(_pick(Welt.MOVEEYE["tor"])))
-	if _tor_open and Vector2(p.x - _tor_p.x, p.z - _tor_p.z).length() < TOR_R:
+	if _tor_open and Vector2(p.x - _tor_p.x, p.z - _tor_p.z).length() < TOR_R and not _zwei_wartet():
 		region_fertig(region)
 		return
 	if main.now() > _me_next:
 		_me_next = main.now() + randf_range(80.0, 130.0)
 		moveeye_sagt(T.t(_pick(Welt.MOVEEYE.get(region, []))))
+
+
+func _zwei_wartet() -> bool:
+	"""Zwei-Spieler-Bausteine (Gummiband): das Tor wartet, bis beide dort sind"""
+	var z = get_node_or_null("maggie_zwei")
+	return z != null and z.get("team_zb") != null and z.team_zb.haelt()
 
 
 func _all_tasks_done() -> bool:
