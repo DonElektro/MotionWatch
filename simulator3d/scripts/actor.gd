@@ -1097,6 +1097,8 @@ func _step(dt: float) -> void:
 			if r3.z != 0.0 and (avoid_side != r3.z or now >= side_until):
 				avoid_side = r3.z
 				side_until = now + 2.5                   # keep going round on this side
+			if kind == "person" and main.get("statisten") != null:
+				avoid_dir = main.statisten.steer(self, avoid_dir)   # Paket «Statisten»: other figures, pass on the right
 		if avoid_dir != Vector2.ZERO:
 			dir = Vector3(avoid_dir.x, 0, avoid_dir.y)
 	var want: float = speed * main.time_scale_visitors() * (0.3 if prone > 0.5 else (0.6 if crouch > 0.5 else 1.0))
@@ -1301,6 +1303,12 @@ func _animate(dt: float, spd: float, now: float) -> void:
 				hyaw = look_yaw * sin(min(1.0, (idle_until - now)) * PI)
 			"phone":
 				hx = -0.25
+			"photo":                                                     # Statisten: looks at the phone held up
+				hx = 0.0
+			"drink", "sitdrink":
+				hx = 0.3 * maxf(0.0, sin(now * 0.9 + seed_t)) - 0.05
+			"tie":
+				hx = -0.6
 			"talk":                                                      # P10: in a group - looks at the others, nods
 				hyaw = look_yaw
 				hx = 0.05 * sin(now * 2.0 + seed_t)
@@ -1350,7 +1358,9 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 	var c: float = clamp(crouch, 0.0, 1.0) * (1.0 - prone)
 	if idle == "bend":
 		c = max(c, 0.35)
-	_sit_k = move_toward(_sit_k, 1.0 if idle == "sit" and not controlled else 0.0, dt * 1.4)   # P10: sits down / gets up (~0.7 s)
+	elif idle == "tie":                                            # Statisten: crouched down, tying a shoe
+		c = max(c, 0.85)
+	_sit_k = move_toward(_sit_k, 1.0 if idle in ["sit", "sitdrink"] and not controlled else 0.0, dt * 1.4)   # P10: sits down / gets up (~0.7 s)
 	var sit_k := smoothstep(0.0, 1.0, _sit_k)
 	c *= 1.0 - sit_k
 	var pr: float = clamp(prone, 0.0, 1.0)
@@ -1409,6 +1419,8 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 		var lean := -0.62 * c - 0.28 * run_f - (0.1 if jog and spd > 0.5 else 0.0) - (0.14 if variant == "elderly" else 0.0) - lean_acc * (1.0 - pr) + still * 0.02 * sin(now * 1.6 + seed_t)
 		if idle == "bend":
 			lean = -1.05
+		elif idle == "tie":
+			lean = -0.95
 		if kl == 0.0:
 			lean = 0.12
 		if pr > 0.5:
@@ -1447,6 +1459,19 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 			sx = 2.55
 			ex = 0.55 + 0.35 * sin(now * 8.0)
 			sz = 0.3 + 0.22 * sin(now * 8.0)
+		elif idle == "photo":                                          # Statisten: a photo with the phone, both hands in front of the face
+			sx = 1.45
+			ex = 0.75
+			sz = -0.12 * side
+		elif idle in ["drink", "sitdrink"] and side > 0:               # Statisten: drinking from a bottle now and then
+			var sip: float = maxf(0.0, sin(now * 0.9 + seed_t))
+			sx = 0.55 + 0.55 * sip
+			ex = 1.5 + 0.9 * sip
+			sz = 0.2
+		elif idle == "tie":                                            # Statisten: the hands down at the shoe
+			sx = 1.05 + 0.08 * sin(now * 6.0 + side)
+			ex = 0.35
+			sz = 0.08 * side
 		elif idle == "phone" and side > 0:                             # on the phone
 			sx = 0.5
 			ex = 2.3
