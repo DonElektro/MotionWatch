@@ -172,7 +172,7 @@ func _dev(x: float, z: float) -> Vector3:
 		o = main.rig.global_position
 		b = main.rig.global_transform.basis.orthonormalized()
 	var p: Vector3 = o + b.x * x - b.z * z
-	p.y = main.ground_y(p.x, p.z) if main.terrain else 0.0
+	p.y = main.ground_y(p.x, p.z) if main.hilly() else 0.0
 	return p
 
 
@@ -455,7 +455,7 @@ func _move_figs(lt: float) -> void:
 		if mv.length() > 0.01:
 			a.heading = lerp_angle(a.heading, atan2(-mv.x, -mv.y), 0.35)
 			a.rotation.y = a.heading
-		a.position = Vector3(p.x, old.y if main.terrain else p.y, p.z)
+		a.position = Vector3(p.x, old.y if main.hilly() else p.y, p.z)
 		a.cur_speed = float(s[3]) if mv.length() > 0.005 else 0.0
 		a.idle_kind = ""
 

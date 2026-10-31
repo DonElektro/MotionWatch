@@ -268,6 +268,8 @@ func tree(parent: Node3D, p: Vector3, sc: float, conifer := -1) -> void:
 	if (parent == root and _out(p)) or (decor and Quality.lite()):
 		rng.randf()                                  # 3D-4.x: outside the place (worlds.gd) - the same random numbers after it
 		return
+	if parent == root and m.hilly():
+		p.y = m.ground_y(p.x, p.z)                               # 3D-4.x: on the hills (gelaende.gd)
 	var tr := node(parent, p, rng.randf() * TAU)
 	tr.scale = Vector3.ONE * sc
 	var bark := Color(0.3, 0.22, 0.15).lerp(Color(0.38, 0.3, 0.22), rng.randf())
@@ -382,7 +384,9 @@ func stones(n: int, dmin: float, dmax: float) -> void:
 		dmin = minf(dmin, dmax * 0.5)
 	for i in range(n):
 		var r := rng.randf_range(0.15, 0.35)
-		put(root, sph(r, r * 1.2), m.pos_of(rng.randf_range(-60, 60), rng.randf_range(dmin, dmax), 0.05), Color(0.48, 0.48, 0.46), "stone")
+		var sp: Vector3 = m.pos_of(rng.randf_range(-60, 60), rng.randf_range(dmin, dmax), 0.05)
+		sp.y += m.ground_y(sp.x, sp.z)                           # 3D-4.x: on the hills (gelaende.gd)
+		put(root, sph(r, r * 1.2), sp, Color(0.48, 0.48, 0.46), "stone")
 
 
 func door_light_at(parent: Node3D, p: Vector3) -> void:
@@ -629,6 +633,9 @@ func _ort() -> void:
 
 
 func _camping() -> void:
+	var plants: bool = m.gelaende != null and m.gelaende.plants_wanted()
+	if m.gelaende != null and m.gelaende.relief_wanted():
+		m.gelaende.camping_relief(self)                  # 3D-4.x: hills and hollows first - everything after stands on them
 	road(-29.0)
 	caravan(m.pos_of(-28.0, 9.0), deg_to_rad(28.0))
 	var tn := node(root, m.pos_of(14.0, 7.0), deg_to_rad(-14.0))
@@ -674,6 +681,9 @@ func _camping() -> void:
 	flag(m.pos_of(-42.0, 13.0), Color(0.8, 0.12, 0.12))
 	laundry(m.pos_of(-12.0, 11.0), deg_to_rad(20.0))
 	stones(8, 4.0, 15.0)
+	if plants:
+		m.gelaende.camping_plants(self)                  # 3D-4.x: paths, hedges, bushes, trees of many kinds, dense grass, flowers
+		return
 	meadow(700, 3.0, 40.0)
 	for i in range(140):
 		var d := rng.randf_range(16, 60) if i < 40 else rng.randf_range(60, 120)

@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.48** · passende MoveEye-Version (früher Motion Watch) **2.98.79**
+Stand: 31.10.2026 · Simulator-Version **3D-4.49** · passende MoveEye-Version (früher Motion Watch) **2.98.80**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.49 (MoveEye 2.98.80): Gelände und Pflanzen (`gelaende.gd`, `vegetation.gd`)
+
+- `gelaende.gd` (Relief, Wege, Sichtlinien `los`, Wolkenschatten), `vegetation.gd` (Bäume, Hecken, Gras/Blumen als MultiMesh);
+  `main.hilly()` (statt nur `terrain`), `ground_y()`: zuerst `ground_fn`, dann Ort, dann Hügel. foliage.gdshader: Jahreszeit
+  (`bare`, `blossom`) + Wolkenschatten (`cloud_amt`). Steuerung `{"action":"gelaende"}`. Lite: Gras/Blumen ausgedünnt.
 
 ## NEU in 3D-4.48 (MoveEye 2.98.79): Jahreszeiten (`jahreszeiten.gd`)
 

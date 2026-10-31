@@ -462,7 +462,7 @@ func sync(dt: float) -> void:
 		if pv != null:
 			skel.set_bone_pose_rotation(i, (pv as Node3D).quaternion)
 	var pr: float = clampf(a.prone, 0.0, 1.0)
-	var on_slope: bool = dt > 0.0 and not a.preview and a.variant != "cyclist" and pr < 0.1 and a.is_inside_tree() and (a.main.terrain or test_slope != 0.0)
+	var on_slope: bool = dt > 0.0 and not a.preview and a.variant != "cyclist" and pr < 0.1 and a.is_inside_tree() and (a.main.hilly() or test_slope != 0.0)
 	var raise := [0.0, 0.0]
 	var pitch := 0.0
 	if on_slope:
@@ -512,7 +512,7 @@ func sync(dt: float) -> void:
 
 
 func _ground(x: float, z: float) -> float:
-	if a.main.terrain:
+	if a.main.hilly():
 		return a.main.ground_y(x, z)
 	return test_slope * x
 

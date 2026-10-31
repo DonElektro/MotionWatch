@@ -8,6 +8,8 @@ uniform float snow_amount = 0.0;
 uniform float wet = 0.0;
 uniform float puddle = 0.0;           // 3D-3.98: puddles in the hollows after long rain (0 … 1)
 uniform sampler2D noise_tex;
+uniform float cloud_amt = 0.0;      // 3D-4.x gelaende.gd: cloud shadows drift over the ground (0 = off)
+uniform vec2 cloud_off = vec2(0.0);
 
 void fragment() {
 	vec3 w = (INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
@@ -18,6 +20,7 @@ void fragment() {
 	c *= 0.75 + 0.35 * mid + 0.25 * (fine - 0.5);
 	c = mix(c, snow.rgb * (0.92 + 0.08 * fine), snow_amount);
 	float pd = puddle * smoothstep(0.34, 0.26, big + 0.15 * (mid - 0.5)) * (1.0 - snow_amount);
+	c *= 1.0 - cloud_amt * smoothstep(0.52, 0.68, texture(noise_tex, (w.xz + cloud_off) * 0.0035).r);
 	ALBEDO = mix(c * (1.0 - 0.35 * wet), vec3(0.05, 0.055, 0.06), pd);
 	ROUGHNESS = mix(mix(0.95, 0.35, wet), 0.04, pd);
 	SPECULAR = mix(0.5, 0.9, pd);

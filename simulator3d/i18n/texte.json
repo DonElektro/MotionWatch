@@ -10452,6 +10452,12 @@
   "it": "Terreno e superficie (alberi, tetti) come modello altimetrico – per un proprio terreno in Blender.",
   "rm": "Terren e surfatscha (plantas, tetgs) sco model d’autezza – per agen terren en Blender."
  },
+ "Gelände: leichte Hügel und Senken statt flachem Boden (Camping-Platz; baut die Szene neu)": {
+  "en": "Terrain: gentle hills and hollows instead of flat ground (camping site; rebuilds the scene)",
+  "fr": "Terrain : légères collines et creux au lieu d’un sol plat (camping ; reconstruit la scène)",
+  "it": "Terreno: leggere colline e avvallamenti invece di un suolo piatto (campeggio; ricostruisce la scena)",
+  "rm": "Terren: collinas e foppas levas empè d’in terren plat (camping; construescha la scena da nov)"
+ },
  "Gelöscht: %d Pakete (%.0f MB) · %s": {
   "en": "Deleted: %d packages (%.0f MB) · %s",
   "fr": "Effacés : %d paquets (%.0f MB) · %s",
@@ -15393,6 +15399,12 @@
   "fr": "plus de personnes",
   "it": "più persone",
   "rm": "dapli persunas"
+ },
+ "Mehr Pflanzen: Büsche, Hecken, Bäume verschiedener Arten, Blumen und Wege (Camping-Platz; baut die Szene neu)": {
+  "en": "More plants: bushes, hedges, trees of different kinds, flowers and paths (camping site; rebuilds the scene)",
+  "fr": "Plus de plantes : buissons, haies, arbres de différentes espèces, fleurs et chemins (camping ; reconstruit la scène)",
+  "it": "Più piante: cespugli, siepi, alberi di vario tipo, fiori e sentieri (campeggio; ricostruisce la scena)",
+  "rm": "Dapli plantas: chaglias, saivs, plantas da different gener, flurs e sendas (camping; construescha la scena da nov)"
  },
  "mehr Tiere": {
   "en": "more animals",
