@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6407 (Stellen: 8897)
-Übersetzt: en 6407, fr 6407, it 6407, rm 6407
+Texte gesamt: 6409 (Stellen: 8900)
+Übersetzt: en 6409, fr 6409, it 6409, rm 6409
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 460 Stellen
 Nicht mehr im Code (noch in texte.json): 228
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 22390, schlüssel 16826, keine Wörter 10407, index 8559, technisch 2882, doc 1869, einheit 255, log 146, englisch 120, pfad 98, html 68, klasse 26, shader 6
+Übersprungen (Grund: Anzahl): kennung 22401, schlüssel 16828, keine Wörter 10413, index 8561, technisch 2883, doc 1871, einheit 255, log 146, englisch 120, pfad 98, html 68, klasse 26, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  691    42
@@ -74,9 +74,9 @@ Pro Datei (Texte / davon dynamische Stellen):
   update.gd                 36     4
   geo.gd                    36     7
   gamemore.gd               36     1
+  maggie_vorfuehrung.gd     34     7
   gameziele.gd              34     0
   devtool_notizen.gd        34     1
-  maggie_vorfuehrung.gd     33     7
   gametools.gd              33     2
   tour.gd                   31     1
   zwilling.gd               29     3
@@ -102,6 +102,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   phone.gd                  20     4
   patrol.gd                 20     0
   figur_paket.gd            19     5
+  devtool_vorfuehrung.gd    19     0
   tv.gd                     19     8
   statusled.gd              19     0
   surprise.gd               19     1
@@ -111,7 +112,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   thermsensor.gd            18     0
   gamelearn.gd              18     0
   kompakt_hof.gd            17     0
-  devtool_vorfuehrung.gd    17     0
   szenenplus.gd             17     1
   gameturnier.gd            17     0
   devtool_kapitel.gd        16     0
@@ -218,13 +218,13 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   ferienpark_leben.gd:992  'fertig'
   maggie_story.gd:403  'fertig'
   maggie_story.gd:1263  'Mit'
-  maggie_vorfuehrung.gd:532  'fertig'
-  maggie_vorfuehrung.gd:874  'ja'
-  maggie_vorfuehrung.gd:874  'nein'
-  maggie_vorfuehrung.gd:1399  'ja'
-  maggie_vorfuehrung.gd:1399  'nein'
-  maggie_vorfuehrung.gd:1434  'Vorführung «Maggie und der Bergkristall» – %s – %s\n'
-  maggie_vorfuehrung.gd:1437  '\nBLOCKIERT:\n'
+  maggie_vorfuehrung.gd:565  'fertig'
+  maggie_vorfuehrung.gd:933  'ja'
+  maggie_vorfuehrung.gd:933  'nein'
+  maggie_vorfuehrung.gd:1460  'ja'
+  maggie_vorfuehrung.gd:1460  'nein'
+  maggie_vorfuehrung.gd:1495  'Vorführung «Maggie und der Bergkristall» – %s – %s\n'
+  maggie_vorfuehrung.gd:1498  '\nBLOCKIERT:\n'
   protokoll.gd:72  'aus'
   protokoll.gd:73  'Tunnel: '
   protokoll.gd:73  'aus'

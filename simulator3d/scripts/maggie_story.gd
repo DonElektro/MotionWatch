@@ -1573,7 +1573,7 @@ func _hud_tick() -> void:
 			_beam.visible = d > 6.0
 			_beam.position = gp + Vector3(0, 35, 0)
 	var left := maxf(0.0, _zk_ready_at - t)
-	_kbtn.visible = has_crystal and phase in WALK and not demo
+	_kbtn.visible = has_crystal and phase in WALK and (not demo or (vf != null and is_instance_valid(vf) and bool(vf.knoepfe)))
 	_help.visible = not demo
 	_kbtn.text = (T.t("K · Kristall") if left <= 0.0 else T.t("Kristall %d s", [int(ceil(left))]))
 	_kbtn.disabled = left > 0.0
