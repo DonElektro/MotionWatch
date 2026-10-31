@@ -421,6 +421,19 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.37
+3D-4.37: Weitere Erlebnisse im Bergtal (18–34): Schneehase im Herbst, Hermelin in der Mauer, Salamander nach Regen,
+Kuhglocken im Nebel, Gämse auf dem Hospiz-Dach, Gleitschirm auf der Kuhweide, Postauto mit Dreiklang, Nordlicht …
+So testest du: 1) Szene «Bergtal», Herbst: Schneehase suchen. 2) Nach Regen: Salamander-Prozession. 3) Entdeckungsbuch
+zeigt die neuen Einträge.
+
+NEU IN 3D-4.36
+3D-4.36: Aussichtspunkte im Bergtal: Fernrohr, Panoramafoto mit MoveEyes Kamera, Bergstimmungen (Alpenglühen,
+Milchstrasse), Karte deckt sich nach und nach auf, Gewitter und Nebel von weitem. Alle Bergtal-Regler stehen jetzt in
+einem eigenen Teil «Bergtal» der Karte Szene (nur im Bergtal sichtbar).
+So testest du: 1) Szene «Bergtal», Szene → Teil «Bergtal» → Schnellreise «Aussicht: Seeblick Gumpisee». 2) «Durchs
+Fernrohr schauen». 3) Andere Szene: der Teil «Bergtal» verschwindet.
+
 NEU IN 3D-4.35
 3D-4.35: Erlebnisse im Bergtal: 17 kleine Szenen (Murmeltiere, Kuh klaut Socke, Dohlen am Sandwich, Schafstau am Pass,
 Fondue mit Fuchs, Alphorn am Morgen, Sternschnuppen …), alle im Entdeckungsbuch. Laufen von selbst, bei Testläufen aus.

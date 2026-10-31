@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.35"
+const VERSION := "3D-4.37"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -3415,7 +3415,7 @@ func add_control(type: String, id: String, label: String, getter, setter, group:
 
 # ---- order of the settings: groups with a symbol, parts inside (from 3D-3.5) ------------------------------------------------
 # [group, symbol (window: drawn; page of MoveEye: emoji), parts in their order]
-const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Foto des Platzes", "Zeit"]],
+const GROUPS := [["Szene", "globe", "🌍", ["", "Bergtal", "Ort von der Karte", "Foto des Platzes", "Zeit"]],
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
 		["Kamerabild", "lens", "👁", ["", "Weitwinkel-Kamera", "Wärmebild", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
@@ -3594,12 +3594,16 @@ func _register_controls() -> void:
 	add_control("button", "bt_ev_storm", "Gewitter zieht auf (Bergtal)", null, func(): _bt_do("storm"), "Wetter", {"sub": "Mehr Wetter"})
 	add_control("button", "bt_ev_fog", "Nebel kommt schnell (Bergtal)", null, func(): _bt_do("fog"), "Wetter", {"sub": "Mehr Wetter"})
 	add_control("button", "bt_ev_fogsea", "Nebelmeer (Bergtal: das Tal im Nebel, oben Sonne)", null, func(): _bt_do("fogsea"), "Wetter", {"sub": "Mehr Wetter"})
+	preload("res://scripts/bergtal_aussicht.gd").add_controls(self)     # «Bergtal · Aussichtspunkte»: Fernrohr, Panorama, Reichweite …
 	for _c in controls:   # Bergtal-only controls: only shown in its scene (like fp_spot); season, quick travel, events also in its places
 		if str(_c.id).begins_with("bt_"):
 			if str(_c.id) in ["bt_season", "bt_goto", "bt_events", "bt_orient", "bt_mark"] or str(_c.id).begins_with("bt_ev_"):
 				_c["only"] = func(): return Worlds.world_of(scene) == "bergtal"
 			else:
 				_c["only"] = func(): return scene == "bergtal"
+			if _c.group == "Szene":
+				_c.extra = _c.extra.duplicate()
+				_c.extra["sub"] = "Bergtal"            # 3D-4.36 (Daniel): own part «Bergtal» on the card Szene, only in the Bergtal
 	add_control("select", "szene_spot", "Standort an diesem Ort (Pfadilager, Hofladen, Bergdorf, Festival)", func(): return scene_spot(scene),
 			func(v): set_scene_spot(str(v)), "Szene", {"options": _spot_options()})     # 3D-4.x: where MoveEye stands in a compact place (kompakt.gd)
 	controls[-1]["only"] = func(): return Kompakt.is_kompakt(scene)

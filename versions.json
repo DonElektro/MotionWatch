@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 06:23",
+ "generated": "2026-10-31 06:45",
  "versions": [
   {
-   "version": "2.98.66",
-   "file": "webcam_bewegung_2_98_66.py",
+   "version": "2.98.68",
+   "file": "webcam_bewegung_2_98_68.py",
    "url": "",
-   "sha256": "f187faf456f0f24070722488ce93ef2eed4f3e26a4263450c390b94ea433746a",
-   "date": "2026-10-31 06:23",
-   "notes": "Simulator 3D-4.35: Erlebnisse im Bergtal – 17 kleine Szenen mit Tieren und Menschen im Entdeckungsbuch (Murmeltiere, Schafstau, Fondue mit Fuchs, Alphorn …).",
-   "sig": "d31b59af749bf758bd62f2c446225dc87da4c94d040c9b723bd330ddcd859671b714a9f80569d61e01c44f3f39cf3fa88fbbea153252a8e418aa26bd96c68f02"
+   "sha256": "7f0a9ffd00b4001ef79d60197ba63839566e04db68dbf80c2999ff1ed0eca277",
+   "date": "2026-10-31 06:45",
+   "notes": "Simulator 3D-4.37: weitere Erlebnisse im Bergtal (18–34: Schneehase, Hermelin, Salamander, Kuhglocken im Nebel, Gleitschirm, Postauto, Nordlicht …) im Entdeckungsbuch.",
+   "sig": "00e353cc9a9fe104804e12c966e9dfc286fba2300df9f920e11faa3ff12322d714292377dd9f791d6adcf3b6d5cdd9b2e264912d04c0f1eee29931e170a5e702"
   },
   {
    "version": "2.97.1",
