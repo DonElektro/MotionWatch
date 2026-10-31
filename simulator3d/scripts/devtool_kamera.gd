@@ -27,6 +27,8 @@ const Orte = preload("res://scripts/bergtal_orte.gd")
 const EYE := 1.7                       # m: eye height over ground / water
 const TGT_H := 1.2                     # m: the point looked at above the ground of the place
 const CELL := 8.0                      # m: grid of the box lookup
+# places whose front looks one way (degrees, 0 = north, like VIEWPOINTS): the camera stands in front of it
+const LOOK := {"bergtal.ort.fort_chruezli_bunker": 90.0}     # bunker front faces west (bib_berg _b_bunker +z, turned -90°)
 const DEEP := ["schlucht", "schlund", "höhle", "hoehle", "spalt", "bunker", "werk", "wasserfall", "gumpen", "fall "]
 
 var main
@@ -208,7 +210,9 @@ func pref_dir(e: Dictionary, frame) -> Vector3:
 		return Vector3.ZERO
 	var a = null
 	var id := str(e.get("id", ""))
-	if id.begins_with("bergtal.aussicht."):
+	if LOOK.has(id):
+		a = float(LOOK[id])
+	elif id.begins_with("bergtal.aussicht."):
 		for vp in Bt.VIEWPOINTS:
 			if "bergtal.aussicht." + str(vp[0]) == id:
 				a = float(vp[6])
@@ -348,7 +352,7 @@ func best_view(e: Dictionary, p: Vector3, d: float, prev_fwd: Vector3, frame = n
 	var aus := pref != Vector3.ZERO and (str(e.get("kind", "")) == "aussicht" or str(e.get("kind", "")) == "ort")
 	if aus:                                                  # a viewpoint: just behind it, looking out like its bench
 		dists = [7.0, 11.0, 16.0]
-	pref_w = 60.0 if aus else 25.0
+	pref_w = 60.0 if (aus or LOOK.has(str(e.get("id", "")))) else 25.0
 	var cands := []
 	var far := 0.0
 	for i in nyaw:
@@ -420,6 +424,10 @@ func best_view(e: Dictionary, p: Vector3, d: float, prev_fwd: Vector3, frame = n
 			c = tgt + bk * up * 0.45
 		c.y = maxf(tgt.y + up, surf(c.x, c.z) + EYE)
 		alts.append(Transform3D(Basis(), c).looking_at(tgt, Vector3.UP))
+	if aus:                                                  # a viewpoint: look out over it (its stored direction), not down at the bench
+		var c: Vector3 = top["c"]
+		var far_pt := tgt + pref * 80.0 + Vector3(0, -8.0, 0)
+		top["xf"] = Transform3D(Basis(), c).looking_at(far_pt, Vector3.UP)
 	var ms := (Time.get_ticks_usec() - t0) / 1000.0
 	last = {"id": str(e.get("id", "")), "score": snappedf(float(top["s"]), 0.1), "why": top["why"], "n": cands.size(),
 			"boxes": _boxes.size(), "ms": snappedf(ms, 0.1), "deep": deep, "lake": in_lake, "cam": _v(top["c"]), "tgt": _v(tgt)}
