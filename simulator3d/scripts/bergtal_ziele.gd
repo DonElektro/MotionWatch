@@ -132,7 +132,7 @@ static func sculpt(hm: PackedFloat32Array, n: int, lo: float, step: float) -> Pa
 	for j in range(maxi(0, int((FALL.y - hw - 5.0 - lo) / step)), mini(n - 1, int((FALL.y + hw + 5.0 - lo) / step) + 1) + 1):
 		for i in range(maxi(0, int((FALL.x - 7.0 - lo) / step)), mini(n - 1, int((POOL.x - lo) / step) + 1) + 1):
 			var q := Vector2(lo + i * step, lo + j * step)
-			var w := (1.0 - smoothstep(hw, hw + 4.0, absf(q.y - FALL.y))) * smoothstep(FALL.x - 7.5, FALL.x - 5.5, q.x)
+			var w := (1.0 - smoothstep(hw - 1.0, hw + 1.5, absf(q.y - FALL.y))) * smoothstep(FALL.x - 7.5, FALL.x - 5.5, q.x)
 			if w > 0.0:
 				hm[j * n + i] = minf(hm[j * n + i], lerpf(hm[j * n + i], pool_level + 0.3, w))
 	return hm
@@ -182,119 +182,241 @@ func _frame(c: Vector2, y: float, rot: float) -> Dictionary:
 
 
 # ---- Tuffwasserfall ------------------------------------------------------------------------------------------------------------
-const TUFF := ["a8956e", "9a8a66", "b5a37c", "8c7e60"]
-const MOSS := ["4a7a22", "5a8a28", "3a6a1e", "6a9430"]
+const TUFF := [Color(0.62, 0.57, 0.46), Color(0.55, 0.51, 0.42), Color(0.68, 0.63, 0.52)]
+const MOSS_C := [Color(0.27, 0.42, 0.14), Color(0.33, 0.48, 0.16), Color(0.22, 0.34, 0.12)]
+const NSTEP := 5                                 # steps (ledges) in the tuff wall
+static var _wn: FastNoiseLite
+
+
+func _wall_z(u: float, v: float) -> float:
+	"""the face of the tuff wall (local: u along the wall, v up from the water, z towards the pool): leaning back a little,
+	every step with a lip that hangs over, lumps from noise; the sides and the top bend back into the slope"""
+	var hk := WALL_H / NSTEP
+	var f := fposmod(v + 0.7 * sin(u * 0.45) + 0.4 * sin(u * 1.3), hk) / hk
+	var z := -0.26 * v + 1.0 * f * f * f
+	z += _wn.get_noise_2d(u * 0.8, v * 0.8) * 0.8 + _wn.get_noise_2d(u * 3.1 + 40.0, v * 3.1) * 0.2
+	var hw := WALL_W / 2.0
+	z -= 6.0 * smoothstep(hw + 0.5, hw + 5.0, absf(u))
+	z -= 7.0 * smoothstep(WALL_H - 0.5, WALL_H + 2.5, v)
+	return z
+
+
+func _moss_k(u: float, v: float) -> float:
+	"""0 … 1: moss (soft patches, more on the lips of the steps and beside the water)"""
+	var hk := WALL_H / NSTEP
+	var f := fposmod(v + 0.7 * sin(u * 0.45) + 0.4 * sin(u * 1.3), hk) / hk
+	var k := smoothstep(0.05, 0.45, _wn.get_noise_2d(u * 0.6 + 100.0, v * 0.6 - 30.0))
+	k = maxf(k, smoothstep(0.78, 0.98, f) * smoothstep(-0.2, 0.3, _wn.get_noise_2d(u * 1.4, v * 0.3 + 7.0)))
+	for th in _threads():
+		k = maxf(k, 0.7 * (1.0 - smoothstep(0.4, 1.6, absf(u - float(th[0])))) * smoothstep(-0.3, 0.2, _wn.get_noise_2d(u * 2.0, v * 2.0 + 50.0)))
+	return clampf(k, 0.0, 1.0)
+
+
+func _threads() -> Array:
+	"""the threads of water: [u, width]"""
+	return [[1.4, 1.1], [-1.4, 0.4], [3.8, 0.35]] if lite else [[1.4, 1.1], [-1.4, 0.4], [-3.7, 0.25], [3.8, 0.35], [5.5, 0.2], [0.2, 0.18]]
 
 
 func _waterfall() -> void:
 	var winter := season == "winter"
 	var y0 := pool_level
-	var b := _frame(FALL, y0, PI / 2.0)                       # local +z = valley east (to the pool), local x = valley north … south
-	var nst := 4 if lite else 7
-	var hk := (WALL_H + 0.8) / nst
-	var tops := []                                            # [front z, top y] per step
-	for k in range(nst):
-		var zf := -k * 0.8 + 0.25 * sin(k * 2.3)
-		var yb := -0.8 + k * hk
-		var yt := yb + hk
-		tops.append([zf, yt, yb])
-		var cuts := 1 if lite else 3
-		var xs := -WALL_W / 2.0
-		for c in range(cuts):
-			var w := WALL_W / cuts * (1.0 + (0.18 * sin(k * 1.7 + c * 2.1) if cuts > 1 else 0.0))
-			if c == cuts - 1:
-				w = WALL_W / 2.0 - xs
-			var dz := 0.3 * sin(k * 3.1 + c * 1.3)
-			o._bx(b, w + 0.4, hk + 0.35, 8.0, xs + w / 2.0, yb + hk / 2.0, zf + dz - 4.0, TUFF[(k + c) % 4], "stone", "far",
-					3.0 * sin(k + c), -4.0 * sin(k * 1.9 + c), 1.5 * cos(k + c * 2.0))
-			if not winter:                                    # moss on the edge of the step
-				o._bx(b, w * (0.55 + 0.3 * absf(sin(k * 2.0 + c))), 0.22, 0.9, xs + w / 2.0 + 0.6 * sin(k + c), yt + 0.06, zf + dz - 0.4, MOSS[(k + c) % 4], "tree", "mid")
-			xs += w
-		if not winter:                                        # moss hanging down the face (Lite: fewer), light tuff bulges
-			for j in range(2 if lite else 4):
-				var mx := -6.5 + fposmod(k * 3.7 + j * 5.3, 13.0)
-				o._pt(b, Bib.B(0.9 + 0.5 * (j % 2), hk * 0.75, 0.16, mx, yb + hk * 0.55, zf + 0.12, MOSS[(k + j) % 4], 0, 0, 4.0 * sin(k + j), "tree"), "mid")
-			if not lite:
-				o._pt(b, Bib.S(0.9, 1.1, -5.0 + fposmod(k * 4.1, 10.0), yb + hk * 0.4, zf + 0.15, TUFF[(k + 2) % 4], "stone"), "mid")
-	# the rocks at both ends of the wall and the top edge (it goes into the slope)
-	for sd in [-1.0, 1.0]:                                    # (and the sides of the cut in the slope)
-		for j in range(3 if lite else 5):
-			o._pt(b, Bib.S(1.7 + 0.25 * j, 2.2 + 0.6 * j, sd * (WALL_W / 2.0 + 0.9 + 0.4 * j), 0.6 + j * 3.2, -1.2 - j * 0.9, (MOSS[j % 4] if j % 2 == 1 and not winter else "8a7e62"), "stone"), "far")
-		for j in range(2 if lite else 4):
-			o._pt(b, Bib.S(1.4, 1.5, sd * (WALL_W / 2.0 + 2.2), 0.3 + j * 0.8, 1.5 + j * 2.4, "7e745c", "stone"), "mid")
-	o._flush(b)
-	m.add_obstacle_box(bt.W(Vector3(FALL.x - 3.0, y0, FALL.y)), WALL_W, 7.0, bt.wrot(PI / 2.0))
+	if _wn == null:
+		_wn = FastNoiseLite.new()
+		_wn.seed = 1601
+		_wn.frequency = 0.35
+		_wn.fractal_octaves = 2
+	var rot := PI / 2.0                                         # local +z = valley east (to the pool), local x = along the wall
+	var xf := Transform3D(Basis(Vector3.UP, rot), Vector3(FALL.x, y0, FALL.y))
+	# the tuff wall: one mesh (a grid bent by noise), colours per corner: beige-grey tuff, darker where wet, soft moss patches
+	var nu := 20 if lite else 48
+	var nv := 16 if lite else 40
+	var u0 := -WALL_W / 2.0 - 5.0
+	var u1 := WALL_W / 2.0 + 5.0
+	var v0 := -1.0
+	var v1 := WALL_H + 3.0
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var pts := []
+	var cols := []
+	for j in range(nv + 1):
+		var v := lerpf(v0, v1, float(j) / nv)
+		for i in range(nu + 1):
+			var u := lerpf(u0, u1, float(i) / nu) + (_wn.get_noise_2d(i * 7.0, j * 7.0) * 0.3 if i > 0 and i < nu else 0.0)
+			pts.append(Vector3(u, v, _wall_z(u, v)))
+			var n1 := 0.5 + 0.5 * _wn.get_noise_2d(u * 1.7 + 9.0, v * 1.7)
+			var c: Color = TUFF[0].lerp(TUFF[1], n1).lerp(TUFF[2], clampf(_wn.get_noise_2d(u * 0.4, v * 2.5) + 0.2, 0.0, 1.0) * 0.6)
+			var wet := 0.0
+			for th in _threads():
+				wet = maxf(wet, 1.0 - smoothstep(0.2, 1.1, absf(u - float(th[0]))))
+			c = c.darkened(0.25 * wet)
+			if not winter:
+				var mk := _moss_k(u, v)
+				var mc: Color = MOSS_C[0].lerp(MOSS_C[1], n1).lerp(MOSS_C[2], wet)
+				c = c.lerp(mc, mk * 0.9)
+			else:
+				c = c.lerp(Color(0.9, 0.92, 0.94), smoothstep(0.6, 0.9, fposmod(v, WALL_H / NSTEP) / (WALL_H / NSTEP)) * 0.8)
+			cols.append(c)
+	for j in range(nv):
+		for i in range(nu):
+			var k := j * (nu + 1) + i
+			for q in [k, k + 1, k + nu + 2, k, k + nu + 2, k + nu + 1]:
+				st.set_color(cols[q])
+				st.add_vertex(pts[q])
+	st.generate_normals()
+	var wm := StandardMaterial3D.new()
+	wm.vertex_color_use_as_albedo = true
+	wm.roughness = 0.95
+	wm.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var wall: MeshInstance3D = m.add_mesh(bt.tal, st.commit(), xf.origin, wm, "stone", Vector3(0, rot, 0))
+	wall.visibility_range_end = 260.0 if lite else 520.0
+	if not lite and not winter:                               # a few soft moss cushions on the lips (not Lite)
+		var ck: String = bib._cell_key(xf.origin)
+		for i in range(14):
+			var u := -6.5 + fposmod(i * 4.7, 13.0)
+			var v := (fposmod(i * 2.3, NSTEP) + 0.9) * WALL_H / NSTEP
+			if _moss_k(u, v) < 0.3:
+				continue
+			var p := xf * Vector3(u, v, _wall_z(u, v) + 0.15)
+			bib._part(Bib.S(0.45 + 0.2 * (i % 3), 0.35, p.x, p.y, p.z, MOSS_C[i % 3], "tree"), Transform3D.IDENTITY, "tree", "small", ck)
+	m.add_obstacle_box(bt.W(Vector3(FALL.x - 3.0, y0, FALL.y)), WALL_W, 7.0, bt.wrot(rot))
 	m.set_obstacle_height(WALL_H)
-	# the threads of water: over every step down, then a short way on the step below; one mesh (Lite: 2 threads, no shader)
 	if not winter:
-		var threads := [[1.4, 0.9], [-1.3, 0.3]] if lite else [[1.4, 0.9], [-1.3, 0.3], [-3.6, 0.18], [3.7, 0.24], [5.4, 0.14]]
-		var st := SurfaceTool.new()
-		st.begin(Mesh.PRIMITIVE_TRIANGLES)
-		for th in threads:
-			var v := 0.0
-			for k in range(nst - 1, -1, -1):
-				var zf := float(tops[k][0]) + 0.06
-				var yt := float(tops[k][1])
-				var yb := maxf(float(tops[k][2]), -0.02)
-				var x := float(th[0]) + 0.22 * sin(k * 2.7 + float(th[0]))
-				var w := float(th[1]) * (1.0 + 0.6 * (1.0 - float(k) / nst))
-				_quad(st, Vector3(x - w / 2.0, yt, zf), Vector3(x + w / 2.0, yt, zf), Vector3(x + w / 2.0, yb, zf), Vector3(x - w / 2.0, yb, zf), v, v + (yt - yb), Vector3(0, 0, 1))
-				v += yt - yb
-				if k > 0:                                     # over the top of the step below
-					var z2 := float(tops[k - 1][0]) + 0.06
-					var y2 := float(tops[k - 1][1]) + 0.04
-					var x2 := float(th[0]) + 0.22 * sin((k - 1) * 2.7 + float(th[0]))
-					_quad(st, Vector3(x - w / 2.0, y2, zf - 0.02), Vector3(x + w / 2.0, y2, zf - 0.02), Vector3(x2 + w / 2.0, y2, z2), Vector3(x2 - w / 2.0, y2, z2), v, v + 0.8, Vector3.UP)
-					v += 0.8
-		var mi: MeshInstance3D = m.add_mesh(bt.tal, st.commit(), Vector3(FALL.x, y0, FALL.y), _water_mat(), "pond", Vector3(0, PI / 2.0, 0))
+		_threads_mesh(xf)
+		_spray(xf)
+	_pool(winter)
+	_waterfall_rest()
+
+
+func _threads_mesh(xf: Transform3D) -> void:
+	"""white, see-through threads and veils of water on the face; they run down (shader, UV scroll)"""
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var dv := 1.0 if lite else 0.4
+	for th in _threads():
+		var u := float(th[0])
+		var w0 := float(th[1])
+		var v := WALL_H - 0.6
+		var prev := []
+		while v > -0.4:
+			var uu := u + 0.25 * sin(v * 0.9 + u)
+			var w := w0 * (1.0 + 0.7 * (1.0 - v / WALL_H)) * (1.0 + 0.25 * sin(v * 2.3 + u * 3.0))
+			var z := maxf(maxf(_wall_z(uu - w / 2.0, v), _wall_z(uu + w / 2.0, v)), _wall_z(uu, v)) + (0.3 if lite else 0.16)
+			var a := Vector3(uu - w / 2.0, v, z)
+			var b := Vector3(uu + w / 2.0, v, z)
+			var tv := WALL_H - v
+			if not prev.is_empty():
+				var uv := [Vector2(0, prev[2]), Vector2(1, prev[2]), Vector2(1, tv), Vector2(0, tv)]
+				var q := [prev[0], prev[1], b, a]
+				for k in [0, 1, 2, 0, 2, 3]:
+					st.set_uv(uv[k])
+					st.set_normal(Vector3(0, 0, 1))
+					st.add_vertex(q[k])
+			prev = [a, b, tv]
+			v -= dv
+	var mi: MeshInstance3D = m.add_mesh(bt.tal, st.commit(), xf.origin, _water_mat(), "pond", Vector3(0, PI / 2.0, 0))
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.visibility_range_end = 220.0 if lite else 420.0
+
+
+static var _puff_tex: GradientTexture2D
+
+
+func _spray(xf: Transform3D) -> void:
+	"""a little spray where the main thread falls into the pool: soft white puffs (billboards) and a foam ring"""
+	if _puff_tex == null:
+		var g := Gradient.new()
+		g.set_color(0, Color(1, 1, 1, 0.85))
+		g.set_color(1, Color(1, 1, 1, 0.0))
+		_puff_tex = GradientTexture2D.new()
+		_puff_tex.gradient = g
+		_puff_tex.fill = GradientTexture2D.FILL_RADIAL
+		_puff_tex.fill_from = Vector2(0.5, 0.5)
+		_puff_tex.fill_to = Vector2(1.0, 0.5)
+		_puff_tex.width = 64
+		_puff_tex.height = 64
+	var pm := StandardMaterial3D.new()
+	pm.albedo_texture = _puff_tex
+	pm.albedo_color = Color(1, 1, 1, 0.55)
+	pm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	pm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	pm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	pm.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var foot := Vector3(1.4, 0.0, _wall_z(1.4, 0.3) + 0.7)
+	for i in range(2 if lite else 6):
+		var qm := QuadMesh.new()
+		var sz := 1.2 + 0.35 * (i % 3)
+		qm.size = Vector2(sz, sz)
+		var p := xf * (foot + Vector3(0.5 * sin(i * 2.1), 0.35 + 0.25 * (i % 2), 0.35 * cos(i * 1.7)))
+		var mi := MeshInstance3D.new()
+		mi.mesh = qm
+		mi.material_override = pm
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		mi.visibility_range_end = 220.0 if lite else 420.0
-	# the pool: brownish clear water over a muddy bed (winter: ice)
+		mi.visibility_range_end = 90.0
+		mi.layers = 1
+		bt.tal.add_child(mi)
+		mi.position = p
+	var fm := StandardMaterial3D.new()                           # the foam ring on the water
+	fm.albedo_texture = _puff_tex
+	fm.albedo_color = Color(1, 1, 1, 0.7)
+	fm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var fq := QuadMesh.new()
+	fq.size = Vector2(3.4, 3.4)
+	var fp := xf * Vector3(1.4, 0.03, _wall_z(1.4, 0.0) + 1.3)
+	var foam: MeshInstance3D = m.add_mesh(bt.tal, fq, fp, fm, "pond", Vector3(-PI / 2.0, 0, 0))
+	foam.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	foam.visibility_range_end = 120.0
+
+
+func _pool(winter: bool) -> void:
+	"""the pool: flat, clear brownish-green water with an uneven rim (no plate), a dark bed, stones sunk in at the rim"""
 	var pm := StandardMaterial3D.new()
 	if winter:
 		pm.albedo_color = Color(0.8, 0.85, 0.88)
 		pm.roughness = 0.4
 	else:
-		pm.albedo_color = Color(0.42, 0.36, 0.24, 0.55)
+		pm.albedo_color = Color(0.27, 0.27, 0.15, 0.78)
 		pm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		pm.roughness = 0.04
-		pm.metallic_specular = 0.8
-	var cm := CylinderMesh.new()
-	cm.top_radius = POOL_R + 0.4
-	cm.bottom_radius = POOL_R + 0.4
-	cm.height = 0.04
-	cm.radial_segments = 14 if lite else 28
-	cm.rings = 1
-	var wi: MeshInstance3D = m.add_mesh(bt.tal, cm, Vector3(POOL.x, pool_level, POOL.y), pm, "pond" if not winter else "stone")
+		pm.roughness = 0.45
+		pm.metallic_specular = 0.2
+	pm.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var n := 18 if lite else 40
+	var rim := []
+	for k in range(n):
+		var a := TAU * k / n
+		var r := POOL_R + 0.25 + 0.55 * _wn.get_noise_1d(a * 9.0 + 3.0)
+		rim.append(Vector3(cos(a) * r, 0, sin(a) * r))
+	for k in range(n):
+		for q in [Vector3.ZERO, rim[(k + 1) % n], rim[k]]:
+			st.set_normal(Vector3.UP)
+			st.add_vertex(q)
+	var wi: MeshInstance3D = m.add_mesh(bt.tal, st.commit(), Vector3(POOL.x, pool_level, POOL.y), pm, "pond" if not winter else "stone")
 	wi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	wi.visibility_range_end = 260.0 if lite else 500.0
-	if not lite and not winter:                               # a dark muddy bed under the water (Hoch / Normal)
+	if not lite and not winter:                                # the dark muddy bed under the water
 		var bed := CylinderMesh.new()
-		bed.top_radius = POOL_R - 0.6
-		bed.bottom_radius = POOL_R - 0.6
+		bed.top_radius = POOL_R - 0.8
+		bed.bottom_radius = POOL_R - 0.8
 		bed.height = 0.05
-		bed.radial_segments = 12
+		bed.radial_segments = 20
 		bed.rings = 1
 		var bmat := StandardMaterial3D.new()
-		bmat.albedo_color = Color(0.24, 0.19, 0.12)
-		var bi: MeshInstance3D = m.add_mesh(bt.tal, bed, Vector3(POOL.x, pool_level - 0.55, POOL.y), bmat, "stone")
+		bmat.albedo_color = Color(0.2, 0.17, 0.1)
+		var bi: MeshInstance3D = m.add_mesh(bt.tal, bed, Vector3(POOL.x, pool_level - 0.6, POOL.y), bmat, "stone")
 		bi.visibility_range_end = 160.0
-	if not winter and not lite:                                # foam where the main thread falls in
-		var fm := StandardMaterial3D.new()
-		fm.albedo_color = Color(0.95, 0.96, 0.95, 0.5)
-		fm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		var fq := QuadMesh.new()
-		fq.size = Vector2(2.4, 1.6)
-		var foam: MeshInstance3D = m.add_mesh(bt.tal, fq, Vector3(FALL.x + 0.9, pool_level + 0.03, FALL.y - 1.4), fm, "pond", Vector3(-PI / 2.0, 0, 0))
-		foam.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		foam.visibility_range_end = 120.0
-	# stones in the water and on the rim
-	for k in range(4 if lite else 9):
-		var a := TAU * (k + 0.4) / (4 if lite else 9)
-		var q := POOL + Vector2(cos(a), sin(a)) * (POOL_R + 0.3 + 0.4 * (k % 2))
-		if q.x < FALL.x + 1.5:
+	for k in range(5 if lite else 11):                         # stones at the rim, half in the ground / water
+		var a := TAU * (k + 0.4) / (5 if lite else 11)
+		var q := POOL + Vector2(cos(a), sin(a)) * (POOL_R + 0.1 + 0.5 * (k % 2))
+		if q.x < FALL.x + 2.0:
 			continue
-		bib.add("boulder", Vector3(q.x, maxf(pool_level - 0.15, bt.H(q.x, q.y) - 0.25), q.y), a, {"r": 0.3 + 0.12 * (k % 3), "v": k % 3, "rock": "kalk", "noob": true, "snow": winter})
+		var r := 0.3 + 0.12 * (k % 3)
+		bib.add("boulder", Vector3(q.x, minf(pool_level, bt.H(q.x, q.y)) - r * 0.6, q.y), a, {"r": r, "v": 0, "rock": "gneis", "noob": true, "snow": winter})
+
+
+func _waterfall_rest() -> void:
+	var winter := season == "winter"
 	# the outflow to the stream (a narrow brook on the ground)
 	if not winter:
 		bt._ribbon(bt.dense(OUTFLOW, 3.0), PackedFloat32Array(), 0.7, Color(0.33, 0.36, 0.33), 0.06, 140.0 if lite else 300.0, "pond")
@@ -319,43 +441,32 @@ func _waterfall() -> void:
 			_snd.position = _snd_pos
 
 
-func _quad(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, v0: float, v1: float, nrm: Vector3) -> void:
-	var uv := [Vector2(0, v0), Vector2(1, v0), Vector2(1, v1), Vector2(0, v1)]
-	var pts := [a, b, c, d]
-	for k in [0, 1, 2, 0, 2, 3]:
-		st.set_normal(nrm)
-		st.set_uv(uv[k])
-		st.add_vertex(pts[k])
-
-
 static var _wshader: Shader
 
 
 func _water_mat() -> Material:
-	"""Lite: a plain see-through material; Hoch / Normal: streaks that run down (shader)"""
-	if lite:
-		var sm := StandardMaterial3D.new()
-		sm.albedo_color = Color(0.9, 0.94, 0.97, 0.62)
-		sm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		sm.cull_mode = BaseMaterial3D.CULL_DISABLED
-		sm.roughness = 0.2
-		return sm
+	"""white, see-through threads with streaks that run down (UV scroll); Lite: the same shader with one wave less"""
 	if _wshader == null:
 		_wshader = Shader.new()
 		_wshader.code = """shader_type spatial;
 render_mode cull_disabled, depth_draw_opaque;
+uniform float fine = 1.0;
 void fragment() {
-	float v = UV.y * 2.2 - TIME * 1.8;
-	float s = 0.5 + 0.5 * sin(v * 6.2832 + sin(UV.x * 9.0 + UV.y * 3.0) * 1.7);
-	float e = smoothstep(0.0, 0.25, UV.x) * smoothstep(1.0, 0.75, UV.x);
-	ALBEDO = mix(vec3(0.78, 0.84, 0.86), vec3(1.0), s * 0.55);
-	ALPHA = (0.38 + 0.42 * s) * (0.45 + 0.55 * e);
-	ROUGHNESS = 0.15;
-	SPECULAR = 0.7;
+	float streak = 0.5 + 0.5 * sin(UV.x * 21.0 + sin(UV.y * 0.6) * 2.0);
+	float band = 0.5 + 0.5 * sin((UV.y * 1.3 - TIME * 2.4) * 6.2832 + UV.x * 2.0);
+	float s = mix(streak, band, 0.4);
+	float t = (0.5 + 0.5 * sin((UV.y * 3.1 - TIME * 3.6) * 6.2832 + UV.x * 5.0)) * fine;
+	float e = smoothstep(0.0, 0.22, UV.x) * smoothstep(1.0, 0.78, UV.x);
+	ALBEDO = mix(vec3(0.86, 0.9, 0.92), vec3(1.0), s);
+	EMISSION = vec3(0.12, 0.13, 0.14) * s;
+	ALPHA = clamp((0.5 + 0.35 * s + 0.12 * t) * (0.35 + 0.65 * e), 0.0, 0.95);
+	ROUGHNESS = 0.2;
+	SPECULAR = 0.6;
 }
 """
 	var mat := ShaderMaterial.new()
 	mat.shader = _wshader
+	mat.set_shader_parameter("fine", 0.0 if lite else 1.0)
 	return mat
 
 
@@ -412,12 +523,27 @@ func _trees(winter: bool) -> void:
 			continue
 		var p: Vector3 = bt.P(q.x, q.y, -0.1)
 		var sc := _rng.randf_range(0.9, 1.5)
-		if winter or cols.is_empty():                          # bare: trunk and two branches
-			bib._part(Bib.C(0.16 * sc, 6.0 * sc, p.x, p.y + 3.0 * sc, p.z, "4a3c2e", 0.2, 0, 0, 0, "tree"), Transform3D.IDENTITY, "tree", "far", bib._cell_key(p))
-			bib._part(Bib.ROD(p + Vector3(0, 3.5 * sc, 0), p + Vector3(1.4, 5.8, 0.3) * sc, 0.07, "4a3c2e", "tree"), Transform3D.IDENTITY, "tree", "far", bib._cell_key(p))
-			bib._part(Bib.ROD(p + Vector3(0, 4.0 * sc, 0), p + Vector3(-1.0, 6.2, -0.6) * sc, 0.06, "4a3c2e", "tree"), Transform3D.IDENTITY, "tree", "far", bib._cell_key(p))
-		else:
-			bib.add("tree", p, _rng.randf() * TAU, {"col": cols[placed % cols.size()], "scale": sc, "noob": r > 14.0})
+		# trunk and branches; the crown: several flat, loose leaf clumps at the ends of the branches (not one ball);
+		# winter: bare. Lite: 3 clumps instead of 6.
+		var ckey: String = bib._cell_key(p)
+		var turn := _rng.randf() * TAU
+		bib._part(Bib.C(0.15 * sc, 7.0 * sc, p.x, p.y + 3.5 * sc, p.z, "4a3c2e", 0.22, 0, 0, 0, "tree"), Transform3D.IDENTITY, "tree", "far", ckey)
+		var nb := 3 if lite else 6
+		for k in range(nb):
+			var ang := turn + TAU * k / nb + 0.4 * sin(k * 2.3)
+			var hy := (3.2 + 3.2 * float(k) / nb) * sc
+			var reach := (1.5 + 0.9 * sin(k * 1.9 + turn)) * sc * (1.0 - 0.35 * float(k) / nb)
+			var tip := p + Vector3(cos(ang) * reach, hy + 1.0 * sc, sin(ang) * reach)
+			bib._part(Bib.ROD(p + Vector3(0, hy - 0.8 * sc, 0), tip, 0.06 * sc, "4a3c2e", "tree"), Transform3D.IDENTITY, "tree", "far", ckey)
+			if not (winter or cols.is_empty()):
+				var cr := (1.25 + 0.3 * sin(k * 3.1)) * sc
+				var col := Bib.cc(cols[(placed + k) % cols.size()]).darkened(0.12 * (k % 2))
+				bib._part(Bib.S(cr, cr * 0.85, tip.x, tip.y + 0.25 * sc, tip.z, col, "tree"), Transform3D.IDENTITY, "tree", "far", ckey)
+		if not (winter or cols.is_empty()):
+			var col0 := Bib.cc(cols[placed % cols.size()]).darkened(0.08)
+			bib._part(Bib.S(1.5 * sc, 1.0 * sc, p.x, p.y + 7.4 * sc, p.z, col0, "tree"), Transform3D.IDENTITY, "tree", "far", ckey)
+		if r < 16.0:
+			m.add_obstacle(bt.W(p), 0.35)
 		placed += 1
 	info["leaf_trees"] = placed
 
