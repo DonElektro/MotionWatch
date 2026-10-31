@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 14:00",
+ "generated": "2026-10-31 14:08",
  "versions": [
   {
-   "version": "2.98.109",
-   "file": "webcam_bewegung_2_98_109.py",
+   "version": "2.98.110",
+   "file": "webcam_bewegung_2_98_110.py",
    "url": "",
-   "sha256": "4bc530182414879eb773ee2361fd672d772e07a704ed372405a2897348f014a7",
-   "date": "2026-10-31 14:00",
-   "notes": "Simulator 3D-4.78: Entwickler-Fenster – Sprung und Kontaktbogen suchen eine freie Sicht (nicht im Hang, Wasser oder hinter Bäumen), Aussichtspunkte in ihrer Richtung.",
-   "sig": "5c34f9fd8f950e2dcda7165569733f59eab9f9772973876558a245578b2e5e58ecd8fa11f859b861d6c1123bb03b3491d5846a92c1cc1eba31a34dda47b1020e"
+   "sha256": "be1be97b5f194dab0684a17c3b944c4922c9bdc0c83996687655644b7a1aeb81",
+   "date": "2026-10-31 14:08",
+   "notes": "Simulator 3D-4.79: neue Geschichte «Maggie und der Bergkristall» unter Spielen – vier Jahreszeiten-Täler, Rätsel, böse und hilfreiche Tiere, etwa 2 Stunden, für Kinder ab ca. 10.",
+   "sig": "4489cd94086a82c00e6f95aaa9330acc9409b66e5e2aa31b107f8aa75ca1b255b67b28ef4f7f88f0bb068912d13bec077672fb1d140e5c048056bb5c385ec508"
   },
   {
    "version": "2.97.1",
