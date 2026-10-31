@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.33
+3D-4.33: Weitwinkel-Kamera wie im Gehäuse v5.2: neue Montage «Im Gehäuse (v5.2)» (Standard) und «Nicht verbaut
+(Blindstopfen)»; Fischauge wie das echte Objektiv (gebogener Rand, dunklere Ecken), nachts eine kleine IR-LED (ca. 4 m).
+So testest du: 1) Kamerabild → Weitwinkel-Kamera: Montage «Im Gehäuse (v5.2)». 2) In MoveEye Sim → Kachel 🔭: breites,
+leicht gebogenes Bild ohne Gehäuserand. 3) Montage «Nicht verbaut»: die Kachel meldet das ohne Fehler.
+
 NEU IN 3D-4.32
 3D-4.32: Gameplay ausgefeilt: Probe-Runde mit Blinki, Wiederholung beim Erwischen, Höhepunkte am Schluss, Missionen,
 Nacht-Spiel mit Geräuschen, neue Werkzeuge, Spielabend-Turnier, Fairness automatisch, «MoveEye ins Schwitzen», KI-Turm,

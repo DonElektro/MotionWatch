@@ -1,7 +1,7 @@
 {
- "version": "3D-4.32",
+ "version": "3D-4.33",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 65444156,
- "sha256": "059b99f92d1faf4053cd687e3bb145346e550f7e9395633da14af7746d9ebde2",
- "notes": "Gameplay ausgefeilt: Probe-Runde mit Blinki, Wiederholung und Höhepunkte, Missionen, Nacht-Spiel, neue Werkzeuge, Turnier, Fairness, KI-Turm, Abzeichen pro Szene."
+ "size": 65459298,
+ "sha256": "dccc1c2f2be2df56ee7434a1f0a8d22001090e347c840ec1c0692be85b365d26",
+ "notes": "Weitwinkel-Kamera wie im Gehäuse v5.2: Montage «Im Gehäuse» (Standard) und «Nicht verbaut», Fischauge wie das echte Objektiv, kleine IR-LED."
 }

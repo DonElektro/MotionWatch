@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.32** · passende MoveEye-Version (früher Motion Watch) **2.98.63**
+Stand: 31.10.2026 · Simulator-Version **3D-4.33** · passende MoveEye-Version (früher Motion Watch) **2.98.64**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.33 (MoveEye 2.98.64): Weitwinkel wie Gehäuse v5.2 (`weitwinkel.gd`, `camfx.gdshader`)
+
+- `weitwinkel.gd`: Montage «case» (neuer Standard, Masse aus Gehäuse v5.2) und «none» (Blindstopfen); äquidistantes Fischauge
+  und Vignette in `camfx.gdshader` (`fe_*`, Kamera 1: `distort` = 0), IR-LED Kanal 4 (ca. 4 m). Lite: `Quality.lite()`.
+- MoveEye 163/591/568: «Im Gehäuse» zählt als Montage am Gerät, Kachel 🔭 mit den neuen Knöpfen. Prüfstand `--weitwinkel case`.
 
 ## NEU in 3D-4.32 (MoveEye 2.98.63): Gameplay ausfeilen (12 Punkte, `gamemore.gd` u. a.)
 
