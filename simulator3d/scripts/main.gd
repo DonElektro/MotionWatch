@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.0.2"
+const VERSION := "3.3.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
@@ -334,6 +334,7 @@ var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»
 var gelaende                          # gelaende.gd (3D-4.x real-gelaende): hills and hollows, paths, cloud shadows (vegetation.gd: plants)
 var inhalte                           # inhalte.gd (F2): Foto-Texturen und HDRI-Himmel (CC0), nachgeladen, nicht in Lite
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
+var statisten                         # statisten.gd: background people - goals, things to do, groups, react to the player, keep away from the games
 var menschen                          # menschen.gd (P10): people behave like real ones - gaits, groups, the day of a campsite, API for scenarios
 var tiere                             # tiere.gd (Paket «Tiere»): animals behave like real ones (flee, curl up, pounce …)
 var fahrzeuge                         # fahrzeuge.gd (Paket «Fahrzeuge»): speed, lights, glare, doors, parking, engine heat
@@ -502,6 +503,9 @@ func _ready() -> void:
 	menschen = preload("res://scripts/menschen.gd").new()     # P10 «Menschen-Verhalten»: gaits, variety, groups, daily routine, scenario API
 	menschen.main = self
 	add_child(menschen)
+	statisten = preload("res://scripts/statisten.gd").new()   # Paket «Statisten»: Hintergrund-Figuren (Ziele, Tätigkeiten, Gruppen, Spieler, Spielmodi)
+	statisten.main = self
+	add_child(statisten)
 	tiere = preload("res://scripts/tiere.gd").new()           # Paket «Tiere»: real behaviour of the animals (with «Tiere wie echt»)
 	tiere.main = self
 	add_child(tiere)
@@ -3608,7 +3612,7 @@ func _life() -> void:
 			var kk: String = life.pick(kinds) if daily_life else kinds[randi() % kinds.size()]
 			if menschen != null:
 				kk = menschen.pick_person(kk)             # P10: «Anteil Kinder», groups
-			if kk != "" and (jahreszeiten == null or jahreszeiten.accept_visit(kk, PEOPLE_KINDS)):   # «Jahreszeiten»: campsite by season
+			if kk != "" and (jahreszeiten == null or jahreszeiten.accept_visit(kk, PEOPLE_KINDS)) and (statisten == null or statisten.accept(kk)):   # «Jahreszeiten»: campsite by season
 				visit(kk)
 		var occ: float = maxf(1.0, jahreszeiten.visit_factor()) if jahreszeiten != null else 1.0   # high season: people more often
 		next_auto = t + randf_range(au[1], au[2]) / max(0.1, visit_rate * occ)
@@ -4059,6 +4063,7 @@ func _register_controls() -> void:
 	objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
 	inhalte.add_controls()                                 # F2: System → Grafik «Echte Oberflächen und Himmel»
 	umgebung.add_controls()                                # 3D-4.x: surroundings like real
+	statisten.add_controls()                               # Paket «Statisten»: Besuch → Von selbst (wie viele, pro Spielmodus)
 	menschen.add_controls()                                # P10: people like real (Besuch → Verhalten / Von selbst / Menschen schicken)
 	tiere.add_controls()                                   # Paket «Tiere»: free dog, birds on the ground
 	fahrzeuge.add_controls()                               # Paket «Fahrzeuge»
@@ -4945,6 +4950,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return inhalte.control(d)
 	elif a == "umgebung":                              # 3D-4.x: {do: info | set (key, value) | spawn (kind) | snow_puff | clear_tracks}
 		return umgebung.control(d)
+	elif a == "statisten":                             # Paket «Statisten»: {do: info | set (mode, value) | spawn (n, group) | clear}
+		return statisten.control(d)
 	elif a == "menschen":                              # P10: {do: info | set (key, value) | spawn (kind) | api (id, fn, args) | probe (gait, dist, dark)}
 		return menschen.control(d)
 	elif a == "tiere":                                 # Paket «Tiere»: {do: info | spawn (kind, from, to) | threat (x, z, secs) | curl | pounce | car}

@@ -1,9 +1,9 @@
 {
- "version": "3D-5.0.2",
- "ver": "3.0.2",
- "name": "MoveEye Sim 3.0.2",
+ "version": "3D-5.3.0",
+ "ver": "3.3.0",
+ "name": "MoveEye Sim 3.3.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35022541,
- "sha256": "f626346d87b0b9248f83fb8ceacaa1b9e05e27c3cab7141131da6e4cc1018ec4",
- "notes": "MoveEye Sim 3.0.2: «Nur Gruppen» wie in MoveEye, Anna Hüttenbetreuerin, Sepp passend zur Jahreszeit."
+ "size": 35078592,
+ "sha256": "86e02266cd6892ca5849c8ab5114afab9bc136e35e8bd66971daaa7ae7b45fde",
+ "notes": "MoveEye Sim 3.3.0: Roter Faden zwischen den Geschichten, Abzeichen «Beide Geschichten geschafft»."
 }

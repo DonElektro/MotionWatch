@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.0.2 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.3.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -422,6 +422,28 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.3.0
+3.3.0: Roter Faden: Die Karte des Grossvaters und Maggie kennen sich. Ruedi, Anna und Sepp erwähnen das andere Abenteuer.
+Vrenis Käse riecht Maggie. Im Finale liegt ein Wanderbuch. Die Kapelle ist auf der alten Karte. Neues Abzeichen «Beide
+Geschichten geschafft».
+So testest du: 1) Maggie Herbst, Ruedi beim ersten Rastplatz. 2) Karte des Grossvaters, mit Anna reden.
+
+NEU IN 3.2.0
+3.2.0: Statisten im Hintergrund: gehen zu Zielen (Bank, Brunnen, Hütte, Aussicht) und verweilen. Sie haben Tätigkeiten
+(Handy, Foto, trinken, Schuh binden) und sind in Gruppen unterwegs. Sie grüssen dich, weichen aus und bleiben stehen, wenn du
+rennst. Abends gehen sie heim, bei Regen schneller. In Spielmodi halten sie Abstand zu Rätseln und Gefahren. Die Menge ist
+einstellbar: wenig, normal, belebt.
+So testest du: 1) Ferienpark, 18 Uhr, Besuch → Statisten: belebt. 2) Bergtal mit Regen. 3) Maggie: auf einen Statisten
+zugehen.
+
+NEU IN 3.1.0
+3.1.0: Handy-Mitteilungen kurz und klar: Titel mit Symbol, eine Zeile Text, Bild wo sinnvoll (z. B. 🛡 Schutz aus · Am Gerät
+ausgeschaltet). Nie mehr roher Code im Text. Neu auch «🛡 Schutz ein» mit Bild. Im Simulator kommen nur Alarme,
+Info-Meldungen per Schalter unter Push → Erweitert (ab Werk aus). E-Mail bekommt den ganzen Text. Gerätename nur bei
+mehreren MoveEye. Behoben: Eine ntfy-Adresse in der Webhook-Karte schickte den rohen Datensatz.
+So testest du: 1) Schutz einschalten → «🛡 Schutz ein» mit Bild. 2) Im Simulator Schutz aus → nichts aufs Handy.
+3) Person durchs Bild → «[SIM] 🚶 Person erkannt».
 
 NEU IN 3.0.2
 3.0.2: Simulator: «Nur Gruppen» wirkt jetzt wie in MoveEye (Gruppen offen, Themen zu). Anna ist jetzt die Betreuerin der

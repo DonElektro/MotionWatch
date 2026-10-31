@@ -57,6 +57,9 @@ def arm_tick():
     left = max(0, int(ARM["at"] - time.time() + 0.99)) if CFG["armed"] else 0
     STATE["arm_state"] = "disarmed" if not CFG["armed"] else ("arming" if left > 0 else "armed")
     STATE["arm_left"] = left
+    was, ARM["pk_state"] = ARM.get("pk_state"), STATE["arm_state"]
+    if was in ("disarmed", "arming") and STATE["arm_state"] == "armed":
+        push_protect_on()                                 # 635b: «🛡 Protection on» with the picture (not at the program start)
     if CFG["armed"] and left == 0 and not ARM["announced"]:
         ARM["announced"] = True
         log_event("sys", "Armed now - alarms are active")

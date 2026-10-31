@@ -17,6 +17,8 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 | Datum | Motion Watch | Simulator | Testlauf | Pushes richtig / falsch | Personen erkannt | Wärmebild | nah / mittel / weit | Reaktion | Tiere gemeldet | Flackern | Bilder/s | KI | Rechner |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-31 15:38 | 3.2.0 | 3.2.0 | Kurz (Tag + Nacht) | **2** / **1** | 10 / 10 (**100 %**) | 1 / 1 | 6/6 / 2/2 / 1/1 | 0.7 s | 3 / 3 | 12 | 1.9 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
+| 2026-10-31 15:19 | 3.0.2 | 3.0.2 | Kurz (Tag + Nacht) | **3** / **0** | 10 / 10 (**100 %**) | 2 / 2 | 5/5 / 2/2 / 1/1 | 2.2 s | 3 / 3 | 5 | 2.1 | mit KI | GitHub (ubuntu, 4 Kerne) · INTEL(R) XEON(R) PLATINUM 8573C |
 | 2026-10-31 15:10 | 3.0.1 | 3.0.1 | Kurz (Tag + Nacht) | **3** / **0** | 9 / 10 (**90 %**) | 1 / 1 | 6/6 / 1/2 / 1/1 | 1.6 s | 3 / 3 | 6 | 1.9 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
 | 2026-10-31 15:00 | 3.0.0 | 3.0.0 | Kurz (Tag + Nacht) | **3** / **0** | 9 / 9 (**100 %**) | – | 6/6 / 2/2 / 1/1 | 1.7 s | 2 / 3 | 3 | 1.9 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
 | 2026-10-31 14:49 | 2.98.116 | 3D-4.85 | Kurz (Tag + Nacht) | **3** / **0** | 10 / 10 (**100 %**) | 1 / 1 | 6/6 / 2/2 / 1/1 | 1.3 s | 3 / 3 | 1 | 2.2 | mit KI | GitHub (ubuntu, 4 Kerne) · INTEL(R) XEON(R) PLATINUM 8573C |
@@ -146,10 +148,10 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 ## Einzelheiten pro Phase (letzter Lauf)
 
-**Kurz (Tag + Nacht)** – 2026-10-31 15:10, Motion Watch 3.0.1
+**Kurz (Tag + Nacht)** – 2026-10-31 15:38, Motion Watch 3.2.0
 
 | Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
 |---|---|---|---|---|---|---|---|
-| Tag, Wind | 1 / 0 | 5 / 6 | – | 0.5 s | 2 / 2 | 6 | 1× zu schnell |
-| Nacht mit Infrarot | 2 / 0 | 4 / 4 | 1 / 1 | 3.0 s | 1 / 1 | 0 | – |
+| Tag, Wind | 1 / 0 | 6 / 6 | – | 0.1 s | 2 / 2 | 6 | – |
+| Nacht mit Infrarot | 1 / 1 | 4 / 4 | 1 / 1 | 1.7 s | 1 / 1 | 6 | – |
 

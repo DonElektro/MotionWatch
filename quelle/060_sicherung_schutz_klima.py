@@ -1053,6 +1053,8 @@ class Notifier:
         """Short information message (e.g. the new address of the page, the night report). Not limited by the alarm cooldown."""
         if not (self.configured() and CFG["notify_on"]):
             return False
+        if jpg is None and push_kind({"event": "info", "text": text, "info_title": title}).get("pic"):
+            jpg = push_frame_jpg(); fname = "info.jpg"     # 635b: «Protection off» with the current camera picture
         payload = {"event": "info", "persons": 0, "time": datetime.now().isoformat(timespec="seconds"), "text": text, "info_title": title,
                    "snapshot": None, "rain": False, "wind": "", "source": STATE["source_label"], "link": link}
         threading.Thread(target=self._dispatch, args=(payload, jpg, fname if jpg else ""), daemon=True).start()
@@ -1064,38 +1066,14 @@ class Notifier:
 
     @staticmethod
     def _title(p):
-        t_ = Notifier._title0(p)
-        if CFG.get("msg_icons", True):                    # 2.96.4: the same symbols everywhere (138_makeover_design)
-            ic = ev_icon("tamper" if Notifier._event(p) == "tamper" else Notifier._event(p))
-            t_ = (ic + " " + t_) if ic and not t_.startswith(ic) else t_
+        t_ = push_short(p)["title"]                       # 635b: short, with the symbol (2.96.4: the same symbols everywhere)
         t_ = ("[SIM] " + t_) if CFG.get("sim_on") else t_
         kw = msg_keyword(Notifier._event(p))
         return (kw + " · " + t_) if kw else t_
 
     @staticmethod
-    def _title0(p):
-        ev = Notifier._event(p)
-        if ev == "tamper":
-            return render_msg(p.get("info_title"), p)
-        if ev == "info":
-            return render_msg(p.get("info_title") or ("{name}: " + tr("network")), p)
-        if ev == "test":                                  # the test shows your own person message
-            return "[Test] " + render_msg(msg_template("person", 0), dict(p, persons=1))
-        return render_msg(msg_template(ev, 0), p)
-
-    @staticmethod
     def _text(p):
-        return Notifier._text0(p) + (" · " + p["dist"] if p.get("dist") else "") + (" " + trf("(+{n} more detections since the last message)", n=p["more"]) if p.get("more") else "") \
-            + (" · " + trf("late - from {t} (the message could not be sent then)", t=str(p.get("time", ""))[11:16]) if p.get("late") else "")
-
-    @staticmethod
-    def _text0(p):
-        ev = Notifier._event(p)
-        if ev in ("info", "tamper"):
-            return p.get("text", "")
-        if ev == "test":
-            return render_msg(msg_template("person", 1), dict(p, persons=1))
-        return render_msg(msg_template(ev, 1), p)
+        return push_short(p)["text"]                      # 635b: at most one line (distance, «+n», «late» included)
 
     def _dispatch(self, p, jpg, fname):
         if sim_net_down():                               # Simulator-Werte: «WLAN weg» / «Internet weg» test - nothing goes out (285)
@@ -1103,6 +1081,9 @@ class Notifier:
         if sandbox_active() or p.get("_test"):           # 2.96.6: simulator test inbox - nobody is disturbed (141); 2.97.0: per message
             sandbox_add(self._title(p), self._text(p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
             msglog_add(self._title(p), self._text(p), self._event(p), jpg, "test", "Test-Postfach")    # 2.98.13: list «Nachrichten»
+            return
+        if push_sim_hold(p):                             # 635b: in the simulation only alarms to the phone (switch sim_info_push)
+            msglog_add(self._title(p), self._text(p), "info", jpg, "none", "🧪 Simulator")
             return
         if CFG["webpush_on"] and webpush_subs():
             threading.Thread(target=self._webpush, args=(p,), daemon=True).start()
@@ -1113,7 +1094,7 @@ class Notifier:
         ev = self._event(p)
         if email_ready() and (CFG.get("email_events") == "all" or ev in ("person", "warm", "noise", "tamper", "test")):
             def _mail():
-                ok, err = email_send(self._title(p), self._text(p) + (("\n" + p["link"]) if p.get("link") else ""), jpg, fname)
+                ok, err = email_send(self._title(p), push_long(p) + (("\n" + p["link"]) if p.get("link") else ""), jpg, fname)   # 635b: e-mail complete
                 log_event("web", "E-mail sent" if ok else f"E-mail failed: {err}"[:200])
             threading.Thread(target=_mail, daemon=True).start()
         if CFG["sms_on"] and ev in ("person", "tamper", "warm", "noise", "test") and sms_numbers():
@@ -1161,8 +1142,10 @@ class Notifier:
         if kind == "ntfy":
             return self._ntfy(p, jpg, fname), "ntfy " + _url_host(CFG["notify_url"])
         url = CFG["notify_url"].strip()
-        body_ = dict(p, title=self._title(p), text=self._text(p))
-        req = urllib.request.Request(url, data=json.dumps(body_).encode(),
+        if push_url_is_ntfy(url):                        # 635b: an ntfy address in the webhook card - as ntfy, not as JSON
+            return self._ntfy(p, jpg, fname), "ntfy " + _url_host(url)
+        body_ = dict(p, title=self._title(p), text=self._text(p), info_title=self._title(p) if p.get("info_title") else "")
+        req = urllib.request.Request(url, data=json.dumps(body_, ensure_ascii=False).encode(),
                                      headers={"Content-Type": "application/json", "Title": _hdr(self._title(p))})
         with urllib.request.urlopen(req, timeout=8) as r:
             return r.status, _url_host(url)
@@ -1231,7 +1214,7 @@ class Notifier:
         if pushover_ready():
             run("Pushover", lambda: self._pushover(p, jpg, "test.jpg"))
         if email_ready():
-            run("E-Mail", lambda: email_send(self._title(p), self._text(p), jpg, "test.jpg"))
+            run("E-Mail", lambda: email_send(self._title(p), push_long(p), jpg, "test.jpg"))
         if CFG["sms_on"] and sms_numbers():
             run("SMS", lambda: sms_send(self._title(p) + ": " + self._text(p), force=True))
         if CFG["webpush_on"] and webpush_subs():
@@ -1262,6 +1245,8 @@ class Notifier:
         h = {"Title": _hdr(self._title(p)), "Tags": {"person": "warning,camera", "prealarm": "eyes,camera", "info": "signal_strength", "warm": "fire,camera",
                                    "noise": "loud_sound,ear", "tamper": "rotating_light,warning"}.get(ev, "camera"),
              "Priority": {"person": "high", "warm": "high", "noise": "high", "prealarm": "default", "tamper": "urgent"}.get(ev, "default")}
+        if CFG.get("msg_icons", True):                   # 635b: the symbol is in the title - no second emoji from the tags
+            h.pop("Tags")
         if p["link"]:
             h["Click"] = p["link"]
         try:

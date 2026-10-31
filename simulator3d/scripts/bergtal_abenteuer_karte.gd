@@ -155,6 +155,8 @@ func _symbol(kind: String, p: Vector2) -> void:
 			draw_arc(p, 9.0, 0.0, TAU, 20, Color(0.15, 0.3, 0.6), 2.0)
 			draw_line(p + Vector2(-3, -18), p + Vector2(3, -18), INK, 2.0)
 			draw_line(p + Vector2(0, -21), p + Vector2(0, -12), INK, 2.0)
+		"kapelle", "kapelle_kerze":                    # Roter Faden (geschichten_faden.gd): Maggies Bergkapelle
+			preload("res://scripts/geschichten_faden.gd").zeichne_kapelle(self, p, kind == "kapelle_kerze")
 		"kreuz":
 			draw_line(p + Vector2(-6, -6), p + Vector2(6, 6), RED, 3.0)
 			draw_line(p + Vector2(6, -6), p + Vector2(-6, 6), RED, 3.0)

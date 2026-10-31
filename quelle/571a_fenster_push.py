@@ -412,7 +412,7 @@ def _px_tk_panel(app, sbody):
     kx = tk.Label(kr, text="✕", bg=C["field"], fg=C["mut"], cursor="hand2", padx=6); kx.pack(side="right")
     kx.bind("<Button-1>", lambda e: (S["kw"].set(""), push_keyword_set(""), _px_tk_paint(app)))
     app._g2_q(kr, "msg_keyword_prefix")
-    for k in ("push_actions", "msg_icons", "notify_network", "notify_remote", "browser_alarm"):
+    for k in ("push_actions", "msg_icons", "notify_network", "sim_info_push", "notify_remote", "browser_alarm"):
         _px_tk_toggle(app, adv, k)
     _px_tk_field(app, adv, "public_url", err)
     tk.Label(adv, text="💬 " + tr("Message texts"), bg=C["panel"], fg=C["txt"], anchor="w").pack(fill="x", pady=(10, 2))
