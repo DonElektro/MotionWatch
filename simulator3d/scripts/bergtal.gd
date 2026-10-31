@@ -979,6 +979,8 @@ func _build(sc) -> void:
 	rating = evaluate(spot_xz.x, spot_xz.y)
 	_publish()
 	aussicht.start()
+	s.data["bergtal_erleben_b"] = preload("res://scripts/bergtal_erleben_b.gd").new()   # vignettes 18–34 (Daniel's numbers)
+	s.data["bergtal_erleben_b"].setup(self)
 	_need_residents = true                                # (at the start of the program the visitors node is not there yet)
 	m.anims.append(Callable(self, "_tick"))
 	_ev_next = m.now() + randf_range(40.0, 90.0)
@@ -3362,6 +3364,9 @@ static func control(main, d: Dictionary) -> Dictionary:
 			return ea.control(d)
 		"aussicht":
 			return bt.aussicht.control(d) if bt.aussicht != null else {"ok": false}
+		"erleben_b":                                         # vignettes 18–34 (bergtal_erleben_b.gd)
+			var eb = main.scenes.data.get("bergtal_erleben_b", null)
+			return eb.control(d) if eb != null else {"ok": false, "error": "no erleben_b"}
 	return {"ok": true, "scene": main.scene, "bergtal": true, "spot": bt.spot, "season": bt.season, "bed": bt.bed, "spot_xz": [bt.spot_xz.x, bt.spot_xz.y],
 			"alt_m": int(bt.h0 + ALT0), "rating": bt.rating, "exposure": bt.exposure(), "info": bt.info, "spots": spot_options(),
 			"viewpoints": main.scenes.data.get("bt_viewpoints", []), "places": main.scenes.data.get("orte", []), "erlebnis": main.scenes.data.get("erlebnis", []),
