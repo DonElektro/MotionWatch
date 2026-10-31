@@ -19,6 +19,7 @@ extends RefCounted
 const Bib = preload("res://scripts/bib_berg.gd")
 const T = preload("res://scripts/i18n.gd")
 const Szenen = preload("res://scripts/szenenplus.gd")
+const Orte = preload("res://scripts/bergtal_orte.gd")          # Orte zum Erkunden (Innenräume, Wasser, Grat, Geschichte)
 
 const ALT0 := 1500.0                 # metres above sea level at the north end (height 0)
 const LO := -1024.0                  # the height map: from LO to -LO in both directions
@@ -239,6 +240,7 @@ static func place_options() -> Array:
 		out.append(["p:" + str(vp[1]), "Aussicht: " + str(vp[1])])
 	for p in PLACES:
 		out.append(["p:" + str(p[0]), str(p[0])])
+	out.append_array(Orte.place_options())
 	return out
 
 
@@ -409,6 +411,7 @@ static func generate() -> void:
 		_vp_pos[vp[0]] = c
 		_flatten(c, 6.0, 1.0)
 		_flatten(c + Vector2(3.0, 3.0), 4.0, 1.0)
+	_hm = Orte.sculpt(_hm, N, LO, STEP)                      # the narrow ridge «Schafgrat» (bergtal_orte.gd)
 	_colours()
 	_gen_ms = Time.get_ticks_msec() - t0
 
@@ -874,6 +877,7 @@ func gy(x: float, z: float) -> float:
 
 
 var ice: Array = []                          # [lake, ice from (ellipse radius), water level] - walkable in winter
+var orte = null                              # bergtal_orte.gd: the places to explore (buildings with their inside …)
 
 
 func _build(sc) -> void:
@@ -908,6 +912,7 @@ func _build(sc) -> void:
 	m.terrain = true
 	m.ground_fn = Callable(self, "gy")
 	bib = Bib.new(m, s, tal, tal.transform)
+	orte = Orte.new(self)
 	_ground()
 	_apron()
 	_far_mountains()
@@ -924,6 +929,7 @@ func _build(sc) -> void:
 	_viewpoints()
 	_vignette_pieces()
 	_signs_and_cairns()
+	orte.build()
 	_own_spot()
 	bib.finish()
 	_lights_and_fx()
@@ -1605,9 +1611,10 @@ var lift := {}                                # the goods cable car: bottom, top
 
 func _hut_area() -> void:
 	# the self-catering hut (nobody there - Daniel: «Selbstversorger»): wood stove, a notice at the door, wood in the shed
-	bib.add("alp_hut", P(HUT.x, HUT.y), PI, {"text": "Selbstversorgerhütte Alp Tschuggen", "warm": false})
-	var nt := P(HUT.x + 3.6, HUT.y - 3.84, 1.55)
-	bib.add("notice", nt, PI, {"text": "Selbstversorgerhütte\nHolz im Schopf, Ofen löschen\nKasse: 15 Fr. pro Nacht\nDanke und gute Tour!"})
+	if not orte.replaces("alp_hut"):                       # (bergtal_orte.gd builds the hut with its inside)
+		bib.add("alp_hut", P(HUT.x, HUT.y), PI, {"text": "Selbstversorgerhütte Alp Tschuggen", "warm": false})
+		var nt := P(HUT.x + 3.6, HUT.y - 3.84, 1.55)
+		bib.add("notice", nt, PI, {"text": "Selbstversorgerhütte\nHolz im Schopf, Ofen löschen\nKasse: 15 Fr. pro Nacht\nDanke und gute Tour!"})
 	bib.add("woodpile", P(HUT.x - 6.0, HUT.y + 1.0), PI / 2.0, {"len": 3.0})
 	bib.add("trough", P(HUT.x + 9.0, HUT.y - 9.0), 0.2, {"len": 3.2, "ice": season == "winter"})
 	bib.add("cowshed", P(HUT.x + 30.0, HUT.y + 8.0), PI, {"w": 16.0})
@@ -1623,8 +1630,9 @@ func _hut_area() -> void:
 	var bot := Vector2(98, 22)
 	var top := UPPER_HUT + Vector2(-8, -4)
 	var ang := atan2(top.x - bot.x, top.y - bot.y)
-	bib.add("lift_station", P(bot.x, bot.y), ang + PI)
-	bib.add("lift_station", P(top.x, top.y), ang, {"top": true})
+	if not orte.replaces("lift_station"):
+		bib.add("lift_station", P(bot.x, bot.y), ang + PI)
+		bib.add("lift_station", P(top.x, top.y), ang, {"top": true})
 	bib.add("stone_hut", P(UPPER_HUT.x, UPPER_HUT.y), PI * 0.8, {"w": 5.0, "d": 4.0})
 	bib._part(Bib.B(0.6, 0.5, 0.06, 0.0, 1.4, 2.04, "%ffd9a0", 0, 0, 0, "window"), Transform3D(Basis(Vector3.UP, PI * 0.8), P(UPPER_HUT.x, UPPER_HUT.y)) * Transform3D(Basis(), Vector3(1.2, 0, 0)),
 			"window", "far", bib._cell_key(P(UPPER_HUT.x, UPPER_HUT.y)))          # somebody is up there: a light far away at night
@@ -1700,7 +1708,8 @@ func _lake_gorge() -> void:
 
 
 func _pass_area() -> void:
-	bib.add("hospice", P(HOSPICE.x, HOSPICE.y), PI / 2.0, {"text": "Hospiz %d m" % int(H(HOSPICE.x, HOSPICE.y) + ALT0)})
+	if not orte.replaces("hospice"):
+		bib.add("hospice", P(HOSPICE.x, HOSPICE.y), PI / 2.0, {"text": "Hospiz %d m" % int(H(HOSPICE.x, HOSPICE.y) + ALT0)})
 	bib.add("parking_lines", P(100.0, 778.0), 0.3, {"n": 9, "spacing": 2.8, "len": 5.0})
 	var cols := ["2b5fa8", "d8d8d8", "a01818", "1a1a1a"]
 	for i in range(4):
@@ -1759,7 +1768,8 @@ func _road_index_near(p: Vector2) -> int:
 
 
 func _lower_valley() -> void:
-	bib.add("chapel", P(CHAPEL.x, CHAPEL.y), PI)
+	if not orte.replaces("chapel"):
+		bib.add("chapel", P(CHAPEL.x, CHAPEL.y), PI)
 	bib.add("bench", P(CHAPEL.x - 4.0, CHAPEL.y - 6.0), PI)
 	bib.add("summit_cross", P(CHAPEL.x + 8.0, CHAPEL.y - 3.0), PI, {"h": 2.6})
 	# the power line along the road (north part): masts every 160 m, three wires
@@ -1798,9 +1808,11 @@ func _side_valleys() -> void:
 	bib.add("ruin", P(RUIN.x, RUIN.y), 0.4)
 	bib.add("bench", P(LAKE2[0].x + 40.0, LAKE2[0].y + 40.0), PI * 1.2)
 	# the old dairy (Sennerei, vignette 43 / Daniel 31) with a very old cheese
-	bib.add("stone_hut", P(-700.0, -130.0), 0.3, {"w": 7.0, "d": 5.0})
-	bib.add("cheese_wheel", P(-698.5, -127.0, 0.02), 0.0)
-	bib.add("bivouac", P(BIVOUAC.x, BIVOUAC.y), PI * 0.9, {"text": "Biwak Chüebodehorn"})
+	if not orte.replaces("dairy"):                          # (bergtal_orte.gd: the dairy with its inside, the cheese on the shelf)
+		bib.add("stone_hut", P(-700.0, -130.0), 0.3, {"w": 7.0, "d": 5.0})
+		bib.add("cheese_wheel", P(-698.5, -127.0, 0.02), 0.0)
+	if not orte.replaces("bivouac"):
+		bib.add("bivouac", P(BIVOUAC.x, BIVOUAC.y), PI * 0.9, {"text": "Biwak Chüebodehorn"})
 	for o in [Vector2(-5, 6), Vector2(4, 7), Vector2(0, 9)]:
 		bib.add("boulder", P(BIVOUAC.x + o.x, BIVOUAC.y + o.y, -0.6), rng.randf() * TAU, {"r": 2.4, "rock": "kalk", "v": 2, "snow": season == "winter"})
 	# the glacier: crevasses (dark ribbons across the tongue)
@@ -2101,7 +2113,7 @@ func _lights_and_fx() -> void:
 func _labels() -> void:
 	"""names of the places and the suggested sleeping spots - only in the window (helper layer), not for MoveEye's cameras"""
 	var items := []
-	for pl in PLACES:
+	for pl in PLACES + Orte.PLACES:
 		items.append([str(pl[0]), Vector2(pl[1], pl[2]), Color(0.98, 0.96, 0.9), 5.0])
 	for k in SPOT_ORDER:
 		if SPOTS.has(k) and k != spot:
@@ -2330,6 +2342,8 @@ func _publish() -> void:
 		var wp := WG(v[3], v[4])
 		er.append({"nr": v[0], "id": v[1], "name": v[2], "x": snappedf(wp.x, 0.1), "z": snappedf(wp.z, 0.1), "y": snappedf(wp.y, 0.01), "tal_x": v[3], "tal_z": v[4]})
 	s.data["erlebnis"] = er
+	if self.orte != null:                                   # (a local «orte» above: the list for MoveEye)
+		self.orte.publish()
 
 
 # =======================================================================================================================
@@ -2995,6 +3009,7 @@ static func all_places() -> Array:
 	var out: Array = PLACES.duplicate()
 	for vp in VIEWPOINTS:
 		out.append([vp[1], vp_xz(vp).x, vp_xz(vp).y])
+	out.append_array(Orte.all_places())
 	return out
 
 
@@ -3285,6 +3300,8 @@ static func control(main, d: Dictionary) -> Dictionary:
 			return {"ok": true, "rating": bt.rating, "exposure": bt.exposure()}
 		"horn":
 			return bt.postauto_horn()
+		"orte":
+			return bt.orte.control(d) if bt.orte != null else {"ok": false}
 	return {"ok": true, "scene": main.scene, "bergtal": true, "spot": bt.spot, "season": bt.season, "bed": bt.bed, "spot_xz": [bt.spot_xz.x, bt.spot_xz.y],
 			"alt_m": int(bt.h0 + ALT0), "rating": bt.rating, "exposure": bt.exposure(), "info": bt.info, "spots": spot_options(),
 			"viewpoints": main.scenes.data.get("bt_viewpoints", []), "places": main.scenes.data.get("orte", []), "erlebnis": main.scenes.data.get("erlebnis", []),

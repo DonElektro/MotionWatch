@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 3342 (Stellen: 4842)
-Übersetzt: en 3105, fr 3104, it 3104, rm 3104
+Texte gesamt: 3449 (Stellen: 4958)
+Übersetzt: en 3212, fr 3211, it 3211, rm 3211
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 340 Stellen
 Nicht mehr im Code (noch in texte.json): 22
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 42 Stellen in wizpics.gd 16, wordmark.gd 10, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 11636, schlüssel 7759, keine Wörter 6133, index 3841, technisch 1429, doc 881, einheit 131, englisch 59, log 56, pfad 54, html 42, klasse 22
+Übersprungen (Grund: Anzahl): kennung 12494, schlüssel 7879, keine Wörter 6259, index 3919, technisch 1467, doc 903, einheit 132, englisch 59, log 56, pfad 54, html 42, klasse 22
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  642    29
@@ -14,6 +14,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   game.gd                  211    32
   bergtal.gd               199     5
   bib_objekte.gd           108     0
+  bergtal_orte.gd          108     0
   ferienpark.gd             89     0
   templates.gd              88     6
   toolbar.gd                85     3
@@ -27,7 +28,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   feedback.gd               66    17
   mehr.gd                   66    11
   parcours.gd               63    10
-  bib_berg.gd               56     0
+  bib_berg.gd               60     0
   quick.gd                  55     2
   mwpc.gd                   46    12
   karte.gd                  46     8
@@ -132,11 +133,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   b3d.gd:86  'Kachel leer: '
   b3d.gd:186  'glTF nicht lesbar: '
   b3d.gd:208  'Kachel ohne Dreiecke: '
-  bergtal.gd:228  'Aussicht: '
-  bergtal.gd:237  'Schlafplatz: '
-  bergtal.gd:239  'Aussicht: '
-  bergtal.gd:2103  'Schlafplatz: '
-  bergtal.gd:2105  'Aussicht: '
+  bergtal.gd:229  'Aussicht: '
+  bergtal.gd:238  'Schlafplatz: '
+  bergtal.gd:240  'Aussicht: '
+  bergtal.gd:2120  'Schlafplatz: '
+  bergtal.gd:2122  'Aussicht: '
   dataset.gd:54  'Spiel: '
   dataset.gd:319  ' · Vielfalt hoch'
   dataset.gd:434  ' · alte KI-Daten gelöscht: %d (%.0f MB)'
@@ -182,35 +183,35 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   karte.gd:503  'Dazu kommen: '
   karte.gd:511  'ja'
   karte.gd:511  'keine'
-  main.gd:1321  '  %.0f Mbit/s'
-  main.gd:1994  ' (von MoveEye)'
-  main.gd:2027  'Der Simulator ist belegt: '
-  main.gd:2824  'aus'
-  main.gd:2824  'ein'
-  main.gd:2901  'Sabotage-Test: '
-  main.gd:2901  'aus'
-  main.gd:2955  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:2958  '\n🚨 Bewacht und weg: '
-  main.gd:3695  'keine'
-  main.gd:3721  'Wächter an MoveEye: '
-  main.gd:4310  'Dein Platz: '
-  main.gd:4531  ' · schaut nur zu: '
-  main.gd:4534  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:4535  ' · Update: '
-  main.gd:4865  'Blinde Flecken: '
-  main.gd:5499  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:5804  'Autostart: '
-  main.gd:5815  'Autologon: '
-  main.gd:5976  'Karte öffnen: '
-  main.gd:6122  'Echt-Abgleich: '
-  main.gd:6129  'Trainingspaket: '
-  main.gd:6138  ' · %d offen · %.1f MB'
-  main.gd:6138  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6147  'Verbindung · '
-  main.gd:6147  'aus'
-  main.gd:6151  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6151  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6154  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:1323  '  %.0f Mbit/s'
+  main.gd:1996  ' (von MoveEye)'
+  main.gd:2029  'Der Simulator ist belegt: '
+  main.gd:2826  'aus'
+  main.gd:2826  'ein'
+  main.gd:2903  'Sabotage-Test: '
+  main.gd:2903  'aus'
+  main.gd:2957  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:2960  '\n🚨 Bewacht und weg: '
+  main.gd:3697  'keine'
+  main.gd:3723  'Wächter an MoveEye: '
+  main.gd:4312  'Dein Platz: '
+  main.gd:4533  ' · schaut nur zu: '
+  main.gd:4536  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:4537  ' · Update: '
+  main.gd:4867  'Blinde Flecken: '
+  main.gd:5501  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:5806  'Autostart: '
+  main.gd:5817  'Autologon: '
+  main.gd:5978  'Karte öffnen: '
+  main.gd:6124  'Echt-Abgleich: '
+  main.gd:6131  'Trainingspaket: '
+  main.gd:6140  ' · %d offen · %.1f MB'
+  main.gd:6140  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6149  'Verbindung · '
+  main.gd:6149  'aus'
+  main.gd:6153  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6153  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6156  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:446  ' (automatisch von oben)'
   explore.gd:446  ' · schnell'
   feedback.gd:266  ' · TESTMODUS: geht nur an '
