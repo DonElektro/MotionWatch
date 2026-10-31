@@ -4297,6 +4297,12 @@
   "it": "Sulla croce di vetta",
   "rm": "Sin la crusch dal piz"
  },
+ "Auf dem Chalchstock": {
+  "en": "On the Chalchstock",
+  "fr": "Sur le Chalchstock",
+  "it": "Sul Chalchstock",
+  "rm": "Sin il Chalchstock"
+ },
  "Auf dem Eis liegt ein Stück Papier. Das Eis ist zu dünn für dich!": {
   "en": "A piece of paper lies on the ice. The ice is too thin for you!",
   "fr": "Un morceau de papier est sur la glace. La glace est trop fine pour toi !",
@@ -5719,6 +5725,12 @@
   "it": "Cristallo di rocca",
   "rm": "Cristal da muntogna"
  },
+ "Bergstation Obri Stafel": {
+  "en": "Top station Obri Stafel",
+  "fr": "Station supérieure Obri Stafel",
+  "it": "Stazione a monte Obri Stafel",
+  "rm": "Staziun sura Obri Stafel"
+ },
  "Bergstimmungen (Alpenglühen, Abendrot, Milchstrasse)": {
   "en": "Mountain moods (alpenglow, evening red, Milky Way)",
   "fr": "Ambiances de montagne (embrasement, rougeoiement du soir, Voie lactée)",
@@ -6804,6 +6816,24 @@
   "fr": "CC0 – libre, aussi pour la vente",
   "it": "CC0 – libero, anche per la vendita",
   "rm": "CC0 – liber, er per vender"
+ },
+ "Chalchstock": {
+  "en": "Chalchstock",
+  "fr": "Chalchstock",
+  "it": "Chalchstock",
+  "rm": "Chalchstock"
+ },
+ "Chalchstock %d m": {
+  "en": "Chalchstock %d m",
+  "fr": "Chalchstock %d m",
+  "it": "Chalchstock %d m",
+  "rm": "Chalchstock %d m"
+ },
+ "Chalchstock (Gipfel mit Antenne)": {
+  "en": "Chalchstock (summit with antenna)",
+  "fr": "Chalchstock (sommet avec antenne)",
+  "it": "Chalchstock (vetta con antenna)",
+  "rm": "Chalchstock (piz cun antenna)"
  },
  "Chalet": {
   "en": "Chalet",
@@ -8671,6 +8701,12 @@
   "fr": "Le Tschingelspitz porte une croix.",
   "it": "Sul Tschingelspitz c’è una croce.",
   "rm": "Il Tschingelspitz porta ina crusch."
+ },
+ "Der Tuffwasserfall": {
+  "en": "The tufa waterfall",
+  "fr": "La cascade de tuf",
+  "it": "La cascata di tufo",
+  "rm": "La cascada da tuf"
  },
  "Der Vergleich läuft schon.": {
   "en": "The comparison is already running.",
@@ -12496,6 +12532,12 @@
   "it": "Guida il rover vicinissimo alla bici!",
   "rm": "Fa cun il rover fitg datiers dal velo!"
  },
+ "Fahr mit der Materialseilbahn von der Alp hinauf.": {
+  "en": "Ride the goods cable car up from the alp.",
+  "fr": "Monte depuis l'alpage avec le téléphérique de service.",
+  "it": "Sali dall'alpe con la teleferica di servizio.",
+  "rm": "Va cun la funiculara da material da l'alp ensi."
+ },
  "Fahrersicht": {
   "en": "Driver's view",
   "fr": "Vue du conducteur",
@@ -14442,6 +14484,12 @@
   "it": "Sentiero segreto dietro i servizi ovest fino alla casa sull’albero",
   "rm": "Senda zuppada davos ils sanitaris vest a la chamona"
  },
+ "Geheimer See": {
+  "en": "Secret lake",
+  "fr": "Lac secret",
+  "it": "Lago segreto",
+  "rm": "Lai zuppà"
+ },
  "Geheimnisvoll": {
   "en": "Mysterious",
   "fr": "Mystérieux",
@@ -15083,6 +15131,12 @@
   "fr": "Croix, livre du sommet et vue panoramique – le point le plus haut à l’ouest de la vallée.",
   "it": "Croce di vetta, libro di vetta e vista a 360° – il punto più alto a ovest della valle.",
   "rm": "Crusch da piz, cudesch da piz e vista enturn – il punct il pli aut en il vest da la val."
+ },
+ "Gipfelweg Chalchstock": {
+  "en": "Summit path Chalchstock",
+  "fr": "Sentier du sommet Chalchstock",
+  "it": "Sentiero della vetta Chalchstock",
+  "rm": "Senda dal piz Chalchstock"
  },
  "Giraffe": {
   "en": "Giraffe",
@@ -15804,6 +15858,12 @@
   "it": "Gumpisee %d m s.l.m.",
   "rm": "Gumpisee %d m s.m."
  },
+ "Gumpisee Nordufer %d m": {
+  "en": "Gumpisee north shore %d m",
+  "fr": "Gumpisee rive nord %d m",
+  "it": "Gumpisee riva nord %d m",
+  "rm": "Gumpisee riva nord %d m"
+ },
  "Gumpisee-Ufer mit Steg": {
   "en": "Gumpisee shore with jetty",
   "fr": "Rive du Gumpisee avec ponton",
@@ -16374,6 +16434,12 @@
   "fr": "Tu es ici",
   "it": "Sei qui",
   "rm": "Ti es qua"
+ },
+ "Hier endet die Materialseilbahn. Bank, Zaun und Wegweiser – 20 Minuten bis zum Gipfel.": {
+  "en": "The goods cable car ends here. Bench, fence and signpost – 20 minutes to the summit.",
+  "fr": "Ici s'arrête le téléphérique de service. Banc, clôture et panneau – 20 minutes jusqu'au sommet.",
+  "it": "Qui finisce la teleferica di servizio. Panchina, recinto e segnavia – 20 minuti fino alla vetta.",
+  "rm": "Qua finescha la funiculara da material. Banc, saiv e mussavia – 20 minutas fin al piz."
  },
  "Hier findet das Kind keinen Platz zum Spielen.": {
   "en": "The child finds no place to play here.",
@@ -17820,6 +17886,12 @@
   "fr": "Dans le Schattwald (en bas au nord)",
   "it": "Nello Schattwald (in basso a nord)",
   "rm": "En il Schattwald (giu en il nord)"
+ },
+ "Im Schattwald westlich unter dem Gumpisee plätschert es – folge dem Tobelweg.": {
+  "en": "Something is splashing in the Schattwald west below the Gumpisee – follow the Tobelweg.",
+  "fr": "Ça clapote dans le Schattwald, à l'ouest sous le Gumpisee – suis le Tobelweg.",
+  "it": "Qualcosa gorgoglia nello Schattwald a ovest sotto il Gumpisee – segui il Tobelweg.",
+  "rm": "Igl sbitga en il Schattwald a vest sut il Gumpisee – suonda il Tobelweg."
  },
  "Im Seitental West liegt ein dunkler See im Moor.": {
   "en": "In the west side valley lies a dark lake in the bog.",
@@ -25878,6 +25950,12 @@
   "it": "Obri Stafel",
   "rm": "Obri Stafel"
  },
+ "Obri Stafel %d m": {
+  "en": "Obri Stafel %d m",
+  "fr": "Obri Stafel %d m",
+  "it": "Obri Stafel %d m",
+  "rm": "Obri Stafel %d m"
+ },
  "Obri Stafelhütte (Seilbahn)": {
   "en": "Obri Stafelhütte (cable car)",
   "fr": "Obri Stafelhütte (téléphérique)",
@@ -26772,6 +26850,12 @@
   "fr": "Sac en plastique au vent",
   "it": "Sacchetto di plastica al vento",
   "rm": "Satg da plastic en il vent"
+ },
+ "Plattform mit Geländer, Antenne und Wegweiser – senkrecht unter dir die helle Kalkwand und die Obri Stafelhütte.": {
+  "en": "A platform with railing, antenna and signpost – straight below you the light limestone face and the Obri Stafel hut.",
+  "fr": "Plateforme avec garde-corps, antenne et panneau – sous tes pieds, la paroi calcaire claire et la cabane Obri Stafel.",
+  "it": "Piattaforma con ringhiera, antenna e segnavia – a picco sotto di te la parete calcarea chiara e la capanna Obri Stafel.",
+  "rm": "Plattafurma cun parapet, antenna e mussavia – sut tai la paraid da chaltschina clera e la chamona Obri Stafel."
  },
  "Platz": {
   "en": "Space",
@@ -28381,6 +28465,12 @@
   "fr": "Schattwald",
   "it": "Schattwald",
   "rm": "Schattwald"
+ },
+ "Schattwald %d m": {
+  "en": "Schattwald %d m",
+  "fr": "Schattwald %d m",
+  "it": "Schattwald %d m",
+  "rm": "Schattwald %d m"
  },
  "Schattwald (Wald mit Feuerstelle)": {
   "en": "Schattwald (forest with fire place)",
@@ -32317,6 +32407,12 @@
   "it": "Tostapane",
   "rm": "Tustader"
  },
+ "Tobelweg": {
+  "en": "Tobelweg (gorge path)",
+  "fr": "Tobelweg (sentier du ravin)",
+  "it": "Tobelweg (sentiero della gola)",
+  "rm": "Tobelweg (senda dal tobel)"
+ },
  "Ton": {
   "en": "sound",
   "fr": "son",
@@ -32551,6 +32647,24 @@
   "fr": "Salut !",
   "it": "Ciao!",
   "rm": "Adia!"
+ },
+ "Tuffwasserfall": {
+  "en": "Tufa waterfall",
+  "fr": "Cascade de tuf",
+  "it": "Cascata di tufo",
+  "rm": "Cascada da tuf"
+ },
+ "Tuffwasserfall %d m": {
+  "en": "Tufa waterfall %d m",
+  "fr": "Cascade de tuf %d m",
+  "it": "Cascata di tufo %d m",
+  "rm": "Cascada da tuf %d m"
+ },
+ "Tuffwasserfall im Schattwald": {
+  "en": "Tufa waterfall in the Schattwald",
+  "fr": "Cascade de tuf dans le Schattwald",
+  "it": "Cascata di tufo nello Schattwald",
+  "rm": "Cascada da tuf en il Schattwald"
  },
  "Tunnel verwenden": {
   "en": "Use tunnel",
@@ -37445,11 +37559,23 @@
   "it": "Informazioni sul simulatore",
   "rm": "Davart il simulatur"
  },
+ "Über der Obri Stafelhütte ragt ein heller Kalkgipfel mit Antenne auf.": {
+  "en": "Above the Obri Stafel hut rises a light limestone peak with an antenna.",
+  "fr": "Au-dessus de la cabane Obri Stafel se dresse un sommet calcaire clair avec une antenne.",
+  "it": "Sopra la capanna Obri Stafel svetta una vetta calcarea chiara con un'antenna.",
+  "rm": "Sur la chamona Obri Stafel s'auza in piz da chaltschina cler cun antenna."
+ },
  "Über die steilen Felsen": {
   "en": "Over the steep rocks",
   "fr": "Par-dessus les rochers raides",
   "it": "Sopra le rocce ripide",
   "rm": "Sur ils crappuns stizs"
+ },
+ "Über eine moosgrüne Tuffwand rinnt das Wasser in vielen Fäden in einen klaren Gumpen. Es plätschert.": {
+  "en": "Over a moss-green tufa wall the water trickles in many threads into a clear pool. It splashes.",
+  "fr": "Sur une paroi de tuf vert mousse, l'eau ruisselle en de nombreux filets dans une vasque claire. Ça clapote.",
+  "it": "Su una parete di tufo verde muschio l'acqua scorre in tanti fili in una pozza limpida. Gorgoglia.",
+  "rm": "Sur ina paraid da tuf verd-mustga cula l'aua en blers fils en in gump cler. Igl sbitga."
  },
  "überall im Tal": {
   "en": "all over the valley",

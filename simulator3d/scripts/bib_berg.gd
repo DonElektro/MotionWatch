@@ -277,6 +277,9 @@ func _b_summit_cross(q: Dictionary) -> Dictionary:
 func _b_hiking_sign(q: Dictionary) -> Dictionary:
 	# Wegweiser der Schweizer Wanderwege: gelbe Pfeil-Tafeln (Ziel und Zeit), oben die weisse Standort-Tafel;
 	# Bergweg: Spitze weiss-rot-weiss. Quelle: Handbuch Signalisation Wanderwege (ASTRA / Schweizer Wanderwege 2013).
+	# real-berg-orte (bergtal_wegweiser.gd): «groups» = Tafeln, die in die Richtung des Wegs zeigen (yaw), bis 3 Ziele je Tafel
+	if q.has("groups"):
+		return _hiking_sign_dirs(q)
 	var arms: Array = _q(q, "arms", [["Bergtal", "30 min", false]])
 	var here := str(_q(q, "here", ""))
 	var p := [C(0.045, 2.6, 0, 1.3, 0, "8a8a8a", 0, 0, 0, 0, "metal")]
@@ -300,6 +303,57 @@ func _b_hiking_sign(q: Dictionary) -> Dictionary:
 		lb.append(["%s  %s" % [str(a[0]), str(a[1]) if a.size() > 1 else ""], dirx * 0.42, y, 0.02, 13, 0.0, "1a1a1a"])
 		y -= 0.24
 	return {"p": p, "t": "metal", "lod": "small", "ob": [["circ", 0, 0, 0.1, 2.6]], "labels": lb}
+
+
+func _hiking_sign_dirs(q: Dictionary) -> Dictionary:
+	"""Schweizer Wegweiser wie auf dem Stockhorn (Daniels Bild 10): grauer Rohrpfosten, oben die weisse Standort-Tafel, darunter
+	gelbe Pfeiltafeln in Wegrichtung, je Zeile «Ziel  Zeit»; Bergweg: Spitze weiss-rot-weiss. q.groups = [[yaw, Stufe, [[Ziel, Zeit]]]]"""
+	var groups: Array = q["groups"]
+	var here := str(_q(q, "here", ""))
+	var both := bool(_q(q, "both", true))
+	var lines := 0
+	for g in groups:
+		lines += (g[2] as Array).size()
+	var top := 2.3 + maxf(0.0, lines - 4) * 0.12
+	var p := [C(0.04, top + 0.45, 0, (top + 0.45) / 2.0, 0, "9a9c9e", 0, 0, 0, 0, "metal"), C(0.05, 0.04, 0, top + 0.47, 0, "6a6c6e", 0, 0, 0, 0, "metal")]
+	var lb := []
+	if here != "":
+		var hw := clampf(0.06 * here.length() + 0.12, 0.5, 1.4)
+		p.append(B(hw, 0.2, 0.03, 0, top + 0.24, 0, "f2f2f2"))
+		for sd in ([0.0, PI] if both else [0.0]):
+			var o: Vector3 = Basis(Vector3.UP, sd) * Vector3(0, 0, 0.022)
+			lb.append([here, o.x, top + 0.24, o.z, 10, sd, "1a1a1a"])
+	var y := top
+	for g in groups:
+		var yaw := float(g[0])
+		var lvl := int(g[1])
+		var rows: Array = g[2]
+		var hgt := 0.05 + 0.12 * rows.size()
+		var txt := ""
+		var longest := 0
+		for r in rows:
+			var line := "%s  %s" % [str(r[0]), str(r[1])]
+			txt += ("\n" if txt != "" else "") + line
+			longest = maxi(longest, line.length())
+		var L := clampf(0.052 * longest + 0.2, 0.9, 1.8)
+		var bs := Basis(Vector3.UP, yaw)
+		var yc := y - hgt / 2.0
+		var mid: Vector3 = bs * Vector3(0.06 + L / 2.0, 0, 0)
+		p.append(B(L, hgt, 0.03, mid.x, yc, mid.z, "f5c400", 0, rad_to_deg(yaw), 0))
+		var tip: Vector3 = bs * Vector3(0.06 + L + hgt * 0.3, 0, 0)
+		p.append(P(hgt, hgt * 0.6, 0.03, tip.x, yc, tip.z, "f5c400", 0, rad_to_deg(yaw), -90.0))
+		if lvl > 0:                                        # mountain trail: white-red-white tip · alpine route: white-blue-white
+			var c2 := "c8102e" if lvl == 1 else "1a5ab0"
+			var sp: Vector3 = bs * Vector3(0.06 + L - 0.07, 0, 0)
+			var hs := hgt / 3.0
+			for k in range(3):
+				p.append(B(0.13, hs, 0.033, sp.x, yc + hs * (1 - k), sp.z, c2 if k == 1 else "f2f2f2", 0, rad_to_deg(yaw), 0))
+		var tc: Vector3 = bs * Vector3(0.06 + (L - 0.14) / 2.0, 0, 0)
+		for sd in ([1.0, -1.0] if both else [1.0]):
+			var nrm: Vector3 = bs * Vector3(0, 0, 0.022 * sd)
+			lb.append([txt, tc.x + nrm.x, yc, tc.z + nrm.z, 9, yaw + (0.0 if sd > 0.0 else PI), "1a1a1a"])
+		y -= hgt + 0.035
+	return {"p": p, "t": "metal", "lod": "small", "ob": [["circ", 0, 0, 0.1, top + 0.4]], "labels": lb}
 
 
 func _b_snow_pole(_q: Dictionary) -> Dictionary:

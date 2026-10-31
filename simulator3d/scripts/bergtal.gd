@@ -23,6 +23,8 @@ const Worlds = preload("res://scripts/worlds.gd")      # 3D-4.x Welten: the old 
 const Aussicht = preload("res://scripts/bergtal_aussicht.gd")   # «Bergtal · Aussichtspunkte»: what the viewpoints do
 const Orte = preload("res://scripts/bergtal_orte.gd")          # Orte zum Erkunden (Innenräume, Wasser, Grat, Geschichte)
 const Waerme = preload("res://scripts/waerme.gd")              # Paket A1: Fell-/Federtemperaturen von Murmeltier, Adler, Geier
+const Ziele = preload("res://scripts/bergtal_ziele.gd")        # real-berg-orte: Tuffwasserfall, Chalchstock (Gipfel mit Antenne)
+const Wegweiser = preload("res://scripts/bergtal_wegweiser.gd") # real-berg-orte: gelbe Wegweiser, Zeiten aus dem Weg
 
 const ALT0 := 1500.0                 # metres above sea level at the north end (height 0)
 const LO := -1024.0                  # the height map: from LO to -LO in both directions
@@ -90,7 +92,9 @@ const TRAILS := [["Seeweg", [Vector2(178, -40), Vector2(110, -20), Vector2(60, 0
 		["Gratweg", [Vector2(-300, 300), Vector2(-420, 230), Vector2(-500, 170), Vector2(-560, 125), Vector2(-620, 128)], 1],
 		["Moorweg", [Vector2(-200, -330), Vector2(-320, -300), Vector2(-470, -240), Vector2(-600, -255), Vector2(-700, -250), Vector2(-830, -205)], 0],
 		["Gletscherweg", [Vector2(180, 140), Vector2(260, 200), Vector2(380, 270), Vector2(470, 300), Vector2(560, 380), Vector2(640, 420), Vector2(720, 450)], 2],
-		["Passweg", [Vector2(60, 0), Vector2(110, 120), Vector2(120, 260), Vector2(90, 420), Vector2(60, 560), Vector2(40, 700), Vector2(30, 780)], 1]]
+		["Passweg", [Vector2(60, 0), Vector2(110, 120), Vector2(120, 260), Vector2(90, 420), Vector2(60, 560), Vector2(40, 700), Vector2(30, 780)], 1],
+		["Tobelweg", Ziele.TOBELWEG, 0],                       # real-berg-orte: to the Tuffwasserfall (bergtal_ziele.gd)
+		["Gipfelweg Chalchstock", Ziele.GIPFELWEG, 1]]
 
 # the suggested sleeping spots: id -> [name, x, z, looking (degrees, 0 = north / down the valley, 90 = east), what it is]
 const SPOTS := {"seeufer": ["Am Ufer des Gumpisees", -142.0, -332.0, 20.0, "See"],
@@ -249,6 +253,7 @@ static func place_options() -> Array:
 	for p in PLACES:
 		out.append(["p:" + str(p[0]), str(p[0])])
 	out.append_array(Orte.place_options())
+	out.append_array(Ziele.place_options())
 	return out
 
 
@@ -425,6 +430,7 @@ static func generate() -> void:
 		_flatten(c, 6.0, 1.0)
 		_flatten(c + Vector2(3.0, 3.0), 4.0, 1.0)
 	_hm = Orte.sculpt(_hm, N, LO, STEP)                      # the narrow ridge «Schafgrat» (bergtal_orte.gd)
+	_hm = Ziele.sculpt(_hm, N, LO, STEP)                     # real-berg-orte: Chalchstock, the pool of the Tuffwasserfall
 	_colours()
 	_gen_ms = Time.get_ticks_msec() - t0
 
@@ -987,6 +993,7 @@ func gy(x: float, z: float) -> float:
 
 var ice: Array = []                          # [lake, ice from (ellipse radius), water level] - walkable in winter
 var orte = null                              # bergtal_orte.gd: the places to explore (buildings with their inside …)
+var ziele = null                             # bergtal_ziele.gd: Tuffwasserfall, Chalchstock
 
 
 func _build(sc) -> void:
@@ -1054,6 +1061,8 @@ func _build(sc) -> void:
 	_vignette_pieces()
 	_signs_and_cairns()
 	orte.build()
+	ziele = Ziele.new(self)
+	ziele.build()
 	if place == "":
 		_own_spot()
 	bib.finish()
@@ -1602,6 +1611,7 @@ func _vegetation() -> void:
 	for v in VIGNETTES:
 		_busy_pts.append([Vector2(v[3], v[4]), float(v[5]) + 2.0])
 	_busy_pts.append_array(Orte.busy_pts())               # K3: no tree in the Militärbaracke (bergtal_orte.gd)
+	_busy_pts.append_array(Ziele.busy_pts())
 	for vp in VIEWPOINTS:
 		_busy_pts.append([vp_xz(vp), 9.0])
 	for k in SPOTS:
@@ -2174,7 +2184,11 @@ func _vignette_pieces() -> void:
 
 func _walk_time(a: Vector2, b: Vector2) -> String:
 	"""the walking time like on the signposts (Schweizer Wanderwege: 4.2 km/h, + 1 h per 300 m up / 500 m down, the bigger
-	part + half the smaller - simplified); the way is ≈ 1.3 × the straight line"""
+	part + half the smaller - simplified); real-berg-orte: along the trails (bergtal_wegweiser.gd), else ≈ 1.3 × the straight line"""
+	Wegweiser.build_net(TRAILS, road_pts)
+	var r: Dictionary = Wegweiser.route(Callable(self, "H"), a, b)
+	if r.get("ok", false):
+		return Wegweiser.fmt(int(r["mins"]))
 	var dist := a.distance_to(b) * 1.3 / 1000.0
 	var dh := H(b.x, b.y) - H(a.x, a.y)
 	var t1 := dist / 4.2
@@ -2187,27 +2201,11 @@ func _walk_time(a: Vector2, b: Vector2) -> String:
 
 
 func _signs_and_cairns() -> void:
-	var junctions := [["Alp Tschuggen %d m", HUT + Vector2(-10, -14), [["Gumpisee", LAKE1[0], 0], ["Furggapass", PASS, 1], ["Biwak Chüebodehorn", BIVOUAC, 1]]],
-			["Gumpisee %d m", Vector2(-200, -326), [["Alp Tschuggen", HUT, 0], ["Schwarzseeli", LAKE2[0], 0], ["Kapelle St. Jodern", CHAPEL, 0]]],
-			["Tschuggen Strasse", Vector2(174, -46), [["Alp Tschuggen", HUT, 0], ["Gumpisee", LAKE1[0], 0]]],
-			["Murmelboden %d m", Vector2(-296, 294), [["Gratspitz", RIDGE_VIEW, 1], ["Biwak Chüebodehorn", BIVOUAC, 1], ["Alp Tschuggen", HUT, 1]]],
-			["Gratspitz %d m", RIDGE_VIEW + Vector2(6, 8), [["Murmelboden", BOULDERS, 1], ["Alp Tschuggen", HUT, 1]]],
-			["Furggapass %d m", Vector2(34, 776), [["Alp Tschuggen", HUT, 1], ["Gumpisee", LAKE1[0], 1]]],
-			["Abzweigung Wyssgletscher", Vector2(186, 136), [["Gletscherseeli", TARN[0], 2], ["Obri Stafel", UPPER_HUT, 2], ["Alp Tschuggen", HUT, 0]]],
-			["St. Jodern %d m", CHAPEL + Vector2(14, 12), [["Gumpisee", LAKE1[0], 0], ["Tschuggen Strasse", Vector2(174, -46), 0]]],
-			["Riedmoos %d m", Vector2(-470, -236), [["Altstafel", RUIN, 0], ["Gumpisee", LAKE1[0], 0]]],
-			["Tüfelsschlund", Vector2(GORGE_BRIDGE.x + 18, -168), [["Alp Tschuggen", HUT, 0], ["Gumpisee", LAKE1[0], 0]]]]
-	var signs := []
-	for jn in junctions:
-		var pos: Vector2 = jn[1]
-		var arms := []
-		for a in jn[2]:
-			arms.append([a[0], _walk_time(pos, a[1]), a[2]])
-		var here := str(jn[0])
-		if here.contains("%d"):
-			here = here % int(H(pos.x, pos.y) + ALT0)
-		bib.add("hiking_sign", P(pos.x, pos.y), rng.randf() * TAU, {"here": here, "arms": arms})
-		signs.append({"here": here, "x": pos.x, "z": pos.y})
+	# real-berg-orte: the signposts with times along the trails and arms in the direction of the way (bergtal_wegweiser.gd)
+	var signs: Array = Wegweiser.build(self, TRAILS, road_pts, ALT0)
+	info["signpost_list"] = signs
+	for k in range(10):                                     # (the old signs turned at random: keep the random numbers that follow)
+		rng.randf()
 	info["signposts"] = signs.size()
 	# marks on stones along the trails (yellow / white-red-white / white-blue-white) and cairns high up
 	var marks := [[], [], []]
@@ -2356,7 +2354,7 @@ func _lights_and_fx() -> void:
 func _labels() -> void:
 	"""names of the places and the suggested sleeping spots - only in the window (helper layer), not for MoveEye's cameras"""
 	var items := []
-	for pl in PLACES + Orte.PLACES:
+	for pl in PLACES + Orte.PLACES + Ziele.PLACES:
 		items.append([str(pl[0]), Vector2(pl[1], pl[2]), Color(0.98, 0.96, 0.9), 5.0])
 	for k in SPOT_ORDER:
 		if SPOTS.has(k) and k != spot:
@@ -2589,6 +2587,8 @@ func _publish() -> void:
 	s.data["erlebnis"] = er
 	if self.orte != null:                                   # (a local «orte» above: the list for MoveEye)
 		self.orte.publish()
+	if self.ziele != null:
+		self.ziele.publish()
 
 
 # =======================================================================================================================
@@ -3274,6 +3274,7 @@ static func all_places() -> Array:
 	for vp in VIEWPOINTS:
 		out.append([vp[1], vp_xz(vp).x, vp_xz(vp).y])
 	out.append_array(Orte.all_places())
+	out.append_array(Ziele.all_places())
 	return out
 
 
@@ -3582,6 +3583,8 @@ static func control(main, d: Dictionary) -> Dictionary:
 			return eb.control(d) if eb != null else {"ok": false, "error": "no erleben_b"}
 		"orte":
 			return bt.orte.control(d) if bt.orte != null else {"ok": false}
+		"ziele":                                             # real-berg-orte: Tuffwasserfall, Chalchstock (bergtal_ziele.gd)
+			return bt.ziele.control(d) if bt.ziele != null else {"ok": false}
 	return {"ok": true, "scene": main.scene, "bergtal": true, "spot": bt.spot, "season": bt.season, "bed": bt.bed, "spot_xz": [bt.spot_xz.x, bt.spot_xz.y],
 			"alt_m": int(bt.h0 + ALT0), "rating": bt.rating, "exposure": bt.exposure(), "info": bt.info, "spots": spot_options(),
 			"viewpoints": main.scenes.data.get("bt_viewpoints", []), "places": main.scenes.data.get("orte", []), "erlebnis": main.scenes.data.get("erlebnis", []),
