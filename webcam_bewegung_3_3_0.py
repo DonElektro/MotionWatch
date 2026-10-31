@@ -34964,8 +34964,11 @@ class MotionWatch:
         hist = getattr(self, "_ll_hist", None)
         if hist is None:
             hist = self._ll_hist = deque(maxlen=900)       # 10 s at up to 90 pictures/s
+        slow = getattr(self, "_ll_slow", None)
+        if slow is None:
+            slow = self._ll_slow = deque(maxlen=200)      # the smoothed value, twice a second over the last 60 s (M2)
         if not CFG["lowlight_auto"]:
-            hist.clear(); self._ll_since = None; self._ll_seen = False   # switched on again later: decide at once
+            hist.clear(); slow.clear(); self._ll_since = None; self._ll_seen = False   # switched on again later: decide at once
             return False
         hold = max(0.0, float(CFG.get("lowlight_hold", 30.0)))
         win = min(10.0, hold)
@@ -34974,6 +34977,10 @@ class MotionWatch:
             hist.popleft()
         vals = sorted(v for _, v in hist) or [bright]
         smooth = vals[len(vals) // 2]
+        if not slow or t0 - slow[-1][0] >= 0.5:
+            slow.append((t0, smooth))
+        while slow and slow[0][0] < t0 - 60.0:
+            slow.popleft()
         cur = bool(STATE["lowlight"])
         on_thr = float(CFG["lowlight_threshold"]); gap = max(0.0, float(CFG.get("lowlight_gap", 15)))
         first = not getattr(self, "_ll_seen", False); self._ll_seen = True
@@ -34987,8 +34994,12 @@ class MotionWatch:
         # far on the other side (white light on / off, lens cover, camera switched): a real jump, not the dusk ->
         # 3 s more are enough (plus ~5 s until the median follows). "Far" = two gaps (at least 2 x 10) beyond the
         # threshold, i.e. < 30 or > 105 with 60 / 15.
+        # Code-Prüfung M2: back to dark after a long light (torch, white light > 8 s) - an IR night picture is often 30 … 59,
+        # never below 30, so the fixed limit did not help (35 s without CLAHE). Now also «far» = the smoothed value fell
+        # by more than two gaps below the brightest smoothed value of the last minute (dusk: a few points a minute only).
         far = 2.0 * max(gap, 10.0)
-        if (want and smooth < on_thr - far) or (not want and smooth > on_thr + gap + far):
+        top = max((v for _, v in slow), default=smooth)
+        if (want and (smooth < on_thr - far or top - smooth > far)) or (not want and smooth > on_thr + gap + far):
             hold = min(hold, 3.0)
         since = getattr(self, "_ll_since", None)
         if since is None:
@@ -35906,6 +35917,48 @@ class MotionWatch:
                     self.jpeg = buf.tobytes(); self.jpeg_seq += 1
 
 
+
+
+def lowlight_selftest():
+    """Code-Prüfung M2: low-light mode (MotionWatch._lowlight_decide) at 10 pictures/s - after a long light (torch, white
+    light 20 s) back to low light within ~10 s, also for an IR night picture of 30 … 59; dusk with noise switches once;
+    a cloud in the morning (80 -> 58 for 20 s) does not switch back"""
+    keys = ("lowlight_auto", "lowlight_threshold", "lowlight_gap", "lowlight_hold")
+    keep = ({k: CFG.get(k) for k in keys}, STATE.get("lowlight"))
+
+    class _W:
+        pass
+
+    def run(seq, start=None):
+        """seq = brightness per picture (10/s) -> list of (time, new state) of the switches"""
+        w = _W(); out = []
+        STATE["lowlight"] = bool(start) if start is not None else False
+        if start is not None:
+            w._ll_seen = True
+        for i, b in enumerate(seq):
+            t = 1000.0 + 0.1 * i
+            v = MotionWatch._lowlight_decide(w, float(b), t)
+            if v != STATE["lowlight"]:
+                STATE["lowlight"] = v; out.append((round(t - 1000.0, 1), v))
+        return out
+    try:
+        CFG.update(lowlight_auto=True, lowlight_threshold=60, lowlight_gap=15, lowlight_hold=30.0)
+        for night in (30, 45, 55):
+            sw = run([night] * 600 + [120] * 200 + [night] * 400, start=True)
+            assert len(sw) == 2 and sw[0][1] is False and 60.0 < sw[0][0] <= 70.0, (night, sw)      # light: off after ~8 s
+            back = sw[1][0] - 80.0
+            assert sw[1][1] is True and back <= 10.0, f"night {night}: low light back only after {back:.1f} s ({sw})"
+        dusk = [90 - 50 * i / 6000.0 + 8 * math.sin(i * 0.7) for i in range(6000)]        # 10 min, 90 -> 40, noise ±8
+        sw = run(dusk, start=False)
+        assert len(sw) == 1 and sw[0][1] is True, f"dusk flickers: {sw}"
+        sw = run([80] * 1200 + [58] * 200 + [80] * 300, start=False)
+        assert not sw, f"a cloud in the morning switched: {sw}"
+    finally:
+        CFG.update(keep[0]); STATE["lowlight"] = keep[1]
+    return "back to low light within 10 s after a long light (night 30 / 45 / 55), dusk switches once, a cloud not"
+
+
+SELFTEST_EXTRA.append(("Low-light mode: hysteresis, back fast after a light (410)", lowlight_selftest))
 # ----------------------------------------------------------------------------
 # 2.98.13 (Wunsch Daniel)
 # 1. Distance: a person is about 1.7 m tall - from the height of its box and the vertical field of view of the camera
@@ -92683,6 +92736,10 @@ for _L in ("fr", "it", "rm"):
 #     Meldung ist für den Besitzer, darum hat sie ihren eigenen Schalter. Ohne eingerichteten Push: nur in die Nachrichten.
 #   * Zustand «spieltest» an den Simulator (sim_state): on, seen (letzte id), st (sent / none / error / off / net), t - der
 #     Simulator zeigt damit im Entwickler-Fenster, ob es einen Push gibt; sein Schalter fragt über mw_cmd «spieltest_push».
+#   * Code-Prüfung (M1, Daniel 31.10.2026): der Simulator darf den Schalter nur AUSschalten - einschalten nur in MoveEye
+#     (ein fremdes Gerät, das sich als Simulator meldet, könnte sonst Texte aufs Handy schicken). Gegen eine Flut: höchstens
+#     eine Push-Nachricht pro SPIELTEST_GAP_S Sekunden und SPIELTEST_MAX_H pro Stunde; was dazwischen kommt, wird gesammelt und
+#     mit der nächsten erlaubten Nachricht geschickt («+2 weitere»), über der Stundengrenze nur noch in die Nachrichten.
 # Kein ntfy-Thema, keine Zugangsdaten hier - es gilt nur, was in den Push-Einstellungen steht.
 # Hier (nach 570 TOGGLES, 560 DE / TRX, 290 sim_state, vor 636 Werkseinstellungen) damit der Schalter in FACTORY_CFG ist.
 # ----------------------------------------------------------------------------
@@ -92693,7 +92750,9 @@ SIMPLE_KEYS.add("spieltest_push")
 SPIELTEST_HELP = ("After every round of the play test assistant in the 3D simulator (More → Developer → Play test) a short push "
                   "through your push channel, e.g. «Play test: Adventure ch. 2 done, 12 min, 3 tips». Only for you, not as an alarm.")
 SPIELTEST_REC = "Off unless you are testing the games; switch it off again afterwards."
-SPIELTEST = {"seen": 0, "n": 0, "st": "", "t": 0.0, "last": None}
+SPIELTEST = {"seen": 0, "n": 0, "st": "", "t": 0.0, "last": None, "q": [], "sent_t": [], "busy": False}
+SPIELTEST_GAP_S = 60.0       # at most one push per minute (a round of a game takes minutes; a broken simulator not 60 a second)
+SPIELTEST_MAX_H = 20         # and at most 20 an hour - beyond that only into the messages (the phone stays quiet)
 _SPIELTEST_CTRL = re.compile(r"[\x00-\x1f\x7f]")
 
 
@@ -92702,10 +92761,65 @@ def spieltest_clean(text):
     return _SPIELTEST_CTRL.sub(" ", str(text or "")).strip()[:200]
 
 
+def spieltest_due(now=None):
+    """the collected messages (oldest first) when the next push is allowed now, else [] (the pause / the limit per hour)"""
+    now = time.time() if now is None else now
+    q = SPIELTEST["q"]
+    if not q or SPIELTEST["busy"]:
+        return []
+    sent = SPIELTEST["sent_t"] = [t_ for t_ in SPIELTEST["sent_t"] if now - t_ < 3600.0]
+    if sent and now - sent[-1] < SPIELTEST_GAP_S:
+        return []
+    out = list(q); q.clear()
+    return out
+
+
+def spieltest_join(texts):
+    """several collected messages -> one text: the newest + «(+n more)»"""
+    if len(texts) <= 1:
+        return texts[0] if texts else ""
+    return spieltest_clean(texts[-1] + " " + trf("(+{n} more)", n=len(texts) - 1))
+
+
+def spieltest_flush(now=None):
+    """send what was collected, if the pause is over (called with every SimLink tick through spieltest_feed)"""
+    now = time.time() if now is None else now
+    texts = spieltest_due(now)
+    if not texts:
+        return None
+    text = spieltest_join(texts)
+    if len(SPIELTEST["sent_t"]) >= SPIELTEST_MAX_H:       # the limit per hour: only into the messages
+        SPIELTEST.update(last={"t": now, "text": text}, t=now, st="limit")
+        msglog_add(Notifier._title(spieltest_payload(text)), text, "info", None, "none", "")
+        if now - SPIELTEST.get("limit_log", 0.0) > 600:
+            SPIELTEST["limit_log"] = now
+            log_event("sim", f"Play test messages: more than {SPIELTEST_MAX_H} an hour - only in the messages, not to the phone")
+        return "limit"
+    if CFG.get("spieltest_push") and not sim_net_down():
+        SPIELTEST["sent_t"].append(now)
+    SPIELTEST["busy"] = True
+
+    def _run():
+        try:
+            spieltest_send(text)
+        finally:
+            SPIELTEST["busy"] = False
+    threading.Thread(target=_run, daemon=True, name="spieltest").start()
+    return "go"
+
+
 def spieltest_feed(lst, first=False):
-    """world_reply «spieltest» of the simulator: new round messages -> push (only with the switch)"""
-    if not isinstance(lst, list):
-        return
+    """world_reply «spieltest» of the simulator: new round messages -> collected -> push (only with the switch, pause +
+    limit per hour: spieltest_flush)"""
+    try:
+        if not isinstance(lst, list):
+            return
+        _spieltest_take(lst, first)
+    finally:
+        spieltest_flush()
+
+
+def _spieltest_take(lst, first):
     for it in lst[-6:]:
         if not isinstance(it, dict):
             continue
@@ -92721,7 +92835,7 @@ def spieltest_feed(lst, first=False):
             continue
         text = spieltest_clean(it.get("text"))
         if text:
-            threading.Thread(target=spieltest_send, args=(text,), daemon=True, name="spieltest").start()
+            SPIELTEST["q"] = (SPIELTEST["q"] + [text])[-10:]      # collected; spieltest_flush sends when the pause is over
 
 
 def spieltest_payload(text):
@@ -92763,10 +92877,18 @@ def spieltest_send(text):
 
 
 def spieltest_set(on):
-    """the switch from the simulator (mw_cmd «spieltest_push», only the developer window / group Entwickler there)"""
-    CFG["spieltest_push"] = bool(on)
-    save_settings()
-    log_event("sim", "Play test messages " + ("on" if on else "off") + " (from the simulator)")
+    """the switch from the simulator (mw_cmd «spieltest_push», only the developer window / group Entwickler there): the
+    simulator may only switch it OFF - on only in MoveEye (Einstellungen → Entwickler), Code-Prüfung M1"""
+    if on:
+        if not CFG.get("spieltest_push"):
+            log_event("sim", "Play test messages: the simulator asked to switch them on - refused, only in MoveEye "
+                             "(Settings → Developer)")
+        return False
+    if CFG.get("spieltest_push"):
+        CFG["spieltest_push"] = False
+        save_settings()
+        log_event("sim", "Play test messages off (from the simulator)")
+    return True
 
 
 _sim_state_635a = sim_state
@@ -92781,6 +92903,7 @@ def sim_state():                                          # + 635a: «spieltest�
 
 _HX_SPIELTEST = {
     "Play test": ("Spieltest", "Test de jeu", "Test di gioco", "Test da gieu"),
+    "(+{n} more)": ("(+{n} weitere)", "(+{n} autres)", "(+{n} altri)", "(+{n} ulteriurs)"),
     "Play test messages to the phone": ("Spieltest-Meldungen aufs Handy", "Messages du test de jeu sur le téléphone",
                                         "Messaggi del test di gioco sul telefono", "Messadis dal test da gieu sin il telefonin"),
     SPIELTEST_HELP: ("Nach jeder Runde des Spieltest-Assistenten im 3D-Simulator (Mehr → Entwickler → Spieltest) eine kurze Push-Nachricht über deinen Push-Kanal, z. B. «Spieltest: Abenteuer Kap. 2 fertig, 12 Min., 3 Tipps». Nur für dich, nicht als Alarm.",
@@ -92812,11 +92935,40 @@ def spieltest_selftest():
         assert p["event"] == "info" and p["info_title"].endswith(tr("Play test")) and "x" in Notifier._text(p), "payload"
         assert "spieltest" in sim_state() and sim_state()["spieltest"]["on"] is False, "state field"
         assert any(t_[1] == "spieltest_push" and t_[0] == "Developer" for t_ in TOGGLES), "switch not in Developer"
+        # M1: the simulator can not switch it on (only off)
+        _ss = globals()["save_settings"]
+        globals()["save_settings"] = lambda *a, **k: None
+        try:
+            assert spieltest_set(True) is False and CFG["spieltest_push"] is False, "the simulator switched the push on"
+            CFG["spieltest_push"] = True
+            assert spieltest_set(False) is True and CFG["spieltest_push"] is False, "the simulator can not switch it off"
+        finally:
+            globals()["save_settings"] = _ss
+        # M1: a flood (a new id with every tick) -> at most one push a minute, the rest collected, limit per hour
+        CFG["spieltest_push"] = True
+        SPIELTEST.update(seen=0, q=[], sent_t=[], busy=False)
+        t0 = 1_000_000.0
+        sent = []
+        for i in range(600):                                # 60 s of ticks every 0.1 s, a new message each
+            _spieltest_take([{"id": i + 1, "t": 0, "text": f"Runde {i + 1}"}], False)
+            got = spieltest_due(t0 + 0.1 * i)
+            if got:
+                sent.append(spieltest_join(got)); SPIELTEST["sent_t"].append(t0 + 0.1 * i)
+        assert len(sent) == 1 and sent[0] == "Runde 1", sent
+        got = spieltest_due(t0 + 60.5)
+        assert got and len(got) == 10 and "(+9 " in spieltest_join(got), (len(got), spieltest_join(got))   # collected (last 10)
+        SPIELTEST["sent_t"] = [t0 + 60.0 * k for k in range(SPIELTEST_MAX_H)]
+        SPIELTEST["q"] = ["x"]
+        _ml = globals()["msglog_add"]; globals()["msglog_add"] = lambda *a, **k: None
+        try:
+            assert spieltest_flush(t0 + 60.0 * SPIELTEST_MAX_H) == "limit", "no limit per hour"
+        finally:
+            globals()["msglog_add"] = _ml
     finally:
         CFG["spieltest_push"] = old[0]
         SPIELTEST.clear()
         SPIELTEST.update(old[1])
-    return "play test messages: only with the switch, main channel, state to the simulator"
+    return "play test messages: only with the switch (the simulator only switches off), pause 60 s + 20 an hour, state to the simulator"
 
 
 SELFTEST_EXTRA.append(("Play test messages of the 3D simulator (635a)", spieltest_selftest))

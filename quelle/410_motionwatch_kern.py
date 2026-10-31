@@ -232,8 +232,11 @@ class MotionWatch:
         hist = getattr(self, "_ll_hist", None)
         if hist is None:
             hist = self._ll_hist = deque(maxlen=900)       # 10 s at up to 90 pictures/s
+        slow = getattr(self, "_ll_slow", None)
+        if slow is None:
+            slow = self._ll_slow = deque(maxlen=200)      # the smoothed value, twice a second over the last 60 s (M2)
         if not CFG["lowlight_auto"]:
-            hist.clear(); self._ll_since = None; self._ll_seen = False   # switched on again later: decide at once
+            hist.clear(); slow.clear(); self._ll_since = None; self._ll_seen = False   # switched on again later: decide at once
             return False
         hold = max(0.0, float(CFG.get("lowlight_hold", 30.0)))
         win = min(10.0, hold)
@@ -242,6 +245,10 @@ class MotionWatch:
             hist.popleft()
         vals = sorted(v for _, v in hist) or [bright]
         smooth = vals[len(vals) // 2]
+        if not slow or t0 - slow[-1][0] >= 0.5:
+            slow.append((t0, smooth))
+        while slow and slow[0][0] < t0 - 60.0:
+            slow.popleft()
         cur = bool(STATE["lowlight"])
         on_thr = float(CFG["lowlight_threshold"]); gap = max(0.0, float(CFG.get("lowlight_gap", 15)))
         first = not getattr(self, "_ll_seen", False); self._ll_seen = True
@@ -255,8 +262,12 @@ class MotionWatch:
         # far on the other side (white light on / off, lens cover, camera switched): a real jump, not the dusk ->
         # 3 s more are enough (plus ~5 s until the median follows). "Far" = two gaps (at least 2 x 10) beyond the
         # threshold, i.e. < 30 or > 105 with 60 / 15.
+        # Code-Prüfung M2: back to dark after a long light (torch, white light > 8 s) - an IR night picture is often 30 … 59,
+        # never below 30, so the fixed limit did not help (35 s without CLAHE). Now also «far» = the smoothed value fell
+        # by more than two gaps below the brightest smoothed value of the last minute (dusk: a few points a minute only).
         far = 2.0 * max(gap, 10.0)
-        if (want and smooth < on_thr - far) or (not want and smooth > on_thr + gap + far):
+        top = max((v for _, v in slow), default=smooth)
+        if (want and (smooth < on_thr - far or top - smooth > far)) or (not want and smooth > on_thr + gap + far):
             hold = min(hold, 3.0)
         since = getattr(self, "_ll_since", None)
         if since is None:
@@ -1174,3 +1185,45 @@ class MotionWatch:
                     self.jpeg = buf.tobytes(); self.jpeg_seq += 1
 
 
+
+
+def lowlight_selftest():
+    """Code-Prüfung M2: low-light mode (MotionWatch._lowlight_decide) at 10 pictures/s - after a long light (torch, white
+    light 20 s) back to low light within ~10 s, also for an IR night picture of 30 … 59; dusk with noise switches once;
+    a cloud in the morning (80 -> 58 for 20 s) does not switch back"""
+    keys = ("lowlight_auto", "lowlight_threshold", "lowlight_gap", "lowlight_hold")
+    keep = ({k: CFG.get(k) for k in keys}, STATE.get("lowlight"))
+
+    class _W:
+        pass
+
+    def run(seq, start=None):
+        """seq = brightness per picture (10/s) -> list of (time, new state) of the switches"""
+        w = _W(); out = []
+        STATE["lowlight"] = bool(start) if start is not None else False
+        if start is not None:
+            w._ll_seen = True
+        for i, b in enumerate(seq):
+            t = 1000.0 + 0.1 * i
+            v = MotionWatch._lowlight_decide(w, float(b), t)
+            if v != STATE["lowlight"]:
+                STATE["lowlight"] = v; out.append((round(t - 1000.0, 1), v))
+        return out
+    try:
+        CFG.update(lowlight_auto=True, lowlight_threshold=60, lowlight_gap=15, lowlight_hold=30.0)
+        for night in (30, 45, 55):
+            sw = run([night] * 600 + [120] * 200 + [night] * 400, start=True)
+            assert len(sw) == 2 and sw[0][1] is False and 60.0 < sw[0][0] <= 70.0, (night, sw)      # light: off after ~8 s
+            back = sw[1][0] - 80.0
+            assert sw[1][1] is True and back <= 10.0, f"night {night}: low light back only after {back:.1f} s ({sw})"
+        dusk = [90 - 50 * i / 6000.0 + 8 * math.sin(i * 0.7) for i in range(6000)]        # 10 min, 90 -> 40, noise ±8
+        sw = run(dusk, start=False)
+        assert len(sw) == 1 and sw[0][1] is True, f"dusk flickers: {sw}"
+        sw = run([80] * 1200 + [58] * 200 + [80] * 300, start=False)
+        assert not sw, f"a cloud in the morning switched: {sw}"
+    finally:
+        CFG.update(keep[0]); STATE["lowlight"] = keep[1]
+    return "back to low light within 10 s after a long light (night 30 / 45 / 55), dusk switches once, a cloud not"
+
+
+SELFTEST_EXTRA.append(("Low-light mode: hysteresis, back fast after a light (410)", lowlight_selftest))
