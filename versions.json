@@ -1,14 +1,32 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 17:29",
+ "generated": "2026-10-31 17:35",
  "versions": [
+  {
+   "version": "3.8.0",
+   "file": "webcam_bewegung_3_8_0.py",
+   "url": "",
+   "sha256": "7c872ffb1e6dd0aa97a6e1c790de6999a9a8eabcbeb9dc76fff0d99b6b043884",
+   "date": "2026-10-31 17:35",
+   "notes": "MoveEye-Datei halb so gross: Webseiten, Bilder und alte Versionsgeschichte in einer Zusatzdatei (moveeye_daten), die beim Update mitkommt oder nachgeladen wird; ohne Zusatzdatei läuft der Schutz weiter; 3.0.2 bleibt als Brücke für sehr alte Geräte.",
+   "size": 4390179,
+   "sig": "0c4cf276d29b44a2107cc767336c80dfdbb4b8d75cf8b895ef66b7eca9e9c312caa9924b93f7015adb86bcae57c293c9f67b1d61498d66996633900e04aff704",
+   "data": {
+    "file": "moveeye_daten_3_8_0.zip",
+    "url": "",
+    "sha256": "ec52e39c76b86c5eddeef577e93ddb340fb18b1da79197cb9827c48c107f3d28",
+    "size": 1609387,
+    "sig": "76ab94a48a64be9e5661d1b487831a131c1303ffd05b6c7763ab1e0b1a2977ceccc097db48f69e58eb9bfd0cacb0dc6248a15484aae54ecb49ad4e052f159d03"
+   }
+  },
   {
    "version": "3.7.1",
    "file": "webcam_bewegung_3_7_1.py",
    "url": "",
    "sha256": "c52aac149e7095b5fbfdd7e90a5a868aa8a79f553da78de5a19ea2a1891efb98",
-   "date": "2026-10-31 17:29",
+   "date": "2026-10-31 17:33",
    "notes": "Simulator 3.7.1: Maggie – der Pfeil zeigt jetzt auf die Stationen, jede Jahreszeit etwa 25–28 Min. mit 3 Rastplätzen und 4 Rätseln, Rastplatz-Anzeige und Tipps korrigiert.",
+   "size": 7860693,
    "sig": "213fefae1ad69017233bcda545ad9199567b3edd2600ed87db0ef08dbf13966632b6790cdfd6c24c1faddb0cd534602e9fb17f7e5f6b4089b324a1fdec34ae01"
   },
   {
@@ -16,8 +34,9 @@
    "file": "webcam_bewegung_3_6_2.py",
    "url": "",
    "sha256": "ddac53d8de9771bd104389659da803a1f93541101cf565d5a02e891d57e366f0",
-   "date": "2026-10-31 17:20",
+   "date": "2026-10-31 17:33",
    "notes": "Fehlerkorrekturen: Spieltest-Push höchstens 1 pro Minute und nur von MoveEye einschaltbar; Schwachlicht nach einer Taschenlampe in höchstens 10 s wieder an; ohne KI wird ein warmer, flacher Körper «Person?»; Hospiz nur für den Besitzer; echte Pi-Warnungen auch im Simulator-Betrieb; Fragen der Produktseite ganz aufs Handy; «Schutz ein» nicht doppelt; Übersetzungen.",
+   "size": 7859536,
    "sig": "1e5680ecc3043d0bd618a595a7a1498eada03f7c8f60bcedfdd0abfde2ca584f45dfd52700ca077a8f3c66a0d53f3f649f7fc228f7f460a58ffc86b842ab2601"
   },
   {
@@ -27,6 +46,7 @@
    "sha256": "2de1f83516566e66a38556fd6f815109de232902f9f03b83837c97ce96012a93",
    "date": "2026-10-31 17:20",
    "notes": "Kriechende nachts: Voralarm «⚠ Etwas Grosses am Boden», nach 6 s «Person? (kriecht)» mit Alarm; Fuchs und Igel lösen nichts aus; KI-Lupe schaut auch kleine, weite Bewegungen an (nicht bei starkem Wind).",
+   "size": 7780206,
    "sig": "f79f98014727f9778348be9f028d6d809a8a1b4ec5123d3ca292b5723908c90ffa671e98d47b3be7f8bfbf16325cc9861d72dde9e4d8aed4135f59904a050c03"
   },
   {
@@ -36,6 +56,7 @@
    "sha256": "0b7cdb82af8a0e0da5f087632fa68d82d270fc63b2b2ac6bec3d2a2ab9e992bd",
    "date": "2026-10-31 17:00",
    "notes": "Nebel-Modus: Nebel erkennen, Kontrast anheben, mehr Wärmebild, Hinweis «🌫 Nebel – Sicht eingeschränkt», kein falsches «Kamera verdreht» im Nebel; in Dämmerung und Wind 2–3 Treffer in Folge vor einer Personen-Meldung.",
+   "size": 7737437,
    "sig": "8130371892411ea77f99bab8ca5102080048285aa12deab4dfcc12943cd08431e6f2c0a54800f4815d894e4b4b64cc90a42e66be2b285f891cc1209e1554cd07"
   },
   {
@@ -45,6 +66,7 @@
    "sha256": "c4fab0fb537df5f612bef02ae834aff6839e4df35b8027084131fc55b9fd04a0",
    "date": "2026-10-31 16:54",
    "notes": "MoveEye Sim 3.3.0: Roter Faden – Die Karte des Grossvaters und Maggie kennen sich, neues Abzeichen «Beide Geschichten geschafft».",
+   "size": 7711358,
    "sig": "664f602b7f58cf7317eaad4b188121a63ec0e8bd25be048f29cf228b4fb648458ff0276e34ea643862d0afacf5f0edc4020b4ac0da2856a2b3f5f42964c14e0d"
   },
   {
@@ -54,6 +76,7 @@
    "sha256": "1f0f2eabaab921fa7d443e91be5c3012c5d033fcbeb11ed3945c75dabdc57955",
    "date": "2026-10-31 16:48",
    "notes": "MoveEye Sim 3.2.0: Statisten im Hintergrund (Ziele, Tätigkeiten, Gruppen, grüssen, weichen aus, abends heim; Menge wenig / normal / belebt).",
+   "size": 7711209,
    "sig": "a05bc44a78d6734ec551d28202bd4679eb818446d008e8894622308dc7c0a586391f1ec401d5e33de460db3de7989c9888a18713a19e9854eba4511fccfcd505"
   },
   {
@@ -63,6 +86,7 @@
    "sha256": "607d49eb62e5a817675a76133988b3fd6b435504456ca4b5f79c63b229033769",
    "date": "2026-10-31 16:24",
    "notes": "Handy-Mitteilungen kurz und klar: Titel mit Symbol, eine Zeile Text, Bild wo sinnvoll, nie roher Code; «🛡 Schutz ein» mit Bild; im Simulator nur Alarme (Info per Schalter); E-Mail mit ganzem Text; Gerätename nur bei mehreren MoveEye; ntfy-Adresse in der Webhook-Karte behoben.",
+   "size": 7711051,
    "sig": "9a8c8a65e4bc598048e522cc2dd196f17a80380a29c94147f899eac2d9ec0a259272bbea399251cb72f1d6d7552124970ebabe959e7a52bda9c5f15a4120f707"
   },
   {
@@ -72,7 +96,9 @@
    "sha256": "0409d855abf83cdfe9ea06bc535d09ed5df56c7b2fa7af6f2fd9bab4fb1ac460",
    "date": "2026-10-31 16:18",
    "notes": "Simulator: «Nur Gruppen» wie in MoveEye (Gruppen offen, Themen zu); Anna ist die Betreuerin der Hütte; Sepp spricht passend zur Jahreszeit.",
-   "sig": "f88dc49ba510c1a8d70bf0d3bf12f431945591b66074181237bca78dc3fe2e704d52cb2dc5496931174a1fc1eac9a38cbdb2c73c48ac17de05696e6744b1e302"
+   "size": 7672293,
+   "sig": "f88dc49ba510c1a8d70bf0d3bf12f431945591b66074181237bca78dc3fe2e704d52cb2dc5496931174a1fc1eac9a38cbdb2c73c48ac17de05696e6744b1e302",
+   "bridge": true
   },
   {
    "version": "2.98.116",
@@ -81,16 +107,8 @@
    "sha256": "6ce7d2dd9c4bfc96fdb99cd94efe06581590194492a7432c30f64e606e0fb7ca",
    "date": "2026-10-31 15:52",
    "notes": "Reiter «Spielen» neu aufgebaut wie im Simulator (Stufe, Spielstand, Weiterspielen, Geschichten-Regal, Entdecken). Simulator 3D-4.85: neues Fenster «Spielen» mit Geschichten als grosse Karten (Die Karte des Grossvaters, Maggie, Hospiz, Teil 2), gleicher Start für alle Geschichten.",
+   "size": 7667336,
    "sig": "e7b0d995cb7bbfa5421610dcd08daef5fe989fb5104b539ebbdc0be110f2333445df32ba35f1087399b385233f7648ffbb44cccb455d69494c74dcd7303e8004"
-  },
-  {
-   "version": "2.97.1",
-   "file": "webcam_bewegung_2_97_1.py",
-   "url": "",
-   "sha256": "8506f66c4e0586e4223100b845ca3e8fbecf8e5af347e71b5ed28f79afaba065",
-   "date": "2026-10-28 23:31",
-   "notes": "Ordnung im Hintergrund: eine Sperre für alle Simulator-Aufgaben, Zeitplan schaltet über die Scharf-Logik, Modi stellen in jeder Reihenfolge richtig zurück, Optimierung fragt «auch echt übernehmen?», AutoTuner pausiert bei Tests, Anwesenheit aus beiden Quellen, Updates warten auf Tests",
-   "sig": "84926a7055dfba236402aa19df4d3034272e1e097a836baf16f4afa634f1589bd9dff0461b1dd9d3cbd1049f2c86ff7f6db10256cbbe55899aec27ad6b689308"
   }
  ]
 }

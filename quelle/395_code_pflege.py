@@ -20,8 +20,7 @@ def i18n_used_keys(src=None):
     import ast as _ast
     import html as _html
     if src is None:
-        with open(os.path.abspath(__file__), encoding="utf-8") as f:
-            src = f.read()
+        src = zd_source()                                   # with the literals of the data zip (012)
     keys = set()
     for rx in (_I18N_PY, _I18N_JS):
         for m in rx.finditer(src):

@@ -154,6 +154,10 @@ func start() -> void:
 		mw = dir.path_join("mw").path_join(override_file.get_file())      # a copy next to the others (the file may be anywhere)
 		if mw != override_file:
 			DirAccess.copy_absolute(override_file, mw)
+			# MoveEye ab dem Verkleinern-Paket: die Zusatzdatei moveeye_daten_X_Y_Z.zip daneben gehört dazu (Web-Seiten, Bilder)
+			var zd := override_file.get_base_dir().path_join(override_file.get_file().replace("webcam_bewegung_", "moveeye_daten_").replace(".py", ".zip"))
+			if FileAccess.file_exists(zd):
+				DirAccess.copy_absolute(zd, dir.path_join("mw").path_join(zd.get_file()))
 	else:
 		mw = await _motion_watch()
 	if mw == "":
