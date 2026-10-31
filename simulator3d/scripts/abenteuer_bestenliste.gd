@@ -6,11 +6,14 @@ extends RefCounted
 ## und wird hier nur mit angezeigt (kein zweites Format).
 ## Datei: user://bergtal_abenteuer/familie.json · Fotos: user://bergtal_abenteuer/familie_fotos/
 ##
-## Schnittstellen zu den anderen Paketen (Stand: noch nicht auf main - darum Stubs):
-##   hat(id)          Inv.hat() aus abenteuer_inventar.gd (A4, preload ab 3D-4.66)
-##   tiere_von(R, P)  TODO verbinden mit A1 (seltene Tiere, Feld "a1_tiere" im Spielstand)
-##   foto_wertung()   TODO verbinden mit A1 foto_wertung(); bis dahin ein Stub: Schärfe aus dem Bild selbst, Tier aus info
-##   wildkamera(R)    TODO verbinden mit A1 (Feld "a1_wildkamera": [{"file" | "jpg_b64", "tier"}])
+## Schnittstellen zu den anderen Paketen (verbunden in 3D-4.74, Paket «Bestenliste verbinden»):
+##   hat(id)          Inv.hat() aus abenteuer_inventar.gd (A4)
+##   tiere_von(R, P)  A1-Sammlung P["a1_sammlung"] (richtig bestimmte seltene Tiere, A1.TIERE) - A1.sammlung()
+##   foto_wertung()   A1.foto_wertung(foto) für Wildkamera-Aufnahmen (Abstand, Grösse, Bewegungsunschärfe, Licht, Seltenheit);
+##                    bild_wertung() nur für Fotos ohne A1-Daten (Handy-Begleiter «Foto», take_foto)
+##   wildkamera(R)    A1-Aufnahmen der Nacht R["a1"]["fotos"] (am Morgen); die Wildkamera am Tag meldet sich über
+##                    add_a1_fotos() selbst (abenteuer_moveeye.gd _tag_done → zweit.on_a1_fotos)
+##   Doppelte Fotos: jede A1-Aufnahme (id) kommt nur einmal auf die Liste (Feld "a1_ids").
 
 const FILE := "user://bergtal_abenteuer/familie.json"
 const FOTO_DIR := "user://bergtal_abenteuer/familie_fotos"
@@ -19,6 +22,7 @@ const PAGES := ["tagebuchseite_1", "tagebuchseite_2", "tagebuchseite_3", "tagebu
 const GEAR := ["seil", "stirnlampe", "feldstecher", "kompass", "pickel", "hut", "taschenuhr"]
 const MAX_FOTOS := 12
 const Inv = preload("res://scripts/abenteuer_inventar.gd")   # A4 (Besitzer, ab 2.98.94 auf main): hat / gib / nimm / anzahl
+const A1 = preload("res://scripts/abenteuer_moveeye.gd")      # A1: foto_wertung(foto), TIERE, tier_name()
 
 
 static func load_all() -> Dictionary:
@@ -35,6 +39,8 @@ static func load_all() -> Dictionary:
 		d["people"] = {}
 	if not d.get("fotos") is Array:
 		d["fotos"] = []
+	if not d.get("a1_ids") is Array:
+		d["a1_ids"] = []
 	return d
 
 
@@ -45,39 +51,42 @@ static func save_all(d: Dictionary) -> void:
 		f.store_string(JSON.stringify(d, " "))
 
 
-# ---- what the run found (stubs until A1 / A4 are there) --------------------------------------------------------------
+# ---- what the run found (A4 inventory, A1 collection and camera trap) -----------------------------------------------------
 static func hat(_ab, id: String) -> bool:
 	"""das Inventar von A4 (abenteuer_inventar.gd: Inv.hat, kennt die Aliase proviant = essen, feldstecher = fernglas).
-	3D-4.66: A4 ist auf main - preload statt Laden zur Laufzeit, kein Ersatz mehr. `_ab` bleibt für die Aufrufer."""
+	`_ab` bleibt für die Aufrufer."""
 	return bool(Inv.hat(id))
 
 
-static func tiere_von(R: Dictionary, P: Dictionary) -> Array:
-	"""TODO verbinden mit A1: die seltenen Tiere des Laufs (Murmeltier, Schneehase, Steinbock, Gämse, Luchs, Bartgeier, Steinadler)"""
+static func tiere_von(_R: Dictionary, P: Dictionary) -> Array:
+	"""die seltenen Tiere der Sammlung von A1 (P["a1_sammlung"]: auf einer Aufnahme richtig bestimmt), in der Reihe von A1.
+	Was erst nach dem Morgen ausgewertet wird, zählt beim nächsten Morgen."""
+	var sm = P.get("a1_sammlung", {})
 	var out: Array = []
-	for src in [R.get("a1_tiere", null), P.get("a1_tiere", null)]:
-		if src is Dictionary:
-			for k in src:
-				if not str(k) in out:
-					out.append(str(k))
-		elif src is Array:
-			for k in src:
-				var id := str(k.get("id", "")) if k is Dictionary else str(k)
-				if id != "" and not id in out:
-					out.append(id)
+	if sm is Dictionary:
+		for t in A1.REIHE:
+			if sm.has(t) and int((sm[t] as Dictionary).get("n", 0)) > 0:
+				out.append(str(t))
 	return out
 
 
 static func wildkamera(R: Dictionary) -> Array:
-	"""TODO verbinden mit A1: die Wildkamera-Aufnahmen des Laufs (Bild + was MoveEye erkannt hat)"""
-	var a = R.get("a1_wildkamera", [])
-	return a if a is Array else []
+	"""die Aufnahmen von MoveEye in dieser Nacht (A1: R["a1"]["fotos"], mit Bild user://…png)"""
+	var a1 = R.get("a1", {})
+	if not a1 is Dictionary:
+		return []
+	var fs = (a1 as Dictionary).get("fotos", [])
+	return fs if fs is Array else []
 
 
-static func foto_wertung(img: Image, info := {}) -> Dictionary:
-	"""Stub bis A1 foto_wertung() liefert (gleicher Name, gleiche Rückgabe): Schärfe 0…1 aus den Kanten des Bildes
-	(mittlere Helligkeitsänderung benachbarter Pixel auf 160 × 90, ~0.08 = scharf), Tier aus info["tier"] (A1: MoveEyes
-	Erkennung). Punkte 0 … 100: 60 × Schärfe + 40 mit Tier."""
+static func foto_wertung(foto: Dictionary) -> Dictionary:
+	"""= A1.foto_wertung(foto): {"tier", "schaerfe" 0…1, "punkte"}"""
+	return A1.foto_wertung(foto)
+
+
+static func bild_wertung(img: Image, info := {}) -> Dictionary:
+	"""für Fotos ohne A1-Daten (Handy-Begleiter): Schärfe 0…1 aus den Kanten des Bildes (mittlere Helligkeitsänderung
+	benachbarter Pixel auf 160 × 90, ~0.08 = scharf), Tier aus info["tier"]. Punkte 0 … 100: 60 × Schärfe + 40 mit Tier."""
 	var sch := 0.0
 	if img != null and not img.is_empty():
 		var s: Image = img.duplicate()
@@ -103,10 +112,10 @@ static func add_foto(img: Image, wer: String, info := {}) -> Dictionary:
 	"""a picture for the board: rated, saved as JPEG, only the best MAX_FOTOS are kept"""
 	if img == null or img.is_empty():
 		return {}
-	var w := foto_wertung(img, info)
+	var w: Dictionary = info["wertung"] if info.get("wertung") is Dictionary else bild_wertung(img, info)
 	var d := load_all()
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(FOTO_DIR))
-	var fn := "%s/%d.jpg" % [FOTO_DIR, int(Time.get_unix_time_from_system() * 1000.0)]
+	var fn := "%s/%d_%d.jpg" % [FOTO_DIR, int(Time.get_unix_time_from_system() * 1000.0), randi() % 1000]
 	var small: Image = img.duplicate()
 	if small.get_width() > 480:
 		small.resize(480, int(480.0 * small.get_height() / small.get_width()), Image.INTERPOLATE_BILINEAR)
@@ -114,6 +123,11 @@ static func add_foto(img: Image, wer: String, info := {}) -> Dictionary:
 	var e := {"file": fn, "wer": wer, "punkte": int(w["punkte"]), "schaerfe": w["schaerfe"], "tier": w["tier"],
 			"date": Time.get_datetime_string_from_system().substr(0, 16), "kapitel": int(info.get("kapitel", 0)), "quelle": str(info.get("quelle", ""))}
 	var L: Array = d["fotos"]
+	if str(info.get("a1_id", "")) != "":
+		e["a1_id"] = str(info["a1_id"])
+		var ids: Array = d["a1_ids"]
+		ids.append(e["a1_id"])
+		d["a1_ids"] = ids.slice(maxi(0, ids.size() - 400))
 	L.append(e)
 	L.sort_custom(func(a, b): return int(a["punkte"]) > int(b["punkte"]))
 	for old in L.slice(MAX_FOTOS):
@@ -156,16 +170,31 @@ static func record_run(names: Array, ab, wins: Dictionary) -> Dictionary:
 		pe["zuletzt"] = Time.get_datetime_string_from_system().substr(0, 16)
 		d["people"][nm] = pe
 	save_all(d)
-	for wk in wildkamera(R):                                # A1: the camera-trap pictures of the night
-		var img: Image = null
-		if wk is Dictionary and str(wk.get("file", "")) != "" and FileAccess.file_exists(str(wk["file"])):
-			img = Image.load_from_file(str(wk["file"]))
-		elif wk is Dictionary and str(wk.get("jpg_b64", "")) != "":
-			img = Image.new()
-			img.load_jpg_from_buffer(Marshalls.base64_to_raw(str(wk["jpg_b64"])))
-		if img != null:
-			add_foto(img, str(names[0]) if not names.is_empty() else "", {"tier": wk.get("tier", ""), "kapitel": R.get("chapter", 0), "quelle": "wildkamera"})
+	add_a1_fotos(wildkamera(R), str(names[0]) if not names.is_empty() else "")     # A1: the camera-trap pictures of the night
 	return load_all()
+
+
+static func add_a1_fotos(fs: Array, wer: String) -> int:
+	"""A1-Aufnahmen auf die Bestenliste: Bild von A1 (user://…png), Punkte von A1.foto_wertung(), jede Aufnahme nur einmal.
+	Gibt zurück, wie viele neu dazugekommen sind."""
+	var n := 0
+	for f in fs:
+		if not f is Dictionary:
+			continue
+		var id := str(f.get("id", ""))
+		if id == "" or id in (load_all()["a1_ids"] as Array):
+			continue
+		var bild := str(f.get("bild", ""))
+		if bild == "" or not FileAccess.file_exists(bild):
+			continue
+		var img := Image.load_from_file(bild)
+		if img == null or img.is_empty():
+			continue
+		var w := foto_wertung(f)
+		w["tier"] = A1.tier_name(str(w["tier"]))
+		add_foto(img, wer, {"wertung": w, "a1_id": id, "kapitel": int(f.get("kapitel", 0)), "quelle": "wildkamera " + str(f.get("modus", ""))})
+		n += 1
+	return n
 
 
 static func score(pe: Dictionary) -> int:
@@ -186,4 +215,4 @@ static func reset() -> void:
 	var d := load_all()
 	for e in d["fotos"]:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(str(e.get("file", ""))))
-	save_all({"names": d["names"], "people": {}, "fotos": []})
+	save_all({"names": d["names"], "people": {}, "fotos": [], "a1_ids": []})

@@ -1,8 +1,29 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.72** · passende MoveEye-Version (früher Motion Watch) **2.98.103**
+Stand: 31.10.2026 · Simulator-Version **3D-4.75** · passende MoveEye-Version (früher Motion Watch) **2.98.106**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.75 (MoveEye 2.98.106): Abenteuer-Pakete verbunden (A1–A5)
+
+- `abenteuer_bestenliste.gd` mit A1 verbunden (Wertung, Sammlung, Wildkamera – keine Stubs mehr), A4-Tausch nach den
+  A2-Wunschlisten, Wildhüter-Aufträge erkennen A1-Fotos.
+- Entscheid Daniel: nur Grossvaters Feldstecher; Seil / Ersatzteil je ein Fundort (zweiter nur auf Leicht); Hilfe-Stufe (A3)
+  = Schwierigkeit (eine Wahl), auf Mittel «Tipp jetzt».
+
+## NEU in 3D-4.74 (MoveEye 2.98.105): Weltfehler Bergtal / Pfadilager (`bergtal.gd`, `kompakt_pfadi.gd`)
+
+- `bergtal.gd`: Passstrasse auf dem Gelände (runde Kehren, nichts schwebt), Bergdorf auf Strassenhöhe, ebene Parkplätze.
+- `kompakt_pfadi.gd`: keine Tanne mehr vor MoveEye beim Standort Zelte.
+
+## NEU in 3D-4.73 (MoveEye 2.98.104): MoveEye im Abenteuer (`abenteuer_moveeye.gd`, Paket A1)
+
+- `abenteuer_moveeye.gd` (neu, `bergtal_abenteuer.gd` `a1`): Lager bewachen / Wildkamera am Wildwechsel, Fuchs am Proviant,
+  Hinweis-Aufnahme (Licht am Berg), Aufnahmen auswerten, Sammlung 7 seltener Tiere, `foto_wertung()`; Luchs in `bergtal.gd`,
+  Murmeltier/Steinadler/Bartgeier in `waerme.gd`. Steht neben A2 `a2`.
+- MoveEye 579b `NACHT_CAUSES` + 599e: neue Ursachen lynx/ibex/marmot/eagle/vulture/light und die älteren chamois/cow/hare/
+  stoat/deer/rockfall/storm mit Übersetzungen (vorher roh angezeigt).
+- Offen: `abenteuer_bestenliste.gd` (A5) nutzt für Tiere, Foto-Wertung und Wildkamera noch die Stubs (TODO A1).
 
 ## NEU in 3D-4.72 (MoveEye 2.98.103): Leben im Ferienpark (`ferienpark_leben.gd`)
 

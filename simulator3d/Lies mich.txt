@@ -421,6 +421,26 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.75
+3D-4.75: Bergtal-Abenteuer: Bestenliste zählt jetzt die Tiere und Wildkamera-Fotos von MoveEye. Wildhüter-Aufträge erkennen
+deine Fotos. Tauschen nach den Wunschlisten der Figuren. Nur noch ein Feldstecher (vom Grossvater). Seil und Ersatzteil haben
+je einen Fundort (zweiter nur auf Leicht). Hilfe und Schwierigkeit sind jetzt eine Wahl. Auf Mittel gibt es «Tipp jetzt».
+So testest du: 1) Abenteuer «Leicht» starten: Pfeile erscheinen. 2) Wildkamera-Nacht spielen: am Morgen steht ein Tierfoto
+in der Bestenliste. 3) Mit dem Älpler tauschen.
+
+NEU IN 3D-4.74
+3D-4.74: Bergtal: Passstrasse liegt sauber auf dem Gelände (runde Kehren, nichts schwebt mehr), Bergdorf auf Strassenhöhe,
+ebene Parkplätze. Pfadilager: keine Tanne mehr vor MoveEye beim Standort Zelte.
+So testest du: 1) Bergtal, Szene Postauto oder Schafstau abspielen: Fahrzeug und Schafe stehen auf der Strasse.
+2) Haarnadelkurve ansehen. 3) Pfadilager, Standort Zelte.
+
+NEU IN 3D-4.73
+3D-4.73: Bergtal-Abenteuer mit MoveEye: Lager nachts bewachen oder als Wildkamera am Wildwechsel. Der Fuchs holt offenen
+Proviant. Das Licht am Berg zählt als Hinweis nur auf einer Aufnahme. Am Morgen Aufnahmen auswerten und eine Sammlung von
+7 seltenen Tieren anlegen.
+So testest du: 1) Kapitel 1 bis zum Nachtlager spielen. 2) Wildkamera wählen, Proviant beim Rucksack lassen. 3) Am Morgen
+die Aufnahmen auswerten.
+
 NEU IN 3D-4.72
 3D-4.72: Ferienpark: Leben nach Uhrzeit (Grillabend mit Glut im Wärmebild, nachts WC-Gänge mit Taschenlampe, morgens Jogger
 und Bäcker). Dazu 3 Aufgaben mit MoveEye unter Spiel → Entdecken (Experte): verlorenes Kind finden, Velo-Dieb bemerken,

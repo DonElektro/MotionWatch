@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.72"
+const VERSION := "3D-4.75"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -4940,6 +4940,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return fahrzeuge.control(d)
 	elif a == "maggie_gefahr":                         # «Maggie und der Bergkristall» S3: böse Tiere, Schutzdinge (maggie_gefahr.gd)
 		return load("res://scripts/maggie_gefahr.gd").control(self, d)
+	elif a == "maggie_hund":                           # «Maggie und der Bergkristall», Paket S2: {do: info | start (region) | befehl (f) | spieler | loesen | stop}
+		return preload("res://scripts/maggie_hund.gd").control(self, d)
 	elif a == "licht":                                 # «Licht & Nacht»: {do: info | set | sources (cam) | lux | attach | headlights | at}
 		return licht.control(d)
 	elif a == "jahreszeiten":                          # «Jahreszeiten»: {do: info | set (key, value) | sun (doy, lat, lon) | year}

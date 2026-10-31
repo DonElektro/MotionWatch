@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 5939 (Stellen: 8092)
-Übersetzt: en 5939, fr 5939, it 5939, rm 5939
+Texte gesamt: 6113 (Stellen: 8316)
+Übersetzt: en 6113, fr 6113, it 6113, rm 6113
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 394 Stellen
-Nicht mehr im Code (noch in texte.json): 68
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 408 Stellen
+Nicht mehr im Code (noch in texte.json): 85
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 67 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 20081, schlüssel 14978, keine Wörter 9168, index 7507, technisch 2601, doc 1639, einheit 234, englisch 105, log 79, pfad 67, html 67, klasse 25, shader 4
+Übersprungen (Grund: Anzahl): kennung 20664, schlüssel 15534, keine Wörter 9590, index 7862, technisch 2674, doc 1687, einheit 236, englisch 108, log 79, pfad 68, html 67, klasse 26, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  671    29
@@ -15,10 +15,11 @@ Pro Datei (Texte / davon dynamische Stellen):
   abenteuer_figuren_daten.gd   235     0
   game.gd                  211    32
   bergtal.gd               199     5
-  bergtal_abenteuer_daten.gd   199     0
+  bergtal_abenteuer_daten.gd   197     0
   bergtal_horror.gd        154     3
   abenteuer_raetsel.gd     145     2
   maggie_story.gd          127     1
+  abenteuer_moveeye.gd     110    14
   bergtal_orte.gd          108     0
   bib_objekte.gd           108     0
   bergtal_aussicht.gd       94     4
@@ -27,6 +28,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   einbruch.gd               91     0
   ferienpark.gd             89     0
   toolbar.gd                87     3
+  maggie_hund.gd            85     0
   gameplus.gd               83     5
   objects.gd                81     0
   objekte_neu.gd            80     0
@@ -43,10 +45,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   bib_berg.gd               60     0
   abenteuer_figuren.gd      58     5
   quick.gd                  57     2
-  abenteuer_rucksack.gd     55     3
   bergtal_erleben_b.gd      55     0
   entdecken.gd              55     0
   spielbereich.gd           52     0
+  abenteuer_rucksack.gd     48     3
   scenes.gd                 47     0
   karte.gd                  46     8
   mwpc.gd                   46    12
@@ -62,8 +64,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamecompare.gd            40     6
   maggie_welt.gd            40     0
   kitrain.gd                39     9
-  fotomodus.gd              38     0
   gamejaeger.gd             38     1
+  fotomodus.gd              38     0
   update.gd                 37     4
   simreal.gd                37     0
   mikrofon.gd               37     0
@@ -83,10 +85,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   umgebung.gd               25     0
   inhalte.gd                25    12
   gameshutter.gd            25     5
+  worlds.gd                 23     0
   devtool_ebenen.gd         23     0
   licht.gd                  23     1
   wetter.gd                 23     0
-  worlds.gd                 23     0
   kompakt_festival.gd       23     0
   fenster.gd                22     0
   dataset.gd                22     3
@@ -109,9 +111,9 @@ Pro Datei (Texte / davon dynamische Stellen):
   devtool.gd                16     0
   weitwinkel.gd             16     0
   menschen.gd               16     0
-  grafik_hoch.gd            15     1
   b3d.gd                    15     3
   gamesneak.gd              15     0
+  grafik_hoch.gd            15     1
   home_editor.gd            14     3
   zimmertiere.gd            14     0
   abenteuer_inventar.gd     13     0
@@ -138,6 +140,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   tunnel.gd                  7     2
   gamexp.gd                  7     0
   nachtlauf.gd               7     0
+  maggie_helfer.gd           7     0
   gamewatch.gd               6     0
   autostart.gd               5     0
   visitlog.gd                5     0
@@ -193,11 +196,11 @@ Unsicher:
   'Wide camera (NoIR Wide)': Kameraname an MoveEye (/info) – nicht umhüllen
 
 Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {name} machen:
-  abenteuer_figuren.gd:699  'fertig'
-  abenteuer_figuren.gd:784  'nein'
-  abenteuer_figuren.gd:794  'nein'
-  abenteuer_figuren.gd:807  'ja'
-  abenteuer_figuren.gd:807  'nein'
+  abenteuer_figuren.gd:693  'fertig'
+  abenteuer_figuren.gd:778  'nein'
+  abenteuer_figuren.gd:788  'nein'
+  abenteuer_figuren.gd:801  'ja'
+  abenteuer_figuren.gd:801  'nein'
   ferienpark_leben.gd:925  'fertig'
   ferienpark_leben.gd:992  'fertig'
   protokoll.gd:72  'aus'
@@ -239,28 +242,42 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   karte.gd:503  'Dazu kommen: '
   karte.gd:511  'ja'
   karte.gd:511  'keine'
-  abenteuer_raetsel.gd:878  'Neu: '
-  abenteuer_raetsel.gd:887  'Gegenstände: '
-  abenteuer_rucksack.gd:224  'keine Wunschliste: '
-  abenteuer_rucksack.gd:412  ' und '
-  abenteuer_rucksack.gd:468  'Fertig'
+  abenteuer_moveeye.gd:136  'offen'
+  abenteuer_moveeye.gd:142  'offen'
+  abenteuer_moveeye.gd:251  'offen'
+  abenteuer_moveeye.gd:253  'offen'
+  abenteuer_moveeye.gd:255  'offen'
+  abenteuer_moveeye.gd:264  'offen'
+  abenteuer_moveeye.gd:324  'offen'
+  abenteuer_moveeye.gd:386  'offen'
+  abenteuer_moveeye.gd:1062  'offen'
+  abenteuer_moveeye.gd:1101  'offen'
+  abenteuer_moveeye.gd:1129  'offen'
+  abenteuer_moveeye.gd:1307  'offen'
+  abenteuer_moveeye.gd:1308  'offen'
+  abenteuer_moveeye.gd:1308  'offen'
   bergtal_horror.gd:40  'offen'
   bergtal_horror.gd:58  'offen'
   bergtal_horror.gd:1102  'Fertig'
+  abenteuer_raetsel.gd:875  'Neu: '
+  abenteuer_raetsel.gd:884  'Gegenstände: '
+  abenteuer_rucksack.gd:218  'keine Wunschliste: '
+  abenteuer_rucksack.gd:424  ' und '
+  abenteuer_rucksack.gd:480  'Fertig'
   tour.gd:187  'Fertig'
   b3d.gd:86  'Kachel leer: '
   b3d.gd:186  'glTF nicht lesbar: '
   b3d.gd:208  'Kachel ohne Dreiecke: '
-  bergtal.gd:235  'Aussicht: '
-  bergtal.gd:244  'Schlafplatz: '
-  bergtal.gd:246  'Aussicht: '
-  bergtal.gd:2180  'Schlafplatz: '
-  bergtal.gd:2182  'Aussicht: '
-  bergtal_abenteuer.gd:338  'Start: '
-  bergtal_abenteuer.gd:815  ' auf der Bank mit Aussicht'
-  bergtal_abenteuer.gd:1896  'Wird frei: '
-  bergtal_abenteuer.gd:2038  '  · %.1f kg'
-  bergtal_abenteuer.gd:2123  ' - Bank'
+  bergtal.gd:237  'Aussicht: '
+  bergtal.gd:246  'Schlafplatz: '
+  bergtal.gd:248  'Aussicht: '
+  bergtal.gd:2248  'Schlafplatz: '
+  bergtal.gd:2250  'Aussicht: '
+  bergtal_abenteuer.gd:348  'Start: '
+  bergtal_abenteuer.gd:825  ' auf der Bank mit Aussicht'
+  bergtal_abenteuer.gd:1925  'Wird frei: '
+  bergtal_abenteuer.gd:2069  '  · %.1f kg'
+  bergtal_abenteuer.gd:2154  ' - Bank'
   bergtal_aussicht.gd:357  'von'
   bergtal_aussicht.gd:536  'von'
   bergtal_aussicht.gd:1159  'Abzeichen: '
@@ -303,24 +320,24 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main.gd:3376  '\n🚨 Bewacht und weg: '
   main.gd:4185  'keine'
   main.gd:4211  'Wächter an MoveEye: '
-  main.gd:4976  'Dein Platz: '
-  main.gd:5215  ' · schaut nur zu: '
-  main.gd:5218  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:5219  ' · Update: '
-  main.gd:5553  'Blinde Flecken: '
-  main.gd:6220  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6526  'Autostart: '
-  main.gd:6537  'Autologon: '
-  main.gd:6698  'Karte öffnen: '
-  main.gd:6844  'Echt-Abgleich: '
-  main.gd:6854  'Trainingspaket: '
-  main.gd:6863  ' · %d offen · %.1f MB'
-  main.gd:6863  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6872  'Verbindung · '
-  main.gd:6872  'aus'
-  main.gd:6876  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6876  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6879  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:4978  'Dein Platz: '
+  main.gd:5217  ' · schaut nur zu: '
+  main.gd:5220  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:5221  ' · Update: '
+  main.gd:5555  'Blinde Flecken: '
+  main.gd:6222  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6528  'Autostart: '
+  main.gd:6539  'Autologon: '
+  main.gd:6700  'Karte öffnen: '
+  main.gd:6846  'Echt-Abgleich: '
+  main.gd:6856  'Trainingspaket: '
+  main.gd:6865  ' · %d offen · %.1f MB'
+  main.gd:6865  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6874  'Verbindung · '
+  main.gd:6874  'aus'
+  main.gd:6878  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6878  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6881  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:581  ' (automatisch von oben)'
   explore.gd:581  ' · schnell'
   fahrzeuge.gd:90  'nie'

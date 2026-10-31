@@ -18,12 +18,17 @@ extends RefCounted
 ##   * Wege freischalten: Holzsteg im Riedmoos flicken (braucht «ersatzteil» → trockene Füsse), Seil am Fels (braucht «seil»,
 ##     bleibt hängen → kurzer Weg in Kapitel 5), Lawinenkegel (Kapitel 4, nur im Sommer).
 ##   * Abzeichen über das Entdecken-System (main.entdecken.register / mark_found, ids «berg.abenteuer.a3.*»).
-##   * Hilfe-Stufen: Leicht (Pfeile: richtige Antwort markiert, Pfeil auf der Karte), Normal (Tipp nach 20 s oder nach einem
-##     Fehler), Schwer (keine Tipps). Vor dem Start (Schritt «Schwierigkeit & Ziel» → Einstellungen) und unterwegs wählbar.
+##   * Hilfe = Schwierigkeit: Leicht (Pfeile: richtige Antwort markiert, Pfeil auf der Karte), Mittel (Tipp nach 20 s oder nach
+##     einem Fehler, «Tipp jetzt» auf Wunsch), Schwer (keine Tipps). Gewählt nur mit der Schwierigkeit (Schritt «Schwierigkeit & Ziel»).
 ## Gespeichert im Spielstand des Abenteuers: P["a3_raetsel"] (fortschritt.json), der laufende Lauf in R["a3"].
 ## Gegenstände: hat(id) / gib(id) / nimm(id) gehen an das gemeinsame Inventar von Paket A4 (scripts/abenteuer_inventar.gd:
-## Inv.hat / gib / finde / nimm; «feldstecher» liegt dort als «fernglas» → wirkt auch für die Wetterwarnung).
+## Inv.hat / gib / finde / nimm; «feldstecher» liegt dort unter dem Schlüssel «fernglas»; Grossvaters Feldstecher ist der einzige im Abenteuer und
+## gibt auch die Wetterwarnung einen Abschnitt früher).
 ## Für andere Pakete: ab.hilfe_stufe() bzw. ab.raetsel.hilfe() -> "leicht" | "normal" | "schwer" (A4: Essen/Trinken in Leicht aus).
+## Ab 3D-4.74 (Daniel 31.10.2026) gibt es keine eigene Hilfe-Einstellung mehr: die Hilfe folgt der Schwierigkeit des Abenteuers
+## (W/R["level"]: leicht = Pfeile, mittel = «normal» = Tipp nach Wartezeit, schwer = keine Hilfe). Unterwegs gibt es auf «Mittel»
+## nur den Knopf «Tipp jetzt» (Tipp auf Wunsch, keine zweite Einstellung). Alte Spielstände: P["a3_raetsel"]["hilfe"] wird
+## beim Laden einmal zur Schwierigkeit (bergtal_abenteuer._load → P["schwierigkeit"]).
 ## Steuerbefehl: {"action": "abenteuer", "do": "a3", "what": state | hilfe (value) | zoom | stern (value A/B/C) | nord |
 ##                gib (value) | badges}
 
@@ -36,8 +41,9 @@ const TIP_S := 20.0                          # Normal: so lange (echte Sekunden)
 const MAG := 8.0                             # Feldstecher 8× (wie MAG_BINO in bergtal_aussicht.gd)
 const ZOOM_S := 10.0
 
+const LEVEL_HILFE := {"leicht": "leicht", "mittel": "normal", "schwer": "schwer"}     # Schwierigkeit -> Hilfe
 const HILFE := {"leicht": ["Leicht", "Pfeile zeigen den Weg und die richtige Antwort."],
-		"normal": ["Normal", "Nach einer Weile (oder nach einem Fehler) kommt ein Tipp."],
+		"normal": ["Mittel", "Nach einer Weile (oder nach einem Fehler) kommt ein Tipp."],
 		"schwer": ["Schwer", "Keine Tipps, keine Pfeile - nur Karte, Kompass und Sterne."]}
 const HILFE_ORDER := ["leicht", "normal", "schwer"]
 
@@ -80,6 +86,8 @@ const ARRIVE := {1: ["hut", "An einem Haken im Stall der Alp hängt ein alter Hu
 		2: ["taschenuhr", "Neben dem Eisenring im Block: eine Taschenuhr, in Wachstuch gewickelt wie das Kartenstück. Sie geht noch - aber sie zeigt nicht die Uhrzeit, sondern die Sonnenzeit."],
 		3: ["pickel", "In einer Nische der Mauer lehnt ein alter Pickel mit Holzstiel, in Wachstuch gewickelt wie die Kartenstücke. Damit kommt man auch über Eis."],
 		4: ["seil", "Im Biwak hängt ein langes Seil am Haken. Ein Zettel daran: «Für die nächste Seilschaft.»"]}
+const NOTFALL := ["seil"]                    # zweiter (Notfall-)Ort, nur in «Leicht» (Daniel 31.10.): das Seil liegt sonst nur in der
+                                            # alten Sennerei (A4 FUNDE), das Ersatzteil sonst nur beim A2-Botendienst q_ersatzteil
 const ERSATZ_TEXT := "Neben der Seite liegt ein Brett mit Nägeln, sauber eingepackt - genau so eins fehlt am Steg."
 
 # ferne Hinweise mit dem Feldstecher (beim Karte lesen): was man von weitem sieht (die Antwort, die Karte und Menschen schon nennen)
@@ -100,7 +108,7 @@ const BADGES := [["tagebuch", "Abzeichen: Grossvaters Tagebuch", "Alle zehn Seit
 		["stern", "Abzeichen: Polarstern", "In der Nacht den Polarstern gefunden - er zeigt immer nach Norden."],
 		["erbe", "Abzeichen: Grossvaters Ausrüstung", "Hut, Feldstecher, Taschenuhr und Pickel gefunden."],
 		["wege", "Abzeichen: Wegmacher", "Den Steg geflickt, das Seil am Fels befestigt und über den Lawinenkegel gegangen."],
-		["schwer", "Abzeichen: Ohne Hilfe", "Ein Kapitel auf der Hilfe-Stufe Schwer geschafft, ohne eine falsche Antwort."]]
+		["schwer", "Abzeichen: Ohne Hilfe", "Ein Kapitel auf der Schwierigkeit Schwer geschafft, ohne eine falsche Antwort."]]
 
 # Sterne (Rektaszension h, Deklination °, Grösse) - Yale Bright Star Catalogue (J2000, gerundet)
 const STARS := {"polaris": [2.53, 89.26, 2.0], "kochab": [14.85, 74.16, 2.1], "pherkad": [15.35, 71.83, 3.0], "yildun": [17.54, 86.59, 4.4],
@@ -139,7 +147,7 @@ func S() -> Dictionary:
 	if not ab.P.has("a3_raetsel") or not ab.P["a3_raetsel"] is Dictionary:
 		ab.P["a3_raetsel"] = {}
 	var s: Dictionary = ab.P["a3_raetsel"]
-	for k in [["hilfe", "normal"], ["pages", []], ["badges", {}], ["wege", {}], ["kompass", []], ["stern", []]]:
+	for k in [["pages", []], ["badges", {}], ["wege", {}], ["kompass", []], ["stern", []]]:
 		if not s.has(k[0]):
 			s[k[0]] = k[1].duplicate() if k[1] is Array or k[1] is Dictionary else k[1]
 	return s
@@ -154,17 +162,23 @@ func RR() -> Dictionary:
 
 
 func hilfe() -> String:
-	var h := str(S()["hilfe"])
-	return h if HILFE.has(h) else "normal"
+	"""die Hilfe folgt der Schwierigkeit (unterwegs die des Laufs, sonst die gewählte)"""
+	var lv := str(ab.R.get("level", ab.W["level"])) if not ab.R.is_empty() else str(ab.W["level"])
+	return str(LEVEL_HILFE.get(lv, "normal"))
+
+
+static func level_of(h: String) -> String:
+	"""Hilfe-Stufe (auch aus alten Spielständen) -> Schwierigkeit"""
+	for k in LEVEL_HILFE:
+		if LEVEL_HILFE[k] == h:
+			return k
+	return "mittel"
 
 
 func set_hilfe(h: String) -> void:
-	if HILFE.has(h):
-		S()["hilfe"] = h
-		if not ab.R.is_empty():
-			RR()["hilfe_changed"] = true if h != str(RR().get("hilfe0", h)) else RR().get("hilfe_changed", false)
-		ab._save()
-		ab._changed()
+	"""alter Steuerbefehl «hilfe»: setzt jetzt die Schwierigkeit (nur vor dem Start)"""
+	if HILFE.has(h) and ab.R.is_empty():
+		ab.op({"do": "pick", "key": "level", "value": level_of(h)})
 
 
 func hilfe_stufe() -> String:
@@ -466,8 +480,8 @@ func _kompass_ok(ch: int, i: int) -> void:
 	if it != "" and not hat(it):
 		gib(it)
 		lines.append(T.t("Neu: %s.") % T.t(ITEM_NAME[it]))
-	if ch == 3 and not hat("ersatzteil") and not bool(S()["wege"].get("steg", false)):
-		gib("ersatzteil")                                # TODO verbinden: A2 (Botendienste) / A4 können das Ersatzteil auch anders geben
+	if ch == 3 and hilfe() == "leicht" and not hat("ersatzteil") and not bool(S()["wege"].get("steg", false)):
+		gib("ersatzteil")                                # Notfall-Ort nur in «Leicht» (Daniel 31.10.); sonst nur A2-Botendienst q_ersatzteil
 		lines.append(T.t(ERSATZ_TEXT))
 	_check_erbe()
 	ab._diary("a3", T.t("Karte und Kompass"), " ".join(lines.slice(0, 2)))
@@ -480,7 +494,7 @@ func on_arrive() -> void:
 	if not ARRIVE.has(ch):
 		return
 	var it := str(ARRIVE[ch][0])
-	if hat(it):
+	if hat(it) or (it in NOTFALL and hilfe() != "leicht"):
 		return
 	gib(it)
 	RR()["arrive"] = [it, T.t(ARRIVE[ch][1])]
@@ -492,7 +506,7 @@ func on_arrive() -> void:
 func morning_xp(arrived: bool) -> int:
 	"""the morning: experience of this package; the badge «Ohne Hilfe»"""
 	var r := RR()
-	if arrived and str(r.get("hilfe0", "")) == "schwer" and hilfe() == "schwer" and not bool(r.get("hilfe_changed", false)) \
+	if arrived and str(r.get("hilfe0", "")) == "schwer" and hilfe() == "schwer" \
 			and int(r.get("wrong", 0)) == 0 and int(ab.R.get("reads_wrong", 0)) == 0:
 		badge("schwer")
 	return int(r.get("xp", 0))
@@ -718,24 +732,8 @@ func star_xy(id: String, lst: float, k: float) -> Vector2:
 # paint (parts of the adventure panel)
 # =======================================================================================================================
 func paint_level(gg: Control) -> void:
-	"""step «Schwierigkeit & Ziel» → Einstellungen: the help level (before the start)"""
-	var row := HBoxContainer.new()
-	gg.add_child(row)
-	var l: Label = ab._lab(T.t("Hilfe bei Rätseln (Karte lesen, Peilung, Sternbild)"), 14)
-	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(l)
-	row.add_child(_hilfe_select())
-	gg.add_child(ab._lab(T.t(HILFE[hilfe()][0]) + ": " + T.t(HILFE[hilfe()][1]), 12, Color(0.6, 0.66, 0.74)))
-
-
-func _hilfe_select() -> OptionButton:
-	var ob := OptionButton.new()
-	for j in range(HILFE_ORDER.size()):
-		ob.add_item(T.t(HILFE[HILFE_ORDER[j]][0]))
-		if HILFE_ORDER[j] == hilfe():
-			ob.select(j)
-	ob.item_selected.connect(func(j): set_hilfe(HILFE_ORDER[j]))
-	return ob
+	"""step «Schwierigkeit & Ziel» → Einstellungen: what the chosen difficulty means for the puzzles (no own setting)"""
+	gg.add_child(ab._lab(T.t("Hilfe bei Rätseln (Karte lesen, Peilung, Sternbild)") + ": " + T.t(HILFE[hilfe()][1]), 12, Color(0.6, 0.66, 0.74)))
 
 
 func paint_pending(g: Control, pe: Dictionary) -> void:
@@ -743,6 +741,8 @@ func paint_pending(g: Control, pe: Dictionary) -> void:
 	var tip := str(r.get("tip", ""))
 	if tip != "" and hilfe() != "schwer" and main.now() - float(r.get("ask_t", 0.0)) >= TIP_S:
 		g.add_child(ab._lab(T.t("Tipp: %s") % tip, 13, ab.ORG))
+	elif tip != "" and hilfe() == "normal":
+		ab._btn(g, T.t("Tipp jetzt"), func(): ab.op({"do": "a3", "what": "tipp"}))       # Tipp auf Wunsch (Mittel)
 	if str(pe.get("kind", "")) == "a3_kompass" and hat("feldstecher"):
 		var ch := int(ab.R["chapter"])
 		var k: Dictionary = KOMPASS[ch]
@@ -780,9 +780,6 @@ func paint_hud(body: Control) -> void:
 		g.add_child(ab._lab(", ".join(got), 12))
 	var pg: Array = S()["pages"]
 	g.add_child(ab._lab(T.t("Tagebuch des Grossvaters: %d von 10 Seiten") % pg.size(), 12, Color(0.75, 0.8, 0.86)))
-	# (the HUD is painted again every few frames while walking: a button, no drop-down list that would close)
-	var nx: String = HILFE_ORDER[(HILFE_ORDER.find(hilfe()) + 1) % HILFE_ORDER.size()]
-	ab._btn(row, T.t("Hilfe: %s ›") % T.t(HILFE[hilfe()][0]), func(): ab.op({"do": "a3", "what": "hilfe", "value": nx}))
 
 
 func paint_camp(body: Control) -> void:
@@ -876,7 +873,7 @@ func paint_morning(parent: Control) -> void:
 	var g: VBoxContainer = ab._group(T.t("Rätsel und Grossvaters Spuren"), parent)
 	if not lines.is_empty():
 		g.add_child(ab._lab(T.t("Neu: ") + ", ".join(lines), 13, Color(0.95, 0.85, 0.6)))
-	g.add_child(ab._lab(T.t("+%d Erfahrung aus Rätseln und Funden · Hilfe-Stufe %s") % [int(r.get("xp", 0)), T.t(HILFE[hilfe()][0])], 12, Color(0.75, 0.8, 0.86)))
+	g.add_child(ab._lab(T.t("+%d Erfahrung aus Rätseln und Funden · Schwierigkeit %s") % [int(r.get("xp", 0)), T.t(HILFE[hilfe()][0])], 12, Color(0.75, 0.8, 0.86)))
 
 
 func paint_chapter(parent: Control) -> void:
@@ -1046,6 +1043,13 @@ func op(d: Dictionary) -> Dictionary:
 			if not HILFE.has(str(d.get("value", ""))):
 				return {"ok": false, "error": "leicht | normal | schwer"}
 			set_hilfe(str(d["value"]))
+		"tipp":                                          # Tipp auf Wunsch (Mittel): die Wartezeit ist sofort um
+			var rt := RR()
+			if not rt.is_empty() and hilfe() == "normal":
+				rt["ask_t"] = main.now() - TIP_S
+				if rt.has("star_t"):
+					rt["star_t"] = main.now() - TIP_S
+				ab._changed()
 		"zoom":
 			out = zoom()
 		"stern":

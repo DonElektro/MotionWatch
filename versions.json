@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 13:02",
+ "generated": "2026-10-31 13:39",
  "versions": [
   {
-   "version": "2.98.103",
-   "file": "webcam_bewegung_2_98_103.py",
+   "version": "2.98.106",
+   "file": "webcam_bewegung_2_98_106.py",
    "url": "",
-   "sha256": "b33a76fdcd583132e10332411c49af853366e84bdba3fd17dd748810aedddfe6",
-   "date": "2026-10-31 13:02",
-   "notes": "Simulator 3D-4.72: Ferienpark mit Leben nach Uhrzeit (Grillabend, WC-Gänge, Jogger, Bäcker) und 3 Aufgaben mit MoveEye (Kind finden, Velo-Dieb, Zeltwache).",
-   "sig": "9a997156497700e113c56e0642be4ae3c0dc8a264f518b732c5f49f7ecaf2fa71a68e861740c8737041a2e17816b69e1ebcb43ce0f64d60cc6844b376e24a203"
+   "sha256": "0e82c4b3271304ca928ab17c550b8ff97939f3f94e5ecf73e4881dd1a806e4bd",
+   "date": "2026-10-31 13:39",
+   "notes": "Simulator 3D-4.75: Bergtal-Abenteuer – Bestenliste mit den Tieren und Wildkamera-Fotos von MoveEye, Tauschen nach Wunschlisten, ein Feldstecher, je ein Fundort für Seil und Ersatzteil, Hilfe = Schwierigkeit.",
+   "sig": "474077f524efd76acd55fe6720d42552f3413574b7551d84a1e20827a4c230d1153d4efcbdceaf1d3f8303f5f11be2c3a724bc57b046476981e3acd7454a1108"
   },
   {
    "version": "2.97.1",
