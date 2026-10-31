@@ -63,7 +63,7 @@ func setup(bt_) -> void:
 	mb = Bib.new(m, s, holder, bt.tal.transform)
 	for v in [Spaet.new(self), KuhSocke.new(self), Dohlen.new(self), Steinbock.new(self), Schafstau.new(self), Kreis.new(self),
 			Gipfelbuch.new(self), Fondue.new(self), Echo.new(self), Kristall.new(self), Buero.new(self), Yeti.new(self),
-			Bartgeier.new(self), Alphorn.new(self), Sternschnuppen.new(self), Flaschenpost.new(self), Fussball.new(self)]:
+			Bartgeier.new(self), Alphorn.new(self), Sternschnuppen.new(self), Flaschenpost.new(self), Laterne.new(self), Fussball.new(self)]:
 		v.build()
 		vigs.append(v)
 		by_id[v.id] = v
@@ -734,7 +734,7 @@ class KuhSocke extends Vig:
 		var bedn: Node3D = ew.bt._bed_node
 		var pk: Vector3 = ew.bt._pack_node.global_position
 		var home := Vector2(110, 40)                          # the alp pasture: the cow comes from there
-		var to_home := (ew.W(Vector3(home.x, 0, home.y)) - Vector3.ZERO) * Vector3(1, 0, 1)
+		var to_home: Vector3 = (ew.W(Vector3(home.x, 0, home.y)) - Vector3.ZERO) * Vector3(1, 0, 1)
 		var dirw := to_home.normalized() if to_home.length() > 1.0 else Vector3(1, 0, 0)
 		start = dirw * 32.0 + Vector3(dirw.z, 0, -dirw.x) * 6.0
 		var bw: Vector3 = bedn.global_position if bedn != null else Vector3(2.4, 0, 2.2)
@@ -1165,7 +1165,7 @@ class Schafstau extends Vig:
 			# Schaf (Weisses Alpenschaf): Wolle isoliert - Oberfläche nur ≈ 29 °C (actor.gd)
 			var sd := s0 + randf_range(-4.0, 4.0)
 			var sdv := randf_range(-2.0, 2.0)
-			var a := ew.actor("sheep", at(sd, sdv), at(sd + 1.0, sdv), 0.5)
+			var a: Node3D = ew.actor("sheep", at(sd, sdv), at(sd + 1.0, sdv), 0.5)
 			actors.append(a)
 			sheep.append([a, sd, sdv])
 		var d: Dictionary = ew.mb.make("car", {"col": "2b5fa8", "style": "sedan"})
@@ -1407,7 +1407,7 @@ class Fondue extends Vig:
 		id = "fondue_fuchs"
 		c = ew.G(-175.0, -300.0)
 		pot = c + Vector3(0, 0.235, 0)
-		var n := ew.node(ew.holder, c)
+		var n: Node3D = ew.node(ew.holder, c)
 		ew.part(n, ew.cylm(0.13, 0.13, 0.01, 12), Vector3(0, 0.236, 0), Color(0.92, 0.78, 0.35), 42.0)    # the cheese, still warm
 		ew.part(n, ew.cylm(0.004, 0.004, 0.3, 4), Vector3(0.2, 0.02, 0.15), Color(0.5, 0.5, 0.55), "stone", Vector3(PI / 2, 0.6, 0))   # a fondue fork
 		ew.part(n, ew.boxm(0.03, 0.03, 0.03), Vector3(0.12, 0.015, 0.25), Color(0.85, 0.7, 0.45), "tent")   # a piece of bread
@@ -1440,7 +1440,7 @@ class Fondue extends Vig:
 		var bas := Basis.looking_at(d.normalized(), Vector3.UP if absf(d.normalized().y) < 0.95 else Vector3.RIGHT)
 		var xf := Transform3D(bas * Basis(Vector3.RIGHT, PI / 2.0) * Basis.from_scale(Vector3(1.0, L, 1.0)), mid)
 		thread.transform = xf
-		var th := ew.twin_of(thread)
+		var th: MeshInstance3D = ew.twin_of(thread)
 		if th != null:
 			th.transform = xf
 
@@ -1615,7 +1615,7 @@ class Kristall extends Vig:
 		return ew.season == "herbst"                      # Niedrigwasser im Herbst: der Vorhang ist schmal, die Höhle frei
 
 	func live() -> void:
-		var n := ew.node(vroot, c, deg_to_rad(10.0))
+		var n: Node3D = ew.node(vroot, c, deg_to_rad(10.0))
 		var rock := Color(0.32, 0.31, 0.3)
 		ew.part(n, ew.boxm(2.2, 0.5, 1.6), Vector3(0, 2.0, 0.4), rock, "stone")            # the rock around the opening
 		ew.part(n, ew.boxm(0.5, 2.0, 1.6), Vector3(-0.85, 1.0, 0.4), rock, "stone")
@@ -1673,10 +1673,10 @@ class Buero extends Vig:
 		return ew.dark()
 
 	func live() -> void:
-		var base := ew.node(vroot, Vector3.ZERO)
+		var base: Node3D = ew.node(vroot, Vector3.ZERO)
 		base.transform = xf
 		inside = ew.node(base, Vector3(-0.9, 0, 1.955))
-		var dm := ew.glow_mat(Color(0.16, 0.1, 0.05), 0.5)       # the dark room behind the door, a little warm light
+		var dm: StandardMaterial3D = ew.glow_mat(Color(0.16, 0.1, 0.05), 0.5)       # the dark room behind the door, a little warm light
 		var back := MeshInstance3D.new()
 		back.mesh = ew.boxm(0.98, 1.98, 0.01)
 		back.material_override = dm
@@ -1686,20 +1686,20 @@ class Buero extends Vig:
 		ew.part(door, ew.boxm(1.0, 2.0, 0.06), Vector3(0.5, 1.0, 0.0), Color(0.29, 0.29, 0.23), "stone")
 		ew.part(door, ew.boxm(0.12, 0.04, 0.05), Vector3(0.85, 1.0, 0.05), Color(0.2, 0.2, 0.2), "stone")
 		# the office on the threshold: a tiny desk, a lamp, a pile of papers, a stamp
-		var desk := ew.node(base, Vector3(-0.9, 0, 2.35))
+		var desk: Node3D = ew.node(base, Vector3(-0.9, 0, 2.35))
 		ew.part(desk, ew.boxm(0.5, 0.03, 0.3), Vector3(0, 0.3, 0), Color(0.45, 0.32, 0.2), "tree")
 		for sx in [-0.22, 0.22]:
 			ew.part(desk, ew.boxm(0.03, 0.3, 0.26), Vector3(sx, 0.15, 0), Color(0.4, 0.28, 0.18), "tree")
 		lampm = ew.glow_mat(Color(1.0, 0.78, 0.4), 2.5)
 		ew.part(desk, ew.cylm(0.005, 0.005, 0.16, 4), Vector3(-0.18, 0.39, -0.08), Color(0.2, 0.2, 0.2), "stone")
-		var shade := ew.light_part(desk, ew.cylm(0.025, 0.05, 0.05, 8), Vector3(-0.18, 0.47, -0.08), lampm)
+		var shade: MeshInstance3D = ew.light_part(desk, ew.cylm(0.025, 0.05, 0.05, 8), Vector3(-0.18, 0.47, -0.08), lampm)
 		var _sh = shade
 		for i in range(6):
-			var pp := ew.part(desk, ew.boxm(0.1, 0.004, 0.14), Vector3(0.13, 0.318 + i * 0.005, 0.02), Color(0.95, 0.95, 0.9), "tent", Vector3(0, 0.1 * (i % 3), 0))
+			var pp: MeshInstance3D = ew.part(desk, ew.boxm(0.1, 0.004, 0.14), Vector3(0.13, 0.318 + i * 0.005, 0.02), Color(0.95, 0.95, 0.9), "tent", Vector3(0, 0.1 * (i % 3), 0))
 			papers.append(pp)
 		ew.part(desk, ew.cylm(0.012, 0.015, 0.035, 6), Vector3(0.0, 0.335, 0.06), Color(0.4, 0.25, 0.15), "tree")   # the stamp
 		light = ew.lamp(desk, Vector3(-0.1, 0.6, 0.1), Color(1.0, 0.8, 0.5), 0.8, 3.5)
-		var p0 := ew.VL(desk.global_position) + Vector3(0, 0, 0)
+		var p0: Vector3 = ew.VL(desk.global_position) + Vector3(0, 0, 0)
 		var lk := xf * Vector3(-0.9, 0, 1.0)
 		mm = ew.marmot(xf * Vector3(-0.9, 0, 2.62), lk)
 		actors.append(mm)
@@ -1707,7 +1707,7 @@ class Buero extends Vig:
 		go("closed")
 
 	func _near() -> bool:
-		var w := ew.W(c)
+		var w: Vector3 = ew.W(c)
 		return minf(ew.view_pos().distance_to(w), ew.head_pos().distance_to(w)) < 6.0
 
 	func _open(k: float) -> void:
@@ -1798,8 +1798,8 @@ class Yeti extends Vig:
 		var dd := (b - a).normalized()
 		var nn := Vector2(-dd.y, dd.x)
 		var n := int(L / (2.2 if ew.lite else 1.1))
-		var sole := ew.boxm(0.24, 0.02, 0.48)
-		var toe := ew.sphm(0.05, 0.03, 6)
+		var sole: BoxMesh = ew.boxm(0.24, 0.02, 0.48)
+		var toe: SphereMesh = ew.sphm(0.05, 0.03, 6)
 		for i in range(n):
 			var k := float(i) / maxf(1.0, n - 1.0)
 			var q := a.lerp(b, k * 0.97) + Vector2(sin(k * 9.0) * 1.2, 0) + nn * (0.28 if i % 2 == 0 else -0.28)
@@ -1872,7 +1872,7 @@ class Bartgeier extends Vig:
 		seat2 = ew.G(c.x - 2.8, c.z - 1.2)
 		ew.mb.add("boulder", ew.G(c.x, c.z, -0.25), 0.2, {"r": 0.6, "v": 0})
 		ew.mb.add("boulder", ew.G(seat2.x, seat2.z, -0.28), 1.1, {"r": 0.6, "v": 2})
-		var sp := ew.G(c.x + 2.2, c.z + 0.6)
+		var sp: Vector3 = ew.G(c.x + 2.2, c.z + 0.6)
 		ew.mb.parts_of("boulder", Transform3D(Basis(Vector3.UP, 0.4).scaled(Vector3(1.4, 0.35, 1.1)), sp + Vector3(0, -0.1, 0)), {"r": 1.0, "v": 1})   # the flat rock (Knochenschmiede)
 		slab = sp + Vector3(0, 0.25, 0)
 
@@ -1894,7 +1894,7 @@ class Bartgeier extends Vig:
 			ew.part(bone, ew.sphm(0.045), Vector3(sx, 0, 0), Color(0.92, 0.9, 0.82), "stone")
 		bone.visible = false
 		for i in range(3):
-			var b := ew.node(vroot, Vector3.ZERO)
+			var b: Node3D = ew.node(vroot, Vector3.ZERO)
 			ew.part(b, ew.cylm(0.028, 0.03, 0.12, 5), Vector3.ZERO, Color(0.9, 0.88, 0.8), "stone", Vector3(0, 0, PI / 2 + i))
 			b.visible = false
 			bits.append([b, Vector3.ZERO])
@@ -2044,7 +2044,7 @@ class Alphorn extends Vig:
 			pp.y = ew.bt.H(pp.x, pp.z)
 			lp.y = ew.bt.H(lp.x, lp.z)
 			# Kuh (Braunvieh / Simmentaler): Fell-Oberfläche ≈ 32 °C (actor.gd); Glocke um den Hals
-			var cw := ew.actor("cow", pp, pp + Vector3(randf_range(-1, 1), 0, 1), 0.6)
+			var cw: Node3D = ew.actor("cow", pp, pp + Vector3(randf_range(-1, 1), 0, 1), 0.6)
 			actors.append(cw)
 			cows.append([cw, pp, lp])
 		go("wait")
@@ -2117,9 +2117,9 @@ class Sternschnuppen extends Vig:
 
 	func live() -> void:
 		for i in range(2 if ew.lite else 3):
-			var mt := ew.glow_mat(Color(0.95, 0.97, 1.0), 4.0, 0.0)
+			var mt: StandardMaterial3D = ew.glow_mat(Color(0.95, 0.97, 1.0), 4.0, 0.0)
 			mt.no_depth_test = false
-			var mi := ew.light_part(ew, ew.boxm(0.5, 0.5, 30.0), Vector3.ZERO, mt)
+			var mi: MeshInstance3D = ew.light_part(ew, ew.boxm(0.5, 0.5, 30.0), Vector3.ZERO, mt)
 			mi.visible = false
 			mi.extra_cull_margin = 200.0
 			streaks.append([mi, mt, Vector3.ZERO, Vector3.ZERO, -1.0, 0.7])
@@ -2234,7 +2234,7 @@ class Laterne extends Vig:
 	func live() -> void:
 		glowm = ew.glow_mat(Color(1.0, 0.75, 0.35), 2.5)
 		ew.light_part(vroot, ew.sphm(0.05), c + Vector3(0, 0.14, 0), glowm)
-		var hot := ew.part(vroot, ew.sphm(0.04), c + Vector3(0, 0.14, 0), Color(1.0, 0.8, 0.4), 55.0)   # a candle inside: warm
+		var hot: MeshInstance3D = ew.part(vroot, ew.sphm(0.04), c + Vector3(0, 0.14, 0), Color(1.0, 0.8, 0.4), 55.0)   # a candle inside: warm
 		hot.visible = false                                # (only the thermal twin)
 		light = ew.lamp(vroot, c + Vector3(0, 0.4, 0), Color(1.0, 0.72, 0.4), 0.9, 6.0)
 		go("glow")
@@ -2275,7 +2275,7 @@ class Fussball extends Vig:
 	func live() -> void:
 		for i in range(3):
 			var p := c + Vector3(randf_range(-3, 3), 0, randf_range(-3, 3))
-			var a := ew.marmot(ew.G(p.x, p.z), c)
+			var a: Node3D = ew.marmot(ew.G(p.x, p.z), c)
 			actors.append(a)
 			pl.append(a)
 		young = ew.marmot(hole_b, c, 0.62)
@@ -2313,7 +2313,7 @@ class Fussball extends Vig:
 					for i in range(pl.size()):
 						if i == kicker:
 							continue
-						var dd := ew.ppos(pl[i]).distance_to(bp)
+						var dd: float = ew.ppos(pl[i]).distance_to(bp)
 						if dd < bd:
 							bd = dd
 							best = i
@@ -2420,8 +2420,6 @@ func _register() -> void:
 			Vector3(0, 1.0, 0), Vector3(1.2, 1.7, 2.6), 30.0, "day",
 			{"node": null, "photo_required": true, "active": func(): return ks.shown and ks.has_sock() and ks.cow != null,
 			"position": Vector3(0, 1.0, 0)})
-	if ks.cow == null:
-		pass
 	var dh: Dohlen = V["dohlen_sandwich"]
 	_reg(e, "berg.dohlen_sandwich", T.t("Streit um das Sandwich"),
 			T.t("Zwei Alpendohlen zerren am Sandwich des Wanderers – die dritte nimmt es mit, während die zwei noch streiten."),
