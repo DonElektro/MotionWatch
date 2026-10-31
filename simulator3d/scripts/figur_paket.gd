@@ -14,6 +14,7 @@ extends Node3D
 ##     ride on the bones, the box of the pose is written for the training pictures (like figur.gd).
 ## Same interface as figur.gd: build(actor, p), sync(dt), recolour(jacket, trousers), mi / th.
 
+const T = preload("res://scripts/i18n.gd")
 const PACK := "figuren_v1.zip"
 const PACK_URL := "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/simulator3d/pakete/figuren_v1.zip"
 const PACK_SIZE := 3817330
@@ -705,11 +706,11 @@ static func set_setting(v: String) -> void:
 
 static func status_text() -> String:
 	if setting == "eigen":
-		return "Figuren: eigene (aus Ringen)"
+		return T.t("Figuren: eigene (aus Ringen)")
 	var p := pack_path()
 	if p == "":
-		return "Figuren-Paket fehlt – «Figuren-Paket laden» holt es (%.1f MB)" % (PACK_SIZE / 1048576.0)
-	return "Figuren-Paket da (%s)%s" % [p.get_file(), "" if last_error == "" else " – Fehler: " + last_error]
+		return T.t("Figuren-Paket fehlt – «Figuren-Paket laden» holt es (%.1f MB)", [PACK_SIZE / 1048576.0])
+	return T.t("Figuren-Paket da (%s)%s", [p.get_file(), "" if last_error == "" else T.t(" – Fehler: ") + last_error])
 
 
 static func add_controls(main) -> void:
@@ -727,10 +728,10 @@ static func download(main) -> void:
 		return
 	var have := pack_path()
 	if have != "" and _sha_ok(have):
-		main.start_info = "Figuren-Paket ist schon da: " + have
+		main.start_info = T.t("Figuren-Paket ist schon da: ") + have
 		return
 	_busy = true
-	main.start_info = "Figuren-Paket wird geladen …"
+	main.start_info = T.t("Figuren-Paket wird geladen …")
 	var to := ProjectSettings.globalize_path("user://" + PACK + ".part")
 	var ok := false
 	if OS.get_name() == "Windows":
@@ -751,13 +752,13 @@ static func download(main) -> void:
 	_busy = false
 	if not ok or not _sha_ok(to):
 		DirAccess.remove_absolute(to)
-		main.start_info = "Figuren-Paket: Download fehlgeschlagen oder Prüfsumme falsch – nichts geändert."
+		main.start_info = T.t("Figuren-Paket: Download fehlgeschlagen oder Prüfsumme falsch – nichts geändert.")
 		return
 	var dst := ProjectSettings.globalize_path("user://" + PACK)
 	DirAccess.remove_absolute(dst)
 	DirAccess.rename_absolute(to, dst)
 	reset()
-	main.start_info = "Figuren-Paket geladen – neue Besucher kommen mit den neuen Figuren."
+	main.start_info = T.t("Figuren-Paket geladen – neue Besucher kommen mit den neuen Figuren.")
 
 
 static func _sha_ok(p: String) -> bool:

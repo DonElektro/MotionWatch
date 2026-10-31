@@ -786,6 +786,12 @@
   "it": " – fine",
   "rm": " – fin"
  },
+ " – Fehler: ": {
+  "en": " – error: ",
+  "fr": " – erreur : ",
+  "it": " – errore: ",
+  "rm": " – errur: "
+ },
  " – im Ziel": {
   "en": " – at the goal",
   "fr": " – à l’arrivée",
@@ -2803,6 +2809,12 @@
   "it": "fuori dall’immagine %.0f s · coperto %.0f s · perso %d×",
   "rm": "or dal maletg %.0f s · cuvert %.0f s · pers %d×"
  },
+ "aus dem Paket (Quaternius, echte Bewegungen) – sonst eigene": {
+  "en": "from the pack (Quaternius, real movements) – otherwise own",
+  "fr": "du paquet (Quaternius, vrais mouvements) – sinon propres",
+  "it": "dal pacchetto (Quaternius, movimenti veri) – altrimenti propri",
+  "rm": "ord il pachet (Quaternius, moviments vairs) – uschiglio agens"
+ },
  "aus – jeder wählt selbst": {
   "en": "off – everyone chooses",
   "fr": "désactivé – chacun choisit",
@@ -4472,6 +4484,12 @@
   "it": "Il file non contiene un modello 3D: ",
   "rm": "La datoteca na cuntegna nagin model 3D: "
  },
+ "Datei im Paket kaputt: ": {
+  "en": "File in the pack broken: ",
+  "fr": "Fichier du paquet corrompu : ",
+  "it": "File nel pacchetto danneggiato: ",
+  "rm": "Datoteca en il pachet donnegiada: "
+ },
  "Datei lässt sich nicht anlegen": {
   "en": "File cannot be created",
   "fr": "Impossible de créer le fichier",
@@ -5504,6 +5522,12 @@
   "fr": "Écureuil",
   "it": "Scoiattolo",
   "rm": "Squirel"
+ },
+ "eigene (aus Ringen, ohne Paket)": {
+  "en": "own (made of rings, no pack)",
+  "fr": "propres (en anneaux, sans paquet)",
+  "it": "propri (ad anelli, senza pacchetto)",
+  "rm": "agens (or d'anels, senza pachet)"
  },
  "Eigene Datei": {
   "en": "Own file",
@@ -6748,6 +6772,66 @@
   "fr": "Épicéa",
   "it": "Abete rosso",
   "rm": "Pign"
+ },
+ "Figuren der Menschen (gilt für neue Besucher; Lite und «einfach»: immer einfache Figuren)": {
+  "en": "Figures of the people (for new visitors; Lite and «simple»: always simple figures)",
+  "fr": "Silhouettes des personnes (pour les nouveaux visiteurs ; Lite et «simple» : toujours simples)",
+  "it": "Figure delle persone (per i nuovi visitatori; Lite e «semplice»: sempre figure semplici)",
+  "rm": "Figuras da las persunas (per novs visitaders; Lite e «simpel»: adina figuras simplas)"
+ },
+ "Figuren-Paket da (%s)%s": {
+  "en": "Figure pack present (%s)%s",
+  "fr": "Paquet de silhouettes présent (%s)%s",
+  "it": "Pacchetto figure presente (%s)%s",
+  "rm": "Pachet da figuras avant maun (%s)%s"
+ },
+ "Figuren-Paket fehlt – «Figuren-Paket laden» holt es (%.1f MB)": {
+  "en": "Figure pack missing – «Load figure pack» gets it (%.1f MB)",
+  "fr": "Paquet de silhouettes absent – «Charger le paquet» le télécharge (%.1f Mo)",
+  "it": "Pacchetto figure mancante – «Carica pacchetto figure» lo scarica (%.1f MB)",
+  "rm": "Pachet da figuras manca – «Chargiar pachet da figuras» al prenda (%.1f MB)"
+ },
+ "Figuren-Paket geladen – neue Besucher kommen mit den neuen Figuren.": {
+  "en": "Figure pack loaded – new visitors come with the new figures.",
+  "fr": "Paquet chargé – les nouveaux visiteurs arrivent avec les nouvelles silhouettes.",
+  "it": "Pacchetto caricato – i nuovi visitatori arrivano con le nuove figure.",
+  "rm": "Pachet chargià – novs visitaders vegnan cun las novas figuras."
+ },
+ "Figuren-Paket ist schon da: ": {
+  "en": "Figure pack is already there: ",
+  "fr": "Le paquet est déjà là : ",
+  "it": "Il pacchetto c'è già: ",
+  "rm": "Il pachet è gia qua: "
+ },
+ "Figuren-Paket laden (%.1f MB, einmalig)": {
+  "en": "Load figure pack (%.1f MB, once)",
+  "fr": "Charger le paquet de silhouettes (%.1f Mo, une fois)",
+  "it": "Carica pacchetto figure (%.1f MB, una volta)",
+  "rm": "Chargiar pachet da figuras (%.1f MB, ina giada)"
+ },
+ "Figuren-Paket wird geladen …": {
+  "en": "Loading figure pack …",
+  "fr": "Chargement du paquet …",
+  "it": "Caricamento del pacchetto …",
+  "rm": "Il pachet vegn chargià …"
+ },
+ "Figuren-Paket: Download fehlgeschlagen oder Prüfsumme falsch – nichts geändert.": {
+  "en": "Figure pack: download failed or checksum wrong – nothing changed.",
+  "fr": "Paquet : téléchargement échoué ou somme de contrôle fausse – rien changé.",
+  "it": "Pacchetto: download fallito o checksum errato – nulla cambiato.",
+  "rm": "Pachet: telechargiar n'è betg reussì u summa da controlla fallada – nagut midà."
+ },
+ "figuren.json fehlt oder ist kaputt": {
+  "en": "figuren.json is missing or broken",
+  "fr": "figuren.json manque ou est corrompu",
+  "it": "figuren.json manca o è danneggiato",
+  "rm": "figuren.json manca u è donnegià"
+ },
+ "Figuren: eigene (aus Ringen)": {
+  "en": "Figures: own (made of rings)",
+  "fr": "Silhouettes : propres (en anneaux)",
+  "it": "Figure: proprie (ad anelli)",
+  "rm": "Figuras: agnas (or d'anels)"
  },
  "Filename: moveeye_rueckmeldung.jpg": {
   "en": "",
@@ -8273,6 +8357,12 @@
   "fr": "Maison avec jardin, chambre (réveil) et chantier à côté",
   "it": "Casa con giardino, camera (sveglia) e cantiere accanto",
   "rm": "Chasa cun curtin, stanza da durmir (svegliarin) e plazza da construcziun sper casa"
+ },
+ "Head": {
+  "en": "Head",
+  "fr": "Head",
+  "it": "Head",
+  "rm": "Head"
  },
  "Head camera (NoIR)": {
   "en": "Head camera (NoIR)",
@@ -13176,6 +13266,12 @@
   "it": "Pacco",
   "rm": "Pachet"
  },
+ "Paket lässt sich nicht öffnen: ": {
+  "en": "Pack cannot be opened: ",
+  "fr": "Impossible d'ouvrir le paquet : ",
+  "it": "Impossibile aprire il pacchetto: ",
+  "rm": "Il pachet na sa lascha betg avrir: "
+ },
  "Paket vor der Tür": {
   "en": "Parcel at the door",
   "fr": "Colis devant la porte",
@@ -15473,6 +15569,12 @@
   "fr": "Skateboard",
   "it": "Skateboard",
   "rm": "Skateboard"
+ },
+ "Skeleton3D:": {
+  "en": "Skeleton3D:",
+  "fr": "Skeleton3D:",
+  "it": "Skeleton3D:",
+  "rm": "Skeleton3D:"
  },
  "Sketchfab": {
   "en": "Sketchfab",
@@ -18903,6 +19005,12 @@
   "fr": "Vent (arbres, buissons)",
   "it": "Vento (alberi, cespugli)",
   "rm": "Vent (plantas, chaglias)"
+ },
+ "Wind bewegt Gras, Büsche, Baumkronen und Zeltplanen (Böen als Wellen; Lite: schwach)": {
+  "en": "Wind moves grass, bushes, tree crowns and tent fabric (gusts as waves; Lite: weak)",
+  "fr": "Le vent agite l'herbe, les buissons, les cimes et les toiles de tente (rafales en vagues ; Lite : faible)",
+  "it": "Il vento muove erba, cespugli, chiome e teli delle tende (raffiche a onde; Lite: debole)",
+  "rm": "Il vent mova erva, chaglias, tschimas e taila da tenda (buffs sco undas; Lite: flaivel)"
  },
  "Wind in Böen": {
   "en": "Wind in gusts",

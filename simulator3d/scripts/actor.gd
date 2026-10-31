@@ -1358,10 +1358,10 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 			var f: float = clamp(1.0 - (emote_until - now) / 0.6, 0.0, 1.0)
 			sx = lerp(-2.6, 0.9, f)
 			ex = lerp(1.2, 0.1, f)
-		elif (idle == "wave" or em == "wave") and side > 0:             # F5: waving (towards the camera)
-			sx = 2.75
-			ex = 0.55 + 0.35 * sin(now * 9.0)
-			sz = 0.3 + 0.18 * sin(now * 9.0)
+		elif idle == "wave" and side > 0:                              # F5: waving while standing (idle «wave»)
+			sx = 2.55
+			ex = 0.55 + 0.35 * sin(now * 8.0)
+			sz = 0.3 + 0.22 * sin(now * 8.0)
 		elif idle == "phone" and side > 0:                             # on the phone
 			sx = 0.5
 			ex = 2.3
