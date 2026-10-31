@@ -257,10 +257,12 @@ func _process(dt: float) -> void:
 		return
 	_t = 0.0
 	var ph := str(story.get("phase"))
-	# remember in which Spielstand Maggie was played / finished
-	if not maggie_begonnen():
+	# remember in which Spielstand Maggie was played / finished (not in a Vorführung: maggie_vorfuehrung.gd)
+	if bool(story.get("demo")):
+		pass
+	elif not maggie_begonnen():
 		_merken("maggie_begonnen")
-	if ph in ["finale_cut", "ende", "abspann"] and not maggie_fertig():
+	if ph in ["finale_cut", "ende", "abspann"] and not maggie_fertig() and not bool(story.get("demo")):
 		_merken("maggie_fertig")
 	if not _abz_ok and maggie_fertig() and karte_fertig(main):
 		_abz_ok = true
