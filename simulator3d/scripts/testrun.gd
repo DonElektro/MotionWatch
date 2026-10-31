@@ -24,7 +24,7 @@ const STANDARD := [
 	{"name": "Nacht, Regen", "hour": 23.5, "weather": "rain", "wind": 20.0, "visits": ["person", "cat", "person"]},
 ]
 # 3D-3.27: more test runs. «cond» = difficult conditions of main.gd (switched on only during the phase)
-const DAUER := {"quick": 150, "night": 230, "standard": 300, "hard": 520, "nacht": 650, "camping_voll": 290, "tarnen": 270, "velodieb": 230, "gegenstaende": 290}   # 3D-3.90: the one place for names and times (also the test bench)
+const DAUER := {"quick": 150, "night": 230, "standard": 300, "hard": 520, "nacht": 650, "camping_voll": 290, "tarnen": 270, "velodieb": 230, "gegenstaende": 290, "fahrzeuge": 300}   # 3D-3.90: the one place for names and times (also the test bench)
 # Prüfstand 2: a whole night in time-lapse. «until» = the hour at the end of the phase (the clock runs faster meanwhile),
 # «every» = a visitor every … s, "-" = a quiet slot (nobody comes: wind and rain alone must not give a push).
 # Realistic numbers: about 20 animals, 2 persons in 10 hours; «fixed»: --mal does not multiply it.
@@ -70,6 +70,13 @@ const PLANS := {
 		{"name": "Tag, Böen (Fahne, Plastiksack, Ballon, Wäsche, Tor, Obstbaum)", "hour": 13.0, "weather": "cloudy", "wind": 55.0, "visits": ["person", "-", "lure", "robomower", "person"]},
 		{"name": "Dämmerung, Tiere am Lockmittel", "hour": 20.6, "weather": "clear", "wind": 25.0, "visits": ["lure", "-", "person", "lure"]},
 		{"name": "Nacht mit Infrarot (Lampe mit Bewegungsmelder, Feuer, Kerze, Solarleuchten)", "hour": 23.0, "weather": "clear", "wind": 30.0, "cond": ["ir"], "visits": ["lure", "person", "-", "delivery_bot", "e_trotti"]}]},
+	# Paket «Fahrzeuge» (fahrzeuge.gd): vehicles at night - pass on the road / through the picture, high beam, headlights at
+	# the camera, a car parks and people get out (they count as truth), bikes with and without light (riders = persons).
+	# Cars are no persons: a push while only a car was there is «falsch» (cause «Fahrzeug …»). Only on Sundays / by hand.
+	"fahrzeuge": {"name": "Fahrzeuge in der Nacht (vorbeifahren, Fernlicht, Blendung, parkieren, Velos – Autos dürfen nicht alarmieren · etwa 5 Min.)", "fz": true, "every": 15.0, "phases": [
+		{"name": "Dämmerung, Abblendlicht, Velo mit Licht", "hour": 20.8, "weather": "clear", "wind": 10.0, "visits": ["fz_pass", "fz_bike", "-", "fz_pass", "person"]},
+		{"name": "Nacht mit Infrarot: Fernlicht, Scheinwerfer auf die Kamera, Töff", "hour": 23.0, "weather": "clear", "wind": 5.0, "cond": ["ir"], "visits": ["fz_pass_high", "fz_toward", "fz_moto", "person", "fz_pass_high"]},
+		{"name": "Nacht: Auto parkiert, Leute steigen aus, Wohnmobil, E-Trottinett", "hour": 0.5, "weather": "clear", "wind": 5.0, "cond": ["ir"], "visits": ["fz_arrive", "fz_trotti", "fz_camper", "fz_bike", "-"]}]},
 	"night": {"name": "Nacht (dunkel, Infrarot, Tiere · etwa 4 Min.)", "phases": [
 		{"name": "Nacht, ohne Licht", "hour": 1.0, "weather": "clear", "wind": 5.0, "visits": ["person", "fox", "person", "hedgehog"]},
 		{"name": "Nacht, Infrarot an", "hour": 2.0, "weather": "clear", "wind": 10.0, "cond": ["ir"], "visits": ["person", "boar", "child", "badger"]},
@@ -410,6 +417,8 @@ func start(which := "", cams: Array = [], times: int = 1, seed_: int = 1) -> Str
 	main.auto_visitors = false
 	main.clear_visitors()
 	_props_rep = {}
+	if main.fahrzeuge != null:
+		main.fahrzeuge.reset_stats()                     # Paket «Fahrzeuge»: the numbers of this run
 	if bool(PLANS.get(plan, {}).get("props", false)) and main.objplus != null:
 		main.objplus.test_place()                        # 3D-4.x «Gegenstände»: the fixed set in front of the head camera
 	running = true
@@ -443,6 +452,8 @@ func stop(finished := false) -> void:
 	main.auto_visitors = bool(saved.get("auto", true))
 	if not _cond_saved.is_empty():
 		main.cond = _cond_saved.duplicate()
+	if main.fahrzeuge != null and bool(PLANS.get(plan, {}).get("fz", false)):
+		_props_rep = main.fahrzeuge.report_extra(self)   # Paket «Fahrzeuge»: vehicles, glare, false pushes because of them
 	main.clear_visitors()
 	if main.szenen != null:
 		main.szenen.restore()                            # 3D-4.x: a bike thief had the bike
@@ -509,6 +520,10 @@ func _process(dt: float) -> void:
 				v = _spawn_way(int(k.substr(4)))
 			elif k == "lure" and main.objplus != null:
 				v = main.objplus.lure_visit()                # 3D-4.x: an animal goes to a lure of the set
+			elif main.fahrzeuge != null and main.fahrzeuge.is_test_kind(k):
+				v = main.fahrzeuge.test_visit(k, self)       # Paket «Fahrzeuge»: bikes = persons, vehicles: null (no person)
+				if v != null:
+					k = str(v.variant)                         # cyclist / escooter
 			elif k in ["delivery_bot", "robomower"]:
 				main.spawn(k)                                # 3D-4.x: no person - only robustness (no push expected)
 				v = null
@@ -610,6 +625,9 @@ func _cause(animals_vis: Array) -> String:
 		return nbc                                         # 3D-4.x «Voller Campingplatz»: a neighbour was in the picture
 	if not animals_vis.is_empty():
 		return "Tier (%s)" % ", ".join(PackedStringArray(animals_vis))
+	var fzc: String = main.fahrzeuge.cause(self) if main.fahrzeuge != null else ""
+	if fzc != "":
+		return fzc                                         # Paket «Fahrzeuge»: a vehicle (its light) was in the picture
 	if "web" in conds:
 		return "Spinnennetz"
 	if "glare" in conds:

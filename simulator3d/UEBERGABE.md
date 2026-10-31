@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.45** · passende MoveEye-Version (früher Motion Watch) **2.98.76**
+Stand: 31.10.2026 · Simulator-Version **3D-4.46** · passende MoveEye-Version (früher Motion Watch) **2.98.77**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.46 (MoveEye 2.98.77): Fahrzeuge wie echt (`fahrzeuge.gd`)
+
+- `fahrzeuge.gd` (neu): Tempo, Licht, Blendung (`_glare_tick`), Türen, Parkieren; Motorwärme aus `Waerme.engine()` (nur die
+  Lampe mit eigenem Wert), läuft `waerme_welt`, macht diese die Motorwärme. Steuerung `{"action":"fahrzeuge"}`.
+  Testlauf «Fahrzeuge in der Nacht» (testrun.gd, pruefstand.py, Workflow sonntags).
 
 ## NEU in 3D-4.45 (MoveEye 2.98.76): Tiere wie echt (`tiere.gd`, `fauna.gd`)
 

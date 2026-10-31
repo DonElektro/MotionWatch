@@ -140,6 +140,13 @@ func homecoming(parcel := false) -> void:
 	_watch(car, func(a): return a.position.distance_to(stop) < 1.0, func(_a):
 		_later(1.5, func():
 			var out := stop + Vector3(0, 0, 1.8)
+			if main.fahrzeuge != null and main.fahrzeuge.fz_real and is_instance_valid(car):   # Paket «Fahrzeuge»: the door opens
+				var sd: int = main.fahrzeuge.side_towards(car, door)
+				main.fahrzeuge.door(car, sd, true)
+				out = main.fahrzeuge.exit_point(car, sd)
+				_later(2.6, func():
+					if is_instance_valid(car):
+						main.fahrzeuge.door(car, sd, false))
 			var w = main.spawn("courier" if parcel else "person", out, door + Vector3(0, 0, 0.9))
 			w.next_idle = main.now() + 999.0
 			if parcel:
