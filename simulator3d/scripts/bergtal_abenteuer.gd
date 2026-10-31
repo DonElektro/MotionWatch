@@ -15,7 +15,8 @@ extends PanelContainer
 ## «Genau gleich nochmals abspielen» fährt sie selbst ab (gleiche Ereignisse, gleiche Nacht) - zum Vergleich zweier
 ## MoveEye-Versionen. Treffer-Karte (gesehen / verpasst) und ein Bericht pro Lauf (user://bergtal_abenteuer/berichte/).
 ## Steuerbefehl: {"action": "abenteuer", "do": state | open | close | pick (key, value) | next | back | choose (value) | go |
-##                pause | refill | eat | camp_here | night | save (name) | situations | replay (name) | report | fast | reset}
+##                pause | refill | eat | camp_here | night | save (name) | situations | replay (name) | report | fast | reset |
+##                a2 (Figuren, Gespräche, Nebenaufgaben: abenteuer_figuren.gd)}
 
 const D = preload("res://scripts/bergtal_abenteuer_daten.gd")
 const T = preload("res://scripts/i18n.gd")
@@ -67,6 +68,7 @@ var back_btn: Button
 var next_btn: Button
 var karte                            # bergtal_abenteuer_karte.gd (kept between paints)
 var title_lab: Label
+var a2                               # A2: Figuren, Gespräche, Nebenaufgaben (abenteuer_figuren.gd)
 
 
 # =======================================================================================================================
@@ -286,6 +288,8 @@ func start_run(seed_v := 0) -> Dictionary:
 	choices = []
 	_snaps = []
 	_plan_events(ch)
+	if a2 != null:
+		a2.on_start()                                    # A2: memory of the figures, who you meet today
 	# the valley: season, orientation, the scene
 	main.bt_season = str(W["season"])
 	if main.BT_MONTH.has(str(W["season"])):
@@ -616,6 +620,8 @@ func _post_leg(i: int) -> void:
 		_ask("find", T.t("Etwas gefunden"), T.t(str(fd[2])) + "\n" + T.t("%s - %.1f kg") % [T.t(str(fd[0])), float(fd[1])],
 				[["take", T.t("Mitnehmen (Rucksack wird schwerer)")], ["leave", T.t("Liegen lassen")]], {"find": fk})
 		return
+	if a2 != null and a2.after_leg(i):
+		return                                           # A2: a talk or a side task here
 	R["stage"] = int(R["stage"]) + 1
 	_advance()
 
@@ -641,6 +647,10 @@ func choose(v: String) -> Dictionary:
 		return {"ok": false, "error": "options: " + str((pe["options"] as Array).map(func(o): return o[0]))}
 	R["pending"] = {}
 	choices.append([int(R["stage"]), str(pe["kind"]), v])
+	if str(pe["kind"]).begins_with("a2_") and a2 != null:
+		a2.choose(pe, v)                                 # A2: talk / side task
+		_changed()
+		return {"ok": true}
 	var ch := chapter()
 	var st_i := int(R["stage"])
 	match str(pe["kind"]):
@@ -1483,6 +1493,9 @@ func _ready() -> void:
 	nav.add_child(next_btn)
 	karte = Karte.new()
 	karte.custom_minimum_size = Vector2(320, 320)
+	a2 = preload("res://scripts/abenteuer_figuren.gd").new()
+	a2.ab = self
+	add_child(a2)
 	visible = false
 	_layout()
 
@@ -1844,6 +1857,8 @@ func _paint_chapter() -> void:
 		var nn := n
 		gc.add_child(_card(T.t(str(ch["title"])), T.t(str(ch["intro"])) if n == int(W["chapter"]) else "", n == int(W["chapter"]),
 				func(): op({"do": "pick", "key": "chapter", "value": nn}), not open, stars if open else T.t("noch nicht frei")))
+	if a2 != null:
+		a2.paint_overview(left)                          # A2: people in the valley, side tasks
 	if not situations().is_empty() or dev_open:
 		_dev_box(left)
 
@@ -2087,6 +2102,8 @@ func _paint_camp() -> void:
 	cb.toggled.connect(func(x): R["wall_pick"] = x)
 	row.add_child(cb)
 	gg.add_child(_lab(T.t("Schlafen: %s") % T.t(_bed_name(bed_of())), 13))
+	if a2 != null:
+		a2.paint_camp(body)                              # A2: people at the camp, the talk
 
 
 func _paint_night() -> void:
@@ -2320,6 +2337,8 @@ func op(d: Dictionary) -> Dictionary:
 			out = {"ok": not (R.get("report", {}) as Dictionary).is_empty(), "report": R.get("report", {})}
 		"fast":
 			fast = bool(d.get("value", true))
+		"a2":
+			out = a2.op(d) if a2 != null else {"ok": false}
 		"dev":
 			dev_open = bool(d.get("value", not dev_open))
 			_changed()
