@@ -110,7 +110,10 @@ const SC_ICON = {
   track: '<rect x="2" y="11" width="20" height="8" rx="4"/><circle cx="7" cy="15" r="1.8"/><circle cx="12" cy="15" r="1.8"/><circle cx="17" cy="15" r="1.8"/><path d="M8 11V6h8v5"/>',
   // Menüs A (31.10.2026): the two strokes the simulator draws (ui_style.gd) - «Licht & Ton» and «Entwickler» had an emoji here
   sun: '<circle cx="12" cy="12" r="4.5"/><path d="M19 12h2.5M16.95 16.95l1.77 1.77M12 19v2.5M7.05 16.95l-1.77 1.77M5 12H2.5M7.05 7.05L5.28 5.28M12 5V2.5M16.95 7.05l1.77-1.77"/>',
-  tools: '<path d="M6 18l8-8" stroke-width="2.6"/><path d="M12.05 8.63A4 4 0 1 1 15.37 11.95"/>'};
+  tools: '<path d="M6 18l8-8" stroke-width="2.6"/><path d="M12.05 8.63A4 4 0 1 1 15.37 11.95"/>',
+  // P1 ui_gemeinsam: «Licht & Ton» = the bulb (💡 like the settings of MoveEye), «Zusatzgeräte» = the puzzle (mehr_icons.gd / ui_style.gd)
+  bulb: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/>',
+  puzzle: '<rect x="4" y="4" width="16" height="16" rx="1"/><path d="M12 4v16M4 12h16"/><circle cx="12" cy="8" r="1.8" fill="currentColor"/><circle cx="16" cy="12" r="1.8" fill="currentColor"/>'};
 function scCss() {
   if (document.getElementById("simctl-css")) return;
   const s = document.createElement("style"); s.id = "simctl-css";
@@ -150,7 +153,11 @@ function scOn(G, r) {                               // 2.95.51: the symbol of a 
 // (simulator 3D-4.7: «Spiel-Karte schlank», those controls come with «wiz»; for older simulators the list below decides)
 const SC_GAME_MAIN = ["game_wizard", "game_start", "game_stop"];
 // 2.98.24: the groups by their fixed id «gid» (simulator 3D-4.7), the visible name only for older simulators
-const scGid = c => c.gid || ({"Spiel": "game", "Game": "game", "Testlauf": "testrun", "Test run": "testrun"})[c.group] || "";
+// P1 ui_gemeinsam (Daniel 31.10.2026): old ids of older simulators -> the ids of simulator3d/ui_gemeinsam.json («alias»; the self-test
+// compares this table with the file). A simulator with /info «features» "menu1" already sends the new ids.
+const SC_GID_ALIAS = {"system": "sys", "sensors": "extras"};
+const scGid = c => { const g = c.gid || ({"Spiel": "game", "Game": "game", "Testlauf": "testrun", "Test run": "testrun"})[c.group] || "";
+  return (window.SC_FEAT || []).indexOf("menu1") >= 0 ? g : SC_GID_ALIAS[g] || g; };
 function scExpert(c) { return !!c.expert; }
 function scWizOnly(c) { return !!c.wiz || (!("gid" in c) && scGid(c) === "game" && SC_GAME_MAIN.indexOf(c.id) < 0); }
 // 2.98.23 (Konzept): the simulator group «Testlauf» is not shown in the Simulator control (testing has ONE place: group «Testen»,
@@ -167,7 +174,7 @@ function simCtlBuild(G, r, ctl, fmt) {
   r = Object.assign({}, r, {controls: (r.controls || []).filter(c => !scWizOnly(c) && (only ? scGid(c) === only && SC_TEST_DUP.indexOf(c.id) < 0 : scGid(c) !== "testrun"))});
   const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
   const ss = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-  const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"])), openS = new Set(ls("mw-sc-sub2", ["Besuch/Vorlagen", "Besuch/Menschen einzeln", "Besuch/Wildtiere"]));   // Menüs A: the parts of the simulator 3.3
+  const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"]).map(n => n === "Sensoren" ? "Zusatzgeräte" : n)), openS = new Set(ls("mw-sc-sub2", ["Besuch/Vorlagen", "Besuch/Menschen einzeln", "Besuch/Wildtiere"]));   // Menüs A: the parts of the simulator 3.3   // P1: «Sensoren» is «Zusatzgeräte» now
   // Aufräumen 2: Einfach / Experte is stored in the settings of MoveEye (page «sim», /api/ui_simple like the main page and the
   // simulator centre 139) - no longer per browser; the first build asks once, later builds take the known value
   let expert = only ? true : window.SC_EXPERT != null ? window.SC_EXPERT : false, q = G.dataset.q || "";
@@ -214,7 +221,8 @@ function simCtlBuild(G, r, ctl, fmt) {
       else if (c.type === "button") {
         let grid = tgt.lastElementChild; if (!grid || !grid.classList.contains("sc-bt")) { grid = el("div", "sc-bt"); tgt.appendChild(grid); }
         const x = el("button", "", (c.emoji ? c.emoji + " " : "") + c.label); x.type = "button"; if (c.label.length > 26) x.className = "wide";
-        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; if (c.ro) x.disabled = true;   // Menüs A: e.g. «Foto-Modus» without a photo x.dataset.ex = scExpert(c) && only ? "1" : ""; grid.appendChild(x); return;
+        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; if (c.ro) x.disabled = true;   // Menüs A: e.g. «Foto-Modus» without a photo
+        x.dataset.ex = scExpert(c) && only ? "1" : ""; grid.appendChild(x); return;   // P1: was behind the comment above - every button ended the build
       } else if (c.type === "toggle") {
         row = el("label", "sc-row sc-tg"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sc-sw simv";
         cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked}); row.append(el("span", "", c.label), cb); if (c.ro) cb.disabled = true;
@@ -836,7 +844,7 @@ let S = null, CS = "", URLEDIT = false;
 const dur = n => n == null ? "–" : n < 60 ? n + " s" : n < 3600 ? Math.floor(n / 60) + " min" : Math.floor(n / 3600) + " h " + Math.floor(n % 3600 / 60) + " min";
 async function load() {
   const r = await fetch("/api/sim").then(x => x.ok ? x.json() : null).catch(() => null);
-  if (r) { if ("connected" in r) r.ok = !!r.connected; S = r; paint(); }   // 2.95.93: «ok» of the answer is the request, «connected» the simulator
+  if (r) { if ("connected" in r) r.ok = !!r.connected; S = r; window.SC_FEAT = r.features || []; paint(); }   // P1: /info «features» of the simulator   // 2.95.93: «ok» of the answer is the request, «connected» the simulator
   clearTimeout(load.t); load.t = setTimeout(load, S && S.scan && S.scan.running ? 1000 : 3000);
 }
 function foldAct() {                       // 2.95.69: symbol + arrow green while the function of the card works

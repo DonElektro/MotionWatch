@@ -30080,6 +30080,12 @@
   "it": "Percorsi furtivi: %d nuovi su GitHub, %d erano già presenti%s. Il banco di prova li ripercorre dalla prossima misurazione.",
   "rm": "Vias da sa stular: %d novas sin GitHub, %d eran gia là%s. Il banc da prova las va suenter a partir da la proxima mesiraziun."
  },
+ "schlicht": {
+  "en": "plain",
+  "fr": "simples",
+  "it": "semplici",
+  "rm": "simpels"
+ },
  "Schliessen": {
   "en": "Close",
   "fr": "Fermer",
@@ -32886,6 +32892,12 @@
   "fr": "swisstopo swissALTI3D",
   "it": "swisstopo swissALTI3D",
   "rm": "swisstopo swissALTI3D"
+ },
+ "Symbole farbig": {
+  "en": "Symbols coloured",
+  "fr": "Symboles en couleur",
+  "it": "Simboli a colori",
+  "rm": "Simbols colurads"
  },
  "System": {
   "en": "System",
@@ -38752,6 +38764,12 @@
   "fr": "Écran supplémentaire (SmallTV)",
   "it": "Schermo supplementare (SmallTV)",
   "rm": "Visur supplementar (SmallTV)"
+ },
+ "Zusatzgeräte": {
+  "en": "Extra devices",
+  "fr": "Appareils supplémentaires",
+  "it": "Dispositivi aggiuntivi",
+  "rm": "Apparats supplementars"
  },
  "Zuschauer": {
   "en": "Spectators",

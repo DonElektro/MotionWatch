@@ -80,7 +80,8 @@
     "thermal": "Waermebild -> 230, 318",
     "view": "Simulator-Fenster als Bild (nur 3D) -> 340, 290 (sim_files nur an den Python-Simulator)",
     "sensors": "Sensoren der Szene (auch «PIR Geraet» AS312 vorne am Gehaeuse, pir.gd: active true / false) -> 350 hello (Zusatz-Sensoren)",
-    "helper": "KI-Helfer auf diesem PC -> 180"
+    "helper": "KI-Helfer auf diesem PC -> 180",
+    "features": "was der Simulator kann (P1 ui_gemeinsam: \"menu1\" = Gruppen-IDs sys / extras, Teil Kinder-Modus; aeltere senden es nicht) -> 639p sim_features, Seite Simulator 470"
   },
   "control": {
     "set": "einen Regler setzen (Uebungen, Akku-Laden ...)",

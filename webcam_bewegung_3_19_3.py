@@ -241,7 +241,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_19_3.zip"
-ZD_SHA256 = "a90bee6a76f1689722375ae004ff5505d440298d4ac9ff49f3b94d55abec4abf"
+ZD_SHA256 = "bb9d29c1040338d119ac58f6b242ef2096471843c97fdf9d523b0d687fba5f5d"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -46819,7 +46819,7 @@ DE = {
     "FPS": "FPS", "PERSONS NOW": "PERSONEN JETZT", "DETECTIONS": "ERKENNUNGEN", "VEHICLES IGNORED": "FAHRZEUGE IGNORIERT",
     "SHADOW % REMOVED": "SCHATTEN % ENTFERNT", "SYSTEM · CPU": "SYSTEM · CPU", "WEATHER": "WETTER",
     "Rain score": "Regen-Wert", "Wind score": "Wind-Wert", "Trigger multiplier (wind)": "Auslöse-Faktor (Wind)",
-    "EVENT LOG": "EREIGNISPROTOKOLL", "important": "Wichtiges", "Expand all": "Alle öffnen", "Collapse all": "Alle schliessen",
+    "EVENT LOG": "EREIGNISPROTOKOLL", "important": "Wichtiges", "Expand all": "Alle aufklappen", "Collapse all": "Alle zuklappen",
     "Centre camera": "Kamera zentrieren", "Snapshot": "Schnappschuss", "Add current pan as waypoint": "Aktuelle Position als Wegpunkt",
     "Clear": "Löschen", "Recalibrate (scene empty)": "Neu kalibrieren (Szene leer)", "Reset all settings": "Alle Einstellungen zurücksetzen",
     "Test notification": "Test-Benachrichtigung", "Test all channels": "Alle Kanäle testen", "testing …": "teste …", "No channel set up.": "Kein Kanal eingerichtet.", "Webhook URL (POST JSON on person; e.g. https://ntfy.sh/my-topic)":
@@ -48230,7 +48230,7 @@ DE.update({    # window in the look of the web page (2.25.0)
     "show / hide fields": "Felder ein-/ausblenden", "All quiet – I'm keeping watch!": "Alles ruhig – ich halte Wache!",
     "Happy Swiss National Day!": "Schöne Bundesfeier!", "Swap stick and buttons (left- / right-handed)": "Stick und Knöpfe tauschen (Links- / Rechtshänder)", "moving to waypoint": "fährt zu Wegpunkt", "waiting at": "wartet bei",
     "need 2+ waypoints": "mindestens 2 Wegpunkte nötig", "paused (tracking person)": "Pause (verfolgt Person)",
-    "paused (manual control)": "Pause (Handsteuerung)", "System": "System", "Log": "Protokoll", "Expand all": "Alle öffnen", "Collapse all": "Alle schliessen",
+    "paused (manual control)": "Pause (Handsteuerung)", "System": "System", "Log": "Protokoll", "Expand all": "Alle aufklappen", "Collapse all": "Alle zuklappen",
 })
 DE.update({    # texts that were written twice in the code (German / English) - now one English text + translations
     "not possible in the demo": "In der Demo nicht möglich",
@@ -60721,7 +60721,7 @@ for _k, _v in _HX17.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
-_HX18 = {'Groups only': ('Nur Gruppen öffnen', 'Ouvrir seulement les groupes', 'Aprire solo i gruppi', 'Avrir mo las gruppas')}
+_HX18 = {'Groups only': ('Nur Gruppen', 'Ouvrir seulement les groupes', 'Aprire solo i gruppi', 'Avrir mo las gruppas')}
 for _k, _v in _HX18.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
@@ -68031,6 +68031,204 @@ def trl_selftest():
 
 
 SELFTEST_EXTRA.append(("Trailer der Geschichten (page /sim/trailer, owner only)", trl_selftest))
+# ----------------------------------------------------------------------------
+# Eine Quelle für beide Programme. Entscheide Daniel (31.10.2026): eine Einfach/Experte-Wahl, eine Sprache, Auf-/Zuklappen
+# wird nicht geteilt, «Sensoren» im Simulator heisst «Zusatzgeräte» (extras, Strom und Netz bleiben darin).
+#   * UI_GEMEINSAM: die Datei, beim Bauen eingebettet (werkzeuge/bauen.py schreibt den Block unten neu, --pruefen meldet
+#     einen alten Stand) - die Signatur der Hauptdatei deckt sie mit ab. Nicht von Hand ändern: die JSON-Datei ändern, bauen.
+#   * ui_gem_text("close", "fr") -> Text der Bedienleiste (Komponente aus Paket P0, 639o) - en ist der Schlüssel in DE / TRX.
+#   * ui_gem_gid("system") -> "sys": alte Gruppen-IDs älterer Simulatoren (dieselbe Tabelle steht als SC_GID_ALIAS in 470).
+#   * sim_features(): was der verbundene Simulator kann (/info «features», z. B. "menu1"); ältere senden nichts.
+#   * Selbsttest «One menu file …»: Web-Gruppen (GROUPS 530), Fenster-Gruppen (TK_GROUPS / TK_GROUP_ICONS 639c),
+#     Übersetzungen, Texte der Leiste, Alias und Symbole der Seite «Simulator» (470) - und, wenn der Ordner simulator3d da
+#     ist, die Gruppen des Simulators (main.gd GROUPS / GROUP_IDS / GROUP_RENAME, i18n/texte.json, export_presets.cfg).
+#     Der Simulator prüft dasselbe ohne Bild (werkzeuge/ui_gemeinsam_test.gd) und beim Start (Log «Menü-Datei: OK»).
+# ----------------------------------------------------------------------------
+
+# ---- UI_GEMEINSAM (von werkzeuge/bauen.py aus simulator3d/ui_gemeinsam.json – nicht von Hand ändern) ----
+UI_GEMEINSAM = json.loads(_zd('639p_ui_gemeinsam/UI_GEMEINSAM', ""))
+# ---- Ende UI_GEMEINSAM ----
+
+UI_GEM_LANGS = ("de", "en", "fr", "it", "rm")
+
+
+def ui_gem_tr(key, lang):
+    """the text of a MoveEye key (English) in a language - the same rule as the web page / window (DE, TRX, else English)"""
+    if lang == "en":
+        return key
+    if lang == "de":
+        return DE.get(key, key)
+    return (TRX.get(lang) or {}).get(key) or key
+
+
+def ui_gem_text(k, lang="de"):
+    """a text of the bar: simple, expert, color, plain, start_groups, close, groups, open"""
+    t = ((UI_GEMEINSAM.get("bar") or {}).get("texts") or {}).get(k) or {}
+    return t.get(lang) or t.get("en") or k
+
+
+def ui_gem_gid(gid):
+    """an old group id (older simulators) -> the id of today"""
+    return (UI_GEMEINSAM.get("alias") or {}).get(gid, gid)
+
+
+def ui_gem_groups(side):
+    """the groups of one side («mw» / «sim») in their order"""
+    return sorted((g for g in UI_GEMEINSAM.get("groups") or [] if side in g), key=lambda g: g.get("order", 0))
+
+
+def sim_features():
+    """/info «features» of the connected simulator (P1: "menu1" = gids sys / extras, part «Kinder-Modus"); [] = older one"""
+    f = (SIM.get("info") or {}).get("features") or []
+    return [str(x) for x in f] if isinstance(f, list) else []
+
+
+_sim_status_639p_base = sim_status
+
+
+def sim_status():                                         # + 639p: the page «Simulator» knows what the simulator can
+    r = _sim_status_639p_base()
+    r["features"] = sim_features()
+    return r
+
+
+def ui_gem_check(base=None):
+    """(problems, counts) - MoveEye (and the simulator sources, if there) against simulator3d/ui_gemeinsam.json"""
+    base = base or os.path.dirname(os.path.abspath(__file__))
+    U, probs = UI_GEMEINSAM, []
+    p = os.path.join(base, "simulator3d", "ui_gemeinsam.json")
+    if os.path.exists(p):
+        with open(p, encoding="utf-8") as f:
+            if json.load(f) != U:
+                probs.append("UI_GEMEINSAM is older than simulator3d/ui_gemeinsam.json - run werkzeuge/bauen.py")
+    if not U.get("groups"):
+        return ["UI_GEMEINSAM is empty (werkzeuge/bauen.py embeds simulator3d/ui_gemeinsam.json)"], {}
+    ids = [g["id"] for g in U["groups"]]
+    if len(set(ids)) != len(ids):
+        probs.append("a group id twice in the file")
+    for old, new in (U.get("alias") or {}).items():
+        if new not in ids or old in ids:
+            probs.append(f"alias {old} -> {new}: the new id must exist, the old one not")
+    mw = ui_gem_groups("mw")
+    src = zd_source()
+    # 1. the web page (GROUPS in 530): ids in this order, symbol and name
+    m = re.search(r"const GROUPS = \[(.*?)\n\];", src, re.S)
+    web = re.findall(r'\{id: "(\w+)", tab: "\w+", icon: "([^"]*)", name: "([^"]*)"', m.group(1)) if m else []
+    if [w[0] for w in web] != [g["id"] for g in mw]:
+        probs.append("web GROUPS (530): " + ", ".join(w[0] for w in web) + " instead of " + ", ".join(g["id"] for g in mw))
+    for gid_, icon, name in web:
+        g = next((x for x in mw if x["id"] == gid_), None)
+        if g and (icon != g.get("emoji") or name != g["mw"]["key"]):
+            probs.append(f"web GROUPS {gid_}: «{icon} {name}» instead of «{g.get('emoji')} {g['mw']['key']}»")
+    # 2. the window (TK_GROUPS, TK_GROUP_ICONS)
+    if [t[0] for t in TK_GROUPS] != [g["id"] for g in mw]:
+        probs.append("window TK_GROUPS: " + ", ".join(t[0] for t in TK_GROUPS) + " instead of " + ", ".join(g["id"] for g in mw))
+    for t in TK_GROUPS:
+        g = next((x for x in mw if x["id"] == t[0]), None)
+        if g and t[1] != g["mw"]["key"]:
+            probs.append(f"window TK_GROUPS {t[0]}: «{t[1]}» instead of «{g['mw']['key']}»")
+        if g and g.get("tk") and TK_GROUP_ICONS.get(t[0]) != g["tk"]:
+            probs.append(f"window symbol {t[0]}: «{TK_GROUP_ICONS.get(t[0])}» instead of «{g['tk']}»")
+    # 3. names and texts of the bar in every language (as the web page / window shows them)
+    for g in mw:
+        for lg in UI_GEM_LANGS:
+            want = (g["mw"].get("names") or {}).get(lg)
+            if want and ui_gem_tr(g["mw"]["key"], lg) != want:
+                probs.append(f"name {g['id']} ({lg}): «{ui_gem_tr(g['mw']['key'], lg)}» instead of «{want}»")
+    bar = (U.get("bar") or {}).get("texts") or {}
+    for k, t in bar.items():
+        for lg in UI_GEM_LANGS:
+            if ui_gem_tr(t["en"], lg) != t.get(lg):
+                probs.append(f"bar text {k} ({lg}): «{ui_gem_tr(t['en'], lg)}» instead of «{t.get(lg)}»")
+    # 4. the page «Simulator» (470): alias table and the drawn symbols of the simulator groups
+    m = re.search(r"const SC_GID_ALIAS = (\{[^}]*\});", src)
+    if not m or json.loads(m.group(1)) != (U.get("alias") or {}):
+        probs.append("470 SC_GID_ALIAS is not the alias table of the file")
+    m = re.search(r"const SC_ICON = \{(.*?)\};", src, re.S)
+    sc = set(re.findall(r"\n  (\w+): '", m.group(1))) if m else set()
+    for g in ui_gem_groups("sim"):
+        dr = g["sim"].get("draw", g.get("draw"))
+        if dr and dr not in sc:
+            probs.append(f"470 SC_ICON: the symbol «{dr}» of the simulator group {g['id']} is missing")
+    n = {"mw": len(mw), "sim": len(ui_gem_groups("sim")), "both": len([g for g in U["groups"] if "mw" in g and "sim" in g]),
+         "bar": len(bar), "simsrc": False}
+    # 5. the simulator (sources, if the folder is there - GitHub has no Godot)
+    gdir = os.path.join(base, "simulator3d", "scripts")
+    if os.path.isfile(os.path.join(gdir, "main.gd")):
+        with open(os.path.join(gdir, "main.gd"), encoding="utf-8") as f:
+            gd = f.read()
+        n["simsrc"] = True
+        m = re.search(r"\nconst GROUPS := \[(.*?)\]\]\n", gd, re.S)
+        rows = re.findall(r'\[\s*"([^"]+)", "(\w*)", "([^"]*)", \[([^\]]*)\]', m.group(1) + "]]") if m else []
+        sim = ui_gem_groups("sim")
+        if [r[0] for r in rows] != [g["sim"]["key"] for g in sim]:
+            probs.append("simulator GROUPS (main.gd): " + ", ".join(r[0] for r in rows) + " instead of " + ", ".join(g["sim"]["key"] for g in sim))
+        m = re.search(r"\nconst GROUP_IDS := \{(.*?)\}", gd, re.S)
+        gids = dict(re.findall(r'"([^"]+)": "(\w+)"', m.group(1))) if m else {}
+        m = re.search(r"\nconst GROUP_RENAME := \{(.*?)\}", gd, re.S)
+        ren = dict(re.findall(r'"([^"]+)": "([^"]+)"', m.group(1))) if m else {}
+        for g in sim:
+            r = next((x for x in rows if x[0] == g["sim"]["key"]), None)
+            if gids.get(g["sim"]["key"]) != g["id"]:
+                probs.append(f"simulator GROUP_IDS {g['sim']['key']}: «{gids.get(g['sim']['key'])}» instead of «{g['id']}»")
+            if r and (r[1] != g["sim"].get("draw", g.get("draw")) or r[2] != g["sim"].get("emoji", g.get("emoji"))):
+                probs.append(f"simulator symbol {g['id']}: «{r[1]} {r[2]}» instead of «{g['sim'].get('draw', g.get('draw'))} {g['sim'].get('emoji', g.get('emoji'))}»")
+            for o in g["sim"].get("old") or []:
+                if ren.get(o) != g["sim"]["key"]:
+                    probs.append(f"simulator GROUP_RENAME: old name «{o}» -> «{g['sim']['key']}» missing")
+        for pid, pt in (U.get("parts") or {}).items():
+            g = next((x for x in sim if x["id"] == pid.split("/")[0]), None)
+            r = next((x for x in rows if g and x[0] == g["sim"]["key"]), None)
+            if not r or f'"{pt["sim"]}"' not in r[3]:
+                probs.append(f"simulator part {pid}: «{pt['sim']}» missing in main.gd GROUPS")
+            for o in pt.get("old") or []:
+                if f'"{o}"' in gd:
+                    probs.append(f"simulator part {pid}: the old name «{o}» is still in main.gd")
+        for g in U["groups"]:
+            for rv in g.get("reserved") or []:
+                for r in rows:
+                    for nm in [r[0]] + re.findall(r'"([^"]*)"', r[3]):
+                        if nm == rv or nm.startswith(rv + " ") or nm.startswith(rv + "/"):
+                            probs.append(f"simulator «{nm}»: the name belongs to the group {g['id']} of MoveEye")
+        tp = os.path.join(base, "simulator3d", "i18n", "texte.json")
+        if os.path.exists(tp):
+            with open(tp, encoding="utf-8") as f:
+                tx = json.load(f)
+            for g in sim:
+                for lg in ("en", "fr", "it", "rm"):
+                    w = (g["sim"].get("names") or {}).get(lg)
+                    if w and (tx.get(g["sim"]["key"]) or {}).get(lg) != w:
+                        probs.append(f"simulator name {g['id']} ({lg}): «{(tx.get(g['sim']['key']) or {}).get(lg)}» instead of «{w}» (i18n/texte.json)")
+            for k, t in bar.items():
+                for lg in ("en", "fr", "it", "rm"):
+                    if (tx.get(t["de"]) or {}).get(lg) != t.get(lg):
+                        probs.append(f"simulator bar text {k} ({lg}): «{(tx.get(t['de']) or {}).get(lg)}» instead of «{t.get(lg)}» (i18n/texte.json)")
+        ep = os.path.join(base, "simulator3d", "export_presets.cfg")
+        if os.path.exists(ep):
+            with open(ep, encoding="utf-8") as f:
+                for line in f:
+                    if line.startswith("include_filter=") and "ui_gemeinsam.json" not in line:
+                        probs.append("simulator export_presets.cfg: ui_gemeinsam.json is not in the .exe")
+    return probs, n
+
+
+def ui_gem_selftest():
+    probs, n = ui_gem_check()
+    assert not probs, f"{len(probs)} problems: " + " | ".join(probs[:12])
+    assert ui_gem_gid("system") == "sys" and ui_gem_gid("sensors") == "extras" and ui_gem_gid("dev") == "dev", "alias"
+    keep = SIM.get("info")
+    try:
+        SIM["info"] = {"features": ["menu1"]}
+        assert "menu1" in sim_features() and sim_status().get("features") == ["menu1"], "features of the simulator"
+        SIM["info"] = {"v": 1}
+        assert sim_features() == [], "older simulator without features"
+    finally:
+        SIM["info"] = keep
+    return (f"{n['mw']} groups MoveEye, {n['sim']} simulator, {n['both']} on both sides, {n['bar']} texts of the bar - same as the file"
+            + ("" if n["simsrc"] else " (simulator folder not here)"))
+
+
+SELFTEST_EXTRA.append(("One menu file MoveEye ↔ simulator (simulator3d/ui_gemeinsam.json: groups, symbols, texts)", ui_gem_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------
