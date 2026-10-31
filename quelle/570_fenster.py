@@ -779,7 +779,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.114")
+        self.root.title("MoveEye 2.98.115")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -791,6 +791,8 @@ class App:
         self.open_secs = set(CFG["ui_open"])                    # open sidebar groups: kept in the settings file
         if not any(x.startswith("grp:") for x in self.open_secs):   # settings of an older version: start with "Alarm & camping" open
             self.open_secs = {"grp:alarm"}
+        # nurgruppen: what is shown now (open_secs = the own state, saved); «On start: groups only» on start / tab change
+        self._shown = {}; self._fold_start = True
         self.step_var = tk.StringVar(value="3")
         self.tab = "live"; self.stick_speed = 30.0; self.relay_prev = {}
         self.left_f = self.stick = self.l_wp = None; self.qs_tiles = {}; self.tab_btns = {}
@@ -1041,7 +1043,9 @@ class App:
             self.tab = "live"
         if self.tab in TK_PANEL_TABS:                     # 2.98.14: Schutz / Einstellungen / Simulator: the settings over the whole width
             self.left_f = None
+            prev_ = dict(self._open_before if getattr(self, "_open_before", None) is not None else getattr(self, "_shown", {}))
             self._build_sidebar(body, self.tab)
+            self._fold_after(prev_)
             return
         left = ttk.Frame(body, style="Bg.TFrame"); left.grid(row=0, column=0, sticky="nsew")
         side_open = False
@@ -1146,7 +1150,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.114 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.115 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1362,6 +1366,7 @@ class App:
         panel = tid in TK_PANEL_TABS or self.tab in TK_PANEL_TABS or self.left_f is None or not self.left_f.winfo_exists()
         self.tab = tid; CFG["ui_tab"] = tid
         if panel:
+            self._fold_start = True                       # nurgruppen: opening a page = a start (like loading the web page)
             self._schedule_rebuild(); return
         for w in self.left_f.winfo_children():
             w.destroy()
@@ -1780,10 +1785,10 @@ class App:
         inner.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
         canvas.bind("<Configure>", lambda e: canvas.itemconfigure(win, width=min(e.width, 860)))     # readable lines on a wide screen
         bar = tk.Frame(right, bg=C["bg"]); bar.pack(side="top", fill="x", pady=(0, 10), before=sb)   # stays at the top while scrolling
-        # like the web page: search field, then two symbols - ⊞ expand all, ⊟ collapse all
-        self._ibtn(bar, "⊟", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right")
-        self._ibtn(bar, "⊞", lambda: self._all_sections(True), tr("Expand all")).pack(side="right", padx=(0, 6))
-        self._ibtn(bar, "☰", self._groups_only, tr("Groups only")).pack(side="right", padx=(0, 6))
+        # like the web page: search field, then «Collapse all · Groups only · Expand all» with the same drawn symbols (nurgruppen)
+        self._fold_btn(bar, "open", lambda: self._all_sections(True), tr("Expand all")).pack(side="right")
+        self._fold_btn(bar, "groups", self._groups_only, tr("Groups only")).pack(side="right", padx=(0, 6))
+        self._fold_btn(bar, "close", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
         sf = tk.Frame(bar, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"]); sf.pack(side="left", fill="x", expand=True, padx=(0, 8))
         tk.Label(sf, text="⚲", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 11)).pack(side="left", padx=(8, 0))
         self.search_var = tk.StringVar()
@@ -1811,6 +1816,12 @@ class App:
         if page_simple(tab) and tab != "sim":
             tk.Label(inner, text=tr("Simple: only the important settings. «Expert» shows all of them."), bg=C["bg"], fg=C["mut"],
                      font=("DejaVu Sans", 8), anchor="w", justify="left", wraplength=330).pack(fill="x", pady=(0, 8))
+        # nurgruppen: «On start: groups only» next to Simple / Expert (same switch as on the web page, CFG ui_start_groups)
+        sg_ = Toggle(inner, tr("On start: groups only"), CFG.get("ui_start_groups", True), self._set_start_groups)
+        for w_ in (sg_, sg_.cv, sg_.lbl):
+            w_.config(bg=C["bg"])
+        sg_.lbl.config(font=("DejaVu Sans", 9)); sg_.pack(fill="x", pady=(0, 10)); self.start_groups_tg = sg_
+        Tip(sg_.lbl, tr("On every start the settings show only the groups. Off: the menus open as you left them."))
         self.grp_meta = {}; self._open_before = None
         self.no_match = tk.Label(inner, text=tr("No match"), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9))
         # 9 groups (same as the web page). Inside a group every topic opens / closes the same way (the first one is open);
@@ -1911,15 +1922,17 @@ class App:
                 ic_.config(fg=C["grn"] if on else C["txt"])
 
     def _sub_open(self, k):
-        return k in self.open_secs
+        return self._shown.get(k, k in self.open_secs)
 
     def _set_sub(self, k, open_, save=True):
         h, body, title = self.subs[k]
         closed = "subx:" + k[4:]
-        if open_:
-            self.open_secs.add(k); self.open_secs.discard(closed)
-        else:
-            self.open_secs.discard(k); self.open_secs.add(closed)
+        self._shown[k] = bool(open_)                         # nurgruppen: shown now; the own state (open_secs) only by a click
+        if save:
+            if open_:
+                self.open_secs.add(k); self.open_secs.discard(closed)
+            else:
+                self.open_secs.discard(k); self.open_secs.add(closed)
         if save and sorted(self.open_secs) != sorted(CFG["ui_open"]):
             CFG["ui_open"] = sorted(self.open_secs); save_settings()
         self._sub_arrow(k, open_)
@@ -2911,6 +2924,7 @@ class App:
     # ---- collapsible sections -------------------------------------------
     def _set_section(self, sec, open_, save=True):
         head, body = self.sections[sec]
+        self._shown[sec] = bool(open_)
         if save:
             (self.open_secs.add if open_ else self.open_secs.discard)(sec)
             if sorted(self.open_secs) != sorted(CFG["ui_open"]):
@@ -2934,7 +2948,7 @@ class App:
             pass
         meta = getattr(self, "grp_meta", {})
         if q and self._open_before is None:
-            self._open_before = set(self.open_secs)
+            self._open_before = dict(self._shown)                # nurgruppen: what was shown (start view or own state)
         cards = [m[2] for m in meta.values()]
         for c in cards:
             c.pack_forget()
@@ -2954,11 +2968,11 @@ class App:
         if q and not hits:
             self.no_match.pack(anchor="w", pady=(4, 0))
         if not q and self._open_before is not None:              # search cleared: back to how it was
-            self.open_secs = self._open_before; self._open_before = None
+            before, self._open_before = self._open_before, None
             for key in meta:
-                self._set_section(key, key in self.open_secs, save=False)
+                self._set_section(key, before.get(key, key in self.open_secs), save=False)
             for k in self.subs:
-                self._show_sub(k, k in self.open_secs)
+                self._show_sub(k, before.get(k, k in self.open_secs))
 
     def _show_sub(self, k, open_):
         h, body, title = self.subs[k]
@@ -2969,13 +2983,52 @@ class App:
             body.pack_forget()
 
     def _toggle_section(self, sec):
-        self._set_section(sec, sec not in self.open_secs)
+        self._set_section(sec, not self._shown.get(sec, sec in self.open_secs))
 
-    def _groups_only(self):
+    def _groups_only(self, save=True):
+        """☰ every group open, the topics inside closed (save=False: the start view of «On start: groups only», not kept)"""
         for sec in self.sections:
-            self._set_section(sec, True)
+            self._set_section(sec, True, save=save)
         for k in getattr(self, "subs", {}):
-            self._set_sub(k, False)
+            self._set_sub(k, False, save=save)
+
+    def _own_view(self):
+        """nurgruppen: every group and topic as the user left them (CFG ui_open)"""
+        for sec in self.sections:
+            self._set_section(sec, sec in self.open_secs or (self.tab == "sim" and sec == "grp:simset"), save=False)
+        for k in getattr(self, "subs", {}):
+            self._set_sub(k, k in self.open_secs, save=False)
+
+    def _fold_after(self, prev):
+        """nurgruppen: after building a settings tab - start / tab change: «Groups only» (switch on); else as shown before"""
+        if getattr(self, "_fold_start", True):
+            self._fold_start = False
+            if CFG.get("ui_start_groups", True):
+                self._groups_only(save=False)
+            return
+        for k, v in prev.items():
+            if k in self.sections:
+                self._set_section(k, v, save=False)
+            elif k in getattr(self, "subs", {}):
+                self._set_sub(k, v, save=False)
+
+    def _set_start_groups(self, v):
+        CFG["ui_start_groups"] = bool(v); save_settings()
+        self._groups_only(save=False) if v else self._own_view()
+
+    def _fold_btn(self, parent, kind, cmd, tip):
+        """the three fold buttons with the drawn symbols of the web page (530: arrows in · two bars · arrows out)"""
+        sz = 26 if self._lay[0] else 30
+        c = tk.Canvas(parent, width=sz, height=sz, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], bd=0, cursor="hand2")
+        f = sz / 24.0; P = lambda pts: [v * f for v in pts]
+        if kind == "close":
+            c.create_line(*P((7, 4, 12, 9, 17, 4)), fill=C["txt"], width=2); c.create_line(*P((7, 20, 12, 15, 17, 20)), fill=C["txt"], width=2)
+        elif kind == "open":
+            c.create_line(*P((7, 9, 12, 4, 17, 9)), fill=C["txt"], width=2); c.create_line(*P((7, 15, 12, 20, 17, 15)), fill=C["txt"], width=2)
+        else:
+            c.create_rectangle(*P((5, 5, 19, 10)), outline=C["txt"], width=2); c.create_rectangle(*P((5, 14, 19, 19)), outline=C["txt"], width=2)
+        c.bind("<Button-1>", lambda e: cmd()); Tip(c, tip)
+        return c
 
     def _all_sections(self, open_):
         for sec in self.sections:

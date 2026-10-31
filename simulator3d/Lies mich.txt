@@ -421,6 +421,14 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.84
+3D-4.84: MoveEye und Simulator öffnen die Einstellungen beim Start immer in der Ansicht «Nur Gruppen» (Gruppen offen, Themen
+zu). Neuer Schalter «Beim Start: Nur Gruppen» bei «Einfach / Experte», ab Werk ein. Schaltet man ihn aus, kommen die eigenen
+auf- und zugeklappten Menüs zurück. Im Pi-Fenster haben die drei Knöpfe jetzt dieselbe Reihenfolge und dieselben Symbole wie
+im Web.
+So testest du: 1) Einstellungen öffnen: nur Gruppen offen. 2) Schalter aus, Menüs ändern. 3) Schalter ein, neu laden, dann
+Schalter aus: deine Menüs sind zurück.
+
 NEU IN 3D-4.83
 3D-4.83: Simulator: «⚠ Auf Werkseinstellungen zurücksetzen …» unter Mehr (nur Besitzer), wie bei MoveEye: zuerst wird eine
 Kopie angelegt, dann alles zurückgesetzt und neu gestartet. Es bleiben: Horror-Passwort, Sprache, heruntergeladene Inhalte,

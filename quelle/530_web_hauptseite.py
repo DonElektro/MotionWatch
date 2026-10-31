@@ -40,7 +40,7 @@ body.icplain .gi .ie{display:none}body.icplain .gi .is{display:inline-block}
 .gi .gdot{display:none;position:absolute;right:-4px;bottom:-2px;width:8px;height:8px;border-radius:50%;background:var(--grn);box-shadow:0 0 0 2px var(--panel),0 0 7px var(--grn)}
 body:not(.icplain) .mon>summary>.gi .gdot{display:block}body.icplain .mon>summary>.gi .is{color:var(--grn)}
 details.sub>summary>.gi{margin-right:8px;font-size:13px;letter-spacing:0}details.sub>summary>.sn{flex:1}
-.icseg{margin-top:8px}.icseg .mut{font-size:12px;margin:0 0 4px}
+.icseg{margin-top:8px}.icseg .mut{font-size:12px;margin:0 0 4px}.simplebar .sgrow{margin-top:8px;font-size:13px;gap:10px}
 details.sub{border-top:1px solid var(--line);margin-top:12px;padding-top:9px}
 details.sub>summary{font-size:10.5px;letter-spacing:.09em;color:var(--mut);font-weight:700;text-transform:uppercase;cursor:pointer;list-style:none;
   display:flex;justify-content:space-between;align-items:center;user-select:none}
@@ -435,6 +435,7 @@ body[data-tab] .simplebar>.mut,body[data-tab] .simplebar .icseg>.mut{display:non
 body[data-tab] .simplebar .seg{display:inline-flex;flex:1 1 160px}
 body[data-tab] .simplebar .seg button{flex:1;padding:7px 8px;font-size:12.5px;white-space:nowrap}
 body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
+body[data-tab] .simplebar .sgrow{margin:0;flex:1 1 160px;padding:0;justify-content:space-between}
 #alarm-chain .chain{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:4px 0}
 #alarm-chain .chain button{padding:6px 9px;font-size:13px}#alarm-chain .chain button.off{opacity:.45;text-decoration:line-through}
 #alarm-chain .chain em{color:var(--mut);font-style:normal}
@@ -4138,6 +4139,10 @@ function simpleBar(on) {
     ic.className = v ? "" : "sel-auto"; ip.className = v ? "sel-auto" : ""; };
   ic.onclick = () => iset(false); ip.onclick = () => iset(true);
   iw.append(el("div", "mut", t("Symbols: green dot or green symbol = switched on")), is); w.appendChild(iw);
+  // nurgruppen: «On start: groups only» (all devices and the Pi window; off = the menus open as you left them)
+  const gw = el("label", "row tg sgrow"), gc = el("input"); gc.type = "checkbox"; gc.className = "sw"; gc.id = "start-groups"; gc.checked = START_GROUPS;
+  gc.onchange = () => startGroupsSet(gc.checked); gw.title = t("On every start the settings show only the groups. Off: the menus open as you left them.");
+  gw.append(el("span", "", t("On start: groups only")), gc); w.appendChild(gw);
   return w;
 }
 // ---- self-check: one traffic light per part ----
@@ -4604,16 +4609,33 @@ addEventListener("keydown", e => {
 function secKey(d) { return "mw-open:" + (d.dataset.view || d.querySelector("summary").textContent); }
 function initSections() {
   document.querySelectorAll("details.card, details.sub:not(.inline), details.adv").forEach(d => {
+    d._mwDef = d.open;                       // nurgruppen: how the page builds it (for «back to the own state» without a saved one)
     try { const v = localStorage.getItem(secKey(d)); if (v !== null) d.open = (v === "1"); } catch (e) {}
-    d.addEventListener("toggle", () => { try { localStorage.setItem(secKey(d), d.open ? "1" : "0"); } catch (e) {} });
+    d.addEventListener("toggle", () => { if (d._mwSkip) { d._mwSkip = false; return; }      // the start view is not the own state
+      try { localStorage.setItem(secKey(d), d.open ? "1" : "0"); } catch (e) {} });
   });
+}
+// nurgruppen (Daniel, 31.10.2026): switch «On start: groups only» (CFG ui_start_groups, factory: on). On every start the settings
+// show «Groups only» WITHOUT saving it - the own open / closed state (mw-open:…, kept on the Pi through web_ui) stays as it was.
+// Switched off: every group and topic goes back to that own state.
+let START_GROUPS = window.MW_SG !== false;
+function foldSet(d, open, keep) { if (d.open === open) return; if (keep) d._mwSkip = true; d.open = open; }
+function foldOwn() {
+  document.querySelectorAll("#settings details.grp, #settings details.sub:not(.inline), #settings details.adv").forEach(d => {
+    let v = null; try { v = localStorage.getItem(secKey(d)); } catch (e) {}
+    const o = v !== null ? v === "1" : d._mwDef; if (typeof o === "boolean") foldSet(d, o, true); });
+}
+function startGroupsSet(v) {
+  START_GROUPS = !!v; post("/api/ui_simple", {start_groups: START_GROUPS});
+  if (START_GROUPS) allGroups(true); else foldOwn();
+  toast((START_GROUPS ? "✓ " : "") + t("On start: groups only") + " – " + t(START_GROUPS ? "On" : "Off"));
 }
 // ---- setup assistant: first start (and System -> "Setup assistant"): language, name, push (ntfy with QR code), password, QR codes ----
 // the setup assistant is the one guide now (516 / 586): «quick or thorough?», resumable, place, walk test …
 function setupWizard(force) { const go = () => window.mwGuide && window.mwGuide(force); if (!go()) setTimeout(go, 1500); }
-function allGroups() {                     // overview: every group open, the topics inside closed
-  document.querySelectorAll("#settings details.grp").forEach(d => { if (!d.open) d.open = true; });
-  document.querySelectorAll("#settings details.sub:not(.inline), #settings details.adv").forEach(d => { if (d.open) d.open = false; });
+function allGroups(keep) {                 // overview: every group open, the topics inside closed (keep: start view, not saved)
+  document.querySelectorAll("#settings details.grp").forEach(d => foldSet(d, true, keep));
+  document.querySelectorAll("#settings details.sub:not(.inline), #settings details.adv").forEach(d => foldSet(d, false, keep));
 }
 function allSections(open) { document.querySelectorAll("details.card, details.sub:not(.inline)").forEach(d => { if (d.open !== open) d.open = open; }); }
 // 2.98.46 (Daniel): order «Collapse all | Groups only | Expand all»; the button of the current fold state is blue – all closed = «Collapse all», all open = «Expand all», groups open / topics closed = «Groups only»; mixed = none
@@ -4646,7 +4668,7 @@ document.addEventListener("webkitfullscreenchange", fsChange);
     catch (e) { LANG = LANG || "en"; THEME = THEME || "dark"; }
   }
   applyTheme(); applyI18n();
-  await build(); regroup(); applyHidden(); initSections(); allBtnState(); refresh(); setInterval(refresh, 700);
+  await build(); regroup(); applyHidden(); initSections(); if (START_GROUPS) allGroups(true); allBtnState(); refresh(); setInterval(refresh, 700);
   setTimeout(() => setupWizard(false), 600);
 })();
 /*ALERTS*/

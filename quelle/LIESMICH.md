@@ -162,6 +162,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `639h_basis_simulator.py` | «MoveEye Sim · Basis» (alter Python-Simulator) nur mit Schalter «Basis-Simulator anzeigen» (Simulator, Experte, Standard aus): Download und Pi-Knöpfe (auch /api/sim gesperrt), Übersetzungen | 41 |
 | `639g_uebersetzungen_entdecken.py` | Übersetzungen der Kachel «Entdeckungen» (Entdeckungsbuch des Simulators, 139) | 29 |
 | `639i_spielbereich.py` | «Spielen» (Mehr → Spielen, Web /play, Fenster-Knopf unter Mehr): Abenteuer, Entdeckungen, Abzeichen, Stufe, Blinki – Daten vom Simulator (spielbereich.gd) | 429 |
+| `639j_nurgruppen.py` | «Beim Start: Nur Gruppen» (Schalter `ui_start_groups`, ab Werk ein; Logik in 530 / 470 / 570 / 550): Übersetzungen DE/FR/IT/RM, Anleitungs-Absatz (Tipps, DE/EN) | 35 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |
