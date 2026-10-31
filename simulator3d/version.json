@@ -1,7 +1,7 @@
 {
- "version": "3D-4.47",
+ "version": "3D-4.48",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 67483583,
- "sha256": "f98cb3fda86cbd4441675b72ae292d0e030cf744e1ad28d682a8eb83ad4b5c78",
- "notes": "Licht & Nacht wie echt: Dämmerung, Mond mit Phase, Sterne nach Lichtverschmutzung, Platzlampen, leuchtende Zelte und Fenster."
+ "size": 67513184,
+ "sha256": "031724f8f0cd7e9cdfb39ba04804c7e313aae6cb06e08dd88eb29e451a8d9e72",
+ "notes": "Jahreszeiten wie echt: Laub, Blüten, fallende Blätter, Schnee, Bodennebel, Tageslänge und Belegung nach Saison."
 }

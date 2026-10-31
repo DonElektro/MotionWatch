@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.48
+3D-4.48: Jahreszeiten wie echt: Laubbäume kahl im Winter, Blüten im Frühling, fallende Blätter im Herbst, Schnee bei
+Kälte, Bodennebel am Morgen, Tageslänge nach Datum, im Winter kaum Leute auf dem Campingplatz, im Sommer viele.
+So testest du: 1) Camping, 11 Uhr, Szene → Zeit → Jahreszeit «Winter»: Laubbäume kahl. 2) «Herbst», Wind 25 km/h: Blätter
+fallen. 3) Knopf «Tageslauf heute»: Winter ~8 h 30 Tag, Sommer ~15 h 30.
+
 NEU IN 3D-4.47
 3D-4.47: Licht & Nacht wie echt: Dämmerung (bürgerlich, nautisch, astronomisch), Mond mit echter Phase und Lage, Sterne
 nach Lichtverschmutzung (Land, Dorf, Stadt), Platzlampen, leuchtende Zelte und Fenster, Blendung tief stehender Sonne.
