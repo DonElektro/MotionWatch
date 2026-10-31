@@ -3,6 +3,12 @@ extends SceneTree
 ##   cd simulator3d && HOME=<test-home> <godot> --headless --path . -s "$PWD/../werkzeuge/trailer_test.gd"   (absoluter Pfad nötig)
 ## Prüft: Länge je Trailer (≈ 3 Min.), jede Einstellung hat ihre Methoden, jeder Klang lässt sich erzeugen, alle Texte
 ## (Tafeln, Erzähler) sind in en / fr / it / rm übersetzt, keine Spoiler-Wörter (Steinmännchen, Seeli, Kapelle am Gipfel …).
+## Dazu (Fix 3.19.x): der Ton-Plan für den Browser (ton_plan: sortiert, nur bekannte Klänge, Ende = Ausblenden) und die
+## WAV-Dateien (wav_bytes: RIFF-Kopf, mono 16 Bit).
+## Mit «-- --mit-welt» zusätzlich ohne Bild mit der echten Welt (main.tscn, Port 9448): Stopp von aussen (/control wie
+## MoveEye am iPad) während MoveEyes Browser-Bild (padview bare) die Knöpfe ausblendet – danach müssen Knöpfe sichtbar,
+## Kamera zurück (nicht unter dem Boden), kein schwarzer Film-Layer da sein; dasselbe mit der Vorführung (maggie_vorfuehrung).
+##   cd simulator3d && HOME=<test-home> <godot> --headless --path . -s "$PWD/../werkzeuge/trailer_test.gd" -- --mit-welt --no-update --no-tour --port 9448
 ## Ende: «Trailer-Test OK» oder «SCRIPT ERROR: Trailer-Test: …» (Exit-Code 0 / 1).
 
 var errs := []
@@ -60,6 +66,41 @@ func _init() -> void:
 		if w == null or w.get_length() <= 0.0:
 			errs.append("Klang %s fehlt" % k)
 	print("Klänge erzeugt: %d in %d ms" % [R.KLAENGE.size(), Time.get_ticks_msec() - t0])
+	# the sound plan for the browser (MoveEye /sim/trailer: music and noises on the iPad)
+	for id in R.IDS:
+		var tr = R.new()
+		tr.id = id
+		var pl: Dictionary = tr.ton_plan()
+		tr.free()
+		var ev: Array = pl.get("plan", [])
+		if ev.size() < 20:
+			errs.append("%s: Ton-Plan zu kurz (%d)" % [id, ev.size()])
+			continue
+		var last := -1.0
+		for e in ev:
+			if float(e[0]) < last:
+				errs.append("%s: Ton-Plan nicht sortiert bei %.2f" % [id, float(e[0])])
+				break
+			last = float(e[0])
+		if str(ev[-1][1]) != "stille" or absf(float(ev[-1][0]) - float(pl["dauer"])) > 0.05:
+			errs.append("%s: Ton-Plan endet nicht mit dem Ausblenden" % id)
+		for k in pl.get("klaenge", []):
+			if not k in R.KLAENGE:
+				errs.append("%s: Klang %s im Plan unbekannt" % [id, k])
+		var says := ev.filter(func(e): return str(e[1]) == "say").size()
+		print("Ton-Plan %s: %d Befehle, %d Klänge, %d Erzählersätze" % [id, ev.size(), (pl.get("klaenge", []) as Array).size(), says])
+	var wb: PackedByteArray = R.wav_bytes("pad_ruhig")
+	if wb.size() < 1000 or wb.slice(0, 4).get_string_from_ascii() != "RIFF" or wb.decode_u16(22) != 1 or wb.decode_u32(40) != wb.size() - 44:
+		errs.append("WAV pad_ruhig falsch (%d Bytes)" % wb.size())
+	if not R.wav_bytes("../etc").is_empty():
+		errs.append("WAV: unbekannter Name nicht abgewiesen")
+	if "--mit-welt" in OS.get_cmdline_user_args():
+		_welt_test.call_deferred()
+		return
+	_ende()
+
+
+func _ende() -> void:
 	if errs.is_empty():
 		print("Trailer-Test OK")
 		quit(0)
@@ -67,3 +108,96 @@ func _init() -> void:
 		for e in errs:
 			push_error("Trailer-Test: " + str(e))
 		quit(1)
+
+
+# ---- with the real world (no picture): stop from outside while the browser picture hides the buttons ------------------------
+var m = null
+var _bare := false
+
+
+func _process(_dt: float) -> bool:
+	if _bare and m != null and m.padview != null:
+		m.padview.bare_t = m.now()                          # like MoveEye's page: a picture with bare=1 every few hundred ms
+	return false
+
+
+func _warte(s: float) -> void:
+	await create_timer(s, true, false, true).timeout
+
+
+func _normal_pruefen(was: String, cam0: Transform3D) -> void:
+	var vc: Camera3D = m.view_cam
+	var tr = load("res://scripts/trailer.gd").inst(m, false)
+	if not m.ui_layer.visible:
+		errs.append("%s: Knöpfe des Fensters nach dem Stopp unsichtbar" % was)
+	if m.padview._hid:
+		errs.append("%s: padview blendet noch aus" % was)
+	if tr != null and tr._layer != null and tr._layer.visible:
+		errs.append("%s: schwarzer Trailer-Layer noch sichtbar" % was)
+	var p := vc.global_position
+	if p.y < float(m.ground_y(p.x, p.z)) - 1.0:
+		errs.append("%s: Kamera unter dem Boden %s" % [was, str(p)])
+	if cam0 != Transform3D.IDENTITY and p.distance_to(cam0.origin) > 1.0:
+		errs.append("%s: Kamera nicht zurück (%s statt %s)" % [was, str(p), str(cam0.origin)])
+	if Engine.time_scale < 0.5:
+		errs.append("%s: Zeit steht still" % was)
+	print("%s: Knöpfe %s, Kamera %s, Zeit %.1f" % [was, str(m.ui_layer.visible), str(p.snapped(Vector3.ONE * 0.1)), Engine.time_scale])
+
+
+func _welt_test() -> void:
+	m = load("res://main.tscn").instantiate()
+	root.add_child(m)
+	for i in range(120):
+		await process_frame
+	await _warte(2.0)
+	var R = load("res://scripts/trailer.gd")
+	for fall in ["bare_vorher", "bare_nachher"]:
+		var cam0: Transform3D = m.view_cam.global_transform
+		if fall == "bare_vorher":
+			_bare = true                                    # the iPad page asks for pictures before the film starts
+			await _warte(0.5)
+		var r: Dictionary = m.control({"action": "trailer", "do": "start", "id": "grossvater", "sprache": "de"})
+		if not bool(r.get("ok", false)):
+			errs.append("Trailer startet nicht: %s" % str(r))
+			break
+		await _warte(1.5)                                   # (until starten() set t back: info still shows the last run)
+		var w := 0
+		while w < 240 and float(m.control({"action": "trailer", "do": "info"}).get("t", 0.0)) < 3.0:
+			await _warte(0.25)
+			w += 1
+		_bare = true                                        # (bare_nachher: the page was opened while it ran)
+		await _warte(1.0)
+		if m.ui_layer.visible:
+			errs.append("Trailer (%s): Knöpfe während des Films sichtbar" % fall)
+		r = m.control({"action": "trailer", "do": "stop"})
+		if bool(r.get("laeuft", true)):
+			errs.append("Trailer (%s): Stopp über /control wirkt nicht" % fall)
+		await _warte(1.0)                                   # the page is still open for a moment (no more bare: Fix in 639n)
+		_bare = false
+		await _warte(3.6)                                   # padview gives the buttons back after 3 s, the watchdog after 1.5 / 3 s
+		_normal_pruefen("Trailer (%s)" % fall, cam0)
+	# the Vorführung: started and stopped from the browser
+	var vf = load("res://scripts/maggie_vorfuehrung.gd").inst(m)
+	if vf == null:
+		errs.append("Vorführung: keine Instanz (main.maggie fehlt)")
+	else:
+		var cam1 := Transform3D.IDENTITY
+		_bare = true
+		await _warte(0.5)
+		m.control({"action": "vorfuehrung", "do": "start", "len": "kurz"})
+		await _warte(6.0)
+		if not bool(vf.laeuft):
+			errs.append("Vorführung läuft nicht")
+		m.control({"action": "vorfuehrung", "do": "pause"})
+		await _warte(0.5)
+		m.control({"action": "vorfuehrung", "do": "stop"})
+		await _warte(1.0)
+		_bare = false
+		await _warte(3.6)
+		_normal_pruefen("Vorführung", cam1)
+		if vf._bar != null and vf._bar.visible:
+			errs.append("Vorführung: Leiste nach dem Stopp noch sichtbar")
+		if vf._schwarz != null and vf._schwarz.color.a > 0.01:
+			errs.append("Vorführung: schwarze Blende nach dem Stopp")
+	print("Welt-Test fertig")
+	_ende()

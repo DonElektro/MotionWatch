@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6823 (Stellen: 9472)
+Texte gesamt: 6823 (Stellen: 9475)
 Übersetzt: en 6823, fr 6823, it 6823, rm 6823
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 469 Stellen
-Nicht mehr im Code (noch in texte.json): 242
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 470 Stellen
+Nicht mehr im Code (noch in texte.json): 243
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 24200, schlüssel 18161, keine Wörter 11469, index 9250, technisch 3150, doc 2023, einheit 288, log 152, englisch 126, pfad 98, html 68, klasse 25, shader 6
+Übersprungen (Grund: Anzahl): kennung 24248, schlüssel 18188, keine Wörter 11477, index 9251, technisch 3155, doc 2030, einheit 288, log 153, englisch 126, pfad 98, html 68, klasse 25, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  692    42
@@ -81,7 +81,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   update.gd                 36     4
   geo.gd                    36     7
   gamemore.gd               36     1
-  maggie_vorfuehrung.gd     34     7
+  maggie_vorfuehrung.gd     35     7
   gameziele.gd              34     0
   devtool_notizen.gd        34     1
   gametools.gd              33     2
@@ -114,7 +114,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   tv.gd                     19     8
   statusled.gd              19     0
   surprise.gd               19     1
-  trailer.gd                18     6
+  trailer.gd                18     7
   kompakt_dorf.gd           18     0
   kompakt_pfadi.gd          18     0
   planner.gd                18     0
@@ -228,13 +228,13 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   ferienpark_leben.gd:992  'fertig'
   maggie_story.gd:406  'fertig'
   maggie_story.gd:1273  'Mit'
-  maggie_vorfuehrung.gd:565  'fertig'
-  maggie_vorfuehrung.gd:933  'ja'
-  maggie_vorfuehrung.gd:933  'nein'
-  maggie_vorfuehrung.gd:1468  'ja'
-  maggie_vorfuehrung.gd:1468  'nein'
-  maggie_vorfuehrung.gd:1503  'Vorführung «Maggie und der Bergkristall» – %s – %s\n'
-  maggie_vorfuehrung.gd:1506  '\nBLOCKIERT:\n'
+  maggie_vorfuehrung.gd:595  'fertig'
+  maggie_vorfuehrung.gd:963  'ja'
+  maggie_vorfuehrung.gd:963  'nein'
+  maggie_vorfuehrung.gd:1515  'ja'
+  maggie_vorfuehrung.gd:1515  'nein'
+  maggie_vorfuehrung.gd:1550  'Vorführung «Maggie und der Bergkristall» – %s – %s\n'
+  maggie_vorfuehrung.gd:1553  '\nBLOCKIERT:\n'
   protokoll.gd:72  'aus'
   protokoll.gd:73  'Tunnel: '
   protokoll.gd:73  'aus'
@@ -271,12 +271,13 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   spieltest.gd:1290  '\n| Start | Einheit | Min. | Ergebnis | Tipps | Falsch | Umwege | Erwischt | Fest | Kreis | Ruckeln s | Bewertung |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n'
   spieltest.gd:1305  'Noch keine Runden notiert.\n\n'
   spieltest.gd:1322  'Spieltest-Daten aus dem MoveEye-Simulator (Mehr → Entwickler → Spieltest).\nbericht.md = Zusammenfassung mit Vorschlägen, runden/ = Rohdaten (JSON pro Runde).\nVersion %s.\n'
-  trailer.gd:272  'an'
-  trailer.gd:317  'fertig'
-  trailer.gd:400  'fertig'
-  trailer.gd:661  'fertig'
-  trailer.gd:694  'fertig'
-  trailer.gd:892  'fertig'
+  trailer.gd:437  'an'
+  trailer.gd:482  'fertig'
+  trailer.gd:574  'fertig'
+  trailer.gd:835  'fertig'
+  trailer.gd:868  'fertig'
+  trailer.gd:999  'fertig'
+  trailer.gd:1079  'fertig'
   zwei_bausteine.gd:614  'fertig'
   zwei_bausteine.gd:1415  ' %.1f kg'
   gamewiz.gd:63  ' (wird hingestellt)'
@@ -624,7 +625,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   mwpc.gd:340  'Die Pakete liessen sich nicht installieren: '
   mwpc.gd:365  'Unerwartete Datei in versions.json: '
   symbole.gd:27  'Aus'
-  net.gd:397  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
+  net.gd:404  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
   news.gd:83  'MOVEEYE SIM · '
   padroles.gd:129  'Spiel am PC – '
   padtest.gd:44  '  roh %.2f / %.2f'

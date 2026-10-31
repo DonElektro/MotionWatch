@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.19.2** · MoveEye **3.19.2** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.19.3** · MoveEye **3.19.3** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.19.3 (MoveEye 3.19.3): Trailer-Stopp ohne schwarzen Simulator
+
+- `trailer.gd` / `maggie_vorfuehrung.gd`: beim Stopp (auch vom iPad über `net.gd`) kommen Kamera und Knöpfe zurück; Knopf
+  «× Zurück» oben rechts, Esc. Teil 639n/639m: Ton am iPad mit einem Tippen (Erzähler, Musik, Geräusche).
+  `werkzeuge/trailer_test.gd` prüft auch den Stopp.
 
 ## NEU in 3.19.2 (MoveEye 3.19.2): beste Stimme automatisch
 

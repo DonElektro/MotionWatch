@@ -37,6 +37,7 @@ const UI = preload("res://scripts/ui_style.gd")
 const Quality = preload("res://scripts/quality.gd")
 const Welt = preload("res://scripts/maggie_welt.gd")
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")
+const Trailer = preload("res://scripts/trailer.gd")   # ui_zeigen / waechter: the normal view after the end (Fix 3.19.x)
 
 const PROTOKOLL := "user://maggie/vorfuehrung_protokoll.txt"
 const EINST := "user://maggie/vorfuehrung_einstellung.json"
@@ -108,6 +109,7 @@ var _pause_btn: Button = null
 var _kap_menu: MenuButton = null
 var _schwarz: ColorRect = null
 var _schwarz_lbl: Label = null
+var _zurueck: Button = null              # the rescue: always a small «× Zurück» on top right while it runs
 var _ende: PanelContainer = null
 var _maus_t := -100.0
 var _saved_ui := true
@@ -318,8 +320,8 @@ func beenden(grund := "abgebrochen") -> void:
 	if Engine.has_meta("vorfuehrung"):
 		Engine.remove_meta("vorfuehrung")
 	story._load()                               # back to the state of Daniel's Spielstand
-	if main.ui_layer != null:
-		main.ui_layer.visible = _saved_ui
+	Trailer.ui_zeigen(main)                     # the buttons back - always (Fix 3.19.x: started from the browser, _saved_ui was
+	Trailer.waechter(main)                      # «hidden» by its picture bare=1 → no buttons after the end); watchdog 1.5 s / 3 s
 	if _saved_mode >= 0 and DisplayServer.get_name() != "headless":
 		DisplayServer.window_set_mode(_saved_mode)
 	_saved_mode = -1
@@ -328,7 +330,35 @@ func beenden(grund := "abgebrochen") -> void:
 	if _schwarz != null:
 		_schwarz.color.a = 0.0
 		_schwarz_lbl.modulate.a = 0.0
+	if _zurueck != null:
+		_zurueck.visible = false
 	_end_card()
+
+
+func anzeige_weg() -> bool:
+	"""the watchdog (trailer.gd normal): nothing of the film stays on the picture after the end (the end card may stay)"""
+	if laeuft:
+		return false
+	var ch := false
+	if _bar != null and _bar.visible:
+		_bar.visible = false
+		ch = true
+	if _schwarz != null and (_schwarz.color.a > 0.0 or _schwarz_lbl.modulate.a > 0.0):
+		_schwarz.color.a = 0.0
+		_schwarz_lbl.modulate.a = 0.0
+		ch = true
+	if _zurueck != null and _zurueck.visible:
+		_zurueck.visible = false
+		ch = true
+	return ch
+
+
+func _input(ev: InputEvent) -> void:
+	"""the rescue: Esc always ends the Vorführung (also when a window of the game has the keys)"""
+	if laeuft and ev is InputEventKey and (ev as InputEventKey).pressed and not (ev as InputEventKey).echo \
+			and (ev as InputEventKey).keycode == KEY_ESCAPE:
+		get_viewport().set_input_as_handled()
+		beenden("abgebrochen")
 
 
 func pause(on: bool) -> void:
@@ -1320,6 +1350,8 @@ func _sprich_neu() -> void:
 func _ui() -> void:
 	if _layer != null:
 		_bar.visible = true
+		if _zurueck != null:
+			_zurueck.visible = true
 		if _ende != null and is_instance_valid(_ende):
 			_ende.queue_free()
 			_ende = null
@@ -1379,6 +1411,18 @@ func _ui() -> void:
 	hb.add_child(_kap_menu)
 	_btn(hb, T.t("Nächstes Kapitel"), func(): kapitel(maxi(0, kapitel_jetzt()) + 1))
 	_btn(hb, T.t("Beenden (Esc)"), func(): beenden("abgebrochen"))
+	_zurueck = Button.new()
+	_zurueck.text = "×  " + T.t("Zurück")
+	_zurueck.focus_mode = Control.FOCUS_NONE
+	_zurueck.anchor_left = 1.0
+	_zurueck.anchor_right = 1.0
+	_zurueck.offset_left = -124
+	_zurueck.offset_right = -10
+	_zurueck.offset_top = 6
+	_zurueck.offset_bottom = 38
+	_zurueck.add_theme_font_size_override("font_size", 14)
+	_zurueck.pressed.connect(func(): beenden("abgebrochen"))
+	root.add_child(_zurueck)
 	_paint_bar()
 
 
@@ -1415,6 +1459,9 @@ func _ui_tick() -> void:
 	var want := laeuft and not bare and (pausiert or _jetzt() - _maus_t < 4.0)
 	if _bar.visible != want:
 		_bar.visible = want
+	if _zurueck != null:
+		_zurueck.visible = laeuft
+		_zurueck.modulate.a = 0.45 if bare else 0.85
 
 
 func _end_card() -> void:

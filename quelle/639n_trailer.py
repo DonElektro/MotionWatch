@@ -3,8 +3,14 @@
 # Der 3D-Simulator spielt den Trailer selbst (simulator3d/scripts/trailer.gd: Kamerafahrt im Bergtal, Musik, Texttafeln,
 # Erzähler). Hier nur das Starten und Zuschauen:
 #   * /sim/trailer?id=…: startet den Trailer (wenn nicht schon einer läuft) und zeigt das Bild des Simulators
-#     (/sim/view.jpg?bare=1), unten eine Leiste: Beenden, Nochmals, Vollbild, Zurück. Den Ton hört man am Simulator-PC
-#     (das Bild im Browser ist ohne Ton).
+#     (/sim/view.jpg?bare=1 – nur solange der Film läuft; danach ohne bare, sonst blieben die Knöpfe am PC versteckt),
+#     unten eine Leiste: Beenden, Nochmals, Ton, Stimme, Vollbild, Zurück.
+#   * Ton auch im Browser (Fix 3.19.x, Daniel: «am iPad nichts»): grosser Knopf «🔊 Tippen für Ton» (iOS braucht ein Tippen
+#     vor Sprache und Audio; ein Tippen irgendwo genügt). Danach Erzähler (speechSynthesis, wie bisher) und Musik + Geräusche:
+#     /api/trailer?plan=1 holt den Ton-Plan des Simulators (trailer.gd ton_plan: Zeit, Klang, Lautstärke, Überblendung),
+#     /sim/trailer_ton/<klang>.wav die Klänge (trailer_ton.gd, mono 22 kHz, zusammen ≈ 3 MB); die Seite spielt sie mit
+#     WebAudio im Takt von «t» aus /api/trailer (nachgeführt, wenn es mehr als 0.35 s abweicht). Ältere Simulatoren ohne
+#     Plan: nur der Erzähler. Der Ton läuft auf beiden Geräten (PC und iPad).
 #   * /api/trailer: GET = Stand (Simulator /control trailer info), POST {do: start (id) | stop}. Nur der Besitzer
 #     (nacht_may: Administrator, nicht im Bedienermodus), wie die Vorführung (639m).
 #   * Einstieg: Reiter «Sim» ganz oben die Karte «🛠 Entwickler» (nur mit dem Entwickler-Bereich und für den Besitzer) mit
@@ -27,6 +33,22 @@ def trl_info():
             return {"ok": False, "error": tr("This simulator has no trailers yet – update it.")}
         return {"ok": False, "error": str(r.get("error") or tr("The 3D simulator is not connected."))[:120]}
     return r
+
+
+def trl_plan():
+    """the sound plan of the running trailer (simulator trailer.gd ton_plan) – for music and noises in the browser"""
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": tr("The 3D simulator is not connected.")}
+    try:
+        r = sim_control({"action": "trailer", "do": "plan"}) or {}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:80]}
+    if not isinstance(r.get("plan"), list):
+        return {"ok": False, "error": str(r.get("error") or "no plan")[:120]}
+    return r
+
+
+TRL_TON_RE = re.compile(r"^[a-z_]{2,24}$")
 
 
 def trl_do(d, owner=True):
@@ -93,8 +115,9 @@ html,body{height:100%;margin:0;background:#000;overflow:hidden}
 /*COMMON*/
 /*TLDE*/
 /*SPKJS*/
+/*TAJS*/
 const ID = (new URLSearchParams(location.search).get("id") || "grossvater") === "maggie" ? "maggie" : "grossvater";
-let S = {}, HIDE_T = 0, BUSY = 0, STARTED = 0;
+let S = {}, HIDE_T = 0, BUSY = 0, STARTED = 0, START_T = Date.now();
 (async () => { try { await initAppearance(); } catch (e) {} tlInfo(true); tlPic(); tlShow(); })();
 function tlShow() { const b = document.getElementById("tl-bar"); b.classList.remove("off"); clearTimeout(HIDE_T);
   HIDE_T = setTimeout(() => { if (S.laeuft && !S.ende && !SPK.pop) b.classList.add("off"); }, 4000); }
@@ -108,7 +131,8 @@ function tlPic() {
   const to = setTimeout(next, 6000);
   n.onload = () => { im.src = n.src; next(); };
   n.onerror = next;
-  n.src = "/sim/view.jpg?bare=1&clean=1&q=72&w=" + w + "&t=" + Date.now();
+  const bare = S.laeuft || (START_T && Date.now() - START_T < 30000);   // only while the film runs: afterwards the PC gets its buttons back
+  n.src = "/sim/view.jpg?" + (bare ? "bare=1&" : "") + "clean=1&q=72&w=" + w + "&t=" + Date.now();
 }
 async function tlInfo(first) {
   let j = null;
@@ -118,8 +142,11 @@ async function tlInfo(first) {
   setTimeout(tlInfo, 1500);
 }
 function tlPaint(j) {
+  const was = !!S.laeuft;
   S = j || {};
+  if (S.laeuft) START_T = 0; else if (was) START_T = 0;
   spkTick(S, false, !!S.laeuft);
+  taSync(S);
   const nm = (S.id || ID) === "maggie" ? t("Trailer Maggie") : t("Trailer Grossvater");
   let st = nm;
   if (S.ok === false && S.error) st = "⚠ " + S.error;
@@ -133,7 +160,8 @@ function tlPaint(j) {
 }
 async function tlDo(d) {
   if (BUSY) return; BUSY = 1; const m = document.getElementById("tl-msg");
-  if (d.do === "start") m.textContent = t("The valley is being prepared …");
+  if (d.do === "start") { m.textContent = t("The valley is being prepared …"); START_T = Date.now(); }
+  if (d.do === "stop") { START_T = 0; taStop(); }
   try { const r = await (await fetch("/api/trailer", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(d)})).json();
     if (r && r.ok === false && r.error) m.textContent = "⚠ " + r.error; else { if (d.do !== "start") m.textContent = ""; if (r && "laeuft" in r) tlPaint(r); } }
   catch (e) { m.textContent = "⚠ " + e; }
@@ -152,8 +180,8 @@ async function tlDo(d) {
 # lange Sätze an Satzzeichen geteilt. Knopf «🗣 Stimme» neben 🔊: Liste der Stimmen (beste «empfohlen», ▶ Hörprobe), Tempo-
 # Regler 0.8–1.1, Wahl pro Gerät (localStorage mw-film-stimme-<sprache>, mw-film-tempo); nur einfache Stimmen: Hinweis «Premium laden».
 SPK_JS = r"""
-let SPK = {on: false, last: -1, wl: null, vs: [], pop: false, rate0: /\/trailer/.test(location.pathname) ? 0.88 : 0.92};
-try { SPK.on = localStorage.getItem("mw-film-ton") === "1"; } catch (e) {}
+let SPK = {on: true, unlocked: false, run: false, hooks: [], last: -1, wl: null, vs: [], pop: false, rate0: /\/trailer/.test(location.pathname) ? 0.88 : 0.92};
+try { SPK.on = localStorage.getItem("mw-film-ton2") !== "0"; } catch (e) {}      // Fix 3.19.x: sound on by default (it still needs one tap: iOS)
 const SPK_GOOD = /premium|enhanced|erweitert|natural|neural|online|google/i;      // the better voices (iOS Premium / Enhanced, Edge Online (Natural), Chrome Google)
 const SPK_PROBE = {de: "Die Karte gehört jetzt dir – lies sie mit der Sonne.", en: "The map is yours now – read it with the sun.",
   fr: "La carte est à toi maintenant – lis-la avec le soleil.", it: "Ora la mappa è tua – leggila con il sole.",
@@ -201,24 +229,42 @@ function spkParts(text) {                                  // long sentences in 
 }
 function spkSay(text, l, v) {
   v = v || spkPick(l);
+  try { speechSynthesis.resume(); } catch (e) {}           // (iOS sometimes keeps the voice «paused» after a while)
   spkParts(text).forEach(p => { const u = new SpeechSynthesisUtterance(p);
     if (v) { u.voice = v; u.lang = v.lang; } else u.lang = spkLang(l);
     u.rate = spkRate(); u.pitch = 0.95; speechSynthesis.speak(u); });
 }
-function spkBtn() { document.querySelectorAll(".spk-btn").forEach(b => { b.textContent = SPK.on ? "🔊 " + t("Sound on") : "🔇 " + t("Sound off"); });
-  document.querySelectorAll(".spk-vbtn").forEach(b => { b.textContent = "🗣 " + t("Voice"); b.classList.toggle("on", SPK.pop); }); }
+function spkBtn() { document.querySelectorAll(".spk-btn").forEach(b => { b.textContent = SPK.on && SPK.unlocked ? "🔊 " + t("Sound on") : "🔇 " + t("Sound off"); });
+  document.querySelectorAll(".spk-vbtn").forEach(b => { b.textContent = "🗣 " + t("Voice"); b.classList.toggle("on", SPK.pop); });
+  const tp = document.getElementById("spk-tap"); if (tp) tp.textContent = "🔊 " + t("Tap for sound"); }
 function spkToggle() {
-  SPK.on = !SPK.on; try { localStorage.setItem("mw-film-ton", SPK.on ? "1" : "0"); } catch (e) {}
-  if (window.speechSynthesis) { speechSynthesis.cancel(); if (SPK.on) { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; speechSynthesis.speak(u); } }   // iOS: started by this tap
-  spkBtn(); spkWake(SPK.on && !!(S && S.laeuft));
+  if (!SPK.unlocked || !SPK.on) { spkUnlock(); return; }   // not yet unlocked: this tap switches the sound on (never off)
+  SPK.on = false; try { localStorage.setItem("mw-film-ton2", "0"); } catch (e) {}
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  SPK.hooks.forEach(f => { try { f(false); } catch (e) {} });
+  spkBtn(); spkTap();
 }
+function spkUnlock() {                                     // iOS: speech and WebAudio only after a tap - this one (in the tap itself)
+  SPK.unlocked = true; SPK.on = true; try { localStorage.setItem("mw-film-ton2", "1"); } catch (e) {}
+  if (window.speechSynthesis) {
+    try { speechSynthesis.cancel(); } catch (e) {}
+    const sp = S && S.sprechen, run = !!(S && S.laeuft && !S.pause);
+    if (run && sp && sp.text) { SPK.last = sp.id; spkSay(sp.text, sp.lang || SPK.lang); }   // the sentence of right now
+    else spkSay(t("Sound on"), SPK.lang);                  // a short «Ton an»: the voice is unlocked and you hear it works
+  }
+  SPK.hooks.forEach(f => { try { f(true); } catch (e) {} });   // the trailer: music and noises (WebAudio)
+  spkBtn(); spkTap(); spkWake(!!(S && S.laeuft));
+}
+function spkTap() { const b = document.getElementById("spk-tap"); if (!b) return; const h = SPK.unlocked || !(S && S.laeuft); if (b.hidden !== h) { b.hidden = h; spkBtn(); } }
 function spkTick(s, paused, running) {
-  const sp = (s && s.sprechen) || null;
+  const sp = (s && s.sprechen) || null, act = running && !paused;
   if (sp && sp.lang) SPK.lang = sp.lang;
-  if (window.speechSynthesis && (paused || !running)) speechSynthesis.cancel();      // pause / end: the voice stops
-  spkWake(running && !paused);
+  if (window.speechSynthesis && SPK.run && !act) speechSynthesis.cancel();      // pause / end: the voice stops (only then - not the «Ton an»)
+  SPK.run = act;
+  spkWake(act);
+  spkTap();
   if (!sp) return;
-  if (SPK.last < 0 || !SPK.on || !running || paused || sp.id === SPK.last || !sp.text) { SPK.last = sp.id; return; }   // only new sentences
+  if (SPK.last < 0 || !SPK.on || !SPK.unlocked || !running || paused || sp.id === SPK.last || !sp.text) { SPK.last = sp.id; return; }   // only new sentences
   SPK.last = sp.id;
   if (!window.speechSynthesis) return;
   if (sp.vorne) speechSynthesis.cancel();
@@ -279,8 +325,16 @@ function spkProbe(v) {
     + ".spk-v.on .spk-nm{background:var(--acc);border-color:var(--acc);color:#fff}.spk-v.on .spk-nm .mut{color:#dbe8ff}"
     + ".spk-pl{flex:0 0 46px;min-height:42px;padding:0}.spk-rec{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px;background:var(--grn);color:#06210f;margin-left:4px;vertical-align:1px}"
     + ".spk-rt{display:flex;align-items:center;gap:8px;margin:8px 0 2px;font-size:13px}.spk-rt input{flex:1 1 auto}.spk-hint{font-size:12px;margin-top:8px;line-height:1.4}"
-    + ".spk-vbtn.on{background:var(--acc)!important;border-color:var(--acc)!important;color:#fff!important}";
+    + ".spk-vbtn.on{background:var(--acc)!important;border-color:var(--acc)!important;color:#fff!important}"
+    + "#spk-tap{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:7;font-size:22px;font-weight:700;padding:16px 28px;min-height:64px;"
+    + "border-radius:999px;background:var(--acc);border:2px solid #fff;color:#fff;box-shadow:0 6px 30px rgba(0,0,0,.6);animation:spkp 1.6s ease-in-out infinite}"
+    + "#spk-tap[hidden]{display:none}@keyframes spkp{50%{transform:translate(-50%,-50%) scale(1.06)}}";
   document.head.appendChild(st);
+  const tap = document.createElement("button"); tap.type = "button"; tap.id = "spk-tap"; tap.hidden = true;
+  tap.textContent = "🔊 " + t("Tap for sound"); tap.onclick = e => { e.stopPropagation(); spkUnlock(); };
+  document.body.appendChild(tap);
+  ["touchend", "click"].forEach(ev => addEventListener(ev, e => {        // one tap anywhere is enough (iOS: touchend / click count as a gesture)
+    if (!SPK.unlocked && !(e.target && e.target.closest && e.target.closest(".spk-btn,.spk-vbtn,#spk-tap,#spk-pop"))) spkUnlock(); }, true));
   if (!window.speechSynthesis) return;
   const p = document.createElement("div"); p.id = "spk-pop"; p.hidden = true; document.body.appendChild(p);
   document.querySelectorAll(".spk-btn").forEach(b => { const v = document.createElement("button"); v.type = "button"; v.className = "sec spk-vbtn";
@@ -294,6 +348,95 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 setTimeout(spkBtn, 50);
 """
 
+
+# Musik und Geräusche des Trailers im Browser (Fix 3.19.x): der Ton-Plan des Simulators (trailer.gd ton_plan) mit WebAudio
+# nachgespielt – Schleifen (Musikflächen, Wind, Wasser …) mit gleitender Lautstärke, Einzelklänge, Musik leiser während der
+# Erzähler spricht (0.6, wie trailer.gd _audio_tick), am Schluss 2 s ausblenden. Die Uhr: «t» aus /api/trailer (alle 1.5 s);
+# weicht sie mehr als 0.35 s ab, wird nachgeführt, bei mehr als 3 s (Sprung) neu aufgesetzt. Erst nach dem Tippen (iOS).
+TA_JS = r"""
+const TA = {ctx: null, buf: {}, plan: null, pid: "", loops: {}, ones: [], i: 0, base: null, mus: [], mb: null, fb: null, mg: null, load: 0, fail: 0, duck: 0, iv: 0};
+function taDb(db) { return Math.pow(10, db / 20); }
+function taUnlock(on) {
+  try {
+    if (!TA.ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+      TA.ctx = new C(); TA.mg = TA.ctx.createGain(); TA.mg.connect(TA.ctx.destination);
+      TA.mb = TA.ctx.createGain(); TA.mb.connect(TA.mg); TA.fb = TA.ctx.createGain(); TA.fb.connect(TA.mg); }
+    if (TA.ctx.resume) TA.ctx.resume();
+    const b = TA.ctx.createBuffer(1, 1, 22050), x = TA.ctx.createBufferSource(); x.buffer = b; x.connect(TA.ctx.destination); x.start(0);   // iOS: unlocked by this tap
+    TA.mg.gain.value = on === false ? 0 : 1;
+  } catch (e) {}
+  if (on !== false) taSync(S);
+}
+SPK.hooks.push(taUnlock);
+async function taLoad() {                                  // the plan and the sounds of this trailer (once per trailer)
+  if (TA.load || !TA.ctx || TA.fail > 2) return; TA.load = 1;
+  try {
+    const j = await (await fetch("/api/trailer?plan=1", {cache: "no-store"})).json();
+    if (!j || !Array.isArray(j.plan)) { TA.fail++; TA.load = 0; return; }   // an older simulator: only the narrator
+    TA.mus = j.musik || [];
+    await Promise.all((j.klaenge || []).map(async nm => {
+      if (TA.buf[nm]) return;
+      const ab = await (await fetch("/sim/trailer_ton/" + encodeURIComponent(nm) + ".wav")).arrayBuffer();
+      TA.buf[nm] = await new Promise((ok, no) => { const p = TA.ctx.decodeAudioData(ab, ok, no); if (p && p.then) p.then(ok, no); });
+    }));
+    TA.plan = j.plan; TA.pid = j.id; TA.base = null;
+  } catch (e) { TA.fail++; }
+  TA.load = 0;
+}
+function taNow() { return TA.ctx.currentTime - TA.base; }  // the film time in the browser
+function taLv(L, at) { if (at >= L.t1) return L.to; if (at <= L.t0) return L.from; return L.from + (L.to - L.from) * (at - L.t0) / (L.t1 - L.t0); }
+function taRamp(L, to, at, f) { const v = taLv(L, at), g = L.g.gain;
+  try { g.cancelScheduledValues(at); g.setValueAtTime(v, at); g.linearRampToValueAtTime(to, at + Math.max(0.02, f)); } catch (e) {}
+  L.from = v; L.to = to; L.t0 = at; L.t1 = at + Math.max(0.02, f); }
+function taLoop(nm, at) {
+  let L = TA.loops[nm]; if (L || !TA.buf[nm]) return L;
+  const x = TA.ctx.createBufferSource(), g = TA.ctx.createGain(); x.buffer = TA.buf[nm]; x.loop = true; g.gain.value = 0;
+  x.connect(g); g.connect(TA.mus.indexOf(nm) >= 0 ? TA.mb : TA.fb); x.start(at);
+  return TA.loops[nm] = {x, g, from: 0, to: 0, t0: 0, t1: 0};
+}
+function taOnesStop(at) { TA.ones.forEach(o => { try { o.stop(at); } catch (e) {} }); TA.ones = []; }
+function taDo(e, at, now) {                                // one command of the plan (now = set at once: catching up)
+  const k = e[1], c = TA.ctx;
+  if (k === "loop") { const L = taLoop(e[2], at); if (L) taRamp(L, taDb(e[3]), at, now ? 0.05 : e[4]); }
+  else if (k === "stop") { const L = TA.loops[e[2]]; if (L) taRamp(L, 0, at, now ? 0.05 : e[3]); }
+  else if (k === "stille") { Object.values(TA.loops).forEach(L => taRamp(L, 0, at, now ? 0.05 : e[2])); taOnesStop(at); }
+  else if (k === "one" && !now && TA.buf[e[2]]) { const x = c.createBufferSource(), g = c.createGain(); x.buffer = TA.buf[e[2]]; g.gain.value = taDb(e[3]);
+    x.connect(g); g.connect(TA.fb); x.start(at); TA.ones.push(x); x.onended = () => { TA.ones = TA.ones.filter(o => o !== x); }; }
+  else if (k === "say" && !now) { const g = TA.mb.gain;        // the music a bit lower while the narrator speaks
+    try { if (at < TA.duck) g.cancelScheduledValues(at); g.setValueAtTime(0.6, at); g.setValueAtTime(1, at + e[2]); } catch (x) {} TA.duck = at + e[2]; }
+}
+function taStop() {
+  if (!TA.ctx) return;
+  const at = TA.ctx.currentTime;
+  Object.values(TA.loops).forEach(L => { try { L.g.gain.cancelScheduledValues(at); L.g.gain.setTargetAtTime(0, at, 0.1); L.x.stop(at + 0.6); } catch (e) {} });
+  TA.loops = {}; taOnesStop(at + 0.3); TA.base = null; TA.i = 0;
+  try { TA.mb.gain.cancelScheduledValues(at); TA.mb.gain.setValueAtTime(1, at); } catch (e) {}
+}
+function taSeek(ft) {                                      // start / a jump: the loops as they are at ft (like trailer.gd _vorspulen)
+  taStop(); TA.base = TA.ctx.currentTime - ft; const at = TA.ctx.currentTime + 0.02;
+  let i = 0; while (i < TA.plan.length && TA.plan[i][0] <= ft) { if (["loop", "stop", "stille"].indexOf(TA.plan[i][1]) >= 0) taDo(TA.plan[i], at, true); i++; }
+  TA.i = i;
+}
+function taTick() {                                        // every 50 ms: the commands of the next 150 ms, exactly on time
+  if (!TA.ctx || !TA.plan || TA.base === null) return;
+  const ft = taNow();
+  while (TA.i < TA.plan.length && TA.plan[TA.i][0] <= ft + 0.15) { const e = TA.plan[TA.i++]; taDo(e, Math.max(TA.ctx.currentTime, TA.base + e[0]), false); }
+}
+function taSync(s) {
+  if (!TA.ctx || !SPK.unlocked) return;
+  if (!s || !s.laeuft) { if (TA.base !== null || Object.keys(TA.loops).length) taStop(); return; }
+  if (!s.dauer) return;                                    // the valley is still being built
+  if (TA.pid && s.id && TA.pid !== s.id) { taStop(); TA.plan = null; TA.pid = ""; }
+  if (!TA.plan) { taLoad().then(() => { if (TA.plan) taSync(S); }); return; }
+  if (!TA.iv) TA.iv = setInterval(taTick, 50);
+  if (s.ende) return;                                      // the end card: the fade of the plan runs out
+  const est = (+s.t || 0) + 0.15;                          // (the way from the simulator to here)
+  if (TA.base === null || Math.abs(taNow() - est) > 3) taSeek(est);
+  else if (Math.abs(taNow() - est) > 0.35) TA.base = TA.ctx.currentTime - est;   // slowly off (the simulator had a hitch): follow
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && TA.ctx && TA.ctx.resume) TA.ctx.resume(); });
+"""
+
 _HX_TRL = {
     'Trailer Grossvater': ('Trailer Grossvater', 'Bande-annonce Grand-père', 'Trailer Nonno', 'Trailer Tat'),
     'Trailer Maggie': ('Trailer Maggie', 'Bande-annonce Maggie', 'Trailer Maggie', 'Trailer Maggie'),
@@ -305,6 +448,7 @@ _HX_TRL = {
     'Over': ('Vorbei', 'Terminé', 'Finito', 'Terminà'),
     'Sound on': ('Ton an', 'Son activé', 'Audio attivo', 'Tun activà'),
     'Sound off': ('Ton aus', 'Son coupé', 'Audio spento', 'Tun deactivà'),
+    'Tap for sound': ('Tippen für Ton', 'Touchez pour le son', 'Tocca per l’audio', 'Tutgar per tun'),
     'This simulator has no trailers yet – update it.': ('Dieser Simulator kennt die Trailer noch nicht – bitte aktualisieren.',
                                                         'Ce simulateur ne connaît pas encore les bandes-annonces – mets-le à jour.',
                                                         'Questo simulatore non conosce ancora i trailer – aggiornalo.',
@@ -327,7 +471,7 @@ for _k, _v in _HX_TRL.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
-_SPK_KEYS = ['Voice', 'recommended', 'Automatic (recommended)', 'Listen', 'Speed', 'No voice for this language on this device.', 'Better voices: iPad → Settings → Accessibility → Spoken Content → Voices → English → download «Premium».']
+_SPK_KEYS = ['Tap for sound', 'Voice', 'recommended', 'Automatic (recommended)', 'Listen', 'Speed', 'No voice for this language on this device.', 'Better voices: iPad → Settings → Accessibility → Spoken Content → Voices → English → download «Premium».']
 _TRL_KEYS = list(_HX_TRL) + ["Full screen", "Back", "The valley is being prepared …", "The 3D simulator is not connected."]
 
 # the Vorführung (639m) gets the same: the button in its bar, the new sentences read aloud, silent on pause, screen awake
@@ -369,7 +513,7 @@ SIM_PAGE = SIM_PAGE.replace("</body>", TRL_SIMJS.replace("/*TRLDE*/{}", _TRL_DE_
 
 def trl_page():
     js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in _TRL_KEYS}, ensure_ascii=False) + ");"
-    return render_page(TRL_PAGE, "sim").replace("/*TLDE*/", js, 1).replace("/*SPKJS*/", SPK_JS, 1)
+    return render_page(TRL_PAGE, "sim").replace("/*TLDE*/", js, 1).replace("/*SPKJS*/", SPK_JS, 1).replace("/*TAJS*/", TA_JS, 1)
 
 
 _smalltv_routes_trl_base = smalltv_routes
@@ -390,10 +534,24 @@ def smalltv_routes(app, reply, body):                     # + 639n: /sim/trailer
         own = nacht_may(_nacht_role())
         from flask import request
         if request.method == "GET":
-            return reply(trl_info()) if own else reply({"ok": False, "error": tr("Only the owner can do this.")}, 403)
+            if not own:
+                return reply({"ok": False, "error": tr("Only the owner can do this.")}, 403)
+            return reply(trl_plan() if request.args.get("plan") == "1" else trl_info())
         r = trl_do(body(), own)
         code = r.pop("code", None)
         return reply(r, code) if code else reply(r)
+
+    @app.route("/sim/trailer_ton/<nm>.wav")
+    def trl_ton_(nm):                                      # one sound of the trailer (simulator /trailer_ton/<nm>.wav)
+        if not nacht_may(_nacht_role()):
+            return Response(tr("Only the owner can do this."), 403)
+        if not CFG.get("sim_on") or not TRL_TON_RE.match(nm or ""):
+            return Response("no", 404)
+        try:
+            b_, _h = _sim_get("/trailer_ton/" + nm + ".wav", 8.0)
+        except Exception:
+            return Response("simulator not reachable", 502)
+        return Response(b_, mimetype="audio/wav", headers={"Cache-Control": "private, max-age=3600"})
 
 
 if GUI_OK:                                                # the window: the two trailers in the developer part (639c)
@@ -429,14 +587,18 @@ def trl_selftest():
     finally:
         CFG["sim_on"] = keep
     html = trl_page()
-    assert "/sim/view.jpg?bare=1" in html and "/api/trailer" in html and "<!--NAV-->" not in html
+    assert "/sim/view.jpg?" in html and "bare=1&" in html and "/api/trailer" in html and "<!--NAV-->" not in html
     assert 'id="c-devquick"' in SIM_PAGE and "/sim/trailer?id=maggie" in SIM_PAGE and "/sim/vorfuehrung" in SIM_PAGE
     assert SIM_PAGE.index('id="c-devquick"') < SIM_PAGE.index('id="c-conn"')
     assert "/sim/trailer?id=grossvater" in WEB_PAGE
     assert "speechSynthesis" in html and "spkTick(S" in html and "wakeLock" in html
+    assert "spk-tap" in html and "spkUnlock" in html and "taSync(S)" in html and "/sim/trailer_ton/" in html and "/api/trailer?plan=1" in html
+    assert "bare ? \"bare=1&\"" in html                    # the browser picture without the PC's buttons only while the film runs
+    assert TRL_TON_RE.match("pad_ruhig") and not TRL_TON_RE.match("../x")
     assert "voiceschanged" in html and "spk-vbtn" in html and "SPK_GOOD" in html and "!SPK.pop" in html and "Stimme" in html
     vh = vf_page()
     assert "spkTick(S, !!S.pause" in vh and "spk-btn" in vh and "Ton an" in vh and "!SPK.pop" in vh and "Premium" in vh
+    assert "spk-tap" in vh and "Tippen für Ton" in vh and "S.laeuft ? \"bare=1&\"" in vh
     for L in ("fr", "it", "rm"):
         assert TRX[L].get("End the trailer"), L
     return "Trailer: page, owner only, commands to the simulator, card on top of «Sim», entries"
