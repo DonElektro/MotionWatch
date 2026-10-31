@@ -74,7 +74,20 @@ void fragment() {
 		vec3 fd = normalize(foto_cam * vec3(nd.x * foto_tan.x, nd.y * foto_tan.y, -1.0));
 		vec4 bg = foto_bg(fd);
 		vec3 dc = abs(c - bg.rgb);
-		if (bg.a > 0.02 && max(dc.r, max(dc.g, dc.b)) > foto_thr) {
+		float dm = max(dc.r, max(dc.g, dc.b));
+		if (bg.a > 0.02 && dm > foto_thr) {
+			// edges of the photo (tree line, painted parts): the sphere and this ray can be half a pixel apart - only a
+			// figure if it differs from the photo around it too (only here, so the plain photo costs nothing extra)
+			vec2 px = 1.5 / res;
+			for (int k = 0; k < 4; k++) {
+				vec2 o = k == 0 ? vec2(px.x, 0.0) : (k == 1 ? vec2(-px.x, 0.0) : (k == 2 ? vec2(0.0, px.y) : vec2(0.0, -px.y)));
+				vec2 n2 = nd + vec2(o.x * 2.0, -o.y * 2.0);
+				vec3 b2 = foto_bg(normalize(foto_cam * vec3(n2.x * foto_tan.x, n2.y * foto_tan.y, -1.0))).rgb;
+				vec3 d2 = abs(c - b2);
+				dm = min(dm, max(d2.r, max(d2.g, d2.b)));
+			}
+		}
+		if (bg.a > 0.02 && dm > foto_thr) {
 			if (foto_soft > 0.05) {
 				vec2 o = vec2(foto_soft) / res;
 				c = c * 0.4 + (texture(screen_tex, uv + vec2(o.x, 0.0)).rgb + texture(screen_tex, uv - vec2(o.x, 0.0)).rgb
