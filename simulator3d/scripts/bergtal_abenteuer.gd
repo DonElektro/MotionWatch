@@ -1649,9 +1649,10 @@ func _diary(kind: String, title: String, text: String) -> void:
 	(R["log"] as Array).append({"k": kind, "h": snappedf(main.hour(), 0.01), "title": title, "text": text})
 	if blinki != null and not replaying:
 		blinki.on_diary(kind, title, text)               # A6: Blinki kommentiert Funde
-	if kind in ["a3_page", "a6_teil2"] and not fast and not replaying:
+	if kind in ["a3_page", "a6_teil2"] and not replaying:
 		_last_read = text
-		Stimme.sprich(text)                              # A6: die Erzählerstimme liest die Tagebuchseite vor
+		if not fast:
+			Stimme.sprich(text)                          # A6: die Erzählerstimme liest die Tagebuchseite vor
 
 
 func _snap_later(cap: String, src: String) -> void:
