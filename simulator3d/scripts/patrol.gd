@@ -268,7 +268,7 @@ func goto_point(p: Vector2, why := "goto") -> void:
 		_next()
 	else:
 		set_active(true)
-	main.start_info = {"alarm": "Rover fährt zum Alarm", "dock": "Rover fährt zur Ladestation", "goto": "Rover fährt hin"}.get(why, why)
+	main.start_info = {"alarm": "Mover fährt zum Alarm", "dock": "Mover fährt zur Ladestation", "goto": "Mover fährt hin"}.get(why, why)
 
 
 func _mission_end() -> void:
@@ -286,7 +286,7 @@ func _mission_end() -> void:
 	else:
 		idx = -1
 		_next()
-	main.start_info = "Rover zurück an der Ladestation" if not keep_on else "Rover: weiter mit der Patrouille"
+	main.start_info = "Mover zurück an der Ladestation" if not keep_on else "Mover: weiter mit der Patrouille"
 
 
 func _next() -> void:

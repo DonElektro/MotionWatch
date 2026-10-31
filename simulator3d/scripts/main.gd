@@ -3865,7 +3865,7 @@ const ALIAS_IDS := {"lens_drops": "linse_tropfen", "w_lens": "linse_tropfen", "c
 		"daily_life": "tagesablauf", "m_plan": "tagesablauf", "pruef_open": "Testen → Prüfstand"}
 # Menüs A, Punkt 8: die Foto-Regler wirken nur mit einem geladenen Foto des Platzes - ohne Foto ausgegraut («ro»)
 const PHOTO_IDS := ["twin_yaw", "twin_span", "twin_dist", "twin_horizon", "fm_on", "fm_h", "fm_hz", "fm_roll", "fm_shk", "fm_bright", "fm_wb",
-		"fm_noise", "fm_front", "fm_measure", "fm_dbg"]
+		"fm_noise", "fm_front", "fm_measure"]
 
 
 func _simple_ok(c: Dictionary) -> bool:
@@ -3923,7 +3923,7 @@ func _order_controls() -> void:
 		c.extra["icon"] = GROUPS[g][2] if g < GROUPS.size() else ""
 		c.extra["iconk"] = GROUPS[g][1] if g < GROUPS.size() else ""          # the drawn symbol (page of MoveEye from 2.93.16)
 		var si: int = (GROUPS[g][3] as Array).find(sub) if g < GROUPS.size() else 0
-		keyed.append([g * 1000 + max(si, 0) * 100, i, c])
+		keyed.append([g * 10000 + max(si, 0) * 100, i, c])   # Menüs A: Besuch has 13 parts now (1000 was too small)
 	keyed.sort_custom(func(a, b): return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
 	controls = keyed.map(func(k): return k[2])
 	# 3D-4.21 (Menü 2, like MoveEye): «Einfach» = the main switch of every group - a group without one gets its first switch
@@ -3971,7 +3971,7 @@ func _register_controls() -> void:
 	add_control("select", "bt_orient", "Orientierung im Bergtal", func(): return bt_orient, func(v): set_bt("bt_orient", str(v)), "Szene",
 			{"options": [["leicht", "leicht (Karte, Kompass, eigener Standort)"], ["mittel", "mittel (Karte und Kompass)"], ["schwer", "schwer (nur Wegweiser)"]], "expert": true})
 	add_control("text", "bt_mark", "Eigene Markierung auf der Karte (Name; wird in der Bildmitte gesetzt)", func(): return "", func(v): bt_mark(str(v)), "Szene", {"expert": true})
-	add_control("button", "bt_here", "Hier übernachten (Bergtal: der Platz in der Bildmitte oder beim Rover)", null, func(): bt_here(), "Szene")
+	add_control("button", "bt_here", "Hier übernachten (Bergtal: der Platz in der Bildmitte oder beim Mover)", null, func(): bt_here(), "Szene")
 	add_control("select", "bt_goto", "Schnellreise im Bergtal (Ort wählen)", func(): return "", func(v): bt_goto(str(v)), "Szene", {"options": Bt.place_options()})
 	add_control("select", "bt_season", "Jahreszeit im Bergtal", func(): return bt_season, func(v): set_bt("bt_season", str(v)), "Szene",
 			{"options": [["auto", "nach dem Monat (Jahreszeit)"], ["fruehling", "Frühling"], ["sommer", "Sommer"], ["herbst", "Herbst (Lärchen gelb, Nebel)"], ["winter", "Winter (Schnee, Eis)"]]})
@@ -4148,16 +4148,16 @@ func _register_controls() -> void:
 	add_control("toggle", "patrol_follow", "Kopf dreht zu Verdächtigem, der Mover fährt dann langsamer", func(): return patrol.follow if patrol != null else true, func(v): if patrol != null: patrol.follow = bool(v), "Mover")
 	add_control("select", "patrol_judge", "Spiel «Patrouille»: wer erwischt", func(): return patrol_judge, func(v): patrol_judge = str(v), "Mover",
 			{"options": [["mw", "die echte Erkennung von MoveEye"], ["sim", "der Wächter des Simulators (geht ohne Pi)"]]})
-	add_control("button", "rover_place", "📍 Rover versetzen – danach in die Welt klicken (beim Erkunden: Strg + Klick)", null, func(): place_kind = "rover", "Mover")
+	add_control("button", "rover_place", "📍 Mover versetzen – danach in die Welt klicken (beim Erkunden: Strg + Klick)", null, func(): place_kind = "rover", "Mover")
 	add_control("slider", "mast_h", "Höhe der Kamera (Stange; beim Erkunden Bild auf / ab oder Steuerkreuz)", func(): return mast_h, func(v): set_mast(float(v)), "Mover", {"min": MAST_MIN, "max": MAST_MAX, "step": 0.05, "unit": "m", "live": true})
-	add_control("button", "pad_roles", "🎮 Controller zuteilen (mehrere Controller: Wächter, Schleicher, Rover)", null, func(): padmap.open_roles(), "Mover", {"sub": "Controller"})
+	add_control("button", "pad_roles", "🎮 Controller zuteilen (mehrere Controller: Wächter, Schleicher, Mover)", null, func(): padmap.open_roles(), "Mover", {"sub": "Controller"})
 	add_control("button", "pad_test", "🎮 Controller testen (zeigt Stick roh und nach der Drift-Korrektur)", null, func(): _pad_test(), "Mover", {"sub": "Controller"})
 	add_control("toggle", "pad_auto", "Stick-Drift selbst lernen (ein Stick, der 3 s genau gleich steht, gilt als Ruhelage)", func(): return pad_auto, func(v): pad_auto = v; _settings_dirty = true, "Mover", {"sub": "Controller"})
 	add_control("button", "pad_cal", "🎮 Controller kalibrieren (gegen Stick-Drift: Sticks 2 s nicht berühren)", null, func(): start_info = explore.calibrate() if explore != null else "", "Mover", {"sub": "Controller"})
 	add_control("slider", "pad_dead", "Totzone der Sticks (höher = weniger Drift, aber träger)", func(): return pad_dead, func(v): pad_dead = v; _settings_dirty = true, "Mover", {"min": 0.02, "max": 0.5, "step": 0.01, "sub": "Controller"})
 	add_control("slider", "pad_sens", "Empfindlichkeit von Kopf und Ansicht (Stick)", func(): return pad_sens, func(v): pad_sens = float(v), "Mover", {"min": 0.3, "max": 2.5, "step": 0.1, "sub": "Controller"})
 	add_control("toggle", "pad_inv_y", "Y umkehren (Stick hoch = Kopf / Blick runter)", func(): return pad_inv_y, func(v): pad_inv_y = bool(v), "Mover", {"sub": "Controller"})
-	add_control("toggle", "pad_swap", "Sticks tauschen (links Rover / gehen, rechts Kopf / schauen)", func(): return pad_swap, func(v): pad_swap = bool(v), "Mover", {"sub": "Controller"})
+	add_control("toggle", "pad_swap", "Sticks tauschen (links Mover / gehen, rechts Kopf / schauen)", func(): return pad_swap, func(v): pad_swap = bool(v), "Mover", {"sub": "Controller"})
 	add_control("toggle", "pad_rumble", "Vibration (erwischt, Treffer, Alarm, die Kamera sieht dich)", func(): return pad_rumble, func(v): pad_rumble = bool(v), "Mover", {"sub": "Controller"})
 	add_control("slider", "explore_speed", "Tempo beim Erkunden (Shift / A = schneller)", func(): return explore.speed if explore != null else 1.6, func(v): if explore != null: explore.speed = v, "Mover", {"min": 0.5, "max": 6.0, "step": 0.1, "unit": "m/s"})
 	add_control("slider", "mover_max", "Höchstgeschwindigkeit des Movers", func(): return mover_max, func(v): mover_max = v, "Mover", {"min": 0.2, "max": 2.0, "step": 0.1, "unit": "m/s"})

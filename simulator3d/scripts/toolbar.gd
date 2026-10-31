@@ -31,20 +31,20 @@ const ON := Color(0.45, 0.95, 0.55)
 const OFF := Color(0.85, 0.88, 0.92)
 
 # [id, symbol, name, tooltip (shortcut · one sentence), [ids of the group menu]]
-const DOCK := [["explore", "compass", "Erkunden", "Start (Controller) · mit dem Rover herumfahren – Tastatur, Maus, Touch oder Controller", []],
-		["rover", "track", "Rover", "Rover-Route: Punkte setzen, Bereich, Zufall – der Mover fährt MoveEye ab", ["patrol", "points", "area", "random", "clear", "route"]],
+const DOCK := [["explore", "compass", "Erkunden", "Start (Controller) · mit dem Mover herumfahren – Tastatur, Maus, Touch oder Controller", []],
+		["rover", "track", "Patrouille", "Patrouille: Punkte setzen, Bereich, Zufall – der Mover fährt MoveEye ab", ["patrol", "points", "area", "random", "clear", "route"]],   # Menüs A: «Mover» / «Patrouille» like MoveEye (was «Rover» / «Rover-Route»)
 		["follow", "target", "Folgen", "Y (Controller) · der Kopf hält Personen, Tiere und Bewegtes in der Bildmitte", []],
 		["head", "pad", "Kopf", "L ◉ (Controller) · den Kopf von MoveEye drehen, Licht ein / aus", []],
-		["place", "move", "Versetzen", "Strg + Klick beim Erkunden · den Rover an eine andere Stelle setzen", []],
+		["place", "move", "Versetzen", "Strg + Klick beim Erkunden · den Mover an eine andere Stelle setzen", []],
 		["mast", "ruler", "Höhe der Kamera", "Bild ↑ / ↓ beim Erkunden · Höhe der Kamera über dem Boden (Stange)", ["mast_up", "mast_dn"]],
 		["invite", "people", "Mitspieler", "J beim Erkunden · QR-Code: Mitspieler mit dem Handy, frei bewegen", []],
 		["view", "lens", "Ansicht", "0 – 3, M, L · Kameras, Karte, Livebild und was angezeigt wird", ["v0", "v1", "v2", "v3", "map", "live", "to_head", "to_top", "exview", "spectate", "cams", "info", "laser", "zones3d", "det3d"]],
 		["windows", "windows", "Fenster", "Karte, Kompass, Livebild … ein / aus und «Anordnung zurücksetzen» (fenster.gd)", []],
 		["panel", "menu", "Menü", "H · das Bedienfeld rechts ein / aus", []],
-		["theme", "theme", "Hell / Rotlicht / Dunkel", "Ansicht des Bedienfelds wie in MoveEye: Hell → Rotlicht → Dunkel (Rotlicht für die Nacht im Zelt)", []],
-		["help", "help", "Hilfe", "Maus und Tasten · Klick: Rundgang, Selbstdiagnose, Protokoll, Rückmeldung, Über (Mehr)", []]]
+		["theme", "theme", "Hell / Dunkel / Rotlicht", "Farben des Bedienfelds wie in MoveEye: Hell → Rotlicht → Dunkel (Rotlicht für die Nacht im Zelt)", []],
+		["help", "help", "Hilfe", "Maus und Tasten · Klick: Rundgang, Selbstdiagnose, Protokoll, Über (Mehr)", []]]
 
-const NAMES := {"patrol": ["Rover-Route starten", "Der Mover fährt MoveEye die Route ab, MoveEye passt die ganze Zeit auf"],
+const NAMES := {"patrol": ["Patrouille starten", "Der Mover fährt MoveEye die Route ab, MoveEye passt die ganze Zeit auf"],
 		"points": ["Punkte setzen", "In die Welt klicken = Punkt, Rechtsklick auf einen Punkt = weg"],
 		"area": ["Bereich aufziehen", "Der Mover fährt zufällige Punkte darin ab"],
 		"random": ["Zufällige Route", "Zufällige Route rund um MoveEye"],
@@ -55,8 +55,8 @@ const NAMES := {"patrol": ["Rover-Route starten", "Der Mover fährt MoveEye die 
 		"v2": ["Kamera 2 (2)", "Durch die zweite Kamera schauen"], "v3": ["Wärmebild (3)", "Das Wärmebild gross"],
 		"map": ["Karte (M)", "Übersichtskarte oben links"], "live": ["Livebild (L)", "Livebild einer Kamera unter der Karte"],
 		"to_head": ["Zum Kopf", "Zurück zu MoveEye"], "to_top": ["Von oben", "Von oben auf den Platz schauen"],
-		"exview": ["Rover-Ansicht (V)", "Erkunden: hinterher, Fahrersicht, von oben"],
-		"spectate": ["Beobachter (C)", "Wechselnde Kamera-Einstellungen von Rover und Spielern"],
+		"exview": ["Mover-Ansicht (V)", "Erkunden: hinterher, Fahrersicht, von oben"],
+		"spectate": ["Beobachter (C)", "Wechselnde Kamera-Einstellungen von Mover und Spielern"],
 		"cams": ["Kamerabilder", "Was MoveEye sieht (im Bedienfeld)"], "info": ["Info oben", "Anzeige oben (Steuerung, Tempo, Höhe der Kamera)"],
 		"laser": ["Blickrichtung", "Roter Strahl: wohin die Kamera von MoveEye schaut (nur für dich sichtbar)"],
 		"zones3d": ["Zonen in 3D", "Die Zonen von MoveEye auf dem Boden (nur für dich sichtbar)"],
@@ -317,7 +317,7 @@ func _paint_sub() -> void:
 		var on := bool(_st.get(k, false))
 		var tx: String = NAMES[k][0]
 		if k == "patrol":
-			tx = "Rover-Route stoppen" if main.patrol.active else "Rover-Route starten"
+			tx = "Patrouille stoppen" if main.patrol.active else "Patrouille starten"
 		b.text = ("●  " if on else "○  ") + tx
 		b.add_theme_color_override("font_color", ON if on else OFF)
 		b.add_theme_color_override("font_focus_color", ON if on else Color.WHITE)
@@ -431,7 +431,7 @@ func _paint() -> void:
 	if _labels.has("view"):
 		(_labels["view"] as Label).text = ("Ansicht: " + str(ex.VIEW_NAMES.get(ex.view, ex.view)) if ex.on else ["Ansicht", "Kamera 1", "Kamera 2", "Wärmebild"][clampi(vm, 0, 3)]) + " ▴"
 	if _labels.has("rover"):
-		(_labels["rover"] as Label).text = ("Rover-Route: " + {"drive": "fährt", "look": "schaut"}.get(pt.state, "")) if pt.active else "Rover ▴"
+		(_labels["rover"] as Label).text = ("Patrouille: " + {"drive": "fährt", "look": "schaut"}.get(pt.state, "")) if pt.active else "Patrouille ▴"
 
 
 func _process(dt: float) -> void:

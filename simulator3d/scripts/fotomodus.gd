@@ -670,15 +670,15 @@ func add_controls() -> void:
 			func(v): set_val("fm_shk", float(v) / 100.0), "Szene", {"sub": "Foto des Platzes", "min": 0, "max": 100, "step": 5, "unit": "%"})
 	m.add_control("slider", "fm_bright", "Foto-Modus: Figuren heller / dunkler (zur Messung am Foto)", func(): return float(gv("fm_bright", 1.0)) * 100.0,
 			func(v): set_val("fm_bright", float(v) / 100.0), "Szene", {"sub": "Foto des Platzes", "min": 40, "max": 160, "step": 5, "unit": "%", "expert": true})
-	m.add_control("slider", "fm_wb", "Foto-Modus: Farbstich des Fotos auf die Figuren", func(): return float(gv("fm_wb", 0.5)) * 100.0,
+	m.add_control("slider", "fm_wb", "Farbstich des Fotos auf die Figuren (Foto-Modus)", func(): return float(gv("fm_wb", 0.5)) * 100.0,
 			func(v): set_val("fm_wb", float(v) / 100.0), "Szene", {"sub": "Foto des Platzes", "min": 0, "max": 100, "step": 5, "unit": "%", "expert": true})
 	m.add_control("slider", "fm_noise", "Foto-Modus: Rauschen der Figuren (100 = wie gemessen)", func(): return float(gv("fm_noise", 1.0)) * 100.0,
 			func(v): set_val("fm_noise", float(v) / 100.0), "Szene", {"sub": "Foto des Platzes", "min": 0, "max": 300, "step": 10, "unit": "%", "expert": true})
-	m.add_control("toggle", "fm_front", "Foto-Modus: gemalte Bereiche immer ganz vorne (sonst Abstand vom untersten Punkt am Boden)",
+	m.add_control("toggle", "fm_front", "Gemalte Bereiche immer ganz vorne (Foto-Modus; sonst Abstand vom untersten Punkt am Boden)",
 			func(): return bool(gv("fm_front", false)), func(v): set_val("fm_front", bool(v)), "Szene", {"sub": "Foto des Platzes", "expert": true})
-	m.add_control("button", "fm_measure", "Foto-Modus: Helligkeit, Farbe und Rauschen neu vom Foto messen", null,
+	m.add_control("button", "fm_measure", "Figuren neu angleichen (Foto-Modus: Helligkeit, Farbe und Rauschen neu vom Foto messen)", null,
 			func(): measure(); _paint_canvas(), "Szene", {"sub": "Foto des Platzes", "expert": true})
-	m.add_control("toggle", "fm_dbg", "Foto-Modus: zeigen, was als Figur angeglichen wird (rot)", func(): return dbg, func(v): dbg = bool(v),
+	m.add_control("toggle", "fm_dbg", "Angeglichene Figuren rot zeigen (Foto-Modus)", func(): return dbg, func(v): dbg = bool(v),
 			"Szene", {"sub": "Foto des Platzes", "expert": true})
 
 

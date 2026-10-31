@@ -621,7 +621,7 @@ func _help() -> String:
 		"touch":
 			return "Grüner Stick unten rechts fahren · Ansicht und Ende oben im Feld"
 		"mouse":
-			return "Grünen Stick ziehen · rechte Taste = umschauen · Rad = Abstand · Strg+Klick = Rover hierhin · C Beobachter · Esc"
+			return "Grünen Stick ziehen · rechte Taste = umschauen · Rad = Abstand · Strg+Klick = Mover hierhin · C Beobachter · Esc"
 	return "W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc"
 
 

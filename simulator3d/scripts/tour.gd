@@ -124,7 +124,7 @@ func _make_steps() -> Array:
 	var tb: Control = main.toolbar if main.toolbar != null and main.toolbar.visible else null
 	return [
 		[[], "Hallo, ich bin Blinki!", "Ich bin das Auge von MoveEye. Ich zeige dir das Bedienfeld des Simulators Schritt für Schritt – und wenn ich blinzle, ist alles gut.", "normal"],
-		[[tb] if tb != null else [], "Die Leiste unten", "Bewegen und Ansicht: Erkunden mit dem Rover, Rover-Route, Folgen, Kopf drehen, Versetzen, Höhe der Kamera, Mitspieler, Ansicht, Bedienfeld ein / aus, Hell / Rotlicht / Dunkel und «?». Mit der Maus über ein Symbol: sein Name.", "point"],
+		[[tb] if tb != null else [], "Die Leiste unten", "Bewegen und Ansicht: Erkunden mit dem Mover, Patrouille, Folgen, Kopf drehen, Versetzen, Höhe der Kamera, Mitspieler, Ansicht, Bedienfeld ein / aus, Hell / Rotlicht / Dunkel und «?». Mit der Maus über ein Symbol: sein Name.", "point"],
 		[_quick_part("Welt"), "Welt", "Die Kacheln oben: Szene, Tageszeit, Wetter, Besuch, Gegenstände, echter Ort und Aufstellen – ein Klick, oder ein kleines Menü direkt an der Kachel.", "point"],
 		[_quick_part("Testen"), "Testen", "Testlauf und Prüfstand messen mit festen Abläufen, wie gut MoveEye Personen und Tiere erkennt – auch nachts und bei Regen.", "point"],
 		[_quick_part("Lernen"), "Lernen", "Trainingsbilder sammeln: damit lernt MoveEye ein eigenes KI-Modell – ohne echte Nächte.", "point"],
