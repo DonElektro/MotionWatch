@@ -1,7 +1,7 @@
 {
- "version": "3D-4.65",
+ "version": "3D-4.66",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34195835,
- "sha256": "0f7290d27b29ec425c9c5826774d9d76adfded8022d46bacfc4d652152f0d364",
- "notes": "Entwickler-Fenster: Schnellregler und Ebenen (Sichtfeld, Wege, Startpunkte, Auslöser, Lampen)."
+ "size": 34247861,
+ "sha256": "64876cccd131f5dfbfb50020c12e8a3df96023fe47ec6099eedfac3278936590",
+ "notes": "Bergtal-Abenteuer zu zweit, Hilfe übers Handy, Familien-Bestenliste."
 }

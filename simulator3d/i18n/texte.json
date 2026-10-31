@@ -1375,6 +1375,12 @@
   "it": "%s posato (%.1f / %.1f m). Girare: «Girare l’ultimo posato …».",
   "rm": "%s mess (%.1f / %.1f m). Volver: «Volver l’ultim mess …»."
  },
+ "%s gewinnt das Rennen zur Etappe.": {
+  "en": "%s wins the race of this stage.",
+  "fr": "%s gagne la course de l'étape.",
+  "it": "%s vince la gara della tappa.",
+  "rm": "%s gudogna la cursa da l'etappa."
+ },
  "%s gibt es nur im Simulator (Profil «Wie echte Hardware»)": {
   "en": "%s only exists in the simulator (profile «Like real hardware»)",
   "fr": "%s n’existe que dans le simulateur (profil «Comme le vrai matériel»)",
@@ -1602,6 +1608,12 @@
   "fr": "%s : lumière allumée – se fige, recule",
   "it": "%s: luce accesa – si blocca, si ritira",
   "rm": "%s: glisch en – sa fermenta, sa retira"
+ },
+ "%s: nicht weiter weg von der Gruppe (%d m)": {
+  "en": "%s: not further away from the group (%d m)",
+  "fr": "%s : pas plus loin du groupe (%d m)",
+  "it": "%s: non più lontano dal gruppo (%d m)",
+  "rm": "%s: betg pli lunsch da la gruppa (%d m)"
  },
  "%s: wieder dunkel – versucht es nochmals": {
   "en": "%s: dark again – tries once more",
@@ -2407,6 +2419,12 @@
   "it": "Attenzione, bordo di un dirupo! Qui si scende a picco.",
   "rm": "Attenziun, ur da precipizi! Qua vai giu a picco."
  },
+ "Achtung, pass auf!": {
+  "en": "Careful, watch out!",
+  "fr": "Attention, fais gaffe !",
+  "it": "Attenzione, stai attento!",
+  "rm": "Attenziun, fa adatg!"
+ },
  "Achtung: %s wird gleich entdeckt!": {
   "en": "Watch out: %s is about to be discovered!",
   "fr": "Attention : %s va être découvert !",
@@ -2658,6 +2676,12 @@
   "fr": "Tout réinitialiser (chacun fait tout)",
   "it": "Azzerare tutto (ognuno fa tutto)",
   "rm": "Reinizialisar tut (mintgin fa tut)"
+ },
+ "Allein": {
+  "en": "Alone",
+  "fr": "Seul",
+  "it": "Da solo",
+  "rm": "Sulet"
  },
  "Alles ausräumen": {
   "en": "Empty everything",
@@ -4699,11 +4723,29 @@
   "it": "Obiettivo appannato (rugiada al mattino, velo lattiginoso)",
   "rm": "Lentilla bagnada (rusada la damaun, vel da latg)"
  },
+ "Beste Schlafplätze": {
+  "en": "Best sleeping places",
+  "fr": "Meilleurs bivouacs",
+  "it": "Migliori posti per dormire",
+  "rm": "Meglras plazzas da durmir"
+ },
+ "Beste Wildkamera-Fotos (Schärfe und Tier)": {
+  "en": "Best camera-trap photos (sharpness and animal)",
+  "fr": "Meilleures photos du piège photo (netteté et animal)",
+  "it": "Migliori foto della fototrappola (nitidezza e animale)",
+  "rm": "Meglras fotos da la camera da selvaschina (nettezza ed animal)"
+ },
  "Besten Platz suchen": {
   "en": "Find best place",
   "fr": "Chercher la meilleure place",
   "it": "Cercare il posto migliore",
   "rm": "Tschertgar il meglier plaz"
+ },
+ "Bestenliste zurücksetzen": {
+  "en": "Reset the leaderboard",
+  "fr": "Réinitialiser le classement",
+  "it": "Azzera la classifica",
+  "rm": "Resetar la glista dals megliers"
  },
  "Bester gefundener Platz: %d %% im Blick (gelber Ring auf der Karte).": {
   "en": "Best place found: %d %% in view (yellow ring on the map).",
@@ -6097,6 +6139,12 @@
   "fr": "Le jeu n’a pas pu être ouvert (port occupé ?).",
   "it": "Il gioco non ha potuto essere aperto (porta occupata?).",
   "rm": "Il gieu n’ha betg pudì vegnir avert (port occupà?)."
+ },
+ "Das Spiel läuft gerade - das Handy kann erst danach helfen.": {
+  "en": "The game is running - the phone can help only afterwards.",
+  "fr": "Le jeu est en cours - le téléphone pourra aider ensuite.",
+  "it": "Il gioco è in corso - il telefono potrà aiutare dopo.",
+  "rm": "Il gieu è en funcziun - il telefonin po gidar pir suenter."
  },
  "Das Spiel wird eingerichtet · Schritt %d von 4": {
   "en": "The game is being set up · step %d of 4",
@@ -8787,6 +8835,12 @@
   "it": "uno parla davanti al dispositivo, l’altro ruba dietro",
   "rm": "in discurra davant l’apparat, l’auter engola davos"
  },
+ "Einer wandert, der andere bedient MoveEye und die Karte.": {
+  "en": "One hikes, the other runs MoveEye and the map.",
+  "fr": "L'un marche, l'autre pilote MoveEye et la carte.",
+  "it": "Uno cammina, l'altro gestisce MoveEye e la mappa.",
+  "rm": "In chamina, l'auter maneja MoveEye e la charta."
+ },
  "Eines zählt an der Hecke, die anderen verstecken sich hinter Hecken, Wohnmobilen und Autos.": {
   "en": "One counts at the hedge, the others hide behind hedges, motorhomes and cars.",
   "fr": "L’un compte contre la haie, les autres se cachent derrière les haies, les camping-cars et les voitures.",
@@ -9502,6 +9556,12 @@
   "it": "Tavolo da pranzo",
   "rm": "Maisa da mangiar"
  },
+ "Etappensieg": {
+  "en": "Stage win",
+  "fr": "Victoire d'étape",
+  "it": "Vittoria di tappa",
+  "rm": "Victoria d'etappa"
+ },
  "Etwas gefunden": {
   "en": "Found something",
   "fr": "Trouvé quelque chose",
@@ -9699,6 +9759,12 @@
   "fr": "Famille avec enfants (les enfants courent devant et reviennent)",
   "it": "Famiglia con bambini (i bambini corrono avanti e tornano)",
   "rm": "Famiglia cun uffants (ils uffants curran ordavant e enavos)"
+ },
+ "Familien-Bestenliste": {
+  "en": "Family leaderboard",
+  "fr": "Classement de la famille",
+  "it": "Classifica di famiglia",
+  "rm": "Glista dals megliers da la famiglia"
  },
  "Farben des Wärmebilds (nur die Anzeige hier – MoveEye bekommt die °C-Werte)": {
   "en": "Thermal picture colours (only the display here – MoveEye gets the °C values)",
@@ -11310,6 +11376,12 @@
   "it": "Cancellati: %d pacchetti (%.0f MB) · %s",
   "rm": "Stizzà: %d pachets (%.0f MB) · %s"
  },
+ "Gemeinsam": {
+  "en": "Together",
+  "fr": "Ensemble",
+  "it": "Insieme",
+  "rm": "Ensemen"
+ },
  "Gemeinschafts-Archiv, gemischte Qualität.": {
   "en": "Community archive, mixed quality.",
   "fr": "Archive communautaire, qualité mitigée.",
@@ -11495,6 +11567,18 @@
   "fr": "Échangé",
   "it": "Scambiato",
   "rm": "Barattà"
+ },
+ "Geteilter Bildschirm, nahe beieinander eine gemeinsame Ansicht. Zwei Ansichten brauchen mehr Leistung - in Lite mit halber Auflösung und kleinerer Sichtweite.": {
+  "en": "Split screen, one shared view when close together. Two views need more power - in Lite at half resolution and a shorter view distance.",
+  "fr": "Écran partagé, une seule vue quand on est proches. Deux vues demandent plus de puissance - en Lite demi-résolution et distance de vue réduite.",
+  "it": "Schermo diviso, una vista comune quando si è vicini. Due viste richiedono più potenza - in Lite mezza risoluzione e visibilità ridotta.",
+  "rm": "Visur partida, datiers in da l'auter ina visur cuminaivla. Duas visurs dovran dapli prestaziun - en Lite cun mesa resoluziun e main vista."
+ },
+ "Getrennt - geteilter Bildschirm": {
+  "en": "Apart - split screen",
+  "fr": "Séparés - écran partagé",
+  "it": "Separati - schermo diviso",
+  "rm": "Separads - visur partida"
  },
  "Getriebespiel der Servos": {
   "en": "Gear play of the servos",
@@ -12371,6 +12455,12 @@
   "fr": "Téléphone",
   "it": "Telefonino",
   "rm": "Telefonin"
+ },
+ "Handy als Begleiter (Karte und MoveEye-Bilder auf dem Handy)": {
+  "en": "Phone as companion (map and MoveEye pictures on the phone)",
+  "fr": "Téléphone comme compagnon (carte et images MoveEye sur le téléphone)",
+  "it": "Telefono come compagno (mappa e immagini MoveEye sul telefono)",
+  "rm": "Telefonin sco accumpagnader (charta e maletgs da MoveEye sin il telefonin)"
  },
  "Handy- / Tablet-Simulator (P)": {
   "en": "Phone / tablet simulator (P)",
@@ -14809,6 +14899,12 @@
   "it": "nessun Vulkan (OpenGL in uso)",
   "rm": "nagin Vulkan (OpenGL è en funcziun)"
  },
+ "Kein zweiter Controller: MoveEye mit der Maus im Bedienfeld bedienen": {
+  "en": "No second controller: use MoveEye with the mouse in the control panel",
+  "fr": "Pas de deuxième manette : piloter MoveEye à la souris dans le panneau",
+  "it": "Nessun secondo controller: usa MoveEye con il mouse nel pannello",
+  "rm": "Nagin segund controller: maneja MoveEye cun la mieur en il panel"
+ },
  "keine": {
   "en": "none",
   "fr": "aucun",
@@ -16286,6 +16382,12 @@
   "it": "Trascinare a sinistra: spostare · trascinare a destra: girare · rotella: zoom · doppio clic: volare lì",
   "rm": "Trair a sanestra: spustar · trair a dretga: volver · roda: zoom · dubel clic: svolar là"
  },
+ "Links!": {
+  "en": "Left!",
+  "fr": "À gauche !",
+  "it": "A sinistra!",
+  "rm": "A sanestra!"
+ },
  "Linse putzen (Tropfen und Beschlag weg)": {
   "en": "Clean the lens (drops and fog gone)",
   "fr": "Nettoyer l'objectif (gouttes et buée)",
@@ -16599,6 +16701,12 @@
   "fr": "Crée un paquet d’entraînement, le dépose sur GitHub (release «ki-daten») et y lance l’entraînement. MoveEye récupère ensuite lui-même le nouveau modèle s’il n’est pas moins bon.",
   "it": "Crea un pacchetto di addestramento, lo mette su GitHub (release «ki-daten») e vi avvia l’addestramento. MoveEye scarica poi da solo il nuovo modello se non è peggiore.",
   "rm": "Fa in pachet da trenament, al metta sin GitHub (release «ki-daten») e cumenza là il trenament. MoveEye prenda suenter sez il nov model, sch’el n’è betg mender."
+ },
+ "Macht eine Pause!": {
+  "en": "Take a break!",
+  "fr": "Faites une pause !",
+  "it": "Fate una pausa!",
+  "rm": "Faschai ina pausa!"
  },
  "Macht euch bereit": {
   "en": "Get ready",
@@ -17091,6 +17199,12 @@
   "fr": "avec le butin",
   "it": "con il bottino",
   "rm": "cun la preda"
+ },
+ "Mit dem Handy (gleiches WLAN) den QR-Code scannen oder %s öffnen - auch auf der MoveEye-Seite «Simulator». Das Handy zeigt, was MoveEye sieht, und die Karte: antippen = Tipp für die Wanderer.": {
+  "en": "Scan the QR code with the phone (same Wi-Fi) or open %s - also on the MoveEye page «Simulator». The phone shows what MoveEye sees, and the map: tap = a tip for the hikers.",
+  "fr": "Scanner le code QR avec le téléphone (même Wi-Fi) ou ouvrir %s - aussi sur la page MoveEye « Simulateur ». Le téléphone montre ce que voit MoveEye, et la carte : toucher = un conseil pour les randonneurs.",
+  "it": "Scansiona il codice QR con il telefono (stessa Wi-Fi) o apri %s - anche sulla pagina MoveEye «Simulatore». Il telefono mostra ciò che vede MoveEye e la mappa: toccare = un consiglio per gli escursionisti.",
+  "rm": "Scannar il code QR cun il telefonin (medem WLAN) u avrir %s - er sin la pagina da MoveEye «Simulatur». Il telefonin mussa tge che MoveEye vesa, e la charta: tutgar = in tip per ils viandants."
  },
  "Mit dem Handy (gleiches WLAN): QR-Code scannen oder %s öffnen": {
   "en": "With the phone (same Wi-Fi): scan the QR code or open %s",
@@ -17746,6 +17860,12 @@
   "fr": "MoveEye se trouve dans un bâtiment – le bâtiment a été omis.",
   "it": "MoveEye si trova in un edificio – l’edificio è stato tralasciato.",
   "rm": "MoveEye stat en in edifizi – l’edifizi è vegnì laschà davent."
+ },
+ "MoveEye und Karte": {
+  "en": "MoveEye and map",
+  "fr": "MoveEye et carte",
+  "it": "MoveEye e mappa",
+  "rm": "MoveEye e charta"
  },
  "MoveEye verbunden – %d s eingewöhnen …": {
   "en": "MoveEye connected – settling in %d s …",
@@ -18426,6 +18546,12 @@
   "it": "Vicino al sentiero: passa gente",
   "rm": "Sper la senda: persunas passan speravia"
  },
+ "Name": {
+  "en": "Name",
+  "fr": "Nom",
+  "it": "Nome",
+  "rm": "Num"
+ },
  "Name nicht gefunden (DNS)": {
   "en": "Name not found (DNS)",
   "fr": "Nom introuvable (DNS)",
@@ -18894,6 +19020,12 @@
   "it": "Ancora nessun MoveEye collegato.",
   "rm": "Anc nagin MoveEye collià."
  },
+ "Noch kein MoveEye-Bild": {
+  "en": "No MoveEye picture yet",
+  "fr": "Pas encore d'image MoveEye",
+  "it": "Ancora nessuna immagine MoveEye",
+  "rm": "Anc nagin maletg da MoveEye"
+ },
  "Noch kein Paket gemacht.": {
   "en": "No package made yet.",
   "fr": "Pas encore de paquet créé.",
@@ -18983,6 +19115,12 @@
   "fr": "Pas encore d’images manquées du jeu.",
   "it": "Ancora nessuna immagine mancata dal gioco.",
   "rm": "Anc nagins maletgs manchentads dal gieu."
+ },
+ "Noch leer - am Morgen jedes Kapitels zählt, was ihr gefunden habt.": {
+  "en": "Still empty - every chapter's morning counts what you found.",
+  "fr": "Encore vide - le matin de chaque chapitre compte ce que vous avez trouvé.",
+  "it": "Ancora vuota - la mattina di ogni capitolo conta ciò che avete trovato.",
+  "rm": "Anc vid - la damaun da mintga chapitel quinta tge che vus avais chattà."
  },
  "noch nicht": {
   "en": "not yet",
@@ -19433,6 +19571,18 @@
   "fr": "Sans connexion : configurer la connexion automatique de Windows …",
   "it": "Senza accesso: impostare l’accesso automatico di Windows …",
   "rm": "Senza s’annunziar: endrizzar l’annunzia automatica da Windows …"
+ },
+ "Ohne Controller: Spieler 1 mit W A S D (Q / E umschauen, Shift rennen), Spieler 2 mit I J K L (U / O, H).": {
+  "en": "Without controllers: player 1 with W A S D (Q / E look round, Shift run), player 2 with I J K L (U / O, H).",
+  "fr": "Sans manettes : joueur 1 avec W A S D (Q / E regarder, Maj courir), joueur 2 avec I J K L (U / O, H).",
+  "it": "Senza controller: giocatore 1 con W A S D (Q / E guardarsi intorno, Shift correre), giocatore 2 con I J K L (U / O, H).",
+  "rm": "Senza controller: giugader 1 cun W A S D (Q / E guardar enturn, Shift currer), giugader 2 cun I J K L (U / O, H)."
+ },
+ "Ohne Controller: Spieler 1 mit W A S D, MoveEye mit der Maus.": {
+  "en": "Without a controller: player 1 with W A S D, MoveEye with the mouse.",
+  "fr": "Sans manette : joueur 1 avec W A S D, MoveEye à la souris.",
+  "it": "Senza controller: giocatore 1 con W A S D, MoveEye con il mouse.",
+  "rm": "Senza controller: giugader 1 cun W A S D, MoveEye cun la mieur."
  },
  "Ohne Erwischen: geh die Grenzen deiner Zonen und die Wege ums Zelt ab. Das Handy sagt laufend, ob MoveEye dich sieht – jede Stelle, wo es dich nicht meldet, kommt auf die Karte der blinden Flecken.": {
   "en": "Without catching: walk along the borders of your zones and the paths around the tent. The phone keeps telling you whether MoveEye sees you – every spot where it does not report you goes onto the blind spot map.",
@@ -20665,6 +20815,12 @@
   "it": "Realismo: MG90S %.0f°/s · servo realistici · campo di rotazione %.0f°%s · immagine con ritardo · simulatore %.0f immagini/s",
   "rm": "Realissem: MG90S %.0f°/s · servos sco vairs · sectur da volver %.0f°%s · maletg cun retard · simulatur %.0f maletgs/s"
  },
+ "Rechter Stick = gehen, linker Stick = umschauen, R2 = rennen, Start = Menü (wie beim Spiel am PC).": {
+  "en": "Right stick = walk, left stick = look round, R2 = run, Start = menu (like the game at the PC).",
+  "fr": "Stick droit = marcher, stick gauche = regarder, R2 = courir, Start = menu (comme le jeu sur le PC).",
+  "it": "Stick destro = camminare, stick sinistro = guardarsi intorno, R2 = correre, Start = menu (come il gioco al PC).",
+  "rm": "Stick dretg = ir, stick sanester = guardar enturn, R2 = currer, Start = menu (sco il gieu al PC)."
+ },
  "rechter Stick fliegen · linker Stick umschauen · R2 / L2 hoch / runter · ✚ ↑↓ Tempo · Start halten = zurück": {
   "en": "right stick fly · left stick look around · R2 / L2 up / down · ✚ ↑↓ speed · hold Start = back",
   "fr": "stick droit voler · stick gauche regarder autour · R2 / L2 monter / descendre · ✚ ↑↓ vitesse · maintenir Start = retour",
@@ -20682,6 +20838,12 @@
   "fr": "À droite de MoveEye, quelqu’un est assis immobile sur un poteau – de quoi faire une photo avec la caméra de MoveEye ?",
   "it": "A destra di MoveEye qualcuno sta immobile su un palo – qualcosa per una foto con la camera di MoveEye?",
   "rm": "A dretga da MoveEye sesa insatgi tut quiet sin in pal – insatge per ina foto cun la camera da MoveEye?"
+ },
+ "Rechts!": {
+  "en": "Right!",
+  "fr": "À droite !",
+  "it": "A destra!",
+  "rm": "A dretga!"
  },
  "Reden": {
   "en": "Talk",
@@ -20893,6 +21055,12 @@
   "fr": "Anneau autour de l’appareil (8 m)",
   "it": "Anello intorno all’apparecchio (8 m)",
   "rm": "Rintg enturn l’apparat (8 m)"
+ },
+ "Rollen": {
+  "en": "Roles",
+  "fr": "Rôles",
+  "it": "Ruoli",
+  "rm": "Rollas"
  },
  "Rollen wechseln": {
   "en": "Swap roles",
@@ -21266,6 +21434,12 @@
   "it": "Scivolo",
   "rm": "Sbrischader"
  },
+ "rät:": {
+  "en": "suggests:",
+  "fr": "conseille :",
+  "it": "consiglia:",
+  "rm": "cussegla:"
+ },
  "Rückmeldung an den Entwickler": {
   "en": "Feedback to the developer",
   "fr": "Retour au développeur",
@@ -21469,6 +21643,12 @@
   "fr": "Regarde autour de toi – %s%s, il reste quelque chose à découvrir.",
   "it": "Guardati intorno – %s%s c’è ancora qualcosa da scoprire.",
   "rm": "Guarda enturn – %s%s datti anc insatge da scuvrir."
+ },
+ "Schau dort!": {
+  "en": "Look there!",
+  "fr": "Regarde là !",
+  "it": "Guarda lì!",
+  "rm": "Guarda là!"
  },
  "Schau in die Kapelle auf dem Hügel.": {
   "en": "Look into the chapel on the hill.",
@@ -22950,6 +23130,18 @@
   "it": "Giocatore %d",
   "rm": "Giugader %d"
  },
+ "Spieler 1": {
+  "en": "Player 1",
+  "fr": "Joueur 1",
+  "it": "Giocatore 1",
+  "rm": "Giugader 1"
+ },
+ "Spieler 2": {
+  "en": "Player 2",
+  "fr": "Joueur 2",
+  "it": "Giocatore 2",
+  "rm": "Giugader 2"
+ },
  "Spielplatz": {
   "en": "Playground",
   "fr": "Place de jeux",
@@ -23153,6 +23345,12 @@
   "fr": "Start (manette) · rouler avec le rover – clavier, souris, tactile ou manette",
   "it": "Start (controller) · girare con il rover – tastiera, mouse, touch o controller",
   "rm": "Start (controller) · charrar enturn cun il rover – tastatura, mieur, touch u controller"
+ },
+ "Start in": {
+  "en": "Start in",
+  "fr": "Départ dans",
+  "it": "Partenza tra",
+  "rm": "Start en"
  },
  "Start mit dem PC": {
   "en": "Start with the PC",
@@ -23700,6 +23898,12 @@
   "fr": "Planche SUP",
   "it": "Tavola SUP",
   "rm": "Aissa SUP"
+ },
+ "Super gemacht!": {
+  "en": "Well done!",
+  "fr": "Bien joué !",
+  "it": "Ben fatto!",
+  "rm": "Fatg bain!"
  },
  "Surfbrett": {
   "en": "Surfboard",
@@ -25802,6 +26006,12 @@
   "it": "davanti a te",
   "rm": "davant tai"
  },
+ "Vor jeder Etappe: wer ist zuerst beim Fähnchen? Etappensiege zählen.": {
+  "en": "Before every stage: who reaches the flag first? Stage wins count.",
+  "fr": "Avant chaque étape : qui arrive le premier au fanion ? Les victoires d'étape comptent.",
+  "it": "Prima di ogni tappa: chi arriva per primo alla bandierina? Le vittorie di tappa contano.",
+  "rm": "Avant mintga etappa: tgi è l'emprim tar la bandiera? Victorias d'etappa quintan."
+ },
  "vor jeder Runde": {
   "en": "before every round",
   "fr": "avant chaque manche",
@@ -26197,6 +26407,12 @@
   "fr": "Remplir l'eau (ruisseau)",
   "it": "Riempire l'acqua (ruscello)",
   "rm": "Emplenir aua (ual)"
+ },
+ "Wasser auffüllen!": {
+  "en": "Refill water!",
+  "fr": "Remplir l'eau !",
+  "it": "Riempire l'acqua!",
+  "rm": "Emplenir aua!"
  },
  "Wasser aufgefüllt": {
   "en": "Water refilled",
@@ -26793,6 +27009,12 @@
   "it": "Cambio del tempo",
   "rm": "Midada da l’aura"
  },
+ "Wettrennen": {
+  "en": "Race",
+  "fr": "Course",
+  "it": "Gara",
+  "rm": "Cursa"
+ },
  "Wichtiger Bereich (%d m um Zelt und Wohnwagen): %d %% im Blick, davon %d %% mit der Kopfkamera.": {
   "en": "Important area (%d m around tent and caravan): %d %% in view, of which %d %% with the head camera.",
   "fr": "Zone importante (%d m autour de la tente et de la caravane) : %d %% en vue, dont %d %% avec la caméra de la tête.",
@@ -26817,6 +27039,12 @@
   "fr": "Comme avec du vrai matériel : MoveEye arrête les servos, signale la panne dans la mémoire d’erreurs (diagnostic des servos) et a besoin de «Libérer» en cas d’erreur de pilote.",
   "it": "Come con l’hardware vero: MoveEye ferma i servo, segnala il guasto nella memoria errori (diagnosi servo) e in caso di errori del driver richiede «Sbloccare».",
   "rm": "Sco cun hardware vair: MoveEye ferma ils servos, annunzia il disturbi en la memoria d’errurs (diagnosa dals servos) e dovra tar errurs dal driver «Liberar»."
+ },
+ "Wie bisher: die Ansicht wandert mit der Tour.": {
+  "en": "As before: the view walks along with the tour.",
+  "fr": "Comme avant : la vue suit le parcours.",
+  "it": "Come prima: la vista segue il percorso.",
+  "rm": "Sco fin ussa: la visur va cun la tura."
  },
  "Wie das Tarp, nur halb so schwer.": {
   "en": "Like the tarp, only half the weight.",
@@ -28175,6 +28403,12 @@
   "it": "Insieme %.1f kg - già compresi nel peso sopra.",
   "rm": "Ensemen %.1f kg - gia quintà en il pais survart."
  },
+ "Zusammen - eine Ansicht": {
+  "en": "Together - one view",
+  "fr": "Ensemble - une seule vue",
+  "it": "Insieme - una vista",
+  "rm": "Ensemen - ina visur"
+ },
  "Zusammenfassung": {
   "en": "Summary",
   "fr": "Résumé",
@@ -28246,6 +28480,12 @@
   "fr": "Deux personnes se croisent",
   "it": "Due persone si incrociano",
   "rm": "Duas persunas sa cruschan"
+ },
+ "Zwei Wanderer, jeder mit eigenem Controller. Bis 110 m von der Gruppe weg spähen.": {
+  "en": "Two hikers, each with their own controller. Scout up to 110 m away from the group.",
+  "fr": "Deux randonneurs, chacun avec sa manette. Explorer jusqu'à 110 m du groupe.",
+  "it": "Due escursionisti, ognuno con il proprio controller. Esplorare fino a 110 m dal gruppo.",
+  "rm": "Dus viandants, mintgin cun ses agen controller. Explorar fin 110 m davent da la gruppa."
  },
  "Zweite Nacht – Das Licht im Fenster": {
   "en": "Second night – The light in the window",
@@ -29693,6 +29933,12 @@
   "it": "🎬 Replay: ecco come ti ha visto %s (3 s)",
   "rm": "🎬 Repetiziun: uschia ta ha %s vis (3 s)"
  },
+ "🎮 %d Controller verbunden.": {
+  "en": "🎮 %d controllers connected.",
+  "fr": "🎮 %d manettes connectées.",
+  "it": "🎮 %d controller collegati.",
+  "rm": "🎮 %d controllers colliads."
+ },
  "🎮 Assistent öffnen: Spiel einrichten und starten": {
   "en": "🎮 Open wizard: set up and start a game",
   "fr": "🎮 Ouvrir l’assistant : configurer et lancer un jeu",
@@ -29716,6 +29962,12 @@
   "fr": "🎮 Attribuer les manettes (plusieurs manettes : gardien, furtif, rover)",
   "it": "🎮 Assegnare i controller (più controller: guardiano, furtivo, rover)",
   "rm": "🎮 Attribuir controllers (plirs controllers: guardian, sfugider, rover)"
+ },
+ "🎮 Linker Stick = Kopf drehen · A Licht · X Foto (Belegung «Wächter»)": {
+  "en": "🎮 Left stick = turn the head · A light · X photo (mapping «Guard»)",
+  "fr": "🎮 Stick gauche = tourner la tête · A lumière · X photo (rôle « Gardien »)",
+  "it": "🎮 Stick sinistro = girare la testa · A luce · X foto (ruolo «Guardiano»)",
+  "rm": "🎮 Stick sanester = vulvar il chau · A glisch · X foto (rolla «Guardian»)"
  },
  "🎯 %s hat dich mit dem Auslöser erwischt!": {
   "en": "🎯 %s caught you with the shutter!",
@@ -29807,11 +30059,29 @@
   "it": "🎽 Fascia",
   "rm": "🎽 Bindel dal frunt"
  },
+ "🏁 %s ist zuerst beim Fähnchen! (%d s)": {
+  "en": "🏁 %s reaches the flag first! (%d s)",
+  "fr": "🏁 %s arrive le premier au fanion ! (%d s)",
+  "it": "🏁 %s arriva per primo alla bandierina! (%d s)",
+  "rm": "🏁 %s è l'emprim tar la bandiera! (%d s)"
+ },
  "🏁 Die Runde ist vorbei": {
   "en": "🏁 The round is over",
   "fr": "🏁 La manche est terminée",
   "it": "🏁 Il turno è finito",
   "rm": "🏁 La runda è finida"
+ },
+ "🏁 Keiner war beim Fähnchen - die Tour geht weiter.": {
+  "en": "🏁 Nobody reached the flag - the tour goes on.",
+  "fr": "🏁 Personne n'a atteint le fanion - le parcours continue.",
+  "it": "🏁 Nessuno ha raggiunto la bandierina - il percorso continua.",
+  "rm": "🏁 Nagin n'è stà tar la bandiera - la tura va vinavant."
+ },
+ "🏁 Wettrennen: Wer ist zuerst beim Fähnchen? (%d m, Abkürzungen erlaubt)": {
+  "en": "🏁 Race: who reaches the flag first? (%d m, shortcuts allowed)",
+  "fr": "🏁 Course : qui arrive le premier au fanion ? (%d m, raccourcis permis)",
+  "it": "🏁 Gara: chi arriva per primo alla bandierina? (%d m, scorciatoie ammesse)",
+  "rm": "🏁 Cursa: tgi è l'emprim tar la bandiera? (%d m, scursanidas permessas)"
  },
  "🏃 Ein Platz ist frei – du läufst jetzt mit!": {
   "en": "🏃 A place is free – you are running now!",
@@ -30233,11 +30503,23 @@
   "it": "📍 Spostare il rover – poi cliccare nel mondo (in esplorazione: Ctrl + clic)",
   "rm": "📍 Spustar il rover – lura cliccar en il mund (cun explorar: Ctrl + clic)"
  },
+ "📍 Tipp von %s erreicht": {
+  "en": "📍 Tip of %s reached",
+  "fr": "📍 Conseil de %s atteint",
+  "it": "📍 Consiglio di %s raggiunto",
+  "rm": "📍 Tip da %s cuntanschì"
+ },
  "📖 Entdeckungsbuch": {
   "en": "📖 Discovery book",
   "fr": "📖 Carnet de découvertes",
   "it": "📖 Diario delle scoperte",
   "rm": "📖 Cudesch da scuvertas"
+ },
+ "📖 Tagebuchseiten · 🐾 Tiere · 🎒 Ausrüstung · 💎 Fundstücke · 🏁 Etappensiege": {
+  "en": "📖 Diary pages · 🐾 Animals · 🎒 Gear · 💎 Finds · 🏁 Stage wins",
+  "fr": "📖 Pages du journal · 🐾 Animaux · 🎒 Équipement · 💎 Trouvailles · 🏁 Victoires d'étape",
+  "it": "📖 Pagine del diario · 🐾 Animali · 🎒 Attrezzatura · 💎 Reperti · 🏁 Vittorie di tappa",
+  "rm": "📖 Paginas dal diari · 🐾 Animals · 🎒 Equipament · 💎 Chats · 🏁 Victorias d'etappa"
  },
  "📡 Der Wächter scannt – er weiss ungefähr, wo du bist!": {
   "en": "📡 The guard scans – he roughly knows where you are!",
@@ -30293,6 +30575,12 @@
   "it": "📦 Pacco con te – alla luce verde!",
   "rm": "📦 Pachet cun tai – a la glisch verda!"
  },
+ "📱 %d Begleiter verbunden": {
+  "en": "📱 %d companions connected",
+  "fr": "📱 %d compagnons connectés",
+  "it": "📱 %d compagni collegati",
+  "rm": "📱 %d accumpagnaders colliads"
+ },
  "📳 Für Schleicher: Das Handy vibriert, wenn die Kamera zu dir schaut. Rennen ist laut – der Wächter sieht dann eine Markierung. Im Schatten sieht dich die Kamera am Tag schlechter.": {
   "en": "📳 For sneakers: the phone vibrates when the camera looks at you. Running is loud – the guard then sees a marker. In daytime the camera sees you worse in the shade.",
   "fr": "📳 Pour les furtifs : le téléphone vibre quand la caméra te regarde. Courir fait du bruit – le gardien voit alors un repère. Le jour, la caméra te voit moins bien à l’ombre.",
@@ -30347,6 +30635,12 @@
   "it": "📸 Fatto – MoveEye ora conosce il posto. Si parte!",
   "rm": "📸 Finì – MoveEye enconuscha ussa il plaz. Vinavant!"
  },
+ "📸 Foto gespeichert: %d Punkte": {
+  "en": "📸 Photo saved: %d points",
+  "fr": "📸 Photo enregistrée : %d points",
+  "it": "📸 Foto salvata: %d punti",
+  "rm": "📸 Foto memorisada: %d puncts"
+ },
  "📸 MoveEye konnte sich den Platz nicht merken – los geht's trotzdem!": {
   "en": "📸 MoveEye could not remember the place – let’s go anyway!",
   "fr": "📸 MoveEye n’a pas pu mémoriser le terrain – c’est parti quand même !",
@@ -30358,6 +30652,12 @@
   "fr": "📸 MoveEye regarde d’abord le terrain%s – ainsi il remarquera plus tard si %s manque. Ça commence bientôt …",
   "it": "📸 MoveEye guarda prima il posto%s – così noterà poi se %s manca. Si comincia subito …",
   "rm": "📸 MoveEye guarda l’emprim il plaz%s – uschia remartga el pli tard, sche %s manca. I cumenza immediat …"
+ },
+ "📸 MoveEye-Bild jetzt bewerten": {
+  "en": "📸 Rate the MoveEye picture now",
+  "fr": "📸 Évaluer l'image MoveEye maintenant",
+  "it": "📸 Valuta ora l'immagine MoveEye",
+  "rm": "📸 Valitar ussa il maletg da MoveEye"
  },
  "📸 So hat dich die Kamera gesehen": {
   "en": "📸 This is how the camera saw you",

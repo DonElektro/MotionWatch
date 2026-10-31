@@ -1,8 +1,16 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.65** · passende MoveEye-Version (früher Motion Watch) **2.98.96**
+Stand: 31.10.2026 · Simulator-Version **3D-4.66** · passende MoveEye-Version (früher Motion Watch) **2.98.97**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.66 (MoveEye 2.98.97): Abenteuer zu zweit (`abenteuer_zweit.gd`, `abenteuer_bestenliste.gd`)
+
+- `abenteuer_zweit.gd` (neu): Spielarten gemeinsam / Rollen / Wettrennen, geteilter Bildschirm (wird eins, wenn beide nah
+  sind), Handy-Begleiter per QR.
+- `abenteuer_bestenliste.gd` (neu): Familien-Bestenliste (`user://bergtal_abenteuer/familie.json`). `hat()` nutzt jetzt
+  `preload` von `abenteuer_inventar.gd` (A4) statt Laden zur Laufzeit. Offen (TODO A1): seltene Tiere, Foto-Wertung,
+  Wildkamera – kommen mit dem MoveEye-Lager-Paket.
 
 ## NEU in 3D-4.65 (MoveEye 2.98.96): Entwicklertool Teil 2 «Regler + Ebenen» (`devtool_ebenen.gd`)
 
