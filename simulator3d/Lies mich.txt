@@ -421,6 +421,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.66
+3D-4.66: Bergtal-Abenteuer zu zweit: Spielart wählbar (gemeinsam, Rollen, Wettrennen). Der Bildschirm ist geteilt und wird
+zu einer Ansicht, wenn beide nah beieinander sind. Eine zweite Person kann übers Handy helfen. Neu ist auch die
+Familien-Bestenliste.
+So testest du: 1) Abenteuer → «Schwierigkeit & Ziel» → «Gemeinsam», zwei Controller. 2) Starten: der Bildschirm ist
+geteilt. 3) QR-Code mit dem Handy scannen und die Karte antippen. 4) Am Morgen die Bestenliste ansehen.
+
 NEU IN 3D-4.65
 3D-4.65: Entwickler-Fenster: Schnellregler für Uhrzeit, Wetter, Jahreszeit und Grafik. Dazu Ebenen in der Ansicht und auf
 der Karte: Sichtfeld von MoveEye, Wege, Startpunkte, Auslöser, Lampen.
