@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 00:42",
+ "generated": "2026-10-31 03:33",
  "versions": [
   {
-   "version": "2.98.54",
-   "file": "webcam_bewegung_2_98_54.py",
+   "version": "2.98.55",
+   "file": "webcam_bewegung_2_98_55.py",
    "url": "",
-   "sha256": "fc22a66924b3a192821a1f25f41eb1c2ec123f4426d95fcd8371d25e6410678e",
-   "date": "2026-10-31 00:42",
-   "notes": "Live-Seite am Handy: die Status-Chips stehen in einer Zeile zum seitlichen Wischen (Schutz-Zustand, Status-LED, alles ok / Probleme, Akku zuerst; Rand blendet aus, wenn weitere folgen) – die Sticks von Sim-Kompakt haben wieder ihre normale Grösse",
-   "sig": "45ca26b23286261d3521b71f254c1e940e5db9799397795fe3cd14c86352feb6d7147f3ec8ff34d784d4b8a8cbadd3de419182cede7935e91321aabf1bec7302"
+   "sha256": "722f92136697c2480cc4910f09804b77bfc0ff443910174e609d3595dd35003a",
+   "date": "2026-10-31 03:32",
+   "notes": "«MoveEye Sim · Basis» (alter Python-Simulator) nur noch mit dem neuen Schalter «Basis-Simulator anzeigen» (Simulator, Experte, Standard aus): ohne ihn kein Download, keine Knöpfe zum Installieren / Starten auf dem Pi (bestehende Installationen bleiben). Simulator 3D-4.25: Grafik-Stufe «Lite» für den Raspberry Pi 5 und «Leistung» in der Selbstdiagnose.",
+   "sig": "066c92a183b54f6d04f1721bfd6b53b5c2d1d2db684239b3602cdb04914a3c88e94427e75c2a628546bff06ed550ef4bf942649e2f0c65c2a90c59667ab3f001"
   },
   {
    "version": "2.97.1",

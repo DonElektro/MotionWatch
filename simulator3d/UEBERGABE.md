@@ -1,8 +1,37 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.24** · passende MoveEye-Version (früher Motion Watch) **2.98.54** (2.98.54 ohne Simulator-Änderung)
+Stand: 31.10.2026 · Simulator-Version **3D-4.25** · passende MoveEye-Version (früher Motion Watch) **2.98.55**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.25 (MoveEye 2.98.55): Grafik-Stufe «Lite» für den Raspberry Pi 5 (`quality.gd`)
+
+- **Zentrale Abfrage (für alle Pakete, auch parallele Zweige):** `const Quality = preload("res://scripts/quality.gd")` →
+  `Quality.lite() -> bool`; ohne preload: `Engine.has_meta("lite") and Engine.get_meta("lite")`. Gesetzt nur von
+  `main.gd lite_update()` (beim Start und bei jedem Wechsel) über `Quality.set_lite()`. Wer etwas Teures baut (Partikel,
+  Gras, Effekte, Schatten), fragt das ab; `Quality.n(anzahl)` gibt in Lite ~35 % zurück.
+- **Einstellung** «Grafik-Modus» (`grafik_mode`, System → Grafik, auch in «Einfach»; gespeichert in user://, KEEP):
+  `auto` (Standard) / `lite` / `normal`. Stufen-Liste `Quality.MODES` – **erweiterbar**: Lite < Normal (= Grafik bis 3D-4.24)
+  < Hoch (Zweig «foto-hoch», `scripts/grafik_hoch.gd`, hängt dort `["hoch", "Hoch …"]` an MODES an; `mode_id()` /
+  `mode_name()` nehmen neue Stufen von selbst). Test-Option `--grafik auto|lite|normal` (alt «voll»/«full» = normal).
+- **Automatisch → Lite**, wenn `Quality.weak_reason()` etwas findet: `/proc/device-tree/model` enthält «Raspberry Pi»,
+  Linux auf arm64/arm32, oder Grafik «V3D/VideoCore»; sonst nach 6–40 s im Mittel unter 12 Bilder/s (`_lite_tick`, einmal pro
+  Start, nicht mit `--quality` = Prüfstand).
+- **Was Lite macht** (`_lite_apply`, `_lite_scene`): Grafik «einfach» (keine Schatten, kein Glow, kein SSAO/SSR/SDFGI/Volumen-
+  nebel, kein MSAA), `scaling_3d_scale` ≤ 0.6, höchstens 25 Bilder/s (auch `_check_active`), Regen/Schnee/Spritzer und alle
+  Partikel der Szene ×0.35, Wiese `visible_instance_count` ×0.35, kleine Dinge (< 1.5 m) mit `visibility_range_end` 70 m,
+  `max_visitors` ≤ 6, `/view.jpg` / `/view.mjpg` ≤ 640 px, JPEG 55 %, ≤ 4 Bilder/s. **Unverändert:** die Kamerabilder für
+  MoveEye (960 × 540 / 640 × 360) – die Erkennung bekommt dieselben Bildgrössen (nur ohne Schatten). Die eigenen Werte
+  (Grafik, Schärfe, Bilder/s, Besucher) liegen in `_perf_orig`, werden so gespeichert und mit «Normal» zurückgesetzt.
+- **Renderer:** das ganze Projekt läuft schon mit Compatibility (OpenGL); `project.godot` hat neu zusätzlich
+  `renderer/rendering_method.arm64="gl_compatibility"`, damit das arm64-Paket (Preset «Linux Pi») auch dann Compatibility
+  bleibt, wenn ein anderer Zweig den Standard auf Forward+ stellt. Zur Laufzeit lässt sich der Renderer nicht wechseln: Lite
+  von Hand am PC mit Vulkan (`.bat`) schaltet nur die Effekte ab.
+- **«🩺 Leistung»** in Mehr → Selbstdiagnose (Zeile «Leistung», vorher «Grafik und Bilder pro Sekunde»): Bilder/s, Lite an/aus
+  (mit Grund), Renderer, 3D-Auflösung (%), Kamerabild für MoveEye; dazu Kurzform auf der Karte und in «Über» (`main.perf_info()`).
+- Gemessen hier (Xvfb, llvmpipe, 2 Kerne, PC-CPU 100 % durch andere Helfer): Normal 1 Bild/s, Lite 1–3 Bilder/s (3D 864 × 516
+  statt 1440 × 860) – **nicht aussagekräftig**, keine Pi-Zahlen. MoveEye am Lite-Simulator: verbunden, Kamerabilder kommen
+  (0.9 Bilder/s), Bewegungsrahmen um die Person. arm64-Export baut; auf echtem Pi 5 **ungetestet**.
 
 ## NEU in 3D-4.24 (MoveEye 2.98.53): Datei heisst MoveEyeSim3D.exe, frischer Start; Schriftzug mit echtem Gang
 

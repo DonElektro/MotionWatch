@@ -200,7 +200,7 @@ CFG = {
     "sim_autostart": True, "sim_autostart_v2": False,   # v2 (2.95.26): on a Raspberry Pi off by default (it guards the real place)
     # 2.95.25: a simulator announces itself -> the simulation goes on by itself (and off again when it is gone)
     "sim_auto_on": False,        # ... it was switched on by that (only then it is switched off again by itself)
-    "sim_autoupd": True, "sim_separate": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
+    "sim_autoupd": True, "sim_separate": True, "sim_basis_show": False, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
     "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
     "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
     "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True,

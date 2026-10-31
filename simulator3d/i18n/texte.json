@@ -474,6 +474,12 @@
   "it": " · cristalli %d",
   "rm": " · cristals %d"
  },
+ " · Leistung: %d Bilder/s, Lite %s": {
+  "en": " · Performance: %d fps, Lite %s",
+  "fr": " · Performances : %d images/s, Lite %s",
+  "it": " · Prestazioni: %d fotogrammi/s, Lite %s",
+  "rm": " · Prestaziun: %d maletgs/s, Lite %s"
+ },
  " · letzter Vergleich: %d fehlt, %d neu, %d verändert": {
   "en": " · last comparison: %d missing, %d new, %d changed",
   "fr": " · dernière comparaison : %d manquants, %d nouveaux, %d modifiés",
@@ -906,6 +912,12 @@
   "fr": "%d images · luminosité %d %%%s%s",
   "it": "%d immagini · luminosità %d %%%s%s",
   "rm": "%d maletgs · clerezza %d %%%s%s"
+ },
+ "%d Bilder/s · %s · %s · 3D %s (%d %%) · Kameras für MoveEye %s · Stufe «%s» · %s": {
+  "en": "%d fps · %s · %s · 3D %s (%d %%) · cameras for MoveEye %s · level «%s» · %s",
+  "fr": "%d images/s · %s · %s · 3D %s (%d %%) · caméras pour MoveEye %s · niveau «%s» · %s",
+  "it": "%d fotogrammi/s · %s · %s · 3D %s (%d %%) · telecamere per MoveEye %s · livello «%s» · %s",
+  "rm": "%d maletgs/s · %s · %s · 3D %s (%d %%) · cameras per MoveEye %s · nivel «%s» · %s"
  },
  "%d da": {
   "en": "%d there",
@@ -2269,6 +2281,12 @@
   "it": "Memoria (RAM)",
   "rm": "Memoria da lavur (RAM)"
  },
+ "ARM-Rechner (%s)": {
+  "en": "ARM computer (%s)",
+  "fr": "ordinateur ARM (%s)",
+  "it": "computer ARM (%s)",
+  "rm": "computer ARM (%s)"
+ },
  "Assistent": {
   "en": "Wizard",
   "fr": "Assistant",
@@ -2473,11 +2491,23 @@
   "it": "Automatico (rilevato)",
   "rm": "Automatic (identifitgà)"
  },
+ "Automatisch (Lite auf Raspberry Pi und sehr langsamen PCs, sonst Normal)": {
+  "en": "Automatic (Lite on a Raspberry Pi and very slow PCs, otherwise Normal)",
+  "fr": "Automatique (Lite sur Raspberry Pi et PC très lents, sinon Normal)",
+  "it": "Automatico (Lite su Raspberry Pi e PC molto lenti, altrimenti Normale)",
+  "rm": "Automatic (Lite sin Raspberry Pi e PCs fitg plauns, uschiglio Normal)"
+ },
  "Automatisch leichter, wenn der PC zu langsam ist": {
   "en": "Automatically lighter if the PC is too slow",
   "fr": "Automatiquement plus léger si le PC est trop lent",
   "it": "Automaticamente più leggero se il PC è troppo lento",
   "rm": "Automaticamain pli lev, sch’il PC è memia plaun"
+ },
+ "automatisch: wenige Bilder pro Sekunde beim Start": {
+  "en": "automatic: few frames per second at the start",
+  "fr": "automatique : peu d’images par seconde au démarrage",
+  "it": "automatico: pochi fotogrammi al secondo all’avvio",
+  "rm": "automatic: paucs maletgs per secunda a l’aviament"
  },
  "Automatische Trainings-Nacht": {
   "en": "Automatic training night",
@@ -3277,6 +3307,12 @@
   "it": "Codice sbagliato – controllare sulla pagina di MoveEye",
   "rm": "Code fallà – guardar sin la pagina da MoveEye"
  },
+ "Compatibility (OpenGL%s)": {
+  "en": "Compatibility (OpenGL%s)",
+  "fr": "Compatibility (OpenGL%s)",
+  "it": "Compatibility (OpenGL%s)",
+  "rm": "Compatibility (OpenGL%s)"
+ },
  "Computer-Spieler (Bots)": {
   "en": "Computer players (bots)",
   "fr": "Joueurs ordinateur (bots)",
@@ -3859,6 +3895,12 @@
   "fr": "l’endroit du détecteur de mouvement",
   "it": "il posto vicino al sensore di movimento",
   "rm": "il lieu tar il sensur da moviment"
+ },
+ "Der Rechner ist langsam (%d Bilder/s) – «Grafik-Modus: Automatisch» hat Lite eingeschaltet (System → Grafik).": {
+  "en": "The computer is slow (%d fps) – «Graphics mode: Automatic» switched on Lite (System → Graphics).",
+  "fr": "L’ordinateur est lent (%d images/s) – «Mode graphique : Automatique» a activé Lite (Système → Graphisme).",
+  "it": "Il computer è lento (%d fotogrammi/s) – «Modalità grafica: Automatico» ha attivato Lite (Sistema → Grafica).",
+  "rm": "Il computer è plaun (%d maletgs/s) – «Modus da grafica: Automatic» ha enconuschì Lite (Sistem → Grafica)."
  },
  "der Reihe nach": {
   "en": "in turn",
@@ -5531,6 +5573,12 @@
   "it": "Seguire richiede MoveEye – prima collegare (fino ad allora solo la pattuglia si gira verso cose sospette)",
   "rm": "Suandar dovra MoveEye – l’emprim colliar (fin lura sa volva mo la patrulla vers chaussas suspectas)"
  },
+ "Forward+ / Mobile (Vulkan%s)": {
+  "en": "Forward+ / Mobile (Vulkan%s)",
+  "fr": "Forward+ / Mobile (Vulkan%s)",
+  "it": "Forward+ / Mobile (Vulkan%s)",
+  "rm": "Forward+ / Mobile (Vulkan%s)"
+ },
  "Foto": {
   "en": "Photo",
   "fr": "Photo",
@@ -6312,11 +6360,23 @@
   "it": "",
   "rm": ""
  },
+ "Grafik VideoCore (Raspberry Pi)": {
+  "en": "VideoCore graphics (Raspberry Pi)",
+  "fr": "graphisme VideoCore (Raspberry Pi)",
+  "it": "grafica VideoCore (Raspberry Pi)",
+  "rm": "grafica VideoCore (Raspberry Pi)"
+ },
  "Grafik «%s»": {
   "en": "Graphics «%s»",
   "fr": "Graphisme «%s»",
   "it": "Grafica «%s»",
   "rm": "Grafica «%s»"
+ },
+ "Grafik-Modus": {
+  "en": "Graphics mode",
+  "fr": "Mode graphique",
+  "it": "Modalità grafica",
+  "rm": "Modus da grafica"
  },
  "Grafik: ": {
   "en": "",
@@ -8198,6 +8258,12 @@
   "it": "Purtroppo sbagliato – ancora una volta.",
   "rm": "Donn, fallà – anc ina giada."
  },
+ "Leistung": {
+  "en": "Performance",
+  "fr": "Performances",
+  "it": "Prestazioni",
+  "rm": "Prestaziun"
+ },
  "Lektion": {
   "en": "Lesson",
   "fr": "Leçon",
@@ -8317,6 +8383,30 @@
   "fr": "Réinitialiser la liste «contre l’IA»",
   "it": "Azzerare la lista «contro l’IA»",
   "rm": "Reinizialisar la glista «cunter la IA»"
+ },
+ "Lite (für Raspberry Pi 5: schneller, etwas einfacher)": {
+  "en": "Lite (for Raspberry Pi 5: faster, a bit simpler)",
+  "fr": "Lite (pour Raspberry Pi 5 : plus rapide, un peu plus simple)",
+  "it": "Lite (per Raspberry Pi 5: più veloce, un po’ più semplice)",
+  "rm": "Lite (per Raspberry Pi 5: pli svelt, in pau pli simpel)"
+ },
+ "Lite an (%s)": {
+  "en": "Lite on (%s)",
+  "fr": "Lite activé (%s)",
+  "it": "Lite acceso (%s)",
+  "rm": "Lite enconuschì (%s)"
+ },
+ "Lite aus": {
+  "en": "Lite off",
+  "fr": "Lite désactivé",
+  "it": "Lite spento",
+  "rm": "Lite stizzà"
+ },
+ "Lite aus (Grafik-Modus «%s»)": {
+  "en": "Lite off (graphics mode «%s»)",
+  "fr": "Lite désactivé (mode graphique «%s»)",
+  "it": "Lite spento (modalità grafica «%s»)",
+  "rm": "Lite stizzà (modus da grafica «%s»)"
  },
  "Livebild": {
   "en": "Live picture",
@@ -9720,6 +9810,12 @@
   "it": "Testare un guasto di rete",
   "rm": "Testar ina panna da la rait"
  },
+ "Neu heisst die Datei MoveEyeSim3D.exe (die alte MotionWatch3D.exe wird entfernt). Der Simulator beginnt mit frischen Einstellungen.": {
+  "en": "The file is now called MoveEyeSim3D.exe (the old MotionWatch3D.exe is removed). The simulator starts with fresh settings.",
+  "fr": "Le fichier s’appelle désormais MoveEyeSim3D.exe (l’ancien MotionWatch3D.exe est supprimé). Le simulateur démarre avec des réglages neufs.",
+  "it": "Ora il file si chiama MoveEyeSim3D.exe (il vecchio MotionWatch3D.exe viene rimosso). Il simulatore parte con impostazioni nuove.",
+  "rm": "Uss sa numna la datoteca MoveEyeSim3D.exe (la veglia MotionWatch3D.exe vegn allontanada). Il simulatur cumenza cun configuraziuns novas."
+ },
  "Neu laden": {
   "en": "Reload",
   "fr": "Recharger",
@@ -10759,6 +10855,12 @@
   "it": "Tosaerba",
   "rm": "Maschina da tagliar erva"
  },
+ "Raspberry Pi": {
+  "en": "Raspberry Pi",
+  "fr": "Raspberry Pi",
+  "it": "Raspberry Pi",
+  "rm": "Raspberry Pi"
+ },
  "Rauch aus Kaminen": {
   "en": "Smoke from chimneys",
   "fr": "Fumée des cheminées",
@@ -11493,6 +11595,18 @@
   "fr": "déjà attrapé",
   "it": "già preso",
   "rm": "gia tschiffà"
+ },
+ "Schon Lite: andere Programme schliessen, das Fenster kleiner machen, weniger Besucher gleichzeitig.": {
+  "en": "Already Lite: close other programs, make the window smaller, fewer visitors at once.",
+  "fr": "Déjà Lite : fermer les autres programmes, réduire la fenêtre, moins de visiteurs à la fois.",
+  "it": "Già Lite: chiudi gli altri programmi, rimpicciolisci la finestra, meno visitatori insieme.",
+  "rm": "Gia Lite: serrar auters programs, far la fanestra pli pitschna, damain visitaders a medem temp."
+ },
+ "Schon Lite: andere Programme schliessen, das Fenster kleiner machen.": {
+  "en": "Already Lite: close other programs, make the window smaller.",
+  "fr": "Déjà Lite : fermer les autres programmes, réduire la fenêtre.",
+  "it": "Già Lite: chiudi gli altri programmi, rimpicciolisci la finestra.",
+  "rm": "Gia Lite: serrar auters programs, far la fanestra pli pitschna."
  },
  "Schritt 1 von 3 · Ort wählen (Schweiz)": {
   "en": "Step 1 of 3 · choose place (Switzerland)",
@@ -12654,6 +12768,18 @@
   "fr": "Système",
   "it": "Sistema",
   "rm": "Sistem"
+ },
+ "System → Grafik: «Grafik-Modus» auf «Lite» oder «Automatisch leichter» einschalten.": {
+  "en": "System → Graphics: set «Graphics mode» to «Lite» or switch on «Automatically lighter».",
+  "fr": "Système → Graphisme : mettre «Mode graphique» sur «Lite» ou activer «Automatiquement plus léger».",
+  "it": "Sistema → Grafica: metti «Modalità grafica» su «Lite» o attiva «Automaticamente più leggero».",
+  "rm": "Sistem → Grafica: metter «Modus da grafica» sin «Lite» u enconuscher «Automaticamain pli lev»."
+ },
+ "System → Grafik: «Grafik-Modus» auf «Lite», andere Programme schliessen.": {
+  "en": "System → Graphics: set «Graphics mode» to «Lite», close other programs.",
+  "fr": "Système → Graphisme : mettre «Mode graphique» sur «Lite», fermer les autres programmes.",
+  "it": "Sistema → Grafica: metti «Modalità grafica» su «Lite», chiudi gli altri programmi.",
+  "rm": "Sistem → Grafica: metter «Modus da grafica» sin «Lite», serrar auters programs."
  },
  "Szene": {
   "en": "Scene",

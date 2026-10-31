@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_54.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_55.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.55: «MoveEye Sim · Basis» (alter Python-Simulator) nur noch mit dem neuen Schalter «Basis-Simulator anzeigen»
+    (Simulator, Experte, Standard aus): ohne ihn kein Download, keine Knöpfe zum Installieren / Starten auf dem Pi (bestehende
+    Installationen bleiben). Simulator 3D-4.25: Grafik-Stufe «Lite» für den Raspberry Pi 5 und «Leistung» in der Selbstdiagnose.
   * 2.98.54: Live-Seite am Handy: die Status-Chips stehen in einer Zeile zum seitlichen Wischen (Schutz-Zustand, Status-LED,
     alles ok / Probleme, Akku zuerst; Rand blendet aus, wenn weitere folgen) – die Sticks von Sim-Kompakt haben wieder ihre
     normale Grösse
@@ -1002,10 +1005,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_54.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_55.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_54.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_54.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_55.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_55.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -1022,7 +1025,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.54"
+APP_VERSION = "2.98.55"
 
 
 def default_data_dir():
@@ -1333,7 +1336,7 @@ CFG = {
     "sim_autostart": True, "sim_autostart_v2": False,   # v2 (2.95.26): on a Raspberry Pi off by default (it guards the real place)
     # 2.95.25: a simulator announces itself -> the simulation goes on by itself (and off again when it is gone)
     "sim_auto_on": False,        # ... it was switched on by that (only then it is switched off again by itself)
-    "sim_autoupd": True, "sim_separate": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
+    "sim_autoupd": True, "sim_separate": True, "sim_basis_show": False, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
     "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
     "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
     "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True,
@@ -25480,8 +25483,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.24", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 64545642,
-         "sha256": "df77d39c319dfdd3cb9bfbccd197364330f11ba44a535d3621191cdf0c69ed97"}
+SIM3D = {"version": "3D-4.25", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 64568361,
+         "sha256": "dfe42c5ea422dfc5b166a68d79997482faa5881c9fba632dd15c804d38aa824c"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -32591,7 +32594,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_54.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_55.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -40085,7 +40088,7 @@ function simCtlBuild(G, r, ctl, fmt) {
     });
     none.hidden = !q || any;
   }
-  const setEx = v => { expert = v; window.SC_EXPERT = v; apply();
+  const setEx = v => { expert = v; window.SC_EXPERT = v; apply(); if (typeof simsetLoad === "function") simsetLoad();
     fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !v, page: "sim"})}).catch(() => {}); };
   qi.oninput = apply; b1.onclick = () => setEx(false); b2.onclick = () => setEx(true);
   apply();
@@ -40556,10 +40559,10 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div class="dl">
       <a class="btn main" id="d-3d" href="/sim/simulator3d.zip"><span><img class="dlic" src="/sim-icon/sim3d.png" alt=""> <span data-i18n="3D simulator for Windows (ZIP)">3D simulator for Windows (ZIP)</span></span><small id="d-3dn"></small></a>
       <a class="btn main" id="d-py" href="/sim/simulator_py.zip"><span><img class="dlic" src="/sim-icon/simwelt.png" alt=""> <span data-i18n="Python world simulator (ZIP)">Python world simulator (ZIP)</span></span><small id="d-pyn"></small></a>
-      <a class="btn sec" href="/sim/simulator.zip"><span><img class="dlic" src="/sim-icon/simbasis.png" alt=""> <span data-i18n="Simple simulator (ZIP)">Simple simulator (ZIP)</span></span><small data-i18n="Python, for a PC or the Pi">Python, for a PC or the Pi</small></a>
+      <a class="btn sec" id="d-basis" hidden href="/sim/simulator.zip"><span><img class="dlic" src="/sim-icon/simbasis.png" alt=""> <span data-i18n="Simple simulator (ZIP)">Simple simulator (ZIP)</span></span><small data-i18n="Python, for a PC or the Pi">Python, for a PC or the Pi</small></a>
       <a class="btn sec" href="/preview" target="_blank"><span>📱 <span data-i18n="Phone / tablet view">Phone / tablet view</span></span><small data-i18n="this page as on a phone">this page as on a phone</small></a>
-      <button type="button" class="sec" id="p-inst" onclick="piAct('install')"><span id="p-instt">📦</span><small data-i18n="simple simulator directly on the Pi">simple simulator directly on the Pi</small></button>
-      <button type="button" class="sec" id="p-start" onclick="piAct('start')"><span>▶ <span data-i18n="Start simulator here">Start simulator here</span></span><small data-i18n="on the Pi (uses its CPU)">on the Pi (uses its CPU)</small></button>
+      <button type="button" class="sec" id="p-inst" hidden onclick="piAct('install')"><span id="p-instt">📦</span><small data-i18n="simple simulator directly on the Pi">simple simulator directly on the Pi</small></button>
+      <button type="button" class="sec" id="p-start" hidden onclick="piAct('start')"><span>▶ <span data-i18n="Start simulator here">Start simulator here</span></span><small data-i18n="on the Pi (uses its CPU)">on the Pi (uses its CPU)</small></button>
       <button type="button" class="sec" id="p-stop" onclick="piAct('stop')" hidden><span>⏹ <span data-i18n="Stop simulator">Stop simulator</span></span><small data-i18n="on the Pi">on the Pi</small></button>
     </div>
     <div class="mut" id="d-link"></div>
@@ -40726,7 +40729,9 @@ function paint() {
   if (!S.ok) { CS = ""; $("#s-groups").textContent = ""; $("#s-scn").hidden = true; $("#s-up").hidden = true; $("#s-cname").textContent = ""; $("#s-cst").textContent = t("ctl-note"); }
   // pi programs
   $("#p-instt").textContent = "📦 " + t(S.installed ? "Install simulator again" : "Install simulator on the Pi");
-  $("#p-start").hidden = !!S.running; $("#p-stop").hidden = !S.running;
+  // 2.98.55: «MoveEye Sim · Basis» only with «Basis-Simulator anzeigen» (639h); a running one can always be stopped
+  $("#d-basis").hidden = $("#p-inst").hidden = !S.basis_show;
+  $("#p-start").hidden = !S.basis_show || !!S.running; $("#p-stop").hidden = !S.running;
 }
 // ---- button «Update the simulator» (2.95.5): the simulator's own update (control «update_now»), newest version shown ----
 const vnum = v => (String(v || "").match(/(\d+)\.(\d+)/) || [0, 0, 0]).slice(1).map(Number);
@@ -40984,10 +40989,12 @@ async function simsetLoad() {
   let sch; try { sch = await (await fetch("/api/schema?sec=Simulator&lang=" + LANG)).json(); } catch (e) { return; }
   // 2.98.24 («Sim-Schalter nur einmal», Daniel): the switches of the tiles of the Simulator centre (Test-Postfach, Trainings-Nacht,
   // Rover, Fehlalarm-Lernen, Generalprobe, Wochen-Check) are only in their tile sheet (139), not here a second time
-  const S = sch[0] || {toggles: [], sliders: [], texts: []}, own = k => !!document.getElementById("k-" + k) || k === "sim_url" || SIM_TILE_KEYS.indexOf(k) >= 0;
+  // 2.98.55: «Basis-Simulator anzeigen» only in «Experte» (the switch Einfach / Experte of this page)
+  if (window.SC_EXPERT == null) { try { const j = await (await fetch("/api/ui_simple?page=sim")).json(); window.SC_EXPERT = !j.on; } catch (e) {} }
+  const S = sch[0] || {toggles: [], sliders: [], texts: []}, own = k => !!document.getElementById("k-" + k) || k === "sim_url" || SIM_TILE_KEYS.indexOf(k) >= 0 || (k === "sim_basis_show" && !window.SC_EXPERT);
   box.textContent = "";
   S.toggles.filter(x => !own(x.key)).forEach(x => { const l = el("label", "opt"), cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.checked = !!x.value;
-    cb.onchange = () => post("/api/set", {key: x.key, value: cb.checked}).then(r => { if (!r.ok) toast(r.error || t("not possible")); }); l.append(el("span", "", x.label), cb); box.appendChild(l); });
+    cb.onchange = () => post("/api/set", {key: x.key, value: cb.checked}).then(r => { if (!r.ok) toast(r.error || t("not possible")); if (x.key === "sim_basis_show") load(); }); l.append(el("span", "", x.label), cb); box.appendChild(l); });
   S.sliders.filter(x => !own(x.key)).forEach(x => { const w = el("div"), top = el("div", "rng"), v = el("b", "", String(x.value)), r = document.createElement("input");
     r.type = "range"; r.min = x.min; r.max = x.max; r.step = x.step; r.value = x.value; r.oninput = () => { v.textContent = r.value; };
     r.onchange = () => post("/api/set", {key: x.key, value: +r.value}); top.append(el("span", "", x.label), v); w.append(top, r); box.appendChild(w); });
@@ -59255,6 +59262,8 @@ class WebStream:
                     log_event("sys", f"Simulator address set to {CFG['sim_url']} (web)")
                     if CFG["sim_on"] and WATCH_REF.get("w") is not None and str(CFG["source"]).startswith("sim:"):
                         w_ = WATCH_REF["w"]; w_._open_gen += 1; w_._start_opener(CFG["source"])
+                if act_ in ("install", "start") and not CFG.get("sim_basis_show"):   # 2.98.55: «Basis-Simulator anzeigen» off (639h)
+                    return reply({"ok": False, "error": tr_err("Switch on «Show the basic simulator» first (Simulator, Expert)", lang)}, 400)
                 if act_ in ("install", "start", "stop"):
                     try:
                         ok, msg = {"install": sim_install, "start": sim_start, "stop": sim_stop}[act_]()
@@ -66789,6 +66798,7 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
     ("Simulator", "sim_autoupd", "Update the simulator by itself (the setting «Neue Versionen» of the simulator)"),
     ("Simulator", "sim_separate", "The simulation has its own settings (when switching back: ask which changes to take over)"),
+    ("Simulator", "sim_basis_show", "Show the basic simulator (MoveEye Sim · Basis, the old Python simulator)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
     ("Setup", "desktop_notice", "Small message on the Pi's desktop when MoveEye starts in the background"),
     ("Solar panel", "solar_on", "Solar panel with current meter (INA219 on I2C)"),
@@ -67401,7 +67411,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.54")
+        self.root.title("MoveEye 2.98.55")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -67768,7 +67778,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.54 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.55 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -68709,9 +68719,11 @@ class App:
                     ok, m = fn()
                     self._status("Simulator", ("✓ " + tr(done)) if ok else "⚠ " + tr_err(m))
                 threading.Thread(target=run, daemon=True).start()
-            ttk.Button(sf, text=tr("Install"), command=lambda: sim_do(sim_install, "Simulator installed")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(sf, text=tr("Start"), command=lambda: sim_do(sim_start, "Simulator started")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(sf, text=tr("Stop"), command=lambda: sim_do(sim_stop, "Simulator stopped")).pack(side="left", expand=True, fill="x")
+            if CFG.get("sim_basis_show"):                 # 2.98.55: «MoveEye Sim · Basis» only with «Basis-Simulator anzeigen» (639h)
+                ttk.Button(sf, text=tr("Install"), command=lambda: sim_do(sim_install, "Simulator installed")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+                ttk.Button(sf, text=tr("Start"), command=lambda: sim_do(sim_start, "Simulator started")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+            if CFG.get("sim_basis_show") or sim_running():    # a running one can always be stopped
+                ttk.Button(sf, text=tr("Stop"), command=lambda: sim_do(sim_stop, "Simulator stopped")).pack(side="left", expand=True, fill="x")
             kidata_tk_build(self, sbody)                  # training pack with «Vielfalt», «Delete old AI data» (197)
             falearn_tk_build(self, sbody)                 # 2.98.38: «Lernbilder prüfen» (148)
         if sec == "Security":                             # «Log in only encrypted» (574)
@@ -75578,7 +75590,7 @@ App._refresh = _kr_tk_refresh
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 223                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 224                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -91837,6 +91849,46 @@ for _g in TK_GROUPS:
         _g[2].insert(_g[2].index("Lights") + 1 if "Lights" in _g[2] else len(_g[2]), "Status LED")
 MENU_TITLES.setdefault("Status LED", "Status LED & buttons")
 led_web_de_refresh()                                      # the German texts of the web panel (599c), now that they exist
+# Ohne den Schalter: kein Download-Link, keine Knöpfe «Simulator auf dem Pi installieren / hier starten» (Web 470, Fenster 570).
+# Der Code bleibt; /sim/simulator.zip bleibt erreichbar (bestehende Basis-Simulatoren holen dort ihre Updates); eine
+# bestehende Installation auf dem Pi bleibt unberührt (nichts wird gelöscht), ein laufender lässt sich weiter stoppen.
+_HX_BASIS = {
+    'Show the basic simulator (MoveEye Sim · Basis, the old Python simulator)':
+        ('Basis-Simulator anzeigen (MoveEye Sim · Basis, der alte Python-Simulator)',
+         'Afficher le simulateur de base (MoveEye Sim · Basis, l’ancien simulateur Python)',
+         'Mostra il simulatore di base (MoveEye Sim · Basis, il vecchio simulatore Python)',
+         'Mussar il simulatur da basa (MoveEye Sim · Basis, il vegl simulatur Python)'),
+    'Shows the download of the old Python simulator and the buttons to install and start it on the Pi (page Simulator → Programs and downloads, window → Simulator). An installation on the Pi stays as it is, also when this is off.':
+        ('Zeigt den Download des alten Python-Simulators und die Knöpfe zum Installieren und Starten auf dem Pi (Seite Simulator → Programme und Downloads, Fenster → Simulator). Eine Installation auf dem Pi bleibt, wie sie ist, auch wenn dies aus ist.',
+         'Affiche le téléchargement de l’ancien simulateur Python et les boutons pour l’installer et le démarrer sur le Pi (page Simulateur → Programmes et téléchargements, fenêtre → Simulateur). Une installation sur le Pi reste telle quelle, même si c’est désactivé.',
+         'Mostra il download del vecchio simulatore Python e i pulsanti per installarlo e avviarlo sul Pi (pagina Simulatore → Programmi e download, finestra → Simulatore). Un’installazione sul Pi resta com’è, anche se questo è spento.',
+         'Mussa la telechargiada dal vegl simulatur Python ed ils buttuns per l’installar e aviar sin il Pi (pagina Simulatur → Programs e telechargiadas, fanestra → Simulatur). Ina installaziun sin il Pi resta sco ch’ella è, er sche quai è stizzà.'),
+    'Switch on «Show the basic simulator» first (Simulator, Expert)':
+        ('Zuerst «Basis-Simulator anzeigen» einschalten (Simulator, Experte)',
+         'Activez d’abord «Afficher le simulateur de base» (Simulateur, Expert)',
+         'Prima attiva «Mostra il simulatore di base» (Simulatore, Esperto)',
+         'Avant enconuschent «Mussar il simulatur da basa» (Simulatur, Expert)'),
+    'Off: MoveEye Sim · 3D is the simulator.': ('Aus: MoveEye Sim · 3D ist der Simulator.', 'Désactivé : MoveEye Sim · 3D est le simulateur.',
+                                                'Spento: MoveEye Sim · 3D è il simulatore.', 'Stizzà: MoveEye Sim · 3D è il simulatur.'),
+}
+for _k, _v in _HX_BASIS.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+SET_HELP["sim_basis_show"] = ("Shows the download of the old Python simulator and the buttons to install and start it on the Pi (page Simulator → "
+                              "Programs and downloads, window → Simulator). An installation on the Pi stays as it is, also when this is off.",
+                              "Off: MoveEye Sim · 3D is the simulator.")
+
+
+_sim_status_558 = sim_status
+
+
+# wraps: sim_status
+def sim_status():                                         # + 639h: show «MoveEye Sim · Basis» (download, install / start on the Pi)?
+    r = _sim_status_558()
+    r["basis_show"] = bool(CFG.get("sim_basis_show"))
+    return r
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

@@ -233,7 +233,8 @@ func _paint_rows() -> void:
 		_rows["tour"].text = ("weiter bei Schritt %d – das Bedienfeld Schritt für Schritt" % (tour_step + 1)) if tour_state == "later" else "das Bedienfeld Schritt für Schritt"
 	if _rows.has("diag"):
 		var its := Diagnose.check(main)
-		_rows["diag"].text = Diagnose.summary(its) + " · was läuft und was fehlt"
+		var pf: Dictionary = main.perf_info()            # 3D-4.25: «Leistung» right on the card (to test on the Raspberry Pi)
+		_rows["diag"].text = Diagnose.summary(its) + " · Leistung: %d Bilder/s, Lite %s" % [int(pf["fps"]), "an" if pf["lite"] else "aus"]
 
 
 # ---- what a row does ------------------------------------------------------------------------------------------------------------
@@ -474,7 +475,7 @@ func _about(b: VBoxContainer) -> void:
 	g.add_theme_constant_override("v_separation", 4)
 	vv.add_child(g)
 	_about_vals = {}
-	for k in ["Simulator", "Godot", "Grafik", "Bilder pro Sekunde", "CPU", "Arbeitsspeicher", "MoveEye", "Ports", "System", "Ordner"]:
+	for k in ["Simulator", "Godot", "Grafik", "Bilder pro Sekunde", "Leistung", "CPU", "Arbeitsspeicher", "MoveEye", "Ports", "System", "Ordner"]:
 		var kl := UI.small(k)
 		kl.autowrap_mode = TextServer.AUTOWRAP_OFF
 		kl.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
@@ -522,12 +523,19 @@ func about_status() -> Dictionary:
 			"Godot": "%s · %s" % [str(v.get("string", "")), str(ProjectSettings.get_setting("rendering/renderer/rendering_method", ""))],
 			"Grafik": "Stufe «%s» · %s%s" % [Diagnose.QNAMES.get(str(main.quality), str(main.quality)), RenderingServer.get_video_adapter_name(), " · virtuelle Maschine" if main.in_vm else ""],
 			"Bilder pro Sekunde": "%d" % Engine.get_frames_per_second(),
+			"Leistung": _perf_line(),
 			"CPU": "PC %s · Simulator %s · %d Kerne" % ["–" if pc < 0 else "%d %%" % roundi(pc), "–" if sm < 0 else "%d %%" % roundi(sm), OS.get_processor_count()],
 			"Arbeitsspeicher": ("frei %s von %s · " % [Diagnose._gb(float(mi.get("available", 0))), Diagnose._gb(float(mi.get("physical", 0)))] if float(mi.get("physical", -1)) > 0 else "") + "Simulator " + Diagnose._gb(float(OS.get_static_memory_usage())),
 			"MoveEye": ("verbunden mit «%s» · MoveEye %s · %s" % [str(main.mw.get("device", "MoveEye")), str(main.mw.get("mw_version", "?")), main.mw_addr]) if conn else ("nicht verbunden" + (" (zuletzt %s)" % main.mw_addr if main.mw_addr != "" else "")),
 			"Ports": ports,
 			"System": "%s · %s" % [OS.get_name(), OS.get_distribution_name() if OS.has_method("get_distribution_name") else ""],
 			"Ordner": OS.get_user_data_dir()}
+
+
+func _perf_line() -> String:
+	"""3D-4.25: Lite an / aus, Renderer, Auflösung (wie «Leistung» in der Selbstdiagnose)"""
+	var pf: Dictionary = main.perf_info()
+	return "%s · %s · 3D %s (%d %%)" % [("Lite an (%s)" % str(pf["why"])) if pf["lite"] else "Lite aus", str(pf["renderer"]), str(pf["res"]), int(pf["scale"])]
 
 
 func _about_paint() -> void:
