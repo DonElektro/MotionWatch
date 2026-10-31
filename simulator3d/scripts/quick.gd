@@ -13,10 +13,11 @@ const UI = preload("res://scripts/ui_style.gd")
 # [id, symbol, name]
 const TILES := [["scene", "globe", "Szene"], ["time", "clock", "Tageszeit"], ["weather", "cloud", "Wetter"], ["visit", "person", "Besuch"],
 		["inventar", "box", "Gegenstände"], ["map", "map", "Echter Ort"], ["planner", "plan", "Aufstellen"],
-		["test", "check", "Testen"], ["pruef", "meter", "Prüfstand"], ["learn", "lens", "Trainingsbilder"], ["game", "pad", "Spiel"]]
+		["test", "check", "Testen"], ["pruef", "meter", "Prüfstand"], ["learn", "lens", "Trainingsbilder"], ["game", "pad", "Spiel"],
+		["disc", "star", "Entdeckungen"]]                 # Erlebniswelt 20: the Entdeckungsbuch (entdecken.gd), like the tile of MoveEye 139
 # 3D-4.21 (Menü 2): the tiles under the same four headings as the simulator centre of MoveEye
 const HEADS := [["Welt", ["scene", "time", "weather", "visit", "inventar", "map", "planner"]], ["Testen", ["test", "pruef"]],
-		["Lernen", ["learn"]], ["Spielen", ["game"]]]
+		["Lernen", ["learn"]], ["Spielen", ["game", "disc"]]]
 # 3D-4.0 (Gesamtrunde): «Patrouille» (= Rover-Route) and «Kopf steuern» only in the bar below - the bar moves, the tiles hold content
 const TIMES := [["Morgen 07:00", 7.0], ["Mittag 13:00", 13.0], ["Abend 19:30", 19.5], ["Dämmerung 21:00", 21.0], ["Nacht 23:00", 23.0], ["Tiefe Nacht 03:00", 3.0]]
 const WEATHER := [["Klar", "clear"], ["Bewölkt", "cloudy"], ["Regen", "rain"], ["Nebel", "fog"], ["Schnee", "snow"]]
@@ -116,6 +117,9 @@ func _press(id: String, b: Button) -> void:
 			main.open_testen()
 		"game":
 			main.gamewiz.open_wiz()
+		"disc":
+			if main.entdecken != null:
+				main.entdecken.open_book()
 		"learn":
 			main.open_train()
 		"patrol":
@@ -157,6 +161,8 @@ func _paint() -> void:
 	if _subs.has("head"):
 		_subs["head"].text = "Pfeile, Licht"
 	_subs["map"].text = "Karte der Welt"
+	if main.entdecken != null:
+		_subs["disc"].text = "%d von %d" % [main.entdecken.count(), main.entdecken.total()]
 	_subs["planner"].text = "wohin?"
 	_subs["pruef"].text = "Erkennung"
 	var on := {"inventar": main.inventar != null and main.inventar.visible, "test": main.testrun.running,
