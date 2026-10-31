@@ -90,6 +90,7 @@ def stats(R, keys=None):
         x = [r for r in C if r["event"] == e]
         d[e] = (sum(1 for r in x if r.get("detected")), len(x))
     d["pers"] = (sum(1 for r in pers if r.get("detected")), len(pers))
+    d["pers_push"] = (sum(1 for r in pers if r.get("detected") or any(p[0] in ("person", "warm") for p in r.get("pushes", []))), len(pers))
     d["idle_eps"] = sum(r.get("false_person_eps", 0) for r in idle)
     d["idle_push"] = sum(r.get("false_pushes", 0) for r in idle)
     d["idle_min"] = isecs / 60.0
@@ -111,7 +112,7 @@ def summary():
     out = ["Nur Fälle, die in beiden Läufen gemessen wurden: %d." % len(keys), "",
            "| Fallgruppe | vorher (2.98.110) | nachher (3.8.0) |", "|---|---|---|"]
     for e, nm in (("gehen", "Person geht"), ("kriechen", "Person kriecht (dunkel)"), ("kind", "Kind"), ("pers", "**Personen gesamt**"),
-                  ("tier", "Tier als Tier erkannt"), ("fahrzeug", "Auto als Fahrzeug erkannt")):
+                  ("pers_push", "Personen gesamt (Kasten **oder** Personen-Push)"), ("tier", "Tier als Tier erkannt"), ("fahrzeug", "Auto als Fahrzeug erkannt")):
         m = cmp_pair(so[e], sn[e])
         out.append("| %s | %s | %s%s |" % (nm, pct(so[e]), pct(sn[e]), m))
     out.append("| Leerlauf: «Person» ohne Person | %d in %.0f Min. (%.0f/h) | %d in %.0f Min. (%.0f/h)%s |" % (
