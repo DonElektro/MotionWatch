@@ -1,7 +1,7 @@
 {
- "version": "3D-4.24",
+ "version": "3D-4.27",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 64545642,
- "sha256": "df77d39c319dfdd3cb9bfbccd197364330f11ba44a535d3621191cdf0c69ed97",
- "notes": "Simulator-Datei heisst neu MoveEyeSim3D.exe – alte Dateien löschen und neu herunterladen; Simulator startet mit frischen Einstellungen; Windows fragt evtl. nochmals (SmartScreen/Firewall). Ein Update aus dem Simulator erledigt den Wechsel von selbst. Die Person im Schriftzug geht jetzt richtig (Bein und Gegenarm schwingen zusammen)."
+ "size": 64732969,
+ "sha256": "08dfbee365fb8e95b66e0452412984a9015af9535bed7ab99ade578f8dc9dbd9",
+ "notes": "Entdecken: Entdeckungsbuch (Spielen → Entdeckungen), Geheimnisse je Szene finden durch Hinschauen oder Foto von MoveEyes Kopfkamera, nur nachts / bei Regen / am Morgen, leise Blinki-Hinweise; Demo im Camping-Platz."
 }

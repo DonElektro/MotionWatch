@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_54.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_58.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,18 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.58: Simulator-Zentrale: neue Kachel «📖 Entdeckungen» (Spielen) – Stand des Entdeckungsbuchs im Simulator, Liste, «📷
+    Foto für Entdeckungsbuch», «Im Simulator öffnen», «Blinki-Hinweis». Simulator 3D-4.27: Entdecken (Buch, Fund per Ansicht
+    oder Foto der Kopfkamera, Tageszeit-/Wetter-Geheimnisse, Blinki-Hinweise, Demo im Camping-Platz).
+  * 2.98.57: Simulator 3D-4.26: alle schwebenden Fenster (Kompass, Karte, Livebild, SmallTV, Gerät, Mover, Kopf, Kameras, CPU)
+    in einem gemeinsamen Rahmen – verschieben, Grösse ändern, ✕ ausblenden, Schnappen, neuer Knopf «Fenster» in der Leiste unten
+    (Liste, «Anordnung zurücksetzen»), Anordnung pro PC gespeichert.
+  * 2.98.56: Sim-Kompakt: hat es neben dem Hauptbild Platz (PC, Tablet quer), steht das zweite Bild (Simulator bzw. Kamera)
+    rechts daneben statt darüber – nichts wird mehr verdeckt; am Handy hochkant bleibt Bild im Bild. Das Simulator-Bild wächst
+    nicht mehr mit dem Zoom «Grösse» aus seinem Platz.
+  * 2.98.55: «MoveEye Sim · Basis» (alter Python-Simulator) nur noch mit dem neuen Schalter «Basis-Simulator anzeigen»
+    (Simulator, Experte, Standard aus): ohne ihn kein Download, keine Knöpfe zum Installieren / Starten auf dem Pi (bestehende
+    Installationen bleiben). Simulator 3D-4.25: Grafik-Stufe «Lite» für den Raspberry Pi 5 und «Leistung» in der Selbstdiagnose.
   * 2.98.54: Live-Seite am Handy: die Status-Chips stehen in einer Zeile zum seitlichen Wischen (Schutz-Zustand, Status-LED,
     alles ok / Probleme, Akku zuerst; Rand blendet aus, wenn weitere folgen) – die Sticks von Sim-Kompakt haben wieder ihre
     normale Grösse
@@ -1002,10 +1014,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_54.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_58.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_54.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_54.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_58.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_58.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -1022,7 +1034,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.54"
+APP_VERSION = "2.98.58"
 
 
 def default_data_dir():
@@ -1333,7 +1345,7 @@ CFG = {
     "sim_autostart": True, "sim_autostart_v2": False,   # v2 (2.95.26): on a Raspberry Pi off by default (it guards the real place)
     # 2.95.25: a simulator announces itself -> the simulation goes on by itself (and off again when it is gone)
     "sim_auto_on": False,        # ... it was switched on by that (only then it is switched off again by itself)
-    "sim_autoupd": True, "sim_separate": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
+    "sim_autoupd": True, "sim_separate": True, "sim_basis_show": False, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
     "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
     "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
     "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True,
@@ -11877,6 +11889,11 @@ def sim_hub(force=False):
         except Exception:
             d["rover"] = None
         d["rover_alarm"] = bool(CFG.get("rover_alarm"))
+        try:                                                # Erlebniswelt 20–23 (simulator entdecken.gd): the Entdeckungsbuch of the scene
+            dz = sim_control({"action": "entdecken"}) or {}
+            d["disc"] = {k: dz.get(k) for k in ("found", "total", "photo", "scene_name", "hint_text", "items")} if dz.get("ok") and "total" in dz else None
+        except Exception:
+            d["disc"] = None
     d["demo"] = {"busy": DEMO_RUN["busy"], "i": DEMO_RUN["i"], "n": DEMO_RUN["n"]}
     d["simple"] = page_simple("sim")                      # 2.98.14: «Simple» shows the assistant instead of the single tools
     d["tune"] = {"busy": TUNEA["busy"], "step": TUNEA["step"], "last": bool(TUNEA.get("last"))}
@@ -11917,6 +11934,13 @@ def sim_hub_do(a, v=None):
                 r = sim_control({"action": "rover", "do": str(v)[:10], "on": True}) if v != "patrol_off" else sim_control({"action": "rover", "do": "patrol", "on": False})
         elif a == "twin":
             r = sim_twin()
+        elif a == "disc":                                    # Erlebniswelt 20–23: open the book in the simulator, photo, Blinki hint
+            r = sim_control({"action": "entdecken", "do": str(v) if v in ("open", "close", "photo", "hint") else "info"})
+            if v == "photo" and r.get("ok") and not r.get("found"):
+                _SIMHUB["t"] = 0.0
+                return False, tr("nothing special in the picture of the camera")
+            if v == "hint" and not r.get("ok"):
+                return False, tr("nothing more to find here right now")
         elif a == "overlay":
             r = sim_control({"action": "set", "id": str(v.get("id")), "value": bool(v.get("on"))}) if isinstance(v, dict) and v.get("id") in ("show_zones3d", "show_det3d") else {"ok": False}
         else:
@@ -11936,6 +11960,12 @@ SIMHUB_CSS = r"""
 .shub .st:hover{border-color:var(--acc,#3b8cff)}.shub .st:active{transform:scale(.97)}
 .shub .st i{font-style:normal;font-size:24px;line-height:1}.shub .st b{font-size:13px;hyphens:auto;overflow-wrap:anywhere}.shub .st small{font-size:11px;color:var(--mut,#8a9bb0)}
 .shub .st.on{border-color:#f59a4a;box-shadow:0 0 0 1px #f59a4a inset}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:8px}
+.dgrid .dit{display:flex;gap:8px;align-items:flex-start;padding:8px;border-radius:12px;border:1px solid var(--line,#1f2b3a);background:var(--panel2,#151e2b)}
+.dgrid .dit.no{background:transparent;color:var(--mut,#8a9bb0)}
+.dgrid img,.dgrid .dph{width:96px;height:54px;border-radius:8px;object-fit:cover;flex:0 0 auto;background:#0006}
+.dgrid .dph{display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--mut,#8a9bb0)}
+.dgrid .dtx{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:12px}.dgrid .dtx b{font-size:13px}.dgrid .dtx small{color:var(--mut,#8a9bb0)}
 .shsheet{margin-top:8px;padding:10px;border-radius:14px;background:var(--panel,#111822);border:1px solid var(--line,#1f2b3a);display:flex;flex-wrap:wrap;gap:6px}
 .shsheet.trs{display:block}.shsheet #tr-box button{flex:0 1 auto}
 .shsheet button{flex:1 1 auto;min-width:84px}.shsheet .shrow{display:flex;gap:6px;width:100%;align-items:center}
@@ -11980,6 +12010,11 @@ SIMHUB_JS = r"""
     "More sensitive": "Empfindlicher", "Less sensitive": "Weniger empfindlich", "AI stricter": "KI strenger", "AI more generous": "KI grosszügiger", "Also small objects": "Auch kleine Objekte",
     "Faster decision": "Schneller entscheiden", "B is better – kept": "B ist besser – übernommen", "A stays": "A bleibt", "Place, zones, patrol": "Ort, Zonen, Patrouille",
     "Zones in 3D": "Zonen in 3D", "mast": "Stange", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"});
+  Object.assign(DE, {"Discoveries": "Entdeckungen", "{f} of {n} discovered": "{f} von {n} entdeckt", "Photo for the discovery book": "Foto für Entdeckungsbuch",
+    "Open in the simulator": "Im Simulator öffnen", "Blinki hint": "Blinki-Hinweis", "a place": "ein Ort", "a scene": "eine Szene", "an animal": "ein Tier", "a person": "ein Mensch",
+    "Found!": "Entdeckt!", "Something special is in the picture – take the photo now!": "Etwas Besonderes ist im Bild – jetzt fotografieren!",
+    "Come close enough in the 3D view to discover places, animals and funny scenes. 📷 = take a photo with MoveEye’s camera: aim the head, then «Photo for the discovery book». 🌙 🌧 🌅 = only at night, in the rain, in the morning.": "Wer in der 3D-Ansicht nahe genug kommt, entdeckt Orte, Tiere und lustige Szenen. 📷 = mit MoveEyes Kamera fotografieren: Kopf hinrichten, dann «Foto für Entdeckungsbuch». 🌙 🌧 🌅 = nur nachts, bei Regen, am Morgen.",
+    "nothing special in the picture of the camera": "nichts Besonderes im Bild der Kamera", "nothing more to find here right now": "gerade gibt es hier nichts mehr zu finden"});   // Erlebniswelt 20–23
   const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : (L() === "en" ? k : (DE[k] || k));
   const scn = x => !x ? "" : (x.en && L() !== "de" ? tt(x.en) : x.name);     // 551: scene names in the language of the page (German from the simulator)
   const WX = [["clear", "☀"], ["cloudy", "☁"], ["rain", "🌧"], ["fog", "🌫"], ["snow", "❄"]];
@@ -12012,10 +12047,32 @@ SIMHUB_JS = r"""
       s.appendChild(E("div", "mut", "🔋 " + (R.batt != null ? R.batt + " %" : "–") + (R.charging ? " · " + tt("charging") : "") + " · " + tt("rover-note")));
     }
     if (kind === "stats") statsSheet(s);
+    if (kind === "disc") discSheet(s);
     if (kind === "tests") { const tb = document.getElementById("tr-box") || window._trBox;   // 2.98.23: the test run (470) lives here, no own card
       if (tb) { window._trBox = tb; s.classList.add("trs"); s.appendChild(tb); } else s.appendChild(E("div", "mut", "–")); }
     if (["blind", "rehearsal", "autoth", "falearn", "week", "points"].includes(kind)) learnSheet(s, kind);
     box.appendChild(s);
+  }
+  // Erlebniswelt 20–23: the Entdeckungsbuch of the simulator (entdecken.gd) - count, pictures, «???» with kind and time
+  const WHEN_I = {night: "🌙", rain: "🌧", morning: "🌅", evening: "🌇", day: "☀", snow: "❄", fog: "🌫"};
+  function discSheet(s) {
+    const D = H.disc || {}; s.classList.add("trs");
+    s.appendChild(E("b", "", (D.scene_name ? D.scene_name + ": " : "") + tt("{f} of {n} discovered").replace("{f}", D.found || 0).replace("{n}", D.total || 0)));
+    const g = E("div", "dgrid");
+    (D.items || []).forEach((x, i) => {
+      const c = E("div", "dit" + (x.found ? "" : " no"));
+      if (x.found && x.pic) { const im = E("img"); im.alt = ""; im.loading = "lazy"; im.src = "/sim/disc_pic/" + i + ".jpg?t=" + x.t; c.appendChild(im); }
+      else c.appendChild(E("div", "dph", x.found ? (x.icon || "✓") : "?"));
+      const w = (x.when || []).map(k => WHEN_I[k] || "").join(" ") + (x.photo ? " 📷" : "");
+      const tx = E("div", "dtx"); tx.append(E("b", "", x.found ? ((x.icon ? x.icon + " " : "") + x.title) : "???"),
+        E("small", "", x.found ? (x.short || "") : tt(({ort: "a place", szene: "a scene", tier: "an animal", mensch: "a person"})[x.kind] || "a place") + (w.trim() ? " · " + w.trim() : "")));
+      c.appendChild(tx); g.appendChild(c); });
+    s.appendChild(g);
+    const r = E("div", "shrow"); r.style.cssText = "margin-top:8px;flex-wrap:wrap";
+    r.append(B("📷 " + tt("Photo for the discovery book"), () => act("disc", "photo").then(x => x && x.ok && say("📷 " + tt("Found!"))), D.photo ? "" : "sec"),
+      B("📖 " + tt("Open in the simulator"), () => act("disc", "open")), B("💡 " + tt("Blinki hint"), () => act("disc", "hint")));
+    s.appendChild(r);
+    s.appendChild(E("div", "mut", D.photo ? "📷 " + tt("Something special is in the picture – take the photo now!") : tt("Come close enough in the 3D view to discover places, animals and funny scenes. 📷 = take a photo with MoveEye’s camera: aim the head, then «Photo for the discovery book». 🌙 🌧 🌅 = only at night, in the rain, in the morning.")));
   }
   let LB = null, ST = null, LN = null;
   const learn = async (d) => { try { const r = d ? await (await fetch("/api/learn", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: L()}, d))})).json()
@@ -12118,7 +12175,7 @@ SIMHUB_JS = r"""
   const GRP = {wide: "world", scene: "world", hour: "world", weather: "world", visit: "world", surprise: "world", twin: "world", devices: "world", rover: "world", templates: "world",
     tests: "test", parc: "test", blind: "test", rehearsal: "test", inbox: "test", drill: "test", ab: "test", week: "test", stats: "test",
     improve: "learn", autoth: "learn", train: "learn", falearn: "learn", diary: "learn",
-    game: "play", points: "play"};
+    game: "play", points: "play", disc: "play"};
   // 2.98.24 («Sim-Schalter nur einmal»): Trainings-Nacht, Fehlalarm-Lernen and Wochen-Check are switched only in their tile
   // (no longer also in the assistant «Erkennung verbessern» and in «Einstellungen der Simulation») - so always shown
   const EXPERT_K = ["autoth", "ab"];
@@ -12154,6 +12211,7 @@ SIMHUB_JS = r"""
       ["ab", "⚖", tt("A/B comparison"), LB && LB.ab.busy ? "⏳ " + LB.ab.step : tt("Which setting is better?")],
       ["stats", "📈", tt("Statistics & versions"), tt("4 weeks, per version")]);
     if (full) T.push(["game", "🎮", tt("Game"), tt("Play on the phone")], ["diary", "📔", tt("Diary"), tt("Visits and detection")]);
+    if (full && H.disc) T.push(["disc", "📖", tt("Discoveries"), (H.disc.found || 0) + " / " + (H.disc.total || 0) + (H.disc.photo ? " · 📷" : "")]);   // Erlebniswelt 20–23
     T.forEach(([k, ic, n, sub]) => { if (full && H.simple && EXPERT_K.includes(k)) return;
       const b = E("button", "st" + (open === k || (k === "surprise" && H.surprise) ? " on" : "")); b.type = "button";
       b.append(E("i", "", ic), E("b", "", n), E("small", "", sub));
@@ -25480,8 +25538,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.24", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 64545642,
-         "sha256": "df77d39c319dfdd3cb9bfbccd197364330f11ba44a535d3621191cdf0c69ed97"}
+SIM3D = {"version": "3D-4.27", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 64732969,
+         "sha256": "08dfbee365fb8e95b66e0452412984a9015af9535bed7ab99ade578f8dc9dbd9"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -32591,7 +32649,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_54.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_58.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -40085,7 +40143,7 @@ function simCtlBuild(G, r, ctl, fmt) {
     });
     none.hidden = !q || any;
   }
-  const setEx = v => { expert = v; window.SC_EXPERT = v; apply();
+  const setEx = v => { expert = v; window.SC_EXPERT = v; apply(); if (typeof simsetLoad === "function") simsetLoad();
     fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !v, page: "sim"})}).catch(() => {}); };
   qi.oninput = apply; b1.onclick = () => setEx(false); b2.onclick = () => setEx(true);
   apply();
@@ -40556,10 +40614,10 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div class="dl">
       <a class="btn main" id="d-3d" href="/sim/simulator3d.zip"><span><img class="dlic" src="/sim-icon/sim3d.png" alt=""> <span data-i18n="3D simulator for Windows (ZIP)">3D simulator for Windows (ZIP)</span></span><small id="d-3dn"></small></a>
       <a class="btn main" id="d-py" href="/sim/simulator_py.zip"><span><img class="dlic" src="/sim-icon/simwelt.png" alt=""> <span data-i18n="Python world simulator (ZIP)">Python world simulator (ZIP)</span></span><small id="d-pyn"></small></a>
-      <a class="btn sec" href="/sim/simulator.zip"><span><img class="dlic" src="/sim-icon/simbasis.png" alt=""> <span data-i18n="Simple simulator (ZIP)">Simple simulator (ZIP)</span></span><small data-i18n="Python, for a PC or the Pi">Python, for a PC or the Pi</small></a>
+      <a class="btn sec" id="d-basis" hidden href="/sim/simulator.zip"><span><img class="dlic" src="/sim-icon/simbasis.png" alt=""> <span data-i18n="Simple simulator (ZIP)">Simple simulator (ZIP)</span></span><small data-i18n="Python, for a PC or the Pi">Python, for a PC or the Pi</small></a>
       <a class="btn sec" href="/preview" target="_blank"><span>📱 <span data-i18n="Phone / tablet view">Phone / tablet view</span></span><small data-i18n="this page as on a phone">this page as on a phone</small></a>
-      <button type="button" class="sec" id="p-inst" onclick="piAct('install')"><span id="p-instt">📦</span><small data-i18n="simple simulator directly on the Pi">simple simulator directly on the Pi</small></button>
-      <button type="button" class="sec" id="p-start" onclick="piAct('start')"><span>▶ <span data-i18n="Start simulator here">Start simulator here</span></span><small data-i18n="on the Pi (uses its CPU)">on the Pi (uses its CPU)</small></button>
+      <button type="button" class="sec" id="p-inst" hidden onclick="piAct('install')"><span id="p-instt">📦</span><small data-i18n="simple simulator directly on the Pi">simple simulator directly on the Pi</small></button>
+      <button type="button" class="sec" id="p-start" hidden onclick="piAct('start')"><span>▶ <span data-i18n="Start simulator here">Start simulator here</span></span><small data-i18n="on the Pi (uses its CPU)">on the Pi (uses its CPU)</small></button>
       <button type="button" class="sec" id="p-stop" onclick="piAct('stop')" hidden><span>⏹ <span data-i18n="Stop simulator">Stop simulator</span></span><small data-i18n="on the Pi">on the Pi</small></button>
     </div>
     <div class="mut" id="d-link"></div>
@@ -40726,7 +40784,9 @@ function paint() {
   if (!S.ok) { CS = ""; $("#s-groups").textContent = ""; $("#s-scn").hidden = true; $("#s-up").hidden = true; $("#s-cname").textContent = ""; $("#s-cst").textContent = t("ctl-note"); }
   // pi programs
   $("#p-instt").textContent = "📦 " + t(S.installed ? "Install simulator again" : "Install simulator on the Pi");
-  $("#p-start").hidden = !!S.running; $("#p-stop").hidden = !S.running;
+  // 2.98.55: «MoveEye Sim · Basis» only with «Basis-Simulator anzeigen» (639h); a running one can always be stopped
+  $("#d-basis").hidden = $("#p-inst").hidden = !S.basis_show;
+  $("#p-start").hidden = !S.basis_show || !!S.running; $("#p-stop").hidden = !S.running;
 }
 // ---- button «Update the simulator» (2.95.5): the simulator's own update (control «update_now»), newest version shown ----
 const vnum = v => (String(v || "").match(/(\d+)\.(\d+)/) || [0, 0, 0]).slice(1).map(Number);
@@ -40984,10 +41044,12 @@ async function simsetLoad() {
   let sch; try { sch = await (await fetch("/api/schema?sec=Simulator&lang=" + LANG)).json(); } catch (e) { return; }
   // 2.98.24 («Sim-Schalter nur einmal», Daniel): the switches of the tiles of the Simulator centre (Test-Postfach, Trainings-Nacht,
   // Rover, Fehlalarm-Lernen, Generalprobe, Wochen-Check) are only in their tile sheet (139), not here a second time
-  const S = sch[0] || {toggles: [], sliders: [], texts: []}, own = k => !!document.getElementById("k-" + k) || k === "sim_url" || SIM_TILE_KEYS.indexOf(k) >= 0;
+  // 2.98.55: «Basis-Simulator anzeigen» only in «Experte» (the switch Einfach / Experte of this page)
+  if (window.SC_EXPERT == null) { try { const j = await (await fetch("/api/ui_simple?page=sim")).json(); window.SC_EXPERT = !j.on; } catch (e) {} }
+  const S = sch[0] || {toggles: [], sliders: [], texts: []}, own = k => !!document.getElementById("k-" + k) || k === "sim_url" || SIM_TILE_KEYS.indexOf(k) >= 0 || (k === "sim_basis_show" && !window.SC_EXPERT);
   box.textContent = "";
   S.toggles.filter(x => !own(x.key)).forEach(x => { const l = el("label", "opt"), cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.checked = !!x.value;
-    cb.onchange = () => post("/api/set", {key: x.key, value: cb.checked}).then(r => { if (!r.ok) toast(r.error || t("not possible")); }); l.append(el("span", "", x.label), cb); box.appendChild(l); });
+    cb.onchange = () => post("/api/set", {key: x.key, value: cb.checked}).then(r => { if (!r.ok) toast(r.error || t("not possible")); if (x.key === "sim_basis_show") load(); }); l.append(el("span", "", x.label), cb); box.appendChild(l); });
   S.sliders.filter(x => !own(x.key)).forEach(x => { const w = el("div"), top = el("div", "rng"), v = el("b", "", String(x.value)), r = document.createElement("input");
     r.type = "range"; r.min = x.min; r.max = x.max; r.step = x.step; r.value = x.value; r.oninput = () => { v.textContent = r.value; };
     r.onchange = () => post("/api/set", {key: x.key, value: +r.value}); top.append(el("span", "", x.label), v); w.append(top, r); box.appendChild(w); });
@@ -58229,6 +58291,12 @@ SIM_PAGE = SIM_PAGE.replace("</body>", "<!--KIGJS--></body>", 1)          # fill
 #           the simulator has it), Ansicht (views of the simulator window, /api/sim padview like 538), Folgen (the quick
 #           switch «Follow» of 530) and «… mehr» = the whole «Simulator-Steuerung» card (search, Simple / Expert).
 #   The explanation of the simulator window is behind «?», «Bildqualität» is in «◫ Ansicht».
+#   2.98.56 «adaptiv» (Daniel 31.10.: on a PC the small picture covered the camera picture, on ~1000 px the big one was small
+#           and centred): is there room BESIDE the main picture (the second one >= 220 px wide, the main one ~64 % of the row,
+#           at least 60 %; height limit as above, phone sideways up to half the height), the second picture stands next to it
+#           (#lv-main.sk-side: grid areas "pic pi", top-aligned, the same card look, «Simulator» / «Kamera» + LIVE dot), the pair
+#           centred by --sk-off when the height limits it. Otherwise (phone upright) the inset as before. ResizeObserver on <main>.
+#           The simulator picture is undone from the zoom «Grösse» of 536 (it grew out of its place on a big screen).
 # Nothing changes when the simulator is not connected (or Sim-Kompakt is off): every element goes back to its place.
 # Hooks: 536 (placeStick leaves the stick alone, menuBuild calls skMenu), 539 / 546 (window.skSlot), 139 (mwSimHub, sheets
 # with data-simhub="sheet"). Window (Tk): no live sticks / simulator window there - nothing to do. Translations: part 597.
@@ -58260,14 +58328,31 @@ body.sk.lv:not(.videoonly) #vcard.sk-pi .vtag{left:4px;bottom:4px;gap:3px}
 body.sk.lv:not(.videoonly) #vcard.sk-pi .vtag span{font-size:9px;padding:1px 5px;border-radius:5px;letter-spacing:.03em}
 body.sk.lv:not(.videoonly) #vcard.sk-pi .vtag .live::before{width:6px;height:6px;margin-right:4px}
 body.sk.lv:not(.videoonly) #vcard.sk-pi #v-src{display:none}
-body.sk.lv:not(.videoonly) #vcard.sk-pm .vtag{right:calc(var(--sk-iw,120px) + 16px);flex-wrap:nowrap;overflow:hidden}   /* not under the small picture */
+body.sk.lv:not(.videoonly) #lv-main:not(.sk-side) #vcard.sk-pm .vtag{right:calc(var(--sk-iw,120px) + 16px);flex-wrap:nowrap;overflow:hidden}   /* not under the small picture */
 body.sk.lv:not(.videoonly) #vcard.sk-pm .vtag span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 body.sk.lv:not(.videoonly) #vcard.sk-pm .vtag .live{flex:none}
+/* 2.98.56 «adaptiv»: room beside the main picture = the second picture next to it (top right, ~1/3 of the row, the same card
+   look, no overlap; --sk-off centres the pair when the height limits the main picture); else the inset in the corner as above */
+body.sk.lv:not(.videoonly) #lv-main.sk-side{grid-template-columns:minmax(0,1fr) calc(var(--sk-iw,240px) + var(--sk-off,0px));grid-template-areas:"pic pi" "ctl ctl" "more more"}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #vcard.sk-pm,body.sk.lv:not(.videoonly) #lv-main.sk-side #sk-sim.sk-pm{justify-self:end}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #vcard.sk-pi,body.sk.lv:not(.videoonly) #lv-main.sk-side #sk-sim.sk-pi{grid-area:pi;justify-self:start;align-self:start;
+  margin:0!important;border:1px solid var(--line);border-radius:12px;box-shadow:none}
+body.sk.lv:not(.videoonly) #lv-main.sk-side.sk-bc #vcard,body.sk.lv:not(.videoonly) #lv-main.sk-side.sk-bs #sk-sim{grid-column:1/-1;justify-self:stretch}
+.vtag .sk-cl{display:none}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #vcard.sk-pi .vtag{left:6px;bottom:6px;gap:4px}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #vcard.sk-pi .vtag span{font-size:10.5px;padding:2px 7px}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #vcard.sk-pi .vtag .sk-cl{display:inline-block}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #sk-sim.sk-pi #sk-tag{left:6px;bottom:6px;font-size:10.5px;padding:2px 7px;border-radius:7px}
+#lv-main.sk-side #sk-sim.sk-pi #sk-tag::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#3fcf6b;margin-right:5px;animation:pulse 1.6s infinite}
 body.sk.lv:not(.videoonly) #lv-joy,body.sk #pip{display:none!important}
 body.sk.lv:not(.videoonly) #lv-tools button{width:30px;height:30px;font-size:14px;border-radius:8px}
 body.sk.lv:not(.videoonly) #lv-tools{top:5px;right:5px;gap:4px}
 body.sk.lv:not(.videoonly) #lv-tools button svg{width:15px;height:15px}
 #sk-sim,#sk-ctl{display:none}
+/* 2.98.56: 536 zooms everything but the camera card by «Grösse» (--lv-ui, a big screen 115 %) - the simulator picture is sized in
+   real pixels like the camera picture (otherwise it grows out of its place beside / under the other one); its labels keep the zoom */
+body.sk.lv:not(.videoonly) #sk-sim{zoom:calc(1 / var(--lv-ui,1))}
+body.sk.lv:not(.videoonly) #sk-sim>:not(#lv-vw){zoom:var(--lv-ui,1)}
 body.sk.lv:not(.videoonly) #sk-sim{display:flex;align-items:center;justify-content:center;background:#000;border-radius:12px;position:relative;border:1px solid var(--line)}
 body.sk.lv:not(.videoonly) #sk-sim.sk-pi{border:2px solid #fff;border-radius:10px;position:relative}
 #sk-sim #lv-vw{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
@@ -58280,7 +58365,7 @@ body.sk.lv:not(.videoonly) #sk-sim.sk-pi{border:2px solid #fff;border-radius:10p
 #sk-sim .lv-vbtn button{width:32px;height:32px;font-size:15px}
 #sk-sim.big .lv-vbox img{cursor:grab}
 #sk-cap{position:absolute;left:6px;bottom:5px;right:6px;font-size:10.5px;line-height:1.25;color:#fff;text-shadow:0 1px 2px #000;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:2}
-#sk-sim.sk-pm #sk-cap{right:calc(var(--sk-iw,120px) + 16px)}   /* not under the small picture */
+#lv-main:not(.sk-side) #sk-sim.sk-pm #sk-cap{right:calc(var(--sk-iw,120px) + 16px)}   /* not under the small picture */
 #sk-sim.sk-pi #sk-cap,#sk-sim.sk-pi #sk-back{display:none!important}
 #sk-tag{display:none;position:absolute;left:4px;bottom:4px;z-index:3;pointer-events:none;background:rgba(0,0,0,.62);color:#fff;border-radius:5px;padding:1px 5px;font-size:9px;font-weight:700;letter-spacing:.03em}
 #sk-sim.sk-pi #sk-tag{display:block}
@@ -58348,8 +58433,8 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   if (document.body.dataset.tab !== "live") return;
   try { const D = /*SKDE*/{}; for (const k in D) if (!(k in I18N.de)) I18N.de[k] = D[k]; } catch (e) {}
   try { I18N.en = I18N.en || {}; Object.assign(I18N.en, {
-    "sk-note": "With the simulator connected: the simulator picture big at the top, MoveEye's camera small in its corner (tap = swap), below them the head and rover sticks at the edges, the tiles of the simulator in between. Only for this device.",
-    "sk-help": "Sim compact: tap the small picture in the corner = swap the two pictures (this device remembers it). Tap the big picture = big view, tap again = back; the big simulator picture is the simulator window (mouse and ✋ finger steer the simulator, ✕ = back). Left stick = MoveEye's head, right stick = rover (in a game round only when the game drives the rover). The tiles = what happens in the simulator; «… more» = all settings of the simulator. On / off and picture quality under «◫ View»."}); } catch (e) {}
+    "sk-note": "With the simulator connected: the simulator picture big at the top, MoveEye's camera beside it (narrow screen: small in its corner; tap = swap), below them the head and rover sticks at the edges, the tiles of the simulator in between. Only for this device.",
+    "sk-help": "Sim compact: tap the small picture beside it or in the corner = swap the two pictures (this device remembers it). Tap the big picture = big view, tap again = back; the big simulator picture is the simulator window (mouse and ✋ finger steer the simulator, ✕ = back). Left stick = MoveEye's head, right stick = rover (in a game round only when the game drives the rover). The tiles = what happens in the simulator; «… more» = all settings of the simulator. On / off and picture quality under «◫ View»."}); } catch (e) {}
   const T = x => (typeof t === "function" ? t(x) : x);
   const $i = id => document.getElementById(id);
   const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
@@ -58368,6 +58453,8 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   const WAIT = E("div", "sk-wait", "…");
   const TAG = E("div"); TAG.id = "sk-tag";              // «Simulator» on the small picture (2.98.53)
   SIM.append(WAIT, CAP, TAG, BK);
+  const CL = E("span", "sk-cl");                        // «Kamera» on the camera picture beside the main one (2.98.56)
+  { const vt = document.querySelector("#vcard .vtag"); if (vt) vt.appendChild(CL); }
   const C = E("div"); C.id = "sk-ctl";
   const HS = E("div"); HS.id = "sk-hs";
   const HSB = E("div", "sk-sb"), HSL = E("div", "sk-slot"), HLB = E("div", "sk-lb");
@@ -58425,6 +58512,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
       VI.style.width = VI.style.height = "";               // the size of the small picture (fitSim)                               // back from «◫ Ansicht» (also when the panel holds it right now)
       sticks(false);
       const m = M0(); if (m) m.classList.remove("sk-bc", "sk-bs");
+      if (m) m.classList.remove("sk-side");
       const vc = $i("vcard"); if (vc) { vc.classList.remove("sk-pm", "sk-pi"); vc.removeAttribute("title"); vc.removeAttribute("tabindex"); vc.removeAttribute("role"); }
     }
     if (typeof window.lvApply === "function") try { window.lvApply(); } catch (e) {}
@@ -58441,7 +58529,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
       if (small) { x.title = tip; x.setAttribute("role", "button"); x.tabIndex = 0; x.setAttribute("aria-label", tip); }
       else { x.removeAttribute("title"); x.removeAttribute("role"); x.removeAttribute("tabindex"); x.removeAttribute("aria-label"); }
     });
-    TAG.textContent = T("Simulator");
+    TAG.textContent = T("Simulator"); CL.textContent = T("Camera");
   }
   function swap() {
     setBig(""); P.sw = camBig() ? "sim" : "cam"; save(); roles(); layout();
@@ -58469,7 +58557,10 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     // bars), the sticks get smaller (down to 104 px) when the room is short; wider screens: as high as the room allows (16:9,
     // centred), the controls stay in view
     const full = narrow && !land;
-    let ph, pw;
+    // 2.98.56 «adaptiv» (Daniel 31.10.): enough room beside the main picture (the second one >= 220 px, the main one ~64 % of the
+    // row, at least 60 %) = both side by side, top-aligned, together over the row; not enough (phone upright) = the inset
+    const GAP = 8, SMIN = 220;
+    let ph, pw, side = false, sw = 0, off = 0;
     if (full) {
       pw = Math.round(mw); ph = Math.round(mw * 9 / 16);
       const short = ph - (room - ch - 2);              // 2.98.54: 2 px gap is enough (was 8)
@@ -58477,15 +58568,24 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
         stk = Math.max(104, stk - Math.ceil(short)); document.documentElement.style.setProperty("--sk-st", stk + "px"); ch = chOf();
       }
     } else {
-      ph = Math.round(Math.max(120, Math.min(mw * 9 / 16, room - ch - 8)));
-      pw = Math.round(Math.min(mw, ph * 16 / 9));
+      // phone sideways (lv-low: the header scrolls away): the pictures may take half of the height, the sticks then scroll
+      const hMax = Math.max(B.classList.contains("lv-low") ? Math.round(innerHeight * 0.5) : 120, room - ch - 8);
+      const pwS = Math.min(Math.round((mw - GAP) * 0.64), Math.floor(hMax * 16 / 9));
+      sw = Math.min(Math.floor(mw - GAP - pwS), Math.round(pwS * 0.66));
+      side = sw >= SMIN;
+      if (side) { pw = pwS; ph = Math.round(pw * 9 / 16); off = Math.max(0, Math.floor((mw - pw - GAP - sw) / 2)); }
+      else {
+        ph = Math.round(Math.max(120, Math.min(mw * 9 / 16, room - ch - 8)));
+        pw = Math.round(Math.min(mw, ph * 16 / 9));
+      }
     }
+    m.classList.toggle("sk-side", side);
     let pb = land ? Math.min(mw * 9 / 16, room - ch - 8) : Math.min(mw * 9 / 16, Hh * 0.62);
     pb = Math.round(Math.max(ph, pb));
-    const iw = Math.round(Math.max(96, Math.min(pw * (pw >= 600 ? 0.24 : 0.32), 300)));   // the small picture: smaller on a wide screen
+    const iw = side ? sw : Math.round(Math.max(96, Math.min(pw * (pw >= 600 ? 0.24 : 0.32), 300)));   // the inset: smaller on a wide screen
     m.style.setProperty("--sk-ph", ph + "px"); m.style.setProperty("--sk-phb", pb + "px"); m.style.setProperty("--sk-pw", pw + "px");
     m.style.setProperty("--sk-iw", iw + "px"); m.style.setProperty("--sk-ih", Math.round(iw * 9 / 16) + "px");
-    m.style.setProperty("--sk-im", Math.round((mw - pw) / 2 + 8) + "px");
+    m.style.setProperty("--sk-im", Math.round((mw - pw) / 2 + 8) + "px"); m.style.setProperty("--sk-off", off + "px");
     ACT.classList.remove("two"); if (ACT.scrollHeight > stk + 24) ACT.classList.add("two");   // ◎ 🎯 🤖 ? in two columns when higher than the stick
     fitSim();
   }
@@ -58696,6 +58796,10 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     if (ON) { sticks(true); layout(); paint(); }
   }
   addEventListener("resize", () => { if (ON) requestAnimationFrame(layout); });
+  if (window.ResizeObserver) {                          // 2.98.56: also when the room changes without a window resize (side panel, scroll bar)
+    let rw = 0, rh = 0;
+    new ResizeObserver(() => { const w = main.clientWidth, h = main.clientHeight; if (w === rw && h === rh) return; rw = w; rh = h; if (ON) requestAnimationFrame(layout); }).observe(main);
+  }
   if (window.visualViewport) visualViewport.addEventListener("resize", () => { if (ON) layout(); });
   let lastCls = "";
   new MutationObserver(() => { const c = document.body.className; if (c === lastCls) return; lastCls = c; tick(); })
@@ -58712,15 +58816,15 @@ WEB_UI_LOCAL.add("mw-simkompakt")                         # per device: a phone 
 
 # the manual (HELP_PAGE of 540): one paragraph in the section «Live-Seite», German and English
 for _a, _b in (('<section id="live" data-icon="📺"><h2>Die Live-Seite</h2>',
-                "<p><b>🧩 Sim-Kompakt (ab 2.98.46, Bild im Bild ab 2.98.53):</b> Ist der Simulator verbunden, zeigt die Live-Seite oben "
-                "das Simulator-Fenster gross und die Kamera von MoveEye klein in seiner Ecke («● LIVE»). Das kleine Bild antippen = die "
+                "<p><b>🧩 Sim-Kompakt (ab 2.98.46, Bild im Bild ab 2.98.53, daneben ab 2.98.56):</b> Ist der Simulator verbunden, zeigt die Live-Seite oben "
+                "das Simulator-Fenster gross und die Kamera von MoveEye daneben – auf einem schmalen Bildschirm (Handy hochkant) klein in seiner Ecke («● LIVE»). Das kleine Bild antippen = die "
                 "beiden Bilder tauschen (das Gerät merkt es sich); das grosse Bild antippen = gross, nochmals = zurück. Darunter links den Kopf-Stick "
                 "(mit ◎, Auslöser 🎯 und KI-Hilfe 🤖), rechts den Rover-Stick und dazwischen die Kacheln Szene, Tageszeit, Wetter, Besuch, "
                 "Spiel, Wildbeobachtung, Foto des Platzes, KI-Wächter, Ansicht und Folgen; «… mehr» öffnet die ganze Simulator-Steuerung, «?» "
                 "die Erklärung. Ein- und ausschalten (pro Gerät) und die Bildqualität des Simulators unter «◫ Ansicht».</p>"),
                ('<section id="live" data-icon="📺"><h2>The live page</h2>',
-                "<p><b>🧩 Sim compact (from 2.98.46, picture in picture from 2.98.53):</b> while the simulator is connected the live page "
-                "shows the simulator window big at the top and MoveEye's camera small in its corner («● LIVE»). Tap the small picture = "
+                "<p><b>🧩 Sim compact (from 2.98.46, picture in picture from 2.98.53, side by side from 2.98.56):</b> while the simulator is connected the live page "
+                "shows the simulator window big at the top and MoveEye's camera beside it - on a narrow screen (phone upright) small in its corner («● LIVE»). Tap the small picture = "
                 "swap the two pictures (this device remembers it); tap the big picture = big, tap again = back. Below them the head stick on the "
                 "left (with ◎, shutter 🎯 and AI help 🤖), the rover stick on the right and the tiles in between: scene, time of day, "
                 "weather, visit, game, wildlife watching, photo of the place, AI guard, view and follow; «… more» opens the whole simulator "
@@ -59255,6 +59359,8 @@ class WebStream:
                     log_event("sys", f"Simulator address set to {CFG['sim_url']} (web)")
                     if CFG["sim_on"] and WATCH_REF.get("w") is not None and str(CFG["source"]).startswith("sim:"):
                         w_ = WATCH_REF["w"]; w_._open_gen += 1; w_._start_opener(CFG["source"])
+                if act_ in ("install", "start") and not CFG.get("sim_basis_show"):   # 2.98.55: «Basis-Simulator anzeigen» off (639h)
+                    return reply({"ok": False, "error": tr_err("Switch on «Show the basic simulator» first (Simulator, Expert)", lang)}, 400)
                 if act_ in ("install", "start", "stop"):
                     try:
                         ok, msg = {"install": sim_install, "start": sim_start, "stop": sim_stop}[act_]()
@@ -59839,6 +59945,17 @@ class WebStream:
             except Exception:
                 return Response("no picture", 404)
             return Response(b_, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+
+        @app.route("/sim/disc_pic/<int:i>.jpg")
+        def sim_disc_pic(i):
+            """Erlebniswelt 20–23: the picture of entry i of the Entdeckungsbuch of the simulator (this scene)"""
+            if not CFG["sim_on"]:
+                return Response("simulation off", 404)
+            try:
+                b_, _h = _sim_get(f"/disc_pic/{int(i)}.jpg", 3.0)
+            except Exception:
+                return Response("no picture", 404)
+            return Response(b_, mimetype="image/jpeg", headers={"Cache-Control": "max-age=60"})
 
         @app.route("/sim/game_qr.png")
         def sim_game_qr():
@@ -66789,6 +66906,7 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
     ("Simulator", "sim_autoupd", "Update the simulator by itself (the setting «Neue Versionen» of the simulator)"),
     ("Simulator", "sim_separate", "The simulation has its own settings (when switching back: ask which changes to take over)"),
+    ("Simulator", "sim_basis_show", "Show the basic simulator (MoveEye Sim · Basis, the old Python simulator)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
     ("Setup", "desktop_notice", "Small message on the Pi's desktop when MoveEye starts in the background"),
     ("Solar panel", "solar_on", "Solar panel with current meter (INA219 on I2C)"),
@@ -67401,7 +67519,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.54")
+        self.root.title("MoveEye 2.98.58")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -67768,7 +67886,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.54 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.58 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -68709,9 +68827,11 @@ class App:
                     ok, m = fn()
                     self._status("Simulator", ("✓ " + tr(done)) if ok else "⚠ " + tr_err(m))
                 threading.Thread(target=run, daemon=True).start()
-            ttk.Button(sf, text=tr("Install"), command=lambda: sim_do(sim_install, "Simulator installed")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(sf, text=tr("Start"), command=lambda: sim_do(sim_start, "Simulator started")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(sf, text=tr("Stop"), command=lambda: sim_do(sim_stop, "Simulator stopped")).pack(side="left", expand=True, fill="x")
+            if CFG.get("sim_basis_show"):                 # 2.98.55: «MoveEye Sim · Basis» only with «Basis-Simulator anzeigen» (639h)
+                ttk.Button(sf, text=tr("Install"), command=lambda: sim_do(sim_install, "Simulator installed")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+                ttk.Button(sf, text=tr("Start"), command=lambda: sim_do(sim_start, "Simulator started")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+            if CFG.get("sim_basis_show") or sim_running():    # a running one can always be stopped
+                ttk.Button(sf, text=tr("Stop"), command=lambda: sim_do(sim_stop, "Simulator stopped")).pack(side="left", expand=True, fill="x")
             kidata_tk_build(self, sbody)                  # training pack with «Vielfalt», «Delete old AI data» (197)
             falearn_tk_build(self, sbody)                 # 2.98.38: «Lernbilder prüfen» (148)
         if sec == "Security":                             # «Log in only encrypted» (574)
@@ -75578,7 +75698,7 @@ App._refresh = _kr_tk_refresh
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 223                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 225                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -80202,32 +80322,32 @@ _HX_simkompakt = {
     'Sim compact': ('Sim-Kompakt', 'Sim compact', 'Sim compatto', 'Sim cumpact'),
     'On when connected': ('Ein, wenn verbunden', 'Actif si connecté', 'Attivo se collegato', 'Activ, sch’el è collià'),
     'Off': ('Aus', 'Désactivé', 'Spento', 'Deactivà'),
-    'sk-note': ('Mit verbundenem Simulator: oben das Simulator-Bild gross, die Kamera von MoveEye klein in seiner Ecke (antippen = '
-                'tauschen), darunter Kopf- und Rover-Stick am Rand, dazwischen die Kacheln des Simulators. Gilt nur für dieses Gerät.',
-                'Avec le simulateur connecté : en haut l’image du simulateur en grand, la caméra de MoveEye en petit dans son coin '
-                '(toucher = échanger), dessous le stick de la tête et celui du rover sur les bords, entre eux les tuiles du simulateur. '
+    'sk-note': ('Mit verbundenem Simulator: oben das Simulator-Bild gross, die Kamera von MoveEye daneben (schmaler Bildschirm: klein in '
+                'seiner Ecke; antippen = tauschen), darunter Kopf- und Rover-Stick am Rand, dazwischen die Kacheln des Simulators. Gilt nur für dieses Gerät.',
+                'Avec le simulateur connecté : en haut l’image du simulateur en grand, la caméra de MoveEye à côté (écran étroit : '
+                'en petit dans son coin ; toucher = échanger), dessous le stick de la tête et celui du rover sur les bords, entre eux les tuiles du simulateur. '
                 'Seulement pour cet appareil.',
-                'Con il simulatore collegato: in alto l’immagine del simulatore grande, la telecamera di MoveEye piccola nel suo angolo '
-                '(toccare = scambiare), sotto lo stick della testa e quello del rover ai bordi, in mezzo le piastrelle del simulatore. '
+                'Con il simulatore collegato: in alto l’immagine del simulatore grande, la telecamera di MoveEye accanto (schermo stretto: '
+                'piccola nel suo angolo; toccare = scambiare), sotto lo stick della testa e quello del rover ai bordi, in mezzo le piastrelle del simulatore. '
                 'Solo per questo apparecchio.',
-                'Cun il simulatur collià: sisum il maletg dal simulatur grond, la camera da MoveEye pitschna en ses chantun (tutgar = '
-                'barattar), sutvart il stick dal chau e quel dal rover a l’ur, tranter els las plattinas dal simulatur. Mo per quest apparat.'),
-    'sk-help': ('Sim-Kompakt: das kleine Bild in der Ecke antippen = die beiden Bilder tauschen (dieses Gerät merkt es sich). Das grosse '
+                'Cun il simulatur collià: sisum il maletg dal simulatur grond, la camera da MoveEye dasper (visur stretg: pitschna en ses '
+                'chantun; tutgar = barattar), sutvart il stick dal chau e quel dal rover a l’ur, tranter els las plattinas dal simulatur. Mo per quest apparat.'),
+    'sk-help': ('Sim-Kompakt: das kleine Bild daneben oder in der Ecke antippen = die beiden Bilder tauschen (dieses Gerät merkt es sich). Das grosse '
                 'Bild antippen = gross, nochmals = zurück; das grosse Simulator-Bild ist das Simulator-Fenster '
                 '(Maus und ✋ Finger steuern den Simulator, ✕ = zurück). Linker Stick = Kopf von MoveEye, rechter Stick = Rover '
                 '(in einer Spielrunde nur, wenn das Spiel den Rover fährt). Die Kacheln = was im Simulator passiert; «… mehr» = alle '
                 'Einstellungen des Simulators. Ein / aus und Bildqualität unter «◫ Ansicht».',
-                'Sim compact : toucher la petite image dans le coin = échanger les deux images (cet appareil s’en souvient). Toucher la '
+                'Sim compact : toucher la petite image à côté ou dans le coin = échanger les deux images (cet appareil s’en souvient). Toucher la '
                 'grande image = en grand, encore une fois = retour ; la grande image du simulateur est la fenêtre du '
                 'simulateur (souris et doigt ✋ pilotent le simulateur, ✕ = retour). Stick gauche = tête de MoveEye, stick droit = '
                 'rover (pendant une partie seulement si le jeu utilise le rover). Les tuiles = ce qui se passe dans le simulateur ; '
                 '« … plus » = tous les réglages du simulateur. Activer / désactiver et qualité d’image sous « ◫ Affichage ».',
-                'Sim compatto: toccare l’immagine piccola nell’angolo = scambiare le due immagini (questo apparecchio lo ricorda). Toccare '
+                'Sim compatto: toccare l’immagine piccola accanto o nell’angolo = scambiare le due immagini (questo apparecchio lo ricorda). Toccare '
                 'l’immagine grande = grande, di nuovo = indietro; l’immagine grande del simulatore è la finestra del '
                 'simulatore (mouse e dito ✋ comandano il simulatore, ✕ = indietro). Stick sinistro = testa di MoveEye, stick destro = '
                 'rover (durante una partita solo se il gioco usa il rover). Le piastrelle = ciò che succede nel simulatore; «… altro» = '
                 'tutte le impostazioni del simulatore. Attivare / disattivare e qualità dell’immagine sotto «◫ Vista».',
-                'Sim cumpact: tutgar il pitschen maletg en il chantun = barattar ils dus maletgs (quest apparat sa regorda). Tutgar il '
+                'Sim cumpact: tutgar il pitschen maletg dasper u en il chantun = barattar ils dus maletgs (quest apparat sa regorda). Tutgar il '
                 'grond maletg = grond, anc ina giada = enavos; il grond maletg dal simulatur è la fanestra dal '
                 'simulatur (mieur e det ✋ commondan il simulatur, ✕ = enavos). Stick sanester = chau da MoveEye, stick dretg = rover '
                 '(durant in gieu mo sch’il gieu dovra il rover). Las plattinas = quai che capita en il simulatur; «… dapli» = tut ils '
@@ -91837,6 +91957,73 @@ for _g in TK_GROUPS:
         _g[2].insert(_g[2].index("Lights") + 1 if "Lights" in _g[2] else len(_g[2]), "Status LED")
 MENU_TITLES.setdefault("Status LED", "Status LED & buttons")
 led_web_de_refresh()                                      # the German texts of the web panel (599c), now that they exist
+_HX_DISC = {
+    'Discoveries': ('Entdeckungen', 'Découvertes', 'Scoperte', 'Scuvertas'),
+    '{f} of {n} discovered': ('{f} von {n} entdeckt', '{f} sur {n} découverts', '{f} di {n} scoperti', '{f} da {n} scuvrids'),
+    'Photo for the discovery book': ('Foto für Entdeckungsbuch', 'Photo pour le carnet de découvertes', 'Foto per il diario delle scoperte', 'Foto per il cudesch da scuvertas'),
+    'Open in the simulator': ('Im Simulator öffnen', 'Ouvrir dans le simulateur', 'Apri nel simulatore', 'Avrir en il simulatur'),
+    'Blinki hint': ('Blinki-Hinweis', 'Indice de Blinki', 'Suggerimento di Blinki', 'Indicaziun da Blinki'),
+    'a place': ('ein Ort', 'un lieu', 'un luogo', 'in lieu'),
+    'a scene': ('eine Szene', 'une scène', 'una scena', 'ina scena'),
+    'an animal': ('ein Tier', 'un animal', 'un animale', 'in animal'),
+    'a person': ('ein Mensch', 'une personne', 'una persona', 'ina persuna'),
+    'Found!': ('Entdeckt!', 'Découvert !', 'Scoperto!', 'Scuvrì!'),
+    'Something special is in the picture – take the photo now!': ('Etwas Besonderes ist im Bild – jetzt fotografieren!',
+        'Quelque chose de spécial est dans l’image – prends la photo maintenant !', 'C’è qualcosa di speciale nell’immagine – scatta la foto ora!',
+        'Insatge spezial è en il maletg – fa ussa la foto!'),
+    'Come close enough in the 3D view to discover places, animals and funny scenes. 📷 = take a photo with MoveEye’s camera: aim the head, then «Photo for the discovery book». 🌙 🌧 🌅 = only at night, in the rain, in the morning.': ('Wer in der 3D-Ansicht nahe genug kommt, entdeckt Orte, Tiere und lustige Szenen. 📷 = mit MoveEyes Kamera fotografieren: Kopf hinrichten, dann «Foto für Entdeckungsbuch». 🌙 🌧 🌅 = nur nachts, bei Regen, am Morgen.',
+        'En s’approchant assez dans la vue 3D, on découvre des lieux, des animaux et des scènes drôles. 📷 = photographier avec la caméra de MoveEye : orienter la tête, puis « Photo pour le carnet de découvertes ». 🌙 🌧 🌅 = seulement la nuit, sous la pluie, le matin.',
+        'Avvicinandosi abbastanza nella vista 3D si scoprono luoghi, animali e scene buffe. 📷 = fotografare con la camera di MoveEye: puntare la testa, poi «Foto per il diario delle scoperte». 🌙 🌧 🌅 = solo di notte, con la pioggia, al mattino.',
+        'Tgi che vegn avunda datiers en la vista 3D, scuvra lieus, animals e scenas legras. 📷 = fotografar cun la camera da MoveEye: drizzar il chau, lura «Foto per il cudesch da scuvertas». 🌙 🌧 🌅 = mo la notg, cun plievgia, la damaun.'),
+    'nothing special in the picture of the camera': ('nichts Besonderes im Bild der Kamera', 'rien de spécial dans l’image de la caméra',
+        'niente di speciale nell’immagine della camera', 'nagut spezial en il maletg da la camera'),
+    'nothing more to find here right now': ('gerade gibt es hier nichts mehr zu finden', 'plus rien à trouver ici pour l’instant',
+        'per ora qui non c’è più niente da trovare', 'per il mument na datti qua nagut pli da chattar'),
+}
+for _k, _v in _HX_DISC.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+# Ohne den Schalter: kein Download-Link, keine Knöpfe «Simulator auf dem Pi installieren / hier starten» (Web 470, Fenster 570).
+# Der Code bleibt; /sim/simulator.zip bleibt erreichbar (bestehende Basis-Simulatoren holen dort ihre Updates); eine
+# bestehende Installation auf dem Pi bleibt unberührt (nichts wird gelöscht), ein laufender lässt sich weiter stoppen.
+_HX_BASIS = {
+    'Show the basic simulator (MoveEye Sim · Basis, the old Python simulator)':
+        ('Basis-Simulator anzeigen (MoveEye Sim · Basis, der alte Python-Simulator)',
+         'Afficher le simulateur de base (MoveEye Sim · Basis, l’ancien simulateur Python)',
+         'Mostra il simulatore di base (MoveEye Sim · Basis, il vecchio simulatore Python)',
+         'Mussar il simulatur da basa (MoveEye Sim · Basis, il vegl simulatur Python)'),
+    'Shows the download of the old Python simulator and the buttons to install and start it on the Pi (page Simulator → Programs and downloads, window → Simulator). An installation on the Pi stays as it is, also when this is off.':
+        ('Zeigt den Download des alten Python-Simulators und die Knöpfe zum Installieren und Starten auf dem Pi (Seite Simulator → Programme und Downloads, Fenster → Simulator). Eine Installation auf dem Pi bleibt, wie sie ist, auch wenn dies aus ist.',
+         'Affiche le téléchargement de l’ancien simulateur Python et les boutons pour l’installer et le démarrer sur le Pi (page Simulateur → Programmes et téléchargements, fenêtre → Simulateur). Une installation sur le Pi reste telle quelle, même si c’est désactivé.',
+         'Mostra il download del vecchio simulatore Python e i pulsanti per installarlo e avviarlo sul Pi (pagina Simulatore → Programmi e download, finestra → Simulatore). Un’installazione sul Pi resta com’è, anche se questo è spento.',
+         'Mussa la telechargiada dal vegl simulatur Python ed ils buttuns per l’installar e aviar sin il Pi (pagina Simulatur → Programs e telechargiadas, fanestra → Simulatur). Ina installaziun sin il Pi resta sco ch’ella è, er sche quai è stizzà.'),
+    'Switch on «Show the basic simulator» first (Simulator, Expert)':
+        ('Zuerst «Basis-Simulator anzeigen» einschalten (Simulator, Experte)',
+         'Activez d’abord «Afficher le simulateur de base» (Simulateur, Expert)',
+         'Prima attiva «Mostra il simulatore di base» (Simulatore, Esperto)',
+         'Avant enconuschent «Mussar il simulatur da basa» (Simulatur, Expert)'),
+    'Off: MoveEye Sim · 3D is the simulator.': ('Aus: MoveEye Sim · 3D ist der Simulator.', 'Désactivé : MoveEye Sim · 3D est le simulateur.',
+                                                'Spento: MoveEye Sim · 3D è il simulatore.', 'Stizzà: MoveEye Sim · 3D è il simulatur.'),
+}
+for _k, _v in _HX_BASIS.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+SET_HELP["sim_basis_show"] = ("Shows the download of the old Python simulator and the buttons to install and start it on the Pi (page Simulator → "
+                              "Programs and downloads, window → Simulator). An installation on the Pi stays as it is, also when this is off.",
+                              "Off: MoveEye Sim · 3D is the simulator.")
+
+
+_sim_status_558 = sim_status
+
+
+# wraps: sim_status
+def sim_status():                                         # + 639h: show «MoveEye Sim · Basis» (download, install / start on the Pi)?
+    r = _sim_status_558()
+    r["basis_show"] = bool(CFG.get("sim_basis_show"))
+    return r
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")
