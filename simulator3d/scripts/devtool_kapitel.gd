@@ -6,10 +6,12 @@ extends Node
 ##   * Spielbereich (spielbereich.gd): Kapitel 1 … 4 offen (die davor als besucht) und hinein.
 ##   * Horror-Modus «Das Hospiz» (bergtal_horror.gd): Nacht 1 … 3 - NUR wenn Horror im laufenden Programm schon mit dem
 ##     Passwort entsperrt ist (horror.unlocked). Keine Umgehung: ohne Entsperren ist der Knopf aus, /control sagt «locked».
-## Test-Spielstand: Abenteuer und Spielbereich schreiben bis zum Neustart (oder «Test beenden») in eigene Dateien
-## (user://dev_test/…, save_file / save_path der beiden Teile) - Daniels echter Spielstand bleibt unberührt. Der Horror-Modus
-## hat Passwort und Fortschritt in einer Datei: dort wird nur der Fortschritt vorher gemerkt und bei «Test beenden» (und beim
-## Schliessen des Simulators) zurückgeschrieben; das Passwort wird nie angefasst.
+## Test-Spielstand: Abenteuer, Spielbereich und Entdeckungsbuch (Abzeichen) schreiben bis zum Neustart (oder «Test beenden»)
+## in eigene Dateien (user://dev_test/…, save_file / save_path / use_file der drei Teile) - Daniels echter Spielstand bleibt
+## unberührt; das Level des Tests wird nicht beim Spielstand gemerkt (Engine-Meta «dev_test», spielstand.gd remember_lv).
+## Der Horror-Modus hat Passwort und Fortschritt in einer Datei: im Test schreibt er Fortschritt und Rätsel unter eigene
+## Schlüssel («progress_test» / «raetsel_test», bergtal_horror.gd test_mode) - die echten Schlüssel aller Spielstände werden
+## nie geschrieben; «Test beenden» (und Schliessen) löscht die Test-Schlüssel. Das Passwort wird nie angefasst.
 ## /control {"action": "dev", "do": "chapters" | "chapter" (area: abenteuer | spielbereich | horror, n, step) | "test_end"}
 
 const T = preload("res://scripts/i18n.gd")
@@ -18,6 +20,7 @@ const UI = preload("res://scripts/ui_style.gd")
 const TEST_DIR := "user://dev_test"
 const AB_TEST := "user://dev_test/bergtal_abenteuer_fortschritt.json"
 const SB_TEST := "user://dev_test/spielbereich.json"
+const ENT_TEST := "user://dev_test/entdecken.json"
 const AREAS := [["abenteuer", "Geschichte «Die Karte des Grossvaters»"], ["spielbereich", "Spielbereich (Kapitel der Szenen)"],
 		["horror", "Horror-Modus «Das Hospiz»"]]
 const SEED := 4242                       # the same tour every time (like «Situation speichern»)
@@ -27,8 +30,8 @@ var dev
 var main
 var test_on := false
 var _scene0 := ""                        # the scene before the test (back there at the end: the play area counts a scene as visited)
-var _horror_prog = null                  # the real horror progress before the test ("" = there was none)
 var _horror_touched := false
+var _horror_mem := {}                    # what the horror keeps in memory (chapter, choices, end, clips) - back at the end
 var _area: OptionButton
 var _n: OptionButton
 var _step: OptionButton
@@ -87,6 +90,16 @@ func _begin_test() -> void:
 	var sb = main.spielbereich
 	if sb != null:
 		sb.save_path = SB_TEST
+	var en = main.entdecken
+	if en != null and en.has_method("use_file"):
+		en.save()                                                  # the real book as it is now ...
+		var real: String = preload("res://scripts/spielstand.gd").path_ent()
+		if FileAccess.file_exists(real):
+			DirAccess.copy_absolute(real, ENT_TEST)                # ... and the test starts from a copy of it
+		elif FileAccess.file_exists(ENT_TEST):
+			DirAccess.remove_absolute(ENT_TEST)
+		en.use_file(ENT_TEST)
+	Engine.set_meta("dev_test", true)
 
 
 func test_end() -> Dictionary:
@@ -108,6 +121,12 @@ func test_end() -> Dictionary:
 		sb.save_path = preload("res://scripts/spielstand.gd").path_sb()   # A6
 		sb.data = {"visited": [], "seen_lv": 1, "greeted": false, "done_seen": []}
 		sb._load()
+	var en = main.entdecken
+	if en != null and en.has_method("use_file"):
+		en.save()                                                  # (into the test file)
+		en.use_file(preload("res://scripts/spielstand.gd").path_ent())
+	if Engine.has_meta("dev_test"):
+		Engine.remove_meta("dev_test")
 	test_on = false
 	_paint()
 	dev._say(T.t("Test beendet – wieder dein echter Spielstand."))
@@ -120,13 +139,14 @@ func _horror_back() -> void:
 		return
 	if h.running:
 		h.stop()
-	if _horror_prog == null:
-		h._store.erase("progress")
-	else:
-		h._store["progress"] = _horror_prog
+	h._store.erase("progress_test")                      # only the test keys: the real ones were never written
+	h._store.erase("raetsel_test")
+	h.test_mode = false
 	h._save()
+	for k in _horror_mem:
+		h.set(k, _horror_mem[k])
 	_horror_touched = false
-	_horror_prog = null
+	_horror_mem = {}
 
 
 func _exit_tree() -> void:
@@ -242,7 +262,9 @@ func _jump_horror(n: int) -> Dictionary:
 	_begin_test()
 	if not _horror_touched:
 		_horror_touched = true
-		_horror_prog = (h._store["progress"] as Dictionary).duplicate(true) if h._store.get("progress") is Dictionary else null
+		_horror_mem = {"chapter": h.chapter, "choices": (h.choices as Dictionary).duplicate(true), "end_kind": h.end_kind,
+				"clips": (h.clips as Array).duplicate()}
+	h.test_mode = true
 	var r: Dictionary = h.command({"do": "start", "chapter": n})
 	_paint()
 	dev._say(T.t("Horror: Nacht %d (Test)") % n)

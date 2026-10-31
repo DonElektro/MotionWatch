@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.6.0** · MoveEye **3.6.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.6.1** · MoveEye **3.6.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.6.1 (MoveEye 3.6.1): Sicherheit und Fehler im Simulator
+
+- `net.gd`: gefährliche /control-Befehle (werk reset, spieltest clear, set_password) und /dev/… nur von diesem PC oder vom
+  verbundenen MoveEye (sonst `--fernsteuerung-offen` / `MWSIM_FERNSTEUERUNG_OFFEN=1`). Hospiz-Rätsel und Maggie-Bild pro
+  Spielstand (`spielstand.gd`, `horror_raetsel.gd`, `geschichten.gd`), Kapitel-Sprung ohne echten Spielstand
+  (`devtool_kapitel.gd`). `werk.gd`: sicherer Neustart, `KEEP_COPIES` 3, `parcours/lernbilder/` in KEEP.
 
 ## NEU in 3.6.0 (MoveEye 3.6.0): Feste Fehl-Personen (nur MoveEye)
 

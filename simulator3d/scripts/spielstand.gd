@@ -7,7 +7,8 @@ extends RefCounted
 ##       Entdecken   user://entdecken.json (nur «gefunden»; was es gibt («known») und die Hinweis-Einstellungen gelten für alle)
 ##       Maggie      user://maggie/spielstand.json (Geschichten-Menü 31.10.2026: jetzt auch pro Platz)
 ##       Hospiz      Fortschritt in user://bergtal_horror.json unter «progress» (Platz 2/3: «progress_2» / «progress_3»;
-##                   der Passwort-Hash bleibt einer für alle)
+##                   der Passwort-Hash bleibt einer für alle), Rätsel unter «raetsel» («raetsel_2» / «raetsel_3»)
+##       Maggie-Bild user://geschichten/maggie.jpg (Karte im Geschichten-Menü; Platz 2/3: user://spielstand/<n>/maggie.jpg)
 ##     Platz 2 und 3: dieselben Dateien unter user://spielstand/<n>/.
 ##   * Ein Level für alles (pro Spielstand): Spielbereich (Entdeckungen, Abzeichen, Abenteuer geschafft / begonnen) +
 ##     Erfahrung aus «Die Karte des Grossvaters» (Bergtal-Abenteuer), eine Kurve (spielbereich.gd need(): 2 = 100, 3 = 300, 4 = 600 …).
@@ -82,6 +83,8 @@ static func set_setting(k: String, v) -> void:
 
 
 static func remember_lv(lv: int) -> void:
+	if Engine.has_meta("dev_test"):
+		return                                                  # Kapitel-Sprung (devtool_kapitel.gd): the test level is not this place's
 	_load()
 	if int(_d["lv"][slot() - 1]) != lv:
 		_d["lv"][slot() - 1] = lv
@@ -136,6 +139,18 @@ static func horror_key(n := -1) -> String:
 	"""the key of the Hospiz progress of place n in user://bergtal_horror.json (place 1 = the old «progress»)"""
 	n = slot() if n < 1 else n
 	return "progress" if n == 1 else "progress_%d" % n
+
+
+static func raetsel_key(n := -1) -> String:
+	"""the key of the Hospiz riddles (horror_raetsel.gd) of place n - like horror_key (place 1 = the old «raetsel»)"""
+	n = slot() if n < 1 else n
+	return "raetsel" if n == 1 else "raetsel_%d" % n
+
+
+static func path_maggie_pic(n := -1) -> String:
+	"""the picture of Maggie's card (geschichten.gd) of place n (place 1 = the old user://geschichten/maggie.jpg)"""
+	n = slot() if n < 1 else n
+	return "user://geschichten/maggie.jpg" if n == 1 else dir_of(n) + "/maggie.jpg"
 
 
 static func path_lauf(n := -1) -> String:

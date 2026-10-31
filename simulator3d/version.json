@@ -1,9 +1,9 @@
 {
- "version": "3D-5.6.0",
- "ver": "3.6.0",
- "name": "MoveEye Sim 3.6.0",
+ "version": "3D-5.6.1",
+ "ver": "3.6.1",
+ "name": "MoveEye Sim 3.6.1",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35079175,
- "sha256": "d86898399a4a6627c83ea841e5b6812bf9fffbf8d9b04a10ff944c679a917a06",
- "notes": "MoveEye Sim 3.6.0: zusammen mit MoveEye 3.6.0 (weniger Fehlalarme); im Simulator selbst nichts geändert."
+ "size": 35084586,
+ "sha256": "9d608efbe5292d4f74b436f9425685388f0b24b4329e4fdd89953a160d3f5146",
+ "notes": "MoveEye Sim 3.6.1: sicherer (Steuerbefehle nur lokal / vom MoveEye), Hospiz und Maggie pro Spielstand, Werksrücksetzung verbessert."
 }
