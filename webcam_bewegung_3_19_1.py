@@ -242,7 +242,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_19_1.zip"
-ZD_SHA256 = "ab0cb8d6eb5afa8d6b6f635a8addc79b2208b60b76b06c22349eaee58bdd6abc"
+ZD_SHA256 = "1577b521e0d8a35f29ef114c1a0f0027122d4705e17ed89f8977393d7b8a3198"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -67828,42 +67828,12 @@ TRL_PAGE = _zd('639n_trailer/TRL_PAGE', ZD_PAGE)
 # der Sprache von MoveEye (rm: eine romanische Stimme, falls das Gerät eine hat, sonst Deutsch). iOS: Ton erst nach einem
 # Tippen («🔊 Ton an»), dabei wird speechSynthesis einmal angestossen; Pause = Stimme verstummt. Dazu hält navigator.wakeLock
 # den Bildschirm wach, solange der Film läuft (iPad). Die Texte bleiben unten als Untertitel im Bild (der Simulator zeigt sie).
-SPK_JS = r"""
-let SPK = {on: false, last: -1, wl: null};
-try { SPK.on = localStorage.getItem("mw-film-ton") === "1"; } catch (e) {}
-function spkLang(l) { l = (l || (typeof LANG !== "undefined" ? LANG : "de") || "de").toLowerCase(); return l === "de" ? "de-CH" : l; }
-function spkPick(l) {
-  if (!window.speechSynthesis) return null;
-  const vs = speechSynthesis.getVoices() || [], want = spkLang(l).toLowerCase(), base = want.slice(0, 2), L = v => (v.lang || "").toLowerCase().replace("_", "-");
-  return vs.find(v => L(v) === want) || vs.find(v => L(v).startsWith(base))
-    || ((base === "rm" || base === "de") ? vs.find(v => L(v) === "de-ch") || vs.find(v => L(v).startsWith("de")) : null) || null;
-}
-function spkBtn() { document.querySelectorAll(".spk-btn").forEach(b => { b.textContent = SPK.on ? "🔊 " + t("Sound on") : "🔇 " + t("Sound off"); }); }
-function spkToggle() {
-  SPK.on = !SPK.on; try { localStorage.setItem("mw-film-ton", SPK.on ? "1" : "0"); } catch (e) {}
-  if (window.speechSynthesis) { speechSynthesis.cancel(); if (SPK.on) { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; speechSynthesis.speak(u); } }   // iOS: started by this tap
-  spkBtn(); spkWake(SPK.on && !!(S && S.laeuft));
-}
-function spkTick(s, paused, running) {
-  const sp = (s && s.sprechen) || null;
-  if (window.speechSynthesis && (paused || !running)) speechSynthesis.cancel();      // pause / end: the voice stops
-  spkWake(running && !paused);
-  if (!sp) return;
-  if (SPK.last < 0 || !SPK.on || !running || paused || sp.id === SPK.last || !sp.text) { SPK.last = sp.id; return; }   // only new sentences
-  SPK.last = sp.id;
-  if (!window.speechSynthesis) return;
-  if (sp.vorne) speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(String(sp.text).replace(/[«»]/g, ""));
-  const v = spkPick(sp.lang); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = spkLang(sp.lang);
-  u.rate = 0.95; speechSynthesis.speak(u);
-}
-async function spkWake(on) {                               // the screen stays awake while the film runs (iPad)
-  try { if (on && !SPK.wl && navigator.wakeLock) { SPK.wl = await navigator.wakeLock.request("screen"); SPK.wl.addEventListener("release", () => { SPK.wl = null; }); }
-    else if (!on && SPK.wl) { SPK.wl.release(); SPK.wl = null; } } catch (e) {}
-}
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && !SPK.wl && S && S.laeuft) spkWake(true); });
-setTimeout(spkBtn, 50);
-"""
+# Stimme (Daniel 31.10.2026, «klingt fürchterlich»): automatisch die beste Stimme der Sprache – 1. Name/voiceURI mit Premium,
+# Enhanced, Erweitert, Natural, Neural, Online oder Google, 2. lokale Stimme der Region (de-CH vor de-DE vor de-AT), 3. die
+# Standardstimme; die Liste kommt auf iOS / Chrome verzögert (voiceschanged + Nachfragen). Tempo 0.92, Trailer 0.88, Tonhöhe 0.95,
+# lange Sätze an Satzzeichen geteilt. Knopf «🗣 Stimme» neben 🔊: Liste der Stimmen (beste «empfohlen», ▶ Hörprobe), Tempo-
+# Regler 0.8–1.1, Wahl pro Gerät (localStorage mw-film-stimme-<sprache>, mw-film-tempo); nur einfache Stimmen: Hinweis «Premium laden».
+SPK_JS = _zd('639n_trailer/SPK_JS', "")
 
 _HX_TRL = {
     'Trailer Grossvater': ('Trailer Grossvater', 'Bande-annonce Grand-père', 'Trailer Nonno', 'Trailer Tat'),
@@ -67882,18 +67852,32 @@ _HX_TRL = {
                                                         'Quest simulatur na conuscha anc betg ils trailers – actualisescha el.'),
     'The simulator is busy: {w}': ('Der Simulator ist beschäftigt: {w}', 'Le simulateur est occupé : {w}', 'Il simulatore è occupato: {w}',
                                    'Il simulatur è occupà: {w}'),
+    'Voice': ('Stimme', 'Voix', 'Voce', 'Vusch'),
+    'recommended': ('empfohlen', 'recommandée', 'consigliata', 'recumandada'),
+    'Automatic (recommended)': ('Automatisch (empfohlen)', 'Automatique (recommandée)', 'Automatica (consigliata)', 'Automatic (recumandà)'),
+    'Listen': ('Anhören', 'Écouter', 'Ascolta', 'Tadlar'),
+    'Speed': ('Tempo', 'Vitesse', 'Velocità', 'Tempo'),
+    'No voice for this language on this device.': ('Dieses Gerät hat keine Stimme für diese Sprache.', 'Cet appareil n’a pas de voix pour cette langue.',
+                                                    'Questo dispositivo non ha una voce per questa lingua.', 'Quest apparat n’ha nagina vusch per quest linguatg.'),
+    'Better voices: iPad → Settings → Accessibility → Spoken Content → Voices → English → download «Premium».': ('Bessere Stimmen: iPad → Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch → «Premium» laden.',
+                          'Meilleures voix : iPad → Réglages → Accessibilité → Contenu énoncé → Voix → Français → télécharger « Premium ».',
+                          'Voci migliori: iPad → Impostazioni → Accessibilità → Contenuto letto ad alta voce → Voci → Italiano → scarica «Premium».',
+                          'Meglras vuschs: iPad → Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch → chargiar «Premium».'),
 }
 for _k, _v in _HX_TRL.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_SPK_KEYS = ['Voice', 'recommended', 'Automatic (recommended)', 'Listen', 'Speed', 'No voice for this language on this device.', 'Better voices: iPad → Settings → Accessibility → Spoken Content → Voices → English → download «Premium».']
 _TRL_KEYS = list(_HX_TRL) + ["Full screen", "Back", "The valley is being prepared …", "The 3D simulator is not connected."]
 
 # the Vorführung (639m) gets the same: the button in its bar, the new sentences read aloud, silent on pause, screen awake
 VF_PAGE = VF_PAGE.replace('<button type="button" class="sec" onclick="vfFull()"', '<button type="button" class="sec spk-btn" onclick="spkToggle()">🔇</button>\n    <button type="button" class="sec" onclick="vfFull()"', 1)
 VF_PAGE = VF_PAGE.replace("/*VFDE*/\n", "/*VFDE*/\n" + SPK_JS, 1)
+VF_PAGE = VF_PAGE.replace('HIDE_T = setTimeout(() => { if (!S.pause) b.classList.add("off"); }, 4000); }',
+                          'HIDE_T = setTimeout(() => { if (!S.pause && !SPK.pop) b.classList.add("off"); }, 4000); }', 1)
 VF_PAGE = VF_PAGE.replace("function vfPaint(j) {\n  S = j || {};", "function vfPaint(j) {\n  S = j || {};\n  spkTick(S, !!S.pause, !!S.laeuft);", 1)
-_VF_KEYS.extend(["Sound on", "Sound off"])
+_VF_KEYS.extend(["Sound on", "Sound off"] + _SPK_KEYS)
 _TRL_DE_JS = json.dumps({k: DE.get(k, k) for k in ("Trailer Grossvater", "Trailer Maggie", "Vorführung", "Developer")}, ensure_ascii=False)
 
 # Settings → Developer (web 530 devExtras): the two trailers on top of the list (the window 639c: see below)
@@ -67991,8 +67975,9 @@ def trl_selftest():
     assert SIM_PAGE.index('id="c-devquick"') < SIM_PAGE.index('id="c-conn"')
     assert "/sim/trailer?id=grossvater" in WEB_PAGE
     assert "speechSynthesis" in html and "spkTick(S" in html and "wakeLock" in html
+    assert "voiceschanged" in html and "spk-vbtn" in html and "SPK_GOOD" in html and "!SPK.pop" in html and "Stimme" in html
     vh = vf_page()
-    assert "spkTick(S, !!S.pause" in vh and "spk-btn" in vh and "Ton an" in vh
+    assert "spkTick(S, !!S.pause" in vh and "spk-btn" in vh and "Ton an" in vh and "!SPK.pop" in vh and "Premium" in vh
     for L in ("fr", "it", "rm"):
         assert TRX[L].get("End the trailer"), L
     return "Trailer: page, owner only, commands to the simulator, card on top of «Sim», entries"
