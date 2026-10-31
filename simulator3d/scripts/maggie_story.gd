@@ -77,11 +77,11 @@ const REGIONEN := ["herbst", "winter", "fruehling", "sommer"]
 # the middle of every region (valley coordinates x, z of bergtal.gd)
 const MITTE := {"herbst": Vector2(-640, -200), "winter": Vector2(590, 360), "fruehling": Vector2(-120, -250), "sommer": Vector2(-530, 480)}
 const SAVE_FILE := "user://maggie/spielstand.json"
-const MODULES := ["res://scripts/maggie_hund.gd", "res://scripts/maggie_gefahr.gd"]   # (maggie_helfer.gd baut maggie_hund.gd selbst)
+const MODULES := ["res://scripts/maggie_hund.gd", "res://scripts/maggie_gefahr.gd", "res://scripts/geschichten_faden.gd"]   # (maggie_helfer.gd baut maggie_hund.gd selbst)
 const COLS := ["red", "orange", "navy", "olive", "brown", "grey", "white", "black"]
 const COL_NAMES := {"red": "Rot", "orange": "Orange", "navy": "Dunkelblau", "olive": "Olivgrün", "brown": "Braun", "grey": "Grau",
 		"white": "Weiss", "black": "Schwarz"}
-const TIERE := {"wildschwein": "Ein Wildschwein", "wolf": "Ein Wolf", "kraehe": "Die Krähen", "viper": "Eine Viper"}
+const TIERE := {"wildschwein": "Ein Wildschwein", "wolf": "Ein Wolf", "kraehe": "Der Krähenschwarm", "viper": "Eine Viper"}
 const WALK := ["intro_walk", "region", "finale_walk"]
 const REST_R := 5.0                   # a rest place counts as reached closer than this (m)
 const TOR_R := 2.0
@@ -804,7 +804,7 @@ func _start_intro() -> void:
 	phase = "intro"
 	_freeze(true)
 	var v := _new_card(T.t("Ein Abendspaziergang"), Color(0.62, 0.85, 1.0))
-	_text(v, T.t("Ein ruhiger Herbstabend auf der Alp. Du gehst mit Maggie spazieren, eurem kleinen Hund. MoveEye ist auch dabei und passt beim Zelt auf."), 16)
+	_text(v, T.t("Ein ruhiger Herbstabend auf der Alp. Du gehst mit Maggie spazieren, eurem kleinen Hund. MoveEye ist auch mit dabei."), 16)
 	_text(v, T.t("Plötzlich bleibt Maggie stehen. Sie schnuppert … und rennt los!"), 16)
 	_text(v, T.t("Gehen: W A S D oder Pfeiltasten · Shift = rennen · Maus ziehen = umschauen · Esc = Pause"), 13, UI.MUT)
 	var row := _row(v)
@@ -887,7 +887,7 @@ func _choose_card() -> void:
 	_hud.visible = false
 	var done: Array = S.get("done", [])
 	var v := _new_card(T.t("Wohin gehst du?"), Color(0.62, 0.85, 1.0), 660)
-	_text(v, T.t("Jede Jahreszeit ist ein eigenes Tal mit eigenen Gefahren. Wähle eins aus."), 15)
+	_text(v, T.t("Jede Jahreszeit ist ein eigenes Tal mit eigenen Gefahren. Wohin willst du zuerst?"), 15)
 	var g := GridContainer.new()
 	g.columns = 2
 	g.add_theme_constant_override("h_separation", 10)
@@ -1412,7 +1412,7 @@ func look_into_crystal() -> void:
 		if g.is_empty():
 			return
 		pos = g[0]
-		text = T.t("Der Weg führt dorthin: %s.", [str(g[1])])
+		text = T.t("Hier geht es weiter – %s.", [str(g[1])])
 	var keep := _safe_until
 	_film([_shot_to(pos)], T.t("Der Kristall zeigt: %s", [text]), func():
 		_safe_until = maxf(keep, main.now() + 2.0))

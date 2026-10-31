@@ -1255,6 +1255,7 @@ class WebStream:
         smalltv_routes(app, reply, body)                   # extra display GeekMagic SmallTV: /api/smalltv (552)
         appkey_routes(app, reply, body)                    # app keys, security check in Settings → Security (573)
         place_routes(app, watch, reply, body)              # 2.98.30: «Platz einrichten» /place, field of view per camera (537)
+        fixp_routes(app, reply, body)                      # real-erk-e1: still «person» = thing, card «ignorieren?» /api/fixp (418)
         g2_routes(app, watch, reply, body)                 # guide 2: tours, tip of the day, factory reset (586)
         qr_routes(app, reply, body)                        # QR codes: POST /api/qr, gallery /qr, print page, no-store for secrets (587)
         servo_routes(app, reply, body)                     # 2.98.35: servos - Not-Aus, taught points, diagnosis /servo, /api/servo (539)

@@ -1,7 +1,9 @@
 {
- "version": "3D-4.85",
+ "version": "3D-5.6.0",
+ "ver": "3.6.0",
+ "name": "MoveEye Sim 3.6.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35015041,
- "sha256": "ab56e9e9c355e7330e72195d9412d12c36b9fcad1417890e66e934fba3bb4a69",
- "notes": "Neues Fenster «Spielen»: Geschichten als grosse Karten, gleicher Start, Abzeichen im Entdeckungsbuch."
+ "size": 35079175,
+ "sha256": "d86898399a4a6627c83ea841e5b6812bf9fffbf8d9b04a10ff944c679a917a06",
+ "notes": "MoveEye Sim 3.6.0: zusammen mit MoveEye 3.6.0 (weniger Fehlalarme); im Simulator selbst nichts geändert."
 }

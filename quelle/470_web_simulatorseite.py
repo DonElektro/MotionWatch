@@ -900,7 +900,10 @@ function paint() {
   $("#p-start").hidden = !S.basis_show || !!S.running; $("#p-stop").hidden = !S.running;
 }
 // ---- button «Update the simulator» (2.95.5): the simulator's own update (control «update_now»), newest version shown ----
-const vnum = v => (String(v || "").match(/(\d+)\.(\d+)/) || [0, 0, 0]).slice(1).map(Number);
+// Versionierung 3.0.0: «3D-A.B[.C]» = (A-2).B.C, «3.0.0» as it is - the same rule as sim_vkey (300) and versionen.gd
+const vnum = v => { const s = String(v || ""), m = s.match(/3D-(\d+)\.(\d+)(?:\.(\d+))?/), n = m || s.match(/(\d+)\.(\d+)(?:\.(\d+))?/);
+  return n ? [+n[1] - (m ? 2 : 0), +n[2], +(n[3] || 0)] : [0, 0, 0]; };
+const vnewer = (a, b) => { const A = vnum(a), B = vnum(b); for (let i = 0; i < 3; i++) if (A[i] !== B[i]) return A[i] > B[i]; return false; };
 function verPaint() {
   const V = S && S.on && S.versions, w = $("#s-supd");
   if (!V || !V.current) { $("#s-ver").textContent = ""; w.hidden = true; return; }
@@ -913,8 +916,8 @@ function verPaint() {
 function updPaint(r) {
   const b = $("#s-upd"), has = !!(r && r.ok && (r.controls || []).some(c => c.id === "update_now"));
   b.hidden = !(has && S && S.on); verPaint(); if (b.hidden) return;
-  const V = S.versions || {}, m = String(r.name || "").match(/3D-\d+\.\d+/), cur = V.current || (m ? m[0] : ""), nw = V.latest || (S.sim3d && S.sim3d.version);
-  const [a1, a2] = vnum(cur), [b1, b2] = vnum(nw), newer = cur && nw && (b1 > a1 || (b1 === a1 && b2 > a2));
+  const V = S.versions || {}, m = String(r.name || "").match(/3D-\d+\.\d+(?:\.\d+)?/), cur = V.current || r.version || (m ? m[0] : ""), nw = V.latest || (S.sim3d && S.sim3d.version);
+  const newer = !!(cur && nw && vnewer(nw, cur));
   b.className = newer ? "" : "sec";
   b.title = newer ? t("New version available") + ": " + nw : t("The simulator looks for a new version and installs it");
   b.lastChild.textContent = newer ? t("Update the simulator") + " → " + nw : t("Update the simulator");

@@ -1697,8 +1697,8 @@ func _register() -> void:
 			W(sm.c) + Vector3(-0.2, 0.2, 0.2), Vector3(0.6, 0.4, 0.5), 4.0, "any", {"active": func(): return e.is_found("berg.schmugglerroute")})
 	var au: Augen = V["steinmann_wald"]
 	_reg(e, "berg.steinmann_augen", T.t("Der Steinmann mit Augen"),
-			T.t("Im Steinmann-Wald hat einer zwei Augen. Sie schauen dir nach – und wenn du zu nahe kommst, macht er sie zu und ist wieder nur ein Steinmann."),
-			T.t("Im Steinmann-Wald beim Biwak: einer von über zweihundert schaut zurück."), "👀", "ort",
+			T.t("Im Steimandli-Wald hat einer zwei Augen. Sie schauen dir nach – und wenn du zu nahe kommst, macht er sie zu und ist wieder nur ein Steinmann."),
+			T.t("Im Steimandli-Wald beim Biwak: einer von über zweihundert Steinmännern schaut zurück."), "👀", "ort",
 			W(au.c) + Vector3(0, 1.0, 0), Vector3(0.6, 0.4, 0.6), 9.0, "any", {"active": func(): return au.open()})
 	var sn: Sennerei = V["sennerei"]
 	_reg(e, "berg.sennerei_kaese", T.t("Der Käse von 1897"),
@@ -1713,7 +1713,7 @@ func _register() -> void:
 	var nl: Nordlicht = V["nordlicht"]
 	_reg(e, "berg.nordlicht", T.t("Nordlicht über dem Pass"),
 			T.t("In einer seltenen, ganz klaren Winternacht steht tief im Norden ein schwacher roter Vorhang am Himmel, unten ein wenig grün. In der Schweiz sieht man das nur ein paar Mal in vielen Jahren."),
-			T.t("In einer ganz klaren Winternacht auf dem Furggapass auf die Steinbank sitzen und nach Norden schauen. Es braucht Glück."), "🌌", "szene",
+			T.t("In einer ganz klaren Winternacht auf dem Furggapass auf der Steinbank sitzen und nach Norden schauen. Es braucht Glück."), "🌌", "szene",
 			nl.where(), Vector3(20.0, 10.0, 4.0), 60.0, "night", {"los": false, "active": func(): return nl.glowing()})
 	var gse: Geheimsee = V["geheimer_see"]
 	_reg(e, "berg.geheimer_see", T.t("Der geheime See"),

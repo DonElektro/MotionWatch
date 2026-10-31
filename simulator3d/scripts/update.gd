@@ -32,24 +32,17 @@ var result := ""              # what came out (for the window and the web page o
 var choice := -1              # -1 not decided, 0 later / OK, 1 update
 
 
+const V = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: both schemas («3D-4.82» and «3.0.0»), see there
+
+
 static func vnum(v: String) -> Array:
-	"""'3D-1.6' -> [1, 6]"""
-	var out := []
-	for p in v.trim_prefix("3D-").split("."):
-		out.append(int(p))
-	return out
+	"""'3D-4.82' -> [2, 82, 0], '3.0.0' -> [3, 0, 0] (versionen.gd)"""
+	return V.key(v)
 
 
 static func newer(a: String, b: String) -> bool:
 	"""is version a newer than b?"""
-	var x := vnum(a)
-	var y := vnum(b)
-	for i in range(max(x.size(), y.size())):
-		var p: int = x[i] if i < x.size() else 0
-		var q: int = y[i] if i < y.size() else 0
-		if p != q:
-			return p > q
-	return false
+	return V.newer(a, b)
 
 
 func check(current: String, url := "") -> void:
@@ -62,7 +55,7 @@ func check(current: String, url := "") -> void:
 	_remove_old()
 	if not quiet:
 		_build_ui()
-		title.text = "MoveEye Sim · 3D %s" % current
+		title.text = V.label(current)
 		text.text = "Suche nach einer neuen Version …"
 	http = HTTPRequest.new()
 	http.timeout = 6.0
@@ -81,16 +74,18 @@ func check(current: String, url := "") -> void:
 		await _note("Die Versions-Angabe auf GitHub ist nicht lesbar.")
 		return
 	info = d
-	if not newer(str(d["version"]), current):
+	var latest := V.of_info(d)                    # Versionierung 3.0.0: «ver» (new number), «version» = for old simulators
+	info["version"] = V.plain(latest)             # (the progress text and the messages show the new number)
+	if not newer(latest, current):
 		print("update check: %s is the newest" % current)
 		result = "schon die neuste Version (%s)" % current
 		await _note("Du hast schon die neuste Version (%s)." % current)
 		return
-	result = "neue Version %s gefunden" % d["version"]
+	result = "neue Version %s gefunden" % info["version"]
 	if quiet:
 		_build_ui()
-		title.text = "MoveEye Sim · 3D %s" % current
-	text.text = "Eine neue Version ist da: %s (du hast %s).\n\n%s" % [d["version"], current, str(d.get("notes", ""))]
+		title.text = V.label(current)
+	text.text = "Eine neue Version ist da: %s (du hast %s).\n\n%s" % [V.label(latest), V.plain(current), str(d.get("notes", ""))]
 	if not OS.has_feature("template"):
 		text.text += "\n\n(Im Godot-Editor wird nicht aktualisiert.)"
 		b_upd.disabled = true
@@ -115,7 +110,7 @@ func check(current: String, url := "") -> void:
 	else:
 		up = await chosen
 	if not up:
-		result = "Update auf %s abgebrochen" % d["version"]
+		result = "Update auf %s abgebrochen" % info["version"]
 		return
 	await _update()
 

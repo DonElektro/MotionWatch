@@ -1,8 +1,67 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.85** · passende MoveEye-Version (früher Motion Watch) **2.98.116**
+Stand: 31.10.2026 · Version **3.6.0** · MoveEye **3.6.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.6.0 (MoveEye 3.6.0): Feste Fehl-Personen (nur MoveEye)
+
+- Simulator-Code unverändert. MoveEye: neue Teile `418_feste_fehlperson.py` (Personen-Kasten, der sich nie bewegt → Karte
+  «ignorieren?», Kopf folgt nicht; warme Motoren keine Person; KI-Tier bleibt Tier), `599f_fenster_fehlperson.py`,
+  `639l_uebersetzungen_fehlperson.py`; 232, 410 (`veto_` neben dem Kriech-Block von 418k), 550.
+
+## NEU in 3.5.0 (MoveEye 3.5.0): Kriechende nachts, KI-Lupe weit (nur MoveEye)
+
+- Simulator-Code unverändert. MoveEye: neue Teile `418k_kriechende_nacht.py` (Voralarm «⚠ Etwas Grosses am Boden», nach 6 s
+  «Person? (kriecht)»; Fuchs/Igel nicht), `418z_ki_zoom_weit.py` (KI-Lupe auch für kleine, weite Bewegungen, nicht bei
+  starkem Wind), `639x_uebersetzungen_kriechende.py`; 180, 410.
+
+## NEU in 3.4.0 (MoveEye 3.4.0): Nebel-Modus und Dämmerung/Wind (nur MoveEye)
+
+- Simulator-Code unverändert. MoveEye: neuer Teil `411_nebel_daemmerung.py` (Nebel erkennen, Kontrast, mehr Wärmebild,
+  Hinweis «🌫 Nebel», kein «Kamera verdreht» im Nebel; Dämmerung/Wind: 2–3 Treffer in Folge), `639k_uebersetzungen_nebel.py`;
+  060, 066, 180, 232, 410, 530, 540, 570.
+
+## NEU in 3.3.0 (MoveEye 3.3.0): Roter Faden (`geschichten_faden.gd`)
+
+- `geschichten_faden.gd` (neu): die beiden Geschichten kennen sich (Ruedi, Anna, Sepp, Vrenis Käse, Wanderbuch im Finale,
+  Kapelle auf der alten Karte), Abzeichen «Beide Geschichten geschafft». Stand pro Spielstand in
+  `user://spielstand/<n>/faden.json`, dazu Maggies eigene Datei dieses Platzes (`spielstand.gd path_maggie`).
+
+## NEU in 3.2.0 (MoveEye 3.2.0): Statisten (`statisten.gd`)
+
+- `statisten.gd` (neu): Hintergrund-Leute mit Zielen (Bank, Brunnen, Hütte, Aussicht), Tätigkeiten, Gruppen, grüssen,
+  weichen aus, gehen abends heim (bei Regen schneller), halten in Spielmodi Abstand zu Rätseln und Gefahren
+  (`bergtal_abenteuer.gd`); Menge wenig / normal / belebt. `actor.gd`, `figur_paket.gd`, `main.gd` angepasst.
+
+## NEU in 3.1.0 (MoveEye 3.1.0): Kurze Push-Nachrichten (nur MoveEye)
+
+- Simulator-Code unverändert. MoveEye: neuer Teil `635b_push_kurz.py` (ein Aufbau für alle Meldungen: Titel mit Symbol,
+  eine Zeile, Bild; «🛡 Schutz ein»; im Simulator nur Alarme, Info per Schalter unter Push → Erweitert), 060, 130, 531a, 571a.
+
+## NEU in 3.0.2 (MoveEye 3.0.2): Angleichungen
+
+- `main.gd`: «Nur Gruppen» wie in MoveEye (Gruppen offen, Themen zu). `abenteuer_figuren_daten.gd`: Anna ist Betreuerin der
+  Hütte, Sepp spricht passend zur gewählten Jahreszeit.
+
+## NEU in 3.0.1 (MoveEye 3.0.1): Lektorat der Geschichten-Texte
+
+- Texte in `maggie_*.gd`, `bergtal_abenteuer*.gd`, `abenteuer_figuren_daten.gd`, `bergtal_erleben_b.gd`, `entdecken.gd`,
+  `spielbereich.gd` und `i18n/texte.json` überarbeitet; Titel überall «Die Karte des Grossvaters».
+
+## NEU in 3.0.0 (MoveEye 3.0.0): Gemeinsame Versionsnummer
+
+- MoveEye und MoveEye Sim haben ab jetzt dieselbe Nummer X.Y.Z (neue Funktion = Y+1, Fehlerkorrektur = Z+1). `version.json`
+  mit Brücke `"version": "3D-5.0.0"` + `"ver": "3.0.0"` (geschrieben mit `werkzeuge/versionen.py --sim-json`).
+
+## Versionsnummern (Paket «Versionierung 3.0.0», umgestellt mit dem Release 3.0.0)
+
+Ab **3.0.0** haben MoveEye und der Simulator **dieselbe Nummer** («MoveEye 3.0.0» / «MoveEye Sim 3.0.0») und werden immer
+zusammen veröffentlicht; `VERSION` in `scripts/main.gd` ist dann `"X.Y.Z"` (vorher `"3D-A.B"`). Vergleich und Anzeige nur
+über `scripts/versionen.gd` (`key`, `newer`, `label`, `legacy`). **Brücke:** alte Simulatoren (bis 3D-4.8x) lesen in
+`version.json` nur `version` – dort steht darum `3D-(X+2).Y.Z` (3.0.0 → `3D-5.0.0`), die echte Nummer in `ver`.
+`version.json` nur mit `python3 werkzeuge/versionen.py --sim-json X.Y.Z "Notiz"` schreiben, danach `--pruefen`.
+Regeln und Ablauf: CLAUDE.md, Abschnitt «Versionierung».
 
 ## NEU in 3D-4.85 (MoveEye 2.98.116): Fenster «Spielen» mit Geschichten (`geschichten.gd`)
 

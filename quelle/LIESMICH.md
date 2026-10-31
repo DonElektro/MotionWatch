@@ -21,6 +21,7 @@ den Eintrag dort ändern, wo er steht.
 
 ```
 python3 werkzeuge/bauen.py --neue-version "Was neu ist"            # Nummer +1, Zeile in der Änderungsliste, bauen
+python3 werkzeuge/bauen.py --neue-version "Was neu ist" --stufe funktion   # ab 3.0.0: X.Y+1.0 (Regeln: CLAUDE.md «Versionierung»)
 python3 werkzeuge/bauen.py --signieren SCHLUESSELDATEI               # versions.json signieren + Selbsttest (Schlüssel nie ins Repository)
 python3 werkzeuge/bauen.py --pruefen                                # passt die Datei zu quelle/? keine Funktion doppelt?
 python3 werkzeuge/web_rauchtest.py                                  # jede Web-Adresse ohne / mit Anmeldung (auch auf GitHub)
@@ -104,8 +105,12 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `396_kopf_abschrecken_zielen.py` | Abschrecken mit Ziel: Licht / Sirene drehen zur Person (zuletzt gesehen) oder zum Zelt aus «Platz einrichten», über den Kopf-Koordinator 162 (Schalter kopf_deter_aim) | 125 |
 | `400_ausschalten.py` | Pi ausschalten / neu starten | 53 |
 | `410_motionwatch_kern.py` | KERN: die Erkennungs-Schleife (Bewegung, Personen, Alarm) | 969 |
+| `411_nebel_daemmerung.py` | Nebel-Modus (Kontrast vor der KI, Wärmebild zählt mehr, kein «Kamera verdreht» im Nebel, Hinweis «Nebel – Sicht eingeschränkt») und strengere Dämmerung / Wind (Person erst nach 2–3 Treffern in Folge); Selbsttest | 407 |
 | `415_entfernung_gehtest.py` | Entfernung und Richtung einer Person, Gehtest beim Einrichten | 376 |
 | `416_verfolgung_parcours.py` | Verfolgungs-Parcours des Simulators (3D-4.18): Lektionen starten (Steuerbefehl `parcours`), Läufe mit den Werten der Verfolgung speichern (`parcours_runs.json`), A/B-Vergleich, Auto-Tuning (nur Vorschlag, «übernehmen»), mit / ohne Weitwinkel-Übergabe, Spiel «Entkomme der Kamera»; neuer Regler `track_lead` (Vorausschauen, 0 = wie bisher) als Wrapper um `MotionWatch.track`; Kachel 🎯 (139, Gruppe «Testen»); eine Sperre (147) | 600 |
+| `418_feste_fehlperson.py` | Feste Fehl-Personen lernen (Personen-Kasten der KI, der sich über Minuten nicht bewegt und nie hingegangen ist = Gegenstand; kein Push, Kopf folgt nicht; Karte «ignorieren?» mit Bild → Maske, /api/fixp), Tier vor Person (Spur behält die Tier-Klasse), Veto Tier / Fahrzeug für «Person?» und Wärmebild-Person (232), Selbsttest | 470 |
+| `418k_kriechende_nacht.py` | Kriechende nachts (real-erk-e3): warmer Körper + Bewegung, nah (< 8 m), am Boden, gross (≥ 1 m lang) → Voralarm «etwas Grosses am Boden» (Protokoll, Browser, kurzer Push mit Bild, `crawl_push`), hält es 6 s an und ist niedrig → «Person?» (`crawl_feed` / `crawl_decide`, von 410); Abgrenzung Fuchs / Igel / Reh / Wildschwein mit Grenzwerten und Quellen; Selbsttest | 242 |
+| `418z_ki_zoom_weit.py` | KI-Zoom für weite Bewegung (real-erk-e3): die KI-Lupe auch für kleine wiederkehrende Bewegung ohne Spur (`zoom_far_feed`), Kacheln aus dem Kamerabild statt dem Arbeitsbild, der Reihe nach, mit YOLO bis 4 Kacheln in einem Lauf (`ai_zoom_run`, von 180), das eigene YOLO-Modell sieht das Kamerabild (`ai_view`); Bestätigung gegen Wind-Fehlalarme; Abschätzung 960-px-Eingang am Pi 5 (nicht eingebaut); Selbsttest | 291 |
 | `420_webzugang_aufnahmen.py` | Web-Zugang, Aufnahmen, Speicher, Bild für andere Programme | 630 |
 | `425_zeitleiste.py` | Zeitleiste der Nacht: Daten für /api/timeline | 230 |
 | `426_wochenbericht.py` | Wochenbericht der Erkennung (Push + Karte) | 200 |
@@ -130,6 +135,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `593_fenster_aufraeumen.py` | Fenster: Gruppe «Tierart» in der KI-Erkennung (wie «KI-Modell») | 37 |
 | `635_uebersetzungen_blinki.py` | Übersetzungen und Anleitungs-Zeile zu Blinki | 60 |
 | `635a_spieltest.py` | Spieltest-Meldungen: der Spieltest-Assistent des 3D-Simulators (spieltest.gd, world_reply «spieltest») meldet jede Runde kurz, MoveEye schickt sie über den Hauptkanal des Push – nur mit dem Schalter «Spieltest-Meldungen» (Entwickler, Standard aus); Zustand «spieltest» zurück, mw_cmd «spieltest_push», Selbsttest | 140 |
+| `635b_push_kurz.py` | Kurze Push-Nachrichten: ein Aufbau für alle Meldungen (`push_short` / `push_kind`, von 060 `_title` / `_text`: Symbol + kurzer Titel, höchstens eine Zeile, Bild bei «Schutz aus», nie JSON), ntfy-Adresse in der Webhook-Karte geht als ntfy (`push_url_is_ntfy`), Gerätename im Titel nur bei mehreren MoveEye (`push_show_name`: Geräteliste 260 oder 2. Gerät im Simulator), E-Mail mit vollem Text (`push_long`), «🛡 Schutz ein» mit Bild (`push_protect_on`, von 130 `arm_tick`), im Simulator-Betrieb nur Alarme aufs Handy (`push_sim_hold`, Schalter `sim_info_push` «Im Simulator: Info-Meldungen aufs Handy», ab Werk aus; Push → Erweitert in 531a / 571a, Seite Simulator), Übersetzungen, Selbsttest | 500 |
 | `594_uebersetzungen_kihilfe.py` | Übersetzungen für die «KI-Hilfe» am Auslöser (542) | 25 |
 | `595_fenster_simstopp.py` | Fenster: «⏹ Stopp» (Not-Aus) in der Simulation ausblenden | 75 |
 | `596_uebersetzungen_vier.py` | Übersetzungen für «MoveEye als KI-Wächter» (548) | 32 |
@@ -163,6 +169,9 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `639g_uebersetzungen_entdecken.py` | Übersetzungen der Kachel «Entdeckungen» (Entdeckungsbuch des Simulators, 139) | 29 |
 | `639i_spielbereich.py` | «Spielen» (Mehr → Spielen, Web /play, Fenster-Knopf unter Mehr): Kopfzeile (Stufe, Spielstand), Weiterspielen-Hinweis, Regal «Geschichten» (nur anschauen, Bild /sim/story_pic), «Entdecken», Blinki – Daten vom Simulator (spielbereich.gd / geschichten.gd); Abzeichen im Entdeckungsbuch (139) | 541 |
 | `639j_nurgruppen.py` | «Beim Start: Nur Gruppen» (Schalter `ui_start_groups`, ab Werk ein; Logik in 530 / 470 / 570 / 550): Übersetzungen DE/FR/IT/RM, Anleitungs-Absatz (Tipps, DE/EN) | 35 |
+| `639k_uebersetzungen_nebel.py` | Übersetzungen des Nebel-Hinweises (411) DE/FR/IT/RM | 8 |
+| `639l_uebersetzungen_fehlperson.py` | Übersetzungen, Karte «Hier steht etwas, das wie eine Person aussieht – ignorieren?» auf der Hauptseite, Anleitungs-Absatz (Erkennung) zu 418 | 60 |
+| `639x_uebersetzungen_kriechende.py` | Übersetzungen DE/FR/IT/RM für 418k (Push «Etwas Grosses am Boden», Kurzform PK_TITLES), Anleitungs-Satz | 38 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |

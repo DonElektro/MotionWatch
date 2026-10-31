@@ -59,6 +59,24 @@ WEAK_AGE_S = 2.5            # the AI runs only now and then: its weak boxes coun
 FOOT_HIST_S = 4.0           # «does not stand up over the last pictures»: what was seen of it in the last 4 s
 FOOT_NEED_N, FOOT_NEED_S = 3, 1.0   # an animal needs 3 animal-like pictures over at least 1 s (the thermal camera: 3 of 5 anyway)
 FOOT = {"h": None, "t": 0.0, "busy": False, "hist": deque(maxlen=200)}
+# ---- real-erk-e1 (Erkennungstest: a car on 20 m gave a push «Person (Wärmebild)» by day) - the limits and why --------------
+# A moving car in the thermal picture: the movement mask cuts its hot parts (bonnet, grille, tyres, exhaust) into narrow
+# pieces that look «upright». Now a warm body is NO thermal person when
+#   - it is followed over the thermal pictures (TVEH chains) and as a 1.7 m person it would run faster than TV_PERSON_MAX_MS, or
+#   - it is a wide (real width / height >= TV_WIDE), very warm body that drives faster than TV_CAR_MS (as a 1.5 m high car),
+#     and the pieces near it (same height band) for TV_HOLD_S,
+#   - the normal camera / the AI sees a vehicle or an animal on it (418 fixp_veto: vehicle track, car / truck …, animal of
+#     the AI or an animal track = «Tier vor Person»).
+# Only while the head stands still (a turning head makes everything «drive»).
+TV_PERSON_MAX_MS = 10.0     # m/s: a sprinter reaches 9 - 10, a person running away 4 - 6; a half hidden person (only the upper
+                            # half warm: 2 x too far as 1.7 m) running 5 m/s stays below. A car piece at 20 m (0.6 m tyre seen as
+                            # 1.7 m = 57 m away) at 30 km/h is about 23 m/s.
+TV_WIDE = 1.6               # «breit»: a car from the side 4.5 x 1.5 m = 3; a person, also two side by side walking, is below
+TV_CAR_MS = 4.0             # m/s (14 km/h) for a wide body seen as 1.5 m high: faster than walking / jogging persons in a group
+TV_HOT_C = 8.0              # «sehr warm» with a camera in °C: at least 8 °C over the scene (a body 3 - 6 °C through clothes);
+                            # without °C (8-bit picture) only the shape and the speed count
+TV_HOLD_S = 2.0
+TVEH = {"chains": [], "veh": [], "ts": 0.0}
 for _k, _v in {"cam_height": FOOT_CAM_H_M}.items():
     CFG.setdefault(_k, _v)
     DEFAULTS.setdefault(_k, _v)
@@ -79,8 +97,8 @@ def thermal_person_active():
     """thermal persons are looked for now: the option is on, a thermal camera is chosen, and it is night (or by day too)"""
     if not CFG.get("thermal_person") or not CFG.get("thermal_source") or not CFG.get("detection_on"):
         return False
-    if CFG.get("thermal_person_day"):
-        return True
+    if CFG.get("thermal_person_day") or STATE.get("fog"):
+        return True                                       # 411: in fog the camera sees little - the thermal camera by day too
     try:
         return bool(is_dark() or STATE.get("lowlight"))
     except Exception:
@@ -253,10 +271,11 @@ def weak_person_check(ab, tracks_n, warm_n, fe):
     return any(_ov(ab[:4], b) > 0.3 for b in list(tracks_n) + list(warm_n))
 
 
-def weak_person_feed(ai, tracks, warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0):
+def weak_person_feed(ai, tracks, warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, veto=()):
     """410, when nobody was found: the weak person boxes of the AI (180, below ai_conf) that are flat at the ground and confirmed
     by a movement track or the thermal picture become «PERSON?» (person boxes = the normal person / alarm logic).
-    Returns the «Person?» boxes 0..1 (a warm body under one never becomes an animal)."""
+    Returns the «Person?» boxes 0..1 (a warm body under one never becomes an animal).
+    real-erk-e1: not where the AI sees an animal (or an animal track is) - «Tier vor Person» (418 fixp_veto)."""
     wk = getattr(ai, "weak", None) or []
     STATE["person_maybe"] = 0                                   # /api/state: how many «Person?» in this picture
     if not wk or t0 - float(getattr(ai, "weak_t", 0.0)) > WEAK_AGE_S:
@@ -269,7 +288,7 @@ def weak_person_feed(ai, tracks, warm_boxes, person_boxes, present, frame, pw, p
             fe = foot_estimate(ab[:4])
         except Exception:
             fe = None
-        if weak_person_check(ab, tn, warm_boxes or [], fe):
+        if weak_person_check(ab, tn, warm_boxes or [], fe) and not any(_ov(ab[:4], v[:4]) > 0.3 for v in veto if v[4] == "animal"):
             out.append(ab)
     for bx, by, bw, bh, cf in out:
         person_boxes.append((int(bx * pw), int(by * ph), max(1, int(bw * pw)), max(1, int(bh * ph))))
@@ -312,14 +331,82 @@ def thermal_person_check(box):
     return d
 
 
-def thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, maybe_boxes=()):
+def _tv_speed(ch, now):
+    """(picture widths per second, mean height, mean width) of a chain over its last 2 s - or None (too short)"""
+    pts = [p for p in ch["pts"] if now - p[0] <= 2.0]
+    if len(pts) < 3 or pts[-1][0] - pts[0][0] < 0.4:
+        return None
+    return ((pts[-1][1] - pts[0][1]) / (pts[-1][0] - pts[0][0]), sum(p[4] for p in pts) / len(pts), sum(p[3] for p in pts) / len(pts))
+
+
+def thermal_vehicle_step(boxes, ts, hf, vf, asp, temps=None):
+    """follow the warm bodies over the thermal pictures (ts = time of the thermal picture) -> the boxes that are a vehicle.
+    asp = picture height / width (main picture), temps(box) -> (body, scene) °C or None. Without the camera (self-test)."""
+    if ts != TVEH["ts"]:
+        TVEH["ts"] = ts
+        for b in boxes:
+            cx, cy = b[0] + b[2] / 2.0, b[1] + b[3] / 2.0
+            near = [c for c in TVEH["chains"] if ts - c["pts"][-1][0] <= 1.0 and abs(c["pts"][-1][2] - cy) < 0.15
+                    and abs(c["pts"][-1][1] - cx) < 0.25 + b[2]]
+            ch = min(near, key=lambda c: abs(c["pts"][-1][1] - cx), default=None) if near else None
+            if ch is None or ch["pts"][-1][0] == ts:
+                ch = {"pts": deque(maxlen=20), "veh": 0.0}; TVEH["chains"].append(ch)
+            ch["pts"].append((ts, cx, cy, b[2], b[3]))
+            sp = _tv_speed(ch, ts)
+            if sp is None:
+                continue
+            vx, mh, mw = sp
+            k = 2.0 * math.tan(math.radians(hf) / 2.0)
+            v_person = abs(vx) * k * PERSON_H_M / (2.0 * max(1e-3, mh) * math.tan(math.radians(vf) / 2.0))
+            v_car = abs(vx) * k * 1.5 / (2.0 * max(1e-3, mh) * math.tan(math.radians(vf) / 2.0))
+            wide = (mw / max(1e-3, mh)) / max(1e-3, asp) >= TV_WIDE
+            tt = temps(b) if temps else None
+            hot = tt is None or tt[0] - tt[1] >= TV_HOT_C
+            if (mh / max(1e-3, mw)) * asp >= 1.0 and v_person >= TV_PERSON_MAX_MS:
+                ch["veh"] = ts                                  # upright piece far too fast for a person
+            elif wide and hot and v_car >= TV_CAR_MS:
+                ch["veh"] = ts; TVEH["veh"].append((ts, cx, cy))    # a wide hot body that drives: the pieces near it too
+        TVEH["chains"] = [c for c in TVEH["chains"] if ts - c["pts"][-1][0] <= 1.5][-8:]
+        TVEH["veh"] = [v for v in TVEH["veh"] if ts - v[0] <= TV_HOLD_S]
+    out = []
+    for b in boxes:
+        cx, cy = b[0] + b[2] / 2.0, b[1] + b[3] / 2.0
+        ch = next((c for c in TVEH["chains"] if c["pts"][-1][0] == TVEH["ts"] and abs(c["pts"][-1][1] - cx) < 1e-6 and abs(c["pts"][-1][2] - cy) < 1e-6), None)
+        if (ch and TVEH["ts"] - ch["veh"] <= TV_HOLD_S) or any(abs(v[2] - cy) < 0.15 and abs(v[1] - cx) < 0.25 for v in TVEH["veh"]):
+            out.append(b)
+    return out
+
+
+def thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, maybe_boxes=(), veto=()):
     """called by the camera loop (410) when the normal camera found nobody: the warm bodies that are persons become person
-    boxes (in the working picture), drawn as «PERSON (THERMAL)». Returns the warm bodies that stay «warm»."""
+    boxes (in the working picture), drawn as «PERSON (THERMAL)». Returns the warm bodies that stay «warm».
+    real-erk-e1: a vehicle (fast / wide and hot in the thermal picture, or the camera / AI sees one there) or an animal of the
+    AI on it is no person (veto from 418 fixp_veto)."""
     rest = []
     found = []
     ThermalCam.main_aspect = H / float(W)                      # (the overlay sets it too - only when the thermal picture is shown)
     animals = []
+    vehicles = []
+    try:
+        if fixp_head_still(t0) >= 1.5:
+            hf, vf = cam_fov()
+            vehicles = thermal_vehicle_step(warm_boxes, float(getattr(THERMAL, "t", t0) or t0), hf, erk_vfov(), ThermalCam.main_aspect, _thermal_temps)
+        else:
+            TVEH["chains"] = []; TVEH["veh"] = []
+    except Exception:
+        vehicles = []
     for b in warm_boxes:
+        if b in vehicles or any(_ov(b, v[:4]) > 0.3 for v in veto if v[4] == "vehicle"):
+            rest.append(b)                                    # a vehicle: only warm (the warm alarm, if on, as before)
+            p1 = (int(b[0] * W), int(b[1] * H)); p2 = (int((b[0] + b[2]) * W), int((b[1] + b[3]) * H))
+            cv2.rectangle(frame, p1, p2, (200, 200, 200), 2)
+            cv2.putText(frame, "VEHICLE (THERMAL)", (p1[0], max(18, p1[1] - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 2)
+            if t0 - TPERS.get("veh_seen", 0.0) > 10.0:
+                log_event("ai", "Vehicle in the thermal picture (fast / wide and hot, or the camera sees one) - no person")
+            TPERS["veh_seen"] = t0
+            continue
+        if any(_ov(b, v[:4]) > 0.3 for v in veto if v[4] == "animal"):
+            rest.append(b); present.add("animal"); continue   # Tier vor Person: the AI sees an animal there
         c = thermal_classify(b, t0, any(_ov(b, m) > 0.3 for m in maybe_boxes))
         if c is None or c[0] == "wait":
             rest.append(b); continue                          # «wait»: maybe an animal - a few more pictures (only warm meanwhile)

@@ -9,6 +9,8 @@ Der Pi, die Update-Funktion und die Signatur arbeiten weiter mit dieser einen Da
   python3 werkzeuge/bauen.py --neue-version "Text" # nächste Version (X.Y.Z+1): Nummer an allen Stellen, Zeile in der
                                                    #   Änderungsliste, Simulator-Version aus simulator3d/version.json, bauen
   python3 werkzeuge/bauen.py --neue-version "Text" --version 2.96.0     # eine bestimmte Nummer
+  python3 werkzeuge/bauen.py --neue-version "Text" --stufe funktion      # ab 3.0.0: neue Funktion X.Y+1.0 (fehler = X.Y.Z+1,
+                                                                         #   gross = X+1.0.0), siehe CLAUDE.md «Versionierung»
   python3 werkzeuge/bauen.py --signieren SCHLUESSELDATEI                 # danach: versions.json schreiben, signieren, Selbsttest
 
 Den Schlüssel nie ins Repository legen.
@@ -158,18 +160,34 @@ def dateiname(v):
     return os.path.join(REPO, "webcam_bewegung_%s.py" % v.replace(".", "_"))
 
 
-def neue_version(text_aenderung, ziel=""):
-    alt = version()
+def naechste(alt, stufe="fehler"):
+    """die nächste Nummer nach Daniels Regeln (31.10.2026): fehler = X.Y.Z+1, funktion = X.Y+1.0, gross = X+1.0.0"""
     a = [int(x) for x in alt.split(".")]
-    neu = ziel or "%d.%d.%d" % (a[0], a[1], a[2] + 1)
+    if stufe == "gross":
+        return "%d.0.0" % (a[0] + 1)
+    if stufe == "funktion":
+        return "%d.%d.0" % (a[0], a[1] + 1)
+    return "%d.%d.%d" % (a[0], a[1], a[2] + 1)
+
+
+def neue_version(text_aenderung, ziel="", stufe="fehler"):
+    alt = version()
+    neu = ziel or naechste(alt, stufe)
+    if not re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}$", neu):              # VER_RE / VFILE_RE of the update (380): else no device finds it
+        sys.exit("Nummer %s passt nicht zum Schema X.Y.Z (je 1-3 Ziffern)" % neu)
     for name in teile():                                       # the number at every place (title, build, help, file name)
         t = lesen(name)
-        t2 = (t.replace(alt.replace(".", "_"), neu.replace(".", "_")).replace('APP_VERSION = "%s"' % alt, 'APP_VERSION = "%s"' % neu)
-              .replace("Motion Watch %s" % alt, "Motion Watch %s" % neu).replace("MoveEye %s" % alt, "MoveEye %s" % neu).replace("{tr('Build')} %s ·" % alt, "{tr('Build')} %s ·" % neu))
+        # Versionierung 3.0.0: only these exact places - with short numbers (3.1.0) a plain «3_1_0» / «MoveEye 3.1.0» could
+        # also be a word or a note about an older version («ab MoveEye 3.1.0») and must stay
+        t2 = (t.replace("webcam_bewegung_" + alt.replace(".", "_") + ".py", "webcam_bewegung_" + neu.replace(".", "_") + ".py")
+              .replace('APP_VERSION = "%s"' % alt, 'APP_VERSION = "%s"' % neu)
+              .replace('root.title("MoveEye %s")' % alt, 'root.title("MoveEye %s")' % neu).replace('root.title("Motion Watch %s")' % alt, 'root.title("Motion Watch %s")' % neu)
+              .replace("{tr('Build')} %s ·" % alt, "{tr('Build')} %s ·" % neu))
         if name.startswith("300_"):                            # the 3D simulator that belongs to this version
             try:
                 d = json.load(open(os.path.join(REPO, "simulator3d", "version.json")))
-                t2 = re.sub(r'SIM3D = \{"version": "3D-[0-9.]+".*?"\}', lambda m: 'SIM3D = {"version": "%s", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": %d,\n         "sha256": "%s"}' % (d["version"], d["size"], d["sha256"]), t2, count=1, flags=re.S)
+                sv = d.get("ver") or d["version"]               # Versionierung 3.0.0: «ver» = X.Y.Z, «version» = for old simulators
+                t2 = re.sub(r'SIM3D = \{"version": "(?:3D-)?[0-9.]+".*?"\}', lambda m: 'SIM3D = {"version": "%s", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": %d,\n         "sha256": "%s"}' % (sv, d["size"], d["sha256"]), t2, count=1, flags=re.S)
             except (OSError, ValueError, KeyError):
                 pass
         t2 = re.sub(r"^INFO_PARTS = \d+", "INFO_PARTS = %d" % len(teile()), t2, count=1, flags=re.M)   # «About MoveEye» (584)
@@ -200,6 +218,8 @@ def main():
     ap.add_argument("--pruefen", action="store_true", help="nur prüfen, ob die Datei im Repository zu quelle/ passt")
     ap.add_argument("--neue-version", metavar="TEXT", default=None, help="nächste Version mit dieser Zeile in der Änderungsliste")
     ap.add_argument("--version", default="", help="mit --neue-version: diese Nummer statt X.Y.Z+1")
+    ap.add_argument("--stufe", choices=("fehler", "funktion", "gross"), default="fehler",
+                    help="mit --neue-version: fehler = X.Y.Z+1 (Standard), funktion = X.Y+1.0, gross = X+1.0.0")
     ap.add_argument("--signieren", metavar="SCHLUESSEL", default="", help="versions.json schreiben und signieren, Selbsttest")
     a = ap.parse_args()
     if a.pruefen:
@@ -216,7 +236,7 @@ def main():
         print("ok: %s = quelle/ (%d Teile)" % (os.path.basename(f), len(teile())))
         return 0
     if a.neue_version is not None:
-        alt, neu = neue_version(a.neue_version, a.version)
+        alt, neu = neue_version(a.neue_version, a.version, a.stufe)
         print("Version %s → %s" % (alt, neu))
         fa, fn = dateiname(alt), dateiname(neu)
         if os.path.isfile(fa) and alt.split(".")[:2] == neu.split(".")[:2]:   # only the newest file of a main version stays

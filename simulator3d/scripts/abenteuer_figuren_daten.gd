@@ -20,7 +20,7 @@ const FIG := {
 		"gross": 1.82, "pack": false, "orte": [Vector2(60, 0)], "r": 240.0, "unterwegs": 0.15, "wo": "Alp Tschuggen"},
 	"sennerin": {"name": "Vreni, die Sennerin", "rolle": "sennerin", "kind": "person", "jacke": Color(0.72, 0.16, 0.14), "cap": false,
 		"gross": 1.66, "pack": false, "orte": [Vector2(60, 0)], "r": 240.0, "unterwegs": 0.1, "wo": "Alp Tschuggen"},
-	"huettenwartin": {"name": "Anna, die Hüttenwartin", "rolle": "huettenwartin", "kind": "person", "jacke": Color(0.22, 0.46, 0.32),
+	"huettenwartin": {"name": "Anna, die Betreuerin der Hütte", "rolle": "huettenwartin", "kind": "person", "jacke": Color(0.22, 0.46, 0.32),
 		"cap": false, "gross": 1.7, "pack": true, "orte": [Vector2(60, 0), Vector2(-520, 560)], "r": 220.0, "unterwegs": 0.1,
 		"wo": "Hütte und Biwak"},
 	"wildhueter": {"name": "Ruedi, der Wildhüter", "rolle": "wildhueter", "kind": "person", "jacke": Color(0.32, 0.34, 0.2), "cap": true,
@@ -87,7 +87,7 @@ const GRUSS := {
 		["hut", "Hoi! Der Hut ist wieder unterwegs - schön."],
 		["", "Hoi! Alles gut unterwegs?"]],
 	"wildhueter": [["neuhut", "Den Hut kenne ich - der Bergführer! Dann bist du sein Enkel. Freut mich."],
-		["erst", "Salü. Ruedi, Wildhut. Ich zähle die Tiere im Tal - und dafür brauche ich manchmal Hilfe."],
+		["erst", "Salü. Ich bin Ruedi, der Wildhüter. Ich zähle die Tiere im Tal - und dafür brauche ich manchmal Hilfe."],
 		["f:auftrag_fertig", "Salü! Deine Aufnahmen waren gut. Vielleicht hätte ich wieder etwas für dich."],
 		["", "Salü. Leise sein - dort oben am Fels steht eine Gämse."]],
 	"w_lena": [["f:hilfe_bekommen", "Du! Dank dir ist mein Fuss wieder gut. Danke nochmals!"],
@@ -103,15 +103,23 @@ const GRUSS := {
 		["f:rat_fondue", "Hoi! Siehst du? Das Fondue-Set ist zu Hause geblieben. Zwei Kilo weniger!"],
 		["", "Hoi! Wieder unterwegs?"]],
 	"b_nina": [["f:hilfe_bekommen", "Hallo! Danke nochmals für die Hilfe neulich - der Fuss ist wieder ganz."],
-		["erst", "Hallo! Nina. Wir wollen morgen früh auf den Grat - und du?"],
+		["erst", "Hallo! Ich bin Nina. Wir wollen morgen früh auf den Grat - und du?"],
 		["f:seil_interesse", "Hallo! Na, immer noch Lust aufs Seil?"],
 		["", "Hallo! Schön, dich wieder zu sehen."]],
 	"b_toni": [["f:hilfe_bekommen", "Salü! Ohne dich wäre ich neulich lange dort gesessen. Merci!"],
-		["erst", "Salü! Toni. Ich war heute schon um vier Uhr unterwegs."],
+		["erst", "Salü! Ich bin Toni. Ich bin heute schon um vier Uhr losgegangen."],
 		["", "Salü! Wieder früh auf den Beinen?"]],
 	"b_urs": [["f:hilfe_bekommen", "Hoi! Der Fuss ist wieder gut - danke dir nochmals."],
-		["erst", "Hoi. Urs. Ich klettere am Gratspitz - der Fels ist dort richtig gut."],
+		["erst", "Hoi, ich bin Urs. Ich klettere am Gratspitz - der Fels ist dort richtig gut."],
 		["", "Hoi! Auch wieder am Berg?"]]}
+
+# Paket angleich (Daniel 31.10.2026): Sepps erster Gruss passt zur Jahreszeit der Runde (bergtal_abenteuer.gd SEASONS).
+# GRUSS_JZ[fid][Bedingung][Jahreszeit] ersetzt den Text aus GRUSS; fehlt die Jahreszeit, gilt GRUSS («sommer»).
+const GRUSS_JZ := {
+	"aelpler": {"erst": {
+		"fruehling": "Grüessech! Ich bin der Sepp, ich mache diesen Frühling die Alp parat für die Kühe. Was führt dich so weit hinauf?",
+		"herbst": "Grüessech! Ich bin der Sepp, ich schaue diesen Herbst zu den Kühen, bis wir mit ihnen ins Tal ziehen. Was führt dich so weit hinauf?",
+		"winter": "Grüessech! Ich bin der Sepp, ich schaue diesen Winter zur Alp und zu den Tieren im Stall. Was führt dich so weit hinauf?"}}}
 
 # ---- Themen ----------------------------------------------------------------------------------------------------------------
 # id, frage (was du sagst), cond, antwort (Text oder [[cond, Text], …]), merkt (Flag), effekt (siehe abenteuer_figuren.gd),
@@ -119,7 +127,7 @@ const GRUSS := {
 const THEMEN := {
 	"aelpler": [
 		{"id": "grossvater", "frage": "Kanntest du meinen Grossvater?", "cond": "hut", "einmal": true,
-			"antwort": "Jeder hier kennt den Bergführer. Wenn er dir seine Karte gegeben hat, dann traut er dir den Weg zu. Lies sie gut."},
+			"antwort": "Jeder hier kennt den Bergführer. Wenn er dir seine Karte gegeben hat, dann hat er dir den Weg zugetraut. Lies sie gut."},
 		{"id": "alp", "frage": "Wie ist das Leben auf der Alp?",
 			"antwort": "Um fünf Uhr melken, dann die Kühe auf die Weide, abends wieder melken. Dazwischen Zäune flicken. Streng - aber schöner kann man nicht arbeiten.",
 			"frage2": {"text": "Und du - magst du Alpkäse?", "antworten": [["Sehr! Am liebsten würzig.", "kaese_ja"], ["Ehrlich gesagt nicht so.", "kaese_nein"]],
@@ -161,7 +169,7 @@ const THEMEN := {
 			"antwort": "Den Bergführer? Die Leute im Tal reden mit Respekt von ihm. Und der Hut steht dir!"},
 		{"id": "geruecht", "frage": "Hast du unterwegs etwas Spezielles gesehen?", "effekt": "geruecht"},
 		{"id": "wohin", "frage": "Wohin gehst du heute?",
-			"antwort": "Über den Pass zum Hospiz. Dort soll es die beste Suppe im ganzen Kanton geben.",
+			"antwort": "Über den Pass, am alten Hospiz vorbei. Früher soll es dort die beste Suppe im ganzen Kanton gegeben haben.",
 			"frage2": {"text": "Und du, wohin?", "antworten": [["Ich folge einer alten Karte.", "karte_erzaehlt"], ["Einfach so, schauen.", "einfach_so"]],
 				"nach": {"karte_erzaehlt": "Eine alte Karte? Wie spannend! Viel Glück.", "einfach_so": "Das ist das Schönste am Wandern."}}},
 		{"id": "tausch", "frage": "Möchtest du etwas tauschen?", "effekt": "tausch"}],
@@ -216,7 +224,7 @@ const GERUECHTE := ["Im Bunker beim Pass soll es nachts ein Büro für Murmeltie
 		"In der alten Sennerei liegt ein uralter Käse. Riechen kann man ihn bis zum Weg.",
 		"Im Gipfelbuch auf dem Tschingelspitz stehen sehr lustige Einträge.",
 		"Eine Gämse stand heute Morgen auf dem Dach vom Hospiz. Einfach so."]
-# Tipps der Hüttenwartin (je Tag einer)
+# Tipps von Anna, der Betreuerin der Hütte (je Tag einer)
 const TIPPS := ["Früh los, früh zurück: am Nachmittag kommen die Gewitter.",
 		"Trink, bevor du Durst hast. Am Bach kannst du auffüllen.",
 		"Die Stirnlampe gehört immer in den Rucksack - auch wenn du vor dem Dunkeln zurück sein willst.",
@@ -250,7 +258,7 @@ const QUESTS := {
 		"abgabe": "Ich habe einen Brief von Anna für dich.",
 		"dank": "Die Käse-Bestellung! Danke - richte Anna einen Gruss aus.",
 		"lohn": {"xp": 40, "v": 1, "gib": ""}},
-	"q_kaese": {"typ": "bote", "von": "sennerin", "cond": "q:q_brief", "item": "kaese", "an": "huettenwartin", "kurz": "Käse von Vreni zur Hüttenwartin Anna bringen",
+	"q_kaese": {"typ": "bote", "von": "sennerin", "cond": "q:q_brief", "item": "kaese", "an": "huettenwartin", "kurz": "Käse von Vreni zu Anna, der Betreuerin der Hütte, bringen",
 		"angebot": "Anna wartet auf einen Laib Käse für die Hütte. Nimmst du ihn mit, wenn du sie siehst?",
 		"abgabe": "Ich bringe dir den Käse von Vreni.",
 		"dank": "Wunderbar! Dann gibt es heute Abend Käseschnitten.",
@@ -277,7 +285,7 @@ const QUESTS := {
 		"dank": "Du hast die Markierungen aufgefrischt? Merci - die Wanderer werden es dir danken.",
 		"lohn": {"xp": 50, "v": 1, "gib": ""}},
 	# Hilfe am Berg: ein Wanderer oder Bergsteiger hat sich verletzt (kommt von selbst, kein Auftrag)
-	"q_verletzt": {"typ": "hilfe", "von": "", "kurz": "Verletzten Wanderer melden (Hüttenwartin oder Wildhüter)",
+	"q_verletzt": {"typ": "hilfe", "von": "", "kurz": "Verletzten Wanderer melden (Betreuerin der Hütte oder Wildhüter)",
 		"angebot": "%s sitzt am Weg und hält sich den Knöchel. «Umgeknickt. Ich komme kaum noch weiter.»",
 		"abgabe": "Am Weg sitzt jemand mit verstauchtem Fuss.",
 		"dank": "Danke, dass du Bescheid sagst. Ich schicke gleich jemanden hinauf.",

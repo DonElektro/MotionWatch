@@ -73,7 +73,7 @@ const TIPPS := {
 		"Mit der Wasserflasche kannst du Wildschweine verscheuchen. Drück B.",
 		"Ist die Flasche leer? Am Bach füllst du sie wieder auf."],
 	"winter": ["Wölfe fürchten Feuer und Licht.",
-		"Mit brennender Fackel bleiben die Wölfe auf Abstand. Drück B zum Anzünden.",
+		"Brennt deine Fackel, halten die Wölfe Abstand. Drück B zum Anzünden.",
 		"Kommt ein Wolf zu nah? Schwenk die Fackel – drück nochmals B.",
 		"Die Fackel brennt nicht ewig. Mach sie aus, wenn kein Wolf da ist.",
 		"Im Dunkeln leuchten die Augen der Wölfe. So siehst du sie früh."],
@@ -1165,7 +1165,7 @@ func benutze() -> Dictionary:
 			if n > 0:
 				vertrieben.emit("viper")
 	if n > 0:
-		_ev("vertrieben", "Super! Sie sind weg. Aber sie kommen vielleicht wieder.")
+		_ev("vertrieben", "Super! Sie sind weg. Aber pass auf – vielleicht kommen sie wieder.")
 	_update_box()
 	return {"ok": true, "vertrieben": n}
 

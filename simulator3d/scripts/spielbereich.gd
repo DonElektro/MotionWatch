@@ -173,6 +173,7 @@ func badges() -> Array:
 			out.append({"id": b, "sym": str(main.game.BADGES[b][0]), "name": T.t(str(main.game.BADGES[b][1])), "n": int(gb.get(b, 0)), "kind": "game"})
 	for c in chapters():
 		out.append({"id": "ch_" + str(c.id), "sym": c.badge, "name": c.badge_name, "n": 1 if c.state == "done" else 0, "kind": "chapter"})
+	out.append_array(preload("res://scripts/geschichten_faden.gd").abzeichen(main))   # Roter Faden: beide Geschichten
 	return out
 
 
@@ -231,7 +232,7 @@ func _tip(ch: Array) -> String:
 			if id != "":
 				return main.entdecken.hint_text(id)
 			if int(c.total) > int(c.found):
-				return T.t("Im %s fehlt noch %d – manches gibt es nur nachts, bei Regen oder am Morgen.", [c.name, int(c.total) - int(c.found)])
+				return T.t("«%s»: noch %d zu entdecken – manches gibt es nur nachts, bei Regen oder am Morgen.", [c.name, int(c.total) - int(c.found)])
 	for c in ch:
 		if c.state == "new":
 			return T.t("Neu: «%s» wartet auf dich!", [c.name])
@@ -334,7 +335,7 @@ func _paint() -> void:
 	lx.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	lx.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	lx.tooltip_text = T.t("Entdeckung +%d · Abzeichen +%d · Ort ganz entdeckt +%d · Ort besucht +%d", [XP_DISC, XP_BADGE, XP_DONE, XP_VISIT]) \
-			+ "\n" + T.t("Dazu die Erfahrung aus «Die Karte des Grossvaters» (%d) - ein Level für alles, pro Spielstand.", [int(lv.ab_xp)])
+			+ "\n" + T.t("Dazu die Erfahrung aus «Die Karte des Grossvaters» (%d) – eine Stufe für alles, pro Spielstand.", [int(lv.ab_xp)])
 	lx.mouse_filter = Control.MOUSE_FILTER_PASS
 	lh.add_child(lx)
 	var sn := UI.small(T.t("Spielstand: %s", [SS.name_of(SS.slot()) if SS.name_of(SS.slot()) != "" else str(SS.slot())]), UI.TXT)

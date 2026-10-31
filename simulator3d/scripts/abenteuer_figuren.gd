@@ -1,7 +1,7 @@
 extends Node
 ## A2 «Figuren, Gespräche, Nebenaufgaben» im Bergtal-Abenteuer (Daniel, 31.10.2026 - Paket A2 des Abenteuer-Ausbaus).
 ##
-## Figuren: Sepp (Älpler) und Vreni (Sennerin) auf der Alp Tschuggen, Anna (Hüttenwartin, Hütte und Biwak), Ruedi
+## Figuren: Sepp (Älpler) und Vreni (Sennerin) auf der Alp Tschuggen, Anna (Betreuerin der Hütte, schaut zu Hütte und Biwak), Ruedi
 ##   (Wildhüter, überall im Tal), dazu jeden Tag (jede Tour) eine andere Wanderin / ein anderer Wanderer und eine andere
 ##   Bergsteigerin / ein anderer Bergsteiger. Gebaut mit actor.gd über menschen.gd (Aussehen: menschen._next_look) -
 ##   es gibt keine neuen Figuren-Modelle. Im Gespräch steht die Figur im Tal vor dir (Puppe, zählt nicht für Tests).
@@ -477,9 +477,14 @@ func start_talk(fid: String, ctx: String, leg := -1) -> void:
 	for gr in FD.GRUSS.get(fid, []):
 		if _cond(str(gr[0]), fid):
 			g = T.t(str(gr[1]))
+			var jz: Dictionary = FD.GRUSS_JZ.get(fid, {}).get(str(gr[0]), {})   # angleich: Sepp nach Jahreszeit
+			var sn := str(ab.R.get("season", ab.W.get("season", "sommer"))) if ab != null else "sommer"
+			if jz.has(sn):
+				g = T.t(str(jz[sn]))
 			if str(gr[0]) == "neuhut":
 				f["flags"]["hut_erkannt"] = true
 			break
+	g += preload("res://scripts/geschichten_faden.gd").gruss(self, fid, f)   # Roter Faden: Anna / Sepp / Ruedi kennen Maggie
 	if int(f["n"]) > 0:                                        # it remembers what you promised
 		for qid in FD.QUEST_ORDER:
 			var q: Dictionary = FD.QUESTS[qid]
@@ -847,9 +852,9 @@ func _ev_choose(ex: Dictionary, v: String) -> void:
 			var fid := str(ex.get("fid", ""))
 			if v == "melden":
 				_set_q("q_verletzt", "melden", {"wer": fid})
-				ab._diary("a2", T.t("Hilfe am Berg"), T.t("Du sagst der Hüttenwartin oder dem Wildhüter Bescheid, sobald du sie triffst."))
+				ab._diary("a2", T.t("Hilfe am Berg"), T.t("Du sagst der Betreuerin der Hütte oder dem Wildhüter Bescheid, sobald du sie triffst."))
 				_persist()
-				_ok(T.t("Hilfe am Berg"), T.t("Du versprichst, Hilfe zu holen. Sag es der Hüttenwartin oder dem Wildhüter, sobald du sie triffst."), leg)
+				_ok(T.t("Hilfe am Berg"), T.t("Du versprichst, Hilfe zu holen. Sag es der Betreuerin der Hütte oder dem Wildhüter, sobald du sie triffst."), leg)
 				return
 			ab._pause(0.25 if v == "apotheke" else 2.0 / 3.0, false)
 			fm(fid)["flags"]["hilfe_bekommen"] = true

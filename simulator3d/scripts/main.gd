@@ -3,7 +3,8 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.85"
+const VERSION := "3.6.0"
+const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -45,7 +46,7 @@ var Karte = preload("res://scripts/karte.gd")
 var geo                               # geo.gd: a real place in Switzerland (scene «ort», from 3D-3.4)
 var karte                             # karte.gd: the map to choose the place
 var gamewiz                           # gamewiz.gd: the game wizard (3D-3.41), also worked from MoveEye
-var abenteuer                         # bergtal_abenteuer.gd: Bergtal-Abenteuer «Die Karte des Bergführers» (Rucksack, Tour, Nacht, Morgen)
+var abenteuer                         # bergtal_abenteuer.gd: Bergtal-Abenteuer «Die Karte des Grossvaters» (Rucksack, Tour, Nacht, Morgen)
 var ort_lat := 0.0                    # the chosen place (kept)
 var ort_lon := 0.0
 var ort_name := ""
@@ -333,6 +334,7 @@ var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»
 var gelaende                          # gelaende.gd (3D-4.x real-gelaende): hills and hollows, paths, cloud shadows (vegetation.gd: plants)
 var inhalte                           # inhalte.gd (F2): Foto-Texturen und HDRI-Himmel (CC0), nachgeladen, nicht in Lite
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
+var statisten                         # statisten.gd: background people - goals, things to do, groups, react to the player, keep away from the games
 var menschen                          # menschen.gd (P10): people behave like real ones - gaits, groups, the day of a campsite, API for scenarios
 var tiere                             # tiere.gd (Paket «Tiere»): animals behave like real ones (flee, curl up, pounce …)
 var fahrzeuge                         # fahrzeuge.gd (Paket «Fahrzeuge»): speed, lights, glare, doors, parking, engine heat
@@ -431,7 +433,7 @@ func _ready() -> void:
 	in_vm = _in_vm()
 	if in_vm and not "--quality" in args:
 		quality = "simple"                      # virtual machine: no real graphics card - the light graphics by default
-	DisplayServer.window_set_title("3D-Simulator Live · %s" % VERSION)
+	DisplayServer.window_set_title(("%s · Live" % Versionen.label(VERSION)) if Versionen.is_new(VERSION) else ("3D-Simulator Live · %s" % VERSION))
 	var ic := load("res://icon_sim3d.png")              # the window icon (3D-3.28; 3D-3.63: the orange MoveEye symbol)
 	if ic is Texture2D:
 		DisplayServer.set_icon((ic as Texture2D).get_image())
@@ -501,6 +503,9 @@ func _ready() -> void:
 	menschen = preload("res://scripts/menschen.gd").new()     # P10 «Menschen-Verhalten»: gaits, variety, groups, daily routine, scenario API
 	menschen.main = self
 	add_child(menschen)
+	statisten = preload("res://scripts/statisten.gd").new()   # Paket «Statisten»: Hintergrund-Figuren (Ziele, Tätigkeiten, Gruppen, Spieler, Spielmodi)
+	statisten.main = self
+	add_child(statisten)
 	tiere = preload("res://scripts/tiere.gd").new()           # Paket «Tiere»: real behaviour of the animals (with «Tiere wie echt»)
 	tiere.main = self
 	add_child(tiere)
@@ -691,7 +696,7 @@ func _ready() -> void:
 			if i + 1 < args.size() and args[i + 1].begins_with("http"):
 				phone.addr.text = args[i + 1]
 			get_tree().create_timer(2.0).timeout.connect(func(): phone.open())
-	DisplayServer.window_set_title("3D-Simulator Live · %s (Port %d)" % [VERSION, port])
+	DisplayServer.window_set_title((("%s · Live" % Versionen.label(VERSION)) if Versionen.is_new(VERSION) else ("3D-Simulator Live · %s" % VERSION)) + " (Port %d)" % port)
 	_fps0 = Engine.max_fps
 	mini_box = preload("res://scripts/mini.gd").new()      # minimize = small box, the simulator keeps drawing
 	mini_box.main = self
@@ -3384,7 +3389,7 @@ func refscan_text() -> String:
 
 
 func info() -> Dictionary:
-	return {"v": 1, "name": "MoveEye Sim · 3D %s" % VERSION, "host": host_name(),
+	return {"v": 1, "name": Versionen.label(VERSION), "version": VERSION, "host": host_name(),   # «version»: Versionierung 3.0.0 (MoveEye 300 sim_versions)
 			"cameras": [{"id": 0, "name": "Head camera (NoIR)", "w": CAM_W[0], "h": CAM_H[0], "fps": CAM_FPS[0], "fov_h": CAM_FOV[0], "fov_v": 41.0, "on_head": true, "noir": true},
 						weit.cam_info()],          # 3D-4.17: the wide camera with its mount (weitwinkel.gd)
 			"thermal": simint.thermal_info() if simint != null else {"w": TH_W, "h": TH_H, "fps": th_fps, "fov_h": TH_FOV, "fov_v": 35.0, "unit": "C", "on_head": true},
@@ -3607,7 +3612,7 @@ func _life() -> void:
 			var kk: String = life.pick(kinds) if daily_life else kinds[randi() % kinds.size()]
 			if menschen != null:
 				kk = menschen.pick_person(kk)             # P10: «Anteil Kinder», groups
-			if kk != "" and (jahreszeiten == null or jahreszeiten.accept_visit(kk, PEOPLE_KINDS)):   # «Jahreszeiten»: campsite by season
+			if kk != "" and (jahreszeiten == null or jahreszeiten.accept_visit(kk, PEOPLE_KINDS)) and (statisten == null or statisten.accept(kk)):   # «Jahreszeiten»: campsite by season
 				visit(kk)
 		var occ: float = maxf(1.0, jahreszeiten.visit_factor()) if jahreszeiten != null else 1.0   # high season: people more often
 		next_auto = t + randf_range(au[1], au[2]) / max(0.1, visit_rate * occ)
@@ -4058,6 +4063,7 @@ func _register_controls() -> void:
 	objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
 	inhalte.add_controls()                                 # F2: System → Grafik «Echte Oberflächen und Himmel»
 	umgebung.add_controls()                                # 3D-4.x: surroundings like real
+	statisten.add_controls()                               # Paket «Statisten»: Besuch → Von selbst (wie viele, pro Spielmodus)
 	menschen.add_controls()                                # P10: people like real (Besuch → Verhalten / Von selbst / Menschen schicken)
 	tiere.add_controls()                                   # Paket «Tiere»: free dog, birds on the ground
 	fahrzeuge.add_controls()                               # Paket «Fahrzeuge»
@@ -4549,7 +4555,7 @@ func control_info() -> Dictionary:
 		if c.has("ro"):
 			d["ro"] = bool(c["ro"].call())            # Aufräumen 2: the page of MoveEye shows it read-only too
 		out.append(d)
-	return {"ok": true, "v": 1, "name": "MoveEye Sim · 3D %s" % VERSION,
+	return {"ok": true, "v": 1, "name": Versionen.label(VERSION), "version": VERSION,
 				"scenarios": scenarios(), "scenario": Worlds.world_of(scene), "place": scene if Worlds.is_place(scene) else "",
 			"controls": out, "status": status_text(), "upload": null, "groups_on": _groups_on(),
 			"game": {"open": game != null and game.open, "url": game.address() if game != null and game.open else "", "players": game.count() if game != null else 0}}
@@ -4944,6 +4950,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return inhalte.control(d)
 	elif a == "umgebung":                              # 3D-4.x: {do: info | set (key, value) | spawn (kind) | snow_puff | clear_tracks}
 		return umgebung.control(d)
+	elif a == "statisten":                             # Paket «Statisten»: {do: info | set (mode, value) | spawn (n, group) | clear}
+		return statisten.control(d)
 	elif a == "menschen":                              # P10: {do: info | set (key, value) | spawn (kind) | api (id, fn, args) | probe (gait, dist, dark)}
 		return menschen.control(d)
 	elif a == "tiere":                                 # Paket «Tiere»: {do: info | spawn (kind, from, to) | threat (x, z, secs) | curl | pounce | car}
@@ -6023,13 +6031,14 @@ func _fold_state() -> String:
 		var o: bool = b.visible
 		all_open = all_open and o
 		all_closed = all_closed and not o
-		groups = groups and o == (not b in setting_bodies and b.get_meta("title", "") in ["Kameras"])
+		groups = groups and o == _fold_group_open(b)
 	for sb in sub_bodies:
 		if not is_instance_valid(sb) or not sb.has_meta("fold"):
 			continue
 		var so: bool = (sb.get_meta("fold") as Control).visible
 		all_open = all_open and so
 		all_closed = all_closed and not so
+		groups = groups and not so
 	if all_closed:
 		return "close"
 	if all_open:
@@ -6054,15 +6063,19 @@ func _fold_paint() -> void:
 				b.remove_theme_stylebox_override(n)
 
 
+func _fold_group_open(b: Control) -> bool:
+	"""«Nur Gruppen» like MoveEye (Paket angleich, Daniel 31.10.2026): the groups open, their parts (Themen) closed.
+	3D-4.12 (Daniel): «Verbindung» stays closed; «Tasten» is a help card, no group"""
+	return not str(b.get_meta("title", "")) in ["Verbindung", "Tasten"]
+
+
 func _fold_all(how: String, own := false) -> void:
 	"""own: pressed by the user (the three buttons) - kept as the own state like on the page of MoveEye; the start view is not"""
 	_fold_lit = "-"
 	for b in fold_bodies:
-		var open: bool = how == "open" or (how == "groups" and not b in setting_bodies and b.get_meta("title") in ["Kameras"])   # 3D-4.12 (Daniel): «Verbindung» stays closed
-		UI.set_open(b, open)
-	if how != "groups":
-		for sb in sub_bodies:
-			UI.set_sub_open(sb, how == "open")
+		UI.set_open(b, how == "open" or (how == "groups" and _fold_group_open(b)))
+	for sb in sub_bodies:
+		UI.set_sub_open(sb, how == "open")
 	if own:
 		for b in fold_bodies + sub_bodies:
 			_fold_keep(b)
