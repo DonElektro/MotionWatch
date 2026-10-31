@@ -12,11 +12,12 @@ extends Node
 ## letzten Rastplatz, der Kristall bleibt bei dir. Danach haben alle Tiere eine Pause und gehen zurück.
 ## Die Tiere jagen nur, wenn du den Kristall trägst (story.kristall_bei_spieler()).
 ##
-## Anbindung an S1 (scripts/maggie_story.gd, Zweig real-maggie-rahmen) – TODO verbinden mit maggie_story.gd:
-##   var g = preload("res://scripts/maggie_gefahr.gd").new(); g.main = main; g.story = self; add_child(g)
-##   Benutzt von der Story: region_aktiv(), spieler_pos(), kristall_bei_spieler(), erwischt(von), tipp(text),
-##   moveeye_sagt(text), region_mitte(id), Signal region_gestartet(id) (wird verbunden, wenn es das gibt; sonst wird
-##   region_aktiv() jede halbe Sekunde abgefragt). Fehlt die Story (noch nicht da / Tests): ein eigener kleiner Ersatz (_Stub).
+## Anbindung an S1 (scripts/maggie_story.gd, Zweig real-maggie-rahmen; API-Stand 79aecaa): die Story legt dieses Modul beim
+##   Öffnen als Kind an und setzt `main` und `story` (sonst sucht es main.maggie). Benutzt: region_aktiv(), spieler_pos(),
+##   spieler(), kristall_bei_spieler(), geschuetzt(), erwischt(von), tipp(text), moveeye_sagt(text), region_mitte(id),
+##   rastplatz_pos(), zukunftsbild_ort(pos, text), aufgabe_anmelden(id, text) / aufgabe_erledigt(id) (Aufgabe
+##   "schutz_<region>": das Schutzding finden), Signale region_gestartet / region_beendet / geschichte_beendet.
+##   Fehlt die Story (Tests über /control): ein eigener kleiner Ersatz (_Stub, freie Kamera = Spieler).
 ## Für S1/S2 (Maggie, liebe Tiere, Kristall-Zukunftsbilder, Speichern):
 ##   signal warnung(stufe, art, pos)    0 ruhig · 1 nah (Maggie knurrt) · 2 sehr nah (Maggie bellt) – S2 lässt Maggie reagieren
 ##   signal erwischt_von(art) · signal schutz_gefunden(id) · signal vertrieben(art)
@@ -55,11 +56,11 @@ const REGIONS := ["herbst", "winter", "fruehling", "sommer"]
 const TIER := {
 	"herbst": {"art": "wildschwein", "kind": "boar", "n": 3, "n_lite": 2, "sinn": 26.0, "jagd": 2.6, "fang": 1.3, "ruhe": 0.6},
 	"winter": {"art": "wolf", "kind": "wolf", "n": 3, "n_lite": 2, "sinn": 30.0, "jagd": 2.9, "fang": 1.4, "ruhe": 0.8},
-	"fruehling": {"art": "kraehen", "kind": "crow", "n": 9, "n_lite": 5, "sinn": 32.0, "jagd": 3.4, "fang": 1.7, "ruhe": 2.0},
+	"fruehling": {"art": "kraehe", "kind": "crow", "n": 9, "n_lite": 5, "sinn": 32.0, "jagd": 3.4, "fang": 1.7, "ruhe": 2.0},
 	"sommer": {"art": "viper", "kind": "viper", "n": 4, "n_lite": 3, "sinn": 9.0, "jagd": 0.4, "fang": 1.1, "ruhe": 0.0}}
 const SCHUTZ := {"herbst": "wasserflasche", "winter": "fackel", "fruehling": "kuhglocke", "sommer": "wanderstock"}
 const SCHUTZ_NAME := {"wasserflasche": "Wasserflasche", "fackel": "Fackel", "kuhglocke": "Kuhglocke", "wanderstock": "Wanderstock"}
-const ART_NAME := {"wildschwein": "Wildschweine", "wolf": "Wölfe", "kraehen": "Krähen", "viper": "Schlangen"}
+const ART_NAME := {"wildschwein": "Wildschweine", "wolf": "Wölfe", "kraehe": "Krähen", "viper": "Schlangen"}
 const WASSER_MAX := 4            # Spritzer pro Füllung (0,75-l-Flasche, je ein kräftiger Schwall)
 const FACKEL_MAX := 150.0        # Sekunden Brennzeit (Pechfackel: echt 15–30 Min.; im Spiel kürzer, damit man haushalten muss)
 const GNADE := 10.0              # nach «erwischt» / Regionsstart: so lange jagt kein Tier
@@ -92,6 +93,13 @@ const GEFUNDEN := {"wasserflasche": "Du hast die Wasserflasche! Wildschweine ver
 	"fackel": "Du hast die Fackel! Mit B zündest du sie an.",
 	"kuhglocke": "Du hast die Kuhglocke! Mit B läutest du sie laut.",
 	"wanderstock": "Du hast den Wanderstock! Mit B stampfst du auf den Boden."}
+const AUFGABE := {"wasserflasche": "Finde die Wasserflasche", "fackel": "Finde die Fackel", "kuhglocke": "Finde die Kuhglocke",
+	"wanderstock": "Finde den Wanderstock"}
+# Kristall-Zukunftsbilder (S1 zeigt sie): wo die bösen Tiere warten, wo das Schutzding liegt
+const ZUKUNFT := {"herbst": "Bei der Schlammsuhle warten Wildschweine.", "winter": "Hinter den Felsen warten Wölfe.",
+	"fruehling": "Auf dem kahlen Baum sitzen die Krähen.", "sommer": "Auf den warmen Steinen liegen Schlangen."}
+const ZUKUNFT_DING := {"wasserflasche": "Hier liegt eine Wasserflasche.", "fackel": "Hier liegt eine Fackel.",
+	"kuhglocke": "Hier liegt eine Kuhglocke.", "wanderstock": "Hier liegt ein Wanderstock."}
 # MoveEye ist einfach dabei: ein kurzer, kindgerechter Satz, was MoveEye jetzt machen würde (keine Technik-Wörter)
 const MOVEEYE := {
 	"herbst": ["MoveEye würde jetzt merken, dass sich im Laub etwas bewegt, und dir Bescheid geben.",
@@ -174,6 +182,11 @@ static func _lite() -> bool:
 static func hole(m) -> Node:
 	"""die Gefahr-Ebene von main (wird beim ersten Mal angelegt, z. B. für /control-Tests ohne Story)"""
 	var n = m.get_node_or_null("MaggieGefahr")
+	var st = m.get("maggie")
+	if n == null and st != null and st is Node:          # S1 legt das Modul als Kind der Story an
+		for c in (st as Node).get_children():
+			if c.get_script() != null and str(c.get_script().resource_path).ends_with("maggie_gefahr.gd"):
+				n = c
 	if n == null:
 		n = load("res://scripts/maggie_gefahr.gd").new()
 		n.name = "MaggieGefahr"
@@ -226,8 +239,8 @@ class _Stub extends RefCounted:
 
 	func region_mitte(id: String) -> Vector3:
 		var bt = g._bt()
-		var xz: Vector2 = {"herbst": Vector2(120, 110), "winter": Vector2(470, 300), "fruehling": Vector2(-90, 170),
-				"sommer": Vector2(-300, 300)}.get(id, Vector2.ZERO)
+		var xz: Vector2 = {"herbst": Vector2(-640, -200), "winter": Vector2(590, 360), "fruehling": Vector2(-110, -330),
+				"sommer": Vector2(-530, 480)}.get(id, Vector2.ZERO)     # wie maggie_story.gd MITTE (Tal-Koordinaten)
 		if bt != null:
 			return bt.WG(xz.x, xz.y)
 		var f: Vector2 = {"herbst": Vector2(0, -40), "winter": Vector2(40, 0), "fruehling": Vector2(0, 40), "sommer": Vector2(-40, 0)}.get(id, Vector2.ZERO)
@@ -244,10 +257,20 @@ func _connect_story() -> void:
 			if s != null and s is Object and (s as Object).has_method("region_aktiv"):
 				story = s
 				break
-	if story != null and story is Object and (story as Object).has_signal("region_gestartet"):
-		var cb := Callable(self, "_on_region_gestartet")
-		if not (story as Object).is_connected("region_gestartet", cb):
-			(story as Object).connect("region_gestartet", cb)
+	if story == null or not (story is Object):
+		return
+	var o := story as Object
+	for pair in [["region_gestartet", "_on_region_gestartet"], ["region_beendet", "_on_region_beendet"],
+			["geschichte_beendet", "_on_geschichte_beendet"]]:
+		if o.has_signal(pair[0]):
+			var cb := Callable(self, pair[1])
+			if not o.is_connected(pair[0], cb):
+				o.connect(pair[0], cb)
+
+
+func _hat_signal_start() -> bool:
+	"""die Story meldet den Start einer Region selbst (dann nicht schon beim Abfragen starten: die Szene ist evtl. noch nicht gebaut)"""
+	return story != null and is_instance_valid(story) and (story as Object).has_signal("region_gestartet")
 
 
 func _st():
@@ -306,7 +329,32 @@ func _bt():
 
 
 func _on_region_gestartet(id: String) -> void:
+	region = ""                                          # (eine neu gebaute Szene: alles neu anlegen, auch bei gleicher Region)
 	start(id)
+
+
+func _on_region_beendet(_id: String) -> void:
+	stop()
+
+
+func _on_geschichte_beendet() -> void:
+	stop()
+
+
+func _spieler_node() -> Node3D:
+	var n = _call("spieler")
+	return n if n is Node3D and is_instance_valid(n) else null
+
+
+func _geschuetzt() -> bool:
+	"""die Story sagt: gerade erwischt / Schreck / Karte offen / Pause – böse Tiere warten"""
+	var g = _call("geschuetzt")
+	return g != null and bool(g)
+
+
+func _rast() -> Vector3:
+	var r = _call("rastplatz_pos")
+	return r if r is Vector3 and r != Vector3.ZERO else Vector3(INF, 0, INF)
 
 
 # =======================================================================================================================
@@ -386,6 +434,8 @@ func _build_region() -> void:
 			for i in range(n):
 				_tier_neu("boar", _dens[i % _dens.size()] + Vector3(randf_range(-3, 3), 0, randf_range(-3, 3)))
 		"winter":
+			for d in _dens:
+				_deko.append(_felsen(d))
 			for i in range(n):
 				_tier_neu("wolf", _dens[i % _dens.size()] + Vector3(randf_range(-3, 3), 0, randf_range(-3, 3)))
 		"fruehling":
@@ -394,8 +444,13 @@ func _build_region() -> void:
 		"sommer":
 			for d in _dens:
 				_deko.append(_steinplatte(d))
+	for d in _dens:                                      # der Kristall darf die Verstecke als «Bild der Zukunft» zeigen
+		_call("zukunftsbild_ort", [d, T.t(ZUKUNFT[region])])
 	# das Schutzding: 12 … 20 m von der Mitte, auf der Seite zum Spieler hin (zu finden, aber nicht vor den Füssen)
 	var sid: String = SCHUTZ[region]
+	_call("aufgabe_anmelden", ["schutz_" + region, T.t(AUFGABE[sid])])
+	if schutz_hat(sid):
+		_call("aufgabe_erledigt", ["schutz_" + region])
 	if not schutz_hat(sid):
 		var a2 := base_a + PI + randf_range(-0.8, 0.8)
 		var at := _boden(c + Vector3(sin(a2), 0, cos(a2)) * randf_range(12.0, 20.0))
@@ -404,6 +459,7 @@ func _build_region() -> void:
 		_pickup.position = at + Vector3(0, 0.05, 0)
 		_root().add_child(_pickup)
 		_deko.append(_pickup)
+		_call("zukunftsbild_ort", [at, T.t(ZUKUNFT_DING[sid])])
 		var glow := OmniLight3D.new()                     # ein leiser Schimmer, damit man es in der Dämmerung findet
 		glow.light_color = Color(1.0, 0.92, 0.6)
 		glow.light_energy = 0.6
@@ -616,7 +672,7 @@ func _tick_schwarm(dt: float, now: float, sp: Vector3) -> void:
 	var cfg: Dictionary = TIER["fruehling"]
 	var head := sp + Vector3(0, 1.4, 0)
 	var flat := Vector2(head.x - c.x, head.z - c.z).length()
-	var jagt_ok := _kristall() and now > _gnade_bis and not _ist_sicher(sp)
+	var jagt_ok := _kristall() and now > _gnade_bis and not _ist_sicher(sp) and not _unter_baeumen(sp)
 	var st: String = s["st"]
 	var ziel := c
 	var spd := 2.0
@@ -651,7 +707,7 @@ func _tick_schwarm(dt: float, now: float, sp: Vector3) -> void:
 			if c.distance_to(head) < float(cfg["fang"]):
 				s["hold"] = float(s["hold"]) + dt
 				if float(s["hold"]) > 1.2:               # sie zupfen am Rucksack – kurzer Schreck, sie bekommen den Kristall nicht
-					_erwischt("kraehen")
+					_erwischt("kraehe")
 					return
 			if not jagt_ok:
 				st = "heim"
@@ -824,7 +880,7 @@ func _process(dt: float) -> void:
 			_connect_story()
 		var r := _region_aktiv()
 		if r != region:
-			if r in REGIONS:
+			if r in REGIONS and not _hat_signal_start():
 				start(r)
 			elif region != "":
 				stop()
@@ -1005,6 +1061,7 @@ func schutz_geben(id: String) -> void:
 	schutz_gefunden.emit(id)
 	if SCHUTZ.get(region, "") == id:
 		_halte(id)
+		_call("aufgabe_erledigt", ["schutz_" + region])
 	_save()
 	_update_box()
 
@@ -1018,6 +1075,10 @@ func _tick_schutz(dt: float, now: float, sp: Vector3) -> void:
 		wasser = WASSER_MAX
 		_say(T.t("Flasche am Bach aufgefüllt."), 3.0)
 		_ui_play("splash", -14.0)
+	if _rast().distance_to(sp) < 4.0 and ((schutz_hat("wasserflasche") and wasser < WASSER_MAX) \
+			or (schutz_hat("fackel") and fackel_zeit < FACKEL_MAX - 1.0 and not fackel_an)):
+		rastplatz()
+		_say(T.t("Am Rastplatz: Flasche und Fackel sind wieder voll."), 3.0)
 	if fackel_an:
 		fackel_zeit -= dt
 		if fackel_zeit <= 0.0:
@@ -1033,7 +1094,7 @@ func _tick_schutz(dt: float, now: float, sp: Vector3) -> void:
 func benutze() -> Dictionary:
 	"""das Schutzding der Region benutzen (Taste B / Knopf)"""
 	if region == "" or paused:
-		return {"ok": false, "error": "keine Region"}
+		return {"ok": false, "error": "keine_region"}
 	var id: String = SCHUTZ[region]
 	if not schutz_hat(id):
 		_say(T.t("Du hast hier noch kein Schutzding. Such zuerst danach!"), 3.0)
@@ -1072,7 +1133,7 @@ func benutze() -> Dictionary:
 				_schwarm["bis"] = _now() + 20.0
 				n = (_schwarm["birds"] as Array).size()
 				_laut("flap", _schwarm["c"], -6.0)
-				vertrieben.emit("kraehen")
+				vertrieben.emit("kraehe")
 			if _held != null:
 				var tw2 := create_tween()
 				tw2.tween_property(_held, "rotation:x", 0.5, 0.1)
@@ -1206,16 +1267,23 @@ func _zyl(top: float, bot: float, h: float) -> CylinderMesh:
 func _halte(id: String) -> void:
 	"""das Schutzding in der Hand: unten rechts im Bild (an der Kamera); die Fackel mit eigenem Licht"""
 	_drop_held()
-	if main.view_cam == null:
-		return
 	_held = _ding_modell(id)
-	var cam: Camera3D = main.view_cam
-	cam.add_child(_held)
-	_held.position = {"wasserflasche": Vector3(0.28, -0.32, -0.55), "fackel": Vector3(0.3, -0.62, -0.6),
-			"kuhglocke": Vector3(0.28, -0.3, -0.55), "wanderstock": Vector3(0.32, -1.0, -0.65)}[id]
-	for mi in _held.find_children("*", "MeshInstance3D", true, false):
-		(mi as MeshInstance3D).layers = 128              # main.HELPER_LAYER: nur das Fenster sieht es, nie eine Kamera von MoveEye
-		(mi as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var fig := _spieler_node()
+	if fig != null:                                     # die Spielfigur trägt es in der rechten Hand
+		fig.add_child(_held)
+		_held.position = {"wasserflasche": Vector3(0.3, 0.75, -0.12), "fackel": Vector3(0.32, 0.55, -0.25),
+				"kuhglocke": Vector3(0.3, 0.75, -0.12), "wanderstock": Vector3(0.34, 0.0, -0.3)}[id]
+	elif main.view_cam != null:                         # ohne Figur (freie Ansicht): unten rechts im Bild
+		(main.view_cam as Camera3D).add_child(_held)
+		_held.position = {"wasserflasche": Vector3(0.28, -0.32, -0.55), "fackel": Vector3(0.3, -0.62, -0.6),
+				"kuhglocke": Vector3(0.28, -0.3, -0.55), "wanderstock": Vector3(0.32, -1.0, -0.65)}[id]
+		for mi in _held.find_children("*", "MeshInstance3D", true, false):
+			(mi as MeshInstance3D).layers = 128          # main.HELPER_LAYER: nur das Fenster sieht es, nie eine Kamera von MoveEye
+			(mi as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	else:
+		_held.queue_free()
+		_held = null
+		return
 	if id == "fackel":
 		_held_light = OmniLight3D.new()
 		_held_light.light_color = Color(1.0, 0.68, 0.35)  # Flammenlicht ≈ 1900 K
@@ -1262,6 +1330,19 @@ func _kraehenbaum(p: Vector3) -> Node3D:
 	return n
 
 
+func _felsen(p: Vector3) -> Node3D:
+	"""Winter: ein paar grosse Felsblöcke – dahinter warten die Wölfe"""
+	var n := Node3D.new()
+	for i in range(3):
+		var h := randf_range(1.2, 2.2)
+		var m := _teil(n, main.box(randf_range(1.2, 2.0), h, randf_range(1.0, 1.6)), Vector3(randf_range(-2.0, 2.0), h * 0.45, randf_range(-2.0, 2.0)),
+				Color(0.42, 0.42, 0.44))
+		m.rotation = Vector3(randf_range(-0.15, 0.15), randf() * PI, randf_range(-0.15, 0.15))
+	_root().add_child(n)
+	n.global_position = p + Vector3(3.0, 0, 0)
+	return n
+
+
 func _steinplatte(p: Vector3) -> Node3D:
 	var n := Node3D.new()
 	for i in range(3):
@@ -1305,10 +1386,18 @@ func _stub_erwischt(_von: String) -> void:
 	_ui_play("schreck", -12.0)
 	_say(T.t("Huch! Das war knapp. Zurück zum Rastplatz – der Kristall ist noch bei dir."), 4.0)
 	var c := _mitte(region)
-	var cam: Camera3D = main.view_cam
-	cam.global_position = c + Vector3(0, 1.7, 0)
+	_versetze(c)
 	_last_pos = c
 	rastplatz()
+
+
+func _versetze(p: Vector3) -> void:
+	"""(Ersatz / Tests) die Figur – oder die freie Kamera – an einen Ort stellen"""
+	var fig := _spieler_node()
+	if fig != null:
+		fig.global_position = _boden(p)
+	else:
+		(main.view_cam as Camera3D).global_position = _boden(p) + Vector3(0, 1.7, 0)
 
 
 func sicher_hier(pos: Vector3, r := 12.0) -> void:
@@ -1316,10 +1405,22 @@ func sicher_hier(pos: Vector3, r := 12.0) -> void:
 
 
 func _ist_sicher(p: Vector3) -> bool:
+	"""am Rastplatz (10 m), an einem gemeldeten sicheren Ort oder solange die Story schützt, jagt kein Tier"""
+	if _geschuetzt() or _rast().distance_to(p) < 10.0:
+		return true
 	for s in _sicher:
 		if (s[0] as Vector3).distance_to(p) < float(s[1]):
 			return true
 	return false
+
+
+func _unter_baeumen(wp: Vector3) -> bool:
+	"""Frühling: im Wald sehen dich die Krähen schlechter (bergtal.gd forest_k: Anteil Wald am Ort)"""
+	var bt = _bt()
+	if bt == null:
+		return false
+	var q: Vector3 = bt.V(wp)
+	return Bergtal.forest_k(q.x, q.z, Bergtal.H(q.x, q.z)) > 0.55
 
 
 func _wasser_dist(wp: Vector3) -> float:
@@ -1357,7 +1458,7 @@ func naechste_gefahr() -> Dictionary:
 		var c: Vector3 = _schwarm["c"]
 		var d2 := c.distance_to(sp + Vector3(0, 1.4, 0))
 		if d2 < float(best["dist"]):
-			best = {"art": "kraehen", "pos": c, "dist": d2}
+			best = {"art": "kraehe", "pos": c, "dist": d2}
 	return best
 
 
@@ -1878,8 +1979,8 @@ func command(d: Dictionary) -> Dictionary:
 				var c := _mitte(region)
 				x += c.x
 				z += c.z
-			(main.view_cam as Camera3D).global_position = Vector3(x, main.ground_y(x, z) + 1.7, z)
-			if d.has("look_x"):
+			_versetze(Vector3(x, 0, z))
+			if d.has("look_x") and _spieler_node() == null:
 				(main.view_cam as Camera3D).look_at(Vector3(float(d["look_x"]), main.ground_y(float(d["look_x"]), float(d["look_z"])) + 0.5, float(d["look_z"])))
 		"near":                                                   # Tests: die Tiere dicht vor den Spieler holen
 			var sp := _spieler()
