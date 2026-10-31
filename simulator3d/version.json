@@ -1,9 +1,9 @@
 {
- "version": "3D-5.19.3",
- "ver": "3.19.3",
- "name": "MoveEye Sim 3.19.3",
+ "version": "3D-5.20.0",
+ "ver": "3.20.0",
+ "name": "MoveEye Sim 3.20.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35627655,
- "sha256": "0ff2f4bd44f62a88118283bd69123572919fff9447518089f57beafbd50a3506",
- "notes": "MoveEye Sim 3.19.3: Trailer/Vorführung – Stopp vom iPad lässt den Simulator nicht mehr schwarz, Knopf «× Zurück»."
+ "size": 35675710,
+ "sha256": "4649f896449fc04f14353eb40dd6d81e292ca51c1505865068e3dd86a53ff6ce",
+ "notes": "MoveEye Sim 3.20.0: Figuren leben mehr – Menschen, Tiere und Maggie mit neuen Bewegungen, Spuren im Schnee."
 }

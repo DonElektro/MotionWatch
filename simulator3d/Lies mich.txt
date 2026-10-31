@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.19.3 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.20.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.20.0
+3.20.0: Figuren leben mehr: Menschen atmen, schauen zu Geräuschen und Tieren, blinzeln, sprechen sichtbar, zittern in der
+Kälte, lehnen sich bergauf vor; High-Five, Klettern, Aufheben. Tiere äsen, schleichen, halten inne und kauen. Maggie gräbt,
+dass die Erde fliegt, schüttelt sich, duckt sich beim Knurren. Spuren im Schnee. Neuer Schalter «Ansicht wippt beim Gehen».
+So testest du: 1. Maggie stehen lassen: Sie setzt sich und legt sich hin. 2. «Graben» drücken. 3. Wetter auf Schnee
+stellen und laufen.
 
 NEU IN 3.19.3
 3.19.3: Trailer/Vorführung: Stopp am iPad lässt den Simulator nicht mehr schwarz (Kamera und Knöpfe kommen zurück, Knopf

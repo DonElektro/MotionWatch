@@ -508,6 +508,8 @@ func _name(fid: String) -> String:
 
 func _ask(text: String, opts: Array) -> void:
 	var t: Dictionary = _A()["talk"]
+	if _fig != null and is_instance_valid(_fig) and _fig.has_method("sprechen"):
+		_fig.sprechen(clampf(text.length() * 0.06, 1.0, 12.0))      # anim_mensch.gd: the mouth moves
 	ab._ask("a2_talk", _name(str(t["fid"])), text, opts, {"a2": {"leg": int(t["leg"]), "ctx": str(t["ctx"])}})
 
 

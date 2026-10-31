@@ -587,7 +587,7 @@ func _choose(now: float) -> Array:
 	var idle: String = a.idle_kind if now < a.idle_until else ""
 	var em: String = a.emote if now < a.emote_until else ""
 	var arms := [0.0, 0.0]
-	if v in ["cyclist", "escooter", "wheelchair"] or pr > 0.35 or a.stars != null or idle == "bend":
+	if v in ["cyclist", "escooter", "wheelchair"] or pr > 0.35 or a.stars != null or idle == "bend" or a.anim_voll:
 		return ["Idle_Loop", 1.0, 1.0, arms]
 	var c := "Idle_Loop"
 	var k := 1.0
@@ -615,7 +615,7 @@ func _choose(now: float) -> Array:
 		k *= 0.9
 	# the arms do something of their own (actor.gd): copy them from the joints
 	var own: bool = em != "" or now < a.startle_until or (a.carry and c != "Walk_Carry_Loop") or v == "stroller" \
-			or idle == "wave" or idle == "photo"
+			or idle == "wave" or idle == "photo" or a.anim_arme
 	if own:
 		arms = [1.0, 1.0]
 	elif idle in ["drink", "sitdrink", "talk"]:

@@ -16,6 +16,9 @@ var _next_birds := 0.0
 var _bats: Array = []            # [{node, wings, c: Vector3, r, w, ph, until}]
 var _next_bats := 0.0
 const Quality = preload("res://scripts/quality.gd")
+var _rig_alt := Vector3.INF      # «Animationen» 12: where the Mover was (once per frame)
+var _rig_f := -1
+var _rig_mv := false
 var _ground: Array = []          # birds on the ground: {node, head, tail, wings, kind, st, t, ...}
 var _next_ground := 0.0
 var _gscan := 0.0
@@ -276,11 +279,27 @@ func _threat_near(p: Vector3, r: float) -> bool:
 		if v.has_method("is_animal") and not v.done and not v.preview and (v.kind == "person" or v.kind in ["dog", "cat", "fox"] or (v.kind == "car" and v.cur_speed > 1.0)):
 			if Vector2(v.global_position.x - p.x, v.global_position.z - p.z).length() < r * (0.5 if v.kind == "car" else 1.0):
 				return true
+	if is_inside_tree():                                      # «Animationen» 12: players and figures of the games too
+		for f in get_tree().get_nodes_in_group("anim_figur"):
+			if f is Node3D and (f as Node3D).is_visible_in_tree() and Vector2((f as Node3D).global_position.x - p.x, (f as Node3D).global_position.z - p.z).length() < r:
+				return true
+	if main.mover_on and main.rig != null and _rig_faehrt() and Vector2(main.rig.global_position.x - p.x, main.rig.global_position.z - p.z).length() < r * 0.8:
+		return true                                           # the Mover drives up
 	if main.tiere != null and main.tiere._test_threat != null:
 		var tp: Vector3 = main.tiere._test_threat[0]
 		if Vector2(tp.x - p.x, tp.z - p.z).length() < r:
 			return true
 	return false
+
+
+func _rig_faehrt() -> bool:
+	var f := Engine.get_process_frames()
+	if f != _rig_f:
+		_rig_f = f
+		var q: Vector3 = main.rig.global_position
+		_rig_mv = _rig_alt != Vector3.INF and q.distance_to(_rig_alt) > 0.004
+		_rig_alt = q
+	return _rig_mv
 
 
 func _take_off(b: Dictionary, t: float) -> void:

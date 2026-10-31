@@ -1,8 +1,17 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.19.3** · MoveEye **3.19.3** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.20.0** · MoveEye **3.20.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.20.0 (MoveEye 3.20.0): Animationen (`anim_mensch.gd`, `anim_tier.gd`)
+
+- `anim_mensch.gd` / `anim_tier.gd`: Ergänzung **nach** der Grund-Animation von `actor.gd` (die Gelenke aus 3.18.0 bauen den
+  Körper; `anim.vorher()` nimmt die Änderungen des letzten Bildes zurück, `anim.post()` legt Atmen, Blick, Gesicht, Wetter,
+  Handlungen obendrauf). Handlungen über `actor.aktion()` (aufheben, klettern, highfive …), Mund über `actor.sprechen()`.
+  `anim_spuren.gd` (Spuren im Schnee), `anim_kamera.gd` (Schalter «Ansicht wippt beim Gehen»). Maggies `tail_wag` bleibt vor
+  `anim.post()`. Test `werkzeuge/anim_test.gd` (headless, in der Release-Kette; «Arme verschränkt» / «Hände in den Taschen»
+  scheitern selten, wenn die Testfigur nicht still steht).
 
 ## NEU in 3.19.3 (MoveEye 3.19.3): Trailer-Stopp ohne schwarzen Simulator
 
