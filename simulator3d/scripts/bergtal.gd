@@ -964,6 +964,7 @@ func _build(sc) -> void:
 	bib.finish()
 	_lights_and_fx()
 	_labels()
+	_erleben()
 	if season != "winter":
 		s.meadow(160 if lite else 420, 3.0, 35.0, func(p: Vector3):
 			var q := inv * p
@@ -979,6 +980,15 @@ func _build(sc) -> void:
 			"gen_ms": _gen_ms, "spot": spot, "season": season, "bed": bed, "lite": lite, "lib": bib.stats.duplicate(), "lamps": bib.lamps.size(),
 			"mem_static_mb": snappedf(float(OS.get_static_memory_usage()) / 1048576.0, 0.1)}, true)
 	print("Bergtal: %s, %s, %d ms (Gelände %d ms%s), %s" % [spot, season, info["ms"], t1 - t0, " aus dem Speicher" if not first else "", str(bib.stats)])
+
+
+# ---- lustige / versteckte Ereignisse (bergtal_erleben_a.gd: 1–17) ---------------------------------------------------------
+func _erleben() -> void:
+	var t0 := Time.get_ticks_msec()
+	var ea = preload("res://scripts/bergtal_erleben_a.gd").new()
+	ea.setup(self)
+	s.data["bt_erleben_a"] = ea
+	info["erleben_a_ms"] = Time.get_ticks_msec() - t0
 
 
 # ---- ground ------------------------------------------------------------------------------------------------------------
@@ -3325,6 +3335,11 @@ static func control(main, d: Dictionary) -> Dictionary:
 			return {"ok": true, "rating": bt.rating, "exposure": bt.exposure()}
 		"horn":
 			return bt.postauto_horn()
+		"erleben":                                       # Ereignisse 1–17: {what: info | where (id) | state (id, state, t, hold)}
+			var ea = main.scenes.data.get("bt_erleben_a", null)
+			if ea == null or not is_instance_valid(ea):
+				return {"ok": false, "error": "no vignettes"}
+			return ea.control(d)
 	return {"ok": true, "scene": main.scene, "bergtal": true, "spot": bt.spot, "season": bt.season, "bed": bt.bed, "spot_xz": [bt.spot_xz.x, bt.spot_xz.y],
 			"alt_m": int(bt.h0 + ALT0), "rating": bt.rating, "exposure": bt.exposure(), "info": bt.info, "spots": spot_options(),
 			"viewpoints": main.scenes.data.get("bt_viewpoints", []), "places": main.scenes.data.get("orte", []), "erlebnis": main.scenes.data.get("erlebnis", []),

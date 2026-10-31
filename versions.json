@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 06:12",
+ "generated": "2026-10-31 06:23",
  "versions": [
   {
-   "version": "2.98.65",
-   "file": "webcam_bewegung_2_98_65.py",
+   "version": "2.98.66",
+   "file": "webcam_bewegung_2_98_66.py",
    "url": "",
-   "sha256": "8de67c8ef6b380f9c08e1822eacc8d2313ebf924180cf8e20db30ad0b725c7d6",
-   "date": "2026-10-31 06:12",
-   "notes": "Simulator 3D-4.34: neue Welt «Bergtal» (2 × 2 km) und Szenen zusammengefasst – Welten Bergtal, Ferienpark, Zuhause mit den alten Szenen als Orte; alte Kennungen gehen weiter, Trainingsnacht lädt Orte allein.",
-   "sig": "ad42de7d0bde3ba7ca001ec914719dc16a575c2e3f975fe182ee4f530064cc0258f23fedaea1186847b2334346a2198e3e960735d3b387ec50a8135388ab730c"
+   "sha256": "f187faf456f0f24070722488ce93ef2eed4f3e26a4263450c390b94ea433746a",
+   "date": "2026-10-31 06:23",
+   "notes": "Simulator 3D-4.35: Erlebnisse im Bergtal – 17 kleine Szenen mit Tieren und Menschen im Entdeckungsbuch (Murmeltiere, Schafstau, Fondue mit Fuchs, Alphorn …).",
+   "sig": "d31b59af749bf758bd62f2c446225dc87da4c94d040c9b723bd330ddcd859671b714a9f80569d61e01c44f3f39cf3fa88fbbea153252a8e418aa26bd96c68f02"
   },
   {
    "version": "2.97.1",
