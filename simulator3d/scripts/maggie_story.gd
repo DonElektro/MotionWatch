@@ -246,7 +246,7 @@ func tor_pos() -> Vector3:
 
 
 func tipp(text: String) -> void:
-	if _tipp == null:
+	if _tipp == null or not running:                     # (Paket «Dauer»: nach dem Verlassen blieb ein Tipp im Bild stehen)
 		return
 	_tipp.text = text
 	_tipp.visible = true
@@ -254,7 +254,7 @@ func tipp(text: String) -> void:
 
 
 func moveeye_sagt(text: String) -> void:
-	if _me_lbl == null:
+	if _me_lbl == null or not running:
 		return
 	_me_lbl.text = text
 	_me_box.visible = true
@@ -673,6 +673,10 @@ func stop() -> void:
 	_close_cards()
 	if _hud != null:
 		_hud.visible = false
+	if _tipp != null:
+		_tipp.visible = false
+	if _me_box != null:
+		_me_box.visible = false
 	if _zk_fx != null:
 		_zk_fx.visible = false
 	if _credits != null:
