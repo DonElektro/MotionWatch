@@ -129,6 +129,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `591_web_weitwinkel.py` | Weitwinkel-Bild als Kachel 🔭 (Simulator-Zentrale 139 und Sim-Kompakt 549, über /cam_feed, antippen = gross), Montage wählen, Schalter «IR-Licht breit (Kanal 4)», Zustand an den Simulator (lights.ir_wide), Selbsttest zu 163 | 167 |
 | `593_fenster_aufraeumen.py` | Fenster: Gruppe «Tierart» in der KI-Erkennung (wie «KI-Modell») | 37 |
 | `635_uebersetzungen_blinki.py` | Übersetzungen und Anleitungs-Zeile zu Blinki | 60 |
+| `635a_spieltest.py` | Spieltest-Meldungen: der Spieltest-Assistent des 3D-Simulators (spieltest.gd, world_reply «spieltest») meldet jede Runde kurz, MoveEye schickt sie über den Hauptkanal des Push – nur mit dem Schalter «Spieltest-Meldungen» (Entwickler, Standard aus); Zustand «spieltest» zurück, mw_cmd «spieltest_push», Selbsttest | 140 |
 | `594_uebersetzungen_kihilfe.py` | Übersetzungen für die «KI-Hilfe» am Auslöser (542) | 25 |
 | `595_fenster_simstopp.py` | Fenster: «⏹ Stopp» (Not-Aus) in der Simulation ausblenden | 75 |
 | `596_uebersetzungen_vier.py` | Übersetzungen für «MoveEye als KI-Wächter» (548) | 32 |
