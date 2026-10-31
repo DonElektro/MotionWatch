@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_62.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_65.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,13 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.65: Simulator 3D-4.34: neue Welt «Bergtal» (2 × 2 km) und Szenen zusammengefasst – Welten Bergtal, Ferienpark, Zuhause
+    mit den alten Szenen als Orte; alte Kennungen gehen weiter, Trainingsnacht lädt Orte allein.
+  * 2.98.64: Simulator 3D-4.33: Weitwinkel-Kamera wie im Gehäuse v5.2 – Montage «Im Gehäuse (v5.2)» (Standard) und «Nicht
+    verbaut (Blindstopfen)», Fischauge wie das echte Objektiv, kleine IR-LED; Kachel 🔭 mit den neuen Knöpfen.
+  * 2.98.63: Simulator 3D-4.32: Gameplay ausgefeilt – Probe-Runde mit Blinki, Wiederholung und Höhepunkte, Missionen,
+    Nacht-Spiel, neue Werkzeuge, Turnier, Fairness, «MoveEye ins Schwitzen», KI-Turm (Rangliste auch in MoveEye), Abzeichen pro
+    Szene.
   * 2.98.62: Simulator 3D-4.31: Nacht-Testlauf – ganze Nacht im Simulator mit Wahrheit, Abgleich in MoveEye, Bericht /nacht (nur
     der Besitzer startet); Trainings-Nacht 🏋 und Nacht-Generalprobe 🎭 mit eigenen Symbolen.
   * 2.98.61: Simulator 3D-4.30: Erlebniswelt im «Ferienpark am See» – 19 kleine Szenen mit Tieren und Menschen im
@@ -1022,10 +1029,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_62.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_65.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_62.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_62.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_65.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_65.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -1042,7 +1049,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.62"
+APP_VERSION = "2.98.65"
 
 
 def default_data_dir():
@@ -13098,7 +13105,7 @@ def _train_thread(manual):
                     break
                 TRAIN["step"] = f"{sc} · {plan}"
                 try:
-                    sim_control({"action": "scenario", "id": sc})
+                    sim_control({"action": "scenario", "id": sc, "solo": True})   # Simulator-Welten: der alte Ort allein (vergleichbar)
                 except Exception:
                     pass
                 time.sleep(4)
@@ -13112,7 +13119,7 @@ def _train_thread(manual):
             worst = min(res, key=lambda x: x["score"] if x["score"] is not None else 999)
             TRAIN["step"] = "optimizing: " + worst["scene"] + " · " + worst["plan"]
             try:
-                sim_control({"action": "scenario", "id": worst["scene"]})
+                sim_control({"action": "scenario", "id": worst["scene"], "solo": True})
             except Exception:
                 pass
             time.sleep(4)
@@ -16691,6 +16698,10 @@ def _kopf_ov_tick(now):
 #    a change of the position) - 440 asks weit_cam_turning().
 #  - Rear mount: movement behind -> the head turns there (162 _kopf_ov_tick, same rank as «turn to the alarm»), then the
 #    AI of the main camera checks.
+#  - P9 (31.10.2026, simulator: weitwinkel.gd): mount «case» = built into case v5.2 (front wall above the PIR, fixed, 12°
+#    down, the head turns above it) - a device mount like «base"; «none» = not built in, blind cover: no picture (the
+#    simulator answers /cam/1 with 404), not the overview; 591 says «not installed» instead of «simulator not reachable».
+#    The picture is an equidistant fisheye (angle linear in the picture) - kopf_ov_deg's (cx - 0.5) * fov is exact for it.
 #  - Second infrared LED 120° on PCA9685 channel 4 («IR-Licht breit (Kanal 4)»): on / off together with the infrared
 #    light (070 lights_tick); the simulator gets lights.ir_wide.
 # ----------------------------------------------------------------------------
@@ -16698,7 +16709,7 @@ for _k, _v in {"light_ir_wide": False, "kopf_ov_simauto": False}.items():
     CFG.setdefault(_k, _v)
     DEFAULTS.setdefault(_k, _v)
 WEIT = {"mount": None, "seen": False, "hd": None, "hd_t": 0.0, "pt": None, "pt_t": 0.0}
-WEIT_DEVICE_MOUNTS = ("base", "head_front", "head_rear")
+WEIT_DEVICE_MOUNTS = ("case", "base", "head_front", "head_rear")   # P9: + «case» (case v5.2)
 WEIT_IR_CH = 4                                            # PCA9685 channel of the wide infrared LED (white 2, IR 3 by convention)
 
 
@@ -16722,13 +16733,19 @@ def weit_on_device():
     return weit_mount() in WEIT_DEVICE_MOUNTS
 
 
+def weit_missing():
+    """P9: the simulator says its wide camera is not built in (blind cover)"""
+    c = weit_sim_cam()
+    return bool(c) and (str(c.get("mount") or "") == "none" or c.get("installed") is False)
+
+
 def weit_from_sim(w):
     """350: the reply to POST /state carries «wide» - a new mount is known at once (no new /info needed)"""
     if not isinstance(w, dict) or not CFG.get("sim_on"):
         return
     c = weit_sim_cam()
     if c is not None:
-        for k in ("mount", "tilt_deg", "yaw_offset", "pan_follow", "tilt_follow", "on_head", "fov_h", "fov_v", "pan_limit"):
+        for k in ("mount", "tilt_deg", "yaw_offset", "pan_follow", "tilt_follow", "on_head", "fov_h", "fov_v", "pan_limit", "installed"):
             if k in w:
                 c[k] = w[k]
     weit_auto()
@@ -16751,7 +16768,8 @@ def weit_auto():
     elif cur == "sim:1" and CFG.get("kopf_ov_simauto"):
         CFG["kopf_ov"] = ""; CFG["kopf_ov_simauto"] = False; changed = True
         if not first:
-            log_event("servo", "Simulator: the wide camera is on the mast again - no longer the overview of the head")
+            log_event("servo", "Simulator: the wide camera is not built in (blind cover) - no overview of the head" if m == "none"
+                      else "Simulator: the wide camera is on the mast again - no longer the overview of the head")
     if changed:
         save_settings()
 
@@ -16869,7 +16887,7 @@ def weit_state(lang=None):
     if not c or "mount" not in c:
         return None
     n = next((x.idx for x in CAMS if str(x.spec) == "sim:1"), None)
-    return {"mount": str(c.get("mount")), "on_head": bool(c.get("on_head")), "tilt": c.get("tilt_deg"), "n": n,
+    return {"mount": str(c.get("mount")), "on_head": bool(c.get("on_head")), "tilt": c.get("tilt_deg"), "n": n, "missing": weit_missing(),
             "ov": str(CFG.get("kopf_ov") or "") == "sim:1", "ov_on": bool(CFG.get("kopf_ov_on")), "fov": [c.get("fov_h"), c.get("fov_v")]}
 # ----------------------------------------------------------------------------
 # Decisions Daniel 30.10.2026 21:55 (docs/Gehaeuse_Variante2_Weitwinkel.md, «Status-LED oben auf dem Kopf»):
@@ -25550,8 +25568,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.31", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 65220826,
-         "sha256": "ffcbe1af006abfb14247dbd0eb6d33f8752a56ead4d425c018426d718e56e311"}
+SIM3D = {"version": "3D-4.34", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 65843704,
+         "sha256": "b91ad36a479476cff167c96643a1c6160c8c97439b80d7a308a02590cc632fc8"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -32661,7 +32679,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_62.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_65.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -58221,7 +58239,8 @@ WEB_PAGE = WEB_PAGE.replace("</body>", USERS_JS + "</body>", 1)
 KIG_KEYS = ["MoveEye as AI guard", "In rounds with a guard role (guard, team against team, team against MoveEye, online rounds) MoveEye itself is the guard: everybody sneaks, MoveEye's real detection watches, the head follows and the shutter fires by itself. Such rounds go into their own list «against the AI», not into the ranking.", "On: MoveEye guards rounds with a guard role itself", "This round: MoveEye guards (AI)",
             "MoveEye is not connected to the simulator game", "Against the AI", "rounds", "caught", "at the goal", "never caught",
             "The AI", "catches", "false alarms", "shots", "Reset the list «against the AI»", "Reset the list «against the AI»?",
-            "not supported - update the simulator", "no rounds against the AI yet"]
+            "not supported - update the simulator", "no rounds against the AI yet",
+            "AI tower", "floor", "highest floor", "towers", "AI tower now: floor", "Start the AI tower: quick start «KI-Turm» in the game wizard"]
 
 KIG_JS = r"""<script>
 Object.assign(I18N.de, /*KIGDE*/{});
@@ -58254,6 +58273,15 @@ Object.assign(I18N.de, /*KIGDE*/{});
       const rb = el("button", "sec", t("Reset the list «against the AI»")); rb.type = "button"; rb.style.marginTop = "6px";
       rb.onclick = async () => { if (!confirm(t("Reset the list «against the AI»?"))) return; await post("/api/sim", {action: "ctl", ctl: "press", id: "game_kig_reset", lang: LANG}); SIG = ""; poll(true); };
       D.appendChild(rb); }
+    // Gameplay ausfeilen (simulator 31.10.2026): the AI tower - the highest floor per player, also «against the AI»
+    const TW = K.turm || [];
+    const th = el("div", "", "🗼 " + t("AI tower")); th.style.cssText = "margin-top:8px;font-weight:600"; D.appendChild(th);
+    if (K.turm_on) D.appendChild(el("div", "", "🗼 " + t("AI tower now: floor") + " " + K.turm_floor));
+    if (!TW.length) D.appendChild(el("div", "mut", t("Start the AI tower: quick start «KI-Turm» in the game wizard")));
+    else { const tb2 = el("table", "gw-board");
+      TW.forEach((b, i) => { const tr = el("tr"); tr.append(el("td", "", (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + " " + b.n), el("td", "", t("floor") + " " + b.best + (b.ki ? " 🛡" : "")),
+        el("td", "mut", (b.towers || 0) + " " + t("towers"))); tb2.appendChild(tr); });
+      D.appendChild(tb2); }
   }
   let tm = null;
   async function poll(now) {
@@ -61985,6 +62013,9 @@ _HX_szenen = {
     'Bike thief': ('Velodieb', 'Voleur de vélo', 'Ladro di bici', 'Lader da velo'),
     'Tracking course': ('Verfolgungs-Parcours', 'Parcours de suivi', 'Percorso di inseguimento', 'Parcours da persequitar'),
     'Holiday park by the lake': ('Ferienpark am See', 'Parc de vacances au bord du lac', 'Parco vacanze sul lago', 'Parc da vacanzas al lai'),
+    'Mountain valley (alp, lake, pass)': ('Bergtal (Alp, See, Pass)', 'Vallée de montagne (alpage, lac, col)', 'Valle alpina (alpe, lago, passo)', 'Val da muntogna (alp, lai, pass)'),
+    # Simulator-Welten (31.10.2026): die alten Szenen sind Orte in den Welten Bergtal, Ferienpark und Zuhause
+    'At home (house, garden, building site)': ('Zuhause (Haus, Garten, Baustelle)', 'À la maison (maison, jardin, chantier)', 'A casa (casa, giardino, cantiere)', 'A chasa (chasa, curtin, plazza da construcziun)'),
 }
 # German comes from the simulator itself (and DE is only made in part 560, after this part) - here only fr / it / rm
 for _k, _v in _HX_szenen.items():
@@ -66586,6 +66617,11 @@ _HX_weit = {
          'Glisch IR largia (chanal 4): segunda LED IR 120° sin il chanal 4 dal PCA9685, en / ora cun la glisch infraritga'),
     'Simulator wide camera': ('Simulator-Weitwinkel', 'Grand-angle du simulateur', 'Grandangolo del simulatore', 'Grond angul dal simulatur'),
     'Wide camera': ('Weitwinkel-Kamera', 'Caméra grand-angle', 'Telecamera grandangolare', 'Camera da grond angul'),
+    'In the case (v5.2)': ('Im Gehäuse (v5.2)', 'Dans le boîtier (v5.2)', 'Nella custodia (v5.2)', 'En la chaschetta (v5.2)'),
+    'Not installed (blind cover)': ('Nicht verbaut (Blindstopfen)', 'Non montée (cache)', 'Non montata (tappo cieco)', 'Betg montada (zaffer)'),
+    'Not installed (blind cover) - no wide picture': ('Nicht verbaut (Blindstopfen) – kein Weitwinkel-Bild',
+        'Non montée (cache) – pas d’image grand-angle', 'Non montata (tappo cieco) – nessuna immagine grandangolare',
+        'Betg montada (zaffer) – nagin maletg da grond angul'),
     'Mast (scene)': ('Mast (Szene)', 'Mât (scène)', 'Palo (scena)', 'Pal (scena)'),
     'Base front, fixed': ('Unterteil vorne, fest', 'Socle avant, fixe', 'Base davanti, fissa', 'Part sut davant, fixa'),
     'Head front': ('Kopf vorne', 'Tête avant', 'Testa davanti', 'Chau davant'),
@@ -66615,7 +66651,11 @@ for _a, _b in (('<section id="camera" data-icon="📷"><h2>Kamera &amp; Servos</
                 "<i>Kopf vorne</i> oder <i>Kopf hinten</i> (dreht mit). Sitzt sie am Gerät, stellt MoveEye «Übersicht lenkt den Kopf» selbst "
                 "ein: Bewegung im Weitwinkel-Bild dreht den Kopf dorthin, dann prüft die KI der Hauptkamera; solange der Kopf dreht, zählt "
                 "die Bewegung im Weitwinkel-Bild nicht. Auf dem Kopf gilt eine Drehgrenze (Kabel; 360°-Servos bräuchten einen Schleifring). "
-                "Die zweite IR-LED 120° schaltest du mit «IR-Licht breit (Kanal 4)» unter Licht.</p>"),
+                "Die zweite IR-LED 120° schaltest du mit «IR-Licht breit (Kanal 4)» unter Licht.</p>"
+                "<p><b>Im Gehäuse (v5.2):</b> Standard-Montage im Simulator – wie das echte Gehäuse v5.2: fest in der Stirnwand über "
+                "dem PIR, 12° nach unten, der Kopf dreht darüber. Das Bild ist ein Fischauge (120° diagonal, gebogene Linien am Rand, "
+                "dunklere Ecken); nachts beleuchtet die kleine 5-mm-IR-LED (Kanal 4) nur die Nähe (ca. 4 m). "
+                "<i>Nicht verbaut (Blindstopfen)</i>: kein Weitwinkel-Bild, die Zusatzkamera meldet «nicht verbaut».</p>"),
                ('<section id="camera" data-icon="📷"><h2>Camera &amp; servos</h2>',
                 "<p><b>🔭 Wide camera in the simulator (simulator 3D-4.17):</b> the former «fixed camera» of the simulator is now the wide "
                 "camera (Camera Module 3 Wide NoIR, 102° × 67°). In Simulator → camera picture → «Weitwinkel-Kamera» or with the tile 🔭 "
@@ -66623,7 +66663,11 @@ for _a, _b in (('<section id="camera" data-icon="📷"><h2>Kamera &amp; Servos</
                 "<i>head rear</i> (turns with the head). On the device MoveEye sets «The overview camera steers the head» by itself: "
                 "movement in the wide picture turns the head there, then the AI of the main camera checks; while the head turns, movement "
                 "in the wide picture does not count. On the head a pan limit applies (cable; 360° servos would need a slip ring). The "
-                "second IR LED 120° is switched with «Wide infrared light (channel 4)» under Lights.</p>")):
+                "second IR LED 120° is switched with «Wide infrared light (channel 4)» under Lights.</p>"
+                "<p><b>In the case (v5.2):</b> the default mount in the simulator - like the real case v5.2: fixed in the front wall "
+                "above the PIR, 12° down, the head turns above it. The picture is a fisheye (120° diagonal, bent lines at the edges, "
+                "darker corners); at night the small 5 mm IR LED (channel 4) lights only the near field (about 4 m). "
+                "<i>Not installed (blind cover)</i>: no wide picture, the extra camera says «not installed».</p>")):
     if _a in HELP_PAGE:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 # key = English text: (Deutsch, Français, Italiano, Rumantsch)
@@ -67532,7 +67576,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.62")
+        self.root.title("MoveEye 2.98.65")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -67899,7 +67943,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.62 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.65 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -80857,7 +80901,7 @@ def sim_hub_do(a, v=None):                                # + 591: «wide_mount�
     if a != "wide_mount":
         return _sim_hub_do_139(a, v)
     m = str(v or "")
-    if m not in ("scene",) + WEIT_DEVICE_MOUNTS:
+    if m not in ("scene", "none") + WEIT_DEVICE_MOUNTS:
         return False, "invalid value"
     try:
         r = sim_control({"action": "set", "id": "wide_mount", "value": m})
@@ -80866,10 +80910,19 @@ def sim_hub_do(a, v=None):                                # + 591: «wide_mount�
     if r.get("ok", True):
         c = weit_sim_cam()
         if c is not None:                                  # the next state reply says it too - but the tile shows it at once
-            c.update(mount=m, on_head=m.startswith("head_"), yaw_offset=180.0 if m == "head_rear" else 0.0)
+            c.update(mount=m, on_head=m.startswith("head_"), yaw_offset=180.0 if m == "head_rear" else 0.0, installed=m != "none")
             weit_auto()
     _SIMHUB["t"] = 0.0
     return bool(r.get("ok", True)), str(r.get("error") or "")
+
+
+_open_source_210 = open_source
+
+
+def open_source(spec, thermal=False):                     # + 591 (P9): blind cover - say so instead of «not reachable»
+    if not thermal and str(spec) == "sim:1" and weit_missing():
+        return None, spec, source_label(spec), "wide camera not installed (blind cover)"
+    return _open_source_210(spec, thermal)
 
 
 _source_label_200 = source_label
@@ -80894,7 +80947,8 @@ WIDE_JS = r"""
 <script>
 (function () {
   const DE = /*WDE*/{};
-  const M = [["scene", "Mast (scene)"], ["base", "Base front, fixed"], ["head_front", "Head front"], ["head_rear", "Head rear"]];
+  const M = [["case", "In the case (v5.2)"], ["scene", "Mast (scene)"], ["base", "Base front, fixed"], ["head_front", "Head front"], ["head_rear", "Head rear"],
+             ["none", "Not installed (blind cover)"]];
   const L = () => { try { return (typeof LANG !== "undefined" && LANG) || document.documentElement.lang || "de"; } catch (e) { return "de"; } };
   let merged = false;
   const merge = () => { if (merged) return; try { if (typeof I18N !== "undefined" && I18N.de) { for (const k in DE) if (!(k in I18N.de)) I18N.de[k] = DE[k]; merged = true; } } catch (e) {} };
@@ -80931,9 +80985,11 @@ WIDE_JS = r"""
       if (!w) { s.appendChild(E("div", "mut", tt("not supported - update the simulator"))); return; }
       N = w.n; s.appendChild(pic());
       LAB.textContent = "🔭 " + tt("Wide camera") + " · " + name(w.mount);
-      if (N == null) WAIT.textContent = tt("The wide camera is not an extra camera of MoveEye");
+      if (w.missing) { WAIT.textContent = tt("Not installed (blind cover) - no wide picture"); WAIT.hidden = false; N = null; }
+      else if (N == null) WAIT.textContent = tt("The wide camera is not an extra camera of MoveEye");
       M.forEach(([k, lb]) => { const b = E("button", k === w.mount ? "" : "sec", tt(lb)); b.type = "button"; b.onclick = () => act("wide_mount", k); s.appendChild(b); });
-      s.appendChild(E("div", "mut mwwnote", w.mount === "scene" ? tt("On the mast: not part of the device - it does not steer the head by itself.")
+      s.appendChild(E("div", "mut mwwnote", w.missing ? tt("Not installed (blind cover) - no wide picture")
+        : w.mount === "scene" ? tt("On the mast: not part of the device - it does not steer the head by itself.")
         : w.ov ? "⟲ " + tt("Steers the head as overview («The overview camera steers the head»)") + (w.ov_on ? "" : " – " + tt("off"))
         : tt("Overview chosen by hand - not changed.")));
       setTimeout(feed, 30);
@@ -80942,7 +80998,8 @@ WIDE_JS = r"""
 })();
 </script>
 """
-WIDE_KEYS = ("Wide camera", "Mast (scene)", "Base front, fixed", "Head front", "Head rear",
+WIDE_KEYS = ("Wide camera", "In the case (v5.2)", "Not installed (blind cover)", "Not installed (blind cover) - no wide picture",
+             "Mast (scene)", "Base front, fixed", "Head front", "Head rear",
              "The wide camera is not an extra camera of MoveEye", "On the mast: not part of the device - it does not steer the head by itself.",
              "Steers the head as overview («The overview camera steers the head»)", "Overview chosen by hand - not changed.")
 _simhub_head_139 = simhub_head
@@ -80971,6 +81028,11 @@ def weit_selftest():
         weit_from_sim({"mount": "head_rear"}); assert CFG["kopf_ov"] == ""
         weit_from_sim({"mount": "base", "yaw_offset": 0.0, "on_head": False})
         assert CFG["kopf_ov"] == "sim:1" and abs(kopf_ov_deg(0.25) + 25.5) < 0.01
+        weit_from_sim({"mount": "case", "yaw_offset": 0.0, "on_head": False, "installed": True})      # P9: case v5.2
+        assert CFG["kopf_ov"] == "sim:1" and abs(kopf_ov_deg(1.0) - 51.0) < 0.01 and not weit_missing()
+        weit_from_sim({"mount": "none", "yaw_offset": 0.0, "on_head": False, "installed": False})    # P9: blind cover
+        assert CFG["kopf_ov"] == "" and weit_missing() and "blind cover" in open_source("sim:1")[3]
+        weit_from_sim({"mount": "case", "installed": True}); assert CFG["kopf_ov"] == "sim:1"
         weit_from_sim({"mount": "scene", "yaw_offset": 0.0, "on_head": False})
         assert CFG["kopf_ov"] == "" and not CFG["kopf_ov_simauto"]
         CFG.update(light_ir_wide=True, light_white_out="pca:4")
@@ -81272,6 +81334,13 @@ _HX_VIER = {
     'Reset the list «against the AI»': ('Liste «gegen die KI» zurücksetzen', 'Réinitialiser la liste «contre l’IA»', 'Azzerare la lista «contro l’IA»', 'Reinizialisar la glista «cunter la IA»'),
     'Reset the list «against the AI»?': ('Liste «gegen die KI» zurücksetzen?', 'Réinitialiser la liste «contre l’IA» ?', 'Azzerare la lista «contro l’IA»?', 'Reinizialisar la glista «cunter la IA»?'),
     'no rounds against the AI yet': ('noch keine Runden gegen die KI', 'encore aucune manche contre l’IA', 'ancora nessun turno contro l’IA', 'anc naginas rundas cunter la IA'),
+    # Gameplay ausfeilen (31.10.2026): the AI tower of the simulator (gameturm.gd)
+    'AI tower': ('KI-Turm', 'Tour de l’IA', 'Torre dell’IA', 'Tur da la IA'),
+    'floor': ('Stufe', 'étage', 'livello', 'stgalim'),
+    'highest floor': ('höchste Stufe', 'étage le plus haut', 'livello più alto', 'il stgalim il pli aut'),
+    'towers': ('Türme', 'tours', 'torri', 'turs'),
+    'AI tower now: floor': ('KI-Turm läuft: Stufe', 'Tour de l’IA en cours : étage', 'Torre dell’IA in corso: livello', 'Tur da la IA en curs: stgalim'),
+    'Start the AI tower: quick start «KI-Turm» in the game wizard': ('KI-Turm starten: Schnellstart «KI-Turm» im Spiel-Assistenten', 'Lancer la tour de l’IA : départ rapide «KI-Turm» dans l’assistant de jeu', 'Avviare la torre dell’IA: avvio rapido «KI-Turm» nell’assistente di gioco', 'Lantschar la tur da la IA: start svelt «KI-Turm» en l’assistent da gieu'),
 }
 for _k, _v in _HX_VIER.items():
     DE.setdefault(_k, _v[0])

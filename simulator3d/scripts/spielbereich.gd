@@ -22,7 +22,7 @@ const SAVE := "user://spiel/spielbereich.json"
 const CHAPTERS := [["camping", "Camping-Platz", "Der erste Abend: Zelt, Feuerstelle und neugierige Tiere.", "⛺", "Camper"],
 		["ferienpark", "Ferienpark", "Ein grosser Platz am See – viele Leute, viel zu entdecken.", "🏖", "Feriengast"],
 		["bergtal", "Bergtal", "Alp, See und Pass – einsam und wild.", "⛰", "Bergfuchs"],
-		["zuhause", "Zuhause", "Dein eigenes Zuhause, selbst gebaut.", "🏠", "Heimwächter"]]
+		["daheim", "Zuhause", "Haus, Garten und Baustelle – zu Hause aufpassen.", "🏠", "Heimwächter"]]
 # experience points of the level (own curve, gentler than gamexp.gd: 2 = 100, 3 = 300, 4 = 600, 5 = 1000 …)
 const XP_DISC := 10                        # per discovery
 const XP_BADGE := 25                       # per different badge (game or chapter)
@@ -135,7 +135,7 @@ func chapters() -> Array:
 		var f: int = main.entdecken.count(id) if main.entdecken != null else 0
 		var n: int = main.entdecken.total(id) if main.entdecken != null else 0
 		var vis: bool = id in data["visited"] or n > 0
-		var done: bool = vis and (f >= n if n > 0 else true) and (n > 0 or id == "zuhause")
+		var done: bool = vis and (f >= n if n > 0 else true) and n > 0
 		var st := "locked"
 		if not ex:
 			st = "soon"

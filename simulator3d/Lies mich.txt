@@ -421,6 +421,27 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.34
+3D-4.34: Neue Welt «Bergtal» (2 × 2 km: Alp, Seen, Pass, Gletscher, Wanderwege, Schlafplätze). Die Szenen sind
+zusammengefasst: statt 20 Szenen die Welten Bergtal, Ferienpark und Zuhause (alte Szenen = «Ort in dieser Welt») plus
+Camping-Platz, Ort von der Karte und eigene. Alte Szenen gehen weiter; Experte: «Alte Szenen allein laden».
+Bergtal-Regler unter «Szene» erscheinen nur im Bergtal.
+So testest du: 1) Szene → «Bergtal», «Ort in dieser Welt» → Schattwald: Kopfkamera ansehen. 2) Szene → «Zuhause» →
+Schlafzimmer. 3) Andere Szene wählen: die Bergtal-Regler verschwinden.
+
+NEU IN 3D-4.33
+3D-4.33: Weitwinkel-Kamera wie im Gehäuse v5.2: neue Montage «Im Gehäuse (v5.2)» (Standard) und «Nicht verbaut
+(Blindstopfen)»; Fischauge wie das echte Objektiv (gebogener Rand, dunklere Ecken), nachts eine kleine IR-LED (ca. 4 m).
+So testest du: 1) Kamerabild → Weitwinkel-Kamera: Montage «Im Gehäuse (v5.2)». 2) In MoveEye Sim → Kachel 🔭: breites,
+leicht gebogenes Bild ohne Gehäuserand. 3) Montage «Nicht verbaut»: die Kachel meldet das ohne Fehler.
+
+NEU IN 3D-4.32
+3D-4.32: Gameplay ausgefeilt: Probe-Runde mit Blinki, Wiederholung beim Erwischen, Höhepunkte am Schluss, Missionen,
+Nacht-Spiel mit Geräuschen, neue Werkzeuge, Spielabend-Turnier, Fairness automatisch, «MoveEye ins Schwitzen», KI-Turm,
+Abzeichen pro Szene. Alles im Spiel-Assistenten (Schnellstart und Extras).
+So testest du: 1) Spiel → Assistent → «Wächter-Duell» mit zwei Handys: Blinki zeigt die Probe-Runde. 2) Schleicher
+erwischen: auf seinem Handy kommt der 3-s-Film. 3) Schnellstart «🎒 Mission» oder «🌙 Nacht-Spiel» ausprobieren.
+
 NEU IN 3D-4.31
 3D-4.31: Nacht-Testlauf – eine ganze Nacht im Simulator (WC-Gänge, Tiere, Auto, Regen, genau ein echter Vorfall) mit
 Wahrheit; MoveEye vergleicht und zeigt den Bericht auf /nacht. Starten nur in MoveEye (Besitzer), im Simulator unter

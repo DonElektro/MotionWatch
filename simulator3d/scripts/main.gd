@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.31"
+const VERSION := "3D-4.34"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const CAM_W := [960, 640]
@@ -52,6 +52,21 @@ var ort_camp := 0
 var terrain := false                  # the scene has hills (ground_y), else the ground is flat at y = 0
 var ground_fn := Callable()            # 3D-4.x: a scene with its own ground (ferienpark.gd): height in world coordinates
 var fp_spot := "zelt"                  # 3D-4.x: where MoveEye stands in the «Ferienpark am See» (ferienpark.gd SPOTS)
+const Worlds := preload("res://scripts/worlds.gd")   # 3D-4.x Welten: the old scenes are places in a few worlds
+var welt_solo := false                # «allein»: old scenes without their world (--solo, Prüfstand: comparable measurements)
+var solo_scene := ""                  # this one scene alone ({"action": "scenario", "id": …, "solo": true}, e.g. the training night)
+var bt_spot := "huette"                # 3D-4.x «Bergtal» (bergtal.gd): the sleeping spot (SPOTS, viewpoints or «frei»)
+var bt_bed := "tent"                   # tent | mat (Isomatte + Schlafsack)
+var bt_season := "auto"                # auto (from the month) | fruehling | sommer | herbst | winter
+var bt_free: Array = []                # the own spot: [x, z, looking] in valley coordinates
+var bt_events := true                  # random events in the valley (rockfall, stranger, animal at the food, weather)
+var bt_mount := "stativ"               # MoveEye's mount at the spot: stativ | rucksack | stein | zelt | baum (height of the head)
+var bt_bag := "sommer"                 # sleeping bag: sommer | winter
+var bt_stove := true                   # a stove at the spot (hot while cooking: thermal picture)
+var bt_wall := false                   # a wind wall of stones on the side of the main wind
+var bt_orient := "leicht"              # orientation: leicht (map + marks + position) | mittel (map only) | schwer (signposts only)
+var bt_marks: Array = []               # own marks on the map [[name, x, z]] (valley coordinates)
+var bt_visited: Array = []             # places already visited (quick travel only goes there)
 var ground_mats: Array = []           # ground materials of the place (snow, wet)
 var flat_nodes: Array = []            # flat meadow and the hills far away: hidden at a real place
 var geo_note := ""
@@ -380,6 +395,8 @@ func _ready() -> void:
 			quality = args[i + 1]
 		elif args[i] == "--scene" and i + 1 < args.size():
 			scene = args[i + 1]
+		elif args[i] == "--solo":
+			welt_solo = true                         # 3D-4.x: the old scenes alone, without their world (Prüfstand)
 	_lite_auto_ok = not "--quality" in args
 	set_process(false)
 	set_process_unhandled_input(false)
@@ -974,6 +991,7 @@ func _build_world() -> void:
 
 func _build_scene() -> void:
 	"""everything of the chosen scene (scenes.gd)"""
+	scene = Worlds.default_place(scene)          # 3D-4.x: a world without its own build -> its first place
 	if Scenes.name_of(scene) == scene:
 		scene = "camping"                        # unknown name
 	foliage_mats.clear()
@@ -1095,6 +1113,9 @@ func ground_hit(from: Vector3, d: Vector3):
 
 
 func set_scene(id: String) -> bool:
+	id = Worlds.default_place(id)                # 3D-4.x: «Zuhause» = its garden (worlds.gd)
+	if id != solo_scene:
+		solo_scene = ""
 	var ok := false
 	for s in Scenes.LIST:
 		if s[0] == id:
@@ -1134,14 +1155,105 @@ func _fp_seek() -> void:
 		entdecken._say_small(preload("res://scripts/i18n.gd").t("Verstecken: vier Kinder verstecken sich bei MoveEye – findet MoveEye alle?"))
 
 
+const BT_MONTH := {"fruehling": "5", "sommer": "7", "herbst": "10", "winter": "1"}
+
+
+func set_bt(key: String, v) -> void:
+	"""3D-4.x «Bergtal»: sleeping spot, bed, season - the valley is built again around the spot (MoveEye stays at the origin)"""
+	set(key, v)
+	if key == "bt_season" and BT_MONTH.has(str(v)):
+		season = BT_MONTH[str(v)]                        # the path of the sun and the moon fit the season
+		_sun_cache = [-1.0, Vector2.ZERO]
+	_settings_dirty = true
+	if Worlds.world_of(scene) == "bergtal":
+		set_scene("bergtal" if key == "bt_spot" or not Worlds.is_place(scene) else scene)   # 3D-4.x: a sleeping spot leaves the place
+	else:
+		_sync_ui()
+
+
+func bt_here() -> Dictionary:
+	"""«Hier übernachten»: the place in the middle of the view (or where the rover stands) - flat enough? then sleep there"""
+	var bt = scenes.data.get("bergtal", null)
+	if bt == null:
+		start_info = preload("res://scripts/i18n.gd").t("«Hier übernachten» geht nur in der Szene Bergtal.")
+		return {"ok": false, "error": "not bergtal"}
+	return bt_take(bt.pick_here())
+
+
+func bt_take(r: Dictionary) -> Dictionary:
+	if not bool(r.get("ok", false)):
+		start_info = preload("res://scripts/i18n.gd").t(str(r.get("error", "")))
+		return r
+	bt_free = [snappedf(float(r["x"]), 0.01), snappedf(float(r["z"]), 0.01), snappedf(float(r.get("yaw", 0.0)), 0.1)]
+	bt_spot = "frei"
+	_settings_dirty = true
+	mover_home()
+	set_scene("bergtal")
+	start_info = "%s %s" % [preload("res://scripts/i18n.gd").t("Neuer Schlafplatz:"), preload("res://scripts/i18n.gd").t(str(r.get("note", "")))]
+	r["rating"] = scenes.data["bergtal"].rating if scenes.data.has("bergtal") else {}
+	return r
+
+
+func bt_goto(v: String) -> Dictionary:
+	"""quick travel in the Bergtal: «s:<spot>» = sleep there (MoveEye moves), «p:<place>» = the view flies there"""
+	var bt = scenes.data.get("bergtal", null)
+	if bt == null or v == "":
+		return {"ok": false}
+	if v.begins_with("s:"):
+		set_bt("bt_spot", v.substr(2))
+		return {"ok": true, "spot": bt_spot}
+	var nm := v.substr(2)
+	var Bt = preload("res://scripts/bergtal.gd")
+	var all: Array = Bt.all_places()
+	for mk in bt_marks:
+		all.append(mk)
+	for pl in all:
+		if str(pl[0]) == nm:
+			if not nm in bt_visited and not bt_marks.any(func(x): return str(x[0]) == nm):
+				start_info = "%s %s" % [preload("res://scripts/i18n.gd").t("Noch nicht besucht – zuerst hingehen oder hinfliegen:"), nm]
+				return {"ok": false, "error": "not visited", "place": nm}
+			var wp: Vector3 = bt.WG(float(pl[1]), float(pl[2]))
+			fly_to(wp + Vector3(0, 2, 0), 45.0)
+			return {"ok": true, "place": nm, "at": wp}
+	return {"ok": false, "error": "unknown place"}
+
+
+func bt_mark(nm: String) -> Dictionary:
+	"""an own mark on the map at the place in the middle of the view"""
+	var bt = scenes.data.get("bergtal", null)
+	if bt == null or nm.strip_edges() == "":
+		return {"ok": false}
+	var r: Dictionary = bt.pick_here()
+	if not r.has("x"):
+		return r
+	bt_marks.append([nm.strip_edges().left(30), snappedf(float(r["x"]), 0.1), snappedf(float(r["z"]), 0.1)])
+	_settings_dirty = true
+	bt._publish()
+	return {"ok": true, "marks": bt_marks}
+
+
+func _bt_do(what: String) -> void:
+	var bt = scenes.data.get("bergtal", null)
+	if bt == null:
+		start_info = preload("res://scripts/i18n.gd").t("Das geht nur in der Szene Bergtal.")
+		return
+	match what:
+		"ride":
+			bt.ride(true)
+		"morning":
+			bt.morning()
+		_:
+			bt.spawn_kind("berg_" + what)
+
+
 func set_fp_spot(v: String) -> void:
 	"""3D-4.x: where MoveEye stands in the «Ferienpark am See»: the park is built again around this place"""
 	if not preload("res://scripts/ferienpark.gd").SPOTS.has(v):
 		return
 	fp_spot = v
 	_settings_dirty = true
-	if scene == "ferienpark":
-		set_scene("ferienpark")
+	if Worlds.world_of(scene) == "ferienpark":
+		set_scene("ferienpark")                    # 3D-4.x: also from a place of the park (worlds.gd)
 	else:
 		_sync_ui()
 
@@ -2370,6 +2482,8 @@ func _check_active() -> void:
 
 # ---- pictures for MoveEye -------------------------------------------------------------------------------------
 func _wanted_fps(i: int) -> float:
+	if i == 1 and weit != null and not weit.installed():
+		return 0.0                                       # P9: blind cover instead of the wide camera - nothing to render
 	var d: Dictionary = net.stream_demand() if net != null else {}
 	var f: float = float(d.get(i, 0.0))
 	if i < 2 and now() - snap_want[i] < 3.0:
@@ -2941,6 +3055,9 @@ func time_scale_visitors() -> float:
 
 
 func spawn(kind: String, from = null, to = null) -> Node3D:
+	if kind.begins_with("berg_"):
+		var bt = scenes.data.get("bergtal", null)                  # 3D-4.x: the animals and events of the «Bergtal» (bergtal.gd)
+		return bt.spawn_kind(kind, from, to) if bt != null else null
 	if simreal != null and simreal.is_kind(kind):
 		return simreal.spawn_kind(kind, from, to)     # 3D-4.4: hood, backpack, phoning, groups, edge sneaker, deer lying ...
 	if umgebung != null and umgebung.is_kind(kind):
@@ -3391,14 +3508,52 @@ func _register_controls() -> void:
 	extra "expert": true = only shown with «Experte» - in the window and on the page of MoveEye (its switch Einfach / Experte
 	is stored in the settings of MoveEye, page «sim», like on its main page)."""
 	var sc := []
-	for s in Scenes.LIST:
-		sc.append([s[0], s[1]])
+	for s in Worlds.SHOWN:                        # 3D-4.x Welten: only the worlds and the tools (the old scenes are places in them)
+		sc.append([s, Scenes.name_of(s)])
 	var ex := {"expert": true}
-	add_control("select", "scene", "Szene", func(): return scene, func(v): set_scene(v), "Szene", {"options": sc})
+	add_control("select", "scene", "Szene", func(): return Worlds.world_of(scene), func(v): set_scene(v), "Szene", {"options": sc})
+	for w in Worlds.WORLDS:                       # «Ort in dieser Welt»: the old scenes of this world (one select per world)
+		add_control("select", "welt_ort_" + w, "Ort in dieser Welt", func(): return scene if Worlds.is_place(scene) else "",
+				func(v): set_scene(str(v) if str(v) != "" else w), "Szene", {"options": Worlds.place_options(w)})
+		controls[-1]["only"] = func(): return Worlds.world_of(scene) == w
+	add_control("toggle", "welt_solo", "Alte Szenen allein laden (ohne Welt drumherum – für Prüfstand-Vergleiche)", func(): return welt_solo,
+			func(v): welt_solo = bool(v); set_scene(scene), "Szene", {"expert": true})
 	add_control("button", "home_edit", "Mein Zuhause bauen (Baukasten mit der Maus)", null, func(): home_editor.open(true), "Szene")
 	add_control("select", "fp_spot", "Standort im Ferienpark am See", func(): return fp_spot, func(v): set_fp_spot(str(v)), "Szene",
 			{"options": preload("res://scripts/ferienpark.gd").spot_options()})
-	controls[-1]["only"] = func(): return scene == "ferienpark"   # 3D-4.28: only shown in its scene (window and MoveEye)
+	controls[-1]["only"] = func(): return scene == "ferienpark"   # 3D-4.28: only shown in its scene (window and MoveEye; not in a place of the park)
+	var Bt = preload("res://scripts/bergtal.gd")
+	add_control("select", "bt_spot", "Schlafplatz im Bergtal", func(): return bt_spot, func(v): set_bt("bt_spot", str(v)), "Szene", {"options": Bt.spot_options()})
+	add_control("select", "bt_bed", "Übernachten im Bergtal", func(): return bt_bed, func(v): set_bt("bt_bed", str(v)), "Szene", {"options": Bt.BEDS})
+	var mo := []
+	for k in Bt.MOUNTS:
+		mo.append([k, Bt.MOUNTS[k][0]])
+	add_control("select", "bt_mount", "MoveEye-Halterung am Schlafplatz (Bergtal)", func(): return bt_mount, func(v): set_bt("bt_mount", str(v)), "Szene", {"options": mo})
+	add_control("select", "bt_bag", "Schlafsack (Bergtal)", func(): return bt_bag, func(v): set_bt("bt_bag", str(v)), "Szene", {"options": [["sommer", "Sommerschlafsack"], ["winter", "Winterschlafsack"]], "expert": true})
+	add_control("toggle", "bt_stove", "Kocher am Schlafplatz (Bergtal)", func(): return bt_stove, func(v): set_bt("bt_stove", bool(v)), "Szene", {"expert": true})
+	add_control("toggle", "bt_wall", "Windschutzmauer aus Steinen bauen (Bergtal)", func(): return bt_wall, func(v): set_bt("bt_wall", bool(v)), "Szene")
+	add_control("select", "bt_orient", "Orientierung im Bergtal", func(): return bt_orient, func(v): set_bt("bt_orient", str(v)), "Szene",
+			{"options": [["leicht", "leicht (Karte, Kompass, eigener Standort)"], ["mittel", "mittel (Karte und Kompass)"], ["schwer", "schwer (nur Wegweiser)"]], "expert": true})
+	add_control("text", "bt_mark", "Eigene Markierung auf der Karte (Name; wird in der Bildmitte gesetzt)", func(): return "", func(v): bt_mark(str(v)), "Szene", {"expert": true})
+	add_control("button", "bt_here", "Hier übernachten (Bergtal: der Platz in der Bildmitte oder beim Rover)", null, func(): bt_here(), "Szene")
+	add_control("select", "bt_goto", "Schnellreise im Bergtal (Ort wählen)", func(): return "", func(v): bt_goto(str(v)), "Szene", {"options": Bt.place_options()})
+	add_control("select", "bt_season", "Jahreszeit im Bergtal", func(): return bt_season, func(v): set_bt("bt_season", str(v)), "Szene",
+			{"options": [["auto", "nach dem Monat (Jahreszeit)"], ["fruehling", "Frühling"], ["sommer", "Sommer"], ["herbst", "Herbst (Lärchen gelb, Nebel)"], ["winter", "Winter (Schnee, Eis)"]]})
+	add_control("button", "bt_ride", "Mit der Materialseilbahn fahren (Bergtal)", null, func(): _bt_do("ride"), "Szene", {"expert": true})
+	add_control("button", "bt_morning", "Wie gut war dein Platz? (Bergtal: Bewertung jetzt)", null, func(): _bt_do("morning"), "Szene", {"expert": true})
+	add_control("toggle", "bt_events", "Bergtal: Ereignisse von selbst (Steinschlag, Fremder, Tier am Proviant, Wetterumschwung)", func(): return bt_events, func(v): bt_events = bool(v), "Besuch", {"sub": "Von selbst"})
+	add_control("button", "bt_ev_rockfall", "Steinschlag (Bergtal)", null, func(): _bt_do("rockfall"), "Besuch", {"sub": "Abläufe"})
+	add_control("button", "bt_ev_stranger", "Fremder am Rucksack (Bergtal)", null, func(): _bt_do("stranger"), "Besuch", {"sub": "Abläufe"})
+	add_control("button", "bt_ev_food", "Tier am Proviant (Bergtal)", null, func(): _bt_do("fox_food"), "Besuch", {"sub": "Abläufe"})
+	add_control("button", "bt_ev_storm", "Gewitter zieht auf (Bergtal)", null, func(): _bt_do("storm"), "Wetter", {"sub": "Mehr Wetter"})
+	add_control("button", "bt_ev_fog", "Nebel kommt schnell (Bergtal)", null, func(): _bt_do("fog"), "Wetter", {"sub": "Mehr Wetter"})
+	add_control("button", "bt_ev_fogsea", "Nebelmeer (Bergtal: das Tal im Nebel, oben Sonne)", null, func(): _bt_do("fogsea"), "Wetter", {"sub": "Mehr Wetter"})
+	for _c in controls:   # Bergtal-only controls: only shown in its scene (like fp_spot); season, quick travel, events also in its places
+		if str(_c.id).begins_with("bt_"):
+			if str(_c.id) in ["bt_season", "bt_goto", "bt_events", "bt_orient", "bt_mark"] or str(_c.id).begins_with("bt_ev_"):
+				_c["only"] = func(): return Worlds.world_of(scene) == "bergtal"
+			else:
+				_c["only"] = func(): return scene == "bergtal"
 	add_control("map", "ort_map", "Ort auf der Karte wählen (Schweiz)", func(): return "%.6f, %.6f" % [ort_lat, ort_lon] if ort_lat != 0.0 else "",
 			func(v): set_place_text(str(v)), "Ort von der Karte")
 	add_control("text", "ort", "Ort (Name oder Koordinaten, z. B. «Zermatt» oder «46.0207, 7.7491»)", func(): return place_label(), func(v): set_place_text(str(v)), "Ort von der Karte")
@@ -3603,7 +3758,8 @@ func _register_controls() -> void:
 	add_control("toggle", "game_rescue", "Befreien: Erwischte kommen in die Zelle, ein Teamkollege befreit sie", func(): return game_rescue, func(v): game_rescue = v, "Spiel")
 	add_control("toggle", "game_teamgoal", "Team-Ziel: das Ziel öffnet erst, wenn alle Kristalle gefunden sind", func(): return game_teamgoal, func(v): game_teamgoal = v, "Spiel", ex)
 	add_control("select", "game_goal", "Spielziel", func(): return game_goal, func(v): game_goal = v, "Spiel",
-			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"], ["flag", "Fahne erobern (zwei Teams)"], ["sprint", "Sprint: 90 s, fester Parcours"], ["theft", "Diebstahl: Velo oder Kühlbox zum Ausgang tragen"]]})
+			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"], ["flag", "Fahne erobern (zwei Teams)"], ["sprint", "Sprint: 90 s, fester Parcours"], ["theft", "Diebstahl: Velo oder Kühlbox zum Ausgang tragen"],
+				["mission", "Mission mit Gegenständen (Portemonnaie, Früchte, Paket)"], ["sweat", "Bring MoveEye ins Schwitzen"]]})
 	add_control("toggle", "game_stones", "Steine werfen zum Ablenken", func(): return game_stones, func(v): game_stones = v, "Spiel")
 	add_control("toggle", "game_powers", "Power-ups: Unsichtbar-Trank (lila) und Turbo (gelb)", func(): return game_powers, func(v): game_powers = v, "Spiel")
 	add_control("toggle", "game_photos", "Erwischt-Fotos (Bild der Kamera beim Erwischen, Galerie am Schluss)", func(): return game_photos, func(v): game_photos = v, "Spiel")
@@ -3971,7 +4127,7 @@ func control_info() -> Dictionary:
 			d["ro"] = bool(c["ro"].call())            # Aufräumen 2: the page of MoveEye shows it read-only too
 		out.append(d)
 	return {"ok": true, "v": 1, "name": "MoveEye Sim · 3D %s" % VERSION,
-				"scenarios": scenarios(), "scenario": scene,
+				"scenarios": scenarios(), "scenario": Worlds.world_of(scene), "place": scene if Worlds.is_place(scene) else "",
 			"controls": out, "status": status_text(), "upload": null, "groups_on": _groups_on(),
 			"game": {"open": game != null and game.open, "url": game.address() if game != null and game.open else "", "players": game.count() if game != null else 0}}
 
@@ -3987,8 +4143,11 @@ func _control(d: Dictionary) -> Dictionary:
 	var a := str(d.get("action", "get"))
 	var cid := str(d.get("id", ""))
 	if a == "scenario":
+		solo_scene = cid if bool(d.get("solo", false)) else ""   # 3D-4.x: this scene alone, without its world (training night)
 		if not set_scene(cid):
 			return {"ok": false, "error": "unknown scenario"}
+	elif a == "welt":                                  # 3D-4.x Welten: the worlds, their places and what is loaded (worlds.gd)
+		return Worlds.info(self)
 	elif a == "delete":
 		return {"ok": false, "error": "cannot be deleted"}
 	elif a == "lang":                                  # Sprachen (i18n.gd): switch / translate, for tests
@@ -4221,6 +4380,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return game.kig.command(d) if game != null and game.kig != null else {"ok": false, "error": "no game"}
 	elif a == "game_shut":                             # 3D-4.x: «Auslöser» (gameshutter.gd) - info / aim / fire, for tests
 		return game.shut.command(d) if game != null and game.shut != null else {"ok": false, "error": "no game"}
+	elif a == "game_more":                             # «Gameplay ausfeilen» (gamemore.gd): info / set / probe … (tests, MoveEye)
+		return game.more.command(d) if game != null and game.more != null else {"ok": false, "error": "no game"}
 	elif a == "game_tool":                             # 3D-4.x: a tool of the guard (gametools.gd): {tool, slot} or {op: "info"}
 		return game.tools.command(d) if game != null and game.tools != null else {"ok": false, "error": "no game"}
 	elif a == "game_rules":                            # 3D-4.x: for tests - fairness, next guard, winner (gamerules.gd)
@@ -4336,6 +4497,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "rover": patrol.rover_info()}
 	elif a == "overlay":
 		return {"ok": true, "overlay": overlay.info()}
+	elif a == "bergtal":                               # 3D-4.x: {do: info | spot | bed | season | here | goto | event | ride | morning | rate | horn | perf} (bergtal.gd)
+		return preload("res://scripts/bergtal.gd").control(self, d)
 	elif a == "ferienpark":                            # 3D-4.x: {do: info | spot (value) | kinds | perf} (ferienpark.gd)
 		return preload("res://scripts/ferienpark.gd").control(self, d)
 	elif a == "szenen":                                # 3D-4.x: the new scenes {do: info | spawn (kind) | restore}
@@ -4596,13 +4759,13 @@ func status_text() -> String:
 	if schnitt != null:
 		mwc += schnitt.mw_extra()                 # Aufräumen 2: «Schutz an · Relais …» from MoveEye
 	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
-	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + nacht.status() if nacht != null and nacht.running else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
+	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Worlds.full_name(scene) if Worlds.is_place(scene) and not Worlds.solo(self, scene) else Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + nacht.status() if nacht != null and nacht.running else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
 
 
 func scenarios() -> Array:
 	var out := []
-	for s in Scenes.LIST:
-		out.append({"id": s[0], "name": s[1] + " (3D)", "kind": "world", "deletable": false, "en": Scenes.EN.get(s[0], "")})
+	for s in Worlds.SHOWN:                        # 3D-4.x Welten: the worlds and tools (old ids still work for «scenario»)
+		out.append({"id": s, "name": Scenes.name_of(s) + " (3D)", "kind": "world", "deletable": false, "en": Scenes.EN.get(s, "")})
 	return out
 
 
@@ -5828,7 +5991,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "grafik_mode", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
 var _settings_dirty := false
 
@@ -7197,7 +7360,33 @@ func clear_obstacles() -> void:
 	ob_grid.clear()
 
 
+# 3D-4.x Welten (worlds.gd): while a place is built inside a world: obstacles beyond ob_clip (local) are left out, ob_xf moves
+# them (a neighbour), none in ob_excl ([[centre (world), r], …]: the active place)
+var ob_xf := Transform3D.IDENTITY
+var ob_clip := 0.0
+var ob_excl: Array = []
+var _ob_skip := false
+
+
+func _ob_place(p: Vector3):
+	"""the obstacle point in the world, or null (left out)"""
+	_ob_skip = false
+	if ob_clip > 0.0 and Vector2(p.x, p.z).length() > ob_clip:
+		_ob_skip = true
+		return null
+	var q := ob_xf * p
+	for e in ob_excl:
+		if Vector2(q.x, q.z).distance_to(e[0]) < float(e[1]):
+			_ob_skip = true
+			return null
+	return q
+
+
 func add_obstacle(p: Vector3, r: float, people_only := false) -> void:
+	var pw = _ob_place(p)
+	if pw == null:
+		return
+	p = pw
 	var o := {"c": Vector2(p.x, p.z), "r": r, "po": people_only, "id": obstacles.size()}
 	obstacles.append(o)
 	_ob_insert(o, Vector2(p.x - r, p.z - r), Vector2(p.x + r, p.z + r))
@@ -7205,6 +7394,11 @@ func add_obstacle(p: Vector3, r: float, people_only := false) -> void:
 
 func add_obstacle_box(p: Vector3, sx: float, sz: float, rot_y: float, people_only := false) -> void:
 	"""a box of sx × sz metres around p, turned like a node with rotation.y = rot_y"""
+	var pw = _ob_place(p)
+	if pw == null:
+		return
+	p = pw
+	rot_y += ob_xf.basis.get_euler().y
 	var b := Basis(Vector3.UP, rot_y)
 	var o := {"c": Vector2(p.x, p.z), "h": Vector2(sx / 2.0, sz / 2.0), "b": b, "bi": b.inverse(), "po": people_only, "id": obstacles.size()}
 	obstacles.append(o)
@@ -7361,7 +7555,7 @@ func line_blocker(a: Vector3, b: Vector3) -> Dictionary:
 
 func set_obstacle_height(ht: float) -> void:
 	"""the height of the object added last (for the line of sight of the game)"""
-	if not obstacles.is_empty():
+	if not obstacles.is_empty() and not _ob_skip:
 		obstacles[-1]["ht"] = ht
 
 

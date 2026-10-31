@@ -23,6 +23,13 @@ _HX_VIER = {
     'Reset the list «against the AI»': ('Liste «gegen die KI» zurücksetzen', 'Réinitialiser la liste «contre l’IA»', 'Azzerare la lista «contro l’IA»', 'Reinizialisar la glista «cunter la IA»'),
     'Reset the list «against the AI»?': ('Liste «gegen die KI» zurücksetzen?', 'Réinitialiser la liste «contre l’IA» ?', 'Azzerare la lista «contro l’IA»?', 'Reinizialisar la glista «cunter la IA»?'),
     'no rounds against the AI yet': ('noch keine Runden gegen die KI', 'encore aucune manche contre l’IA', 'ancora nessun turno contro l’IA', 'anc naginas rundas cunter la IA'),
+    # Gameplay ausfeilen (31.10.2026): the AI tower of the simulator (gameturm.gd)
+    'AI tower': ('KI-Turm', 'Tour de l’IA', 'Torre dell’IA', 'Tur da la IA'),
+    'floor': ('Stufe', 'étage', 'livello', 'stgalim'),
+    'highest floor': ('höchste Stufe', 'étage le plus haut', 'livello più alto', 'il stgalim il pli aut'),
+    'towers': ('Türme', 'tours', 'torri', 'turs'),
+    'AI tower now: floor': ('KI-Turm läuft: Stufe', 'Tour de l’IA en cours : étage', 'Torre dell’IA in corso: livello', 'Tur da la IA en curs: stgalim'),
+    'Start the AI tower: quick start «KI-Turm» in the game wizard': ('KI-Turm starten: Schnellstart «KI-Turm» im Spiel-Assistenten', 'Lancer la tour de l’IA : départ rapide «KI-Turm» dans l’assistant de jeu', 'Avviare la torre dell’IA: avvio rapido «KI-Turm» nell’assistente di gioco', 'Lantschar la tur da la IA: start svelt «KI-Turm» en l’assistent da gieu'),
 }
 for _k, _v in _HX_VIER.items():
     DE.setdefault(_k, _v[0])

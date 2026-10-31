@@ -283,6 +283,10 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 				if cam < 0 or cam > 1:
 					_json(c, {"ok": false, "error": "no such camera"}, 404)
 					return
+				var wt = main.get("weit")                    # (the second device, device.gd, has no wide camera object)
+				if cam == 1 and wt != null and not wt.installed():
+					_json(c, {"ok": false, "error": "wide camera not installed (blind cover)"}, 404)   # P9
+					return
 				if parts[2] == "snapshot.jpg":
 					main.want_snapshot(cam)
 					_send(c, 200, main.latest_jpg(cam), "image/jpeg")

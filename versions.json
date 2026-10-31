@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 05:47",
+ "generated": "2026-10-31 06:12",
  "versions": [
   {
-   "version": "2.98.62",
-   "file": "webcam_bewegung_2_98_62.py",
+   "version": "2.98.65",
+   "file": "webcam_bewegung_2_98_65.py",
    "url": "",
-   "sha256": "4081a35d27c87c7eba395ef93f92c6207e4fceeb59d02f817cfd83d743f41eea",
-   "date": "2026-10-31 05:47",
-   "notes": "Simulator 3D-4.31: Nacht-Testlauf – ganze Nacht im Simulator mit Wahrheit, Abgleich in MoveEye, Bericht /nacht (nur der Besitzer startet); Trainings-Nacht 🏋 und Nacht-Generalprobe 🎭 mit eigenen Symbolen.",
-   "sig": "c5118e089823331ee6ecfae8ad02163581377c5b69aea9e9439ef93092decb5768942dd0df046dbc477b8db472c70fb25f48459671708d189cb82c3dce8a6706"
+   "sha256": "8de67c8ef6b380f9c08e1822eacc8d2313ebf924180cf8e20db30ad0b725c7d6",
+   "date": "2026-10-31 06:12",
+   "notes": "Simulator 3D-4.34: neue Welt «Bergtal» (2 × 2 km) und Szenen zusammengefasst – Welten Bergtal, Ferienpark, Zuhause mit den alten Szenen als Orte; alte Kennungen gehen weiter, Trainingsnacht lädt Orte allein.",
+   "sig": "ad42de7d0bde3ba7ca001ec914719dc16a575c2e3f975fe182ee4f530064cc0258f23fedaea1186847b2334346a2198e3e960735d3b387ec50a8135388ab730c"
   },
   {
    "version": "2.97.1",
