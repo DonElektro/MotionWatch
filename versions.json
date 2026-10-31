@@ -1,13 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 16:12",
+ "generated": "2026-10-31 16:19",
  "versions": [
+  {
+   "version": "3.1.0",
+   "file": "webcam_bewegung_3_1_0.py",
+   "url": "",
+   "sha256": "607d49eb62e5a817675a76133988b3fd6b435504456ca4b5f79c63b229033769",
+   "date": "2026-10-31 16:19",
+   "notes": "Handy-Mitteilungen kurz und klar: Titel mit Symbol, eine Zeile Text, Bild wo sinnvoll, nie roher Code; «🛡 Schutz ein» mit Bild; im Simulator nur Alarme (Info per Schalter); E-Mail mit ganzem Text; Gerätename nur bei mehreren MoveEye; ntfy-Adresse in der Webhook-Karte behoben.",
+   "sig": "9a8c8a65e4bc598048e522cc2dd196f17a80380a29c94147f899eac2d9ec0a259272bbea399251cb72f1d6d7552124970ebabe959e7a52bda9c5f15a4120f707"
+  },
   {
    "version": "3.0.2",
    "file": "webcam_bewegung_3_0_2.py",
    "url": "",
    "sha256": "0409d855abf83cdfe9ea06bc535d09ed5df56c7b2fa7af6f2fd9bab4fb1ac460",
-   "date": "2026-10-31 16:12",
+   "date": "2026-10-31 16:18",
    "notes": "Simulator: «Nur Gruppen» wie in MoveEye (Gruppen offen, Themen zu); Anna ist die Betreuerin der Hütte; Sepp spricht passend zur Jahreszeit.",
    "sig": "f88dc49ba510c1a8d70bf0d3bf12f431945591b66074181237bca78dc3fe2e704d52cb2dc5496931174a1fc1eac9a38cbdb2c73c48ac17de05696e6744b1e302"
   },
@@ -82,15 +91,6 @@
    "date": "2026-10-26 20:35",
    "notes": "3D simulator 3D-2.0 (big update): toolbar, search and «Einfach | Experte» like Motion Watch; visitors as small pictures to drag into the world; people and animals walk around objects; smoother movement, finer objects, grass and flowers; new visitors (child, jogger, hare, hedgehog, dog walk, deer herd, birds); new visitor settings (also here in the simulator control).",
    "sig": "aaf681e4ea061b4253bb45d62c3b4663c19fcd3d14664f9d32a585167f35095fd816c0c81e71028e6a072be41bfda184671b8e55112a01f855dc4ff0c4a26103"
-  },
-  {
-   "version": "2.90.9",
-   "file": "webcam_bewegung_2_90_9.py",
-   "url": "",
-   "sha256": "ca0098cc8a98b2293d691d7a820dd1fb3caa58b2aa71bda683007ea6f99cbc7e",
-   "date": "2026-10-26 18:26",
-   "notes": "The download of the 3D simulator for Windows (ZIP) is now a button right under «Search now» in the simulator section (before hidden under Tools); the desktop window shows its address for the PC browser in the simulator line.",
-   "sig": "6ec9afbf1255355f142377a9fdff4c7feae0730afe568207a656ded68bc36e3392f125e266cb5bb94014279f5e4f58a1af9b6b57975ecb6f05a9839aa6349007"
   }
  ]
 }
