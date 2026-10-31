@@ -250,7 +250,7 @@ func _stationen(r: String) -> Array:
 	match r:
 		"herbst":
 			return [
-				{"id": "h_spur", "f": "riechen", "ding": "spur", "off": Vector2(170, 40), "ziel": Vector2(145, -50),
+				{"id": "h_spur", "f": "riechen", "ding": "spur", "off": Vector2(170, 40), "ziel": Vector2(160, 28),
 					"hinweis": T.t("Im Nebel ist der Weg verschwunden. Maggie hält die Nase in die Luft."),
 					"hilfe": T.t("Lass Maggie riechen!"),
 					"ok": T.t("Maggie hat die Spur! Die Pfoten leuchten bis zu den Steinen im Bach."),
