@@ -839,6 +839,31 @@ static func chunk_mesh(ci: int, cj: int, step_i: int) -> ArrayMesh:
 		for a in range(n - 1):
 			var q := b * n + a
 			idx.append_array([q, q + 1, q + n, q + 1, q + n + 1, q + n])
+	# K3 (Kontaktbogen 31.10.2026): a curtain down from every edge. Next to a chunk in the other detail (4 m / 16 m) the edges
+	# do not meet in steep V-notches - the sky showed through the crack («white plate between the mountains»). The curtain is
+	# as deep as the ground changes along the edge within 16 m (+ 2 m); both sides drawn.
+	for e in range(4):
+		var top := PackedInt32Array()
+		var base := verts.size()
+		for t in range(n):
+			var a := t if e < 2 else (0 if e == 2 else n - 1)
+			var b := (0 if e == 0 else n - 1) if e < 2 else t
+			var i := mini(ci * per + a * step_i, N - 1)
+			var j := mini(cj * per + b * step_i, N - 1)
+			var lo := INF
+			var hi := -INF
+			for o in range(-4, 5):
+				var h := _hm[j * N + clampi(i + o, 0, N - 1)] if e < 2 else _hm[clampi(j + o, 0, N - 1) * N + i]
+				lo = minf(lo, h)
+				hi = maxf(hi, h)
+			var k := b * n + a
+			top.append(k)
+			verts.append(verts[k] - Vector3(0, hi - lo + 2.0, 0))
+			norms.append(norms[k])
+			cols.append(cols[k])
+		for t in range(n - 1):
+			var q0 := base + t
+			idx.append_array([top[t], top[t + 1], q0, top[t + 1], q0 + 1, q0, top[t], q0, top[t + 1], top[t + 1], q0, q0 + 1])
 	var arr := []
 	arr.resize(Mesh.ARRAY_MAX)
 	arr[Mesh.ARRAY_VERTEX] = verts
@@ -1039,6 +1064,7 @@ func _ground() -> void:
 	_gm.set_shader_parameter("detail", 0.0 if lite else 1.0)
 	_season_params(_gm)
 	m.ground_mats = [_gm]
+	_chunk_mi.clear()
 	var near_end := 380.0 if lite else 720.0
 	for cj in range(8):
 		for ci in range(8):
@@ -1046,6 +1072,7 @@ func _ground() -> void:
 				var mi: MeshInstance3D = m.add_mesh(tal, chunk_mesh(ci, cj, lod), Vector3.ZERO, _gm, "x")
 				var th: MeshInstance3D = tal.get_child(tal.get_child_count() - 1)
 				th.material_override = m.tmats["ground"]
+				_chunk_mi[Vector2i(ci, cj)] = _chunk_mi.get(Vector2i(ci, cj), []) + [mi]
 				for g in [mi, th]:
 					if lod == 1:
 						g.visibility_range_end = near_end
@@ -1054,6 +1081,42 @@ func _ground() -> void:
 						g.visibility_range_begin = near_end - 20.0
 				mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if lod == 1 else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	info["chunks"] = 64
+
+
+var _chunk_mi := {}                          # K3: Vector2i(ci, cj) -> the ground meshes of that chunk (clip_ground)
+static var _clip_shader: Shader
+
+
+func clip_ground(clips: Array) -> void:
+	"""K3 (Kontaktbogen 31.10.2026): the ground is not drawn inside rooms in the hill (bunker, cave of bergtal_orte.gd) -
+	it showed as grass floor. clips: [[centre (valley Vector2), half (Vector2), turn, floor y, ceiling y], …] (at most 8).
+	Only the chunks with such a room get the material with the clipping (discard)."""
+	if clips.is_empty() or _gm == null:
+		return
+	if _clip_shader == null:
+		_clip_shader = Shader.new()
+		_clip_shader.code = _gm.shader.code.replace("shader_type spatial;", "shader_type spatial;\n#define CLIPS")
+	var gc: ShaderMaterial = _gm.duplicate()
+	gc.shader = _clip_shader
+	var ca := []
+	var cb := []
+	var cells := {}
+	for c in clips.slice(0, 8):
+		var ctr: Vector2 = c[0]
+		var half: Vector2 = c[1]
+		ca.append(Vector4(ctr.x, ctr.y, half.x, half.y))
+		cb.append(Vector4(cos(float(c[2])), sin(float(c[2])), float(c[3]), float(c[4])))
+		var r := half.length()
+		for p in [ctr + Vector2(-r, -r), ctr + Vector2(r, -r), ctr + Vector2(-r, r), ctr + Vector2(r, r)]:
+			cells[Vector2i(clampi(int(floor((p.x - LO) / CH)), 0, 7), clampi(int(floor((p.y - LO) / CH)), 0, 7))] = true
+	gc.set_shader_parameter("clip_n", ca.size())
+	gc.set_shader_parameter("clip_a", ca)
+	gc.set_shader_parameter("clip_b", cb)
+	for cell in cells:
+		for mi in _chunk_mi.get(cell, []):
+			(mi as MeshInstance3D).material_override = gc
+	m.ground_mats.append(gc)
+	info["ground_clips"] = ca.size()
 
 
 static var _apron_mesh: ArrayMesh
@@ -1283,9 +1346,11 @@ func _water() -> void:
 	wm.cull_mode = BaseMaterial3D.CULL_DISABLED
 	wm.roughness = 0.3
 	var wf := QuadMesh.new()
-	wf.size = Vector2(3.2 if season == "fruehling" else 2.2, fall)
-	var wp := Vector3(GORGE_HEAD.x, bot + fall * 0.5, GORGE_HEAD.y)
-	m.add_mesh(tal, wf, wp, wm, "pond", Vector3(0, deg_to_rad(10.0), 0))
+	# K3 (Kontaktbogen: «white band floats in the gorge»): the curtain lies on the steep bed from 16 m above to 16 m below the
+	# head (32 m along the stream), 0.4 m over it - before it stood upright and its upper half hung in the air
+	wf.size = Vector2(3.2 if season == "fruehling" else 2.2, sqrt(fall * fall + 32.0 * 32.0))
+	var wp := Vector3(GORGE_HEAD.x, bot + fall * 0.5 + 0.4, GORGE_HEAD.y)
+	m.add_mesh(tal, wf, wp, wm, "pond", Vector3(atan2(32.0, fall), deg_to_rad(10.0), 0))
 	if not lite and season != "winter" and W(wp).length() < 400.0:
 		var sp := CPUParticles3D.new()
 		sp.amount = 40
@@ -1468,6 +1533,7 @@ func _vegetation() -> void:
 			[BUNKER, 10.0], [place_c, maxf(9.0, place_r + 6.0)], [GORGE_BRIDGE, 14.0], [Vector2(-700, -130), 10.0], [Vector2(-650, 430), 32.0]]
 	for v in VIGNETTES:
 		_busy_pts.append([Vector2(v[3], v[4]), float(v[5]) + 2.0])
+	_busy_pts.append_array(Orte.busy_pts())               # K3: no tree in the Militärbaracke (bergtal_orte.gd)
 	for vp in VIEWPOINTS:
 		_busy_pts.append([vp_xz(vp), 9.0])
 	for k in SPOTS:
