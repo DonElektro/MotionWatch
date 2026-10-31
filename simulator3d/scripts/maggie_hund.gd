@@ -7,7 +7,7 @@ extends "res://scripts/bergtal_erleben_base.gd"
 ##                    Weggabelungen, wo auf einem Weg Gefahr lauert
 ##   * Graben/Holen – gräbt Dinge aus (Laub, Schnee, Geröll) und holt Gegenstände, wo du nicht hinkommst (dünnes Eis)
 ##   * Durchschlüpfen – kriecht durch enge Stellen (Spalt unter der Tür, Felsspalte, Gatter) und öffnet von der anderen Seite
-## Jede Region (Jahreszeit) hat 3–4 Stationen in fester Reihenfolge, davon mindestens 2 Maggie-Rätsel (STATIONEN unten).
+## Jede Region (Jahreszeit) hat 4 Stationen in fester Reihenfolge (Paket «Dauer»: je eine zweite Gabelung), davon mindestens 2 Maggie-Rätsel (STATIONEN unten).
 ## Die lieben Tiere (Eule, Steinbock, Murmeltier, Fuchs) stehen in maggie_helfer.gd.
 ##
 ## Verbindung mit dem Rahmen (Paket S1, scripts/maggie_story.gd = main.maggie): S1 legt diese Datei beim Öffnen der
@@ -250,17 +250,23 @@ func _stationen(r: String) -> Array:
 	match r:
 		"herbst":
 			return [
-				{"id": "h_spur", "f": "riechen", "ding": "spur", "off": Vector2(-22, -14), "ziel": Vector2(-12, -24),
+				{"id": "h_spur", "f": "riechen", "ding": "spur", "off": Vector2(170, 40), "ziel": Vector2(145, -50),
 					"hinweis": T.t("Im Nebel ist der Weg verschwunden. Maggie hält die Nase in die Luft."),
 					"hilfe": T.t("Lass Maggie riechen!"),
 					"ok": T.t("Maggie hat die Spur! Die Pfoten leuchten bis zu den Steinen im Bach."),
 					"me": T.t("MoveEye würde jetzt die frischen Spuren am Boden bemerken und dir zeigen.")},
-				{"id": "h_laub", "f": "graben", "ding": "haufen", "off": Vector2(-4, -44), "item": "kartenstueck_herbst",
+				{"id": "h_laub", "f": "graben", "ding": "haufen", "off": Vector2(115, -148), "item": "kartenstueck_herbst",
 					"hinweis": T.t("Unter dem gelben Lärchenlaub glitzert etwas."),
 					"hilfe": T.t("Maggie kann graben!"),
 					"ok": T.t("Maggie gräbt und bringt dir ein Stück einer alten Karte!"),
 					"me": T.t("MoveEye würde sich merken, wo etwas vergraben ist.")},
-				{"id": "h_gabel", "f": "warnen", "ding": "gabel", "off": Vector2(18, -62), "boese": -1,
+				{"id": "h_gabel", "f": "warnen", "ding": "gabel", "off": Vector2(-100, -100), "boese": -1,
+					"hinweis": T.t("Der Weg teilt sich. Hör auf Maggie!"),
+					"hilfe": T.t("Maggie knurrt zu einem Weg. Nimm den anderen."),
+					"ok": T.t("Gut gemacht! Du hast auf Maggie gehört."),
+					"me": T.t("MoveEye würde jetzt merken, dass sich im Gebüsch etwas bewegt, und dir Bescheid geben.")},
+				# Paket «Dauer»: eine zweite Gabelung kurz vor dem Tor (gleiche Texte, der Weg ist länger geworden)
+				{"id": "h_gabel2", "f": "warnen", "ding": "gabel", "off": Vector2(-220, -40), "boese": 1,
 					"hinweis": T.t("Der Weg teilt sich. Hör auf Maggie!"),
 					"hilfe": T.t("Maggie knurrt zu einem Weg. Nimm den anderen."),
 					"ok": T.t("Gut gemacht! Du hast auf Maggie gehört."),
@@ -268,17 +274,22 @@ func _stationen(r: String) -> Array:
 			]
 		"winter":
 			return [
-				{"id": "w_tuer", "f": "schluepfen", "ding": "tuer", "off": Vector2(16, 10),
+				{"id": "w_tuer", "f": "schluepfen", "ding": "tuer", "off": Vector2(-214, -80),
 					"hinweis": T.t("Die Tür der Schutzhütte klemmt. Unten ist ein schmaler Spalt."),
 					"hilfe": T.t("Maggie passt durch enge Stellen!"),
 					"ok": T.t("Maggie schlüpft durch und schiebt den Riegel weg. Die Tür ist offen!"),
 					"me": T.t("MoveEye würde dir sagen, ob in der Hütte jemand ist.")},
-				{"id": "w_eis", "f": "graben", "ding": "eis", "off": Vector2(30, 32), "item": "kartenstueck_winter",
+				{"id": "w_eis", "f": "graben", "ding": "eis", "off": Vector2(-154, -152), "item": "kartenstueck_winter",
 					"hinweis": T.t("Auf dem Eis liegt ein Stück Papier. Das Eis ist zu dünn für dich!"),
 					"hilfe": T.t("Maggie ist leicht. Sie kann es holen."),
 					"ok": T.t("Maggie tapst übers Eis und holt dir ein Kartenstück!"),
 					"me": T.t("MoveEye würde das Eis knacken hören und dich warnen.")},
-				{"id": "w_gabel", "f": "warnen", "ding": "gabel", "off": Vector2(8, 58), "boese": 1,
+				{"id": "w_gabel", "f": "warnen", "ding": "gabel", "off": Vector2(-58, 32), "boese": 1,
+					"hinweis": T.t("Zwei Wege im Schnee. Maggie spitzt die Ohren."),
+					"hilfe": T.t("Maggie knurrt zu einem Weg. Nimm den anderen."),
+					"ok": T.t("Richtig! Auf dem anderen Weg waren Augen im Dunkeln."),
+					"me": T.t("MoveEye würde auch im Dunkeln sehen, wo sich etwas Warmes versteckt.")},
+				{"id": "w_gabel2", "f": "warnen", "ding": "gabel", "off": Vector2(102, 32), "boese": -1,      # Paket «Dauer»
 					"hinweis": T.t("Zwei Wege im Schnee. Maggie spitzt die Ohren."),
 					"hilfe": T.t("Maggie knurrt zu einem Weg. Nimm den anderen."),
 					"ok": T.t("Richtig! Auf dem anderen Weg waren Augen im Dunkeln."),
@@ -286,40 +297,45 @@ func _stationen(r: String) -> Array:
 			]
 		"fruehling":
 			return [
-				{"id": "f_lawine", "f": "graben", "ding": "haufen", "off": Vector2(-16, 14), "item": "kartenstueck_fruehling",
+				{"id": "f_lawine", "f": "graben", "ding": "haufen", "off": Vector2(60, 100), "item": "kartenstueck_fruehling",
 					"hinweis": T.t("Ein Rest Lawinenschnee liegt auf dem Weg. Darunter steckt ein Wegweiser."),
 					"hilfe": T.t("Maggie kann graben!"),
 					"ok": T.t("Maggie gräbt den Wegweiser frei. Daran hängt ein Kartenstück!"),
 					"me": T.t("MoveEye würde sich den Weg merken, damit du ihn wieder findest.")},
-				{"id": "f_loecher", "f": "riechen", "ding": "loecher", "off": Vector2(-34, 36), "richtig": 1,
+				{"id": "f_loecher", "f": "riechen", "ding": "loecher", "off": Vector2(-80, 110), "richtig": 1,
 					"hinweis": T.t("Drei Löcher im Hang. Nur eines ist ein Geheimgang."),
 					"hilfe": T.t("Lass Maggie riechen, wo das Murmeltier war!"),
 					"ok": T.t("Maggie hat es! Das Murmeltier zeigt dir seinen Geheimgang."),
 					"me": T.t("MoveEye würde zählen, wie oft das Murmeltier aus dem Loch schaut.")},
-				{"id": "f_gatter", "f": "schluepfen", "ding": "gatter", "off": Vector2(-8, 62),
+				{"id": "f_gatter", "f": "schluepfen", "ding": "gatter", "off": Vector2(-185, 90),
 					"hinweis": T.t("Das Weidegatter ist zu. Der Haken ist auf der anderen Seite."),
 					"hilfe": T.t("Maggie passt unten durch!"),
 					"ok": T.t("Maggie kriecht unten durch und stupst den Haken hoch. Offen!"),
 					"me": T.t("MoveEye würde sehen, ob auf der Weide Tiere sind.")},
+				{"id": "f_gabel", "f": "warnen", "ding": "gabel", "off": Vector2(-95, -55), "boese": 1,       # Paket «Dauer»
+					"hinweis": T.t("Der Weg teilt sich. Hör auf Maggie!"),
+					"hilfe": T.t("Maggie knurrt zu einem Weg. Nimm den anderen."),
+					"ok": T.t("Gut gemacht! Du hast auf Maggie gehört."),
+					"me": T.t("MoveEye würde jetzt merken, dass sich im Gebüsch etwas bewegt, und dir Bescheid geben.")},
 			]
 		_:
 			return [
-				{"id": "s_spalte", "f": "schluepfen", "ding": "spalte", "off": Vector2(20, -12), "item": "seil",
+				{"id": "s_spalte", "f": "schluepfen", "ding": "spalte", "off": Vector2(110, 80), "item": "seil",
 					"hinweis": T.t("Zwei grosse Felsen. Der Spalt dazwischen ist viel zu eng für dich."),
 					"hilfe": T.t("Maggie passt durch enge Stellen!"),
 					"ok": T.t("Maggie kriecht durch und bringt dir ein Seilende. Jetzt kommst du hinüber!"),
 					"me": T.t("MoveEye würde schauen, ob hinter den Felsen alles ruhig ist.")},
-				{"id": "s_fels", "f": "helfer", "ding": "fels", "off": Vector2(36, -34), "helfer": "steinbock",
+				{"id": "s_fels", "f": "helfer", "ding": "fels", "off": Vector2(120, -40), "helfer": "steinbock",
 					"hinweis": T.t("Die Felswand ist steil. Oben steht ein Steinbock."),
 					"hilfe": T.t("Geh nah zum Steinbock."),
 					"ok": T.t("Der Steinbock trägt dich sicher über die Felsen."),
 					"me": T.t("MoveEye würde von oben weit ins Tal schauen.")},
-				{"id": "s_geroell", "f": "graben", "ding": "haufen", "off": Vector2(52, -52), "item": "kartenstueck_sommer",
+				{"id": "s_geroell", "f": "graben", "ding": "haufen", "off": Vector2(-48, -150), "item": "kartenstueck_sommer",
 					"hinweis": T.t("Geröll versperrt eine kleine Nische. Etwas schaut heraus."),
 					"hilfe": T.t("Maggie kann graben!"),
 					"ok": T.t("Maggie scharrt die Steine weg und bringt dir ein Kartenstück!"),
 					"me": T.t("MoveEye würde hören, wenn Steine rollen.")},
-				{"id": "s_gabel", "f": "warnen", "ding": "gabel", "off": Vector2(40, -78), "boese": -1,
+				{"id": "s_gabel", "f": "warnen", "ding": "gabel", "off": Vector2(-190, -130), "boese": -1,
 					"hinweis": T.t("Der Weg teilt sich im hohen Gras. Maggie schnuppert."),
 					"hilfe": T.t("Maggie knurrt zu einem Weg. Nimm den anderen."),
 					"ok": T.t("Gut! Im Gras auf dem anderen Weg hat es geraschelt."),
@@ -330,8 +346,9 @@ func _stationen(r: String) -> Array:
 func _aufgaben_namen() -> Dictionary:
 	"""kurze Namen der Stationen (für die Aufgaben-Liste des Rahmens)"""
 	return {"h_spur": T.t("Den Weg im Nebel finden"), "h_laub": T.t("Was glitzert im Laub?"), "h_gabel": T.t("Der richtige Weg an der Gabelung"),
-		"w_tuer": T.t("Die Tür der Schutzhütte öffnen"), "w_eis": T.t("Das Kartenstück auf dem Eis"), "w_gabel": T.t("Der richtige Weg im Schnee"),
-		"f_lawine": T.t("Den Wegweiser ausgraben"), "f_loecher": T.t("Den Geheimgang finden"), "f_gatter": T.t("Das Weidegatter öffnen"),
+		"h_gabel2": T.t("Der richtige Weg an der Gabelung"),
+		"w_tuer": T.t("Die Tür der Schutzhütte öffnen"), "w_eis": T.t("Das Kartenstück auf dem Eis"), "w_gabel": T.t("Der richtige Weg im Schnee"), "w_gabel2": T.t("Der richtige Weg im Schnee"),
+		"f_lawine": T.t("Den Wegweiser ausgraben"), "f_loecher": T.t("Den Geheimgang finden"), "f_gatter": T.t("Das Weidegatter öffnen"), "f_gabel": T.t("Der richtige Weg an der Gabelung"),
 		"s_spalte": T.t("Durch die Felsspalte"), "s_fels": T.t("Über die steilen Felsen"), "s_geroell": T.t("Was steckt im Geröll?"),
 		"s_gabel": T.t("Der richtige Weg im hohen Gras")}
 
@@ -659,7 +676,7 @@ func _fertig(st_: Dictionary) -> void:
 	_geloest_zeigen(st_)
 	raetsel_geloest.emit(region, id)
 	Spieltest.ereignis("maggie", "fortschritt", {"raetsel": id})              # Spieltest: Rätsel gelöst
-	if str(st_["ding"]) == "gabel" and region == "herbst":
+	if id == "h_gabel":                                   # (der Fuchs nur an der ersten Gabelung)
 		helfer.szene("fuchs_ablenken", st_)
 	if idx < stationen.size() and str(stationen[idx]["id"]) == id:
 		idx += 1

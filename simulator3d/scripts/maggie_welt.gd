@@ -11,27 +11,30 @@ const HELPER_LAYER := 128             # main.HELPER_LAYER: only the window sees 
 
 # region id -> data. rests: Rastplätze (valley x, z) – the first one is the spot of MoveEye; tor: the Jahreszeiten-Tor.
 # All points checked on the height map (slope < 12°, not in a lake; Probe 31.10.2026).
+# Paket «Geschichten: Dauer» (31.10.2026): 3 Rastplätze und weitere Wege, damit eine Region ca. 25–30 Min. dauert (Ziel
+# Daniel: Geschichte ca. 2 h). weg: die Reihenfolge der Ziele für den Pfeil (s = nächste Station von Maggie, r = nächster
+# Rastplatz, x = das Schutzding; danach das Tor) – Rechnung und Messung in REAL_STORY_DAUER.md.
 const REG := {
 	"herbst": {"name": "Herbsttal", "col": Color(0.95, 0.55, 0.18), "hour": 16.6, "weather": "clear",
-		"rests": [Vector2(-420, -230), Vector2(-694, -134)], "tor": Vector2(-810, -230),
+		"rests": [Vector2(-420, -230), Vector2(-640, -235), Vector2(-800, -130)], "tor": Vector2(-870, -170), "weg": "ssrxssr",
 		"short": "Gelbe Lärchen, Nebel über dem Moor – und Wildschweine.",
 		"intro": "Im Herbsttal hängt Nebel über dem Moor. Die Lärchen leuchten gelb. Zwischen den Büschen wühlen Wildschweine – sie haben den Kristall gerochen. Zum Glück mögen Wildschweine kein Wasser.",
 		"done": "Die Wildschweine sind weg. Das Herbsttal ist geschafft!",
 		"tipp": "Wildschweine mögen kein Wasser. Bäche und Flaschen sind deine Freunde."},
 	"winter": {"name": "Wintertal", "col": Color(0.6, 0.82, 1.0), "hour": 15.9, "weather": "clear",
-		"rests": [Vector2(470, 310), Vector2(632, 450)], "tor": Vector2(690, 330),
+		"rests": [Vector2(470, 310), Vector2(480, 368), Vector2(632, 450)], "tor": Vector2(688, 328), "weg": "ssrxssr",
 		"short": "Schnee am Gletscher, kurze Tage – und Wölfe.",
 		"intro": "Im Wintertal liegt tiefer Schnee. Es wird früh dunkel. Hinter den Felsen heulen Wölfe. Sie wollen den Kristall – aber vor Feuer und hellem Licht haben sie Respekt.",
 		"done": "Die Wölfe halten Abstand. Das Wintertal ist geschafft!",
 		"tipp": "Wölfe meiden helles Licht. Eine Fackel oder Laterne hilft."},
 	"fruehling": {"name": "Frühlingstal", "col": Color(0.5, 0.9, 0.45), "hour": 9.4, "weather": "clear",
-		"rests": [Vector2(-30, -250), Vector2(-142, -332)], "tor": Vector2(-250, -470),
+		"rests": [Vector2(-30, -250), Vector2(-262, -232), Vector2(-142, -332)], "tor": Vector2(-250, -470), "weg": "ssxrssr",
 		"short": "Schmelzwasser, Krokusse am See – und ein Krähenschwarm.",
 		"intro": "Im Frühlingstal rauscht das Schmelzwasser. Am See blühen Krokusse. Aber über dem Wald kreist ein grosser Krähenschwarm. Lauter Glockenklang mögen die Krähen gar nicht.",
 		"done": "Der Krähenschwarm ist davongeflogen. Das Frühlingstal ist geschafft!",
 		"tipp": "Krähen erschrecken bei lautem Glockenklang."},
 	"sommer": {"name": "Sommertal", "col": Color(1.0, 0.85, 0.3), "hour": 18.8, "weather": "clear",
-		"rests": [Vector2(-512, 548), Vector2(-420, 450)], "tor": Vector2(-650, 430),
+		"rests": [Vector2(-512, 548), Vector2(-470, 380), Vector2(-598, 450)], "tor": Vector2(-650, 430), "weg": "ssxrssr",
 		"short": "Hoch oben, warme Steine – und Vipern.",
 		"intro": "Im Sommertal ist es warm. Hoch oben liegen viele Steine in der Sonne. Dazwischen schlängeln sich Vipern. Wenn du fest auftrittst, spüren sie das und verschwinden.",
 		"done": "Die Vipern haben sich verkrochen. Das Sommertal ist geschafft!",

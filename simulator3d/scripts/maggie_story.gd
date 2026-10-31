@@ -470,6 +470,7 @@ func info() -> Dictionary:
 			"player": [snappedf(p.x, 0.1), snappedf(p.y, 0.1), snappedf(p.z, 0.1)], "rests": rs, "last_rest": _last_rest,
 			"tor": [snappedf(_tor_p.x, 0.1), snappedf(_tor_p.z, 0.1)], "tor_open": _tor_open, "tasks": tasks,
 			"zukunft_orte": _zk_orte.size(), "modules": _modules.size(), "geschuetzt": geschuetzt(), "scene": main.scene,
+			"ziel": _goal_info(),
 			"lite": Welt.lite()}
 
 
@@ -1032,11 +1033,75 @@ func _next_goal() -> Array:
 		return [_chapel.to_global(Welt.ALTAR + Vector3(0, 0, 1.2)), T.t("Bergkapelle")]
 	if phase == "intro_walk":
 		return [_dig_p, T.t("Maggie")]
-	for i in range(_rests.size()):
-		if not bool(_rests[i]["reached"]):
-			return [_rests[i]["pos"], T.t("Rastplatz %d", [i + 1])]
+	var wg := _weg_goal()
+	if not wg.is_empty():
+		return wg
+	if region == "" or not Welt.REG.has(region) or not Welt.REG[region].has("weg"):
+		for i in range(_rests.size()):
+			if not bool(_rests[i]["reached"]):
+				return [_rests[i]["pos"], T.t("Rastplatz %d", [i + 1])]
 	if _tor != null:
 		return [_tor_p, T.t("Jahreszeiten-Tor") if _tor_open else T.t("Jahreszeiten-Tor (noch zu)")]
+	return []
+
+
+func _goal_info() -> Array:
+	"""(tests) [name, distance m] of the goal the arrow shows"""
+	if not running or not (phase in WALK or phase == "pause"):
+		return []
+	var g := _next_goal()
+	if g.is_empty():
+		return []
+	var p := spieler_pos()
+	return [str(g[1]), snappedf(Vector2((g[0] as Vector3).x - p.x, (g[0] as Vector3).z - p.z).length(), 0.1)]
+
+
+func _weg_goal() -> Array:
+	"""Paket «Dauer» (31.10.2026): der Pfeil führt der Reihe nach durch die Region (Welt.REG[…]["weg"]: s = nächste Station
+	von Maggie, r = nächster Rastplatz, x = das Schutzding). Vorher zeigte er nur Rastplätze und Tor – die Stationen fand man
+	kaum, und das Tor blieb zu (Stelle, an der man nicht weiterkam). Übersprungene Rastplätze sind kein Ziel mehr.
+	[] = nichts mehr offen (dann das Tor)"""
+	if region == "" or not Welt.REG.has(region):
+		return []
+	var weg := str(Welt.REG[region].get("weg", ""))
+	var hund = null
+	var gef = null
+	for m in _modules:
+		if is_instance_valid(m) and m.has_method("aktuell") and m.get("stationen") is Array:
+			hund = m
+		if is_instance_valid(m) and m.has_method("schutz_ort"):
+			gef = m
+	var items := []                                      # [pos (Welt), name, done, kind]
+	var si := 0
+	var ri := 1
+	for k in weg:
+		match k:
+			"s":
+				if hund != null and si < (hund.stationen as Array).size():
+					var st_: Dictionary = hund.stationen[si]
+					var id := str(st_["id"])
+					if st_.has("p") and _tasks.has(id):
+						var p: Vector3 = st_["p"]
+						items.append([tal_punkt(p.x, p.z), str(_tasks[id]["text"]), bool(_tasks[id]["done"]), "s"])
+				si += 1
+			"r":
+				if ri < _rests.size():
+					items.append([_rests[ri]["pos"], T.t("Rastplatz %d", [ri + 1]), bool(_rests[ri]["reached"]), "r"])
+				ri += 1
+			"x":
+				var xid := "schutz_" + region
+				if gef != null and _tasks.has(xid):
+					items.append([gef.schutz_ort(region), str(_tasks[xid]["text"]), bool(_tasks[xid]["done"]), "x"])
+	var last := -1                                       # the furthest station / rest already done (the Schutzding: any time)
+	for i in range(items.size()):
+		if bool(items[i][2]) and str(items[i][3]) != "x":
+			last = i
+	for i in range(last + 1, items.size()):
+		if not bool(items[i][2]):
+			return [items[i][0], items[i][1]]
+	for it in items:                                     # a station or the Schutzding left behind
+		if not bool(it[2]) and str(it[3]) != "r":
+			return [it[0], it[1]]
 	return []
 
 
