@@ -1,8 +1,16 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.29** · passende MoveEye-Version (früher Motion Watch) **2.98.60**
+Stand: 31.10.2026 · Simulator-Version **3D-4.30** · passende MoveEye-Version (früher Motion Watch) **2.98.61**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.30 (MoveEye 2.98.61): Erlebniswelt im Ferienpark (`erlebniswelt.gd`, 19 Vignetten)
+
+- `erlebniswelt.gd` (neu): 18 Abläufe (innere Klassen) an den reservierten Orten von `ferienpark.gd`, nur aktiv unter 60 m
+  (Ansicht oder MoveEye), unsichtbar über 180 m, bei Testlauf / Prüfstand weg. Figuren aus `actor.gd` («puppet», neue Geste
+  «wave»). Steuerung `{"action":"ferienpark","do":"erleben","what":…}`. Entdeckungen über `main.entdecken.register()`.
+- `_lite()` = `Quality.lite()`. Knopf `disc_seek` mit `controls[-1]["only"]` nur in der Szene «ferienpark» (Fenster und MoveEye).
+- `overlay3d.gd`: MoveEye-Boxen auf Erlebniswelt-Figuren = «✓ erkannt». Details: Zweig `erlebniswelt`, REAL_ERLEBEN.
 
 ## NEU in 3D-4.29 (MoveEye 2.98.60): «Neu in dieser Version» scrollt, Esc schliesst (`news.gd`)
 
