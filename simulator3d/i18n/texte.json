@@ -1051,6 +1051,12 @@
   "it": "%d× preso (%d corridori): %+d",
   "rm": "%d× tschiffà (%d curriders): %+d"
  },
+ "%s %d×": {
+  "en": "%s %d×",
+  "fr": "%s %d×",
+  "it": "%s %d×",
+  "rm": "%s %d×"
+ },
  "%s %s dabei – schnell zum AUSGANG! ": {
   "en": "%s %s with you – quick, to the EXIT! ",
   "fr": "%s %s avec toi – vite, vers la SORTIE ! ",
@@ -1747,6 +1753,12 @@
   "it": "Sera, crepuscolo",
   "rm": "Saira, crepuscul"
  },
+ "Abendrot": {
+  "en": "Evening red",
+  "fr": "Rougeoiement du soir",
+  "it": "Rosso della sera",
+  "rm": "Cotschnas da la saira"
+ },
  "Abfalleimer": {
   "en": "Waste bin",
   "fr": "Poubelle",
@@ -1800,6 +1812,36 @@
   "fr": "Badge",
   "it": "Distintivo",
   "rm": "Insigna"
+ },
+ "Abzeichen und Aussichtspunkte im Bergtal zeigen": {
+  "en": "Show badges and viewpoints of the mountain valley",
+  "fr": "Afficher les badges et les points de vue de la vallée",
+  "it": "Mostrare distintivi e belvederi della valle alpina",
+  "rm": "Mussar insignas e puncts da vista da la val da muntogna"
+ },
+ "Abzeichen: ": {
+  "en": "Badge: ",
+  "fr": "Badge : ",
+  "it": "Distintivo: ",
+  "rm": "Insigna: "
+ },
+ "Abzeichen: Alle Gipfel": {
+  "en": "Badge: All summits",
+  "fr": "Badge : Tous les sommets",
+  "it": "Distintivo: Tutte le vette",
+  "rm": "Insigna: Tut ils pizs"
+ },
+ "Abzeichen: Nebelmeer gesehen": {
+  "en": "Badge: Sea of fog seen",
+  "fr": "Badge : Mer de brouillard vue",
+  "it": "Distintivo: Mare di nebbia visto",
+  "rm": "Insigna: Mar da tschajera vis"
+ },
+ "Abzeichen: Sonnenaufgang auf dem Grat": {
+  "en": "Badge: Sunrise on the ridge",
+  "fr": "Badge : Lever du soleil sur la crête",
+  "it": "Distintivo: Alba sulla cresta",
+  "rm": "Insigna: Levada dal sulegl sin la creta"
  },
  "Abzweigung Wyssgletscher": {
   "en": "Junction Wyssgletscher",
@@ -2119,6 +2161,12 @@
   "it": "Gracchi alpini litigano per un panino",
   "rm": "Curvs alpins dispitan per in sandwich"
  },
+ "Alpenglühen": {
+  "en": "Alpenglow",
+  "fr": "Alpenglühen (embrasement des Alpes)",
+  "it": "Enrosadira",
+  "rm": "Splendur alpina"
+ },
  "Alphornbläser bei Sonnenaufgang, Kühe kommen gerannt": {
   "en": "Alphorn player at sunrise, cows come running",
   "fr": "Joueur de cor des Alpes au lever du soleil, les vaches accourent",
@@ -2257,6 +2305,12 @@
   "it": "acceso",
   "rm": "activ"
  },
+ "An einem Aussichtspunkt, zur richtigen Zeit.": {
+  "en": "At a viewpoint, at the right time.",
+  "fr": "À un point de vue, au bon moment.",
+  "it": "A un belvedere, al momento giusto.",
+  "rm": "En in punct da vista, al dretg mument."
+ },
  "An einem Baum / Pfosten befestigt": {
   "en": "Fixed to a tree / post",
   "fr": "Fixé à un arbre / un poteau",
@@ -2286,6 +2340,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Andere beobachten (Bergtal: vom Aussichtspunkt aus)": {
+  "en": "Watch others (mountain valley: from the viewpoint)",
+  "fr": "Observer les autres (vallée de montagne : depuis le point de vue)",
+  "it": "Osservare gli altri (valle alpina: dal belvedere)",
+  "rm": "Observar auters (val da muntogna: dal punct da vista)"
  },
  "Andere Welt": {
   "en": "Another world",
@@ -2695,6 +2755,30 @@
   "it": "Belvedere 512 m s.l.m.",
   "rm": "Punct da vista 512 m s. m."
  },
+ "Aussichtspunkt besucht": {
+  "en": "Viewpoint visited",
+  "fr": "Point de vue visité",
+  "it": "Belvedere visitato",
+  "rm": "Punct da vista visità"
+ },
+ "Aussichtspunkt entdeckt:": {
+  "en": "Viewpoint discovered:",
+  "fr": "Point de vue découvert :",
+  "it": "Belvedere scoperto:",
+  "rm": "Punct da vista scuvert:"
+ },
+ "Aussichtspunkt: %s": {
+  "en": "Viewpoint: %s",
+  "fr": "Point de vue : %s",
+  "it": "Belvedere: %s",
+  "rm": "Punct da vista: %s"
+ },
+ "Aussichtspunkte": {
+  "en": "Viewpoints",
+  "fr": "Points de vue",
+  "it": "Belvederi",
+  "rm": "Puncts da vista"
+ },
  "Auto": {
   "en": "Auto",
   "fr": "Auto",
@@ -3091,6 +3175,12 @@
   "it": "Montagne",
   "rm": "Muntognas"
  },
+ "Bergstimmungen (Alpenglühen, Abendrot, Milchstrasse)": {
+  "en": "Mountain moods (alpenglow, evening red, Milky Way)",
+  "fr": "Ambiances de montagne (embrasement, rougeoiement du soir, Voie lactée)",
+  "it": "Atmosfere di montagna (enrosadira, rosso della sera, Via Lattea)",
+  "rm": "Atmosferas da muntogna (splendur alpina, cotschnas da la saira, Via da latg)"
+ },
  "Bergtal": {
   "en": "Mountain valley",
   "fr": "Vallée de montagne",
@@ -3222,6 +3312,12 @@
   "fr": "bouge au vent",
   "it": "si muove al vento",
   "rm": "sa mova en il vent"
+ },
+ "Bewegung: Person bis %d m": {
+  "en": "Motion: person up to %d m",
+  "fr": "Mouvement : personne jusqu’à %d m",
+  "it": "Movimento: persona fino a %d m",
+  "rm": "Moviment: persuna fin %d m"
  },
  "Bewertung jetzt": {
   "en": "Rate now",
@@ -4352,6 +4448,12 @@
   "it": "Lo scatto vale solo in un turno in corso in cui una persona guida la telecamera.",
   "rm": "Il sajet vala mo en ina runda en cursa, en la quala in uman maniescha la camera."
  },
+ "Der Blick auf den Gletscher mit seinen Spalten.": {
+  "en": "The view of the glacier with its crevasses.",
+  "fr": "La vue sur le glacier et ses crevasses.",
+  "it": "La vista sul ghiacciaio con i suoi crepacci.",
+  "rm": "La vista sin il glatscher cun sias sfessas."
+ },
  "Der Bot-Wächter": {
   "en": "The bot guard",
   "fr": "Le gardien-bot",
@@ -4423,6 +4525,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Der Schlafplatz ist ausgesetzt – jetzt runter vom Grat!": {
+  "en": "The sleeping spot is exposed – get off the ridge now!",
+  "fr": "Le bivouac est exposé – descends de la crête maintenant !",
+  "it": "Il posto per dormire è esposto – scendi subito dalla cresta!",
+  "rm": "Il plaz da durmir è exponì – ussa giu da la creta!"
  },
  "Der sieht schon Sterne": {
   "en": "That one is already seeing stars",
@@ -4556,6 +4664,12 @@
   "it": "Sorveglia il vero rilevamento di MoveEye: se segnala una persona, viene preso chi la telecamera vede meglio. Ciò che MoveEye manca va nell’addestramento e sulla mappa dei punti ciechi.",
   "rm": "L’identificaziun vaira da MoveEye fa attenziun: sch’ella annunzia ina persuna, è quel tschiffà che la camera vesa il meglier. Quai che MoveEye mancanta va en il trenament e sin la charta dals puncts orbs."
  },
+ "Die Gipfel leuchten rosa, bevor die Sonne ins Tal kommt.": {
+  "en": "The peaks glow pink before the sun reaches the valley.",
+  "fr": "Les sommets brillent en rose avant que le soleil n’arrive dans la vallée.",
+  "it": "Le vette brillano di rosa prima che il sole arrivi nella valle.",
+  "rm": "Ils pizs glischan rosa, avant ch’il sulegl arriva en la val."
+ },
  "Die GPS-Position wandert mit 1.6 m/s weg (wie zu Fuss). MoveEye braucht «GPS-Modul» und «Diebstahl-Alarm» und muss scharf sein. Nochmals drücken = zurückstellen.": {
   "en": "The GPS position moves away at 1.6 m/s (like on foot). MoveEye needs «GPS module» and «Theft alarm» and must be armed. Press again = put back.",
   "fr": "La position GPS s’éloigne à 1.6 m/s (comme à pied). MoveEye a besoin de «Module GPS» et «Alarme vol» et doit être armé. Appuyer encore = remettre.",
@@ -4603,6 +4717,12 @@
   "fr": "La caméra met plus de temps à te remarquer, ramper est presque sûr. Vies illimitées, 4 minutes, tu vois où regardent les caméras.",
   "it": "La telecamera ci mette di più a notarti, strisciare è quasi sicuro. Vite illimitate, 4 minuti, vedi dove guardano le telecamere.",
   "rm": "La camera dovra dapli temp per ta remartgar, sa trair è quasi segir. Vitas illimitadas, 4 minutas, ti vesas, nua che las cameras guardan."
+ },
+ "die Karte zeigt jetzt, was man von hier sieht.": {
+  "en": "the map now shows what you can see from here.",
+  "fr": "la carte montre maintenant ce qu’on voit d’ici.",
+  "it": "la mappa ora mostra ciò che si vede da qui.",
+  "rm": "la charta mussa ussa, tge ch’ins vesa da qua."
  },
  "Die Karten sind die Schleicher-Stufe (wie schnell die Kamera dich bemerkt). Der Wächter hat seine eigene Stufe darunter.": {
   "en": "The cards are the sneaker level (how fast the camera notices you). The guard has its own level below.",
@@ -4688,6 +4808,12 @@
   "it": "Sorge il sole: presto la telecamera ti vedrà di nuovo meglio.",
   "rm": "Il sulegl leva: bainprest vesa la camera tai puspè meglier."
  },
+ "Die Sonne ging auf, und du standest oben auf dem Grat.": {
+  "en": "The sun rose, and you stood up on the ridge.",
+  "fr": "Le soleil s’est levé, et tu étais là-haut sur la crête.",
+  "it": "Il sole è sorto e tu eri lassù sulla cresta.",
+  "rm": "Il sulegl è levà e ti eras si sin la creta."
+ },
  "die Sonnenbrille": {
   "en": "the sunglasses",
   "fr": "les lunettes de soleil",
@@ -4753,6 +4879,12 @@
   "fr": "La caméra thermique te voit à peine. Mais : elle bruisse fort et brille à la lumière.",
   "it": "La termocamera ti vede appena. Ma: fruscia forte e luccica alla luce.",
   "rm": "La camera termica vesa tai strusch. Ma: ella fa canera e glischa en la glisch."
+ },
+ "Die Zeit im Münzfernrohr ist um.": {
+  "en": "The time in the coin telescope is up.",
+  "fr": "Le temps de la longue-vue est écoulé.",
+  "it": "Il tempo del cannocchiale è scaduto.",
+  "rm": "Il temp dal telescop è passà."
  },
  "Die ZIP-Datei lässt sich nicht öffnen.": {
   "en": "The ZIP file cannot be opened.",
@@ -4905,6 +5037,12 @@
   "it": "Drone",
   "rm": "Drona"
  },
+ "Du beobachtest:": {
+  "en": "You are watching:",
+  "fr": "Tu observes :",
+  "it": "Stai osservando:",
+  "rm": "Ti observas:"
+ },
  "Du fährst den Rover! Pfeiltasten, Maus oder Controller.": {
   "en": "You are driving the rover! Arrow keys, mouse or controller.",
   "fr": "Tu conduis le rover ! Flèches, souris ou manette.",
@@ -4922,6 +5060,12 @@
   "fr": "Tu ressembles à une caisse, pas à un humain. Mais : seulement baissé, très lentement, sans courir – et une caisse qui marche se remarque.",
   "it": "Sembri una scatola, non una persona. Ma: solo abbassato, molto lento, niente corsa – e una scatola che cammina si nota.",
   "rm": "Ti paras ina chista, betg in uman. Ma: mo bassà, fitg plaun, betg currer – ed ina chista che va dat en egl."
+ },
+ "Du warst auf allen Gipfeln und Graten des Bergtals.": {
+  "en": "You have been on all summits and ridges of the mountain valley.",
+  "fr": "Tu as été sur tous les sommets et crêtes de la vallée.",
+  "it": "Sei stato su tutte le vette e creste della valle.",
+  "rm": "Ti es stà sin tut ils pizs e cretas da la val."
  },
  "Duell: MoveEye %d : %d %s": {
   "en": "Duel: MoveEye %d : %d %s",
@@ -4982,6 +5126,18 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Durchs Fernrohr schauen (Bergtal: an einem Aussichtspunkt)": {
+  "en": "Look through the telescope (mountain valley: at a viewpoint)",
+  "fr": "Regarder dans la longue-vue (vallée de montagne : à un point de vue)",
+  "it": "Guardare nel cannocchiale (valle alpina: a un belvedere)",
+  "rm": "Guardar tras il telescop (val da muntogna: en in punct da vista)"
+ },
+ "Durchs Fernrohr: drüben im Hang liegt ein Gleitschirm. Der Pilot ist zum Glück schon weg.": {
+  "en": "Through the telescope: a paraglider lies on the slope over there. Luckily the pilot has already gone.",
+  "fr": "Dans la longue-vue : un parapente gît sur le versant d’en face. Heureusement, le pilote est déjà parti.",
+  "it": "Nel cannocchiale: sul pendio di fronte c’è un parapendio. Per fortuna il pilota se n’è già andato.",
+  "rm": "Tras il telescop: vis-a-vis en la spunda giascha in parapendio. Il pilot è per fortuna gia ì."
  },
  "Dämmerung": {
   "en": "Dusk",
@@ -5133,6 +5289,12 @@
   "it": "attivo",
   "rm": "activà"
  },
+ "Ein Abzeichen der Aussichtspunkte.": {
+  "en": "A badge of the viewpoints.",
+  "fr": "Un badge des points de vue.",
+  "it": "Un distintivo dei belvederi.",
+  "rm": "Ina insigna dals puncts da vista."
+ },
  "Ein Ding wählen und in die Welt klicken, oder ein gesetztes Ding anklicken. MoveEye steht in der Mitte (roter Punkt auf der Karte). %d Dinge.": {
   "en": "Choose a thing and click into the world, or click a placed thing. MoveEye stands in the middle (red dot on the map). %d things.",
   "fr": "Choisir un objet et cliquer dans le monde, ou cliquer sur un objet placé. MoveEye est au milieu (point rouge sur la carte). %d objets.",
@@ -5175,6 +5337,12 @@
   "it": "Arriva un temporale",
   "rm": "In urizi vegn"
  },
+ "Ein Gipfel mit Rundumsicht – ausgesetzt und windig.": {
+  "en": "A summit with an all-round view – exposed and windy.",
+  "fr": "Un sommet avec vue panoramique – exposé et venteux.",
+  "it": "Una vetta con vista a 360° – esposta e ventosa.",
+  "rm": "In piz cun vista enturn enturn – exponì e ventus."
+ },
  "Ein Kind kommt zum Spielen!": {
   "en": "A child comes to play!",
   "fr": "Un enfant vient jouer !",
@@ -5210,6 +5378,12 @@
   "fr": "Un chevreuil sort de la forêt.",
   "it": "Un capriolo esce dal bosco.",
   "rm": "In chavriel vegn or dal guaud."
+ },
+ "Ein roter Rucksack weit unten neben dem Weg – jemand hat ihn bei der Pause vergessen.": {
+  "en": "A red backpack far below beside the trail – someone forgot it during a break.",
+  "fr": "Un sac à dos rouge tout en bas à côté du sentier – quelqu’un l’a oublié pendant une pause.",
+  "it": "Uno zaino rosso giù in basso accanto al sentiero – qualcuno l’ha dimenticato durante una pausa.",
+  "rm": "In satgados cotschen giu bass sper la senda – insatgi l’ha emblidà durant ina pausa."
  },
  "Ein Schleicher will das Velo holen! Erwischt ihn MoveEye?": {
   "en": "A sneaker wants to take the bike! Will MoveEye catch them?",
@@ -5253,6 +5427,12 @@
   "it": "Un sentiero dietro i WC porta a una capanna sull’albero con una scala di corda.",
   "rm": "Ina senda davos il WC maina tar ina chamona en la planta cun stgala da suga."
  },
+ "Ein weisses Meer aus Nebel, die Gipfel schauen heraus wie Inseln.": {
+  "en": "A white sea of fog, the peaks stick out like islands.",
+  "fr": "Une mer blanche de brouillard, les sommets en sortent comme des îles.",
+  "it": "Un mare bianco di nebbia, le vette spuntano come isole.",
+  "rm": "In mar alv da tschajera, ils pizs guardan ora sco inslas."
+ },
  "Ein Wildschwein wühlt im Boden!": {
   "en": "A wild boar digs in the ground!",
   "fr": "Un sanglier fouille le sol !",
@@ -5276,6 +5456,12 @@
   "fr": "une tente",
   "it": "una tenda",
   "rm": "ina tenda"
+ },
+ "Ein zweites Zelt weit hinten": {
+  "en": "A second tent far away",
+  "fr": "Une deuxième tente au loin",
+  "it": "Una seconda tenda lontano",
+  "rm": "Ina segunda tenda lunsch davent"
  },
  "Ein-Klick-Demo": {
   "en": "One-click demo",
@@ -5307,6 +5493,12 @@
   "it": "Caricare un file e avviarlo qui su questo PC",
   "rm": "Leger ina datoteca e la cumenzar qua sin quest PC"
  },
+ "Eine Felskanzel hoch über dem Tal.": {
+  "en": "A rock pulpit high above the valley.",
+  "fr": "Un promontoire rocheux haut au-dessus de la vallée.",
+  "it": "Un pulpito di roccia alto sopra la valle.",
+  "rm": "Ina chanzla da crap aut sur la val."
+ },
  "Eine Nebelbank kommt": {
   "en": "A fog bank is coming",
   "fr": "Un banc de brouillard arrive",
@@ -5324,6 +5516,12 @@
   "fr": "Une manche normale.",
   "it": "Un turno normale.",
   "rm": "Ina runda normala."
+ },
+ "Eine rot-weisse Picknickdecke mit Korb auf der Weide – aber niemand weit und breit.": {
+  "en": "A red and white picnic blanket with a basket on the pasture – but nobody in sight.",
+  "fr": "Une couverture de pique-nique rouge et blanche avec un panier sur le pâturage – mais personne à la ronde.",
+  "it": "Una coperta da picnic bianca e rossa con un cestino sul pascolo – ma nessuno in giro.",
+  "rm": "Ina cuverta da picnic cotschna-alva cun in chanaster sin la pastgira – ma nagin enturn."
  },
  "Einen echten Ort nachbauen. In der Schweiz geht es direkt mit der Karte; weltweit über Blender (gratis) und OpenStreetMap – das Ergebnis als .glb hier laden.": {
   "en": "Rebuild a real place. In Switzerland it works directly with the map; worldwide via Blender (free) and OpenStreetMap – load the result as .glb here.",
@@ -6029,6 +6227,18 @@
   "it": "Campo",
   "rm": "Champ"
  },
+ "Feldstecher": {
+  "en": "Binoculars",
+  "fr": "Jumelles",
+  "it": "Binocolo",
+  "rm": "Binocul"
+ },
+ "Feldstecher (8×): schau mit der Maus herum.": {
+  "en": "Binoculars (8×): look around with the mouse.",
+  "fr": "Jumelles (8×) : regarde avec la souris.",
+  "it": "Binocolo (8×): guarda in giro col mouse.",
+  "rm": "Binocul (8×): guarda enturn cun la mieur."
+ },
  "Fels": {
   "en": "Rock",
   "fr": "Rocher",
@@ -6226,6 +6436,12 @@
   "fr": "Chauves-souris à la lumière (la nuit)",
   "it": "Pipistrelli alla luce (di notte)",
   "rm": "Mez-mieurs a la glisch (da notg)"
+ },
+ "Folge den Wegweisern nach oben – dort ist die Aussicht weit.": {
+  "en": "Follow the signposts upwards – the view is wide up there.",
+  "fr": "Suis les panneaux vers le haut – la vue y est large.",
+  "it": "Segui i cartelli verso l’alto – lassù la vista è ampia.",
+  "rm": "Suonda ils indicaturs ensi – là sisum è la vista lada."
  },
  "Folgen": {
   "en": "Follow",
@@ -6437,6 +6653,12 @@
   "it": "Programma 3D gratuito, anche per ridurre e adattare modelli.",
   "rm": "Program 3D gratuit, er per reducir ed adattar models."
  },
+ "Fremder": {
+  "en": "Stranger",
+  "fr": "Inconnu",
+  "it": "Sconosciuto",
+  "rm": "Ester"
+ },
  "Fremder am Rucksack": {
   "en": "Stranger at the backpack",
   "fr": "Inconnu près du sac à dos",
@@ -6622,6 +6844,12 @@
   "fr": "Fourchette",
   "it": "Forchetta",
   "rm": "Furtgetta"
+ },
+ "Ganz hinten steht noch ein Zelt – du bist doch nicht ganz allein im Tal.": {
+  "en": "Far back there is another tent – you are not quite alone in the valley after all.",
+  "fr": "Tout au fond, il y a encore une tente – tu n’es pas tout seul dans la vallée.",
+  "it": "In fondo c’è un’altra tenda – non sei del tutto solo nella valle.",
+  "rm": "Dal tut davos stat anc ina tenda – ti n’es betg dal tut sulet en la val."
  },
  "Ganz normal, ohne Tarnung.": {
   "en": "Completely normal, without camouflage.",
@@ -6984,6 +7212,12 @@
   "it": "Temporale",
   "rm": "Urizi"
  },
+ "Gewitter kommt von weitem (Bergtal: zuerst am Horizont)": {
+  "en": "Thunderstorm comes from afar (mountain valley: first on the horizon)",
+  "fr": "Un orage arrive de loin (vallée de montagne : d’abord à l’horizon)",
+  "it": "Un temporale arriva da lontano (valle alpina: prima all’orizzonte)",
+  "rm": "In urizi vegn da lunsch (val da muntogna: l’emprim a l’orizont)"
+ },
  "Gewitter mit Blitzen (bei Regen; die Blitze sind auch eine typische Fehlalarm-Ursache)": {
   "en": "Thunderstorm with lightning (with rain; lightning is also a typical cause of false alarms)",
   "fr": "Orage avec éclairs (avec pluie ; les éclairs sont aussi une cause typique de fausses alarmes)",
@@ -7008,6 +7242,12 @@
   "it": "Temporale! Posto esposto – scendi dalla cresta, cerca riparo (capanna, bivacco)",
   "rm": "Urizi! Plazza exponida – davent da la creta, tschertgar protecziun (tegia, bivac)"
  },
+ "Gewitterwolken im Westen": {
+  "en": "Thunderclouds in the west",
+  "fr": "Nuages d’orage à l’ouest",
+  "it": "Nuvole temporalesche a ovest",
+  "rm": "Nivels d’urizi en il vest"
+ },
  "Gewählt: ": {
   "en": "Chosen: ",
   "fr": "Choisi : ",
@@ -7025,6 +7265,18 @@
   "fr": "endroit choisi",
   "it": "luogo scelto",
   "rm": "lieu tschernì"
+ },
+ "Gipfel": {
+  "en": "Summits",
+  "fr": "Sommets",
+  "it": "Vette",
+  "rm": "Pizs"
+ },
+ "Gipfel-Schlafplatz: schöne Aussicht, aber viel Wind –": {
+  "en": "Summit sleeping spot: beautiful view, but lots of wind –",
+  "fr": "Bivouac au sommet : belle vue, mais beaucoup de vent –",
+  "it": "Posto per dormire in vetta: bella vista, ma molto vento –",
+  "rm": "Plaz da durmir sin il piz: bella vista, ma bler vent –"
  },
  "Gipfelbuch beim Kreuz (Tschingelspitz)": {
   "en": "Summit book at the cross (Tschingelspitz)",
@@ -7139,6 +7391,12 @@
   "fr": "Parapente (au sol)",
   "it": "Parapendio (a terra)",
   "rm": "Parapendi (per terra)"
+ },
+ "Gleitschirm am Gegenhang": {
+  "en": "Paraglider on the opposite slope",
+  "fr": "Parapente sur le versant d’en face",
+  "it": "Parapendio sul versante opposto",
+  "rm": "Parapendio sin la spunda visavi"
  },
  "Gleitschirm landet auf der Kuhweide": {
   "en": "Paraglider lands on the cow pasture",
@@ -7741,6 +7999,12 @@
   "it": "Avviso (autogestito)",
   "rm": "Avis (tegia senza survegliader)"
  },
+ "Hirsch": {
+  "en": "Deer",
+  "fr": "Cerf",
+  "it": "Cervo",
+  "rm": "Tschierv"
+ },
  "Hmm, nicht ganz. Schau nochmals genau hin!": {
   "en": "Hmm, not quite. Look again carefully!",
   "fr": "Hmm, pas tout à fait. Regarde encore bien !",
@@ -7752,6 +8016,12 @@
   "fr": "Portrait",
   "it": "Verticale",
   "rm": "Vertical"
+ },
+ "Hoch über dem See – die Berge spiegeln sich im Wasser.": {
+  "en": "High above the lake – the mountains are reflected in the water.",
+  "fr": "Haut au-dessus du lac – les montagnes se reflètent dans l’eau.",
+  "it": "Alto sopra il lago – le montagne si specchiano nell’acqua.",
+  "rm": "Aut sur il lai – las muntognas sa reflecteschan en l’aua."
  },
  "hoch: zufällige Kleider und Muster, Haltungen, Dinge in der Hand, Lampen und Sonnenstand, Wetter, alle Szenen, weit weg, teils verdeckt, Kamera-Fehler (Rauschen, Unschärfe, JPEG), leere Bilder mit Ästen, Fahnen, Lichtern und Insekten": {
   "en": "high: random clothes and patterns, postures, things in the hand, lamps and sun position, weather, all scenes, far away, partly hidden, camera errors (noise, blur, JPEG), empty pictures with branches, flags, lights and insects",
@@ -8131,6 +8401,12 @@
   "it": "Cliccare nel mondo = punto, clic destro su un punto = via",
   "rm": "Cliccar en il mund = punct, clic dretg sin in punct = davent"
  },
+ "in etwa": {
+  "en": "in about",
+  "fr": "dans environ",
+  "it": "tra circa",
+  "rm": "en var"
+ },
  "In MoveEye: Reiter Simulator → Verbindung: die Adresse dieses PCs eintragen (gleiches Netz) – oder unten den Tunnel nutzen.": {
   "en": "",
   "fr": "",
@@ -8178,6 +8454,12 @@
   "fr": "Lumière infrarouge toujours allumée (aussi sans MoveEye)",
   "it": "Luce infrarossa sempre accesa (anche senza MoveEye)",
   "rm": "Glisch infracotschna adina envidada (er senza MoveEye)"
+ },
+ "Infrarot: bis %d m": {
+  "en": "Infrared: up to %d m",
+  "fr": "Infrarouge : jusqu’à %d m",
+  "it": "Infrarosso: fino a %d m",
+  "rm": "Infracotschen: fin %d m"
  },
  "Insekten am Licht": {
   "en": "Insects at the light",
@@ -8395,6 +8677,12 @@
   "it": "Calendario: più gente nel fine settimana, meno d’inverno",
   "rm": "Chalender: la fin d’emna dapli glieud, d’enviern main"
  },
+ "Kalte Nacht am Gipfel": {
+  "en": "Cold night on the summit",
+  "fr": "Nuit froide au sommet",
+  "it": "Notte fredda in vetta",
+  "rm": "Notg fraida sin il piz"
+ },
  "Kamera": {
   "en": "Camera",
   "fr": "Caméra",
@@ -8592,6 +8880,12 @@
   "fr": "Chargement de la carte …",
   "it": "Carico la mappa …",
   "rm": "La charta chargia …"
+ },
+ "Karte nach und nach aufdecken (Bergtal: Aussichtspunkte decken auf)": {
+  "en": "Uncover the map bit by bit (mountain valley: viewpoints uncover it)",
+  "fr": "Découvrir la carte peu à peu (vallée de montagne : les points de vue la dévoilent)",
+  "it": "Scoprire la mappa poco a poco (valle alpina: i belvederi la svelano)",
+  "rm": "Scuvrir la charta pass per pass (val da muntogna: ils puncts da vista la scuvran)"
  },
  "Karte schliessen (Esc)": {
   "en": "Close map (Esc)",
@@ -8851,6 +9145,12 @@
   "it": "Aiuto IA per questo turno (tasto K): spento → riquadri IA → l’IA mira → pilota automatico IA. Con l’aiuto IA il turno non conta per la classifica.",
   "rm": "Agid IA per questa runda (tasta K): deactivà → roms IA → l’IA mira → autopilot IA. Cun agid IA na quinta la runda betg per la rangaziun."
  },
+ "KI-Person bis %d m": {
+  "en": "AI person up to %d m",
+  "fr": "Personne IA jusqu’à %d m",
+  "it": "Persona IA fino a %d m",
+  "rm": "Persuna IA fin %d m"
+ },
  "KI-Rahmen": {
   "en": "AI frames",
   "fr": "Cadres IA",
@@ -9019,6 +9319,12 @@
   "fr": "Dégagé",
   "it": "Sereno",
   "rm": "Cler"
+ },
+ "Klare Bergnacht: die Milchstrasse spannt sich über den Himmel.": {
+  "en": "Clear mountain night: the Milky Way stretches across the sky.",
+  "fr": "Nuit claire en montagne : la Voie lactée traverse le ciel.",
+  "it": "Notte limpida in montagna: la Via Lattea attraversa il cielo.",
+  "rm": "Notg clera en las muntognas: la Via da latg sa stenda sur il tschiel."
  },
  "Klare Nacht, weiter Himmel – die Milchstrasse über dem Bergtal.": {
   "en": "Clear night, wide sky – the Milky Way above the valley.",
@@ -10084,6 +10390,12 @@
   "it": "Mouse: trascinare a sinistra = spostare · trascinare a destra = girare · rotella = zoom (Shift + rotella: velocità di W A S D) · tasto centrale o Alt + destra = guardarsi intorno · doppio clic = volare lì · cliccare un visitatore = selezionare, trascinare = portare.  Tasti: W A S D Q E volare (Shift più veloce) · 1 / 2 telecamera · 3 immagine termica · 0 libero · F seguire · Canc rimuovere · Esc deselezionare · H pannello · P telefonino / tablet · K mappa · G fucile (clic sinistro = colpo)",
   "rm": "Mieur: trair a sanestra = spustar · trair a dretga = volver · roda = zoom (Shift + roda: tempo da W A S D) · tasta dal mez u Alt + dretga = guardar enturn · dubel clic = svolar là · cliccar visitader = tscherner, trair = purtar.  Tastas: W A S D Q E svolar (Shift pli svelt) · 1 / 2 camera · 3 maletg termic · 0 liber · F suandar · Del allontanar · Esc betg pli tscherner · H panela · P telefonin / tablet · K charta · G schluppet (clic sanester = sajet)"
  },
+ "Maus: schauen · nochmals drücken: beenden": {
+  "en": "Mouse: look · press again: stop",
+  "fr": "Souris : regarder · appuyer encore : terminer",
+  "it": "Mouse: guardare · premere di nuovo: terminare",
+  "rm": "Mieur: guardar · smatgar anc ina giada: terminar"
+ },
  "Mehr": {
   "en": "More",
   "fr": "Plus",
@@ -10288,6 +10600,12 @@
   "it": "Microonde",
   "rm": "Microundas"
  },
+ "Milchstrasse": {
+  "en": "Milky Way",
+  "fr": "Voie lactée",
+  "it": "Via Lattea",
+  "rm": "Via da latg"
+ },
  "MINIGOLF": {
   "en": "MINIGOLF",
   "fr": "MINIGOLF",
@@ -10305,6 +10623,12 @@
   "fr": "Piste de minigolf",
   "it": "Pista di minigolf",
   "rm": "Pista da minigolf"
+ },
+ "Minuten am Schlafplatz.": {
+  "en": "minutes at the sleeping spot.",
+  "fr": "minutes au bivouac.",
+  "it": "minuti al posto per dormire.",
+  "rm": "minutas al plaz da durmir."
  },
  "Missionen  ⭐ %d": {
   "en": "Missions  ⭐ %d",
@@ -10853,6 +11177,12 @@
   "it": "Supporto di MoveEye al posto per dormire (valle alpina)",
   "rm": "Tegnida da MoveEye tar la plazza da durmir (val)"
  },
+ "MoveEye-Reichweite auf der Landschaft zeigen (Bergtal)": {
+  "en": "Show MoveEye’s range on the landscape (mountain valley)",
+  "fr": "Afficher la portée de MoveEye sur le paysage (vallée de montagne)",
+  "it": "Mostrare la portata di MoveEye sul paesaggio (valle alpina)",
+  "rm": "Mussar la tanschida da MoveEye sin la cuntrada (val da muntogna)"
+ },
  "MoveEye: noch keine Angaben (verbinden, MoveEye ab 2.95.97)": {
   "en": "MoveEye: no details yet (connect, MoveEye from 2.95.97)",
   "fr": "MoveEye : pas encore d’informations (connecter, MoveEye dès 2.95.97)",
@@ -10937,6 +11267,12 @@
   "it": "Murmelboden %d m",
   "rm": "Murmelboden %d m"
  },
+ "Murmeltier": {
+  "en": "Marmot",
+  "fr": "Marmotte",
+  "it": "Marmotta",
+  "rm": "Muntanella"
+ },
  "Murmeltier kommt zu spät zum Bau": {
   "en": "Marmot is late for its burrow",
   "fr": "Une marmotte arrive en retard au terrier",
@@ -11002,6 +11338,12 @@
   "fr": "Longue-vue à pièces",
   "it": "Cannocchiale a gettoni",
   "rm": "Telescop cun munaida"
+ },
+ "Münzfernrohr: eine Münze, 2 Minuten. Schau mit der Maus herum – in der Ferne gibt es Dinge, die man nur von hier sieht.": {
+  "en": "Coin telescope: one coin, 2 minutes. Look around with the mouse – far away there are things you can only see from here.",
+  "fr": "Longue-vue à pièces : une pièce, 2 minutes. Regarde avec la souris – au loin il y a des choses qu’on ne voit que d’ici.",
+  "it": "Cannocchiale a gettoni: una moneta, 2 minuti. Guarda in giro col mouse – in lontananza ci sono cose visibili solo da qui.",
+  "rm": "Telescop a munaida: ina munaida, 2 minutas. Guarda enturn cun la mieur – en la distanza datti chaussas ch’ins vesa mo da qua."
  },
  "nach dem Monat (Jahreszeit)": {
   "en": "by the month (season)",
@@ -11189,6 +11531,12 @@
   "it": "Test notturno: confronto di notte …",
   "rm": "Test da notg: cumparegliaziun da notg …"
  },
+ "nachts gefühlt": {
+  "en": "feels at night like",
+  "fr": "ressenti la nuit",
+  "it": "di notte percepiti",
+  "rm": "la notg sentì"
+ },
  "Nachts mit Stirnlampe oder Handylicht": {
   "en": "At night with head torch or phone light",
   "fr": "La nuit avec lampe frontale ou lumière du téléphone",
@@ -11262,6 +11610,18 @@
   "it": "La nebbia arriva in fretta (valle alpina)",
   "rm": "La tschajera vegn spert (val)"
  },
+ "Nebel steigt aus dem Tal": {
+  "en": "Fog rising from the valley",
+  "fr": "Le brouillard monte de la vallée",
+  "it": "La nebbia sale dalla valle",
+  "rm": "Tschajera sa leva da la val"
+ },
+ "Nebel steigt von weitem auf (Bergtal)": {
+  "en": "Fog rises in the distance (mountain valley)",
+  "fr": "Le brouillard monte au loin (vallée de montagne)",
+  "it": "La nebbia sale in lontananza (valle alpina)",
+  "rm": "La tschajera sa leva en la distanza (val da muntogna)"
+ },
  "Nebelbank": {
   "en": "Fog bank",
   "fr": "Banc de brouillard",
@@ -11279,6 +11639,12 @@
   "fr": "Mer de brouillard (vallée : la vallée dans le brouillard, soleil au-dessus)",
   "it": "Mare di nebbia (valle alpina: la valle nella nebbia, sopra il sole)",
   "rm": "Mar da tschajera (val: la val en la tschajera, survart sulegl)"
+ },
+ "Nebelmeer von oben": {
+  "en": "Sea of fog from above",
+  "fr": "Mer de brouillard vue d’en haut",
+  "it": "Mare di nebbia dall’alto",
+  "rm": "Mar da tschajera da sura"
  },
  "Neige": {
   "en": "Tilt",
@@ -11664,6 +12030,12 @@
   "it": "Solo il guardiano ha strumenti.",
   "rm": "Mo il guardian ha utensils."
  },
+ "Nur durchs Münzfernrohr zu sehen.": {
+  "en": "Only visible through the coin telescope.",
+  "fr": "Visible seulement dans la longue-vue à pièces.",
+  "it": "Visibile solo nel cannocchiale a gettoni.",
+  "rm": "Mo da vesair tras il telescop a munaida."
+ },
  "Nur Gruppen": {
   "en": "Groups only",
   "fr": "Ouvrir seulement les groupes",
@@ -11729,6 +12101,12 @@
   "fr": "Ob em Schwarzseeli",
   "it": "Ob em Schwarzseeli",
   "rm": "Ob em Schwarzseeli"
+ },
+ "Oben auf dem Grat: Sicht nach beiden Seiten, viel Wind.": {
+  "en": "Up on the ridge: a view to both sides, lots of wind.",
+  "fr": "Sur la crête : vue des deux côtés, beaucoup de vent.",
+  "it": "Sulla cresta: vista su entrambi i lati, molto vento.",
+  "rm": "Sisum la creta: vista sin omaduas varts, bler vent."
  },
  "Oberflächen (Holz, Kies, Rasen, Beton) für eigene Modelle in Blender.": {
   "en": "Surfaces (wood, gravel, lawn, concrete) for your own models in Blender.",
@@ -11970,6 +12348,18 @@
   "it": "Pacchetto: immagine %d di %d · %s · %s%s",
   "rm": "Pachet: maletg %d da %d · %s · %s%s"
  },
+ "Panoramafoto gespeichert:": {
+  "en": "Panorama photo saved:",
+  "fr": "Photo panoramique enregistrée :",
+  "it": "Foto panoramica salvata:",
+  "rm": "Fotografia panoramica memorisada:"
+ },
+ "Panoramafoto mit MoveEyes Kamera (Bergtal)": {
+  "en": "Panorama photo with MoveEye’s camera (mountain valley)",
+  "fr": "Photo panoramique avec la caméra de MoveEye (vallée de montagne)",
+  "it": "Foto panoramica con la fotocamera di MoveEye (valle alpina)",
+  "rm": "Fotografia panoramica cun la camera da MoveEye (val da muntogna)"
+ },
  "Panoramatafel": {
   "en": "Panorama board",
   "fr": "Table panoramique",
@@ -12173,6 +12563,12 @@
   "fr": "Pi 5 : délai jusqu’à ce que l’image arrive à MoveEye (traitement, Wi-Fi)",
   "it": "Pi 5: ritardo finché l’immagine arriva a MoveEye (elaborazione, Wi-Fi)",
   "rm": "Pi 5: retard fin ch’il maletg è tar MoveEye (elavuraziun, WLAN)"
+ },
+ "Picknick ohne Leute": {
+  "en": "Picnic without people",
+  "fr": "Pique-nique sans personne",
+  "it": "Picnic senza nessuno",
+  "rm": "Picnic senza glieud"
  },
  "Picknick-Decke mit Korb": {
   "en": "Picnic blanket with basket",
@@ -12799,6 +13195,12 @@
   "fr": "Rayon rouge : où regarde la caméra de MoveEye (visible pour toi seulement)",
   "it": "Raggio rosso: dove guarda la telecamera di MoveEye (visibile solo a te)",
   "rm": "Radi cotschen: nua che la camera da MoveEye guarda (mo visibel per tai)"
+ },
+ "Rotes Licht und lange Schatten über dem Tal.": {
+  "en": "Red light and long shadows over the valley.",
+  "fr": "Lumière rouge et longues ombres sur la vallée.",
+  "it": "Luce rossa e lunghe ombre sulla valle.",
+  "rm": "Glisch cotschna e lungas sumbrivas sur la val."
  },
  "Rotlicht": {
   "en": "",
@@ -13447,6 +13849,12 @@
   "fr": "Neige",
   "it": "Neve",
   "rm": "Naiv"
+ },
+ "Schneehase": {
+  "en": "Mountain hare",
+  "fr": "Lièvre variable",
+  "it": "Lepre bianca",
+  "rm": "Lieur alv"
  },
  "Schneestange": {
   "en": "Snow pole",
@@ -14821,6 +15229,12 @@
   "it": "Arriva una tempesta",
   "rm": "Ina tempesta s’avischina"
  },
+ "Sturmböe": {
+  "en": "Gust of wind",
+  "fr": "Rafale de vent",
+  "it": "Raffica di vento",
+  "rm": "Buffada da vent"
+ },
  "Störung: %s-Servo blockiert am Anschlag – der Kopf klemmt": {
   "en": "Fault: %s servo blocked at the stop – the head is stuck",
   "fr": "Panne : servo %s bloqué en butée – la tête est coincée",
@@ -15427,6 +15841,12 @@
   "it": "Notte fonda 03:00",
   "rm": "Notg profunda 03:00"
  },
+ "Tier": {
+  "en": "Animal",
+  "fr": "Animal",
+  "it": "Animale",
+  "rm": "Animal"
+ },
  "Tier (%s)": {
   "en": "Animal (%s)",
   "fr": "Animal (%s)",
@@ -15944,6 +16364,12 @@
   "it": "Invisibile",
   "rm": "Invisibel"
  },
+ "Unten das Tal im Nebel, oben du in der klaren Luft.": {
+  "en": "Below, the valley in fog; above, you in the clear air.",
+  "fr": "En bas la vallée dans le brouillard, en haut toi dans l’air limpide.",
+  "it": "Giù la valle nella nebbia, su tu nell’aria limpida.",
+  "rm": "Giudim la val en la tschajera, sisum ti en l’aria clera."
+ },
  "Unter den Nachbarn": {
   "en": "Among the neighbours",
   "fr": "Parmi les voisins",
@@ -16183,6 +16609,12 @@
   "fr": "Parcours de suivi : leçons",
   "it": "Percorso di inseguimento: lezioni",
   "rm": "Parcours da persequitar: lecziuns"
+ },
+ "Vergessener Rucksack": {
+  "en": "Forgotten backpack",
+  "fr": "Sac à dos oublié",
+  "it": "Zaino dimenticato",
+  "rm": "Satgados emblidà"
  },
  "Vergessenes Fondue-Caquelon + Fuchs mit Käse": {
   "en": "Forgotten fondue pot + fox with cheese",
@@ -16454,6 +16886,12 @@
   "it": "Campeggio pieno (i vicini si muovono, sconosciuti arrivano al tuo posto · circa 5 min)",
   "rm": "Plaz da campadi plain (vischins sa movan, esters vegnan tar tes plaz · circa 5 min.)"
  },
+ "Vom Aussichtspunkt siehst du:": {
+  "en": "From the viewpoint you see:",
+  "fr": "Depuis le point de vue tu vois :",
+  "it": "Dal belvedere vedi:",
+  "rm": "Dal punct da vista vesas ti:"
+ },
  "Vom Ende des Bootsstegs sieht man ein altes Boot, das im See liegt – nur der Mast schaut heraus.": {
   "en": "From the end of the jetty you can see an old boat lying in the lake – only the mast sticks out.",
   "fr": "Depuis le bout du ponton, on voit un vieux bateau au fond du lac – seul le mât dépasse.",
@@ -16466,11 +16904,23 @@
   "it": "colpito dal cacciatore, non segnalato",
   "rm": "tutgà dal chatschader, betg annunzià"
  },
+ "von": {
+  "en": "of",
+  "fr": "sur",
+  "it": "di",
+  "rm": "da"
+ },
  "von Hand": {
   "en": "",
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Von hier siehst du gerade niemanden – warte etwas oder schau später nochmals.": {
+  "en": "You cannot see anyone from here right now – wait a little or look again later.",
+  "fr": "D’ici tu ne vois personne pour l’instant – attends un peu ou regarde plus tard.",
+  "it": "Da qui al momento non vedi nessuno – aspetta un po’ o guarda più tardi.",
+  "rm": "Da qua na vesas ti gist nagin – spetga in pau u guarda pli tard anc ina giada."
  },
  "Von oben": {
   "en": "From above",
@@ -16597,6 +17047,12 @@
   "fr": "Chemin forestier · belvédère",
   "it": "Sentiero nel bosco · belvedere",
   "rm": "Senda dal guaud · vista"
+ },
+ "Wanderer": {
+  "en": "Hiker",
+  "fr": "Randonneur",
+  "it": "Escursionista",
+  "rm": "Viandant"
  },
  "Wanderer läuft im Kreis um den Wegweiser": {
   "en": "Hiker walks in circles round the signpost",
@@ -17036,6 +17492,18 @@
   "fr": "Météo",
   "it": "Meteo",
   "rm": "Aura"
+ },
+ "Wetter früh gesehen": {
+  "en": "Weather seen early",
+  "fr": "Météo vue à temps",
+  "it": "Tempo visto in anticipo",
+  "rm": "Aura vesida baud"
+ },
+ "Wetter kommt!": {
+  "en": "Weather is coming!",
+  "fr": "La météo change !",
+  "it": "Arriva il maltempo!",
+  "rm": "L’aura vegn!"
  },
  "Wetter und Zeit": {
   "en": "Weather and time",
@@ -17621,6 +18089,12 @@
   "it": "Immagine termica: %s – %d° × %d°, %d immagini/s",
   "rm": "Maletg termic: %s – %d° × %d°, %d maletgs/s"
  },
+ "Wärmebild: Person bis %d m": {
+  "en": "Thermal: person up to %d m",
+  "fr": "Image thermique : personne jusqu’à %d m",
+  "it": "Termocamera: persona fino a %d m",
+  "rm": "Maletg termic: persuna fin %d m"
+ },
  "Wärmedecke": {
   "en": "Thermal blanket",
   "fr": "Couverture de survie",
@@ -17921,6 +18395,12 @@
   "it": "Chiudi",
   "rm": "Serrar"
  },
+ "zu kalt für den Sommerschlafsack: Winterschlafsack, Zelt und Windschutzmauer!": {
+  "en": "too cold for the summer sleeping bag: winter bag, tent and wind wall!",
+  "fr": "trop froid pour le sac de couchage d’été : sac d’hiver, tente et mur coupe-vent !",
+  "it": "troppo freddo per il sacco a pelo estivo: sacco invernale, tenda e muretto frangivento!",
+  "rm": "memia fraid per il sac da durmir da stad: sac d’enviern, tenda e mir cunter il vent!"
+ },
  "zu klein": {
   "en": "too small",
   "fr": "trop petit",
@@ -17980,6 +18460,12 @@
   "fr": "D’abord placer quelque chose de «Attire les animaux» (gamelle, sac poubelle, glacière ouverte, fruits).",
   "it": "Prima mettere qualcosa da «Attira gli animali» (ciotola, sacco della spazzatura, borsa frigo aperta, frutta).",
   "rm": "L’emprim metter insatge da «Attira animals» (scadiola da pavlar, satg da ruments, chista da fraid averta, fritgs)."
+ },
+ "Zuerst zu einem Aussichtspunkt gehen (Schnellreise oder hinfliegen) – dort gibt es Fernrohr oder Feldstecher.": {
+  "en": "First go to a viewpoint (quick travel or fly there) – there you have a telescope or binoculars.",
+  "fr": "Va d’abord à un point de vue (voyage rapide ou en volant) – il y a une longue-vue ou des jumelles.",
+  "it": "Prima vai a un belvedere (viaggio rapido o in volo) – lì c’è un cannocchiale o un binocolo.",
+  "rm": "L’emprim ir en in punct da vista (viadi svelt u sgulond) – là datti in telescop u in binocul."
  },
  "Zufallsereignisse (Gewitter, Hund, Auto)": {
   "en": "Random events (thunderstorm, dog, car)",

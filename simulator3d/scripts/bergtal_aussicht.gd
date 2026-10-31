@@ -732,7 +732,7 @@ func reveal_update() -> void:
 			for k in range(g.size()):
 				g[k] = g[k] | vs[k]
 	var img := Image.create(128, 128, false, Image.FORMAT_RGBA8)
-	var veil := Color(0.86, 0.86, 0.84, 0.86)
+	var veil := Color(0.2, 0.24, 0.22, 0.78)                    # not yet seen: dark (contours shine through a little)
 	var n := 0
 	for j in range(128):
 		for i in range(128):
@@ -863,7 +863,7 @@ func _summit_risk() -> void:
 			m.wind = wind
 	var felt := wind_chill(night_c, wind * (1.0 - b._shelter_k() * 0.6))
 	var comfort := 10.0 if str(m.get("bt_bag")) != "winter" else -8.0   # Komfortwert typisch (ISO 23537): Sommer ≈ +10 °C, Winter ≈ −8 °C
-	var cold := felt < comfort - 4.0
+	var cold := summit and felt < comfort - 4.0
 	info["summit"] = {"summit": summit, "night_air_c": snappedf(night_c, 0.1), "lapse_c": snappedf(lapse, 0.1), "wind_kmh": snappedf(wind, 0.1),
 			"felt_c": snappedf(felt, 0.1), "bag_comfort_c": comfort, "too_cold": cold}
 	var ex: Dictionary = s.data.get("exposure", {})
@@ -1159,7 +1159,14 @@ func control(d: Dictionary) -> Dictionary:
 			var txt := "%s %d %s %d · %s" % [T.t("Aussichtspunkte"), st["seen"].size(), T.t("von"), vps.size(), " · ".join(lines)]
 			m.start_info = txt
 			return {"ok": true, "text": txt, "badges": st["badges"], "seen": st["seen"]}
-		"visit":                                             # tests: the view flies to a viewpoint
+		"visit":                                             # tests: the view flies to a viewpoint («spot»: above the sleeping spot)
+			if str(d.get("value", "")) == "spot":
+				if m.has_method("_to_free_view"):
+					m._to_free_view()
+				var hp: Vector3 = m.head.global_position
+				m.view_cam.global_position = hp + Vector3(0, float(d.get("up", 30.0)), float(d.get("back", 22.0)))
+				m.view_cam.look_at(hp + Vector3(0, 0, -10.0), Vector3.UP)
+				return {"ok": true}
 			var v := _vp(str(d.get("value", "")))
 			if v.is_empty():
 				return {"ok": false, "error": "unknown viewpoint", "ids": vps.map(func(x): return x.id)}
@@ -1176,6 +1183,13 @@ func control(d: Dictionary) -> Dictionary:
 			var az2 := deg_to_rad(float(d.get("value", 0.0)))
 			var e2: Vector3 = m.view_cam.global_position
 			m.view_cam.look_at(e2 + b.tal.basis * Vector3(sin(az2), float(d.get("down", -0.05)), -cos(az2)), Vector3.UP)
+			return {"ok": true}
+		"map":                                               # tests: the overview map big and wide (shows the uncovered parts)
+			if m.minimap != null:
+				m.set_map(true)
+				m.minimap.span = float(d.get("value", 1800.0))
+				m.minimap.size_px = float(d.get("px", 420.0))
+				m.minimap._apply_size()
 			return {"ok": true}
 		"reset":
 			st.clear()
