@@ -1,9 +1,9 @@
 {
- "version": "3D-5.0.0",
- "ver": "3.0.0",
- "name": "MoveEye Sim 3.0.0",
+ "version": "3D-5.0.1",
+ "ver": "3.0.1",
+ "name": "MoveEye Sim 3.0.1",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35017903,
- "sha256": "f3381e9406ad44fe57c40370b8f5b79b46878a3cfb3fadf83fad4715a8543831",
- "notes": "MoveEye Sim 3.0.0: neue gemeinsame Versionsnummer mit MoveEye (alte Simulatoren zeigen sie als 3D-5.0.0)."
+ "size": 35021276,
+ "sha256": "9ed57d46ebdca6056aa788de06b3c9b374c6fe456e96712beb494f8db9299a91",
+ "notes": "MoveEye Sim 3.0.1: Geschichten-Texte überarbeitet (Maggie, Die Karte des Grossvaters, Entdecken)."
 }

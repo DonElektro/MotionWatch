@@ -1,10 +1,10 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6307 (Stellen: 8601)
-Übersetzt: en 6307, fr 6307, it 6307, rm 6307
+Texte gesamt: 6306 (Stellen: 8601)
+Übersetzt: en 6306, fr 6306, it 6306, rm 6306
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 431 Stellen
-Nicht mehr im Code (noch in texte.json): 126
+Nicht mehr im Code (noch in texte.json): 168
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
 Übersprungen (Grund: Anzahl): kennung 21576, schlüssel 16305, keine Wörter 10127, index 8348, technisch 2745, doc 1805, einheit 249, englisch 116, pfad 96, log 85, html 68, klasse 26, shader 6
 

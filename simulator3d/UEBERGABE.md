@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.0.0** · MoveEye **3.0.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.0.1** · MoveEye **3.0.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.0.1 (MoveEye 3.0.1): Lektorat der Geschichten-Texte
+
+- Texte in `maggie_*.gd`, `bergtal_abenteuer*.gd`, `abenteuer_figuren_daten.gd`, `bergtal_erleben_b.gd`, `entdecken.gd`,
+  `spielbereich.gd` und `i18n/texte.json` überarbeitet; Titel überall «Die Karte des Grossvaters».
 
 ## NEU in 3.0.0 (MoveEye 3.0.0): Gemeinsame Versionsnummer
 

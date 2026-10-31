@@ -231,7 +231,7 @@ func _tip(ch: Array) -> String:
 			if id != "":
 				return main.entdecken.hint_text(id)
 			if int(c.total) > int(c.found):
-				return T.t("Im %s fehlt noch %d – manches gibt es nur nachts, bei Regen oder am Morgen.", [c.name, int(c.total) - int(c.found)])
+				return T.t("«%s»: noch %d zu entdecken – manches gibt es nur nachts, bei Regen oder am Morgen.", [c.name, int(c.total) - int(c.found)])
 	for c in ch:
 		if c.state == "new":
 			return T.t("Neu: «%s» wartet auf dich!", [c.name])
