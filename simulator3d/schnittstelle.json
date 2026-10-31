@@ -33,7 +33,8 @@
     "battery": "simulierter USV-HAT -> 285 sim_battery_tick, Uebung Akku (141/565)",
     "follower": "ein anderes MoveEye steuert, dieses schaut nur zu -> 350",
     "leader": "Name des MoveEye, das steuert -> 350 Meldung «schaut nur zu»",
-    "sky": "Himmel und Licht der Szene (licht.gd): lux am Geraet (Himmel + Lampen), sky_lux, phase (tag / buergerlich / nautisch / astronomisch / nacht), sun_el, moon_el, moon_illum, lp (land / dorf / stadt) -> MoveEye liest es noch nicht (spaeter: Nacht-Umschaltung pruefen, Kamera-Paket Blendung)"
+    "sky": "Himmel und Licht der Szene (licht.gd): lux am Geraet (Himmel + Lampen), sky_lux, phase (tag / buergerlich / nautisch / astronomisch / nacht), sun_el, moon_el, moon_illum, lp (land / dorf / stadt) -> MoveEye liest es noch nicht (spaeter: Nacht-Umschaltung pruefen, Kamera-Paket Blendung)",
+    "season": "Jahreszeit und Tageslauf (jahreszeiten.gd): season (fruehling / sommer / herbst / winter), doy, sunrise, sunset (H:MM Schweizer Zeit), day_h, snow (Schnee liegt), occupancy (Campingplatz 0..1) -> MoveEye liest es noch nicht (spaeter: Tagebuch, Nacht-Zeiten pruefen)"
   },
   "state": {
     "v": "Version des Zustands",
@@ -114,7 +115,8 @@
     "world_reply": [
       "v",
       "ok",
-      "sky"
+      "sky",
+      "season"
     ],
     "state": [
       "v",
