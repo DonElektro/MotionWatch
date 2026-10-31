@@ -11,6 +11,8 @@ extends Node
 ##     keines gibt: eine kleine gezeichnete Szene (_draw, kein fremdes Bild).
 ##   * «Das Hospiz»: nur für den Besitzer (devtool.is_owner - wie das Entwicklertool: nie im Kinder-Modus), mit Schloss: zum
 ##     Öffnen fragt das Spiel nach dem Passwort (bergtal_horror.gd open_locked - Prüfung, Hash, Widmung, Warnung unverändert).
+##     Daneben «Ohne Passwort starten» (nur Besitzer, nie Kinder-Modus, bergtal_horror.gd ohne_passwort). «Weiterspielen» und
+##     «Neu beginnen» gehen beide über dieselbe Regel (horror.may_play, Code-Prüfung H1).
 ##     Für alle anderen gibt es die Karte nicht (auch nicht in MoveEye: dort nur für den Administrator, 639i).
 ##   * Kinder-Modus (main.kids_on): nur Karten «ab X Jahren» mit X ≤ KIDS_AGE, grössere Schrift.
 ##   * Gemeinsamer Start (ein Ablauf für alle): Spielstand wählen → Figur (Name / Aussehen, wo die Geschichte eine hat: Maggie)
@@ -382,6 +384,11 @@ func card(s: Dictionary, w: float) -> Control:
 	if bool(s["locked"]):
 		var b := _btn(br, T.t("Öffnen (Passwort)"), func(): unlock(id), true)
 		b.tooltip_text = T.t("Passwortgeschützt – unheimlich, mit Schreckmomenten")
+		if id == "horror" and bool(main.horror.knopf_erlaubt()):   # the second button (only the owner, never the children)
+			var br2 := HBoxContainer.new()                       # own row: fits the narrow card in every language
+			tv.add_child(br2)
+			var bo := _btn(br2, T.t("Ohne Passwort starten"), func(): ohne_passwort(id))
+			bo.tooltip_text = T.t("Nur für den Besitzer (nicht im Kinder-Modus). Das Passwort bleibt, die Warnung kommt trotzdem.")
 		return p
 	var can := bool(s["started"]) and (not bool(s["done"]) or id == "grossvater")
 	var bw := _btn(br, T.t("Weiterspielen"), func(): weiter(id), can)
@@ -537,6 +544,10 @@ func weiter(id: String) -> Dictionary:
 	"""«Weiterspielen»: straight into the story where it stopped (not started yet: the common start)"""
 	if not (id in shown_ids()) or id == "teil2":
 		return {"ok": false, "error": "unknown story"}
+	if id == "horror" and not bool(main.horror.may_play()):     # H1: «Weiterspielen» before the first night went around
+		_close_play()                                          # the password - now the same rule as every other way
+		main.horror.open_locked(func(): weiter("horror"))
+		return {"ok": true, "locked": true}
 	var p := progress(id)
 	if not bool(p["started"]):
 		open_start(id, "start")
@@ -576,6 +587,15 @@ func unlock(id: String) -> void:
 	main.horror.open_locked(func():
 		if sb != null:
 			sb.open())
+
+
+func ohne_passwort(id: String) -> void:
+	"""«Ohne Passwort starten» on the locked card (only pressed at this PC): unlocked until the restart, then «Weiterspielen»
+	(not started yet: the common start) - the warning and the dedication come as always"""
+	if id != "horror" or not (id in shown_ids()):
+		return
+	if bool(main.horror.ohne_passwort().get("ok", false)):
+		weiter(id)
 
 
 # ---- the common start of all stories -------------------------------------------------------------------------------------

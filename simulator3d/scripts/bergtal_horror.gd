@@ -11,6 +11,14 @@ extends Node
 ##     Danach: Passwort eingeben = entsperrt bis zum Neustart des Simulators. 5 Fehlversuche = 30 s Pause.
 ##     Vergessen: die Datei user://bergtal_horror.json löschen (dann wird es beim nächsten Mal neu festgelegt).
 ##   * Nicht im Kinder-Modus (main.kids_on). Warnhinweis vor dem Start. Esc = Pause jederzeit (heller, leiser, Zeit steht).
+##   * Knopf «Ohne Passwort starten» (Daniel, 31.10.2026, Paket «Hospiz: Knopf ohne Passwort»): im Passwort-Dialog und auf der
+##     gesperrten Karte «Das Hospiz». Nur für den Besitzer = nicht im Kinder-Modus (devtool.is_owner, gleiche Prüfung wie das
+##     Entwickler-Fenster). Er entsperrt bis zum Neustart wie das Passwort (unlock_via = "knopf"); Passwort, Hash und Widmung
+##     bleiben unverändert, die Warnung kommt trotzdem. Über /control nur von diesem PC ({"do": "ohne_passwort"}: net.gd setzt
+##     "_von_lokal" nur bei 127.0.0.1 / ::1 - nicht für das verbundene MoveEye, nicht mit --fernsteuerung-offen).
+##   * EINE Regel für alle Wege (Code-Prüfung H1): may_play() = entsperrt (richtiges Passwort oder der Knopf) und nicht im
+##     Kinder-Modus. Geprüft in neu_beginnen, weiter, _show_warn, _show_start, begin und in /control «start» - also auch für das
+##     Geschichten-Menü (geschichten.gd), den Kapitel-Sprung (devtool_kapitel.gd), /control und MoveEye (639i über /control).
 ##   * Regler «Schreck-Stärke» (0 … 100 %): Lautstärke UND Häufigkeit der Schreckmomente (ab 25 % ein Jump-Scare pro Nacht,
 ##     ab 50 % zwei, ab 75 % drei). Kein Blut, keine Gewalt.
 ## Elemente: dichter Nebel und Dunkelheit (kein Mond, nur der Stirnlampen-Kegel), Geräusche (Schritte, Knacken, Flüstern,
@@ -35,6 +43,7 @@ extends Node
 const T = preload("res://scripts/i18n.gd")
 const UI = preload("res://scripts/ui_style.gd")
 const Bergtal = preload("res://scripts/bergtal.gd")
+const Dev = preload("res://scripts/devtool.gd")
 
 const FILE := "user://bergtal_horror.json"
 const ITER := 12000                    # PBKDF2 rounds (RFC 8018); a few 100 ms on a normal PC, once per unlock
@@ -52,6 +61,7 @@ const PIR_DIST := 3.0                  # like main.gd: a person closer than 3 m 
 
 var main
 var unlocked := false
+var unlock_via := ""                   # "pw" (password set or entered) | "knopf" («Ohne Passwort starten» at this PC) | ""
 var phase := ""                        # "" | setpw | lock | warn | start | intro | night | morning | ending | clips
 var running := false                   # the world belongs to the horror (night / morning between nights)
 var paused := false
@@ -165,6 +175,35 @@ func raetsel_key() -> String:
 	return "raetsel_test" if test_mode else preload("res://scripts/spielstand.gd").raetsel_key()
 
 
+func may_play() -> bool:
+	"""THE rule for every way into the story (start or continue): unlocked (right password or the button «Ohne Passwort
+	starten» at this PC) and not in the children's mode"""
+	return unlocked and Dev.is_owner(main)
+
+
+func knopf_erlaubt() -> bool:
+	"""the button «Ohne Passwort starten»: only for the owner = not in the children's mode (like the developer window)"""
+	return Dev.is_owner(main)
+
+
+func ohne_passwort() -> Dictionary:
+	"""the button «Ohne Passwort starten» (or /control from this PC): unlocked until the restart, like the password -
+	the password, its hash and the dedication stay as they are; the warning comes anyway"""
+	if not knopf_erlaubt():
+		return {"ok": false, "error": "kids"}
+	unlocked = true
+	unlock_via = "knopf"
+	return {"ok": true}
+
+
+func _locked_again(again: Callable) -> bool:
+	"""the hard check of a start / continue: not allowed -> the password first (never in the children's mode), true = stop"""
+	if may_play():
+		return false
+	open_locked(again)
+	return true
+
+
 func open_locked(after: Callable) -> void:
 	"""the card «Das Hospiz» (geschichten.gd): password (or set it the first time) -> after.call() - the warning and the
 	start picture come afterwards as always (already unlocked: after.call() at once)"""
@@ -190,6 +229,8 @@ func fortschritt() -> Dictionary:
 
 func neu_beginnen() -> void:
 	"""the common start chose «Neu beginnen»: the progress of this Spielstand from the beginning, then warning and start"""
+	if _locked_again(neu_beginnen):
+		return
 	_store.erase(_pk())
 	_save()
 	_ensure_ui()
@@ -198,6 +239,8 @@ func neu_beginnen() -> void:
 
 func weiter() -> void:
 	"""«Weiterspielen»: running = the pause; else warning, then the start picture (with «Weiter mit Nacht n»)"""
+	if _locked_again(weiter):
+		return
 	_ensure_ui()
 	if running:
 		_set_pause(true)
@@ -227,6 +270,7 @@ func _unlocked_next() -> void:
 
 func open_from_mood(on_close := Callable()) -> void:
 	_on_close = on_close
+	_after_unlock = Callable()
 	open()
 
 
@@ -305,6 +349,7 @@ func set_password(pw: String) -> Dictionary:
 	_store["v"] = 1
 	_save()
 	unlocked = true
+	unlock_via = "pw"
 	return {"ok": true}
 
 
@@ -327,6 +372,7 @@ func unlock(pw: String) -> Dictionary:
 		return {"ok": false, "error": T.t("Falsches Passwort.")}
 	_fails = 0
 	unlocked = true
+	unlock_via = "pw"
 	return {"ok": true}
 
 
@@ -521,6 +567,7 @@ func _show_setpw() -> void:
 	_msg = _text(v, "", 14, UI.RED)
 	var r := _row(v)
 	_button(r, T.t("Festlegen"), _do_setpw, true)
+	_knopf(r)
 	_button(r, T.t("Abbrechen"), func(): _close_all())
 	_pw1.grab_focus.call_deferred()
 
@@ -549,8 +596,30 @@ func _show_lock() -> void:
 	_msg = _text(v, "", 14, UI.RED)
 	var r := _row(v)
 	_button(r, T.t("Entsperren"), _do_unlock, true)
+	_knopf(r)
 	_button(r, T.t("Abbrechen"), func(): _close_all())
 	_pw1.grab_focus.call_deferred()
+
+
+func _knopf(r: Control) -> void:
+	"""«Ohne Passwort starten» next to the password field - only for the owner (never in the children's mode)"""
+	if not knopf_erlaubt():
+		return
+	var b := _button(r, T.t("Ohne Passwort starten"), _do_ohne_pw)
+	b.tooltip_text = T.t("Nur für den Besitzer (nicht im Kinder-Modus). Das Passwort bleibt, die Warnung kommt trotzdem.")
+
+
+func _do_ohne_pw() -> void:
+	var r := ohne_passwort()
+	if _pw1 != null:
+		_pw1.text = ""
+	if _pw2 != null:
+		_pw2.text = ""
+	if not bool(r["ok"]):
+		if _msg != null:
+			_msg.text = T.t("Der Horror-Modus ist im Kinder-Modus gesperrt.")
+		return
+	_unlocked_next()
 
 
 func _do_unlock() -> void:
@@ -565,6 +634,8 @@ func _do_unlock() -> void:
 
 
 func _show_warn() -> void:
+	if _locked_again(_show_warn):
+		return
 	phase = "warn"
 	var v := _new_card(T.t("Bevor es losgeht"), UI.ORG, 600)
 	_text(v, T.t("Achtung: Dieser Modus ist unheimlich und hat einige Schreckmomente – plötzliche laute Geräusche und Bilder, Dunkelheit, dichter Nebel. Kein Blut, keine Gewalt. Nicht für kleine Kinder."))
@@ -575,6 +646,8 @@ func _show_warn() -> void:
 
 
 func _show_start() -> void:
+	if _locked_again(_show_warn):                               # after the password: the warning first, as always
+		return
 	phase = "start"
 	var v := _new_card(T.t("Das Hospiz"), Color(0.55, 0.12, 0.12), 640)
 	_text(v, T.t("Für die Mutigste."), 18, Color(0.95, 0.8, 0.55), true)
@@ -680,6 +753,9 @@ func _input(ev: InputEvent) -> void:
 # the nights
 # =======================================================================================================================
 func begin(n: int) -> void:
+	if not may_play():                                          # H1: no way around the password (or the button at this PC)
+		main.start_info = T.t("Der Horror-Modus ist gesperrt.")
+		return
 	if n == 1:
 		choices = {}
 		clips.clear()
@@ -1993,24 +2069,37 @@ func command(d: Dictionary) -> Dictionary:
 		return raetsel.command(d)
 	match what:
 		"info":
-			return {"ok": true, "unlocked": unlocked, "has_password": has_password(), "phase": phase, "running": running,
+			return {"ok": true, "unlocked": unlocked, "via": unlock_via, "may_play": may_play(), "has_password": has_password(), "phase": phase, "running": running,
 					"paused": paused, "chapter": chapter, "end": end_kind, "strength": strength, "choices": choices,
 					"t": snappedf(_t, 0.1), "beat": _bi, "beats": _beats.size(), "clips": clips.size(), "jumps": _jumps,
 					"fig": [snappedf(_fig.global_position.x, 0.1), snappedf(_fig.global_position.z, 0.1)] if _fig != null and _fig.visible else null,
 					"hut": [snappedf(_hut.global_position.x, 0.1), snappedf(_hut.global_position.z, 0.1)] if _hut != null else null,
 					"clock": _hhmm(), "fog": snappedf(main.env.fog_density, 0.001), "lite": _lite(), "slot": mood_slot()}
 		"open":
+			_after_unlock = Callable()
 			open()
 			return {"ok": true, "phase": phase}
 		"set_password":
 			return set_password(str(d.get("pw", "")))
 		"unlock":
 			return unlock(str(d.get("pw", "")))
+		"ohne_passwort":                                        # the button «Ohne Passwort starten» - only from this PC (net.gd)
+			if not bool(d.get("_von_lokal", false)):
+				return {"ok": false, "error": "nur_lokal"}
+			return ohne_passwort()
+		"sperren":                                              # tests: locked again (as after a restart; the hash stays)
+			if running:
+				stop()
+			_clear_card()
+			phase = ""
+			unlocked = false
+			unlock_via = ""
+			return {"ok": true}
 		"start":
-			if not unlocked:
-				return {"ok": false, "error": "locked"}
 			if bool(main.get("kids_on")):                       # like every way in the window (open, open_locked, Kapitel-Sprung)
 				return {"ok": false, "error": "kids"}
+			if not may_play():
+				return {"ok": false, "error": "locked"}
 			if ENDS.has(str(d.get("end", ""))):
 				end_kind = str(d["end"])
 			if d.has("strength"):
@@ -2050,4 +2139,4 @@ func command(d: Dictionary) -> Dictionary:
 		"stop":
 			stop()
 			return {"ok": true}
-	return {"ok": false, "error": "do: info | open | set_password | unlock | start | go | skip | beat | choose | pause | resume | clips | clip | stop"}
+	return {"ok": false, "error": "do: info | open | set_password | unlock | ohne_passwort | sperren | start | go | skip | beat | choose | pause | resume | clips | clip | stop"}

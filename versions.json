@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 17:35",
+ "generated": "2026-10-31 18:11",
  "versions": [
+  {
+   "version": "3.9.0",
+   "file": "webcam_bewegung_3_9_0.py",
+   "url": "",
+   "sha256": "bc8f09d38da168d618ef0326d9d07f6d6f50d904ba9744bd2b159905466c24da",
+   "date": "2026-10-31 18:11",
+   "notes": "Simulator 3.9.0: Hospiz mit Knopf «Ohne Passwort starten» (nicht im Kinder-Modus); der Umweg über «Weiterspielen» per Steuerbefehl ist geschlossen – überall Passwort oder Knopf am Simulator.",
+   "size": 4390265,
+   "sig": "a68bf23116428706e5f4181cd47c95e3b77dd1dfab8ae8ab3d269b80fe57e736a5a16aef15383e0ff79326bc96b6b6327312fccf8706b3f277c05c81c9ec8905",
+   "data": {
+    "file": "moveeye_daten_3_9_0.zip",
+    "url": "",
+    "sha256": "c22f2b8571b1c3f6d02b058153e4cbd2fd841a4400bfa1804795e9cb7502a237",
+    "size": 1609476,
+    "sig": "1ba9ec7d72eb8461f6735d57cf56794b4278c1a1b23e637ab3d7c9a798cca22040b94d0035b27651e7e6e71372913af19e81697aee13b5281074f328050bb60a"
+   }
+  },
   {
    "version": "3.8.0",
    "file": "webcam_bewegung_3_8_0.py",
    "url": "",
    "sha256": "7c872ffb1e6dd0aa97a6e1c790de6999a9a8eabcbeb9dc76fff0d99b6b043884",
-   "date": "2026-10-31 17:35",
+   "date": "2026-10-31 17:39",
    "notes": "MoveEye-Datei halb so gross: Webseiten, Bilder und alte Versionsgeschichte in einer Zusatzdatei (moveeye_daten), die beim Update mitkommt oder nachgeladen wird; ohne Zusatzdatei läuft der Schutz weiter; 3.0.2 bleibt als Brücke für sehr alte Geräte.",
    "size": 4390179,
    "sig": "0c4cf276d29b44a2107cc767336c80dfdbb4b8d75cf8b895ef66b7eca9e9c312caa9924b93f7015adb86bcae57c293c9f67b1d61498d66996633900e04aff704",
@@ -99,16 +116,6 @@
    "size": 7672293,
    "sig": "f88dc49ba510c1a8d70bf0d3bf12f431945591b66074181237bca78dc3fe2e704d52cb2dc5496931174a1fc1eac9a38cbdb2c73c48ac17de05696e6744b1e302",
    "bridge": true
-  },
-  {
-   "version": "2.98.116",
-   "file": "webcam_bewegung_2_98_116.py",
-   "url": "",
-   "sha256": "6ce7d2dd9c4bfc96fdb99cd94efe06581590194492a7432c30f64e606e0fb7ca",
-   "date": "2026-10-31 15:52",
-   "notes": "Reiter «Spielen» neu aufgebaut wie im Simulator (Stufe, Spielstand, Weiterspielen, Geschichten-Regal, Entdecken). Simulator 3D-4.85: neues Fenster «Spielen» mit Geschichten als grosse Karten (Die Karte des Grossvaters, Maggie, Hospiz, Teil 2), gleicher Start für alle Geschichten.",
-   "size": 7667336,
-   "sig": "e7b0d995cb7bbfa5421610dcd08daef5fe989fb5104b539ebbdc0be110f2333445df32ba35f1087399b385233f7648ffbb44cccb455d69494c74dcd7303e8004"
   }
  ]
 }

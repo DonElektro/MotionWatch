@@ -1,9 +1,9 @@
 {
- "version": "3D-5.8.0",
- "ver": "3.8.0",
- "name": "MoveEye Sim 3.8.0",
+ "version": "3D-5.9.0",
+ "ver": "3.9.0",
+ "name": "MoveEye Sim 3.9.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35098640,
- "sha256": "64ae4c3d103eb59aba9e08cbf897b0c98f305d390a5c33628be73fb2f069e12e",
- "notes": "MoveEye Sim 3.8.0: zusammen mit MoveEye 3.8.0 (kleinere Programmdatei); der Prüfstand kopiert die Zusatzdatei mit."
+ "size": 35102145,
+ "sha256": "d6f35cc329428e8986dee8c695d28a6fe4b23eaeda4e8b1f87b9638cd74c57d1",
+ "notes": "MoveEye Sim 3.9.0: Hospiz – Knopf «Ohne Passwort starten», eine Regel für alle Wege."
 }
