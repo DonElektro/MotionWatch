@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 06:54",
+ "generated": "2026-10-31 07:00",
  "versions": [
   {
-   "version": "2.98.69",
-   "file": "webcam_bewegung_2_98_69.py",
+   "version": "2.98.70",
+   "file": "webcam_bewegung_2_98_70.py",
    "url": "",
-   "sha256": "63ecdde4b8edaf0cf7941f22bea890e68f32aec79375bb382ca47f1f9548cd1d",
-   "date": "2026-10-31 06:54",
-   "notes": "Simulator 3D-4.38: Orte zum Erkunden im Bergtal – begehbare Alphütte, Biwak, Kapelle, Hospiz (geschlossen), Bunker, Sennerei, Baracke, Seilbahn-Stationen, Wasserstellen, Grat, Säumerweg.",
-   "sig": "393c5e984f9a745278fd47549eca74a4e0537d48c9bfa6fc3a4de9d781c57e6e43212b4482858a7bb59ebcece2f199780ad6c87436bfc8be939c5c3a3601b303"
+   "sha256": "3526d14804a1ee60af7fe937d638d1100c6115716e2bfbb2c477e480917f569d",
+   "date": "2026-10-31 07:00",
+   "notes": "Simulator 3D-4.39: Bergtal-Abenteuer «Die Karte des Bergführers» – Rucksack packen, Schatzkarte, Nachtlager und Nacht mit MoveEye, am Morgen Sterne; Start im Spiel-Assistenten.",
+   "sig": "bb4ac697e159cd53d84d4df1d083dd8a8e8472495ae526a1c1303931c71c90b0a1f6351a9a6942ad84db7c2e211c1ccacd952de9d8ac3342597eae518eb24708"
   },
   {
    "version": "2.97.1",

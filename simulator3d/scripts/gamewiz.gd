@@ -247,7 +247,7 @@ const QUICK := [["sneak", "🕵️", "Schleichen", "Unentdeckt zum grünen Ziel 
 		["mission", "🎒", "Mission", "Portemonnaie vom Tisch holen, 5 Früchte sammeln oder ein Paket wegbringen – ohne erwischt zu werden. 4 Minuten, 3 Leben."]]
 const LEVEL_OF := {"mission": "normal", "night": "normal", "turm": "easy", "turnier": "normal", "sweat": "normal", "szene_voll": "normal", "szene_tarnen": "normal", "szene_velo": "normal", "sneak": "normal", "duel": "normal", "theft": "normal", "kids": "easy", "family": "normal", "pro": "hard", "kids_pc": "easy", "free": "normal"}
 # 3D-4.20 (Daniel): the quick start cards have pictures again (wizpics.gd) - quick card -> picture
-const QUICK_PIC := {"mission": "mission", "night": "night", "turm": "turm", "turnier": "turnier", "sweat": "sweat", "sneak": "mw", "duel": "guard", "theft": "theft", "szene_voll": "mw", "szene_tarnen": "free", "szene_velo": "theft", "escape_quick": "escape"}
+const QUICK_PIC := {"abenteuer": "mission", "mission": "mission", "night": "night", "turm": "turm", "turnier": "turnier", "sweat": "sweat", "sneak": "mw", "duel": "guard", "theft": "theft", "szene_voll": "mw", "szene_tarnen": "free", "szene_velo": "theft", "escape_quick": "escape"}
 const OWN_LABEL := "⚙ Eigene Regeln – alle Spielarten, Ziele und Extras"
 
 
@@ -485,6 +485,10 @@ func model() -> Dictionary:
 			quick.append(sg)                               # 3D-4.x: the game that fits the scene (szenenplus.gd) first
 		for q in QUICK:
 			quick.append({"v": q[0], "icon": q[1], "title": q[2], "text": q[3], "pic": Pics.PICS.get(str(QUICK_PIC.get(q[0], "mw")), "")})   # 3D-4.20: with a picture again
+		if main.abenteuer != null:                     # 3D-4.39: the Bergtal adventure as a quick start (instead of a button on the card «Spiel»)
+			quick.append({"v": "abenteuer", "icon": "🎒", "title": "Bergtal-Abenteuer",
+					"text": "Rucksack packen, mit der Schatzkarte durchs Bergtal, Nacht mit MoveEye – Kapitel, Stimmung und Schwierigkeit wählst du im Abenteuer.",
+					"pic": Pics.PICS.get("mission", "")})
 	var opts := []
 	if step == 2 or step == 3:
 		for o in (OPTIONS if step == 2 else PLAYER_OPTS):
@@ -651,6 +655,10 @@ func op(d: Dictionary) -> Dictionary:
 			_changed()
 		"quick":                                        # 3D-4.x: a quick start - set, open the game, show the QR code
 			var qv := str(d.get("value", ""))
+			if qv == "abenteuer" and main.abenteuer != null:   # 3D-4.39: the Bergtal adventure has its own window
+				close_wiz()
+				main.abenteuer.open_ab()
+				return model()
 			if qv == "escape_quick":                       # 3D-4.20: «Entkomme der Kamera» from the quick start of the parcours
 				W["game_mode"] = "escape"
 				_next()

@@ -1,7 +1,7 @@
 {
- "version": "3D-4.38",
+ "version": "3D-4.39",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 66437620,
- "sha256": "3970a613b9b564a8ef64b1492a960acc58bd35bee4c07dafafa5508c90acbfd0",
- "notes": "Orte zum Erkunden im Bergtal: begehbare Innenräume (Hütte, Biwak, Kapelle, Hospiz, Bunker, Sennerei …), Wasserstellen, Grat, Säumerweg."
+ "size": 66737990,
+ "sha256": "01322d48cdb85b43873a4cd9442c4c6c8b8661f82727ab6b336c17b270b4a4ef",
+ "notes": "Bergtal-Abenteuer: Rucksack packen, Schatzkarte, Nacht mit MoveEye, am Morgen Sterne – Start im Spiel-Assistenten."
 }
