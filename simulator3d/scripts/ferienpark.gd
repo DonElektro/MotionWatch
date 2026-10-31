@@ -14,6 +14,7 @@ extends RefCounted
 const Bib = preload("res://scripts/bib_objekte.gd")
 const Szenen = preload("res://scripts/szenenplus.gd")
 const T = preload("res://scripts/i18n.gd")
+const Worlds = preload("res://scripts/worlds.gd")      # 3D-4.x Welten: the old scenes as places in the park
 
 # id -> [name, x, z, Blickrichtung (Grad, 0 = Norden / See, 90 = Osten)]
 const SPOTS := {"zelt": ["Beim Zelt (Zeltwiese)", -55.5, -62.5, 0.0],
@@ -64,6 +65,8 @@ var m                       # main.gd
 var bib
 var park: Node3D
 var spot := "zelt"
+var place := ""                              # 3D-4.x Welten: the old scene that is the place now ("" = a park spot)
+var place_r := 0.0
 var h0 := 0.0
 var inv := Transform3D()
 var rng := RandomNumberGenerator.new()
@@ -94,7 +97,19 @@ static func creek_x(pz: float) -> float:
 	return 175.0 + 6.0 * sin(pz / 30.0)
 
 
+static var pad: Array = []                   # 3D-4.x Welten: the flat area of the place now [x, z, r, height] ([] = none)
+
+
 static func H(px: float, pz: float) -> float:
+	var h := _H(px, pz)
+	if not pad.is_empty():
+		var w := 1.0 - smoothstep(float(pad[2]), float(pad[2]) + 14.0, Vector2(px - float(pad[0]), pz - float(pad[1])).length())
+		if w > 0.0:
+			h = lerpf(h, float(pad[3]), w)
+	return h
+
+
+static func _H(px: float, pz: float) -> float:
 	var d := pz - zs(px)
 	if d < 0.0:                                        # the lake bed (and the far shore, 1 km away)
 		var bed := -0.3 - minf(-d * 0.25, 3.0)
@@ -163,6 +178,14 @@ func _build(sc) -> void:
 	if not SPOTS.has(spot):
 		spot = "zelt"
 	var sp: Array = SPOTS[spot]
+	pad = []
+	place = Worlds.active(m, "ferienpark")
+	if place != "":                                    # 3D-4.x Welten: an old scene is the place (worlds.gd builds it)
+		var pl: Array = Worlds.PLACES[place]
+		spot = place
+		sp = [pl[1], pl[2], pl[3], pl[4]]
+		place_r = float(pl[5])
+		pad = [float(pl[2]), float(pl[3]), place_r, _H(float(pl[2]), float(pl[3]))]
 	h0 = H(sp[1], sp[2])
 	park = Node3D.new()
 	park.name = "ferienpark"
@@ -173,6 +196,8 @@ func _build(sc) -> void:
 	m.terrain = true
 	m.ground_fn = Callable(self, "gy")
 	bib = Bib.new(m, s, park, park.transform)
+	if place != "":
+		bib.clear = [[Vector2(float(sp[1]), float(sp[2])), place_r + 10.0]]     # nothing of the park on the place
 	_ground()
 	_water()
 	var t1 := Time.get_ticks_msec()
@@ -186,16 +211,19 @@ func _build(sc) -> void:
 	_ways()
 	_forest()
 	_village()
-	_own_spot()
+	if place == "":
+		_own_spot()
 	_erlebnis()
 	bib.finish()
 	_lights_and_fx()
-	_hiding()
+	if place == "":
+		_hiding()
 	_signs()
 	s.meadow(220 if lite else 520, 3.0, 40.0, func(p: Vector3):
 		var q := inv * p
-		return H(q.x, q.z) < 0.6 or q.z > 112.0 or _on_way(q.x, q.z))
+		return H(q.x, q.z) < 0.6 or q.z > 112.0 or _on_way(q.x, q.z) or (place != "" and p.length() < place_r))
 	_data()
+	_erleben()
 	info.merge({"ms": Time.get_ticks_msec() - t0, "ground_ms": t1 - t0, "spot": spot, "lite": lite, "lib": bib.stats.duplicate(),
 			"lamps": bib.lamps.size()}, true)
 	print("Ferienpark: %s, %d ms (Gelände %d ms), %s" % [spot, info["ms"], info["ground_ms"], str(bib.stats)])
@@ -1021,6 +1049,7 @@ func _hiding() -> void:
 	var made := 0
 	var tries := 0
 	var kinds := ["bush", "bush", "woodpile", "crates", "barrels", "hedge"]
+	s.data["fp_verstecke"] = []
 	while made < (5 if lite else 9) and tries < 200:
 		tries += 1
 		var wp: Vector3 = m.pos_of(rng.randf_range(-170, 170), rng.randf_range(8.0, 34.0))
@@ -1035,8 +1064,18 @@ func _hiding() -> void:
 		if not ok:
 			continue
 		s.prop(kinds[rng.randi() % kinds.size()], wp, rng.randf() * TAU)
+		(s.data["fp_verstecke"] as Array).append(wp)        # Erlebniswelt 12: the children hide here when MoveEye plays along
 		made += 1
 	info["hiding"] = made
+
+
+# ---- Erlebniswelt 1–19 (erlebniswelt.gd): the vignettes at the reserved places --------------------------------------------------
+func _erleben() -> void:
+	var t0 := Time.get_ticks_msec()
+	var ew = preload("res://scripts/erlebniswelt.gd").new()
+	ew.setup(self)
+	s.data["erleben"] = ew
+	info["erleben_ms"] = Time.get_ticks_msec() - t0
 
 
 # ---- name signs of the places --------------------------------------------------------------------------------------------------
@@ -1119,6 +1158,14 @@ static func control(main, d: Dictionary) -> Dictionary:
 			return {"ok": true, "lite": Bib.lite()}
 		"kinds":
 			return {"ok": true, "kinds": Bib.names(), "n": Bib.KINDS.size()}
+		"erleben", "verstecken":                         # Erlebniswelt: {what: info | verstecken | fish | where (id) | state (id, state)}
+			var ew = main.scenes.data.get("erleben", null) if main.scenes != null else null
+			if ew == null or not is_instance_valid(ew):
+				return {"ok": false, "error": "not in the Ferienpark"}
+			if what == "verstecken":
+				d = d.duplicate()
+				d["what"] = "verstecken"
+			return ew.control(d)
 		"perf":
 			return {"ok": true, "fps": Engine.get_frames_per_second(), "draw": Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
 					"objects": Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME), "prims": Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME),

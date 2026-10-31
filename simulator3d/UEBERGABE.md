@@ -1,8 +1,72 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.27** · passende MoveEye-Version (früher Motion Watch) **2.98.58**
+Stand: 31.10.2026 · Simulator-Version **3D-4.35** · passende MoveEye-Version (früher Motion Watch) **2.98.66**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.35 (MoveEye 2.98.66): Erlebnisse im Bergtal 1–17 (`bergtal_erleben_a.gd`)
+
+- `bergtal_erleben_a.gd` (neu): 17 Abläufe an den VIGNETTES-Plätzen von `bergtal.gd` (Hook `_erleben()`,
+  `s.data["bt_erleben_a"]`), aktiv unter 60 m, versteckt über 220 m, bei Tests weg. Entdeckungen `berg.*` (18).
+  Steuerung `{"action":"bergtal","do":"erleben","what":"info|where|go|state"}`. `_lite()` = `Bib.lite()` = `Quality.lite()`.
+
+## NEU in 3D-4.34 (MoveEye 2.98.65): Welt «Bergtal» und Szenen zusammengefasst (`bergtal.gd`, `worlds.gd`)
+
+- `bergtal.gd` + `bib_berg.gd` (erbt von Bib → `Quality.lite()`), Bodenshader `bergtal_boden.gdshader`, Karte mit Höhenlinien
+  (`minimap.gd`). Regler `bt_*` mit `controls[…]["only"]`: nur im Bergtal (Jahreszeit, Schnellreise, Ereignisse auch in seinen Orten).
+- `worlds.gd` (neu): alte Szenen sind Orte in Welten (`Worlds.world_of`, `is_place`, `solo`); `main.scene` bleibt die alte
+  Kennung. Steuerung `{"action":"welt"}`, `{"action":"scenario","solo":true}`, Schalter `welt_solo`, Start `--solo`
+  (Prüfstand). MoveEye 141 (Trainingsnacht allein), 551 (Name «Zuhause»). Details: REAL_BERGTAL, REAL_KONSOL.
+
+## NEU in 3D-4.33 (MoveEye 2.98.64): Weitwinkel wie Gehäuse v5.2 (`weitwinkel.gd`, `camfx.gdshader`)
+
+- `weitwinkel.gd`: Montage «case» (neuer Standard, Masse aus Gehäuse v5.2) und «none» (Blindstopfen); äquidistantes Fischauge
+  und Vignette in `camfx.gdshader` (`fe_*`, Kamera 1: `distort` = 0), IR-LED Kanal 4 (ca. 4 m). Lite: `Quality.lite()`.
+- MoveEye 163/591/568: «Im Gehäuse» zählt als Montage am Gerät, Kachel 🔭 mit den neuen Knöpfen. Prüfstand `--weitwinkel case`.
+
+## NEU in 3D-4.32 (MoveEye 2.98.63): Gameplay ausfeilen (12 Punkte, `gamemore.gd` u. a.)
+
+- Neu: `gamemission.gd`, `gamenacht.gd`, `gamesneak.gd`, `gameschwitzen.gd`, `gameturm.gd`, `gameturnier.gd`, `gameziele.gd`,
+  gemeinsamer Teil `gamemore.gd` (Probe, Wiederholung, Höhepunkte, Werkzeuge). Geändert: game.gd, gamewiz.gd, gamerules.gd,
+  gametools.gd, localplay.gd. MoveEye 548/596: Rangliste KI-Turm. Plan: `docs/Gameplay_Ausfeilen_Plan.md`.
+- `gamemore._lite()` = `Quality.lite()` (keine Leucht-Materialien, kein Kies-Schmuck, Film 4 statt 8 Bilder).
+
+## NEU in 3D-4.31 (MoveEye 2.98.62): Nacht-Testlauf (`nachtlauf.gd`, MoveEye /nacht)
+
+- `nachtlauf.gd` (neu): Ablauf einer Nacht mit festem Zufall, schreibt die Wahrheit (Ereignisse, Abstand, Sichtbarkeit);
+  Steuerung `{"action":"nacht",…}` (schnittstelle.json), `busy_with` «Nacht-Testlauf». Eigene Arten:
+  `main.nacht.register_kind(kind, f, cat, cause)`. MoveEye: 579b (Abgleich, /nacht), 599d (Fenster), 599e (Texte).
+- Abbrechen im Simulator-Fenster bleibt erlaubt (Daniel 31.10.); Start nur in MoveEye durch den Besitzer.
+- MoveEye: «Trainings-Nacht» 🏋 und «Nacht-Generalprobe» 🎭 statt 🌙 (🌙 nur noch Nacht-Testlauf).
+
+## NEU in 3D-4.30 (MoveEye 2.98.61): Erlebniswelt im Ferienpark (`erlebniswelt.gd`, 19 Vignetten)
+
+- `erlebniswelt.gd` (neu): 18 Abläufe (innere Klassen) an den reservierten Orten von `ferienpark.gd`, nur aktiv unter 60 m
+  (Ansicht oder MoveEye), unsichtbar über 180 m, bei Testlauf / Prüfstand weg. Figuren aus `actor.gd` («puppet», neue Geste
+  «wave»). Steuerung `{"action":"ferienpark","do":"erleben","what":…}`. Entdeckungen über `main.entdecken.register()`.
+- `_lite()` = `Quality.lite()`. Knopf `disc_seek` mit `controls[-1]["only"]` nur in der Szene «ferienpark» (Fenster und MoveEye).
+- `overlay3d.gd`: MoveEye-Boxen auf Erlebniswelt-Figuren = «✓ erkannt». Details: Zweig `erlebniswelt`, REAL_ERLEBEN.
+
+## NEU in 3D-4.29 (MoveEye 2.98.60): «Neu in dieser Version» scrollt, Esc schliesst (`news.gd`)
+
+- `news.gd`: Liste in einem `ScrollContainer` (`_scroll`/`_list`), Knöpfe ausserhalb – nie höher als der Bildschirm;
+  `_unhandled_input`: Esc = `close(false)`.
+
+## NEU in 3D-4.28 (MoveEye 2.98.59): Szenen-Bibliothek `bib_objekte.gd` + Szene «Ferienpark am See» (`ferienpark.gd`)
+
+- **Bibliothek** (~90 Dinge mit Parametern, echte Grösse, Hindernis, Wärme, Sichtweite): `var bib = Bib.new(main, scenes, knoten,
+  transform)`, `bib.add(art, pos, drehung, {…})`, `bib.many(art, liste)`, `bib.line(art, a, b, n)`, `bib.finish()`. Teile gleicher
+  Oberfläche pro 48-m-Zelle in einem Netz (+ Wärmebild-Zwilling), viele gleiche Dinge als MultiMesh (128-m-Gruppen).
+  **Lite:** `Bib.lite()` = `Quality.lite()` (zusätzlich Grafik «simple»): 6 statt 10 Ecken, kleine Teile weg, Sichtweiten
+  320/110/45 m, halber Wald, 4 Lampenlichter, 1 Rauchfahne.
+- **Ferienpark** (~500 × 500 m): See, Terrassen (`main.ground_fn` = Höhe in Weltkoordinaten), Wald, Dorf; Boden-Shader
+  `shaders/ferienpark_boden.gdshader`; Ortsschilder nur im Fenster (HELPER_LAYER), nicht im MoveEye-Bild.
+  5 MoveEye-Standorte (`ferienpark.gd SPOTS`, Einstellung `fp_spot`, gespeichert in KEEP): zelt, wohnmobil, bungalow, steg, rezeption.
+- **Neu: Regler nur in ihrer Szene.** `add_control(…)` danach `controls[-1]["only"] = func(): return scene == "…"`: der Regler
+  fehlt dann im Fenster (`_dev_hidden` / `_apply_simple`, nach `set_scene` → `_only_refresh`) und in `control_info()` – MoveEye
+  baut seine Simulator-Steuerung bei geänderter Liste von selbst neu (kein MoveEye-Code nötig). Erster Fall: «Standort im
+  Ferienpark am See».
+- MoveEye 551: Szenen-Name in allen Sprachen.
 
 ## NEU in 3D-4.27 (MoveEye 2.98.58): Entdecken (`entdecken.gd`, Erlebniswelt 20–23)
 

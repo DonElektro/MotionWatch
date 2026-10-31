@@ -39,7 +39,7 @@ def sim_hub_do(a, v=None):                                # + 591: «wide_mount�
     if a != "wide_mount":
         return _sim_hub_do_139(a, v)
     m = str(v or "")
-    if m not in ("scene",) + WEIT_DEVICE_MOUNTS:
+    if m not in ("scene", "none") + WEIT_DEVICE_MOUNTS:
         return False, "invalid value"
     try:
         r = sim_control({"action": "set", "id": "wide_mount", "value": m})
@@ -48,10 +48,19 @@ def sim_hub_do(a, v=None):                                # + 591: «wide_mount�
     if r.get("ok", True):
         c = weit_sim_cam()
         if c is not None:                                  # the next state reply says it too - but the tile shows it at once
-            c.update(mount=m, on_head=m.startswith("head_"), yaw_offset=180.0 if m == "head_rear" else 0.0)
+            c.update(mount=m, on_head=m.startswith("head_"), yaw_offset=180.0 if m == "head_rear" else 0.0, installed=m != "none")
             weit_auto()
     _SIMHUB["t"] = 0.0
     return bool(r.get("ok", True)), str(r.get("error") or "")
+
+
+_open_source_210 = open_source
+
+
+def open_source(spec, thermal=False):                     # + 591 (P9): blind cover - say so instead of «not reachable»
+    if not thermal and str(spec) == "sim:1" and weit_missing():
+        return None, spec, source_label(spec), "wide camera not installed (blind cover)"
+    return _open_source_210(spec, thermal)
 
 
 _source_label_200 = source_label
@@ -76,7 +85,8 @@ WIDE_JS = r"""
 <script>
 (function () {
   const DE = /*WDE*/{};
-  const M = [["scene", "Mast (scene)"], ["base", "Base front, fixed"], ["head_front", "Head front"], ["head_rear", "Head rear"]];
+  const M = [["case", "In the case (v5.2)"], ["scene", "Mast (scene)"], ["base", "Base front, fixed"], ["head_front", "Head front"], ["head_rear", "Head rear"],
+             ["none", "Not installed (blind cover)"]];
   const L = () => { try { return (typeof LANG !== "undefined" && LANG) || document.documentElement.lang || "de"; } catch (e) { return "de"; } };
   let merged = false;
   const merge = () => { if (merged) return; try { if (typeof I18N !== "undefined" && I18N.de) { for (const k in DE) if (!(k in I18N.de)) I18N.de[k] = DE[k]; merged = true; } } catch (e) {} };
@@ -113,9 +123,11 @@ WIDE_JS = r"""
       if (!w) { s.appendChild(E("div", "mut", tt("not supported - update the simulator"))); return; }
       N = w.n; s.appendChild(pic());
       LAB.textContent = "🔭 " + tt("Wide camera") + " · " + name(w.mount);
-      if (N == null) WAIT.textContent = tt("The wide camera is not an extra camera of MoveEye");
+      if (w.missing) { WAIT.textContent = tt("Not installed (blind cover) - no wide picture"); WAIT.hidden = false; N = null; }
+      else if (N == null) WAIT.textContent = tt("The wide camera is not an extra camera of MoveEye");
       M.forEach(([k, lb]) => { const b = E("button", k === w.mount ? "" : "sec", tt(lb)); b.type = "button"; b.onclick = () => act("wide_mount", k); s.appendChild(b); });
-      s.appendChild(E("div", "mut mwwnote", w.mount === "scene" ? tt("On the mast: not part of the device - it does not steer the head by itself.")
+      s.appendChild(E("div", "mut mwwnote", w.missing ? tt("Not installed (blind cover) - no wide picture")
+        : w.mount === "scene" ? tt("On the mast: not part of the device - it does not steer the head by itself.")
         : w.ov ? "⟲ " + tt("Steers the head as overview («The overview camera steers the head»)") + (w.ov_on ? "" : " – " + tt("off"))
         : tt("Overview chosen by hand - not changed.")));
       setTimeout(feed, 30);
@@ -124,7 +136,8 @@ WIDE_JS = r"""
 })();
 </script>
 """
-WIDE_KEYS = ("Wide camera", "Mast (scene)", "Base front, fixed", "Head front", "Head rear",
+WIDE_KEYS = ("Wide camera", "In the case (v5.2)", "Not installed (blind cover)", "Not installed (blind cover) - no wide picture",
+             "Mast (scene)", "Base front, fixed", "Head front", "Head rear",
              "The wide camera is not an extra camera of MoveEye", "On the mast: not part of the device - it does not steer the head by itself.",
              "Steers the head as overview («The overview camera steers the head»)", "Overview chosen by hand - not changed.")
 _simhub_head_139 = simhub_head
@@ -153,6 +166,11 @@ def weit_selftest():
         weit_from_sim({"mount": "head_rear"}); assert CFG["kopf_ov"] == ""
         weit_from_sim({"mount": "base", "yaw_offset": 0.0, "on_head": False})
         assert CFG["kopf_ov"] == "sim:1" and abs(kopf_ov_deg(0.25) + 25.5) < 0.01
+        weit_from_sim({"mount": "case", "yaw_offset": 0.0, "on_head": False, "installed": True})      # P9: case v5.2
+        assert CFG["kopf_ov"] == "sim:1" and abs(kopf_ov_deg(1.0) - 51.0) < 0.01 and not weit_missing()
+        weit_from_sim({"mount": "none", "yaw_offset": 0.0, "on_head": False, "installed": False})    # P9: blind cover
+        assert CFG["kopf_ov"] == "" and weit_missing() and "blind cover" in open_source("sim:1")[3]
+        weit_from_sim({"mount": "case", "installed": True}); assert CFG["kopf_ov"] == "sim:1"
         weit_from_sim({"mount": "scene", "yaw_offset": 0.0, "on_head": False})
         assert CFG["kopf_ov"] == "" and not CFG["kopf_ov_simauto"]
         CFG.update(light_ir_wide=True, light_white_out="pca:4")

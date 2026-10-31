@@ -19,6 +19,13 @@ uniform float cnoise = 0.0;         // 3D-3.97: colour grain in the dark (each p
 uniform float seed = 0.0;
 // 3D-4.4 (simreal.gd): the lens and sensor of the Camera Module 3
 uniform float distort = 0.0;        // barrel distortion (0.05 normal lens, ~0.16 wide lens): straight lines bend at the edges
+// P9 (weitwinkel.gd): the equidistant fisheye of the Camera Module 3 Wide - the angle from the middle grows linearly with the
+// distance in the picture (model of the case report v5.2). The camera renders a wider straight picture (tan fe_tan at its
+// edges), here every pixel fetches the ray of its angle. fe_vig: the dark corners the ISP leaves.
+uniform float fe_on = 0.0;
+uniform vec2 fe_half = vec2(0.8901, 0.5847);   // half angles of the picture (rad): 51° to the side edge, 33.5° to the top
+uniform vec2 fe_tan = vec2(1.796, 1.010);      // tan of the half width / height of the rendered straight picture
+uniform float fe_vig = 0.0;                    // 0..1 darker in the corners (by the angle from the middle)
 uniform float rshutter = 0.0;       // rolling shutter: the rows are read one after the other - turning fast skews the picture
 uniform float shot = 0.0;           // sensor noise that depends on the light: dark parts grainy, bright parts clean
 uniform float bloom = 0.0;          // near things in the infrared light blow out and glow over their edges
@@ -33,7 +40,15 @@ float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32);
 void fragment() {
 	vec2 suv = SCREEN_UV;
 	vec2 uv = suv;
-	if (distort > 0.0) {
+	float fe_k = 1.0;
+	if (fe_on > 0.5) {
+		vec2 an = (suv - 0.5) * 2.0 * fe_half;            // the angles of this pixel along x / y
+		float th = length(an);
+		vec2 dir = th > 0.00001 ? an / th : vec2(0.0);
+		uv = dir * tan(min(th, 1.45)) / fe_tan * 0.5 + 0.5;
+		float rr = th / length(fe_half);                   // 1 in the corners
+		fe_k = 1.0 - fe_vig * rr * rr;
+	} else if (distort > 0.0) {
 		float asp = res.x / res.y;
 		vec2 q = (uv - 0.5) * vec2(asp, 1.0);
 		float r2 = dot(q, q) / (0.25 * (asp * asp + 1.0));   // 1 in the corners: the corners stay, the middle grows a little
@@ -58,6 +73,7 @@ void fragment() {
 	} else {
 		c = texture(screen_tex, uv).rgb;
 	}
+	c *= fe_k;                                             // P9: vignetting of the wide lens (before the last picture is mixed in)
 	if (trail > 0.0) {
 		// 3D-4.1: the last picture is the finished one (after the lens: gain, grain) - never let it be brighter than now,
 		// otherwise it adds up from picture to picture (the infrared picture at night turned completely white)
