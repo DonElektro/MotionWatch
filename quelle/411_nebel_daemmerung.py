@@ -33,12 +33,13 @@ STRICT = {"n": 1, "why": ""}
 STATE.setdefault("fog", False); STATE.setdefault("strict", {"n": 1, "why": ""})
 
 # Why these limits (measured on the pictures of the detection test, 80 x 45 grey, rel = (p95 - p5) / mean):
-#   fog (Schattwald)  mean 215, rel 0.20-0.23, saturation 9-10
+#   fog (Schattwald)  mean 215, rel 0.20-0.23, saturation 9-10; live run E2 (thinner fog): mean 190, rel 0.33, saturation 16
 #   snow (Stellplatz) mean 187, rel 0.50, saturation 20      rain (Camping) mean 175, rel 0.64, saturation 37
 #   clear day         rel 0.7-1.0, saturation 48-85          dusk / night   mean < 130, rel > 0.9
-# 0.32 / 30 lie well between fog and snow; with fog in the weather 0.42 / 40 (still below snow). mean >= 90: fog by day
+# 0.40 / 30 lie between fog and snow (first 0.32: the thinner fog of the live run needed 4 min); with fog in the weather
+# 0.46 / 40 (still below snow 0.50). mean >= 90: fog by day
 # is bright grey; below that it is dusk / night, where the low-light mode lifts the contrast already.
-FOG_REL, FOG_SAT, FOG_REL_WX, FOG_SAT_WX, FOG_MEAN = 0.32, 30.0, 0.42, 40.0, 90.0
+FOG_REL, FOG_SAT, FOG_REL_WX, FOG_SAT_WX, FOG_MEAN = 0.40, 30.0, 0.46, 40.0, 90.0
 FOG_ON_S, FOG_OFF_S = 10.0, 30.0          # fog comes and goes in minutes; 10 s: a white van filling the picture (2-5 s) is no fog
 TWI_NOISE_K = 1.6                         # noise dusk / day in the test: 1.8-2.2 (three places); rain 0.85, snow 0.6
 WIND_MEAN_KMH, WIND_GUST_KMH = 20.0, 39.0  # Beaufort 4 (20-28 km/h): twigs move; Beaufort 6 (39-49 km/h): big branches move
