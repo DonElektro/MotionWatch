@@ -921,10 +921,16 @@ func _beat(b: Array) -> void:
 			_fig_place(float(a["az"]), float(a["d"]), a.get("to_az", null), bool(a.get("stand", false)), bool(a.get("face", false)))
 		"fig_hut":
 			if _hut != null:
-				_fig_walk(_hut.global_position + _hut.global_transform.basis * Vector3(0, 0, 3.6), 0.5)
+				_fig_walk(_hut.global_position + _hut.global_transform.basis * Vector3(0, 0, 3.6), 0.9)
 		"fig_tent":
+			var tf := _tent_front()
 			_fig_show()
-			_fig_walk(_tent_front(), 0.7)
+			if _fig.global_position.distance_to(tf) > 9.0:        # out of the fog, 8 m before the tent (≈ 10 s to the PIR)
+				var o := Vector3(tf.x, 0, tf.z).normalized() if Vector2(tf.x, tf.z).length() > 0.1 else Vector3(0, 0, -1)
+				var st := tf + o * 8.0
+				st.y = main.ground_y(st.x, st.z)
+				_fig.global_position = st
+			_fig_walk(tf, 0.8)
 		"fig_away":
 			_fig_walk(_around(45.0), 1.1)
 		"hut_light":
