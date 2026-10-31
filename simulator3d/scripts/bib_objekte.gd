@@ -124,8 +124,20 @@ func make(kind: String, q := {}) -> Dictionary:
 # =======================================================================================================================
 # building
 # =======================================================================================================================
+var clear: Array = []                     # 3D-4.x Welten: [[centre (local, Vector2), r], …] - nothing is built there (a place)
+
+
+func _cleared(p: Vector3) -> bool:
+	for c in clear:
+		if Vector2(p.x, p.z).distance_to(c[0]) < float(c[1]):
+			return true
+	return false
+
+
 func add(kind: String, p: Vector3, rot := 0.0, q := {}) -> Dictionary:
 	"""one thing at p (local to root, y = ground) turned by rot; returns its description (door, lights …)"""
+	if not clear.is_empty() and _cleared(p):
+		return {}
 	var d := make(kind, q)
 	if d.is_empty():
 		return d
@@ -144,6 +156,8 @@ func add(kind: String, p: Vector3, rot := 0.0, q := {}) -> Dictionary:
 
 func parts_of(kind: String, xf: Transform3D, q := {}) -> void:
 	"""the parts of a thing into the nets, without obstacles (e.g. a car on a ferry, a boat in the boat house)"""
+	if not clear.is_empty() and _cleared(xf.origin):
+		return
 	var d := make(kind, q)
 	if d.is_empty():
 		return
@@ -154,6 +168,8 @@ func parts_of(kind: String, xf: Transform3D, q := {}) -> void:
 func many(kind: String, list: Array, q := {}) -> void:
 	"""many equal things as MultiMesh (one draw call per surface and group of 128 m): list = [[position, rot_y], …] or
 	[[position, rot_y, scale]]"""
+	if not clear.is_empty():
+		list = list.filter(func(e): return not _cleared(e[0]))
 	if list.is_empty():
 		return
 	var d := make(kind, q)

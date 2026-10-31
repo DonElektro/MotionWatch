@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 06:02",
+ "generated": "2026-10-31 06:12",
  "versions": [
   {
-   "version": "2.98.64",
-   "file": "webcam_bewegung_2_98_64.py",
+   "version": "2.98.65",
+   "file": "webcam_bewegung_2_98_65.py",
    "url": "",
-   "sha256": "42a682459562b37e05e2505a0843d39e8204ded3278a9e8fb792793df0449257",
-   "date": "2026-10-31 06:02",
-   "notes": "Simulator 3D-4.33: Weitwinkel-Kamera wie im Gehäuse v5.2 – Montage «Im Gehäuse (v5.2)» (Standard) und «Nicht verbaut (Blindstopfen)», Fischauge wie das echte Objektiv, kleine IR-LED; Kachel 🔭 mit den neuen Knöpfen.",
-   "sig": "3e2824f8474486aa6eb1aee3f911cbaf0e139567265661cef9dbf174dbc2e61e5434611dffa4670eb959590de353c7ed62fba73331e5efc707f43a50fe804503"
+   "sha256": "8de67c8ef6b380f9c08e1822eacc8d2313ebf924180cf8e20db30ad0b725c7d6",
+   "date": "2026-10-31 06:12",
+   "notes": "Simulator 3D-4.34: neue Welt «Bergtal» (2 × 2 km) und Szenen zusammengefasst – Welten Bergtal, Ferienpark, Zuhause mit den alten Szenen als Orte; alte Kennungen gehen weiter, Trainingsnacht lädt Orte allein.",
+   "sig": "ad42de7d0bde3ba7ca001ec914719dc16a575c2e3f975fe182ee4f530064cc0258f23fedaea1186847b2334346a2198e3e960735d3b387ec50a8135388ab730c"
   },
   {
    "version": "2.97.1",
