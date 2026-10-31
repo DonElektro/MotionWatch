@@ -4930,6 +4930,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return tiere.control(d)
 	elif a == "fahrzeuge":                             # Paket «Fahrzeuge»: {do: info | set | spawn | arrive | toward | leave | reset}
 		return fahrzeuge.control(d)
+	elif a == "maggie_gefahr":                         # «Maggie und der Bergkristall» S3: böse Tiere, Schutzdinge (maggie_gefahr.gd)
+		return load("res://scripts/maggie_gefahr.gd").control(self, d)
 	elif a == "licht":                                 # «Licht & Nacht»: {do: info | set | sources (cam) | lux | attach | headlights | at}
 		return licht.control(d)
 	elif a == "jahreszeiten":                          # «Jahreszeiten»: {do: info | set (key, value) | sun (doy, lat, lon) | year}
