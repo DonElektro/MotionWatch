@@ -2262,7 +2262,7 @@ func control(d: Dictionary) -> Dictionary:
 			var v = by_id[id]
 			var w: Vector3 = v.where()
 			return {"ok": true, "pos": [snappedf(w.x, 0.01), snappedf(w.y, 0.01), snappedf(w.z, 0.01)], "tal": [snappedf(v.c.x, 0.1), snappedf(v.c.y, 0.1), snappedf(v.c.z, 0.1)],
-					"when_ok": v.when_ok()}
+					"when_ok": v.when_ok(), "c_world": [snappedf(W(v.c).x, 0.01), snappedf(W(v.c).y, 0.01), snappedf(W(v.c).z, 0.01)]}
 		"state":                                         # tests: jump a vignette to a state (and hold it)
 			if by_id.has(id):
 				if d.has("state"):
@@ -2275,6 +2275,11 @@ func control(d: Dictionary) -> Dictionary:
 						by_id[id].set(str(k), sv[k])
 				by_id[id].hold = bool(d.get("hold", false))
 				return {"ok": true, "info": by_id[id].info()}
+			return {"ok": false, "error": "unknown", "ids": by_id.keys()}
+		"get":                                           # tests: one value of a vignette (e.g. «horn_at» of the Postauto)
+			if by_id.has(id):
+				var val = by_id[id].get(str(d.get("key", "st")))
+				return {"ok": true, "value": val if typeof(val) in [TYPE_FLOAT, TYPE_INT, TYPE_STRING, TYPE_BOOL] else str(val)}
 			return {"ok": false, "error": "unknown", "ids": by_id.keys()}
 		"rain":                                          # tests: «it has just rained» (salamanders)
 			_rain_end = float(m.now())
