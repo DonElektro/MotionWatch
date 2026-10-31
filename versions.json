@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 07:23",
+ "generated": "2026-10-31 07:29",
  "versions": [
   {
-   "version": "2.98.73",
-   "file": "webcam_bewegung_2_98_73.py",
+   "version": "2.98.74",
+   "file": "webcam_bewegung_2_98_74.py",
    "url": "",
-   "sha256": "886800cf8d1ecdb6e918608905138a9e9d914002953dd2c01f12396fb0ecae16",
-   "date": "2026-10-31 07:23",
-   "notes": "Simulator 3D-4.42: Menschen verhalten sich echter – Gangarten, Familien, Gruppen, Draussen sitzen, WC-Gang mit Taschenlampe, Tagesablauf.",
-   "sig": "1df71e2719ded92369d99d88ce69506e5bc32c34291885831908311cb986e3a2f868b93e79adbb446701fdc1bf4d73b41841a07dcc64ff8d2e29359bd8252d0d"
+   "sha256": "83df2d034701d4e6365f9a6585df29446c47217f90293e67eae60024e391579a",
+   "date": "2026-10-31 07:29",
+   "notes": "Simulator 3D-4.43: 7 Einbruch-Abläufe mit Bericht (wann gewarnt, was verpasst), auch als Vorfall im Nacht-Testlauf.",
+   "sig": "11bf365aa160a86d8732a7b02817e6357163a9ab541953524919080daebb3af3cf423f5e09ca681c8fbd599c32715f2b898ac95b8462e838f6e82055c2a6cf0a"
   },
   {
    "version": "2.97.1",
