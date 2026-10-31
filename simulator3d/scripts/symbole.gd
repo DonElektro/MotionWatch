@@ -21,7 +21,8 @@ const ICON := {"🔋": "battery", "🔌": "plug", "📵": "nonet", "⏻": "power
 		"⚙": "gear", "🔧": "gear", "🔍": "search", "📊": "chart", "📈": "chart", "🚨": "siren", "📢": "megaphone", "🔊": "megaphone",
 		"📡": "scan", "🌙": "moon", "🌑": "moon", "🔒": "lock", "🔓": "lock", "📍": "pin", "🎮": "pad", "🕹": "pad", "🏠": "house",
 		"🚶": "person", "🏃": "person", "👮": "person", "🕵": "person", "🌳": "tree", "🌿": "tree", "📱": "phone", "📳": "phone",
-		"⏹": "stop", "⏸": "pause", "📦": "box", "📺": "tv", "🚗": "car", "🚜": "car", "🚲": "bike"}
+		"⏹": "stop", "⏸": "pause", "📦": "box", "📺": "tv", "🚗": "car", "🚜": "car", "🚲": "bike",
+		"🌧": "rain", "☔": "rain", "🌅": "dawn", "🌇": "dawn", "🌫": "cloud", "📖": "book", "📔": "book"}   # entdecken.gd (Erlebniswelt 20–23)
 # what stands there when the text is ONLY the emoji (a label or a button without words)
 const WORD := {"battery": "Akku", "plug": "Netz", "nonet": "kein Netz", "power": "Aus", "note": "Ton", "target": "Ziel", "test": "Test",
 		"bolt": "Strom", "warn": "Achtung", "sun": "Sonne", "snow": "Kälte", "thermo": "Temp.", "bulb": "Licht", "robot": "KI",
@@ -29,7 +30,8 @@ const WORD := {"battery": "Akku", "plug": "Netz", "nonet": "kein Netz", "power":
 		"eyeoff": "versteckt", "clock": "Zeit", "check": "✓", "cross": "✗", "gear": "Einst.", "search": "Suche", "chart": "Statistik",
 		"siren": "Alarm", "megaphone": "Sirene", "scan": "Scan", "moon": "Nacht", "lock": "Sperre", "pin": "Ort", "pad": "Spiel",
 		"house": "Haus", "person": "Person", "tree": "Baum", "phone": "Handy", "stop": "Stopp", "pause": "Pause", "box": "Paket",
-		"tv": "TV", "car": "Auto", "bike": "Velo"}
+		"tv": "TV", "car": "Auto", "bike": "Velo",
+		"rain": "Regen", "dawn": "Morgen", "cloud": "Wolken", "book": "Buch"}
 const COL := {"warn": UI.ORG, "cross": UI.RED, "siren": UI.RED, "check": UI.GRN, "nonet": UI.ORG, "power": UI.RED, "trophy": Color("#f2c14e"),
 		"star": Color("#f2c14e"), "bolt": Color("#f2c14e"), "sun": Color("#f2c14e")}
 
@@ -150,6 +152,12 @@ const SHAPES := {
 	"tv": [["r", 2, 4, 16, 11], ["l", 6, 18, 14, 18], ["l", 10, 15, 10, 18]],
 	"car": [["p", [1.5, 14, 1.5, 10, 4.5, 9.5, 7, 5.5, 13, 5.5, 15.5, 9.5, 18.5, 10, 18.5, 14, 1.5, 14]], ["c", 5.5, 14.5, 2], ["c", 14.5, 14.5, 2]],
 	"bike": [["a", 5, 13, 4, 0, 2], ["a", 15, 13, 4, 0, 2], ["p", [5, 13, 8.5, 7, 13, 7, 15, 13]], ["l", 8.5, 7, 10.5, 13], ["l", 7.5, 5, 10, 5]],
+	# entdecken.gd (Erlebniswelt 20–23): rain, sunrise (morning / evening), cloud (fog), the book
+	"cloud": [["a", 7, 10, 3.5, 0.5, 1.6], ["a", 11.5, 8, 4.5, 1.0, 2.05], ["a", 15, 11.5, 3, -0.6, 0.5], ["l", 5, 14.4, 15.5, 14.4]],
+	"rain": [["a", 7, 8, 3.2, 0.5, 1.6], ["a", 11.5, 6.5, 4, 1.0, 2.05], ["a", 14.8, 9.5, 2.6, -0.6, 0.5], ["l", 5.5, 12, 15.5, 12],
+			["l", 6.5, 14.5, 5.5, 17.5], ["l", 10.5, 14.5, 9.5, 17.5], ["l", 14.5, 14.5, 13.5, 17.5]],
+	"dawn": [["l", 1, 15, 19, 15], ["a", 10, 15, 5, 1.0, 2.0], ["l", 10, 4, 10, 7], ["l", 3, 8.5, 5, 10], ["l", 17, 8.5, 15, 10], ["l", 6, 18, 14, 18]],
+	"book": [["p", [10, 5, 6, 3.5, 2, 4, 2, 16, 6, 15.5, 10, 17, 14, 15.5, 18, 16, 18, 4, 14, 3.5, 10, 5]], ["l", 10, 5, 10, 17]],
 }
 
 

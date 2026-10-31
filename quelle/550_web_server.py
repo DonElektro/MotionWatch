@@ -1114,6 +1114,17 @@ class WebStream:
                 return Response("no picture", 404)
             return Response(b_, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
 
+        @app.route("/sim/disc_pic/<int:i>.jpg")
+        def sim_disc_pic(i):
+            """Erlebniswelt 20–23: the picture of entry i of the Entdeckungsbuch of the simulator (this scene)"""
+            if not CFG["sim_on"]:
+                return Response("simulation off", 404)
+            try:
+                b_, _h = _sim_get(f"/disc_pic/{int(i)}.jpg", 3.0)
+            except Exception:
+                return Response("no picture", 404)
+            return Response(b_, mimetype="image/jpeg", headers={"Cache-Control": "max-age=60"})
+
         @app.route("/sim/game_qr.png")
         def sim_game_qr():
             """the QR code of the game in the 3D simulator (3D-3.20): players photograph it with their phone"""

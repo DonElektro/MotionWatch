@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 03:55",
+ "generated": "2026-10-31 04:19",
  "versions": [
   {
-   "version": "2.98.57",
-   "file": "webcam_bewegung_2_98_57.py",
+   "version": "2.98.58",
+   "file": "webcam_bewegung_2_98_58.py",
    "url": "",
-   "sha256": "e244862ce85caefa253914fbebe866d557e0a03c4fe876a772cf56381975f663",
-   "date": "2026-10-31 03:55",
-   "notes": "Simulator 3D-4.26: alle schwebenden Fenster (Kompass, Karte, Livebild, SmallTV, Gerät, Mover, Kopf, Kameras, CPU) in einem gemeinsamen Rahmen – verschieben, Grösse ändern, ✕ ausblenden, Schnappen, neuer Knopf «Fenster» in der Leiste unten (Liste, «Anordnung zurücksetzen»), Anordnung pro PC gespeichert.",
-   "sig": "2e8d1968e85bbd0d30c9cb2f3053019e74587deb79805e6625d44bfdeb827ac43829f91b91ae3ecd3e49929b7fd9d77d0b9d7d272471436c55fd175ee0dc3108"
+   "sha256": "f0f00bb68bb67f827b7f60fe8aadb7e1996d6dfb416852d43553da46fd742b3f",
+   "date": "2026-10-31 04:19",
+   "notes": "Simulator-Zentrale: neue Kachel «📖 Entdeckungen» (Spielen) – Stand des Entdeckungsbuchs im Simulator, Liste, «📷 Foto für Entdeckungsbuch», «Im Simulator öffnen», «Blinki-Hinweis». Simulator 3D-4.27: Entdecken (Buch, Fund per Ansicht oder Foto der Kopfkamera, Tageszeit-/Wetter-Geheimnisse, Blinki-Hinweise, Demo im Camping-Platz).",
+   "sig": "5c60e58a98f01018640948b80c4f902b61d724bf808b927d2fecc59010dd570dd839a57fbe49d82367c3e80e0be7877488a296c0f9dfed1e8530a2f12428c503"
   },
   {
    "version": "2.97.1",
