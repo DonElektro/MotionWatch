@@ -841,6 +841,7 @@ class MotionWatch:
                 self._reset_models()
             self._proc_size = (pw, ph)
             small = cv2.resize(frame, (pw, ph))
+            full_ = frame                                 # (the overlays below make new pictures - this one stays as it is)
             if TAMPER is not None:
                 TAMPER.feed(small, t0)
             if LENS is not None:
@@ -883,6 +884,7 @@ class MotionWatch:
             if CFG["detection_on"]:
                 g = self.preprocess(fog_gray(gray, t0), rain_mode)       # 411: in fog with the contrast lifted
                 fg = self.foreground(g, small, rain_mode, wind_boost)
+                self.ai.full = full_                       # real-erk-e3: the camera pixels for the AI / the Lupe (418z)
                 ai_boxes = [b for b in self.ai.detect(small) if zone_box_ok(b, pw, ph, "person")]     # 2.98.13: zones by kind (066)
                 ai_objs = [o for o in self.ai.objects if zone_box_ok(o, pw, ph, "animal" if COCO_LABELS.get(o[5]) in ANIMALS else "other")]
                 rec_animals = [o for o in ai_objs if COCO_LABELS.get(o[5]) in ANIMALS]
@@ -900,6 +902,12 @@ class MotionWatch:
                 if any(b[2] * b[3] >= min_area for b in boxes):
                     present.add("prealarm")              # pre-alarm: anything at all moves in the picture (before it is judged to be a person)
                 raw_boxes = list(boxes)
+                try:                                        # real-erk-e3: small movement that comes back = a far hint of the Lupe (418z)
+                    zoom_far_feed(self.ai, [b for b in (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) < small_area)
+                                            if zone_box_ok(b, pw, ph, "person")],
+                                  small_area, self.tracker.tracks, pw, ph, t0, STATE.get("wind_level", "calm"))
+                except Exception as e:
+                    log_event("sys", f"AI magnifier: {e}"[:160])
                 # 2.98.13: a motion box over a quarter of the picture is no person (light change, turn) - it must not
                 # swallow the persons of the AI when merging
                 boxes = [b for b in boxes if b[2] * b[3] <= 0.25 * pw * ph] if ai_boxes else boxes
@@ -1061,7 +1069,10 @@ class MotionWatch:
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.42, col, 1, cv2.LINE_AA)
             warm_boxes = []
             th_pers = THERMAL is not None and not person_boxes and thermal_person_active()   # 2.98.13: persons in the thermal picture (232)
-            if (CFG["thermal_alarm"] or th_pers) and CFG["detection_on"] and THERMAL is not None:
+            # real-erk-e3: at night the crawling check needs the warm bodies also when a person box is there elsewhere (a fixed
+            # false «person» in the picture must not hide a crawling one, 418k)
+            th_crawl = THERMAL is not None and bool(person_boxes) and thermal_person_active() and _foot_night()
+            if (CFG["thermal_alarm"] or th_pers or th_crawl) and CFG["detection_on"] and THERMAL is not None:
                 warm_boxes = THERMAL.detect()                 # (x, y, w, h) 0..1 of the picture, already checked against the zones
             maybe_ = []
             if not person_boxes and CFG["detection_on"]:      # real-reh-fusspunkt: «Person?» - flat + weak AI + movement / warmth (232)
@@ -1069,9 +1080,14 @@ class MotionWatch:
                     maybe_ = weak_person_feed(self.ai, persons + candidates, warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0)
                 except Exception as e:
                     log_event("sys", f"Person?: {e}"[:160])
-            if (CFG["thermal_alarm"] or th_pers) and CFG["detection_on"] and THERMAL is not None:
+            if (CFG["thermal_alarm"] or th_pers or th_crawl) and CFG["detection_on"] and THERMAL is not None:
                 if th_pers and warm_boxes and not maybe_:                 # a «Person?» is there: no animal under it (232)
                     warm_boxes = thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, maybe_)
+                try:                                          # real-erk-e3: crawling at night - warm + moving + near (418k)
+                    cb_ = crawl_feed(warm_boxes, persons + candidates, rec_animals, person_boxes, present, frame, pw, ph, W, H, t0, self.notifier)
+                    warm_boxes = [b_ for b_ in warm_boxes if b_ not in cb_]    # «Person?» now, no longer «warm»
+                except Exception as e:
+                    log_event("sys", f"Crawling at night: {e}"[:160])
                 if not CFG["thermal_alarm"]:
                     warm_boxes = []
                 if warm_boxes:
