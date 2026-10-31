@@ -2485,6 +2485,12 @@
   "it": "",
   "rm": ""
  },
+ "Anteil Kinder unter den Menschen, die von selbst kommen": {
+  "en": "Share of children among the people who come by themselves",
+  "fr": "Part d’enfants parmi les personnes qui viennent d’elles-mêmes",
+  "it": "Quota di bambini tra le persone che arrivano da sole",
+  "rm": "Part d’uffants tranter las persunas che vegnan da sasez"
+ },
  "Antwort": {
   "en": "Answer",
   "fr": "Réponse",
@@ -5079,6 +5085,12 @@
   "it": "All’aperto",
   "rm": "Ordaifer"
  },
+ "Draussen sitzen (bringen Stühle mit, bleiben eine Weile)": {
+  "en": "Sitting outside (bring chairs, stay a while)",
+  "fr": "Assis dehors (apportent des chaises, restent un moment)",
+  "it": "Seduti fuori (portano le sedie, restano un po’)",
+  "rm": "Seser dadora (portan sutgas, restan in mument)"
+ },
  "Drehbereich des Kopfes: ±%d° · Kamera-Blickwinkel %d° · %s": {
   "en": "Turning range of the head: ±%d° · camera angle of view %d° · %s",
   "fr": "Plage de rotation de la tête : ±%d° · angle de vue de la caméra %d° · %s",
@@ -5294,6 +5306,12 @@
   "fr": "Itinéraire propre (tel que placé)",
   "it": "Percorso proprio (come posato)",
   "rm": "Atgna ruta (sco messa)"
+ },
+ "Eilt oder rennt vorbei": {
+  "en": "Hurries or runs past",
+  "fr": "Passe en se pressant ou en courant",
+  "it": "Passa di fretta o di corsa",
+  "rm": "Passa en prescha u currind"
  },
  "ein": {
   "en": "on",
@@ -6196,6 +6214,12 @@
   "it": "SBAGLIATO: ",
   "rm": "FALLÀ: "
  },
+ "Familie mit Kindern (Kinder rennen voraus und zurück)": {
+  "en": "Family with children (children run ahead and back)",
+  "fr": "Famille avec enfants (les enfants courent devant et reviennent)",
+  "it": "Famiglia con bambini (i bambini corrono avanti e tornano)",
+  "rm": "Famiglia cun uffants (ils uffants curran ordavant e enavos)"
+ },
  "Fast voll: Programme schliessen (Browser-Tabs), den Simulator neu starten.": {
   "en": "",
   "fr": "",
@@ -6910,6 +6934,18 @@
   "fr": "Fourchette",
   "it": "Forchetta",
   "rm": "Furtgetta"
+ },
+ "Gang zum WC / zur Dusche (nachts mit Taschenlampe)": {
+  "en": "Walk to the toilet / shower (at night with a torch)",
+  "fr": "Aller aux WC / à la douche (la nuit avec une lampe de poche)",
+  "it": "Andare al WC / alla doccia (di notte con la torcia)",
+  "rm": "Ir al WC / a la duscha (la notg cun ina lampa da giaglioffa)"
+ },
+ "Gangarten nacheinander vor der Kamera (gehen, eilen, rennen, schleichen, kriechen)": {
+  "en": "Gaits one after another in front of the camera (walk, hurry, run, sneak, crawl)",
+  "fr": "Allures l’une après l’autre devant la caméra (marcher, se presser, courir, se faufiler, ramper)",
+  "it": "Andature una dopo l’altra davanti alla telecamera (camminare, affrettarsi, correre, strisciare acquattati, gattonare)",
+  "rm": "Moda da chaminar ina suenter l’autra davant la camera (ir, ir en prescha, currer, sa zuppar, ir a quatter pes)"
  },
  "Ganz im Westen der Zeltwiese baut jemand ein Zelt auf – oder versucht es.": {
   "en": "At the far west of the tent meadow someone is pitching a tent – or trying to.",
@@ -7649,6 +7685,12 @@
   "fr": "Grand cercle de tir, 130 ⚡ d’énergie, se recharge plus vite (0.5 ⚡ par seconde).",
   "it": "Cerchio di tiro grande, 130 ⚡ di energia, si ricarica più in fretta (0.5 ⚡ al secondo).",
   "rm": "Grond rintg da tutgar, 130 ⚡ energia, chargia pli svelt (0.5 ⚡ per secunda)."
+ },
+ "Gruppe bleibt stehen und redet (3–5 Personen)": {
+  "en": "Group stops and talks (3–5 people)",
+  "fr": "Groupe s’arrête et discute (3–5 personnes)",
+  "it": "Gruppo si ferma e chiacchiera (3–5 persone)",
+  "rm": "Gruppa sa ferma e discurra (3–5 persunas)"
  },
  "Gruppe zu dritt": {
   "en": "Group of three",
@@ -10486,6 +10528,12 @@
   "it": "",
   "rm": ""
  },
+ "Menschen kommen auch in Gruppen: Familien mit Kindern, Leute bleiben stehen und reden": {
+  "en": "People also come in groups: families with children, people stop and talk",
+  "fr": "Les gens viennent aussi en groupe : familles avec enfants, des gens s’arrêtent pour discuter",
+  "it": "Le persone arrivano anche in gruppo: famiglie con bambini, gente che si ferma a chiacchierare",
+  "rm": "Las persunas vegnan er en gruppas: famiglias cun uffants, glieud che sa ferma e discurra"
+ },
  "Menschen schauen zum Licht, wenn es angeht": {
   "en": "People look at the light when it comes on",
   "fr": "Les gens regardent la lumière quand elle s’allume",
@@ -10497,6 +10545,12 @@
   "fr": "Envoyer des personnes",
   "it": "Inviare persone",
   "rm": "Trametter persunas"
+ },
+ "Menschen wie echt: jeder mit eigenem Tempo, Pausen und leichten Umwegen, Kinder rennen sprunghaft; verschieden gross (Kinder 1,0–1,4 m, Erwachsene 1,55–1,95 m) und angezogen (nachts öfter dunkel, Leuchtweste, Kapuze, Mütze, Rucksack, Tasche, Schirm bei Regen)": {
+  "en": "People like real ones: each with their own pace, pauses and slight detours, children run in bursts; different heights (children 1.0–1.4 m, adults 1.55–1.95 m) and clothes (darker more often at night, high-visibility vest, hood, cap, backpack, bag, umbrella in the rain)",
+  "fr": "Personnes comme en vrai : chacune à son rythme, avec des pauses et de légers détours, les enfants courent par à-coups ; tailles différentes (enfants 1,0–1,4 m, adultes 1,55–1,95 m) et habits variés (plus souvent sombres la nuit, gilet fluo, capuche, bonnet, sac à dos, sac, parapluie sous la pluie)",
+  "it": "Persone come vere: ognuna col suo ritmo, pause e piccole deviazioni, i bambini corrono a scatti; altezze diverse (bambini 1,0–1,4 m, adulti 1,55–1,95 m) e vestiti diversi (di notte più spesso scuri, gilet catarifrangente, cappuccio, berretto, zaino, borsa, ombrello sotto la pioggia)",
+  "rm": "Persunas sco en vardad: mintgina cun ses agen tempo, pausas e pitschens girs, ils uffants curran a sigls; grondas differentas (uffants 1,0–1,4 m, creschids 1,55–1,95 m) e vestgids differents (la notg pli savens stgirs, vesta da segirtad, chaputscha, chapitscha, satg da spatla, tastga, parasol cura ch’i plova)"
  },
  "Menü": {
   "en": "Menu",
@@ -13646,6 +13700,12 @@
   "it": "Fienile, balle di fieno, pascolo con recinto",
   "rm": "Clavà, balas da fain, pastgira cun saiv"
  },
+ "Schiebt ein Velo vorbei": {
+  "en": "Pushes a bike past",
+  "fr": "Passe en poussant un vélo",
+  "it": "Passa spingendo una bici",
+  "rm": "Passa stuschond in velo"
+ },
  "Schilf": {
   "en": "Reeds",
   "fr": "Roseaux",
@@ -14484,6 +14544,12 @@
   "it": "Passeggiata con il cane",
   "rm": "Spassegiada cun chaun"
  },
+ "Spaziergang: schlendert, bleibt stehen, schaut sich um": {
+  "en": "Walk: strolls, stops, looks around",
+  "fr": "Promenade : flâne, s’arrête, regarde autour",
+  "it": "Passeggiata: gironzola, si ferma, si guarda intorno",
+  "rm": "Spassegiada: va plaun, sa ferma, guarda enturn"
+ },
  "Spaziergänger": {
   "en": "Walker",
   "fr": "Promeneur",
@@ -15288,6 +15354,12 @@
   "fr": "Statistiques du journal depuis le simulateur",
   "it": "Statistiche del diario dal simulatore",
   "rm": "Statistica dal diari dal simulatur"
+ },
+ "Tagesablauf auf dem Campingplatz: morgens zu WC und Dusche, tagsüber spazieren, abends draussen sitzen, nachts fast leer – nur WC-Gänge mit Taschenlampe": {
+  "en": "Daily routine on the campsite: toilet and shower in the morning, walks during the day, sitting outside in the evening, almost empty at night – only walks to the toilet with a torch",
+  "fr": "Journée au camping : WC et douche le matin, promenades la journée, assis dehors le soir, presque vide la nuit – seulement des passages aux WC avec une lampe de poche",
+  "it": "Giornata al campeggio: al mattino WC e doccia, di giorno passeggiate, la sera seduti fuori, di notte quasi vuoto – solo passaggi al WC con la torcia",
+  "rm": "Di sin il plaz da campar: la damaun al WC ed a la duscha, il di spassegiar, la saira seser dadora, la notg bunamain vid – mo ir al WC cun ina lampa da giaglioffa"
  },
  "Tagesablauf – jeder kommt zu seiner Zeit": {
   "en": "Daily routine – everyone comes at their time",

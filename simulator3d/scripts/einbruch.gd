@@ -596,6 +596,7 @@ func _spawn(r: Dictionary) -> void:
 			first = s["p"]
 			break
 	seed(int(rep.get("seed", 1)) * 1000 + act_i * 10 + roles.find(r))   # the look of the visitors: same seed, same thief
+	_thief_look(r)
 	var v = main.spawn(r["kind"], r["from"], first)
 	randomize()
 	v.route = [[first, HOLD, 0.0, first]]                # never ends by itself - the steps come from here
@@ -606,6 +607,31 @@ func _spawn(r: Dictionary) -> void:
 	r["v"] = v
 	r["i"] = -1
 	_step_next(r)
+
+
+func _thief_look(r: Dictionary) -> void:
+	"""menschen.gd (branch real-menschen): the look of the next figure - at night dark clothes, often a hood or cap, never
+	a high-visibility vest; by day like everybody (a thief in daylight does not want to stand out). The pace and the
+	posture stay ours (menschen._testing() is true while a run is on, so no random pace / detours from there)."""
+	var M = main.get("menschen")
+	if M == null or not is_instance_valid(M) or not str(r["kind"]) in ["person", "burglar"]:
+		return
+	var dark: bool = main.is_dark()
+	var nl := {"force": true, "vest": false, "bag": false, "bike": false, "umbrella": false}
+	nl["height"] = clampf(randfn(1.76, 0.07), 1.6, 1.95)
+	if str(r["kind"]) == "burglar":
+		pass                                             # actor.gd: the burglar has his own dark clothes and hood
+	elif dark:
+		nl["jacket"] = M.DARK[randi() % M.DARK.size()]
+		nl["trousers"] = M.DARK[randi() % M.DARK.size()]
+		nl["hood"] = randf() < 0.55
+		nl["cap"] = not bool(nl["hood"]) and randf() < 0.4
+	else:
+		nl["jacket"] = (M.DARK + M.BRIGHT)[randi() % (M.DARK.size() + M.BRIGHT.size())]
+		nl["hood"] = false
+		nl["cap"] = randf() < 0.3
+	nl["pack"] = randf() < 0.35                         # a backpack for the loot
+	M._next_look = nl
 
 
 func _posture(v, c: float) -> void:

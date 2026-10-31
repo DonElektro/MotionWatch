@@ -305,6 +305,7 @@ var fauna                             # fauna.gd (3D-3.95)
 var entdecken                         # entdecken.gd (Erlebniswelt 20–23): register() / mark_found() / is_found() / count() of the scenes
 var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»): wind, light, lures, valuables of the catalogue
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
+var menschen                          # menschen.gd (P10): people behave like real ones - gaits, groups, the day of a campsite, API for scenarios
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
 var colors_on := true
 var tracks                            # tracks.gd (3D-3.98)
@@ -434,6 +435,9 @@ func _ready() -> void:
 	umgebung = preload("res://scripts/umgebung.gd").new()     # 3D-4.x: the surroundings like real (every part can be switched off)
 	umgebung.main = self
 	add_child(umgebung)
+	menschen = preload("res://scripts/menschen.gd").new()     # P10 «Menschen-Verhalten»: gaits, variety, groups, daily routine, scenario API
+	menschen.main = self
+	add_child(menschen)
 	fauna = preload("res://scripts/fauna.gd").new()          # 3D-3.95: birds and bats
 	fauna.main = self
 	add_child(fauna)
@@ -2950,6 +2954,8 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 		return umgebung.spawn_kind(kind, from, to)    # 3D-4.x: e-scooter, wheelchair, robots, cat on the fence, chickens …
 	if szenen != null and szenen.is_kind(kind):
 		return szenen.spawn_kind(kind, from, to)      # 3D-4.x: on your pitch, camouflage / crawling, bike thief (szenenplus.gd)
+	if menschen != null and menschen.is_kind(kind):
+		return menschen.spawn_kind(kind, from, to)    # P10: family, standing and talking, sitting, WC walk, gaits (menschen.gd)
 	if kids_on and not kids_scary and kind in ["wolf", "lynx", "boar"]:
 		kind = "hare"                             # 3D-3.69: Kinder-Modus without wild animals if so set
 	if kids_on and not kids_thief and kind in ["thief", "burglar", "drunk"]:
@@ -2968,7 +2974,11 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 	if recorder != null and recorder.recording:             # the recording keeps the seed: the replay has the same look
 		sd = randi()
 		seed(sd)
+	if menschen != null:
+		menschen.before_build(kind)                 # P10: height, clothes, hood, bag … of this figure (Actor.npc_look)
 	v.setup(self, kind, a, b, spd * randf_range(0.85, 1.15))
+	if menschen != null:
+		menschen.after_build(v, kind)               # P10: vest, bag, bike, own pace, gentle bends, children run about
 	v.set_night(is_dark())
 	if sd >= 0:
 		recorder.note_spawn(v, sd)
@@ -3114,6 +3124,8 @@ func _life() -> void:
 		var kinds := _mixed(au[0] if preset_kinds.is_empty() else preset_kinds)
 		if visitors.get_child_count() < max_visitors and not kinds.is_empty():
 			var kk: String = life.pick(kinds) if daily_life else kinds[randi() % kinds.size()]
+			if menschen != null:
+				kk = menschen.pick_person(kk)             # P10: «Anteil Kinder», groups
 			if kk != "":
 				visit(kk)
 		next_auto = t + randf_range(au[1], au[2]) / max(0.1, visit_rate)
@@ -3510,6 +3522,7 @@ func _register_controls() -> void:
 	simreal.add_controls()                                 # 3D-4.4: closer to the real device
 	objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
 	umgebung.add_controls()                                # 3D-4.x: surroundings like real
+	menschen.add_controls()                                # P10: people like real (Besuch → Verhalten / Von selbst / Menschen schicken)
 	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
 	if statusled != null:
 		statusled.add_controls()                           # Licht & Ton → Status-LED & Tasten (Fenster «Gerät»)
@@ -4353,6 +4366,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return objplus.control(d)
 	elif a == "umgebung":                              # 3D-4.x: {do: info | set (key, value) | spawn (kind) | snow_puff | clear_tracks}
 		return umgebung.control(d)
+	elif a == "menschen":                              # P10: {do: info | set (key, value) | spawn (kind) | api (id, fn, args) | probe (gait, dist, dark)}
+		return menschen.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
 		return weit.control(d)
 	elif a == "nacht":                                 # Nacht-Testlauf: {do: info | start | stop | state | truth | plan} (nachtlauf.gd)
