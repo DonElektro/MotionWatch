@@ -1,13 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 16:55",
+ "generated": "2026-10-31 17:02",
  "versions": [
+  {
+   "version": "3.6.0",
+   "file": "webcam_bewegung_3_6_0.py",
+   "url": "",
+   "sha256": "7e4c5ed32bbdfb9b702834d4ffc73738edbb32546e6e17031929d898bfed01c1",
+   "date": "2026-10-31 17:02",
+   "notes": "Weniger Fehlalarme: Dinge, die wie eine Person aussehen (z. B. eine Fichte), lösen die Frage «ignorieren?» aus, der Kopf folgt ignorierten Dingen nicht; warme Motoren sind keine «Person (Wärmebild)»; ein von der KI erkanntes Tier bleibt ein Tier.",
+   "sig": "f57987ca29832b24569464ca142a1e09801be965ddf7e5efdc530557065778a945e8f2ceda1f1595f32cfc3bff9ac62abb9e161d9cebb8f64ef0da2fc737fd09"
+  },
   {
    "version": "3.5.0",
    "file": "webcam_bewegung_3_5_0.py",
    "url": "",
    "sha256": "2de1f83516566e66a38556fd6f815109de232902f9f03b83837c97ce96012a93",
-   "date": "2026-10-31 16:55",
+   "date": "2026-10-31 17:00",
    "notes": "Kriechende nachts: Voralarm «⚠ Etwas Grosses am Boden», nach 6 s «Person? (kriecht)» mit Alarm; Fuchs und Igel lösen nichts aus; KI-Lupe schaut auch kleine, weite Bewegungen an (nicht bei starkem Wind).",
    "sig": "f79f98014727f9778348be9f028d6d809a8a1b4ec5123d3ca292b5723908c90ffa671e98d47b3be7f8bfbf16325cc9861d72dde9e4d8aed4135f59904a050c03"
   },
@@ -16,7 +25,7 @@
    "file": "webcam_bewegung_3_4_0.py",
    "url": "",
    "sha256": "0b7cdb82af8a0e0da5f087632fa68d82d270fc63b2b2ac6bec3d2a2ab9e992bd",
-   "date": "2026-10-31 16:54",
+   "date": "2026-10-31 17:00",
    "notes": "Nebel-Modus: Nebel erkennen, Kontrast anheben, mehr Wärmebild, Hinweis «🌫 Nebel – Sicht eingeschränkt», kein falsches «Kamera verdreht» im Nebel; in Dämmerung und Wind 2–3 Treffer in Folge vor einer Personen-Meldung.",
    "sig": "8130371892411ea77f99bab8ca5102080048285aa12deab4dfcc12943cd08431e6f2c0a54800f4815d894e4b4b64cc90a42e66be2b285f891cc1209e1554cd07"
   },
@@ -82,15 +91,6 @@
    "date": "2026-10-28 23:06",
    "notes": "Passt zum Simulator 3D-3.87 (Schriftzug MoveEye auch im Simulator)",
    "sig": "470269de335765ab58b20e9becf236a6860692b0cf9a5dfdac1b9941cf56e86f1c7d537a13aa223e57090b070f9707488800c83b23f2326427565095b206010a"
-  },
-  {
-   "version": "2.95.105",
-   "file": "webcam_bewegung_2_95_105.py",
-   "url": "",
-   "sha256": "c28491b8f823442befdf1df7547020a889bf9abba373b36642cc6bc02e833b69",
-   "date": "2026-10-28 20:20",
-   "notes": "Schutz: Stufen Aus / Wachsam / Voller Schutz, Schutz-Assistent, Ampel mit «Beheben», Diebstahlschutz-Zeile, bewachte Gegenstände, Sirene nach X s, PIN zum Ausschalten, «Schutz testen»; Begriffe «Schutz an / aus»; Bluetooth-Lautsprecher schnell erreichbar unter den Modi",
-   "sig": "afa8a0d419eef51be7626c1643444247f45258766538a30292a8e5f46ab157f67f5b42b5efb921947c4ab6fe81d6c9ce7b4cef0dc1875b628b3cc8382b96050f"
   }
  ]
 }
