@@ -262,7 +262,7 @@ func _stationen(r: String) -> Array:
 					"me": T.t("MoveEye würde sich merken, wo etwas vergraben ist.")},
 				{"id": "h_gabel", "f": "warnen", "ding": "gabel", "off": Vector2(-100, -100), "boese": -1,
 					"hinweis": T.t("Der Weg teilt sich. Hör auf Maggie!"),
-					"hilfe": T.t("Maggie knurrt zu einem Weg. Nimm den anderen."),
+					"hilfe": T.t("Maggie knurrt einen der Wege an. Nimm lieber den anderen!"),
 					"ok": T.t("Gut gemacht! Du hast auf Maggie gehört."),
 					"me": T.t("MoveEye würde jetzt merken, dass sich im Gebüsch etwas bewegt, und dir Bescheid geben.")},
 				# Paket «Dauer»: eine zweite Gabelung kurz vor dem Tor (gleiche Texte, der Weg ist länger geworden)
@@ -286,8 +286,8 @@ func _stationen(r: String) -> Array:
 					"me": T.t("MoveEye würde das Eis knacken hören und dich warnen.")},
 				{"id": "w_gabel", "f": "warnen", "ding": "gabel", "off": Vector2(-58, 32), "boese": 1,
 					"hinweis": T.t("Zwei Wege im Schnee. Maggie spitzt die Ohren."),
-					"hilfe": T.t("Maggie knurrt zu einem Weg. Nimm den anderen."),
-					"ok": T.t("Richtig! Auf dem anderen Weg waren Augen im Dunkeln."),
+					"hilfe": T.t("Maggie knurrt einen der Wege an. Nimm lieber den anderen!"),
+					"ok": T.t("Richtig! Auf dem anderen Weg leuchteten Augen im Dunkeln."),
 					"me": T.t("MoveEye würde auch im Dunkeln sehen, wo sich etwas Warmes versteckt.")},
 				{"id": "w_gabel2", "f": "warnen", "ding": "gabel", "off": Vector2(102, 32), "boese": -1,      # Paket «Dauer»
 					"hinweis": T.t("Zwei Wege im Schnee. Maggie spitzt die Ohren."),
@@ -314,7 +314,7 @@ func _stationen(r: String) -> Array:
 					"me": T.t("MoveEye würde sehen, ob auf der Weide Tiere sind.")},
 				{"id": "f_gabel", "f": "warnen", "ding": "gabel", "off": Vector2(-95, -55), "boese": 1,       # Paket «Dauer»
 					"hinweis": T.t("Der Weg teilt sich. Hör auf Maggie!"),
-					"hilfe": T.t("Maggie knurrt zu einem Weg. Nimm den anderen."),
+					"hilfe": T.t("Maggie knurrt einen der Wege an. Nimm lieber den anderen!"),
 					"ok": T.t("Gut gemacht! Du hast auf Maggie gehört."),
 					"me": T.t("MoveEye würde jetzt merken, dass sich im Gebüsch etwas bewegt, und dir Bescheid geben.")},
 			]
