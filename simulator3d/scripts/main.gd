@@ -444,12 +444,12 @@ func _ready() -> void:
 	objplus = preload("res://scripts/objekte_plus.gd").new()  # 3D-4.x «Gegenstände»: what the new things of the catalogue do
 	objplus.main = self
 	add_child(objplus)
-	umgebung = preload("res://scripts/umgebung.gd").new()     # 3D-4.x: the surroundings like real (every part can be switched off)
-	umgebung.main = self
-	add_child(umgebung)
 	inhalte = preload("res://scripts/inhalte.gd").new()       # F2: real photo surfaces and sky (downloaded once, fallback = code)
 	inhalte.main = self
 	add_child(inhalte)
+	umgebung = preload("res://scripts/umgebung.gd").new()     # 3D-4.x: the surroundings like real (every part can be switched off)
+	umgebung.main = self
+	add_child(umgebung)
 	fauna = preload("res://scripts/fauna.gd").new()          # 3D-3.95: birds and bats
 	fauna.main = self
 	add_child(fauna)
@@ -1021,12 +1021,12 @@ func _build_scene() -> void:
 		umgebung.on_scene()                      # 3D-4.x: neighbour's lamp, puddles, fog wisps, tracks …
 	if szenen != null:
 		szenen.on_scene()                        # 3D-4.x: the neighbours of «Voller Campingplatz»
-	if inhalte != null:
-		inhalte.on_scene()                       # F2: photo textures / HDRI sky for this scene (or back to the code materials)
 	if scene == "ort" and not geo.loaded and not geo.busy and ort_lat != 0.0:
 		geo.load_place(ort_lat, ort_lon, ort_name)      # from the cache or the internet; then place_loaded()
 	if scene == "wild":
 		rifle_on = true                          # wildlife watching: the rifle is on by itself
+	if inhalte != null:
+		inhalte.on_scene()                       # F2: photo textures / HDRI sky for this scene (or back to the code materials)
 	if Quality.lite():
 		_lite_scene.call_deferred(true)          # 3D-4.25: Lite - thin grass, far small things not drawn
 
@@ -3663,8 +3663,8 @@ func _register_controls() -> void:
 		add_control("toggle", "cond_" + key, cd[1], func(): return cond[key], func(v): cond[key] = bool(v), "Kamerabild")
 	simreal.add_controls()                                 # 3D-4.4: closer to the real device
 	objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
-	umgebung.add_controls()                                # 3D-4.x: surroundings like real
 	inhalte.add_controls()                                 # F2: System → Grafik «Echte Oberflächen und Himmel»
+	umgebung.add_controls()                                # 3D-4.x: surroundings like real
 	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
 	if statusled != null:
 		statusled.add_controls()                           # Licht & Ton → Status-LED & Tasten (Fenster «Gerät»)
@@ -4510,10 +4510,10 @@ func _control(d: Dictionary) -> Dictionary:
 		return simreal.control(d)
 	elif a == "objekte":                               # 3D-4.x «Gegenstände»: {do: info | lure | test_place | test_clear | set}
 		return objplus.control(d)
-	elif a == "umgebung":                              # 3D-4.x: {do: info | set (key, value) | spawn (kind) | snow_puff | clear_tracks}
-		return umgebung.control(d)
 	elif a == "inhalte":                               # F2: {do: info | set (value) | laden | anwenden | zuruecksetzen}
 		return inhalte.control(d)
+	elif a == "umgebung":                              # 3D-4.x: {do: info | set (key, value) | spawn (kind) | snow_puff | clear_tracks}
+		return umgebung.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
 		return weit.control(d)
 	elif a == "nacht":                                 # Nacht-Testlauf: {do: info | start | stop | state | truth | plan} (nachtlauf.gd)
