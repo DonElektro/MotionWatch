@@ -5262,7 +5262,8 @@ class Notifier:
         url = CFG["notify_url"].strip()
         if push_url_is_ntfy(url):                        # 635b: an ntfy address in the webhook card - as ntfy, not as JSON
             return self._ntfy(p, jpg, fname), "ntfy " + _url_host(url)
-        body_ = dict(p, title=self._title(p), text=self._text(p), info_title=self._title(p) if p.get("info_title") else "")
+        body_ = dict(p, title=self._title(p), text=self._text(p), info_title=self._title(p) if p.get("info_title") else "",
+                     text_full=push_long(p))              # K2: the short form in «text», the complete text for own automations
         req = urllib.request.Request(url, data=json.dumps(body_, ensure_ascii=False).encode(),
                                      headers={"Content-Type": "application/json", "Title": _hdr(self._title(p))})
         with urllib.request.urlopen(req, timeout=8) as r:
@@ -11064,15 +11065,22 @@ def disarm():
     arm_tick()
 
 
+_ARM_LOCK = threading.Lock()   # Code-Prüfung K10: arm_tick runs from the web, the schedule thread and the camping profile
+
+
 def arm_tick():
-    left = max(0, int(ARM["at"] - time.time() + 0.99)) if CFG["armed"] else 0
-    STATE["arm_state"] = "disarmed" if not CFG["armed"] else ("arming" if left > 0 else "armed")
-    STATE["arm_left"] = left
-    was, ARM["pk_state"] = ARM.get("pk_state"), STATE["arm_state"]
-    if was in ("disarmed", "arming") and STATE["arm_state"] == "armed":
+    with _ARM_LOCK:                                       # read + write of the state in one step: one «Protection on» only
+        left = max(0, int(ARM["at"] - time.time() + 0.99)) if CFG["armed"] else 0
+        STATE["arm_state"] = "disarmed" if not CFG["armed"] else ("arming" if left > 0 else "armed")
+        STATE["arm_left"] = left
+        was, ARM["pk_state"] = ARM.get("pk_state"), STATE["arm_state"]
+        push_on = was in ("disarmed", "arming") and STATE["arm_state"] == "armed"
+        announce = CFG["armed"] and left == 0 and not ARM["announced"]
+        if announce:
+            ARM["announced"] = True
+    if push_on:
         push_protect_on()                                 # 635b: «🛡 Protection on» with the picture (not at the program start)
-    if CFG["armed"] and left == 0 and not ARM["announced"]:
-        ARM["announced"] = True
+    if announce:
         log_event("sys", "Armed now - alarms are active")
         push_alert("armed", "armed")
         try:
@@ -12518,6 +12526,12 @@ def sim_twin_info():
         return r.get("twin") or {}
     except Exception:
         return {}
+
+
+# Code-Prüfung K6: «camera height» of the twin line (SIMHUB_JS, tt) in fr / it / rm too - before, the German text showed there
+for _k, _v in {"camera height": ("hauteur de la caméra", "altezza della telecamera", "autezza da la camera")}.items():
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i])
 # ----------------------------------------------------------------------------
 # Autostart: when switched on, the Pi starts MoveEye when it boots (no screen needed) and switches the own Wi-Fi on.
 # When switched off, nothing starts at boot and the Pi joins its known networks as usual (the own Wi-Fi never starts by itself).
@@ -17961,20 +17975,33 @@ def helper_detect(frame):
         sc = min(1.0, 640.0 / max(1, w))
         small = cv2.resize(frame, (int(w * sc), int(h * sc))) if sc < 1.0 else frame
         ok, buf = cv2.imencode(".jpg", small, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        jpg_h, jpg_w = small.shape[:2]
         if ok:
             HELPER["busy"] = True
 
             def work(jpg=buf.tobytes(), sc=sc, u=u, code=code):
                 t0 = time.time()
                 try:
-                    d = _helper_post(u, code, jpg, float(CFG["ai_conf"]), float(CFG["object_conf"]))
+                    # Code-Prüfung M3: «Person?» (232) also with the PC helper - with the standard model (SSD, the score is the
+                    # same on both sides) the helper is asked with the low person threshold WEAK_AI_MIN and the boxes are split
+                    # here exactly like AIDetector.detect does it; another model: as before, without weak boxes
+                    need = float(CFG["ai_conf"])
+                    ssd = str(HELPER.get("model") or "") == "SSD MobileNet V2"
+                    ask = min(need, WEAK_AI_MIN) if ssd else need
+                    d = _helper_post(u, code, jpg, ask, float(CFG["object_conf"]))
                     if not d.get("ok"):
                         raise ValueError(str(d.get("error") or "no answer"))
                     k = 1.0 / sc
                     boxes = [(int(b[0] * k), int(b[1] * k), int(b[2] * k), int(b[3] * k), float(b[4])) for b in d.get("boxes", [])]
                     objs = [(int(b[0] * k), int(b[1] * k), int(b[2] * k), int(b[3] * k), float(b[4]), int(b[5])) for b in d.get("objects", [])]
+                    weak_ok = ssd and str(d.get("model") or "SSD MobileNet V2") == "SSD MobileNet V2"
+                    weak = [b for b in boxes if b[4] < need] if weak_ok else []
+                    boxes = [b for b in boxes if b[4] >= need]
+                    if d.get("model") and str(d.get("model")) != str(HELPER.get("model") or ""):
+                        HELPER["model"] = str(d["model"])[:40]     # the helper changed its model: from the next picture
                     HELPER.update(res=(boxes, objs), res_t=time.time(), ms=int(d.get("ms") or 0), rtt=int((time.time() - t0) * 1000),
-                                  n=HELPER["n"] + 1, fails=0, last_ok=time.time(), msg="")
+                                  n=HELPER["n"] + 1, fails=0, last_ok=time.time(), msg="", res_weak=weak, res_weak_ok=weak_ok,
+                                  res_size=(int(round(jpg_w / sc)), int(round(jpg_h / sc))))
                 except Exception as e:
                     HELPER["fails"] += 1; HELPER["msg"] = str(e)[:80]
                     if HELPER["fails"] >= 3:
@@ -18587,6 +18614,7 @@ class AIDetector:
         self.boxes = []          # last persons, in processing-frame coordinates
         self.objects = []        # last non-person objects (x, y, w, h, conf, cls)
         self.weak = []; self.weak_t = 0.0   # real-reh-fusspunkt: persons below ai_conf, raw score >= WEAK_AI_MIN, 0..1 (232 «Person?»)
+        self.weak_ok_t = 0.0                # Code-Prüfung M3: when the AI last looked for weak persons (232: else no «animal»)
         self.frame_counter = 0
         STATE["ai_model_note"] = ""
         if CFG.get("ai_model") == "own" and not force_ssd:
@@ -18650,6 +18678,11 @@ class AIDetector:
             got = helper_detect(frame)
             if got is not None:
                 self.boxes, self.objects = got
+                if HELPER.get("res_weak_ok"):                # M3: the weak person boxes of the helper (SSD) for «Person?» (232)
+                    fw, fh = HELPER.get("res_size") or (frame.shape[1], frame.shape[0])
+                    self.weak = [(b[0] / max(1, fw), b[1] / max(1, fh), b[2] / max(1, fw), b[3] / max(1, fh), b[4])
+                                 for b in HELPER.get("res_weak") or []]
+                    self.weak_t = self.weak_ok_t = float(HELPER.get("res_t") or 0.0)
                 STATE["ai_persons"] = len(self.boxes)
                 STATE["ai_status"] = f"PC · {HELPER['ms']} ms"
                 return self.boxes
@@ -18679,7 +18712,7 @@ class AIDetector:
             low = (0.5 + (WEAK_AI_MIN - float(self.meta["conf"].get("person", 0.35)))) if self.kind == "yolo" else WEAK_AI_MIN
             boxes, objects = self.infer(frame, min(float(CFG["ai_conf"]), low), CFG["object_conf"])
             self.weak = [(b[0] / w, b[1] / h, b[2] / w, b[3] / h, b[4]) for b in boxes if b[4] < need]
-            self.weak_t = time.time()
+            self.weak_t = self.weak_ok_t = time.time()
             boxes = [b for b in boxes if b[4] >= need]
         except Exception as e:
             if self.kind != "yolo":
@@ -20785,9 +20818,10 @@ NIGHTVISION = NightVision()
 # Now the distance is estimated a second time from the FOOT POINT (lower edge of the box, flat ground): the camera height
 # (simulator: its pole «mast» from the twin info, else FOOT_CAM_H_M) and the tilt of the head (servo; simulator: the real
 # head angle head_deg minus its fixed 6° down, main.gd want_tilt) give the distance of the feet, and with it the real height
-# of the thing. Do both distances disagree strongly (FOOT_RATIO_MIN) and is the thing clearly lower than a standing person
-# (FOOT_ANIMAL_MAX_H_M), it is reported as an animal («ANIMAL (THERMAL)», present «animal») and not as a person. Feet near
-# the horizon or cut off at the picture edge: no foot estimate, everything as before. Self-test: 417 (foot_selftest).
+# of the thing. First round (replaced, see «third round» below): do both distances disagree strongly (FOOT_RATIO_MIN) and is
+# the thing clearly lower than a standing person (FOOT_ANIMAL_MAX_H_M), it was an animal. Since the third round this only
+# applies to a FLAT warm body - frontal / upright stays a person. Feet near the horizon or cut off at the picture edge: no
+# foot estimate, everything as before. Self-test: 417 (foot_selftest, thermal_maybe_selftest).
 # Decision Daniel (31.10.2026, third round): «animal» ONLY for a really FLAT warm body, everything upright stays as before:
 #   - upright boxes (h/w >= 1.3, thermal_person_check) are persons exactly as before - also a roe deer straight from the
 #     front, a child, a crouching person («im Zweifel Person»),
@@ -20797,6 +20831,10 @@ NIGHTVISION = NightVision()
 #   - «Person?» (weak_person_feed): a flat box at the ground (w/h > WEAK_FLAT) that the AI of MoveEye calls a person with at
 #     least WEAK_AI_MIN (the normal AI threshold stays) AND a movement track or a warm body confirms it -> a person (alarm,
 #     «PERSON?»). It wins over «animal»: a warm body under a «Person?» never becomes an animal.
+# Code-Prüfung M3 (Daniel 31.10.2026, «im Zweifel Person?»): «animal» only when the AI of MoveEye really looked for weak
+# persons in the last WEAK_OK_S seconds (AIDetector.weak_ok_t: own run on the Pi, or the PC helper with the standard model).
+# AI off, still loading, or a PC helper that gives no weak boxes: a flat warm body that would be an «animal» becomes
+# «PERSON? (THERMAL)» (a person, alarm) - never «no person». Upright warm bodies are persons as before.
 # Camera height: CFG «cam_height» («Höhe der Kamera (m)» in «Platz einrichten», 537 / 582, default 1.6 m). Connected to the
 # simulator, its pole («Höhe der Kamera», 3D-4.x) has priority (the simulated camera really is that high); the field is for
 # the real device.
@@ -20825,6 +20863,7 @@ WEAK_AI_MIN = 0.15          # «Person?»: the raw person score of the AI (crawl
                             # REAL_KRIECHENDE.md; the normal threshold ai_conf stays for everything else)
 WEAK_FLAT = 1.5             # «flat box at the ground»: AI box width / height above 1.5 (crawling / lying, a standing person ~0.4)
 WEAK_AGE_S = 2.5            # the AI runs only now and then: its weak boxes count for 2.5 s
+WEAK_OK_S = 6.0             # M3: the AI looked for weak persons in the last 6 s (it runs every 0.3 … ~5 s: hot Pi, battery saver)
 FOOT_HIST_S = 4.0           # «does not stand up over the last pictures»: what was seen of it in the last 4 s
 FOOT_NEED_N, FOOT_NEED_S = 3, 1.0   # an animal needs 3 animal-like pictures over at least 1 s (the thermal camera: 3 of 5 anyway)
 FOOT = {"h": None, "t": 0.0, "busy": False, "hist": deque(maxlen=200)}
@@ -21034,6 +21073,8 @@ def weak_person_feed(ai, tracks, warm_boxes, person_boxes, present, frame, pw, p
     tn = [(t.box[0] / pw, t.box[1] / ph, t.box[2] / pw, t.box[3] / ph) for t in tracks if getattr(t, "box", None)]
     out = []
     for ab in wk:
+        if not zone_box_ok((ab[0] * pw, ab[1] * ph, ab[2] * pw, ab[3] * ph), pw, ph, "person"):
+            continue                                            # Code-Prüfung K1: zones by kind, like the normal AI boxes (410)
         try:
             fe = foot_estimate(ab[:4])
         except Exception:
@@ -21081,20 +21122,46 @@ def thermal_person_check(box):
     return d
 
 
-def thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, maybe_boxes=()):
+def thermal_ai_checked(t0, ai=None):
+    """M3: the AI looked for weak («Person?») persons in the last WEAK_OK_S seconds - only then a flat warm body may be an animal"""
+    if ai is None:
+        w = WATCH_REF.get("w")
+        ai = getattr(w, "ai", None) if w is not None else None
+    if ai is None or not CFG.get("ai_enabled") or DEMO.get("on"):
+        return False
+    return 0.0 <= t0 - float(getattr(ai, "weak_ok_t", 0.0) or 0.0) <= WEAK_OK_S
+
+
+def thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, maybe_boxes=(), ai=None):
     """called by the camera loop (410) when the normal camera found nobody: the warm bodies that are persons become person
     boxes (in the working picture), drawn as «PERSON (THERMAL)». Returns the warm bodies that stay «warm»."""
     rest = []
     found = []
     ThermalCam.main_aspect = H / float(W)                      # (the overlay sets it too - only when the thermal picture is shown)
     animals = []
+    unsure = []
     for b in warm_boxes:
         c = thermal_classify(b, t0, any(_ov(b, m) > 0.3 for m in maybe_boxes))
         if c is None or c[0] == "wait":
             rest.append(b); continue                          # «wait»: maybe an animal - a few more pictures (only warm meanwhile)
         if c[0] == "animal":
+            if not thermal_ai_checked(t0, ai):                # M3: nobody checked for a crawling person: «Person?», not «animal»
+                unsure.append((b, c[1])); continue
             animals.append((b, c[1], c[2], c[3])); rest.append(b); continue   # still a warm body (the warm alarm, if on, as for any animal)
         found.append((b, c[1]))
+    if unsure:
+        for (bx, by, bw, bh), d_ in unsure:
+            person_boxes.append((int(bx * pw), int(by * ph), max(1, int(bw * pw)), max(1, int(bh * ph))))
+            p1 = (int(bx * W), int(by * H)); p2 = (int((bx + bw) * W), int((by + bh) * H))
+            cv2.rectangle(frame, p1, p2, (60, 0, 255), 3)
+            cv2.putText(frame, f"PERSON? (THERMAL) ~{dist_round(d_)}m", (p1[0], max(18, p1[1] - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (60, 0, 255), 2)
+        present.add("person")
+        STATE["person_maybe"] = int(STATE.get("person_maybe") or 0) + len(unsure)
+        if t0 - TPERS.get("weak_seen", 0.0) > 10.0:
+            TPERS["weak_n"] = TPERS.get("weak_n", 0) + 1
+            log_event("person", f"Person? in the thermal picture: flat warm body, about {dist_round(min(u[1] for u in unsure))} m - "
+                                "the AI could not check it (AI off / PC helper) - in doubt a person")
+        TPERS["weak_seen"] = t0
     if animals:
         for (bx, by, bw, bh), d_, h_, _ds in animals:
             p1 = (int(bx * W), int(by * H)); p2 = (int((bx + bw) * W), int((by + bh) * H))
@@ -37060,18 +37127,21 @@ def foot_selftest():
     k = math.tan(math.radians(vf) / 2.0)
     ThermalCam.main_aspect = 9 / 16.0
 
-    def box(dist, height, width=0.4, cx=0.5):
+    def box(dist, height, width=0.4, cx=0.5, ch=None):
+        ch = cam_h if ch is None else ch                     # ch = the real camera height (the estimate below uses cam_h)
+
         def row(z):                                          # picture row 0..1 of a point z m above the ground at dist m
-            return 0.5 + math.tan(math.atan((cam_h - z) / dist) + math.radians(pitch)) / (2.0 * k)
+            return 0.5 + math.tan(math.atan((ch - z) / dist) + math.radians(pitch)) / (2.0 * k)
         y0, y1 = row(height), row(0.0)
         w = width / (2.0 * dist * math.tan(math.radians(hf) / 2.0))
         return (cx - w / 2.0, y0, w, y1 - y0)
 
-    def run(seq, night=True, maybe=False):
-        """seq = [(dist, height, width)] one picture each 0.5 s -> the last decision (like thermal_classify)"""
+    def run(seq, night=True, maybe=False, ch=None):
+        """seq = [(dist, height, width)] one picture each 0.5 s -> the last decision (like thermal_classify); ch = real
+        camera height (the foot point always assumes cam_h = 1.6 m)"""
         hist = deque(maxlen=50); c = None
         for n, (dist, height, width) in enumerate(seq):
-            b = box(dist, height, width)
+            b = box(dist, height, width, ch=ch)
             d = thermal_person_check(b)
             c = foot_decide(b, d, foot_estimate(b, cam_h, pitch, vf) if d is None else None, night, 100.0 + 0.5 * n, hist, maybe, vf)
         return c[0] if c else None
@@ -37098,12 +37168,60 @@ def foot_selftest():
     assert not weak_person_check((0.41, 0.71, 0.20, 0.08, 0.10), tr_, [], None)     # AI below 0.15
     assert not weak_person_check((0.41, 0.71, 0.20, 0.08, 0.17), [], [], None)      # nothing confirms it
     assert not weak_person_check((0.45, 0.50, 0.05, 0.30, 0.20), [(0.45, 0.5, 0.05, 0.3)], [], None)   # upright: not flat
-    hist = deque(maxlen=50)                                               # camera 30 % higher than thought: still no animal
-    b = box(8.0, 1.65, 0.5)
-    assert foot_decide(b, thermal_person_check(b), None, True, 1.0, hist, False, vf)[0] == "person"
+    # camera 30 % higher than thought (really 2.1 m, the foot point assumes 1.6 m): the boxes are made with 2.1 m, judged with
+    # 1.6 m (Code-Prüfung K8: before, the test gave fe=None with an upright box - the foot point was never used)
+    fe_hi = foot_estimate(box(8.0, 0.5, 0.9, ch=2.1), cam_h, pitch, vf)
+    assert fe_hi is not None and fe_hi[0] < 8.0 * 0.85, ("the wrong height must change the foot distance", fe_hi)
+    assert run([(8.0, 1.65, 0.5)] * 5, ch=2.1) == "person"                # standing
+    assert run([(7.0, 1.0, 0.3)] * 5, ch=2.1) == "person"                 # child 1.0 m
+    assert run([(6.0, 1.0, 0.55)] * 8, ch=2.1) == "person"                # crouching, never stands up
+    assert run([(9.0, 1.0, 0.35)] * 5, ch=2.1) == "person"                # roe deer straight from the front
+    wide = box(6.0, 1.0, 0.8, ch=2.1)                                    # crouching wide (h/w 1.25): not upright -> foot point
+    assert thermal_person_check(wide) is None and foot_estimate(wide, cam_h, pitch, vf) is not None
+    assert run([(6.0, 1.0, 0.8)] * 8, ch=2.1) is None                     # ... and still no animal (only warm)
+    crawl_hi = [(7.0 - 0.2 * i, 0.45, 1.5) for i in range(5)]
+    assert run(crawl_hi, maybe=True, ch=2.1) is None                      # crawling + AI hint («Person?»): never an animal
+    assert run(crawl_hi, ch=2.1) == "animal"                              # without AI hint: thermal_person_feed decides (M3)
     return True
 
+
+def thermal_maybe_selftest():
+    """Code-Prüfung M3: a flat warm body that the foot point calls «animal» is only an animal when the AI really looked for
+    weak persons (own run or PC helper with the standard model) - AI off / helper without weak boxes: «Person?» (alarm)"""
+    class _AI:
+        weak_ok_t = 0.0
+    keep = (globals()["thermal_classify"], CFG.get("ai_enabled"), DEMO.get("on"), dict(TPERS), STATE.get("person_maybe"))
+    _le = globals()["log_event"]
+    try:
+        globals()["thermal_classify"] = lambda b, t0=None, maybe=False: ("animal", 6.0, 0.45, 14.0)
+        globals()["log_event"] = lambda *a, **k: None
+        CFG["ai_enabled"] = True; DEMO["on"] = False
+        fr = np.zeros((90, 160, 3), np.uint8)
+        wb = [(0.40, 0.70, 0.22, 0.08)]
+
+        def feed(ai, t0=100.0):
+            pb, pres = [], set()
+            rest = thermal_person_feed(list(wb), pb, pres, fr, 160, 90, 160, 90, t0, (), ai=ai)
+            return pres, pb, rest
+        ai = _AI(); ai.weak_ok_t = 99.0                     # the AI looked 1 s ago: an animal, no person
+        pres, pb, rest = feed(ai)
+        assert "animal" in pres and "person" not in pres and not pb and rest == wb, (pres, pb)
+        ai.weak_ok_t = 0.0                                   # helper without weak boxes / AI not running: «Person?»
+        pres, pb, rest = feed(ai)
+        assert "person" in pres and "animal" not in pres and len(pb) == 1 and not rest, ("no «Person?» without the AI", pres)
+        ai.weak_ok_t = 99.0; CFG["ai_enabled"] = False       # AI switched off: «Person?»
+        pres, pb, rest = feed(ai)
+        assert "person" in pres and "animal" not in pres, ("AI off: animal", pres)
+        CFG["ai_enabled"] = True
+        assert not thermal_ai_checked(100.0, None) or WATCH_REF.get("w") is not None
+        assert thermal_ai_checked(100.0, ai) and not thermal_ai_checked(100.0 + WEAK_OK_S + 1, ai)
+    finally:
+        globals()["thermal_classify"] = keep[0]; globals()["log_event"] = _le
+        CFG["ai_enabled"] = keep[1]; DEMO["on"] = keep[2]; TPERS.clear(); TPERS.update(keep[3]); STATE["person_maybe"] = keep[4]
+    return "flat warm body: animal only after an AI check, else «Person?» (AI off, PC helper without weak boxes)"
+
 SELFTEST_EXTRA.append(("Thermal picture: animal or person from the foot point (232)", foot_selftest))
+SELFTEST_EXTRA.append(("Thermal picture: no «animal» without an AI check, «Person?» instead (232, M3)", thermal_maybe_selftest))
 # ----------------------------------------------------------------------------
 # Web access options (set on the command line) + self-signed certificate + systemd unit
 # ----------------------------------------------------------------------------
@@ -92988,6 +93106,11 @@ SELFTEST_EXTRA.append(("Play test messages of the 3D simulator (635a)", spieltes
 #     und Berichte der Simulator-Tests (Nacht-Testlauf, Trainings-Nacht, Wochen-Check) weiter. Schalter sim_info_push
 #     (Push → Erweitert im Web 531a und Fenster 571a, Seite Simulator → «Einstellungen der Simulation»), ab Werk aus (636).
 #     Der Spieltest-Push (635a) schickt selbst über _send_main und hat seinen eigenen Schalter - davon unberührt.
+# Code-Prüfung (31.10.2026): ntfy nur bei bekannten ntfy-Hosts (nicht «ntfy» irgendwo im Namen), Webhook-JSON mit «text_full»
+# (060); «Name (Thema):\n Frage» kommt ganz (die Zeile nach dem «:»); echte Pi-Warnungen (Akku leer, Unterspannung, zu heiss,
+# Stromausfall, Speicherkarte voll - Klasse «hw») gehen im Simulator-Betrieb weiter aufs Handy, nur die simulierten («🧪»)
+# bleiben zurück; Titel und Texte der Kurzform kommen direkt aus _HX_PK (pk_tr), nicht über ältere gleiche Schlüssel
+# («Power» = «Ein / Aus» als Schalter).
 # Kein ntfy-Thema, keine Adresse, keine Zugangsdaten hier. Hier (nach 470 SIM_PAGE, 560–600 DE / TRX, 586 SET_HELP, vor 636
 # Werkseinstellungen), damit der Schalter in FACTORY_CFG ist; 060 ruft push_short / push_kind / push_sim_hold erst beim Senden.
 # ----------------------------------------------------------------------------
@@ -93002,7 +93125,9 @@ PK_MAX = 80                                               # one line on the phon
 
 # ---- the short forms -------------------------------------------------------------------------------------------------------
 # texts (the English key of the call site; a tuple = key + literal rest): (templates, symbol, title, text, class, picture)
-# class: info = not to the phone in the simulation (without the switch) · alarm / sim = always
+# class: info = not to the phone in the simulation (without the switch) · alarm / sim = always · hw = a real warning of the Pi
+# (to the phone also in the simulation, unless the value is simulated: «🧪» in the text, 285) · hw_batt = the same for the
+# battery (simulated when the simulator's UPS HAT gives the values: STATE battery «sim», 285 sim_battery_tick)
 PK_TEXTS = [
     (("Protection switched off at the device",), "🛡", "Protection off", "Switched off at the device", "info", True),
     (("Protection on - alarms are active",), "🛡", "Protection on", "Alarms are active", "info", True),
@@ -93011,18 +93136,18 @@ PK_TEXTS = [
     (("MoveEye is online in Wi-Fi {ssid}: {addr}",), "📶", "Online", "Wi-Fi {ssid} · open page", "info", False),
     ((("Simulation switched on automatically (a simulator is online)", ": {who}"),), "🧪", "Simulation on", "{who}", "info", False),
     ((("Fixed again", ": {k}"),), "✅", "Fixed again", "{k}", "info", False),
-    (("Power cut – running on the battery ({pct} %)",), "🔌", "Power cut", "Battery {pct} %", "info", False),
+    (("Power cut – running on the battery ({pct} %)",), "🔌", "Power cut", "Battery {pct} %", "hw_batt", False),
     (("Power back – battery {pct} %",), "🔌", "Power back", "Battery {pct} %", "info", False),
     (("Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap", "Battery almost empty: about {pct} % ({hours:.1f} h)"),
-     "🪫", "Battery {pct} %", "About {hours} h left · please charge", "info", False),
-    (("Battery empty – the Pi shuts down cleanly",), "🪫", "Battery empty", "The Pi shuts down", "info", False),
-    (("Under-voltage: power bank almost empty or cable too weak",), "⚡", "Under-voltage", "Power bank almost empty or cable too weak", "info", False),
+     "🪫", "Battery {pct} %", "About {hours} h left · please charge", "hw_batt", False),
+    (("Battery empty – the Pi shuts down cleanly",), "🪫", "Battery empty", "The Pi shuts down", "hw_batt", False),
+    (("Under-voltage: power bank almost empty or cable too weak",), "⚡", "Under-voltage", "Power bank almost empty or cable too weak", "hw", False),
     (("Battery {pct} %: the battery saver is on - fewer pictures per second, the AI less often. Back to normal when charging.",),
      "🔋", "Battery saver on", "Battery {pct} % · fewer pictures, AI less often", "info", False),
     (("The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.",),
      "🪫", "Battery until sunrise?", "{have} h left, {need} h needed", "info", False),
-    (("Memory card almost full: {free} MB free - the oldest recordings are deleted",), "💾", "Memory card almost full", "{free} MB free", "info", False),
-    (("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation",), "🌡", "Pi too hot", "{temp} °C (limit {lim} °C)", "info", False),
+    (("Memory card almost full: {free} MB free - the oldest recordings are deleted",), "💾", "Memory card almost full", "{free} MB free", "hw", False),
+    (("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation",), "🌡", "Pi too hot", "{temp} °C (limit {lim} °C)", "hw", False),
     (("Temperature fine again: {t:.1f} °C",), "🌡", "Temperature OK", "{t} °C", "info", False),
     (("Remote access: {who} is watching",), "👁", "Remote access", "{who} is watching", "info", False),
     (("Automatic update to version {v} – the program restarts (about 20 s)",), "⬆", "Update {v}", "Restarts (about 20 s)", "info", False),
@@ -93071,7 +93196,12 @@ def push_url_is_ntfy(url):
         host = urlsplit(str(url or "").strip()).hostname or ""
     except ValueError:
         return False
-    return "ntfy" in host.lower()
+    host = host.lower().rstrip(".")
+    # Code-Prüfung K2: only real ntfy servers - ntfy.sh, ntfy-me.com (CLAUDE.md), an own «ntfy.…» / «….ntfy.…» or a host
+    # called «ntfy» in the LAN; not every name that contains «ntfy» (contentfy.example, myntfy-bridge.local = own webhooks)
+    if host in ("ntfy", "ntfy.sh", "ntfy-me.com") or host.endswith((".ntfy.sh", ".ntfy-me.com")):
+        return True
+    return host.startswith("ntfy.") or ".ntfy." in host
 
 
 def pk_line(s, n=None):
@@ -93084,6 +93214,23 @@ def pk_line(s, n=None):
     cut = s[:n - 1]
     sp = cut.rfind(" ")
     return (cut[:sp] if sp > n * 0.6 else cut).rstrip(" ,;:-–·") + "…"
+
+
+def pk_tr(text):
+    """the short-form texts in the current language straight from _HX_PK (Code-Prüfung K5: tr() gave an older text for the
+    same English key, e.g. «Power» = «Ein / Aus» of a switch, «Update» = the verb «Aktualisieren»); other keys: tr()"""
+    v = _HX_PK.get(text)
+    L = cur_lang()
+    if v is None or L == "en":
+        return tr(text)
+    return v[{"de": 0, "fr": 1, "it": 2, "rm": 3}.get(L, 0)] if L in ("de", "fr", "it", "rm") else text
+
+
+def pk_trf(text, **kw):
+    try:
+        return pk_tr(text).format(**kw)
+    except (KeyError, IndexError, ValueError):
+        return text.format(**kw)
 
 
 def _pk_tpl(t):
@@ -93110,7 +93257,10 @@ def _pk_fill(tpl, vals):
 
 def _pk_cut(text):
     """text without a known form: the first line, the part before « - » / « – » / the first sentence (the advice behind it is on the page)"""
-    s = (str(text or "").strip().splitlines() or [""])[0]
+    lines = [x.strip() for x in str(text or "").strip().splitlines() if x.strip()] or [""]
+    s = lines[0]
+    if s.endswith(":") and len(lines) > 1:                # «Name (Thema):» + the question below (K3): the line below belongs to it
+        return s + " " + " · ".join(lines[1:])
     for sep in (" - ", " – ", ". "):
         i = s.find(sep)
         if i >= 12:
@@ -93132,7 +93282,7 @@ def push_kind(p):
             for cand in dict.fromkeys(_pk_tpl(t_)):
                 v = _pk_match(cand, text)
                 if v is not None:
-                    out = {"ic": ic, "title": _pk_fill(tr(ti), v), "text": _pk_fill(tr(tx), v), "cls": cls, "pic": pic}
+                    out = {"ic": ic, "title": _pk_fill(pk_tr(ti), v), "text": _pk_fill(pk_tr(tx), v), "cls": cls, "pic": pic}
                     break
             if out:
                 break
@@ -93142,7 +93292,7 @@ def push_kind(p):
         for key, (ic, ti, cls, pic) in PK_TITLES.items():
             for k_ in dict.fromkeys((tr(key), key)):
                 if raw == k_ or raw.startswith(k_ + " – "):
-                    out = {"ic": ic, "title": tr(ti) + raw[len(k_):], "text": _pk_cut(text), "cls": cls, "pic": pic}
+                    out = {"ic": ic, "title": pk_tr(ti) + raw[len(k_):], "text": _pk_cut(text), "cls": cls, "pic": pic}
                     break
             if out:
                 break
@@ -93151,7 +93301,7 @@ def push_kind(p):
         tx = _pk_cut(text)
         if not ti:
             m = re.match(r"^([^:·\n]{3,30}):\s+(.+)$", tx)
-            ti, tx = (m.group(1), m.group(2)) if m else (tr("Note"), tx)
+            ti, tx = (m.group(1), m.group(2)) if m else (pk_tr("Note"), tx)
         out = {"ic": ev_icon(ev), "title": ti, "text": tx, "cls": "alarm" if ev == "tamper" else "info", "pic": False}
     m = re.match(r"^" + re.escape(out["title"]) + r"\s*:\s*", out["text"], re.I) if out["title"] else None
     if m and out["text"][m.end():]:                       # «Safe start: …» under the title «Safe start»
@@ -93227,7 +93377,7 @@ def push_short(p):
         own_t = str(CFG.get(f"msg_{kind}_title", "") or "").strip()
         own_x = str(CFG.get(f"msg_{kind}_text", "") or "").strip()
         n = int(pp.get("persons") or 0)
-        title = render_msg(own_t, pp) if own_t else (trf("{n} persons", n=n) if kind == "person" and n > 1 else tr(PK_EVENT.get(kind, "Note")))
+        title = render_msg(own_t, pp) if own_t else (pk_trf("{n} persons", n=n) if kind == "person" and n > 1 else pk_tr(PK_EVENT.get(kind, "Note")))
         if push_show_name() and not own_t:
             title = ((CFG.get("device_name") or "").strip()[:20] or "MoveEye") + ": " + title
         ic = ev_icon(kind)
@@ -93239,24 +93389,24 @@ def push_short(p):
         else:
             parts = [hm]
             if ev == "test":
-                parts.append(tr("Test message"))
+                parts.append(pk_tr("Test message"))
             elif kind == "person" and p.get("dist"):
                 d = str(p["dist"])
                 for h_ in (tr("Person") + ", ",):
                     d = d[len(h_):] if d.startswith(h_) else d
                 parts.append(d)
             elif kind == "prealarm":
-                parts.append(tr("pre-alarm"))
+                parts.append(pk_tr("pre-alarm"))
             elif kind == "warm":
-                parts.append(tr("thermal camera"))
+                parts.append(pk_tr("thermal camera"))
             elif kind == "noise" and p.get("db") not in (None, ""):
                 parts.append(f"{p['db']} dB")
         if own_x and p.get("dist"):
             parts.append(str(p["dist"]))
     if p.get("more"):
-        parts.append(trf("+{n} more", n=p["more"]))
+        parts.append(pk_trf("+{n} more", n=p["more"]))
     if p.get("late"):
-        parts.append(trf("late, from {t}", t=hm))
+        parts.append(pk_trf("late, from {t}", t=hm))
     title = pk_line(_PK_PH.sub("", render_msg(title, p)) if "{" in title else title, 60)
     text = pk_line(" · ".join(x for x in parts if x))
     return {"title": title, "text": text}
@@ -93285,8 +93435,12 @@ def push_sim_hold(p):
     """True = not to the phone: in the simulation only alarms (and the reports of simulator tests), unless sim_info_push"""
     if not CFG.get("sim_on") or CFG.get("sim_info_push") or Notifier._event(p) != "info":
         return False
-    if push_kind(p)["cls"] in ("alarm", "sim"):
+    cls = push_kind(p)["cls"]
+    if cls in ("alarm", "sim"):
         return False
+    if cls in ("hw", "hw_batt") and "🧪" not in str(p.get("text") or "") + str(p.get("info_title") or ""):
+        if not (cls == "hw_batt" and (STATE.get("battery") or {}).get("sim")):
+            return False                                  # K4: the Pi really runs - its battery / heat / power warnings go out
     STATE["notify_status"] = "simulation: only alarms"
     if time.time() - _PK_HELD["t"] > 60:
         _PK_HELD["t"] = time.time()
@@ -93324,7 +93478,7 @@ _HX_PK = {
     "Noise": ("Geräusch", "Bruit", "Rumore", "Canera"),
     "Note": ("Hinweis", "Info", "Avviso", "Infurmaziun"),
     "Test message": ("Testnachricht", "Message de test", "Messaggio di prova", "Messadi da test"),
-    "pre-alarm": ("Voralarm", "pré-alarme", "preallarme", "pre-alarm"),
+    "pre-alarm": ("Voralarm", "pré-alarme", "preallarme", "prealarm"),
     "thermal camera": ("Wärmebild", "caméra thermique", "termocamera", "camera termica"),
     "+{n} more": ("+{n} weitere", "+{n} autres", "+{n} altri", "+{n} ulteriurs"),
     "late, from {t}": ("verspätet, von {t}", "en retard, de {t}", "in ritardo, delle {t}", "tard, da las {t}"),
@@ -93434,7 +93588,7 @@ def push_kurz_selftest():
         assert out["off"] == ("🛡 Schutz aus", "Am Gerät ausgeschaltet"), out["off"]
         assert out["online"] == ("📶 Online", "WLAN Camping · Seite öffnen"), out["online"]
         assert out["batt"] == ("🪫 Akku 12 %", "Noch etwa 1.5 h · bitte laden"), out["batt"]
-        assert out["person"] == ("🚶 Person erkannt", "21:07 · ca. 12 m, kommt näher") or out["person"][0] == "🚶 Person erkannt", out["person"]
+        assert out["person"] == ("🚶 Person erkannt", "21:07 · " + trf("about {m} m", m=12) + ", " + tr("coming closer")), out["person"]   # K8: text too
         assert out["night"] == ("🌙 Nachtbericht", "Zeile 1"), out["night"]
         assert push_kind(cases["off"])["pic"] and not push_kind(cases["online"])["pic"], "picture only for «Protection off»"
         on = P(text=tr("Protection on - alarms are active"), info_title="{name}: " + tr("Protection"))
@@ -93452,7 +93606,24 @@ def push_kurz_selftest():
         # the simulation: [SIM] in front, info messages held back (switch off), alarms and sim reports go out
         CFG["sim_on"] = True
         assert Notifier._title(cases["off"]).startswith("[SIM] 🛡 "), "[SIM] in front"
-        assert push_sim_hold(cases["off"]) and push_sim_hold(cases["online"]) and push_sim_hold(cases["batt"]), "info in the simulation"
+        assert push_sim_hold(cases["off"]) and push_sim_hold(cases["online"]), "info in the simulation"
+        # K4: real warnings of the Pi go out in the simulation too; simulated values («🧪», the simulator's battery) stay back
+        keep_b = STATE.get("battery")
+        try:
+            STATE["battery"] = {"on": True, "src": "ups"}
+            hw = [cases["batt"], P(text=tr("Battery empty – the Pi shuts down cleanly"), info_title="{name}: " + tr("power")),
+                  P(text=tr("Under-voltage: power bank almost empty or cable too weak") + " (4.7 V)", info_title="{name}: " + tr("power")),
+                  P(text=trf("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation", temp=85, lim=80),
+                    info_title="{name}: " + tr("temperature"))]
+            assert not any(push_sim_hold(x) for x in hw), [Notifier._title(x) for x in hw if push_sim_hold(x)]
+            assert push_sim_hold(P(text=tr("Battery empty – the Pi shuts down cleanly") + " (🧪 " + tr("simulator") + ")",
+                                   info_title="{name}: " + tr("power"))), "simulated battery empty went out"
+            assert push_sim_hold(P(text=trf("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation", temp=85, lim=80)
+                                   + " (🧪 " + tr("simulator") + ")", info_title="{name}: " + tr("temperature"))), "simulated heat went out"
+            STATE["battery"] = {"on": True, "src": "ups", "sim": True}
+            assert push_sim_hold(cases["batt"]), "the simulator's battery (almost empty) went out"
+        finally:
+            STATE["battery"] = keep_b
         assert not push_sim_hold(cases["person"]) and not push_sim_hold(P(event="tamper", text="x", info_title="{name}: " + tr("TAMPER ALARM")))
         assert not push_sim_hold(P(text="x", info_title="{name}: 🧪 " + tr("Night test run (simulation)"))), "the report of a sim test goes out"
         assert not push_sim_hold(P(text=trf("Person crossed the line «{zone}»", zone="Eingang"), info_title="{name}: " + tr("line"))), "zone = alarm"
@@ -93466,6 +93637,21 @@ def push_kurz_selftest():
         assert "sim_info_push" in SIM_PAGE, "switch not on the page Simulator"
         # an ntfy address in the webhook card goes as ntfy, a real webhook gets readable JSON
         assert push_url_is_ntfy("https://ntfy.sh/x") and push_url_is_ntfy("https://ntfy-me.com/x") and not push_url_is_ntfy("https://ha.local/api/webhook/x")
+        assert push_url_is_ntfy("https://ntfy.example.org/x") and push_url_is_ntfy("http://ntfy:80/x") and push_url_is_ntfy("https://push.ntfy.sh/x")
+        assert not push_url_is_ntfy("https://contentfy.example/hook") and not push_url_is_ntfy("https://myntfy-bridge.local/json"), "K2"
+        # K3: the question of the product page comes complete (the line after «Name (topic):»)
+        q = P(text="Max (Frage):\nWie lange hält der Akku?", info_title="{name}: " + tr("question from the product page"))
+        assert T(q) == ("💬 Frage", "Max (Frage): Wie lange hält der Akku?"), T(q)
+        # K5: the short titles straight from _HX_PK (not the older «Power» = «Ein / Aus» of a switch, «Update» = verb)
+        pw_ = P(text="Etwas mit dem Strom", info_title="{name}: " + tr("power"))
+        assert T(pw_)[0] == "🔌 Strom", T(pw_)
+        for L, want in (("fr", "⬆ Mise à jour"), ("it", "⬆ Aggiornamento"), ("rm", "⬆ Actualisaziun")):
+            CFG["lang"] = L
+            assert T(P(text="x y", info_title="{name}: Update"))[0] == want, (L, T(P(text="x y", info_title="{name}: Update")))
+        CFG["lang"] = "rm"
+        assert "prealarm" in Notifier._text(P(event="prealarm")), Notifier._text(P(event="prealarm"))
+        CFG["lang"] = "de"
+        assert Notifier._title(P(event="warm")).endswith(" Wärme erkannt"), Notifier._title(P(event="warm"))   # not «Warmer Körper»
         for L in ("fr", "it", "rm", "en"):
             CFG["lang"] = L
             ti, tx = T(P(text=tr("Protection switched off at the device"), info_title="{name}: " + tr("Buttons on the device")))
@@ -93475,7 +93661,42 @@ def push_kurz_selftest():
     return "one short form (title with symbol, one line), [SIM], only alarms in the simulation, webhook with an ntfy address"
 
 
+def arm_once_selftest():
+    """Code-Prüfung K10: arm_tick from several threads at the end of the countdown -> exactly one «🛡 Protection on»"""
+    names = ("push_protect_on", "push_alert", "rehearsal_on_arm", "refscan_on_armed", "log_event")
+    keep_f = {n: globals()[n] for n in names}
+    keep = (CFG.get("armed"), dict(ARM), STATE.get("arm_state"), STATE.get("arm_left"))
+    calls = []
+    arm0 = globals()["ARM"]
+
+    class _SlowArm(dict):                                    # widens the gap between reading and writing the state (the race)
+        def get(self, *a):
+            v = dict.get(self, *a); time.sleep(0.005); return v
+    try:
+        globals()["ARM"] = _SlowArm(arm0)
+        globals()["push_protect_on"] = lambda: (calls.append("on"), time.sleep(0.01))[0]
+        globals()["push_alert"] = lambda *a, **k: calls.append("alert")
+        for n in names[2:]:
+            globals()[n] = lambda *a, **k: None
+        for _round in range(5):
+            calls.clear()
+            CFG["armed"] = True; ARM.update(at=time.time() - 1, announced=False, pk_state="arming")
+            go = threading.Event()
+            ths = [threading.Thread(target=lambda: (go.wait(), arm_tick())) for _ in range(12)]
+            for t_ in ths:
+                t_.start()
+            go.set()
+            for t_ in ths:
+                t_.join(5)
+            assert calls.count("on") == 1 and calls.count("alert") == 1, calls
+    finally:
+        globals().update(keep_f); globals()["ARM"] = arm0
+        CFG["armed"] = keep[0]; ARM.clear(); ARM.update(keep[1]); STATE["arm_state"] = keep[2]; STATE["arm_left"] = keep[3]
+    return "12 threads at the end of the countdown: one «Protection on»"
+
+
 SELFTEST_EXTRA.append(("Short push messages, only alarms in the simulation (635b)", push_kurz_selftest))
+SELFTEST_EXTRA.append(("«Protection on» only once (arm_tick from several threads, 130)", arm_once_selftest))
 # All parts have added their settings now (CFG.setdefault in later parts), the start (640) loads the file only after this.
 import copy as _copy_g2
 FACTORY_CFG = _copy_g2.deepcopy(CFG)
@@ -94976,8 +95197,12 @@ def play_story_pic(sid, owner=True):
         return None
 
 
-def play_do(action, cid=""):
-    """«Start the adventure» (id) / open or close the start screen in the simulator / «seen» (Blinki's joy shown)"""
+def play_do(action, cid="", owner=True):
+    """«Start the adventure» (id) / open or close the start screen in the simulator / «seen» (Blinki's joy shown).
+    owner = nacht_may(...): «Das Hospiz» starts only for the owner (Code-Prüfung M4: before only the answer was filtered)"""
+    if action == "start" and str(cid or "").strip().lower() == "horror" and not owner:
+        log_event("web", "Play area: «Das Hospiz» refused (not the owner / operator mode)")
+        return {"ok": False, "error": tr("Only the owner can start this story."), "code": 403}
     if not CFG.get("sim_on"):
         return {"ok": False, "error": tr("The 3D simulator is not connected.")}
     try:
@@ -95162,6 +95387,8 @@ _HX_PLAY = {
                                                                        'Non ancora visitato – cosa c’è da scoprire si vede sul posto.',
                                                                        'Anc betg visità – tge ch’i dat da scuvrir sa mussa al lieu.'),
     'Stories': ('Geschichten', 'Histoires', 'Storie', 'Istorgias'),
+    'Only the owner can start this story.': ('Nur der Besitzer kann diese Geschichte starten.', 'Seul le propriétaire peut lancer cette histoire.',
+                                             'Solo il proprietario può avviare questa storia.', 'Mo il proprietari po cumenzar questa istorgia.'),
     'Discover': ('Entdecken', 'Découvrir', 'Scoprire', 'Scuvrir'),
     'Travel there': ('Hinreisen', 'Y aller', 'Andarci', 'Ir là'),
     'Keep discovering': ('Weiter entdecken', 'Continuer à découvrir', 'Continua a scoprire', 'Cuntinuar a scuvrir'),
@@ -95247,7 +95474,9 @@ def smalltv_routes(app, reply, body):                     # + 639i: /play and /a
         d = body(); a = str(d.get("action") or "")
         if a not in ("start", "open", "close", "seen"):
             return reply({"ok": False, "error": "unknown action"}, 400)
-        r = play_do(a, d.get("id") or "")
+        r = play_do(a, d.get("id") or "", own)
+        if r.pop("code", None) == 403:
+            return reply(r, 403)
         if r.get("state"):
             r["state"] = play_for(r["state"], own)
         return reply(r)
@@ -95297,7 +95526,8 @@ def _tk_play_poll(self):
 
 def _tk_play_act(self, a, cid=""):
     def work():
-        r = play_do(a, cid)
+        r = play_do(a, cid, nacht_may("admin"))           # the window = the owner, unless operator mode (M4)
+        r.pop("code", None)
         try:
             self.root.after(0, lambda: (self._status("Playing", ("✓ " + tr("The simulator travels there.")) if r.get("ok") and a == "start"
                                                      else ("⚠ " + str(r.get("error") or "")) if not r.get("ok") else tr("Open in the simulator")),
@@ -95418,6 +95648,18 @@ def play_selftest():
         d = play_state(True)
         assert d["ok"] and d["offline"] and isinstance(d.get("chapters"), list)
         assert not play_do("start", "camping")["ok"]
+        CFG["sim_on"] = True                                 # M4: «Das Hospiz» never starts for others (before: simulator asked)
+        _sc = globals()["sim_control"]; asked = []
+        globals()["sim_control"] = lambda d_: (asked.append(d_), {"ok": True})[1]
+        _le = globals()["log_event"]; globals()["log_event"] = lambda *a, **k: None
+        try:
+            r = play_do("start", "horror", False)
+            assert not r["ok"] and r.get("code") == 403 and not asked, ("Hospiz started without the owner", r, asked)
+            r = play_do("start", " HORROR ", False)
+            assert not r["ok"] and not asked, "Hospiz with another spelling"
+            assert nacht_may("admin", locked=True) is False and nacht_may("user", locked=False) is False
+        finally:
+            globals()["sim_control"] = _sc; globals()["log_event"] = _le; CFG["sim_on"] = False
         html = play_page()
         assert 'href="/play"' in html and "/api/play" in html and "Geschichten" in html and "Entdecken" in html and "MWBlinki" in html
         assert 'id="pl-bd"' not in html and "/sim/story_pic/" in html             # Geschichten-Menü: badges in the discovery book

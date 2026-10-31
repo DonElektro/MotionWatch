@@ -74,7 +74,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `210_demo.py` | Demo-Modus | 255 |
 | `220_zeitraffer.py` | Zeitraffer | 195 |
 | `230_waermebild.py` | Wärmebild-Überlagerung, Nachtsicht, Easter Egg (Herz) | 349 |
-| `232_waermebild_person.py` | Personen im Wärmebild (nachts, wenn die Kamera nichts sieht); Fusspunkt-Prüfung: Reh / Fuchs frontal = Tier statt Person | 200 |
+| `232_waermebild_person.py` | Personen im Wärmebild (nachts, wenn die Kamera nichts sieht); Fusspunkt-Prüfung (dritte Runde): aufrecht / frontal = Person (auch Reh von vorn, Kind, Kauernde), nur ein **flacher** warmer Körper von der Seite = Tier; «Person?» bei flacher KI-Box (KI ≥ 0.15 + Bewegung / Wärme, in den Zonen); ohne KI-Prüfung (KI aus, PC-Helfer ohne schwache Boxen) nie «Tier», sondern «Person?». Selbsttest in 417 | 398 |
 | `240_audio.py` | Mikrofon, Geräusch-Alarm | 81 |
 | `250_klatschen_bluetooth_ton.py` | Klatschschalter, Bluetooth, Lautsprecher, Sprachausgabe | 1131 |
 | `255_wecker.py` | Wecker mit Schlafplatz: wegschauen, wecken, Gesten (winken / aufstehen) | 330 |
@@ -130,7 +130,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `591_web_weitwinkel.py` | Weitwinkel-Bild als Kachel 🔭 (Simulator-Zentrale 139 und Sim-Kompakt 549, über /cam_feed, antippen = gross), Montage wählen, Schalter «IR-Licht breit (Kanal 4)», Zustand an den Simulator (lights.ir_wide), Selbsttest zu 163 | 167 |
 | `593_fenster_aufraeumen.py` | Fenster: Gruppe «Tierart» in der KI-Erkennung (wie «KI-Modell») | 37 |
 | `635_uebersetzungen_blinki.py` | Übersetzungen und Anleitungs-Zeile zu Blinki | 60 |
-| `635a_spieltest.py` | Spieltest-Meldungen: der Spieltest-Assistent des 3D-Simulators (spieltest.gd, world_reply «spieltest») meldet jede Runde kurz, MoveEye schickt sie über den Hauptkanal des Push – nur mit dem Schalter «Spieltest-Meldungen» (Entwickler, Standard aus); Zustand «spieltest» zurück, mw_cmd «spieltest_push», Selbsttest | 140 |
+| `635a_spieltest.py` | Spieltest-Meldungen: der Spieltest-Assistent des 3D-Simulators (spieltest.gd, world_reply «spieltest») meldet jede Runde kurz, MoveEye schickt sie über den Hauptkanal des Push – nur mit dem Schalter «Spieltest-Meldungen» (Entwickler, Standard aus); Zustand «spieltest» zurück, mw_cmd «spieltest_push» (der Simulator darf nur ausschalten), höchstens 1 Push pro Minute und 20 pro Stunde (dazwischen gesammelt), Selbsttest | 248 |
 | `635b_push_kurz.py` | Kurze Push-Nachrichten: ein Aufbau für alle Meldungen (`push_short` / `push_kind`, von 060 `_title` / `_text`: Symbol + kurzer Titel, höchstens eine Zeile, Bild bei «Schutz aus», nie JSON), ntfy-Adresse in der Webhook-Karte geht als ntfy (`push_url_is_ntfy`), Gerätename im Titel nur bei mehreren MoveEye (`push_show_name`: Geräteliste 260 oder 2. Gerät im Simulator), E-Mail mit vollem Text (`push_long`), «🛡 Schutz ein» mit Bild (`push_protect_on`, von 130 `arm_tick`), im Simulator-Betrieb nur Alarme aufs Handy (`push_sim_hold`, Schalter `sim_info_push` «Im Simulator: Info-Meldungen aufs Handy», ab Werk aus; Push → Erweitert in 531a / 571a, Seite Simulator), Übersetzungen, Selbsttest | 500 |
 | `594_uebersetzungen_kihilfe.py` | Übersetzungen für die «KI-Hilfe» am Auslöser (542) | 25 |
 | `595_fenster_simstopp.py` | Fenster: «⏹ Stopp» (Not-Aus) in der Simulation ausblenden | 75 |

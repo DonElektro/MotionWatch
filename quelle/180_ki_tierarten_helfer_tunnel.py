@@ -270,20 +270,33 @@ def helper_detect(frame):
         sc = min(1.0, 640.0 / max(1, w))
         small = cv2.resize(frame, (int(w * sc), int(h * sc))) if sc < 1.0 else frame
         ok, buf = cv2.imencode(".jpg", small, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        jpg_h, jpg_w = small.shape[:2]
         if ok:
             HELPER["busy"] = True
 
             def work(jpg=buf.tobytes(), sc=sc, u=u, code=code):
                 t0 = time.time()
                 try:
-                    d = _helper_post(u, code, jpg, float(CFG["ai_conf"]), float(CFG["object_conf"]))
+                    # Code-Prüfung M3: «Person?» (232) also with the PC helper - with the standard model (SSD, the score is the
+                    # same on both sides) the helper is asked with the low person threshold WEAK_AI_MIN and the boxes are split
+                    # here exactly like AIDetector.detect does it; another model: as before, without weak boxes
+                    need = float(CFG["ai_conf"])
+                    ssd = str(HELPER.get("model") or "") == "SSD MobileNet V2"
+                    ask = min(need, WEAK_AI_MIN) if ssd else need
+                    d = _helper_post(u, code, jpg, ask, float(CFG["object_conf"]))
                     if not d.get("ok"):
                         raise ValueError(str(d.get("error") or "no answer"))
                     k = 1.0 / sc
                     boxes = [(int(b[0] * k), int(b[1] * k), int(b[2] * k), int(b[3] * k), float(b[4])) for b in d.get("boxes", [])]
                     objs = [(int(b[0] * k), int(b[1] * k), int(b[2] * k), int(b[3] * k), float(b[4]), int(b[5])) for b in d.get("objects", [])]
+                    weak_ok = ssd and str(d.get("model") or "SSD MobileNet V2") == "SSD MobileNet V2"
+                    weak = [b for b in boxes if b[4] < need] if weak_ok else []
+                    boxes = [b for b in boxes if b[4] >= need]
+                    if d.get("model") and str(d.get("model")) != str(HELPER.get("model") or ""):
+                        HELPER["model"] = str(d["model"])[:40]     # the helper changed its model: from the next picture
                     HELPER.update(res=(boxes, objs), res_t=time.time(), ms=int(d.get("ms") or 0), rtt=int((time.time() - t0) * 1000),
-                                  n=HELPER["n"] + 1, fails=0, last_ok=time.time(), msg="")
+                                  n=HELPER["n"] + 1, fails=0, last_ok=time.time(), msg="", res_weak=weak, res_weak_ok=weak_ok,
+                                  res_size=(int(round(jpg_w / sc)), int(round(jpg_h / sc))))
                 except Exception as e:
                     HELPER["fails"] += 1; HELPER["msg"] = str(e)[:80]
                     if HELPER["fails"] >= 3:
@@ -896,6 +909,7 @@ class AIDetector:
         self.boxes = []          # last persons, in processing-frame coordinates
         self.objects = []        # last non-person objects (x, y, w, h, conf, cls)
         self.weak = []; self.weak_t = 0.0   # real-reh-fusspunkt: persons below ai_conf, raw score >= WEAK_AI_MIN, 0..1 (232 «Person?»)
+        self.weak_ok_t = 0.0                # Code-Prüfung M3: when the AI last looked for weak persons (232: else no «animal»)
         self.frame_counter = 0
         STATE["ai_model_note"] = ""
         if CFG.get("ai_model") == "own" and not force_ssd:
@@ -959,6 +973,11 @@ class AIDetector:
             got = helper_detect(frame)
             if got is not None:
                 self.boxes, self.objects = got
+                if HELPER.get("res_weak_ok"):                # M3: the weak person boxes of the helper (SSD) for «Person?» (232)
+                    fw, fh = HELPER.get("res_size") or (frame.shape[1], frame.shape[0])
+                    self.weak = [(b[0] / max(1, fw), b[1] / max(1, fh), b[2] / max(1, fw), b[3] / max(1, fh), b[4])
+                                 for b in HELPER.get("res_weak") or []]
+                    self.weak_t = self.weak_ok_t = float(HELPER.get("res_t") or 0.0)
                 STATE["ai_persons"] = len(self.boxes)
                 STATE["ai_status"] = f"PC · {HELPER['ms']} ms"
                 return self.boxes
@@ -988,7 +1007,7 @@ class AIDetector:
             low = (0.5 + (WEAK_AI_MIN - float(self.meta["conf"].get("person", 0.35)))) if self.kind == "yolo" else WEAK_AI_MIN
             boxes, objects = self.infer(frame, min(float(CFG["ai_conf"]), low), CFG["object_conf"])
             self.weak = [(b[0] / w, b[1] / h, b[2] / w, b[3] / h, b[4]) for b in boxes if b[4] < need]
-            self.weak_t = time.time()
+            self.weak_t = self.weak_ok_t = time.time()
             boxes = [b for b in boxes if b[4] >= need]
         except Exception as e:
             if self.kind != "yolo":
