@@ -15457,6 +15457,12 @@
   "it": "Sentiero d'alta quota ovest",
   "rm": "Senda d'autezza vest"
  },
+ "höhle": {
+  "en": "cave",
+  "fr": "grotte",
+  "it": "grotta",
+  "rm": "cuvel"
+ },
  "Hühner (mit Hühnerstall)": {
   "en": "Chickens (with chicken coop)",
   "fr": "Poules (avec poulailler)",

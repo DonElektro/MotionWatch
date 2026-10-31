@@ -1,7 +1,7 @@
 {
- "version": "3D-4.77",
+ "version": "3D-4.78",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34687863,
- "sha256": "9510f940a9da73971d5990f2ad5b288666d2ad8d85aaae529adfb6fcae02bfdf",
- "notes": "Spieltest-Assistent: beobachtet alle Spielmodi, Smileys, Vorschläge, ZIP für Claude, Push über MoveEye."
+ "size": 34706767,
+ "sha256": "2de471ed9cfe034ff5d4010dfffae5d70b62ee2d5ea06ab4bd13f8fbeae50c1d",
+ "notes": "Entwickler-Fenster: Sprung und Kontaktbogen mit freier Sicht."
 }

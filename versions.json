@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 13:53",
+ "generated": "2026-10-31 14:00",
  "versions": [
   {
-   "version": "2.98.108",
-   "file": "webcam_bewegung_2_98_108.py",
+   "version": "2.98.109",
+   "file": "webcam_bewegung_2_98_109.py",
    "url": "",
-   "sha256": "598fabf3e30eb6d5602bd8d19f9dcdb7758413fab8e6a8e5f49dc568a86bd1f0",
-   "date": "2026-10-31 13:53",
-   "notes": "Spieltest-Meldungen: Push aufs Handy für den Spieltest-Assistenten des Simulators (Schalter in Entwickler, Standard aus). Simulator 3D-4.77: Spieltest-Assistent beobachtet alle Spielmodi, fragt mit Smileys, macht Vorschläge, ZIP für Claude.",
-   "sig": "b78068fc28d25b01f6e144e0a61723e99008c3f39b916a41d46f9718d274006ec4bb3698540e7f5a5d592c9d47f5a8fd088e6f0b10d0e51594eaaabce4fe3403"
+   "sha256": "4bc530182414879eb773ee2361fd672d772e07a704ed372405a2897348f014a7",
+   "date": "2026-10-31 14:00",
+   "notes": "Simulator 3D-4.78: Entwickler-Fenster – Sprung und Kontaktbogen suchen eine freie Sicht (nicht im Hang, Wasser oder hinter Bäumen), Aussichtspunkte in ihrer Richtung.",
+   "sig": "5c34f9fd8f950e2dcda7165569733f59eab9f9772973876558a245578b2e5e58ecd8fa11f859b861d6c1123bb03b3491d5846a92c1cc1eba31a34dda47b1020e"
   },
   {
    "version": "2.97.1",

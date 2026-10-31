@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.77** · passende MoveEye-Version (früher Motion Watch) **2.98.108**
+Stand: 31.10.2026 · Simulator-Version **3D-4.78** · passende MoveEye-Version (früher Motion Watch) **2.98.109**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.78 (MoveEye 2.98.109): Kamera für Sprung und Kontaktbogen (`devtool_kamera.gd`)
+
+- `devtool_kamera.gd` (neu): sucht freie Sicht (eigene Strahlen gegen Gelände, Wasser, Dinge), Augenhöhe, bevorzugte
+  Blickrichtung der Aussichtspunkte; Lite über `Quality.lite()` (keine eigene Abfrage mehr). Eingebunden in `devtool.gd`
+  und `devtool_kontakt.gd`. 38 von 55 Problem-Orten gut, Schluchten bleiben schwierig.
+- `i18n/texte.json`: Suchwort «höhle» aus `DEEP` (kein sichtbarer Text) mit Übersetzung, damit sim_texte 0 Lücken meldet.
 
 ## NEU in 3D-4.77 (MoveEye 2.98.108): Spieltest-Assistent (`spieltest.gd`, `devtool_spieltest.gd`)
 

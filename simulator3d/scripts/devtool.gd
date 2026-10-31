@@ -71,6 +71,7 @@ var _all: Array = []                   # alle_orte() of the last refresh
 var _t := 0.0
 var ebenen = null                      # Entwicklertool 2 «Regler + Ebenen» (devtool_ebenen.gd): eb()
 var extra                              # devtool_extra.gd: Entwicklertool 3 (Notizen, Kontaktbogen, Kapitel-Sprung)
+var _kam = null                        # devtool_kamera.gd (K1): kam()
 
 
 func _ready() -> void:
@@ -341,9 +342,35 @@ func goto(id: String) -> Dictionary:
 	if bool(e.get("room", false)) and not (ex != null and ex.on):
 		var bt = main.scenes.data.get("bergtal")
 		if bt != null and bt.get("orte") != null and bt.orte.fly(str(e["name"])):
-			return {"ok": true, "id": id, "loaded": need, "room": true, "pos": _v(p)}
-	view_at(p, _dist(e), loaded)
-	return {"ok": true, "id": id, "loaded": need, "pos": _v(p), "scene": main.scene}
+			var rx = kam().room_view(e)                       # K1: a thing right in front of the lens -> a little aside
+			if rx is Transform3D:
+				_fly_to(rx, loaded)
+			return {"ok": true, "id": id, "loaded": need, "room": true, "pos": _v(p), "cam": kam().last}
+	view_at(p, _dist(e), loaded, e)
+	return {"ok": true, "id": id, "loaded": need, "pos": _v(p), "scene": main.scene, "cam": kam().last}
+
+
+func reaim(id: String) -> Dictionary:
+	"""the camera for a place once more, at once (Kontaktbogen: after a new scene has been built)"""
+	var e := {}
+	for x in (_all if not _all.is_empty() else alle_orte(main)):
+		if x["id"] == id:
+			e = x
+	if e.is_empty():
+		return {"ok": false}
+	var ex = main.explore
+	if ex != null and ex.on:
+		return {"ok": false}
+	if bool(e.get("room", false)):
+		var rx = kam().room_view(e)
+		if rx is Transform3D:
+			_fly_to(rx, true)
+		return {"ok": rx is Transform3D, "cam": kam().last}
+	var p = scene_pos(e)
+	if p == null:
+		return {"ok": false}
+	view_at(p, _dist(e), true, e)
+	return {"ok": true, "cam": kam().last}
 
 
 static func _w2(q) -> Array:
@@ -358,8 +385,17 @@ func _dist(e: Dictionary) -> float:
 	return clampf(float(e.get("r", 10.0)) * 1.1, 7.0, 60.0)
 
 
-func view_at(p: Vector3, d: float, at_once := false) -> void:
-	"""the view (or, while exploring, the rover) to the place, looking at it"""
+func kam():
+	"""devtool_kamera.gd: the camera of the jump and the Kontaktbogen (K1)"""
+	if _kam == null:
+		_kam = preload("res://scripts/devtool_kamera.gd").new(main)
+	return _kam
+
+
+func view_at(p: Vector3, d: float, at_once := false, e := {}) -> void:
+	"""the view (or, while exploring, the rover) to the place, looking at it. K1 (31.10.2026): the camera is chosen by
+	devtool_kamera.gd (eye height over ground and water, distance for the size, free line of sight, no hillside / tree /
+	gorge in front of the lens) - before it kept the direction of the last view and stood in slopes, lakes and gorges."""
 	var ex = main.explore
 	if ex != null and ex.on:                                  # «Erkunden»: the rover goes there, its camera follows
 		var a: Vector3 = main.free_spot(p + Vector3(0, 0, 3.0), 0.6, false)
@@ -373,13 +409,16 @@ func view_at(p: Vector3, d: float, at_once := false) -> void:
 		main.fly_tw.kill()
 	var cam: Camera3D = main.view_cam
 	var fwd := -cam.global_transform.basis.z
-	fwd.y = 0.0
-	fwd = fwd.normalized() if fwd.length() > 0.01 else Vector3(0, 0, -1)
-	var tgt := p + Vector3(0, 1.2, 0)
-	var to := tgt - fwd * d + Vector3(0, d * 0.45, 0)
-	to.y = maxf(to.y, main.ground_y(to.x, to.z) + 1.5)
-	var end := Transform3D(Basis(), to).looking_at(tgt, Vector3.UP)
-	if at_once or cam.global_position.distance_to(to) > 600.0:
+	var place := e if not e.is_empty() else {"id": "", "name": "", "r": d / 1.1}
+	var r: Dictionary = kam().best_view(place, p, d, fwd, frame())
+	_fly_to(r["xf"], at_once)
+
+
+func _fly_to(end: Transform3D, at_once := false) -> void:
+	var cam: Camera3D = main.view_cam
+	if main.fly_tw != null:
+		main.fly_tw.kill()
+	if at_once or cam.global_position.distance_to(end.origin) > 600.0:
 		cam.global_transform = end                            # a new scene / far away: no long flight through the valley
 		return
 	var start: Transform3D = cam.global_transform
