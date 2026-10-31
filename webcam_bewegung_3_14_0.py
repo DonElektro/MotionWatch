@@ -244,7 +244,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_14_0.zip"
-ZD_SHA256 = "4008bd96ef386c063a18dd5cfe9aa31344ea477ee7b816698ee16e4a886f79fb"
+ZD_SHA256 = "a45697c8fa652f802d14e4c279e5bd572a58dcd220868f09331f82537c7a9ce2"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -67672,6 +67672,191 @@ def vf_selftest():
 
 
 SELFTEST_EXTRA.append(("Vorführung «Maggie» (page /sim/vorfuehrung, owner only)", vf_selftest))
+# ----------------------------------------------------------------------------
+# Der 3D-Simulator spielt den Trailer selbst (simulator3d/scripts/trailer.gd: Kamerafahrt im Bergtal, Musik, Texttafeln,
+# Erzähler). Hier nur das Starten und Zuschauen:
+#   * /sim/trailer?id=…: startet den Trailer (wenn nicht schon einer läuft) und zeigt das Bild des Simulators
+#     (/sim/view.jpg?bare=1), unten eine Leiste: Beenden, Nochmals, Vollbild, Zurück. Den Ton hört man am Simulator-PC
+#     (das Bild im Browser ist ohne Ton).
+#   * /api/trailer: GET = Stand (Simulator /control trailer info), POST {do: start (id) | stop}. Nur der Besitzer
+#     (nacht_may: Administrator, nicht im Bedienermodus), wie die Vorführung (639m).
+#   * Einstieg: Reiter «Sim» ganz oben die Karte «🛠 Entwickler» (nur mit dem Entwickler-Bereich und für den Besitzer) mit
+#     «🎬 Trailer Grossvater», «🎬 Trailer Maggie», «🎬 Vorführung»; dazu Einstellungen → Entwickler (Web 530 devExtras,
+#     Fenster 639c) ganz oben die zwei Trailer. Im Simulator selbst: oben im Fenster «Entwickler» und auf den Story-Karten.
+# Hier (nach 639m) weil VF-Teile (639m), render_page, sim_control, nacht_may, SIM_PAGE, WEB_PAGE vorher kommen.
+# ----------------------------------------------------------------------------
+TRL_IDS = ("grossvater", "maggie")
+
+
+def trl_info():
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": tr("The 3D simulator is not connected."), "offline": True}
+    try:
+        r = sim_control({"action": "trailer", "do": "info"}) or {}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:80]}
+    if not r.get("ok") and "laeuft" not in r:
+        if "unknown" in str(r.get("error") or "").lower():
+            return {"ok": False, "error": tr("This simulator has no trailers yet – update it.")}
+        return {"ok": False, "error": str(r.get("error") or tr("The 3D simulator is not connected."))[:120]}
+    return r
+
+
+def trl_do(d, owner=True):
+    """start (id) / stop – only the owner"""
+    if not owner:
+        log_event("web", "Trailer refused (not the owner / operator mode)")
+        return {"ok": False, "error": tr("Only the owner can do this."), "code": 403}
+    w = str((d or {}).get("do") or "")
+    if w not in ("start", "stop"):
+        return {"ok": False, "error": "do: start | stop", "code": 400}
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": tr("The 3D simulator is not connected.")}
+    c = {"action": "trailer", "do": w}
+    if w == "start":
+        tid = str(d.get("id") or "")
+        if tid not in TRL_IDS:
+            return {"ok": False, "error": "id: " + " | ".join(TRL_IDS), "code": 400}
+        c["id"] = tid
+        lg = str(CFG.get("lang") or "")
+        if lg in ("de", "fr", "it", "rm", "en"):
+            c["sprache"] = lg
+    try:
+        r = sim_control(c) or {}
+    except Exception as e:
+        if w == "start" and "timed out" in str(e):           # building the Bergtal takes a moment
+            return {"ok": True, "loading": True}
+        return {"ok": False, "error": str(e)[:80]}
+    if str(r.get("error") or "").startswith("busy: "):
+        return {"ok": False, "error": tr("The simulator is busy: {w}").replace("{w}", str(r["error"])[6:])}
+    return r
+
+
+TRL_PAGE = _zd('639n_trailer/TRL_PAGE', ZD_PAGE)
+
+_HX_TRL = {
+    'Trailer Grossvater': ('Trailer Grossvater', 'Bande-annonce Grand-père', 'Trailer Nonno', 'Trailer Tat'),
+    'Trailer Maggie': ('Trailer Maggie', 'Bande-annonce Maggie', 'Trailer Maggie', 'Trailer Maggie'),
+    'Vorführung': ('Vorführung', 'Démonstration', 'Dimostrazione', 'Demonstraziun'),
+    'Developer': ('Entwickler', 'Développeur', 'Sviluppatore', 'Sviluppader'),
+    'End the trailer': ('Trailer beenden', 'Arrêter la bande-annonce', 'Termina il trailer', 'Terminar il trailer'),
+    'Watch again': ('Nochmals ansehen', 'Revoir', 'Guarda di nuovo', 'Guardar anc ina giada'),
+    'The end': ('Ende', 'Fin', 'Fine', 'Fin'),
+    'Over': ('Vorbei', 'Terminé', 'Finito', 'Terminà'),
+    'This simulator has no trailers yet – update it.': ('Dieser Simulator kennt die Trailer noch nicht – bitte aktualisieren.',
+                                                        'Ce simulateur ne connaît pas encore les bandes-annonces – mets-le à jour.',
+                                                        'Questo simulatore non conosce ancora i trailer – aggiornalo.',
+                                                        'Quest simulatur na conuscha anc betg ils trailers – actualisescha el.'),
+    'The simulator is busy: {w}': ('Der Simulator ist beschäftigt: {w}', 'Le simulateur est occupé : {w}', 'Il simulatore è occupato: {w}',
+                                   'Il simulatur è occupà: {w}'),
+}
+for _k, _v in _HX_TRL.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_TRL_KEYS = list(_HX_TRL) + ["Full screen", "Back", "The valley is being prepared …", "The 3D simulator is not connected."]
+_TRL_DE_JS = json.dumps({k: DE.get(k, k) for k in ("Trailer Grossvater", "Trailer Maggie", "Vorführung", "Developer")}, ensure_ascii=False)
+
+# Settings → Developer (web 530 devExtras): the two trailers on top of the list (the window 639c: see below)
+WEB_PAGE = WEB_PAGE.replace('[["🧪", "Test bench and test run", "/sim#c-test"]',
+                            '[["🎬", "Trailer Grossvater", "/sim/trailer?id=grossvater"], ["🎬", "Trailer Maggie", "/sim/trailer?id=maggie"], '
+                            '["🧪", "Test bench and test run", "/sim#c-test"]', 1)
+WEB_PAGE = WEB_PAGE.replace("</body>", "<script>Object.assign(I18N.de, " + _TRL_DE_JS + ");</script></body>", 1)
+
+# the tab «Sim»: on top the card «🛠 Entwickler» (only the owner with the developer area: /api/ui_simple dev + /api/trailer not 403)
+TRL_SIM_CARD = """<details class="sc fold wide" id="c-devquick" hidden open>
+    <summary><h2><span>🛠</span><span data-i18n="Developer">Developer</span></h2></summary>
+    <div class="fb">
+      <a class="btn sec" href="/sim/trailer?id=grossvater" style="display:block;margin:4px 0;text-align:left">🎬 <span data-i18n="Trailer Grossvater">Trailer Grossvater</span> ›</a>
+      <a class="btn sec" href="/sim/trailer?id=maggie" style="display:block;margin:4px 0;text-align:left">🎬 <span data-i18n="Trailer Maggie">Trailer Maggie</span> ›</a>
+      <a class="btn sec" href="/sim/vorfuehrung" style="display:block;margin:4px 0;text-align:left">🎬 <span data-i18n="Vorführung">Vorführung</span> ›</a>
+    </div>
+  </details>
+  """
+TRL_SIMJS = """<script>
+(function trlQuick() {
+  try { Object.assign(I18N.de, /*TRLDE*/{}); } catch (e) {}
+  const c = document.getElementById("c-devquick"); if (!c) return;
+  Promise.all([fetch("/api/ui_simple?page=sim").then(x => x.json()).catch(() => ({})), fetch("/api/trailer", {cache: "no-store"}).then(x => x.status).catch(() => 403)])
+    .then(([u, st]) => { c.hidden = !(u && u.dev) || st === 403; if (!c.hidden) try { applyI18n(); } catch (e) {} });
+})();
+</script>"""
+SIM_PAGE = SIM_PAGE.replace('<main class="simp">\n', '<main class="simp">\n  ' + TRL_SIM_CARD, 1)
+SIM_PAGE = SIM_PAGE.replace("</body>", TRL_SIMJS.replace("/*TRLDE*/{}", _TRL_DE_JS) + "</body>", 1)
+
+
+def trl_page():
+    js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in _TRL_KEYS}, ensure_ascii=False) + ");"
+    return render_page(TRL_PAGE, "sim").replace("/*TLDE*/", js, 1)
+
+
+_smalltv_routes_trl_base = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):                     # + 639n: /sim/trailer and /api/trailer (550 calls smalltv_routes once)
+    _smalltv_routes_trl_base(app, reply, body)
+    from flask import Response
+
+    @app.route("/sim/trailer")
+    def trl_page_():
+        if not nacht_may(_nacht_role()):
+            return Response(tr("Only the owner can do this."), 403)
+        return Response(trl_page(), mimetype="text/html")
+
+    @app.route("/api/trailer", methods=["GET", "POST"])
+    def api_trailer():
+        own = nacht_may(_nacht_role())
+        from flask import request
+        if request.method == "GET":
+            return reply(trl_info()) if own else reply({"ok": False, "error": tr("Only the owner can do this.")}, 403)
+        r = trl_do(body(), own)
+        code = r.pop("code", None)
+        return reply(r, code) if code else reply(r)
+
+
+if GUI_OK:                                                # the window: the two trailers in the developer part (639c)
+    _trl_tk_build_section_base = App._build_section
+
+    def _trl_tk_build_section(self, sec, sbody, settings_parent=None):
+        r = _trl_tk_build_section_base(self, sec, sbody, settings_parent)
+        if sec == "Developer":
+            for tid, nm in (("grossvater", "Trailer Grossvater"), ("maggie", "Trailer Maggie")):
+                ttk.Button(sbody, text="🎬 " + tr(nm) + " ›", command=lambda u="/sim/trailer?id=" + tid: self._open_page(u)).pack(fill="x", pady=(4, 0))
+        return r
+
+    # wraps: App._build_section (after 639m)
+    App._build_section = _trl_tk_build_section
+
+
+def trl_selftest():
+    keep = CFG.get("sim_on")
+    try:
+        CFG["sim_on"] = False
+        assert not trl_info()["ok"] and not trl_do({"do": "start", "id": "maggie"})["ok"]
+        assert trl_do({"do": "start", "id": "maggie"}, owner=False).get("code") == 403
+        assert trl_do({"do": "rm"}).get("code") == 400
+        CFG["sim_on"] = True
+        assert trl_do({"do": "start", "id": "x"}).get("code") == 400
+        _sc = globals()["sim_control"]; asked = []
+        globals()["sim_control"] = lambda d_: (asked.append(d_), {"ok": True, "loading": True})[1]
+        try:
+            assert trl_do({"do": "start", "id": "maggie"})["ok"] and asked[-1]["action"] == "trailer" and asked[-1]["id"] == "maggie"
+            assert trl_do({"do": "stop"})["ok"] and asked[-1] == {"action": "trailer", "do": "stop"}
+        finally:
+            globals()["sim_control"] = _sc
+    finally:
+        CFG["sim_on"] = keep
+    html = trl_page()
+    assert "/sim/view.jpg?bare=1" in html and "/api/trailer" in html and "<!--NAV-->" not in html
+    assert 'id="c-devquick"' in SIM_PAGE and "/sim/trailer?id=maggie" in SIM_PAGE and "/sim/vorfuehrung" in SIM_PAGE
+    assert SIM_PAGE.index('id="c-devquick"') < SIM_PAGE.index('id="c-conn"')
+    assert "/sim/trailer?id=grossvater" in WEB_PAGE
+    for L in ("fr", "it", "rm"):
+        assert TRX[L].get("End the trailer"), L
+    return "Trailer: page, owner only, commands to the simulator, card on top of «Sim», entries"
+
+
+SELFTEST_EXTRA.append(("Trailer der Geschichten (page /sim/trailer, owner only)", trl_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------

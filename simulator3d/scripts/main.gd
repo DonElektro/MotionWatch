@@ -710,6 +710,7 @@ func _ready() -> void:
 		get_tree().create_timer(5.0).timeout.connect(func(): print("RESTART_ARGS: ", " ".join(restart_args())))
 	set_process(true)
 	set_process_unhandled_input(true)
+	preload("res://scripts/trailer.gd").from_args(self, args)   # --trailer grossvater|maggie (werkzeuge/trailer_aufnehmen.sh)
 
 
 func _hold_children() -> Dictionary:
@@ -2361,6 +2362,8 @@ func busy_with(except_ := "") -> String:
 		w = "Horror-Modus"                             # the nights of «Das Hospiz» (bergtal_horror.gd)
 	elif maggie != null and maggie.running:
 		w = "Maggie-Geschichte"                        # «Maggie und der Bergkristall» (maggie_story.gd)
+	elif has_meta("trailer") and preload("res://scripts/trailer.gd").busy(self):
+		w = "Trailer"                                  # ein Trailer der Geschichten läuft (trailer.gd)
 	elif preload("res://scripts/ferienpark_leben.gd").task_busy(self) != "":
 		w = "Ferienpark-Aufgabe"                       # Ferienpark-Leben: lost child / bike thief (the tent task: «Nacht-Testlauf»)
 	elif _mw_task() != "":                             # 3D-4.x: one lock with MoveEye (a drill, a protection test … there)
@@ -4211,6 +4214,7 @@ func _register_controls() -> void:
 	add_control("button", "simint_open", "Störungen testen", null, func(): _open_stoer(), "Entwickler", {"expert": true, "devwin": true})
 	preload("res://scripts/spieltest.gd").add_controls(self)   # Spieltest-Assistent + «Spieltest-Meldungen» (wie MoveEye Entwickler)
 	preload("res://scripts/maggie_vorfuehrung.gd").add_controls(self)   # Vorführmodus «Maggie» (Entwickler, Reiter «Vorführung»)
+	preload("res://scripts/trailer.gd").add_controls(self)   # Trailer der Geschichten (Entwickler; dazu oben im Entwickler-Fenster)
 	add_control("toggle", "dev_updates", "Entwicklungsphase: jede Minute nach neuen Versionen schauen und sofort installieren", func(): return dev_updates, func(v): dev_updates = v; _settings_dirty = true, "Updates", {"expert": true, "hide": true})
 	add_control("toggle", "auto_update", "Neue Versionen automatisch installieren", func(): return auto_update, func(v): set_auto_update(v), "Updates", {"expert": true, "hide": true})
 	add_control("button", "update_now", "Jetzt nach Updates suchen und installieren", null, func(): run_update(true, false), "Updates", {"expert": true, "hide": true})
@@ -5082,6 +5086,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return preload("res://scripts/bergtal.gd").control(self, d)
 	elif a == "vorfuehrung":                           # Vorführmodus «Maggie» (maggie_vorfuehrung.gd): {do: start (len) | pause | weiter | kapitel (n) | stop | info}
 		return preload("res://scripts/maggie_vorfuehrung.gd").control(self, d)
+	elif a == "trailer":                               # Trailer der Geschichten (trailer.gd): {do: start (id, sprache, untertitel, ab) | stop | info}
+		return preload("res://scripts/trailer.gd").control(self, d)
 	elif a == "maggie":                                # «Maggie und der Bergkristall» (maggie_story.gd): {do: info | open | start | region …}
 		return maggie.control(d) if maggie != null else {"ok": false, "error": "no maggie"}
 	elif a == "horror":                                # Bergtal · Horror-Modus: {do: info | open | unlock | start | skip | pause | stop …} (bergtal_horror.gd)

@@ -21,7 +21,8 @@ extends Node
 ##   * «Weiterspielen: <Geschichte>, <Kapitel/Region> (x %)» ganz oben: die zuletzt gespielte Geschichte dieses Spielstands
 ##     (spielstand.gd last_story, wird hier jede Sekunde nachgeführt).
 ## Lite: keine teuren Effekte (die Bilder sind gezeichnet oder einmal aufgenommen; die Aufnahme ist ein einziges Bild).
-## Steuerbefehl (über spielbereich.gd): {"action": "spielbereich", "do": "stories" | "story" (id, what: weiter | neu | open) |
+##   * «Trailer ansehen» (Grossvater, Maggie): ein Film von ≈ 3 Min. (trailer.gd), Esc / Klick = zurück zu «Spielen».
+## Steuerbefehl (über spielbereich.gd): {"action": "spielbereich", "do": "stories" | "story" (id, what: weiter | neu | open | trailer) |
 ##   "gs" (k: info | next | back | cancel | slot (v) | level (v) | season (v) | name (v) | col (v))}
 
 const T = preload("res://scripts/i18n.gd")
@@ -34,6 +35,7 @@ const Ab = preload("res://scripts/bergtal_abenteuer.gd")
 const Mg = preload("res://scripts/maggie_story.gd")
 const Figur = preload("res://scripts/figur.gd")
 const MZ = preload("res://scripts/maggie_zwei.gd")      # Maggie für zwei Spieler: «1 oder 2 Spieler» auf der Seite «Figur»
+const Trailer = preload("res://scripts/trailer.gd")   # «Trailer ansehen» auf den Karten Grossvater und Maggie
 
 const IDS := ["grossvater", "maggie", "horror", "teil2"]
 const AGE := {"grossvater": 8, "maggie": 10, "horror": 16, "teil2": 8}
@@ -397,6 +399,11 @@ func card(s: Dictionary, w: float) -> Control:
 	var bw := _btn(br, T.t("Weiterspielen"), func(): weiter(id), can)
 	bw.disabled = not can
 	_btn(br, T.t("Neu beginnen"), func(): neu(id), not can)
+	if id in Trailer.IDS:                                  # Trailer (trailer.gd): eigene Zeile, passt in jeder Sprache
+		var br3 := HBoxContainer.new()
+		tv.add_child(br3)
+		var bt := _btn(br3, T.t("Trailer ansehen"), func(): trailer(id))
+		bt.tooltip_text = T.t("Etwa 3 Minuten · Esc oder Klick = zurück")
 	return p
 
 
@@ -568,6 +575,14 @@ func weiter(id: String) -> Dictionary:
 		"horror":
 			main.horror.open_locked(func(): main.horror.weiter())
 	return {"ok": true}
+
+
+func trailer(id: String) -> Dictionary:
+	"""«Trailer ansehen»: der Film zur Geschichte (trailer.gd); danach / bei Esc wieder das Fenster «Spielen»"""
+	if not (id in shown_ids()) or not id in Trailer.IDS:
+		return {"ok": false, "error": "unknown story"}
+	var r: Dictionary = await Trailer.inst(main).starten(id, {"von": "karte"})
+	return r
 
 
 func neu(id: String) -> Dictionary:
