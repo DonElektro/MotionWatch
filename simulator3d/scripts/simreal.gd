@@ -19,6 +19,7 @@ extends Node
 ## Settings in user://simreal.json (like realism.gd: echt_abgleich.json).
 
 var main
+const Waerme = preload("res://scripts/waerme.gd")   # 3D-4.26: the heat table (Paket P3)
 const FILE := "user://simreal.json"
 const SAVE := ["pi_on", "pi_fps", "pi_delay", "lens_on", "ir_real", "th_real", "fa_flags", "fa_sweep", "fa_catroof", "fa_birds",
 		"anim_real", "leash_on", "hard_auto"]
@@ -110,8 +111,9 @@ func add_controls() -> void:
 			func(): return lens_on, func(v): _put("lens_on", bool(v)), "Kamerabild", {"sub": "Wie echt"})
 	m.add_control("toggle", "real_ir", "Infrarot wie echt: Lichtkegel der LED mit weichem Rand, nimmt mit der Entfernung stark ab, Nahes überstrahlt, Rückstrahler (Velo, Nummernschild, Schild) leuchten auf",
 			func(): return ir_real, func(v): _put("ir_real", bool(v)); _ir_setup(), "Kamerabild", {"sub": "Wie echt"})
-	m.add_control("toggle", "real_thermal", "Wärmebild wie echt: Kleider isolieren (Jacke kühl, Gesicht und Hände warm), Steine, Autos und Asphalt speichern die Sonnenwärme bis in die Nacht, Regen kühlt, Fenster spiegeln den kalten Himmel",
-			func(): return th_real, func(v): _put("th_real", bool(v)), "Kamerabild", {"sub": "Wie echt"})
+	# 3D-4.26 (Paket P2/P3): der eine Schalter für das Wärmebild steht jetzt in «Kamerabild → Wärmebild» (vorher «Wie echt»)
+	m.add_control("toggle", "real_thermal", "Wärmebild wie echt: Sensor wie der Thermal-90 (80 × 62, Rauschen, Drift, Unschärfe, Wasser auf dem Fenster, Nebel schluckt), Wärme wie echt (Kleider isolieren, Tiere mit Fell, Motor kühlt ab, Sonne heizt Asphalt, Autodach und Zelt, kalter Himmel, Glas ist undurchsichtig)",
+			func(): return th_real, func(v): _put("th_real", bool(v)), "Kamerabild", {"sub": "Wärmebild"})
 	m.add_control("toggle", "fa_flags", "Lose Zeltplane und Wimpel flattern im Wind (wirkt nach dem Szenenwechsel)", func(): return fa_flags, func(v): _put("fa_flags", bool(v)), "Kamerabild", {"sub": "Schwierige Bedingungen"})
 	m.add_control("toggle", "fa_sweep", "Nachts streift ab und zu das Licht eines einbiegenden Autos über Wände und Zelt", func(): return fa_sweep, func(v): _put("fa_sweep", bool(v)), "Kamerabild", {"sub": "Schwierige Bedingungen"})
 	m.add_control("toggle", "fa_catroof", "Nachts setzt sich ab und zu eine Katze aufs Autodach", func(): return fa_catroof, func(v): _put("fa_catroof", bool(v)), "Kamerabild", {"sub": "Schwierige Bedingungen"})
@@ -141,12 +143,16 @@ func info() -> Dictionary:
 	d["gain"] = [snappedf(float(main.gain[0]), 0.01), snappedf(float(main.gain[1]), 0.01)]
 	d["ir_ex"] = snappedf(float(main.ir_ex), 0.001)
 	var th := {}
-	for k in ["ground", "stone", "road", "caravan", "window", "tent"]:
+	for k in ["ground", "stone", "road", "caravan", "window", "tent", "car", "sky", "lamp"]:
 		var tm = main.tmats.get(k, null)
 		if tm != null:
 			th[k] = snappedf(float(tm.get_shader_parameter("temp")), 0.1)
 	d["temps"] = th
 	d["ambient"] = main.ambient
+	if main.thermsensor != null:
+		d["thermsensor"] = main.thermsensor.info()          # 3D-4.26: the sensor model (P2)
+	if main.waerme_welt != null:
+		d["waerme"] = main.waerme_welt.info()              # 3D-4.26: engines that cool down, tent (P3)
 	return d
 
 
@@ -425,15 +431,16 @@ func _road_sign(root: Node3D, p: Vector3) -> void:
 
 
 # ---- 4. thermal ------------------------------------------------------------------------------------------------------
-func cloth_t(base: float, jog: bool) -> float:
-	"""the surface of clothes: between the air and the skin (a jacket insulates); wet clothes are close to the air"""
+func cloth_t(base: float, jog: bool, variant := "") -> float:
+	"""the surface of clothes: between the air and the skin (a jacket insulates); wet clothes are close to the air.
+	3D-4.26: the values come from waerme.gd (what people wear at this temperature, after running warmer, wet cooler)"""
 	if not th_real:
 		return base
 	var amb: float = main.ambient
-	var t: float = amb + (33.5 - amb) * (0.55 if jog else 0.42)
-	if main.weather == "rain":
-		t = lerpf(t, amb, 0.45)
-	return t
+	var lvl := Waerme.cloth_level(amb, variant)
+	if jog and lvl in ["jacket", "thick"]:
+		lvl = "light"                               # joggers wear thin, tight clothes
+	return Waerme.cloth(amb, lvl, main.weather == "rain", jog)
 
 
 func _sun_at(h: float) -> float:
@@ -464,24 +471,27 @@ func temps() -> void:
 	var sun := PackedFloat32Array()                 # the sun of the last 24 hours, every half hour
 	for j in range(48):
 		sun.append(maxf(0.0, _sun_at(fposmod(h - j * 0.5, 24.0))) / 50.0 * (1.0 - cl))
-	# [thermal material, warming by the full sun (°C), how long it keeps the heat (hours)]
-	for k in [["stone", 15.0, 2.6], ["road", 12.0, 3.2], ["caravan", 9.0, 1.3]]:
+	# [thermal material, warming by the full sun (°C), how long it keeps the heat (hours)] - 3D-4.26: table in waerme.gd
+	# (now also car roofs and tent cloth: hot in the afternoon sun, below the air in a clear night - false alarm sources)
+	var clear_night: float = (1.0 - cl) if main.is_dark() else 0.0
+	for key in Waerme.SUN:
+		var k: Array = Waerme.SUN[key]
 		var heat := 0.0
-		var T: float = k[2]
+		var T: float = k[1]
 		for j in range(48):
 			heat += sun[j] * exp(-j * 0.5 / T) * (0.5 / T)
-		heat *= float(k[1])
+		heat *= float(k[0])
 		if rain:
 			heat *= 0.3                             # rain takes the heat away (and evaporates: colder than the air)
-		var t: float = amb + heat - (1.6 if rain else 0.0)
-		if k[0] == "road":
+		var t: float = amb + heat - (1.6 if rain else 0.0) - float(Waerme.NIGHT_SKY_COOL.get(key, 0.0)) * clear_night
+		if key == "road":
 			t -= 1.0 if not rain else 0.0           # asphalt at night: a little under the air without the stored heat
-		main.tmat(k[0]).set_shader_parameter("temp", t)
+		main.tmat(key).set_shader_parameter("temp", t)
 	if rain:
 		main.tmat("tent").set_shader_parameter("temp", amb - 1.2)
 		main.tmat("tree").set_shader_parameter("temp", amb - 1.5)
 	# windows: glass lets no thermal light through - it reflects; at a clear night the cold sky, in the day the warm world
-	var sky_t: float = amb - (35.0 * (1.0 - cl) + 4.0 * cl)
+	var sky_t: float = Waerme.sky_zenith(amb, cl, float(main.humidity))
 	var ev := 1.0 if h >= 17.0 or h < 1.0 else 0.0
 	var inside: float = amb + 8.0 * ev + 3.0
 	var refl: float = sky_t if main.is_dark() else amb + 4.0 * sun[0]
