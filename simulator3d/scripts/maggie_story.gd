@@ -66,7 +66,7 @@ signal geschichte_beendet()
 
 const REGIONEN := ["herbst", "winter", "fruehling", "sommer"]
 # the middle of every region (valley coordinates x, z of bergtal.gd)
-const MITTE := {"herbst": Vector2(-640, -200), "winter": Vector2(590, 360), "fruehling": Vector2(-110, -330), "sommer": Vector2(-530, 480)}
+const MITTE := {"herbst": Vector2(-640, -200), "winter": Vector2(590, 360), "fruehling": Vector2(-120, -250), "sommer": Vector2(-530, 480)}
 const SAVE_FILE := "user://maggie/spielstand.json"
 const MODULES := ["res://scripts/maggie_hund.gd", "res://scripts/maggie_helfer.gd", "res://scripts/maggie_gefahr.gd"]
 const COLS := ["red", "orange", "navy", "olive", "brown", "grey", "white", "black"]
@@ -1518,6 +1518,8 @@ func _pause() -> void:
 		_button(row, T.t("Zur Auswahl"), func():
 			region_beendet.emit(region)
 			region = ""
+			S["region"] = ""
+			_save()
 			_clear_stage_things()
 			_choose_card())
 	_button(row, T.t("Speichern und beenden"), stop)
