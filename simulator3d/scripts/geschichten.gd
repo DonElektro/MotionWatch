@@ -189,6 +189,8 @@ func _process(dt: float) -> void:
 	_t = 1.0
 	var mg = main.get("maggie")
 	var ho = main.get("horror")
+	if mg != null and bool(mg.get("demo")):
+		return                                         # Vorführmodus: no picture, no «zuletzt gespielt» (Daniel's Spielstände stay)
 	if mg != null and bool(mg.running):
 		SS.set_last_story("maggie")
 		if str(mg.phase) == "region" and str(mg.region) != "" and _mg_snap != str(mg.region):

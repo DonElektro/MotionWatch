@@ -211,7 +211,9 @@ static func dangerous(d: Dictionary) -> bool:
 	var a := str(d.get("action", ""))
 	var w := str(d.get("do", ""))
 	return (a == "werk" and w == "reset") or (a == "dev" and w == "spieltest" and str(d.get("what", "")) == "clear") \
-			or (a == "horror" and w == "set_password")
+			or (a == "horror" and w == "set_password") \
+			or (a == "vorfuehrung" and w != "info") \
+			or (a in ["press", "set"] and str(d.get("id", "")).begins_with("vorfuehrung_"))   # Vorführmodus: only this PC / MoveEye
 
 
 func _handle(c: Dictionary, method: String, path: String, query: Dictionary, body: PackedByteArray, host: String) -> void:

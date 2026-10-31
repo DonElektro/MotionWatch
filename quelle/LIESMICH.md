@@ -180,6 +180,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `639j_nurgruppen.py` | «Beim Start: Nur Gruppen» (Schalter `ui_start_groups`, ab Werk ein; Logik in 530 / 470 / 570 / 550): Übersetzungen DE/FR/IT/RM, Anleitungs-Absatz (Tipps, DE/EN) | 35 |
 | `639k_uebersetzungen_nebel.py` | Übersetzungen des Nebel-Hinweises (411) DE/FR/IT/RM | 8 |
 | `639l_uebersetzungen_fehlperson.py` | Übersetzungen, Karte «Hier steht etwas, das wie eine Person aussieht – ignorieren?» auf der Hauptseite, Anleitungs-Absatz (Erkennung) zu 418 | 60 |
+| `639m_vorfuehrung.py` | Vorführung «Maggie und der Bergkristall» (Simulator maggie_vorfuehrung.gd): Vollbild-Seite /sim/vorfuehrung (Bild /sim/view.jpg?bare=1, Pause / Weiter / Kapitel / Beenden, Handy), /api/vorfuehrung (Steuerbefehl `vorfuehrung`), nur Besitzer; Einstieg Entwickler (Web 530 devExtras, Fenster) und Karte «Entwickler» der Simulator-Seite | 287 |
 | `639x_uebersetzungen_kriechende.py` | Übersetzungen DE/FR/IT/RM für 418k (Push «Etwas Grosses am Boden», Kurzform PK_TITLES), Anleitungs-Satz | 38 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |

@@ -78,6 +78,12 @@
   "it": "\nScatto: centro dell’immagine (cerchio) su un giocatore, poi il pulsante rotondo nell’immagine o R2 sul controller.",
   "rm": "\nSajet: center dal maletg (rintg) sin in giugader, lura il buttun radund en il maletg u R2 al controller."
  },
+ "\nBLOCKIERT:\n": {
+  "en": "\nBLOCKED:\n",
+  "fr": "\nBLOQUÉ :\n",
+  "it": "\nBLOCCATO:\n",
+  "rm": "\nBLOCCÀ:\n"
+ },
  "\nController: ": {
   "en": "\nController: ",
   "fr": "\nManette : ",
@@ -3133,6 +3139,12 @@
   "it": "Tutti i tasti",
   "rm": "Tut las tastas"
  },
+ "Alle vier Jahreszeiten mit allen Stationen und das Finale – so wie ein Spieler (lang).": {
+  "en": "All four seasons with all stations and the finale – like a player (long).",
+  "fr": "Les quatre saisons avec toutes les étapes et la finale – comme un joueur (long).",
+  "it": "Tutte e quattro le stagioni con tutte le tappe e il finale – come un giocatore (lungo).",
+  "rm": "Tut las quatter stagiuns cun tut las staziuns ed il final – sco in giugader (lung)."
+ },
  "Alle vier Jahreszeiten sind geschafft! Jetzt bringst du den Kristall hinauf zur Bergkapelle.": {
   "en": "All four seasons are done! Now take the crystal up to the mountain chapel.",
   "fr": "Les quatre saisons sont réussies ! Maintenant, monte le cristal jusqu’à la chapelle.",
@@ -4399,6 +4411,12 @@
   "it": "Verso la telecamera / via",
   "rm": "Vers la camera / davent"
  },
+ "Auf diesem PC gibt es keine Sprachausgabe – nur Untertitel.": {
+  "en": "This PC has no speech output – subtitles only.",
+  "fr": "Ce PC n’a pas de synthèse vocale – seulement des sous-titres.",
+  "it": "Questo PC non ha la sintesi vocale – solo sottotitoli.",
+  "rm": "Quest PC n’ha nagina emissiun vocala – mo suttitels."
+ },
  "Auf diesem PC wurde keine Sprachausgabe gefunden - die Seiten stehen dann nur im Tagebuch.": {
   "en": "No speech output found on this PC - the pages are then only in the diary.",
   "fr": "Aucune synthèse vocale trouvée sur ce PC - les pages restent alors seulement dans le journal.",
@@ -5173,6 +5191,12 @@
   "it": "Termina",
   "rm": "Terminar"
  },
+ "Beenden (Esc)": {
+  "en": "End (Esc)",
+  "fr": "Terminer (Échap)",
+  "it": "Termina (Esc)",
+  "rm": "Terminar (Esc)"
+ },
  "Beerenstrauch": {
   "en": "Berry bush",
   "fr": "Buisson de baies",
@@ -5196,6 +5220,12 @@
   "fr": "Libérer : celui qui est attrapé attend en cellule jusqu’à ce qu’un coéquipier le libère.",
   "it": "Liberare: chi viene preso aspetta in cella finché un compagno lo libera.",
   "rm": "Liberar: tgi che vegn tschiffà spetga en la cella, fin ch’in collega da squadra al libera."
+ },
+ "Beginnen bei:": {
+  "en": "Start at:",
+  "fr": "Commencer à :",
+  "it": "Inizia da:",
+  "rm": "Cumenzar tar:"
  },
  "Behalten": {
   "en": "Keep it",
@@ -5580,6 +5610,12 @@
   "fr": "Prêt !",
   "it": "Pronti!",
   "rm": "Pront!"
+ },
+ "Bereit.": {
+  "en": "Ready.",
+  "fr": "Prêt.",
+  "it": "Pronto.",
+  "rm": "Pront."
  },
  "Bereit?": {
   "en": "Ready?",
@@ -6270,6 +6306,12 @@
   "fr": "Labyrinthe de blocs",
   "it": "Labirinto di massi",
   "rm": "Labirint da blocs"
+ },
+ "BLOCKIERT: %d Mal – siehe Protokoll.": {
+  "en": "BLOCKED: %d times – see the log.",
+  "fr": "BLOQUÉ : %d fois – voir le journal.",
+  "it": "BLOCCATO: %d volte – vedi il protocollo.",
+  "rm": "BLOCCÀ: %d giadas – guarda il protocol."
  },
  "Bluemenmatte": {
   "en": "Bluemenmatte",
@@ -7604,6 +7646,12 @@
   "it": "Durata di un turno",
   "rm": "Durada d’ina runda"
  },
+ "Dauer: %s · Jahreszeiten geschafft: %d von 4 · Finale: %s": {
+  "en": "Duration: %s · seasons done: %d of 4 · finale: %s",
+  "fr": "Durée : %s · saisons réussies : %d sur 4 · finale : %s",
+  "it": "Durata: %s · stagioni superate: %d di 4 · finale: %s",
+  "rm": "Durada: %s · stagiuns reussidas: %d da 4 · final: %s"
+ },
  "Daunen-Winterschlafsack": {
   "en": "Down winter sleeping bag",
   "fr": "Sac de couchage d'hiver en duvet",
@@ -7957,6 +8005,12 @@
   "fr": "Le déclencheur ne fonctionne que dans une manche en cours où un humain dirige la caméra.",
   "it": "Lo scatto vale solo in un turno in corso in cui una persona guida la telecamera.",
   "rm": "Il sajet vala mo en ina runda en cursa, en la quala in uman maniescha la camera."
+ },
+ "Der Autopilot kam überall weiter.": {
+  "en": "The autopilot got through everywhere.",
+  "fr": "Le pilote automatique est passé partout.",
+  "it": "Il pilota automatico è passato ovunque.",
+  "rm": "Il pilot automatic è vegnì vinavant dapertut."
  },
  "Der Bach fällt zweimal - und der Steinmann zeigt zum Wasser. Wohin?": {
   "en": "The stream falls twice - and the cairn points to the water. Where to?",
@@ -8599,6 +8653,12 @@
   "fr": "Le chemin mène là : %s.",
   "it": "La strada porta lì: %s.",
   "rm": "La via maina là: %s."
+ },
+ "Der Weg hinauf …": {
+  "en": "The way up …",
+  "fr": "Le chemin vers le haut …",
+  "it": "La strada verso l’alto …",
+  "rm": "La via ensi …"
  },
  "Der Weg teilt sich im hohen Gras. Maggie schnuppert.": {
   "en": "The path splits in the tall grass. Maggie sniffs.",
@@ -9777,6 +9837,12 @@
   "it": "do: r_info | r_code | r_hint | r_search | r_find | r_go",
   "rm": "do: r_info | r_code | r_hint | r_search | r_find | r_go"
  },
+ "do: start (len) | pause | weiter | kapitel (n) | stop | info": {
+  "en": "do: start (len) | pause | weiter | kapitel (n) | stop | info",
+  "fr": "do: start (len) | pause | weiter | kapitel (n) | stop | info",
+  "it": "do: start (len) | pause | weiter | kapitel (n) | stop | info",
+  "rm": "do: start (len) | pause | weiter | kapitel (n) | stop | info"
+ },
  "Donut": {
   "en": "Donut",
   "fr": "Beignet",
@@ -10893,6 +10959,12 @@
   "it": "Un pezzo di formaggio di Vreni - dà forza.",
   "rm": "In toc chaschiel da la Vreni - dat forza."
  },
+ "Ein Stück weiter …": {
+  "en": "A little further …",
+  "fr": "Un peu plus loin …",
+  "it": "Un po’ più avanti …",
+  "rm": "In toc pli lunsch …"
+ },
  "ein Tier": {
   "en": "an animal",
   "fr": "un animal",
@@ -11469,6 +11541,12 @@
   "it": "Inizio sull’alpe",
   "rm": "Entrada sin l’alp"
  },
+ "Einstieg: Maggie findet den Kristall": {
+  "en": "Beginning: Maggie finds the crystal",
+  "fr": "Début : Maggie trouve le cristal",
+  "it": "Inizio: Maggie trova il cristallo",
+  "rm": "Entschatta: Maggie chatta il cristal"
+ },
  "Eisenbahnwagen": {
   "en": "Railway wagon",
   "fr": "Wagon de chemin de fer",
@@ -11498,6 +11576,12 @@
   "fr": "Fin",
   "it": "Fine",
   "rm": "Fin"
+ },
+ "Ende der Vorführung": {
+  "en": "End of the show",
+  "fr": "Fin de la démonstration",
+  "it": "Fine della dimostrazione",
+  "rm": "Fin da la demonstraziun"
  },
  "Ende: Die Erklärung": {
   "en": "Ending: The explanation",
@@ -12058,6 +12142,12 @@
   "it": "Foto delle catture (immagine della telecamera alla cattura, galleria alla fine)",
   "rm": "Fotos da tschiffar (maletg da la camera cun tschiffar, gallaria a la fin)"
  },
+ "Erzählerstimme": {
+  "en": "Narrator voice",
+  "fr": "Voix du narrateur",
+  "it": "Voce narrante",
+  "rm": "Vusch dal narratur"
+ },
  "Erzählerstimme: Grossvaters Tagebuchseiten vorlesen": {
   "en": "Narrator voice: read grandfather's diary pages aloud",
   "fr": "Voix du narrateur : lire à voix haute les pages du journal du grand-père",
@@ -12195,6 +12285,12 @@
   "fr": "Trouvé quelque chose",
   "it": "Trovato qualcosa",
   "rm": "Chattà insatge"
+ },
+ "Etwas später …": {
+  "en": "A little later …",
+  "fr": "Un peu plus tard …",
+  "it": "Poco dopo …",
+  "rm": "In pau pli tard …"
  },
  "Etwas Warmes in der Hand": {
   "en": "Something warm in its hand",
@@ -13936,6 +14032,18 @@
   "fr": "Silence total",
   "it": "Silenzio totale",
   "rm": "Tut quiet"
+ },
+ "ganze Geschichte": {
+  "en": "whole story",
+  "fr": "toute l’histoire",
+  "it": "tutta la storia",
+  "rm": "tut l’istorgia"
+ },
+ "Ganze Geschichte ansehen": {
+  "en": "Watch the whole story",
+  "fr": "Regarder toute l’histoire",
+  "it": "Guarda tutta la storia",
+  "rm": "Guardar tut l’istorgia"
  },
  "Ganze Nacht (20–6 Uhr im Zeitraffer, Tiere, Wind, Regenschauer, 2 Personen · etwa 11 Min.)": {
   "en": "Whole night (20–6 o’clock in timelapse, animals, wind, rain showers, 2 people · about 11 min)",
@@ -18271,6 +18379,12 @@
   "it": "Gennaio",
   "rm": "Schaner"
  },
+ "Je Jahreszeit die Höhepunkte: eine Station mit Maggie, das Schutzding und das böse Tier, das Tor – dazwischen Schnitte. Dann das Finale.": {
+  "en": "The highlights of each season: a station with Maggie, the protective item and the bad animal, the gate – cuts in between. Then the finale.",
+  "fr": "Les temps forts de chaque saison : une étape avec Maggie, l’objet protecteur et l’animal méchant, le portail – des coupures entre les deux. Puis la finale.",
+  "it": "I momenti salienti di ogni stagione: una tappa con Maggie, l’oggetto protettivo e l’animale cattivo, il portale – tagli nel mezzo. Poi il finale.",
+  "rm": "Ils puncts culminants da mintga stagiun: ina staziun cun Maggie, l’object da protecziun e la bestga nauscha, la porta – taglias tranteren. Lura il final."
+ },
  "je Modell verschieden – Lizenz prüfen!": {
   "en": "different for each model – check the licence!",
   "fr": "différent selon le modèle – vérifier la licence !",
@@ -18882,6 +18996,18 @@
   "fr": "Chapitre 5 - Derrière l'arête",
   "it": "Capitolo 5 - Dietro la cresta",
   "rm": "Chapitel 5 - Davos la creesta"
+ },
+ "Kapitel zurück": {
+  "en": "Chapter back",
+  "fr": "Chapitre précédent",
+  "it": "Capitolo indietro",
+  "rm": "Chapitel enavos"
+ },
+ "Kapitel …": {
+  "en": "Chapter …",
+  "fr": "Chapitre …",
+  "it": "Capitolo …",
+  "rm": "Chapitel …"
  },
  "Kapitel-Sprung": {
   "en": "Chapter jump",
@@ -20234,6 +20360,12 @@
   "it": "Breve (giorno e notte · circa 2½ min, per l’ottimizzazione automatica)",
   "rm": "Curt (di e notg · circa 2½ min., per l’optimaziun automatica)"
  },
+ "Kurz darauf …": {
+  "en": "Shortly after …",
+  "fr": "Peu après …",
+  "it": "Poco più tardi …",
+  "rm": "Curt suenter …"
+ },
  "Kurz und ausgesetzt: über die Hängebrücke": {
   "en": "Short and exposed: over the suspension bridge",
   "fr": "Court et exposé : par la passerelle suspendue",
@@ -20311,6 +20443,18 @@
   "fr": "Jours courts, mélèzes jaunes, brouillard, glace vive au sommet, cerfs la nuit.",
   "it": "Giornate corte, larici gialli, nebbia, ghiaccio vivo in cima, cervi di notte.",
   "rm": "Dis curts, laresch mellen, tschajera, glatsch nitid sin il piz, tschiervs la notg."
+ },
+ "Kurzfassung": {
+  "en": "Short version",
+  "fr": "Version courte",
+  "it": "Versione breve",
+  "rm": "Versiun curta"
+ },
+ "Kurzfassung ansehen (15–20 Min.)": {
+  "en": "Watch the short version (15–20 min)",
+  "fr": "Regarder la version courte (15–20 min)",
+  "it": "Guarda la versione breve (15–20 min)",
+  "rm": "Guardar la versiun curta (15–20 min.)"
  },
  "Kälte": {
   "en": "Cold",
@@ -20882,6 +21026,12 @@
   "it": "Aprire l’ultimo rapporto",
   "rm": "Avrir l’ultim rapport"
  },
+ "Letzter Durchlauf: %s": {
+  "en": "Last run: %s",
+  "fr": "Dernier passage : %s",
+  "it": "Ultimo passaggio: %s",
+  "rm": "Ultim passagi: %s"
+ },
  "Letztes Foto weg": {
   "en": "Remove last photo",
   "fr": "Retirer la dernière photo",
@@ -21025,6 +21175,12 @@
   "fr": "Transat",
   "it": "Sdraio",
   "rm": "Sutga da sulegl"
+ },
+ "Liest die Texte der Geschichte vor (Sprachausgabe von Windows). Ohne Stimme: nur Untertitel.": {
+  "en": "Reads the texts of the story aloud (speech output of Windows). Without a voice: subtitles only.",
+  "fr": "Lit les textes de l’histoire à voix haute (synthèse vocale de Windows). Sans voix : seulement des sous-titres.",
+  "it": "Legge ad alta voce i testi della storia (sintesi vocale di Windows). Senza voce: solo sottotitoli.",
+  "rm": "Legia ad auta vusch ils texts da l’istorgia (emissiun vocala da Windows). Senza vusch: mo suttitels."
  },
  "Lila": {
   "en": "Purple",
@@ -21357,6 +21513,12 @@
   "fr": "En cours : %s (passage %d sur %d) · %s · encore environ %d min",
   "it": "In corso: %s (giro %d di %d) · %s · ancora circa %d min",
   "rm": "Va: %s (curs %d da %d) · %s · anc circa %d min."
+ },
+ "Läuft: %s · %s · %s": {
+  "en": "Running: %s · %s · %s",
+  "fr": "En cours : %s · %s · %s",
+  "it": "In corso: %s · %s · %s",
+  "rm": "En funcziun: %s · %s · %s"
  },
  "Läuten (B)": {
   "en": "Ring (B)",
@@ -22023,6 +22185,12 @@
   "fr": "Mesure terminée",
   "it": "Misurazione finita",
   "rm": "Mesiraziun finida"
+ },
+ "Mia": {
+  "en": "Mia",
+  "fr": "Mia",
+  "it": "Mia",
+  "rm": "Mia"
  },
  "Miau! Eine Katze schaut vorbei.": {
   "en": "Meow! A cat drops by.",
@@ -25332,6 +25500,12 @@
   "it": "Solo durante un turno",
   "rm": "Mo durant ina runda"
  },
+ "Nächstes Kapitel": {
+  "en": "Next chapter",
+  "fr": "Chapitre suivant",
+  "it": "Capitolo successivo",
+  "rm": "Proxim chapitel"
+ },
  "Nächstes Kapitel ›": {
   "en": "Next chapter ›",
   "fr": "Chapitre suivant ›",
@@ -26550,6 +26724,12 @@
   "fr": "Journal",
   "it": "Registro",
   "rm": "Protocol"
+ },
+ "Protokoll: %s": {
+  "en": "Log: %s",
+  "fr": "Journal : %s",
+  "it": "Protocollo: %s",
+  "rm": "Protocol: %s"
  },
  "Proviant": {
   "en": "Food",
@@ -30114,6 +30294,12 @@
   "it": "Pagina iniziale con riquadro del simulatore",
   "rm": "Pagina da partenza cun platta dal simulatur"
  },
+ "Stationen: %d gespielt, %d im Schnitt, %d erzwungen, %d offen": {
+  "en": "Stations: %d played, %d in a cut, %d forced, %d open",
+  "fr": "Étapes : %d jouées, %d dans une coupure, %d forcées, %d ouvertes",
+  "it": "Tappe: %d giocate, %d in un taglio, %d forzate, %d aperte",
+  "rm": "Staziuns: %d giugadas, %d en ina taglia, %d sforzadas, %d avertas"
+ },
  "Statisten (Leute im Hintergrund): wie viele, mit Zielen, Tätigkeiten und Gruppen": {
   "en": "Background people: how many, with goals, things to do and groups",
   "fr": "Figurants (gens à l’arrière-plan) : combien, avec buts, activités et groupes",
@@ -33229,6 +33415,48 @@
   "fr": "Vorder Tschuggen",
   "it": "Vorder Tschuggen",
   "rm": "Vorder Tschuggen"
+ },
+ "Vorführung": {
+  "en": "Show",
+  "fr": "Démonstration",
+  "it": "Dimostrazione",
+  "rm": "Demonstraziun"
+ },
+ "Vorführung beenden": {
+  "en": "End the show",
+  "fr": "Terminer la démonstration",
+  "it": "Termina la dimostrazione",
+  "rm": "Terminar la demonstraziun"
+ },
+ "Vorführung beendet": {
+  "en": "Show ended",
+  "fr": "Démonstration terminée",
+  "it": "Dimostrazione terminata",
+  "rm": "Demonstraziun terminada"
+ },
+ "Vorführung «Maggie und der Bergkristall» · %s · Kapitel %d von 6: %s · %s": {
+  "en": "Show «Maggie and the mountain crystal» · %s · chapter %d of 6: %s · %s",
+  "fr": "Démonstration «Maggie et le cristal de montagne» · %s · chapitre %d sur 6 : %s · %s",
+  "it": "Dimostrazione «Maggie e il cristallo di montagna» · %s · capitolo %d di 6: %s · %s",
+  "rm": "Demonstraziun «Maggie ed il cristal da muntogna» · %s · chapitel %d da 6: %s · %s"
+ },
+ "Vorführung «Maggie und der Bergkristall» – %s – %s\n": {
+  "en": "Show «Maggie and the mountain crystal» – %s – %s\n",
+  "fr": "Démonstration «Maggie et le cristal de montagne» – %s – %s\n",
+  "it": "Dimostrazione «Maggie e il cristallo di montagna» – %s – %s\n",
+  "rm": "Demonstraziun «Maggie ed il cristal da muntogna» – %s – %s\n"
+ },
+ "Vorführung «Maggie»: ganze Geschichte ansehen": {
+  "en": "Show «Maggie»: watch the whole story",
+  "fr": "Démonstration «Maggie» : regarder toute l’histoire",
+  "it": "Dimostrazione «Maggie»: guarda tutta la storia",
+  "rm": "Demonstraziun «Maggie»: guardar tut l’istorgia"
+ },
+ "Vorführung «Maggie»: Kurzfassung ansehen (15–20 Min.)": {
+  "en": "Show «Maggie»: watch the short version (15–20 min)",
+  "fr": "Démonstration «Maggie» : regarder la version courte (15–20 min)",
+  "it": "Dimostrazione «Maggie»: guarda la versione breve (15–20 min)",
+  "rm": "Demonstraziun «Maggie»: guardar la versiun curta (15–20 min.)"
  },
  "vorher eine Kopie der alten Einstellungen – nur für den Besitzer": {
   "en": "first a copy of the old settings – only for the owner",
@@ -36550,6 +36778,12 @@
   "fr": "«Lis la carte avec le soleil : le matin, ce qui est haut et dégagé vers l'est reçoit la lumière en premier.»",
   "it": "«Leggi la mappa col sole: al mattino riceve luce per primo ciò che sta in alto ed è libero verso est.»",
   "rm": "«Legia la charta cun il sulegl: la damaun survegn l'emprim glisch quai ch'è aut e liber vers ost.»"
+ },
+ "«Maggie und der Bergkristall» als Film: ein Autopilot spielt die Geschichte, du schaust zu (eigener Vorführ-Spielstand, deine Spielstände bleiben unberührt). Im Vollbild: Esc = beenden, Leertaste = Pause, ← → = Kapitel. Im Browser: MoveEye → Simulator → Entwickler → «Vorführung ansehen».": {
+  "en": "«Maggie and the mountain crystal» as a film: an autopilot plays the story, you watch (own demo save, your game states stay untouched). Full screen: Esc = end, space = pause, ← → = chapter. In the browser: MoveEye → Simulator → Developer → «Watch as a film».",
+  "fr": "«Maggie et le cristal de montagne» en film : un pilote automatique joue l’histoire, tu regardes (partie de démonstration à part, tes parties restent intactes). Plein écran : Échap = terminer, espace = pause, ← → = chapitre. Dans le navigateur : MoveEye → Simulateur → Développeur → «Regarder en film».",
+  "it": "«Maggie e il cristallo di montagna» come film: un pilota automatico gioca la storia, tu guardi (partita dimostrativa a parte, le tue partite restano intatte). Schermo intero: Esc = termina, spazio = pausa, ← → = capitolo. Nel browser: MoveEye → Simulatore → Sviluppatore → «Guarda come film».",
+  "rm": "«Maggie ed il cristal da muntogna» sco film: in pilot automatic giuga l’istorgia, ti guardas (agen stadi da demonstraziun, tes stadis dal gieu restan intacts). Maletg entir: Esc = terminar, spazi = pausa, ← → = chapitel. En il navigatur: MoveEye → Simulatur → Sviluppader → «Guardar sco film»."
  },
  "«Morgen früh kommt das Alpenglühen. Oben auf dem Grat ist es am schönsten.»": {
   "en": "«Tomorrow morning the alpenglow comes. It's most beautiful up on the ridge.»",

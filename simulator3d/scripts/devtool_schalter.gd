@@ -29,7 +29,8 @@ static func ids(m) -> Array:
 	if m == null:
 		return out
 	for c in m.controls:
-		if c.group == "Entwickler" and c.extra.get("devwin", false) and not str(c.id).begins_with("spieltest_"):
+		if c.group == "Entwickler" and c.extra.get("devwin", false) and not str(c.id).begins_with("spieltest_") \
+				and not str(c.id).begins_with("vorfuehrung_"):      # (Vorführung: own tab, devtool_vorfuehrung.gd)
 			out.append(c)
 	return out
 
