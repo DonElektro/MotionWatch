@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6822 (Stellen: 9471)
-Übersetzt: en 6822, fr 6822, it 6822, rm 6822
+Texte gesamt: 6823 (Stellen: 9472)
+Übersetzt: en 6823, fr 6823, it 6823, rm 6823
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 469 Stellen
 Nicht mehr im Code (noch in texte.json): 242
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 24190, schlüssel 18152, keine Wörter 11450, index 9250, technisch 3147, doc 2022, einheit 288, log 152, englisch 126, pfad 98, html 68, klasse 25, shader 6
+Übersprungen (Grund: Anzahl): kennung 24200, schlüssel 18161, keine Wörter 11469, index 9250, technisch 3150, doc 2023, einheit 288, log 152, englisch 126, pfad 98, html 68, klasse 25, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  692    42
@@ -177,6 +177,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   abenteuer_bestenliste.gd     2     0
   kidaten.gd                 2     0
   versionen.gd               2     0
+  abenteuer_stimme.gd        1     0
   spielstand.gd              1     0
   blindmap.gd                1     0
   devtool_kamera.gd          1     0
@@ -230,10 +231,10 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   maggie_vorfuehrung.gd:565  'fertig'
   maggie_vorfuehrung.gd:933  'ja'
   maggie_vorfuehrung.gd:933  'nein'
-  maggie_vorfuehrung.gd:1460  'ja'
-  maggie_vorfuehrung.gd:1460  'nein'
-  maggie_vorfuehrung.gd:1495  'Vorführung «Maggie und der Bergkristall» – %s – %s\n'
-  maggie_vorfuehrung.gd:1498  '\nBLOCKIERT:\n'
+  maggie_vorfuehrung.gd:1468  'ja'
+  maggie_vorfuehrung.gd:1468  'nein'
+  maggie_vorfuehrung.gd:1503  'Vorführung «Maggie und der Bergkristall» – %s – %s\n'
+  maggie_vorfuehrung.gd:1506  '\nBLOCKIERT:\n'
   protokoll.gd:72  'aus'
   protokoll.gd:73  'Tunnel: '
   protokoll.gd:73  'aus'
@@ -270,12 +271,12 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   spieltest.gd:1290  '\n| Start | Einheit | Min. | Ergebnis | Tipps | Falsch | Umwege | Erwischt | Fest | Kreis | Ruckeln s | Bewertung |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n'
   spieltest.gd:1305  'Noch keine Runden notiert.\n\n'
   spieltest.gd:1322  'Spieltest-Daten aus dem MoveEye-Simulator (Mehr → Entwickler → Spieltest).\nbericht.md = Zusammenfassung mit Vorschlägen, runden/ = Rohdaten (JSON pro Runde).\nVersion %s.\n'
-  trailer.gd:269  'an'
-  trailer.gd:314  'fertig'
-  trailer.gd:397  'fertig'
-  trailer.gd:650  'fertig'
-  trailer.gd:683  'fertig'
-  trailer.gd:879  'fertig'
+  trailer.gd:272  'an'
+  trailer.gd:317  'fertig'
+  trailer.gd:400  'fertig'
+  trailer.gd:661  'fertig'
+  trailer.gd:694  'fertig'
+  trailer.gd:892  'fertig'
   zwei_bausteine.gd:614  'fertig'
   zwei_bausteine.gd:1415  ' %.1f kg'
   gamewiz.gd:63  ' (wird hingestellt)'

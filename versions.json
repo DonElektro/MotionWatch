@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 22:40",
+ "generated": "2026-10-31 22:54",
  "versions": [
   {
-   "version": "3.19.1",
-   "file": "webcam_bewegung_3_19_1.py",
+   "version": "3.19.2",
+   "file": "webcam_bewegung_3_19_2.py",
    "url": "",
-   "sha256": "2b8ea6e72ec7b6b7734d8f46a8a3f06e9bbda30adfa99af972c9a1e3448433b1",
-   "date": "2026-10-31 22:40",
-   "notes": "Vorführung und Trailer im Browser sprechen die Texte selbst vor (🔊 Ton an/aus in der Leiste, Sprache von MoveEye); das iPad bleibt während der Vorführung wach; Karte «🛠 Entwickler» im Reiter «Sim» offen.",
-   "size": 4436366,
-   "sig": "4d3c76f884a2e98d3772a3d628268df280888f503ba329e23ed40396057328bf426b33dfcfcb187683dad019f649db667c7c4d77a7f8da6dec48455e6d185902",
+   "sha256": "169ee354ddc417034ab9fc96059bdd4da6ea44691902a7314a212bddbe0dd264",
+   "date": "2026-10-31 22:54",
+   "notes": "Vorführung und Trailer wählen automatisch die beste Stimme und sprechen ruhiger; Knopf «🗣 Stimme» mit Liste, Hörprobe und Geschwindigkeit (pro Gerät gespeichert), Hinweis zu Premium-Stimmen.",
+   "size": 4436780,
+   "sig": "43cf4219b80e8c3fb1cbfc48a088e528884da4a78407cdd2aad919ccb5aeec202f4bfb3005a0a6a5f79de7956142d666c275071e8839014e9d15e6507cbd7507",
    "data": {
-    "file": "moveeye_daten_3_19_1.zip",
+    "file": "moveeye_daten_3_19_2.zip",
     "url": "",
-    "sha256": "ab0cb8d6eb5afa8d6b6f635a8addc79b2208b60b76b06c22349eaee58bdd6abc",
-    "size": 1614304,
-    "sig": "7b4d73ea68fb51a67471dd753af1792cbc59a8b1d5651b233d352754d65ce3f4a9d89318273d8a170ae04d67f0bab22afc29be559d2e9eea3c000eb05cb86f06"
+    "sha256": "195819cdbfc7be68a038a06819984f4a38a02b30a5dcf94c021bc41608ccc37b",
+    "size": 1618159,
+    "sig": "6522d705f4d6897d73e269e3f337872ad0df10ee1c22d9a748211c5966a5449395ae86c34cbfd41ee2d77c19656cc14b437c5c7a5ff5a077bf1481d92d95520c"
    }
   },
   {

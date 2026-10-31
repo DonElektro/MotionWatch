@@ -1,9 +1,9 @@
 {
- "version": "3D-5.19.1",
- "ver": "3.19.1",
- "name": "MoveEye Sim 3.19.1",
+ "version": "3D-5.19.2",
+ "ver": "3.19.2",
+ "name": "MoveEye Sim 3.19.2",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35617612,
- "sha256": "5bdcc11f5d27ad8d67e22055b42eb2f7f7020cddae0f397d825130fc0f90152e",
- "notes": "MoveEye Sim 3.19.1: Trailer und Vorführung liefern die Texte für die Sprachausgabe im Browser."
+ "size": 35618485,
+ "sha256": "d6d432fe10ab472915f4c6fd7d5c1f8bf7ec146654e4284cfc4f53db0c88ea9e",
+ "notes": "MoveEye Sim 3.19.2: der Simulator am PC wählt die beste Stimme automatisch und spricht ruhiger."
 }
