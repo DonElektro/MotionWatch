@@ -522,6 +522,14 @@ class Steinbock extends Vig:
 		c = ew.G(-360.0, 210.0)
 		# a free standing rock tower (Felsturm) of gneiss blocks, 7 m high, the top hardly bigger than the ibex
 		var g: float = ew.bt.H(c.x, c.z)
+		# K3 (Kontaktbogen: «blocks float beside the steep slope»): the foot reaches down to the lowest ground under it
+		var lo := g
+		for o in [Vector2(1.5, 0), Vector2(-1.5, 0), Vector2(0, 1.5), Vector2(0, -1.5), Vector2(1.1, 1.1), Vector2(-1.1, -1.1), Vector2(1.1, -1.1), Vector2(-1.1, 1.1)]:
+			lo = minf(lo, float(ew.bt.H(c.x + o.x, c.z + o.y)))
+		if lo < g - 0.2:
+			var sy := (g - lo + 0.8) / 1.3                   # (block «v 2»: 1.3 high from -0.1, 1.5 × 1.4 wide)
+			ew.mb.parts_of("boulder", Transform3D(Basis(Vector3.UP, 0.5).scaled(Vector3(1.8, sy, 1.8)),
+					Vector3(c.x, lo - 0.3 + 0.1 * sy, c.z)), {"r": 1.0, "v": 2})
 		var blocks := [[2.8, 2.6, 2.4, 0.0, 1.0, 0.0, 0.15], [2.2, 2.2, 1.9, 0.15, 3.2, -0.1, -0.2], [1.6, 2.0, 1.4, -0.1, 5.1, 0.05, 0.35],
 				[1.0, 1.0, 0.85, 0.05, 6.5, 0.0, 0.1]]
 		var col := ["7c7a72", "868278", "726f68", "7f7b72"]
@@ -1606,7 +1614,12 @@ class Sternschnuppen extends Vig:
 	func build() -> void:
 		id = "sternschnuppen"
 		c = ew.G(-640.0, 80.0)
-		ew.mb.parts_of("boulder", Transform3D(Basis(Vector3.UP, 0.3).scaled(Vector3(1.9, 0.25, 1.0)), c + Vector3(0, -0.12, 0)), {"r": 1.0, "v": 2})   # a flat stone to lie on
+		# a flat stone to lie on - K3 (Kontaktbogen: «block floats at the slope»): it lies along the slope, a little sunk in
+		var hx: float = ew.bt.H(c.x + 1.0, c.z) - ew.bt.H(c.x - 1.0, c.z)
+		var hz: float = ew.bt.H(c.x, c.z + 1.0) - ew.bt.H(c.x, c.z - 1.0)
+		var nrm := Vector3(-hx, 2.0, -hz).normalized()
+		var bs := Basis(Quaternion(Vector3.UP, nrm)) * Basis(Vector3.UP, 0.3).scaled(Vector3(1.9, 0.25, 1.0))
+		ew.mb.parts_of("boulder", Transform3D(bs, c + Vector3(0, -0.18, 0)), {"r": 1.0, "v": 2})
 
 	func when_ok() -> bool:
 		return ew.dark() and ew.weather() == "clear"

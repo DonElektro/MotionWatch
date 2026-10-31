@@ -56,7 +56,7 @@ const VIEWPOINTS := [["vp_horn", "Tschingelspitz (Gipfel West)", "gipfel", -790.
 		["vp_grat", "Gratspitz über der Rüfi", "grat", -625.0, 125.0, "wild", 60.0],
 		["vp_kanzel", "Chanzle über dem Gumpisee", "kanzel", 262.0, -430.0, "fernrohr", -90.0],
 		["vp_seeblick", "Seeblick Gumpisee", "see", -250.0, -470.0, "tafel", 70.0],
-		["vp_gletscher", "Gletscherblick Wyssgletscher", "gletscher", 690.0, 330.0, "tafel", 120.0],
+		["vp_gletscher", "Gletscherblick Wyssgletscher", "gletscher", 690.0, 330.0, "tafel", 135.0],
 		["vp_pass", "Passchanzle Furgga", "kanzel", -30.0, 850.0, "fernrohr", 0.0],
 		["vp_ostgipfel", "Nüdelistock (Gipfel Ost)", "gipfel", 720.0, -260.0, "wild", -90.0],
 		["vp_moorsee", "Ob em Schwarzseeli", "see", -700.0, -380.0, "bank_kreuz", 30.0]]
@@ -149,7 +149,7 @@ const VIGNETTES := [[1, "murmeltier_zu_spaet", "Murmeltier kommt zu spät zum Ba
 		[34, "gemse_hospizdach", "Gämse auf dem Hospiz-Dach", 18.0, 790.0, 0.0],
 		[35, "selfie_kante", "Selfie-Wanderer an der Schluchtkante, Kuh stupst", 64.0, -140.0, 3.0],
 		[36, "trailrunner", "Trailrunner fragt den Wegweiser", -200.0, -330.0, 3.0],
-		[37, "huettenwart", "Hüttenwart fegt, der Wind weht zurück", 48.0, 8.0, 3.0],
+		[37, "huettenwart", "Hüttenwart fegt, der Wind weht zurück", 55.0, -2.5, 3.0],
 		[38, "picknick", "Picknick: Korkenzieher auf dem Hut", -10.0, -296.0, 4.0],
 		[39, "gleitschirm", "Gleitschirm landet auf der Kuhweide", 135.0, 85.0, 10.0],
 		[40, "postauto", "Postauto mit Dreiklang-Horn (Passstrasse)", 175.0, 300.0, 0.0],
@@ -1618,6 +1618,8 @@ func _veg_lists() -> Dictionary:
 					sc = vr.randf_range(1.2, 3.6)
 				elif zn == "scree":
 					sc = vr.randf_range(0.25, 1.5) * (1.0 + smoothstep(0.0, 1.0, vr.randf()) * 0.8)
+				if sc > 2.0 and v == 2:
+					v = 0                                    # K3: big ones rounded (big boxes looked like steps of the ground)
 				r_rocks.append(["%s|%d" % [rt, v], px, pz, vr.randf() * TAU, sc])
 				continue
 			if zn in ["moor", "scree", "boulders", "shore", "pasture", "flowers"] or sl > 38.0:
@@ -1676,6 +1678,8 @@ func _veg_rest(trees: Dictionary, trees_far: Dictionary, rocks: Dictionary) -> v
 		bib.many("cottongrass", cg, {"season": season})
 		info["flowers"] = fl.size()
 		info["cottongrass"] = cg.size()
+	elif season == "herbst":
+		_autumn_flowers()
 	# spring: avalanche cones at the foot of steep gullies, crocuses on the meadows near the spot
 	if season == "fruehling":
 		var cones := 0
@@ -1953,7 +1957,9 @@ func _side_valleys() -> void:
 			var u := (t / 6.0 - 0.5) * L
 			pts.append(c + nx * u + ax * bend * u * u / L)
 		if _glacier_k(c.x, c.y) > 0.5:
-			_ribbon(pts, PackedFloat32Array(), rng.randf_range(0.6, 1.4), Color(0.06, 0.12, 0.2), 0.05, 700.0, "stone")
+			# K3 (Kontaktbogen: «bars float over the ice»): every 2 m on the ice, low, and only as far as the fine ground is
+			# drawn (beyond it the coarse ground lies lower and the ribbons seemed to float)
+			_ribbon(dense(Array(pts), 2.0), PackedFloat32Array(), rng.randf_range(0.6, 1.4), Color(0.06, 0.12, 0.2), 0.02, 350.0 if lite else 690.0, "stone")
 	# the cairn plateau («Steinmann-Wald», vignette 42): many small cairns
 	var cl := []
 	for k in range(80 if lite else 210):
@@ -1961,6 +1967,7 @@ func _side_valleys() -> void:
 		var q := Vector2(-650.0, 430.0) + Vector2(cos(a), sin(a)) * sqrt(rng.randf()) * 30.0
 		cl.append([P(q.x, q.y), rng.randf() * TAU, rng.randf_range(0.5, 1.4)])
 	bib.many("cairn", cl, {})
+	_cairn_grove()
 	# the via ferrata (Klettersteig) up the west cliff: steel cable, iron rungs, a ladder at the steepest part
 	var zf := 200.0
 	var cwf := cx(zf)
@@ -1989,6 +1996,48 @@ func _side_valleys() -> void:
 
 
 var via_ferrata := []
+
+
+func _cairn_grove() -> void:
+	"""K3 (Kontaktbogen 31.10.2026: «kein Wald beim Steimandli-Wald»): the plateau is at ≈ 2250 m, above the tree line - so a
+	light grove of old stone pines (Arven) round the cairns and mountain pines (Legföhren) in between, a few among the
+	cairns. Lite: about a third."""
+	var c := Vector2(-650.0, 430.0)
+	var gr := RandomNumberGenerator.new()
+	gr.seed = 4242
+	var lists := {"arve": [], "pine_shrub": [], "larch": []}
+	var n := 45 if lite else 130
+	var snowy := season == "winter"
+	for i in range(n):
+		var a := gr.randf() * TAU
+		var inner := i % 8 == 0
+		var r := gr.randf_range(10.0, 28.0) if inner else 30.0 + 40.0 * sqrt(gr.randf())
+		var q := c + Vector2(cos(a), sin(a)) * r
+		if zone(q.x, q.y) in ["lake", "glacier", "scree"] or slope_deg(q.x, q.y, 2.0) > 36.0 or _near_way(q.x, q.y, 2.5):
+			continue
+		var u := gr.randf()
+		var kind := "pine_shrub" if (inner or u < 0.3) else ("larch" if u < 0.42 else "arve")
+		lists[kind].append([P(q.x, q.y, -0.15), gr.randf() * TAU, gr.randf_range(0.6, 1.05)])
+	var nt := 0
+	for k in lists:
+		bib.many(k, lists[k], {"season": season, "snow": snowy, "noob": c.distance_to(spot_xz) > 220.0})
+		nt += lists[k].size()
+	info["cairn_grove"] = nt
+
+
+func _autumn_flowers() -> void:
+	"""K3 (Kontaktbogen: «keine Blumen auf der Bluemenmatte»): in autumn the alp meadow still has its late flowers - silver
+	thistle (Silberdistel), meadow saffron (Herbstzeitlose) and field gentian (Feld-Enzian); fewer than in summer (bib_berg
+	flowers variant 5). Lite: about a third."""
+	var fl := []
+	for i in range(110 if lite else 320):
+		var a := rng.randf() * TAU
+		var d := sqrt(rng.randf()) * 55.0
+		var q := FLOWERS + Vector2(cos(a), sin(a)) * d
+		if not _near_way(q.x, q.y, 1.2):
+			fl.append([P(q.x, q.y), rng.randf() * TAU, rng.randf_range(0.7, 1.2)])
+	bib.many("flowers", fl, {"v": 5})
+	info["flowers"] = fl.size()
 
 
 func _viewpoints() -> void:

@@ -69,7 +69,7 @@ func content() -> void:
 	bib.many("lamp", [[P(33.0, -40.0), 0.0], [P(33.0, -16.0), 0.0], [P(32.0, 10.0), 0.0], [P(31.0, 40.0), 0.0], [P(2.0, -6.0), 0.0],
 			[P(18.0, 8.0), 0.0], [P(-20.0, 30.0), 0.0], [P(6.0, -42.0), 0.0]])
 	# the bridges: stone road bridge, wooden footbridge
-	bib.add("footbridge", P(36.0, 32.0, 0.05), PI / 2.0 + 0.1, {"len": 7.0, "w": 7.0})
+	bib.add("footbridge", P(36.0, 32.0, 0.05), PI / 2.0 + 0.1, {"len": 7.0, "w": 7.0, "stone": true})   # K3: of stone (its name)
 	bib.add("footbridge", P(-2.0, 26.0, 0.05), PI / 2.0 + 0.15, {"len": 6.0, "w": 1.8})
 	for i in range(10):
 		var seg := rng.randi() % (CREEK.size() - 1)
