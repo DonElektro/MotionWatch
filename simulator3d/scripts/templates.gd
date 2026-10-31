@@ -20,7 +20,8 @@ const UI = preload("res://scripts/ui_style.gd")
 const DIR := "user://vorlagen"
 const MAX_OBST := 250
 
-const NEW_SCENES := ["bauernhof", "seeufer", "baustelle", "stellplatz", "vorlage", "camping_voll", "tarnen", "velodieb", "parcours", "ferienpark", "bergtal"]
+const NEW_SCENES := ["bauernhof", "seeufer", "baustelle", "stellplatz", "vorlage", "camping_voll", "tarnen", "velodieb", "parcours", "ferienpark", "bergtal",
+		"pfadilager", "hofladen", "bergdorf", "festival"]
 const SCENE_INFO := {
 	"camping": "Zelt, Wohnwagen, Feuer – der Klassiker", "wald": "Dichter Wald, viele Wildtiere", "parkplatz": "Autos, Leute, Lieferwagen",
 	"garten": "Haus mit Garten, Katzen und Igel", "lustig": "Bunter Platz zum Ausprobieren", "wild": "Hochsitz, Wildwechsel",
@@ -32,7 +33,12 @@ const SCENE_INFO := {
 	"velodieb": "Schnell hin, Velo greifen, weg – Reaktionszeit", "parcours": "Wiese mit Distanzmarken, Busch, Zelt, Auto, Baum – Verfolgen üben",
 	"ferienpark": "Grosser Campingplatz am See: Terrassen, Strand, Steg, Wald – 5 Standorte, 5 Orte",
 	"bergtal": "Einsames Bergtal 2 × 2 km: Alp, Bergsee, Pass, Gletscher – Schlafplatz frei wählbar, 7 Orte",
-	"daheim": "Haus mit Garten, Schlafzimmer (Wecker) und Baustelle nebenan"}
+	"daheim": "Haus mit Garten, Schlafzimmer (Wecker) und Baustelle nebenan",
+	"pfadilager": "Sarasani, Jurten, Lagerfeuer, Bach mit Seilbrücke – dunkel, eng, viele Kinder – 4 Standorte",
+	"hofladen": "Scheune, Stall mit Kühen, Hühner, Traktor, Hofhund, Hofladen, 5 Wohnmobil-Plätze – viel Wärme – 4 Standorte",
+	"bergdorf": "Kirche, Brunnen, Bäckerei, Bach mit Brücke, Seilbahn, Stellplatz am Dorfrand – 4 Standorte",
+	"festival": "Zeltstadt, zwei Bühnen, Foodtrucks, Eingang – sehr viele Menschen, bunte Lichter – 4 Standorte"}
+
 
 # [name, what, licence, link]
 const KITS := [

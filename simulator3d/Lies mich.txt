@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.41
+3D-4.41: Neue Orte: Pfadilager und Bergdorf im Bergtal, Bauernhof mit Hofladen im Ferienpark, Festival-Gelände als eigene
+Welt (2 Bühnen, Foodtrucks, Zeltstadt, viele Leute, 14–3 Uhr). In diesen Orten: «Standort an diesem Ort» (mehrere Plätze).
+So testest du: 1) Bergtal → Ort «Pfadilager auf der Waldlichtung», alle Standorte durchklicken. 2) Szene «Festival-Gelände»,
+22 Uhr: Bühnenlichter, viele Leute – gibt MoveEye Fehlalarme?
+
 NEU IN 3D-4.40
 3D-4.40: Horror-Modus «Das Hospiz» im Bergtal (mit Passwort, im Kinder-Modus gesperrt): unheimliche Nächte im Hospiz,
 die Gestalt nur im Wärmebild, «Aufnahmen» landen in MoveEye im Verlauf. Einstieg: Bergtal-Abenteuer → Stimmung «Horror».

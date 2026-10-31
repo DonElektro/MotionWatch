@@ -67,6 +67,7 @@ var park: Node3D
 var spot := "zelt"
 var place := ""                              # 3D-4.x Welten: the old scene that is the place now ("" = a park spot)
 var place_r := 0.0
+var place_c := Vector2.ZERO                  # 3D-4.x: the centre of the place (a compact place: MoveEye can stand away from it)
 var h0 := 0.0
 var inv := Transform3D()
 var rng := RandomNumberGenerator.new()
@@ -183,8 +184,10 @@ func _build(sc) -> void:
 	if place != "":                                    # 3D-4.x Welten: an old scene is the place (worlds.gd builds it)
 		var pl: Array = Worlds.PLACES[place]
 		spot = place
-		sp = [pl[1], pl[2], pl[3], pl[4]]
+		var po: Array = Worlds.pose(m, place)              # 3D-4.x: a compact place: its centre + the chosen spot (kompakt.gd)
+		sp = [pl[1], po[0], po[1], po[2]]
 		place_r = float(pl[5])
+		place_c = Vector2(float(pl[2]), float(pl[3]))
 		pad = [float(pl[2]), float(pl[3]), place_r, _H(float(pl[2]), float(pl[3]))]
 	h0 = H(sp[1], sp[2])
 	park = Node3D.new()
@@ -197,7 +200,7 @@ func _build(sc) -> void:
 	m.ground_fn = Callable(self, "gy")
 	bib = Bib.new(m, s, park, park.transform)
 	if place != "":
-		bib.clear = [[Vector2(float(sp[1]), float(sp[2])), place_r + 10.0]]     # nothing of the park on the place
+		bib.clear = [[place_c, place_r + 10.0]]     # nothing of the park on the place
 	_ground()
 	_water()
 	var t1 := Time.get_ticks_msec()
@@ -221,7 +224,7 @@ func _build(sc) -> void:
 	_signs()
 	s.meadow(220 if lite else 520, 3.0, 40.0, func(p: Vector3):
 		var q := inv * p
-		return H(q.x, q.z) < 0.6 or q.z > 112.0 or _on_way(q.x, q.z) or (place != "" and p.length() < place_r))
+		return H(q.x, q.z) < 0.6 or q.z > 112.0 or _on_way(q.x, q.z) or (place != "" and Vector2(q.x, q.z).distance_to(place_c) < place_r))
 	_data()
 	_erleben()
 	info.merge({"ms": Time.get_ticks_msec() - t0, "ground_ms": t1 - t0, "spot": spot, "lite": lite, "lib": bib.stats.duplicate(),

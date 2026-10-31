@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 07:06",
+ "generated": "2026-10-31 07:18",
  "versions": [
   {
-   "version": "2.98.71",
-   "file": "webcam_bewegung_2_98_71.py",
+   "version": "2.98.72",
+   "file": "webcam_bewegung_2_98_72.py",
    "url": "",
-   "sha256": "90ecd8403517cb84dd4258589bc5cb1ae1fa5e797235a242b7a237262f15164a",
-   "date": "2026-10-31 07:06",
-   "notes": "Simulator 3D-4.40: Horror-Modus «Das Hospiz» im Bergtal (mit Passwort, im Kinder-Modus gesperrt) – Einstieg über die Stimmung «Horror» im Bergtal-Abenteuer; «Aufnahmen» erscheinen im Verlauf.",
-   "sig": "00a0d3c4467b9f96ba1eae3e259b8c1e4bcdabdd709343772e3cbebd4e6457e743e5160a6efa9dc8ed5d949ad9c7364afaf0906241b670e714c2f1f827395503"
+   "sha256": "1aa9b92525c1ff41c9744d9120f53cc58feb56b11ed24b4454e81edfba20a85c",
+   "date": "2026-10-31 07:18",
+   "notes": "Simulator 3D-4.41: neue Orte – Pfadilager und Bergdorf im Bergtal, Bauernhof mit Hofladen im Ferienpark, Festival-Gelände als eigene Welt; mehrere MoveEye-Standorte pro Ort.",
+   "sig": "b84cee2e7a06a6cda9306cde8bb7110966d498a44fab7577c3b4a14eb09df9c584ebbd0f83558affbfde6f61db59b83dde7c92aa54bd338db959c2b20631f601"
   },
   {
    "version": "2.97.1",

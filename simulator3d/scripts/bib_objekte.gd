@@ -125,9 +125,17 @@ func make(kind: String, q := {}) -> Dictionary:
 # building
 # =======================================================================================================================
 var clear: Array = []                     # 3D-4.x Welten: [[centre (local, Vector2), r], …] - nothing is built there (a place)
+var keep: Array = []                      # 3D-4.x kompakt.gd: [[centre (local, Vector2), r], …] - only there (a compact place in a world)
 
 
 func _cleared(p: Vector3) -> bool:
+	if not keep.is_empty():
+		var inside := false
+		for k in keep:
+			if Vector2(p.x, p.z).distance_to(k[0]) < float(k[1]):
+				inside = true
+		if not inside:
+			return true
 	for c in clear:
 		if Vector2(p.x, p.z).distance_to(c[0]) < float(c[1]):
 			return true
@@ -136,7 +144,7 @@ func _cleared(p: Vector3) -> bool:
 
 func add(kind: String, p: Vector3, rot := 0.0, q := {}) -> Dictionary:
 	"""one thing at p (local to root, y = ground) turned by rot; returns its description (door, lights …)"""
-	if not clear.is_empty() and _cleared(p):
+	if not (clear.is_empty() and keep.is_empty()) and _cleared(p):
 		return {}
 	var d := make(kind, q)
 	if d.is_empty():
@@ -156,7 +164,7 @@ func add(kind: String, p: Vector3, rot := 0.0, q := {}) -> Dictionary:
 
 func parts_of(kind: String, xf: Transform3D, q := {}) -> void:
 	"""the parts of a thing into the nets, without obstacles (e.g. a car on a ferry, a boat in the boat house)"""
-	if not clear.is_empty() and _cleared(xf.origin):
+	if not (clear.is_empty() and keep.is_empty()) and _cleared(xf.origin):
 		return
 	var d := make(kind, q)
 	if d.is_empty():
@@ -168,7 +176,7 @@ func parts_of(kind: String, xf: Transform3D, q := {}) -> void:
 func many(kind: String, list: Array, q := {}) -> void:
 	"""many equal things as MultiMesh (one draw call per surface and group of 128 m): list = [[position, rot_y], …] or
 	[[position, rot_y, scale]]"""
-	if not clear.is_empty():
+	if not (clear.is_empty() and keep.is_empty()):
 		list = list.filter(func(e): return not _cleared(e[0]))
 	if list.is_empty():
 		return

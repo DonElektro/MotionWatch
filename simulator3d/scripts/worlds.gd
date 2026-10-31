@@ -4,6 +4,10 @@ extends RefCounted
 ## Welt «Bergtal» (bergtal.gd): Wald, Wildbeobachtung, Seeufer, Tarnen, Versteckspiel, Parcours, Bauernhof.
 ## Welt «Ferienpark am See» (ferienpark.gd): Voller Campingplatz, Lustiger Platz, Velodieb, Parkplatz, Stellplatz.
 ## Welt «Zuhause» (id «daheim», hier gebaut): Garten mit Haus, Schlafzimmer (im Haus), Baustelle nebenan.
+## 3D-4.x «Vier kompakte Szenen» (kompakt.gd): Pfadilager (Lichtung im Lärchenwald) und Bergdorf (Taleingang an der
+## Passstrasse) sind Orte im Bergtal, der Bauernhof mit Hofladen und Stellplätzen liegt im Ferienpark am See (Ostufer);
+## das Festival-Gelände ist eine eigene Welt. Diese Orte haben mehrere MoveEye-Standorte («Standort an diesem Ort»):
+## die Welt wird um den Standort gedreht und verschoben (pose()), der Ort selbst mit kompakt.gd auf seiner Fläche gebaut.
 ## Allein bleiben: Camping-Platz (klein, schnell, Standard), Ort von der Karte, Mein Zuhause (selbst gebaut), Meine Vorlage.
 ##
 ## Die alten Kennungen bleiben gültig (Steuerbefehl, MoveEye, Prüfstand, Einstellungen, Spiel-Assistent, Vorlagen, Tests):
@@ -15,7 +19,7 @@ extends RefCounted
 const T = preload("res://scripts/i18n.gd")
 
 # the worlds and the tools in the scene list (in this order)
-const SHOWN := ["camping", "bergtal", "ferienpark", "daheim", "ort", "zuhause", "vorlage"]
+const SHOWN := ["camping", "bergtal", "ferienpark", "festival", "daheim", "ort", "zuhause", "vorlage"]
 const WORLDS := ["bergtal", "ferienpark", "daheim"]
 # the default place of a world without its own build (daheim = the garden)
 const DEFAULT := {"daheim": "garten"}
@@ -29,6 +33,9 @@ const PLACES := {
 	"verstecken": ["bergtal", "Versteckspiel beim Murmelboden", -500.0, 400.0, 63.0, 52.0],
 	"parcours": ["bergtal", "Verfolgungs-Parcours (Hochebene)", 840.0, -400.0, 0.0, 55.0],
 	"bauernhof": ["bergtal", "Hinterstafel (Bauernhof der Alp)", 40.0, 230.0, 0.0, 50.0],
+	"pfadilager": ["bergtal", "Pfadilager auf der Waldlichtung", -150.0, -800.0, 0.0, 60.0],      # 3D-4.x kompakt_pfadi.gd (CLEARING)
+	"bergdorf": ["bergtal", "Bergdorf am Taleingang (mit Stellplatz)", 195.0, -930.0, 0.0, 62.0],  # 3D-4.x kompakt_dorf.gd (at the pass road)
+	"hofladen": ["ferienpark", "Bauernhof mit Hofladen am Ostufer (Stellplätze)", 268.0, -128.0, 0.0, 42.0],   # 3D-4.x kompakt_hof.gd
 	"camping_voll": ["ferienpark", "Zeltwiese in der Hochsaison (voller Platz)", -100.0, -68.0, 0.0, 42.0],
 	"lustig": ["ferienpark", "Spielwiese am Strand (lustiger Platz)", -145.0, -105.0, 0.0, 38.0],
 	"velodieb": ["ferienpark", "Velo am Parkrand (Velodieb)", 265.0, 50.0, 0.0, 38.0],
@@ -37,8 +44,8 @@ const PLACES := {
 	"garten": ["daheim", "Garten und Haus", 0.0, 0.0, 0.0, 40.0],
 	"schlafzimmer": ["daheim", "Schlafzimmer im Haus (Wecker)", 0.0, 0.0, 0.0, 5.0],     # x/z/looking: _home_xf (in the house)
 	"baustelle": ["daheim", "Baustelle nebenan", 52.0, 5.0, 0.0, 40.0]}
-const ORDER := {"bergtal": ["wald", "wild", "seeufer", "tarnen", "verstecken", "parcours", "bauernhof"],
-		"ferienpark": ["camping_voll", "lustig", "velodieb", "parkplatz", "stellplatz"],
+const ORDER := {"bergtal": ["wald", "wild", "seeufer", "tarnen", "verstecken", "parcours", "bauernhof", "pfadilager", "bergdorf"],
+		"ferienpark": ["camping_voll", "lustig", "velodieb", "parkplatz", "stellplatz", "hofladen"],
 		"daheim": ["garten", "schlafzimmer", "baustelle"]}
 const OWN := {"bergtal": "– Schlafplatz im Bergtal (oben wählen) –", "ferienpark": "– Standort im Ferienpark (oben wählen) –"}
 
@@ -64,6 +71,21 @@ static func place_name(id: String) -> String:
 
 
 const SHORT := {"bergtal": "Bergtal", "ferienpark": "Ferienpark am See", "daheim": "Zuhause"}
+const Kompakt = preload("res://scripts/kompakt.gd")     # 3D-4.x: places with several MoveEye spots (Pfadilager, Bergdorf, Hofladen)
+
+
+static func pose(main, id: String) -> Array:
+	"""where MoveEye stands for a place: [x, z, looking] in world coordinates. A compact place (kompakt.gd): its centre plus
+	the chosen spot (spot coordinates relative to the centre, axes like the world: x = east, z = south)"""
+	var p: Array = PLACES[id]
+	if Kompakt.is_kompakt(id):
+		var sps: Dictionary = Kompakt.spots_of(id)
+		var k := str(main.scene_spot(id)) if main != null and main.has_method("scene_spot") else ""
+		if not sps.has(k):
+			k = str(Kompakt.spot_options(id)[0][0])
+		var sp: Array = sps[k]
+		return [float(p[2]) + float(sp[1]), float(p[3]) + float(sp[2]), float(sp[3])]
+	return [float(p[2]), float(p[3]), float(p[4])]
 
 
 static func full_name(id: String) -> String:
@@ -128,6 +150,10 @@ static func build(s, id: String) -> void:
 
 static func _place(s, id: String, r: float) -> void:
 	"""the old scene at the origin, clipped to its flat area (the world is around it)"""
+	if Kompakt.is_kompakt(id):                                   # 3D-4.x: a compact place (several spots, its own builder)
+		Kompakt.build_place(s, id, r)
+		s.data["welt"] = {"world": world_of(id), "place": id, "r": r}
+		return
 	var m = s.m
 	var root0: Node3D = s.root
 	var n := Node3D.new()

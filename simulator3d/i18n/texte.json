@@ -2683,6 +2683,18 @@
   "it": "Al pontile",
   "rm": "Al punt da bartgas"
  },
+ "Am Dorfbrunnen (Dorfplatz)": {
+  "en": "At the village fountain (square)",
+  "fr": "À la fontaine du village (place)",
+  "it": "Alla fontana del paese (piazza)",
+  "rm": "Tar la fontauna dal vitg (plazza)"
+ },
+ "Am Eingang (Kontrolle)": {
+  "en": "At the entrance (check)",
+  "fr": "À l’entrée (contrôle)",
+  "it": "All’ingresso (controllo)",
+  "rm": "A l’entrada (controlla)"
+ },
  "Am Ende des Bootsstegs wartet jemand geduldig auf einen Fang.": {
   "en": "At the end of the jetty someone is waiting patiently for a catch.",
   "fr": "Au bout du ponton, quelqu’un attend patiemment une prise.",
@@ -2724,6 +2736,12 @@
   "fr": "Sur le sentier d'altitude ouest, un randonneur se repose près d'une dalle. Au-dessus de lui tourne quelque chose de grand.",
   "it": "Sul sentiero alto ovest un escursionista riposa presso una lastra di roccia. Sopra di lui volteggia qualcosa di grande.",
   "rm": "Sin la senda d'autezza vest pausescha in viandant sper ina platta da crap. Sur el rodla insatge grond."
+ },
+ "Am Lagerfeuer (Blick zum Sarasani)": {
+  "en": "At the campfire (view to the big tent)",
+  "fr": "Au feu de camp (vue sur le grand chapiteau)",
+  "it": "Al fuoco del campo (vista sul grande tendone)",
+  "rm": "Al fieu da champ (vista sin il sarasani)"
  },
  "Am Morgen ist alles ruhig. Das Lager ist, wie du es verlassen hast – fast. Die Laterne ist weg.": {
   "en": "In the morning everything is calm. The camp is as you left it – almost. The lantern is gone.",
@@ -2851,6 +2869,12 @@
   "it": "Al limite del bosco c’è una vecchia roulotte con il muschio sul tetto. Chi ci abiterà?",
   "rm": "A l’ur dal guaud stat ina veglia rulotta cun mistgel sin il tetg. Tgi che sta qua?"
  },
+ "Am Waldweg (Lagereingang)": {
+  "en": "On the forest path (camp entrance)",
+  "fr": "Sur le chemin forestier (entrée du camp)",
+  "it": "Sul sentiero nel bosco (ingresso del campo)",
+  "rm": "Sin la senda dal guaud (entrada dal champ)"
+ },
  "Am Wasser: Tiere kommen trinken, nachts feucht und kalt": {
   "en": "By the water: animals come to drink, damp and cold at night",
   "fr": "Au bord de l'eau : les animaux viennent boire, humide et froid la nuit",
@@ -2905,11 +2929,29 @@
   "it": "acceso",
   "rm": "activ"
  },
+ "An der Bachbrücke": {
+  "en": "At the creek bridge",
+  "fr": "Au pont du ruisseau",
+  "it": "Al ponte sul ruscello",
+  "rm": "Tar la punt dal dutg"
+ },
  "An der Hecke bei den Bungalows raschelt es – ganz leise näher gehen.": {
   "en": "Something rustles in the hedge by the bungalows – go closer very quietly.",
   "fr": "Ça bruisse dans la haie près des bungalows – approche tout doucement.",
   "it": "Qualcosa fruscia nella siepe vicino ai bungalow – avvicinati piano piano.",
   "rm": "En la saiv sper ils bungalows ruschna insatge – ir pli datiers fitg plaun."
+ },
+ "An der Seilbrücke (Bach)": {
+  "en": "At the rope bridge (creek)",
+  "fr": "Au pont de corde (ruisseau)",
+  "it": "Al ponte di corda (ruscello)",
+  "rm": "Tar la punt da suga (dutg)"
+ },
+ "An der Weide (Zaun, Kühe)": {
+  "en": "At the pasture (fence, cows)",
+  "fr": "Au pâturage (clôture, vaches)",
+  "it": "Al pascolo (recinto, mucche)",
+  "rm": "Tar la pastgira (saiv, vatgas)"
  },
  "An einem Aussichtspunkt, zur richtigen Zeit.": {
   "en": "At a viewpoint, at the right time.",
@@ -3655,6 +3697,12 @@
   "it": "Avvio automatico: ",
   "rm": "Autostart: "
  },
+ "Bach": {
+  "en": "Creek",
+  "fr": "Ruisseau",
+  "it": "Ruscello",
+  "rm": "Dutg"
+ },
  "Bach gefroren": {
   "en": "Stream frozen",
   "fr": "Ruisseau gelé",
@@ -3715,6 +3763,18 @@
   "it": "Panchina",
   "rm": "Banc"
  },
+ "BAR": {
+  "en": "BAR",
+  "fr": "BAR",
+  "it": "BAR",
+  "rm": "BAR"
+ },
+ "Bar": {
+  "en": "Bar",
+  "fr": "Bar",
+  "it": "Bar",
+  "rm": "Bar"
+ },
  "Baracke 3": {
   "en": "Barrack 3",
   "fr": "Baraque 3",
@@ -3745,6 +3805,12 @@
   "it": "Il contadino falcia con il trattore",
   "rm": "Il pur sega cun il tractor"
  },
+ "Bauernhaus": {
+  "en": "Farmhouse",
+  "fr": "Ferme (maison)",
+  "it": "Casa colonica",
+  "rm": "Chasa da pur"
+ },
  "Bauernhof": {
   "en": "Farm",
   "fr": "Ferme",
@@ -3756,6 +3822,18 @@
   "fr": "Ferme / campagne",
   "it": "Fattoria / campagna",
   "rm": "Bain puril / champagna"
+ },
+ "Bauernhof mit Hofladen am Ostufer (Stellplätze)": {
+  "en": "Farm with farm shop on the east shore (camper pitches)",
+  "fr": "Ferme avec magasin à la ferme sur la rive est (emplacements)",
+  "it": "Fattoria con spaccio sulla riva est (piazzole)",
+  "rm": "Bain puril cun butia sin la riva da l’ost (plazzas)"
+ },
+ "Bauernhof mit Hofladen und Stellplätzen": {
+  "en": "Farm with farm shop and camper pitches",
+  "fr": "Ferme avec magasin et emplacements camping-car",
+  "it": "Fattoria con spaccio e piazzole camper",
+  "rm": "Bain puril cun butia e plazzas per autos da campar"
  },
  "Bauernhof – Kühe, Schafe, Traktor": {
   "en": "Farm – cows, sheep, tractor",
@@ -3871,6 +3949,18 @@
   "it": "Vicino ai bungalow vale la pena guardare nella siepe.",
   "rm": "Tar ils bungalows vala la paina da guardar en la saiv."
  },
+ "Bei den Foodtrucks": {
+  "en": "At the food trucks",
+  "fr": "Aux food trucks",
+  "it": "Ai food truck",
+  "rm": "Tar ils food trucks"
+ },
+ "Bei den Spatz-Zelten": {
+  "en": "At the small scout tents",
+  "fr": "Près des petites tentes",
+  "it": "Presso le tendine",
+  "rm": "Tar las tendas pitschnas"
+ },
  "Bei der Alp Tschuggen": {
   "en": "At the Alp Tschuggen",
   "fr": "À l'Alp Tschuggen",
@@ -3931,6 +4021,12 @@
   "it": "Presso le rovine di Altstafel (in alto a ovest, libero verso est)",
   "rm": "Tar la ruina Altstafel (si en il vest, libra vers ost)"
  },
+ "Bei der Seilbahn-Talstation": {
+  "en": "At the cable car valley station",
+  "fr": "À la station inférieure du téléphérique",
+  "it": "Alla stazione a valle della funivia",
+  "rm": "Tar la staziun da la pendiculara"
+ },
  "Bei der Zeltwiese riecht es nach Grillwurst – und immer mehr nach Rauch.": {
   "en": "At the tent meadow it smells of sausages – and more and more of smoke.",
   "fr": "Près du pré des tentes, ça sent la saucisse grillée – et de plus en plus la fumée.",
@@ -3967,11 +4063,23 @@
   "it": "La prima volta scegli tu la password. Su questo PC viene salvata solo un'impronta cifrata (hash) – mai la password stessa.",
   "rm": "L'emprima giada fixeschas ti sez il pled-clav. Memorisà vegn mo in improntament criptà (hash) sin quest PC – mai il pled-clav sez."
  },
+ "Beim Hofladen (Kasse des Vertrauens)": {
+  "en": "At the farm shop (honesty till)",
+  "fr": "Au magasin de la ferme (caisse de confiance)",
+  "it": "Allo spaccio (cassa di fiducia)",
+  "rm": "Tar la butia (cassa da fidanza)"
+ },
  "Beim Klettersteig steht ein Felsturm. Ganz oben steht jemand, der keine Höhenangst kennt.": {
   "en": "By the via ferrata stands a rock tower. Right at the top stands someone who knows no fear of heights.",
   "fr": "Près de la via ferrata se dresse une tour rocheuse. Tout en haut se tient quelqu'un qui ignore le vertige.",
   "it": "Presso la via ferrata c'è una torre di roccia. In cima sta qualcuno che non soffre di vertigini.",
   "rm": "Sper la via ferrata stat ina tur da crap. Survart stat insatgi che n'enconuscha nagina tema d'autezza."
+ },
+ "Beim Kuhstall (viel Wärme)": {
+  "en": "At the cow shed (much warmth)",
+  "fr": "À l’étable (beaucoup de chaleur)",
+  "it": "Alla stalla (molto calore)",
+  "rm": "Tar il nuegl (bler chalur)"
  },
  "Beim Lager": {
   "en": "At the camp",
@@ -4015,11 +4123,23 @@
   "it": "Al cartello nel Murmelboden qualcuno cammina da tanto – ma non lontano.",
   "rm": "Tar l'indicatur da via en il Murmelboden è insatgi gia ditg en viadi – ma betg lunsch."
  },
+ "Beim Wohnmobil (Stellplatz am Hof)": {
+  "en": "At the motorhome (pitch at the farm)",
+  "fr": "Au camping-car (emplacement à la ferme)",
+  "it": "Al camper (piazzola in fattoria)",
+  "rm": "Tar l’auto da campar (plazza al bain)"
+ },
  "Beim Wohnmobil (Wohnmobil-Terrasse)": {
   "en": "At the motorhome (motorhome terrace)",
   "fr": "Au camping-car (terrasse des camping-cars)",
   "it": "Al camper (terrazza dei camper)",
   "rm": "Tar l’auto da campadi (terrassa)"
+ },
+ "Beim Wohnmobil am Dorfrand": {
+  "en": "At the motorhome on the edge of the village",
+  "fr": "Au camping-car en bordure du village",
+  "it": "Al camper ai margini del paese",
+  "rm": "Tar l’auto da campar a l’ur dal vitg"
  },
  "Beim Zelt (Zeltwiese)": {
   "en": "At the tent (tent meadow)",
@@ -4116,6 +4236,18 @@
   "fr": "Un peu moins fatigant en montée et en descente.",
   "it": "Un po' meno faticoso in salita e in discesa.",
   "rm": "In pau main stentus ensi ed engiu."
+ },
+ "Bergdorf am Taleingang (mit Stellplatz)": {
+  "en": "Mountain village at the valley entrance (with camper pitch)",
+  "fr": "Village de montagne à l’entrée de la vallée (avec aire)",
+  "it": "Paese di montagna all’ingresso della valle (con area camper)",
+  "rm": "Vitg da muntogna a l’entrada da la val (cun plazza)"
+ },
+ "Bergdorf mit Stellplatz": {
+  "en": "Mountain village with camper pitch",
+  "fr": "Village de montagne avec aire camping-car",
+  "it": "Paese di montagna con area camper",
+  "rm": "Vitg da muntogna cun plazza"
  },
  "Berge": {
   "en": "Mountains",
@@ -4861,6 +4993,12 @@
   "it": "Posto colorato per provare",
   "rm": "Plaz colurà per empruvar"
  },
+ "Burger": {
+  "en": "Burgers",
+  "fr": "Burgers",
+  "it": "Hamburger",
+  "rm": "Burgers"
+ },
  "Bus": {
   "en": "Bus",
   "fr": "Bus",
@@ -4884,6 +5022,12 @@
   "fr": "Maître des buissons",
   "it": "Maestro dei cespugli",
   "rm": "Maister da chaglias"
+ },
+ "Bushaltestelle": {
+  "en": "Bus stop",
+  "fr": "Arrêt de bus",
+  "it": "Fermata del bus",
+  "rm": "Fermada da bus"
  },
  "Bäckerei": {
   "en": "Bakery",
@@ -4968,6 +5112,12 @@
   "fr": "Checkpoints (+150 points)",
   "it": "Checkpoint (+150 punti)",
   "rm": "Checkpoints (+150 puncts)"
+ },
+ "Churros": {
+  "en": "Churros",
+  "fr": "Churros",
+  "it": "Churros",
+  "rm": "Churros"
  },
  "Chäschessi": {
   "en": "Chäschessi",
@@ -5125,6 +5275,12 @@
   "fr": "CPU : – (mesuré par MoveEye dès la connexion)",
   "it": "CPU: – (misurata da MoveEye appena collegato)",
   "rm": "CPU: – (mesira MoveEye, uschespert ch’el è collià)"
+ },
+ "Crêpes": {
+  "en": "Crêpes",
+  "fr": "Crêpes",
+  "it": "Crêpes",
+  "rm": "Crêpes"
  },
  "Da gibt es etwas für MoveEyes Kamera – %s%s. Dreh den Kopf und mach ein Foto.": {
   "en": "There is something for MoveEye’s camera – %s%s. Turn the head and take a photo.",
@@ -6975,6 +7131,18 @@
   "it": "Villaggio con chiesa",
   "rm": "Vischnanca cun baselgia"
  },
+ "Dorfbrunnen": {
+  "en": "Village fountain",
+  "fr": "Fontaine du village",
+  "it": "Fontana del paese",
+  "rm": "Fontauna dal vitg"
+ },
+ "Dorfplatz": {
+  "en": "Village square",
+  "fr": "Place du village",
+  "it": "Piazza del paese",
+  "rm": "Plazza dal vitg"
+ },
  "Dort: Scheinwerfer, das Dreiklang-Horn des ersten Postautos. Geschafft.": {
   "en": "There: headlights, the three-tone horn of the first PostBus. You made it.",
   "fr": "Là : des phares, le klaxon à trois tons du premier car postal. Ouf, réussi.",
@@ -7869,6 +8037,12 @@
   "it": "Semplice: l’essenziale (scena, ora, meteo, visite, testare, assistente di gioco). «Esperto» mostra tutto.",
   "rm": "Simpel: l’impurtant (scena, temp, aura, visita, testar, assistent da gieu). «Expert» mussa tut."
  },
+ "Eingang": {
+  "en": "Entrance",
+  "fr": "Entrée",
+  "it": "Ingresso",
+  "rm": "Entrada"
+ },
  "Eingefallene Hütten, Mauerreste und Alpenampfer – hier wurde früher gealpt.": {
   "en": "Collapsed huts, remains of walls and alpine dock – cattle were summered here long ago.",
   "fr": "Cabanes effondrées, restes de murs et rumex – autrefois, on estivait ici.",
@@ -8584,6 +8758,12 @@
   "it": "Equità",
   "rm": "Fairness"
  },
+ "Falafel": {
+  "en": "Falafel",
+  "fr": "Falafel",
+  "it": "Falafel",
+  "rm": "Falafel"
+ },
  "Fallen": {
   "en": "Fall",
   "fr": "Tomber",
@@ -8975,6 +9155,18 @@
   "it": "Test fissi: sempre gli stessi visitatori sugli stessi percorsi. Il simulatore sa chi era ben visibile per la telecamera della testa e lo confronta con le segnalazioni di MoveEye. Su questo PC (con scheda grafica) i numeri sono più realistici che su GitHub.",
   "rm": "Tests fixs: adina ils medems visitaders sin las medemas vias. Il simulatur sa, tgi ch’era bain visibel per la camera dal chau, e cumparegliescha quai cun ils messadis da MoveEye. Sin quest PC (cun carta grafica) èn las cifras pli realisticas che sin GitHub."
  },
+ "Festival · Eingang": {
+  "en": "Festival · Entrance",
+  "fr": "Festival · Entrée",
+  "it": "Festival · Ingresso",
+  "rm": "Festival · Entrada"
+ },
+ "Festival-Gelände": {
+  "en": "Festival grounds",
+  "fr": "Terrain du festival",
+  "it": "Area del festival",
+  "rm": "Terren dal festival"
+ },
  "Festlegen": {
   "en": "Set",
   "fr": "Définir",
@@ -9065,6 +9257,12 @@
   "it": "Fuga – via dal passo all'alba",
   "rm": "Fugia – davent dal pass en l'alva"
  },
+ "FOH": {
+  "en": "FOH",
+  "fr": "FOH",
+  "it": "FOH",
+  "rm": "FOH"
+ },
  "Folge dem Bach von der Alp Richtung Gletscher.": {
   "en": "Follow the stream from the alp towards the glacier.",
   "fr": "Suis le ruisseau depuis l’alpage vers le glacier.",
@@ -9112,6 +9310,18 @@
   "fr": "Fondueplätzli",
   "it": "Fondueplätzli",
   "rm": "Fondueplätzli"
+ },
+ "Foodtrucks": {
+  "en": "Food trucks",
+  "fr": "Food trucks",
+  "it": "Food truck",
+  "rm": "Food trucks"
+ },
+ "Forststrasse": {
+  "en": "Forest road",
+  "fr": "Route forestière",
+  "it": "Strada forestale",
+  "rm": "Via forestala"
  },
  "Fort Chrüzli (Bunker)": {
   "en": "Fort Chrüzli (Bunker)",
@@ -10812,6 +11022,12 @@
   "it": "Lepre",
   "rm": "Lieur"
  },
+ "Hauptbühne": {
+  "en": "Main stage",
+  "fr": "Grande scène",
+  "it": "Palco principale",
+  "rm": "Tribuna principala"
+ },
  "Haus": {
   "en": "House",
   "fr": "Maison",
@@ -11173,6 +11389,18 @@
   "it": "Fantasma della fattoria",
   "rm": "Spiert dal bain puril"
  },
+ "Hofladen": {
+  "en": "Farm shop",
+  "fr": "Magasin de la ferme",
+  "it": "Spaccio aziendale",
+  "rm": "Butia dal bain"
+ },
+ "Hofladen · Kasse des Vertrauens": {
+  "en": "Farm shop · honesty till",
+  "fr": "Magasin de la ferme · caisse de confiance",
+  "it": "Spaccio · cassa di fiducia",
+  "rm": "Butia dal bain · cassa da fidanza"
+ },
  "Hol das Paket (Pfeil) und bring es zum grünen Licht. Wer es trägt, ist langsamer.": {
   "en": "Fetch the parcel (arrow) and bring it to the green light. Whoever carries it is slower.",
   "fr": "Va chercher le colis (flèche) et apporte-le à la lumière verte. Qui le porte est plus lent.",
@@ -11208,6 +11436,12 @@
   "fr": "Tas de bois, rochers, buissons, cabane forestière",
   "it": "Cataste di legna, rocce, cespugli, capanna nel bosco",
   "rm": "Mantuns da laina, grippa, chaglias, chamona da guaud"
+ },
+ "Holzsteg": {
+  "en": "Wooden footbridge",
+  "fr": "Passerelle en bois",
+  "it": "Passerella di legno",
+  "rm": "Punt da lain"
  },
  "Holzsteg am Schwarzseeli": {
   "en": "Boardwalk at the Schwarzseeli",
@@ -11754,6 +11988,12 @@
   "fr": "Dans l'image thermique, la silhouette refroidit jusqu'à disparaître. Là-haut à l'hospice, la cloche sonne une dernière fois.",
   "it": "Nell'immagine termica la figura si raffredda finché non si vede più. Su all'ospizio la campana suona un'ultima volta.",
   "rm": "En il maletg termic sa sfradenta la figura, fin ch'ella na sa lascha betg pli vesair. Si tar l'ospizi tuna la stgella ina ultima giada."
+ },
+ "Im Zeltdorf (beim eigenen Zelt)": {
+  "en": "In the tent village (at your own tent)",
+  "fr": "Dans le village de tentes (près de ta tente)",
+  "it": "Nel villaggio di tende (presso la tua tenda)",
+  "rm": "En il vitg da tendas (tar l’atgna tenda)"
  },
  "im Ziel": {
   "en": "at the goal",
@@ -13124,6 +13364,12 @@
   "it": "Chiesa",
   "rm": "Baselgia"
  },
+ "Kirche, Brunnen, Bäckerei, Bach mit Brücke, Seilbahn, Stellplatz am Dorfrand – 4 Standorte": {
+  "en": "Church, fountain, bakery, creek with bridge, cable car, camper pitch at the edge of the village – 4 positions",
+  "fr": "Église, fontaine, boulangerie, ruisseau avec pont, téléphérique, aire en bordure du village – 4 emplacements",
+  "it": "Chiesa, fontana, panetteria, ruscello con ponte, funivia, area camper ai margini – 4 posizioni",
+  "rm": "Baselgia, fontauna, pasternaria, dutg cun punt, pendiculara, plazza a l’ur dal vitg – 4 lieus"
+ },
  "Kirschen": {
   "en": "Cherries",
   "fr": "Cerises",
@@ -13183,6 +13429,12 @@
   "fr": "Petit, mais tout près de la caméra il paraît grand.",
   "it": "Piccolo, ma vicinissimo alla telecamera sembra grande.",
   "rm": "Pitschen, ma fitg datiers da la camera para el grond."
+ },
+ "Kleine Bühne": {
+  "en": "Small stage",
+  "fr": "Petite scène",
+  "it": "Palco piccolo",
+  "rm": "Tribuna pitschna"
  },
  "Kleine Höhle": {
   "en": "Small cave",
@@ -13604,6 +13856,12 @@
   "it": "Cucina",
   "rm": "Cuschina"
  },
+ "Küchenwagen": {
+  "en": "Kitchen trailer",
+  "fr": "Roulotte cuisine",
+  "it": "Carro cucina",
+  "rm": "Char da cuschina"
+ },
  "Kühe": {
   "en": "Cows",
   "fr": "Vaches",
@@ -13741,6 +13999,12 @@
   "fr": "camp avant la nuit",
   "it": "campo prima del buio",
   "rm": "champ avant la stgiradetgna"
+ },
+ "Lagerfeuer": {
+  "en": "Campfire",
+  "fr": "Feu de camp",
+  "it": "Fuoco del campo",
+  "rm": "Fieu da champ"
  },
  "Lagerfeuer (flackert, Funken)": {
   "en": "Campfire (flickers, sparks)",
@@ -14806,6 +15070,12 @@
   "it": "minuti al posto per dormire.",
   "rm": "minutas al plaz da durmir."
  },
+ "Mischpult": {
+  "en": "Mixing desk",
+  "fr": "Table de mixage",
+  "it": "Mixer",
+  "rm": "Pult da maschadar"
+ },
  "Mission": {
   "en": "Mission",
   "fr": "Mission",
@@ -14829,6 +15099,12 @@
   "fr": "Missions  ⭐ %d",
   "it": "Missioni  ⭐ %d",
   "rm": "Missiuns  ⭐ %d"
+ },
+ "Misthaufen": {
+  "en": "Dung heap",
+  "fr": "Tas de fumier",
+  "it": "Letamaio",
+  "rm": "Mantun da grascha"
  },
  "Mit dem Handy (gleiches WLAN): QR-Code scannen oder %s öffnen": {
   "en": "With the phone (same Wi-Fi): scan the QR code or open %s",
@@ -16728,6 +17004,12 @@
   "it": "Visibile solo nel cannocchiale a gettoni.",
   "rm": "Mo da vesair tras il telescop a munaida."
  },
+ "nur ein Standort in dieser Szene": {
+  "en": "only one location in this scene",
+  "fr": "un seul emplacement dans cette scène",
+  "it": "un solo punto in questa scena",
+  "rm": "mo in lieu en questa scena"
+ },
  "Nur einer. Wo ist wohl der andere?": {
   "en": "Just one. Where might the other one be?",
   "fr": "Un seul. Où peut bien être l'autre ?",
@@ -16901,6 +17183,12 @@
   "fr": "Arbre fruitier (les fruits tombent au vent)",
   "it": "Albero da frutto (i frutti cadono col vento)",
   "rm": "Planta da fritgs (ils fritgs crodan en il vent)"
+ },
+ "Obstgarten": {
+  "en": "Orchard",
+  "fr": "Verger",
+  "it": "Frutteto",
+  "rm": "Curtin da fritga"
  },
  "offen": {
   "en": "open",
@@ -17256,6 +17544,18 @@
   "it": "Passchanzle Furgga",
   "rm": "Passchanzle Furgga"
  },
+ "Passhöhe": {
+  "en": "Pass summit",
+  "fr": "Sommet du col",
+  "it": "Passo",
+  "rm": "Pass"
+ },
+ "Passstrasse": {
+  "en": "Pass road",
+  "fr": "Route du col",
+  "it": "Strada del passo",
+  "rm": "Via dal pass"
+ },
  "Passstrasse mit Haarnadelkurven": {
   "en": "Pass road with hairpin bends",
   "fr": "Route du col avec épingles",
@@ -17399,6 +17699,24 @@
   "fr": "Camp scout",
   "it": "Campo scout",
   "rm": "Champ da scouts"
+ },
+ "Pfadilager": {
+  "en": "Scout camp",
+  "fr": "Camp scout",
+  "it": "Campo scout",
+  "rm": "Champ da scouts"
+ },
+ "Pfadilager auf der Waldlichtung": {
+  "en": "Scout camp in the forest clearing",
+  "fr": "Camp scout dans la clairière",
+  "it": "Campo scout nella radura",
+  "rm": "Champ da scouts sin la runcada"
+ },
+ "Pfadilager im Wald": {
+  "en": "Scout camp in the forest",
+  "fr": "Camp scout dans la forêt",
+  "it": "Campo scout nel bosco",
+  "rm": "Champ da scouts en il guaud"
  },
  "Pfeile, Licht": {
   "en": "Arrows, light",
@@ -17634,6 +17952,12 @@
   "fr": "CarPostal avec klaxon à trois tons (route du col)",
   "it": "AutoPostale con il clacson a tre toni (strada del passo)",
   "rm": "Auto da posta cun corn da trais tuns (via dal pass)"
+ },
+ "Postauto · Bergdorf": {
+  "en": "Post bus · Mountain village",
+  "fr": "Car postal · Village de montagne",
+  "it": "Autopostale · Paese di montagna",
+  "rm": "Auto da posta · Vitg da muntogna"
  },
  "Postauto-Haltestelle bei der Kapelle St. Jodern": {
   "en": "Post bus stop at St. Jodern chapel",
@@ -17892,6 +18216,12 @@
   "fr": "Paysage",
   "it": "Orizzontale",
   "rm": "Format orizontal"
+ },
+ "Raclette": {
+  "en": "Raclette",
+  "fr": "Raclette",
+  "it": "Raclette",
+  "rm": "Raclette"
  },
  "Rahmen von MoveEye über den Figuren: grün erkannt, rot Fehlalarm, orange übersehen": {
   "en": "MoveEye’s boxes over the figures: green detected, red false alarm, orange missed",
@@ -18644,11 +18974,23 @@
   "it": "Edificio dei servizi",
   "rm": "Edifizi sanitar"
  },
+ "Sarasani": {
+  "en": "Big scout tent (Sarasani)",
+  "fr": "Grand chapiteau (sarasani)",
+  "it": "Tendone (sarasani)",
+  "rm": "Sarasani"
+ },
  "Sarasani (grosses Pfadi-Zelt)": {
   "en": "Sarasani (big scout tent)",
   "fr": "Sarasani (grande tente scoute)",
   "it": "Sarasani (grande tenda scout)",
   "rm": "Sarasani (gronda tenda da scouts)"
+ },
+ "Sarasani, Jurten, Lagerfeuer, Bach mit Seilbrücke – dunkel, eng, viele Kinder – 4 Standorte": {
+  "en": "Big tent, yurts, campfire, creek with rope bridge – dark, narrow, many children – 4 positions",
+  "fr": "Chapiteau, yourtes, feu de camp, ruisseau avec pont de corde – sombre, étroit, beaucoup d’enfants – 4 emplacements",
+  "it": "Tendone, yurte, fuoco, ruscello con ponte di corda – buio, stretto, molti bambini – 4 posizioni",
+  "rm": "Sarasani, jurtas, fieu, dutg cun punt da suga – stgir, stretg, blers uffants – 4 lieus"
  },
  "Scan": {
   "en": "Scan",
@@ -18781,6 +19123,12 @@
   "fr": "Grange, balles de foin, pâturage avec clôture",
   "it": "Fienile, balle di fieno, pascolo con recinto",
   "rm": "Clavà, balas da fain, pastgira cun saiv"
+ },
+ "Scheune, Stall mit Kühen, Hühner, Traktor, Hofhund, Hofladen, 5 Wohnmobil-Plätze – viel Wärme – 4 Standorte": {
+  "en": "Barn, cow shed, hens, tractor, farm dog, farm shop, 5 motorhome pitches – much warmth – 4 positions",
+  "fr": "Grange, étable, poules, tracteur, chien, magasin, 5 emplacements camping-car – beaucoup de chaleur – 4 emplacements",
+  "it": "Fienile, stalla, galline, trattore, cane, spaccio, 5 piazzole camper – molto calore – 4 posizioni",
+  "rm": "Clavà, nuegl, giaglinas, tractor, chaun, butia, 5 plazzas – bler chalur – 4 lieus"
  },
  "Schilf": {
   "en": "Reeds",
@@ -19368,6 +19716,18 @@
   "it": "Stazione della funivia",
   "rm": "Staziun da la pendiculara"
  },
+ "Seilbahn-Talstation": {
+  "en": "Cable car valley station",
+  "fr": "Station inférieure du téléphérique",
+  "it": "Stazione a valle della funivia",
+  "rm": "Staziun da la pendiculara"
+ },
+ "Seilbrücke": {
+  "en": "Rope bridge",
+  "fr": "Pont de corde",
+  "it": "Ponte di corda",
+  "rm": "Punt da suga"
+ },
  "Seilwinde, Motor und Schaltkasten – von hier fährt die Kiste hinauf zur Obri Stafelhütte.": {
   "en": "Winch, motor and switch box – from here the box goes up to the Obri Stafel hut.",
   "fr": "Treuil, moteur et armoire de commande – d’ici, la caisse monte à la cabane d’Obri Stafel.",
@@ -19878,6 +20238,12 @@
   "it": "Tramonto oggi nella valle: %s · alba: %s",
   "rm": "Rendiu dal sulegl oz en la val: %s · levada: %s"
  },
+ "Spatz-Zelte": {
+  "en": "Small scout tents",
+  "fr": "Petites tentes",
+  "it": "Tendine",
+  "rm": "Tendas pitschnas"
+ },
  "Spaziergang mit Hund": {
   "en": "Walk with a dog",
   "fr": "Promenade avec chien",
@@ -20202,6 +20568,12 @@
   "it": "Standard (giorno, vento, notte, pioggia · circa 5 min)",
   "rm": "Standard (di, vent, notg, plievgia · circa 5 min.)"
  },
+ "Standort an diesem Ort (Pfadilager, Hofladen, Bergdorf, Festival)": {
+  "en": "Position at this place (scout camp, farm shop, mountain village, festival)",
+  "fr": "Emplacement à cet endroit (camp scout, ferme, village, festival)",
+  "it": "Posizione in questo luogo (campo scout, fattoria, paese, festival)",
+  "rm": "Lieu en quest lieu (champ da scouts, bain, vitg, festival)"
+ },
  "Standort im Ferienpark am See": {
   "en": "Position in the holiday park by the lake",
   "fr": "Emplacement dans le parc de vacances au bord du lac",
@@ -20359,6 +20731,12 @@
   "it": "Stambecco sul bordo ripido",
   "rm": "Capricorn a l'ur stip"
  },
+ "Steinbrücke": {
+  "en": "Stone bridge",
+  "fr": "Pont de pierre",
+  "it": "Ponte di pietra",
+  "rm": "Punt da crap"
+ },
  "Steinchaos Murmelboden": {
   "en": "Steinchaos Murmelboden",
   "fr": "Steinchaos Murmelboden",
@@ -20412,6 +20790,18 @@
   "fr": "Danger de chute de pierres : paroi au-dessus",
   "it": "Pericolo di caduta massi: parete sopra",
   "rm": "Privel da crudada da crappa: paraid da grippa survart"
+ },
+ "Stellplatz": {
+  "en": "Camper pitch",
+  "fr": "Aire camping-car",
+  "it": "Area camper",
+  "rm": "Plazza"
+ },
+ "Stellplätze": {
+  "en": "Camper pitches",
+  "fr": "Emplacements",
+  "it": "Piazzole",
+  "rm": "Plazzas"
  },
  "Sternennacht": {
   "en": "Starry night",
@@ -21312,6 +21702,12 @@
   "fr": "Thermal-90 (Waveshare) · 90° × 67° · 15 images/s",
   "it": "Thermal-90 (Waveshare) · 90° × 67° · 15 immagini/s",
   "rm": "Thermal-90 (Waveshare) · 90° × 67° · 15 maletgs/s"
+ },
+ "TICKETS": {
+  "en": "TICKETS",
+  "fr": "BILLETS",
+  "it": "BIGLIETTI",
+  "rm": "BILLETS"
  },
  "Tiefblick vom Schafgrat": {
   "en": "Looking down from the Schafgrat",
@@ -22640,6 +23036,12 @@
   "it": "Davanti alla tenda c'è una vecchia lanterna antivento. È ancora calda. Inciso: «B. 1936 · Hospiz». Il sacco delle provviste è all'ingresso della tenda.",
   "rm": "Davant il tschalet stat ina veglia lanterna da stemprada. Ella è anc chauda. Engravà: «B. 1936 · Hospiz». Il satg da provisiun giascha a l'entrada dal tschalet."
  },
+ "Vor der Hauptbühne (beim Mischpult)": {
+  "en": "In front of the main stage (at the mixing desk)",
+  "fr": "Devant la grande scène (à la table de mixage)",
+  "it": "Davanti al palco principale (al mixer)",
+  "rm": "Davant la tribuna principala (tar il pult)"
+ },
  "Vor der Hütte Alp Tschuggen wird geputzt. Ob der Wind mithilft?": {
   "en": "Someone is cleaning in front of the Alp Tschuggen hut. Will the wind help?",
   "fr": "On nettoie devant la cabane de l’Alp Tschuggen. Le vent va-t-il aider ?",
@@ -23042,6 +23444,12 @@
   "it": "way[landuse];relation[landuse~\"forest|orchard\"];way[waterway];node[natural=tree];way[barrier];way[leisure~\"pitch|swimming_pool|park\"];way[amenity=parking];);out geom;",
   "rm": "way[landuse];relation[landuse~\"forest|orchard\"];way[waterway];node[natural=tree];way[barrier];way[leisure~\"pitch|swimming_pool|park\"];way[amenity=parking];);out geom;"
  },
+ "WC": {
+  "en": "WC",
+  "fr": "WC",
+  "it": "WC",
+  "rm": "WC"
+ },
  "WC (Camping-WC)": {
   "en": "Toilet (camping toilet)",
   "fr": "WC (WC de camping)",
@@ -23065,6 +23473,12 @@
   "fr": "WC · Douche · Eaux usées",
   "it": "WC · Doccia · Acque di scarico",
   "rm": "WC · Duscha · Aua persa"
+ },
+ "WC-Container": {
+  "en": "Toilet containers",
+  "fr": "Conteneurs WC",
+  "it": "Container WC",
+  "rm": "Containers WC"
  },
  "Wechselnde Kamera-Einstellungen von Rover und Spielern": {
   "en": "Changing camera angles on rover and players",
@@ -23137,6 +23551,12 @@
   "fr": "Panneau en bas : 1 h 30. Moi : 4 h. – Lea",
   "it": "Cartello in basso: 1 h 30. Io: 4 h. – Lea",
   "rm": "Indicatur da via giudim: 1 h 30. Jau: 4 h. – Lea"
+ },
+ "Weide": {
+  "en": "Pasture",
+  "fr": "Pâturage",
+  "it": "Pascolo",
+  "rm": "Pastgira"
  },
  "Weinglas": {
   "en": "Wine glass",
@@ -24358,6 +24778,18 @@
   "fr": "Rôdeur du camping",
   "it": "Infiltrato del campeggio",
   "rm": "Stgaffader dal campadi"
+ },
+ "Zeltstadt": {
+  "en": "Tent city",
+  "fr": "Ville de tentes",
+  "it": "Città di tende",
+  "rm": "Citad da tendas"
+ },
+ "Zeltstadt, zwei Bühnen, Foodtrucks, Eingang – sehr viele Menschen, bunte Lichter – 4 Standorte": {
+  "en": "Tent city, two stages, food trucks, entrance – very many people, coloured lights – 4 positions",
+  "fr": "Ville de tentes, deux scènes, food trucks, entrée – très nombreuses personnes, lumières colorées – 4 emplacements",
+  "it": "Città di tende, due palchi, food truck, ingresso – moltissime persone, luci colorate – 4 posizioni",
+  "rm": "Citad da tendas, duas tribunas, food trucks, entrada – fitg bleras persunas, glischs coluradas – 4 lieus"
  },
  "Zeltwiese": {
   "en": "Tent meadow",

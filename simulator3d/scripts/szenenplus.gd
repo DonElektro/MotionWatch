@@ -35,6 +35,7 @@ var tracked: Array = []       # visitors of this file: {"v", "kind", "t0", "ente
 var events: Array = []        # for the test run: {"kind", "id", "t" (testrun clock), "what"}
 var _dark := false
 var _bed := false             # 22:30 - 6:30: the neighbours sleep (only the walks to the toilet go on)
+var _ph := ""                 # 3D-4.x: who sleeps now (_phase) - neighbours with own hours (kompakt.gd «runde»)
 var _tick := 0.0
 var _bike_copy_of = null      # the original bike while a thief has the copy
 
@@ -274,11 +275,14 @@ func on_scene() -> void:
 	_bike_copy_of = null
 	_dark = main.is_dark()
 	_bed = _bedtime()
+	_ph = ""
 	var sc = main.scenes
 	if sc == null or sc.root == null:
 		return
 	for e in sc.data.get("nachbarn", []):
 		var n := {"kind": str(e[0]), "home": e[1], "a": [], "t": now() + randf_range(2.0, 30.0)}
+		if e.size() > 2 and typeof(e[2]) == TYPE_DICTIONARY:
+			n["opt"] = e[2]                             # 3D-4.x «runde» (kompakt.gd): pts, actor, wach [from, to], spd, wait
 		nb.append(n)
 		_make(n)
 
@@ -296,6 +300,9 @@ func _make(n: Dictionary) -> void:
 	var h: Vector3 = n["home"]
 	var sp: Vector3 = main.free_spot(h, 0.4, true)
 	match str(n["kind"]):
+		"runde":                                        # 3D-4.x (kompakt.gd): one figure (person, child, dog, cow …) walks between points
+			var o: Dictionary = n.get("opt", {})
+			n["a"].append(_actor(str(o.get("actor", "person")), sp, sp + Vector3(0.5, 0, 0.5), float(o.get("spd", randf_range(1.0, 1.4)))))
 		"kinder":
 			for i in range(2):
 				var c = _actor("child", sp + Vector3(i * 1.2, 0, 0), sp + Vector3(2, 0, 1), randf_range(1.8, 2.4))
@@ -329,7 +336,21 @@ func _bedtime() -> bool:
 
 func _sleeping(n: Dictionary) -> bool:
 	"""at night most neighbours are in their tents - only the walks to the toilet go on"""
+	if n.has("opt") and (n["opt"] as Dictionary).has("wach"):      # 3D-4.x: own hours (festival until 3, the farm dog always)
+		var w: Array = n["opt"]["wach"]
+		var h: float = main.hour()
+		var a := float(w[0])
+		var b := float(w[1])
+		return not ((h >= a and h < b) if a <= b else (h >= a or h < b))
 	return _bed and str(n["kind"]) != "wc"
+
+
+func _phase() -> String:
+	"""what decides who sleeps: bedtime and the own hours (changes -> to bed / up again)"""
+	var out := "1" if _bedtime() else "0"
+	for n in nb:
+		out += "1" if _sleeping(n) else "0"
+	return out
 
 
 func _plan(n: Dictionary) -> void:
@@ -342,6 +363,13 @@ func _plan(n: Dictionary) -> void:
 		return
 	var wz: float = float(main.scenes.data.get("weg_z", h.z + 4.0))
 	match str(n["kind"]):
+		"runde":                                       # 3D-4.x: to one of its points, a while there, a few steps (kompakt.gd)
+			var o: Dictionary = n.get("opt", {})
+			var pts: Array = o.get("pts", [])
+			var p: Vector3 = h if pts.is_empty() or randf() < 0.25 else pts[randi() % pts.size()]
+			var wt: Array = o.get("wait", [4.0, 30.0])
+			var r := float(o.get("r", 1.5))
+			lead.route.append([main.free_spot(p + Vector3(randf_range(-r, r), 0, randf_range(-r, r)), 0.4, true), randf_range(float(wt[0]), float(wt[1])), 0.0])
 		"koch":                                        # at the table and the grill: a few steps, bends over, stands
 			for i in range(3):
 				var p: Vector3 = main.free_spot(h + Vector3(randf_range(-1.6, 1.6), 0, randf_range(-1.2, 1.2)), 0.4, true)
@@ -403,9 +431,10 @@ func _process(dt: float) -> void:
 			for v in n["a"]:
 				if is_instance_valid(v):
 					v.set_night(dk)
-	var bd := _bedtime()
-	if bd != _bed:                                      # to bed, up again
-		_bed = bd
+	_bed = _bedtime()
+	var ph := _phase()
+	if ph != _ph:                                       # to bed, up again
+		_ph = ph
 		for n in nb:
 			_sleep(n, _sleeping(n))
 			_plan(n)

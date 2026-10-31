@@ -1,7 +1,7 @@
 {
- "version": "3D-4.40",
+ "version": "3D-4.41",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 66886163,
- "sha256": "4c84b8b4b106433b1ce966fdc00c969599428c8f7fa5e8d4bea885f622d6076e",
- "notes": "Horror-Modus «Das Hospiz» im Bergtal (Passwort, nicht im Kinder-Modus) – Einstieg über die Stimmung «Horror» im Bergtal-Abenteuer."
+ "size": 67018038,
+ "sha256": "f409fb41dd36143ff4a132b37a9c68d1586891faf3fe22252a7ec218871b15c2",
+ "notes": "Neue Orte: Pfadilager und Bergdorf im Bergtal, Hofladen im Ferienpark, Festival-Gelände als eigene Welt (mehrere Standorte)."
 }
