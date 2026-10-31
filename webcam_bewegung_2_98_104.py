@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_103.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_104.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.104: Nacht-Testlauf: Ursachen der Bergtal-Nacht übersetzt (seltene Tiere, Licht am Berg, Gämse, Kuh, Hase, Hermelin,
+    Reh, Steinschlag, Gewitter). Simulator 3D-4.73: Bergtal-Abenteuer mit MoveEye – Lager bewachen oder Wildkamera, Fuchs am
+    Proviant, Hinweis-Aufnahme, Sammlung von 7 seltenen Tieren.
   * 2.98.103: Simulator 3D-4.72: Ferienpark mit Leben nach Uhrzeit (Grillabend, WC-Gänge, Jogger, Bäcker) und 3 Aufgaben mit
     MoveEye (Kind finden, Velo-Dieb, Zeltwache).
   * 2.98.102: Simulator 3D-4.71: Schlafzimmer mit Hamster, Wellensittich und Hauswinkelspinne, die sich nachts vor die Linse
@@ -1105,10 +1108,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_103.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_104.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_103.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_103.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_104.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_104.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -1125,7 +1128,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.103"
+APP_VERSION = "2.98.104"
 
 
 def default_data_dir():
@@ -25926,8 +25929,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.72", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 34551400,
-         "sha256": "dfd258dcd35c0dc4f7ef6eb8c86c69d6b09cdd3ee82880382bcaf892ba266dfd"}
+SIM3D = {"version": "3D-4.73", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 34603131,
+         "sha256": "8d189e1077e6ab6367a44652231054d0bbb84cb722ec0f3261cc25ff1ddb0669"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -33038,7 +33041,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_103.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_104.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -68177,7 +68180,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.103")
+        self.root.title("MoveEye 2.98.104")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -68544,7 +68547,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.103 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.104 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -74214,7 +74217,13 @@ NACHT_PRIO = {"incident": 0, "people": 1, "animal": 2, "vehicle": 3, "weather": 
 # cause keys of the simulator (nachtlauf.gd KINDS) -> English text (translated in 599e)
 NACHT_CAUSES = {"wc": "Toilet trip (own people)", "wc_torch": "Toilet trip with torch", "cat": "Cat", "fox": "Fox", "hedgehog": "Hedgehog",
                 "car": "Headlights (late car)", "rain": "Rain", "wind": "Wind", "fog": "Fog", "unknown": "nothing in the plan (unknown)",
-                "incident": "Incident"}
+                "incident": "Incident",
+                # Bergtal-Abenteuer A1 (Simulator abenteuer_moveeye.gd): seltene Tiere und das Licht am Berg (Hinweis)
+                "lynx": "Lynx", "ibex": "Ibex", "marmot": "Marmot", "eagle": "Golden eagle", "vulture": "Bearded vulture",
+                "light": "Light on the mountain",
+                # 2.98.104: older causes of the Bergtal night (bergtal.gd night_log, abenteuer_moveeye.gd) - before shown raw
+                "chamois": "Chamois", "cow": "Cow", "hare": "Hare", "stoat": "Stoat", "deer": "Deer", "rockfall": "Rockfall",
+                "storm": "Thunderstorm"}
 NACHT_TARGETS = {"tent": "Somebody sneaks to the tent", "bike": "Somebody sneaks to the bike", "door": "Somebody sneaks to the caravan / car"}
 
 
@@ -83579,6 +83588,19 @@ _HX_nacht = {
     'Rain': ('Regen', 'Pluie', 'Pioggia', 'Plievgia'),
     'Wind': ('Wind', 'Vent', 'Vento', 'Vent'),
     'Fog': ('Nebel', 'Brouillard', 'Nebbia', 'Tschajera'),
+    'Lynx': ('Luchs', 'Lynx', 'Lince', 'Luf tscherver'),
+    'Ibex': ('Steinbock', 'Bouquetin', 'Stambecco', 'Capricorn'),
+    'Marmot': ('Murmeltier', 'Marmotte', 'Marmotta', 'Muntanella'),
+    'Golden eagle': ('Steinadler', 'Aigle royal', 'Aquila reale', 'Evla'),
+    'Bearded vulture': ('Bartgeier', 'Gypaète barbu', 'Gipeto', 'Tschess barbet'),
+    'Light on the mountain': ('Licht am Berg', 'Lumière sur la montagne', 'Luce sulla montagna', 'Glisch vi da la muntogna'),
+    'Chamois': ('Gämse', 'Chamois', 'Camoscio', 'Chamutsch'),
+    'Cow': ('Kuh', 'Vache', 'Mucca', 'Vatga'),
+    'Hare': ('Hase', 'Lièvre', 'Lepre', 'Lieur'),
+    'Stoat': ('Hermelin', 'Hermine', 'Ermellino', 'Ermelin'),
+    'Deer': ('Reh', 'Chevreuil', 'Capriolo', 'Chavriel'),
+    'Rockfall': ('Steinschlag', 'Chute de pierres', 'Caduta di massi', 'Crudada da crappa'),
+    'Thunderstorm': ('Gewitter', 'Orage', 'Temporale', 'Urizi'),
     'nothing in the plan (unknown)': ('nichts im Ablauf (unbekannt)', 'rien dans le plan (inconnu)', 'niente nel piano (sconosciuto)', 'nagut en il plan (nunenconuschent)'),
     'Somebody sneaks to the tent': ('Jemand schleicht zum Zelt', 'Quelqu’un se faufile vers la tente', 'Qualcuno si avvicina furtivo alla tenda', 'Insatgi sa stgaffa a la tenda'),
     'Somebody sneaks to the bike': ('Jemand schleicht zum Velo', 'Quelqu’un se faufile vers le vélo', 'Qualcuno si avvicina furtivo alla bici', 'Insatgi sa stgaffa al velo'),

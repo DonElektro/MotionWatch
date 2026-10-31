@@ -22,6 +22,7 @@ const Szenen = preload("res://scripts/szenenplus.gd")
 const Worlds = preload("res://scripts/worlds.gd")      # 3D-4.x Welten: the old scenes as places in the valley
 const Aussicht = preload("res://scripts/bergtal_aussicht.gd")   # «Bergtal · Aussichtspunkte»: what the viewpoints do
 const Orte = preload("res://scripts/bergtal_orte.gd")          # Orte zum Erkunden (Innenräume, Wasser, Grat, Geschichte)
+const Waerme = preload("res://scripts/waerme.gd")              # Paket A1: Fell-/Federtemperaturen von Murmeltier, Adler, Geier
 
 const ALT0 := 1500.0                 # metres above sea level at the north end (height 0)
 const LO := -1024.0                  # the height map: from LO to -LO in both directions
@@ -2480,6 +2481,15 @@ func spawn_kind(kind: String, from = null, to = null):
 			return _at_food("choughs")
 		"berg_eagle", "berg_vulture":
 			return _big_bird(kind == "berg_vulture")
+		"berg_lynx":
+			# Luchs (Lynx lynx, Paket A1): 80–110 cm, sehr scheu, vor allem nachts; geht in Abstand am Lager vorbei
+			var la: Vector3 = from if from != null else _ground_pt(18.0, 35.0)
+			var lb: Vector3 = to if to != null else _ground_pt(18.0, 35.0)
+			var lv = m.spawn("lynx", la, lb)
+			if lv != null and str(lv.kind) == "lynx":
+				lv.speed *= 0.6
+				lv.set_meta("berg_kind", "lynx")
+			return lv
 		"berg_snowhare":
 			var v2 = m.spawn("hare", from if from != null else _ground_pt(8.0, 25.0), to if to != null else _ground_pt(8.0, 25.0))
 			_recolor(v2, Color(0.95, 0.95, 0.93) if season == "winter" else Color(0.5, 0.45, 0.38))
@@ -2527,6 +2537,7 @@ func _auto():
 	w["berg_marmot"] = 0.0 if season == "winter" or dark or _burrows.is_empty() else 1.2
 	w["berg_chamois"] = 0.9 if dark else 0.5
 	w["berg_ibex"] = 0.6 if dark else 0.35
+	w["berg_lynx"] = 0.06 if dark else 0.0                    # Paket A1: selten und scheu
 	w["berg_cows"] = 0.6 if sumr and spot_xz.distance_to(HUT) < 300.0 and _count("cow") == 0 else 0.0
 	w["berg_sheep"] = 0.4 if sumr and spot_xz.distance_to(Vector2(200, 560)) < 500.0 and _count("sheep") == 0 else 0.0
 	w["berg_fox_food"] = 0.7 if dark else (0.4 if season != "winter" else 0.2)
@@ -2597,7 +2608,7 @@ func _marmot(burrow: Vector3):
 	if v == null:
 		return null
 	v.body_root.scale *= 0.85                               # Murmeltier: 50–60 cm, 3–7 kg (Marmota marmota)
-	_recolor(v, Color(0.56, 0.44, 0.3), 31.0)
+	_recolor(v, Color(0.56, 0.44, 0.3), Waerme.animal("marmot", float(m.ambient), "body"))   # (bis A1: fest 31 °C)
 	v.speed = 0.6
 	v.route = [[out, randf_range(20.0, 60.0), 0.0], out + Vector3(randf_range(-4, 4), 0, randf_range(-4, 4)), [burrow, 0.5, 0.0]]
 	v.set_meta("berg_kind", "marmot")
@@ -2679,7 +2690,7 @@ func _choughs(fp: Vector3):
 func _big_bird(vulture: bool):
 	# Bartgeier (Gypaetus barbatus): Spannweite 2,6–2,9 m · Steinadler (Aquila chrysaetos): 1,9–2,3 m - kreisen über Grat und Hang
 	var span := 2.8 if vulture else 2.1
-	var b := _bird_node(span, Color(0.55, 0.42, 0.3) if vulture else Color(0.3, 0.22, 0.14), 34.0)
+	var b := _bird_node(span, Color(0.55, 0.42, 0.3) if vulture else Color(0.3, 0.22, 0.14), Waerme.animal("vulture" if vulture else "eagle", float(m.ambient), "body"))
 	s.root.add_child(b)
 	var c := _ground_pt(80.0, 220.0)
 	var r := randf_range(40.0, 90.0)
