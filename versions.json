@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 08:29",
+ "generated": "2026-10-31 08:34",
  "versions": [
   {
-   "version": "2.98.84",
-   "file": "webcam_bewegung_2_98_84.py",
+   "version": "2.98.85",
+   "file": "webcam_bewegung_2_98_85.py",
    "url": "",
-   "sha256": "ccaff36d48fbcba1f147bd235a97491da14939a4d458a29e46324a119d19a243",
-   "date": "2026-10-31 08:29",
-   "notes": "Simulator 3D-4.53: Servos wie die echten MG90S – schnelles Schwenken mit Nachschwingen, Servostrom, Störungen «schwaches Signal» und «blockiert».",
-   "sig": "f376c5347a6968f9290dab6ef6a0c181ec2c89217ccbad42f1a933ba5c7ea5877ea4b949cc83e39961f5fd3a4809600f029f6486b9d77c1c7e1e3d5dca12ad05"
+   "sha256": "06f4c4588f38cc3a6f729c4e7a1da4a85cf2123cf0b90613024fff1d6dc4faca",
+   "date": "2026-10-31 08:34",
+   "notes": "Simulator 3D-4.54: Spielbereich «Spielen» – Abenteuer als Kapitel, Entdeckungen, Abzeichen, Stufe, Blinki; in MoveEye unter Mehr → Spielen (/play).",
+   "sig": "f0b7d342b1c42fa6e24958dea9dff237509d72e1abf9ad317b18760f4096f82cb549952552533bd2afc35205494a6a292cec2388d94db2ed89e2d6ca8497020f"
   },
   {
    "version": "2.97.1",

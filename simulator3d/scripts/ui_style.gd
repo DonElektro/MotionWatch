@@ -366,6 +366,12 @@ static func _draw_group_icon(d: Control, kind: String) -> void:
 			d.draw_polyline(P.call([Vector2(0, -5), Vector2(-4, -6.5), Vector2(-8, -6), Vector2(-8, 6), Vector2(-4, 5.5), Vector2(0, 7),
 					Vector2(4, 5.5), Vector2(8, 6), Vector2(8, -6), Vector2(4, -6.5), Vector2(0, -5)]), col, w, true)
 			d.draw_line(c + Vector2(0, -5), c + Vector2(0, 7), col, w, true)
+		"star":                                       # Paket «Spielbereich»: the start screen «Spielen» (like ⭐ of MoveEye)
+			var sp := []
+			for i in range(11):
+				var a := -PI / 2.0 + i * PI / 5.0
+				sp.append(Vector2(cos(a), sin(a)) * (8.5 if i % 2 == 0 else 3.6))
+			d.draw_polyline(P.call(sp), col, w, true)
 		"target":
 			d.draw_arc(c, 7.5, 0, TAU, 24, col, w, true)
 			d.draw_arc(c, 3.5, 0, TAU, 16, col, w, true)

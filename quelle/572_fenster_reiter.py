@@ -23,6 +23,7 @@ def _tk_more_bar(self, parent):
         g_ = g2_state()
         g2_action({"action": "again"} if g_["finished"] or not g_["mode"] else {"action": "resume"}, "window"); self._g2_wizard()
     f = self._tk_bar(parent, [("? " + tr("Manual"), self._open_help), ("🎲 " + tr("Game corner"), lambda: self._open_page("/party")),
+                              ("⭐ " + tr("Play area"), lambda: self._open_page("/play")),   # 639i: «Spielen» under «Mehr» (2.98.85)
                               ("🛠 " + tr("Tools"), lambda: self._open_page("/tools")), ("💬 " + tr("Feedback to the developer"), self._feedback),
                               ("🌐 " + tr("Overview"), lambda: self._open_page("/more")), ("ℹ " + tr("About MoveEye"), self._about_win), ("🧭 " + tr("Setup"), setup),
                               ("↺ " + tr("Reset all tours"), lambda: (g2_action({"action": "tours_reset"}, "window"), self._status("Setup", tr("All tours will show again.")))),

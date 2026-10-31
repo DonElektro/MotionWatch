@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.53** · passende MoveEye-Version (früher Motion Watch) **2.98.84**
+Stand: 31.10.2026 · Simulator-Version **3D-4.54** · passende MoveEye-Version (früher Motion Watch) **2.98.85**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.54 (MoveEye 2.98.85): Spielbereich «Spielen» (`spielbereich.gd`, MoveEye 639i)
+
+- `spielbereich.gd` (neu): Startbildschirm «Spielen» (Kapitel, Entdeckungen, Abzeichen, Stufe, Blinki), Kachel ⭐ in `quick.gd`,
+  Steuerung `{"action":"spielbereich"}`. MoveEye 639i: Web `/play` unter Mehr (bis Daniel über einen 7. Reiter entscheidet),
+  im Fenster Knopf «⭐ Spielen» in der Leiste von Mehr (572).
 
 ## NEU in 3D-4.53 (MoveEye 2.98.84): Servo-Mechanik MG90S (`servo.gd`)
 
