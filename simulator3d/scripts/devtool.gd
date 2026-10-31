@@ -195,6 +195,10 @@ static func alle_orte(m = null) -> Array:
 		var room := rooms.has(str(p[0]))
 		_add(out, seen, ("bergtal.raum." if room else "bergtal.ort.") + _slug(str(p[0])), str(p[0]), "bergtal", "raum" if room else "ort",
 				float(p[1]), float(p[2]), "", 6.0 if room else 25.0, "bergtal_orte.gd:INSIDE" if room else "bergtal_orte.gd:PLACES", {"room": true} if room else {})
+	# Bergtal-Abenteuer: die Orte der Geheimnisse und Action-Teile (abenteuer_geheim.gd orte) - geheime mit «geheim»
+	for g in load("res://scripts/abenteuer_geheim.gd").orte(m):
+		_add(out, seen, "bergtal.ort." + str(g[0]), str(g[1]), "bergtal", "ort", float(g[2]), float(g[3]), "", 6.0, "abenteuer_geheim.gd",
+				{"geheim": true} if bool(g[4]) else {})
 	# Ferienpark: named places, MoveEye spots, the vignettes of the Erlebniswelt (ferienpark.gd ERLEBNIS)
 	for p in Fp.PLACES:
 		_add(out, seen, "ferienpark.ort." + _slug(str(p[0])), str(p[0]), "ferienpark", "ort", float(p[1]), float(p[2]), "", 20.0, "ferienpark.gd:PLACES")
@@ -575,9 +579,10 @@ func _fill() -> void:
 		if q != "" and nm.to_lower().find(q) < 0 and str(e["name"]).to_lower().find(q) < 0:
 			continue
 		_items.append(e)
-		var i := _list.add_item(("▣ " if e["kind"] == "szene" else "• ") + nm)
+		var gh := bool(e.get("geheim", false))
+		var i := _list.add_item(("▣ " if e["kind"] == "szene" else "• ") + nm + ("  (" + T.t("geheim") + ")" if gh else ""))
 		_list.set_item_custom_fg_color(i, KIND_COL.get(str(e["kind"]), UI.TXT))
-		_list.set_item_tooltip(i, "%s · %s" % [T.t(str(KIND_NAME.get(str(e["kind"]), e["kind"]))), str(e["src"])])
+		_list.set_item_tooltip(i, "%s · %s" % [T.t(str(KIND_NAME.get(str(e["kind"]), e["kind"]))) + (" · " + T.t("geheim") if gh else ""), str(e["src"])])
 	if _map != null:
 		_map.queue_redraw()
 
@@ -708,7 +713,7 @@ class DevMap extends Control:
 						h = i
 				if h != hover:
 					hover = h
-					tooltip_text = "" if e == null else "%s (%s)" % [T.t(str(e["name"])), T.t(str(KIND_NAME.get(str(e["kind"]), e["kind"])))]
+					tooltip_text = "" if e == null else "%s (%s)" % [T.t(str(e["name"])), T.t(str(KIND_NAME.get(str(e["kind"]), e["kind"]))) + (" · " + T.t("geheim") if bool(e.get("geheim", false)) else "")]
 					queue_redraw()
 
 	func _zoom(p: Vector2, f: float) -> void:

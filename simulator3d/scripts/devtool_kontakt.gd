@@ -103,7 +103,7 @@ func _run() -> void:
 		var r: Dictionary = dev.goto(cur)
 		var loaded: bool = str(r.get("loaded", "")) != "" or str(main.scene) != last_scene
 		last_scene = str(main.scene)
-		var item := {"id": cur, "name": str(e["name"]), "world": str(e["world"]), "kind": str(e["kind"]), "ok": false}
+		var item := {"id": cur, "name": str(e["name"]), "world": str(e["world"]), "kind": str(e["kind"]), "ok": false, "geheim": bool(e.get("geheim", false))}
 		if not bool(r.get("ok", false)):
 			item["error"] = str(r.get("error", "?"))
 			done.append(item)
@@ -287,7 +287,7 @@ func write_index() -> void:
 		h += "<h2>%s (%d)</h2><div class=\"g\">" % [_esc(dev.world_name(str(w))), (by[w] as Array).size()]
 		for i in by[w]:
 			h += "<figure><a href=\"%s\"><img loading=\"lazy\" src=\"%s\" alt=\"\"></a><figcaption>%s<small>%s · %s</small></figcaption></figure>" % [
-					_esc(i["file"]), _esc(i["file"]), _esc(T.t(str(i["name"]))), _esc(T.t(str(Dev.KIND_NAME.get(str(i["kind"]), i["kind"])))), _esc(str(i["id"]))]
+					_esc(i["file"]), _esc(i["file"]), _esc(T.t(str(i["name"]))), _esc(T.t(str(Dev.KIND_NAME.get(str(i["kind"]), i["kind"]))) + (" · " + T.t("geheim") if bool(i.get("geheim", false)) else "")), _esc(str(i["id"]))]
 		h += "</div>"
 		by.erase(w)
 	h += "</body></html>"

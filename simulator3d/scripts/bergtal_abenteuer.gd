@@ -98,6 +98,7 @@ var title_lab: Label
 var a2                               # A2: Figuren, Gespräche, Nebenaufgaben (abenteuer_figuren.gd)
 var a1                               # abenteuer_moveeye.gd (Paket A1)
 var blinki                           # A6: abenteuer_blinki.gd (Blinki als Helfer: Tipps, Funde)
+var geheim                           # abenteuer_geheim.gd: Geheimnisse, Nacht mit Geräuschen + Action-Teile (abenteuer_action.gd)
 var kids_test := false               # A6, nur für Tests (/control kinder_test): Kinder-Modus ohne main.kids_on
 var _lv_c := [-1, -1, 1]             # A6: level() je Bild zwischengespeichert [frame, xp, lv]
 var _last_read := ""                 # A6: die zuletzt vorgelesene Seite («Nochmals vorlesen»)
@@ -415,6 +416,8 @@ func start_run(seed_v := 0) -> Dictionary:
 	_snap_later("Start: " + T.t(str(ch["start"][0])), "view")
 	if raetsel != null:
 		raetsel.on_start()
+	if geheim != null:
+		geheim.on_start()                                # Geheimnisse / Action-Teile
 	_changed()
 	_say(T.t("Los geht's: %s") % T.t(str(ch["start"][0])))
 	_intro()                                             # A6: Zwischenszene (Kamerafahrt), danach _advance()
@@ -663,10 +666,12 @@ func _start_leg(i: int, pts: Array, flags: Array, nm: String) -> void:
 
 
 func _tick_leg(dt: float) -> void:
-	if leg.is_empty() or (zweit != null and zweit.holds_leg()):
+	if leg.is_empty() or (zweit != null and zweit.holds_leg()) or (geheim != null and geheim.holds_leg()):
 		return
 	var f0: float = float(leg["f"])
 	var f: float = minf(1.0, f0 + dt / float(leg["real_s"]))
+	if geheim != null and geheim.leg_stop(leg, f0, f):
+		return                                           # Action-Teil mitten im Wegstück (Steg, Kühe, Schleuse)
 	leg["f"] = f
 	var t_h: float = float(leg["t_h"])
 	main.set_hour(float(leg["h0"]) + t_h * f)
@@ -807,6 +812,8 @@ func _ask(kind: String, title: String, text: String, opts: Array, extra := {}) -
 		R["pending"][k] = extra[k]
 	if raetsel != null:
 		raetsel.on_ask()                                 # A3: help level, far hints, pocket watch, ice, ways
+	if geheim != null:
+		geheim.on_ask()                                  # Action-Teile: Seilbahn an der Gabelung, Felsnische, Spalt
 	if kinder():
 		R["pending"]["text"] = kurz(str(R["pending"]["text"]))   # A6 Kinder-Modus: kurze Texte
 	_replay_t = 0.7
@@ -825,6 +832,9 @@ func choose(v: String) -> Dictionary:
 		return {"ok": false, "error": "options: " + str((pe["options"] as Array).map(func(o): return o[0]))}
 	R["pending"] = {}
 	choices.append([int(R["stage"]), str(pe["kind"]), v])
+	if geheim != null and geheim.choose(pe, v):
+		_changed()                                       # Geheimnisse / Action-Teile (gh_*)
+		return {"ok": true}
 	if str(pe["kind"]).begins_with("a2_") and a2 != null:
 		a2.choose(pe, v)                                 # A2: talk / side task
 		_changed()
@@ -1118,6 +1128,8 @@ func _register_kinds() -> void:
 		main.nacht.register_kind(k, func(_ev): return _spawn_list(kk), kinds[k][0], kinds[k][1])
 	if a1 != null:
 		a1.register_kinds()                              # A1: fox / food, lynx, ibex, game trail, birds, hint light
+	if geheim != null:
+		geheim.register_kinds()                          # Dachs (Geräusche), Licht an einem Ort ohne Namen
 
 
 func _spawn_list(kind: String) -> Array:
@@ -1172,6 +1184,8 @@ func night_plan(from_h: float, to_h: float, speed: float) -> Array:
 		out.append({"kind": "wind", "at_h": r.randf_range(0.1, 0.7) * sp, "dur_h": minf(0.75, 0.12 * sp), "wind": 40.0 + 30.0 * float(rt.get("wind", 0.5))})
 	if a1 != null:
 		a1.plan_extra(out, r, sp, speed)                  # A1: rare animals, game trail, the light on the mountain
+	if geheim != null:
+		geheim.plan_extra(out, sp, speed)                 # eigene Zufallszahlen: die anderen Ereignisse bleiben gleich
 	# seconds, not two animals on top of each other
 	out.sort_custom(func(a, c): return float(a["at_h"]) < float(c["at_h"]))
 	var real_s := sp * 3600.0 / speed
@@ -1251,7 +1265,7 @@ func _tick_night(dt: float) -> void:
 static func _kind_name(k: String) -> String:
 	return {"bt_fox": "Fuchs am Proviant", "bt_chamois": "Gämsen", "bt_cows": "Kühe", "bt_hare": "Schneehase", "bt_stoat": "Hermelin",
 			"bt_deer": "Hirsch", "bt_stranger": "Fremder am Rucksack", "bt_rockfall": "Steinschlag", "bt_storm": "Gewitter", "rain": "Regen",
-			"fog": "Nebel", "wind": "Windböen"}.get(k, A1.kind_name(k))
+			"fog": "Nebel", "wind": "Windböen"}.get(k, preload("res://scripts/abenteuer_geheim.gd").kind_name(k) if k.begins_with("gh_") else A1.kind_name(k))
 
 
 # =======================================================================================================================
@@ -1394,6 +1408,8 @@ func _morning() -> void:
 			"sleep": snappedf(sleep, 0.01), "source": _night_src, "battery_h": battery_h, "finale": finale, "notes": notes}
 	if a1 != null:
 		a1.morning(R["result"])                          # A1: food, pictures, the hint
+	if geheim != null:
+		geheim.morning(R["result"])                      # Geheimnisse: Erfahrung, das Wort der Steinmännchen
 	_diary("morning", T.t("Der Morgen"), T.t(str(D.FLAVOR[R["mood"]]["morning"])))
 	P["runs"].append({"id": R["id"], "chapter": R["chapter"], "stars": stars, "date": Time.get_datetime_string_from_system().substr(0, 16), "seed": R["seed"]})
 	P["runs"] = (P["runs"] as Array).slice(-30)
@@ -1796,6 +1812,9 @@ func _ready() -> void:
 	zweit = load("res://scripts/abenteuer_zweit.gd").new()     # A5 (Einhänge-Punkt)
 	zweit.setup(self)
 	add_child(zweit)
+	geheim = load("res://scripts/abenteuer_geheim.gd").new()   # Geheimnisse + Action-Teile (Einhänge-Punkt)
+	geheim.setup(self)
+	add_child(geheim)
 
 
 func _layout() -> void:
@@ -2178,6 +2197,8 @@ func _paint_chapter() -> void:
 		zweit.paint_board(left, true)                  # A5: Familien-Bestenliste (kurz)
 		if zweit.team != null:
 			zweit.team.paint_chapter(left)             # Zwei-Spieler-Bausteine: Reisetagebuch
+	if geheim != null:
+		geheim.paint_chapter(left)                       # erst wenn etwas gefunden ist
 
 
 func _paint_slots(parent: Control) -> void:
@@ -2517,6 +2538,8 @@ func _paint_hud() -> void:
 			b.custom_minimum_size = Vector2(0, 40)
 		if raetsel != null:
 			raetsel.paint_pending(g, pe)
+		if geheim != null:
+			geheim.paint_pending(g, pe)
 	if blinki != null:
 		blinki.paint(body)                               # A6: Blinki kommentiert Funde
 	var acts := HFlowContainer.new()
@@ -2535,6 +2558,8 @@ func _paint_hud() -> void:
 	Ruck.paint_tausch(self, body)                        # A4: Tausch-Fenster
 	if raetsel != null:
 		raetsel.paint_hud(body)
+	if geheim != null:
+		geheim.paint_hud(body)                           # Feldstecher «hier durchschauen», Abstecher zum Licht
 	var lg := _group(T.t("Tagebuch"))
 	var lst: Array = R["log"]
 	for e in lst.slice(maxi(0, lst.size() - 4)):
@@ -2583,6 +2608,8 @@ func _paint_camp() -> void:
 		a2.paint_camp(body)                              # A2: people at the camp, the talk
 	if zweit != null and zweit.team != null:
 		zweit.team.paint_camp(body)                    # Zwei-Spieler-Bausteine: Lagerfeuer, Fotowettbewerb
+	if geheim != null:
+		geheim.paint_camp(body)
 
 
 func _paint_night() -> void:
@@ -2610,6 +2637,8 @@ func _paint_night() -> void:
 		a1.paint_night(g)
 	if raetsel != null:
 		raetsel.paint_night(body)                        # A3: Sternbild
+	if geheim != null:
+		geheim.paint_night(body)                         # Geräusche in der Nacht
 
 
 func _paint_morning() -> void:
@@ -2631,6 +2660,8 @@ func _paint_morning() -> void:
 		var fg := _group(T.t("Die Überraschung"))
 		for line in D.FINALE:
 			fg.add_child(_lab(kurz(T.t(line)), 15, Color(0.97, 0.9, 0.7)))
+		if geheim != null:
+			geheim.paint_finale(fg)                      # die fünf Zeichen der Steinmännchen (nur wenn alle gefunden)
 		var tg2 := _group(T.t("Die letzte Seite"))               # A6: die Andeutung auf Teil 2
 		tg2.add_child(_lab(kurz(T.t(TEIL2_PAGE)), 14, Color(0.95, 0.85, 0.6)))
 		tg2.add_child(_lab(T.t(TEIL2_NOTE), 13, ACC))
@@ -2684,6 +2715,8 @@ func _paint_morning() -> void:
 	_karte_in(right, 260.0)
 	if a1 != null:
 		a1.paint_morning(body)                            # A1: MoveEye at the camp, the hint, evaluate the pictures
+	if geheim != null:
+		geheim.paint_morning(body)                       # Nachtaufnahme (Licht), wer hat geraschelt?
 	# the diary with pictures of the day and the night
 	var dg := _group(T.t("Tagebuch"))
 	if not _snaps.is_empty():
@@ -2875,6 +2908,8 @@ func op(d: Dictionary) -> Dictionary:
 			out = a2.op(d) if a2 != null else {"ok": false}
 		"a1":
 			out = a1.op(d) if a1 != null else {"ok": false}
+		"geheim":                                      # abenteuer_geheim.gd (+ abenteuer_action.gd)
+			out = geheim.op(d) if geheim != null else {"ok": false}
 		"dev":
 			dev_open = bool(d.get("value", not dev_open))
 			_changed()
@@ -2920,7 +2955,7 @@ func state() -> Dictionary:
 				"log": (R["log"] as Array).slice(-6), "choices": choices.size(), "replaying": replaying},
 			"a5_zweit": zweit.state() if zweit != null else {}, "a3": raetsel.state() if raetsel != null else {}, "error": error,
 			"a6": {"slot": SS.slot(), "slot_name": SS.name_of(SS.slot()), "file": save_file, "kids": kinder(), "intro": bool(R.get("intro", false)),
-				"lauf": SS.lauf_head(), "stimme": Stimme.state(), "last_read": _last_read, "blinki": blinki.state() if blinki != null else {},
+				"lauf": SS.lauf_head(), "stimme": Stimme.state(), "last_read": _last_read, "blinki": blinki.state() if blinki != null else {}, "gh": geheim.state() if geheim != null else {},
 				"season": str(R.get("season", W["season"])), "level": SS.level(main), "teil2": bool(P.get("teil2", false)),
 				"szenen": bool(SS.setting("szenen", true)), "text": str(pe.get("text", ""))}}
 

@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.13.0** · MoveEye **3.13.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.14.0** · MoveEye **3.14.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.14.0 (MoveEye 3.14.0): Geheimnisse und Action im Grossvater-Abenteuer
+
+- `abenteuer_geheim.gd` (neu, `bergtal_abenteuer.gd` `geheim`): Steinmännchen mit Geheimwort, doppelter Boden, Licht auf der
+  Nachtaufnahme, Nacht-Geräusche mit «Wer war es?»; `abenteuer_action.gd` (neu): ein Action-Teil pro Kapitel. Steht neben den
+  Team-Bausteinen von 3.13 (Kapitelseite und Lager: beide). `devtool.gd`, `devtool_kontakt.gd`.
+- `zwei_bausteine.gd`: Kategorie-Emoji (💎 🐾 🗿 👣 📖 📸 🤝) durch übersetzten Text ersetzt (Godot-Standardschrift ohne Emoji).
 
 ## NEU in 3.13.0 (MoveEye 3.13.0): Team-Bausteine zu zweit (`zwei_bausteine.gd`)
 
