@@ -1,7 +1,7 @@
 {
- "version": "3D-4.26",
+ "version": "3D-4.33",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 64637396,
- "sha256": "3c81a8b691cdf3817fbc86021dd57500481690e0859c3aa91391e3f20128634e",
- "notes": "Alle schwebenden Fenster (Kompass, Karte, Livebild, SmallTV, Gerät, Mover, Kopf, Kameras, CPU) in einem gemeinsamen Rahmen: verschieben, Grösse ändern, ✕ ausblenden, Schnappen; neuer Knopf «Fenster» in der Leiste unten (Liste, «Anordnung zurücksetzen»); die Anordnung bleibt gespeichert."
+ "size": 65459298,
+ "sha256": "dccc1c2f2be2df56ee7434a1f0a8d22001090e347c840ec1c0692be85b365d26",
+ "notes": "Weitwinkel-Kamera wie im Gehäuse v5.2: Montage «Im Gehäuse» (Standard) und «Nicht verbaut», Fischauge wie das echte Objektiv, kleine IR-LED."
 }

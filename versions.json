@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 03:55",
+ "generated": "2026-10-31 06:02",
  "versions": [
   {
-   "version": "2.98.57",
-   "file": "webcam_bewegung_2_98_57.py",
+   "version": "2.98.64",
+   "file": "webcam_bewegung_2_98_64.py",
    "url": "",
-   "sha256": "e244862ce85caefa253914fbebe866d557e0a03c4fe876a772cf56381975f663",
-   "date": "2026-10-31 03:55",
-   "notes": "Simulator 3D-4.26: alle schwebenden Fenster (Kompass, Karte, Livebild, SmallTV, Gerät, Mover, Kopf, Kameras, CPU) in einem gemeinsamen Rahmen – verschieben, Grösse ändern, ✕ ausblenden, Schnappen, neuer Knopf «Fenster» in der Leiste unten (Liste, «Anordnung zurücksetzen»), Anordnung pro PC gespeichert.",
-   "sig": "2e8d1968e85bbd0d30c9cb2f3053019e74587deb79805e6625d44bfdeb827ac43829f91b91ae3ecd3e49929b7fd9d77d0b9d7d272471436c55fd175ee0dc3108"
+   "sha256": "42a682459562b37e05e2505a0843d39e8204ded3278a9e8fb792793df0449257",
+   "date": "2026-10-31 06:02",
+   "notes": "Simulator 3D-4.33: Weitwinkel-Kamera wie im Gehäuse v5.2 – Montage «Im Gehäuse (v5.2)» (Standard) und «Nicht verbaut (Blindstopfen)», Fischauge wie das echte Objektiv, kleine IR-LED; Kachel 🔭 mit den neuen Knöpfen.",
+   "sig": "3e2824f8474486aa6eb1aee3f911cbaf0e139567265661cef9dbf174dbc2e61e5434611dffa4670eb959590de353c7ed62fba73331e5efc707f43a50fe804503"
   },
   {
    "version": "2.97.1",
