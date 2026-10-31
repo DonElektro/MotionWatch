@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 4987 (Stellen: 6914)
-Übersetzt: en 4756, fr 4756, it 4756, rm 4756
+Texte gesamt: 5023 (Stellen: 6972)
+Übersetzt: en 4792, fr 4792, it 4792, rm 4792
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 380 Stellen
 Nicht mehr im Code (noch in texte.json): 52
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 56 Stellen in wizpics.gd 21, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 17762, schlüssel 12552, keine Wörter 8086, index 6369, technisch 2251, doc 1441, einheit 190, englisch 86, log 78, pfad 66, html 56, klasse 22, shader 4
+Übersprungen (Grund: Anzahl): kennung 17881, schlüssel 12648, keine Wörter 8148, index 6381, technisch 2302, doc 1460, einheit 193, englisch 86, log 78, pfad 66, html 56, klasse 23, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  669    29
@@ -52,6 +52,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   inventar.gd               41     4
   gamecompare.gd            40     6
   kitrain.gd                39     9
+  fotomodus.gd              38     0
   gamejaeger.gd             38     1
   simreal.gd                37     0
   update.gd                 37     4
@@ -246,32 +247,32 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main.gd:1638  '  %.0f Mbit/s'
   main.gd:2335  ' (von MoveEye)'
   main.gd:2368  'Der Simulator ist belegt: '
-  main.gd:3224  'aus'
-  main.gd:3224  'ein'
-  main.gd:3301  'Sabotage-Test: '
-  main.gd:3301  'aus'
-  main.gd:3355  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3358  '\n🚨 Bewacht und weg: '
-  main.gd:4165  'keine'
-  main.gd:4191  'Wächter an MoveEye: '
-  main.gd:4950  'Dein Platz: '
-  main.gd:5185  ' · schaut nur zu: '
-  main.gd:5188  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:5189  ' · Update: '
-  main.gd:5523  'Blinde Flecken: '
-  main.gd:6190  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6496  'Autostart: '
-  main.gd:6507  'Autologon: '
-  main.gd:6668  'Karte öffnen: '
-  main.gd:6814  'Echt-Abgleich: '
-  main.gd:6824  'Trainingspaket: '
-  main.gd:6833  ' · %d offen · %.1f MB'
-  main.gd:6833  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6842  'Verbindung · '
-  main.gd:6842  'aus'
-  main.gd:6846  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6846  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6849  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:3226  'aus'
+  main.gd:3226  'ein'
+  main.gd:3303  'Sabotage-Test: '
+  main.gd:3303  'aus'
+  main.gd:3357  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3360  '\n🚨 Bewacht und weg: '
+  main.gd:4167  'keine'
+  main.gd:4193  'Wächter an MoveEye: '
+  main.gd:4954  'Dein Platz: '
+  main.gd:5189  ' · schaut nur zu: '
+  main.gd:5192  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:5193  ' · Update: '
+  main.gd:5527  'Blinde Flecken: '
+  main.gd:6194  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6500  'Autostart: '
+  main.gd:6511  'Autologon: '
+  main.gd:6672  'Karte öffnen: '
+  main.gd:6818  'Echt-Abgleich: '
+  main.gd:6828  'Trainingspaket: '
+  main.gd:6837  ' · %d offen · %.1f MB'
+  main.gd:6837  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6846  'Verbindung · '
+  main.gd:6846  'aus'
+  main.gd:6850  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6850  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6853  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:446  ' (automatisch von oben)'
   explore.gd:446  ' · schnell'
   fahrzeuge.gd:90  'nie'
@@ -543,9 +544,9 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   templates.gd:308  'Datei nicht lesbar: '
   templates.gd:317  'Umwandeln ging nicht: '
   templates.gd:322  'Datei enthält kein 3D-Modell: '
-  zwilling.gd:94  'Bild nicht lesbar: '
-  zwilling.gd:104  'Kann nicht speichern: '
-  zwilling.gd:168  'Foto fehlt: '
+  zwilling.gd:104  'Bild nicht lesbar: '
+  zwilling.gd:114  'Kann nicht speichern: '
+  zwilling.gd:180  'Foto fehlt: '
   testrun.gd:775  ' (nur Wärmebild)'
   testrun.gd:900  ' (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).'
   testrun.gd:951  'FALSCH: '
