@@ -73860,7 +73860,10 @@ NACHT_PRIO = {"incident": 0, "people": 1, "animal": 2, "vehicle": 3, "weather": 
 # cause keys of the simulator (nachtlauf.gd KINDS) -> English text (translated in 599e)
 NACHT_CAUSES = {"wc": "Toilet trip (own people)", "wc_torch": "Toilet trip with torch", "cat": "Cat", "fox": "Fox", "hedgehog": "Hedgehog",
                 "car": "Headlights (late car)", "rain": "Rain", "wind": "Wind", "fog": "Fog", "unknown": "nothing in the plan (unknown)",
-                "incident": "Incident"}
+                "incident": "Incident",
+                # Bergtal-Abenteuer A1 (Simulator abenteuer_moveeye.gd): seltene Tiere und das Licht am Berg (Hinweis)
+                "lynx": "Lynx", "ibex": "Ibex", "marmot": "Marmot", "eagle": "Golden eagle", "vulture": "Bearded vulture",
+                "light": "Light on the mountain"}
 NACHT_TARGETS = {"tent": "Somebody sneaks to the tent", "bike": "Somebody sneaks to the bike", "door": "Somebody sneaks to the caravan / car"}
 
 
@@ -83207,6 +83210,12 @@ _HX_nacht = {
     'Rain': ('Regen', 'Pluie', 'Pioggia', 'Plievgia'),
     'Wind': ('Wind', 'Vent', 'Vento', 'Vent'),
     'Fog': ('Nebel', 'Brouillard', 'Nebbia', 'Tschajera'),
+    'Lynx': ('Luchs', 'Lynx', 'Lince', 'Luf tscherver'),
+    'Ibex': ('Steinbock', 'Bouquetin', 'Stambecco', 'Capricorn'),
+    'Marmot': ('Murmeltier', 'Marmotte', 'Marmotta', 'Muntanella'),
+    'Golden eagle': ('Steinadler', 'Aigle royal', 'Aquila reale', 'Evla'),
+    'Bearded vulture': ('Bartgeier', 'Gypaète barbu', 'Gipeto', 'Tschess barbet'),
+    'Light on the mountain': ('Licht am Berg', 'Lumière sur la montagne', 'Luce sulla montagna', 'Glisch vi da la muntogna'),
     'nothing in the plan (unknown)': ('nichts im Ablauf (unbekannt)', 'rien dans le plan (inconnu)', 'niente nel piano (sconosciuto)', 'nagut en il plan (nunenconuschent)'),
     'Somebody sneaks to the tent': ('Jemand schleicht zum Zelt', 'Quelqu’un se faufile vers la tente', 'Qualcuno si avvicina furtivo alla tenda', 'Insatgi sa stgaffa a la tenda'),
     'Somebody sneaks to the bike': ('Jemand schleicht zum Velo', 'Quelqu’un se faufile vers le vélo', 'Qualcuno si avvicina furtivo alla bici', 'Insatgi sa stgaffa al velo'),

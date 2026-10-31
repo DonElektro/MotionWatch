@@ -37,7 +37,10 @@ NACHT_PRIO = {"incident": 0, "people": 1, "animal": 2, "vehicle": 3, "weather": 
 # cause keys of the simulator (nachtlauf.gd KINDS) -> English text (translated in 599e)
 NACHT_CAUSES = {"wc": "Toilet trip (own people)", "wc_torch": "Toilet trip with torch", "cat": "Cat", "fox": "Fox", "hedgehog": "Hedgehog",
                 "car": "Headlights (late car)", "rain": "Rain", "wind": "Wind", "fog": "Fog", "unknown": "nothing in the plan (unknown)",
-                "incident": "Incident"}
+                "incident": "Incident",
+                # Bergtal-Abenteuer A1 (Simulator abenteuer_moveeye.gd): seltene Tiere und das Licht am Berg (Hinweis)
+                "lynx": "Lynx", "ibex": "Ibex", "marmot": "Marmot", "eagle": "Golden eagle", "vulture": "Bearded vulture",
+                "light": "Light on the mountain"}
 NACHT_TARGETS = {"tent": "Somebody sneaks to the tent", "bike": "Somebody sneaks to the bike", "door": "Somebody sneaks to the caravan / car"}
 
 
