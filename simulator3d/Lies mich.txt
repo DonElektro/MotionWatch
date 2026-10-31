@@ -421,6 +421,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.45
+3D-4.45: Tiere verhalten sich echter: Reh äugt und flieht in Sprüngen, Fuchs mit Mäusesprung, Wildschwein-Rotte, Igel
+rollt sich ein, Hase drückt sich, Katze springt aufs Auto; neu Krähen, Elstern, Möwen am Boden und «Hund frei laufend».
+Echte Grössen (das Reh war so gross wie ein Hirsch). Wärme der Tiere aus der Wärmetabelle.
+So testest du: 1) 20:30, «Reh» schicken und mit der Figur langsam hingehen: es schaut, flieht, schaut zurück.
+2) 11 Uhr, «Krähen» schicken, hingehen: sie fliegen auf. 3) Nachts «Igel», nahe hingehen: er rollt sich ein.
+
 NEU IN 3D-4.44
 3D-4.44: Wärmebild wie der echte Thermal-90 (80 × 62, Rauschen, Drift, Unschärfe, Wasser auf der Linse) und eine
 Wärmetabelle für Menschen, Tiere, Motoren, Feuer und Sonne: Asphalt am Nachmittag warm, Nebel schluckt die Ferne,

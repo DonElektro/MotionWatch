@@ -581,9 +581,15 @@ func _person_extras(jacket: Color, cloth_t: float) -> void:
 
 func _build_animal() -> void:
 	# height of the back, body length, colour, body temperature (fur), leg thickness
-	var spec := {"fox": [0.42, 0.62, Color(0.82, 0.38, 0.12), 28.0, 0.035], "deer": [0.95, 1.05, Color(0.58, 0.4, 0.23), 29.0, 0.042],
-			"boar": [0.62, 1.05, Color(0.22, 0.19, 0.16), 28.0, 0.07], "cat": [0.26, 0.4, Color(0.35, 0.33, 0.3), 29.0, 0.025],
-			"dog": [0.5, 0.7, Color(0.45, 0.35, 0.22), 30.0, 0.045], "badger": [0.3, 0.7, Color(0.42, 0.42, 0.42), 28.0, 0.05],
+	# 3D-4.x «Tiere» (31.10.2026): sizes of the real animals - the back is at about 1.32 × the first value (body radius on top).
+	# Schulterhöhe: Rotfuchs 35–40 cm, Reh 60–75 cm, Wildschwein 55–100 cm, Hauskatze 25–30 cm, Dachs 25–30 cm, Feldhase ~30 cm
+	# 3D-4.45: the fur temperature comes from Waerme.animal(kind, ambient, "body", sun) (waerme.gd) for every kind it knows;
+	# the 4th value below is only the fallback for kinds not in waerme.gd (and with «Wärmebild wie echt» off, as before).
+	# (Wildtier Schweiz / Schweizerische Vogelwarte-Steckbriefe, Wikipedia-Artikel der Arten). Until 3D-4.26 the deer had
+	# the size of a red deer (1.25 m), the fox, badger and cat were a quarter too tall.
+	var spec := {"fox": [0.31, 0.62, Color(0.82, 0.38, 0.12), 28.0, 0.03], "deer": [0.55, 1.0, Color(0.58, 0.4, 0.23), 29.0, 0.032],
+			"boar": [0.58, 1.05, Color(0.22, 0.19, 0.16), 28.0, 0.07], "cat": [0.22, 0.4, Color(0.35, 0.33, 0.3), 29.0, 0.022],
+			"dog": [0.5, 0.7, Color(0.45, 0.35, 0.22), 30.0, 0.045], "badger": [0.22, 0.7, Color(0.42, 0.42, 0.42), 28.0, 0.045],
 			"hare": [0.28, 0.42, Color(0.55, 0.45, 0.32), 30.0, 0.03], "hedgehog": [0.12, 0.26, Color(0.35, 0.28, 0.2), 27.0, 0.02],
 			# 3D-3.27: wolf, marten, squirrel
 			"wolf": [0.66, 1.0, Color(0.5, 0.48, 0.44), 30.0, 0.05], "marten": [0.17, 0.48, Color(0.34, 0.22, 0.12), 30.0, 0.02],
@@ -617,6 +623,8 @@ func _build_animal() -> void:
 		bodyr = hb * 0.42
 	if kind == "hedgehog":
 		bodyr = 0.11
+	if kind == "badger":
+		bodyr = hb * 0.52                        # 3D-4.x: a low, broad body on short legs
 	body_h = hb * sc
 	body_r = max(L * 0.6, hb * 0.55) * sc
 	radius = max(0.15, L * 0.45) * sc
