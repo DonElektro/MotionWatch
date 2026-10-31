@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.61"
+const VERSION := "3D-4.62"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -5006,6 +5006,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return entdecken.control(d) if entdecken != null else {"ok": false, "error": "no entdecken"}
 	elif a == "spielbereich":                          # Paket «Spielbereich»: {do: info | open | close | start (id) | seen | reset}
 		return spielbereich.control(d) if spielbereich != null else {"ok": false, "error": "no spielbereich"}
+	elif a == "dev":                                   # Entwicklertool 1 (devtool.gd): {do: places | goto (id) | fly (on, speed) | open | close | info}
+		return mehr.dev.control(d) if mehr != null and mehr.dev != null else {"ok": false, "error": "not ready"}
 	elif a == "mehr":                                  # 3D-4.2x: «Mehr» (tests): {"do": open | theme | tour | diag | log | fb_* | shot}
 		return mehr.control(d) if mehr != null else {"ok": false, "error": "not ready"}
 	elif a == "feedback":                              # MoveEye 2.98.33: the dialog «Rückmeldung» (tests: {text, kind, stars, shot})
@@ -7504,8 +7506,8 @@ func _fly(dt: float) -> void:
 	view_cam.far = 7000.0 if terrain else 2000.0
 	if phone != null and phone.visible and phone.screen.has_focus():
 		return                                   # keys go to the phone
-	if explore != null and explore.on:
-		return                                   # exploring: W A S D drive the rover
+	if explore != null and (explore.on or explore.fly):
+		return                                   # exploring: W A S D drive the rover (Entwicklertool: the fly camera, explore.gd)
 	if typing():
 		return                                   # 3D-3.88: letters typed into a search field do not fly the view
 	var mv := Vector3.ZERO

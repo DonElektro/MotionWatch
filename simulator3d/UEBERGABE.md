@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.61** · passende MoveEye-Version (früher Motion Watch) **2.98.92**
+Stand: 31.10.2026 · Simulator-Version **3D-4.62** · passende MoveEye-Version (früher Motion Watch) **2.98.93**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.62 (MoveEye 2.98.93): Entwicklertool Teil 1 (`devtool.gd`)
+
+- `devtool.gd` (neu): Fenster Mehr → Entwickler (nur Besitzer) mit Übersichtskarte aller Welten und Orte (`explore.gd`
+  `alle_orte()`), Klick = hinspringen, Flugkamera (W A S D, Esc zurück); `/control dev`. Anpassungen in `mehr.gd`,
+  `padmap.gd`, `main.gd`; Texte in `i18n/texte.json` (sim_texte nach dem Merge neu gelaufen, 0 Lücken).
 
 ## NEU in 3D-4.61 (MoveEye 2.98.92): Kriechende Paket-Figuren (`figur_paket.gd`)
 
