@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
 Texte gesamt: 5040 (Stellen: 7002)
-Übersetzt: en 4809, fr 4809, it 4809, rm 4809
+Übersetzt: en 5040, fr 5040, it 5040, rm 5040
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 380 Stellen
 Nicht mehr im Code (noch in texte.json): 52
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 56 Stellen in wizpics.gd 21, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 18003, schlüssel 12762, keine Wörter 8229, index 6417, technisch 2327, doc 1472, einheit 198, englisch 90, log 78, pfad 66, html 56, klasse 23, shader 4
+Übersprungen (Grund: Anzahl): kennung 18003, schlüssel 12763, keine Wörter 8229, index 6418, technisch 2327, doc 1473, einheit 198, englisch 90, log 78, pfad 66, html 56, klasse 23, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  669    29
@@ -93,10 +93,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   kompakt_hof.gd            17     0
   szenenplus.gd             17     1
   gameturnier.gd            17     0
+  devtool.gd                16     0
   weitwinkel.gd             16     0
   menschen.gd               16     0
   b3d.gd                    15     3
-  devtool.gd                15     0
   gamesneak.gd              15     0
   grafik_hoch.gd            15     1
   home_editor.gd            14     3

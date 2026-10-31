@@ -326,6 +326,7 @@ TRX['fr'].update({
     'Loudspeakers': 'Haut-parleurs',
     'Low light': 'Faible luminosité',
     'Low-light threshold (brightness)': 'Seuil faible luminosité (luminosité)',
+    'Low light: wait before switching (s)': 'Faible luminosité : attendre avant de basculer (s)',
     'MANUAL': 'MANUEL',
     'MQTT broker (address, e.g. 192.168.1.10 or homeassistant.local)': 'Broker MQTT (adresse, p. ex. 192.168.1.10 ou homeassistant.local)',
     'MQTT on (state, events, commands)': 'MQTT activé (état, événements, commandes)',

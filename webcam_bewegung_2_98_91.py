@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_89.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_91.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,11 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.91: Simulator 3D-4.60: alle Simulator-Texte jetzt auch auf Englisch, Französisch, Italienisch, Rätoromanisch
+    (Rätoromanisch noch prüfen lassen).
+  * 2.98.90: Schwachlicht-Modus mit Hysterese: Helligkeit über 10 s geglättet, Aus erst über Schwelle + Abstand, Wartezeit 30 s
+    (neuer Regler «Schwachlicht: warten vor dem Umschalten (s)»); schaltet in der Dämmerung nur einmal um. Simulator 3D-4.59: im
+    ZIP nur noch MoveEyeSim3D.exe.
   * 2.98.89: Simulator 3D-4.58: Foto-Modus – ein echtes Foto vom eigenen Platz als Hintergrund der Kopfkamera, Figuren werden
     eingepasst und gehen hinter angemalten Dingen durch.
   * 2.98.88: Simulator 3D-4.57: echte Oberflächen und Foto-Himmel (CC0) im Camping-Platz – Paket wird nachgeladen, nicht in
@@ -1076,10 +1081,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_89.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_91.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_89.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_89.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_91.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_91.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -1096,7 +1101,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.89"
+APP_VERSION = "2.98.91"
 
 
 def default_data_dir():
@@ -1247,6 +1252,13 @@ CFG = {
     "rec_marks": "thin",         # markings in recordings / alarm pictures: none | thin (corner brackets, face stays free) | full
     # low light
     "lowlight_auto": True, "lowlight_threshold": 60,   # mean brightness (0-255) below which CLAHE is applied
+    # hysteresis at dusk (real-nacht-puffer): switch OFF only above threshold + gap, and only after the change has lasted
+    # lowlight_hold seconds. Why these values: the mean brightness of the camera picture wobbles by ~5-10 at dusk
+    # (sensor noise in the dark, auto exposure hunting, leaves in the wind, clouds), so 15 (= 25 % of the default 60) is
+    # clearly more than the wobble but much less than the dusk itself (60 -> 75 takes several minutes; civil twilight in
+    # Switzerland ~30-40 min). 30 s rides out a car's headlights, a torch, a bright jacket close to the lens and the
+    # exposure re-adjusting, and still follows the dusk within half a minute. 0 s = switch at once (only the gap).
+    "lowlight_gap": 15, "lowlight_hold": 30.0,
     "lowlight_view": True,       # in low light also brighten the picture you see (live, recordings, photos)
     # notifications (POST JSON to this URL when a person is detected; leave empty to disable)
     "notify_url": "", "notify_cooldown": 60.0,
@@ -25636,8 +25648,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.58", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 68118519,
-         "sha256": "1b08c57a205c3339ca5a233545acdfa9fbb11d8b7db755d048a8966120cb205a"}
+SIM3D = {"version": "3D-4.60", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 34098093,
+         "sha256": "56bd7d9cdeabcac87726cb3166c27a439d26f81ddd179e464daa71e2fd84b0cb"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -32748,7 +32760,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_89.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_91.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -34588,6 +34600,51 @@ class MotionWatch:
         return img
 
     # ---- processing ------------------------------------------------------
+    def _lowlight_decide(self, bright, t0):
+        """Low-light mode with hysteresis (real-nacht-puffer). Before, the mode switched on every picture that crossed
+        lowlight_threshold, so at dusk it flipped to and fro (noise, auto exposure, clouds) - and with it CLAHE, the
+        brightened view and the thermal person check (232). Now three things together (values: see CFG, 020):
+        1) the brightness is smoothed: median of the last 10 s (at most lowlight_hold). 10 s = longer than a passing
+           car's headlights or a torch sweep (2-5 s), so they do not count; the median also ignores sensor noise.
+        2) two thresholds: ON below lowlight_threshold, OFF only above lowlight_threshold + lowlight_gap.
+        3) the smoothed value must stay on the other side for lowlight_hold seconds without a break, then it switches."""
+        hist = getattr(self, "_ll_hist", None)
+        if hist is None:
+            hist = self._ll_hist = deque(maxlen=900)       # 10 s at up to 90 pictures/s
+        if not CFG["lowlight_auto"]:
+            hist.clear(); self._ll_since = None; self._ll_seen = False   # switched on again later: decide at once
+            return False
+        hold = max(0.0, float(CFG.get("lowlight_hold", 30.0)))
+        win = min(10.0, hold)
+        hist.append((t0, bright))
+        while hist and hist[0][0] < t0 - win:
+            hist.popleft()
+        vals = sorted(v for _, v in hist) or [bright]
+        smooth = vals[len(vals) // 2]
+        cur = bool(STATE["lowlight"])
+        on_thr = float(CFG["lowlight_threshold"]); gap = max(0.0, float(CFG.get("lowlight_gap", 15)))
+        first = not getattr(self, "_ll_seen", False); self._ll_seen = True
+        if first:                                       # first picture after the start: no reason to wait
+            self._ll_since = None
+            return bright < on_thr
+        want = smooth < (on_thr + gap if cur else on_thr)
+        if want == cur:
+            self._ll_since = None
+            return cur
+        # far on the other side (white light on / off, lens cover, camera switched): a real jump, not the dusk ->
+        # 3 s more are enough (plus ~5 s until the median follows). "Far" = two gaps (at least 2 x 10) beyond the
+        # threshold, i.e. < 30 or > 105 with 60 / 15.
+        far = 2.0 * max(gap, 10.0)
+        if (want and smooth < on_thr - far) or (not want and smooth > on_thr + gap + far):
+            hold = min(hold, 3.0)
+        since = getattr(self, "_ll_since", None)
+        if since is None:
+            self._ll_since = since = t0
+        if t0 - since >= hold:
+            self._ll_since = None
+            return want
+        return cur
+
     def preprocess(self, gray, rain_mode):
         if rain_mode:
             g = cv2.medianBlur(cv2.GaussianBlur(gray, (9, 9), 0), 5)
@@ -35172,7 +35229,7 @@ class MotionWatch:
                 frame = THERMAL.overlay(frame)             # detection keeps using `small` (the normal picture)
             gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
             bright = float(gray.mean()); STATE["brightness"] = int(bright)
-            lowlight = CFG["lowlight_auto"] and bright < CFG["lowlight_threshold"]
+            lowlight = self._lowlight_decide(bright, t0)
             if lowlight != STATE["lowlight"]:
                 log_event("auto", f"Low-light mode {'ON' if lowlight else 'OFF'} (brightness {bright:.0f})")
                 STATE["lowlight"] = lowlight
@@ -55961,7 +56018,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>🧠 Eigenes KI-Modell</b> (Einstellungen → KI-Erkennung → «KI-Modell»): <i>Standard (SSD)</i> ist das bekannte Modell (≈ 70 MB, kennt 90 Dinge). <i>Eigenes (MoveEye-Modell)</i> ist ein kleines YOLO-Modell (≈ 12 MB), das auf GitHub nur für MoveEye trainiert wird: aus Trainingspaketen des Simulators und deinen beschrifteten Alarmbildern («Was war das?» – Person / Tier / Nichts). Es kennt drei Klassen: Person, Tier, Fahrzeug. «Eigenes Modell herunterladen» holt die neueste Fassung vom GitHub-Release «ki-modell» und prüft sie mit der Prüfsumme (sha256); danach läuft sie gleich. Darunter steht, welches Modell gerade läuft, die Version und die gemessene Güte (mAP50: 1,0 = perfekt, ab etwa 0,6 brauchbar). Fehlt die Datei oder läuft sie auf dem Pi nicht, nimmt MoveEye von selbst wieder das Standard-Modell (Meldung im Selbstcheck). Die Regler «Sicherheit» behalten ihre Bedeutung: 0,5 = die beste Schwelle aus dem Training. Mit «KI-Prüfung mit Simulator-Bildern» (Reiter Simulator) lassen sich beide Modelle vergleichen. Neu trainieren: auf GitHub Actions → «KI-Modell» → «Run workflow» (Anleitung im Ordner <code>ki_training/</code>).</li>
 <li><b>Zonen</b> (Reiter <i>Zonen</i>): «Ignorieren» für Bäume, Strasse, Zeltwand; «Nur hier» wenn nur ein Bereich zählen soll.</li>
 <li><b>Privatsphäre-Zone</b> (Reiter <i>Zonen</i>): der Bereich wird gleich nach der Kamera schwarz abgedeckt – im Live-Bild, in Aufnahmen, Fotos, Zeitraffer und für Gäste. Für Nachbarzelt, Weg, fremde Fenster. Wichtig für den Datenschutz: fremde Personen und öffentlichen Grund nicht dauernd filmen.</li>
-<li>Regen, Wind, Schatten und Schwachlicht werden automatisch erkannt und ausgeglichen (Feineinstellungen).</li>
+<li>Regen, Wind, Schatten und Schwachlicht werden automatisch erkannt und ausgeglichen (Feineinstellungen). Schwachlicht schaltet in der Dämmerung erst nach einer Wartezeit um (Standard 30 s) und erst etwas heller wieder aus – so flackert es nicht hin und her.</li>
 <li><b>Auto-Abstimmung</b> lernt die Szene selbst; «Neu kalibrieren», wenn sich die Umgebung stark geändert hat (Szene dabei leer lassen).</li></ul>
 </section>
 
@@ -56183,7 +56240,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>🧠 Own AI model</b> (Settings → AI detection → «AI model»): <i>Standard (SSD)</i> is the well-known model (≈ 70 MB, 90 things). <i>Own (MoveEye model)</i> is a small YOLO model (≈ 12 MB) trained on GitHub only for MoveEye, from simulator training packs and your labelled alarm pictures («What was that?»): person, animal, vehicle. «Download own model» fetches the newest one from the GitHub release «ki-modell» and checks its sha256. Below it: which model runs, its version and quality (mAP50). If the file is missing or does not run on the Pi, MoveEye goes back to the standard model by itself. The certainty sliders keep their meaning (0.5 = the best threshold of the training). Train again: GitHub Actions → «KI-Modell» → «Run workflow» (see the folder <code>ki_training/</code>).</li>
 <li><b>Zones</b> (tab <i>Zones</i>): «Ignore» for trees, road, tent wall; «Only here» when only one area counts.</li>
 <li><b>Privacy zone</b> (tab <i>Zones</i>): the area is painted black right after the camera – in the live picture, recordings, photos, timelapse and for guests. For a neighbour's tent, a path, other people's windows. Important for data protection: do not film strangers and public ground all the time.</li>
-<li>Rain, wind, shadows and low light are detected and handled automatically (fine-tuning).</li>
+<li>Rain, wind, shadows and low light are detected and handled automatically (fine-tuning). At dusk, low light only switches after a waiting time (default 30 s) and only switches off again when it is a little brighter – so it does not flip to and fro.</li>
 <li><b>Auto-tune</b> learns the scene; «Recalibrate» after big changes (scene empty).</li></ul>
 </section>
 
@@ -65825,7 +65882,7 @@ DE = {
     "Vehicle aspect ratio": "Fahrzeug-Seitenverhältnis", "Vehicle speed (px/frame)": "Fahrzeug-Geschwindigkeit (px/Bild)",
     "Rain threshold": "Regen-Schwelle", "Wind threshold": "Wind-Schwelle", "Max trigger boost": "Max. Auslöse-Verstärkung",
     "Keep recording after (s)": "Nachlaufzeit Aufnahme (s)", "Max recordings folder (GB)": "Max. Aufnahmeordner (GB)",
-    "Low-light threshold (brightness)": "Schwachlicht-Schwelle (Helligkeit)", "Cooldown between alarms (s)": "Pause zwischen Alarmen (s)",
+    "Low light: wait before switching (s)": "Schwachlicht: warten vor dem Umschalten (s)", "Low-light threshold (brightness)": "Schwachlicht-Schwelle (Helligkeit)", "Cooldown between alarms (s)": "Pause zwischen Alarmen (s)",
     # toggles
     "Follow detected person (auto pan/tilt)": "Erkannter Person folgen (auto Schwenk/Neige)",
     "Invert pan direction": "Schwenkrichtung umkehren", "Invert tilt direction": "Neigerichtung umkehren",
@@ -67072,6 +67129,7 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Recording", "loop_hours", "Continuous recording: keep (hours)", 1, 168, 1),
     ("Recording", "loop_fps", "Continuous recording: pictures per second", 1, 15, 1),
     ("Low light", "lowlight_threshold", "Low-light threshold (brightness)", 10, 150, 5),
+    ("Low light", "lowlight_hold", "Low light: wait before switching (s)", 0, 120, 5),
     ("Notifications", "notify_cooldown", "Cooldown between alarms (s)", 5, 600, 5),
     ("Notifications", "prealarm_cooldown", "Pre-alarm: min. time between messages (s)", 30, 1800, 30),
     ("Timelapse", "timelapse_interval", "Photo every N minutes", 1, 720, 1),
@@ -67759,7 +67817,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.89")
+        self.root.title("MoveEye 2.98.91")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -68126,7 +68184,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.89 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.91 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -75032,6 +75090,7 @@ TRX['fr'].update({
     'Loudspeakers': 'Haut-parleurs',
     'Low light': 'Faible luminosité',
     'Low-light threshold (brightness)': 'Seuil faible luminosité (luminosité)',
+    'Low light: wait before switching (s)': 'Faible luminosité : attendre avant de basculer (s)',
     'MANUAL': 'MANUEL',
     'MQTT broker (address, e.g. 192.168.1.10 or homeassistant.local)': 'Broker MQTT (adresse, p. ex. 192.168.1.10 ou homeassistant.local)',
     'MQTT on (state, events, commands)': 'MQTT activé (état, événements, commandes)',
@@ -79974,6 +80033,7 @@ TRX['it'].update({
     'Loudspeakers': 'Altoparlanti',
     'Low light': 'Poca luce',
     'Low-light threshold (brightness)': 'Soglia poca luce (luminosità)',
+    'Low light: wait before switching (s)': 'Poca luce: attendere prima di cambiare (s)',
     'MANUAL': 'MANUALE',
     'MQTT broker (address, e.g. 192.168.1.10 or homeassistant.local)': 'Broker MQTT (indirizzo, p. es. 192.168.1.10 o homeassistant.local)',
     'MQTT on (state, events, commands)': 'MQTT acceso (stato, eventi, comandi)',
@@ -83499,6 +83559,7 @@ TRX['rm'].update({
     'Loudspeakers': 'Autpledaders',
     'Low light': 'Pauca glisch',
     'Low-light threshold (brightness)': 'Limita da pauca glisch (clerezza)',
+    'Low light: wait before switching (s)': 'Pauca glisch: spetgar avant che midar (s)',
     'MANUAL': 'MANUAL',
     'MQTT broker (address, e.g. 192.168.1.10 or homeassistant.local)': 'Broker MQTT (adressa, p.ex. 192.168.1.10 u homeassistant.local)',
     'MQTT on (state, events, commands)': 'MQTT activ (status, eveniments, cumonds)',
