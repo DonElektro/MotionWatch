@@ -286,6 +286,7 @@ var realism                           # realism.gd
 var simreal                           # simreal.gd (3D-4.4): Pi 5, lens, infrared, thermal, false alarms, difficult visitors
 var szenen                            # szenenplus.gd (3D-4.x): Voller Campingplatz, Tarnen und Kriechen, Velodieb
 var smalltv                           # smalltv.gd (3D-4.19): virtueller Zusatz-Bildschirm GeekMagic SmallTV Ultra (MoveEye 552)
+var fenster                           # fenster.gd (Paket «Fenster»): ein Rahmen für alle schwebenden Fenster (ziehen, Grösse, ✕, Liste «Fenster»)
 var statusled                         # statusled.gd: Status-LED auf dem Kopf + Fenster «Gerät» mit den Tasten (MoveEye 163a / 599c)
 var weit                              # weitwinkel.gd (3D-4.17): camera 1 = the wide camera with its mount (mast, base, head front / rear)
 var parcours                          # parcours.gd (3D-4.18): «Verfolgungs-Parcours» - lessons, ground truth, game «Entkomme der Kamera»
@@ -505,6 +506,10 @@ func _ready() -> void:
 	mwpc.main = self
 	add_child(mwpc)
 	_build_ui()
+	fenster = preload("res://scripts/fenster.gd").new()   # Paket «Fenster»: Karte, Kompass, Livebild … in einem gemeinsamen Rahmen
+	fenster.main = self
+	add_child(fenster)
+	fenster.setup_sim()
 	mwpc.changed.connect(_on_mwpc)
 	_on_mwpc()
 	next_update_check = now() + UPDATE_EVERY
@@ -4261,6 +4266,8 @@ func _control(d: Dictionary) -> Dictionary:
 		if sleeper == null:
 			return {"ok": false, "error": "no sleeper"}
 		return sleeper.command(d)
+	elif a == "fenster":                               # Paket «Fenster» (fenster.gd): info / drag / resize / close / list / check / reset
+		return fenster.control(d) if fenster != null else {"ok": false, "error": "no fenster"}
 	elif a == "smalltv":                               # 3D-4.19: virtueller SmallTV - Zähler, letztes Bild (Tests, Prüfstand)
 		return smalltv.control(d) if smalltv != null else {"ok": false, "error": "no smalltv"}
 	elif a == "game_info":                             # the spectators in MoveEye: the game in numbers (3D-3.22)
@@ -5063,9 +5070,12 @@ func show_panel(on: bool) -> void:
 		cam_card.custom_minimum_size.x = w
 		cam_float.add_child(cam_card)
 		cam_float.visible = true
-		cam_float.size = Vector2.ZERO
-		cam_float.position = Vector2(cam_fx, cam_fy) if cam_fx >= 0.0 else gp - Vector2(0, 26)
-		_cam_clamp()
+		if fenster != null:                                # Paket «Fenster»: where the card was (until moved by hand)
+			fenster.home_at(cam_float, gp - Vector2(6, 26))
+		else:
+			cam_float.size = Vector2.ZERO
+			cam_float.position = Vector2(cam_fx, cam_fy) if cam_fx >= 0.0 else gp - Vector2(0, 26)
+			_cam_clamp()
 	elif on and cam_card != null and cam_card.get_parent() == cam_float:
 		var home: Control = cam_card.get_meta("home")
 		cam_float.remove_child(cam_card)
@@ -6069,7 +6079,7 @@ func _over_hud(p: Vector2) -> bool:
 	for c in [ui_root, show_btn, view_bar, minimap, liveview, rover_pad, sel_box, karte, toolbar, cam_card, home_editor, smalltv.tile if smalltv != null else null]:
 		if c != null and is_instance_valid(c) and c is Control and (c as Control).is_visible_in_tree() and (c as Control).modulate.a > 0.01 and (c as Control).get_global_rect().has_point(p):
 			return true
-	return false
+	return fenster != null and fenster.over(p)        # Paket «Fenster»: alle Fenster im gemeinsamen Rahmen
 
 
 func _unhandled_input(ev: InputEvent) -> void:
@@ -6442,7 +6452,7 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	compass.size = Vector2(54, 54)
 	compass.tooltip_text = "Norden – anklicken: nach Norden schauen"
 	compass.draw.connect(func():
-		var c := Vector2(27, 27)
+		var c := compass.size / 2.0                        # Paket «Fenster»: in the middle of its frame (room for the «N»)
 		compass.draw_circle(c, 25, Color(0.05, 0.07, 0.1, 0.75))
 		compass.draw_arc(c, 25, 0, TAU, 32, Color(1, 1, 1, 0.35), 1.5, true)
 		var fwd := -view_cam.global_transform.basis.z
@@ -7814,8 +7824,9 @@ func _cpu_pill_tick(dt: float) -> void:
 	var vw: float = get_viewport().get_visible_rect().size.x
 	var right: float = ui_root.get_global_rect().position.x if ui_root != null and ui_root.visible else vw
 	var left: float = phone.get_global_rect().end.x if phone != null and phone.visible else 0.0
-	cpu_pill.reset_size()
-	cpu_pill.position = Vector2((left + right - cpu_pill.size.x) / 2.0, 10.0)
+	if fenster == null:                                   # Paket «Fenster»: the frame places it (fenster.gd)
+		cpu_pill.reset_size()
+		cpu_pill.position = Vector2((left + right - cpu_pill.size.x) / 2.0, 10.0)
 
 
 func _hud_layout() -> void:
@@ -7830,9 +7841,10 @@ func _hud_layout() -> void:
 		return
 	_hud_key = key
 	if ph:
-		compass.position = Vector2(right - 68.0, 26.0)
-		if minimap != null:
-			minimap.position = Vector2(right - minimap.size.x - 14.0, 92.0)
+		if fenster == null:                              # Paket «Fenster»: the frames place compass and map (fenster.gd)
+			compass.position = Vector2(right - 68.0, 26.0)
+			if minimap != null:
+				minimap.position = Vector2(right - minimap.size.x - 14.0, 92.0)
 		view_bar.offset_left = left + 12.0
 		view_bar.offset_right = -(vw - right) - 12.0
 		view_bar.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -7845,9 +7857,10 @@ func _hud_layout() -> void:
 			if b is Button:
 				b.add_theme_font_size_override("font_size", fs)
 	else:
-		compass.position = Vector2(14, 26)
-		if minimap != null:
-			minimap.position = Vector2(14, 92)
+		if fenster == null:
+			compass.position = Vector2(14, 26)
+			if minimap != null:
+				minimap.position = Vector2(14, 92)
 		view_bar.offset_left = 12.0
 		view_bar.offset_right = -404.0
 		view_bar.alignment = BoxContainer.ALIGNMENT_BEGIN

@@ -1933,6 +1933,12 @@
   "it": "Rimuovi tutto",
   "rm": "Allontanar tut"
  },
+ "Alle Fenster an ihren Standardplatz und in die Standardgrösse; mit ✕ ausgeblendete kommen zurück": {
+  "en": "All windows back to their standard place and size; windows hidden with ✕ come back",
+  "fr": "Toutes les fenêtres à leur place et à leur taille standard ; celles masquées avec ✕ reviennent",
+  "it": "Tutte le finestre al loro posto e alla dimensione standard; quelle nascoste con ✕ ritornano",
+  "rm": "Tut las fanestras a lur plazza e grondezza da standard; quellas zuppentadas cun ✕ returnan"
+ },
  "Alle Gebäude der Schweiz in 3D. Kachel herunterladen, in Blender öffnen, als .glb exportieren.": {
   "en": "All buildings of Switzerland in 3D. Download a tile, open it in Blender, export as .glb.",
   "fr": "Tous les bâtiments de Suisse en 3D. Télécharger une tuile, l’ouvrir dans Blender, exporter en .glb.",
@@ -2149,6 +2155,12 @@
   "it": "",
   "rm": ""
  },
+ "Anordnung zurücksetzen": {
+  "en": "Reset layout",
+  "fr": "Réinitialiser la disposition",
+  "it": "Ripristina disposizione",
+  "rm": "Reinizialisar la disposiziun"
+ },
  "Ansicht": {
   "en": "View",
   "fr": "Affichage",
@@ -2178,6 +2190,12 @@
   "fr": "Vue à la souris : glisser à gauche = déplacer · glisser à droite = tourner · molette = zoomer · double-clic = y voler\nTouches : 0 libre · 1 / 2 caméras · 3 image thermique · M carte · L image en direct · H panneau · Esc points terminés",
   "it": "Vista con il mouse: trascinare a sinistra = spostare · trascinare a destra = girare · rotella = zoom · doppio clic = volare lì\nTasti: 0 libero · 1 / 2 telecamere · 3 immagine termica · M mappa · L immagine live · H pannello · Esc punti fatti",
   "rm": "Vista cun la mieur: trair a sanestra = spustar · trair a dretga = volver · roda = zoom · dubel clic = svolar là\nTastas: 0 liber · 1 / 2 cameras · 3 maletg termic · M charta · L maletg live · H panela · Esc puncts finì"
+ },
+ "Ansicht mit der Maus: links ziehen = verschieben · rechts ziehen = drehen · Rad = zoomen · Doppelklick = hinfliegen\nTasten: 0 frei · 1 / 2 Kameras · 3 Wärmebild · M Karte · L Livebild · H Bedienfeld · Esc Punkte fertig\nFenster: Titelleiste ziehen = verschieben · Ecke unten rechts = Grösse · ✕ = ausblenden (zurück über «Fenster»)": {
+  "en": "View with the mouse: drag left = move · drag right = turn · wheel = zoom · double click = fly there\nKeys: 0 free · 1 / 2 cameras · 3 thermal image · M map · L live picture · H control panel · Esc points done\nWindows: drag the title bar = move · bottom right corner = size · ✕ = hide (back via «Windows»)",
+  "fr": "Vue à la souris : glisser à gauche = déplacer · glisser à droite = tourner · molette = zoomer · double-clic = y voler\nTouches : 0 libre · 1 / 2 caméras · 3 image thermique · M carte · L image en direct · H panneau · Esc points terminés\nFenêtres : glisser la barre de titre = déplacer · coin en bas à droite = taille · ✕ = masquer (retour via «Fenêtres»)",
+  "it": "Vista con il mouse: trascinare a sinistra = spostare · trascinare a destra = girare · rotella = zoom · doppio clic = volare lì\nTasti: 0 libero · 1 / 2 telecamere · 3 immagine termica · M mappa · L immagine live · H pannello · Esc punti fatti\nFinestre: trascinare la barra del titolo = spostare · angolo in basso a destra = dimensione · ✕ = nascondere (ritorno con «Finestre»)",
+  "rm": "Vista cun la mieur: trair a sanestra = spustar · trair a dretga = volver · roda = zoom · dubel clic = svolar là\nTastas: 0 liber · 1 / 2 cameras · 3 maletg termic · M charta · L maletg live · H panela · Esc puncts finì\nFanestras: trair la trav dal titel = spustar · chantun giu a dretga = grondezza · ✕ = zuppentar (enavos cun «Fanestras»)"
  },
  "Ansicht und Tasten": {
   "en": "",
@@ -3385,6 +3403,12 @@
   "fr": "CPU …",
   "it": "CPU …",
   "rm": "CPU …"
+ },
+ "CPU-Anzeige": {
+  "en": "CPU display",
+  "fr": "Affichage CPU",
+  "it": "Indicatore CPU",
+  "rm": "Indicaziun CPU"
  },
  "CPU-Last": {
   "en": "",
@@ -5381,11 +5405,29 @@
   "it": "Rocce e massi, cataste di legna, baita, cespugli",
   "rm": "Grippa e blocs da crap, mantuns da laina, tegia d’alp, chaglias"
  },
+ "Fenster": {
+  "en": "Windows",
+  "fr": "Fenêtres",
+  "it": "Finestre",
+  "rm": "Fanestras"
+ },
+ "Fenster ausblenden (zurück über «Fenster» in der Leiste unten)": {
+  "en": "Hide window (back via «Windows» in the bar at the bottom)",
+  "fr": "Masquer la fenêtre (retour via «Fenêtres» dans la barre en bas)",
+  "it": "Nascondi finestra (ritorno con «Finestre» nella barra in basso)",
+  "rm": "Zuppentar la fanestra (enavos cun «Fanestras» en la trav giusut)"
+ },
  "Fenster mit Vorhang (Fernseher flackert)": {
   "en": "Window with curtain (TV flickers)",
   "fr": "Fenêtre avec rideau (la TV scintille)",
   "it": "Finestra con tenda (la TV tremola)",
   "rm": "Fanestra cun cortina (la televisiun sbrigliescha)"
+ },
+ "Fenster zeigen / ausblenden": {
+  "en": "Show / hide window",
+  "fr": "Afficher / masquer la fenêtre",
+  "it": "Mostra / nascondi finestra",
+  "rm": "Mussar / zuppentar la fanestra"
  },
  "Fenster «Gerät»: Status-LED und die Tasten «Schutz» / «Alarm quittieren» zeigen (gehen wie echte Tasten an MoveEye)": {
   "en": "",
@@ -6029,6 +6071,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Gerät (LED und Tasten)": {
+  "en": "Device (LED and buttons)",
+  "fr": "Appareil (LED et touches)",
+  "it": "Dispositivo (LED e tasti)",
+  "rm": "Apparat (LED e tastas)"
  },
  "Gerät 2: Port %d, %s": {
   "en": "Device 2: port %d, %s",
@@ -7291,6 +7339,12 @@
   "it": "Telecamere",
   "rm": "Cameras"
  },
+ "Kameras · H = Bedienfeld": {
+  "en": "Cameras · H = control panel",
+  "fr": "Caméras · H = panneau",
+  "it": "Telecamere · H = pannello",
+  "rm": "Cameras · H = panela"
+ },
  "kann %s nicht schreiben": {
   "en": "cannot write %s",
   "fr": "impossible d’écrire %s",
@@ -7386,6 +7440,12 @@
   "fr": "Ouvrir la carte : ",
   "it": "Aprire la mappa: ",
   "rm": "Avrir la charta: "
+ },
+ "Karte, Kompass, Livebild … ein / aus und «Anordnung zurücksetzen» (fenster.gd)": {
+  "en": "Map, compass, live picture … on / off and «Reset layout»",
+  "fr": "Carte, boussole, image en direct … on / off et «Réinitialiser la disposition»",
+  "it": "Mappa, bussola, immagine live … on / off e «Ripristina disposizione»",
+  "rm": "Charta, bussola, maletg live … en / ora e «Reinizialisar la disposiziun»"
  },
  "Karte: ": {
   "en": "Map: ",
@@ -7820,11 +7880,23 @@
   "it": "Momento più stretto  %d:%02d  ·  rosso = visto",
   "rm": "Il mument il pli stretg  %d:%02d  ·  cotschen = vis"
  },
+ "Knopf «Kopf» unten": {
+  "en": "button «Head» at the bottom",
+  "fr": "bouton «Tête» en bas",
+  "it": "pulsante «Testa» in basso",
+  "rm": "buttun «Chau» giusut"
+ },
  "Koffer": {
   "en": "Suitcase",
   "fr": "Valise",
   "it": "Valigia",
   "rm": "Valisch"
+ },
+ "Kompass": {
+  "en": "Compass",
+  "fr": "Boussole",
+  "it": "Bussola",
+  "rm": "Bussola"
  },
  "Konnte die Firewall-Freigabe nicht starten.": {
   "en": "Could not start the firewall rule.",
@@ -9720,6 +9792,12 @@
   "it": "Testare un guasto di rete",
   "rm": "Testar ina panna da la rait"
  },
+ "Neu heisst die Datei MoveEyeSim3D.exe (die alte MotionWatch3D.exe wird entfernt). Der Simulator beginnt mit frischen Einstellungen.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Neu laden": {
   "en": "Reload",
   "fr": "Recharger",
@@ -10049,6 +10127,12 @@
   "fr": "seulement des personnes",
   "it": "solo persone",
   "rm": "mo persunas"
+ },
+ "nur mit «Mover simulieren»": {
+  "en": "only with «Simulate mover»",
+  "fr": "seulement avec «Simuler le mover»",
+  "it": "solo con «Simulare il mover»",
+  "rm": "mo cun «Simular il mover»"
  },
  "nur Tiere": {
   "en": "animals only",
@@ -11994,6 +12078,12 @@
   "it": "quanti più possibile",
   "rm": "uschè blers sco pussaivel"
  },
+ "sobald MoveEye ein Bild schickt": {
+  "en": "as soon as MoveEye sends a picture",
+  "fr": "dès que MoveEye envoie une image",
+  "it": "appena MoveEye invia un’immagine",
+  "rm": "uschespert che MoveEye trametta in maletg"
+ },
  "Sofa": {
   "en": "Couch",
   "fr": "Canapé",
@@ -13218,6 +13308,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Titelleiste ziehen = verschieben · Ecke unten rechts = Grösse · Doppelklick auf die Leiste = zurück an den Platz": {
+  "en": "Drag the title bar = move · bottom right corner = size · double click on the bar = back to its place",
+  "fr": "Glisser la barre de titre = déplacer · coin en bas à droite = taille · double-clic sur la barre = retour à sa place",
+  "it": "Trascinare la barra del titolo = spostare · angolo in basso a destra = dimensione · doppio clic sulla barra = torna al suo posto",
+  "rm": "Trair la trav dal titel = spustar · chantun giu a dretga = grondezza · dubel clic sin la trav = enavos a sia plazza"
  },
  "Title: ": {
   "en": "",
@@ -14469,6 +14565,12 @@
   "it": "Mondo",
   "rm": "Mund"
  },
+ "wenn das Bedienfeld zu ist (H)": {
+  "en": "when the control panel is closed (H)",
+  "fr": "quand le panneau est fermé (H)",
+  "it": "quando il pannello è chiuso (H)",
+  "rm": "cura che la panela è serrada (H)"
+ },
  "wer am wenigsten erwischt wurde": {
   "en": "whoever was caught least",
   "fr": "celui qui a été le moins attrapé",
@@ -15161,6 +15263,18 @@
   "it": "Zigzag e cambi di velocità",
   "rm": "Zigzag e midadas da sveltezza"
  },
+ "Ziehen zum Verschieben · Doppelklick: zurück an den Platz": {
+  "en": "Drag to move · double click: back to its place",
+  "fr": "Glisser pour déplacer · double-clic : retour à sa place",
+  "it": "Trascina per spostare · doppio clic: torna al suo posto",
+  "rm": "Trair per spustar · dubel clic: enavos a sia plazza"
+ },
+ "Ziehen: Grösse ändern": {
+  "en": "Drag: change size",
+  "fr": "Glisser : changer la taille",
+  "it": "Trascina: cambia dimensione",
+  "rm": "Trair: midar la grondezza"
+ },
  "Ziehen: verschieben · ▢: wieder gross · ▁: nur ein Symbol": {
   "en": "Drag: move · ▢: large again · ▁: only an icon",
   "fr": "Glisser : déplacer · ▢ : de nouveau grand · ▁ : seulement une icône",
@@ -15496,6 +15610,12 @@
   "fr": "Compte dans le classement de la soirée (carte Jeu). Points seulement entre 4 et 25 m de l’appareil.",
   "it": "Conta nella classifica della serata (scheda Gioco). Punti solo tra 4 e 25 m dall’apparecchio.",
   "rm": "Quinta en la rangaziun da la saira (carta Gieu). Puncts dat i mo tranter 4 e 25 m da l’apparat."
+ },
+ "«%s» ausgeblendet – wieder zeigen: «Fenster» in der Leiste unten": {
+  "en": "«%s» hidden – show it again: «Windows» in the bar at the bottom",
+  "fr": "«%s» masqué – pour le réafficher : «Fenêtres» dans la barre en bas",
+  "it": "«%s» nascosto – per mostrarlo di nuovo: «Finestre» nella barra in basso",
+  "rm": "«%s» zuppentà – mussar puspè: «Fanestras» en la trav giusut"
  },
  "«%s» geladen (%s).": {
   "en": "«%s» loaded (%s).",
