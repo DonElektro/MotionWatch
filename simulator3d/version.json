@@ -1,9 +1,9 @@
 {
- "version": "3D-5.15.0",
- "ver": "3.15.0",
- "name": "MoveEye Sim 3.15.0",
+ "version": "3D-5.15.1",
+ "ver": "3.15.1",
+ "name": "MoveEye Sim 3.15.1",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35410825,
- "sha256": "ee021219fe9c004cccb86fc8f3d30d91651a6ab6e633bebdf8db38837a516eb3",
- "notes": "MoveEye Sim 3.15.0: Maggie sieht aus wie das echte Vorbild und wedelt bei Erfolgen."
+ "size": 35411002,
+ "sha256": "7067cc3638fb2d9c5f89867473bc35e1c84a51769f70a67c31e6b3a96be718a0",
+ "notes": "MoveEye Sim 3.15.1: zusammen mit MoveEye 3.15.1 (Live-Bedienung in der Simulation); im Simulator selbst nichts geändert."
 }

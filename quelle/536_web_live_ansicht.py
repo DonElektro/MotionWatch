@@ -102,6 +102,8 @@ body.swapside #lv-joy{right:auto;left:12px;flex-direction:row-reverse}
 body.lv-nohead #stick,body.lv-nohead .ctl-stick,body.lv-nohead #qs-track,body.lv-nohead #qs-patrol,body.lv-nohead #patrol-st,body.lv-nohead #vo-center,body.lv-nohead #lv-joy{display:none!important}
 body.lv-nohead:not(.moveravail) #ctl-side{display:none!important}
 body.lv-nohead.moveravail #ctl-side>:not(.spd),body.lv-nohead.moveravail #ctl-side .spd>:not(#mv-tog){display:none!important}
+/* 3.16 (Daniel 31.10.2026): simulation (body.sim-on = CFG sim_on, the source of the stripe) - no speed, ⇆, 🚜, centre, calibrate, waypoints */
+body.sim-on #ctl-side{display:none!important}
 /* the controls card: wraps instead of overlapping (the old fixed columns pushed «Mittel» under the switches) */
 body.lv #ctl-left{display:flex!important;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:12px 18px;padding:0 2px;grid-template-areas:none!important}
 body.lv #ctl-left>*{min-width:0}

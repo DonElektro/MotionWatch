@@ -3161,7 +3161,7 @@ function sevPaint(s) {
     $("#sev-inst").hidden = V.runtime || V.install === "done"; $("#sev-inst").disabled = V.install === "running"; }
 }
 function simPaint(s) {
-  const S = s.sim || {}; document.body.classList.toggle("sim-on", !!S.on);
+  const S = s.sim || {}; document.body.classList.toggle("sim-on", !!S.on); if (window.mwSimMark) mwSimMark(S.on);   /* 3.16: the stripe at the same time as the controls (536 body.sim-on) */
   const bs = $("#b-sim"); if (bs) { bs.hidden = !S.on; const nv = S.on && S.versions && S.versions.newer;
     const pcc = S.on && S.ok && S.stats && S.stats.pc_cpu != null ? " · PC " + Math.round(S.stats.pc_cpu) + " %" : "";
     bs.textContent = "🧪 " + t("SIMULATION") + (S.on && !S.ok ? " ⚠" : "") + pcc + (nv ? " · ⟳ " + t("Update") + " " + S.versions.latest : "");
