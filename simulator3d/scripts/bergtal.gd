@@ -22,6 +22,7 @@ const Szenen = preload("res://scripts/szenenplus.gd")
 const Worlds = preload("res://scripts/worlds.gd")      # 3D-4.x Welten: the old scenes as places in the valley
 const Aussicht = preload("res://scripts/bergtal_aussicht.gd")   # «Bergtal · Aussichtspunkte»: what the viewpoints do
 const Orte = preload("res://scripts/bergtal_orte.gd")          # Orte zum Erkunden (Innenräume, Wasser, Grat, Geschichte)
+const Landschaft = preload("res://scripts/bergtal_landschaft.gd")   # «wie auf den Fotos»: Karst, Felszähne, See, Himmel (nicht Lite)
 const Waerme = preload("res://scripts/waerme.gd")              # Paket A1: Fell-/Federtemperaturen von Murmeltier, Adler, Geier
 
 const ALT0 := 1500.0                 # metres above sea level at the north end (height 0)
@@ -165,6 +166,7 @@ const VIGNETTES := [[1, "murmeltier_zu_spaet", "Murmeltier kommt zu spät zum Ba
 
 static var _hm := PackedFloat32Array()       # the height map (valley coordinates), kept between rebuilds
 static var _col := PackedColorArray()        # ground colour per point (+ alpha: rock may show on steep ground)
+static var _cone := PackedFloat32Array()      # «wie auf den Fotos»: 0 … 1 scree cone below a wall (every 8 m, like _col)
 static var _chunks := {}                     # "i,j" -> [near mesh, far mesh]
 static var _gen_ms := 0
 static var _noise: FastNoiseLite
@@ -743,15 +745,17 @@ static func _round_hairpins() -> void:
 
 
 # ---- colours of the ground (per point of the height map; the shader adds rock, snow, the season) -------------------------
-const C_MEADOW := Color(0.36, 0.46, 0.2)
-const C_ALP := Color(0.46, 0.5, 0.25)          # alpine meadow (higher, drier, yellowish)
+const C_MEADOW := Color(0.4, 0.48, 0.2)        # «wie auf den Fotos»: late summer, yellow-green (was 0.36, 0.46, 0.2)
+const C_ALP := Color(0.5, 0.53, 0.25)          # alpine meadow (higher, drier, yellowish)
+const C_GOLD := Color(0.62, 0.55, 0.26)        # steep sunny slopes: dry, almost golden grass
+const C_KALKSCREE := Color(0.7, 0.69, 0.65)    # scree of light limestone below the walls
 const C_FOREST := Color(0.24, 0.24, 0.13)
 const C_MOOR := Color(0.42, 0.4, 0.2)
-const C_SCREE := Color(0.58, 0.56, 0.52)
+const C_SCREE := Color(0.64, 0.63, 0.59)        # light limestone (was 0.58, 0.56, 0.52)
 const C_GLACIER := Color(0.82, 0.88, 0.94)
 const C_SHORE := Color(0.55, 0.52, 0.45)
 const C_BED := Color(0.25, 0.27, 0.22)
-const C_PASTURE := Color(0.32, 0.44, 0.17)
+const C_PASTURE := Color(0.36, 0.46, 0.18)
 
 
 static func forest_k(x: float, z: float, h: float) -> float:
@@ -800,7 +804,43 @@ static func _glacier_k(x: float, z: float) -> float:
 const NC := 257              # the colours every 8 m
 
 
+static func _slope8(i: int, j: int) -> Vector2:
+	"""the gradient (dh/dx, dh/dz) at point (i, j) of the 8-m colour grid"""
+	var a := clampi(i, 1, NC - 2) * 2
+	var b := clampi(j, 1, NC - 2) * 2
+	return Vector2(_hm[b * N + a + 2] - _hm[b * N + a - 2], _hm[(b + 2) * N + a] - _hm[(b - 2) * N + a]) / 16.0
+
+
+static func _cones() -> void:
+	"""«wie auf den Fotos»: scree cones (Schuttkegel) - moderate ground with a steep wall above it (up to 48 m uphill)"""
+	_cone.resize(NC * NC)
+	_cone.fill(0.0)
+	for j in range(2, NC - 2):
+		for i in range(2, NC - 2):
+			var g := _slope8(i, j)
+			var sl := g.length()
+			if sl < 0.25 or sl > 0.78:                      # 14° … 38°
+				continue
+			var up := g / sl
+			var best := 0.0
+			for k in range(1, 7):
+				var ii := clampi(int(round(i + up.x * k)), 1, NC - 2)
+				var jj := clampi(int(round(j + up.y * k)), 1, NC - 2)
+				var su := _slope8(ii, jj).length()
+				best = maxf(best, smoothstep(0.95, 1.4, su) * (1.0 - k / 8.0))
+			_cone[j * NC + i] = best
+
+
+static func cone_at(x: float, z: float) -> float:
+	if _cone.is_empty():
+		return 0.0
+	var i := clampi(int(round((x - LO) / 8.0)), 0, NC - 1)
+	var j := clampi(int(round((z - LO) / 8.0)), 0, NC - 1)
+	return _cone[j * NC + i]
+
+
 static func _colours() -> void:
+	_cones()
 	_col.resize(NC * NC)
 	var rock := FastNoiseLite.new()
 	rock.seed = 5
@@ -839,8 +879,23 @@ static func _colours() -> void:
 				_:
 					var fk := forest_k(x, z, h)
 					c = C_MEADOW.lerp(C_ALP, smoothstep(250.0, 560.0, h + v * 60.0))
+					# «wie auf den Fotos»: steep slopes facing the sun (south, south-west) dry and golden
+					var g := _slope8(i, j)
+					var sun := clampf(Vector2(-g.x, -g.y).normalized().dot(Vector2(-0.35, 0.94)), 0.0, 1.0) if g.length() > 0.01 else 0.0
+					c = c.lerp(C_GOLD, smoothstep(0.3, 0.65, g.length()) * sun * 0.75 * (1.0 - smoothstep(0.2, 0.5, fk)))
 					c = c.lerp(C_SCREE.darkened(0.1), smoothstep(560.0, 760.0, h + v * 80.0))      # high up: more stones
 					c = c.lerp(C_FOREST, smoothstep(0.25, 0.6, fk))
+					# scree cones below the walls (light limestone, streaky)
+					var cn := _cone[j * NC + i]
+					if cn > 0.05:
+						c = c.lerp(C_KALKSCREE.lerp(C_SCREE.darkened(0.15), clampf(0.5 + v * 2.5, 0.0, 1.0) * 0.5), smoothstep(0.05, 0.5, cn) * 0.85)
+					# grass bands on the cliffs (ledges): the rock of the shader leaves the band (alpha lower)
+					var sl8 := g.length()
+					if sl8 > 0.85:
+						var band := fposmod(h * 0.035 + x * 0.006 - z * 0.004 + v * 0.8, 1.0)
+						if band < 0.2:
+							c = C_ALP.darkened(0.12)
+							rk = 0.35
 			# rock tint for the shader (cliffs): stored in alpha × rock-type in the low bits is too much - alpha only
 			c.a = rk
 			_col[j * NC + i] = c
@@ -941,6 +996,8 @@ static func build_scene(sc) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE and m != null and is_instance_valid(m) and m.env != null:
 		m.env.fog_height_density = 0.0               # the valley fog of the autumn goes with the scene
+		if landschaft != null:
+			landschaft.cleanup()                     # the sky (shared by all scenes) as before
 		if aussicht != null:
 			aussicht.cleanup()
 
@@ -987,6 +1044,7 @@ func gy(x: float, z: float) -> float:
 
 var ice: Array = []                          # [lake, ice from (ellipse radius), water level] - walkable in winter
 var orte = null                              # bergtal_orte.gd: the places to explore (buildings with their inside …)
+var landschaft = null                        # bergtal_landschaft.gd: «wie auf den Fotos» (karst, rock teeth, lake, sky)
 
 
 func _build(sc) -> void:
@@ -1035,6 +1093,7 @@ func _build(sc) -> void:
 	if place != "":
 		bib.clear = [[place_c, place_r + 8.0]]          # nothing of the valley on the flat area of the place
 	orte = Orte.new(self)
+	landschaft = Landschaft.new(self)
 	_ground()
 	_apron()
 	_far_mountains()
@@ -1072,6 +1131,7 @@ func _build(sc) -> void:
 	s.data["bergtal_erleben_b"].setup(self)
 	_need_residents = true                                # (at the start of the program the visitors node is not there yet)
 	m.anims.append(Callable(self, "_tick"))
+	m.anims.append(Callable(landschaft, "tick"))           # «wie auf den Fotos»: clouds, contrails, evening sky (not in Lite)
 	_ev_next = m.now() + randf_range(40.0, 90.0)
 	_was_dark = m.is_dark()
 	info.merge({"ms": Time.get_ticks_msec() - t0, "terrain_ms": t1 - t0, "terrain_cached": not first, "ground_ms": t2 - t1, "plants_ms": t3 - t2,
@@ -1107,7 +1167,7 @@ func _season_params(mt: ShaderMaterial) -> void:
 		_:
 			mt.set_shader_parameter("snow_cover", 0.0)
 			mt.set_shader_parameter("snow_line", 980.0)      # ≈ 2480 m (+ the glacier)
-			mt.set_shader_parameter("grass_tint", Vector3(1.0, 1.0, 1.0))
+			mt.set_shader_parameter("grass_tint", Vector3(1.04, 1.0, 0.88))   # «wie auf den Fotos»: late summer, a little yellow
 
 
 func _ground() -> void:
@@ -1195,8 +1255,9 @@ func _apron() -> void:
 					h = H(x, z) - 4.0                       # under the near ground at the seam
 				verts[j * n + i] = Vector3(x, h, z)
 				var c := C_MEADOW.lerp(C_FOREST, 0.6 * (1.0 - smoothstep(300.0, 450.0, h)))
-				c = c.lerp(Color(0.42, 0.41, 0.39), smoothstep(450.0, 700.0, h))
+				c = c.lerp(Color(0.6, 0.59, 0.56), smoothstep(450.0, 700.0, h))      # «wie auf den Fotos»: light limestone
 				c = c.lerp(Color(0.85, 0.87, 0.9), smoothstep(900.0, 1100.0, h))
+				c = c.lerp(Color(0.5, 0.58, 0.68), 0.45 * smoothstep(1100.0, 2900.0, Vector2(x, z).length()))   # blue in the haze
 				c.a = 1.0
 				cols[j * n + i] = c
 		var idx := PackedInt32Array()
@@ -1256,9 +1317,11 @@ func _far_mountains() -> void:
 		var midB := d1 * (r0 + 500.0) + Vector3(0, hB * 0.72, 0)
 		var topA := d0 * (r0 + 900.0) + Vector3(0, hA, 0)
 		var topB := d1 * (r0 + 900.0) + Vector3(0, hB, 0)
-		var rock := Color(0.32, 0.33, 0.36)
-		var snw := Color(0.86, 0.88, 0.92) if season != "sommer" or hA > 1250.0 else rock.lightened(0.15)
-		for tri in [[lowA, lowB, midA, Color(0.2, 0.24, 0.18), Color(0.2, 0.24, 0.18), rock], [lowB, midB, midA, Color(0.2, 0.24, 0.18), rock, rock],
+		# «wie auf den Fotos»: far chains blue and pale in the haze (Luftperspektive)
+		var rock := Color(0.45, 0.5, 0.6)
+		var snw := Color(0.84, 0.87, 0.93) if season != "sommer" or hA > 1250.0 else rock.lightened(0.15)
+		var foot := Color(0.3, 0.37, 0.45)
+		for tri in [[lowA, lowB, midA, foot, foot, rock], [lowB, midB, midA, foot, rock, rock],
 				[midA, midB, topA, rock, rock, snw], [midB, topB, topA, rock, snw, snw]]:
 			var nrm: Vector3 = ((tri[1] as Vector3) - (tri[0] as Vector3)).cross((tri[2] as Vector3) - (tri[0] as Vector3)).normalized()
 			if nrm.dot(-d0) < 0.0:
@@ -1289,7 +1352,7 @@ func _water_mat(ice: bool) -> StandardMaterial3D:
 		wm.roughness = 0.35
 		wm.metallic = 0.05
 	else:
-		wm.albedo_color = Color(0.06, 0.2, 0.24) if season != "fruehling" else Color(0.08, 0.24, 0.26)
+		wm.albedo_color = Color(0.04, 0.27, 0.26) if season != "fruehling" else Color(0.07, 0.29, 0.28)   # «wie auf den Fotos»: emerald
 		wm.metallic = 0.35
 		wm.roughness = 0.05
 	return wm
@@ -1325,7 +1388,10 @@ func _water() -> void:
 			ice_e = 0.45                                     # high lakes thaw late
 		elif season == "herbst" and wl > 600.0:
 			ice_e = 0.9
-		if ice_e > 0.0:
+		if ice_e > 0.0 and not lite and landschaft != null:   # «wie auf den Fotos»: türkis, flaches Ufer klar, Spiegelung
+			var lw: MeshInstance3D = m.add_mesh(tal, landschaft.lake_mesh(lk, 0.0, minf(ice_e, 1.06), wl), Vector3.ZERO, landschaft.lake_material(lk), "pond")
+			lw.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		elif ice_e > 0.0:
 			m.add_mesh(tal, _lake_mesh(lk, 0.0, minf(ice_e, 1.06), wl), Vector3.ZERO, _water_mat(false), "pond")
 		if ice_e < 1.06:
 			m.add_mesh(tal, _lake_mesh(lk, ice_e, 1.06, wl + 0.03), Vector3.ZERO, _water_mat(true), "stone")
@@ -1516,7 +1582,8 @@ func _roads_and_trails() -> void:
 			_ribbon(lp, rh, 0.14, Color(0.85, 0.85, 0.82), 0.09, 140.0 if lite else 260.0)
 	var tc := Color(0.42, 0.34, 0.24) if season != "winter" else Color(0.8, 0.82, 0.86)
 	for tr in TRAILS:
-		_ribbon(dense(tr[1], 3.0), PackedFloat32Array(), [1.3, 0.9, 0.6][int(tr[2])], tc, 0.08, 160.0 if lite else 330.0, "road")
+		var tcol := tc if season == "winter" or int(tr[2]) == 0 else Color(0.6, 0.57, 0.5)   # «wie auf den Fotos»: mountain trails light gravel
+		_ribbon(dense(tr[1], 3.0), PackedFloat32Array(), [1.3, 0.9, 0.6][int(tr[2])], tcol, 0.08, 160.0 if lite else 330.0, "road")
 	# parking at the pass and at the alp (K2: the ground under them is flat - generate())
 	for pk in PARKINGS:
 		var c: Vector2 = pk[0]
@@ -1631,7 +1698,14 @@ func _vegetation() -> void:
 		if not rocks.has(key):
 			rocks[key] = []
 		rocks[key].append([P(q.x, q.y, -0.2 * float(e[4])), e[3], e[4]])
+	if not lite and landschaft != null:
+		trees["spruce_dead"] = []
+		trees_far["spruce_dead"] = []
+		landschaft.add_trees(trees, trees_far, near_r)       # «wie auf den Fotos»: single spruces, dead ones, mountain pines
 	_veg_rest(trees, trees_far, rocks)
+	if not lite and landschaft != null:
+		landschaft.build()                                  # karst blocks, scree, rock teeth, dwarf shrubs, narrow paths
+		info["landschaft"] = landschaft.info
 
 
 static var _veg_cache := {}
@@ -1695,12 +1769,22 @@ func _veg_lists() -> Dictionary:
 			var fk := forest_k(px, pz, h)
 			var kind := ""
 			if r < fk * 0.62:
-				if h < 160.0:
-					kind = "spruce" if vr.randf() < 0.45 else "larch"
+				# «wie auf den Fotos»: mostly slim dark spruces, larch and stone pine higher up (same random numbers as before);
+				# Lite: the mix as before (the same number of MultiMeshes)
+				var u := vr.randf()
+				if lite:
+					if h < 160.0:
+						kind = "spruce" if u < 0.45 else "larch"
+					elif h < 380.0:
+						kind = "larch" if u < 0.6 else "arve"
+					else:
+						kind = "arve" if u < 0.7 else "larch"
+				elif h < 160.0:
+					kind = "spruce" if u < 0.8 else "larch"
 				elif h < 380.0:
-					kind = "larch" if vr.randf() < 0.6 else "arve"
+					kind = "spruce" if u < 0.65 else ("larch" if u < 0.85 else "arve")
 				else:
-					kind = "arve" if vr.randf() < 0.7 else "larch"
+					kind = "arve" if u < 0.45 else ("spruce" if u < 0.75 else "larch")
 			elif h > 380.0 and h < 640.0 and sl > 12.0 and r < 0.05:
 				kind = "pine_shrub"
 			if kind == "" or _busy(px, pz) or _near_way(px, pz, 3.5):
@@ -3032,6 +3116,8 @@ func _tick(dt: float, _t: float) -> bool:
 	var target := 1.0 if m.weather == "fog" else 0.0
 	_fog_k = move_toward(_fog_k, target, dt / 40.0)
 	var base: float = {"clear": 0.00012, "cloudy": 0.0004, "rain": 0.0028, "snow": 0.007, "fog": 0.0008}.get(m.weather, 0.0004)
+	if not lite and m.weather == "clear":
+		base = 0.00022                                   # «wie auf den Fotos»: a little haze, far chains blue and pale
 	m.env.fog_density = lerpf(base, 0.045, _fog_k)
 	var hr: float = m.hour()
 	if m.now() < _fogsea_until or (season == "herbst" and (hr < 10.0 or hr > 20.0) and m.weather in ["clear", "cloudy"]):

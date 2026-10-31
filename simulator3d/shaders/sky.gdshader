@@ -32,6 +32,11 @@ float hash2(vec2 p) {
 }
 
 uniform float milky = 0.0;            // Bergtal (bergtal_aussicht.gd): the Milky Way in a clear mountain night, 0 = none
+// «Bergtal wie auf den Fotos» (bergtal_landschaft.gd, nicht in Lite; 0 = genau wie bisher, alle anderen Szenen):
+uniform float cumulus = 0.0;          // Quellwolken: hoch aufgetürmt, oben hell, unten flach und grauer
+uniform float contrails = 0.0;        // Kondensstreifen (zwei, drei lange dünne Linien, ziehen langsam mit)
+uniform float rays = 0.0;             // leichte Sonnenstrahlen im Dunst um die Sonne (stehen still)
+uniform float dusk_band = 0.0;        // Abend: Gelb am Horizont, darüber Blaugrau
 
 float vnoise(vec2 p) {
 	vec2 i = floor(p);
@@ -83,6 +88,12 @@ void sky() {
 	} else {
 		col = mix(horizon_color, ground_color, clamp(-h * 5.0, 0.0, 1.0));
 	}
+	if (dusk_band > 0.001) {
+		// the evening sky of the photos: a yellow band at the horizon (stronger toward the sun), blue-grey above
+		float toward = LIGHT0_ENABLED ? 0.55 + 0.45 * max(dot(normalize(d.xz + vec2(1e-4)), normalize(LIGHT0_DIRECTION.xz + vec2(1e-4))), 0.0) : 0.7;
+		vec3 dusk = mix(vec3(1.0, 0.78, 0.4) * (0.55 + 0.45 * toward), vec3(0.36, 0.43, 0.54), smoothstep(0.0, 0.4, max(h, 0.0)));
+		col = mix(col, dusk * max(energy, 0.25) * 0.9, dusk_band * 0.85 * step(-0.02, h));
+	}
 	float hs = 0.0;                                          // how much of the photo sky
 	float wa = hdri_mix_a * smoothstep(hdri_low_a, hdri_low_a + 0.18, h);
 	float wb = hdri_mix_b * smoothstep(hdri_low_b, hdri_low_b + 0.18, h);
@@ -109,6 +120,14 @@ void sky() {
 		float halo = pow(max(sd, 0.0), 300.0) * 0.8 + pow(max(sd, 0.0), 24.0) * 0.18;
 		float hz = pow(max(sd, 0.0), 6.0) * 0.25 * (1.0 - clamp(h * 3.0, 0.0, 1.0));     // warm glow round the sun near the horizon
 		col += sun_col * (disk * 12.0 + halo + hz) * sun_vis * (1.0 - cloud_cover * 0.85);
+		if (rays > 0.001 && detail > 0.5 && sd > 0.8) {
+			// light shafts in the haze round the sun: soft streaks by the angle round the sun (no movement)
+			vec3 ax = normalize(cross(LIGHT0_DIRECTION, vec3(0.0, 1.0, 0.0)) + vec3(1e-4));
+			vec3 ay = cross(ax, LIGHT0_DIRECTION);
+			float ang = atan(dot(d, ay), dot(d, ax));
+			float st = vnoise(vec2(ang * 7.0, 1.3)) * vnoise(vec2(ang * 17.0, 4.1));
+			col += sun_col * sun_vis * rays * smoothstep(0.82, 0.998, sd) * smoothstep(0.1, 0.6, st) * 0.06 * (1.0 - cloud_cover);
+		}
 	}
 	col *= energy;
 	col += vec3(0.010, 0.016, 0.034) * night * (0.4 + 0.6 * clamp(h * 2.0, 0.0, 1.0)) * (1.0 - cloud_cover * 0.5);   // the night sky is deep blue, not black
@@ -161,6 +180,29 @@ void sky() {
 		cc += sun_col * sun_vis * 0.25 * pow(max(dot(d, LIGHT0_DIRECTION), 0.0), 8.0);
 		float fade = smoothstep(0.0, 0.12, h);
 		col = mix(col, cc * energy, c * fade * (0.55 + 0.45 * cov) * (1.0 - hs * 0.9));
+		if (cumulus > 0.001) {
+			// cumulus: separate puffs, lower in the sky, bright tops and grey flat bases
+			vec2 uq = d.xz / (h + 0.2) * 0.55 + wind * TIME * 0.6 + vec2(3.7, 1.9);
+			float base = fbm(uq * 2.2) + 0.06 * (vnoise(uq * 14.0) - 0.5);   // cauliflower edges
+			float puff = smoothstep(0.585 - 0.07 * cumulus, 0.635 - 0.06 * cumulus, base);
+			float top = fbm(uq * 2.2 - normalize(d.xz + vec2(1e-4)) * 0.06);   // the side toward the zenith
+			float lit = clamp(0.55 + (base - top) * 7.0 + 0.25 * max(dot(d, LIGHT0_DIRECTION), 0.0), 0.0, 1.0);
+			vec3 cu = mix(cloud_shadow * 0.85, cloud_light * 1.1, lit);
+			float band = smoothstep(0.02, 0.1, h) * (1.0 - smoothstep(0.35, 0.7, h) * 0.6);
+			col = mix(col, cu * energy, puff * band * min(1.0, cumulus * 1.3) * (1.0 - hs * 0.9));
+		}
+		if (contrails > 0.001) {
+			float tr = 0.0;
+			for (int k = 0; k < 3; k++) {
+				float fk = float(k);
+				vec3 n = normalize(vec3(sin(fk * 2.1 + 0.4 + TIME * 0.0004), 0.18 + 0.12 * fk, cos(fk * 2.1 + 0.4 + TIME * 0.0004)));
+				float dl = abs(dot(d, n));
+				float along = vnoise(vec2(dot(d, cross(n, vec3(0.0, 1.0, 0.0))) * 9.0 + fk * 5.0, fk));
+				float w = 0.0015 + 0.0025 * along;
+				tr += smoothstep(w, 0.0, dl) * smoothstep(0.25, 0.6, along) * (0.6 + 0.4 * fk / 2.0);
+			}
+			col = mix(col, cloud_light * energy * 1.02, clamp(tr, 0.0, 1.0) * contrails * 0.4 * smoothstep(0.1, 0.3, h));
+		}
 	}
 	COLOR = col;
 }

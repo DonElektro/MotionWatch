@@ -30,7 +30,7 @@ const BERG := {
 
 
 func make(kind: String, q := {}) -> Dictionary:
-	if BERG.has(kind):
+	if BERG.has(kind) or BERG_FOTO.has(kind):
 		var d: Dictionary = call("_b_" + kind, q)
 		if not d.has("t"):
 			d["t"] = "stone"
@@ -63,6 +63,8 @@ static func berg_names() -> Array:
 	var out := []
 	for k in BERG:
 		out.append([k, BERG[k][0], BERG[k][1]])
+	for k in BERG_FOTO:
+		out.append([k, BERG_FOTO[k][0], BERG_FOTO[k][1]])
 	return out
 
 
@@ -101,12 +103,20 @@ func _b_pine_shrub(q: Dictionary) -> Dictionary:
 
 
 func _b_spruce(q: Dictionary) -> Dictionary:
-	var col = _q(q, "col", "22402a")
-	var p := [C(0.12, 3.0, 0, 1.5, 0, "4a3624", 0.26, 0, 0, 0, "tree"), K(2.3, 5.0, 0, 3.8, 0, col, 0, 0, 0, "tree"),
-			K(1.6, 4.2, 0, 6.6, 0, cc(col).darkened(0.08), 0, 0, 0, "tree"), K(0.9, 3.0, 0, 9.0, 0, col, 0, 0, 0, "tree")]
+	# «Bergtal wie auf den Fotos» (Daniel, 31.10.2026): schlanke, dunkle, spitze Fichte (Stockhorn-Gebiet). Lite: gleich viele
+	# Teile wie bisher (Stamm + 3 Kegel), nur schlanker und dunkler; sonst 5 Kegel übereinander (gestufter Umriss).
+	var col = _q(q, "col", "1e3524")
+	var p := []
+	if _lite:
+		p = [C(0.14, 3.0, 0, 1.5, 0, "4a3624", 0.24, 0, 0, 0, "tree"), K(1.7, 6.0, 0, 4.0, 0, col, 0, 0, 0, "tree"),
+				K(1.25, 5.0, 0, 7.0, 0, cc(col).darkened(0.1), 0, 0, 0, "tree"), K(0.7, 4.0, 0, 10.0, 0, col, 0, 0, 0, "tree")]
+	else:
+		p = [C(0.14, 3.0, 0, 1.5, 0, "4a3624", 0.24, 0, 0, 0, "tree"), K(1.8, 4.5, 0, 3.0, 0, col, 0, 0, 0, "tree"),
+				K(1.5, 4.2, 0, 5.2, 0, cc(col).darkened(0.1), 0, 0, 0, "tree"), K(1.2, 3.8, 0, 7.3, 0, col, 0, 0, 0, "tree"),
+				K(0.9, 3.4, 0, 9.2, 0, cc(col).darkened(0.08), 0, 0, 0, "tree"), K(0.55, 3.0, 0, 11.0, 0, cc(col).lightened(0.04), 0, 0, 0, "tree")]
 	if bool(_q(q, "snow", false)):
-		p.append(K(1.9, 1.2, 0, 5.2, 0, "e8ecf0", 0, 0, 0, "tree"))
-		p.append(K(1.2, 1.0, 0, 7.8, 0, "e8ecf0", 0, 0, 0, "tree"))
+		p.append(K(1.45, 1.2, 0, 5.0, 0, "e8ecf0", 0, 0, 0, "tree"))
+		p.append(K(0.95, 1.0, 0, 8.2, 0, "e8ecf0", 0, 0, 0, "tree"))
 	return {"p": p, "t": "tree", "lod": "tree", "low": true, "ob": [["circ", 0, 0, 0.3, 10.0]]}
 
 
@@ -136,6 +146,74 @@ func _b_boulder(q: Dictionary) -> Dictionary:
 		p.append(B(0.24, 0.07, 0.02, 0, r * 0.75, r * 0.96, "c8102e"))
 		p.append(B(0.24, 0.07, 0.02, 0, r * 0.75 - 0.1, r * 0.95, "f2f2f2"))
 	return {"p": p, "t": "stone", "lod": "rock", "low": true, "ob": [["circ", 0, 0, r * 0.9, r * 1.2]]}
+
+
+# ---- «Bergtal wie auf den Fotos» (Daniel, 31.10.2026; bergtal_landschaft.gd, nur ausserhalb von Lite) ---------------------
+const BERG_FOTO := {"karst": ["Kalkblock (Karstweide)", "Berg"], "rock_tooth": ["Felszahn (Kalk)", "Berg"],
+		"spruce_dead": ["Dürre Fichte", "Berg"], "dwarf_shrub": ["Zwergsträucher (Alpenrosen, Heidelbeeren)", "Berg"]}
+const KARST_COLS := [["c4c2ba", "b0ada4", "d0cec6", "9a978d"], ["a29f95", "918e84", "aeaba1", "7e7b72"]]   # hell (Blöcke), verwittert (Felszähne)
+
+
+func _b_karst(q: Dictionary) -> Dictionary:
+	"""ein kantiger heller Kalkblock, halb eingesunken (Grösse 1 = rund 1 m; der Fuss liegt unter dem Boden)"""
+	var cs: Array = KARST_COLS[int(_q(q, "c", 0)) % 2]
+	var p := []
+	match int(_q(q, "v", 0)) % 4:
+		0:                                                 # ein Block mit abgebrochener Ecke
+			p = [B(1.0, 0.6, 0.8, 0, 0.12, 0, cs[0], 5, 15, -7, "stone"), B(0.6, 0.45, 0.55, 0.38, 0.2, 0.18, cs[1], -10, 40, 9, "stone"),
+					B(0.5, 0.1, 0.45, -0.05, 0.43, -0.05, cs[2], 4, 15, -7, "stone")]
+		1:                                                 # flache Platte mit Spalt (Karren)
+			p = [B(1.4, 0.36, 1.0, 0, 0.04, 0, cs[1], 3, 0, 5, "stone"), B(0.7, 0.3, 0.5, -0.32, 0.2, -0.12, cs[2], 8, 25, -4, "stone"),
+					B(0.06, 0.2, 0.9, 0.22, 0.2, 0.0, cs[3], 3, 0, 5, "stone")]
+		2:                                                 # hoher, schräger Brocken
+			p = [B(0.7, 0.9, 0.6, 0, 0.2, 0, cs[0], 12, 30, 7, "stone"), B(0.45, 0.4, 0.5, 0.3, 0.05, 0.25, cs[1], -6, 70, -12, "stone")]
+		_:                                                 # drei kleine Steine
+			p = [B(0.5, 0.36, 0.4, 0.4, 0.06, 0.2, cs[2], 6, 20, -8, "stone"), B(0.42, 0.3, 0.45, -0.35, 0.05, 0.1, cs[0], -5, 55, 6, "stone"),
+					B(0.6, 0.32, 0.42, 0.0, 0.04, -0.42, cs[1], 9, -25, 4, "stone")]
+	var d := {"p": p, "t": "stone", "lod": str(_q(q, "lod", "rock")), "low": true}
+	if bool(_q(q, "ob", false)):
+		d["ob"] = [["circ", 0, 0, 0.6, 0.6, true]]
+	return d
+
+
+func _b_rock_tooth(q: Dictionary) -> Dictionary:
+	"""ein Felszahn am Grat: heller Kalk, senkrecht bis leicht schräg, oben abgebrochen (Höhe 1 = rund 7 m)"""
+	var cs: Array = KARST_COLS[int(_q(q, "c", 0)) % 2]
+	var p := []
+	match int(_q(q, "v", 0)) % 3:
+		0:
+			p = [B(2.6, 7.0, 2.0, 0, 2.6, 0, cs[0], 4, 10, -6, "stone"), B(1.6, 2.4, 1.4, 0.2, 6.6, -0.1, cs[2], -6, 30, 8, "stone"),
+					B(1.4, 3.0, 1.6, 1.1, 1.0, 0.6, cs[1], 8, -20, 10, "stone")]
+		1:
+			p = [B(1.8, 9.0, 1.6, 0, 3.6, 0, cs[1], -8, 25, 9, "stone"), B(1.1, 2.4, 1.0, -0.4, 8.6, 0.2, cs[0], 5, 40, -7, "stone")]
+		_:
+			p = [B(3.4, 4.6, 2.6, 0, 1.4, 0, cs[0], 6, -15, -9, "stone"), B(1.6, 3.6, 1.5, 0.9, 4.0, 0.3, cs[2], -9, 20, 12, "stone"),
+					B(1.2, 2.2, 1.1, -1.1, 3.2, -0.5, cs[3], 10, 60, -5, "stone")]
+	return {"p": p, "t": "stone", "lod": "far", "low": true, "ob": [["circ", 0, 0, 1.6, 6.0]]}
+
+
+func _b_spruce_dead(q: Dictionary) -> Dictionary:
+	"""eine dürre Fichte (Blitz, Borkenkäfer): grauer Stamm, wenige kahle Äste, ein Rest brauner Nadeln"""
+	var p := [C(0.11, 11.0, 0, 5.5, 0, "8a857b", 0.2, 0, 0, 0, "tree")]
+	for i in range(5):
+		var y := 3.0 + i * 1.6
+		var a := i * 2.3
+		p.append(B(1.6 - i * 0.22, 0.06, 0.06, cos(a) * 0.7, y, sin(a) * 0.7, "7d786e", 0, rad_to_deg(-a), -18, "tree"))
+	p.append(K(0.7, 2.2, 0, 8.4, 0, "5e4a32", 0, 0, 0, "tree"))
+	return {"p": p, "t": "tree", "lod": "tree", "low": true, "ob": [["circ", 0, 0, 0.25, 10.0]]}
+
+
+func _b_dwarf_shrub(q: Dictionary) -> Dictionary:
+	"""ein Polster aus Alpenrosen und Heidelbeeren (Grat, Waldgrenze): niedrig, dunkelgrün, im Sommer ein paar rosa Blüten,
+	im Herbst rotbraun"""
+	var season := str(_q(q, "season", "sommer"))
+	var col: String = {"herbst": "7a3a22", "fruehling": "3a5a2a"}.get(season, "2f4a26")
+	var p := [S(0.9, 0.55, 0, 0.12, 0, col, "tree"), S(0.6, 0.45, 0.7, 0.1, 0.3, cc(col).lightened(0.08), "tree"),
+			S(0.55, 0.4, -0.6, 0.08, -0.35, cc(col).darkened(0.08), "tree")]
+	if season == "sommer":
+		p.append(S(0.22, 0.12, 0.2, 0.36, 0.1, "c8487a", "tree"))
+		p.append(S(0.18, 0.1, -0.45, 0.28, -0.2, "d0588a", "tree"))
+	return {"p": p, "t": "tree", "lod": "mid", "low": true}
 
 
 func _b_cairn(q: Dictionary) -> Dictionary:
