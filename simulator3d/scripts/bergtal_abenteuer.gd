@@ -21,6 +21,7 @@ const D = preload("res://scripts/bergtal_abenteuer_daten.gd")
 const T = preload("res://scripts/i18n.gd")
 const Bt = preload("res://scripts/bergtal.gd")
 const Karte = preload("res://scripts/bergtal_abenteuer_karte.gd")
+const Inv = preload("res://scripts/abenteuer_inventar.gd")   # A4: gemeinsames Inventar (hat / gib / nimm / anzahl)
 
 const STEPS := ["Kapitel", "Stimmung", "Schwierigkeit & Ziel", "Rucksack", "Unterwegs", "Nachtlager", "Nacht", "Morgen"]
 const SAVE_FILE := "user://bergtal_abenteuer/fortschritt.json"
@@ -112,7 +113,9 @@ func pack_kg(items: Dictionary = {}) -> float:
 	for k in it:
 		if D.ITEMS.has(k):
 			kg += float(D.ITEMS[k][1]) * int(it[k])
-	return snappedf(kg, 0.01)
+		elif str(k) in Inv.IDS:
+			kg += Inv.gewicht(str(k)) * int(it[k])          # A4: neue Gegenstände (kaese, brief …)
+	return snappedf(kg + Inv.extra_kg(), 0.01)
 
 
 func pack_l() -> float:
@@ -124,7 +127,7 @@ func pack_l() -> float:
 
 
 func has(id: String) -> bool:
-	return int((R.get("items", W["items"]) as Dictionary).get(id, 0)) > 0
+	return Inv.hat(id)                                   # A4: Rucksack + gefundene / bleibende Dinge
 
 
 func blinki_suggest() -> Dictionary:
@@ -1415,6 +1418,7 @@ func _changed() -> void:
 
 
 func _ready() -> void:
+	Inv.verbinde(self)                                   # A4
 	_load()
 	W["items"] = blinki_suggest()
 	set_anchors_preset(Control.PRESET_FULL_RECT)
