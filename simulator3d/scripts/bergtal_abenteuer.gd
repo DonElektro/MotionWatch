@@ -2305,8 +2305,9 @@ func _paint_level() -> void:
 		row3.add_child(l3)
 		var ob3 := OptionButton.new()
 		var lv3 := ["aus", "wenig", "normal", "belebt"]
+		var nm3 := [T.t("keine"), T.t("wenig"), T.t("normal"), T.t("belebt")]
 		for i in range(lv3.size()):
-			ob3.add_item(T.t(["keine", "wenig", "normal", "belebt"][i]))
+			ob3.add_item(nm3[i])
 			if lv3[i] == str(main.statisten.menge["abenteuer"]):
 				ob3.select(i)
 		ob3.item_selected.connect(func(i): main.statisten.set_menge("abenteuer", lv3[i]))

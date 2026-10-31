@@ -97,8 +97,8 @@ func set_menge(mode: String, v: String) -> void:
 # ---- controls (main._register_controls, next to menschen.add_controls) --------------------------------------------------
 func add_controls() -> void:
 	var m = main
-	var L3 := [["wenig", "wenig"], ["normal", "normal"], ["belebt", "belebt"]]
-	var L4 := [["aus", "keine"], ["wenig", "wenig"], ["normal", "normal"], ["belebt", "belebt"]]
+	var L3 := [["wenig", T.t("wenig")], ["normal", T.t("normal")], ["belebt", T.t("belebt")]]
+	var L4 := [["aus", T.t("keine")], ["wenig", T.t("wenig")], ["normal", T.t("normal")], ["belebt", T.t("belebt")]]
 	m.add_control("select", "st_frei", "Statisten (Leute im Hintergrund): wie viele, mit Zielen, Tätigkeiten und Gruppen",
 			func(): return menge["frei"], func(v): set_menge("frei", str(v)), "Besuch", {"sub": "Von selbst", "options": L3})
 	m.add_control("select", "st_spiel", "Statisten in Spielrunden", func(): return menge["spiel"], func(v): set_menge("spiel", str(v)),
@@ -108,7 +108,7 @@ func add_controls() -> void:
 	m.add_control("select", "st_aufgabe", "Statisten bei den Ferienpark-Aufgaben", func(): return menge["aufgabe"], func(v): set_menge("aufgabe", str(v)),
 			"Besuch", {"sub": "Von selbst", "options": L4, "expert": true})
 	m.add_control("select", "st_maggie", "Statisten bei Maggie und im Hospiz", func(): return menge["maggie"], func(v): set_menge("maggie", str(v)),
-			"Besuch", {"sub": "Von selbst", "options": [["aus", "keine"], ["wenig", "ganz wenige"]], "expert": true})
+			"Besuch", {"sub": "Von selbst", "options": [["aus", T.t("keine")], ["wenig", T.t("ganz wenige")]], "expert": true})
 
 
 func info() -> Dictionary:
@@ -244,17 +244,17 @@ func _walkable(p: Vector3) -> bool:
 
 func _goal_type(name: String, kind: String) -> String:
 	var n := name.to_lower()
-	if kind == "aussicht" or "aussicht" in n or "seeblick" in n or "steg" in n or "brücke" in n:
+	if kind == "aussicht" or n.contains("aussicht") or n.contains("seeblick") or n.contains("steg") or n.contains("brücke"):
 		return "view"
-	if "bank" in n or "rast" in n or "picknick" in n:
+	if n.contains("bank") or n.contains("rast") or n.contains("picknick"):
 		return "bench"
-	if "brunnen" in n:
+	if n.contains("brunnen"):
 		return "fountain"
-	if "parkplatz" in n or "haltestelle" in n or "postauto" in n:
+	if n.contains("parkplatz") or n.contains("haltestelle") or n.contains("postauto"):
 		return "parking"
-	if "hütte" in n or "kiosk" in n or "restaurant" in n or "laden" in n or "bäckerei" in n or "stall" in n or "beizli" in n or "rezeption" in n:
+	if n.contains("hütte") or n.contains("kiosk") or n.contains("restaurant") or n.contains("laden") or n.contains("bäckerei") or n.contains("stall") or n.contains("beizli") or n.contains("rezeption"):
 		return "hut"
-	if "sanitär" in n or "wc" in n:
+	if n.contains("sanitär") or n.contains("wc"):
 		return "wc"
 	return "place"
 
