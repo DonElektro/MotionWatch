@@ -590,7 +590,9 @@ func befehl(f: String) -> Dictionary:
 				_zeige(T.t("Hier gibt es keine enge Stelle zum Durchschlüpfen."))}])
 	if nah and str(st_["f"]) in ["riechen", "graben", "schluepfen"]:
 		_zeige(T.t("Das klappt hier nicht. Probier etwas anderes!"))
-	return {"ok": true, "loest": "", "pos": [snappedf(hp.x, 0.1), snappedf(hp.z, 0.1)]}
+	var sp_ := _spieler()
+	return {"ok": true, "loest": "", "pos": [snappedf(hp.x, 0.1), snappedf(hp.z, 0.1)], "spieler": [snappedf(sp_.x, 0.1), snappedf(sp_.z, 0.1)],
+		"station": str(st_.get("id", "")), "abstand": snappedf(sp_.distance_to(st_["p"]), 0.1) if not st_.is_empty() else -1.0}
 
 
 func _loesen_start(st_: Dictionary) -> void:
@@ -930,7 +932,12 @@ func _warnen() -> void:
 				{"t": "bark", "n": 3}, {"t": "wait", "s": 0.8}])
 			_zeige(T.t("Maggie knurrt! Da vorne ist etwas. Sei vorsichtig."))
 	var st_ := aktuell()                              # die Weggabelung
-	if st_.is_empty() or str(st_["ding"]) != "gabel" or zustand_hund != "folgen":
+	if st_.is_empty() or str(st_["ding"]) != "gabel":
+		return
+	if sp.distance_to(st_["gut_p"]) < 4.0:
+		_fertig(st_)
+		return
+	if zustand_hund != "folgen":
 		return
 	if _nah(st_, 9.0) and _uhr > _gabel_warn:
 		_gabel_warn = _uhr + 9.0
@@ -941,8 +948,6 @@ func _warnen() -> void:
 		_warn_bis = _uhr + 6.0
 		_aktion([{"t": "walk", "p": sp.lerp(st_["boese_p"], 0.5), "spd": 4.0}, {"t": "bark", "n": 4}])
 		_zeige(T.t("Maggie stellt sich dir in den Weg und bellt. Lieber den anderen Weg!"))
-	elif sp.distance_to(st_["gut_p"]) < 4.0:
-		_fertig(st_)
 
 
 # ---- Ablauf ------------------------------------------------------------------------------------------------------------
@@ -1007,7 +1012,7 @@ func _ui() -> void:
 	root.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 	root.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	root.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	root.offset_bottom = -14
+	root.offset_bottom = -64                          # über der Leiste unten (Bewegen / Ansicht)
 	root.theme = UI.theme()
 	root.alignment = BoxContainer.ALIGNMENT_END
 	_layer.add_child(root)
@@ -1116,11 +1121,13 @@ static func control(main, d: Dictionary) -> Dictionary:
 				h.main = main
 				main.add_child(h)
 			main.set_meta("maggie_hund", h)
-		if h.story == null or h.story is StubStory:
+		if h.story == null:
 			h.story = StubStory.new(h)
-			h.story.region = str(d.get("region", "herbst"))
 			h.verbinden(h.story)
-		if h.region == "" and h.story.has_method("region_aktiv") and h.story.region_aktiv() != "":
+		if h.story is StubStory:
+			h.story.region = str(d.get("region", "herbst"))
+			h.story.pos = null
+		if h.story.has_method("region_aktiv") and h.story.region_aktiv() != "" and h.story.region_aktiv() != h.region:
 			h._on_region(str(h.story.region_aktiv()))
 		return {"ok": true, "info": h.info()}
 	if h == null:
@@ -1138,6 +1145,19 @@ static func control(main, d: Dictionary) -> Dictionary:
 						p = st_.get(key, st_["p"]) if key != "" else st_["p"]
 				h.story.pos = p
 			return {"ok": true, "info": h.info()}
+		"blick":                                      # Tests: die Fensteransicht schaut Maggie von schräg oben an
+			if h.hund == null or not is_instance_valid(h.hund):
+				return {"ok": false, "error": "kein Hund"}
+			var hw: Vector3 = (h.hund as Node3D).global_position
+			var off: Array = d.get("off", [3.0, 1.8, 3.0])
+			main.view_mode = 0
+			main.view_cam.position = hw + Vector3(float(off[0]), float(off[1]), float(off[2]))
+			main.view_cam.look_at(hw + Vector3(0, 0.3, 0))
+			main.show_panel(false)
+			return {"ok": true}
+		"einstieg":                                   # Tests: wie das Signal einstieg_graben des Rahmens (x, z Tal)
+			h._on_einstieg(h.W(h.G(float(d.get("x", 0)), float(d.get("z", 0)))))
+			return {"ok": true}
 		"loesen":
 			var st2 := h.aktuell() as Dictionary
 			if st2.is_empty():

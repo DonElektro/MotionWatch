@@ -45,6 +45,9 @@ func aufraeumen() -> void:
 			a.queue_free()
 	if root != null and is_instance_valid(root):
 		root.queue_free()
+	_eule_fl = []
+	_e["fliegt"] = false
+	_e["auf"] = false
 	fuchs = null
 	murmel = null
 	bock = null
