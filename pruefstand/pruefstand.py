@@ -42,10 +42,12 @@ PLAN_DAUER = {"quick": 150, "standard": 300, "night": 230, "hard": 520, "nacht":
 # Neue Szenen (Simulator 3D-4.x, szenenplus.gd): jeder Plan lädt seine eigene Szene (--szene gilt dafür nicht) - nicht in «quick»
 PLAN_DAUER.update({"camping_voll": 290, "tarnen": 270, "velodieb": 230})
 PLAN_DAUER["gegenstaende"] = 290      # Simulator 3D-4.x «Gegenstände»: Dinge vor der Kamera (Wind, Licht, Lockmittel) - nur sonntags / von Hand
+PLAN_DAUER["fahrzeuge"] = 300         # Paket «Fahrzeuge»: Autos nachts (Licht, Blendung, Parkieren, Velos) - nur sonntags / von Hand
 PLAN_NAME = {"quick": "Kurz (Tag + Nacht)", "standard": "Standard (Tag, Wind, Nacht, Regen)", "night": "Nacht", "hard": "Schwierige Bedingungen",
              "nacht": "Ganze Nacht (20–6 Uhr, Zeitraffer)", "spielwege": "Schleichwege aus dem Spiel", "echtenaechte": "Echte Nächte nachgespielt"}
 PLAN_NAME.update({"camping_voll": "Voller Campingplatz", "tarnen": "Tarnen und Kriechen", "velodieb": "Velodieb"})
 PLAN_NAME["gegenstaende"] = "Gegenstände (Wind, Licht, Lockmittel)"
+PLAN_NAME["fahrzeuge"] = "Fahrzeuge in der Nacht (Licht, Blendung, Parkieren)"
 FIX_PLAENE = ("spielwege", "echtenaechte", "nacht")      # Prüfstand 2: realistic numbers - --mal does not multiply, no run without effects
 WEGE = os.path.join(REPO, "simulator3d", "spielwege")
 NAECHTE = os.path.join(REPO, "simulator3d", "pruefnaechte")
@@ -301,6 +303,10 @@ def run(a):
                     log("  Gegenstände: %d Dinge (KI kennt %d, kennt nicht %d), Tiere zum Lockmittel %d (angekommen %d), Pushes falsch %d / richtig %d" % (
                         sz.get("dinge", 0), sz.get("ki_kennt", 0), sz.get("ki_kennt_nicht", 0), sz.get("lockmittel_tiere", 0),
                         sz.get("lockmittel_angekommen", 0), sz.get("push_falsch", 0), sz.get("push_richtig", 0)), wichtig=True)
+                elif sz.get("art") == "fahrzeuge":
+                    log("  Fahrzeuge: %d (Fernlicht %d), ausgestiegen %d, zurück %d, Blendung bis %.2f, Velos ohne Licht %d, Pushes falsch %d (wegen Fahrzeug %d) / richtig %d" % (
+                        sz.get("fahrzeuge", 0), sz.get("fernlicht", 0), sz.get("ausgestiegen", 0), sz.get("zurueck", 0), sz.get("blendung_max", 0.0),
+                        sz.get("velos_ohne_licht", 0), sz.get("push_falsch", 0), sz.get("push_falsch_fahrzeug", 0), sz.get("push_richtig", 0)), wichtig=True)
                 elif sz.get("art") == "tarnen":
                     log("  Tarnen: " + ", ".join("%s %d/%d erkannt, %d Push" % (k[5:], v.get("erkannt", 0), v.get("sichtbar", 0), v.get("push", 0))
                                                 for k, v in sorted((sz.get("arten") or {}).items())), wichtig=True)
@@ -767,7 +773,7 @@ def main():
     ap.add_argument("--mw", default="", help="die Motion-Watch-Datei (Standard: die neuste im Repository)")
     ap.add_argument("--sim-bin", default="", help="das exportierte Simulator-Programm (Linux)")
     ap.add_argument("--godot", default="", help="Godot 4.3 (startet das Projekt simulator3d/ direkt)")
-    ap.add_argument("--plaene", default="quick,night", help="quick, standard, night, hard, nacht (ganze Nacht), camping_voll, tarnen, velodieb, gegenstaende – mit Komma")
+    ap.add_argument("--plaene", default="quick,night", help="quick, standard, night, hard, nacht (ganze Nacht), camping_voll, tarnen, velodieb, gegenstaende, fahrzeuge – mit Komma")
     ap.add_argument("--wiederholungen", type=int, default=1, help="jeden Testlauf so oft (mehr = verlässlichere Zahlen)")
     ap.add_argument("--seeds", type=int, default=1, help="so viele Zufallsstarts (1 = die festen Besucher von früher, 4711; 2, 3 … andere Wege)")
     ap.add_argument("--mal", type=int, default=2, help="jede Besucherliste so oft, 1–5 (mehr Personen pro Lauf = verlässlichere Zahlen)")

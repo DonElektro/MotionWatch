@@ -69,7 +69,7 @@ func activity(kind: String, h: float) -> float:
 			return 0.6 if night else (0.3 if dawn or dusk else 0.0)
 		"bats", "owl":
 			return 1.5 if night or dusk else 0.0
-		"moto", "van":
+		"moto", "van", "camper":
 			return 0.2 if night else 1.0
 		"burglar":                                          # 3D-3.40: the stories
 			return 1.6 if _band(h, 23.0, 4.0) else 0.0

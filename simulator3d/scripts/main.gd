@@ -301,6 +301,7 @@ var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Z
 var fauna                             # fauna.gd (3D-3.95)
 var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»): wind, light, lures, valuables of the catalogue
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
+var fahrzeuge                         # fahrzeuge.gd (Paket «Fahrzeuge»): speed, lights, glare, doors, parking, engine heat
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
 var colors_on := true
 var tracks                            # tracks.gd (3D-3.98)
@@ -422,6 +423,9 @@ func _ready() -> void:
 	umgebung = preload("res://scripts/umgebung.gd").new()     # 3D-4.x: the surroundings like real (every part can be switched off)
 	umgebung.main = self
 	add_child(umgebung)
+	fahrzeuge = preload("res://scripts/fahrzeuge.gd").new()   # Paket «Fahrzeuge»: vehicles like real
+	fahrzeuge.main = self
+	add_child(fahrzeuge)
 	fauna = preload("res://scripts/fauna.gd").new()          # 3D-3.95: birds and bats
 	fauna.main = self
 	add_child(fauna)
@@ -1778,8 +1782,9 @@ func _update_lens() -> void:
 		m.set_shader_parameter("noise", lens_noise * (0.08 + 0.92 * (amp if dark else amp * 0.4)) * (realism.noise_scale() if realism != null else 1.0))
 		m.set_shader_parameter("vignette", lens_vignette)
 		m.set_shader_parameter("drops", 0.55 if cond["drops"] else ((0.45 if i == 1 else 0.25) if lens_drops and weather == "rain" else 0.0))
-		m.set_shader_parameter("glare", (0.85 if i == 0 else 0.6) if cond["glare"] and not dark else 0.0)
-		m.set_shader_parameter("glare_pos", Vector2(0.84, 0.16) if i == 0 else Vector2(0.15, 0.2))
+		if fahrzeuge == null or not fahrzeuge.glaring(i):  # Paket «Fahrzeuge»: headlights blinding the lens set it themselves
+			m.set_shader_parameter("glare", (0.85 if i == 0 else 0.6) if cond["glare"] and not dark else 0.0)
+			m.set_shader_parameter("glare_pos", Vector2(0.84, 0.16) if i == 0 else Vector2(0.15, 0.2))
 		m.set_shader_parameter("web", 1.0 if cond["web"] and i == 0 else 0.0)        # the web hangs in front of the head camera
 		var lit_now: bool = dark and (ir_on() or white_light.light_energy > 0.0)
 		m.set_shader_parameter("web_lit", 1.0 if lit_now else 0.0)
@@ -2911,7 +2916,7 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 	var spd: float = {"person": 1.3, "elderly": 0.7, "child": 1.0, "jogger": 2.8, "fox": 2.0, "boar": 1.5, "deer": 1.6, "cat": 1.1, "dog": 1.8, "badger": 0.9,
 			"hare": 1.9, "hedgehog": 0.3, "car": 11.0, "wolf": 1.7, "marten": 1.5, "squirrel": 1.6,
 			"cyclist": 4.6, "stroller": 1.1, "drunk": 0.75, "courier": 1.8, "police": 1.2, "cow": 0.8, "sheep": 0.9, "horse": 1.4,
-			"chamois": 1.7, "ibex": 1.1, "lynx": 1.5, "tractor": 5.5, "moto": 14.0, "van": 10.0}.get(kind, 1.3)
+			"chamois": 1.7, "ibex": 1.1, "lynx": 1.5, "tractor": 5.5, "moto": 14.0, "van": 10.0, "camper": 9.0}.get(kind, 1.3)
 	var v = Actor.new()
 	visitors.add_child(v)
 	var sd := -1
@@ -2920,6 +2925,8 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 		seed(sd)
 	v.setup(self, kind, a, b, spd * randf_range(0.85, 1.15))
 	v.set_night(is_dark())
+	if fahrzeuge != null:
+		fahrzeuge.on_spawn(v)                     # Paket «Fahrzeuge»: lights, doors, heat, speed
 	if sd >= 0:
 		recorder.note_spawn(v, sd)
 		randomize()
@@ -2949,13 +2956,18 @@ func car(kind_ := "car") -> void:
 				v.route.append(path[i])
 			return
 	var z: float = scenes.data.get("road_z", -28.0)
-	spawn(kind_, Vector3(-side * 90.0, 0, z - side * 1.2), Vector3(side * 90.0, 0, z - side * 1.2))
+	var lz: float = z - side * 1.2
+	if fahrzeuge != null and fahrzeuge.fz_real:
+		lz = fahrzeuge.lane_z(side)                       # Paket «Fahrzeuge»: on the right lane
+	spawn(kind_, Vector3(-side * 90.0, 0, lz), Vector3(side * 90.0, 0, lz))
 
 
 func visit(k: String) -> void:
 	"""a visitor that fits the scene: also the special ones (a car parks, somebody sits on the bench, an animal comes to the feeder)"""
 	if k == "car":
 		car()
+	elif k == "car_park" and fahrzeuge != null and fahrzeuge.fz_real:
+		fahrzeuge.arrive("car")                                # Paket «Fahrzeuge»: parks, people get out, comes back later
 	elif k == "car_park":
 		var c = spawn("car", Vector3(90, 0, -31.0), Vector3(26, 0, -31.0))
 		scenes.park_route(c)
@@ -2978,7 +2990,7 @@ func visit(k: String) -> void:
 			d2.speed = lead.speed
 			if randf() < 0.5:
 				d2.body_root.scale *= 0.7                        # a young one
-	elif k in ["tractor", "moto", "van"]:                      # vehicles (3D-3.39): along the road like a car
+	elif k in ["tractor", "moto", "van", "camper"]:            # vehicles (3D-3.39; camper: fahrzeuge.gd): along the road like a car
 		car(k)
 	elif k == "cyclist":                                       # on the road (or across the meadow)
 		var z0: float = scenes.data.get("road_z", -28.0) + 0.6
@@ -3405,7 +3417,7 @@ func _register_controls() -> void:
 	add_control("button", "tractor", "Traktor", null, func(): visit("tractor"), "Besuch")
 	add_control("button", "moto", "Töff", null, func(): visit("moto"), "Besuch")
 	add_control("button", "van", "Lieferwagen", null, func(): visit("van"), "Besuch")
-	add_control("button", "car_park", "Auto parkiert (Parkplatz)", null, func(): visit("car_park"), "Besuch", ex)
+	add_control("button", "car_park", "Auto kommt an und parkiert (Leute steigen aus)", null, func(): visit("car_park"), "Besuch", ex)
 	add_control("button", "bench", "Besuch setzt sich auf die Bank (Lustiger Platz)", null, func(): visit("bench"), "Besuch", ex)
 	add_control("button", "feed", "Reh kommt zur Futterstelle (Wildbeobachtung)", null, func(): visit("feed_deer"), "Besuch", ex)
 	add_control("button", "garden_person", "Besuch kommt durchs Gartentor (Garten)", null, func(): visit("garden_person"), "Besuch", ex)
@@ -3452,6 +3464,7 @@ func _register_controls() -> void:
 	simreal.add_controls()                                 # 3D-4.4: closer to the real device
 	objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
 	umgebung.add_controls()                                # 3D-4.x: surroundings like real
+	fahrzeuge.add_controls()                               # Paket «Fahrzeuge»
 	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
 	if statusled != null:
 		statusled.add_controls()                           # Licht & Ton → Status-LED & Tasten (Fenster «Gerät»)
@@ -4284,6 +4297,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return objplus.control(d)
 	elif a == "umgebung":                              # 3D-4.x: {do: info | set (key, value) | spawn (kind) | snow_puff | clear_tracks}
 		return umgebung.control(d)
+	elif a == "fahrzeuge":                             # Paket «Fahrzeuge»: {do: info | set | spawn | arrive | toward | leave | reset}
+		return fahrzeuge.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
 		return weit.control(d)
 	elif a == "parcours":                              # 3D-4.18: {do: info | start (lessons, night, seed, prep_s) | stop | state | result | game | steer ...}

@@ -27,7 +27,7 @@ const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox"
 		"bauernhof": [["cows", "sheep_flock", "cat", "cat", "dog", "fox", "fox", "marten", "badger", "hare", "person", "tractor", "horse_walk", "owl", "bats", "burglar", "dogwalk"], 30.0, 90.0],
 		"seeufer": [["person", "couple", "jogger", "dogwalk", "fox", "deer", "hare", "cyclist", "child", "bats", "owl", "drunk", "burglar"], 30.0, 90.0],
 		"baustelle": [["person", "burglar", "burglar", "police", "fox", "cat", "marten", "courier", "van", "drunk", "hare"], 40.0, 120.0],
-		"stellplatz": [["person", "couple", "child", "dogwalk", "cat", "fox", "hedgehog", "cyclist", "van", "moto", "courier", "burglar", "homecoming", "drunk", "bbq"], 30.0, 90.0],
+		"stellplatz": [["person", "couple", "child", "dogwalk", "cat", "fox", "hedgehog", "cyclist", "van", "moto", "camper", "courier", "burglar", "homecoming", "drunk", "bbq"], 30.0, 90.0],
 		"vorlage": [["person", "child", "dogwalk", "cat", "fox", "deer", "hare", "hedgehog", "courier", "burglar", "cyclist"], 35.0, 100.0],
 		"schlafzimmer": [["cat"], 300.0, 900.0],
 		"parcours": [["person", "jogger", "fox", "deer", "hare", "cyclist"], 60.0, 150.0],   # 3D-4.18 (the lessons switch them off)
