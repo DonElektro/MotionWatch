@@ -632,6 +632,10 @@ func _ready() -> void:
 	maggie = preload("res://scripts/maggie_story.gd").new()    # «Maggie und der Bergkristall» (Geschichte unter «Spielen», maggie_story.gd)
 	maggie.main = self
 	add_child(maggie)
+	if OS.has_feature("web"):                                  # Web-Machbarkeit (real-web-test): Steuerung aus JavaScript
+		var wb = preload("res://scripts/web_bruecke.gd").new()
+		wb.main = self
+		add_child(wb)
 	_register_controls()
 	_order_controls()
 	mwpc = Mwpc.new()
