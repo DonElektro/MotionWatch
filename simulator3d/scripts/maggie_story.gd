@@ -1,6 +1,6 @@
 extends Node
 ## «Maggie und der Bergkristall» (Daniel, 31.10.2026) – eine Geschichte für Kinder (ca. 12) im Bergtal. Paket S1 «Rahmen».
-## Eigene Kachel unter «Spielen» (spielbereich.gd). Alles selbst erfunden (nur lose Inspiration: vier Reiche = vier
+## Eine Karte im Regal «Geschichten» unter «Spielen» (geschichten.gd). Alles selbst erfunden (nur lose Inspiration: vier Reiche = vier
 ## Jahreszeiten). Ablauf:
 ##   Figur wählen (Name + Aussehen) → Einstieg: Spaziergang auf der Alp, Maggie gräbt einen leuchtenden Bergkristall aus,
 ##   in seinem Licht kurze Bilder der Zukunft → Auswahl der Region (Reihenfolge frei: Herbst, Winter, Frühling, Sommer) →
@@ -11,7 +11,7 @@ extends Node
 ## Erwischt von einem bösen Tier: kurzer Schreck (dunkler, ein Rauschen – kein Schrei, nichts Hartes), dann sicher
 ## zurück zum letzten Rastplatz; der Kristall bleibt bei dir. MoveEye wird nicht aufgestellt: es ist «einfach dabei»
 ## und sagt ab und zu, was es jetzt machen würde (moveeye_sagt).
-## Speichern: user://maggie/spielstand.json (Name, Aussehen, geschaffte Regionen, Region + letzter Rastplatz, Finale).
+## Speichern: user://maggie/spielstand.json (pro Spielstand: spielstand.gd path_maggie; Name, Aussehen, geschaffte Regionen, Region + letzter Rastplatz, Finale).
 ## Lite (Quality.lite()): kein Bild-Effekt beim Zukunftsbild (nur Tönung), weniger Teilchen, keine Schatten der Lichter.
 ##
 ## API für S2 (maggie_hund.gd / maggie_helfer.gd) und S3 (maggie_gefahr.gd) – Zugriff über main.maggie (oder `story`):
@@ -156,8 +156,6 @@ var _zk_lbl: Label = null
 var _credits: Control = null
 var _snd: AudioStreamPlayer = null
 var _streams := {}
-var _name_edit: LineEdit = null
-var _look := {}
 
 
 class Arrow:
@@ -432,17 +430,21 @@ func region_fertig(id: String) -> void:
 # =======================================================================================================================
 # state
 # =======================================================================================================================
+func _file() -> String:
+	return preload("res://scripts/spielstand.gd").path_maggie()   # Geschichten-Menü: per Spielstand (place 1 = SAVE_FILE)
+
+
 func _load() -> void:
 	S = {}
-	if FileAccess.file_exists(SAVE_FILE):
-		var d = JSON.parse_string(FileAccess.get_file_as_string(SAVE_FILE))
+	if FileAccess.file_exists(_file()):
+		var d = JSON.parse_string(FileAccess.get_file_as_string(_file()))
 		if d is Dictionary:
 			S = d
 
 
 func _save() -> void:
-	DirAccess.make_dir_recursive_absolute(SAVE_FILE.get_base_dir())
-	var f := FileAccess.open(SAVE_FILE, FileAccess.WRITE)
+	DirAccess.make_dir_recursive_absolute(_file().get_base_dir())
+	var f := FileAccess.open(_file(), FileAccess.WRITE)
 	if f != null:
 		f.store_string(JSON.stringify(S))
 		f.close()
@@ -471,61 +473,11 @@ func info() -> Dictionary:
 			"lite": Welt.lite()}
 
 
-# =======================================================================================================================
-# the tile under «Spielen» (spielbereich.gd)
-# =======================================================================================================================
-func kachel(W: float) -> Control:
-	var p := PanelContainer.new()
-	p.add_theme_stylebox_override("panel", UI.box(UI.PANEL2, Color(0.62, 0.85, 1.0) if running else UI.LINE, 12, 8, 1))
-	p.custom_minimum_size = Vector2(W, 0)
-	var h := HBoxContainer.new()
-	h.add_theme_constant_override("separation", 10)
-	p.add_child(h)
-	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 2)
-	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	h.add_child(v)
-	var tl := HBoxContainer.new()
-	tl.add_theme_constant_override("separation", 6)
-	v.add_child(tl)
-	var t := Label.new()
-	t.text = T.t("Maggie und der Bergkristall")
-	t.add_theme_font_override("font", UI.heading_font())
-	t.add_theme_font_size_override("font_size", 14)
-	tl.add_child(t)
-	var n := done_count()
-	var chip := ""
-	var cc := UI.ACC
-	if bool(S.get("finale", false)):
-		chip = T.t("✓ Geschafft")
-		cc = UI.GRN
-	elif not bool(S.get("intro", false)):
-		chip = T.t("Neu")
-	if chip != "":
-		var ch := UI.small(chip, cc)
-		ch.autowrap_mode = TextServer.AUTOWRAP_OFF
-		ch.add_theme_font_size_override("font_size", 11)
-		tl.add_child(ch)
-	var sh := UI.small(T.t("Mit Maggie, dem kleinen Hund, bringst du einen leuchtenden Kristall durch vier Jahreszeiten zum Gipfel. Etwa 2 Stunden, ein bisschen gruselig."), UI.MUT)
-	sh.custom_minimum_size = Vector2(W - 230.0, 0)
-	v.add_child(sh)
-	if bool(S.get("intro", false)) and not bool(S.get("finale", false)):
-		v.add_child(UI.small(T.t("%d von 4 Jahreszeiten geschafft", [n]), UI.TXT))
-	var b := Button.new()
-	b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	b.custom_minimum_size = Vector2(150, 34)
-	b.text = T.t("Weiter spielen") if bool(S.get("intro", false)) or running else T.t("Geschichte starten")
-	UI.primary(b)
-	b.pressed.connect(func():
-		if main.spielbereich != null:
-			main.spielbereich.close()
-		open())
-	h.add_child(b)
-	return p
+# (the card under «Spielen» → «Geschichten» is drawn by geschichten.gd: fortschritt(), weiter(), beginnen(), figur())
 
 
 # =======================================================================================================================
-# start: choose the figure, or go on
+# start: the common start of all stories (geschichten.gd: Spielstand → Figur), or go on
 # =======================================================================================================================
 func open() -> void:
 	_ensure_ui()
@@ -537,9 +489,19 @@ func open() -> void:
 		return
 	_load()
 	if not bool(S.get("intro", false)):
-		_figure_card()
+		_common_start()
 	else:
 		_continue_card()
+
+
+func _common_start() -> void:
+	"""Geschichten-Menü (Daniel 31.10.2026): the same start for every story - Spielstand, then the figure (geschichten.gd)"""
+	_close_cards()
+	var rg = main.spielbereich.regal if main.spielbereich != null else null
+	if rg != null:
+		rg.open_start("maggie", "neu")
+	else:
+		beginnen(T.t("Du"), {})
 
 
 func _continue_card() -> void:
@@ -555,95 +517,69 @@ func _continue_card() -> void:
 	var row := _row(v)
 	if not bool(S.get("finale", false)):
 		_button(row, T.t("Weiter spielen"), _resume, true)
-	_button(row, T.t("Neu beginnen"), func():
-		var keep := {"name": S.get("name", ""), "look": S.get("look", {})}
-		S = keep
-		_save()
-		_figure_card(), bool(S.get("finale", false)))
+	_button(row, T.t("Neu beginnen"), _common_start, bool(S.get("finale", false)))
 	_button(row, T.t("Schliessen"), _close_cards)
 
 
-func _figure_card() -> void:
-	phase = "figur"
-	_look = (S.get("look", {}) as Dictionary).duplicate() if S.get("look", {}) is Dictionary else {}
-	if _look.is_empty():
-		_look = {"col": "red", "size": "", "build": "", "hat": "", "pack": true}
-	var v := _new_card(T.t("Maggie und der Bergkristall"), Color(0.62, 0.85, 1.0), 640)
-	_text(v, T.t("Wer bist du? Gib deiner Figur einen Namen und such dir aus, wie sie aussieht."), 15)
-	var r0 := _row(v)
-	var nl := Label.new()
-	nl.text = T.t("Name")
-	nl.custom_minimum_size = Vector2(110, 0)
-	r0.add_child(nl)
-	_name_edit = LineEdit.new()
-	_name_edit.text = str(S.get("name", ""))
-	_name_edit.placeholder_text = T.t("Dein Name")
-	_name_edit.max_length = 16
-	_name_edit.custom_minimum_size = Vector2(260, 36)
-	r0.add_child(_name_edit)
-	var r1 := _row(v)
-	var cl := Label.new()
-	cl.text = T.t("Jacke")
-	cl.custom_minimum_size = Vector2(110, 0)
-	r1.add_child(cl)
-	for c in COLS:
-		var b := Button.new()
-		b.custom_minimum_size = Vector2(38, 34)
-		b.tooltip_text = T.t(COL_NAMES[c])
-		var sb := UI.box(Figur.LOOK_COLS[c], Color.WHITE if _look.get("col", "") == c else UI.LINE, 8, 4, 3 if _look.get("col", "") == c else 1)
-		b.add_theme_stylebox_override("normal", sb)
-		b.add_theme_stylebox_override("hover", sb)
-		b.add_theme_stylebox_override("pressed", sb)
-		var cc: String = c
-		b.pressed.connect(func():
-			_look["col"] = cc
-			_keep_name()
-			_figure_card())
-		r1.add_child(b)
-	_choice_row(v, T.t("Grösse"), "size", [["s", T.t("klein")], ["", T.t("mittel")], ["l", T.t("gross")]])
-	_choice_row(v, T.t("Figur"), "build", [["slim", T.t("schlank")], ["", T.t("normal")], ["strong", T.t("kräftig")]])
-	_choice_row(v, T.t("Kopf"), "hat", [["", T.t("Haare")], ["cap", T.t("Mütze")], ["hood", T.t("Kapuze")]])
-	_text(v, T.t("Maggie ist euer Familienhund: ein kleiner, heller Terrier mit hellbraunen Flecken. Sie hat eine sehr gute Nase."), 13, UI.MUT)
-	var row := _row(v)
-	_button(row, T.t("Los geht's!"), _begin, true)
-	_button(row, T.t("Abbrechen"), _close_cards)
-	_name_edit.grab_focus.call_deferred()
-
-
-func _keep_name() -> void:
-	if _name_edit != null and is_instance_valid(_name_edit):
-		S["name"] = _name_edit.text.strip_edges()
-
-
-func _choice_row(v: Control, label: String, key: String, opts: Array) -> void:
-	var r := _row(v)
-	var l := Label.new()
-	l.text = label
-	l.custom_minimum_size = Vector2(110, 0)
-	r.add_child(l)
-	for o in opts:
-		var b := Button.new()
-		b.text = str(o[1])
-		b.custom_minimum_size = Vector2(110, 34)
-		if str(_look.get(key, "")) == str(o[0]):
-			UI.primary(b)
-		var val: String = o[0]
-		b.pressed.connect(func():
-			_look[key] = val
-			_keep_name()
-			_figure_card())
-		r.add_child(b)
-
-
-func _begin() -> void:
-	_keep_name()
-	if str(S.get("name", "")) == "":
-		S["name"] = T.t("Du")
-	S["look"] = _look
-	S["started"] = int(main.now())
+func beginnen(nm: String, look: Dictionary) -> void:
+	"""the common start is done (geschichten.gd): a new story with this figure, from the very beginning"""
+	_load()
+	nm = nm.strip_edges().left(16)
+	S = {"name": nm if nm != "" else T.t("Du"), "look": look if not look.is_empty() else {"col": "red", "size": "", "build": "", "hat": "", "pack": true},
+			"started": int(main.now())}
 	_save()
+	if running:
+		stop()
+	_ensure_ui()
 	_start()
 	_start_intro()
+
+
+func figur() -> Dictionary:
+	"""name and look saved last (the common start shows them again)"""
+	_load()
+	return {"name": str(S.get("name", "")), "look": (S.get("look", {}) as Dictionary).duplicate() if S.get("look", {}) is Dictionary else {}}
+
+
+func fortschritt() -> Dictionary:
+	"""Geschichten-Menü: {pct, where, started, done} of the active Spielstand"""
+	if not running:
+		_load()
+	var n := done_count()
+	var pct := 0
+	if bool(S.get("finale", false)):
+		pct = 100
+	elif bool(S.get("intro", false)):
+		pct = 10 + n * 20
+	var where := ""
+	var rg := region if running and region != "" else str(S.get("region", ""))
+	if bool(S.get("finale", false)):
+		where = T.t("Geschafft")
+	elif Welt.REG.has(rg):
+		where = T.t(str(Welt.REG[rg]["name"]))
+	elif rg == "finale":
+		where = T.t("Finale am Gipfel")
+	elif bool(S.get("intro", false)):
+		where = T.t("%d von 4 Jahreszeiten", [n])
+	elif running:
+		where = T.t("Einstieg auf der Alp")
+	return {"pct": pct, "where": where, "started": bool(S.get("intro", false)) or running, "done": bool(S.get("finale", false))}
+
+
+func weiter() -> void:
+	"""«Weiterspielen» on the card: straight back into the story (running: the pause menu)"""
+	_ensure_ui()
+	if main.mehr != null:
+		main.mehr.close_menu()
+	if running:
+		if phase in WALK:
+			_pause()
+		return
+	_load()
+	if bool(S.get("intro", false)) and not bool(S.get("finale", false)):
+		_resume()
+	else:
+		open()
 
 
 func _resume() -> void:

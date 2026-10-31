@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 15:30",
+ "generated": "2026-10-31 15:42",
  "versions": [
   {
-   "version": "2.98.115",
-   "file": "webcam_bewegung_2_98_115.py",
+   "version": "2.98.116",
+   "file": "webcam_bewegung_2_98_116.py",
    "url": "",
-   "sha256": "e983db1de2496437a0efd4c23c2a558e2bb2a5d8d06578d68c98546df995320a",
-   "date": "2026-10-31 15:30",
-   "notes": "Einstellungen öffnen beim Start in «Nur Gruppen»; neuer Schalter «Beim Start: Nur Gruppen» (ab Werk ein, aus = eigene Menüs zurück); Pi-Fenster: die drei Aufklapp-Knöpfe wie im Web. Simulator 3D-4.84: dasselbe im Simulator.",
-   "sig": "260d6d60e90e2d7ed17b888d1432a1497ebdeec6a49d336f6c8c5d03392e53614ee8da566cac995c2d6f4aa8aa233a3b1d90897ff0ebc88299ce9dc33503c706"
+   "sha256": "6ce7d2dd9c4bfc96fdb99cd94efe06581590194492a7432c30f64e606e0fb7ca",
+   "date": "2026-10-31 15:42",
+   "notes": "Reiter «Spielen» neu aufgebaut wie im Simulator (Stufe, Spielstand, Weiterspielen, Geschichten-Regal, Entdecken). Simulator 3D-4.85: neues Fenster «Spielen» mit Geschichten als grosse Karten (Die Karte des Grossvaters, Maggie, Hospiz, Teil 2), gleicher Start für alle Geschichten.",
+   "sig": "e7b0d995cb7bbfa5421610dcd08daef5fe989fb5104b539ebbdc0be110f2333445df32ba35f1087399b385233f7648ffbb44cccb455d69494c74dcd7303e8004"
   },
   {
    "version": "2.97.1",

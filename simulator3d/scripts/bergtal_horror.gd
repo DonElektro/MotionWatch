@@ -1,5 +1,6 @@
 extends Node
-## Bergtal · Horror-Modus «Das Hospiz» (Daniel, 31.10.2026 05:38 / 05:44): die 5. Stimmung des Bergtal-Abenteuers als eigener,
+## Bergtal · Horror-Modus «Das Hospiz» (Daniel, 31.10.2026 05:38 / 05:44): früher die 5. Stimmung des Bergtal-Abenteuers, ab dem
+## Geschichten-Menü eine eigene Karte im Regal «Geschichten» (nur für den Besitzer, nie im Kinder-Modus, mit Schloss); ein eigener,
 ## in sich geschlossener Modus. Oben am Pass steht das alte Hospiz: im Winter 1936 verschwand dort die Hospizwartin – Licht im
 ## Fenster, Tür offen, die Glocke läutete, das Haus war leer. Nie geklärt. Drei Nächte (3 Kapitel, steigende Spannung) bewacht
 ## MoveEye das Lager im Bergtal; erzählt wird über seltsame MoveEye-Aufnahmen, die man am Morgen in MoveEyes Verlauf findet.
@@ -64,6 +65,7 @@ var _clip_pending: Array = []          # [due, title, text]
 var _fails := 0
 var _lock_until := 0.0
 var _on_close := Callable()
+var _after_unlock := Callable()         # Geschichten-Menü: after the password (set or entered) this runs instead of the warning
 var _started_once := false
 var _store := {}
 
@@ -151,6 +153,71 @@ func mood_slot() -> Dictionary:
 			"kids": bool(main.get("kids_on")), "hint": T.t("Passwortgeschützt – unheimlich, mit Schreckmomenten")}
 
 
+func _pk() -> String:
+	"""Geschichten-Menü: the progress of the active Spielstand (place 1 = the old key «progress», spielstand.gd)"""
+	return preload("res://scripts/spielstand.gd").horror_key()
+
+
+func open_locked(after: Callable) -> void:
+	"""the card «Das Hospiz» (geschichten.gd): password (or set it the first time) -> after.call() - the warning and the
+	start picture come afterwards as always (already unlocked: after.call() at once)"""
+	if bool(main.get("kids_on")):
+		main.start_info = T.t("Der Horror-Modus ist im Kinder-Modus gesperrt.")
+		return
+	if unlocked:
+		after.call()
+		return
+	_after_unlock = after
+	open()
+
+
+func fortschritt() -> Dictionary:
+	"""Geschichten-Menü: {pct, where, started, done} of the active Spielstand (3 nights)"""
+	var pr = _store.get(_pk(), {})
+	var done := int(pr.get("done", 0)) if pr is Dictionary else 0
+	if running:
+		return {"pct": int(round(100.0 * (chapter - 1) / 3.0)), "where": T.t("Nacht %d", [chapter]), "started": true, "done": false}
+	return {"pct": int(round(100.0 * clampi(done, 0, 3) / 3.0)), "where": T.t("Geschafft") if done >= 3 else (T.t("Nacht %d", [done + 1]) if done > 0 else ""),
+			"started": done > 0, "done": done >= 3}
+
+
+func neu_beginnen() -> void:
+	"""the common start chose «Neu beginnen»: the progress of this Spielstand from the beginning, then warning and start"""
+	_store.erase(_pk())
+	_save()
+	_ensure_ui()
+	_show_warn()
+
+
+func weiter() -> void:
+	"""«Weiterspielen»: running = the pause; else warning, then the start picture (with «Weiter mit Nacht n»)"""
+	_ensure_ui()
+	if running:
+		_set_pause(true)
+		return
+	_show_warn()
+
+
+func last_pic() -> PackedByteArray:
+	"""the newest recording (a picture from the story) for the card - empty if there is none"""
+	for i in range(clips.size() - 1, -1, -1):
+		var j = clips[i].get("jpg")
+		if j is PackedByteArray and not (j as PackedByteArray).is_empty():
+			return j
+	return PackedByteArray()
+
+
+func _unlocked_next() -> void:
+	if _after_unlock.is_valid():
+		var cb := _after_unlock
+		_after_unlock = Callable()
+		_clear_card()
+		phase = ""
+		cb.call()
+		return
+	_show_warn()
+
+
 func open_from_mood(on_close := Callable()) -> void:
 	_on_close = on_close
 	open()
@@ -175,6 +242,7 @@ func open() -> void:
 func _close_all(started := false) -> void:
 	_clear_card()
 	phase = ""
+	_after_unlock = Callable()
 	if _on_close.is_valid():
 		var cb := _on_close
 		_on_close = Callable()
@@ -462,7 +530,7 @@ func _do_setpw() -> void:
 	if not bool(r["ok"]):
 		_msg.text = str(r["error"])
 		return
-	_show_warn()
+	_unlocked_next()
 
 
 func _show_lock() -> void:
@@ -486,7 +554,7 @@ func _do_unlock() -> void:
 	if not bool(r["ok"]):
 		_msg.text = str(r["error"])
 		return
-	_show_warn()
+	_unlocked_next()
 
 
 func _show_warn() -> void:
@@ -514,7 +582,7 @@ func _show_start() -> void:
 	var names := {"gut": T.t("Gut – die Gestalt findet Ruhe"), "flucht": T.t("Flucht – im Morgengrauen weg vom Pass"),
 			"offen": T.t("Offen – manches bleibt ungeklärt"), "harmlos": T.t("Harmlos – es gibt eine einfache Erklärung")}
 	var bg := ButtonGroup.new()
-	var pr = _store.get("progress", {})
+	var pr = _store.get(_pk(), {})
 	if pr is Dictionary and ENDS.has(str(pr.get("end", ""))):
 		end_kind = str(pr["end"])
 	for k in ENDS:
@@ -540,7 +608,7 @@ func _show_start() -> void:
 
 
 func _continue(n: int) -> void:
-	var pr = _store.get("progress", {})
+	var pr = _store.get(_pk(), {})
 	if pr is Dictionary and pr.get("choices") is Dictionary:
 		choices = (pr["choices"] as Dictionary).duplicate()
 	begin(n)
@@ -609,7 +677,7 @@ func begin(n: int) -> void:
 		choices = {}
 		clips.clear()
 	chapter = n
-	_store["progress"] = {"done": n - 1, "end": end_kind, "choices": choices}
+	_store[_pk()] = {"done": n - 1, "end": end_kind, "choices": choices}
 	_save()
 	if str(main.scene) != "bergtal":
 		main.set_scene("bergtal")
@@ -1018,7 +1086,7 @@ func _morning() -> void:
 			_lantern = null
 		var ct := _clip_text("extra")
 		_clip_now(ct[0], ct[1])
-	_store["progress"] = {"done": chapter, "end": end_kind, "choices": choices}
+	_store[_pk()] = {"done": chapter, "end": end_kind, "choices": choices}
 	_save()
 	if chapter >= 3:
 		phase = "ending"
@@ -1055,7 +1123,7 @@ func _morning_card() -> void:
 
 func _choose(k: String, val: String) -> void:
 	choices[k] = val
-	_store["progress"] = {"done": chapter, "end": end_kind, "choices": choices}
+	_store[_pk()] = {"done": chapter, "end": end_kind, "choices": choices}
 	_save()
 	if k == "d1" and val == "follow":
 		var v := _new_card(T.t("In der verlassenen Hütte"), UI.ORG, 600)

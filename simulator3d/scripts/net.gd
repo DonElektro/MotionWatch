@@ -278,6 +278,13 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 					_json(c, {"ok": false, "error": "no picture"}, 404)
 				else:
 					_send(c, 200, dj, "image/jpeg")
+			if parts.size() == 2 and parts[0] == "story_pic":   # Geschichten-Menü: the picture of a story card (MoveEye 639i)
+				var sp: PackedByteArray = main.spielbereich.regal.pic_bytes(parts[1].get_basename()) if main.spielbereich != null and main.spielbereich.regal != null else PackedByteArray()
+				if sp.is_empty():
+					_json(c, {"ok": false, "error": "no picture"}, 404)
+				else:
+					_send(c, 200, sp, "image/jpeg")
+				return
 			if parts.size() == 2 and parts[0] == "horror_pic":  # Horror-Modus: the picture of a «recording» (MoveEye 539a -> Verlauf)
 				var hj: PackedByteArray = main.horror.pic(int(parts[1].get_basename())) if main.horror != null else PackedByteArray()
 				if hj.is_empty():
