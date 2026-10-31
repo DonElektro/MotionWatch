@@ -7,7 +7,7 @@ extends RefCounted
 ## Datei: user://bergtal_abenteuer/familie.json · Fotos: user://bergtal_abenteuer/familie_fotos/
 ##
 ## Schnittstellen zu den anderen Paketen (Stand: noch nicht auf main - darum Stubs):
-##   hat(id)          TODO verbinden mit abenteuer_inventar.gd (A4, Besitzer); bis dahin: Rucksack + Fundstücke des Laufs
+##   hat(id)          Inv.hat() aus abenteuer_inventar.gd (A4), sobald die Datei da ist; sonst Rucksack + Fundstücke
 ##   tiere_von(R, P)  TODO verbinden mit A1 (seltene Tiere, Feld "a1_tiere" im Spielstand)
 ##   foto_wertung()   TODO verbinden mit A1 foto_wertung(); bis dahin ein Stub: Schärfe aus dem Bild selbst, Tier aus info
 ##   wildkamera(R)    TODO verbinden mit A1 (Feld "a1_wildkamera": [{"file" | "jpg_b64", "tier"}])
@@ -18,6 +18,7 @@ const PAGES := ["tagebuchseite_1", "tagebuchseite_2", "tagebuchseite_3", "tagebu
 		"tagebuchseite_6", "tagebuchseite_7", "tagebuchseite_8", "tagebuchseite_9", "tagebuchseite_10"]
 const GEAR := ["seil", "stirnlampe", "feldstecher", "kompass", "pickel", "hut", "taschenuhr"]
 const MAX_FOTOS := 12
+const INV := "res://scripts/abenteuer_inventar.gd"     # A4 (Besitzer), gemeinsame Schnittstelle hat / gib / nimm / anzahl
 
 
 static func load_all() -> Dictionary:
@@ -46,20 +47,19 @@ static func save_all(d: Dictionary) -> void:
 
 # ---- what the run found (stubs until A1 / A4 are there) --------------------------------------------------------------
 static func hat(ab, id: String) -> bool:
-	"""TODO verbinden mit abenteuer_inventar.gd (A4): erst dort fragen, sonst Rucksack + Fundstücke dieses Laufs"""
-	var inv = ab.get("inventar") if ab != null else null
-	if inv != null and inv.has_method("hat"):
-		return bool(inv.hat(id))
-	if ResourceLoader.exists("res://scripts/abenteuer_inventar.gd"):
-		var s = load("res://scripts/abenteuer_inventar.gd")
-		if s is GDScript and (s as GDScript).get_script_method_list().any(func(mm): return str(mm["name"]) == "hat" and int(mm["flags"]) & METHOD_FLAG_STATIC):
-			return bool(s.call("hat", id))
-	if ab == null:
+	"""das Inventar von A4 (abenteuer_inventar.gd: Inv.hat, kennt die Aliase proviant = essen, feldstecher = fernglas).
+	Die Datei ist noch nicht auf main: darum hier zur Laufzeit geladen (preload ginge ohne Datei nicht durch den Parser).
+	TODO beim Zusammenführen (2.98.94): const Inv = preload("res://scripts/abenteuer_inventar.gd") und nur Inv.hat(id)."""
+	if ResourceLoader.exists(INV):
+		var Inv = load(INV)
+		if Inv != null:
+			return bool(Inv.hat(id))
+	if ab == null:                                          # Ersatz ohne A4: Rucksack (Packliste-Namen) + Fundstücke
 		return false
-	if ab.has_method("has") and ab.has(id):
+	var pid: String = {"proviant": "essen", "feldstecher": "fernglas"}.get(id, id)
+	if ab.has(pid):
 		return true
-	var R: Dictionary = ab.R
-	return id in (R.get("found", []) as Array)
+	return id in (ab.R.get("found", []) as Array)
 
 
 static func tiere_von(R: Dictionary, P: Dictionary) -> Array:
