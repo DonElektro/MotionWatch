@@ -397,6 +397,17 @@ func control(d: Dictionary) -> Dictionary:
 			else:
 				mz.yaw2 = float(d["yaw"]) + (float(_bt().wrot(0.0)) if _bt() != null else 0.0)
 		return {"ok": true, "zb": zb.state()}
+	if str(d.get("was", "")) == "tor":
+		return {"ok": true, "haelt": haelt(), "tor": [_tal2(story.tor_pos()).x, _tal2(story.tor_pos()).y], "zb": zb.state()}
+	if str(d.get("was", "")) == "orte":                 # tests: where the next station and the crystal places are (valley)
+		var h = mz._hund()
+		var st: Dictionary = h.aktuell() if h != null and h.has_method("aktuell") else {}
+		var zk = story.get("_zk_orte")
+		var L: Array = []
+		for e in (zk if zk is Array else []):
+			var q := _tal2(e[0])
+			L.append([q.x, q.y])
+		return {"ok": true, "station": [st["p"].x, st["p"].z] if st.get("p") is Vector3 else [], "zk": L}
 	if str(d.get("was", "")) == "region":
 		_region_start(str(story.region))
 		return {"ok": true, "zb": zb.state()}
