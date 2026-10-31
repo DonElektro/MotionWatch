@@ -71,7 +71,7 @@ extends Node
 ##                           var zb = ZB.new();  zb.setup(self, main, "maggie");  add_child(zb)
 ##      und die Pflicht-Funktionen oben als Methoden des Wirts. Koordinaten: q = Vector2(welt.x, welt.z),
 ##      zb_welt(q, h) = Vector3(q.x, main.ground_y(q.x, q.y) + h, q.y), zb_yaw(i) = Figur.rotation.y, zb_3d() = story (main.maggie).
-##   2. Rollen: zb_rollen() -> [{"id": "kristall", "name": "Kristall-Hüter", "name_f": "Kristall-Hüterin", "icon": "💎",
+##   2. Rollen: zb_rollen() -> [{"id": "kristall", "name": "Kristall-Hüter", "name_f": "Kristall-Hüterin", "icon": "",
 ##      "faehigkeit": "Kristall-Licht", "text": …, "cd": 25}, {"id": "nase", "name": "Hundeführer", "name_f": "Hundeführerin", "icon": "🐕",
 ##      "faehigkeit": "Spürnase", …}]; zb_faehigkeit(i, "kristall") -> story.look_into_crystal(), "nase" -> Spuren + Pfeil zur Station.
 ##   3. Geteiltes Wissen: was der Kristall über nahe Gefahren weiss (story._zk_orte) nur bei Spieler 1: zb.wissen("maggie", [text, ""]);
@@ -326,7 +326,7 @@ func _faehigkeit(i: int) -> void:
 		say(i, T.t("%s geht hier gerade nicht.") % T.t(str(r["faehigkeit"])), 2.5)
 		return
 	_cd[i] = now() + float(r.get("cd", 12))
-	say(i, "%s %s" % [str(r.get("icon", "")), msg], 5.0, 2)
+	say(i, msg, 5.0, 2)                                     # ohne Rollen-Symbol (Emoji, Schrift hat sie nicht)
 
 
 # =======================================================================================================================
@@ -1015,9 +1015,9 @@ func foto(i: int, tier_test := "") -> Dictionary:
 		if not (_tiere_heute[i] as Dictionary).has(e["tier"]):
 			_tiere_heute[i][e["tier"]] = true
 			zaehle(i, "tiere")
-		say(i, T.t("📸 Tierfoto: %d Punkte") % int(e["punkte"]), 3.5, 2)
+		say(i, T.t("Tierfoto: %d Punkte") % int(e["punkte"]), 3.5, 2)
 	else:
-		say(i, T.t("📸 Foto gemacht - aber kein Tier im Bild"), 3.0, 2)
+		say(i, T.t("Foto gemacht - aber kein Tier im Bild"), 3.0, 2)
 	_ereignis("foto", e)
 	return e
 
@@ -1115,7 +1115,7 @@ func high_five(grund: String) -> void:
 		return
 	_hf = {"grund": grund, "until": now() + 8.0}
 	for i in range(2):
-		say(i, T.t("🙌 High-Five! Beide gleichzeitig %s") % _k(i, "team"), 8.0, 5)
+		say(i, T.t("High-Five! Beide gleichzeitig %s") % _k(i, "team"), 8.0, 5)
 
 
 func _jubel_show(txt: String) -> void:
@@ -1168,7 +1168,7 @@ func _team_press(i: int) -> void:
 			var g := str(_hf["grund"])
 			_hf = {}
 			_prompt = [{}, {}]
-			_jubel_show(T.t("🙌 Super Team!"))
+			_jubel_show(T.t("Super Team!"))
 			_rumble([0, 1])
 			Spieltest.ereignis(modus, "fortschritt", {"zwei": "high_five_" + g})
 			high_five_geschafft.emit(g)
@@ -1177,7 +1177,7 @@ func _team_press(i: int) -> void:
 			say(i, T.t("Gleichzeitig mit %s!") % nm(o), 1.2, 6)
 		return
 	if t - float(_last_team[o]) <= HF_DT and abstand() < 6.0:
-		_jubel_show("🙌")                                 # just for fun (not counted)
+		_jubel_show(T.t("High-Five!"))                     # just for fun (not counted); Text statt 🙌 (Schrift ohne Emoji)
 
 
 # =======================================================================================================================
@@ -1407,7 +1407,7 @@ func _hud() -> void:
 
 func _info(i: int) -> String:
 	var r := rolle(i)
-	var tx := "%s %s" % [str(r.get("icon", "")), rolle_name(i)]
+	var tx := rolle_name(i)                                  # ohne Rollen-Symbol (Emoji)
 	if str(r.get("faehigkeit", "")) != "":
 		var cd := float(_cd[i]) - now()
 		tx += "  ·  %s %s%s" % [_k(i, "faehig"), T.t(str(r["faehigkeit"])), (" (%d s)" % int(ceil(cd))) if cd > 0.0 else ""]
@@ -1561,7 +1561,7 @@ func paint_fotowettbewerb(parent: Control) -> void:
 	var bf := beste_fotos()
 	if (bf[0] as Dictionary).is_empty() and (bf[1] as Dictionary).is_empty():
 		return
-	var gg := _g(T.t("📸 Fotowettbewerb: das schönste Tierfoto"), parent)
+	var gg := _g(T.t("Fotowettbewerb: das schönste Tierfoto"), parent)
 	var hb := HBoxContainer.new()
 	hb.add_theme_constant_override("separation", 12)
 	gg.add_child(hb)
@@ -1810,7 +1810,7 @@ func tagebuch_oeffnen() -> void:
 			var vb := VBoxContainer.new()
 			fl.add_child(vb)
 			vb.add_child(_thumb(str(f.get("file", "")), Vector2(240, 135)))
-			vb.add_child(_plain("📸 %s · %d %s%s" % [str(f.get("name", "")), int(f.get("punkte", 0)), T.t("Punkte"), (" · " + T.t(_tiername(str(f["tier"])))) if str(f.get("tier", "")) != "" else ""], 12, Color(0.8, 0.84, 0.9)))
+			vb.add_child(_plain("%s · %d %s%s" % [str(f.get("name", "")), int(f.get("punkte", 0)), T.t("Punkte"), (" · " + T.t(_tiername(str(f["tier"])))) if str(f.get("tier", "")) != "" else ""], 12, Color(0.8, 0.84, 0.9)))
 		for b in e.get("bilder", []):
 			fl.add_child(_thumb(str(b), Vector2(240, 135)))
 		var aw: Array = e.get("auszeichnungen", [])
@@ -1825,7 +1825,7 @@ func tagebuch_oeffnen() -> void:
 					tx += "%s %d · " % [T.t(str(KAT_ICON[kat])), int(zz[i][kat])]
 			ev.add_child(_plain(tx, 13, Color(0.7, 0.75, 0.82)))
 		if int(e.get("high_fives", 0)) > 0:
-			ev.add_child(_plain(T.t("🙌 %d High-Fives") % int(e["high_fives"]), 13, Color(0.7, 0.75, 0.82)))
+			ev.add_child(_plain(T.t("%d High-Fives") % int(e["high_fives"]), 13, Color(0.7, 0.75, 0.82)))
 	close.grab_focus.call_deferred()
 
 
