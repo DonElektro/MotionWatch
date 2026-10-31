@@ -16,9 +16,10 @@
 # Now the distance is estimated a second time from the FOOT POINT (lower edge of the box, flat ground): the camera height
 # (simulator: its pole «mast» from the twin info, else FOOT_CAM_H_M) and the tilt of the head (servo; simulator: the real
 # head angle head_deg minus its fixed 6° down, main.gd want_tilt) give the distance of the feet, and with it the real height
-# of the thing. Do both distances disagree strongly (FOOT_RATIO_MIN) and is the thing clearly lower than a standing person
-# (FOOT_ANIMAL_MAX_H_M), it is reported as an animal («ANIMAL (THERMAL)», present «animal») and not as a person. Feet near
-# the horizon or cut off at the picture edge: no foot estimate, everything as before. Self-test: 417 (foot_selftest).
+# of the thing. First round (replaced, see «third round» below): do both distances disagree strongly (FOOT_RATIO_MIN) and is
+# the thing clearly lower than a standing person (FOOT_ANIMAL_MAX_H_M), it was an animal. Since the third round this only
+# applies to a FLAT warm body - frontal / upright stays a person. Feet near the horizon or cut off at the picture edge: no
+# foot estimate, everything as before. Self-test: 417 (foot_selftest, thermal_maybe_selftest).
 # Decision Daniel (31.10.2026, third round): «animal» ONLY for a really FLAT warm body, everything upright stays as before:
 #   - upright boxes (h/w >= 1.3, thermal_person_check) are persons exactly as before - also a roe deer straight from the
 #     front, a child, a crouching person («im Zweifel Person»),
@@ -28,6 +29,10 @@
 #   - «Person?» (weak_person_feed): a flat box at the ground (w/h > WEAK_FLAT) that the AI of MoveEye calls a person with at
 #     least WEAK_AI_MIN (the normal AI threshold stays) AND a movement track or a warm body confirms it -> a person (alarm,
 #     «PERSON?»). It wins over «animal»: a warm body under a «Person?» never becomes an animal.
+# Code-Prüfung M3 (Daniel 31.10.2026, «im Zweifel Person?»): «animal» only when the AI of MoveEye really looked for weak
+# persons in the last WEAK_OK_S seconds (AIDetector.weak_ok_t: own run on the Pi, or the PC helper with the standard model).
+# AI off, still loading, or a PC helper that gives no weak boxes: a flat warm body that would be an «animal» becomes
+# «PERSON? (THERMAL)» (a person, alarm) - never «no person». Upright warm bodies are persons as before.
 # Camera height: CFG «cam_height» («Höhe der Kamera (m)» in «Platz einrichten», 537 / 582, default 1.6 m). Connected to the
 # simulator, its pole («Höhe der Kamera», 3D-4.x) has priority (the simulated camera really is that high); the field is for
 # the real device.
@@ -56,6 +61,7 @@ WEAK_AI_MIN = 0.15          # «Person?»: the raw person score of the AI (crawl
                             # REAL_KRIECHENDE.md; the normal threshold ai_conf stays for everything else)
 WEAK_FLAT = 1.5             # «flat box at the ground»: AI box width / height above 1.5 (crawling / lying, a standing person ~0.4)
 WEAK_AGE_S = 2.5            # the AI runs only now and then: its weak boxes count for 2.5 s
+WEAK_OK_S = 6.0             # M3: the AI looked for weak persons in the last 6 s (it runs every 0.3 … ~5 s: hot Pi, battery saver)
 FOOT_HIST_S = 4.0           # «does not stand up over the last pictures»: what was seen of it in the last 4 s
 FOOT_NEED_N, FOOT_NEED_S = 3, 1.0   # an animal needs 3 animal-like pictures over at least 1 s (the thermal camera: 3 of 5 anyway)
 FOOT = {"h": None, "t": 0.0, "busy": False, "hist": deque(maxlen=200)}
@@ -284,6 +290,8 @@ def weak_person_feed(ai, tracks, warm_boxes, person_boxes, present, frame, pw, p
     tn = [(t.box[0] / pw, t.box[1] / ph, t.box[2] / pw, t.box[3] / ph) for t in tracks if getattr(t, "box", None)]
     out = []
     for ab in wk:
+        if not zone_box_ok((ab[0] * pw, ab[1] * ph, ab[2] * pw, ab[3] * ph), pw, ph, "person"):
+            continue                                            # Code-Prüfung K1: zones by kind, like the normal AI boxes (410)
         try:
             fe = foot_estimate(ab[:4])
         except Exception:
@@ -377,7 +385,17 @@ def thermal_vehicle_step(boxes, ts, hf, vf, asp, temps=None):
     return out
 
 
-def thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, maybe_boxes=(), veto=()):
+def thermal_ai_checked(t0, ai=None):
+    """M3: the AI looked for weak («Person?») persons in the last WEAK_OK_S seconds - only then a flat warm body may be an animal"""
+    if ai is None:
+        w = WATCH_REF.get("w")
+        ai = getattr(w, "ai", None) if w is not None else None
+    if ai is None or not CFG.get("ai_enabled") or DEMO.get("on"):
+        return False
+    return 0.0 <= t0 - float(getattr(ai, "weak_ok_t", 0.0) or 0.0) <= WEAK_OK_S
+
+
+def thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, maybe_boxes=(), veto=(), ai=None):
     """called by the camera loop (410) when the normal camera found nobody: the warm bodies that are persons become person
     boxes (in the working picture), drawn as «PERSON (THERMAL)». Returns the warm bodies that stay «warm».
     real-erk-e1: a vehicle (fast / wide and hot in the thermal picture, or the camera / AI sees one there) or an animal of the
@@ -395,6 +413,7 @@ def thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, 
             TVEH["chains"] = []; TVEH["veh"] = []
     except Exception:
         vehicles = []
+    unsure = []
     for b in warm_boxes:
         if b in vehicles or any(_ov(b, v[:4]) > 0.3 for v in veto if v[4] == "vehicle"):
             rest.append(b)                                    # a vehicle: only warm (the warm alarm, if on, as before)
@@ -411,8 +430,23 @@ def thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, 
         if c is None or c[0] == "wait":
             rest.append(b); continue                          # «wait»: maybe an animal - a few more pictures (only warm meanwhile)
         if c[0] == "animal":
+            if not thermal_ai_checked(t0, ai):                # M3: nobody checked for a crawling person: «Person?», not «animal»
+                unsure.append((b, c[1])); continue
             animals.append((b, c[1], c[2], c[3])); rest.append(b); continue   # still a warm body (the warm alarm, if on, as for any animal)
         found.append((b, c[1]))
+    if unsure:
+        for (bx, by, bw, bh), d_ in unsure:
+            person_boxes.append((int(bx * pw), int(by * ph), max(1, int(bw * pw)), max(1, int(bh * ph))))
+            p1 = (int(bx * W), int(by * H)); p2 = (int((bx + bw) * W), int((by + bh) * H))
+            cv2.rectangle(frame, p1, p2, (60, 0, 255), 3)
+            cv2.putText(frame, f"PERSON? (THERMAL) ~{dist_round(d_)}m", (p1[0], max(18, p1[1] - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (60, 0, 255), 2)
+        present.add("person")
+        STATE["person_maybe"] = int(STATE.get("person_maybe") or 0) + len(unsure)
+        if t0 - TPERS.get("weak_seen", 0.0) > 10.0:
+            TPERS["weak_n"] = TPERS.get("weak_n", 0) + 1
+            log_event("person", f"Person? in the thermal picture: flat warm body, about {dist_round(min(u[1] for u in unsure))} m - "
+                                "the AI could not check it (AI off / PC helper) - in doubt a person")
+        TPERS["weak_seen"] = t0
     if animals:
         for (bx, by, bw, bh), d_, h_, _ds in animals:
             p1 = (int(bx * W), int(by * H)); p2 = (int((bx + bw) * W), int((by + bh) * H))

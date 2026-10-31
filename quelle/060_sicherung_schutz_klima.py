@@ -1150,7 +1150,8 @@ class Notifier:
         url = CFG["notify_url"].strip()
         if push_url_is_ntfy(url):                        # 635b: an ntfy address in the webhook card - as ntfy, not as JSON
             return self._ntfy(p, jpg, fname), "ntfy " + _url_host(url)
-        body_ = dict(p, title=self._title(p), text=self._text(p), info_title=self._title(p) if p.get("info_title") else "")
+        body_ = dict(p, title=self._title(p), text=self._text(p), info_title=self._title(p) if p.get("info_title") else "",
+                     text_full=push_long(p))              # K2: the short form in «text», the complete text for own automations
         req = urllib.request.Request(url, data=json.dumps(body_, ensure_ascii=False).encode(),
                                      headers={"Content-Type": "application/json", "Title": _hdr(self._title(p))})
         with urllib.request.urlopen(req, timeout=8) as r:

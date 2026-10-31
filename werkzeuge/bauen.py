@@ -213,6 +213,25 @@ def git(*a):
     return subprocess.run(["git"] + list(a), cwd=REPO, capture_output=True, text=True)
 
 
+# Code-Prüfung K9: Geräte bis 2.98.x nehmen nur Programmdateien bis 8 MiB an (UPD_MAX_BYTES damals, Teil 390) und holen die
+# NEUESTE Version aus versions.json - darum muss jede angebotene Version darunter bleiben, solange es solche Geräte gibt.
+GROESSE_MAX = 8 * 1024 * 1024                 # darüber: Abbruch (die Datei wird nicht geschrieben)
+GROESSE_WARN = int(7.5 * 1024 * 1024)         # darüber: Warnung (noch rund 512 KiB Reserve)
+
+
+def groesse_pruefen(text):
+    """False = zu gross (Meldung ausgegeben); Warnung ab GROESSE_WARN"""
+    n = len(text.encode("utf-8"))
+    mib = n / 1048576.0
+    if n > GROESSE_MAX:
+        print("ZU GROSS: %.2f MiB (%d Bytes) – Geräte bis 2.98.x nehmen höchstens 8 MiB an. Teile verkleinern "
+              "(z. B. Daten-Teile 360 / 480 / 620) oder eine Brückenversion unter 8 MiB in versions.json behalten." % (mib, n))
+        return False
+    if n > GROESSE_WARN:
+        print("WARNUNG: %.2f MiB (%d Bytes) – noch %d KiB bis zur 8-MiB-Grenze der Geräte bis 2.98.x" % (mib, n, (GROESSE_MAX - n) // 1024))
+    return True
+
+
 def main():
     ap = argparse.ArgumentParser(description="Motion Watch aus quelle/ zusammensetzen")
     ap.add_argument("--pruefen", action="store_true", help="nur prüfen, ob die Datei im Repository zu quelle/ passt")
@@ -227,6 +246,8 @@ def main():
             return 1
         text = zusammensetzen()
         f = dateiname(version(text))
+        if not groesse_pruefen(text):
+            return 1
         if not os.path.isfile(f):
             print("FEHLT: %s – zuerst bauen" % os.path.basename(f))
             return 1
@@ -236,6 +257,8 @@ def main():
         print("ok: %s = quelle/ (%d Teile)" % (os.path.basename(f), len(teile())))
         return 0
     if a.neue_version is not None:
+        if not groesse_pruefen(zusammensetzen()):     # vor dem Hochzählen: nichts ändern, wenn es zu gross wird
+            return 1
         alt, neu = neue_version(a.neue_version, a.version, a.stufe)
         print("Version %s → %s" % (alt, neu))
         fa, fn = dateiname(alt), dateiname(neu)
@@ -246,6 +269,8 @@ def main():
         return 1
     text = zusammensetzen()
     f = dateiname(version(text))
+    if not groesse_pruefen(text):
+        return 1
     with open(f, "w", encoding="utf-8", newline="") as fh:
         fh.write(text)
     r = subprocess.run([sys.executable, "-m", "py_compile", f], capture_output=True, text=True)

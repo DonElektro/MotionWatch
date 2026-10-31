@@ -544,3 +544,9 @@ def sim_twin_info():
         return r.get("twin") or {}
     except Exception:
         return {}
+
+
+# Code-Prüfung K6: «camera height» of the twin line (SIMHUB_JS, tt) in fr / it / rm too - before, the German text showed there
+for _k, _v in {"camera height": ("hauteur de la caméra", "altezza della telecamera", "autezza da la camera")}.items():
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i])
