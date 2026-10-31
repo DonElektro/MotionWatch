@@ -1,7 +1,7 @@
 {
- "version": "3D-4.73",
+ "version": "3D-4.74",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34603131,
- "sha256": "8d189e1077e6ab6367a44652231054d0bbb84cb722ec0f3261cc25ff1ddb0669",
- "notes": "Bergtal-Abenteuer mit MoveEye: Lager bewachen oder Wildkamera, Aufnahmen auswerten, Sammlung seltener Tiere."
+ "size": 34606322,
+ "sha256": "14415f40563b562da2eac3105214c9651ff6ffcbd807f1cce7ebb426781bddd3",
+ "notes": "Bergtal: Passstrasse auf dem Gelände, Bergdorf auf Strassenhöhe; Pfadilager ohne Tanne vor MoveEye."
 }

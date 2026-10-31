@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.74
+3D-4.74: Bergtal: Passstrasse liegt sauber auf dem Gelände (runde Kehren, nichts schwebt mehr), Bergdorf auf Strassenhöhe,
+ebene Parkplätze. Pfadilager: keine Tanne mehr vor MoveEye beim Standort Zelte.
+So testest du: 1) Bergtal, Szene Postauto oder Schafstau abspielen: Fahrzeug und Schafe stehen auf der Strasse.
+2) Haarnadelkurve ansehen. 3) Pfadilager, Standort Zelte.
+
 NEU IN 3D-4.73
 3D-4.73: Bergtal-Abenteuer mit MoveEye: Lager nachts bewachen oder als Wildkamera am Wildwechsel. Der Fuchs holt offenen
 Proviant. Das Licht am Berg zählt als Hinweis nur auf einer Aufnahme. Am Morgen Aufnahmen auswerten und eine Sammlung von

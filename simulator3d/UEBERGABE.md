@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.73** · passende MoveEye-Version (früher Motion Watch) **2.98.104**
+Stand: 31.10.2026 · Simulator-Version **3D-4.74** · passende MoveEye-Version (früher Motion Watch) **2.98.105**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.74 (MoveEye 2.98.105): Weltfehler Bergtal / Pfadilager (`bergtal.gd`, `kompakt_pfadi.gd`)
+
+- `bergtal.gd`: Passstrasse auf dem Gelände (runde Kehren, nichts schwebt), Bergdorf auf Strassenhöhe, ebene Parkplätze.
+- `kompakt_pfadi.gd`: keine Tanne mehr vor MoveEye beim Standort Zelte.
 
 ## NEU in 3D-4.73 (MoveEye 2.98.104): MoveEye im Abenteuer (`abenteuer_moveeye.gd`, Paket A1)
 
