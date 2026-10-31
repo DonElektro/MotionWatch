@@ -40,6 +40,13 @@ CFG = {
     "rec_marks": "thin",         # markings in recordings / alarm pictures: none | thin (corner brackets, face stays free) | full
     # low light
     "lowlight_auto": True, "lowlight_threshold": 60,   # mean brightness (0-255) below which CLAHE is applied
+    # hysteresis at dusk (real-nacht-puffer): switch OFF only above threshold + gap, and only after the change has lasted
+    # lowlight_hold seconds. Why these values: the mean brightness of the camera picture wobbles by ~5-10 at dusk
+    # (sensor noise in the dark, auto exposure hunting, leaves in the wind, clouds), so 15 (= 25 % of the default 60) is
+    # clearly more than the wobble but much less than the dusk itself (60 -> 75 takes several minutes; civil twilight in
+    # Switzerland ~30-40 min). 30 s rides out a car's headlights, a torch, a bright jacket close to the lens and the
+    # exposure re-adjusting, and still follows the dusk within half a minute. 0 s = switch at once (only the gap).
+    "lowlight_gap": 15, "lowlight_hold": 30.0,
     "lowlight_view": True,       # in low light also brighten the picture you see (live, recordings, photos)
     # notifications (POST JSON to this URL when a person is detected; leave empty to disable)
     "notify_url": "", "notify_cooldown": 60.0,

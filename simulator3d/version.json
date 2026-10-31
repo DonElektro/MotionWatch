@@ -1,7 +1,7 @@
 {
- "version": "3D-4.58",
+ "version": "3D-4.59",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 68118519,
- "sha256": "1b08c57a205c3339ca5a233545acdfa9fbb11d8b7db755d048a8966120cb205a",
- "notes": "Foto-Modus: ein echtes Foto vom eigenen Platz als Hintergrund, die Figuren werden eingepasst."
+ "size": 34080991,
+ "sha256": "fb4758f2c8505fc5aab9cd7bbbe59a595ea7a8d27b0c47acc21adb1141ba71e0",
+ "notes": "MoveEye 2.98.90: Schwachlicht-Modus mit Hysterese (schaltet in der Dämmerung nur einmal um); im ZIP nur noch MoveEyeSim3D.exe."
 }

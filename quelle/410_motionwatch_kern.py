@@ -221,6 +221,51 @@ class MotionWatch:
         return img
 
     # ---- processing ------------------------------------------------------
+    def _lowlight_decide(self, bright, t0):
+        """Low-light mode with hysteresis (real-nacht-puffer). Before, the mode switched on every picture that crossed
+        lowlight_threshold, so at dusk it flipped to and fro (noise, auto exposure, clouds) - and with it CLAHE, the
+        brightened view and the thermal person check (232). Now three things together (values: see CFG, 020):
+        1) the brightness is smoothed: median of the last 10 s (at most lowlight_hold). 10 s = longer than a passing
+           car's headlights or a torch sweep (2-5 s), so they do not count; the median also ignores sensor noise.
+        2) two thresholds: ON below lowlight_threshold, OFF only above lowlight_threshold + lowlight_gap.
+        3) the smoothed value must stay on the other side for lowlight_hold seconds without a break, then it switches."""
+        hist = getattr(self, "_ll_hist", None)
+        if hist is None:
+            hist = self._ll_hist = deque(maxlen=900)       # 10 s at up to 90 pictures/s
+        if not CFG["lowlight_auto"]:
+            hist.clear(); self._ll_since = None; self._ll_seen = False   # switched on again later: decide at once
+            return False
+        hold = max(0.0, float(CFG.get("lowlight_hold", 30.0)))
+        win = min(10.0, hold)
+        hist.append((t0, bright))
+        while hist and hist[0][0] < t0 - win:
+            hist.popleft()
+        vals = sorted(v for _, v in hist) or [bright]
+        smooth = vals[len(vals) // 2]
+        cur = bool(STATE["lowlight"])
+        on_thr = float(CFG["lowlight_threshold"]); gap = max(0.0, float(CFG.get("lowlight_gap", 15)))
+        first = not getattr(self, "_ll_seen", False); self._ll_seen = True
+        if first:                                       # first picture after the start: no reason to wait
+            self._ll_since = None
+            return bright < on_thr
+        want = smooth < (on_thr + gap if cur else on_thr)
+        if want == cur:
+            self._ll_since = None
+            return cur
+        # far on the other side (white light on / off, lens cover, camera switched): a real jump, not the dusk ->
+        # 3 s more are enough (plus ~5 s until the median follows). "Far" = two gaps (at least 2 x 10) beyond the
+        # threshold, i.e. < 30 or > 105 with 60 / 15.
+        far = 2.0 * max(gap, 10.0)
+        if (want and smooth < on_thr - far) or (not want and smooth > on_thr + gap + far):
+            hold = min(hold, 3.0)
+        since = getattr(self, "_ll_since", None)
+        if since is None:
+            self._ll_since = since = t0
+        if t0 - since >= hold:
+            self._ll_since = None
+            return want
+        return cur
+
     def preprocess(self, gray, rain_mode):
         if rain_mode:
             g = cv2.medianBlur(cv2.GaussianBlur(gray, (9, 9), 0), 5)
@@ -805,7 +850,7 @@ class MotionWatch:
                 frame = THERMAL.overlay(frame)             # detection keeps using `small` (the normal picture)
             gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
             bright = float(gray.mean()); STATE["brightness"] = int(bright)
-            lowlight = CFG["lowlight_auto"] and bright < CFG["lowlight_threshold"]
+            lowlight = self._lowlight_decide(bright, t0)
             if lowlight != STATE["lowlight"]:
                 log_event("auto", f"Low-light mode {'ON' if lowlight else 'OFF'} (brightness {bright:.0f})")
                 STATE["lowlight"] = lowlight
