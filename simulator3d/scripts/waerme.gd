@@ -113,6 +113,10 @@ const ANIMALS := {
 	"chamois": [38.8, 0.28, 0.45, 1.2],    # Gämse: dichtes Winterfell
 	"ibex": [38.7, 0.30, 0.45, 1.4],
 	"lynx": [38.4, 0.28, 0.45, 1.0],
+	# Paket A1 (seltene Tiere im Bergtal) - Kern-Temperaturen [CR08], k wie bei verwandten Arten (dichtes Fell / Federn):
+	"marmot": [37.8, 0.30, 0.45, 0.55],    # Murmeltier (aktiv; im Winterschlaf nur wenige °C - dann unsichtbar)
+	"eagle": [40.5, 0.22, 0.45, 0.85],     # Steinadler: Federn isolieren sehr gut, Kopf und Füsse wärmer
+	"vulture": [40.0, 0.22, 0.45, 1.1],    # Bartgeier
 	"bird": [41.0, 0.25, 0.50, 0.2],       # Vögel: Federn isolieren sehr gut
 	"bat": [37.0, 0.40, 0.50, 0.08],
 	# Zimmertiere (zimmertiere.gd, Paket «Erlebniswelt: mehr Tiere drinnen», 31.10.2026):

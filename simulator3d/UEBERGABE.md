@@ -1,8 +1,17 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.72** · passende MoveEye-Version (früher Motion Watch) **2.98.103**
+Stand: 31.10.2026 · Simulator-Version **3D-4.73** · passende MoveEye-Version (früher Motion Watch) **2.98.104**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.73 (MoveEye 2.98.104): MoveEye im Abenteuer (`abenteuer_moveeye.gd`, Paket A1)
+
+- `abenteuer_moveeye.gd` (neu, `bergtal_abenteuer.gd` `a1`): Lager bewachen / Wildkamera am Wildwechsel, Fuchs am Proviant,
+  Hinweis-Aufnahme (Licht am Berg), Aufnahmen auswerten, Sammlung 7 seltener Tiere, `foto_wertung()`; Luchs in `bergtal.gd`,
+  Murmeltier/Steinadler/Bartgeier in `waerme.gd`. Steht neben A2 `a2`.
+- MoveEye 579b `NACHT_CAUSES` + 599e: neue Ursachen lynx/ibex/marmot/eagle/vulture/light und die älteren chamois/cow/hare/
+  stoat/deer/rockfall/storm mit Übersetzungen (vorher roh angezeigt).
+- Offen: `abenteuer_bestenliste.gd` (A5) nutzt für Tiere, Foto-Wertung und Wildkamera noch die Stubs (TODO A1).
 
 ## NEU in 3D-4.72 (MoveEye 2.98.103): Leben im Ferienpark (`ferienpark_leben.gd`)
 
