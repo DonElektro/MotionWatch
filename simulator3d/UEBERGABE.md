@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.59** · passende MoveEye-Version (früher Motion Watch) **2.98.90**
+Stand: 31.10.2026 · Simulator-Version **3D-4.60** · passende MoveEye-Version (früher Motion Watch) **2.98.91**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.60 (MoveEye 2.98.91): Simulator-Sprachen Schritt 2 (`i18n/texte.json`)
+
+- Die 231 fehlenden Übersetzungen (en/fr/it/rm) ergänzt, nur `simulator3d/i18n/` (texte.json, abdeckung.txt).
+  `werkzeuge/sim_texte.py --pruefen` meldet jetzt 0 Lücken (neue Basis 0 statt 231). Rätoromanisch noch nicht von
+  Muttersprachlern geprüft.
 
 ## NEU in 3D-4.59 (MoveEye 2.98.90): Schwachlicht-Hysterese in MoveEye, nur noch eine Exe im ZIP
 

@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 11:25",
+ "generated": "2026-10-31 11:31",
  "versions": [
   {
-   "version": "2.98.90",
-   "file": "webcam_bewegung_2_98_90.py",
+   "version": "2.98.91",
+   "file": "webcam_bewegung_2_98_91.py",
    "url": "",
-   "sha256": "cab17f3bdb98c3a1dfd0211e6e7aab53d9298712fbb1496f1c1a1fd26eb609cb",
-   "date": "2026-10-31 11:25",
-   "notes": "Schwachlicht-Modus mit Hysterese: Helligkeit über 10 s geglättet, Aus erst über Schwelle + Abstand, Wartezeit 30 s (neuer Regler «Schwachlicht: warten vor dem Umschalten (s)»); schaltet in der Dämmerung nur einmal um. Simulator 3D-4.59: im ZIP nur noch MoveEyeSim3D.exe.",
-   "sig": "53529ccdfc405fbe415db8b1eea520891cd5556f1db89ac36604c2a88165f3fb26fd33d0e8de65eabfa65f9a274c98a8595d3638f090afb8a9bd14c685c78703"
+   "sha256": "d65a71a83e7367217e4f0ab8bf3ea3d4ebbc6d7eecfa449ef83a4e1597321d6b",
+   "date": "2026-10-31 11:31",
+   "notes": "Simulator 3D-4.60: alle Simulator-Texte jetzt auch auf Englisch, Französisch, Italienisch, Rätoromanisch (Rätoromanisch noch prüfen lassen).",
+   "sig": "85f96ac4cc3d4ec118b2837239f83c0cf22af1e39947262c99a638d7d982c758d5f9e200d4ff7c912e6deb70164e6c083459fe08f9f73635e2741c2965920206"
   },
   {
    "version": "2.97.1",
