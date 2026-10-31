@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 08:06",
+ "generated": "2026-10-31 08:12",
  "versions": [
   {
-   "version": "2.98.80",
-   "file": "webcam_bewegung_2_98_80.py",
+   "version": "2.98.81",
+   "file": "webcam_bewegung_2_98_81.py",
    "url": "",
-   "sha256": "0a747232e83bddf49a169f2a17ead2cb31d3297fa0cba240ffca250ac5f7f1d5",
-   "date": "2026-10-31 08:06",
-   "notes": "Simulator 3D-4.49: Gelände und Pflanzen im Camping-Platz – Hügel, Wege, Hecken, Baumarten, Gras und Blumen, Wolkenschatten; Hecken verdecken.",
-   "sig": "d96511e7691cec8d1060f63bac31feae2a2178db88d9bbe9c4b22b14f4f7e0657c3d35207511f2dbee4564b97a9e183fa3e3b3744aa44d7322b60c278fdbaf0d"
+   "sha256": "82ba87278a5aaf38c3b3ee6644118b7df04beee74133b7a249b39ae178a82559",
+   "date": "2026-10-31 08:12",
+   "notes": "Simulator 3D-4.50: Kopfkamera wie die echte Camera Module 3 NoIR (Belichtung, Rauschen, NoIR-Farben, Unschärfe nachts); Infrarot-Reichweite 10 m.",
+   "sig": "4d32eec7fe2dbdc4787d1bd45433d2a8f31131950d9d037db90847f0715fd196a8a273fd7846ee57d29ed8bff2bf717162c3cfafcbf525c91e49de08bd3fe403"
   },
   {
    "version": "2.97.1",

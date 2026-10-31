@@ -421,6 +421,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.50
+3D-4.50: Kopfkamera wie die echte Camera Module 3 NoIR: Belichtung und Verstärkung nach Licht, Rauschen, NoIR-Farben am
+Tag (leicht rosa), Bewegungsunschärfe nachts, Rolling Shutter beim Drehen. Infrarot-Reichweite neu 10 m (wie ein kleines
+3-W-Modul), Licht nimmt mit dem Abstand ab.
+So testest du: 1) Kamerabild → Wie echt: «Kamera wie echt» an, Tag: Bild leicht rosa. 2) 23 Uhr, Infrarot aus: fast
+schwarz und körnig. 3) Infrarot an: Leute bis ~8–10 m gut sichtbar.
+
 NEU IN 3D-4.49
 3D-4.49: Gelände und Pflanzen im Camping-Platz: sanfte Hügel, Wege, Hecken, Bäume verschiedener Arten, Gras und Blumen,
 Wolkenschatten ziehen über die Wiese. Hinter einer dichten Hecke sieht MoveEye niemanden.

@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.49"
+const VERSION := "3D-4.50"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -299,7 +299,7 @@ var cond := {"glare": false, "drops": false, "web": false, "headlights": false, 
 var _net_hold := 0.0                  # 3D-3.74: bad Wi-Fi - the picture stands still until then
 var _next_headlight := 0.0
 var night_gain := 2.5                 # how much a camera may amplify at night (real cameras: limited -> dark, grainy)
-var ir_range := 14.0                  # reach of the infrared light (m)
+var ir_range := 10.0                  # reach of the infrared light (m); 3D-4.x P1: 10 m like a small 3 W 850 nm module (was 14)
 var sound_on := true                  # the sounds of the world go to the microphone of MoveEye (from 3D-2.6)
 var sounds: Array = []                # [dB at 1 m, position, until]
 var sound_ev: Array = []              # 3D-3.98: short sounds for MoveEye [{id, kind: clap | sneeze | voice | shout, n, db, t}]
@@ -313,6 +313,7 @@ var realism                           # realism.gd
 var simreal                           # simreal.gd (3D-4.4): Pi 5, lens, infrared, thermal, false alarms, difficult visitors
 var thermsensor                       # thermsensor.gd (3D-4.26, P2): the thermal module like the real Thermal-90 (noise, drift, optics, AGC)
 var waerme_welt                       # waerme_welt.gd (3D-4.26, P3): engines cool down, the person in the tent, lamps (table: waerme.gd)
+var camphys                           # camphys.gd (3D-4.x P1): exposure / gain / noise / NoIR colours of the Camera Module 3 NoIR
 var szenen                            # szenenplus.gd (3D-4.x): Voller Campingplatz, Tarnen und Kriechen, Velodieb
 var smalltv                           # smalltv.gd (3D-4.19): virtueller Zusatz-Bildschirm GeekMagic SmallTV Ultra (MoveEye 552)
 var fenster                           # fenster.gd (Paket «Fenster»): ein Rahmen für alle schwebenden Fenster (ziehen, Grösse, ✕, Liste «Fenster»)
@@ -438,6 +439,9 @@ func _ready() -> void:
 	waerme_welt = preload("res://scripts/waerme_welt.gd").new()   # 3D-4.26 heat in the world (P3)
 	waerme_welt.main = self
 	add_child(waerme_welt)
+	camphys = preload("res://scripts/camphys.gd").new()      # 3D-4.x P1: the sensor of the Camera Module 3 NoIR (exposure, gain, noise)
+	camphys.main = self
+	add_child(camphys)
 	szenen = preload("res://scripts/szenenplus.gd").new()   # 3D-4.x: the new scenes (neighbours, camouflage, bike thief)
 	szenen.main = self
 	add_child(szenen)
@@ -2143,7 +2147,7 @@ func _update_lens() -> void:
 	for i in range(lens_mats.size()):
 		var amp: float = clamp((float(gain[i]) - 1.0) / max(0.5, gain_cap() - 1.0), 0.0, 1.0)
 		var m: ShaderMaterial = lens_mats[i]
-		m.set_shader_parameter("noise", lens_noise * (0.08 + 0.92 * (amp if dark else amp * 0.4)) * (realism.noise_scale() if realism != null else 1.0))
+		m.set_shader_parameter("noise", 0.0 if camphys != null and camphys.active() else lens_noise * (0.08 + 0.92 * (amp if dark else amp * 0.4)) * (realism.noise_scale() if realism != null else 1.0))   # 3D-4.x: with «Kamera wie echt» the noise comes from camphys.gd (camfx)
 		m.set_shader_parameter("vignette", lens_vignette)
 		m.set_shader_parameter("drops", 0.55 if cond["drops"] else ((0.45 if i == 1 else 0.25) if lens_drops and weather == "rain" else 0.0))
 		if fahrzeuge == null or not fahrzeuge.glaring(i):  # Paket «Fahrzeuge»: headlights blinding the lens set it themselves
@@ -2787,6 +2791,8 @@ func _capture(i: int) -> void:
 		if simreal != null:
 			simreal.before_capture(i)            # 3D-4.4: lens, rolling shutter, noise, infrared, reflectors
 		weit.before_capture(i)                   # 3D-4.17: NoIR Wide - infrared picture, fisheye, the wide infrared light
+		if camphys != null:
+			camphys.before_capture(i)            # 3D-4.x P1: last - exposure time, gain, sensor noise, NoIR colours
 	vps[i].render_target_update_mode = SubViewport.UPDATE_ONCE
 	await RenderingServer.frame_post_draw
 	var img: Image = vps[i].get_texture().get_image()
@@ -3920,15 +3926,17 @@ func _register_controls() -> void:
 	add_control("toggle", "flee_light", "Tiere flüchten nachts vor dem weissen Licht", func(): return flee_light, func(v): flee_light = v, "Besuch", ex)
 	add_control("toggle", "flee_sound", "Tiere flüchten vor der Sirene", func(): return flee_sound, func(v): flee_sound = v, "Besuch", ex)
 	add_control("toggle", "avoid_on", "Um Bäume, Häuser und Fahrzeuge herumgehen", func(): return avoid_on, func(v): avoid_on = v, "Besuch", ex)
-	add_control("slider", "lens_noise", "Bildrauschen (nachts stärker)", func(): return lens_noise, func(v): lens_noise = v, "Kamerabild", {"min": 0, "max": 1, "step": 0.05})
+	# 3D-4.x P1: the noise slider is also the one of «Kamera wie echt» (camphys.gd: noise from the gain of the sensor) - no second one
+	add_control("slider", "lens_noise", "Rauschen (wie der Sensor: mehr Verstärkung = mehr Rauschen, am Tag sauber)", func(): return lens_noise, func(v): lens_noise = v, "Kamerabild", {"sub": "Wie echt", "min": 0, "max": 1, "step": 0.05, "expert": true})
 	add_control("slider", "night_gain", "Nachtverstärkung der Kameras (höchstens)", func(): return night_gain, func(v): night_gain = v, "Kamerabild", {"min": 1, "max": 8, "step": 0.5, "unit": "×"})
 	add_control("slider", "ir_range", "Reichweite des Infrarot-Lichts", func(): return ir_range, func(v): ir_range = v, "Kamerabild", {"min": 4, "max": 30, "step": 1, "unit": "m"})
 	add_control("slider", "lens_vignette", "Dunkle Bildecken", func(): return lens_vignette, func(v): lens_vignette = v, "Kamerabild", {"min": 0, "max": 1, "step": 0.05, "expert": true})
 	# 3D-3.94: the camera like a real one - and like the real one of MoveEye
-	add_control("toggle", "real_fx", "Kamera wie echt: Bewegungsunschärfe (nachts stärker), Farben des Sensors, NoIR-Rosastich am Tag, langsamere Belichtung", func(): return realism.fx_on, func(v): realism.fx_on = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
+	add_control("toggle", "real_fx", "Kamera wie echt (Camera Module 3 NoIR): Belichtung und Verstärkung mit echten Grenzen, Rauschen bei wenig Licht, Bewegungsunschärfe, NoIR-Farben, Blendung nachts", func(): return realism.fx_on, func(v): realism.fx_on = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
 	add_control("toggle", "real_look", "Echt-Abgleich: Helligkeit, Farbe, Schärfe und Rauschen an die echten Bilder von MoveEye angleichen", func(): return realism.real_on, func(v): realism.real_on = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
 	add_control("toggle", "real_servo", "Servos wie echt: kleines Spiel, Nachschwingen nach dem Drehen", func(): return realism.servo_real, func(v): realism.servo_real = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
 	add_control("button", "real_reset", "Echt-Abgleich zurücksetzen", null, func(): realism.reset(), "Kamerabild", {"sub": "Wie echt", "expert": true})
+	camphys.add_controls()                                 # 3D-4.x P1: «Bewegungsunschärfe», «NoIR-Farben»
 	add_control("toggle", "colors_on", "Natürliche Farben und Materialien (Metall, Glas, Stoff, nass bei Regen) – wirkt nach dem Szenenwechsel", func(): return colors_on, func(v): colors_on = v; colors.on = v; _settings_dirty = true, "Kamerabild", {"sub": "Wie echt"})
 	add_control("toggle", "seasons_on", "Jahreszeiten: Gras und Laub nach dem Monat (Frühling, Sommer, Herbst, Winter)", func(): return seasons_on, func(v): seasons_on = v; colors.seasons_on = v; colors._month = -1; _update_sky(); _settings_dirty = true, "Szene", {"sub": "Zeit"})
 	add_control("toggle", "show_laser", "Blickrichtung: roter Strahl aus dem Kopf und Bildränder am Boden (nur für dich sichtbar)", func(): return show_laser, func(v): show_laser = v; _settings_dirty = true, "Kamerabild")
@@ -4803,6 +4811,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return szenen.control(d)
 	elif a == "simreal":                               # 3D-4.4: {do: info | set (key, value) | sweep | bird | spawn (kind, from, to)}
 		return simreal.control(d)
+	elif a == "camphys":                               # 3D-4.x P1: {do: info | set (key: blur_k | noir_k, value)} - exposure, gain, light
+		return camphys.control(d)
 	elif a == "objekte":                               # 3D-4.x «Gegenstände»: {do: info | lure | test_place | test_clear | set}
 		return objplus.control(d)
 	elif a == "umgebung":                              # 3D-4.x: {do: info | set (key, value) | spawn (kind) | snow_puff | clear_tracks}
@@ -6693,6 +6703,9 @@ func _paint_groups() -> void:
 func _update_status() -> void:
 	if real_label != null and realism != null:
 		real_label.text = "Echt-Abgleich: " + realism.info
+		var cps: String = camphys.status() if camphys != null else ""
+		if cps != "":
+			real_label.text += "\n" + cps                 # 3D-4.x P1: exposure and gain of the head camera right now
 	_night_test_tick()
 	if refscan_label != null:
 		refscan_label.text = refscan_text()

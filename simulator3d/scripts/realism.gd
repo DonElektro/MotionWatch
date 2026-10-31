@@ -60,6 +60,8 @@ func cur() -> Dictionary:
 
 func exposure_time() -> float:
 	"""seconds the sensor collects light: short by day, long at night (that is what makes moving people blurry)"""
+	if main.camphys != null and main.camphys.active():
+		return float(main.camphys.t_exp[0])               # 3D-4.x P1: the exposure of the sensor model (camphys.gd)
 	var amb: float = clampf(main.light_level() if main.has_method("light_level") else (0.0 if main.is_dark() else 1.0), 0.0, 1.0)
 	return lerpf(0.11, 0.004, amb)
 

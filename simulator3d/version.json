@@ -1,7 +1,7 @@
 {
- "version": "3D-4.49",
+ "version": "3D-4.50",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 67585190,
- "sha256": "b80b9559908f3abdf67481d5d5275fefe447b11a2abb7fb388a7eb410cec28b9",
- "notes": "Gelände und Pflanzen im Camping-Platz: Hügel, Wege, Hecken, Baumarten, Gras und Blumen, Wolkenschatten."
+ "size": 67619456,
+ "sha256": "65a0da8414fab2595e05e6350e727759e1d3dd8f9fcae745ca895794c28c6209",
+ "notes": "Kopfkamera wie die echte Camera Module 3 NoIR: Belichtung, Rauschen, NoIR-Farben, Unschärfe nachts; Infrarot-Reichweite 10 m."
 }
