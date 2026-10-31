@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 15:11",
+ "generated": "2026-10-31 15:30",
  "versions": [
   {
-   "version": "2.98.114",
-   "file": "webcam_bewegung_2_98_114.py",
+   "version": "2.98.115",
+   "file": "webcam_bewegung_2_98_115.py",
    "url": "",
-   "sha256": "c6951b8d07f040a873cf38b190c7bc16e85fc1fa220f32c409051ab2871c3f67",
-   "date": "2026-10-31 15:11",
-   "notes": "Simulator 3D-4.83: «Auf Werkseinstellungen zurücksetzen» unter Mehr (nur Besitzer) wie bei MoveEye – erst eine Kopie, dann zurücksetzen und neu starten; Horror-Passwort, Sprache, Inhalte und Entwicklerdaten bleiben.",
-   "sig": "3fe3706648115cdf822aca4af97e8682ee8f0cdada0641f7af2d9777d6b9d89434526837828060fcf45c3242e305528f5dc32278599b7124c0ee35ac3f71b105"
+   "sha256": "e983db1de2496437a0efd4c23c2a558e2bb2a5d8d06578d68c98546df995320a",
+   "date": "2026-10-31 15:30",
+   "notes": "Einstellungen öffnen beim Start in «Nur Gruppen»; neuer Schalter «Beim Start: Nur Gruppen» (ab Werk ein, aus = eigene Menüs zurück); Pi-Fenster: die drei Aufklapp-Knöpfe wie im Web. Simulator 3D-4.84: dasselbe im Simulator.",
+   "sig": "260d6d60e90e2d7ed17b888d1432a1497ebdeec6a49d336f6c8c5d03392e53614ee8da566cac995c2d6f4aa8aa233a3b1d90897ff0ebc88299ce9dc33503c706"
   },
   {
    "version": "2.97.1",
