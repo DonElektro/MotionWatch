@@ -45,7 +45,7 @@ def case(place, ck, ev, want, secs, act, info, done, wind=12, before=None):
 
 
 NAMES = {"nacht_blend": "Nacht, Scheinwerfer direkt in die Kamera", "tag_blend": "Tag, Sonne blendet in die Linse",
-         "linse": "Tag, Wind 55 km/h, etwas direkt vor der Linse", "kopf": "Tag, klar, Kopf-Verfolgung AN"}
+         "linse": "Tag, Wind 55 km/h, etwas direkt vor der Linse", "tag_ruhig": "Tag, klar, ohne Sturm in den 10 Min. davor", "kopf": "Tag, klar, Kopf-Verfolgung AN"}
 save = D.save
 
 
@@ -77,7 +77,7 @@ def blend(done):
     D.set_cond("tag")
     ctl(action="set", id="cond_glare", value=True)
     time.sleep(15)
-    case("stellplatz", "tag_blend", "leer", "none", 45.0, None, "Sonne blendet (cond_glare), Wind 55 km/h, niemand da", done, wind=55,
+    case("stellplatz", "tag_blend", "leer", "none", 45.0, None, "Sonne blendet (cond_glare), niemand da", done,
          before=lambda: ctl(action="set", id="cond_glare", value=True))
     case("stellplatz", "tag_blend", "gehen", "person", 18.0, walk(10.0), "Sonne blendet, Person geht quer, 10 m", done,
          before=lambda: ctl(action="set", id="cond_glare", value=True))
@@ -157,9 +157,33 @@ def kopf(done):
     log("Kopf-Verfolgung aus:", mw_set("track_person", False), mw_set("kopf_on", False))
 
 
+def diag(done):
+    """Gegenprobe: gleiche Fälle wie camping|tag, aber vorher 90 s ruhig (kein Wind-55-Leerlauf direkt davor)"""
+    D.goto_place("camping")
+    D.set_cond("tag")
+    ctl(action="set", id="wind", value=12)
+    t0 = time.time()
+    while time.time() - t0 < 700:          # until the 10-min gust of MoveEye is below 39 km/h (strict mode off)
+        try:
+            st = mw_state()
+            if float((st.get("storm") or {}).get("gust") or 0) < 39 and int((st.get("strict") or {}).get("n") or 1) == 1:
+                break
+        except Exception:
+            pass
+        time.sleep(10)
+    log("ruhig nach %.0f s" % (time.time() - t0))
+    case("camping", "tag_ruhig", "gehen", "person", 18.0, walk(10.0), "wie camping|tag|gehen, aber ohne Sturm davor (Böe < 39 km/h)", done)
+    case("camping", "tag_ruhig", "kriechen", "person", 22.0, lambda: ctl(action="menschen", do="probe", gait="crawl", dist=7.0, dark=True),
+         "wie camping|tag|kriechen, aber ohne Sturm davor", done)
+    case("camping", "tag_ruhig", "kind", "person", 18.0, lambda: ctl(action="spawn_at", kind="child", **dict(zip(("from", "to"), D.cross(8.0)))),
+         "wie camping|tag|kind, aber ohne Sturm davor", done)
+    case("camping", "tag_ruhig", "fahrzeug", "vehicle", 14.0, lambda: ctl(action="spawn_at", kind="car", **dict(zip(("from", "to"), D.cross(20.0)))),
+         "wie camping|tag|fahrzeug, aber ohne Sturm davor", done)
+
+
 if __name__ == "__main__":
     done = D.done_keys()
     for w in sys.argv[1].split(","):
-        {"blend": blend, "linse": linse, "kopf": kopf}[w](done)
+        {"blend": blend, "linse": linse, "kopf": kopf, "diag": diag}[w](done)
         os.system("cd /tmp/claude-0/erkt2/tools && python3 sync.py >> ../out/sync.log 2>&1")
     log("extra fertig")

@@ -163,6 +163,14 @@ def observe(secs, tag, want, t_spawn, base):
                 pass
         if s.get("fog"):
             extra.setdefault("fog_s", t)
+        try:
+            _st = s.get("strict") or {}
+            if int(_st.get("n") or 1) > 1:
+                extra.setdefault("strict_s", t)
+                extra["strict_why"] = _st.get("why", "")
+                extra["strict_n"] = max(extra.get("strict_n", 0), int(_st.get("n")))
+        except Exception:
+            pass
         if int(s.get("warm") or 0) > 0 and warm is None:
             warm = t
         if not shot_mid and t >= secs * 0.45:
@@ -274,8 +282,9 @@ def run_case(place, ck, ev, i, done):
         r = ctl(action="spawn_at", kind="car", **{"from": a, "to": b})
         want, secs, info = "vehicle", 14.0, "Auto, 20 m" + (" + Scheinwerfer" if ir else "")
     elif ev == "leer":
-        ctl(action="set", id="wind", value=55)
-        want, secs, info = "none", 45.0, "nichts, Wind 55 km/h (Äste)"
+        _lw = int(os.environ.get("LEERWIND", "55"))   # Test 2: neue Orte ohne Sturm (Böen >= 39 km/h machen MoveEye 10 Min. strenger)
+        ctl(action="set", id="wind", value=_lw)
+        want, secs, info = "none", 45.0, "nichts, Wind %d km/h%s" % (_lw, " (Äste)" if _lw >= 39 else "")
         r = {"ok": True}
     t_spawn = time.time()
     rec = observe(secs, tag, want, t_spawn, base)
