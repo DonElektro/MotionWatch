@@ -264,6 +264,13 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 				else:
 					_send(c, 200, sj, "image/jpeg")
 				return
+			if parts.size() == 2 and parts[0] == "disc_pic":    # Erlebniswelt 20–23: the picture of entry <i> of the Entdeckungsbuch (this scene)
+				var dj: PackedByteArray = main.entdecken.pic_bytes(str(query.get("scene", "")), int(parts[1].get_basename())) if main.entdecken != null else PackedByteArray()
+				if dj.is_empty():
+					_json(c, {"ok": false, "error": "no picture"}, 404)
+				else:
+					_send(c, 200, dj, "image/jpeg")
+				return
 			if parts.size() == 2 and parts[0] == "game_pic":    # the «caught» photos (3D-3.25)
 				var gj: PackedByteArray = main.game.gallery_jpg(int(parts[1].get_basename())) if main.game != null else PackedByteArray()
 				if gj.is_empty():
@@ -275,6 +282,10 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 				var cam := int(parts[1])
 				if cam < 0 or cam > 1:
 					_json(c, {"ok": false, "error": "no such camera"}, 404)
+					return
+				var wt = main.get("weit")                    # (the second device, device.gd, has no wide camera object)
+				if cam == 1 and wt != null and not wt.installed():
+					_json(c, {"ok": false, "error": "wide camera not installed (blind cover)"}, 404)   # P9
 					return
 				if parts[2] == "snapshot.jpg":
 					main.want_snapshot(cam)

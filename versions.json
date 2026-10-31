@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 03:55",
+ "generated": "2026-10-31 06:12",
  "versions": [
   {
-   "version": "2.98.57",
-   "file": "webcam_bewegung_2_98_57.py",
+   "version": "2.98.65",
+   "file": "webcam_bewegung_2_98_65.py",
    "url": "",
-   "sha256": "e244862ce85caefa253914fbebe866d557e0a03c4fe876a772cf56381975f663",
-   "date": "2026-10-31 03:55",
-   "notes": "Simulator 3D-4.26: alle schwebenden Fenster (Kompass, Karte, Livebild, SmallTV, Gerät, Mover, Kopf, Kameras, CPU) in einem gemeinsamen Rahmen – verschieben, Grösse ändern, ✕ ausblenden, Schnappen, neuer Knopf «Fenster» in der Leiste unten (Liste, «Anordnung zurücksetzen»), Anordnung pro PC gespeichert.",
-   "sig": "2e8d1968e85bbd0d30c9cb2f3053019e74587deb79805e6625d44bfdeb827ac43829f91b91ae3ecd3e49929b7fd9d77d0b9d7d272471436c55fd175ee0dc3108"
+   "sha256": "8de67c8ef6b380f9c08e1822eacc8d2313ebf924180cf8e20db30ad0b725c7d6",
+   "date": "2026-10-31 06:12",
+   "notes": "Simulator 3D-4.34: neue Welt «Bergtal» (2 × 2 km) und Szenen zusammengefasst – Welten Bergtal, Ferienpark, Zuhause mit den alten Szenen als Orte; alte Kennungen gehen weiter, Trainingsnacht lädt Orte allein.",
+   "sig": "ad42de7d0bde3ba7ca001ec914719dc16a575c2e3f975fe182ee4f530064cc0258f23fedaea1186847b2334346a2198e3e960735d3b387ec50a8135388ab730c"
   },
   {
    "version": "2.97.1",

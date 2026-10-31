@@ -34,6 +34,8 @@ Der Prüfstand beantwortet bei jeder neuen Version die Frage: **Erkennt MoveEye 
 - **Ganze Nacht** (`nacht`): 20–6 Uhr im Zeitraffer in etwa 11 Minuten (die Uhr des Simulators läuft schneller), etwa
   20 Tiere, Windböen, ein Regenschauer, ruhige Abschnitte ohne Besuch und 2 Personen. Hauptzahl: **Pushes pro Nacht**
   (richtig / falsch). `--mal` vervielfacht diese Nacht nicht (realistische Zahlen).
+  **Später (Daniel 31.10.2026):** «Ganze Nacht» auf den Nacht-Ablauf `simulator3d/scripts/nachtlauf.gd` des
+  Nacht-Testlaufs (MoveEye 579b, Seite /nacht) umstellen – ein Nacht-Ablauf für beide.
 - **Zufallsstarts** (`--seeds 3`): Zufall 1 = die festen Besucher von früher (4711), 2, 3 … dieselben Besucher auf anderen
   Wegen. In `VERLAUF.md` steht dann die Streuung (kleinster–grösster Wert pro Lauf). Mehr Personen: `--mal 1` … `--mal 5`.
 - **Schleichwege automatisch:** `pruefstand.py` übernimmt bei jedem Lauf die Schleichwege aus `feedback/` (Spielberichte als
@@ -44,7 +46,8 @@ Der Prüfstand beantwortet bei jeder neuen Version die Frage: **Erkennt MoveEye 
 
 ## Übersicht → Kopf findet Ziel (Weitwinkel-Kamera, ab Simulator 3D-4.17)
 
-`--weitwinkel base,head_front,head_rear` (auch `scene` als Vergleich ohne Übersicht am Gerät) misst pro Montage der
+`--weitwinkel case,base,head_front,head_rear` (`case` = im Gehäuse v5.2, Standard ab P9; auch `scene` als Vergleich ohne
+Übersicht am Gerät) misst pro Montage der
 Weitwinkel-Kamera: ein Besucher kommt **ausserhalb des Bildes der Kopfkamera** ins Weitwinkel-Bild (vorne: 42° neben der Mitte,
 von 14 m auf 6 m auf das Gerät zu – im Weitwinkel-Bild ±51°, nicht im Kopfbild ±33°; hinten: quer hinter dem Kopf, 150° → 215°,
 9 m), langsam (0,3 m/s). Gemessen wird die Zeit, bis die **Kopfkamera ihn im

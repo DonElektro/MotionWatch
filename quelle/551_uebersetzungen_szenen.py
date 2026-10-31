@@ -19,6 +19,10 @@ _HX_szenen = {
     'Camouflage and crawling': ('Tarnen und Kriechen', 'Camouflage et ramper', 'Mimetizzarsi e strisciare', 'Camuflar e sa trair'),
     'Bike thief': ('Velodieb', 'Voleur de vélo', 'Ladro di bici', 'Lader da velo'),
     'Tracking course': ('Verfolgungs-Parcours', 'Parcours de suivi', 'Percorso di inseguimento', 'Parcours da persequitar'),
+    'Holiday park by the lake': ('Ferienpark am See', 'Parc de vacances au bord du lac', 'Parco vacanze sul lago', 'Parc da vacanzas al lai'),
+    'Mountain valley (alp, lake, pass)': ('Bergtal (Alp, See, Pass)', 'Vallée de montagne (alpage, lac, col)', 'Valle alpina (alpe, lago, passo)', 'Val da muntogna (alp, lai, pass)'),
+    # Simulator-Welten (31.10.2026): die alten Szenen sind Orte in den Welten Bergtal, Ferienpark und Zuhause
+    'At home (house, garden, building site)': ('Zuhause (Haus, Garten, Baustelle)', 'À la maison (maison, jardin, chantier)', 'A casa (casa, giardino, cantiere)', 'A chasa (chasa, curtin, plazza da construcziun)'),
 }
 # German comes from the simulator itself (and DE is only made in part 560, after this part) - here only fr / it / rm
 for _k, _v in _HX_szenen.items():

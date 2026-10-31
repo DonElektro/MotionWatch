@@ -421,6 +421,45 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.34
+3D-4.34: Neue Welt «Bergtal» (2 × 2 km: Alp, Seen, Pass, Gletscher, Wanderwege, Schlafplätze). Die Szenen sind
+zusammengefasst: statt 20 Szenen die Welten Bergtal, Ferienpark und Zuhause (alte Szenen = «Ort in dieser Welt») plus
+Camping-Platz, Ort von der Karte und eigene. Alte Szenen gehen weiter; Experte: «Alte Szenen allein laden».
+Bergtal-Regler unter «Szene» erscheinen nur im Bergtal.
+So testest du: 1) Szene → «Bergtal», «Ort in dieser Welt» → Schattwald: Kopfkamera ansehen. 2) Szene → «Zuhause» →
+Schlafzimmer. 3) Andere Szene wählen: die Bergtal-Regler verschwinden.
+
+NEU IN 3D-4.33
+3D-4.33: Weitwinkel-Kamera wie im Gehäuse v5.2: neue Montage «Im Gehäuse (v5.2)» (Standard) und «Nicht verbaut
+(Blindstopfen)»; Fischauge wie das echte Objektiv (gebogener Rand, dunklere Ecken), nachts eine kleine IR-LED (ca. 4 m).
+So testest du: 1) Kamerabild → Weitwinkel-Kamera: Montage «Im Gehäuse (v5.2)». 2) In MoveEye Sim → Kachel 🔭: breites,
+leicht gebogenes Bild ohne Gehäuserand. 3) Montage «Nicht verbaut»: die Kachel meldet das ohne Fehler.
+
+NEU IN 3D-4.32
+3D-4.32: Gameplay ausgefeilt: Probe-Runde mit Blinki, Wiederholung beim Erwischen, Höhepunkte am Schluss, Missionen,
+Nacht-Spiel mit Geräuschen, neue Werkzeuge, Spielabend-Turnier, Fairness automatisch, «MoveEye ins Schwitzen», KI-Turm,
+Abzeichen pro Szene. Alles im Spiel-Assistenten (Schnellstart und Extras).
+So testest du: 1) Spiel → Assistent → «Wächter-Duell» mit zwei Handys: Blinki zeigt die Probe-Runde. 2) Schleicher
+erwischen: auf seinem Handy kommt der 3-s-Film. 3) Schnellstart «🎒 Mission» oder «🌙 Nacht-Spiel» ausprobieren.
+
+NEU IN 3D-4.31
+3D-4.31: Nacht-Testlauf – eine ganze Nacht im Simulator (WC-Gänge, Tiere, Auto, Regen, genau ein echter Vorfall) mit
+Wahrheit; MoveEye vergleicht und zeigt den Bericht auf /nacht. Starten nur in MoveEye (Besitzer), im Simulator unter
+«Testen» Fortschritt und Abbrechen.
+So testest du: 1) MoveEye: Sim → Testen → «🌙 Nacht-Testlauf», 23:00–23:30, schnell, starten. 2) Im Simulator unter
+«Testen» den Fortschritt ansehen. 3) Nach dem Push «📄 Bericht öffnen»: Vorfall erkannt?
+
+NEU IN 3D-4.30
+3D-4.30: Erlebniswelt im «Ferienpark am See»: 19 kleine Szenen mit Tieren und Menschen (Katze und Maus, Enten, Fuchs am
+Abfall, Schlafwandler, Yoga, Angler mit Riesenfisch, Schnecken-Rennen …), alle im Entdeckungsbuch («x von 26»). Neu
+«🙈 Verstecken mit MoveEye» (Spiel → Entdecken, nur im Ferienpark sichtbar). Bei Testläufen sind sie aus.
+So testest du: 1) Szene «Ferienpark am See», 12 Uhr: Entdeckungen zeigt «0 von 26». 2) Zum Badestrand fliegen: der Hund
+bringt den Ball. 3) MoveEye verbinden, «Verstecken mit MoveEye»: findet MoveEye die vier Kinder?
+
+NEU IN 3D-4.29
+3D-4.29: Das Fenster «Neu in dieser Version» scrollt jetzt; der Knopf OK ist immer sichtbar, Esc schliesst es.
+So testest du: 1) Simulator starten (das Fenster erscheint nach dem Update). 2) In der Liste scrollen. 3) Esc oder OK.
+
 NEU IN 3D-3.26
 - Handy-Ansicht: Karte und Kompass stehen rechts, die Knopfzeile ist mittig (das Handy-Bild links bleibt frei).
 - Oben in der Mitte immer sichtbar: "PC-CPU … · Simulator …" (wie im kleinen Fenster).
@@ -607,6 +646,30 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-4.28
+3D-4.28: Neue Szene «Ferienpark am See» (rund 500 × 500 m, ganz unten in der Szenenliste): See mit Strand, Steg und
+Booten, sechs Terrassen mit Zelten, Wohnmobilen und Bungalows, Wald mit Aussichtspunkt, Bach mit Brücken, Hängebrücke,
+Seilbahn, Dorf mit Kirche, Streichelzoo und Felder. MoveEye kann an fünf Orten stehen: beim Zelt, beim Wohnmobil, beim
+Bungalow, am Bootssteg oder bei der Rezeption – Auswahl «Standort im Ferienpark am See» in der Karte Szene (erscheint nur,
+wenn diese Szene gewählt ist, in MoveEye ebenso). Nachts leuchten Laternen und Fenster; Tiere, Grill, Feuer und Motoren
+sind im Wärmebild warm. Dahinter eine neue Bibliothek mit rund 90 Dingen, auch für weitere Szenen; mit «Lite» leichter.
+So testest du: 1) Szene → «Ferienpark am See». 2) Darunter «Standort im Ferienpark am See» nacheinander auf Zelt,
+Wohnmobil, Bungalow, Bootssteg, Rezeption stellen und das Bild der Kopfkamera ansehen. 3) Uhrzeit 22 Uhr: Laternen und
+Fenster leuchten. 4) MoveEye verbinden, «Besuch → Person» schicken: MoveEye meldet die Person. 5) Andere Szene wählen:
+die Standort-Auswahl verschwindet.
+
+NEU IN 3D-4.27
+3D-4.27: Entdecken – jede Szene kann Geheimnisse haben, die man selbst findet. Das Entdeckungsbuch (Schnellzugriff →
+Spielen → «Entdeckungen», Symbol Buch) zeigt «2 von 3 entdeckt», Gefundenes mit Bild und Text, Ungefundenes als «???» mit
+Art und Hinweis-Symbol (nur nachts, bei Regen, am Morgen, nur per Foto). Gefunden wird beim Hinschauen aus der Nähe oder
+mit einem Foto von MoveEyes Kopfkamera («Foto fürs Buch» oben in der Ansicht). Findet man lange nichts, meldet sich
+unten links Blinki mit einem leisen Hinweis (im gemeinsamen Fensterrahmen, abschaltbar unter Spiel → Entdecken oder mit ✕;
+wieder einschalten über «Fenster»). Im Camping-Platz drei Demo-Entdeckungen. In MoveEye: Simulator → Spielen → «Entdeckungen».
+So testest du: 1) Szene «Camping-Platz», Mittag: Schnellzugriff → Spielen → «Entdeckungen 0 von 3» – drei Karten «???».
+2) Hinter MoveEyes Kopf an den Wiesenrand fliegen: Steinmännchen, unten «Entdeckt: … 1 von 3». 3) Tageszeit Nacht 23:00,
+zum Holzstapel links hinten: Glühwürmchen. 4) MoveEyes Kopf nach rechts drehen, bis die Eule ganz im Bild ist → «Foto fürs
+Buch» antippen (oder in MoveEye «Entdeckungen» → «Foto für Entdeckungsbuch»). 5) 5 Minuten nichts finden → Blinki-Hinweis.
 
 NEU IN 3D-4.26
 3D-4.26: Alle schwebenden Fenster über der 3D-Ansicht (Kompass, Karte, Livebild, SmallTV, Gerät, Mover-Stick, Kopf
