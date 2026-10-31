@@ -8,7 +8,7 @@ extends Node
 ##     mit Art und Zeit-Symbol (Nacht / Regen / Morgen …).
 ##   * Blinki-Hinweis: wenn man N Minuten (Standard 5) nichts Neues gefunden hat, ein kleiner, wegklickbarer Hinweis auf das
 ##     nächste Ungefundene, das JETZT möglich ist (Tageszeit, Wetter).
-##   * gespeichert pro Szene in user://entdecken.json, Bilder in user://entdecken/<szene>/<id>.jpg
+##   * gespeichert pro Szene in user://entdecken.json (A6: das ist Spielstand 1; Platz 2/3 unter user://spielstand/<n>/), Bilder in user://entdecken/<szene>/<id>.jpg
 ## API (Doku mit Beispiel: REAL_ENTDECKEN.md): main.entdecken.register(id, info) · mark_found(id, how) · is_found(id) ·
 ## count(scene) · total(scene) · Signal found(id). Lite: _lite() -> kleinere Bilder, seltener prüfen.
 
@@ -68,6 +68,7 @@ var _book_list: VBoxContainer = null
 var _demo_nodes: Array = []
 var _demo_glow: Node3D = null
 var _tex_cache := {}                       # pic path -> ImageTexture
+var save_path := SAVE                      # A6: the file of the active Spielstand (spielstand.gd; place 1 = SAVE)
 var check_us := 0.0                        # how long one check of all items took (µs, smoothed) - for the report / tests
 
 
@@ -280,6 +281,7 @@ func on_scene() -> void:
 
 # =============================================================================================================================
 func _ready() -> void:
+	save_path = preload("res://scripts/spielstand.gd").path_ent()   # A6
 	_load()
 	_thumb_vp = SubViewport.new()
 	_thumb_vp.size = THUMB
@@ -321,9 +323,9 @@ func _scene(sc: String) -> Dictionary:
 
 
 func _load() -> void:
-	if not FileAccess.file_exists(SAVE):
+	if not FileAccess.file_exists(save_path):
 		return
-	var d = JSON.parse_string(FileAccess.get_file_as_string(SAVE))
+	var d = JSON.parse_string(FileAccess.get_file_as_string(save_path))
 	if typeof(d) != TYPE_DICTIONARY:
 		return
 	if typeof(d.get("scenes", null)) == TYPE_DICTIONARY:
@@ -336,10 +338,35 @@ func _load() -> void:
 func save() -> void:
 	_dirty = false
 	var d := {"v": 1, "scenes": data["scenes"], "hints_on": hints_on, "hint_min": hint_min, "demo_on": demo_on}
-	var f := FileAccess.open(SAVE, FileAccess.WRITE)
+	DirAccess.make_dir_recursive_absolute(save_path.get_base_dir())
+	var f := FileAccess.open(save_path, FileAccess.WRITE)
 	if f != null:
 		f.store_string(JSON.stringify(d))
 		f.close()
+
+
+func use_file(path: String) -> void:
+	"""A6 Spielstand: another place - its «found» lists; what exists («known») and the hint settings stay (they are the same
+	for everybody on this PC)"""
+	var known := {}
+	for sc in data["scenes"]:
+		known[sc] = (data["scenes"][sc] as Dictionary).get("known", {})
+	var keep := [hints_on, hint_min, demo_on]
+	save_path = path
+	data = {"v": 1, "scenes": {}}
+	_load()
+	hints_on = keep[0]
+	hint_min = keep[1]
+	demo_on = keep[2]
+	for sc in known:
+		var S := _scene(sc)
+		for id in known[sc]:
+			S["known"][id] = known[sc][id]
+	_tex_cache.clear()
+	last_new_t = main.now() if main != null else 0.0
+	_dirty = true
+	_save_t = 0.0
+	_refresh_book()
 
 
 func set_hints(on: bool) -> void:

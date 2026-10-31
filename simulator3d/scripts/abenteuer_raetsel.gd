@@ -162,7 +162,9 @@ func RR() -> Dictionary:
 
 
 func hilfe() -> String:
-	"""die Hilfe folgt der Schwierigkeit (unterwegs die des Laufs, sonst die gewählte)"""
+	"""die Hilfe folgt der Schwierigkeit (unterwegs die des Laufs, sonst die gewählte; A6: Kinder-Modus = immer Leicht)"""
+	if ab.has_method("kinder") and ab.kinder():
+		return "leicht"
 	var lv := str(ab.R.get("level", ab.W["level"])) if not ab.R.is_empty() else str(ab.W["level"])
 	return str(LEVEL_HILFE.get(lv, "normal"))
 
@@ -342,7 +344,7 @@ func _fork_ask(ch: int, si: int, pe: Dictionary) -> void:
 	var notes := []
 	var season := str(ab.R.get("season", "sommer"))
 	var w: Dictionary = S()["wege"]
-	if ICE.has(ch) and int(ICE[ch][0]) == si and season in ICE[ch][2]:
+	if ICE.has(ch) and int(ICE[ch][0]) == si and season in ICE[ch][2] and not ab.kinder():   # A6: Kinder-Modus ohne Eis
 		var side := str(ICE[ch][1])
 		for j in range(opts.size() - 1, -1, -1):
 			if str(opts[j][0]) == side:
@@ -366,7 +368,7 @@ func _fork_ask(ch: int, si: int, pe: Dictionary) -> void:
 			opts.append(["a3lawine", "%s\n%s · %s" % [T.t("Mittel: über den Lawinenkegel (nur im Sommer)"), ab.leg_text(li), T.t("Kraft −%d") % int(round(float(li["cost"]) * ab._cost_f()))]])
 		else:
 			notes.append(T.t("Über den Lawinenkegel geht es nur im Sommer, wenn der alte Schnee fest ist."))
-	if ch == 5 and si == 2:
+	if ch == 5 and si == 2 and not ab.kinder():                  # A6: Kinder-Modus ohne Felsstufe
 		var li2: Dictionary = ab.leg_info(SEIL_PTS, ["steep"])
 		var info2 := "\n%s · %s" % [ab.leg_text(li2), T.t("Kraft −%d") % int(round(float(li2["cost"]) * ab._cost_f()))]
 		if bool(w.get("seil", false)):
@@ -459,7 +461,7 @@ func after_choose(pe: Dictionary, v: String) -> void:
 		var si := int(ab.R["stage"])
 		if ch == 3 and si == 2 and v == "0" and bool(S()["wege"].get("steg", false)):
 			ab.R["wet"] = bool(r.get("wet_before", false))
-		if ICE.has(ch) and int(ICE[ch][0]) == si and str(ICE[ch][1]) == v and str(ab.R.get("season", "")) in ICE[ch][2]:
+		if ICE.has(ch) and int(ICE[ch][0]) == si and str(ICE[ch][1]) == v and str(ab.R.get("season", "")) in ICE[ch][2] and not ab.kinder():
 			ab._diary("a3_weg", T.t("Grossvaters Pickel"), T.t("Mit dem Pickel schlägst du Stufen ins Eis - Schritt für Schritt, sicher."))
 
 
@@ -740,9 +742,10 @@ func paint_pending(g: Control, pe: Dictionary) -> void:
 	var r := RR()
 	var tip := str(r.get("tip", ""))
 	if tip != "" and hilfe() != "schwer" and main.now() - float(r.get("ask_t", 0.0)) >= TIP_S:
-		g.add_child(ab._lab(T.t("Tipp: %s") % tip, 13, ab.ORG))
+		if ab.blinki == null or not ab.blinki.paint(g, tip):          # A6: Blinki sagt den Tipp
+			g.add_child(ab._lab(T.t("Tipp: %s") % tip, 13, ab.ORG))
 	elif tip != "" and hilfe() == "normal":
-		ab._btn(g, T.t("Tipp jetzt"), func(): ab.op({"do": "a3", "what": "tipp"}))       # Tipp auf Wunsch (Mittel)
+		ab._btn(g, T.t("Blinki um einen Tipp bitten"), func(): ab.op({"do": "a3", "what": "tipp"}))   # Tipp auf Wunsch (Mittel)
 	if str(pe.get("kind", "")) == "a3_kompass" and hat("feldstecher"):
 		var ch := int(ab.R["chapter"])
 		var k: Dictionary = KOMPASS[ch]
