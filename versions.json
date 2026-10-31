@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 08:59",
+ "generated": "2026-10-31 11:31",
  "versions": [
   {
-   "version": "2.98.89",
-   "file": "webcam_bewegung_2_98_89.py",
+   "version": "2.98.91",
+   "file": "webcam_bewegung_2_98_91.py",
    "url": "",
-   "sha256": "348c6cacea24b5f3b263cdeabd2167c388a142dfe1357ae89d0ae4c6b67dd36e",
-   "date": "2026-10-31 08:59",
-   "notes": "Simulator 3D-4.58: Foto-Modus – ein echtes Foto vom eigenen Platz als Hintergrund der Kopfkamera, Figuren werden eingepasst und gehen hinter angemalten Dingen durch.",
-   "sig": "244991507bbb465d70674f1619ef6b9219884255a0bae8d3de944e46081060f140f9ec1d6614b657f447c2de600af172f5ad6374f690aaf46002ceefb33eba03"
+   "sha256": "d65a71a83e7367217e4f0ab8bf3ea3d4ebbc6d7eecfa449ef83a4e1597321d6b",
+   "date": "2026-10-31 11:31",
+   "notes": "Simulator 3D-4.60: alle Simulator-Texte jetzt auch auf Englisch, Französisch, Italienisch, Rätoromanisch (Rätoromanisch noch prüfen lassen).",
+   "sig": "85f96ac4cc3d4ec118b2837239f83c0cf22af1e39947262c99a638d7d982c758d5f9e200d4ff7c912e6deb70164e6c083459fe08f9f73635e2741c2965920206"
   },
   {
    "version": "2.97.1",

@@ -322,6 +322,7 @@ TRX['rm'].update({
     'Loudspeakers': 'Autpledaders',
     'Low light': 'Pauca glisch',
     'Low-light threshold (brightness)': 'Limita da pauca glisch (clerezza)',
+    'Low light: wait before switching (s)': 'Pauca glisch: spetgar avant che midar (s)',
     'MANUAL': 'MANUAL',
     'MQTT broker (address, e.g. 192.168.1.10 or homeassistant.local)': 'Broker MQTT (adressa, p.ex. 192.168.1.10 u homeassistant.local)',
     'MQTT on (state, events, commands)': 'MQTT activ (status, eveniments, cumonds)',
