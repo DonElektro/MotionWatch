@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 08:18",
+ "generated": "2026-10-31 08:23",
  "versions": [
   {
-   "version": "2.98.82",
-   "file": "webcam_bewegung_2_98_82.py",
+   "version": "2.98.83",
+   "file": "webcam_bewegung_2_98_83.py",
    "url": "",
-   "sha256": "008b5d9a964ab25b4502fecbd3162861554d9286cf325cf104b1ceb4b6ed0852",
-   "date": "2026-10-31 08:18",
-   "notes": "Simulator 3D-4.51: Wetter näher an der Physik – Regenstärke, Sichtweite, Bodennebel, Schneedecke, Tropfen und Beschlag auf der Linse, Blitze; Testlauf «Wetter physikalisch».",
-   "sig": "05998ecb9607072776eabe73c67d548c3504d250c48cd5182aa7a3f654be3ccea475a9488ad05a8a8809c5f63fcdc27553b07390200d0a4a04286ff24b778402"
+   "sha256": "73654406e9e4cd7ea469f9dcc70353de28f4e07543dbc304ec2770dcb9bf1fe6",
+   "date": "2026-10-31 08:23",
+   "notes": "Simulator 3D-4.52: Bewegungsmelder wie der AS312, Mikrofon mit Umgebungsgeräuschen; «Mithören» geht auch im Simulator (Teil 558p).",
+   "sig": "b7ccc54efd95131208edb303a6118a1ef4da866a73edf7c1930b824f7230a0f0aa9827e1ce8a0ab69b54f9b11dcc1d775c8f15976e504d2fdeda30de9f7b430e"
   },
   {
    "version": "2.97.1",

@@ -1,15 +1,15 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 4840 (Stellen: 6675)
-Übersetzt: en 4609, fr 4609, it 4609, rm 4609
+Texte gesamt: 4888 (Stellen: 6764)
+Übersetzt: en 4657, fr 4657, it 4657, rm 4657
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 360 Stellen
 Nicht mehr im Code (noch in texte.json): 50
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 56 Stellen in wizpics.gd 21, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 17199, schlüssel 12014, keine Wörter 7831, index 6202, technisch 2052, doc 1353, einheit 184, englisch 85, log 70, pfad 64, html 56, klasse 22, shader 2
+Übersprungen (Grund: Anzahl): kennung 17336, schlüssel 12263, keine Wörter 7898, index 6263, technisch 2075, doc 1368, einheit 187, englisch 85, log 70, pfad 64, html 56, klasse 22, shader 2
 
 Pro Datei (Texte / davon dynamische Stellen):
-  main.gd                  662    29
+  main.gd                  666    29
   gamewiz.gd               252    15
   bergtal_abenteuer.gd     240     5
   game.gd                  211    32
@@ -45,6 +45,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamerules.gd              45     4
   symbole.gd                44     1
   protokoll.gd              42    16
+  pir.gd                    41     0
   localplay.gd              41    13
   inventar.gd               41     4
   gamecompare.gd            40     6
@@ -53,6 +54,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamejaeger.gd             38     1
   simreal.gd                37     0
   update.gd                 37     4
+  mikrofon.gd               37     0
   geo.gd                    36     7
   gamemore.gd               36     1
   gameziele.gd              34     0
@@ -235,35 +237,35 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   karte.gd:503  'Dazu kommen: '
   karte.gd:511  'ja'
   karte.gd:511  'keine'
-  main.gd:1599  '  %.0f Mbit/s'
-  main.gd:2292  ' (von MoveEye)'
-  main.gd:2325  'Der Simulator ist belegt: '
-  main.gd:3173  'aus'
-  main.gd:3173  'ein'
-  main.gd:3250  'Sabotage-Test: '
-  main.gd:3250  'aus'
-  main.gd:3304  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3307  '\n🚨 Bewacht und weg: '
-  main.gd:4106  'keine'
-  main.gd:4132  'Wächter an MoveEye: '
-  main.gd:4879  'Dein Platz: '
-  main.gd:5104  ' · schaut nur zu: '
-  main.gd:5107  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:5108  ' · Update: '
-  main.gd:5442  'Blinde Flecken: '
-  main.gd:6105  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6411  'Autostart: '
-  main.gd:6422  'Autologon: '
-  main.gd:6583  'Karte öffnen: '
-  main.gd:6729  'Echt-Abgleich: '
-  main.gd:6739  'Trainingspaket: '
-  main.gd:6748  ' · %d offen · %.1f MB'
-  main.gd:6748  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6757  'Verbindung · '
-  main.gd:6757  'aus'
-  main.gd:6761  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6761  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6764  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:1607  '  %.0f Mbit/s'
+  main.gd:2304  ' (von MoveEye)'
+  main.gd:2337  'Der Simulator ist belegt: '
+  main.gd:3186  'aus'
+  main.gd:3186  'ein'
+  main.gd:3263  'Sabotage-Test: '
+  main.gd:3263  'aus'
+  main.gd:3317  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3320  '\n🚨 Bewacht und weg: '
+  main.gd:4122  'keine'
+  main.gd:4148  'Wächter an MoveEye: '
+  main.gd:4895  'Dein Platz: '
+  main.gd:5124  ' · schaut nur zu: '
+  main.gd:5127  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:5128  ' · Update: '
+  main.gd:5462  'Blinde Flecken: '
+  main.gd:6129  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6435  'Autostart: '
+  main.gd:6446  'Autologon: '
+  main.gd:6607  'Karte öffnen: '
+  main.gd:6753  'Echt-Abgleich: '
+  main.gd:6763  'Trainingspaket: '
+  main.gd:6772  ' · %d offen · %.1f MB'
+  main.gd:6772  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6781  'Verbindung · '
+  main.gd:6781  'aus'
+  main.gd:6785  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6785  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6788  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:446  ' (automatisch von oben)'
   explore.gd:446  ' · schnell'
   fahrzeuge.gd:90  'nie'

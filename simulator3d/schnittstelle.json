@@ -13,6 +13,7 @@
     "sound_db": "Lautstaerke der Welt -> 250 Geraeusch-Alarm",
     "sound_ev": "Klatschen, Niesen, Stimmen -> 250 sim_sound_events",
     "sound_ev_last": "letzte Ton-Ereignis-Nummer -> 250",
+    "mic": "Mikrofon wie echt: Pegel, Hintergrund, lauteste Quellen {k, db, az, d} -> 558p Mithoeren (erzeugtes Geraeusch in dieser Lautstaerke), Simulator mikrofon.gd",
     "solar": "Solarpanel -> 280 sim_sensor(solar)",
     "gps": "GPS-Modul -> 280 sim_sensor(gps)",
     "mover": "der Simulator hat einen Mover -> 350 zweiter Stick",
@@ -75,7 +76,7 @@
     "cameras": "Kameras mit Bildwinkel -> 290, 318, 163",
     "thermal": "Waermebild -> 230, 318",
     "view": "Simulator-Fenster als Bild (nur 3D) -> 340, 290 (sim_files nur an den Python-Simulator)",
-    "sensors": "Sensoren der Szene -> 350 hello (Zusatz-Sensoren)",
+    "sensors": "Sensoren der Szene (auch «PIR Geraet» AS312 vorne am Gehaeuse, pir.gd: active true / false) -> 350 hello (Zusatz-Sensoren)",
     "helper": "KI-Helfer auf diesem PC -> 180"
   },
   "control": {

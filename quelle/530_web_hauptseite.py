@@ -2394,13 +2394,13 @@ async function refreshEnums(keys) {
 function auTxt(st) {
   if (!st) return "";
   if (st.startsWith("error: ")) return "⚠ " + st.slice(7);
-  return ({"listening": t("microphone on"), "off": t("off"), "starting": t("starting …")})[st] || st;
+  return ({"listening": t("microphone on"), "off": t("off"), "starting": t("starting …"), "simulated": "🧪 " + t("simulated")})[st] || st;
 }
 function updateAudio(a) {
   if (!a) return;
   AU.st = a;
   const pct = v => Math.max(0, Math.min(100, (v + 70) / 70 * 100));
-  const on = a.level != null && a.status === "listening";
+  const on = a.level != null && (a.status === "listening" || a.status === "simulated");    // real-pir-ton: the simulator's microphone too
   const lv = $("#au-lvl");
   if (lv) {
     lv.textContent = on ? Math.round(a.level) + " dB" : (a.mic ? "–" : t("no microphone selected"));
@@ -2415,7 +2415,7 @@ function updateAudio(a) {
   const sp = $("#au-spk");
   if (sp) sp.textContent = (!a.spk ? t("no loudspeaker selected") : (a.talk ? "🎙 " + t("somebody is talking") : (a.playing ? "🔊 " + t("playing …") : ""))) + (a.sound_msg ? " ⚠ " + a.sound_msg : "");
   const stop = $("#au-stop"); if (stop) stop.disabled = !a.playing;
-  const can = (a.mic && a.status === "listening") || AU.on;
+  const can = (a.mic && (a.status === "listening" || a.status === "simulated")) || AU.on;
   const bl = $("#btn-listen"); if (bl) bl.hidden = !can;
   const sl = $("#stick-listen"); if (sl) sl.hidden = !can;
   const vl = $("#vo-listen"); if (vl) vl.hidden = !can;

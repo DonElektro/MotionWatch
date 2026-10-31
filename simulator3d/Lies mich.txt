@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.52
+3D-4.52: Bewegungsmelder wie der echte AS312 (Fächer, Reichweite je nach Temperatur, Fehlauslösung) und Mikrofon mit
+Umgebungsgeräuschen (Wasser, Wind, Wetter) – in MoveEye geht «🎧 Mithören» jetzt auch im Simulator, gleich laut.
+So testest du: 1) Sensoren → PIR: «Erfassungsfächer zeigen». 2) Eine Person 3 m vor dem Gerät durchschicken: MoveEye
+meldet «PIR Gerät», bei 8 m nicht. 3) Szene «Seeufer», Umgebungsgeräusche an, in MoveEye «🎧 Mithören».
+
 NEU IN 3D-4.51
 3D-4.51: Wetter näher an der Physik: Regenstärke (Niesel bis Wolkenbruch), Sichtweite im Nebel, Bodennebel, Schneedecke,
 Tropfen und Beschlag auf der Linse (rinnen ab, «Linse putzen»), Blitze. Neuer Testlauf «Wetter physikalisch».
