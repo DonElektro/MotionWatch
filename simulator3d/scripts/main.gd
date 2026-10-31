@@ -2455,6 +2455,7 @@ func _check_active() -> void:
 	var conn := connected()
 	var playing: bool = game != null and game.busy()
 	var act: bool = win_open or conn or playing or (testrun != null and testrun.running) or not eco_idle
+	act = act or (nacht != null and nacht.running) or (abenteuer != null and abenteuer.status() != "")   # a night / the adventure runs also without a viewer
 	if act != sim_active:
 		sim_active = act
 		visitors.process_mode = Node.PROCESS_MODE_INHERIT if act else Node.PROCESS_MODE_DISABLED

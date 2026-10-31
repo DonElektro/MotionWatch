@@ -1081,7 +1081,12 @@ func _morning() -> void:
 				st = "seen" if vis >= 1.5 else "missed"       # without MoveEye: the simulator guesses (visible long enough)
 		if battery_h >= 0.0 and st == "seen" and fposmod(float(rec.get("h0", 0.0)) - float(R["night"]["from"]), 24.0) > fposmod(battery_h - float(R["night"]["from"]), 24.0):
 			st = "missed"
+		if str(rec.get("kind", "")) in ["bt_rockfall", "bt_storm"]:
+			continue                                         # no body to see (the stones / the storm are in the diary)
 		var pos: Array = rec.get("pos", [])
+		var pth: Array = rec.get("path", [])
+		if (pos.size() < 2 or (absf(float(pos[0])) < 0.01 and absf(float(pos[1])) < 0.01)) and not pth.is_empty():
+			pos = [pth[0][1], pth[0][2]]                     # (spawned this frame: the first point of its way)
 		hits.append({"id": rec["id"], "kind": rec["kind"], "label": T.t(_kind_name(str(rec["kind"]))), "st": st, "x": float(pos[0]) if pos.size() > 1 else 0.0,
 				"z": float(pos[1]) if pos.size() > 1 else 0.0, "path": rec.get("path", []), "near_m": rec.get("near_m", -1.0), "vis_s": vis,
 				"t_detect": _night_seen.get(int(rec["id"]), -1.0), "h": rec.get("h0", 0.0)})
