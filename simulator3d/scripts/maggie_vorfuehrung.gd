@@ -755,11 +755,12 @@ func _station(h) -> void:
 		_ap["n"] = 1
 		_druecke(h, f, st)
 	elif n == 1 and t > 30.0:
-		if int(_ap.get("tries", 0)) < 2 and str(h.zustand_hund) == "folgen":
+		var frei: bool = str(h.zustand_hund) == "folgen"     # (Maggie still busy: the trail can take a minute)
+		if int(_ap.get("tries", 0)) < 2 and frei and t > 35.0:
 			_ap["tries"] = int(_ap.get("tries", 0)) + 1
 			_ap["t"] = 0.0
 			_druecke(h, f, st)
-		elif t > 60.0:
+		elif t > 150.0 or (frei and int(_ap.get("tries", 0)) >= 2 and t > 60.0):
 			log_line("Station «%s» löst sich nicht" % str(st["id"]))
 			_loese(st, "erzwungen")
 			_ap = {"art": "frei", "t": 0.0}
@@ -847,6 +848,8 @@ func _erwischt_von(art: String) -> void:
 	var rg := str(story.region)
 	if rg == FEHLER_ERWISCHT:
 		_fehler["erwischt"] = true                  # (caught anyway: the planned mistake is done)
+	if str(_ap.get("art", "")) == "erwischen":
+		_ap["gefangen"] = art
 	if _regionen.has(rg):
 		_regionen[rg]["erwischt"] += 1
 	_log("Erwischt von: %s – zurück zum Rastplatz" % art)
@@ -892,7 +895,7 @@ func _gefahr(rg: String, g) -> bool:
 	if rg == FEHLER_ERWISCHT and not _fehler.has("erwischt") and str(_ap.get("art", "")) in ["frei", "begegnung"]:
 		_fehler["erwischt"] = true
 		_log("Fehler (Absicht): vergisst die %s – das Tier kommt nah" % T.t(str(g.SCHUTZ_NAME[schutz_id])))
-		_ap = {"art": "erwischen", "t": 0.0, "zurueck": _ap.duplicate()}
+		_ap = {"art": "erwischen", "t": 0.0, "n0": int(story.S.get("erwischt", 0))}
 		return true
 	if story.main.now() - _benutzt_t < (1.2 if rg == "winter" else 2.5):
 		return false
@@ -906,18 +909,25 @@ func _gefahr(rg: String, g) -> bool:
 
 
 func _erwischen(g) -> void:
-	if str(story.phase) != "region":
-		return
 	var t := float(_ap["t"])
+	if int(story.S.get("erwischt", 0)) > int(_ap.get("n0", 0)):    # caught (the fright ran): the planned mistake is done
+		t = 99.0
+	elif str(story.phase) != "region":
+		return
 	if g != null:
 		var ng: Dictionary = g.naechste_gefahr()
 		if float(ng.get("dist", 9999.0)) < 200.0:
 			_lauf_ziel([ng["pos"]], 0.3)
-	if t > 25.0:
+	if _ap.has("gefangen") and t > 1.0 and str(story.phase) != "schreck":
+		story._safe_until = 0.0                     # the animal caught the figure during the short rest after a cut: show the fright now
+		story.erwischt(str(_ap["gefangen"]))
+		_ap.erase("gefangen")
+		t = 99.0
+	if t > 25.0 and t < 99.0 and str(story.phase) == "region":
 		_log("Das Tier kommt nicht – erwischt von Hand (story.erwischt)")
 		story.erwischt(str(g.TIER[str(story.region)]["art"]) if g != null else "wolf")
 		t = 99.0
-	if str(story.phase) == "schreck" or t > 30.0:
+	if t >= 99.0 or t > 30.0:
 		_ap = {"art": "warten", "t": 0.0}
 		if laenge == "kurz":
 			_plan.push_front({"art": "begegnung"})     # once more - this time with the Schutzding
