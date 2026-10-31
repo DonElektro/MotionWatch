@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 22:54",
+ "generated": "2026-10-31 23:23",
  "versions": [
   {
-   "version": "3.19.2",
-   "file": "webcam_bewegung_3_19_2.py",
+   "version": "3.19.3",
+   "file": "webcam_bewegung_3_19_3.py",
    "url": "",
-   "sha256": "169ee354ddc417034ab9fc96059bdd4da6ea44691902a7314a212bddbe0dd264",
-   "date": "2026-10-31 22:54",
-   "notes": "Vorführung und Trailer wählen automatisch die beste Stimme und sprechen ruhiger; Knopf «🗣 Stimme» mit Liste, Hörprobe und Geschwindigkeit (pro Gerät gespeichert), Hinweis zu Premium-Stimmen.",
-   "size": 4436780,
-   "sig": "43cf4219b80e8c3fb1cbfc48a088e528884da4a78407cdd2aad919ccb5aeec202f4bfb3005a0a6a5f79de7956142d666c275071e8839014e9d15e6507cbd7507",
+   "sha256": "34cb330790c7cd527ae836915c656373996e7d805595e8aa60bd85eec4635df0",
+   "date": "2026-10-31 23:22",
+   "notes": "Trailer/Vorführung: Stopp am iPad lässt den Simulator nicht mehr schwarz (Kamera und Knöpfe kommen zurück, Knopf «× Zurück», Esc); am iPad Ton mit einem Tippen (Erzähler, Musik, Geräusche).",
+   "size": 4439968,
+   "sig": "c4a39873ca2d7bdc4f4a7fd89292c563e9fa86c9ffe1230e488f1aebc0825a0b3f285644b0488ad66e9c686e97f5caa451c43d5ede1975fa9eefba585b7b720c",
    "data": {
-    "file": "moveeye_daten_3_19_2.zip",
+    "file": "moveeye_daten_3_19_3.zip",
     "url": "",
-    "sha256": "195819cdbfc7be68a038a06819984f4a38a02b30a5dcf94c021bc41608ccc37b",
-    "size": 1618159,
-    "sig": "6522d705f4d6897d73e269e3f337872ad0df10ee1c22d9a748211c5966a5449395ae86c34cbfd41ee2d77c19656cc14b437c5c7a5ff5a077bf1481d92d95520c"
+    "sha256": "a90bee6a76f1689722375ae004ff5505d440298d4ac9ff49f3b94d55abec4abf",
+    "size": 1621011,
+    "sig": "f9a58eebc707213245adbdc64e13b2165f67e46daf307619806751b0b08a758026198fbdc12b2d618ff4f3aaab4f322907bcd7e835d1a1707c55af781fc4e704"
    }
   },
   {

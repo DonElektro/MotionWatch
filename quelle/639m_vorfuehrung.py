@@ -3,7 +3,7 @@
 # Der 3D-Simulator spielt die Geschichte selbst (simulator3d/scripts/maggie_vorfuehrung.gd, Autopilot + Film-Kamera,
 # eigener Vorführ-Spielstand). Hier nur das Zuschauen:
 #   * Seite /sim/vorfuehrung: das Bild des Simulators (/sim/view.jpg?bare=1 – ohne die Knöpfe des Simulator-Fensters, die
-#     Leiste der Vorführung blendet der Simulator dann auch aus), Bild für Bild geholt (nie eine wachsende Verzögerung);
+#     Leiste der Vorführung blendet der Simulator dann auch aus; bare nur solange sie läuft, Fix 3.19.x), Bild für Bild geholt (nie eine wachsende Verzögerung);
 #     unten eine Leiste (verschwindet nach 4 s, Tippen zeigt sie wieder): Pause / Weiter, Kapitel zurück / Liste / weiter,
 #     Beenden, Vollbild. Ohne laufende Vorführung: Start «Kurzfassung» / «Ganze Geschichte».
 #   * /api/vorfuehrung: GET = Stand (Simulator /control vorfuehrung info), POST {do: start (len) | pause | weiter |
@@ -125,7 +125,7 @@ function vfPic() {                                   // one picture after the ot
   const to = setTimeout(next, 6000);
   n.onload = () => { if (LASTURL) URL.revokeObjectURL(LASTURL); im.src = n.src; next(); };
   n.onerror = next;
-  n.src = "/sim/view.jpg?bare=1&clean=1&q=72&w=" + w + "&t=" + Date.now();
+  n.src = "/sim/view.jpg?" + (S.laeuft ? "bare=1&" : "") + "clean=1&q=72&w=" + w + "&t=" + Date.now();   // bare only while it runs (Fix 3.19.x: else the PC keeps no buttons)
 }
 async function vfInfo() {
   let j = null;
@@ -279,7 +279,7 @@ def vf_selftest():
     finally:
         CFG["sim_on"] = keep
     html = vf_page()
-    assert "/sim/view.jpg?bare=1" in html and "/api/vorfuehrung" in html and "Kurzfassung" in html and "<!--NAV-->" not in html
+    assert "/sim/view.jpg?" in html and "bare=1&" in html and "/api/vorfuehrung" in html and "Kurzfassung" in html and "<!--NAV-->" not in html
     assert "/sim/vorfuehrung" in SIM_PAGE and "/sim/vorfuehrung" in WEB_PAGE
     for L in ("fr", "it", "rm"):
         assert TRX[L].get("Watch «Maggie» as a film (demo)"), L

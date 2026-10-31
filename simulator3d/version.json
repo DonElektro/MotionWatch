@@ -1,9 +1,9 @@
 {
- "version": "3D-5.19.2",
- "ver": "3.19.2",
- "name": "MoveEye Sim 3.19.2",
+ "version": "3D-5.19.3",
+ "ver": "3.19.3",
+ "name": "MoveEye Sim 3.19.3",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35618485,
- "sha256": "d6d432fe10ab472915f4c6fd7d5c1f8bf7ec146654e4284cfc4f53db0c88ea9e",
- "notes": "MoveEye Sim 3.19.2: der Simulator am PC wählt die beste Stimme automatisch und spricht ruhiger."
+ "size": 35627655,
+ "sha256": "0ff2f4bd44f62a88118283bd69123572919fff9447518089f57beafbd50a3506",
+ "notes": "MoveEye Sim 3.19.3: Trailer/Vorführung – Stopp vom iPad lässt den Simulator nicht mehr schwarz, Knopf «× Zurück»."
 }
