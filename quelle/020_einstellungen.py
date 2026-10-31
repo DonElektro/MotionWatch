@@ -188,6 +188,7 @@ CFG = {
     "share_logo": True,
     "ui_simple": True,                       # settings: only the important ones (Expert shows everything)
     "ui_start_groups": True,                 # nurgruppen: settings open as «Groups only» on every start (off: as folded last time)
+    "ui_ansicht": {}, "ui_ansicht_mig": False, "ui_ansicht_sg0": False,   # 639p «Meine Ansicht»: per user and page; the take-over of «Groups only»
     "share_gps": False,                      # shared pictures / videos keep their GPS position (off: removed before sharing)
     "share_blur_faces": True,                # 2.98.14: faces pixelated in shared pictures / videos (375), the originals stay
     "weekrep_on": True, "weekrep_day": "Sunday", "weekrep_hour": 18, "weekrep_last": "",   # 2.98.14: weekly detection report (426)

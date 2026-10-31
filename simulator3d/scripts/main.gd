@@ -6173,6 +6173,8 @@ func _fold_state() -> String:
 		all_open = all_open and so
 		all_closed = all_closed and not so
 		groups = groups and not so
+	if mine_on:                                        # 639p «Meine Ansicht»: the middle is blue while it is on
+		return "mine"
 	if all_closed:
 		return "close"
 	if all_open:
@@ -6203,22 +6205,25 @@ func _fold_group_open(b: Control) -> bool:
 	return not str(b.get_meta("title", "")) in ["Verbindung", "Tasten"]
 
 
-func _fold_all(how: String, own := false) -> void:
-	"""own: pressed by the user (the three buttons) - kept as the own state like on the page of MoveEye; the start view is not"""
+func _fold_all(how: String, _own := false) -> void:
+	"""639p: «mine» = Meine Ansicht (the own state); «close» / «open» / «groups»: Meine Ansicht off, the own state stays as kept"""
 	_fold_lit = "-"
+	if how == "mine":
+		set_mine()
+		return
+	mine_on = false
 	for b in fold_bodies:
 		UI.set_open(b, how == "open" or (how == "groups" and _fold_group_open(b)))
 	for sb in sub_bodies:
 		UI.set_sub_open(sb, how == "open")
-	if own:
-		for b in fold_bodies + sub_bodies:
-			_fold_keep(b)
 
 
 # ---- Paket nurgruppen (Daniel, 31.10.2026): «Beim Start: Nur Gruppen» ------------------------------------------------------
 # Every start shows the settings as «Nur Gruppen» (_fold_all("groups"), not saved). What the user opens / closes himself is kept in
 # fold_mem (simulator_settings.json; before, the cards always started as built). Switch off: everything as the user left it.
-var start_groups := true              # the switch, factory: on (saved)
+var start_groups := true              # the switch, factory: on (saved); 639p: taken over once into «Meine Ansicht» (mine_mig)
+var mine_on := true                   # 639p «Meine Ansicht» (Daniel 1.11.2026): on = every fold by the user is kept in fold_mem
+var mine_mig := false                 # 639p: «Beim Start: Nur Gruppen» taken over once (the first Meine Ansicht = «Nur Gruppen»), saved
 var fold_mem := {}                    # the own state: {"c:Karte": true, "s:Karte/Teil": false} (saved)
 var _fold_init := {}                  # how the panel was built (for cards the user never touched)
 var _sg_cb: CheckButton
@@ -6244,9 +6249,22 @@ func _fold_put(b: Control, open: bool) -> void:
 
 
 func _fold_keep(b: Control) -> void:
-	if is_instance_valid(b):
-		fold_mem[_fold_key(b)] = _fold_is_open(b)
-		_settings_dirty = true
+	if is_instance_valid(b) and mine_on:
+		_mine_change(_fold_key(b), _fold_is_open(b))
+
+
+func _mine_change(key: String, open: bool) -> void:
+	"""639p: the ONE function per change of «Meine Ansicht» (saved locally; P2 hangs the sync with MoveEye in here)"""
+	if not mine_on or key == "":
+		return
+	fold_mem[key] = open
+	_settings_dirty = true
+
+
+func set_mine() -> void:
+	"""639p: the middle button «Meine Ansicht» - every card and part as the user left them"""
+	mine_on = true
+	_fold_own()
 
 
 func _fold_setup() -> void:
@@ -6263,7 +6281,19 @@ func _fold_setup() -> void:
 			hdr = b.get_parent().get_child(0)
 		if hdr is Button:
 			(hdr as Button).pressed.connect(func(): _fold_keep(b))   # after the heading's own handler: the new state
+	if not mine_mig:                                   # 639p: once - who had «Beim Start: Nur Gruppen» gets it as the first Meine Ansicht
+		mine_mig = true
+		_settings_dirty = true
+		if start_groups:
+			start_groups = false
+			if _sg_cb != null:
+				_sg_cb.set_pressed_no_signal(false)
+			_fold_all("groups")
+			mine_on = true
+			for b in fold_bodies + sub_bodies:
+				_fold_keep(b)
 	_fold_own()
+	mine_on = not start_groups
 	if start_groups:
 		_fold_all("groups")
 
@@ -6286,7 +6316,7 @@ func set_start_groups(on: bool) -> void:
 	if on:
 		_fold_all("groups")
 	else:
-		_fold_own()
+		set_mine()
 
 
 func _search(q: String) -> void:
@@ -6739,7 +6769,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "start_groups", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "start_groups", "mine_mig", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "grafik_mode", "cam_wippen", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
 var _settings_dirty := false
 

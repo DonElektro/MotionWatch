@@ -196,7 +196,7 @@ function simCtlBuild(G, r, ctl, fmt) {
       let tgt = bd; const sub = !only && c.sub === "Feineinstellungen" ? "" : c.sub || "";   // 639d: one fold «Feineinstellungen» per card
       if (sub) {
         if (!subs[sub]) {
-          const key = g + "/" + sub, w = el("div", "sc-sub"); if (openS.has(key) || (only && sub === "Störungen" && location.hash === "#c-stoer")) w.classList.add("open");
+          const key = g + "/" + sub, w = el("div", "sc-sub"); w.dataset.mwbId = "s:" + key; if (openS.has(key) || (only && sub === "Störungen" && location.hash === "#c-stoer")) w.classList.add("open");
           const sh = document.createElement("button"); sh.type = "button"; sh.className = "sc-sh";
           const p = () => { sh.textContent = (w.classList.contains("open") ? "▾  " : "▸  ") + sub; };
           sh.onclick = () => { w.classList.toggle("open"); p(); w.classList.contains("open") ? openS.add(key) : openS.delete(key); ss("mw-sc-sub2", [...openS]); };

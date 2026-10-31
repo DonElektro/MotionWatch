@@ -23632,6 +23632,18 @@
   "it": "Costruire la mia casa (kit di costruzione con il mouse)",
   "rm": "Construir mia chasa (chaschetta da construcziun cun la mieur)"
  },
+ "Meine Ansicht": {
+  "en": "My view",
+  "fr": "Ma vue",
+  "it": "La mia vista",
+  "rm": "Mia vista"
+ },
+ "Meine Ansicht: Die Menüs sind auf- und zugeklappt, wie du sie selbst eingestellt hast. Lange drücken oder Rechtsklick: Nur Gruppen.": {
+  "en": "My view: the menus open and close the way you left them. Long press or right click: groups only.",
+  "fr": "Ma vue : les menus s’ouvrent et se ferment comme tu les as laissés. Appui long ou clic droit : seulement les groupes.",
+  "it": "La mia vista: i menu sono aperti e chiusi come li hai lasciati. Pressione lunga o clic destro: solo i gruppi.",
+  "rm": "Mia vista: ils menus èn averts e serrads sco che ti als has laschads. Smatgar ditg u clic dretg: mo las gruppas."
+ },
  "Meine Vorlage (3D-Datei)": {
   "en": "My template (3D file)",
   "fr": "Mon modèle (fichier 3D)",
