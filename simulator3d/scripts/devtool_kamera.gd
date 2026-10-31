@@ -7,9 +7,10 @@ extends RefCounted
 ##     steht die Kamera am Ufer (Abstand bis zum Ufer + Rand).
 ##   * Viele Kandidaten (12 Richtungen × 3 Abstände × 3 Höhen; Lite 8 × 3 × 2), jeder wird bewertet: freie Sicht zur Mitte
 ##     (Gelände + Dinge), Kamera nicht in einem Ding, Bildrand nicht voller Hang/Baum/Wasser direkt vor der Linse
-##     («Füllstrahlen» durch das Bild), offener Himmel (keine Schlucht), nicht zu steil nach unten/oben, bevorzugte
+##     («Füllstrahlen» durch das Bild), hinter dem Ort Weite statt Hang (obere Bildhälfte), offener Himmel (keine Schlucht),
+##     nicht zu steil nach unten/oben, bevorzugte
 ##     Blickrichtung (Bergtal: Aussichtspunkte und Schlafplätze haben eine eigene), sonst leicht die vorherige Richtung.
-##     Die besten 8 werden genau geprüft, der beste genommen.
+##     Die besten 8 werden genau geprüft, der beste genommen. Sind alle schlecht (Mulde, Schlucht): nochmals höher und weiter weg.
 ##   * Schluchten, Höhlen, Bunker, Wasserfälle (Kennzeichen im Namen, DEEP): auch höhere Kamerapunkte (über dem Rand) und
 ##     der Himmel zählt doppelt - sonst ist das Bild fast schwarz.
 ##   * Räume (… (innen), bergtal_orte.gd INSIDE): der Punkt der Liste wird leicht verschoben (vor/seitlich), wenn ein Ding
@@ -228,6 +229,8 @@ func _frust(xf: Transform3D, u: float, v: float) -> Vector3:
 	return (-xf.basis.z + xf.basis.x * (u * th) + xf.basis.y * (v * tv)).normalized()
 
 
+const BACK := [[-0.7, 0.0], [0.0, 0.0], [0.7, 0.0], [-0.6, 0.35], [0.0, 0.35], [0.6, 0.35], [-0.5, 0.7], [0.0, 0.7], [0.5, 0.7]]
+const BACK_Q := [[-0.6, 0.35], [0.0, 0.35], [0.6, 0.35]]
 const FILL := [[-0.8, -0.65, 0.6], [0.0, -0.65, 0.8], [0.8, -0.65, 0.6], [-0.85, 0.0, 1.0], [-0.45, 0.0, 1.2], [0.45, 0.0, 1.2],
 		[0.85, 0.0, 1.0], [-0.8, 0.6, 0.8], [0.0, 0.6, 1.0], [0.8, 0.6, 0.8], [-0.45, 0.3, 1.0], [0.45, 0.3, 1.0]]
 
@@ -253,8 +256,8 @@ func _score(cam: Vector3, tgt: Vector3, d0: float, r: float, pref: Vector3, prev
 	# looking too steeply down / up
 	var dir := (tgt - cam) / maxf(L, 0.01)
 	var pitch := rad_to_deg(asin(clampf(dir.y, -1.0, 1.0)))
-	if pitch < -40.0:
-		s += (-40.0 - pitch) * 2.0
+	if pitch < -30.0:
+		s += (-30.0 - pitch) * 1.5
 	if pitch > 8.0:
 		s += (pitch - 8.0) * 2.5
 	# the direction
@@ -275,6 +278,18 @@ func _score(cam: Vector3, tgt: Vector3, d0: float, r: float, pref: Vector3, prev
 	var fsky := float(blocked) / float(nsky)
 	s += fsky * (60.0 if deep else 30.0)
 	why["himmel_zu"] = snappedf(fsky, 0.01)
+	# behind the place: distance, not a hillside right behind it (the upper half of the picture)
+	var far := minf(3.0 * L + 20.0, 220.0)
+	var bw := 0.0
+	var bn := 0.0
+	for f in (BACK if full else BACK_Q):
+		var rd := _frust(xf, float(f[0]), float(f[1]))
+		bn += 1.0
+		if _ground_hit(cam, cam + rd * far, false) < far:
+			bw += 1.0
+	var wall := bw / maxf(bn, 1.0)
+	s += wall * 45.0
+	why["wand"] = snappedf(wall, 0.01)
 	if full:
 		# more points of the place visible?
 		var side := xf.basis.x * minf(r * 0.3, 6.0)
@@ -316,7 +331,7 @@ func best_view(e: Dictionary, p: Vector3, d: float, prev_fwd: Vector3, frame = n
 	if pref != Vector3.ZERO:
 		a0 = atan2(pref.x, pref.z)
 	var dists := [d, d * 0.65, d * 1.5]
-	var elevs := [0.22, 0.45] if lite else [0.2, 0.42, 0.8]
+	var elevs := [0.18, 0.4] if lite else [0.15, 0.35, 0.7]
 	if deep:
 		elevs.append(1.3)
 	var cands := []
@@ -354,6 +369,21 @@ func best_view(e: Dictionary, p: Vector3, d: float, prev_fwd: Vector3, frame = n
 			best_s = float(f["s"])
 			top = f
 			top["c"] = c
+	if best_s > 35.0 and not in_lake:                         # all bad (a hollow, a gorge): higher and further away
+		if d * 2.5 + 15.0 > far + 15.0:
+			_prep(tgt, d * 2.5 + 15.0)
+		for i in nyaw:
+			var a := a0 + TAU * float(i) / float(nyaw)
+			var fwd := Vector3(sin(a), 0, cos(a))
+			for dd in [d * 1.5, d * 2.5]:
+				for ev in [0.9, 1.6]:
+					var c: Vector3 = tgt - fwd * float(dd)
+					c.y = maxf(tgt.y + float(dd) * float(ev), surf(c.x, c.z) + EYE)
+					var f2 := _score(c, tgt, d, r, pref, prev, deep, true)
+					if float(f2["s"]) < best_s:
+						best_s = float(f2["s"])
+						top = f2
+						top["c"] = c
 	var ms := (Time.get_ticks_usec() - t0) / 1000.0
 	last = {"id": str(e.get("id", "")), "score": snappedf(float(top["s"]), 0.1), "why": top["why"], "n": cands.size(),
 			"boxes": _boxes.size(), "ms": snappedf(ms, 0.1), "deep": deep, "lake": in_lake, "cam": _v(top["c"]), "tgt": _v(tgt)}
