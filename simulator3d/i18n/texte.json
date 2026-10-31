@@ -3620,10 +3620,10 @@
   "rm": "A l'ur dal Riedmoos"
  },
  "Am Rastplatz: Flasche und Fackel sind wieder voll.": {
-  "en": "At the rest stop: bottle and torch are full again.",
-  "fr": "À l'aire de repos : la gourde et la torche sont de nouveau pleines.",
+  "en": "At the resting place: bottle and torch are full again.",
+  "fr": "À la halte : la gourde et la torche sont de nouveau pleines.",
   "it": "Al punto di sosta: borraccia e torcia sono di nuovo piene.",
-  "rm": "Al lieu da pausa: la buttiglia e la fatschla èn puspè plainas."
+  "rm": "A la plazza da pausa: buttiglia e fatschla èn puspè plainas."
  },
  "Am Schluchtweg beim Schild «Absturzgefahr» fotografiert sich jemand. Die Kühe schauen zu.": {
   "en": "On the gorge path by the «danger of falling» sign someone takes pictures of himself. The cows are watching.",
@@ -3690,6 +3690,12 @@
   "fr": "Sur la rive se trouve le bloc de la carte. Un anneau de fer est planté dans son flanc, et dessous : le troisième morceau de carte, enveloppé dans de la toile cirée. Il montre un soleil au-dessus d'une pierre.",
   "it": "Sulla riva c'è il masso della mappa. Nel fianco ha un anello di ferro, e sotto: il terzo pezzo di mappa, avvolto in tela cerata. Mostra un sole sopra una pietra.",
   "rm": "Sin la riva è il bloc da la charta. En sia vart stat in anel da fier, e sutvart: il terz toc da charta, envolvì en tela cun tschaira. El mussa in sulegl sur in crap."
+ },
+ "Am Ufer liegt der grosse Block, auf den der Steinmann gezeigt hat. In seiner Seite steckt ein Eisenring, und darunter: das dritte Kartenstück, in Wachstuch gewickelt. Es zeigt eine Sonne über einem Stein.": {
+  "en": "On the shore lies the big boulder the cairn pointed to. An iron ring is stuck in its side, and below it: the third map piece, wrapped in oilcloth. It shows a sun above a stone.",
+  "fr": "Sur la rive se trouve le gros bloc que le cairn indiquait. Un anneau de fer est planté dans son flanc, et dessous : le troisième morceau de carte, enveloppé dans de la toile cirée. Il montre un soleil au-dessus d'une pierre.",
+  "it": "Sulla riva c'è il grande masso indicato dall'ometto. Nel fianco ha un anello di ferro, e sotto: il terzo pezzo di mappa, avvolto in tela cerata. Mostra un sole sopra una pietra.",
+  "rm": "Sin la riva è il grond bloc che l'um da crap ha mussà. En sia vart stat in anel da fier, e sutvart: il terz toc da charta, envolvì en tela cun tschaira. El mussa in sulegl sur in crap."
  },
  "Am versteckten See liegt ein flacher Stein mit einem eingemeisselten Kreuz. Was darunter ist, zeigt die Sonne - morgen früh.": {
   "en": "At the hidden lake lies a flat stone with a chiselled cross. What is under it, the sun will show - tomorrow morning.",
@@ -4202,10 +4208,10 @@
   "rm": "Sin il pass da la Furgga fa insatgi pausa da mezdi. Resta il sandwich ditg là?"
  },
  "Auf dem kahlen Baum sitzen die Krähen.": {
-  "en": "The crows sit on the bare tree.",
-  "fr": "Les corneilles sont perchées sur l'arbre nu.",
-  "it": "I corvi stanno sull'albero spoglio.",
-  "rm": "Las corvs sesan sin la planta nidia."
+  "en": "The crows are sitting in the bare tree.",
+  "fr": "Les corneilles sont perchées sur l’arbre nu.",
+  "it": "Le cornacchie stanno sull'albero spoglio.",
+  "rm": "Ils corvs sesan sin la planta nidia."
  },
  "Auf dem Kartenstück: eine Glocke über einem Brunnen. Wo ist das?": {
   "en": "On the map piece: a bell above a fountain. Where is that?",
@@ -6337,6 +6343,12 @@
   "it": "Legna da ardere",
   "rm": "Laina da fieu"
  },
+ "Brennt deine Fackel, halten die Wölfe Abstand. Drück B zum Anzünden.": {
+  "en": "While your torch is burning, the wolves keep their distance. Press B to light it.",
+  "fr": "Tant que ta torche brûle, les loups gardent leurs distances. Appuie sur B pour l’allumer.",
+  "it": "Finché la tua torcia brucia, i lupi stanno a distanza. Premi B per accenderla.",
+  "rm": "Uschè ditg che tia fatschla arda, restan ils lufs a distanza. Smatga B per envidar."
+ },
  "Brief": {
   "en": "Letter",
   "fr": "Lettre",
@@ -7388,6 +7400,12 @@
   "it": "La meta non è ancora raggiunta. Dormire qui significa: il capitolo non è riuscito (al massimo 1 stella).",
   "rm": "La finamira n'è anc betg cuntanschida. Durmir qua vul dir: il chapitel n'è betg reussì (al pli 1 staila)."
  },
+ "Das zweite Kartenstück zeigt den Bach, der zweimal fällt: zwei Wellen übereinander, darunter ein Strich wie ein Steg. Daneben, ganz klein: ein Steinmann mit einer Kerbe.": {
+  "en": "The second map piece shows the stream that falls twice: two waves on top of each other, below a line like a footbridge. Next to it, very small: a cairn with a notch.",
+  "fr": "Le deuxième morceau montre le ruisseau qui tombe deux fois : deux vagues superposées, dessous un trait comme une passerelle. À côté, tout petit : un cairn avec une encoche.",
+  "it": "Il secondo pezzo mostra il ruscello che cade due volte: due onde sovrapposte, sotto una linea come una passerella. Accanto, piccolissimo: un ometto con una tacca.",
+  "rm": "Il segund toc mussa il dutg che croda duas giadas: duas undas ina sur l'autra, sut ina lingia sco ina punt. Sperasvi, fitg pitschen: in um da crap cun ina tagla."
+ },
  "Das zweite Kartenstück: zwei Wellen übereinander, darunter ein Strich wie ein Steg. Daneben, ganz klein: ein Steinmann mit einer Kerbe.": {
   "en": "The second map piece: two waves on top of each other, below a line like a footbridge. Next to it, very small: a cairn with a notch.",
   "fr": "Le deuxième morceau : deux vagues superposées, dessous un trait comme une passerelle. À côté, tout petit : un cairn avec une encoche.",
@@ -7477,6 +7495,12 @@
   "fr": "Plus l'expérience de l'aventure du Bergtal (%d) - un seul niveau pour tout, par sauvegarde.",
   "it": "Più l'esperienza dell'avventura del Bergtal (%d) - un solo livello per tutto, per salvataggio.",
   "rm": "Plus l'experientscha da l'aventura dal Bergtal (%d) - in nivel per tut, per stadi da gieu."
+ },
+ "Dazu die Erfahrung aus dem Bergtal-Abenteuer (%d) – eine Stufe für alles, pro Spielstand.": {
+  "en": "Plus the experience from the Bergtal adventure (%d) – one level for everything, per save slot.",
+  "fr": "Plus l'expérience de l'aventure du Bergtal (%d) – un seul niveau pour tout, par sauvegarde.",
+  "it": "Più l'esperienza dell'avventura del Bergtal (%d) – un solo livello per tutto, per salvataggio.",
+  "rm": "Plus l'experientscha da l'aventura dal Bergtal (%d) – in nivel per tut, per stadi da gieu."
  },
  "Dazu die Erfahrung aus «Die Karte des Grossvaters» (%d) - ein Level für alles, pro Spielstand.": {
   "en": "Plus the experience from «Grandfather’s map» (%d) - one level for everything, per game state.",
@@ -7657,6 +7681,12 @@
   "fr": "Démo",
   "it": "Demo",
   "rm": "Demo"
+ },
+ "Demo-Entdeckungen auf dem Camping-Platz": {
+  "en": "Demo discoveries on the campsite",
+  "fr": "Découvertes de démo au camping",
+  "it": "Scoperte demo nel campeggio",
+  "rm": "Scuvertas da demo sin il plaz da campadi"
  },
  "Demo-Entdeckungen im Camping-Platz": {
   "en": "Demo discoveries on the campsite",
@@ -8018,11 +8048,23 @@
   "it": "Il cristallo mostra: %s",
   "rm": "Il cristal mussa: %s"
  },
+ "Der Krähenschwarm": {
+  "en": "The flock of crows",
+  "fr": "La nuée de corneilles",
+  "it": "Lo stormo di cornacchie",
+  "rm": "Il scham da corvs"
+ },
  "Der Krähenschwarm ist davongeflogen. Das Frühlingstal ist geschafft!": {
   "en": "The flock of crows has flown away. The spring valley is done!",
   "fr": "La nuée de corneilles s’est envolée. La vallée du printemps est réussie !",
   "it": "Lo stormo di cornacchie è volato via. La valle della primavera è superata!",
   "rm": "Il scham da corvs è sgulà davent. La val da primavaira è fatga!"
+ },
+ "Der Krähenschwarm ist davongeflogen. Du hast das Frühlingstal geschafft!": {
+  "en": "The flock of crows has flown away. You made it through the spring valley!",
+  "fr": "La nuée de corneilles s’est envolée. Tu as réussi la vallée du printemps !",
+  "it": "Lo stormo di cornacchie è volato via. Hai superato la valle della primavera!",
+  "rm": "Il scham da corvs è svulà davent. Ti has fatg la val da primavaira!"
  },
  "Der Käse von 1897": {
   "en": "The cheese of 1897",
@@ -8643,16 +8685,16 @@
   "rm": "La fatschla na arda betg per adina. Stizza ella, sche nagin luf è qua."
  },
  "Die Fackel ist abgebrannt. Am Rastplatz bekommst du eine neue.": {
-  "en": "The torch has burnt down. You get a new one at the rest stop.",
-  "fr": "La torche est consumée. Tu en auras une nouvelle à l'aire de repos.",
-  "it": "La torcia è consumata. Al punto di sosta ne ricevi una nuova.",
-  "rm": "La fatschla è arsa. Al lieu da pausa survegns ti ina nova."
+  "en": "The torch has burnt down. You get a new one at the resting place.",
+  "fr": "La torche est consumée. Tu en auras une nouvelle à la halte.",
+  "it": "La torcia si è consumata. Al punto di sosta ne ricevi una nuova.",
+  "rm": "La fatschla è arsa giu. A la plazza da pausa survegns ti ina nova."
  },
  "Die Fackel ist aus. Am Rastplatz bekommst du eine neue.": {
-  "en": "The torch has gone out. You get a new one at the rest stop.",
-  "fr": "La torche s'est éteinte. Tu en auras une nouvelle à l'aire de repos.",
+  "en": "The torch has gone out. You get a new one at the resting place.",
+  "fr": "La torche s'est éteinte. Tu en auras une nouvelle à la halte.",
   "it": "La torcia si è spenta. Al punto di sosta ne ricevi una nuova.",
-  "rm": "La fatschla è stizzada. Al lieu da pausa survegns ti ina nova."
+  "rm": "La fatschla è stizzada. A la plazza da pausa survegns ti ina nova."
  },
  "Die Felsen werfen lange Schatten. Fast wirkt es, als würde jemand zuschauen.": {
   "en": "The rocks cast long shadows. It almost feels as if someone were watching.",
@@ -8677,6 +8719,12 @@
   "fr": "La bouteille à la mer parle du glacier : la nuit, chercher une lumière dans les crevasses du Wyssgletscher.",
   "it": "Il messaggio nella bottiglia parla del ghiacciaio: di notte cercare una luce nei crepacci del Wyssgletscher.",
   "rm": "La posta en butiglia discurra dal glatscher: la notg tschertgar ina glisch en las sfessas dal Wyssgletscher."
+ },
+ "Die ganze Herde steht auf dem Weg und denkt gar nicht daran weiterzugehen. Da hilft nur warten.": {
+  "en": "The whole herd is standing on the path and has no intention of moving. Nothing to do but wait.",
+  "fr": "Tout le troupeau est sur le chemin et ne pense pas du tout à bouger. Il ne reste qu'à attendre.",
+  "it": "Tutta la mandria è sul sentiero e non ha nessuna intenzione di spostarsi. Non resta che aspettare.",
+  "rm": "L'entira muntanera stat sin la via e na pensa gnanc dad ir vinavant. I gida mo spetgar."
  },
  "Die ganze Herde steht auf dem Weg und denkt nicht ans Weitergehen. Warten.": {
   "en": "The whole herd stands on the path and has no intention of moving. Wait.",
@@ -8984,6 +9032,12 @@
   "it": "La baita superiore",
   "rm": "La chamona sura"
  },
+ "Die Obri Stafelhütte": {
+  "en": "The Obri Stafel hut",
+  "fr": "La cabane d'Obri Stafel",
+  "it": "La capanna Obri Stafel",
+  "rm": "La chamona Obri Stafel"
+ },
  "Die Pakete liessen sich nicht installieren: ": {
   "en": "The packages could not be installed: ",
   "fr": "Les paquets n’ont pas pu être installés : ",
@@ -9109,6 +9163,12 @@
   "fr": "Le soleil se lève : bientôt la caméra te verra de nouveau mieux.",
   "it": "Sorge il sole: presto la telecamera ti vedrà di nuovo meglio.",
   "rm": "Il sulegl leva: bainprest vesa la camera tai puspè meglier."
+ },
+ "Die Sonne geht im Osten auf, die Schatten fallen dann nach Westen. Wo steht der Stein, den die Sonne am Morgen zuerst trifft?": {
+  "en": "The sun rises in the east, so the shadows fall to the west. Where is the stone the morning sun hits first?",
+  "fr": "Le soleil se lève à l'est, les ombres tombent alors vers l'ouest. Où est la pierre que le soleil du matin touche en premier ?",
+  "it": "Il sole sorge a est, le ombre cadono allora verso ovest. Dov'è la pietra che il sole del mattino colpisce per prima?",
+  "rm": "Il sulegl leva en l'ost, las sumbrivas crodan lura vers vest. Nua stat il crap ch'il sulegl da la damaun tutga l'emprim?"
  },
  "Die Sonne geht im Osten auf. Ihr Schatten fällt nach Westen. Wo steht der Stein, den die Sonne am Morgen zuerst trifft?": {
   "en": "The sun rises in the east. Its shadow falls to the west. Where is the stone the morning sun hits first?",
@@ -9284,6 +9344,18 @@
   "it": "Le vipere si sono nascoste. La valle dell’estate è superata!",
   "rm": "Las vipras èn sa zuppadas. La val da stad è fatga!"
  },
+ "Die Vipern haben sich verkrochen. Du hast das Sommertal geschafft!": {
+  "en": "The vipers have slithered away. You made it through the summer valley!",
+  "fr": "Les vipères se sont cachées. Tu as réussi la vallée de l’été !",
+  "it": "Le vipere si sono nascoste. Hai superato la valle dell’estate!",
+  "rm": "Las viperas èn sa zuppadas. Ti has fatg la val da stad!"
+ },
+ "Die Wanderin hat gesagt: der flache Weg ist schöner, aber er zieht sich.": {
+  "en": "The hiker said: the flat path is nicer, but it drags on.",
+  "fr": "La randonneuse l'a dit : le chemin plat est plus beau, mais il est long.",
+  "it": "L'escursionista l'ha detto: il sentiero piano è più bello, ma è lungo.",
+  "rm": "La viandanta ha ditg: la via plauna è pli bella, ma ella è lunga."
+ },
  "Die Wanderin hat gesagt: der flache Weg zieht sich, ist aber weniger anstrengend.": {
   "en": "The hiker said: the flat path drags on, but it is less tiring.",
   "fr": "La randonneuse l'a dit : le chemin plat est long, mais moins fatigant.",
@@ -9326,6 +9398,12 @@
   "it": "I cinghiali sono spariti. La valle dell’autunno è superata!",
   "rm": "Ils portgs selvadis èn davent. La val d’atun è fatga!"
  },
+ "Die Wildschweine sind weg. Du hast das Herbsttal geschafft!": {
+  "en": "The wild boars are gone. You made it through the autumn valley!",
+  "fr": "Les sangliers sont partis. Tu as réussi la vallée de l’automne !",
+  "it": "I cinghiali se ne sono andati. Hai superato la valle dell’autunno!",
+  "rm": "Ils portgs selvadis èn davent. Ti has fatg la val d’atun!"
+ },
  "Die Wärmebild-Kamera sieht dich kaum. Aber: sie raschelt laut und glänzt im Licht.": {
   "en": "The thermal camera can hardly see you. But: it rustles loudly and shines in the light.",
   "fr": "La caméra thermique te voit à peine. Mais : elle bruisse fort et brille à la lumière.",
@@ -9343,6 +9421,12 @@
   "fr": "Les loups gardent leurs distances. La vallée de l’hiver est réussie !",
   "it": "I lupi stanno alla larga. La valle dell’inverno è superata!",
   "rm": "Ils lufs tegnan distanza. La val d’enviern è fatga!"
+ },
+ "Die Wölfe halten Abstand. Du hast das Wintertal geschafft!": {
+  "en": "The wolves keep their distance. You made it through the winter valley!",
+  "fr": "Les loups gardent leurs distances. Tu as réussi la vallée de l’hiver !",
+  "it": "I lupi stanno a distanza. Hai superato la valle dell’inverno!",
+  "rm": "Ils lufs tegnan distanza. Ti has fatg la val d’enviern!"
  },
  "Die Zeit im Münzfernrohr ist um.": {
   "en": "The time in the coin telescope is up.",
@@ -9807,6 +9891,12 @@
   "it": "Non ce la fai più. Devi sederti e riposare a lungo (45 minuti).",
   "rm": "Ti na pos betg pli. Ti stos seser giu e ruassar ditg (45 minutas)."
  },
+ "Du kannst nicht mehr. Setz dich hin und ruh dich lange aus (45 Minuten).": {
+  "en": "You can't go on. Sit down and have a long rest (45 minutes).",
+  "fr": "Tu n'en peux plus. Assieds-toi et repose-toi longtemps (45 minutes).",
+  "it": "Non ce la fai più. Siediti e riposati a lungo (45 minuti).",
+  "rm": "Ti na pos betg pli. Sesa giu e ruassa ditg (45 minutas)."
+ },
  "Du legst den Proviant ins Kästchen im Biwak. Die nächsten Bergsteiger werden sich freuen.": {
   "en": "You put the food in the box in the bivouac. The next climbers will be pleased.",
   "fr": "Tu ranges les provisions dans la caisse du bivouac. Les prochains alpinistes seront contents.",
@@ -10245,6 +10335,12 @@
   "it": "Un cristallo di rocca! Brilla da solo.",
   "rm": "In cristal da muntogna! El glischa da sai."
  },
+ "Ein Brief vom Grossvater, mit Wachs verschlossen. Darin nur ein Satz: «Die Karte gehört jetzt dir - lies sie mit der Sonne.» Dazu ein Stück einer alten, vergilbten Karte des Bergtals - das erste von fünf. Es zeigt eine Glocke über einem Brunnen.": {
+  "en": "A letter from grandfather, sealed with wax. Inside only one sentence: «The map is yours now - read it with the sun.» With it, a piece of an old, yellowed map of the valley - the first of five. It shows a bell above a fountain.",
+  "fr": "Une lettre du grand-père, scellée à la cire. Dedans une seule phrase : «La carte est à toi maintenant - lis-la avec le soleil.» Avec elle, un morceau d'une vieille carte jaunie de la vallée - le premier de cinq. Il montre une cloche au-dessus d'une fontaine.",
+  "it": "Una lettera del nonno, sigillata con la cera. Dentro una sola frase: «La mappa ora è tua - leggila con il sole.» Insieme, un pezzo di una vecchia mappa ingiallita della valle - il primo di cinque. Mostra una campana sopra una fontana.",
+  "rm": "Ina brev dal tat, serrada cun tschaira. Lien mo ina frasa: «La charta tutga ussa a tai - legia ella cun il sulegl.» Ensemen in toc d'ina veglia charta melnenta da la val - l'emprim da tschintg. El mussa ina zampogna sur ina fontauna."
+ },
  "Ein Brief vom Grossvater, mit Wachs verschlossen. Darin nur ein Satz: «Die Karte gehört jetzt dir - lies sie mit der Sonne.» Und eine alte, vergilbte Karte des Bergtals, in fünf Stücke gefaltet. Das erste Stück zeigt eine Glocke über einem Brunnen.": {
   "en": "A letter from grandfather, sealed with wax. Inside only one sentence: «The map is yours now - read it with the sun.» And an old, yellowed map of the valley, folded into five pieces. The first piece shows a bell above a fountain.",
   "fr": "Une lettre du grand-père, scellée à la cire. Dedans une seule phrase : «La carte est à toi maintenant - lis-la avec le soleil.» Et une vieille carte jaunie de la vallée, pliée en cinq morceaux. Le premier morceau montre une cloche au-dessus d'une fontaine.",
@@ -10502,6 +10598,12 @@
   "fr": "Un soir d’automne tranquille sur l’alpage. Tu te promènes avec Maggie, votre petit chien. MoveEye est là aussi et surveille la tente.",
   "it": "Una tranquilla sera d’autunno sull’alpe. Vai a passeggio con Maggie, il vostro cagnolino. Anche MoveEye è con te e sorveglia la tenda.",
   "rm": "Ina saira d’atun quieta sin l’alp. Ti vas a spass cun Maggie, voss pitschen chaun. MoveEye è er cun tai e fa adatg sin la tenda."
+ },
+ "Ein ruhiger Herbstabend auf der Alp. Du gehst mit Maggie spazieren, eurem kleinen Hund. MoveEye ist auch mit dabei.": {
+  "en": "A quiet autumn evening on the alp. You are out for a walk with Maggie, your little dog. MoveEye has come along too.",
+  "fr": "Un soir d’automne tranquille sur l’alpage. Tu te promènes avec Maggie, votre petit chien. MoveEye est de la partie, lui aussi.",
+  "it": "Una tranquilla sera d’autunno sull’alpe. Vai a passeggio con Maggie, il vostro cagnolino. Anche MoveEye è con te.",
+  "rm": "Ina saira d’atun quieta sin l’alp. Ti vas a spass cun Maggie, voss pitschen chaun. Er MoveEye è cun tai."
  },
  "Ein Schaf hat sich von der Herde getrennt - ein schwarzes, gut zu erkennen. Zuletzt war es beim Riedmoos. Hältst du die Augen offen?": {
   "en": "A sheep has left the flock - a black one, easy to spot. It was last at the Riedmoos. Will you keep your eyes open?",
@@ -10971,6 +11073,12 @@
   "it": "Una voce, più vicina: «C'è qualcuno?»",
   "rm": "Ina vusch, pli datiers: «Èsi qua insatgi?»"
  },
+ "Eine Stufe für alles: Abenteuer, Spielbereich und Entdecken zählen zusammen (%d aus dem Abenteuer).": {
+  "en": "One level for everything: adventure, play area and discoveries count together (%d from the adventure).",
+  "fr": "Un seul niveau pour tout : aventure, espace de jeu et découvertes comptent ensemble (%d de l'aventure).",
+  "it": "Un solo livello per tutto: avventura, area di gioco e scoperte contano insieme (%d dall'avventura).",
+  "rm": "In nivel per tut: aventura, spazi da gieu e scuvertas quintan ensemen (%d da l'aventura)."
+ },
  "eine Szene": {
   "en": "a scene",
   "fr": "une scène",
@@ -11432,6 +11540,12 @@
   "fr": "Il rit en voyant la carte : «Une cloche ? Ici chaque vache en a une. Et la seule fontaine à des kilomètres est près de mon étable.»",
   "it": "Ride quando vede la mappa: «Una campana? Qui ogni mucca ne ha una. E l'unica fontana nei dintorni è vicino alla mia stalla.»",
   "rm": "El ri cura ch'el vesa la charta: «Ina zampogna? Qua ha mintga vatga ina. E l'unica fontauna lunsch enturn stat sper mia stalla.»"
+ },
+ "Er lacht, als er die Karte sieht: «Eine Glocke? Hier bei uns hat jede Kuh eine. Und hier oben bei den Weiden gibt es nur einen Brunnen - den bei meinem Stall.»": {
+  "en": "He laughs when he sees the map: «A bell? Every cow here has one. And up here by the pastures there is only one fountain - the one by my barn.»",
+  "fr": "Il rit en voyant la carte : «Une cloche ? Ici chaque vache en a une. Et ici en haut, près des pâturages, il n'y a qu'une fontaine - celle de mon étable.»",
+  "it": "Ride quando vede la mappa: «Una campana? Qui ogni mucca ne ha una. E quassù vicino ai pascoli c'è una sola fontana - quella vicino alla mia stalla.»",
+  "rm": "El ri cura ch'el vesa la charta: «Ina zampogna? Qua ha mintga vatga ina. E qua sisum tar las pastgiras datti mo ina fontauna - quella sper mia stalla.»"
  },
  "Er liest den Wegweiser, dreht die Karte, läuft eine Runde um den Wegweiser – und liest ihn wieder.": {
   "en": "He reads the signpost, turns the map, walks once round the signpost – and reads it again.",
@@ -15282,6 +15396,12 @@
   "it": "Ciao! Sono Murmli. Premi un’immagine – e succede qualcosa nel mondo!",
   "rm": "Allegra! Jau sun Murmli. Smatga sin in maletg – lura capita insatge en il mund!"
  },
+ "Hallo! Ich bin Nina. Wir wollen morgen früh auf den Grat - und du?": {
+  "en": "Hello! I'm Nina. We want to go up the ridge early tomorrow - and you?",
+  "fr": "Salut ! Je suis Nina. Nous voulons monter sur l'arête demain matin tôt - et toi ?",
+  "it": "Ciao! Sono Nina. Domattina presto vogliamo salire sulla cresta - e tu?",
+  "rm": "Allegra! Jau sun Nina. Nus vulain ir damaun marvegl sin la cresta - e ti?"
+ },
  "Hallo! Na, immer noch Lust aufs Seil?": {
   "en": "Hello! Well, still keen on the rope?",
   "fr": "Salut ! Alors, toujours envie de la corde ?",
@@ -15661,6 +15781,12 @@
   "it": "Qui il bambino non trova un posto per giocare.",
   "rm": "Qua na chatta l'uffant nagin plaz per giugar."
  },
+ "Hier geht es weiter – %s.": {
+  "en": "This is your way – %s.",
+  "fr": "C’est par ici – %s.",
+  "it": "Si prosegue da qui – %s.",
+  "rm": "Qua va la via vinavant – %s."
+ },
  "Hier gibt es (noch) nichts zu entdecken.": {
   "en": "Nothing to discover here (yet).",
   "fr": "Rien à découvrir ici (pour l’instant).",
@@ -15680,10 +15806,10 @@
   "rm": "Qua has ti gia cuschinà."
  },
  "Hier hängt irgendwo eine Kuhglocke. Such sie, bevor die Krähen kommen.": {
-  "en": "A cowbell is hanging somewhere here. Find it before the crows come.",
-  "fr": "Une cloche de vache est accrochée quelque part ici. Trouve-la avant les corneilles.",
-  "it": "Qui da qualche parte c'è un campanaccio. Trovalo prima che arrivino i corvi.",
-  "rm": "Qua pendia insanua ina talacla. Tschertga ella avant che las corvs vegnan."
+  "en": "There’s a cowbell hanging somewhere here. Find it before the crows come.",
+  "fr": "Une cloche de vache est accrochée quelque part ici. Trouve-la avant que les corneilles arrivent.",
+  "it": "Qui da qualche parte c'è un campanaccio. Trovalo prima che arrivino le cornacchie.",
+  "rm": "Qua penda insanua ina talacla. Tschertga ella avant che ils corvs vegnan."
  },
  "Hier ist dein Ersatzteil von der Haltestelle.": {
   "en": "Here's your spare part from the bus stop.",
@@ -16237,6 +16363,12 @@
   "it": "Hoi, sono Jonas. Porto tutto per una settimana - per questo lo zaino è così grande.",
   "rm": "Hoi, jau sun il Jonas. Jau port tut per in'emna - perquai è il satg uschè grond."
  },
+ "Hoi, ich bin Urs. Ich klettere am Gratspitz - der Fels ist dort richtig gut.": {
+  "en": "Hoi, I'm Urs. I climb on the Gratspitz - the rock there is really good.",
+  "fr": "Hoi, je suis Urs. Je grimpe au Gratspitz - le rocher y est vraiment bon.",
+  "it": "Hoi, sono Urs. Arrampico sul Gratspitz - la roccia lì è davvero buona.",
+  "rm": "Hoi, jau sun Urs. Jau rampun al Gratspitz - il grip è là propi bun."
+ },
  "Hoi, schön dich zu sehen! Wieder Lust auf meinen Wetterbericht?": {
   "en": "Hoi, nice to see you! Fancy my weather report again?",
   "fr": "Hoi, contente de te voir ! Encore envie de mon bulletin météo ?",
@@ -16442,10 +16574,10 @@
   "rm": "HTTP %d"
  },
  "Huch! Das war knapp. Zurück zum Rastplatz – der Kristall ist noch bei dir.": {
-  "en": "Whoa! That was close. Back to the rest stop – you still have the crystal.",
-  "fr": "Ouf ! C'était juste. Retour à l'aire de repos – tu as toujours le cristal.",
-  "it": "Uh! C'è mancato poco. Torna al punto di sosta – il cristallo è ancora con te.",
-  "rm": "Uh! Quai è stà stretg. Enavos al lieu da pausa – il cristal è anc tar tai."
+  "en": "Whoa! That was close. Back to the resting place – you still have the crystal.",
+  "fr": "Ouf ! C'était juste. Retour à la halte – tu as toujours le cristal.",
+  "it": "Accidenti! C’è mancato poco. Torna al punto di sosta – il cristallo è ancora con te.",
+  "rm": "Hui! Quai è stà stretg. Enavos a la plazza da pausa – il cristal è anc tar tai."
  },
  "Huch, Nebel! Kann MoveEye noch etwas sehen?": {
   "en": "Oops, fog! Can MoveEye still see anything?",
@@ -16927,6 +17059,12 @@
   "it": "Nella luce radente della sera si vedono all’improvviso croci incise nelle pietre – un’antica via dei contrabbandieri sul passo, verso un nascondiglio.",
   "rm": "En la glisch bassa da la saira vesan ins cun ina giada cruschs sgrattadas en ils crappa – ina veglia ruta da contrabandists sur il pass, tar in zuppader."
  },
+ "Im Frühlingstal rauscht das Schmelzwasser. Am See blühen Krokusse. Aber über dem Wald kreist ein grosser Krähenschwarm. Lauten Glockenklang mögen die Krähen gar nicht.": {
+  "en": "In the spring valley the meltwater rushes. Crocuses bloom by the lake. But a big flock of crows circles over the forest. Crows really don’t like loud bells.",
+  "fr": "Dans la vallée du printemps, l’eau de fonte gronde. Des crocus fleurissent au bord du lac. Mais une grande nuée de corneilles tourne au-dessus de la forêt. Les corneilles détestent le son fort des cloches.",
+  "it": "Nella valle della primavera scroscia l’acqua di disgelo. Al lago fioriscono i crochi. Ma sopra il bosco volteggia un grande stormo di cornacchie. Alle cornacchie il suono forte delle campane non piace proprio.",
+  "rm": "En la val da primavaira ramura l’aua da luada. Al lai flureschan crocus. Ma sur il guaud gira in grond scham da corvs. Ils corvs n’han gnanc gugent il tun ferm da las zenns."
+ },
  "Im Frühlingstal rauscht das Schmelzwasser. Am See blühen Krokusse. Aber über dem Wald kreist ein grosser Krähenschwarm. Lauter Glockenklang mögen die Krähen gar nicht.": {
   "en": "In the spring valley the meltwater rushes. Crocuses bloom by the lake. But a big flock of crows circles over the forest. Crows really don’t like loud bells.",
   "fr": "Dans la vallée du printemps, l’eau de fonte gronde. Des crocus fleurissent au bord du lac. Mais une grande nuée de corneilles tourne au-dessus de la forêt. Les corneilles détestent le son fort des cloches.",
@@ -17088,6 +17226,18 @@
   "fr": "Il fait chaud dans la vallée de l’été. Tout là-haut, beaucoup de pierres sont au soleil. Entre elles se faufilent des vipères. Si tu tapes fort du pied, elles le sentent et disparaissent.",
   "it": "Nella valle dell’estate fa caldo. In alto molte pietre stanno al sole. Tra di loro strisciano le vipere. Se pesti forte i piedi, lo sentono e spariscono.",
   "rm": "En la val da stad èsi chaud. Ad aut giaschan blers craps al sulegl. Tranter els serpentan vipras. Sche ti pitgas ferm cun il pe, sentan ellas quai e svaneschan."
+ },
+ "Im Steimandli-Wald beim Biwak: einer von über zweihundert Steinmännern schaut zurück.": {
+  "en": "In the Steimandli forest near the bivouac: one of more than two hundred cairns looks back.",
+  "fr": "Dans la forêt de Steimandli près du bivouac : l’un des plus de deux cents cairns te regarde.",
+  "it": "Nel bosco degli Steimandli vicino al bivacco: uno degli oltre duecento ometti ricambia lo sguardo.",
+  "rm": "En il guaud Steimandli sper il bivac: in da passa duatschient umens da crap guarda enavos."
+ },
+ "Im Steimandli-Wald hat einer zwei Augen. Sie schauen dir nach – und wenn du zu nahe kommst, macht er sie zu und ist wieder nur ein Steinmann.": {
+  "en": "In the Steimandli forest one cairn has two eyes. They follow you – and when you come too close, it shuts them and is just a cairn again.",
+  "fr": "Dans la forêt de Steimandli, un cairn a deux yeux. Ils te suivent – et si tu t’approches trop, il les ferme et redevient un simple cairn.",
+  "it": "Nel bosco degli Steimandli un ometto ha due occhi. Ti seguono – e se ti avvicini troppo, li chiude e torna a essere solo un ometto.",
+  "rm": "En il guaud Steimandli ha in um da crap dus egls. Els ta guardan suenter – e sche ti vegns memia datiers, als serra el ed è puspè mo in um da crap."
  },
  "Im Steimandli-Wald liegt unter einem Steinmann die nächste Seite.": {
   "en": "In the Steimandli forest the next page lies under a cairn.",
@@ -17370,6 +17520,12 @@
   "fr": "Il n’y a (encore) rien à découvrir dans cette scène.",
   "it": "In questa scena non c’è (ancora) niente da scoprire.",
   "rm": "En questa scena na datti (anc) nagut da scuvrir."
+ },
+ "In einer ganz klaren Winternacht auf dem Furggapass auf der Steinbank sitzen und nach Norden schauen. Es braucht Glück.": {
+  "en": "On a perfectly clear winter night sit on the stone bench on the Furgga pass and look north. It takes luck.",
+  "fr": "Par une nuit d’hiver très claire, assieds-toi sur le banc de pierre du col de la Furgga et regarde vers le nord. Il faut de la chance.",
+  "it": "In una notte d’inverno limpidissima siediti sulla panca di pietra del passo della Furgga e guarda a nord. Ci vuole fortuna.",
+  "rm": "En ina notg d’enviern fitg clera seser sin il banc da crap sin il pass da la Furgga e guardar vers il nord. I dovra fortuna."
  },
  "In einer ganz klaren Winternacht auf dem Furggapass auf die Steinbank sitzen und nach Norden schauen. Es braucht Glück.": {
   "en": "On a perfectly clear winter night sit on the stone bench on the Furgga pass and look north. It takes luck.",
@@ -17779,6 +17935,12 @@
   "it": "secondo la scena",
   "rm": "tenor la scena"
  },
+ "Jede Jahreszeit ist ein eigenes Tal mit eigenen Gefahren. Wohin willst du zuerst?": {
+  "en": "Each season is its own valley with its own dangers. Where do you want to go first?",
+  "fr": "Chaque saison est une vallée avec ses propres dangers. Où veux-tu aller d’abord ?",
+  "it": "Ogni stagione è una valle con i suoi pericoli. Dove vuoi andare prima?",
+  "rm": "Mintga stagiun è ina atgna val cun atgns privels. Nua vuls ti ir l’emprim?"
+ },
  "Jede Jahreszeit ist ein eigenes Tal mit eigenen Gefahren. Wähle eins aus.": {
   "en": "Each season is its own valley with its own dangers. Pick one.",
   "fr": "Chaque saison est une vallée avec ses propres dangers. Choisis-en une.",
@@ -17796,6 +17958,12 @@
   "fr": "Chaque manette : A = participer · ◀ ▶ = choisir le rôle · B = pas de la partie · Start = terminé",
   "it": "Ogni controller: A = partecipare · ◀ ▶ = scegliere il ruolo · B = non partecipa · Start = fatto",
   "rm": "Mintga controller: A = far cun · ◀ ▶ = tscherner la rolla · B = betg cun · Start = finì"
+ },
+ "Jeder hier kennt den Bergführer. Wenn er dir seine Karte gegeben hat, dann hat er dir den Weg zugetraut. Lies sie gut.": {
+  "en": "Everyone here knows the mountain guide. If he gave you his map, he trusted you to find the way. Read it carefully.",
+  "fr": "Tout le monde ici connaît le guide. S'il t'a donné sa carte, c'est qu'il te croyait capable de trouver le chemin. Lis-la bien.",
+  "it": "Qui tutti conoscono la guida alpina. Se ti ha dato la sua carta, ti credeva capace di trovare la strada. Leggila bene.",
+  "rm": "Mintgin qua enconuscha il guid da muntogna. Sch'el ta ha dà sia charta, ta ha el fidà la via. Legia ella bain."
  },
  "Jeder hier kennt den Bergführer. Wenn er dir seine Karte gegeben hat, dann traut er dir den Weg zu. Lies sie gut.": {
   "en": "Everyone here knows the mountain guide. If he gave you his map, he trusts you to find the way. Read it carefully.",
@@ -19625,14 +19793,14 @@
  "Krähen erschrecken vor lautem Glockenklang.": {
   "en": "Crows get scared by loud bell sounds.",
   "fr": "Les corneilles ont peur du son fort des cloches.",
-  "it": "I corvi si spaventano col suono forte delle campane.",
-  "rm": "Las corvs sa strementan dal tun ferm da las talaclas."
+  "it": "Le cornacchie si spaventano al suono forte delle campane.",
+  "rm": "Ils corvs sa strementan dal tun ferm da las talaclas."
  },
  "Krähen lieben glänzende Dinge. Pass gut auf den Kristall auf!": {
   "en": "Crows love shiny things. Take good care of the crystal!",
   "fr": "Les corneilles adorent ce qui brille. Fais bien attention au cristal !",
-  "it": "I corvi amano le cose luccicanti. Bada bene al cristallo!",
-  "rm": "Las corvs aman chaussas che glischan. Fa bain attenziun al cristal!"
+  "it": "Le cornacchie amano le cose luccicanti. Bada bene al cristallo!",
+  "rm": "Ils corvs aman chaussas che glischan. Fa bain attenziun al cristal!"
  },
  "Kuchen": {
   "en": "Cake",
@@ -20944,6 +21112,12 @@
   "it": "Maggie ha la traccia! Le impronte brillano fino ai sassi nel ruscello.",
   "rm": "Maggie ha la fastiz! Las tschattas glischan fin tar ils crappa en il dutg."
  },
+ "Maggie hat die Spur! Leuchtende Pfotenspuren führen bis zu den Steinen im Bach.": {
+  "en": "Maggie has the scent! Glowing paw prints lead to the stones in the stream.",
+  "fr": "Maggie a trouvé la piste ! Des traces de pattes lumineuses mènent jusqu’aux pierres du ruisseau.",
+  "it": "Maggie ha trovato la pista! Impronte luminose portano fino ai sassi nel ruscello.",
+  "rm": "Maggie ha la fastiz! Fastizs da tatgas glischantas mainan fin tar ils crappa en il dutg."
+ },
  "Maggie hat es! Das Murmeltier zeigt dir seinen Geheimgang.": {
   "en": "Maggie has it! The marmot shows you its secret passage.",
   "fr": "Maggie a trouvé ! La marmotte te montre son passage secret.",
@@ -20979,6 +21153,12 @@
   "fr": "Maggie sait creuser !",
   "it": "Maggie sa scavare!",
   "rm": "Maggie sa chavar!"
+ },
+ "Maggie knurrt einen der Wege an. Nimm lieber den anderen!": {
+  "en": "Maggie growls at one of the paths. Better take the other one!",
+  "fr": "Maggie grogne vers l’un des chemins. Prends plutôt l’autre !",
+  "it": "Maggie ringhia verso uno dei sentieri. Meglio prendere l’altro!",
+  "rm": "Maggie rugna vers ina da las vias. Prenda pli gugent l’autra!"
  },
  "Maggie knurrt leise. Da ist etwas …": {
   "en": "Maggie growls softly. Something is there …",
@@ -21033,6 +21213,12 @@
   "fr": "Maggie sent quelque chose ! Suis les empreintes lumineuses.",
   "it": "Maggie sente qualcosa! Segui le impronte luminose.",
   "rm": "Maggie savura insatge! Suonda las tschattas che glischan."
+ },
+ "Maggie riecht etwas! Folge den leuchtenden Pfotenspuren.": {
+  "en": "Maggie smells something! Follow the glowing paw prints.",
+  "fr": "Maggie sent quelque chose ! Suis les traces de pattes lumineuses.",
+  "it": "Maggie sente qualcosa! Segui le impronte luminose.",
+  "rm": "Maggie savura insatge! Suonda las fastizs da tatgas glischantas."
  },
  "Maggie riecht nur Gras und Blumen.": {
   "en": "Maggie only smells grass and flowers.",
@@ -21207,6 +21393,12 @@
   "fr": "Plus",
   "it": "Altro",
   "rm": "Dapli"
+ },
+ "Mehr Kraft, ruhiges Wetter, Standort auf der Karte. Rätsel: Pfeile zeigen den Weg.": {
+  "en": "More strength, calm weather, your position on the map. Puzzles: arrows show the way.",
+  "fr": "Plus de force, temps calme, position sur la carte. Énigmes : des flèches montrent le chemin.",
+  "it": "Più forza, tempo tranquillo, posizione sulla mappa. Enigmi: le frecce mostrano la via.",
+  "rm": "Dapli forza, aura quieta, lieu sin la charta. Enigmas: frizzas mussan la via."
  },
  "Mehr Kraft, wenig Wetter, Kompass und eigener Standort auf der Karte.": {
   "en": "More strength, little weather, compass and your own position on the map.",
@@ -22644,10 +22836,10 @@
   "rm": "MoveEye guardass ussa simplamain tiers – e sa legrass cun tai."
  },
  "MoveEye würde jetzt laut piepsen. Das mögen Krähen nicht.": {
-  "en": "MoveEye would beep loudly now. Crows don't like that.",
-  "fr": "MoveEye bipperait fort maintenant. Les corneilles n'aiment pas ça.",
-  "it": "MoveEye ora farebbe un forte bip. Ai corvi non piace.",
-  "rm": "MoveEye pipass ussa ferm. Quai na plai betg a las corvs."
+  "en": "MoveEye would beep loudly now. Crows don’t like that.",
+  "fr": "MoveEye ferait maintenant un bip sonore. Les corneilles n’aiment pas ça.",
+  "it": "MoveEye ora farebbe un forte bip. Alle cornacchie non piace.",
+  "rm": "MoveEye pipass ussa fitg. Quai n’han ils corvs betg gugent."
  },
  "MoveEye würde jetzt merken, dass sich im Gebüsch etwas bewegt, und dir Bescheid geben.": {
   "en": "MoveEye would now notice that something is moving in the bushes, and let you know.",
@@ -26390,6 +26582,12 @@
   "it": "Rilevamento giusto: %s.",
   "rm": "Relevament correct: %s."
  },
+ "Richtig! Auf dem anderen Weg leuchteten Augen im Dunkeln.": {
+  "en": "Right! On the other path, eyes were glowing in the dark.",
+  "fr": "Bravo ! Sur l’autre chemin, des yeux brillaient dans le noir.",
+  "it": "Giusto! Sull’altro sentiero brillavano degli occhi nel buio.",
+  "rm": "Gist! Sin l’autra via glischavan egls en il stgir."
+ },
  "Richtig! Auf dem anderen Weg waren Augen im Dunkeln.": {
   "en": "Right! On the other path there were eyes in the dark.",
   "fr": "Exact ! Sur l'autre chemin, il y avait des yeux dans le noir.",
@@ -26756,6 +26954,12 @@
   "it": "Notte tranquilla – raramente qualcuno",
   "rm": "Notg quieta – darar insatgi"
  },
+ "Ruhiges Wetter, Bänke mit Aussicht, Käse beim Senner, Zeit zum Schauen.": {
+  "en": "Calm weather, benches with a view, cheese at the herdsman's, time to look around.",
+  "fr": "Temps calme, des bancs avec vue, du fromage chez le berger, du temps pour regarder.",
+  "it": "Tempo tranquillo, panchine con vista, formaggio dal casaro, tempo per guardare.",
+  "rm": "Aura quieta, bancs cun vista, chaschiel tar il signun, temp per guardar."
+ },
  "Ruine": {
   "en": "Ruin",
   "fr": "Ruines",
@@ -27008,6 +27212,12 @@
   "it": "Salü! Le tue riprese erano buone. Forse avrei di nuovo qualcosa per te.",
   "rm": "Salü! Tias registraziuns eran bunas. Forsa avess jau puspè insatge per tai."
  },
+ "Salü! Ich bin Toni. Ich bin heute schon um vier Uhr losgegangen.": {
+  "en": "Salü! I'm Toni. I set off at four this morning.",
+  "fr": "Salü ! Je suis Toni. Je suis parti à quatre heures ce matin.",
+  "it": "Salü! Sono Toni. Oggi sono partito già alle quattro.",
+  "rm": "Salü! Jau sun Toni. Jau sun partì oz gia a las quatter."
+ },
  "Salü! Ohne dich wäre ich neulich lange dort gesessen. Merci!": {
   "en": "Salü! Without you I'd have sat there a long time the other day. Merci!",
   "fr": "Salü ! Sans toi, je serais resté longtemps assis là-bas l'autre jour. Merci !",
@@ -27025,6 +27235,12 @@
   "fr": "Salü ! De nouveau debout tôt ?",
   "it": "Salü! Di nuovo in piedi presto?",
   "rm": "Salü! Puspè marvegl en pe?"
+ },
+ "Salü. Ich bin Ruedi, der Wildhüter. Ich zähle die Tiere im Tal - und dafür brauche ich manchmal Hilfe.": {
+  "en": "Salü. I'm Ruedi, the game warden. I count the animals in the valley - and sometimes I need help with that.",
+  "fr": "Salü. Je suis Ruedi, le garde-faune. Je compte les animaux de la vallée - et pour ça, j'ai parfois besoin d'aide.",
+  "it": "Salü. Sono Ruedi, il guardiacaccia. Conto gli animali della valle - e a volte mi serve aiuto.",
+  "rm": "Salü. Jau sun Ruedi, il guardiaselvaschina. Jau dumbrel las bestgas en la val - e per quai dovri jau mintgatant agid."
  },
  "Salü. Leise sein - dort oben am Fels steht eine Gämse.": {
   "en": "Salü. Quiet - there's a chamois up there on the rock.",
@@ -29893,6 +30109,12 @@
   "it": "Ben fatto!",
   "rm": "Fatg bain!"
  },
+ "Super! Sie sind weg. Aber pass auf – vielleicht kommen sie wieder.": {
+  "en": "Great! They’re gone. But watch out – they might come back.",
+  "fr": "Super ! Ils sont partis. Mais attention – ils reviendront peut-être.",
+  "it": "Fantastico! Se ne sono andati. Ma attento – forse tornano.",
+  "rm": "Super! Els èn davent. Ma fa attenziun – forsa turnan els."
+ },
  "Super! Sie sind weg. Aber sie kommen vielleicht wieder.": {
   "en": "Great! They are gone. But they might come back.",
   "fr": "Super ! Ils sont partis. Mais ils reviendront peut-être.",
@@ -31443,10 +31665,10 @@
   "rm": "Tranter alpinists enconuscha ins il num. Cun il chapè es ti qua dapertut bainvegni."
  },
  "Unter Bäumen sehen dich die Krähen schlechter.": {
-  "en": "Under trees the crows can't see you so well.",
+  "en": "Under trees the crows can’t see you as well.",
   "fr": "Sous les arbres, les corneilles te voient moins bien.",
-  "it": "Sotto gli alberi i corvi ti vedono peggio.",
-  "rm": "Sut las plantas ta vesan las corvs mender."
+  "it": "Sotto gli alberi le cornacchie ti vedono peggio.",
+  "rm": "Sut las plantas ta vesan ils corvs mender."
  },
  "Unter dem Brunnentrog der Alp ist ein Zeichen eingemeisselt: zwei Wellen, eine über der anderen. Das zweite Kartenstück passt genau daneben - es zeigt einen Bach, der zweimal fällt.": {
   "en": "A sign is chiselled under the trough of the alp: two waves, one above the other. The second map piece fits right next to it - it shows a stream that falls twice.",
@@ -33315,6 +33537,12 @@
   "it": "Meno forza, più maltempo e animali, solo cartelli e il sole. Enigmi: nessun aiuto.",
   "rm": "Main forza, dapli aura ed animals, mo indicaturs da via ed il sulegl. Enigmas: nagin agid."
  },
+ "Weniger Kraft, öfter schlechtes Wetter, mehr Tiere, nur Wegweiser und die Sonne. Rätsel: keine Hilfe.": {
+  "en": "Less strength, bad weather more often, more animals, only signposts and the sun. Puzzles: no help.",
+  "fr": "Moins de force, plus souvent du mauvais temps, plus d'animaux, seulement les panneaux et le soleil. Énigmes : aucune aide.",
+  "it": "Meno forza, più spesso maltempo, più animali, solo cartelli e il sole. Enigmi: nessun aiuto.",
+  "rm": "Main forza, savens aura nauscha, dapli animals, mo indicaturs da via ed il sulegl. Enigmas: nagin agid."
+ },
  "wenn das Bedienfeld zu ist (H)": {
   "en": "when the control panel is closed (H)",
   "fr": "quand le panneau est fermé (H)",
@@ -34469,6 +34697,12 @@
   "it": "I lupi temono il fuoco e la luce.",
   "rm": "Lufs teman fieu e glisch."
  },
+ "Wölfe meiden helles Licht. Deine Fackel hilft dir.": {
+  "en": "Wolves avoid bright light. Your torch will help you.",
+  "fr": "Les loups évitent la lumière vive. Ta torche t’aidera.",
+  "it": "I lupi evitano la luce forte. La tua torcia ti aiuta.",
+  "rm": "Ils lufs evitan glisch clera. Tia fatschla ta gida."
+ },
  "Wölfe meiden helles Licht. Eine Fackel oder Laterne hilft.": {
   "en": "Wolves avoid bright light. A torch or lantern helps.",
   "fr": "Les loups évitent la lumière vive. Une torche ou une lanterne aide.",
@@ -35501,6 +35735,12 @@
   "it": "«%s»: in media %s deviazioni per partita → suggerimenti più chiari?",
   "rm": "«%s»: en media %s sviaments per runda → tips pli clers?"
  },
+ "«%s»: noch %d zu entdecken – manches gibt es nur nachts, bei Regen oder am Morgen.": {
+  "en": "«%s»: %d still to discover – some things are only there at night, in the rain or in the morning.",
+  "fr": "«%s» : encore %d à découvrir – certaines choses n’existent que la nuit, sous la pluie ou le matin.",
+  "it": "«%s»: ancora %d da scoprire – alcune cose ci sono solo di notte, con la pioggia o al mattino.",
+  "rm": "«%s»: anc %d da scuvrir – intginas chaussas datti mo la notg, cun plievgia u la damaun."
+ },
  "«18. Januar 1936. Sturm. Zwei Wanderer über den Pass geholt. Die Glocke hilft im Nebel. Wer sie hört, soll ihr folgen. – B.»": {
   "en": "«18 January 1936. Storm. Brought two hikers over the pass. The bell helps in the fog. Whoever hears it should follow it. – B.»",
   "fr": "«18 janvier 1936. Tempête. Ramené deux randonneurs par le col. La cloche aide dans le brouillard. Qui l'entend doit la suivre. – B.»",
@@ -35818,6 +36058,12 @@
   "fr": "Par le col jusqu'à l'hospice. Il paraît qu'on y sert la meilleure soupe du canton.",
   "it": "Oltre il passo fino all'ospizio. Dicono che lì ci sia la zuppa migliore di tutto il cantone.",
   "rm": "Sur il pass a l'ospizi. Là duai ei dar la meglra suppa da l'entir chantun."
+ },
+ "Über den Pass, am alten Hospiz vorbei. Früher soll es dort die beste Suppe im ganzen Kanton gegeben haben.": {
+  "en": "Over the pass, past the old hospice. They say it used to serve the best soup in the whole canton.",
+  "fr": "Par le col, en passant devant le vieil hospice. Il paraît qu'autrefois on y servait la meilleure soupe du canton.",
+  "it": "Oltre il passo, davanti al vecchio ospizio. Dicono che una volta lì ci fosse la zuppa migliore di tutto il cantone.",
+  "rm": "Sur il pass, sperasvi il vegl ospizi. Pli baud duai ei avair dà là la meglra suppa da l'entir chantun."
  },
  "Über den Simulator": {
   "en": "About the simulator",

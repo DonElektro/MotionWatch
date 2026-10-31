@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.0.0"
+const VERSION := "3.0.1"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
@@ -46,7 +46,7 @@ var Karte = preload("res://scripts/karte.gd")
 var geo                               # geo.gd: a real place in Switzerland (scene «ort», from 3D-3.4)
 var karte                             # karte.gd: the map to choose the place
 var gamewiz                           # gamewiz.gd: the game wizard (3D-3.41), also worked from MoveEye
-var abenteuer                         # bergtal_abenteuer.gd: Bergtal-Abenteuer «Die Karte des Bergführers» (Rucksack, Tour, Nacht, Morgen)
+var abenteuer                         # bergtal_abenteuer.gd: Bergtal-Abenteuer «Die Karte des Grossvaters» (Rucksack, Tour, Nacht, Morgen)
 var ort_lat := 0.0                    # the chosen place (kept)
 var ort_lon := 0.0
 var ort_name := ""

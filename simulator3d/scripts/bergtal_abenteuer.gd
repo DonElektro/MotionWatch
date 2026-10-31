@@ -554,7 +554,7 @@ func _advance() -> void:
 			opts.append([str(k), "%s\n%s · %s" % [T.t(str(side[0])), leg_text(li), T.t("Kraft −%d") % int(round(li["cost"] * _cost_f()))]])
 		var tip := ""
 		if R.get("tip_fork", false):
-			tip = T.t("Die Wanderin hat gesagt: der flache Weg zieht sich, ist aber weniger anstrengend.")
+			tip = T.t("Die Wanderin hat gesagt: der flache Weg ist schöner, aber er zieht sich.")
 		_ask("fork", T.t("Weggabelung"), T.t("Der Weg teilt sich. Welchen nimmst du?") + ("\n" + tip if tip != "" else ""), opts)
 	elif st.has("clue"):
 		var kind := str(st["clue"])
@@ -741,7 +741,7 @@ func _end_leg() -> void:
 		R["notes"].append("nojacket")
 		_diary("forgot", T.t("Keine Jacke"), T.t("Der Wind wird kalt, und die warme Jacke fehlt. Du frierst - jeder Schritt kostet mehr Kraft."))
 	if float(R["stamina"]) <= 0.0 and not was_detour:
-		_ask("tired", T.t("Erschöpft"), T.t("Du kannst nicht mehr. Du musst dich hinsetzen und lange ausruhen (45 Minuten)."), [["rest", T.t("Ausruhen")]])
+		_ask("tired", T.t("Erschöpft"), T.t("Du kannst nicht mehr. Setz dich hin und ruh dich lange aus (45 Minuten)."), [["rest", T.t("Ausruhen")]])
 		return
 	if was_detour:
 		_advance()
@@ -2144,7 +2144,7 @@ func _paint_chapter() -> void:
 	var lv := int(L["lv"])
 	var g := _group(T.t("Stufe %d · %d Erfahrung") % [lv, int(L["xp"])], left)
 	_bar(g, T.t("Erfahrung"), float(L["xp"]) - float(L["from"]), maxf(1.0, float(L["to"]) - float(L["from"])), ACC, T.t("noch %d") % maxi(0, int(L["to"]) - int(L["xp"])))
-	g.add_child(_lab(T.t("Ein Level für alles: Abenteuer, Spielbereich und Entdecken zählen zusammen (%d aus dem Abenteuer).") % int(P.get("xp", 0)), 11, Color(0.6, 0.66, 0.74)))
+	g.add_child(_lab(T.t("Eine Stufe für alles: Abenteuer, Spielbereich und Entdecken zählen zusammen (%d aus dem Abenteuer).") % int(P.get("xp", 0)), 11, Color(0.6, 0.66, 0.74)))
 	var nexts := []
 	for l in D.UNLOCKS:
 		if int(l) > lv:
