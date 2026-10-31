@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.3.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.4.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -425,6 +425,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.4.0
+3.4.0: Nebel-Modus: MoveEye erkennt Nebel, hebt den Kontrast an, verlässt sich mehr aufs Wärmebild, zeigt «🌫 Nebel – Sicht
+eingeschränkt» und meldet im Nebel kein falsches «Kamera verdreht» mehr. In der Dämmerung und bei Wind braucht es 2–3 Treffer
+in Folge, bevor eine Person gemeldet wird (weniger Fehlalarme).
+So testest du: 1) Simulator Schattwald, Nebel: Hinweis erscheint, kein Push «verdreht». 2) 17:30, Wind 55 km/h, niemand im
+Bild: weniger Personen-Meldungen. 3) Eine Person geht durch: wird erkannt.
 
 NEU IN 3.3.0
 3.3.0: Roter Faden: Die Karte des Grossvaters und Maggie kennen sich. Ruedi, Anna und Sepp erwähnen das andere Abenteuer.
