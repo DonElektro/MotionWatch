@@ -1,0 +1,112 @@
+14:30:11 pilot|tag|gehen -> True Person 0.0 fps 2.8 pushes 0
+14:30:34 pilot|tag|tier -> False nur Bewegung None fps 2.3 pushes 0
+14:30:52 pilot|tag|fahrzeug -> True bicycle 0.1 fps 2.0 pushes 0
+14:31:18 pilot|tag|kriechen -> True Person 0.0 fps 2.0 pushes 0
+14:32:33 pilot|tag|gehen -> False – None fps 1.8 pushes 0
+14:32:58 pilot|tag|tier -> False nur Bewegung None fps 2.1 pushes 0
+14:33:19 pilot|tag|fahrzeug -> True truck 13.6 fps 2.0 pushes 0
+14:34:54 pilot|tag|gehen -> True Person 12.1 fps 2.8 pushes 1
+14:35:18 pilot|tag|tier -> False – None fps 3.0 pushes 0
+14:35:42 pilot|tag|kind -> True Person 8.9 fps 3.0 pushes 1
+14:36:16 Last 4.72
+14:36:20 Ort camping Welt camping geladen in 4 s True
+14:36:59 Last 4.82
+14:37:02 Ort camping Welt camping geladen in 3 s True
+14:38:09 camping|tag|leer -> 0   fps 2.2 pushes 1
+14:38:33 camping|tag|gehen -> True Person 6.2 fps 2.2 pushes 1
+14:39:01 camping|tag|kriechen -> False – None fps 2.1 pushes 0
+14:39:25 camping|tag|kind -> True Person 6.4 fps 2.2 pushes 1
+14:39:50 camping|tag|tier -> False – None fps 2.3 pushes 0
+14:40:11 camping|tag|fahrzeug -> False Person None fps 2.1 pushes 1
+14:41:38 camping|tag|blindmap -> 11 / 13 im Bild, von 15 max 20
+14:42:45 camping|daemmerung|leer -> 4   fps 2.5 pushes 1
+14:43:53 Last 4.95
+14:43:57 Ort camping Welt camping geladen in 4 s True
+14:44:53 camping|daemmerung|gehen -> True Person 7.7 fps 3.3 pushes 1
+14:45:21 camping|daemmerung|kriechen -> True Person 20.6 fps 2.9 pushes 0
+14:45:45 camping|daemmerung|kind -> True Person 5.2 fps 2.9 pushes 1
+14:46:09 camping|daemmerung|tier -> False Person None fps 3.4 pushes 1
+14:46:29 camping|daemmerung|fahrzeug -> False Person None fps 3.4 pushes 0
+14:47:36 camping|nacht|leer -> 0   fps 3.1 pushes 0
+14:48:00 camping|nacht|gehen -> True Person 7.7 fps 3.0 pushes 3
+14:48:28 camping|nacht|kriechen -> False truck None fps 2.9 pushes 0
+14:48:53 camping|nacht|kind -> False nur Bewegung None fps 3.3 pushes 0
+14:49:17 camping|nacht|tier -> False nur Bewegung None fps 2.9 pushes 0
+14:49:37 camping|nacht|fahrzeug -> True truck 11.5 fps 2.9 pushes 0
+14:51:07 camping|nacht|blindmap -> 7 / 11 im Bild, von 15 max 10
+14:52:14 camping|regen|leer -> 0   fps 3.7 pushes 0
+14:52:37 camping|regen|gehen -> True Person 16.0 fps 3.4 pushes 1
+14:53:05 camping|regen|kriechen -> False – None fps 3.4 pushes 0
+14:53:29 camping|regen|kind -> True Person 5.1 fps 3.5 pushes 1
+14:53:53 camping|regen|tier -> False – None fps 3.6 pushes 0
+14:54:13 camping|regen|fahrzeug -> False Person None fps 3.4 pushes 0
+14:54:15 Last 2.88
+14:54:24 Ort wald Welt bergtal geladen in 9 s True
+14:55:30 wald|tag|leer -> 0   fps 3.5 pushes 0
+14:55:54 wald|tag|gehen -> True Person 6.6 fps 3.7 pushes 1
+14:56:21 wald|tag|kriechen -> True Person 5.1 fps 3.6 pushes 0
+14:56:46 wald|tag|kind -> True Person 6.7 fps 3.4 pushes 1
+14:57:10 wald|tag|tier -> True animal, dog 8.1 fps 3.7 pushes 1
+14:57:30 wald|tag|fahrzeug -> False nur Bewegung None fps 3.7 pushes 0
+14:58:56 wald|tag|blindmap -> 5 / 15 im Bild, von 15 max 10
+15:00:03 wald|daemmerung|leer -> 2   fps 3.7 pushes 0
+15:00:26 wald|daemmerung|gehen -> True Person 5.7 fps 3.6 pushes 2
+15:00:54 wald|daemmerung|kriechen -> True Person 6.2 fps 3.2 pushes 0
+15:01:18 wald|daemmerung|kind -> True Person 9.4 fps 3.7 pushes 1
+15:01:42 wald|daemmerung|tier -> False – None fps 3.5 pushes 0
+15:02:02 wald|daemmerung|fahrzeug -> False nur Bewegung None fps 3.5 pushes 0
+15:03:09 wald|nacht|leer -> 4   fps 3.3 pushes 1
+15:03:33 wald|nacht|gehen -> False nur Bewegung None fps 3.1 pushes 1
+15:04:01 wald|nacht|kriechen -> True Person 9.2 fps 3.0 pushes 0
+15:04:25 wald|nacht|kind -> True Person 4.1 fps 3.3 pushes 1
+15:04:50 wald|nacht|tier -> True animal, sheep 10.7 fps 3.3 pushes 1
+15:05:10 wald|nacht|fahrzeug -> True car 5.2 fps 3.1 pushes 0
+15:06:46 wald|nacht|blindmap -> 7 / 15 im Bild, von 15 max 10
+15:07:55 wald|nebel|leer -> 0   fps 2.9 pushes 1
+15:08:19 wald|nebel|gehen -> False – None fps 3.4 pushes 0
+15:08:47 wald|nebel|kriechen -> False – None fps 3.3 pushes 1
+15:09:11 wald|nebel|kind -> False – None fps 2.4 pushes 0
+15:09:36 wald|nebel|tier -> False – None fps 3.1 pushes 0
+15:09:56 wald|nebel|fahrzeug -> False – None fps 3.2 pushes 0
+15:09:58 Last 2.79
+15:10:01 Ort stellplatz Welt ferienpark geladen in 3 s True
+15:11:07 stellplatz|tag|leer -> 0   fps 3.5 pushes 0
+15:11:31 stellplatz|tag|gehen -> True Person 7.3 fps 2.8 pushes 1
+15:12:00 stellplatz|tag|kriechen -> True Person 6.2 fps 3.1 pushes 0
+15:12:25 stellplatz|tag|kind -> True Person 3.2 fps 3.5 pushes 0
+15:12:48 stellplatz|tag|tier -> False – None fps 3.6 pushes 0
+15:17:08   Last-Pause 260 s, Last jetzt 4.9
+15:17:29 stellplatz|tag|fahrzeug -> False – None fps 5.0 pushes 0
+15:18:36 stellplatz|tag|blindmap -> 13 / 14 im Bild, von 15 max 25
+15:19:43 stellplatz|daemmerung|leer -> 0   fps 4.2 pushes 0
+15:20:07 stellplatz|daemmerung|gehen -> True Person 12.6 fps 3.0 pushes 1
+15:20:35 stellplatz|daemmerung|kriechen -> True Person 17.4 fps 2.6 pushes 0
+15:25:25 Last 4.94
+15:25:28 Ort stellplatz Welt ferienpark geladen in 3 s True
+15:26:23 stellplatz|daemmerung|kind -> True Person 5.1 fps 4.4 pushes 2
+15:26:47 stellplatz|daemmerung|tier -> False nur Bewegung None fps 4.5 pushes 0
+15:27:07 stellplatz|daemmerung|fahrzeug -> False nur Bewegung None fps 3.1 pushes 0
+15:28:14 stellplatz|nacht|leer -> 0   fps 4.1 pushes 0
+15:28:38 stellplatz|nacht|gehen -> True Person 5.2 fps 4.1 pushes 1
+15:29:06 stellplatz|nacht|kriechen -> False nur Bewegung None fps 3.3 pushes 0
+15:29:30 stellplatz|nacht|kind -> True Person 5.8 fps 2.3 pushes 1
+15:34:00   Last-Pause 270 s, Last jetzt 4.8
+15:34:25 stellplatz|nacht|tier -> True animal, bird 2.2 fps 2.7 pushes 0
+15:37:45   Last-Pause 200 s, Last jetzt 4.8
+15:38:05 stellplatz|nacht|fahrzeug -> False nur Bewegung None fps 4.4 pushes 0
+15:39:16 stellplatz|nacht|blindmap -> 10 / 15 im Bild, von 15 max 18
+15:40:24 stellplatz|schnee|leer -> 0   fps 2.3 pushes 0
+15:40:54   Last-Pause 30 s, Last jetzt 4.7
+15:41:18 stellplatz|schnee|gehen -> True Person 10.4 fps 4.1 pushes 1
+15:41:46 stellplatz|schnee|kriechen -> True Person 11.4 fps 2.9 pushes 0
+15:41:54 Last 4.38
+15:41:57 Ort stellplatz Welt ferienpark geladen in 4 s True
+15:50:03   Last-Pause 420 s, Last jetzt 6.7
+15:50:28 stellplatz|schnee|kind -> True Person 4.1 fps 2.7 pushes 1
+15:57:28   Last-Pause 420 s, Last jetzt 9.1
+15:57:53 stellplatz|schnee|tier -> False – None fps 2.6 pushes 0
+16:04:53   Last-Pause 420 s, Last jetzt 8.3
+16:05:13 stellplatz|schnee|fahrzeug -> False nur Bewegung None fps 2.5 pushes 0
+16:13:35 Last vor Schlafzimmer 7.27
+16:13:35 Schlafzimmer übersprungen: Last zu hoch
+16:13:36 fertig
