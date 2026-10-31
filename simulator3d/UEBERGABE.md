@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.54** · passende MoveEye-Version (früher Motion Watch) **2.98.85**
+Stand: 31.10.2026 · Simulator-Version **3D-4.55** · passende MoveEye-Version (früher Motion Watch) **2.98.86**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.55 (MoveEye 2.98.86): Grafikstufe «Hoch» (`grafik_hoch.gd`, `quality.gd`)
+
+- `grafik_hoch.gd` (neu, Forward+/Vulkan, nur Godot-Bordmittel); `quality.gd` MODES (auto, lite, normal, hoch), eine Wahl
+  `grafik_mode`, Einzelheiten Experte. Rückfall auf Normal, wenn Vulkan fehlt oder Hoch zu langsam ist.
 
 ## NEU in 3D-4.54 (MoveEye 2.98.85): Spielbereich «Spielen» (`spielbereich.gd`, MoveEye 639i)
 

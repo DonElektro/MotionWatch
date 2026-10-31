@@ -421,6 +421,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.55
+3D-4.55: Neue Grafikstufe «Hoch» (fotorealistischer: weiche Schatten, Dunst, Spiegelungen im Wasser; startet einmal neu mit
+Vulkan, geht das nicht, zurück zu «Normal»). Eine einzige Wahl System → Grafik → «Grafik-Modus»: Automatisch / Lite /
+Normal / Hoch; die Einzelheiten unter Experte.
+So testest du: 1) System → Grafik → «Grafik-Modus» = Hoch: der Simulator startet neu. 2) Camping am Morgen: weiche
+Schatten, Dunst, Spiegelung am See. 3) Wieder «Normal»: alles wie vorher.
+
 NEU IN 3D-4.54
 3D-4.54: Spielbereich ⭐ «Spielen» im Schnellzugriff: Abenteuer der Reihe nach (Szenen als Kapitel), Entdeckungen pro
 Kapitel, Abzeichen, Stufe, Blinki als Begleiter. In MoveEye unter Mehr → «Spielen» (gleicher Aufbau).
