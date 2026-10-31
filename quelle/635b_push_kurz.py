@@ -32,6 +32,7 @@ PK_MAX = 80                                               # one line on the phon
 # class: info = not to the phone in the simulation (without the switch) · alarm / sim = always
 PK_TEXTS = [
     (("Protection switched off at the device",), "🛡", "Protection off", "Switched off at the device", "info", True),
+    (("Protection on - alarms are active",), "🛡", "Protection on", "Alarms are active", "info", True),
     (("Siren stopped at the device",), "🔕", "Siren off", "Stopped at the device", "info", False),
     (("Disarmed via MQTT / Home Assistant",), "🛡", "Protection off", "Via MQTT / Home Assistant", "info", True),
     (("MoveEye is online in Wi-Fi {ssid}: {addr}",), "📶", "Online", "Wi-Fi {ssid} · open page", "info", False),
@@ -189,6 +190,51 @@ def push_kind(p):
     return out
 
 
+def push_show_name():
+    """the device name in the title only when there is more than one MoveEye. There is no pairing yet (CLAUDE.md: «Zwei
+    MoveEye koppeln», later); the condition is: other devices in the device list of Teil 260 (CFG «fleet», Cameras page →
+    several devices) - or, in the simulation, the «second device in the simulator» (dev2 of the simulator, the cached summary
+    of 139 sim_hub, no extra request). Simulators in the network alone do not count (they are no second MoveEye)."""
+    if CFG.get("fleet"):
+        return True
+    try:
+        return bool(CFG.get("sim_on") and (_SIMHUB.get("d") or {}).get("dev2"))
+    except NameError:
+        return False
+
+
+def push_long(p):
+    """the full text for the e-mail (Daniel 31.10.2026: e-mail complete, the phone channels short): the text of the call
+    site / the message text with time and camera, the distance, «+n», «late»"""
+    ev = Notifier._event(p)
+    if ev in ("info", "tamper"):
+        t_ = str(p.get("text") or "")
+    else:
+        kind = "person" if ev == "test" else ev
+        t_ = render_msg(msg_template(kind, 1), dict(p, persons=max(1, int(p.get("persons") or 0))) if ev == "test" else p)
+        if p.get("dist"):
+            t_ += " · " + str(p["dist"])
+    if p.get("more"):
+        t_ += " " + trf("(+{n} more detections since the last message)", n=p["more"])
+    if p.get("late"):
+        t_ += " · " + trf("late - from {t} (the message could not be sent then)", t=str(p.get("time", ""))[11:16])
+    return t_
+
+
+def push_protect_on():
+    """«🛡 Protection on» with the current camera picture (info; in the simulation only with sim_info_push) - 130 arm_tick
+    calls it when the protection becomes active (after the countdown; not at the start of the program)"""
+    w = WATCH_REF.get("w")
+    n = getattr(w, "notifier", None) if w is not None else None
+    if n is None:
+        return False
+    try:
+        return bool(n.info(tr("Protection on - alarms are active"), title="{name}: " + tr("Protection")))
+    except Exception as e:
+        log_event("sys", f"Protection on message: {type(e).__name__}"[:120])
+        return False
+
+
 def push_short(p):
     """the one form of every push message: {title, text} - title «symbol short title» (the Notifier adds [SIM] and the keyword),
     text at most one line. Own message texts (msg_<kind>_title / _text) stay."""
@@ -199,6 +245,8 @@ def push_short(p):
     if ev in ("info", "tamper"):
         k = push_kind(p)
         ic, title, parts = k["ic"], k["title"], [k["text"]]
+        if push_show_name():
+            title = ((CFG.get("device_name") or "").strip()[:20] or "MoveEye") + ": " + title
         title = ("[Test] " if k["test"] else "") + ((ic + " ") if icons and ic else "") + title
     else:
         kind = "person" if ev == "test" else ev
@@ -207,6 +255,8 @@ def push_short(p):
         own_x = str(CFG.get(f"msg_{kind}_text", "") or "").strip()
         n = int(pp.get("persons") or 0)
         title = render_msg(own_t, pp) if own_t else (trf("{n} persons", n=n) if kind == "person" and n > 1 else tr(PK_EVENT.get(kind, "Note")))
+        if push_show_name() and not own_t:
+            title = ((CFG.get("device_name") or "").strip()[:20] or "MoveEye") + ": " + title
         ic = ev_icon(kind)
         if icons and ic and not title.startswith(ic):
             title = ic + " " + title
@@ -305,6 +355,11 @@ _HX_PK = {
     "thermal camera": ("Wärmebild", "caméra thermique", "termocamera", "camera termica"),
     "+{n} more": ("+{n} weitere", "+{n} autres", "+{n} altri", "+{n} ulteriurs"),
     "late, from {t}": ("verspätet, von {t}", "en retard, de {t}", "in ritardo, delle {t}", "tard, da las {t}"),
+    "Protection on": ("Schutz ein", "Protection activée", "Protezione attiva", "Protecziun activada"),
+    "Protection on - alarms are active": ("Schutz ein – Alarme aktiv", "Protection activée – alarmes actives",
+                                          "Protezione attiva – allarmi attivi", "Protecziun activada – alarms activs"),
+    "Alarms are active": ("Alarme aktiv", "Alarmes actives", "Allarmi attivi", "Alarms activs"),
+    "Protection": ("Schutz", "Protection", "Protezione", "Protecziun"),
     "Protection off": ("Schutz aus", "Protection désactivée", "Protezione spenta", "Protecziun stizzada"),
     "Switched off at the device": ("Am Gerät ausgeschaltet", "Désactivée sur l’appareil", "Spenta sul dispositivo", "Stizzada a l’apparat"),
     "Siren off": ("Sirene aus", "Sirène arrêtée", "Sirena spenta", "Sirena stizzada"),
@@ -380,11 +435,11 @@ for _k, _v in _HX_PK.items():
 
 # ---- self-test: the form of every kind, never JSON / escapes / {name}, the simulation filter, the webhook with an ntfy address --
 def push_kurz_selftest():
-    keys = ("sim_on", "sim_info_push", "msg_icons", "msg_keyword_on", "lang", "device_name", "msg_person_title", "msg_person_text")
+    keys = ("sim_on", "sim_info_push", "msg_icons", "msg_keyword_on", "lang", "device_name", "msg_person_title", "msg_person_text", "fleet")
     keep = {k: CFG.get(k) for k in keys}
     try:
         CFG.update(sim_on=False, sim_info_push=False, msg_icons=True, msg_keyword_on=False, lang="de", device_name="Zelt",
-                   msg_person_title="", msg_person_text="")
+                   msg_person_title="", msg_person_text="", fleet=[])
         now = datetime(2026, 10, 31, 21, 7, 5).isoformat(timespec="seconds")
         def P(**kw):
             return dict({"event": "info", "persons": 0, "time": now, "snapshot": None, "rain": False, "wind": "", "source": "cam", "link": ""}, **kw)
@@ -409,6 +464,15 @@ def push_kurz_selftest():
         assert out["person"] == ("🚶 Person erkannt", "21:07 · ca. 12 m, kommt näher") or out["person"][0] == "🚶 Person erkannt", out["person"]
         assert out["night"] == ("🌙 Nachtbericht", "Zeile 1"), out["night"]
         assert push_kind(cases["off"])["pic"] and not push_kind(cases["online"])["pic"], "picture only for «Protection off»"
+        on = P(text=tr("Protection on - alarms are active"), info_title="{name}: " + tr("Protection"))
+        assert T(on) == ("🛡 Schutz ein", "Alarme aktiv") and push_kind(on)["pic"], T(on)
+        # the device name only with several MoveEye (device list of 260)
+        CFG["fleet"] = [{"url": "http://192.0.2.9:5000", "id": "x"}]
+        assert Notifier._title(cases["off"]) == "🛡 Zelt: Schutz aus" and Notifier._title(cases["person"]) == "🚶 Zelt: Person erkannt", Notifier._title(cases["off"])
+        CFG["fleet"] = []
+        # e-mail: the complete text
+        assert push_long(cases["batt"]).endswith(tr("Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap").format(pct=12, hours=1.5))
+        assert "Person" in push_long(cases["person"]) and "cam" in push_long(cases["person"]), push_long(cases["person"])
         CFG["msg_person_title"] = "{name}: Achtung"
         assert Notifier._title(cases["person"]) == "🚶 Zelt: Achtung", "own title with {name} replaced"
         CFG["msg_person_title"] = ""

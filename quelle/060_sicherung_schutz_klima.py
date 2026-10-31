@@ -1094,7 +1094,7 @@ class Notifier:
         ev = self._event(p)
         if email_ready() and (CFG.get("email_events") == "all" or ev in ("person", "warm", "noise", "tamper", "test")):
             def _mail():
-                ok, err = email_send(self._title(p), self._text(p) + (("\n" + p["link"]) if p.get("link") else ""), jpg, fname)
+                ok, err = email_send(self._title(p), push_long(p) + (("\n" + p["link"]) if p.get("link") else ""), jpg, fname)   # 635b: e-mail complete
                 log_event("web", "E-mail sent" if ok else f"E-mail failed: {err}"[:200])
             threading.Thread(target=_mail, daemon=True).start()
         if CFG["sms_on"] and ev in ("person", "tamper", "warm", "noise", "test") and sms_numbers():
@@ -1214,7 +1214,7 @@ class Notifier:
         if pushover_ready():
             run("Pushover", lambda: self._pushover(p, jpg, "test.jpg"))
         if email_ready():
-            run("E-Mail", lambda: email_send(self._title(p), self._text(p), jpg, "test.jpg"))
+            run("E-Mail", lambda: email_send(self._title(p), push_long(p), jpg, "test.jpg"))
         if CFG["sms_on"] and sms_numbers():
             run("SMS", lambda: sms_send(self._title(p) + ": " + self._text(p), force=True))
         if CFG["webpush_on"] and webpush_subs():
