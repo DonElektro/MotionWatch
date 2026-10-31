@@ -1080,6 +1080,8 @@ func control(d: Dictionary) -> Dictionary:
 			return {"ok": true, "above_horizon": true}
 		var foot := dd * t
 		var top := uv_of(po[0], po[1], (foot + Vector3(0, 1.75, 0)).normalized())
+		var ey := eye()
 		return {"ok": true, "dist": snappedf(Vector2(foot.x, foot.z).length(), 0.01), "head_v": snappedf(top.y, 0.001),
+				"x": snappedf(ey.x + foot.x, 0.01), "z": snappedf(ey.z + foot.z, 0.01),
 				"person_h": snappedf(float(d.get("v", 0.8)) - top.y, 0.0001)}
 	return {"ok": true, "fotomodus": info()}
