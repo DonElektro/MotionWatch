@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 16:03",
+ "generated": "2026-10-31 16:12",
  "versions": [
   {
-   "version": "3.0.1",
-   "file": "webcam_bewegung_3_0_1.py",
+   "version": "3.0.2",
+   "file": "webcam_bewegung_3_0_2.py",
    "url": "",
-   "sha256": "3d8d740a01b1d0b6d347a80d26459b15e165e44f8481d3a1cea0249e47712935",
-   "date": "2026-10-31 16:03",
-   "notes": "Geschichten-Texte überarbeitet: stimmiger, lebendiger, Tippfehler korrigiert (Maggie, Die Karte des Grossvaters, Entdecken), Übersetzungen vereinheitlicht.",
-   "sig": "a7d7eabd1a63ab6eb47f2d2cb0f4f9bd7dac191a496c678e6d927a7fd5f15dab4c41336be145a7a4c426cf236ea3a5a24ab2bf06797000a651c65d3ae99b8307"
+   "sha256": "0409d855abf83cdfe9ea06bc535d09ed5df56c7b2fa7af6f2fd9bab4fb1ac460",
+   "date": "2026-10-31 16:12",
+   "notes": "Simulator: «Nur Gruppen» wie in MoveEye (Gruppen offen, Themen zu); Anna ist die Betreuerin der Hütte; Sepp spricht passend zur Jahreszeit.",
+   "sig": "f88dc49ba510c1a8d70bf0d3bf12f431945591b66074181237bca78dc3fe2e704d52cb2dc5496931174a1fc1eac9a38cbdb2c73c48ac17de05696e6744b1e302"
   },
   {
    "version": "2.98.116",

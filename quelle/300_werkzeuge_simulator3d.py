@@ -672,8 +672,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.0.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 35021276,
-         "sha256": "9ed57d46ebdca6056aa788de06b3c9b374c6fe456e96712beb494f8db9299a91"}
+SIM3D = {"version": "3.0.2", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 35022541,
+         "sha256": "f626346d87b0b9248f83fb8ceacaa1b9e05e27c3cab7141131da6e4cc1018ec4"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,

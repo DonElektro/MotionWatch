@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.0.1"
+const VERSION := "3.0.2"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
@@ -6024,13 +6024,14 @@ func _fold_state() -> String:
 		var o: bool = b.visible
 		all_open = all_open and o
 		all_closed = all_closed and not o
-		groups = groups and o == (not b in setting_bodies and b.get_meta("title", "") in ["Kameras"])
+		groups = groups and o == _fold_group_open(b)
 	for sb in sub_bodies:
 		if not is_instance_valid(sb) or not sb.has_meta("fold"):
 			continue
 		var so: bool = (sb.get_meta("fold") as Control).visible
 		all_open = all_open and so
 		all_closed = all_closed and not so
+		groups = groups and not so
 	if all_closed:
 		return "close"
 	if all_open:
@@ -6055,15 +6056,19 @@ func _fold_paint() -> void:
 				b.remove_theme_stylebox_override(n)
 
 
+func _fold_group_open(b: Control) -> bool:
+	"""«Nur Gruppen» like MoveEye (Paket angleich, Daniel 31.10.2026): the groups open, their parts (Themen) closed.
+	3D-4.12 (Daniel): «Verbindung» stays closed; «Tasten» is a help card, no group"""
+	return not str(b.get_meta("title", "")) in ["Verbindung", "Tasten"]
+
+
 func _fold_all(how: String, own := false) -> void:
 	"""own: pressed by the user (the three buttons) - kept as the own state like on the page of MoveEye; the start view is not"""
 	_fold_lit = "-"
 	for b in fold_bodies:
-		var open: bool = how == "open" or (how == "groups" and not b in setting_bodies and b.get_meta("title") in ["Kameras"])   # 3D-4.12 (Daniel): «Verbindung» stays closed
-		UI.set_open(b, open)
-	if how != "groups":
-		for sb in sub_bodies:
-			UI.set_sub_open(sb, how == "open")
+		UI.set_open(b, how == "open" or (how == "groups" and _fold_group_open(b)))
+	for sb in sub_bodies:
+		UI.set_sub_open(sb, how == "open")
 	if own:
 		for b in fold_bodies + sub_bodies:
 			_fold_keep(b)

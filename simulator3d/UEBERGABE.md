@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.0.1** · MoveEye **3.0.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.0.2** · MoveEye **3.0.2** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.0.2 (MoveEye 3.0.2): Angleichungen
+
+- `main.gd`: «Nur Gruppen» wie in MoveEye (Gruppen offen, Themen zu). `abenteuer_figuren_daten.gd`: Anna ist Betreuerin der
+  Hütte, Sepp spricht passend zur gewählten Jahreszeit.
 
 ## NEU in 3.0.1 (MoveEye 3.0.1): Lektorat der Geschichten-Texte
 

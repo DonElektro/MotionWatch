@@ -3961,6 +3961,12 @@
   "it": "Anna aspetta una forma di formaggio per la capanna. La porti tu, se la vedi?",
   "rm": "L'Anna spetga in paun chaschiel per la chamona. Al prendas ti cun tai, sche ti la vesas?"
  },
+ "Anna, die Betreuerin der Hütte": {
+  "en": "Anna, who looks after the hut",
+  "fr": "Anna, qui s'occupe de la cabane",
+  "it": "Anna, che si occupa della capanna",
+  "rm": "Anna, che tgira la chamona"
+ },
  "Anna, die Hüttenwartin": {
   "en": "Anna, the hut warden",
   "fr": "Anna, la gardienne de cabane",
@@ -7508,6 +7514,12 @@
   "it": "Più l’esperienza di «La mappa del nonno» (%d) - un livello per tutto, per partita.",
   "rm": "Plus l’experientscha da «La charta dal tat» (%d) - in stgalim per tut, per stadi dal gieu."
  },
+ "Dazu die Erfahrung aus «Die Karte des Grossvaters» (%d) – eine Stufe für alles, pro Spielstand.": {
+  "en": "Plus the experience from «Grandfather’s map» (%d) – one level for everything, per game state.",
+  "fr": "Plus l’expérience de «La carte du grand-père» (%d) – un niveau pour tout, par partie.",
+  "it": "Più l’esperienza di «La mappa del nonno» (%d) – un livello per tutto, per partita.",
+  "rm": "Plus l’experientscha da «La charta dal tat» (%d) – in stgalim per tut, per stadi dal gieu."
+ },
  "Dazu kommen: ": {
   "en": "Added: ",
   "fr": "S’y ajoutent : ",
@@ -9903,6 +9915,12 @@
   "it": "Metti le provviste nella cassetta del bivacco. I prossimi alpinisti saranno contenti.",
   "rm": "Ti metas il provediment en la chaschetta dal bivac. Ils proxims alpinists vegnan ad avair plaschair."
  },
+ "Du sagst der Betreuerin der Hütte oder dem Wildhüter Bescheid, sobald du sie triffst.": {
+  "en": "You'll tell Anna from the hut or the gamekeeper as soon as you meet them.",
+  "fr": "Tu préviendras Anna, qui s'occupe de la cabane, ou le garde-faune dès que tu les croiseras.",
+  "it": "Avviserai Anna, che si occupa della capanna, o il guardiacaccia appena li incontri.",
+  "rm": "Ti das part a l'Anna da la chamona u al guardiaselvaschina uschespert che ti als entaupas."
+ },
  "Du sagst der Hüttenwartin oder dem Wildhüter Bescheid, sobald du sie triffst.": {
   "en": "You'll tell the hut warden or the gamekeeper as soon as you meet them.",
   "fr": "Tu préviendras la gardienne de cabane ou le garde-faune dès que tu les croiseras.",
@@ -9926,6 +9944,12 @@
   "fr": "Tu places MoveEye plus haut et tu restes éveillé. Vers midi, le vent pousse une page jaunie contre ta tente :",
   "it": "Metti MoveEye più in alto e resti sveglio. Verso mezzogiorno il vento spinge una pagina ingiallita contro la tua tenda:",
   "rm": "Ti metas MoveEye pli aut e restas sveglià. Vers mezdi suffla il vent ina pagina melnenta vers tes tschalet:"
+ },
+ "Du versprichst, Hilfe zu holen. Sag es der Betreuerin der Hütte oder dem Wildhüter, sobald du sie triffst.": {
+  "en": "You promise to get help. Tell Anna from the hut or the gamekeeper as soon as you meet them.",
+  "fr": "Tu promets d'aller chercher de l'aide. Dis-le à Anna, qui s'occupe de la cabane, ou au garde-faune dès que tu les croises.",
+  "it": "Prometti di cercare aiuto. Dillo ad Anna, che si occupa della capanna, o al guardiacaccia appena li incontri.",
+  "rm": "Ti empermettas da clamar agid. Di quai a l'Anna da la chamona u al guardiaselvaschina uschespert che ti als entaupas."
  },
  "Du versprichst, Hilfe zu holen. Sag es der Hüttenwartin oder dem Wildhüter, sobald du sie triffst.": {
   "en": "You promise to get help. Tell the hut warden or the gamekeeper as soon as you meet them.",
@@ -15138,11 +15162,29 @@
   "it": "Più grande",
   "rm": "Pli grond"
  },
+ "Grüessech! Ich bin der Sepp, ich mache diesen Frühling die Alp parat für die Kühe. Was führt dich so weit hinauf?": {
+  "en": "Grüessech! I'm Sepp, this spring I'm getting the alp ready for the cows. What brings you up this far?",
+  "fr": "Grüessech ! Je suis Sepp, ce printemps je prépare l'alpage pour les vaches. Qu'est-ce qui t'amène si haut ?",
+  "it": "Grüessech! Sono Sepp, questa primavera preparo l'alpe per le mucche. Cosa ti porta fin quassù?",
+  "rm": "Grüessech! Jau sun il Sepp, questa primavaira pare jau l'alp per las vatgas. Tge ta maina uschè lunsch ensi?"
+ },
+ "Grüessech! Ich bin der Sepp, ich schaue diesen Herbst zu den Kühen, bis wir mit ihnen ins Tal ziehen. Was führt dich so weit hinauf?": {
+  "en": "Grüessech! I'm Sepp, this autumn I look after the cows until we take them down to the valley. What brings you up this far?",
+  "fr": "Grüessech ! Je suis Sepp, cet automne je garde les vaches jusqu'à ce qu'on les redescende dans la vallée. Qu'est-ce qui t'amène si haut ?",
+  "it": "Grüessech! Sono Sepp, quest'autunno bado alle mucche finché le riportiamo a valle. Cosa ti porta fin quassù?",
+  "rm": "Grüessech! Jau sun il Sepp, quest atun guard jau las vatgas, fin che nus las manain giu en la val. Tge ta maina uschè lunsch ensi?"
+ },
  "Grüessech! Ich bin der Sepp, ich schaue diesen Sommer zu den Kühen. Was führt dich so weit hinauf?": {
   "en": "Grüessech! I'm Sepp, I look after the cows this summer. What brings you up this far?",
   "fr": "Grüessech ! Je suis Sepp, je garde les vaches cet été. Qu'est-ce qui t'amène si haut ?",
   "it": "Grüessech! Sono Sepp, quest'estate bado alle mucche. Cosa ti porta fin quassù?",
   "rm": "Grüessech! Jau sun il Sepp, jau guard questa stad las vatgas. Tge ta maina uschè lunsch ensi?"
+ },
+ "Grüessech! Ich bin der Sepp, ich schaue diesen Winter zur Alp und zu den Tieren im Stall. Was führt dich so weit hinauf?": {
+  "en": "Grüessech! I'm Sepp, this winter I keep an eye on the alp and on the animals in the barn. What brings you up this far?",
+  "fr": "Grüessech ! Je suis Sepp, cet hiver je veille sur l'alpage et sur les bêtes à l'étable. Qu'est-ce qui t'amène si haut ?",
+  "it": "Grüessech! Sono Sepp, quest'inverno tengo d'occhio l'alpe e gli animali nella stalla. Cosa ti porta fin quassù?",
+  "rm": "Grüessech! Jau sun il Sepp, quest enviern guard jau sin l'alp e sin las bestgas en la stalla. Tge ta maina uschè lunsch ensi?"
  },
  "Grüessech! Wieder unterwegs?": {
   "en": "Grüessech! Out and about again?",
@@ -19963,6 +20005,12 @@
   "fr": "Fromage",
   "it": "Formaggio",
   "rm": "Chaschiel"
+ },
+ "Käse von Vreni zu Anna, der Betreuerin der Hütte, bringen": {
+  "en": "Bring Vreni's cheese to Anna, who looks after the hut",
+  "fr": "Apporter le fromage de Vreni à Anna, qui s'occupe de la cabane",
+  "it": "Portare il formaggio di Vreni ad Anna, che si occupa della capanna",
+  "rm": "Purtar il chaschiel da la Vreni a l'Anna che tgira la chamona"
  },
  "Käse von Vreni zur Hüttenwartin Anna bringen": {
   "en": "Bring Vreni's cheese to Anna the hut warden",
@@ -32107,6 +32155,12 @@
   "fr": "Caravane abandonnée à l’orée du bois",
   "it": "Roulotte abbandonata al limite del bosco",
   "rm": "Rulotta bandunada a l’ur dal guaud"
+ },
+ "Verletzten Wanderer melden (Betreuerin der Hütte oder Wildhüter)": {
+  "en": "Report the injured hiker (Anna from the hut or the gamekeeper)",
+  "fr": "Signaler le randonneur blessé (Anna de la cabane ou garde-faune)",
+  "it": "Segnalare l'escursionista ferito (Anna della capanna o guardiacaccia)",
+  "rm": "Annunziar il viandant blessà (Anna da la chamona u guardiaselvaschina)"
  },
  "Verletzten Wanderer melden (Hüttenwartin oder Wildhüter)": {
   "en": "Report the injured hiker (hut warden or gamekeeper)",
