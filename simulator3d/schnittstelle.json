@@ -33,7 +33,8 @@
     "battery": "simulierter USV-HAT -> 285 sim_battery_tick, Uebung Akku (141/565)",
     "follower": "ein anderes MoveEye steuert, dieses schaut nur zu -> 350",
     "leader": "Name des MoveEye, das steuert -> 350 Meldung «schaut nur zu»",
-    "horror": "Horror-Modus «Das Hospiz»: neue Aufnahmen (id, t, night, time, title, text; Bild /horror_pic/<id>.jpg) -> 539a horror_feed, Verlauf Nachrichten"
+    "horror": "Horror-Modus «Das Hospiz»: neue Aufnahmen (id, t, night, time, title, text; Bild /horror_pic/<id>.jpg) -> 539a horror_feed, Verlauf Nachrichten",
+    "sky": "Himmel und Licht der Szene (licht.gd): lux am Geraet (Himmel + Lampen), sky_lux, phase (tag / buergerlich / nautisch / astronomisch / nacht), sun_el, moon_el, moon_illum, lp (land / dorf / stadt) -> MoveEye liest es noch nicht (spaeter: Nacht-Umschaltung pruefen, Kamera-Paket Blendung)"
   },
   "state": {
     "v": "Version des Zustands",
@@ -113,7 +114,8 @@
   "_meta": {
     "world_reply": [
       "v",
-      "ok"
+      "ok",
+      "sky"
     ],
     "state": [
       "v",

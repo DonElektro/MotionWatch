@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.46** · passende MoveEye-Version (früher Motion Watch) **2.98.77**
+Stand: 31.10.2026 · Simulator-Version **3D-4.47** · passende MoveEye-Version (früher Motion Watch) **2.98.78**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.47 (MoveEye 2.98.78): Licht & Nacht (`licht.gd`)
+
+- `licht.gd` (neu): Sonne, Dämmerung, Mond, Sterne, Lichtverschmutzung, Lampen, Blendung; `main.licht.lux_at(p)`, `main.licht.sky`,
+  `night_level()` für `main.light_level`. sky.gdshader `star_vis` / `star_lim` (+ `milky` vom Bergtal). Feld `sky` in
+  world_reply (schnittstelle.json; MoveEye liest es noch nicht). Teil «Licht & Nacht» in der Karte Szene. Lite: höchstens 4 Lampen, keine Schatten.
 
 ## NEU in 3D-4.46 (MoveEye 2.98.77): Fahrzeuge wie echt (`fahrzeuge.gd`)
 

@@ -421,6 +421,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.47
+3D-4.47: Licht & Nacht wie echt: Dämmerung (bürgerlich, nautisch, astronomisch), Mond mit echter Phase und Lage, Sterne
+nach Lichtverschmutzung (Land, Dorf, Stadt), Platzlampen, leuchtende Zelte und Fenster, Blendung tief stehender Sonne.
+Neu unter Szene → «Licht & Nacht».
+So testest du: 1) «Voller Campingplatz», klar, Uhrzeit von 17 auf 23 Uhr schieben: Dämmerung, Lampen gehen an.
+2) Lichtverschmutzung «Stadt» ↔ «Land»: Himmel orange oder viele Sterne. 3) Mondphase 1 / 0: Nacht heller / dunkler.
+
 NEU IN 3D-4.46
 3D-4.46: Fahrzeuge wie echt: Tempo, Abblend- und Fernlicht, Blinker, Türen, Parkieren und Aussteigen, Blendung der Kamera
 durch Scheinwerfer, Velos mit Licht (einige ohne). Neuer Testlauf «Fahrzeuge in der Nacht».
