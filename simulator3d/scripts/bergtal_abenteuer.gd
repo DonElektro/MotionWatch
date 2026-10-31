@@ -21,6 +21,7 @@ const D = preload("res://scripts/bergtal_abenteuer_daten.gd")
 const T = preload("res://scripts/i18n.gd")
 const Bt = preload("res://scripts/bergtal.gd")
 const Karte = preload("res://scripts/bergtal_abenteuer_karte.gd")
+const A1 = preload("res://scripts/abenteuer_moveeye.gd")   # Paket A1: MoveEye am Lager, Wildkamera, seltene Tiere
 
 const STEPS := ["Kapitel", "Stimmung", "Schwierigkeit & Ziel", "Rucksack", "Unterwegs", "Nachtlager", "Nacht", "Morgen"]
 const SAVE_FILE := "user://bergtal_abenteuer/fortschritt.json"
@@ -67,6 +68,7 @@ var back_btn: Button
 var next_btn: Button
 var karte                            # bergtal_abenteuer_karte.gd (kept between paints)
 var title_lab: Label
+var a1                               # abenteuer_moveeye.gd (Paket A1)
 
 
 # =======================================================================================================================
@@ -884,6 +886,9 @@ func set_camp(mount: String, wall: bool) -> Dictionary:
 		if not bool(chk.get("ok", false)):
 			chk = {"ok": true, "x": p.x + 8.0, "z": p.y + 8.0, "yaw": 0.0, "note": ""}
 		res = main.bt_take(chk)
+	if a1 != null:
+		a1.on_camp()                                     # A1: MoveEye mode, food secured (minutes)
+		R["camp"]["set_h"] = main.hour()
 	R["sunset_ok"] = float(R["camp"]["set_h"]) <= float(R["sunset"]) + 0.02
 	_diary("camp", T.t("Lager aufgeschlagen"), T.t(str(D.FLAVOR[R["mood"]]["camp"])) + " " + T.t("(%s, MoveEye: %s)") % [T.t(_bed_name(bed_of())), T.t(str(Bt.MOUNTS.get(mount, ["?"])[0]))])
 	if not has("isomatte") and bed_of() != "mat":
@@ -913,6 +918,8 @@ func _register_kinds() -> void:
 	for k in kinds:
 		var kk: String = kinds[k][2]
 		main.nacht.register_kind(k, func(_ev): return _spawn_list(kk), kinds[k][0], kinds[k][1])
+	if a1 != null:
+		a1.register_kinds()                              # A1: fox / food, lynx, ibex, game trail, birds, hint light
 
 
 func _spawn_list(kind: String) -> Array:
@@ -965,6 +972,8 @@ func night_plan(from_h: float, to_h: float, speed: float) -> Array:
 			out.append({"kind": "rain", "at_h": r.randf_range(0.15, 0.6) * sp, "dur_h": minf(1.0, 0.15 * sp)})
 	if float(rt.get("wind", 0.3)) > 0.5:
 		out.append({"kind": "wind", "at_h": r.randf_range(0.1, 0.7) * sp, "dur_h": minf(0.75, 0.12 * sp), "wind": 40.0 + 30.0 * float(rt.get("wind", 0.5))})
+	if a1 != null:
+		a1.plan_extra(out, r, sp, speed)                  # A1: rare animals, game trail, the light on the mountain
 	# seconds, not two animals on top of each other
 	out.sort_custom(func(a, c): return float(a["at_h"]) < float(c["at_h"]))
 	var real_s := sp * 3600.0 / speed
@@ -1044,7 +1053,7 @@ func _tick_night(dt: float) -> void:
 static func _kind_name(k: String) -> String:
 	return {"bt_fox": "Fuchs am Proviant", "bt_chamois": "Gämsen", "bt_cows": "Kühe", "bt_hare": "Schneehase", "bt_stoat": "Hermelin",
 			"bt_deer": "Hirsch", "bt_stranger": "Fremder am Rucksack", "bt_rockfall": "Steinschlag", "bt_storm": "Gewitter", "rain": "Regen",
-			"fog": "Nebel", "wind": "Windböen"}.get(k, k)
+			"fog": "Nebel", "wind": "Windböen"}.get(k, A1.kind_name(k))
 
 
 # =======================================================================================================================
@@ -1181,6 +1190,8 @@ func _morning() -> void:
 	R["result"] = {"stars": stars, "xp": xp, "level": lv1, "level_up": lv1 > lv0, "unlocked": unlocked, "rating": mr, "seen": seen,
 			"missed": missed, "hidden": hidden, "hits": hits, "summit_ok": summit_ok, "sunset_ok": bool(R.get("sunset_ok", false)),
 			"sleep": snappedf(sleep, 0.01), "source": _night_src, "battery_h": battery_h, "finale": finale, "notes": notes}
+	if a1 != null:
+		a1.morning(R["result"])                          # A1: food, pictures, the hint
 	_diary("morning", T.t("Der Morgen"), T.t(str(D.FLAVOR[R["mood"]]["morning"])))
 	P["runs"].append({"id": R["id"], "chapter": R["chapter"], "stars": stars, "date": Time.get_datetime_string_from_system().substr(0, 16), "seed": R["seed"]})
 	P["runs"] = (P["runs"] as Array).slice(-30)
@@ -1211,10 +1222,13 @@ func _forgot_text(k: String) -> String:
 # test ground: save the situation, replay it, one report per run
 # =======================================================================================================================
 func situation() -> Dictionary:
-	return {"seed": int(R.get("seed", 0)), "chapter": int(R.get("chapter", W["chapter"])), "mood": str(R.get("mood", W["mood"])),
+	var s := {"seed": int(R.get("seed", 0)), "chapter": int(R.get("chapter", W["chapter"])), "mood": str(R.get("mood", W["mood"])),
 			"level": str(R.get("level", W["level"])), "goal": str(R.get("goal_pick", W["goal"])), "season": str(R.get("season", W["season"])),
 			"pack": str(R.get("pack", W["pack"])), "items": (R.get("items0", W["items"]) as Dictionary).duplicate(), "tempo": int(W["tempo"]),
 			"choices": choices.duplicate(true)}
+	if a1 != null:
+		a1.situation_add(s)
+	return s
 
 
 func situation_key(s: Dictionary) -> String:
@@ -1269,6 +1283,8 @@ func replay(nm := "") -> Dictionary:
 	for k in s["items"]:
 		W["items"][k] = int(s["items"][k])
 	replay_q = (s["choices"] as Array).duplicate(true)
+	if a1 != null:
+		a1.replay_from(s)
 	replaying = true
 	shown = true
 	var r := start_run(int(s["seed"]))
@@ -1483,6 +1499,10 @@ func _ready() -> void:
 	nav.add_child(next_btn)
 	karte = Karte.new()
 	karte.custom_minimum_size = Vector2(320, 320)
+	a1 = A1.new()
+	a1.ab = self
+	a1.main = main
+	add_child(a1)
 	visible = false
 	_layout()
 
@@ -1844,6 +1864,8 @@ func _paint_chapter() -> void:
 		var nn := n
 		gc.add_child(_card(T.t(str(ch["title"])), T.t(str(ch["intro"])) if n == int(W["chapter"]) else "", n == int(W["chapter"]),
 				func(): op({"do": "pick", "key": "chapter", "value": nn}), not open, stars if open else T.t("noch nicht frei")))
+	if a1 != null:
+		a1.paint_sammlung(left)                           # A1: the collection of rare animals
 	if not situations().is_empty() or dev_open:
 		_dev_box(left)
 
@@ -2087,6 +2109,8 @@ func _paint_camp() -> void:
 	cb.toggled.connect(func(x): R["wall_pick"] = x)
 	row.add_child(cb)
 	gg.add_child(_lab(T.t("Schlafen: %s") % T.t(_bed_name(bed_of())), 13))
+	if a1 != null:
+		a1.paint_camp()
 
 
 func _paint_night() -> void:
@@ -2110,6 +2134,8 @@ func _paint_night() -> void:
 	for rec in (n.truth as Array).slice(maxi(0, (n.truth as Array).size() - 6)):
 		var seen: bool = _night_seen.has(int(rec["id"]))
 		g.add_child(_lab("%s  %s%s" % [hm(float(rec.get("h0", 0.0))), T.t(_kind_name(str(rec["kind"]))), ("  - " + T.t("MoveEye meldet")) if seen else ""], 12, GRN if seen else Color(0.75, 0.8, 0.86)))
+	if a1 != null:
+		a1.paint_night(g)
 
 
 func _paint_morning() -> void:
@@ -2175,6 +2201,8 @@ func _paint_morning() -> void:
 	right.add_child(hk)
 	right.add_child(_lab(T.t("grün = gemeldet, rot = verpasst, grau = nicht im Bild"), 11, Color(0.6, 0.66, 0.74)))
 	_karte_in(right, 260.0)
+	if a1 != null:
+		a1.paint_morning(body)                            # A1: MoveEye at the camp, the hint, evaluate the pictures
 	# the diary with pictures of the day and the night
 	var dg := _group(T.t("Tagebuch"))
 	if not _snaps.is_empty():
@@ -2320,6 +2348,8 @@ func op(d: Dictionary) -> Dictionary:
 			out = {"ok": not (R.get("report", {}) as Dictionary).is_empty(), "report": R.get("report", {})}
 		"fast":
 			fast = bool(d.get("value", true))
+		"a1":
+			out = a1.op(d) if a1 != null else {"ok": false}
 		"dev":
 			dev_open = bool(d.get("value", not dev_open))
 			_changed()
