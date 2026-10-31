@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.76"
+const VERSION := "3D-4.77"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -625,6 +625,9 @@ func _ready() -> void:
 	horror = preload("res://scripts/bergtal_horror.gd").new()   # Bergtal · Horror-Modus «Das Hospiz» (mit Passwort, bergtal_horror.gd)
 	horror.main = self
 	add_child(horror)
+	spieltest = preload("res://scripts/spieltest.gd").new()   # Paket «Spieltest-Assistent»: beobachtet die Spiele (Mehr → Entwickler → Spieltest)
+	spieltest.main = self
+	add_child(spieltest)
 	_register_controls()
 	_order_controls()
 	mwpc = Mwpc.new()
@@ -3169,6 +3172,7 @@ func world_reply() -> Dictionary:
 			"game_live": smalltv.game_live() if smalltv != null else null}   # 3D-4.19: Spiel-Anzeige auf dem SmallTV (MoveEye 552)
 	r["buttons"] = statusled.reply() if statusled != null else null   # die Tasten des Geräts wie ein GPIO (MoveEye 163a)
 	r["horror"] = horror.reply() if horror != null else null   # Horror-Modus: neue «Aufnahmen» -> MoveEye Verlauf (539a)
+	r["spieltest"] = spieltest.reply() if spieltest != null else null   # Spieltest-Assistent: Meldung nach jeder Runde -> MoveEye 635a (Push)
 	r["sky"] = licht.reply() if licht != null else null   # «Licht & Nacht»: lux am Gerät, Dämmerung, Sonne, Mond (MoveEye liest es noch nicht)
 	r["season"] = jahreszeiten.reply() if jahreszeiten != null else null   # «Jahreszeiten»: Jahreszeit, Sonnenauf-/untergang, Belegung (MoveEye liest es noch nicht)
 	if simwerte != null:
@@ -3178,6 +3182,7 @@ func world_reply() -> Dictionary:
 
 var schnitt = null                     # schnittstelle.gd (Aufräumen 2)
 var horror = null                      # bergtal_horror.gd: Bergtal · Horror-Modus (Hook für die Stimmungswahl: horror.mood_slot / open_from_mood)
+var spieltest = null                   # spieltest.gd: Spieltest-Assistent (Haken für Spiele: Spieltest.ereignis(modus, art, daten))
 var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
 var bike_node: Node3D = null
 var refscan_label: Label
@@ -4115,6 +4120,7 @@ func _register_controls() -> void:
 	# 3D-4.21: group «Entwickler» (like MoveEye, only «Experte»): test bench and faults - the same buttons as in «Testen»
 	add_control("button", "pruef_open", "Prüfstand öffnen", null, func(): pruef.open(not pruef.visible), "Entwickler", {"expert": true})
 	add_control("button", "simint_open", "Störungen testen", null, func(): _open_stoer(), "Entwickler", {"expert": true})
+	preload("res://scripts/spieltest.gd").add_controls(self)   # Spieltest-Assistent + «Spieltest-Meldungen» (wie MoveEye Entwickler)
 	add_control("toggle", "dev_updates", "Entwicklungsphase: jede Minute nach neuen Versionen schauen und sofort installieren", func(): return dev_updates, func(v): dev_updates = v; _settings_dirty = true, "Updates", {"expert": true, "hide": true})
 	add_control("toggle", "auto_update", "Neue Versionen automatisch installieren", func(): return auto_update, func(v): set_auto_update(v), "Updates", {"expert": true, "hide": true})
 	add_control("button", "update_now", "Jetzt nach Updates suchen und installieren", null, func(): run_update(true, false), "Updates", {"expert": true, "hide": true})

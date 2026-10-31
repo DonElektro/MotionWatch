@@ -255,6 +255,7 @@ func start_adventure(id: String) -> Dictionary:
 		data["visited"].append(id)
 		save()
 	close()
+	preload("res://scripts/spieltest.gd").ereignis("spielbereich", "start", {"einheit": str(CHAPTERS[int(c.n) - 1][1]), "szene": id, "id": id})   # Spieltest-Assistent
 	if main.mehr != null:
 		main.mehr.toast(T.t("Abenteuer «%s» – viel Spass beim Entdecken!", [str(c.name)]))
 	return {"ok": true, "id": id}

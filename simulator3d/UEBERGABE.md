@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.76** · passende MoveEye-Version (früher Motion Watch) **2.98.107**
+Stand: 31.10.2026 · Simulator-Version **3D-4.77** · passende MoveEye-Version (früher Motion Watch) **2.98.108**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.77 (MoveEye 2.98.108): Spieltest-Assistent (`spieltest.gd`, `devtool_spieltest.gd`)
+
+- `spieltest.gd` (neu): beobachtet alle Spielmodi, Smiley-Frage nach jeder Runde, Vorschläge, «ZIP für Claude»;
+  Entwickler → Spieltest (`devtool_spieltest.gd`, `devtool_extra.gd`). world_reply «spieltest» (schnittstelle.json, 37 Felder).
+- MoveEye `quelle/635a_spieltest.py` (neu, 350): Spieltest-Meldungen über den Haupt-Push, nur mit Schalter (Standard aus).
 
 ## NEU in 3D-4.76 (MoveEye 2.98.107): Weltfehler Bergtal, Rest (K3)
 

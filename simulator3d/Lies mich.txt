@@ -421,6 +421,14 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.77
+3D-4.77: Spieltest-Assistent (nur Besitzer, Mehr → Entwickler → Spieltest): beobachtet alle Spielmodi (Dauer, Feststecken,
+Tipps, Erwischt, Abbruch, Ruckeln), fragt nach jeder Runde mit Smileys und macht Vorschläge, was man am Spiel anpassen
+könnte. «ZIP für Claude» zum Anhängen im Chat. Push aufs Handy über MoveEye (Schalter «Spieltest-Meldungen aufs Handy» in
+Entwickler).
+So testest du: 1) Entwickler → Spieltest → einschalten. 2) Eine Runde spielen und einen Smiley wählen. 3) Vorschläge
+ansehen, ZIP erstellen. 4) In MoveEye den Schalter einschalten, dann kommt der Push.
+
 NEU IN 3D-4.76
 3D-4.76: Bergtal: Innenräume ohne Gras oder Bäume (Infanteriewerk, Baracke, Höhle), alte Sennerei mit Dach, keine Löcher mehr
 im Gelände zwischen den Bergen, Steinbrücke aus Stein, Tarnwiese rund mit weichem Rand, Arvenhain am Steimandli, Herbstblumen

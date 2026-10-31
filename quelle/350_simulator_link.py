@@ -115,12 +115,15 @@ class SimLink:
                     light_set("white", "on" if mc_.get("on") else "auto")
                 elif op_ == "ir":                           # 2.98.41: B of the controller in the simulator (one mapping, 542)
                     light_set("ir", "on" if mc_.get("on") else "auto")
+                elif op_ == "spieltest_push":               # Spieltest-Assistent: the switch «Spieltest-Meldungen» from the simulator (635a)
+                    spieltest_set(bool(mc_.get("on")))
                 elif op_ == "feedback":                     # 2.98.33: «Rückmeldung an den Entwickler» in the simulator (584)
                     threading.Thread(target=lambda m=dict(mc_): feedback_send(m.get("kind"), m.get("text"), str(m.get("contact") or "")[:120], True, m.get("stars"),
                                      "3D-Simulator " + str(m.get("sim") or "")[:12], feedback_shot("sim") if m.get("shot") else None, "simulator"),
                                      daemon=True, name="simfeedback").start()
         shut_feed(rep_.get("shut"), first)               # 2.98.35: «Auslöser» hits -> alarm into the test inbox (539)
         horror_feed(rep_.get("horror"), first)           # Bergtal · Horror-Modus: its «recordings» -> Verlauf / Nachrichten (539a)
+        spieltest_feed(rep_.get("spieltest"), first)     # Spieltest-Assistent: a short message after every round -> push (635a)
         le = int(rep_.get("last_event") or 0)
         if le > SIM["seen_event"]:
             data, _ = _sim_get(f"/events?since={SIM['seen_event']}")

@@ -35,6 +35,7 @@
     "follower": "ein anderes MoveEye steuert, dieses schaut nur zu -> 350",
     "leader": "Name des MoveEye, das steuert -> 350 Meldung «schaut nur zu»",
     "horror": "Horror-Modus «Das Hospiz»: neue Aufnahmen (id, t, night, time, title, text; Bild /horror_pic/<id>.jpg) -> 539a horror_feed, Verlauf Nachrichten",
+    "spieltest": "Spieltest-Assistent (spieltest.gd): kurze Meldung nach jeder Runde (id, t, text - schon in der Sprache des Simulators) -> 635a spieltest_feed, Push nur mit Schalter «Spieltest-Meldungen» (Entwickler)",
     "sky": "Himmel und Licht der Szene (licht.gd): lux am Geraet (Himmel + Lampen), sky_lux, phase (tag / buergerlich / nautisch / astronomisch / nacht), sun_el, moon_el, moon_illum, lp (land / dorf / stadt) -> MoveEye liest es noch nicht (spaeter: Nacht-Umschaltung pruefen, Kamera-Paket Blendung)",
     "season": "Jahreszeit und Tageslauf (jahreszeiten.gd): season (fruehling / sommer / herbst / winter), doy, sunrise, sunset (H:MM Schweizer Zeit), day_h, snow (Schnee liegt), occupancy (Campingplatz 0..1) -> MoveEye liest es noch nicht (spaeter: Tagebuch, Nacht-Zeiten pruefen)"
   },
@@ -67,7 +68,8 @@
     "waypoints": "Patrouille-Punkte -> Simulator Zwilling",
     "ups_mah": "Akku-Groesse einer Zelle (Einstellung ups_mah) -> power.gd: Kapazitaet nur lesbar «von MoveEye»",
     "dev_area": "Entwickler-Bereich von MoveEye an (639d) -> main.gd: Gruppe «Entwickler» im Simulator",
-    "led": "Status-LED auf dem Kopf: rgb, br, layer (alarm / fault / heartbeat ...), hb-Zaehler, Text -> Simulator statusled.gd (Kugel auf dem Kopf, Fenster Geraet)"
+    "led": "Status-LED auf dem Kopf: rgb, br, layer (alarm / fault / heartbeat ...), hb-Zaehler, Text -> Simulator statusled.gd (Kugel auf dem Kopf, Fenster Geraet)",
+    "spieltest": "Schalter «Spieltest-Meldungen» von MoveEye (on), letzte gesehene Meldung (seen) und wie sie raus ging (st: sent / none / error / off / net) -> Simulator spieltest.gd (Zeile «Push» im Entwickler-Fenster, Schalter in Entwickler)"
   },
   "info": {
     "v": "Version",
