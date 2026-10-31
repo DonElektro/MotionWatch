@@ -3103,6 +3103,12 @@
   "it": "Montagne",
   "rm": "Muntognas"
  },
+ "Beschlagene Linse": {
+  "en": "Fogged lens",
+  "fr": "Objectif embué",
+  "it": "Obiettivo appannato",
+  "rm": "Lentilla bagnada da vapur"
+ },
  "Beschlagene Linse (Tau am Morgen, milchiger Schleier)": {
   "en": "Fogged lens (dew in the morning, milky veil)",
   "fr": "Objectif embué (rosée le matin, voile laiteux)",
@@ -3457,11 +3463,29 @@
   "it": "Fulmine",
   "rm": "Chametg"
  },
+ "Blitz jetzt (Test: Lichtblitz im Kamerabild – typischer Fehlalarm)": {
+  "en": "Lightning now (test: flash in the camera image – typical false alarm)",
+  "fr": "Éclair maintenant (test : flash dans l'image – fausse alarme typique)",
+  "it": "Fulmine ora (test: lampo nell'immagine – tipico falso allarme)",
+  "rm": "Chametg ussa (test: glisch en il maletg – fauss alarm tipic)"
+ },
+ "Blitze sichtbar am Himmel (bei Gewitter)": {
+  "en": "Lightning visible in the sky (in thunderstorms)",
+  "fr": "Éclairs visibles dans le ciel (orage)",
+  "it": "Fulmini visibili nel cielo (temporale)",
+  "rm": "Chametgs visibels al tschiel (cun urizi)"
+ },
  "Blumenbeet": {
   "en": "Flower bed",
   "fr": "Massif de fleurs",
   "it": "Aiuola",
   "rm": "Iert da flurs"
+ },
+ "Bodennebel: dichter über dem Boden, fleckig (im Kamerabild für MoveEye)": {
+  "en": "Ground fog: denser near the ground, patchy (in the camera image for MoveEye)",
+  "fr": "Brouillard au sol : plus dense près du sol, irrégulier (dans l'image pour MoveEye)",
+  "it": "Nebbia al suolo: più densa vicino al terreno, a chiazze (nell'immagine per MoveEye)",
+  "rm": "Tschajera al terren: pli spessa sur il terren, a flatgs (en il maletg per MoveEye)"
  },
  "Boje": {
   "en": "Buoy",
@@ -7104,6 +7128,12 @@
   "it": "Temporale",
   "rm": "Urizi"
  },
+ "Gewitter in der Nacht, kein Besuch (jeder Push ist falsch)": {
+  "en": "Thunderstorm at night, no visitor (every push is false)",
+  "fr": "Orage la nuit, aucun visiteur (chaque push est faux)",
+  "it": "Temporale di notte, nessun visitatore (ogni push è falso)",
+  "rm": "Urizi la notg, nagina visita (mintga push è fauss)"
+ },
  "Gewitter mit Blitzen (bei Regen; die Blitze sind auch eine typische Fehlalarm-Ursache)": {
   "en": "Thunderstorm with lightning (with rain; lightning is also a typical cause of false alarms)",
   "fr": "Orage avec éclairs (avec pluie ; les éclairs sont aussi une cause typique de fausses alarmes)",
@@ -9584,6 +9614,12 @@
   "it": "",
   "rm": ""
  },
+ "leicht (2 mm/h)": {
+  "en": "light (2 mm/h)",
+  "fr": "faible (2 mm/h)",
+  "it": "leggera (2 mm/h)",
+  "rm": "levet (2 mm/h)"
+ },
  "Leider falsch – noch einmal.": {
   "en": "Sorry, wrong – try again.",
   "fr": "Dommage, faux – encore une fois.",
@@ -9733,6 +9769,12 @@
   "fr": "Glisser à gauche : déplacer · glisser à droite : tourner · molette : zoomer · double-clic : y voler",
   "it": "Trascinare a sinistra: spostare · trascinare a destra: girare · rotella: zoom · doppio clic: volare lì",
   "rm": "Trair a sanestra: spustar · trair a dretga: volver · roda: zoom · dubel clic: svolar là"
+ },
+ "Linse putzen (Tropfen und Beschlag weg)": {
+  "en": "Clean the lens (drops and fog gone)",
+  "fr": "Nettoyer l'objectif (gouttes et buée)",
+  "it": "Pulire l'obiettivo (gocce e condensa)",
+  "rm": "Nettegiar la lentilla (daguts e vapur)"
  },
  "Liste «gegen die KI» zurücksetzen": {
   "en": "Reset the list «against the AI»",
@@ -10468,6 +10510,12 @@
   "it": "medio (10 m)",
   "rm": "mesaun (10 m)"
  },
+ "mittel (8 mm/h, wie bisher)": {
+  "en": "medium (8 mm/h, as before)",
+  "fr": "moyenne (8 mm/h, comme avant)",
+  "it": "media (8 mm/h, come prima)",
+  "rm": "mesaun (8 mm/h, sco fin ussa)"
+ },
  "Mitternacht, nach dem Regen": {
   "en": "Midnight, after the rain",
   "fr": "Minuit, après la pluie",
@@ -10503,6 +10551,18 @@
   "fr": "Matin 07:00",
   "it": "Mattina 07:00",
   "rm": "Damaun 07:00"
+ },
+ "Morgen, beschlagene Linse": {
+  "en": "Morning, fogged lens",
+  "fr": "Matin, objectif embué",
+  "it": "Mattina, obiettivo appannato",
+  "rm": "Damaun, lentilla bagnada da vapur"
+ },
+ "Morgen-Test: warme, feuchte Luft – die kalte Linse beschlägt": {
+  "en": "Morning test: warm, humid air – the cold lens fogs up",
+  "fr": "Test du matin : air chaud et humide – l'objectif froid s'embue",
+  "it": "Test del mattino: aria calda e umida – l'obiettivo freddo si appanna",
+  "rm": "Test da la damaun: aria chauda ed umida – la lentilla fraida vegn bagnada da vapur"
  },
  "Morgendämmerung": {
   "en": "Dawn",
@@ -11340,6 +11400,18 @@
   "it": "Nebbia",
   "rm": "Tschajera"
  },
+ "Nebel 50 m, zieht, Bodennebel": {
+  "en": "Fog 50 m, drifting, ground fog",
+  "fr": "Brouillard 50 m, mouvant, brouillard au sol",
+  "it": "Nebbia 50 m, in movimento, nebbia al suolo",
+  "rm": "Tschajera 50 m, sa moventa, tschajera al terren"
+ },
+ "Nebel zieht in Schwaden mit dem Wind (die Sichtweite schwankt)": {
+  "en": "Fog drifts in banks with the wind (visibility varies)",
+  "fr": "Le brouillard dérive en nappes avec le vent (la visibilité varie)",
+  "it": "La nebbia si sposta a banchi col vento (la visibilità varia)",
+  "rm": "La tschajera va en nivels cun il vent (la vesida varia)"
+ },
  "Nebelbank": {
   "en": "Fog bank",
   "fr": "Banc de brouillard",
@@ -11513,6 +11585,12 @@
   "fr": "Personne n’est attrapé. Entraîne-toi un peu – ensuite ça compte.",
   "it": "Nessuno viene preso. Esercitati un po’ – poi si fa sul serio.",
   "rm": "Nagin na vegn tschiffà. Exercitescha in pau – lura vala quai."
+ },
+ "Nieselregen (0,5 mm/h)": {
+  "en": "Drizzle (0.5 mm/h)",
+  "fr": "Bruine (0,5 mm/h)",
+  "it": "Pioggerella (0,5 mm/h)",
+  "rm": "Plievgina (0,5 mm/h)"
  },
  "Niesen": {
   "en": "Sneeze",
@@ -12727,11 +12805,23 @@
   "it": "Pioggia e fulmini: quasi non ti si sente, ma i fulmini illuminano.",
   "rm": "Plievgia e chametgs: ins auda tai strusch, ma ils chametgs fan cler."
  },
+ "Regen und Spritzer im Kamerabild für MoveEye": {
+  "en": "Rain and splashes in the camera image for MoveEye",
+  "fr": "Pluie et éclaboussures dans l'image pour MoveEye",
+  "it": "Pioggia e spruzzi nell'immagine per MoveEye",
+  "rm": "Plievgia e sbrinzs en il maletg per MoveEye"
+ },
  "Regenschirm": {
   "en": "Umbrella",
   "fr": "Parapluie",
   "it": "Ombrello",
   "rm": "Parasol"
+ },
+ "Regenstärke (gilt auch für Schnee)": {
+  "en": "Rain intensity (also for snow)",
+  "fr": "Intensité de la pluie (aussi pour la neige)",
+  "it": "Intensità della pioggia (anche per la neve)",
+  "rm": "Intensitad da la plievgia (er per la naiv)"
  },
  "Regentropfen auf der Linse": {
   "en": "Raindrops on the lens",
@@ -13454,6 +13544,24 @@
   "it": "Neve",
   "rm": "Naiv"
  },
+ "Schnee bleibt liegen (wächst beim Schneien, schmilzt über 0 °C)": {
+  "en": "Snow settles (grows while snowing, melts above 0 °C)",
+  "fr": "La neige tient (augmente quand il neige, fond au-dessus de 0 °C)",
+  "it": "La neve resta (cresce quando nevica, si scioglie sopra 0 °C)",
+  "rm": "La naiv resta (crescha cura ch'i naiva, lua sur 0 °C)"
+ },
+ "Schneefall, 10 cm Schnee": {
+  "en": "Snowfall, 10 cm of snow",
+  "fr": "Chute de neige, 10 cm de neige",
+  "it": "Nevicata, 10 cm di neve",
+  "rm": "Naiv, 10 cm naiv"
+ },
+ "Schneehöhe jetzt": {
+  "en": "Snow depth now",
+  "fr": "Hauteur de neige actuelle",
+  "it": "Altezza della neve ora",
+  "rm": "Autezza da naiv ussa"
+ },
  "Schnell hin, Velo greifen, weg – Reaktionszeit": {
   "en": "Quickly there, grab the bike, away – reaction time",
   "fr": "Vite y aller, prendre le vélo, partir – temps de réaction",
@@ -13907,6 +14015,12 @@
   "fr": "Afficher le champ de vision des caméras (pour débutants)",
   "it": "Mostrare il campo visivo delle telecamere (per principianti)",
   "rm": "Mussar il champ da vista da las cameras (per principiants)"
+ },
+ "Sichtweite im Nebel": {
+  "en": "Visibility in fog",
+  "fr": "Visibilité dans le brouillard",
+  "it": "Visibilità nella nebbia",
+  "rm": "Vesida en la tschajera"
  },
  "Sie sitzt ganz still auf dem Pfosten und dreht nur ab und zu den Kopf. Fotografiert mit MoveEyes Kamera.": {
   "en": "It sits very still on the post and only turns its head now and then. Photographed with MoveEye’s camera.",
@@ -14466,6 +14580,12 @@
   "it": "Lunghezza del palo (altezza della testa; in esplorazione Pag su / giù o croce)",
   "rm": "Lunghezza dal pal (autezza dal chau da la camera; cun explorar Pagina si / giu u crusch)"
  },
+ "stark (25 mm/h)": {
+  "en": "heavy (25 mm/h)",
+  "fr": "forte (25 mm/h)",
+  "it": "forte (25 mm/h)",
+  "rm": "ferm (25 mm/h)"
+ },
  "Start (Controller) · mit dem Rover herumfahren – Tastatur, Maus, Touch oder Controller": {
   "en": "Start (controller) · drive around with the rover – keyboard, mouse, touch or controller",
   "fr": "Start (manette) · rouler avec le rover – clavier, souris, tactile ou manette",
@@ -14916,6 +15036,18 @@
   "fr": "Jour, dégagé",
   "it": "Giorno, sereno",
   "rm": "Di, cler"
+ },
+ "Tag, Nieselregen": {
+  "en": "Day, drizzle",
+  "fr": "Jour, bruine",
+  "it": "Giorno, pioggerella",
+  "rm": "Di, plievgina"
+ },
+ "Tag, Starkregen, Tropfen auf der Linse": {
+  "en": "Day, heavy rain, drops on the lens",
+  "fr": "Jour, forte pluie, gouttes sur l'objectif",
+  "it": "Giorno, pioggia forte, gocce sull'obiettivo",
+  "rm": "Di, plievgia ferma, daguts sin la lentilla"
  },
  "Tag, Tarnkleidung und Robben": {
   "en": "Day, camouflage clothing and crawling",
@@ -15607,6 +15739,12 @@
   "fr": "Gouttes sur l’objectif (aussi sans pluie)",
   "it": "Gocce sull’obiettivo (anche senza pioggia)",
   "rm": "Daguts sin la lentilla (er senza plievgia)"
+ },
+ "Tropfen und Beschlag physikalisch: Tropfen haften, fliessen zusammen und rinnen, Linse beschlägt unter dem Taupunkt": {
+  "en": "Physical drops and fog: drops stick, merge and run, the lens fogs up below the dew point",
+  "fr": "Gouttes et buée physiques : les gouttes adhèrent, fusionnent et coulent, l'objectif s'embue sous le point de rosée",
+  "it": "Gocce e condensa fisiche: le gocce aderiscono, si uniscono e colano, l'obiettivo si appanna sotto il punto di rugiada",
+  "rm": "Daguts e vapur fisicals: ils daguts tegnan, s'unifitgeschan e curran, la lentilla vegn bagnada sut il punct da rugada"
  },
  "Tschüss zusammen! Alle gehen nach Hause.": {
   "en": "Bye everyone! Everyone goes home.",
@@ -16929,6 +17067,12 @@
   "it": "Meteo",
   "rm": "Aura"
  },
+ "Wetter physikalisch (Niesel, Starkregen, Nebel 50 m, beschlagene Linse, Schnee, Gewitter-Blitze · etwa 7 Min.)": {
+  "en": "Physical weather (drizzle, heavy rain, fog 50 m, fogged lens, snow, lightning · about 7 min)",
+  "fr": "Météo physique (bruine, forte pluie, brouillard 50 m, objectif embué, neige, éclairs · env. 7 min)",
+  "it": "Meteo fisico (pioggerella, pioggia forte, nebbia 50 m, obiettivo appannato, neve, fulmini · circa 7 min)",
+  "rm": "Aura fisicala (plievgina, plievgia ferma, tschajera 50 m, lentilla bagnada, naiv, chametgs · var 7 min)"
+ },
  "Wetter und Zeit": {
   "en": "Weather and time",
   "fr": "Météo et heure",
@@ -17345,6 +17489,12 @@
   "it": "Nuvole",
   "rm": "Nivels"
  },
+ "Wolkenbruch (60 mm/h)": {
+  "en": "Cloudburst (60 mm/h)",
+  "fr": "Averse diluvienne (60 mm/h)",
+  "it": "Nubifragio (60 mm/h)",
+  "rm": "Plievgia torrenziala (60 mm/h)"
+ },
  "Wolkenschatten": {
   "en": "Cloud shadows",
   "fr": "Ombres des nuages",
@@ -17656,6 +17806,12 @@
   "fr": "Chaos du montage de tente (emplacement libre)",
   "it": "Caos del montaggio della tenda (piazzola libera)",
   "rm": "Caos cun montar la tenda (plaz liber)"
+ },
+ "Zeltplanen beulen und flattern im Wind, Wäsche und Fahnen ohne Ruckeln": {
+  "en": "Tent walls bulge and flap in the wind, laundry and flags without jerks",
+  "fr": "Les toiles de tente gonflent et claquent au vent, linge et drapeaux sans à-coups",
+  "it": "I teli delle tende si gonfiano e sbattono al vento, bucato e bandiere senza scatti",
+  "rm": "Las tailas da tenda sa gonfian e flattereschan en il vent, la resgia e las bandieras senza sbittads"
  },
  "Zeltplatz-Schleicher": {
   "en": "Campsite sneaker",

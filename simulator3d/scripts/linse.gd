@@ -118,9 +118,8 @@ func step(dt: float, dt_sim: float) -> bool:
 	_acc += rate * dt
 	while _acc >= 1.0:
 		_acc -= 1.0
-		if true:
-			var is_snow := snow_mmh > 0.0 and _rng.randf() < snow_mmh / (snow_mmh + rain_mmh + 0.001) and air_c < 1.0
-			_land(_rng.randf_range(0.0, W), _rng.randf_range(0.0, H), _rng.randf_range(0.6, 1.5) * (1.4 if is_snow else 1.0) * (1.0 + 0.012 * rain_mmh), is_snow)
+		var is_snow := snow_mmh > 0.0 and _rng.randf() < snow_mmh / (snow_mmh + rain_mmh + 0.001) and air_c < 1.0
+		_land(_rng.randf_range(0.0, W), _rng.randf_range(0.0, H), _rng.randf_range(0.6, 1.5) * (1.4 if is_snow else 1.0) * (1.0 + 0.012 * rain_mmh), is_snow)
 	while drops.size() > cap:
 		drops.pop_front()
 		_dirty = true

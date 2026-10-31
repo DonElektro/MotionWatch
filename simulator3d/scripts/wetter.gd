@@ -398,6 +398,7 @@ func before_capture(i: int) -> void:
 	if i >= lenses.size():
 		return
 	var L = lenses[i]
+	_fit(i)
 	var t: float = main.now()
 	var dt: float = clampf(t - float(_cap_t[i]), 0.0, 1.0) if _cap_t[i] > 0.0 else 0.0
 	_cap_t[i] = t
@@ -407,8 +408,29 @@ func before_capture(i: int) -> void:
 		fog_mats[i].set_shader_parameter("expo", float(main.lens_mats[i].get_shader_parameter("expo")))
 
 
+var _lens_poll := 0.0
+
+
+func _fit(i: int) -> void:
+	"""Weitwinkel mit Fischauge rendert breiter (weitwinkel.gd): die Vierecke mitwachsen lassen, sonst decken sie nur die Mitte"""
+	var cam: Camera3D = main.cams[i]
+	var k: float = tan(deg_to_rad(cam.fov) / 2.0) / tan(deg_to_rad(float(main.CAM_FOV[i])) / 2.0)
+	if absf(k - float(_fit_k[i])) < 0.001:
+		return
+	_fit_k[i] = k
+	for q in [lenses[i].quad, fog_quads[i] if i < fog_quads.size() else null]:
+		if q == null:
+			continue
+		if not q.has_meta("base"):
+			q.set_meta("base", (q.mesh as QuadMesh).size)
+		(q.mesh as QuadMesh).size = (q.get_meta("base") as Vector2) * k
+
+
+var _fit_k := [1.0, 1.0]
+
+
 func _process(dt: float) -> void:
-	if true or not _ready_done:
+	if not _ready_done:
 		return
 	# Wäsche, Fahnen, Zeltwände: Takt aus dem Wind aufsummiert (vorher TIME × Wind: jede Böe liess die Welle springen)
 	var w: float = clampf(float(main.wind) * main.gust() / 50.0, 0.05, 1.6)
@@ -418,10 +440,14 @@ func _process(dt: float) -> void:
 			if is_instance_valid(cm):
 				cm.set_shader_parameter("phase", fmod(_phase, 6283.0))
 	# die Linse weiterrechnen, auch wenn gerade keine Bilder geholt werden (Vorschau im Fenster)
+	# (höchstens 4 × pro Sekunde - die Karte in GDScript neu zeichnen kostet ~1 ms)
 	var t: float = main.now()
-	for i in range(lenses.size()):
-		if t - float(_cap_t[i]) > 0.3:
-			before_capture(i)
+	_lens_poll -= dt
+	if _lens_poll <= 0.0:
+		_lens_poll = 0.25
+		for i in range(lenses.size()):
+			if t - float(_cap_t[i]) > 0.3:
+				before_capture(i)
 	if _bolt != null and t > _bolt_until:
 		_bolt.queue_free()
 		_bolt = null
