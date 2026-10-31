@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.15.1 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.15.2 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -436,6 +436,10 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.15.2
+3.15.2: Vollbild: In der Simulation sind auch ◎, ⇆, 🚜 und der Mover-Stick ausgeblendet; beim echten Live-Bild bleiben sie.
+So testest du: Live → Vollbild, Simulation ein- und ausschalten.
 
 NEU IN 3.15.1
 3.15.1: Live → Bedienung: In der Simulation sind Tempo, ⇆, 🚜, Mitte, Kalibrieren und Wegpunkte ausgeblendet (auch im
