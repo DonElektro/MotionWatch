@@ -17,6 +17,13 @@ text_choice_pairs, tools_state / tools_cfg und _tunea_autotune_base zusammengef�
 `werkzeuge/gleichheit_pruefen.py`). Einstellungs-Listen (TOGGLES, SLIDERS, TEXTS) nicht in späteren Teilen umbauen, sondern
 den Eintrag dort ändern, wo er steht.
 
+**Zusatzdatei** (ab dem Paket «MoveEye-Datei verkleinern», 31.10.2026): beim Bauen kommen die grossen Literale (ab 4 KB:
+Web-Seiten, JavaScript, Bilder als base64, Übersetzungen fr/it/rm, ältere Änderungen) in `moveeye_daten_X_Y_Z.zip`; in der
+grossen Datei steht an ihrer Stelle `_zd("<teil>/<name>", <Ersatz>)`. Hier in `quelle/` ändert sich nichts – Texte und Seiten
+weiter wie bisher bearbeiten. Was in der Datei bleibt, steht in `bauen.py` (`ZD_KEEP_PARTS`, `ZD_KEEP_NAMES`, `ZD_KEEP_PREFIX`:
+Einstellungen, deutsche Texte, `_HX…`-Tabellen, Menü). Wer den eigenen Quelltext lesen will, nimmt `zd_source()` (Teil 012).
+`python3 werkzeuge/bauen.py --groessen` zeigt, was am meisten Platz braucht.
+
 ## Ablauf
 
 ```
@@ -34,6 +41,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 |---|---|---|
 | `000_kopf_aenderungen.py` | Kopf: Beschreibung und die Liste aller Änderungen (neueste oben) | 735 |
 | `010_grundlagen.py` | Importe, Version (APP_VERSION), Ordner für Einstellungen | 119 |
+| `012_zusatzdaten.py` | Zusatzdaten laden: moveeye_daten_X_Y_Z.zip prüfen (ZD_SHA256), `_zd()`, `zd_source()`, Seite «Zusatzdaten fehlen – Update» | 125 |
 | `020_einstellungen.py` | CFG: alle Einstellungen mit Standardwerten | 435 |
 | `030_zonen_anwesenheit_zeitplaene.py` | Zonen, Anwesenheit, Text-Einstellungen, Zeitpläne | 817 |
 | `040_speichern_passwort.py` | Einstellungen speichern, Web-Passwort | 443 |
@@ -103,6 +111,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `390_protokoll_bedienermodus.py` | Protokoll, Bedienermodus, Pause, Update-Wächter | 1065 |
 | `395_code_pflege.py` | Code-Pflege im Selbsttest: fehlende Übersetzungen fr / it / rm (nur Warnung), MIGRATE_ONLY (alte Schlüssel nur zum Übernehmen), SELFTEST_EXTRA | 85 |
 | `396_kopf_abschrecken_zielen.py` | Abschrecken mit Ziel: Licht / Sirene drehen zur Person (zuletzt gesehen) oder zum Zelt aus «Platz einrichten», über den Kopf-Koordinator 162 (Schalter kopf_deter_aim) | 125 |
+| `397_zusatzdaten_nachladen.py` | Zusatzdatei nachladen (Update-Quelle, Prüfsumme, ein Neustart), beim Update mitholen, aufräumen; Brücke 3.0.2 (`update_pick`) | 247 |
 | `400_ausschalten.py` | Pi ausschalten / neu starten | 53 |
 | `410_motionwatch_kern.py` | KERN: die Erkennungs-Schleife (Bewegung, Personen, Alarm) | 969 |
 | `411_nebel_daemmerung.py` | Nebel-Modus (Kontrast vor der KI, Wärmebild zählt mehr, kein «Kamera verdreht» im Nebel, Hinweis «Nebel – Sicht eingeschränkt») und strengere Dämmerung / Wind (Person erst nach 2–3 Treffern in Folge); Selbsttest | 407 |

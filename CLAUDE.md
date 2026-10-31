@@ -158,6 +158,20 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   Dieses Feld nie weglassen, auch nicht in späteren Versionen.
 - **Grösse:** Geräte bis 2.98.x nehmen nur Programmdateien bis 8 MiB an (3.0.0 hat rund 7.6 MB) – 3.0.0 muss darunter
   bleiben. Ab 3.0.0 gilt 32 MiB (`UPD_MAX_BYTES`, Teil 390).
+- **Zusatzdatei** (Entscheid Daniel 31.10.2026, Paket «MoveEye-Datei verkleinern»): `bauen.py` lagert grosse Literale
+  (Web-Seiten, JavaScript, Bilder als base64, Übersetzungen fr/it/rm, ältere Einträge der Änderungsliste) in
+  `moveeye_daten_X_Y_Z.zip` neben `webcam_bewegung_X_Y_Z.py` aus; `quelle/` bleibt unverändert. Die Hauptdatei kennt die
+  SHA-256 der ZIP (`ZD_SHA256`, Teil 012) – die Signatur der Hauptdatei bürgt so auch für die ZIP; zusätzlich steht sie mit
+  eigener Signatur unter `"data"` in versions.json. **Beide Dateien gehören zusammen ins Repository** (`git add` beider).
+  Ohne ZIP startet MoveEye im Kern (Kamera, Erkennung, Alarm, Push, Fenster; Web-Seiten zeigen «Zusatzdaten fehlen – Update»)
+  und holt sie über dieselbe Update-Quelle (Teil 397), dann ein Neustart. Ziel Hauptdatei unter 5 MiB, Pflicht unter 8 MiB
+  (`versionen.py --pruefen`) – so gehen auch Geräte bis 2.98.x direkt auf die neueste Version.
+- **Brücke** (Entscheid Daniel 31.10.2026): `webcam_bewegung_3_0_2.py` (eine Datei unter 8 MiB, ohne Zusatzdatei) bleibt
+  **für immer** im Repository und in versions.json (`"bridge": true`, `BRUECKE` in `versionen.py`, `UPD_BRIDGE` in Teil 397).
+  Beim Aufräumen («höchstens 10») nie löschen – `python3 werkzeuge/versionen.py --aufraeumen` lässt sie stehen (sie zählt mit).
+  Wäre eine Hauptdatei je über 8 MiB, schreibt `--make-manifest` `"needs": "3.0.0"` in ihren Eintrag: Geräte ab dieser Fassung
+  nehmen dann zuerst die Brücke und danach die neueste (`update_pick`, Teil 397). Geräte bis 3.4.0 / 2.98.x wählen immer die
+  neueste – für sie ist die 8-MiB-Grenze der Hauptdatei die eigentliche Sicherung, 3.0.2 von Hand in der Liste der Rückweg.
 - **Release-Ablauf ab 3.0.0** (nur der Koordinator, Schlüssel nur bei Daniel):
   1. Nummer wählen (Regeln oben); `VERSION := "X.Y.Z"` in `simulator3d/scripts/main.gd`, Block `NEU IN X.Y.Z` in
      `simulator3d/Lies mich.txt`, Kopf von `simulator3d/UEBERGABE.md`.
@@ -165,7 +179,8 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
      `python3 werkzeuge/versionen.py --sim-json X.Y.Z "Notiz"` (schreibt `version.json` mit `version` + `ver`).
   3. `python3 werkzeuge/bauen.py --version X.Y.Z --neue-version "Was neu ist"` (oder `--stufe funktion|fehler|gross` statt
      `--version`); übernimmt `ver` aus `version.json` in `SIM3D` (Teil 300).
-  4. `python3 werkzeuge/versionen.py --pruefen` (eine Nummer überall, Brücke stimmt), dann `bauen.py --signieren …`
+  4. `python3 werkzeuge/versionen.py --pruefen` (eine Nummer überall, Brücke stimmt, Hauptdatei unter 8 MiB, Zusatzdatei und
+     Brücken-Datei da), dann `bauen.py --signieren …`
      (Selbsttest prüft dasselbe noch einmal: «Version numbers …»), Rauchtest, committen, pushen.
 
 ## Testen (vor jeder Auslieferung)

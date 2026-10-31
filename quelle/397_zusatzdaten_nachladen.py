@@ -139,25 +139,35 @@ def zusatz_restart():
 
 
 def zusatz_holen():
-    """one try: fetch the zip of this version from the update source, check it, save it. "" = there now"""
+    """one try: fetch the zip of this version from the update source (else the repository of the simulator updates,
+    SIM3D_BASE in 300), check it, save it. "" = there now"""
     src = CFG["update_url"].strip()
+    tries = []
+    if src.startswith("/"):
+        tries.append(("", src))
+    elif src.startswith("https://"):
+        tries.append((src, ""))
     try:
-        if src.startswith("https://"):
-            data = _zd_fetch_bytes(ZD_FILE, src_url=src)
-        elif src.startswith("/"):
-            data = _zd_fetch_bytes(ZD_FILE, src_dir=src)
-        else:
-            return "no update source set"
-    except Exception as e:
-        return f"not reachable: {_upd_error(e)}"[:200]
-    err = _zd_check_bytes(data, ZD_SHA256, APP_VERSION)
-    if err:
-        return err
-    try:
-        _zd_save(HERE, ZD_FILE, data)
-    except OSError as e:
-        return f"cannot save: {e}"[:200]
-    return ""
+        if SIM3D_BASE.startswith("https://") and not src.startswith(SIM3D_BASE):
+            tries.append((SIM3D_BASE + "versions.json", ""))
+    except NameError:
+        pass
+    err = "no update source set"
+    for url, folder in tries:
+        try:
+            data = _zd_fetch_bytes(ZD_FILE, src_url=url, src_dir=folder)
+        except Exception as e:
+            err = f"not reachable: {_upd_error(e)}"[:200]
+            continue
+        err = _zd_check_bytes(data, ZD_SHA256, APP_VERSION)
+        if err:
+            continue
+        try:
+            _zd_save(HERE, ZD_FILE, data)
+        except OSError as e:
+            return f"cannot save: {e}"[:200]
+        return ""
+    return err
 
 
 def zusatz_aufraeumen():

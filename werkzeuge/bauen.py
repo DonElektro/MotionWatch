@@ -163,6 +163,7 @@ ZD_KEEP_PARTS = ("000_", "010_", "012_", "020_")   # head, basics, loader, setti
 # tables the core needs (settings schema, German texts, menu structure, guides with index access) stay in the file
 ZD_KEEP_NAMES = {"CFG", "TOGGLES", "SLIDERS", "TEXTS", "SECTIONS", "DE", "QUICK_GUIDE", "MENU_SHORT", "GUIDE_TIPS", "_DETAIL",
                  "G2_UI", "SET_HELP", "GONL_DE", "ALMANAC", "PAUSE_PAGE", "LANGS"}
+ZD_KEEP_PREFIX = ("_HX",)          # the translation tables _HX… also carry the German texts (DE) that the start needs
 ZD_DATE = (2026, 1, 1, 0, 0, 0)     # fixed time stamp in the zip
 
 
@@ -268,7 +269,7 @@ def auslagern(name, text):
             a = off[nd.lineno - 1] + nd.col_offset
             e = off[nd.end_lineno - 1] + nd.end_col_offset
             base = re.split(r"[.\[]", ctx, maxsplit=1)[0]
-            if e - a >= ZD_MIN and base not in ZD_KEEP_NAMES:
+            if e - a >= ZD_MIN and base not in ZD_KEEP_NAMES and not base.startswith(ZD_KEEP_PREFIX):
                 found.append((a, e, nd, ctx))
             return
         for c in ast.iter_child_nodes(nd):
@@ -467,7 +468,8 @@ def main():
         alt, neu = neue_version(a.neue_version, a.version, a.stufe)
         print("Version %s → %s" % (alt, neu))
         fa, fn = dateiname(alt), dateiname(neu)
-        if os.path.isfile(fa) and alt.split(".")[:2] == neu.split(".")[:2]:   # only the newest file of a main version stays
+        brucke = alt == "3.0.2"                          # Brücke (versionen.py BRUECKE): never removed
+        if os.path.isfile(fa) and alt.split(".")[:2] == neu.split(".")[:2] and not brucke:   # only the newest file of a main version stays
             if git("rm", "-q", os.path.basename(fa)).returncode != 0:
                 os.remove(fa)
             za = zd_pfad(alt)
