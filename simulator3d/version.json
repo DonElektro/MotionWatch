@@ -1,7 +1,7 @@
 {
- "version": "3D-4.63",
+ "version": "3D-4.69",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34159260,
- "sha256": "974097d14e7e825c214cd8f9774f21a9e1d4eaef50e5b3200a26ac9dfa581e8b",
- "notes": "Bergtal-Abenteuer: Rucksack mit gefundener Ausrüstung, mildes Essen und Trinken, Quellen und Kochen, Tauschen ohne Geld."
+ "size": 34379904,
+ "sha256": "f711d8f02bc82e7abb249ed1effac8a28b7254d213c5de8eda1f8175bb641c5b",
+ "notes": "Bergtal-Abenteuer: neue Rätsel, Tagebuch, Gegenstände des Grossvaters, Wege, Abzeichen, Hilfe-Stufen."
 }

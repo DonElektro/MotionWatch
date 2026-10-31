@@ -421,6 +421,46 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.69
+3D-4.69: Bergtal-Abenteuer: neue Rätsel (Peilung mit Karte und Kompass, Polarstern), 10 Tagebuchseiten, Gegenstände des
+Grossvaters (Feldstecher, Taschenuhr, Pickel), Wege freischalten (Steg, Seil, Lawinenkegel im Sommer), 6 Abzeichen,
+Hilfe-Stufen Leicht / Normal / Schwer.
+So testest du: 1) Hilfe «Leicht» einstellen, Kapitel 1 starten. 2) Peilung lösen; der Feldstecher kommt dazu. 3) In der
+Nacht den Polarstern wählen.
+
+NEU IN 3D-4.68
+3D-4.68: Horror «Das Hospiz»: In jedem Kapitel ein Rätsel (Schlüssel, Zahlenschloss, Uhrzeit). Die Lösung sieht man nur auf
+MoveEye-Aufnahmen. Ein Hinweis-Knopf hilft, unter 25 % Schreck gibt es keine Schreckmomente.
+So testest du: 1) Horror starten, Schreck auf 10 % stellen. 2) Nach der 1. Nacht die Aufnahme ansehen, auf «Suchen gehen»
+drücken und den Schlüssel holen. 3) Den Code aus «Zahlen an der Wand» eingeben.
+
+NEU IN 3D-4.67
+3D-4.67: Entwickler-Fenster: Notizen an Claude mit Bild und ZIP-Export, Kontaktbogen (fotografiert alle Orte einer Welt),
+Kapitel-Sprung in einem Test-Spielstand. Der Horror-Modus bleibt mit Passwort geschützt.
+So testest du: 1) Unter Notizen «Hier (Kamera)» wählen, Text eingeben und speichern. 2) Exportieren und das ZIP im Chat
+anhängen. 3) Kontaktbogen für die Welt «Zuhause» erstellen. 4) Zu Abenteuer Kapitel 3 springen, danach «Test beenden».
+
+NEU IN 3D-4.66
+3D-4.66: Bergtal-Abenteuer zu zweit: Spielart wählbar (gemeinsam, Rollen, Wettrennen). Der Bildschirm ist geteilt und wird
+zu einer Ansicht, wenn beide nah beieinander sind. Eine zweite Person kann übers Handy helfen. Neu ist auch die
+Familien-Bestenliste.
+So testest du: 1) Abenteuer → «Schwierigkeit & Ziel» → «Gemeinsam», zwei Controller. 2) Starten: der Bildschirm ist
+geteilt. 3) QR-Code mit dem Handy scannen und die Karte antippen. 4) Am Morgen die Bestenliste ansehen.
+
+NEU IN 3D-4.65
+3D-4.65: Entwickler-Fenster: Schnellregler für Uhrzeit, Wetter, Jahreszeit und Grafik. Dazu Ebenen in der Ansicht und auf
+der Karte: Sichtfeld von MoveEye, Wege, Startpunkte, Auslöser, Lampen.
+So testest du: 1) Mehr → Entwickler → Schnellregler, Uhrzeit «Nacht» wählen: das Bedienfeld zeigt dasselbe. 2) Ebenen alle
+anhaken. 3) Zur Alp Tschuggen springen.
+
+NEU IN 3D-4.64
+3D-4.64: MoveEye 2.98.95: Wärmebild – ein Reh oder Fuchs, der nachts seitlich vorbeigeht, gilt nicht mehr als Person;
+aufrechte Formen (Kinder, Kauernde) bleiben immer Person. Kriechende Personen: eine flache Box am Boden gilt als «Person?»,
+wenn die KI einen schwachen Hinweis gibt und die Spur oder das Wärmebild ihn bestätigt. Neues Feld «Höhe der Kamera» in
+«Platz einrichten». Im Simulator heisst «Stange» jetzt «Höhe der Kamera».
+So testest du: 1) Simulator auf 23 Uhr, Wärmebild an. 2) Reh seitlich vorbeigehen lassen: es erscheint keine Person.
+3) Kind laufen lassen: es bleibt Person. 4) In «Platz einrichten» das Feld «Höhe der Kamera» ansehen.
+
 NEU IN 3D-4.63
 3D-4.63: Bergtal-Abenteuer: Rucksack mit gefundener Ausrüstung (Kompass, Stirnlampe, Feldstecher, Seil), mildes Essen und
 Trinken (nur langsamer, nie Spielende), Quellen und Kochen, Tauschen mit Figuren ohne Geld.

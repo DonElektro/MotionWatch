@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.63"
+const VERSION := "3D-4.69"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -2785,7 +2785,7 @@ func _check_active() -> void:
 		if act:
 			next_auto = max(next_auto, now() + 5.0)
 		print("simulation " + ("runs" if act else "pauses (nobody looks)"))
-	get_viewport().disable_3d = not win_open      # the big 3D view only when it can be seen
+	get_viewport().disable_3d = not win_open or (abenteuer != null and abenteuer.zweit != null and abenteuer.zweit.views_on())   # the big 3D view only when it can be seen (A5: not while the two views of «zu zweit» draw)
 	# 3D-3.30: MoveEye saves power (nothing happens there): the simulator calculates slower too (window closed)
 	var mw_saving: bool = conn and str(mw.get("eco", "")) == "saving" and not playing and not (testrun != null and testrun.running)
 	var cap: int = (win_fps if win_fps > 0 else _fps0) if win_open else (60 if playing else ((12 if mw_saving else 30) if sim_active else 5))
@@ -2808,6 +2808,8 @@ func _wanted_fps(i: int) -> float:
 		f = max(f, 8.0)                                  # a player guards: he sees through the head camera
 	if i == 1 and game != null and game.guard2_watching():
 		f = max(f, 6.0)                                  # a second guard sees through the fixed camera
+	if i == 0 and abenteuer != null and abenteuer.zweit != null:
+		f = max(f, abenteuer.zweit.head_fps())           # A5: player 2 (Rollen) / the companion phone sees what MoveEye sees
 	if i == 2 and now() - _th_asked < 3.0:
 		f = max(f, th_fps)                               # 30.10.2026: the model (Thermal-90: 15 fps like the driver of MoveEye)
 	if i == 2 and thermsensor != null:
@@ -4070,7 +4072,7 @@ func _register_controls() -> void:
 	add_control("select", "patrol_judge", "Spiel «Patrouille»: wer erwischt", func(): return patrol_judge, func(v): patrol_judge = str(v), "Mover",
 			{"options": [["mw", "die echte Erkennung von MoveEye"], ["sim", "der Wächter des Simulators (geht ohne Pi)"]]})
 	add_control("button", "rover_place", "📍 Rover versetzen – danach in die Welt klicken (beim Erkunden: Strg + Klick)", null, func(): place_kind = "rover", "Mover")
-	add_control("slider", "mast_h", "Stangenlänge (Höhe des Kamerakopfs; beim Erkunden Bild auf / ab oder Steuerkreuz)", func(): return mast_h, func(v): set_mast(float(v)), "Mover", {"min": MAST_MIN, "max": MAST_MAX, "step": 0.05, "unit": "m", "live": true})
+	add_control("slider", "mast_h", "Höhe der Kamera (Stange; beim Erkunden Bild auf / ab oder Steuerkreuz)", func(): return mast_h, func(v): set_mast(float(v)), "Mover", {"min": MAST_MIN, "max": MAST_MAX, "step": 0.05, "unit": "m", "live": true})
 	add_control("button", "pad_roles", "🎮 Controller zuteilen (mehrere Controller: Wächter, Schleicher, Rover)", null, func(): padmap.open_roles(), "Mover", {"sub": "Controller"})
 	add_control("button", "pad_test", "🎮 Controller testen (zeigt Stick roh und nach der Drift-Korrektur)", null, func(): _pad_test(), "Mover", {"sub": "Controller"})
 	add_control("toggle", "pad_auto", "Stick-Drift selbst lernen (ein Stick, der 3 s genau gleich steht, gilt als Ruhelage)", func(): return pad_auto, func(v): pad_auto = v; _settings_dirty = true, "Mover", {"sub": "Controller"})

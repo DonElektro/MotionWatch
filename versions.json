@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 11:58",
+ "generated": "2026-10-31 12:42",
  "versions": [
   {
-   "version": "2.98.94",
-   "file": "webcam_bewegung_2_98_94.py",
+   "version": "2.98.100",
+   "file": "webcam_bewegung_2_98_100.py",
    "url": "",
-   "sha256": "fe7f5595c2c3852ddf747df56af7e432833892bf8a85f404c2ec2f04ddf4e867",
-   "date": "2026-10-31 11:58",
-   "notes": "Simulator 3D-4.63: Bergtal-Abenteuer – Rucksack mit gefundener Ausrüstung, mildes Essen und Trinken, Quellen und Kochen, Tauschen ohne Geld.",
-   "sig": "a46bc8691192072ad8705f206a8b85bf8f3e9fd85d6a4057587ae5214a7f5a095befb2ad478918aaea876ce643528bcb3b82fc7726e0626ec446f1c4590e7d03"
+   "sha256": "be3c2d116d0793f828e321e735ba92cb337df292db2dfeafe7757fe82300765b",
+   "date": "2026-10-31 12:42",
+   "notes": "Simulator 3D-4.69: Bergtal-Abenteuer – neue Rätsel (Peilung, Polarstern), 10 Tagebuchseiten, Gegenstände des Grossvaters, Wege freischalten, 6 Abzeichen, Hilfe-Stufen.",
+   "sig": "a1e54c8bdf9aaff61a1943cd069519eb342243df6dbc8852d4039dcd76c9320176941e7111cf57b95c47957822b4f13363db2cbb15a5d3602ae1c52af5ef2e0b"
   },
   {
    "version": "2.97.1",

@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_94.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_100.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,19 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.100: Simulator 3D-4.69: Bergtal-Abenteuer – neue Rätsel (Peilung, Polarstern), 10 Tagebuchseiten, Gegenstände des
+    Grossvaters, Wege freischalten, 6 Abzeichen, Hilfe-Stufen.
+  * 2.98.99: Simulator 3D-4.68: Horror «Das Hospiz» mit einem Rätsel pro Kapitel (Schlüssel, Zahlenschloss, Uhrzeit), Lösung nur
+    auf MoveEye-Aufnahmen, Hinweis-Knopf.
+  * 2.98.98: Simulator 3D-4.67: Entwickler-Fenster mit Notizen an Claude (Bild, ZIP-Export), Kontaktbogen aller Orte einer Welt,
+    Kapitel-Sprung im Test-Spielstand.
+  * 2.98.97: Simulator 3D-4.66: Bergtal-Abenteuer zu zweit (gemeinsam, Rollen, Wettrennen), geteilter Bildschirm, Hilfe übers
+    Handy, Familien-Bestenliste.
+  * 2.98.96: Simulator 3D-4.65: Entwickler-Fenster mit Schnellreglern (Uhrzeit, Wetter, Jahreszeit, Grafik) und Ebenen
+    (Sichtfeld, Wege, Startpunkte, Auslöser, Lampen).
+  * 2.98.95: Wärmebild: Reh oder Fuchs seitlich gilt nicht mehr als Person (aufrechte Formen bleiben Person); kriechende
+    Personen als «Person?» (flache Box + schwache KI + Spur/Wärme); Feld «Höhe der Kamera» in Platz einrichten. Simulator
+    3D-4.64: «Stange» heisst «Höhe der Kamera».
   * 2.98.94: Simulator 3D-4.63: Bergtal-Abenteuer – Rucksack mit gefundener Ausrüstung, mildes Essen und Trinken, Quellen und
     Kochen, Tauschen ohne Geld.
   * 2.98.93: Simulator 3D-4.62: neues Fenster Mehr → Entwickler (nur Besitzer) – Übersichtskarte aller Welten und Orte, Klick =
@@ -1087,10 +1100,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_94.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_100.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_94.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_94.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_100.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_100.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -1107,7 +1120,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.94"
+APP_VERSION = "2.98.100"
 
 
 def default_data_dir():
@@ -12089,7 +12102,7 @@ SIMHUB_JS = r"""
     "ab-note": "Zweimal derselbe Testlauf: A mit den jetzigen Einstellungen, B mit der Änderung. B bleibt nur, wenn es klar besser ist (+3 Punkte).",
     "More sensitive": "Empfindlicher", "Less sensitive": "Weniger empfindlich", "AI stricter": "KI strenger", "AI more generous": "KI grosszügiger", "Also small objects": "Auch kleine Objekte",
     "Faster decision": "Schneller entscheiden", "B is better – kept": "B ist besser – übernommen", "A stays": "A bleibt", "Place, zones, patrol": "Ort, Zonen, Patrouille",
-    "Zones in 3D": "Zonen in 3D", "mast": "Stange", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"});
+    "Zones in 3D": "Zonen in 3D", "camera height": "Höhe der Kamera", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"});
   Object.assign(DE, {"Discoveries": "Entdeckungen", "{f} of {n} discovered": "{f} von {n} entdeckt", "Photo for the discovery book": "Foto für Entdeckungsbuch",
     "Open in the simulator": "Im Simulator öffnen", "Blinki hint": "Blinki-Hinweis", "a place": "ein Ort", "a scene": "eine Szene", "an animal": "ein Tier", "a person": "ein Mensch",
     "Found!": "Entdeckt!", "Something special is in the picture – take the photo now!": "Etwas Besonderes ist im Bild – jetzt fotografieren!",
@@ -12313,7 +12326,7 @@ SIMHUB_JS = r"""
     if (open && full && G[GRP[open] || "world"].parentNode) { const hold = E("div"); G[GRP[open] || "world"].after(hold); sheet(hold, open); }   // the sheet right under its group
     else if (open) sheet(box, open);
     if (full && H.handover && H.handover.length) { const w = E("div", "mut", "🔁 " + H.handover.map(x => x.t + " " + x.from + " → " + x.to).join(" · ")); w.style.cssText = "margin-top:6px;font-size:12px"; box.appendChild(w); }
-    if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("mast") + " " + H.twin.mast.toFixed(2) + " m" : "")
+    if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("camera height") + " " + H.twin.mast.toFixed(2) + " m" : "")
       + (H.twin.zones != null ? " · " + H.twin.zones + " " + tt("zones") : "") + (H.twin.waypoints != null ? " · " + H.twin.waypoints + " " + tt("patrol points") : "")); w.style.cssText = "margin-top:8px;font-size:12px"; box.appendChild(w); }
   }
   function paintTile(el_) {
@@ -18530,6 +18543,7 @@ class AIDetector:
         self.meta = None         # manifest of the own model
         self.boxes = []          # last persons, in processing-frame coordinates
         self.objects = []        # last non-person objects (x, y, w, h, conf, cls)
+        self.weak = []; self.weak_t = 0.0   # real-reh-fusspunkt: persons below ai_conf, raw score >= WEAK_AI_MIN, 0..1 (232 «Person?»)
         self.frame_counter = 0
         STATE["ai_model_note"] = ""
         if CFG.get("ai_model") == "own" and not force_ssd:
@@ -18614,7 +18628,16 @@ class AIDetector:
         t0 = time.time()
         h, w = frame.shape[:2]
         try:
-            boxes, objects = self.infer(frame, CFG["ai_conf"], CFG["object_conf"])
+            # real-reh-fusspunkt: one run with a lower person threshold (raw score WEAK_AI_MIN, 232); the boxes below the normal
+            # threshold go to self.weak («Person?» only with a flat box + movement / warmth), all others exactly as before (the
+            # NMS keeps every strong box: only a stronger box can suppress one)
+            need = own_ai_thresholds(self.meta, float(CFG["ai_conf"]), 0.5)[self.meta["classes"].index("person")] \
+                if self.kind == "yolo" and "person" in (self.meta or {}).get("classes", []) else float(CFG["ai_conf"])
+            low = (0.5 + (WEAK_AI_MIN - float(self.meta["conf"].get("person", 0.35)))) if self.kind == "yolo" else WEAK_AI_MIN
+            boxes, objects = self.infer(frame, min(float(CFG["ai_conf"]), low), CFG["object_conf"])
+            self.weak = [(b[0] / w, b[1] / h, b[2] / w, b[3] / h, b[4]) for b in boxes if b[4] < need]
+            self.weak_t = time.time()
+            boxes = [b for b in boxes if b[4] >= need]
         except Exception as e:
             if self.kind != "yolo":
                 raise
@@ -20714,11 +20737,57 @@ NIGHTVISION = NightVision()
 # 2.98.22 (Wunsch Daniel: «das Wärmebild soll mitlaufen»): by day too is now the default, so the thermal camera always
 # runs along as soon as one is chosen - also with the overlay and the warm alarm off. Older settings are switched once
 # (thermal_migrate, called by 040); who switches «… by day too» off again keeps it off.
+# real-reh-fusspunkt (31.10.2026, Fehlalarm Daniel): a roe deer or a fox coming straight at the camera at night is narrow and
+# looks «upright» in the thermal picture; with the 1.7 m of a person it seemed far away and so of person size -> push «Person».
+# Now the distance is estimated a second time from the FOOT POINT (lower edge of the box, flat ground): the camera height
+# (simulator: its pole «mast» from the twin info, else FOOT_CAM_H_M) and the tilt of the head (servo; simulator: the real
+# head angle head_deg minus its fixed 6° down, main.gd want_tilt) give the distance of the feet, and with it the real height
+# of the thing. Do both distances disagree strongly (FOOT_RATIO_MIN) and is the thing clearly lower than a standing person
+# (FOOT_ANIMAL_MAX_H_M), it is reported as an animal («ANIMAL (THERMAL)», present «animal») and not as a person. Feet near
+# the horizon or cut off at the picture edge: no foot estimate, everything as before. Self-test: 417 (foot_selftest).
+# Decision Daniel (31.10.2026, third round): «animal» ONLY for a really FLAT warm body, everything upright stays as before:
+#   - upright boxes (h/w >= 1.3, thermal_person_check) are persons exactly as before - also a roe deer straight from the
+#     front, a child, a crouching person («im Zweifel Person»),
+#   - a flat warm body (failed the upright check, before only «warm») becomes «animal» when: it is night / low light, the
+#     foot point works (FOOT_RATIO_MIN, FOOT_ANIMAL_MAX_H_M), real height / real width <= FLAT_MAX_ASP, it did not stand
+#     up in the last FOOT_HIST_S seconds, and 3 such pictures over >= 1 s (until then «warm» only),
+#   - «Person?» (weak_person_feed): a flat box at the ground (w/h > WEAK_FLAT) that the AI of MoveEye calls a person with at
+#     least WEAK_AI_MIN (the normal AI threshold stays) AND a movement track or a warm body confirms it -> a person (alarm,
+#     «PERSON?»). It wins over «animal»: a warm body under a «Person?» never becomes an animal.
+# Camera height: CFG «cam_height» («Höhe der Kamera (m)» in «Platz einrichten», 537 / 582, default 1.6 m). Connected to the
+# simulator, its pole («Höhe der Kamera», 3D-4.x) has priority (the simulated camera really is that high); the field is for
+# the real device.
 # ----------------------------------------------------------------------------
 for _k, _v in {"thermal_person": True, "thermal_person_day": True, "thermal_mig22": False}.items():
     CFG.setdefault(_k, _v)
     DEFAULTS.setdefault(_k, _v)
-TPERS = {"t": 0.0, "seen": 0.0, "n": 0}
+TPERS = {"t": 0.0, "seen": 0.0, "n": 0, "animal_seen": 0.0, "animals": 0, "last": None}
+# ---- foot point (real-reh-fusspunkt) - the limits and why ----------------------------------------------------------------
+FOOT_CAM_H_M = 1.6          # camera height when nothing is known: the simulator's head (main.gd HEAD_H 1.6 m); a camping tripod
+                            # is about 1.2 … 1.8 m. Too high a guess makes things look taller (= the safe side, more «person»).
+FOOT_MIN_DEP_DEG = 4.0      # the feet must be at least 4° below the horizon. Thermal-90 (MI0802, 80 x 62 px, 90° x 67°,
+                            # datasheet Waveshare / Meridian) = about 1.1° per pixel; with ±1° servo play the foot distance is
+                            # then good to about ±30 %, enough to tell 1.7 m from 0.9 m (factor 1.9). Above it: as before.
+FOOT_RATIO_MIN = 1.5        # «strongly different»: the 1.7 m estimate is at least 1.5 x the foot distance (a person stays near
+                            # 1.0; ±30 % error of height / tilt keeps a real person below 1.5)
+FOOT_ANIMAL_MAX_H_M = 1.1   # «clearly lower than a person»: roe deer shoulder height 0.6 … 0.9 m (head up to about 1.1 m), fox
+                            # 0.35 … 0.4 m (about 0.5 m with the head) - Wildtier Schweiz / Hespeler «Rehwild heute»; standing
+                            # adults are 1.45 m and taller. Small children and a crouching person are lower too - they stay
+                            # persons: upright (thermal_person_check) or not flat (FLAT_MAX_ASP).
+FLAT_MAX_ASP = 0.8          # «really flat» (Daniel: wider than high): real height / real width from the side. Roe deer: shoulder
+                            # 0.6 … 0.9 m, head-body 0.95 … 1.35 m (Wildtier Schweiz) -> 0.5 … 0.8 (head held high up to ~0.9:
+                            # then «warm», not animal); fox: shoulder 0.35 … 0.4 m, head-body 0.6 … 0.9 m (+ tail 0.35 … 0.45)
+                            # -> 0.3 … 0.6. A crouching person (1.0 / 0.55 m = 1.8) and any child standing (> 3) are far above.
+WEAK_AI_MIN = 0.15          # «Person?»: the raw person score of the AI (crawling figures of the simulator reach 0.18 at most,
+                            # REAL_KRIECHENDE.md; the normal threshold ai_conf stays for everything else)
+WEAK_FLAT = 1.5             # «flat box at the ground»: AI box width / height above 1.5 (crawling / lying, a standing person ~0.4)
+WEAK_AGE_S = 2.5            # the AI runs only now and then: its weak boxes count for 2.5 s
+FOOT_HIST_S = 4.0           # «does not stand up over the last pictures»: what was seen of it in the last 4 s
+FOOT_NEED_N, FOOT_NEED_S = 3, 1.0   # an animal needs 3 animal-like pictures over at least 1 s (the thermal camera: 3 of 5 anyway)
+FOOT = {"h": None, "t": 0.0, "busy": False, "hist": deque(maxlen=200)}
+for _k, _v in {"cam_height": FOOT_CAM_H_M}.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
 
 
 def thermal_migrate(cfg_in):
@@ -20766,8 +20835,187 @@ def _thermal_temps(box):
         return None
 
 
+def cam_height_cfg():
+    """the field «Höhe der Kamera (m)» of «Platz einrichten» (0.2 … 10 m, else the default 1.6 m)"""
+    try:
+        v = float(CFG.get("cam_height") or FOOT_CAM_H_M)
+    except (TypeError, ValueError):
+        return FOOT_CAM_H_M
+    return v if 0.2 <= v <= 10.0 else FOOT_CAM_H_M
+
+
+def cam_height_info():
+    """for the pages: {"m": field, "sim": pole of the simulator or None, "used": what the foot point uses}"""
+    h = _foot_cam_h()
+    sim = FOOT["h"] if bool(CFG.get("sim_on")) and str(CFG.get("source") or "").startswith("sim:") else None
+    return {"m": round(cam_height_cfg(), 2), "sim": round(sim, 2) if sim else None, "used": round(h, 2)}
+
+
+def _foot_cam_h():
+    """height of the camera above the ground in m: connected to the simulator its pole (twin info «mast», fetched in the
+    background at most every 60 s - never in the camera loop) has priority, else the field «Höhe der Kamera» (cam_height)"""
+    sim = bool(CFG.get("sim_on")) and str(CFG.get("source") or "").startswith("sim:")
+    if not sim:
+        return cam_height_cfg()
+    now = time.time()
+    if now - FOOT["t"] > 60.0 and not FOOT["busy"]:
+        FOOT["t"] = now; FOOT["busy"] = True
+
+        def _get():
+            try:
+                m = (sim_twin_info() or {}).get("mast")
+                FOOT["h"] = float(m) if m is not None and 0.2 <= float(m) <= 10.0 else None
+            except Exception:
+                pass
+            finally:
+                FOOT["busy"] = False
+        threading.Thread(target=_get, daemon=True).start()
+    return FOOT["h"] or cam_height_cfg()
+
+
+def _foot_pitch_deg():
+    """where the main camera looks up (+) / down (-) in degrees: the wide camera of the simulator its mount (tilt_deg, + the
+    head with tilt_follow), the head camera the servo; in the simulator the real head (head_deg) and its fixed 6° down"""
+    src = str(CFG.get("source") or "")
+    sim = bool(CFG.get("sim_on")) and src.startswith("sim:")
+    head = servo_pos_deg()[1]
+    if sim and isinstance(SIM.get("head"), list) and len(SIM["head"]) >= 2:
+        try:
+            head = float(SIM["head"][1])
+        except (TypeError, ValueError):
+            pass
+    if sim and src != "sim:0":
+        cam = next((c for c in (SIM.get("info") or {}).get("cameras") or [] if str(c.get("id")) == src[4:]), None)
+        if cam and cam.get("tilt_deg") is not None:
+            return float(cam["tilt_deg"]) + ((head - 6.0) if cam.get("tilt_follow") else 0.0)
+    return head - 6.0 if sim else head
+
+
+def foot_estimate(box, cam_h=None, pitch=None, vf=None):
+    """(distance of the feet in m, real height in m) of a thing standing on flat ground, from the lower / upper edge of its
+    box (x, y, w, h 0..1 of the main picture) - or None when the feet are cut off or too near the horizon"""
+    x, y, w, h = box
+    if h <= 0 or y + h > 0.985 or y < 0.01:
+        return None                                           # cut off at the picture edge: feet / head unknown
+    cam_h = _foot_cam_h() if cam_h is None else float(cam_h)
+    pitch = _foot_pitch_deg() if pitch is None else float(pitch)
+    vf = erk_vfov() if vf is None else float(vf)
+    k = math.tan(math.radians(vf) / 2.0)
+    dep_b = math.atan((y + h - 0.5) * 2.0 * k) - math.radians(pitch)   # how far below the horizon the feet are
+    if dep_b < math.radians(FOOT_MIN_DEP_DEG):
+        return None
+    dist = cam_h / math.tan(dep_b)
+    dep_t = math.atan((y - 0.5) * 2.0 * k) - math.radians(pitch)
+    return dist, cam_h - dist * math.tan(dep_t)
+
+
+def _foot_night():
+    try:
+        return bool(is_dark() or STATE.get("lowlight"))
+    except Exception:
+        return bool(STATE.get("lowlight"))
+
+
+def foot_shape(box, fe):
+    """real height / real width of a box (both from the foot distance) - small = flat like an animal from the side"""
+    hf = cam_fov()[0]
+    width_m = box[2] * 2.0 * fe[0] * math.tan(math.radians(hf) / 2.0)
+    return max(0.0, fe[1]) / max(0.05, width_m)
+
+
+def foot_decide(box, d, fe, night, t0, hist, maybe=False, vf=None):
+    """the decision of thermal_classify, without the camera (self-test 417): -> ("person", d) / ("animal", foot m, height m,
+    distance at 1.7 m) / ("wait", None) / None (only warm, as before). d = thermal_person_check (upright person) or None;
+    maybe = a «Person?» of the AI lies on it. hist = deque of the last observations {t, cx, fy, low, person}."""
+    x, y, w, h = box
+    cx, fy = x + w / 2.0, y + h
+    same = [o for o in hist if t0 - o["t"] <= FOOT_HIST_S and abs(o["cx"] - cx) < 0.12 and abs(o["fy"] - fy) < 0.15]
+    if d is not None:                                           # upright: a person, as before
+        hist.append({"t": t0, "cx": cx, "fy": fy, "low": False, "person": True})
+        return ("person", d)
+    low = False
+    if fe is not None and night and not maybe:
+        vf = erk_vfov() if vf is None else vf
+        d_size = PERSON_H_M / (2.0 * max(1e-3, h) * math.tan(math.radians(vf) / 2.0))
+        low = (d_size / max(0.1, fe[0]) >= FOOT_RATIO_MIN and fe[1] <= FOOT_ANIMAL_MAX_H_M and foot_shape(box, fe) <= FLAT_MAX_ASP)
+    stood = any(o["person"] for o in same)                     # it stood up in the last seconds: no animal
+    hist.append({"t": t0, "cx": cx, "fy": fy, "low": low, "person": False})
+    if not low or stood:
+        return None
+    lows = [o for o in same if o["low"]] + [hist[-1]]
+    if len(lows) >= FOOT_NEED_N and t0 - min(o["t"] for o in lows) >= FOOT_NEED_S:
+        vf = erk_vfov() if vf is None else vf
+        return ("animal", fe[0], max(0.0, fe[1]), PERSON_H_M / (2.0 * max(1e-3, h) * math.tan(math.radians(vf) / 2.0)))
+    return ("wait", None)
+
+
+def thermal_classify(box, t0=None, maybe=False):
+    """-> ("person", distance m) / ("animal", …) / ("wait", None) / None for a warm body (x, y, w, h 0..1 of the main picture):
+    upright as before (thermal_person_check), flat at night with the foot point = animal (real-reh-fusspunkt)"""
+    d = thermal_person_check(box)
+    fe = None
+    if d is None:
+        try:
+            fe = foot_estimate(box)
+        except Exception:
+            fe = None
+    TPERS["last"] = {"d_size": round(d, 2) if d else None, "d_foot": round(fe[0], 2) if fe else None, "h_foot": round(fe[1], 2) if fe else None}
+    return foot_decide(box, d, fe, _foot_night(), time.time() if t0 is None else t0, FOOT["hist"], maybe)
+
+
+def _ov(a, b):
+    """two boxes (x, y, w, h, same units) overlap: intersection / smaller area"""
+    ix = max(0.0, min(a[0] + a[2], b[0] + b[2]) - max(a[0], b[0])); iy = max(0.0, min(a[1] + a[3], b[1] + b[3]) - max(a[1], b[1]))
+    return ix * iy / max(1e-9, min(a[2] * a[3], b[2] * b[3]))
+
+
+def weak_person_check(ab, tracks_n, warm_n, fe):
+    """«Person?» for one weak AI box ab = (x, y, w, h, conf) 0..1: flat, at the ground, confirmed by movement or warmth"""
+    x, y, w, h, cf = ab
+    if cf < WEAK_AI_MIN or h <= 0 or (w / h) * (1.0 / max(1e-3, float(ThermalCam.main_aspect))) <= WEAK_FLAT:
+        return False                                            # (w / h in real pixels of the picture)
+    if fe is not None and fe[1] > FOOT_ANIMAL_MAX_H_M + 0.3:
+        return False                                            # not at the ground (a flat thing high up)
+    return any(_ov(ab[:4], b) > 0.3 for b in list(tracks_n) + list(warm_n))
+
+
+def weak_person_feed(ai, tracks, warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0):
+    """410, when nobody was found: the weak person boxes of the AI (180, below ai_conf) that are flat at the ground and confirmed
+    by a movement track or the thermal picture become «PERSON?» (person boxes = the normal person / alarm logic).
+    Returns the «Person?» boxes 0..1 (a warm body under one never becomes an animal)."""
+    wk = getattr(ai, "weak", None) or []
+    STATE["person_maybe"] = 0                                   # /api/state: how many «Person?» in this picture
+    if not wk or t0 - float(getattr(ai, "weak_t", 0.0)) > WEAK_AGE_S:
+        return []
+    ThermalCam.main_aspect = H / float(W)
+    tn = [(t.box[0] / pw, t.box[1] / ph, t.box[2] / pw, t.box[3] / ph) for t in tracks if getattr(t, "box", None)]
+    out = []
+    for ab in wk:
+        try:
+            fe = foot_estimate(ab[:4])
+        except Exception:
+            fe = None
+        if weak_person_check(ab, tn, warm_boxes or [], fe):
+            out.append(ab)
+    for bx, by, bw, bh, cf in out:
+        person_boxes.append((int(bx * pw), int(by * ph), max(1, int(bw * pw)), max(1, int(bh * ph))))
+        p1 = (int(bx * W), int(by * H)); p2 = (int((bx + bw) * W), int((by + bh) * H))
+        cv2.rectangle(frame, p1, p2, (60, 0, 255), 3)
+        cv2.putText(frame, f"PERSON? (AI {cf:.2f})", (p1[0], max(18, p1[1] - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (60, 0, 255), 2)
+    STATE["person_maybe"] = len(out)
+    if out:
+        present.add("person")
+        if t0 - TPERS.get("weak_seen", 0.0) > 10.0:
+            TPERS["weak_n"] = TPERS.get("weak_n", 0) + 1
+            log_event("person", f"Person? lying / crawling - AI {max(o[4] for o in out):.2f} (below the normal threshold) + "
+                                f"movement / warmth at the same place")
+        TPERS["weak_seen"] = t0
+    return [o[:4] for o in out]
+
+
 def thermal_person_check(box):
-    """-> distance in m when the warm body (x, y, w, h 0..1 of the main picture) looks like a person, else None"""
+    """-> distance in m when the warm body (x, y, w, h 0..1 of the main picture) looks like a person by shape, size at 1.7 m and
+    temperature, else None (the foot point comes after it: thermal_classify)"""
     x, y, w, h = box
     if w <= 0 or h <= 0:
         return None
@@ -20790,17 +21038,36 @@ def thermal_person_check(box):
     return d
 
 
-def thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0):
+def thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, maybe_boxes=()):
     """called by the camera loop (410) when the normal camera found nobody: the warm bodies that are persons become person
     boxes (in the working picture), drawn as «PERSON (THERMAL)». Returns the warm bodies that stay «warm»."""
     rest = []
     found = []
     ThermalCam.main_aspect = H / float(W)                      # (the overlay sets it too - only when the thermal picture is shown)
+    animals = []
     for b in warm_boxes:
-        d = thermal_person_check(b)
-        if d is None:
-            rest.append(b); continue
-        found.append((b, d))
+        c = thermal_classify(b, t0, any(_ov(b, m) > 0.3 for m in maybe_boxes))
+        if c is None or c[0] == "wait":
+            rest.append(b); continue                          # «wait»: maybe an animal - a few more pictures (only warm meanwhile)
+        if c[0] == "animal":
+            animals.append((b, c[1], c[2], c[3])); rest.append(b); continue   # still a warm body (the warm alarm, if on, as for any animal)
+        found.append((b, c[1]))
+    if animals:
+        for (bx, by, bw, bh), d_, h_, _ds in animals:
+            p1 = (int(bx * W), int(by * H)); p2 = (int((bx + bw) * W), int((by + bh) * H))
+            cv2.rectangle(frame, p1, p2, (0, 200, 255), 2)
+            cv2.putText(frame, f"ANIMAL (THERMAL) ~{dist_round(d_)}m {h_:.1f}m high", (p1[0], max(18, p1[1] - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 200, 255), 2)
+        present.add("animal")
+        if t0 - TPERS["animal_seen"] > 10.0:                  # a new appearance (not every picture)
+            TPERS["animals"] += 1
+            a_ = min(animals, key=lambda a: a[1])
+            try:                                              # for tuning FLAT_MAX_ASP with real nights (shape, box)
+                shp = f", shape h/w {foot_shape(a_[0], (a_[1], a_[2])):.2f}, box {tuple(round(float(q), 3) for q in a_[0])}"
+            except Exception:
+                shp = ""
+            log_event("ai", f"Animal in the thermal picture, about {dist_round(a_[1])} m, about {a_[2]:.1f} m high - no person "
+                            f"(foot point; as a 1.7 m person it would be {dist_round(a_[3])} m away{shp})")
+        TPERS["animal_seen"] = t0
     if not found:
         return rest
     for (bx, by, bw, bh), d in found:
@@ -25654,8 +25921,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.63", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 34159260,
-         "sha256": "974097d14e7e825c214cd8f9774f21a9e1d4eaef50e5b3200a26ac9dfa581e8b"}
+SIM3D = {"version": "3D-4.69", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 34379904,
+         "sha256": "f711d8f02bc82e7abb249ed1effac8a28b7254d213c5de8eda1f8175bb641c5b"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -28273,7 +28540,7 @@ def place_state(lang=None):
             "scan": sc, "record": {"t": rec.get("t"), "items": rec.get("items") or [], "public_report": rec.get("public_report", True),
                                    "watched": rec.get("watched", 0), "zones": len(rec.get("zones") or []), "wps": len(rec.get("wps") or [])} if rec else None,
             "offer": place_offer(), "why_not": tr(place_busy_reason(), lang) if not PLACE["busy"] else "",
-            "info": place_info()}
+            "info": place_info(), "cam_h": cam_height_info()}
 
 
 # ---- the alarm: a person on the public path is only reported, a person at the tent counts more ---------------------------
@@ -32766,7 +33033,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_94.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_100.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -35446,8 +35713,15 @@ class MotionWatch:
             th_pers = THERMAL is not None and not person_boxes and thermal_person_active()   # 2.98.13: persons in the thermal picture (232)
             if (CFG["thermal_alarm"] or th_pers) and CFG["detection_on"] and THERMAL is not None:
                 warm_boxes = THERMAL.detect()                 # (x, y, w, h) 0..1 of the picture, already checked against the zones
-                if th_pers and warm_boxes:
-                    warm_boxes = thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0)
+            maybe_ = []
+            if not person_boxes and CFG["detection_on"]:      # real-reh-fusspunkt: «Person?» - flat + weak AI + movement / warmth (232)
+                try:
+                    maybe_ = weak_person_feed(self.ai, persons + candidates, warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0)
+                except Exception as e:
+                    log_event("sys", f"Person?: {e}"[:160])
+            if (CFG["thermal_alarm"] or th_pers) and CFG["detection_on"] and THERMAL is not None:
+                if th_pers and warm_boxes and not maybe_:                 # a «Person?» is there: no animal under it (232)
+                    warm_boxes = thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, maybe_)
                 if not CFG["thermal_alarm"]:
                     warm_boxes = []
                 if warm_boxes:
@@ -36641,6 +36915,62 @@ def size_ok(t, ph):
 def size_state():
     f = SIZEFIT["fit"].get(_size_bucket())
     return {"learned": bool(f), "persons": int(f[2]) if f else len(SIZEFIT["b"].get(_size_bucket(), [])), "rejects": SIZEFIT["rejects"]}
+
+
+def foot_selftest():
+    """real-reh-fusspunkt (232, third round): at night a roe deer / fox from the SIDE (flat) is an animal; a child 1.0 m, a
+    crouching person (also one that never stands up), a roe deer straight from the front and a standing person stay persons;
+    a crawling person is an animal without an AI hint and «Person?» with AI >= 0.15 + movement / warmth; by day no animal.
+    Camera 1.6 m high, 6° down - boxes from the flat-ground geometry with the field of view of this camera."""
+    vf, cam_h, pitch = erk_vfov(), 1.6, -6.0
+    hf = cam_fov()[0]
+    k = math.tan(math.radians(vf) / 2.0)
+    ThermalCam.main_aspect = 9 / 16.0
+
+    def box(dist, height, width=0.4, cx=0.5):
+        def row(z):                                          # picture row 0..1 of a point z m above the ground at dist m
+            return 0.5 + math.tan(math.atan((cam_h - z) / dist) + math.radians(pitch)) / (2.0 * k)
+        y0, y1 = row(height), row(0.0)
+        w = width / (2.0 * dist * math.tan(math.radians(hf) / 2.0))
+        return (cx - w / 2.0, y0, w, y1 - y0)
+
+    def run(seq, night=True, maybe=False):
+        """seq = [(dist, height, width)] one picture each 0.5 s -> the last decision (like thermal_classify)"""
+        hist = deque(maxlen=50); c = None
+        for n, (dist, height, width) in enumerate(seq):
+            b = box(dist, height, width)
+            d = thermal_person_check(b)
+            c = foot_decide(b, d, foot_estimate(b, cam_h, pitch, vf) if d is None else None, night, 100.0 + 0.5 * n, hist, maybe, vf)
+        return c[0] if c else None
+    for dist, height in ((6.0, 1.75), (12.0, 1.6), (9.0, 0.85), (5.0, 0.45)):
+        fe = foot_estimate(box(dist, height), cam_h, pitch, vf)
+        assert fe is not None and abs(fe[0] - dist) < 0.05 * dist and abs(fe[1] - height) < 0.05, (dist, height, fe)
+    assert foot_estimate(box(40.0, 1.7), cam_h, 6.0, vf) is None          # feet near the horizon: no estimate
+    assert foot_estimate((0.5, 0.3, 0.05, 0.7), cam_h, pitch, vf) is None  # cut off at the lower edge
+    deer_side = [(10.0 - 0.6 * i, 0.9, 1.3) for i in range(5)]            # h/w 0.69
+    fox_side = [(9.0 - 0.8 * i, 0.45, 0.8) for i in range(5)]             # h/w 0.56
+    crawl = [(7.0 - 0.2 * i, 0.45, 1.5) for i in range(5)]
+    assert run(deer_side) == "animal" and run(fox_side) == "animal", (run(deer_side), run(fox_side))
+    assert run(fox_side[:2]) == "wait"                                    # 2 pictures in 0.5 s: not decided yet
+    assert run(fox_side, night=False) is None                             # by day: no animal (only warm, as before)
+    assert run([(9.0, 1.05, 1.2)] * 5) is None                            # deer with the head high (0.88): only warm
+    assert run([(9.0, 1.0, 0.35)] * 5) == "person"                        # roe deer straight from the front: person («im Zweifel»)
+    assert run([(7.0, 1.0, 0.3)] * 5) == "person"                         # child 1.0 m
+    assert run([(6.0, 1.0, 0.55)] * 8) == "person"                        # crouching, never stands up
+    assert run([(6.0, 1.75, 0.5)] * 5) == "person"
+    assert run([(6.0, 1.75, 0.5)] * 2 + crawl) is None                    # stood, then lies down: never an animal
+    assert run(crawl) == "animal" and run(crawl, maybe=True) is None      # crawling: animal without AI, «Person?» wins
+    tr_ = [(0.40, 0.70, 0.22, 0.10)]                                      # a movement track at the same place
+    assert weak_person_check((0.41, 0.71, 0.20, 0.08, 0.17), tr_, [], None)
+    assert not weak_person_check((0.41, 0.71, 0.20, 0.08, 0.10), tr_, [], None)     # AI below 0.15
+    assert not weak_person_check((0.41, 0.71, 0.20, 0.08, 0.17), [], [], None)      # nothing confirms it
+    assert not weak_person_check((0.45, 0.50, 0.05, 0.30, 0.20), [(0.45, 0.5, 0.05, 0.3)], [], None)   # upright: not flat
+    hist = deque(maxlen=50)                                               # camera 30 % higher than thought: still no animal
+    b = box(8.0, 1.65, 0.5)
+    assert foot_decide(b, thermal_person_check(b), None, True, 1.0, hist, False, vf)[0] == "person"
+    return True
+
+SELFTEST_EXTRA.append(("Thermal picture: animal or person from the foot point (232)", foot_selftest))
 # ----------------------------------------------------------------------------
 # Web access options (set on the command line) + self-signed certificate + systemd unit
 # ----------------------------------------------------------------------------
@@ -54892,6 +55222,14 @@ function paintStart() {
   const opt = (id, label, on) => { const l = E("label", "opt"); const c = E("input"); c.type = "checkbox"; c.checked = on; c.id = id; l.append(c, E("span", "", label)); v.appendChild(l); opts[id] = c; };
   if (S.wide) opt("o-wide", tf("Use the wide-angle camera ({cam}, {deg}°): {n} directions, about {min} min", {cam: S.wide.label, deg: Math.round(S.wide.hf), n: S.wide.n, min: Math.max(1, Math.round(S.wide.eta / 60))}), true);
   opt("o-rows", t("Thorough: 3 rows instead of 2 (takes longer)"), false);
+  if (S.cam_h) {                                   // real-reh-fusspunkt: the height of the camera (foot point of the thermal check, 232)
+    const l = E("label", "opt"); const n = E("input"); n.type = "number"; n.min = 0.2; n.max = 10; n.step = 0.05; n.value = S.cam_h.m;
+    n.style.width = "90px"; n.id = "o-camh";
+    n.onchange = async () => { const r = await post("/api/place", {op: "height", value: parseFloat(n.value)}); if (r && r.ok) { n.value = r.m; toast("✓ " + t("Camera height (m)") + ": " + r.m); } };
+    l.append(n, E("span", "", t("Camera height (m)"))); v.appendChild(l);
+    v.appendChild(E("div", "mut", t("Height of the lens above the ground - helps to tell animals from persons at night.") +
+      (S.cam_h.sim ? " " + tf("Simulator: camera height {m} m - counts while connected", {m: S.cam_h.sim.toFixed(2)}) : "")));
+  }
   if (S.dark) {
     v.appendChild(E("div", "mut", "🌙 " + t("It is dark: the night reference is made now.")));
     if (S.ir_ok) opt("o-ir", t("with the infrared light"), true);
@@ -55158,6 +55496,8 @@ def _place_de(keys):
 PLACE_PAGE_KEYS = ["Set up the place", "1 Look around", "2 Mark", "3 Done", "Put MoveEye where it will guard. The head looks around once: it takes a photo in every direction and watches for about 10 seconds what moves and what the AI recognises. Then you only mark your tent, the access, your valuables and what to ignore.", "the whole circle (360°)", "about", "Pan range of the servo {servo}°, with the lens it sees {cover} (camera {hf}°).",
                    "No full turn: the head turns only as far as its servo goes.", "{n} directions in {rows} rows - about {min} minutes.",
                    "Use the wide-angle camera ({cam}, {deg}°): {n} directions, about {min} min", "Thorough: 3 rows instead of 2 (takes longer)",
+                   "Camera height (m)", "Height of the lens above the ground - helps to tell animals from persons at night.",
+                   "Simulator: camera height {m} m - counts while connected",
                    "It is dark: the night reference is made now.", "with the infrared light", "with the thermal camera too", "Start looking around",
                    "Show the last look-around", "Place set up on {when}: {n} things marked", "Forget the place",
                    "Forget the place? Its zones, waypoints and guarded things are removed.", "The head turns by itself - please do not stand in front of it.",
@@ -55224,6 +55564,15 @@ def place_routes(app, watch, reply, body):
             if not ok:
                 return reply({"ok": False, "error": tr_err(err, lang)}, 400)
             return reply({"ok": True, "result": res})
+        elif op == "height":                            # real-reh-fusspunkt: «Höhe der Kamera (m)» (232 cam_height)
+            try:
+                v_ = round(float(d.get("value")), 2)
+            except (TypeError, ValueError):
+                return reply({"ok": False, "error": "number"}, 400)
+            if not 0.2 <= v_ <= 10.0:
+                return reply({"ok": False, "error": "0.2 … 10 m"}, 400)
+            CFG["cam_height"] = v_; save_settings()
+            return reply({"ok": True, "m": v_})
         elif op == "dismiss":
             place_offer_dismiss()
         elif op == "clear":
@@ -57573,7 +57922,7 @@ PADMAP_JS = r"""window.MWPad = window.MWPad || (function () {
               ["select", "swap", "Swap pictures / views", "Bilder / Ansichten tauschen"],
               ["start", "menu", "Menu (control panel)", "Menü (Bedienfeld)"], ["start_long", "exit", "Hold 1 s: leave", "1 s halten: beenden"],
               ["dpad", "head", "Head in small steps", "Kopf in kleinen Schritten"],
-              ["l2", "pole", "Hold L2 + ✚ ↑↓: pole longer / shorter", "L2 halten + ✚ ↑↓: Stange länger / kürzer"]],
+              ["l2", "pole", "Hold L2 + ✚ ↑↓: camera higher / lower", "L2 halten + ✚ ↑↓: Höhe der Kamera + / −"]],
       "view": [["ls", "head", "Turn / tilt the head of MoveEye", "Kopf von MoveEye drehen / neigen"],
                ["rs", "drive", "Drive the rover (without rover: move the view)", "Rover fahren (ohne Rover: Ansicht bewegen)"],
                ["r1rs", "orbit", "Hold R1: turn the view", "R1 halten: Ansicht drehen"],
@@ -67823,7 +68172,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.94")
+        self.root.title("MoveEye 2.98.100")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -68190,7 +68539,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.94 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.100 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -76558,6 +76907,24 @@ def _app_place(self):
     v_wide, v_rows, v_ir, v_th = tk.BooleanVar(win, True), tk.BooleanVar(win, False), tk.BooleanVar(win, True), tk.BooleanVar(win, True)
     cb_wide = ttk.Checkbutton(of, variable=v_wide, text="")
     ttk.Checkbutton(of, variable=v_rows, text=tr("Thorough: 3 rows instead of 2 (takes longer)")).pack(anchor="w")
+    hfr = ttk.Frame(of); hfr.pack(anchor="w", pady=(4, 0))          # real-reh-fusspunkt: «Höhe der Kamera (m)» (232 cam_height)
+    v_camh = tk.StringVar(win, "%.2f" % cam_height_cfg())
+
+    def camh_set(*_a):
+        try:
+            v_ = round(float(v_camh.get().replace(",", ".")), 2)
+        except ValueError:
+            return
+        if 0.2 <= v_ <= 10.0 and v_ != CFG.get("cam_height"):
+            CFG["cam_height"] = v_; save_settings()
+            self._status("Camping / protection", "📏 " + tr("Camera height (m)") + f": {v_:.2f}")
+    sp = ttk.Spinbox(hfr, from_=0.2, to=10.0, increment=0.05, textvariable=v_camh, width=6, command=camh_set)
+    sp.pack(side="left"); sp.bind("<FocusOut>", camh_set); sp.bind("<Return>", camh_set)
+    ttk.Label(hfr, text=" " + tr("Camera height (m)")).pack(side="left")
+    _ci = cam_height_info()
+    ttk.Label(of, style="Mut.TLabel", wraplength=760, justify="left",
+              text=tr("Height of the lens above the ground - helps to tell animals from persons at night.")
+              + ((" " + trf("Simulator: camera height {m} m - counts while connected", m="%.2f" % _ci["sim"])) if _ci["sim"] else "")).pack(anchor="w")
     cb_ir = ttk.Checkbutton(of, variable=v_ir, text=tr("with the infrared light"))
     cb_th = ttk.Checkbutton(of, variable=v_th, text=tr("with the thermal camera too"))
     bf = ttk.Frame(top); bf.pack(fill="x", pady=(6, 0))
@@ -90336,7 +90703,7 @@ _HX_pad2 = {
     'Menu (control panel)': ('Menü (Bedienfeld)', 'Menu (panneau de commande)', 'Menu (pannello di comando)', 'Menu (panela da manipulaziun)'),
     'Hold 1 s: leave': ('1 s halten: beenden', 'Maintenir 1 s : quitter', 'Tenere 1 s: uscire', 'Tegnair 1 s: terminar'),
     'Head in small steps': ('Kopf in kleinen Schritten', 'Tête par petits pas', 'Testa a piccoli passi', 'Chau en pitschens pass'),
-    'Hold L2 + ✚ ↑↓: pole longer / shorter': ('L2 halten + ✚ ↑↓: Stange länger / kürzer', 'Maintenir L2 + ✚ ↑↓ : mât plus long / plus court', 'Tenere L2 + ✚ ↑↓: asta più lunga / più corta', 'Tegnair L2 + ✚ ↑↓: pertga pli lunga / pli curta'),
+    'Hold L2 + ✚ ↑↓: camera higher / lower': ('L2 halten + ✚ ↑↓: Höhe der Kamera + / −', 'Maintenir L2 + ✚ ↑↓ : caméra plus haut / plus bas', 'Tenere L2 + ✚ ↑↓: telecamera più alta / più bassa', 'Tegnair L2 + ✚ ↑↓: camera pli aut / pli bass'),
     'Hold 1.5 s: emergency stop of the servos': ('1,5 s halten: Not-Aus der Servos', 'Maintenir 1,5 s : arrêt d’urgence des servos', 'Tenere 1,5 s: arresto d’emergenza dei servo', 'Tegnair 1,5 s: stop d’urgenza dals servos'),
     'Menu (the bar)': ('Menü (die Leiste)', 'Menu (la barre)', 'Menu (la barra)', 'Menu (la trav)'),
     'Choose a button of the bar (A = press, B = back)': ('Knopf der Leiste wählen (A = drücken, B = zurück)', 'Choisir un bouton de la barre (A = appuyer, B = retour)', 'Scegliere un pulsante della barra (A = premere, B = indietro)', 'Tscherner in buttun da la trav (A = smatgar, B = enavos)'),
@@ -90423,6 +90790,14 @@ _HX_PLATZEIN = {
                                                      'Accurato: 3 file invece di 2 (dura di più)', 'Precis: 3 lingias empè da 2 (dura pli ditg)'),
     'It is dark: the night reference is made now.': ('Es ist dunkel: jetzt entsteht die Nacht-Referenz.', 'Il fait nuit : la référence de nuit est faite maintenant.',
                                                      'È buio: ora si crea il riferimento notturno.', 'Igl è stgir: ussa vegn fatga la referenza da notg.'),
+    'Camera height (m)': ('Höhe der Kamera (m)', 'Hauteur de la caméra (m)', 'Altezza della telecamera (m)', 'Autezza da la camera (m)'),
+    'Height of the lens above the ground - helps to tell animals from persons at night.': (
+        'Höhe der Linse über dem Boden – hilft nachts, Tiere von Personen zu unterscheiden.',
+        'Hauteur de l’objectif au-dessus du sol – aide la nuit à distinguer les animaux des personnes.',
+        'Altezza dell’obiettivo dal suolo – aiuta di notte a distinguere gli animali dalle persone.',
+        'Autezza da l’objectiv sur il terren – gida la notg a distinguer animals da persunas.'),
+    'Simulator: camera height {m} m - counts while connected': ('Simulator: Höhe der Kamera {m} m – gilt, solange verbunden', 'Simulateur : hauteur de la caméra {m} m – compte tant qu’il est connecté',
+                                                         'Simulatore: altezza della telecamera {m} m – vale finché è collegato', 'Simulatur: autezza da la camera {m} m – vala uschè ditg sco connectà'),
     'with the infrared light': ('mit dem Infrarot-Licht', 'avec la lumière infrarouge', 'con la luce infrarossa', 'cun la glisch infracotschna'),
     'with the thermal camera too': ('auch mit der Wärmebild-Kamera', 'aussi avec la caméra thermique', 'anche con la termocamera', 'er cun la camera termica'),
     'Start looking around': ('Umschauen starten', 'Commencer à regarder autour', 'Iniziare a guardarsi intorno', 'Cumenzar a guardar enturn'),
@@ -90565,35 +90940,35 @@ _HELP_PLATZEIN = {
           '<li><b>Nachts:</b> mit Infrarot-Licht und Wärmebild – so passt die Nacht-Referenz. <b>Weitwinkel:</b> sitzt eine Zusatzkamera mit grösserem Blickwinkel auf dem Kopf, braucht der Rundblick weniger Schritte.</li>'
           '<li><b>2 Markieren:</b> auf dem Panorama die Vorschläge antippen oder mit einer Taste ein Rechteck ziehen: <b>⛺ Mein Zelt / Wohnmobil</b> (Schutzzone: wer dort länger bleibt, wird gemeldet; eine Person beim Zelt braucht keine zweite Bestätigung), <b>🚶 Zugang / Weg</b> (Linie + Patrouillen-Punkt; «öffentlicher Weg = nur melden»: Passanten lösen keinen Alarm aus, nur einen Hinweis), <b>🚲 Wertsachen</b> (bewacht vom Referenz-Scan: am Morgen «Velo fehlt»), <b>🌿 Ignorieren</b> (Maske).</li>'
           '<li><b>3 Fertig:</b> Zonen, Masken, Wegpunkte und bewachte Sachen entstehen von selbst; die Zonen bleiben an ihrem Platz, auch wenn der Kopf dreht. Danach gleich den <b>Gehtest</b> machen. Ändern: Schutz → Zonen, oder nochmals «Platz einrichten».</li>'
-          '<li><b>📐 Blickwinkel der Kamera</b> (Einstellungen → Kamera / Servos): pro Kamera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) oder ein eigener Wert; am Pi wird das Modell meist selbst erkannt, im Simulator kommt der Wert vom Simulator.</li></ul></section>\n\n',
+          '<li><b>📐 Blickwinkel der Kamera</b> (Einstellungen → Kamera / Servos): pro Kamera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) oder ein eigener Wert; am Pi wird das Modell meist selbst erkannt, im Simulator kommt der Wert vom Simulator.</li><li><b>📏 Höhe der Kamera (m):</b> im Schritt 1, Standard 1.6 m. Damit schätzt MoveEye nachts im Wärmebild über den Fusspunkt, wie gross etwas wirklich ist (Reh / Fuchs = Tier statt Person). Mit dem Simulator verbunden gilt dessen «Höhe der Kamera».</li></ul></section>\n\n',
     "en": '<section id="place" data-icon="📍"><h2>Set up the place</h2><ul>'
           '<li><b>When:</b> after putting MoveEye up (it suggests it itself on the first start and when it stands at a new place). Schutz → «📍 Set up the place» (web and window).</li>'
           '<li><b>1 Look around:</b> the head drives its whole pan range in 2 (thorough: 3) rows. How far depends on the servo and the lens: MG90S about 180°, with the lens of the Camera Module 3 (66°) about 240° – no full turn; a 360° servo sees the whole circle. In every direction a photo and about 10 seconds of watching: what moves (branches, road, lights) and what the AI sees (car, bike, chair, bench, person …). 2–3 minutes, «Cancel» at any time.</li>'
           '<li><b>At night:</b> with the infrared light and the thermal camera – so the night reference fits. <b>Wide angle:</b> when an extra camera with a wider view sits on the head, the look-around needs fewer steps.</li>'
           '<li><b>2 Mark:</b> tap the suggestions on the panorama or draw a box with a button: <b>⛺ My tent / camper</b> (protection zone: who stays there is reported; a person at the tent needs no second confirmation), <b>🚶 Access / path</b> (line + patrol point; «public path = only report»: passers-by raise no alarm, only a note), <b>🚲 Valuables</b> (guarded by the reference scan: «Bike missing» in the morning), <b>🌿 Ignore</b> (mask).</li>'
           '<li><b>3 Done:</b> zones, masks, waypoints and guarded things are made by themselves; the zones stay on their place when the head turns. Then do the <b>walk test</b>. To change: Schutz → zones, or «Set up the place» again.</li>'
-          '<li><b>📐 Field of view of the camera</b> (Settings → Camera / Servos): per camera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) or an own value; on the Pi the model is usually detected, in the simulator the value comes from the simulator.</li></ul></section>\n\n',
+          '<li><b>📐 Field of view of the camera</b> (Settings → Camera / Servos): per camera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) or an own value; on the Pi the model is usually detected, in the simulator the value comes from the simulator.</li><li><b>📏 Camera height (m):</b> in step 1, default 1.6 m. At night MoveEye uses it to estimate from the foot point how tall something in the thermal picture really is (roe deer / fox = animal instead of person). Connected to the simulator, its «camera height» counts.</li></ul></section>\n\n',
     "fr": '<section id="place" data-icon="📍"><h2>Configurer l’emplacement</h2><ul>'
           '<li><b>Quand :</b> après avoir installé MoveEye (il le propose lui-même au premier démarrage et à un nouvel endroit). Protection → « 📍 Configurer l’emplacement » (web et fenêtre).</li>'
           '<li><b>1 Regarder autour :</b> la tête parcourt toute sa rotation en 2 (minutieux : 3) rangées. MG90S environ 180°, avec l’objectif de la Camera Module 3 (66°) environ 240° – pas de tour complet ; un servo 360° voit tout le cercle. Dans chaque direction une photo et environ 10 secondes d’observation : ce qui bouge (branches, route, lumières) et ce que l’IA voit (voiture, vélo, chaise, banc, personne …). 2–3 minutes, « Annuler » à tout moment.</li>'
           '<li><b>La nuit :</b> avec la lumière infrarouge et la caméra thermique. <b>Grand angle :</b> une caméra supplémentaire plus large sur la tête demande moins d’étapes.</li>'
           '<li><b>2 Marquer :</b> toucher les suggestions sur le panorama ou dessiner un rectangle : <b>⛺ Ma tente / camping-car</b> (zone de protection), <b>🚶 Accès / chemin</b> (ligne + point de patrouille ; « chemin public = seulement signaler »), <b>🚲 Objets de valeur</b> (surveillés par le scan de référence : « vélo manquant » le matin), <b>🌿 Ignorer</b> (masque).</li>'
           '<li><b>3 Terminé :</b> zones, masques, points de passage et objets surveillés sont créés tout seuls ; les zones restent à leur place quand la tête tourne. Ensuite faire le <b>test de marche</b>.</li>'
-          '<li><b>📐 Angle de vue de la caméra</b> (Réglages → Caméra / Servos) : par caméra Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) ou une valeur propre.</li></ul></section>\n\n',
+          '<li><b>📐 Angle de vue de la caméra</b> (Réglages → Caméra / Servos) : par caméra Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) ou une valeur propre.</li><li><b>📏 Hauteur de la caméra (m) :</b> à l’étape 1, 1.6 m par défaut. La nuit, MoveEye estime ainsi par le point au sol la taille réelle d’un corps dans l’image thermique (chevreuil / renard = animal au lieu de personne). Connecté au simulateur, sa «hauteur de la caméra» compte.</li></ul></section>\n\n',
     "it": '<section id="place" data-icon="📍"><h2>Configurare il posto</h2><ul>'
           '<li><b>Quando:</b> dopo aver posizionato MoveEye (lo propone da solo al primo avvio e in un posto nuovo). Protezione → «📍 Configurare il posto» (web e finestra).</li>'
           '<li><b>1 Guardarsi intorno:</b> la testa percorre tutta la sua rotazione in 2 (accurato: 3) file. MG90S circa 180°, con l’obiettivo della Camera Module 3 (66°) circa 240° – nessun giro completo; un servo a 360° vede tutto il cerchio. In ogni direzione una foto e circa 10 secondi di osservazione: cosa si muove (rami, strada, luci) e cosa vede l’IA (auto, bici, sedia, panchina, persona …). 2–3 minuti, «Annulla» in ogni momento.</li>'
           '<li><b>Di notte:</b> con la luce infrarossa e la termocamera. <b>Grandangolo:</b> una telecamera aggiuntiva più larga sulla testa richiede meno passi.</li>'
           '<li><b>2 Segnare:</b> toccare i suggerimenti sul panorama o disegnare un rettangolo: <b>⛺ La mia tenda / camper</b> (zona di protezione), <b>🚶 Accesso / sentiero</b> (linea + punto di pattuglia; «sentiero pubblico = solo segnalare»), <b>🚲 Oggetti di valore</b> (sorvegliati dalla scansione di riferimento: «bici mancante» al mattino), <b>🌿 Ignorare</b> (maschera).</li>'
           '<li><b>3 Fatto:</b> zone, maschere, punti di passaggio e oggetti sorvegliati nascono da soli; le zone restano al loro posto quando la testa gira. Poi fare il <b>test di camminata</b>.</li>'
-          '<li><b>📐 Angolo di visione della telecamera</b> (Impostazioni → Telecamera / Servo): per telecamera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) o un valore proprio.</li></ul></section>\n\n',
+          '<li><b>📐 Angolo di visione della telecamera</b> (Impostazioni → Telecamera / Servo): per telecamera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) o un valore proprio.</li><li><b>📏 Altezza della telecamera (m):</b> nel passo 1, 1.6 m di default. Di notte MoveEye stima così dal punto a terra quanto è davvero alto qualcosa nell’immagine termica (capriolo / volpe = animale invece di persona). Collegato al simulatore vale la sua «altezza della telecamera».</li></ul></section>\n\n',
     "rm": '<section id="place" data-icon="📍"><h2>Endrizzar il plaz</h2><ul>'
           '<li><b>Cura:</b> suenter avair plazzà MoveEye (el propona quai sez tar l’emprima partenza e sin in nov lieu). Protecziun → «📍 Endrizzar il plaz» (web e fanestra).</li>'
           '<li><b>1 Guardar enturn:</b> il chau percurra tut sia rotaziun en 2 (precis: 3) lingias. MG90S var 180°, cun l’objectiv da la Camera Module 3 (66°) var 240° – nagina rotaziun cumplaina; in servo da 360° vesa l’entir circul. En mintga direcziun ina foto ed observar var 10 secundas: tge che sa mova (roma, via, glischs) e tge che la IA vesa (auto, velo, sutga, banc, persuna …). 2–3 minutas, «Interrumper» adina.</li>'
           '<li><b>La notg:</b> cun la glisch infracotschna e la camera termica. <b>Grond angul:</b> ina camera supplementara pli largia sin il chau basegna damain pass.</li>'
           '<li><b>2 Marcar:</b> tutgar las propostas sin il panorama u dissegnar in rectangul: <b>⛺ Mia tenda / auto da campadi</b> (zona da protecziun), <b>🚶 Access / via</b> (lingia + punct da patrulla; «via publica = mo annunziar»), <b>🚲 Chaussas da valur</b> (survegliadas dal scan da referenza: «velo manca» la damaun), <b>🌿 Ignorar</b> (mascra).</li>'
           '<li><b>3 Fatg:</b> zonas, mascras, puncts da via e chaussas survegliadas vegnan fatgas sezzas; las zonas restan en lur plaz, er sch’il chau sa volva. Lura far il <b>test da chaminar</b>.</li>'
-          '<li><b>📐 Angul da vista da la camera</b> (Parameters → Camera / Servos): per camera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) u in agen valur.</li></ul></section>\n\n',
+          '<li><b>📐 Angul da vista da la camera</b> (Parameters → Camera / Servos): per camera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) u in agen valur.</li><li><b>📏 Autezza da la camera (m):</b> en il pass 1, standard 1.6 m. La notg stima MoveEye uschia tras il punct dals pes quant grond ch’insatge è propi en il maletg termic (chavriel / vulp = animal empè da persuna). Connectà cun il simulatur vala sia «autezza da la camera».</li></ul></section>\n\n',
 }
 
 

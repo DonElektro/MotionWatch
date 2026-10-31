@@ -15,7 +15,8 @@ extends PanelContainer
 ## «Genau gleich nochmals abspielen» fährt sie selbst ab (gleiche Ereignisse, gleiche Nacht) - zum Vergleich zweier
 ## MoveEye-Versionen. Treffer-Karte (gesehen / verpasst) und ein Bericht pro Lauf (user://bergtal_abenteuer/berichte/).
 ## Steuerbefehl: {"action": "abenteuer", "do": state | open | close | pick (key, value) | next | back | choose (value) | go |
-##                pause | refill | eat | camp_here | night | save (name) | situations | replay (name) | report | fast | reset}
+##                pause | refill | eat | camp_here | night | save (name) | situations | replay (name) | report | fast | reset |
+##                a3 (Paket A3: Rätsel, Tagebuch, Grossvaters Sachen, Wege, Abzeichen, Hilfe - abenteuer_raetsel.gd)}
 
 const D = preload("res://scripts/bergtal_abenteuer_daten.gd")
 const T = preload("res://scripts/i18n.gd")
@@ -43,6 +44,7 @@ var _pulse := 0.0
 var _prog_f := 0.0
 var error := ""
 var dev_open := false
+var save_file := SAVE_FILE           # Entwicklertool 3 (devtool_kapitel.gd): the test progress goes to its own file (only until restart)
 
 # the choice being made (the wizard steps)
 var W := {"chapter": 1, "mood": "abenteuerlich", "level": "mittel", "goal": "dunkel", "season": "sommer", "pack": "50",
@@ -69,6 +71,8 @@ var _slide: MarginContainer
 var back_btn: Button
 var next_btn: Button
 var karte                            # bergtal_abenteuer_karte.gd (kept between paints)
+var zweit                            # A5 abenteuer_zweit.gd: zu zweit, Handy-Begleiter, Familien-Bestenliste
+var raetsel                          # A3: abenteuer_raetsel.gd (Rätsel, Tagebuch, Grossvaters Sachen, Wege, Abzeichen, Hilfe-Stufen)
 var title_lab: Label
 var a1                               # abenteuer_moveeye.gd (Paket A1)
 
@@ -78,8 +82,8 @@ var a1                               # abenteuer_moveeye.gd (Paket A1)
 # =======================================================================================================================
 func _load() -> void:
 	P = {"chapter": 1, "xp": 0, "stars": {}, "finds": [], "finale": false, "runs": [], "pieces": []}
-	if FileAccess.file_exists(SAVE_FILE):
-		var d = JSON.parse_string(FileAccess.get_file_as_string(SAVE_FILE))
+	if FileAccess.file_exists(save_file):
+		var d = JSON.parse_string(FileAccess.get_file_as_string(save_file))
 		if d is Dictionary:
 			for k in d:
 				P[k] = d[k]
@@ -87,8 +91,8 @@ func _load() -> void:
 
 
 func _save() -> void:
-	DirAccess.make_dir_recursive_absolute(DIR)
-	var f := FileAccess.open(SAVE_FILE, FileAccess.WRITE)
+	DirAccess.make_dir_recursive_absolute(save_file.get_base_dir())
+	var f := FileAccess.open(save_file, FileAccess.WRITE)
 	if f != null:
 		f.store_string(JSON.stringify(P, " "))
 
@@ -131,6 +135,11 @@ func pack_l() -> float:
 
 func has(id: String) -> bool:
 	return Inv.hat(id)                                   # A4: Rucksack + gefundene / bleibende Dinge
+
+
+func hilfe_stufe() -> String:
+	"""A3: die Hilfe-Stufe «leicht» | «normal» | «schwer» (für A4 und andere Pakete)"""
+	return raetsel.hilfe() if raetsel != null else "normal"
 
 
 func blinki_suggest() -> Dictionary:
@@ -325,6 +334,8 @@ func start_run(seed_v := 0) -> Dictionary:
 	_karte_update()
 	step = 4
 	_snap_later("Start: " + T.t(str(ch["start"][0])), "view")
+	if raetsel != null:
+		raetsel.on_start()
 	_changed()
 	_say(T.t("Los geht's: %s") % T.t(str(ch["start"][0])))
 	_advance()
@@ -490,10 +501,12 @@ func _start_leg(i: int, pts: Array, flags: Array, nm: String) -> void:
 		R["now"] = T.t(nm)
 	_fly_t = 0.0
 	_changed()
+	if zweit != null:
+		zweit.on_leg(leg)                              # A5: «Wettrennen» - first a race to the flag
 
 
 func _tick_leg(dt: float) -> void:
-	if leg.is_empty():
+	if leg.is_empty() or (zweit != null and zweit.holds_leg()):
 		return
 	var f0: float = float(leg["f"])
 	var f: float = minf(1.0, f0 + dt / float(leg["real_s"]))
@@ -581,6 +594,8 @@ func _end_leg() -> void:
 
 func _post_leg(i: int) -> void:
 	"""what happens after leg i: weather, a meeting, a find (each once) - then the next stage"""
+	if raetsel != null and raetsel.post_leg(i):
+		return                                           # A3: a page of the diary with a bearing
 	var key := str(i)
 	if R["weather"].has(key) and not R["events_done"].has("wx" + key):
 		R["events_done"]["wx" + key] = true
@@ -631,6 +646,8 @@ func _ask(kind: String, title: String, text: String, opts: Array, extra := {}) -
 	R["pending"] = {"kind": kind, "title": title, "text": text, "options": opts}
 	for k in extra:
 		R["pending"][k] = extra[k]
+	if raetsel != null:
+		raetsel.on_ask()                                 # A3: help level, far hints, pocket watch, ice, ways
 	_replay_t = 0.7
 	_changed()
 
@@ -647,6 +664,9 @@ func choose(v: String) -> Dictionary:
 		return {"ok": false, "error": "options: " + str((pe["options"] as Array).map(func(o): return o[0]))}
 	R["pending"] = {}
 	choices.append([int(R["stage"]), str(pe["kind"]), v])
+	if raetsel != null and raetsel.choose(pe, v):
+		_changed()
+		return {"ok": true}
 	var ch := chapter()
 	var st_i := int(R["stage"])
 	match str(pe["kind"]):
@@ -753,6 +773,8 @@ func choose(v: String) -> Dictionary:
 				_arrive(true)
 			else:
 				_advance()
+	if raetsel != null:
+		raetsel.after_choose(pe, v)
 	_changed()
 	return {"ok": true}
 
@@ -826,6 +848,8 @@ func _arrive(early := false) -> void:
 		P["pieces"] = pc
 		_karte_update()
 		_snap_later(T.t("Am Ziel"), "view")
+		if raetsel != null:
+			raetsel.on_arrive()                          # A3: a thing of the grandfather at the goal
 	R["camp_xz"] = R["pos"] if early or str(ch["camp"][0]) == "frei" else Vector2(float(ch["camp"][1]), float(ch["camp"][2]))
 	R["camp_spot"] = "frei" if early else str(ch["camp"][0])
 	step = 5
@@ -1173,6 +1197,8 @@ func _morning() -> void:
 		stars = 0
 	# experience
 	var xp := stars * 100 + int(R.get("read_ok", 0)) * 30 + (R["found"] as Array).size() * 20 + int(R["mw_warn"]) * 10 + seen * 15
+	if raetsel != null:
+		xp += raetsel.morning_xp(arrived)               # A3: puzzles, pages, badges
 	var lv0 := level()
 	P["xp"] = int(P.get("xp", 0)) + xp
 	var lv1 := level()
@@ -1202,6 +1228,8 @@ func _morning() -> void:
 	_diary("morning", T.t("Der Morgen"), T.t(str(D.FLAVOR[R["mood"]]["morning"])))
 	P["runs"].append({"id": R["id"], "chapter": R["chapter"], "stars": stars, "date": Time.get_datetime_string_from_system().substr(0, 16), "seed": R["seed"]})
 	P["runs"] = (P["runs"] as Array).slice(-30)
+	if zweit != null:
+		zweit.on_morning()                              # A5: Familien-Bestenliste
 	_save()
 	_write_report()
 	_restore()
@@ -1516,8 +1544,13 @@ func _ready() -> void:
 	a1.ab = self
 	a1.main = main
 	add_child(a1)
+	raetsel = preload("res://scripts/abenteuer_raetsel.gd").new(self)
+	raetsel.attach_map(karte)
 	visible = false
 	_layout()
+	zweit = load("res://scripts/abenteuer_zweit.gd").new()     # A5 (Einhänge-Punkt)
+	zweit.setup(self)
+	add_child(zweit)
 
 
 func _layout() -> void:
@@ -1549,6 +1582,8 @@ func _process(dt: float) -> void:
 	if not R.is_empty() and step == 6:
 		_tick_night(dt)
 	_tick_replay(dt)
+	if raetsel != null:
+		raetsel.tick(dt)
 	if visible != shown:
 		visible = shown
 		if shown:
@@ -1880,8 +1915,12 @@ func _paint_chapter() -> void:
 				func(): op({"do": "pick", "key": "chapter", "value": nn}), not open, stars if open else T.t("noch nicht frei")))
 	if a1 != null:
 		a1.paint_sammlung(left)                           # A1: the collection of rare animals
+	if raetsel != null:
+		raetsel.paint_chapter(left)
 	if not situations().is_empty() or dev_open:
 		_dev_box(left)
+	if zweit != null:
+		zweit.paint_board(left, true)                  # A5: Familien-Bestenliste (kurz)
 
 
 func _dev_box(parent: Control) -> void:
@@ -1967,6 +2006,10 @@ func _paint_level() -> void:
 	row2.add_child(ob2)
 	var ss := sunset_h()
 	gg.add_child(_lab(T.t("Sonnenuntergang heute im Bergtal: %s · Sonnenaufgang: %s") % [hm(ss), hm(sunrise_h())], 12, Color(0.6, 0.66, 0.74)))
+	if raetsel != null:
+		raetsel.paint_level(gg)                          # A3: Hilfe-Stufe
+	if zweit != null:
+		zweit.paint_choice(body)                       # A5: Mitspieler (Spielart, Namen, Handy)
 
 
 func _paint_pack() -> void:
@@ -2077,6 +2120,8 @@ func _paint_hud() -> void:
 			var vv: String = str(o[0])
 			var b := _btn(g, str(o[1]), func(): op({"do": "choose", "value": vv}), (pe["options"] as Array).size() == 1)
 			b.custom_minimum_size = Vector2(0, 40)
+		if raetsel != null:
+			raetsel.paint_pending(g, pe)
 	var acts := HFlowContainer.new()
 	acts.add_theme_constant_override("h_separation", 8)
 	acts.add_theme_constant_override("v_separation", 8)
@@ -2088,6 +2133,8 @@ func _paint_hud() -> void:
 	_btn(acts, T.t("Hier übernachten"), func(): op({"do": "camp_here"}), false, not idle or not pe.is_empty())
 	Ruck.hud_buttons(self, acts, idle and pe.is_empty())   # A4: Essen, Quelle, Kochen, Tauschen
 	Ruck.paint_tausch(self, body)                        # A4: Tausch-Fenster
+	if raetsel != null:
+		raetsel.paint_hud(body)
 	var lg := _group(T.t("Tagebuch"))
 	var lst: Array = R["log"]
 	for e in lst.slice(maxi(0, lst.size() - 4)):
@@ -2130,6 +2177,8 @@ func _paint_camp() -> void:
 		Ruck.hud_buttons(self, ka, true)
 	if a1 != null:
 		a1.paint_camp()
+	if raetsel != null:
+		raetsel.paint_camp(body)
 
 
 func _paint_night() -> void:
@@ -2155,6 +2204,8 @@ func _paint_night() -> void:
 		g.add_child(_lab("%s  %s%s" % [hm(float(rec.get("h0", 0.0))), T.t(_kind_name(str(rec["kind"]))), ("  - " + T.t("MoveEye meldet")) if seen else ""], 12, GRN if seen else Color(0.75, 0.8, 0.86)))
 	if a1 != null:
 		a1.paint_night(g)
+	if raetsel != null:
+		raetsel.paint_night(body)                        # A3: Sternbild
 
 
 func _paint_morning() -> void:
@@ -2204,6 +2255,8 @@ func _paint_morning() -> void:
 			if not done.has(k):
 				done[k] = true
 				g3.add_child(_lab(_forgot_text(str(k)), 13, ORG))
+	if raetsel != null:
+		raetsel.paint_morning(left)
 	var g4 := _group(T.t("Erfahrung"), left)
 	g4.add_child(_lab(T.t("+%d Erfahrung · Stufe %d") % [int(res["xp"]), int(res["level"])], 14, Color.WHITE))
 	for u in res["unlocked"]:
@@ -2243,6 +2296,8 @@ func _paint_morning() -> void:
 			vb.add_child(cl)
 	for e in R["log"]:
 		dg.add_child(_lab("%s  %s - %s" % [hm(float(e["h"])), str(e["title"]), str(e["text"])], 12))
+	if zweit != null:
+		zweit.paint_board(body)                        # A5: Familien-Bestenliste
 	# test ground
 	var eb := Button.new()
 	eb.text = ("▾ " if dev_open else "▸ ") + T.t("Testgelände (Situation speichern, nochmals abspielen, Bericht)")
@@ -2276,6 +2331,8 @@ func op(d: Dictionary) -> Dictionary:
 	match what:
 		"open":
 			open_ab()
+		"zweit":                                       # A5: zu zweit, Handy-Begleiter, Familien-Bestenliste
+			out = zweit.op(d)
 		"close":
 			close_ab()
 		"pick":
@@ -2347,6 +2404,8 @@ func op(d: Dictionary) -> Dictionary:
 				R["items0"] = it1
 		"choose":
 			out = choose(str(d.get("value", "")))
+		"a3":                                          # A3: {what: state | hilfe | zoom | stern | nord | gib | badges | tip_now}
+			out = raetsel.op(d) if raetsel != null else {"ok": false}
 		"pause":
 			out = do_pause()
 		"refill":
@@ -2412,7 +2471,7 @@ func state() -> Dictionary:
 				"sunrise": R["sunrise"], "pending": {"kind": pe.get("kind", ""), "title": pe.get("title", ""), "options": pe.get("options", [])} if not pe.is_empty() else {},
 				"notes": R["notes"], "found": R["found"], "arrived": R.get("arrived", false), "night": R["night"], "result_stars": R.get("result", {}).get("stars", -1),
 				"log": (R["log"] as Array).slice(-6), "choices": choices.size(), "replaying": replaying},
-			"error": error}
+			"a5_zweit": zweit.state() if zweit != null else {}, "a3": raetsel.state() if raetsel != null else {}, "error": error}
 
 
 var _night_starting := false

@@ -626,7 +626,7 @@ func _net() -> void:
 		var txt: String = (h[1] as PackedByteArray).get_string_from_utf8()
 		if txt.contains("\r\n\r\n"):
 			var path := txt.get_slice(" ", 1)
-			var body := PAGE.replace("%WSPORT%", str(ws_port)).replace("/*PADMAP*/", main.padmap.JS if main.padmap != null else "").replace("</body>", shut.ki.PHONE_JS + more.PHONE_JS + "</body>").to_utf8_buffer() if path == "/" or path.begins_with("/?") else "nicht gefunden".to_utf8_buffer()   # KI-Hilfe (gamekihilfe.gd)
+			var body := PAGE.replace("%WSPORT%", str(ws_port)).replace("/*PADMAP*/", main.padmap.JS if main.padmap != null else "").replace("</body>", shut.ki.PHONE_JS + more.PHONE_JS + (main.abenteuer.zweit.PHONE_JS if main.abenteuer != null and main.abenteuer.zweit != null else "") + "</body>").to_utf8_buffer() if path == "/" or path.begins_with("/?") else "nicht gefunden".to_utf8_buffer()   # KI-Hilfe (gamekihilfe.gd)
 			var ctype := "text/html; charset=utf-8"
 			if path == "/manifest.json":                   # «Zum Home-Bildschirm»: then the game runs without the address bar (3D-3.23)
 				body = JSON.stringify({"name": "Unentdeckt ans Ziel", "short_name": "Unentdeckt", "start_url": "/", "display": "fullscreen",
@@ -718,6 +718,8 @@ func _message(s: Dictionary, m: Dictionary) -> void:
 	var p2: Dictionary = players[slot2]
 	if more.message(p2, t, m):                             # «Gameplay ausfeilen» (gamemore.gd): probe round, tools, missions …
 		return
+	if main.abenteuer != null and main.abenteuer.zweit != null and main.abenteuer.zweit.phone_msg(p2, t, m):
+		return                                             # A5: the companion phone of the Bergtal adventure
 	match t:
 		"in":
 			p2["mx"] = clamp(float(m.get("mx", 0.0)), -1.0, 1.0)

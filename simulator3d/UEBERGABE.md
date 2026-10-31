@@ -1,8 +1,47 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.63** · passende MoveEye-Version (früher Motion Watch) **2.98.94**
+Stand: 31.10.2026 · Simulator-Version **3D-4.69** · passende MoveEye-Version (früher Motion Watch) **2.98.100**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.69 (MoveEye 2.98.100): Abenteuer-Rätsel (`abenteuer_raetsel.gd`)
+
+- `abenteuer_raetsel.gd` (neu, `bergtal_abenteuer.gd` `raetsel`): Peilung, Polarstern, 10 Tagebuchseiten, Gegenstände des
+  Grossvaters, Wege freischalten, 6 Abzeichen, Hilfe-Stufen. Steht neben A5 `zweit` (Variable, Malen, `state()` → `a3`).
+- MoveEye 2.98.100: erste dreistellige Patch-Nummer – bauen.py, `_vkey`, Manifest, Web-`vnum`, `sort -V` vergleichen numerisch.
+
+## NEU in 3D-4.68 (MoveEye 2.98.99): Rätsel im Hospiz (`horror_raetsel.gd`)
+
+- `horror_raetsel.gd` (neu, über `bergtal_horror.gd` `raetsel`): pro Kapitel ein Rätsel (Schlüssel, Zahlenschloss, Uhrzeit),
+  Lösung nur auf den MoveEye-Aufnahmen, Hinweis-Knopf, unter 25 % Schreck keine Schreckmomente; Befehle `r_*`.
+  Passwortschutz, Widmung und Warnung unverändert.
+
+## NEU in 3D-4.67 (MoveEye 2.98.98): Entwicklertool Teil 3 (`devtool_extra.gd`, `_notizen`, `_kontakt`, `_kapitel`)
+
+- Notizen an Claude (mit Bild, ZIP-Export), Kontaktbogen (alle Orte einer Welt), Kapitel-Sprung in einem Test-Spielstand.
+- `devtool.gd`: Teil 2 (`eb()`, Ebenen) und Teil 3 (`extra`) hängen nebeneinander in `_build`, `control` und `_draw`.
+
+## NEU in 3D-4.66 (MoveEye 2.98.97): Abenteuer zu zweit (`abenteuer_zweit.gd`, `abenteuer_bestenliste.gd`)
+
+- `abenteuer_zweit.gd` (neu): Spielarten gemeinsam / Rollen / Wettrennen, geteilter Bildschirm (wird eins, wenn beide nah
+  sind), Handy-Begleiter per QR.
+- `abenteuer_bestenliste.gd` (neu): Familien-Bestenliste (`user://bergtal_abenteuer/familie.json`). `hat()` nutzt jetzt
+  `preload` von `abenteuer_inventar.gd` (A4) statt Laden zur Laufzeit. Offen (TODO A1): seltene Tiere, Foto-Wertung,
+  Wildkamera – kommen mit dem MoveEye-Lager-Paket.
+
+## NEU in 3D-4.65 (MoveEye 2.98.96): Entwicklertool Teil 2 «Regler + Ebenen» (`devtool_ebenen.gd`)
+
+- `devtool_ebenen.gd` (neu): Schnellregler als Spiegel der Bedienfeld-Regler (Uhrzeit, Wetter, Jahreszeit, Grafik), Ebenen
+  Sichtfeld / Wege / Startpunkte / Auslöser / Lampen in 3D und auf der Karte; `/control dev layer|set|regler|parts`.
+- `i18n/texte.json`: Eintrag «klar» (Wetter-Auswahl, main.gd `options`) von Hand ergänzt – sim_texte findet ihn nicht im Code
+  (Zeile «nicht mehr im Code»), `--aufraeumen` würde ihn entfernen.
+
+## NEU in 3D-4.64 (MoveEye 2.98.95): Wärmebild-Tier, «Person?», «Höhe der Kamera»
+
+- MoveEye (232, 180, 410, Selbsttest 417): Wärmebild-Tier nur bei flacher Form (h/b ≤ 0.8); «Person?» bei flacher Box +
+  KI ≥ 0.15 + Bewegung/Wärme (`weak_person_feed`, Zähler `person_maybe`). Feld «Höhe der Kamera (m)» in Platz einrichten
+  (317, 537, 582); die Simulator-Stange hat Vorrang, solange verbunden.
+- Simulator: «Stange» heisst «Höhe der Kamera» (toolbar, explore, fotomodus, padmap, tour; T.t-Übersetzungen).
 
 ## NEU in 3D-4.63 (MoveEye 2.98.94): Abenteuer-Rucksack (`abenteuer_inventar.gd`, `abenteuer_rucksack.gd`)
 

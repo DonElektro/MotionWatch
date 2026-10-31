@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 5190 (Stellen: 7205)
-Übersetzt: en 5190, fr 5190, it 5190, rm 5190
+Texte gesamt: 5475 (Stellen: 7578)
+Übersetzt: en 5475, fr 5475, it 5475, rm 5475
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 397 Stellen
-Nicht mehr im Code (noch in texte.json): 57
-HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 56 Stellen in wizpics.gd 21, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 18428, schlüssel 13182, keine Wörter 8365, index 6697, technisch 2401, doc 1508, einheit 203, englisch 93, log 78, pfad 67, html 56, klasse 23, shader 4
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 400 Stellen
+Nicht mehr im Code (noch in texte.json): 68
+HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 67 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1
+Übersprungen (Grund: Anzahl): kennung 19229, schlüssel 13847, keine Wörter 8852, index 7197, technisch 2485, doc 1574, einheit 234, englisch 105, log 78, pfad 67, html 67, klasse 24, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  669    29
@@ -16,9 +16,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_abenteuer_daten.gd   199     0
   bergtal.gd               199     5
   bergtal_horror.gd        154     3
+  abenteuer_raetsel.gd     145     2
   abenteuer_moveeye.gd     110    14
-  bib_objekte.gd           108     0
   bergtal_orte.gd          108     0
+  bib_objekte.gd           108     0
   bergtal_aussicht.gd       94     4
   testrun.gd                94     3
   templates.gd              93     6
@@ -33,6 +34,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   pruefstand.gd             72     8
   diagnose.gd               71     8
   feedback.gd               66    17
+  abenteuer_zweit.gd        64     0
   parcours.gd               63    10
   bergtal_erleben_a.gd      62     0
   erlebniswelt.gd           62     0
@@ -46,6 +48,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   mwpc.gd                   46    12
   karte.gd                  46     8
   gamerules.gd              45     4
+  horror_raetsel.gd         44     0
   symbole.gd                44     1
   protokoll.gd              42    16
   pir.gd                    41     0
@@ -56,12 +59,13 @@ Pro Datei (Texte / davon dynamische Stellen):
   kitrain.gd                39     9
   gamejaeger.gd             38     1
   fotomodus.gd              38     0
-  simreal.gd                37     0
   update.gd                 37     4
+  simreal.gd                37     0
   mikrofon.gd               37     0
   geo.gd                    36     7
   gamemore.gd               36     1
   gameziele.gd              34     0
+  devtool_notizen.gd        34     1
   gametools.gd              33     2
   tour.gd                   31     1
   zwilling.gd               29     3
@@ -75,14 +79,15 @@ Pro Datei (Texte / davon dynamische Stellen):
   inhalte.gd                25    12
   gameshutter.gd            25     5
   worlds.gd                 23     0
+  devtool_ebenen.gd         23     0
   licht.gd                  23     1
   wetter.gd                 23     0
   kompakt_festival.gd       23     0
   fenster.gd                22     0
   dataset.gd                22     3
   mini.gd                   21     1
-  patrol.gd                 20     0
   phone.gd                  20     4
+  patrol.gd                 20     0
   figur_paket.gd            19     5
   tv.gd                     19     8
   statusled.gd              19     0
@@ -95,18 +100,20 @@ Pro Datei (Texte / davon dynamische Stellen):
   kompakt_hof.gd            17     0
   szenenplus.gd             17     1
   gameturnier.gd            17     0
+  devtool_kapitel.gd        16     0
   devtool.gd                16     0
   weitwinkel.gd             16     0
   menschen.gd               16     0
+  grafik_hoch.gd            15     1
   b3d.gd                    15     3
   gamesneak.gd              15     0
-  grafik_hoch.gd            15     1
   home_editor.gd            14     3
   abenteuer_inventar.gd     13     0
   life.gd                   13     0
   fahrzeuge.gd              13     1
   gamekihilfe.gd            13     4
   gameturm.gd               13     0
+  devtool_kontakt.gd        12     0
   replay.gd                 11     1
   objekte_plus.gd           11     0
   smalltv.gd                11     4
@@ -137,8 +144,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   waerme_welt.gd             4     0
   gelaende.gd                3     0
   wind_fx.gd                 3     0
+  devtool_extra.gd           3     0
   padtest.gd                 3     1
   ui_style.gd                3     0
+  abenteuer_bestenliste.gd     2     0
   kidaten.gd                 2     0
   net.gd                     2     1
   blindmap.gd                1     0
@@ -178,23 +187,25 @@ Unsicher:
   'Wide camera (NoIR Wide)': Kameraname an MoveEye (/info) – nicht umhüllen
 
 Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {name} machen:
-  abenteuer_moveeye.gd:167  'offen'
-  abenteuer_moveeye.gd:173  'offen'
-  abenteuer_moveeye.gd:282  'offen'
-  abenteuer_moveeye.gd:284  'offen'
-  abenteuer_moveeye.gd:286  'offen'
-  abenteuer_moveeye.gd:295  'offen'
-  abenteuer_moveeye.gd:355  'offen'
-  abenteuer_moveeye.gd:406  'offen'
-  abenteuer_moveeye.gd:1056  'offen'
-  abenteuer_moveeye.gd:1095  'offen'
-  abenteuer_moveeye.gd:1123  'offen'
-  abenteuer_moveeye.gd:1301  'offen'
-  abenteuer_moveeye.gd:1302  'offen'
-  abenteuer_moveeye.gd:1302  'offen'
+  abenteuer_moveeye.gd:136  'offen'
+  abenteuer_moveeye.gd:142  'offen'
+  abenteuer_moveeye.gd:251  'offen'
+  abenteuer_moveeye.gd:253  'offen'
+  abenteuer_moveeye.gd:255  'offen'
+  abenteuer_moveeye.gd:264  'offen'
+  abenteuer_moveeye.gd:324  'offen'
+  abenteuer_moveeye.gd:386  'offen'
+  abenteuer_moveeye.gd:1060  'offen'
+  abenteuer_moveeye.gd:1099  'offen'
+  abenteuer_moveeye.gd:1127  'offen'
+  abenteuer_moveeye.gd:1305  'offen'
+  abenteuer_moveeye.gd:1306  'offen'
+  abenteuer_moveeye.gd:1306  'offen'
   bergtal_horror.gd:40  'offen'
   bergtal_horror.gd:58  'offen'
-  bergtal_horror.gd:1093  'Fertig'
+  bergtal_horror.gd:1102  'Fertig'
+  abenteuer_raetsel.gd:878  'Neu: '
+  abenteuer_raetsel.gd:887  'Gegenstände: '
   abenteuer_rucksack.gd:224  'keine Wunschliste: '
   abenteuer_rucksack.gd:412  ' und '
   abenteuer_rucksack.gd:468  'Fertig'
@@ -207,11 +218,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:247  'Aussicht: '
   bergtal.gd:2181  'Schlafplatz: '
   bergtal.gd:2183  'Aussicht: '
-  bergtal_abenteuer.gd:327  'Start: '
-  bergtal_abenteuer.gd:785  ' auf der Bank mit Aussicht'
-  bergtal_abenteuer.gd:1868  'Wird frei: '
-  bergtal_abenteuer.gd:2002  '  · %.1f kg'
-  bergtal_abenteuer.gd:2085  ' - Bank'
+  bergtal_abenteuer.gd:336  'Start: '
+  bergtal_abenteuer.gd:807  ' auf der Bank mit Aussicht'
+  bergtal_abenteuer.gd:1903  'Wird frei: '
+  bergtal_abenteuer.gd:2045  '  · %.1f kg'
+  bergtal_abenteuer.gd:2130  ' - Bank'
   bergtal_aussicht.gd:357  'von'
   bergtal_aussicht.gd:536  'von'
   bergtal_aussicht.gd:1159  'Abzeichen: '
@@ -221,6 +232,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   dataset.gd:319  ' · Vielfalt hoch'
   dataset.gd:434  ' · alte KI-Daten gelöscht: %d (%.0f MB)'
   device.gd:91  ' (Port belegt!)'
+  devtool_notizen.gd:225  'Notizen aus dem MoveEye-Simulator (Entwickler → Notizen an Claude)\n%d Notizen, davon %d offen. Version %s.\n\n'
   diagnose.gd:31  ' · virtuelle Maschine'
   diagnose.gd:33  ' · Fenster klein / versteckt'
   diagnose.gd:71  ' · Ersatz-Port, 8765 war besetzt'
@@ -268,32 +280,32 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main.gd:1638  '  %.0f Mbit/s'
   main.gd:2335  ' (von MoveEye)'
   main.gd:2368  'Der Simulator ist belegt: '
-  main.gd:3226  'aus'
-  main.gd:3226  'ein'
-  main.gd:3303  'Sabotage-Test: '
-  main.gd:3303  'aus'
-  main.gd:3357  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3360  '\n🚨 Bewacht und weg: '
-  main.gd:4167  'keine'
-  main.gd:4193  'Wächter an MoveEye: '
-  main.gd:4954  'Dein Platz: '
-  main.gd:5191  ' · schaut nur zu: '
-  main.gd:5194  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:5195  ' · Update: '
-  main.gd:5529  'Blinde Flecken: '
-  main.gd:6196  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6502  'Autostart: '
-  main.gd:6513  'Autologon: '
-  main.gd:6674  'Karte öffnen: '
-  main.gd:6820  'Echt-Abgleich: '
-  main.gd:6830  'Trainingspaket: '
-  main.gd:6839  ' · %d offen · %.1f MB'
-  main.gd:6839  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6848  'Verbindung · '
-  main.gd:6848  'aus'
-  main.gd:6852  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6852  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6855  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:3228  'aus'
+  main.gd:3228  'ein'
+  main.gd:3305  'Sabotage-Test: '
+  main.gd:3305  'aus'
+  main.gd:3359  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3362  '\n🚨 Bewacht und weg: '
+  main.gd:4169  'keine'
+  main.gd:4195  'Wächter an MoveEye: '
+  main.gd:4956  'Dein Platz: '
+  main.gd:5193  ' · schaut nur zu: '
+  main.gd:5196  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:5197  ' · Update: '
+  main.gd:5531  'Blinde Flecken: '
+  main.gd:6198  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6504  'Autostart: '
+  main.gd:6515  'Autologon: '
+  main.gd:6676  'Karte öffnen: '
+  main.gd:6822  'Echt-Abgleich: '
+  main.gd:6832  'Trainingspaket: '
+  main.gd:6841  ' · %d offen · %.1f MB'
+  main.gd:6841  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6850  'Verbindung · '
+  main.gd:6850  'aus'
+  main.gd:6854  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6854  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6857  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:581  ' (automatisch von oben)'
   explore.gd:581  ' · schnell'
   fahrzeuge.gd:90  'nie'
@@ -324,38 +336,38 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   figur_paket.gd:157  'Skeleton3D:'
   figur_paket.gd:735  ' – Fehler: '
   figur_paket.gd:753  'Figuren-Paket ist schon da: '
-  game.gd:1449  ' · 🏆 alle gefunden'
-  game.gd:1453  'Wächter · '
-  game.gd:1479  ' · 🦆 %d s beobachtet'
-  game.gd:1485  ' · ✅ Aufgabe (+%d)'
-  game.gd:1488  ' · 🙈 %d s unerkannt (+%d)'
-  game.gd:1490  ' · %d× erwischt'
-  game.gd:1492  ' · %d× befreit'
-  game.gd:1502  ' · NEU: '
-  game.gd:1513  ' · 🧠 %d gelernt'
-  game.gd:1523  ' · ⬆ Stufe %d!'
-  game.gd:1523  ' · ⭐ +%d XP'
-  game.gd:1524  ' Neu: '
-  game.gd:1540  'Wächter an MoveEye · '
-  game.gd:1544  'Bot-Wächter · '
-  game.gd:1584  ' (mehr Punkte)'
-  game.gd:1616  ' (%d× derselbe nochmals – zählt weniger)'
-  game.gd:1617  ' · %d× Fehlalarm: %d · nicht im Ziel %d/%d: +%d = %d Punkte'
-  game.gd:2037  ' von %s'
-  game.gd:2268  '🔊 Geräusch '
-  game.gd:2346  '❌ Fehlalarm von MoveEye'
-  game.gd:2375  '❌ Fehlschuss von MoveEye – Fehlalarm'
-  game.gd:2388  ' · 🎯 Auslöser %d× Treffer, %d× daneben'
-  game.gd:2607  ' · Ziel: '
-  game.gd:2614  ' – ausgeschieden'
-  game.gd:2614  ' – im Ziel'
-  game.gd:2615  ' – Wächter'
-  game.gd:2616  ' · getrennt'
-  game.gd:2620  'Rangliste: '
-  game.gd:3439  ' – Vorsicht, Scheinwerfer!'
-  game.gd:3439  ' – der Motor übertönt die Schritte'
-  game.gd:3439  '🚗 Ein Auto fährt vorbei'
-  game.gd:3598  '🎯 Aufgabe dieser Runde: '
+  game.gd:1451  ' · 🏆 alle gefunden'
+  game.gd:1455  'Wächter · '
+  game.gd:1481  ' · 🦆 %d s beobachtet'
+  game.gd:1487  ' · ✅ Aufgabe (+%d)'
+  game.gd:1490  ' · 🙈 %d s unerkannt (+%d)'
+  game.gd:1492  ' · %d× erwischt'
+  game.gd:1494  ' · %d× befreit'
+  game.gd:1504  ' · NEU: '
+  game.gd:1515  ' · 🧠 %d gelernt'
+  game.gd:1525  ' · ⬆ Stufe %d!'
+  game.gd:1525  ' · ⭐ +%d XP'
+  game.gd:1526  ' Neu: '
+  game.gd:1542  'Wächter an MoveEye · '
+  game.gd:1546  'Bot-Wächter · '
+  game.gd:1586  ' (mehr Punkte)'
+  game.gd:1618  ' (%d× derselbe nochmals – zählt weniger)'
+  game.gd:1619  ' · %d× Fehlalarm: %d · nicht im Ziel %d/%d: +%d = %d Punkte'
+  game.gd:2039  ' von %s'
+  game.gd:2270  '🔊 Geräusch '
+  game.gd:2348  '❌ Fehlalarm von MoveEye'
+  game.gd:2377  '❌ Fehlschuss von MoveEye – Fehlalarm'
+  game.gd:2390  ' · 🎯 Auslöser %d× Treffer, %d× daneben'
+  game.gd:2609  ' · Ziel: '
+  game.gd:2616  ' – ausgeschieden'
+  game.gd:2616  ' – im Ziel'
+  game.gd:2617  ' – Wächter'
+  game.gd:2618  ' · getrennt'
+  game.gd:2622  'Rangliste: '
+  game.gd:3441  ' – Vorsicht, Scheinwerfer!'
+  game.gd:3441  ' – der Motor übertönt die Schritte'
+  game.gd:3441  '🚗 Ein Auto fährt vorbei'
+  game.gd:3600  '🎯 Aufgabe dieser Runde: '
   gamecompare.gd:134  'Vergleich '
   gamecompare.gd:138  '⚖ Mensch gegen KI: '
   gamecompare.gd:525  '\n%s: %s %d · MoveEye %d – %s'
@@ -373,23 +385,23 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   gamekiwaechter.gd:147  '🤖 MoveEye als KI-Wächter: '
   padmap.gd:64  ' – mehrere Controller: Bedienfeld Mover › Controller › «Controller zuteilen»'
   padmap.gd:86  'Browser'
-  padmap.gd:413  'Licht '
-  padmap.gd:413  'aus'
-  padmap.gd:413  'ein'
-  padmap.gd:417  'IR-Licht '
-  padmap.gd:417  'aus'
-  padmap.gd:417  'ein'
-  padmap.gd:423  'Folgen '
-  padmap.gd:423  'aus'
-  padmap.gd:423  'ein'
-  padmap.gd:440  'Ansicht: '
-  padmap.gd:443  'Ansicht: '
-  padmap.gd:447  'Livebild '
-  padmap.gd:447  'aus'
-  padmap.gd:447  'ein'
-  padmap.gd:450  'Ansicht: '
-  padmap.gd:464  'Foto gespeichert: '
-  padmap.gd:516  'Zu'
+  padmap.gd:415  'Licht '
+  padmap.gd:415  'aus'
+  padmap.gd:415  'ein'
+  padmap.gd:419  'IR-Licht '
+  padmap.gd:419  'aus'
+  padmap.gd:419  'ein'
+  padmap.gd:425  'Folgen '
+  padmap.gd:425  'aus'
+  padmap.gd:425  'ein'
+  padmap.gd:442  'Ansicht: '
+  padmap.gd:445  'Ansicht: '
+  padmap.gd:449  'Livebild '
+  padmap.gd:449  'aus'
+  padmap.gd:449  'ein'
+  padmap.gd:452  'Ansicht: '
+  padmap.gd:466  'Foto gespeichert: '
+  padmap.gd:518  'Zu'
   protokoll.gd:72  'aus'
   protokoll.gd:73  'Tunnel: '
   protokoll.gd:73  'aus'
@@ -512,7 +524,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   mwpc.gd:336  'Die Pakete liessen sich nicht installieren: '
   mwpc.gd:361  'Unerwartete Datei in versions.json: '
   symbole.gd:27  'Aus'
-  net.gd:334  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
+  net.gd:342  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
   news.gd:92  'MOVEEYE SIM · '
   padroles.gd:129  'Spiel am PC – '
   padtest.gd:44  '  roh %.2f / %.2f'
