@@ -591,7 +591,9 @@ func _choose(now: float) -> Array:
 		return ["Idle_Loop", 1.0, 1.0, arms]
 	var c := "Idle_Loop"
 	var k := 1.0
-	var sitting: bool = (now < a.wait_until and cr > 0.4 and cr < 0.85 and spd < 0.15)
+	var sitting: bool = (now < a.wait_until and cr > 0.4 and cr < 0.85 and spd < 0.15) or (idle in ["sit", "sitdrink"] and spd < 0.15)
+	if idle == "tie" and spd < 0.15 and ap.has_animation("Crouch_Idle_Loop"):
+		return ["Crouch_Idle_Loop", 1.0, 0.0, [1.0, 1.0]]          # Statisten: tying a shoe - crouched, the hands from actor.gd
 	if sitting:
 		c = "Sitting_Idle_Loop"
 	elif cr > 0.5:
@@ -613,9 +615,11 @@ func _choose(now: float) -> Array:
 		k *= 0.9
 	# the arms do something of their own (actor.gd): copy them from the joints
 	var own: bool = em != "" or now < a.startle_until or (a.carry and c != "Walk_Carry_Loop") or v == "stroller" \
-			or idle == "wave"
+			or idle == "wave" or idle == "photo"
 	if own:
 		arms = [1.0, 1.0]
+	elif idle in ["drink", "sitdrink", "talk"]:
+		arms[1] = 1.0                                              # Statisten: drinking / a gesture while talking (actor.gd joints)
 	elif (a.phone_out or (now < a.wait_until and cr == 0.0 and a._at_door())) and c != "Idle_TalkingPhone_Loop":
 		arms[1] = 1.0                                              # right hand: phone light ahead / door handle
 	return [c, k, 0.0, arms]

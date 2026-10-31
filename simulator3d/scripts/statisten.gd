@@ -124,7 +124,8 @@ func info() -> Dictionary:
 				"group": int(e.get("group", 0)), "home": bool(e.get("home", false)), "visible": v.visible})
 	return {"ok": true, "mode": _mode, "menge": menge, "want": want_count(), "own": own_count(), "managed": S.size(), "goals": goals.size(),
 			"goal_list": goals.map(func(g): return [g["type"], str(g["name"]), snappedf(g["p"].x, 0.1), snappedf(g["p"].z, 0.1)]),
-			"zones": zones.size(), "players": _players.size(), "lite": _lite(), "stats": stats, "people": people}
+			"zones": zones.size(), "players": _players.size(), "lite": _lite(), "fps": Engine.get_frames_per_second(), "visitors": main.visitors.get_child_count(),
+			"stats": stats, "people": people}
 
 
 func control(d: Dictionary) -> Dictionary:
@@ -408,7 +409,7 @@ func _process(dt: float) -> void:
 	if _zone_t <= 0.0:
 		_zone_t = 2.0
 		zones = _zones_now()
-		_players = _find_players()
+	_players = _find_players()
 	_cut(_mode == "cut")
 	if _mode == "cut":
 		return
@@ -569,6 +570,17 @@ func _adopt_new(t: float) -> void:
 		var b: Vector3 = v.route[-1] if v.route.size() > 0 and v.route[-1] is Vector3 else v.target
 		_plan(e, v.position, b)
 		stats["adopted"] += 1
+		var kids := 0
+		for u in main.visitors.get_children():                   # a couple / a family of the old visitors: the others too
+			if u.get("leader") == v and u.get("kind") == "person":
+				var f := _new_entry(u, false)
+				f["group"] = id
+				S[u.get_instance_id()] = f
+				seen[u.get_instance_id()] = true
+				e["kind"] = "couple"
+				kids += 1 if u.variant == "child" else 0
+		if kids > 0:
+			e["kind"] = "family"
 
 
 func _new_entry(v, own: bool) -> Dictionary:
@@ -831,6 +843,8 @@ func _activity(e: Dictionary, t: float) -> void:
 		k = "bend"
 	if k in ["sit", "sitdrink"]:
 		v.sit_seat = 0.45 if bool(e.get("bench_ok", false)) else 0.05
+	if str(e.get("kind", "")) in ["couple", "family"] and k in ["look", "phone"] and randf() < 0.5:
+		k = "talk"                                               # together: the leader talks too
 	v.idle_kind = k
 	v.idle_until = t + dur
 	v.look_yaw = randf_range(-0.8, 0.8)
@@ -850,7 +864,7 @@ func _pick_act(e: Dictionary, ty: String) -> String:
 		"fountain":
 			w["drink"] = 3.0
 		"hut", "place":
-			w["sit"] = 0.6
+			w["drink"] = 1.2
 		"parking", "wc":
 			w["phone"] = 2.0
 	if has_pack and not wet:
@@ -961,8 +975,6 @@ func _group_talk(e: Dictionary, t: float, dur: float) -> void:
 		u.idle_until = t + dur
 		var to: Vector3 = v.position - u.position
 		u.look_yaw = clampf(wrapf(atan2(-to.x, -to.z) - u.heading, -PI, PI), -1.2, 1.2)
-	if str(e.get("kind", "")) in ["couple", "family"] and randf() < 0.35 and v.idle_kind != "sitdrink":
-		v.idle_kind = "talk"
 
 
 func _follower(e: Dictionary, t: float) -> void:
