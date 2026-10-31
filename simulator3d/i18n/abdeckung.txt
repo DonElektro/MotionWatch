@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6408 (Stellen: 8898)
-Übersetzt: en 6406, fr 6406, it 6406, rm 6406
+Texte gesamt: 6409 (Stellen: 8900)
+Übersetzt: en 6409, fr 6409, it 6409, rm 6409
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 459 Stellen
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 460 Stellen
 Nicht mehr im Code (noch in texte.json): 228
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 22399, schlüssel 16827, keine Wörter 10409, index 8561, technisch 2882, doc 1866, einheit 255, log 145, englisch 120, pfad 98, html 68, klasse 26, shader 6
+Übersprungen (Grund: Anzahl): kennung 22401, schlüssel 16828, keine Wörter 10413, index 8561, technisch 2883, doc 1871, einheit 255, log 146, englisch 120, pfad 98, html 68, klasse 26, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  691    42
@@ -87,7 +87,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   power.gd                  28    10
   devtool_spieltest.gd      27     0
   jahreszeiten.gd           26     1
-  inhalte.gd                25    12
+  inhalte.gd                26    13
   umgebung.gd               25     0
   gameshutter.gd            25     5
   werk.gd                   24     0
@@ -329,59 +329,60 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   gamemore.gd:23  'aus'
   inhalte.gd:28  'an'
   inhalte.gd:29  'aus'
-  inhalte.gd:35  'an'
-  inhalte.gd:82  'an'
-  inhalte.gd:82  'aus'
-  inhalte.gd:93  'an'
-  inhalte.gd:93  'an'
-  inhalte.gd:93  'aus'
-  inhalte.gd:245  ' · Godot: startet nicht'
-  inhalte.gd:251  ' · Godot: %s / HTTP %s'
-  inhalte.gd:293  'Paket: '
-  inhalte.gd:781  'an'
+  inhalte.gd:37  'an'
+  inhalte.gd:86  'an'
+  inhalte.gd:86  'aus'
+  inhalte.gd:98  'aus'
+  inhalte.gd:141  'an'
+  inhalte.gd:141  'an'
+  inhalte.gd:141  'aus'
+  inhalte.gd:293  ' · Godot: startet nicht'
+  inhalte.gd:299  ' · Godot: %s / HTTP %s'
+  inhalte.gd:341  'Paket: '
+  inhalte.gd:861  'an'
   licht.gd:42  'aus'
-  main.gd:700  ' (Port %d)'
-  main.gd:1657  '  %.0f Mbit/s'
-  main.gd:2358  ' (von MoveEye)'
-  main.gd:2391  'Der Simulator ist belegt: '
-  main.gd:3254  'aus'
-  main.gd:3254  'ein'
-  main.gd:3331  'Sabotage-Test: '
-  main.gd:3331  'aus'
-  main.gd:3385  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3388  '\n🚨 Bewacht und weg: '
-  main.gd:4253  'keine'
-  main.gd:4279  'Wächter an MoveEye: '
-  main.gd:4338  'immer'
-  main.gd:4340  'aus'
-  main.gd:4347  'aus'
-  main.gd:4347  'aus'
-  main.gd:4348  'immer'
-  main.gd:4353  'aus'
-  main.gd:4357  'aus'
-  main.gd:4357  'aus'
-  main.gd:4364  'ohne'
-  main.gd:4366  'ohne'
-  main.gd:4383  'aus'
-  main.gd:4387  'aus'
-  main.gd:5128  'Dein Platz: '
-  main.gd:5369  ' · schaut nur zu: '
-  main.gd:5372  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:5373  ' · Update: '
-  main.gd:5717  'Blinde Flecken: '
-  main.gd:6460  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6769  'Autostart: '
-  main.gd:6780  'Autologon: '
-  main.gd:6943  'Karte öffnen: '
-  main.gd:7094  'Echt-Abgleich: '
-  main.gd:7104  'Trainingspaket: '
-  main.gd:7113  ' · %d offen · %.1f MB'
-  main.gd:7113  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:7122  'Verbindung · '
-  main.gd:7122  'aus'
-  main.gd:7126  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:7126  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:7129  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:703  ' (Port %d)'
+  main.gd:1679  '  %.0f Mbit/s'
+  main.gd:2380  ' (von MoveEye)'
+  main.gd:2413  'Der Simulator ist belegt: '
+  main.gd:3276  'aus'
+  main.gd:3276  'ein'
+  main.gd:3353  'Sabotage-Test: '
+  main.gd:3353  'aus'
+  main.gd:3407  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3410  '\n🚨 Bewacht und weg: '
+  main.gd:4275  'keine'
+  main.gd:4301  'Wächter an MoveEye: '
+  main.gd:4360  'immer'
+  main.gd:4362  'aus'
+  main.gd:4369  'aus'
+  main.gd:4369  'aus'
+  main.gd:4370  'immer'
+  main.gd:4375  'aus'
+  main.gd:4379  'aus'
+  main.gd:4379  'aus'
+  main.gd:4386  'ohne'
+  main.gd:4388  'ohne'
+  main.gd:4405  'aus'
+  main.gd:4409  'aus'
+  main.gd:5150  'Dein Platz: '
+  main.gd:5391  ' · schaut nur zu: '
+  main.gd:5394  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:5395  ' · Update: '
+  main.gd:5739  'Blinde Flecken: '
+  main.gd:6482  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6791  'Autostart: '
+  main.gd:6802  'Autologon: '
+  main.gd:6965  'Karte öffnen: '
+  main.gd:7116  'Echt-Abgleich: '
+  main.gd:7126  'Trainingspaket: '
+  main.gd:7135  ' · %d offen · %.1f MB'
+  main.gd:7135  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:7144  'Verbindung · '
+  main.gd:7144  'aus'
+  main.gd:7148  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:7148  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:7151  ' – versucht es weiter (gleich auf einem freien Port)'
   mehr.gd:255  ' · Leistung: %d Bilder/s, Lite %s'
   mehr.gd:255  'an'
   mehr.gd:255  'aus'
