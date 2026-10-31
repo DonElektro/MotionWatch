@@ -12124,7 +12124,7 @@ SIMHUB_JS = r"""
     "patrols": "patrouilliert", "charging": "lädt", "ready": "bereit", "Statistics & versions": "Statistik & Versionen", "4 weeks, per version": "4 Wochen, pro Version",
     "Second device in the simulator": "Zweites Gerät im Simulator", "dev-note": "Ein zweites MoveEye verbindet sich mit Port 8785 des Simulators (z. B. eine zweite Kopie auf dem PC). Unter Kameras → Geräte hinzufügen: dann meldet MoveEye die Übergabe, wenn eine Person von einem Gerät zum anderen geht.",
     "Patrol": "Patrouille", "Drive to the alarm": "Zum Alarm fahren", "To the charger": "Zur Ladestation", "At a person alarm: drive there by itself": "Bei Personen-Alarm von selbst hinfahren",
-    "rover-note": "Akku hält etwa 30 Minuten Fahrt; unter 20 % fährt der Rover von selbst zur Ladestation.",
+    "rover-note": "Akku hält etwa 30 Minuten Fahrt; unter 20 % fährt der Mover von selbst zur Ladestation.",
     "Visits (blue) and persons recognised in % (green), 4 weeks": "Besuche (blau) und erkannte Personen in % (grün), 4 Wochen", "Per MoveEye version": "Pro MoveEye-Version", "test": "Test",
     "Your place": "Dein Platz", "Test inbox": "Test-Posteingang", "Drills": "Störfall-Übungen", "Battery, Wi-Fi, heat, cold": "Akku, WLAN, Hitze, Kälte",
     "Training night": "Trainings-Nacht", "A/B comparison": "A/B-Vergleich", "Which setting is better?": "Welche Einstellung ist besser?", "Messages here instead of the phone": "Meldungen hierhin statt aufs Handy",
@@ -12326,12 +12326,12 @@ SIMHUB_JS = r"""
     if (full && H.twin_ok) T.push(["twin", "🪞", tt("Your place"), tt("Place, zones, patrol")]);   // 2.98.5: zones / detection in 3D = simulator, «Ansicht»
     if (full) { const R = H.rover || {};
       T.push(["devices", "📡", tt("Several devices"), H.dev2 ? tt("2nd device") + ": " + tt("P_" + (H.dev2_place || "opposite")) : tt("off")],
-        ["rover", "🚜", tt("Rover"), H.rover ? (R.mission ? "⏳ " + tt("M_" + R.mission) : R.active ? tt("patrols") : R.charging ? "⚡ " + tt("charging") : tt("ready")) + " · 🔋 " + R.batt + " %" : "–"],
+        ["rover", "🚜", tt("Mover"), H.rover ? (R.mission ? "⏳ " + tt("M_" + R.mission) : R.active ? tt("patrols") : R.charging ? "⚡ " + tt("charging") : tt("ready")) + " · 🔋 " + R.batt + " %" : "–"],
         ["templates", "🧩", tt("Templates"), tt("Opens on the PC")]); }
     if (full) { const TU = H.tune || {};
       T.push(["improve", "🎯", tt("Improve detection"), TU.busy ? "⏳ " + (TU.step === "night" ? tt("Night") : tt("Day")) : tt("step by step")]); }
     if (full) { const N = LN || {}; const bl = N.blind || {}, au = N.autoth || {}, re = bl.rehearsal;
-      T.push(["tests", "🧪", tt("Testing"), tt("Test run, test bench")]);   // 639c: «Testen» like the simulator
+      T.push(["tests", "✅", tt("Testing"), tt("Test run, test bench")]);   // 639c: «Testen» like the simulator; Menüs A (31.10.2026): ✅ like its group «check» there (🧪 = Entwickler)
       if (window.mwParc && H.parc) T.push(["parc", "🎯", tt("Tracking parcours"), window.mwParc.sub(H)]);   // 416: the tracking parcours
       if (window.mwNacht && H.nacht) T.push(["nacht", "🌙", window.mwNacht.name(), window.mwNacht.sub(H)]);   // 579b: only with the simulator connected
       T.push(
@@ -12358,7 +12358,7 @@ SIMHUB_JS = r"""
         if (k === "game") return location.href = "/sim#c-game"; if (k === "tests" && !document.getElementById("tr-box") && !window._trBox) return location.href = "/sim#c-test"; if (k === "diary") return location.href = "/diary#simcard";
         open = open === k ? "" : k; paintAll(); if (k === "tests" && open && typeof trLoad === "function") trLoad(); };
       (full ? G[GRP[k] || "world"] : g).appendChild(b); });
-    if (full) { [["world", "🌍 " + tt("World")], ["test", "🧪 " + tt("Testing")], ["learn", "🎓 " + tt("Learning")], ["play", "🎮 " + tt("Playing")]].forEach(([id, h]) => {
+    if (full) { [["world", "🌍 " + tt("World")], ["test", "✅ " + tt("Testing")], ["learn", "🎓 " + tt("Learning")], ["play", "🎮 " + tt("Playing")]].forEach(([id, h]) => {
         if (G[id].children.length) box.append(E("div", "shubh", h), G[id]); });
       const sx = B(H.simple ? "🧰 " + tt("Show all tools («Expert»)") : "🎯 " + tt("Only the assistant («Simple»)"), async () => {
         try { await fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !H.simple, page: "sim"})}); } catch (e) {} H.simple = !H.simple; paintAll(); });
@@ -40568,7 +40568,10 @@ const SC_ICON = {
   check: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/>',
   gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/><circle cx="12" cy="12" r="6.5"/>',
   keys: '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h1M10 10h1M14 10h1M18 10h1M7 14h10"/>',
-  track: '<rect x="2" y="11" width="20" height="8" rx="4"/><circle cx="7" cy="15" r="1.8"/><circle cx="12" cy="15" r="1.8"/><circle cx="17" cy="15" r="1.8"/><path d="M8 11V6h8v5"/>'};
+  track: '<rect x="2" y="11" width="20" height="8" rx="4"/><circle cx="7" cy="15" r="1.8"/><circle cx="12" cy="15" r="1.8"/><circle cx="17" cy="15" r="1.8"/><path d="M8 11V6h8v5"/>',
+  // Menüs A (31.10.2026): the two strokes the simulator draws (ui_style.gd) - «Licht & Ton» and «Entwickler» had an emoji here
+  sun: '<circle cx="12" cy="12" r="4.5"/><path d="M19 12h2.5M16.95 16.95l1.77 1.77M12 19v2.5M7.05 16.95l-1.77 1.77M5 12H2.5M7.05 7.05L5.28 5.28M12 5V2.5M16.95 7.05l1.77-1.77"/>',
+  tools: '<path d="M6 18l8-8" stroke-width="2.6"/><path d="M12.05 8.63A4 4 0 1 1 15.37 11.95"/>'};
 function scCss() {
   if (document.getElementById("simctl-css")) return;
   const s = document.createElement("style"); s.id = "simctl-css";
@@ -40625,7 +40628,7 @@ function simCtlBuild(G, r, ctl, fmt) {
   r = Object.assign({}, r, {controls: (r.controls || []).filter(c => !scWizOnly(c) && (only ? scGid(c) === only && SC_TEST_DUP.indexOf(c.id) < 0 : scGid(c) !== "testrun"))});
   const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
   const ss = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-  const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"])), openS = new Set(ls("mw-sc-sub2", ["Besuch/Vorlagen", "Besuch/Menschen schicken", "Besuch/Tiere schicken", "Spiel/Runde"]));
+  const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"])), openS = new Set(ls("mw-sc-sub2", ["Besuch/Vorlagen", "Besuch/Menschen einzeln", "Besuch/Wildtiere"]));   // Menüs A: the parts of the simulator 3.3
   // Aufräumen 2: Einfach / Experte is stored in the settings of MoveEye (page «sim», /api/ui_simple like the main page and the
   // simulator centre 139) - no longer per browser; the first build asks once, later builds take the known value
   let expert = only ? true : window.SC_EXPERT != null ? window.SC_EXPERT : false, q = G.dataset.q || "";
@@ -40672,14 +40675,14 @@ function simCtlBuild(G, r, ctl, fmt) {
       else if (c.type === "button") {
         let grid = tgt.lastElementChild; if (!grid || !grid.classList.contains("sc-bt")) { grid = el("div", "sc-bt"); tgt.appendChild(grid); }
         const x = el("button", "", (c.emoji ? c.emoji + " " : "") + c.label); x.type = "button"; if (c.label.length > 26) x.className = "wide";
-        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; x.dataset.ex = scExpert(c) && only ? "1" : ""; grid.appendChild(x); return;
+        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; if (c.ro) x.disabled = true;   // Menüs A: e.g. «Foto-Modus» without a photo x.dataset.ex = scExpert(c) && only ? "1" : ""; grid.appendChild(x); return;
       } else if (c.type === "toggle") {
         row = el("label", "sc-row sc-tg"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sc-sw simv";
-        cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked}); row.append(el("span", "", c.label), cb);
+        cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked}); row.append(el("span", "", c.label), cb); if (c.ro) cb.disabled = true;
       } else if (c.type === "slider") {
         row = el("div", "sc-row sc-sl"); const l = el("div", "sc-l"); const vv = el("span", "mut simvv"); l.append(el("span", "", c.label), vv);
         const rg = document.createElement("input"); rg.type = "range"; rg.className = "simv"; rg.min = c.min; rg.max = c.max; rg.step = c.step || 1;
-        if (c.ro) { rg.disabled = true; rg.title = t("from MoveEye (setting of MoveEye, only shown here)"); }   // Aufräumen 2: e.g. the battery size
+        if (c.ro) { rg.disabled = true; rg.title = c.ro_tip || t("from MoveEye (setting of MoveEye, only shown here)"); }   // Menüs A: «ro_tip» (e.g. «zuerst ein Foto laden»)   // Aufräumen 2: e.g. the battery size
         let lvT = 0, lvW = null;                      // «live» (simulator 3D-4.x, e.g. the height of the pole): sent while dragging, 5× a second at most
         const lvSend = () => { lvW = null; lvT = Date.now(); ctl({ctl: "set", id: c.id, value: +rg.value}); };
         rg.oninput = () => { vv.textContent = fmt(c, +rg.value); if (c.live && !lvW) lvW = setTimeout(lvSend, Math.max(0, 200 - (Date.now() - lvT))); };
@@ -40687,7 +40690,7 @@ function simCtlBuild(G, r, ctl, fmt) {
       } else if (c.type === "select") {
         row = el("div", "sc-row sc-se"); const se = document.createElement("select"); se.className = "simv";
         (c.options || []).forEach(o => { const op = document.createElement("option"); op.value = o[0]; op.textContent = o[1] || o[0]; se.appendChild(op); });
-        se.onchange = () => ctl({ctl: "set", id: c.id, value: se.value}); row.append(el("div", "", c.label), se);
+        se.onchange = () => ctl({ctl: "set", id: c.id, value: se.value}); row.append(el("div", "", c.label), se); if (c.ro) se.disabled = true;
       } else {
         row = el("div", "sc-row sc-tx"); const ti = document.createElement("input"); ti.className = "simv";
         ti.onkeydown = e => { if (e.key === "Enter") ctl({ctl: "set", id: c.id, value: ti.value}); }; row.append(el("div", "", c.label), ti);
@@ -56572,7 +56575,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>
 <ul>
 <li>🔍 <b>Einstellung suchen:</b> im Einstellungsbereich oben ins Suchfeld tippen (z. B. «Passwort», «Sirene», «WLAN») – alles andere verschwindet, die Treffer sind blau umrandet. ✕ oder Esc zeigt wieder alles.</li>
-<li>💬 <b>Rückmeldung an den Entwickler:</b> das 💬 oben auf jeder Seite (auch im Fenster und im 3D-Simulator, dort unter «Mehr: Aufstellen …») oder Mehr → «Rückmeldung an den Entwickler». Art wählen (Fehler / Wunsch / Lob / Frage), auf Wunsch 1–5 Sterne «Wie zufrieden?» und «Bildschirmfoto mitschicken» (im Browser das aktuelle Live-Bild, im Fenster das Fenster, im Simulator sein Bild – Gesichter verpixelt). Version und Seite gehen immer mit. Anonym, ohne Absender. Ohne Internet wartet die Nachricht und geht später weg; der Dialog zeigt, wie viele noch warten («Jetzt senden»).</li><li>ℹ️ <b>Über MoveEye:</b> die Versionsnummer neben dem Logo antippen (Web und Fenster) oder Mehr → «Über MoveEye»: die Geschichte des Projekts, der Entwickler, eine Zeitleiste und ein paar Zahlen.</li>
+<li>💬 <b>Rückmeldung an den Entwickler:</b> das 💬 oben auf jeder Seite (auch im Fenster und im 3D-Simulator, dort unter «Mehr») oder Mehr → «Rückmeldung an den Entwickler». Art wählen (Fehler / Wunsch / Lob / Frage), auf Wunsch 1–5 Sterne «Wie zufrieden?» und «Bildschirmfoto mitschicken» (im Browser das aktuelle Live-Bild, im Fenster das Fenster, im Simulator sein Bild – Gesichter verpixelt). Version und Seite gehen immer mit. Anonym, ohne Absender. Ohne Internet wartet die Nachricht und geht später weg; der Dialog zeigt, wie viele noch warten («Jetzt senden»).</li><li>ℹ️ <b>Über MoveEye:</b> die Versionsnummer neben dem Logo antippen (Web und Fenster) oder Mehr → «Über MoveEye»: die Geschichte des Projekts, der Entwickler, eine Zeitleiste und ein paar Zahlen.</li>
 <li>🎞 <b>Markierungen in Aufnahmen:</b> Aufnahme → «Markierungen in Aufnahmen und Alarmbildern»: dünne Eckmarken (Standard, das Gesicht bleibt frei), keine, oder rote Rahmen wie im Live-Bild.</li>
 <li>⚡ <b>Schnellschalter neben dem Stick</b> (grün = an): 🌡 Wärmebild über das Live-Bild, 🏷 Objekte markieren, 💡 weisses Licht, 🔴 IR-Licht, 🎧 Mithören, ⚡ je Relais (ein / automatisch), 🎯 Person folgen, 🔄 Patrouille, ⏺ jetzt aufnehmen (max. 10 min, rot während der Aufnahme, nochmals tippen = stopp), 📷 Foto in die Aufnahmen. Grau = nicht angeschlossen.</li>
 <li>🕹 <b>Steuer-Stick im Vollbild</b> (Handy, Tablet, PC): das Bild füllt den ganzen Bildschirm, der Stick liegt durchsichtig unten rechts darüber. Nach 3 s ohne Berührung wird er blass, beim Berühren wieder deutlich. Daneben: ◎ Mitte, 🎧 Mithören; ⇆ oben neben ✕ legt den Stick auf die andere Seite.</li>
@@ -56794,7 +56797,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>
 <ul>
 <li>🔍 <b>Find a setting:</b> type into the search box at the top of the settings (e.g. «password», «siren», «Wi-Fi») – everything else disappears, matches get a blue frame. ✕ or Esc shows everything again.</li>
-<li>💬 <b>Feedback to the developer:</b> the 💬 at the top of every page (also in the window and in the 3D simulator, there under «Mehr: Aufstellen …») or More → «Feedback to the developer». Choose the kind (error / wish / praise / question), optionally 1–5 stars «How happy are you?» and «Send a screenshot» (in the browser the current live picture, in the window the window, in the simulator its picture – faces pixelated). Version and page always go along. Anonymous, no sender. Without internet the message waits and is sent later; the dialog shows how many are waiting («Send now»).</li><li>ℹ️ <b>About MoveEye:</b> tap the version number next to the logo (web and window) or More → «About MoveEye»: the story of the project, the developer, a timeline and a few numbers.</li>
+<li>💬 <b>Feedback to the developer:</b> the 💬 at the top of every page (also in the window and in the 3D simulator, there under «Mehr») or More → «Feedback to the developer». Choose the kind (error / wish / praise / question), optionally 1–5 stars «How happy are you?» and «Send a screenshot» (in the browser the current live picture, in the window the window, in the simulator its picture – faces pixelated). Version and page always go along. Anonymous, no sender. Without internet the message waits and is sent later; the dialog shows how many are waiting («Send now»).</li><li>ℹ️ <b>About MoveEye:</b> tap the version number next to the logo (web and window) or More → «About MoveEye»: the story of the project, the developer, a timeline and a few numbers.</li>
 <li>🎞 <b>Markings in recordings:</b> Recording → «Markings in recordings and alarm pictures»: thin corner marks (default, the face stays free), none, or red boxes like the live picture.</li>
 <li>⚡ <b>Quick switches next to the stick</b> (green = on): 🌡 thermal picture over the live picture, 🏷 mark objects, 💡 white light, 🔴 IR light, 🎧 listen, ⚡ per relay (on / automatic), 🎯 follow person, 🔄 patrol, ⏺ record now (max. 10 min, red while recording, tap again = stop), 📷 photo into the recordings. Grey = not connected.</li>
 <li>🕹 <b>Joystick in full screen</b> (phone, tablet, PC): the picture fills the whole screen, the stick floats see-through at the bottom right. After 3 s untouched it becomes pale, on touch clearly visible again. Next to it: ◎ centre, 🎧 listen; ⇆ at the top next to ✕ puts the stick on the other side.</li>

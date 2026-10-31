@@ -3902,6 +3902,7 @@ func _order_controls() -> void:
 			c.extra.erase("devwin")                        # pruef_open: no second «Prüfstand» in the developer window
 		if c.id in PHOTO_IDS and zwilling != null and not c.has("ro"):
 			c["ro"] = func(): return zwilling.cur().is_empty()   # Menüs A: without a photo of the place these do nothing - greyed out
+			c.extra["ro_tip"] = "Zuerst ein Foto des Platzes laden (Gegenstände → Foto des Platzes)"   # tooltip on the page of MoveEye
 		c.group = GROUP_RENAME.get(c.group, c.group)       # 3D-4.21: names like MoveEye
 		if SUB_RENAME.has(str(c.extra.get("sub", ""))):
 			c.extra["sub"] = SUB_RENAME[str(c.extra.get("sub", ""))]
