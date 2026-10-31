@@ -64,7 +64,9 @@ var _untertitel := true
 var _stimme := false
 var _movie := false
 var _flash := 0.0
-var _welt := false                     # the world was changed (scene, clock, weather …) and must come back
+var _welt := false
+var sprech_id := 0                     # the browser (MoveEye /sim/trailer) reads the narrator and the cards aloud: info «sprechen»
+var sprech_text := ""                     # the world was changed (scene, clock, weather …) and must come back
 
 # ui
 var _layer: CanvasLayer = null
@@ -168,7 +170,8 @@ func titel(tid: String) -> String:
 
 func info() -> Dictionary:
 	return {"ok": true, "laeuft": laeuft, "id": id, "t": snappedf(t, 0.1), "dauer": dauer, "einstellung": cur,
-			"einstellungen": shots.size(), "ergebnis": ergebnis, "ende": _ende_halten, "stimme": _stimme, "untertitel": _untertitel, "sprache": T.lang()}
+			"einstellungen": shots.size(), "ergebnis": ergebnis, "ende": _ende_halten,
+			"sprechen": {"id": sprech_id, "text": sprech_text, "lang": T.lang()}, "stimme": _stimme, "untertitel": _untertitel, "sprache": T.lang()}
 
 
 # =======================================================================================================================
@@ -601,6 +604,7 @@ func _sag(text: String) -> void:
 	"""a sentence of the narrator: the voice of the system (if there is one for this language), else / also the subtitle"""
 	var secs := 0.6 + text.length() * 0.068
 	_say_bis = t + secs
+	_vorlesen(text)
 	_cues.append({"t": snappedf(_vorlauf + t, 0.01), "rel": snappedf(t, 0.01), "text": text.replace("«", "").replace("»", ""), "dauer": snappedf(secs, 0.01)})
 	if _stimme:
 		var tt := text.replace("«", "").replace("»", "").strip_edges()
@@ -610,6 +614,13 @@ func _sag(text: String) -> void:
 	if _untertitel and _sub != null and str(shots[cur].get("art", "")) != "ende":
 		_sub.text = text
 		_sub_bis = t + secs + 0.4
+
+
+func _vorlesen(text: String) -> void:
+	var tx := text.replace("«", "").replace("»", "").replace("\n", " ").strip_edges()
+	if tx != "":
+		sprech_id += 1
+		sprech_text = tx
 
 
 func _cues_schreiben() -> void:
@@ -831,6 +842,8 @@ func _ui_schnitt(sh: Dictionary) -> void:
 	_black.color.a = 0.0 if art == "welt" else 1.0
 	var tc: Color = sh.get("tint", Color(0, 0, 0, 0))
 	_tint.color = tc
+	if art in ["tafel", "titel"]:
+		_vorlesen(str(sh.get("text", "")))
 	if art == "tafel":
 		_card.text = str(sh.get("text", ""))
 		_card.add_theme_font_size_override("font_size", _fs(20.0 if bool(sh.get("klein", false)) else 32.0))

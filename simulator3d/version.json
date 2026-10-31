@@ -1,9 +1,9 @@
 {
- "version": "3D-5.19.0",
- "ver": "3.19.0",
- "name": "MoveEye Sim 3.19.0",
+ "version": "3D-5.19.1",
+ "ver": "3.19.1",
+ "name": "MoveEye Sim 3.19.1",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35617013,
- "sha256": "9bafc21af348f2062035f609628aaa4b84e107dfbd10f9fee11087f3c3b3fb0e",
- "notes": "MoveEye Sim 3.19.0: Trailer zu «Die Karte des Grossvaters» und «Maggie und der Bergkristall» (Knopf «Trailer ansehen» auf der Story-Karte)."
+ "size": 35617612,
+ "sha256": "5bdcc11f5d27ad8d67e22055b42eb2f7f7020cddae0f397d825130fc0f90152e",
+ "notes": "MoveEye Sim 3.19.1: Trailer und Vorführung liefern die Texte für die Sprachausgabe im Browser."
 }
