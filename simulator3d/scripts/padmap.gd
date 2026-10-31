@@ -287,6 +287,8 @@ func _process(dt: float) -> void:
 		set_menu(true)
 		return
 	var own: Array = main.localplay.pad_devs() if main.localplay != null and main.localplay.active else []
+	if main.abenteuer != null and main.abenteuer.zweit != null:
+		own.append_array(main.abenteuer.zweit.pad_devs())   # A5: the walkers of the Bergtal adventure (zu zweit)
 	var free := []
 	for d in devices():
 		if not d in own:

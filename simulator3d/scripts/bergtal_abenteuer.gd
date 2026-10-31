@@ -66,6 +66,7 @@ var _slide: MarginContainer
 var back_btn: Button
 var next_btn: Button
 var karte                            # bergtal_abenteuer_karte.gd (kept between paints)
+var zweit                            # A5 abenteuer_zweit.gd: zu zweit, Handy-Begleiter, Familien-Bestenliste
 var title_lab: Label
 
 
@@ -487,10 +488,12 @@ func _start_leg(i: int, pts: Array, flags: Array, nm: String) -> void:
 		R["now"] = T.t(nm)
 	_fly_t = 0.0
 	_changed()
+	if zweit != null:
+		zweit.on_leg(leg)                              # A5: «Wettrennen» - first a race to the flag
 
 
 func _tick_leg(dt: float) -> void:
-	if leg.is_empty():
+	if leg.is_empty() or (zweit != null and zweit.holds_leg()):
 		return
 	var f0: float = float(leg["f"])
 	var f: float = minf(1.0, f0 + dt / float(leg["real_s"]))
@@ -1184,6 +1187,8 @@ func _morning() -> void:
 	_diary("morning", T.t("Der Morgen"), T.t(str(D.FLAVOR[R["mood"]]["morning"])))
 	P["runs"].append({"id": R["id"], "chapter": R["chapter"], "stars": stars, "date": Time.get_datetime_string_from_system().substr(0, 16), "seed": R["seed"]})
 	P["runs"] = (P["runs"] as Array).slice(-30)
+	if zweit != null:
+		zweit.on_morning()                              # A5: Familien-Bestenliste
 	_save()
 	_write_report()
 	_restore()
@@ -1485,6 +1490,9 @@ func _ready() -> void:
 	karte.custom_minimum_size = Vector2(320, 320)
 	visible = false
 	_layout()
+	zweit = load("res://scripts/abenteuer_zweit.gd").new()     # A5 (Einhänge-Punkt)
+	zweit.setup(self)
+	add_child(zweit)
 
 
 func _layout() -> void:
@@ -1846,6 +1854,8 @@ func _paint_chapter() -> void:
 				func(): op({"do": "pick", "key": "chapter", "value": nn}), not open, stars if open else T.t("noch nicht frei")))
 	if not situations().is_empty() or dev_open:
 		_dev_box(left)
+	if zweit != null:
+		zweit.paint_board(left, true)                  # A5: Familien-Bestenliste (kurz)
 
 
 func _dev_box(parent: Control) -> void:
@@ -1931,6 +1941,8 @@ func _paint_level() -> void:
 	row2.add_child(ob2)
 	var ss := sunset_h()
 	gg.add_child(_lab(T.t("Sonnenuntergang heute im Bergtal: %s · Sonnenaufgang: %s") % [hm(ss), hm(sunrise_h())], 12, Color(0.6, 0.66, 0.74)))
+	if zweit != null:
+		zweit.paint_choice(body)                       # A5: Mitspieler (Spielart, Namen, Handy)
 
 
 func _paint_pack() -> void:
@@ -2196,6 +2208,8 @@ func _paint_morning() -> void:
 			vb.add_child(cl)
 	for e in R["log"]:
 		dg.add_child(_lab("%s  %s - %s" % [hm(float(e["h"])), str(e["title"]), str(e["text"])], 12))
+	if zweit != null:
+		zweit.paint_board(body)                        # A5: Familien-Bestenliste
 	# test ground
 	var eb := Button.new()
 	eb.text = ("▾ " if dev_open else "▸ ") + T.t("Testgelände (Situation speichern, nochmals abspielen, Bericht)")
@@ -2229,6 +2243,8 @@ func op(d: Dictionary) -> Dictionary:
 	match what:
 		"open":
 			open_ab()
+		"zweit":                                       # A5: zu zweit, Handy-Begleiter, Familien-Bestenliste
+			out = zweit.op(d)
 		"close":
 			close_ab()
 		"pick":
@@ -2360,7 +2376,7 @@ func state() -> Dictionary:
 				"sunrise": R["sunrise"], "pending": {"kind": pe.get("kind", ""), "title": pe.get("title", ""), "options": pe.get("options", [])} if not pe.is_empty() else {},
 				"notes": R["notes"], "found": R["found"], "arrived": R.get("arrived", false), "night": R["night"], "result_stars": R.get("result", {}).get("stars", -1),
 				"log": (R["log"] as Array).slice(-6), "choices": choices.size(), "replaying": replaying},
-			"error": error}
+			"a5_zweit": zweit.state() if zweit != null else {}, "error": error}
 
 
 var _night_starting := false
