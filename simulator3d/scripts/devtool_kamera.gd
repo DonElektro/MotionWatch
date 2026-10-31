@@ -212,6 +212,10 @@ func pref_dir(e: Dictionary, frame) -> Vector3:
 		for vp in Bt.VIEWPOINTS:
 			if "bergtal.aussicht." + str(vp[0]) == id:
 				a = float(vp[6])
+	elif id.begins_with("bergtal.ort."):                    # a place on a viewpoint (Gratspitz): like the viewpoint
+		for vp in Bt.VIEWPOINTS:
+			if Bt.vp_xz(vp).distance_to(Vector2(float(e.get("x", 0.0)), float(e.get("z", 0.0)))) < 20.0:
+				a = float(vp[6])
 	elif id.begins_with("bergtal.schlafplatz."):
 		var sp = Bt.SPOTS.get(id.trim_prefix("bergtal.schlafplatz."))
 		if sp is Array and sp.size() > 3:
@@ -341,7 +345,7 @@ func best_view(e: Dictionary, p: Vector3, d: float, prev_fwd: Vector3, frame = n
 	if deep:
 		elevs.append(1.3)
 		elevs.append(2.2)
-	var aus := str(e.get("kind", "")) == "aussicht" and pref != Vector3.ZERO
+	var aus := pref != Vector3.ZERO and (str(e.get("kind", "")) == "aussicht" or str(e.get("kind", "")) == "ort")
 	if aus:                                                  # a viewpoint: just behind it, looking out like its bench
 		dists = [7.0, 11.0, 16.0]
 	pref_w = 60.0 if aus else 25.0
@@ -408,9 +412,13 @@ func best_view(e: Dictionary, p: Vector3, d: float, prev_fwd: Vector3, frame = n
 	var bk := (top["c"] as Vector3) - tgt
 	bk.y = 0.0
 	bk = bk.normalized() if bk.length() > 0.01 else Vector3(0, 0, 1)
-	for hv in [[1.2, 1.4], [1.6, 2.6]]:
+	for hv in [[1.2, 1.4], [1.6, 2.6], [0.0, 35.0], [0.0, 70.0]]:
 		var c: Vector3 = tgt + bk * d * float(hv[0])
-		c.y = maxf(tgt.y + d * float(hv[1]), surf(c.x, c.z) + EYE)
+		var up := d * float(hv[1])
+		if float(hv[0]) == 0.0:                              # from high above, a little behind (rock walls of gorges)
+			up = float(hv[1])
+			c = tgt + bk * up * 0.45
+		c.y = maxf(tgt.y + up, surf(c.x, c.z) + EYE)
 		alts.append(Transform3D(Basis(), c).looking_at(tgt, Vector3.UP))
 	var ms := (Time.get_ticks_usec() - t0) / 1000.0
 	last = {"id": str(e.get("id", "")), "score": snappedf(float(top["s"]), 0.1), "why": top["why"], "n": cands.size(),
