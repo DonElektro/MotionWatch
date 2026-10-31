@@ -437,7 +437,7 @@ func cloth_t(base: float, jog: bool, variant := "") -> float:
 	if not th_real:
 		return base
 	var amb: float = main.ambient
-	var lvl := Waerme.cloth_level(amb, variant)
+	var lvl := Waerme.cloth_level(amb, variant, preload("res://scripts/kleidung.gd").stufe(main))   # Winter / Nacht / Berg: wärmer angezogen
 	if jog and lvl in ["jacket", "thick"]:
 		lvl = "light"                               # joggers wear thin, tight clothes
 	return Waerme.cloth(amb, lvl, main.weather == "rain", jog)

@@ -81,6 +81,7 @@ func build(actor, p: Dictionary) -> void:
 	var nose_t: float = face_t - 1.2 - 3.0 * cold_k
 	var hand_t: float = (31.5 - 5.0 * cold_k) if not p.get("gloves", false) else ct - 2.5
 	var skin_t := 31.5 - 2.0 * cold_k
+	var leg_t := 31.0 - 5.0 * cold_k                                # bare legs (shorts) cool more in the cold (waerme.gd «leg»)
 	if main.simreal != null and main.simreal.th_real:              # 3D-4.26: the heat table (waerme.gd), warmer after running
 		var W = preload("res://scripts/waerme.gd")
 		var act: bool = p.get("active", false)
@@ -88,6 +89,7 @@ func build(actor, p: Dictionary) -> void:
 		nose_t = W.skin("nose", amb, act)
 		hand_t = W.skin("hand", amb, act) if not p.get("gloves", false) else ct - 2.5
 		skin_t = W.skin("arm", amb, act)
+		leg_t = W.skin("leg", amb, act)
 	var shorts: bool = p.get("shorts", false)
 	var short_sl: bool = p.get("short_sleeves", false)
 	pal = {R_SKIN: p["skin"], R_JACKET: p["jacket"], R_TROUSERS: p["trousers"], R_SHOE: p["shoe"], R_SOLE: (p["shoe"] as Color).darkened(0.55),
@@ -120,13 +122,13 @@ func build(actor, p: Dictionary) -> void:
 		var ft := th_ + 2
 		var tr: int = R_TROUSERS
 		var lower: int = R_SKIN if shorts else R_TROUSERS
-		var lower_t: float = skin_t if shorts else ct - 1.8
+		var lower_t: float = leg_t if shorts else ct - 1.8
 		var legs := [[0.99, 0.095, 0.09, [[B_HIPS, 1.0]], tr, ct - 0.5],
 				[0.92, 0.1 * lt * hp, 0.094 * lt, [[B_HIPS, 0.45], [th_, 0.55]], tr, ct - 0.6],
 				[0.82, 0.093 * lt, 0.088 * lt, [[th_, 1.0]], tr, ct - 0.8],
 				[0.66, 0.078 * lt, 0.075 * lt, [[th_, 1.0]], tr, ct - 1.0]]
 		if shorts:
-			legs.append_array([[0.57, 0.066 * lt, 0.066 * lt, [[th_, 1.0]], tr, ct - 1.0], [0.555, 0.058 * lt, 0.059 * lt, [[th_, 0.95], [sn, 0.05]], R_SKIN, skin_t]])
+			legs.append_array([[0.57, 0.066 * lt, 0.066 * lt, [[th_, 1.0]], tr, ct - 1.0], [0.555, 0.058 * lt, 0.059 * lt, [[th_, 0.95], [sn, 0.05]], R_SKIN, leg_t]])
 		legs.append_array([[0.53, 0.06 * lt, 0.061 * lt, [[th_, 0.85], [sn, 0.15]], lower, lower_t + 0.3],
 				[0.46, 0.054 * lt, 0.056 * lt, [[th_, 0.5], [sn, 0.5]], lower, lower_t, 0.008],
 				[0.40, 0.054 * lt, 0.058 * lt, [[sn, 0.85], [th_, 0.15]], lower, lower_t, 0.0, 0.008],
@@ -701,6 +703,16 @@ static func op(main, d: Dictionary) -> Dictionary:
 		if bool(d.get("reload", false)):
 			FP.reset()
 		return {"ok": true, "paket": FP.info(), "status": FP.status_text()}
+	if o == "kleidung":                                       # «Kleidung nach Jahreszeit» (kleidung.gd): info | force (warm | lang | gemischt | "")
+		var KL = load("res://scripts/kleidung.gd")
+		if d.has("value"):
+			KL.force = str(d["value"])
+		var per := []
+		for v in main.visitors.get_children():
+			if v.get("kind") == "person" and v.get("_kleid_stufe") != null:
+				per.append({"variant": v.variant, "stufe": v._kleid_stufe, "short_sleeves": v._short_sl,
+						"pack": v.get("fig") != null and v.fig.get("outfit") != null})
+		return {"ok": true, "kleidung": KL.info(main), "persons": per}
 	if o == "wave":                                           # F5: every person waves for a few seconds (actor.gd «wave»)
 		var nw := 0
 		for v in main.visitors.get_children():

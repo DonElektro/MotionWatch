@@ -1,7 +1,7 @@
 {
- "version": "3D-4.80",
+ "version": "3D-4.81",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34914191,
- "sha256": "40322abb73ad9502a4739098b8b2db15da1c06f93d752f4189c177fa6272927a",
- "notes": "Nur noch ein «Entwickler»: Reiter «Schalter», Bedienfeld-Karte öffnet das Fenster."
+ "size": 34922366,
+ "sha256": "7730e973899e9de90748e0fc0496bcb05a0b9b3e2d21fa70bc3c1fc300529d56",
+ "notes": "Kleidung nach Jahreszeit, Paket-Figuren ohne durchscheinende Beine, Haut wärmer im Wärmebild."
 }

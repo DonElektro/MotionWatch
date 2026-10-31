@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.80** · passende MoveEye-Version (früher Motion Watch) **2.98.111**
+Stand: 31.10.2026 · Simulator-Version **3D-4.81** · passende MoveEye-Version (früher Motion Watch) **2.98.112**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.81 (MoveEye 2.98.112): Kleidung nach Jahreszeit (`kleidung.gd`)
+
+- `kleidung.gd` (neu, `stufe(main)`): Winter / Nacht / Berg / Regen → lang mit Jacke, Sommer gemischt. `waerme.gd`
+  `cloth_level(amb, variant, stufe)` und Haut wärmer als Stoff; `figur_paket.gd` ohne durchscheinende Beine; `actor.gd`,
+  `figur.gd`, `menschen.gd`, `simreal.gd` angepasst.
 
 ## NEU in 3D-4.80 (MoveEye 2.98.111): Ein «Entwickler» (`devtool_schalter.gd`)
 

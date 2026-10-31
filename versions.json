@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 14:33",
+ "generated": "2026-10-31 14:40",
  "versions": [
   {
-   "version": "2.98.111",
-   "file": "webcam_bewegung_2_98_111.py",
+   "version": "2.98.112",
+   "file": "webcam_bewegung_2_98_112.py",
    "url": "",
-   "sha256": "cb6b1d53ce62ffb5c8090a24ddc1c6d0f3eccf1f897ca646d51329687f852d14",
-   "date": "2026-10-31 14:33",
-   "notes": "Simulator 3D-4.80: nur noch ein «Entwickler» – Reiter «Schalter» im Fenster Mehr → Entwickler (Prüfstand, Störungen, Diagnose-Paket), die Bedienfeld-Karte öffnet dieses Fenster, Spieltest-Schalter nur einmal.",
-   "sig": "77445ba74ac365cf23b52cf62938d790b7e70af01493de6e20fafea398f7ebce71c2da5e85bf0cb60761c88d52f5c82d997c2eddd9cb3a64342151854920f50b"
+   "sha256": "7af86c079662e7e4e33a5c04074969f6588130c5087b0d7b20611db93ff9993a",
+   "date": "2026-10-31 14:40",
+   "notes": "Simulator 3D-4.81: Figuren ziehen sich nach Jahreszeit an (Winter, Nacht, Berg, Regen lang mit Jacke; Sommer gemischt), Paket-Figuren ohne durchscheinende Beine, im Wärmebild ist Haut wärmer als Kleidung.",
+   "sig": "7fd9dfee66361cd19cf703ca6442d1042948205c500f0bff4a8e2de6ceddf50ffdced718b16bcc3b36423a54bdf28e77ccd5efa9a732c8888800b6f717078406"
   },
   {
    "version": "2.97.1",
