@@ -182,6 +182,7 @@ func round_end() -> void:
 	sneak.round_end()
 	turnier.after_round(game.results)
 	turm.after_round(game.results)
+	seq += 1
 
 
 func _process(dt: float) -> void:
@@ -533,6 +534,8 @@ func _probe_stop(go: bool) -> void:
 			continue
 		if _human(p) and p.has("pr"):
 			probed[str(p["name"]).to_lower()] = true
+			if bool(p["pr"]["done"]) and not main.game_tutorial:
+				p["tut_on"] = false                        # practised with Blinki: no practice steps of the newcomers on top
 		p.erase("pr")
 		if go and p["role"] == "runner" and p["state"] == "play":
 			game._to_start(p)

@@ -55,11 +55,14 @@ func tick(dt: float) -> void:
 	"""gamemore._process during a round (every 0.25 s); counts once per second"""
 	if not active() or game.round_state != "play":
 		return
-	_t += dt
-	if _t < 1.0:
+	var tn: float = game.now()                             # real seconds (the simulation may run slower than real time)
+	if _t <= 0.0:
+		_t = tn
 		return
-	var secs := mini(5, int(_t))                           # a slow PC: the seconds since the last count
-	_t -= float(int(_t))
+	if tn - _t < 1.0:
+		return
+	var secs := mini(5, int(tn - _t))
+	_t += float(int(tn - _t))
 	stat["secs"] = int(stat["secs"]) + secs
 	var seen := []
 	for p in game.players:

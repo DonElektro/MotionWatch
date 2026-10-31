@@ -575,7 +575,8 @@ func _paint_card() -> void:
 	card.visible = show
 	if not show:
 		return
-	var sig := "%s|%d|%d|%d|%s|%d|%d" % [rs, g.results.size(), g.count(), main.game_bots, str(_st.get("daily", {})), int(g.plus.seq), int(g.rules.seq)]
+	var sig := "%s|%d|%d|%d|%s|%d|%d|%d" % [rs, g.results.size(), g.count(), main.game_bots, str(_st.get("daily", {})), int(g.plus.seq), int(g.rules.seq),
+			int(g.more.seq) if g.more != null else 0]
 	if sig == _card_sig:
 		_center(card)
 		return
@@ -607,6 +608,13 @@ func _paint_card() -> void:
 			fl_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			fl_.custom_minimum_size.x = 480
 			card_v.add_child(fl_)
+	if g.more != null and rs in ["lobby", "end"]:          # «Gameplay ausfeilen»: tournament (who is next, table), tower, badges, highlights
+		var ml: Array = g.more.turnier.lines() + g.more.turm.lines() + (g.more.ziele.lines() + g.more.reel_lines() if rs == "end" else [])
+		for ln in ml:
+			var mlb := UI.small(_plain(str(ln)), UI.TXT)
+			mlb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			mlb.custom_minimum_size.x = 480
+			card_v.add_child(mlb)
 	if rs == "end":
 		if not g.flag_res.is_empty():                       # 3D-4.x: «Fahne erobern» - decided by the captures
 			var fl := UI.heading("%s – %s" % [g.flag_res["text"], g.flag_res["title"]])
