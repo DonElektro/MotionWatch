@@ -19,18 +19,18 @@
 # of the thing. Do both distances disagree strongly (FOOT_RATIO_MIN) and is the thing clearly lower than a standing person
 # (FOOT_ANIMAL_MAX_H_M), it is reported as an animal («ANIMAL (THERMAL)», present «animal») and not as a person. Feet near
 # the horizon or cut off at the picture edge: no foot estimate, everything as before. Self-test: 417 (foot_selftest).
-# Decision Daniel (31.10.2026, second round): «animal» ONLY when all of it is true, otherwise it stays a person:
-#   1. it is night / low light (is_dark() or STATE «lowlight», 410 hysteresis) - by day the camera + AI decide,
-#   2. it is shaped like a four-legged animal: real height / real width (both from the foot distance) <= QUAD_MAX_ASP,
-#      and it does not stand up over the last pictures (a matched box upright / taller than FOOT_ANIMAL_MAX_H_M in the last
-#      FOOT_HIST_S seconds = person, and it stays a person while it is followed),
-#   3. the foot point limits above.
-# Until 3 low, animal-shaped pictures over >= 1 s are seen, such a thing is «undecided» (only warm, no push either way).
+# Decision Daniel (31.10.2026, third round): «animal» ONLY for a really FLAT warm body, everything upright stays as before:
+#   - upright boxes (h/w >= 1.3, thermal_person_check) are persons exactly as before - also a roe deer straight from the
+#     front, a child, a crouching person («im Zweifel Person»),
+#   - a flat warm body (failed the upright check, before only «warm») becomes «animal» when: it is night / low light, the
+#     foot point works (FOOT_RATIO_MIN, FOOT_ANIMAL_MAX_H_M), real height / real width <= FLAT_MAX_ASP, it did not stand
+#     up in the last FOOT_HIST_S seconds, and 3 such pictures over >= 1 s (until then «warm» only),
+#   - «Person?» (weak_person_feed): a flat box at the ground (w/h > WEAK_FLAT) that the AI of MoveEye calls a person with at
+#     least WEAK_AI_MIN (the normal AI threshold stays) AND a movement track or a warm body confirms it -> a person (alarm,
+#     «PERSON?»). It wins over «animal»: a warm body under a «Person?» never becomes an animal.
 # Camera height: CFG «cam_height» («Höhe der Kamera (m)» in «Platz einrichten», 537 / 582, default 1.6 m). Connected to the
-# simulator, its pole «mast» has priority (the simulated camera really is that high); the field is for the real device.
-# Limits (see REAL_REH.md): a strictly frontal roe deer and a small child have the same thermal shape at 80 x 62 px - then
-# «person» wins. Crawling persons are wide (h/w < 1.3) and were never a thermal person (aspect gate below) - unchanged: at
-# Thermal-90 resolution no reliable feature tells a crawling person from a deer walking sideways (leg gaps < 1 pixel).
+# simulator, its pole («Höhe der Kamera», 3D-4.x) has priority (the simulated camera really is that high); the field is for
+# the real device.
 # ----------------------------------------------------------------------------
 for _k, _v in {"thermal_person": True, "thermal_person_day": True, "thermal_mig22": False}.items():
     CFG.setdefault(_k, _v)
@@ -47,11 +47,15 @@ FOOT_RATIO_MIN = 1.5        # «strongly different»: the 1.7 m estimate is at l
 FOOT_ANIMAL_MAX_H_M = 1.1   # «clearly lower than a person»: roe deer shoulder height 0.6 … 0.9 m (head up to about 1.1 m), fox
                             # 0.35 … 0.4 m (about 0.5 m with the head) - Wildtier Schweiz / Hespeler «Rehwild heute»; standing
                             # adults are 1.45 m and taller. Small children and a crouching person are lower too - they stay
-                            # persons by their shape (QUAD_MAX_ASP) or as soon as they stand up (FOOT_HIST_S).
-QUAD_MAX_ASP = 2.0          # «shaped like a four-legged animal»: real height / width. Fox from the front 0.45 / 0.22 m = 2.0, roe
-                            # deer at an angle 1.0 / 0.6 = 1.7, from the side < 1; a child 1.0 m tall is 0.25 … 0.3 m wide
-                            # (shoulders, DIN 33402) = 3.3 … 4 - with 1 pixel of thermal blur (0.1 … 0.2 m at 6 … 10 m) still
-                            # about 2.2: person. Roe deer straight from the front (0.35 m wide, ~2.9) stays «person» (limit).
+                            # persons: upright (thermal_person_check) or not flat (FLAT_MAX_ASP).
+FLAT_MAX_ASP = 0.8          # «really flat» (Daniel: wider than high): real height / real width from the side. Roe deer: shoulder
+                            # 0.6 … 0.9 m, head-body 0.95 … 1.35 m (Wildtier Schweiz) -> 0.5 … 0.8 (head held high up to ~0.9:
+                            # then «warm», not animal); fox: shoulder 0.35 … 0.4 m, head-body 0.6 … 0.9 m (+ tail 0.35 … 0.45)
+                            # -> 0.3 … 0.6. A crouching person (1.0 / 0.55 m = 1.8) and any child standing (> 3) are far above.
+WEAK_AI_MIN = 0.15          # «Person?»: the raw person score of the AI (crawling figures of the simulator reach 0.18 at most,
+                            # REAL_KRIECHENDE.md; the normal threshold ai_conf stays for everything else)
+WEAK_FLAT = 1.5             # «flat box at the ground»: AI box width / height above 1.5 (crawling / lying, a standing person ~0.4)
+WEAK_AGE_S = 2.5            # the AI runs only now and then: its weak boxes count for 2.5 s
 FOOT_HIST_S = 4.0           # «does not stand up over the last pictures»: what was seen of it in the last 4 s
 FOOT_NEED_N, FOOT_NEED_S = 3, 1.0   # an animal needs 3 animal-like pictures over at least 1 s (the thermal camera: 3 of 5 anyway)
 FOOT = {"h": None, "t": 0.0, "busy": False, "hist": deque(maxlen=200)}
@@ -187,47 +191,98 @@ def _foot_night():
 
 
 def foot_shape(box, fe):
-    """real height / real width of a box (both from the foot distance) - small = wide like a four-legged animal"""
+    """real height / real width of a box (both from the foot distance) - small = flat like an animal from the side"""
     hf = cam_fov()[0]
     width_m = box[2] * 2.0 * fe[0] * math.tan(math.radians(hf) / 2.0)
     return max(0.0, fe[1]) / max(0.05, width_m)
 
 
-def foot_decide(box, d, fe, night, t0, hist):
-    """the decision of thermal_classify, without the camera (self-test 417): -> ("person", d) / ("animal", …) / ("wait", None)
-    hist = deque of the last observations {t, cx, fy, low, person}; the new one is added"""
+def foot_decide(box, d, fe, night, t0, hist, maybe=False, vf=None):
+    """the decision of thermal_classify, without the camera (self-test 417): -> ("person", d) / ("animal", foot m, height m,
+    distance at 1.7 m) / ("wait", None) / None (only warm, as before). d = thermal_person_check (upright person) or None;
+    maybe = a «Person?» of the AI lies on it. hist = deque of the last observations {t, cx, fy, low, person}."""
     x, y, w, h = box
     cx, fy = x + w / 2.0, y + h
-    low = False
-    if fe is not None and night:
-        d_foot, h_foot = fe
-        low = d / max(0.1, d_foot) >= FOOT_RATIO_MIN and h_foot <= FOOT_ANIMAL_MAX_H_M and foot_shape(box, fe) <= QUAD_MAX_ASP
     same = [o for o in hist if t0 - o["t"] <= FOOT_HIST_S and abs(o["cx"] - cx) < 0.12 and abs(o["fy"] - fy) < 0.15]
-    was_person = any(o["person"] for o in same)                 # it stood up (or was a person) in the last seconds: stays one
-    obs = {"t": t0, "cx": cx, "fy": fy, "low": low, "person": (not low) or was_person}
-    hist.append(obs)
-    if obs["person"]:
+    if d is not None:                                           # upright: a person, as before
+        hist.append({"t": t0, "cx": cx, "fy": fy, "low": False, "person": True})
         return ("person", d)
-    lows = [o for o in same if o["low"]] + [obs]
+    low = False
+    if fe is not None and night and not maybe:
+        vf = erk_vfov() if vf is None else vf
+        d_size = PERSON_H_M / (2.0 * max(1e-3, h) * math.tan(math.radians(vf) / 2.0))
+        low = (d_size / max(0.1, fe[0]) >= FOOT_RATIO_MIN and fe[1] <= FOOT_ANIMAL_MAX_H_M and foot_shape(box, fe) <= FLAT_MAX_ASP)
+    stood = any(o["person"] for o in same)                     # it stood up in the last seconds: no animal
+    hist.append({"t": t0, "cx": cx, "fy": fy, "low": low, "person": False})
+    if not low or stood:
+        return None
+    lows = [o for o in same if o["low"]] + [hist[-1]]
     if len(lows) >= FOOT_NEED_N and t0 - min(o["t"] for o in lows) >= FOOT_NEED_S:
-        return ("animal", fe[0], max(0.0, fe[1]), d)
+        vf = erk_vfov() if vf is None else vf
+        return ("animal", fe[0], max(0.0, fe[1]), PERSON_H_M / (2.0 * max(1e-3, h) * math.tan(math.radians(vf) / 2.0)))
     return ("wait", None)
 
 
-def thermal_classify(box, t0=None):
-    """-> ("person", distance m) / ("animal", foot distance m, height m, distance at 1.7 m) / ("wait", None) / None for a warm
-    body (x, y, w, h 0..1 of the main picture). A person by shape, size at 1.7 m and temperature (as before) becomes «animal»
-    only at night, when the foot point shows it low and four-legged and it did not stand up (real-reh-fusspunkt). Feet hidden
-    (grass, tent) put the foot point higher = farther = taller: that errs on the side of «person»."""
+def thermal_classify(box, t0=None, maybe=False):
+    """-> ("person", distance m) / ("animal", …) / ("wait", None) / None for a warm body (x, y, w, h 0..1 of the main picture):
+    upright as before (thermal_person_check), flat at night with the foot point = animal (real-reh-fusspunkt)"""
     d = thermal_person_check(box)
+    fe = None
     if d is None:
-        return None
-    try:
-        fe = foot_estimate(box)
-    except Exception:
-        fe = None
-    TPERS["last"] = {"d_size": round(d, 2), "d_foot": round(fe[0], 2) if fe else None, "h_foot": round(fe[1], 2) if fe else None}
-    return foot_decide(box, d, fe, _foot_night(), time.time() if t0 is None else t0, FOOT["hist"])
+        try:
+            fe = foot_estimate(box)
+        except Exception:
+            fe = None
+    TPERS["last"] = {"d_size": round(d, 2) if d else None, "d_foot": round(fe[0], 2) if fe else None, "h_foot": round(fe[1], 2) if fe else None}
+    return foot_decide(box, d, fe, _foot_night(), time.time() if t0 is None else t0, FOOT["hist"], maybe)
+
+
+def _ov(a, b):
+    """two boxes (x, y, w, h, same units) overlap: intersection / smaller area"""
+    ix = max(0.0, min(a[0] + a[2], b[0] + b[2]) - max(a[0], b[0])); iy = max(0.0, min(a[1] + a[3], b[1] + b[3]) - max(a[1], b[1]))
+    return ix * iy / max(1e-9, min(a[2] * a[3], b[2] * b[3]))
+
+
+def weak_person_check(ab, tracks_n, warm_n, fe):
+    """«Person?» for one weak AI box ab = (x, y, w, h, conf) 0..1: flat, at the ground, confirmed by movement or warmth"""
+    x, y, w, h, cf = ab
+    if cf < WEAK_AI_MIN or h <= 0 or (w / h) * (1.0 / max(1e-3, float(ThermalCam.main_aspect))) <= WEAK_FLAT:
+        return False                                            # (w / h in real pixels of the picture)
+    if fe is not None and fe[1] > FOOT_ANIMAL_MAX_H_M + 0.3:
+        return False                                            # not at the ground (a flat thing high up)
+    return any(_ov(ab[:4], b) > 0.3 for b in list(tracks_n) + list(warm_n))
+
+
+def weak_person_feed(ai, tracks, warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0):
+    """410, when nobody was found: the weak person boxes of the AI (180, below ai_conf) that are flat at the ground and confirmed
+    by a movement track or the thermal picture become «PERSON?» (person boxes = the normal person / alarm logic).
+    Returns the «Person?» boxes 0..1 (a warm body under one never becomes an animal)."""
+    wk = getattr(ai, "weak", None) or []
+    if not wk or t0 - float(getattr(ai, "weak_t", 0.0)) > WEAK_AGE_S:
+        return []
+    ThermalCam.main_aspect = H / float(W)
+    tn = [(t.box[0] / pw, t.box[1] / ph, t.box[2] / pw, t.box[3] / ph) for t in tracks if getattr(t, "box", None)]
+    out = []
+    for ab in wk:
+        try:
+            fe = foot_estimate(ab[:4])
+        except Exception:
+            fe = None
+        if weak_person_check(ab, tn, warm_boxes or [], fe):
+            out.append(ab)
+    for bx, by, bw, bh, cf in out:
+        person_boxes.append((int(bx * pw), int(by * ph), max(1, int(bw * pw)), max(1, int(bh * ph))))
+        p1 = (int(bx * W), int(by * H)); p2 = (int((bx + bw) * W), int((by + bh) * H))
+        cv2.rectangle(frame, p1, p2, (60, 0, 255), 3)
+        cv2.putText(frame, f"PERSON? (AI {cf:.2f})", (p1[0], max(18, p1[1] - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (60, 0, 255), 2)
+    if out:
+        present.add("person")
+        if t0 - TPERS.get("weak_seen", 0.0) > 10.0:
+            TPERS["weak_n"] = TPERS.get("weak_n", 0) + 1
+            log_event("person", f"Person? lying / crawling - AI {max(o[4] for o in out):.2f} (below the normal threshold) + "
+                                f"movement / warmth at the same place")
+        TPERS["weak_seen"] = t0
+    return [o[:4] for o in out]
 
 
 def thermal_person_check(box):
@@ -255,7 +310,7 @@ def thermal_person_check(box):
     return d
 
 
-def thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0):
+def thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, maybe_boxes=()):
     """called by the camera loop (410) when the normal camera found nobody: the warm bodies that are persons become person
     boxes (in the working picture), drawn as «PERSON (THERMAL)». Returns the warm bodies that stay «warm»."""
     rest = []
@@ -263,7 +318,7 @@ def thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, 
     ThermalCam.main_aspect = H / float(W)                      # (the overlay sets it too - only when the thermal picture is shown)
     animals = []
     for b in warm_boxes:
-        c = thermal_classify(b, t0)
+        c = thermal_classify(b, t0, any(_ov(b, m) > 0.3 for m in maybe_boxes))
         if c is None or c[0] == "wait":
             rest.append(b); continue                          # «wait»: maybe an animal - a few more pictures (only warm meanwhile)
         if c[0] == "animal":
@@ -278,7 +333,7 @@ def thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, 
         if t0 - TPERS["animal_seen"] > 10.0:                  # a new appearance (not every picture)
             TPERS["animals"] += 1
             a_ = min(animals, key=lambda a: a[1])
-            try:                                              # for tuning QUAD_MAX_ASP with real nights (shape, box)
+            try:                                              # for tuning FLAT_MAX_ASP with real nights (shape, box)
                 shp = f", shape h/w {foot_shape(a_[0], (a_[1], a_[2])):.2f}, box {tuple(round(float(q), 3) for q in a_[0])}"
             except Exception:
                 shp = ""
