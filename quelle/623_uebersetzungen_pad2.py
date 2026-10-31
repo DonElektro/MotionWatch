@@ -1,7 +1,7 @@
 #@ MoveEye – Teil 639: Übersetzungen des einen Controller-Konzepts (542 MWPad, 538 Controller-Ansicht, 470). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 _HX_pad2 = {
     'Turn / tilt the head of MoveEye': ('Kopf von MoveEye drehen / neigen', 'Tourner / incliner la tête de MoveEye', 'Ruotare / inclinare la testa di MoveEye', 'Volver / sbassar il chau da MoveEye'),
-    'Drive the rover (without rover: move the view)': ('Rover fahren (ohne Rover: Ansicht bewegen)', 'Conduire le rover (sans rover : déplacer la vue)', 'Guidare il rover (senza rover: muovere la vista)', 'Manischar il rover (senza rover: muventar la vista)'),
+    'Drive the mover (without mover: move the view)': ('Mover fahren (ohne Mover: Ansicht bewegen)', 'Conduire le mover (sans mover : déplacer la vue)', 'Guidare il mover (senza mover: muovere la vista)', 'Manischar il mover (senza mover: muventar la vista)'),
     'Hold R1: turn the view': ('R1 halten: Ansicht drehen', 'Maintenir R1 : tourner la vue', 'Tenere R1: ruotare la vista', 'Tegnair R1: volver la vista'),
     'Shutter in a game round (otherwise zoom in)': ('Auslöser in einer Spielrunde (sonst hineinzoomen)', 'Déclencheur pendant une manche (sinon zoom avant)', 'Scatto in una manche (altrimenti zoom avanti)', 'Releschader en ina runda da gieu (uschiglio zoom enavant)'),
     'Zoom out': ('Herauszoomen', 'Zoom arrière', 'Zoom indietro', 'Zoom enavos'),
@@ -33,7 +33,7 @@ _HX_pad2 = {
     'Pause menu · start the round': ('Pause-Menü · Runde starten', 'Menu pause · lancer la manche', 'Menu pausa · avviare la manche', 'Menu da pausa · cumenzar la runda'),
     'Hold 1 s: leave the game': ('1 s halten: Spiel verlassen', 'Maintenir 1 s : quitter le jeu', 'Tenere 1 s: lasciare il gioco', 'Tegnair 1 s: bandunar il gieu'),
     'Head in steps · menus: choose': ('Kopf in Schritten · Menüs: wählen', 'Tête par pas · menus : choisir', 'Testa a passi · menu: scegliere', 'Chau en pass · menus: tscherner'),
-    'Drive the rover': ('Rover fahren', 'Conduire le rover', 'Guidare il rover', 'Manischar il rover'),
+    'Drive the mover': ('Mover fahren', 'Conduire le mover', 'Guidare il mover', 'Manischar il mover'),
     '«Found!»': ('«Gefunden!»', '« Trouvé ! »', '«Trovato!»', '«Chattà!»'),
     'Look around': ('Umschauen', 'Regarder autour', 'Guardarsi intorno', 'Guardar enturn'),
     'Walk': ('Gehen', 'Marcher', 'Camminare', 'Ir'),
@@ -52,20 +52,20 @@ _HX_pad2 = {
     'everything': ('alles', 'tout', 'tutto', 'tut'),
     'guard (head)': ('Wächter (Kopf)', 'gardien (tête)', 'guardiano (testa)', 'guardian (chau)'),
     'sneaker': ('Schleicher', 'furtif', 'furtivo', 'sfugider'),
-    'rover': ('Rover', 'rover', 'rover', 'rover'),
+    'mover': ('Mover', 'mover', 'mover', 'mover'),
     # 538 / 470 (Controller-Ansicht, simulator page)
     'Controllers': ('Controller', 'Manettes', 'Controller', 'Controllers'),
     'Head': ('Kopf', 'Tête', 'Testa', 'Chau'),
-    'Rover': ('Rover', 'Rover', 'Rover', 'Rover'),
+    'Mover': ('Mover', 'Mover', 'Mover', 'Mover'),
     'Settings': ('Einstellungen', 'Réglages', 'Impostazioni', 'Parameters'),
     'Dead zone': ('Totzone', 'Zone morte', 'Zona morta', 'Zona morta'),
     'Sensitivity': ('Empfindlichkeit', 'Sensibilité', 'Sensibilità', 'Sensibilitad'),
     'Invert Y (look)': ('Y umkehren (schauen)', 'Inverser Y (regard)', 'Invertire Y (sguardo)', 'Invertir Y (guardar)'),
     'Swap the sticks': ('Sticks tauschen', 'Échanger les sticks', 'Scambiare gli stick', 'Barattar ils sticks'),
     'Vibration': ('Vibration', 'Vibration', 'Vibrazione', 'Vibraziun'),
-    'Start = menu of the simulator, left stick = head, right stick = rover': (
-        'Start = Menü des Simulators, linker Stick = Kopf, rechter Stick = Rover', 'Start = menu du simulateur, stick gauche = tête, stick droit = rover',
-        'Start = menu del simulatore, stick sinistro = testa, stick destro = rover', 'Start = menu dal simulatur, stick sanester = chau, stick dretg = rover'),
+    'Start = menu of the simulator, left stick = head, right stick = mover': (
+        'Start = Menü des Simulators, linker Stick = Kopf, rechter Stick = Mover', 'Start = menu du simulateur, stick gauche = tête, stick droit = mover',
+        'Start = menu del simulatore, stick sinistro = testa, stick destro = mover', 'Start = menu dal simulatur, stick sanester = chau, stick dretg = mover'),
 }
 for _k, _v in _HX_pad2.items():
     DE.setdefault(_k, _v[0])

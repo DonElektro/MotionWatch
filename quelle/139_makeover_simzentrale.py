@@ -148,7 +148,7 @@ SIMHUB_JS = r"""
     "Learning pictures checked": "Lernbilder geprüft", "moved to «doubtful»": "nach «zweifel» verschoben",
     "stays quiet": "bleibt ruhig", "alarm(s) – pictures kept for the training": "Alarm(e) – Bilder fürs Training behalten", "Every Sunday night": "Jeden Sonntag in der Nacht",
     "week-note": "Sonntags zur Stunde des Nacht-Tests ein Testlauf «standard». Ist er klar schlechter als letzte Woche, kommt ein Push.", "2nd device": "2. Gerät", "P_opposite": "gegenüber", "P_door": "bewacht Zelt / Tür", "P_bike": "bewacht Velo",
-    "P_car": "bewacht Auto", "P_left": "links", "P_right": "rechts", "Rover": "Rover", "M_alarm": "fährt zum Alarm", "M_dock": "fährt zur Ladestation", "M_goto": "fährt hin",
+    "P_car": "bewacht Auto", "P_left": "links", "P_right": "rechts", "Mover": "Mover", "M_alarm": "fährt zum Alarm", "M_dock": "fährt zur Ladestation", "M_goto": "fährt hin",
     "patrols": "patrouilliert", "charging": "lädt", "ready": "bereit", "Statistics & versions": "Statistik & Versionen", "4 weeks, per version": "4 Wochen, pro Version",
     "Second device in the simulator": "Zweites Gerät im Simulator", "dev-note": "Ein zweites MoveEye verbindet sich mit Port 8785 des Simulators (z. B. eine zweite Kopie auf dem PC). Unter Kameras → Geräte hinzufügen: dann meldet MoveEye die Übergabe, wenn eine Person von einem Gerät zum anderen geht.",
     "Patrol": "Patrouille", "Drive to the alarm": "Zum Alarm fahren", "To the charger": "Zur Ladestation", "At a person alarm: drive there by itself": "Bei Personen-Alarm von selbst hinfahren",

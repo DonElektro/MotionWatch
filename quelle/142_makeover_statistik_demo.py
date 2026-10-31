@@ -27,7 +27,7 @@ def rover_on_alarm(kind):
     def go():
         try:
             sim_control({"action": "rover", "do": "alarm"})
-            log_event("sys", "Rover drives to the alarm")
+            log_event("sys", "Mover drives to the alarm")
         except Exception:
             pass
     threading.Thread(target=go, daemon=True).start()

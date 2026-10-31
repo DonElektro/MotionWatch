@@ -616,6 +616,15 @@ def osm_link(lat, lon):
     return f"https://www.openstreetmap.org/?mlat={lat:.5f}&mlon={lon:.5f}#map=17/{lat:.5f}/{lon:.5f}"
 
 
+def gps_map_link():
+    """the map link of the device's own position (GPS module or the simulator's GPS, a fix of the last 5 minutes) for the
+    sabotage alarms «device moved / knocked over / power cut» (060) - '' without a fresh fix (Paket «Diebstahl-Kartenlink»)"""
+    g = GPSMOD
+    if not CFG.get("gpsmod_on") or g.get("lat") is None or time.time() - float(g.get("t") or 0) > 300:
+        return ""
+    return osm_link(g["lat"], g["lon"])
+
+
 def gps_theft_check():
     """Armed: the first position is the anchor. Further away than gps_theft_m twice in a row = carried away."""
     g = GPSMOD; now = time.time()
