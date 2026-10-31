@@ -7,7 +7,7 @@ extends Node
 ##     Fortschritt in %, «Weiterspielen» und «Neu beginnen».
 ##   * Bild = ein Ausschnitt aus der Geschichte selbst, im Simulator gerendert: Grossvater = das neueste Tagebuchbild (sonst
 ##     die alte Schatzkarte, wie sie im Spiel aussieht), Maggie = ein Bild aus der zuletzt gespielten Region (einmal pro Region
-##     beim Spielen aufgenommen, user://geschichten/maggie.jpg), Hospiz = die neueste «Aufnahme» von MoveEye. Solange es noch
+##     beim Spielen aufgenommen, user://geschichten/maggie.jpg, Platz 2/3 im Ordner des Spielstands), Hospiz = die neueste «Aufnahme» von MoveEye. Solange es noch
 ##     keines gibt: eine kleine gezeichnete Szene (_draw, kein fremdes Bild).
 ##   * «Das Hospiz»: nur für den Besitzer (devtool.is_owner - wie das Entwicklertool: nie im Kinder-Modus), mit Schloss: zum
 ##     Öffnen fragt das Spiel nach dem Passwort (bergtal_horror.gd open_locked - Prüfung, Hash, Widmung, Warnung unverändert).
@@ -222,8 +222,9 @@ func _snap_maggie() -> void:
 	var h := img.get_height()
 	img = img.get_region(Rect2i(int(w * 0.18), int(h * 0.16), int(w * 0.64), int(h * 0.56)))
 	img.resize(480, int(480.0 * img.get_height() / maxf(1.0, img.get_width())), Image.INTERPOLATE_BILINEAR)
-	DirAccess.make_dir_recursive_absolute(PIC_DIR)
-	img.save_jpg(PIC_DIR + "/maggie.jpg", 0.82)
+	var mp := SS.path_maggie_pic()                               # per Spielstand (place 1 = PIC_DIR/maggie.jpg)
+	DirAccess.make_dir_recursive_absolute(mp.get_base_dir())
+	img.save_jpg(mp, 0.82)
 	_tex.erase("maggie")
 
 
@@ -235,7 +236,7 @@ func _pic_image(id: String) -> Array:
 			if p != "":
 				return [p + str(FileAccess.get_modified_time(p)), p]
 		"maggie":
-			var p := PIC_DIR + "/maggie.jpg"
+			var p := SS.path_maggie_pic()
 			if FileAccess.file_exists(p):
 				return [p + str(FileAccess.get_modified_time(p)), p]
 		"horror":

@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.6.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.6.1 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -370,6 +370,9 @@ MoveEyeSim3D.exe -- --port 8766 --hour 22.5 --quality simple --stream --scene wa
   --win X,Y,BREITE,HOEHE: Fenster an diese Stelle und in diese Grösse
   --mini: gleich als kleines Kästchen in der Ecke starten (--mini-tiny: als kleines Symbol)
   --maximized: gleich als grosses Fenster starten
+  --fernsteuerung-offen: nur für Testläufe von einem anderen Rechner - sonst nehmen Werksrücksetzung, «Spieltest löschen»,
+    Horror-Passwort festlegen und die Entwickler-Seiten /dev/… nur Befehle von diesem PC oder vom verbundenen MoveEye an
+    (gleich: Umgebungsvariable MWSIM_FERNSTEUERUNG_OFFEN=1)
 
 COMPUTERNAME (ab 3D-3.17)
 - Der Simulator schickt den Namen dieses Computers mit. MoveEye (ab 2.95.1) zeigt ihn in der Liste
@@ -422,6 +425,14 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.6.1
+3.6.1: Simulator sicherer: Werksrücksetzung, Spieltest-Löschen und Horror-Passwort gehen nicht mehr von fremden Geräten im
+WLAN. Entwickler-Notizen sind nicht mehr von aussen abrufbar. Hospiz-Rätsel und Maggie-Bild gelten pro Spielstand. Der
+Kapitel-Sprung-Test verändert keinen echten Spielstand mehr. Werksrücksetzung: sicherer Neustart, nur die letzten 3 Kopien
+bleiben, die Parcours-Lernbilder bleiben erhalten.
+So testest du: 1) Kapitel-Sprung Horror, danach Test beenden: der Fortschritt bleibt unverändert. 2) Mehr → Zurücksetzen:
+die Sprache steht unter «bleibt».
 
 NEU IN 3.6.0
 3.6.0: Weniger Fehlalarme: MoveEye erkennt Dinge, die wie eine Person aussehen (z. B. eine Fichte) und fragt «ignorieren?» –

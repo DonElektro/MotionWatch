@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 17:02",
+ "generated": "2026-10-31 17:10",
  "versions": [
   {
-   "version": "3.6.0",
-   "file": "webcam_bewegung_3_6_0.py",
+   "version": "3.6.1",
+   "file": "webcam_bewegung_3_6_1.py",
    "url": "",
-   "sha256": "7e4c5ed32bbdfb9b702834d4ffc73738edbb32546e6e17031929d898bfed01c1",
-   "date": "2026-10-31 17:02",
-   "notes": "Weniger Fehlalarme: Dinge, die wie eine Person aussehen (z. B. eine Fichte), lösen die Frage «ignorieren?» aus, der Kopf folgt ignorierten Dingen nicht; warme Motoren sind keine «Person (Wärmebild)»; ein von der KI erkanntes Tier bleibt ein Tier.",
-   "sig": "f57987ca29832b24569464ca142a1e09801be965ddf7e5efdc530557065778a945e8f2ceda1f1595f32cfc3bff9ac62abb9e161d9cebb8f64ef0da2fc737fd09"
+   "sha256": "1275c1a699c79e6421fa30439e9eecc75b33ac92be7b0223c2f91c1d8b034b60",
+   "date": "2026-10-31 17:10",
+   "notes": "Simulator sicherer: gefährliche Steuerbefehle nur von diesem PC oder vom verbundenen MoveEye; Hospiz-Rätsel und Maggie-Bild pro Spielstand; Kapitel-Sprung-Test ohne echten Spielstand; Werksrücksetzung mit sicherem Neustart, 3 Kopien, Parcours-Lernbilder bleiben.",
+   "sig": "a0e2f1a58e538b84caccf6f0b6bf6a32edf7881acb27d375deef5f0a0d18e3f140cfd5cafeb30584fd11b0aa7f6bbcd096209ffb86d400e711b83b40e0a45404"
   },
   {
    "version": "3.5.0",
