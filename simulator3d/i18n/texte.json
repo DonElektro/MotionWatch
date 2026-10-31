@@ -8108,6 +8108,12 @@
   "it": "Lo sci di legno nel ghiacciaio",
   "rm": "Il skis da lain en il glatscher"
  },
+ "Der Horror-Modus ist gesperrt.": {
+  "en": "The horror mode is locked.",
+  "fr": "Le mode horreur est verrouillé.",
+  "it": "La modalità horror è bloccata.",
+  "rm": "Il modus da horror è bloccà."
+ },
  "Der Horror-Modus ist im Kinder-Modus gesperrt.": {
   "en": "The horror mode is locked in kids mode.",
   "fr": "Le mode horreur est bloqué en mode enfants.",
@@ -9728,6 +9734,12 @@
   "fr": "Choses",
   "it": "Cose",
   "rm": "Chaussas"
+ },
+ "do: info | open | set_password | unlock | ohne_passwort | sperren | start | go | skip | beat | choose | pause | resume | clips | clip | stop": {
+  "en": "do: info | open | set_password | unlock | ohne_passwort | sperren | start | go | skip | beat | choose | pause | resume | clips | clip | stop",
+  "fr": "do: info | open | set_password | unlock | ohne_passwort | sperren | start | go | skip | beat | choose | pause | resume | clips | clip | stop",
+  "it": "do: info | open | set_password | unlock | ohne_passwort | sperren | start | go | skip | beat | choose | pause | resume | clips | clip | stop",
+  "rm": "do: info | open | set_password | unlock | ohne_passwort | sperren | start | go | skip | beat | choose | pause | resume | clips | clip | stop"
  },
  "do: info | open | set_password | unlock | start | go | skip | beat | choose | pause | resume | clips | clip | stop": {
   "en": "do: info | open | set_password | unlock | start | go | skip | beat | choose | pause | resume | clips | clip | stop",
@@ -25200,6 +25212,12 @@
   "it": "Solo uno. Dove sarà l'altro?",
   "rm": "Mo in. Nua è bain l'auter?"
  },
+ "Nur für den Besitzer (nicht im Kinder-Modus). Das Passwort bleibt, die Warnung kommt trotzdem.": {
+  "en": "Only for the owner (not in kids mode). The password stays, the warning still comes.",
+  "fr": "Uniquement pour le propriétaire (pas en mode enfants). Le mot de passe reste, l'avertissement s'affiche quand même.",
+  "it": "Solo per il proprietario (non nella modalità bambini). La password resta, l'avviso appare comunque.",
+  "rm": "Mo per il possessur (betg en il modus d'uffants). Il pled-clav resta, l'avertiment vegn tuttina."
+ },
  "Nur für den Besitzer – nicht im Kinder-Modus.": {
   "en": "Only for the owner – not in the children’s mode.",
   "fr": "Seulement pour le propriétaire – pas en mode enfants.",
@@ -25535,6 +25553,12 @@
   "fr": "Sans MoveEye, la tête surveille toute seule",
   "it": "Senza MoveEye la testa sorveglia da sola",
   "rm": "Senza MoveEye surveglia il chau sez"
+ },
+ "Ohne Passwort starten": {
+  "en": "Start without password",
+  "fr": "Démarrer sans mot de passe",
+  "it": "Avvia senza password",
+  "rm": "Cumenzar senza pled-clav"
  },
  "Ohne Pi: MoveEye auf diesem PC starten": {
   "en": "Without Pi: start MoveEye on this PC",
