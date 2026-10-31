@@ -73,7 +73,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `210_demo.py` | Demo-Modus | 255 |
 | `220_zeitraffer.py` | Zeitraffer | 195 |
 | `230_waermebild.py` | Wärmebild-Überlagerung, Nachtsicht, Easter Egg (Herz) | 349 |
-| `232_waermebild_person.py` | Personen im Wärmebild (nachts, wenn die Kamera nichts sieht) | 105 |
+| `232_waermebild_person.py` | Personen im Wärmebild (nachts, wenn die Kamera nichts sieht); Fusspunkt-Prüfung: Reh / Fuchs frontal = Tier statt Person | 200 |
 | `240_audio.py` | Mikrofon, Geräusch-Alarm | 81 |
 | `250_klatschen_bluetooth_ton.py` | Klatschschalter, Bluetooth, Lautsprecher, Sprachausgabe | 1131 |
 | `255_wecker.py` | Wecker mit Schlafplatz: wegschauen, wecken, Gesten (winken / aufstehen) | 330 |

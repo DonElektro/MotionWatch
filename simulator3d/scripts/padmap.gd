@@ -792,7 +792,7 @@ const JS := r"""window.MWPad = window.MWPad || (function () {
               ["select", "swap", "Swap pictures / views", "Bilder / Ansichten tauschen"],
               ["start", "menu", "Menu (control panel)", "Menü (Bedienfeld)"], ["start_long", "exit", "Hold 1 s: leave", "1 s halten: beenden"],
               ["dpad", "head", "Head in small steps", "Kopf in kleinen Schritten"],
-              ["l2", "pole", "Hold L2 + ✚ ↑↓: pole longer / shorter", "L2 halten + ✚ ↑↓: Stange länger / kürzer"]],
+              ["l2", "pole", "Hold L2 + ✚ ↑↓: camera higher / lower", "L2 halten + ✚ ↑↓: Höhe der Kamera + / −"]],
       "view": [["ls", "head", "Turn / tilt the head of MoveEye", "Kopf von MoveEye drehen / neigen"],
                ["rs", "drive", "Drive the rover (without rover: move the view)", "Rover fahren (ohne Rover: Ansicht bewegen)"],
                ["r1rs", "orbit", "Hold R1: turn the view", "R1 halten: Ansicht drehen"],

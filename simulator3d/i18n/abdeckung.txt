@@ -4,7 +4,7 @@ Texte gesamt: 5098 (Stellen: 7070)
 Übersetzt: en 5098, fr 5098, it 5098, rm 5098
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 383 Stellen
-Nicht mehr im Code (noch in texte.json): 56
+Nicht mehr im Code (noch in texte.json): 66
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 56 Stellen in wizpics.gd 21, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, main.gd 1, phone.gd 1
 Übersprungen (Grund: Anzahl): kennung 18155, schlüssel 12906, keine Wörter 8270, index 6498, technisch 2362, doc 1490, einheit 201, englisch 90, log 78, pfad 66, html 56, klasse 23, shader 4
 

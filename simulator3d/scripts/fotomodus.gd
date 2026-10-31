@@ -658,7 +658,7 @@ func add_controls() -> void:
 	var sub := {"sub": "Foto des Platzes"}
 	m.add_control("toggle", "fm_on", "Foto-Modus: das Foto ist die Welt – die MoveEye-Kamera sieht das echte Foto, die Figuren laufen davor",
 			func(): return on, func(v): set_on(bool(v)), "Szene", sub)
-	m.add_control("slider", "fm_h", "Foto-Modus: Kamerahöhe beim Foto (= Stangenlänge)", func(): return float(gv("fm_h", main.mast_h)),
+	m.add_control("slider", "fm_h", "Foto-Modus: Höhe der Kamera beim Foto", func(): return float(gv("fm_h", main.mast_h)),
 			func(v): set_val("fm_h", float(v)), "Szene", {"sub": "Foto des Platzes", "min": main.MAST_MIN, "max": main.MAST_MAX, "step": 0.05, "unit": "m"})
 	m.add_control("slider", "fm_hz", "Foto-Modus: Horizont im Foto (0 = oben, 100 = unten; im Fenster per Klick)",
 			func(): return float(photos()[0].get("fm_hz", 0.5)) * 100.0 if not photos().is_empty() else 50.0,
