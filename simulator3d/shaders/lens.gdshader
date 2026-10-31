@@ -17,8 +17,22 @@ uniform float web_lit = 0.0;        // 0..1 at night the lamp / infrared light m
 uniform float sway = 0.0;
 uniform float fogged = 0.0;         // 3D-3.75: 0..1 the lens is fogged up (dew): a milky veil, stronger at the edges
 uniform float dirt = 0.0;           // 3D-3.75: 0..1 dirt / pollen spots on the lens           // 0..1 the wind moves the web and the branches in front of the sun
+// Paket «Erlebniswelt: mehr Tiere drinnen» (zimmertiere.gd): a house spider a few cm in front of the lens - far out of focus
+// (Camera Module 3 focuses from 10 cm). Drawn here, not in 3D: the cameras cut off everything nearer than 0.1 m and do not blur.
+uniform float spider = 0.0;         // 0..1 how much of it is seen (0 = none: the block is skipped)
+uniform vec2 sp_c = vec2(0.5);      // its centre (uv)
+uniform float sp_k = 10.0;          // metres -> picture heights at its distance
+uniform vec2 sp_dir = vec2(0.0, 1.0); // its heading in the picture (uv, y down)
+uniform float sp_blur = 0.01;       // blur radius (picture heights): circle of confusion of the lens
+uniform float sp_lit = 0.0;         // 1 = lit by the infrared / white light of MoveEye (over-exposed), 0 = dark silhouette
+uniform float sp_leg = 0.0;         // gait phase (rad)
+uniform float sp_squash = 1.0;      // seen from the side (dangling, turning): narrower
+uniform float sp_thread = 0.0;      // the silk thread above it (dangling)
+uniform float sp_size = 1.0;        // 1 = female Eratigena atrica (body 18 mm, legs 45 mm)
 
 float seg(vec2 p, vec2 a, vec2 b) { vec2 pa = p - a, ba = b - a; float t = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0); return length(pa - ba * t); }
+
+float ell(vec2 p, vec2 r) { return (length(p / r) - 1.0) * min(r.x, r.y); }   // ellipse, roughly a distance
 
 float h(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 // 3D-3.33: grain without sin() - with a growing TIME the old hash lost precision and drew horizontal streaks
@@ -78,6 +92,45 @@ void fragment() {
 		float na3 = wa + al * (1.0 - wa);
 		c = (wc * wa + c * al * (1.0 - wa)) / max(na3, 0.0001);
 		al = na3;
+	}
+	// house spider in front of the lens (zimmertiere.gd): body and legs in metres, blurred by the circle of confusion - thin
+	// legs fade to a ghost, the body stays a soft blob; at night the infrared LEDs a few cm away make it glow white
+	if (spider > 0.0) {
+		vec2 asp = vec2(res.x / res.y, 1.0);
+		vec2 qq = uv * asp - sp_c * asp;                    // picture heights from its centre
+		vec2 fw = normalize(sp_dir + vec2(0.0, 1e-5));
+		vec2 q = vec2(dot(qq, vec2(-fw.y, fw.x)), dot(qq, fw)) / sp_k / sp_size;   // metres along its body (+y = forward)
+		q.x /= max(sp_squash, 0.25);
+		float b = max(sp_blur / sp_k / sp_size, 1e-5);     // blur radius in metres
+		float sa = 0.0;
+		if (length(q) < 0.03 + 2.5 * b) {
+			float bd = min(ell(q - vec2(0.0, 0.0045), vec2(0.0034, 0.0042)), ell(q - vec2(0.0, -0.0058), vec2(0.0044, 0.006)));
+			float ab = (1.0 - smoothstep(-b, b, bd)) * (0.0042 / (0.0042 + 0.55 * b));
+			float dl = 1e3;
+			for (int k = 0; k < 8; k++) {
+				float sd = k < 4 ? 1.0 : -1.0;
+				float j = float(k % 4);
+				float sw = sin(sp_leg + j * 1.5708 + (sd > 0.0 ? 0.0 : 3.1416)) * 0.2;   // alternating legs
+				float an = 0.5 + j * 0.62 + sw;                  // from forward: 29°, 64°, 100°, 135°
+				vec2 a0 = vec2(sd * 0.0028, 0.0055 - j * 0.0012);
+				vec2 a1 = a0 + vec2(sd * sin(an), cos(an)) * (0.0085 + 0.0012 * j);
+				float an2 = an + 0.35 * (j < 2.0 ? -1.0 : 1.0);
+				vec2 a2 = a1 + vec2(sd * sin(an2), cos(an2)) * (0.012 + 0.0015 * j);
+				dl = min(dl, min(seg(q, a0, a1), seg(q, a1, a2)));
+			}
+			float alg = (1.0 - smoothstep(0.0, b + 0.00035, dl)) * clamp(0.0011 / (0.0011 + 1.6 * b), 0.04, 1.0);
+			sa = max(ab, alg);
+			sa = max(sa, (1.0 - smoothstep(0.0, 2.0 * b + 0.004, bd)) * 0.35 * sp_lit);   // over-exposed: a halo round it
+		}
+		float tth = 0.0;
+		if (sp_thread > 0.0 && qq.y < 0.0) {
+			tth = (1.0 - smoothstep(0.0, sp_blur + 0.0015, abs(qq.x))) * mix(0.05, 0.3, sp_lit) * sp_thread;
+		}
+		float sa2 = clamp(max(sa, tth) * spider, 0.0, 0.97);
+		vec3 sc = mix(vec3(0.09, 0.07, 0.055) * max(0.35, expo), vec3(0.97, 0.97, 0.96), sp_lit);
+		float na7 = sa2 + al * (1.0 - sa2);
+		c = (sc * sa2 + c * al * (1.0 - sa2)) / max(na7, 0.0001);
+		al = na7;
 	}
 	// low sun: a bright veil (less contrast), the sun as a big spot, ghosts along the line through the middle; branches in
 	// front of the sun make the light flicker (a classic cause of false alarms)

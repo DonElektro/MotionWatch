@@ -3913,6 +3913,12 @@
   "it": "Sulla mappa",
   "rm": "Sin la charta"
  },
+ "Auf der Kommode beim Eingang raschelt es nachts.": {
+  "en": "Something rustles on the chest of drawers by the door at night.",
+  "fr": "La nuit, ça froufroute sur la commode près de l'entrée.",
+  "it": "Di notte qualcosa fruscia sul cassettone vicino all'entrata.",
+  "rm": "La notg tschuvrescha insatge sin la cumoda sper l'entrada."
+ },
  "Auf der Restaurant-Terrasse sollte man die Pommes nicht allein lassen.": {
   "en": "On the restaurant terrace you should not leave your fries alone.",
   "fr": "Sur la terrasse du restaurant, mieux vaut ne pas laisser ses frites seules.",
@@ -9597,6 +9603,12 @@
   "it": "Stamattina un camoscio stava sul tetto dell'ospizio. Così, senza motivo.",
   "rm": "Questa damaun steva in chamutsch sin il tetg da l'ospizi. Simplamain uschia."
  },
+ "Eine Hauswinkelspinne seilt sich direkt vor MoveEyes Kamera ab – unscharf und nachts im Infrarot hell: ein klassischer Fehlalarm.": {
+  "en": "A house spider abseils right in front of MoveEye's camera – blurred, and bright in the infrared at night: a classic false alarm.",
+  "fr": "Une tégénaire descend au bout de son fil juste devant la caméra de MoveEye – floue, et claire la nuit dans l'infrarouge : une fausse alarme classique.",
+  "it": "Un ragno domestico si cala proprio davanti alla telecamera di MoveEye – sfocato e di notte chiaro nell'infrarosso: un classico falso allarme.",
+  "rm": "In aragn da chasa sa lascha giu directamain davant la camera da MoveEye – nunscharia e la notg cler en l'infracotschen: in fauss alarm classic."
+ },
  "Eine Kuh hat mir heute fast eine Socke gestohlen. Pass auf deine Schuhe auf!": {
   "en": "A cow almost stole one of my socks today. Watch your shoes!",
   "fr": "Une vache a failli me voler une chaussette aujourd'hui. Fais attention à tes chaussures !",
@@ -10082,6 +10094,12 @@
   "fr": "Elle scintille au soleil. Lourde, mais belle.",
   "it": "Brilla al sole. Pesante, ma bella.",
   "rm": "El sbrinzla al sulegl. Grev, ma bel."
+ },
+ "Er hüpft von Stange zu Stange, flattert und pickt ans Glöckchen. Nachts schläft er aufgeplustert.": {
+  "en": "He hops from perch to perch, flutters and pecks at the little bell. At night he sleeps all fluffed up.",
+  "fr": "Il saute de perchoir en perchoir, bat des ailes et picore la clochette. La nuit, il dort tout ébouriffé.",
+  "it": "Salta da un posatoio all'altro, sbatte le ali e becca il campanellino. Di notte dorme tutto arruffato.",
+  "rm": "El siglia da stanga a stanga, sbatta cun las alas e piclia vi da la stgaletta. La notg dorma el tut sgarbatschà."
  },
  "Er klopft vorsichtig am Fels. «Kristalle findet man, wo Quarzbänder sind.»": {
   "en": "He knocks carefully on the rock. «You find crystals where there are bands of quartz.»",
@@ -13632,6 +13650,12 @@
   "it": "Tieni d'occhio l'immagine termica (in alto a destra). Con «Esplora» puoi girare con la lampada frontale.",
   "rm": "Tegna en egl il maletg termic (si a dretga). Cun «Explorar» pos ti ir enturn cun la lampa da frunt."
  },
+ "Hamster im Laufrad": {
+  "en": "Hamster in the wheel",
+  "fr": "Hamster dans sa roue",
+  "it": "Criceto nella ruota",
+  "rm": "Hamster en la roda"
+ },
  "Handicap für den Ersten der Rangliste": {
   "en": "Handicap for the leader of the ranking",
   "fr": "Handicap pour le premier du classement",
@@ -13775,6 +13799,12 @@
   "fr": "Maison, jardin et chantier – veiller à la maison.",
   "it": "Casa, giardino e cantiere – sorvegliare a casa.",
   "rm": "Chasa, iert e plazza da construcziun – far attenziun a chasa."
+ },
+ "Haustiere im Schlafzimmer: Hamster (nachts im Laufrad) und Wellensittich (am Tag)": {
+  "en": "Pets in the bedroom: hamster (in the wheel at night) and budgie (by day)",
+  "fr": "Animaux dans la chambre : hamster (la nuit dans sa roue) et perruche (le jour)",
+  "it": "Animali in camera da letto: criceto (di notte nella ruota) e pappagallino (di giorno)",
+  "rm": "Animals da chasa en la stanza da durmir: hamster (la notg en la roda) e papagalin (di)"
  },
  "Head": {
   "en": "Head",
@@ -15126,6 +15156,12 @@
   "fr": "Bloqué en mode enfants.",
   "it": "Bloccato in modalità bambini.",
   "rm": "Bloccà en il modus d'uffants."
+ },
+ "Im Käfig in der Ecke beim Eingang ist am Tag viel los.": {
+  "en": "By day there's a lot going on in the cage in the corner by the door.",
+  "fr": "Le jour, il y a de l'animation dans la cage dans le coin près de l'entrée.",
+  "it": "Di giorno nella gabbia nell'angolo vicino all'entrata c'è molto movimento.",
+  "rm": "Di è bler moviment en la chabgia en il chantun sper l'entrada."
  },
  "Im Moment brauche ich nichts. Danke!": {
   "en": "I don't need anything right now. Thanks!",
@@ -20471,6 +20507,12 @@
   "it": "Di notte qualcosa sbatacchia vicino ai rifiuti del prato delle tende …",
   "rm": "La notg tschanchetga insatge tar ils rumients dal prà da tendas …"
  },
+ "Nachts kommt von der Decke manchmal jemand mit acht Beinen ganz nah an MoveEye.": {
+  "en": "At night someone with eight legs sometimes comes down from the ceiling very close to MoveEye.",
+  "fr": "La nuit, quelqu'un à huit pattes descend parfois du plafond tout près de MoveEye.",
+  "it": "Di notte a volte qualcuno con otto zampe scende dal soffitto vicinissimo a MoveEye.",
+  "rm": "La notg vegn mintgatant insatgi cun otg chommas giu da la plafond fitg datiers da MoveEye."
+ },
  "Nachts leuchten in der kleinen Höhle grüne Pünktchen. Kaltes Licht: das Wärmebild sieht sie nicht.": {
   "en": "At night little green dots glow in the small cave. Cold light: the thermal picture does not see them.",
   "fr": "La nuit, de petits points verts brillent dans la petite grotte. Lumière froide : l’image thermique ne les voit pas.",
@@ -20488,6 +20530,12 @@
   "fr": "la nuit, la lumière infrarouge porte à environ %d m",
   "it": "di notte la luce infrarossa arriva a circa %d m",
   "rm": "da notg tanscha la glisch infracotschna circa %d m"
+ },
+ "Nachts rennt der Hamster im Laufrad – stundenlang kleine Bewegung. MoveEye soll deswegen keinen Alarm geben.": {
+  "en": "At night the hamster runs in its wheel – small movement for hours. MoveEye should not raise an alarm because of it.",
+  "fr": "La nuit, le hamster court dans sa roue – de petits mouvements pendant des heures. MoveEye ne doit pas donner l'alarme pour ça.",
+  "it": "Di notte il criceto corre nella ruota – piccoli movimenti per ore. MoveEye non deve dare l'allarme per questo.",
+  "rm": "La notg curra il hamster en la roda – pitschen moviment durant uras. MoveEye na duai betg dar alarm pervia da quai."
  },
  "Nachts schläft jemand im Zelt (schwacher warmer Fleck an der Zeltwand)": {
   "en": "At night someone sleeps in the tent (faint warm patch on the tent wall)",
@@ -21485,6 +21533,12 @@
   "fr": "Visible seulement dans la fenêtre, jamais dans l'image de MoveEye. Déclencheurs d'horreur seulement si «L'Hospice» est déverrouillé.",
   "it": "Visibile solo nella finestra, mai nell'immagine di MoveEye. Attivatori horror solo se «L'Ospizio» è sbloccato.",
   "rm": "Mo visibel en la fanestra, mai en il maletg da MoveEye. Activaturs da horror mo sche «L'Ospizi» è avert."
+ },
+ "nur in der Szene Schlafzimmer": {
+  "en": "only in the Bedroom scene",
+  "fr": "seulement dans la scène Chambre",
+  "it": "solo nella scena Camera da letto",
+  "rm": "mo en la scena Stanza da durmir"
  },
  "Nur Kuhglocken im Nebel, plötzlich eine Kuh": {
   "en": "Only cowbells in the fog, suddenly a cow",
@@ -25536,6 +25590,24 @@
   "it": "Obiettivo del gioco",
   "rm": "Finamira dal gieu"
  },
+ "Spinne im Schlafzimmer (krabbelt an Wand und Decke, seilt sich manchmal vor der Linse ab)": {
+  "en": "Spider in the bedroom (crawls on wall and ceiling, sometimes abseils in front of the lens)",
+  "fr": "Araignée dans la chambre (marche sur le mur et le plafond, descend parfois devant l'objectif)",
+  "it": "Ragno in camera da letto (cammina su pareti e soffitto, a volte si cala davanti all'obiettivo)",
+  "rm": "Aragn en la stanza da durmir (rampluna sin paraid e plafond, sa lascha mintgatant giu davant l'objectiv)"
+ },
+ "Spinne vor der Linse": {
+  "en": "Spider in front of the lens",
+  "fr": "Araignée devant l'objectif",
+  "it": "Ragno davanti all'obiettivo",
+  "rm": "Aragn davant l'objectiv"
+ },
+ "Spinne vor die Linse – jetzt (Fehlalarm-Test, Szene Schlafzimmer)": {
+  "en": "Spider in front of the lens – now (false alarm test, Bedroom scene)",
+  "fr": "Araignée devant l'objectif – maintenant (test de fausse alarme, scène Chambre)",
+  "it": "Ragno davanti all'obiettivo – ora (test falso allarme, scena Camera da letto)",
+  "rm": "Aragn davant l'objectiv – ussa (test da fauss alarm, scena Stanza da durmir)"
+ },
  "Spinnennetz": {
   "en": "Spider web",
   "fr": "Toile d’araignée",
@@ -29492,6 +29564,12 @@
   "fr": "Quel jeu ?",
   "it": "Quale gioco?",
   "rm": "Tge gieu?"
+ },
+ "Wellensittich": {
+  "en": "Budgie",
+  "fr": "Perruche ondulée",
+  "it": "Pappagallino ondulato",
+  "rm": "Papagalin undulà"
  },
  "Welt": {
   "en": "World",

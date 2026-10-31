@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.71
+3D-4.71: Szene Schlafzimmer: Hamster im Laufrad (nachts), Wellensittich im Käfig, Hauswinkelspinne an Wand und Decke, die
+sich nachts vor die Linse abseilt. Das sind gute Fehlalarm-Tests. Knopf unter Wildtier: «Spinne vor die Linse – jetzt».
+So testest du: 1) Schlafzimmer, 23 Uhr. 2) Wildtier → «Spinne vor die Linse – jetzt». 3) MoveEye verbinden, Alarm
+beobachten.
+
 NEU IN 3D-4.70
 3D-4.70: Bergtal-Abenteuer: Leute im Tal (Älpler Sepp, Sennerin Vreni, Hüttenwartin Anna, Wildhüter Ruedi, wechselnde
 Wanderer und Bergsteiger), Gespräche mit Antwortwahl, die Figuren erinnern sich, mit dem Hut erzählen sie mehr.
