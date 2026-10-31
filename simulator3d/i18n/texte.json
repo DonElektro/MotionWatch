@@ -1536,6 +1536,12 @@
   "it": "1/3 pacchetto: ",
   "rm": "1/3 pachet: "
  },
+ "14.7. Endlich oben! Die Murmeltiere waren schneller. – Ruedi": {
+  "en": "14.7. Finally at the top! The marmots were faster. – Ruedi",
+  "fr": "14.7. Enfin au sommet ! Les marmottes étaient plus rapides. – Ruedi",
+  "it": "14.7. Finalmente in cima! Le marmotte sono state più veloci. – Ruedi",
+  "rm": "14.7. Finalmain sisum! Las muntanellas eran pli spertas. – Ruedi"
+ },
  "2 Bots": {
   "en": "2 bots",
   "fr": "2 bots",
@@ -1583,6 +1589,12 @@
   "fr": "3 minutes",
   "it": "3 minuti",
   "rm": "3 minutas"
+ },
+ "3. Versuch – diesmal der richtige Gipfel. – Hans": {
+  "en": "3rd attempt – the right summit this time. – Hans",
+  "fr": "3e essai – cette fois le bon sommet. – Hans",
+  "it": "3° tentativo – questa volta la cima giusta. – Hans",
+  "rm": "3. emprova – questa giada il dretg piz. – Hans"
  },
  "3/3 Training auf GitHub starten …": {
   "en": "3/3 starting the training on GitHub …",
@@ -2119,6 +2131,12 @@
   "it": "Gracchi alpini litigano per un panino",
   "rm": "Curvs alpins dispitan per in sandwich"
  },
+ "Alphorn bei Sonnenaufgang": {
+  "en": "Alphorn at sunrise",
+  "fr": "Cor des Alpes au lever du soleil",
+  "it": "Corno delle Alpi all'alba",
+  "rm": "Corn alpin a l'alva"
+ },
  "Alphornbläser bei Sonnenaufgang, Kühe kommen gerannt": {
   "en": "Alphorn player at sunrise, cows come running",
   "fr": "Joueur de cor des Alpes au lever du soleil, les vaches accourent",
@@ -2167,11 +2185,41 @@
   "it": "Al pontile",
   "rm": "Al punt da bartgas"
  },
+ "Am Fondueplätzli am Gumpisee riecht es nachts nach Käse …": {
+  "en": "At the Fondueplätzli by the Gumpisee it smells of cheese at night …",
+  "fr": "Au Fondueplätzli près du Gumpisee, ça sent le fromage la nuit …",
+  "it": "Al Fondueplätzli presso il Gumpisee di notte c'è odore di formaggio …",
+  "rm": "Al Fondueplätzli sper il Gumpisee savura i la notg da chaschiel …"
+ },
+ "Am Fort Chrüzli brennt nachts manchmal Licht. Von weitem schauen, nicht zu nahe gehen!": {
+  "en": "At Fort Chrüzli there is sometimes a light at night. Watch from afar, don't go too close!",
+  "fr": "Au Fort Chrüzli, il y a parfois de la lumière la nuit. Regarder de loin, ne pas trop s'approcher !",
+  "it": "Al Forte Chrüzli di notte a volte c'è luce. Guardare da lontano, non avvicinarsi troppo!",
+  "rm": "Al Fort Chrüzli arda la notg mintgatant ina glisch. Guardar da lunsch, betg ir memia datiers!"
+ },
+ "Am frühen Morgen bei der Alp Tschuggen übernachten: wenn das Alphorn klingt, ein Foto mit MoveEyes Kamera!": {
+  "en": "Spend the night at Alp Tschuggen: when the alphorn sounds in the early morning, take a photo with MoveEye's camera!",
+  "fr": "Passer la nuit à l'Alp Tschuggen : quand le cor des Alpes résonne tôt le matin, une photo avec la caméra de MoveEye !",
+  "it": "Pernottare all'Alp Tschuggen: quando all'alba suona il corno delle Alpi, una foto con la telecamera di MoveEye!",
+  "rm": "Durmir sin l'Alp Tschuggen: cura ch'il corn alpin tuna la damaun baud, ina foto cun la camera da MoveEye!"
+ },
  "Am Gletscherseeli": {
   "en": "At the Gletscherseeli",
   "fr": "Au Gletscherseeli",
   "it": "Al Gletscherseeli",
   "rm": "Al Gletscherseeli"
+ },
+ "Am Höhenweg West rastet ein Wanderer bei einer Felsplatte. Über ihm kreist etwas Grosses.": {
+  "en": "On the western high trail a hiker rests by a rock slab. Something big is circling above him.",
+  "fr": "Sur le sentier d'altitude ouest, un randonneur se repose près d'une dalle. Au-dessus de lui tourne quelque chose de grand.",
+  "it": "Sul sentiero alto ovest un escursionista riposa presso una lastra di roccia. Sopra di lui volteggia qualcosa di grande.",
+  "rm": "Sin la senda d'autezza vest pausescha in viandant sper ina platta da crap. Sur el rodla insatge grond."
+ },
+ "Am Ostufer des Gumpisees schaukelt etwas Grünes im Wasser.": {
+  "en": "On the east shore of the Gumpisee something green bobs in the water.",
+  "fr": "Sur la rive est du Gumpisee, quelque chose de vert flotte dans l'eau.",
+  "it": "Sulla riva est del Gumpisee qualcosa di verde dondola nell'acqua.",
+  "rm": "A la riva da l'ost dal Gumpisee sa dandaglia insatge verd en l'aua."
  },
  "Am PC stumm (das simulierte Mikrofon hört es trotzdem)": {
   "en": "Muted on the PC (the simulated microphone still hears it)",
@@ -2473,11 +2521,23 @@
   "it": "Ramo nel vento",
   "rm": "Rom en il vent"
  },
+ "Auf dem flachen Stein am Grat sieht man in klaren Nächten viel mehr Sternschnuppen als unten im Tal.": {
+  "en": "From the flat stone on the ridge you see many more shooting stars on clear nights than down in the valley.",
+  "fr": "Depuis la pierre plate sur l'arête, on voit par nuit claire bien plus d'étoiles filantes qu'en bas dans la vallée.",
+  "it": "Dalla pietra piatta sulla cresta nelle notti limpide si vedono molte più stelle cadenti che giù in valle.",
+  "rm": "Dal crap plat sin la cresta vesa ins en notgs claras bler dapli stailas currentas che giu en la val."
+ },
  "Auf dem Furggapass (beim Hospiz)": {
   "en": "On the Furggapass (at the hospice)",
   "fr": "Au col de la Furgga (près de l'hospice)",
   "it": "Sul passo Furgga (presso l'ospizio)",
   "rm": "Sin il pass Furgga (tar l'ospizi)"
+ },
+ "Auf dem Furggapass macht jemand Mittagspause. Ob das Sandwich lange liegen bleibt?": {
+  "en": "Someone is having lunch on the Furgga pass. Will the sandwich stay there for long?",
+  "fr": "Quelqu'un pique-nique au col de la Furgga. Le sandwich restera-t-il longtemps là ?",
+  "it": "Qualcuno fa la pausa pranzo sul passo della Furgga. Il panino resterà lì a lungo?",
+  "rm": "Sin il pass da la Furgga fa insatgi pausa da mezdi. Resta il sandwich ditg là?"
  },
  "Auf dem Pi bringt MoveEye die neue Version": {
   "en": "On the Pi, MoveEye brings the new version",
@@ -2497,11 +2557,35 @@
   "it": "Sul treppiede (altezza libera, 1,5 m)",
   "rm": "Sin il stativ (autezza libra, 1,5 m)"
  },
+ "Auf dem Tschingelspitz blättert der Wind im Gipfelbuch. Jede Seite ein Eintrag – manche kennen die Tiere des Tals.": {
+  "en": "On the Tschingelspitz the wind turns the pages of the summit book. Every page an entry – some know the animals of the valley.",
+  "fr": "Sur le Tschingelspitz, le vent feuillette le livre du sommet. Chaque page une inscription – certaines connaissent les animaux de la vallée.",
+  "it": "Sul Tschingelspitz il vento sfoglia il libro di vetta. Ogni pagina una dedica – alcune conoscono gli animali della valle.",
+  "rm": "Sin il Tschingelspitz sfeglia il vent en il cudesch dal piz. Mintga pagina ina inscripziun – intginas enconuschan las bestgas da la val."
+ },
+ "Auf dem Tschingelspitz liegt beim Kreuz ein Buch. Wer hat sich da eingetragen?": {
+  "en": "On the Tschingelspitz there is a book by the cross. Who has signed it?",
+  "fr": "Sur le Tschingelspitz, un livre est posé près de la croix. Qui s'y est inscrit ?",
+  "it": "Sul Tschingelspitz accanto alla croce c'è un libro. Chi ci ha scritto?",
+  "rm": "Sin il Tschingelspitz è i in cudesch sper la crusch. Tgi è s'inscrit là?"
+ },
  "Auf den Schreibtisch gelegt: %s – diese Datei im Chat anhängen.": {
   "en": "Put on the desktop: %s – attach this file in the chat.",
   "fr": "Déposé sur le bureau : %s – joindre ce fichier dans le chat.",
   "it": "Messo sul desktop: %s – allegare questo file nella chat.",
   "rm": "Mess sin la scrivania: %s – agiuntar questa datoteca en il chat."
+ },
+ "Auf der Hängebrücke ruft jemand in die Schlucht. Das Echo antwortet dreimal – und einmal muht es.": {
+  "en": "On the suspension bridge someone calls into the gorge. The echo answers three times – and once it moos.",
+  "fr": "Sur la passerelle, quelqu'un crie dans la gorge. L'écho répond trois fois – et une fois, il meugle.",
+  "it": "Sul ponte sospeso qualcuno grida nella gola. L'eco risponde tre volte – e una volta muggisce.",
+  "rm": "Sin la punt pendenta clama insatgi en la foppa. L'echo respunda trais giadas – ed ina giada mugia el."
+ },
+ "Auf der Hängebrücke über den Tüfelsschlund ruft jemand. Gut zuhören!": {
+  "en": "Someone is calling on the suspension bridge over the Tüfelsschlund. Listen closely!",
+  "fr": "Quelqu'un crie sur la passerelle au-dessus du Tüfelsschlund. Écoute bien !",
+  "it": "Qualcuno grida sul ponte sospeso sopra il Tüfelsschlund. Ascolta bene!",
+  "rm": "Sin la punt pendenta sur il Tüfelsschlund clama insatgi. Tadla bain!"
  },
  "Auf die Kamera zu / weg": {
   "en": "Towards the camera / away",
@@ -2959,6 +3043,12 @@
   "it": "All'Alp Tschuggen",
   "rm": "Tar l'Alp Tschuggen"
  },
+ "Bei der Alp Tschuggen übernachten und die Socke auf dem Rucksack im Auge behalten – ein Foto mit MoveEyes Kamera!": {
+  "en": "Spend the night at Alp Tschuggen and keep an eye on the sock on the backpack – a photo with MoveEye's camera!",
+  "fr": "Passer la nuit à l'Alp Tschuggen et surveiller la chaussette sur le sac à dos – une photo avec la caméra de MoveEye !",
+  "it": "Pernottare all'Alp Tschuggen e tenere d'occhio il calzino sullo zaino – una foto con la telecamera di MoveEye!",
+  "rm": "Durmir sin l'Alp Tschuggen e tegnair en egl la stgaffa sin il satg – ina foto cun la camera da MoveEye!"
+ },
  "Bei der Biwakschachtel": {
   "en": "At the bivouac box",
   "fr": "Au bivouac",
@@ -2988,6 +3078,18 @@
   "fr": "Au bungalow (rangée de bungalows)",
   "it": "Al bungalow (fila di bungalow)",
   "rm": "Tar il bungalow (retscha da bungalows)"
+ },
+ "Beim Klettersteig steht ein Felsturm. Ganz oben steht jemand, der keine Höhenangst kennt.": {
+  "en": "By the via ferrata stands a rock tower. Right at the top stands someone who knows no fear of heights.",
+  "fr": "Près de la via ferrata se dresse une tour rocheuse. Tout en haut se tient quelqu'un qui ignore le vertige.",
+  "it": "Presso la via ferrata c'è una torre di roccia. In cima sta qualcuno che non soffre di vertigini.",
+  "rm": "Sper la via ferrata stat ina tur da crap. Survart stat insatgi che n'enconuscha nagina tema d'autezza."
+ },
+ "Beim Wegweiser im Murmelboden ist jemand schon lange unterwegs – aber nicht weit.": {
+  "en": "At the signpost in the Murmelboden someone has been walking for a long time – but not far.",
+  "fr": "Au panneau du Murmelboden, quelqu'un marche depuis longtemps – mais pas loin.",
+  "it": "Al cartello nel Murmelboden qualcuno cammina da tanto – ma non lontano.",
+  "rm": "Tar l'indicatur da via en il Murmelboden è insatgi gia ditg en viadi – ma betg lunsch."
  },
  "Beim Wohnmobil (Wohnmobil-Terrasse)": {
   "en": "At the motorhome (motorhome terrace)",
@@ -4016,6 +4118,12 @@
   "it": "",
   "rm": ""
  },
+ "Das Echo im Tüfelsschlund": {
+  "en": "The echo in the Tüfelsschlund",
+  "fr": "L'écho du Tüfelsschlund",
+  "it": "L'eco nel Tüfelsschlund",
+  "rm": "L'echo en il Tüfelsschlund"
+ },
  "Das Ergebnis als Text in die Zwischenablage": {
   "en": "",
   "fr": "",
@@ -4040,11 +4148,29 @@
   "it": "Il rumore viene dalla persona a letto, altrimenti dal visitatore più vicino, altrimenti da 2 m davanti a MoveEye. MoveEye ha bisogno di «Interruttore a battito di mani» o «Salute» – quando suona la sveglia, battere le mani significa posticipare.",
   "rm": "La canera vegn da la persuna en il letg, uschiglio dal proxim visitader, uschiglio 2 m davant MoveEye. MoveEye dovra per quai «Interruptur da clatschar» resp. «Sanadad» – cur ch’il svegliarin scalina, munta clatschar «durmir anc in pau»."
  },
+ "Das Gipfelbuch": {
+  "en": "The summit book",
+  "fr": "Le livre du sommet",
+  "it": "Il libro di vetta",
+  "rm": "Il cudesch dal piz"
+ },
  "das Handy": {
   "en": "the phone",
   "fr": "le téléphone",
   "it": "il telefonino",
   "rm": "il telefonin"
+ },
+ "Das Murmeltier, das zu spät kommt": {
+  "en": "The marmot that is late",
+  "fr": "La marmotte en retard",
+  "it": "La marmotta in ritardo",
+  "rm": "La muntanella che vegn memia tard"
+ },
+ "Das Murmeltier-Büro": {
+  "en": "The marmot office",
+  "fr": "Le bureau des marmottes",
+  "it": "L'ufficio delle marmotte",
+  "rm": "Il biro da las muntanellas"
  },
  "das Paket": {
   "en": "the parcel",
@@ -4063,6 +4189,12 @@
   "fr": "le porte-monnaie",
   "it": "il portafoglio",
   "rm": "la bursa"
+ },
+ "Das Rätsel der Flaschenpost stimmt: in einer Spalte des Wyssgletschers brennt nachts eine alte Laterne. Wer sie wohl jeden Abend anzündet?": {
+  "en": "The riddle of the message in a bottle is right: an old lantern burns at night in a crevasse of the Wyssgletscher. Who lights it every evening?",
+  "fr": "L'énigme de la bouteille à la mer est juste : dans une crevasse du Wyssgletscher, une vieille lanterne brûle la nuit. Qui l'allume chaque soir ?",
+  "it": "L'enigma del messaggio nella bottiglia è giusto: in un crepaccio del Wyssgletscher di notte arde una vecchia lanterna. Chi la accende ogni sera?",
+  "rm": "L'enigma da la posta en butiglia è gist: en ina sfessa dal Wyssgletscher arda la notg ina veglia lanterna. Tgi la pizza mintga saira?"
  },
  "das Solarpanel": {
   "en": "the solar panel",
@@ -4352,17 +4484,35 @@
   "it": "Lo scatto vale solo in un turno in corso in cui una persona guida la telecamera.",
   "rm": "Il sajet vala mo en ina runda en cursa, en la quala in uman maniescha la camera."
  },
+ "Der Bartgeier lässt seinen Knochen auf die Felsplatte fallen, damit er zerbricht – genau neben dem Wanderer, der gerade isst.": {
+  "en": "The bearded vulture drops its bone onto the rock slab so that it breaks – right next to the hiker who is eating.",
+  "fr": "Le gypaète laisse tomber son os sur la dalle pour le briser – juste à côté du randonneur qui mange.",
+  "it": "Il gipeto lascia cadere il suo osso sulla lastra perché si rompa – proprio accanto all'escursionista che sta mangiando.",
+  "rm": "Il tschess barbet lascha crudar ses ruaus sin la platta da crap per ch'el sa rumpa – exact sper il viandant che maglia."
+ },
  "Der Bot-Wächter": {
   "en": "The bot guard",
   "fr": "Le gardien-bot",
   "it": "Il guardiano bot",
   "rm": "Il guardian-bot"
  },
+ "Der Fondue-Fuchs": {
+  "en": "The fondue fox",
+  "fr": "Le renard à fondue",
+  "it": "La volpe della fonduta",
+  "rm": "La vulp da fondue"
+ },
  "Der Himmel ist ganz klar.": {
   "en": "The sky is completely clear.",
   "fr": "Le ciel est tout dégagé.",
   "it": "Il cielo è limpidissimo.",
   "rm": "Il tschiel è tut cler."
+ },
+ "Der Knochen vom Himmel": {
+  "en": "The bone from the sky",
+  "fr": "L'os tombé du ciel",
+  "it": "L'osso dal cielo",
+  "rm": "Il ruaus dal tschiel"
  },
  "Der Mensch": {
   "en": "The human",
@@ -4424,6 +4574,12 @@
   "it": "",
   "rm": ""
  },
+ "Der Senn bläst bei Sonnenaufgang das Alphorn – und die Kühe kommen von der ganzen Weide angerannt und hören zu. Fotografiert mit MoveEyes Kamera.": {
+  "en": "At sunrise the herdsman plays the alphorn – and the cows come running from all over the pasture to listen. Photographed with MoveEye's camera.",
+  "fr": "Au lever du soleil, l'armailli joue du cor des Alpes – et les vaches accourent de tout le pâturage pour écouter. Photographié avec la caméra de MoveEye.",
+  "it": "All'alba il pastore suona il corno delle Alpi – e le mucche arrivano di corsa da tutto il pascolo ad ascoltare. Fotografato con la telecamera di MoveEye.",
+  "rm": "A l'alva suna il signun il corn alpin – e las vatgas vegnan currind da l'entira pastgira e tadlan. Fotografà cun la camera da MoveEye."
+ },
  "Der sieht schon Sterne": {
   "en": "That one is already seeing stars",
   "fr": "Celui-là voit déjà des étoiles",
@@ -4460,6 +4616,12 @@
   "it": "Il confronto è già in corso.",
   "rm": "La cumparegliaziun è gia en cursa."
  },
+ "Der Wanderer im Kreis": {
+  "en": "The hiker going in circles",
+  "fr": "Le randonneur qui tourne en rond",
+  "it": "L'escursionista che gira in tondo",
+  "rm": "Il viandant che va en ring"
+ },
  "der Wächter des Simulators (geht ohne Pi)": {
   "en": "the simulator’s guard (works without Pi)",
   "fr": "le gardien du simulateur (fonctionne sans Pi)",
@@ -4471,6 +4633,12 @@
   "fr": "Le gardien a le même niveau que les furtifs.",
   "it": "Il guardiano ha lo stesso livello dei furtivi.",
   "rm": "Il guardian ha il medem nivel sco ils sfugiders."
+ },
+ "Der Wächter pfeift, alle verschwinden im Bau – nur das dicke frisst weiter. Es rennt erst los, als die anderen schon wieder herausschauen.": {
+  "en": "The sentinel whistles, all vanish into the burrow – only the fat one keeps eating. It only starts running when the others are already peeking out again.",
+  "fr": "La sentinelle siffle, toutes disparaissent dans le terrier – seule la grosse continue de manger. Elle ne court que lorsque les autres ressortent déjà la tête.",
+  "it": "La sentinella fischia, tutte spariscono nella tana – solo quella grassa continua a mangiare. Corre solo quando le altre stanno già rimettendo fuori il naso.",
+  "rm": "La guardia sivla, tuttas svaneschan en la tana – mo la grassa maglia vinavant. Ella cumenza pir a currer cura che las autras guardan gia puspè or."
  },
  "Dezember": {
   "en": "December",
@@ -4556,6 +4724,12 @@
   "it": "Sorveglia il vero rilevamento di MoveEye: se segnala una persona, viene preso chi la telecamera vede meglio. Ciò che MoveEye manca va nell’addestramento e sulla mappa dei punti ciechi.",
   "rm": "L’identificaziun vaira da MoveEye fa attenziun: sch’ella annunzia ina persuna, è quel tschiffà che la camera vesa il meglier. Quai che MoveEye mancanta va en il trenament e sin la charta dals puncts orbs."
  },
+ "Die Flaschenpost spricht vom Gletscher: nachts beim Wyssgletscher nach einem Licht in den Spalten suchen.": {
+  "en": "The message in the bottle speaks of the glacier: at night, look for a light in the crevasses of the Wyssgletscher.",
+  "fr": "La bouteille à la mer parle du glacier : la nuit, chercher une lumière dans les crevasses du Wyssgletscher.",
+  "it": "Il messaggio nella bottiglia parla del ghiacciaio: di notte cercare una luce nei crepacci del Wyssgletscher.",
+  "rm": "La posta en butiglia discurra dal glatscher: la notg tschertgar ina glisch en las sfessas dal Wyssgletscher."
+ },
  "Die GPS-Position wandert mit 1.6 m/s weg (wie zu Fuss). MoveEye braucht «GPS-Modul» und «Diebstahl-Alarm» und muss scharf sein. Nochmals drücken = zurückstellen.": {
   "en": "The GPS position moves away at 1.6 m/s (like on foot). MoveEye needs «GPS module» and «Theft alarm» and must be armed. Press again = put back.",
   "fr": "La position GPS s’éloigne à 1.6 m/s (comme à pied). MoveEye a besoin de «Module GPS» et «Alarme vol» et doit être armé. Appuyer encore = remettre.",
@@ -4616,11 +4790,23 @@
   "it": "L’aiuto IA esiste solo in un turno in cui una persona sorveglia con lo scatto.",
   "rm": "L’agid IA dat i mo en ina runda, en la quala in uman surveglia cun il sajet."
  },
+ "Die Kristallhöhle": {
+  "en": "The crystal cave",
+  "fr": "La grotte de cristal",
+  "it": "La grotta dei cristalli",
+  "rm": "La fora da cristals"
+ },
  "die Kühlbox": {
   "en": "the cool box",
   "fr": "la glacière",
   "it": "la borsa frigo",
   "rm": "la chista da fraid"
+ },
+ "Die Laterne in der Gletscherspalte": {
+  "en": "The lantern in the crevasse",
+  "fr": "La lanterne dans la crevasse",
+  "it": "La lanterna nel crepaccio",
+  "rm": "La lanterna en la sfessa dal glatscher"
  },
  "Die laufende Datei lässt sich nicht ersetzen. Läuft der Simulator zweimal? Bitte alle Simulator-Fenster schliessen (auch das kleine Kästchen) und neu starten.": {
   "en": "The running file cannot be replaced. Is the simulator running twice? Please close all simulator windows (also the small box) and restart.",
@@ -4676,11 +4862,23 @@
   "it": "Il turno non parte: %s",
   "rm": "La runda na cumenza betg: %s"
  },
+ "Die Schafe liegen auf der warmen Strasse. Das Auto wartet, kriecht, hupt – und eines legt sich genau vor die Stossstange.": {
+  "en": "The sheep lie on the warm road. The car waits, creeps, honks – and one lies down right in front of the bumper.",
+  "fr": "Les moutons sont couchés sur la route chaude. La voiture attend, avance au pas, klaxonne – et l'un d'eux se couche juste devant le pare-chocs.",
+  "it": "Le pecore sono sdraiate sulla strada calda. L'auto aspetta, avanza piano, suona il clacson – e una si sdraia proprio davanti al paraurti.",
+  "rm": "Las nursas giaschan sin la via chauda. L'auto spetga, sa stortscha, tuna – ed ina sa metta exact davant la stanga da protecziun."
+ },
  "Die Schatzkarte aus der Flaschenpost führt hierher.": {
   "en": "The treasure map from the bottle leads here.",
   "fr": "La carte au trésor de la bouteille mène ici.",
   "it": "La mappa del tesoro della bottiglia porta qui.",
   "rm": "La charta da stgazi da la buttiglia maina nà qua."
+ },
+ "Die Sockendiebin": {
+  "en": "The sock thief",
+  "fr": "La voleuse de chaussettes",
+  "it": "La ladra di calzini",
+  "rm": "La laderna da stgaffas"
  },
  "Die Sonne geht auf: bald sieht dich die Kamera wieder besser.": {
   "en": "The sun rises: soon the camera sees you better again.",
@@ -4898,6 +5096,12 @@
   "fr": "tourner (15°)",
   "it": "girare (15°)",
   "rm": "volver (15°)"
+ },
+ "Drei Murmeltiere schieben einen verlorenen Tennisball hin und her. Rollt er in den Bau, kommt er beim anderen Loch wieder heraus – mit einem Jungen dahinter.": {
+  "en": "Three marmots push a lost tennis ball back and forth. If it rolls into the burrow, it comes out of the other hole again – with a young one behind it.",
+  "fr": "Trois marmottes poussent une balle de tennis perdue. Si elle roule dans le terrier, elle ressort par l'autre trou – avec un petit derrière.",
+  "it": "Tre marmotte spingono avanti e indietro una pallina da tennis persa. Se rotola nella tana, esce dall'altro buco – con un piccolo dietro.",
+  "rm": "Trais muntanellas stuschan ina balla da tennis persa nanavant e nanavos. Sch'ella rudla en la tana, vegn ella or da l'auter fora – cun in giuven davos."
  },
  "Drohne": {
   "en": "Drone",
@@ -5307,6 +5511,12 @@
   "it": "Caricare un file e avviarlo qui su questo PC",
   "rm": "Leger ina datoteca e la cumenzar qua sin quest PC"
  },
+ "Eine Kuh leckt am Zelt, holt sich die Socke vom Rucksack und schaut MoveEye an – mit der Socke im Maul. Fotografiert mit MoveEyes Kamera.": {
+  "en": "A cow licks the tent, takes the sock off the backpack and looks at MoveEye – with the sock in its mouth. Photographed with MoveEye's camera.",
+  "fr": "Une vache lèche la tente, prend la chaussette sur le sac à dos et regarde MoveEye – la chaussette dans la gueule. Photographié avec la caméra de MoveEye.",
+  "it": "Una mucca lecca la tenda, prende il calzino dallo zaino e guarda MoveEye – con il calzino in bocca. Fotografato con la telecamera di MoveEye.",
+  "rm": "Ina vatga litga la tenda, prenda la stgaffa dal satg e guarda MoveEye – cun la stgaffa en la bucca. Fotografà cun la camera da MoveEye."
+ },
  "Eine Nebelbank kommt": {
   "en": "A fog bank is coming",
   "fr": "Un banc de brouillard arrive",
@@ -5522,6 +5732,12 @@
   "fr": "Phase de développement : chaque minute, immédiatement",
   "it": "Fase di sviluppo: ogni minuto, subito",
   "rm": "Fasa da svilup: mintga minuta, immediat"
+ },
+ "Er liest den Wegweiser, dreht die Karte, läuft eine Runde um den Wegweiser – und liest ihn wieder.": {
+  "en": "He reads the signpost, turns the map, walks once round the signpost – and reads it again.",
+  "fr": "Il lit le panneau, tourne la carte, fait le tour du panneau – et le relit.",
+  "it": "Legge il cartello, gira la cartina, fa un giro attorno al cartello – e lo rilegge.",
+  "rm": "El legia l'indicatur da via, volva la charta, fa in ring enturn l'indicatur – e al legia puspè."
  },
  "Er schwebt auf Kopfhöhe. «Steigen» lässt ihn hochsteigen.": {
   "en": "It floats at head height. «Rise» lets it go up.",
@@ -6215,6 +6431,12 @@
   "it": "Bottiglia sulla spiaggia / cassa al belvedere",
   "rm": "Buttiglia sin la riva / chista al punct da vista"
  },
+ "Flaschenpost im Gumpisee": {
+  "en": "Message in a bottle in the Gumpisee",
+  "fr": "Bouteille à la mer dans le Gumpisee",
+  "it": "Messaggio nella bottiglia nel Gumpisee",
+  "rm": "Posta en butiglia en il Gumpisee"
+ },
  "Flaschenpost im See → alte Laterne in der Gletscherspalte": {
   "en": "Message in a bottle in the lake → old lantern in the crevasse",
   "fr": "Bouteille à la mer dans le lac → vieille lanterne dans la crevasse",
@@ -6634,6 +6856,12 @@
   "fr": "Tout en haut à l’orée du bois, à l’est du mirador, il y a quelque chose de vieux.",
   "it": "In alto al limite del bosco, a est della torretta, c’è qualcosa di vecchio.",
   "rm": "Tut sisum a l’ur dal guaud, a l’ost dal pulpit, stat insatge vegl."
+ },
+ "Ganz oben auf einem Felsturm, kaum grösser als er selbst: er kratzt sich mit dem Horn den Rücken und legt sich an die Kante.": {
+  "en": "Right on top of a rock tower, hardly bigger than himself: he scratches his back with his horn and lies down at the edge.",
+  "fr": "Tout en haut d'une tour rocheuse à peine plus grande que lui : il se gratte le dos avec sa corne et se couche au bord.",
+  "it": "In cima a una torre di roccia, poco più grande di lui: si gratta la schiena con il corno e si sdraia sul bordo.",
+  "rm": "Survart sin ina tur da crap, strusch pli gronda ch'el sez: el sa grattia il dies cun il corn e sa metta a l'ur."
  },
  "Ganze Nacht (20–6 Uhr im Zeitraffer, Tiere, Wind, Regenschauer, 2 Personen · etwa 11 Min.)": {
   "en": "Whole night (20–6 o’clock in timelapse, animals, wind, rain showers, 2 people · about 11 min)",
@@ -7999,6 +8227,12 @@
   "it": "",
   "rm": ""
  },
+ "Ich bin nur wegen dem Gipfelbuch gekommen. – Beat": {
+  "en": "I only came for the summit book. – Beat",
+  "fr": "Je ne suis venu que pour le livre du sommet. – Beat",
+  "it": "Sono venuto solo per il libro di vetta. – Beat",
+  "rm": "Jau sun vegnì mo pervia dal cudesch dal piz. – Beat"
+ },
  "Igel": {
   "en": "Hedgehog",
   "fr": "Hérisson",
@@ -8053,6 +8287,18 @@
   "it": "Più difficile da riconoscere nel verde. Ma: su ghiaia, asfalto e di notte non serve – e sei un po’ più lento.",
   "rm": "En il verd pli grev d’identifitgar. Ma: sin gera, asfalt e da notg na nizza ella nagut – e ti es in pau pli plaun."
  },
+ "Im Herbst führt der Wasserfall wenig Wasser – dahinter öffnet sich eine kleine Höhle voller Bergkristalle. Ein Strahler hat seinen Hammer vergessen.": {
+  "en": "In autumn the waterfall carries little water – behind it opens a small cave full of rock crystals. A crystal hunter has forgotten his hammer.",
+  "fr": "En automne, la cascade a peu d'eau – derrière s'ouvre une petite grotte pleine de cristaux de roche. Un cristallier a oublié son marteau.",
+  "it": "In autunno la cascata porta poca acqua – dietro si apre una piccola grotta piena di cristalli di rocca. Un cercatore di cristalli ha dimenticato il martello.",
+  "rm": "L'atun maina la cascada pauc'aua – davos sa avra ina pitschna fora plaina cristals. In tschertgader da cristals ha emblidà ses martè."
+ },
+ "Im Herbst, wenn der Wasserfall im Tüfelsschlund schmal ist, lohnt sich ein Blick dahinter.": {
+  "en": "In autumn, when the waterfall in the Tüfelsschlund is narrow, it is worth a look behind it.",
+  "fr": "En automne, quand la cascade du Tüfelsschlund est mince, un coup d'œil derrière vaut la peine.",
+  "it": "In autunno, quando la cascata nel Tüfelsschlund è stretta, vale la pena guardarci dietro.",
+  "rm": "L'atun, cura che la cascada en il Tüfelsschlund è stretga, vali la paina da guardar davos."
+ },
  "Im Nebel sieht die Kamera schlechter – die Wärmebild-Kamera auch ein bisschen.": {
   "en": "In fog the camera sees worse – the thermal camera a bit too.",
   "fr": "Dans le brouillard, la caméra voit moins bien – la caméra thermique un peu aussi.",
@@ -8070,6 +8316,12 @@
   "fr": "Impossible de dormir dans l'eau.",
   "it": "Non si può dormire nell'acqua.",
   "rm": "Ins na po betg durmir en l'aua."
+ },
+ "Im Winter führen unter dem Wyssgletscher seltsame Spuren durch den Schnee.": {
+  "en": "In winter strange tracks lead through the snow below the Wyssgletscher.",
+  "fr": "En hiver, d'étranges traces traversent la neige sous le Wyssgletscher.",
+  "it": "In inverno strane tracce attraversano la neve sotto il Wyssgletscher.",
+  "rm": "L'enviern mainan stranas fastizs tras la naiv sut il Wyssgletscher."
  },
  "im Ziel": {
   "en": "at the goal",
@@ -8113,6 +8365,18 @@
   "it": "Riprodurre di continuo",
   "rm": "Reproducir adina puspè"
  },
+ "In den Furggakehren ist die Strasse manchmal ganz voll. Nicht mit Autos.": {
+  "en": "In the Furgga bends the road is sometimes completely full. Not with cars.",
+  "fr": "Dans les lacets de la Furgga, la route est parfois complètement pleine. Pas de voitures.",
+  "it": "Nei tornanti della Furgga la strada a volte è piena. Non di auto.",
+  "rm": "En las sviaus da la Furgga è la via mintgatant plain occupada. Betg cun autos."
+ },
+ "In der Flasche steckt ein Zettel: «Wo der Gletscher die Ski behält und die Spalte blau schimmert, brennt nachts ein altes Licht.»": {
+  "en": "There is a note in the bottle: «Where the glacier keeps the skis and the crevasse shimmers blue, an old light burns at night.»",
+  "fr": "Un billet dans la bouteille : « Là où le glacier garde les skis et où la crevasse brille de bleu, une vieille lumière brûle la nuit. »",
+  "it": "Nella bottiglia c'è un biglietto: «Dove il ghiacciaio tiene gli sci e il crepaccio luccica di blu, di notte arde una vecchia luce.»",
+  "rm": "En la butiglia è in bigliet: «Nua ch'il glatscher tegna ils skis e la sfessa glischa blau, arda la notg ina veglia glisch.»"
+ },
  "In der Hecke bei den Bungalows wohnen fünf Gartenzwerge.": {
   "en": "Five garden gnomes live in the hedge by the bungalows.",
   "fr": "Cinq nains de jardin habitent dans la haie des bungalows.",
@@ -8130,6 +8394,12 @@
   "fr": "Cliquer dans le monde = point, clic droit sur un point = l’enlever",
   "it": "Cliccare nel mondo = punto, clic destro su un punto = via",
   "rm": "Cliccar en il mund = punct, clic dretg sin in punct = davent"
+ },
+ "In einer klaren Nacht auf dem Grat beim Gratspitz liegt ein flacher Stein. Hinlegen und nach oben schauen.": {
+  "en": "On a clear night there is a flat stone on the ridge by the Gratspitz. Lie down and look up.",
+  "fr": "Par une nuit claire, une pierre plate se trouve sur l'arête près du Gratspitz. S'allonger et regarder en haut.",
+  "it": "In una notte limpida sulla cresta presso il Gratspitz c'è una pietra piatta. Sdraiarsi e guardare in alto.",
+  "rm": "En ina notg clera è i in crap plat sin la cresta sper il Gratspitz. Sa metter giu e guardar ensi."
  },
  "In MoveEye: Reiter Simulator → Verbindung: die Adresse dieses PCs eintragen (gleiches Netz) – oder unten den Tunnel nutzen.": {
   "en": "",
@@ -8304,6 +8574,12 @@
   "fr": "Chaque coureur est une image 3D propre sur le PC et une vidéo propre sur le réseau. Portable : environ 4, PC avec carte graphique : 6–8. Dès 5 coureurs, les images deviennent automatiquement plus petites.",
   "it": "Ogni corridore è un’immagine 3D propria sul PC e un video proprio in rete. Laptop: circa 4, PC con scheda grafica: 6–8. Da 5 corridori le immagini diventano automaticamente più piccole.",
   "rm": "Mintga currider è in agen maletg 3D sin il PC ed in agen video sur la rait. Laptop: circa 4, PC cun carta grafica: 6–8. A partir da 5 curriders daventan ils maletgs automaticamain pli pitschens."
+ },
+ "Jemand hat sein Fondue vergessen – das Rechaud brennt noch. Nachts zieht der Fuchs einen langen Käsefaden aus dem Caquelon. Im Wärmebild leuchtet der Brenner.": {
+  "en": "Someone has forgotten their fondue – the burner is still alight. At night the fox pulls a long cheese thread out of the caquelon. The burner glows in the thermal image.",
+  "fr": "Quelqu'un a oublié sa fondue – le réchaud brûle encore. La nuit, le renard tire un long fil de fromage du caquelon. Le brûleur brille dans l'image thermique.",
+  "it": "Qualcuno ha dimenticato la fonduta – il fornelletto è ancora acceso. Di notte la volpe tira un lungo filo di formaggio dal caquelon. Nell'immagine termica il fornelletto brilla.",
+  "rm": "Insatgi ha emblidà ses fondue – il rechaud arda anc. La notg tira la vulp in lung fil da chaschiel or dal caquelon. En il maletg termic glischa il brischader."
  },
  "Jetzt aktualisieren": {
   "en": "Update now",
@@ -8694,6 +8970,12 @@
   "fr": "Aucune manette connectée (USB ou Bluetooth ; dans le navigateur : page MoveEye Simulateur).",
   "it": "Nessun controller collegato (USB o Bluetooth; nel browser: pagina MoveEye Simulatore).",
   "rm": "Nagin controller collià (USB u Bluetooth; en il navigatur: pagina da MoveEye Simulatur)."
+ },
+ "Kein Empfang. Herrlich. – Anna & Marco": {
+  "en": "No reception. Wonderful. – Anna & Marco",
+  "fr": "Pas de réseau. Merveilleux. – Anna & Marco",
+  "it": "Niente campo. Splendido. – Anna & Marco",
+  "rm": "Nagina retschavida. Stupent. – Anna & Marco"
  },
  "Kein Fehlalarm – MoveEye hat sich nicht täuschen lassen": {
   "en": "No false alarm – MoveEye was not fooled",
@@ -9697,6 +9979,12 @@
   "fr": "Cône de lumière d’une voiture maintenant (la nuit)",
   "it": "Cono di luce di un’auto ora (di notte)",
   "rm": "Cun da glisch d’in auto ussa (da notg)"
+ },
+ "Liebes MoveEye, falls du das liest: Grüsse vom Steinbock.": {
+  "en": "Dear MoveEye, if you read this: greetings from the ibex.",
+  "fr": "Cher MoveEye, si tu lis ceci : salutations du bouquetin.",
+  "it": "Caro MoveEye, se leggi questo: saluti dallo stambecco.",
+  "rm": "Char MoveEye, sche ti legias quai: salids dal capricorn."
  },
  "Lieferroboter (keine Person)": {
   "en": "Delivery robot (no person)",
@@ -10949,6 +11237,12 @@
   "it": "Tana della marmotta",
   "rm": "Tana da muntanella"
  },
+ "Murmeltier-Fussball": {
+  "en": "Marmot football",
+  "fr": "Football des marmottes",
+  "it": "Calcio delle marmotte",
+  "rm": "Ballapé da muntanellas"
+ },
  "Murmeltier-Fussball (Tennisball)": {
   "en": "Marmot football (tennis ball)",
   "fr": "Football des marmottes (balle de tennis)",
@@ -11206,6 +11500,12 @@
   "fr": "La nuit, de temps en temps, un chat s’assied sur le toit de la voiture",
   "it": "Di notte di tanto in tanto un gatto si siede sul tetto dell’auto",
   "rm": "Da notg sa tschenta da temp en temp in giat sin il tetg da l’auto"
+ },
+ "Nachts steht die Bunkertür im Fort Chrüzli offen: ein Murmeltier am Pult, Lampe, Stempel, Akten. Kommt man näher – Licht aus, Tür zu.": {
+  "en": "At night the bunker door at Fort Chrüzli is open: a marmot at a desk, lamp, stamp, files. Come closer – light off, door shut.",
+  "fr": "La nuit, la porte du bunker du Fort Chrüzli est ouverte : une marmotte au bureau, lampe, tampon, dossiers. On s'approche – lumière éteinte, porte fermée.",
+  "it": "Di notte la porta del bunker al Forte Chrüzli è aperta: una marmotta alla scrivania, lampada, timbro, pratiche. Ci si avvicina – luce spenta, porta chiusa.",
+  "rm": "La notg è l'isch dal bunker en il Fort Chrüzli avert: ina muntanella al pult, lampa, bul, actas. Sch'ins vegn pli datiers – glisch ora, isch serrà."
  },
  "Nachts streift ab und zu das Licht eines einbiegenden Autos über Wände und Zelt": {
   "en": "At night now and then the light of a turning car sweeps over walls and tent",
@@ -12752,6 +13052,12 @@
   "it": "Scelta enorme, anche edifici reali e scansioni 3D. Filtro «Downloadable», scegliere il formato glTF.",
   "rm": "Tscherna enorma, er edifizis vairs e scans 3D. Filter «Downloadable», tscherner il format glTF."
  },
+ "Riesige Spuren im Schnee – sie enden bei einem Schneemann mit echten Wanderschuhen. Schaut man weg, dreht er den Kopf.": {
+  "en": "Huge tracks in the snow – they end at a snowman wearing real hiking boots. Look away and he turns his head.",
+  "fr": "D'énormes traces dans la neige – elles s'arrêtent devant un bonhomme de neige en vraies chaussures de marche. Si on détourne le regard, il tourne la tête.",
+  "it": "Enormi tracce nella neve – finiscono presso un pupazzo di neve con veri scarponi. Se si guarda altrove, gira la testa.",
+  "rm": "Fastizs enormas en la naiv – ellas fineschan tar in um da naiv cun veritabels chalzers da viandar. Sch'ins guarda davent, volva el il chau."
+ },
  "Ring rund ums Gerät (8 m)": {
   "en": "Ring around the device (8 m)",
   "fr": "Anneau autour de l’appareil (8 m)",
@@ -13147,6 +13453,12 @@
   "fr": "Sandwich",
   "it": "Panino",
   "rm": "Sandwich"
+ },
+ "Sandwich vergessen. Die Dohle nicht. – S.": {
+  "en": "Forgot my sandwich. The chough didn't. – S.",
+  "fr": "Sandwich oublié. Pas par le chocard. – S.",
+  "it": "Panino dimenticato. Il gracchio no. – S.",
+  "rm": "Emblidà il sandwich. La curnagl'alpina betg. – S."
  },
  "Sanitär Ost": {
   "en": "Toilets east",
@@ -14605,6 +14917,12 @@
   "it": "Stambecco",
   "rm": "Capricorn"
  },
+ "Steinbock auf dem Felsturm": {
+  "en": "Ibex on the rock tower",
+  "fr": "Bouquetin sur la tour rocheuse",
+  "it": "Stambecco sulla torre di roccia",
+  "rm": "Capricorn sin la tur da crap"
+ },
  "Steinbock auf der steilen Kante": {
   "en": "Ibex on the steep edge",
   "fr": "Bouquetin sur l'arête raide",
@@ -14670,6 +14988,12 @@
   "fr": "Nuit étoilée au bivouac",
   "it": "Notte stellata al posto per dormire",
   "rm": "Notg cun stailas tar la plazza da durmir"
+ },
+ "Sternschnuppen-Platz": {
+  "en": "Shooting-star spot",
+  "fr": "Le coin des étoiles filantes",
+  "it": "Il posto delle stelle cadenti",
+  "rm": "Plazza da stailas currentas"
  },
  "Sternschnuppen-Platz auf dem Grat (klare Nächte)": {
   "en": "Shooting star spot on the ridge (clear nights)",
@@ -14754,6 +15078,12 @@
   "fr": "Mini-ferme",
   "it": "Fattoria didattica",
   "rm": "Zoo da charezzar"
+ },
+ "Streit um das Sandwich": {
+  "en": "Fight over the sandwich",
+  "fr": "Dispute pour le sandwich",
+  "it": "Lite per il panino",
+  "rm": "Dispita pervia dal sandwich"
  },
  "Strg + Klick beim Erkunden · den Rover an eine andere Stelle setzen": {
   "en": "Ctrl + click when exploring · put the rover somewhere else",
@@ -15950,6 +16280,18 @@
   "it": "Tra i vicini",
   "rm": "Tranter ils vischins"
  },
+ "Unter der Blumenmatte frisst einer immer weiter, wenn die anderen pfeifen …": {
+  "en": "Below the Bluemenmatte one keeps on eating when the others whistle …",
+  "fr": "Sous la Bluemenmatte, l'une continue de manger quand les autres sifflent …",
+  "it": "Sotto la Bluemenmatte una continua a mangiare quando le altre fischiano …",
+  "rm": "Sut la Bluemenmatte maglia ina adina vinavant, cura che las autras sivlan …"
+ },
+ "Unter der Blumenmatte liegt ein gelber Ball – und er bleibt nicht lange liegen.": {
+  "en": "Below the Bluemenmatte lies a yellow ball – and it doesn't stay there for long.",
+  "fr": "Sous la Bluemenmatte se trouve une balle jaune – et elle ne reste pas longtemps immobile.",
+  "it": "Sotto la Bluemenmatte c'è una pallina gialla – e non resta ferma a lungo.",
+  "rm": "Sut la Bluemenmatte è ina balla mellna – ed ella na resta betg ditg là."
+ },
  "Unter einem Karton (eine Kiste, die sich bewegt)": {
   "en": "Under a cardboard box (a box that moves)",
   "fr": "Sous un carton (une caisse qui bouge)",
@@ -16844,6 +17186,12 @@
   "it": "Segnavia (sentiero)",
   "rm": "Indicatur (senda)"
  },
+ "Wegweiser unten: 1 h 30. Ich: 4 h. – Lea": {
+  "en": "Signpost below: 1 h 30. Me: 4 h. – Lea",
+  "fr": "Panneau en bas : 1 h 30. Moi : 4 h. – Lea",
+  "it": "Cartello in basso: 1 h 30. Io: 4 h. – Lea",
+  "rm": "Indicatur da via giudim: 1 h 30. Jau: 4 h. – Lea"
+ },
  "Weinglas": {
   "en": "Wine glass",
   "fr": "Verre à vin",
@@ -17000,6 +17348,12 @@
   "fr": "Qui a attrapé le plus ? %s %d · MoveEye %d",
   "it": "Chi ha preso di più? %s %d · MoveEye %d",
   "rm": "Tgi ha tschiffà dapli? %s %d · MoveEye %d"
+ },
+ "Wer hat meine Socke? Die Kuh weiss es. – Fam. Meier": {
+  "en": "Who has my sock? The cow knows. – The Meier family",
+  "fr": "Qui a ma chaussette ? La vache le sait. – Fam. Meier",
+  "it": "Chi ha il mio calzino? La mucca lo sa. – Fam. Meier",
+  "rm": "Tgi ha mia stgaffa? La vatga sa. – Fam. Meier"
  },
  "Wer kommt": {
   "en": "Who comes",
@@ -17645,6 +17999,12 @@
   "it": "Invertire Y (stick su = testa / vista giù)",
   "rm": "Invertir Y (stick si = chau / vista giu)"
  },
+ "Yeti-Spuren": {
+  "en": "Yeti tracks",
+  "fr": "Traces de yéti",
+  "it": "Tracce dello yeti",
+  "rm": "Fastizs dal yeti"
+ },
  "Yeti-Spuren bis zum Schneemann mit Wanderschuhen (Winter)": {
   "en": "Yeti tracks to a snowman with hiking boots (winter)",
   "fr": "Traces de yéti jusqu'à un bonhomme de neige en chaussures de marche (hiver)",
@@ -18106,6 +18466,12 @@
   "fr": "Caméra spectateur : survole le terrain toute seule",
   "it": "Telecamera spettatore: sorvola il campo da sola",
   "rm": "Camera d’aspectaturs: svola sezza sur il champ da gieu"
+ },
+ "Zwei Alpendohlen zerren am Sandwich des Wanderers – die dritte nimmt es mit, während die zwei noch streiten.": {
+  "en": "Two alpine choughs tug at the hiker's sandwich – the third takes it away while the two are still fighting.",
+  "fr": "Deux chocards tirent sur le sandwich du randonneur – le troisième l'emporte pendant que les deux se disputent encore.",
+  "it": "Due gracchi alpini tirano il panino dell'escursionista – il terzo se lo porta via mentre gli altri due litigano ancora.",
+  "rm": "Duas curnaglias alpinas tiran vi dal sandwich dal viandant – la terza al prenda cun sai, entant che las duas dispitan anc."
  },
  "Zwei Personen dicht beieinander": {
   "en": "Two people close together",

@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 3342 (Stellen: 4842)
-Übersetzt: en 3105, fr 3104, it 3104, rm 3104
+Texte gesamt: 3403 (Stellen: 4904)
+Übersetzt: en 3166, fr 3165, it 3165, rm 3165
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 340 Stellen
 Nicht mehr im Code (noch in texte.json): 22
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 42 Stellen in wizpics.gd 16, wordmark.gd 10, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 11636, schlüssel 7759, keine Wörter 6133, index 3841, technisch 1429, doc 881, einheit 131, englisch 59, log 56, pfad 54, html 42, klasse 22
+Übersprungen (Grund: Anzahl): kennung 11973, schlüssel 7927, keine Wörter 6203, index 3868, technisch 1492, doc 896, einheit 131, englisch 59, log 56, pfad 54, html 42, klasse 22
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  642    29
@@ -27,6 +27,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   feedback.gd               66    17
   mehr.gd                   66    11
   parcours.gd               63    10
+  bergtal_erleben_a.gd      62     0
   bib_berg.gd               56     0
   quick.gd                  55     2
   mwpc.gd                   46    12
@@ -135,8 +136,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:228  'Aussicht: '
   bergtal.gd:237  'Schlafplatz: '
   bergtal.gd:239  'Aussicht: '
-  bergtal.gd:2103  'Schlafplatz: '
-  bergtal.gd:2105  'Aussicht: '
+  bergtal.gd:2118  'Schlafplatz: '
+  bergtal.gd:2120  'Aussicht: '
   dataset.gd:54  'Spiel: '
   dataset.gd:319  ' · Vielfalt hoch'
   dataset.gd:434  ' · alte KI-Daten gelöscht: %d (%.0f MB)'
