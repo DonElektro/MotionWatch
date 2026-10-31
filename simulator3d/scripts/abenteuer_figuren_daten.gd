@@ -87,7 +87,7 @@ const GRUSS := {
 		["hut", "Hoi! Der Hut ist wieder unterwegs - schön."],
 		["", "Hoi! Alles gut unterwegs?"]],
 	"wildhueter": [["neuhut", "Den Hut kenne ich - der Bergführer! Dann bist du sein Enkel. Freut mich."],
-		["erst", "Salü. Ruedi, Wildhut. Ich zähle die Tiere im Tal - und dafür brauche ich manchmal Hilfe."],
+		["erst", "Salü. Ich bin Ruedi, der Wildhüter. Ich zähle die Tiere im Tal - und dafür brauche ich manchmal Hilfe."],
 		["f:auftrag_fertig", "Salü! Deine Aufnahmen waren gut. Vielleicht hätte ich wieder etwas für dich."],
 		["", "Salü. Leise sein - dort oben am Fels steht eine Gämse."]],
 	"w_lena": [["f:hilfe_bekommen", "Du! Dank dir ist mein Fuss wieder gut. Danke nochmals!"],
@@ -103,14 +103,14 @@ const GRUSS := {
 		["f:rat_fondue", "Hoi! Siehst du? Das Fondue-Set ist zu Hause geblieben. Zwei Kilo weniger!"],
 		["", "Hoi! Wieder unterwegs?"]],
 	"b_nina": [["f:hilfe_bekommen", "Hallo! Danke nochmals für die Hilfe neulich - der Fuss ist wieder ganz."],
-		["erst", "Hallo! Nina. Wir wollen morgen früh auf den Grat - und du?"],
+		["erst", "Hallo! Ich bin Nina. Wir wollen morgen früh auf den Grat - und du?"],
 		["f:seil_interesse", "Hallo! Na, immer noch Lust aufs Seil?"],
 		["", "Hallo! Schön, dich wieder zu sehen."]],
 	"b_toni": [["f:hilfe_bekommen", "Salü! Ohne dich wäre ich neulich lange dort gesessen. Merci!"],
-		["erst", "Salü! Toni. Ich war heute schon um vier Uhr unterwegs."],
+		["erst", "Salü! Ich bin Toni. Ich bin heute schon um vier Uhr losgegangen."],
 		["", "Salü! Wieder früh auf den Beinen?"]],
 	"b_urs": [["f:hilfe_bekommen", "Hoi! Der Fuss ist wieder gut - danke dir nochmals."],
-		["erst", "Hoi. Urs. Ich klettere am Gratspitz - der Fels ist dort richtig gut."],
+		["erst", "Hoi, ich bin Urs. Ich klettere am Gratspitz - der Fels ist dort richtig gut."],
 		["", "Hoi! Auch wieder am Berg?"]]}
 
 # ---- Themen ----------------------------------------------------------------------------------------------------------------
@@ -119,7 +119,7 @@ const GRUSS := {
 const THEMEN := {
 	"aelpler": [
 		{"id": "grossvater", "frage": "Kanntest du meinen Grossvater?", "cond": "hut", "einmal": true,
-			"antwort": "Jeder hier kennt den Bergführer. Wenn er dir seine Karte gegeben hat, dann traut er dir den Weg zu. Lies sie gut."},
+			"antwort": "Jeder hier kennt den Bergführer. Wenn er dir seine Karte gegeben hat, dann hat er dir den Weg zugetraut. Lies sie gut."},
 		{"id": "alp", "frage": "Wie ist das Leben auf der Alp?",
 			"antwort": "Um fünf Uhr melken, dann die Kühe auf die Weide, abends wieder melken. Dazwischen Zäune flicken. Streng - aber schöner kann man nicht arbeiten.",
 			"frage2": {"text": "Und du - magst du Alpkäse?", "antworten": [["Sehr! Am liebsten würzig.", "kaese_ja"], ["Ehrlich gesagt nicht so.", "kaese_nein"]],
@@ -161,7 +161,7 @@ const THEMEN := {
 			"antwort": "Den Bergführer? Die Leute im Tal reden mit Respekt von ihm. Und der Hut steht dir!"},
 		{"id": "geruecht", "frage": "Hast du unterwegs etwas Spezielles gesehen?", "effekt": "geruecht"},
 		{"id": "wohin", "frage": "Wohin gehst du heute?",
-			"antwort": "Über den Pass zum Hospiz. Dort soll es die beste Suppe im ganzen Kanton geben.",
+			"antwort": "Über den Pass, am alten Hospiz vorbei. Früher soll es dort die beste Suppe im ganzen Kanton gegeben haben.",
 			"frage2": {"text": "Und du, wohin?", "antworten": [["Ich folge einer alten Karte.", "karte_erzaehlt"], ["Einfach so, schauen.", "einfach_so"]],
 				"nach": {"karte_erzaehlt": "Eine alte Karte? Wie spannend! Viel Glück.", "einfach_so": "Das ist das Schönste am Wandern."}}},
 		{"id": "tausch", "frage": "Möchtest du etwas tauschen?", "effekt": "tausch"}],
