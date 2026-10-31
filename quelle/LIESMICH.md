@@ -21,6 +21,7 @@ den Eintrag dort ändern, wo er steht.
 
 ```
 python3 werkzeuge/bauen.py --neue-version "Was neu ist"            # Nummer +1, Zeile in der Änderungsliste, bauen
+python3 werkzeuge/bauen.py --neue-version "Was neu ist" --stufe funktion   # ab 3.0.0: X.Y+1.0 (Regeln: CLAUDE.md «Versionierung»)
 python3 werkzeuge/bauen.py --signieren SCHLUESSELDATEI               # versions.json signieren + Selbsttest (Schlüssel nie ins Repository)
 python3 werkzeuge/bauen.py --pruefen                                # passt die Datei zu quelle/? keine Funktion doppelt?
 python3 werkzeuge/web_rauchtest.py                                  # jede Web-Adresse ohne / mit Anmeldung (auch auf GitHub)

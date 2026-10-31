@@ -4,6 +4,15 @@ Stand: 31.10.2026 · Simulator-Version **3D-4.82** · passende MoveEye-Version (
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
+## Versionsnummern (vorbereitet im Paket «Versionierung 3.0.0», umgestellt beim Release)
+
+Ab **3.0.0** haben MoveEye und der Simulator **dieselbe Nummer** («MoveEye 3.0.0» / «MoveEye Sim 3.0.0») und werden immer
+zusammen veröffentlicht; `VERSION` in `scripts/main.gd` ist dann `"X.Y.Z"` (vorher `"3D-A.B"`). Vergleich und Anzeige nur
+über `scripts/versionen.gd` (`key`, `newer`, `label`, `legacy`). **Brücke:** alte Simulatoren (bis 3D-4.8x) lesen in
+`version.json` nur `version` – dort steht darum `3D-(X+2).Y.Z` (3.0.0 → `3D-5.0.0`), die echte Nummer in `ver`.
+`version.json` nur mit `python3 werkzeuge/versionen.py --sim-json X.Y.Z "Notiz"` schreiben, danach `--pruefen`.
+Regeln und Ablauf: CLAUDE.md, Abschnitt «Versionierung».
+
 ## NEU in 3D-4.82 (MoveEye 2.98.113): Abenteuer A6 (`spielstand.gd`, `abenteuer_stimme.gd`, `abenteuer_blinki.gd`)
 
 - `spielstand.gd` (neu): 3 Familien-Spielstände, Autosave an Hütte und Lager, «Weiterspielen»; gemeinsames Level für

@@ -105,7 +105,7 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   `python3 werkzeuge/bauen.py` setzt sie Byte für Byte zur **einen Datei** `webcam_bewegung_X_Y_Z.py` zusammen (ca. 51'000 Zeilen),
   die der Pi, die Update-Funktion und die Signatur kennen. **Die grosse Datei nie von Hand ändern** – GitHub prüft bei jedem Push
   (`bauen.py --pruefen`), dass sie zu `quelle/` passt. Alle Teile sind zusammen *ein* Programm (gemeinsame Namen, keine Importe).
-- Jede Änderung = **neue Version und neue Datei**: `python3 werkzeuge/bauen.py --neue-version "Was neu ist"` erhöht die Nummer an
+- Jede Änderung = **neue Version und neue Datei** (Nummern-Regeln ab 3.0.0: Abschnitt «Versionierung»): `python3 werkzeuge/bauen.py --neue-version "Was neu ist"` erhöht die Nummer an
   allen Stellen (`APP_VERSION`, Fenstertitel, `{tr('Build')}`, Dateiname in der Hilfe), schreibt die Zeile in die Änderungsliste
   (`quelle/000_kopf_aenderungen.py`), übernimmt die Simulator-Version aus `simulator3d/version.json`, baut die Datei und entfernt
   die ältere Datei derselben Hauptversion. `--version X.Y.Z` für eine bestimmte Nummer.
@@ -142,6 +142,31 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
     Web-Gruppen in `GROUPS` (JS), Fenster-Gruppen in `TK_GROUPS`. Übersetzungen im Python-Wörterbuch `DE` (Fenster + Server).
   - Einstellungen bleiben bei neuen Versionen erhalten (`~/.config/motionwatch/`); `VOLATILE` wird nie geladen.
 - Anleitung (`HELP_PAGE`, Abschnitte `<section id=…>` DE und EN) bei neuen Funktionen ergänzen.
+
+## Versionierung (Entscheid Daniel, 31.10.2026 – gilt ab dem Release 3.0.0)
+
+- **Eine gemeinsame Nummer X.Y.Z:** «MoveEye 3.0.0» und «MoveEye Sim 3.0.0» haben immer dieselbe Nummer und werden **immer
+  zusammen** veröffentlicht (auch wenn sich nur eines geändert hat). Start bei **3.0.0** (davor MoveEye 2.98.x / Simulator 3D-4.8x).
+- **Zählen:** neue Funktion = zweite Zahl +1 (3.0.4 → 3.1.0), reine Fehlerkorrektur = dritte Zahl +1 (3.1.0 → 3.1.1),
+  grosser Sprung (z. B. Hardware) = erste Zahl +1 (→ 4.0.0). Jede Zahl höchstens 3 Ziffern (Update-Muster der Geräte).
+- **Dateiname bleibt** `webcam_bewegung_X_Y_Z.py` (z. B. `webcam_bewegung_3_0_0.py`): alte Geräte suchen genau dieses Muster
+  (`VFILE_RE`, Signatur über Version + Dateiname). Pro Hauptversion X.Y nur die neueste Datei, höchstens 10 Hauptversionen.
+- **Brücke für alte Simulatoren:** sie lesen in `simulator3d/version.json` nur `version` und vergleichen «3D-A.B» als Zahlen
+  («3.0.0» wäre für sie älter als «3D-4.82»). Darum steht dort immer `"version": "3D-(X+2).Y.Z"` (3.0.0 → `3D-5.0.0`,
+  3.1.0 → `3D-5.1.0`, 4.0.0 → `3D-6.0.0`) und die echte Nummer in `"ver": "X.Y.Z"`. Neue Simulatoren und MoveEye lesen `ver`
+  und rechnen «3D-A.B» als (A−2).B (`simulator3d/scripts/versionen.gd`, `sim_vkey()` in Teil 300, `vnum` im Web-JS, Teil 470).
+  Dieses Feld nie weglassen, auch nicht in späteren Versionen.
+- **Grösse:** Geräte bis 2.98.x nehmen nur Programmdateien bis 8 MiB an (3.0.0 hat rund 7.6 MB) – 3.0.0 muss darunter
+  bleiben. Ab 3.0.0 gilt 32 MiB (`UPD_MAX_BYTES`, Teil 390).
+- **Release-Ablauf ab 3.0.0** (nur der Koordinator, Schlüssel nur bei Daniel):
+  1. Nummer wählen (Regeln oben); `VERSION := "X.Y.Z"` in `simulator3d/scripts/main.gd`, Block `NEU IN X.Y.Z` in
+     `simulator3d/Lies mich.txt`, Kopf von `simulator3d/UEBERGABE.md`.
+  2. Simulator exportieren und ZIP packen, dann `python3 werkzeuge/versionen.py --neu-data` (vor dem Export) und
+     `python3 werkzeuge/versionen.py --sim-json X.Y.Z "Notiz"` (schreibt `version.json` mit `version` + `ver`).
+  3. `python3 werkzeuge/bauen.py --version X.Y.Z --neue-version "Was neu ist"` (oder `--stufe funktion|fehler|gross` statt
+     `--version`); übernimmt `ver` aus `version.json` in `SIM3D` (Teil 300).
+  4. `python3 werkzeuge/versionen.py --pruefen` (eine Nummer überall, Brücke stimmt), dann `bauen.py --signieren …`
+     (Selbsttest prüft dasselbe noch einmal: «Version numbers …»), Rauchtest, committen, pushen.
 
 ## Testen (vor jeder Auslieferung)
 
