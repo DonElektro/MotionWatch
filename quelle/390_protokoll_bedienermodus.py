@@ -903,6 +903,7 @@ class UpdateWatcher:
                 if time.time() - last > 3 * 3600 or UPD.get("recheck") or self.fast_changed():
                     UPD["recheck"] = False; last = time.time()
                     self.tick()
+                update_unsigned_ok()                     # 3.23: unsigned versions switch themselves off after 24 h (380)
                 self.auto_install()
             except Exception as e:
                 print(f"Update watcher: {e}")

@@ -243,7 +243,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_22_0.zip"
-ZD_SHA256 = "bac55ca09b0b3fda58fb0ce920c8f158a7ce653ab34b56d186908726d03ac713"
+ZD_SHA256 = "1e774429e6c1f12a5eb02d94591fcfc4852c77fd24577ab2c3bf66f8140672cf"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -546,7 +546,7 @@ CFG = {
     "sim_autostart": True, "sim_autostart_v2": False,   # v2 (2.95.26): on a Raspberry Pi off by default (it guards the real place)
     # 2.95.25: a simulator announces itself -> the simulation goes on by itself (and off again when it is gone)
     "sim_auto_on": False,        # ... it was switched on by that (only then it is switched off again by itself)
-    "sim_autoupd": True, "sim_separate": True, "sim_basis_show": False, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
+    "sim_autoupd": True, "sim_basis_show": False, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
     "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
     "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
     "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True,
@@ -572,10 +572,11 @@ CFG = {
     "backup_url": "", "backup_user": "", "backup_password": "", "backup_folder": "",
     "backup_all": False,         # copy every recording (otherwise only alarm recordings: armed or with a person)          # alarm messages also as web push to browsers that switched it on (no extra app)         # first start: the setup assistant shows on the web page (and the QR code in the window)
     "update_unsigned": False,    # also install versions without a valid signature (own builds) - not recommended
+    "update_unsigned_t": 0.0,    # 3.23: when it was switched on - after 24 h it switches itself off (update_unsigned_ok, 380)
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
     "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
     "update_install": False,     # install a new version by itself ...
-    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "me_points": {"total": 0, "log": [], "week": ""}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
+    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "me_points": {"total": 0, "log": [], "week": ""}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
            # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
     "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
@@ -4273,7 +4274,7 @@ class Notifier:
     def _dispatch(self, p, jpg, fname):
         if sim_net_down():                               # Simulator-Werte: «WLAN weg» / «Internet weg» test - nothing goes out (285)
             return simnet_hold(self, p, jpg, fname)
-        if sandbox_active() or p.get("_test"):           # 2.96.6: simulator test inbox - nobody is disturbed (141); 2.97.0: per message
+        if (sandbox_active() and not sandbox_lets_through(p)) or p.get("_test"):   # 2.96.6: test inbox (141), 3.23: always in the simulation
             sandbox_add(self._title(p), push_with_map(self._text(p), p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
             msglog_add(self._title(p), push_with_map(self._text(p), p, " · "), self._event(p), jpg, "test", "Test-Postfach")    # 2.98.13: list «Nachrichten»
             return
@@ -11784,12 +11785,24 @@ def event_origin():
 
 
 def sandbox_active():
-    """the test inbox instead of the phone: drills / demo (force), simulation with the switch, and always while a game runs"""
+    """the test inbox instead of the phone: drills / demo (force) and always in the simulation (3.23: no switch any more,
+    the old notify_sandbox is ignored; info messages may still go out with sim_info_push - sandbox_lets_through, 060)"""
     if SANDBOX["force"] > 0:
         return True
-    if not CFG.get("sim_on"):
+    return bool(CFG.get("sim_on"))
+
+
+def sandbox_lets_through(p):
+    """3.23: in the simulation an info message still goes to the phone when «In the simulator: info messages to the phone»
+    (sim_info_push) is on or the real Pi warns (battery, heat, power - 635b push_sim_hold); never alarms, games, drills, tests"""
+    try:
+        if SANDBOX["force"] > 0 or sim_game_running() or not CFG.get("sim_on") or Notifier._event(p) != "info":
+            return False
+        if push_kind(p)["cls"] in ("alarm", "sim"):
+            return False
+        return not push_sim_hold(p)
+    except Exception:
         return False
-    return bool(CFG.get("notify_sandbox")) or sim_game_running()
 
 
 def sandbox_add(title, text, jpg=None, ev=""):
@@ -12122,7 +12135,7 @@ def _ab_thread(preset, plan):
 
 
 def lab_state():
-    return {"sandbox": bool(CFG.get("notify_sandbox")), "inbox": SANDBOX["items"][:12], "drill": {"kind": DRILL["kind"], "busy": DRILL["busy"],
+    return {"sandbox": bool(sandbox_active()), "inbox": SANDBOX["items"][:12], "drill": {"kind": DRILL["kind"], "busy": DRILL["busy"],
             "left": max(0, int(DRILL["until"] - time.time())) if DRILL["busy"] else 0, "last": DRILL["last"]},
             "train": {"on": bool(CFG.get("train_night_on")), "hour": int(CFG.get("train_hour", 1)), "busy": TRAIN["busy"], "step": TRAIN["step"],
                       "last": TRAIN["last"]}, "ab": {"busy": ABT["busy"], "step": ABT["step"], "last": ABT["last"],
@@ -28711,9 +28724,7 @@ def _simprof_load(which):
 
 
 def simprof_on():
-    """simulation on: the real settings aside, the ones of the last simulation back"""
-    if not CFG.get("sim_separate", True):
-        return
+    """simulation on: the real settings aside, the ones of the last simulation back (3.23: always - the switch sim_separate is gone)"""
     keys = simprof_keys()
     _simprof_save("real", {k: CFG[k] for k in keys})
     SIMPROF["q"] = None
@@ -28726,8 +28737,6 @@ def simprof_on():
 
 def simprof_off():
     """simulation off: remember its settings, the real ones back, the question which changes to take over"""
-    if not CFG.get("sim_separate", True):
-        return
     keys = simprof_keys()
     real = _simprof_load("real")
     if not real:
@@ -30728,7 +30737,28 @@ def sig_ok(version, fname, sha, sig, pub=None):
 
 def _installable(it):
     """May this list entry be installed? (already on the Pi, or signed, or unsigned ones are allowed)"""
-    return bool(it.get("installed") or it.get("signed") or CFG["update_unsigned"])
+    return bool(it.get("installed") or it.get("signed") or update_unsigned_ok())
+
+
+UNSIGNED_HOURS = 24
+
+
+def update_unsigned_ok():
+    """3.23: «Also accept unsigned versions» (developer area only) lasts 24 hours, then it switches itself off. The time
+    starts when it is first seen on (switch, old settings file); the update watcher (390) looks every minute."""
+    if not CFG.get("update_unsigned"):
+        if CFG.get("update_unsigned_t"):
+            CFG["update_unsigned_t"] = 0.0
+        return False
+    now = time.time(); t0 = float(CFG.get("update_unsigned_t") or 0.0)
+    if t0 <= 0 or t0 > now + 60:
+        CFG["update_unsigned_t"] = now; save_settings()
+        return True
+    if now - t0 >= UNSIGNED_HOURS * 3600:
+        CFG["update_unsigned"] = False; CFG["update_unsigned_t"] = 0.0; save_settings()
+        log_event("sys", "Unsigned versions: switched off by itself after 24 hours")
+        return False
+    return True
 
 VFILE_RE = re.compile(r"^webcam_bewegung_(\d{1,3})_(\d{1,3})_(\d{1,3})\.py$")
 VER_RE = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}$")
@@ -31684,6 +31714,7 @@ class UpdateWatcher:
                 if time.time() - last > 3 * 3600 or UPD.get("recheck") or self.fast_changed():
                     UPD["recheck"] = False; last = time.time()
                     self.tick()
+                update_unsigned_ok()                     # 3.23: unsigned versions switch themselves off after 24 h (380)
                 self.auto_install()
             except Exception as e:
                 print(f"Update watcher: {e}")
@@ -39407,6 +39438,8 @@ def set_cfg(key, value):
         return False, "unknown setting"
     if spec["type"] == "bool":
         CFG[key] = bool(value)
+        if key == "update_unsigned":                     # 3.23: the 24 hours start now (380 update_unsigned_ok)
+            CFG["update_unsigned_t"] = time.time() if CFG[key] else 0.0
         sched_user_changed(key)
         save_settings()
         if key == "patrol":
@@ -41823,7 +41856,7 @@ class WebStream:
             d = body(); lang = norm_lang(d.get("lang")); a = str(d.get("do") or "")
             ok, err, extra = True, "", {}
             if a == "sandbox":
-                CFG["notify_sandbox"] = bool(d.get("on")); save_settings()
+                pass                                         # 3.23: the test inbox is always on in the simulation (old pages)
             elif a == "clear":
                 SANDBOX["items"].clear()
             elif a == "chain":
@@ -42064,7 +42097,7 @@ class WebStream:
             return reply({"ok": True, "error": tr_err(err, lang) if err else None, "current": APP_VERSION, "source": CFG["update_url"],
                           "items": items, "newer": [x["version"] for x in items if _vkey(x["version"]) > _vkey(APP_VERSION)],
                           "pending": RESTART["pending"], "checked": datetime.fromtimestamp(UPD["time"]).strftime("%H:%M:%S") if UPD["time"] else "",
-                          "list_time": UPD["list_time"], "unsigned_ok": bool(CFG["update_unsigned"])})
+                          "list_time": UPD["list_time"], "unsigned_ok": bool(update_unsigned_ok())})
 
         @app.route("/api/light", methods=["POST"])
         def api_light():
@@ -44743,12 +44776,12 @@ def soundev_state():                                      # + 554: how often the
 def sim_sound_selftest():
     """virtual loudspeaker: plays only in the simulator in test-inbox mode, the state goes to the simulator, the own sound
     mutes the noise alarm and the claps of the simulator"""
-    keep = {k: CFG.get(k) for k in ("sim_on", "audio_out", "notify_sandbox")}
+    keep = {k: CFG.get(k) for k in ("sim_on", "audio_out")}
     keep_sim = {k: SIM.get(k) for k in ("ok", "t")}
     G = globals(); keep_log = G["log_event"]
     try:
         G["log_event"] = lambda *a, **k: None
-        CFG.update(sim_on=True, audio_out="", notify_sandbox=True); SIM.update(ok=True, t=time.time())
+        CFG.update(sim_on=True, audio_out=""); SIM.update(ok=True, t=time.time())
         assert sim_speaker() and speaker_ok() and sim_speaker_only("person alarm")
         ok, _ = sound_play("two-tone", 0.6, 50, reason="selftest")
         assert ok and SOUND["playing"] and SOUND["virt"] and SOUND["kind"] == "two-tone"
@@ -48057,7 +48090,6 @@ TOGGLES = [  # (section, key, label)
     ("Mover", "mover_swap", "Left and right tracks swapped"),
     ("Mover", "mover_sim_show", "Simulation: show the stick even without a mover or motor driver (to try it out)"),
     ("Simulator", "sim_eco", "Simulator: fewer pictures (the simulator draws only what is fetched)"),
-    ("Simulator", "notify_sandbox", "Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)"),
     ("Simulator", "train_night_on", "Training night: every night test runs in several scenes, optimization, training pictures"),
     ("Simulator", "rover_alarm", "Mover: at a person alarm drive there by itself (simulator)"),
     ("Simulator", "fa_learn_auto", "False alarm marked: re-enact it in the simulator and learn from it"),
@@ -48066,7 +48098,6 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
     ("Simulator", "sim_autoupd", "Update the simulator by itself (the setting «Neue Versionen» of the simulator)"),
-    ("Simulator", "sim_separate", "The simulation has its own settings (when switching back: ask which changes to take over)"),
     ("Simulator", "sim_basis_show", "Show the basic simulator (MoveEye Sim · Basis, the old Python simulator)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
     ("Setup", "desktop_notice", "Small message on the Pi's desktop when MoveEye starts in the background"),
@@ -52769,16 +52800,10 @@ SELFTEST_EXTRA.append(("App keys (hash only, no security changes)", appkey_selft
 #   * Unchanged: links with their own key (/na/ buttons in the push, /g/ guests, /x/ shares, /k/ kiosk, /tv/ ...), the
 #     public files, and a device that is already trusted (its cookie is no password).
 # ----------------------------------------------------------------------------
-_SECLOGIN_CFG = {"login_https_only": True}
-for _k, _v in _SECLOGIN_CFG.items():
-    CFG.setdefault(_k, _v)
-    DEFAULTS.setdefault(_k, _v)
-TOGGLES.extend([
-    ("Security", "login_https_only", "Log in only encrypted (https): from other devices the password is only accepted over the secure page"),
-])
+# 3.23 (Daniel 01.11.2026): always on - the switch «login_https_only» is gone (an old saved value is ignored); from the device
+# itself (localhost) the login works without https as before, without a secure page the fallback below stays.
 # «Simple» shows the section only when something is wrong (no secure page, or switched off with a password); «Expert» always
 SIMPLE_IN_USE["Security"] = lambda: web_pw_active() and seclogin_mode() != "on"
-SIMPLE_KEYS.add("login_https_only")
 SECLOGIN = {"own": (0.0, frozenset()), "logged": {}, "fallback_logged": False}
 SECLOGIN_NOTE = ("The password is only accepted over the secure page (https://…:port + 1) or from this device itself. Over plain http "
                  "everybody in the same Wi-Fi (camping!) could read it. The browser warns once about the certificate (it is made by MoveEye "
@@ -52859,9 +52884,7 @@ def seclogin_secure(req):
 
 
 def seclogin_mode():
-    """"off" (setting off), "fallback" (setting on, but no secure page: http login allowed with a warning), "on" """
-    if not CFG.get("login_https_only", True):
-        return "off"
+    """"fallback" (no secure page: http login allowed with a warning), "on" (3.23: always on, no switch)"""
     if not seclogin_https_port():
         if not SECLOGIN["fallback_logged"] and time.time() - START > 60:
             SECLOGIN["fallback_logged"] = True
@@ -52940,7 +52963,7 @@ def seclogin_info(req=None, lang=None):
     """for the page (Settings → Security), /api/state and the window"""
     m = seclogin_mode()
     port = seclogin_https_port()
-    i = {"on": bool(CFG.get("login_https_only", True)), "mode": m, "port": port, "pw": web_pw_active(),
+    i = {"on": True, "mode": m, "port": port, "pw": web_pw_active(),
          "note": tr(SECLOGIN_NOTE, lang), "warn": ""}
     if req is not None:
         i["secure"] = seclogin_secure(req)
@@ -52976,18 +52999,17 @@ def seclogin_selftest():
     assert seclogin_secure(_R("127.0.0.1", h={"X-Forwarded-For": "1.2.3.4", "X-Forwarded-Proto": "https"}))
     assert not seclogin_secure(_R("127.0.0.1", h={"X-Forwarded-For": "1.2.3.4", "X-Forwarded-Proto": "http"}))
     assert not seclogin_secure(_R("192.0.2.77"))                       # TEST-NET: never an own address
-    keep = STATE.get("https_port"), CFG.get("login_https_only")
+    keep = STATE.get("https_port")
     try:
-        STATE["https_port"] = 5001; CFG["login_https_only"] = True
+        STATE["https_port"] = 5001
         assert seclogin_url(_R("192.0.2.77", path="/zones")) == "https://192.168.1.5:5001/zones"
         assert seclogin_url(_R("192.0.2.77", host="[fe80::1]:5000")) == "https://[fe80::1]:5001/"
         assert seclogin_mode() == "on" and seclogin_plain(_R("192.0.2.77")) and not seclogin_plain(_R("100.64.0.5"))
         STATE["https_port"] = None
         assert seclogin_mode() == "fallback" and not seclogin_plain(_R("192.0.2.77"))   # no secure page: never locked out
-        STATE["https_port"] = 5001; CFG["login_https_only"] = False
-        assert not seclogin_plain(_R("192.0.2.77"))
+        assert "login_https_only" not in CFG, "3.23: always on, no switch"
     finally:
-        STATE["https_port"], CFG["login_https_only"] = keep
+        STATE["https_port"] = keep
     return True
 
 
@@ -57262,7 +57284,6 @@ SET_HELP = {
     "rec_keep_days": ("Recordings older than this are deleted by themselves (0 = keep until the memory is full).", "14 to 30 days."),
     "push_pics": ("A picture in the push message.", "On - you see at once what it is."),
     "batt_save_on": ("Below a battery level MoveEye saves power by itself (fewer pictures, the AI less often).", "On with a battery."),
-    "login_https_only": ("The password is only accepted over a secure connection (https, the device itself or Tailscale).", "On when you use MoveEye from outside."),
     "lens_check": ("Warns when the lens is dirty, wet or covered.", "On."),
     "weather_on": ("Weather forecast and warnings for the place (needs the location).", "On."),
     "gps_tag": ("Writes the location into the photos.", "Off if you share pictures."),
@@ -66478,7 +66499,7 @@ _MENU_MOVES = {
     "Setup": ("time_from_browser",),
     "Device warnings": ("temp_alarm_on", "env_on", "temp_hot", "temp_cold", "env_offset", "temp_warn", "disk_warn_mb"),
     "Device & help": ("device_name", "use_case", "tips_level", "tours_auto", "tip_of_day", "blinki_on", "desktop_notice", "log_keep_days", "dev_area"),
-    "Developer": ("log_status_min",),
+    "Developer": ("log_status_min", "update_unsigned"),       # 3.23: unsigned versions only in the developer area (24 h)
 }
 for _ms, _mk in _MENU_MOVES.items():
     for _lst in (TOGGLES, SLIDERS, TEXTS):
@@ -68152,6 +68173,60 @@ def _mwb_selftest():
 
 
 SELFTEST_EXTRA.append(("Header folds and bar (639o)", _mwb_selftest))
+# ----------------------------------------------------------------------------
+# Entfernt (nur diese Schalter, die Funktion bleibt immer an):
+#   * notify_sandbox  -> sandbox_active() (141) ist in der Simulation immer wahr; Info-Meldungen gehen mit sim_info_push
+#                        oder bei echten Pi-Warnungen weiter aufs Handy (sandbox_lets_through, 141 / 060)
+#   * sim_separate    -> simprof_on / simprof_off (340) immer
+#   * login_https_only-> seclogin_mode (574) immer «on» (oder «fallback» ohne https-Seite, nie ausgesperrt)
+# Ein gespeicherter alter Wert dieser Schlüssel wird beim Laden still übergangen (apply_settings kennt sie nicht mehr).
+# update_unsigned: Abschnitt «Developer» (639c _MENU_MOVES), Ablauf in update_unsigned_ok (380), Zeit update_unsigned_t (020).
+# ----------------------------------------------------------------------------
+_HX_SCHALTER = {
+    "Only for your own builds: MoveEye also installs versions without the developer's signature. Switches itself off after 24 hours.":
+        ("Nur für eigene Fassungen: MoveEye installiert auch Versionen ohne die Signatur des Entwicklers. Schaltet sich nach 24 Stunden selbst aus.",
+         "Uniquement pour vos propres versions : MoveEye installe aussi des versions sans la signature du développeur. Se désactive tout seul après 24 heures.",
+         "Solo per versioni proprie: MoveEye installa anche versioni senza la firma dello sviluppatore. Si spegne da solo dopo 24 ore.",
+         "Mo per atgnas versiuns: MoveEye installescha er versiuns senza la signatura dal sviluppader. Sa stizza sez suenter 24 uras."),
+    "Off.": ("Aus.", "Désactivé.", "Spento.", "Stizzà."),
+    "Unsigned versions: switched off by itself after 24 hours":
+        ("Nicht signierte Versionen: nach 24 Stunden von selbst ausgeschaltet",
+         "Versions non signées : désactivé tout seul après 24 heures",
+         "Versioni non firmate: spento da solo dopo 24 ore",
+         "Versiuns betg signadas: stizzà sez suenter 24 uras"),
+}
+for _k, _v in _HX_SCHALTER.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+SET_HELP["update_unsigned"] = ("Only for your own builds: MoveEye also installs versions without the developer's signature. Switches itself off after 24 hours.",
+                               "Off.")
+
+
+def schalter_selftest():
+    """the removed switches stay removed, the functions are always on, unsigned versions expire after 24 hours"""
+    lists = {x[1] for x in TOGGLES + SLIDERS + TEXTS}
+    for k in ("notify_sandbox", "sim_separate", "login_https_only"):
+        assert k not in CFG and k not in lists, f"{k} is back"
+    assert any(x[1] == "update_unsigned" and x[0] == "Developer" for x in TOGGLES), "update_unsigned not in the developer section"
+    keep = {k: CFG.get(k) for k in ("sim_on", "update_unsigned", "update_unsigned_t")}
+    G = globals(); keep_save = G["save_settings"]; keep_log = G["log_event"]
+    try:
+        G["save_settings"] = lambda *a, **k: None; G["log_event"] = lambda *a, **k: None
+        CFG["sim_on"] = True
+        assert sandbox_active(), "test inbox not on in the simulation"
+        CFG.update(update_unsigned=True, update_unsigned_t=0.0)
+        assert update_unsigned_ok() and CFG["update_unsigned_t"] > 0, "time not started"
+        CFG["update_unsigned_t"] = time.time() - 25 * 3600
+        assert not update_unsigned_ok() and not CFG["update_unsigned"], "not switched off after 24 h"
+    finally:
+        G["save_settings"] = keep_save; G["log_event"] = keep_log
+        CFG.update(keep)
+    return "test inbox always on in the simulation, login always encrypted, unsigned versions 24 h"
+
+
+SELFTEST_EXTRA.append(("Switches tidied up (639p)", schalter_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------
