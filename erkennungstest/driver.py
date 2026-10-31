@@ -312,6 +312,11 @@ def goto_place(place):
 def zimmer(done):
     """Schlafzimmer (Welt Zuhause): Hamster im Laufrad (Nacht), Spinne vor der Linse (Nacht, Infrarot), Wellensittich (Tag), Leerlauf"""
     place = "schlafzimmer"
+    l = wait_load(5.0, 480)
+    log("Last vor Schlafzimmer", l)
+    if l >= 5.0:
+        log("Schlafzimmer übersprungen: Last zu hoch")
+        return
     goto_place(place)
     ctl(action="zimmertiere", do="set", pets=True, spider=True)
     cases = [("nacht", "hamster", lambda: ctl(action="zimmertiere", do="state", who="hamster", state="wheel", dur=40, hold=True)),
@@ -343,6 +348,7 @@ def zimmer(done):
 
 
 ANI_I = 0
+PLAN["schlafzimmer"] = ("daheim", [])
 EVENTS = ["leer", "gehen", "kriechen", "kind", "tier", "fahrzeug"]
 
 if __name__ == "__main__":
