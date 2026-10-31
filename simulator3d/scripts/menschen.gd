@@ -1076,7 +1076,7 @@ func _plan_tick(t: float) -> void:
 		return
 	var h: float = main.hour()
 	var night := h >= 22.5 or h < 6.0
-	_next_plan = t + (randf_range(150.0, 360.0) if night else randf_range(40.0, 100.0)) / maxf(0.1, main.visit_rate)
+	_next_plan = t + (randf_range(150.0, 360.0) if night else randf_range(40.0, 100.0)) / maxf(0.1, main.visit_rate) * (1.6 if _lite() else 1.0)   # Lite: fewer people
 	if main.visitors.get_child_count() + 3 > main.max_visitors:
 		return
 	main.visit(plan_pick(h))
