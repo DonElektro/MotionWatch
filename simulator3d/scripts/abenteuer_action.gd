@@ -425,7 +425,7 @@ func _schl_choose(v: String) -> void:
 				s["zuerst"] = v
 				s["t"] = _now()
 				hub.snd("knarr", hub.wg(X, 0.5), -22.0)
-				_schl_ask(T.t("Der %s Schieber ist unten - %d Sekunden, dann fällt er zurück!") % [T.t("linke") if v == "links" else T.t("rechte"), int(_fenster())])
+				_schl_ask((T.t("Der linke Schieber ist unten - %d Sekunden, dann fällt er zurück!") if v == "links" else T.t("Der rechte Schieber ist unten - %d Sekunden, dann fällt er zurück!")) % int(_fenster()))
 			elif v != str(s["zuerst"]) and str(s["bei"]) == v:
 				_schl_ok()
 		"lauf":

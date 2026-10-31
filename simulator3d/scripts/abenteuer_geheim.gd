@@ -113,7 +113,7 @@ func _call(fn: String, args := []) -> Variant:
 	for o in act:
 		if o.has_method(fn):
 			var r = o.callv(fn, args)
-			if r == true:
+			if r is bool and r:
 				return true
 			if r is Dictionary and out == null:
 				out = r
@@ -943,7 +943,8 @@ func on_start() -> void:
 
 
 func leg_stop(lg: Dictionary, f0: float, f: float) -> bool:
-	return _call("leg_stop", [lg, f0, f]) == true
+	var r = _call("leg_stop", [lg, f0, f])
+	return r is bool and r
 
 
 func on_ask() -> void:
@@ -961,7 +962,8 @@ func choose(pe: Dictionary, v: String) -> bool:
 		if not ab.choices.is_empty() and str(ab.choices[-1][1]) == "gh_blatt":
 			ab.choices.pop_back()                           # (a detour of the player, not part of «genau gleich nochmals»)
 		return true
-	return _call("choose", [pe, v]) == true
+	var r = _call("choose", [pe, v])
+	return r is bool and r
 
 
 func register_kinds() -> void:
