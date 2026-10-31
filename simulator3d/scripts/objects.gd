@@ -1,4 +1,5 @@
 extends RefCounted
+const Waerme = preload("res://scripts/waerme.gd")   # 3D-4.26: the heat table
 ## 3D-3.86: alle Dinge, die die KI von MoveEye kennt (die 80 COCO-Klassen), als Gegenstände für das Inventar - einfach aus
 ## Grundformen gebaut, in echter Grösse, mit der Farbe, an der man sie erkennt. Menschen und die laufenden Tiere kommen aus
 ## den Besuchern (VISITOR_LIST); hier stehen die übrigen. Jeder Eintrag: Name, Kategorie, COCO-Name, Symbol, Teile, Hindernis.
@@ -362,7 +363,10 @@ static func build(main, kind: String) -> Node3D:
 			m.emission = m.albedo_color
 			m.emission_energy_multiplier = 2.0
 		var rot := Vector3(deg_to_rad(p[8]), deg_to_rad(p[9]), deg_to_rad(p[10]))
-		var mi: MeshInstance3D = main.add_mesh(parent, mesh, Vector3(p[4], p[5], p[6]) - off, m, tk, rot)
+		var tkp = tk
+		if main.simreal != null and main.simreal.th_real:           # 3D-4.26: flame / glow and the rest from waerme.gd
+			tkp = Waerme.obj(kind, col.begins_with("*"), tk, float(main.ambient))
+		var mi: MeshInstance3D = main.add_mesh(parent, mesh, Vector3(p[4], p[5], p[6]) - off, m, tkp, rot)
 		if col.begins_with("*"):
 			mi.set_meta("glow", m)
 	if d.has("scl"):

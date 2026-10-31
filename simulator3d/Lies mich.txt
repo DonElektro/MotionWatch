@@ -421,6 +421,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.44
+3D-4.44: Wärmebild wie der echte Thermal-90 (80 × 62, Rauschen, Drift, Unschärfe, Wasser auf der Linse) und eine
+Wärmetabelle für Menschen, Tiere, Motoren, Feuer und Sonne: Asphalt am Nachmittag warm, Nebel schluckt die Ferne,
+Motorhaube eines eben angekommenen Autos kühlt langsam ab, Glas lässt kein Wärmebild durch.
+So testest du: 1) Kamerabild → Wärmebild: «Wärmebild wie echt» ein, 14 Uhr: Asphalt und Autodächer warm. 2) 23 Uhr:
+«Geparktes Auto: Motor warm». 3) «Glasscheibe vor MoveEye»: Kamera sieht die Person, das Wärmebild nicht.
+
 NEU IN 3D-4.43
 3D-4.43: Einbruch-Abläufe: 7 Szenarien (z. B. Auskundschaften und nachts zurück, Ablenkung, Velo-Diebstahl in der Nacht),
 der Dieb nutzt Deckung; am Schluss ein Bericht: wann MoveEye gewarnt hat, was verpasst wurde. Auch im Nacht-Testlauf.
