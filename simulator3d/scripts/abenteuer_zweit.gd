@@ -162,6 +162,12 @@ func on_morning() -> void:
 	_keep()
 
 
+func on_a1_fotos(fs: Array) -> void:
+	"""A1 (abenteuer_moveeye.gd _tag_done): die Aufnahmen der Wildkamera am Tag kommen auch auf die Bestenliste"""
+	if Board.add_a1_fotos(fs, str(names[0])) > 0:
+		ab._changed()
+
+
 func phone_msg(p: Dictionary, t: String, m: Dictionary) -> bool:
 	"""game._message: what the companion phone sends ({"t": "abz", "k": pin | say | rat | foto})"""
 	if t != "abz":
@@ -873,7 +879,7 @@ func _pins_tick() -> void:
 
 
 func take_foto(wer: String, quelle: String) -> Dictionary:
-	"""the picture MoveEye sees right now - for the family board (rated by foto_wertung)"""
+	"""the picture MoveEye sees right now - for the family board (no A1 data: rated by Board.bild_wertung)"""
 	if main.vps.is_empty():
 		return {}
 	var img: Image = (main.vps[0] as SubViewport).get_texture().get_image()

@@ -16999,6 +16999,12 @@
   "it": "Nessuna volpe alle provviste stanotte.",
   "rm": "Nagina vulp tar la provianda questa notg."
  },
+ "Kein Geld - nur Tausch nach der Wunschliste. Gesucht: %s.": {
+  "en": "No money - only trading by the wish list. Wanted: %s.",
+  "fr": "Pas d'argent - seulement du troc selon la liste de souhaits. Recherché : %s.",
+  "it": "Niente soldi - solo baratto secondo la lista dei desideri. Cercato: %s.",
+  "rm": "Nagins daners - mo barat tenor la glista da giavischs. Tschertgà: %s."
+ },
  "Kein Geld - nur Tausch, eins gegen eins. Gesucht: %s.": {
   "en": "No money - only trading, one for one. Wanted: %s.",
   "fr": "Pas d'argent - seulement du troc, un contre un. Recherché : %s.",

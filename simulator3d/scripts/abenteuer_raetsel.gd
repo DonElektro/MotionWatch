@@ -467,7 +467,7 @@ func _kompass_ok(ch: int, i: int) -> void:
 		gib(it)
 		lines.append(T.t("Neu: %s.") % T.t(ITEM_NAME[it]))
 	if ch == 3 and not hat("ersatzteil") and not bool(S()["wege"].get("steg", false)):
-		gib("ersatzteil")                                # TODO verbinden: A2 (Botendienste) / A4 können das Ersatzteil auch anders geben
+		gib("ersatzteil")                                # OFFEN (Entscheid Daniel): 2. Quelle = A2-Botendienst q_ersatzteil
 		lines.append(T.t(ERSATZ_TEXT))
 	_check_erbe()
 	ab._diary("a3", T.t("Karte und Kompass"), " ".join(lines.slice(0, 2)))

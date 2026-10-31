@@ -173,18 +173,12 @@ func _carry_again() -> void:
 			gib(str(q["item"]))
 
 
-# A1 (MoveEye-Lager + Wildkamera) meldet Fotos: entweder ab.a1.hat_foto(tier) -> bool, oder A1 ruft foto_gemeldet(tier).
-# TODO verbinden, sobald A1 zusammengeführt ist (Felder "a1_fotos" / "a1_sammlung" im Spielstand werden auch gelesen).
+# A1 (MoveEye-Lager + Wildkamera, abenteuer_moveeye.gd): ab.a1.hat_foto(tier) - Aufnahmen dieser Nacht und frühere (P["a1_fotos"]).
+# foto_gemeldet(tier) bleibt für Tests (Steuerbefehl «foto»).
 func foto_da(tier: String) -> bool:
 	var a1 = ab.get("a1")
-	if a1 != null and is_instance_valid(a1) and a1.has_method("hat_foto"):
-		return bool(a1.hat_foto(tier))
-	for k in ["a1_fotos", "a1_sammlung"]:
-		var s = ab.P.get(k, null)
-		if s is Dictionary and s.has(tier):
-			return true
-		if s is Array and tier in s:
-			return true
+	if a1 != null and is_instance_valid(a1) and bool(a1.hat_foto(tier)):
+		return true
 	return bool((mem()["fotos"] as Dictionary).get(tier, false))
 
 
@@ -213,7 +207,7 @@ func _enter_tree() -> void:
 
 
 static func wuensche(fid: String) -> Dictionary:
-	"""A4 (abenteuer_rucksack.gd) ruft das auf: {name, will: [ids], gibt: [ids]} - Format wie WUENSCHE_STUB.
+	"""A4 (abenteuer_rucksack.gd) ruft das auf: {name, will: [ids], gibt: [ids], figur}; die Paare für den Tausch holt A4 mit wunschliste().
 	«wanderer» / «bergsteiger» = die Figur von heute. Die genauen Paare (wie viele gegen wie viele): wunschliste()."""
 	if fid in ["wanderer", "bergsteiger"]:
 		if _me == null:

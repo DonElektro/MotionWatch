@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 5802 (Stellen: 7968)
-Übersetzt: en 5802, fr 5802, it 5802, rm 5802
+Texte gesamt: 5797 (Stellen: 7963)
+Übersetzt: en 5797, fr 5797, it 5797, rm 5797
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 407 Stellen
-Nicht mehr im Code (noch in texte.json): 69
+Nicht mehr im Code (noch in texte.json): 75
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 67 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 19892, schlüssel 14826, keine Wörter 9087, index 7483, technisch 2598, doc 1624, einheit 235, englisch 107, log 78, pfad 68, html 67, klasse 24, shader 4
+Übersprungen (Grund: Anzahl): kennung 19867, schlüssel 14806, keine Wörter 9099, index 7513, technisch 2592, doc 1629, einheit 235, englisch 107, log 78, pfad 68, html 67, klasse 24, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  670    29
@@ -42,10 +42,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   bib_berg.gd               60     0
   abenteuer_figuren.gd      58     5
   quick.gd                  57     2
-  abenteuer_rucksack.gd     55     3
   bergtal_erleben_b.gd      55     0
   entdecken.gd              55     0
   spielbereich.gd           51     0
+  abenteuer_rucksack.gd     49     3
   scenes.gd                 47     0
   karte.gd                  46     8
   mwpc.gd                   46    12
@@ -191,11 +191,11 @@ Unsicher:
   'Wide camera (NoIR Wide)': Kameraname an MoveEye (/info) – nicht umhüllen
 
 Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {name} machen:
-  abenteuer_figuren.gd:699  'fertig'
-  abenteuer_figuren.gd:784  'nein'
-  abenteuer_figuren.gd:794  'nein'
-  abenteuer_figuren.gd:807  'ja'
-  abenteuer_figuren.gd:807  'nein'
+  abenteuer_figuren.gd:693  'fertig'
+  abenteuer_figuren.gd:778  'nein'
+  abenteuer_figuren.gd:788  'nein'
+  abenteuer_figuren.gd:801  'ja'
+  abenteuer_figuren.gd:801  'nein'
   ferienpark_leben.gd:925  'fertig'
   ferienpark_leben.gd:992  'fertig'
   protokoll.gd:72  'aus'
@@ -245,20 +245,20 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   abenteuer_moveeye.gd:264  'offen'
   abenteuer_moveeye.gd:324  'offen'
   abenteuer_moveeye.gd:386  'offen'
-  abenteuer_moveeye.gd:1060  'offen'
-  abenteuer_moveeye.gd:1099  'offen'
-  abenteuer_moveeye.gd:1127  'offen'
-  abenteuer_moveeye.gd:1305  'offen'
-  abenteuer_moveeye.gd:1306  'offen'
-  abenteuer_moveeye.gd:1306  'offen'
+  abenteuer_moveeye.gd:1062  'offen'
+  abenteuer_moveeye.gd:1101  'offen'
+  abenteuer_moveeye.gd:1129  'offen'
+  abenteuer_moveeye.gd:1307  'offen'
+  abenteuer_moveeye.gd:1308  'offen'
+  abenteuer_moveeye.gd:1308  'offen'
   bergtal_horror.gd:40  'offen'
   bergtal_horror.gd:58  'offen'
   bergtal_horror.gd:1102  'Fertig'
   abenteuer_raetsel.gd:878  'Neu: '
   abenteuer_raetsel.gd:887  'Gegenstände: '
-  abenteuer_rucksack.gd:224  'keine Wunschliste: '
-  abenteuer_rucksack.gd:412  ' und '
-  abenteuer_rucksack.gd:468  'Fertig'
+  abenteuer_rucksack.gd:218  'keine Wunschliste: '
+  abenteuer_rucksack.gd:424  ' und '
+  abenteuer_rucksack.gd:480  'Fertig'
   tour.gd:187  'Fertig'
   b3d.gd:86  'Kachel leer: '
   b3d.gd:186  'glTF nicht lesbar: '

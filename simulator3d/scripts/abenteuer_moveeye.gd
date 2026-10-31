@@ -879,6 +879,8 @@ func _tag_done(n) -> void:
 	var fs: Array = ab.R["a1"]["fotos"]
 	tg["fotos"] = fs.size()
 	_in_p(fs)
+	if ab.get("zweit") != null and ab.zweit.has_method("on_a1_fotos"):
+		ab.zweit.on_a1_fotos(fs)                                   # A5: the pictures of the day go onto the family board too
 	ab._diary("a1_tag", T.t("Wildkamera am Tag"), T.t("%d Aufnahmen - jetzt auswerten.") % fs.size())
 	ab._save()
 	ab._changed()
