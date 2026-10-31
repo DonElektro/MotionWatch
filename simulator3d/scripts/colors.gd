@@ -93,7 +93,8 @@ func update() -> void:
 			var amt: float = float(lf[1]) * (0.15 if conifer else 1.0)
 			fm.set_shader_parameter("color", b.lerp(lf[0], amt))
 	_ground_tick()
-	var wet: float = 1.0 if main.weather == "rain" else (0.4 if main.weather == "snow" else 0.0)
+	# real-wetter: shiny as long as the surfaces are wet (they dry slowly after the rain), in steps of 0.1
+	var wet: float = 0.4 if main.weather == "snow" else snappedf(wetness, 0.1)
 	if wet != _wet and on:
 		_wet = wet
 		for m in base_alb.keys():
@@ -122,8 +123,10 @@ func _ground_tick() -> void:
 	var el: float = main.sun_el()
 	var day: float = clampf((el + 6.0) / 18.0, 0.0, 1.0)
 	if main.weather == "rain":
-		wetness = minf(1.0, wetness + dt / 90.0)
-		puddle = minf(1.0, puddle + dt / 900.0)
+		# real-wetter: by the strength of the rain (8 mm/h = as before); drizzle soaks in, no puddles
+		var R: float = main.wetter.rain_mmh() if main.wetter != null else 8.0
+		wetness = minf(1.0, wetness + dt * R / 720.0)
+		puddle = minf(1.0, puddle + dt * maxf(0.0, R - 1.0) / 6300.0)
 	else:
 		var dry: float = (1.0 + 2.0 * day + float(main.wind) / 15.0) / 2400.0
 		wetness = maxf(0.0, wetness - dt * dry)

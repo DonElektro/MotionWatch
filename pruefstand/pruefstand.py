@@ -46,6 +46,8 @@ PLAN_NAME = {"quick": "Kurz (Tag + Nacht)", "standard": "Standard (Tag, Wind, Na
              "nacht": "Ganze Nacht (20–6 Uhr, Zeitraffer)", "spielwege": "Schleichwege aus dem Spiel", "echtenaechte": "Echte Nächte nachgespielt"}
 PLAN_NAME.update({"camping_voll": "Voller Campingplatz", "tarnen": "Tarnen und Kriechen", "velodieb": "Velodieb"})
 PLAN_NAME["gegenstaende"] = "Gegenstände (Wind, Licht, Lockmittel)"
+PLAN_DAUER["wetter"] = 380            # Zweig real-wetter: Niesel, Starkregen, Nebel 50 m, beschlagene Linse, Schnee, Gewitter-Blitze - von Hand
+PLAN_NAME["wetter"] = "Wetter physikalisch (Regen, Nebel, Linse, Schnee, Blitze)"
 FIX_PLAENE = ("spielwege", "echtenaechte", "nacht")      # Prüfstand 2: realistic numbers - --mal does not multiply, no run without effects
 WEGE = os.path.join(REPO, "simulator3d", "spielwege")
 NAECHTE = os.path.join(REPO, "simulator3d", "pruefnaechte")
