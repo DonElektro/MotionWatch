@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 18:19",
+ "generated": "2026-10-31 19:20",
  "versions": [
   {
-   "version": "3.9.1",
-   "file": "webcam_bewegung_3_9_1.py",
+   "version": "3.9.2",
+   "file": "webcam_bewegung_3_9_2.py",
    "url": "",
-   "sha256": "506ae9bab4d5dec008504fefcfaa4c3b365e9143e5b0dbb185d8940fe3007a45",
-   "date": "2026-10-31 18:19",
-   "notes": "Diebstahl-Alarm: Kartenlink wieder vollständig in jeder Handy-Meldung (auch SMS), Sabotage-Meldungen mit letzter GPS-Position; überall «Mover» (auch im Simulator: «Verstecken mit dem Mover»).",
-   "size": 4403927,
-   "sig": "22c1ccd1e885497bdec36d299d3726b13b16f4e61242261c1a6e4362acef8680a78c3b703730d635cf440c0dca42bf9f9a512fcafba9934482820e7b192a4901",
+   "sha256": "379acd853935bc37f51e4cd3cd19b5a09d7ed24c2e3cfee12259255d99642c38",
+   "date": "2026-10-31 19:20",
+   "notes": "Simulator 3.9.2: Start-Absturz behoben (Foto-Inhalte wurden zu früh angewendet); nach einem Absturz beim Laden der Fotos startet der Simulator ohne Fotos; neue Startoption --no-inhalte.",
+   "size": 4403953,
+   "sig": "9c9f3784fc918cd6513a0307976ee060330587ea4ccc1c55f79a81fd45ebe6e7e4ace222237bc751236e56a4edab0d94248b1a8c83faa3d06afb2cbec9d4c101",
    "data": {
-    "file": "moveeye_daten_3_9_1.zip",
+    "file": "moveeye_daten_3_9_2.zip",
     "url": "",
-    "sha256": "c26b538ff3c5313370845679df549a5d295e00f3d8067d3d6ea1df0ecb292039",
-    "size": 1609543,
-    "sig": "52298f41c084a14229f637156c22393d919770766feef1f35777f7d1b3d29b10868e88eda2c217913e366ace1d954cfb721c16276311f4af0f69cb42bdf93a06"
+    "sha256": "6e159f0a6962cb216c0cb1bb9c2923616ede7f81f5276388a2050ed42e178bb7",
+    "size": 1609632,
+    "sig": "56898ff6da73eff5c08c24d8a96325abaaa4d21854579a5c3f1f9a26cd66978d623a313e4882b25959533e1c786fa39bfcf53c35755e2ff47bd261fb3191c60b"
    }
   },
   {
