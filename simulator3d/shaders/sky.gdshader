@@ -24,6 +24,8 @@ float hash2(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
 }
 
+uniform float milky = 0.0;            // Bergtal (bergtal_aussicht.gd): the Milky Way in a clear mountain night, 0 = none
+
 float vnoise(vec2 p) {
 	vec2 i = floor(p);
 	vec2 f = fract(p);
@@ -85,6 +87,18 @@ void sky() {
 		float star = step(0.993, r) * smoothstep(0.5, 0.0, length(fract(p) - 0.5)) * (0.35 + 2.6 * pow((r - 0.993) / 0.007, 3.0));
 		// (no twinkling: a camera does not see it, and it would look like movement)
 		col += vec3(0.9, 0.93, 1.0) * star * night * (1.0 - cloud_cover) * smoothstep(0.02, 0.2, h) * 2.2;
+		if (milky > 0.01) {
+			// the Milky Way: a soft band along a great circle, patchy (dust lanes), with many faint stars in it
+			float bd = dot(d, normalize(vec3(0.42, 0.55, 0.72)));
+			float band = exp(-bd * bd / 0.018);
+			float cloud = fbm(vec2(atan(d.z, d.x) * 4.0, bd * 9.0)) ;
+			float lane = smoothstep(0.35, 0.75, fbm(vec2(atan(d.z, d.x) * 7.0 + 3.0, bd * 22.0)));
+			vec3 q = d * 520.0;
+			float r2 = hash3(floor(q));
+			float fs = step(0.975, r2) * smoothstep(0.5, 0.0, length(fract(q) - 0.5)) * 0.6;
+			float mk = milky * night * (1.0 - cloud_cover) * smoothstep(0.02, 0.25, h);
+			col += (vec3(0.55, 0.6, 0.75) * band * cloud * (1.0 - 0.6 * lane) * 0.05 + vec3(0.85, 0.9, 1.0) * fs * band * 1.4) * mk;
+		}
 		// clouds: noise on a high plane, moving with the wind
 		vec2 uv = d.xz / (h + 0.06) * 0.55 + wind * TIME;
 		float n = fbm(uv * 1.3);

@@ -19,6 +19,7 @@ extends RefCounted
 const Bib = preload("res://scripts/bib_berg.gd")
 const T = preload("res://scripts/i18n.gd")
 const Szenen = preload("res://scripts/szenenplus.gd")
+const Aussicht = preload("res://scripts/bergtal_aussicht.gd")   # «Bergtal · Aussichtspunkte»: what the viewpoints do
 
 const ALT0 := 1500.0                 # metres above sea level at the north end (height 0)
 const LO := -1024.0                  # the height map: from LO to -LO in both directions
@@ -194,6 +195,7 @@ var _birds: Array = []
 var _stones: Array = []                      # rolling stones (rockfall)
 var _burrows: Array = []                     # world positions of marmot burrows near the spot
 var _gm: ShaderMaterial
+var aussicht                                   # bergtal_aussicht.gd (Fernrohr, Panorama, Stimmungen, Karte, Abzeichen …)
 
 
 static func _lite() -> bool:
@@ -831,6 +833,8 @@ static func build_scene(sc) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE and m != null and is_instance_valid(m) and m.env != null:
 		m.env.fog_height_density = 0.0               # the valley fog of the autumn goes with the scene
+		if aussicht != null:
+			aussicht.cleanup()
 
 
 func P(x: float, z: float, dy := 0.0) -> Vector3:
@@ -922,6 +926,8 @@ func _build(sc) -> void:
 	_lower_valley()
 	_side_valleys()
 	_viewpoints()
+	aussicht = Aussicht.new(self)
+	aussicht.pieces()                                # (the things only seen through the telescope)
 	_vignette_pieces()
 	_signs_and_cairns()
 	_own_spot()
@@ -935,6 +941,7 @@ func _build(sc) -> void:
 			return z in ["lake", "shore", "scree", "glacier"] or slope_deg(q.x, q.z) > 30.0)
 	rating = evaluate(spot_xz.x, spot_xz.y)
 	_publish()
+	aussicht.start()
 	_need_residents = true                                # (at the start of the program the visitors node is not there yet)
 	m.anims.append(Callable(self, "_tick"))
 	_ev_next = m.now() + randf_range(40.0, 90.0)
@@ -2770,6 +2777,8 @@ func _tick(dt: float, _t: float) -> bool:
 		m.env.fog_height_density = 0.03
 	else:
 		m.env.fog_height_density = 0.0
+	if aussicht != null:
+		aussicht.frame(dt)                               # moods (sun colour, Milky Way), the weather coming from far, the telescope
 	_t_slow -= dt
 	if _t_slow > 0.0:
 		_tick_stones(dt)
@@ -2787,6 +2796,8 @@ func _tick(dt: float, _t: float) -> bool:
 	_tick_edges()
 	_tick_ice()
 	_tick_visited()
+	if aussicht != null:
+		aussicht.slow()                                  # (before the morning: alpenglow counts for this morning)
 	if _storm_until > 0.0 and m.now() > _storm_until:
 		_storm_until = 0.0
 		m.thunder = false
@@ -2816,7 +2827,10 @@ func _random_event(dark: bool) -> void:
 	elif r < 0.6:
 		spawn_kind("berg_fox_food")
 	elif r < 0.66 and m.weather == "clear":
-		storm() if randf() < 0.5 else fog_roll()
+		if aussicht != null:
+			aussicht.plan_weather("storm" if randf() < 0.5 else "fog")     # first seen far away (viewpoints: early warning)
+		else:
+			storm() if randf() < 0.5 else fog_roll()
 
 
 func _tick_stones(dt: float) -> void:
@@ -3112,6 +3126,12 @@ func morning() -> Dictionary:
 				ruhe -= 1
 			"stars":
 				aus += 1
+	if aussicht != null:                                      # viewpoint, moods seen, wind and cold on a summit
+		var adj: Array = aussicht.morning_adjust()
+		sich += int(adj[0])
+		aus += int(adj[1])
+		ruhe += int(adj[2])
+		lines.append_array(adj[3])
 	sich = clampi(sich, 1, 5)
 	aus = clampi(aus, 1, 5)
 	ruhe = clampi(ruhe, 1, 5)
@@ -3285,7 +3305,9 @@ static func control(main, d: Dictionary) -> Dictionary:
 			return {"ok": true, "rating": bt.rating, "exposure": bt.exposure()}
 		"horn":
 			return bt.postauto_horn()
+		"aussicht":
+			return bt.aussicht.control(d) if bt.aussicht != null else {"ok": false}
 	return {"ok": true, "scene": main.scene, "bergtal": true, "spot": bt.spot, "season": bt.season, "bed": bt.bed, "spot_xz": [bt.spot_xz.x, bt.spot_xz.y],
 			"alt_m": int(bt.h0 + ALT0), "rating": bt.rating, "exposure": bt.exposure(), "info": bt.info, "spots": spot_options(),
 			"viewpoints": main.scenes.data.get("bt_viewpoints", []), "places": main.scenes.data.get("orte", []), "erlebnis": main.scenes.data.get("erlebnis", []),
-			"night": bt.night_log, "ground_at_0": bt.gy(0.0, 0.0), "pir": main.obj.get("pir"), "door": main.obj.get("door")}
+			"night": bt.night_log, "aussicht": bt.aussicht.info_dict() if bt.aussicht != null else {}, "ground_at_0": bt.gy(0.0, 0.0), "pir": main.obj.get("pir"), "door": main.obj.get("door")}

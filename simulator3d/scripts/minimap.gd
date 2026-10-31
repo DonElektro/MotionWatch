@@ -76,6 +76,12 @@ func _draw() -> void:
 		draw_set_transform_matrix(Transform2D(ax, ay, o2))
 		draw_texture(mi[0], Vector2.ZERO, Color(1, 1, 1, 0.92))
 		draw_set_transform_matrix(Transform2D.IDENTITY)
+		if md0.has("map_fog"):                             # Bergtal: still covered parts of the map (bergtal_aussicht.gd)
+			var mf: Array = md0["map_fog"]
+			var of := w2m(mf[1])
+			draw_set_transform_matrix(Transform2D((w2m(mf[2]) - of) / float(mf[4]), (w2m(mf[3]) - of) / float(mf[4]), of))
+			draw_texture(mf[0], Vector2.ZERO)
+			draw_set_transform_matrix(Transform2D.IDENTITY)
 	# roads of the drawn scenes
 	if not main.terrain and main.scenes.data.has("road_z"):
 		var rz: float = float(main.scenes.data["road_z"]) - 1.2

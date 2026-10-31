@@ -3471,6 +3471,7 @@ func _register_controls() -> void:
 	add_control("button", "bt_ev_storm", "Gewitter zieht auf (Bergtal)", null, func(): _bt_do("storm"), "Wetter", {"sub": "Mehr Wetter"})
 	add_control("button", "bt_ev_fog", "Nebel kommt schnell (Bergtal)", null, func(): _bt_do("fog"), "Wetter", {"sub": "Mehr Wetter"})
 	add_control("button", "bt_ev_fogsea", "Nebelmeer (Bergtal: das Tal im Nebel, oben Sonne)", null, func(): _bt_do("fogsea"), "Wetter", {"sub": "Mehr Wetter"})
+	preload("res://scripts/bergtal_aussicht.gd").add_controls(self)     # «Bergtal · Aussichtspunkte»: Fernrohr, Panorama, Reichweite …
 	add_control("map", "ort_map", "Ort auf der Karte wählen (Schweiz)", func(): return "%.6f, %.6f" % [ort_lat, ort_lon] if ort_lat != 0.0 else "",
 			func(v): set_place_text(str(v)), "Ort von der Karte")
 	add_control("text", "ort", "Ort (Name oder Koordinaten, z. B. «Zermatt» oder «46.0207, 7.7491»)", func(): return place_label(), func(v): set_place_text(str(v)), "Ort von der Karte")
