@@ -300,6 +300,7 @@ var parcours                          # parcours.gd (3D-4.18): «Verfolgungs-Par
 var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Zwilling» - photo / panorama of the real place
 var fauna                             # fauna.gd (3D-3.95)
 var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»): wind, light, lures, valuables of the catalogue
+var gelaende                          # gelaende.gd (3D-4.x real-gelaende): hills and hollows, paths, cloud shadows (vegetation.gd: plants)
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
 var colors_on := true
@@ -461,6 +462,9 @@ func _ready() -> void:
 	geo = Geo.new()
 	geo.main = self
 	add_child(geo)
+	gelaende = preload("res://scripts/gelaende.gd").new()   # 3D-4.x: before the first scene (it asks for the hills)
+	gelaende.main = self
+	add_child(gelaende)
 	_build_world()
 	_build_head()
 	_build_viewports()
@@ -971,9 +975,11 @@ func _build_scene() -> void:
 	_horizon.clear()
 	ground_mats.clear()
 	geo_note = ""
+	gelaende.reset()                             # 3D-4.x: flat until the scene asks for hills (gelaende.setup_relief)
 	scenes.build(scene, scene_parent)
 	for n in flat_nodes:
 		n.visible = not terrain
+	gelaende.on_scene()
 	if zwilling != null:
 		zwilling.on_scene()                      # 3D-4.4: the photo of the real place, tent and car by hand (first: the tent moves obj["pir"])
 	if simreal != null:
@@ -1044,13 +1050,20 @@ func open_map() -> void:
 
 
 func ground_y(x: float, z: float) -> float:
-	"""height of the ground (0 everywhere except at a real place)"""
-	return geo.height(x, z) if terrain else 0.0
+	"""height of the ground (0 everywhere except at a real place and in scenes with hills, gelaende.gd)"""
+	if terrain:
+		return geo.height(x, z)
+	return gelaende.height(x, z) if gelaende != null and gelaende.on else 0.0
+
+
+func hilly() -> bool:
+	"""the ground is not flat (a real place or hills of gelaende.gd): things follow ground_y"""
+	return terrain or (gelaende != null and gelaende.on)
 
 
 func ground_hit(from: Vector3, d: Vector3):
 	"""where a ray meets the ground (null if not within 400 m)"""
-	if not terrain:
+	if not hilly():
 		return Plane(Vector3.UP, 0).intersects_ray(from, d)
 	var t := 0.0
 	var prev := from
@@ -2431,6 +2444,8 @@ func cloud_shade() -> float:
 		return 1.0 - 0.7 * smoothstep(0.4, 0.65, vv)
 	if not cloud_shadows or weather in ["clear", "fog"]:
 		return 1.0
+	if gelaende != null and gelaende.cloud_active():
+		return gelaende.shade_at_head()              # 3D-4.x: the same cloud shadow that drifts over the ground (gelaende.gd)
 	var t := now() - clock0
 	var w := 0.04 + wind * 0.0015
 	var v := 0.5 + 0.5 * sin(t * w) * cos(t * w * 0.63 + 2.0)
@@ -3452,6 +3467,7 @@ func _register_controls() -> void:
 	simreal.add_controls()                                 # 3D-4.4: closer to the real device
 	objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
 	umgebung.add_controls()                                # 3D-4.x: surroundings like real
+	gelaende.add_controls()                                # 3D-4.x: hills and more plants (Szene)
 	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
 	if statusled != null:
 		statusled.add_controls()                           # Licht & Ton → Status-LED & Tasten (Fenster «Gerät»)
@@ -4284,6 +4300,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return objplus.control(d)
 	elif a == "umgebung":                              # 3D-4.x: {do: info | set (key, value) | spawn (kind) | snow_puff | clear_tracks}
 		return umgebung.control(d)
+	elif a == "gelaende":                              # 3D-4.x: {do: info | set (key, value) | height (x, z) | los (from, to) | cloud (x, z)}
+		return gelaende.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
 		return weit.control(d)
 	elif a == "parcours":                              # 3D-4.18: {do: info | start (lessons, night, seed, prep_s) | stop | state | result | game | steer ...}
@@ -7269,6 +7287,8 @@ func line_blocker(a: Vector3, b: Vector3) -> Dictionary:
 			var p := a2 + seg * f
 			if ground_y(p.x, p.y) > lerp(a.y, b.y, f) + 0.05:
 				return {"id": -1, "c": "Gelände", "terrain": true}
+	elif gelaende != null and gelaende.hill_blocks(a, b):   # 3D-4.x: hills and hollows of the scene (gelaende.gd)
+		return {"id": -1, "c": "Gelände", "terrain": true}
 	return {}
 
 

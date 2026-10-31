@@ -147,7 +147,7 @@ func _equip(p: Dictionary) -> void:
 		var k := int(p["slot"])
 		var sp: Vector3 = cam.global_position + fw * (13.0 + 2.5 * (k % 3)) + side * (float(k % 5) - 2.0) * 3.0
 		sp = main.free_spot(Vector3(sp.x, 0, sp.z), 0.5, false)
-		sp.y = main.ground_y(sp.x, sp.z) if main.terrain else 0.0
+		sp.y = main.ground_y(sp.x, sp.z) if main.hilly() else 0.0
 		old.position = sp
 		var to: Vector3 = cam.global_position - sp
 		p["yaw"] = atan2(-to.x, -to.z)

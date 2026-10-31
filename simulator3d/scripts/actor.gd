@@ -934,7 +934,7 @@ func _process(dt: float) -> void:
 			for l in lights:
 				if l is StandardMaterial3D:
 					l.emission_energy_multiplier = base * f
-	if main != null and main.terrain and not preview and is_inside_tree():
+	if main != null and main.hilly() and not preview and is_inside_tree():
 		position.y = main.ground_y(position.x, position.z)   # a real place (from 3D-3.4): on the hills
 	if fig != null:
 		fig.sync(dt)                                         # 3D-4.12: the joints -> the bones, feet on the ground
