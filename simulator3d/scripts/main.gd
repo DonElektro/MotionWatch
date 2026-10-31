@@ -327,6 +327,8 @@ var conn_body: Control                # the card «Verbindung» (symbol and titl
 var cam_body: Control                 # 3D-3.50: the cards «Kameras» and «Werkzeuge» (symbol + arrow green while working)
 var tools_body: Control
 var testen_train: VBoxContainer       # 3D-4.21: card «Testen» → «Trainingsbilder» (quick tile «Lernen»)
+var einbruch                          # einbruch.gd (Paket «real-einbruch»): Einbruch-Abläufe mit Bewertung
+var testen_einbruch: VBoxContainer    # card «Testen» → «Einbruch-Abläufe»
 var testen_stoer: VBoxContainer       # 30.10.2026: card «Testen» → «Störungen» (simint.gd: servos, 5 V, I2C)
 var testen_measure: VBoxContainer     # 3D-4.x: card «Testen» → «Erkennung messen» (also the test run controls)
 var testen_rec: VBoxContainer         # 3D-4.x: card «Testen» → «Aufnahme …» (the recorder)
@@ -413,6 +415,9 @@ func _ready() -> void:
 	parcours = preload("res://scripts/parcours.gd").new()   # 3D-4.18: the tracking parcours (scene «parcours»)
 	parcours.main = self
 	add_child(parcours)
+	einbruch = preload("res://scripts/einbruch.gd").new()   # Einbruch-Abläufe: auskundschaften, ablenken, stehlen - wann warnt MoveEye?
+	einbruch.main = self
+	add_child(einbruch)
 	zwilling = preload("res://scripts/zwilling.gd").new()    # 3D-4.4: your place as a twin (photo behind the scene)
 	zwilling.main = self
 	add_child(zwilling)
@@ -1875,6 +1880,8 @@ func busy_with(except_ := "") -> String:
 		w = "Spielrunde"
 	elif parcours != null and (parcours.running or bool(parcours.game.get("on", false))):
 		w = "Verfolgungs-Parcours"                    # 3D-4.18 (the head follows - not «measuring»: MoveEye steers it)
+	elif einbruch != null and einbruch.running and not einbruch.embedded:
+		w = "Einbruch-Ablauf"
 	elif recorder != null and recorder.playing:
 		w = "Wiedergabe"
 	elif _mw_task() != "":                             # 3D-4.x: one lock with MoveEye (a drill, a protection test … there)
@@ -3214,7 +3221,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Foto des 
 		["Licht & Ton", "sun", "💡", ["", "Status-LED & Tasten", "Lautsprecher"]],      # 3D-4.22: «Lautsprecher» here like MoveEye (was «Sensoren»)
 		["Spiel", "pad", "🎮", ["", "Assistent"]],
 		["Wildtier", "target", "🎯", [""]],
-		["Testen", "check", "✅", ["", "Verfolgungs-Parcours", "Störungen"]],
+		["Testen", "check", "✅", ["", "Verfolgungs-Parcours", "Störungen", "Einbruch-Abläufe"]],
 		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates", "Sicherheit / Benutzer"]],
 		["Entwickler", "tools", "🧪", ["", "Updates"]]]
 # 3D-4.21 (Menü 2, Daniel 30.10.2026): the same names as MoveEye - the controls keep their old group / part in add_control,
@@ -3459,6 +3466,7 @@ func _register_controls() -> void:
 		smalltv.add_controls()                             # 3D-4.19: Sensoren → Zusatz-Bildschirm (virtueller SmallTV)
 	weit.add_controls()                                    # 3D-4.17: the wide camera (card «Kamerabild», part «Weitwinkel-Kamera»)
 	parcours.add_controls()                                # 3D-4.18: card «Testlauf», part «Verfolgungs-Parcours»
+	einbruch.add_controls()                                # card «Testen», part «Einbruch-Abläufe» (einbruch.gd)
 	zwilling.add_controls()
 	add_control("toggle", "dev2_on", "Zweites MoveEye-Gerät in der Welt (eigene Adresse: Port des Simulators + 20, meist 8785)", func(): return dev2.on, func(v): dev2.set_on(v), "Mover")
 	add_control("select", "dev2_place", "Platz des zweiten Geräts", func(): return dev2.place, func(v): dev2.set_place(str(v)), "Mover",
@@ -4288,6 +4296,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return weit.control(d)
 	elif a == "parcours":                              # 3D-4.18: {do: info | start (lessons, night, seed, prep_s) | stop | state | result | game | steer ...}
 		return parcours.control(d)
+	elif a == "einbruch":                              # {do: info | start (ablauf, seed, zeit) | serie | stop | state | result}
+		return einbruch.control(d)
 	elif a == "zwilling":                              # 3D-4.4: {do: info | import (path) | set (key, value) | item (k, x, z, r) | clear | remove | on}
 		return zwilling.control(d)
 	elif a == "whatif":                                # 3D-3.83: makeover 8 - MoveEye re-enacts a real recording
@@ -4883,6 +4893,10 @@ func _build_ui() -> void:
 	sub_bodies.append(testen_stoer)
 	testen_stoer.add_child(UI.small("Wie bei echter Hardware: MoveEye stoppt die Servos, meldet die Störung im Fehlerspeicher (Servo-Diagnose) und braucht bei Treiber-Fehlern «Freigeben»."))
 	simint.add_info(testen_stoer, UI)
+	testen_einbruch = UI.sub_fold(tl_main, "Einbruch-Abläufe (auskundschaften, ablenken, stehlen – wann warnt MoveEye?)", false)
+	testen_einbruch.set_meta("always", true)
+	sub_bodies.append(testen_einbruch)
+	einbruch.add_info(testen_einbruch, UI)
 	tl = UI.sub_fold(tl_main, "Diebstahlschutz prüfen (Referenz-Scan, Sabotage, Überraschung)", false)
 	tl.set_meta("always", true)
 	sub_bodies.append(tl)
@@ -5026,6 +5040,9 @@ func _build_ui() -> void:
 			if c.id in ["testrun_plan", "testrun_start"]:
 				continue                                 # the card has its own row «plan + Testlauf starten»
 			var tgt: VBoxContainer = testen_rec if c.id.begins_with("rec_") else (testen_stoer if c.id.begins_with("stoer_") and testen_stoer != null else testen_measure)
+			if c.id.begins_with("einbruch_") and testen_einbruch != null:
+				tgt = testen_einbruch
+
 			var k0 := ui_items.size()
 			_ui_control(tgt, c)
 			for i in range(k0, ui_items.size()):
