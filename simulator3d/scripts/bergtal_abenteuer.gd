@@ -1538,8 +1538,8 @@ func _process(dt: float) -> void:
 func _draw_prog() -> void:
 	var w := prog.size.x
 	var n := STEPS.size()
-	var x0 := 30.0
-	var x1 := w - 30.0
+	var x0 := 50.0
+	var x1 := w - 50.0
 	var y := 16.0
 	prog.draw_line(Vector2(x0, y), Vector2(x1, y), Color(0.2, 0.25, 0.32), 4.0, true)
 	prog.draw_line(Vector2(x0, y), Vector2(lerpf(x0, x1, _prog_f / float(n - 1)), y), ACC, 4.0, true)
@@ -1559,7 +1559,7 @@ func _draw_prog() -> void:
 func _prog_input(ev: InputEvent) -> void:
 	if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT and R.is_empty():
 		var n := STEPS.size()
-		var i := clampi(int(round((ev.position.x - 30.0) / max(1.0, prog.size.x - 60.0) * (n - 1))), 0, n - 1)
+		var i := clampi(int(round((ev.position.x - 50.0) / max(1.0, prog.size.x - 100.0) * (n - 1))), 0, n - 1)
 		if i < step and i <= 3:
 			step = i
 			_changed()
