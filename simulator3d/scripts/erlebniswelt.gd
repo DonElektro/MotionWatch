@@ -273,6 +273,56 @@ func rain() -> bool:
 	return str(m.weather) == "rain"
 
 
+# ---- MoveEye's person boxes against a figure (the ONE match: «Verstecken mit MoveEye» and the tasks of ferienpark_leben.gd) ---
+func mw_boxes() -> Array:
+	"""MoveEye's person boxes right now (Rect2, 0..1 of the head camera) - [] when MoveEye said nothing for 1.5 s"""
+	if m.now() - float(m.mw_det_t) > 1.5:
+		return []
+	var out := []
+	var bx = m.mw_det.get("boxes", null)
+	if typeof(bx) == TYPE_ARRAY:
+		for b in bx:
+			if typeof(b) == TYPE_ARRAY and (b as Array).size() >= 4:
+				out.append(Rect2(float(b[0]), float(b[1]), float(b[2]), float(b[3])))
+	return out
+
+
+func mw_rect(a, h: float, los := true) -> Rect2:
+	"""where a figure (h m high) is in the picture of the head camera (0..1), or empty (behind, > 45 m, outside, hidden)"""
+	if a == null or not is_instance_valid(a):
+		return Rect2()
+	var cam: Camera3D = m.cams[0]
+	var p: Vector3 = (a as Node3D).global_position
+	if cam.is_position_behind(p) or cam.global_position.distance_to(p) > 45.0:
+		return Rect2()
+	var vs := Vector2(m.CAM_W[0], m.CAM_H[0])
+	var lo := cam.unproject_position(p) / vs
+	var hi := cam.unproject_position(p + Vector3(0, h, 0)) / vs
+	var w := absf(lo.y - hi.y) * 0.4
+	var r := Rect2(minf(lo.x, hi.x) - w / 2.0, minf(lo.y, hi.y), w + absf(lo.x - hi.x), absf(lo.y - hi.y))
+	if r.end.x < 0.0 or r.position.x > 1.0 or r.end.y < 0.0 or r.position.y > 1.0:
+		return Rect2()
+	if los and (not ent() or not ent()._los(cam.global_position, p + Vector3(0, h * 0.8, 0))):
+		return Rect2()
+	return r
+
+
+func mw_reported(a, h: float) -> bool:
+	"""MoveEye has a person box on this figure (an older MoveEye without boxes: any person while it is in the picture)"""
+	if m.now() - float(m.mw_det_t) > 1.5:
+		return false
+	var r := mw_rect(a, h)
+	if r.size.x <= 0.0:
+		return false
+	var bx = m.mw_det.get("boxes", null)
+	if typeof(bx) != TYPE_ARRAY:
+		return int(m.mw_det.get("persons", 0)) > 0
+	for b in mw_boxes():
+		if (b as Rect2).grow(0.02).intersects(r):
+			return true
+	return false
+
+
 func ent():
 	var e = m.get("entdecken")
 	return e if e != null and e.has_method("register") else null
@@ -2131,39 +2181,15 @@ class Verstecken extends Vig:
 			ew.place(kids[i], ew.Pg(base.x + i * 0.8, base.z + 0.8))
 			kids[i].crouch = 0.0
 
+	func _h(k) -> float:
+		return 1.25 * (1.0 - 0.45 * float(k.crouch))
+
 	func _rect(k) -> Rect2:
 		"""where a child is in the picture of the head camera (0..1), or empty"""
-		var cam: Camera3D = ew.m.cams[0]
-		var p: Vector3 = (k as Node3D).global_position
-		var h := 1.25 * (1.0 - 0.45 * float(k.crouch))
-		if cam.is_position_behind(p) or cam.global_position.distance_to(p) > 45.0:
-			return Rect2()
-		var vs := Vector2(ew.m.CAM_W[0], ew.m.CAM_H[0])
-		var a := cam.unproject_position(p) / vs
-		var b := cam.unproject_position(p + Vector3(0, h, 0)) / vs
-		var w := absf(a.y - b.y) * 0.4
-		var r := Rect2(minf(a.x, b.x) - w / 2.0, minf(a.y, b.y), w + absf(a.x - b.x), absf(a.y - b.y))
-		if r.end.x < 0.0 or r.position.x > 1.0 or r.end.y < 0.0 or r.position.y > 1.0:
-			return Rect2()
-		if not ew.ent() or not ew.ent()._los(cam.global_position, p + Vector3(0, h * 0.8, 0)):
-			return Rect2()
-		return r
+		return ew.mw_rect(k, _h(k))
 
 	func _reported(k) -> bool:
-		if ew.m.now() - float(ew.m.mw_det_t) > 1.5:
-			return false
-		var r := _rect(k)
-		if r.size.x <= 0.0:
-			return false
-		var bx = ew.m.mw_det.get("boxes", null)
-		if typeof(bx) == TYPE_ARRAY:
-			for b in bx:
-				if typeof(b) == TYPE_ARRAY and (b as Array).size() == 4:
-					var br := Rect2(float(b[0]), float(b[1]), float(b[2]), float(b[3]))
-					if br.grow(0.02).intersects(r):
-						return true
-			return false
-		return int(ew.m.mw_det.get("persons", 0)) > 0          # an older MoveEye without boxes: any person
+		return ew.mw_reported(k, _h(k))
 
 
 	func _mw_tick(dt: float) -> void:

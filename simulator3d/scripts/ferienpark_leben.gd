@@ -576,55 +576,11 @@ class Aufgaben extends Node:
 	var _flick_prev := false
 	var keep_pic: Image = null      # the last picture of MoveEye (the tent: into the book only when the night went well)
 
-	static func head_rect(mn, a, h: float) -> Rect2:
-		"""where a figure is in the picture of the head camera (0..1), or an empty Rect2 (behind, too far, outside)"""
-		var cam: Camera3D = mn.cams[0]
-		var p: Vector3 = (a as Node3D).global_position
-		if cam.is_position_behind(p) or cam.global_position.distance_to(p) > 60.0:
-			return Rect2()
-		var vs := Vector2(mn.CAM_W[0], mn.CAM_H[0])
-		var lo: Vector2 = cam.unproject_position(p) / vs
-		var hi: Vector2 = cam.unproject_position(p + Vector3(0, h, 0)) / vs
-		var w := absf(lo.y - hi.y) * 0.45
-		var r := Rect2(minf(lo.x, hi.x) - w / 2.0, minf(lo.y, hi.y), w + absf(lo.x - hi.x), absf(lo.y - hi.y))
-		if r.end.x < 0.0 or r.position.x > 1.0 or r.end.y < 0.0 or r.position.y > 1.0:
-			return Rect2()
-		return r
-
-
 	static func fig_h(a) -> float:
 		if a.kind == "person":
 			return 1.75 * float(a.body_root.scale.y) * (1.0 - 0.45 * clampf(float(a.crouch), 0.0, 1.0))
 		return maxf(0.25, float(a.body_h) * 1.3)
 
-
-	static func boxes(mn) -> Array:
-		"""MoveEye's person boxes right now (0..1), [] when MoveEye says nothing (older than 1.5 s)"""
-		if mn.now() - float(mn.mw_det_t) > 1.5:
-			return []
-		var out := []
-		var bx = mn.mw_det.get("boxes", null)
-		if typeof(bx) == TYPE_ARRAY:
-			for b in bx:
-				if typeof(b) == TYPE_ARRAY and (b as Array).size() >= 4:
-					out.append(Rect2(float(b[0]), float(b[1]), float(b[2]), float(b[3])))
-		return out
-
-
-	static func mw_sees(mn, a) -> bool:
-		"""a box of MoveEye on this figure (MoveEye without boxes: any person while it is in the picture)"""
-		if a == null or not is_instance_valid(a):
-			return false
-		var r := head_rect(mn, a, fig_h(a))
-		if r.size.x <= 0.0 or mn.now() - float(mn.mw_det_t) > 1.5:
-			return false
-		var bx = mn.mw_det.get("boxes", null)
-		if typeof(bx) != TYPE_ARRAY:
-			return int(mn.mw_det.get("persons", 0)) > 0
-		for b in boxes(mn):
-			if (b as Rect2).grow(0.02).intersects(r):
-				return true
-		return false
 
 	func locks() -> bool:
 		return what in ["kind", "velo"]
@@ -638,7 +594,7 @@ class Aufgaben extends Node:
 		main.start_info = t
 
 	func info() -> Dictionary:
-		return {"ok": true, "what": what, "state": st, "t": snappedf(main.now() - t0, 0.1) if what != "" else 0.0, "result": result, "last": last}
+		return {"ok": true, "what": what, "state": st, "st_t": snappedf(st_t, 0.1), "frames": Engine.get_process_frames(), "t": snappedf(main.now() - t0, 0.1) if what != "" else 0.0, "result": result, "last": last}
 
 	func start(w: String) -> Dictionary:
 		if what != "":
@@ -748,23 +704,33 @@ class Aufgaben extends Node:
 			if img != null and e.has_method("_store_pic"):
 				e._store_pic(id, img)
 
+	func _ew():
+		var lv = _lv()
+		return lv.ew if lv != null and is_instance_valid(lv) else null
+
 	func ferienpark_leben_rect(a) -> Rect2:
-		if a == null or not is_instance_valid(a):
+		var ew = _ew()
+		if ew == null or a == null or not is_instance_valid(a):
 			return Rect2()
-		return head_rect(main, a, fig_h(a))
+		return ew.mw_rect(a, fig_h(a), false)
 
 	func _sees(a) -> bool:
-		return mw_sees(main, a)
+		"""the one match of MoveEye's boxes with a figure: erlebniswelt.gd mw_reported (also «Verstecken mit MoveEye»)"""
+		var ew = _ew()
+		return ew != null and a != null and is_instance_valid(a) and ew.mw_reported(a, fig_h(a))
 
 	func _flicker(figs: Array) -> void:
 		"""a box of MoveEye where no figure is (counted once per new box) - a «Fehlmeldung»"""
-		var bx: Array = boxes(main)
+		var ew = _ew()
+		if ew == null:
+			return
+		var bx: Array = ew.mw_boxes()
 		var bad := false
 		for b in bx:
 			var hit := false
 			for a in figs:
 				if a != null and is_instance_valid(a):
-					var r: Rect2 = head_rect(main, a, fig_h(a))
+					var r: Rect2 = ew.mw_rect(a, fig_h(a), false)
 					if r.size.x > 0.0 and (b as Rect2).grow(0.03).intersects(r):
 						hit = true
 						break
