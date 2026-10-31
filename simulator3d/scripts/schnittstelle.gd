@@ -37,6 +37,11 @@ func _cmp(sect: String, keys: Array, L: Dictionary, cond: Array) -> Array:
 
 
 func check() -> void:
+	var um: String = preload("res://scripts/ui_gemeinsam.gd").summary(main)   # P1: Gruppen, Symbole, Texte wie res://ui_gemeinsam.json (auch in der .exe)
+	if um.begins_with("Menü-Datei: OK"):
+		print(um)
+	elif um != "":
+		printerr("SCRIPT ERROR: " + um)
 	var L := load_list()
 	if L.is_empty():
 		return

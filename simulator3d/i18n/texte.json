@@ -30208,7 +30208,7 @@
  },
  "schlicht": {
   "en": "plain",
-  "fr": "sobres",
+  "fr": "simples",
   "it": "semplici",
   "rm": "simpels"
  },
@@ -38920,6 +38920,12 @@
   "fr": "Écran supplémentaire (SmallTV)",
   "it": "Schermo supplementare (SmallTV)",
   "rm": "Visur supplementar (SmallTV)"
+ },
+ "Zusatzgeräte": {
+  "en": "Extra devices",
+  "fr": "Appareils supplémentaires",
+  "it": "Dispositivi aggiuntivi",
+  "rm": "Apparats supplementars"
  },
  "Zuschauer": {
   "en": "Spectators",

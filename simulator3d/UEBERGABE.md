@@ -1,8 +1,16 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.22.0** · MoveEye **3.22.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.23.0** · MoveEye **3.23.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.23.0 (MoveEye 3.23.0): gemeinsame Menü-Datei (`ui_gemeinsam.json`)
+
+- `simulator3d/ui_gemeinsam.json`: Gruppen-IDs, Namen, Symbole, Reihenfolge und Texte für beide Projekte; `bauen.py` bettet
+  sie als `UI_GEMEINSAM` in Teil 639p ein (`--pruefen` meldet Unterschiede), der Export nimmt sie in die .exe
+  (`include_filter`). Simulator `ui_gemeinsam.gd` (Prüfung beim Start, `features()` in hello, Alias alter IDs
+  `system`/`sensors`, `migrate_fold`). «Sensoren» → «Zusatzgeräte» (extras) nach «Licht & Ton», System → «Kinder-Modus».
+  Test `werkzeuge/ui_gemeinsam_test.gd` (in der Release-Kette). FR «schlicht» = «simples» (auch Teil 639o).
 
 ## NEU in 3.22.0 (MoveEye 3.22.0): eine Bedienleiste (`bedienleiste.gd`, Teil 639o)
 

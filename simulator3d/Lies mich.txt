@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.22.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.23.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.23.0
+3.23.0: Gemeinsame Menü-Datei für MoveEye und Simulator. Im Simulator heisst «Sensoren» jetzt «Zusatzgeräte» und steht nach
+«Licht & Ton», System → «Kinder-Modus». Der Selbsttest prüft beide Seiten. Behoben: Auf der Simulator-Seite von MoveEye
+fehlten Karten nach der ersten.
+So testest du: 1. Simulator → Bedienfeld: Die Reihenfolge stimmt. 2. MoveEye → Simulator: Alle Karten sind da.
 
 NEU IN 3.22.0
 3.22.0: Reiter- und Statuszeile einzeln einklappbar (pro Gerät gemerkt, roter Punkt bei Warnungen); auf jeder Seite dieselbe

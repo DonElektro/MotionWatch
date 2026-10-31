@@ -1,9 +1,9 @@
 {
- "version": "3D-5.22.0",
- "ver": "3.22.0",
- "name": "MoveEye Sim 3.22.0",
+ "version": "3D-5.23.0",
+ "ver": "3.23.0",
+ "name": "MoveEye Sim 3.23.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35717995,
- "sha256": "dba8e1e6d5198d6c357e7ad646e0fce9b0a7f96e698a4eef0d1ba90c6b601767",
- "notes": "MoveEye Sim 3.22.0: dieselbe Bedienleiste wie in MoveEye (Einfach/Experte, Symbole farbig/schlicht, Aufklappen)."
+ "size": 35726805,
+ "sha256": "693053b806ce4ed6e28d7c618c1bd62495dd77a764e26ed21142495dec7e1455",
+ "notes": "MoveEye Sim 3.23.0: gemeinsame Menü-Datei mit MoveEye – «Sensoren» heisst «Zusatzgeräte» und steht nach «Licht & Ton», System → «Kinder-Modus»."
 }
