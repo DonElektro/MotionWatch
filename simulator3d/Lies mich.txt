@@ -421,6 +421,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.39
+3D-4.39: Bergtal-Abenteuer «Die Karte des Bergführers»: Kapitel, Stimmung, Schwierigkeit, Rucksack packen, mit der
+Schatzkarte durchs Tal, Nachtlager und eine Nacht mit MoveEye, am Morgen Sterne und Bericht. Start im Spiel-Assistenten
+(Schnellstart «🎒 Bergtal-Abenteuer»).
+So testest du: 1) Spiel → Assistent → «🎒 Bergtal-Abenteuer». 2) Kapitel 1, «lustig», «mittel», Rucksack packen, los.
+3) Am Ziel MoveEye verbinden und «Nacht starten».
+
 NEU IN 3D-4.38
 3D-4.38: Orte zum Erkunden im Bergtal: begehbare Innenräume (Alphütte, Biwak, Kapelle, Hospiz mit 5 Räumen – geschlossen
 und dunkel, Bunker, Sennerei, Baracke, Seilbahn-Stationen), Wasserstellen, Gumpizahn, Schafgrat, Säumerweg, Altstafel.

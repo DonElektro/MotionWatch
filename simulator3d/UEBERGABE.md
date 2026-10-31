@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.38** · passende MoveEye-Version (früher Motion Watch) **2.98.69**
+Stand: 31.10.2026 · Simulator-Version **3D-4.39** · passende MoveEye-Version (früher Motion Watch) **2.98.70**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.39 (MoveEye 2.98.70): Bergtal-Abenteuer (`bergtal_abenteuer.gd`)
+
+- `bergtal_abenteuer.gd` (Ablauf + Fenster) und `bergtal_abenteuer_daten.gd` (Stimmungen, Rucksack, Kapitel); Steuerung
+  `{"action":"abenteuer","do":…}`, `busy_with`; Nacht über `nachtlauf.gd` (eigener Plan).
+- Start als Schnellstart-Karte im Spiel-Assistenten (`gamewiz.gd`, `v` «abenteuer») statt Knopf in der Karte «Spiel».
 
 ## NEU in 3D-4.38 (MoveEye 2.98.69): Orte zum Erkunden im Bergtal (`bergtal_orte.gd`)
 
