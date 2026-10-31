@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 5023 (Stellen: 6972)
-Übersetzt: en 5023, fr 5023, it 5023, rm 5023
+Texte gesamt: 5040 (Stellen: 7002)
+Übersetzt: en 5040, fr 5040, it 5040, rm 5040
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 380 Stellen
 Nicht mehr im Code (noch in texte.json): 62
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 56 Stellen in wizpics.gd 21, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 17881, schlüssel 12659, keine Wörter 8150, index 6381, technisch 2312, doc 1460, einheit 193, englisch 86, log 78, pfad 66, html 56, klasse 23, shader 4
+Übersprungen (Grund: Anzahl): kennung 18003, schlüssel 12774, keine Wörter 8231, index 6418, technisch 2337, doc 1473, einheit 198, englisch 90, log 78, pfad 66, html 56, klasse 23, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  669    29
@@ -28,9 +28,9 @@ Pro Datei (Texte / davon dynamische Stellen):
   objects.gd                81     0
   objekte_neu.gd            80     0
   kids.gd                   74     1
+  mehr.gd                   72    13
   pruefstand.gd             72     8
   diagnose.gd               71     8
-  mehr.gd                   70    13
   feedback.gd               66    17
   parcours.gd               63    10
   bergtal_erleben_a.gd      62     0
@@ -65,8 +65,9 @@ Pro Datei (Texte / davon dynamische Stellen):
   zwilling.gd               29     3
   gamemission.gd            29     0
   news.gd                   29     1
+  padmap.gd                 28    19
+  explore.gd                28     2
   power.gd                  28    10
-  padmap.gd                 27    19
   jahreszeiten.gd           26     1
   umgebung.gd               25     0
   inhalte.gd                25    12
@@ -77,7 +78,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   kompakt_festival.gd       23     0
   dataset.gd                22     3
   fenster.gd                22     0
-  explore.gd                22     2
   mini.gd                   21     1
   patrol.gd                 20     0
   phone.gd                  20     4
@@ -93,6 +93,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   kompakt_hof.gd            17     0
   szenenplus.gd             17     1
   gameturnier.gd            17     0
+  devtool.gd                16     0
   weitwinkel.gd             16     0
   menschen.gd               16     0
   b3d.gd                    15     3
@@ -208,19 +209,19 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   diagnose.gd:127  'keine'
   diagnose.gd:140  'kein'
   diagnose.gd:145  ' · Version '
-  mehr.gd:237  ' · Leistung: %d Bilder/s, Lite %s'
-  mehr.gd:237  'an'
-  mehr.gd:237  'aus'
-  mehr.gd:268  'Ansicht: '
-  mehr.gd:519  'aus'
-  mehr.gd:519  'ein'
-  mehr.gd:521  ' · Tunnel %s:%d (%s)'
-  mehr.gd:522  ' · Update: '
-  mehr.gd:524  ' · virtuelle Maschine'
-  mehr.gd:528  'Simulator '
-  mehr.gd:528  'frei %s von %s · '
-  mehr.gd:529  ' (zuletzt %s)'
-  mehr.gd:529  'nicht verbunden'
+  mehr.gd:245  ' · Leistung: %d Bilder/s, Lite %s'
+  mehr.gd:245  'an'
+  mehr.gd:245  'aus'
+  mehr.gd:279  'Ansicht: '
+  mehr.gd:530  'aus'
+  mehr.gd:530  'ein'
+  mehr.gd:532  ' · Tunnel %s:%d (%s)'
+  mehr.gd:533  ' · Update: '
+  mehr.gd:535  ' · virtuelle Maschine'
+  mehr.gd:539  'Simulator '
+  mehr.gd:539  'frei %s von %s · '
+  mehr.gd:540  ' (zuletzt %s)'
+  mehr.gd:540  'nicht verbunden'
   gamewiz.gd:63  ' (wird hingestellt)'
   gamewiz.gd:66  'keine'
   gamewiz.gd:71  'aus'
@@ -256,25 +257,25 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main.gd:4167  'keine'
   main.gd:4193  'Wächter an MoveEye: '
   main.gd:4954  'Dein Platz: '
-  main.gd:5189  ' · schaut nur zu: '
-  main.gd:5192  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:5193  ' · Update: '
-  main.gd:5527  'Blinde Flecken: '
-  main.gd:6194  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6500  'Autostart: '
-  main.gd:6511  'Autologon: '
-  main.gd:6672  'Karte öffnen: '
-  main.gd:6818  'Echt-Abgleich: '
-  main.gd:6828  'Trainingspaket: '
-  main.gd:6837  ' · %d offen · %.1f MB'
-  main.gd:6837  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6846  'Verbindung · '
-  main.gd:6846  'aus'
-  main.gd:6850  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6850  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6853  ' – versucht es weiter (gleich auf einem freien Port)'
-  explore.gd:446  ' (automatisch von oben)'
-  explore.gd:446  ' · schnell'
+  main.gd:5191  ' · schaut nur zu: '
+  main.gd:5194  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:5195  ' · Update: '
+  main.gd:5529  'Blinde Flecken: '
+  main.gd:6196  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6502  'Autostart: '
+  main.gd:6513  'Autologon: '
+  main.gd:6674  'Karte öffnen: '
+  main.gd:6820  'Echt-Abgleich: '
+  main.gd:6830  'Trainingspaket: '
+  main.gd:6839  ' · %d offen · %.1f MB'
+  main.gd:6839  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6848  'Verbindung · '
+  main.gd:6848  'aus'
+  main.gd:6852  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6852  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6855  ' – versucht es weiter (gleich auf einem freien Port)'
+  explore.gd:581  ' (automatisch von oben)'
+  explore.gd:581  ' · schnell'
   fahrzeuge.gd:90  'nie'
   jahreszeiten.gd:51  'nie'
   feedback.gd:266  ' · TESTMODUS: geht nur an '
@@ -352,23 +353,23 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   gamekiwaechter.gd:147  '🤖 MoveEye als KI-Wächter: '
   padmap.gd:64  ' – mehrere Controller: Bedienfeld Mover › Controller › «Controller zuteilen»'
   padmap.gd:86  'Browser'
-  padmap.gd:405  'Licht '
-  padmap.gd:405  'aus'
-  padmap.gd:405  'ein'
-  padmap.gd:409  'IR-Licht '
-  padmap.gd:409  'aus'
-  padmap.gd:409  'ein'
-  padmap.gd:415  'Folgen '
-  padmap.gd:415  'aus'
-  padmap.gd:415  'ein'
-  padmap.gd:432  'Ansicht: '
-  padmap.gd:435  'Ansicht: '
-  padmap.gd:439  'Livebild '
-  padmap.gd:439  'aus'
-  padmap.gd:439  'ein'
-  padmap.gd:442  'Ansicht: '
-  padmap.gd:456  'Foto gespeichert: '
-  padmap.gd:508  'Zu'
+  padmap.gd:413  'Licht '
+  padmap.gd:413  'aus'
+  padmap.gd:413  'ein'
+  padmap.gd:417  'IR-Licht '
+  padmap.gd:417  'aus'
+  padmap.gd:417  'ein'
+  padmap.gd:423  'Folgen '
+  padmap.gd:423  'aus'
+  padmap.gd:423  'ein'
+  padmap.gd:440  'Ansicht: '
+  padmap.gd:443  'Ansicht: '
+  padmap.gd:447  'Livebild '
+  padmap.gd:447  'aus'
+  padmap.gd:447  'ein'
+  padmap.gd:450  'Ansicht: '
+  padmap.gd:464  'Foto gespeichert: '
+  padmap.gd:516  'Zu'
   protokoll.gd:72  'aus'
   protokoll.gd:73  'Tunnel: '
   protokoll.gd:73  'aus'

@@ -5005,6 +5005,12 @@
   "it": "Blu",
   "rm": "Blau"
  },
+ "Blau Szene · Weiss Ort · Gelb Aussicht · Grün Schlaf- / Standort · Rosa Vignette · Braun Raum · ▲ Ansicht · ● MoveEye — Klick = hinspringen, Rad = zoomen, ziehen = verschieben": {
+  "en": "Blue scene · white place · yellow viewpoint · green sleeping spot / position · pink vignette · brown room · ▲ view · ● MoveEye — click = jump there, wheel = zoom, drag = move",
+  "fr": "Bleu scène · blanc lieu · jaune point de vue · vert emplacement pour dormir / position · rose vignette · brun pièce · ▲ vue · ● MoveEye — clic = y sauter, molette = zoom, glisser = déplacer",
+  "it": "Blu scena · bianco luogo · giallo punto panoramico · verde posto per dormire / posizione · rosa vignetta · marrone stanza · ▲ vista · ● MoveEye — clic = saltare lì, rotella = zoom, trascinare = spostare",
+  "rm": "Blau scena · alv lieu · mellen punct da vista · verd plazza da durmir / posiziun · rosa vignetta · brin stanza · ▲ vista · ● MoveEye — clic = siglir là, roda = zoom, trair = spustar"
+ },
  "Blender + Blosm (OpenStreetMap, weltweit)": {
   "en": "Blender + Blosm (OpenStreetMap, worldwide)",
   "fr": "Blender + Blosm (OpenStreetMap, monde entier)",
@@ -5815,6 +5821,12 @@
   "fr": "L'écho du Tüfelsschlund",
   "it": "L'eco nel Tüfelsschlund",
   "rm": "L'echo en il Tüfelsschlund"
+ },
+ "Das Entwicklertool ist nur für den Besitzer (nicht im Kinder-Modus).": {
+  "en": "The developer tool is only for the owner (not in children's mode).",
+  "fr": "L'outil de développement est réservé au propriétaire (pas en mode enfants).",
+  "it": "Lo strumento per sviluppatori è solo per il proprietario (non in modalità bambini).",
+  "rm": "L'utensil da svilup è mo per il possessur (betg en il modus d'uffants)."
  },
  "Das Ergebnis als Text in die Zwischenablage": {
   "en": "Copy the result as text to the clipboard",
@@ -10049,6 +10061,36 @@
   "it": "Fuga – via dal passo all'alba",
   "rm": "Fugia – davent dal pass en l'alva"
  },
+ "Flugkamera": {
+  "en": "Fly camera",
+  "fr": "Caméra libre",
+  "it": "Telecamera di volo",
+  "rm": "Camera da sgol"
+ },
+ "Flugkamera (durch Wände)": {
+  "en": "Fly camera (through walls)",
+  "fr": "Caméra libre (à travers les murs)",
+  "it": "Telecamera di volo (attraverso i muri)",
+  "rm": "Camera da sgol (tras ils mirs)"
+ },
+ "Flugkamera an – Esc oder «Zurück» = normale Ansicht": {
+  "en": "Fly camera on – Esc or «Back» = normal view",
+  "fr": "Caméra libre activée – Échap ou «Retour» = vue normale",
+  "it": "Telecamera di volo attiva – Esc o «Indietro» = vista normale",
+  "rm": "Camera da sgol activada – Esc u «Enavos» = vista normala"
+ },
+ "Flugkamera aus – normale Ansicht": {
+  "en": "Fly camera off – normal view",
+  "fr": "Caméra libre désactivée – vue normale",
+  "it": "Telecamera di volo spenta – vista normale",
+  "rm": "Camera da sgol deactivada – vista normala"
+ },
+ "Flugkamera beendet": {
+  "en": "Fly camera ended",
+  "fr": "Caméra libre terminée",
+  "it": "Telecamera di volo terminata",
+  "rm": "Camera da sgol terminada"
+ },
  "FOH": {
   "en": "FOH",
   "fr": "FOH",
@@ -14160,6 +14202,12 @@
   "fr": "Carte (M)",
   "it": "Mappa (M)",
   "rm": "Charta (M)"
+ },
+ "Karte aller Orte, hinspringen, Flugkamera – nur für den Besitzer": {
+  "en": "Map of all places, jump there, fly camera – only for the owner",
+  "fr": "Carte de tous les lieux, y sauter, caméra libre – réservé au propriétaire",
+  "it": "Mappa di tutti i luoghi, saltarci, telecamera di volo – solo per il proprietario",
+  "rm": "Charta da tut ils lieus, siglir là, camera da sgol – mo per il possessur"
  },
  "Karte der blinden Flecken": {
   "en": "Blind spot map",
@@ -19152,6 +19200,12 @@
   "it": "Luogo in questo mondo",
   "rm": "Lieu en quest mund"
  },
+ "Ort suchen …": {
+  "en": "Search place …",
+  "fr": "Chercher un lieu …",
+  "it": "Cerca luogo …",
+  "rm": "Tschertgar in lieu …"
+ },
  "Ort suchen, z. B. Zermatt, Bahnhofstrasse 1 Zürich …": {
   "en": "Search place, e.g. Zermatt, Bahnhofstrasse 1 Zürich …",
   "fr": "Chercher un lieu, p. ex. Zermatt, Bahnhofstrasse 1 Zürich …",
@@ -20161,6 +20215,12 @@
   "it": "fuma / emette vapore",
   "rm": "fima / vapurescha"
  },
+ "Raum (innen)": {
+  "en": "Room (inside)",
+  "fr": "Pièce (intérieur)",
+  "it": "Stanza (interno)",
+  "rm": "Stanza (endadens)"
+ },
  "Rauschen (wie der Sensor: mehr Verstärkung = mehr Rauschen, am Tag sauber)": {
   "en": "Noise (like the sensor: more gain = more noise, clean by day)",
   "fr": "Bruit (comme le capteur : plus de gain = plus de bruit, net le jour)",
@@ -20184,6 +20244,12 @@
   "fr": "Réalisme : MG90S %.0f°/s · servos réalistes · plage de rotation %.0f°%s · image avec retard · simulateur %.0f images/s",
   "it": "Realismo: MG90S %.0f°/s · servo realistici · campo di rotazione %.0f°%s · immagine con ritardo · simulatore %.0f immagini/s",
   "rm": "Realissem: MG90S %.0f°/s · servos sco vairs · sectur da volver %.0f°%s · maletg cun retard · simulatur %.0f maletgs/s"
+ },
+ "rechter Stick fliegen · linker Stick umschauen · R2 / L2 hoch / runter · ✚ ↑↓ Tempo · Start halten = zurück": {
+  "en": "right stick fly · left stick look around · R2 / L2 up / down · ✚ ↑↓ speed · hold Start = back",
+  "fr": "stick droit voler · stick gauche regarder autour · R2 / L2 monter / descendre · ✚ ↑↓ vitesse · maintenir Start = retour",
+  "it": "stick destro volare · stick sinistro guardarsi intorno · R2 / L2 su / giù · ✚ ↑↓ velocità · tenere Start = indietro",
+  "rm": "stick dretg sgular · stick sanester guardar enturn · R2 / L2 ensi / engiu · ✚ ↑↓ tempo · tegnair Start = enavos"
  },
  "rechts von dir": {
   "en": "to your right",
@@ -22524,6 +22590,12 @@
   "it": "Sprint: 90 secondi, sempre lo stesso percorso – adatto a bambini e turni brevi.",
   "rm": "Sprint: 90 secundas, adina il medem parcurs – bun per uffants e rundas curtas."
  },
+ "Sprung: %s": {
+  "en": "Jump: %s",
+  "fr": "Saut : %s",
+  "it": "Salto: %s",
+  "rm": "Sigl: %s"
+ },
  "Spuren im Schnee (Menschen und Tiere) bleiben liegen, nach dem Regen Fussspuren im Matsch": {
   "en": "Tracks in the snow (people and animals) stay, after rain footprints in the mud",
   "fr": "Les traces dans la neige (personnes et animaux) restent, après la pluie des empreintes dans la boue",
@@ -22589,6 +22661,12 @@
   "fr": "Standard (jour, vent, nuit, pluie · environ 5 min)",
   "it": "Standard (giorno, vento, notte, pioggia · circa 5 min)",
   "rm": "Standard (di, vent, notg, plievgia · circa 5 min.)"
+ },
+ "Standort": {
+  "en": "Position",
+  "fr": "Position",
+  "it": "Posizione",
+  "rm": "Posiziun"
  },
  "Standort an diesem Ort (Pfadilager, Hofladen, Bergdorf, Festival)": {
   "en": "Position at this place (scout camp, farm shop, mountain village, festival)",
@@ -23622,6 +23700,12 @@
   "fr": "Température",
   "it": "Temperatura",
   "rm": "Temperatura"
+ },
+ "Tempo": {
+  "en": "Speed",
+  "fr": "Vitesse",
+  "it": "Velocità",
+  "rm": "Tempo"
  },
  "Tempo beim Erkunden (Shift / A = schneller)": {
   "en": "Speed when exploring (Shift / A = faster)",
@@ -25070,6 +25154,12 @@
   "it": "Forse da un campanaccio? Qualcuno ci ha intagliato delle tacche.",
   "rm": "Forsa d'ina zampogna? Insatgi ha taglià taglias en el."
  },
+ "Vignette": {
+  "en": "Vignette",
+  "fr": "Vignette",
+  "it": "Vignetta",
+  "rm": "Vignetta"
+ },
  "Virtueller SmallTV (GeekMagic SmallTV Ultra) · Klick: grösser / kleiner": {
   "en": "Virtual SmallTV (GeekMagic SmallTV Ultra) · click: bigger / smaller",
   "fr": "SmallTV virtuel (GeekMagic SmallTV Ultra) · clic : plus grand / plus petit",
@@ -25327,6 +25417,12 @@
   "fr": "W A S D / flèches conduire · Shift rapide · V vue · Page ↑↓ mât · C observateur · J joueurs · Esc",
   "it": "W A S D / frecce guidare · Shift veloce · V vista · Pag ↑↓ palo · C osservatore · J giocatori · Esc",
   "rm": "W A S D / frizzas manischar · Shift svelt · V vista · Pagina ↑↓ pal · C observatur · J giugaders · Esc"
+ },
+ "W A S D fliegen · Q / E runter / hoch · Shift schneller · rechte Maustaste umschauen · Rad oder + / − Tempo · Esc zurück": {
+  "en": "W A S D fly · Q / E down / up · Shift faster · right mouse button look around · wheel or + / − speed · Esc back",
+  "fr": "W A S D voler · Q / E descendre / monter · Maj plus vite · bouton droit regarder autour · molette ou + / − vitesse · Échap retour",
+  "it": "W A S D volare · Q / E giù / su · Shift più veloce · tasto destro guardarsi intorno · rotella o + / − velocità · Esc indietro",
+  "rm": "W A S D sgular · Q / E engiu / ensi · Shift pli svelt · buttun dretg da la mieur guardar enturn · roda u + / − tempo · Esc enavos"
  },
  "W A S D: gehen · Maus ziehen / Q E: umschauen · Shift: rennen · C: ducken · X: kriechen · F: Stein · L: Lampe · Esc: Menü": {
   "en": "W A S D: walk · drag mouse / Q E: look around · Shift: run · C: duck · X: crawl · F: stone · L: lamp · Esc: menu",
@@ -27544,6 +27640,12 @@
   "fr": "Retour",
   "it": "Indietro",
   "rm": "Enavos"
+ },
+ "Zurück (Esc)": {
+  "en": "Back (Esc)",
+  "fr": "Retour (Échap)",
+  "it": "Indietro (Esc)",
+  "rm": "Enavos (Esc)"
  },
  "Zurück (←)": {
   "en": "Back (←)",
