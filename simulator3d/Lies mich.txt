@@ -421,6 +421,10 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.29
+3D-4.29: Das Fenster «Neu in dieser Version» scrollt jetzt; der Knopf OK ist immer sichtbar, Esc schliesst es.
+So testest du: 1) Simulator starten (das Fenster erscheint nach dem Update). 2) In der Liste scrollen. 3) Esc oder OK.
+
 NEU IN 3D-3.26
 - Handy-Ansicht: Karte und Kompass stehen rechts, die Knopfzeile ist mittig (das Handy-Bild links bleibt frei).
 - Oben in der Mitte immer sichtbar: "PC-CPU … · Simulator …" (wie im kleinen Fenster).
