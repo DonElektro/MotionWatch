@@ -4,6 +4,16 @@ Stand: 31.10.2026 · Version **3.11.1** · MoveEye **3.11.1** (ab 3.0.0 eine gem
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
+## NEU (Zweig real-maggie-aussehen, Nummer setzt der Koordinator): Maggie sieht aus wie Daniels Hund
+
+- `maggie_hund.gd` `_maggie_koerper()`: baut Maggie nach der Grundform «dog» neu (andere Hunde unverändert): schlank,
+  hochbeinig (Schulter ≈ 31 cm), Beine mit Gelenk (`legs[i][2]`), feste Kippohren, Schwanz aus 3 Teilen nach oben gebogen,
+  Farben fest (Liste im Kopf der Datei: WEISS, BRAUN, NASENR, NASE, AUGE, GLANZ; 6 Materialien über `m.mat()`).
+  Schnittstelle bleibt: `body_root` (scale 0.6, innen Knoten `maggie_koerper` in Metern), `head`, `tail`, `legs`.
+  `freuen(sek)`: wedelt kräftig (Rätsel gelöst/Fund, Graben-Erfolg, Kristall); sonst läuft der Schwanz leicht mit.
+  `_schwanz()` senkt beim Laufen den Körper um die Höhe der tiefsten Pfote (Pfoten bleiben am Boden).
+- `actor.gd`: neues Feld `tail_wag` (≥ 0 = Ausschlag von aussen, −1 = wie bisher; nur Maggie setzt es).
+
 ## NEU in 3.11.1 (MoveEye 3.11.1): OSM-Kacheln wieder sichtbar (nur MoveEye)
 
 - Simulator-Code unverändert. MoveEye 530 / 540: Kachel-Bilder mit `referrerPolicy = "origin"` (die Seiten bleiben

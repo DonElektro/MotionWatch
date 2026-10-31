@@ -1,7 +1,7 @@
 extends "res://scripts/bergtal_erleben_base.gd"
 ## «Maggie und der Bergkristall» (Daniel 31.10.2026, Paket S2 «Maggie + liebe Tiere»): Maggie, der Familienhund.
-## Ein kleiner heller Terrier (Jack-Russell-artig: weiss mit hellbraunen Flecken, Schulterhöhe ≈ 30 cm – Rassestandard
-## FCI 345: 25–30 cm), folgt der Spielfigur und hat vier Fähigkeiten:
+## Ein kleiner heller Terrier (Jack-Russell-artig: weiss mit hellbraunen Flecken, Schulterhöhe ≈ 31 cm – Rassestandard
+## FCI 345: 25–30 cm; Aussehen nach Daniels Fotos, _maggie_koerper()), folgt der Spielfigur und hat vier Fähigkeiten:
 ##   * Riechen      – findet versteckte Spuren und Wege (leuchtende Pfotenspuren), ohne Rätsel in der Nähe: Spur zum nächsten
 ##   * Warnen       – knurrt / bellt von selbst, wenn böse Tiere nah sind (Knoten der Gruppe «maggie_boese», Paket S3) und an
 ##                    Weggabelungen, wo auf einem Weg Gefahr lauert
@@ -40,10 +40,22 @@ const NAH_R := 7.0                   # m: so nah an einer Station = «du bist do
 const WARN_R := 26.0                 # m: so nah ein böses Tier = Maggie warnt
 const WEIT_R := 45.0                 # m: weiter weg = Maggie kommt nachgelaufen (springt hin, wenn man es nicht sieht)
 const HILFE_S := 25.0                # s an einer Station ohne Lösung: der richtige Knopf leuchtet
-# Maggie: weiss mit hellbraunen Flecken; Fell-Oberfläche ≈ 30 °C (Wärmebild, wie «dog» in actor.gd)
-const FELL := Color(0.93, 0.91, 0.86)
-const FLECK := Color(0.72, 0.5, 0.28)
+# Maggie wie Daniels echter Hund (Fotos 31.10.2026): Jack-Russell-artig, Schulterhöhe ≈ 31 cm, schlank und hochbeinig.
+# Farben (alle über m.mat() geteilt, 6 Materialien + 1 Augen-Leuchten für die Nacht):
+#   WEISS  #F2EEE4  Grundfell, Brust, Beine, Bauch, Schnauze/Maul, Blesse, Schwanz innen und Spitze
+#   BRAUN  #B5703B  Kopf, Kippohren, grosse Platte Rücken/Flanke, Kruppe/Hinterteil, Schwanzwurzel und -aussenseite
+#   NASENR #D8CAB6  Nasenrücken (leicht dunkler als das Weiss)
+#   NASE   #151210  Nase      AUGE #24160E  Augen      GLANZ #FFFFFF  Glanzpunkt in den Augen (nicht in Lite)
+# Fell-Oberfläche ≈ 30 °C (Wärmebild, wie «dog» in actor.gd).
+const WEISS := Color(0.949, 0.933, 0.894)
+const BRAUN := Color(0.71, 0.44, 0.23)
+const NASENR := Color(0.847, 0.792, 0.714)
+const NASE := Color(0.082, 0.071, 0.063)
+const AUGE := Color(0.141, 0.086, 0.055)
+const GLANZ := Color(1, 1, 1)
 const FELL_C := 30.0
+const PFOTE_H := 0.0112              # m: halbe Höhe einer Pfote (Kugel 1.8 cm × 0.62)
+const MAGGIE_SKALA := 0.6            # body_root.scale wie bisher (Schritt-Takt von actor.gd), das Innere ist in echten Metern
 
 var story = null                     # maggie_story.gd (S1) oder StubStory
 var hund: Node3D                     # Maggie (actor.gd «dog», puppet)
@@ -196,6 +208,8 @@ var _graben_frei := false
 
 func _graben_hier(an: bool) -> void:
 	_graben_frei = an
+	if not an:
+		freuen(4.0)                                   # der Kristall ist da
 
 
 func _region_der_story() -> String:
@@ -410,27 +424,169 @@ func _hund_bauen() -> void:
 	var sp := _spieler()
 	hund = actor("dog", G(sp.x + 1.2, sp.z + 1.2), G(sp.x, sp.z), 1.6)
 	hund.name = "maggie"
-	hund.body_root.scale = Vector3.ONE * 0.6         # «dog» hat 50 cm Rücken-Mitte → ≈ 30 cm Schulterhöhe
-	bt._recolor(hund, FELL, FELL_C)
-	# hellbraune Flecken: Ohren, ein Fleck über einem Auge, einer auf dem Rücken, Schwanzwurzel
-	var hd: Node3D = hund.head
-	var big: MeshInstance3D = null
-	for mi in hd.find_children("*", "MeshInstance3D", true, false):
-		var g := mi as MeshInstance3D
-		if g.layers != 1:
-			continue
-		if g.mesh is PrismMesh or (g.mesh is CapsuleMesh and g.position.x != 0.0):
-			g.material_override = m.mat(FLECK)
-		elif g.mesh is SphereMesh and (big == null or (g.mesh as SphereMesh).radius > (big.mesh as SphereMesh).radius):
-			big = g
-	if big != null:
-		var r := (big.mesh as SphereMesh).radius
-		part(hd, sphm(r * 0.75), big.position + Vector3(r * 0.32, r * 0.28, -r * 0.12), FLECK, FELL_C)
-	part(hund.body_root, sphm(0.11, 0.12), Vector3(0.02, 0.62, 0.12), FLECK, FELL_C, Vector3.ZERO, Vector3(1.0, 0.6, 1.4))
-	if hund.tail != null:
-		part(hund.tail, sphm(0.04), Vector3(0, 0.03, 0.02), FLECK, FELL_C - 2.0)
+	_maggie_koerper(hund)
+	hund.tail_wag = 0.1
+	hund.process_priority = -1                       # erst die Beine (actor.gd), dann _schwanz(): Körperhöhe ohne Verzögerung
 	hund.process_mode = Node.PROCESS_MODE_INHERIT
 	_q["a"] = hund
+
+
+func _kap(r: float, h: float) -> CapsuleMesh:
+	var cm := CapsuleMesh.new()
+	cm.radius = r
+	cm.height = maxf(h, 2.0 * r + 0.002)
+	cm.radial_segments = 6 if lite else 10
+	cm.rings = 1 if lite else 3
+	return cm
+
+
+func _maggie_koerper(a) -> void:
+	"""Maggie neu bauen (ersetzt die Grundform «dog» von actor.gd, andere Hunde bleiben gleich): schlanker Rumpf, hohe
+	Beine mit Gelenk, kleine Pfoten, spitze Schnauze, Kippohren, nach oben gebogener Schwanz aus 3 Teilen.
+	Behält die Schnittstelle von actor.gd: body_root, head (Kopf-Gelenk), tail (Schwanzwurzel, wedelt um y), legs."""
+	var br: Node3D = a.body_root
+	for ch in br.get_children():
+		br.remove_child(ch)
+		ch.queue_free()
+	a.legs.clear()
+	a.lights.clear()
+	br.scale = Vector3.ONE * MAGGIE_SKALA
+	var k := Node3D.new()                        # alles darin in echten Metern (Boden y = 0, vorne = -z)
+	k.name = "maggie_koerper"
+	k.scale = Vector3.ONE / MAGGIE_SKALA
+	br.add_child(k)
+	var t := FELL_C
+	var X := Vector3.ZERO
+	var sg := 14                                 # Kugeln (sphm halbiert in Lite)
+	# ---- Rumpf: schmal, tiefe Brust, Bauch hochgezogen; braune Platte über Rücken/Flanke und Kruppe ----
+	part(k, _kap(0.064, 0.36), Vector3(0, 0.25, 0.015), WEISS, t, Vector3(PI / 2, 0, 0), Vector3(0.8, 1, 1))
+	part(k, sphm(0.074, -1.0, sg), Vector3(0, 0.236, -0.1), WEISS, t, X, Vector3(0.76, 1.04, 1.0))             # Brust
+	part(k, sphm(0.1, -1.0, sg), Vector3(0, 0.266, 0.01), BRAUN, t, X, Vector3(0.57, 0.72, 0.88))            # Platte Rücken/Flanke
+	part(k, sphm(0.064, -1.0, sg), Vector3(0, 0.255, 0.16), BRAUN, t, X, Vector3(0.82, 0.98, 0.88))             # Kruppe (weisser Streifen dazwischen)
+	if not lite:
+		part(k, sphm(0.03, -1.0, 8), Vector3(0.0, 0.322, 0.03), WEISS, t, X, Vector3(0.9, 0.22, 1.3))         # weisser Tupfen
+	var pfoten := []
+	# ---- Beine: vorne Oberarm + Unterarm, hinten Oberschenkel (braun) + Unterschenkel, Gelenk sichtbar; kleine Pfoten ----
+	for i in range(4):
+		var s := 1.0 if i % 2 == 0 else -1.0
+		var vorn := i < 2
+		var hp := _pivot_k(k, Vector3(0.036 * s, 0.245, -0.105 if vorn else 0.128))
+		var knie: Node3D
+		if vorn:
+			part(hp, _kap(0.021, 0.14), Vector3(0, -0.06, 0.0), WEISS, t - 1.0)
+			knie = _pivot_k(hp, Vector3(0, -0.13, 0))
+			knie.rotation.y = PI                     # Vorderlauf: die Pfote klappt nach hinten
+			part(knie, sphm(0.0165, -1.0, 8), X, WEISS, t - 2.0)
+			part(knie, _kap(0.0135, 0.1), Vector3(0, -0.05, 0), WEISS, t - 3.0)
+			pfoten.append(part(knie, sphm(0.018, -1.0, 8), Vector3(0, -0.104, 0.006), WEISS, t - 4.0, X, Vector3(1.0, 0.62, 1.35)))
+		else:
+			part(hp, sphm(0.046, -1.0, 10), Vector3(0.002 * s, -0.016, 0.006), BRAUN, t - 1.0, X, Vector3(0.44, 1.15, 0.9))   # Oberschenkel
+			part(hp, _kap(0.019, 0.1), Vector3(0, -0.095, 0.012), WEISS, t - 2.0, Vector3(-0.3, 0, 0))
+			knie = _pivot_k(hp, Vector3(0, -0.15, 0.028))   # Sprunggelenk: die Pfote klappt nach vorne
+			part(knie, sphm(0.0145, -1.0, 8), X, WEISS, t - 2.0)
+			part(knie, _kap(0.0125, 0.085), Vector3(0, -0.042, -0.002), WEISS, t - 3.0)
+			pfoten.append(part(knie, sphm(0.018, -1.0, 8), Vector3(0, -0.084, -0.01), WEISS, t - 4.0, X, Vector3(1.0, 0.62, 1.35)))
+		a.legs.append([hp, 1 if i in [0, 3] else -1, knie])
+	k.set_meta("pfoten", pfoten)                 # _schwanz(): die Pfoten bleiben beim Laufen am Boden
+	# ---- Hals und Kopf: brauner Kopf, schmale Blesse, weisse spitze Schnauze, Nasenrücken etwas dunkler ----
+	var hd := _pivot_k(k, Vector3(0, 0.275, -0.14))
+	a.head = hd
+	var hc := Vector3(0, 0.078, -0.09)             # Mitte des Schädels (Kopf ≈ 35–40 cm über dem Boden)
+	part(hd, _kap(0.041, 0.13), hc * 0.48, BRAUN, t + 1.0, Vector3(-atan2(-hc.z, hc.y), 0, 0), Vector3(0.9, 1, 1))   # Hals (braun wie der Kopf, die Brust bleibt weiss)
+	part(hd, sphm(0.052, -1.0, sg), hc, BRAUN, t + 2.0, X, Vector3(0.94, 0.88, 1.0))
+	part(hd, cylm(0.017, 0.03, 0.062, 12), hc + Vector3(0, -0.02, -0.064), WEISS, t + 1.0, Vector3(-PI / 2 - 0.06, 0, 0), Vector3(0.88, 1, 1))
+	part(hd, _kap(0.0092, 0.046), hc + Vector3(0, -0.004, -0.064), NASENR, t + 1.0, Vector3(-PI / 2 - 0.2, 0, 0), Vector3(1, 1, 0.7))
+	part(hd, sphm(0.022, -1.0, 8), hc + Vector3(0, 0.0356, -0.0338), WEISS, t + 2.0, Vector3(0.93, 0, 0), Vector3(0.14, 0.8, 0.25))   # Blesse
+	part(hd, sphm(0.0115, -1.0, 8), hc + Vector3(0, -0.012, -0.096), NASE, t - 3.0, X, Vector3(1.25, 0.9, 0.9))
+	if not lite:
+		part(hd, _kap(0.014, 0.05), hc + Vector3(0, -0.037, -0.056), WEISS, t + 1.0, Vector3(-PI / 2, 0, 0))   # Unterkiefer
+	var em := StandardMaterial3D.new()             # Augen: dunkelbraun, nachts mit Augenleuchten (actor.gd lights)
+	em.albedo_color = AUGE
+	em.roughness = 0.25
+	em.emission_enabled = true
+	em.emission = Color(0.9, 0.95, 0.8)
+	em.emission_energy_multiplier = 0.0
+	a.lights.append(em)
+	for s2 in [-1.0, 1.0]:
+		var e := part(hd, sphm(0.0068, -1.0, 8), hc + Vector3(0.024 * s2, 0.01, -0.042), AUGE, 34.0)
+		e.material_override = em
+		if not lite:
+			part(hd, sphm(0.0022, -1.0, 6), hc + Vector3(0.025 * s2 + 0.002, 0.013, -0.0478), GLANZ, 34.0)
+		# Kippohr: Ansatz hoch oben am Schädel, der Lappen fällt mit der Spitze nach vorne/unten (Richtung äusserer Augenwinkel)
+		var fp := hc + Vector3(0.04 * s2, 0.04, -0.01)          # Knick
+		var fu := hc + Vector3(0.03 * s2, 0.024, -0.002)          # Ansatz
+		var ob := _pivot_k(hd, fu)
+		ob.basis = _achsen((fp - fu).normalized())
+		var pm := PrismMesh.new()
+		pm.size = Vector3(0.036, (fp - fu).length() + 0.003, 0.009)
+		part(ob, pm, Vector3(0, pm.size.y * 0.5, 0), BRAUN, t - 2.0)
+		var of := _pivot_k(hd, fp)
+		of.basis = _achsen(Vector3(0.22 * s2, -0.62, -0.75).normalized())
+		var pm2 := PrismMesh.new()
+		pm2.size = Vector3(0.04, 0.046, 0.007)
+		part(of, pm2, Vector3(0, 0.023, 0), BRAUN, t - 3.0)
+	# ---- Schwanz: nach oben gebogen, 3 Teile; Wurzel und aussen braun, innen und Spitze weiss ----
+	var tw := _pivot_k(k, Vector3(0, 0.3, 0.19))
+	a.tail = tw
+	var t1 := _pivot_k(tw, X)
+	t1.rotation.x = 0.5
+	part(t1, _kap(0.018, 0.075), Vector3(0, 0.03, 0), BRAUN, t - 4.0)
+	var t2 := _pivot_k(t1, Vector3(0, 0.058, 0))
+	t2.rotation.x = -0.75
+	part(t2, sphm(0.0145, -1.0, 8), X, BRAUN, t - 4.0)
+	part(t2, _kap(0.0138, 0.065), Vector3(0, 0.027, 0.002), BRAUN, t - 4.0)
+	part(t2, _kap(0.0115, 0.062), Vector3(0, 0.028, -0.0045), WEISS, t - 4.0)
+	var t3 := _pivot_k(t2, Vector3(0, 0.054, 0))
+	t3.rotation.x = -1.0
+	part(t3, sphm(0.012, -1.0, 8), X, WEISS, t - 5.0)
+	part(t3, _kap(0.0115, 0.058), Vector3(0, 0.025, 0), WEISS, t - 5.0)
+	# Grössen für actor.gd (Treffer, Abstand zu Hindernissen)
+	a.body_h = 0.31
+	a.body_r = 0.24
+	a.radius = 0.18
+
+
+func _achsen(y: Vector3) -> Basis:
+	"""eine Drehung, die +y nach «y» zeigt (x bleibt möglichst seitlich): für die Ohren"""
+	var z := Vector3.RIGHT.cross(y).normalized()
+	return Basis(y.cross(z).normalized(), y, z)
+
+
+func _pivot_k(parent: Node3D, p: Vector3) -> Node3D:
+	var n := Node3D.new()
+	n.position = p
+	parent.add_child(n)
+	return n
+
+
+var _freude_bis := 0.0
+var _wedel := 0.1
+
+
+func freuen(sek := 3.0) -> void:
+	"""Maggie freut sich (Fund, Lob, Graben-Erfolg): der Schwanz wedelt kräftig"""
+	_freude_bis = maxf(_freude_bis, _uhr + sek)
+
+
+func _schwanz(dt: float) -> void:
+	"""sonst läuft der Schwanz leicht mit (etwas mehr beim Laufen). Dazu: beim Laufen den Körper so weit senken, wie die
+	schwingenden Beine (actor.gd schwingt alle vier gleich weit) und das Wippen ihn heben – die Pfoten bleiben am Boden."""
+	if hund == null or not is_instance_valid(hund):
+		return
+	var v := clampf(float(hund.cur_speed) / 3.0, 0.0, 1.0)
+	var ziel := 0.6 if _uhr < _freude_bis else 0.07 + 0.12 * v
+	_wedel = move_toward(_wedel, ziel, dt * 2.5)
+	hund.tail_wag = _wedel
+	var k: Node3D = hund.body_root.get_node_or_null("maggie_koerper")
+	if k == null or (hund.legs as Array).is_empty():
+		return
+	var heben := 0.0
+	if not (str(hund.idle_kind) in ["sit", "sit_up", "lie"]) and float(hund._lie_k) < 0.01 and float(hund.cur_speed) >= 0.05:
+		var tief := 99.0                              # die tiefste Pfote (Unterseite) über dem Boden, ohne die jetzige Senkung
+		for pf in k.get_meta("pfoten", []):
+			tief = minf(tief, (pf as Node3D).global_position.y - PFOTE_H)
+		heben = maxf(0.0, tief - hund.global_position.y - k.position.y * MAGGIE_SKALA)
+	k.position.y = -heben / MAGGIE_SKALA
 
 
 func _folgen(dt: float) -> void:
@@ -609,6 +765,7 @@ func befehl(f: String) -> Dictionary:
 		"graben":
 			_aktion([{"t": "idle", "k": "root", "s": 1.8}, {"t": "call", "fn": func():
 				_kruemel_werfen(ppos(hund), _boden_farbe(), 4)
+				freuen(2.5)
 				_zeige([T.t("Maggie gräbt … einen alten Knochen. Den behält sie lieber selbst."),
 					T.t("Maggie gräbt ein Loch. Da ist nichts. Sie wedelt trotzdem."),
 					T.t("Maggie findet einen Tannzapfen und ist sehr stolz.")][randi() % 3])}])
@@ -678,6 +835,7 @@ func _fertig(st_: Dictionary) -> void:
 	if geloest.has(id):
 		return
 	geloest[id] = true
+	freuen(4.0)                                       # Fund / gelöst / Lob: Maggie wedelt
 	if st_.has("item") and not gefunden.has(str(st_["item"])):
 		gefunden.append(str(st_["item"]))
 	tipp(str(st_["ok"]))
@@ -808,6 +966,7 @@ func _bauen(st_: Dictionary) -> void:
 func _graben_an(st_: Dictionary, an: bool) -> void:
 	st_["graben"] = an
 	if not an:
+		freuen(3.0)
 		var hm = st_.get("haufen", null)
 		if hm != null and is_instance_valid(hm):
 			show_part(hm, false)
@@ -997,6 +1156,7 @@ func _process(dt: float) -> void:
 			_on_region(r)
 	if hund == null or not is_instance_valid(hund):
 		return
+	_schwanz(dt)
 	if zustand_hund == "aktion":
 		if _q_tick(_q, dt):
 			zustand_hund = "folgen"
