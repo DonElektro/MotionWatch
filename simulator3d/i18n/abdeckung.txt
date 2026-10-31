@@ -6,7 +6,7 @@ Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 407 Stellen
 Nicht mehr im Code (noch in texte.json): 85
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 67 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 19877, schlüssel 14812, keine Wörter 9101, index 7521, technisch 2592, doc 1635, einheit 235, englisch 107, log 78, pfad 68, html 67, klasse 24, shader 4
+Übersprungen (Grund: Anzahl): kennung 19916, schlüssel 14821, keine Wörter 9110, index 7526, technisch 2594, doc 1640, einheit 235, englisch 107, log 78, pfad 68, html 67, klasse 24, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  670    29
@@ -266,8 +266,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:237  'Aussicht: '
   bergtal.gd:246  'Schlafplatz: '
   bergtal.gd:248  'Aussicht: '
-  bergtal.gd:2248  'Schlafplatz: '
-  bergtal.gd:2250  'Aussicht: '
+  bergtal.gd:2363  'Schlafplatz: '
+  bergtal.gd:2365  'Aussicht: '
   bergtal_abenteuer.gd:348  'Start: '
   bergtal_abenteuer.gd:825  ' auf der Bank mit Aussicht'
   bergtal_abenteuer.gd:1925  'Wird frei: '

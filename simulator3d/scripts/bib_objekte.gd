@@ -1599,6 +1599,15 @@ func _k_bike_rack(q: Dictionary) -> Dictionary:
 func _k_footbridge(q: Dictionary) -> Dictionary:
 	var L := float(_q(q, "len", 6.0))
 	var w := float(_q(q, "w", 1.8))
+	if bool(_q(q, "stone", false)):                         # K3: a stone (road) bridge - arch, stone deck, low walls
+		var sc := "8a857d"
+		var ps := [B(w, 0.3, L + 0.6, 0, 0.3, 0, "6a6a66", 0, 0, 0, "stone"),                         # the paved deck
+				B(w - 0.4, 0.35, L * 0.5, 0, 0.0, 0, "7a756d", 0, 0, 0, "stone")]                   # the crown of the arch
+		for sd in [-1.0, 1.0]:
+			ps.append(B(0.4, 0.55, L + 0.6, sd * (w / 2.0 + 0.1), 0.7, 0, sc, 0, 0, 0, "stone"))   # parapet walls
+			ps.append(B(w + 0.6, 1.4, 1.0, 0, -0.3, sd * L / 2.0, sc, 0, 0, 0, "stone"))           # abutments
+			ps.append(B(w - 0.4, 0.5, L * 0.22, 0, -0.1, sd * L * 0.32, "7a756d", 0, 0, 0, "stone"))  # the arch flanks
+		return {"p": ps, "t": "stone", "lod": "mid"}
 	var p := [B(w, 0.15, L, 0, 0.35, 0, "8a6a48", 0, 0, 0, "tree"), B(w + 0.4, 0.6, 0.8, 0, 0.0, L / 2.0, "8a857d", 0, 0, 0, "stone"),
 			B(w + 0.4, 0.6, 0.8, 0, 0.0, -L / 2.0, "8a857d", 0, 0, 0, "stone")]
 	for sd in [-1.0, 1.0]:

@@ -6,7 +6,7 @@ extends RefCounted
 ##     Selbstversorgerhütte Alp Tschuggen (Stube mit Holzofen, Hüttenbuch, Matratzenlager oben) · Biwakschachtel Chüebodehorn
 ##     (Pritschen, Biwakbuch, Notfallkiste) · Kapelle St. Jodern (Bänke, Altar, brennende Kerzen) · Infanteriewerk Gufer (Bunker:
 ##     Gang, Kampfstand mit Scharte, Filterraum, Mannschaftsraum) · verlassene Sennerei Chäsgaden (Kessi am Turner, Käsepresse,
-##     eingefallenes Dach) · altes Hospiz am Furggapass (Eingangshalle mit Treppe, Gaststube mit Kachelofen und stehender Uhr,
+##     altes Steinplattendach) · altes Hospiz am Furggapass (Eingangshalle mit Treppe, Gaststube mit Kachelofen und stehender Uhr,
 ##     Küche mit Falltür, Schlafsaal mit Tüchern über den Betten, Hauskapelle - für die spätere Horror-Geschichte: Türen als
 ##     eigene Knoten (hospiz_door), Raumlichter aus (hospiz_light), Räume in s.data["bt_orte"]["hospiz"]) · Militärbaracke Gufer
 ##     mit Stacheldraht-Resten · Tal- und Bergstation der Materialseilbahn (Seilwinde, Motor, Schaltkasten).
@@ -119,6 +119,7 @@ var ent_pos := {}                 # discovery id -> valley position
 var _xf := {}                     # building -> its transform (valley)
 var hospiz := {"rooms": {}, "doors": {}, "lights": {}}
 var _flames: Array = []           # [OmniLight3D, energy, valley position]
+var _clips: Array = []            # K3: rooms in the hill - the ground is not drawn there (bergtal.gd clip_ground)
 var _slow := 0.0
 var _warn_t := -100.0
 var _clock := 0.0
@@ -173,6 +174,14 @@ static func building(key: String) -> Array:
 		"seilbahn":
 			return B_LIFT
 	return [0.0, 0.0, 0.0]
+
+
+static func busy_pts() -> Array:
+	"""K3 (Kontaktbogen 31.10.2026): no tree or rock in or right beside the buildings (a tree stood in the Militärbaracke):
+	[[centre (valley), radius], …] for bergtal.gd _vegetation"""
+	return [[Vector2(B_BARRACK[0], B_BARRACK[1]), 10.0], [Vector2(B_BUNKER[0], B_BUNKER[1]), 9.0], [Vector2(B_DAIRY[0], B_DAIRY[1]), 8.0],
+			[Vector2(B_LIFT[0], B_LIFT[1]), 5.0], [Vector2(B_CAVE[0], B_CAVE[1]), 6.0], [Vector2(B_GATE[0], B_GATE[1]), 6.0],
+			[Vector2(B_BIV[0], B_BIV[1]), 5.0]]
 
 
 static func all_places() -> Array:
@@ -560,6 +569,7 @@ func build() -> void:
 	_saeumerweg()
 	_alp_ruins()
 	_register()
+	bt.clip_ground(_clips)
 	m.anims.append(Callable(self, "_tick"))
 	info.merge({"ms": Time.get_ticks_msec() - t0, "lite": lite, "obstacles": m.obstacles.size() - n0, "decks": bt.decks.size(),
 			"lights": _flames.size(), "places": PLACES.size(), "inside": INSIDE.size(), "discoveries": ENT.size()}, true)
@@ -1012,24 +1022,21 @@ func _dairy() -> void:
 	var fz := d / 2.0 - t / 2.0
 	var sx := w / 2.0 - t / 2.0
 	_wall(b, Vector2(-w / 2.0, fz), Vector2(w / 2.0, fz), 0, 2.4, t, c1, "stone", [[w / 2.0 - 1.2, 1.0, 0.0, 1.85], [w / 2.0 + 1.6, 0.5, 1.1, 1.5]])
-	_wall(b, Vector2(-w / 2.0, -fz), Vector2(w / 2.0 - 2.2, -fz), 0, 2.4, t, c1)
-	_wall(b, Vector2(w / 2.0 - 2.2, -fz), Vector2(w / 2.0, -fz), 0, 1.3, t, c1)                    # the collapsed corner
+	# K3 (Kontaktbogen 31.10.2026): the roof is closed again (the open roof looked like a building fault); old, but tight -
+	# only a few slabs lie on the floor
+	_wall(b, Vector2(-w / 2.0, -fz), Vector2(w / 2.0, -fz), 0, 2.4, t, c1)
 	_wall(b, Vector2(-sx, -fz + t / 2.0), Vector2(-sx, fz - t / 2.0), 0, 2.4, t, c1, "stone", [[1.2, 0.4, 1.2, 1.5]])
-	_wall(b, Vector2(sx, -fz + t / 2.0), Vector2(sx, 0.4), 0, 1.6, t, c1)
-	_wall(b, Vector2(sx, 0.4), Vector2(sx, fz - t / 2.0), 0, 2.4, t, c1)
-	_pt(b, Bib.P(d, 1.2, t, -sx, 3.0, 0, c1, 0, 90, 0), "far")                                     # the west gable (the east one fell)
-	_pt(b, Bib.ROD(Vector3(-w / 2.0, 3.55, 0), Vector3(w / 2.0 - 1.0, 3.5, 0), 0.12, "3a2a1a", "tree"), "far")    # ridge beam
-	for k in range(6):                                                                             # rafters; on the east half some broken
+	_wall(b, Vector2(sx, -fz + t / 2.0), Vector2(sx, fz - t / 2.0), 0, 2.4, t, c1)
+	for sd in [-1.0, 1.0]:                                                                         # both gables
+		_pt(b, Bib.P(d, 1.2, t, sd * sx, 3.0, 0, c1, 0, 90, 0), "far")
+	_pt(b, Bib.ROD(Vector3(-w / 2.0, 3.55, 0), Vector3(w / 2.0, 3.55, 0), 0.12, "3a2a1a", "tree"), "far")    # ridge beam
+	for k in range(6):                                                                             # rafters
 		var x := -w / 2.0 + 0.4 + k * (w - 0.8) / 5.0
 		for sd in [-1.0, 1.0]:
-			if x > 1.0 and sd > 0 and k % 2 == 1:
-				_pt(b, Bib.ROD(Vector3(x, 3.5, 0), Vector3(x + 0.1, 3.0, sd * 1.1), 0.07, "3a2a1a", "tree"), "mid")
-				continue
 			_pt(b, Bib.ROD(Vector3(x, 3.5, 0), Vector3(x, 2.4, sd * (fz + 0.2)), 0.07, "3a2a1a", "tree"), "mid")
-	for sd in [-1.0, 1.0]:                                                                         # stone slabs: the west part still there
+	for sd in [-1.0, 1.0]:                                                                         # stone slabs (Steinplatten)
 		var ang = rad_to_deg(atan2(1.1, d / 2.0)) * sd
-		_pt(b, Bib.B(w * 0.55, 0.1, d / 2.0 + 0.4, -w * 0.22, 2.98, sd * (d / 4.0 + 0.1), "6e6a64", ang, 0, 0, "stone"), "far")
-	_pt(b, Bib.B(w * 0.2, 0.1, d / 2.0 + 0.4, w * 0.4, 2.98, -(d / 4.0 + 0.1), "6e6a64", -rad_to_deg(atan2(1.1, d / 2.0)), 0, 0, "stone"), "far")
+		_pt(b, Bib.B(w + 0.5, 0.12, d / 2.0 + 0.45, 0, 3.0, sd * (d / 4.0 + 0.1), "6e6a64", ang, 0, 0, "stone"), "far")
 	_bx(b, 1.3, 0.12, 0.9, 1.6, 0.2, 0.6, "6e6a64", "stone", "mid", 20.0, 8.0, 14.0)             # fallen slabs on the floor
 	_bx(b, 1.0, 0.1, 0.8, 2.3, 0.12, -0.4, "6e6a64", "stone", "mid", -40.0, -5.0, 3.0)
 	_bx(b, 0.95, 1.8, 0.06, w / 2.0 - 1.4, 0.06, fz + 0.6, "4a3220", "tree", "mid", 10.0, 90.0, 0.0)   # the door, fallen out
@@ -1095,6 +1102,9 @@ func _bunker() -> void:
 		_bx(b, float(r[2]) + 0.2, 0.06, float(r[3]) + 0.2, float(r[0]), 0.03, float(r[1]), "6a6a64", "stone", "mid")
 		_bx(b, float(r[2]) + 0.7, 0.35, float(r[3]) + 0.7, float(r[0]), hh + 0.17, float(r[1]), dk, "stone", "mid")
 		_deck(b, Vector2(float(r[0]), float(r[1])), Vector2(float(r[2]) / 2.0, float(r[3]) / 2.0), 0.06)
+		# K3: the hill must not come through the floor (it showed as grass floor in the corridor)
+		_clips.append([_lx(b, float(r[0]), float(r[1])), Vector2(float(r[2]) / 2.0 + 0.15, float(r[3]) / 2.0 + 0.15), float(b["rot"]),
+				float(b["y"]) - 0.02, float(b["y"]) + hh + 0.3])
 	# walls (x0, z0, x1, z1, holes)
 	var ws := [[-1.8, -0.35, -1.8, -4.5, []], [-1.8, -7.0, -1.8, -8.0, []], [-0.6, -0.35, -0.6, -8.0, [[1.25, 0.9, 0.0, 2.0]]],
 			[-0.6, -3.25, 2.8, -3.25, []], [2.8, -0.35, 2.8, -3.25, []],
@@ -1296,6 +1306,19 @@ func _cave() -> void:
 			_pt(b, Bib.S(0.4, 0.5, wr - 0.1, 0.25, z0 - 0.5, cols[2], "stone"))
 		_deck(b, Vector2((wr - wl) / 2.0, z0), Vector2(minf(wl, wr), 1.25), 0.02)
 	_bx(b, 4.6, 3.4, 0.8, 0, 1.5, -D - 0.5, cols[0], "stone", "mid")                          # the back wall
+	# K3 (Kontaktbogen: «looks like a concrete corridor»): rough rock bulging from the walls and the ceiling, the cliff not
+	# through the floor. Lite: fewer lumps.
+	_clips.append([_lx(b, 0.0, -5.6), Vector2(2.1, 5.7), float(b["rot"]), float(b["y"]) - 0.05, float(b["y"]) + 2.2])
+	var lumps := 14 if full else 6
+	for i in range(lumps):
+		var u := (i + 0.5) / lumps
+		var zz := -0.6 - u * (D - 0.4)
+		var sd := -1.0 if i % 2 == 0 else 1.0
+		var hh := 0.5 + 1.6 * fposmod(i * 0.618, 1.0)
+		var r := 0.55 + 0.35 * fposmod(i * 0.37, 1.0)
+		_pt(b, Bib.S(r, r * 1.3, sd * (1.45 + 0.1 * sin(i * 2.1)), hh, zz, cols[i % 3], "stone"), "mid")
+		if i % 3 == 0:
+			_pt(b, Bib.S(r * 1.2, r * 0.8, 0.5 * sin(i * 1.3), 2.25 + 0.1 * cos(i), zz - 0.4, cols[(i + 1) % 3], "stone"), "mid")
 	for p in [Vector3(-2.2, 2.9, 0.2), Vector3(2.0, 3.0, 0.0), Vector3(0.0, 3.4, 0.4), Vector3(-1.0, 3.6, -1.2)]:
 		_pt(b, Bib.S(1.4, 1.5, p.x, p.y, p.z, cols[int(absf(p.x)) % 3], "stone"), "far")        # rock around the mouth
 	_bx(b, 1.4, 0.03, 1.0, 0.4, 0.04, -6.5, "1a2a34", "pond", "mid")                           # a puddle

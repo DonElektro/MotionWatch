@@ -178,6 +178,9 @@ const EXTRA_HIDE := {
 
 # ---- small helpers -------------------------------------------------------------------------------------------------
 func put(parent: Node3D, mesh: Mesh, p: Vector3, c, tkey, rot := Vector3.ZERO, scl := Vector3.ONE) -> MeshInstance3D:
+	if clip > 0.0 and parent == root and mesh is BoxMesh and (mesh as BoxMesh).size.y <= 0.12 and absf(rot.y) < 0.01 \
+			and (mesh as BoxMesh).size.x > clip and (mesh as BoxMesh).size.z > clip and typeof(c) == TYPE_COLOR:
+		return _soft_ground(parent, (mesh as BoxMesh).size, p, c, tkey)
 	if clip > 0.0 and parent == root and mesh is BoxMesh and (mesh as BoxMesh).size.y <= 0.12 and absf(rot.y) < 0.01:
 		var bs: Vector3 = (mesh as BoxMesh).size        # 3D-4.x: a flat thing (road, gravel, water) only on the flat area
 		if bs.x > clip or bs.z > clip:
@@ -193,6 +196,53 @@ func put(parent: Node3D, mesh: Mesh, p: Vector3, c, tkey, rot := Vector3.ZERO, s
 			mesh = m.box(x1 - x0, bs.y, z1 - z0)
 			p = Vector3((x0 + x1) / 2.0, p.y, (z0 + z1) / 2.0)
 	return m.add_mesh(parent, mesh, p, m.mat(c) if typeof(c) == TYPE_COLOR else c, tkey, rot, scl)
+
+
+func _soft_ground(parent: Node3D, bs: Vector3, p: Vector3, c: Color, tkey) -> MeshInstance3D:
+	"""K3 (Kontaktbogen 31.10.2026, «Tarnwiese»): the ground of an old scene inside a world (bigger than its flat area) was a
+	sharp-edged rectangle that stuck out over the hill. Now: only the round flat area (radius clip, in the box), lying on the
+	ground of the world, and its colour fades out over the outer quarter into the ground of the world (vertex alpha).
+	A grid of 2 m (Lite: 4 m) - flat area, so the heights only matter at the edge."""
+	var x0 := maxf(p.x - bs.x / 2.0, -clip)
+	var x1 := minf(p.x + bs.x / 2.0, clip)
+	var z0 := maxf(p.z - bs.z / 2.0, -clip)
+	var z1 := minf(p.z + bs.z / 2.0, clip)
+	var stp := 4.0 if (Engine.has_meta("lite") and bool(Engine.get_meta("lite"))) else 2.0
+	var nx := maxi(2, int(ceil((x1 - x0) / stp)) + 1)
+	var nz := maxi(2, int(ceil((z1 - z0) / stp)) + 1)
+	var fade := clip * 0.25
+	var top := p.y + bs.y / 2.0
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var vs := []
+	for j in range(nz):
+		for i in range(nx):
+			var x := lerpf(x0, x1, float(i) / (nx - 1))
+			var z := lerpf(z0, z1, float(j) / (nz - 1))
+			var edge := minf(minf(x - x0, x1 - x), minf(z - z0, z1 - z))                  # to the edge of the box …
+			edge = minf(edge, clip - Vector2(x, z).length())                              # … and of the flat area
+			var a := smoothstep(0.0, fade, edge)
+			var y := top
+			if m.ground_fn.is_valid():
+				y = maxf(top, float(m.ground_fn.call(x, z)) + 0.02) if a < 0.999 else top
+			vs.append([Vector3(x, y, z), a])
+	for j in range(nz - 1):
+		for i in range(nx - 1):
+			var q := j * nx + i
+			if float(vs[q][1]) + float(vs[q + 1][1]) + float(vs[q + nx][1]) + float(vs[q + nx + 1][1]) <= 0.0:
+				continue                                                                   # (all four invisible)
+			for k in [q, q + 1, q + nx, q + 1, q + nx + 1, q + nx]:
+				st.set_color(Color(1, 1, 1, float(vs[k][1])))
+				st.set_normal(Vector3.UP)
+				st.add_vertex(vs[k][0])
+	var mt := StandardMaterial3D.new()
+	mt.albedo_color = c
+	mt.vertex_color_use_as_albedo = true
+	mt.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mt.roughness = 0.95
+	var mi: MeshInstance3D = m.add_mesh(parent, st.commit(), Vector3.ZERO, mt, tkey)
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	return mi
 
 
 func node(parent: Node3D, p: Vector3, rot_y := 0.0) -> Node3D:

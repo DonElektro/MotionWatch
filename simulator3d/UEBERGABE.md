@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.75** · passende MoveEye-Version (früher Motion Watch) **2.98.106**
+Stand: 31.10.2026 · Simulator-Version **3D-4.76** · passende MoveEye-Version (früher Motion Watch) **2.98.107**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.76 (MoveEye 2.98.107): Weltfehler Bergtal, Rest (K3)
+
+- `bergtal.gd`, `bergtal_orte.gd`, `bergtal_erleben_a/b.gd`, `bib_berg.gd`, `bib_objekte.gd`, `scenes.gd`, `kompakt_dorf.gd`,
+  `shaders/bergtal_boden.gdshader`: Innenräume ohne Gras/Bäume, Sennerei mit Dach, keine Geländelöcher, Steinbrücke, runde
+  Tarnwiese, Arvenhain, Herbstblumen, Gletscherspalten und Felsen auf dem Boden. K2 (`_roads_and_trails`, `_road_flatten`)
+  unverändert.
 
 ## NEU in 3D-4.75 (MoveEye 2.98.106): Abenteuer-Pakete verbunden (A1–A5)
 

@@ -1,7 +1,7 @@
 {
- "version": "3D-4.75",
+ "version": "3D-4.76",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34608050,
- "sha256": "2e9a8fc89f7d162b6db458b08bbb2e659debf4046c4395102bc0a2b8a069eac6",
- "notes": "Bergtal-Abenteuer: Pakete verbunden – Bestenliste mit MoveEye-Fotos, Tausch nach Wunschlisten, Hilfe = Schwierigkeit."
+ "size": 34626270,
+ "sha256": "08d07a09fab555d4f45923c7bbffa87f38ffc6532a85ba3bcfd59b902752e787",
+ "notes": "Bergtal: weitere Weltfehler behoben (Innenräume, Sennerei, Geländelöcher, Steinbrücke, Tarnwiese, Arvenhain, Felsen)."
 }
