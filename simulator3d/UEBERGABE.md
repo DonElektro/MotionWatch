@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.11.0** · MoveEye **3.11.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.11.1** · MoveEye **3.11.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.11.1 (MoveEye 3.11.1): OSM-Kacheln wieder sichtbar (nur MoveEye)
+
+- Simulator-Code unverändert. MoveEye 530 / 540: Kachel-Bilder mit `referrerPolicy = "origin"` (die Seiten bleiben
+  `Referrer-Policy: no-referrer`, 550) – OSM blockiert Kacheln ohne Referer («Access blocked … 403»).
 
 ## NEU in 3.11.0 (MoveEye 3.11.0): Maggie zu zweit (`maggie_zwei.gd`, `zweit_bild.gd`)
 
