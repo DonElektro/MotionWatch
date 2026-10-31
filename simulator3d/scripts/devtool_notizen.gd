@@ -343,18 +343,18 @@ func build(v: VBoxContainer) -> void:
 	l.text = T.t("Stelle")
 	r1.add_child(l)
 	_b3d = Button.new()
-	_b3d.text = "📍 " + T.t("In 3D anklicken")
+	_b3d.text = T.t("In 3D anklicken")
 	_b3d.toggle_mode = true
 	_b3d.tooltip_text = T.t("Danach in die 3D-Ansicht klicken (ausserhalb dieses Fensters)")
 	_b3d.toggled.connect(func(on): arm = "3d" if on else ""; _paint_arm())
 	r1.add_child(_b3d)
 	var bc := Button.new()
-	bc.text = "🎥 " + T.t("Hier (Kamera)")
+	bc.text = T.t("Hier (Kamera)")
 	bc.tooltip_text = T.t("Die Mitte der Ansicht jetzt")
 	bc.pressed.connect(func(): _set_spot({"src": "kamera", "pos": null, "wpos": null, "world": dev.loaded_world(), "scene": str(main.scene)}))
 	r1.add_child(bc)
 	_bmap = Button.new()
-	_bmap.text = "🗺 " + T.t("Auf der Karte")
+	_bmap.text = T.t("Auf der Karte")
 	_bmap.toggle_mode = true
 	_bmap.tooltip_text = T.t("Danach auf die Karte oben klicken")
 	_bmap.toggled.connect(func(on): arm = "karte" if on else ""; _paint_arm())
@@ -368,7 +368,7 @@ func build(v: VBoxContainer) -> void:
 	v.add_child(_spot_l)
 	_text = TextEdit.new()
 	_text.placeholder_text = T.t("Was ist hier? Text an Claude …")
-	_text.custom_minimum_size = Vector2(598, 58)
+	_text.custom_minimum_size = Vector2(598, 52)
 	_text.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	v.add_child(_text)
 	var r2 := HBoxContainer.new()
@@ -384,7 +384,7 @@ func build(v: VBoxContainer) -> void:
 	bg.pressed.connect(func(): _goto_sel())
 	r2.add_child(bg)
 	var bd := Button.new()
-	bd.text = "✓ " + T.t("Abhaken")
+	bd.text = T.t("Abhaken")
 	bd.pressed.connect(func():
 		var n := find(_sel)
 		if not n.is_empty():
@@ -395,7 +395,7 @@ func build(v: VBoxContainer) -> void:
 	bx.pressed.connect(func(): _delete_sel())
 	r2.add_child(bx)
 	_list = ItemList.new()
-	_list.custom_minimum_size = Vector2(598, 110)
+	_list.custom_minimum_size = Vector2(598, 96)
 	_list.add_theme_font_size_override("font_size", 13)
 	_list.item_selected.connect(func(i):
 		_sel = str(_list.get_item_metadata(i))
@@ -407,7 +407,7 @@ func build(v: VBoxContainer) -> void:
 	r3.add_theme_constant_override("separation", 6)
 	v.add_child(r3)
 	var be := Button.new()
-	be.text = "📦 " + T.t("Alle Notizen exportieren")
+	be.text = T.t("Alle Notizen exportieren")
 	be.pressed.connect(_export_pressed)
 	r3.add_child(be)
 	var bo := Button.new()
@@ -480,7 +480,7 @@ func _fill() -> void:
 	_list.clear()
 	for n in notes:
 		var cat := str(n.get("cat", ""))
-		var t := "%s %s%s  · %s · %s" % ["☑" if bool(n.get("done", false)) else "☐", ("[%s] " % T.t(_cat_name(cat))) if cat != "" else "",
+		var t := "%s %s%s  · %s · %s" % ["✓" if bool(n.get("done", false)) else "•", ("[%s] " % T.t(_cat_name(cat))) if cat != "" else "",
 				str(n.get("text", "")).replace("\n", " ").left(60), dev.world_name(str(n.get("world", ""))) if str(n.get("world", "")) != "" else str(n.get("scene", "")),
 				str(n.get("t", "")).substr(5, 11).replace("T", " ")]
 		var i := _list.add_item(t)

@@ -46,8 +46,8 @@ func build(v: VBoxContainer) -> void:
 	v.add_child(row)
 	var holder := VBoxContainer.new()
 	holder.add_theme_constant_override("separation", 6)
-	for it in [["notizen", "📝 " + T.t("Notizen an Claude"), notizen], ["kontakt", "🖼 " + T.t("Kontaktbogen"), kontakt],
-			["kapitel", "⏭ " + T.t("Kapitel-Sprung"), kapitel]]:
+	for it in [["notizen", T.t("Notizen an Claude"), notizen], ["kontakt", T.t("Kontaktbogen"), kontakt],
+			["kapitel", T.t("Kapitel-Sprung"), kapitel]]:
 		var b := Button.new()
 		b.text = str(it[1])
 		b.toggle_mode = true
@@ -74,8 +74,38 @@ func show_tab(id: String) -> void:
 	for p in [notizen, kontakt, kapitel]:
 		if p.has_method("on_show"):
 			p.on_show(open_tab)
-	if dev.panel != null:
-		dev.panel.reset_size()
+	_fit_t = 0.0
+	call_deferred("_fit")
+
+
+var _fit_t := 0.0
+var _fit_vh := 0.0
+
+
+func _fit() -> void:
+	"""a part is open: the map and the list of places get lower, so the whole window fits on the screen (min 140 px)"""
+	if dev.panel == null or dev._map == null:
+		return
+	var vh: float = main.get_viewport().get_visible_rect().size.y
+	_fit_vh = vh
+	var h := 380.0
+	if open_tab != "":
+		var rest: float = dev.panel.get_combined_minimum_size().y - dev._map.custom_minimum_size.y
+		h = clampf(vh - 110.0 - rest, 140.0, 380.0)
+	if absf(dev._map.custom_minimum_size.y - h) > 1.0:
+		dev._map.custom_minimum_size.y = h
+		dev._list.custom_minimum_size.y = h
+		dev._map.call_deferred("fit")
+
+
+func _process(dt: float) -> void:
+	if dev == null or not dev.shown or dev.panel == null:
+		return
+	_fit_t -= dt
+	if _fit_t <= 0.0:
+		_fit_t = 0.5
+		if open_tab != "" or main.get_viewport().get_visible_rect().size.y != _fit_vh:
+			_fit()
 
 
 # =============================================================================================================================
@@ -83,13 +113,17 @@ func show_tab(id: String) -> void:
 # =============================================================================================================================
 const MINE := ["notes", "note_add", "note_done", "note_delete", "note_goto", "notes_export",
 		"contact", "contact_state", "contact_stop", "contact_list",
-		"chapters", "chapter", "test_end"]
+		"chapters", "chapter", "test_end", "tab"]
 
 
 func control(d: Dictionary):
 	var w := str(d.get("do", ""))
 	if not w in MINE:
 		return null
+	if w == "tab":                               # {do: tab, value: notizen | kontakt | kapitel | ""} - opens the window too
+		dev.open()
+		show_tab(str(d.get("value", "")) if _tabs.has(str(d.get("value", ""))) else "")
+		return {"ok": dev.shown, "tab": open_tab}
 	if w.begins_with("note"):
 		return notizen.control(d)
 	if w.begins_with("contact"):
@@ -111,6 +145,8 @@ func map_draw(m: Control) -> void:
 # =============================================================================================================================
 func photo(sz: Vector2i, xf = null, fov := -1.0) -> Image:
 	"""the view of main.view_cam (or xf: Transform3D in the scene) as an Image of size sz - await it"""
+	if DisplayServer.get_name() == "headless":
+		return null                              # (no picture without a screen - frame_post_draw does not come)
 	while _photo_busy:
 		await get_tree().process_frame
 	_photo_busy = true

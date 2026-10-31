@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 5040 (Stellen: 7002)
-Übersetzt: en 5040, fr 5040, it 5040, rm 5040
+Texte gesamt: 5097 (Stellen: 7070)
+Übersetzt: en 5097, fr 5097, it 5097, rm 5097
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 380 Stellen
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 381 Stellen
 Nicht mehr im Code (noch in texte.json): 52
-HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 56 Stellen in wizpics.gd 21, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 18003, schlüssel 12763, keine Wörter 8229, index 6418, technisch 2327, doc 1473, einheit 198, englisch 90, log 78, pfad 66, html 56, klasse 23, shader 4
+HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 67 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1
+Übersprungen (Grund: Anzahl): kennung 18200, schlüssel 13001, keine Wörter 8397, index 6527, technisch 2370, doc 1482, einheit 208, englisch 97, log 78, html 67, pfad 66, klasse 23, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  669    29
@@ -60,6 +60,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   geo.gd                    36     7
   gamemore.gd               36     1
   gameziele.gd              34     0
+  devtool_notizen.gd        34     1
   gametools.gd              33     2
   tour.gd                   31     1
   zwilling.gd               29     3
@@ -94,6 +95,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   szenenplus.gd             17     1
   gameturnier.gd            17     0
   devtool.gd                16     0
+  devtool_kapitel.gd        16     0
   weitwinkel.gd             16     0
   menschen.gd               16     0
   b3d.gd                    15     3
@@ -104,6 +106,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   fahrzeuge.gd              13     1
   gamekihilfe.gd            13     4
   gameturm.gd               13     0
+  devtool_kontakt.gd        12     0
   replay.gd                 11     1
   objekte_plus.gd           11     0
   smalltv.gd                11     4
@@ -134,6 +137,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   waerme_welt.gd             4     0
   gelaende.gd                3     0
   wind_fx.gd                 3     0
+  devtool_extra.gd           3     0
   padtest.gd                 3     1
   ui_style.gd                3     0
   kidaten.gd                 2     0
@@ -183,11 +187,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:246  'Aussicht: '
   bergtal.gd:2180  'Schlafplatz: '
   bergtal.gd:2182  'Aussicht: '
-  bergtal_abenteuer.gd:321  'Start: '
-  bergtal_abenteuer.gd:776  ' auf der Bank mit Aussicht'
-  bergtal_abenteuer.gd:1834  'Wird frei: '
-  bergtal_abenteuer.gd:1966  '  · %.1f kg'
-  bergtal_abenteuer.gd:2050  ' - Bank'
+  bergtal_abenteuer.gd:322  'Start: '
+  bergtal_abenteuer.gd:777  ' auf der Bank mit Aussicht'
+  bergtal_abenteuer.gd:1835  'Wird frei: '
+  bergtal_abenteuer.gd:1967  '  · %.1f kg'
+  bergtal_abenteuer.gd:2051  ' - Bank'
   bergtal_aussicht.gd:357  'von'
   bergtal_aussicht.gd:536  'von'
   bergtal_aussicht.gd:1159  'Abzeichen: '
@@ -201,6 +205,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   dataset.gd:319  ' · Vielfalt hoch'
   dataset.gd:434  ' · alte KI-Daten gelöscht: %d (%.0f MB)'
   device.gd:91  ' (Port belegt!)'
+  devtool_notizen.gd:225  'Notizen aus dem MoveEye-Simulator (Entwickler → Notizen an Claude)\n%d Notizen, davon %d offen. Version %s.\n\n'
   diagnose.gd:31  ' · virtuelle Maschine'
   diagnose.gd:33  ' · Fenster klein / versteckt'
   diagnose.gd:71  ' · Ersatz-Port, 8765 war besetzt'
@@ -492,7 +497,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   mwpc.gd:336  'Die Pakete liessen sich nicht installieren: '
   mwpc.gd:361  'Unerwartete Datei in versions.json: '
   symbole.gd:27  'Aus'
-  net.gd:334  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
+  net.gd:342  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
   news.gd:92  'MOVEEYE SIM · '
   padroles.gd:129  'Spiel am PC – '
   padtest.gd:44  '  roh %.2f / %.2f'

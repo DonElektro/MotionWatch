@@ -117,7 +117,21 @@ func _run() -> void:
 			main.fly_tw.custom_step(10.0)
 		if _cancel:
 			break
-		var img: Image = await x.photo(SIZE)
+		# the view from outside is blocked (a room, the bedroom in the house): the picture of MoveEye's camera instead
+		var xf = null
+		var fov := -1.0
+		var tp = r.get("pos", null)
+		if tp is Array and tp.size() == 3 and not main.cams.is_empty():
+			var to := Vector3(float(tp[0]), float(tp[1]) + 1.2, float(tp[2]))
+			var from: Vector3 = main.view_cam.global_position
+			var hit: Dictionary = (main.view_cam as Camera3D).get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(from, to))
+			var blocked: bool = not hit.is_empty() and (hit["position"] as Vector3).distance_to(to) > 1.5
+			var indoor: bool = main.scenes != null and bool(main.scenes.data.get("indoor", false))
+			if (blocked or indoor) and bool(e.get("at_mw", false)):
+				xf = (main.cams[0] as Camera3D).global_transform
+				fov = (main.cams[0] as Camera3D).fov
+				item["view"] = "moveeye"
+		var img: Image = await x.photo(SIZE, xf, fov)
 		if img == null:
 			item["error"] = "no picture"
 			done.append(item)
@@ -189,7 +203,7 @@ func list_files(w := "") -> Array:
 
 
 static func _esc(s: String) -> String:
-	return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
+	return s.xml_escape(true)
 
 
 func write_index() -> void:
@@ -265,7 +279,7 @@ func build(v: VBoxContainer) -> void:
 	_lab.custom_minimum_size = Vector2(598, 0)
 	v.add_child(_lab)
 	var sc := ScrollContainer.new()
-	sc.custom_minimum_size = Vector2(598, 170)
+	sc.custom_minimum_size = Vector2(598, 150)
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	v.add_child(sc)
 	_grid = GridContainer.new()
@@ -303,7 +317,7 @@ func on_show(tab: String) -> void:
 func _paint() -> void:
 	if _go == null:
 		return
-	_go.text = T.t("Abbrechen") if running else "📷 " + T.t("Alle Orte fotografieren")
+	_go.text = T.t("Abbrechen") if running else T.t("Alle Orte fotografieren")
 	_world_opt.disabled = running
 	var n := queue.size()
 	_bar.max_value = maxf(1.0, float(n))

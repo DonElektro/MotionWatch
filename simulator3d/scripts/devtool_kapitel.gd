@@ -26,6 +26,7 @@ var x
 var dev
 var main
 var test_on := false
+var _scene0 := ""                        # the scene before the test (back there at the end: the play area counts a scene as visited)
 var _horror_prog = null                  # the real horror progress before the test ("" = there was none)
 var _horror_touched := false
 var _area: OptionButton
@@ -78,6 +79,7 @@ func _begin_test() -> void:
 	if test_on:
 		return
 	test_on = true
+	_scene0 = str(main.scene)
 	DirAccess.make_dir_recursive_absolute(TEST_DIR)
 	var ab = main.abenteuer
 	if ab != null:
@@ -89,6 +91,8 @@ func _begin_test() -> void:
 
 func test_end() -> Dictionary:
 	"""everything back to the real progress (the test files stay for the next test)"""
+	if not test_on:
+		return {"ok": true, "test": false}
 	var ab = main.abenteuer
 	if ab != null:
 		_ab_stop_run()
@@ -96,12 +100,14 @@ func test_end() -> Dictionary:
 		ab._load()
 		ab.step = 0
 		ab._changed()
+	_horror_back()
+	if _scene0 != "" and str(main.scene) != _scene0:
+		main.set_scene(_scene0)          # (before the real file of the play area is used again)
 	var sb = main.spielbereich
 	if sb != null:
 		sb.save_path = sb.SAVE
 		sb.data = {"visited": [], "seen_lv": 1, "greeted": false, "done_seen": []}
 		sb._load()
-	_horror_back()
 	test_on = false
 	_paint()
 	dev._say(T.t("Test beendet – wieder dein echter Spielstand."))
@@ -158,7 +164,7 @@ func jump(area: String, n: int, s := 0) -> Dictionary:
 			return _jump_sb(n)
 		"horror":
 			return _jump_horror(n)
-	return {"ok": false, "error": "area: abenteuer | spielbereich | horror"}
+	return {"ok": false, "error": "unknown area", "areas": ["abenteuer", "spielbereich", "horror"]}
 
 
 func _jump_ab(n: int, s: int) -> Dictionary:
@@ -174,8 +180,8 @@ func _jump_ab(n: int, s: int) -> Dictionary:
 	_begin_test()
 	_ab_stop_run()
 	# the test progress: this chapter open, the level of this chapter (so its things can be packed), the map pieces before it
-	var pieces := []
-	for i in range(1, n):
+	var pieces := []                     # (chapter k has map piece k - 1; arriving also shows the next one)
+	for i in range(n):
 		pieces.append(i)
 	ab.P = {"chapter": n, "xp": int(D.LEVEL_XP[mini(n - 1, D.LEVEL_XP.size() - 1)]), "stars": {}, "finds": [], "finale": false,
 			"runs": [], "pieces": pieces, "test": true}
@@ -263,7 +269,7 @@ func build(v: VBoxContainer) -> void:
 	r2.add_theme_constant_override("separation", 6)
 	v.add_child(r2)
 	_go = Button.new()
-	_go.text = "⏭ " + T.t("Hinspringen (Test-Spielstand)")
+	_go.text = T.t("Hinspringen (Test-Spielstand)")
 	UI.primary(_go)
 	_go.pressed.connect(func():
 		var r := jump(str(AREAS[_area.selected][0]), _n.selected + 1, _step.selected if _step.visible else 0)
@@ -320,7 +326,7 @@ func _paint() -> void:
 	_go.disabled = locked
 	var t := ""
 	if locked:
-		t = "🔒 " + T.t("Horror ist gesperrt – zuerst mit dem Passwort entsperren (Abenteuer → Stimmung → Horror).")
+		t = T.t("Horror ist gesperrt – zuerst mit dem Passwort entsperren (Abenteuer → Stimmung → Horror).")
 	elif test_on:
 		t = T.t("Test-Spielstand aktiv – dein echter Spielstand bleibt unberührt (bis «Test beenden» oder Neustart).")
 	else:
