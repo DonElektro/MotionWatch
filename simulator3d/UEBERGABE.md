@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.64** · passende MoveEye-Version (früher Motion Watch) **2.98.95**
+Stand: 31.10.2026 · Simulator-Version **3D-4.65** · passende MoveEye-Version (früher Motion Watch) **2.98.96**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.65 (MoveEye 2.98.96): Entwicklertool Teil 2 «Regler + Ebenen» (`devtool_ebenen.gd`)
+
+- `devtool_ebenen.gd` (neu): Schnellregler als Spiegel der Bedienfeld-Regler (Uhrzeit, Wetter, Jahreszeit, Grafik), Ebenen
+  Sichtfeld / Wege / Startpunkte / Auslöser / Lampen in 3D und auf der Karte; `/control dev layer|set|regler|parts`.
+- `i18n/texte.json`: Eintrag «klar» (Wetter-Auswahl, main.gd `options`) von Hand ergänzt – sim_texte findet ihn nicht im Code
+  (Zeile «nicht mehr im Code»), `--aufraeumen` würde ihn entfernen.
 
 ## NEU in 3D-4.64 (MoveEye 2.98.95): Wärmebild-Tier, «Person?», «Höhe der Kamera»
 

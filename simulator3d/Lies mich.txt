@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.65
+3D-4.65: Entwickler-Fenster: Schnellregler für Uhrzeit, Wetter, Jahreszeit und Grafik. Dazu Ebenen in der Ansicht und auf
+der Karte: Sichtfeld von MoveEye, Wege, Startpunkte, Auslöser, Lampen.
+So testest du: 1) Mehr → Entwickler → Schnellregler, Uhrzeit «Nacht» wählen: das Bedienfeld zeigt dasselbe. 2) Ebenen alle
+anhaken. 3) Zur Alp Tschuggen springen.
+
 NEU IN 3D-4.64
 3D-4.64: MoveEye 2.98.95: Wärmebild – ein Reh oder Fuchs, der nachts seitlich vorbeigeht, gilt nicht mehr als Person;
 aufrechte Formen (Kinder, Kauernde) bleiben immer Person. Kriechende Personen: eine flache Box am Boden gilt als «Person?»,

@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 12:06",
+ "generated": "2026-10-31 12:14",
  "versions": [
   {
-   "version": "2.98.95",
-   "file": "webcam_bewegung_2_98_95.py",
+   "version": "2.98.96",
+   "file": "webcam_bewegung_2_98_96.py",
    "url": "",
-   "sha256": "70575fbe189b57782fc9ed3018fbb88cd73d560f00d214eb452886299ab4d497",
-   "date": "2026-10-31 12:06",
-   "notes": "Wärmebild: Reh oder Fuchs seitlich gilt nicht mehr als Person (aufrechte Formen bleiben Person); kriechende Personen als «Person?» (flache Box + schwache KI + Spur/Wärme); Feld «Höhe der Kamera» in Platz einrichten. Simulator 3D-4.64: «Stange» heisst «Höhe der Kamera».",
-   "sig": "24e079ad0c2112d0d2b7d364148dfbcffe6fdca5ac55f543adf34367f07c387580cffa82683d5ed0f5aaa0dd89b595aead2479ce040c33af72e3360a0cf06304"
+   "sha256": "bf79e91c0ce9d8c3e549a2759da82948b24d03c75797c651644263fa5b3b2a30",
+   "date": "2026-10-31 12:14",
+   "notes": "Simulator 3D-4.65: Entwickler-Fenster mit Schnellreglern (Uhrzeit, Wetter, Jahreszeit, Grafik) und Ebenen (Sichtfeld, Wege, Startpunkte, Auslöser, Lampen).",
+   "sig": "6747136d61b78b58ebf2c45c5d77713fce2301fd07392a0042cfdd91a862fbb4c6436a67d5702372ecd2d3e7634969f3a8f51f0d19ce3456605b3f2f622bdc04"
   },
   {
    "version": "2.97.1",
