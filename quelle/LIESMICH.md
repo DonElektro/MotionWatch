@@ -155,6 +155,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `639d_angleichen.py` | Angleichen MoveEye ↔ Simulator: Entwickler-Schalter an den Simulator (dev_area), Fenster «Strom» und Teil «System» (Ausschalten / Neustart / Pause) | 75 |
 | `639e_uebersetzungen_angl.py` | Übersetzungen zu 639d (Störungen-Link, Foto des Platzes) | 13 |
 | `639f_uebersetzungen_led.py` | Übersetzungen der Status-LED und Tasten (163a / 599c), Platz im Fenster (Gruppe «Licht & Ton») | 136 |
+| `639h_basis_simulator.py` | «MoveEye Sim · Basis» (alter Python-Simulator) nur mit Schalter «Basis-Simulator anzeigen» (Simulator, Experte, Standard aus): Download und Pi-Knöpfe (auch /api/sim gesperrt), Übersetzungen | 41 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |

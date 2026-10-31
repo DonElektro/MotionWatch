@@ -608,6 +608,19 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-4.25
+3D-4.25: Neue Grafik-Stufe «Lite» für den Raspberry Pi 5 – derselbe Simulator mit denselben Menüs, nur leichter: keine
+Schatten und kein Leuchten, die grosse Ansicht 60 % scharf, höchstens 25 Bilder pro Sekunde, weniger Regen-, Schnee- und
+Rauchteilchen, ein Drittel des Grases, kleine Dinge weit weg werden nicht gezeichnet, höchstens 6 Besucher gleichzeitig,
+das Fensterbild für MoveEye kleiner. Die Kamerabilder für MoveEye bleiben gleich gross, die Erkennung läuft wie bisher.
+Einstellung: System → Grafik → «Grafik-Modus»: Automatisch (Standard: Lite auf einem Raspberry Pi / ARM-Rechner oder wenn
+die ersten Sekunden sehr langsam sind, sonst Normal) / Lite / Normal. Deine eigenen Grafik-Einstellungen bleiben gespeichert
+und kommen mit «Normal» zurück. Neu in «Mehr → Selbstdiagnose» die Zeile «Leistung» (Bilder/s, Renderer, Lite, Auflösung).
+So testest du: 1) Simulator starten, «Mehr» → «Selbstdiagnose»: bei «Leistung» die Bilder/s merken. 2) System → Grafik →
+«Grafik-Modus» auf «Lite»: das Bild wird etwas einfacher (keine Schatten), die Bilder/s steigen. 3) MoveEye verbunden lassen
+und jemanden durchs Bild schicken: MoveEye erkennt ihn wie vorher. 4) Zurück auf «Automatisch» (am PC = Normal).
+Auf dem Raspberry Pi 5 (Datei MoveEyeSim3D.arm64): «Leistung» sollte «Lite an (automatisch: Raspberry Pi …)» zeigen.
+
 NEU IN 3D-4.24
 3D-4.24: Die Simulator-Datei heisst neu MoveEyeSim3D.exe (vorher MotionWatch3D.exe), der Ordner im ZIP MoveEyeSim3D.
 Wer von einer alten Version aus aktualisiert, braucht nichts zu tun: die alte Datei startet einmal die neue und wird

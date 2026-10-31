@@ -3,8 +3,9 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.24"
+const VERSION := "3D-4.25"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
+const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -197,6 +198,12 @@ var quality := "nice"
 var view_scale := 1.0                 # 3D-3.75: sharpness of the big view on the screen (the pictures for MoveEye stay sharp)
 var win_fps := 0                     # 3D-3.75: frames per second of the big view (0 = as fast as it goes)
 var auto_perf := true                 # 3D-3.75: too slow? the graphics get lighter by themselves
+var grafik_mode := "auto"             # 3D-4.25: «Grafik-Modus» auto | lite | normal (quality.gd; later «hoch»)
+var lite_why := ""                    # why Lite is on («Raspberry Pi 5 …», «von Hand», «wenige Bilder/s») - for «Leistung»
+var _lite_slow := false               # auto: the first seconds were very slow -> Lite for this session
+var _lite_fps: Array = []
+var _lite_t0 := 0.0
+var _lite_auto_ok := true             # «--quality» given (Prüfstand): no automatic Lite from the frames per second
 var _slow_n := 0
 var _perf_t := 0.0
 var cam1_yaw := -12.0
@@ -367,6 +374,7 @@ func _ready() -> void:
 			quality = args[i + 1]
 		elif args[i] == "--scene" and i + 1 < args.size():
 			scene = args[i + 1]
+	_lite_auto_ok = not "--quality" in args
 	set_process(false)
 	set_process_unhandled_input(false)
 	if _vm_needs_angle(args):
@@ -538,6 +546,11 @@ func _ready() -> void:
 	_apply_quality()
 	if view_scale < 1.0:
 		set_view_scale(view_scale)
+	var gi := args.find("--grafik")                   # 3D-4.25: --grafik auto | lite | normal (for tests)
+	if gi >= 0 and gi + 1 < args.size():
+		grafik_mode = Quality.mode_id(args[gi + 1])
+	_lite_t0 = now()
+	lite_update()
 	_calibrate_thermal()
 	next_auto = now() + 20.0
 	for i in range(args.size()):
@@ -968,6 +981,8 @@ func _build_scene() -> void:
 		geo.load_place(ort_lat, ort_lon, ort_name)      # from the cache or the internet; then place_loaded()
 	if scene == "wild":
 		rifle_on = true                          # wildlife watching: the rifle is on by itself
+	if Quality.lite():
+		_lite_scene.call_deferred(true)          # 3D-4.25: Lite - thin grass, far small things not drawn
 
 
 func place_loaded() -> void:
@@ -2171,6 +2186,7 @@ func _process(dt: float) -> void:
 		_update_status()
 		_night_weather_tick()
 		_perf_tick()
+		_lite_tick()
 		_stream_watch()
 		if now() - _hour_saved_t > 20.0:
 			_settings_dirty = true                         # 3D-3.76: the time of the scene is saved now and then
@@ -2294,7 +2310,10 @@ func _check_active() -> void:
 	get_viewport().disable_3d = not win_open      # the big 3D view only when it can be seen
 	# 3D-3.30: MoveEye saves power (nothing happens there): the simulator calculates slower too (window closed)
 	var mw_saving: bool = conn and str(mw.get("eco", "")) == "saving" and not playing and not (testrun != null and testrun.running)
-	Engine.max_fps = (win_fps if win_fps > 0 else _fps0) if win_open else (60 if playing else ((12 if mw_saving else 30) if sim_active else 5))
+	var cap: int = (win_fps if win_fps > 0 else _fps0) if win_open else (60 if playing else ((12 if mw_saving else 30) if sim_active else 5))
+	if Quality.lite():
+		cap = Quality.FPS if cap <= 0 else mini(cap, Quality.FPS)    # 3D-4.25: Lite - at most 25 pictures per second
+	Engine.max_fps = cap
 
 
 # ---- pictures for MoveEye -------------------------------------------------------------------------------------
@@ -3225,7 +3244,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"game_night": ["Spiel", "Extras"], "game_events": ["Spiel", "Extras"], "game_checkpoints": ["Spiel", "Extras"], "game_tasks": ["Spiel", "Extras"], "game_autohandicap": ["Spiel", "Extras"],
 		"game_board_reset": ["Spiel", "Extras"], "spectate_now": ["Spiel", "Anzeige"], "game_noise": ["Spiel", "Regeln"],
 		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"], "game_max": ["Spiel", "Runde"],
-		"quality": ["System", "Grafik"], "view_scale": ["System", "Grafik"], "win_fps": ["System", "Grafik"], "auto_perf": ["System", "Grafik"], "map_on": ["System", "Ansicht"], "live_on": ["System", "Ansicht"], "live_cam": ["System", "Ansicht"], "live_size": ["System", "Ansicht"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
+		"grafik_mode": ["System", "Grafik"], "quality": ["System", "Grafik"], "view_scale": ["System", "Grafik"], "win_fps": ["System", "Grafik"], "auto_perf": ["System", "Grafik"], "map_on": ["System", "Ansicht"], "live_on": ["System", "Ansicht"], "live_cam": ["System", "Ansicht"], "live_size": ["System", "Ansicht"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
 		"autostart_min": ["System", "Start mit dem PC"], "autostart_mwpc": ["System", "Start mit dem PC"], "autostart_lock": ["System", "Start mit dem PC"],
 		"cond_glare": ["Kamerabild", "Schwierige Bedingungen"], "cond_drops": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_web": ["Kamerabild", "Schwierige Bedingungen"], "cond_headlights": ["Kamerabild", "Schwierige Bedingungen"],
@@ -3252,7 +3271,7 @@ func _simple_ok(c: Dictionary) -> bool:
 	if c.id == "mast_h":
 		return true                                   # 3D-4.x: the height of the pole - easy to find (wish of Daniel)
 	if c.group == "System":
-		return c.id in ["update_mode", "kids_ask"]
+		return c.id in ["update_mode", "kids_ask", "grafik_mode"]
 	if not c.group in SIMPLE_GROUPS:
 		return false
 	return not str(c.extra.get("sub", "")) in SIMPLE_HIDE_SUBS
@@ -3396,7 +3415,7 @@ func _register_controls() -> void:
 	add_control("select", "mix", "Wer kommt", func(): return mix, func(v): mix = v, "Besuch",
 			{"options": [["mixed", "Tiere und Menschen"], ["more_animals", "mehr Tiere"], ["more_people", "mehr Menschen"], ["animals", "nur Tiere"], ["people", "nur Menschen"]]})
 	add_control("slider", "visit_rate", "Wie oft Besuch kommt", func(): return visit_rate, func(v): visit_rate = v, "Besuch", {"min": 0.25, "max": 4.0, "step": 0.25, "unit": "×"})
-	add_control("slider", "max_visitors", "Höchstens gleichzeitig", func(): return max_visitors, func(v): max_visitors = int(v), "Besuch", {"min": 1, "max": 30, "step": 1, "expert": true})
+	add_control("slider", "max_visitors", "Höchstens gleichzeitig", func(): return max_visitors, func(v): max_visitors = int(v); _perf_orig.erase("max_visitors"), "Besuch", {"min": 1, "max": 30, "step": 1, "expert": true})
 	add_control("slider", "visitor_speed", "Tempo der Besucher", func(): return visitor_speed, func(v): visitor_speed = v, "Besuch", {"min": 0.25, "max": 2.5, "step": 0.05, "unit": "×", "expert": true})
 	add_control("toggle", "flee_light", "Tiere flüchten nachts vor dem weissen Licht", func(): return flee_light, func(v): flee_light = v, "Besuch", ex)
 	add_control("toggle", "flee_sound", "Tiere flüchten vor der Sirene", func(): return flee_sound, func(v): flee_sound = v, "Besuch", ex)
@@ -3580,11 +3599,13 @@ func _register_controls() -> void:
 	add_control("toggle", "kids_laser", "Kinder-Modus: Laser-Treffer im Spiel", func(): return kids_laser, func(v): kids_laser = v, "Kinder-Modus")
 	add_control("toggle", "kids_sound", "Kinder-Modus: Töne bei den Knöpfen", func(): return kids_sound, func(v): kids_sound = v, "Kinder-Modus")
 	add_control("toggle", "kids_ask", "Kinder-Modus: zum Verlassen eine Rechenaufgabe stellen (aus = ein Klick auf «Erwachsene» genügt)", func(): return kids_ask, func(v): kids_ask = bool(v), "Kinder-Modus")
+	add_control("select", "grafik_mode", "Grafik-Modus", func(): return grafik_mode, func(v): set_grafik_mode(str(v)), "Grafik",
+			{"options": Quality.MODES})
 	add_control("select", "quality", "Grafik", func(): return quality, func(v): _set_quality(v), "Grafik",
 			{"options": [["simple", "einfach (schnell)"], ["medium", "mittel"], ["nice", "schön (Schatten, Leuchten, Wolken)"],
 						 ["ultra", "ultra (für starke Grafikkarten; mit Vulkan noch mehr Effekte)"]]})
 	add_control("slider", "view_scale", "Schärfe der Ansicht im Fenster (weniger = schneller; die Bilder für MoveEye bleiben scharf)", func(): return view_scale, func(v): set_view_scale(float(v)), "Grafik", {"min": 0.4, "max": 1.0, "step": 0.05, "unit": "×"})
-	add_control("select", "win_fps", "Bilder pro Sekunde im Fenster", func(): return str(win_fps), func(v): win_fps = int(v); _settings_dirty = true, "Grafik",
+	add_control("select", "win_fps", "Bilder pro Sekunde im Fenster", func(): return str(win_fps), func(v): win_fps = int(v); _perf_orig.erase("win_fps"); _settings_dirty = true, "Grafik",
 			{"options": [["0", "so viele wie möglich"], ["60", "60"], ["30", "30 (spart Strom)"], ["20", "20 (schwacher PC)"]]})
 	add_control("toggle", "auto_perf", "Automatisch leichter, wenn der PC zu langsam ist", func(): return auto_perf, func(v): auto_perf = v; _slow_n = 0, "Grafik")
 	add_control("toggle", "eco_idle", "Simulator ruht, wenn niemand zuschaut (rechnet nur, wenn das Fenster offen oder MoveEye verbunden ist)", func(): return eco_idle, func(v): eco_idle = v, "Grafik", ex)
@@ -3728,6 +3749,129 @@ func _apply_quality() -> void:
 	env.volumetric_fog_density = 0.008
 	env.volumetric_fog_length = 80.0
 	get_viewport().use_taa = fwd and lvl >= 3
+
+
+# ---- 3D-4.25 «Lite» (Wunsch Daniel 31.10.2026): the same simulator, lighter for the Raspberry Pi 5 ---------------------------
+# «Grafik-Modus» Automatisch (Lite on a Pi / ARM computer or when the first seconds are very slow) / Lite / Normal. Lite: graphics
+# level «einfach» (no shadows, no glow, no SSAO / SSR / fog volumes), the big view 60 % sharp, at most 25 pictures per second,
+# rain / snow / smoke / fire with about a third of the particles, a third of the grass, small things far away not drawn, at
+# most 6 visitors at once, a smaller picture of the window for MoveEye. The camera pictures for MoveEye keep their size.
+# The own choices (Grafik, Schärfe, Bilder/s, Besucher) stay saved (_perf_orig) and come back with «Normal».
+const LITE_KEYS := ["quality", "view_scale", "win_fps", "max_visitors"]
+
+
+func set_grafik_mode(v: String) -> void:
+	grafik_mode = Quality.mode_id(v)
+	lite_update()
+
+
+func lite_update() -> void:
+	"""Lite on or off - from «Grafik-Modus» and the hardware (quality.gd)"""
+	var why := ""
+	if grafik_mode == "lite":
+		why = "von Hand"
+	elif grafik_mode == "auto":
+		var w := Quality.weak_reason()
+		if w != "":
+			why = "automatisch: " + w
+		elif _lite_slow:
+			why = "automatisch: wenige Bilder pro Sekunde beim Start"
+	lite_why = why
+	var on := why != ""
+	if Engine.has_meta("lite") and on == Quality.lite():
+		return
+	Quality.set_lite(on)
+	_lite_apply(on)
+	print("graphics mode %s -> Lite %s%s" % [grafik_mode, "on" if on else "off", (" (" + why + ")") if on else ""])
+
+
+func _lite_apply(on: bool) -> void:
+	if on:
+		for k_ in LITE_KEYS:
+			if not _perf_orig.has(k_):
+				_perf_orig[k_] = get(k_)
+		_perf_auto = true                                  # not the own choice: the setters keep _perf_orig
+		_set_quality("simple")
+		set_view_scale(minf(view_scale, Quality.SCALE))
+		if win_fps <= 0 or win_fps > Quality.FPS:
+			win_fps = Quality.FPS
+		max_visitors = mini(max_visitors, Quality.VISITORS)
+		_perf_auto = false
+		view_w = mini(view_w, Quality.VIEW_W)
+		view_q = minf(view_q, Quality.VIEW_Q)
+	else:
+		for k_ in LITE_KEYS:
+			if _perf_orig.has(k_):
+				var v = _perf_orig[k_]
+				_perf_orig.erase(k_)
+				if k_ == "quality":
+					quality = str(v)
+					_apply_quality()
+				elif k_ == "view_scale":
+					set_view_scale(float(v))
+				else:
+					set(k_, int(v))
+	for pa in [[rain, 2500], [snow, 3000], [splashes, 700]]:
+		if pa[0] != null:
+			pa[0].amount = Quality.n(pa[1])
+	_lite_scene(on)
+	_settings_dirty = true
+
+
+func _lite_scene(on: bool) -> void:
+	"""the things of the scene: fewer particles, thinner grass, small things far away not drawn (visibility range)"""
+	if scene_parent == null:
+		return
+	var todo: Array = [scene_parent]
+	while not todo.is_empty():
+		var n = todo.pop_back()
+		todo.append_array(n.get_children())
+		if n is CPUParticles3D or n is GPUParticles3D:
+			if not n.has_meta("full_n"):
+				n.set_meta("full_n", n.amount)
+			n.amount = maxi(1, roundi(int(n.get_meta("full_n")) * Quality.KEEP)) if on else int(n.get_meta("full_n"))
+		elif n is MultiMeshInstance3D and n.is_in_group("meadow"):
+			if n.multimesh != null:
+				n.multimesh.visible_instance_count = roundi(n.multimesh.instance_count * Quality.KEEP) if on else -1
+		elif n is GeometryInstance3D:
+			if on:
+				var sz: Vector3 = n.get_aabb().size * n.global_transform.basis.get_scale()
+				if maxf(sz.x, maxf(sz.y, sz.z)) < 1.5 and n.visibility_range_end == 0.0:
+					n.visibility_range_end = Quality.FAR
+					n.set_meta("lite_far", true)
+			elif n.has_meta("lite_far"):
+				n.visibility_range_end = 0.0
+				n.remove_meta("lite_far")
+
+
+func _lite_tick() -> void:
+	"""«Automatisch» on a normal PC: are the first seconds very slow (under 12 pictures per second)? Then Lite for this session"""
+	if grafik_mode != "auto" or Quality.lite() or _lite_slow or not _lite_auto_ok:
+		return
+	var age := now() - _lite_t0
+	if age < 6.0 or age > 40.0 or not win_open or not sim_active or busy_with() != "":
+		return
+	_lite_fps.append(Engine.get_frames_per_second())
+	if _lite_fps.size() < 16:
+		return
+	var avg := 0.0
+	for f in _lite_fps:
+		avg += float(f) / _lite_fps.size()
+	_lite_fps.clear()
+	_lite_t0 = -1000.0                                   # decided once per start
+	if avg < 12.0:
+		_lite_slow = true
+		lite_update()
+		start_info = "Der Rechner ist langsam (%d Bilder/s) – «Grafik-Modus: Automatisch» hat Lite eingeschaltet (System → Grafik)." % roundi(avg)
+
+
+func perf_info() -> Dictionary:
+	"""for «Leistung» in the self-diagnosis and «Über»: frames per second, renderer, Lite, resolution"""
+	var vs: Vector2 = get_viewport().get_visible_rect().size
+	var k: float = get_viewport().scaling_3d_scale
+	return {"fps": Engine.get_frames_per_second(), "renderer": Quality.renderer(), "lite": Quality.lite(), "why": lite_why,
+			"mode": grafik_mode, "res": "%d × %d" % [roundi(vs.x * k), roundi(vs.y * k)], "scale": roundi(k * 100.0),
+			"cams": "%d × %d" % [CAM_W[0], CAM_H[0]], "max_fps": Engine.max_fps}
 
 
 func _game_card_start() -> void:
@@ -5588,7 +5732,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
+		"avoid_on", "grafik_mode", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
 var _settings_dirty := false
 
 
@@ -5613,6 +5757,7 @@ func _load_settings() -> void:
 			else:
 				v = str(v)
 			set(k, v)
+	grafik_mode = Quality.mode_id(grafik_mode)            # 3D-4.25: unknown / older names -> «Automatisch»
 	if game_mode == "teamguard":                          # Balance 30.10.2026: «Team gegen Team» is gone
 		game_mode = "guard"
 	if d.has("hour_now") and not "--hour" in OS.get_cmdline_user_args() and not "--hour" in OS.get_cmdline_args() and not real_time:
@@ -7278,6 +7423,9 @@ func view_request(q: Dictionary) -> void:
 		view_w = clampi(int(q["w"]), 320, 2560)
 	if q.has("q") and str(q["q"]).is_valid_float():
 		view_q = clampf(float(q["q"]) / 100.0, 0.3, 0.95)
+	if Quality.lite():                          # 3D-4.25: Lite - a smaller picture of the window (the cameras for MoveEye stay)
+		view_w = mini(view_w, Quality.VIEW_W)
+		view_q = minf(view_q, Quality.VIEW_Q)
 	if q.has("fmt"):
 		view_webp = str(q["fmt"]) == "webp"
 	if str(q.get("clean", "")) == "1":
@@ -7312,7 +7460,7 @@ func _view_capture() -> void:
 			Input.parse_input_event(ku)
 	# the window is the small box (or minimized): the view for MoveEye is drawn in a picture of its own (3D-3.19)
 	_remote_set(t - view_want_t < (10.0 if remote_vp != null else 3.0) and not win_open)
-	if t - view_want_t > 3.0 or t - _view_t < 1.0 / max(1.0, view_fps):
+	if t - view_want_t > 3.0 or t - _view_t < 1.0 / max(1.0, minf(view_fps, Quality.VIEW_FPS) if Quality.lite() else view_fps):
 		return
 	_view_t = t
 	var img := (remote_vp.get_texture() if remote_vp != null else get_viewport().get_texture()).get_image()
