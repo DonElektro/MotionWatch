@@ -196,7 +196,7 @@ def lock_pin_ok(pin):
 # not put back when unlocking: what the operator does (arm, move the camera), what the Pi measures itself, how a
 # device shows the page
 LOCK_KEEP = {"armed", "pan", "tilt", "hotspot_on", "lock_on", "lock_pin", "lock_snap", "web_ui", "ui_open", "ui_tab", "theme", "lang",
-             "fullscreen", "latitude", "longitude", "batt_full_t", "batt_warned", "setup_done", "autostart", "ui_simple"}
+             "fullscreen", "latitude", "longitude", "batt_full_t", "batt_warned", "setup_done", "autostart", "ui_simple", "ui_start_groups"}
 LOCK_LAST = {"restored": []}
 
 

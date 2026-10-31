@@ -1445,6 +1445,7 @@ CFG = {
     "deter_seconds": 6, "deter_pause": 60, "deter_always": False,
     "share_logo": True,
     "ui_simple": True,                       # settings: only the important ones (Expert shows everything)
+    "ui_start_groups": True,                 # nurgruppen: settings open as «Groups only» on every start (off: as folded last time)
     "share_gps": False,                      # shared pictures / videos keep their GPS position (off: removed before sharing)
     "share_blur_faces": True,                # 2.98.14: faces pixelated in shared pictures / videos (375), the originals stay
     "weekrep_on": True, "weekrep_day": "Sunday", "weekrep_hour": 18, "weekrep_last": "",   # 2.98.14: weekly detection report (426)
@@ -33472,7 +33473,7 @@ def lock_pin_ok(pin):
 # not put back when unlocking: what the operator does (arm, move the camera), what the Pi measures itself, how a
 # device shows the page
 LOCK_KEEP = {"armed", "pan", "tilt", "hotspot_on", "lock_on", "lock_pin", "lock_snap", "web_ui", "ui_open", "ui_tab", "theme", "lang",
-             "fullscreen", "latitude", "longitude", "batt_full_t", "batt_warned", "setup_done", "autostart", "ui_simple"}
+             "fullscreen", "latitude", "longitude", "batt_full_t", "batt_warned", "setup_done", "autostart", "ui_simple", "ui_start_groups"}
 LOCK_LAST = {"restored": []}
 
 
@@ -40590,13 +40591,15 @@ function simCtlBuild(G, r, ctl, fmt) {
   (r.controls || []).forEach(c => { const g = c.group || t("Controls"); if (!byG[g]) { byG[g] = []; order.push(g); } byG[g].push(c); });
   const cards = [];
   order.forEach(g => {
-    const cs = byG[g], card = el("div", "sc-card"); card.dataset.g = g; if (openC.has(g)) card.classList.add("open");
+    const cs = byG[g], card = el("div", "sc-card"); card.dataset.g = g;
+    if (!only && window.SC_SHOWN ? window.SC_SHOWN.has(g) : openC.has(g)) card.classList.add("open");   // nurgruppen: start view, not saved
     const hd = document.createElement("button"); hd.type = "button"; hd.className = "sc-hd";
     const ik = (cs.find(c => c.iconk) || {}).iconk, ie = (cs.find(c => c.icon) || {}).icon;
     hd.innerHTML = (ik && SC_ICON[ik] ? '<svg viewBox="0 0 24 24">' + SC_ICON[ik] + '</svg>' : (ie ? "<span>" + String(ie).replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";") + "</span>" : "")) + '<span class="sc-t"></span><span class="sc-ar"></span>';
     hd.querySelector(".sc-t").textContent = g;
     const ar = () => { hd.querySelector(".sc-ar").textContent = card.classList.contains("open") ? "▼" : "▶"; };
-    hd.onclick = () => { card.classList.toggle("open"); ar(); card.classList.contains("open") ? openC.add(g) : openC.delete(g); ss("mw-sc-open", [...openC]); };
+    hd.onclick = () => { card.classList.toggle("open"); ar(); const o_ = card.classList.contains("open"); o_ ? openC.add(g) : openC.delete(g); ss("mw-sc-open", [...openC]);
+      if (!only && window.SC_SHOWN) o_ ? window.SC_SHOWN.add(g) : window.SC_SHOWN.delete(g); };
     ar(); const bd = el("div", "sc-bd"); card.append(hd, bd); G.appendChild(card); cards.push(card);
     const subs = {}, fines = new Map();
     if (cs.some(scDev)) card.dataset.dev = "1";
@@ -41917,10 +41920,16 @@ function paint3d() { const D = S && S.sim3d; if (D) $("#d-3dn").textContent = D.
   const P = S && S.simpy; if (P) $("#d-pyn").textContent = P.version + " · " + t("second simulator, needs Python on the PC") + (P.ready ? "" : " · " + t("prepared on the first download")); }
 $("#d-py").href = "/sim/simulator_py.zip?lang=" + (LANG || "");
 $("#d-link").textContent = t("Link for the PC browser") + ": " + location.origin + "/sim/simulator3d.zip";
+// nurgruppen (Daniel, 31.10.2026): «On start: groups only» (window.MW_SG, from ui_seed_script) - the cards of this page are one level,
+// so they start closed; only «Simulator control» stays open (its groups start closed, simCtlBuild / SC_SHOWN). Not saved: the own
+// state (mw-sim-fold) stays and is used again with the switch off. A toggle saves only its own card (before: all cards).
 (function () { let o = null; try { o = JSON.parse(localStorage.getItem("mw-sim-fold") || "null"); } catch (e) {}
-  document.querySelectorAll("details.fold").forEach(d => { if (o && d.dataset.k in o) d.open = !!o[d.dataset.k];
-    d.addEventListener("toggle", () => { const m = {}; document.querySelectorAll("details.fold").forEach(x => m[x.dataset.k] = x.open);
-      try { localStorage.setItem("mw-sim-fold", JSON.stringify(m)); } catch (e) {} }); }); })();
+  o = (o && typeof o === "object") ? o : {}; const sg = window.MW_SG !== false;
+  document.querySelectorAll("details.fold").forEach(d => { if (d.dataset.k in o) d.open = !!o[d.dataset.k];
+    if (sg) { const v = d.dataset.k === "ctl"; if (d.open !== v) { d._mwSkip = true; d.open = v; } }
+    d.addEventListener("toggle", () => { if (d._mwSkip) { d._mwSkip = false; return; }
+      o[d.dataset.k] = d.open; try { localStorage.setItem("mw-sim-fold", JSON.stringify(o)); } catch (e) {} }); });
+  if (sg && window.SC_SHOWN == null) window.SC_SHOWN = new Set(); })();
 (async () => { await initAppearance(); load(); if (location.hash === "#gw") setTimeout(() => gwOpen(), 400); })();   // 639i: «Spielen» → game wizard
 /*ALERTS*/
 </script></body></html>
@@ -41956,7 +41965,9 @@ def ui_seed_script():
     """Runs first on every page: copies the saved layout into the browser storage (so the page code finds it there) and
     sends every later layout change back to the Pi, where it is kept in the settings file."""
     data = json.dumps({k: v for k, v in CFG["web_ui"].items() if k not in WEB_UI_LOCAL}).replace("</", "<\\/")   # aufr: per-device keys stay on the device
-    return ("<script>(function(){var S=" + data + ";try{for(var k in S)localStorage.setItem(k,S[k]);}catch(e){}"
+    # nurgruppen: the switch «On start: groups only» for the page code (main page 530, simulator page 470) before it builds
+    return ("<script>window.MW_SG=" + ("true" if CFG.get("ui_start_groups", True) else "false") + ";"
+            "(function(){var S=" + data + ";try{for(var k in S)localStorage.setItem(k,S[k]);}catch(e){}"
             "var P={},T=null,L=" + json.dumps(sorted(WEB_UI_LOCAL)) + ";"
             "function send(){var b=P;P={};T=null;try{fetch('/api/ui',{method:'POST',headers:{'Content-Type':'application/json'},"
             "body:JSON.stringify({set:b}),keepalive:true}).catch(function(){});}catch(e){}}"
@@ -49421,7 +49432,7 @@ body.icplain .gi .ie{display:none}body.icplain .gi .is{display:inline-block}
 .gi .gdot{display:none;position:absolute;right:-4px;bottom:-2px;width:8px;height:8px;border-radius:50%;background:var(--grn);box-shadow:0 0 0 2px var(--panel),0 0 7px var(--grn)}
 body:not(.icplain) .mon>summary>.gi .gdot{display:block}body.icplain .mon>summary>.gi .is{color:var(--grn)}
 details.sub>summary>.gi{margin-right:8px;font-size:13px;letter-spacing:0}details.sub>summary>.sn{flex:1}
-.icseg{margin-top:8px}.icseg .mut{font-size:12px;margin:0 0 4px}
+.icseg{margin-top:8px}.icseg .mut{font-size:12px;margin:0 0 4px}.simplebar .sgrow{margin-top:8px;font-size:13px;gap:10px}
 details.sub{border-top:1px solid var(--line);margin-top:12px;padding-top:9px}
 details.sub>summary{font-size:10.5px;letter-spacing:.09em;color:var(--mut);font-weight:700;text-transform:uppercase;cursor:pointer;list-style:none;
   display:flex;justify-content:space-between;align-items:center;user-select:none}
@@ -49816,6 +49827,7 @@ body[data-tab] .simplebar>.mut,body[data-tab] .simplebar .icseg>.mut{display:non
 body[data-tab] .simplebar .seg{display:inline-flex;flex:1 1 160px}
 body[data-tab] .simplebar .seg button{flex:1;padding:7px 8px;font-size:12.5px;white-space:nowrap}
 body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
+body[data-tab] .simplebar .sgrow{margin:0;flex:1 1 160px;padding:0;justify-content:space-between}
 #alarm-chain .chain{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:4px 0}
 #alarm-chain .chain button{padding:6px 9px;font-size:13px}#alarm-chain .chain button.off{opacity:.45;text-decoration:line-through}
 #alarm-chain .chain em{color:var(--mut);font-style:normal}
@@ -53519,6 +53531,10 @@ function simpleBar(on) {
     ic.className = v ? "" : "sel-auto"; ip.className = v ? "sel-auto" : ""; };
   ic.onclick = () => iset(false); ip.onclick = () => iset(true);
   iw.append(el("div", "mut", t("Symbols: green dot or green symbol = switched on")), is); w.appendChild(iw);
+  // nurgruppen: «On start: groups only» (all devices and the Pi window; off = the menus open as you left them)
+  const gw = el("label", "row tg sgrow"), gc = el("input"); gc.type = "checkbox"; gc.className = "sw"; gc.id = "start-groups"; gc.checked = START_GROUPS;
+  gc.onchange = () => startGroupsSet(gc.checked); gw.title = t("On every start the settings show only the groups. Off: the menus open as you left them.");
+  gw.append(el("span", "", t("On start: groups only")), gc); w.appendChild(gw);
   return w;
 }
 // ---- self-check: one traffic light per part ----
@@ -53985,16 +54001,33 @@ addEventListener("keydown", e => {
 function secKey(d) { return "mw-open:" + (d.dataset.view || d.querySelector("summary").textContent); }
 function initSections() {
   document.querySelectorAll("details.card, details.sub:not(.inline), details.adv").forEach(d => {
+    d._mwDef = d.open;                       // nurgruppen: how the page builds it (for «back to the own state» without a saved one)
     try { const v = localStorage.getItem(secKey(d)); if (v !== null) d.open = (v === "1"); } catch (e) {}
-    d.addEventListener("toggle", () => { try { localStorage.setItem(secKey(d), d.open ? "1" : "0"); } catch (e) {} });
+    d.addEventListener("toggle", () => { if (d._mwSkip) { d._mwSkip = false; return; }      // the start view is not the own state
+      try { localStorage.setItem(secKey(d), d.open ? "1" : "0"); } catch (e) {} });
   });
+}
+// nurgruppen (Daniel, 31.10.2026): switch «On start: groups only» (CFG ui_start_groups, factory: on). On every start the settings
+// show «Groups only» WITHOUT saving it - the own open / closed state (mw-open:…, kept on the Pi through web_ui) stays as it was.
+// Switched off: every group and topic goes back to that own state.
+let START_GROUPS = window.MW_SG !== false;
+function foldSet(d, open, keep) { if (d.open === open) return; if (keep) d._mwSkip = true; d.open = open; }
+function foldOwn() {
+  document.querySelectorAll("#settings details.grp, #settings details.sub:not(.inline), #settings details.adv").forEach(d => {
+    let v = null; try { v = localStorage.getItem(secKey(d)); } catch (e) {}
+    const o = v !== null ? v === "1" : d._mwDef; if (typeof o === "boolean") foldSet(d, o, true); });
+}
+function startGroupsSet(v) {
+  START_GROUPS = !!v; post("/api/ui_simple", {start_groups: START_GROUPS});
+  if (START_GROUPS) allGroups(true); else foldOwn();
+  toast((START_GROUPS ? "✓ " : "") + t("On start: groups only") + " – " + t(START_GROUPS ? "On" : "Off"));
 }
 // ---- setup assistant: first start (and System -> "Setup assistant"): language, name, push (ntfy with QR code), password, QR codes ----
 // the setup assistant is the one guide now (516 / 586): «quick or thorough?», resumable, place, walk test …
 function setupWizard(force) { const go = () => window.mwGuide && window.mwGuide(force); if (!go()) setTimeout(go, 1500); }
-function allGroups() {                     // overview: every group open, the topics inside closed
-  document.querySelectorAll("#settings details.grp").forEach(d => { if (!d.open) d.open = true; });
-  document.querySelectorAll("#settings details.sub:not(.inline), #settings details.adv").forEach(d => { if (d.open) d.open = false; });
+function allGroups(keep) {                 // overview: every group open, the topics inside closed (keep: start view, not saved)
+  document.querySelectorAll("#settings details.grp").forEach(d => foldSet(d, true, keep));
+  document.querySelectorAll("#settings details.sub:not(.inline), #settings details.adv").forEach(d => foldSet(d, false, keep));
 }
 function allSections(open) { document.querySelectorAll("details.card, details.sub:not(.inline)").forEach(d => { if (d.open !== open) d.open = open; }); }
 // 2.98.46 (Daniel): order «Collapse all | Groups only | Expand all»; the button of the current fold state is blue – all closed = «Collapse all», all open = «Expand all», groups open / topics closed = «Groups only»; mixed = none
@@ -54027,7 +54060,7 @@ document.addEventListener("webkitfullscreenchange", fsChange);
     catch (e) { LANG = LANG || "en"; THEME = THEME || "dark"; }
   }
   applyTheme(); applyI18n();
-  await build(); regroup(); applyHidden(); initSections(); allBtnState(); refresh(); setInterval(refresh, 700);
+  await build(); regroup(); applyHidden(); initSections(); if (START_GROUPS) allGroups(true); allBtnState(); refresh(); setInterval(refresh, 700);
   setTimeout(() => setupWizard(false), 600);
 })();
 /*ALERTS*/
@@ -61805,7 +61838,9 @@ class WebStream:
             pg = str(request.args.get("page") or "")[:20]
             if request.method == "POST":
                 d = body(); pg = str(d.get("page") or pg)[:20]
-                if pg and re.fullmatch(r"[a-z]{2,20}", pg):     # 586: Simple / Expert of ONE page (the default stays)
+                if "start_groups" in d:                          # nurgruppen: switch «On start: groups only» (all devices, Pi window)
+                    CFG["ui_start_groups"] = bool(d.get("start_groups")); save_settings()
+                elif pg and re.fullmatch(r"[a-z]{2,20}", pg):     # 586: Simple / Expert of ONE page (the default stays)
                     m_ = page_modes(); m_[pg] = "simple" if d.get("on") else "expert"
                     if (m_[pg] == "simple") == bool(CFG["ui_simple"]):
                         m_.pop(pg)
@@ -61813,7 +61848,8 @@ class WebStream:
                 else:
                     CFG["ui_simple"] = bool(d.get("on")); save_settings()      # the default (the Pi window follows by itself)
             return reply({"on": page_simple(pg) if pg else bool(CFG["ui_simple"]), "default": bool(CFG["ui_simple"]), "own": pg in page_modes(),
-                          "dev": bool(CFG.get("dev_area"))})        # 639d: the group «Entwickler» of the simulator control (470)
+                          "dev": bool(CFG.get("dev_area")),         # 639d: the group «Entwickler» of the simulator control (470)
+                          "start_groups": bool(CFG.get("ui_start_groups", True))})
 
         @app.route("/api/night", methods=["POST"])
         def api_night():
@@ -68214,6 +68250,8 @@ class App:
         self.open_secs = set(CFG["ui_open"])                    # open sidebar groups: kept in the settings file
         if not any(x.startswith("grp:") for x in self.open_secs):   # settings of an older version: start with "Alarm & camping" open
             self.open_secs = {"grp:alarm"}
+        # nurgruppen: what is shown now (open_secs = the own state, saved); «On start: groups only» on start / tab change
+        self._shown = {}; self._fold_start = True
         self.step_var = tk.StringVar(value="3")
         self.tab = "live"; self.stick_speed = 30.0; self.relay_prev = {}
         self.left_f = self.stick = self.l_wp = None; self.qs_tiles = {}; self.tab_btns = {}
@@ -68464,7 +68502,9 @@ class App:
             self.tab = "live"
         if self.tab in TK_PANEL_TABS:                     # 2.98.14: Schutz / Einstellungen / Simulator: the settings over the whole width
             self.left_f = None
+            prev_ = dict(self._open_before if getattr(self, "_open_before", None) is not None else getattr(self, "_shown", {}))
             self._build_sidebar(body, self.tab)
+            self._fold_after(prev_)
             return
         left = ttk.Frame(body, style="Bg.TFrame"); left.grid(row=0, column=0, sticky="nsew")
         side_open = False
@@ -68785,6 +68825,7 @@ class App:
         panel = tid in TK_PANEL_TABS or self.tab in TK_PANEL_TABS or self.left_f is None or not self.left_f.winfo_exists()
         self.tab = tid; CFG["ui_tab"] = tid
         if panel:
+            self._fold_start = True                       # nurgruppen: opening a page = a start (like loading the web page)
             self._schedule_rebuild(); return
         for w in self.left_f.winfo_children():
             w.destroy()
@@ -69203,10 +69244,10 @@ class App:
         inner.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
         canvas.bind("<Configure>", lambda e: canvas.itemconfigure(win, width=min(e.width, 860)))     # readable lines on a wide screen
         bar = tk.Frame(right, bg=C["bg"]); bar.pack(side="top", fill="x", pady=(0, 10), before=sb)   # stays at the top while scrolling
-        # like the web page: search field, then two symbols - ⊞ expand all, ⊟ collapse all
-        self._ibtn(bar, "⊟", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right")
-        self._ibtn(bar, "⊞", lambda: self._all_sections(True), tr("Expand all")).pack(side="right", padx=(0, 6))
-        self._ibtn(bar, "☰", self._groups_only, tr("Groups only")).pack(side="right", padx=(0, 6))
+        # like the web page: search field, then «Collapse all · Groups only · Expand all» with the same drawn symbols (nurgruppen)
+        self._fold_btn(bar, "open", lambda: self._all_sections(True), tr("Expand all")).pack(side="right")
+        self._fold_btn(bar, "groups", self._groups_only, tr("Groups only")).pack(side="right", padx=(0, 6))
+        self._fold_btn(bar, "close", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
         sf = tk.Frame(bar, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"]); sf.pack(side="left", fill="x", expand=True, padx=(0, 8))
         tk.Label(sf, text="⚲", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 11)).pack(side="left", padx=(8, 0))
         self.search_var = tk.StringVar()
@@ -69234,6 +69275,12 @@ class App:
         if page_simple(tab) and tab != "sim":
             tk.Label(inner, text=tr("Simple: only the important settings. «Expert» shows all of them."), bg=C["bg"], fg=C["mut"],
                      font=("DejaVu Sans", 8), anchor="w", justify="left", wraplength=330).pack(fill="x", pady=(0, 8))
+        # nurgruppen: «On start: groups only» next to Simple / Expert (same switch as on the web page, CFG ui_start_groups)
+        sg_ = Toggle(inner, tr("On start: groups only"), CFG.get("ui_start_groups", True), self._set_start_groups)
+        for w_ in (sg_, sg_.cv, sg_.lbl):
+            w_.config(bg=C["bg"])
+        sg_.lbl.config(font=("DejaVu Sans", 9)); sg_.pack(fill="x", pady=(0, 10)); self.start_groups_tg = sg_
+        Tip(sg_.lbl, tr("On every start the settings show only the groups. Off: the menus open as you left them."))
         self.grp_meta = {}; self._open_before = None
         self.no_match = tk.Label(inner, text=tr("No match"), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9))
         # 9 groups (same as the web page). Inside a group every topic opens / closes the same way (the first one is open);
@@ -69334,15 +69381,17 @@ class App:
                 ic_.config(fg=C["grn"] if on else C["txt"])
 
     def _sub_open(self, k):
-        return k in self.open_secs
+        return self._shown.get(k, k in self.open_secs)
 
     def _set_sub(self, k, open_, save=True):
         h, body, title = self.subs[k]
         closed = "subx:" + k[4:]
-        if open_:
-            self.open_secs.add(k); self.open_secs.discard(closed)
-        else:
-            self.open_secs.discard(k); self.open_secs.add(closed)
+        self._shown[k] = bool(open_)                         # nurgruppen: shown now; the own state (open_secs) only by a click
+        if save:
+            if open_:
+                self.open_secs.add(k); self.open_secs.discard(closed)
+            else:
+                self.open_secs.discard(k); self.open_secs.add(closed)
         if save and sorted(self.open_secs) != sorted(CFG["ui_open"]):
             CFG["ui_open"] = sorted(self.open_secs); save_settings()
         self._sub_arrow(k, open_)
@@ -70334,6 +70383,7 @@ class App:
     # ---- collapsible sections -------------------------------------------
     def _set_section(self, sec, open_, save=True):
         head, body = self.sections[sec]
+        self._shown[sec] = bool(open_)
         if save:
             (self.open_secs.add if open_ else self.open_secs.discard)(sec)
             if sorted(self.open_secs) != sorted(CFG["ui_open"]):
@@ -70357,7 +70407,7 @@ class App:
             pass
         meta = getattr(self, "grp_meta", {})
         if q and self._open_before is None:
-            self._open_before = set(self.open_secs)
+            self._open_before = dict(self._shown)                # nurgruppen: what was shown (start view or own state)
         cards = [m[2] for m in meta.values()]
         for c in cards:
             c.pack_forget()
@@ -70377,11 +70427,11 @@ class App:
         if q and not hits:
             self.no_match.pack(anchor="w", pady=(4, 0))
         if not q and self._open_before is not None:              # search cleared: back to how it was
-            self.open_secs = self._open_before; self._open_before = None
+            before, self._open_before = self._open_before, None
             for key in meta:
-                self._set_section(key, key in self.open_secs, save=False)
+                self._set_section(key, before.get(key, key in self.open_secs), save=False)
             for k in self.subs:
-                self._show_sub(k, k in self.open_secs)
+                self._show_sub(k, before.get(k, k in self.open_secs))
 
     def _show_sub(self, k, open_):
         h, body, title = self.subs[k]
@@ -70392,13 +70442,52 @@ class App:
             body.pack_forget()
 
     def _toggle_section(self, sec):
-        self._set_section(sec, sec not in self.open_secs)
+        self._set_section(sec, not self._shown.get(sec, sec in self.open_secs))
 
-    def _groups_only(self):
+    def _groups_only(self, save=True):
+        """☰ every group open, the topics inside closed (save=False: the start view of «On start: groups only», not kept)"""
         for sec in self.sections:
-            self._set_section(sec, True)
+            self._set_section(sec, True, save=save)
         for k in getattr(self, "subs", {}):
-            self._set_sub(k, False)
+            self._set_sub(k, False, save=save)
+
+    def _own_view(self):
+        """nurgruppen: every group and topic as the user left them (CFG ui_open)"""
+        for sec in self.sections:
+            self._set_section(sec, sec in self.open_secs or (self.tab == "sim" and sec == "grp:simset"), save=False)
+        for k in getattr(self, "subs", {}):
+            self._set_sub(k, k in self.open_secs, save=False)
+
+    def _fold_after(self, prev):
+        """nurgruppen: after building a settings tab - start / tab change: «Groups only» (switch on); else as shown before"""
+        if getattr(self, "_fold_start", True):
+            self._fold_start = False
+            if CFG.get("ui_start_groups", True):
+                self._groups_only(save=False)
+            return
+        for k, v in prev.items():
+            if k in self.sections:
+                self._set_section(k, v, save=False)
+            elif k in getattr(self, "subs", {}):
+                self._set_sub(k, v, save=False)
+
+    def _set_start_groups(self, v):
+        CFG["ui_start_groups"] = bool(v); save_settings()
+        self._groups_only(save=False) if v else self._own_view()
+
+    def _fold_btn(self, parent, kind, cmd, tip):
+        """the three fold buttons with the drawn symbols of the web page (530: arrows in · two bars · arrows out)"""
+        sz = 26 if self._lay[0] else 30
+        c = tk.Canvas(parent, width=sz, height=sz, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], bd=0, cursor="hand2")
+        f = sz / 24.0; P = lambda pts: [v * f for v in pts]
+        if kind == "close":
+            c.create_line(*P((7, 4, 12, 9, 17, 4)), fill=C["txt"], width=2); c.create_line(*P((7, 20, 12, 15, 17, 20)), fill=C["txt"], width=2)
+        elif kind == "open":
+            c.create_line(*P((7, 9, 12, 4, 17, 9)), fill=C["txt"], width=2); c.create_line(*P((7, 15, 12, 20, 17, 15)), fill=C["txt"], width=2)
+        else:
+            c.create_rectangle(*P((5, 5, 19, 10)), outline=C["txt"], width=2); c.create_rectangle(*P((5, 14, 19, 19)), outline=C["txt"], width=2)
+        c.bind("<Button-1>", lambda e: cmd()); Tip(c, tip)
+        return c
 
     def _all_sections(self, open_):
         for sec in self.sections:
@@ -93830,7 +93919,7 @@ if GUI_OK:
                 k = "grp:" + gid
                 if k in getattr(self, "group_titles", {}) and k in self.sections:
                     self.group_titles[k] = name
-                    self._set_section(k, k in self.open_secs, save=False)
+                    self._set_section(k, self._shown.get(k, k in self.open_secs), save=False)   # nurgruppen: as shown
         return r
 
     # wraps: App._build_section (after 639c)
@@ -94491,6 +94580,39 @@ def play_selftest():
 
 
 SELFTEST_EXTRA.append(("Play area: tab «Spielen» (web, window, simulator spielbereich.gd)", play_selftest))
+# nurgruppen (Daniel, 31.10.2026): on every start the settings show «Groups only» (web, phone, Pi window, simulator page); the
+# own open / closed state is kept (web: mw-open:… through web_ui, window: CFG ui_open) and comes back when the switch is off.
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_NG = {
+    'On start: groups only': ('Beim Start: Nur Gruppen', 'Au démarrage : seulement les groupes', 'All’avvio: solo i gruppi', 'Al start: mo las gruppas'),
+    'On every start the settings show only the groups. Off: the menus open as you left them.':
+        ('Bei jedem Start zeigen die Einstellungen nur die Gruppen. Aus: Die Menüs sind auf- und zugeklappt, wie du sie verlassen hast.',
+         'À chaque démarrage, les réglages n’affichent que les groupes. Désactivé : les menus restent ouverts ou fermés comme vous les avez laissés.',
+         'A ogni avvio le impostazioni mostrano solo i gruppi. Spento: i menu restano aperti o chiusi come li hai lasciati.',
+         'A mintga start mussan ils parameters mo las gruppas. Deactivà: ils menus èn averts u serrads sco che ti als has laschads.'),
+}
+for _k, _v in _HX_NG.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+# the main page has its own dictionary (German); fr / it / rm come through /i18n/<lang>.js (TRX)
+WEB_PAGE = WEB_PAGE.replace("</body>", "<script>Object.assign(I18N.de, " + json.dumps({_k: _v[0] for _k, _v in _HX_NG.items()}, ensure_ascii=False)
+                            + ");</script></body>", 1)
+
+# the manual (HELP_PAGE of 540): one paragraph in «Tipps & Tricks», German and English
+for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>',
+                "<p><b>☰ Beim Start: Nur Gruppen:</b> Bei jedem Öffnen der Seite (Handy, PC, Pi-Fenster) stehen die Einstellungen in der "
+                "Ansicht «Nur Gruppen»: alle Gruppen offen, die Themen darin zu. Was du selbst auf- und zuklappst, merkt sich MoveEye trotzdem. "
+                "Schaltest du den Schalter «Beim Start: Nur Gruppen» (neben «Einfach / Experte») aus, sind alle Menüs sofort wieder so, wie du "
+                "sie zuletzt verlassen hast. Ab Werk: ein. Auf der Seite Simulator sind beim Start die Karten und die Gruppen der "
+                "Simulator-Steuerung zu (nur «Steuerung» bleibt offen).</p>"),
+               ('<section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>',
+                "<p><b>☰ On start: groups only:</b> every time a page opens (phone, PC, Pi window) the settings show «Groups only»: "
+                "all groups open, the topics inside closed. MoveEye still remembers what you open and close yourself. Switch «On start: "
+                "groups only» (next to «Simple / Expert») off and every menu is back the way you left it. Factory setting: on. On the "
+                "page Simulator the cards and the groups of the simulator control start closed (only «Controls» stays open).</p>")):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")
