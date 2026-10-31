@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 08:23",
+ "generated": "2026-10-31 08:29",
  "versions": [
   {
-   "version": "2.98.83",
-   "file": "webcam_bewegung_2_98_83.py",
+   "version": "2.98.84",
+   "file": "webcam_bewegung_2_98_84.py",
    "url": "",
-   "sha256": "73654406e9e4cd7ea469f9dcc70353de28f4e07543dbc304ec2770dcb9bf1fe6",
-   "date": "2026-10-31 08:23",
-   "notes": "Simulator 3D-4.52: Bewegungsmelder wie der AS312, Mikrofon mit Umgebungsgeräuschen; «Mithören» geht auch im Simulator (Teil 558p).",
-   "sig": "b7ccc54efd95131208edb303a6118a1ef4da866a73edf7c1930b824f7230a0f0aa9827e1ce8a0ab69b54f9b11dcc1d775c8f15976e504d2fdeda30de9f7b430e"
+   "sha256": "ccaff36d48fbcba1f147bd235a97491da14939a4d458a29e46324a119d19a243",
+   "date": "2026-10-31 08:29",
+   "notes": "Simulator 3D-4.53: Servos wie die echten MG90S – schnelles Schwenken mit Nachschwingen, Servostrom, Störungen «schwaches Signal» und «blockiert».",
+   "sig": "f376c5347a6968f9290dab6ef6a0c181ec2c89217ccbad42f1a933ba5c7ea5877ea4b949cc83e39961f5fd3a4809600f029f6486b9d77c1c7e1e3d5dca12ad05"
   },
   {
    "version": "2.97.1",

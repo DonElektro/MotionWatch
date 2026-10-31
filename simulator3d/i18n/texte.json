@@ -576,6 +576,18 @@
   "it": " · protezione ",
   "rm": " · protecziun "
  },
+ " · Servos %.2f A (Spitze %.2f A)": {
+  "en": " · servos %.2f A (peak %.2f A)",
+  "fr": " · servos %.2f A (pointe %.2f A)",
+  "it": " · servo %.2f A (picco %.2f A)",
+  "rm": " · servos %.2f A (piz %.2f A)"
+ },
+ " · Servosignal schwach (Kopf zittert)": {
+  "en": " · servo signal weak (head jitters)",
+  "fr": " · signal servo faible (la tête tremble)",
+  "it": " · segnale servo debole (la testa trema)",
+  "rm": " · signal da servo flaivel (il chau tremblanta)"
+ },
  " · Sim-KI": {
   "en": " · sim AI",
   "fr": " · IA du sim",
@@ -10776,6 +10788,12 @@
   "it": "Salvato: %s – allegare questo file nella chat.",
   "rm": "Memorisà: %s – agiuntar questa datoteca en il chat."
  },
+ "Getriebespiel der Servos": {
+  "en": "Gear play of the servos",
+  "fr": "Jeu d'engrenage des servos",
+  "it": "Gioco degli ingranaggi dei servo",
+  "rm": "Gieu dals rodals dals servos"
+ },
  "gewarnt (kein Griff)": {
   "en": "warned (no grab)",
   "fr": "averti (pas de vol)",
@@ -14377,6 +14395,12 @@
   "fr": "Tête au centre",
   "it": "Testa al centro",
   "rm": "Chau al center"
+ },
+ "Kopfgewicht für die Servos (Kamera, Halter)": {
+  "en": "Head weight for the servos (camera, holder)",
+  "fr": "Poids de la tête pour les servos (caméra, support)",
+  "it": "Peso della testa per i servo (telecamera, supporto)",
+  "rm": "Paisa dal chau per ils servos (camera, tegnider)"
  },
  "Kopfkamera": {
   "en": "Head camera",
@@ -20692,6 +20716,12 @@
   "it": "",
   "rm": ""
  },
+ "Schwaches Servosignal (lange Leitung: der Kopf zittert)": {
+  "en": "Weak servo signal (long cable: the head jitters)",
+  "fr": "Signal servo faible (câble long : la tête tremble)",
+  "it": "Segnale servo debole (cavo lungo: la testa trema)",
+  "rm": "Signal da servo flaivel (cabel lung: il chau tremblanta)"
+ },
  "Schwarz = warm": {
   "en": "Black = warm",
   "fr": "Noir = chaud",
@@ -21089,6 +21119,12 @@
   "fr": "Servos réalistes : petit jeu, oscillation après la rotation",
   "it": "Servo realistici: un po’ di gioco, oscillazione dopo la rotazione",
   "rm": "Servos sco vairs: pitschen gieu, oscillar suenter il volver"
+ },
+ "Servos wie echt: MG90S-Tempo nach Spannung, Getriebespiel, Nachschwingen, Anlaufstrom": {
+  "en": "Realistic servos: MG90S speed by voltage, gear play, overshoot, start current",
+  "fr": "Servos réalistes : vitesse MG90S selon la tension, jeu d'engrenage, dépassement, courant de démarrage",
+  "it": "Servo realistici: velocità MG90S secondo la tensione, gioco degli ingranaggi, oscillazione, corrente di spunto",
+  "rm": "Servos sco en realitad: svelt MG90S tenor tensiun, gieu dals rodals, surpassament, current da partenza"
  },
  "Setzen: %s – in die Welt klicken (mehrmals), Esc = fertig": {
   "en": "Place: %s – click into the world (several times), Esc = done",

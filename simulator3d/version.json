@@ -1,7 +1,7 @@
 {
- "version": "3D-4.52",
+ "version": "3D-4.53",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 67783630,
- "sha256": "ad2a5e2f3cbdf472a3d4a1fc8ecb4c6e2dc32687f41291cd0fe01b38a179f16d",
- "notes": "Bewegungsmelder wie der echte AS312, Mikrofon mit Umgebungsgeräuschen; in MoveEye «Mithören» auch im Simulator."
+ "size": 67805098,
+ "sha256": "6b75a1aab4b9e0347e7b08884531c7200be5898b9fc51a25ecb9ce42623ec846",
+ "notes": "Servos wie die echten MG90S: Nachschwingen, Servostrom und Störungen (schwaches Signal, blockiert)."
 }

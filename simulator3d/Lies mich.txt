@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.53
+3D-4.53: Servos wie die echten MG90S: der Kopf schwenkt schnell und schwingt nach dem Halt kurz nach, Servostrom und
+Spannungseinbruch der 5-V-Schiene, Störungen «Schwaches Servosignal» (Zittern) und «Servo blockiert».
+So testest du: 1) Kamerabild → Wie echt → «Servos wie echt» an, Kopf schwenken: schwingt kurz nach. 2) «Schwaches
+Servosignal» an: macht MoveEye Fehlalarme? 3) «Servo blockiert»: nach ~3 s meldet MoveEye «Servo blockiert».
+
 NEU IN 3D-4.52
 3D-4.52: Bewegungsmelder wie der echte AS312 (Fächer, Reichweite je nach Temperatur, Fehlauslösung) und Mikrofon mit
 Umgebungsgeräuschen (Wasser, Wind, Wetter) – in MoveEye geht «🎧 Mithören» jetzt auch im Simulator, gleich laut.

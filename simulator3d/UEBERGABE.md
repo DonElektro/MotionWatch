@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.52** · passende MoveEye-Version (früher Motion Watch) **2.98.83**
+Stand: 31.10.2026 · Simulator-Version **3D-4.53** · passende MoveEye-Version (früher Motion Watch) **2.98.84**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.53 (MoveEye 2.98.84): Servo-Mechanik MG90S (`servo.gd`)
+
+- `servo.gd` (neu): MG90S-Modell pro Achse (Tempo, Spiel, Nachschwingen, Strom, 5-V-Einbruch), Kopfbewegung in `main._process`,
+  Störungen über `simint.gd`. Steuerung `{"action":"servo","do":"info|set|sim"}`. Lite: nichts abzuschalten.
 
 ## NEU in 3D-4.52 (MoveEye 2.98.83): PIR AS312, Mikrofon und Umgebungsgeräusche (`pir.gd`, `mikrofon.gd`)
 
