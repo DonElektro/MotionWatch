@@ -244,7 +244,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_15_0.zip"
-ZD_SHA256 = "2491b76c3fb81810c3b98eb7471865b8a1acfcd669afb87f61fa36a83636bc65"
+ZD_SHA256 = "ec872a940ca1f011078b52fe0b86c3679b50c71b2c023f70ad89b48c4d0b9226"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -11008,6 +11008,8 @@ def makeover_head():
           "if(on&&!b&&document.body){b=document.createElement('div');b.className='mwsimbar';b.title='MoveEye';const s=document.createElement('span');b.appendChild(s);document.body.prepend(b);}"
           "if(b){b.hidden=!on;b.firstChild.textContent='🧪 '+(TX[L()]||TX.en);}};"
           "document.addEventListener('DOMContentLoaded',paint);"
+          # 3.16: the main page knows sim_on from its state every few seconds -> the stripe follows at once (not only every 15 s)
+          "window.mwSimMark=v=>{v=!!v;if(v!==on){on=v;paint();}};"
           "setInterval(async()=>{try{const r=await (await fetch('/api/simbar')).json();if(r.on!==on){on=r.on;}paint();}catch(e){}},15000);setTimeout(paint,1500);"
           # 2.97.0: switch the simulation; armed -> ask «disarm and simulate?» first (sim_set needs confirm)
           "window.mwSimSet=async(v,lang)=>{const P=b=>fetch('/api/sim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(x=>x.json()).catch(()=>({}));"
@@ -49314,6 +49316,7 @@ class App:
         wide = self._lay[2] and not side_col             # wide: stick | small things | quick switches in one row
         left_w = self._win_w() - self._lay[1] - 60
         tiny = side_col or (not wide and left_w < 520)   # very narrow: small things beside the stick, switches below both
+        self._ctl_sim = simh = bool(CFG.get("sim_on"))  # 3.16: simulation = no speed, ⇆, centre, calibrate, waypoints (like the web page)
         head = self._tk_head()                           # 2.98.26: joystick, centre, calibrate, waypoints only with a pan / tilt head (2.98.29: «Ansicht» → Joystick always / never)
         u = self._tk_ui()
         bar = tk.Frame(f, bg=C["panel"]); bar.pack(fill="x")
@@ -49373,14 +49376,17 @@ class App:
             for _, short, cmd, tip in btns:
                 self._fbtn(side, short, cmd, tip).pack(side="left", padx=(6, 0))
             swb(side).pack(side="left", padx=(6, 0))
-        if not head:
+        if not head or simh:
             side.grid_remove()
+        if not head and not simh:
             tk.Label(bar, text=tr("no pan / tilt head - joystick hidden (Settings → Camera / Servos → Servo driver)"), bg=C["panel"], fg=C["mut"],
                      font=("DejaVu Sans", 8), wraplength=360, justify="left").grid(row=3, column=0, columnspan=4, sticky="w")
-        self.l_ctl_status = tk.Label(side if wide else bar, text="", bg=C["panel"], fg=C["yel"], font=("DejaVu Sans", 8), wraplength=200 if wide else 400,
+        self.l_ctl_status = tk.Label(side if wide and not simh else bar, text="", bg=C["panel"], fg=C["yel"], font=("DejaVu Sans", 8), wraplength=200 if wide else 400,
                                      justify="left")
-        if wide:
+        if wide and not simh:
             self.l_ctl_status.pack(anchor="w", pady=(6, 0))
+        elif wide:
+            self.l_ctl_status.grid(row=1, column=0, columnspan=4, sticky="w")
         else:
             self.l_ctl_status.grid(row=2, column=0, columnspan=4, sticky="w")
         # 3) quick switches, the waypoints below
@@ -49390,7 +49396,7 @@ class App:
         elif tiny:
             qf.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(8, 0)); bar.columnconfigure(c_sd, weight=1); cols = 5
         else:
-            qf.grid(row=1, column=c_sd, sticky="new", padx=(0, 14) if swap else (14, 0), pady=(8, 0)); bar.columnconfigure(c_sd, weight=1)
+            qf.grid(row=0 if simh else 1, rowspan=2 if simh else 1, column=c_sd, sticky="new", padx=(0, 14) if swap else (14, 0), pady=(8, 0)); bar.columnconfigure(c_sd, weight=1)
             cols = 5 if left_w - 170 >= 380 else 4
         grid = tk.Frame(qf, bg=C["panel"]); grid.pack(fill="x")
         for k in range(cols):
@@ -58791,6 +58797,8 @@ WEB_PAGE = WEB_PAGE.replace("/*KIHDE*/{}", json.dumps({_k: _v[0] for _k, _v in _
 # are not used then. The web side is in 541 (servo_client_state "sim" → #srv-stop hidden); the setting servo_stop_btn stays for
 # the real hardware. Here the window: every «⏹ Stopp» made by App._fbtn with the command _srv_estop_btn (570, all three
 # layouts of the camera bar) is remembered and taken off / put back by App._refresh (it runs every few seconds).
+# 3.16 (Daniel 31.10.2026): in the simulation the whole small column (speed, ⇆, centre, calibrate, waypoints) is left out
+# (570 _build_controls, flag self._ctl_sim); _refresh builds the tab again when the simulation is switched.
 # ----------------------------------------------------------------------------
 
 _ss_fbtn_before = App._fbtn
@@ -58851,6 +58859,13 @@ def _ss_refresh(self, *a, **k):
     r = _ss_refresh_before(self, *a, **k)
     try:
         _ss_stop_show(self)
+    except Exception:
+        pass
+    try:                                                 # 3.16: simulation switched -> build the camera bar again (570 _build_controls)
+        if hasattr(self, "_ctl_sim") and self._ctl_sim != bool(CFG.get("sim_on")) and self.tab is not None:
+            self._ctl_sim = bool(CFG.get("sim_on"))
+            tid, self.tab = self.tab, None
+            self.root.after(10, lambda: self._tab(tid))
     except Exception:
         pass
     return r

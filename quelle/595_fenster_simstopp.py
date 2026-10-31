@@ -4,6 +4,8 @@
 # are not used then. The web side is in 541 (servo_client_state "sim" → #srv-stop hidden); the setting servo_stop_btn stays for
 # the real hardware. Here the window: every «⏹ Stopp» made by App._fbtn with the command _srv_estop_btn (570, all three
 # layouts of the camera bar) is remembered and taken off / put back by App._refresh (it runs every few seconds).
+# 3.16 (Daniel 31.10.2026): in the simulation the whole small column (speed, ⇆, centre, calibrate, waypoints) is left out
+# (570 _build_controls, flag self._ctl_sim); _refresh builds the tab again when the simulation is switched.
 # ----------------------------------------------------------------------------
 
 _ss_fbtn_before = App._fbtn
@@ -64,6 +66,13 @@ def _ss_refresh(self, *a, **k):
     r = _ss_refresh_before(self, *a, **k)
     try:
         _ss_stop_show(self)
+    except Exception:
+        pass
+    try:                                                 # 3.16: simulation switched -> build the camera bar again (570 _build_controls)
+        if hasattr(self, "_ctl_sim") and self._ctl_sim != bool(CFG.get("sim_on")) and self.tab is not None:
+            self._ctl_sim = bool(CFG.get("sim_on"))
+            tid, self.tab = self.tab, None
+            self.root.after(10, lambda: self._tab(tid))
     except Exception:
         pass
     return r
