@@ -30,7 +30,7 @@ func place(bed: Node3D) -> void:
 	var shirt := Color(0.3, 0.45, 0.7)
 	blanket = Node3D.new()
 	root.add_child(blanket)
-	main.add_mesh(blanket, main.box(1.35, 0.22, 1.25), Vector3(-0.3, 0.66, 0), main.mat(Color(0.55, 0.62, 0.78)), 31.0)
+	main.add_mesh(blanket, main.box(1.35, 0.22, 1.25), Vector3(-0.3, 0.66, 0), main.mat(Color(0.55, 0.62, 0.78)), preload("res://scripts/waerme.gd").T("bed_blanket_person"))   # 3D-4.26: was 31 °C
 	upper = Node3D.new()                                   # hip joint
 	upper.position = Vector3(0.1, 0.66, 0.0)
 	root.add_child(upper)

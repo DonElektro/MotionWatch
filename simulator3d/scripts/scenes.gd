@@ -1,4 +1,5 @@
 extends RefCounted
+const Waerme = preload("res://scripts/waerme.gd")   # 3D-4.26: the heat table (fire, lamps)
 ## The scenes of the 3D simulator (from 3D-1.5): camping place, forest, car park, garden with house, a funny place and
 ## wildlife watching. Every scene builds its things below one node (root); switching frees it and builds the next one.
 ## Every scene must give main: door_node + door_light + window_mat (the door sensor), obj["door"], obj["pir"], obj["bike"].
@@ -499,7 +500,7 @@ func lamp_post(p: Vector3, h := 4.5) -> void:
 	put(root, cyl(0.06, 0.08, h, 8), p + Vector3(0, h / 2, 0), Color(0.25, 0.27, 0.3), "stone")
 	put(root, cyl(0.14, 0.16, 0.3, 10), p + Vector3(0, 0.15, 0), Color(0.22, 0.24, 0.27), "stone")
 	m.add_obstacle(p, 0.2)
-	put(root, m.box(0.5, 0.12, 0.3), p + Vector3(0, h, 0), glow_mat(Color(1.0, 0.85, 0.6)), 45.0)
+	put(root, m.box(0.5, 0.12, 0.3), p + Vector3(0, h, 0), glow_mat(Color(1.0, 0.85, 0.6)), "lamp")   # 3D-4.26: warm only when lit (waerme_welt.gd)
 	var l := OmniLight3D.new()
 	l.position = p + Vector3(0, h - 0.2, 0)
 	l.light_color = Color(1.0, 0.82, 0.55)
@@ -689,9 +690,9 @@ func _wald() -> void:
 	for i in range(9):
 		var a := i * TAU / 9.0
 		put(root, sph(0.18, 0.2), fire + Vector3(cos(a) * 0.7, 0.06, sin(a) * 0.7), Color(0.4, 0.4, 0.4), "stone")
-	put(root, m.box(0.9, 0.12, 0.25), fire + Vector3(0, 0.08, 0), Color(0.15, 0.1, 0.07), 70.0, Vector3(0, 0.5, 0))
-	put(root, m.box(0.9, 0.12, 0.25), fire + Vector3(0, 0.12, 0), Color(0.15, 0.1, 0.07), 70.0, Vector3(0, -0.6, 0))
-	var glow := put(root, sph(0.25, 0.2), fire + Vector3(0, 0.15, 0), glow_mat(Color(1.0, 0.4, 0.08)), 120.0)
+	put(root, m.box(0.9, 0.12, 0.25), fire + Vector3(0, 0.08, 0), Color(0.15, 0.1, 0.07), Waerme.T("campfire_logs"), Vector3(0, 0.5, 0))   # 3D-4.26: waerme.gd
+	put(root, m.box(0.9, 0.12, 0.25), fire + Vector3(0, 0.12, 0), Color(0.15, 0.1, 0.07), Waerme.T("campfire_logs"), Vector3(0, -0.6, 0))
+	var glow := put(root, sph(0.25, 0.2), fire + Vector3(0, 0.15, 0), glow_mat(Color(1.0, 0.4, 0.08)), Waerme.T("campfire_embers"))
 	var fl := OmniLight3D.new()
 	fl.position = fire + Vector3(0, 0.6, 0)
 	fl.light_color = Color(1.0, 0.55, 0.2)

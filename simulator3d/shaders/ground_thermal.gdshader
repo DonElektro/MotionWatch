@@ -1,7 +1,8 @@
 // Thermal picture of the ground: warmer near the camera's feet in the sun, a pattern of warmer / cooler patches,
-// further away it looks colder (more air in between, flat angle).
+// further away it looks colder (flat angle: the ground reflects more of the cold sky), the air in between (fog).
 shader_type spatial;
 render_mode unshaded, cull_disabled, shadows_disabled, fog_disabled;
+#include "res://shaders/thermal_inc.gdshaderinc"
 
 uniform float temp = 15.0;
 uniform float far_temp = 10.0;
@@ -17,5 +18,5 @@ void fragment() {
 	float d = length(VERTEX);
 	float n = vnoise(w.xz * 0.35) * 1.6 + vnoise(w.xz * 2.0) * 0.6 - 1.1;
 	float t = mix(temp + n, far_temp, clamp(d / 600.0, 0.0, 1.0));
-	ALBEDO = vec3(clamp((t + 40.0) / 120.0, 0.0, 1.0));
+	ALBEDO = th_encode(th_atm(t, d));
 }

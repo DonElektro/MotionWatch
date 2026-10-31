@@ -81,6 +81,13 @@ func build(actor, p: Dictionary) -> void:
 	var nose_t: float = face_t - 1.2 - 3.0 * cold_k
 	var hand_t: float = (31.5 - 5.0 * cold_k) if not p.get("gloves", false) else ct - 2.5
 	var skin_t := 31.5 - 2.0 * cold_k
+	if main.simreal != null and main.simreal.th_real:              # 3D-4.26: the heat table (waerme.gd), warmer after running
+		var W = preload("res://scripts/waerme.gd")
+		var act: bool = p.get("active", false)
+		face_t = W.skin("face", amb, act)
+		nose_t = W.skin("nose", amb, act)
+		hand_t = W.skin("hand", amb, act) if not p.get("gloves", false) else ct - 2.5
+		skin_t = W.skin("arm", amb, act)
 	var shorts: bool = p.get("shorts", false)
 	var short_sl: bool = p.get("short_sleeves", false)
 	pal = {R_SKIN: p["skin"], R_JACKET: p["jacket"], R_TROUSERS: p["trousers"], R_SHOE: p["shoe"], R_SOLE: (p["shoe"] as Color).darkened(0.55),
@@ -394,6 +401,8 @@ func _commit(main) -> void:
 		_mat_t = ShaderMaterial.new()
 		_mat_t.shader = load("res://shaders/thermal_vc.gdshader")
 		_mat_t.set_shader_parameter("spread", 0.6)
+		if main.has_method("th_reg"):
+			main.th_reg(_mat_t)                                  # 3D-4.26: air and code of the thermal picture (main.gd)
 	mi = MeshInstance3D.new()
 	mi.mesh = mesh_v
 	mi.skin = skin

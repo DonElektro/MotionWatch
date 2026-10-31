@@ -7347,6 +7347,12 @@
   "it": "Per tre notti MoveEye sorveglia il tuo campo nella valle. Quello che registra lo trovi al mattino nella sua cronologia.",
   "rm": "Trais notgs ditg surveglia MoveEye tes campament en la val. Tge ch'el registrescha, chattas ti la damaun en ses decurs."
  },
+ "Drift (Modul wird mit dem Pi warm, Geräte-Fehler, langsames Wandern)": {
+  "en": "Drift (module warms up with the Pi, unit error, slow wandering)",
+  "fr": "Dérive (le module chauffe avec le Pi, erreur de l’appareil, lente variation)",
+  "it": "Deriva (il modulo si scalda con il Pi, errore dell’apparecchio, lenta variazione)",
+  "rm": "Deriva (il modul vegn chaud cun il Pi, sbagl da l’apparat, variaziun plaun)"
+ },
  "Dritte Nacht – Das Hospiz": {
   "en": "Third night – The Hospice",
   "fr": "Troisième nuit – L'Hospice",
@@ -9034,6 +9040,12 @@
   "it": "Famiglia con bambini (i bambini corrono avanti e tornano)",
   "rm": "Famiglia cun uffants (ils uffants curran ordavant e enavos)"
  },
+ "Farben des Wärmebilds (nur die Anzeige hier – MoveEye bekommt die °C-Werte)": {
+  "en": "Thermal picture colours (only the display here – MoveEye gets the °C values)",
+  "fr": "Couleurs de l’image thermique (seulement l’affichage ici – MoveEye reçoit les valeurs en °C)",
+  "it": "Colori dell’immagine termica (solo la visualizzazione qui – MoveEye riceve i valori in °C)",
+  "rm": "Colurs dal maletg termic (mo la vista qua – MoveEye survegn las valurs en °C)"
+ },
  "Fast voll: Programme schliessen (Browser-Tabs), den Simulator neu starten.": {
   "en": "",
   "fr": "",
@@ -9412,6 +9424,12 @@
   "fr": "Foyer",
   "it": "Focolare",
   "rm": "Fieu da campadi"
+ },
+ "FFC alle": {
+  "en": "FFC every",
+  "fr": "FFC toutes les",
+  "it": "FFC ogni",
+  "rm": "FFC mintga"
  },
  "Fichte": {
   "en": "Spruce",
@@ -10338,6 +10356,12 @@
   "it": "Tranquillo",
   "rm": "Pachific"
  },
+ "Geparktes Auto: Motor warm (eben angekommen, kühlt in 1–2 h ab)": {
+  "en": "Parked car: engine warm (just arrived, cools down in 1–2 h)",
+  "fr": "Voiture garée : moteur chaud (vient d’arriver, refroidit en 1–2 h)",
+  "it": "Auto parcheggiata: motore caldo (appena arrivata, si raffredda in 1–2 h)",
+  "rm": "Auto parcà: motor chaud (gist arrivà, sa sfradenta en 1–2 h)"
+ },
  "Gepflasterte Steine, ausgetreten von Maultieren und Säumern, führen vom Hospiz nach Süden.": {
   "en": "Paving stones, worn by mules and muleteers, lead south from the hospice.",
   "fr": "Des pavés usés par les mulets et les muletiers mènent de l’hospice vers le sud.",
@@ -10691,6 +10715,24 @@
   "fr": "github_pat_… (vide = ZIP sur le bureau)",
   "it": "github_pat_… (vuoto = ZIP sul desktop)",
   "rm": "github_pat_… (vid = ZIP sin la scrivania)"
+ },
+ "Glasscheibe 4 m vor MoveEye, dahinter bleibt eine Person 30 s stehen – die Kamera sieht sie, das Wärmebild nicht": {
+  "en": "Glass pane 4 m in front of MoveEye, a person stands behind it for 30 s – the camera sees them, the thermal picture does not",
+  "fr": "Vitre à 4 m devant MoveEye, une personne reste 30 s derrière – la caméra la voit, l’image thermique non",
+  "it": "Lastra di vetro a 4 m davanti a MoveEye, una persona resta dietro per 30 s – la telecamera la vede, l’immagine termica no",
+  "rm": "Vaider 4 m davant MoveEye, ina persuna stat 30 s davos – la camera la vesa, il maletg termic betg"
+ },
+ "Glasscheibe vor MoveEye (Test: die Kamera sieht durch, das Wärmebild nicht) – nochmals drücken: weg": {
+  "en": "Glass pane in front of MoveEye (test: the camera sees through, the thermal picture does not) – press again: gone",
+  "fr": "Vitre devant MoveEye (test : la caméra voit à travers, l’image thermique non) – appuyer encore : enlevée",
+  "it": "Lastra di vetro davanti a MoveEye (test: la telecamera vede attraverso, l’immagine termica no) – premere di nuovo: via",
+  "rm": "Vaider davant MoveEye (test: la camera vesa tras, il maletg termic betg) – smatgar anc ina giada: davent"
+ },
+ "Glasscheibe weg": {
+  "en": "Glass pane gone",
+  "fr": "Vitre enlevée",
+  "it": "Lastra di vetro tolta",
+  "rm": "Vaider davent"
  },
  "glb Version %d, Kopf unlesbar": {
   "en": "glb version %d, header unreadable",
@@ -12487,6 +12529,12 @@
   "it": "Opera di fanteria Gufer (interno)",
   "rm": "Ovra d’infantaria Gufer (endadens)"
  },
+ "Inferno": {
+  "en": "Inferno",
+  "fr": "Inferno",
+  "it": "Inferno",
+  "rm": "Inferno"
+ },
  "Info": {
   "en": "Info",
   "fr": "Info",
@@ -12618,6 +12666,12 @@
   "fr": "Quelque part tinte une cloche de vache. Est-ce que quelqu'un dort ici ?",
   "it": "Da qualche parte tintinna un campanaccio. Ma qui dorme qualcuno?",
   "rm": "Insanua tinta ina zampogna. Dorma qua insumma insatgi?"
+ },
+ "Ironbow (Eisen)": {
+  "en": "Ironbow",
+  "fr": "Ironbow (fer)",
+  "it": "Ironbow (ferro)",
+  "rm": "Ironbow (fier)"
  },
  "Isomatte": {
   "en": "Sleeping mat",
@@ -16655,6 +16709,12 @@
   "it": "di notte la luce infrarossa arriva a circa %d m",
   "rm": "da notg tanscha la glisch infracotschna circa %d m"
  },
+ "Nachts schläft jemand im Zelt (schwacher warmer Fleck an der Zeltwand)": {
+  "en": "At night someone sleeps in the tent (faint warm patch on the tent wall)",
+  "fr": "La nuit, quelqu’un dort dans la tente (faible tache chaude sur la paroi)",
+  "it": "Di notte qualcuno dorme nella tenda (debole macchia calda sulla parete)",
+  "rm": "La notg dorma insatgi en la tenda (fletg chaud flaivel vi da la paraid)"
+ },
  "Nachts setzt sich ab und zu eine Katze aufs Autodach": {
   "en": "At night now and then a cat sits on the car roof",
   "fr": "La nuit, de temps en temps, un chat s’assied sur le toit de la voiture",
@@ -16775,6 +16835,12 @@
   "fr": "Le brouillard traverse la vallée, de vieux signes dans la roche, des rencontres discrètes.",
   "it": "La nebbia attraversa la valle, vecchi segni nella roccia, incontri silenziosi.",
   "rm": "Tschajera tras la val, vegls segns en il crap, inscuntras quietas."
+ },
+ "Nebel, Schnee und feuchte Luft schlucken Wärmestrahlung (1 = Physik)": {
+  "en": "Fog, snow and humid air absorb thermal radiation (1 = physics)",
+  "fr": "Brouillard, neige et air humide absorbent le rayonnement thermique (1 = physique)",
+  "it": "Nebbia, neve e aria umida assorbono la radiazione termica (1 = fisica)",
+  "rm": "Tschajera, naiv ed aria umida tragutteschan radiaziun termica (1 = fisica)"
  },
  "Nebelbank": {
   "en": "Fog bank",
@@ -18709,6 +18775,12 @@
   "it": "fuma / emette vapore",
   "rm": "fima / vapurescha"
  },
+ "Rauschen des Sensors (1 = Datenblatt: 125 mK bei 1 Bild/s)": {
+  "en": "Sensor noise (1 = datasheet: 125 mK at 1 frame/s)",
+  "fr": "Bruit du capteur (1 = fiche technique : 125 mK à 1 image/s)",
+  "it": "Rumore del sensore (1 = scheda tecnica: 125 mK a 1 immagine/s)",
+  "rm": "Canera dal sensor (1 = fegl da datas: 125 mK tar 1 maletg/s)"
+ },
  "Rauschendes Wasser (laut)": {
   "en": "Rushing water (loud)",
   "fr": "Eau bruyante (fort)",
@@ -19953,6 +20025,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Schwarz = warm": {
+  "en": "Black = warm",
+  "fr": "Noir = chaud",
+  "it": "Nero = caldo",
+  "rm": "Nair = chaud"
  },
  "Schwarzgrat": {
   "en": "Schwarzgrat",
@@ -22796,6 +22874,12 @@
   "it": "File inatteso in versions.json: ",
   "rm": "Datoteca nunspetgada en versions.json: "
  },
+ "Unschärfe des kleinen Objektivs (ca. 1 Pixel)": {
+  "en": "Blur of the small lens (about 1 pixel)",
+  "fr": "Flou du petit objectif (env. 1 pixel)",
+  "it": "Sfocatura del piccolo obiettivo (circa 1 pixel)",
+  "rm": "Sfuschadad dal pitschen objectiv (ca. 1 pixel)"
+ },
  "Unsichtbar": {
   "en": "Invisible",
   "fr": "Invisible",
@@ -23221,6 +23305,12 @@
   "fr": "déplacer (loin / près, 2 m)",
   "it": "spostare (via / qui, 2 m)",
   "rm": "spustar (davent / natiers, 2 m)"
+ },
+ "Verschluss-Kalibrierung (FFC) wie bei Modulen mit Verschluss – der Thermal-90 hat keinen": {
+  "en": "Shutter calibration (FFC) like modules with a shutter – the Thermal-90 has none",
+  "fr": "Calibrage par obturateur (FFC) comme les modules avec obturateur – le Thermal-90 n’en a pas",
+  "it": "Calibrazione con otturatore (FFC) come i moduli con otturatore – il Thermal-90 non ne ha",
+  "rm": "Calibraziun cun clausura (FFC) sco tar moduls cun clausura – il Thermal-90 n’ha nagina"
  },
  "Versetzen": {
   "en": "Move",
@@ -23930,6 +24020,12 @@
   "it": "Acqua (1 litro)",
   "rm": "Aua (1 liter)"
  },
+ "Wasser auf dem Sensorfenster bei Regen und Schnee (kalte Flecken, dahinter nichts)": {
+  "en": "Water on the sensor window in rain and snow (cold spots, nothing visible behind)",
+  "fr": "Eau sur la fenêtre du capteur sous la pluie et la neige (taches froides, rien derrière)",
+  "it": "Acqua sulla finestra del sensore con pioggia e neve (macchie fredde, dietro niente)",
+  "rm": "Aua sin la fanestra dal sensor cun plievgia e naiv (fletgs fraids, davos nagut)"
+ },
  "Wasser auffüllen (Bach)": {
   "en": "Refill water (stream)",
   "fr": "Remplir l'eau (ruisseau)",
@@ -24103,6 +24199,12 @@
   "fr": "Blanche",
   "it": "Bianca",
   "rm": "Alva"
+ },
+ "Weiss = warm": {
+  "en": "White = warm",
+  "fr": "Blanc = chaud",
+  "it": "Bianco = caldo",
+  "rm": "Alv = chaud"
  },
  "Weisser Schneehase im braunen Herbst": {
   "en": "White mountain hare in brown autumn",
@@ -25103,11 +25205,29 @@
   "it": "Immagine termica realistica: i vestiti isolano (giacca fredda, viso e mani caldi), sassi, auto e asfalto conservano il calore del sole fino a notte, la pioggia raffredda, le finestre riflettono il cielo freddo",
   "rm": "Maletg termic sco vair: vestgids isoleschan (giacca fraida, fatscha e mauns chauds), crappa, autos ed asfalt tegnan il chaud dal sulegl fin en la notg, la plievgia sfradenta, fanestras reflecteschan il tschiel fraid"
  },
+ "Wärmebild wie echt: Sensor wie der Thermal-90 (80 × 62, Rauschen, Drift, Unschärfe, Wasser auf dem Fenster, Nebel schluckt), Wärme wie echt (Kleider isolieren, Tiere mit Fell, Motor kühlt ab, Sonne heizt Asphalt, Autodach und Zelt, kalter Himmel, Glas ist undurchsichtig)": {
+  "en": "Realistic thermal picture: sensor like the Thermal-90 (80 × 62, noise, drift, blur, water on the window, fog absorbs), realistic heat (clothes insulate, animals with fur, engine cools down, sun heats asphalt, car roof and tent, cold sky, glass is opaque)",
+  "fr": "Image thermique réaliste : capteur comme le Thermal-90 (80 × 62, bruit, dérive, flou, eau sur la fenêtre, le brouillard absorbe), chaleur réaliste (les vêtements isolent, animaux à fourrure, le moteur refroidit, le soleil chauffe l’asphalte, le toit de la voiture et la tente, ciel froid, le verre est opaque)",
+  "it": "Immagine termica realistica: sensore come il Thermal-90 (80 × 62, rumore, deriva, sfocatura, acqua sulla finestra, la nebbia assorbe), calore realistico (i vestiti isolano, animali con pelliccia, il motore si raffredda, il sole scalda asfalto, tetto dell’auto e tenda, cielo freddo, il vetro è opaco)",
+  "rm": "Maletg termic sco vair: sensor sco il Thermal-90 (80 × 62, canera, deriva, sfuschadad, aua sin la fanestra, tschajera traguttescha), chalur sco vaira (vestgadira isolescha, animals cun pel, motor sa sfradenta, il sulegl stgauda asfalt, tetg da l’auto e tenda, tschiel fraid, vaider è betg transparent)"
+ },
  "Wärmebild: %s – %d° × %d°, %d Bilder/s": {
   "en": "Thermal image: %s – %d° × %d°, %d frames/s",
   "fr": "Image thermique : %s – %d° × %d°, %d images/s",
   "it": "Immagine termica: %s – %d° × %d°, %d immagini/s",
   "rm": "Maletg termic: %s – %d° × %d°, %d maletgs/s"
+ },
+ "Wärmebild: Auto in %d m ist eben angekommen – Motor warm, kühlt in 1–2 h ab": {
+  "en": "Thermal: car at %d m has just arrived – engine warm, cools down in 1–2 h",
+  "fr": "Thermique : la voiture à %d m vient d’arriver – moteur chaud, refroidit en 1–2 h",
+  "it": "Termica: l’auto a %d m è appena arrivata – motore caldo, si raffredda in 1–2 h",
+  "rm": "Termic: l’auto a %d m è gist arrivà – motor chaud, sa sfradenta en 1–2 h"
+ },
+ "Wärmebild: kein geparktes Auto in dieser Szene (oder «Wärmebild wie echt» aus)": {
+  "en": "Thermal: no parked car in this scene (or «Realistic thermal picture» off)",
+  "fr": "Thermique : pas de voiture garée dans cette scène (ou «Image thermique réaliste» désactivée)",
+  "it": "Termica: nessuna auto parcheggiata in questa scena (o «Immagine termica realistica» spenta)",
+  "rm": "Termic: nagin auto parcà en questa scena (u «Maletg termic sco vair» deactivà)"
  },
  "Wärmebild: Person bis %d m": {
   "en": "Thermal: person up to %d m",
@@ -25222,6 +25342,12 @@
   "fr": "Temps écoulé (15 minutes) – interrompu.",
   "it": "Tempo scaduto (15 minuti) – interrotto.",
   "rm": "Il temp è passà (15 minutas) – interrut."
+ },
+ "Zeitlicher Filter des Moduls (wie der Treiber von MoveEye: weniger Rauschen, kurzer Nachzieh-Schatten)": {
+  "en": "Temporal filter of the module (like MoveEye's driver: less noise, short trailing shadow)",
+  "fr": "Filtre temporel du module (comme le pilote de MoveEye : moins de bruit, courte traînée)",
+  "it": "Filtro temporale del modulo (come il driver di MoveEye: meno rumore, breve scia)",
+  "rm": "Filter temporal dal modul (sco il driver da MoveEye: main canera, curta stresa)"
  },
  "Zeitüberschreitung": {
   "en": "Timeout",

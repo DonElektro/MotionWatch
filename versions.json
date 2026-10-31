@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 07:29",
+ "generated": "2026-10-31 07:34",
  "versions": [
   {
-   "version": "2.98.74",
-   "file": "webcam_bewegung_2_98_74.py",
+   "version": "2.98.75",
+   "file": "webcam_bewegung_2_98_75.py",
    "url": "",
-   "sha256": "83df2d034701d4e6365f9a6585df29446c47217f90293e67eae60024e391579a",
-   "date": "2026-10-31 07:29",
-   "notes": "Simulator 3D-4.43: 7 Einbruch-Abläufe mit Bericht (wann gewarnt, was verpasst), auch als Vorfall im Nacht-Testlauf.",
-   "sig": "11bf365aa160a86d8732a7b02817e6357163a9ab541953524919080daebb3af3cf423f5e09ca681c8fbd599c32715f2b898ac95b8462e838f6e82055c2a6cf0a"
+   "sha256": "cf8d76d2a361d213395bd3dfdbf29f60e28161a6db5ffe283bbce1d0b8146f05",
+   "date": "2026-10-31 07:34",
+   "notes": "Simulator 3D-4.44: Wärmebild wie der echte Thermal-90 (Rauschen, Drift, Unschärfe) und Wärmetabelle für Menschen, Tiere, Motoren, Feuer, Sonne.",
+   "sig": "c6b5148182802e103254977c32c2e0944e5ab235b2bd1ebad7b6febd1bf01876346fb6a67d62015876879b4088f57fec4a64ba988feab4319e9144e7dabf8809"
   },
   {
    "version": "2.97.1",

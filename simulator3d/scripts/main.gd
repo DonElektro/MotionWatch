@@ -3,10 +3,11 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.43"
+const VERSION := "3D-4.44"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
+const Waerme := preload("res://scripts/waerme.gd")       # 3D-4.26: the heat table (people, animals, engines, fire, sun)
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -285,7 +286,6 @@ var frame_no := [0, 0]
 var last_cap := [0.0, 0.0, 0.0]
 var snap_want := [0.0, 0.0]
 var thermal := PackedFloat32Array()
-var th_lut := PackedFloat32Array()
 var th_srgb := true
 var th_bg_raw := false
 var gain := [1.0, 1.0]
@@ -311,6 +311,8 @@ var lens_mats: Array = []
 var camfx_mats: Array = []            # 3D-3.94: camfx.gdshader per camera (realism.gd sets it)
 var realism                           # realism.gd
 var simreal                           # simreal.gd (3D-4.4): Pi 5, lens, infrared, thermal, false alarms, difficult visitors
+var thermsensor                       # thermsensor.gd (3D-4.26, P2): the thermal module like the real Thermal-90 (noise, drift, optics, AGC)
+var waerme_welt                       # waerme_welt.gd (3D-4.26, P3): engines cool down, the person in the tent, lamps (table: waerme.gd)
 var szenen                            # szenenplus.gd (3D-4.x): Voller Campingplatz, Tarnen und Kriechen, Velodieb
 var smalltv                           # smalltv.gd (3D-4.19): virtueller Zusatz-Bildschirm GeekMagic SmallTV Ultra (MoveEye 552)
 var fenster                           # fenster.gd (Paket «Fenster»): ein Rahmen für alle schwebenden Fenster (ziehen, Grösse, ✕, Liste «Fenster»)
@@ -425,6 +427,12 @@ func _ready() -> void:
 	simreal = preload("res://scripts/simreal.gd").new()      # 3D-4.4: closer to the real device (every part can be switched off)
 	simreal.main = self
 	add_child(simreal)
+	thermsensor = preload("res://scripts/thermsensor.gd").new()   # 3D-4.26 «Wärmebild wie echt» (P2)
+	thermsensor.main = self
+	add_child(thermsensor)
+	waerme_welt = preload("res://scripts/waerme_welt.gd").new()   # 3D-4.26 heat in the world (P3)
+	waerme_welt.main = self
+	add_child(waerme_welt)
 	szenen = preload("res://scripts/szenenplus.gd").new()   # 3D-4.x: the new scenes (neighbours, camouflage, bike thief)
 	szenen.main = self
 	add_child(szenen)
@@ -747,15 +755,82 @@ func set_stream(on: bool, alt := false) -> void:
 
 
 func _make_lut(srgb: bool) -> void:
-	"""grey value of the thermal picture -> °C (the renderer writes it either linear or sRGB - found out at the start)"""
-	th_lut = PackedFloat32Array()
+	"""3D-4.26: the thermal picture is a 14-bit code in the upper half of two colour channels (red = 128 + high 7 bits,
+	green = 128 + low 7 bits, -40 … +400 °C, see shaders/thermal_inc.gdshaderinc). The dark end of a colour channel is not
+	reliable (some renderers squeeze 0 … 100, measured with a ramp in _calibrate_thermal) - the upper half is.
+	th_inv[stored byte] = the byte the shader wrote (identity until the calibration measured the renderer).
+	srgb: the renderer turns colours into sRGB - the shaders then write the inverse (th_srgb_out) so the bytes stay right."""
+	th_srgb = srgb
+	th_uniforms({"th_srgb_out": 1.0 if srgb else 0.0})
+	if th_inv.size() != 256:
+		th_inv = PackedInt32Array()
+		for i in range(256):
+			th_inv.append(i)
+	th_hi = PackedFloat32Array()
+	th_lo = PackedFloat32Array()
 	for i in range(256):
-		var v := i / 255.0
-		th_lut.append((Color(v, 0, 0).srgb_to_linear().r if srgb else v) * 120.0 - 40.0)
+		th_hi.append(_th_byte(i) * 128.0 * TH_STEP)       # °C of the stored byte in red / green (+ -40 at the end)
+		th_lo.append(_th_byte(i) * TH_STEP)
+
+
+const TH_STEP := 440.0 / 16383.0     # °C per step of the 14-bit code
+var th_inv := PackedInt32Array()
+var th_hi := PackedFloat32Array()
+var th_lo := PackedFloat32Array()
+var th_mats: Array = []              # 3D-4.26: every material with a thermal shader (they share th_air, th_atm_k, th_srgb_out)
+var th_u := {"th_air": 15.0, "th_atm_k": 0.0, "th_srgb_out": 0.0}
+
+
+func th_reg(m: ShaderMaterial) -> ShaderMaterial:
+	"""a new thermal material: it gets the shared values now and on every change (th_uniforms). (Plain uniforms: the
+	global shader uniforms of Godot gave wrong values in the Compatibility renderer.)"""
+	for k in th_u:
+		m.set_shader_parameter(k, th_u[k])
+	th_mats.append(weakref(m))
+	return m
+
+
+func th_uniforms(vals: Dictionary) -> void:
+	"""the shared values of all thermal materials (only what changed; forgotten materials are dropped)"""
+	var ch := {}
+	for k in vals:
+		if absf(float(vals[k]) - float(th_u.get(k, 0.0))) > 1e-6:
+			ch[k] = float(vals[k])
+			th_u[k] = float(vals[k])
+	if ch.is_empty():
+		return
+	var keep: Array = []
+	for w in th_mats:
+		var m = w.get_ref()
+		if m == null:
+			continue
+		for k in ch:
+			m.set_shader_parameter(k, ch[k])
+		keep.append(w)
+	th_mats = keep
+
+
+func th_code(t: float) -> Color:
+	"""the colour the shaders write for t °C (without the sRGB inverse)"""
+	var v := roundf(clampf((t + 40.0) / 440.0, 0.0, 1.0) * 16383.0)
+	var hi := floorf(v / 128.0)
+	return Color((128.0 + hi) / 255.0, (128.0 + v - hi * 128.0) / 255.0, (128.0 + hi) / 255.0)
+
+
+func _th_byte(b: int) -> int:
+	"""a stored byte -> the 7 bits the shader wrote"""
+	return clampi(th_inv[b] - 128, 0, 127)
+
+
+func _th_read(img: Image, x: int, y: int) -> float:
+	"""°C of one pixel of a rendered thermal picture (calibration)"""
+	var c := img.get_pixel(x, y)
+	return (_th_byte(roundi(c.r * 255.0)) * 128 + _th_byte(roundi(c.g * 255.0))) * TH_STEP - 40.0
 
 
 func _calibrate_thermal() -> void:
-	"""render a surface of exactly 20 °C once and see how its grey value comes back"""
+	"""3D-4.26: measure how the renderer stores colours (a ramp 128 … 255 in a 16 × 8 picture: linear, sRGB, squeezed?) and
+	build th_inv; then check with a surface of exactly 20 °C"""
 	var vp := SubViewport.new()
 	vp.size = Vector2i(16, 16)
 	vp.render_target_update_mode = SubViewport.UPDATE_ONCE
@@ -764,28 +839,69 @@ func _calibrate_thermal() -> void:
 	cam.cull_mask = 8
 	cam.environment = th_env
 	vp.add_child(cam)
-	var q := MeshInstance3D.new()
+	cam.global_transform = Transform3D(Basis(), Vector3(0, -500, 3))
+	var rq := MeshInstance3D.new()                       # the ramp: pixel x + 16 y shows 128 + that (written like the code)
+	rq.mesh = box(40, 40, 0.1)
+	var rs := Shader.new()
+	rs.code = "shader_type spatial;\nrender_mode unshaded, cull_disabled, shadows_disabled, fog_disabled;\nuniform float srgb = 0.0;\n" + \
+			"void fragment() { vec3 c = vec3(min(255.0, 128.0 + floor(FRAGCOORD.x) + 16.0 * floor(FRAGCOORD.y)) / 255.0);\n" + \
+			"if (srgb > 0.5) { c = mix(c / 12.92, pow((c + vec3(0.055)) / 1.055, vec3(2.4)), step(vec3(0.04045), c)); }\nALBEDO = c; }"
+	var rm := ShaderMaterial.new()
+	rm.shader = rs
+	rq.material_override = rm
+	rq.layers = 8
+	add_child(rq)
+	rq.global_position = Vector3(0, -500, 0)
+	var bg_was := th_env.background_color
+	_make_lut(false)
+	var ok := false
+	for srgb in [false, true]:
+		rm.set_shader_parameter("srgb", 1.0 if srgb else 0.0)
+		vp.render_target_update_mode = SubViewport.UPDATE_ONCE
+		await RenderingServer.frame_post_draw
+		await RenderingServer.frame_post_draw
+		var ri := vp.get_texture().get_image()
+		if ri == null or ri.is_empty():
+			break
+		var inv := PackedInt32Array()
+		inv.resize(256)
+		inv.fill(-1)
+		var distinct := true
+		for k in range(128):
+			var st := roundi(ri.get_pixel(k % 16, k / 16).r * 255.0)
+			if inv[st] >= 0:
+				distinct = false
+			inv[st] = 128 + k
+		if distinct:
+			var last := 128
+			for b2 in range(256):                         # bytes the ramp never gave: the nearest below (or 128)
+				if inv[b2] >= 0:
+					last = inv[b2]
+				else:
+					inv[b2] = last
+			th_inv = inv
+			_make_lut(srgb)
+			ok = true
+			break
+	rq.queue_free()
+	var q := MeshInstance3D.new()                        # the check: 20 °C in the middle, background in the corners
 	q.mesh = box(4, 4, 0.1)
 	q.material_override = tmat_fixed(20.0)
 	q.layers = 8
 	add_child(q)
-	cam.global_transform = Transform3D(Basis(), Vector3(0, -500, 3))
 	q.global_position = Vector3(0, -500, 0)
-	q.scale = Vector3(0.5, 0.5, 1)                       # covers the middle only: the corners show the background
-	var bg_was := th_env.background_color
+	q.scale = Vector3(0.5, 0.5, 1)
 	th_env.background_color = Color(0.25, 0.25, 0.25)
-	await RenderingServer.frame_post_draw
-	await RenderingServer.frame_post_draw
 	vp.render_target_update_mode = SubViewport.UPDATE_ONCE
+	await RenderingServer.frame_post_draw
 	await RenderingServer.frame_post_draw
 	var img := vp.get_texture().get_image()
 	if img != null and not img.is_empty():
-		var r := img.get_pixel(8, 8).r                  # 0.5 linear -> 0.5 (linear) or 0.735 (sRGB)
-		th_srgb = r > 0.62
-		_make_lut(th_srgb)
 		var rb := img.get_pixel(0, 0).r                 # background colour 0.25 comes back as ...
 		th_bg_raw = abs(rb - 0.25) < 0.04
-		print("thermal calibration: grey %.3f -> %s, background %.3f -> %s" % [r, "sRGB" if th_srgb else "linear", rb, "raw" if th_bg_raw else "converted"])
+		var got := _th_read(img, 8, 8)
+		print("thermal calibration: 20.00 °C -> %.2f °C (%s%s), background %.3f -> %s" % [got, "sRGB" if th_srgb else "linear",
+				"" if ok else ", ramp not clean", rb, "raw" if th_bg_raw else "converted"])
 	th_env.background_color = bg_was
 	q.queue_free()
 	vp.queue_free()
@@ -860,7 +976,7 @@ func tmat(key: String) -> ShaderMaterial:
 		m.shader = load("res://shaders/thermal.gdshader")
 		m.set_shader_parameter("temp", ambient)
 		m.set_shader_parameter("spread", 0.8)
-		tmats[key] = m
+		tmats[key] = th_reg(m)
 	return tmats[key]
 
 
@@ -871,7 +987,7 @@ func tmat_fixed(temp: float) -> ShaderMaterial:
 		m.shader = load("res://shaders/thermal.gdshader")
 		m.set_shader_parameter("temp", k)
 		m.set_shader_parameter("spread", 0.6)
-		tmat_fixed_cache[k] = m
+		tmat_fixed_cache[k] = th_reg(m)
 	return tmat_fixed_cache[k]
 
 
@@ -967,7 +1083,7 @@ func _build_world() -> void:
 	gt.mesh = plane
 	var gm := ShaderMaterial.new()
 	gm.shader = load("res://shaders/ground_thermal.gdshader")
-	tmats["ground"] = gm
+	tmats["ground"] = th_reg(gm)
 	gt.material_override = gm
 	gt.layers = 2
 	world.add_child(gt)
@@ -983,6 +1099,7 @@ func _build_world() -> void:
 	dm.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	world.add_child(dm)
 	tmat("sky").set_shader_parameter("spread", 0.0)
+	tmat("sky").set_shader_parameter("sky", 1.0)            # 3D-4.26: cold at the zenith, near the air at the horizon
 	# hills far away (fade in the haze)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 11
@@ -1032,6 +1149,8 @@ func _build_scene() -> void:
 		umgebung.on_scene()                      # 3D-4.x: neighbour's lamp, puddles, fog wisps, tracks …
 	if szenen != null:
 		szenen.on_scene()                        # 3D-4.x: the neighbours of «Voller Campingplatz»
+	if waerme_welt != null:
+		waerme_welt.on_scene()                   # 3D-4.26: parked cars (warm engine, hot roof), the person in the tent
 	if scene == "ort" and not geo.loaded and not geo.busy and ort_lat != 0.0:
 		geo.load_place(ort_lat, ort_lon, ort_name)      # from the cache or the internet; then place_loaded()
 	if scene == "wild":
@@ -2377,9 +2496,17 @@ func _update_temps() -> void:
 	tmat("hill").set_shader_parameter("temp", ambient - 5.0)
 	tmat("pond").set_shader_parameter("temp", ambient - 2.0)
 	var sky_t := ambient - (35.0 * (1.0 - cl) + 4.0 * cl)
-	tmat("sky").set_shader_parameter("temp", sky_t)       # the sky is a big dome only the thermal camera sees
+	if simreal != null and simreal.th_real:
+		sky_t = Waerme.sky_zenith(ambient, cl, humidity)   # 3D-4.26: 8–14 µm, drier air = colder sky (waerme.gd)
+	tmat("sky").set_shader_parameter("temp", sky_t)       # the sky is a big dome only the thermal camera sees (zenith)
+	tmat("car").set_shader_parameter("temp", ambient + 6.0 * sunk + 3.0 * evening - wet)   # 3D-4.26 parked cars (simreal: sun)
+	tmat("lamp").set_shader_parameter("temp", 45.0)       # 3D-4.26 street lamp heads (waerme_welt: only warm when lit)
 	if simreal != null:
 		simreal.temps()                                   # 3D-4.4: heat of the day in stones / cars / asphalt, rain, windows
+	if thermsensor != null:
+		thermsensor.air_update()                          # 3D-4.26: air temperature and what fog / snow swallow (shaders)
+	if waerme_welt != null:
+		waerme_welt.tick()                                # 3D-4.26: engines cool down, the person in the tent, lamps
 
 
 # ---- every frame -----------------------------------------------------------------------------------------------------
@@ -2567,6 +2694,8 @@ func _wanted_fps(i: int) -> float:
 		f = max(f, 6.0)                                  # a second guard sees through the fixed camera
 	if i == 2 and now() - _th_asked < 3.0:
 		f = max(f, th_fps)                               # 30.10.2026: the model (Thermal-90: 15 fps like the driver of MoveEye)
+	if i == 2 and thermsensor != null:
+		f = thermsensor.fps_cap(f)                     # 3D-4.26: Lite - at most 8 thermal pictures per second
 	if preview_on and win_open:
 		f = max(f, (2.0 if in_vm else 4.0) if i < 2 else (1.5 if in_vm else 3.0))
 	return simreal.fps_cap(i, f) if simreal != null else f   # 3D-4.4: «Wie ein echter Pi 5»
@@ -2754,19 +2883,27 @@ func decode_thermal_img(img: Image, fx: bool = true) -> PackedFloat32Array:
 	var h := img.get_height()                          # 30.10.2026: Thermal-90 renders 160 × 106 (90° × 67°, pixels not square)
 	var out := PackedFloat32Array()
 	out.resize(TH_W * TH_H)
+	var real: bool = fx and thermsensor != null and thermsensor.on()     # 3D-4.26: the sensor model adds its own noise
+	var nz := 0.0 if real else th_noise
 	for y in range(TH_H):
 		var yy := clampi(int((y + 0.5) * h / TH_H - 0.5), 0, h - 2)
 		for x in range(TH_W):
 			var a := (yy * w + clampi(int((x + 0.5) * w / TH_W - 0.5), 0, w - 2)) * 4
-			var b := a + w * 4
-			var t := (th_lut[d[a]] + th_lut[d[a + 4]] + th_lut[d[b]] + th_lut[d[b + 4]]) * 0.25
-			out[y * TH_W + x] = t + randfn(0.0, th_noise)
-	if fx and realism != null and realism.fx_on:       # 3D-3.98: like a real thermal module - see realism.thermal_fx()
+			var b := a + w * 4                         # 3D-4.26: 14-bit code (red: high 7 bits, green: low 7 bits), 4 render pixels per pixel
+			var t := ((th_hi[d[a]] + th_hi[d[a + 4]] + th_hi[d[b]] + th_hi[d[b + 4]]) + (th_lo[d[a + 1]] + th_lo[d[a + 5]] + th_lo[d[b + 1]] + th_lo[d[b + 5]])) * 0.25 - 40.0
+			out[y * TH_W + x] = t + (randfn(0.0, nz) if nz > 0.0 else 0.0)
+	if real:
+		out = thermsensor.process(out, TH_W, TH_H)    # 3D-4.26 «Wärmebild wie echt»: optics, water, noise + filter, drift
+	elif fx and realism != null and realism.fx_on:     # 3D-3.98: like a real thermal module - see realism.thermal_fx()
 		out = realism.thermal_fx(out, TH_W, TH_H)
 	return out
 
 
+
 func _thermal_preview() -> void:
+	if thermsensor != null:                            # 3D-4.26: automatic range like the module's app, palettes
+		th_preview.set_image(thermsensor.preview(thermal, TH_W, TH_H))
+		return
 	var lo := 1e9
 	var hi := -1e9
 	for v in thermal:
@@ -3798,6 +3935,7 @@ func _register_controls() -> void:
 	add_control("button", "pir", "PIR Zelt auslösen", null, func(): add_event("PIR Zelt", "pir"), "Sensoren")
 	add_control("button", "bike", "Velo-Sensor auslösen (jemand rüttelt am Velo)", null, func(): add_event("Velo", "tag"), "Sensoren")
 	simint.add_controls()                              # 30.10.2026: Lautsprecher, Störungen, Wärmebild (simint.gd)
+	thermsensor.add_controls()                         # 3D-4.26: Kamerabild → Wärmebild (palette, sensor, tent, warm car)
 	simwerte.add_controls()                            # Simulator-Werte: Akku und Strom, Netz-Ausfall testen (power.gd)
 	add_control("toggle", "rifle", "Gewehr (unblutig, nur Tiere)", func(): return rifle_on, func(v): rifle_on = v, "Wildbeobachtung")
 	add_control("button", "shoot_head", "Schuss aus der Kopfkamera", null, func(): shoot_head(), "Wildbeobachtung")

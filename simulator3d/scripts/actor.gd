@@ -4,6 +4,7 @@ extends Node3D
 ## From 3D-2.0: moves with inertia (turns smoothly, speeds up and slows down), goes round obstacles (main.avoid / main.keep_out),
 ## animals graze now and then and look up, people stop and look round; a dog can walk with its person (leader).
 
+const Waerme = preload("res://scripts/waerme.gd")   # 3D-4.26: the heat table (Paket P3)
 var main
 var kind := "person"
 var variant := ""             # person: "" | child | jogger
@@ -260,7 +261,7 @@ func _build_person() -> void:
 	var shoe: Color = Color(0.95, 0.95, 0.95) if jog else [Color(0.12, 0.1, 0.09), Color(0.35, 0.22, 0.12), Color(0.2, 0.2, 0.22)][randi() % 3]
 	var cloth_t := 26.0 - (3.0 if cold else 0.0) + (2.0 if jog else 0.0)
 	if main.simreal != null:
-		cloth_t = main.simreal.cloth_t(cloth_t, jog)                    # 3D-4.4: clothes insulate (cooler than the skin)
+		cloth_t = main.simreal.cloth_t(cloth_t, jog, variant)           # 3D-4.4: clothes insulate (3D-4.26: waerme.gd)
 	var old_ := variant == "elderly"                                      # 3D-3.95: more kinds of people
 	var shorts: bool = main.ambient > 21.0 and not wet and not kid and not old_ and variant not in ["police", "burglar", "courier"] and randf() < 0.45
 	var coat: bool = cold and not jog and not kid and variant == "" and randf() < 0.3
@@ -446,7 +447,7 @@ func _figure_body(jacket: Color, shirt: Color, trousers: Color, skin: Color, hai
 	var q: String = str(main.quality)
 	var strong := wide > 1.06
 	var p := {"skin": skin, "jacket": jacket, "shirt": shirt, "trousers": trousers, "shoe": shoe, "hand": hand_c, "hair": hair,
-			"shorts": shorts, "open": open_jacket, "short_sleeves": jog and not cold, "gloves": cold, "cloth_t": cloth_t,
+			"shorts": shorts, "open": open_jacket, "short_sleeves": jog and not cold, "gloves": cold, "cloth_t": cloth_t, "active": jog,
 			"seg": {"medium": 8, "nice": 10, "ultra": 12}.get(q, 10),
 			"sh": 1.0 if kid else randf_range(0.93, 1.07), "hp": 1.0 if kid else randf_range(0.94, 1.1),
 			"bl": 0.0 if kid or jog else (randf_range(0.012, 0.045) if randf() < (0.5 if old_ or strong else 0.25) else 0.0),
@@ -605,6 +606,9 @@ func _build_animal() -> void:
 		col = [Color(0.45, 0.28, 0.15), Color(0.2, 0.14, 0.1), Color(0.75, 0.72, 0.68), Color(0.6, 0.42, 0.25)][randi() % 4]
 	col = col.lerp(col.lightened(0.15), randf())
 	var t: float = s[3]
+	if main.simreal != null and main.simreal.th_real and Waerme.has_animal(kind):   # 3D-4.26: fur insulates (waerme.gd)
+		var sun_k: float = 0.0 if main.is_dark() else clampf(main.sun_el() / 50.0, 0.0, 1.0) * (1.0 - main.clouds())
+		t = Waerme.animal(kind, main.ambient, "body", sun_k) + 1.5   # +1.5: the parts below are 1-5 K cooler than the body (legs, tail)
 	var lw: float = s[4]
 	var sc := randf_range(0.9, 1.1)
 	body_root.scale = Vector3.ONE * sc
