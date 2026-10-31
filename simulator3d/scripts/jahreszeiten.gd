@@ -446,4 +446,4 @@ func control(d: Dictionary) -> Dictionary:
 				out.append([mo + 1, hm(float(st["sunrise"])), hm(float(st["sunset"])), st["day_h"], season_of_doy(dd),
 						snappedf(bare_k(dd), 0.01), float(OCC[mo])])
 			return {"ok": true, "year": out}
-	return {"ok": true, "info": state(), "summary": summary(), "lite": _lite(), "leaves_node": _leaves != null and _leaves.emitting}
+	return {"ok": true, "info": state(), "summary": summary(), "lite": _lite(), "fps": Engine.get_frames_per_second(), "leaves_node": _leaves != null and _leaves.emitting}
