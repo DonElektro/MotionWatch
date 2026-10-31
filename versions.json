@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 08:12",
+ "generated": "2026-10-31 08:18",
  "versions": [
   {
-   "version": "2.98.81",
-   "file": "webcam_bewegung_2_98_81.py",
+   "version": "2.98.82",
+   "file": "webcam_bewegung_2_98_82.py",
    "url": "",
-   "sha256": "82ba87278a5aaf38c3b3ee6644118b7df04beee74133b7a249b39ae178a82559",
-   "date": "2026-10-31 08:12",
-   "notes": "Simulator 3D-4.50: Kopfkamera wie die echte Camera Module 3 NoIR (Belichtung, Rauschen, NoIR-Farben, Unschärfe nachts); Infrarot-Reichweite 10 m.",
-   "sig": "4d32eec7fe2dbdc4787d1bd45433d2a8f31131950d9d037db90847f0715fd196a8a273fd7846ee57d29ed8bff2bf717162c3cfafcbf525c91e49de08bd3fe403"
+   "sha256": "008b5d9a964ab25b4502fecbd3162861554d9286cf325cf104b1ceb4b6ed0852",
+   "date": "2026-10-31 08:18",
+   "notes": "Simulator 3D-4.51: Wetter näher an der Physik – Regenstärke, Sichtweite, Bodennebel, Schneedecke, Tropfen und Beschlag auf der Linse, Blitze; Testlauf «Wetter physikalisch».",
+   "sig": "05998ecb9607072776eabe73c67d548c3504d250c48cd5182aa7a3f654be3ccea475a9488ad05a8a8809c5f63fcdc27553b07390200d0a4a04286ff24b778402"
   },
   {
    "version": "2.97.1",

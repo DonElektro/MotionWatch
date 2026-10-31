@@ -395,7 +395,7 @@ func _process(dt: float) -> void:
 	var simple: bool = main.quality == "simple"
 	var col = main.colors
 	var wet: float = float(col.puddle) if col != null else 0.0
-	var snow_ground: bool = main.weather == "snow"
+	var snow_ground: bool = main.weather == "snow" or (main.wetter != null and main.wetter.snow_lying())   # real-wetter: snow stays
 	# puddles: after (long) rain; they reflect the lamps and headlights
 	for pd in _puddles:
 		var on: bool = u_reflect and (wet > 0.12 or main.weather == "rain")
