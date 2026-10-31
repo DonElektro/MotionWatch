@@ -2006,7 +2006,7 @@ for _k, _v in _HX114.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 _HX115 = {  # 2.96.7: makeover 16-20
-    'Rover: at a person alarm drive there by itself (simulator)': ('Rover: bei Personen-Alarm von selbst hinfahren (Simulator)', 'Rover : en cas d’alarme personne, y aller tout seul (simulateur)', 'Rover: in caso di allarme persona andarci da solo (simulatore)', 'Rover: tar alarm da persuna ir da sez (simulatur)'),
+    'Mover: at a person alarm drive there by itself (simulator)': ('Mover: bei Personen-Alarm von selbst hinfahren (Simulator)', 'Mover : en cas d’alarme personne, y aller tout seul (simulateur)', 'Mover: in caso di allarme persona andarci da solo (simulatore)', 'Mover: tar alarm da persuna ir da sez (simulatur)'),
     'Week report of the simulator diary as a push (Monday morning)': ('Wochenbericht des Simulator-Tagebuchs als Push (Montagmorgen)', 'Rapport hebdomadaire du journal du simulateur par push (lundi matin)', 'Rapporto settimanale del diario del simulatore via push (lunedì mattina)', 'Rapport d’emna dal diari dal simulatur sco push (glindesdi damaun)'),
     'Week in the simulator: {v} visits, persons recognised {r} % ({a} of {b}). Animals: {an}': ('Woche im Simulator: {v} Besuche, Personen erkannt {r} % ({a} von {b}). Tiere: {an}', 'Semaine dans le simulateur : {v} visites, personnes reconnues {r} % ({a} sur {b}). Animaux : {an}', 'Settimana nel simulatore: {v} visite, persone riconosciute {r} % ({a} su {b}). Animali: {an}', 'Emna en il simulatur: {v} visitas, persunas renconuschidas {r} % ({a} da {b}). Animals: {an}'),
     'One-click demo': ('Ein-Klick-Demo', 'Démo en un clic', 'Demo con un clic', 'Demo cun in clic'),

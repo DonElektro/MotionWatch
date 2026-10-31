@@ -158,7 +158,7 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_eco", "Simulator: fewer pictures (the simulator draws only what is fetched)"),
     ("Simulator", "notify_sandbox", "Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)"),
     ("Simulator", "train_night_on", "Training night: every night test runs in several scenes, optimization, training pictures"),
-    ("Simulator", "rover_alarm", "Rover: at a person alarm drive there by itself (simulator)"),
+    ("Simulator", "rover_alarm", "Mover: at a person alarm drive there by itself (simulator)"),
     ("Simulator", "fa_learn_auto", "False alarm marked: re-enact it in the simulator and learn from it"),
     ("Simulator", "rehearsal_on_arm", "Night rehearsal by itself when arming in the simulation"),
     ("Simulator", "weekcheck_on", "Recognition check every week (Sunday night) with a warning when it got worse"),

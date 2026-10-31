@@ -243,7 +243,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_8_0.zip"
-ZD_SHA256 = "ec52e39c76b86c5eddeef577e93ddb340fb18b1da79197cb9827c48c107f3d28"
+ZD_SHA256 = "1fe83e331e0dd0291402c6291c9944895fcc30acbb8bc03866d3b40a0feab622"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -10915,7 +10915,7 @@ MAKEOVER_ALL = [
     (6, "Einheitliche Ereignis-Symbole"), (7, "Simulator-Zentrale in MoveEye"), (8, "«Was wäre wenn …?» bei echten Alarmen"),
     (9, "Dein Platz (Ort, Winkel, Zonen, Patrouille)"), (10, "Zonen im Simulator sehen"), (11, "Erkennung live in der 3D-Ansicht"),
     (12, "Automatische Trainings-Nacht"), (13, "Einstellungs-Vergleich A/B"), (14, "Benachrichtigungen testen (Test-Kanal)"),
-    (15, "Akku-, Wetter- und WLAN-Ausfall üben"), (16, "Mehrere MoveEye-Geräte im Simulator"), (17, "Rover voll integriert"),
+    (15, "Akku-, Wetter- und WLAN-Ausfall üben"), (16, "Mehrere MoveEye-Geräte im Simulator"), (17, "Mover voll integriert"),
     (18, "Tagebuch-Statistik aus dem Simulator"), (19, "Versionen vergleichen (Kurve)"), (20, "Ein-Klick-Demo"),
     (21, "Fehlalarm-Lernen"), (22, "Karte der blinden Flecken"), (23, "Nacht-Generalprobe vor dem Einschalten des Schutzes"),
     (24, "Schwellen automatisch einstellen"), (25, "Erkennungs-Check jede Woche"),
@@ -12153,7 +12153,7 @@ def rover_on_alarm(kind):
     def go():
         try:
             sim_control({"action": "rover", "do": "alarm"})
-            log_event("sys", "Rover drives to the alarm")
+            log_event("sys", "Mover drives to the alarm")
         except Exception:
             pass
     threading.Thread(target=go, daemon=True).start()
@@ -40066,14 +40066,14 @@ for _a, _b in (('<section id="live" data-icon="📺"><h2>Die Live-Seite</h2>',
                 "<p><b>🧩 Sim-Kompakt (ab 2.98.46, Bild im Bild ab 2.98.53, daneben ab 2.98.56):</b> Ist der Simulator verbunden, zeigt die Live-Seite oben "
                 "das Simulator-Fenster gross und die Kamera von MoveEye daneben – auf einem schmalen Bildschirm (Handy hochkant) klein in seiner Ecke («● LIVE»). Das kleine Bild antippen = die "
                 "beiden Bilder tauschen (das Gerät merkt es sich); das grosse Bild antippen = gross, nochmals = zurück. Darunter links den Kopf-Stick "
-                "(mit ◎, Auslöser 🎯 und KI-Hilfe 🤖), rechts den Rover-Stick und dazwischen die Kacheln Szene, Tageszeit, Wetter, Besuch, "
+                "(mit ◎, Auslöser 🎯 und KI-Hilfe 🤖), rechts den Mover-Stick und dazwischen die Kacheln Szene, Tageszeit, Wetter, Besuch, "
                 "Spiel, Wildbeobachtung, Foto des Platzes, KI-Wächter, Ansicht und Folgen; «… mehr» öffnet die ganze Simulator-Steuerung, «?» "
                 "die Erklärung. Ein- und ausschalten (pro Gerät) und die Bildqualität des Simulators unter «◫ Ansicht».</p>"),
                ('<section id="live" data-icon="📺"><h2>The live page</h2>',
                 "<p><b>🧩 Sim compact (from 2.98.46, picture in picture from 2.98.53, side by side from 2.98.56):</b> while the simulator is connected the live page "
                 "shows the simulator window big at the top and MoveEye's camera beside it - on a narrow screen (phone upright) small in its corner («● LIVE»). Tap the small picture = "
                 "swap the two pictures (this device remembers it); tap the big picture = big, tap again = back. Below them the head stick on the "
-                "left (with ◎, shutter 🎯 and AI help 🤖), the rover stick on the right and the tiles in between: scene, time of day, "
+                "left (with ◎, shutter 🎯 and AI help 🤖), the mover stick on the right and the tiles in between: scene, time of day, "
                 "weather, visit, game, wildlife watching, photo of the place, AI guard, view and follow; «… more» opens the whole simulator "
                 "control, «?» the explanation. On / off (per device) and the picture quality of the simulator under «◫ View».</p>")):
     if _a in HELP_PAGE:
@@ -47981,7 +47981,7 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_eco", "Simulator: fewer pictures (the simulator draws only what is fetched)"),
     ("Simulator", "notify_sandbox", "Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)"),
     ("Simulator", "train_night_on", "Training night: every night test runs in several scenes, optimization, training pictures"),
-    ("Simulator", "rover_alarm", "Rover: at a person alarm drive there by itself (simulator)"),
+    ("Simulator", "rover_alarm", "Mover: at a person alarm drive there by itself (simulator)"),
     ("Simulator", "fa_learn_auto", "False alarm marked: re-enact it in the simulator and learn from it"),
     ("Simulator", "rehearsal_on_arm", "Night rehearsal by itself when arming in the simulation"),
     ("Simulator", "weekcheck_on", "Recognition check every week (Sunday night) with a warning when it got worse"),
@@ -58913,50 +58913,50 @@ _HX_simkompakt = {
     'On when connected': ('Ein, wenn verbunden', 'Actif si connecté', 'Attivo se collegato', 'Activ, sch’el è collià'),
     'Off': ('Aus', 'Désactivé', 'Spento', 'Deactivà'),
     'sk-note': ('Mit verbundenem Simulator: oben das Simulator-Bild gross, die Kamera von MoveEye daneben (schmaler Bildschirm: klein in '
-                'seiner Ecke; antippen = tauschen), darunter Kopf- und Rover-Stick am Rand, dazwischen die Kacheln des Simulators. Gilt nur für dieses Gerät.',
+                'seiner Ecke; antippen = tauschen), darunter Kopf- und Mover-Stick am Rand, dazwischen die Kacheln des Simulators. Gilt nur für dieses Gerät.',
                 'Avec le simulateur connecté : en haut l’image du simulateur en grand, la caméra de MoveEye à côté (écran étroit : '
-                'en petit dans son coin ; toucher = échanger), dessous le stick de la tête et celui du rover sur les bords, entre eux les tuiles du simulateur. '
+                'en petit dans son coin ; toucher = échanger), dessous le stick de la tête et celui du mover sur les bords, entre eux les tuiles du simulateur. '
                 'Seulement pour cet appareil.',
                 'Con il simulatore collegato: in alto l’immagine del simulatore grande, la telecamera di MoveEye accanto (schermo stretto: '
-                'piccola nel suo angolo; toccare = scambiare), sotto lo stick della testa e quello del rover ai bordi, in mezzo le piastrelle del simulatore. '
+                'piccola nel suo angolo; toccare = scambiare), sotto lo stick della testa e quello del mover ai bordi, in mezzo le piastrelle del simulatore. '
                 'Solo per questo apparecchio.',
                 'Cun il simulatur collià: sisum il maletg dal simulatur grond, la camera da MoveEye dasper (visur stretg: pitschna en ses '
-                'chantun; tutgar = barattar), sutvart il stick dal chau e quel dal rover a l’ur, tranter els las plattinas dal simulatur. Mo per quest apparat.'),
+                'chantun; tutgar = barattar), sutvart il stick dal chau e quel dal mover a l’ur, tranter els las plattinas dal simulatur. Mo per quest apparat.'),
     'sk-help': ('Sim-Kompakt: das kleine Bild daneben oder in der Ecke antippen = die beiden Bilder tauschen (dieses Gerät merkt es sich). Das grosse '
                 'Bild antippen = gross, nochmals = zurück; das grosse Simulator-Bild ist das Simulator-Fenster '
-                '(Maus und ✋ Finger steuern den Simulator, ✕ = zurück). Linker Stick = Kopf von MoveEye, rechter Stick = Rover '
-                '(in einer Spielrunde nur, wenn das Spiel den Rover fährt). Die Kacheln = was im Simulator passiert; «… mehr» = alle '
+                '(Maus und ✋ Finger steuern den Simulator, ✕ = zurück). Linker Stick = Kopf von MoveEye, rechter Stick = Mover '
+                '(in einer Spielrunde nur, wenn das Spiel den Mover fährt). Die Kacheln = was im Simulator passiert; «… mehr» = alle '
                 'Einstellungen des Simulators. Ein / aus und Bildqualität unter «◫ Ansicht».',
                 'Sim compact : toucher la petite image à côté ou dans le coin = échanger les deux images (cet appareil s’en souvient). Toucher la '
                 'grande image = en grand, encore une fois = retour ; la grande image du simulateur est la fenêtre du '
                 'simulateur (souris et doigt ✋ pilotent le simulateur, ✕ = retour). Stick gauche = tête de MoveEye, stick droit = '
-                'rover (pendant une partie seulement si le jeu utilise le rover). Les tuiles = ce qui se passe dans le simulateur ; '
+                'mover (pendant une partie seulement si le jeu utilise le mover). Les tuiles = ce qui se passe dans le simulateur ; '
                 '« … plus » = tous les réglages du simulateur. Activer / désactiver et qualité d’image sous « ◫ Affichage ».',
                 'Sim compatto: toccare l’immagine piccola accanto o nell’angolo = scambiare le due immagini (questo apparecchio lo ricorda). Toccare '
                 'l’immagine grande = grande, di nuovo = indietro; l’immagine grande del simulatore è la finestra del '
                 'simulatore (mouse e dito ✋ comandano il simulatore, ✕ = indietro). Stick sinistro = testa di MoveEye, stick destro = '
-                'rover (durante una partita solo se il gioco usa il rover). Le piastrelle = ciò che succede nel simulatore; «… altro» = '
+                'mover (durante una partita solo se il gioco usa il mover). Le piastrelle = ciò che succede nel simulatore; «… altro» = '
                 'tutte le impostazioni del simulatore. Attivare / disattivare e qualità dell’immagine sotto «◫ Vista».',
                 'Sim cumpact: tutgar il pitschen maletg dasper u en il chantun = barattar ils dus maletgs (quest apparat sa regorda). Tutgar il '
                 'grond maletg = grond, anc ina giada = enavos; il grond maletg dal simulatur è la fanestra dal '
-                'simulatur (mieur e det ✋ commondan il simulatur, ✕ = enavos). Stick sanester = chau da MoveEye, stick dretg = rover '
-                '(durant in gieu mo sch’il gieu dovra il rover). Las plattinas = quai che capita en il simulatur; «… dapli» = tut ils '
+                'simulatur (mieur e det ✋ commondan il simulatur, ✕ = enavos). Stick sanester = chau da MoveEye, stick dretg = mover '
+                '(durant in gieu mo sch’il gieu dovra il mover). Las plattinas = quai che capita en il simulatur; «… dapli» = tut ils '
                 'parameters dal simulatur. Activar / deactivar e qualitad dal maletg sut «◫ Vista».'),
     'Tap = swap pictures': ('Antippen = Bilder tauschen', 'Toucher = échanger les images', 'Toccare = scambiare le immagini',
                             'Tutgar = barattar ils maletgs'),
     'Visit': ('Besuch', 'Visite', 'Visita', 'Visita'),
     'Switch on': ('Einschalten', 'Activer', 'Accendere', 'Activar'),
     'Head': ('Kopf', 'Tête', 'Testa', 'Chau'),
-    'Rover': ('Rover', 'Rover', 'Rover', 'Rover'),
-    'Rover locked in this game round': ('Rover in dieser Spielrunde gesperrt', 'Rover bloqué pendant cette partie', 'Rover bloccato in questa partita',
-                                        'Rover bloccà en quest gieu'),
-    'Switch the rover on in the simulator': ('Rover im Simulator einschalten', 'Activer le rover dans le simulateur', 'Accendere il rover nel simulatore',
-                                             'Activar il rover en il simulatur'),
+    'Mover': ('Mover', 'Mover', 'Mover', 'Mover'),
+    'Mover locked in this game round': ('Mover in dieser Spielrunde gesperrt', 'Mover bloqué pendant cette partie', 'Mover bloccato in questa partita',
+                                        'Mover bloccà en quest gieu'),
+    'Switch the mover on in the simulator': ('Mover im Simulator einschalten', 'Activer le mover dans le simulateur', 'Accendere il mover nel simulatore',
+                                             'Activar il mover en il simulatur'),
     'AI guard': ('KI-Wächter', 'Gardien IA', 'Guardiano IA', 'Guardian IA'),
     'View': ('Ansicht', 'Affichage', 'Vista', 'Vista'),
     'Head camera': ('Kopfkamera', 'Caméra de la tête', 'Telecamera della testa', 'Camera dal chau'),
     'From above': ('Von oben', 'Vue d’en haut', 'Dall’alto', 'Da sura'),
-    'Behind the rover': ('Hinter dem Rover', 'Derrière le rover', 'Dietro il rover', 'Davos il rover'),
+    'Behind the mover': ('Hinter dem Mover', 'Derrière le mover', 'Dietro il mover', 'Davos il mover'),
     "Driver's view": ('Fahrersicht', 'Vue du conducteur', 'Vista del conducente', 'Vista dal manischunz'),
     'Free view': ('Freie Ansicht', 'Vue libre', 'Vista libera', 'Vista libra'),
     'Normal view': ('Normale Ansicht', 'Vue normale', 'Vista normale', 'Vista normala'),
@@ -61130,7 +61130,7 @@ for _k, _v in _HX114.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 _HX115 = {  # 2.96.7: makeover 16-20
-    'Rover: at a person alarm drive there by itself (simulator)': ('Rover: bei Personen-Alarm von selbst hinfahren (Simulator)', 'Rover : en cas d’alarme personne, y aller tout seul (simulateur)', 'Rover: in caso di allarme persona andarci da solo (simulatore)', 'Rover: tar alarm da persuna ir da sez (simulatur)'),
+    'Mover: at a person alarm drive there by itself (simulator)': ('Mover: bei Personen-Alarm von selbst hinfahren (Simulator)', 'Mover : en cas d’alarme personne, y aller tout seul (simulateur)', 'Mover: in caso di allarme persona andarci da solo (simulatore)', 'Mover: tar alarm da persuna ir da sez (simulatur)'),
     'Week report of the simulator diary as a push (Monday morning)': ('Wochenbericht des Simulator-Tagebuchs als Push (Montagmorgen)', 'Rapport hebdomadaire du journal du simulateur par push (lundi matin)', 'Rapporto settimanale del diario del simulatore via push (lunedì mattina)', 'Rapport d’emna dal diari dal simulatur sco push (glindesdi damaun)'),
     'Week in the simulator: {v} visits, persons recognised {r} % ({a} of {b}). Animals: {an}': ('Woche im Simulator: {v} Besuche, Personen erkannt {r} % ({a} von {b}). Tiere: {an}', 'Semaine dans le simulateur : {v} visites, personnes reconnues {r} % ({a} sur {b}). Animaux : {an}', 'Settimana nel simulatore: {v} visite, persone riconosciute {r} % ({a} su {b}). Animali: {an}', 'Emna en il simulatur: {v} visitas, persunas renconuschidas {r} % ({a} da {b}). Animals: {an}'),
     'One-click demo': ('Ein-Klick-Demo', 'Démo en un clic', 'Demo con un clic', 'Demo cun in clic'),
@@ -62923,7 +62923,7 @@ for _L, _li in _HELP_INFO.items():
         HELP_X[_L] = _d[:_j] + _li + _d[_j:]
 _HX_pad2 = {
     'Turn / tilt the head of MoveEye': ('Kopf von MoveEye drehen / neigen', 'Tourner / incliner la tête de MoveEye', 'Ruotare / inclinare la testa di MoveEye', 'Volver / sbassar il chau da MoveEye'),
-    'Drive the rover (without rover: move the view)': ('Rover fahren (ohne Rover: Ansicht bewegen)', 'Conduire le rover (sans rover : déplacer la vue)', 'Guidare il rover (senza rover: muovere la vista)', 'Manischar il rover (senza rover: muventar la vista)'),
+    'Drive the mover (without mover: move the view)': ('Mover fahren (ohne Mover: Ansicht bewegen)', 'Conduire le mover (sans mover : déplacer la vue)', 'Guidare il mover (senza mover: muovere la vista)', 'Manischar il mover (senza mover: muventar la vista)'),
     'Hold R1: turn the view': ('R1 halten: Ansicht drehen', 'Maintenir R1 : tourner la vue', 'Tenere R1: ruotare la vista', 'Tegnair R1: volver la vista'),
     'Shutter in a game round (otherwise zoom in)': ('Auslöser in einer Spielrunde (sonst hineinzoomen)', 'Déclencheur pendant une manche (sinon zoom avant)', 'Scatto in una manche (altrimenti zoom avanti)', 'Releschader en ina runda da gieu (uschiglio zoom enavant)'),
     'Zoom out': ('Herauszoomen', 'Zoom arrière', 'Zoom indietro', 'Zoom enavos'),
@@ -62955,7 +62955,7 @@ _HX_pad2 = {
     'Pause menu · start the round': ('Pause-Menü · Runde starten', 'Menu pause · lancer la manche', 'Menu pausa · avviare la manche', 'Menu da pausa · cumenzar la runda'),
     'Hold 1 s: leave the game': ('1 s halten: Spiel verlassen', 'Maintenir 1 s : quitter le jeu', 'Tenere 1 s: lasciare il gioco', 'Tegnair 1 s: bandunar il gieu'),
     'Head in steps · menus: choose': ('Kopf in Schritten · Menüs: wählen', 'Tête par pas · menus : choisir', 'Testa a passi · menu: scegliere', 'Chau en pass · menus: tscherner'),
-    'Drive the rover': ('Rover fahren', 'Conduire le rover', 'Guidare il rover', 'Manischar il rover'),
+    'Drive the mover': ('Mover fahren', 'Conduire le mover', 'Guidare il mover', 'Manischar il mover'),
     '«Found!»': ('«Gefunden!»', '« Trouvé ! »', '«Trovato!»', '«Chattà!»'),
     'Look around': ('Umschauen', 'Regarder autour', 'Guardarsi intorno', 'Guardar enturn'),
     'Walk': ('Gehen', 'Marcher', 'Camminare', 'Ir'),
@@ -62974,20 +62974,20 @@ _HX_pad2 = {
     'everything': ('alles', 'tout', 'tutto', 'tut'),
     'guard (head)': ('Wächter (Kopf)', 'gardien (tête)', 'guardiano (testa)', 'guardian (chau)'),
     'sneaker': ('Schleicher', 'furtif', 'furtivo', 'sfugider'),
-    'rover': ('Rover', 'rover', 'rover', 'rover'),
+    'mover': ('Mover', 'mover', 'mover', 'mover'),
     # 538 / 470 (Controller-Ansicht, simulator page)
     'Controllers': ('Controller', 'Manettes', 'Controller', 'Controllers'),
     'Head': ('Kopf', 'Tête', 'Testa', 'Chau'),
-    'Rover': ('Rover', 'Rover', 'Rover', 'Rover'),
+    'Mover': ('Mover', 'Mover', 'Mover', 'Mover'),
     'Settings': ('Einstellungen', 'Réglages', 'Impostazioni', 'Parameters'),
     'Dead zone': ('Totzone', 'Zone morte', 'Zona morta', 'Zona morta'),
     'Sensitivity': ('Empfindlichkeit', 'Sensibilité', 'Sensibilità', 'Sensibilitad'),
     'Invert Y (look)': ('Y umkehren (schauen)', 'Inverser Y (regard)', 'Invertire Y (sguardo)', 'Invertir Y (guardar)'),
     'Swap the sticks': ('Sticks tauschen', 'Échanger les sticks', 'Scambiare gli stick', 'Barattar ils sticks'),
     'Vibration': ('Vibration', 'Vibration', 'Vibrazione', 'Vibraziun'),
-    'Start = menu of the simulator, left stick = head, right stick = rover': (
-        'Start = Menü des Simulators, linker Stick = Kopf, rechter Stick = Rover', 'Start = menu du simulateur, stick gauche = tête, stick droit = rover',
-        'Start = menu del simulatore, stick sinistro = testa, stick destro = rover', 'Start = menu dal simulatur, stick sanester = chau, stick dretg = rover'),
+    'Start = menu of the simulator, left stick = head, right stick = mover': (
+        'Start = Menü des Simulators, linker Stick = Kopf, rechter Stick = Mover', 'Start = menu du simulateur, stick gauche = tête, stick droit = mover',
+        'Start = menu del simulatore, stick sinistro = testa, stick destro = mover', 'Start = menu dal simulatur, stick sanester = chau, stick dretg = mover'),
 }
 for _k, _v in _HX_pad2.items():
     DE.setdefault(_k, _v[0])
@@ -63501,8 +63501,8 @@ _HX_padview = {
         'La vista controller resta sut «Vista» (◫) e tar il 🎮 en il maletg'),
     'More buttons': ('Weitere Knöpfe', 'Autres boutons', 'Altri pulsanti', 'Ulteriurs buttuns'),
     'Head to the middle': ('Kopf in die Mitte', 'Tête au milieu', 'Testa al centro', 'Chau en il center'),
-    'Rover': ('Rover', 'Rover', 'Rover', 'Rover'),
-    'The rover in the simulator on / off': ('Rover im Simulator ein / aus', 'Rover dans le simulateur oui / non', 'Rover nel simulatore acceso / spento', 'Rover en il simulatur en / ora'),
+    'Mover': ('Mover', 'Mover', 'Mover', 'Mover'),
+    'The mover in the simulator on / off': ('Mover im Simulator ein / aus', 'Mover dans le simulateur oui / non', 'Mover nel simulatore acceso / spento', 'Mover en il simulatur en / ora'),
     'Swap': ('Tauschen', 'Échanger', 'Scambia', 'Barattar'),
     'Swap the pictures (long tap on a picture, Select)': ('Bilder tauschen (lange auf ein Bild tippen, Select)', 'Échanger les images (appui long sur une image, Select)',
                                                           'Scambiare le immagini (tocco lungo su un’immagine, Select)', 'Barattar ils maletgs (tutgar ditg in maletg, Select)'),
@@ -63517,19 +63517,19 @@ _HX_padview = {
                                                     'Stick sinistro: ruotare / inclinare la testa di MoveEye', 'Stick sanester: volver / sbassar il chau da MoveEye'),
     'Press the left stick: head to the middle': ('Linken Stick drücken: Kopf in die Mitte', 'Appuyer sur le stick gauche : tête au milieu',
                                                  'Premere lo stick sinistro: testa al centro', 'Smatgar il stick sanester: chau en il center'),
-    'Right stick: drive the rover (up = forward, sideways = steer) - the view follows behind it': (
-        'Rechter Stick: Rover fahren (hoch = vorwärts, seitlich = lenken) – die Ansicht fährt hinterher',
-        'Stick droit : conduire le rover (haut = avant, côté = diriger) – la vue suit derrière',
-        'Stick destro: guidare il rover (su = avanti, lato = sterzare) – la vista segue da dietro',
-        'Stick dretg: manar il rover (ensi = enavant, da la vart = dirigir) – la vista suonda davos'),
-    'Right stick: move the simulator view (no rover)': ('Rechter Stick: Simulator-Ansicht bewegen (kein Rover)', 'Stick droit : déplacer la vue du simulateur (pas de rover)',
-                                                        'Stick destro: muovere la vista del simulatore (nessun rover)', 'Stick dretg: mover la vista dal simulatur (nagin rover)'),
+    'Right stick: drive the mover (up = forward, sideways = steer) - the view follows behind it': (
+        'Rechter Stick: Mover fahren (hoch = vorwärts, seitlich = lenken) – die Ansicht fährt hinterher',
+        'Stick droit : conduire le mover (haut = avant, côté = diriger) – la vue suit derrière',
+        'Stick destro: guidare il mover (su = avanti, lato = sterzare) – la vista segue da dietro',
+        'Stick dretg: manar il mover (ensi = enavant, da la vart = dirigir) – la vista suonda davos'),
+    'Right stick: move the simulator view (no mover)': ('Rechter Stick: Simulator-Ansicht bewegen (kein Mover)', 'Stick droit : déplacer la vue du simulateur (pas de mover)',
+                                                        'Stick destro: muovere la vista del simulatore (nessun mover)', 'Stick dretg: mover la vista dal simulatur (nagin mover)'),
     'Hold R1 + right stick: turn the simulator view': ('R1 halten + rechter Stick: Simulator-Ansicht drehen', 'Maintenir R1 + stick droit : tourner la vue du simulateur',
                                                        'Tenere R1 + stick destro: ruotare la vista del simulatore', 'Tegnair R1 + stick dretg: volver la vista dal simulatur'),
     'Zoom out / in (L2 = zoom out too)': ('Verkleinern / vergrössern (L2 verkleinert auch)', 'Zoom arrière / avant (L2 aussi en arrière)', 'Zoom indietro / avanti (anche L2 indietro)', 'Zoom enavos / enavant (er L2 enavos)'),
-    'Press the right stick: next view (behind the rover, driver, from above)': ('Rechten Stick drücken: nächste Ansicht (hinter dem Rover, Fahrersicht, von oben)',
-        'Appuyer sur le stick droit : vue suivante (derrière le rover, conducteur, d’en haut)', 'Premere lo stick destro: vista successiva (dietro il rover, conducente, dall’alto)',
-        'Smatgar il stick dretg: proxima vista (davos il rover, manischunz, dad ensi)'),
+    'Press the right stick: next view (behind the mover, driver, from above)': ('Rechten Stick drücken: nächste Ansicht (hinter dem Mover, Fahrersicht, von oben)',
+        'Appuyer sur le stick droit : vue suivante (derrière le mover, conducteur, d’en haut)', 'Premere lo stick destro: vista successiva (dietro il mover, conducente, dall’alto)',
+        'Smatgar il stick dretg: proxima vista (davos il mover, manischunz, dad ensi)'),
     'A Photo · B Record · X Lamp · Y Follow': ('A Foto · B Aufnahme · X Licht · Y Folgen', 'A Photo · B Enregistrer · X Lampe · Y Suivre',
                                               'A Foto · B Registra · X Lampada · Y Segui', 'A Foto · B Registrar · X Lampa · Y Suandar'),
     'Choose a button of the bar, ↑ presses it, ↓ this help': ('Knopf der Leiste wählen, ↑ drückt ihn, ↓ diese Hilfe', 'Choisir un bouton de la barre, ↑ l’active, ↓ cette aide',
@@ -63541,7 +63541,7 @@ _HX_padview = {
         'Image du simulateur : un doigt = tourner, deux doigts = zoom, double appui = vue suivante, appui long = échanger les images',
         'Immagine del simulatore: un dito = ruotare, due dita = zoom, doppio tocco = vista successiva, tocco lungo = scambiare le immagini',
         'Maletg dal simulatur: in det = volver, dus dets = zoom, tutgar dubel = proxima vista, tutgar ditg = barattar ils maletgs'),
-    'Behind the rover': ('Hinter dem Rover', 'Derrière le rover', 'Dietro il rover', 'Davos il rover'),
+    'Behind the mover': ('Hinter dem Mover', 'Derrière le mover', 'Dietro il mover', 'Davos il mover'),
     "Driver's view": ('Fahrersicht', 'Vue du conducteur', 'Vista del conducente', 'Vista dal manischunz'),
     'From above': ('Von oben', 'D’en haut', 'Dall’alto', 'Dad ensi'),
     'Head camera': ('Kopfkamera', 'Caméra de la tête', 'Camera della testa', 'Camera dal chau'),

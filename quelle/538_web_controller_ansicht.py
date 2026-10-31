@@ -110,7 +110,7 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
   const QD = id => (typeof QS !== "undefined" && Array.isArray(QS) ? QS.find(q => q.id === id) : null);
   const EXTRA = {
     center: {ic: "◎", lb: "Centre", tip: "Head to the middle", on: () => false, go: () => post("/api/move", {dir: "center"})},
-    rover: {ic: "🚜", lb: "Rover", tip: "The rover in the simulator on / off", on: () => rover(), ok: () => simOn() && !(ST().mover || {}).hw,
+    rover: {ic: "🚜", lb: "Mover", tip: "The mover in the simulator on / off", on: () => rover(), ok: () => simOn() && !(ST().mover || {}).hw,
             go: () => post("/api/sim", {action: "ctl", ctl: "set", id: "mover_on", value: !rover(), lang: LANG})},
     swap: {ic: "⇅", lb: "Swap", tip: "Swap the pictures (long tap on a picture, Select)", on: () => !!P.swap, ok: () => simOn(), go: () => { swap(); return Promise.resolve({ok: true}); }, util: true},
     help: {ic: "?", lb: "Help", tip: "Controller and gestures", on: () => !HELP.hidden, go: () => { help(HELP.hidden); return Promise.resolve({ok: true}); }, util: true},
@@ -175,7 +175,7 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     if (L.length > 1) {                                                     // several controllers: a role each
       HELP.appendChild(E("b", "", T("Controllers")));
       L.forEach((g, i) => { const row = E("div"); row.style.cssText = "display:flex;gap:8px;align-items:center;margin:3px 0";
-        const r = roleOf(i), sel = E("select"); [["guard", "Head"], ["rover", "Rover"], ["all", "everything"]].forEach(([v, l]) => { const o = E("option", "", T(l)); o.value = v; sel.appendChild(o); });
+        const r = roleOf(i), sel = E("select"); [["guard", "Head"], ["rover", "Mover"], ["all", "everything"]].forEach(([v, l]) => { const o = E("option", "", T(l)); o.value = v; sel.appendChild(o); });
         sel.value = r; sel.onclick = e => e.stopPropagation(); sel.onchange = () => { P.roles = Object.assign({}, P.roles || {}, {[i]: sel.value}); save(); paintPads(); };
         const n = E("span", "", (i + 1) + " " + MWPad.name(g)); n.style.cssText = "flex:1;color:" + roleCol(r); row.append(n, sel); HELP.appendChild(row); });
     }
@@ -266,7 +266,7 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
     if (isSim) el.addEventListener("wheel", e => { e.preventDefault(); vpush(Object.assign({t: "wheel", d: e.deltaY < 0 ? 1 : -1}, posIn(img, e.clientX, e.clientY)), true); }, {passive: false});
   }
-  const VIEWNAME = {follow: "Behind the rover", driver: "Driver's view", top: "From above", head: "Head camera", free: "Free view"};
+  const VIEWNAME = {follow: "Behind the mover", driver: "Driver's view", top: "From above", head: "Head camera", free: "Free view"};
   gestures(PS, SI, true);
   gestures(PL, slot, false);
   // ---- the game controller (Gamepad API, standard mapping) ----
@@ -342,7 +342,7 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
   // ---- the chips of the controllers (number + role in its colour) and the mini-map of the simulator ----
   function paintPads() {
     const L = pads(); PADI.hidden = !L.length; if (!L.length) return;
-    const h = L.map((g, i) => '<span style="color:' + roleCol(roleOf(i)) + '">🎮' + (L.length > 1 ? (i + 1) + " " + T(({guard: "Head", rover: "Rover", all: "everything"})[roleOf(i)]) : " " + MWPad.name(g).replace(/[<>&"]/g, "")) + "</span>").join(" · ");
+    const h = L.map((g, i) => '<span style="color:' + roleCol(roleOf(i)) + '">🎮' + (L.length > 1 ? (i + 1) + " " + T(({guard: "Head", rover: "Mover", all: "everything"})[roleOf(i)]) : " " + MWPad.name(g).replace(/[<>&"]/g, "")) + "</span>").join(" · ");
     if (PADI.innerHTML !== h) PADI.innerHTML = h;
   }
   const MM = E("canvas"); MM.id = "pv-map"; MM.width = MM.height = 220; MM.hidden = true; PS.appendChild(MM);

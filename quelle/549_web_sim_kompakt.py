@@ -164,8 +164,8 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   if (document.body.dataset.tab !== "live") return;
   try { const D = /*SKDE*/{}; for (const k in D) if (!(k in I18N.de)) I18N.de[k] = D[k]; } catch (e) {}
   try { I18N.en = I18N.en || {}; Object.assign(I18N.en, {
-    "sk-note": "With the simulator connected: the simulator picture big at the top, MoveEye's camera beside it (narrow screen: small in its corner; tap = swap), below them the head and rover sticks at the edges, the tiles of the simulator in between. Only for this device.",
-    "sk-help": "Sim compact: tap the small picture beside it or in the corner = swap the two pictures (this device remembers it). Tap the big picture = big view, tap again = back; the big simulator picture is the simulator window (mouse and ✋ finger steer the simulator, ✕ = back). Left stick = MoveEye's head, right stick = rover (in a game round only when the game drives the rover). The tiles = what happens in the simulator; «… more» = all settings of the simulator. On / off and picture quality under «◫ View»."}); } catch (e) {}
+    "sk-note": "With the simulator connected: the simulator picture big at the top, MoveEye's camera beside it (narrow screen: small in its corner; tap = swap), below them the head and mover sticks at the edges, the tiles of the simulator in between. Only for this device.",
+    "sk-help": "Sim compact: tap the small picture beside it or in the corner = swap the two pictures (this device remembers it). Tap the big picture = big view, tap again = back; the big simulator picture is the simulator window (mouse and ✋ finger steer the simulator, ✕ = back). Left stick = MoveEye's head, right stick = mover (in a game round only when the game drives the mover). The tiles = what happens in the simulator; «… more» = all settings of the simulator. On / off and picture quality under «◫ View»."}); } catch (e) {}
   const T = x => (typeof t === "function" ? t(x) : x);
   const $i = id => document.getElementById(id);
   const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
@@ -404,7 +404,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   const H = () => { const h = HUB(); return h ? h.H() : null; };
   const TT = k => { const h = HUB(); return h && h.tt ? h.tt(k) : T(k); };          // the words of the Simulator-Zentrale (139: weather …)
   const WXI = {clear: "☀", cloudy: "☁", rain: "🌧", fog: "🌫", snow: "❄"};
-  const VIEWS = [["head", "🎥", "Head camera"], ["top", "🛰", "From above"], ["follow", "🚜", "Behind the rover"], ["driver", "🧑‍✈️", "Driver's view"], ["free", "🕊", "Free view"], ["off", "↺", "Normal view"]];
+  const VIEWS = [["head", "🎥", "Head camera"], ["top", "🛰", "From above"], ["follow", "🚜", "Behind the mover"], ["driver", "🧑‍✈️", "Driver's view"], ["free", "🕊", "Free view"], ["off", "↺", "Normal view"]];
   let VIEW = "";
   function tiles() {
     const h = H() || {}, sc = (h.scenes || []).find(x => x.id === h.scene) || {};
@@ -490,10 +490,10 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     const round = G && (G.round === "play" || G.round === "countdown"), okMode = G && ["seek", "patrol"].includes(G.mode);
     const off = !!(round && !okMode);
     MS.classList.toggle("off", off);
-    MH.hidden = !off; if (off) MH.textContent = "🔒 " + T("Rover locked in this game round");
-    MLB.textContent = "🚜 " + T("Rover");
+    MH.hidden = !off; if (off) MH.textContent = "🔒 " + T("Mover locked in this game round");
+    MLB.textContent = "🚜 " + T("Mover");
     const test = !!(m.sim && m.test) && !!cv("mover_on");
-    MON.hidden = !test || off; if (test) { MON.textContent = "🚜 " + T("Switch on"); MON.title = T("Switch the rover on in the simulator"); }
+    MON.hidden = !test || off; if (test) { MON.textContent = "🚜 " + T("Switch on"); MON.title = T("Switch the mover on in the simulator"); }
   }
   MON.onclick = () => ctl({ctl: "set", id: "mover_on", value: true});
   function paint() {
@@ -550,14 +550,14 @@ for _a, _b in (('<section id="live" data-icon="📺"><h2>Die Live-Seite</h2>',
                 "<p><b>🧩 Sim-Kompakt (ab 2.98.46, Bild im Bild ab 2.98.53, daneben ab 2.98.56):</b> Ist der Simulator verbunden, zeigt die Live-Seite oben "
                 "das Simulator-Fenster gross und die Kamera von MoveEye daneben – auf einem schmalen Bildschirm (Handy hochkant) klein in seiner Ecke («● LIVE»). Das kleine Bild antippen = die "
                 "beiden Bilder tauschen (das Gerät merkt es sich); das grosse Bild antippen = gross, nochmals = zurück. Darunter links den Kopf-Stick "
-                "(mit ◎, Auslöser 🎯 und KI-Hilfe 🤖), rechts den Rover-Stick und dazwischen die Kacheln Szene, Tageszeit, Wetter, Besuch, "
+                "(mit ◎, Auslöser 🎯 und KI-Hilfe 🤖), rechts den Mover-Stick und dazwischen die Kacheln Szene, Tageszeit, Wetter, Besuch, "
                 "Spiel, Wildbeobachtung, Foto des Platzes, KI-Wächter, Ansicht und Folgen; «… mehr» öffnet die ganze Simulator-Steuerung, «?» "
                 "die Erklärung. Ein- und ausschalten (pro Gerät) und die Bildqualität des Simulators unter «◫ Ansicht».</p>"),
                ('<section id="live" data-icon="📺"><h2>The live page</h2>',
                 "<p><b>🧩 Sim compact (from 2.98.46, picture in picture from 2.98.53, side by side from 2.98.56):</b> while the simulator is connected the live page "
                 "shows the simulator window big at the top and MoveEye's camera beside it - on a narrow screen (phone upright) small in its corner («● LIVE»). Tap the small picture = "
                 "swap the two pictures (this device remembers it); tap the big picture = big, tap again = back. Below them the head stick on the "
-                "left (with ◎, shutter 🎯 and AI help 🤖), the rover stick on the right and the tiles in between: scene, time of day, "
+                "left (with ◎, shutter 🎯 and AI help 🤖), the mover stick on the right and the tiles in between: scene, time of day, "
                 "weather, visit, game, wildlife watching, photo of the place, AI guard, view and follow; «… more» opens the whole simulator "
                 "control, «?» the explanation. On / off (per device) and the picture quality of the simulator under «◫ View».</p>")):
     if _a in HELP_PAGE:
