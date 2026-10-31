@@ -1,8 +1,27 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.60** · passende MoveEye-Version (früher Motion Watch) **2.98.91**
+Stand: 31.10.2026 · Simulator-Version **3D-4.63** · passende MoveEye-Version (früher Motion Watch) **2.98.94**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.63 (MoveEye 2.98.94): Abenteuer-Rucksack (`abenteuer_inventar.gd`, `abenteuer_rucksack.gd`)
+
+- `abenteuer_inventar.gd` (neu): gemeinsames Inventar (hat / gib / nimm / anzahl / gewicht), mit dem Rucksack verbunden.
+- `abenteuer_rucksack.gd` (neu): Essen und Trinken mild (nur langsamer, nie Spielende), Quellen, Kochen in der Hütte,
+  Ausrüstung finden (Kompass, Stirnlampe als Licht, Feldstecher, Seil), Tausch-Fenster ohne Geld; eingebunden in
+  `bergtal_abenteuer.gd`. Texte in `i18n/texte.json` (sim_texte nach dem Merge neu gelaufen, 0 Lücken).
+- Nicht live geprüft: Kochen, Quelle, Stirnlampe als Licht, Lite.
+
+## NEU in 3D-4.62 (MoveEye 2.98.93): Entwicklertool Teil 1 (`devtool.gd`)
+
+- `devtool.gd` (neu): Fenster Mehr → Entwickler (nur Besitzer) mit Übersichtskarte aller Welten und Orte (`explore.gd`
+  `alle_orte()`), Klick = hinspringen, Flugkamera (W A S D, Esc zurück); `/control dev`. Anpassungen in `mehr.gd`,
+  `padmap.gd`, `main.gd`; Texte in `i18n/texte.json` (sim_texte nach dem Merge neu gelaufen, 0 Lücken).
+
+## NEU in 3D-4.61 (MoveEye 2.98.92): Kriechende Paket-Figuren (`figur_paket.gd`)
+
+- `figur_paket.gd`: die Bezugshaltung (Grundpose) der Paket-Figuren wird gerade gerichtet – kriechende und liegende Figuren
+  liegen flach (Kopf nicht mehr im Boden, Fuss nicht in der Luft), Arme bei Winken / Handy unverändert.
 
 ## NEU in 3D-4.60 (MoveEye 2.98.91): Simulator-Sprachen Schritt 2 (`i18n/texte.json`)
 

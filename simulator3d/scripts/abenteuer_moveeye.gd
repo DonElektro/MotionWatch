@@ -37,7 +37,7 @@ extends Node
 ##   P["a1_aufgaben"] {id: "gegeben" | "erfuellt"}                   R["a1"] die laufende Nacht (modus, sichern, fuchs, licht …)
 ## Steuerbefehl: {"action": "abenteuer", "do": "a1", "was": state | modus (value) | sichern (value) | auswerten (id, tier) |
 ##               tag | sammlung (mit fotos) | wertung (id) | aufgabe (id) | reset}
-## Gegenstände: über das Inventar von A4 (abenteuer_inventar.gd: hat / anzahl / nimm), solange es fehlt direkt R["items"].
+## Gegenstände: über das Inventar von A4 (abenteuer_inventar.gd: hat / anzahl / nimm).
 ## Lite: weniger und kleinere Aufnahmen, das Licht am Berg ohne echte Lichtquelle (Quality.lite()).
 
 signal aufgabe_fertig(id)
@@ -47,6 +47,7 @@ const Bt = preload("res://scripts/bergtal.gd")
 const D = preload("res://scripts/bergtal_abenteuer_daten.gd")
 const Waerme = preload("res://scripts/waerme.gd")
 const Quality = preload("res://scripts/quality.gd")
+const Inv = preload("res://scripts/abenteuer_inventar.gd")   # A4: hat / anzahl / nimm
 
 # ---- die Sammlung -------------------------------------------------------------------------------------------------------
 # tier -> name, Tageszeit, Ort, Tipp, Seltenheit (Punkte für ein scharfes Bild), woran man es erkennt
@@ -112,49 +113,16 @@ static func _lite() -> bool:
 
 
 # =======================================================================================================================
-# Gegenstände: das Inventar von A4 (scripts/abenteuer_inventar.gd: hat / anzahl / nimm). Liegt die Datei noch nicht
-# auf diesem Stand (vor dem Zusammenführen mit 2.98.94), gilt der Rucksack R["items"] direkt (proviant = «essen»).
+# Gegenstände: das gemeinsame Inventar von A4 (abenteuer_inventar.gd; proviant = «essen», feldstecher = «fernglas»)
 # =======================================================================================================================
-const INV_PATH := "res://scripts/abenteuer_inventar.gd"
-const _ALT_ID := {"proviant": "essen", "feldstecher": "fernglas"}
-static var _inv_s = null
-static var _inv_tried := false
-
-
-static func _inv():
-	if not _inv_tried:
-		_inv_tried = true
-		if ResourceLoader.exists(INV_PATH):
-			_inv_s = load(INV_PATH)
-	return _inv_s
-
-
 func hat(id: String) -> bool:
-	var iv = _inv()
-	if iv != null:
-		return bool(iv.hat(id))
-	if ab == null or ab.R.is_empty():
-		return false
-	return int((ab.R.get("items", {}) as Dictionary).get(_ALT_ID.get(id, id), 0)) > 0
+	return bool(Inv.hat(id))
 
 
 func nimm(id: String, n := 999) -> int:
 	"""nimmt bis n Stück aus dem Rucksack; gibt zurück, wie viele es waren"""
-	var iv = _inv()
-	if iv != null:
-		var k := mini(int(iv.anzahl(id)), n)
-		return k if k > 0 and bool(iv.nimm(id, k)) else 0
-	if ab == null or ab.R.is_empty():
-		return 0
-	var it: Dictionary = ab.R.get("items", {})
-	var key: String = _ALT_ID.get(id, id)
-	var had := int(it.get(key, 0))
-	var take := mini(had, n)
-	if take > 0:
-		it[key] = had - take
-		if int(it[key]) <= 0:
-			it.erase(key)
-	return take
+	var k := mini(int(Inv.anzahl(id)), n)
+	return k if k > 0 and bool(Inv.nimm(id, k)) else 0
 
 
 # =======================================================================================================================
