@@ -396,6 +396,7 @@ func _ready() -> void:
 	if Updater.old_name_forward():               # 3D-4.24: started as MotionWatch3D.exe - MoveEyeSim3D.exe takes over
 		get_tree().quit()
 		return
+	preload("res://scripts/werk.gd").apply_pending()    # Werksrücksetzung: right after the restart, before anything reads user://
 	randomize()
 	_no_pad_ui_nav()
 	colors = preload("res://scripts/colors.gd").new()        # 3D-3.97: natural colours, materials, seasons (before the world is built)
@@ -5043,6 +5044,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return spielbereich.control(d) if spielbereich != null else {"ok": false, "error": "no spielbereich"}
 	elif a == "dev":                                   # Entwicklertool 1 (devtool.gd): {do: places | goto (id) | fly (on, speed) | open | close | info}
 		return mehr.dev.control(d) if mehr != null and mehr.dev != null else {"ok": false, "error": "not ready"}
+	elif a == "werk":                                  # Werksrücksetzung (werk.gd): {do: info | open | close | reset (confirm: true)}
+		return mehr.werk.control(d) if mehr != null and mehr.werk != null else {"ok": false, "error": "not ready"}
 	elif a == "mehr":                                  # 3D-4.2x: «Mehr» (tests): {"do": open | theme | tour | diag | log | fb_* | shot}
 		return mehr.control(d) if mehr != null else {"ok": false, "error": "not ready"}
 	elif a == "feedback":                              # MoveEye 2.98.33: the dialog «Rückmeldung» (tests: {text, kind, stars, shot})
