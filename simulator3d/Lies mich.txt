@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.40
+3D-4.40: Horror-Modus «Das Hospiz» im Bergtal (mit Passwort, im Kinder-Modus gesperrt): unheimliche Nächte im Hospiz,
+die Gestalt nur im Wärmebild, «Aufnahmen» landen in MoveEye im Verlauf. Einstieg: Bergtal-Abenteuer → Stimmung «Horror».
+So testest du: 1) Spiel → Assistent → «🎒 Bergtal-Abenteuer» → Stimmung «🔒 Horror». 2) Passwort zweimal festlegen,
+Warnung bestätigen, «Erste Nacht beginnen». 3) Am Morgen in MoveEye Verlauf → Nachrichten «[SIM] 🎞 …».
+
 NEU IN 3D-4.39
 3D-4.39: Bergtal-Abenteuer «Die Karte des Bergführers»: Kapitel, Stimmung, Schwierigkeit, Rucksack packen, mit der
 Schatzkarte durchs Tal, Nachtlager und eine Nacht mit MoveEye, am Morgen Sterne und Bericht. Start im Spiel-Assistenten

@@ -1877,7 +1877,18 @@ func _paint_mood() -> void:
 	for k in D.MOOD_ORDER:
 		var kk: String = k
 		g.add_child(_card(T.t(str(D.MOODS[k][0])), T.t(str(D.MOODS[k][1])), str(W["mood"]) == k, func(): op({"do": "pick", "key": "mood", "value": kk})))
-	g.add_child(_card(T.t(str(D.HORROR_SLOT[1])), T.t(str(D.HORROR_SLOT[2])), false, func(): pass, true))
+	if main.horror == null:
+		g.add_child(_card(T.t(str(D.HORROR_SLOT[1])), T.t(str(D.HORROR_SLOT[2])), false, func(): pass, true))
+		return
+	# 3D-4.40: the 5th mood = Horror-Modus «Das Hospiz» (bergtal_horror.gd, password) - the only way in (no button under «Szene»)
+	var hs: Dictionary = main.horror.mood_slot()
+	var kids := bool(hs.get("kids", false))
+	g.add_child(_card(("🔒 " if bool(hs.get("locked", true)) and not kids else "") + str(hs.get("name", "Horror")),
+			T.t("Im Kinder-Modus gesperrt.") if kids else str(hs.get("hint", "")), false, func():
+				close_ab()
+				main.horror.open_from_mood(func(started):
+					if not bool(started):
+						open_ab()), kids))
 
 
 func _paint_level() -> void:
