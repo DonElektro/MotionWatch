@@ -244,7 +244,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_9_1.zip"
-ZD_SHA256 = "c26b538ff3c5313370845679df549a5d295e00f3d8067d3d6ea1df0ecb292039"
+ZD_SHA256 = "c25b13b6451c166d9313dfc930d59fff170d7618341833fac9af6ce6267f5c5a"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -67488,6 +67488,198 @@ for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
                 "movement, «Person?» or the thermal picture.</p>")):
     if _a in HELP_PAGE:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+# ----------------------------------------------------------------------------
+# Der 3D-Simulator spielt die Geschichte selbst (simulator3d/scripts/maggie_vorfuehrung.gd, Autopilot + Film-Kamera,
+# eigener Vorführ-Spielstand). Hier nur das Zuschauen:
+#   * Seite /sim/vorfuehrung: das Bild des Simulators (/sim/view.jpg?bare=1 – ohne die Knöpfe des Simulator-Fensters, die
+#     Leiste der Vorführung blendet der Simulator dann auch aus), Bild für Bild geholt (nie eine wachsende Verzögerung);
+#     unten eine Leiste (verschwindet nach 4 s, Tippen zeigt sie wieder): Pause / Weiter, Kapitel zurück / Liste / weiter,
+#     Beenden, Vollbild. Ohne laufende Vorführung: Start «Kurzfassung» / «Ganze Geschichte».
+#   * /api/vorfuehrung: GET = Stand (Simulator /control vorfuehrung info), POST {do: start (len) | pause | weiter |
+#     kapitel (n) | stop}. Nur der Besitzer (nacht_may: Administrator, nicht im Bedienermodus) – neue Adressen sind
+#     ohnehin nur für den Administrator (040 VIEW_GET). Der Simulator nimmt die Befehle nur von diesem PC oder vom
+#     verbundenen MoveEye an (net.gd dangerous, wie werk reset).
+#   * Einstieg: Einstellungen → Entwickler (Web 530 devExtras, Fenster 639c) und die Karte «Entwickler» der
+#     Simulator-Seite (dort zusätzlich die Start-Knöpfe des Simulators, Gruppe Entwickler) – nur mit dem Entwickler-Bereich.
+# Hier (nach 639i, vor 640) weil render_page (510/584), sim_control (290), nacht_may (579b), SIM_PAGE (470), WEB_PAGE,
+# smalltv_routes (552 …) und die Tabellen DE / TRX vorher kommen.
+# ----------------------------------------------------------------------------
+VF_DO = ("start", "pause", "weiter", "kapitel", "stop")
+
+
+def vf_info():
+    """the state of the Vorführung in the simulator ({ok: False, error} without simulator)"""
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": tr("The 3D simulator is not connected."), "offline": True}
+    try:
+        r = sim_control({"action": "vorfuehrung", "do": "info"}) or {}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:80]}
+    if not r.get("ok") and "laeuft" not in r:
+        return {"ok": False, "error": tr("This simulator has no Vorführung yet – update it.")}
+    return r
+
+
+def vf_do(d, owner=True):
+    """start / pause / weiter / kapitel / stop – only the owner"""
+    if not owner:
+        log_event("web", "Vorführung refused (not the owner / operator mode)")
+        return {"ok": False, "error": tr("Only the owner can do this."), "code": 403}
+    w = str((d or {}).get("do") or "")
+    if w not in VF_DO:
+        return {"ok": False, "error": "do: " + " | ".join(VF_DO), "code": 400}
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": tr("The 3D simulator is not connected.")}
+    c = {"action": "vorfuehrung", "do": w}
+    if w == "start":
+        c["len"] = "ganz" if str(d.get("len") or "") == "ganz" else "kurz"
+    if w == "kapitel":
+        try:
+            c["n"] = max(0, min(5, int(d.get("n"))))
+        except (TypeError, ValueError):
+            return {"ok": False, "error": "n", "code": 400}
+    try:
+        r = sim_control(c) or {}
+    except Exception as e:
+        if w == "start" and "timed out" in str(e):          # building the Bergtal takes a moment
+            return {"ok": True, "loading": True}
+        return {"ok": False, "error": str(e)[:80]}
+    if r.get("error") == "nur_lokal":
+        return {"ok": False, "error": tr("The simulator only takes this from the connected MoveEye – switch on the simulation.")}
+    return r
+
+
+VF_PAGE = _zd('639m_vorfuehrung/VF_PAGE', ZD_PAGE)
+
+_HX_VF = {
+    'Maggie and the mountain crystal – as a film': ('Maggie und der Bergkristall – als Film', 'Maggie et le cristal de montagne – en film',
+                                                    'Maggie e il cristallo di montagna – come film', 'Maggie ed il cristal da muntogna – sco film'),
+    'vf-intro': ('Der Simulator spielt die Geschichte selbst, du schaust nur zu. Eigener Vorführ-Spielstand – deine Spielstände bleiben, wie sie sind.',
+                 'Le simulateur joue l’histoire tout seul, tu regardes. Partie de démonstration à part – tes parties restent intactes.',
+                 'Il simulatore gioca la storia da solo, tu guardi. Partita dimostrativa a parte – le tue partite restano come sono.',
+                 'Il simulatur giuga l’istorgia sez, ti guardas mo. Stadi da demonstraziun separà – tes stadis dal gieu restan sco ch’els èn.'),
+    'Short version (15–20 min)': ('Kurzfassung (15–20 Min.)', 'Version courte (15–20 min)', 'Versione breve (15–20 min)', 'Versiun curta (15–20 min.)'),
+    'Short version': ('Kurzfassung', 'Version courte', 'Versione breve', 'Versiun curta'),
+    'The whole story': ('Ganze Geschichte', 'Toute l’histoire', 'Tutta la storia', 'Tut l’istorgia'),
+    'Chapter back': ('Kapitel zurück', 'Chapitre précédent', 'Capitolo indietro', 'Chapitel enavos'),
+    'Next chapter': ('Nächstes Kapitel', 'Chapitre suivant', 'Capitolo successivo', 'Proxim chapitel'),
+    'Chapter': ('Kapitel', 'Chapitre', 'Capitolo', 'Chapitel'),
+    'Full screen': ('Vollbild', 'Plein écran', 'Schermo intero', 'Maletg entir'),
+    'End': ('Beenden', 'Terminer', 'Termina', 'Terminar'),
+    'Paused': ('Pause', 'En pause', 'In pausa', 'Pausa'),
+    'BLOCKED': ('BLOCKIERT', 'BLOQUÉ', 'BLOCCATO', 'BLOCCÀ'),
+    'Last run': ('Letzter Durchlauf', 'Dernier passage', 'Ultimo passaggio', 'Ultim passagi'),
+    'The valley is being prepared …': ('Das Tal wird vorbereitet …', 'La vallée se prépare …', 'La valle viene preparata …', 'La val vegn preparada …'),
+    'Watch «Maggie» as a film (demo)': ('Vorführung «Maggie» ansehen (als Film)', 'Regarder «Maggie» en film (démo)', 'Guardare «Maggie» come film (demo)',
+                                        'Guardar «Maggie» sco film (demonstraziun)'),
+    'Only the owner can do this.': ('Das darf nur der Besitzer.', 'Seul le propriétaire peut faire cela.', 'Solo il proprietario può farlo.',
+                                    'Quai po mo il possessur.'),
+    'This simulator has no Vorführung yet – update it.': ('Dieser Simulator kennt die Vorführung noch nicht – bitte aktualisieren.',
+                                                          'Ce simulateur ne connaît pas encore la démonstration – mets-le à jour.',
+                                                          'Questo simulatore non conosce ancora la dimostrazione – aggiornalo.',
+                                                          'Quest simulatur na conuscha anc betg la demonstraziun – actualisescha el.'),
+    'The simulator only takes this from the connected MoveEye – switch on the simulation.': (
+        'Der Simulator nimmt das nur vom verbundenen MoveEye an – schalte die Simulation ein.',
+        'Le simulateur n’accepte cela que du MoveEye connecté – active la simulation.',
+        'Il simulatore lo accetta solo dal MoveEye collegato – attiva la simulazione.',
+        'Il simulatur accepta quai mo dal MoveEye collià – activescha la simulaziun.'),
+}
+for _k, _v in _HX_VF.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_VF_KEYS = list(_HX_VF) + ["Pause", "Continue", "Back", "The 3D simulator is not connected."]
+
+# the way in: Settings → Developer (web 530 devExtras, window 639c has the same row there) and the card «Entwickler» of
+# the Simulator page (only shown with the developer area)
+WEB_PAGE = WEB_PAGE.replace('["🛠", "Developer area", "/dev"]]', '["🛠", "Developer area", "/dev"], ["🎬", "Watch «Maggie» as a film (demo)", "/sim/vorfuehrung"]]', 1)
+WEB_PAGE = WEB_PAGE.replace("</body>", "<script>Object.assign(I18N.de, " + json.dumps({"Watch «Maggie» as a film (demo)": DE["Watch «Maggie» as a film (demo)"]},
+                                                                                      ensure_ascii=False) + ");</script></body>", 1)
+VF_SIMJS = r"""<script>
+// 639m: the card «Entwickler» of the Simulator page: «Watch as a film» (the start buttons come from the simulator itself)
+(function vfLink() {
+  try { Object.assign(I18N.de, /*VFLDE*/{}); } catch (e) {}
+  setInterval(() => { document.querySelectorAll(".sc-card[data-dev] > .sc-bd").forEach(bd => {
+    if (bd.querySelector(".vf-link")) return;
+    const a = document.createElement("a"); a.className = "btn vf-link"; a.href = "/sim/vorfuehrung"; a.style.cssText = "display:block;margin:6px 0;text-align:left";
+    a.textContent = "🎬 " + t("Watch «Maggie» as a film (demo)") + " ›"; bd.insertBefore(a, bd.firstChild); }); }, 1500);
+})();
+</script>"""
+SIM_PAGE = SIM_PAGE.replace("</body>", VF_SIMJS.replace("/*VFLDE*/{}", json.dumps({"Watch «Maggie» as a film (demo)": DE["Watch «Maggie» as a film (demo)"]},
+                                                                                    ensure_ascii=False)) + "</body>", 1)
+
+
+def vf_page():
+    js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in _VF_KEYS}, ensure_ascii=False) + ");"
+    return render_page(VF_PAGE, "sim").replace("/*VFDE*/", js, 1)
+
+
+_smalltv_routes_vf_base = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):                     # + 639m: /sim/vorfuehrung and /api/vorfuehrung (550 calls smalltv_routes once)
+    _smalltv_routes_vf_base(app, reply, body)
+    from flask import Response
+
+    @app.route("/sim/vorfuehrung")
+    def vf_page_():
+        if not nacht_may(_nacht_role()):
+            return Response(tr("Only the owner can do this."), 403)
+        return Response(vf_page(), mimetype="text/html")
+
+    @app.route("/api/vorfuehrung", methods=["GET", "POST"])
+    def api_vorfuehrung():
+        from flask import request
+        own = nacht_may(_nacht_role())
+        if request.method == "GET":
+            return reply(vf_info()) if own else reply({"ok": False, "error": tr("Only the owner can do this.")}, 403)
+        r = vf_do(body(), own)
+        code = r.pop("code", None)
+        return reply(r, code) if code else reply(r)
+
+
+if GUI_OK:                                                # the window: the same row in the developer part (639c)
+    _vf_tk_build_section_base = App._build_section
+
+    def _vf_tk_build_section(self, sec, sbody, settings_parent=None):
+        r = _vf_tk_build_section_base(self, sec, sbody, settings_parent)
+        if sec == "Developer":
+            ttk.Button(sbody, text="🎬 " + tr("Watch «Maggie» as a film (demo)") + " ›", command=lambda: self._open_page("/sim/vorfuehrung")).pack(fill="x", pady=(4, 0))
+        return r
+
+    # wraps: App._build_section (after 639d)
+    App._build_section = _vf_tk_build_section
+
+
+def vf_selftest():
+    keep = CFG.get("sim_on")
+    try:
+        CFG["sim_on"] = False
+        assert not vf_info()["ok"] and not vf_do({"do": "start"})["ok"]
+        r = vf_do({"do": "start"}, owner=False)
+        assert not r["ok"] and r.get("code") == 403, r
+        assert vf_do({"do": "rm -rf"}).get("code") == 400
+        CFG["sim_on"] = True
+        _sc = globals()["sim_control"]; asked = []
+        globals()["sim_control"] = lambda d_: (asked.append(d_), {"ok": True, "laeuft": True})[1]
+        try:
+            assert vf_do({"do": "start", "len": "ganz"})["ok"] and asked[-1] == {"action": "vorfuehrung", "do": "start", "len": "ganz"}
+            assert vf_do({"do": "start", "len": "x"})["ok"] and asked[-1]["len"] == "kurz"
+            assert vf_do({"do": "kapitel", "n": 9})["ok"] and asked[-1]["n"] == 5
+            n = len(asked); assert vf_do({"do": "stop"}, owner=False).get("code") == 403 and len(asked) == n
+        finally:
+            globals()["sim_control"] = _sc
+    finally:
+        CFG["sim_on"] = keep
+    html = vf_page()
+    assert "/sim/view.jpg?bare=1" in html and "/api/vorfuehrung" in html and "Kurzfassung" in html and "<!--NAV-->" not in html
+    assert "/sim/vorfuehrung" in SIM_PAGE and "/sim/vorfuehrung" in WEB_PAGE
+    for L in ("fr", "it", "rm"):
+        assert TRX[L].get("Watch «Maggie» as a film (demo)"), L
+    return "Vorführung: page, owner only, commands to the simulator, translations, entries"
+
+
+SELFTEST_EXTRA.append(("Vorführung «Maggie» (page /sim/vorfuehrung, owner only)", vf_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------

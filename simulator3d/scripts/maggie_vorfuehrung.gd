@@ -80,7 +80,7 @@ var _umweg_s := 1.0
 var _loese_art := {}                    # station id -> gespielt | Schnitt | erzwungen
 var _regionen := {}                     # region -> {gespielt, schnitt, erzwungen, offen, schutz, erwischt}
 var blockaden: Array = []               # [{t, wo, was}]
-var _log: Array = []
+var _zeilen: Array = []
 var _t0 := 0.0                          # real start (s)
 var _t_spiel := 0.0                     # game time (s, scaled, without pause)
 var _abspann := false
@@ -155,7 +155,7 @@ static func control(m, d: Dictionary) -> Dictionary:
 			v.pause(false)
 		"kapitel":
 			if not v.laeuft:
-				return {"ok": false, "error": "keine Vorführung"}
+				return {"ok": false, "error": "not running"}
 			v.kapitel(int(d.get("n", d.get("value", 0))))
 		"stop":
 			v.beenden("abgebrochen")
@@ -211,9 +211,9 @@ func set_stimme(v: bool) -> void:
 # =======================================================================================================================
 func starten(ln: String, opt := {}) -> void:
 	if laeuft:
-		beenden("neu gestartet")
+		beenden("restart")
 	if story.running:
-		_p("Eine laufende Geschichte wurde verlassen (ihr Fortschritt bleibt gespeichert).")
+		_log("Eine laufende Geschichte wurde verlassen (ihr Fortschritt bleibt gespeichert).")
 		story.stop()
 	var fig: Dictionary = story.figur()           # (the figure of the active Spielstand, only read)
 	laenge = ln
@@ -230,7 +230,7 @@ func starten(ln: String, opt := {}) -> void:
 	_loese_art = {}
 	_regionen = {}
 	blockaden = []
-	_log = []
+	_zeilen = []
 	_plan = []
 	_plan_region = ""
 	_hund_ok = false
@@ -261,7 +261,7 @@ func starten(ln: String, opt := {}) -> void:
 		main.mehr.close_menu()
 	if main.mehr != null and main.mehr.get("dev") != null and main.mehr.dev.has_method("close"):
 		main.mehr.dev.close()
-	_p("Start: %s (Tempo %s, Stimme %s, Lite %s)" % ["Kurzfassung" if ln == "kurz" else "ganze Geschichte", str(tempo), "an" if _stimme_ok() else "aus", str(_lite())])
+	_log("Start: %s (Tempo %s, Stimme %s, Lite %s)" % ["Kurzfassung" if ln == "kurz" else "ganze Geschichte", str(tempo), "an" if _stimme_ok() else "aus", str(_lite())])
 	story._ensure_ui()
 	story._start()
 	_maus_t = _jetzt()
@@ -280,7 +280,7 @@ func beenden(grund := "abgebrochen") -> void:
 	pausiert = false
 	Engine.time_scale = 1.0
 	Stimme.stopp()
-	_p("Ende: %s nach %s (Spielzeit %s). Blockaden: %d." % [grund, _min(_jetzt() - _t0), _min(_t_spiel), blockaden.size()])
+	_log("Ende: %s nach %s (Spielzeit %s). Blockaden: %d." % [grund, _min(_jetzt() - _t0), _min(_t_spiel), blockaden.size()])
 	_zusammenfassung()
 	_schreiben()
 	if story.running:
@@ -314,7 +314,7 @@ func pause(on: bool) -> void:
 			DisplayServer.tts_pause()
 		else:
 			DisplayServer.tts_resume()
-	_p("Pause" if on else "Weiter")
+	_log("Pause" if on else "Weiter")
 	_maus_t = _jetzt()
 	_paint_bar()
 
@@ -350,7 +350,7 @@ func kapitel(n: int) -> void:
 	n = clampi(n, 0, 5)
 	if pausiert:
 		pause(false)
-	_p("Kapitel %d: %s" % [n, kapitel_namen()[n]])
+	_log("Kapitel %d: %s" % [n, kapitel_namen()[n]])
 	# what runs now: away (like «Zur Auswahl» of the pause card; old timers stop with the next stage)
 	if str(story.region) != "":
 		story.region_beendet.emit(story.region)
@@ -511,7 +511,7 @@ func _karte(card: Control, ph: String, dt: float) -> void:
 		if ph == "reise":
 			_karte_lese = 1e9                     # «Unterwegs …»: goes away by itself
 		_sprich(all, true)
-		_cam_set("fahrt", 30.0, "Karte")
+		_cam_set("fahrt", 30.0, "card")
 		return
 	_karte_t += dt
 	if _karte_t < _karte_lese or (_stimme_ok() and DisplayServer.tts_is_speaking() and _karte_t < _karte_lese + 25.0):
@@ -522,10 +522,10 @@ func _karte(card: Control, ph: String, dt: float) -> void:
 			var done: Array = story.S.get("done", [])
 			for id in Welt.ORDER:
 				if not id in done:
-					_p("Wählt: %s" % T.t(str(Welt.REG[id]["name"])))
+					_log("Wählt: %s" % T.t(str(Welt.REG[id]["name"])))
 					story._start_region(id, 0)
 					return
-			_p("Wählt: Zum Gipfel")
+			_log("Wählt: Zum Gipfel")
 			story._start_finale()
 		"ende":
 			if _abspann:
@@ -593,7 +593,7 @@ func _ziel_tick(dt: float) -> void:
 	if _stuck_d - d < 1.0:
 		_stuck_n += 1
 		if _stuck_n >= 4:
-			_blockiert("Weg versperrt – %d m vor dem Ziel" % int(d))
+			log_line("Weg versperrt – %d m vor dem Ziel" % int(d))
 			var back := Vector3(p.x - z.x, 0, p.z - z.z)
 			back = back.normalized() if back.length() > 0.1 else Vector3(1, 0, 0)
 			story.spieler_setzen(z + back * maxf(1.0, _stop_r * 0.5))
@@ -605,10 +605,10 @@ func _ziel_tick(dt: float) -> void:
 	_stuck_d = d
 
 
-func _blockiert(was: String) -> void:
+func log_line(was: String) -> void:
 	var wo := str(story.region) if str(story.region) != "" else str(story.phase)
 	blockaden.append({"t": _min(_t_spiel), "wo": wo, "was": was})
-	_p("BLOCKIERT (%s): %s" % [wo, was])
+	_log("BLOCKIERT (%s): %s" % [wo, was])
 
 
 func _fortschritt(dt: float) -> void:
@@ -631,10 +631,10 @@ func _fortschritt(dt: float) -> void:
 	var h = _hund()
 	var st: Dictionary = h.aktuell() if h != null else {}
 	if not st.is_empty():
-		_blockiert("kein Fortschritt bei der Station «%s»" % str(st["id"]))
+		log_line("kein Fortschritt bei der Station «%s»" % str(st["id"]))
 		_loese(st, "erzwungen")
 	elif _ziel != null:
-		_blockiert("kein Fortschritt auf dem Weg")
+		log_line("kein Fortschritt auf dem Weg")
 		story.spieler_setzen(_ziel)
 	_ap = {"art": "frei", "t": 0.0}
 
@@ -659,7 +659,7 @@ func _region(dt: float) -> void:
 	if not _k_region.has(rg) and float(_ap.get("t", 0.0)) > 3.0 and _t_seit_region() > (25.0 if laenge == "kurz" else 50.0) \
 			and str(_ap.get("art", "")) == "frei" and story.main.now() >= float(story._zk_ready_at):
 		_k_region[rg] = true
-		_p("Schaut in den Kristall (K)")
+		_log("Schaut in den Kristall (K)")
 		story.look_into_crystal()
 		return
 	match str(_ap.get("art", "frei")):
@@ -707,16 +707,16 @@ func _station_nah(h) -> bool:
 	if f in FAEHIG and d < 4.5:
 		_ap = {"art": "station", "t": 0.0, "id": str(st["id"]), "n": 0}
 		_ziel = null
-		_cam_set("nah", 14.0, "Station")
+		_cam_set("nah", 14.0, "station")
 		return true
 	if f == "warnen" and d < 3.5:
 		_ap = {"art": "gabel", "t": 0.0, "id": str(st["id"]), "falsch": str(story.region) == FEHLER_ABBIEGEN and not _fehler.has("abbiegen")}
-		_cam_set("totale", 10.0, "Gabelung")
+		_cam_set("totale", 10.0, "fork")
 		return true
 	if f == "helfer" and d < 5.0:
 		_ap = {"art": "helfer", "t": 0.0, "id": str(st["id"])}
 		_ziel = null
-		_cam_set("totale", 14.0, "Steinbock")
+		_cam_set("totale", 14.0, "ibex")
 		return true
 	_ziel = story.tal_punkt((st["p"] as Vector3).x, (st["p"] as Vector3).z) if _ziel == null else _ziel
 	return false
@@ -745,7 +745,7 @@ func _station(h) -> void:
 		if str(story.region) == FEHLER_KNOPF and not _fehler.has("knopf"):
 			_fehler["knopf"] = true
 			var falsch := "riechen" if f != "riechen" else "graben"
-			_p("Fehler (Absicht): falscher Maggie-Knopf «%s» bei «%s»" % [falsch, str(st["id"])])
+			_log("Fehler (Absicht): falscher Maggie-Knopf «%s» bei «%s»" % [falsch, str(st["id"])])
 			h.befehl(falsch)
 			_ap["n"] = 2
 			_ap["t"] = -2.5                       # a moment to see that it did not work
@@ -760,7 +760,7 @@ func _station(h) -> void:
 			_ap["t"] = 0.0
 			_druecke(h, f, st)
 		elif t > 60.0:
-			_blockiert("Station «%s» löst sich nicht" % str(st["id"]))
+			log_line("Station «%s» löst sich nicht" % str(st["id"]))
 			_loese(st, "erzwungen")
 			_ap = {"art": "frei", "t": 0.0}
 
@@ -771,7 +771,7 @@ func _druecke(h, f: String, st: Dictionary) -> void:
 		_ap["n"] = 2
 		_ap["t"] = -1.5
 		return
-	_p("Maggie-Knopf «%s» bei «%s»: %s" % [f, str(st["id"]), "löst" if str(r.get("loest", "")) != "" else str(r.get("error", "nichts"))])
+	_log("Maggie-Knopf «%s» bei «%s»: %s" % [f, str(st["id"]), "löst" if str(r.get("loest", "")) != "" else str(r.get("error", "nichts"))])
 
 
 func _gabel(h) -> void:
@@ -784,18 +784,18 @@ func _gabel(h) -> void:
 		_lauf_ziel([_welt(st["boese_p"])], 2.5)
 		if _tal_d(h, st["boese_p"]) < 3.6 or t > 9.0:
 			_fehler["abbiegen"] = true
-			_p("Fehler (Absicht): falsch abgebogen bei «%s» – Maggie bellt" % str(st["id"]))
+			_log("Fehler (Absicht): falsch abgebogen bei «%s» – Maggie bellt" % str(st["id"]))
 			_ap["falsch"] = false
 			_ap["t"] = -2.0
 			_ziel = null
-			_cam_set("nah", 6.0, "Maggie bellt")
+			_cam_set("nah", 6.0, "bark")
 		return
 	if t < 0.0:
 		_ziel = null
 		return
 	_lauf_ziel([_welt(st["gut_p"])], 0.8)
 	if t > 45.0:
-		_blockiert("Gabelung «%s»: der gute Weg wird nicht erreicht" % str(st["id"]))
+		log_line("Gabelung «%s»: der gute Weg wird nicht erreicht" % str(st["id"]))
 		_loese(st, "erzwungen")
 		_ap = {"art": "frei", "t": 0.0}
 
@@ -807,7 +807,7 @@ func _helfer(h) -> void:
 		_ap = {"art": "frei", "t": 0.0}
 		return
 	if float(_ap["t"]) > 45.0:
-		_blockiert("der Steinbock kommt nicht («%s»)" % str(st["id"]))
+		log_line("der Steinbock kommt nicht («%s»)" % str(st["id"]))
 		_loese(st, "erzwungen")
 		_ap = {"art": "frei", "t": 0.0}
 
@@ -839,8 +839,8 @@ func _hund_verbinden() -> void:
 func _geloest(rg: String, id: String) -> void:
 	var art := str(_loese_art.get(id, "gespielt"))
 	if _regionen.has(rg):
-		_regionen[rg][{"gespielt": "gespielt", "Schnitt": "schnitt", "erzwungen": "erzwungen"}.get(art, "gespielt")] += 1
-	_p("Station «%s» gelöst (%s)" % [id, art])
+		_regionen[rg][art if art in ["gespielt", "schnitt", "erzwungen"] else "gespielt"] += 1
+	_log("Station «%s» gelöst (%s)" % [id, art])
 
 
 func _erwischt_von(art: String) -> void:
@@ -849,14 +849,14 @@ func _erwischt_von(art: String) -> void:
 		_fehler["erwischt"] = true                  # (caught anyway: the planned mistake is done)
 	if _regionen.has(rg):
 		_regionen[rg]["erwischt"] += 1
-	_p("Erwischt von: %s – zurück zum Rastplatz" % art)
+	_log("Erwischt von: %s – zurück zum Rastplatz" % art)
 
 
 func _schutz(id: String) -> void:
 	var rg := str(story.region)
 	if _regionen.has(rg):
 		_regionen[rg]["schutz"] = true
-	_p("Schutzding gefunden: %s" % id)
+	_log("Schutzding gefunden: %s" % id)
 
 
 func _region_ende(id: String) -> void:
@@ -867,7 +867,7 @@ func _region_ende(id: String) -> void:
 		offen += 0 if bool(story._tasks[k]["done"]) else 1
 	_regionen[id]["offen"] = offen
 	var r: Dictionary = _regionen[id]
-	_p("Region %s zu Ende: gespielt %d, Schnitt %d, erzwungen %d, offen %d, Schutzding %s, erwischt %d" % [id, r["gespielt"], r["schnitt"],
+	_log("Region %s zu Ende: gespielt %d, Schnitt %d, erzwungen %d, offen %d, Schutzding %s, erwischt %d" % [id, r["gespielt"], r["schnitt"],
 			r["erzwungen"], offen, "ja" if r["schutz"] else "nein", r["erwischt"]])
 	_schreiben()
 
@@ -885,13 +885,13 @@ func _gefahr(rg: String, g) -> bool:
 	var hat: bool = g.schutz_hat(schutz_id)
 	if d < SICHT[rg]:
 		_rennen = not hat
-		if _cam_grund != "Gefahr":
-			_cam_set("totale", 8.0, "Gefahr")
+		if _cam_grund != "danger":
+			_cam_set("totale", 8.0, "danger")
 	if not hat or d > NAH[rg]:
 		return false
 	if rg == FEHLER_ERWISCHT and not _fehler.has("erwischt") and str(_ap.get("art", "")) in ["frei", "begegnung"]:
 		_fehler["erwischt"] = true
-		_p("Fehler (Absicht): vergisst die %s – das Tier kommt nah" % T.t(str(g.SCHUTZ_NAME[schutz_id])))
+		_log("Fehler (Absicht): vergisst die %s – das Tier kommt nah" % T.t(str(g.SCHUTZ_NAME[schutz_id])))
 		_ap = {"art": "erwischen", "t": 0.0, "zurueck": _ap.duplicate()}
 		return true
 	if story.main.now() - _benutzt_t < (1.2 if rg == "winter" else 2.5):
@@ -899,7 +899,7 @@ func _gefahr(rg: String, g) -> bool:
 	_benutzt_t = story.main.now()
 	var r: Dictionary = g.benutze()
 	if int(r.get("vertrieben", 0)) > 0 or r.has("fackel"):
-		_p("Schutzding benutzt: %s" % ("Fackel an" if r.has("fackel") else "%d vertrieben" % int(r["vertrieben"])))
+		_log("Schutzding benutzt: %s" % ("Fackel an" if r.has("fackel") else "%d vertrieben" % int(r["vertrieben"])))
 		if str(_ap.get("art", "")) == "begegnung" and int(r.get("vertrieben", 0)) > 0:
 			_ap["vertrieben"] = true
 	return false
@@ -914,7 +914,7 @@ func _erwischen(g) -> void:
 		if float(ng.get("dist", 9999.0)) < 200.0:
 			_lauf_ziel([ng["pos"]], 0.3)
 	if t > 25.0:
-		_p("Das Tier kommt nicht – erwischt von Hand (story.erwischt)")
+		_log("Das Tier kommt nicht – erwischt von Hand (story.erwischt)")
 		story.erwischt(str(g.TIER[str(story.region)]["art"]) if g != null else "wolf")
 		t = 99.0
 	if str(story.phase) == "schreck" or t > 30.0:
@@ -957,7 +957,7 @@ func _plan_bauen(rg: String, h) -> void:
 	var names := []
 	for s in _plan:
 		names.append(str(s["art"]) + ("·" + str(s["id"]) if s.has("id") else ""))
-	_p("Kurzfassung %s: %s" % [rg, ", ".join(names)])
+	_log("Kurzfassung %s: %s" % [rg, ", ".join(names)])
 
 
 func _st_i(h, id: String) -> int:
@@ -976,7 +976,7 @@ func _plan_schritt(rg: String, h, g) -> void:
 			for k in range(mini(i, (h.stationen as Array).size())):     # the stations before it: solved «in the cut»
 				var sk: Dictionary = h.stationen[k]
 				if not (h.geloest as Dictionary).has(str(sk["id"])):
-					_loese(sk, "Schnitt")
+					_loese(sk, "cut")
 			var st: Dictionary = h.aktuell()
 			if st.is_empty() or str(st["id"]) != str(s["id"]):
 				_plan.pop_front()
@@ -1000,7 +1000,7 @@ func _plan_schritt(rg: String, h, g) -> void:
 			_plan.pop_front()
 			for st2 in h.stationen:                    # what is left: solved in the cut
 				if not (h.geloest as Dictionary).has(str(st2["id"])):
-					_loese(st2, "Schnitt")
+					_loese(st2, "cut")
 			_schnitt(story._tor_p, 20.0, {"art": "frei", "t": 0.0})
 
 
@@ -1010,7 +1010,7 @@ func _hin(h) -> void:
 		var g = _gef()
 		if g == null or g.schutz_hat(str(g.SCHUTZ[str(story.region)])) or float(_ap["t"]) > 40.0:
 			if float(_ap["t"]) > 40.0:
-				_blockiert("Schutzding nicht erreicht")
+				log_line("Schutzding nicht erreicht")
 			_ap = {"art": "frei", "t": 0.0}
 			return
 		_lauf_ziel([g.schutz_ort(str(story.region))], 0.6)
@@ -1022,7 +1022,7 @@ func _hin(h) -> void:
 			return
 		_lauf_ziel([_welt(st["p"])], 1.0)
 		if float(_ap["t"]) > 50.0:
-			_blockiert("Station «%s» nach dem Schnitt nicht erreicht" % str(st["id"]))
+			log_line("Station «%s» nach dem Schnitt nicht erreicht" % str(st["id"]))
 			_loese(st, "erzwungen")
 			_ap = {"art": "frei", "t": 0.0}
 
@@ -1030,7 +1030,7 @@ func _hin(h) -> void:
 func _begegnung(rg: String, g) -> void:
 	if g == null or bool(_ap.get("vertrieben", false)) or float(_ap["t"]) > 35.0:
 		if float(_ap["t"]) > 35.0 and not bool(_ap.get("vertrieben", false)):
-			_p("Begegnung ohne Vertreiben zu Ende (das Tier kam nicht nah)")
+			_log("Begegnung ohne Vertreiben zu Ende (das Tier kam nicht nah)")
 		_ap = {"art": "warten", "t": 0.0}
 		_weiter_nach(3.0)
 		return
@@ -1070,7 +1070,7 @@ func _schnitt(ziel: Vector3, abstand: float, danach: Dictionary) -> void:
 		var tp: Vector3 = h.VL(at + dir.cross(Vector3.UP) * 1.2)
 		h.place(h.hund, tp)
 	_cam_snap = true
-	_cam_set("folge", 9.0, "Schnitt")
+	_cam_set("folge", 9.0, "cut")
 	await get_tree().create_timer(0.7).timeout
 	var tw2 := create_tween()
 	tw2.tween_property(_schwarz, "color:a", 0.0, 0.6)
@@ -1093,7 +1093,7 @@ func _finale() -> void:
 		return
 	if str(_ap.get("art", "")) == "schnitt":
 		return
-	_cam_set("folge" if lp.z > hl + 6.0 else "fahrt", 8.0, "Kapelle")
+	_cam_set("folge" if lp.z > hl + 6.0 else "fahrt", 8.0, "chapel")
 	if lp.z > hl + 0.2 and absf(lp.x) > 0.45:
 		_lauf_ziel([(ch as Node3D).to_global(Vector3(0, 0, hl + 1.4))], 0.4)
 	elif lp.z > hl - 0.6:
@@ -1408,11 +1408,11 @@ static func _min(s: float) -> String:
 	return "%d:%02d" % [int(s / 60.0), int(s) % 60]
 
 
-func _p(text: String) -> void:
+func _log(text: String) -> void:
 	var line := "[%s] %s" % [_min(_t_spiel), text]
-	_log.append(line)
-	if _log.size() > 600:
-		_log = _log.slice(-500)
+	_zeilen.append(line)
+	if _zeilen.size() > 600:
+		_zeilen = _zeilen.slice(-500)
 	print("[Vorführung] " + line)
 
 
@@ -1422,7 +1422,7 @@ func _schreiben() -> void:
 	if f == null:
 		return
 	f.store_string("Vorführung «Maggie und der Bergkristall» – %s – %s\n" % [laenge, Time.get_datetime_string_from_system(false, true)])
-	f.store_string("\n".join(_log) + "\n")
+	f.store_string("\n".join(_zeilen) + "\n")
 	if not blockaden.is_empty():
 		f.store_string("\nBLOCKIERT:\n")
 		for b in blockaden:
@@ -1436,7 +1436,7 @@ func info() -> Dictionary:
 			"phase": str(story.phase) if story != null else "", "region": str(story.region) if story != null else "",
 			"autopilot": str(_ap.get("art", "")), "zeit": _min(_jetzt() - _t0) if laeuft or ergebnis != "" else "", "spielzeit": _min(_t_spiel),
 			"tempo": tempo, "stimme": stimme, "stimme_moeglich": Stimme.moeglich(), "regionen": _regionen, "blockiert": blockaden.size(),
-			"blockaden": blockaden, "fehler": _fehler.keys(), "protokoll": _log.slice(-14), "lite": _lite(),
+			"blockaden": blockaden, "fehler": _fehler.keys(), "protokoll": _zeilen.slice(-14), "lite": _lite(),
 			"datei": ProjectSettings.globalize_path(PROTOKOLL)}
 	if story != null and story.running and story.demo:
 		out["fertig_regionen"] = story.S.get("done", [])
