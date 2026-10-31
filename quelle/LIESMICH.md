@@ -107,6 +107,8 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `410_motionwatch_kern.py` | KERN: die Erkennungs-Schleife (Bewegung, Personen, Alarm) | 969 |
 | `415_entfernung_gehtest.py` | Entfernung und Richtung einer Person, Gehtest beim Einrichten | 376 |
 | `416_verfolgung_parcours.py` | Verfolgungs-Parcours des Simulators (3D-4.18): Lektionen starten (Steuerbefehl `parcours`), Läufe mit den Werten der Verfolgung speichern (`parcours_runs.json`), A/B-Vergleich, Auto-Tuning (nur Vorschlag, «übernehmen»), mit / ohne Weitwinkel-Übergabe, Spiel «Entkomme der Kamera»; neuer Regler `track_lead` (Vorausschauen, 0 = wie bisher) als Wrapper um `MotionWatch.track`; Kachel 🎯 (139, Gruppe «Testen»); eine Sperre (147) | 600 |
+| `418k_kriechende_nacht.py` | Kriechende nachts (real-erk-e3): warmer Körper + Bewegung, nah (< 8 m), am Boden, gross (≥ 1 m lang) → Voralarm «etwas Grosses am Boden» (Protokoll, Browser, kurzer Push mit Bild, `crawl_push`), hält es 6 s an und ist niedrig → «Person?» (`crawl_feed` / `crawl_decide`, von 410); Abgrenzung Fuchs / Igel / Reh / Wildschwein mit Grenzwerten und Quellen; Selbsttest | 239 |
+| `418z_ki_zoom_weit.py` | KI-Zoom für weite Bewegung (real-erk-e3): die KI-Lupe auch für kleine wiederkehrende Bewegung ohne Spur (`zoom_far_feed`), Kacheln aus dem Kamerabild statt dem Arbeitsbild, der Reihe nach, mit YOLO bis 4 Kacheln in einem Lauf (`ai_zoom_run`, von 180), das eigene YOLO-Modell sieht das Kamerabild (`ai_view`); Bestätigung gegen Wind-Fehlalarme; Abschätzung 960-px-Eingang am Pi 5 (nicht eingebaut); Selbsttest | 291 |
 | `420_webzugang_aufnahmen.py` | Web-Zugang, Aufnahmen, Speicher, Bild für andere Programme | 630 |
 | `425_zeitleiste.py` | Zeitleiste der Nacht: Daten für /api/timeline | 230 |
 | `426_wochenbericht.py` | Wochenbericht der Erkennung (Push + Karte) | 200 |
@@ -164,6 +166,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `639g_uebersetzungen_entdecken.py` | Übersetzungen der Kachel «Entdeckungen» (Entdeckungsbuch des Simulators, 139) | 29 |
 | `639i_spielbereich.py` | «Spielen» (Mehr → Spielen, Web /play, Fenster-Knopf unter Mehr): Kopfzeile (Stufe, Spielstand), Weiterspielen-Hinweis, Regal «Geschichten» (nur anschauen, Bild /sim/story_pic), «Entdecken», Blinki – Daten vom Simulator (spielbereich.gd / geschichten.gd); Abzeichen im Entdeckungsbuch (139) | 541 |
 | `639j_nurgruppen.py` | «Beim Start: Nur Gruppen» (Schalter `ui_start_groups`, ab Werk ein; Logik in 530 / 470 / 570 / 550): Übersetzungen DE/FR/IT/RM, Anleitungs-Absatz (Tipps, DE/EN) | 35 |
+| `639x_uebersetzungen_kriechende.py` | Übersetzungen DE/FR/IT/RM für 418k (Push «Etwas Grosses am Boden») | 17 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |
