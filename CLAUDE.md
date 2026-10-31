@@ -44,6 +44,9 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 - **Zusammenfassung / Stand (Daniel, 31.10.2026 11:52):** wenn Daniel nach Stand, Übersicht oder Zusammenfassung fragt,
   immer als kleine Tabelle «Teil | Stand» mit Prozenten pro Paket (geschätzt, kurz sagen woraus) und Zeile «Gesamt»,
   darunter höchstens 1–2 Sätze. Knapp und klein.
+- **Kurzzeichen «st» (Daniel, 31.10.2026 13:18):** schickt Daniel nur «st», sofort den Kurzbericht: Tabelle «Teil | Stand»
+  (Prozent je Paket + «Gesamt»), darunter eine Zeile «Zuletzt veröffentlicht: …» und eine Zeile «Wartet auf dich: …»
+  (offene Entscheide, sonst «nichts»). Kein weiterer Text.
 - **Arbeit verteilen (Daniel, 31.10.2026 04:24):** grössere Aufträge in möglichst viele unabhängige Pakete aufteilen und
   parallel an Helfer geben – bevorzugt Helfer auf eigenen Cloud-Rechnern (Agent mit isolation "remote"), damit der lokale
   Rechner nicht überlastet. Jeder Helfer: eigener Zweig, kein Release, keine Rückfragen bei bestätigten Paketen; zusammengeführt

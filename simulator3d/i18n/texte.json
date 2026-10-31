@@ -973,6 +973,18 @@
   "it": "%.2f kg",
   "rm": "%.2f kg"
  },
+ "%d Aufnahmen": {
+  "en": "%d pictures",
+  "fr": "%d images",
+  "it": "%d immagini",
+  "rm": "%d maletgs"
+ },
+ "%d Aufnahmen - jetzt auswerten.": {
+  "en": "%d pictures - now evaluate them.",
+  "fr": "%d images - à analyser maintenant.",
+  "it": "%d immagini - ora da valutare.",
+  "rm": "%d maletgs - ussa evaluar."
+ },
  "%d bewegen sich": {
   "en": "%d are moving",
   "fr": "%d bougent",
@@ -1122,6 +1134,12 @@
   "fr": "%d points",
   "it": "%d punti",
   "rm": "%d puncts"
+ },
+ "%d Punkte · %d×": {
+  "en": "%d points · %d×",
+  "fr": "%d points · %d×",
+  "it": "%d punti · %d×",
+  "rm": "%d puncts · %d×"
  },
  "%d Punkte · noch %d bis Stufe %d": {
   "en": "%d points · %d more to level %d",
@@ -1500,6 +1518,12 @@
   "fr": "%s · coucher du soleil %s · altitude %d m",
   "it": "ore %s · tramonto %s · quota %d m",
   "rm": "%s uras · rendiu dal sulegl %s · autezza %d m"
+ },
+ "%s um %s (%s)": {
+  "en": "%s at %s (%s)",
+  "fr": "%s à %s (%s)",
+  "it": "%s alle %s (%s)",
+  "rm": "%s a las %s (%s)"
  },
  "%s von der Seite": {
   "en": "%s from the side",
@@ -1887,6 +1911,12 @@
   "fr": "+%d d'expérience grâce aux énigmes et trouvailles · niveau d'aide %s",
   "it": "+%d esperienza da enigmi e ritrovamenti · livello di aiuto %s",
   "rm": "+%d experientscha da enigmas e chats · nivel d'agid %s"
+ },
+ "+%d Erfahrung aus Rätseln und Funden · Schwierigkeit %s": {
+  "en": "+%d experience from puzzles and finds · difficulty %s",
+  "fr": "+%d d'expérience grâce aux énigmes et trouvailles · difficulté %s",
+  "it": "+%d esperienza da enigmi e ritrovamenti · difficoltà %s",
+  "rm": "+%d experientscha d'enigmas e chats · difficultad %s"
  },
  "+%d Erfahrung · Stufe %d": {
   "en": "+%d experience · level %d",
@@ -2683,6 +2713,12 @@
   "it": "Conferma allarme",
   "rm": "Quittar l’alarm"
  },
+ "Alarm von MoveEye": {
+  "en": "Alarm from MoveEye",
+  "fr": "Alarme de MoveEye",
+  "it": "Allarme di MoveEye",
+  "rm": "Alarm da MoveEye"
+ },
  "Alarm-Rückblick": {
   "en": "Alarm review",
   "fr": "Revue des alarmes",
@@ -2700,6 +2736,12 @@
   "fr": "Revue d’alarme : %s  ·  %d / %d s%s  ·  Esc termine",
   "it": "Revisione allarme: %s  ·  %d / %d s%s  ·  Esc termina",
   "rm": "Retrospectiva d’alarm: %s  ·  %d / %d s%s  ·  Esc termina"
+ },
+ "Alarm: Fuchs am Rucksack - verscheucht.": {
+  "en": "Alarm: fox at the backpack - chased away.",
+  "fr": "Alarme : renard au sac à dos - chassé.",
+  "it": "Allarme: volpe allo zaino - scacciata.",
+  "rm": "Alarm: vulp al satg da dies - stgatschada."
  },
  "Alle": {
   "en": "All",
@@ -3055,6 +3097,12 @@
   "it": "Formaggio d'alpe",
   "rm": "Chaschiel d'alp"
  },
+ "Alpweiden und Blockfelder": {
+  "en": "Alpine pastures and boulder fields",
+  "fr": "Alpages et pierriers",
+  "it": "Pascoli alpini e pietraie",
+  "rm": "Pastgiras e champs da crappa"
+ },
  "Alte KI-Daten löschen": {
   "en": "Delete old AI data",
   "fr": "Supprimer les anciennes données IA",
@@ -3192,6 +3240,12 @@
   "fr": "Sur le rocher, une marque blanc-rouge-blanc a pâli. C'est le moment du pinceau et de la peinture.",
   "it": "Sulla roccia c'è un segno bianco-rosso-bianco sbiadito. È ora di pennello e colore.",
   "rm": "Al grip è ina marcaziun alv-cotschen-alv sblatgida. Temp per pinel e colur."
+ },
+ "Am Fels und im Geröll; in der Nacht kommen sie nah ans Lager.": {
+  "en": "On rock and scree; at night they come close to the camp.",
+  "fr": "Sur les rochers et les éboulis ; la nuit, ils s'approchent du camp.",
+  "it": "Sulle rocce e nei ghiaioni; di notte si avvicinano al campo.",
+  "rm": "Sin la grippa ed en la gera; la notg vegnan els datiers dal champ."
  },
  "Am Fels über dem Biwak stehen manchmal Steinböcke. Eine Aufnahme in der Dämmerung, das wäre etwas.": {
   "en": "Ibex sometimes stand on the rocks above the bivouac. A recording at dusk would be something.",
@@ -3540,6 +3594,12 @@
   "fr": "Une encoche est taillée dans un poteau indicateur - elle ne montre pas le lac, mais les pâturages en haut.",
   "it": "Su un cartello è intagliata una tacca - non indica il lago, ma i pascoli in alto.",
   "rm": "En in indicatur da via è tagliada ina tagla - ella na mussa betg al lai, mabain ensi a las pastgiras."
+ },
+ "An einen Baum oder mit dem Seil (10 Min.).": {
+  "en": "On a tree or with the rope (10 min).",
+  "fr": "À un arbre ou avec la corde (10 min).",
+  "it": "A un albero o con la corda (10 min).",
+  "rm": "Vid in pign u cun la suga (10 min.)."
  },
  "An jedem Punkt umschauen": {
   "en": "Look around at every point",
@@ -3961,6 +4021,12 @@
   "it": "Di notte qualcosa fruscia sul cassettone vicino all'entrata.",
   "rm": "La notg tschuvrescha insatge sin la cumoda sper l'entrada."
  },
+ "Auf der Nachtaufnahme blinkt ein Licht im %s - dort liegt: %s. Da geht es weiter.": {
+  "en": "On the night picture a light blinks in the %s - that is where: %s. The way goes on there.",
+  "fr": "Sur l'image de nuit, une lumière clignote au %s - là se trouve : %s. C'est là que ça continue.",
+  "it": "Nell'immagine notturna lampeggia una luce a %s - lì si trova: %s. Si continua da lì.",
+  "rm": "Sin il maletg da notg cligna ina glisch en il %s - là è: %s. Là va ei vinavant."
+ },
  "Auf der Restaurant-Terrasse sollte man die Pommes nicht allein lassen.": {
   "en": "On the restaurant terrace you should not leave your fries alone.",
   "fr": "Sur la terrasse du restaurant, mieux vaut ne pas laisser ses frites seules.",
@@ -4015,6 +4081,12 @@
   "it": "Compito: %s (+%d)",
   "rm": "Incumbensa: %s (+%d)"
  },
+ "Aufhängen": {
+  "en": "Hang it up",
+  "fr": "Suspendre",
+  "it": "Appendere",
+  "rm": "Pender si"
+ },
  "Aufnahme": {
   "en": "Recording",
   "fr": "Enregistrement",
@@ -4032,6 +4104,12 @@
   "fr": "Enregistrement illisible.",
   "it": "Registrazione illeggibile.",
   "rm": "Registraziun betg legibla."
+ },
+ "Aufnahme von MoveEye": {
+  "en": "Picture from MoveEye",
+  "fr": "Image de MoveEye",
+  "it": "Immagine di MoveEye",
+  "rm": "Maletg da MoveEye"
  },
  "Aufnahme zu kurz – nicht gespeichert.": {
   "en": "Recording too short – not saved.",
@@ -4056,6 +4134,12 @@
   "fr": "Enregistrements (MoveEye)",
   "it": "Registrazioni (MoveEye)",
   "rm": "Registraziuns (MoveEye)"
+ },
+ "Aufnahmen auswerten (%d offen) - welches Tier ist das?": {
+  "en": "Evaluate the pictures (%d open) - which animal is it?",
+  "fr": "Analyser les images (%d en attente) - quel animal est-ce ?",
+  "it": "Valutare le immagini (%d aperte) - che animale è?",
+  "rm": "Evaluar ils maletgs (%d averts) - tge animal è quai?"
  },
  "Aufstell-Planer: Wo soll MoveEye hin?": {
   "en": "Placement planner: where should MoveEye go?",
@@ -4531,6 +4615,12 @@
   "it": "Baracca 3",
   "rm": "Baracca 3"
  },
+ "Bartgeier": {
+  "en": "Bearded vulture",
+  "fr": "Gypaète barbu",
+  "it": "Gipeto",
+  "rm": "Tschess barbet"
+ },
  "Bartgeier lässt Knochen fallen (bei einem Wanderer)": {
   "en": "Bearded vulture drops a bone (near a hiker)",
   "fr": "Le gypaète lâche un os (près d'un randonneur)",
@@ -4896,6 +4986,12 @@
   "fr": "À la table de pique-nique sous le grand arbre, des noix disparaissent …",
   "it": "Al tavolo da picnic sotto il grande albero spariscono delle noci …",
   "rm": "Tar la maisa da picnic sut la gronda planta svaneschan nuschs …"
+ },
+ "Beim Rucksack lassen": {
+  "en": "Leave it at the backpack",
+  "fr": "Laisser près du sac",
+  "it": "Lasciare allo zaino",
+  "rm": "Laschar tar il satg"
  },
  "Beim Schuppen am Schwimmbad sitzt jemand ganz geduldig vor einer Mauer …": {
   "en": "By the shed at the pool someone sits very patiently in front of a wall …",
@@ -7274,11 +7370,41 @@
   "it": "La volpe della fonduta",
   "rm": "La vulp da fondue"
  },
+ "Der Fuchs": {
+  "en": "The fox",
+  "fr": "Le renard",
+  "it": "La volpe",
+  "rm": "La vulp"
+ },
  "Der Fuchs bellt hell und rennt davon. Die bösen Tiere laufen ihm nach!": {
   "en": "The fox gives a high bark and runs off. The bad animals chase after it!",
   "fr": "Le renard jappe et s'enfuit. Les méchants animaux le suivent !",
   "it": "La volpe abbaia acuta e scappa. Gli animali cattivi la inseguono!",
   "rm": "La vulp bagliaffa e fui davent. Las bestgas nauschas la cursan suenter!"
+ },
+ "Der Fuchs hat den Proviant geholt - kein Frühstück (etwas weniger Kraft).": {
+  "en": "The fox took the food - no breakfast (a bit less strength).",
+  "fr": "Le renard a pris les provisions - pas de petit-déjeuner (un peu moins de force).",
+  "it": "La volpe ha preso le provviste - niente colazione (un po' meno forza).",
+  "rm": "La vulp ha prendì la provianda - nagin ensolver (in pau main forza)."
+ },
+ "Der Fuchs hat den Proviant geholt!": {
+  "en": "The fox took the food!",
+  "fr": "Le renard a pris les provisions !",
+  "it": "La volpe ha preso le provviste!",
+  "rm": "La vulp ha prendì la provianda!"
+ },
+ "Der Fuchs hat den Proviant geholt.": {
+  "en": "The fox took the food.",
+  "fr": "Le renard a pris les provisions.",
+  "it": "La volpe ha preso le provviste.",
+  "rm": "La vulp ha prendì la provianda."
+ },
+ "Der Fuchs kam an den Rucksack - MoveEye hat dich geweckt, du hast ihn verscheucht. Proviant gerettet!": {
+  "en": "The fox came to the backpack - MoveEye woke you, you chased it away. Food saved!",
+  "fr": "Le renard est venu au sac - MoveEye t'a réveillé, tu l'as chassé. Provisions sauvées !",
+  "it": "La volpe è arrivata allo zaino - MoveEye ti ha svegliato, l'hai scacciata. Provviste salvate!",
+  "rm": "La vulp è vegnida tar il satg - MoveEye t'ha dasdà, ti l'has stgatschada. Provianda salvada!"
  },
  "Der geheime See": {
   "en": "The secret lake",
@@ -7303,6 +7429,12 @@
   "fr": "Le ciel est tout dégagé.",
   "it": "Il cielo è limpidissimo.",
   "rm": "Il tschiel è tut cler."
+ },
+ "Der Hinweis": {
+  "en": "The clue",
+  "fr": "L'indice",
+  "it": "L'indizio",
+  "rm": "L'indizi"
  },
  "Der Holzski im Gletscher": {
   "en": "The wooden ski in the glacier",
@@ -7345,6 +7477,12 @@
   "fr": "Le fromage de 1897",
   "it": "Il formaggio del 1897",
   "rm": "Il chaschiel da 1897"
+ },
+ "Der Luchs (Wildkamera am Wildwechsel, nachts)": {
+  "en": "The lynx (camera trap at the game trail, at night)",
+  "fr": "Le lynx (piège photo sur le passage, la nuit)",
+  "it": "La lince (fototrappola sul passaggio, di notte)",
+  "rm": "Il luf tscherver (camera da selvaschina al passadi, la notg)"
  },
  "Der Luchs - den sieht fast niemand, er ist nachts unterwegs und sehr scheu. Bartgeier und Steinadler kreisen über dem Grat. Murmeltiere und Schneehasen findest du leicht.": {
   "en": "The lynx - hardly anyone sees it, it's out at night and very shy. Bearded vultures and golden eagles circle above the ridge. Marmots and mountain hares are easy to find.",
@@ -8997,6 +9135,12 @@
   "it": "Blu scuro",
   "rm": "Blau stgir"
  },
+ "dunkelbraun, breite Flügel mit «Fingern»": {
+  "en": "dark brown, broad wings with «fingers»",
+  "fr": "brun foncé, larges ailes avec des « doigts »",
+  "it": "marrone scuro, ali larghe con «dita»",
+  "rm": "brin stgir, alas largias cun «dets»"
+ },
  "Dunkelwerden": {
   "en": "Getting dark",
   "fr": "Crépuscule",
@@ -9081,11 +9225,23 @@
   "it": "Crepuscolo",
   "rm": "Crepuscul"
  },
+ "Dämmerung (nachts nah)": {
+  "en": "Dusk (close at night)",
+  "fr": "Crépuscule (proches la nuit)",
+  "it": "Crepuscolo (vicini di notte)",
+  "rm": "Brentg (la notg datiers)"
+ },
  "Dämmerung 21:00": {
   "en": "Dusk 21:00",
   "fr": "Crépuscule 21:00",
   "it": "Crepuscolo 21:00",
   "rm": "Crepuscul 21:00"
+ },
+ "Dämmerung und Nacht": {
+  "en": "Dusk and night",
+  "fr": "Crépuscule et nuit",
+  "it": "Crepuscolo e notte",
+  "rm": "Brentg e notg"
  },
  "Dämmerung, Abblendlicht, Velo mit Licht": {
   "en": "Dusk, low beam, bike with light",
@@ -9303,6 +9459,12 @@
   "it": "Un vecchio escursionista",
   "rm": "In vegl viandant"
  },
+ "Ein Bartgeier oben beim Biwak": {
+  "en": "A bearded vulture up at the bivouac",
+  "fr": "Un gypaète en haut près du bivouac",
+  "it": "Un gipeto in alto al bivacco",
+  "rm": "In tschess barbet sisum tar il bivac"
+ },
  "Ein Brief vom Grossvater, mit Wachs verschlossen. Darin nur ein Satz: «Die Karte gehört jetzt dir - lies sie mit der Sonne.» Und eine alte, vergilbte Karte des Bergtals, in fünf Stücke gefaltet. Das erste Stück zeigt eine Glocke über einem Brunnen.": {
   "en": "A letter from grandfather, sealed with wax. Inside only one sentence: «The map is yours now - read it with the sun.» And an old, yellowed map of the valley, folded into five pieces. The first piece shows a bell above a fountain.",
   "fr": "Une lettre du grand-père, scellée à la cire. Dedans une seule phrase : «La carte est à toi maintenant - lis-la avec le soleil.» Et une vieille carte jaunie de la vallée, pliée en cinq morceaux. Le premier morceau montre une cloche au-dessus d'une fontaine.",
@@ -9339,6 +9501,12 @@
   "it": "Una torre di roccia isolata al Gumpisee – si sale solo per la via ferrata.",
   "rm": "Ina tur da crap libra al Gumpisee – ins va si mo sur la via ferrata."
  },
+ "Ein Fuchs hat am Lager geschnüffelt - der Proviant war gesichert.": {
+  "en": "A fox sniffed around the camp - the food was secured.",
+  "fr": "Un renard a reniflé au camp - les provisions étaient à l'abri.",
+  "it": "Una volpe ha annusato al campo - le provviste erano al sicuro.",
+  "rm": "Ina vulp ha nufà enturn il champ - la provianda era segirada."
+ },
  "Ein Fuchs hat sich versteckt! Fahr mit dem Rover zu ihm.": {
   "en": "A fox has hidden! Drive the rover to it.",
   "fr": "Un renard s’est caché ! Va le trouver avec le rover.",
@@ -9356,6 +9524,12 @@
   "fr": "Un renard s’approche – chut !",
   "it": "Una volpe si avvicina di soppiatto – sst!",
   "rm": "Ina vulp sa stula natiers – pst!"
+ },
+ "Ein Fuchs war in der Nähe - der Proviant ist noch da.": {
+  "en": "A fox was nearby - the food is still there.",
+  "fr": "Un renard était tout près - les provisions sont encore là.",
+  "it": "Una volpe era vicina - le provviste ci sono ancora.",
+  "rm": "Ina vulp era datiers - la provianda è anc qua."
  },
  "Ein ganzer Käselaib": {
   "en": "A whole cheese wheel",
@@ -9429,6 +9603,12 @@
   "it": "Completato un capitolo al livello di aiuto Difficile, senza una risposta sbagliata.",
   "rm": "In chapitel cun il nivel d'agid Grev, senza ina sulet'a resposta sbagliada."
  },
+ "Ein Kapitel auf der Schwierigkeit Schwer geschafft, ohne eine falsche Antwort.": {
+  "en": "Finished a chapter on difficulty Hard without a wrong answer.",
+  "fr": "Un chapitre réussi en difficulté Difficile, sans mauvaise réponse.",
+  "it": "Un capitolo superato a difficoltà Difficile, senza risposte sbagliate.",
+  "rm": "In chapitel cun la difficultad Grev fatg, senza ina resposta sbagliada."
+ },
  "Ein Kind ist weg: rote Jacke, etwa 6 Jahre. Es spielt irgendwo um MoveEye – findet MoveEye es? (5 Min.)": {
   "en": "A child is missing: red jacket, about 6 years old. It is playing somewhere around MoveEye – will MoveEye find it? (5 min)",
   "fr": "Un enfant a disparu : veste rouge, environ 6 ans. Il joue quelque part autour de MoveEye – MoveEye le trouvera-t-il ? (5 min)",
@@ -9482,6 +9662,12 @@
   "fr": "Une personne passe. MoveEye la voit-il ?",
   "it": "Una persona passa. MoveEye la vede?",
   "rm": "Ina persuna passa speravia. La vesa MoveEye?"
+ },
+ "Ein Murmeltier bei der Alp Tschuggen": {
+  "en": "A marmot at Alp Tschuggen",
+  "fr": "Une marmotte à l'alpage Tschuggen",
+  "it": "Una marmotta all'alpe Tschuggen",
+  "rm": "Ina muntanella tar l'Alp Tschuggen"
  },
  "Ein Murmeltier pfeift laut: Achtung, Gefahr!": {
   "en": "A marmot whistles loudly: watch out, danger!",
@@ -9543,6 +9729,12 @@
   "it": "Un sentiero di cresta stretto, a strapiombo a destra e a sinistra – giù in fondo il Gumpisee.",
   "rm": "In stretg senda da cresta, a sanestra ed a dretga va ei stip engiu – giudim il Gumpisee."
  },
+ "Ein Schneehase am Gumpisee": {
+  "en": "A mountain hare at the Gumpisee",
+  "fr": "Un lièvre variable au Gumpisee",
+  "it": "Una lepre variabile al Gumpisee",
+  "rm": "In lieur alpin al Gumpisee"
+ },
  "Ein schwacher Lichtpunkt zeigt die Stelle. Geh bis auf 2 m heran.": {
   "en": "A faint point of light marks the spot. Go within 2 m.",
   "fr": "Un faible point lumineux montre l'endroit. Approche-toi à 2 m.",
@@ -9573,11 +9765,23 @@
   "it": "Un giocatore guida una figura con lo stick nel percorso di inseguimento (telefonino, controller o finestra) e cerca di uscire dall’immagine di MoveEye. Un turno dura 60 secondi. Punti per il tempo fuori dall’immagine e per ogni perdita che provochi. I punti contano nella classifica della serata – e MoveEye impara a seguire meglio.",
   "rm": "In giugader maniescha en il parcours da persequitar ina figura cun il stick (telefonin, controller u fanestra) ed emprova da vegnir or dal maletg da MoveEye. Ina runda dura 60 secundas. Puncts dat i per il temp ordaifer il maletg e per mintga perdita che ti chaschunas. Ils puncts quintan en la rangaziun da la saira – e MoveEye emprenda da suandar meglier."
  },
+ "Ein Steinadler (Wildkamera am Tag)": {
+  "en": "A golden eagle (camera trap by day)",
+  "fr": "Un aigle royal (piège photo de jour)",
+  "it": "Un'aquila reale (fototrappola di giorno)",
+  "rm": "In evla (camera da selvaschina il di)"
+ },
  "Ein Steinbock aus den Bergen!": {
   "en": "An ibex from the mountains!",
   "fr": "Un bouquetin des montagnes !",
   "it": "Uno stambecco dalle montagne!",
   "rm": "In capricorn da las muntognas!"
+ },
+ "Ein Steinbock beim Biwak Chüebodehorn": {
+  "en": "An ibex at the Chüebodehorn bivouac",
+  "fr": "Un bouquetin au bivouac du Chüebodehorn",
+  "it": "Uno stambecco al bivacco Chüebodehorn",
+  "rm": "In capricorn tar il bivac Chüebodehorn"
  },
  "Ein Steinmann am Weg hat oben einen flachen Stein mit einer Kerbe - sie zeigt hinunter zum Seeufer, wo ein grosser Block im Wasser steht.": {
   "en": "A cairn by the path has a flat stone with a notch on top - it points down to the lake shore, where a big boulder stands in the water.",
@@ -9824,6 +10028,12 @@
   "fr": "Une patrouille de gardes-frontière",
   "it": "Una pattuglia di guardie di confine",
   "rm": "Ina patruglia da guardias da cunfin"
+ },
+ "Eine Gämse bei der Ruine Altstafel": {
+  "en": "A chamois at the Altstafel ruin",
+  "fr": "Un chamois à la ruine d'Altstafel",
+  "it": "Un camoscio alla rovina Altstafel",
+  "rm": "In chamutsch tar la ruina Altstafel"
  },
  "Eine Gämse stand heute Morgen auf dem Dach vom Hospiz. Einfach so.": {
   "en": "A chamois stood on the roof of the hospice this morning. Just like that.",
@@ -10738,6 +10948,12 @@
   "it": "Cibo e bevande: spento (livello d'aiuto Facile)",
   "rm": "Mangiar e baiver: deactivà (stgalim d'agid Lev)"
  },
+ "Essen und Trinken: aus (Schwierigkeit Leicht)": {
+  "en": "Food and drink: off (difficulty Easy)",
+  "fr": "Manger et boire : désactivé (difficulté Facile)",
+  "it": "Mangiare e bere: spento (difficoltà Facile)",
+  "rm": "Mangiar e baiver: deactivà (difficultad Lev)"
+ },
  "Esstisch": {
   "en": "Dining table",
   "fr": "Table à manger",
@@ -11248,6 +11464,18 @@
   "fr": "Bloc de rocher",
   "it": "Masso",
   "rm": "Bloc da grippa"
+ },
+ "Felsen und Geröll": {
+  "en": "Rock and scree",
+  "fr": "Rochers et éboulis",
+  "it": "Rocce e ghiaioni",
+  "rm": "Grippa e gera"
+ },
+ "Felsen und steile Hänge": {
+  "en": "Rock and steep slopes",
+  "fr": "Rochers et pentes raides",
+  "it": "Rocce e pendii ripidi",
+  "rm": "Grippa e spundas stippas"
  },
  "Felsen und Steinblöcke, Holzstapel, Alphütte, Büsche": {
   "en": "Rocks and boulders, woodpiles, alpine hut, bushes",
@@ -12690,6 +12918,12 @@
   "it": "Archivio della comunità, qualità mista.",
   "rm": "Archiv da la cuminanza, qualitad maschadada."
  },
+ "gemeldet von MoveEye": {
+  "en": "reported by MoveEye",
+  "fr": "signalé par MoveEye",
+  "it": "segnalato da MoveEye",
+  "rm": "annunzià da MoveEye"
+ },
  "Gemüsebeet": {
   "en": "Vegetable bed",
   "fr": "Potager",
@@ -12857,6 +13091,12 @@
   "fr": "Réussi : %s !",
   "it": "Fatto: %s!",
   "rm": "Reussì: %s!"
+ },
+ "geschätzt": {
+  "en": "estimated",
+  "fr": "estimé",
+  "it": "stimato",
+  "rm": "stimà"
  },
  "Gesehen": {
   "en": "Seen",
@@ -14443,6 +14683,18 @@
   "it": "Cielo adesso (crepuscolo, luna, luminosità in lux)",
   "rm": "Tschiel ussa (crepuscul, glina, clerezza en lux)"
  },
+ "Himmel über den Hängen": {
+  "en": "Sky above the slopes",
+  "fr": "Ciel au-dessus des pentes",
+  "it": "Cielo sopra i pendii",
+  "rm": "Tschiel sur las spundas"
+ },
+ "Himmel über Grat und Fels": {
+  "en": "Sky above ridge and rock",
+  "fr": "Ciel au-dessus de l'arête et des rochers",
+  "it": "Cielo sopra cresta e rocce",
+  "rm": "Tschiel sur la creista e la grippa"
+ },
  "Himmel: %s · Sonne %.1f° · %s · %s lx · Lichtverschmutzung %s": {
   "en": "Sky: %s · sun %.1f° · %s · %s lx · light pollution %s",
   "fr": "Ciel : %s · soleil %.1f° · %s · %s lx · pollution lumineuse %s",
@@ -14490,6 +14742,12 @@
   "fr": "Y aller (progression de test)",
   "it": "Vai lì (progresso di prova)",
   "rm": "Siglir là (stadi da test)"
+ },
+ "Hinter dem Grat": {
+  "en": "Behind the ridge",
+  "fr": "Derrière l'arête",
+  "it": "Dietro la cresta",
+  "rm": "Davos la creista"
  },
  "Hinter dem Grat, nur über einen schmalen Pfad: ein kleiner stiller See. Am Morgen und am Abend springen Forellen, eine Steinbank wartet am Ufer.": {
   "en": "Behind the ridge, only by a narrow path: a small quiet lake. In the morning and evening trout rise, a stone bench waits on the shore.",
@@ -14568,6 +14826,12 @@
   "fr": "Fermer l’indice (désactiver les indices de Blinki : Jeu → Découvrir)",
   "it": "Chiudi il suggerimento (disattivare i suggerimenti di Blinki: Gioco → Scoprire)",
   "rm": "Serrar l’indicaziun (deactivar las indicaziuns da Blinki: Gieu → Scuvrir)"
+ },
+ "Hinweis-Aufnahme: In der Nacht blinkt ein Licht am Berg, Richtung %s. Dort liegt: %s - da geht es im nächsten Kapitel weiter.": {
+  "en": "Clue picture: in the night a light blinks on the mountain, towards the %s. That is where: %s - the next chapter goes on there.",
+  "fr": "Image-indice : la nuit, une lumière clignote sur la montagne, direction %s. Là se trouve : %s - le prochain chapitre continue là.",
+  "it": "Immagine-indizio: di notte lampeggia una luce sulla montagna, verso %s. Lì si trova: %s - il prossimo capitolo continua da lì.",
+  "rm": "Maletg-indizi: la notg cligna ina glisch vi da la muntogna, direcziun %s. Là è: %s - là va il proxim chapitel vinavant."
  },
  "Hinweis: der Schutz von MoveEye war aus – ohne Schutz gibt es keine Pushes.": {
   "en": "Note: the protection of MoveEye was off – without protection there are no pushes.",
@@ -15060,6 +15324,18 @@
   "fr": "Hamac (se balance au vent)",
   "it": "Amaca (dondola al vento)",
   "rm": "Hamac (sa ballantscha en il vent)"
+ },
+ "Häufig: in der Dämmerung und nachts rund ums Lager.": {
+  "en": "Common: at dusk and at night around the camp.",
+  "fr": "Fréquent : au crépuscule et la nuit autour du camp.",
+  "it": "Frequente: al crepuscolo e di notte intorno al campo.",
+  "rm": "Frequent: en il brentg e la notg enturn il champ."
+ },
+ "Häufig: tagsüber auf den Weiden (im Winter im Winterschlaf).": {
+  "en": "Common: by day on the pastures (hibernating in winter).",
+  "fr": "Fréquent : de jour dans les pâturages (en hibernation l'hiver).",
+  "it": "Frequente: di giorno sui pascoli (in letargo d'inverno).",
+  "rm": "Frequent: il di sin las pastgiras (l'enviern en sien d'enviern)."
  },
  "Häuser in 3D von swisstopo": {
   "en": "Houses in 3D from swisstopo",
@@ -15757,6 +16033,18 @@
   "it": "Durante la notte MoveEye ha riconosciuto l'intruso e non ha scambiato nessun animale per una persona.",
   "rm": "Durant la notg ha MoveEye renconuschì l'intrus e n'ha tegnì nagin animal per ina persuna."
  },
+ "In der Nacht war ein Licht am Berg - MoveEye hat es nicht aufgenommen.": {
+  "en": "In the night there was a light on the mountain - MoveEye did not record it.",
+  "fr": "La nuit, il y avait une lumière sur la montagne - MoveEye ne l'a pas enregistrée.",
+  "it": "Di notte c'era una luce sulla montagna - MoveEye non l'ha registrata.",
+  "rm": "La notg era ina glisch vi da la muntogna - MoveEye n'ha betg registrà ella."
+ },
+ "In der Nacht war irgendwo ein Licht - aber nicht im Bild von MoveEye.": {
+  "en": "In the night there was a light somewhere - but not in MoveEye's picture.",
+  "fr": "La nuit, il y avait une lumière quelque part - mais pas dans l'image de MoveEye.",
+  "it": "Di notte c'era una luce da qualche parte - ma non nell'immagine di MoveEye.",
+  "rm": "La notg era insanua ina glisch - ma betg en il maletg da MoveEye."
+ },
  "in der Nähe": {
   "en": "nearby",
   "fr": "tout près",
@@ -15936,6 +16224,12 @@
   "fr": "En bas dans la vallée vers l'alpage",
   "it": "Giù nella valle all'alpe",
   "rm": "Engiu en la val a l'alp"
+ },
+ "Ins Zelt nehmen": {
+  "en": "Take it into the tent",
+  "fr": "Prendre dans la tente",
+  "it": "Portare nella tenda",
+  "rm": "Prender en la tenda"
  },
  "ins Ziel und mindestens 10 s gekrochen": {
   "en": "to the goal and at least 10 s crawled",
@@ -16867,6 +17161,12 @@
   "it": "nessun albero vicino",
   "rm": "nagin bostg en la vischinanza"
  },
+ "kein Baum und kein Seil": {
+  "en": "no tree and no rope",
+  "fr": "ni arbre ni corde",
+  "it": "nessun albero e nessuna corda",
+  "rm": "nagin pign e nagina suga"
+ },
  "Kein Besuch von selbst": {
   "en": "No visitors by themselves",
   "fr": "Pas de visites spontanées",
@@ -16933,6 +17233,18 @@
   "it": "nessuna foto per «%s»",
   "rm": "nagina foto per «%s»"
  },
+ "Kein Fuchs am Proviant heute Nacht.": {
+  "en": "No fox at the food tonight.",
+  "fr": "Pas de renard aux provisions cette nuit.",
+  "it": "Nessuna volpe alle provviste stanotte.",
+  "rm": "Nagina vulp tar la provianda questa notg."
+ },
+ "Kein Geld - nur Tausch nach der Wunschliste. Gesucht: %s.": {
+  "en": "No money - only trading by the wish list. Wanted: %s.",
+  "fr": "Pas d'argent - seulement du troc selon la liste de souhaits. Recherché : %s.",
+  "it": "Niente soldi - solo baratto secondo la lista dei desideri. Cercato: %s.",
+  "rm": "Nagins daners - mo barat tenor la glista da giavischs. Tschertgà: %s."
+ },
  "Kein Geld - nur Tausch, eins gegen eins. Gesucht: %s.": {
   "en": "No money - only trading, one for one. Wanted: %s.",
   "fr": "Pas d'argent - seulement du troc, un contre un. Recherché : %s.",
@@ -16944,6 +17256,12 @@
   "fr": "Plus aucun bruit. La silhouette a disparu. L'enregistrement s'arrête au milieu de l'image.",
   "it": "Nessun rumore. La figura è sparita. La registrazione finisce a metà immagine.",
   "rm": "Nagina canera pli. La figura è davent. La registraziun finescha amez il maletg."
+ },
+ "kein Hund": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "kein Netz": {
   "en": "no network",
@@ -17768,6 +18086,12 @@
   "it": "Cravatta (sulla corda)",
   "rm": "Cravatta (sin la corda)"
  },
+ "Kreist tagsüber über den Hängen - Wildkamera am Morgen.": {
+  "en": "Circles over the slopes by day - camera trap in the morning.",
+  "fr": "Tournoie de jour au-dessus des pentes - piège photo le matin.",
+  "it": "Volteggia di giorno sopra i pendii - fototrappola al mattino.",
+  "rm": "Gira il di sur las spundas - camera da selvaschina la damaun."
+ },
  "Kriech-Profi": {
   "en": "Crawling pro",
   "fr": "Pro de la reptation",
@@ -17941,6 +18265,12 @@
   "fr": "Court : par le sommet (Tschingelspitz)",
   "it": "Corto: sulla vetta (Tschingelspitz)",
   "rm": "Curt: sur il piz (Tschingelspitz)"
+ },
+ "kurze Hakenhörner, helles Gesicht mit dunklem Streifen": {
+  "en": "short hooked horns, pale face with a dark stripe",
+  "fr": "courtes cornes en crochet, visage clair à bande sombre",
+  "it": "corna corte a uncino, muso chiaro con striscia scura",
+  "rm": "cornas curtas a crutsch, fatscha clera cun ina strivla stgira"
  },
  "Kälte": {
   "en": "Cold",
@@ -18116,11 +18446,23 @@
   "it": "Montare il campo ›",
   "rm": "Construir il champ ›"
  },
+ "Lager bewachen": {
+  "en": "Guard the camp",
+  "fr": "Surveiller le camp",
+  "it": "Sorvegliare il campo",
+  "rm": "Survegliar il champ"
+ },
  "Lager erst nach Sonnenuntergang": {
   "en": "camp only after sunset",
   "fr": "camp seulement après le coucher du soleil",
   "it": "campo solo dopo il tramonto",
   "rm": "champ pir suenter il rendiu dal sulegl"
+ },
+ "Lager nahe am Fels - abends oder früh am Morgen.": {
+  "en": "Camp close to the rock - in the evening or early in the morning.",
+  "fr": "Camp près des rochers - le soir ou tôt le matin.",
+  "it": "Campo vicino alle rocce - la sera o al mattino presto.",
+  "rm": "Champ datiers da la grippa - la saira u baud la damaun."
  },
  "Lager von MoveEye": {
   "en": "MoveEye’s camp",
@@ -18229,6 +18571,18 @@
   "fr": "Observer longtemps, puis se servir",
   "it": "Osservare a lungo, poi rubare",
   "rm": "Observar ditg, lura tschiffar"
+ },
+ "lange Ohren, im Winter ganz weiss": {
+  "en": "long ears, all white in winter",
+  "fr": "longues oreilles, tout blanc en hiver",
+  "it": "orecchie lunghe, tutta bianca d'inverno",
+  "rm": "ureglias lungas, l'enviern tut alv"
+ },
+ "lange, gebogene Hörner": {
+  "en": "long, curved horns",
+  "fr": "longues cornes recourbées",
+  "it": "corna lunghe e ricurve",
+  "rm": "cornas lungas e storschas"
  },
  "Langsam quer durchs Bild": {
   "en": "Slowly across the picture",
@@ -18511,6 +18865,12 @@
   "fr": "Lumière / son",
   "it": "Luce / suono",
   "rm": "Glisch / tun"
+ },
+ "Licht am Berg": {
+  "en": "Light on the mountain",
+  "fr": "Lumière sur la montagne",
+  "it": "Luce sulla montagna",
+  "rm": "Glisch vi da la muntogna"
  },
  "Licht in der verlassenen Hütte": {
   "en": "Light in the abandoned hut",
@@ -19245,6 +19605,12 @@
   "fr": "Plus de force, peu de mauvais temps, boussole et position sur la carte.",
   "it": "Più forza, poco maltempo, bussola e posizione sulla mappa.",
   "rm": "Dapli forza, pauca aura, cumpass ed agen lieu sin la charta."
+ },
+ "Mehr Kraft, wenig Wetter, Standort auf der Karte. Rätsel: Pfeile zeigen den Weg.": {
+  "en": "More strength, little weather, your position on the map. Puzzles: arrows show the way.",
+  "fr": "Plus de force, peu de mauvais temps, position sur la carte. Énigmes : des flèches montrent le chemin.",
+  "it": "Più forza, poco maltempo, posizione sulla mappa. Enigmi: le frecce mostrano la via.",
+  "rm": "Dapli forza, pauca aura, lieu sin la charta. Enigmas: frizzas mussan la via."
  },
  "mehr Menschen": {
   "en": "more people",
@@ -20020,6 +20386,12 @@
   "it": "MoveEye come %s · %s%s",
   "rm": "MoveEye sco %s · %s%s"
  },
+ "MoveEye am Lager": {
+  "en": "MoveEye at the camp",
+  "fr": "MoveEye au camp",
+  "it": "MoveEye al campo",
+  "rm": "MoveEye al champ"
+ },
  "MoveEye an diesen Platz stellen und gleich die Referenz-Fotos aufnehmen lassen": {
   "en": "Put MoveEye at this place and have the reference photos taken right away",
   "fr": "Placer MoveEye à cet endroit et faire prendre tout de suite les photos de référence",
@@ -20067,6 +20439,12 @@
   "fr": "MoveEye garde le campement. Toute la nuit passe en accéléré (%d minutes) ; le matin tu vois ce qui s'est passé.",
   "it": "MoveEye sorveglia il campo. Tutta la notte scorre in time-lapse (%d minuti); al mattino vedi cosa è successo.",
   "rm": "MoveEye surveglia il champ. L'entira notg passa en accelerà (%d minutas); la damaun vesas ti tge ch'è capità."
+ },
+ "MoveEye bleibt noch ein paar Stunden als Wildkamera stehen.": {
+  "en": "MoveEye stays a few more hours as a camera trap.",
+  "fr": "MoveEye reste encore quelques heures comme piège photo.",
+  "it": "MoveEye resta ancora qualche ora come fototrappola.",
+  "rm": "MoveEye resta anc in pèr uras sco camera da selvaschina."
  },
  "MoveEye dreht den Kopf (auch Tracking und Patrouille pausieren kurz).": {
   "en": "MoveEye turns the head (tracking and patrol also pause briefly).",
@@ -20158,6 +20536,18 @@
   "it": "MoveEye ha perso la connessione – test annullato.",
   "rm": "MoveEye ha pers la connexiun – test interrut."
  },
+ "MoveEye hat ein blinkendes Licht am Berg aufgenommen.": {
+  "en": "MoveEye recorded a blinking light on the mountain.",
+  "fr": "MoveEye a enregistré une lumière clignotante sur la montagne.",
+  "it": "MoveEye ha registrato una luce lampeggiante sulla montagna.",
+  "rm": "MoveEye ha registrà ina glisch che cligna vi da la muntogna."
+ },
+ "MoveEye hat ein Licht am Berg aufgenommen!": {
+  "en": "MoveEye recorded a light on the mountain!",
+  "fr": "MoveEye a enregistré une lumière sur la montagne !",
+  "it": "MoveEye ha registrato una luce sulla montagna!",
+  "rm": "MoveEye ha registrà ina glisch vi da la muntogna!"
+ },
  "MoveEye hat gesehen, wie jemand dein Velo wegträgt.": {
   "en": "MoveEye saw somebody carry your bike away.",
   "fr": "MoveEye a vu quelqu'un emporter ton vélo.",
@@ -20211,6 +20601,12 @@
   "fr": "MoveEye monte la garde. Un jeu se lance dans l’assistant de jeu – sur la page de MoveEye ou dans le simulateur.",
   "it": "MoveEye fa la guardia. Un gioco si avvia nell’assistente di gioco – sulla pagina di MoveEye o nel simulatore.",
   "rm": "MoveEye fa la guardia. In gieu vegn cumenzà en l’assistent da gieu – sin la pagina da MoveEye u en il simulatur."
+ },
+ "MoveEye in der Nacht": {
+  "en": "MoveEye at night",
+  "fr": "MoveEye la nuit",
+  "it": "MoveEye di notte",
+  "rm": "MoveEye la notg"
  },
  "MoveEye ins Schwitzen": {
   "en": "Make MoveEye sweat",
@@ -20332,6 +20728,18 @@
   "it": "MoveEye mette registro, impostazioni senza password e valori di sistema in uno ZIP (apre il browser). Serve un MoveEye collegato.",
   "rm": "MoveEye pachetescha protocol, configuraziuns senza pleds-clav e valurs dal sistem en in ZIP (avra il navigatur). Dovra in MoveEye collià."
  },
+ "MoveEye schlägt Alarm - du wachst auf und verscheuchst den Fuchs. Der Proviant ist noch da.": {
+  "en": "MoveEye raises the alarm - you wake up and chase the fox away. The food is still there.",
+  "fr": "MoveEye donne l'alarme - tu te réveilles et chasses le renard. Les provisions sont encore là.",
+  "it": "MoveEye dà l'allarme - ti svegli e scacci la volpe. Le provviste ci sono ancora.",
+  "rm": "MoveEye dat alarm - ti ta dasdas e stgatschas la vulp. La provianda è anc qua."
+ },
+ "MoveEye schlägt Alarm und weckt dich - zum Beispiel, wenn ein Fuchs an den Rucksack geht.": {
+  "en": "MoveEye raises the alarm and wakes you - for example when a fox goes for the backpack.",
+  "fr": "MoveEye donne l'alarme et te réveille - par exemple quand un renard s'approche du sac.",
+  "it": "MoveEye dà l'allarme e ti sveglia - per esempio quando una volpe va allo zaino.",
+  "rm": "MoveEye dat alarm e ta dasda - per exempel sch'ina vulp va tar il satg."
+ },
  "MoveEye schneller": {
   "en": "MoveEye faster",
   "fr": "MoveEye plus rapide",
@@ -20380,6 +20788,12 @@
   "fr": "MoveEye se trouve dans un bâtiment – le bâtiment a été omis.",
   "it": "MoveEye si trova in un edificio – l’edificio è stato tralasciato.",
   "rm": "MoveEye stat en in edifizi – l’edifizi è vegnì laschà davent."
+ },
+ "MoveEye tagsüber als Wildkamera stehen lassen (Zeitraffer, 2 Min.)": {
+  "en": "Leave MoveEye as a camera trap by day (time-lapse, 2 min)",
+  "fr": "Laisser MoveEye comme piège photo de jour (accéléré, 2 min)",
+  "it": "Lasciare MoveEye come fototrappola di giorno (accelerato, 2 min)",
+  "rm": "Laschar MoveEye sco camera da selvaschina il di (accelerà, 2 min.)"
  },
  "MoveEye und Karte": {
   "en": "MoveEye and map",
@@ -20507,6 +20921,12 @@
   "it": "MoveEye – ",
   "rm": "MoveEye – "
  },
+ "MoveEye-Alarm: ein Fuchs am Rucksack! Du verscheuchst ihn.": {
+  "en": "MoveEye alarm: a fox at the backpack! You chase it away.",
+  "fr": "Alarme MoveEye : un renard au sac ! Tu le chasses.",
+  "it": "Allarme MoveEye: una volpe allo zaino! La scacci.",
+  "rm": "Alarm da MoveEye: ina vulp tar il satg! Ti la stgatschas."
+ },
  "MoveEye-CPU %d %%": {
   "en": "MoveEye CPU %d %%",
   "fr": "CPU MoveEye %d %%",
@@ -20548,6 +20968,12 @@
   "fr": "MoveEye : L'humidité monte fortement. Le brouillard arrive - garde la boussole à portée.",
   "it": "MoveEye: L'umidità sale molto. Arriva la nebbia - tieni pronta la bussola.",
   "rm": "MoveEye: L'umiditad crescha fermamain. La tschajera vegn - tegnair pront il cumpass."
+ },
+ "MoveEye: Lager bewachen": {
+  "en": "MoveEye: guard the camp",
+  "fr": "MoveEye : surveiller le camp",
+  "it": "MoveEye: sorvegliare il campo",
+  "rm": "MoveEye: survegliar il champ"
  },
  "MoveEye: noch keine Angaben (verbinden, MoveEye ab 2.95.97)": {
   "en": "MoveEye: no details yet (connect, MoveEye from 2.95.97)",
@@ -20596,6 +21022,12 @@
   "fr": "MoveEye : pré-alarme",
   "it": "MoveEye: preallarme",
   "rm": "MoveEye: preavertiment"
+ },
+ "MoveEye: Wildkamera (still)": {
+  "en": "MoveEye: camera trap (silent)",
+  "fr": "MoveEye : piège photo (silencieux)",
+  "it": "MoveEye: fototrappola (silenziosa)",
+  "rm": "MoveEye: camera da selvaschina (quieta)"
  },
  "MoveEye: –": {
   "en": "MoveEye: –",
@@ -21077,6 +21509,12 @@
   "it": "Accampamento",
   "rm": "Champ da notg"
  },
+ "nachts": {
+  "en": "at night",
+  "fr": "la nuit",
+  "it": "di notte",
+  "rm": "la notg"
+ },
  "nachts gefühlt": {
   "en": "feels at night like",
   "fr": "ressenti la nuit",
@@ -21462,6 +21900,12 @@
   "it": "Ora il file si chiama MoveEyeSim3D.exe (il vecchio MotionWatch3D.exe viene rimosso). Il simulatore parte con impostazioni nuove.",
   "rm": "Uss sa numna la datoteca MoveEyeSim3D.exe (la veglia MotionWatch3D.exe vegn allontanada). Il simulatur cumenza cun configuraziuns novas."
  },
+ "Neu in der Sammlung: %s!": {
+  "en": "New in the collection: %s!",
+  "fr": "Nouveau dans la collection : %s !",
+  "it": "Nuovo nella collezione: %s!",
+  "rm": "Nov en la collecziun: %s!"
+ },
  "Neu laden": {
   "en": "Reload",
   "fr": "Recharger",
@@ -21575,6 +22019,12 @@
   "fr": "nicht erreich",
   "it": "nicht erreich",
   "rm": "nicht erreich"
+ },
+ "Nicht ganz - schau genau: %s": {
+  "en": "Not quite - look closely: %s",
+  "fr": "Pas tout à fait - regarde bien : %s",
+  "it": "Non proprio - guarda bene: %s",
+  "rm": "Betg gist - guarda exact: %s"
  },
  "nicht gefunden": {
   "en": "not found",
@@ -22007,6 +22457,12 @@
   "fr": "Météo de montagne normale, animaux la nuit, seulement la boussole.",
   "it": "Tempo di montagna normale, animali di notte, solo bussola.",
   "rm": "Aura da muntogna normala, animals la notg, mo cumpass."
+ },
+ "Normales Bergwetter, Tiere in der Nacht, nur Kompass. Rätsel: Tipp nach einer Weile.": {
+  "en": "Normal mountain weather, animals at night, compass only. Puzzles: a tip after a while.",
+  "fr": "Météo de montagne normale, animaux la nuit, seulement la boussole. Énigmes : un conseil après un moment.",
+  "it": "Tempo di montagna normale, animali di notte, solo bussola. Enigmi: un consiglio dopo un po'.",
+  "rm": "Aura da muntogna normala, animals la notg, mo cumpass. Enigmas: in cussegl suenter in mument."
  },
  "Note": {
   "en": "Grade",
@@ -23034,6 +23490,12 @@
   "it": "Tavolo da picnic e albero con un buco",
   "rm": "Maisa da picnic e planta cun fora"
  },
+ "Pinselohren, kurzer Schwanz mit schwarzer Spitze, gefleckt": {
+  "en": "ear tufts, short tail with a black tip, spotted",
+  "fr": "pinceaux aux oreilles, queue courte à bout noir, tacheté",
+  "it": "ciuffi alle orecchie, coda corta con punta nera, maculata",
+  "rm": "pinels a las ureglias, cua curta cun piz nair, taclà"
+ },
  "PIR am Gerät (AS312, 100°): %s": {
   "en": "PIR on the device (AS312, 100°): %s",
   "fr": "PIR de l'appareil (AS312, 100°) : %s",
@@ -23364,6 +23826,12 @@
   "fr": "Apporter des provisions au bivouac du Chüebodehorn",
   "it": "Portare provviste al bivacco Chüebodehorn",
   "rm": "Purtar provediment en il bivac Chüebodehorn"
+ },
+ "Proviant:": {
+  "en": "Food:",
+  "fr": "Provisions :",
+  "it": "Provviste:",
+  "rm": "Provianda:"
  },
  "Prüfe die Datei …": {
   "en": "Checking the file …",
@@ -23918,6 +24386,12 @@
   "it": "Riedspitz",
   "rm": "Riedspitz"
  },
+ "riesig, rostroter Bauch, keilförmiger Schwanz": {
+  "en": "huge, rust-red belly, wedge-shaped tail",
+  "fr": "immense, ventre roux, queue en losange",
+  "it": "enorme, ventre rosso ruggine, coda a cuneo",
+  "rm": "enorm, venter cotschen-ruina, cua en furma da cugn"
+ },
  "Riesige Auswahl, auch echte Gebäude und 3D-Scans. Filter «Downloadable», Format glTF wählen.": {
   "en": "Huge choice, also real buildings and 3D scans. Filter «Downloadable», choose format glTF.",
   "fr": "Choix immense, aussi de vrais bâtiments et des scans 3D. Filtre «Downloadable», choisir le format glTF.",
@@ -23983,6 +24457,12 @@
   "fr": "Rouge contre Bleu (seulement pour «Capture du drapeau»)",
   "it": "Rosso contro Blu (solo con «Conquista la bandiera»)",
   "rm": "Cotschen cunter Blau (mo tar «Conquistar la bandiera»)"
+ },
+ "rotbraun, buschiger Schwanz mit weisser Spitze": {
+  "en": "red-brown, bushy tail with a white tip",
+  "fr": "roux, queue touffue à bout blanc",
+  "it": "rossiccia, coda folta con punta bianca",
+  "rm": "cotschen-brin, cua spessa cun piz alv"
  },
  "Roter Strahl: wohin die Kamera von MoveEye schaut (nur für dich sichtbar)": {
   "en": "Red beam: where MoveEye’s camera looks (only visible to you)",
@@ -24314,6 +24794,12 @@
   "it": "Tour in pausa – continua sotto Altro → Tour con Blinki (passo %d di %d).",
   "rm": "Gir en pausa – cuntinuar sut Dapli → Gir cun Blinki (pass %d da %d)."
  },
+ "rundlich, braun, kurzer Schwanz": {
+  "en": "round, brown, short tail",
+  "fr": "rondelet, brun, queue courte",
+  "it": "rotondetta, marrone, coda corta",
+  "rm": "radund, brin, cua curta"
+ },
  "Rutschbahn": {
   "en": "Slide",
   "fr": "Toboggan",
@@ -24463,6 +24949,12 @@
   "fr": "Collectionneur",
   "it": "Collezionista",
   "rm": "Rimnader"
+ },
+ "Sammlung seltener Tiere · %d von %d": {
+  "en": "Collection of rare animals · %d of %d",
+  "fr": "Collection d'animaux rares · %d sur %d",
+  "it": "Collezione di animali rari · %d di %d",
+  "rm": "Collecziun d'animals rars · %d da %d"
  },
  "Sandkasten": {
   "en": "Sandpit",
@@ -24926,6 +25418,12 @@
   "it": "Palina da neve",
   "rm": "Pal da naiv"
  },
+ "Schnell - aber ein Fuchs riecht ihn.": {
+  "en": "Quick - but a fox smells it.",
+  "fr": "Rapide - mais un renard le sent.",
+  "it": "Veloce - ma una volpe lo fiuta.",
+  "rm": "Svelt - ma ina vulp al senta."
+ },
  "Schnell hin, Velo greifen, weg – Reaktionszeit": {
   "en": "Quickly there, grab the bike, away – reaction time",
   "fr": "Vite y aller, prendre le vélo, partir – temps de réaction",
@@ -25320,6 +25818,12 @@
   "it": "Molto bene. Allora è più bravo di tutta la mia ultima classe.",
   "rm": "Fitg bain. Lura essas Vus meglier che mia entira ultima classa."
  },
+ "Sehr scheu: MoveEye als Wildkamera am Wildwechsel, am besten in Waldnähe.": {
+  "en": "Very shy: MoveEye as a camera trap at the game trail, best near the forest.",
+  "fr": "Très farouche : MoveEye en piège photo sur le passage, de préférence près de la forêt.",
+  "it": "Molto schiva: MoveEye come fototrappola sul passaggio, meglio vicino al bosco.",
+  "rm": "Fitg tema: MoveEye sco camera da selvaschina al passadi, il meglier datiers dal guaud."
+ },
  "Sehr! Am liebsten würzig.": {
   "en": "Very much! Preferably strong.",
   "fr": "Beaucoup ! De préférence corsé.",
@@ -25583,6 +26087,12 @@
   "fr": "Placer : %s – cliquer dans le monde, Esc = annuler",
   "it": "Posare: %s – cliccare nel mondo, Esc = annulla",
   "rm": "Metter: %s – cliccar en il mund, Esc = interrumper"
+ },
+ "Sicher (2 Min.).": {
+  "en": "Safe (2 min).",
+  "fr": "Sûr (2 min).",
+  "it": "Sicuro (2 min).",
+  "rm": "Segir (2 min.)."
  },
  "Sicher ist sicher. Zurück und abwarten, dann nochmals.": {
   "en": "Better safe than sorry. Back, wait, then try again.",
@@ -26563,6 +27073,12 @@
   "it": "Pietra arrivata a %d m dal posto",
   "rm": "Crap fin %d m da la plazza"
  },
+ "Steinadler": {
+  "en": "Golden eagle",
+  "fr": "Aigle royal",
+  "it": "Aquila reale",
+  "rm": "Evla"
+ },
  "Steinbock": {
   "en": "Ibex",
   "fr": "Bouquetin",
@@ -26742,6 +27258,12 @@
   "fr": "Échanger les sticks (gauche rover / marcher, droite tête / regarder)",
   "it": "Scambiare gli stick (sinistra rover / camminare, destra testa / guardare)",
   "rm": "Barattar ils sticks (sanester rover / ir, dretg chau / guardar)"
+ },
+ "Still, ohne Alarm - dafür gehen mehr Tiere vor der Kamera durch. Den Proviant besser sichern!": {
+  "en": "Silent, no alarm - but more animals pass in front of the camera. Better secure the food!",
+  "fr": "Silencieux, sans alarme - mais plus d'animaux passent devant la caméra. Mieux vaut mettre les provisions à l'abri !",
+  "it": "Silenziosa, senza allarme - ma passano più animali davanti alla camera. Meglio mettere al sicuro le provviste!",
+  "rm": "Quiet, senza alarm - percunter passan dapli animals davant la camera. Meglier segirar la provianda!"
  },
  "Stimme": {
   "en": "Voice",
@@ -27337,6 +27859,12 @@
   "it": "Tags: camera",
   "rm": "Tags: camera"
  },
+ "tagsüber": {
+  "en": "by day",
+  "fr": "de jour",
+  "it": "di giorno",
+  "rm": "il di"
+ },
  "Tagsüber bei den Kehren der Passstrasse warten und hinhören.": {
   "en": "During the day, wait by the hairpins of the pass road and listen.",
   "fr": "En journée, attends près des lacets de la route du col et écoute.",
@@ -27354,6 +27882,12 @@
   "fr": "passe de jour et regarde, revient la nuit, observe, se sert",
   "it": "passa di giorno e guarda, torna di notte, osserva, ruba",
   "rm": "passa dal di e guarda, returna la notg, observa, tschiffa"
+ },
+ "Tagsüber über Felsen - am Morgen MoveEye als Wildkamera stehen lassen.": {
+  "en": "By day above the rocks - leave MoveEye as a camera trap in the morning.",
+  "fr": "De jour au-dessus des rochers - le matin, laisser MoveEye en piège photo.",
+  "it": "Di giorno sopra le rocce - al mattino lasciare MoveEye come fototrappola.",
+  "rm": "Il di sur la grippa - la damaun laschar MoveEye sco camera da selvaschina."
  },
  "Talstation Materialseilbahn (innen)": {
   "en": "Goods cable car valley station (inside)",
@@ -27913,6 +28447,12 @@
   "it": "Animali: grilli, uccelli, gufo, cane in lontananza, campanacci",
   "rm": "Animals: grils, utschels, tschuetta, chaun en la distanza, zampuns"
  },
+ "Tipp jetzt": {
+  "en": "Tip now",
+  "fr": "Conseil maintenant",
+  "it": "Consiglio ora",
+  "rm": "Cussegl ussa"
+ },
  "Tipp richtig": {
   "en": "Guessed right",
   "fr": "Bien deviné",
@@ -27948,6 +28488,12 @@
   "fr": "Touche ce qui peut participer (plusieurs possibles). Chaque joueur choisit ensuite son leurre sur le téléphone.",
   "it": "Tocca ciò che può partecipare (più scelte possibili). Ogni giocatore sceglie poi la sua esca sul telefonino.",
   "rm": "Tutga, tge che dastga far cun (plirs pussaivels). Mintga giugader tscherna lura sin il telefonin sia attrapa."
+ },
+ "Tipps und Wildkamera-Aufgaben": {
+  "en": "Tips and camera-trap tasks",
+  "fr": "Conseils et missions piège photo",
+  "it": "Consigli e compiti fototrappola",
+  "rm": "Cussegls e lezias da camera da selvaschina"
  },
  "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter Dingen sieht euch die Kamera schlechter. Rennen hört das Mikrofon.": {
   "en": "Tips: ducking and crawling help. In the dark and behind things the camera sees you worse. The microphone hears running.",
@@ -29306,6 +29852,12 @@
   "it": "colpito dal cacciatore, non segnalato",
   "rm": "tutgà dal chatschader, betg annunzià"
  },
+ "vom Wildhüter": {
+  "en": "from the game warden",
+  "fr": "du garde-faune",
+  "it": "dal guardiacaccia",
+  "rm": "dal guardiaselvaschina"
+ },
  "von": {
   "en": "of",
   "fr": "sur",
@@ -29533,6 +30085,12 @@
   "fr": "Forêt et arbres",
   "it": "Bosco e alberi",
   "rm": "Guaud e plantas"
+ },
+ "Wald und Waldrand": {
+  "en": "Forest and forest edge",
+  "fr": "Forêt et lisière",
+  "it": "Bosco e margine del bosco",
+  "rm": "Guaud e ur dal guaud"
  },
  "Waldlichtung (unten im Tal)": {
   "en": "Forest clearing (down in the valley)",
@@ -30026,6 +30584,12 @@
   "it": "Pascolo",
   "rm": "Pastgira"
  },
+ "Weiden, Blockfelder, Waldgrenze": {
+  "en": "Pastures, boulder fields, tree line",
+  "fr": "Pâturages, pierriers, limite des arbres",
+  "it": "Pascoli, pietraie, limite del bosco",
+  "rm": "Pastgiras, champs da crappa, cunfin dal guaud"
+ },
  "Weinglas": {
   "en": "Wine glass",
   "fr": "Verre à vin",
@@ -30302,6 +30866,12 @@
   "fr": "Moins de force, plus de mauvais temps et d'animaux, seulement les panneaux et le soleil.",
   "it": "Meno forza, più maltempo e animali, solo cartelli e il sole.",
   "rm": "Main forza, dapli aura ed animals, mo indicaturs da via ed il sulegl."
+ },
+ "Weniger Kraft, mehr Wetter und Tiere, nur Wegweiser und die Sonne. Rätsel: keine Hilfe.": {
+  "en": "Less strength, more weather and animals, only signposts and the sun. Puzzles: no help.",
+  "fr": "Moins de force, plus de mauvais temps et d'animaux, seulement les panneaux et le soleil. Énigmes : aucune aide.",
+  "it": "Meno forza, più maltempo e animali, solo cartelli e il sole. Enigmi: nessun aiuto.",
+  "rm": "Main forza, dapli aura ed animals, mo indicaturs da via ed il sulegl. Enigmas: nagin agid."
  },
  "wenn das Bedienfeld zu ist (H)": {
   "en": "when the control panel is closed (H)",
@@ -30783,6 +31353,42 @@
   "fr": "Garde-faune : filmer un bouquetin sur le rocher",
   "it": "Guardiacaccia: riprendere uno stambecco sulla roccia",
   "rm": "Guardiaselvaschina: registrar in capricorn al grip"
+ },
+ "Wildkamera": {
+  "en": "Camera trap",
+  "fr": "Piège photo",
+  "it": "Fototrappola",
+  "rm": "Camera da selvaschina"
+ },
+ "Wildkamera am Tag": {
+  "en": "Camera trap by day",
+  "fr": "Piège photo de jour",
+  "it": "Fototrappola di giorno",
+  "rm": "Camera da selvaschina il di"
+ },
+ "Wildkamera am Tag: %d Aufnahmen.": {
+  "en": "Camera trap by day: %d pictures.",
+  "fr": "Piège photo de jour : %d images.",
+  "it": "Fototrappola di giorno: %d immagini.",
+  "rm": "Camera da selvaschina il di: %d maletgs."
+ },
+ "Wildkamera am Wildwechsel": {
+  "en": "Camera trap at the game trail",
+  "fr": "Piège photo sur le passage du gibier",
+  "it": "Fototrappola sul passaggio della selvaggina",
+  "rm": "Camera da selvaschina al passadi da la selvaschina"
+ },
+ "Wildkamera-Aufgabe erfüllt": {
+  "en": "Camera-trap task done",
+  "fr": "Mission piège photo réussie",
+  "it": "Compito fototrappola svolto",
+  "rm": "Lezia da camera da selvaschina fatga"
+ },
+ "Wildkamera-Aufgabe: %s": {
+  "en": "Camera-trap task: %s",
+  "fr": "Mission piège photo : %s",
+  "it": "Compito fototrappola: %s",
+  "rm": "Lezia da camera da selvaschina: %s"
  },
  "Wildschwein": {
   "en": "Boar",
@@ -32686,6 +33292,12 @@
   "fr": "— aucune —",
   "it": "— nessuna —",
   "rm": "— nagina —"
+ },
+ "… und %d weitere": {
+  "en": "… and %d more",
+  "fr": "… et %d autres",
+  "it": "… e altre %d",
+  "rm": "… e %d ulteriurs"
  },
  "‹ Zurück": {
   "en": "‹ Back",
