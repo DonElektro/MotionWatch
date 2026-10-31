@@ -1,20 +1,21 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 5383 (Stellen: 7443)
-Übersetzt: en 5383, fr 5383, it 5383, rm 5383
+Texte gesamt: 5659 (Stellen: 7768)
+Übersetzt: en 5659, fr 5659, it 5659, rm 5659
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 386 Stellen
-Nicht mehr im Code (noch in texte.json): 67
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 391 Stellen
+Nicht mehr im Code (noch in texte.json): 68
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 67 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 18955, schlüssel 13573, keine Wörter 8755, index 6996, technisch 2447, doc 1555, einheit 232, englisch 102, log 78, html 67, pfad 66, klasse 24, shader 4
+Übersprungen (Grund: Anzahl): kennung 19329, schlüssel 14310, keine Wörter 8953, index 7222, technisch 2519, doc 1572, einheit 233, englisch 102, log 78, html 67, pfad 66, klasse 24, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  669    29
   gamewiz.gd               252    15
   bergtal_abenteuer.gd     238     5
+  abenteuer_figuren_daten.gd   235     0
   game.gd                  211    32
-  bergtal_abenteuer_daten.gd   199     0
   bergtal.gd               199     5
+  bergtal_abenteuer_daten.gd   199     0
   bergtal_horror.gd        154     3
   abenteuer_raetsel.gd     145     2
   bergtal_orte.gd          108     0
@@ -38,14 +39,15 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_erleben_a.gd      62     0
   erlebniswelt.gd           62     0
   bib_berg.gd               60     0
+  abenteuer_figuren.gd      58     5
   quick.gd                  57     2
   abenteuer_rucksack.gd     55     3
   bergtal_erleben_b.gd      55     0
   entdecken.gd              55     0
   spielbereich.gd           51     0
   scenes.gd                 47     0
-  mwpc.gd                   46    12
   karte.gd                  46     8
+  mwpc.gd                   46    12
   gamerules.gd              45     4
   horror_raetsel.gd         44     0
   symbole.gd                44     1
@@ -186,6 +188,50 @@ Unsicher:
   'Wide camera (NoIR Wide)': Kameraname an MoveEye (/info) – nicht umhüllen
 
 Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {name} machen:
+  abenteuer_figuren.gd:699  'fertig'
+  abenteuer_figuren.gd:784  'nein'
+  abenteuer_figuren.gd:794  'nein'
+  abenteuer_figuren.gd:807  'ja'
+  abenteuer_figuren.gd:807  'nein'
+  protokoll.gd:72  'aus'
+  protokoll.gd:73  'Tunnel: '
+  protokoll.gd:73  'aus'
+  protokoll.gd:75  'Szene: '
+  protokoll.gd:77  'Wetter: '
+  protokoll.gd:79  'Testlauf zu Ende · '
+  protokoll.gd:84  'Spielrunde: '
+  protokoll.gd:84  'fertig'
+  protokoll.gd:84  'läuft'
+  protokoll.gd:86  'Update: '
+  protokoll.gd:90  'Grafik: '
+  protokoll.gd:92  'Kinder-Modus '
+  protokoll.gd:92  'aus'
+  protokoll.gd:92  'ein'
+  protokoll.gd:128  'Godot: '
+  protokoll.gd:131  'Godot: '
+  gamewiz.gd:63  ' (wird hingestellt)'
+  gamewiz.gd:66  'keine'
+  gamewiz.gd:71  'aus'
+  gamewiz.gd:471  ' ⚠ Nur Simulator: braucht einen drehbaren Kopf, den Mover oder den Rover.'
+  gamewiz.gd:473  ' ⚠ MoveEye ist gerade nicht verbunden.'
+  gamewiz.gd:518  ' – 💡 Licht und 📢 Sirene'
+  gamewiz.gd:548  'nein'
+  gamewiz.gd:549  'nein'
+  gamewiz.gd:550  'nein'
+  gamewiz.gd:562  ' (mit den Spielern, die jetzt dabei sind)'
+  gamewiz.gd:577  'ja'
+  gamewiz.gd:577  'nein'
+  gamewiz.gd:773  '⚠ Nicht übernommen: '
+  gamewiz.gd:1090  'Wie letztes Mal: '
+  gamewiz.gd:1189  ' Regeln (%d)'
+  karte.gd:249  ' – ist der PC mit dem Internet verbunden?'
+  karte.gd:249  'Karte: '
+  karte.gd:334  'Nichts gefunden'
+  karte.gd:402  ' (beim ersten Mal etwa eine Minute, danach ist der Ort gespeichert)'
+  karte.gd:479  '3D-Gebäude von swisstopo: '
+  karte.gd:503  'Dazu kommen: '
+  karte.gd:511  'ja'
+  karte.gd:511  'keine'
   abenteuer_raetsel.gd:878  'Neu: '
   abenteuer_raetsel.gd:887  'Gegenstände: '
   abenteuer_rucksack.gd:224  'keine Wunschliste: '
@@ -203,11 +249,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:246  'Aussicht: '
   bergtal.gd:2180  'Schlafplatz: '
   bergtal.gd:2182  'Aussicht: '
-  bergtal_abenteuer.gd:334  'Start: '
-  bergtal_abenteuer.gd:805  ' auf der Bank mit Aussicht'
-  bergtal_abenteuer.gd:1883  'Wird frei: '
-  bergtal_abenteuer.gd:2023  '  · %.1f kg'
-  bergtal_abenteuer.gd:2108  ' - Bank'
+  bergtal_abenteuer.gd:338  'Start: '
+  bergtal_abenteuer.gd:815  ' auf der Bank mit Aussicht'
+  bergtal_abenteuer.gd:1896  'Wird frei: '
+  bergtal_abenteuer.gd:2038  '  · %.1f kg'
+  bergtal_abenteuer.gd:2123  ' - Bank'
   bergtal_aussicht.gd:357  'von'
   bergtal_aussicht.gd:536  'von'
   bergtal_aussicht.gd:1159  'Abzeichen: '
@@ -239,29 +285,6 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   mehr.gd:539  'frei %s von %s · '
   mehr.gd:540  ' (zuletzt %s)'
   mehr.gd:540  'nicht verbunden'
-  gamewiz.gd:63  ' (wird hingestellt)'
-  gamewiz.gd:66  'keine'
-  gamewiz.gd:71  'aus'
-  gamewiz.gd:471  ' ⚠ Nur Simulator: braucht einen drehbaren Kopf, den Mover oder den Rover.'
-  gamewiz.gd:473  ' ⚠ MoveEye ist gerade nicht verbunden.'
-  gamewiz.gd:518  ' – 💡 Licht und 📢 Sirene'
-  gamewiz.gd:548  'nein'
-  gamewiz.gd:549  'nein'
-  gamewiz.gd:550  'nein'
-  gamewiz.gd:562  ' (mit den Spielern, die jetzt dabei sind)'
-  gamewiz.gd:577  'ja'
-  gamewiz.gd:577  'nein'
-  gamewiz.gd:773  '⚠ Nicht übernommen: '
-  gamewiz.gd:1090  'Wie letztes Mal: '
-  gamewiz.gd:1189  ' Regeln (%d)'
-  karte.gd:249  ' – ist der PC mit dem Internet verbunden?'
-  karte.gd:249  'Karte: '
-  karte.gd:334  'Nichts gefunden'
-  karte.gd:402  ' (beim ersten Mal etwa eine Minute, danach ist der Ort gespeichert)'
-  karte.gd:479  '3D-Gebäude von swisstopo: '
-  karte.gd:503  'Dazu kommen: '
-  karte.gd:511  'ja'
-  karte.gd:511  'keine'
   main.gd:1638  '  %.0f Mbit/s'
   main.gd:2335  ' (von MoveEye)'
   main.gd:2368  'Der Simulator ist belegt: '
@@ -387,22 +410,6 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   padmap.gd:452  'Ansicht: '
   padmap.gd:466  'Foto gespeichert: '
   padmap.gd:518  'Zu'
-  protokoll.gd:72  'aus'
-  protokoll.gd:73  'Tunnel: '
-  protokoll.gd:73  'aus'
-  protokoll.gd:75  'Szene: '
-  protokoll.gd:77  'Wetter: '
-  protokoll.gd:79  'Testlauf zu Ende · '
-  protokoll.gd:84  'Spielrunde: '
-  protokoll.gd:84  'fertig'
-  protokoll.gd:84  'läuft'
-  protokoll.gd:86  'Update: '
-  protokoll.gd:90  'Grafik: '
-  protokoll.gd:92  'Kinder-Modus '
-  protokoll.gd:92  'aus'
-  protokoll.gd:92  'ein'
-  protokoll.gd:128  'Godot: '
-  protokoll.gd:131  'Godot: '
   gamemore.gd:23  'aus'
   inhalte.gd:28  'an'
   inhalte.gd:29  'aus'
