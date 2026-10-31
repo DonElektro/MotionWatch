@@ -37,7 +37,7 @@ extends Node
 ##   P["a1_aufgaben"] {id: "gegeben" | "erfuellt"}                   R["a1"] die laufende Nacht (modus, sichern, fuchs, licht …)
 ## Steuerbefehl: {"action": "abenteuer", "do": "a1", "was": state | modus (value) | sichern (value) | auswerten (id, tier) |
 ##               tag | sammlung | wertung (id) | aufgabe (id) | reset}
-## Gegenstände: hat(id) / nimm(id) unten sind Stubs - TODO verbinden mit abenteuer_inventar.gd (Paket A4).
+## Gegenstände: über das Inventar von A4 (abenteuer_inventar.gd: hat / anzahl / nimm), solange es fehlt direkt R["items"].
 ## Lite: weniger und kleinere Aufnahmen, das Licht am Berg ohne echte Lichtquelle (Quality.lite()).
 
 signal aufgabe_fertig(id)
@@ -112,12 +112,27 @@ static func _lite() -> bool:
 
 
 # =======================================================================================================================
-# Gegenstände (Stub) - TODO verbinden mit abenteuer_inventar.gd (Paket A4 ist Besitzer; IDs aus dem Brief)
+# Gegenstände: das Inventar von A4 (scripts/abenteuer_inventar.gd: hat / anzahl / nimm). Liegt die Datei noch nicht
+# auf diesem Stand (vor dem Zusammenführen mit 2.98.94), gilt der Rucksack R["items"] direkt (proviant = «essen»).
 # =======================================================================================================================
+const INV_PATH := "res://scripts/abenteuer_inventar.gd"
 const _ALT_ID := {"proviant": "essen", "feldstecher": "fernglas"}
+static var _inv_s = null
+static var _inv_tried := false
+
+
+static func _inv():
+	if not _inv_tried:
+		_inv_tried = true
+		if ResourceLoader.exists(INV_PATH):
+			_inv_s = load(INV_PATH)
+	return _inv_s
 
 
 func hat(id: String) -> bool:
+	var iv = _inv()
+	if iv != null:
+		return bool(iv.hat(id))
 	if ab == null or ab.R.is_empty():
 		return false
 	return int((ab.R.get("items", {}) as Dictionary).get(_ALT_ID.get(id, id), 0)) > 0
@@ -125,16 +140,20 @@ func hat(id: String) -> bool:
 
 func nimm(id: String, n := 999) -> int:
 	"""nimmt bis n Stück aus dem Rucksack; gibt zurück, wie viele es waren"""
+	var iv = _inv()
+	if iv != null:
+		var k := mini(int(iv.anzahl(id)), n)
+		return k if k > 0 and bool(iv.nimm(id, k)) else 0
 	if ab == null or ab.R.is_empty():
 		return 0
 	var it: Dictionary = ab.R.get("items", {})
-	var k: String = _ALT_ID.get(id, id)
-	var had := int(it.get(k, 0))
+	var key: String = _ALT_ID.get(id, id)
+	var had := int(it.get(key, 0))
 	var take := mini(had, n)
 	if take > 0:
-		it[k] = had - take
-		if int(it[k]) <= 0:
-			it.erase(k)
+		it[key] = had - take
+		if int(it[key]) <= 0:
+			it.erase(key)
 	return take
 
 

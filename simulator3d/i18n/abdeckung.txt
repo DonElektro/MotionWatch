@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 5023 (Stellen: 6972)
-Übersetzt: en 5023, fr 5023, it 5023, rm 5023
+Texte gesamt: 5115 (Stellen: 7107)
+Übersetzt: en 5115, fr 5115, it 5115, rm 5115
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 380 Stellen
-Nicht mehr im Code (noch in texte.json): 52
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 394 Stellen
+Nicht mehr im Code (noch in texte.json): 53
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 56 Stellen in wizpics.gd 21, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 17881, schlüssel 12648, keine Wörter 8148, index 6381, technisch 2302, doc 1460, einheit 193, englisch 86, log 78, pfad 66, html 56, klasse 23, shader 4
+Übersprungen (Grund: Anzahl): kennung 18154, schlüssel 12918, keine Wörter 8243, index 6576, technisch 2341, doc 1478, einheit 195, englisch 89, log 78, pfad 67, html 56, klasse 23, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  669    29
@@ -16,10 +16,11 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal.gd               199     5
   bergtal_abenteuer_daten.gd   199     0
   bergtal_horror.gd        154     3
+  abenteuer_moveeye.gd     110    14
   bib_objekte.gd           108     0
   bergtal_orte.gd          108     0
-  testrun.gd                94     3
   bergtal_aussicht.gd       94     4
+  testrun.gd                94     3
   templates.gd              93     6
   einbruch.gd               91     0
   ferienpark.gd             89     0
@@ -52,8 +53,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   inventar.gd               41     4
   gamecompare.gd            40     6
   kitrain.gd                39     9
-  fotomodus.gd              38     0
   gamejaeger.gd             38     1
+  fotomodus.gd              38     0
   simreal.gd                37     0
   update.gd                 37     4
   mikrofon.gd               37     0
@@ -71,9 +72,9 @@ Pro Datei (Texte / davon dynamische Stellen):
   umgebung.gd               25     0
   inhalte.gd                25    12
   gameshutter.gd            25     5
+  worlds.gd                 23     0
   licht.gd                  23     1
   wetter.gd                 23     0
-  worlds.gd                 23     0
   kompakt_festival.gd       23     0
   dataset.gd                22     3
   fenster.gd                22     0
@@ -174,26 +175,40 @@ Unsicher:
   'Wide camera (NoIR Wide)': Kameraname an MoveEye (/info) – nicht umhüllen
 
 Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {name} machen:
+  abenteuer_moveeye.gd:167  'offen'
+  abenteuer_moveeye.gd:173  'offen'
+  abenteuer_moveeye.gd:282  'offen'
+  abenteuer_moveeye.gd:284  'offen'
+  abenteuer_moveeye.gd:286  'offen'
+  abenteuer_moveeye.gd:295  'offen'
+  abenteuer_moveeye.gd:355  'offen'
+  abenteuer_moveeye.gd:406  'offen'
+  abenteuer_moveeye.gd:1056  'offen'
+  abenteuer_moveeye.gd:1095  'offen'
+  abenteuer_moveeye.gd:1123  'offen'
+  abenteuer_moveeye.gd:1301  'offen'
+  abenteuer_moveeye.gd:1302  'offen'
+  abenteuer_moveeye.gd:1302  'offen'
+  bergtal_horror.gd:40  'offen'
+  bergtal_horror.gd:58  'offen'
+  bergtal_horror.gd:1093  'Fertig'
   b3d.gd:86  'Kachel leer: '
   b3d.gd:186  'glTF nicht lesbar: '
   b3d.gd:208  'Kachel ohne Dreiecke: '
-  bergtal.gd:235  'Aussicht: '
-  bergtal.gd:244  'Schlafplatz: '
-  bergtal.gd:246  'Aussicht: '
-  bergtal.gd:2180  'Schlafplatz: '
-  bergtal.gd:2182  'Aussicht: '
-  bergtal_abenteuer.gd:321  'Start: '
-  bergtal_abenteuer.gd:776  ' auf der Bank mit Aussicht'
-  bergtal_abenteuer.gd:1834  'Wird frei: '
-  bergtal_abenteuer.gd:1966  '  · %.1f kg'
-  bergtal_abenteuer.gd:2050  ' - Bank'
+  bergtal.gd:236  'Aussicht: '
+  bergtal.gd:245  'Schlafplatz: '
+  bergtal.gd:247  'Aussicht: '
+  bergtal.gd:2181  'Schlafplatz: '
+  bergtal.gd:2183  'Aussicht: '
+  bergtal_abenteuer.gd:323  'Start: '
+  bergtal_abenteuer.gd:778  ' auf der Bank mit Aussicht'
+  bergtal_abenteuer.gd:1854  'Wird frei: '
+  bergtal_abenteuer.gd:1988  '  · %.1f kg'
+  bergtal_abenteuer.gd:2072  ' - Bank'
   bergtal_aussicht.gd:357  'von'
   bergtal_aussicht.gd:536  'von'
   bergtal_aussicht.gd:1159  'Abzeichen: '
   bergtal_aussicht.gd:1160  'von'
-  bergtal_horror.gd:40  'offen'
-  bergtal_horror.gd:58  'offen'
-  bergtal_horror.gd:1093  'Fertig'
   tour.gd:187  'Fertig'
   camphys.gd:153  ' · %.1f Blenden zu dunkel'
   dataset.gd:54  'Spiel: '
