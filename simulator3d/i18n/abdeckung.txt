@@ -4,9 +4,9 @@ Texte gesamt: 5023 (Stellen: 6972)
 Übersetzt: en 5023, fr 5023, it 5023, rm 5023
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 380 Stellen
-Nicht mehr im Code (noch in texte.json): 52
+Nicht mehr im Code (noch in texte.json): 62
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 56 Stellen in wizpics.gd 21, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 17881, schlüssel 12648, keine Wörter 8148, index 6381, technisch 2302, doc 1460, einheit 193, englisch 86, log 78, pfad 66, html 56, klasse 23, shader 4
+Übersprungen (Grund: Anzahl): kennung 17881, schlüssel 12659, keine Wörter 8150, index 6381, technisch 2312, doc 1460, einheit 193, englisch 86, log 78, pfad 66, html 56, klasse 23, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  669    29
@@ -298,11 +298,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   smalltv.gd:276  ' · vor %d s'
   smalltv.gd:360  ' · Uhr (kein Fotoalbum)'
   smalltv.gd:360  'SmallTV (virtuell)'
-  figur_paket.gd:104  'Paket lässt sich nicht öffnen: '
-  figur_paket.gd:122  'Datei im Paket kaputt: '
-  figur_paket.gd:150  'Skeleton3D:'
-  figur_paket.gd:713  ' – Fehler: '
-  figur_paket.gd:731  'Figuren-Paket ist schon da: '
+  figur_paket.gd:111  'Paket lässt sich nicht öffnen: '
+  figur_paket.gd:129  'Datei im Paket kaputt: '
+  figur_paket.gd:157  'Skeleton3D:'
+  figur_paket.gd:735  ' – Fehler: '
+  figur_paket.gd:753  'Figuren-Paket ist schon da: '
   game.gd:1449  ' · 🏆 alle gefunden'
   game.gd:1453  'Wächter · '
   game.gd:1479  ' · 🦆 %d s beobachtet'

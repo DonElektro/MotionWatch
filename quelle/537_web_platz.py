@@ -86,7 +86,7 @@ function paintStart() {
     n.onchange = async () => { const r = await post("/api/place", {op: "height", value: parseFloat(n.value)}); if (r && r.ok) { n.value = r.m; toast("✓ " + t("Camera height (m)") + ": " + r.m); } };
     l.append(n, E("span", "", t("Camera height (m)"))); v.appendChild(l);
     v.appendChild(E("div", "mut", t("Height of the lens above the ground - helps to tell animals from persons at night.") +
-      (S.cam_h.sim ? " " + tf("Simulator: pole {m} m - counts while connected", {m: S.cam_h.sim.toFixed(2)}) : "")));
+      (S.cam_h.sim ? " " + tf("Simulator: camera height {m} m - counts while connected", {m: S.cam_h.sim.toFixed(2)}) : "")));
   }
   if (S.dark) {
     v.appendChild(E("div", "mut", "🌙 " + t("It is dark: the night reference is made now.")));
@@ -355,7 +355,7 @@ PLACE_PAGE_KEYS = ["Set up the place", "1 Look around", "2 Mark", "3 Done", "Put
                    "No full turn: the head turns only as far as its servo goes.", "{n} directions in {rows} rows - about {min} minutes.",
                    "Use the wide-angle camera ({cam}, {deg}°): {n} directions, about {min} min", "Thorough: 3 rows instead of 2 (takes longer)",
                    "Camera height (m)", "Height of the lens above the ground - helps to tell animals from persons at night.",
-                   "Simulator: pole {m} m - counts while connected",
+                   "Simulator: camera height {m} m - counts while connected",
                    "It is dark: the night reference is made now.", "with the infrared light", "with the thermal camera too", "Start looking around",
                    "Show the last look-around", "Place set up on {when}: {n} things marked", "Forget the place",
                    "Forget the place? Its zones, waypoints and guarded things are removed.", "The head turns by itself - please do not stand in front of it.",

@@ -442,7 +442,7 @@ func _process(dt: float) -> void:
 	var dn: String = {"keyboard": "Tastatur", "mouse": "Maus", "touch": "Touch", "pad": "Controller"}[device]
 	if device == "pad" and _rp_on():
 		dn = "Controller im Browser"
-	_info.text = "Erkunden · %s · %s · %.1f km/h · Stange %.1f m%s\n%s" % [dn,
+	_info.text = "Erkunden · %s · %s · %.1f km/h · Höhe der Kamera %.1f m%s\n%s" % [dn,
 			VIEW_NAMES[view] + (" (automatisch von oben)" if auto_top and view == "chase" else ""), kmh, main.mast_h, " · schnell" if turbo else "", _help()]
 
 
@@ -487,7 +487,7 @@ func _help() -> String:
 			return "Grüner Stick unten rechts fahren · Ansicht und Ende oben im Feld"
 		"mouse":
 			return "Grünen Stick ziehen · rechte Taste = umschauen · Rad = Abstand · Strg+Klick = Rover hierhin · C Beobachter · Esc"
-	return "W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Stange · C Beobachter · J Mitspieler · Esc"
+	return "W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc"
 
 
 func _draw() -> void:

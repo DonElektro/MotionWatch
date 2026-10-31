@@ -45,7 +45,7 @@ def _app_place(self):
     _ci = cam_height_info()
     ttk.Label(of, style="Mut.TLabel", wraplength=760, justify="left",
               text=tr("Height of the lens above the ground - helps to tell animals from persons at night.")
-              + ((" " + trf("Simulator: pole {m} m - counts while connected", m="%.2f" % _ci["sim"])) if _ci["sim"] else "")).pack(anchor="w")
+              + ((" " + trf("Simulator: camera height {m} m - counts while connected", m="%.2f" % _ci["sim"])) if _ci["sim"] else "")).pack(anchor="w")
     cb_ir = ttk.Checkbutton(of, variable=v_ir, text=tr("with the infrared light"))
     cb_th = ttk.Checkbutton(of, variable=v_th, text=tr("with the thermal camera too"))
     bf = ttk.Frame(top); bf.pack(fill="x", pady=(6, 0))

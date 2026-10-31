@@ -12085,7 +12085,7 @@ SIMHUB_JS = r"""
     "ab-note": "Zweimal derselbe Testlauf: A mit den jetzigen Einstellungen, B mit der Änderung. B bleibt nur, wenn es klar besser ist (+3 Punkte).",
     "More sensitive": "Empfindlicher", "Less sensitive": "Weniger empfindlich", "AI stricter": "KI strenger", "AI more generous": "KI grosszügiger", "Also small objects": "Auch kleine Objekte",
     "Faster decision": "Schneller entscheiden", "B is better – kept": "B ist besser – übernommen", "A stays": "A bleibt", "Place, zones, patrol": "Ort, Zonen, Patrouille",
-    "Zones in 3D": "Zonen in 3D", "mast": "Stange", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"});
+    "Zones in 3D": "Zonen in 3D", "camera height": "Höhe der Kamera", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"});
   Object.assign(DE, {"Discoveries": "Entdeckungen", "{f} of {n} discovered": "{f} von {n} entdeckt", "Photo for the discovery book": "Foto für Entdeckungsbuch",
     "Open in the simulator": "Im Simulator öffnen", "Blinki hint": "Blinki-Hinweis", "a place": "ein Ort", "a scene": "eine Szene", "an animal": "ein Tier", "a person": "ein Mensch",
     "Found!": "Entdeckt!", "Something special is in the picture – take the photo now!": "Etwas Besonderes ist im Bild – jetzt fotografieren!",
@@ -12309,7 +12309,7 @@ SIMHUB_JS = r"""
     if (open && full && G[GRP[open] || "world"].parentNode) { const hold = E("div"); G[GRP[open] || "world"].after(hold); sheet(hold, open); }   // the sheet right under its group
     else if (open) sheet(box, open);
     if (full && H.handover && H.handover.length) { const w = E("div", "mut", "🔁 " + H.handover.map(x => x.t + " " + x.from + " → " + x.to).join(" · ")); w.style.cssText = "margin-top:6px;font-size:12px"; box.appendChild(w); }
-    if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("mast") + " " + H.twin.mast.toFixed(2) + " m" : "")
+    if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("camera height") + " " + H.twin.mast.toFixed(2) + " m" : "")
       + (H.twin.zones != null ? " · " + H.twin.zones + " " + tt("zones") : "") + (H.twin.waypoints != null ? " · " + H.twin.waypoints + " " + tt("patrol points") : "")); w.style.cssText = "margin-top:8px;font-size:12px"; box.appendChild(w); }
   }
   function paintTile(el_) {
@@ -55209,7 +55209,7 @@ function paintStart() {
     n.onchange = async () => { const r = await post("/api/place", {op: "height", value: parseFloat(n.value)}); if (r && r.ok) { n.value = r.m; toast("✓ " + t("Camera height (m)") + ": " + r.m); } };
     l.append(n, E("span", "", t("Camera height (m)"))); v.appendChild(l);
     v.appendChild(E("div", "mut", t("Height of the lens above the ground - helps to tell animals from persons at night.") +
-      (S.cam_h.sim ? " " + tf("Simulator: pole {m} m - counts while connected", {m: S.cam_h.sim.toFixed(2)}) : "")));
+      (S.cam_h.sim ? " " + tf("Simulator: camera height {m} m - counts while connected", {m: S.cam_h.sim.toFixed(2)}) : "")));
   }
   if (S.dark) {
     v.appendChild(E("div", "mut", "🌙 " + t("It is dark: the night reference is made now.")));
@@ -55478,7 +55478,7 @@ PLACE_PAGE_KEYS = ["Set up the place", "1 Look around", "2 Mark", "3 Done", "Put
                    "No full turn: the head turns only as far as its servo goes.", "{n} directions in {rows} rows - about {min} minutes.",
                    "Use the wide-angle camera ({cam}, {deg}°): {n} directions, about {min} min", "Thorough: 3 rows instead of 2 (takes longer)",
                    "Camera height (m)", "Height of the lens above the ground - helps to tell animals from persons at night.",
-                   "Simulator: pole {m} m - counts while connected",
+                   "Simulator: camera height {m} m - counts while connected",
                    "It is dark: the night reference is made now.", "with the infrared light", "with the thermal camera too", "Start looking around",
                    "Show the last look-around", "Place set up on {when}: {n} things marked", "Forget the place",
                    "Forget the place? Its zones, waypoints and guarded things are removed.", "The head turns by itself - please do not stand in front of it.",
@@ -57903,7 +57903,7 @@ PADMAP_JS = r"""window.MWPad = window.MWPad || (function () {
               ["select", "swap", "Swap pictures / views", "Bilder / Ansichten tauschen"],
               ["start", "menu", "Menu (control panel)", "Menü (Bedienfeld)"], ["start_long", "exit", "Hold 1 s: leave", "1 s halten: beenden"],
               ["dpad", "head", "Head in small steps", "Kopf in kleinen Schritten"],
-              ["l2", "pole", "Hold L2 + ✚ ↑↓: pole longer / shorter", "L2 halten + ✚ ↑↓: Stange länger / kürzer"]],
+              ["l2", "pole", "Hold L2 + ✚ ↑↓: camera higher / lower", "L2 halten + ✚ ↑↓: Höhe der Kamera + / −"]],
       "view": [["ls", "head", "Turn / tilt the head of MoveEye", "Kopf von MoveEye drehen / neigen"],
                ["rs", "drive", "Drive the rover (without rover: move the view)", "Rover fahren (ohne Rover: Ansicht bewegen)"],
                ["r1rs", "orbit", "Hold R1: turn the view", "R1 halten: Ansicht drehen"],
@@ -76902,7 +76902,7 @@ def _app_place(self):
     _ci = cam_height_info()
     ttk.Label(of, style="Mut.TLabel", wraplength=760, justify="left",
               text=tr("Height of the lens above the ground - helps to tell animals from persons at night.")
-              + ((" " + trf("Simulator: pole {m} m - counts while connected", m="%.2f" % _ci["sim"])) if _ci["sim"] else "")).pack(anchor="w")
+              + ((" " + trf("Simulator: camera height {m} m - counts while connected", m="%.2f" % _ci["sim"])) if _ci["sim"] else "")).pack(anchor="w")
     cb_ir = ttk.Checkbutton(of, variable=v_ir, text=tr("with the infrared light"))
     cb_th = ttk.Checkbutton(of, variable=v_th, text=tr("with the thermal camera too"))
     bf = ttk.Frame(top); bf.pack(fill="x", pady=(6, 0))
@@ -90675,7 +90675,7 @@ _HX_pad2 = {
     'Menu (control panel)': ('Menü (Bedienfeld)', 'Menu (panneau de commande)', 'Menu (pannello di comando)', 'Menu (panela da manipulaziun)'),
     'Hold 1 s: leave': ('1 s halten: beenden', 'Maintenir 1 s : quitter', 'Tenere 1 s: uscire', 'Tegnair 1 s: terminar'),
     'Head in small steps': ('Kopf in kleinen Schritten', 'Tête par petits pas', 'Testa a piccoli passi', 'Chau en pitschens pass'),
-    'Hold L2 + ✚ ↑↓: pole longer / shorter': ('L2 halten + ✚ ↑↓: Stange länger / kürzer', 'Maintenir L2 + ✚ ↑↓ : mât plus long / plus court', 'Tenere L2 + ✚ ↑↓: asta più lunga / più corta', 'Tegnair L2 + ✚ ↑↓: pertga pli lunga / pli curta'),
+    'Hold L2 + ✚ ↑↓: camera higher / lower': ('L2 halten + ✚ ↑↓: Höhe der Kamera + / −', 'Maintenir L2 + ✚ ↑↓ : caméra plus haut / plus bas', 'Tenere L2 + ✚ ↑↓: telecamera più alta / più bassa', 'Tegnair L2 + ✚ ↑↓: camera pli aut / pli bass'),
     'Hold 1.5 s: emergency stop of the servos': ('1,5 s halten: Not-Aus der Servos', 'Maintenir 1,5 s : arrêt d’urgence des servos', 'Tenere 1,5 s: arresto d’emergenza dei servo', 'Tegnair 1,5 s: stop d’urgenza dals servos'),
     'Menu (the bar)': ('Menü (die Leiste)', 'Menu (la barre)', 'Menu (la barra)', 'Menu (la trav)'),
     'Choose a button of the bar (A = press, B = back)': ('Knopf der Leiste wählen (A = drücken, B = zurück)', 'Choisir un bouton de la barre (A = appuyer, B = retour)', 'Scegliere un pulsante della barra (A = premere, B = indietro)', 'Tscherner in buttun da la trav (A = smatgar, B = enavos)'),
@@ -90768,8 +90768,8 @@ _HX_PLATZEIN = {
         'Hauteur de l’objectif au-dessus du sol – aide la nuit à distinguer les animaux des personnes.',
         'Altezza dell’obiettivo dal suolo – aiuta di notte a distinguere gli animali dalle persone.',
         'Autezza da l’objectiv sur il terren – gida la notg a distinguer animals da persunas.'),
-    'Simulator: pole {m} m - counts while connected': ('Simulator: Stange {m} m – gilt, solange verbunden', 'Simulateur : mât {m} m – compte tant qu’il est connecté',
-                                                         'Simulatore: asta {m} m – vale finché è collegato', 'Simulatur: pertga {m} m – vala uschè ditg sco connectà'),
+    'Simulator: camera height {m} m - counts while connected': ('Simulator: Höhe der Kamera {m} m – gilt, solange verbunden', 'Simulateur : hauteur de la caméra {m} m – compte tant qu’il est connecté',
+                                                         'Simulatore: altezza della telecamera {m} m – vale finché è collegato', 'Simulatur: autezza da la camera {m} m – vala uschè ditg sco connectà'),
     'with the infrared light': ('mit dem Infrarot-Licht', 'avec la lumière infrarouge', 'con la luce infrarossa', 'cun la glisch infracotschna'),
     'with the thermal camera too': ('auch mit der Wärmebild-Kamera', 'aussi avec la caméra thermique', 'anche con la termocamera', 'er cun la camera termica'),
     'Start looking around': ('Umschauen starten', 'Commencer à regarder autour', 'Iniziare a guardarsi intorno', 'Cumenzar a guardar enturn'),
@@ -90912,35 +90912,35 @@ _HELP_PLATZEIN = {
           '<li><b>Nachts:</b> mit Infrarot-Licht und Wärmebild – so passt die Nacht-Referenz. <b>Weitwinkel:</b> sitzt eine Zusatzkamera mit grösserem Blickwinkel auf dem Kopf, braucht der Rundblick weniger Schritte.</li>'
           '<li><b>2 Markieren:</b> auf dem Panorama die Vorschläge antippen oder mit einer Taste ein Rechteck ziehen: <b>⛺ Mein Zelt / Wohnmobil</b> (Schutzzone: wer dort länger bleibt, wird gemeldet; eine Person beim Zelt braucht keine zweite Bestätigung), <b>🚶 Zugang / Weg</b> (Linie + Patrouillen-Punkt; «öffentlicher Weg = nur melden»: Passanten lösen keinen Alarm aus, nur einen Hinweis), <b>🚲 Wertsachen</b> (bewacht vom Referenz-Scan: am Morgen «Velo fehlt»), <b>🌿 Ignorieren</b> (Maske).</li>'
           '<li><b>3 Fertig:</b> Zonen, Masken, Wegpunkte und bewachte Sachen entstehen von selbst; die Zonen bleiben an ihrem Platz, auch wenn der Kopf dreht. Danach gleich den <b>Gehtest</b> machen. Ändern: Schutz → Zonen, oder nochmals «Platz einrichten».</li>'
-          '<li><b>📐 Blickwinkel der Kamera</b> (Einstellungen → Kamera / Servos): pro Kamera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) oder ein eigener Wert; am Pi wird das Modell meist selbst erkannt, im Simulator kommt der Wert vom Simulator.</li><li><b>📏 Höhe der Kamera (m):</b> im Schritt 1, Standard 1.6 m. Damit schätzt MoveEye nachts im Wärmebild über den Fusspunkt, wie gross etwas wirklich ist (Reh / Fuchs = Tier statt Person). Mit dem Simulator verbunden gilt dessen Stange.</li></ul></section>\n\n',
+          '<li><b>📐 Blickwinkel der Kamera</b> (Einstellungen → Kamera / Servos): pro Kamera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) oder ein eigener Wert; am Pi wird das Modell meist selbst erkannt, im Simulator kommt der Wert vom Simulator.</li><li><b>📏 Höhe der Kamera (m):</b> im Schritt 1, Standard 1.6 m. Damit schätzt MoveEye nachts im Wärmebild über den Fusspunkt, wie gross etwas wirklich ist (Reh / Fuchs = Tier statt Person). Mit dem Simulator verbunden gilt dessen «Höhe der Kamera».</li></ul></section>\n\n',
     "en": '<section id="place" data-icon="📍"><h2>Set up the place</h2><ul>'
           '<li><b>When:</b> after putting MoveEye up (it suggests it itself on the first start and when it stands at a new place). Schutz → «📍 Set up the place» (web and window).</li>'
           '<li><b>1 Look around:</b> the head drives its whole pan range in 2 (thorough: 3) rows. How far depends on the servo and the lens: MG90S about 180°, with the lens of the Camera Module 3 (66°) about 240° – no full turn; a 360° servo sees the whole circle. In every direction a photo and about 10 seconds of watching: what moves (branches, road, lights) and what the AI sees (car, bike, chair, bench, person …). 2–3 minutes, «Cancel» at any time.</li>'
           '<li><b>At night:</b> with the infrared light and the thermal camera – so the night reference fits. <b>Wide angle:</b> when an extra camera with a wider view sits on the head, the look-around needs fewer steps.</li>'
           '<li><b>2 Mark:</b> tap the suggestions on the panorama or draw a box with a button: <b>⛺ My tent / camper</b> (protection zone: who stays there is reported; a person at the tent needs no second confirmation), <b>🚶 Access / path</b> (line + patrol point; «public path = only report»: passers-by raise no alarm, only a note), <b>🚲 Valuables</b> (guarded by the reference scan: «Bike missing» in the morning), <b>🌿 Ignore</b> (mask).</li>'
           '<li><b>3 Done:</b> zones, masks, waypoints and guarded things are made by themselves; the zones stay on their place when the head turns. Then do the <b>walk test</b>. To change: Schutz → zones, or «Set up the place» again.</li>'
-          '<li><b>📐 Field of view of the camera</b> (Settings → Camera / Servos): per camera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) or an own value; on the Pi the model is usually detected, in the simulator the value comes from the simulator.</li><li><b>📏 Camera height (m):</b> in step 1, default 1.6 m. At night MoveEye uses it to estimate from the foot point how tall something in the thermal picture really is (roe deer / fox = animal instead of person). Connected to the simulator, its pole counts.</li></ul></section>\n\n',
+          '<li><b>📐 Field of view of the camera</b> (Settings → Camera / Servos): per camera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) or an own value; on the Pi the model is usually detected, in the simulator the value comes from the simulator.</li><li><b>📏 Camera height (m):</b> in step 1, default 1.6 m. At night MoveEye uses it to estimate from the foot point how tall something in the thermal picture really is (roe deer / fox = animal instead of person). Connected to the simulator, its «camera height» counts.</li></ul></section>\n\n',
     "fr": '<section id="place" data-icon="📍"><h2>Configurer l’emplacement</h2><ul>'
           '<li><b>Quand :</b> après avoir installé MoveEye (il le propose lui-même au premier démarrage et à un nouvel endroit). Protection → « 📍 Configurer l’emplacement » (web et fenêtre).</li>'
           '<li><b>1 Regarder autour :</b> la tête parcourt toute sa rotation en 2 (minutieux : 3) rangées. MG90S environ 180°, avec l’objectif de la Camera Module 3 (66°) environ 240° – pas de tour complet ; un servo 360° voit tout le cercle. Dans chaque direction une photo et environ 10 secondes d’observation : ce qui bouge (branches, route, lumières) et ce que l’IA voit (voiture, vélo, chaise, banc, personne …). 2–3 minutes, « Annuler » à tout moment.</li>'
           '<li><b>La nuit :</b> avec la lumière infrarouge et la caméra thermique. <b>Grand angle :</b> une caméra supplémentaire plus large sur la tête demande moins d’étapes.</li>'
           '<li><b>2 Marquer :</b> toucher les suggestions sur le panorama ou dessiner un rectangle : <b>⛺ Ma tente / camping-car</b> (zone de protection), <b>🚶 Accès / chemin</b> (ligne + point de patrouille ; « chemin public = seulement signaler »), <b>🚲 Objets de valeur</b> (surveillés par le scan de référence : « vélo manquant » le matin), <b>🌿 Ignorer</b> (masque).</li>'
           '<li><b>3 Terminé :</b> zones, masques, points de passage et objets surveillés sont créés tout seuls ; les zones restent à leur place quand la tête tourne. Ensuite faire le <b>test de marche</b>.</li>'
-          '<li><b>📐 Angle de vue de la caméra</b> (Réglages → Caméra / Servos) : par caméra Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) ou une valeur propre.</li><li><b>📏 Hauteur de la caméra (m) :</b> à l’étape 1, 1.6 m par défaut. La nuit, MoveEye estime ainsi par le point au sol la taille réelle d’un corps dans l’image thermique (chevreuil / renard = animal au lieu de personne). Connecté au simulateur, son mât compte.</li></ul></section>\n\n',
+          '<li><b>📐 Angle de vue de la caméra</b> (Réglages → Caméra / Servos) : par caméra Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) ou une valeur propre.</li><li><b>📏 Hauteur de la caméra (m) :</b> à l’étape 1, 1.6 m par défaut. La nuit, MoveEye estime ainsi par le point au sol la taille réelle d’un corps dans l’image thermique (chevreuil / renard = animal au lieu de personne). Connecté au simulateur, sa «hauteur de la caméra» compte.</li></ul></section>\n\n',
     "it": '<section id="place" data-icon="📍"><h2>Configurare il posto</h2><ul>'
           '<li><b>Quando:</b> dopo aver posizionato MoveEye (lo propone da solo al primo avvio e in un posto nuovo). Protezione → «📍 Configurare il posto» (web e finestra).</li>'
           '<li><b>1 Guardarsi intorno:</b> la testa percorre tutta la sua rotazione in 2 (accurato: 3) file. MG90S circa 180°, con l’obiettivo della Camera Module 3 (66°) circa 240° – nessun giro completo; un servo a 360° vede tutto il cerchio. In ogni direzione una foto e circa 10 secondi di osservazione: cosa si muove (rami, strada, luci) e cosa vede l’IA (auto, bici, sedia, panchina, persona …). 2–3 minuti, «Annulla» in ogni momento.</li>'
           '<li><b>Di notte:</b> con la luce infrarossa e la termocamera. <b>Grandangolo:</b> una telecamera aggiuntiva più larga sulla testa richiede meno passi.</li>'
           '<li><b>2 Segnare:</b> toccare i suggerimenti sul panorama o disegnare un rettangolo: <b>⛺ La mia tenda / camper</b> (zona di protezione), <b>🚶 Accesso / sentiero</b> (linea + punto di pattuglia; «sentiero pubblico = solo segnalare»), <b>🚲 Oggetti di valore</b> (sorvegliati dalla scansione di riferimento: «bici mancante» al mattino), <b>🌿 Ignorare</b> (maschera).</li>'
           '<li><b>3 Fatto:</b> zone, maschere, punti di passaggio e oggetti sorvegliati nascono da soli; le zone restano al loro posto quando la testa gira. Poi fare il <b>test di camminata</b>.</li>'
-          '<li><b>📐 Angolo di visione della telecamera</b> (Impostazioni → Telecamera / Servo): per telecamera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) o un valore proprio.</li><li><b>📏 Altezza della telecamera (m):</b> nel passo 1, 1.6 m di default. Di notte MoveEye stima così dal punto a terra quanto è davvero alto qualcosa nell’immagine termica (capriolo / volpe = animale invece di persona). Collegato al simulatore vale la sua asta.</li></ul></section>\n\n',
+          '<li><b>📐 Angolo di visione della telecamera</b> (Impostazioni → Telecamera / Servo): per telecamera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) o un valore proprio.</li><li><b>📏 Altezza della telecamera (m):</b> nel passo 1, 1.6 m di default. Di notte MoveEye stima così dal punto a terra quanto è davvero alto qualcosa nell’immagine termica (capriolo / volpe = animale invece di persona). Collegato al simulatore vale la sua «altezza della telecamera».</li></ul></section>\n\n',
     "rm": '<section id="place" data-icon="📍"><h2>Endrizzar il plaz</h2><ul>'
           '<li><b>Cura:</b> suenter avair plazzà MoveEye (el propona quai sez tar l’emprima partenza e sin in nov lieu). Protecziun → «📍 Endrizzar il plaz» (web e fanestra).</li>'
           '<li><b>1 Guardar enturn:</b> il chau percurra tut sia rotaziun en 2 (precis: 3) lingias. MG90S var 180°, cun l’objectiv da la Camera Module 3 (66°) var 240° – nagina rotaziun cumplaina; in servo da 360° vesa l’entir circul. En mintga direcziun ina foto ed observar var 10 secundas: tge che sa mova (roma, via, glischs) e tge che la IA vesa (auto, velo, sutga, banc, persuna …). 2–3 minutas, «Interrumper» adina.</li>'
           '<li><b>La notg:</b> cun la glisch infracotschna e la camera termica. <b>Grond angul:</b> ina camera supplementara pli largia sin il chau basegna damain pass.</li>'
           '<li><b>2 Marcar:</b> tutgar las propostas sin il panorama u dissegnar in rectangul: <b>⛺ Mia tenda / auto da campadi</b> (zona da protecziun), <b>🚶 Access / via</b> (lingia + punct da patrulla; «via publica = mo annunziar»), <b>🚲 Chaussas da valur</b> (survegliadas dal scan da referenza: «velo manca» la damaun), <b>🌿 Ignorar</b> (mascra).</li>'
           '<li><b>3 Fatg:</b> zonas, mascras, puncts da via e chaussas survegliadas vegnan fatgas sezzas; las zonas restan en lur plaz, er sch’il chau sa volva. Lura far il <b>test da chaminar</b>.</li>'
-          '<li><b>📐 Angul da vista da la camera</b> (Parameters → Camera / Servos): per camera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) u in agen valur.</li><li><b>📏 Autezza da la camera (m):</b> en il pass 1, standard 1.6 m. La notg stima MoveEye uschia tras il punct dals pes quant grond ch’insatge è propi en il maletg termic (chavriel / vulp = animal empè da persuna). Connectà cun il simulatur vala sia pertga.</li></ul></section>\n\n',
+          '<li><b>📐 Angul da vista da la camera</b> (Parameters → Camera / Servos): per camera Camera Module 3 (66°), Module 3 Wide (102°), Module 2 (62°) u in agen valur.</li><li><b>📏 Autezza da la camera (m):</b> en il pass 1, standard 1.6 m. La notg stima MoveEye uschia tras il punct dals pes quant grond ch’insatge è propi en il maletg termic (chavriel / vulp = animal empè da persuna). Connectà cun il simulatur vala sia «autezza da la camera».</li></ul></section>\n\n',
 }
 
 

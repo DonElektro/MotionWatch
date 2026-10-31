@@ -3379,6 +3379,12 @@
   "it": "Visualizzazione",
   "rm": "Visualisaziun"
  },
+ "Anzeige oben (Steuerung, Tempo, Höhe der Kamera)": {
+  "en": "Display at the top (controls, speed, camera height)",
+  "fr": "Affichage en haut (commande, vitesse, hauteur de la caméra)",
+  "it": "Indicazione in alto (comandi, velocità, altezza della telecamera)",
+  "rm": "Indicaziun si sura (manischament, tempo, autezza da la camera)"
+ },
  "Anzeige oben (Steuerung, Tempo, Stange)": {
   "en": "Display at the top (controls, speed, pole)",
   "fr": "Affichage en haut (commande, vitesse, mât)",
@@ -4717,6 +4723,12 @@
   "it": "Oggetti sorvegliati – togliere e vedere se MoveEye se ne accorge (scansione di riferimento; bici e borsa frigo anche obiettivo del gioco «Furto»):",
   "rm": "Objects survegliads – prender davent e guardar, sche MoveEye al remartga (scan da referenza; velo e chista da fraid er finamira dal gieu «Engul»):"
  },
+ "Bewegen und Ansicht: Erkunden mit dem Rover, Rover-Route, Folgen, Kopf drehen, Versetzen, Höhe der Kamera, Mitspieler, Ansicht, Bedienfeld ein / aus, Hell / Rotlicht / Dunkel und «?». Mit der Maus über ein Symbol: sein Name.": {
+  "en": "Moving and view: explore with the rover, rover route, follow, turn head, move, camera height, players, view, control panel on / off, light / red light / dark and «?». Mouse over a symbol: its name.",
+  "fr": "Bouger et vue : explorer avec le rover, trajet du rover, suivre, tourner la tête, déplacer, hauteur de la caméra, joueurs, vue, panneau oui / non, clair / lumière rouge / sombre et «?». Souris sur un symbole : son nom.",
+  "it": "Muoversi e vista: esplorare con il rover, percorso del rover, seguire, girare la testa, spostare, altezza della telecamera, giocatori, vista, pannello sì / no, chiaro / luce rossa / scuro e «?». Mouse su un simbolo: il suo nome.",
+  "rm": "Muventar e vista: explorar cun il rover, ruta dal rover, suandar, volver il chau, spustar, autezza da la camera, giugaders, vista, panela en / ora, cler / glisch cotschna / stgir e «?». Cun la mieur sur in simbol: ses num."
+ },
  "Bewegen und Ansicht: Erkunden mit dem Rover, Rover-Route, Folgen, Kopf drehen, Versetzen, Stange, Mitspieler, Ansicht, Bedienfeld ein / aus, Hell / Rotlicht / Dunkel und «?». Mit der Maus über ein Symbol: sein Name.": {
   "en": "Moving and view: explore with the rover, rover route, follow, turn head, move, pole, players, view, control panel on / off, light / red light / dark and «?». Mouse over a symbol: its name.",
   "fr": "Bouger et vue : explorer avec le rover, trajet du rover, suivre, tourner la tête, déplacer, mât, joueurs, vue, panneau oui / non, clair / lumière rouge / sombre et «?». Souris sur un symbole : son nom.",
@@ -4830,6 +4842,12 @@
   "fr": "Image illisible : %s",
   "it": "Immagine non leggibile: %s",
   "rm": "Maletg betg legibel: %s"
+ },
+ "Bild ↑ / ↓ beim Erkunden · Höhe der Kamera über dem Boden (Stange)": {
+  "en": "Page ↑ / ↓ when exploring · height of the camera above the ground (pole)",
+  "fr": "Page ↑ / ↓ en exploration · hauteur de la caméra au-dessus du sol (mât)",
+  "it": "Pag ↑ / ↓ in esplorazione · altezza della telecamera dal suolo (palo)",
+  "rm": "Pagina ↑ / ↓ cun explorar · autezza da la camera sur il terren (pal)"
  },
  "Bild ↑ / ↓ beim Erkunden · Höhe des Kamerakopfs": {
   "en": "Page ↑ / ↓ when exploring · height of the camera head",
@@ -9082,6 +9100,12 @@
   "it": "Esplorare con il rover (tastiera, mouse, touch, controller)",
   "rm": "Explorar cun il rover (tastatura, mieur, touch, controller)"
  },
+ "Erkunden · %s · %s · %.1f km/h · Höhe der Kamera %.1f m%s\n%s": {
+  "en": "Exploring · %s · %s · %.1f km/h · camera height %.1f m%s\n%s",
+  "fr": "Exploration · %s · %s · %.1f km/h · hauteur de la caméra %.1f m%s\n%s",
+  "it": "Esplorazione · %s · %s · %.1f km/h · altezza della telecamera %.1f m%s\n%s",
+  "rm": "Explorar · %s · %s · %.1f km/h · autezza da la camera %.1f m%s\n%s"
+ },
  "Erkunden · %s · %s · %.1f km/h · Stange %.1f m%s\n%s": {
   "en": "Exploring · %s · %s · %.1f km/h · pole %.1f m%s\n%s",
   "fr": "Exploration · %s · %s · %.1f km/h · mât %.1f m%s\n%s",
@@ -10270,6 +10294,12 @@
   "fr": "Mode photo : horizon penché (droite plus bas = plus)",
   "it": "Modalità foto: orizzonte storto (destra più in basso = più)",
   "rm": "Modus foto: orizont stort (a dretga pli bass = plus)"
+ },
+ "Foto-Modus: Höhe der Kamera beim Foto": {
+  "en": "Photo mode: camera height of the photo",
+  "fr": "Mode photo : hauteur de la caméra de la photo",
+  "it": "Modalità foto: altezza della telecamera della foto",
+  "rm": "Modus foto: autezza da la camera tar la foto"
  },
  "Foto-Modus: Kamerahöhe beim Foto (= Stangenlänge)": {
   "en": "Photo mode: camera height of the photo (= pole length)",
@@ -12888,6 +12918,30 @@
   "fr": "Hauteur %.1f m",
   "it": "Altezza %.1f m",
   "rm": "Autezza %.1f m"
+ },
+ "Höhe der Kamera": {
+  "en": "Camera height",
+  "fr": "Hauteur de la caméra",
+  "it": "Altezza della telecamera",
+  "rm": "Autezza da la camera"
+ },
+ "Höhe der Kamera (Stange; beim Erkunden Bild auf / ab oder Steuerkreuz)": {
+  "en": "Camera height (pole; when exploring Page up / down or d-pad)",
+  "fr": "Hauteur de la caméra (mât ; en exploration Page haut / bas ou croix)",
+  "it": "Altezza della telecamera (palo; in esplorazione Pag su / giù o croce)",
+  "rm": "Autezza da la camera (pal; cun explorar Pagina si / giu u crusch)"
+ },
+ "Höhe der Kamera + (höher)": {
+  "en": "Camera height + (higher)",
+  "fr": "Hauteur de la caméra + (plus haut)",
+  "it": "Altezza della telecamera + (più alta)",
+  "rm": "Autezza da la camera + (pli aut)"
+ },
+ "Höhe der Kamera − (tiefer)": {
+  "en": "Camera height − (lower)",
+  "fr": "Hauteur de la caméra − (plus bas)",
+  "it": "Altezza della telecamera − (più bassa)",
+  "rm": "Autezza da la camera − (pli bass)"
  },
  "Höhe des Kamerakopfs: ziehen (oder ◀ ▶ am Controller)": {
   "en": "Height of the camera head: drag (or ◀ ▶ on the controller)",
@@ -25261,6 +25315,12 @@
   "fr": "Oiseaux le jour, chauves-souris la nuit (chauds dans l’image thermique, cause typique de fausses alarmes)",
   "it": "Uccelli di giorno, pipistrelli di notte (caldi nell’immagine termica, causa tipica di falsi allarmi)",
   "rm": "Utschels dal di, mez-mieurs da notg (chauds en il maletg termic, motiv tipic da fauss alarms)"
+ },
+ "W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc": {
+  "en": "W A S D / arrows drive · Shift fast · V view · Page ↑↓ camera height · C observer · J players · Esc",
+  "fr": "W A S D / flèches conduire · Shift rapide · V vue · Page ↑↓ hauteur de la caméra · C observateur · J joueurs · Esc",
+  "it": "W A S D / frecce guidare · Shift veloce · V vista · Pag ↑↓ altezza della telecamera · C osservatore · J giocatori · Esc",
+  "rm": "W A S D / frizzas manischar · Shift svelt · V vista · Pagina ↑↓ autezza da la camera · C observatur · J giugaders · Esc"
  },
  "W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Stange · C Beobachter · J Mitspieler · Esc": {
   "en": "W A S D / arrows drive · Shift fast · V view · Page ↑↓ pole · C observer · J players · Esc",
