@@ -2318,6 +2318,8 @@ func _check_active() -> void:
 
 # ---- pictures for MoveEye -------------------------------------------------------------------------------------
 func _wanted_fps(i: int) -> float:
+	if i == 1 and weit != null and not weit.installed():
+		return 0.0                                       # P9: blind cover instead of the wide camera - nothing to render
 	var d: Dictionary = net.stream_demand() if net != null else {}
 	var f: float = float(d.get(i, 0.0))
 	if i < 2 and now() - snap_want[i] < 3.0:

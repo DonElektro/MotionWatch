@@ -16627,6 +16627,10 @@ def _kopf_ov_tick(now):
 #    a change of the position) - 440 asks weit_cam_turning().
 #  - Rear mount: movement behind -> the head turns there (162 _kopf_ov_tick, same rank as «turn to the alarm»), then the
 #    AI of the main camera checks.
+#  - P9 (31.10.2026, simulator: weitwinkel.gd): mount «case» = built into case v5.2 (front wall above the PIR, fixed, 12°
+#    down, the head turns above it) - a device mount like «base"; «none» = not built in, blind cover: no picture (the
+#    simulator answers /cam/1 with 404), not the overview; 591 says «not installed» instead of «simulator not reachable».
+#    The picture is an equidistant fisheye (angle linear in the picture) - kopf_ov_deg's (cx - 0.5) * fov is exact for it.
 #  - Second infrared LED 120° on PCA9685 channel 4 («IR-Licht breit (Kanal 4)»): on / off together with the infrared
 #    light (070 lights_tick); the simulator gets lights.ir_wide.
 # ----------------------------------------------------------------------------
@@ -16634,7 +16638,7 @@ for _k, _v in {"light_ir_wide": False, "kopf_ov_simauto": False}.items():
     CFG.setdefault(_k, _v)
     DEFAULTS.setdefault(_k, _v)
 WEIT = {"mount": None, "seen": False, "hd": None, "hd_t": 0.0, "pt": None, "pt_t": 0.0}
-WEIT_DEVICE_MOUNTS = ("base", "head_front", "head_rear")
+WEIT_DEVICE_MOUNTS = ("case", "base", "head_front", "head_rear")   # P9: + «case» (case v5.2)
 WEIT_IR_CH = 4                                            # PCA9685 channel of the wide infrared LED (white 2, IR 3 by convention)
 
 
@@ -16658,13 +16662,19 @@ def weit_on_device():
     return weit_mount() in WEIT_DEVICE_MOUNTS
 
 
+def weit_missing():
+    """P9: the simulator says its wide camera is not built in (blind cover)"""
+    c = weit_sim_cam()
+    return bool(c) and (str(c.get("mount") or "") == "none" or c.get("installed") is False)
+
+
 def weit_from_sim(w):
     """350: the reply to POST /state carries «wide» - a new mount is known at once (no new /info needed)"""
     if not isinstance(w, dict) or not CFG.get("sim_on"):
         return
     c = weit_sim_cam()
     if c is not None:
-        for k in ("mount", "tilt_deg", "yaw_offset", "pan_follow", "tilt_follow", "on_head", "fov_h", "fov_v", "pan_limit"):
+        for k in ("mount", "tilt_deg", "yaw_offset", "pan_follow", "tilt_follow", "on_head", "fov_h", "fov_v", "pan_limit", "installed"):
             if k in w:
                 c[k] = w[k]
     weit_auto()
@@ -16687,7 +16697,8 @@ def weit_auto():
     elif cur == "sim:1" and CFG.get("kopf_ov_simauto"):
         CFG["kopf_ov"] = ""; CFG["kopf_ov_simauto"] = False; changed = True
         if not first:
-            log_event("servo", "Simulator: the wide camera is on the mast again - no longer the overview of the head")
+            log_event("servo", "Simulator: the wide camera is not built in (blind cover) - no overview of the head" if m == "none"
+                      else "Simulator: the wide camera is on the mast again - no longer the overview of the head")
     if changed:
         save_settings()
 
@@ -16805,7 +16816,7 @@ def weit_state(lang=None):
     if not c or "mount" not in c:
         return None
     n = next((x.idx for x in CAMS if str(x.spec) == "sim:1"), None)
-    return {"mount": str(c.get("mount")), "on_head": bool(c.get("on_head")), "tilt": c.get("tilt_deg"), "n": n,
+    return {"mount": str(c.get("mount")), "on_head": bool(c.get("on_head")), "tilt": c.get("tilt_deg"), "n": n, "missing": weit_missing(),
             "ov": str(CFG.get("kopf_ov") or "") == "sim:1", "ov_on": bool(CFG.get("kopf_ov_on")), "fov": [c.get("fov_h"), c.get("fov_v")]}
 # ----------------------------------------------------------------------------
 # Decisions Daniel 30.10.2026 21:55 (docs/Gehaeuse_Variante2_Weitwinkel.md, «Status-LED oben auf dem Kopf»):
@@ -66510,6 +66521,11 @@ _HX_weit = {
          'Glisch IR largia (chanal 4): segunda LED IR 120° sin il chanal 4 dal PCA9685, en / ora cun la glisch infraritga'),
     'Simulator wide camera': ('Simulator-Weitwinkel', 'Grand-angle du simulateur', 'Grandangolo del simulatore', 'Grond angul dal simulatur'),
     'Wide camera': ('Weitwinkel-Kamera', 'Caméra grand-angle', 'Telecamera grandangolare', 'Camera da grond angul'),
+    'In the case (v5.2)': ('Im Gehäuse (v5.2)', 'Dans le boîtier (v5.2)', 'Nella custodia (v5.2)', 'En la chaschetta (v5.2)'),
+    'Not installed (blind cover)': ('Nicht verbaut (Blindstopfen)', 'Non montée (cache)', 'Non montata (tappo cieco)', 'Betg montada (zaffer)'),
+    'Not installed (blind cover) - no wide picture': ('Nicht verbaut (Blindstopfen) – kein Weitwinkel-Bild',
+        'Non montée (cache) – pas d’image grand-angle', 'Non montata (tappo cieco) – nessuna immagine grandangolare',
+        'Betg montada (zaffer) – nagin maletg da grond angul'),
     'Mast (scene)': ('Mast (Szene)', 'Mât (scène)', 'Palo (scena)', 'Pal (scena)'),
     'Base front, fixed': ('Unterteil vorne, fest', 'Socle avant, fixe', 'Base davanti, fissa', 'Part sut davant, fixa'),
     'Head front': ('Kopf vorne', 'Tête avant', 'Testa davanti', 'Chau davant'),
@@ -66539,7 +66555,11 @@ for _a, _b in (('<section id="camera" data-icon="📷"><h2>Kamera &amp; Servos</
                 "<i>Kopf vorne</i> oder <i>Kopf hinten</i> (dreht mit). Sitzt sie am Gerät, stellt MoveEye «Übersicht lenkt den Kopf» selbst "
                 "ein: Bewegung im Weitwinkel-Bild dreht den Kopf dorthin, dann prüft die KI der Hauptkamera; solange der Kopf dreht, zählt "
                 "die Bewegung im Weitwinkel-Bild nicht. Auf dem Kopf gilt eine Drehgrenze (Kabel; 360°-Servos bräuchten einen Schleifring). "
-                "Die zweite IR-LED 120° schaltest du mit «IR-Licht breit (Kanal 4)» unter Licht.</p>"),
+                "Die zweite IR-LED 120° schaltest du mit «IR-Licht breit (Kanal 4)» unter Licht.</p>"
+                "<p><b>Im Gehäuse (v5.2):</b> Standard-Montage im Simulator – wie das echte Gehäuse v5.2: fest in der Stirnwand über "
+                "dem PIR, 12° nach unten, der Kopf dreht darüber. Das Bild ist ein Fischauge (120° diagonal, gebogene Linien am Rand, "
+                "dunklere Ecken); nachts beleuchtet die kleine 5-mm-IR-LED (Kanal 4) nur die Nähe (ca. 4 m). "
+                "<i>Nicht verbaut (Blindstopfen)</i>: kein Weitwinkel-Bild, die Zusatzkamera meldet «nicht verbaut».</p>"),
                ('<section id="camera" data-icon="📷"><h2>Camera &amp; servos</h2>',
                 "<p><b>🔭 Wide camera in the simulator (simulator 3D-4.17):</b> the former «fixed camera» of the simulator is now the wide "
                 "camera (Camera Module 3 Wide NoIR, 102° × 67°). In Simulator → camera picture → «Weitwinkel-Kamera» or with the tile 🔭 "
@@ -66547,7 +66567,11 @@ for _a, _b in (('<section id="camera" data-icon="📷"><h2>Kamera &amp; Servos</
                 "<i>head rear</i> (turns with the head). On the device MoveEye sets «The overview camera steers the head» by itself: "
                 "movement in the wide picture turns the head there, then the AI of the main camera checks; while the head turns, movement "
                 "in the wide picture does not count. On the head a pan limit applies (cable; 360° servos would need a slip ring). The "
-                "second IR LED 120° is switched with «Wide infrared light (channel 4)» under Lights.</p>")):
+                "second IR LED 120° is switched with «Wide infrared light (channel 4)» under Lights.</p>"
+                "<p><b>In the case (v5.2):</b> the default mount in the simulator - like the real case v5.2: fixed in the front wall "
+                "above the PIR, 12° down, the head turns above it. The picture is a fisheye (120° diagonal, bent lines at the edges, "
+                "darker corners); at night the small 5 mm IR LED (channel 4) lights only the near field (about 4 m). "
+                "<i>Not installed (blind cover)</i>: no wide picture, the extra camera says «not installed».</p>")):
     if _a in HELP_PAGE:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 # key = English text: (Deutsch, Français, Italiano, Rumantsch)
@@ -79832,7 +79856,7 @@ def sim_hub_do(a, v=None):                                # + 591: «wide_mount�
     if a != "wide_mount":
         return _sim_hub_do_139(a, v)
     m = str(v or "")
-    if m not in ("scene",) + WEIT_DEVICE_MOUNTS:
+    if m not in ("scene", "none") + WEIT_DEVICE_MOUNTS:
         return False, "invalid value"
     try:
         r = sim_control({"action": "set", "id": "wide_mount", "value": m})
@@ -79841,10 +79865,19 @@ def sim_hub_do(a, v=None):                                # + 591: «wide_mount�
     if r.get("ok", True):
         c = weit_sim_cam()
         if c is not None:                                  # the next state reply says it too - but the tile shows it at once
-            c.update(mount=m, on_head=m.startswith("head_"), yaw_offset=180.0 if m == "head_rear" else 0.0)
+            c.update(mount=m, on_head=m.startswith("head_"), yaw_offset=180.0 if m == "head_rear" else 0.0, installed=m != "none")
             weit_auto()
     _SIMHUB["t"] = 0.0
     return bool(r.get("ok", True)), str(r.get("error") or "")
+
+
+_open_source_210 = open_source
+
+
+def open_source(spec, thermal=False):                     # + 591 (P9): blind cover - say so instead of «not reachable»
+    if not thermal and str(spec) == "sim:1" and weit_missing():
+        return None, spec, source_label(spec), "wide camera not installed (blind cover)"
+    return _open_source_210(spec, thermal)
 
 
 _source_label_200 = source_label
@@ -79869,7 +79902,8 @@ WIDE_JS = r"""
 <script>
 (function () {
   const DE = /*WDE*/{};
-  const M = [["scene", "Mast (scene)"], ["base", "Base front, fixed"], ["head_front", "Head front"], ["head_rear", "Head rear"]];
+  const M = [["case", "In the case (v5.2)"], ["scene", "Mast (scene)"], ["base", "Base front, fixed"], ["head_front", "Head front"], ["head_rear", "Head rear"],
+             ["none", "Not installed (blind cover)"]];
   const L = () => { try { return (typeof LANG !== "undefined" && LANG) || document.documentElement.lang || "de"; } catch (e) { return "de"; } };
   let merged = false;
   const merge = () => { if (merged) return; try { if (typeof I18N !== "undefined" && I18N.de) { for (const k in DE) if (!(k in I18N.de)) I18N.de[k] = DE[k]; merged = true; } } catch (e) {} };
@@ -79906,9 +79940,11 @@ WIDE_JS = r"""
       if (!w) { s.appendChild(E("div", "mut", tt("not supported - update the simulator"))); return; }
       N = w.n; s.appendChild(pic());
       LAB.textContent = "🔭 " + tt("Wide camera") + " · " + name(w.mount);
-      if (N == null) WAIT.textContent = tt("The wide camera is not an extra camera of MoveEye");
+      if (w.missing) { WAIT.textContent = tt("Not installed (blind cover) - no wide picture"); WAIT.hidden = false; N = null; }
+      else if (N == null) WAIT.textContent = tt("The wide camera is not an extra camera of MoveEye");
       M.forEach(([k, lb]) => { const b = E("button", k === w.mount ? "" : "sec", tt(lb)); b.type = "button"; b.onclick = () => act("wide_mount", k); s.appendChild(b); });
-      s.appendChild(E("div", "mut mwwnote", w.mount === "scene" ? tt("On the mast: not part of the device - it does not steer the head by itself.")
+      s.appendChild(E("div", "mut mwwnote", w.missing ? tt("Not installed (blind cover) - no wide picture")
+        : w.mount === "scene" ? tt("On the mast: not part of the device - it does not steer the head by itself.")
         : w.ov ? "⟲ " + tt("Steers the head as overview («The overview camera steers the head»)") + (w.ov_on ? "" : " – " + tt("off"))
         : tt("Overview chosen by hand - not changed.")));
       setTimeout(feed, 30);
@@ -79917,7 +79953,8 @@ WIDE_JS = r"""
 })();
 </script>
 """
-WIDE_KEYS = ("Wide camera", "Mast (scene)", "Base front, fixed", "Head front", "Head rear",
+WIDE_KEYS = ("Wide camera", "In the case (v5.2)", "Not installed (blind cover)", "Not installed (blind cover) - no wide picture",
+             "Mast (scene)", "Base front, fixed", "Head front", "Head rear",
              "The wide camera is not an extra camera of MoveEye", "On the mast: not part of the device - it does not steer the head by itself.",
              "Steers the head as overview («The overview camera steers the head»)", "Overview chosen by hand - not changed.")
 _simhub_head_139 = simhub_head
@@ -79946,6 +79983,11 @@ def weit_selftest():
         weit_from_sim({"mount": "head_rear"}); assert CFG["kopf_ov"] == ""
         weit_from_sim({"mount": "base", "yaw_offset": 0.0, "on_head": False})
         assert CFG["kopf_ov"] == "sim:1" and abs(kopf_ov_deg(0.25) + 25.5) < 0.01
+        weit_from_sim({"mount": "case", "yaw_offset": 0.0, "on_head": False, "installed": True})      # P9: case v5.2
+        assert CFG["kopf_ov"] == "sim:1" and abs(kopf_ov_deg(1.0) - 51.0) < 0.01 and not weit_missing()
+        weit_from_sim({"mount": "none", "yaw_offset": 0.0, "on_head": False, "installed": False})    # P9: blind cover
+        assert CFG["kopf_ov"] == "" and weit_missing() and "blind cover" in open_source("sim:1")[3]
+        weit_from_sim({"mount": "case", "installed": True}); assert CFG["kopf_ov"] == "sim:1"
         weit_from_sim({"mount": "scene", "yaw_offset": 0.0, "on_head": False})
         assert CFG["kopf_ov"] == "" and not CFG["kopf_ov_simauto"]
         CFG.update(light_ir_wide=True, light_white_out="pca:4")
