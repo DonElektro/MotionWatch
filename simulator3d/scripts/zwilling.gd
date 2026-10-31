@@ -23,6 +23,8 @@ var _tex: ImageTexture = null
 var _slow := 0.0
 var _box: VBoxContainer = null     # the photo part of the tab «Dein Platz» (inventar.gd)
 var _fd: FileDialog = null
+var fm = null                      # 3D-4.27 fotomodus.gd: Foto-Modus (the photo IS the world)
+var fm_on := false
 
 const UI = preload("res://scripts/ui_style.gd")
 
@@ -33,12 +35,18 @@ func _ready() -> void:
 		on = bool(d.get("on", true))
 		if typeof(d.get("places")) == TYPE_DICTIONARY:
 			data = d["places"]
+		fm_on = bool(d.get("fm_on", false))
+	fm = preload("res://scripts/fotomodus.gd").new()
+	fm.main = main
+	fm.zw = self
+	fm.on = fm_on
+	add_child(fm)
 
 
 func save() -> void:
 	var f := FileAccess.open(FILE, FileAccess.WRITE)
 	if f != null:
-		f.store_string(JSON.stringify({"on": on, "places": data}))
+		f.store_string(JSON.stringify({"on": on, "places": data, "fm_on": fm_on}))
 		f.close()
 
 
@@ -80,6 +88,8 @@ func add_controls() -> void:
 			{"sub": "Foto des Platzes", "min": 15, "max": 300, "step": 5, "unit": "m", "expert": true})
 	m.add_control("slider", "twin_horizon", "Foto: Horizont im Bild höher / tiefer", func(): return float(gv("horizon", 0.0)), func(v): set_val("horizon", float(v)), "Szene",
 			{"sub": "Foto des Platzes", "min": -20, "max": 20, "step": 0.5, "unit": "°", "expert": true})
+	if fm != null:
+		fm.add_controls()                                # 3D-4.27: Foto-Modus (same part «Foto des Platzes»)
 	# 3D-4.x: tent and car are tiles in the window «Gegenstände» (3D-4.22, was «Dein Platz») (not twice here); for MoveEye's page they stay hidden controls
 	m.add_control("button", "twin_tent", "Zelt hierhin – danach in die Welt klicken", null, func(): main.place_kind = "twin_tent", "Szene", {"sub": "Foto des Platzes", "hide": true})
 	m.add_control("button", "twin_car", "Auto hierhin – danach in die Welt klicken", null, func(): main.place_kind = "twin_car", "Szene", {"sub": "Foto des Platzes", "hide": true})
@@ -144,6 +154,8 @@ func on_scene() -> void:
 	"""after a scene was built (main._build_scene): backdrop and things of this place"""
 	_back = null
 	_nodes.clear()
+	if fm != null:
+		fm.on_scene()                                    # 3D-4.27: Foto-Modus for the photos of this place
 	if not on:
 		return
 	_rebuild_back()
@@ -349,6 +361,8 @@ func _paint() -> void:
 		t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		t.custom_minimum_size = Vector2(520, 0)
 		_box.add_child(t)
+	if fm != null:
+		fm.paint_box(_box)                               # 3D-4.27: Foto-Modus (calibration, masks)
 
 
 func _say(s: String) -> void:

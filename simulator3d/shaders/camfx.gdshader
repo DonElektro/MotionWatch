@@ -7,6 +7,17 @@ render_mode unshaded, blend_mix, depth_test_disabled, depth_draw_never, cull_dis
 
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap;
 uniform sampler2D prev_tex : filter_linear;
+// 3D-4.27 Foto-Modus (fotomodus.gd): where the picture is not the photo, a simulated figure stands - fit it to the photo
+// (brightness, white balance, softness, noise like the photo). Off (foto_on 0) everywhere else.
+#include "res://shaders/foto.gdshaderinc"
+uniform float foto_on = 0.0;
+uniform mat3 foto_cam;              // basis of this camera in the world
+uniform vec2 foto_tan = vec2(0.65, 0.37);
+uniform vec3 foto_gain = vec3(1.0);
+uniform float foto_noise = 0.0;
+uniform float foto_soft = 0.0;
+uniform float foto_thr = 0.035;
+uniform float foto_dbg = 0.0;       // 1: show which pixels count as figure (red)
 uniform float trail = 0.0;          // 0..0.6 share of the last picture (exposure time / time between pictures)
 uniform vec2 pan_blur = vec2(0.0);  // blur along the turning of the head (uv over the exposure time)
 uniform float soft = 0.0;           // 0..2 px softness of the lens
@@ -57,6 +68,28 @@ void fragment() {
 			+ texture(screen_tex, uv + vec2(0.0, o.y)).rgb + texture(screen_tex, uv - vec2(0.0, o.y)).rgb) * 0.15;
 	} else {
 		c = texture(screen_tex, uv).rgb;
+	}
+	if (foto_on > 0.5) {
+		vec2 nd = vec2(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0);
+		vec3 fd = normalize(foto_cam * vec3(nd.x * foto_tan.x, nd.y * foto_tan.y, -1.0));
+		vec4 bg = foto_bg(fd);
+		vec3 dc = abs(c - bg.rgb);
+		if (bg.a > 0.02 && max(dc.r, max(dc.g, dc.b)) > foto_thr) {
+			if (foto_soft > 0.05) {
+				vec2 o = vec2(foto_soft) / res;
+				c = c * 0.4 + (texture(screen_tex, uv + vec2(o.x, 0.0)).rgb + texture(screen_tex, uv - vec2(o.x, 0.0)).rgb
+					+ texture(screen_tex, uv + vec2(0.0, o.y)).rgb + texture(screen_tex, uv - vec2(0.0, o.y)).rgb) * 0.15;
+			}
+			c *= foto_gain;
+			if (foto_noise > 0.0) {
+				vec2 fp = floor(uv * res) + seed * 2.11 + fract(TIME * 7.3) * 113.0;
+				float fz = (h21(fp) + h21(fp + 5.3) + h21(fp + 11.9) - 1.5) * 2.0;      // about gaussian, sigma ~1
+				c += vec3(fz * foto_noise) + (vec3(h21(fp + 2.1), h21(fp + 7.7), h21(fp + 13.3)) - 0.5) * foto_noise * 0.6;
+			}
+			if (foto_dbg > 0.5) {
+				c = mix(c, vec3(1.0, 0.0, 0.0), 0.6);
+			}
+		}
 	}
 	if (trail > 0.0) {
 		// 3D-4.1: the last picture is the finished one (after the lens: gain, grain) - never let it be brighter than now,

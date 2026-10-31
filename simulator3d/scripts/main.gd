@@ -2383,6 +2383,8 @@ func _capture(i: int) -> void:
 		if simreal != null:
 			simreal.before_capture(i)            # 3D-4.4: lens, rolling shutter, noise, infrared, reflectors
 		weit.before_capture(i)                   # 3D-4.17: NoIR Wide - infrared picture, fisheye, the wide infrared light
+		if zwilling != null and zwilling.fm != null:
+			zwilling.fm.before_capture(i)        # 3D-4.27: Foto-Modus - the camera sees the real photo, the figures are fitted to it
 	vps[i].render_target_update_mode = SubViewport.UPDATE_ONCE
 	await RenderingServer.frame_post_draw
 	var img: Image = vps[i].get_texture().get_image()
@@ -4290,6 +4292,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return parcours.control(d)
 	elif a == "zwilling":                              # 3D-4.4: {do: info | import (path) | set (key, value) | item (k, x, z, r) | clear | remove | on}
 		return zwilling.control(d)
+	elif a == "fotomodus":                             # 3D-4.27: {do: info | on | set | mask_rect | mask_clear | more | measure | size | debug}
+		return zwilling.fm.control(d)
 	elif a == "whatif":                                # 3D-3.83: makeover 8 - MoveEye re-enacts a real recording
 		return whatif(d)
 	elif a == "twin":                                  # 3D-3.83: makeover 9 - the twin of the real place
