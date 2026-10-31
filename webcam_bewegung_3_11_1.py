@@ -244,7 +244,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_11_1.zip"
-ZD_SHA256 = "922467ca7435ce7e56d1f1407585431f8aa8e542c3ae1abd735612686568153d"
+ZD_SHA256 = "a237cf1bd0b3d82a64afe71fc43da03d7314dc63aa8f6a28b7860fd139671fc5"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -58270,6 +58270,10 @@ SELFTEST_EXTRA.append(("Servo page and Not-Aus on the live page", servo_web_self
 # bottom (orange iris, dark pupil) is the face, the four detection corners float in the fan and show the mood.
 #   * blinks every few seconds (the name), looks left / right, hops when a step is done, «talks» when a new text comes
 #   * moods: normal · point (explains, looks at the text) · happy (eye smiles, heart) · think (looks up, three dots)
+# Daniel 31.10.2026: Blinki everywhere WITHOUT the orange fan - eye, rim, feet; the mood shows in the eye and the hop.
+#   The mood signs (corners, arrow, heart, dots) appear for ~2 s in a small speech bubble above / right of Blinki, only when
+#   the mood changes (MWBlinki.mood), then fade out; same bubble in the simulator (mehr_icons.gd blinki_bubble). Window: no
+#   bubble. viewBox now 26 59 48 52 (the old coordinates stay). The logo (144 / mw_logo.gd) is separate and keeps its fan.
 #   * prefers-reduced-motion: no animation; light / dark / Rotlicht (html.sxnight: dim colours)
 #   * setting «blinki_on» (Setup; also in the guide step «Tours and tips» and under More); off = the plain boxes as before
 # Web: window.MWBlinki (make / mood / hop / talk / row) is put in front of the script /g2/ui.js (516), which uses it in the
@@ -58282,24 +58286,28 @@ SET_HELP["blinki_on"] = ("Blinki is the little figure made of the MoveEye logo: 
                          "On - switch it off if you prefer plain text boxes.")
 BLINKI_TX = ["Hello, I am Blinki!", "I am the eye of MoveEye. I show you everything step by step - and when I blink, all is well.", "Show Blinki"]
 
-# the figure (viewBox 0 0 100 112): fan = body, eye at the bottom = face, corners in the fan = mood; __I__ = unique id
+# the figure (viewBox 26 59 48 52, coordinates of the old 100 x 112 figure): eye = face, feet; __I__ = unique id
 BLINKI_SVG = (
-    '<svg viewBox="0 0 100 112" class="bk-svg" focusable="false" aria-hidden="true"><defs>'
-    '<linearGradient id="bkg__I__" x1="0" y1="1" x2="0" y2="0"><stop offset="0" class="bk-s0"/><stop offset="1" class="bk-s1"/></linearGradient>'
+    '<svg viewBox="26 59 48 52" class="bk-svg" focusable="false" aria-hidden="true"><defs>'
     '<clipPath id="bkc__I__"><circle cx="50" cy="80" r="16.6"/></clipPath></defs>'
     '<g class="bk-all">'
     '<ellipse class="bk-ft" cx="39" cy="105.5" rx="7.5" ry="3.8"/><ellipse class="bk-ft" cx="61" cy="105.5" rx="7.5" ry="3.8"/>'
-    '<g class="bk-body"><path class="bk-fan" fill="url(#bkg__I__)" d="M50 80 L10.6 29.6 A64 64 0 0 1 89.4 29.6 Z"/>'
-    '<g class="bk-frm"><path class="bk-br" d="M37 33 V27 H43 M57 27 H63 V33 M63 45 V51 H57 M43 51 H37 V45"/>'
-    '<path class="bk-i bk-ip" d="M46 33.5 L54.5 39 L46 44.5"/>'
-    '<path class="bk-i bk-ih" d="M50 46 C42 40.5 42.5 33.5 46.5 33.5 C48.6 33.5 49.6 35 50 36.4 C50.4 35 51.4 33.5 53.5 33.5 C57.5 33.5 58 40.5 50 46 Z"/>'
-    '<g class="bk-i bk-it"><circle cx="43.5" cy="39" r="2.4"/><circle cx="50" cy="39" r="2.4"/><circle cx="56.5" cy="39" r="2.4"/></g></g></g>'
     '<g class="bk-eye"><circle class="bk-scl" cx="50" cy="80" r="17"/>'
     '<g clip-path="url(#bkc__I__)"><g class="bk-pup"><circle class="bk-iris" cx="50" cy="80" r="10.5"/><circle class="bk-pupil" cx="50" cy="80" r="5.2"/>'
     '<circle class="bk-hl" cx="53.2" cy="76.6" r="2"/></g>'
     '<path class="bk-hap" d="M40.5 83.5 Q50 71 59.5 83.5"/>'
     '<rect class="bk-lid" x="32" y="62" width="36" height="36"/></g>'
     '<circle class="bk-rim" cx="50" cy="80" r="17"/></g></g></svg>')
+
+# the mood bubble (own viewBox 28 19 44 47 with the old corner coordinates): put next to the figure by MWBlinki.make (not
+# part of BLINKI_SVG, so the status LED of 599c, which uses BLINKI_SVG, stays without it). Same shape as mehr_icons.gd.
+BLINKI_BUB = (
+    '<svg viewBox="28 19 44 47" class="bk-bub" focusable="false" aria-hidden="true">'
+    '<path class="bk-bb" d="M39 21 H61 A8 8 0 0 1 69 29 V49 A8 8 0 0 1 61 57 H47 L30 64 L39 57 A8 8 0 0 1 31 49 V29 A8 8 0 0 1 39 21 Z"/>'
+    '<path class="bk-br" d="M37 33 V27 H43 M57 27 H63 V33 M63 45 V51 H57 M43 51 H37 V45"/>'
+    '<path class="bk-i bk-ip" d="M46 33.5 L54.5 39 L46 44.5"/>'
+    '<path class="bk-i bk-ih" d="M50 46 C42 40.5 42.5 33.5 46.5 33.5 C48.6 33.5 49.6 35 50 36.4 C50.4 35 51.4 33.5 53.5 33.5 C57.5 33.5 58 40.5 50 46 Z"/>'
+    '<g class="bk-i bk-it"><circle cx="43.5" cy="39" r="2.4"/><circle cx="50" cy="39" r="2.4"/><circle cx="56.5" cy="39" r="2.4"/></g></svg>')
 
 BLINKI_CSS = _zd('589_blinki/BLINKI_CSS', "")
 
@@ -58312,10 +58320,11 @@ BLINKI_JS = r"""
   const t = k => (K.tx || {})[k] || k;
   function make(mood) {
     const w = document.createElement("div"); w.className = "bk"; w.dataset.m = mood || "normal"; w.setAttribute("aria-hidden", "true");
-    w.innerHTML = String(K.svg || "").split("__I__").join("x" + (++n) + "_" + Math.random().toString(36).slice(2, 7)); return w;
+    w.innerHTML = String(K.svg || "").split("__I__").join("x" + (++n) + "_" + Math.random().toString(36).slice(2, 7)) + String(K.bub || ""); return w;
   }
   const again = (el, cls, ms) => { if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); clearTimeout(el["_" + cls]); el["_" + cls] = setTimeout(() => el.classList.remove(cls), ms); };
-  const mood = (el, m) => { if (el) el.dataset.m = m || "normal"; };
+  // a new mood shows its sign for ~2 s in the small bubble (class «say»); the same mood again = no bubble
+  const mood = (el, m) => { if (!el) return; m = m || "normal"; if (el.dataset.m === m) return; el.dataset.m = m; again(el, "say", 2000); };
   const hop = el => again(el, "hop", 800), talk = el => again(el, "talk", 1350);
   function happyHop(el, after) { mood(el, "happy"); hop(el); setTimeout(() => mood(el, after || "point"), 1100); }
   // a row: Blinki + a speech bubble with the title (b or h2) and the texts (strings or nodes)
@@ -58333,7 +58342,7 @@ BLINKI_JS = r"""
 
 
 def blinki_js(L):
-    data = {"on": bool(CFG.get("blinki_on", True)), "tx": {s: tr(s, L) for s in BLINKI_TX}, "svg": BLINKI_SVG, "css": BLINKI_CSS}
+    data = {"on": bool(CFG.get("blinki_on", True)), "tx": {s: tr(s, L) for s in BLINKI_TX}, "svg": BLINKI_SVG, "bub": BLINKI_BUB, "css": BLINKI_CSS}
     return "window.MW_BK=" + json.dumps(data, ensure_ascii=False).replace("</", "<\\/") + ";\n" + BLINKI_JS
 
 
@@ -58362,46 +58371,25 @@ def _bk_hex(c, d=(232, 238, 245)):
 
 
 def blinki_png(height=72, mood="normal", line="#e8eef5", red=False):
-    """Blinki as PNG bytes (RGBA, transparent background). mood: normal / point / happy / think"""
+    """Blinki as PNG bytes (RGBA, transparent background). mood: normal / point / happy / think (in the eye only: the
+    window shows no fan and no mood bubble). Old coordinates (100 x 112), cut out: x 26 ... 74, y 59 ... 111"""
     S = 8                                                    # draw 8 x bigger, then scale down (smooth edges)
-    W, H = 100, 112
+    X0, Y0, W, H = 26, 59, 48, 52
     k = height / float(H) * S
     w, h = max(8, int(round(W * k))), max(8, int(round(H * k)))
     O, O2, WH, DK = ((14, 22, 122), (10, 15, 90), (6, 6, 42), (0, 0, 0)) if red else ((67, 159, 255), (12, 89, 232), (255, 255, 255), (20, 14, 10))
-    LN = _bk_hex(line)
     rgb = np.zeros((h, w, 3), np.float32); a = np.zeros((h, w), np.float32)
 
     def P(x, y):
-        return [int(round(x * k)), int(round(y * k))]
+        return [int(round((x - X0) * k)), int(round((y - Y0) * k))]
 
     def put(mask, col, alpha=1.0):
         m = (mask > 0).astype(np.float32) * (alpha if np.isscalar(alpha) else alpha)
         for i in range(3):
             rgb[..., i] = rgb[..., i] * (1 - m) + col[i] * m
         a[:] = a * (1 - m) + m
-    tilt = {"point": 7.0, "think": -5.0}.get(mood, 0.0)
-    rot = lambda x, y: (50 + (x - 50) * math.cos(math.radians(tilt)) - (y - 80) * math.sin(math.radians(tilt)),
-                        80 + (x - 50) * math.sin(math.radians(tilt)) + (y - 80) * math.cos(math.radians(tilt)))
     for fx in (39, 61):                                      # feet
         m = np.zeros((h, w), np.uint8); cv2.ellipse(m, tuple(P(fx, 105.5)), (int(7.5 * k), int(3.8 * k)), 0, 0, 360, 255, -1); put(m, O2)
-    pts = [rot(50, 80)] + [rot(50 + 64 * math.cos(math.radians(g)), 80 + 64 * math.sin(math.radians(g))) for g in np.linspace(-128, -52, 24)]
-    m = np.zeros((h, w), np.uint8); cv2.fillPoly(m, [np.array([P(x, y) for x, y in pts], np.int32)], 255)
-    yy = np.linspace(0, H, h, dtype=np.float32)[:, None] * np.ones((1, w), np.float32)
-    put(m, O, np.clip(0.4 + 0.6 * (yy - 16) / 64.0, 0.4, 1.0))   # the fan: opaque at the eye, lighter at the top
-    dx = 3.0 if mood == "point" else 0.0
-    lw = max(1, int(3 * k))
-    for seg in (((37, 33), (37, 27), (43, 27)), ((57, 27), (63, 27), (63, 33)), ((63, 45), (63, 51), (57, 51)), ((43, 51), (37, 51), (37, 45))):
-        m = np.zeros((h, w), np.uint8)
-        cv2.polylines(m, [np.array([P(*rot(x + dx, y)) for x, y in seg], np.int32)], False, 255, lw, cv2.LINE_AA); put(m, LN)
-    if mood == "point":
-        m = np.zeros((h, w), np.uint8); cv2.polylines(m, [np.array([P(*rot(x + dx, y)) for x, y in ((46, 33.5), (54.5, 39), (46, 44.5))], np.int32)], False, 255, lw, cv2.LINE_AA); put(m, LN)
-    elif mood == "think":
-        for cx in (43.5, 50, 56.5):
-            m = np.zeros((h, w), np.uint8); cv2.circle(m, tuple(P(*rot(cx, 39))), int(2.4 * k), 255, -1); put(m, LN)
-    elif mood == "happy":
-        m = np.zeros((h, w), np.uint8)
-        cv2.circle(m, tuple(P(46.6, 37.6)), int(3.9 * k), 255, -1); cv2.circle(m, tuple(P(53.4, 37.6)), int(3.9 * k), 255, -1)
-        cv2.fillPoly(m, [np.array([P(43, 39.5), P(57, 39.5), P(50, 46.5)], np.int32)], 255); put(m, O2)
     m = np.zeros((h, w), np.uint8); cv2.circle(m, tuple(P(50, 80)), int(17 * k), 255, -1); put(m, WH)   # the eye
     if mood == "happy":
         m = np.zeros((h, w), np.uint8)
@@ -58456,9 +58444,11 @@ def blinki_selftest():
         png = blinki_png(64, md)
         assert png[:8] == b"\x89PNG\r\n\x1a\n" and len(png) > 300, "Blinki PNG " + md
         im = cv2.imdecode(np.frombuffer(png, np.uint8), cv2.IMREAD_UNCHANGED)
-        assert im is not None and im.shape[2] == 4 and im[0, 0, 3] == 0 and im[int(im.shape[0] * 0.71), im.shape[1] // 2, 3] > 200, "Blinki: transparent + eye"
+        assert im is not None and im.shape[2] == 4 and im[0, 0, 3] == 0 and im[int(im.shape[0] * 0.40), im.shape[1] // 2, 3] > 200, "Blinki: transparent + eye"
+        assert abs(im.shape[1] / float(im.shape[0]) - 48 / 52.0) < 0.05, "Blinki: the size without the fan"
     js = _g2_js_blinki("de")
     assert js.index("window.MWBlinki") < js.index("function g2()") and "Hallo, ich bin Blinki" in js and "__I__" in js
+    assert "bk-fan" not in BLINKI_SVG and "A64 64" not in BLINKI_SVG and "bk-bub" in js and '"say", 2000' in js, "Blinki: no fan, mood bubble"
     assert "MWBlinki" in G2_JS and "blinki_on" in DEFAULTS and tr("Show Blinki", "fr") != "Show Blinki"
     return True
 
@@ -64509,11 +64499,11 @@ for _k, _v in _HX_BLINKI.items():
 
 # ---- the manual: one line in the chapter «Einrichtung, Rundgänge und Tipps» (633) ---------------------------------------
 _HELP_BLINKI = {
-    "de": '<li><b>Blinki</b> 👁: die kleine Figur aus dem Logo (Sichtfächer, Auge, Erkennungs-Ecken) spricht die Texte der Einrichtung und der Rundgänge – sie blinzelt, schaut umher und hüpft, wenn ein Schritt erledigt ist. Ausschalten: Einstellungen → Einrichtung → «Blinki zeigen» (oder unter Mehr).</li>',
-    "en": '<li><b>Blinki</b> 👁: the little figure made of the logo (field of view, eye, detection corners) speaks the texts of the setup and the tours – it blinks, looks around and hops when a step is done. Switch it off: Settings → Setup → «Show Blinki» (or under More).</li>',
-    "fr": '<li><b>Blinki</b> 👁 : le petit personnage fait du logo (champ de vision, œil, coins de détection) dit les textes de la configuration et des visites – il cligne de l’œil, regarde autour de lui et saute quand une étape est faite. Désactiver : Réglages → Configuration → «Afficher Blinki» (ou sous Plus).</li>',
-    "it": '<li><b>Blinki</b> 👁: la piccola figura fatta dal logo (campo visivo, occhio, angoli di rilevamento) dice i testi della configurazione e dei tour – sbatte l’occhio, si guarda intorno e salta quando un passo è fatto. Disattivare: Impostazioni → Configurazione → «Mostra Blinki» (o sotto Altro).</li>',
-    "rm": '<li><b>Blinki</b> 👁: la pitschna figura fatga dal logo (champ da vista, egl, chantuns da reconuschientscha) di ils texts da l’installaziun e dals girs – ella tschegna, guarda enturn e siglia, cura ch’in pass è fatg. Deactivar: Parameters → Installaziun → «Mussar Blinki» (u sut Dapli).</li>',
+    "de": '<li><b>Blinki</b> 👁: die kleine Figur aus dem Logo (das Auge mit Füssen; die Stimmung zeigt sie kurz in einer kleinen Sprechblase) spricht die Texte der Einrichtung und der Rundgänge – sie blinzelt, schaut umher und hüpft, wenn ein Schritt erledigt ist. Ausschalten: Einstellungen → Einrichtung → «Blinki zeigen» (oder unter Mehr).</li>',
+    "en": '<li><b>Blinki</b> 👁: the little figure made of the logo (the eye with feet; it shows its mood briefly in a small speech bubble) speaks the texts of the setup and the tours – it blinks, looks around and hops when a step is done. Switch it off: Settings → Setup → «Show Blinki» (or under More).</li>',
+    "fr": '<li><b>Blinki</b> 👁 : le petit personnage fait du logo (l’œil avec des pieds ; il montre brièvement son humeur dans une petite bulle) dit les textes de la configuration et des visites – il cligne de l’œil, regarde autour de lui et saute quand une étape est faite. Désactiver : Réglages → Configuration → «Afficher Blinki» (ou sous Plus).</li>',
+    "it": '<li><b>Blinki</b> 👁: la piccola figura fatta dal logo (l’occhio con i piedi; mostra brevemente il suo umore in un piccolo fumetto) dice i testi della configurazione e dei tour – sbatte l’occhio, si guarda intorno e salta quando un passo è fatto. Disattivare: Impostazioni → Configurazione → «Mostra Blinki» (o sotto Altro).</li>',
+    "rm": '<li><b>Blinki</b> 👁: la pitschna figura fatga dal logo (l’egl cun peis; ella mussa curt sia luna en ina pitschna bulla) di ils texts da l’installaziun e dals girs – ella tschegna, guarda enturn e siglia, cura ch’in pass è fatg. Deactivar: Parameters → Installaziun → «Mussar Blinki» (u sut Dapli).</li>',
 }
 
 
