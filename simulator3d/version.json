@@ -1,7 +1,7 @@
 {
- "version": "3D-4.55",
+ "version": "3D-4.56",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 67898650,
- "sha256": "f979a71153279ef5825034b1bbe69446e14b3aaa7273be81a88df77a69b76d86",
- "notes": "Neue Grafikstufe «Hoch» (weiche Schatten, Dunst, Spiegelungen) – eine Wahl «Grafik-Modus»: Automatisch / Lite / Normal / Hoch."
+ "size": 67966155,
+ "sha256": "d55b21abf78ceac8dce9f1a07f34b1a3e516f20cb44e34611b4457f7509b87fb",
+ "notes": "Echtere Menschen aus einem nachladbaren Figuren-Paket (CC0) und Wind in Gras, Bäumen und Zelten. Bekannt: Kriechende werden schlechter erkannt."
 }

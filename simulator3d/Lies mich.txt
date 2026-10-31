@@ -421,6 +421,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.56
+3D-4.56: Echtere Menschen aus einem Figuren-Paket (Quaternius, CC0: Gesicht, Haare, Kleider, 22 Bewegungen; 3,8 MB, wird
+nachgeladen, nicht im ZIP) und Wind in Gras, Büschen, Baumkronen und Zelten. Bekannt: kriechende Paket-Figuren erkennt
+MoveEye schlechter (1 von 4 statt 4 von 4).
+So testest du: 1) System → Grafik → «Figuren-Paket laden». 2) Grafik «mittel» oder besser, eine Person schicken: Gesicht,
+Haare, Kleider. 3) Wind 60 km/h: Gras wogt, Zeltplanen flattern.
+
 NEU IN 3D-4.55
 3D-4.55: Neue Grafikstufe «Hoch» (fotorealistischer: weiche Schatten, Dunst, Spiegelungen im Wasser; startet einmal neu mit
 Vulkan, geht das nicht, zurück zu «Normal»). Eine einzige Wahl System → Grafik → «Grafik-Modus»: Automatisch / Lite /

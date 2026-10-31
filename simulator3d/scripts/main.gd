@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.55"
+const VERSION := "3D-4.56"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -338,6 +338,7 @@ var fahrzeuge                         # fahrzeuge.gd (Paket «Fahrzeuge»): spee
 var licht                             # licht.gd («Licht & Nacht»): sun, twilight, moon, stars, light pollution, lamps, glare
 var jahreszeiten                      # jahreszeiten.gd («Jahreszeiten & Tageslauf»): season, bare trees, blossom, leaves, fog, snow, occupancy
 var wetter                            # wetter.gd (real-wetter): rain strength, fog visibility, ground fog, snow cover, lens drops, lightning
+var wind_fx                           # F6 wind_fx.gd: grass, bushes, crowns and tents move in the wind (vertex shaders)
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
 var colors_on := true
 var tracks                            # tracks.gd (3D-3.98)
@@ -485,6 +486,9 @@ func _ready() -> void:
 	objplus = preload("res://scripts/objekte_plus.gd").new()  # 3D-4.x «Gegenstände»: what the new things of the catalogue do
 	objplus.main = self
 	add_child(objplus)
+	wind_fx = preload("res://scripts/wind_fx.gd").new()       # F6: wind in grass, bushes, crowns, tents (before the scene is built)
+	wind_fx.main = self
+	add_child(wind_fx)
 	umgebung = preload("res://scripts/umgebung.gd").new()     # 3D-4.x: the surroundings like real (every part can be switched off)
 	umgebung.main = self
 	add_child(umgebung)
@@ -4027,6 +4031,8 @@ func _register_controls() -> void:
 	jahreszeiten.add_controls()                            # «Jahreszeiten & Tageslauf»: season, snow, fog, leaves, campsite occupancy
 	gelaende.add_controls()                                # 3D-4.x: hills and more plants (Szene)
 	wetter.add_controls()                                  # real-wetter: rain strength, visibility, ground fog, snow, lens, lightning
+	wind_fx.add_controls()                                 # F6: wind in the plants and tents (Wetter → Natur und Wind)
+	preload("res://scripts/figur_paket.gd").add_controls(self)   # F5: figures from the pack (System → Grafik)
 	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
 	if statusled != null:
 		statusled.add_controls()                           # Licht & Ton → Status-LED & Tasten (Fenster «Gerät»)
@@ -4891,6 +4897,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return camphys.control(d)
 	elif a == "objekte":                               # 3D-4.x «Gegenstände»: {do: info | lure | test_place | test_clear | set}
 		return objplus.control(d)
+	elif a == "wind_fx":                               # F6: {do: info | set (on)}
+		return wind_fx.control(d)
 	elif a == "umgebung":                              # 3D-4.x: {do: info | set (key, value) | spawn (kind) | snow_puff | clear_tracks}
 		return umgebung.control(d)
 	elif a == "menschen":                              # P10: {do: info | set (key, value) | spawn (kind) | api (id, fn, args) | probe (gait, dist, dark)}
