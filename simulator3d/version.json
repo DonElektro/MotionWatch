@@ -1,7 +1,7 @@
 {
- "version": "3D-4.26",
+ "version": "3D-4.32",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 64637396,
- "sha256": "3c81a8b691cdf3817fbc86021dd57500481690e0859c3aa91391e3f20128634e",
- "notes": "Alle schwebenden Fenster (Kompass, Karte, Livebild, SmallTV, Gerät, Mover, Kopf, Kameras, CPU) in einem gemeinsamen Rahmen: verschieben, Grösse ändern, ✕ ausblenden, Schnappen; neuer Knopf «Fenster» in der Leiste unten (Liste, «Anordnung zurücksetzen»); die Anordnung bleibt gespeichert."
+ "size": 65444156,
+ "sha256": "059b99f92d1faf4053cd687e3bb145346e550f7e9395633da14af7746d9ebde2",
+ "notes": "Gameplay ausgefeilt: Probe-Runde mit Blinki, Wiederholung und Höhepunkte, Missionen, Nacht-Spiel, neue Werkzeuge, Turnier, Fairness, KI-Turm, Abzeichen pro Szene."
 }
