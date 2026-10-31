@@ -1,7 +1,7 @@
 {
- "version": "3D-4.83",
+ "version": "3D-4.84",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34968748,
- "sha256": "98b1a02c17b631b5edc0c86b3f6d6b72a1c2f2b49148387e1948dffa82cb43b3",
- "notes": "Werkseinstellungen im Simulator wie bei MoveEye (mit Kopie, Horror-Passwort und Sprache bleiben)."
+ "size": 34972336,
+ "sha256": "893531e9a64e4a95084e883197c5f97b5c755185d9aa319a67ac1d9472e95218",
+ "notes": "Einstellungen beim Start in «Nur Gruppen», Schalter «Beim Start: Nur Gruppen» – wie in MoveEye."
 }

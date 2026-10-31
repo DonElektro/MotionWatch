@@ -177,13 +177,15 @@ function simCtlBuild(G, r, ctl, fmt) {
   (r.controls || []).forEach(c => { const g = c.group || t("Controls"); if (!byG[g]) { byG[g] = []; order.push(g); } byG[g].push(c); });
   const cards = [];
   order.forEach(g => {
-    const cs = byG[g], card = el("div", "sc-card"); card.dataset.g = g; if (openC.has(g)) card.classList.add("open");
+    const cs = byG[g], card = el("div", "sc-card"); card.dataset.g = g;
+    if (!only && window.SC_SHOWN ? window.SC_SHOWN.has(g) : openC.has(g)) card.classList.add("open");   // nurgruppen: start view, not saved
     const hd = document.createElement("button"); hd.type = "button"; hd.className = "sc-hd";
     const ik = (cs.find(c => c.iconk) || {}).iconk, ie = (cs.find(c => c.icon) || {}).icon;
     hd.innerHTML = (ik && SC_ICON[ik] ? '<svg viewBox="0 0 24 24">' + SC_ICON[ik] + '</svg>' : (ie ? "<span>" + String(ie).replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";") + "</span>" : "")) + '<span class="sc-t"></span><span class="sc-ar"></span>';
     hd.querySelector(".sc-t").textContent = g;
     const ar = () => { hd.querySelector(".sc-ar").textContent = card.classList.contains("open") ? "▼" : "▶"; };
-    hd.onclick = () => { card.classList.toggle("open"); ar(); card.classList.contains("open") ? openC.add(g) : openC.delete(g); ss("mw-sc-open", [...openC]); };
+    hd.onclick = () => { card.classList.toggle("open"); ar(); const o_ = card.classList.contains("open"); o_ ? openC.add(g) : openC.delete(g); ss("mw-sc-open", [...openC]);
+      if (!only && window.SC_SHOWN) o_ ? window.SC_SHOWN.add(g) : window.SC_SHOWN.delete(g); };
     ar(); const bd = el("div", "sc-bd"); card.append(hd, bd); G.appendChild(card); cards.push(card);
     const subs = {}, fines = new Map();
     if (cs.some(scDev)) card.dataset.dev = "1";
@@ -1504,10 +1506,16 @@ function paint3d() { const D = S && S.sim3d; if (D) $("#d-3dn").textContent = D.
   const P = S && S.simpy; if (P) $("#d-pyn").textContent = P.version + " · " + t("second simulator, needs Python on the PC") + (P.ready ? "" : " · " + t("prepared on the first download")); }
 $("#d-py").href = "/sim/simulator_py.zip?lang=" + (LANG || "");
 $("#d-link").textContent = t("Link for the PC browser") + ": " + location.origin + "/sim/simulator3d.zip";
+// nurgruppen (Daniel, 31.10.2026): «On start: groups only» (window.MW_SG, from ui_seed_script) - the cards of this page are one level,
+// so they start closed; only «Simulator control» stays open (its groups start closed, simCtlBuild / SC_SHOWN). Not saved: the own
+// state (mw-sim-fold) stays and is used again with the switch off. A toggle saves only its own card (before: all cards).
 (function () { let o = null; try { o = JSON.parse(localStorage.getItem("mw-sim-fold") || "null"); } catch (e) {}
-  document.querySelectorAll("details.fold").forEach(d => { if (o && d.dataset.k in o) d.open = !!o[d.dataset.k];
-    d.addEventListener("toggle", () => { const m = {}; document.querySelectorAll("details.fold").forEach(x => m[x.dataset.k] = x.open);
-      try { localStorage.setItem("mw-sim-fold", JSON.stringify(m)); } catch (e) {} }); }); })();
+  o = (o && typeof o === "object") ? o : {}; const sg = window.MW_SG !== false;
+  document.querySelectorAll("details.fold").forEach(d => { if (d.dataset.k in o) d.open = !!o[d.dataset.k];
+    if (sg) { const v = d.dataset.k === "ctl"; if (d.open !== v) { d._mwSkip = true; d.open = v; } }
+    d.addEventListener("toggle", () => { if (d._mwSkip) { d._mwSkip = false; return; }
+      o[d.dataset.k] = d.open; try { localStorage.setItem("mw-sim-fold", JSON.stringify(o)); } catch (e) {} }); });
+  if (sg && window.SC_SHOWN == null) window.SC_SHOWN = new Set(); })();
 (async () => { await initAppearance(); load(); if (location.hash === "#gw") setTimeout(() => gwOpen(), 400); })();   // 639i: «Spielen» → game wizard
 /*ALERTS*/
 </script></body></html>
@@ -1543,7 +1551,9 @@ def ui_seed_script():
     """Runs first on every page: copies the saved layout into the browser storage (so the page code finds it there) and
     sends every later layout change back to the Pi, where it is kept in the settings file."""
     data = json.dumps({k: v for k, v in CFG["web_ui"].items() if k not in WEB_UI_LOCAL}).replace("</", "<\\/")   # aufr: per-device keys stay on the device
-    return ("<script>(function(){var S=" + data + ";try{for(var k in S)localStorage.setItem(k,S[k]);}catch(e){}"
+    # nurgruppen: the switch «On start: groups only» for the page code (main page 530, simulator page 470) before it builds
+    return ("<script>window.MW_SG=" + ("true" if CFG.get("ui_start_groups", True) else "false") + ";"
+            "(function(){var S=" + data + ";try{for(var k in S)localStorage.setItem(k,S[k]);}catch(e){}"
             "var P={},T=null,L=" + json.dumps(sorted(WEB_UI_LOCAL)) + ";"
             "function send(){var b=P;P={};T=null;try{fetch('/api/ui',{method:'POST',headers:{'Content-Type':'application/json'},"
             "body:JSON.stringify({set:b}),keepalive:true}).catch(function(){});}catch(e){}}"

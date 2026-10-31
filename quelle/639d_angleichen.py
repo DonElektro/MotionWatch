@@ -51,7 +51,7 @@ if GUI_OK:
                 k = "grp:" + gid
                 if k in getattr(self, "group_titles", {}) and k in self.sections:
                     self.group_titles[k] = name
-                    self._set_section(k, k in self.open_secs, save=False)
+                    self._set_section(k, self._shown.get(k, k in self.open_secs), save=False)   # nurgruppen: as shown
         return r
 
     # wraps: App._build_section (after 639c)
