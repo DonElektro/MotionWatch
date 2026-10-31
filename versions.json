@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 12:28",
+ "generated": "2026-10-31 12:35",
  "versions": [
   {
-   "version": "2.98.98",
-   "file": "webcam_bewegung_2_98_98.py",
+   "version": "2.98.99",
+   "file": "webcam_bewegung_2_98_99.py",
    "url": "",
-   "sha256": "448e33f5a7f06646e0b91b9977ebd1540f31e40dc9318bcb6a793a259e39f44c",
-   "date": "2026-10-31 12:28",
-   "notes": "Simulator 3D-4.67: Entwickler-Fenster mit Notizen an Claude (Bild, ZIP-Export), Kontaktbogen aller Orte einer Welt, Kapitel-Sprung im Test-Spielstand.",
-   "sig": "a3c96007a301d68067d5aca3d3f089f5e2a1982872d4bf97f1d62d60b7ce28ba6fd1f9f3babf45d0a3eda777fc93da0d4be63d6bc93ec8adadb158500ffb5b0e"
+   "sha256": "92cd0bb805f2b2adeaff6ddcf915ee33b900b5d1c81616c8dc5d020f2ca671aa",
+   "date": "2026-10-31 12:34",
+   "notes": "Simulator 3D-4.68: Horror «Das Hospiz» mit einem Rätsel pro Kapitel (Schlüssel, Zahlenschloss, Uhrzeit), Lösung nur auf MoveEye-Aufnahmen, Hinweis-Knopf.",
+   "sig": "14b75186f10f860d553e52b22df45ac823cd723b3ba60795e8c9418d0c749ff9b98a527b0694511526edb51c259efbd8addeacb7da388488ef2100b79172f704"
   },
   {
    "version": "2.97.1",
