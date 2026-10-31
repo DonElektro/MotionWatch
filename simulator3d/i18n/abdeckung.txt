@@ -140,7 +140,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:2110  'Aussicht: '
   bergtal_horror.gd:40  'offen'
   bergtal_horror.gd:58  'offen'
-  bergtal_horror.gd:1087  'Fertig'
+  bergtal_horror.gd:1093  'Fertig'
   tour.gd:187  'Fertig'
   dataset.gd:54  'Spiel: '
   dataset.gd:319  ' · Vielfalt hoch'
