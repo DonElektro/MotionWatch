@@ -310,7 +310,7 @@ func _faehigkeit(i: int) -> void:
 		say(i, T.t("%s geht hier gerade nicht.") % T.t(str(r["faehigkeit"])), 2.5)
 		return
 	_cd[i] = now() + float(r.get("cd", 12))
-	say(i, "%s %s" % [str(r.get("icon", "")), msg], 5.0)
+	say(i, "%s %s" % [str(r.get("icon", "")), msg], 5.0, 2)
 
 
 # =======================================================================================================================
@@ -687,7 +687,8 @@ func _sel_item(i: int) -> String:
 # =======================================================================================================================
 # 4 back to back
 # =======================================================================================================================
-func geraeusch(text := "", tier := "") -> void:
+func geraeusch(text := "", tier := "", wen := "", quelle := Vector2.INF) -> void:
+	"""a noise: wen = what one sees then (T.t() already), quelle = where it is (otherwise a random direction)"""
 	if not aktiv() or n_fig() < 2 or not _ruecken.is_empty():
 		return
 	var e: Array = TIERE_NACHT[_rng.randi() % TIERE_NACHT.size()]
@@ -696,7 +697,11 @@ func geraeusch(text := "", tier := "") -> void:
 			if str(x[0]) == tier:
 				e = x
 	var a := _rng.randf_range(-PI, PI)
-	_ruecken = {"t0": now(), "src": a, "tier": str(e[0]), "wen": T.t(str(e[1])), "ok_t": 0.0, "text": text if text != "" else T.t("Ein Knacken im Dunkeln!")}
+	if quelle != Vector2.INF:
+		var to: Vector2 = quelle - (pos(0) + pos(1)) / 2.0
+		a = atan2(-to.x, -to.y)
+	_ruecken = {"t0": now(), "src": a, "tier": tier if tier != "" else str(e[0]), "wen": wen if wen != "" else T.t(str(e[1])), "ok_t": 0.0,
+			"text": text if text != "" else T.t("Ein Knacken im Dunkeln!")}
 	say(-1, "👂 " + str(_ruecken["text"]) + " " + T.t("Rücken an Rücken!"), 4.0, 3)
 	_rumble([0, 1])
 
@@ -1017,8 +1022,8 @@ func _im_tagebuch(fn: String) -> bool:
 # =======================================================================================================================
 # 7 campfire diary
 # =======================================================================================================================
-func lagerfeuer_frage(frage: String, optionen: Array) -> void:
-	if not _lf.is_empty() and str(_lf.get("frage", "")) == frage:
+func lagerfeuer_frage(frage: String, optionen: Array, neu_ := false) -> void:
+	if not neu_ and not _lf.is_empty() and str(_lf.get("frage", "")) == frage:
 		return
 	_lf = {"frage": frage, "optionen": optionen.slice(0, 5), "antworten": ["", ""]}
 
@@ -1170,9 +1175,20 @@ const KEY_TXT := [{"team": "F", "geben": "G", "wahl": "V", "faehig": "R", "foto"
 const PAD_TXT := {"team": "Ⓐ", "geben": "Ⓑ", "wahl": "◀ ▶", "faehig": "Ⓧ", "foto": "Ⓨ"}
 
 
+const PAD_NAME := {"a": "Ⓐ", "b": "Ⓑ", "x": "Ⓧ", "y": "Ⓨ", "l1": "LB", "r1": "RB", "up": "⬆", "down": "⬇", "left": "◀", "right": "▶"}
+
+
+func _pad() -> Dictionary:
+	"""which controller button does what (the host may change it: Maggie has A B X Y for herself)"""
+	var p = _h("zb_pad", [], null)
+	return p if p is Dictionary else PAD
+
+
 func _k(i: int, act: String) -> String:
 	if int(_h("zb_dev", [i], -1)) >= 0:
-		return str(PAD_TXT[act])
+		if act == "wahl":
+			return str(PAD_TXT["wahl"])
+		return str(PAD_NAME.get(str(_pad().get(act, "")), PAD_TXT[act]))
 	return "«%s»" % str(KEY_TXT[clampi(i, 0, 1)][act])
 
 
@@ -1182,8 +1198,9 @@ func _presses(i: int) -> Array:
 	var dv := int(_h("zb_dev", [i], -1))
 	var pm = main.padmap if main != null else null
 	if free and dv >= 0 and pm != null and bool(_h("zb_knoepfe", [i], true)):     # (Rollen: the controller of player 2 is MoveEye's)
-		for act in PAD:
-			if pm.hit(str(PAD[act]), [dv]):
+		var pd := _pad()
+		for act in pd:
+			if pm.hit(str(pd[act]), [dv]):
 				out.append(act)
 		if pm.hit("left", [dv]) or pm.hit("right", [dv]):
 			out.append("wahl")
@@ -1202,6 +1219,9 @@ func _presses(i: int) -> Array:
 func _input_tick() -> void:
 	for i in range(2):
 		for act in _presses(i):
+			if lagerfeuer_offen() and str(act) in ["team", "wahl"]:
+				_lf_knopf(i, str(act))
+				continue
 			match str(act):
 				"team":
 					_team_press(i)
@@ -1245,6 +1265,9 @@ func _process(dt: float) -> void:
 	if _ov != null:
 		_ov.visible = on
 	if not on:
+		if lagerfeuer_offen():
+			_input_tick()
+			_lf_tick()
 		return
 	_ensure_ov()
 	_pf_frame = [[], []]
@@ -1255,6 +1278,7 @@ func _process(dt: float) -> void:
 	_gummiband_tick()
 	if not _hf.is_empty() and now() > float(_hf["until"]):
 		_hf = {}
+	_lf_tick()
 	_ov_t -= dt
 	if _ov != null and (_ov_t <= 0.0):
 		_ov_t = 1.0 / 15.0 if _lite() else 0.0
@@ -1558,6 +1582,122 @@ func paint_auszeichnungen(parent: Control, e: Dictionary = {}) -> void:
 		gg.add_child(_l("🏅 %s: «%s» - %s" % [str(a["name"]), str(a["titel"]), str(a["grund"])], 15, Color("#ffd166")))
 
 
+# ---- the campfire as a window (for stories without a panel, e.g. Maggie): controllers answer with «wahl» and «team» ------
+var _lf_win: CanvasLayer
+var _lf_box: VBoxContainer
+var _lf_sel: Array = [0, 0]
+var _lf_t := 0.0
+var _lf_sig := ""
+
+
+func lagerfeuer_fenster() -> void:
+	if _lf.is_empty():
+		return
+	lagerfeuer_zu()
+	_lf_win = CanvasLayer.new()
+	_lf_win.layer = 35
+	(main if main != null else self).add_child(_lf_win)
+	var pc := PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.07, 0.06, 0.05, 0.96)
+	sb.border_color = Color("#ff9f43")
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(14)
+	sb.set_content_margin_all(18)
+	pc.add_theme_stylebox_override("panel", sb)
+	pc.anchor_left = 0.5
+	pc.anchor_right = 0.5
+	pc.anchor_top = 0.5
+	pc.anchor_bottom = 0.5
+	pc.offset_left = -380
+	pc.offset_right = 380
+	pc.offset_top = -230
+	pc.offset_bottom = 230
+	_lf_win.add_child(pc)
+	_lf_box = VBoxContainer.new()
+	_lf_box.add_theme_constant_override("separation", 8)
+	pc.add_child(_lf_box)
+	_lf_t = now()
+	_lf_sig = ""
+	_lf_paint()
+
+
+func lagerfeuer_offen() -> bool:
+	return _lf_win != null and is_instance_valid(_lf_win)
+
+
+func lagerfeuer_zu() -> void:
+	if lagerfeuer_offen():
+		_lf_win.queue_free()
+	_lf_win = null
+
+
+func _lf_paint() -> void:
+	if not lagerfeuer_offen() or _lf.is_empty():
+		return
+	var sig := str(_lf["antworten"]) + str(_lf_sel)
+	if sig == _lf_sig:
+		return
+	_lf_sig = sig
+	for c in _lf_box.get_children():
+		c.queue_free()
+	_lf_box.add_child(_plain(T.t("🔥 Lagerfeuer"), 26, Color("#ff9f43")))
+	_lf_box.add_child(_plain(str(_lf["frage"]), 20, Color.WHITE))
+	var opts: Array = _lf["optionen"]
+	for i in range(2):
+		var a := str(_lf["antworten"][i])
+		_lf_box.add_child(_plain("%d · %s%s" % [i + 1, nm(i), ("   ✓ «%s»" % a) if a != "" else "   " + T.t("(%s wählen, %s = so!)") % [_k(i, "wahl"), _k(i, "team")]], 17, col(i)))
+		var fl := HFlowContainer.new()
+		fl.add_theme_constant_override("h_separation", 6)
+		_lf_box.add_child(fl)
+		for j in range(opts.size()):
+			var b := Button.new()
+			var oo := str(opts[j])
+			b.text = ("▶ " if int(_lf_sel[i]) % maxi(1, opts.size()) == j and a == "" else "") + ("● " if a == oo else "") + oo
+			b.custom_minimum_size = Vector2(0, 38)
+			var ii := i
+			b.pressed.connect(func(): antwort(ii, oo); _lf_sig = "")
+			fl.add_child(b)
+	var le := LineEdit.new()
+	le.placeholder_text = T.t("Oder eigene kurze Antwort (Tastatur, Enter) - für Spieler 1")
+	le.max_length = 80
+	le.text_submitted.connect(func(tx): antwort(0, tx); _lf_sig = "")
+	_lf_box.add_child(le)
+	var hb := HBoxContainer.new()
+	_lf_box.add_child(hb)
+	var bz := Button.new()
+	bz.text = T.t("Schliessen")
+	bz.pressed.connect(lagerfeuer_zu)
+	hb.add_child(bz)
+	if not tagebuch().is_empty():
+		var bt := Button.new()
+		bt.text = T.t("📔 Reisetagebuch ansehen")
+		bt.pressed.connect(tagebuch_oeffnen)
+		hb.add_child(bt)
+
+
+func _lf_knopf(i: int, act: String) -> void:
+	var opts: Array = _lf.get("optionen", [])
+	if opts.is_empty():
+		return
+	if act == "wahl":
+		_lf_sel[i] = int(_lf_sel[i]) + 1
+	else:
+		antwort(i, str(opts[int(_lf_sel[i]) % opts.size()]))
+	_lf_sig = ""
+
+
+func _lf_tick() -> void:
+	if not lagerfeuer_offen():
+		return
+	_lf_paint()
+	var done: bool = not _lf.is_empty() and str(_lf["antworten"][0]) != "" and (str(_lf["antworten"][1]) != "" or n_fig() < 2)
+	if done and float(_lf.get("done_t", 0.0)) == 0.0:
+		_lf["done_t"] = now()
+	if float(_lf.get("done_t", 0.0)) > 0.0 and now() - float(_lf["done_t"]) > 2.5 or now() - _lf_t > 90.0:
+		lagerfeuer_zu()
+
+
 func tagebuch_knopf(parent: Control) -> void:
 	if tagebuch().is_empty():
 		return
@@ -1710,6 +1850,10 @@ func op(d: Dictionary) -> Dictionary:
 			out["n"] = spuren_zeigen(pos(i), 60.0, 30.0)
 		"foto":
 			out["foto"] = foto(i, str(d.get("tier", "")))
+		"fenster":
+			lagerfeuer_fenster()
+		"fenster_zu":
+			lagerfeuer_zu()
 		"frage":
 			lagerfeuer_frage(str(d.get("frage", T.t("Was war heute das Schönste?"))), d.get("optionen", ["A", "B"]))
 		"antwort":
@@ -1760,4 +1904,4 @@ func state() -> Dictionary:
 			"wichtig": _wichtig.keys(), "traeger": _traeger, "kg": [last_kg(0), last_kg(1)], "tempo": [snappedf(tempo(0), 0.01), snappedf(tempo(1), 0.01)],
 			"ruecken": {} if _ruecken.is_empty() else {"tier": _ruecken["tier"], "abdeckung": abdeckung(), "ok_t": snappedf(float(_ruecken["ok_t"]), 0.1)},
 			"fotos": _fotos, "lf": _lf, "rollen": [rolle(0).get("id", ""), rolle(1).get("id", "")], "form": form, "prompt": pr, "wissen": wi,
-			"abstand": snappedf(abstand(), 0.1), "tagebuch_n": tagebuch().size(), "tagebuch_offen": tagebuch_offen()}
+			"abstand": snappedf(abstand(), 0.1), "tagebuch_n": tagebuch().size(), "tagebuch_offen": tagebuch_offen(), "lf_offen": lagerfeuer_offen()}

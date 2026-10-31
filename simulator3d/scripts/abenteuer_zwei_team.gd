@@ -594,7 +594,7 @@ func op(d: Dictionary) -> Dictionary:
 			return {"ok": true, "pos": [q.x, q.y], "zb": zb.state()}
 		"funde_hier":
 			var p: Vector2 = z.pl[0]["pos"]
-			zb.fundstueck("t_funde", p + Vector2(3, 0), "funde", T.t("eine alte Münze"))
+			zb.fundstueck("t_funde", p + Vector2(7, 0), "funde", T.t("eine alte Münze"))
 			zb.fundstueck("t_stein", p + Vector2(-20, 0), "steinmaennchen", T.t("ein Steinmännchen"))
 			zb.fundstueck("t_spur", p + Vector2(0, 20), "spuren", T.t("eine Fuchsspur"))
 			return {"ok": true, "zb": zb.state()}
@@ -606,6 +606,13 @@ func op(d: Dictionary) -> Dictionary:
 			return {"ok": true, "tag": _last_day, "zb": zb.state()}
 		"hoehe":
 			return {"ok": true, "hoehe": hoehe}
+		"setzen":                                   # tests: player p to (x, z) in valley coordinates, view yaw
+			var i := clampi(int(d.get("p", 1)) - 1, 0, 1)
+			if d.has("x"):
+				zb_setzen(i, Vector2(float(d["x"]), float(d["z"])))
+			if d.has("yaw"):
+				z.pl[i]["yaw"] = float(d["yaw"])
+			return {"ok": true, "zb": zb.state()}
 	var out: Dictionary = zb.op(d)
 	out["hoehe"] = hoehe
 	return out

@@ -130,6 +130,7 @@ var _vpad := {}
 var _p1_test := {"press": [], "hold_until": 0.0}
 var _e_hit := false
 var _rest_seen := -1
+var team_zb                          # Zwei-Spieler-Bausteine: maggie_zwei_team.gd (-> zwei_bausteine.gd)
 
 
 # =======================================================================================================================
@@ -241,6 +242,8 @@ static func seite_figur(g, fl: Dictionary) -> void:
 func _ready() -> void:
 	process_priority = 60                 # after the story (50): its camera of player 1 is ready
 	_build_hud()
+	team_zb = load("res://scripts/maggie_zwei_team.gd").new(self)     # Zwei-Spieler-Bausteine (Einhänge-Punkt)
+	add_child(team_zb)
 	if story != null:
 		if story.has_signal("szene_bereit"):
 			story.szene_bereit.connect(_on_szene)
@@ -778,7 +781,7 @@ func _p1_buttons(keys: Array, walking: bool) -> void:
 		return
 	if "b" in keys:
 		var g = _gefahr()
-		if g != null and g.has_method("benutze"):
+		if g != null and g.has_method("benutze") and (team_zb == null or team_zb.darf_benutzen()):   # (Bausteine: wer trägt es?)
 			g.benutze()                                   # das Schutzding (wie die Taste B)
 	if "x" in keys and rolle == "wanderer":
 		_maggie_hilft(_p1_tal())
@@ -1673,6 +1676,8 @@ static func steuer(st, d: Dictionary) -> Dictionary:
 
 func control(d: Dictionary) -> Dictionary:
 	var k := str(d.get("k", "info"))
+	if k == "zb" and team_zb != null:
+		return team_zb.control(d)                         # Zwei-Spieler-Bausteine
 	var out := {"ok": true}
 	match k:
 		"an":
