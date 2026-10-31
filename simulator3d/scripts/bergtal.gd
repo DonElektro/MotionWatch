@@ -935,7 +935,7 @@ func _build(sc) -> void:
 			return z in ["lake", "shore", "scree", "glacier"] or slope_deg(q.x, q.z) > 30.0)
 	rating = evaluate(spot_xz.x, spot_xz.y)
 	_publish()
-	_residents_spawn()
+	_need_residents = true                                # (at the start of the program the visitors node is not there yet)
 	m.anims.append(Callable(self, "_tick"))
 	_ev_next = m.now() + randf_range(40.0, 90.0)
 	_was_dark = m.is_dark()
@@ -2052,6 +2052,11 @@ func _own_spot() -> void:
 	flap.material_override = m.mat(Color(0.2, 0.2, 0.2))
 	m.door_node.add_child(flap)
 	s.door_light_at(_bed_node, Vector3(0, 0.9 if tent else 0.5, 1.6))      # light from the tent when the zip opens (headlamp)
+	var lamp := MeshInstance3D.new()                       # the small lamp at the bed (main.window_mat: glows at night)
+	lamp.mesh = m.box(0.08, 0.12, 0.08)
+	lamp.position = Vector3(0.35, 0.06, 0.7)
+	lamp.material_override = s.window_mat()
+	_bed_node.add_child(lamp)
 	m.obj["door"] = bw + (_bed_node.global_transform.basis * Vector3(0, 0, 1.8) if _bed_node.is_inside_tree() else Vector3(0, 0, 1.8))
 	m.obj["bike"] = pack_at                               # the thief tests take the backpack (there is no bike up here)
 	m.bike_node = null
@@ -2744,6 +2749,7 @@ func fog_roll() -> Dictionary:
 
 # ---- every frame ----------------------------------------------------------------------------------------------------------
 var _t_slow := 0.0
+var _need_residents := false
 var _bell_t := 0.0
 var _edge_t := 0.0
 var _headlamp: SpotLight3D
@@ -2770,6 +2776,9 @@ func _tick(dt: float, _t: float) -> bool:
 		_tick_ride(dt)
 		return false
 	_t_slow = 0.25
+	if _need_residents and m.visitors != null:
+		_need_residents = false
+		_residents_spawn()
 	_tick_stones(dt)
 	_tick_ride(dt)
 	_tick_residents()
