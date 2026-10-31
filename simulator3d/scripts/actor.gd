@@ -540,6 +540,8 @@ func _build_animal() -> void:
 	# height of the back, body length, colour, body temperature (fur), leg thickness
 	# 3D-4.x «Tiere» (31.10.2026): sizes of the real animals - the back is at about 1.32 × the first value (body radius on top).
 	# Schulterhöhe: Rotfuchs 35–40 cm, Reh 60–75 cm, Wildschwein 55–100 cm, Hauskatze 25–30 cm, Dachs 25–30 cm, Feldhase ~30 cm
+	# TODO (Koordinator, Paket «Wärme»): the fur temperatures here (4th value) stay until scripts/waerme.gd (branch real-waerme)
+	# is on main - then Waerme.animal(kind, ambient, part) instead (fauna.gd birds switch by themselves when waerme.gd exists).
 	# (Wildtier Schweiz / Schweizerische Vogelwarte-Steckbriefe, Wikipedia-Artikel der Arten). Until 3D-4.26 the deer had
 	# the size of a red deer (1.25 m), the fox, badger and cat were a quarter too tall.
 	var spec := {"fox": [0.31, 0.62, Color(0.82, 0.38, 0.12), 28.0, 0.03], "deer": [0.55, 1.0, Color(0.58, 0.4, 0.23), 29.0, 0.032],
