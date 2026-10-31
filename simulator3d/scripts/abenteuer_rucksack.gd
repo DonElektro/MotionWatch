@@ -6,16 +6,19 @@ extends RefCounted
 ## Essen und Trinken MILD: hungrig oder durstig = nur langsamer (Gehzeit und Kraft je ~10–20 % mehr), nie Spielende.
 ##   Auf der Hilfe-Stufe «Leicht» (Paket A3) ist es ganz aus: kein Verbrauch, keine Balken. Quellen und Brunnen am Weg füllen
 ##   die Flasche auf, in der Hütte (Alp Tschuggen, Holzofen; im Biwak mit eigenem Kocher) wird gekocht.
-## Ausrüstung finden: an festen Fundorten der Kapitel liegen Kompass, Stirnlampe, Feldstecher und Seil; einmal gefunden
+## Ausrüstung finden: an festen Fundorten der Kapitel liegen Kompass, Stirnlampe und Seil (den Feldstecher gibt es nur als
+##   Grossvaters Feldstecher von A3, Daniel 31.10.2026); einmal gefunden
 ##   bleiben sie für alle weiteren Kapitel (abenteuer_inventar.gd finde()). Die Stirnlampe ist ein echtes Licht (licht.gd
 ##   attach_lamp): im Dunkeln leuchtet sie vor dem Wanderer und am Lager - bis zum Schlafen (dann bewacht MoveEye im Dunkeln).
-## Tauschen: jede Figur hat eine feste Wunschliste (was sie sucht / was sie dafür gibt) - kein Geld, eins gegen eins.
-##   Die Listen kommen von Paket A2 (wuensche(figur_id)); bis dahin Beispiele (WUENSCHE_STUB).
+## Tauschen: jede Figur hat eine feste Wunschliste (was sie sucht / was sie dafür gibt) - kein Geld, feste Paare.
+##   Die Listen kommen von Paket A2 (abenteuer_figuren.gd wuensche() / wunschliste(): feste Paare mit Anzahl, z. B. 2 Proviant
+##   gegen 1 Seil, «einmal» = nur einmal). Nach dem Tausch meldet A4 das an A2 (tausch_erledigt).
 ## Steuerbefehl: {"action": "abenteuer", "do": "a4_eat" | "a4_cook" | "a4_tausch" (figur) | "a4_tausch_gib" (value) |
 ##                "a4_tausch_bekomme" (value) | "a4_tausch_ok" | "a4_tausch_zu" | "a4_inv" | "a4_gib" (key, n) | "a4_find" (key)}
 
 const T = preload("res://scripts/i18n.gd")
 const Inv = preload("res://scripts/abenteuer_inventar.gd")
+const Fig = preload("res://scripts/abenteuer_figuren.gd")      # A2: wuensche(fid) (statisch); Paare über ab.a2.wunschliste(fid)
 
 # ---- Quellen und Brunnen (Tal-Koordinaten wie bergtal.gd: x = Osten, z = Süden): [Name, x, z] --------------------------------
 const QUELLEN := [["Brunnen bei der Kapelle St. Jodern", 210.0, -700.0], ["Brunnen bei der Alp Tschuggen", 69.0, -9.0],
@@ -28,16 +31,8 @@ const HUETTE_R := 70.0
 # ---- Fundorte der Ausrüstung: id -> [Kapitel, x, z, Text] ----------------------------------------------------------------
 const FUNDE := {"kompass": [1, 178.0, -200.0, "Am Fuss des Wegweisers steckt eine verbeulte Blechdose. Darin: ein alter Kartenkompass, die Nadel zittert und zeigt nach Norden."],
 		"stirnlampe": [2, -150.0, -230.0, "Neben dem Weg hängt eine Stirnlampe an einem Ast - jemand hat sie vergessen. Sie leuchtet noch."],
-		"feldstecher": [3, -810.0, -230.0, "In einer Mauernische der Ruine liegt ein Feldstecher in einer Ledertasche. Damit sieht man Hinweise und Tiere von weitem."],
 		"seil": [4, -700.0, -130.0, "In der alten Sennerei hängt ein aufgerolltes Seil am Haken - stark genug für den Fels."]}
 const FUND_R := 70.0
-# ---- Wunschlisten (Stub, bis A2 wuensche(figur_id) liefert): figur -> {name, will: [ids], gibt: [ids]} --------------------
-const WUENSCHE_STUB := {"aelpler": {"name": "Der Älpler", "will": ["brief", "ersatzteil", "batterien"], "gibt": ["kaese", "proviant", "seil"]},
-		"sennerin": {"name": "Die Sennerin", "will": ["brief", "batterien"], "gibt": ["kaese", "proviant"]},
-		"huettenwartin": {"name": "Die Hüttenwartin", "will": ["kaese", "brief", "ersatzteil"], "gibt": ["proviant", "batterien", "stirnlampe"]},
-		"wanderer": {"name": "Ein Wanderer", "will": ["proviant", "kaese"], "gibt": ["batterien", "kompass"]},
-		"bergsteiger": {"name": "Die Bergsteiger", "will": ["kaese", "proviant", "batterien"], "gibt": ["seil", "feldstecher"]},
-		"wildhueter": {"name": "Der Wildhüter", "will": ["batterien", "kaese"], "gibt": ["feldstecher", "kompass"]}}
 # Begegnungen von heute (bergtal_abenteuer_daten.gd MEET) -> Figur zum Tauschen
 const MEET_FIGUR := {"senner": "aelpler", "wanderer": "wanderer", "wanderer2": "wanderer", "bergsteiger": "bergsteiger"}
 
@@ -53,15 +48,9 @@ static var _lamp_t := 0.0
 # Hilfe-Stufe (kommt von A3) und Essen / Trinken
 # =======================================================================================================================
 static func hilfe_stufe(ab) -> String:
-	"""«leicht» | «normal» | «schwer». TODO verbinden mit Paket A3 (Hilfe-Stufen): solange A3 nichts liefert, gilt der
-	Spielstand-Eintrag P["a3_hilfe"] / R["a3_hilfe"] oder eine Funktion ab.hilfe_stufe(), sonst «normal»."""
-	if ab.has_method("hilfe_stufe"):
+	"""«leicht» | «normal» | «schwer» - die Hilfe-Stufe von A3 (abenteuer_raetsel.gd hilfe(), über ab.hilfe_stufe())"""
+	if ab != null and ab.has_method("hilfe_stufe"):
 		return str(ab.hilfe_stufe())
-	for k in ["a3_hilfe", "a3_hilfe_stufe"]:
-		if ab.R.has(k):
-			return str(ab.R[k])
-		if ab.P.has(k):
-			return str(ab.P[k])
 	return "normal"
 
 
@@ -203,18 +192,23 @@ static func begegnung(ab, meet_id: String) -> void:
 # Tauschen (feste Wunschliste je Figur, kein Geld)
 # =======================================================================================================================
 static func wuensche(figur_id: String) -> Dictionary:
-	"""{name, will: [ids], gibt: [ids]} - von Paket A2 (abenteuer_figuren.gd wuensche()), sonst die Beispiele hier.
-	TODO verbinden mit abenteuer_figuren.gd, sobald A2 gepusht hat (Format wie WUENSCHE_STUB)."""
-	for path in ["res://scripts/abenteuer_figuren.gd", "res://scripts/abenteuer_gespraeche.gd"]:
-		if ResourceLoader.exists(path):
-			var scr = load(path)
-			if scr != null:
-				for m in scr.get_script_method_list():
-					if str(m["name"]) == "wuensche":
-						var w = scr.call("wuensche", figur_id)
-						if w is Dictionary and not w.is_empty():
-							return w
-	return WUENSCHE_STUB.get(figur_id, {})
+	"""{name, will: [ids], gibt: [ids], figur} - von Paket A2 (abenteuer_figuren.gd wuensche())"""
+	return Fig.wuensche(figur_id)
+
+
+static func paare(ab, figur_id: String) -> Array:
+	"""die offenen festen Paare der Figur (A2 wunschliste: will, will_n, gibt, gibt_n, einmal, i, figur, erledigt)"""
+	var a2 = ab.get("a2") if ab != null else null
+	if a2 == null or not is_instance_valid(a2):
+		return []
+	return (a2.wunschliste(figur_id) as Array).filter(func(w): return not bool(w["erledigt"]))
+
+
+static func _paar(m: Dictionary, g: String, b: String) -> Dictionary:
+	for w in m.get("paare", []):
+		if str(w["will"]) == g and str(w["gibt"]) == b:
+			return w
+	return {}
 
 
 static func tausch_oeffnen(ab, figur_id: String) -> Dictionary:
@@ -228,23 +222,30 @@ static func tausch_oeffnen(ab, figur_id: String) -> Dictionary:
 
 
 static func _tausch_moeglich(ab) -> Dictionary:
+	"""geben = was die Figur will und genug im Rucksack ist; bekommen = was sie dafür gibt (ist «gib» gewählt: nur das Passende)"""
 	var tz: Dictionary = ab.R.get("a4_tausch", {})
 	if tz.is_empty():
 		return {}
 	var w := wuensche(str(tz["figur"]))
 	var done: Array = (ab.P.get("a4_getauscht", {}) as Dictionary).get(str(tz["figur"]), [])
+	var ps: Array = []
+	for p in paare(ab, str(tz["figur"])):
+		var s := str(p["gibt"])
+		if (Inv.bleibend(s) or s in ["stirnlampe", "feldstecher"]) and (Inv.hat(s) or s in done):
+			continue
+		ps.append(p)
 	var geben := []
-	for id in w.get("will", []):
-		if Inv.hat(str(id)):
-			geben.append(str(id))
 	var bekommen := []
-	for id in w.get("gibt", []):
-		var s := str(id)
-		if Inv.bleibend(s) or s in ["stirnlampe", "feldstecher"]:
-			if Inv.hat(s) or s in done:
-				continue
-		bekommen.append(s)
-	return {"w": w, "geben": geben, "bekommen": bekommen}
+	var nn := {}
+	for p in ps:
+		var g := str(p["will"])
+		if Inv.anzahl(g) >= int(p["will_n"]) and not g in geben:
+			geben.append(g)
+		if (str(tz.get("gib", "")) == "" or str(tz["gib"]) == g) and not str(p["gibt"]) in bekommen:
+			bekommen.append(str(p["gibt"]))
+		nn[g] = int(p["will_n"])
+		nn[str(p["gibt"])] = int(p["gibt_n"])
+	return {"w": w, "geben": geben, "bekommen": bekommen, "paare": ps, "n": nn}
 
 
 static func tausch(ab) -> Dictionary:
@@ -254,25 +255,33 @@ static func tausch(ab) -> Dictionary:
 		return {"ok": false, "error": "kein Tausch offen"}
 	var g := str(tz.get("gib", ""))
 	var b := str(tz.get("bekomme", ""))
-	if not g in m["geben"] or not b in m["bekommen"]:
+	var p := _paar(m, g, b)
+	if not g in m["geben"] or p.is_empty() or Inv.anzahl(g) < int(p["will_n"]):
 		return {"ok": false, "error": T.t("Wähle, was du gibst und was du dafür bekommst.")}
-	Inv.nimm(g)
+	Inv.nimm(g, int(p["will_n"]))
 	if Inv.bleibend(b) or b in ["stirnlampe", "feldstecher"]:
 		Inv.finde(b)
 	else:
-		Inv.gib(b)
+		Inv.gib(b, int(p["gibt_n"]))
 	var gt: Dictionary = ab.P.get("a4_getauscht", {})
 	var lst: Array = gt.get(str(tz["figur"]), [])
 	lst.append(b)
 	gt[str(tz["figur"])] = lst
 	ab.P["a4_getauscht"] = gt
+	var a2 = ab.get("a2")
+	if a2 != null and is_instance_valid(a2):
+		a2.tausch_erledigt(str(p["figur"]), int(p["i"]))            # A2: «einmal»-Paare sind danach erledigt
 	ab._save()
 	ab.choices.append([int(ab.R["stage"]), "a4_tausch", "%s:%s>%s" % [str(tz["figur"]), g, b]])
-	ab._diary("meet", T.t("Getauscht"), T.t("%s gegen %s - mit %s.") % [T.t(Inv.name_of(g)), T.t(Inv.name_of(b)), T.t(str(m["w"].get("name", tz["figur"])))])
+	ab._diary("meet", T.t("Getauscht"), T.t("%s gegen %s - mit %s.") % [_n_name(g, int(p["will_n"])), _n_name(b, int(p["gibt_n"])), T.t(str(m["w"].get("name", tz["figur"])))])
 	tz["gib"] = ""
 	tz["bekomme"] = ""
 	ab._changed()
-	return {"ok": true, "gab": g, "bekam": b}
+	return {"ok": true, "gab": g, "bekam": b, "gab_n": int(p["will_n"]), "bekam_n": int(p["gibt_n"])}
+
+
+static func _n_name(id: String, n: int) -> String:
+	return "%d× %s" % [n, T.t(Inv.name_of(id))] if n > 1 else T.t(Inv.name_of(id))
 
 
 # =======================================================================================================================
@@ -289,6 +298,9 @@ static func op(ab, what: String, d: Dictionary) -> Dictionary:
 		"a4_tausch_gib":
 			if ab.R.has("a4_tausch"):
 				ab.R["a4_tausch"]["gib"] = str(d.get("value", ""))
+				var bk: Array = _tausch_moeglich(ab).get("bekommen", [])
+				if bk.size() == 1 or not str(ab.R["a4_tausch"]["bekomme"]) in bk:
+					ab.R["a4_tausch"]["bekomme"] = str(bk[0]) if bk.size() == 1 else ""
 				ab._changed()
 			return {"ok": ab.R.has("a4_tausch")}
 		"a4_tausch_bekomme":
@@ -402,7 +414,7 @@ static func stat_extra(ab, g: Control) -> void:
 	if not parts.is_empty():
 		g.add_child(ab._lab(T.t("Im Rucksack: %s") % ", ".join(parts), 12, DIM))
 	if not essen_an(ab):
-		g.add_child(ab._lab(T.t("Essen und Trinken: aus (Hilfe-Stufe Leicht)"), 12, DIM))
+		g.add_child(ab._lab(T.t("Essen und Trinken: aus (Schwierigkeit Leicht)"), 12, DIM))
 	elif hungrig(ab) or durstig(ab):
 		var w := []
 		if hungrig(ab):
@@ -438,7 +450,7 @@ static func paint_tausch(ab, parent: Control) -> void:
 	var sucht := []
 	for id in w.get("will", []):
 		sucht.append(T.t(Inv.name_of(str(id))))
-	g.add_child(ab._lab(T.t("Kein Geld - nur Tausch, eins gegen eins. Gesucht: %s.") % ", ".join(sucht), 13, DIM))
+	g.add_child(ab._lab(T.t("Kein Geld - nur Tausch nach der Wunschliste. Gesucht: %s.") % ", ".join(sucht), 13, DIM))
 	var row := HFlowContainer.new()
 	row.add_theme_constant_override("h_separation", 6)
 	g.add_child(row)
@@ -447,7 +459,7 @@ static func paint_tausch(ab, parent: Control) -> void:
 		row.add_child(ab._lab(T.t("(nichts davon im Rucksack)"), 13, ORG, false))
 	for id in m["geben"]:
 		var ii: String = id
-		var b: Button = ab._btn(row, T.t(Inv.name_of(ii)), func(): ab.op({"do": "a4_tausch_gib", "value": ii}), str(tz["gib"]) == ii)
+		var b: Button = ab._btn(row, _n_name(ii, int(m["n"].get(ii, 1))), func(): ab.op({"do": "a4_tausch_gib", "value": ii}), str(tz["gib"]) == ii)
 		b.toggle_mode = true
 		b.button_pressed = str(tz["gib"]) == ii
 	var row2 := HFlowContainer.new()
@@ -458,7 +470,7 @@ static func paint_tausch(ab, parent: Control) -> void:
 		row2.add_child(ab._lab(T.t("(hat nichts mehr für dich)"), 13, ORG, false))
 	for id in m["bekommen"]:
 		var ii: String = id
-		var b: Button = ab._btn(row2, "%s (%.2f kg)" % [T.t(Inv.name_of(ii)), Inv.gewicht(ii)], func(): ab.op({"do": "a4_tausch_bekomme", "value": ii}), str(tz["bekomme"]) == ii)
+		var b: Button = ab._btn(row2, "%s (%.2f kg)" % [_n_name(ii, int(m["n"].get(ii, 1))), Inv.gewicht(ii) * int(m["n"].get(ii, 1))], func(): ab.op({"do": "a4_tausch_bekomme", "value": ii}), str(tz["bekomme"]) == ii)
 		b.toggle_mode = true
 		b.button_pressed = str(tz["bekomme"]) == ii
 	var r3 := HBoxContainer.new()

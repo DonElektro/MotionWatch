@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.74** · passende MoveEye-Version (früher Motion Watch) **2.98.105**
+Stand: 31.10.2026 · Simulator-Version **3D-4.75** · passende MoveEye-Version (früher Motion Watch) **2.98.106**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.75 (MoveEye 2.98.106): Abenteuer-Pakete verbunden (A1–A5)
+
+- `abenteuer_bestenliste.gd` mit A1 verbunden (Wertung, Sammlung, Wildkamera – keine Stubs mehr), A4-Tausch nach den
+  A2-Wunschlisten, Wildhüter-Aufträge erkennen A1-Fotos.
+- Entscheid Daniel: nur Grossvaters Feldstecher; Seil / Ersatzteil je ein Fundort (zweiter nur auf Leicht); Hilfe-Stufe (A3)
+  = Schwierigkeit (eine Wahl), auf Mittel «Tipp jetzt».
 
 ## NEU in 3D-4.74 (MoveEye 2.98.105): Weltfehler Bergtal / Pfadilager (`bergtal.gd`, `kompakt_pfadi.gd`)
 

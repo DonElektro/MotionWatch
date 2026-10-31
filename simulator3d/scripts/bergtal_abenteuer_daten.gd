@@ -34,9 +34,9 @@ const FLAVOR := {"geheimnisvoll": {"start": "Über dem Tal liegt ein dünner Sch
 			"morning": "Neben dem Lager liegt eine Socke, die dir nicht gehört."}}
 
 # ---- Schwierigkeit: [Name, Text, Kraft höchstens, Wetter-Faktor, Tier-Faktor, Orientierung (bergtal bt_orient)] ---------
-const LEVELS := {"leicht": ["Leicht", "Mehr Kraft, wenig Wetter, Kompass und eigener Standort auf der Karte.", 100.0, 0.6, 0.7, "leicht"],
-		"mittel": ["Mittel", "Normales Bergwetter, Tiere in der Nacht, nur Kompass.", 85.0, 1.0, 1.0, "mittel"],
-		"schwer": ["Schwer", "Weniger Kraft, mehr Wetter und Tiere, nur Wegweiser und die Sonne.", 70.0, 1.5, 1.4, "schwer"]}
+const LEVELS := {"leicht": ["Leicht", "Mehr Kraft, wenig Wetter, Standort auf der Karte. Rätsel: Pfeile zeigen den Weg.", 100.0, 0.6, 0.7, "leicht"],
+		"mittel": ["Mittel", "Normales Bergwetter, Tiere in der Nacht, nur Kompass. Rätsel: Tipp nach einer Weile.", 85.0, 1.0, 1.0, "mittel"],
+		"schwer": ["Schwer", "Weniger Kraft, mehr Wetter und Tiere, nur Wegweiser und die Sonne. Rätsel: keine Hilfe.", 70.0, 1.5, 1.4, "schwer"]}
 const LEVEL_ORDER := ["leicht", "mittel", "schwer"]
 
 # ---- Ziel ---------------------------------------------------------------------------------------------------------------
@@ -68,17 +68,16 @@ const ITEMS := {"isomatte": ["Isomatte", 0.5, 6.0, "schlafen", "Gegen den kalten
 		"stoecke": ["Wanderstöcke", 0.5, 0.0, "sicher", "Bergauf und bergab etwas weniger anstrengend.", 1, 1],
 		"ministativ": ["Mini-Stativ für MoveEye", 0.3, 0.5, "moveeye", "MoveEye frei aufstellen (Höhe und Richtung frei).", 1, 1],
 		"powerbank": ["Powerbank für MoveEye", 0.3, 0.3, "moveeye", "Strom für MoveEye bis zum Morgen, auch bei Kälte.", 1, 1],
-		"fernglas": ["Fernglas", 0.4, 0.5, "extra", "Hinweise und Wetter von weitem sehen.", 1, 2],
 		"ultratarp": ["Ultraleicht-Tarp", 0.3, 1.0, "dach", "Wie das Tarp, nur halb so schwer.", 1, 3],
 		"daunenschlafsack": ["Daunen-Winterschlafsack", 1.0, 8.0, "schlafen", "Warm wie der Winterschlafsack, viel leichter.", 1, 4],
 		"karabiner": ["Der alte Karabiner", 0.05, 0.0, "andenken", "Aus der Blechdose am versteckten See.", 1, 99]}
 const ITEM_ORDER := ["isomatte", "einmannzelt", "kuppelzelt", "tarp", "ultratarp", "biwaksack", "sommerschlafsack", "winterschlafsack",
-		"daunenschlafsack", "kocher", "stirnlampe", "jacke", "essen", "wasser", "apotheke", "stoecke", "ministativ", "powerbank", "fernglas", "karabiner"]
+		"daunenschlafsack", "kocher", "stirnlampe", "jacke", "essen", "wasser", "apotheke", "stoecke", "ministativ", "powerbank", "karabiner"]
 # MoveEye ist Teil der Ausrüstung, zählt aber nicht als Gewicht (Daniel)
 
 # ---- Stufen (Erfahrung) -------------------------------------------------------------------------------------------------
 const LEVEL_XP := [0, 300, 700, 1200, 2000, 3000]
-const UNLOCKS := {2: "fernglas", 3: "ultratarp", 4: "daunenschlafsack"}
+const UNLOCKS := {3: "ultratarp", 4: "daunenschlafsack"}     # (Daniel 31.10.: kein «Fernglas» mehr - nur Grossvaters Feldstecher, A3)
 
 # ---- Fundstücke unterwegs (machen den Rucksack schwerer) ------------------------------------------------------------------
 # id -> [Name, kg, Text, nur lustig]

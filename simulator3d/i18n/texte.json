@@ -1912,6 +1912,12 @@
   "it": "+%d esperienza da enigmi e ritrovamenti · livello di aiuto %s",
   "rm": "+%d experientscha da enigmas e chats · nivel d'agid %s"
  },
+ "+%d Erfahrung aus Rätseln und Funden · Schwierigkeit %s": {
+  "en": "+%d experience from puzzles and finds · difficulty %s",
+  "fr": "+%d d'expérience grâce aux énigmes et trouvailles · difficulté %s",
+  "it": "+%d esperienza da enigmi e ritrovamenti · difficoltà %s",
+  "rm": "+%d experientscha d'enigmas e chats · difficultad %s"
+ },
  "+%d Erfahrung · Stufe %d": {
   "en": "+%d experience · level %d",
   "fr": "+%d d'expérience · niveau %d",
@@ -9441,6 +9447,12 @@
   "it": "Completato un capitolo al livello di aiuto Difficile, senza una risposta sbagliata.",
   "rm": "In chapitel cun il nivel d'agid Grev, senza ina sulet'a resposta sbagliada."
  },
+ "Ein Kapitel auf der Schwierigkeit Schwer geschafft, ohne eine falsche Antwort.": {
+  "en": "Finished a chapter on difficulty Hard without a wrong answer.",
+  "fr": "Un chapitre réussi en difficulté Difficile, sans mauvaise réponse.",
+  "it": "Un capitolo superato a difficoltà Difficile, senza risposte sbagliate.",
+  "rm": "In chapitel cun la difficultad Grev fatg, senza ina resposta sbagliada."
+ },
  "Ein Kind ist weg: rote Jacke, etwa 6 Jahre. Es spielt irgendwo um MoveEye – findet MoveEye es? (5 Min.)": {
   "en": "A child is missing: red jacket, about 6 years old. It is playing somewhere around MoveEye – will MoveEye find it? (5 min)",
   "fr": "Un enfant a disparu : veste rouge, environ 6 ans. Il joue quelque part autour de MoveEye – MoveEye le trouvera-t-il ? (5 min)",
@@ -10755,6 +10767,12 @@
   "fr": "Manger et boire : désactivé (niveau d'aide Facile)",
   "it": "Cibo e bevande: spento (livello d'aiuto Facile)",
   "rm": "Mangiar e baiver: deactivà (stgalim d'agid Lev)"
+ },
+ "Essen und Trinken: aus (Schwierigkeit Leicht)": {
+  "en": "Food and drink: off (difficulty Easy)",
+  "fr": "Manger et boire : désactivé (difficulté Facile)",
+  "it": "Mangiare e bere: spento (difficoltà Facile)",
+  "rm": "Mangiar e baiver: deactivà (difficultad Lev)"
  },
  "Esstisch": {
   "en": "Dining table",
@@ -16999,6 +17017,12 @@
   "it": "Nessuna volpe alle provviste stanotte.",
   "rm": "Nagina vulp tar la provianda questa notg."
  },
+ "Kein Geld - nur Tausch nach der Wunschliste. Gesucht: %s.": {
+  "en": "No money - only trading by the wish list. Wanted: %s.",
+  "fr": "Pas d'argent - seulement du troc selon la liste de souhaits. Recherché : %s.",
+  "it": "Niente soldi - solo baratto secondo la lista dei desideri. Cercato: %s.",
+  "rm": "Nagins daners - mo barat tenor la glista da giavischs. Tschertgà: %s."
+ },
  "Kein Geld - nur Tausch, eins gegen eins. Gesucht: %s.": {
   "en": "No money - only trading, one for one. Wanted: %s.",
   "fr": "Pas d'argent - seulement du troc, un contre un. Recherché : %s.",
@@ -19167,6 +19191,12 @@
   "fr": "Plus de force, peu de mauvais temps, boussole et position sur la carte.",
   "it": "Più forza, poco maltempo, bussola e posizione sulla mappa.",
   "rm": "Dapli forza, pauca aura, cumpass ed agen lieu sin la charta."
+ },
+ "Mehr Kraft, wenig Wetter, Standort auf der Karte. Rätsel: Pfeile zeigen den Weg.": {
+  "en": "More strength, little weather, your position on the map. Puzzles: arrows show the way.",
+  "fr": "Plus de force, peu de mauvais temps, position sur la carte. Énigmes : des flèches montrent le chemin.",
+  "it": "Più forza, poco maltempo, posizione sulla mappa. Enigmi: le frecce mostrano la via.",
+  "rm": "Dapli forza, pauca aura, lieu sin la charta. Enigmas: frizzas mussan la via."
  },
  "mehr Menschen": {
   "en": "more people",
@@ -21935,6 +21965,12 @@
   "fr": "Météo de montagne normale, animaux la nuit, seulement la boussole.",
   "it": "Tempo di montagna normale, animali di notte, solo bussola.",
   "rm": "Aura da muntogna normala, animals la notg, mo cumpass."
+ },
+ "Normales Bergwetter, Tiere in der Nacht, nur Kompass. Rätsel: Tipp nach einer Weile.": {
+  "en": "Normal mountain weather, animals at night, compass only. Puzzles: a tip after a while.",
+  "fr": "Météo de montagne normale, animaux la nuit, seulement la boussole. Énigmes : un conseil après un moment.",
+  "it": "Tempo di montagna normale, animali di notte, solo bussola. Enigmi: un consiglio dopo un po'.",
+  "rm": "Aura da muntogna normala, animals la notg, mo cumpass. Enigmas: in cussegl suenter in mument."
  },
  "Note": {
   "en": "Grade",
@@ -27895,6 +27931,12 @@
   "it": "Animali: grilli, uccelli, gufo, cane in lontananza, campanacci",
   "rm": "Animals: grils, utschels, tschuetta, chaun en la distanza, zampuns"
  },
+ "Tipp jetzt": {
+  "en": "Tip now",
+  "fr": "Conseil maintenant",
+  "it": "Consiglio ora",
+  "rm": "Cussegl ussa"
+ },
  "Tipp richtig": {
   "en": "Guessed right",
   "fr": "Bien deviné",
@@ -30290,6 +30332,12 @@
   "fr": "Moins de force, plus de mauvais temps et d'animaux, seulement les panneaux et le soleil.",
   "it": "Meno forza, più maltempo e animali, solo cartelli e il sole.",
   "rm": "Main forza, dapli aura ed animals, mo indicaturs da via ed il sulegl."
+ },
+ "Weniger Kraft, mehr Wetter und Tiere, nur Wegweiser und die Sonne. Rätsel: keine Hilfe.": {
+  "en": "Less strength, more weather and animals, only signposts and the sun. Puzzles: no help.",
+  "fr": "Moins de force, plus de mauvais temps et d'animaux, seulement les panneaux et le soleil. Énigmes : aucune aide.",
+  "it": "Meno forza, più maltempo e animali, solo cartelli e il sole. Enigmi: nessun aiuto.",
+  "rm": "Main forza, dapli aura ed animals, mo indicaturs da via ed il sulegl. Enigmas: nagin agid."
  },
  "wenn das Bedienfeld zu ist (H)": {
   "en": "when the control panel is closed (H)",
