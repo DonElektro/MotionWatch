@@ -1075,6 +1075,12 @@
   "it": "%d fotogrammi/s · %s · %s · 3D %s (%d %%) · telecamere per MoveEye %s · livello «%s» · %s",
   "rm": "%d maletgs/s · %s · %s · 3D %s (%d %%) · cameras per MoveEye %s · nivel «%s» · %s"
  },
+ "%d Controller verbunden.": {
+  "en": "%d controllers connected.",
+  "fr": "%d manettes connectées.",
+  "it": "%d controller collegati.",
+  "rm": "%d controllers colliads."
+ },
  "%d da": {
   "en": "%d there",
   "fr": "%d présents",
@@ -1555,6 +1561,12 @@
   "it": "%s ha lasciato il gioco",
   "rm": "%s ha bandunà il gieu"
  },
+ "%s ist durchgeschlüpft und hält das Seil!": {
+  "en": "%s slipped through and is holding the rope!",
+  "fr": "%s s'est faufilé·e et tient la corde !",
+  "it": "%s è passato/a e tiene la corda!",
+  "rm": "%s è sguitschà tras e tegna la suga!"
+ },
  "%s ist kurz vor dem Ziel": {
   "en": "%s is close to the goal",
   "fr": "%s est tout près de l’arrivée",
@@ -1566,6 +1578,18 @@
   "fr": "%s est déjà gardien",
   "it": "%s è già guardiano",
   "rm": "%s è gia guardian"
+ },
+ "%s ist umzingelt!": {
+  "en": "%s is surrounded!",
+  "fr": "%s est encerclé·e !",
+  "it": "%s è circondato/a!",
+  "rm": "%s è circumdà!"
+ },
+ "%s ist umzingelt! %s: lauf hin und drück A!": {
+  "en": "%s is surrounded! %s: run there and press A!",
+  "fr": "%s est encerclé·e ! %s : cours-y et appuie sur A !",
+  "it": "%s è circondato/a! %s: corri lì e premi A!",
+  "rm": "%s è circumdà! %s: curra là e smatga A!"
  },
  "%s Jetzt: %s! %s": {
   "en": "%s Now: %s! %s",
@@ -2196,6 +2220,12 @@
   "it": "1 furtivo",
   "rm": "1 sfugider"
  },
+ "1 Spieler": {
+  "en": "1 player",
+  "fr": "1 joueur",
+  "it": "1 giocatore",
+  "rm": "1 giugader"
+ },
  "1 Wächter": {
   "en": "1 guard",
   "fr": "1 gardien",
@@ -2255,6 +2285,12 @@
   "fr": "2 bots",
   "it": "2 bot",
   "rm": "2 bots"
+ },
+ "2 Spieler": {
+  "en": "2 players",
+  "fr": "2 joueurs",
+  "it": "2 giocatori",
+  "rm": "2 giugaders"
  },
  "2. Welche Testläufe?": {
   "en": "2. Which test runs?",
@@ -6139,6 +6175,12 @@
   "it": "Blu scena · bianco luogo · giallo punto panoramico · verde posto per dormire / posizione · rosa vignetta · marrone stanza · ▲ vista · ● MoveEye — clic = saltare lì, rotella = zoom, trascinare = spostare",
   "rm": "Blau scena · alv lieu · mellen punct da vista · verd plazza da durmir / posiziun · rosa vignetta · brin stanza · ▲ vista · ● MoveEye — clic = siglir là, roda = zoom, trair = spustar"
  },
+ "Bleib beim Haken und halte das Seil fest.": {
+  "en": "Stay at the hook and hold the rope tight.",
+  "fr": "Reste près du crochet et tiens bien la corde.",
+  "it": "Resta vicino al gancio e tieni forte la corda.",
+  "rm": "Resta tar il crutsch e tegna ferm la suga."
+ },
  "Blender + Blosm (OpenStreetMap, weltweit)": {
   "en": "Blender + Blosm (OpenStreetMap, worldwide)",
   "fr": "Blender + Blosm (OpenStreetMap, monde entier)",
@@ -6468,6 +6510,12 @@
   "fr": "Facteur",
   "it": "Postino",
   "rm": "Postin"
+ },
+ "Bring den Kristall durch die Schlucht bis zum Steinmann – wenn das Feuer brennt.": {
+  "en": "Take the crystal through the gorge to the cairn – while the fire burns.",
+  "fr": "Porte le cristal à travers la gorge jusqu'au cairn – pendant que le feu brûle.",
+  "it": "Porta il cristallo attraverso la gola fino all'ometto di pietra – mentre il fuoco arde.",
+  "rm": "Porta il cristal tras la chavorgia fin tar l'um da crap – cura ch'il fieu arda."
  },
  "Bring den Kristall hinein und leg ihn auf den Stein vor dem Altar.": {
   "en": "Carry the crystal inside and put it on the stone in front of the altar.",
@@ -7459,6 +7507,12 @@
   "fr": "La barrière du pâturage est fermée. Le crochet est de l'autre côté.",
   "it": "Il cancello del pascolo è chiuso. Il gancio è dall'altra parte.",
   "rm": "Il portun da la pastgira è serrà. Il crutsch è da l'autra vart."
+ },
+ "Das Weidegatter mit dem Seil": {
+  "en": "The pasture gate with the rope",
+  "fr": "La barrière du pâturage et la corde",
+  "it": "Il cancello del pascolo con la corda",
+  "rm": "La porta da la pastgira cun la suga"
  },
  "Das Weidegatter öffnen": {
   "en": "Open the pasture gate",
@@ -8564,6 +8618,12 @@
   "it": "Il piede slogato ti ha rallentato (il pronto soccorso avrebbe aiutato).",
   "rm": "Il pe sturtì ha franà (l'emprima agid avess gidà)."
  },
+ "Der Viperweg": {
+  "en": "The viper path",
+  "fr": "Le chemin des vipères",
+  "it": "Il sentiero delle vipere",
+  "rm": "La senda da las vipras"
+ },
  "Der Wanderer im Kreis": {
   "en": "The hiker going in circles",
   "fr": "Le randonneur qui tourne en rond",
@@ -8659,6 +8719,12 @@
   "fr": "La sentinelle siffle, toutes disparaissent dans le terrier – seule la grosse continue de manger. Elle ne court que lorsque les autres ressortent déjà la tête.",
   "it": "La sentinella fischia, tutte spariscono nella tana – solo quella grassa continua a mangiare. Corre solo quando le altre stanno già rimettendo fuori il naso.",
   "rm": "La guardia sivla, tuttas svaneschan en la tana – mo la grassa maglia vinavant. Ella cumenza pir a currer cura che las autras guardan gia puspè or."
+ },
+ "Der Zaun ist zu hoch. Nur durch das kleine Loch kommt man hinüber.": {
+  "en": "The fence is too high. You only get across through the small hole.",
+  "fr": "La clôture est trop haute. On ne passe que par le petit trou.",
+  "it": "Il recinto è troppo alto. Si passa solo dal piccolo buco.",
+  "rm": "La saiv è memia auta. Mo tras la pitschna foura vegn ins sur."
  },
  "Der Älpler": {
   "en": "The alpine herdsman",
@@ -9506,6 +9572,12 @@
   "it": "Le vipere si sono nascoste. Hai superato la valle dell’estate!",
   "rm": "Las viperas èn sa zuppadas. Ti has fatg la val da stad!"
  },
+ "Die Vipern liegen auf dem Weg! Zuerst muss jemand stampfen.": {
+  "en": "The vipers are lying on the path! Someone has to stamp first.",
+  "fr": "Les vipères sont sur le chemin ! Quelqu'un doit d'abord taper du pied.",
+  "it": "Le vipere sono sul sentiero! Prima qualcuno deve battere i piedi.",
+  "rm": "Las vipras èn sin la senda! L'emprim sto insatgi stampar."
+ },
  "Die Wanderin hat gesagt: der flache Weg ist schöner, aber er zieht sich.": {
   "en": "The hiker said: the flat path is nicer, but it drags on.",
   "fr": "La randonneuse l'a dit : le chemin plat est plus beau, mais il est long.",
@@ -9560,6 +9632,12 @@
   "it": "I cinghiali se ne sono andati. Hai superato la valle dell’autunno!",
   "rm": "Ils portgs selvadis èn davent. Ti has fatg la val d’atun!"
  },
+ "Die Wolfsschlucht": {
+  "en": "The wolf gorge",
+  "fr": "La gorge des loups",
+  "it": "La gola dei lupi",
+  "rm": "La chavorgia dals lufs"
+ },
  "Die Wärmebild-Kamera sieht dich kaum. Aber: sie raschelt laut und glänzt im Licht.": {
   "en": "The thermal camera can hardly see you. But: it rustles loudly and shines in the light.",
   "fr": "La caméra thermique te voit à peine. Mais : elle bruisse fort et brille à la lumière.",
@@ -9583,6 +9661,12 @@
   "fr": "Les loups gardent leurs distances. Tu as réussi la vallée de l’hiver !",
   "it": "I lupi stanno a distanza. Hai superato la valle dell’inverno!",
   "rm": "Ils lufs tegnan distanza. Ti has fatg la val d’enviern!"
+ },
+ "Die Wölfe lassen dich nicht vorbei! Zuerst muss die Fackel brennen.": {
+  "en": "The wolves won't let you pass! First the torch must burn.",
+  "fr": "Les loups ne te laissent pas passer ! D'abord, la torche doit brûler.",
+  "it": "I lupi non ti lasciano passare! Prima deve ardere la fiaccola.",
+  "rm": "Ils lufs na laschan betg passar tai! L'emprim sto la fatschla arder."
  },
  "Die Zeit im Münzfernrohr ist um.": {
   "en": "The time in the coin telescope is up.",
@@ -9613,6 +9697,12 @@
   "fr": "La dernière trace d’alarme lue (MoveEye → revue d’alarme en 3D) devient une «vraie nuit» : le banc d’essai la rejoue, aussi avec pluie, sans lumière et de jour.",
   "it": "L’ultima traccia di allarme riprodotta (MoveEye → revisione allarme in 3D) diventa una «notte vera»: il banco di prova la riproduce, anche con pioggia, senza luce e di giorno.",
   "rm": "L’ultim fastiz d’alarm reproducì (MoveEye → retrospectiva d’alarm en 3D) daventa ina «notg vaira»: il banc da prova al reproducescha, er cun plievgia, senza glisch e dal di."
+ },
+ "Die zwei Zaubersteine": {
+  "en": "The two magic stones",
+  "fr": "Les deux pierres magiques",
+  "it": "Le due pietre magiche",
+  "rm": "Ils dus craps magics"
  },
  "Die Überraschung": {
   "en": "The surprise",
@@ -10514,6 +10604,12 @@
   "fr": "Un cristal de roche ! Il brille tout seul.",
   "it": "Un cristallo di rocca! Brilla da solo.",
   "rm": "In cristal da muntogna! El glischa da sai."
+ },
+ "Ein Bildschirm, zwei Controller. Beim Start drückt Spieler 2 A auf seinem Controller. Spieler 1 spielt mit der Tastatur (wie allein) oder mit dem anderen Controller.": {
+  "en": "One screen, two controllers. At the start, player 2 presses A on their controller. Player 1 plays with the keyboard (as alone) or with the other controller.",
+  "fr": "Un écran, deux manettes. Au départ, le joueur 2 appuie sur A sur sa manette. Le joueur 1 joue au clavier (comme seul) ou avec l'autre manette.",
+  "it": "Uno schermo, due controller. All'inizio il giocatore 2 preme A sul suo controller. Il giocatore 1 gioca con la tastiera (come da solo) o con l'altro controller.",
+  "rm": "In visur, dus controllers. Al cumenzament smatga il giugader 2 A sin ses controller. Il giugader 1 giuga cun la tastatura (sco sulet) u cun l'auter controller."
  },
  "Ein Brief vom Grossvater, mit Wachs verschlossen. Darin nur ein Satz: «Die Karte gehört jetzt dir - lies sie mit der Sonne.» Dazu ein Stück einer alten, vergilbten Karte des Bergtals - das erste von fünf. Es zeigt eine Glocke über einem Brunnen.": {
   "en": "A letter from grandfather, sealed with wax. Inside only one sentence: «The map is yours now - read it with the sun.» With it, a piece of an old, yellowed map of the valley - the first of five. It shows a bell above a fountain.",
@@ -12448,6 +12544,18 @@
   "it": "Quasi pieno: «Elimina i vecchi dati IA» (scheda Testare) o eliminare vecchie registrazioni e immagini di addestramento nella cartella.",
   "rm": "Bunamain plain: «Stizzar las datas IA veglias» (carta Testar) u stizzar registraziuns e maletgs da trenament vegls en l’ordinatur."
  },
+ "Fast! Aber der Kristall muss durch die Mitte – an den Augen vorbei.": {
+  "en": "Almost! But the crystal has to go through the middle – past the eyes.",
+  "fr": "Presque ! Mais le cristal doit passer par le milieu – devant les yeux.",
+  "it": "Quasi! Ma il cristallo deve passare in mezzo – davanti agli occhi.",
+  "rm": "Quasi! Ma il cristal sto passar tras il mez – sper ils egls vi."
+ },
+ "Fast! Aber du musst über den Viperweg gehen, nicht daneben.": {
+  "en": "Almost! But you have to walk over the viper path, not beside it.",
+  "fr": "Presque ! Mais tu dois passer sur le chemin des vipères, pas à côté.",
+  "it": "Quasi! Ma devi camminare sul sentiero delle vipere, non accanto.",
+  "rm": "Quasi! Ma ti stos ir sur la senda da las vipras, betg sper ella."
+ },
  "Februar": {
   "en": "February",
   "fr": "Février",
@@ -14178,6 +14286,24 @@
   "it": "Vai da un punto di sosta all’altro fino alla porta delle stagioni. La porta brilla quando tutti i compiti sono risolti.",
   "rm": "Va da plazza da pausa a plazza da pausa fin tar la porta da las stagiuns. La porta glischa, cura che tut las incumbensas èn schliadas."
  },
+ "Geh zum Haken am Zaun und halte das Seil.": {
+  "en": "Go to the hook on the fence and hold the rope.",
+  "fr": "Va au crochet de la clôture et tiens la corde.",
+  "it": "Vai al gancio del recinto e tieni la corda.",
+  "rm": "Va tar il crutsch da la saiv e tegna la suga."
+ },
+ "Geh zur Feuerschale und drück %s: das Feuer hält die Wölfe in der Höhle.": {
+  "en": "Go to the fire bowl and press %s: the fire keeps the wolves in their den.",
+  "fr": "Va au brasero et appuie sur %s : le feu garde les loups dans leur tanière.",
+  "it": "Vai al braciere e premi %s: il fuoco tiene i lupi nella tana.",
+  "rm": "Va tar la cuppa da fieu e smatga %s: il fieu tegna ils lufs en lur tana."
+ },
+ "Geh über den Viperweg bis zum Steinmann – wenn gestampft wird.": {
+  "en": "Walk over the viper path to the cairn – while someone stamps.",
+  "fr": "Passe sur le chemin des vipères jusqu'au cairn – pendant qu'on tape du pied.",
+  "it": "Cammina sul sentiero delle vipere fino all'ometto – mentre qualcuno batte i piedi.",
+  "rm": "Va sur la senda da las vipras fin tar l'um da crap – cura ch'insatgi stampa."
+ },
  "Geheimer Bergsee hinter dem Grat (schmaler Pfad)": {
   "en": "Secret mountain lake behind the ridge (narrow path)",
   "fr": "Lac secret derrière l'arête (sentier étroit)",
@@ -14376,6 +14502,12 @@
   "it": "Nessun turno «Squadra contro MoveEye» o «Nascondino» in corso.",
   "rm": "Nagina runda «Team cunter MoveEye» u «Giu da zuppar» n’è gist en cursa."
  },
+ "Gerettet! Zusammen seid ihr stärker – die Tiere laufen weg.": {
+  "en": "Rescued! Together you are stronger – the animals run away.",
+  "fr": "Sauvé·e ! Ensemble, vous êtes plus forts – les animaux s'enfuient.",
+  "it": "Salvato/a! Insieme siete più forti – gli animali scappano.",
+  "rm": "Salvà! Ensemen essas vus pli ferms – las bestgas fugian."
+ },
  "Gern, danke!": {
   "en": "Yes please, thanks!",
   "fr": "Volontiers, merci !",
@@ -14484,6 +14616,12 @@
   "it": "Fatto!",
   "rm": "Fatg!"
  },
+ "Geschafft! Das Feuer hat die Wölfe in ihrer Höhle gehalten. Der Kristall ist sicher vorbei.": {
+  "en": "Done! The fire kept the wolves in their den. The crystal got past safely.",
+  "fr": "Réussi ! Le feu a gardé les loups dans leur tanière. Le cristal est passé en sécurité.",
+  "it": "Fatto! Il fuoco ha tenuto i lupi nella tana. Il cristallo è passato al sicuro.",
+  "rm": "Fatg! Il fieu ha tegnì ils lufs en lur tana. Il cristal è passà a segir."
+ },
  "Geschafft! Der Mover steht beim Velo.": {
   "en": "Done! The mover is at the bike.",
   "fr": "Réussi ! Le mover est près du vélo.",
@@ -14495,6 +14633,24 @@
   "fr": "Réussi ! Le rover est près du vélo.",
   "it": "Fatto! Il rover è vicino alla bici.",
   "rm": "Fatg! Il rover stat tar il velo."
+ },
+ "Geschafft! Die Vipern sind vor dem Stampfen weggekrochen. Der Weg ist frei.": {
+  "en": "Done! The vipers crawled away from the stamping. The path is clear.",
+  "fr": "Réussi ! Les vipères ont fui en rampant. Le chemin est libre.",
+  "it": "Fatto! Le vipere sono strisciate via. Il sentiero è libero.",
+  "rm": "Fatg! Las vipras èn sa stortas davent. La senda è libra."
+ },
+ "Geschafft! Zusammen auf den Zaubersteinen – der Steg über den Bach ist unten.": {
+  "en": "Done! Together on the magic stones – the footbridge over the stream is down.",
+  "fr": "Réussi ! Ensemble sur les pierres magiques – la passerelle sur le ruisseau est baissée.",
+  "it": "Fatto! Insieme sulle pietre magiche – la passerella sul ruscello è abbassata.",
+  "rm": "Fatg! Ensemen sin ils craps magics – la punt sur il dutg è giu."
+ },
+ "Geschafft! Zusammen habt ihr am Seil gezogen – das Gatter ist offen.": {
+  "en": "Done! Together you pulled the rope – the gate is open.",
+  "fr": "Réussi ! Ensemble, vous avez tiré la corde – la barrière est ouverte.",
+  "it": "Fatto! Insieme avete tirato la corda – il cancello è aperto.",
+  "rm": "Fatg! Ensemen avais vus tratg la suga – la porta è averta."
  },
  "Geschafft, das Ziel! Jetzt brauchst du einen guten Platz für die Nacht.": {
   "en": "You made it to the goal! Now you need a good place for the night.",
@@ -14513,6 +14669,12 @@
   "fr": "Histoire",
   "it": "Storia",
   "rm": "Istorgia"
+ },
+ "Geschichte läuft nicht (maggie_zwei fehlt)": {
+  "en": "The story is not running (maggie_zwei missing)",
+  "fr": "L'histoire ne tourne pas (maggie_zwei manque)",
+  "it": "La storia non è in corso (manca maggie_zwei)",
+  "rm": "L'istorgia na va betg (maggie_zwei manca)"
  },
  "Geschichte starten": {
   "en": "Start the story",
@@ -14609,6 +14771,12 @@
   "fr": "Séparés - écran partagé",
   "it": "Separati - schermo diviso",
   "rm": "Separads - visur partida"
+ },
+ "Getrennt – geteilter Bildschirm": {
+  "en": "Apart – split screen",
+  "fr": "Séparés – écran partagé",
+  "it": "Separati – schermo diviso",
+  "rm": "Separads – visur partì"
  },
  "Getriebespiel der Servos": {
   "en": "Gear play of the servos",
@@ -16243,6 +16411,12 @@
   "it": "Qui non c'è nessuna bici.",
   "rm": "Qua na stat nagin velo."
  },
+ "Hier wartet ein Teamrätsel – aber zuerst kommt etwas anderes. Folgt dem Pfeil!": {
+  "en": "A team puzzle waits here – but something else comes first. Follow the arrow!",
+  "fr": "Une énigme d'équipe attend ici – mais il y a d'abord autre chose. Suivez la flèche !",
+  "it": "Qui aspetta un enigma di squadra – ma prima viene altro. Seguite la freccia!",
+  "rm": "Qua spetga in enigma da squadra – ma l'emprim vegn insatge auter. Suandai la frizza!"
+ },
  "Hier übernachten": {
   "en": "Sleep here",
   "fr": "Dormir ici",
@@ -17293,6 +17467,12 @@
   "it": "Non siete persone, ma volpe, gatto, ramo nel vento, lampada, palloncino … Riuscite a far segnalare comunque «Persona!» a MoveEye? Ogni falso allarme dà punti – e MoveEye ne impara. Solo con MoveEye.",
   "rm": "Vus essas betg umans, mabain vulp, giat, rom en il vent, lampa, ballun … Reussis vus da far annunziar tuttina «Persuna!» a MoveEye? Mintga fauss alarm dat puncts – e MoveEye emprenda da quai. Mo cun MoveEye."
  },
+ "Ihr wandert beide. Maggie folgt euch und hilft.": {
+  "en": "You both hike. Maggie follows you and helps.",
+  "fr": "Vous marchez tous les deux. Maggie vous suit et aide.",
+  "it": "Camminate entrambi. Maggie vi segue e aiuta.",
+  "rm": "Vus chaminais omadus. Maggie suonda vus e gida."
+ },
  "Im %s fehlt noch %d – manches gibt es nur nachts, bei Regen oder am Morgen.": {
   "en": "In %s, %d still missing – some things are only there at night, in the rain or in the morning.",
   "fr": "Dans %s, il en manque encore %d – certaines choses n’existent que la nuit, sous la pluie ou le matin.",
@@ -18198,6 +18378,12 @@
   "fr": "Veste",
   "it": "Giacca",
   "rm": "Giacca"
+ },
+ "Jacke 2": {
+  "en": "Jacket 2",
+  "fr": "Veste 2",
+  "it": "Giacca 2",
+  "rm": "Giacca 2"
  },
  "Jahreszeit": {
   "en": "Season",
@@ -19111,6 +19297,12 @@
   "it": "Nessun controller trovato",
   "rm": "Nagin controller chattà"
  },
+ "Kein Controller gefunden – USB oder Bluetooth anschliessen.": {
+  "en": "No controller found – connect via USB or Bluetooth.",
+  "fr": "Aucune manette trouvée – brancher en USB ou Bluetooth.",
+  "it": "Nessun controller trovato – collegare via USB o Bluetooth.",
+  "rm": "Nagin controller chattà – colliar cun USB u Bluetooth."
+ },
  "Kein Controller verbunden (USB oder Bluetooth; im Browser: MoveEye-Seite Simulator).": {
   "en": "No controller connected (USB or Bluetooth; in the browser: MoveEye page Simulator).",
   "fr": "Aucune manette connectée (USB ou Bluetooth ; dans le navigateur : page MoveEye Simulateur).",
@@ -19260,6 +19452,12 @@
   "fr": "aucun échange ouvert",
   "it": "nessuno scambio aperto",
   "rm": "nagin barat avert"
+ },
+ "kein Teamrätsel": {
+  "en": "no team puzzle",
+  "fr": "pas d'énigme d'équipe",
+  "it": "nessun enigma di squadra",
+  "rm": "nagin enigma da squadra"
  },
  "Kein Treffer": {
   "en": "No match",
@@ -20684,6 +20882,24 @@
   "it": "Partita salvata",
   "rm": "Partida memorisada"
  },
+ "Lauf hin und drück A! (noch %d s)": {
+  "en": "Run there and press A! (%d s left)",
+  "fr": "Cours-y et appuie sur A ! (encore %d s)",
+  "it": "Corri lì e premi A! (ancora %d s)",
+  "rm": "Curra là e smatga A! (anc %d s)"
+ },
+ "Lauf zum Stampfstein und drück immer wieder X: Maggie scharrt und stampft.": {
+  "en": "Run to the stamping stone and press X again and again: Maggie scrapes and stamps.",
+  "fr": "Cours à la pierre et appuie sur X encore et encore : Maggie gratte et tape.",
+  "it": "Corri alla pietra e premi X più volte: Maggie raspa e batte.",
+  "rm": "Curra tar il crap da stampar e smatga adina puspè X: Maggie sgrafla e stampa."
+ },
+ "Lauf zur Feuerschale und drück A: Maggie bellt die Wölfe in die Höhle.": {
+  "en": "Run to the fire bowl and press A: Maggie barks the wolves back into their den.",
+  "fr": "Cours au brasero et appuie sur A : Maggie aboie et renvoie les loups dans leur tanière.",
+  "it": "Corri al braciere e premi A: Maggie abbaia e ricaccia i lupi nella tana.",
+  "rm": "Curra tar la cuppa da fieu e smatga A: Maggie bauscha ils lufs en lur tana."
+ },
  "laut und oft, drei Jump-Scares pro Nacht": {
   "en": "loud and often, three jump scares per night",
   "fr": "fort et souvent, trois sursauts par nuit",
@@ -21412,11 +21628,29 @@
   "it": "Maggie",
   "rm": "Maggie"
  },
+ "Maggie bellt laut – die Tiere laufen weg! %s ist gerettet.": {
+  "en": "Maggie barks loudly – the animals run away! %s is rescued.",
+  "fr": "Maggie aboie fort – les animaux s'enfuient ! %s est sauvé·e.",
+  "it": "Maggie abbaia forte – gli animali scappano! %s è salvo/a.",
+  "rm": "Maggie bauscha fitg – las bestgas fugian! %s è salvà."
+ },
  "Maggie bellt laut – ganz nah ist etwas!": {
   "en": "Maggie barks loudly – something is very close!",
   "fr": "Maggie aboie fort – quelque chose est tout près !",
   "it": "Maggie abbaia forte – c'è qualcosa vicinissimo!",
   "rm": "Maggie bubla ferm – zatgei è fitg datiers!"
+ },
+ "Maggie bellt: Achtung, da ist ein böses Tier!": {
+  "en": "Maggie barks: careful, there's a bad animal!",
+  "fr": "Maggie aboie : attention, il y a un méchant animal !",
+  "it": "Maggie abbaia: attenzione, c'è un animale cattivo!",
+  "rm": "Maggie bauscha: attenziun, là è ina bestga mala!"
+ },
+ "Maggie bleibt in der Nähe (25 m) – sie läuft zurück.": {
+  "en": "Maggie stays close (25 m) – she runs back.",
+  "fr": "Maggie reste à proximité (25 m) – elle revient.",
+  "it": "Maggie resta vicino (25 m) – torna indietro.",
+  "rm": "Maggie resta en la vischinanza (25 m) – ella curra enavos."
  },
  "Maggie findet einen Tannzapfen und ist sehr stolz.": {
   "en": "Maggie finds a pine cone and is very proud.",
@@ -21519,6 +21753,12 @@
   "fr": "Maggie sait creuser !",
   "it": "Maggie sa scavare!",
   "rm": "Maggie sa chavar!"
+ },
+ "Maggie knurrt diesen Weg an. Dort lauert etwas – nehmt den anderen!": {
+  "en": "Maggie growls at this path. Something lurks there – take the other one!",
+  "fr": "Maggie grogne vers ce chemin. Quelque chose s'y cache – prenez l'autre !",
+  "it": "Maggie ringhia verso questo sentiero. Lì c'è qualcosa – prendete l'altro!",
+  "rm": "Maggie rugna vers questa via. Là sa zuppa insatge – prendai l'autra!"
  },
  "Maggie knurrt einen der Wege an. Nimm lieber den anderen!": {
   "en": "Maggie growls at one of the paths. Better take the other one!",
@@ -23303,6 +23543,12 @@
   "it": "MoveEye si ricorderebbe questo posto perché tu possa sempre tornare al sicuro.",
   "rm": "MoveEye sa regurdass da quest lieu, per che ti chattias adina segir enavos."
  },
+ "MoveEye würde sich freuen: Ihr passt gut aufeinander auf.": {
+  "en": "MoveEye would be happy: you look out for each other well.",
+  "fr": "MoveEye serait content : vous veillez bien l'un sur l'autre.",
+  "it": "MoveEye sarebbe contento: badate bene l'uno all'altro.",
+  "rm": "MoveEye sa legrass: vus fais bain attenziun in da l'auter."
+ },
  "MoveEye würde sich merken, wo das Tier herkam, und dich nächstes Mal früher warnen.": {
   "en": "MoveEye would remember where the animal came from and warn you earlier next time.",
   "fr": "MoveEye se souviendrait d'où venait l'animal et t'avertirait plus tôt la prochaine fois.",
@@ -24162,6 +24408,12 @@
   "it": "Nome",
   "rm": "Num"
  },
+ "Name 2": {
+  "en": "Name 2",
+  "fr": "Nom 2",
+  "it": "Nome 2",
+  "rm": "Num 2"
+ },
  "Name des Spielstands": {
   "en": "Name of the game state",
   "fr": "Nom de la partie",
@@ -24173,6 +24425,12 @@
   "fr": "Nom introuvable (DNS)",
   "it": "Nome non trovato (DNS)",
   "rm": "Num betg chattà (DNS)"
+ },
+ "Name von Spieler 2": {
+  "en": "Name of player 2",
+  "fr": "Nom du joueur 2",
+  "it": "Nome del giocatore 2",
+  "rm": "Num dal giugader 2"
  },
  "Name:": {
   "en": "Name:",
@@ -24605,6 +24863,12 @@
   "fr": "introuvable (dépôt ou workflow ?)",
   "it": "non trovato (repository o workflow?)",
   "rm": "betg chattà (repository u workflow?)"
+ },
+ "nicht gerettet": {
+  "en": "not rescued",
+  "fr": "pas sauvé",
+  "it": "non salvato",
+  "rm": "betg salvà"
  },
  "nicht im Bild": {
   "en": "not seen",
@@ -28214,6 +28478,12 @@
   "it": "Sentiero della gola",
   "rm": "Senda da la stretga"
  },
+ "Schlüpf durch das Loch im Zaun: dort hinstellen und %s drücken.": {
+  "en": "Slip through the hole in the fence: stand there and press %s.",
+  "fr": "Faufile-toi par le trou de la clôture : mets-toi là et appuie sur %s.",
+  "it": "Passa dal buco nel recinto: mettiti lì e premi %s.",
+  "rm": "Sguitscha tras la foura da la saiv: stà là e smatga %s."
+ },
  "Schlüssel abgelehnt – Rechte prüfen (Contents und Actions: Read and write)": {
   "en": "Key rejected – check the rights (Contents and Actions: Read and write)",
   "fr": "Clé refusée – vérifier les droits (Contents et Actions : Read and write)",
@@ -29700,11 +29970,59 @@
   "it": "Giocatore 1",
   "rm": "Giugader 1"
  },
+ "Spieler 1 spielt mit der Tastatur (W A S D, E = A-Knopf) oder mit dem anderen Controller.": {
+  "en": "Player 1 plays with the keyboard (W A S D, E = A button) or with the other controller.",
+  "fr": "Le joueur 1 joue au clavier (W A S D, E = bouton A) ou avec l'autre manette.",
+  "it": "Il giocatore 1 gioca con la tastiera (W A S D, E = tasto A) o con l'altro controller.",
+  "rm": "Il giugader 1 giuga cun la tastatura (W A S D, E = buttun A) u cun l'auter controller."
+ },
  "Spieler 2": {
   "en": "Player 2",
   "fr": "Joueur 2",
   "it": "Giocatore 2",
   "rm": "Giugader 2"
+ },
+ "Spieler 2 dabei": {
+  "en": "Player 2 joined",
+  "fr": "Joueur 2 présent",
+  "it": "Giocatore 2 presente",
+  "rm": "Giugader 2 da la partida"
+ },
+ "Spieler 2 ist dabei! %s": {
+  "en": "Player 2 has joined! %s",
+  "fr": "Le joueur 2 est là ! %s",
+  "it": "Il giocatore 2 c'è! %s",
+  "rm": "Il giugader 2 è da la partida! %s"
+ },
+ "Spieler 2 ist Maggie": {
+  "en": "Player 2 is Maggie",
+  "fr": "Le joueur 2 est Maggie",
+  "it": "Il giocatore 2 è Maggie",
+  "rm": "Il giugader 2 è Maggie"
+ },
+ "Spieler 2 ist Maggie: A = warnen, B = riechen, X = graben, Y = durchschlüpfen.": {
+  "en": "Player 2 is Maggie: A = warn, B = sniff, X = dig, Y = slip through.",
+  "fr": "Le joueur 2 est Maggie : A = avertir, B = flairer, X = creuser, Y = se faufiler.",
+  "it": "Il giocatore 2 è Maggie: A = avvisare, B = fiutare, X = scavare, Y = passare.",
+  "rm": "Il giugader 2 è Maggie: A = avertir, B = sniffar, X = chavar, Y = sguitschar tras."
+ },
+ "Spieler 2 steuert Maggie: laufen, riechen, graben, durchschlüpfen, warnen.": {
+  "en": "Player 2 controls Maggie: run, sniff, dig, slip through, warn.",
+  "fr": "Le joueur 2 dirige Maggie : courir, flairer, creuser, se faufiler, avertir.",
+  "it": "Il giocatore 2 guida Maggie: correre, fiutare, scavare, passare, avvisare.",
+  "rm": "Il giugader 2 maina Maggie: currer, sniffar, chavar, sguitschar tras, avertir."
+ },
+ "Spieler 2: Drücke A auf deinem Controller": {
+  "en": "Player 2: press A on your controller",
+  "fr": "Joueur 2 : appuie sur A sur ta manette",
+  "it": "Giocatore 2: premi A sul tuo controller",
+  "rm": "Giugader 2: smatga A sin tes controller"
+ },
+ "Spieler 2: linker Stick = gehen, rechter Stick = umschauen, A = Teamrätsel und retten, X = Maggie hilft.": {
+  "en": "Player 2: left stick = walk, right stick = look around, A = team puzzle and rescue, X = Maggie helps.",
+  "fr": "Joueur 2 : stick gauche = marcher, stick droit = regarder, A = énigme d'équipe et sauver, X = Maggie aide.",
+  "it": "Giocatore 2: stick sinistro = camminare, stick destro = guardarsi intorno, A = enigma di squadra e salvare, X = Maggie aiuta.",
+  "rm": "Giugader 2: stick sanester = ir, stick dretg = guardar enturn, A = enigma da squadra e salvar, X = Maggie gida."
  },
  "Spielplatz": {
   "en": "Playground",
@@ -29921,6 +30239,12 @@
   "fr": "Plus tard",
   "it": "Più tardi",
   "rm": "Pli tard"
+ },
+ "Später (Spieler 2 läuft einfach mit)": {
+  "en": "Later (player 2 just walks along)",
+  "fr": "Plus tard (le joueur 2 suit simplement)",
+  "it": "Più tardi (il giocatore 2 segue e basta)",
+  "rm": "Pli tard (il giugader 2 vegn simplamain cun)"
  },
  "Später - weitergehen": {
   "en": "Later - keep walking",
@@ -30282,6 +30606,30 @@
   "fr": "Danger de chute de pierres : paroi au-dessus",
   "it": "Pericolo di caduta massi: parete sopra",
   "rm": "Privel da crudada da crappa: paraid da grippa survart"
+ },
+ "Stell dich an die Winde und halte A (Tastatur: E) gedrückt.": {
+  "en": "Stand at the winch and hold A (keyboard: E).",
+  "fr": "Mets-toi au treuil et maintiens A (clavier : E).",
+  "it": "Mettiti all'argano e tieni premuto A (tastiera: E).",
+  "rm": "Stà tar l'argun e tegna smatgà A (tastatura: E)."
+ },
+ "Stell dich auf den anderen Stein – gleichzeitig!": {
+  "en": "Stand on the other stone – at the same time!",
+  "fr": "Mets-toi sur l'autre pierre – en même temps !",
+  "it": "Mettiti sull'altra pietra – contemporaneamente!",
+  "rm": "Stà sin l'auter crap – a medem temp!"
+ },
+ "Stell dich auf den Stampfstein und drück immer wieder %s.": {
+  "en": "Stand on the stamping stone and press %s again and again.",
+  "fr": "Mets-toi sur la pierre et appuie sur %s encore et encore.",
+  "it": "Mettiti sulla pietra e premi %s più volte.",
+  "rm": "Stà sin il crap da stampar e smatga adina puspè %s."
+ },
+ "Stell dich auf einen Zauberstein.": {
+  "en": "Stand on a magic stone.",
+  "fr": "Mets-toi sur une pierre magique.",
+  "it": "Mettiti su una pietra magica.",
+  "rm": "Stà sin in crap magic."
  },
  "Stell dir vor: Ein kleiner heller Hund hat neulich meine Ziegen angebellt – ganz frech, aber lieb. Ein Kind war bei ihm.": {
   "en": "Imagine: a little light-coloured dog barked at my goats the other day – very cheeky, but sweet. A child was with it.",
@@ -31236,6 +31584,30 @@
   "fr": "Objectif d’équipe : l’arrivée ne s’ouvre que quand tous les cristaux sont trouvés",
   "it": "Obiettivo di squadra: il traguardo si apre solo quando tutti i cristalli sono trovati",
   "rm": "Finamira da squadra: la finala s’avra pir, cur che tut ils cristals èn chattads"
+ },
+ "Teamrätsel: Das Weidegatter mit dem Seil": {
+  "en": "Team puzzle: the pasture gate with the rope",
+  "fr": "Énigme d'équipe : la barrière et la corde",
+  "it": "Enigma di squadra: il cancello con la corda",
+  "rm": "Enigma da squadra: la porta da la pastgira cun la suga"
+ },
+ "Teamrätsel: Der Viperweg": {
+  "en": "Team puzzle: the viper path",
+  "fr": "Énigme d'équipe : le chemin des vipères",
+  "it": "Enigma di squadra: il sentiero delle vipere",
+  "rm": "Enigma da squadra: la senda da las vipras"
+ },
+ "Teamrätsel: Die Wolfsschlucht": {
+  "en": "Team puzzle: the wolf gorge",
+  "fr": "Énigme d'équipe : la gorge des loups",
+  "it": "Enigma di squadra: la gola dei lupi",
+  "rm": "Enigma da squadra: la chavorgia dals lufs"
+ },
+ "Teamrätsel: Die zwei Zaubersteine": {
+  "en": "Team puzzle: the two magic stones",
+  "fr": "Énigme d'équipe : les deux pierres magiques",
+  "it": "Enigma di squadra: le due pietre magiche",
+  "rm": "Enigma da squadra: ils dus craps magics"
  },
  "Teams": {
   "en": "Teams",
@@ -33482,6 +33854,18 @@
   "it": "In attesa di giocatori",
   "rm": "Spetgar giugaders"
  },
+ "Warte bei der Winde.": {
+  "en": "Wait at the winch.",
+  "fr": "Attends près du treuil.",
+  "it": "Aspetta all'argano.",
+  "rm": "Spetga tar l'argun."
+ },
+ "Warte – Hilfe kommt!": {
+  "en": "Wait – help is coming!",
+  "fr": "Attends – de l'aide arrive !",
+  "it": "Aspetta – arriva aiuto!",
+  "rm": "Spetga – agid vegn!"
+ },
  "Warten (10 Min.)": {
   "en": "Wait (10 min)",
   "fr": "Attendre (10 min)",
@@ -33499,6 +33883,12 @@
   "fr": "Salle d’attente",
   "it": "Sala d’attesa",
   "rm": "Sala d’aspectar"
+ },
+ "wartet auf A": {
+  "en": "waiting for A",
+  "fr": "attend A",
+  "it": "aspetta A",
+  "rm": "spetga A"
  },
  "wartet auf die Nacht": {
   "en": "waiting for the night",
@@ -34588,6 +34978,12 @@
   "it": "Quanto fa %d × %d?",
   "rm": "Quant fa %d × %d?"
  },
+ "Wie viele spielen?": {
+  "en": "How many are playing?",
+  "fr": "Combien de joueurs ?",
+  "it": "Quanti giocano?",
+  "rm": "Quants giugan?"
+ },
  "Wie viele Tiere siehst du? Schau gut hin!": {
   "en": "How many animals do you see? Look carefully!",
   "fr": "Combien d’animaux vois-tu ? Regarde bien !",
@@ -35170,6 +35566,12 @@
   "fr": "Ouaf ! Un chien arrive.",
   "it": "Bau! Arriva un cane.",
   "rm": "Uf! In chaun vegn."
+ },
+ "Wuff! Maggie passt auf.": {
+  "en": "Woof! Maggie is on guard.",
+  "fr": "Ouaf ! Maggie veille.",
+  "it": "Bau! Maggie fa la guardia.",
+  "rm": "Vuf! Maggie fa attenziun."
  },
  "Wunderbar! Dann gibt es heute Abend Käseschnitten.": {
   "en": "Wonderful! Then it's cheese toast tonight.",
@@ -36167,6 +36569,12 @@
   "it": "Insieme - una vista",
   "rm": "Ensemen - ina visur"
  },
+ "Zusammen – ein Bild": {
+  "en": "Together – one picture",
+  "fr": "Ensemble – une seule image",
+  "it": "Insieme – un'unica immagine",
+  "rm": "Ensemen – in maletg"
+ },
  "Zusammenfassung": {
   "en": "Summary",
   "fr": "Résumé",
@@ -36244,6 +36652,18 @@
   "fr": "Deux personnes se croisent",
   "it": "Due persone si incrociano",
   "rm": "Duas persunas sa cruschan"
+ },
+ "Zwei Spieler": {
+  "en": "Two players",
+  "fr": "Deux joueurs",
+  "it": "Due giocatori",
+  "rm": "Dus giugaders"
+ },
+ "Zwei Wanderer": {
+  "en": "Two hikers",
+  "fr": "Deux randonneurs",
+  "it": "Due escursionisti",
+  "rm": "Dus viandants"
  },
  "Zwei Wanderer, jeder mit eigenem Controller. Bis 110 m von der Gruppe weg spähen.": {
   "en": "Two hikers, each with their own controller. Scout up to 110 m away from the group.",

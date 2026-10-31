@@ -35,6 +35,9 @@ extends Node
 ## Einhängepunkte (klein gehalten): maggie_story.gd (MODULES, erwischt → faengt, _steer → eigen, control "zwei"),
 ##   maggie_hund.gd (var zwei: _nah → nah_bei, _folgen → fuehrt_hund, ersetzte Gabelung), padmap.gd (pad_devs),
 ##   geschichten.gd (Seite «Figur»: seite_figur, gs_taste, wahl_laden, wahl_merken).
+## Einhängepunkte für Zwei-Spieler-Bausteine (später, zwei_bausteine.gd): Signale rastplatz(i), teamraetsel_geloest(region,
+##   art), fund(id), erwischt_zwei(von), gerettet_zwei(wer), nicht_gerettet(von), spieler2_dabei(dev); Abfragen
+##   spieler_positionen(), rolle_von(n), spieler_zahl(), dabei(). Zu finden über main.maggie.get_node("maggie_zwei").
 ## Test / Fernsteuerung: /control {"action": "maggie", "do": "zwei", "k": "wahl" (n, rolle, name2, col2) | "info" | "an" (n, rolle)
 ##   | "join" (dev) | "pad" (ls [x, y], rs [x, y], run, secs, press [a b x y]) | "p1" (press [a b x], hold secs) | "hin" (p 1|2,
 ##   ort a|b|h|d|z|l|k|w|s0|p) | "p2" (x, z Tal) | "fest" (von) | "loesen" | "lite" (value) | "fps"}
@@ -47,6 +50,16 @@ const ActorS = preload("res://scripts/actor.gd")
 const Figur = preload("res://scripts/figur.gd")
 const Quality = preload("res://scripts/quality.gd")
 const Spieltest = preload("res://scripts/spieltest.gd")
+
+# Einhängepunkte für spätere Zwei-Spieler-Bausteine (zwei_bausteine.gd, Zweig real-zwei-bausteine) – nur Signale /
+# Abfragen, hier wird nichts davon gebaut:
+signal rastplatz(i: int)                         # Spieler 1 hat einen Rastplatz erreicht (gespeichert)
+signal teamraetsel_geloest(region: String, art: String)
+signal fund(id: String)                          # eine Station gelöst / ein Schutzding gefunden (maggie_hund / maggie_gefahr)
+signal erwischt_zwei(von: String)                # Spieler 1 umzingelt (Spieler 2 kann retten)
+signal gerettet_zwei(wer: int)                   # 2 = Spieler 2 hat gerettet
+signal nicht_gerettet(von: String)               # 20 s vorbei: beide zum Rastplatz
+signal spieler2_dabei(dev: int)
 
 const COLS := [Color(0.23, 0.55, 1.0), Color(1.0, 0.62, 0.26)]     # wie abenteuer_zweit.gd: 1 blau, 2 orange
 const LEINE := 25.0                  # m: so weit darf Maggie (Spieler 2) von Spieler 1 weg
@@ -116,6 +129,7 @@ var fest := {}
 var _vpad := {}
 var _p1_test := {"press": [], "hold_until": 0.0}
 var _e_hit := false
+var _rest_seen := -1
 
 
 # =======================================================================================================================
@@ -308,6 +322,21 @@ func spieler_zahl() -> int:
 	return 2 if aktiv else 1
 
 
+func spieler_positionen() -> Array:
+	"""[Welt-Position Spieler 1, Welt-Position Spieler 2 oder null] (Bausteine)"""
+	return [story.spieler_pos() if story != null and story.spieler() != null else null, _p2_welt()]
+
+
+func rolle_von(n: int) -> String:
+	"""1 = «wanderer» (trägt den Kristall), 2 = «wanderer» | «maggie» (Bausteine)"""
+	return "wanderer" if n == 1 else rolle
+
+
+func dabei() -> bool:
+	"""zwei Spieler und Spieler 2 hat seinen Controller (Bausteine: erst dann Zwei-Spieler-Sachen)"""
+	return _team_moeglich()
+
+
 func _ev(art: String, d := {}) -> void:
 	var dd: Dictionary = d.duplicate()
 	dd["spieler"] = spieler_zahl()
@@ -443,7 +472,16 @@ func _on_szene(_art: String) -> void:
 	_p1_last = story.spieler_pos()
 
 
+func _on_fund(_region: String, id: String) -> void:
+	fund.emit(id)
+
+
+func _on_schutz(id: String) -> void:
+	fund.emit(id)
+
+
 func _on_region(_id: String) -> void:
+	_rest_seen = int(story._last_rest)
 	if aktiv:
 		_ev("abschnitt", {"name": "Zwei Spieler"})
 	_team_weg()
@@ -539,6 +577,7 @@ func _set_p2(d: int) -> void:
 	if main.padmap != null and d >= 0:
 		main.padmap.rumble("catch", [d])
 	_say(T.t("Spieler 2 ist dabei! %s", [_n2()]))
+	spieler2_dabei.emit(d)
 	_ev("abschnitt", {"name": "Spieler 2 dabei"})
 	if rolle == "maggie":
 		story.tipp(T.t("Spieler 2 ist Maggie: A = warnen, B = riechen, X = graben, Y = durchschlüpfen."))
@@ -554,6 +593,17 @@ func _process(dt: float) -> void:
 		return
 	_frame += 1
 	dt = minf(dt, 0.25)
+	var hd = _hund()
+	if hd != null and hd.get("zwei") != self:
+		hd.zwei = self                                    # maggie_hund.gd asks us (Maggie steered, stations near player 2)
+		if hd.has_signal("raetsel_geloest") and not hd.raetsel_geloest.is_connected(_on_fund):
+			hd.raetsel_geloest.connect(_on_fund)
+	var gf = _gefahr()
+	if gf != null and gf.has_signal("schutz_gefunden") and not gf.schutz_gefunden.is_connected(_on_schutz):
+		gf.schutz_gefunden.connect(_on_schutz)
+	if story.running and int(story._last_rest) != _rest_seen and str(story.region) != "":
+		_rest_seen = int(story._last_rest)
+		rastplatz.emit(_rest_seen)
 	var walk: bool = aktiv and story.running and str(story.phase) in VIEW_PH and main.scene == "bergtal" and story.spieler() != null
 	if not walk:
 		if on:
@@ -811,6 +861,7 @@ func faengt(von: String) -> bool:
 	if main.padmap != null and p2dev >= 0:
 		main.padmap.rumble("alarm", [p2dev])
 	_ev("erwischt", {"von": von})
+	erwischt_zwei.emit(von)
 	story.tipp(T.t("%s ist umzingelt! %s: lauf hin und drück A!", [_n1(), _n2()]))
 	return true
 
@@ -852,6 +903,7 @@ func retten() -> void:
 	if main.padmap != null and p2dev >= 0:
 		main.padmap.rumble("catch", [p2dev])
 	_ev("fortschritt", {"gerettet": true})
+	gerettet_zwei.emit(2)
 
 
 func _aufgeben() -> void:
@@ -859,6 +911,7 @@ func _aufgeben() -> void:
 	var von := str(fest.get("von", ""))
 	fest = {}
 	_ev("neustart", {"grund": "nicht gerettet"})
+	nicht_gerettet.emit(von)
 	story._safe_until = 0.0
 	story._schreck(von)                                   # (player 2 follows the jump: _follow_jumps)
 
@@ -1081,6 +1134,7 @@ func _team_geloest() -> void:
 	if story.has_method("_play"):
 		story._play("chime")
 	_ev("fortschritt", {"raetsel": "team_" + art})
+	teamraetsel_geloest.emit(str(team.get("region", "")), art)
 	for d in [p2dev] + _p1_devs():
 		if main.padmap != null and int(d) >= 0:
 			main.padmap.rumble("catch", [int(d)])
