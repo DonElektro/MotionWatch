@@ -667,9 +667,9 @@ func _licht_spot(cam: Camera3D) -> Vector3:
 	var places: Array = Bt.all_places()
 	for sp in Bt.SPOTS:
 		places.append([sp, float(Bt.SPOTS[sp][1]), float(Bt.SPOTS[sp][2])])
-	for ang in [0.3, -0.3, 0.18, -0.18, 0.38, -0.38, 0.05]:
+	for ang in [0.3, -0.3, 0.18, -0.18, 0.4, -0.4, 0.05]:
 		var dir := f.rotated(Vector3.UP, ang)
-		for s in range(220, 59, -12):
+		for s in range(220, 39, -10):
 			var q := o + dir * float(s)
 			q.y = b.gy(q.x, q.z) + 0.6
 			if not cam.is_position_in_frustum(q):
@@ -678,7 +678,7 @@ func _licht_spot(cam: Camera3D) -> Vector3:
 			var vq := Vector2(v.x, v.z)
 			var far := true
 			for pl in places:
-				if vq.distance_to(Vector2(float(pl[1]), float(pl[2]))) < 90.0:
+				if vq.distance_to(Vector2(float(pl[1]), float(pl[2]))) < 70.0:
 					far = false
 					break
 			if not far or not _ok_spot(vq, []):
@@ -813,8 +813,10 @@ func _licht_xz() -> Vector2:
 
 func abstecher_moeglich() -> bool:
 	var li: Dictionary = S()["licht"]
-	if ab.R.is_empty() or int(ab.step) != 4 or bool(S()["blatt"]) or not bool(li.get("gesehen", false)) or bool(ab.R.get("walking", false)):
+	if ab.R.is_empty() or not int(ab.step) in [4, 7] or bool(S()["blatt"]) or not bool(li.get("gesehen", false)) or bool(ab.R.get("walking", false)):
 		return false
+	if int(ab.step) == 7:                                 # the next morning, at the camp
+		return (ab.R.get("camp_xz", ab.R["pos"]) as Vector2).distance_to(_licht_xz()) < 300.0 and not (main.nacht != null and main.nacht.running)
 	if str((ab.R.get("pending", {}) as Dictionary).get("kind", "")).begins_with("gh_") or holds_leg():
 		return false
 	return (ab.R["pos"] as Vector2).distance_to(_licht_xz()) < 260.0
@@ -824,7 +826,7 @@ func abstecher() -> Dictionary:
 	"""the detour to the light (there and back; the question of the way waits meanwhile)"""
 	if not abstecher_moeglich():
 		return {"ok": false, "error": "nicht hier"}
-	var p: Vector2 = ab.R["pos"]
+	var p: Vector2 = ab.R["pos"] if int(ab.step) == 4 else ab.R.get("camp_xz", ab.R["pos"])
 	var q := _licht_xz()
 	var li: Dictionary = ab.leg_info([p, q, p], [])
 	main.set_hour(main.hour() + float(li["t_h"]) * (1.3 if main.is_dark() and not ab.has("stirnlampe") else 1.0))
@@ -844,8 +846,11 @@ func _blatt_found(who: String) -> void:
 		tx = who + ": " + tx
 	ab._diary("gh_blatt", T.t("Ein verstecktes Tagebuchblatt"), tx)
 	main.start_info = T.t("Ein verstecktes Tagebuchblatt!")
-	var prev: Dictionary = (ab.R.get("pending", {}) as Dictionary).duplicate(true)
-	ab._ask("gh_blatt", T.t("Ein verstecktes Tagebuchblatt"), tx, [["ok", T.t("Einpacken und zurück zum Weg")]], {"gh_prev": prev})
+	RR()["blatt_text"] = tx
+	if int(ab.step) == 4:
+		var prev: Dictionary = (ab.R.get("pending", {}) as Dictionary).duplicate(true)
+		ab._ask("gh_blatt", T.t("Ein verstecktes Tagebuchblatt"), tx, [["ok", T.t("Einpacken und zurück zum Weg")]], {"gh_prev": prev})
+	ab._changed()
 	if _refl != null and is_instance_valid(_refl):
 		_refl.queue_free()
 	ab._save()
@@ -900,6 +905,16 @@ func _dachs_spawn(_ev) -> Array:
 	return [v]
 
 
+func _ir_nah(p: Vector3) -> bool:
+	"""close in front of the head camera at night: MoveEye's infrared light shows it (typical 850-nm IR LEDs light up
+	about 5–15 m; here 12 m) - in the picture and no obstacle in between"""
+	if main.cams.is_empty():
+		return false
+	var cam: Camera3D = main.cams[0]
+	var q := p + Vector3(0, 0.25, 0)
+	return cam.global_position.distance_to(q) < 12.0 and cam.is_position_in_frustum(q) and main.line_free(cam.global_position, q)
+
+
 func _dachs_tick(dt: float) -> void:
 	if _dachs == null or not is_instance_valid(_dachs) or _dachs.is_queued_for_deletion():
 		_dachs = null
@@ -908,13 +923,13 @@ func _dachs_tick(dt: float) -> void:
 	var dd: Dictionary = r.get("dachs", {})
 	_snd_t -= dt
 	if _snd_t <= 0.0:
-		_snd_t = randf_range(1.6, 3.2) * (1.6 if _lite() else 1.0)
+		_snd_t = randf_range(3.0, 6.0) * (1.5 if _lite() else 1.0)
 		var p: Vector3 = _dachs.global_position
 		snd("raschel" if randf() < 0.75 else "knack", p + Vector3(randf_range(-1, 1), 0.2, randf_range(-1, 1)), -38.0)
 		dd["laut"] = int(dd.get("laut", 0)) + 1
 	if dd.has("bild_da") or ab.a1 == null:
 		return
-	var vis: bool = main.testrun.visible(_dachs) or main.testrun.thermal_visible(_dachs)
+	var vis: bool = main.testrun.visible(_dachs) or main.testrun.thermal_visible(_dachs) or _ir_nah(_dachs.global_position)
 	if not vis:
 		return
 	dd["vis"] = float(dd.get("vis", 0.0)) + dt
@@ -1088,6 +1103,11 @@ func paint_morning(body: Control) -> void:
 		g.add_child(_pic(str(sl.get("bild", "")), Vector2(320, 180), func(q: Vector2): ab.op({"do": "geheim", "was": "licht_klick", "rx": q.x, "ry": q.y})))
 		if bool(sl.get("gesehen", false)):
 			g.add_child(ab._lab(T.t("Da ist ein schwaches Licht - im %s, wo auf keiner Karte etwas steht.") % T.t(str(sl.get("richtung", ""))), 13, Color(0.95, 0.85, 0.6)))
+	if abstecher_moeglich():
+		ab._btn(body, T.t("Abstecher: dorthin, wo auf der Aufnahme das Licht war"), func(): ab.op({"do": "geheim", "was": "abstecher"}))
+	if str(r.get("blatt_text", "")) != "":
+		var gb: VBoxContainer = ab._group(T.t("Ein verstecktes Tagebuchblatt"), body)
+		gb.add_child(ab._lab(str(r["blatt_text"]), 13, Color(0.95, 0.85, 0.6)))
 	# who rustled?
 	var dd: Dictionary = r.get("dachs", {})
 	if dd.has("da"):
