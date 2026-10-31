@@ -252,7 +252,7 @@ function simCtlBuild(G, r, ctl, fmt) {
     });
     none.hidden = !q || any;
   }
-  const setEx = v => { expert = v; window.SC_EXPERT = v; apply();
+  const setEx = v => { expert = v; window.SC_EXPERT = v; apply(); if (typeof simsetLoad === "function") simsetLoad();
     fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !v, page: "sim"})}).catch(() => {}); };
   qi.oninput = apply; b1.onclick = () => setEx(false); b2.onclick = () => setEx(true);
   apply();
@@ -723,10 +723,10 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div class="dl">
       <a class="btn main" id="d-3d" href="/sim/simulator3d.zip"><span><img class="dlic" src="/sim-icon/sim3d.png" alt=""> <span data-i18n="3D simulator for Windows (ZIP)">3D simulator for Windows (ZIP)</span></span><small id="d-3dn"></small></a>
       <a class="btn main" id="d-py" href="/sim/simulator_py.zip"><span><img class="dlic" src="/sim-icon/simwelt.png" alt=""> <span data-i18n="Python world simulator (ZIP)">Python world simulator (ZIP)</span></span><small id="d-pyn"></small></a>
-      <a class="btn sec" href="/sim/simulator.zip"><span><img class="dlic" src="/sim-icon/simbasis.png" alt=""> <span data-i18n="Simple simulator (ZIP)">Simple simulator (ZIP)</span></span><small data-i18n="Python, for a PC or the Pi">Python, for a PC or the Pi</small></a>
+      <a class="btn sec" id="d-basis" hidden href="/sim/simulator.zip"><span><img class="dlic" src="/sim-icon/simbasis.png" alt=""> <span data-i18n="Simple simulator (ZIP)">Simple simulator (ZIP)</span></span><small data-i18n="Python, for a PC or the Pi">Python, for a PC or the Pi</small></a>
       <a class="btn sec" href="/preview" target="_blank"><span>📱 <span data-i18n="Phone / tablet view">Phone / tablet view</span></span><small data-i18n="this page as on a phone">this page as on a phone</small></a>
-      <button type="button" class="sec" id="p-inst" onclick="piAct('install')"><span id="p-instt">📦</span><small data-i18n="simple simulator directly on the Pi">simple simulator directly on the Pi</small></button>
-      <button type="button" class="sec" id="p-start" onclick="piAct('start')"><span>▶ <span data-i18n="Start simulator here">Start simulator here</span></span><small data-i18n="on the Pi (uses its CPU)">on the Pi (uses its CPU)</small></button>
+      <button type="button" class="sec" id="p-inst" hidden onclick="piAct('install')"><span id="p-instt">📦</span><small data-i18n="simple simulator directly on the Pi">simple simulator directly on the Pi</small></button>
+      <button type="button" class="sec" id="p-start" hidden onclick="piAct('start')"><span>▶ <span data-i18n="Start simulator here">Start simulator here</span></span><small data-i18n="on the Pi (uses its CPU)">on the Pi (uses its CPU)</small></button>
       <button type="button" class="sec" id="p-stop" onclick="piAct('stop')" hidden><span>⏹ <span data-i18n="Stop simulator">Stop simulator</span></span><small data-i18n="on the Pi">on the Pi</small></button>
     </div>
     <div class="mut" id="d-link"></div>
@@ -893,7 +893,9 @@ function paint() {
   if (!S.ok) { CS = ""; $("#s-groups").textContent = ""; $("#s-scn").hidden = true; $("#s-up").hidden = true; $("#s-cname").textContent = ""; $("#s-cst").textContent = t("ctl-note"); }
   // pi programs
   $("#p-instt").textContent = "📦 " + t(S.installed ? "Install simulator again" : "Install simulator on the Pi");
-  $("#p-start").hidden = !!S.running; $("#p-stop").hidden = !S.running;
+  // 2.98.55: «MoveEye Sim · Basis» only with «Basis-Simulator anzeigen» (639h); a running one can always be stopped
+  $("#d-basis").hidden = $("#p-inst").hidden = !S.basis_show;
+  $("#p-start").hidden = !S.basis_show || !!S.running; $("#p-stop").hidden = !S.running;
 }
 // ---- button «Update the simulator» (2.95.5): the simulator's own update (control «update_now»), newest version shown ----
 const vnum = v => (String(v || "").match(/(\d+)\.(\d+)/) || [0, 0, 0]).slice(1).map(Number);
@@ -1151,10 +1153,12 @@ async function simsetLoad() {
   let sch; try { sch = await (await fetch("/api/schema?sec=Simulator&lang=" + LANG)).json(); } catch (e) { return; }
   // 2.98.24 («Sim-Schalter nur einmal», Daniel): the switches of the tiles of the Simulator centre (Test-Postfach, Trainings-Nacht,
   // Rover, Fehlalarm-Lernen, Generalprobe, Wochen-Check) are only in their tile sheet (139), not here a second time
-  const S = sch[0] || {toggles: [], sliders: [], texts: []}, own = k => !!document.getElementById("k-" + k) || k === "sim_url" || SIM_TILE_KEYS.indexOf(k) >= 0;
+  // 2.98.55: «Basis-Simulator anzeigen» only in «Experte» (the switch Einfach / Experte of this page)
+  if (window.SC_EXPERT == null) { try { const j = await (await fetch("/api/ui_simple?page=sim")).json(); window.SC_EXPERT = !j.on; } catch (e) {} }
+  const S = sch[0] || {toggles: [], sliders: [], texts: []}, own = k => !!document.getElementById("k-" + k) || k === "sim_url" || SIM_TILE_KEYS.indexOf(k) >= 0 || (k === "sim_basis_show" && !window.SC_EXPERT);
   box.textContent = "";
   S.toggles.filter(x => !own(x.key)).forEach(x => { const l = el("label", "opt"), cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.checked = !!x.value;
-    cb.onchange = () => post("/api/set", {key: x.key, value: cb.checked}).then(r => { if (!r.ok) toast(r.error || t("not possible")); }); l.append(el("span", "", x.label), cb); box.appendChild(l); });
+    cb.onchange = () => post("/api/set", {key: x.key, value: cb.checked}).then(r => { if (!r.ok) toast(r.error || t("not possible")); if (x.key === "sim_basis_show") load(); }); l.append(el("span", "", x.label), cb); box.appendChild(l); });
   S.sliders.filter(x => !own(x.key)).forEach(x => { const w = el("div"), top = el("div", "rng"), v = el("b", "", String(x.value)), r = document.createElement("input");
     r.type = "range"; r.min = x.min; r.max = x.max; r.step = x.step; r.value = x.value; r.oninput = () => { v.textContent = r.value; };
     r.onchange = () => post("/api/set", {key: x.key, value: +r.value}); top.append(el("span", "", x.label), v); w.append(top, r); box.appendChild(w); });

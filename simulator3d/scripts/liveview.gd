@@ -45,8 +45,8 @@ func apply() -> void:
 
 
 func _process(_dt: float) -> void:
-	if not visible:
-		return
+	if not visible or has_meta("fenster"):
+		return                             # in a window frame (fenster.gd): the frame places it
 	var y := 92.0                          # below the map when it is shown, else where the map would be
 	if main.minimap != null and main.minimap.visible:
 		y = main.minimap.position.y + main.minimap.size.y + 8.0

@@ -5,6 +5,7 @@ extends RefCounted
 
 const UI = preload("res://scripts/ui_style.gd")
 const Icons = preload("res://scripts/mehr_icons.gd")
+const Quality = preload("res://scripts/quality.gd")   # 3D-4.25: «Leistung» (Lite, Renderer)
 const QNAMES := {"simple": "einfach", "medium": "mittel", "nice": "schön", "ultra": "ultra"}
 
 
@@ -18,21 +19,24 @@ static func check(main) -> Array:
 	var out := []
 	var add := func(id: String, icon: String, title: String, level: String, text: String, tip := ""):
 		out.append({"id": id, "icon": icon, "title": title, "level": level, "text": text, "tip": tip})
-	# graphics and frames per second
+	# 3D-4.25 «Leistung»: frames per second, renderer, Lite on / off, resolution (to test on the Raspberry Pi)
 	var fps := Engine.get_frames_per_second()
 	var q := str(main.quality)
 	var gpu := RenderingServer.get_video_adapter_name()
-	var gt := "Stufe «%s» · %d Bilder/s · %s" % [QNAMES.get(q, q), fps, gpu if gpu != "" else "Grafikkarte unbekannt"]
+	var pf: Dictionary = main.perf_info()
+	var gt := "%d Bilder/s · %s · %s · 3D %s (%d %%) · Kameras für MoveEye %s · Stufe «%s» · %s" % [fps,
+			("Lite an (%s)" % str(pf["why"])) if pf["lite"] else "Lite aus (Grafik-Modus «%s»)" % Quality.mode_name(str(pf["mode"])),
+			str(pf["renderer"]), str(pf["res"]), int(pf["scale"]), str(pf["cams"]), QNAMES.get(q, q), gpu if gpu != "" else "Grafikkarte unbekannt"]
 	if main.in_vm:
 		gt += " · virtuelle Maschine"
 	if not main.win_open:
-		add.call("gfx", "meter", "Grafik und Bilder pro Sekunde", "ok", gt + " · Fenster klein / versteckt")
-	elif fps >= 20:
-		add.call("gfx", "meter", "Grafik und Bilder pro Sekunde", "ok", gt)
+		add.call("gfx", "meter", "Leistung", "ok", gt + " · Fenster klein / versteckt")
+	elif fps >= 20 or (pf["lite"] and fps >= 18):
+		add.call("gfx", "meter", "Leistung", "ok", gt)
 	elif fps >= 10:
-		add.call("gfx", "meter", "Grafik und Bilder pro Sekunde", "warn", gt, "Grafik leichter stellen (System → Grafik) oder «Automatisch leichter» einschalten.")
+		add.call("gfx", "meter", "Leistung", "warn", gt, "System → Grafik: «Grafik-Modus» auf «Lite» oder «Automatisch leichter» einschalten." if not pf["lite"] else "Schon Lite: andere Programme schliessen, das Fenster kleiner machen.")
 	else:
-		add.call("gfx", "meter", "Grafik und Bilder pro Sekunde", "bad", gt, "Grafik auf «einfach (schnell)», «Schärfe der Ansicht» kleiner, andere Programme schliessen.")
+		add.call("gfx", "meter", "Leistung", "bad", gt, "System → Grafik: «Grafik-Modus» auf «Lite», andere Programme schliessen." if not pf["lite"] else "Schon Lite: andere Programme schliessen, das Fenster kleiner machen, weniger Besucher gleichzeitig.")
 	# CPU of the PC and of the simulator (mini.gd measures it)
 	var own: Dictionary = main.mini_box.own if main.mini_box != null else {}
 	var pc := float(own.get("pc", -1.0))
