@@ -238,9 +238,9 @@ def run_case(place, ck, ev, i, done):
         return
     world = PLAN[place][0]
     name, hour, weather, ir, (dw, dc, dk) = COND[ck]
-    if load() >= 5.0:
+    if load() >= 7.0:
         lw = time.time()
-        l = wait_load(5.0, 420)
+        l = wait_load(7.0, 420)
         log("  Last-Pause %.0f s, Last jetzt %.1f" % (time.time() - lw, l))
     tag = "%s_%s_%s" % (place, ck, ev)
     clear()
@@ -348,9 +348,9 @@ def goto_place(place):
 def zimmer(done):
     """Schlafzimmer (Welt Zuhause): Hamster im Laufrad (Nacht), Spinne vor der Linse (Nacht, Infrarot), Wellensittich (Tag), Leerlauf"""
     place = "schlafzimmer"
-    l = wait_load(5.0, 480)
+    l = wait_load(7.0, 480)
     log("Last vor Schlafzimmer", l)
-    if l >= 5.0:
+    if l >= 7.0:
         log("Schlafzimmer übersprungen: Last zu hoch")
         return
     goto_place(place)
@@ -410,7 +410,7 @@ if __name__ == "__main__":
             conds = ONLY[place]
         if all("%s|%s|%s" % (place, c, e) in done for c in conds for e in EVENTS):
             continue
-        l = wait_load(5.0, 900)
+        l = wait_load(7.0, 900)
         log("Last", l)
         goto_place(place)
         for ci, ck in enumerate(conds):
