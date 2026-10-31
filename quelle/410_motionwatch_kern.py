@@ -401,6 +401,7 @@ class MotionWatch:
             walking = False                                 # needs AI confirmation
         elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k and not animal and not getattr(t, "fixp", False):
             walking = True                                  # keep flag while tracked (may stand still)
+        walking = strict_gate(self, t, walking, time.time())   # 411: at dusk / in wind a new person only after 2-3 hits in a row
         if walking and not t.is_person:
             STATE["detections_total"] += 1
             log_event("person", f"Person #{t.id} {'AI-confirmed' if t.ai_confirmed else 'walking'}, speed {sp:.1f} px/f")
@@ -858,6 +859,7 @@ class MotionWatch:
             if lowlight != STATE["lowlight"]:
                 log_event("auto", f"Low-light mode {'ON' if lowlight else 'OFF'} (brightness {bright:.0f})")
                 STATE["lowlight"] = lowlight
+            fog_twi_frame(self, small, gray, bright, lowlight, t0)   # 411: fog mode, dusk / wind stricter (before the CLAHE)
             if lowlight:
                 gray = self.clahe.apply(cv2.medianBlur(gray, 5))   # denoise, then boost contrast so dark figures separate
             if lowlight and CFG["lowlight_view"] and bright > 1.5:
@@ -883,7 +885,7 @@ class MotionWatch:
             persons, candidates, person_boxes = [], [], []
             present = set()                      # what is in view right now -> relay triggers
             if CFG["detection_on"]:
-                g = self.preprocess(gray, rain_mode)
+                g = self.preprocess(fog_gray(gray, t0), rain_mode)       # 411: in fog with the contrast lifted
                 fg = self.foreground(g, small, rain_mode, wind_boost)
                 ai_boxes = [b for b in self.ai.detect(small) if zone_box_ok(b, pw, ph, "person")]     # 2.98.13: zones by kind (066)
                 ai_objs = [o for o in self.ai.objects if zone_box_ok(o, pw, ph, "animal" if COCO_LABELS.get(o[5]) in ANIMALS else "other")]

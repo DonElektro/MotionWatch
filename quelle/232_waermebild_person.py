@@ -97,8 +97,8 @@ def thermal_person_active():
     """thermal persons are looked for now: the option is on, a thermal camera is chosen, and it is night (or by day too)"""
     if not CFG.get("thermal_person") or not CFG.get("thermal_source") or not CFG.get("detection_on"):
         return False
-    if CFG.get("thermal_person_day"):
-        return True
+    if CFG.get("thermal_person_day") or STATE.get("fog"):
+        return True                                       # 411: in fog the camera sees little - the thermal camera by day too
     try:
         return bool(is_dark() or STATE.get("lowlight"))
     except Exception:

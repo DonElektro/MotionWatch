@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639k: Übersetzungen und Karte «Hier steht etwas, das wie eine Person aussieht – ignorieren?» (feste Fehl-Personen, 418) auf der Hauptseite, Anleitungs-Absatz. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639l: Übersetzungen und Karte «Hier steht etwas, das wie eine Person aussieht – ignorieren?» (feste Fehl-Personen, 418) auf der Hauptseite, Anleitungs-Absatz. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 _HX_FIXP = {
     'Something here looks like a person - ignore it?': ('Hier steht etwas, das wie eine Person aussieht – ignorieren?',
                                                         'Quelque chose ici ressemble à une personne – l’ignorer ?',

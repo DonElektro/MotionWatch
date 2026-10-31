@@ -412,7 +412,7 @@ def fixp_routes(app, reply, body):
         return Response(o["jpg"], mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
 
 
-# the card on the Live / Schutz page (main page 530); German texts by 639k
+# the card on the Live / Schutz page (main page 530); German texts by 639l
 FIXP_MAIN_JS = r"""
 <script>
 (function () {

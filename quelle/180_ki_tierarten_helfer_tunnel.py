@@ -956,7 +956,7 @@ class AIDetector:
             self.boxes = []; self.objects = []
             return self.boxes
         if hp:
-            got = helper_detect(frame)
+            got = helper_detect(frame if HELPER["busy"] else fog_ai_input(frame))   # 411: in fog with the contrast lifted (only when sent)
             if got is not None:
                 self.boxes, self.objects = got
                 STATE["ai_persons"] = len(self.boxes)
@@ -978,6 +978,7 @@ class AIDetector:
             return self.boxes
         self._last_run = time.time()
         t0 = time.time()
+        frame = fog_ai_input(frame)                              # 411: in fog the contrast lifted - only when the AI really runs
         h, w = frame.shape[:2]
         try:
             # real-reh-fusspunkt: one run with a lower person threshold (raw score WEAK_AI_MIN, 232); the boxes below the normal
