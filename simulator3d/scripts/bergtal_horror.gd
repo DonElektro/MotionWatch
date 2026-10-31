@@ -1045,13 +1045,13 @@ func _choose(k: String, val: String) -> void:
 	if k == "d1" and val == "follow":
 		var v := _new_card(T.t("In der verlassenen Hütte"), UI.ORG, 600)
 		_text(v, T.t("Die Spur führt zur Hütte. Drinnen riecht es nach kaltem Rauch. Auf dem Tisch liegt eine Seite aus einem alten Hospizbuch:"))
-		_text(v, T.t("«18. Jänner 1936. Sturm. Zwei Wanderer über den Pass geholt. Die Glocke hilft im Nebel. Wer sie hört, soll ihr folgen. – B.»"), 15, Color(0.95, 0.8, 0.55), true)
+		_text(v, T.t("«18. Januar 1936. Sturm. Zwei Wanderer über den Pass geholt. Die Glocke hilft im Nebel. Wer sie hört, soll ihr folgen. – B.»"), 15, Color(0.95, 0.8, 0.55), true)
 		_button(v, T.t("Zur nächsten Nacht"), func(): begin(chapter + 1), true)
 		return
 	if k == "d1":
 		var v2 := _new_card(T.t("Beim Lager"), UI.ORG, 600)
 		_text(v2, T.t("Du stellst MoveEye höher und bleibst wach. Gegen Mittag weht der Wind eine vergilbte Seite gegen dein Zelt:"))
-		_text(v2, T.t("«18. Jänner 1936. Sturm. Zwei Wanderer über den Pass geholt. Die Glocke hilft im Nebel. Wer sie hört, soll ihr folgen. – B.»"), 15, Color(0.95, 0.8, 0.55), true)
+		_text(v2, T.t("«18. Januar 1936. Sturm. Zwei Wanderer über den Pass geholt. Die Glocke hilft im Nebel. Wer sie hört, soll ihr folgen. – B.»"), 15, Color(0.95, 0.8, 0.55), true)
 		_button(v2, T.t("Zur nächsten Nacht"), func(): begin(chapter + 1), true)
 		return
 	begin(chapter + 1)

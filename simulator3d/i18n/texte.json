@@ -1390,6 +1390,96 @@
   "it": "",
   "rm": ""
  },
+ "(die Glocke läutet bei jedem Schritt der Gestalt)": {
+  "en": "(the bell rings with every step of the figure)",
+  "fr": "(la cloche sonne à chaque pas de la silhouette)",
+  "it": "(la campana suona a ogni passo della figura)",
+  "rm": "(la stgella tuna a mintga pass da la figura)"
+ },
+ "(ein Ast knackt)": {
+  "en": "(a branch cracks)",
+  "fr": "(une branche craque)",
+  "it": "(un ramo scricchiola)",
+  "rm": "(in rom crappa)"
+ },
+ "(eine Glocke, weit weg)": {
+  "en": "(a bell, far away)",
+  "fr": "(une cloche, au loin)",
+  "it": "(una campana, lontano)",
+  "rm": "(ina stgella, lunsch davent)"
+ },
+ "(eine Kuhglocke – aber keine Kuh)": {
+  "en": "(a cowbell – but no cow)",
+  "fr": "(une cloche de vache – mais pas de vache)",
+  "it": "(un campanaccio – ma nessuna mucca)",
+  "rm": "(ina stgella da vatga – ma nagina vatga)"
+ },
+ "(eine Tür knarrt – von selbst)": {
+  "en": "(a door creaks – by itself)",
+  "fr": "(une porte grince – toute seule)",
+  "it": "(una porta cigola – da sola)",
+  "rm": "(in esch scrocla – da sasez)"
+ },
+ "(eine Tür schlägt zu)": {
+  "en": "(a door slams shut)",
+  "fr": "(une porte claque)",
+  "it": "(una porta sbatte)",
+  "rm": "(in esch sbatta)"
+ },
+ "(es knackt, ganz nah)": {
+  "en": "(a crack, very close)",
+  "fr": "(un craquement, tout près)",
+  "it": "(uno scricchiolio, vicinissimo)",
+  "rm": "(i crappa, fitg datiers)"
+ },
+ "(Flüstern)": {
+  "en": "(whispering)",
+  "fr": "(chuchotement)",
+  "it": "(sussurri)",
+  "rm": "(chischugnem)"
+ },
+ "(Flüstern, direkt hinter dir)": {
+  "en": "(whispering, right behind you)",
+  "fr": "(chuchotement, juste derrière toi)",
+  "it": "(sussurri, proprio dietro di te)",
+  "rm": "(chischugnem, directamain davos tai)"
+ },
+ "(in der verlassenen Hütte geht ein Licht an)": {
+  "en": "(a light comes on in the abandoned hut)",
+  "fr": "(une lumière s'allume dans la cabane abandonnée)",
+  "it": "(nella baita abbandonata si accende una luce)",
+  "rm": "(en la chamona bandunada sa mussa ina glisch)"
+ },
+ "(MoveEye hat etwas aufgenommen: «{t}»)": {
+  "en": "(MoveEye recorded something: «{t}»)",
+  "fr": "(MoveEye a enregistré quelque chose : «{t}»)",
+  "it": "(MoveEye ha registrato qualcosa: «{t}»)",
+  "rm": "(MoveEye ha registrà insatge: «{t}»)"
+ },
+ "(oben beim Hospiz läutet eine Glocke – ruhig, ein letztes Mal)": {
+  "en": "(up at the hospice a bell rings – calmly, one last time)",
+  "fr": "(là-haut à l'hospice, une cloche sonne – calmement, une dernière fois)",
+  "it": "(su all'ospizio suona una campana – tranquilla, un'ultima volta)",
+  "rm": "(si tar l'ospizi tuna ina stgella – quietamain, ina ultima giada)"
+ },
+ "(plötzlich ist es ganz still)": {
+  "en": "(suddenly everything is completely silent)",
+  "fr": "(soudain, tout est silencieux)",
+  "it": "(all'improvviso è tutto silenzioso)",
+  "rm": "(anetgamain èsi tut quiet)"
+ },
+ "(Schritte im nassen Gras)": {
+  "en": "(footsteps in the wet grass)",
+  "fr": "(des pas dans l'herbe mouillée)",
+  "it": "(passi nell'erba bagnata)",
+  "rm": "(pass en l'erva bletscha)"
+ },
+ "(Schritte – oder der Wind?)": {
+  "en": "(footsteps – or the wind?)",
+  "fr": "(des pas – ou le vent ?)",
+  "it": "(passi – o il vento?)",
+  "rm": "(pass – u il vent?)"
+ },
  "*.glb, *.gltf ; 3D-Modell (glTF)": {
   "en": "*.glb, *.gltf ; 3D model (glTF)",
   "fr": "*.glb, *.gltf ; modèle 3D (glTF)",
@@ -1837,6 +1927,12 @@
   "it": "Attenzione: %s sta per essere scoperto!",
   "rm": "Attenziun: %s vegn immediat scuvert!"
  },
+ "Achtung: Dieser Modus ist unheimlich und hat einige Schreckmomente – plötzliche laute Geräusche und Bilder, Dunkelheit, dichter Nebel. Kein Blut, keine Gewalt. Nicht für kleine Kinder.": {
+  "en": "Warning: this mode is eerie and has a few jump scares – sudden loud sounds and pictures, darkness, thick fog. No blood, no violence. Not for small children.",
+  "fr": "Attention : ce mode fait peur et contient quelques sursauts – bruits forts et images soudaines, obscurité, brouillard épais. Pas de sang, pas de violence. Pas pour les petits enfants.",
+  "it": "Attenzione: questa modalità è inquietante e ha alcuni spaventi improvvisi – rumori forti e immagini improvvise, buio, nebbia fitta. Niente sangue, niente violenza. Non per bambini piccoli.",
+  "rm": "Attenziun: quest modus è stgarschaivel ed ha intgins mumens da tschuffergna – canera ed images anetgas, stgirezza, tschajera spessa. Nagin sang, nagina violenza. Betg per uffants pitschens."
+ },
  "Adlerauge": {
   "en": "Eagle eye",
   "fr": "Œil de lynx",
@@ -1908,6 +2004,12 @@
   "fr": "Alarme %s",
   "it": "Allarme %s",
   "rm": "Alarm %s"
+ },
+ "Alarm am Zelt": {
+  "en": "Alarm at the tent",
+  "fr": "Alarme à la tente",
+  "it": "Allarme alla tenda",
+  "rm": "Alarm tar il tschalet"
  },
  "Alarm quittieren": {
   "en": "Acknowledge alarm",
@@ -2059,6 +2161,12 @@
   "it": "",
   "rm": ""
  },
+ "Alles ist ruhig. Die Zeit steht still. Atme durch – es geht erst weiter, wenn du willst.": {
+  "en": "Everything is calm. Time stands still. Take a breath – it only goes on when you want.",
+  "fr": "Tout est calme. Le temps s'arrête. Respire – ça ne continue que quand tu veux.",
+  "it": "È tutto tranquillo. Il tempo si ferma. Respira – si continua solo quando vuoi tu.",
+  "rm": "Tut è quiet. Il temp stat salda. Respira – i va vinavant pir cura che ti vuls."
+ },
  "Alles leeren": {
   "en": "Clear all",
   "fr": "Tout effacer",
@@ -2161,6 +2269,12 @@
   "it": "Altstafel",
   "rm": "Altstafel"
  },
+ "Am Abend kommt der Nebel. Irgendwo im Grau läutet eine Kuhglocke. Seit Jahren sind keine Kühe mehr auf dieser Alp.": {
+  "en": "In the evening the fog comes. Somewhere in the grey a cowbell rings. There have been no cows on this alp for years.",
+  "fr": "Le soir, le brouillard arrive. Quelque part dans le gris, une cloche de vache sonne. Il n'y a plus de vaches sur cet alpage depuis des années.",
+  "it": "La sera arriva la nebbia. Da qualche parte nel grigio suona un campanaccio. Da anni non ci sono più mucche su quest'alpe.",
+  "rm": "La saira vegn la tschajera. Insanua en il grisch tuna ina stgella da vatga. Dapi onns n'hai nagina vatga pli sin quest'alp."
+ },
  "Am Bootssteg": {
   "en": "At the jetty",
   "fr": "Au ponton",
@@ -2172,6 +2286,30 @@
   "fr": "Au Gletscherseeli",
   "it": "Al Gletscherseeli",
   "rm": "Al Gletscherseeli"
+ },
+ "Am Morgen ist alles ruhig. Das Lager ist, wie du es verlassen hast – fast. Die Laterne ist weg.": {
+  "en": "In the morning everything is calm. The camp is as you left it – almost. The lantern is gone.",
+  "fr": "Au matin, tout est calme. Le camp est comme tu l'as laissé – presque. La lanterne a disparu.",
+  "it": "Al mattino è tutto tranquillo. Il campo è come l'hai lasciato – quasi. La lanterna è sparita.",
+  "rm": "La damaun è tut quiet. Il campament è sco che ti al has bandunà – quasi. La lanterna è davent."
+ },
+ "Am Morgen ist der Nebel weg. Die Laterne neben deinem Zelt ist erloschen – zum ersten Mal kalt.": {
+  "en": "In the morning the fog is gone. The lantern next to your tent has gone out – cold for the first time.",
+  "fr": "Au matin, le brouillard est parti. La lanterne près de ta tente s'est éteinte – froide pour la première fois.",
+  "it": "Al mattino la nebbia è sparita. La lanterna accanto alla tua tenda si è spenta – fredda per la prima volta.",
+  "rm": "La damaun è la tschajera davent. La lanterna sper tes tschalet è stizzada – fraida per l'emprima giada."
+ },
+ "Am Morgen ist der Nebel weg. Im Fenster des Hospizes steht die Laterne, die du zurückgebracht hast.": {
+  "en": "In the morning the fog is gone. In the window of the hospice stands the lantern you brought back.",
+  "fr": "Au matin, le brouillard est parti. À la fenêtre de l'hospice se trouve la lanterne que tu as rapportée.",
+  "it": "Al mattino la nebbia è sparita. Alla finestra dell'ospizio c'è la lanterna che hai riportato.",
+  "rm": "La damaun è la tschajera davent. En la fanestra da l'ospizi stat la lanterna che ti has purtà enavos."
+ },
+ "Am Morgen klopft jemand ans Zelt: ein alter Mann in dunklem Lodenmantel, eine Kuhglocke am Gurt. «Ich bin der Enkel der Hospizwartin», sagt er. «In Nebelnächten gehe ich mit ihrer Glocke über den Pass – wie sie damals, für die Verirrten.»": {
+  "en": "In the morning someone knocks on the tent: an old man in a dark loden coat, a cowbell on his belt. «I am the grandson of the hospice keeper», he says. «On foggy nights I walk over the pass with her bell – as she did back then, for the lost.»",
+  "fr": "Au matin, quelqu'un frappe à la tente : un vieil homme en manteau de loden sombre, une cloche de vache à la ceinture. «Je suis le petit-fils de la gardienne de l'hospice», dit-il. «Les nuits de brouillard, je passe le col avec sa cloche – comme elle autrefois, pour ceux qui s'égarent.»",
+  "it": "Al mattino qualcuno bussa alla tenda: un vecchio con un mantello di loden scuro, un campanaccio alla cintura. «Sono il nipote della custode dell'ospizio», dice. «Nelle notti di nebbia passo il valico con la sua campana – come lei allora, per chi si è perso.»",
+  "rm": "La damaun splunta insatgi vi dal tschalet: in um vegl en in mantel da loden stgir, ina stgella da vatga a la tschinta. «Jau sun il biadi da la guardiana da l'ospizi», di el. «En notgs da tschajera vom jau cun sia stgella sur il pass – sco ella da lez temp, per ils sviads.»"
  },
  "Am PC stumm (das simulierte Mikrofon hört es trotzdem)": {
   "en": "Muted on the PC (the simulated microphone still hears it)",
@@ -2563,6 +2701,18 @@
   "it": "Registrazione: registrare una visita e riprodurla esattamente uguale",
   "rm": "Registraziun: registrar ina visita e la reproducir exactamain uguala"
  },
+ "Aufnahmen": {
+  "en": "Recordings",
+  "fr": "Enregistrements",
+  "it": "Registrazioni",
+  "rm": "Registraziuns"
+ },
+ "Aufnahmen (MoveEye)": {
+  "en": "Recordings (MoveEye)",
+  "fr": "Enregistrements (MoveEye)",
+  "it": "Registrazioni (MoveEye)",
+  "rm": "Registraziuns (MoveEye)"
+ },
  "Aufstell-Planer: Wo soll MoveEye hin?": {
   "en": "Placement planner: where should MoveEye go?",
   "fr": "Planificateur d’emplacement : où placer MoveEye ?",
@@ -2923,6 +3073,12 @@
   "it": "Mostrare il pannello (H)",
   "rm": "Mussar la panela (H)"
  },
+ "Beenden": {
+  "en": "Quit",
+  "fr": "Quitter",
+  "it": "Termina",
+  "rm": "Terminar"
+ },
  "Beerenstrauch": {
   "en": "Berry bush",
   "fr": "Buisson de baies",
@@ -2946,6 +3102,12 @@
   "fr": "Libérer : celui qui est attrapé attend en cellule jusqu’à ce qu’un coéquipier le libère.",
   "it": "Liberare: chi viene preso aspetta in cella finché un compagno lo libera.",
   "rm": "Liberar: tgi che vegn tschiffà spetga en la cella, fin ch’in collega da squadra al libera."
+ },
+ "Behalten": {
+  "en": "Keep it",
+  "fr": "La garder",
+  "it": "Tenerla",
+  "rm": "La tegnair"
  },
  "Bei den Bungalows lohnt sich ein Blick in die Hecke.": {
   "en": "At the bungalows it is worth looking into the hedge.",
@@ -2988,6 +3150,24 @@
   "fr": "Au bungalow (rangée de bungalows)",
   "it": "Al bungalow (fila di bungalow)",
   "rm": "Tar il bungalow (retscha da bungalows)"
+ },
+ "Beim ersten Mal legst du das Passwort selbst fest. Gespeichert wird nur ein verschlüsselter Fingerabdruck (Hash) auf diesem PC – nie das Passwort selbst.": {
+  "en": "The first time, you set the password yourself. Only an encrypted fingerprint (hash) is stored on this PC – never the password itself.",
+  "fr": "La première fois, tu choisis toi-même le mot de passe. Seule une empreinte chiffrée (hash) est enregistrée sur ce PC – jamais le mot de passe lui-même.",
+  "it": "La prima volta scegli tu la password. Su questo PC viene salvata solo un'impronta cifrata (hash) – mai la password stessa.",
+  "rm": "L'emprima giada fixeschas ti sez il pled-clav. Memorisà vegn mo in improntament criptà (hash) sin quest PC – mai il pled-clav sez."
+ },
+ "Beim Lager": {
+  "en": "At the camp",
+  "fr": "Au camp",
+  "it": "Al campo",
+  "rm": "Tar il campament"
+ },
+ "Beim Lager bleiben": {
+  "en": "Stay at the camp",
+  "fr": "Rester au camp",
+  "it": "Restare al campo",
+  "rm": "Restar tar il campament"
  },
  "Beim Wohnmobil (Wohnmobil-Terrasse)": {
   "en": "At the motorhome (motorhome terrace)",
@@ -3181,6 +3361,12 @@
   "it": "Prendere il bottino e riportarlo",
   "rm": "Prender la preda e la purtar enavos"
  },
+ "Bevor es losgeht": {
+  "en": "Before it starts",
+  "fr": "Avant de commencer",
+  "it": "Prima di iniziare",
+  "rm": "Avant che cumenzar"
+ },
  "bewacht das Auto (Strasse)": {
   "en": "guards the car (road)",
   "fr": "surveille la voiture (route)",
@@ -3222,6 +3408,18 @@
   "fr": "bouge au vent",
   "it": "si muove al vento",
   "rm": "sa mova en il vent"
+ },
+ "Bewegung im Nebel": {
+  "en": "Movement in the fog",
+  "fr": "Mouvement dans le brouillard",
+  "it": "Movimento nella nebbia",
+  "rm": "Moviment en la tschajera"
+ },
+ "Bewegung {d} m vor MoveEye – nur im Wärmebild. Sie trägt etwas Warmes: eine Laterne?": {
+  "en": "Movement {d} m in front of MoveEye – only in the thermal picture. It carries something warm: a lantern?",
+  "fr": "Mouvement à {d} m devant MoveEye – seulement dans l'image thermique. Elle porte quelque chose de chaud : une lanterne ?",
+  "it": "Movimento a {d} m davanti a MoveEye – solo nell'immagine termica. Porta qualcosa di caldo: una lanterna?",
+  "rm": "Moviment {d} m davant MoveEye – mo en il maletg termic. Ella porta insatge chaud: ina lanterna?"
  },
  "Bewertung jetzt": {
   "en": "Rate now",
@@ -4010,6 +4208,12 @@
   "it": "",
   "rm": ""
  },
+ "Darum sah ihn MoveEyes Kamera nicht: dunkler Mantel, dichter Nebel, kein Licht. Das Wärmebild schon. Die Spuren sind von ihm, und den Rucksack hat er aus dem Bach geholt.": {
+  "en": "That is why MoveEye's camera did not see him: dark coat, thick fog, no light. The thermal camera did. The tracks are his, and he pulled the backpack out of the stream.",
+  "fr": "Voilà pourquoi la caméra de MoveEye ne l'a pas vu : manteau sombre, brouillard épais, aucune lumière. L'image thermique, si. Les traces sont les siennes, et il a repêché le sac à dos dans le ruisseau.",
+  "it": "Ecco perché la telecamera di MoveEye non lo vedeva: mantello scuro, nebbia fitta, nessuna luce. L'immagine termica sì. Le tracce sono sue, e lo zaino l'ha ripescato dal ruscello.",
+  "rm": "Perquai n'al ha la camera da MoveEye betg vis: mantel stgir, tschajera spessa, nagina glisch. Il maletg termic bain. Ils fastizs èn dad el, e la tastga ha el pratgà ord il ual."
+ },
  "das Bedienfeld Schritt für Schritt": {
   "en": "",
   "fr": "",
@@ -4046,6 +4250,18 @@
   "it": "il telefonino",
   "rm": "il telefonin"
  },
+ "Das Hospiz": {
+  "en": "The Hospice",
+  "fr": "L'Hospice",
+  "it": "L'Ospizio",
+  "rm": "L'Ospizi"
+ },
+ "Das Mikrofon hört eine Kuhglocke. Wärmebild: die Gestalt steht still und schaut zum Lager.": {
+  "en": "The microphone hears a cowbell. Thermal: the figure stands still and looks at the camp.",
+  "fr": "Le micro entend une cloche de vache. Image thermique : la silhouette est immobile et regarde le camp.",
+  "it": "Il microfono sente un campanaccio. Immagine termica: la figura sta ferma e guarda verso il campo.",
+  "rm": "Il microfon auda ina stgella da vatga. Maletg termic: la figura stat salda e guarda vers il campament."
+ },
  "das Paket": {
   "en": "the parcel",
   "fr": "le colis",
@@ -4057,6 +4273,12 @@
   "fr": "Le paquet n’a pas fonctionné (%s).",
   "it": "Il pacchetto non è riuscito (%s).",
   "rm": "Il pachet n’ha betg funcziunà (%s)."
+ },
+ "Das Passwort ist schon festgelegt.": {
+  "en": "The password is already set.",
+  "fr": "Le mot de passe est déjà défini.",
+  "it": "La password è già impostata.",
+  "rm": "Il pled-clav è gia fixà."
  },
  "das Portemonnaie": {
   "en": "the wallet",
@@ -4123,6 +4345,12 @@
   "fr": "L’image thermique en grand (3)",
   "it": "L’immagine termica in grande (3)",
   "rm": "Il maletg termic grond (3)"
+ },
+ "Das Wärmebild zeigt sie direkt hinter dem Zelt. Lauf – zur Passstrasse!": {
+  "en": "The thermal picture shows her right behind the tent. Run – to the pass road!",
+  "fr": "L'image thermique la montre juste derrière la tente. Cours – vers la route du col !",
+  "it": "L'immagine termica la mostra proprio dietro la tenda. Corri – verso la strada del passo!",
+  "rm": "Il maletg termic la mussa directamain davos il tschalet. Curra – a la via dal pass!"
  },
  "das Ziel": {
   "en": "the goal",
@@ -4262,6 +4490,12 @@
   "it": "",
   "rm": ""
  },
+ "Dein Zelt ist leer. Daneben steht die warme Gestalt und schaut dir nach.": {
+  "en": "Your tent is empty. Next to it stands the warm figure, watching you go.",
+  "fr": "Ta tente est vide. À côté se tient la silhouette chaude, qui te regarde partir.",
+  "it": "La tua tenda è vuota. Accanto c'è la figura calda che ti guarda andare via.",
+  "rm": "Tes tschalet è vid. Sperasvi stat la figura chauda e ta guarda suenter."
+ },
  "Dein Zelt und dein Auto – anklicken und in die Welt klicken (oder hineinziehen):": {
   "en": "",
   "fr": "",
@@ -4364,6 +4598,12 @@
   "it": "Il cielo è limpidissimo.",
   "rm": "Il tschiel è tut cler."
  },
+ "Der Horror-Modus ist im Kinder-Modus gesperrt.": {
+  "en": "The horror mode is locked in kids mode.",
+  "fr": "Le mode horreur est bloqué en mode enfants.",
+  "it": "La modalità horror è bloccata nella modalità bambini.",
+  "rm": "Il modus da horror è bloccà en il modus d'uffants."
+ },
  "Der Mensch": {
   "en": "The human",
   "fr": "L’humain",
@@ -4454,6 +4694,12 @@
   "it": "",
   "rm": ""
  },
+ "Der Spur folgen (zur Hütte)": {
+  "en": "Follow the tracks (to the hut)",
+  "fr": "Suivre les traces (vers la cabane)",
+  "it": "Seguire le tracce (verso la baita)",
+  "rm": "Suandar ils fastizs (a la chamona)"
+ },
  "Der Vergleich läuft schon.": {
   "en": "The comparison is already running.",
   "fr": "La comparaison est déjà en cours.",
@@ -4526,6 +4772,12 @@
   "it": "la base",
   "rm": "la basa"
  },
+ "Die beiden Eingaben sind nicht gleich.": {
+  "en": "The two entries do not match.",
+  "fr": "Les deux saisies ne sont pas identiques.",
+  "it": "Le due immissioni non coincidono.",
+  "rm": "Las duas endataziuns n'èn betg tuttina."
+ },
  "Die Datei hat die falsche Grösse.": {
   "en": "The file has the wrong size.",
   "fr": "Le fichier n’a pas la bonne taille.",
@@ -4556,6 +4808,18 @@
   "it": "Sorveglia il vero rilevamento di MoveEye: se segnala una persona, viene preso chi la telecamera vede meglio. Ciò che MoveEye manca va nell’addestramento e sulla mappa dei punti ciechi.",
   "rm": "L’identificaziun vaira da MoveEye fa attenziun: sch’ella annunzia ina persuna, è quel tschiffà che la camera vesa il meglier. Quai che MoveEye mancanta va en il trenament e sin la charta dals puncts orbs."
  },
+ "Die Gestalt geht ruhig zum Pass hinauf. Die Glocke läutet bei jedem Schritt – sie trägt sie am Gurt.": {
+  "en": "The figure walks calmly up to the pass. The bell rings with every step – it carries it on its belt.",
+  "fr": "La silhouette monte calmement vers le col. La cloche sonne à chaque pas – elle la porte à la ceinture.",
+  "it": "La figura sale tranquilla verso il passo. La campana suona a ogni passo – la porta alla cintura.",
+  "rm": "La figura va quietamain si al pass. La stgella tuna a mintga pass – ella la porta a la tschinta."
+ },
+ "Die Gestalt ist zurück, {d} m entfernt. Im Kamerabild nur Nebel.": {
+  "en": "The figure is back, {d} m away. Only fog in the camera picture.",
+  "fr": "La silhouette est revenue, à {d} m. Seulement du brouillard dans l'image de la caméra.",
+  "it": "La figura è tornata, a {d} m. Nell'immagine della telecamera solo nebbia.",
+  "rm": "La figura è enavos, {d} m davent. En il maletg da la camera mo tschajera."
+ },
  "Die GPS-Position wandert mit 1.6 m/s weg (wie zu Fuss). MoveEye braucht «GPS-Modul» und «Diebstahl-Alarm» und muss scharf sein. Nochmals drücken = zurückstellen.": {
   "en": "The GPS position moves away at 1.6 m/s (like on foot). MoveEye needs «GPS module» and «Theft alarm» and must be armed. Press again = put back.",
   "fr": "La position GPS s’éloigne à 1.6 m/s (comme à pied). MoveEye a besoin de «Module GPS» et «Alarme vol» et doit être armé. Appuyer encore = remettre.",
@@ -4567,6 +4831,12 @@
   "fr": "le sac à main",
   "it": "la borsetta",
   "rm": "la tastga"
+ },
+ "Die Hospizwartin holte in Sturmnächten Verirrte über den Pass. Vielleicht hat sie nur nachgeschaut, ob du sicher bist.": {
+  "en": "On stormy nights the hospice keeper brought lost travellers over the pass. Maybe she only came to see that you were safe.",
+  "fr": "Les nuits de tempête, la gardienne de l'hospice guidait les égarés par le col. Peut-être voulait-elle seulement voir si tu étais en sécurité.",
+  "it": "Nelle notti di tempesta la custode dell'ospizio guidava i dispersi oltre il passo. Forse voleva solo vedere se eri al sicuro.",
+  "rm": "En notgs da stemprada manava la guardiana da l'ospizi ils sviads sur il pass. Forsa ha ella mo vulì guardar, sche ti es segir."
  },
  "die Isomatte": {
   "en": "the sleeping mat",
@@ -4622,6 +4892,18 @@
   "it": "la borsa frigo",
   "rm": "la chista da fraid"
  },
+ "Die Laterne steht neben deinem Zelt. Die letzte Nacht. Die Glocke ist jetzt ganz nah.": {
+  "en": "The lantern stands next to your tent. The last night. The bell is very close now.",
+  "fr": "La lanterne est près de ta tente. La dernière nuit. La cloche est maintenant tout près.",
+  "it": "La lanterna è accanto alla tua tenda. L'ultima notte. La campana ora è vicinissima.",
+  "rm": "La lanterna stat sper tes tschalet. L'ultima notg. La stgella è ussa fitg datiers."
+ },
+ "Die Laterne steht wieder in der Hütte. Die letzte Nacht. Die Glocke ist jetzt ganz nah.": {
+  "en": "The lantern is back in the hut. The last night. The bell is very close now.",
+  "fr": "La lanterne est de nouveau dans la cabane. La dernière nuit. La cloche est maintenant tout près.",
+  "it": "La lanterna è di nuovo nella baita. L'ultima notte. La campana ora è vicinissima.",
+  "rm": "La lanterna è puspè en la chamona. L'ultima notg. La stgella è ussa fitg datiers."
+ },
  "Die laufende Datei lässt sich nicht ersetzen. Läuft der Simulator zweimal? Bitte alle Simulator-Fenster schliessen (auch das kleine Kästchen) und neu starten.": {
   "en": "The running file cannot be replaced. Is the simulator running twice? Please close all simulator windows (also the small box) and restart.",
   "fr": "Impossible de remplacer le fichier en cours. Le simulateur tourne-t-il deux fois ? Merci de fermer toutes les fenêtres du simulateur (aussi la petite case) et de redémarrer.",
@@ -4639,6 +4921,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Die Nacht beginnt": {
+  "en": "The night begins",
+  "fr": "La nuit commence",
+  "it": "La notte comincia",
+  "rm": "La notg cumenza"
  },
  "Die neue Datei lässt sich nicht hinlegen.": {
   "en": "The new file cannot be put in place.",
@@ -4700,6 +4988,18 @@
   "it": "I giocatori si avvicinano di soppiatto con il telefonino. I guardiani stanno a MoveEye: girano la vera telecamera con il joystick sulla pagina live, mirano con il centro dell’immagine e premono lo scatto 🎯.",
   "rm": "Ils giugaders sa stulan cun il telefonin. Ils guardians sesan tar MoveEye: els volvan la camera vaira cun il joystick sin la pagina live, miran cun il center dal maletg e smatgan il sajet 🎯."
  },
+ "Die Spur endete gestern an der verlassenen Hütte. Heute Nacht steht ihre Tür einen Spalt offen. Und im Nebel rufen Stimmen.": {
+  "en": "Yesterday the tracks ended at the abandoned hut. Tonight its door is ajar. And voices are calling in the fog.",
+  "fr": "Hier, les traces s'arrêtaient à la cabane abandonnée. Cette nuit, sa porte est entrouverte. Et des voix appellent dans le brouillard.",
+  "it": "Ieri le tracce finivano alla baita abbandonata. Stanotte la sua porta è socchiusa. E nella nebbia chiamano delle voci.",
+  "rm": "Ier finivan ils fastizs tar la chamona bandunada. Questa notg è sia esch in pau averta. Ed en la tschajera claman vuschs."
+ },
+ "Die Spur führt zur Hütte. Drinnen riecht es nach kaltem Rauch. Auf dem Tisch liegt eine Seite aus einem alten Hospizbuch:": {
+  "en": "The tracks lead to the hut. Inside it smells of cold smoke. On the table lies a page from an old hospice book:",
+  "fr": "Les traces mènent à la cabane. Dedans, ça sent la fumée froide. Sur la table, une page d'un vieux livre de l'hospice :",
+  "it": "Le tracce portano alla baita. Dentro c'è odore di fumo freddo. Sul tavolo c'è una pagina di un vecchio libro dell'ospizio:",
+  "rm": "Ils fastizs mainan a la chamona. Endadens savura quai da fim fraid. Sin la maisa giascha ina pagina d'in vegl cudesch da l'ospizi:"
+ },
  "Die Suche liess sich nicht starten.": {
   "en": "The search could not be started.",
   "fr": "La recherche n’a pas pu démarrer.",
@@ -4711,6 +5011,18 @@
   "fr": "la porte",
   "it": "la porta",
   "rm": "l’isch"
+ },
+ "Die Tür der verlassenen Hütte öffnet sich von selbst. Kamera: niemand. Wärmebild: die Gestalt geht hinein.": {
+  "en": "The door of the abandoned hut opens by itself. Camera: nobody. Thermal: the figure goes in.",
+  "fr": "La porte de la cabane abandonnée s'ouvre toute seule. Caméra : personne. Image thermique : la silhouette entre.",
+  "it": "La porta della baita abbandonata si apre da sola. Telecamera: nessuno. Immagine termica: la figura entra.",
+  "rm": "L'esch da la chamona bandunada s'avra da sasez. Camera: nagin. Maletg termic: la figura va en."
+ },
+ "Die Tür geht auf": {
+  "en": "The door opens",
+  "fr": "La porte s'ouvre",
+  "it": "La porta si apre",
+  "rm": "L'esch s'avra"
  },
  "Die Umgebung bestimmt, welche Dinge zusätzlich in die Szene kommen. Gebäude, Strassen, Wald und Wasser kommen immer vom echten Ort.": {
   "en": "The surroundings decide which extra things come into the scene. Buildings, roads, forest and water always come from the real place.",
@@ -4808,6 +5120,18 @@
   "it": "Controllare la protezione antifurto (scansione di riferimento, sabotaggio, sorpresa)",
   "rm": "Controllar la protecziun cunter engul (scan da referenza, sabotascha, surpraisa)"
  },
+ "Diese Aufnahme trägt das Datum von morgen Nacht.": {
+  "en": "This recording carries the date of tomorrow night.",
+  "fr": "Cet enregistrement porte la date de demain soir.",
+  "it": "Questa registrazione porta la data di domani notte.",
+  "rm": "Questa registraziun porta la data da damaun notg."
+ },
+ "Diese Aufnahmen hat MoveEye auch in seinen Verlauf gelegt (Nachrichten, als Test – kein echter Push).": {
+  "en": "MoveEye also put these recordings into its history (Messages, as a test – no real push).",
+  "fr": "MoveEye a aussi placé ces enregistrements dans son historique (Messages, en test – pas de vrai push).",
+  "it": "MoveEye ha messo queste registrazioni anche nella sua cronologia (Messaggi, come test – nessun push vero).",
+  "rm": "MoveEye ha er mess questas registraziuns en ses decurs (Messadis, sco test – nagin push vair)."
+ },
  "Diese Datei ist schon auf GitHub.": {
   "en": "This file is already on GitHub.",
   "fr": "Ce fichier est déjà sur GitHub.",
@@ -4827,6 +5151,12 @@
   "it": "Questo caso è già su GitHub.",
   "rm": "Quest cas è gia sin GitHub."
  },
+ "Dieser Modus ist mit einem Passwort geschützt.": {
+  "en": "This mode is protected by a password.",
+  "fr": "Ce mode est protégé par un mot de passe.",
+  "it": "Questa modalità è protetta da una password.",
+  "rm": "Quest modus è protegì cun in pled-clav."
+ },
  "Dieser Punkt liegt nicht in der Schweiz.": {
   "en": "This point is not in Switzerland.",
   "fr": "Ce point n’est pas en Suisse.",
@@ -4845,6 +5175,12 @@
   "it": "Cose",
   "rm": "Chaussas"
  },
+ "do: info | open | set_password | unlock | start | go | skip | beat | choose | pause | resume | clips | clip | stop": {
+  "en": "do: info | open | set_password | unlock | start | go | skip | beat | choose | pause | resume | clips | clip | stop",
+  "fr": "do: info | open | set_password | unlock | start | go | skip | beat | choose | pause | resume | clips | clip | stop",
+  "it": "do: info | open | set_password | unlock | start | go | skip | beat | choose | pause | resume | clips | clip | stop",
+  "rm": "do: info | open | set_password | unlock | start | go | skip | beat | choose | pause | resume | clips | clip | stop"
+ },
  "Donut": {
   "en": "Donut",
   "fr": "Beignet",
@@ -4862,6 +5198,12 @@
   "fr": "Village avec église",
   "it": "Villaggio con chiesa",
   "rm": "Vischnanca cun baselgia"
+ },
+ "Dort: Scheinwerfer, das Dreiklang-Horn des ersten Postautos. Geschafft.": {
+  "en": "There: headlights, the three-tone horn of the first PostBus. You made it.",
+  "fr": "Là : des phares, le klaxon à trois tons du premier car postal. Ouf, réussi.",
+  "it": "Lì: fari, il clacson a tre toni del primo autopostale. Ce l'hai fatta.",
+  "rm": "Là: cazzolas, il corn da trais tuns da l'emprim auto da posta. Fatg."
  },
  "Download abgebrochen (Fehler %s / %s).": {
   "en": "Download cancelled (error %s / %s).",
@@ -4899,6 +5241,18 @@
   "it": "girare (15°)",
   "rm": "volver (15°)"
  },
+ "Drei Nächte lang bewacht MoveEye dein Lager im Bergtal. Was es aufnimmt, findest du am Morgen in seinem Verlauf.": {
+  "en": "For three nights MoveEye guards your camp in the mountain valley. What it records, you will find in its history in the morning.",
+  "fr": "Pendant trois nuits, MoveEye surveille ton camp dans la vallée. Ce qu'il enregistre, tu le trouveras le matin dans son historique.",
+  "it": "Per tre notti MoveEye sorveglia il tuo campo nella valle. Quello che registra lo trovi al mattino nella sua cronologia.",
+  "rm": "Trais notgs ditg surveglia MoveEye tes campament en la val. Tge ch'el registrescha, chattas ti la damaun en ses decurs."
+ },
+ "Dritte Nacht – Das Hospiz": {
+  "en": "Third night – The Hospice",
+  "fr": "Troisième nuit – L'Hospice",
+  "it": "Terza notte – L'Ospizio",
+  "rm": "Terza notg – L'Ospizi"
+ },
  "Drohne": {
   "en": "Drone",
   "fr": "Drone",
@@ -4911,6 +5265,12 @@
   "it": "Guidi tu il rover! Frecce, mouse o controller.",
   "rm": "Ti manischeschas il rover! Tastas da frizza, mieur u controller."
  },
+ "Du hast MoveEye höher gestellt und bleibst beim Lager. Heute Nacht rufen Stimmen im Nebel – wie Wanderer, die sich verirrt haben.": {
+  "en": "You set MoveEye up higher and stay at the camp. Tonight voices call in the fog – like hikers who have lost their way.",
+  "fr": "Tu as placé MoveEye plus haut et tu restes au camp. Cette nuit, des voix appellent dans le brouillard – comme des randonneurs égarés.",
+  "it": "Hai messo MoveEye più in alto e resti al campo. Stanotte nella nebbia chiamano delle voci – come escursionisti che si sono persi.",
+  "rm": "Ti has mess MoveEye pli aut e restas tar il campament. Questa notg claman vuschs en la tschajera – sco viandants ch'èn sa sviads."
+ },
  "Du hast schon die neuste Version (%s).": {
   "en": "You already have the newest version (%s).",
   "fr": "Tu as déjà la dernière version (%s).",
@@ -4922,6 +5282,12 @@
   "fr": "Tu ressembles à une caisse, pas à un humain. Mais : seulement baissé, très lentement, sans courir – et une caisse qui marche se remarque.",
   "it": "Sembri una scatola, non una persona. Ma: solo abbassato, molto lento, niente corsa – e una scatola che cammina si nota.",
   "rm": "Ti paras ina chista, betg in uman. Ma: mo bassà, fitg plaun, betg currer – ed ina chista che va dat en egl."
+ },
+ "Du stellst MoveEye höher und bleibst wach. Gegen Mittag weht der Wind eine vergilbte Seite gegen dein Zelt:": {
+  "en": "You set MoveEye up higher and stay awake. Towards noon the wind blows a yellowed page against your tent:",
+  "fr": "Tu places MoveEye plus haut et tu restes éveillé. Vers midi, le vent pousse une page jaunie contre ta tente :",
+  "it": "Metti MoveEye più in alto e resti sveglio. Verso mezzogiorno il vento spinge una pagina ingiallita contro la tua tenda:",
+  "rm": "Ti metas MoveEye pli aut e restas sveglià. Vers mezdi suffla il vent ina pagina melnenta vers tes tschalet:"
  },
  "Duell: MoveEye %d : %d %s": {
   "en": "Duel: MoveEye %d : %d %s",
@@ -5175,6 +5541,12 @@
   "it": "Arriva un temporale",
   "rm": "In urizi vegn"
  },
+ "ein Jump-Scare pro Nacht": {
+  "en": "one jump scare per night",
+  "fr": "un sursaut par nuit",
+  "it": "uno spavento improvviso per notte",
+  "rm": "in mument da tschuffergna per notg"
+ },
  "Ein Kind kommt zum Spielen!": {
   "en": "A child comes to play!",
   "fr": "Un enfant vient jouer !",
@@ -5301,11 +5673,23 @@
   "it": "Tentato scasso (si avvicina di soppiatto, prova la porta – fugge davanti a luce e sirena)",
   "rm": "Emprova d’invasiun (sa stula, emprova l’isch – fugia davant glisch e sirena)"
  },
+ "Eine Aufnahme zu viel": {
+  "en": "One recording too many",
+  "fr": "Un enregistrement de trop",
+  "it": "Una registrazione di troppo",
+  "rm": "Ina registraziun memia"
+ },
  "Eine Datei einlesen und hier auf diesem PC starten": {
   "en": "Read in a file and start it here on this PC",
   "fr": "Charger un fichier et le démarrer ici sur ce PC",
   "it": "Caricare un file e avviarlo qui su questo PC",
   "rm": "Leger ina datoteca e la cumenzar qua sin quest PC"
+ },
+ "Eine leise Stimme: «Komm … zum Hospiz.»": {
+  "en": "A quiet voice: «Come … to the hospice.»",
+  "fr": "Une voix douce : «Viens … à l'hospice.»",
+  "it": "Una voce sommessa: «Vieni … all'ospizio.»",
+  "rm": "Ina vusch quieta: «Vegni … a l'ospizi.»"
  },
  "Eine Nebelbank kommt": {
   "en": "A fog bank is coming",
@@ -5324,6 +5708,18 @@
   "fr": "Une manche normale.",
   "it": "Un turno normale.",
   "rm": "Ina runda normala."
+ },
+ "Eine Stimme im Nebel: «Hallo?»": {
+  "en": "A voice in the fog: «Hello?»",
+  "fr": "Une voix dans le brouillard : «Allô ?»",
+  "it": "Una voce nella nebbia: «Ehi?»",
+  "rm": "Ina vusch en la tschajera: «Hallo?»"
+ },
+ "Eine Stimme, näher: «Ist da jemand?»": {
+  "en": "A voice, closer: «Is anybody there?»",
+  "fr": "Une voix, plus proche : «Il y a quelqu'un ?»",
+  "it": "Una voce, più vicina: «C'è qualcuno?»",
+  "rm": "Ina vusch, pli datiers: «Èsi qua insatgi?»"
  },
  "Einen echten Ort nachbauen. In der Schweiz geht es direkt mit der Karte; weltweit über Blender (gratis) und OpenStreetMap – das Ergebnis als .glb hier laden.": {
   "en": "Rebuild a real place. In Switzerland it works directly with the map; worldwide via Blender (free) and OpenStreetMap – load the result as .glb here.",
@@ -5433,6 +5829,30 @@
   "it": "Fine",
   "rm": "Fin"
  },
+ "Ende: Die Erklärung": {
+  "en": "Ending: The explanation",
+  "fr": "Fin : L'explication",
+  "it": "Finale: La spiegazione",
+  "rm": "Fin: L'explicaziun"
+ },
+ "Ende: Flucht im Morgengrauen": {
+  "en": "Ending: Escape at dawn",
+  "fr": "Fin : Fuite à l'aube",
+  "it": "Finale: Fuga all'alba",
+  "rm": "Fin: Fugia en l'alva"
+ },
+ "Ende: Ruhe am Pass": {
+  "en": "Ending: Peace at the pass",
+  "fr": "Fin : La paix au col",
+  "it": "Finale: Pace al passo",
+  "rm": "Fin: Pasch al pass"
+ },
+ "Ende: Ungeklärt": {
+  "en": "Ending: Unsolved",
+  "fr": "Fin : Non résolu",
+  "it": "Finale: Irrisolto",
+  "rm": "Fin: Betg scleri"
+ },
  "Energie [": {
   "en": "Energy [",
   "fr": "Énergie [",
@@ -5504,6 +5924,12 @@
   "fr": "Échec de la décompression",
   "it": "Decompressione non riuscita",
   "rm": "Decumprimer betg reussì"
+ },
+ "Entsperren": {
+  "en": "Unlock",
+  "fr": "Déverrouiller",
+  "it": "Sblocca",
+  "rm": "Debloccar"
  },
  "Entwickler": {
   "en": "Developer",
@@ -5668,6 +6094,18 @@
   "it": "Spaventare",
   "rm": "Spaventar"
  },
+ "Erste Nacht beginnen": {
+  "en": "Begin the first night",
+  "fr": "Commencer la première nuit",
+  "it": "Inizia la prima notte",
+  "rm": "Cumenzar l'emprima notg"
+ },
+ "Erste Nacht – Die Glocke ohne Kuh": {
+  "en": "First night – The bell without a cow",
+  "fr": "Première nuit – La cloche sans vache",
+  "it": "Prima notte – La campana senza mucca",
+  "rm": "Emprima notg – La stgella senza vatga"
+ },
  "Erwachsene": {
   "en": "Adults",
   "fr": "Adultes",
@@ -5722,6 +6160,18 @@
   "it": "Si fa giorno",
   "rm": "I vegn cler"
  },
+ "Esc = Pause (heller, leiser)": {
+  "en": "Esc = pause (brighter, quieter)",
+  "fr": "Échap = pause (plus clair, plus calme)",
+  "it": "Esc = pausa (più luce, più silenzio)",
+  "rm": "Esc = pausa (pli cler, pli quiet)"
+ },
+ "Esc hält jederzeit an: dann wird es heller und leiser, und die Zeit steht still. Mit dem Regler «Schreck-Stärke» stellst du Lautstärke und Häufigkeit der Schreckmomente ein.": {
+  "en": "Esc stops at any time: it gets brighter and quieter, and time stands still. With the slider «Scare strength» you set the volume and how often the scares come.",
+  "fr": "Échap arrête à tout moment : tout devient plus clair et plus calme, et le temps s'arrête. Avec le curseur «Intensité de la peur», tu règles le volume et la fréquence des sursauts.",
+  "it": "Esc ferma in qualsiasi momento: diventa più chiaro e silenzioso, e il tempo si ferma. Con il cursore «Intensità dello spavento» regoli volume e frequenza degli spaventi.",
+  "rm": "Esc ferma da tut temp: lura vegni pli cler e pli quiet, ed il temp stat salda. Cun il reglader «Fermezza da la tschuffergna» fixeschas ti la loudezza e quant savens ch'i dat tschuffergnas."
+ },
  "Essen": {
   "en": "Food",
   "fr": "Nourriture",
@@ -5733,6 +6183,12 @@
   "fr": "Table à manger",
   "it": "Tavolo da pranzo",
   "rm": "Maisa da mangiar"
+ },
+ "Etwas Warmes in der Hand": {
+  "en": "Something warm in its hand",
+  "fr": "Quelque chose de chaud dans la main",
+  "it": "Qualcosa di caldo in mano",
+  "rm": "Insatge chaud en il maun"
  },
  "Eule fliegt vorbei": {
   "en": "Owl flies past",
@@ -5847,6 +6303,12 @@
   "fr": "FAUX : ",
   "it": "SBAGLIATO: ",
   "rm": "FALLÀ: "
+ },
+ "Falsches Passwort.": {
+  "en": "Wrong password.",
+  "fr": "Mot de passe incorrect.",
+  "it": "Password errata.",
+  "rm": "Pled-clav fallì."
  },
  "Fast voll: Programme schliessen (Browser-Tabs), den Simulator neu starten.": {
   "en": "",
@@ -6155,6 +6617,12 @@
   "it": "Test fissi: sempre gli stessi visitatori sugli stessi percorsi. Il simulatore sa chi era ben visibile per la telecamera della testa e lo confronta con le segnalazioni di MoveEye. Su questo PC (con scheda grafica) i numeri sono più realistici che su GitHub.",
   "rm": "Tests fixs: adina ils medems visitaders sin las medemas vias. Il simulatur sa, tgi ch’era bain visibel per la camera dal chau, e cumparegliescha quai cun ils messadis da MoveEye. Sin quest PC (cun carta grafica) èn las cifras pli realisticas che sin GitHub."
  },
+ "Festlegen": {
+  "en": "Set",
+  "fr": "Définir",
+  "it": "Imposta",
+  "rm": "Fixar"
+ },
  "Festwiese mit Bühne": {
   "en": "Festival meadow with stage",
   "fr": "Pré de fête avec scène",
@@ -6226,6 +6694,12 @@
   "fr": "Chauves-souris à la lumière (la nuit)",
   "it": "Pipistrelli alla luce (di notte)",
   "rm": "Mez-mieurs a la glisch (da notg)"
+ },
+ "Flucht – im Morgengrauen weg vom Pass": {
+  "en": "Escape – away from the pass at dawn",
+  "fr": "Fuite – loin du col à l'aube",
+  "it": "Fuga – via dal passo all'alba",
+  "rm": "Fugia – davent dal pass en l'alva"
  },
  "Folgen": {
   "en": "Follow",
@@ -6587,6 +7061,18 @@
   "it": "Per il telefonino senza Pi – e come aiuto di calcolo IA: il Pi fa calcolare il rilevamento a questo PC (più veloce, il Pi resta fresco). La prima volta vengono caricati Python, MoveEye e il modello IA (circa 170 MB, alcuni minuti). Windows chiede se Python può accedere alla rete: scegliere «Consenti».",
   "rm": "Per il telefonin senza Pi – e sco agid da calcular IA: il Pi lascha lura quintar l’identificaziun da quest PC (pli svelt, il Pi resta fraid). L’emprima giada vegnan chargiads Python, MoveEye ed il model IA (circa 170 MB, intginas minutas). Windows dumonda, sche Python dastga en la rait: tscherner «Permetter»."
  },
+ "Für die Mutigste – du hast alle drei Nächte überstanden.": {
+  "en": "For the bravest – you made it through all three nights.",
+  "fr": "Pour la plus courageuse – tu as tenu les trois nuits.",
+  "it": "Per la più coraggiosa – hai superato tutte e tre le notti.",
+  "rm": "Per la pli curaschusa – ti has surventschì tut las trais notgs."
+ },
+ "Für die Mutigste.": {
+  "en": "For the bravest.",
+  "fr": "Pour la plus courageuse.",
+  "it": "Per la più coraggiosa.",
+  "rm": "Per la pli curaschusa."
+ },
  "Für Kinder und kurze Runden: immer derselbe Parcours mit 3 Toren. Durch die Tore, dann ins Ziel – je schneller, desto mehr Punkte.": {
   "en": "For children and short rounds: always the same course with 3 gates. Through the gates, then to the goal – the faster, the more points.",
   "fr": "Pour les enfants et les manches courtes : toujours le même parcours avec 3 portes. À travers les portes, puis à l’arrivée – plus c’est rapide, plus il y a de points.",
@@ -6598,6 +7084,12 @@
   "fr": "Paquets Python manquants pour MoveEye : ",
   "it": "Pacchetti Python mancanti per MoveEye: ",
   "rm": "Pachets da Python mancan per MoveEye: "
+ },
+ "Für MoveEye heisst das: im Nebel sieht das Wärmebild, was die Kamera nicht sieht.": {
+  "en": "For MoveEye this means: in fog the thermal camera sees what the camera does not.",
+  "fr": "Pour MoveEye, cela veut dire : dans le brouillard, l'image thermique voit ce que la caméra ne voit pas.",
+  "it": "Per MoveEye significa: nella nebbia l'immagine termica vede ciò che la telecamera non vede.",
+  "rm": "Per MoveEye vul quai dir: en la tschajera vesa il maletg termic quai che la camera na vesa betg."
  },
  "Für MoveEye: Patrouille über 3 Punkte (Schwenk %d / %d / %d %%) – auf der Seite von MoveEye unter Simulator → «Vom Aufstell-Planer übernehmen».": {
   "en": "For MoveEye: patrol over 3 points (pan %d / %d / %d %%) – on MoveEye’s page under Simulator → «Take over from the placement planner».",
@@ -6623,6 +7115,12 @@
   "it": "Forchetta",
   "rm": "Furtgetta"
  },
+ "Ganz nah, im Nebel: «Hier oben … hier!»": {
+  "en": "Very close, in the fog: «Up here … here!»",
+  "fr": "Tout près, dans le brouillard : «Ici en haut … ici !»",
+  "it": "Vicinissimo, nella nebbia: «Quassù … qui!»",
+  "rm": "Fitg datiers, en la tschajera: «Qua si … qua!»"
+ },
  "Ganz normal, ohne Tarnung.": {
   "en": "Completely normal, without camouflage.",
   "fr": "Tout à fait normal, sans camouflage.",
@@ -6634,6 +7132,12 @@
   "fr": "Tout en haut à l’orée du bois, à l’est du mirador, il y a quelque chose de vieux.",
   "it": "In alto al limite del bosco, a est della torretta, c’è qualcosa di vecchio.",
   "rm": "Tut sisum a l’ur dal guaud, a l’ost dal pulpit, stat insatge vegl."
+ },
+ "Ganz still": {
+  "en": "Completely silent",
+  "fr": "Silence total",
+  "it": "Silenzio totale",
+  "rm": "Tut quiet"
  },
  "Ganze Nacht (20–6 Uhr im Zeitraffer, Tiere, Wind, Regenschauer, 2 Personen · etwa 11 Min.)": {
   "en": "Whole night (20–6 o’clock in timelapse, animals, wind, rain showers, 2 people · about 11 min)",
@@ -7182,6 +7686,12 @@
   "it": "Lingua glaciale con crepacci",
   "rm": "Lieunga da glatscher cun sfessas"
  },
+ "Glocke ohne Kuh": {
+  "en": "A bell without a cow",
+  "fr": "Une cloche sans vache",
+  "it": "Una campana senza mucca",
+  "rm": "Ina stgella senza vatga"
+ },
  "glTF %s (glb %d), Erweiterungen: %s": {
   "en": "glTF %s (glb %d), extensions: %s",
   "fr": "glTF %s (glb %d), extensions : %s",
@@ -7464,6 +7974,12 @@
   "it": "Ben riparato dal vento",
   "rm": "Bain protegì dal vent"
  },
+ "Gut – die Gestalt findet Ruhe": {
+  "en": "Good – the figure finds peace",
+  "fr": "Bonne – la silhouette trouve la paix",
+  "it": "Buono – la figura trova pace",
+  "rm": "Bun – la figura chatta pasch"
+ },
  "Gute Nacht! Jetzt braucht MoveEye Infrarot.": {
   "en": "Good night! Now MoveEye needs infrared.",
   "fr": "Bonne nuit ! Maintenant MoveEye a besoin de l’infrarouge.",
@@ -7512,6 +8028,12 @@
   "it": "Ciao, sono Blinki!",
   "rm": "Allegra, jau sun Blinki!"
  },
+ "Halte im Wärmebild (oben rechts) die Augen offen. Mit «Erkunden» kannst du mit der Stirnlampe herumgehen.": {
+  "en": "Keep your eyes on the thermal picture (top right). With «Explore» you can walk around with the headlamp.",
+  "fr": "Garde l'œil sur l'image thermique (en haut à droite). Avec «Explorer», tu peux te promener avec la lampe frontale.",
+  "it": "Tieni d'occhio l'immagine termica (in alto a destra). Con «Esplora» puoi girare con la lampada frontale.",
+  "rm": "Tegna en egl il maletg termic (si a dretga). Cun «Explorar» pos ti ir enturn cun la lampa da frunt."
+ },
  "Handicap für den Ersten der Rangliste": {
   "en": "Handicap for the leader of the ranking",
   "fr": "Handicap pour le premier du classement",
@@ -7553,6 +8075,12 @@
   "fr": "Téléphones : scanner le code QR (même Wi-Fi) ou ouvrir %s",
   "it": "Telefonini: scansionare il codice QR (stessa Wi-Fi) o aprire %s",
   "rm": "Telefonins: scannar il code QR (medem WLAN) u avrir %s"
+ },
+ "Harmlos – es gibt eine einfache Erklärung": {
+  "en": "Harmless – there is a simple explanation",
+  "fr": "Inoffensive – il y a une explication simple",
+  "it": "Innocuo – c'è una spiegazione semplice",
+  "rm": "Innocent – i dat ina explicaziun simpla"
  },
  "Hase": {
   "en": "Hare",
@@ -7801,6 +8329,36 @@
   "it": "Hop, hop – una lepre!",
   "rm": "Hop, hop – in lieur!"
  },
+ "Horror": {
+  "en": "Horror",
+  "fr": "Horreur",
+  "it": "Horror",
+  "rm": "Horror"
+ },
+ "Horror-Modus": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Horror-Modus «Das Hospiz» (Bergtal, mit Passwort)": {
+  "en": "Horror mode «The Hospice» (mountain valley, with password)",
+  "fr": "Mode horreur «L'Hospice» (vallée de montagne, avec mot de passe)",
+  "it": "Modalità horror «L'Ospizio» (valle di montagna, con password)",
+  "rm": "Modus da horror «L'Ospizi» (val da muntogna, cun pled-clav)"
+ },
+ "Horror-Modus: gesperrt": {
+  "en": "Horror mode: locked",
+  "fr": "Mode horreur : verrouillé",
+  "it": "Modalità horror: bloccata",
+  "rm": "Modus da horror: bloccà"
+ },
+ "Horror-Modus: Passwort festlegen": {
+  "en": "Horror mode: set a password",
+  "fr": "Mode horreur : définir un mot de passe",
+  "it": "Modalità horror: imposta una password",
+  "rm": "Modus da horror: fixar in pled-clav"
+ },
  "Hospiz": {
   "en": "Hospice",
   "fr": "Hospice",
@@ -7999,6 +8557,12 @@
   "it": "",
   "rm": ""
  },
+ "Ich habe verstanden": {
+  "en": "I understand",
+  "fr": "J'ai compris",
+  "it": "Ho capito",
+  "rm": "Jau hai chapì"
+ },
  "Igel": {
   "en": "Hedgehog",
   "fr": "Hérisson",
@@ -8071,6 +8635,12 @@
   "it": "Non si può dormire nell'acqua.",
   "rm": "Ins na po betg durmir en l'aua."
  },
+ "Im Wärmebild kühlt die Gestalt ab, bis sie nicht mehr zu sehen ist. Oben beim Hospiz läutet die Glocke ein letztes Mal.": {
+  "en": "In the thermal picture the figure cools down until it can no longer be seen. Up at the hospice the bell rings one last time.",
+  "fr": "Dans l'image thermique, la silhouette refroidit jusqu'à disparaître. Là-haut à l'hospice, la cloche sonne une dernière fois.",
+  "it": "Nell'immagine termica la figura si raffredda finché non si vede più. Su all'ospizio la campana suona un'ultima volta.",
+  "rm": "En il maletg termic sa sfradenta la figura, fin ch'ella na sa lascha betg pli vesair. Si tar l'ospizi tuna la stgella ina ultima giada."
+ },
  "im Ziel": {
   "en": "at the goal",
   "fr": "à l’arrivée",
@@ -8119,6 +8689,12 @@
   "it": "Nella siepe dei bungalow abitano cinque nani da giardino.",
   "rm": "En la saiv tar ils bungalows abitan tschintg nanins."
  },
+ "In der verlassenen Hütte": {
+  "en": "In the abandoned hut",
+  "fr": "Dans la cabane abandonnée",
+  "it": "Nella baita abbandonata",
+  "rm": "En la chamona bandunada"
+ },
  "In der ZIP-Datei fehlt %s.": {
   "en": "%s is missing in the ZIP file.",
   "fr": "%s manque dans le fichier ZIP.",
@@ -8136,6 +8712,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "In MoveEyes Verlauf ist eine Aufnahme mehr, als in der Nacht passiert ist. Sie trägt das Datum von morgen Nacht.": {
+  "en": "In MoveEye's history there is one more recording than what happened in the night. It carries the date of tomorrow night.",
+  "fr": "Dans l'historique de MoveEye, il y a un enregistrement de plus que ce qui s'est passé cette nuit. Il porte la date de demain soir.",
+  "it": "Nella cronologia di MoveEye c'è una registrazione in più di quanto è successo nella notte. Porta la data di domani notte.",
+  "rm": "En il decurs da MoveEye hai ina registraziun dapli che quai ch'è capità la notg. Ella porta la data da damaun notg."
  },
  "In «%s» gibt es nichts zum Wegnehmen (Szene «Camping-Platz»: Velo, Zelt, Tisch, Kühlbox, Grill).": {
   "en": "In «%s» there is nothing to take away (scene «Campsite»: bike, tent, table, cool box, grill).",
@@ -8305,6 +8887,12 @@
   "it": "Ogni corridore è un’immagine 3D propria sul PC e un video proprio in rete. Laptop: circa 4, PC con scheda grafica: 6–8. Da 5 corridori le immagini diventano automaticamente più piccole.",
   "rm": "Mintga currider è in agen maletg 3D sin il PC ed in agen video sur la rait. Laptop: circa 4, PC cun carta grafica: 6–8. A partir da 5 curriders daventan ils maletgs automaticamain pli pitschens."
  },
+ "Jemand mit Glocke": {
+  "en": "Someone with a bell",
+  "fr": "Quelqu'un avec une cloche",
+  "it": "Qualcuno con una campana",
+  "rm": "Insatgi cun ina stgella"
+ },
  "Jetzt aktualisieren": {
   "en": "Update now",
   "fr": "Mettre à jour maintenant",
@@ -8466,6 +9054,18 @@
   "fr": "Caméra réaliste : flou de mouvement (plus fort la nuit), couleurs du capteur, teinte rose NoIR le jour, exposition plus lente",
   "it": "Telecamera realistica: sfocatura di movimento (più forte di notte), colori del sensore, dominante rosa NoIR di giorno, esposizione più lenta",
   "rm": "Camera sco vaira: nunsclerezza da moviment (pli ferma da notg), colurs dal sensur, tun rosa NoIR dal di, exposiziun pli plauna"
+ },
+ "Kamera: das Fenster ist hell. Wärmebild: vor der Tür steht jemand.": {
+  "en": "Camera: the window is lit. Thermal: someone is standing in front of the door.",
+  "fr": "Caméra : la fenêtre est éclairée. Image thermique : quelqu'un se tient devant la porte.",
+  "it": "Telecamera: la finestra è illuminata. Immagine termica: qualcuno sta davanti alla porta.",
+  "rm": "Camera: la fanestra è clera. Maletg termic: davant l'esch stat insatgi."
+ },
+ "Kamera: niemand. Wärmebild: eine Gestalt, {d} m entfernt, langsam.": {
+  "en": "Camera: nobody. Thermal: a figure, {d} m away, slow.",
+  "fr": "Caméra : personne. Image thermique : une silhouette, à {d} m, lente.",
+  "it": "Telecamera: nessuno. Immagine termica: una figura, a {d} m, lenta.",
+  "rm": "Camera: nagin. Maletg termic: ina figura, {d} m davent, plaun."
  },
  "Kamerabild": {
   "en": "Camera picture",
@@ -8712,6 +9312,12 @@
   "fr": "pas de photo pour «%s»",
   "it": "nessuna foto per «%s»",
   "rm": "nagina foto per «%s»"
+ },
+ "Kein Geräusch mehr. Die Gestalt ist weg. Die Aufnahme endet mitten im Bild.": {
+  "en": "Not a sound any more. The figure is gone. The recording ends in the middle of the picture.",
+  "fr": "Plus aucun bruit. La silhouette a disparu. L'enregistrement s'arrête au milieu de l'image.",
+  "it": "Nessun rumore. La figura è sparita. La registrazione finisce a metà immagine.",
+  "rm": "Nagina canera pli. La figura è davent. La registraziun finescha amez il maletg."
  },
  "kein Netz": {
   "en": "",
@@ -9362,6 +9968,12 @@
   "it": "Breve (giorno e notte · circa 2½ min, per l’ottimizzazione automatica)",
   "rm": "Curt (di e notg · circa 2½ min., per l’optimaziun automatica)"
  },
+ "Kurz vor fünf: das Wärmebild zeigt sie direkt hinter dem Zelt. Du packst nichts mehr ein, du rennst – der Kegel der Stirnlampe springt über die Steine, hinunter zur Passstrasse.": {
+  "en": "Just before five: the thermal picture shows her right behind the tent. You pack nothing, you run – the cone of the headlamp jumps over the stones, down to the pass road.",
+  "fr": "Peu avant cinq heures : l'image thermique la montre juste derrière la tente. Tu n'emballes plus rien, tu cours – le faisceau de la lampe frontale saute sur les pierres, jusqu'à la route du col.",
+  "it": "Poco prima delle cinque: l'immagine termica la mostra proprio dietro la tenda. Non metti via niente, corri – il cono della lampada frontale salta sui sassi, giù fino alla strada del passo.",
+  "rm": "Curt avant las tschintg: il maletg termic la mussa directamain davos il tschalet. Ti na pachetteschas nagut pli, ti curras – il cuntun da la lampa da frunt siglia sur ils crappa, giu a la via dal pass."
+ },
  "Kurz – gut für Kinder und zum Ausprobieren.": {
   "en": "Short – good for children and for trying out.",
   "fr": "Court – bien pour les enfants et pour essayer.",
@@ -9560,6 +10172,12 @@
   "it": "Latifoglia",
   "rm": "Planta da feglia"
  },
+ "laut und oft, drei Jump-Scares pro Nacht": {
+  "en": "loud and often, three jump scares per night",
+  "fr": "fort et souvent, trois sursauts par nuit",
+  "it": "forte e spesso, tre spaventi improvvisi per notte",
+  "rm": "dad aut e savens, trais mumens da tschuffergna per notg"
+ },
  "Lautsprecher": {
   "en": "Loudspeaker",
   "fr": "Haut-parleur",
@@ -9590,6 +10208,12 @@
   "it": "",
   "rm": ""
  },
+ "Leeres Zelt": {
+  "en": "Empty tent",
+  "fr": "Tente vide",
+  "it": "Tenda vuota",
+  "rm": "Tschalet vid"
+ },
  "Legföhre": {
   "en": "Mountain pine",
   "fr": "Pin couché",
@@ -9607,6 +10231,12 @@
   "fr": "Dommage, faux – encore une fois.",
   "it": "Purtroppo sbagliato – ancora una volta.",
   "rm": "Donn, fallà – anc ina giada."
+ },
+ "leise und selten, keine Jump-Scares": {
+  "en": "quiet and rare, no jump scares",
+  "fr": "doux et rare, pas de sursauts",
+  "it": "piano e raro, nessuno spavento improvviso",
+  "rm": "quiet e rar, nagins mumens da tschuffergna"
  },
  "Leitplanke": {
   "en": "Guard rail",
@@ -9680,6 +10310,12 @@
   "it": "Luce e suono",
   "rm": "Glisch e tun"
  },
+ "Licht in der verlassenen Hütte": {
+  "en": "Light in the abandoned hut",
+  "fr": "Lumière dans la cabane abandonnée",
+  "it": "Luce nella baita abbandonata",
+  "rm": "Glisch en la chamona bandunada"
+ },
  "Licht lädt noch %d s": {
   "en": "Light still charging %d s",
   "fr": "Lumière se recharge encore %d s",
@@ -9697,6 +10333,12 @@
   "fr": "Cône de lumière d’une voiture maintenant (la nuit)",
   "it": "Cono di luce di un’auto ora (di notte)",
   "rm": "Cun da glisch d’in auto ussa (da notg)"
+ },
+ "Lieber nicht": {
+  "en": "Rather not",
+  "fr": "Plutôt pas",
+  "it": "Meglio di no",
+  "rm": "Plitost betg"
  },
  "Lieferroboter (keine Person)": {
   "en": "Delivery robot (no person)",
@@ -10288,6 +10930,12 @@
   "it": "Microonde",
   "rm": "Microundas"
  },
+ "Mindestens 4 Zeichen.": {
+  "en": "At least 4 characters.",
+  "fr": "Au moins 4 caractères.",
+  "it": "Almeno 4 caratteri.",
+  "rm": "Almain 4 caracters."
+ },
  "MINIGOLF": {
   "en": "MINIGOLF",
   "fr": "MINIGOLF",
@@ -10492,6 +11140,12 @@
   "it": "Mattina 07:00",
   "rm": "Damaun 07:00"
  },
+ "Morgen nach der {n}. Nacht": {
+  "en": "Morning after night {n}",
+  "fr": "Matin après la nuit {n}",
+  "it": "Mattino dopo la notte {n}",
+  "rm": "Damaun suenter la {n}. notg"
+ },
  "Morgendämmerung": {
   "en": "Dawn",
   "fr": "Aube",
@@ -10635,6 +11289,12 @@
   "fr": "MoveEye a perdu la connexion – test annulé.",
   "it": "MoveEye ha perso la connessione – test annullato.",
   "rm": "MoveEye ha pers la connexiun – test interrut."
+ },
+ "MoveEye hat in der Nacht {n} Aufnahmen gemacht – im Kamerabild ist niemand, nur im Wärmebild. Schau in MoveEyes Verlauf (Nachrichten) oder hier unter «Aufnahmen».": {
+  "en": "MoveEye made {n} recordings during the night – nobody in the camera picture, only in the thermal picture. Look in MoveEye's history (Messages) or here under «Recordings».",
+  "fr": "MoveEye a fait {n} enregistrements pendant la nuit – personne dans l'image de la caméra, seulement dans l'image thermique. Regarde dans l'historique de MoveEye (Messages) ou ici sous «Enregistrements».",
+  "it": "MoveEye ha fatto {n} registrazioni nella notte – nessuno nell'immagine della telecamera, solo in quella termica. Guarda nella cronologia di MoveEye (Messaggi) o qui sotto «Registrazioni».",
+  "rm": "MoveEye ha fatg {n} registraziuns la notg – en il maletg da la camera nagin, mo en il maletg termic. Guarda en il decurs da MoveEye (Messadis) u qua sut «Registraziuns»."
  },
  "MoveEye hat noch keine echten Bilder (Tagebuch, Alarmbilder)": {
   "en": "MoveEye has no real pictures yet (diary, alarm pictures)",
@@ -10829,6 +11489,18 @@
   "it": "MoveEye non era collegato",
   "rm": "MoveEye n’era betg collià"
  },
+ "MoveEye · Kamera": {
+  "en": "MoveEye · camera",
+  "fr": "MoveEye · caméra",
+  "it": "MoveEye · telecamera",
+  "rm": "MoveEye · camera"
+ },
+ "MoveEye · Wärmebild": {
+  "en": "MoveEye · thermal",
+  "fr": "MoveEye · image thermique",
+  "it": "MoveEye · immagine termica",
+  "rm": "MoveEye · maletg termic"
+ },
  "MoveEye – ": {
   "en": "",
   "fr": "",
@@ -10852,6 +11524,12 @@
   "fr": "Fixation de MoveEye au bivouac (vallée)",
   "it": "Supporto di MoveEye al posto per dormire (valle alpina)",
   "rm": "Tegnida da MoveEye tar la plazza da durmir (val)"
+ },
+ "MoveEye: Alarm – PIR Zelt. Im Kamerabild: niemand.": {
+  "en": "MoveEye: alarm – PIR tent. In the camera picture: nobody.",
+  "fr": "MoveEye : alarme – PIR tente. Dans l'image de la caméra : personne.",
+  "it": "MoveEye: allarme – PIR tenda. Nell'immagine della telecamera: nessuno.",
+  "rm": "MoveEye: alarm – PIR tschalet. En il maletg da la camera: nagin."
  },
  "MoveEye: noch keine Angaben (verbinden, MoveEye ab 2.95.97)": {
   "en": "MoveEye: no details yet (connect, MoveEye from 2.95.97)",
@@ -10894,6 +11572,12 @@
   "fr": "MoveEye : –",
   "it": "MoveEye: –",
   "rm": "MoveEye: –"
+ },
+ "MoveEyes letzte Aufnahme zeigt dein leeres Zelt – und daneben eine warme Gestalt, die dir nachschaut.": {
+  "en": "MoveEye's last recording shows your empty tent – and next to it a warm figure watching you go.",
+  "fr": "Le dernier enregistrement de MoveEye montre ta tente vide – et à côté une silhouette chaude qui te regarde partir.",
+  "it": "L'ultima registrazione di MoveEye mostra la tua tenda vuota – e accanto una figura calda che ti guarda andare via.",
+  "rm": "L'ultima registraziun da MoveEye mussa tes tschalet vid – e sperasvi ina figura chauda che ta guarda suenter."
  },
  "Mover": {
   "en": "Mover",
@@ -11098,6 +11782,12 @@
   "fr": "Nuit avec infrarouge, les voisins vont aux WC",
   "it": "Notte con infrarossi, i vicini vanno al WC",
   "rm": "Notg cun infracotschen, vischins van al WC"
+ },
+ "Nacht {n}": {
+  "en": "Night {n}",
+  "fr": "Nuit {n}",
+  "it": "Notte {n}",
+  "rm": "Notg {n}"
  },
  "Nacht, Infrarot an": {
   "en": "Night, infrared on",
@@ -11358,6 +12048,12 @@
   "it": "Nuovo posto per dormire:",
   "rm": "Nova plazza da durmir:"
  },
+ "Neues Passwort": {
+  "en": "New password",
+  "fr": "Nouveau mot de passe",
+  "it": "Nuova password",
+  "rm": "Nov pled-clav"
+ },
  "Nicht auf Menschen! Nur Tiere.": {
   "en": "Not at people! Only animals.",
   "fr": "Pas sur les gens ! Seulement les animaux.",
@@ -11496,6 +12192,12 @@
   "it": "Ancora nessun pacchetto creato.",
   "rm": "Anc nagin pachet fatg."
  },
+ "Noch kein Passwort festgelegt.": {
+  "en": "No password set yet.",
+  "fr": "Aucun mot de passe défini.",
+  "it": "Nessuna password impostata.",
+  "rm": "Anc nagin pled-clav fixà."
+ },
  "Noch kein Spielbericht – zuerst eine Runde mit MoveEye spielen.": {
   "en": "No game report yet – first play a round with MoveEye.",
   "fr": "Pas encore de rapport de jeu – jouer d’abord une manche avec MoveEye.",
@@ -11519,6 +12221,12 @@
   "fr": "Pas encore d’enregistrement.",
   "it": "Ancora nessuna registrazione.",
   "rm": "Anc nagina registraziun."
+ },
+ "Noch keine Aufnahmen.": {
+  "en": "No recordings yet.",
+  "fr": "Pas encore d'enregistrements.",
+  "it": "Ancora nessuna registrazione.",
+  "rm": "Anc naginas registraziuns."
  },
  "Noch keine Datei geladen. Tipp: in «Bausätze» z. B. bei Kenney ein Haus herunterladen und hier hineinziehen.": {
   "en": "No file loaded yet. Tip: in «Kits» e.g. download a house from Kenney and drag it in here.",
@@ -11603,6 +12311,12 @@
   "fr": "Encore personne.",
   "it": "Ancora nessuno.",
   "rm": "Anc nagin."
+ },
+ "Nochmals eingeben": {
+  "en": "Enter again",
+  "fr": "Saisir à nouveau",
+  "it": "Inserisci di nuovo",
+  "rm": "Endatar anc ina giada"
  },
  "Nochmals prüfen": {
   "en": "Check again",
@@ -11730,6 +12444,12 @@
   "it": "Ob em Schwarzseeli",
   "rm": "Ob em Schwarzseeli"
  },
+ "Oben am Pass steht das alte Hospiz. Im Winter 1936, in einer Sturmnacht, brannte im Fenster Licht, die Tür stand offen, die Glocke der Hospizwartin läutete – aber das Haus war leer. Was geschah, wurde nie geklärt.": {
+  "en": "Up at the pass stands the old hospice. In the winter of 1936, on a stormy night, a light burned in the window, the door stood open, the hospice keeper's bell was ringing – but the house was empty. What happened was never solved.",
+  "fr": "Là-haut au col se dresse le vieil hospice. En hiver 1936, une nuit de tempête, une lumière brûlait à la fenêtre, la porte était ouverte, la cloche de la gardienne sonnait – mais la maison était vide. Ce qui s'est passé n'a jamais été élucidé.",
+  "it": "Su al passo c'è il vecchio ospizio. Nell'inverno del 1936, in una notte di tempesta, alla finestra ardeva una luce, la porta era aperta, la campana della custode suonava – ma la casa era vuota. Cosa sia successo non è mai stato chiarito.",
+  "rm": "Si al pass stat il vegl ospizi. L'enviern 1936, en ina notg da stemprada, ardeva glisch en la fanestra, l'esch steva avert, la stgella da la guardiana tunava – ma la chasa era vida. Tge ch'è capità, n'è mai vegnì scleri."
+ },
  "Oberflächen (Holz, Kies, Rasen, Beton) für eigene Modelle in Blender.": {
   "en": "Surfaces (wood, gravel, lawn, concrete) for your own models in Blender.",
   "fr": "Surfaces (bois, gravier, gazon, béton) pour tes propres modèles dans Blender.",
@@ -11771,6 +12491,18 @@
   "fr": "Arbre fruitier (les fruits tombent au vent)",
   "it": "Albero da frutto (i frutti cadono col vento)",
   "rm": "Planta da fritgs (ils fritgs crodan en il vent)"
+ },
+ "offen": {
+  "en": "open",
+  "fr": "ouvert",
+  "it": "aperto",
+  "rm": "avert"
+ },
+ "Offen – manches bleibt ungeklärt": {
+  "en": "Open – some things stay unsolved",
+  "fr": "Ouverte – certaines choses restent inexpliquées",
+  "it": "Aperto – qualcosa resta irrisolto",
+  "rm": "Avert – insatge resta betg scleri"
  },
  "Offene Chipstüte": {
   "en": "Open crisp bag",
@@ -12036,6 +12768,18 @@
   "it": "Sentiero del passo",
   "rm": "Senda dal pass"
  },
+ "Passwort": {
+  "en": "Password",
+  "fr": "Mot de passe",
+  "it": "Password",
+  "rm": "Pled-clav"
+ },
+ "Passwortgeschützt – unheimlich, mit Schreckmomenten": {
+  "en": "Password protected – eerie, with jump scares",
+  "fr": "Protégé par mot de passe – inquiétant, avec des sursauts",
+  "it": "Protetto da password – inquietante, con spaventi improvvisi",
+  "rm": "Protegì cun pled-clav – stgarschaivel, cun mumens da tschuffergna"
+ },
  "Patrouille": {
   "en": "Patrol",
   "fr": "Patrouille",
@@ -12210,6 +12954,12 @@
   "fr": "Déclencher le PIR tente",
   "it": "Attivare il PIR tenda",
   "rm": "Activar il PIR tenda"
+ },
+ "PIR Zelt hat ausgelöst – Kamera: niemand. Wärmebild: eine Gestalt, {d} m vor MoveEye.": {
+  "en": "PIR tent went off – camera: nobody. Thermal: a figure, {d} m in front of MoveEye.",
+  "fr": "Le PIR de la tente s'est déclenché – caméra : personne. Image thermique : une silhouette, à {d} m devant MoveEye.",
+  "it": "Il PIR della tenda è scattato – telecamera: nessuno. Immagine termica: una figura, a {d} m davanti a MoveEye.",
+  "rm": "Il PIR dal tschalet è sa activà – camera: nagin. Maletg termic: ina figura, {d} m davant MoveEye."
  },
  "Piz Vadret": {
   "en": "Piz Vadret",
@@ -12992,6 +13742,12 @@
   "it": "Intorno a %s",
   "rm": "Enturn %s"
  },
+ "Rund ums Zelt sind Spuren im feuchten Boden. Dein Rucksack liegt einen Meter weiter weg als gestern Abend.": {
+  "en": "There are tracks in the damp ground all around the tent. Your backpack lies a metre further away than last night.",
+  "fr": "Il y a des traces dans le sol humide tout autour de la tente. Ton sac à dos est un mètre plus loin qu'hier soir.",
+  "it": "Tutt'intorno alla tenda ci sono tracce nel terreno umido. Il tuo zaino è un metro più in là di ieri sera.",
+  "rm": "Enturn il tschalet hai fastizs en il terren umid. Tia tastga è in meter pli lunsch davent che ier saira."
+ },
  "Runde": {
   "en": "Round",
   "fr": "Manche",
@@ -13528,6 +14284,12 @@
   "it": "Sbarra",
   "rm": "Barriera"
  },
+ "Schreck-Stärke": {
+  "en": "Scare strength",
+  "fr": "Intensité de la peur",
+  "it": "Intensità dello spavento",
+  "rm": "Fermezza da la tschuffergna"
+ },
  "Schritt 1 von 3 · Ort wählen (Schweiz)": {
   "en": "Step 1 of 3 · choose place (Switzerland)",
   "fr": "Étape 1 sur 3 · choisir le lieu (Suisse)",
@@ -13967,6 +14729,24 @@
   "fr": "Afficher le champ de vision des caméras (pour débutants)",
   "it": "Mostrare il campo visivo delle telecamere (per principianti)",
   "rm": "Mussar il champ da vista da las cameras (per principiants)"
+ },
+ "Sie kommt wieder": {
+  "en": "She comes back",
+  "fr": "Elle revient",
+  "it": "Ritorna",
+  "rm": "Ella returna"
+ },
+ "Sie schaut in die Kamera": {
+  "en": "She looks into the camera",
+  "fr": "Elle regarde la caméra",
+  "it": "Guarda nella telecamera",
+  "rm": "Ella guarda en la camera"
+ },
+ "Sie wird kalt": {
+  "en": "She grows cold",
+  "fr": "Elle refroidit",
+  "it": "Si raffredda",
+  "rm": "Ella daventa fraida"
  },
  "Sieg": {
   "en": "",
@@ -14971,6 +15751,12 @@
   "it": "Costruire la scena ✓",
   "rm": "Construir la scena ✓"
  },
+ "Szene gewechselt – der Horror-Modus ist beendet.": {
+  "en": "Scene changed – the horror mode has ended.",
+  "fr": "Scène changée – le mode horreur est terminé.",
+  "it": "Scena cambiata – la modalità horror è terminata.",
+  "rm": "Scena midada – il modus da horror è terminà."
+ },
  "Szene suchen …": {
   "en": "Search scene …",
   "fr": "Chercher une scène …",
@@ -15848,6 +16634,12 @@
   "it": "Girare intorno ad alberi, case e veicoli",
   "rm": "Ir enturn plantas, chasas e vehichels"
  },
+ "Um vier Uhr stand die Gestalt still neben dem Zelt, lange. Dann läutete oben beim Hospiz die Glocke, und im Wärmebild wurde sie langsam kalt, bis sie verschwand.": {
+  "en": "At four o'clock the figure stood still beside the tent, for a long time. Then up at the hospice the bell rang, and in the thermal picture she slowly grew cold until she vanished.",
+  "fr": "À quatre heures, la silhouette est restée immobile près de la tente, longtemps. Puis, là-haut à l'hospice, la cloche a sonné, et dans l'image thermique elle a lentement refroidi jusqu'à disparaître.",
+  "it": "Alle quattro la figura è rimasta ferma accanto alla tenda, a lungo. Poi su all'ospizio ha suonato la campana, e nell'immagine termica si è raffreddata lentamente fino a scomparire.",
+  "rm": "Allas quatter steva la figura salda sper il tschalet, ditg. Lura ha tunà si tar l'ospizi la stgella, ed en il maletg termic è ella daventada plaunsieu fraida, fin ch'ella è svanida."
+ },
  "Umgebung": {
   "en": "Surroundings",
   "fr": "Environnement",
@@ -16496,6 +17288,18 @@
   "it": "Da soli",
   "rm": "Da sasez"
  },
+ "Von vorne": {
+  "en": "From the start",
+  "fr": "Depuis le début",
+  "it": "Dall'inizio",
+  "rm": "Da l'entschatta"
+ },
+ "Vor dem Zelt steht eine alte Sturmlaterne. Sie ist noch warm. Eingeritzt: «B. 1936 · Hospiz». Der Proviantsack liegt am Zelteingang.": {
+  "en": "In front of the tent stands an old storm lantern. It is still warm. Scratched into it: «B. 1936 · Hospiz». The food bag lies at the tent entrance.",
+  "fr": "Devant la tente se trouve une vieille lanterne-tempête. Elle est encore chaude. Gravé dessus : «B. 1936 · Hospiz». Le sac de provisions est à l'entrée de la tente.",
+  "it": "Davanti alla tenda c'è una vecchia lanterna antivento. È ancora calda. Inciso: «B. 1936 · Hospiz». Il sacco delle provviste è all'ingresso della tenda.",
+  "rm": "Davant il tschalet stat ina veglia lanterna da stemprada. Ella è anc chauda. Engravà: «B. 1936 · Hospiz». Il satg da provisiun giascha a l'entrada dal tschalet."
+ },
  "Vorbereitung: Kopf zur Mitte …": {
   "en": "Preparing: head to the centre …",
   "fr": "Préparation : tête au centre …",
@@ -16676,6 +17480,12 @@
   "it": "aspetta MoveEye …",
   "rm": "spetga MoveEye …"
  },
+ "Was im Hospiz geschah, bleibt ungeklärt.": {
+  "en": "What happened at the hospice remains unsolved.",
+  "fr": "Ce qui s'est passé à l'hospice reste inexpliqué.",
+  "it": "Cosa sia successo all'ospizio resta irrisolto.",
+  "rm": "Tge ch'è capità en l'ospizi, resta betg scleri."
+ },
  "Was ist das Ziel?": {
   "en": "What is the goal?",
   "fr": "Quel est le but ?",
@@ -16693,6 +17503,18 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Was machst du mit der Laterne?": {
+  "en": "What do you do with the lantern?",
+  "fr": "Que fais-tu de la lanterne ?",
+  "it": "Cosa fai con la lanterna?",
+  "rm": "Tge fas ti cun la lanterna?"
+ },
+ "Was machst du?": {
+  "en": "What do you do?",
+  "fr": "Que fais-tu ?",
+  "it": "Cosa fai?",
+  "rm": "Tge fas ti?"
  },
  "Was MoveEye sieht (im Bedienfeld)": {
   "en": "What MoveEye sees (in the control panel)",
@@ -16903,6 +17725,12 @@
   "fr": "Ciel dégagé : beaucoup d'étoiles",
   "it": "Cielo ampio: molte stelle",
   "rm": "Tschiel lad: bleras stailas"
+ },
+ "Weiter mit Nacht {n}": {
+  "en": "Continue with night {n}",
+  "fr": "Continuer avec la nuit {n}",
+  "it": "Continua con la notte {n}",
+  "rm": "Cuntinuar cun la notg {n}"
  },
  "Weiter ›": {
   "en": "Next ›",
@@ -17169,6 +17997,12 @@
   "fr": "Quelle difficulté ?",
   "it": "Quanto difficile?",
   "rm": "Co grev?"
+ },
+ "Wie soll die Geschichte enden?": {
+  "en": "How should the story end?",
+  "fr": "Comment l'histoire doit-elle finir ?",
+  "it": "Come deve finire la storia?",
+  "rm": "Co duai l'istorgia finir?"
  },
  "Wie viel ist %d × %d?": {
   "en": "What is %d × %d?",
@@ -17945,6 +18779,12 @@
   "it": "",
   "rm": ""
  },
+ "Zu viele Versuche – bitte {s} s warten.": {
+  "en": "Too many attempts – please wait {s} s.",
+  "fr": "Trop d'essais – merci d'attendre {s} s.",
+  "it": "Troppi tentativi – attendi {s} s.",
+  "rm": "Memia blers emprovs – spetga per plaschair {s} s."
+ },
  "zu viele Weiterleitungen": {
   "en": "too many redirects",
   "fr": "trop de redirections",
@@ -18029,6 +18869,12 @@
   "it": "Alla testa",
   "rm": "Tar il chau"
  },
+ "Zum Morgen springen": {
+  "en": "Skip to the morning",
+  "fr": "Passer au matin",
+  "it": "Salta al mattino",
+  "rm": "Siglir a la damaun"
+ },
  "Zum Ziel schleichen": {
   "en": "Sneak to the goal",
   "fr": "Se faufiler jusqu’à l’arrivée",
@@ -18041,6 +18887,18 @@
   "it": "",
   "rm": ""
  },
+ "Zur nächsten Nacht": {
+  "en": "To the next night",
+  "fr": "Vers la nuit suivante",
+  "it": "Alla notte successiva",
+  "rm": "A la proxima notg"
+ },
+ "Zurück": {
+  "en": "Back",
+  "fr": "Retour",
+  "it": "Indietro",
+  "rm": "Enavos"
+ },
  "Zurück (←)": {
   "en": "",
   "fr": "",
@@ -18052,6 +18910,12 @@
   "fr": "Retour au début",
   "it": "Torna all’inizio",
   "rm": "Enavos a l’entschatta"
+ },
+ "Zurück in die Hütte bringen": {
+  "en": "Bring it back to the hut",
+  "fr": "La rapporter dans la cabane",
+  "it": "Riportarla nella baita",
+  "rm": "La purtar enavos en la chamona"
  },
  "Zurück zu MoveEye": {
   "en": "Back to MoveEye",
@@ -18107,6 +18971,12 @@
   "it": "Telecamera spettatore: sorvola il campo da sola",
   "rm": "Camera d’aspectaturs: svola sezza sur il champ da gieu"
  },
+ "zwei Jump-Scares pro Nacht": {
+  "en": "two jump scares per night",
+  "fr": "deux sursauts par nuit",
+  "it": "due spaventi improvvisi per notte",
+  "rm": "dus mumens da tschuffergna per notg"
+ },
  "Zwei Personen dicht beieinander": {
   "en": "Two people close together",
   "fr": "Deux personnes très proches",
@@ -18118,6 +18988,12 @@
   "fr": "Deux personnes se croisent",
   "it": "Due persone si incrociano",
   "rm": "Duas persunas sa cruschan"
+ },
+ "Zweite Nacht – Das Licht im Fenster": {
+  "en": "Second night – The light in the window",
+  "fr": "Deuxième nuit – La lumière à la fenêtre",
+  "it": "Seconda notte – La luce alla finestra",
+  "rm": "Segunda notg – La glisch en la fanestra"
  },
  "Zweites MoveEye-Gerät in der Welt (eigene Adresse: Port des Simulators + 20, meist 8785)": {
   "en": "Second MoveEye device in the world (own address: simulator port + 20, usually 8785)",
@@ -18136,6 +19012,12 @@
   "fr": "Compte dans le classement de la soirée (carte Jeu). Points seulement entre 4 et 25 m de l’appareil.",
   "it": "Conta nella classifica della serata (scheda Gioco). Punti solo tra 4 e 25 m dall’apparecchio.",
   "rm": "Quinta en la rangaziun da la saira (carta Gieu). Puncts dat i mo tranter 4 e 25 m da l’apparat."
+ },
+ "{d} m. Kamera: Nebel. Wärmebild: die Gestalt steht still und schaut direkt zu MoveEye.": {
+  "en": "{d} m. Camera: fog. Thermal: the figure stands still and looks straight at MoveEye.",
+  "fr": "{d} m. Caméra : brouillard. Image thermique : la silhouette est immobile et regarde droit vers MoveEye.",
+  "it": "{d} m. Telecamera: nebbia. Immagine termica: la figura sta ferma e guarda dritto verso MoveEye.",
+  "rm": "{d} m. Camera: tschajera. Maletg termic: la figura stat salda e guarda directamain vers MoveEye."
  },
  "«%s» geladen (%s).": {
   "en": "«%s» loaded (%s).",
@@ -18160,6 +19042,12 @@
   "fr": "«%s» introuvable.",
   "it": "«%s» non trovato.",
   "rm": "«%s» betg chattà."
+ },
+ "«18. Januar 1936. Sturm. Zwei Wanderer über den Pass geholt. Die Glocke hilft im Nebel. Wer sie hört, soll ihr folgen. – B.»": {
+  "en": "«18 January 1936. Storm. Brought two hikers over the pass. The bell helps in the fog. Whoever hears it should follow it. – B.»",
+  "fr": "«18 janvier 1936. Tempête. Ramené deux randonneurs par le col. La cloche aide dans le brouillard. Qui l'entend doit la suivre. – B.»",
+  "it": "«18 gennaio 1936. Tempesta. Portati due viandanti oltre il passo. La campana aiuta nella nebbia. Chi la sente la segua. – B.»",
+  "rm": "«18 da schaner 1936. Stemprada. Manà dus viandants sur il pass. La stgella gida en la tschajera. Tgi che l'auda, duai la suandar. – B.»"
  },
  "«An MoveEye senden» ist aus": {
   "en": "",

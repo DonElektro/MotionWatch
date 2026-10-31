@@ -1,18 +1,19 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 3342 (Stellen: 4842)
-Übersetzt: en 3105, fr 3104, it 3104, rm 3104
+Texte gesamt: 3490 (Stellen: 5009)
+Übersetzt: en 3252, fr 3251, it 3251, rm 3251
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 340 Stellen
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 343 Stellen
 Nicht mehr im Code (noch in texte.json): 22
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 42 Stellen in wizpics.gd 16, wordmark.gd 10, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 11636, schlüssel 7759, keine Wörter 6133, index 3841, technisch 1429, doc 881, einheit 131, englisch 59, log 56, pfad 54, html 42, klasse 22
+Übersprungen (Grund: Anzahl): kennung 11830, schlüssel 7937, keine Wörter 6241, index 3894, technisch 1444, doc 899, einheit 133, englisch 59, log 57, pfad 54, html 42, klasse 22
 
 Pro Datei (Texte / davon dynamische Stellen):
-  main.gd                  642    29
+  main.gd                  644    29
   gamewiz.gd               213    14
   game.gd                  211    32
   bergtal.gd               199     5
+  bergtal_horror.gd        154     3
   bib_objekte.gd           108     0
   ferienpark.gd             89     0
   templates.gd              88     6
@@ -34,10 +35,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamerules.gd              45     4
   scenes.gd                 42     0
   protokoll.gd              42    16
-  inventar.gd               41     4
   localplay.gd              41    13
-  symbole.gd                40     1
+  inventar.gd               41     4
   gamecompare.gd            40     6
+  symbole.gd                40     1
   simint.gd                 39     4
   kitrain.gd                39     9
   gamejaeger.gd             38     1
@@ -96,6 +97,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   minimap.gd                 1     0
 
 Unsicher:
+  'PIR Zelt': Sensorname an MoveEye (/info) – nicht umhüllen
   'Dieselbe Runde zweimal: zuerst bewacht ein Mensch (Wächter mit Auslöser – oder der Bot-Wächter), dann die echte Erkennung von MoveEye – mit genau denselben Wegen der Schleicher und denselben Kamerabildern. Am Schluss: Wer hat mehr erwischt? Was der Mensch sah und MoveEye verpasste, wird ein Lernbild und ein Prüfstand-Weg.': rm: Formulierung prüfen
   'Nachts: lass den Lichtkegel über den Platz wandern («Schwenken»).': rm: Sguazzar = schwenken?
   'Er schwebt auf Kopfhöhe. «Steigen» lässt ihn hochsteigen.': rm: Steigen
@@ -114,7 +116,6 @@ Unsicher:
   'MoveEye Sim · 3D %s': Gerätename an MoveEye (/info) – nicht umhüllen
   'Head camera (NoIR)': Kameraname an MoveEye (/info) – nicht umhüllen
   'Wohnwagen-Tür': Sensorname an MoveEye (/info) – nicht umhüllen
-  'PIR Zelt': Sensorname an MoveEye (/info) – nicht umhüllen
   'Gas Wohnwagen': Sensorname an MoveEye (/info) – nicht umhüllen
   'Lockvogel erlaubt (lockt die Kamera weg, Teampunkte)': rm: Lockvogel
   '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n': technisch (HTTP) – nicht umhüllen
@@ -135,8 +136,12 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:228  'Aussicht: '
   bergtal.gd:237  'Schlafplatz: '
   bergtal.gd:239  'Aussicht: '
-  bergtal.gd:2103  'Schlafplatz: '
-  bergtal.gd:2105  'Aussicht: '
+  bergtal.gd:2108  'Schlafplatz: '
+  bergtal.gd:2110  'Aussicht: '
+  bergtal_horror.gd:40  'offen'
+  bergtal_horror.gd:58  'offen'
+  bergtal_horror.gd:1087  'Fertig'
+  tour.gd:187  'Fertig'
   dataset.gd:54  'Spiel: '
   dataset.gd:319  ' · Vielfalt hoch'
   dataset.gd:434  ' · alte KI-Daten gelöscht: %d (%.0f MB)'
@@ -182,35 +187,35 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   karte.gd:503  'Dazu kommen: '
   karte.gd:511  'ja'
   karte.gd:511  'keine'
-  main.gd:1321  '  %.0f Mbit/s'
-  main.gd:1994  ' (von MoveEye)'
-  main.gd:2027  'Der Simulator ist belegt: '
-  main.gd:2824  'aus'
-  main.gd:2824  'ein'
-  main.gd:2901  'Sabotage-Test: '
-  main.gd:2901  'aus'
-  main.gd:2955  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:2958  '\n🚨 Bewacht und weg: '
-  main.gd:3695  'keine'
-  main.gd:3721  'Wächter an MoveEye: '
-  main.gd:4310  'Dein Platz: '
-  main.gd:4531  ' · schaut nur zu: '
-  main.gd:4534  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:4535  ' · Update: '
-  main.gd:4865  'Blinde Flecken: '
-  main.gd:5499  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:5804  'Autostart: '
-  main.gd:5815  'Autologon: '
-  main.gd:5976  'Karte öffnen: '
-  main.gd:6122  'Echt-Abgleich: '
-  main.gd:6129  'Trainingspaket: '
-  main.gd:6138  ' · %d offen · %.1f MB'
-  main.gd:6138  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6147  'Verbindung · '
-  main.gd:6147  'aus'
-  main.gd:6151  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6151  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6154  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:1324  '  %.0f Mbit/s'
+  main.gd:1999  ' (von MoveEye)'
+  main.gd:2032  'Der Simulator ist belegt: '
+  main.gd:2831  'aus'
+  main.gd:2831  'ein'
+  main.gd:2908  'Sabotage-Test: '
+  main.gd:2908  'aus'
+  main.gd:2962  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:2965  '\n🚨 Bewacht und weg: '
+  main.gd:3703  'keine'
+  main.gd:3729  'Wächter an MoveEye: '
+  main.gd:4320  'Dein Platz: '
+  main.gd:4541  ' · schaut nur zu: '
+  main.gd:4544  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:4545  ' · Update: '
+  main.gd:4875  'Blinde Flecken: '
+  main.gd:5509  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:5814  'Autostart: '
+  main.gd:5825  'Autologon: '
+  main.gd:5986  'Karte öffnen: '
+  main.gd:6132  'Echt-Abgleich: '
+  main.gd:6139  'Trainingspaket: '
+  main.gd:6148  ' · %d offen · %.1f MB'
+  main.gd:6148  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6157  'Verbindung · '
+  main.gd:6157  'aus'
+  main.gd:6161  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6161  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6164  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:446  ' (automatisch von oben)'
   explore.gd:446  ' · schnell'
   feedback.gd:266  ' · TESTMODUS: geht nur an '
@@ -403,7 +408,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   mwpc.gd:336  'Die Pakete liessen sich nicht installieren: '
   mwpc.gd:361  'Unerwartete Datei in versions.json: '
   symbole.gd:26  'Aus'
-  net.gd:317  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
+  net.gd:324  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
   news.gd:88  'MOVEEYE SIM · '
   padroles.gd:129  'Spiel am PC – '
   padtest.gd:44  '  roh %.2f / %.2f'
@@ -464,7 +469,6 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   testrun.gd:738  ' (nur Wärmebild)'
   testrun.gd:863  ' (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).'
   testrun.gd:914  'FALSCH: '
-  tour.gd:187  'Fertig'
   update.gd:95  '\n\n(Im Godot-Editor wird nicht aktualisiert.)'
   update.gd:99  '\n\nDer Simulator startet nach dem Update neu. Läuft MoveEye auf diesem PC, danach bitte wieder starten.'
   update.gd:110  '\n\nWird in %d s automatisch installiert, danach startet der Simulator neu.'
