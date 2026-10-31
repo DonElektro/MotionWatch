@@ -115,6 +115,10 @@ const ANIMALS := {
 	"lynx": [38.4, 0.28, 0.45, 1.0],
 	"bird": [41.0, 0.25, 0.50, 0.2],       # Vögel: Federn isolieren sehr gut
 	"bat": [37.0, 0.40, 0.50, 0.08],
+	# Zimmertiere (zimmertiere.gd, Paket «Erlebniswelt: mehr Tiere drinnen», 31.10.2026):
+	"hamster": [37.5, 0.42, 0.55, 0.16],   # Goldhamster: Kern 37–38 °C [CR08], kurzes Fell; 13–18 cm lang
+	"budgie": [41.5, 0.25, 0.50, 0.18],    # Wellensittich: Vogel-Kern ~41 °C [CR08], Federn isolieren; 18 cm mit Schwanz
+	"spider": [0.0, 0.0, 0.0, 0.018],      # Spinne: wechselwarm (kein eigener Kern) -> Oberfläche = Luft, siehe animal()
 }
 const FUR_SUN := 6.0             # dunkles Fell in voller Sonne: einige K wärmer [Mc07]
 
@@ -123,6 +127,8 @@ static func animal(kind: String, amb: float, part := "body", sun := 0.0) -> floa
 	"""Oberfläche eines Tiers: part = body | head | legs | eyes; sun 0 … 1 (volle Sonne)"""
 	var a: Array = ANIMALS.get(kind, ANIMALS["fox"])
 	var core: float = a[0]
+	if core <= 0.0:                # wechselwarm (Spinne, Insekten, Schnecke): so warm wie die Luft - im Wärmebild unsichtbar
+		return amb
 	match part:
 		"eyes":
 			return core - 2.0
@@ -180,6 +186,7 @@ const FIXED := {
 	"pi_case": ["+", 12.0],             # MoveEye selbst (Pi 5 im Gehäuse)
 	"tent_person": ["+", 1.4],          # Zeltwand über einer schlafenden Person (Schlafsack): ein schwacher Fleck [Mc07-ähnlich]
 	"bed_blanket_person": [25.0],       # Bettdecke über einer schlafenden Person im Zimmer (~20 °C)
+	"room_air": [21.0],                 # geheiztes Zimmer (Schweiz, Winterhalbjahr 20–22 °C; SIA 180: Wohnräume ~20–21 °C) - zimmertiere.gd
 	"window_glass_e": [0.85],           # Emissionsgrad von Glas (8–14 µm): Glas ist für Wärmestrahlung undurchsichtig
 	"window_plastic_e": [0.90],         # Acryl / Polycarbonat (Wohnwagenfenster): ebenso undurchsichtig
 }
