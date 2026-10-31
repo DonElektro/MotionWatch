@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 03:33",
+ "generated": "2026-10-31 03:42",
  "versions": [
   {
-   "version": "2.98.55",
-   "file": "webcam_bewegung_2_98_55.py",
+   "version": "2.98.56",
+   "file": "webcam_bewegung_2_98_56.py",
    "url": "",
-   "sha256": "722f92136697c2480cc4910f09804b77bfc0ff443910174e609d3595dd35003a",
-   "date": "2026-10-31 03:32",
-   "notes": "«MoveEye Sim · Basis» (alter Python-Simulator) nur noch mit dem neuen Schalter «Basis-Simulator anzeigen» (Simulator, Experte, Standard aus): ohne ihn kein Download, keine Knöpfe zum Installieren / Starten auf dem Pi (bestehende Installationen bleiben). Simulator 3D-4.25: Grafik-Stufe «Lite» für den Raspberry Pi 5 und «Leistung» in der Selbstdiagnose.",
-   "sig": "066c92a183b54f6d04f1721bfd6b53b5c2d1d2db684239b3602cdb04914a3c88e94427e75c2a628546bff06ed550ef4bf942649e2f0c65c2a90c59667ab3f001"
+   "sha256": "94b54832b5836d2defbaa0fff653c9ec16eea7949b5637c85256d348ec041883",
+   "date": "2026-10-31 03:42",
+   "notes": "Sim-Kompakt: hat es neben dem Hauptbild Platz (PC, Tablet quer), steht das zweite Bild (Simulator bzw. Kamera) rechts daneben statt darüber – nichts wird mehr verdeckt; am Handy hochkant bleibt Bild im Bild. Das Simulator-Bild wächst nicht mehr mit dem Zoom «Grösse» aus seinem Platz.",
+   "sig": "955a9d2041106d389f9a62806d96d9f70d6c10e74772245d0a349a9d5d8473a635767be8aca56b98dd7e8360c9b0c2d60f67e41499d79873ba32c25400fa580a"
   },
   {
    "version": "2.97.1",
