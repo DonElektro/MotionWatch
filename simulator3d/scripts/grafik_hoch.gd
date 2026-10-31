@@ -17,11 +17,10 @@ extends Node
 ##   1. _ready: nach _vm_needs_angle:   if GrafikHoch.start_check(self, args): return      (Neustart mit Forward+)
 ##   2. _ready: nach _load_settings:    hoch = GrafikHoch.new(); hoch.main = self; add_child(hoch)
 ##   3. Ende von _apply_quality():      if hoch != null: hoch.after_quality()
-##   4. Bedienung: add_control("select", "grafik_stufe", …) in «System › Grafik» (ein Auswahlfeld Normal / Hoch)
+##   4. Bedienung: EIN Auswahlfeld «Grafik-Modus» (quality.gd MODES: Automatisch / Lite / Normal / Hoch) in «System › Grafik»;
+##      main.set_grafik_mode("hoch") ruft set_stufe("hoch"), jede andere Wahl set_stufe(...) = Normal. Feinheiten unter «Experte».
 ##   5. _control: {"action": "grafik", "do": "info" | "set" (value) | "perf"}  (Tests, Messungen)
-## Zusammenführen mit quality.gd («Grafik-Modus» Automatisch / Voll / Lite): Vorschlag für den Koordinator – ein einziges
-## Auswahlfeld «Grafik-Modus»: Automatisch · Lite · Normal (= Voll) · Hoch; set_grafik_mode("high") ruft hoch.set_stufe("hoch"),
-## jede andere Wahl hoch.set_stufe("normal"). _lite() unten fragt dieselbe Meta «lite» ab wie Quality.lite().
+## _lite() unten fragt dieselbe Meta «lite» ab wie Quality.lite() (quality.gd).
 ##
 ## Einstellung: eigene kleine Datei user://grafik_stufe.json (nicht in KEEP von main.gd, damit kein Konflikt entsteht).
 ## Den Himmel baut das Licht-&-Nacht-Paket (sky.gdshader: Sonne, Mond, Sterne) – hier wird der Himmel NICHT ersetzt;
@@ -66,6 +65,12 @@ static func forward_plus() -> bool:
 	return RenderingServer.get_rendering_device() != null
 
 
+static func _arg_hoch(args: Array) -> bool:
+	"""--hoch oder --grafik hoch auf der Befehlszeile"""
+	var gi := args.find("--grafik")
+	return "--hoch" in args or (gi >= 0 and gi + 1 < args.size() and str(args[gi + 1]).to_lower() == "hoch")
+
+
 static func _read() -> Dictionary:
 	if not FileAccess.file_exists(FILE):
 		return {}
@@ -83,13 +88,16 @@ static func start_check(m, args: Array) -> bool:
 	"""beim Start (main._ready, gleich nach _vm_needs_angle): «Hoch» gespeichert, aber OpenGL läuft -> einmal mit Forward+
 	neu starten. Ist der letzte Versuch nicht angekommen (Vulkan geht nicht, Fenster ging nie auf), bleibt es bei Normal."""
 	var d := _read()
-	var want := str(d.get("stufe", "normal")) == "hoch" or "--hoch" in args
+	var want := str(d.get("stufe", "normal")) == "hoch" or _arg_hoch(args)
+	var gi := args.find("--grafik")
+	if gi >= 0 and gi + 1 < args.size() and str(args[gi + 1]).to_lower() != "hoch":
+		want = false                                      # Tests: --grafik lite | normal | auto = diesmal ohne Hoch
 	if forward_plus():
 		if bool(d.get("pending", false)):
 			d["pending"] = false
 			_write(d)
 		return false
-	if not want or "--no-hoch" in args or _lite() or ("--quality" in args and not "--hoch" in args):
+	if not want or "--no-hoch" in args or _lite() or ("--quality" in args and not _arg_hoch(args)):
 		return false
 	if bool(d.get("pending", false)) or FLAG in args:
 		d["stufe"] = "normal"                         # Forward+ ging beim letzten Mal nicht: nicht nochmals versuchen
@@ -123,8 +131,8 @@ static func _restart(m, fwd: bool, early := false) -> void:
 	var ua := OS.get_cmdline_user_args()
 	var i := 0
 	while i < ua.size():
-		if ua[i] == "--old-pid":
-			i += 2                                      # the pid of an older restart: not again
+		if ua[i] == "--old-pid" or ua[i] == "--grafik":
+			i += 2                                      # the pid of an older restart / a test choice: not again
 			continue
 		if ua[i] != FLAG and ua[i] != "--hoch":
 			a.append(ua[i])
@@ -142,7 +150,7 @@ static func _restart(m, fwd: bool, early := false) -> void:
 # ---- Bedienung --------------------------------------------------------------------------------------------------------
 func _ready() -> void:
 	var d := _read()
-	stufe = "hoch" if str(d.get("stufe", "normal")) == "hoch" or "--hoch" in OS.get_cmdline_user_args() else "normal"
+	stufe = "hoch" if str(d.get("stufe", "normal")) == "hoch" or _arg_hoch(Array(OS.get_cmdline_user_args())) else "normal"
 	dof_free = bool(d.get("dof", false))
 	if bool(d.get("failed", false)):
 		d.erase("failed")

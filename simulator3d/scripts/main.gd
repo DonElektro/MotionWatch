@@ -419,6 +419,10 @@ func _ready() -> void:
 	hoch = GrafikHoch.new()                    # F1 «Grafikstufe Hoch» (own setting file user://grafik_stufe.json)
 	hoch.main = self
 	add_child(hoch)
+	if hoch.stufe == "hoch":                   # the file of grafik_hoch.gd decides (it falls back to Normal if Vulkan failed)
+		grafik_mode = "hoch"
+	elif grafik_mode == "hoch":
+		grafik_mode = "normal"
 	home_load()                                # 3D-3.73: «Mein Zuhause»
 	realism = preload("res://scripts/realism.gd").new()      # 3D-3.94: cameras like real ones (and like the real one of MoveEye)
 	realism.main = self
@@ -587,9 +591,11 @@ func _ready() -> void:
 	_apply_quality()
 	if view_scale < 1.0:
 		set_view_scale(view_scale)
-	var gi := args.find("--grafik")                   # 3D-4.25: --grafik auto | lite | normal (for tests)
+	var gi := args.find("--grafik")                   # 3D-4.25: --grafik auto | lite | normal | hoch (for tests)
 	if gi >= 0 and gi + 1 < args.size():
 		grafik_mode = Quality.mode_id(args[gi + 1])
+		if hoch != null and grafik_mode != "hoch":
+			hoch.stufe = "normal"                       # only for this start (the file stays)
 	_lite_t0 = now()
 	lite_update()
 	_calibrate_thermal()
@@ -3416,7 +3422,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"game_night": ["Spiel", "Extras"], "game_events": ["Spiel", "Extras"], "game_checkpoints": ["Spiel", "Extras"], "game_tasks": ["Spiel", "Extras"], "game_autohandicap": ["Spiel", "Extras"],
 		"game_board_reset": ["Spiel", "Extras"], "spectate_now": ["Spiel", "Anzeige"], "game_noise": ["Spiel", "Regeln"],
 		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"], "game_max": ["Spiel", "Runde"],
-		"grafik_mode": ["System", "Grafik"], "quality": ["System", "Grafik"], "view_scale": ["System", "Grafik"], "win_fps": ["System", "Grafik"], "auto_perf": ["System", "Grafik"], "map_on": ["System", "Ansicht"], "live_on": ["System", "Ansicht"], "live_cam": ["System", "Ansicht"], "live_size": ["System", "Ansicht"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
+		"grafik_mode": ["System", "Grafik"], "quality": ["System", "Grafik"], "grafik_dof": ["System", "Grafik"], "view_scale": ["System", "Grafik"], "win_fps": ["System", "Grafik"], "auto_perf": ["System", "Grafik"], "map_on": ["System", "Ansicht"], "live_on": ["System", "Ansicht"], "live_cam": ["System", "Ansicht"], "live_size": ["System", "Ansicht"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
 		"autostart_min": ["System", "Start mit dem PC"], "autostart_mwpc": ["System", "Start mit dem PC"], "autostart_lock": ["System", "Start mit dem PC"],
 		"cond_glare": ["Kamerabild", "Schwierige Bedingungen"], "cond_drops": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_web": ["Kamerabild", "Schwierige Bedingungen"], "cond_headlights": ["Kamerabild", "Schwierige Bedingungen"],
@@ -3821,19 +3827,18 @@ func _register_controls() -> void:
 	add_control("toggle", "kids_laser", "Kinder-Modus: Laser-Treffer im Spiel", func(): return kids_laser, func(v): kids_laser = v, "Kinder-Modus")
 	add_control("toggle", "kids_sound", "Kinder-Modus: Töne bei den Knöpfen", func(): return kids_sound, func(v): kids_sound = v, "Kinder-Modus")
 	add_control("toggle", "kids_ask", "Kinder-Modus: zum Verlassen eine Rechenaufgabe stellen (aus = ein Klick auf «Erwachsene» genügt)", func(): return kids_ask, func(v): kids_ask = bool(v), "Kinder-Modus")
+	# F1 (Konzept-Wunsch): EINE Wahl «Grafik-Modus» Automatisch / Lite / Normal / Hoch; die Feinheiten (Grafik-Details,
+	# «Automatisch leichter», Tiefenschärfe) nur unter «Experte»
 	add_control("select", "grafik_mode", "Grafik-Modus", func(): return grafik_mode, func(v): set_grafik_mode(str(v)), "Grafik",
-			{"options": Quality.MODES})
-	add_control("select", "quality", "Grafik", func(): return quality, func(v): _set_quality(v), "Grafik",
-			{"options": [["simple", "einfach (schnell)"], ["medium", "mittel"], ["nice", "schön (Schatten, Leuchten, Wolken)"],
+			{"options": Quality.MODES, "tip": "Hoch: Licht prallt von Flächen ab, Dunst, weiche Schatten, Spiegelungen auf Wasser und nassen Flächen, bessere Oberflächen. Braucht eine gute Grafikkarte (Vulkan); der Simulator startet dafür einmal neu."})
+	add_control("select", "quality", "Grafik-Details (Schatten, Leuchten, Wolken)", func(): return quality, func(v): _set_quality(v), "Grafik",
+			{"expert": true, "options": [["simple", "einfach (schnell)"], ["medium", "mittel"], ["nice", "schön (Schatten, Leuchten, Wolken)"],
 						 ["ultra", "ultra (für starke Grafikkarten; mit Vulkan noch mehr Effekte)"]]})
-	add_control("select", "grafik_stufe", "Grafikstufe", func(): return hoch.stufe, func(v): hoch.set_stufe(str(v)), "System",
-			{"sub": "Grafik", "options": hoch.STUFEN, "tip": "Hoch: Licht prallt von Flächen ab, Dunst, weiche Schatten, Spiegelungen auf Wasser und nassen Flächen, bessere Oberflächen. Braucht eine gute Grafikkarte (Vulkan); der Simulator startet dafür einmal neu."})
-	add_control("toggle", "grafik_dof", "Hoch: Tiefenschärfe in der freien Ansicht (die Kamerabilder für MoveEye bleiben scharf)", func(): return hoch.dof_free, func(v): hoch.set_dof(bool(v)), "System",
-			{"sub": "Grafik", "expert": true})
+	add_control("toggle", "grafik_dof", "Hoch: Tiefenschärfe in der freien Ansicht (die Kamerabilder für MoveEye bleiben scharf)", func(): return hoch.dof_free, func(v): hoch.set_dof(bool(v)), "Grafik", ex)
 	add_control("slider", "view_scale", "Schärfe der Ansicht im Fenster (weniger = schneller; die Bilder für MoveEye bleiben scharf)", func(): return view_scale, func(v): set_view_scale(float(v)), "Grafik", {"min": 0.4, "max": 1.0, "step": 0.05, "unit": "×"})
 	add_control("select", "win_fps", "Bilder pro Sekunde im Fenster", func(): return str(win_fps), func(v): win_fps = int(v); _perf_orig.erase("win_fps"); _settings_dirty = true, "Grafik",
 			{"options": [["0", "so viele wie möglich"], ["60", "60"], ["30", "30 (spart Strom)"], ["20", "20 (schwacher PC)"]]})
-	add_control("toggle", "auto_perf", "Automatisch leichter, wenn der PC zu langsam ist", func(): return auto_perf, func(v): auto_perf = v; _slow_n = 0, "Grafik")
+	add_control("toggle", "auto_perf", "Automatisch leichter, wenn der PC zu langsam ist", func(): return auto_perf, func(v): auto_perf = v; _slow_n = 0, "Grafik", ex)
 	add_control("toggle", "eco_idle", "Simulator ruht, wenn niemand zuschaut (rechnet nur, wenn das Fenster offen oder MoveEye verbunden ist)", func(): return eco_idle, func(v): eco_idle = v, "Grafik", ex)
 	add_control("toggle", "meadow", "Gras und Blumen auf der Wiese", func(): return meadow_on, func(v): set_meadow(v), "Grafik", ex)
 	add_control("toggle", "map_on", "Übersichtskarte oben links (M)", func(): return map_on, func(v): set_map(v), "Grafik")
@@ -3991,6 +3996,9 @@ const LITE_KEYS := ["quality", "view_scale", "win_fps", "max_visitors"]
 func set_grafik_mode(v: String) -> void:
 	grafik_mode = Quality.mode_id(v)
 	lite_update()
+	if hoch != null and (grafik_mode == "hoch") != (hoch.stufe == "hoch"):
+		hoch.set_stufe(grafik_mode)                       # F1: Hoch = Neustart mit Forward+; jede andere Wahl = wieder normal
+	_settings_dirty = true
 
 
 func lite_update() -> void:
