@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 13:02",
+ "generated": "2026-10-31 13:09",
  "versions": [
   {
-   "version": "2.98.103",
-   "file": "webcam_bewegung_2_98_103.py",
+   "version": "2.98.104",
+   "file": "webcam_bewegung_2_98_104.py",
    "url": "",
-   "sha256": "b33a76fdcd583132e10332411c49af853366e84bdba3fd17dd748810aedddfe6",
-   "date": "2026-10-31 13:02",
-   "notes": "Simulator 3D-4.72: Ferienpark mit Leben nach Uhrzeit (Grillabend, WC-Gänge, Jogger, Bäcker) und 3 Aufgaben mit MoveEye (Kind finden, Velo-Dieb, Zeltwache).",
-   "sig": "9a997156497700e113c56e0642be4ae3c0dc8a264f518b732c5f49f7ecaf2fa71a68e861740c8737041a2e17816b69e1ebcb43ce0f64d60cc6844b376e24a203"
+   "sha256": "245cc7c67f11de69ec6a61f5975618f20a863bb9face727e23a7cc71c5786271",
+   "date": "2026-10-31 13:09",
+   "notes": "Nacht-Testlauf: Ursachen der Bergtal-Nacht übersetzt (seltene Tiere, Licht am Berg, Gämse, Kuh, Hase, Hermelin, Reh, Steinschlag, Gewitter). Simulator 3D-4.73: Bergtal-Abenteuer mit MoveEye – Lager bewachen oder Wildkamera, Fuchs am Proviant, Hinweis-Aufnahme, Sammlung von 7 seltenen Tieren.",
+   "sig": "97faaf68bac49278ce31e93bf6ea2b119fb4d0b0c2430e090b9fd37bfc545c2880f6ac65464df88f6f7709be487357dfd0a12e7548c74e54a7ab174448e41c0e"
   },
   {
    "version": "2.97.1",
