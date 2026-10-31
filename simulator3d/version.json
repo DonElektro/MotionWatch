@@ -1,7 +1,7 @@
 {
- "version": "3D-4.62",
+ "version": "3D-4.63",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34131575,
- "sha256": "4891812ea61e6401eaa4b2372f57a9ae1ed363ebd25048710b2c63cee5b4516a",
- "notes": "Neues Fenster Mehr → Entwickler (nur Besitzer): Übersichtskarte aller Welten und Orte, Klick = hinspringen, Flugkamera."
+ "size": 34159260,
+ "sha256": "974097d14e7e825c214cd8f9774f21a9e1d4eaef50e5b3200a26ac9dfa581e8b",
+ "notes": "Bergtal-Abenteuer: Rucksack mit gefundener Ausrüstung, mildes Essen und Trinken, Quellen und Kochen, Tauschen ohne Geld."
 }
