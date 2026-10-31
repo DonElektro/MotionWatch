@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.35
+3D-4.35: Erlebnisse im Bergtal: 17 kleine Szenen (Murmeltiere, Kuh klaut Socke, Dohlen am Sandwich, Schafstau am Pass,
+Fondue mit Fuchs, Alphorn am Morgen, Sternschnuppen …), alle im Entdeckungsbuch. Laufen von selbst, bei Testläufen aus.
+So testest du: 1) Szene «Bergtal», Alp Tschuggen, Sommer, 11 Uhr. 2) Zur Blumenmatte fliegen: Murmeltiere. 3) 23 Uhr,
+Gumpisee: Fondue mit Fuchs (im Wärmebild warm).
+
 NEU IN 3D-4.34
 3D-4.34: Neue Welt «Bergtal» (2 × 2 km: Alp, Seen, Pass, Gletscher, Wanderwege, Schlafplätze). Die Szenen sind
 zusammengefasst: statt 20 Szenen die Welten Bergtal, Ferienpark und Zuhause (alte Szenen = «Ort in dieser Welt») plus
