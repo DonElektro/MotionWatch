@@ -158,6 +158,13 @@ func zb_bild(i: int):
 	return (v["vp"] as SubViewport).get_texture().get_image()
 
 
+func zb_figur(i: int):
+	"""anim_mensch.gd (zwei_bausteine.figur_aktion): the walker of player i (actor.gd) - or null (player 2 is Maggie)"""
+	if i == 0:
+		return mz.story.spieler() if mz.story != null else null
+	return mz.fig2 if mz.fig2 != null and is_instance_valid(mz.fig2) else null
+
+
 func zb_kamera(i: int):
 	var v: Dictionary = mz._v[0 if mz.merged else i]
 	return v.get("cam")

@@ -454,8 +454,11 @@ func _folgen(dt: float) -> void:
 	else:
 		stop(hund, dt)
 		face(hund, sp - hp)
-		if _steh_t > 5.0 and str(hund.idle_kind) == "":
-			idle(hund, ["sniff", "sit", "sniff"][randi() % 3], randf_range(2.0, 4.0))
+		if _steh_t > 5.0 and (str(hund.idle_kind) == "" or hund.now_s() > float(hund.idle_until) + 2.0):
+			if _steh_t > 14.0 and randf() < 0.4:
+				idle(hund, "lie", randf_range(6.0, 12.0))      # anim_tier.gd: lies down, the head up now and then
+			else:
+				idle(hund, ["sniff", "sit", "sniff", "schief"][randi() % 4], randf_range(2.0, 4.0))
 
 
 func place(a, p: Vector3, lift := false) -> void:
@@ -526,6 +529,8 @@ func bellen(p: Vector3, n := 2) -> void:
 
 
 func knurren(p: Vector3) -> void:
+	if hund != null and is_instance_valid(hund):
+		idle(hund, "knurren", 1.4)                       # anim_tier.gd: ducks while growling
 	sound(p, "growl", [[0.0, 1.1, 110.0, 95.0, 1.0]], -4.0, -22.0)
 
 
@@ -632,7 +637,7 @@ func _loesen_start(st_: Dictionary) -> void:
 			_aktion([{"t": "walk", "p": p, "spd": 2.0}, {"t": "idle", "k": "sniff", "s": 1.5},
 				{"t": "call", "fn": func(): _pfoten_legen(p, z, 30.0)},
 				{"t": "walk", "p": p.lerp(z, 0.5), "spd": 1.4}, {"t": "idle", "k": "sniff", "s": 0.8},
-				{"t": "walk", "p": z, "spd": 1.4}, {"t": "bark", "n": 2},
+				{"t": "walk", "p": z, "spd": 1.4}, {"t": "idle", "k": "schuetteln", "s": 1.2}, {"t": "bark", "n": 2},
 				{"t": "call", "fn": func(): _fertig(st_)}])
 		"haufen":
 			_aktion([{"t": "walk", "p": p + Vector3(0, 0, 0.9), "spd": 2.2}, {"t": "face", "p": p},
@@ -682,6 +687,9 @@ func _fertig(st_: Dictionary) -> void:
 		gefunden.append(str(st_["item"]))
 	tipp(str(st_["ok"]))
 	_geloest_zeigen(st_)
+	var sf = story.spieler() if story != null and story.has_method("spieler") else null
+	if sf != null and is_instance_valid(sf) and sf.has_method("aktion"):   # anim_mensch.gd: take it / be happy
+		sf.aktion("aufheben" if st_.has("item") else "freude")
 	raetsel_geloest.emit(region, id)
 	Spieltest.ereignis("maggie", "fortschritt", {"raetsel": id})              # Spieltest: Rätsel gelöst
 	if id == "h_gabel":                                   # (der Fuchs nur an der ersten Gabelung)
@@ -881,6 +889,8 @@ func _pfoten_legen(a: Vector3, b: Vector3, lang: float) -> void:
 	var dir := d.normalized()
 	var seite := Vector3(-dir.z, 0, dir.x)
 	var mt := glow_mat(Color(0.55, 0.85, 1.0), 1.6, 0.85)
+	if hund != null and is_instance_valid(hund):
+		hund.set_meta("anim_spur_bis", hund.now_s() + 4.0 + L / 1.4)   # anim_tier.gd: the nose on the ground
 	var n := int(L / 0.9)
 	for i in range(n):
 		var q := a + dir * (0.6 + i * 0.9) + seite * (0.12 if i % 2 == 0 else -0.12)

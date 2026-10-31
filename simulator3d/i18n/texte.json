@@ -4285,6 +4285,12 @@
   "it": "Vista e tasti",
   "rm": "Vista e tastas"
  },
+ "Ansicht wippt beim Gehen (Spielfigur)": {
+  "en": "View bobs when walking (player figure)",
+  "fr": "La vue oscille à la marche (personnage)",
+  "it": "La vista oscilla camminando (personaggio)",
+  "rm": "La vista sa mova cun ir (figura dal giugader)"
+ },
  "Ansicht zurück": {
   "en": "View back",
   "fr": "Vue de retour",
@@ -9170,6 +9176,12 @@
   "it": "La vista segue il mover da dietro",
   "rm": "La vista suonda il mover davos"
  },
+ "Die Ansicht hinter der Spielfigur geht mit den Schritten leicht auf und ab. Aus, wenn dir davon schwindlig wird. Nur bei Grafik «schön» oder «ultra».": {
+  "en": "The view behind the player figure moves gently up and down with the steps. Turn off if it makes you dizzy. Only with graphics «nice» or «ultra».",
+  "fr": "La vue derrière le personnage monte et descend légèrement avec les pas. Désactiver si cela donne le vertige. Seulement avec les graphismes «beau» ou «ultra».",
+  "it": "La vista dietro il personaggio si alza e abbassa leggermente con i passi. Disattivare se dà le vertigini. Solo con grafica «bella» o «ultra».",
+  "rm": "La vista davos la figura dal giugader va cun ils pass levamain si e giu. Deactivar, sch'i fa sturn. Mo cun grafica «bella» u «ultra»."
+ },
  "Die Aufgaben gibt es nur im Ferienpark am See (bei einem Standort im Park).": {
   "en": "The tasks are only in the holiday park by the lake (at a spot of the park).",
   "fr": "Les missions n'existent que dans le parc de vacances au bord du lac (à un emplacement du parc).",
@@ -10328,6 +10340,12 @@
   "fr": "Choses",
   "it": "Cose",
   "rm": "Chaussas"
+ },
+ "do: info | aktion (art, s) | sprechen (s) | stufe (x, z, h)": {
+  "en": "do: info | aktion (art, s) | sprechen (s) | stufe (x, z, h)",
+  "fr": "do: info | aktion (art, s) | sprechen (s) | stufe (x, z, h)",
+  "it": "do: info | aktion (art, s) | sprechen (s) | stufe (x, z, h)",
+  "rm": "do: info | aktion (art, s) | sprechen (s) | stufe (x, z, h)"
  },
  "do: info | open | set_password | unlock | ohne_passwort | sperren | start | go | skip | beat | choose | pause | resume | clips | clip | stop": {
   "en": "do: info | open | set_password | unlock | ohne_passwort | sperren | start | go | skip | beat | choose | pause | resume | clips | clip | stop",
@@ -20550,6 +20568,12 @@
   "fr": "aucun fichier choisi",
   "it": "nessun file scelto",
   "rm": "nagina datoteca tschernida"
+ },
+ "keine Figur": {
+  "en": "no figure",
+  "fr": "aucun personnage",
+  "it": "nessun personaggio",
+  "rm": "nagina figura"
  },
  "keine gespeicherte Situation": {
   "en": "no saved situation",

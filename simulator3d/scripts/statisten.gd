@@ -877,6 +877,8 @@ func _pick_act(e: Dictionary, ty: String) -> String:
 			w["phone"] = 2.0
 	if has_pack and not wet:
 		w["pack"] = 1.2 if ty in ["view", "hut", "place", "spot"] else 0.4
+	if not wet and ty in ["place", "spot"] and v.variant == "":
+		w["zelt"] = 0.35                                        # anim_mensch.gd: pitching a tent (hammering a peg)
 	if wet:
 		for k in ["sit", "sitdrink", "tie", "photo", "drink"]:
 			w.erase(k)
@@ -912,6 +914,8 @@ func _act_seq(e: Dictionary, act: String) -> Array:
 			return [["pack_down", 1.6], ["drink", 4.0], ["look", 6.0], ["photo", 3.0], ["look", 8.0]]
 		"talk":
 			return [["talk", 6.0], ["look", 3.0], ["talk", 8.0]]
+		"zelt":
+			return [["zelt", 7.0], ["look", 2.0], ["zelt", 6.0], ["bend", 1.5]]
 	return [[act, 6.0], ["look", 4.0]]
 
 
@@ -921,7 +925,7 @@ func _end_act(e: Dictionary) -> void:
 		_pack(e, false)
 	e["act"] = ""
 	e["seq"] = []
-	if is_instance_valid(v) and v.idle_kind in ["photo", "drink", "sitdrink", "tie", "sit", "talk", "phone", "look", "bend"]:
+	if is_instance_valid(v) and v.idle_kind in ["photo", "drink", "sitdrink", "tie", "sit", "talk", "phone", "look", "bend", "zelt"]:
 		v.idle_until = 0.0
 
 

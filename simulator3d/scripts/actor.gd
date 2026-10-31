@@ -129,6 +129,12 @@ var _jacket_c := Color(0.3, 0.3, 0.3)
 var _cloth_t := 26.0
 var _short_sl := false            # kleidung.gd: short sleeves (summer)
 var _kleid_stufe := ""            # kleidung.gd: warm | lang | gemischt
+# «Animationen verbessern» (31.10.2026): eine Ergänzung nach der Grund-Animation - anim_mensch.gd / anim_tier.gd
+const AnimMensch = preload("res://scripts/anim_mensch.gd")
+const AnimTier = preload("res://scripts/anim_tier.gd")
+var anim = null               # null = nur die Grund-Animation (Autos, Vorschau)
+var anim_voll := false        # figur_paket.gd: diesen Augenblick alles aus den Gelenken (Handlung)
+var anim_arme := false        # figur_paket.gd: die Arme aus den Gelenken (Arme verschränkt, Hände reiben …)
 
 
 func setup(m, k: String, from: Vector3, to: Vector3, spd: float) -> void:
@@ -161,6 +167,7 @@ func setup(m, k: String, from: Vector3, to: Vector3, spd: float) -> void:
 	next_idle = now_s() + randf_range(4.0, 12.0)
 	stuck_pos = position
 	stuck_t = now_s()
+	anim = AnimMensch.neu(self) if kind == "person" else (AnimTier.neu(self) if is_animal() else null)
 
 
 func _face(p: Vector3) -> void:
@@ -1003,8 +1010,12 @@ func _process(dt: float) -> void:
 					l.emission_energy_multiplier = base * f
 	if main != null and main.hilly() and not preview and is_inside_tree():
 		position.y = main.ground_y(position.x, position.z)   # a real place (from 3D-3.4): on the hills
+	if anim != null:
+		anim.vor_sync(dt)                                    # anim_mensch.gd: up onto a step
 	if fig != null:
 		fig.sync(dt)                                         # 3D-4.12: the joints -> the bones, feet on the ground
+	if anim != null:
+		anim.nach_sync(dt)
 	if tag_p != null:
 		Figur.tag_tick(self, dt)
 
@@ -1102,6 +1113,8 @@ func _step(dt: float) -> void:
 		if avoid_dir != Vector2.ZERO:
 			dir = Vector3(avoid_dir.x, 0, avoid_dir.y)
 	var want: float = speed * main.time_scale_visitors() * (0.3 if prone > 0.5 else (0.6 if crouch > 0.5 else 1.0))
+	if anim != null and kind == "person":
+		want *= anim.tempo_k                             # anim_mensch.gd: uphill shorter steps, downhill braking
 	if route.size() > 0 and typeof(route[0]) == TYPE_ARRAY and dist < 2.0:
 		want *= max(0.35, dist / 2.0)                    # slows down before a stop
 	if kind == "car" and main.get("fahrzeuge") != null and main.fahrzeuge.fz_real:
@@ -1210,6 +1223,8 @@ func _turn(dt: float, standing: bool) -> void:
 func _animate(dt: float, spd: float, now: float) -> void:
 	"""walking, running, crawling, standing about - persons with hips and upper body swinging against each other (3D-2.7),
 	animals with their own ways (hopping, jumping when fleeing, stalking, grazing, sniffing, rooting, sitting up)"""
+	if anim != null:
+		anim.vorher()                                     # anim_*.gd: its changes of the last frame back
 	var gait: float = spd / max(0.3, speed if not fled else speed / 2.6)
 	var amp: float
 	if kind == "person":
@@ -1337,6 +1352,8 @@ func _animate(dt: float, spd: float, now: float) -> void:
 		head.rotation.y = lerp(head.rotation.y, hyaw, clamp(dt * (6.0 if controlled else 3.0), 0.0, 1.0))
 	if tail != null:
 		tail.rotation.y = sin(now * (9.0 if kind == "dog" else 2.0)) * (0.5 if kind == "dog" else 0.15)
+	if anim != null:
+		anim.post(dt, spd, now, idle)                     # «Animationen verbessern»: idle, look, face, weather, actions
 
 
 func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k: float, idle: String) -> void:
@@ -1584,6 +1601,17 @@ func come_back(after_s: float, center = null) -> void:
 func play_emote(e: String, secs: float) -> void:
 	emote = e
 	emote_until = now_s() + secs
+
+
+func aktion(art: String, secs := -1.0, ziel = null) -> bool:
+	"""anim_mensch.gd: aufheben | klettern | kurbeln | hebel | highfive | winken | freude | schreck (people only)"""
+	return anim != null and kind == "person" and anim.aktion(art, secs, ziel)
+
+
+func sprechen(secs: float) -> void:
+	"""anim_mensch.gd: the mouth moves for secs seconds (a talk, the narrator)"""
+	if anim != null and kind == "person":
+		anim.sprechen(secs)
 
 
 func now_s() -> float:

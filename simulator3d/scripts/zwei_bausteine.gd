@@ -592,12 +592,14 @@ func _ts_press(i: int) -> bool:
 					s["helfer"] = i
 					s["klett"] = o
 					s["phase"] = "hoch"
+					figur_aktion(i, "aufheben", 1.8)                # anim_mensch.gd: the hands down as a step
 					_rumble([i])
 					return true
 			"hoch":
 				if i == int(s["klett"]):
 					_h("zb_setzen", [i, q])
 					_h("zb_heben", [i, float(s["h"])])
+					figur_aktion(i, "klettern", 1.6)
 					s["phase"] = "oben"
 					_rumble([0, 1])
 					return true
@@ -611,6 +613,7 @@ func _ts_press(i: int) -> bool:
 				if i == int(s["helfer"]):
 					_h("zb_setzen", [i, q + Vector2(0.7, 0.0)])
 					_h("zb_heben", [i, float(s["h"])])
+					figur_aktion(i, "klettern", 2.2)               # up the rope
 					s["phase"] = "fertig"
 					s["fertig_t"] = now() + 7.0
 					wichtig_weg("ts_" + str(id))
@@ -912,6 +915,7 @@ func _funde_tick() -> void:
 		for i in range(n_fig()):
 			if pos(i).distance_to(e["pos"]) <= NAH:
 				zaehle(i, str(e["kat"]))
+				figur_aktion(i, "aufheben")                      # anim_mensch.gd: bends down and picks it up
 				say(i, T.t("Gefunden: %s") % str(e["text"]), 3.5, 2)
 				if n_fig() == 2:
 					say(1 - i, T.t("%s hat zuerst gefunden: %s") % [nm(i), str(e["text"])], 3.0, 1)
@@ -1110,6 +1114,20 @@ func tag_speichern(titel: String, bilder: Array = []) -> Dictionary:
 # =======================================================================================================================
 # 8 high five
 # =======================================================================================================================
+func figur_aktion(i: int, art: String, secs := -1.0, zu := -1) -> void:
+	"""anim_mensch.gd: the figure of player i (if the host has one: zb_figur(i), actor.gd) shows the action; zu = turns
+	towards the figure of that player (High-Five)"""
+	var f = _h("zb_figur", [i], null)
+	if f == null or not is_instance_valid(f) or not f.has_method("aktion"):
+		return
+	var ziel = null
+	if zu >= 0:
+		var g = _h("zb_figur", [zu], null)
+		if g != null and is_instance_valid(g):
+			ziel = (g as Node3D).global_position
+	f.aktion(art, secs, ziel)
+
+
 func high_five(grund: String) -> void:
 	if not aktiv() or n_fig() < 1:
 		return
@@ -1169,6 +1187,8 @@ func _team_press(i: int) -> void:
 			_hf = {}
 			_prompt = [{}, {}]
 			_jubel_show(T.t("🙌 Super Team!"))
+			figur_aktion(0, "highfive", 1.3, 1)
+			figur_aktion(1, "highfive", 1.3, 0)
 			_rumble([0, 1])
 			Spieltest.ereignis(modus, "fortschritt", {"zwei": "high_five_" + g})
 			high_five_geschafft.emit(g)

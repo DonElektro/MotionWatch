@@ -464,11 +464,13 @@ func sync(dt: float) -> void:
 		if pv != null:
 			skel.set_bone_pose_rotation(i, (pv as Node3D).quaternion)
 	var pr: float = clampf(a.prone, 0.0, 1.0)
-	var on_slope: bool = dt > 0.0 and not a.preview and a.variant != "cyclist" and pr < 0.1 and a.is_inside_tree() and (a.main.hilly() or test_slope != 0.0)
+	var on_slope: bool = dt > 0.0 and not a.preview and a.variant != "cyclist" and pr < 0.1 and a.is_inside_tree() and (a.main.hilly() or test_slope != 0.0 or (a.anim != null and a.anim.get("stufe_nah") == true))
 	var raise := [0.0, 0.0]
 	var pitch := 0.0
 	if on_slope:
 		var g0: float = a.global_position.y
+		if a.anim != null and a.anim.get("stufe_nah") == true:
+			g0 += float(a.anim.get("_y_stufe"))                # anim_mensch.gd: the body stands on the step already
 		var dl := [0.0, 0.0]
 		for li in range(2):
 			var ank: Vector3 = (a.legs[li][2] as Node3D).global_transform * Vector3(0, -L2, 0)
@@ -514,9 +516,10 @@ func sync(dt: float) -> void:
 
 
 func _ground(x: float, z: float) -> float:
-	if a.main.hilly():
-		return a.main.ground_y(x, z)
-	return test_slope * x
+	var g: float = a.main.ground_y(x, z) if a.main.hilly() else test_slope * x
+	if a.anim != null and a.anim.get("stufe_nah") == true:
+		g = a.anim.boden(x, z, g)                             # anim_mensch.gd: steps and stones (a ray down per foot)
+	return g
 
 
 func _pose_box() -> void:
