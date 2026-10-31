@@ -57,7 +57,8 @@ func setup(fp_) -> void:
 	today = Time.get_date_string_from_system()
 	day_seed = absi(hash(today))
 	for v in [Katze.new(self), Eichhorn.new(self), Enten.new(self), Igel.new(self), Hund.new(self), Fuchs.new(self), Moewe.new(self),
-			Zelt.new(self), Grill.new(self), Angler.new(self), Schlafwandler.new(self), Verstecken.new(self), Yoga.new(self)]:
+			Zelt.new(self), Grill.new(self), Angler.new(self), Schlafwandler.new(self), Verstecken.new(self), Yoga.new(self),
+			Gluehwurm.new(self), Bibliothek.new(self), Wanderzwerg.new(self), Schnecken.new(self), Schatz.new(self)]:
 		v.build()
 		vigs.append(v)
 		by_id[v.id] = v
@@ -2300,6 +2301,184 @@ class Yoga extends Vig:
 		return d
 
 
+# ---- C · glow-worms in the cave (only at night; cold light: not in the thermal picture) --------------------------------------
+class Gluehwurm extends Vig:
+	var glow: Node3D
+
+	func build() -> void:
+		id = "gluehwurm"
+		c = ew.Pg(-42.0, 140.6, 0.6)
+		glow = ew.node(vroot, ew.Pg(-42.0, 140.7))
+		nodes.append(glow)
+		var gm: StandardMaterial3D = ew.glow_mat(Color(0.55, 1.0, 0.45), 3.0)
+		var rng := RandomNumberGenerator.new()
+		rng.seed = 15
+		for i in range(10 if ew.lite else 22):
+			ew.light_part(glow, ew.sphm(0.02, -1.0, 4), Vector3(rng.randf_range(-0.6, 0.6), rng.randf_range(0.15, 1.2), rng.randf_range(-0.55, -0.05)), gm)
+
+	func when_ok() -> bool:
+		return ew.dark()
+
+	func tick(_dt: float) -> void:
+		for i in range(glow.get_child_count()):
+			var n: Node3D = glow.get_child(i)
+			n.visible = fmod(t * 0.35 + i * 0.61, 3.0) < 2.4
+
+
+# ---- C · the hedgehog library in the abandoned caravan (seen through the open door) --------------------------------------------
+class Bibliothek extends Vig:
+	var page: Node3D
+	var lamp_l: OmniLight3D
+	var lamp_m: StandardMaterial3D
+
+	func build() -> void:
+		id = "bibliothek"
+		var cv := Transform3D(Basis(Vector3.UP, 0.35), ew.Pg(150.0, 116.0))
+		var lib: Node3D = ew.node(vroot, Vector3.ZERO)
+		lib.transform = cv
+		nodes.append(lib)
+		var dx := 4.8 * 0.28                              # the door of the caravan (bib_objekte.gd _k_caravan)
+		c = cv * Vector3(dx, 1.0, 1.5)
+		ew.part(lib, ew.boxm(0.72, 1.85, 0.02), Vector3(dx, 1.4, 1.185), Color(0.1, 0.075, 0.06), "caravan")   # the dark inside
+		var leaf: Node3D = ew.node(lib, Vector3(dx + 0.375, 0, 1.19))
+		leaf.rotation.y = deg_to_rad(-105.0)
+		ew.part(leaf, ew.boxm(0.75, 1.9, 0.04), Vector3(-0.375, 1.4, 0), Color(0.6, 0.6, 0.58), "caravan")
+		ew.part(lib, ew.boxm(0.7, 0.18, 0.4), Vector3(dx, 0.36, 1.42), Color(0.45, 0.43, 0.4), "stone")         # the step
+		var cols := [Color(0.6, 0.2, 0.15), Color(0.2, 0.35, 0.6), Color(0.75, 0.6, 0.2), Color(0.25, 0.5, 0.3), Color(0.5, 0.3, 0.5), Color(0.85, 0.82, 0.75)]
+		for sh in range(3):
+			var y := 0.95 + sh * 0.38
+			ew.part(lib, ew.boxm(0.62, 0.02, 0.05), Vector3(dx, y, 1.205), Color(0.45, 0.32, 0.2), "caravan")
+			var x := dx - 0.28
+			var i := sh * 3
+			while x < dx + 0.27:
+				var w := 0.022 + 0.012 * ((i * 7) % 3)
+				var h := 0.12 + 0.03 * ((i * 5) % 3)
+				ew.part(lib, ew.boxm(w, h, 0.035), Vector3(x + w / 2.0, y + 0.01 + h / 2.0, 1.21), cols[i % cols.size()], "caravan", Vector3(0, 0, 0.12 if i % 7 == 3 else 0.0))
+				x += w + 0.004
+				i += 1
+		lamp_m = ew.glow_mat(Color(1.0, 0.8, 0.45), 0.0)
+		ew.light_part(lib, ew.sphm(0.025, -1.0, 6), Vector3(dx + 0.22, 1.82, 1.225), lamp_m)
+		lamp_l = OmniLight3D.new()
+		lamp_l.position = Vector3(dx, 1.5, 1.6)
+		lamp_l.omni_range = 2.2
+		lamp_l.light_color = Color(1.0, 0.8, 0.5)
+		lamp_l.light_energy = 0.0
+		lamp_l.shadow_enabled = false
+		lib.add_child(lamp_l)
+		for k in range(2):                                # two hedgehogs read on the step (27 °C, like actor.gd)
+			var hx := dx - 0.16 + k * 0.32
+			var hn: Node3D = ew.node(lib, Vector3(hx, 0.45, 1.45))
+			hn.rotation.y = PI + (0.4 if k == 0 else -0.4)
+			ew.part(hn, ew.sphm(0.08, 0.11), Vector3(0, 0.05, 0), Color(0.3, 0.24, 0.18), 21.0, Vector3.ZERO, Vector3(1, 1, 1.3))
+			ew.part(hn, ew.sphm(0.035), Vector3(0, 0.05, -0.1), Color(0.62, 0.52, 0.42), 27.0)
+			ew.part(hn, ew.sphm(0.01), Vector3(0, 0.045, -0.135), Color(0.05, 0.05, 0.05), 27.0)
+			var bk: Node3D = ew.node(hn, Vector3(0, 0.0, -0.17))
+			ew.part(bk, ew.boxm(0.09, 0.006, 0.065), Vector3(0, 0.003, 0), cols[k + 2], "caravan", Vector3(-0.3, 0, 0))
+			if k == 0:
+				page = ew.node(bk, Vector3(0, 0.008, 0))
+				ew.part(page, ew.boxm(0.04, 0.003, 0.06), Vector3(0.02, 0, 0), Color(0.95, 0.93, 0.85), "caravan", Vector3(-0.3, 0, 0))
+
+	func tick(_dt: float) -> void:
+		var k := fmod(t, 7.0)
+		page.rotation.z = PI * clampf((k - 6.2) / 0.6, 0.0, 1.0)      # now and then a page is turned
+		var on: bool = ew.dark()
+		lamp_m.emission_energy_multiplier = 2.5 if on else 0.4
+		lamp_l.light_energy = 0.6 if on else 0.0
+
+
+# ---- C · the wandering garden gnome: stands somewhere else every day (seeded by the date) --------------------------------------
+class Wanderzwerg extends Vig:
+	const SPOTS := [[-83.3, 12.0, 0.4], [-77.4, 13.6, -0.6], [-80.0, 10.4, 3.1], [-79.2, 17.7, 0.0], [-84.6, 15.0, 1.2], [-78.7, 10.9, 2.2], [-81.2, 17.4, 2.8]]
+	var gn: Node3D
+	var which := 0
+
+	func build() -> void:
+		id = "wanderzwerg"
+		which = ew.day_seed % SPOTS.size()
+		var sp: Array = SPOTS[which]
+		c = ew.Pg(float(sp[0]), float(sp[1]), 0.2)
+		gn = ew.node(vroot, ew.Pg(float(sp[0]), float(sp[1])), float(sp[2]))
+		nodes.append(gn)
+		ew.part(gn, ew.cylm(0.07, 0.09, 0.16, 8), Vector3(0, 0.08, 0), Color(0.75, 0.2, 0.15), "stone")
+		ew.part(gn, ew.sphm(0.055), Vector3(0, 0.21, 0), Color(0.94, 0.78, 0.62), "stone")
+		ew.part(gn, ew.cylm(0.0, 0.06, 0.15, 8), Vector3(0, 0.33, 0), Color(0.95, 0.8, 0.15), "stone")
+		ew.part(gn, ew.cylm(0.0, 0.04, 0.08, 6), Vector3(0, 0.16, -0.045), Color(0.95, 0.95, 0.95), "stone", Vector3(PI, 0, 0))
+		ew.part(gn, ew.boxm(0.08, 0.09, 0.05), Vector3(0, 0.12, 0.08), Color(0.4, 0.3, 0.2), "stone")        # a small backpack
+		ew.part(gn, ew.cylm(0.006, 0.006, 0.3, 4), Vector3(0.07, 0.14, -0.03), Color(0.45, 0.32, 0.2), "stone", Vector3(0.15, 0, 0))   # walking stick
+
+
+# ---- 22 · snail race on the stepping stone (only when it rains); the gnomes watch -------------------------------------------
+class Schnecken extends Vig:
+	var snails: Array = []          # [node, speed, eye pivots]
+	var start := Vector3.ZERO
+	var winner := -1
+	var pause := 0.0
+
+	func build() -> void:
+		id = "schnecken"
+		start = ew.Pg(-77.6, 10.9)
+		c = start + Vector3(0.5, 0.05, 0)
+		var st_n: Node3D = ew.node(vroot, start + Vector3(0.55, 0, 0))
+		nodes.append(st_n)
+		ew.part(st_n, ew.boxm(1.4, 0.05, 0.45), Vector3(0, 0.025, 0), Color(0.5, 0.5, 0.48), "stone")
+		ew.part(st_n, ew.boxm(0.02, 0.02, 0.4), Vector3(0.62, 0.06, 0), Color(0.3, 0.45, 0.2), "tree")      # the finish: a twig
+		var shells := [Color(0.62, 0.45, 0.25), Color(0.5, 0.38, 0.28), Color(0.7, 0.55, 0.3)]
+		for i in range(3):
+			var n: Node3D = ew.node(vroot, start + Vector3(0, 0.05, -0.12 + i * 0.12))
+			n.rotation.y = -PI / 2.0
+			nodes.append(n)
+			# snails are cold-blooded: as warm as the wet stone - the thermal camera does not see them
+			ew.part(n, ew.boxm(0.025, 0.012, 0.07), Vector3(0, 0.006, 0), Color(0.55, 0.5, 0.42), "stone")
+			ew.part(n, ew.sphm(0.02, 0.035, 8), Vector3(0, 0.025, 0.012), shells[i], "stone", Vector3(0, 0, PI / 2.0))
+			var eyes: Array = []
+			for sx in [-1, 1]:
+				var e: Node3D = ew.node(n, Vector3(0.006 * sx, 0.01, -0.035))
+				ew.part(e, ew.cylm(0.002, 0.002, 0.02, 4), Vector3(0, 0.01, 0), Color(0.5, 0.45, 0.38), "stone")
+				eyes.append(e)
+			# garden snail: up to ~1.3 cm/s at full speed (Helix aspersa, Denny 1980); here 0.6–1.2 cm/s
+			snails.append([n, randf_range(0.006, 0.012), eyes, 0.0])
+
+	func when_ok() -> bool:
+		return ew.rain()
+
+	func tick(dt: float) -> void:
+		if pause > 0.0:
+			pause -= dt
+			if pause <= 0.0:
+				for i in range(snails.size()):
+					snails[i][0].position = start + Vector3(0, 0.05, -0.12 + i * 0.12)
+					snails[i][1] = randf_range(0.006, 0.012)
+					snails[i][3] = 0.0
+				winner = -1
+			return
+		for i in range(snails.size()):
+			var sn: Array = snails[i]
+			var n: Node3D = sn[0]
+			sn[3] = float(sn[3]) + float(sn[1]) * dt * (0.6 + 0.4 * sin(t * 0.3 + i * 2.0))
+			n.position.x = start.x + float(sn[3])
+			for e in sn[2]:
+				(e as Node3D).rotation.x = 0.25 * sin(t * 1.1 + i)
+			if float(sn[3]) >= 1.15 and winner < 0:
+				winner = i
+				pause = 12.0
+
+	func info() -> Dictionary:
+		var d := super.info()
+		var best := 0.0
+		for sn in snails:
+			best = maxf(best, float(sn[3]))
+		d["lead_m"] = snappedf(best, 0.01)
+		d["winner"] = winner
+		return d
+
+
+# ---- 19 · bottle post -> treasure chest: the map in the bottle tells where the chest is ------------------------------------------
+class Schatz extends Vig:
+	func build() -> void:
+		id = "schatz"
+		c = ew.Pg(117.0, 237.0)
+
+
 # =============================================================================================================================
 # ---- the discovery book (entdecken.gd) -----------------------------------------------------------------------------------------
 # =============================================================================================================================
@@ -2368,6 +2547,19 @@ func _register() -> void:
 	var yg: Yoga = V["yoga"]
 	_reg(e, "see.yoga", "Yoga bei Sonnenaufgang", "Alle schauen zum See – nur eine Person macht alles falsch herum und etwas zu spät.",
 			T.t("Früh am Morgen ist am Strand Yoga – schau genau, wer wohin schaut."), "🧘", "mensch", W(yg.c) + Vector3(0, 0.8, 0), Vector3(7, 2, 7), 18.0, "morning")
+	# C · Orte (die anderen 7 meldet ferienpark.gd selbst an)
+	_reg(e, "see.gluehwuermchen", "Glühwürmchen in der Höhle", "Nachts leuchten in der kleinen Höhle grüne Pünktchen. Kaltes Licht: das Wärmebild sieht sie nicht.",
+			T.t("Nachts glimmt es in der kleinen Höhle am Waldhang."), "✨", "tier", W(V["gluehwurm"].c), Vector3(1.2, 1.2, 1.0), 8.0, "night")
+	_reg(e, "see.igel_bibliothek", "Igel-Bibliothek", "Im alten Wohnwagen steht die Tür offen: Bücherregale, ein Lämpchen – und zwei Igel, die lesen.",
+			T.t("Im alten Wohnwagen am Waldrand steht die Tür offen. Wer liest da wohl?"), "📚", "ort", W(V["bibliothek"].c), Vector3(1.0, 1.4, 0.8), 6.0)
+	_reg(e, "see.wanderzwerg", "Der Wanderzwerg", "Ein Zwerg mit Rucksack und Stock steht jeden Tag woanders. Morgen sucht man ihn neu.",
+			T.t("Einer der Gartenzwerge steht heute nicht dort, wo er gestern stand."), "🧭", "ort", W(V["wanderzwerg"].c), Vector3(0.3, 0.45, 0.3), 4.0)
+	_reg(e, "see.schnecken_rennen", "Schnecken-Wettrennen", "Bei Regen kriechen drei Schnecken um die Wette über den Stein – die Zwerge schauen zu.",
+			T.t("Bei Regen gibt es beim Zwergendorf ein ganz langsames Rennen."), "🐌", "tier", W(V["schnecken"].c), Vector3(1.4, 0.2, 0.5), 4.0, "rain")
+	# 19 · the bottle post shows the way to the chest: the chest counts only after the bottle
+	_reg(e, "see.schatzkiste", "Schatzkiste beim Aussichtspunkt", "Die Schatzkarte aus der Flaschenpost führt hierher.",
+			T.t("Auf der Schatzkarte ist ein Kreuz beim Aussichtspunkt – gleich neben der Plattform."), "🧰", "ort", W(Pg(117.0, 237.0, 0.3)), Vector3(0.8, 0.6, 0.6), 5.0,
+			"any", {"active": func(): return e.is_found("see.flaschenpost")})
 	if not e.found.is_connected(_on_found):
 		e.found.connect(_on_found)
 
