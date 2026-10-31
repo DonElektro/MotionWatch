@@ -272,7 +272,8 @@ func _gefahr():
 
 
 func _n1() -> String:
-	return str(story.S.get("name", T.t("Spieler 1"))) if story != null else T.t("Spieler 1")
+	var n := str(story.S.get("name", "")) if story != null else ""
+	return T.t("Spieler 1") if n == "" or n == T.t("Du") else n
 
 
 func _n2() -> String:
@@ -1065,11 +1066,11 @@ func _team_tick(dt: float, inp: Dictionary, k1: Array, walking: bool) -> void:
 			if str(team["art"]) == "fackel":
 				_big_set(T.t(TITEL["fackel"]), T.t("Bring den Kristall durch die Schlucht bis zum Steinmann – wenn das Feuer brennt."),
 						(T.t("Geh zur Feuerschale und drück %s: das Feuer hält die Wölfe in der Höhle.", [k2]) if rolle != "maggie" else T.t("Lauf zur Feuerschale und drück A: Maggie bellt die Wölfe in die Höhle.")) \
-						+ ("   🔥 %d s" % int(ceil(float(team["held_until"]) - _now())) if held else ""), near)
+						+ ("   (%d s)" % int(ceil(float(team["held_until"]) - _now())) if held else ""), near)
 			else:
 				_big_set(T.t(TITEL["stampfen"]), T.t("Geh über den Viperweg bis zum Steinmann – wenn gestampft wird."),
 						(T.t("Stell dich auf den Stampfstein und drück immer wieder %s.", [k2]) if rolle != "maggie" else T.t("Lauf zum Stampfstein und drück immer wieder X: Maggie scharrt und stampft.")) \
-						+ ("   👣" if held else ""), near)
+						+ ("   ✓" if held else ""), near)
 		"seil":
 			_zaun(dt)
 			var side0: float = team["side0"]
@@ -1526,16 +1527,19 @@ func _view_tick(dt: float) -> void:
 	# the chips
 	var c0l: Label = _v[0]["chip"]
 	var c1l: Label = _v[1]["chip"]
-	var dev1 := "🎮" if not _p1_devs().is_empty() else "⌨"
-	var dev2 := "🎮" if p2dev != -1 else T.t("wartet auf A")
-	c0l.position = (rr[0] as Rect2).position + Vector2(12, 12)
+	var dev1 := T.t("Controller") if not _p1_devs().is_empty() else T.t("Tastatur")
+	var dev2 := T.t("Controller") if p2dev != -1 else T.t("wartet auf A")
 	c1l.visible = not merged
-	c1l.position = (rr[1] as Rect2).position + Vector2(12, 12)
+	for e in [[c0l, rr[0]], [c1l, rr[1]]]:                 # top middle of each view (top left: the title of the story)
+		var lb: Label = e[0]
+		var r: Rect2 = e[1]
+		lb.reset_size()
+		lb.position = r.position + Vector2((r.size.x - lb.size.x) / 2.0, 100.0)
 	if merged:
-		c0l.text = "1 · %s %s   +   2 · %s %s" % [_n1(), dev1, _n2(), dev2]
+		c0l.text = "1 · %s (%s)   +   2 · %s (%s)" % [_n1(), dev1, _n2(), dev2]
 	else:
-		c0l.text = "1 · %s %s" % [_n1(), dev1]
-		c1l.text = "2 · %s %s" % [_n2(), dev2]
+		c0l.text = "1 · %s (%s)" % [_n1(), dev1]
+		c1l.text = "2 · %s (%s)" % [_n2(), dev2]
 	var t := _now()
 	_fps.append([t, Engine.get_frames_per_second()])
 	while not _fps.is_empty() and t - float(_fps[0][0]) > 6.0:
@@ -1626,7 +1630,7 @@ func _big_set(title: String, t1: String, t2: String, show: bool) -> void:
 	if not fest.is_empty():
 		return
 	_big.visible = show
-	_big_t.text = "🤝 " + title
+	_big_t.text = T.t("Teamrätsel: %s", [title])
 	_big_1.text = "1 · %s: %s" % [_n1(), t1]
 	_big_2.text = "2 · %s: %s" % [_n2(), t2]
 

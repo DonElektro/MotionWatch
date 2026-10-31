@@ -31591,6 +31591,12 @@
   "it": "Obiettivo di squadra: il traguardo si apre solo quando tutti i cristalli sono trovati",
   "rm": "Finamira da squadra: la finala s’avra pir, cur che tut ils cristals èn chattads"
  },
+ "Teamrätsel: %s": {
+  "en": "Team puzzle: %s",
+  "fr": "Énigme d'équipe : %s",
+  "it": "Enigma di squadra: %s",
+  "rm": "Enigma da squadra: %s"
+ },
  "Teamrätsel: Das Weidegatter mit dem Seil": {
   "en": "Team puzzle: the pasture gate with the rope",
   "fr": "Énigme d'équipe : la barrière et la corde",
