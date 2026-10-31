@@ -13889,6 +13889,12 @@
   "it": "Per il telefonino senza Pi – e come aiuto di calcolo IA: il Pi fa calcolare il rilevamento a questo PC (più veloce, il Pi resta fresco). La prima volta vengono caricati Python, MoveEye e il modello IA (circa 170 MB, alcuni minuti). Windows chiede se Python può accedere alla rete: scegliere «Consenti».",
   "rm": "Per il telefonin senza Pi – e sco agid da calcular IA: il Pi lascha lura quintar l’identificaziun da quest PC (pli svelt, il Pi resta fraid). L’emprima giada vegnan chargiads Python, MoveEye ed il model IA (circa 170 MB, intginas minutas). Windows dumonda, sche Python dastga en la rait: tscherner «Permetter»."
  },
+ "Für die Entwicklung: die normalen Knöpfe (Maggie, Schutzding, Kristall, Karten) bleiben sichtbar und leuchten auf, wenn der Autopilot sie drückt. Gilt auch für die Browser-Ansicht.": {
+  "en": "For development: the normal buttons (Maggie, protective item, crystal, cards) stay visible and light up when the autopilot presses them. Also applies to the browser view.",
+  "fr": "Pour le développement : les boutons normaux (Maggie, objet protecteur, cristal, cartes) restent visibles et s’allument quand le pilote automatique les presse. Vaut aussi pour la vue dans le navigateur.",
+  "it": "Per lo sviluppo: i pulsanti normali (Maggie, oggetto protettivo, cristallo, carte) restano visibili e si illuminano quando il pilota automatico li preme. Vale anche per la vista nel browser.",
+  "rm": "Per il svilup: ils buttuns normals (Maggie, object da protecziun, cristal, cartas) restan visibels e s’illumineschan, cura ch’il pilot automatic als smatga. Vala er per la vista en il navigatur."
+ },
  "Für die Mutigste – du hast alle drei Nächte überstanden.": {
   "en": "For the bravest – you made it through all three nights.",
   "fr": "Pour la plus courageuse – tu as tenu les trois nuits.",
@@ -29789,6 +29795,12 @@
   "fr": "Assistant de jeu",
   "it": "Assistente di gioco",
   "rm": "Assistent da gieu"
+ },
+ "Spiel-Knöpfe zeigen": {
+  "en": "Show game buttons",
+  "fr": "Afficher les boutons du jeu",
+  "it": "Mostra i pulsanti del gioco",
+  "rm": "Mussar ils buttuns dal gieu"
  },
  "Spiel: ": {
   "en": "Game: ",

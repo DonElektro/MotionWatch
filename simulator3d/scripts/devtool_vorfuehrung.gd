@@ -15,6 +15,7 @@ var _open := false
 var _t := 0.0
 var _state: Label
 var _stimme: CheckButton
+var _knoepfe: CheckButton
 var _kap: OptionButton
 var _stop: Button
 
@@ -49,6 +50,14 @@ func build(v: VBoxContainer) -> void:
 		if vf != null:
 			vf.set_stimme(b))
 	r2.add_child(_stimme)
+	_knoepfe = CheckButton.new()
+	_knoepfe.text = T.t("Spiel-Knöpfe zeigen")
+	_knoepfe.tooltip_text = T.t("Für die Entwicklung: die normalen Knöpfe (Maggie, Schutzding, Kristall, Karten) bleiben sichtbar und leuchten auf, wenn der Autopilot sie drückt. Gilt auch für die Browser-Ansicht.")
+	_knoepfe.toggled.connect(func(b):
+		var vf = Vf.inst(main)
+		if vf != null:
+			vf.set_knoepfe(b))
+	r2.add_child(_knoepfe)
 	r2.add_child(UI.small(T.t("Beginnen bei:"), UI.MUT))
 	_kap = OptionButton.new()
 	_kap.focus_mode = Control.FOCUS_NONE
@@ -104,6 +113,7 @@ func paint() -> void:
 		return
 	var d: Dictionary = vf.info()
 	_stimme.set_pressed_no_signal(bool(d.get("stimme", true)))
+	_knoepfe.set_pressed_no_signal(bool(d.get("knoepfe", false)))
 	_stimme.disabled = not bool(d.get("stimme_moeglich", false))
 	if _stimme.disabled:
 		_stimme.tooltip_text = T.t("Auf diesem PC gibt es keine Sprachausgabe – nur Untertitel.")

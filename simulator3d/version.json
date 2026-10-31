@@ -1,9 +1,9 @@
 {
- "version": "3D-5.10.0",
- "ver": "3.10.0",
- "name": "MoveEye Sim 3.10.0",
+ "version": "3D-5.10.1",
+ "ver": "3.10.1",
+ "name": "MoveEye Sim 3.10.1",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35155025,
- "sha256": "6913f1971663c7184b3c9055bd88a07922557d58b17a60514bbfc72049dba72e",
- "notes": "MoveEye Sim 3.10.0: Vorführmodus – Maggie spielt sich selbst wie ein Film (ganz oder Kurzfassung)."
+ "size": 35157938,
+ "sha256": "5e10905e67ba8ab23adb7ff62b92711bf852589a5205a5f2fd14e9670e0f06c2",
+ "notes": "MoveEye Sim 3.10.1: Vorführung – Schalter «Spiel-Knöpfe zeigen»."
 }

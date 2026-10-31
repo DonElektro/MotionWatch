@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 19:29",
+ "generated": "2026-10-31 19:37",
  "versions": [
   {
-   "version": "3.10.0",
-   "file": "webcam_bewegung_3_10_0.py",
+   "version": "3.10.1",
+   "file": "webcam_bewegung_3_10_1.py",
    "url": "",
-   "sha256": "faff1d5275c55f227212419a11efb0640f3433b6c931f999714e73d8a75714fc",
-   "date": "2026-10-31 19:29",
-   "notes": "Vorführung im Browser: «Maggie und der Bergkristall» als Film zuschauen (Simulator → Entwickler → Vorführung), Pause und Kapitel. Simulator 3.10.0: Vorführmodus – Maggie spielt sich selbst, ganz oder als Kurzfassung, mit Kamerawechsel, Untertiteln und Erzählerstimme.",
-   "size": 4416489,
-   "sig": "38dc1980041463c15b499cc1fa045763d79b3be85275bd74a918d185eb1bbab51098eb1b47354997a0ea1c81bf619ab004ad2d07f209dae5c20cc8597ed2f00b",
+   "sha256": "b50c7ace073baab12449fd5299836334c71939b7c72a89b4152386664267944e",
+   "date": "2026-10-31 19:37",
+   "notes": "Simulator 3.10.1: Vorführung mit Schalter «Spiel-Knöpfe zeigen» – die Knöpfe bleiben sichtbar und leuchten auf, wenn der Autopilot sie drückt.",
+   "size": 4416453,
+   "sig": "62d50610eb70771f0fa2221ae51f625da9807b229605b4c4ca31f1386c806cec8799541db216c298d13572a2984758843571a6d655621d66f4b22e5fb536350b",
    "data": {
-    "file": "moveeye_daten_3_10_0.zip",
+    "file": "moveeye_daten_3_10_1.zip",
     "url": "",
-    "sha256": "6718646c0189c4336848597766c51becbbc23562a13e1e29c0f4d57bec9359d1",
-    "size": 1611845,
-    "sig": "d323938c216a19d282d923e354d7e9ee19d325da7195001303170c13e35c441be626937decaa4d881a0647059eaedb1b6deba043ab7cbb3fe35884558f5c6d07"
+    "sha256": "cf32ac8d4496ccea21715bec1a600cdec55ef1b1288cfa57155ee052331313b0",
+    "size": 1611913,
+    "sig": "0fc6959356d16b057836ce2168a0e1c3ffbd441184c7f1ace91788deb3094dbe48ebaa664bd1c341a0242f8e82aadc2eae29885ad6f6f260579e5735e323240b"
    }
   },
   {
