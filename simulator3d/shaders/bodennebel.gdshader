@@ -15,6 +15,7 @@ uniform vec2 drift = vec2(0.0);
 uniform float patchy = 0.5;
 uniform float expo = 1.0;
 uniform float max_dist = 600.0;
+uniform bool compat = false;       // wetter.gd: true im Compatibility-Renderer
 
 float hh(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float vn(vec2 p) {
@@ -32,11 +33,8 @@ void fragment() {
 		discard;
 	}
 	float depth = texture(depth_tex, SCREEN_UV).r;
-#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
-	vec3 ndc = vec3(SCREEN_UV, depth) * 2.0 - 1.0;
-#else
-	vec3 ndc = vec3(SCREEN_UV * 2.0 - 1.0, depth);
-#endif
+	// Compatibility-Renderer (Lite / Pi): Tiefe 0..1 statt NDC (Godot 4.3 kennt CURRENT_RENDERER noch nicht -> Uniform)
+	vec3 ndc = compat ? vec3(SCREEN_UV, depth) * 2.0 - 1.0 : vec3(SCREEN_UV * 2.0 - 1.0, depth);
 	vec4 vw = INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
 	vec3 vpos = vw.xyz / vw.w;
 	vec3 cp = CAMERA_POSITION_WORLD;

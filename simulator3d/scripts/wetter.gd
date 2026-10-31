@@ -203,6 +203,7 @@ func _setup() -> void:
 		q.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		var fm := ShaderMaterial.new()
 		fm.shader = load("res://shaders/bodennebel.gdshader")
+		fm.set_shader_parameter("compat", RenderingServer.get_rendering_device() == null)   # Lite / Pi: andere Tiefe
 		q.material_override = fm
 		q.visible = false
 		cam.add_child(q)
@@ -402,10 +403,12 @@ func before_capture(i: int) -> void:
 	var t: float = main.now()
 	var dt: float = clampf(t - float(_cap_t[i]), 0.0, 1.0) if _cap_t[i] > 0.0 else 0.0
 	_cap_t[i] = t
-	L.set_expo(float(main.lens_mats[i].get_shader_parameter("expo")))
+	var ev = main.lens_mats[i].get_shader_parameter("expo") if i < main.lens_mats.size() else null
+	var e: float = float(ev) if ev != null else 1.0             # null, solange noch niemand die Belichtung gesetzt hat
+	L.set_expo(e)
 	L.step(dt, dt * float(main.speed))
 	if i < fog_mats.size():
-		fog_mats[i].set_shader_parameter("expo", float(main.lens_mats[i].get_shader_parameter("expo")))
+		fog_mats[i].set_shader_parameter("expo", e)
 
 
 var _lens_poll := 0.0
