@@ -6,7 +6,8 @@ extends RefCounted
 ## Essen und Trinken MILD: hungrig oder durstig = nur langsamer (Gehzeit und Kraft je ~10–20 % mehr), nie Spielende.
 ##   Auf der Hilfe-Stufe «Leicht» (Paket A3) ist es ganz aus: kein Verbrauch, keine Balken. Quellen und Brunnen am Weg füllen
 ##   die Flasche auf, in der Hütte (Alp Tschuggen, Holzofen; im Biwak mit eigenem Kocher) wird gekocht.
-## Ausrüstung finden: an festen Fundorten der Kapitel liegen Kompass, Stirnlampe, Feldstecher und Seil; einmal gefunden
+## Ausrüstung finden: an festen Fundorten der Kapitel liegen Kompass, Stirnlampe und Seil (den Feldstecher gibt es nur als
+##   Grossvaters Feldstecher von A3, Daniel 31.10.2026); einmal gefunden
 ##   bleiben sie für alle weiteren Kapitel (abenteuer_inventar.gd finde()). Die Stirnlampe ist ein echtes Licht (licht.gd
 ##   attach_lamp): im Dunkeln leuchtet sie vor dem Wanderer und am Lager - bis zum Schlafen (dann bewacht MoveEye im Dunkeln).
 ## Tauschen: jede Figur hat eine feste Wunschliste (was sie sucht / was sie dafür gibt) - kein Geld, feste Paare.
@@ -30,7 +31,6 @@ const HUETTE_R := 70.0
 # ---- Fundorte der Ausrüstung: id -> [Kapitel, x, z, Text] ----------------------------------------------------------------
 const FUNDE := {"kompass": [1, 178.0, -200.0, "Am Fuss des Wegweisers steckt eine verbeulte Blechdose. Darin: ein alter Kartenkompass, die Nadel zittert und zeigt nach Norden."],
 		"stirnlampe": [2, -150.0, -230.0, "Neben dem Weg hängt eine Stirnlampe an einem Ast - jemand hat sie vergessen. Sie leuchtet noch."],
-		"feldstecher": [3, -810.0, -230.0, "In einer Mauernische der Ruine liegt ein Feldstecher in einer Ledertasche. Damit sieht man Hinweise und Tiere von weitem."],
 		"seil": [4, -700.0, -130.0, "In der alten Sennerei hängt ein aufgerolltes Seil am Haken - stark genug für den Fels."]}
 const FUND_R := 70.0
 # Begegnungen von heute (bergtal_abenteuer_daten.gd MEET) -> Figur zum Tauschen
@@ -414,7 +414,7 @@ static func stat_extra(ab, g: Control) -> void:
 	if not parts.is_empty():
 		g.add_child(ab._lab(T.t("Im Rucksack: %s") % ", ".join(parts), 12, DIM))
 	if not essen_an(ab):
-		g.add_child(ab._lab(T.t("Essen und Trinken: aus (Hilfe-Stufe Leicht)"), 12, DIM))
+		g.add_child(ab._lab(T.t("Essen und Trinken: aus (Schwierigkeit Leicht)"), 12, DIM))
 	elif hungrig(ab) or durstig(ab):
 		var w := []
 		if hungrig(ab):

@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 5797 (Stellen: 7963)
-Übersetzt: en 5797, fr 5797, it 5797, rm 5797
+Texte gesamt: 5794 (Stellen: 7960)
+Übersetzt: en 5794, fr 5794, it 5794, rm 5794
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 407 Stellen
-Nicht mehr im Code (noch in texte.json): 75
+Nicht mehr im Code (noch in texte.json): 85
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 67 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 19867, schlüssel 14806, keine Wörter 9099, index 7513, technisch 2592, doc 1629, einheit 235, englisch 107, log 78, pfad 68, html 67, klasse 24, shader 4
+Übersprungen (Grund: Anzahl): kennung 19877, schlüssel 14812, keine Wörter 9101, index 7519, technisch 2592, doc 1632, einheit 235, englisch 107, log 78, pfad 68, html 67, klasse 24, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  670    29
@@ -15,7 +15,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   abenteuer_figuren_daten.gd   235     0
   game.gd                  211    32
   bergtal.gd               199     5
-  bergtal_abenteuer_daten.gd   199     0
+  bergtal_abenteuer_daten.gd   197     0
   bergtal_horror.gd        154     3
   abenteuer_raetsel.gd     145     2
   abenteuer_moveeye.gd     110    14
@@ -45,7 +45,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_erleben_b.gd      55     0
   entdecken.gd              55     0
   spielbereich.gd           51     0
-  abenteuer_rucksack.gd     49     3
+  abenteuer_rucksack.gd     48     3
   scenes.gd                 47     0
   karte.gd                  46     8
   mwpc.gd                   46    12
@@ -107,9 +107,9 @@ Pro Datei (Texte / davon dynamische Stellen):
   devtool.gd                16     0
   weitwinkel.gd             16     0
   menschen.gd               16     0
-  grafik_hoch.gd            15     1
   b3d.gd                    15     3
   gamesneak.gd              15     0
+  grafik_hoch.gd            15     1
   home_editor.gd            14     3
   zimmertiere.gd            14     0
   abenteuer_inventar.gd     13     0
@@ -254,8 +254,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal_horror.gd:40  'offen'
   bergtal_horror.gd:58  'offen'
   bergtal_horror.gd:1102  'Fertig'
-  abenteuer_raetsel.gd:878  'Neu: '
-  abenteuer_raetsel.gd:887  'Gegenstände: '
+  abenteuer_raetsel.gd:875  'Neu: '
+  abenteuer_raetsel.gd:884  'Gegenstände: '
   abenteuer_rucksack.gd:218  'keine Wunschliste: '
   abenteuer_rucksack.gd:424  ' und '
   abenteuer_rucksack.gd:480  'Fertig'
@@ -268,11 +268,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:247  'Aussicht: '
   bergtal.gd:2181  'Schlafplatz: '
   bergtal.gd:2183  'Aussicht: '
-  bergtal_abenteuer.gd:340  'Start: '
-  bergtal_abenteuer.gd:817  ' auf der Bank mit Aussicht'
-  bergtal_abenteuer.gd:1916  'Wird frei: '
-  bergtal_abenteuer.gd:2060  '  · %.1f kg'
-  bergtal_abenteuer.gd:2145  ' - Bank'
+  bergtal_abenteuer.gd:348  'Start: '
+  bergtal_abenteuer.gd:825  ' auf der Bank mit Aussicht'
+  bergtal_abenteuer.gd:1925  'Wird frei: '
+  bergtal_abenteuer.gd:2069  '  · %.1f kg'
+  bergtal_abenteuer.gd:2154  ' - Bank'
   bergtal_aussicht.gd:357  'von'
   bergtal_aussicht.gd:536  'von'
   bergtal_aussicht.gd:1159  'Abzeichen: '
