@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.49** · passende MoveEye-Version (früher Motion Watch) **2.98.80**
+Stand: 31.10.2026 · Simulator-Version **3D-4.50** · passende MoveEye-Version (früher Motion Watch) **2.98.81**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.50 (MoveEye 2.98.81): Kamera wie Camera Module 3 NoIR (`camphys.gd`)
+
+- `camphys.gd` (neu): Belichtung, Verstärkung, Rauschen, NoIR-Farben, Unschärfe, Rolling Shutter; läuft in `_capture` nach
+  `weit.before_capture` und setzt `distort` nicht für die Weitwinkel-Kamera (deren Fischauge bleibt). camfx.gdshader: eigene
+  Uniforms getrennt von den Weitwinkel-Teilen. `ir_range` 10 m (vorher 14). Lite: Farbrauschen statt Flecken, kein Leuchten.
 
 ## NEU in 3D-4.49 (MoveEye 2.98.80): Gelände und Pflanzen (`gelaende.gd`, `vegetation.gd`)
 
