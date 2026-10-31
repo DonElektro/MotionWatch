@@ -685,6 +685,20 @@ static func op(main, d: Dictionary) -> Dictionary:
 		return {"ok": true}
 	if o == "shot":
 		return _shot(main, d)
+	if o == "paket":                                          # F5: figures from the pack (figur_paket.gd): mode an | aus | ""
+		var FP = load("res://scripts/figur_paket.gd")
+		if d.has("value"):
+			FP.mode = str(d["value"])
+		if bool(d.get("reload", false)):
+			FP.reset()
+		return {"ok": true, "paket": FP.info(), "status": FP.status_text()}
+	if o == "wave":                                           # F5: every person waves for a few seconds (actor.gd «wave»)
+		var nw := 0
+		for v in main.visitors.get_children():
+			if v.kind == "person":
+				v.play_emote("wave", float(d.get("secs", 4.0)))
+				nw += 1
+		return {"ok": true, "n": nw}
 	if o == "info":
 		var nf := 0
 		var np := 0

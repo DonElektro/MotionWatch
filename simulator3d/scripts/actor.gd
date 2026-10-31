@@ -102,6 +102,7 @@ var carry := false            # courier: holds the box in front with both hands
 var _lie_k := 0.0             # 3D-4.4: 0 standing … 1 lying (deer bedded down, simreal.gd «deer_bedded»)
 # ---- 3D-4.12 «Figuren»: a real figure with a skeleton (figur.gd) on «mittel» and better, the old one on «einfach» ----
 const Figur = preload("res://scripts/figur.gd")
+const FigurPaket = preload("res://scripts/figur_paket.gd")
 var fig = null                # the figure with a skeleton (null = built from shapes)
 var demo := -1.0              # tests (figur.gd «row»): walks on the spot at this speed
 var tag_p = null              # players: the dictionary of game.gd (name, role, team above the head)
@@ -410,7 +411,7 @@ func _figure_body(jacket: Color, shirt: Color, trousers: Color, skin: Color, hai
 			"bl": 0.0 if kid or jog else (randf_range(0.012, 0.045) if randf() < (0.5 if old_ or strong else 0.25) else 0.0),
 			"ch": 0.0 if kid else (randf_range(0.012, 0.03) if randf() < 0.4 else 0.0),
 			"lt": randf_range(0.93, 1.08) * (1.06 if strong else 1.0)}
-	fig = Figur.new()
+	fig = FigurPaket.new() if FigurPaket.wanted(main) else Figur.new()   # F5: figure from the pack (Quaternius, figur_paket.gd)
 	body_root.add_child(fig)
 	fig.build(self, p)
 
@@ -1353,6 +1354,10 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 			var f: float = clamp(1.0 - (emote_until - now) / 0.6, 0.0, 1.0)
 			sx = lerp(-2.6, 0.9, f)
 			ex = lerp(1.2, 0.1, f)
+		elif (idle == "wave" or em == "wave") and side > 0:             # F5: waving (towards the camera)
+			sx = 2.75
+			ex = 0.55 + 0.35 * sin(now * 9.0)
+			sz = 0.3 + 0.18 * sin(now * 9.0)
 		elif idle == "phone" and side > 0:                             # on the phone
 			sx = 0.5
 			ex = 2.3

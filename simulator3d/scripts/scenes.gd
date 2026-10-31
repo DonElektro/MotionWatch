@@ -240,7 +240,7 @@ func meadow(n: int, dmin: float, dmax: float, keep_clear := Callable()) -> void:
 	gm.albedo_color = Color(0.3, 0.5, 0.18)
 	gm.cull_mode = BaseMaterial3D.CULL_DISABLED
 	gm.roughness = 0.9
-	blade.material = gm
+	blade.material = gm if m.get("wind_fx") == null else m.wind_fx.grass_mat(gm.albedo_color)   # F6: bends in the wind
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.use_colors = false
@@ -540,10 +540,11 @@ func _camping() -> void:
 	var tn := node(root, m.pos_of(14.0, 7.0), deg_to_rad(-14.0))
 	var tent := PrismMesh.new()
 	tent.size = Vector3(2.6, 1.5, 2.4)
-	put(tn, tent, Vector3(0, 0.75, 0), Color(0.9, 0.5, 0.15), "tent")
+	var wf = m.get("wind_fx")                                                        # F6: the fabric moves in the wind
+	put(tn, tent, Vector3(0, 0.75, 0), Color(0.9, 0.5, 0.15) if wf == null else wf.tent_mat(Color(0.9, 0.5, 0.15), 1.5), "tent")
 	var fly := PrismMesh.new()                                                       # flysheet a bit bigger, darker
 	fly.size = Vector3(2.9, 1.58, 2.0)
-	put(tn, fly, Vector3(0, 0.78, 0), Color(0.75, 0.38, 0.1), "tent")
+	put(tn, fly, Vector3(0, 0.78, 0), Color(0.75, 0.38, 0.1) if wf == null else wf.tent_mat(Color(0.75, 0.38, 0.1), 1.58), "tent")
 	var door := PrismMesh.new()
 	door.size = Vector3(0.9, 0.9, 0.02)
 	put(tn, door, Vector3(0, 0.45, 1.21), Color(0.15, 0.1, 0.08), "tent")              # opening

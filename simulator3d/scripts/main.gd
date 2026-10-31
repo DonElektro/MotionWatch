@@ -301,6 +301,7 @@ var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Z
 var fauna                             # fauna.gd (3D-3.95)
 var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»): wind, light, lures, valuables of the catalogue
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
+var wind_fx                           # F6 wind_fx.gd: grass, bushes, crowns and tents move in the wind (vertex shaders)
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
 var colors_on := true
 var tracks                            # tracks.gd (3D-3.98)
@@ -419,6 +420,9 @@ func _ready() -> void:
 	objplus = preload("res://scripts/objekte_plus.gd").new()  # 3D-4.x «Gegenstände»: what the new things of the catalogue do
 	objplus.main = self
 	add_child(objplus)
+	wind_fx = preload("res://scripts/wind_fx.gd").new()       # F6: wind in grass, bushes, crowns, tents (before the scene is built)
+	wind_fx.main = self
+	add_child(wind_fx)
 	umgebung = preload("res://scripts/umgebung.gd").new()     # 3D-4.x: the surroundings like real (every part can be switched off)
 	umgebung.main = self
 	add_child(umgebung)
@@ -3452,6 +3456,8 @@ func _register_controls() -> void:
 	simreal.add_controls()                                 # 3D-4.4: closer to the real device
 	objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
 	umgebung.add_controls()                                # 3D-4.x: surroundings like real
+	wind_fx.add_controls()                                 # F6: wind in the plants and tents (Wetter → Natur und Wind)
+	preload("res://scripts/figur_paket.gd").add_controls(self)   # F5: figures from the pack (System → Grafik)
 	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
 	if statusled != null:
 		statusled.add_controls()                           # Licht & Ton → Status-LED & Tasten (Fenster «Gerät»)
@@ -4282,6 +4288,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return simreal.control(d)
 	elif a == "objekte":                               # 3D-4.x «Gegenstände»: {do: info | lure | test_place | test_clear | set}
 		return objplus.control(d)
+	elif a == "wind_fx":                               # F6: {do: info | set (on)}
+		return wind_fx.control(d)
 	elif a == "umgebung":                              # 3D-4.x: {do: info | set (key, value) | spawn (kind) | snow_puff | clear_tracks}
 		return umgebung.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
