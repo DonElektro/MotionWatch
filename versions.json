@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 12:50",
+ "generated": "2026-10-31 12:56",
  "versions": [
   {
-   "version": "2.98.101",
-   "file": "webcam_bewegung_2_98_101.py",
+   "version": "2.98.102",
+   "file": "webcam_bewegung_2_98_102.py",
    "url": "",
-   "sha256": "ac33fda1114aa4598ccc44f51d4d43e370156b912850f9413dff6ac968e691a6",
-   "date": "2026-10-31 12:50",
-   "notes": "Simulator 3D-4.70: Bergtal-Abenteuer – Leute im Tal, Gespräche mit Antwortwahl und Gedächtnis, Nebenaufgaben.",
-   "sig": "cf11f966c2b5e2ce1de87138e17df40b0ef4cd29aa2bc4210ba8d3794648c3655d711b54789e9d2d6c19c79e0eafa922f48ba9396a2d04ac0c19125f7e8ece09"
+   "sha256": "bc05a1845367715bc7a800f35760ce4036c7d982e4957b159e277b818e65c71a",
+   "date": "2026-10-31 12:56",
+   "notes": "Simulator 3D-4.71: Schlafzimmer mit Hamster, Wellensittich und Hauswinkelspinne, die sich nachts vor die Linse abseilt (Fehlalarm-Tests).",
+   "sig": "02d897b28e3fad8de8957c70d61db93e4a644c7ffa2e462ed360b147d4890a72dc7d51080955208970400da1eda241cbcc7c63fe7f848453fca2f709d3686d0e"
   },
   {
    "version": "2.97.1",

@@ -1,7 +1,7 @@
 {
- "version": "3D-4.70",
+ "version": "3D-4.71",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34465612,
- "sha256": "6c51ca9f93d0a7dfc502403889c863dc8cf89cc187dc0d69daef0aa43748d6b4",
- "notes": "Bergtal-Abenteuer: Leute im Tal, Gespräche, Nebenaufgaben."
+ "size": 34509645,
+ "sha256": "4222afb3b0af948be0d1e3bfcb0554d5b1858d7ea09e31265dae7ea18b96dd92",
+ "notes": "Schlafzimmer: Hamster, Wellensittich, Spinne vor der Linse (Fehlalarm-Tests)."
 }

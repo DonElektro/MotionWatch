@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.70"
+const VERSION := "3D-4.71"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -345,6 +345,7 @@ var colors_on := true
 var tracks                            # tracks.gd (3D-3.98)
 var seasons_on := true
 var sleeper                           # sleeper.gd (3D-3.96): the person in the bed of the bedroom scene
+var zimmertiere                       # zimmertiere.gd (Erlebniswelt «mehr Tiere drinnen»): hamster, budgie, spider in the bedroom
 var fauna_on := true
 var servo                             # servo.gd («Servo-Mechanik»): the two MG90S of the head with «Servos wie echt»
 var pan_vel := 0.0                    # rad/s of the head (for the blur while turning; with «Servo-Mechanik» incl. overshoot)
@@ -526,6 +527,9 @@ func _ready() -> void:
 	add_child(sleeper)
 	if scene == "schlafzimmer" and scenes != null and scenes.data.has("bed") and is_instance_valid(scenes.data["bed"]):
 		sleeper.place(scenes.data["bed"])
+	zimmertiere = preload("res://scripts/zimmertiere.gd").new()   # Erlebniswelt «mehr Tiere drinnen»: animals in the bedroom
+	zimmertiere.main = self
+	add_child(zimmertiere)
 	tunnel = preload("res://scripts/tunnel.gd").new()        # 3D-3.45: out through the firewall to MoveEye
 	tunnel.main = self
 	add_child(tunnel)
@@ -1222,6 +1226,8 @@ func _build_scene() -> void:
 		waerme_welt.on_scene()                   # 3D-4.26: parked cars (warm engine, hot roof), the person in the tent
 	if licht != null:
 		licht.on_scene()                         # «Licht & Nacht»: place lamps, tents, windows of the scene
+	if zimmertiere != null:
+		zimmertiere.on_scene()                   # Erlebniswelt «mehr Tiere drinnen»: hamster, budgie, spider (bedroom only)
 	if scene == "ort" and not geo.loaded and not geo.busy and ort_lat != 0.0:
 		geo.load_place(ort_lat, ort_lon, ort_name)      # from the cache or the internet; then place_loaded()
 	if scene == "wild":
@@ -4097,6 +4103,7 @@ func _register_controls() -> void:
 	add_control("toggle", "rifle", "Gewehr (unblutig, nur Tiere)", func(): return rifle_on, func(v): rifle_on = v, "Wildbeobachtung")
 	add_control("button", "shoot_head", "Schuss aus der Kopfkamera", null, func(): shoot_head(), "Wildbeobachtung")
 	add_control("button", "score0", "Punkte auf 0", null, func(): reset_score(), "Wildbeobachtung")
+	zimmertiere.add_controls()                         # Erlebniswelt «mehr Tiere drinnen»: Wildtier → Hamster, Vogel, Spinne
 	add_control("toggle", "news_popup", "Nach einem Update kurz zeigen, was neu ist (und was als Nächstes kommt)", func(): return news_popup, func(v): news_popup = v; _settings_dirty = true, "Updates")
 	add_control("button", "news_show", "Was ist neu?", null, func(): news.show_news(), "Updates")
 	# 3D-3.90: one choice instead of two switches (the old ids stay for MoveEye, hidden in the window)
@@ -5070,6 +5077,8 @@ func _control(d: Dictionary) -> Dictionary:
 		if d.has("x") and d.has("z"):
 			sp = Vector3(float(d["x"]), ground_y(float(d["x"]), float(d["z"])) + 1.5, float(d["z"]))
 		return emit_sound(str(d.get("kind", "clap")), int(d.get("n", 2)), sp)
+	elif a == "zimmertiere":                           # Erlebniswelt «mehr Tiere drinnen»: {do: info | lens (dist, hold) | set (pets, spider) | state (who, state)}
+		return zimmertiere.control(d) if zimmertiere != null else {"ok": false, "error": "no zimmertiere"}
 	elif a == "sleeper":                               # 3D-3.96: the person in the bed (bedroom scene)
 		if sleeper == null:
 			return {"ok": false, "error": "no sleeper"}

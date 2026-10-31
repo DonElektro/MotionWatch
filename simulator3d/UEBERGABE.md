@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.70** · passende MoveEye-Version (früher Motion Watch) **2.98.101**
+Stand: 31.10.2026 · Simulator-Version **3D-4.71** · passende MoveEye-Version (früher Motion Watch) **2.98.102**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.71 (MoveEye 2.98.102): Tiere im Schlafzimmer (`zimmertiere.gd`)
+
+- `zimmertiere.gd` (neu): Hamster im Laufrad, Wellensittich im Käfig, Hauswinkelspinne (Wand/Decke, seilt sich nachts vor
+  die Linse ab); `lens.gdshader` neuer Block `spider` (Uniform `spider`, 0 = Block übersprungen); Wärme in `waerme.gd`.
 
 ## NEU in 3D-4.70 (MoveEye 2.98.101): Figuren, Gespräche, Nebenaufgaben (`abenteuer_figuren.gd`, `_daten`)
 
