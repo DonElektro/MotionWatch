@@ -1009,6 +1009,12 @@
   "it": "%.2f kg",
   "rm": "%.2f kg"
  },
+ "%d %% geschafft": {
+  "en": "%d %% done",
+  "fr": "%d %% réussi",
+  "it": "%d %% fatto",
+  "rm": "%d %% reussì"
+ },
  "%d Aufnahmen": {
   "en": "%d pictures",
   "fr": "%d images",
@@ -1254,6 +1260,12 @@
   "fr": "%d sur 4 réussies",
   "it": "%d su 4 superate",
   "rm": "%d da 4 fatg"
+ },
+ "%d von 4 Jahreszeiten": {
+  "en": "%d of 4 seasons",
+  "fr": "%d saisons sur 4",
+  "it": "%d stagioni su 4",
+  "rm": "%d da 4 stagiuns"
  },
  "%d von 4 Jahreszeiten geschafft": {
   "en": "%d of 4 seasons done",
@@ -2268,6 +2280,12 @@
   "it": "3 minuti",
   "rm": "3 minutas"
  },
+ "3 Nächte, je etwa 10 Min.": {
+  "en": "3 nights, about 10 min each",
+  "fr": "3 nuits, environ 10 min chacune",
+  "it": "3 notti, circa 10 min ciascuna",
+  "rm": "3 notgs, mintgina var 10 min."
+ },
  "3. Versuch – diesmal der richtige Gipfel. – Hans": {
   "en": "3rd attempt – the right summit this time. – Hans",
   "fr": "3e essai – cette fois le bon sommet. – Hans",
@@ -2382,6 +2400,12 @@
   "it": "Raccogliere 5 frutti",
   "rm": "Rimnar 5 fritgs"
  },
+ "5 Kapitel, je 30–45 Min.": {
+  "en": "5 chapters, 30–45 min each",
+  "fr": "5 chapitres, 30–45 min chacun",
+  "it": "5 capitoli, 30–45 min ciascuno",
+  "rm": "5 chapitels, mintgin 30–45 min."
+ },
  "5 Minuten": {
   "en": "5 minutes",
   "fr": "5 minutes",
@@ -2430,6 +2454,12 @@
   "fr": "A, B ou C",
   "it": "A, B o C",
   "rm": "A, B u C"
+ },
+ "ab %d Jahren": {
+  "en": "from %d years",
+  "fr": "dès %d ans",
+  "it": "da %d anni",
+  "rm": "a partir da %d onns"
  },
  "ab und zu Besuch von selbst": {
   "en": "visitors now and then by themselves",
@@ -2754,6 +2784,12 @@
   "fr": "Attention : ce mode fait peur et contient quelques sursauts – bruits forts et images soudaines, obscurité, brouillard épais. Pas de sang, pas de violence. Pas pour les petits enfants.",
   "it": "Attenzione: questa modalità è inquietante e ha alcuni spaventi improvvisi – rumori forti e immagini improvvise, buio, nebbia fitta. Niente sangue, niente violenza. Non per bambini piccoli.",
   "rm": "Attenziun: quest modus è stgarschaivel ed ha intgins mumens da tschuffergna – canera ed images anetgas, stgirezza, tschajera spessa. Nagin sang, nagina violenza. Betg per uffants pitschens."
+ },
+ "Achtung: «%s» beginnt in diesem Spielstand von vorne (%d %% sind geschafft). Stufe und Abzeichen bleiben. Ein leerer Spielstand behält alles.": {
+  "en": "Careful: «%s» starts again from the beginning in this game state (%d %% are done). Level and badges stay. An empty game state keeps everything.",
+  "fr": "Attention : «%s» recommence depuis le début dans cette partie (%d %% sont réussis). Le niveau et les badges restent. Une partie vide garde tout.",
+  "it": "Attenzione: «%s» ricomincia da capo in questa partita (%d %% fatto). Livello e distintivi restano. Una partita vuota conserva tutto.",
+  "rm": "Attenziun: «%s» cumenza da nov en quest stadi dal gieu (%d %% èn reussids). Stgalim ed insignas restan. In stadi vid tegna tut."
  },
  "Adlerauge": {
   "en": "Eagle eye",
@@ -3114,6 +3150,18 @@
   "fr": "Tout découvert – la prochaine aventure t’attend.",
   "it": "Tutto scoperto – la prossima avventura ti aspetta.",
   "rm": "Tut scuvrì – la proxima aventura spetga gia."
+ },
+ "Alles entdeckt – der nächste Ort wartet schon.": {
+  "en": "Everything discovered – the next place is waiting.",
+  "fr": "Tout découvert – le prochain lieu t’attend.",
+  "it": "Tutto scoperto – il prossimo luogo ti aspetta.",
+  "rm": "Tut scuvrì – il proxim lieu spetga gia."
+ },
+ "Alles Entdeckte und die Abzeichen": {
+  "en": "Everything discovered and the badges",
+  "fr": "Tout ce qui est découvert et les badges",
+  "it": "Tutto ciò che hai scoperto e i distintivi",
+  "rm": "Tut quai che ti has scuvrì e las insignas"
  },
  "Alles gewählt? Dann «Szene bauen».": {
   "en": "Everything chosen? Then «Build scene».",
@@ -5293,6 +5341,12 @@
   "it": "Vicino alla baracca della piscina qualcuno siede pazientissimo davanti a un muro …",
   "rm": "Sper la chamona da la piscina sesa insatgi fitg pazient davant in mir …"
  },
+ "Beim Start gewählt": {
+  "en": "Chosen at the start",
+  "fr": "Choisi au départ",
+  "it": "Scelto all’inizio",
+  "rm": "Tschernì al cumenzament"
+ },
  "Beim Start: Nur Gruppen": {
   "en": "On start: groups only",
   "fr": "Au démarrage : seulement les groupes",
@@ -6932,6 +6986,12 @@
   "it": "Lo strumento per sviluppatori è solo per il proprietario (non in modalità bambini).",
   "rm": "L'utensil da svilup è mo per il possessur (betg en il modus d'uffants)."
  },
+ "Das Entwicklertool «Kapitel-Sprung» ist aktiv – zuerst dort beenden.": {
+  "en": "The developer tool «Chapter jump» is active – end it there first.",
+  "fr": "L’outil de développement «Saut de chapitre» est actif – le terminer d’abord.",
+  "it": "Lo strumento sviluppatore «Salto di capitolo» è attivo – terminalo prima lì.",
+  "rm": "L’utensil da sviluppader «Sigl da chapitel» è activ – l’emprim terminar là."
+ },
  "Das Ergebnis als Text in die Zwischenablage": {
   "en": "Copy the result as text to the clipboard",
   "fr": "Le résultat en texte dans le presse-papiers",
@@ -7405,6 +7465,12 @@
   "fr": "Plus l'expérience de l'aventure du Bergtal (%d) - un seul niveau pour tout, par sauvegarde.",
   "it": "Più l'esperienza dell'avventura del Bergtal (%d) - un solo livello per tutto, per salvataggio.",
   "rm": "Plus l'experientscha da l'aventura dal Bergtal (%d) - in nivel per tut, per stadi da gieu."
+ },
+ "Dazu die Erfahrung aus «Die Karte des Grossvaters» (%d) - ein Level für alles, pro Spielstand.": {
+  "en": "Plus the experience from «Grandfather’s map» (%d) - one level for everything, per game state.",
+  "fr": "Plus l’expérience de «La carte du grand-père» (%d) - un niveau pour tout, par partie.",
+  "it": "Più l’esperienza di «La mappa del nonno» (%d) - un livello per tutto, per partita.",
+  "rm": "Plus l’experientscha da «La charta dal tat» (%d) - in stgalim per tut, per stadi dal gieu."
  },
  "Dazu kommen: ": {
   "en": "Added: ",
@@ -8726,6 +8792,12 @@
   "it": "La mappa della guida alpina",
   "rm": "La charta dal guid da muntogna"
  },
+ "Die Karte des Grossvaters": {
+  "en": "Grandfather’s map",
+  "fr": "La carte du grand-père",
+  "it": "La mappa del nonno",
+  "rm": "La charta dal tat"
+ },
  "die Karte zeigt jetzt, was man von hier sieht.": {
   "en": "the map now shows what you can see from here.",
   "fr": "la carte montre maintenant ce qu’on voit d’ici.",
@@ -9393,6 +9465,12 @@
   "it": "Questa modalità è protetta da una password.",
   "rm": "Quest modus è protegì cun in pled-clav."
  },
+ "Dieser Ort kommt mit einer nächsten Version.": {
+  "en": "This place comes with a next version.",
+  "fr": "Ce lieu arrive avec une prochaine version.",
+  "it": "Questo luogo arriva con una prossima versione.",
+  "rm": "Quest lieu vegn cun ina proxima versiun."
+ },
  "Dieser Punkt liegt nicht in der Schweiz.": {
   "en": "This point is not in Switzerland.",
   "fr": "Ce point n’est pas en Suisse.",
@@ -9542,6 +9620,12 @@
   "fr": "Trois marmottes poussent une balle de tennis perdue. Si elle roule dans le terrier, elle ressort par l'autre trou – avec un petit derrière.",
   "it": "Tre marmotte spingono avanti e indietro una pallina da tennis persa. Se rotola nella tana, esce dall'altro buco – con un piccolo dietro.",
   "rm": "Trais muntanellas stuschan ina balla da tennis persa nanavant e nanavos. Sch'ella rudla en la tana, vegn ella or da l'auter fora – cun in giuven davos."
+ },
+ "Drei Nächte am Pass beim alten Hospiz – was nimmt MoveEye auf? Unheimlich, mit Schreckmomenten.": {
+  "en": "Three nights on the pass at the old hospice – what does MoveEye record? Eerie, with jump scares.",
+  "fr": "Trois nuits au col près du vieil hospice – qu’enregistre MoveEye ? Inquiétant, avec des moments d’effroi.",
+  "it": "Tre notti al passo presso il vecchio ospizio – cosa registra MoveEye? Inquietante, con momenti di spavento.",
+  "rm": "Trais notgs al pass tar il vegl ospizi – tge registrescha MoveEye? Sgarschaivel, cun mumaints da tema."
  },
  "Drei Nächte lang bewacht MoveEye dein Lager im Bergtal. Was es aufnimmt, findest du am Morgen in seinem Verlauf.": {
   "en": "For three nights MoveEye guards your camp in the mountain valley. What it records, you will find in its history in the morning.",
@@ -10100,6 +10184,12 @@
   "fr": "Un insigne de l'aventure Bergtal.",
   "it": "Un distintivo dell'avventura Bergtal.",
   "rm": "Ina insigna da l'aventura Bergtal."
+ },
+ "Ein Abzeichen aus «Die Karte des Grossvaters».": {
+  "en": "A badge from «Grandfather’s map».",
+  "fr": "Un badge de «La carte du grand-père».",
+  "it": "Un distintivo da «La mappa del nonno».",
+  "rm": "Ina insigna da «La charta dal tat»."
  },
  "Ein Abzeichen der Aussichtspunkte.": {
   "en": "A badge of the viewpoints.",
@@ -11061,6 +11151,12 @@
   "it": "Confronto delle impostazioni A/B",
   "rm": "Cumparegliaziun da parameters A/B"
  },
+ "Einstieg auf der Alp": {
+  "en": "Start on the alp",
+  "fr": "Début sur l’alpage",
+  "it": "Inizio sull’alpe",
+  "rm": "Entrada sin l’alp"
+ },
  "Eisenbahnwagen": {
   "en": "Railway wagon",
   "fr": "Wagon de chemin de fer",
@@ -11162,6 +11258,12 @@
   "fr": "Découverte +%d · badge +%d · aventure réussie +%d · aventure commencée +%d",
   "it": "Scoperta +%d · distintivo +%d · avventura completata +%d · avventura iniziata +%d",
   "rm": "Scuverta +%d · insigna +%d · aventura reussida +%d · aventura cumenzada +%d"
+ },
+ "Entdeckung +%d · Abzeichen +%d · Ort ganz entdeckt +%d · Ort besucht +%d": {
+  "en": "Discovery +%d · Badge +%d · Place fully discovered +%d · Place visited +%d",
+  "fr": "Découverte +%d · Badge +%d · Lieu entièrement découvert +%d · Lieu visité +%d",
+  "it": "Scoperta +%d · Distintivo +%d · Luogo scoperto del tutto +%d · Luogo visitato +%d",
+  "rm": "Scuverta +%d · Insigna +%d · Lieu scuvrì cumplettamain +%d · Lieu visità +%d"
  },
  "Entdeckungen": {
   "en": "Discoveries",
@@ -11757,6 +11859,12 @@
   "fr": "Victoire d'étape",
   "it": "Vittoria di tappa",
   "rm": "Victoria d'etappa"
+ },
+ "etwa 2 Stunden": {
+  "en": "about 2 hours",
+  "fr": "environ 2 heures",
+  "it": "circa 2 ore",
+  "rm": "var 2 uras"
  },
  "Etwas fällt ins Gras": {
   "en": "Something falls into the grass",
@@ -12568,6 +12676,12 @@
   "fr": "Filename: moveeye_rueckmeldung.jpg",
   "it": "Filename: moveeye_rueckmeldung.jpg",
   "rm": "Filename: moveeye_rueckmeldung.jpg"
+ },
+ "Finale am Gipfel": {
+  "en": "Finale at the summit",
+  "fr": "Finale au sommet",
+  "it": "Finale in vetta",
+  "rm": "Finala al piz"
  },
  "Finde den Fuchs": {
   "en": "Find the fox",
@@ -13902,6 +14016,18 @@
   "it": "Nessuna partita in questo momento.",
   "rm": "Gist nagina runda."
  },
+ "Gerade läuft eine Geschichte – zuerst beenden, dann wechseln.": {
+  "en": "A story is running – end it first, then switch.",
+  "fr": "Une histoire est en cours – la terminer d’abord, puis changer.",
+  "it": "È in corso una storia – prima terminala, poi cambia.",
+  "rm": "Ina istorgia è en funcziun – l’emprim terminar, lura midar."
+ },
+ "Gerade läuft eine Tour – erst am Lager oder nach dem Morgen wechseln.": {
+  "en": "A tour is running – switch at the camp or after the morning.",
+  "fr": "Une randonnée est en cours – changer au camp ou après le matin.",
+  "it": "È in corso un’escursione – cambia al campo o dopo il mattino.",
+  "rm": "Ina tura è en funcziun – midar pir al champ u suenter la damaun."
+ },
  "Gerade läuft keine Runde «Team gegen MoveEye» oder «Verstecken».": {
   "en": "No round «Team against MoveEye» or «Hide and seek» is running right now.",
   "fr": "Aucune manche «Équipe contre MoveEye» ou «Cache-cache» en cours.",
@@ -13998,6 +14124,12 @@
   "it": "Dei sassi bloccano una piccola nicchia. Qualcosa spunta fuori.",
   "rm": "Grava bloccà ina pitschna nischa. Insatge guarda ora."
  },
+ "Geschafft": {
+  "en": "Done",
+  "fr": "Réussi",
+  "it": "Fatto",
+  "rm": "Reussì"
+ },
  "Geschafft - die Beine brennen, aber der Platz ist es wert.": {
   "en": "Made it - the legs are burning, but the place is worth it.",
   "fr": "Réussi - les jambes brûlent, mais l'endroit en vaut la peine.",
@@ -14039,6 +14171,18 @@
   "fr": "Commencer l’histoire",
   "it": "Inizia la storia",
   "rm": "Cumenzar l’istorgia"
+ },
+ "Geschichte «Die Karte des Grossvaters»": {
+  "en": "Story «Grandfather’s map»",
+  "fr": "Histoire «La carte du grand-père»",
+  "it": "Storia «La mappa del nonno»",
+  "rm": "Istorgia «La charta dal tat»"
+ },
+ "Geschichten": {
+  "en": "Stories",
+  "fr": "Histoires",
+  "it": "Storie",
+  "rm": "Istorgias"
  },
  "geschätzt": {
   "en": "estimated",
@@ -15649,6 +15793,12 @@
   "it": "Qui giochi le avventure una dopo l’altra. Scopri tutto, raccogli distintivi – così sale il tuo livello.",
   "rm": "Qua giogas ti las aventuras ina suenter l’autra. Scuvra tut, rimna insignas – uschia crescha tes stgalim."
  },
+ "Hier spielst du Geschichten und entdeckst die Orte der Reihe nach. Entdecke alles, sammle Abzeichen – so steigt deine Stufe.": {
+  "en": "Here you play stories and discover the places one after the other. Discover everything, collect badges – that is how your level rises.",
+  "fr": "Ici tu joues des histoires et découvres les lieux l’un après l’autre. Découvre tout, collectionne les badges – ainsi ton niveau monte.",
+  "it": "Qui giochi storie e scopri i luoghi uno dopo l’altro. Scopri tutto, raccogli distintivi – così sale il tuo livello.",
+  "rm": "Qua giogas ti istorgias e scuvras ils lieus in suenter l’auter. Scuvra tut, rimna insignas – uschia crescha tes stgalim."
+ },
  "Hier steht kein Velo.": {
   "en": "There is no bike here.",
   "fr": "Il n'y a pas de vélo ici.",
@@ -15774,6 +15924,12 @@
   "fr": "Montée aux ruines d'Altstafel",
   "it": "Su alle rovine di Altstafel",
   "rm": "Ensi a la ruina Altstafel"
+ },
+ "Hinreisen": {
+  "en": "Travel there",
+  "fr": "Y aller",
+  "it": "Andarci",
+  "rm": "Ir là"
  },
  "Hinspringen": {
   "en": "Jump there",
@@ -17545,6 +17701,12 @@
   "it": "Giacca",
   "rm": "Giacca"
  },
+ "Jahreszeit": {
+  "en": "Season",
+  "fr": "Saison",
+  "it": "Stagione",
+  "rm": "Stagiun"
+ },
  "Jahreszeit (gilt für die ganze Runde)": {
   "en": "Season (for the whole round)",
   "fr": "Saison (pour toute la partie)",
@@ -17568,6 +17730,12 @@
   "fr": "Saison dans la vallée",
   "it": "Stagione nella valle alpina",
   "rm": "Stagiun en la val"
+ },
+ "Jahreszeit: %s": {
+  "en": "Season: %s",
+  "fr": "Saison : %s",
+  "it": "Stagione: %s",
+  "rm": "Stagiun: %s"
  },
  "Jahreszeiten-Tor": {
   "en": "Season gate",
@@ -21538,6 +21706,12 @@
   "it": "Con un grande zaino (sagoma diversa)",
   "rm": "Cun in grond satgados (auter contur)"
  },
+ "Mit Grossvaters alter Schatzkarte wanderst du in fünf Kapiteln durchs Bergtal – nachts bewacht MoveEye dein Lager.": {
+  "en": "With grandfather’s old treasure map you hike through the mountain valley in five chapters – at night MoveEye guards your camp.",
+  "fr": "Avec la vieille carte au trésor du grand-père, tu traverses la vallée en cinq chapitres – la nuit, MoveEye garde ton camp.",
+  "it": "Con la vecchia mappa del tesoro del nonno attraversi la valle in cinque capitoli – di notte MoveEye sorveglia il tuo campo.",
+  "rm": "Cun la veglia charta da stgazi dal tat viagias ti en tschintg chapitels tras la val – la notg survegli MoveEye tes champ."
+ },
  "Mit Kapuze / Regenumhang (Umriss ohne Kopf, kühl im Wärmebild)": {
   "en": "With hood / rain cape (outline without head, cool in the thermal image)",
   "fr": "Avec capuche / cape de pluie (silhouette sans tête, froide dans l’image thermique)",
@@ -21549,6 +21723,12 @@
   "fr": "Avec un set de via ferrata, un casque et un peu d'entraînement, ça va. Échelons, échelles, câble - et quelle vue !",
   "it": "Con set da ferrata, casco e un po' di pratica va bene. Gradini di ferro, scale, cavo d'acciaio - e che vista!",
   "rm": "Cun set da via ferrata, chaplina ed in pau exercizi va ei bain. Stgalims da fier, stgalas, suga da fier - ed ina vista!"
+ },
+ "Mit Maggie, dem kleinen Hund, bringst du einen leuchtenden Kristall durch vier Jahreszeiten zum Gipfel.": {
+  "en": "With Maggie, the little dog, you carry a glowing crystal through four seasons to the summit.",
+  "fr": "Avec Maggie, la petite chienne, tu portes un cristal lumineux à travers quatre saisons jusqu’au sommet.",
+  "it": "Con Maggie, la piccola cagnolina, porti un cristallo luminoso attraverso quattro stagioni fino in vetta.",
+  "rm": "Cun Maggie, la pitschna chaun, portas ti in cristal glischant tras quatter stagiuns fin al piz."
  },
  "Mit Maggie, dem kleinen Hund, bringst du einen leuchtenden Kristall durch vier Jahreszeiten zum Gipfel. Etwa 2 Stunden, ein bisschen gruselig.": {
   "en": "With Maggie, the little dog, you carry a glowing crystal through four seasons to the summit. About 2 hours, a little bit spooky.",
@@ -22949,6 +23129,12 @@
   "it": "Misurare automaticamente dopo ogni aggiornamento di MoveEye (breve, 1×, quando nessuno usa il simulatore da 3 minuti; con una chiave il risultato viene inviato)",
   "rm": "Mesirar automaticamain suenter mintga update da MoveEye (curt, 1×, sche nagin n’ha duvrà il simulatur dapi 3 minutas; cun clav vegn il resultat tramess)"
  },
+ "Nach Kapitel 5 der «Karte des Grossvaters» gibt es einen Hinweis auf die zweite Karte.": {
+  "en": "After chapter 5 of «Grandfather’s map» there is a hint to the second map.",
+  "fr": "Après le chapitre 5 de «La carte du grand-père», il y a un indice sur la deuxième carte.",
+  "it": "Dopo il capitolo 5 di «La mappa del nonno» c’è un indizio sulla seconda mappa.",
+  "rm": "Suenter il chapitel 5 da «La charta dal tat» datti in indizi davart la segunda charta."
+ },
  "Nach Updates suchen (jetzt %s)": {
   "en": "Search for updates (now %s)",
   "fr": "Chercher des mises à jour (actuellement %s)",
@@ -23346,6 +23532,12 @@
   "it": "Nome",
   "rm": "Num"
  },
+ "Name des Spielstands": {
+  "en": "Name of the game state",
+  "fr": "Nom de la partie",
+  "it": "Nome della partita",
+  "rm": "Num dal stadi dal gieu"
+ },
  "Name nicht gefunden (DNS)": {
   "en": "Name not found (DNS)",
   "fr": "Nom introuvable (DNS)",
@@ -23621,6 +23813,12 @@
   "fr": "Recommencer",
   "it": "Ricomincia",
   "rm": "Cumenzar da nov"
+ },
+ "Neu beginnen: %s": {
+  "en": "Start again: %s",
+  "fr": "Recommencer : %s",
+  "it": "Ricomincia: %s",
+  "rm": "Cumenzar da nov: %s"
  },
  "Neu frei: %s": {
   "en": "Newly unlocked: %s",
@@ -24090,6 +24288,12 @@
   "it": "Ancora nessuna immagine mancata dal gioco.",
   "rm": "Anc nagins maletgs manchentads dal gieu."
  },
+ "noch leer": {
+  "en": "still empty",
+  "fr": "encore vide",
+  "it": "ancora vuoto",
+  "rm": "anc vid"
+ },
  "Noch leer - am Morgen jedes Kapitels zählt, was ihr gefunden habt.": {
   "en": "Still empty - every chapter's morning counts what you found.",
   "fr": "Encore vide - le matin de chaque chapitre compte ce que vous avez trouvé.",
@@ -24101,6 +24305,12 @@
   "fr": "pas encore",
   "it": "non ancora",
   "rm": "anc betg"
+ },
+ "noch nicht begonnen": {
+  "en": "not started yet",
+  "fr": "pas encore commencé",
+  "it": "non ancora iniziato",
+  "rm": "anc betg cumenzà"
  },
  "Noch nicht besucht – was es zu entdecken gibt, zeigt sich vor Ort.": {
   "en": "Not visited yet – what there is to discover shows on the spot.",
@@ -24851,6 +25061,18 @@
   "fr": "Lieu : %s (%.5f, %.5f)\n%s\n",
   "it": "Luogo: %s (%.5f, %.5f)\n%s\n",
   "rm": "Lieu: %s (%.5f, %.5f)\n%s\n"
+ },
+ "Orte besucht": {
+  "en": "Places visited",
+  "fr": "Lieux visités",
+  "it": "Luoghi visitati",
+  "rm": "Lieus visitads"
+ },
+ "Orte ganz entdeckt": {
+  "en": "Places fully discovered",
+  "fr": "Lieux entièrement découverts",
+  "it": "Luoghi scoperti del tutto",
+  "rm": "Lieus scuvrids cumplettamain"
  },
  "Ortssuche: ": {
   "en": "Place search: ",
@@ -26516,6 +26738,12 @@
   "it": "Preparare lo zaino, attraversare la valle con la mappa del tesoro, una notte con MoveEye – capitolo, atmosfera e difficoltà si scelgono nell’avventura.",
   "rm": "Pachetar il rucksac, cun la charta da stgazi tras la val, ina notg cun MoveEye – chapitel, atmosfera e grad da difficultad tschernas ti en l’aventura."
  },
+ "Rucksack packen, mit Grossvaters Schatzkarte durchs Bergtal, Nacht mit MoveEye – Spielstand, Schwierigkeit und Jahreszeit wählst du beim Start.": {
+  "en": "Pack the rucksack, through the mountain valley with grandfather’s treasure map, a night with MoveEye – game state, difficulty and season are chosen at the start.",
+  "fr": "Faire le sac, traverser la vallée avec la carte au trésor du grand-père, une nuit avec MoveEye – partie, difficulté et saison se choisissent au départ.",
+  "it": "Prepara lo zaino, attraverso la valle con la mappa del tesoro del nonno, una notte con MoveEye – partita, difficoltà e stagione si scelgono all’inizio.",
+  "rm": "Pachetar il satg, cun la charta da stgazi dal tat tras la val, ina notg cun MoveEye – stadi dal gieu, grevezza e stagiun tschernas ti al cumenzament."
+ },
  "Ruderboot": {
   "en": "Rowing boat",
   "fr": "Barque",
@@ -27647,11 +27875,23 @@
   "it": "Difficoltà",
   "rm": "Difficultad"
  },
+ "Schwierigkeit & Jahreszeit": {
+  "en": "Difficulty & season",
+  "fr": "Difficulté et saison",
+  "it": "Difficoltà e stagione",
+  "rm": "Grevezza e stagiun"
+ },
  "Schwierigkeit & Ziel": {
   "en": "Difficulty & goal",
   "fr": "Difficulté & but",
   "it": "Difficoltà & meta",
   "rm": "Difficultad & finamira"
+ },
+ "Schwierigkeit: %s": {
+  "en": "Difficulty: %s",
+  "fr": "Difficulté : %s",
+  "it": "Difficoltà: %s",
+  "rm": "Grevezza: %s"
  },
  "Schwimmbad": {
   "en": "Swimming pool",
@@ -28745,6 +28985,18 @@
   "fr": "Sauvegarde %d",
   "it": "Salvataggio %d",
   "rm": "Stadi da gieu %d"
+ },
+ "Spielstand wechseln": {
+  "en": "Switch game state",
+  "fr": "Changer de partie",
+  "it": "Cambia partita",
+  "rm": "Midar il stadi dal gieu"
+ },
+ "Spielstand: %s": {
+  "en": "Game state: %s",
+  "fr": "Partie : %s",
+  "it": "Partita: %s",
+  "rm": "Stadi dal gieu: %s"
  },
  "Spieltest": {
   "en": "Play test",
@@ -30192,6 +30444,12 @@
   "fr": "Partie 2 - La deuxième carte",
   "it": "Parte 2 - La seconda mappa",
   "rm": "Part 2 - La segunda charta"
+ },
+ "Teil 2 – Die zweite Karte": {
+  "en": "Part 2 – The second map",
+  "fr": "Partie 2 – La deuxième carte",
+  "it": "Parte 2 – La seconda mappa",
+  "rm": "Part 2 – La segunda charta"
  },
  "Telefoniert und bleibt lange stehen (kaum Bewegung)": {
   "en": "Phones and stands still for a long time (hardly any movement)",
@@ -32450,6 +32708,12 @@
   "it": "Qual è l’obiettivo?",
   "rm": "Tge è la finamira?"
  },
+ "Was ist dein Ziel?": {
+  "en": "What is your goal?",
+  "fr": "Quel est ton but ?",
+  "it": "Qual è il tuo obiettivo?",
+  "rm": "Tge è tia finamira?"
+ },
  "Was ist hier? Text an Claude …": {
   "en": "What is here? Text to Claude …",
   "fr": "Qu’y a-t-il ici ? Texte pour Claude …",
@@ -32834,11 +33098,23 @@
   "it": "continua dal passo %d – il pannello passo dopo passo",
   "rm": "cuntinuar tar il pass %d – la panela pass per pass"
  },
+ "Weiter entdecken": {
+  "en": "Keep discovering",
+  "fr": "Continuer à découvrir",
+  "it": "Continua a scoprire",
+  "rm": "Cuntinuar a scuvrir"
+ },
  "Weiter geht es im Abenteuer «%s».": {
   "en": "It goes on in the adventure «%s».",
   "fr": "La suite dans l’aventure « %s ».",
   "it": "Si continua nell’avventura «%s».",
   "rm": "I va vinavant en l’aventura «%s»."
+ },
+ "Weiter geht es mit dem Entdecken: «%s».": {
+  "en": "Keep discovering: «%s».",
+  "fr": "On continue à découvrir : «%s».",
+  "it": "Si continua a scoprire: «%s».",
+  "rm": "I va vinavant cun scuvrir: «%s»."
  },
  "Weiter geht's: %s": {
   "en": "On we go: %s",
@@ -32941,6 +33217,18 @@
   "fr": "Continuer à jouer",
   "it": "Continuare a giocare",
   "rm": "Giugar vinavant"
+ },
+ "Weiterspielen: %s (%d %%)": {
+  "en": "Continue: %s (%d %%)",
+  "fr": "Continuer : %s (%d %%)",
+  "it": "Continua: %s (%d %%)",
+  "rm": "Giugar vinavant: %s (%d %%)"
+ },
+ "Weiterspielen: %s, %s (%d %%)": {
+  "en": "Continue: %s, %s (%d %%)",
+  "fr": "Continuer : %s, %s (%d %%)",
+  "it": "Continua: %s, %s (%d %%)",
+  "rm": "Giugar vinavant: %s, %s (%d %%)"
  },
  "Weitwinkel am Mast: Richtung": {
   "en": "Wide angle on the mast: direction",
@@ -33146,6 +33434,12 @@
   "fr": "Qui joue ? (un nom par ligne)",
   "it": "Chi gioca? (un nome per riga)",
   "rm": "Tgi giogia? (in num per lingia)"
+ },
+ "Wer spielt? Wähle deinen Spielstand – jeder in der Familie kann seinen eigenen haben.": {
+  "en": "Who is playing? Choose your game state – everybody in the family can have their own.",
+  "fr": "Qui joue ? Choisis ta partie – chacun dans la famille peut avoir la sienne.",
+  "it": "Chi gioca? Scegli la tua partita – ognuno in famiglia può avere la sua.",
+  "rm": "Tgi gioga? Tscherna tes stadi dal gieu – mintgin en la famiglia po avair ses agen."
  },
  "Werkseinstellungen: %d Dateien gelöscht, Kopie %s": {
   "en": "Factory settings: %d files deleted, copy %s",
@@ -35195,6 +35489,12 @@
   "it": "«%s» non trovato.",
   "rm": "«%s» betg chattà."
  },
+ "«%s» – viel Spass beim Entdecken!": {
+  "en": "«%s» – have fun discovering!",
+  "fr": "«%s» – amuse-toi bien à découvrir !",
+  "it": "«%s» – buon divertimento a scoprire!",
+  "rm": "«%s» – bun divertiment cun scuvrir!"
+ },
  "«%s»: %d× erwischt in %d Runden → Wächter oder Gegner zu schnell / zu streng?": {
   "en": "«%s»: caught %d× in %d rounds → guard or opponents too fast / too strict?",
   "fr": "« %s » : pris %d× en %d parties → gardien ou adversaires trop rapides / trop sévères ?",
@@ -35459,11 +35759,23 @@
   "it": "Persona anziana con bastone",
   "rm": "Persuna veglia cun bastun"
  },
+ "Ändern": {
+  "en": "Change",
+  "fr": "Modifier",
+  "it": "Cambia",
+  "rm": "Midar"
+ },
  "Öffnen": {
   "en": "Open",
   "fr": "Ouvrir",
   "it": "Apri",
   "rm": "Avrir"
+ },
+ "Öffnen (Passwort)": {
+  "en": "Open (password)",
+  "fr": "Ouvrir (mot de passe)",
+  "it": "Apri (password)",
+  "rm": "Avrir (pled-clav)"
  },
  "Öffnet die Anleitung im Browser (MoveEye muss verbunden sein)": {
   "en": "Opens the manual in the browser (MoveEye must be connected)",
@@ -35482,6 +35794,12 @@
   "fr": "S’ouvre quand la moitié de l’aventure précédente est découverte.",
   "it": "Si apre quando metà dell’avventura precedente è scoperta.",
   "rm": "S’avra, cura che la mesadad da l’aventura avant è scuvrida."
+ },
+ "Öffnet sich, wenn der Ort davor zur Hälfte entdeckt ist.": {
+  "en": "Opens when half of the place before is discovered.",
+  "fr": "S’ouvre quand la moitié du lieu précédent est découverte.",
+  "it": "Si apre quando metà del luogo precedente è scoperta.",
+  "rm": "S’avra, cura che la mesadad dal lieu avant è scuvrida."
  },
  "Über das Plateau nach Westen": {
   "en": "Across the plateau to the west",
@@ -35525,6 +35843,12 @@
   "it": "Sul cono di valanga: la neve vecchia è compatta e regge.",
   "rm": "Sur il cun da lavina: la naiv veglia è dira e porta."
  },
+ "Über den Pass ins nächste Tal: Grossvaters zweite Karte wartet. Kommt mit einer nächsten Version.": {
+  "en": "Over the pass into the next valley: grandfather’s second map is waiting. Comes with a next version.",
+  "fr": "Par le col dans la vallée suivante : la deuxième carte du grand-père attend. Arrive avec une prochaine version.",
+  "it": "Oltre il passo nella valle successiva: la seconda mappa del nonno aspetta. Arriva con una prossima versione.",
+  "rm": "Sur il pass en la proxima val: la segunda charta dal tat spetga. Vegn cun ina proxima versiun."
+ },
  "Über den Pass zum Hospiz. Dort soll es die beste Suppe im ganzen Kanton geben.": {
   "en": "Over the pass to the hospice. They say it has the best soup in the whole canton.",
   "fr": "Par le col jusqu'à l'hospice. Il paraît qu'on y sert la meilleure soupe du canton.",
@@ -35560,6 +35884,12 @@
   "fr": "Passer la nuit dans la vallée",
   "it": "Pernottare nella valle alpina",
   "rm": "Durmir en la val"
+ },
+ "Übernehmen": {
+  "en": "Apply",
+  "fr": "Appliquer",
+  "it": "Applica",
+  "rm": "Applitgar"
  },
  "Überraschung jetzt auslösen (bewertet MoveEye; nachts von selbst: Wetter → Überraschungsnacht):": {
   "en": "Trigger surprise now (rates MoveEye; at night by itself: Weather → Surprise night):",
@@ -37679,6 +38009,12 @@
   "it": "🔍 Zoom (8 s): le persone sembrano più grandi, l’immagine è più stretta",
   "rm": "🔍 Zoom (8 s): la glieud para pli gronda, il maletg è pli stretg"
  },
+ "🔒 Gesperrt": {
+  "en": "🔒 Locked",
+  "fr": "🔒 Verrouillé",
+  "it": "🔒 Bloccato",
+  "rm": "🔒 Bloccà"
+ },
  "🔒 In der Zelle – ein Teamkollege muss dich befreien": {
   "en": "🔒 In the cell – a teammate has to free you",
   "fr": "🔒 En cellule – un coéquipier doit te libérer",
@@ -37696,6 +38032,12 @@
   "fr": "🔒 Arrivée encore fermée – trouve d’abord tous les cristaux",
   "it": "🔒 Traguardo ancora chiuso – prima trova tutti i cristalli",
   "rm": "🔒 Finala anc serrada – l’emprim chattar tut ils cristals"
+ },
+ "🔒 Öffnen": {
+  "en": "🔒 Open",
+  "fr": "🔒 Ouvrir",
+  "it": "🔒 Apri",
+  "rm": "🔒 Avrir"
  },
  "🔓 %s befreit %s": {
   "en": "🔓 %s frees %s",

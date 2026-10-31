@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.84** · passende MoveEye-Version (früher Motion Watch) **2.98.115**
+Stand: 31.10.2026 · Simulator-Version **3D-4.85** · passende MoveEye-Version (früher Motion Watch) **2.98.116**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.85 (MoveEye 2.98.116): Fenster «Spielen» mit Geschichten (`geschichten.gd`)
+
+- `geschichten.gd` (neu): Regal mit Geschichten-Karten (Die Karte des Grossvaters = Bergtal-Abenteuer, Maggie, Hospiz nur
+  Besitzer mit Schloss, Teil 2 gesperrt), gleicher Start (Spielstand → Figur → Schwierigkeit/Jahreszeit); `spielbereich.gd`
+  mit Kopfzeile Stufe/Spielstand/Weiterspielen und «Entdecken»; Abzeichen im Entdeckungsbuch (`entdecken.gd`).
+- MoveEye: Reiter «Spielen» gleich aufgebaut (639i, 139; Bild `/sim/story_pic`), `net.gd`/`schnittstelle.json` angepasst.
 
 ## NEU in 3D-4.84 (MoveEye 2.98.115): «Beim Start: Nur Gruppen» (MoveEye und Simulator)
 

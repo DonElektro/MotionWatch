@@ -1,5 +1,5 @@
 extends PanelContainer
-## Bergtal-Abenteuer «Die Karte des Bergführers» (Daniel, 31.10.2026 - Plan: Story / Abenteuer, Spiel & Ziele, Schlafplatz &
+## Bergtal-Abenteuer «Die Karte des Grossvaters» (bis zum Geschichten-Menü «Die Karte des Bergführers»; Daniel, 31.10.2026 - Plan: Story / Abenteuer, Spiel & Ziele, Schlafplatz &
 ## Ausrüstung, Leben & Geschichten, Bergtal als Testgelände, Karte & Orientierung).
 ##
 ## Ablauf (gleicher Look wie der Spiel-Assistent gamewiz.gd: Punkte-Leiste, Karten, Zurück / Weiter):
@@ -46,6 +46,7 @@ const SEASONS := [["fruehling", "Frühling", "Schneereste oben: vereiste Rinnen 
 		["herbst", "Herbst", "Kurze Tage, Lärchen gelb, Nebel, Blankeis am Gipfel, Hirsche in der Nacht."],
 		["winter", "Winter", "Schnee und Eis, Bäche gefroren (Kocher), kalte Nächte, kein Gewitter."]]
 
+const BUSY := "Die Karte des Grossvaters"   # the name in main.busy_with (who has the world) - also the title of the story
 const STEPS := ["Kapitel", "Stimmung", "Schwierigkeit & Ziel", "Rucksack", "Unterwegs", "Nachtlager", "Nacht", "Morgen"]
 const SAVE_FILE := "user://bergtal_abenteuer/fortschritt.json"
 const DIR := "user://bergtal_abenteuer"
@@ -346,7 +347,7 @@ func start_run(seed_v := 0) -> Dictionary:
 		error = T.t("Der Rucksack ist zu voll - etwas herausnehmen oder einen grösseren nehmen.")
 		_changed()
 		return {"ok": false, "error": error}
-	var b: String = main.busy_with("Bergtal-Abenteuer")
+	var b: String = main.busy_with(BUSY)
 	if b == "Nacht-Testlauf" and main.nacht.opts.get("by", "") == "abenteuer":
 		main.nacht.stop(false)
 		b = ""
@@ -1596,7 +1597,7 @@ func resume() -> Dictionary:
 	var d := SS.lauf_load()
 	if d.is_empty():
 		return {"ok": false, "error": T.t("Kein gespeicherter Lauf.")}
-	var b: String = main.busy_with("Bergtal-Abenteuer")
+	var b: String = main.busy_with(BUSY)
 	if b != "":
 		error = main.busy_msg(b)
 		_changed()
@@ -1735,7 +1736,7 @@ func _ready() -> void:
 	logo.custom_minimum_size = Vector2(30, 30)
 	top.add_child(logo)
 	title_lab = Label.new()
-	title_lab.text = T.t("Bergtal-Abenteuer")
+	title_lab.text = T.t("Die Karte des Grossvaters")
 	title_lab.add_theme_font_size_override("font_size", 19)
 	title_lab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(title_lab)
@@ -2127,7 +2128,7 @@ func _paint() -> void:
 
 
 func _paint_chapter() -> void:
-	body.add_child(_lab(T.t("Die Karte des Bergführers"), 22, Color.WHITE))
+	body.add_child(_lab(T.t("Die Karte des Grossvaters"), 22, Color.WHITE))
 	body.add_child(_lab(T.t("Dein Grossvater war Bergführer. Sein Brief und eine alte Karte führen dich in fünf Kapiteln durchs Bergtal - jedes Abenteuer ist ein Kapitel."), 13, Color(0.6, 0.66, 0.74)))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 14)
@@ -2178,40 +2179,117 @@ func _paint_chapter() -> void:
 
 
 func _paint_slots(parent: Control) -> void:
-	"""A6: three places for the family; the active one has a name; «Weiterspielen» for a tour saved at the hut / camp"""
+	"""A6 / Geschichten-Menü: the Spielstand is chosen in the common start (geschichten.gd); here only which one it is,
+	«Spielstand wechseln» and «Weiterspielen» for a tour saved at the hut / camp"""
 	var g := _group(T.t("Spielstand"), parent)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	g.add_child(row)
-	for n in range(1, SS.N + 1):
-		var inf := SS.info(n)
-		var nm := str(inf["name"]) if str(inf["name"]) != "" else T.t("Spielstand %d") % n
-		var lvn: int = level() if bool(inf["active"]) else int(inf["lv"])
-		var tx: String = (T.t("Kapitel %d · %d Sterne") % [int(inf["chapter"]), int(inf["stars"])] + (" · " + T.t("Stufe %d") % lvn if lvn > 0 else "")) if bool(inf["used"]) else T.t("leer")
-		var nn := n
-		var c := _card(nm, tx, bool(inf["active"]), func(): op({"do": "slot", "value": nn}), false, T.t("Lauf gespeichert") if str(inf["lauf"]) != "" else "")
-		c.custom_minimum_size = Vector2(110, 0)
-		row.add_child(c)
-	var nr := HBoxContainer.new()
-	nr.add_theme_constant_override("separation", 8)
-	g.add_child(nr)
-	nr.add_child(_lab(T.t("Name:"), 13, Color(0.75, 0.8, 0.86), false))
-	var le := LineEdit.new()
-	le.text = SS.name_of(SS.slot())
-	le.placeholder_text = T.t("z. B. Lea")
-	le.max_length = 24
-	le.custom_minimum_size = Vector2(160, 0)
-	le.text_submitted.connect(func(t): op({"do": "slot_name", "value": t}))
-	le.focus_exited.connect(func():
-		if le.text != SS.name_of(SS.slot()):
-			op({"do": "slot_name", "value": le.text}))
-	nr.add_child(le)
+	var nm := SS.name_of(SS.slot())
+	var l := _lab((nm if nm != "" else T.t("Spielstand %d") % SS.slot()) + " · " + T.t("Schwierigkeit: %s") % T.t(str(D.LEVELS[str(W["level"])][0]))
+			+ " · " + T.t("Jahreszeit: %s") % T.t(_season_name(str(W["season"]))), 14, Color.WHITE)
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(l)
+	if R.is_empty():
+		_btn(row, T.t("Spielstand wechseln"), func(): _common_start("slot"))
 	var lh := SS.lauf_head()
 	if not lh.is_empty() and R.is_empty():
 		var rg := _group(T.t("Gespeicherter Lauf"), parent)
 		rg.add_child(_lab(T.t("Kapitel %d · %s · %s") % [int(lh["chapter"]), str(lh["where_txt"]), str(lh["date"])], 13, Color.WHITE))
 		_btn(rg, T.t("▶ Weiterspielen"), func(): op({"do": "resume"}), true)
 		rg.add_child(_lab(T.t("Automatisch gespeichert an Hütten und am Nachtlager. Ein neuer Lauf ersetzt ihn."), 11, Color(0.6, 0.66, 0.74)))
+
+
+func _season_name(k: String) -> String:
+	for sn in SEASONS:
+		if sn[0] == k:
+			return str(sn[1])
+	return k
+
+
+func _common_start(what: String) -> void:
+	"""Geschichten-Menü: the common start of all stories (geschichten.gd) - «slot» = only change the Spielstand,
+	«level» = only Schwierigkeit & Jahreszeit; afterwards this window comes back"""
+	var rg = main.spielbereich.regal if main.spielbereich != null else null
+	if rg == null:
+		return
+	close_ab()
+	rg.open_start("grossvater", what, "ab")
+
+
+func fortschritt() -> Dictionary:
+	"""Geschichten-Menü: {pct, where, started, done} of the active Spielstand (5 chapters, 20 % each)"""
+	var ch := clampi(int(P.get("chapter", 1)), 1, 5)
+	var fin := bool(P.get("finale", false))
+	var started := not R.is_empty() or ch > 1 or not (P.get("runs", []) as Array).is_empty() or not SS.lauf_head().is_empty() \
+			or P.has("schwierigkeit")
+	var cur := int(R.get("chapter", ch)) if not R.is_empty() else ch
+	var pct := 100 if fin else (cur - 1) * 20
+	var where := T.t("Geschafft") if fin else T.t("Kapitel %d") % cur
+	if not fin and not R.is_empty() and step >= 4:
+		pct += 10                                        # on the way: half of the chapter
+	return {"pct": pct, "where": where if started else "", "started": started, "done": fin}
+
+
+func weiter() -> Dictionary:
+	"""«Weiterspielen» on the card: the running tour, else the tour saved at the hut / camp, else the wizard"""
+	if not R.is_empty():
+		shown = true
+		_changed()
+		return {"ok": true}
+	if not SS.lauf_head().is_empty():
+		return resume()
+	open_ab()
+	return {"ok": true}
+
+
+func neu(level_k: String, season_k: String, from_start: bool) -> void:
+	"""the common start is done: Schwierigkeit and Jahreszeit; from_start («Neu beginnen») = this Spielstand starts again
+	at chapter 1 (the experience and the level stay, the saved tour is gone)"""
+	_load()
+	if from_start:
+		P["chapter"] = 1
+		P["stars"] = {}
+		P["pieces"] = []
+		P["finale"] = false
+		SS.lauf_delete()
+		R = {}
+		leg = {}
+		step = 0
+	if D.LEVELS.has(level_k):
+		W["level"] = level_k
+		P["schwierigkeit"] = level_k
+	if season_k in ["fruehling", "sommer", "herbst", "winter"]:
+		W["season"] = season_k
+		P["season"] = season_k
+	W["chapter"] = clampi(int(P["chapter"]), 1, 5)
+	_save()
+	open_ab()
+	if from_start:
+		step = 1                                         # the chapter is 1: on to the mood
+		_changed()
+
+
+func last_pic_path() -> String:
+	"""the newest diary picture (a picture from the story itself) - "" if there is none yet"""
+	var root := DIR + "/tagebuch"
+	var best := ""
+	var best_t := 0
+	var d := DirAccess.open(root)
+	if d == null:
+		return ""
+	for sub in d.get_directories():
+		var dd := DirAccess.open(root + "/" + sub)
+		if dd == null:
+			continue
+		for f in dd.get_files():
+			if f.ends_with(".png"):
+				var p := root + "/" + sub + "/" + f
+				var t := FileAccess.get_modified_time(p)
+				if t > best_t:
+					best_t = t
+					best = p
+	return best
 
 
 func _dev_box(parent: Control) -> void:
@@ -2243,41 +2321,30 @@ func _paint_mood() -> void:
 	for k in D.MOOD_ORDER:
 		var kk: String = k
 		g.add_child(_card(T.t(str(D.MOODS[k][0])), T.t(str(D.MOODS[k][1])), str(W["mood"]) == k, func(): op({"do": "pick", "key": "mood", "value": kk})))
-	if main.horror == null:
-		g.add_child(_card(T.t(str(D.HORROR_SLOT[1])), T.t(str(D.HORROR_SLOT[2])), false, func(): pass, true))
-		return
-	# 3D-4.40: the 5th mood = Horror-Modus «Das Hospiz» (bergtal_horror.gd, password) - the only way in (no button under «Szene»)
-	var hs: Dictionary = main.horror.mood_slot()
-	var kids := bool(hs.get("kids", false))
-	g.add_child(_card(("🔒 " if bool(hs.get("locked", true)) and not kids else "") + str(hs.get("name", "Horror")),
-			T.t("Im Kinder-Modus gesperrt.") if kids else str(hs.get("hint", "")), false, func():
-				close_ab()
-				main.horror.open_from_mood(func(started):
-					if not bool(started):
-						open_ab()), kids))
+	# Geschichten-Menü: «Das Hospiz» (bergtal_horror.gd) is its own card under «Spielen» → «Geschichten» (only for the owner,
+	# with a lock) - no 5th mood here any more
 
 
 func _paint_level() -> void:
-	body.add_child(_lab(T.t("Wie schwierig - und was ist dein Ziel?"), 22, Color.WHITE))
+	body.add_child(_lab(T.t("Was ist dein Ziel?"), 22, Color.WHITE))
 	var kid := kinder()
 	if kid:                                              # A6: Kinder-Modus des Simulators
 		body.add_child(_lab(T.t("Kinder-Modus: immer Leicht, keine Gefahren (Eis, Fels), kein Hunger, kurze Texte."), 13, ORG))
-	var g := _grid(3)
-	for k in D.LEVEL_ORDER:
-		var kk: String = k
-		var on: bool = (k == "leicht") if kid else str(W["level"]) == k
-		g.add_child(_card(T.t(str(D.LEVELS[k][0])), T.t(str(D.LEVELS[k][1])), on, func(): op({"do": "pick", "key": "level", "value": kk}), kid and k != "leicht"))
+	var sg := _group(T.t("Beim Start gewählt"))
+	var srow := HBoxContainer.new()
+	srow.add_theme_constant_override("separation", 8)
+	sg.add_child(srow)
+	var lk: String = "leicht" if kid else str(W["level"])
+	var sl := _lab(T.t("Schwierigkeit: %s") % T.t(str(D.LEVELS[lk][0])) + " · " + T.t("Jahreszeit: %s") % T.t(_season_name(str(W["season"]))), 14, Color.WHITE)
+	sl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	srow.add_child(sl)
+	_btn(srow, T.t("Ändern"), func(): _common_start("level"))
+	sg.add_child(_lab(kurz(T.t(str(D.LEVELS[lk][1]))), 12, Color(0.6, 0.66, 0.74)))
 	body.add_child(_lab(T.t("Ziel"), 15, Color.WHITE, false))
 	var g2 := _grid(3)
 	for k in D.GOAL_ORDER:
 		var kk: String = k
 		g2.add_child(_card(T.t(str(D.GOALS[k][0])), T.t(str(D.GOALS[k][1])), str(W["goal"]) == k, func(): op({"do": "pick", "key": "goal", "value": kk})))
-	# A6: die Jahreszeit vor dem Start - sie gilt für die ganze Runde, die Rätsel passen sich an
-	body.add_child(_lab(T.t("Jahreszeit (gilt für die ganze Runde)"), 15, Color.WHITE, false))
-	var g3 := _grid(4)
-	for sn in SEASONS:
-		var sk: String = sn[0]
-		g3.add_child(_card(T.t(str(sn[1])), kurz(T.t(str(sn[2]))), str(W["season"]) == sk, func(): op({"do": "pick", "key": "season", "value": sk})))
 	var gg := _group(T.t("Einstellungen"))
 	var row2 := HBoxContainer.new()
 	gg.add_child(row2)
@@ -2764,7 +2831,7 @@ func op(d: Dictionary) -> Dictionary:
 						"test": T.t("Der Kapitel-Sprung (Entwickler) läuft - zuerst «Test beenden».")}.get(str(out.get("error", "")), str(out.get("error", "")))
 			_changed()
 		"slot_name":
-			SS.set_name(SS.slot(), str(d.get("value", "")))
+			SS.set_slot_name(SS.slot(), str(d.get("value", "")))
 			_changed()
 		"resume":
 			out = resume()
@@ -2842,7 +2909,7 @@ var _night_starting := false
 
 func status() -> String:
 	"""main.busy_with: the adventure has the world (clock, weather, visitors) - but not while it starts its own night"""
-	return "Bergtal-Abenteuer" if not R.is_empty() and step in [4, 5, 6] and not _night_starting and not (main.nacht != null and main.nacht.running) else ""
+	return BUSY if not R.is_empty() and step in [4, 5, 6] and not _night_starting and not (main.nacht != null and main.nacht.running) else ""
 
 
 func _say(t: String) -> void:

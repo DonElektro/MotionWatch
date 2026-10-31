@@ -1,5 +1,5 @@
 extends RefCounted
-## Bergtal-Abenteuer «Die Karte des Bergführers» - die Daten (Daniel, 31.10.2026, Abschnitt «Story / Abenteuer» im Plan):
+## Bergtal-Abenteuer «Die Karte des Grossvaters» - die Daten (Daniel, 31.10.2026, Abschnitt «Story / Abenteuer» im Plan):
 ## Stimmungen, Schwierigkeit, Ziele, Rucksack und Ausrüstung, die 5 Kapitel der Schatzkarte (Wege mit Gabelungen,
 ## Hinweise auf der Karte / im Gelände / bei Menschen), Begegnungen, Fundstücke, Stufen (Erfahrung).
 ## Die Abläufe stehen in bergtal_abenteuer.gd, die Karte in bergtal_abenteuer_karte.gd.

@@ -486,8 +486,8 @@ func model() -> Dictionary:
 		for q in QUICK:
 			quick.append({"v": q[0], "icon": q[1], "title": q[2], "text": q[3], "pic": Pics.PICS.get(str(QUICK_PIC.get(q[0], "mw")), "")})   # 3D-4.20: with a picture again
 		if main.abenteuer != null:                     # 3D-4.39: the Bergtal adventure as a quick start (instead of a button on the card «Spiel»)
-			quick.append({"v": "abenteuer", "icon": "🎒", "title": "Bergtal-Abenteuer",
-					"text": "Rucksack packen, mit der Schatzkarte durchs Bergtal, Nacht mit MoveEye – Kapitel, Stimmung und Schwierigkeit wählst du im Abenteuer.",
+			quick.append({"v": "abenteuer", "icon": "🎒", "title": "Die Karte des Grossvaters",
+					"text": "Rucksack packen, mit Grossvaters Schatzkarte durchs Bergtal, Nacht mit MoveEye – Spielstand, Schwierigkeit und Jahreszeit wählst du beim Start.",
 					"pic": Pics.PICS.get("mission", "")})
 	var opts := []
 	if step == 2 or step == 3:
@@ -657,7 +657,10 @@ func op(d: Dictionary) -> Dictionary:
 			var qv := str(d.get("value", ""))
 			if qv == "abenteuer" and main.abenteuer != null:   # 3D-4.39: the Bergtal adventure has its own window
 				close_wiz()
-				main.abenteuer.open_ab()
+				if main.spielbereich != null and main.spielbereich.regal != null:
+					main.spielbereich.regal.weiter("grossvater")   # Geschichten-Menü: the same way as the card under «Spielen»
+				else:
+					main.abenteuer.open_ab()
 				return model()
 			if qv == "escape_quick":                       # 3D-4.20: «Entkomme der Kamera» from the quick start of the parcours
 				W["game_mode"] = "escape"
