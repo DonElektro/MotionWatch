@@ -1,19 +1,21 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 2989 (Stellen: 4274)
-Übersetzt: en 2758, fr 2758, it 2758, rm 2758
+Texte gesamt: 3151 (Stellen: 4560)
+Übersetzt: en 2920, fr 2920, it 2920, rm 2920
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 337 Stellen
 Nicht mehr im Code (noch in texte.json): 28
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 42 Stellen in wizpics.gd 16, wordmark.gd 10, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 9352, schlüssel 6863, keine Wörter 5516, index 3770, technisch 1244, doc 840, einheit 114, englisch 58, pfad 55, log 53, html 42, klasse 21
+Übersprungen (Grund: Anzahl): kennung 10855, schlüssel 7470, keine Wörter 5965, index 3835, technisch 1306, doc 868, einheit 116, englisch 60, log 56, pfad 55, html 42, klasse 21
 
 Pro Datei (Texte / davon dynamische Stellen):
-  main.gd                  612    29
+  main.gd                  613    29
   gamewiz.gd               213    14
   game.gd                  211    32
+  bib_objekte.gd           108     0
+  ferienpark.gd             89     0
+  templates.gd              87     6
   toolbar.gd                87     3
-  templates.gd              86     6
   gameplus.gd               83     5
   testrun.gd                81     3
   objects.gd                81     0
@@ -31,10 +33,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamerules.gd              45     4
   symbole.gd                44     1
   protokoll.gd              42    16
-  localplay.gd              41    13
   inventar.gd               41     4
+  scenes.gd                 41     0
+  localplay.gd              41    13
   gamecompare.gd            40     6
-  scenes.gd                 40     0
   kitrain.gd                39     9
   simint.gd                 39     4
   gamejaeger.gd             38     1
@@ -46,8 +48,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   news.gd                   29     1
   power.gd                  28    10
   padmap.gd                 27    19
-  gameshutter.gd            25     5
   umgebung.gd               25     0
+  gameshutter.gd            25     5
   gametools.gd              24     2
   dataset.gd                22     3
   fenster.gd                22     0
@@ -66,8 +68,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   life.gd                   13     0
   gamekihilfe.gd            13     4
   weitwinkel.gd             13     0
-  smalltv.gd                11     4
   replay.gd                 11     1
+  smalltv.gd                11     4
   objekte_plus.gd           11     0
   recorder.gd               11     2
   schnittstelle.gd          10     7
@@ -178,35 +180,35 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   karte.gd:503  'Dazu kommen: '
   karte.gd:511  'ja'
   karte.gd:511  'keine'
-  main.gd:1231  '  %.0f Mbit/s'
-  main.gd:1904  ' (von MoveEye)'
-  main.gd:1937  'Der Simulator ist belegt: '
-  main.gd:2738  'aus'
-  main.gd:2738  'ein'
-  main.gd:2815  'Sabotage-Test: '
-  main.gd:2815  'aus'
-  main.gd:2869  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:2872  '\n🚨 Bewacht und weg: '
-  main.gd:3584  'keine'
-  main.gd:3610  'Wächter an MoveEye: '
-  main.gd:4320  'Dein Platz: '
-  main.gd:4545  ' · schaut nur zu: '
-  main.gd:4548  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:4549  ' · Update: '
-  main.gd:4879  'Blinde Flecken: '
-  main.gd:5516  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:5822  'Autostart: '
-  main.gd:5833  'Autologon: '
-  main.gd:5994  'Karte öffnen: '
-  main.gd:6140  'Echt-Abgleich: '
-  main.gd:6147  'Trainingspaket: '
-  main.gd:6156  ' · %d offen · %.1f MB'
-  main.gd:6156  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6165  'Verbindung · '
-  main.gd:6165  'aus'
-  main.gd:6169  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6169  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6172  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:1249  '  %.0f Mbit/s'
+  main.gd:1922  ' (von MoveEye)'
+  main.gd:1955  'Der Simulator ist belegt: '
+  main.gd:2756  'aus'
+  main.gd:2756  'ein'
+  main.gd:2833  'Sabotage-Test: '
+  main.gd:2833  'aus'
+  main.gd:2887  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:2890  '\n🚨 Bewacht und weg: '
+  main.gd:3605  'keine'
+  main.gd:3631  'Wächter an MoveEye: '
+  main.gd:4345  'Dein Platz: '
+  main.gd:4570  ' · schaut nur zu: '
+  main.gd:4573  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:4574  ' · Update: '
+  main.gd:4904  'Blinde Flecken: '
+  main.gd:5559  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:5865  'Autostart: '
+  main.gd:5876  'Autologon: '
+  main.gd:6037  'Karte öffnen: '
+  main.gd:6183  'Echt-Abgleich: '
+  main.gd:6190  'Trainingspaket: '
+  main.gd:6199  ' · %d offen · %.1f MB'
+  main.gd:6199  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6208  'Verbindung · '
+  main.gd:6208  'aus'
+  main.gd:6212  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6212  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6215  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:446  ' (automatisch von oben)'
   explore.gd:446  ' · schnell'
   feedback.gd:266  ' · TESTMODUS: geht nur an '
@@ -448,12 +450,12 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   simint.gd:417  '-Servo blockiert'
   surprise.gd:113  'Überraschung: '
   szenenplus.gd:735  'Spiel zur Szene: '
-  templates.gd:210  'Lizenz: '
-  templates.gd:281  'Datei nicht lesbar: '
-  templates.gd:285  'Kann nicht speichern: '
-  templates.gd:293  'Datei nicht lesbar: '
-  templates.gd:302  'Umwandeln ging nicht: '
-  templates.gd:307  'Datei enthält kein 3D-Modell: '
+  templates.gd:211  'Lizenz: '
+  templates.gd:282  'Datei nicht lesbar: '
+  templates.gd:286  'Kann nicht speichern: '
+  templates.gd:294  'Datei nicht lesbar: '
+  templates.gd:303  'Umwandeln ging nicht: '
+  templates.gd:308  'Datei enthält kein 3D-Modell: '
   zwilling.gd:94  'Bild nicht lesbar: '
   zwilling.gd:104  'Kann nicht speichern: '
   zwilling.gd:168  'Foto fehlt: '

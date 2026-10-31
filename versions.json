@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 04:19",
+ "generated": "2026-10-31 04:32",
  "versions": [
   {
-   "version": "2.98.58",
-   "file": "webcam_bewegung_2_98_58.py",
+   "version": "2.98.59",
+   "file": "webcam_bewegung_2_98_59.py",
    "url": "",
-   "sha256": "f0f00bb68bb67f827b7f60fe8aadb7e1996d6dfb416852d43553da46fd742b3f",
-   "date": "2026-10-31 04:19",
-   "notes": "Simulator-Zentrale: neue Kachel «📖 Entdeckungen» (Spielen) – Stand des Entdeckungsbuchs im Simulator, Liste, «📷 Foto für Entdeckungsbuch», «Im Simulator öffnen», «Blinki-Hinweis». Simulator 3D-4.27: Entdecken (Buch, Fund per Ansicht oder Foto der Kopfkamera, Tageszeit-/Wetter-Geheimnisse, Blinki-Hinweise, Demo im Camping-Platz).",
-   "sig": "5c60e58a98f01018640948b80c4f902b61d724bf808b927d2fecc59010dd570dd839a57fbe49d82367c3e80e0be7877488a296c0f9dfed1e8530a2f12428c503"
+   "sha256": "5b1227715413c89398f3cc4d3d5c13aa4f3b899109e15e8757ab4b2dc9a3ef08",
+   "date": "2026-10-31 04:32",
+   "notes": "Simulator 3D-4.28: neue Szene «Ferienpark am See» mit fünf MoveEye-Standorten (Zelt, Wohnmobil, Bungalow, Bootssteg, Rezeption); die Auswahl «Standort im Ferienpark am See» erscheint in der Simulator-Steuerung nur, wenn diese Szene gewählt ist. Szenen-Name in allen Sprachen.",
+   "sig": "eaaf0060ffcd7374adbecf08a1c2fd9ffabaf2dd1bf840420590fadb980d599f1ffc60f2e7c9b56958c6d1cf683a4dd8febea9b11140b93c0a6c2f3bbaaf6b0f"
   },
   {
    "version": "2.97.1",
