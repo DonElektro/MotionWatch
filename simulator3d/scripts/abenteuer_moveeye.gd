@@ -28,6 +28,7 @@ extends Node
 ##       Belichtung, Licht (und, wenn das Bild da ist, dem Kontrast im Rahmen); Punkte = Seltenheit × Schärfe, × 0.7 wenn
 ##       MoveEye nicht selbst aufgenommen hat (geschätzt). Unabhängig davon, ob der Spieler das Tier richtig bestimmt hat.
 ##   A1.TIERE / A1.REIHE                -> die Sammlung (Name, Tageszeit, Ort, Tipp, Seltenheit)
+##   ab.a1.hat_foto(tier) -> bool    (A2 Wildhüter-Aufträge)
 ##   ab.a1.sammlung() -> {tier: {...}}  ab.a1.fotos() -> Array    ab.a1.aufgaben() -> Array    ab.a1.aufgabe_geben(id)
 ##   Signal aufgabe_fertig(id)          (Wildhüter A2, Abzeichen A3)
 ## Spielstand (im bestehenden Abenteuer-Spielstand, Präfix a1_):
@@ -365,7 +366,7 @@ func _ev_fox(_ev) -> Array:
 	var keep := fn.visible if ok_fn else false
 	if ok_fn and not bool(_a().get("proviant_weg", false)):
 		fn.visible = true                                     # (the fox smells it even in the tent)
-	var v = b.spawn_kind("berg_fox_food")
+	var v = b._at_food("fox")                                 # always the fox (spawn_kind sends alpine choughs while it is light)
 	if ok_fn:
 		fn.visible = keep
 	if not v is Node:
@@ -699,8 +700,10 @@ func _licht_tick(n, meldet: bool, da: bool) -> void:
 	if mi != null:
 		mi.visible = fmod(_licht_t, 1.25) < 0.75                 # it blinks like a lantern that is swung
 	var cam: Camera3D = main.cams[0]
-	if not cam.is_position_in_frustum(_licht.global_position):
+	if not cam.is_position_in_frustum(_licht.global_position) or not main.line_free(cam.global_position, _licht.global_position):
 		return
+	if mi == null or not mi.visible or fmod(_licht_t, 1.25) < 0.25:
+		return                                                # (the picture shows the frame before: only while it is on)
 	_licht_vis += 0.25
 	var li: Dictionary = a["licht"]
 	li["im_bild"] = true
@@ -751,7 +754,7 @@ func _licht_an() -> void:
 	var mi := MeshInstance3D.new()
 	mi.name = "glow"
 	var sm := SphereMesh.new()
-	var r := clampf(o.distance_to(p) * 0.008, 0.5, 1.8)          # a lantern with its glow: a few pixels in the picture
+	var r := clampf(o.distance_to(p) * 0.012, 0.8, 3.0)          # a lantern with its glow: a few pixels in the picture
 	sm.radius = r
 	sm.height = r * 2.0
 	mi.mesh = sm
@@ -919,6 +922,18 @@ func _in_p(fs: Array) -> void:
 
 func fotos() -> Array:
 	return ab.P.get("a1_fotos", [])
+
+
+func hat_foto(tier: String) -> bool:
+	"""A2 (Wildhüter-Aufträge): gibt es eine Aufnahme dieses Tiers von MoveEye (diese Nacht oder früher, ausgewertet oder nicht)?"""
+	for f in fotos():
+		if str(f["tier"]) == tier:
+			return true
+	if not ab.R.is_empty() and ab.R.has("a1"):
+		for f in ab.R["a1"].get("fotos", []):
+			if str(f["tier"]) == tier:
+				return true
+	return false
 
 
 func offen() -> Array:
