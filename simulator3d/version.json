@@ -1,7 +1,7 @@
 {
- "version": "3D-4.41",
+ "version": "3D-4.42",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 67018038,
- "sha256": "f409fb41dd36143ff4a132b37a9c68d1586891faf3fe22252a7ec218871b15c2",
- "notes": "Neue Orte: Pfadilager und Bergdorf im Bergtal, Hofladen im Ferienpark, Festival-Gelände als eigene Welt (mehrere Standorte)."
+ "size": 67105526,
+ "sha256": "1ef1af0af88b9c918caf7616510dcfb27d9898d521964aa92aab552e07620536",
+ "notes": "Menschen verhalten sich echter: Gangarten, Familien, Gruppen, Draussen sitzen, WC-Gang mit Taschenlampe, Tagesablauf."
 }

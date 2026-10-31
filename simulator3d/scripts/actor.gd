@@ -78,6 +78,13 @@ var gear_norun := false       # ... the cardboard box: no running
 var gear_pmin := 0            # ... the postures it allows (box: only crouching, umbrella: no crawling)
 var gear_pmax := 2
 static var npc_camo := false   # szenenplus.gd «Tarnen»: the next figure built wears the camouflage clothes of the players
+# P10 «Menschen» (menschen.gd): the look of the next visitor built - {jacket, trousers, height (m), hood, cap, pack, umbrella, lamp}
+static var npc_look := {}
+const BASE_H := 1.86          # P10: height of a figure with body_root.scale.y = 1 (top of the head, measured in 3D)
+var arm_hold := {}            # P10: side (-1 left, 1 right) -> Vector3(shoulder x, elbow x, shoulder z): a bag, an umbrella, a bike, a torch
+var sit_seat := 0.45          # P10: idle «sit» - height of the seat (camping chair 0.45 m, ground 0.05 m)
+var hold_post := -1           # P10: posture kept for the plain points of the route (-1 = stand up there, 1 crouch, 2 crawl)
+var _sit_k := 0.0
 var power_until := 0.0
 var emote := ""               # players: caught / goal / throw (game.gd)
 var emote_until := 0.0
@@ -267,6 +274,16 @@ func _build_person() -> void:
 			jacket = Figur.LOOK_COLS[lc]
 		tall = float(Figur.LOOK_SIZE.get(str(look.get("size", "")), 1.0))
 		wide = float(Figur.LOOK_BUILD.get(str(look.get("build", "")), 1.0))
+	var nl: Dictionary = npc_look if not controlled and not preview else {}
+	if not nl.is_empty():                                                  # P10: menschen.gd chose the look
+		if nl.has("jacket"):
+			jacket = nl["jacket"]
+		if nl.has("trousers"):
+			trousers = nl["trousers"]
+		if nl.has("height"):
+			tall = float(nl["height"]) / (BASE_H * (0.62 if kid else 1.0))
+		if nl.has("shorts"):
+			shorts = bool(nl["shorts"])
 	body_root.scale = Vector3(wide, tall, wide) * (0.62 if kid else 1.0)
 	var open_jacket := not jog and not cold and variant not in ["police", "burglar"] and randf() < 0.4
 	var hand_c: Color = Color(0.15, 0.15, 0.16) if cold else skin             # gloves in the cold
@@ -283,10 +300,17 @@ func _build_person() -> void:
 			var pc: Color = Color(0.2, 0.24, 0.13) if k2 % 2 == 0 else Color(0.38, 0.3, 0.18)
 			var a2 := randf() * TAU
 			_part(torso, _sph(0.07, 0.05), Vector3(cos(a2) * 0.16, randf_range(0.05, 0.45), sin(a2) * 0.12), pc, cloth_t, Vector3(0, a2, 0), Vector3(1.4, 1.0, 0.4))
-	if (controlled and bool(look.get("pack", false))) or (not jog and not kid and not controlled and randf() < 0.35):   # backpack
+	var pack: bool = (controlled and bool(look.get("pack", false))) or (not jog and not kid and not controlled and randf() < 0.35)
+	if nl.has("pack"):
+		pack = bool(nl["pack"])
+	if pack:   # backpack
 		add_backpack(jacket)
 	var style := randi() % 5
 	var hooded: bool = ((cold or wet) and not jog and randf() < 0.45) or variant == "burglar"
+	if nl.has("hood"):
+		hooded = bool(nl["hood"]) or variant == "burglar"
+	if bool(nl.get("cap", false)) and not hooded:
+		style = 3
 	if controlled and not look.is_empty():                                  # a player chose
 		hooded = look.get("hat", "") == "hood"
 		style = 3 if look.get("hat", "") == "cap" else 0
@@ -308,12 +332,24 @@ func _build_person() -> void:
 		_part(head, _cyl(0.16, 0.16, 0.012, 18), Vector3(0, 0.22, 0), Color(0.3, 0.25, 0.2), 27.0)
 	body_h = 0.9 * body_root.scale.y
 	_person_extras(jacket, cloth_t)
-	if wet and not kid and not jog and variant in ["", "elderly"] and not controlled and randf() < 0.55:   # 3D-3.95: umbrella in the rain
+	if bool(nl.get("umbrella", wet and not kid and not jog and variant in ["", "elderly"] and not controlled and randf() < 0.55)):   # 3D-3.95: umbrella in the rain
 		add_umbrella()
 	if old_:                                                              # walking stick
 		_part(arms[1][2], _cyl(0.014, 0.014, 0.9, 6), Vector3(0.02, -0.75, -0.1), Color(0.3, 0.2, 0.12), main.ambient)
 	# at night some people carry a light: a headlamp or the light of the phone (MoveEye sees it)
-	if main.is_dark() and not kid and not controlled and not preview and randf() < main.lamp_share:
+	var want_lamp: bool = main.is_dark() and not kid and not controlled and not preview and randf() < main.lamp_share
+	if nl.has("lamp"):
+		want_lamp = str(nl["lamp"]) != "" and not preview
+	if want_lamp:
+		add_lamp(str(nl.get("lamp", "")) if nl.has("lamp") else ("head" if randf() < 0.5 else "phone"))
+
+
+func add_lamp(how := "head") -> void:
+	"""a light at night (from 3D-2.7; P10: own function): «head» = headlamp, «phone» = the phone light, «torch» = a hand
+	torch (P10 menschen.gd: the walk to the toilet). set_night() switches it on in the dark."""
+	if lamp != null or head == null or arms.size() < 2:
+		return
+	if true:
 		lamp = SpotLight3D.new()
 		lamp.spot_range = 9.0
 		lamp.spot_angle = 24.0
@@ -326,7 +362,7 @@ func _build_person() -> void:
 		lamp_mat.emission = Color(1.0, 0.98, 0.9)
 		lamp_mat.emission_energy_multiplier = 16.0
 		bulb.material_override = lamp_mat
-		if randf() < 0.5:
+		if how == "head":
 			head.add_child(lamp)                                           # headlamp
 			lamp.position = Vector3(0, 0.24, -0.16)
 			lamp.rotation = Vector3(-0.35, 0, 0)
@@ -340,7 +376,13 @@ func _build_person() -> void:
 			bulb.position = Vector3(0, -0.36, -0.05)
 			arms[1][2].add_child(bulb)
 			phone_out = true
-		lamp.light_energy = 6.0
+			if how == "torch":                                             # P10: a torch - brighter, wider, a black body
+				lamp.spot_range = 14.0
+				lamp.spot_angle = 30.0
+				lamp.rotation = Vector3(-1.35, 0, 0)
+				_part(arms[1][2], _cyl(0.02, 0.025, 0.16, 8), Vector3(0, -0.33, -0.04), Color(0.08, 0.08, 0.09), main.ambient + 4.0, Vector3(-1.2, 0, 0))
+		lamp.light_energy = 6.0 if main.is_dark() else 0.0
+		lamp_mat.emission_energy_multiplier = 16.0 if main.is_dark() else 0.0
 
 
 func _shape_body(jacket: Color, shirt: Color, trousers: Color, skin: Color, hair: Color, shoe: Color, hand_c: Color, cloth_t: float,
@@ -1112,9 +1154,9 @@ func _next_point(now: float) -> void:
 			_face(nxt[3] if nxt.size() > 3 else target)
 		else:
 			target = nxt
-			_want_c = 0.0
-			_want_p = 0.0
-			_post_smooth = crouch > 0.0 or prone > 0.0
+			_want_c = 1.0 if hold_post >= 1 else 0.0         # P10 (menschen.gd): a sneaking / crawling gait stays down
+			_want_p = 1.0 if hold_post >= 2 else 0.0
+			_post_smooth = crouch != _want_c or prone != _want_p
 			_face(target)
 	else:
 		done = true
@@ -1229,6 +1271,9 @@ func _animate(dt: float, spd: float, now: float) -> void:
 				hyaw = look_yaw * sin(min(1.0, (idle_until - now)) * PI)
 			"phone":
 				hx = -0.25
+			"talk":                                                      # P10: in a group - looks at the others, nods
+				hyaw = look_yaw
+				hx = 0.05 * sin(now * 2.0 + seed_t)
 			"stare":                                                     # 3D-3.95: towards the camera
 				var to_c: Vector3 = main.head.global_position - global_position
 				hyaw = clampf(wrapf(atan2(-to_c.x, -to_c.z) - heading, -PI, PI), -1.3, 1.3)
@@ -1275,6 +1320,9 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 	var c: float = clamp(crouch, 0.0, 1.0) * (1.0 - prone)
 	if idle == "bend":
 		c = max(c, 0.35)
+	_sit_k = move_toward(_sit_k, 1.0 if idle == "sit" and not controlled else 0.0, dt * 1.4)   # P10: sits down / gets up (~0.7 s)
+	var sit_k := smoothstep(0.0, 1.0, _sit_k)
+	c *= 1.0 - sit_k
 	var pr: float = clamp(prone, 0.0, 1.0)
 	var sc: float = body_root.scale.y
 	var kl: float = 1.0 if not (now < startle_until or em == "caught") else 0.0
@@ -1301,6 +1349,10 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 			knee_x = -(kf + swing_fw * amp * (1.5 + 1.0 * run_f) + 0.12 * amp)
 			if idle == "bend":
 				knee_x = -0.6
+		if sit_k > 0.0:                                                # P10: thigh level, shin down (on the ground: legs ahead)
+			hip_x = lerpf(hip_x, 1.5 if sit_seat > 0.2 else 1.45, sit_k)
+			knee_x = lerpf(knee_x, -1.45 if sit_seat > 0.2 else -0.3, sit_k)
+			hip_z = lerpf(hip_z, 0.1 * side, sit_k)
 		l[0].rotation.x = lerp(l[0].rotation.x, hip_x, k)
 		l[0].rotation.z = lerp(l[0].rotation.z, hip_z, k)
 		l[2].rotation.x = lerp(l[2].rotation.x, knee_x, k)
@@ -1311,6 +1363,8 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 		jump = abs(sin(now * 7.0)) * 0.18
 	var crawl_bob: float = abs(sin(phase)) * 0.02
 	body_root.position.y = lerp((-drop * sc + bob + jump), 0.05 * sc + crawl_bob, pr)
+	if sit_k > 0.0:                                                # P10: the hips down on the seat
+		body_root.position.y = lerpf(body_root.position.y, sit_seat + 0.07 - 0.95 * sc, sit_k)
 	body_root.rotation.x = -1.52 * pr
 	body_root.rotation.z = sin(phase) * 0.06 * pr                     # crawling: the body rolls a little from side to side
 	body_root.position.z = 0.95 * pr * sc                              # lying down: the hips stay where the player is
@@ -1329,6 +1383,8 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 			lean = 0.12
 		if pr > 0.5:
 			lean = 0.0
+		if sit_k > 0.0:
+			lean = lerpf(lean, 0.06 + 0.04 * sin(now * 0.3 + seed_t), sit_k)   # sits upright, leans back a little now and then
 		torso.rotation.x = lerp(torso.rotation.x, lean, k)
 	# ---- arms ----
 	for a in arms:
@@ -1367,6 +1423,19 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 		elif phone_out and side > 0:                                   # walking with the phone light ahead
 			sx = 0.9
 			ex = 0.9
+		elif sit_k > 0.5:                                              # P10: sitting - hands on the thighs, now and then a gesture
+			sx = 0.55
+			ex = 0.85 + (0.5 * maxf(0.0, sin(now * 0.7 + seed_t * 3.0 + side)) if side > 0 else 0.0)
+			sz = 0.12 * side
+		elif idle == "talk" and side > 0:                              # P10: talking in a group - the hand moves
+			sx = 0.35 + 0.15 * sin(now * 2.3 + seed_t)
+			ex = 1.2 + 0.25 * sin(now * 3.1 + seed_t)
+			sz = 0.15
+		elif arm_hold.has(side):                                       # P10: a bag, an umbrella, a pushed bike, a torch
+			var hv: Vector3 = arm_hold[side]
+			sx = hv.x + sx * 0.25
+			ex = hv.y
+			sz = hv.z * side
 		elif carry or variant == "stroller":                           # holding the box / pushing the pram
 			sx = 0.75 if carry else 0.85
 			ex = 1.0 if carry else 0.35
@@ -1408,6 +1477,49 @@ func startle() -> void:
 	"""the light went on: stop, look at it, hands up for a moment (people only)"""
 	if kind == "person" and not controlled:
 		startle_until = now_s() + randf_range(0.6, 1.2)
+
+
+# ---- P10 «Menschen»: behaviour for the scenario system (the work is done in menschen.gd) -------------------------------
+func set_gait(g: String) -> void:
+	"""stroll | walk | hurry | run | sneak | crawl | stand - speed and posture of the rest of the way"""
+	if main != null and main.menschen != null:
+		main.menschen.set_gait(self, g)
+
+
+func sneak_to(p: Vector3, crawl_last := 0.0) -> void:
+	"""crouched, stop and go, looking round (towards the camera); the last crawl_last metres on the belly"""
+	if main != null and main.menschen != null:
+		main.menschen.sneak_to(self, p, crawl_last)
+
+
+func loiter(center: Vector3, secs: float, radius := 4.0) -> void:
+	"""hangs about in this area: a few steps, stands, looks round, on the phone - then goes on with the route"""
+	if main != null and main.menschen != null:
+		main.menschen.loiter(self, center, secs, radius)
+
+
+func peek_into(p: Vector3, secs := 5.0) -> void:
+	"""goes close to a car or a tent, bends over and looks in (car window, tent door)"""
+	if main != null and main.menschen != null:
+		main.menschen.peek_into(self, p, secs)
+
+
+func hide_behind(p = null, secs := 8.0) -> void:
+	"""crouches behind the nearest thing (seen from the camera) - or the thing near p"""
+	if main != null and main.menschen != null:
+		main.menschen.hide_behind(self, p, secs)
+
+
+func avoid_light(on := true) -> void:
+	"""keeps out of the light: when the white light of MoveEye shines on it - away to the side, crouched, lamp off"""
+	if main != null and main.menschen != null:
+		main.menschen.avoid_light(self, on)
+
+
+func come_back(after_s: float, center = null) -> void:
+	"""leaves, waits out of the picture, comes back (center: where to - else where it was)"""
+	if main != null and main.menschen != null:
+		main.menschen.come_back(self, after_s, center)
 
 
 func play_emote(e: String, secs: float) -> void:
