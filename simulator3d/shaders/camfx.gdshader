@@ -27,6 +27,15 @@ uniform float flakes = 0.0;         // drops / flakes right in front of the lens
 uniform float flake_kind = 0.0;     // 0 rain (short slanted streaks), 1 snow (soft dots)
 uniform vec2 cone_c = vec2(0.5, 0.56);
 uniform float veil_k = 1.0;         // the veil and the flakes are lit by the same light: they follow the exposure
+// 3D-4.x «Kamera-Physik» (camphys.gd): the sensor noise of the IMX708 from its gain, hot pixels, glow of bright lights
+uniform float sn_on = 0.0;          // 1: this noise instead of «shot» / «cnoise»
+uniform float sn_read = 0.0;        // read noise × gain (same in dark and bright parts)
+uniform float sn_shot = 0.0;        // photon noise: × sqrt(brightness)
+uniform float sn_chroma = 0.0;      // colour noise the denoise of the ISP leaves: blotches of ~2 px
+uniform float sn_blob = 1.0;        // 0 (Lite): colour noise per pixel instead of blotches (cheaper)
+uniform float hotpx = 0.0;          // 0..1 hot pixels (long exposure, high gain)
+uniform float ir_tint = 0.0;        // infrared picture: grey with a magenta touch (850 nm through the colour filters)
+uniform float flare = 0.0;          // glow round bright lights at night (headlights, torch) - the more gain, the more
 
 float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 
@@ -75,9 +84,18 @@ void fragment() {
 	if (noir > 0.0) {
 		// without an infrared filter: plants reflect infrared - green turns grey-pink, the whole picture gets a magenta cast
 		float green = clamp(c.g - max(c.r, c.b), 0.0, 1.0);
+		// 3D-4.x (camphys): also dark, dull green (grass in the shade) counts - relative to its brightness; leaves reflect
+		// 40-50 % in near infrared (vs ~10 % green light), so vegetation gets lighter and washed out
+		float rg = clamp((c.g - max(c.r, c.b)) / max(c.g, 0.04) * 2.5, 0.0, 1.0);
+		float lv = dot(c, vec3(0.299, 0.587, 0.114));
 		vec3 nc = c + vec3(green * 0.9, -green * 0.55, green * 0.75);
+		nc = mix(nc, vec3(lv * 1.3 + 0.03) * vec3(1.08, 0.9, 1.04), rg * 0.6);
 		nc *= vec3(1.08, 0.93, 1.06);
 		c = mix(c, nc, noir);
+	}
+	if (ir_tint > 0.0) {
+		float li = dot(c, vec3(0.299, 0.587, 0.114));
+		c = mix(c, li * vec3(1.06, 0.95, 1.05), ir_tint);
 	}
 	if (cnoise > 0.0) {
 		vec2 px = floor(uv * res) + seed;
@@ -120,6 +138,52 @@ void fragment() {
 		float n2 = h21(px2 + 3.3) + h21(px2.yx + 9.1) - 1.0;
 		float lum = dot(c, vec3(0.299, 0.587, 0.114));
 		c += vec3(n2 * shot * (0.3 + 0.7 * (1.0 - lum)) * (0.35 + sqrt(max(lum, 0.0))));
+	}
+	if (flare > 0.0) {
+		// a wide soft halo round lights that blow out the sensor (two rings of 8 samples, 14 and 34 px)
+		float hl = 0.0;
+		for (int k = 0; k < 8; k++) {
+			float an = float(k) * 0.7854 + 0.3;
+			vec2 dv = vec2(cos(an), sin(an)) / res;
+			hl += max(0.0, dot(texture(screen_tex, uv + dv * 14.0).rgb, vec3(0.333)) - 0.9);
+			hl += 0.6 * max(0.0, dot(texture(screen_tex, uv + dv * 34.0).rgb, vec3(0.333)) - 0.92);
+		}
+		c += vec3(1.0, 0.97, 0.92) * hl / 8.0 * flare * 3.0;
+	}
+	if (sn_on > 0.5) {
+		vec2 px3 = floor(uv * res);
+		float lum3 = clamp(dot(c, vec3(0.299, 0.587, 0.114)), 0.0, 1.0);
+		float sig = sqrt(sn_shot * sn_shot * lum3 + sn_read * sn_read);
+		// two uniform hashes ≈ a triangle distribution (close enough to Gaussian for the eye and for MoveEye)
+		float nl = (h21(px3 + seed * 1.37 + 3.3) + h21(px3.yx + seed * 0.71 + 9.1) - 1.0) * 2.45;
+		c += vec3(nl * sig);
+		if (sn_chroma > 0.0) {
+			vec3 cn;
+			if (sn_blob > 0.5) {
+				vec2 q3 = uv * res / 2.2 + seed * 0.53;
+				vec2 i3 = floor(q3);
+				vec2 f3 = fract(q3);
+				f3 = f3 * f3 * (3.0 - 2.0 * f3);
+				vec3 a00 = vec3(h21(i3), h21(i3 + 17.1), h21(i3 + 41.7));
+				vec3 a10 = vec3(h21(i3 + vec2(1.0, 0.0)), h21(i3 + vec2(18.1, 17.1)), h21(i3 + vec2(42.7, 41.7)));
+				vec3 a01 = vec3(h21(i3 + vec2(0.0, 1.0)), h21(i3 + vec2(17.1, 18.1)), h21(i3 + vec2(41.7, 42.7)));
+				vec3 a11 = vec3(h21(i3 + 1.0), h21(i3 + 18.1), h21(i3 + 42.7));
+				cn = mix(mix(a00, a10, f3.x), mix(a01, a11, f3.x), f3.y) - 0.5;
+				cn *= 1.8;
+			} else {
+				cn = vec3(h21(px3 + seed), h21(px3 + seed + 17.1), h21(px3 + seed + 41.7)) - 0.5;
+			}
+			c += (cn - dot(cn, vec3(0.333))) * sn_chroma * sig * 4.0;
+		}
+		if (hotpx > 0.0) {
+			// fixed places (the same every picture): a few pixels with a high dark current, one colour of the Bayer pattern
+			float hp = h21(px3 * 1.013 + 77.0);
+			if (hp < 0.00005) {
+				float ch = h21(px3 + 5.0);
+				vec3 hc = ch < 0.33 ? vec3(1.0, 0.25, 0.2) : (ch < 0.66 ? vec3(0.3, 1.0, 0.3) : vec3(0.25, 0.35, 1.0));
+				c += hc * hotpx * (0.4 + 0.6 * h21(px3 + 9.0));
+			}
+		}
 	}
 	ALBEDO = clamp(c, 0.0, 1.0);
 	ALPHA = 1.0;
