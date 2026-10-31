@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.25** · passende MoveEye-Version (früher Motion Watch) **2.98.55**
+Stand: 31.10.2026 · Simulator-Version **3D-4.25** · passende MoveEye-Version (früher Motion Watch) **2.98.56** (2.98.56 ohne Simulator-Änderung)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 

@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_55.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_56.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.56: Sim-Kompakt: hat es neben dem Hauptbild Platz (PC, Tablet quer), steht das zweite Bild (Simulator bzw. Kamera)
+    rechts daneben statt darüber – nichts wird mehr verdeckt; am Handy hochkant bleibt Bild im Bild. Das Simulator-Bild wächst
+    nicht mehr mit dem Zoom «Grösse» aus seinem Platz.
   * 2.98.55: «MoveEye Sim · Basis» (alter Python-Simulator) nur noch mit dem neuen Schalter «Basis-Simulator anzeigen»
     (Simulator, Experte, Standard aus): ohne ihn kein Download, keine Knöpfe zum Installieren / Starten auf dem Pi (bestehende
     Installationen bleiben). Simulator 3D-4.25: Grafik-Stufe «Lite» für den Raspberry Pi 5 und «Leistung» in der Selbstdiagnose.
@@ -1005,10 +1008,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_55.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_56.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_55.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_55.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_56.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_56.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -1025,7 +1028,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.55"
+APP_VERSION = "2.98.56"
 
 
 def default_data_dir():
@@ -32594,7 +32597,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_55.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_56.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -58236,6 +58239,12 @@ SIM_PAGE = SIM_PAGE.replace("</body>", "<!--KIGJS--></body>", 1)          # fill
 #           the simulator has it), Ansicht (views of the simulator window, /api/sim padview like 538), Folgen (the quick
 #           switch «Follow» of 530) and «… mehr» = the whole «Simulator-Steuerung» card (search, Simple / Expert).
 #   The explanation of the simulator window is behind «?», «Bildqualität» is in «◫ Ansicht».
+#   2.98.56 «adaptiv» (Daniel 31.10.: on a PC the small picture covered the camera picture, on ~1000 px the big one was small
+#           and centred): is there room BESIDE the main picture (the second one >= 220 px wide, the main one ~64 % of the row,
+#           at least 60 %; height limit as above, phone sideways up to half the height), the second picture stands next to it
+#           (#lv-main.sk-side: grid areas "pic pi", top-aligned, the same card look, «Simulator» / «Kamera» + LIVE dot), the pair
+#           centred by --sk-off when the height limits it. Otherwise (phone upright) the inset as before. ResizeObserver on <main>.
+#           The simulator picture is undone from the zoom «Grösse» of 536 (it grew out of its place on a big screen).
 # Nothing changes when the simulator is not connected (or Sim-Kompakt is off): every element goes back to its place.
 # Hooks: 536 (placeStick leaves the stick alone, menuBuild calls skMenu), 539 / 546 (window.skSlot), 139 (mwSimHub, sheets
 # with data-simhub="sheet"). Window (Tk): no live sticks / simulator window there - nothing to do. Translations: part 597.
@@ -58267,14 +58276,31 @@ body.sk.lv:not(.videoonly) #vcard.sk-pi .vtag{left:4px;bottom:4px;gap:3px}
 body.sk.lv:not(.videoonly) #vcard.sk-pi .vtag span{font-size:9px;padding:1px 5px;border-radius:5px;letter-spacing:.03em}
 body.sk.lv:not(.videoonly) #vcard.sk-pi .vtag .live::before{width:6px;height:6px;margin-right:4px}
 body.sk.lv:not(.videoonly) #vcard.sk-pi #v-src{display:none}
-body.sk.lv:not(.videoonly) #vcard.sk-pm .vtag{right:calc(var(--sk-iw,120px) + 16px);flex-wrap:nowrap;overflow:hidden}   /* not under the small picture */
+body.sk.lv:not(.videoonly) #lv-main:not(.sk-side) #vcard.sk-pm .vtag{right:calc(var(--sk-iw,120px) + 16px);flex-wrap:nowrap;overflow:hidden}   /* not under the small picture */
 body.sk.lv:not(.videoonly) #vcard.sk-pm .vtag span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 body.sk.lv:not(.videoonly) #vcard.sk-pm .vtag .live{flex:none}
+/* 2.98.56 «adaptiv»: room beside the main picture = the second picture next to it (top right, ~1/3 of the row, the same card
+   look, no overlap; --sk-off centres the pair when the height limits the main picture); else the inset in the corner as above */
+body.sk.lv:not(.videoonly) #lv-main.sk-side{grid-template-columns:minmax(0,1fr) calc(var(--sk-iw,240px) + var(--sk-off,0px));grid-template-areas:"pic pi" "ctl ctl" "more more"}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #vcard.sk-pm,body.sk.lv:not(.videoonly) #lv-main.sk-side #sk-sim.sk-pm{justify-self:end}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #vcard.sk-pi,body.sk.lv:not(.videoonly) #lv-main.sk-side #sk-sim.sk-pi{grid-area:pi;justify-self:start;align-self:start;
+  margin:0!important;border:1px solid var(--line);border-radius:12px;box-shadow:none}
+body.sk.lv:not(.videoonly) #lv-main.sk-side.sk-bc #vcard,body.sk.lv:not(.videoonly) #lv-main.sk-side.sk-bs #sk-sim{grid-column:1/-1;justify-self:stretch}
+.vtag .sk-cl{display:none}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #vcard.sk-pi .vtag{left:6px;bottom:6px;gap:4px}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #vcard.sk-pi .vtag span{font-size:10.5px;padding:2px 7px}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #vcard.sk-pi .vtag .sk-cl{display:inline-block}
+body.sk.lv:not(.videoonly) #lv-main.sk-side #sk-sim.sk-pi #sk-tag{left:6px;bottom:6px;font-size:10.5px;padding:2px 7px;border-radius:7px}
+#lv-main.sk-side #sk-sim.sk-pi #sk-tag::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#3fcf6b;margin-right:5px;animation:pulse 1.6s infinite}
 body.sk.lv:not(.videoonly) #lv-joy,body.sk #pip{display:none!important}
 body.sk.lv:not(.videoonly) #lv-tools button{width:30px;height:30px;font-size:14px;border-radius:8px}
 body.sk.lv:not(.videoonly) #lv-tools{top:5px;right:5px;gap:4px}
 body.sk.lv:not(.videoonly) #lv-tools button svg{width:15px;height:15px}
 #sk-sim,#sk-ctl{display:none}
+/* 2.98.56: 536 zooms everything but the camera card by «Grösse» (--lv-ui, a big screen 115 %) - the simulator picture is sized in
+   real pixels like the camera picture (otherwise it grows out of its place beside / under the other one); its labels keep the zoom */
+body.sk.lv:not(.videoonly) #sk-sim{zoom:calc(1 / var(--lv-ui,1))}
+body.sk.lv:not(.videoonly) #sk-sim>:not(#lv-vw){zoom:var(--lv-ui,1)}
 body.sk.lv:not(.videoonly) #sk-sim{display:flex;align-items:center;justify-content:center;background:#000;border-radius:12px;position:relative;border:1px solid var(--line)}
 body.sk.lv:not(.videoonly) #sk-sim.sk-pi{border:2px solid #fff;border-radius:10px;position:relative}
 #sk-sim #lv-vw{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
@@ -58287,7 +58313,7 @@ body.sk.lv:not(.videoonly) #sk-sim.sk-pi{border:2px solid #fff;border-radius:10p
 #sk-sim .lv-vbtn button{width:32px;height:32px;font-size:15px}
 #sk-sim.big .lv-vbox img{cursor:grab}
 #sk-cap{position:absolute;left:6px;bottom:5px;right:6px;font-size:10.5px;line-height:1.25;color:#fff;text-shadow:0 1px 2px #000;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:2}
-#sk-sim.sk-pm #sk-cap{right:calc(var(--sk-iw,120px) + 16px)}   /* not under the small picture */
+#lv-main:not(.sk-side) #sk-sim.sk-pm #sk-cap{right:calc(var(--sk-iw,120px) + 16px)}   /* not under the small picture */
 #sk-sim.sk-pi #sk-cap,#sk-sim.sk-pi #sk-back{display:none!important}
 #sk-tag{display:none;position:absolute;left:4px;bottom:4px;z-index:3;pointer-events:none;background:rgba(0,0,0,.62);color:#fff;border-radius:5px;padding:1px 5px;font-size:9px;font-weight:700;letter-spacing:.03em}
 #sk-sim.sk-pi #sk-tag{display:block}
@@ -58355,8 +58381,8 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   if (document.body.dataset.tab !== "live") return;
   try { const D = /*SKDE*/{}; for (const k in D) if (!(k in I18N.de)) I18N.de[k] = D[k]; } catch (e) {}
   try { I18N.en = I18N.en || {}; Object.assign(I18N.en, {
-    "sk-note": "With the simulator connected: the simulator picture big at the top, MoveEye's camera small in its corner (tap = swap), below them the head and rover sticks at the edges, the tiles of the simulator in between. Only for this device.",
-    "sk-help": "Sim compact: tap the small picture in the corner = swap the two pictures (this device remembers it). Tap the big picture = big view, tap again = back; the big simulator picture is the simulator window (mouse and ✋ finger steer the simulator, ✕ = back). Left stick = MoveEye's head, right stick = rover (in a game round only when the game drives the rover). The tiles = what happens in the simulator; «… more» = all settings of the simulator. On / off and picture quality under «◫ View»."}); } catch (e) {}
+    "sk-note": "With the simulator connected: the simulator picture big at the top, MoveEye's camera beside it (narrow screen: small in its corner; tap = swap), below them the head and rover sticks at the edges, the tiles of the simulator in between. Only for this device.",
+    "sk-help": "Sim compact: tap the small picture beside it or in the corner = swap the two pictures (this device remembers it). Tap the big picture = big view, tap again = back; the big simulator picture is the simulator window (mouse and ✋ finger steer the simulator, ✕ = back). Left stick = MoveEye's head, right stick = rover (in a game round only when the game drives the rover). The tiles = what happens in the simulator; «… more» = all settings of the simulator. On / off and picture quality under «◫ View»."}); } catch (e) {}
   const T = x => (typeof t === "function" ? t(x) : x);
   const $i = id => document.getElementById(id);
   const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
@@ -58375,6 +58401,8 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
   const WAIT = E("div", "sk-wait", "…");
   const TAG = E("div"); TAG.id = "sk-tag";              // «Simulator» on the small picture (2.98.53)
   SIM.append(WAIT, CAP, TAG, BK);
+  const CL = E("span", "sk-cl");                        // «Kamera» on the camera picture beside the main one (2.98.56)
+  { const vt = document.querySelector("#vcard .vtag"); if (vt) vt.appendChild(CL); }
   const C = E("div"); C.id = "sk-ctl";
   const HS = E("div"); HS.id = "sk-hs";
   const HSB = E("div", "sk-sb"), HSL = E("div", "sk-slot"), HLB = E("div", "sk-lb");
@@ -58432,6 +58460,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
       VI.style.width = VI.style.height = "";               // the size of the small picture (fitSim)                               // back from «◫ Ansicht» (also when the panel holds it right now)
       sticks(false);
       const m = M0(); if (m) m.classList.remove("sk-bc", "sk-bs");
+      if (m) m.classList.remove("sk-side");
       const vc = $i("vcard"); if (vc) { vc.classList.remove("sk-pm", "sk-pi"); vc.removeAttribute("title"); vc.removeAttribute("tabindex"); vc.removeAttribute("role"); }
     }
     if (typeof window.lvApply === "function") try { window.lvApply(); } catch (e) {}
@@ -58448,7 +58477,7 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
       if (small) { x.title = tip; x.setAttribute("role", "button"); x.tabIndex = 0; x.setAttribute("aria-label", tip); }
       else { x.removeAttribute("title"); x.removeAttribute("role"); x.removeAttribute("tabindex"); x.removeAttribute("aria-label"); }
     });
-    TAG.textContent = T("Simulator");
+    TAG.textContent = T("Simulator"); CL.textContent = T("Camera");
   }
   function swap() {
     setBig(""); P.sw = camBig() ? "sim" : "cam"; save(); roles(); layout();
@@ -58476,7 +58505,10 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     // bars), the sticks get smaller (down to 104 px) when the room is short; wider screens: as high as the room allows (16:9,
     // centred), the controls stay in view
     const full = narrow && !land;
-    let ph, pw;
+    // 2.98.56 «adaptiv» (Daniel 31.10.): enough room beside the main picture (the second one >= 220 px, the main one ~64 % of the
+    // row, at least 60 %) = both side by side, top-aligned, together over the row; not enough (phone upright) = the inset
+    const GAP = 8, SMIN = 220;
+    let ph, pw, side = false, sw = 0, off = 0;
     if (full) {
       pw = Math.round(mw); ph = Math.round(mw * 9 / 16);
       const short = ph - (room - ch - 2);              // 2.98.54: 2 px gap is enough (was 8)
@@ -58484,15 +58516,24 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
         stk = Math.max(104, stk - Math.ceil(short)); document.documentElement.style.setProperty("--sk-st", stk + "px"); ch = chOf();
       }
     } else {
-      ph = Math.round(Math.max(120, Math.min(mw * 9 / 16, room - ch - 8)));
-      pw = Math.round(Math.min(mw, ph * 16 / 9));
+      // phone sideways (lv-low: the header scrolls away): the pictures may take half of the height, the sticks then scroll
+      const hMax = Math.max(B.classList.contains("lv-low") ? Math.round(innerHeight * 0.5) : 120, room - ch - 8);
+      const pwS = Math.min(Math.round((mw - GAP) * 0.64), Math.floor(hMax * 16 / 9));
+      sw = Math.min(Math.floor(mw - GAP - pwS), Math.round(pwS * 0.66));
+      side = sw >= SMIN;
+      if (side) { pw = pwS; ph = Math.round(pw * 9 / 16); off = Math.max(0, Math.floor((mw - pw - GAP - sw) / 2)); }
+      else {
+        ph = Math.round(Math.max(120, Math.min(mw * 9 / 16, room - ch - 8)));
+        pw = Math.round(Math.min(mw, ph * 16 / 9));
+      }
     }
+    m.classList.toggle("sk-side", side);
     let pb = land ? Math.min(mw * 9 / 16, room - ch - 8) : Math.min(mw * 9 / 16, Hh * 0.62);
     pb = Math.round(Math.max(ph, pb));
-    const iw = Math.round(Math.max(96, Math.min(pw * (pw >= 600 ? 0.24 : 0.32), 300)));   // the small picture: smaller on a wide screen
+    const iw = side ? sw : Math.round(Math.max(96, Math.min(pw * (pw >= 600 ? 0.24 : 0.32), 300)));   // the inset: smaller on a wide screen
     m.style.setProperty("--sk-ph", ph + "px"); m.style.setProperty("--sk-phb", pb + "px"); m.style.setProperty("--sk-pw", pw + "px");
     m.style.setProperty("--sk-iw", iw + "px"); m.style.setProperty("--sk-ih", Math.round(iw * 9 / 16) + "px");
-    m.style.setProperty("--sk-im", Math.round((mw - pw) / 2 + 8) + "px");
+    m.style.setProperty("--sk-im", Math.round((mw - pw) / 2 + 8) + "px"); m.style.setProperty("--sk-off", off + "px");
     ACT.classList.remove("two"); if (ACT.scrollHeight > stk + 24) ACT.classList.add("two");   // ◎ 🎯 🤖 ? in two columns when higher than the stick
     fitSim();
   }
@@ -58703,6 +58744,10 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     if (ON) { sticks(true); layout(); paint(); }
   }
   addEventListener("resize", () => { if (ON) requestAnimationFrame(layout); });
+  if (window.ResizeObserver) {                          // 2.98.56: also when the room changes without a window resize (side panel, scroll bar)
+    let rw = 0, rh = 0;
+    new ResizeObserver(() => { const w = main.clientWidth, h = main.clientHeight; if (w === rw && h === rh) return; rw = w; rh = h; if (ON) requestAnimationFrame(layout); }).observe(main);
+  }
   if (window.visualViewport) visualViewport.addEventListener("resize", () => { if (ON) layout(); });
   let lastCls = "";
   new MutationObserver(() => { const c = document.body.className; if (c === lastCls) return; lastCls = c; tick(); })
@@ -58719,15 +58764,15 @@ WEB_UI_LOCAL.add("mw-simkompakt")                         # per device: a phone 
 
 # the manual (HELP_PAGE of 540): one paragraph in the section «Live-Seite», German and English
 for _a, _b in (('<section id="live" data-icon="📺"><h2>Die Live-Seite</h2>',
-                "<p><b>🧩 Sim-Kompakt (ab 2.98.46, Bild im Bild ab 2.98.53):</b> Ist der Simulator verbunden, zeigt die Live-Seite oben "
-                "das Simulator-Fenster gross und die Kamera von MoveEye klein in seiner Ecke («● LIVE»). Das kleine Bild antippen = die "
+                "<p><b>🧩 Sim-Kompakt (ab 2.98.46, Bild im Bild ab 2.98.53, daneben ab 2.98.56):</b> Ist der Simulator verbunden, zeigt die Live-Seite oben "
+                "das Simulator-Fenster gross und die Kamera von MoveEye daneben – auf einem schmalen Bildschirm (Handy hochkant) klein in seiner Ecke («● LIVE»). Das kleine Bild antippen = die "
                 "beiden Bilder tauschen (das Gerät merkt es sich); das grosse Bild antippen = gross, nochmals = zurück. Darunter links den Kopf-Stick "
                 "(mit ◎, Auslöser 🎯 und KI-Hilfe 🤖), rechts den Rover-Stick und dazwischen die Kacheln Szene, Tageszeit, Wetter, Besuch, "
                 "Spiel, Wildbeobachtung, Foto des Platzes, KI-Wächter, Ansicht und Folgen; «… mehr» öffnet die ganze Simulator-Steuerung, «?» "
                 "die Erklärung. Ein- und ausschalten (pro Gerät) und die Bildqualität des Simulators unter «◫ Ansicht».</p>"),
                ('<section id="live" data-icon="📺"><h2>The live page</h2>',
-                "<p><b>🧩 Sim compact (from 2.98.46, picture in picture from 2.98.53):</b> while the simulator is connected the live page "
-                "shows the simulator window big at the top and MoveEye's camera small in its corner («● LIVE»). Tap the small picture = "
+                "<p><b>🧩 Sim compact (from 2.98.46, picture in picture from 2.98.53, side by side from 2.98.56):</b> while the simulator is connected the live page "
+                "shows the simulator window big at the top and MoveEye's camera beside it - on a narrow screen (phone upright) small in its corner («● LIVE»). Tap the small picture = "
                 "swap the two pictures (this device remembers it); tap the big picture = big, tap again = back. Below them the head stick on the "
                 "left (with ◎, shutter 🎯 and AI help 🤖), the rover stick on the right and the tiles in between: scene, time of day, "
                 "weather, visit, game, wildlife watching, photo of the place, AI guard, view and follow; «… more» opens the whole simulator "
@@ -67411,7 +67456,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.55")
+        self.root.title("MoveEye 2.98.56")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -67778,7 +67823,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.55 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.56 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -80214,32 +80259,32 @@ _HX_simkompakt = {
     'Sim compact': ('Sim-Kompakt', 'Sim compact', 'Sim compatto', 'Sim cumpact'),
     'On when connected': ('Ein, wenn verbunden', 'Actif si connecté', 'Attivo se collegato', 'Activ, sch’el è collià'),
     'Off': ('Aus', 'Désactivé', 'Spento', 'Deactivà'),
-    'sk-note': ('Mit verbundenem Simulator: oben das Simulator-Bild gross, die Kamera von MoveEye klein in seiner Ecke (antippen = '
-                'tauschen), darunter Kopf- und Rover-Stick am Rand, dazwischen die Kacheln des Simulators. Gilt nur für dieses Gerät.',
-                'Avec le simulateur connecté : en haut l’image du simulateur en grand, la caméra de MoveEye en petit dans son coin '
-                '(toucher = échanger), dessous le stick de la tête et celui du rover sur les bords, entre eux les tuiles du simulateur. '
+    'sk-note': ('Mit verbundenem Simulator: oben das Simulator-Bild gross, die Kamera von MoveEye daneben (schmaler Bildschirm: klein in '
+                'seiner Ecke; antippen = tauschen), darunter Kopf- und Rover-Stick am Rand, dazwischen die Kacheln des Simulators. Gilt nur für dieses Gerät.',
+                'Avec le simulateur connecté : en haut l’image du simulateur en grand, la caméra de MoveEye à côté (écran étroit : '
+                'en petit dans son coin ; toucher = échanger), dessous le stick de la tête et celui du rover sur les bords, entre eux les tuiles du simulateur. '
                 'Seulement pour cet appareil.',
-                'Con il simulatore collegato: in alto l’immagine del simulatore grande, la telecamera di MoveEye piccola nel suo angolo '
-                '(toccare = scambiare), sotto lo stick della testa e quello del rover ai bordi, in mezzo le piastrelle del simulatore. '
+                'Con il simulatore collegato: in alto l’immagine del simulatore grande, la telecamera di MoveEye accanto (schermo stretto: '
+                'piccola nel suo angolo; toccare = scambiare), sotto lo stick della testa e quello del rover ai bordi, in mezzo le piastrelle del simulatore. '
                 'Solo per questo apparecchio.',
-                'Cun il simulatur collià: sisum il maletg dal simulatur grond, la camera da MoveEye pitschna en ses chantun (tutgar = '
-                'barattar), sutvart il stick dal chau e quel dal rover a l’ur, tranter els las plattinas dal simulatur. Mo per quest apparat.'),
-    'sk-help': ('Sim-Kompakt: das kleine Bild in der Ecke antippen = die beiden Bilder tauschen (dieses Gerät merkt es sich). Das grosse '
+                'Cun il simulatur collià: sisum il maletg dal simulatur grond, la camera da MoveEye dasper (visur stretg: pitschna en ses '
+                'chantun; tutgar = barattar), sutvart il stick dal chau e quel dal rover a l’ur, tranter els las plattinas dal simulatur. Mo per quest apparat.'),
+    'sk-help': ('Sim-Kompakt: das kleine Bild daneben oder in der Ecke antippen = die beiden Bilder tauschen (dieses Gerät merkt es sich). Das grosse '
                 'Bild antippen = gross, nochmals = zurück; das grosse Simulator-Bild ist das Simulator-Fenster '
                 '(Maus und ✋ Finger steuern den Simulator, ✕ = zurück). Linker Stick = Kopf von MoveEye, rechter Stick = Rover '
                 '(in einer Spielrunde nur, wenn das Spiel den Rover fährt). Die Kacheln = was im Simulator passiert; «… mehr» = alle '
                 'Einstellungen des Simulators. Ein / aus und Bildqualität unter «◫ Ansicht».',
-                'Sim compact : toucher la petite image dans le coin = échanger les deux images (cet appareil s’en souvient). Toucher la '
+                'Sim compact : toucher la petite image à côté ou dans le coin = échanger les deux images (cet appareil s’en souvient). Toucher la '
                 'grande image = en grand, encore une fois = retour ; la grande image du simulateur est la fenêtre du '
                 'simulateur (souris et doigt ✋ pilotent le simulateur, ✕ = retour). Stick gauche = tête de MoveEye, stick droit = '
                 'rover (pendant une partie seulement si le jeu utilise le rover). Les tuiles = ce qui se passe dans le simulateur ; '
                 '« … plus » = tous les réglages du simulateur. Activer / désactiver et qualité d’image sous « ◫ Affichage ».',
-                'Sim compatto: toccare l’immagine piccola nell’angolo = scambiare le due immagini (questo apparecchio lo ricorda). Toccare '
+                'Sim compatto: toccare l’immagine piccola accanto o nell’angolo = scambiare le due immagini (questo apparecchio lo ricorda). Toccare '
                 'l’immagine grande = grande, di nuovo = indietro; l’immagine grande del simulatore è la finestra del '
                 'simulatore (mouse e dito ✋ comandano il simulatore, ✕ = indietro). Stick sinistro = testa di MoveEye, stick destro = '
                 'rover (durante una partita solo se il gioco usa il rover). Le piastrelle = ciò che succede nel simulatore; «… altro» = '
                 'tutte le impostazioni del simulatore. Attivare / disattivare e qualità dell’immagine sotto «◫ Vista».',
-                'Sim cumpact: tutgar il pitschen maletg en il chantun = barattar ils dus maletgs (quest apparat sa regorda). Tutgar il '
+                'Sim cumpact: tutgar il pitschen maletg dasper u en il chantun = barattar ils dus maletgs (quest apparat sa regorda). Tutgar il '
                 'grond maletg = grond, anc ina giada = enavos; il grond maletg dal simulatur è la fanestra dal '
                 'simulatur (mieur e det ✋ commondan il simulatur, ✕ = enavos). Stick sanester = chau da MoveEye, stick dretg = rover '
                 '(durant in gieu mo sch’il gieu dovra il rover). Las plattinas = quai che capita en il simulatur; «… dapli» = tut ils '
