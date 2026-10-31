@@ -2971,6 +2971,12 @@
   "it": "Tutte le scene integrate. Clic = caricare la scena (i visitatori arrivano da soli). Verde = nuovo.",
   "rm": "Tut las scenas integradas. Clic = chargiar la scena (visitaders vegnan da sasez). Verd = nov."
  },
+ "alle Einstellungen und Regler, die Fensteranordnung, die Controller-Rollen, der Zuhause-Bausatz, der Echt-Abgleich": {
+  "en": "all settings and sliders, the window layout, the controller roles, the home kit, the real-world match",
+  "fr": "tous les réglages et curseurs, la disposition des fenêtres, les rôles des manettes, le kit maison, la comparaison réelle",
+  "it": "tutte le impostazioni e i cursori, la disposizione delle finestre, i ruoli dei controller, il kit casa, il confronto reale",
+  "rm": "tut ils parameters e regulaturs, la disposiziun da las fanestras, las rollas dals controllers, il kit da chasa, la cumparegliaziun reala"
+ },
  "alle Einstellungen und Regler, die Fensteranordnung, die Controller-Rollen, der Zuhause-Bausatz, der Echt-Abgleich, die Sprache (wieder wie MoveEye)": {
   "en": "all settings and sliders, the window layout, the controller roles, the home kit, the real-world match, the language (again like MoveEye)",
   "fr": "tous les réglages et curseurs, la disposition des fenêtres, les rôles des manettes, le kit maison, la comparaison réelle, la langue (de nouveau comme MoveEye)",
@@ -7454,6 +7460,12 @@
   "it": "La meta non è ancora raggiunta. Dormire qui significa: il capitolo non è riuscito (al massimo 1 stella).",
   "rm": "La finamira n'è anc betg cuntanschida. Durmir qua vul dir: il chapitel n'è betg reussì (al pli 1 staila)."
  },
+ "Das Zurücksetzen läuft schon.": {
+  "en": "The reset is already running.",
+  "fr": "La réinitialisation est déjà en cours.",
+  "it": "Il ripristino è già in corso.",
+  "rm": "La reinizialisaziun è gia en lavur."
+ },
  "Das zweite Kartenstück zeigt den Bach, der zweimal fällt: zwei Wellen übereinander, darunter ein Strich wie ein Steg. Daneben, ganz klein: ein Steinmann mit einer Kerbe.": {
   "en": "The second map piece shows the stream that falls twice: two waves on top of each other, below a line like a footbridge. Next to it, very small: a cairn with a notch.",
   "fr": "Le deuxième morceau montre le ruisseau qui tombe deux fois : deux vagues superposées, dessous un trait comme une passerelle. À côté, tout petit : un cairn avec une encoche.",
@@ -7910,6 +7922,12 @@
   "it": "Il gipeto lascia cadere il suo osso sulla lastra perché si rompa – proprio accanto all'escursionista che sta mangiando.",
   "rm": "Il tschess barbet lascha crudar ses ruaus sin la platta da crap per ch'el sa rumpa – exact sper il viandant che maglia."
  },
+ "Der Benutzerordner sieht unerwartet aus – zur Sicherheit wird nichts gelöscht.": {
+  "en": "The user folder looks unexpected – to be safe, nothing is deleted.",
+  "fr": "Le dossier utilisateur semble inhabituel – par sécurité, rien n’est supprimé.",
+  "it": "La cartella utente sembra insolita – per sicurezza non viene cancellato nulla.",
+  "rm": "L’ordinatur da l’utilisader para nunspetgà – per segirezza na vegn nagut stizzà."
+ },
  "Der Bergführer, natürlich - den Namen hört man hier oft. Ein schöner Hut, tragen Sie ihn mit Stolz.": {
   "en": "The mountain guide, of course - you hear the name often here. A fine hat, wear it with pride.",
   "fr": "Le guide, bien sûr - on entend souvent ce nom ici. Un beau chapeau, portez-le avec fierté.",
@@ -8161,6 +8179,12 @@
   "fr": "L’humain",
   "it": "La persona",
   "rm": "L’uman"
+ },
+ "Der Merker für den Neustart liess sich nicht schreiben – nichts wurde gelöscht.": {
+  "en": "The marker for the restart could not be written – nothing was deleted.",
+  "fr": "Le repère pour le redémarrage n’a pas pu être écrit – rien n’a été supprimé.",
+  "it": "Il segnale per il riavvio non ha potuto essere scritto – non è stato cancellato nulla.",
+  "rm": "Il marcader per la reaviada n’ha betg pudì vegnir scrit – nagut è vegnì stizzà."
  },
  "Der Morgen": {
   "en": "The morning",
