@@ -10,15 +10,18 @@ extends "res://scripts/bergtal_erleben_base.gd"
 ## Jede Region (Jahreszeit) hat 3–4 Stationen in fester Reihenfolge, davon mindestens 2 Maggie-Rätsel (STATIONEN unten).
 ## Die lieben Tiere (Eule, Steinbock, Murmeltier, Fuchs) stehen in maggie_helfer.gd.
 ##
-## Verbindung mit dem Rahmen (Paket S1, scripts/maggie_story.gd – API laut Brief):
-##   region_aktiv() -> String, spieler_pos() -> Vector3 (Welt), kristall_bei_spieler(), tipp(text), moveeye_sagt(text),
-##   region_fertig(id), Signal region_gestartet(id), region_mitte(id) -> Vector3 (Welt).
-##   Der Rahmen startet Maggie mit  MaggieHund.starten(main, story)  (gibt den Knoten zurück; bei Szenenwechsel neu aufrufen).
+## Verbindung mit dem Rahmen (Paket S1, scripts/maggie_story.gd = main.maggie): S1 legt diese Datei beim Öffnen der
+##   Geschichte als Kind des Story-Knotens an und setzt vorher `main` und `story`. Benutzt werden region_aktiv(),
+##   spieler_pos() (Welt), region_mitte(id) (Welt), tipp(), moveeye_sagt(), aufgabe_anmelden(id, text) /
+##   aufgabe_erledigt(id) (alle Stationen sind Aufgaben – sind alle erledigt, leuchtet das Jahreszeiten-Tor),
+##   zukunftsbild_ort(pos, text) (die Gefahr an der Weggabelung), die Signale region_gestartet / region_beendet /
+##   einstieg_graben(pos) (Maggie läuft hin und gräbt den Kristall aus) / geschichte_beendet.
+##   Jede Region baut das Bergtal neu: Maggie, die Stationen und die Helfer werden bei region_gestartet neu gebaut.
 ##   Optional, wenn der Rahmen sie hat: story.spieler_setzen(welt_pos) (Steinbock trägt dich), story.speichern() (nach Rätsel).
 ##   Speichern: zustand() -> Dictionary für den Autosave am Rastplatz, laden(d) beim Weiterspielen.
 ##   Sperren: sperren() -> [[welt_pos, radius], …] – noch geschlossene Stellen (Tür, Spalte, Gatter, Fels), falls der
 ##   Rahmen die Figur dort aufhalten will.
-##   Solange maggie_story.gd fehlt: eigener Stub (Klasse StubStory unten – TODO verbinden mit maggie_story.gd).
+##   Ohne Rahmen (Tests): StubStory unten, gestartet über /control maggie_hund start.
 ## Paket S3 (maggie_gefahr.gd): böse Tiere in die Gruppe «maggie_boese» (Node3D, Welt-Position); optional
 ##   Methode ablenken(welt_pos: Vector3, sekunden: float) – der Fuchs lockt sie weg; Meta «art» = wildschwein | wolf | kraehe | viper.
 ## Lite: _lite() (Bergtal/Bib.lite() = Engine-Meta «lite»): weniger Erdkrümel, keine Lämpchen.
@@ -73,33 +76,69 @@ var _msg_bis := 0.0
 var _gesagt := {}                    # station id -> true (Hinweis schon gesagt)
 
 
-static func starten(main, story_ = null) -> Node:
-	"""Maggie ins Bergtal holen (der Rahmen ruft das nach dem Laden der Szene «bergtal»)"""
-	var bt_ = main.scenes.data.get("bergtal", null) if main.scenes != null else null
-	if bt_ == null:
-		return null
-	var old = main.get_meta("maggie_hund") if main.has_meta("maggie_hund") else null
-	if old != null and is_instance_valid(old) and old.is_inside_tree():
-		if story_ != null:
-			old.verbinden(story_)
-		return old
-	var h = new()
-	h.story = story_
-	h.setup(bt_)
-	main.set_meta("maggie_hund", h)
-	return h
+var main                             # gesetzt von maggie_story.gd (S1) vor dem Anlegen
+var _bt_alt = null
+
+
+func _ready() -> void:
+	if m == null:
+		m = main
+	if m == null:
+		return
+	main = m
+	name = "maggie_hund"
+	helfer = Helfer.new(self)
+	_ui()
+	if story == null:
+		story = _story_suchen()
+	verbinden(story)
 
 
 func _part() -> String:
 	return "maggie"
 
 
-func _register() -> void:
-	helfer = Helfer.new(self)
-	_ui()
-	if story == null:
-		story = _story_suchen()
-	verbinden(story)
+func _binden() -> bool:
+	"""an das Bergtal anhängen, das gerade gebaut ist (jede Region baut es neu, mit ihrer Jahreszeit)"""
+	var b = m.scenes.data.get("bergtal", null) if m != null and m.scenes != null else null
+	if b == null or b.tal == null or not is_instance_valid(b.tal):
+		return false
+	if b == _bt_alt and holder != null and is_instance_valid(holder):
+		return true
+	_aufraeumen()
+	bt = b
+	_bt_alt = b
+	s = bt.s
+	season = str(bt.season)
+	lite = _lite() or str(m.quality) == "simple"
+	process_priority = 100
+	holder = Node3D.new()
+	holder.name = "maggie_hund"
+	bt.tal.add_child(holder)
+	return true
+
+
+func _aufraeumen() -> void:
+	"""alles der Region weg (Maggie, Stationen, Helfer, Effekte)"""
+	if helfer != null:
+		helfer.aufraeumen()
+	if hund != null and is_instance_valid(hund):
+		hund.queue_free()
+	hund = null
+	if _rroot != null and is_instance_valid(_rroot):
+		_rroot.queue_free()
+	_rroot = null
+	for k in _kruemel + _pfoten:
+		if is_instance_valid(k[0]):
+			k[0].queue_free()
+	_kruemel = []
+	_pfoten = []
+	stationen = []
+	region = ""
+	_q["q"] = []
+	zustand_hund = "folgen"
+	if _bar != null:
+		_bar.visible = false
 
 
 func _story_suchen():
@@ -115,11 +154,46 @@ func verbinden(s_) -> void:
 	story = s_
 	if story == null:
 		return
-	if story.has_signal("region_gestartet") and not story.is_connected("region_gestartet", Callable(self, "_on_region")):
-		story.connect("region_gestartet", Callable(self, "_on_region"))
+	for sg in [["region_gestartet", "_on_region"], ["region_beendet", "_on_ende"], ["einstieg_graben", "_on_einstieg"],
+			["geschichte_beendet", "_on_schluss"]]:
+		if story.has_signal(sg[0]) and not story.is_connected(sg[0], Callable(self, sg[1])):
+			story.connect(sg[0], Callable(self, sg[1]))
 	var r := _region_der_story()
 	if r != "" and r != region:
 		_on_region(r)
+
+
+func _on_ende(_id: String) -> void:
+	_aufraeumen()
+
+
+func _on_schluss() -> void:
+	_aufraeumen()
+	if holder != null and is_instance_valid(holder):
+		holder.queue_free()
+	holder = null
+	_bt_alt = null
+
+
+func _on_einstieg(pos: Vector3) -> void:
+	"""der Einstieg: beim Spaziergang läuft Maggie zu pos und gräbt den leuchtenden Bergkristall aus"""
+	if not _binden():
+		return
+	_hund_bauen()
+	var p := VL(pos)
+	var ziel := Vector3(p.x, 0, p.z)
+	if ppos(hund).distance_to(_spieler()) > 6.0:
+		place(hund, _spieler() + Vector3(1.0, 0, 1.0))
+	_aktion([{"t": "idle", "k": "sniff", "s": 1.2}, {"t": "bark", "n": 1}, {"t": "walk", "p": ziel + Vector3(0, 0, 0.6), "spd": 3.0},
+		{"t": "face", "p": ziel}, {"t": "call", "fn": func(): _graben_hier(true)}, {"t": "idle", "k": "root", "s": 3.0},
+		{"t": "call", "fn": func(): _graben_hier(false)}, {"t": "bark", "n": 3}, {"t": "idle", "k": "sit", "s": 2.0}])
+
+
+var _graben_frei := false
+
+
+func _graben_hier(an: bool) -> void:
+	_graben_frei = an
 
 
 func _region_der_story() -> String:
@@ -251,6 +325,15 @@ func _stationen(r: String) -> Array:
 			]
 
 
+func _aufgaben_namen() -> Dictionary:
+	"""kurze Namen der Stationen (für die Aufgaben-Liste des Rahmens)"""
+	return {"h_spur": T.t("Den Weg im Nebel finden"), "h_laub": T.t("Was glitzert im Laub?"), "h_gabel": T.t("Der richtige Weg an der Gabelung"),
+		"w_tuer": T.t("Die Tür der Schutzhütte öffnen"), "w_eis": T.t("Das Kartenstück auf dem Eis"), "w_gabel": T.t("Der richtige Weg im Schnee"),
+		"f_lawine": T.t("Den Wegweiser ausgraben"), "f_loecher": T.t("Den Geheimgang finden"), "f_gatter": T.t("Das Weidegatter öffnen"),
+		"s_spalte": T.t("Durch die Felsspalte"), "s_fels": T.t("Über die steilen Felsen"), "s_geroell": T.t("Was steckt im Geröll?"),
+		"s_gabel": T.t("Der richtige Weg im hohen Gras")}
+
+
 func _platz(p: Vector2) -> Vector2:
 	"""ein Ort in der Nähe, der nicht im See und nicht zu steil ist"""
 	for rr in [0.0, 4.0, 8.0, 12.0, 16.0, 22.0, 30.0]:
@@ -263,12 +346,12 @@ func _platz(p: Vector2) -> Vector2:
 
 
 func _on_region(r: String) -> void:
-	if not r in REGIONEN:
+	if not r in REGIONEN or not _binden():
 		return
+	_aufraeumen()
 	region = r
 	c = _mitte(r)
-	if _rroot != null and is_instance_valid(_rroot):
-		_rroot.queue_free()
+	_gesagt = {}
 	_rroot = Node3D.new()
 	_rroot.name = "maggie_" + r
 	holder.add_child(_rroot)
@@ -285,11 +368,17 @@ func _on_region(r: String) -> void:
 		_geloest_zeigen(stationen[idx])
 		idx += 1
 	_hund_bauen()
-	var sp := _spieler()
-	place(hund, sp + Vector3(1.2, 0, 1.2))
-	_q["q"] = []
-	zustand_hund = "folgen"
 	helfer.region_bauen(r, c, stationen)
+	var namen := _aufgaben_namen()
+	for st_ in stationen:                            # alle Stationen sind Aufgaben der Region (das Tor wartet auf sie)
+		var id := str(st_["id"])
+		if story != null and story.has_method("aufgabe_anmelden"):
+			story.aufgabe_anmelden(id, str(namen.get(id, st_["hinweis"])))
+			if geloest.has(id) and story.has_method("aufgabe_erledigt"):
+				story.aufgabe_erledigt(id)
+		if str(st_["ding"]) == "gabel" and story != null and story.has_method("zukunftsbild_ort"):
+			story.zukunftsbild_ort(W(G((st_["boese_p"] as Vector3).x, (st_["boese_p"] as Vector3).z)),
+				T.t("An der Weggabelung leuchten Augen im Gebüsch. Hör auf Maggie!"))
 	_bar.visible = true
 	_knopf_hilfe("")
 
@@ -298,7 +387,8 @@ func _on_region(r: String) -> void:
 func _hund_bauen() -> void:
 	if hund != null and is_instance_valid(hund):
 		return
-	hund = actor("dog", G(c.x, c.y), G(c.x, c.y + 1.0), 1.6)
+	var sp := _spieler()
+	hund = actor("dog", G(sp.x + 1.2, sp.z + 1.2), G(sp.x, sp.z), 1.6)
 	hund.name = "maggie"
 	hund.body_root.scale = Vector3.ONE * 0.6         # «dog» hat 50 cm Rücken-Mitte → ≈ 30 cm Schulterhöhe
 	bt._recolor(hund, FELL, FELL_C)
@@ -571,10 +661,14 @@ func _fertig(st_: Dictionary) -> void:
 	_knopf_hilfe("")
 	if story != null and story.has_method("speichern"):
 		story.speichern()
+	if story != null and story.has_method("aufgabe_erledigt"):
+		story.aufgabe_erledigt(id)
 	if idx >= stationen.size() and not fertig.has(region):
 		fertig[region] = true
 		region_raetsel_fertig.emit(region)
-		if story != null and story.has_method("region_fertig"):
+		if story != null and story.has_method("aufgabe_erledigt"):
+			tipp(T.t("Alle Rätsel gelöst! Jetzt leuchtet das Tor der Jahreszeit."))
+		elif story != null and story.has_method("region_fertig"):
 			story.region_fertig(region)
 		else:
 			_zeige(T.t("Alle Rätsel dieser Jahreszeit gelöst!"))
@@ -853,9 +947,9 @@ func _warnen() -> void:
 
 # ---- Ablauf ------------------------------------------------------------------------------------------------------------
 func _process(dt: float) -> void:
-	super._process(dt)
-	if m == null or not is_inside_tree() or bt.tal == null or not is_instance_valid(bt.tal):
+	if m == null or bt == null or not is_inside_tree() or bt.tal == null or not is_instance_valid(bt.tal):
 		return
+	super._process(dt)
 	dt = minf(dt, 0.25)
 	_uhr += dt
 	if _msg != null and _msg.visible and _uhr > _msg_bis:
@@ -868,13 +962,18 @@ func _process(dt: float) -> void:
 		var r := _region_der_story()
 		if r != "" and r != region:
 			_on_region(r)
-	if hund == null or not is_instance_valid(hund) or region == "":
+	if hund == null or not is_instance_valid(hund):
 		return
 	if zustand_hund == "aktion":
 		if _q_tick(_q, dt):
 			zustand_hund = "folgen"
 	else:
 		_folgen(dt)
+	if _graben_frei and randf() < dt * 6.0:
+		_kruemel_werfen(ppos(hund) - _richtung(hund) * 0.3, _boden_farbe(), 2)
+	if region == "":
+		_effekte(dt)
+		return
 	_warnen()
 	_effekte(dt)
 	_station_hinweis(dt)
@@ -992,6 +1091,7 @@ func info() -> Dictionary:
 	return {"region": region, "mitte": [snappedf(c.x, 0.1), snappedf(c.y, 0.1)], "idx": idx, "zustand": zustand_hund,
 		"hund": [snappedf(hp.x, 0.1), snappedf(hp.z, 0.1)], "spieler": [snappedf(sp.x, 0.1), snappedf(sp.z, 0.1)],
 		"stationen": sts, "gefunden": gefunden, "fertig": fertig.keys(), "stub": story is StubStory,
+		"log": (story.log_.slice(-8) if story is StubStory else []),
 		"helfer": helfer.info() if helfer != null else {}, "lite": lite}
 
 
@@ -1000,16 +1100,28 @@ static func control(main, d: Dictionary) -> Dictionary:
 	var h = main.get_meta("maggie_hund") if main.has_meta("maggie_hund") else null
 	if h != null and not is_instance_valid(h):
 		h = null
+	var mg = main.get("maggie")
+	if h == null and mg != null and mg is Node and (mg as Node).has_node("maggie_hund"):
+		h = (mg as Node).get_node("maggie_hund")
 	var what := str(d.get("do", "info"))
 	if what == "start":
 		if main.scenes.data.get("bergtal", null) == null:
 			return {"ok": false, "error": "Szene bergtal zuerst laden"}
 		if h == null:
-			h = starten(main, null)
+			var st_ = main.get("maggie")
+			if st_ != null and st_ is Node and (st_ as Node).has_node("maggie_hund"):
+				h = (st_ as Node).get_node("maggie_hund")
+			else:
+				h = (load("res://scripts/maggie_hund.gd") as GDScript).new()
+				h.main = main
+				main.add_child(h)
+			main.set_meta("maggie_hund", h)
 		if h.story == null or h.story is StubStory:
 			h.story = StubStory.new(h)
-		h.story.region = str(d.get("region", "herbst"))
-		h.verbinden(h.story)
+			h.story.region = str(d.get("region", "herbst"))
+			h.verbinden(h.story)
+		if h.region == "" and h.story.has_method("region_aktiv") and h.story.region_aktiv() != "":
+			h._on_region(str(h.story.region_aktiv()))
 		return {"ok": true, "info": h.info()}
 	if h == null:
 		return {"ok": false, "error": "Maggie ist nicht da (do: start)"}
@@ -1034,6 +1146,7 @@ static func control(main, d: Dictionary) -> Dictionary:
 			return {"ok": true, "info": h.info()}
 		"stop":
 			main.remove_meta("maggie_hund")
+			h._on_schluss()
 			h.queue_free()
 			return {"ok": true}
 	return {"ok": true, "info": h.info()}
@@ -1044,7 +1157,7 @@ class StubStory:
 	## TODO verbinden mit maggie_story.gd (Paket S1): nur solange es den Rahmen noch nicht gibt – für Tests ohne S1.
 	## Die Figur steht an «pos» (Tal), die Regionen sind feste Orte im Bergtal.
 	signal region_gestartet(id: String)
-	const MITTE := {"herbst": Vector2(-150, -230), "winter": Vector2(470, 300), "fruehling": Vector2(-90, 170), "sommer": Vector2(-300, 300)}
+	const MITTE := {"herbst": Vector2(-640, -200), "winter": Vector2(590, 360), "fruehling": Vector2(-110, -330), "sommer": Vector2(-530, 480)}   # wie maggie_story.gd
 	var h
 	var region := "herbst"
 	var pos = null
@@ -1077,3 +1190,12 @@ class StubStory:
 
 	func region_fertig(id: String) -> void:
 		log_.append("fertig: " + id)
+
+	func aufgabe_anmelden(id: String, text: String) -> void:
+		log_.append("aufgabe: " + id + " " + text)
+
+	func aufgabe_erledigt(id: String) -> void:
+		log_.append("erledigt: " + id)
+
+	func zukunftsbild_ort(_pos: Vector3, text: String) -> void:
+		log_.append("zukunft: " + text)
