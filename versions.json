@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 22:11",
+ "generated": "2026-10-31 22:19",
  "versions": [
+  {
+   "version": "3.18.0",
+   "file": "webcam_bewegung_3_18_0.py",
+   "url": "",
+   "sha256": "c7529050a3d1a2c698585cc0a99ce436a05583e1997fc5be9aeb267e07857bdd",
+   "date": "2026-10-31 22:19",
+   "notes": "Simulator 3.18.0: Figuren und Tiere mit echten Gelenken (Knie, Ellbogen, Schultern, Hüfte, Sprunggelenk) und natürlicherem Gang, Füsse bleiben am Boden.",
+   "size": 4421404,
+   "sig": "006fb23f3e3f9ecd4c4472925d55cd0e9649ff415398954c8540e6263b07f74b21fe2c07e2292b12099dc05252fad31921574cfb33db2e7b3724d93433c8dc0c",
+   "data": {
+    "file": "moveeye_daten_3_18_0.zip",
+    "url": "",
+    "sha256": "9b0ac6b9c0a94cc51a86f5c0e83c27ff69aa3ac8ea9f4569b7633a248e21ad11",
+    "size": 1613431,
+    "sig": "32f424fc51c77dcbbc29231a199213e82ad244873bc30768a83c8e48cd4c3841fd54d84d02a8908e2f9379ec858449e1408f35394adbed18d523c43053cb350e"
+   }
+  },
   {
    "version": "3.17.0",
    "file": "webcam_bewegung_3_17_0.py",
    "url": "",
    "sha256": "ced7b39c55410c8d04078e2a583ab7629cdc176339d38022a3203800da83adcc",
-   "date": "2026-10-31 22:11",
+   "date": "2026-10-31 22:15",
    "notes": "Simulator-Ports: MoveEye findet auch die Ausweich-Ports 8775/8785/8795 (Portliste geprüft). Simulator 3.17.0: Notfall-Start.bat, Fehlerbericht sammeln.bat, Fotos mit weniger Grafikspeicher, zweiter Simulator auf Port 8768.",
    "size": 4421540,
    "sig": "7fba0fbcd890d7e528c64b5428fff1335eb8f7bdb2ec2e9e6e85208d8aa59e0010778629bf5d71e68d067be5387cc690b8ab154074d97ac783438884e1bf3c05",
@@ -136,23 +153,6 @@
     "sha256": "cf32ac8d4496ccea21715bec1a600cdec55ef1b1288cfa57155ee052331313b0",
     "size": 1611913,
     "sig": "0fc6959356d16b057836ce2168a0e1c3ffbd441184c7f1ace91788deb3094dbe48ebaa664bd1c341a0242f8e82aadc2eae29885ad6f6f260579e5735e323240b"
-   }
-  },
-  {
-   "version": "3.9.2",
-   "file": "webcam_bewegung_3_9_2.py",
-   "url": "",
-   "sha256": "379acd853935bc37f51e4cd3cd19b5a09d7ed24c2e3cfee12259255d99642c38",
-   "date": "2026-10-31 19:26",
-   "notes": "Simulator 3.9.2: Start-Absturz behoben (Foto-Inhalte wurden zu früh angewendet); nach einem Absturz beim Laden der Fotos startet der Simulator ohne Fotos; neue Startoption --no-inhalte.",
-   "size": 4403953,
-   "sig": "9c9f3784fc918cd6513a0307976ee060330587ea4ccc1c55f79a81fd45ebe6e7e4ace222237bc751236e56a4edab0d94248b1a8c83faa3d06afb2cbec9d4c101",
-   "data": {
-    "file": "moveeye_daten_3_9_2.zip",
-    "url": "",
-    "sha256": "6e159f0a6962cb216c0cb1bb9c2923616ede7f81f5276388a2050ed42e178bb7",
-    "size": 1609632,
-    "sig": "56898ff6da73eff5c08c24d8a96325abaaa4d21854579a5c3f1f9a26cd66978d623a313e4882b25959533e1c786fa39bfcf53c35755e2ff47bd261fb3191c60b"
    }
   },
   {

@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.17.0** · MoveEye **3.17.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.18.0** · MoveEye **3.18.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.18.0 (MoveEye 3.18.0): Gelenke (`actor.gd`)
+
+- `actor.gd`: Figuren aus Grundformen mit Gelenken (Knie, Ellbogen, Schultern, Hüfte, Sprunggelenk), Gang mit Beugung, Füsse
+  am Boden; Maggies `tail_wag` (3.15.0) bleibt. Test `werkzeuge/gelenke_test.gd` (headless, in der Release-Kette).
 
 ## NEU in 3.17.0 (MoveEye 3.17.0): Notfall-Start, Fehlerbericht, Fotos kleiner, Ports
 

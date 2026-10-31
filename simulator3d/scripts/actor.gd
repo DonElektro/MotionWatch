@@ -18,6 +18,9 @@ var fled := false
 var done := false
 var pir_done := false
 var legs: Array = []          # [pivot, sign]
+var ankles: Array = []        # «Gelenke»: persons from shapes - the ankle of each leg (keeps the foot flat), else empty
+var _paws: Array = []         # «Gelenke»: animals - [hip pivot, knee pivot or null, centre of the paw, its radius] per leg
+var _paw_rest := 0.0          # ... the lowest paw (body space) standing
 var arms: Array = []
 var lights: Array = []
 var route: Array = []         # further points: Vector3, or [point, wait seconds, crouch, look at]
@@ -82,6 +85,8 @@ var gear_pmax := 2
 static var npc_camo := false   # szenenplus.gd «Tarnen»: the next figure built wears the camouflage clothes of the players
 # P10 «Menschen» (menschen.gd): the look of the next visitor built - {jacket, trousers, height (m), hood, cap, pack, umbrella, lamp}
 static var npc_look := {}
+const LEG_1 := 0.46            # «Gelenke»: thigh (hip -> knee) and shin (knee -> ankle) of a person, body_root space
+const LEG_2 := 0.4
 const BASE_H := 1.86          # P10: height of a figure with body_root.scale.y = 1 (top of the head, measured in 3D)
 var arm_hold := {}            # P10: side (-1 left, 1 right) -> Vector3(shoulder x, elbow x, shoulder z): a bag, an umbrella, a bike, a torch
 var sit_seat := 0.45          # P10: idle «sit» - height of the seat (camping chair 0.45 m, ground 0.05 m)
@@ -113,6 +118,7 @@ var _lie_k := 0.0             # 3D-4.4: 0 standing … 1 lying (deer bedded down
 const Figur = preload("res://scripts/figur.gd")
 const FigurPaket = preload("res://scripts/figur_paket.gd")
 const Kleidung = preload("res://scripts/kleidung.gd")   # «Kleidung nach Jahreszeit» (31.10.2026)
+const Quality = preload("res://scripts/quality.gd")
 var fig = null                # the figure with a skeleton (null = built from shapes)
 var demo := -1.0              # tests (figur.gd «row»): walks on the spot at this speed
 var tag_p = null              # players: the dictionary of game.gd (name, role, team above the head)
@@ -197,37 +203,81 @@ func _part(parent: Node3D, mesh: Mesh, pos: Vector3, color: Color, temp: float, 
 	return mi
 
 
+# «Gelenke» (31.10.2026): the shapes are shared - one mesh per size for all figures (less memory, less to upload);
+# nobody changes a mesh after it is made (checked with grep), the colour is on the MeshInstance (material_override).
+static var _mesh_cache := {}
+
+
 func _box(x: float, y: float, z: float) -> BoxMesh:
+	var key := "b%.4f/%.4f/%.4f" % [x, y, z]
+	if _mesh_cache.has(key):
+		return _mesh_cache[key]
 	var b := BoxMesh.new()
 	b.size = Vector3(x, y, z)
+	_mesh_cache[key] = b
 	return b
 
 
 func _caps(r: float, h: float) -> CapsuleMesh:
+	var key := "c%.4f/%.4f" % [r, h]
+	if _mesh_cache.has(key):
+		return _mesh_cache[key]
 	var c := CapsuleMesh.new()
 	c.radius = r
 	c.height = max(h, 2.0 * r + 0.01)
 	c.radial_segments = 12
 	c.rings = 4
+	_mesh_cache[key] = c
 	return c
 
 
 func _sph(r: float, h := -1.0) -> SphereMesh:
+	var key := "s%.4f/%.4f" % [r, h]
+	if _mesh_cache.has(key):
+		return _mesh_cache[key]
 	var s := SphereMesh.new()
 	s.radius = r
 	s.height = 2 * r if h < 0 else h
 	s.radial_segments = 14
 	s.rings = 7
+	_mesh_cache[key] = s
 	return s
 
 
 func _cyl(rt: float, rb: float, h: float, seg := 10) -> CylinderMesh:
+	var key := "y%.4f/%.4f/%.4f/%d" % [rt, rb, h, seg]
+	if _mesh_cache.has(key):
+		return _mesh_cache[key]
 	var c := CylinderMesh.new()
 	c.top_radius = rt
 	c.bottom_radius = rb
 	c.height = h
 	c.radial_segments = seg
+	c.rings = 1
+	_mesh_cache[key] = c
 	return c
+
+
+func _ball(r: float) -> SphereMesh:
+	"""«Gelenke»: a joint ball (knee, elbow, shoulder, hock …) - fewer corners than _sph, in Lite fewer again"""
+	var lt := Quality.lite()
+	var key := "j%.4f/%d" % [r, 1 if lt else 0]
+	if _mesh_cache.has(key):
+		return _mesh_cache[key]
+	var s := SphereMesh.new()
+	s.radius = r
+	s.height = 2.0 * r
+	s.radial_segments = 8 if lt else 10
+	s.rings = 4 if lt else 5
+	_mesh_cache[key] = s
+	return s
+
+
+func _limb(parent: Node3D, a: Vector3, b: Vector3, ra: float, rb: float, color: Color, temp: float) -> MeshInstance3D:
+	"""«Gelenke»: a tapered limb from a (radius ra) to b (radius rb) in the space of parent - ends hidden in joint balls"""
+	var d := b - a
+	var rx := atan2(-d.z, -d.y)                      # a cylinder points along +y: tip it so its bottom points from a to b
+	return _part(parent, _cyl(ra, rb, d.length(), 8 if Quality.lite() else 10), (a + b) * 0.5, color, temp, Vector3(rx, 0, 0))
 
 
 func _pivot(parent: Node3D, pos: Vector3) -> Node3D:
@@ -397,37 +447,60 @@ func add_lamp(how := "head") -> void:
 
 func _shape_body(jacket: Color, shirt: Color, trousers: Color, skin: Color, hair: Color, shoe: Color, hand_c: Color, cloth_t: float,
 		shorts: bool, open_jacket: bool, cold: bool, jog: bool) -> void:
-	"""the old figure from shapes (Grafik «einfach», the Pi): joints with boxes, capsules and spheres"""
+	"""the old figure from shapes (Grafik «einfach», the Pi): joints with boxes, capsules and spheres.
+	«Gelenke» (31.10.2026): balls in the joints (hip, knee, ankle, shoulder, elbow, wrist) close the gaps when they bend,
+	the limbs get thinner towards the hand and the foot, one pelvis instead of a block, soft shoulders, a shorter neck,
+	the foot on its own ankle (stays flat on the ground). Same joints, places, size and width as before."""
+	var lt := Quality.lite()                                               # Lite: no ankle / wrist balls, no calf
+	var leg_c: Color = skin if shorts else trousers
+	var leg_t: float = Waerme.skin("leg", main.ambient) if shorts else cloth_t - 1.5
 	# ---- hips and legs ----
 	hips = _pivot(body_root, Vector3(0, 0.95, 0))
-	_part(hips, _caps(0.165, 0.3), Vector3(0, 0.02, 0), trousers, cloth_t, Vector3(0, 0, PI / 2), Vector3(1, 1, 0.78))
+	_part(hips, _sph(0.17, 0.25), Vector3(0, 0.0, 0), trousers, cloth_t, Vector3.ZERO, Vector3(1.08, 1.0, 0.78))   # pelvis (first: vielfalt.gd)
+	_part(hips, _ball(0.06), Vector3(0, -0.085, 0.0), trousers, cloth_t - 1.0, Vector3.ZERO, Vector3(1.0, 0.8, 1.15))  # crotch
+	ankles.clear()
 	for s in [-1, 1]:
 		var hip := _pivot(hips, Vector3(0.1 * s, -0.03, 0))
-		_part(hip, _caps(0.078, 0.5), Vector3(0, -0.22, 0), trousers, cloth_t - 1.0)            # thigh
+		_part(hip, _ball(0.087), Vector3.ZERO, trousers, cloth_t - 1.0)                                      # hip joint
+		_limb(hip, Vector3(0, -0.02, 0), Vector3(0, -0.445, 0), 0.087, 0.061, trousers, cloth_t - 1.0)        # thigh
 		var knee := _pivot(hip, Vector3(0, -0.46, 0))
-		_part(knee, _caps(0.062, 0.46), Vector3(0, -0.21, 0), skin if shorts else trousers, Waerme.skin("leg", main.ambient) if shorts else cloth_t - 1.5)   # shin (bare with shorts)
-		_part(knee, _box(0.11, 0.06, 0.27), Vector3(0, -0.43, -0.06), shoe, cloth_t - 4.0)       # shoe
-		_part(knee, _box(0.115, 0.02, 0.28), Vector3(0, -0.465, -0.06), shoe.darkened(0.5), cloth_t - 5.0)   # sole
+		_part(knee, _ball(0.063), Vector3.ZERO, leg_c, leg_t)                                                # knee
+		_limb(knee, Vector3(0, -0.01, 0), Vector3(0, -0.385 if not lt else -0.405, 0), 0.06, 0.045, leg_c, leg_t)   # shin (bare with shorts)
+		if not lt:
+			_part(knee, _sph(0.054, 0.2), Vector3(0, -0.13, 0.014), leg_c, leg_t)                            # calf
+		var ank := _pivot(knee, Vector3(0, -0.4, 0))
+		if not lt:
+			_part(ank, _ball(0.042), Vector3.ZERO, leg_c, leg_t)                                              # ankle
+		_part(ank, _box(0.11, 0.06, 0.27), Vector3(0, -0.018, -0.06), shoe, cloth_t - 4.0)                    # shoe
+		_part(ank, _box(0.115, 0.02, 0.28), Vector3(0, -0.05, -0.06), shoe.darkened(0.5), cloth_t - 5.0)      # sole (bottom on the ground)
 		legs.append([hip, s, knee])
+		ankles.append(ank)
 	# ---- upper body ----
 	torso = _pivot(body_root, Vector3(0, 0.98, 0))
-	_part(torso, _caps(0.17, 0.34), Vector3(0, 0.12, 0), jacket, cloth_t, Vector3.ZERO, Vector3(1.0, 1.0, 0.68))      # belly
-	_part(torso, _caps(0.205, 0.36), Vector3(0, 0.36, 0), jacket, cloth_t, Vector3.ZERO, Vector3(1.05, 1.0, 0.66))    # chest
-	_part(torso, _caps(0.07, 0.5), Vector3(0, 0.49, 0), jacket, cloth_t, Vector3(0, 0, PI / 2))                       # shoulders
+	_part(torso, _caps(0.172, 0.36), Vector3(0, 0.13, 0), jacket, cloth_t, Vector3.ZERO, Vector3(1.06, 1.0, 0.7))     # belly (no waist crease)
+	_part(torso, _caps(0.19, 0.42), Vector3(0, 0.33, 0), jacket, cloth_t, Vector3.ZERO, Vector3(1.12, 1.0, 0.7))      # chest
+	_part(torso, _sph(0.2, 0.12), Vector3(0, 0.475, 0.005), jacket, cloth_t, Vector3.ZERO, Vector3(1.1, 1.0, 0.52))   # shoulder line (soft)
+	_part(torso, _sph(0.1, 0.12), Vector3(0, 0.53, 0.012), jacket, cloth_t, Vector3.ZERO, Vector3(1.25, 1.0, 0.85))   # trapezius: up to the neck
 	if open_jacket:                                                        # open jacket: the shirt shows in front
 		_part(torso, _box(0.13, 0.42, 0.02), Vector3(0, 0.27, -0.142), shirt, cloth_t + 2.0)
 	else:
 		_part(torso, _box(0.012, 0.42, 0.012), Vector3(0, 0.27, -0.142), jacket.darkened(0.45), cloth_t)               # zip
+	var arm_c: Color = skin if _short_sl else jacket
+	var arm_t: float = Waerme.skin("arm", main.ambient) if _short_sl else cloth_t
 	for s in [-1, 1]:
 		var sh := _pivot(torso, Vector3(0.245 * s, 0.48, 0))
-		_part(sh, _caps(0.058, 0.34), Vector3(0, -0.15, 0), jacket, cloth_t)
+		_part(sh, _ball(0.06), Vector3(0, -0.03, 0), jacket, cloth_t)                                         # shoulder (inside the slope)
+		_limb(sh, Vector3(0, -0.01, 0), Vector3(0, -0.29, 0), 0.058, 0.047, jacket, cloth_t)                  # upper arm
 		var el := _pivot(sh, Vector3(0, -0.3, 0))
-		_part(el, _caps(0.05, 0.32), Vector3(0, -0.14, 0), skin if _short_sl else jacket, Waerme.skin("arm", main.ambient) if _short_sl else cloth_t)
+		_part(el, _ball(0.048), Vector3.ZERO, arm_c, arm_t)                                                   # elbow
+		_limb(el, Vector3(0, -0.005, 0), Vector3(0, -0.255 if not lt else -0.275, 0), 0.046, 0.033, arm_c, arm_t)   # forearm, thinner to the wrist
+		if not lt:
+			_part(el, _ball(0.033), Vector3(0, -0.268, -0.004), hand_c, 31.5 if not cold else 22.0)          # wrist
 		_part(el, _caps(0.045, 0.11), Vector3(0, -0.32, -0.01), hand_c, 31.5 if not cold else 22.0, Vector3.ZERO, Vector3(1.0, 1.0, 0.7))  # hand
 		arms.append([sh, s, el])
 	# ---- head ----
 	head = _pivot(torso, Vector3(0, 0.6, 0))
-	_part(head, _caps(0.052, 0.13), Vector3(0, 0.02, 0), skin, 33.0)                                   # neck
+	_part(head, _caps(0.056, 0.15), Vector3(0, 0.0, 0.005), skin, 33.0)                                # neck (shorter, a little thicker)
 	_part(head, _sph(0.105, 0.25), Vector3(0, 0.16, 0), skin, 34.0, Vector3.ZERO, Vector3(1.0, 1.0, 1.08))   # head
 	_part(head, _sph(0.06, 0.07), Vector3(0, 0.085, -0.035), skin, 34.0, Vector3.ZERO, Vector3(1.2, 1.0, 1.1))  # chin / jaw
 	_part(head, _caps(0.016, 0.05), Vector3(0, 0.15, -0.115), skin.darkened(0.06), 34.0, Vector3(0.3, 0, 0))     # nose
@@ -682,17 +755,44 @@ func _build_animal() -> void:
 			_part(body_root, _sph(0.025), Vector3(cos(a2) * bodyr * 1.0, hb + sin(a2) * bodyr * 0.9, randf_range(-0.4, 0.4) * L), col.darkened(0.55), t - 1.0)
 	if kind == "horse":                                                        # mane along the neck comes below
 		pass
+	# «Gelenke» (31.10.2026): legs with a joint in the middle - in front the wrist (carpus, the paw folds back), behind the
+	# hock (it points backwards, the paw swings forward), a ball in the joint, thinner below; hoofed animals also a fetlock.
+	# The paws stay on the ground while walking (_animal_ground). Same height and stance as before.
+	var hoofed: bool = kind in ["deer", "boar", "cow", "sheep", "horse", "chamois", "ibex"]
+	var lt := Quality.lite()
+	_paws.clear()
 	for i in range(4):
 		var fx := 0.6 * bodyr * (1 if i % 2 == 0 else -1)
 		var fz := (-L * 0.38) if i < 2 else (L * 0.38)
 		var p := _pivot(body_root, Vector3(fx, hb, fz))
 		var legc: Color = Color(0.1, 0.08, 0.07) if kind in ["fox", "sheep"] else col.darkened(0.25)
 		var hare_back := kind == "hare" and i >= 2
-		_part(p, _caps(lw * (1.6 if hare_back else 1.0), hb * (0.55 if hare_back else 1.0)), Vector3(0, -hb / (3.0 if hare_back else 2.0), 0), legc, t - 4.0)
-		if not hare_back:                                                   # upper leg in the colour of the body
-			_part(p, _caps(lw * 1.75, hb * 0.48), Vector3(0, -hb * 0.17, 0), col, t - 1.0)
-		_part(p, _sph(lw * 1.2), Vector3(0, -hb + lw, -lw * 0.6), legc.darkened(0.3), t - 5.0)   # paw / hoof
-		legs.append([p, 1 if i in [0, 3] else -1, null])
+		var paw_c: Color = legc.darkened(0.3)
+		if hare_back:                                                       # the long hind feet of the hare: as before
+			_part(p, _caps(lw * 1.6, hb * 0.55), Vector3(0, -hb / 3.0, 0), legc, t - 4.0)
+			_part(p, _sph(lw * 1.2), Vector3(0, -hb + lw * 1.2, -lw * 0.6), paw_c, t - 5.0)
+			legs.append([p, 1 if i in [0, 3] else -1, null])
+			_paws.append([p, null, Vector3(0, -hb + lw * 1.2, -lw * 0.6), lw * 1.2])
+			continue
+		var front := i < 2
+		_part(p, _caps(lw * 1.75, hb * 0.48), Vector3(0, -hb * 0.17, 0.0 if front else lw * 0.4), col, t - 1.0)   # upper leg in the colour of the body
+		# the joint: front low (wrist), behind a little higher and backwards (hock)
+		var kp := Vector3(0, -hb * (0.7 if front else 0.62), 0.0 if front else hb * 0.11)
+		var paw := Vector3(0, -hb + lw * 1.2, -lw * 0.6 if front else hb * 0.015 - lw * 0.6)   # centre of the paw: its bottom on the ground
+		_limb(p, Vector3(0, -hb * 0.12, 0.0 if front else lw * 0.3), kp, lw * 1.3, lw * 1.0, legc, t - 4.0)
+		var kn := _pivot(p, kp)
+		if front:
+			kn.rotation.y = PI                                              # the front paw folds backwards (like Maggie)
+		var pk: Vector3 = kn.basis.inverse() * (paw - kp)                   # the paw seen from the joint
+		_part(kn, _ball(lw * 1.1), Vector3.ZERO, legc, t - 4.0)             # wrist / hock
+		var fet := pk + Vector3(0, lw * 1.6, 0) if hoofed else pk
+		_limb(kn, Vector3(0, -lw * 0.2, 0), fet, lw * 0.95, lw * 0.78, legc, t - 4.5)   # cannon bone, thinner
+		if hoofed and not lt:
+			_part(kn, _ball(lw * 0.85), fet, legc, t - 4.5)                 # fetlock
+		_part(kn, _sph(lw * 1.2), pk, paw_c, t - 5.0)                       # paw / hoof
+		legs.append([p, 1 if i in [0, 3] else -1, kn])
+		_paws.append([p, kn, pk, lw * 1.2])
+	_paw_rest = _lowest_paw()
 	var head_y := hb + bodyr * 0.4
 	var head_z := -L * 0.55 - bodyr * 0.4
 	head = _pivot(body_root, Vector3(0, hb + bodyr * 0.2, -L * 0.45))
@@ -832,6 +932,25 @@ func _eyes(parent: Node3D, r: float, x: float, z: float, y := 0.0) -> void:
 		em.emission_energy_multiplier = 0.0
 		e.material_override = em
 		lights.append(em)
+
+
+func _lowest_paw() -> float:
+	"""«Gelenke»: height of the lowest paw in the space of body_root (with the legs as they are now) - 99 if unknown
+	(no legs of actor.gd any more, e.g. Maggie builds her own body in maggie_hund.gd)"""
+	if _paws.size() != legs.size():
+		return 99.0
+	var low := 99.0
+	for i in range(_paws.size()):
+		var e: Array = _paws[i]
+		if not is_instance_valid(e[0]) or e[0] != legs[i][0] or (e[1] != null and not is_instance_valid(e[1])):
+			_paws.clear()
+			return 99.0
+		var hp: Node3D = e[0]
+		var pt: Vector3 = e[2]
+		if e[1] != null:
+			pt = (e[1] as Node3D).transform * pt
+		low = minf(low, (hp.transform * pt).y - float(e[3]))   # the bottom of the paw (a ball)
+	return low
 
 
 func _build_car() -> void:
@@ -1256,10 +1375,15 @@ func _animate(dt: float, spd: float, now: float) -> void:
 		if _lie_k > 0.0:
 			want = lerpf(want, -1.45 if legs.find(l) < 2 else 1.45, _lie_k)   # folded under the body
 		l[0].rotation.x = want
-		if l.size() > 2 and l[2] != null:                 # knee bends while the leg swings back (more when running)
-			var bend: float = max(0.0, -sin(phase * l[1])) * amp * (1.2 + (0.8 if spd > 2.2 else 0.0)) + crouch * 1.4
-			if kind == "person" and idle == "bend":
-				bend = 0.5
+		if l.size() > 2 and l[2] != null:
+			# «Gelenke»: the joint (wrist in front, hock behind) bends while the leg swings forward and lifts the paw - most
+			# early in the swing, more when trotting / running; + = the right way for both (front paw back, hind paw forward)
+			var bend: float = max(0.0, cos(phase + 0.3) * l[1]) * amp * (1.7 + (0.7 if spd > 2.2 else 0.0)) + 0.06 * amp + crouch * 1.4
+			if leap:
+				bend = 1.1 * abs(sin(phase * 0.5))                         # tucked in during the jump
+			elif kind == "hare":
+				bend = 0.5 * abs(sin(phase * 0.5)) * amp
+			bend = lerpf(bend, 0.0, _lie_k)
 			l[2].rotation.x = lerp(l[2].rotation.x, bend, k)
 	if kind == "person":
 		_animate_person(dt, spd, now, sw, amp, k, idle)
@@ -1283,9 +1407,14 @@ func _animate(dt: float, spd: float, now: float) -> void:
 					y = -0.03
 				"root":
 					y = 0.01 * sin(now * 13.0)
+			var ground := not leap and kind != "hare" and _lie_k <= 0.0 and idle not in ["sit", "sit_up"] and not _paws.is_empty()
+			if ground:                                         # «Gelenke»: the paws stay on the ground (the swinging legs are shorter)
+				var low := _lowest_paw()
+				if low < 50.0:
+					y = -(low - _paw_rest) * body_root.scale.y + (y if y < 0.0 else y * 0.3)
 			if _lie_k > 0.0:
 				y = lerpf(y, -body_h * 0.62, _lie_k)
-			body_root.position.y = lerp(body_root.position.y, y, k) if not leap and kind != "hare" else y
+			body_root.position.y = lerp(body_root.position.y, y, 1.0 if ground else k) if not leap and kind != "hare" else y
 			body_root.rotation.x = lerp(body_root.rotation.x, rx, clamp(dt * 6.0, 0.0, 1.0))
 	# head: grazing (down), rooting, sniffing, looking round, else forward
 	if head != null:
@@ -1373,13 +1502,19 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 	# ---- legs: base pose of the crouch + the swing of the steps ----
 	var hf: float = 1.05 * c                                       # thigh forward
 	var kf: float = 1.8 * c                                        # knee bent
-	var drop: float = 0.46 * (1.0 - cos(hf)) + 0.46 * (1.0 - cos(hf - kf))   # how much lower the hips are
 	var swing_k: float = 1.0 - 0.45 * c                            # crouched: shorter steps
-	for l in legs:
+	# «Gelenke» (31.10.2026): the knee bends much more while the leg swings forward (walking ~1 rad, running up to ~1.9),
+	# a little in the stance (more when running), the foot stays flat on its ankle and rolls over heel and toes; the hips
+	# go as low as the legs reach, so the feet neither sink into the ground nor float (crouching, kids, all speeds).
+	var ext_rest: float = LEG_1 + LEG_2
+	var ext_max := 0.0                                             # the longest leg (vertical): it stands on the ground
+	for li in range(legs.size()):
+		var l: Array = legs[li]
 		var side: int = l[1]
 		var hip_x: float
 		var hip_z := 0.0
 		var knee_x: float
+		var s := 0.0
 		if pr > 0.5:
 			# belly crawl: one knee drawn up to the side while the other leg is stretched, in turn
 			var draw: float = max(0.0, sin(phase + (0.0 if side > 0 else PI)))
@@ -1387,10 +1522,11 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 			hip_z = side * (0.08 + 0.85 * draw)                          # the knee comes up at the side, on the ground
 			knee_x = -(0.08 + 0.4 * draw)
 		else:
-			var s: float = sin(phase) * amp * side * swing_k
-			var swing_fw: float = max(0.0, cos(phase) * side)            # this leg is swinging forward: the knee bends
+			s = sin(phase) * amp * side * swing_k
+			var swing_fw: float = max(0.0, cos(phase + 0.3 - 0.6 * run_f) * side)   # this leg is swinging forward: the knee bends (walking: early in the swing most, running: still bent in front)
+			var stance: float = max(0.0, -cos(phase) * side)             # this leg carries the weight: a little bent
 			hip_x = hf + s
-			knee_x = -(kf + swing_fw * amp * (1.5 + 1.0 * run_f) + 0.12 * amp)
+			knee_x = -(kf + minf(1.95 - 0.9 * c, swing_fw * amp * (2.3 + 1.2 * run_f) * (1.0 - 0.5 * c)) + stance * amp * (0.25 + 0.5 * run_f) + 0.05 * amp)
 			if idle == "bend":
 				knee_x = -0.6
 		if sit_k > 0.0:                                                # P10: thigh level, shin down (on the ground: legs ahead)
@@ -1400,13 +1536,26 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 		l[0].rotation.x = lerp(l[0].rotation.x, hip_x, k)
 		l[0].rotation.z = lerp(l[0].rotation.z, hip_z, k)
 		l[2].rotation.x = lerp(l[2].rotation.x, knee_x, k)
+		var h: float = l[0].rotation.x
+		var kx: float = l[2].rotation.x
+		var sw_now: float = h - hf                                     # the swing part (without the crouch)
+		# the foot: flat on the ground, heel up behind, toes up in front (rolls over heel and toes)
+		var fa: float = clampf(-(h + kx) + 0.4 * sw_now, -0.9, 0.8)
+		fa = lerpf(fa, 0.45 if sit_seat <= 0.2 else fa, sit_k)
+		if li < ankles.size():
+			(ankles[li] as Node3D).rotation.x = lerpf(fa, -1.2, pr)
+		var ft: float = h + kx + fa                                    # the angle of the sole: toe and heel, how deep below the ankle
+		var foot: float = maxf(0.06 * cos(ft) - 0.2 * sin(ft), 0.06 * cos(ft) + 0.075 * sin(ft)) - 0.06
+		ext_max = maxf(ext_max, LEG_1 * cos(h) * cos(l[0].rotation.z) + LEG_2 * cos(h + kx) + foot)
 	# ---- the body ----
-	var bob: float = (abs(cos(phase)) - 0.6) * (0.03 + 0.05 * run_f) * clamp(amp / 0.35, 0.0, 1.3) * (1.0 - c * 0.6)
+	var drop: float = ext_rest - ext_max                               # how much lower the hips are than standing
+	if run_f > 0.0:                                                    # running: a short flight, the feet leave the ground
+		drop = lerpf(drop, minf(drop, 0.05 + 0.05 * run_f), run_f)
 	var jump := 0.0
 	if em == "goal":
 		jump = abs(sin(now * 7.0)) * 0.18
 	var crawl_bob: float = abs(sin(phase)) * 0.02
-	body_root.position.y = lerp((-drop * sc + bob + jump), 0.05 * sc + crawl_bob, pr)
+	body_root.position.y = lerp((-drop * sc + jump), 0.05 * sc + crawl_bob, pr)
 	if sit_k > 0.0:                                                # P10: the hips down on the seat
 		body_root.position.y = lerpf(body_root.position.y, sit_seat + 0.07 - 0.95 * sc, sit_k)
 	body_root.rotation.x = -1.52 * pr
@@ -1435,8 +1584,10 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 	# ---- arms ----
 	for a in arms:
 		var side: int = a[1]
-		var sx: float = -sin(phase) * amp * side * (1.25 if jog or run_f > 0.3 else 0.85) * swing_k + 0.35 * c
-		var ex: float = 0.2 + (1.1 if jog else 0.0) + 1.0 * run_f + 0.55 * c
+		var asw: float = -sin(phase) * amp * side * (1.25 if jog or run_f > 0.3 else 0.85) * swing_k
+		var sx: float = asw + 0.35 * c
+		# «Gelenke»: the elbow is always a little bent and bends more while the arm swings forward (running ~90°)
+		var ex: float = minf(1.9, 0.28 + 0.9 * (1.0 - 0.6 * run_f) * maxf(0.0, asw) + (1.0 if jog else 0.0) + 1.15 * run_f * (0.0 if jog else 1.0) + (0.15 if jog else 0.0) * run_f + 0.55 * c)
 		var sz := 0.06 * side + 0.1 * c * side
 		if pr > 0.5:                                                   # crawling: reach forward along the ground, pull back
 			var reach: float = max(0.0, sin(phase + (PI if side > 0 else 0.0)))
