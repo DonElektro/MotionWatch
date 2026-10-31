@@ -71,6 +71,7 @@ const FLOWERS := Vector2(-90, 170)
 const ROAD := [Vector2(240, -1060), Vector2(225, -800), Vector2(205, -600), Vector2(190, -400), Vector2(178, -200), Vector2(172, -40),
 		Vector2(180, 140), Vector2(175, 300), Vector2(140, 380), Vector2(240, 430), Vector2(100, 490), Vector2(250, 540), Vector2(90, 600),
 		Vector2(230, 650), Vector2(80, 710), Vector2(150, 760), Vector2(80, 790), Vector2(60, 830), Vector2(70, 1060)]
+const PARKINGS := [[Vector2(100, 775), 30.0, 16.0, 0.3], [Vector2(150, 20), 18.0, 10.0, -1.2]]   # [centre, length, width, rot]
 # streams: [points, width]
 const STREAMS := [[[Vector2(600, 430), Vector2(470, 360), Vector2(330, 290), Vector2(200, 220), Vector2(120, 110), Vector2(80, 30),
 			Vector2(48, -60), Vector2(36, -120), Vector2(18, -200), Vector2(-10, -280), Vector2(-30, -310)], 2.6],
@@ -401,9 +402,12 @@ static func generate() -> void:
 	_flatten(Vector2(-650, 430), 30.0, 0.7)                # the cairn plateau
 	for i in range(STREAMS.size()):
 		_carve_stream(STREAMS[i][0], float(STREAMS[i][1]), i == 0)
-	_road_flatten()
+	_pads.clear()
 	for pl in Worlds.places_of("bergtal"):                 # 3D-4.x Welten: the flat areas of the old scenes (worlds.gd)
-		_pad(Vector2(pl[2], pl[3]), float(pl[5]), pl[0] == "seeufer")
+		_pad(Vector2(pl[2], pl[3]), float(pl[5]), pl[0] == "seeufer")   # K2: before the road (the road lies on them)
+	for pk in PARKINGS:                                    # K2: the parking places flat (the plane lies on the ground)
+		_flatten(pk[0], Vector2(pk[1], pk[2]).length() * 0.5, 1.0)
+	_road_flatten()
 	for sp in SPOTS.values():                              # the suggested spots: flat enough for a tent
 		_flatten(Vector2(sp[1], sp[2]), 7.0, 1.0)
 	for vp in VIEWPOINTS:
@@ -506,13 +510,30 @@ static func _flatten(c: Vector2, r: float, k: float) -> void:
 				_hm[j * N + i] = lerpf(_hm[j * N + i], target, w)
 
 
+static var _pads: Array = []                    # K2: [centre, radius, edge factor] of the flat areas (the road keeps them flat)
+
+
 static func _pad(c: Vector2, r: float, shore := false) -> void:
-	"""3D-4.x Welten: a flat area for an old scene (radius r, edge to 1.5 r); the lakes stay (shore: just above the water)"""
+	"""3D-4.x Welten: a flat area for an old scene (radius r, edge to 1.5 r); the lakes stay (shore: just above the water).
+	K2 (Kontaktbogen): when the pass road goes through the place (Bergdorf: «die Strasse des Tals ist die Dorfstrasse»), the
+	flat area is at the height of the road (not 34 m lower in a pit, the road then floated over the village) with a wider edge."""
 	var target := H(c.x, c.y)
 	if shore:
 		target = level_of(LAKE1) + 0.45
-	var i0 := _idx(c.x - r * 1.5, c.y - r * 1.5)
-	var i1 := _idx(c.x + r * 1.5, c.y + r * 1.5)
+	var edge := 1.5
+	var on_road := PackedFloat32Array()
+	for q in dense(ROAD, STEP):
+		if q.distance_to(c) < r:
+			on_road.append(H(q.x, q.y))
+	if not on_road.is_empty():
+		var sum := 0.0
+		for h in on_road:
+			sum += h
+		target = sum / on_road.size()
+		edge = 2.2
+	_pads.append([c, r, edge])
+	var i0 := _idx(c.x - r * edge, c.y - r * edge)
+	var i1 := _idx(c.x + r * edge, c.y + r * edge)
 	for j in range(i0.y, i1.y + 1):
 		for i in range(i0.x, i1.x + 1):
 			var q := Vector2(LO + i * STEP, LO + j * STEP)
@@ -522,7 +543,7 @@ static func _pad(c: Vector2, r: float, shore := false) -> void:
 					lake = true
 			if lake:
 				continue
-			var w := 1.0 - smoothstep(r, r * 1.5, q.distance_to(c))
+			var w := 1.0 - smoothstep(r, r * edge, q.distance_to(c))
 			if w > 0.0:
 				_hm[j * N + i] = lerpf(_hm[j * N + i], target, w)
 
@@ -625,15 +646,16 @@ static var road_pts := PackedVector2Array()
 
 static func _road_flatten() -> void:
 	road_pts.clear()
-	for s_ in range(ROAD.size() - 1):
-		var a: Vector2 = ROAD[s_]
-		var b: Vector2 = ROAD[s_ + 1]
+	var rr := _road_curves()                                 # K2: hairpins with a real radius (≈ 10 m, before: ≈ 2 m - the ribbon folded)
+	for s_ in range(rr.size() - 1):
+		var a: Vector2 = rr[s_]
+		var b: Vector2 = rr[s_ + 1]
 		var L := a.distance_to(b)
 		var k := 0.0
 		while k < L:
 			road_pts.append(a.lerp(b, k / L))
 			k += STEP
-	road_pts.append(ROAD[-1])
+	road_pts.append(rr[-1])
 	_round_hairpins()
 	var raw := PackedFloat32Array()
 	for p in road_pts:
@@ -650,24 +672,54 @@ static func _road_flatten() -> void:
 				n += 1
 			nh[i] = sum / n
 		road_h = nh
+	for pd in _pads:                                         # K2: on a flat area (Bergdorf) the road stays at its height
+		for i in range(road_pts.size()):
+			var w := 1.0 - smoothstep(float(pd[1]), float(pd[1]) * float(pd[2]), road_pts[i].distance_to(pd[0]))
+			if w > 0.0:
+				road_h[i] = lerpf(road_h[i], H(road_pts[i].x, road_pts[i].y), w)
+	# K2 (Kontaktbogen: Strasse schwebt / zerrissen): each point of the ground takes the height of the NEAREST piece of the
+	# road, interpolated along it (before: the height of the nearest 4-m point - steps of up to 0.6 m under the ribbon, and in
+	# the hairpins the wrong leg)
 	var wbuf := PackedFloat32Array()
 	wbuf.resize(N * N)
 	var tbuf := PackedFloat32Array()
 	tbuf.resize(N * N)
-	for r in range(road_pts.size()):
-		var p: Vector2 = road_pts[r]
-		var i0 := _idx(p.x - 12.0, p.y - 12.0)
-		var i1 := _idx(p.x + 12.0, p.y + 12.0)
+	var dbuf := PackedFloat32Array()
+	dbuf.resize(N * N)
+	dbuf.fill(1.0e9)
+	for r in range(road_pts.size() - 1):
+		var a: Vector2 = road_pts[r]
+		var b: Vector2 = road_pts[r + 1]
+		var i0 := _idx(minf(a.x, b.x) - 12.0, minf(a.y, b.y) - 12.0)
+		var i1 := _idx(maxf(a.x, b.x) + 12.0, maxf(a.y, b.y) + 12.0)
 		for j in range(i0.y, i1.y + 1):
 			for i in range(i0.x, i1.x + 1):
-				var d := Vector2(LO + i * STEP, LO + j * STEP).distance_to(p)
-				var w := 1.0 - smoothstep(4.5, 11.0, d)
-				if w > wbuf[j * N + i]:
-					wbuf[j * N + i] = w
-					tbuf[j * N + i] = road_h[r] - 0.05
+				var st := _seg_t(Vector2(LO + i * STEP, LO + j * STEP), a, b)
+				var k := j * N + i
+				if st.y < 11.0 and st.y < dbuf[k]:
+					dbuf[k] = st.y
+					wbuf[k] = 1.0 - smoothstep(4.5, 11.0, st.y)
+					tbuf[k] = lerpf(road_h[r], road_h[r + 1], st.x) - 0.05
 	for k in range(N * N):
 		if wbuf[k] > 0.0:
 			_hm[k] = lerpf(_hm[k], tbuf[k], wbuf[k])
+
+
+static func _road_curves() -> Array:
+	"""K2: the corners of ROAD as curves (quadratic, from 24 m before to 24 m after the corner, at most 40 % of a leg)"""
+	var out: Array = [ROAD[0]]
+	for i in range(1, ROAD.size() - 1):
+		var p0: Vector2 = ROAD[i - 1]
+		var v: Vector2 = ROAD[i]
+		var p2: Vector2 = ROAD[i + 1]
+		var c := minf(24.0, 0.4 * minf(v.distance_to(p0), v.distance_to(p2)))
+		var a := v + (p0 - v).normalized() * c
+		var b := v + (p2 - v).normalized() * c
+		for k in range(13):
+			var t := k / 12.0
+			out.append(a.lerp(v, t).lerp(v.lerp(b, t), t))
+	out.append(ROAD[-1])
+	return out
 
 
 static func _round_hairpins() -> void:
@@ -1345,11 +1397,11 @@ func _ribbon(pts: PackedVector2Array, hs: PackedFloat32Array, w: float, col: Col
 			st0.begin(Mesh.PRIMITIVE_TRIANGLES)
 			pieces[key] = st0
 		var st: SurfaceTool = pieces[key]
-		var dd := (b2 - a).normalized()
-		var nn := Vector2(-dd.y, dd.x) * w * 0.5
+		var na := _side(pts, i) * w * 0.5                    # K2: the side at each point (both pieces share it: no gaps or folds)
+		var nb := _side(pts, i + 1) * w * 0.5
 		var ya := (hs[i] if not hs.is_empty() else H(a.x, a.y)) + lift
 		var yb := (hs[i + 1] if not hs.is_empty() else H(b2.x, b2.y)) + lift
-		var q := [Vector3(a.x - nn.x, ya, a.y - nn.y), Vector3(a.x + nn.x, ya, a.y + nn.y), Vector3(b2.x + nn.x, yb, b2.y + nn.y), Vector3(b2.x - nn.x, yb, b2.y - nn.y)]
+		var q := [Vector3(a.x - na.x, ya, a.y - na.y), Vector3(a.x + na.x, ya, a.y + na.y), Vector3(b2.x + nb.x, yb, b2.y + nb.y), Vector3(b2.x - nb.x, yb, b2.y - nb.y)]
 		if hs.is_empty():                                    # a path: every corner on the ground
 			for k in range(4):
 				q[k].y = H(q[k].x, q[k].z) + lift
@@ -1362,6 +1414,12 @@ func _ribbon(pts: PackedVector2Array, hs: PackedFloat32Array, w: float, col: Col
 		mi.visibility_range_end = vis
 		var th: MeshInstance3D = tal.get_child(tal.get_child_count() - 1)
 		th.visibility_range_end = vis
+
+
+static func _side(pts: PackedVector2Array, i: int) -> Vector2:
+	"""K2: the unit vector to the side of a line at point i (from the point before to the point after)"""
+	var d := (pts[mini(i + 1, pts.size() - 1)] - pts[maxi(i - 1, 0)]).normalized()
+	return Vector2(-d.y, d.x)
 
 
 static func dense(pts: Array, step: float) -> PackedVector2Array:
@@ -1388,22 +1446,31 @@ func _roads_and_trails() -> void:
 		for side in [-1.0, 1.0]:                             # the white edge lines
 			var lp := PackedVector2Array()
 			for i in range(road_pts.size()):
-				var a := road_pts[i]
-				var b2 := road_pts[mini(i + 1, road_pts.size() - 1)] if i + 1 < road_pts.size() else road_pts[i] + (road_pts[i] - road_pts[i - 1])
-				var dd := (b2 - a).normalized()
-				lp.append(a + Vector2(-dd.y, dd.x) * side * 2.5)
+				lp.append(road_pts[i] + _side(road_pts, i) * side * 2.5)     # K2: same side as the ribbon
 			_ribbon(lp, rh, 0.14, Color(0.85, 0.85, 0.82), 0.09, 140.0 if lite else 260.0)
 	var tc := Color(0.42, 0.34, 0.24) if season != "winter" else Color(0.8, 0.82, 0.86)
 	for tr in TRAILS:
 		_ribbon(dense(tr[1], 3.0), PackedFloat32Array(), [1.3, 0.9, 0.6][int(tr[2])], tc, 0.08, 160.0 if lite else 330.0, "road")
-	# parking at the pass and at the alp
-	for pk in [[Vector2(100, 775), 30.0, 16.0, 0.3], [Vector2(150, 20), 18.0, 10.0, -1.2]]:
+	# parking at the pass and at the alp (K2: the ground under them is flat - generate())
+	for pk in PARKINGS:
 		var c: Vector2 = pk[0]
-		var pm := PlaneMesh.new()
-		pm.size = Vector2(pk[1], pk[2])
+		var st := SurfaceTool.new()                          # K2: a 2-m grid on the ground (a flat plane floated where the road crosses)
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		var nx := int(ceil(float(pk[1]) / 2.0))
+		var nz := int(ceil(float(pk[2]) / 2.0))
+		var bs := Basis(Vector3.UP, float(pk[3]))
+		for b in range(nz):
+			for a in range(nx):
+				var q := []
+				for o in [Vector2(a, b), Vector2(a + 1, b), Vector2(a + 1, b + 1), Vector2(a, b + 1)]:
+					var l := bs * (Vector3(o.x / nx - 0.5, 0, o.y / nz - 0.5) * Vector3(float(pk[1]), 0, float(pk[2])))
+					q.append(Vector3(c.x + l.x, H(c.x + l.x, c.y + l.z) + 0.08, c.y + l.z))
+				for k in [0, 1, 2, 0, 2, 3]:                     # (same winding as the road ribbon)
+					st.set_normal(Vector3.UP)
+					st.add_vertex(q[k])
 		var mt := StandardMaterial3D.new()
 		mt.albedo_color = Color(0.3, 0.3, 0.31) if season != "winter" else Color(0.6, 0.62, 0.64)
-		m.add_mesh(tal, pm, Vector3(c.x, H(c.x, c.y) + 0.08, c.y), mt, "road", Vector3(0, float(pk[3]), 0))
+		m.add_mesh(tal, st.commit(), Vector3.ZERO, mt, "road")
 
 
 # ---- plants and rocks --------------------------------------------------------------------------------------------------
