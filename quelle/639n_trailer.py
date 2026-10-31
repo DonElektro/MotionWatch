@@ -97,7 +97,7 @@ const ID = (new URLSearchParams(location.search).get("id") || "grossvater") === 
 let S = {}, HIDE_T = 0, BUSY = 0, STARTED = 0;
 (async () => { try { await initAppearance(); } catch (e) {} tlInfo(true); tlPic(); tlShow(); })();
 function tlShow() { const b = document.getElementById("tl-bar"); b.classList.remove("off"); clearTimeout(HIDE_T);
-  HIDE_T = setTimeout(() => { if (S.laeuft && !S.ende) b.classList.add("off"); }, 4000); }
+  HIDE_T = setTimeout(() => { if (S.laeuft && !S.ende && !SPK.pop) b.classList.add("off"); }, 4000); }
 ["pointerdown", "pointermove", "keydown"].forEach(e => addEventListener(e, tlShow, {passive: true}));
 addEventListener("keydown", e => { if (e.key === "Escape" && S.laeuft) tlDo({do: "stop"}); });
 function tlFull() { const d = document.documentElement; try { (document.fullscreenElement ? document.exitFullscreen() : (d.requestFullscreen || d.webkitRequestFullscreen).call(d)); } catch (e) {} }
@@ -146,17 +146,67 @@ async function tlDo(d) {
 # der Sprache von MoveEye (rm: eine romanische Stimme, falls das Gerät eine hat, sonst Deutsch). iOS: Ton erst nach einem
 # Tippen («🔊 Ton an»), dabei wird speechSynthesis einmal angestossen; Pause = Stimme verstummt. Dazu hält navigator.wakeLock
 # den Bildschirm wach, solange der Film läuft (iPad). Die Texte bleiben unten als Untertitel im Bild (der Simulator zeigt sie).
+# Stimme (Daniel 31.10.2026, «klingt fürchterlich»): automatisch die beste Stimme der Sprache – 1. Name/voiceURI mit Premium,
+# Enhanced, Erweitert, Natural, Neural, Online oder Google, 2. lokale Stimme der Region (de-CH vor de-DE vor de-AT), 3. die
+# Standardstimme; die Liste kommt auf iOS / Chrome verzögert (voiceschanged + Nachfragen). Tempo 0.92, Trailer 0.88, Tonhöhe 0.95,
+# lange Sätze an Satzzeichen geteilt. Knopf «🗣 Stimme» neben 🔊: Liste der Stimmen (beste «empfohlen», ▶ Hörprobe), Tempo-
+# Regler 0.8–1.1, Wahl pro Gerät (localStorage mw-film-stimme-<sprache>, mw-film-tempo); nur einfache Stimmen: Hinweis «Premium laden».
 SPK_JS = r"""
-let SPK = {on: false, last: -1, wl: null};
+let SPK = {on: false, last: -1, wl: null, vs: [], pop: false, rate0: /\/trailer/.test(location.pathname) ? 0.88 : 0.92};
 try { SPK.on = localStorage.getItem("mw-film-ton") === "1"; } catch (e) {}
+const SPK_GOOD = /premium|enhanced|erweitert|natural|neural|online|google/i;      // the better voices (iOS Premium / Enhanced, Edge Online (Natural), Chrome Google)
+const SPK_PROBE = {de: "Die Karte gehört jetzt dir – lies sie mit der Sonne.", en: "The map is yours now – read it with the sun.",
+  fr: "La carte est à toi maintenant – lis-la avec le soleil.", it: "Ora la mappa è tua – leggila con il sole.",
+  rm: "La charta tutga ussa a tai – legia ella cun il sulegl."};
 function spkLang(l) { l = (l || (typeof LANG !== "undefined" ? LANG : "de") || "de").toLowerCase(); return l === "de" ? "de-CH" : l; }
+function spkBase(l) { return spkLang(l).slice(0, 2); }
+function spkVL(v) { return (v.lang || "").toLowerCase().replace("_", "-"); }
+function spkLoad() { try { SPK.vs = (window.speechSynthesis && speechSynthesis.getVoices()) || []; } catch (e) { SPK.vs = []; } return SPK.vs; }
+function spkScore(v, l) {                                  // 1. better voices by name, 2. local voice of the right region (de-CH > de-DE > de-AT), 3. the default
+  const want = spkLang(l).toLowerCase(), base = want.slice(0, 2), vl = spkVL(v);
+  let s = 0;
+  if (SPK_GOOD.test((v.name || "") + " " + (v.voiceURI || ""))) s += 1000;
+  if (vl.startsWith(base)) s += 300;                       // rm: a Romansh voice before a German one
+  const reg = base === "de" || base === "rm" ? ["de-ch", "de-de", "de-at"] : [want];
+  const ri = reg.indexOf(vl);
+  if (ri >= 0) s += (3 - ri) * 20 + (v.localService ? 10 : 0);
+  else if (v.localService) s += 5;
+  if (v.default) s += 1;
+  return s;
+}
+function spkList(l) {                                      // the voices of this language, best first
+  const base = spkBase(l), vs = SPK.vs.length ? SPK.vs : spkLoad();
+  let c = vs.filter(v => spkVL(v).startsWith(base));
+  if (base === "rm") c = c.concat(vs.filter(v => spkVL(v).startsWith("de")));
+  return c.map(v => [spkScore(v, l), v]).sort((a, b) => b[0] - a[0]).map(x => x[1]);
+}
+function spkId(v) { return v ? (v.voiceURI || v.name || "") : ""; }
+function spkSaved(l) { try { return localStorage.getItem("mw-film-stimme-" + spkBase(l)) || ""; } catch (e) { return ""; } }
+function spkRate() { let r = 0; try { r = parseFloat(localStorage.getItem("mw-film-tempo") || ""); } catch (e) {}
+  return r >= 0.8 && r <= 1.1 ? (SPK.rate0 < 0.9 ? r - 0.04 : r) : SPK.rate0; }      // the trailer a bit calmer
 function spkPick(l) {
   if (!window.speechSynthesis) return null;
-  const vs = speechSynthesis.getVoices() || [], want = spkLang(l).toLowerCase(), base = want.slice(0, 2), L = v => (v.lang || "").toLowerCase().replace("_", "-");
-  return vs.find(v => L(v) === want) || vs.find(v => L(v).startsWith(base))
-    || ((base === "rm" || base === "de") ? vs.find(v => L(v) === "de-ch") || vs.find(v => L(v).startsWith("de")) : null) || null;
+  const list = spkList(l), want = spkSaved(l);
+  return (want && list.find(v => spkId(v) === want)) || list[0] || null;
 }
-function spkBtn() { document.querySelectorAll(".spk-btn").forEach(b => { b.textContent = SPK.on ? "🔊 " + t("Sound on") : "🔇 " + t("Sound off"); }); }
+function spkParts(text) {                                  // long sentences in pieces at the punctuation (a more natural melody)
+  const out = [];
+  String(text).replace(/[«»]/g, "").replace(/\s+/g, " ").trim().split(/(?<=[.!?…])\s+/).forEach(s => {
+    if (s.length <= 140) { if (s) out.push(s); return; }
+    let cur = "";
+    s.split(/(?<=[,;:–—])\s+/).forEach(p => { if (cur && (cur + " " + p).length > 140) { out.push(cur); cur = p; } else cur = cur ? cur + " " + p : p; });
+    if (cur) out.push(cur);
+  });
+  return out;
+}
+function spkSay(text, l, v) {
+  v = v || spkPick(l);
+  spkParts(text).forEach(p => { const u = new SpeechSynthesisUtterance(p);
+    if (v) { u.voice = v; u.lang = v.lang; } else u.lang = spkLang(l);
+    u.rate = spkRate(); u.pitch = 0.95; speechSynthesis.speak(u); });
+}
+function spkBtn() { document.querySelectorAll(".spk-btn").forEach(b => { b.textContent = SPK.on ? "🔊 " + t("Sound on") : "🔇 " + t("Sound off"); });
+  document.querySelectorAll(".spk-vbtn").forEach(b => { b.textContent = "🗣 " + t("Voice"); b.classList.toggle("on", SPK.pop); }); }
 function spkToggle() {
   SPK.on = !SPK.on; try { localStorage.setItem("mw-film-ton", SPK.on ? "1" : "0"); } catch (e) {}
   if (window.speechSynthesis) { speechSynthesis.cancel(); if (SPK.on) { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; speechSynthesis.speak(u); } }   // iOS: started by this tap
@@ -164,6 +214,7 @@ function spkToggle() {
 }
 function spkTick(s, paused, running) {
   const sp = (s && s.sprechen) || null;
+  if (sp && sp.lang) SPK.lang = sp.lang;
   if (window.speechSynthesis && (paused || !running)) speechSynthesis.cancel();      // pause / end: the voice stops
   spkWake(running && !paused);
   if (!sp) return;
@@ -171,14 +222,74 @@ function spkTick(s, paused, running) {
   SPK.last = sp.id;
   if (!window.speechSynthesis) return;
   if (sp.vorne) speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(String(sp.text).replace(/[«»]/g, ""));
-  const v = spkPick(sp.lang); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = spkLang(sp.lang);
-  u.rate = 0.95; speechSynthesis.speak(u);
+  spkSay(sp.text, sp.lang);
 }
 async function spkWake(on) {                               // the screen stays awake while the film runs (iPad)
   try { if (on && !SPK.wl && navigator.wakeLock) { SPK.wl = await navigator.wakeLock.request("screen"); SPK.wl.addEventListener("release", () => { SPK.wl = null; }); }
     else if (!on && SPK.wl) { SPK.wl.release(); SPK.wl = null; } } catch (e) {}
 }
+// «🗣 Stimme»: the voices of the language, the best marked «recommended», ▶ = a sample; the choice stays on this device
+function spkPop(open) {
+  const p = document.getElementById("spk-pop"); if (!p) return;
+  SPK.pop = open === undefined ? !SPK.pop : !!open; p.hidden = !SPK.pop; spkBtn();
+  if (!SPK.pop) return;
+  spkLoad(); spkPaint();
+  const b = document.querySelector(".spk-vbtn"), bar = b && b.closest("[id$='-bar']");
+  if (bar) p.style.bottom = Math.max(70, innerHeight - bar.getBoundingClientRect().top + 8) + "px";
+}
+function spkPaint() {
+  const p = document.getElementById("spk-pop"); if (!p || p.hidden) return;
+  const l = SPK.lang, list = spkList(l), best = list[0], cur = spkPick(l), saved = spkSaved(l), esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"})[c]);
+  let h = '<div class="spk-hd"><b>🗣 ' + esc(t("Voice")) + '</b><button type="button" class="sec spk-x" onclick="spkPop(false)" aria-label="×">×</button></div>';
+  if (!list.length) h += '<div class="mut spk-hint">' + esc(t("No voice for this language on this device.")) + "</div>";
+  else {
+    h += '<div class="spk-ls">';
+    list.forEach((v, i) => { const id = spkId(v);
+      h += '<div class="spk-v' + (v === cur ? " on" : "") + '"><button type="button" class="spk-nm" data-i="' + i + '">' + esc(v.name || id)
+        + ' <span class="mut">' + esc(v.lang || "") + (v.localService === false ? " · ☁" : "") + "</span>"
+        + (v === best ? ' <span class="spk-rec">' + esc(t("recommended")) + "</span>" : "") + '</button>'
+        + '<button type="button" class="sec spk-pl" data-p="' + i + '" aria-label="' + esc(t("Listen")) + '">▶</button></div>'; });
+    h += "</div>";
+    if (saved) h += '<button type="button" class="sec spk-auto" style="width:100%;margin-top:6px">' + esc(t("Automatic (recommended)")) + "</button>";
+  }
+  const r = spkRate() + (SPK.rate0 < 0.9 ? 0.04 : 0);
+  h += '<label class="spk-rt"><span>' + esc(t("Speed")) + '</span><input type="range" min="0.8" max="1.1" step="0.02" value="' + r.toFixed(2) + '"><span class="mut spk-rv">' + r.toFixed(2) + "</span></label>";
+  if (!list.some(v => SPK_GOOD.test((v.name || "") + " " + (v.voiceURI || "")))) h += '<div class="mut spk-hint">💡 ' + esc(t("Better voices: iPad → Settings → Accessibility → Spoken Content → Voices → English → download «Premium».")) + "</div>";
+  p.innerHTML = h;
+  p.querySelectorAll(".spk-nm").forEach(b => b.onclick = () => { const v = list[+b.dataset.i];
+    try { localStorage.setItem("mw-film-stimme-" + spkBase(l), spkId(v)); } catch (e) {} spkProbe(v); spkPaint(); });
+  p.querySelectorAll(".spk-pl").forEach(b => b.onclick = () => spkProbe(list[+b.dataset.p]));
+  const a = p.querySelector(".spk-auto"); if (a) a.onclick = () => { try { localStorage.removeItem("mw-film-stimme-" + spkBase(l)); } catch (e) {} spkPaint(); };
+  const rg = p.querySelector(".spk-rt input");
+  rg.oninput = () => { p.querySelector(".spk-rv").textContent = (+rg.value).toFixed(2); };
+  rg.onchange = () => { try { localStorage.setItem("mw-film-tempo", rg.value); } catch (e) {} spkProbe(spkPick(l)); };
+}
+function spkProbe(v) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel(); const l = SPK.lang;
+  spkSay(SPK_PROBE[spkBase(l)] || SPK_PROBE.en, l, v);
+}
+(function spkSetup() {
+  SPK.lang = spkLang();
+  const st = document.createElement("style");
+  st.textContent = "#spk-pop{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;width:min(420px,calc(100% - 20px));max-height:min(60vh,460px);overflow:auto;z-index:6;"
+    + "background:rgba(17,24,34,.94);border:1px solid var(--line);border-radius:14px;padding:8px 10px;color:var(--txt);-webkit-overflow-scrolling:touch}"
+    + ".spk-hd{display:flex;align-items:center;justify-content:space-between;margin:0 0 6px}.spk-x{min-height:34px;min-width:40px;padding:0 10px}"
+    + ".spk-v{display:flex;gap:6px;align-items:stretch;margin:4px 0}.spk-nm{flex:1 1 auto;text-align:left;min-height:42px;background:var(--btn2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:14px;line-height:1.25;overflow-wrap:anywhere}"
+    + ".spk-v.on .spk-nm{background:var(--acc);border-color:var(--acc);color:#fff}.spk-v.on .spk-nm .mut{color:#dbe8ff}"
+    + ".spk-pl{flex:0 0 46px;min-height:42px;padding:0}.spk-rec{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px;background:var(--grn);color:#06210f;margin-left:4px;vertical-align:1px}"
+    + ".spk-rt{display:flex;align-items:center;gap:8px;margin:8px 0 2px;font-size:13px}.spk-rt input{flex:1 1 auto}.spk-hint{font-size:12px;margin-top:8px;line-height:1.4}"
+    + ".spk-vbtn.on{background:var(--acc)!important;border-color:var(--acc)!important;color:#fff!important}";
+  document.head.appendChild(st);
+  if (!window.speechSynthesis) return;
+  const p = document.createElement("div"); p.id = "spk-pop"; p.hidden = true; document.body.appendChild(p);
+  document.querySelectorAll(".spk-btn").forEach(b => { const v = document.createElement("button"); v.type = "button"; v.className = "sec spk-vbtn";
+    v.onclick = () => spkPop(); b.after(v); });
+  const fresh = () => { spkLoad(); spkPaint(); };
+  try { speechSynthesis.addEventListener("voiceschanged", fresh); } catch (e) { speechSynthesis.onvoiceschanged = fresh; }
+  [0, 250, 1000, 3000].forEach(ms => setTimeout(fresh, ms));      // iOS / Chrome load the voices late (voiceschanged is not always sent)
+  addEventListener("keydown", e => { if (e.key === "Escape" && SPK.pop) { e.stopImmediatePropagation(); spkPop(false); } }, true);
+})();
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && !SPK.wl && S && S.laeuft) spkWake(true); });
 setTimeout(spkBtn, 50);
 """
@@ -200,18 +311,32 @@ _HX_TRL = {
                                                         'Quest simulatur na conuscha anc betg ils trailers – actualisescha el.'),
     'The simulator is busy: {w}': ('Der Simulator ist beschäftigt: {w}', 'Le simulateur est occupé : {w}', 'Il simulatore è occupato: {w}',
                                    'Il simulatur è occupà: {w}'),
+    'Voice': ('Stimme', 'Voix', 'Voce', 'Vusch'),
+    'recommended': ('empfohlen', 'recommandée', 'consigliata', 'recumandada'),
+    'Automatic (recommended)': ('Automatisch (empfohlen)', 'Automatique (recommandée)', 'Automatica (consigliata)', 'Automatic (recumandà)'),
+    'Listen': ('Anhören', 'Écouter', 'Ascolta', 'Tadlar'),
+    'Speed': ('Tempo', 'Vitesse', 'Velocità', 'Tempo'),
+    'No voice for this language on this device.': ('Dieses Gerät hat keine Stimme für diese Sprache.', 'Cet appareil n’a pas de voix pour cette langue.',
+                                                    'Questo dispositivo non ha una voce per questa lingua.', 'Quest apparat n’ha nagina vusch per quest linguatg.'),
+    'Better voices: iPad → Settings → Accessibility → Spoken Content → Voices → English → download «Premium».': ('Bessere Stimmen: iPad → Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch → «Premium» laden.',
+                          'Meilleures voix : iPad → Réglages → Accessibilité → Contenu énoncé → Voix → Français → télécharger « Premium ».',
+                          'Voci migliori: iPad → Impostazioni → Accessibilità → Contenuto letto ad alta voce → Voci → Italiano → scarica «Premium».',
+                          'Meglras vuschs: iPad → Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch → chargiar «Premium».'),
 }
 for _k, _v in _HX_TRL.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_SPK_KEYS = ['Voice', 'recommended', 'Automatic (recommended)', 'Listen', 'Speed', 'No voice for this language on this device.', 'Better voices: iPad → Settings → Accessibility → Spoken Content → Voices → English → download «Premium».']
 _TRL_KEYS = list(_HX_TRL) + ["Full screen", "Back", "The valley is being prepared …", "The 3D simulator is not connected."]
 
 # the Vorführung (639m) gets the same: the button in its bar, the new sentences read aloud, silent on pause, screen awake
 VF_PAGE = VF_PAGE.replace('<button type="button" class="sec" onclick="vfFull()"', '<button type="button" class="sec spk-btn" onclick="spkToggle()">🔇</button>\n    <button type="button" class="sec" onclick="vfFull()"', 1)
 VF_PAGE = VF_PAGE.replace("/*VFDE*/\n", "/*VFDE*/\n" + SPK_JS, 1)
+VF_PAGE = VF_PAGE.replace('HIDE_T = setTimeout(() => { if (!S.pause) b.classList.add("off"); }, 4000); }',
+                          'HIDE_T = setTimeout(() => { if (!S.pause && !SPK.pop) b.classList.add("off"); }, 4000); }', 1)
 VF_PAGE = VF_PAGE.replace("function vfPaint(j) {\n  S = j || {};", "function vfPaint(j) {\n  S = j || {};\n  spkTick(S, !!S.pause, !!S.laeuft);", 1)
-_VF_KEYS.extend(["Sound on", "Sound off"])
+_VF_KEYS.extend(["Sound on", "Sound off"] + _SPK_KEYS)
 _TRL_DE_JS = json.dumps({k: DE.get(k, k) for k in ("Trailer Grossvater", "Trailer Maggie", "Vorführung", "Developer")}, ensure_ascii=False)
 
 # Settings → Developer (web 530 devExtras): the two trailers on top of the list (the window 639c: see below)
@@ -309,8 +434,9 @@ def trl_selftest():
     assert SIM_PAGE.index('id="c-devquick"') < SIM_PAGE.index('id="c-conn"')
     assert "/sim/trailer?id=grossvater" in WEB_PAGE
     assert "speechSynthesis" in html and "spkTick(S" in html and "wakeLock" in html
+    assert "voiceschanged" in html and "spk-vbtn" in html and "SPK_GOOD" in html and "!SPK.pop" in html and "Stimme" in html
     vh = vf_page()
-    assert "spkTick(S, !!S.pause" in vh and "spk-btn" in vh and "Ton an" in vh
+    assert "spkTick(S, !!S.pause" in vh and "spk-btn" in vh and "Ton an" in vh and "!SPK.pop" in vh and "Premium" in vh
     for L in ("fr", "it", "rm"):
         assert TRX[L].get("End the trailer"), L
     return "Trailer: page, owner only, commands to the simulator, card on top of «Sim», entries"

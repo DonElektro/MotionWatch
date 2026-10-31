@@ -1924,6 +1924,12 @@
   "it": "(%s, MoveEye: %s)",
   "rm": "(%s, MoveEye: %s)"
  },
+ "(?i)premium|enhanced|erweitert|natural|neural|online|google": {
+  "en": "(?i)premium|enhanced|erweitert|natural|neural|online|google",
+  "fr": "(?i)premium|enhanced|erweitert|natural|neural|online|google",
+  "it": "(?i)premium|enhanced|erweitert|natural|neural|online|google",
+  "rm": "(?i)premium|enhanced|erweitert|natural|neural|online|google"
+ },
  "(ab Stufe %d)": {
   "en": "(from level %d)",
   "fr": "(dès le niveau %d)",

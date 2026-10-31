@@ -608,9 +608,9 @@ func _sag(text: String) -> void:
 	_cues.append({"t": snappedf(_vorlauf + t, 0.01), "rel": snappedf(t, 0.01), "text": text.replace("«", "").replace("»", ""), "dauer": snappedf(secs, 0.01)})
 	if _stimme:
 		var tt := text.replace("«", "").replace("»", "").strip_edges()
-		var ids := DisplayServer.tts_get_voices_for_language(T.lang())
-		if not ids.is_empty():
-			DisplayServer.tts_speak(tt, ids[0], 85, 0.86, 0.9, 0, true)
+		var vid := Stimme.beste(T.lang())
+		if vid != "":
+			DisplayServer.tts_speak(tt, vid, 85, 0.86, 0.9, 0, true)
 	if _untertitel and _sub != null and str(shots[cur].get("art", "")) != "ende":
 		_sub.text = text
 		_sub_bis = t + secs + 0.4

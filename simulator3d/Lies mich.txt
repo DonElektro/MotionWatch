@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.19.1 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.19.2 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.19.2
+3.19.2: Vorführung und Trailer wählen automatisch die beste Stimme und sprechen ruhiger. Neuer Knopf «🗣 Stimme» mit Liste,
+Hörprobe und Geschwindigkeit; die Wahl bleibt pro Gerät gespeichert. Hinweis, wie man Premium-Stimmen lädt. Der Simulator
+am PC wählt die Stimme ebenfalls automatisch.
+So testest du: iPad → Sim → Trailer Maggie → 🔊 Ton an → 🗣 Stimme → ▶ antippen und eine Stimme wählen.
 
 NEU IN 3.19.1
 3.19.1: Vorführung und Trailer im Browser sprechen die Texte selbst vor (🔊 Ton an/aus in der Leiste, Sprache von MoveEye);

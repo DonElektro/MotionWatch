@@ -40,18 +40,48 @@ static func _pick() -> String:
 	if lg == _voice_lang:
 		return _voice
 	_voice_lang = lg
-	_voice = ""
-	for l in [lg, "de" if lg == "rm" else "", "en"]:
-		if l == "":
-			continue
-		var ids: PackedStringArray = DisplayServer.tts_get_voices_for_language(l)
-		if not ids.is_empty():
-			_voice = ids[0]
-			return _voice
-	var all: Array = DisplayServer.tts_get_voices()
-	if not all.is_empty():
-		_voice = str(all[0].get("id", ""))
+	_voice = beste(lg)
+	if _voice == "":
+		_voice = beste("en")
+	if _voice == "":
+		var all: Array = DisplayServer.tts_get_voices()
+		if not all.is_empty():
+			_voice = str(all[0].get("id", ""))
 	return _voice
+
+
+static func beste(lg: String) -> String:
+	"""the best voice of a language, same order as the browser (MoveEye 639n): 1. name / id with Premium, Enhanced,
+	Erweitert, Natural, Neural, Online or Google, 2. the region (de-CH before de-DE before de-AT), 3. the first one
+	(the default of the system); rm: a Romansh voice, else a German one. "" = none"""
+	if DisplayServer.get_name() == "headless" or not DisplayServer.has_feature(DisplayServer.FEATURE_TEXT_TO_SPEECH):
+		return ""
+	var base := lg.substr(0, 2).to_lower()
+	var reg: Array = ["de_ch", "de_de", "de_at"] if base in ["de", "rm"] else []
+	var good := RegEx.create_from_string("(?i)premium|enhanced|erweitert|natural|neural|online|google")
+	var best := ""
+	var best_s := -1
+	var i := 0
+	for v in DisplayServer.tts_get_voices():
+		var l := str(v.get("language", "")).to_lower().replace("-", "_")
+		var s := 0
+		if l.begins_with(base):
+			s = 300
+		elif base == "rm" and l.begins_with("de"):
+			s = 100
+		else:
+			continue
+		if good.search(str(v.get("name", "")) + " " + str(v.get("id", ""))) != null:
+			s += 1000
+		var ri := reg.find(l.substr(0, 5))
+		if ri >= 0:
+			s += (3 - ri) * 20
+		s -= mini(i, 9)                                # among equals: the earlier (the system's order)
+		i += 1
+		if s > best_s:
+			best_s = s
+			best = str(v.get("id", ""))
+	return best
 
 
 static func sprich(text: String) -> bool:

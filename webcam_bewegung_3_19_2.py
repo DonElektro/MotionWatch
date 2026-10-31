@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.19.2: Vorführung und Trailer wählen automatisch die beste Stimme und sprechen ruhiger; Knopf «🗣 Stimme» mit Liste,
+    Hörprobe und Geschwindigkeit (pro Gerät gespeichert), Hinweis zu Premium-Stimmen.
   * 3.19.1: Vorführung und Trailer im Browser sprechen die Texte selbst vor (🔊 Ton an/aus in der Leiste, Sprache von MoveEye);
     das iPad bleibt während der Vorführung wach; Karte «🛠 Entwickler» im Reiter «Sim» offen.
   * 3.19.0: Simulator 3.19.0: Trailer (ca. 3 Min.) zu «Die Karte des Grossvaters» und «Maggie und der Bergkristall»; Karte «🛠
@@ -89,8 +91,6 @@ Features
   * 3.1.0: Handy-Mitteilungen kurz und klar: Titel mit Symbol, eine Zeile Text, Bild wo sinnvoll, nie roher Code; «🛡 Schutz ein»
     mit Bild; im Simulator nur Alarme (Info per Schalter); E-Mail mit ganzem Text; Gerätename nur bei mehreren MoveEye;
     ntfy-Adresse in der Webhook-Karte behoben.
-  * 3.0.2: Simulator: «Nur Gruppen» wie in MoveEye (Gruppen offen, Themen zu); Anna ist die Betreuerin der Hütte; Sepp spricht
-    passend zur Jahreszeit.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -99,10 +99,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_19_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_19_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_19_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_19_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_19_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_19_2.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -119,7 +119,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.19.1"
+APP_VERSION = "3.19.2"
 
 
 def default_data_dir():
@@ -241,8 +241,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_19_1.zip"
-ZD_SHA256 = "ab0cb8d6eb5afa8d6b6f635a8addc79b2208b60b76b06c22349eaee58bdd6abc"
+ZD_FILE = "moveeye_daten_3_19_2.zip"
+ZD_SHA256 = "195819cdbfc7be68a038a06819984f4a38a02b30a5dcf94c021bc41608ccc37b"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -24553,8 +24553,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.19.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 35617612,
-         "sha256": "5bdcc11f5d27ad8d67e22055b42eb2f7f7020cddae0f397d825130fc0f90152e"}
+SIM3D = {"version": "3.19.2", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 35618485,
+         "sha256": "d6d432fe10ab472915f4c6fd7d5c1f8bf7ec146654e4284cfc4f53db0c88ea9e"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -30567,7 +30567,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_19_1.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_19_2.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -48679,7 +48679,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.19.1")
+        self.root.title("MoveEye 3.19.2")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49050,7 +49050,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.19.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.19.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -67828,42 +67828,12 @@ TRL_PAGE = _zd('639n_trailer/TRL_PAGE', ZD_PAGE)
 # der Sprache von MoveEye (rm: eine romanische Stimme, falls das Gerät eine hat, sonst Deutsch). iOS: Ton erst nach einem
 # Tippen («🔊 Ton an»), dabei wird speechSynthesis einmal angestossen; Pause = Stimme verstummt. Dazu hält navigator.wakeLock
 # den Bildschirm wach, solange der Film läuft (iPad). Die Texte bleiben unten als Untertitel im Bild (der Simulator zeigt sie).
-SPK_JS = r"""
-let SPK = {on: false, last: -1, wl: null};
-try { SPK.on = localStorage.getItem("mw-film-ton") === "1"; } catch (e) {}
-function spkLang(l) { l = (l || (typeof LANG !== "undefined" ? LANG : "de") || "de").toLowerCase(); return l === "de" ? "de-CH" : l; }
-function spkPick(l) {
-  if (!window.speechSynthesis) return null;
-  const vs = speechSynthesis.getVoices() || [], want = spkLang(l).toLowerCase(), base = want.slice(0, 2), L = v => (v.lang || "").toLowerCase().replace("_", "-");
-  return vs.find(v => L(v) === want) || vs.find(v => L(v).startsWith(base))
-    || ((base === "rm" || base === "de") ? vs.find(v => L(v) === "de-ch") || vs.find(v => L(v).startsWith("de")) : null) || null;
-}
-function spkBtn() { document.querySelectorAll(".spk-btn").forEach(b => { b.textContent = SPK.on ? "🔊 " + t("Sound on") : "🔇 " + t("Sound off"); }); }
-function spkToggle() {
-  SPK.on = !SPK.on; try { localStorage.setItem("mw-film-ton", SPK.on ? "1" : "0"); } catch (e) {}
-  if (window.speechSynthesis) { speechSynthesis.cancel(); if (SPK.on) { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; speechSynthesis.speak(u); } }   // iOS: started by this tap
-  spkBtn(); spkWake(SPK.on && !!(S && S.laeuft));
-}
-function spkTick(s, paused, running) {
-  const sp = (s && s.sprechen) || null;
-  if (window.speechSynthesis && (paused || !running)) speechSynthesis.cancel();      // pause / end: the voice stops
-  spkWake(running && !paused);
-  if (!sp) return;
-  if (SPK.last < 0 || !SPK.on || !running || paused || sp.id === SPK.last || !sp.text) { SPK.last = sp.id; return; }   // only new sentences
-  SPK.last = sp.id;
-  if (!window.speechSynthesis) return;
-  if (sp.vorne) speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(String(sp.text).replace(/[«»]/g, ""));
-  const v = spkPick(sp.lang); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = spkLang(sp.lang);
-  u.rate = 0.95; speechSynthesis.speak(u);
-}
-async function spkWake(on) {                               // the screen stays awake while the film runs (iPad)
-  try { if (on && !SPK.wl && navigator.wakeLock) { SPK.wl = await navigator.wakeLock.request("screen"); SPK.wl.addEventListener("release", () => { SPK.wl = null; }); }
-    else if (!on && SPK.wl) { SPK.wl.release(); SPK.wl = null; } } catch (e) {}
-}
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && !SPK.wl && S && S.laeuft) spkWake(true); });
-setTimeout(spkBtn, 50);
-"""
+# Stimme (Daniel 31.10.2026, «klingt fürchterlich»): automatisch die beste Stimme der Sprache – 1. Name/voiceURI mit Premium,
+# Enhanced, Erweitert, Natural, Neural, Online oder Google, 2. lokale Stimme der Region (de-CH vor de-DE vor de-AT), 3. die
+# Standardstimme; die Liste kommt auf iOS / Chrome verzögert (voiceschanged + Nachfragen). Tempo 0.92, Trailer 0.88, Tonhöhe 0.95,
+# lange Sätze an Satzzeichen geteilt. Knopf «🗣 Stimme» neben 🔊: Liste der Stimmen (beste «empfohlen», ▶ Hörprobe), Tempo-
+# Regler 0.8–1.1, Wahl pro Gerät (localStorage mw-film-stimme-<sprache>, mw-film-tempo); nur einfache Stimmen: Hinweis «Premium laden».
+SPK_JS = _zd('639n_trailer/SPK_JS', "")
 
 _HX_TRL = {
     'Trailer Grossvater': ('Trailer Grossvater', 'Bande-annonce Grand-père', 'Trailer Nonno', 'Trailer Tat'),
@@ -67882,18 +67852,32 @@ _HX_TRL = {
                                                         'Quest simulatur na conuscha anc betg ils trailers – actualisescha el.'),
     'The simulator is busy: {w}': ('Der Simulator ist beschäftigt: {w}', 'Le simulateur est occupé : {w}', 'Il simulatore è occupato: {w}',
                                    'Il simulatur è occupà: {w}'),
+    'Voice': ('Stimme', 'Voix', 'Voce', 'Vusch'),
+    'recommended': ('empfohlen', 'recommandée', 'consigliata', 'recumandada'),
+    'Automatic (recommended)': ('Automatisch (empfohlen)', 'Automatique (recommandée)', 'Automatica (consigliata)', 'Automatic (recumandà)'),
+    'Listen': ('Anhören', 'Écouter', 'Ascolta', 'Tadlar'),
+    'Speed': ('Tempo', 'Vitesse', 'Velocità', 'Tempo'),
+    'No voice for this language on this device.': ('Dieses Gerät hat keine Stimme für diese Sprache.', 'Cet appareil n’a pas de voix pour cette langue.',
+                                                    'Questo dispositivo non ha una voce per questa lingua.', 'Quest apparat n’ha nagina vusch per quest linguatg.'),
+    'Better voices: iPad → Settings → Accessibility → Spoken Content → Voices → English → download «Premium».': ('Bessere Stimmen: iPad → Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch → «Premium» laden.',
+                          'Meilleures voix : iPad → Réglages → Accessibilité → Contenu énoncé → Voix → Français → télécharger « Premium ».',
+                          'Voci migliori: iPad → Impostazioni → Accessibilità → Contenuto letto ad alta voce → Voci → Italiano → scarica «Premium».',
+                          'Meglras vuschs: iPad → Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch → chargiar «Premium».'),
 }
 for _k, _v in _HX_TRL.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_SPK_KEYS = ['Voice', 'recommended', 'Automatic (recommended)', 'Listen', 'Speed', 'No voice for this language on this device.', 'Better voices: iPad → Settings → Accessibility → Spoken Content → Voices → English → download «Premium».']
 _TRL_KEYS = list(_HX_TRL) + ["Full screen", "Back", "The valley is being prepared …", "The 3D simulator is not connected."]
 
 # the Vorführung (639m) gets the same: the button in its bar, the new sentences read aloud, silent on pause, screen awake
 VF_PAGE = VF_PAGE.replace('<button type="button" class="sec" onclick="vfFull()"', '<button type="button" class="sec spk-btn" onclick="spkToggle()">🔇</button>\n    <button type="button" class="sec" onclick="vfFull()"', 1)
 VF_PAGE = VF_PAGE.replace("/*VFDE*/\n", "/*VFDE*/\n" + SPK_JS, 1)
+VF_PAGE = VF_PAGE.replace('HIDE_T = setTimeout(() => { if (!S.pause) b.classList.add("off"); }, 4000); }',
+                          'HIDE_T = setTimeout(() => { if (!S.pause && !SPK.pop) b.classList.add("off"); }, 4000); }', 1)
 VF_PAGE = VF_PAGE.replace("function vfPaint(j) {\n  S = j || {};", "function vfPaint(j) {\n  S = j || {};\n  spkTick(S, !!S.pause, !!S.laeuft);", 1)
-_VF_KEYS.extend(["Sound on", "Sound off"])
+_VF_KEYS.extend(["Sound on", "Sound off"] + _SPK_KEYS)
 _TRL_DE_JS = json.dumps({k: DE.get(k, k) for k in ("Trailer Grossvater", "Trailer Maggie", "Vorführung", "Developer")}, ensure_ascii=False)
 
 # Settings → Developer (web 530 devExtras): the two trailers on top of the list (the window 639c: see below)
@@ -67991,8 +67975,9 @@ def trl_selftest():
     assert SIM_PAGE.index('id="c-devquick"') < SIM_PAGE.index('id="c-conn"')
     assert "/sim/trailer?id=grossvater" in WEB_PAGE
     assert "speechSynthesis" in html and "spkTick(S" in html and "wakeLock" in html
+    assert "voiceschanged" in html and "spk-vbtn" in html and "SPK_GOOD" in html and "!SPK.pop" in html and "Stimme" in html
     vh = vf_page()
-    assert "spkTick(S, !!S.pause" in vh and "spk-btn" in vh and "Ton an" in vh
+    assert "spkTick(S, !!S.pause" in vh and "spk-btn" in vh and "Ton an" in vh and "!SPK.pop" in vh and "Premium" in vh
     for L in ("fr", "it", "rm"):
         assert TRX[L].get("End the trailer"), L
     return "Trailer: page, owner only, commands to the simulator, card on top of «Sim», entries"
