@@ -221,7 +221,7 @@ func _tip(ch: Array) -> String:
 			if id != "":
 				return main.entdecken.hint_text(id)
 			if int(c.total) > int(c.found):
-				return T.t("Im %s fehlt noch %d – manches gibt es nur nachts, bei Regen oder am Morgen.", [c.name, int(c.total) - int(c.found)])
+				return T.t("«%s»: noch %d zu entdecken – manches gibt es nur nachts, bei Regen oder am Morgen.", [c.name, int(c.total) - int(c.found)])
 	for c in ch:
 		if c.state == "new":
 			return T.t("Neu: «%s» wartet auf dich!", [c.name])
@@ -345,7 +345,7 @@ func _paint() -> void:
 	var lx := UI.small(T.t("%d Punkte · noch %d bis Stufe %d", [int(lv.xp), int(lv.to) - int(lv.xp), int(lv.lv) + 1]))
 	lx.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	lx.tooltip_text = T.t("Entdeckung +%d · Abzeichen +%d · Abenteuer geschafft +%d · Abenteuer begonnen +%d", [XP_DISC, XP_BADGE, XP_DONE, XP_VISIT]) \
-			+ "\n" + T.t("Dazu die Erfahrung aus dem Bergtal-Abenteuer (%d) - ein Level für alles, pro Spielstand.", [int(lv.ab_xp)])
+			+ "\n" + T.t("Dazu die Erfahrung aus dem Bergtal-Abenteuer (%d) – eine Stufe für alles, pro Spielstand.", [int(lv.ab_xp)])
 	lx.mouse_filter = Control.MOUSE_FILTER_PASS
 	lh.add_child(lx)
 	var lb := ProgressBar.new()

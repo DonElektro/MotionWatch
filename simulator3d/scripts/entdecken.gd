@@ -997,7 +997,7 @@ func register_controls() -> void:
 	main.add_control("toggle", "disc_hints", "Blinki-Hinweise, wenn man lange nichts findet", func(): return hints_on, func(v): set_hints(bool(v)), "Spiel")
 	main.add_control("slider", "disc_hint_min", "Blinki-Hinweis nach (Minuten ohne Fund)", func(): return hint_min, func(v): set_hint_min(float(v)), "Spiel",
 			{"min": 1, "max": 30, "step": 1, "unit": "min"})
-	main.add_control("toggle", "disc_demo", "Demo-Entdeckungen im Camping-Platz", func(): return demo_on, func(v): set_demo(bool(v)), "Spiel")
+	main.add_control("toggle", "disc_demo", "Demo-Entdeckungen auf dem Camping-Platz", func(): return demo_on, func(v): set_demo(bool(v)), "Spiel")
 
 
 func set_demo(on: bool) -> void:
