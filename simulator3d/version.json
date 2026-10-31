@@ -1,9 +1,9 @@
 {
- "version": "3D-5.9.1",
- "ver": "3.9.1",
- "name": "MoveEye Sim 3.9.1",
+ "version": "3D-5.9.2",
+ "ver": "3.9.2",
+ "name": "MoveEye Sim 3.9.2",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35102499,
- "sha256": "418a9f818c3a897125d4b80631feb4e66d1fb1bc644b4d4d68754b8f5c3c9eaf",
- "notes": "MoveEye Sim 3.9.1: «Verstecken mit dem Mover» – überall «Mover» wie in MoveEye."
+ "size": 35105442,
+ "sha256": "76b61cfe2badc6e31fbf79b9167d9393c1791fce5ebc54512d7534ed2c606e08",
+ "notes": "MoveEye Sim 3.9.2: Behoben – der Simulator schloss sich bei manchen PCs gleich nach dem Start."
 }

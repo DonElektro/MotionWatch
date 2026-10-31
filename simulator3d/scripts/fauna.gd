@@ -112,6 +112,8 @@ func _move_flock(t: float, _dt: float) -> void:
 
 
 func _spawn_bats() -> void:
+	if main.head == null or not main.head.is_inside_tree():
+		return                                    # Startfix: die Welt steht noch nicht (main wartet auf die Update-Suche)
 	var head: Vector3 = main.head.global_position
 	for i in range(randi_range(1, 3)):
 		var b := _bird(0.12, Color(0.12, 0.09, 0.08), 37.0)
