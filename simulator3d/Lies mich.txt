@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.15.2 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.16.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -436,6 +436,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.16.0
+3.16.0: Bergtal wie auf Daniels Fotos: heller Kalkfels mit Grasbändern und Schuttkegeln, gelbgrüne Weiden, schlanke dunkle
+Fichten, smaragdgrüner Bergsee mit klarem Ufer und Spiegelung, ferne Ketten blau im Dunst; in Hoch dazu Karstweide mit
+Kalkblöcken, Felszähne, Legföhren, Alpenrosen, Quellwolken und Abendhimmel. Lite bleibt gleich schnell.
+So testest du: 1) Bergtal laden, Sommer, Grafik Hoch. 2) Schlafplatz «Am Ufer des Gumpisees» ansehen. 3) Auf die Weide und
+den Grat fliegen. 4) Uhrzeit auf etwa 20:00 stellen.
 
 NEU IN 3.15.2
 3.15.2: Vollbild: In der Simulation sind auch ◎, ⇆, 🚜 und der Mover-Stick ausgeblendet; beim echten Live-Bild bleiben sie.

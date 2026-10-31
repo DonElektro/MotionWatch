@@ -314,6 +314,22 @@ func foliage(k: int) -> ShaderMaterial:
 	return fol_mats[k % fol_mats.size()]
 
 
+var _berg_fm: ShaderMaterial
+
+
+func _berg_foliage() -> ShaderMaterial:
+	"""«Bergtal wie auf den Fotos»: the dark blue-green of the spruces (one shared material, like foliage())"""
+	if _berg_fm == null:
+		_berg_fm = ShaderMaterial.new()
+		_berg_fm.shader = load("res://shaders/foliage.gdshader")
+		_berg_fm.set_shader_parameter("noise_tex", m.noise_tex)
+		_berg_fm.set_shader_parameter("color", Color(0.07, 0.15, 0.09))
+		_berg_fm.set_meta("broad", false)
+	if not m.foliage_mats.has(_berg_fm):
+		m.foliage_mats.append(_berg_fm)                        # (wind, seasons like the other foliage)
+	return _berg_fm
+
+
 func tree(parent: Node3D, p: Vector3, sc: float, conifer := -1) -> void:
 	if (parent == root and _out(p)) or (decor and Quality.lite()):
 		rng.randf()                                  # 3D-4.x: outside the place (worlds.gd) - the same random numbers after it
@@ -328,9 +344,13 @@ func tree(parent: Node3D, p: Vector3, sc: float, conifer := -1) -> void:
 		put(tr, cyl(0.08, 0.22, 5.2, 8), Vector3(0, 2.6, 0), bark, "tree")
 		var fm := foliage(rng.randi_range(0, 2) * 2 + 0)
 		var layers := rng.randi_range(4, 5)
+		var berg: bool = str(m.scene) == "bergtal"              # «Bergtal wie auf den Fotos»: slim, dark, pointed (same parts)
+		if berg:
+			fm = _berg_foliage()
 		for k in range(layers):
 			var f := float(k) / layers
-			put(tr, cyl(0.0, 1.7 * (1.0 - f * 0.75), 2.0, 10), Vector3(rng.randf_range(-0.05, 0.05), 1.9 + k * 1.05, 0), fm, "tree",
+			put(tr, cyl(0.0, (1.15 if berg else 1.7) * (1.0 - f * 0.75), 2.2 if berg else 2.0, 10),
+					Vector3(rng.randf_range(-0.05, 0.05), (2.0 + k * 1.35) if berg else (1.9 + k * 1.05), 0), fm, "tree",
 					Vector3(0, rng.randf() * TAU, rng.randf_range(-0.04, 0.04)))
 	else:                                                        # broadleaf: trunk with two branches and a round crown
 		put(tr, cyl(0.12, 0.22, 3.6, 8), Vector3(0, 1.8, 0), bark, "tree")

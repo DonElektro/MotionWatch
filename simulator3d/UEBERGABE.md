@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.15.2** · MoveEye **3.15.2** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.16.0** · MoveEye **3.16.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.16.0 (MoveEye 3.16.0): Bergtal wie auf Daniels Fotos (`bergtal_landschaft.gd`)
+
+- `bergtal_landschaft.gd` (neu): Kalkfels mit Grasbändern und Schuttkegeln, Karstweide, Felszähne, Legföhren, Alpenrosen
+  (Hoch); `bergtal.gd`, `bib_berg.gd`; Shader `bergsee.gdshader` (neu, Smaragd, Ufer, Spiegelung), `bergtal_boden.gdshader`,
+  `sky.gdshader` (Dunst, Quellwolken, Abendhimmel); `scenes.gd`: schlanke dunkle Fichten nur für die Szene bergtal.
+  `_roads_and_trails` / `_road_flatten` unverändert.
 
 ## NEU in 3.15.2 (MoveEye 3.15.2): Vollbild-Bedienung in der Simulation (nur MoveEye)
 

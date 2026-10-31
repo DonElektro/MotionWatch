@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 21:55",
+ "generated": "2026-10-31 22:03",
  "versions": [
+  {
+   "version": "3.16.0",
+   "file": "webcam_bewegung_3_16_0.py",
+   "url": "",
+   "sha256": "ad0ae21700563d3e61e2b370f2438040e7006b0a78c4b3d02501479a9c7e4d9c",
+   "date": "2026-10-31 22:03",
+   "notes": "Simulator 3.16.0: Bergtal wie auf Daniels Fotos – Kalkfels mit Grasbändern, gelbgrüne Weiden, dunkle Fichten, smaragdgrüner Bergsee mit Spiegelung, Dunst; in Hoch Karstweide, Felszähne, Legföhren, Alpenrosen, Quellwolken, Abendhimmel.",
+   "size": 4417151,
+   "sig": "ef583a7a32ad8fe4ba6da4f0233774ce7bfcbd725f014c34e5010b4047f796bbc84036930114f516d2a73299dd92ab28589a77c91d27c060b49403806f75c704",
+   "data": {
+    "file": "moveeye_daten_3_16_0.zip",
+    "url": "",
+    "sha256": "1f6a9c298aa565c26fabff9222a40522de85345ee01869aa1c6605a2522cf2cc",
+    "size": 1613268,
+    "sig": "90f6ac37f6f7e0b65116e8441e0e63c9828b516c560a0b195e985b497be05f45ec0ff8a295e5987274c99798a44e8d41fdde930fdcbdb4b736aa83d47cfcbb07"
+   }
+  },
   {
    "version": "3.15.2",
    "file": "webcam_bewegung_3_15_2.py",
    "url": "",
    "sha256": "5f7608aaf472923fb93629887d8aab9e78b30500ae6a59737cfe2634bb4ad3c5",
-   "date": "2026-10-31 21:55",
+   "date": "2026-10-31 22:00",
    "notes": "Vollbild: in der Simulation auch ◎, ⇆, 🚜 und der Mover-Stick ausgeblendet; beim echten Live-Bild bleiben sie.",
    "size": 4417133,
    "sig": "e670d946407f3ef5a67d61f20acf4f80a1f42b7770721a2dd76e439c0fb2372f746393f8450298491cbb353a19aba3eda26214b95edd23ad444a86f61d5beb0d",
@@ -137,16 +154,6 @@
     "size": 1609387,
     "sig": "76ab94a48a64be9e5661d1b487831a131c1303ffd05b6c7763ab1e0b1a2977ceccc097db48f69e58eb9bfd0cacb0dc6248a15484aae54ecb49ad4e052f159d03"
    }
-  },
-  {
-   "version": "3.7.1",
-   "file": "webcam_bewegung_3_7_1.py",
-   "url": "",
-   "sha256": "c52aac149e7095b5fbfdd7e90a5a868aa8a79f553da78de5a19ea2a1891efb98",
-   "date": "2026-10-31 17:33",
-   "notes": "Simulator 3.7.1: Maggie – der Pfeil zeigt jetzt auf die Stationen, jede Jahreszeit etwa 25–28 Min. mit 3 Rastplätzen und 4 Rätseln, Rastplatz-Anzeige und Tipps korrigiert.",
-   "size": 7860693,
-   "sig": "213fefae1ad69017233bcda545ad9199567b3edd2600ed87db0ef08dbf13966632b6790cdfd6c24c1faddb0cd534602e9fb17f7e5f6b4089b324a1fdec34ae01"
   },
   {
    "version": "3.0.2",

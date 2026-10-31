@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6771 (Stellen: 9387)
-Übersetzt: en 6771, fr 6771, it 6771, rm 6771
+Texte gesamt: 6775 (Stellen: 9395)
+Übersetzt: en 6775, fr 6775, it 6775, rm 6775
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 463 Stellen
 Nicht mehr im Code (noch in texte.json): 242
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 23372, schlüssel 17567, keine Wörter 11163, index 9171, technisch 3037, doc 1964, einheit 287, log 146, englisch 121, pfad 98, html 68, klasse 25, shader 6
+Übersprungen (Grund: Anzahl): kennung 23487, schlüssel 17599, keine Wörter 11188, index 9185, technisch 3042, doc 1980, einheit 287, log 146, englisch 121, pfad 98, html 68, klasse 25, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  691    42
@@ -43,12 +43,12 @@ Pro Datei (Texte / davon dynamische Stellen):
   diagnose.gd               71     8
   abenteuer_zweit.gd        66     0
   feedback.gd               66    17
+  bib_berg.gd               64     0
   parcours.gd               63    10
   geschichten.gd            62     0
   bergtal_erleben_a.gd      62     0
   erlebniswelt.gd           62     0
   abenteuer_geheim.gd       60     0
-  bib_berg.gd               60     0
   abenteuer_figuren.gd      58     5
   abenteuer_zwei_team.gd    57     0
   spielbereich.gd           57     0
@@ -319,11 +319,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   b3d.gd:86  'Kachel leer: '
   b3d.gd:186  'glTF nicht lesbar: '
   b3d.gd:208  'Kachel ohne Dreiecke: '
-  bergtal.gd:237  'Aussicht: '
-  bergtal.gd:246  'Schlafplatz: '
-  bergtal.gd:248  'Aussicht: '
-  bergtal.gd:2363  'Schlafplatz: '
-  bergtal.gd:2365  'Aussicht: '
+  bergtal.gd:239  'Aussicht: '
+  bergtal.gd:248  'Schlafplatz: '
+  bergtal.gd:250  'Aussicht: '
+  bergtal.gd:2447  'Schlafplatz: '
+  bergtal.gd:2449  'Aussicht: '
   bergtal_abenteuer.gd:416  'Start: '
   bergtal_abenteuer.gd:982  ' auf der Bank mit Aussicht'
   bergtal_abenteuer.gd:2173  'Wird frei: '
