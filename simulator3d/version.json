@@ -1,7 +1,7 @@
 {
- "version": "3D-4.24",
+ "version": "3D-4.28",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 64545642,
- "sha256": "df77d39c319dfdd3cb9bfbccd197364330f11ba44a535d3621191cdf0c69ed97",
- "notes": "Simulator-Datei heisst neu MoveEyeSim3D.exe – alte Dateien löschen und neu herunterladen; Simulator startet mit frischen Einstellungen; Windows fragt evtl. nochmals (SmartScreen/Firewall). Ein Update aus dem Simulator erledigt den Wechsel von selbst. Die Person im Schriftzug geht jetzt richtig (Bein und Gegenarm schwingen zusammen)."
+ "size": 64986065,
+ "sha256": "b188ae45bcd700b3827c7381bc58945cb4a017aefa8e8e45f8216e4a4f14923a",
+ "notes": "Neue Szene «Ferienpark am See» (500 × 500 m: See, Terrassen, Wald, Dorf) mit fünf MoveEye-Standorten (Zelt, Wohnmobil, Bungalow, Bootssteg, Rezeption) – Auswahl nur sichtbar, wenn die Szene gewählt ist; dahinter eine Bibliothek mit rund 90 Dingen, mit «Lite» leichter."
 }

@@ -197,7 +197,7 @@ var _gm: ShaderMaterial
 
 
 static func _lite() -> bool:
-	"""the central question «Lite?» (Brief: Engine meta «lite»; the coordinator connects it to Quality.lite())"""
+	"""the central question «Lite?» (Quality.lite() via Bib.lite(), set by main.lite_update)"""
 	return Bib.lite()
 
 
@@ -3249,7 +3249,7 @@ static func control(main, d: Dictionary) -> Dictionary:
 			main.set_bt("bt_season", str(d.get("value", "auto")))
 			return {"ok": true, "season": main.bt_season}
 		"lite_test":
-			Engine.set_meta("lite", bool(d.get("value", true)))
+			preload("res://scripts/quality.gd").set_lite(bool(d.get("value", true)))
 			if main.scene == "bergtal":
 				main.set_scene("bergtal")
 			return {"ok": true, "lite": Bib.lite()}

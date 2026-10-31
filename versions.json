@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 00:42",
+ "generated": "2026-10-31 04:32",
  "versions": [
   {
-   "version": "2.98.54",
-   "file": "webcam_bewegung_2_98_54.py",
+   "version": "2.98.59",
+   "file": "webcam_bewegung_2_98_59.py",
    "url": "",
-   "sha256": "fc22a66924b3a192821a1f25f41eb1c2ec123f4426d95fcd8371d25e6410678e",
-   "date": "2026-10-31 00:42",
-   "notes": "Live-Seite am Handy: die Status-Chips stehen in einer Zeile zum seitlichen Wischen (Schutz-Zustand, Status-LED, alles ok / Probleme, Akku zuerst; Rand blendet aus, wenn weitere folgen) – die Sticks von Sim-Kompakt haben wieder ihre normale Grösse",
-   "sig": "45ca26b23286261d3521b71f254c1e940e5db9799397795fe3cd14c86352feb6d7147f3ec8ff34d784d4b8a8cbadd3de419182cede7935e91321aabf1bec7302"
+   "sha256": "5b1227715413c89398f3cc4d3d5c13aa4f3b899109e15e8757ab4b2dc9a3ef08",
+   "date": "2026-10-31 04:32",
+   "notes": "Simulator 3D-4.28: neue Szene «Ferienpark am See» mit fünf MoveEye-Standorten (Zelt, Wohnmobil, Bungalow, Bootssteg, Rezeption); die Auswahl «Standort im Ferienpark am See» erscheint in der Simulator-Steuerung nur, wenn diese Szene gewählt ist. Szenen-Name in allen Sprachen.",
+   "sig": "eaaf0060ffcd7374adbecf08a1c2fd9ffabaf2dd1bf840420590fadb980d599f1ffc60f2e7c9b56958c6d1cf683a4dd8febea9b11140b93c0a6c2f3bbaaf6b0f"
   },
   {
    "version": "2.97.1",

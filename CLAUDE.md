@@ -36,6 +36,17 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   offen sagen** und begründen, damit Daniel den Weg stoppen kann – nicht einfach umsetzen.
 - **Fragen immer als Fragekatalog (Wunsch Daniel, 29.10.2026):** wenn Daniel nichts anderes wünscht, jede Rückfrage als
   Auswahl-Katalog stellen (AskUserQuestion: bis 4 Fragen à 4 Antworten, Mehrfachauswahl wo sinnvoll), nicht als Fliesstext.
+  **Ergänzung (Daniel, 31.10.2026 03:02):** für ALLE Entscheide den Fragebogen verwenden, aber **zuerst ankündigen**
+  («Fragebogen zu X kommt – sag "weiter", wenn du bereit bist») und den Turn beenden; erst nach Daniels «weiter» den Fragebogen
+  zeigen, damit er sich vorher Notizen machen kann. Erklärungen/Vorschläge allein schicken, nie zusammen mit dem Popup.
+- **Arbeit verteilen (Daniel, 31.10.2026 04:24):** grössere Aufträge in möglichst viele unabhängige Pakete aufteilen und
+  parallel an Helfer geben – bevorzugt Helfer auf eigenen Cloud-Rechnern (Agent mit isolation "remote"), damit der lokale
+  Rechner nicht überlastet. Jeder Helfer: eigener Zweig, kein Release, keine Rückfragen bei bestätigten Paketen; zusammengeführt
+  und veröffentlicht wird nur im Haupt-Chat, ein Paket nach dem anderen.
+- **Kurz schreiben (Daniel, 31.10.2026 04:36):** Text, den Daniel lesen muss, möglichst knapp halten – nur Ergebnis,
+  Entscheid, nicht getestet; keine langen Aufzählungen.
+- **Pause für Realismus aufgehoben (Daniel, 31.10.2026 00:53):** bis die Hardware da ist, Realismus/Szenen in kleinen Paketen,
+  je Paket eine Version mit «So testest du». Danach Pause und Hardware-Aufbau.
 
 ## Offene Erinnerungen an Daniel
 

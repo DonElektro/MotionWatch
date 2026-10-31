@@ -608,6 +608,55 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-4.28
+3D-4.28: Neue Szene «Ferienpark am See» (rund 500 × 500 m, ganz unten in der Szenenliste): See mit Strand, Steg und
+Booten, sechs Terrassen mit Zelten, Wohnmobilen und Bungalows, Wald mit Aussichtspunkt, Bach mit Brücken, Hängebrücke,
+Seilbahn, Dorf mit Kirche, Streichelzoo und Felder. MoveEye kann an fünf Orten stehen: beim Zelt, beim Wohnmobil, beim
+Bungalow, am Bootssteg oder bei der Rezeption – Auswahl «Standort im Ferienpark am See» in der Karte Szene (erscheint nur,
+wenn diese Szene gewählt ist, in MoveEye ebenso). Nachts leuchten Laternen und Fenster; Tiere, Grill, Feuer und Motoren
+sind im Wärmebild warm. Dahinter eine neue Bibliothek mit rund 90 Dingen, auch für weitere Szenen; mit «Lite» leichter.
+So testest du: 1) Szene → «Ferienpark am See». 2) Darunter «Standort im Ferienpark am See» nacheinander auf Zelt,
+Wohnmobil, Bungalow, Bootssteg, Rezeption stellen und das Bild der Kopfkamera ansehen. 3) Uhrzeit 22 Uhr: Laternen und
+Fenster leuchten. 4) MoveEye verbinden, «Besuch → Person» schicken: MoveEye meldet die Person. 5) Andere Szene wählen:
+die Standort-Auswahl verschwindet.
+
+NEU IN 3D-4.27
+3D-4.27: Entdecken – jede Szene kann Geheimnisse haben, die man selbst findet. Das Entdeckungsbuch (Schnellzugriff →
+Spielen → «Entdeckungen», Symbol Buch) zeigt «2 von 3 entdeckt», Gefundenes mit Bild und Text, Ungefundenes als «???» mit
+Art und Hinweis-Symbol (nur nachts, bei Regen, am Morgen, nur per Foto). Gefunden wird beim Hinschauen aus der Nähe oder
+mit einem Foto von MoveEyes Kopfkamera («Foto fürs Buch» oben in der Ansicht). Findet man lange nichts, meldet sich
+unten links Blinki mit einem leisen Hinweis (im gemeinsamen Fensterrahmen, abschaltbar unter Spiel → Entdecken oder mit ✕;
+wieder einschalten über «Fenster»). Im Camping-Platz drei Demo-Entdeckungen. In MoveEye: Simulator → Spielen → «Entdeckungen».
+So testest du: 1) Szene «Camping-Platz», Mittag: Schnellzugriff → Spielen → «Entdeckungen 0 von 3» – drei Karten «???».
+2) Hinter MoveEyes Kopf an den Wiesenrand fliegen: Steinmännchen, unten «Entdeckt: … 1 von 3». 3) Tageszeit Nacht 23:00,
+zum Holzstapel links hinten: Glühwürmchen. 4) MoveEyes Kopf nach rechts drehen, bis die Eule ganz im Bild ist → «Foto fürs
+Buch» antippen (oder in MoveEye «Entdeckungen» → «Foto für Entdeckungsbuch»). 5) 5 Minuten nichts finden → Blinki-Hinweis.
+
+NEU IN 3D-4.26
+3D-4.26: Alle schwebenden Fenster über der 3D-Ansicht (Kompass, Karte, Livebild, SmallTV, Gerät, Mover-Stick, Kopf
+steuern, Kameras bei zugeklapptem Bedienfeld, CPU-Anzeige) haben jetzt einen gemeinsamen Rahmen mit Titelleiste:
+an der Leiste ziehen = verschieben (Doppelklick = zurück an den Standardplatz), Ecke unten rechts = Grösse (Bilder behalten
+ihr Seitenverhältnis), ✕ = ausblenden. Fenster schnappen an Rand, Bedienfeld, Leiste und an andere Fenster. Neuer Knopf
+«Fenster» in der Leiste unten: Liste mit Häkchen pro Fenster und «Anordnung zurücksetzen». Die Anordnung bleibt auf
+diesem PC gespeichert. Das Fenster «Gerät» liegt nicht mehr versteckt unter dem Bedienfeld.
+So testest du: 1) Karte an der Titelleiste in die Mitte ziehen, dann nahe an den Rand oder ein anderes Fenster: sie
+schnappt an. 2) Maus über die Karte, Griff unten rechts ziehen = grösser/kleiner. 3) Beim Kompass ✕ → weg; Leiste unten
+«Fenster» → Häkchen «Kompass» → wieder da. 4) Simulator neu starten: alles steht wie vorher; zum Schluss «Fenster» →
+«Anordnung zurücksetzen».
+
+NEU IN 3D-4.25
+3D-4.25: Neue Grafik-Stufe «Lite» für den Raspberry Pi 5 – derselbe Simulator mit denselben Menüs, nur leichter: keine
+Schatten und kein Leuchten, die grosse Ansicht 60 % scharf, höchstens 25 Bilder pro Sekunde, weniger Regen-, Schnee- und
+Rauchteilchen, ein Drittel des Grases, kleine Dinge weit weg werden nicht gezeichnet, höchstens 6 Besucher gleichzeitig,
+das Fensterbild für MoveEye kleiner. Die Kamerabilder für MoveEye bleiben gleich gross, die Erkennung läuft wie bisher.
+Einstellung: System → Grafik → «Grafik-Modus»: Automatisch (Standard: Lite auf einem Raspberry Pi / ARM-Rechner oder wenn
+die ersten Sekunden sehr langsam sind, sonst Normal) / Lite / Normal. Deine eigenen Grafik-Einstellungen bleiben gespeichert
+und kommen mit «Normal» zurück. Neu in «Mehr → Selbstdiagnose» die Zeile «Leistung» (Bilder/s, Renderer, Lite, Auflösung).
+So testest du: 1) Simulator starten, «Mehr» → «Selbstdiagnose»: bei «Leistung» die Bilder/s merken. 2) System → Grafik →
+«Grafik-Modus» auf «Lite»: das Bild wird etwas einfacher (keine Schatten), die Bilder/s steigen. 3) MoveEye verbunden lassen
+und jemanden durchs Bild schicken: MoveEye erkennt ihn wie vorher. 4) Zurück auf «Automatisch» (am PC = Normal).
+Auf dem Raspberry Pi 5 (Datei MoveEyeSim3D.arm64): «Leistung» sollte «Lite an (automatisch: Raspberry Pi …)» zeigen.
+
 NEU IN 3D-4.24
 3D-4.24: Die Simulator-Datei heisst neu MoveEyeSim3D.exe (vorher MotionWatch3D.exe), der Ordner im ZIP MoveEyeSim3D.
 Wer von einer alten Version aus aktualisiert, braucht nichts zu tun: die alte Datei startet einmal die neue und wird

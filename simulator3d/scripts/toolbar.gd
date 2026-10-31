@@ -39,6 +39,7 @@ const DOCK := [["explore", "compass", "Erkunden", "Start (Controller) · mit dem
 		["mast", "ruler", "Stange", "Bild ↑ / ↓ beim Erkunden · Höhe des Kamerakopfs", ["mast_up", "mast_dn"]],
 		["invite", "people", "Mitspieler", "J beim Erkunden · QR-Code: Mitspieler mit dem Handy, frei bewegen", []],
 		["view", "lens", "Ansicht", "0 – 3, M, L · Kameras, Karte, Livebild und was angezeigt wird", ["v0", "v1", "v2", "v3", "map", "live", "to_head", "to_top", "exview", "spectate", "cams", "info", "laser", "zones3d", "det3d"]],
+		["windows", "windows", "Fenster", "Karte, Kompass, Livebild … ein / aus und «Anordnung zurücksetzen» (fenster.gd)", []],
 		["panel", "menu", "Menü", "H · das Bedienfeld rechts ein / aus", []],
 		["theme", "theme", "Hell / Rotlicht / Dunkel", "Ansicht des Bedienfelds wie in MoveEye: Hell → Rotlicht → Dunkel (Rotlicht für die Nacht im Zelt)", []],
 		["help", "help", "Hilfe", "Maus und Tasten · Klick: Rundgang, Selbstdiagnose, Protokoll, Rückmeldung, Über (Mehr)", []]]
@@ -173,7 +174,7 @@ func _hover(id: String, on: bool, mouse: bool) -> void:
 
 
 func _help_text() -> String:
-	var t := "Ansicht mit der Maus: links ziehen = verschieben · rechts ziehen = drehen · Rad = zoomen · Doppelklick = hinfliegen\nTasten: 0 frei · 1 / 2 Kameras · 3 Wärmebild · M Karte · L Livebild · H Bedienfeld · Esc Punkte fertig"
+	var t := "Ansicht mit der Maus: links ziehen = verschieben · rechts ziehen = drehen · Rad = zoomen · Doppelklick = hinfliegen\nTasten: 0 frei · 1 / 2 Kameras · 3 Wärmebild · M Karte · L Livebild · H Bedienfeld · Esc Punkte fertig\nFenster: Titelleiste ziehen = verschieben · Ecke unten rechts = Grösse · ✕ = ausblenden (zurück über «Fenster»)"
 	if main.padmap != null:
 		t += "\nController: " + main.padmap.help_line("sim", ["head", "drive", "orbit", "view", "swap", "menu"])
 	return t
@@ -191,6 +192,11 @@ func _press_item(id: String) -> void:
 	if id == "help" and main.mehr != null:             # 3D-4.2x: the menu of «Mehr» (mehr.gd)
 		_help.visible = false
 		main.mehr.help_menu(_items["help"])
+		return
+	if id == "windows" and main.fenster != null:      # Paket «Fenster»: the list of the windows (fenster.gd)
+		_help.visible = false
+		main.fenster.toggle_list(_items["windows"])
+		_paint()
 		return
 	if id == "theme" and main.mehr != null:
 		main.mehr.theme_next()
@@ -408,7 +414,8 @@ func _paint() -> void:
 			"route": pt.show_route, "map": main.map_on, "cams": main.cam_card != null and main.cam_card.visible, "info": not ex.info_hidden, "laser": main.show_laser, "zones3d": main.show_zones3d, "det3d": main.show_det3d,
 			"panel": main.ui_root.visible, "exview": ex.on, "head": main.headpad != null and main.headpad.visible,
 			"v0": vm == 0 and not ex.on, "v1": vm == 1, "v2": vm == 2, "v3": vm == 3, "live": main.live_on,
-			"templates": main.templates != null and main.templates.visible, "inventar": main.inventar != null and main.inventar.visible}
+			"templates": main.templates != null and main.templates.visible, "inventar": main.inventar != null and main.inventar.visible,
+			"windows": main.fenster != null and main.fenster.list_open()}
 	st["rover"] = st["patrol"] or st["points"] or st["area"]
 	st["view"] = vm != 0 or main.spectate
 	st["mast"] = false
@@ -558,6 +565,11 @@ class DockBtn extends Button:
 				for dx in [-4.0, 4.5]:
 					draw_arc(c + Vector2(dx, -4), 2.6, 0.0, TAU, 12, col, w, true)
 					draw_arc(c + Vector2(dx, 8), 5.5, PI * 1.15, PI * 1.85, 10, col, w, true)
+			"windows":                                 # Fenster: two windows, one over the other
+				draw_rect(Rect2(c + Vector2(-8, -7), Vector2(11, 9)), col, false, w)
+				draw_rect(Rect2(c + Vector2(-3, -2), Vector2(11, 9)), Color(0.05, 0.07, 0.09, 0.9), true)
+				draw_rect(Rect2(c + Vector2(-3, -2), Vector2(11, 9)), col, false, w)
+				draw_line(c + Vector2(-3, 0.5), c + Vector2(8, 0.5), col, 1.4)
 			"menu":                                    # ☰
 				for dy in [-5.0, 0.0, 5.0]:
 					draw_line(c + Vector2(-7, dy), c + Vector2(7, dy), col, 2.0, true)

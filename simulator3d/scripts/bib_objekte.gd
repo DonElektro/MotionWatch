@@ -18,7 +18,7 @@ extends RefCounted
 ## Ein Ding (make(kind, q)): {"p": Teile, "t": Wärme-Standard, "lod": big|mid|small, "ob": Hindernisse, "lights": Lampen,
 ##   "fx": Rauch / Fahne, "door": Tür (für den Türsensor), "node": true = eigener Knoten (Tiere)}
 ## Lite (Raspberry Pi, Compatibility-Renderer): lite() - weniger Ecken, kleine Teile weg, kürzere Sichtweite, weniger Schatten.
-## Solange es Quality.lite() noch nicht gibt: Engine-Meta «lite» (Brief Realismus-Pakete) oder Grafik «simple».
+## Quelle: Quality.lite() (quality.gd) oder Grafik «simple».
 
 const T = preload("res://scripts/i18n.gd")
 
@@ -41,8 +41,8 @@ var _low := false                  # the kind being built wants few corners (man
 
 
 static func lite() -> bool:
-	"""the central question «Lite?» (Brief: Engine meta «lite»; the coordinator connects it to Quality.lite() later)"""
-	return Engine.has_meta("lite") and bool(Engine.get_meta("lite"))
+	"""the central question «Lite?» (3D-4.28: quality.gd, set by main.lite_update)"""
+	return preload("res://scripts/quality.gd").lite()
 
 
 func _init(main_, scenes_, root_: Node3D, xf := Transform3D()) -> void:
