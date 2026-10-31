@@ -762,6 +762,7 @@ func _update_sky() -> void:
 		sm.set_shader_parameter("hdri_rot_" + pair[0], fposmod(float(h["sun_u"]) - s_u, 1.0))
 		sm.set_shader_parameter("hdri_gain_" + pair[0], float(h["gain"]) * day)
 		sm.set_shader_parameter("hdri_cap_" + pair[0], float(h["cap"]) * day)
+		sm.set_shader_parameter("hdri_low_" + pair[0], float(entry(pair[1]).get("himmel_ab", -0.06)))
 
 
 # ---- Test-Schnittstelle --------------------------------------------------------------------------------------------------
@@ -770,7 +771,8 @@ func info() -> Dictionary:
 	return {"mode": mode, "state": state, "note": note, "applied": applied, "active_here": active_here(), "off": _off,
 			"lite": Quality.lite(), "scene": str(main.scene), "szenen": szenen, "geladen": _loaded_ids.keys(), "fehlt": missing(),
 			"hdri": hdri.keys(), "himmel_tag": snappedf(sw.x, 0.01), "himmel_daemmerung": snappedf(sw.y, 0.01),
-			"ordner": dirs(), "paket_url": _url(str(kat.get("paket", {}).get("url", ""))), "stats": stats, "loading": _loading}
+			"ordner": dirs(), "paket_url": _url(str(kat.get("paket", {}).get("url", ""))), "stats": stats, "loading": _loading,
+			"fps": Engine.get_frames_per_second()}
 
 
 func control(d: Dictionary) -> Dictionary:

@@ -55,6 +55,8 @@ uniform float hdri_gain_a = 1.0;      // Helligkeit angleichen
 uniform float hdri_gain_b = 1.0;
 uniform float hdri_cap_a = 3.0;       // höchstens so hell (nach gain)
 uniform float hdri_cap_b = 3.0;
+uniform float hdri_low_a = -0.06;    // erst ab dieser Höhe (sin) das Foto: Bäume / Häuser am Horizont des Fotos bleiben weg
+uniform float hdri_low_b = -0.06;
 
 vec3 hdri_at(sampler2D t, vec3 d, float rot, float gain, float cap) {
 	float u = atan(d.x, -d.z) / 6.2831853 + 0.5;
@@ -73,17 +75,19 @@ void sky() {
 		col = mix(horizon_color, ground_color, clamp(-h * 5.0, 0.0, 1.0));
 	}
 	float hs = 0.0;                                          // how much of the photo sky
-	float hw = hdri_mix_a + hdri_mix_b;
-	if (hw > 0.001 && h > -0.06) {
+	float wa = hdri_mix_a * smoothstep(hdri_low_a, hdri_low_a + 0.18, h);
+	float wb = hdri_mix_b * smoothstep(hdri_low_b, hdri_low_b + 0.18, h);
+	float hw = wa + wb;
+	if (hw > 0.001) {
 		vec3 hc = vec3(0.0);
-		if (hdri_mix_a > 0.001) {
-			hc += hdri_at(hdri_a, d, hdri_rot_a, hdri_gain_a, hdri_cap_a) * hdri_mix_a;
+		if (wa > 0.001) {
+			hc += hdri_at(hdri_a, d, hdri_rot_a, hdri_gain_a, hdri_cap_a) * wa;
 		}
-		if (hdri_mix_b > 0.001) {
-			hc += hdri_at(hdri_b, d, hdri_rot_b, hdri_gain_b, hdri_cap_b) * hdri_mix_b;
+		if (wb > 0.001) {
+			hc += hdri_at(hdri_b, d, hdri_rot_b, hdri_gain_b, hdri_cap_b) * wb;
 		}
 		hc /= max(hw, 0.001);
-		hs = min(hw, 1.0) * smoothstep(-0.06, 0.0, h);
+		hs = min(hw, 1.0);
 		col = mix(col, hc, hs);
 	}
 	float sun_vis = 0.0;
