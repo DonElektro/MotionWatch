@@ -14,7 +14,13 @@ extends Node
 ## Inhalte (Figuren-Paket, Fotos-Oberflächen/CC0/Texturen, Karten-Zwischenspeicher, MoveEye auf diesem PC), Entwickler-Notizen,
 ## Kontaktbogen, Spieltest- und Prüfdaten. Alles andere in user:// wird gelöscht. Eine «Kopie wiederherstellen» gibt es nicht
 ## (MoveEye hat auch keine - dort: Kopie herunterladen); das Fenster zeigt die Kopien und öffnet den Ordner.
-## Test: /control {"action": "werk", "do": "info"} · {"do": "open"} · {"do": "reset", "confirm": true} (nur mit confirm).
+## Test: /control {"action": "werk", "do": "info"} · {"do": "open"} · {"do": "reset", "confirm": true} (nur mit confirm,
+## nur von diesem PC oder vom verbundenen MoveEye: net.gd _ctl_allowed; für Testläufe Startoption --fernsteuerung-offen).
+## Merker (Code-Prüfung M3): die alte PID wird nie beendet. Ist der Merker jünger als MARK_FRESH, wartet der neue Simulator
+## höchstens 10 s auf den alten (läuft er dann noch: nichts löschen, beim nächsten Start wieder); ist er älter, gilt der alte
+## Prozess als längst weg (die PID gehört vielleicht einem anderen Programm) - dann zuerst eine frische Kopie, dann löschen.
+## Älter als MARK_MAX: Merker weg, nichts gelöscht. Der Merker wird VOR dem Löschen entfernt (geht das nicht: nichts löschen).
+## Kopien: nur die neuesten KEEP_COPIES bleiben (die älteren löscht jede neue Kopie).
 
 const T = preload("res://scripts/i18n.gd")
 const UI = preload("res://scripts/ui_style.gd")
@@ -22,6 +28,9 @@ const MARK := "user://werk_reset.json"
 const COPY_DIR := "user://werk_kopie"
 const HORROR := "bergtal_horror.json"                 # (= bergtal_horror.gd FILE)
 const HORROR_KEEP := ["hash", "salt", "iter", "v"]     # the password only; progress / strength / restore are the game
+const MARK_FRESH := 120.0                             # s: a younger mark = the old simulator is just closing (wait for it)
+const MARK_MAX := 7 * 24 * 3600.0                     # s: an older mark is forgotten (no reset days or weeks later)
+const KEEP_COPIES := 3                                # werk_kopie: only the newest 3 copies stay (like MoveEye: the newest N)
 const WORDS_S := "ZURÜCKSETZEN_ZURUECKSETZEN_RESET_RÉINITIALISER_REINITIALISER_RIPRISTINA_RESETTAR"   # = MoveEye FACTORY_WORDS (not translated)
 
 # what stays: path relative to user:// ("/" at the end = the whole folder) - why: the comment
@@ -35,6 +44,7 @@ const KEEP := [
 	"motionwatch_pc/",                   # MoveEye auf diesem PC (heruntergeladenes Programm, mwpc.gd)
 	"autologon/",                        # Autologon-Programm von Microsoft (heruntergeladen, autostart.gd)
 	"trainingsbilder/",                  # KI-Trainingsbilder (dataset.gd, kidaten.gd)
+	"parcours/lernbilder/",              # Parcours-Lernbilder (parcours.gd PICS_DIR) - Daniel 31.10.2026: bleiben
 	"dev_notizen/",                      # Entwickler-Notizen
 	"dev_notizen_export/",               # Entwickler-Notizen (ZIP)
 	"kontaktbogen/",                     # Kontaktbogen
@@ -155,7 +165,44 @@ static func copies() -> Array:
 	return out
 
 
-func make_copy() -> Dictionary:
+static func _prune_copies(keep: int) -> int:
+	"""werk_kopie: only the newest «keep» copies stay (the names are date_time, so sorting = age); returns how many went"""
+	var d := DirAccess.open(COPY_DIR)
+	if d == null:
+		return 0
+	d.include_hidden = true
+	var names := Array(d.get_directories())
+	names.sort()
+	names.reverse()
+	var n := 0
+	for nm in names.slice(keep):
+		if d.is_link(nm):
+			continue
+		if _rm_tree(COPY_DIR + "/" + nm):
+			n += 1
+	return n
+
+
+static func _rm_tree(path: String) -> bool:
+	"""deletes a folder below user://werk_kopie with everything in it (links are not followed, only removed)"""
+	if not path.begins_with(COPY_DIR + "/") or path.find("..") >= 0:
+		return false
+	var d := DirAccess.open(path)
+	if d == null:
+		return false
+	d.include_hidden = true
+	d.include_navigational = false
+	for f in d.get_files():
+		DirAccess.remove_absolute(path + "/" + f)
+	for s in d.get_directories():
+		if d.is_link(s):
+			DirAccess.remove_absolute(path + "/" + s)
+		else:
+			_rm_tree(path + "/" + s)
+	return DirAccess.remove_absolute(path) == OK
+
+
+static func make_copy() -> Dictionary:
 	var stamp := Time.get_datetime_string_from_system(false, false).replace(":", "-").replace("T", "_")
 	var base := COPY_DIR + "/" + stamp
 	var p := plan()
@@ -172,6 +219,7 @@ func make_copy() -> Dictionary:
 			fails += 1
 	if fails > 0:
 		return {"ok": false, "error": T.t("Die Kopie konnte nicht ganz geschrieben werden (%d Dateien fehlen).") % fails, "copy": stamp}
+	_prune_copies(KEEP_COPIES)                          # (only after a good copy: the new one is among the newest)
 	return {"ok": true, "copy": stamp, "n": n, "path": ProjectSettings.globalize_path(base)}
 
 
@@ -179,9 +227,10 @@ func start_reset(who := "Fenster") -> Dictionary:
 	if not is_owner(main):
 		return {"ok": false, "error": T.t("Nur für den Besitzer – nicht im Kinder-Modus.")}
 	if busy:
-		return {"ok": false, "error": "busy"}
+		return {"ok": false, "error": "busy", "msg": T.t("Das Zurücksetzen läuft schon.")}
 	if not _safe_root():
-		return {"ok": false, "error": "unsafe_user_dir", "dir": OS.get_user_data_dir()}
+		return {"ok": false, "error": "unsafe_user_dir", "dir": OS.get_user_data_dir(),
+				"msg": T.t("Der Benutzerordner sieht unerwartet aus – zur Sicherheit wird nichts gelöscht.")}
 	busy = true
 	if main.has_method("_save_settings"):
 		main._save_settings()                           # the copy has the settings as they are now
@@ -192,7 +241,8 @@ func start_reset(who := "Fenster") -> Dictionary:
 	var f := FileAccess.open(MARK, FileAccess.WRITE)
 	if f == null:
 		busy = false
-		return {"ok": false, "error": "could not write the mark", "file": MARK}
+		return {"ok": false, "error": "could not write the mark", "file": MARK,
+				"msg": T.t("Der Merker für den Neustart liess sich nicht schreiben – nichts wurde gelöscht.")}
 	f.store_string(JSON.stringify({"copy": c["copy"], "pid": OS.get_process_id(), "who": who, "t": Time.get_unix_time_from_system()}))
 	f.close()
 	print("factory reset (%s): copy %s (%d files), restarting" % [who, c["copy"], int(c["n"])])
@@ -236,14 +286,29 @@ static func apply_pending() -> Dictionary:
 		printerr("factory reset: user folder looks wrong, nothing deleted: ", OS.get_user_data_dir())
 		DirAccess.remove_absolute(MARK)
 		return {}
+	var age := absf(Time.get_unix_time_from_system() - float(m.get("t", 0.0)))   # (abs: the clock may have been set back)
+	if age > MARK_MAX:
+		printerr("factory reset: the mark is %d days old - forgotten, nothing deleted" % int(age / 86400.0))
+		DirAccess.remove_absolute(MARK)
+		return {}
+	var copy := str(m.get("copy", ""))
 	var op := int(m.get("pid", 0))                      # the old simulator first has to be gone (it writes files when closing)
-	if op > 0 and op != OS.get_process_id():
+	if age <= MARK_FRESH and op > 0 and op != OS.get_process_id():
 		var t0 := Time.get_ticks_msec()
 		while OS.is_process_running(op) and Time.get_ticks_msec() - t0 < 10000:
 			OS.delay_msec(100)
-		if OS.is_process_running(op):
-			OS.kill(op)
-			OS.delay_msec(500)
+		if OS.is_process_running(op):                   # never kill it: maybe it is not the old simulator at all
+			printerr("factory reset: process %d still runs - nothing deleted now, again at the next start" % op)
+			return {}
+	elif age > MARK_FRESH:                              # an old mark (the restart failed): the pid means nothing any more, and
+		var c := make_copy()                            # everything played since then gets a copy of its own first
+		if not bool(c["ok"]):
+			printerr("factory reset: no fresh copy - nothing deleted: ", str(c.get("error", "")))
+			return {}
+		copy = str(c["copy"])
+	if DirAccess.remove_absolute(MARK) != OK and FileAccess.file_exists(MARK):
+		printerr("factory reset: the mark cannot be removed - nothing deleted (else every start would reset)")
+		return {}
 	var p := plan()
 	var n := 0
 	for r in p["delete"]:
@@ -264,8 +329,7 @@ static func apply_pending() -> Dictionary:
 				f.close()
 		else:
 			DirAccess.remove_absolute("user://" + HORROR)
-	DirAccess.remove_absolute(MARK)
-	var res := {"copy": str(m.get("copy", "")), "deleted": n, "left": (p["delete"] as Array).size() - n}
+	var res := {"copy": copy, "deleted": n, "left": (p["delete"] as Array).size() - n}
 	print("factory reset done: %d files deleted (%d could not), copy werk_kopie/%s" % [n, int(res["left"]), res["copy"]])
 	Engine.set_meta("werk_done", res)
 	return res
@@ -303,8 +367,8 @@ func open() -> void:
 		return
 	var b: VBoxContainer = mehr._window("⚠ " + T.t("Auf Werkseinstellungen zurücksetzen"), "trash")
 	mehr.win_id = "werk"
-	for s in [[T.t("Zurück auf die Werkseinstellungen:"), T.t("alle Einstellungen und Regler, die Fensteranordnung, die Controller-Rollen, der Zuhause-Bausatz, der Echt-Abgleich, die Sprache (wieder wie MoveEye)"), UI.TXT],
-			[T.t("Das bleibt:"), T.t("das Horror-Passwort, die Sprache, heruntergeladene Inhalte (Figuren, CC0-Fotos und Texturen, Karten, MoveEye auf diesem PC), eigene 3D-Modelle, Entwickler-Notizen, Kontaktbogen, Spieltest- und Prüfstand-Daten"), UI.GRN],
+	for s in [[T.t("Zurück auf die Werkseinstellungen:"), T.t("alle Einstellungen und Regler, die Fensteranordnung, die Controller-Rollen, der Zuhause-Bausatz, der Echt-Abgleich"), UI.TXT],
+			[T.t("Das bleibt:"), T.t("das Horror-Passwort, die Sprache, heruntergeladene Inhalte (Figuren, CC0-Fotos und Texturen, Karten, MoveEye auf diesem PC), eigene 3D-Modelle, Parcours-Lernbilder, Entwickler-Notizen, Kontaktbogen, Spieltest- und Prüfstand-Daten"), UI.GRN],
 			[T.t("Das wird gelöscht:"), T.t("alle Spielstände (Abenteuer 1–3, Maggie, Spielbereich, Level, Abzeichen, Entdeckungsbuch), die Ranglisten, Aufnahmen und Fotos und alles Weitere im Benutzerordner"), UI.RED]]:
 		var h := Label.new()
 		h.text = s[0]
@@ -377,7 +441,7 @@ func _do() -> void:
 		return
 	var r := start_reset("Fenster")
 	if not bool(r["ok"]):
-		_err.text = "⚠ " + str(r.get("error", ""))
+		_err.text = "⚠ " + str(r.get("msg", r.get("error", "")))      # (the codes busy / unsafe_user_dir … as a sentence)
 		_paint()
 		return
 	_go.disabled = true

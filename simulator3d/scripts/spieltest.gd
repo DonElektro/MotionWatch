@@ -33,7 +33,7 @@ extends Node
 ## Lite: _lite() = Quality.lite() – nichts pro Bild: ein Timer 1 × pro Sekunde (Bildrate als Stichprobe), Position alle 2 s
 ## nur in den Lauf-Modi; in Lite Position alle 4 s und kein Kreis-Test.
 ## /control {"action": "dev", "do": "spieltest", "what": info | on (value) | summary | report | export | end | feedback
-##   (smiley 1–3, text) | ereignis (modus, art, daten) | clear}
+##   (smiley 1–3, text) | ereignis (modus, art, daten) | clear (nur mit "confirm": true, nur von diesem PC / vom verbundenen MoveEye, net.gd)}
 
 const T = preload("res://scripts/i18n.gd")
 const UI = preload("res://scripts/ui_style.gd")
@@ -1403,7 +1403,9 @@ func control(d: Dictionary) -> Dictionary:
 		"ereignis":
 			if on:
 				ext(str(d.get("modus", "")), str(d.get("art", "")), d.get("daten", {}) if d.get("daten", {}) is Dictionary else {})
-		"clear":
+		"clear":                                                  # deletes every round: only with confirm (net.gd: only local / MoveEye)
+			if d.get("confirm", false) != true:
+				return {"ok": false, "error": "only with \"confirm\": true"}
 			return {"ok": true, "deleted": clear_all()}
 		"mw_push":
 			return {"ok": set_mw_push(str(d.get("value", "true")) in ["true", "1", "on"])}

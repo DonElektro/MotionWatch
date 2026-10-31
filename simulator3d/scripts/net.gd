@@ -1,6 +1,12 @@
 extends Node
 ## The connection to MoveEye: a small HTTP server with the same protocol as motionwatch_sim_interface.py
 ## (POST /state, GET /info, /events, /cam/<n>/video.mjpg, /cam/<n>/snapshot.jpg, /thermal.bin, GET+POST /control).
+## Code-Prüfung M4/K2 (31.10.2026): der Server hört im ganzen WLAN. Darum nehmen die zerstörenden Befehle (werk reset,
+## dev spieltest clear, horror set_password) und die Entwickler-Seiten /dev/… (Notizen, Kontaktbogen) nur Anfragen von
+## diesem PC (127.0.0.1 / ::1) oder vom verbundenen MoveEye an (der Leiter aus POST /state, letzte 10 s), und nur ausserhalb
+## des Kinder-Modus (devtool.is_owner). Fremde Geräte bekommen {"ok": false, "error": "nur_lokal"} bzw. 404.
+## Für Testläufe von einem anderen Rechner: Startoption «--fernsteuerung-offen» oder Umgebungsvariable
+## MWSIM_FERNSTEUERUNG_OFFEN=1 (dann gilt die Prüfung des Absenders nicht; Kinder-Modus bleibt gesperrt).
 
 const BOUNDARY := "mwsimframe"
 const MAX_BUFFER := 4 * 1024 * 1024        # a client that does not read its pictures: frames are skipped
@@ -178,6 +184,34 @@ func _json(c: Dictionary, obj, code := 200) -> void:
 	_send(c, code, JSON.stringify(obj).to_utf8_buffer())
 
 
+static func ctl_open() -> bool:
+	"""tests from another computer: --fernsteuerung-offen (after «--») or MWSIM_FERNSTEUERUNG_OFFEN=1"""
+	return "--fernsteuerung-offen" in OS.get_cmdline_user_args() or OS.get_environment("MWSIM_FERNSTEUERUNG_OFFEN") == "1"
+
+
+static func _local(host: String) -> bool:
+	return host in ["::1", "::ffff:127.0.0.1", "localhost"] or host.begins_with("127.")
+
+
+func trusted(host: String) -> bool:
+	"""this PC, or the MoveEye that is connected now (leads the simulator) - and the owner (not the children's mode)"""
+	if main == null or bool(main.get("kids_on")):
+		return false
+	if ctl_open() or _local(host):
+		return true
+	var mw_addr = main.get("mw_addr")
+	var mw_t = main.get("mw_t")
+	return mw_addr != null and str(mw_addr) == host and host != "" and mw_t != null and main.now() - float(mw_t) < 10.0
+
+
+static func dangerous(d: Dictionary) -> bool:
+	"""/control commands that delete or lock (Code-Prüfung M4)"""
+	var a := str(d.get("action", ""))
+	var w := str(d.get("do", ""))
+	return (a == "werk" and w == "reset") or (a == "dev" and w == "spieltest" and str(d.get("what", "")) == "clear") \
+			or (a == "horror" and w == "set_password")
+
+
 func _handle(c: Dictionary, method: String, path: String, query: Dictionary, body: PackedByteArray, host: String) -> void:
 	if main.smalltv != null and main.smalltv.wants(path):      # 3D-4.19: virtueller SmallTV (smalltv.gd), gleiche Schnittstelle wie das Gerät
 		main.smalltv.handle(self, c, method, path, query, body, host)
@@ -199,7 +233,11 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 		return
 	if method == "POST" and path == "/control":
 		var d2 = JSON.parse_string(body.get_string_from_utf8())
-		_json(c, main.control(d2 if typeof(d2) == TYPE_DICTIONARY else {}))
+		var dc: Dictionary = d2 if typeof(d2) == TYPE_DICTIONARY else {}
+		if dangerous(dc) and not trusted(host):
+			_json(c, {"ok": false, "error": "nur_lokal", "msg": "only from this PC or the connected MoveEye (owner)"})
+			return
+		_json(c, main.control(dc))
 		return
 	if method == "POST" and path == "/upload":
 		_json(c, {"ok": false, "error": "not supported"})
@@ -216,6 +254,9 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 			_send(c, 200, b, "image/jpeg")
 		return
 	if path.begins_with("/dev/"):                      # Entwicklertool 3: Kontaktbogen- und Notizen-Bilder (devtool_extra.gd http_get)
+		if not trusted(host):                          # K2: the notes and the contact sheet are not for the whole WLAN
+			_json(c, {"ok": false, "error": "not found"}, 404)
+			return
 		var dx = main.mehr.dev.extra if main.mehr != null and main.mehr.dev != null else null
 		var fr: Array = dx.http_get(path) if dx != null else []
 		if fr.is_empty():

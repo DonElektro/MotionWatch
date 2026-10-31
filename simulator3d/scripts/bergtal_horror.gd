@@ -124,6 +124,7 @@ var _scare: ColorRect
 var _pw1: LineEdit
 var _pw2: LineEdit
 var _msg: Label
+var test_mode := false                 # Kapitel-Sprung (devtool_kapitel.gd): progress and riddles under «…_test» (_pk, raetsel_key)
 var raetsel = null                     # horror_raetsel.gd: the riddles of the 3 chapters (key, code on the wall, time)
 
 
@@ -154,8 +155,14 @@ func mood_slot() -> Dictionary:
 
 
 func _pk() -> String:
-	"""Geschichten-Menü: the progress of the active Spielstand (place 1 = the old key «progress», spielstand.gd)"""
-	return preload("res://scripts/spielstand.gd").horror_key()
+	"""Geschichten-Menü: the progress of the active Spielstand (place 1 = the old key «progress», spielstand.gd);
+	Kapitel-Sprung test (devtool_kapitel.gd, test_mode): its own key - the real progress is never written"""
+	return "progress_test" if test_mode else preload("res://scripts/spielstand.gd").horror_key()
+
+
+func raetsel_key() -> String:
+	"""the riddles (horror_raetsel.gd) of the active Spielstand - or of the Kapitel-Sprung test"""
+	return "raetsel_test" if test_mode else preload("res://scripts/spielstand.gd").raetsel_key()
 
 
 func open_locked(after: Callable) -> void:
@@ -2002,6 +2009,8 @@ func command(d: Dictionary) -> Dictionary:
 		"start":
 			if not unlocked:
 				return {"ok": false, "error": "locked"}
+			if bool(main.get("kids_on")):                       # like every way in the window (open, open_locked, Kapitel-Sprung)
+				return {"ok": false, "error": "kids"}
 			if ENDS.has(str(d.get("end", ""))):
 				end_kind = str(d["end"])
 			if d.has("strength"):
