@@ -56,6 +56,8 @@ extends Node
 ## Module: gibt es res://scripts/maggie_hund.gd oder maggie_gefahr.gd (maggie_helfer.gd legt der Hund selbst an), wird jedes beim Start der
 ## Geschichte angelegt (als Kind dieses Knotens, wenn es ein Node ist); vorher werden (wenn vorhanden) die Variablen
 ## `main` und `story` gesetzt. Beim Beenden werden sie wieder entfernt.
+## Vorführmodus (Daniel 31.10.2026, maggie_vorfuehrung.gd): `demo` = true -> eigener Spielstand user://maggie/vorfuehrung.json
+##   (Daniels Spielstände bleiben unberührt), der Autopilot `vf` lenkt die Figur (_steer), die Kamera (_cam) und die Tasten.
 ## Test / Fernsteuerung: /control {"action": "maggie", "do": "info" | "open" | "start" (name, look) | "region" (id) |
 ##   "aufgabe" (id, text) | "erledigt" (id) | "fertig" | "erwischt" (von) | "zukunft" | "finale" | "rast" (i) | "gehe" (x, z
 ##   = Welt) | "pause" | "weiter" | "stop" | "reset"}
@@ -122,6 +124,9 @@ var _me_next := 0.0
 var _region_t0 := 0.0
 var _resume_phase := ""
 var _cam_fix = null                   # tests: Transform3D of a fixed view (/control maggie kamera), null = follow the figure
+var demo := false                     # Vorführmodus: own save file, the autopilot plays (maggie_vorfuehrung.gd)
+var vf = null                         # maggie_vorfuehrung.gd while a Vorführung runs
+const DEMO_FILE := "user://maggie/vorfuehrung.json"
 # camera
 var cam_yaw := 0.0
 var cam_pitch := 0.42
@@ -432,6 +437,8 @@ func region_fertig(id: String) -> void:
 # state
 # =======================================================================================================================
 func _file() -> String:
+	if demo:
+		return DEMO_FILE                                   # Vorführung: never Daniel's Spielstände (spielstand.gd)
 	return preload("res://scripts/spielstand.gd").path_maggie()   # Geschichten-Menü: per Spielstand (place 1 = SAVE_FILE)
 
 
@@ -481,7 +488,14 @@ func info() -> Dictionary:
 # =======================================================================================================================
 # start: the common start of all stories (geschichten.gd: Spielstand → Figur), or go on
 # =======================================================================================================================
+func _demo_weg() -> void:
+	"""a real start from «Spielen» while a Vorführung runs: the Vorführung ends first"""
+	if demo and vf != null and is_instance_valid(vf):
+		vf.beenden("abgebrochen")
+
+
 func open() -> void:
+	_demo_weg()
 	_ensure_ui()
 	if main.mehr != null:
 		main.mehr.close_menu()
@@ -525,6 +539,7 @@ func _continue_card() -> void:
 
 func beginnen(nm: String, look: Dictionary) -> void:
 	"""the common start is done (geschichten.gd): a new story with this figure, from the very beginning"""
+	_demo_weg()
 	_load()
 	nm = nm.strip_edges().left(16)
 	S = {"name": nm if nm != "" else T.t("Du"), "look": look if not look.is_empty() else {"col": "red", "size": "", "build": "", "hat": "", "pack": true},
@@ -570,6 +585,7 @@ func fortschritt() -> Dictionary:
 
 func weiter() -> void:
 	"""«Weiterspielen» on the card: straight back into the story (running: the pause menu)"""
+	_demo_weg()
 	_ensure_ui()
 	if main.mehr != null:
 		main.mehr.close_menu()
@@ -632,6 +648,8 @@ func _load_modules() -> void:
 			m.main = main
 		if "story" in m:
 			m.story = self
+		if demo and "eigene_datei" in m:
+			m.eigene_datei = false                      # Vorführung: maggie_gefahr.gd writes no file of its own
 		if m is Node:
 			m.name = path.get_file().get_basename()           # S2 / S3 finden sich so (has_node("maggie_hund"))
 			add_child(m)
@@ -1463,6 +1481,9 @@ func _steer(dt: float) -> void:
 	if phase not in WALK or a.frozen:
 		a.ctl_move = Vector2.ZERO
 		return
+	if demo and vf != null:                 # Vorführung: the autopilot walks (maggie_vorfuehrung.gd)
+		vf.steuern(a, dt)
+		return
 	var k := Vector2.ZERO                   # (forward, right)
 	if not main.typing():
 		if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
@@ -1510,6 +1531,8 @@ func _follow_xform() -> Transform3D:
 func _cam(dt: float) -> void:
 	var cam: Camera3D = main.view_cam
 	main.view_mode = 0
+	if demo and vf != null and vf.kamera(cam, dt):     # Vorführung: the camera of the film
+		return
 	if _cam_fix != null:                                 # tests (/control maggie kamera): a fixed view for photos
 		cam.global_transform = _cam_fix
 		return
@@ -1550,7 +1573,8 @@ func _hud_tick() -> void:
 			_beam.visible = d > 6.0
 			_beam.position = gp + Vector3(0, 35, 0)
 	var left := maxf(0.0, _zk_ready_at - t)
-	_kbtn.visible = has_crystal and phase in WALK
+	_kbtn.visible = has_crystal and phase in WALK and not demo
+	_help.visible = not demo
 	_kbtn.text = (T.t("K · Kristall") if left <= 0.0 else T.t("Kristall %d s", [int(ceil(left))]))
 	_kbtn.disabled = left > 0.0
 
@@ -1580,6 +1604,10 @@ func walking() -> bool:
 
 func _unhandled_input(ev: InputEvent) -> void:
 	if not running or phase in ["", "figur"]:
+		return
+	if demo and vf != null:                 # Vorführung: Esc = beenden, Leertaste = Pause … (maggie_vorfuehrung.gd)
+		if vf.taste(ev):
+			get_viewport().set_input_as_handled()
 		return
 	if ev is InputEventKey and ev.pressed and not ev.echo:
 		match ev.keycode:

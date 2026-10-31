@@ -107,6 +107,8 @@ static func _lite() -> bool:
 
 static func ereignis(modus: String, art: String, daten := {}) -> void:
 	"""THE hook for the games (see the head of the file) - nothing happens while the assistant is off"""
+	if modus == "maggie" and bool(Engine.get_meta("vorfuehrung", false)):
+		return                                   # Vorführmodus (maggie_vorfuehrung.gd): a Vorführung is no round of play
 	if inst != null and is_instance_valid(inst) and inst.on:
 		inst.ext(modus, art, daten)
 

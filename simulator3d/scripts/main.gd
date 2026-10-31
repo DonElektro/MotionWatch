@@ -4188,6 +4188,7 @@ func _register_controls() -> void:
 	add_control("button", "pruef_open", "Prüfstand öffnen", null, func(): pruef.open(not pruef.visible), "Entwickler", {"expert": true, "devwin": true})
 	add_control("button", "simint_open", "Störungen testen", null, func(): _open_stoer(), "Entwickler", {"expert": true, "devwin": true})
 	preload("res://scripts/spieltest.gd").add_controls(self)   # Spieltest-Assistent + «Spieltest-Meldungen» (wie MoveEye Entwickler)
+	preload("res://scripts/maggie_vorfuehrung.gd").add_controls(self)   # Vorführmodus «Maggie» (Entwickler, Reiter «Vorführung»)
 	add_control("toggle", "dev_updates", "Entwicklungsphase: jede Minute nach neuen Versionen schauen und sofort installieren", func(): return dev_updates, func(v): dev_updates = v; _settings_dirty = true, "Updates", {"expert": true, "hide": true})
 	add_control("toggle", "auto_update", "Neue Versionen automatisch installieren", func(): return auto_update, func(v): set_auto_update(v), "Updates", {"expert": true, "hide": true})
 	add_control("button", "update_now", "Jetzt nach Updates suchen und installieren", null, func(): run_update(true, false), "Updates", {"expert": true, "hide": true})
@@ -5057,6 +5058,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return Kompakt.control(self, d)
 	elif a == "bergtal":                               # 3D-4.x: {do: info | spot | bed | season | here | goto | event | ride | morning | rate | horn | perf} (bergtal.gd)
 		return preload("res://scripts/bergtal.gd").control(self, d)
+	elif a == "vorfuehrung":                           # Vorführmodus «Maggie» (maggie_vorfuehrung.gd): {do: start (len) | pause | weiter | kapitel (n) | stop | info}
+		return preload("res://scripts/maggie_vorfuehrung.gd").control(self, d)
 	elif a == "maggie":                                # «Maggie und der Bergkristall» (maggie_story.gd): {do: info | open | start | region …}
 		return maggie.control(d) if maggie != null else {"ok": false, "error": "no maggie"}
 	elif a == "horror":                                # Bergtal · Horror-Modus: {do: info | open | unlock | start | skip | pause | stop …} (bergtal_horror.gd)
