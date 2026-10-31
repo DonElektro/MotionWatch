@@ -35,6 +35,7 @@ var _hash := {}                        # Vector2i -> [index]
 var _bt = null                         # bergtal.gd while it is loaded
 var _fp_wy := -INF                     # Ferienpark: the water level (world)
 var last := {}                         # the last choice (for /control "info" and tests)
+var alts: Array = []                   # the next best cameras [Transform3D] (Kontaktbogen: tries them when the picture is dark/plain)
 
 
 func _init(m) -> void:
@@ -111,8 +112,9 @@ func _prep(c: Vector3, R: float) -> void:
 			if o.mesh == null:
 				continue
 			var a: AABB = (o as MeshInstance3D).global_transform * (o as MeshInstance3D).get_aabb()
-			if a.size.x > 32.0 or a.size.z > 32.0 or a.size.y < 0.5 or a.size.y > 70.0:
-				continue                                     # ground pieces, lakes, roads, paths; tall far rock faces
+			var big := maxf(a.size.x, a.size.z)
+			if big > 60.0 or a.size.y < 0.5 or a.size.y > 70.0 or (big > 20.0 and a.size.y < 0.2 * big):
+				continue                                     # ground pieces, lakes, roads, paths (long and flat); tall rock faces
 			var mat = o.material_override
 			if mat is BaseMaterial3D and (mat as BaseMaterial3D).transparency != BaseMaterial3D.TRANSPARENCY_DISABLED:
 				continue                                     # glass, water, smoke: one sees through
@@ -235,6 +237,9 @@ const FILL := [[-0.8, -0.65, 0.6], [0.0, -0.65, 0.8], [0.8, -0.65, 0.6], [-0.85,
 		[0.85, 0.0, 1.0], [-0.8, 0.6, 0.8], [0.0, 0.6, 1.0], [0.8, 0.6, 0.8], [-0.45, 0.3, 1.0], [0.45, 0.3, 1.0]]
 
 
+var pref_w := 25.0
+
+
 func _score(cam: Vector3, tgt: Vector3, d0: float, r: float, pref: Vector3, prev: Vector3, deep: bool, full: bool) -> Dictionary:
 	var why := {}
 	var s := 0.0
@@ -256,14 +261,15 @@ func _score(cam: Vector3, tgt: Vector3, d0: float, r: float, pref: Vector3, prev
 	# looking too steeply down / up
 	var dir := (tgt - cam) / maxf(L, 0.01)
 	var pitch := rad_to_deg(asin(clampf(dir.y, -1.0, 1.0)))
-	if pitch < -30.0:
-		s += (-30.0 - pitch) * 1.5
+	var pmax := -55.0 if deep else -30.0                     # gorges, caves: from above is fine
+	if pitch < pmax:
+		s += (pmax - pitch) * 1.5
 	if pitch > 8.0:
 		s += (pitch - 8.0) * 2.5
 	# the direction
 	var fl := Vector3(dir.x, 0, dir.z).normalized()
 	if pref != Vector3.ZERO:
-		s += 25.0 * (1.0 - fl.dot(pref)) * 0.5
+		s += pref_w * (1.0 - fl.dot(pref)) * 0.5
 	if prev != Vector3.ZERO:
 		s += 3.0 * (1.0 - fl.dot(prev)) * 0.5
 	s += 4.0 * absf(log(L / maxf(d0, 1.0)))                  # near the distance for the size of the place
@@ -334,6 +340,11 @@ func best_view(e: Dictionary, p: Vector3, d: float, prev_fwd: Vector3, frame = n
 	var elevs := [0.18, 0.4] if lite else [0.15, 0.35, 0.7]
 	if deep:
 		elevs.append(1.3)
+		elevs.append(2.2)
+	var aus := str(e.get("kind", "")) == "aussicht" and pref != Vector3.ZERO
+	if aus:                                                  # a viewpoint: just behind it, looking out like its bench
+		dists = [7.0, 11.0, 16.0]
+	pref_w = 60.0 if aus else 25.0
 	var cands := []
 	var far := 0.0
 	for i in nyaw:
@@ -362,13 +373,15 @@ func best_view(e: Dictionary, p: Vector3, d: float, prev_fwd: Vector3, frame = n
 	sc.sort_custom(func(x, y): return float(x["s"]) < float(y["s"]))
 	var top: Dictionary = sc[0]
 	var best_s := INF
+	var fulls := []
 	for q in sc.slice(0, 5 if lite else 8):
 		var c: Vector3 = q["c"]
 		var f := _score(c, tgt, dists[0] if not in_lake else c.distance_to(tgt), r, pref, prev, deep, true)
+		f["c"] = c
+		fulls.append(f)
 		if float(f["s"]) < best_s:
 			best_s = float(f["s"])
 			top = f
-			top["c"] = c
 	if best_s > 35.0 and not in_lake:                         # all bad (a hollow, a gorge): higher and further away
 		if d * 2.5 + 15.0 > far + 15.0:
 			_prep(tgt, d * 2.5 + 15.0)
@@ -380,10 +393,25 @@ func best_view(e: Dictionary, p: Vector3, d: float, prev_fwd: Vector3, frame = n
 					var c: Vector3 = tgt - fwd * float(dd)
 					c.y = maxf(tgt.y + float(dd) * float(ev), surf(c.x, c.z) + EYE)
 					var f2 := _score(c, tgt, d, r, pref, prev, deep, true)
+					f2["c"] = c
+					fulls.append(f2)
 					if float(f2["s"]) < best_s:
 						best_s = float(f2["s"])
 						top = f2
 						top["c"] = c
+	# the alternatives: the next best, and a view from high above (gorges: walls of rock are meshes the ground does not know)
+	fulls.sort_custom(func(x, y): return float(x["s"]) < float(y["s"]))
+	alts = []
+	for f in fulls.slice(1, 5):
+		if (f["c"] as Vector3).distance_to(top["c"]) > 3.0:
+			alts.append(f["xf"])
+	var bk := (top["c"] as Vector3) - tgt
+	bk.y = 0.0
+	bk = bk.normalized() if bk.length() > 0.01 else Vector3(0, 0, 1)
+	for hv in [[1.2, 1.4], [1.6, 2.6]]:
+		var c: Vector3 = tgt + bk * d * float(hv[0])
+		c.y = maxf(tgt.y + d * float(hv[1]), surf(c.x, c.z) + EYE)
+		alts.append(Transform3D(Basis(), c).looking_at(tgt, Vector3.UP))
 	var ms := (Time.get_ticks_usec() - t0) / 1000.0
 	last = {"id": str(e.get("id", "")), "score": snappedf(float(top["s"]), 0.1), "why": top["why"], "n": cands.size(),
 			"boxes": _boxes.size(), "ms": snappedf(ms, 0.1), "deep": deep, "lake": in_lake, "cam": _v(top["c"]), "tgt": _v(tgt)}

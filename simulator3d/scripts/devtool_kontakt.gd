@@ -5,6 +5,9 @@ extends Node
 ## (Raster mit Namen, pro Welt) und kontakt.json. Im Fenster: Fortschritt, Abbrechen, kleines Raster (Klick = hinspringen).
 ## «bei Tag» (Standard): für jedes Foto 12 Uhr und klares Wetter (danach wieder wie vorher), damit man die Orte vergleicht.
 ## Danach stehen Szene, Ansicht, Uhrzeit und Wetter wieder wie vorher. Nicht während ein Testlauf / Abenteuer die Welt hat.
+## Kamera (K1, 31.10.2026): devtool_kamera.gd wählt sie (freie Sicht, Augenhöhe, Abstand); nach dem Laden einer Szene wird sie
+## nochmals gewählt (reaim). Danach ein kleines Probebild (96 × 54): fast schwarz oder einfarbig (Schlucht, Höhle, Hang/Wand
+## direkt vor der Linse) -> die nächstbesten Kameras (kam().alts, auch eine von hoch oben) probieren, das beste Bild nehmen.
 ## Lite: gleich, nur länger warten (dev._lite()).
 ## /control {"action": "dev", "do": "contact" (world: "" = alle, day: true, ids: [...], limit: n) | "contact_state" |
 ##   "contact_stop" | "contact_list" (world)} - Bilder per HTTP: GET /dev/kontakt/<welt>/<id>.jpg, /dev/kontakt/index.html,
@@ -121,6 +124,10 @@ func _run() -> void:
 				r["cam"] = ra["cam"]
 			await _wait_frames(2 if not lite else 4)
 		item["cam"] = r.get("cam", {})
+		if not bool(e.get("room", false)) and not bool(r.get("room", false)):
+			var chk: Dictionary = await _check_view()
+			if not chk.is_empty():
+				item["check"] = chk
 		if _cancel:
 			break
 		# the view from outside is blocked (a room, the bedroom in the house): the picture of MoveEye's camera instead
@@ -169,6 +176,54 @@ func _run() -> void:
 	dev._say(T.t("Kontaktbogen fertig: %d Fotos") % done.filter(func(i): return bool(i["ok"])).size() if not _cancel else T.t("Kontaktbogen abgebrochen"))
 	_grid_dirty = true
 	_paint()
+
+
+static func _look(img: Image) -> Dictionary:
+	"""how a small picture looks: mean brightness and contrast (0..1) - nearly black or one colour = the view is blocked"""
+	if img == null or img.is_empty():
+		return {"ok": false, "q": -1.0}
+	var n := 0
+	var sm := 0.0
+	var sq := 0.0
+	var cols := {}
+	for y in range(0, img.get_height(), 2):
+		for x in range(0, img.get_width(), 2):
+			var c := img.get_pixel(x, y)
+			var l := c.get_luminance()
+			sm += l
+			sq += l * l
+			n += 1
+			cols[Vector3i(int(c.r * 6.0), int(c.g * 6.0), int(c.b * 6.0))] = true
+	var mean := sm / maxf(1.0, float(n))
+	var sd := sqrt(maxf(0.0, sq / maxf(1.0, float(n)) - mean * mean))
+	var ok := mean > 0.13 and sd > 0.045 and cols.size() > 6
+	return {"ok": ok, "mean": snappedf(mean, 0.01), "sd": snappedf(sd, 0.001), "cols": cols.size(),
+			"q": minf(mean, 0.35) + sd * 2.0 + minf(float(cols.size()), 30.0) * 0.005}
+
+
+func _check_view() -> Dictionary:
+	"""K1: a small test picture of the chosen view; dark (gorge, cave) or one colour (slope, wall right in front): try the
+	other good cameras of devtool_kamera.gd (alts) and take the best picture"""
+	var k = dev.kam()
+	var sz := Vector2i(96, 54)
+	var cur_xf: Transform3D = main.view_cam.global_transform
+	var q0 := _look(await x.photo(sz, cur_xf))
+	if bool(q0.get("ok", false)) or k.alts.is_empty():
+		return {} if bool(q0.get("ok", false)) else {"first": q0}
+	var best_xf := cur_xf
+	var best: Dictionary = q0
+	var tried := 0
+	for xf in k.alts:
+		tried += 1
+		var q := _look(await x.photo(sz, xf))
+		if float(q["q"]) > float(best["q"]):
+			best = q
+			best_xf = xf
+		if bool(q.get("ok", false)):
+			break
+	main.view_cam.global_transform = best_xf
+	await _wait_frames(2)
+	return {"first": q0, "tried": tried, "chosen": best, "changed": best_xf != cur_xf}
 
 
 func state() -> Dictionary:
