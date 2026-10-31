@@ -385,7 +385,8 @@ def update_check():
                 it = items.setdefault(v, {"version": v, "file": fn, "installed": False, "path": ""})
                 sha = str(e.get("sha256", ""))[:64].lower()
                 it.update(available=True, url=url, sha256=sha, signed=sig_ok(v, fn, sha, e.get("sig")),
-                          date=str(e.get("date", it.get("date", "")))[:16], notes=str(e.get("notes", it.get("notes", "")))[:600])
+                          date=str(e.get("date", it.get("date", "")))[:16], notes=str(e.get("notes", it.get("notes", "")))[:600],
+                          bridge=bool(e.get("bridge")), needs=str(e.get("needs") or "") if VER_RE.match(str(e.get("needs") or "")) else "")
         except Exception as e:
             msg = f"update source not reachable: {_upd_error(e)}"[:240]
     elif src.startswith("/"):
@@ -414,8 +415,9 @@ def update_check():
         it.setdefault("signed", False)
     UPD["items"] = sorted(items.values(), key=lambda x: _vkey(x["version"]), reverse=True)
     newer = [x for x in UPD["items"] if x.get("available") and _installable(x) and _vkey(x["version"]) > _vkey(APP_VERSION)]
-    STATE["update_new"] = ({"version": newer[0]["version"], "notes": newer[0].get("notes", "")[:300], "date": newer[0].get("date", "")}
-                           if newer else {})
+    pick = update_pick(newer)                             # Brücke (397): a version with «needs» only from that version on
+    STATE["update_new"] = ({"version": pick["version"], "notes": pick.get("notes", "")[:300], "date": pick.get("date", "")}
+                           if pick else {})
     UPD["msg"] = msg; UPD["time"] = time.time()
     return UPD["items"], msg
 
@@ -487,6 +489,9 @@ def update_install(version):
                 f.write(data)
             os.replace(tmp, dst)
             log_event("sys", f"Version {version} downloaded: {it['file']}")
+            UPD_PROG.update(phase="check", tp=time.time())    # its data zip (397) - best effort, the new version can fetch it too
+            zusatz_mitholen(data.decode("utf-8", "replace"), version, src_url=it.get("url") or "",
+                            src_dir=os.path.dirname(it["src_path"]) if it.get("src_path") and not it.get("url") else "")
         else:
             UPD_PROG.update(phase="check", tp=time.time())
             with open(dst, "rb") as f:
@@ -1112,6 +1117,20 @@ def self_test(folder=""):
                     sha = hashlib.sha256(f.read()).hexdigest()
                 if sha != e.get("sha256") or not sig_ok(e["version"], e["file"], sha, e.get("sig")):
                     bad.append(e["version"])
+                with open(p_, encoding="utf-8", errors="replace") as f:
+                    zname, zsha_ = _zd_name_of(f.read())  # the data zip this program file expects (397)
+                dz = e.get("data") or {}
+                if zname:
+                    zp_ = os.path.join(folder, zname)
+                    zsha = ""
+                    if os.path.isfile(zp_):
+                        with open(zp_, "rb") as f:
+                            zsha = hashlib.sha256(f.read()).hexdigest()
+                    if (zsha != zsha_ or dz.get("file") != zname or dz.get("sha256") != zsha
+                            or not sig_ok(e["version"], zname, zsha, dz.get("sig"))):
+                        bad.append(e["version"] + " (data file)")
+            if not any(e.get("bridge") and e.get("version") == UPD_BRIDGE for e in m.get("versions", [])):
+                bad.append("bridge " + UPD_BRIDGE + " missing")
             assert not bad, f"bad checksum / signature: {bad}"
             return f"{len(m.get('versions', []))} versions signed and checked"
         if os.environ.get("MW_SELFTEST_NO_SIG"):         # 2.98.50 (Daniel): work branches are not signed yet - GitHub checks it only on main
@@ -1142,9 +1161,21 @@ def make_manifest(folder, base_url, sign_key=""):
         with open(it["path"], "rb") as f:
             sha = hashlib.sha256(f.read()).hexdigest()
         e = {"version": it["version"], "file": it["file"], "url": base + it["file"] if base_url else "", "sha256": sha,
-             "date": it["date"], "notes": it["notes"]}
+             "date": it["date"], "notes": it["notes"], "size": it["size"]}
         if seed:
             e["sig"] = _ED[1](seed, _sig_msg(it["version"], it["file"], sha)).hex()
+        if it["version"] == UPD_BRIDGE:                   # Brücke (397): one file below 8 MiB for devices up to 2.98.x
+            e["bridge"] = True
+        if it["size"] > 8 * 1024 * 1024:                  # devices up to 2.98.x refuse it: they go over the bridge first
+            e["needs"] = "3.0.0"
+        zf = "moveeye_daten_" + it["file"][len("webcam_bewegung_"):-3] + ".zip"
+        if os.path.isfile(os.path.join(folder, zf)):     # the data zip (012 / 397): checksum + own signature
+            with open(os.path.join(folder, zf), "rb") as f:
+                zb = f.read()
+            zsha = hashlib.sha256(zb).hexdigest()
+            e["data"] = {"file": zf, "url": base + zf if base_url else "", "sha256": zsha, "size": len(zb)}
+            if seed:
+                e["data"]["sig"] = _ED[1](seed, _sig_msg(it["version"], zf, zsha)).hex()
         out.append(e)
     p = os.path.join(folder, "versions.json")
     with open(p, "w") as f:

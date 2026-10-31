@@ -70,7 +70,7 @@ def iface_check(base=None):
         if fn.endswith(".gd"):
             with open(os.path.join(gdir, fn), encoding="utf-8") as f:
                 gd[fn] = f.read()
-    own = open(os.path.abspath(__file__), encoding="utf-8").read()
+    own = zd_source()                                       # with the literals of the data zip (012)
     meta = L.get("_meta") or {}
     pyonly = set(L.get("_nur_python_simulator") or [])
     cond = set(L.get("_bedingt") or [])
