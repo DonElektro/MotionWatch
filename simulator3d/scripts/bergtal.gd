@@ -181,6 +181,7 @@ var info := {}
 var spot_xz := Vector2.ZERO
 var place := ""                              # 3D-4.x Welten: the old scene that is the place now ("" = a sleeping spot)
 var place_r := 0.0
+var place_c := Vector2.ZERO                # 3D-4.x: the centre of the place (a compact place: MoveEye can stand away from it)
 var spot_yaw := 0.0
 var rating := {}                             # the evaluation of the sleeping spot
 var night_log: Array = []                    # what happened at the spot this night (morning rating)
@@ -919,9 +920,11 @@ func _build(sc) -> void:
 	if place != "":                                      # 3D-4.x Welten: an old scene is the place (worlds.gd builds it)
 		var pl: Array = Worlds.PLACES[place]
 		spot = place
-		spot_xz = Vector2(float(pl[2]), float(pl[3]))
-		spot_yaw = float(pl[4])
+		var po: Array = Worlds.pose(m, place)            # 3D-4.x: a compact place: its centre + the chosen spot (kompakt.gd)
+		spot_xz = Vector2(float(po[0]), float(po[1]))
+		spot_yaw = float(po[2])
 		place_r = float(pl[5])
+		place_c = Vector2(float(pl[2]), float(pl[3]))
 	elif spot == "frei" and fr.size() >= 3:
 		spot_xz = Vector2(float(fr[0]), float(fr[1]))
 		spot_yaw = float(fr[2])
@@ -931,6 +934,8 @@ func _build(sc) -> void:
 		var sp: Array = spot_data(spot)
 		spot_xz = Vector2(sp[1], sp[2])
 		spot_yaw = float(sp[3])
+	if place == "":
+		place_c = spot_xz
 	h0 = H(spot_xz.x, spot_xz.y)
 	tal = Node3D.new()
 	tal.name = "bergtal"
@@ -942,7 +947,7 @@ func _build(sc) -> void:
 	m.ground_fn = Callable(self, "gy")
 	bib = Bib.new(m, s, tal, tal.transform)
 	if place != "":
-		bib.clear = [[spot_xz, place_r + 8.0]]          # nothing of the valley on the flat area of the place
+		bib.clear = [[place_c, place_r + 8.0]]          # nothing of the valley on the flat area of the place
 	_ground()
 	_apron()
 	_far_mountains()
@@ -969,7 +974,7 @@ func _build(sc) -> void:
 		s.meadow(160 if lite else 420, 3.0, 35.0, func(p: Vector3):
 			var q := inv * p
 			var z := zone(q.x, q.z)
-			return z in ["lake", "shore", "scree", "glacier"] or slope_deg(q.x, q.z) > 30.0 or (place != "" and p.length() < place_r))
+			return z in ["lake", "shore", "scree", "glacier"] or slope_deg(q.x, q.z) > 30.0 or (place != "" and Vector2(q.x, q.z).distance_to(place_c) < place_r))
 	rating = evaluate(spot_xz.x, spot_xz.y)
 	_publish()
 	_need_residents = true                                # (at the start of the program the visitors node is not there yet)
@@ -1445,7 +1450,7 @@ func way_dist(x: float, z: float, maxd := 80.0) -> float:
 
 func _vegetation() -> void:
 	_busy_pts = [[HUT, 30.0], [UPPER_HUT, 12.0], [HOSPICE, 30.0], [Vector2(100, 775), 22.0], [CHAPEL, 18.0], [RUIN, 10.0], [BIVOUAC, 8.0],
-			[BUNKER, 10.0], [spot_xz, maxf(9.0, place_r + 6.0)], [GORGE_BRIDGE, 14.0], [Vector2(-700, -130), 10.0], [Vector2(-650, 430), 32.0]]
+			[BUNKER, 10.0], [place_c, maxf(9.0, place_r + 6.0)], [GORGE_BRIDGE, 14.0], [Vector2(-700, -130), 10.0], [Vector2(-650, 430), 32.0]]
 	for v in VIGNETTES:
 		_busy_pts.append([Vector2(v[3], v[4]), float(v[5]) + 2.0])
 	for vp in VIEWPOINTS:
@@ -1462,7 +1467,7 @@ func _vegetation() -> void:
 	var near_r := 220.0                                 # obstacles (people, animals, rover) only near the spot
 	for e in raw["trees"]:                                 # [kind, x, z, rot, scale]
 		var q := Vector2(e[1], e[2])
-		if q.distance_to(spot_xz) < maxf(9.0, place_r + 4.0):
+		if q.distance_to(place_c) < maxf(9.0, place_r + 4.0):
 			continue
 		var it := [P(q.x, q.y, -0.15), e[3], e[4]]
 		if q.distance_to(spot_xz) < near_r:
@@ -1471,7 +1476,7 @@ func _vegetation() -> void:
 			trees_far[e[0]].append(it)
 	for e in raw["rocks"]:                                 # [type|variant, x, z, rot, scale]
 		var q := Vector2(e[1], e[2])
-		if q.distance_to(spot_xz) < maxf(9.0, place_r + 4.0):
+		if q.distance_to(place_c) < maxf(9.0, place_r + 4.0):
 			continue
 		var key := "%s|%s" % [e[0], "n" if q.distance_to(spot_xz) < near_r else "f"]
 		if not rocks.has(key):

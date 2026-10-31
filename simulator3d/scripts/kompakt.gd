@@ -12,6 +12,11 @@ extends RefCounted
 ## Wie im Ferienpark steht MoveEye immer im Nullpunkt: die Szene wird gedreht und verschoben (Knoten «park»).
 ## Park-Koordinaten: x = Osten, z = Süden. Standort: [Name, x, z, Blickrichtung in Grad (0 = Norden, 90 = Osten)].
 ## Steuerbefehl {action: kompakt, do: info | spot (value) | perf}. Lite: Bib.lite() = Quality.lite().
+##
+## Welten (worlds.gd): Pfadilager und Bergdorf sind Orte im Bergtal, der Hofladen ein Ort im Ferienpark am See - dann baut
+## die Welt das Gelände (eben auf der Fläche des Orts, Radius R) und diese Datei nur den Ort («flat»: Höhe 0, nichts
+## ausserhalb R, gemalter Boden nur wo etwas ist: shaders/kompakt_ort.gdshader). Park-Nullpunkt = Mitte des Orts.
+## Das Festival-Gelände ist eine eigene Welt (Gelände wie bisher), «allein» (--solo) baut auch die anderen wie bisher.
 
 const Bib = preload("res://scripts/bib_objekte.gd")
 const Szenen = preload("res://scripts/szenenplus.gd")
@@ -37,6 +42,8 @@ var ways: Array = []              # [[Vector2 …], width, colour] - painted, no
 var clear: Array = []             # [x0, z0, x1, z1] - no random tree, no grass there
 var road: Array = []              # [Vector2 …] the road for the cars (park coordinates)
 var anim_lights: Array = []       # [OmniLight3D / SpotLight3D, base colour, phase] - festival lights (only at night)
+var flat := false                 # a place in a world (worlds.gd): the world makes the ground, the place is flat (height 0)
+var place_r := 0.0                # its radius (only inside it is built)
 
 
 # =======================================================================================================================
@@ -68,6 +75,15 @@ static func spot_options(sid: String) -> Array:
 static func build_scene(sc, sid: String) -> void:
 	var k = load(SCENES[sid]).new()
 	sc.data["kompakt"] = k                            # keeps it (and main.ground_fn) alive while the scene is there
+	k._build(sc, sid)
+
+
+static func build_place(sc, sid: String, r: float) -> void:
+	"""worlds.gd: the place inside its world (the world is built already, around the chosen spot)"""
+	var k = load(SCENES[sid]).new()
+	k.flat = true
+	k.place_r = r
+	sc.data["kompakt"] = k
 	k._build(sc, sid)
 
 
@@ -125,9 +141,19 @@ func grass_n() -> int:
 # =======================================================================================================================
 # coordinates
 # =======================================================================================================================
+func hh(x: float, z: float) -> float:
+	"""the height of the ground of the place (0 when it is a place in a world: the world made it flat)"""
+	return 0.0 if flat else H(x, z)
+
+
+func inside(x: float, z: float, margin := 0.0) -> bool:
+	"""in the place (always true for a scene of its own)"""
+	return not flat or Vector2(x, z).length() < place_r - margin
+
+
 func P(x: float, z: float, dy := 0.0) -> Vector3:
 	"""a point on the ground (park coordinates)"""
-	return Vector3(x, H(x, z) + dy, z)
+	return Vector3(x, hh(x, z) + dy, z)
 
 
 func W(p: Vector3) -> Vector3:
@@ -170,31 +196,37 @@ func _build(sc, sid: String) -> void:
 	if not sps.has(spot):
 		spot = str(spot_order()[0])
 	var sp: Array = sps[spot]
-	h0 = H(sp[1], sp[2])
+	h0 = hh(sp[1], sp[2])
 	park = Node3D.new()
 	park.name = sid
 	var b := Basis(Vector3.UP, deg_to_rad(float(sp[3])))
 	park.transform = Transform3D(b, b * -Vector3(sp[1], h0, sp[2]))
 	s.root.add_child(park)
 	inv = park.transform.affine_inverse()
-	m.terrain = true
-	m.ground_fn = Callable(self, "gy")
+	if not flat:                                       # a place in a world: the world has the ground (worlds.gd)
+		m.terrain = true
+		m.ground_fn = Callable(self, "gy")
 	bib = Bib.new(m, s, park, park.transform)
+	if flat:
+		bib.keep = [[Vector2.ZERO, place_r]]
 	content()                                          # (fills ways / clear / road first, the ground is painted after)
 	own_spot()
 	var t1 := Time.get_ticks_msec()
-	_ground()
+	if flat:
+		_ground_place()
+	else:
+		_ground()
 	bib.finish()
 	_lights_and_fx()
 	_hiding()
 	_signs()
 	s.meadow(nl(grass_n()), 3.0, 45.0, func(p: Vector3):
 		var q := inv * p
-		return _on_way(q.x, q.z, 1.5) or _is_clear(q.x, q.z, 0.0) or _water_at(q.x, q.z))
+		return _on_way(q.x, q.z, 1.5) or _is_clear(q.x, q.z, 0.0) or _water_at(q.x, q.z) or not inside(q.x, q.z, 1.0))
 	_data()
 	if not anim_lights.is_empty():
 		m.anims.append(_light_show)
-	info.merge({"ms": Time.get_ticks_msec() - t0, "ground_ms": Time.get_ticks_msec() - t1, "spot": spot, "lite": lite,
+	info.merge({"ms": Time.get_ticks_msec() - t0, "ground_ms": Time.get_ticks_msec() - t1, "spot": spot, "lite": lite, "in_world": flat, "r": place_r,
 			"lib": bib.stats.duplicate(), "lamps": bib.lamps.size(), "people": s.data.get("nachbarn", []).size()}, true)
 	print("Kompakt %s: %s, %d ms, %s" % [sid, spot, info["ms"], str(bib.stats)])
 
@@ -220,6 +252,32 @@ func _ground() -> void:
 		var th: MeshInstance3D = park.get_child(park.get_child_count() - 1)
 		th.material_override = m.tmats["ground"]
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if pair[0] == far else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+
+
+func _ground_place() -> void:
+	"""a place in a world: a flat disc over the flat area of the world, painted only where the place has something"""
+	var r := place_r + 1.0
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var n := 48
+	for i in range(n):
+		var a0 := TAU * i / n
+		var a1 := TAU * (i + 1) / n
+		for q in [Vector3.ZERO, Vector3(cos(a1) * r, 0, sin(a1) * r), Vector3(cos(a0) * r, 0, sin(a0) * r)]:
+			st.set_normal(Vector3.UP)
+			st.add_vertex(q + Vector3(0, 0.035, 0))
+	var tm := ShaderMaterial.new()
+	tm.shader = load("res://shaders/kompakt_ort.gdshader")
+	tm.set_shader_parameter("photo", _paint())
+	tm.set_shader_parameter("rect", Vector4(-NEAR, -NEAR, 2.0 * NEAR, 2.0 * NEAR))
+	tm.set_shader_parameter("noise_tex", m.noise_tex)
+	m.ground_mats.append(tm)
+	var mi: MeshInstance3D = m.add_mesh(park, st.commit(), Vector3.ZERO, tm, "x")
+	if mi != null:
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var th: MeshInstance3D = park.get_child(park.get_child_count() - 1)
+	if th != mi and m.tmats.has("ground"):
+		th.material_override = m.tmats["ground"]
 
 
 func _grid(lo: float, hi: float, step: float, hole: bool) -> ArrayMesh:
@@ -274,8 +332,8 @@ func _px(x: float) -> int:
 
 func _paint() -> ImageTexture:
 	var nn := int(2.0 * NEAR / _mpp())
-	var img := Image.create(nn, nn, false, Image.FORMAT_RGB8)
-	img.fill(ground_colour())
+	var img := Image.create(nn, nn, false, Image.FORMAT_RGBA8 if flat else Image.FORMAT_RGB8)
+	img.fill(Color(0, 0, 0, 0) if flat else ground_colour())         # in a world: only the painted parts
 	paint(img)
 	for w in ways:
 		polyline(img, w[0], float(w[1]), w[2])
@@ -345,14 +403,16 @@ func creek(pts: Array, w: float, bridges := []) -> void:
 		while k < L:
 			var p0 := a.lerp(b, k / L)
 			var p1 := a.lerp(b, minf(k + 2.0, L) / L)
-			var y0 := H(p0.x, p0.y) + 0.18
-			var y1 := H(p1.x, p1.y) + 0.18
+			k += 2.0
+			if not inside(p0.x, p0.y, 1.0) or not inside(p1.x, p1.y, 1.0):
+				continue
+			var y0 := hh(p0.x, p0.y) + (0.06 if flat else 0.18)
+			var y1 := hh(p1.x, p1.y) + (0.06 if flat else 0.18)
 			var v := [Vector3(p0.x - nrm.x, y0, p0.y - nrm.y), Vector3(p0.x + nrm.x, y0, p0.y + nrm.y),
 					Vector3(p1.x - nrm.x, y1, p1.y - nrm.y), Vector3(p1.x + nrm.x, y1, p1.y + nrm.y)]
 			for q in [v[0], v[1], v[2], v[1], v[3], v[2]]:
 				st.set_normal(Vector3.UP)
 				st.add_vertex(q)
-			k += 2.0
 	var cm := StandardMaterial3D.new()
 	cm.albedo_color = Color(0.16, 0.3, 0.34)
 	cm.metallic = 0.25
@@ -367,7 +427,7 @@ func creek(pts: Array, w: float, bridges := []) -> void:
 		for bz in bridges:
 			if Geometry2D.get_closest_point_to_segment(bz, a, b).distance_to(bz) < 3.5:
 				near_bridge = true
-		if near_bridge:
+		if near_bridge or not inside(c.x, c.y):
 			continue
 		var d := b - a
 		m.add_obstacle_box(W(Vector3(c.x, 0, c.y)), w + 0.6, d.length() + 0.4, wrot(atan2(d.x, d.y)))
@@ -419,6 +479,8 @@ func _is_clear(x: float, z: float, extra := 2.0) -> bool:
 
 
 func free_at(x: float, z: float, extra := 2.0) -> bool:
+	if not inside(x, z, 1.5):
+		return false
 	return not (_on_way(x, z, extra) or _is_clear(x, z, extra) or _water_at(x, z) or creek_dist(x, z) < extra + 1.0)
 
 
@@ -429,11 +491,12 @@ func forest(area: Callable, step: float, dens: float, conifer_share := 0.7, near
 	var broad := []
 	var real := []
 	var nreal := 0
-	var z := -NEAR + 4.0
+	var lim := minf(NEAR - 4.0, place_r) if flat else NEAR - 4.0
+	var z := -lim
 	var d := dens * (0.45 if lite else 1.0)
-	while z < NEAR - 4.0:
-		var x := -NEAR + 4.0
-		while x < NEAR - 4.0:
+	while z < lim:
+		var x := -lim
+		while x < lim:
 			var px := x + rng.randf_range(-step * 0.4, step * 0.4)
 			var pz := z + rng.randf_range(-step * 0.4, step * 0.4)
 			x += step
@@ -613,7 +676,7 @@ func _hiding() -> void:
 func _signs() -> void:
 	for pl in places():
 		var p := P(pl[1], pl[2])
-		if W(p).length() > 140.0:
+		if W(p).length() > 140.0 or not inside(pl[1], pl[2]):
 			continue
 		var l := Label3D.new()
 		l.text = T.t(str(pl[0]))
@@ -631,7 +694,7 @@ func _signs() -> void:
 
 # ---- what the rest of the simulator needs (cars, places, neighbours) -------------------------------------------------------------
 func _data() -> void:
-	if road.size() >= 2:
+	if road.size() >= 2 and not (flat and s.data.has("road_line")):    # in a world: its road (cars come from far)
 		var rl := PackedVector2Array()
 		for i in range(road.size() - 1):
 			var a: Vector2 = road[i]
@@ -713,4 +776,5 @@ static func control(main, d: Dictionary) -> Dictionary:
 		nbs = main.szenen.nb.size()
 	return {"ok": true, "scene": main.scene, "kompakt": true, "spot": k.spot, "spots": spot_options(main.scene), "info": k.info,
 			"places": main.scenes.data.get("orte", []), "pir": main.obj.get("pir"), "door": main.obj.get("door"), "bike": main.obj.get("bike"),
-			"neighbours": nbs, "lights_show": k.anim_lights.size(), "ground_at_0": k.gy(0.0, 0.0)}
+			"neighbours": nbs, "lights_show": k.anim_lights.size(), "ground_at_0": k.gy(0.0, 0.0) if not k.flat else 0.0, "in_world": k.flat,
+			"world": str(main.scenes.data.get("welt", {}).get("world", ""))}

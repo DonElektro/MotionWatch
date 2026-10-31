@@ -1,5 +1,5 @@
 extends "res://scripts/kompakt.gd"
-## 3D-4.x «Pfadilager im Wald» (kompakt.gd): eine Lichtung in dichtem Wald, rund 200 × 200 m. Sarasani und zwei Jurten,
+## 3D-4.x «Pfadilager im Wald» (kompakt.gd): eine Lichtung in dichtem Wald, rund 200 × 200 m (allein), als Ort im Bergtal die Waldlichtung (Radius 60 m). Sarasani und zwei Jurten,
 ## eine Reihe Spatz-Zelte, Lagerfeuerplatz mit Bänken, Fahnenmasten und Totempfahl, Küchenwagen (Türsensor), Plumpsklos,
 ## Wasserstelle; östlich der Bach in einer kleinen Schlucht mit Seilbrücke und Holzsteg, im Westen ein Hochsitz an einer
 ## kleinen Wiese, Waldwege zur Forststrasse im Süden. Dunkel und eng: Bäume bis an den Platz, viele Kinder, Tiere aus dem
@@ -8,11 +8,11 @@ extends "res://scripts/kompakt.gd"
 const SPOTS := {"feuer": ["Am Lagerfeuer (Blick zum Sarasani)", 3.0, 9.0, 0.0],
 		"zelte": ["Bei den Spatz-Zelten", -10.0, 25.0, 15.0],
 		"bach": ["An der Seilbrücke (Bach)", 31.0, -12.0, 75.0],
-		"waldweg": ["Am Waldweg (Lagereingang)", -2.0, 58.0, 0.0]}
+		"waldweg": ["Am Waldweg (Lagereingang)", -2.0, 48.0, 0.0]}
 const SPOT_ORDER := ["feuer", "zelte", "bach", "waldweg"]
 const PLACES := [["Sarasani", -6.0, -14.0], ["Jurte", 17.0, -16.0], ["Lagerfeuer", 0.0, 2.0], ["Spatz-Zelte", -10.0, 17.0],
 		["Fahnenmast", -22.0, -10.0], ["Küchenwagen", -26.0, 4.0], ["Plumpsklo", -31.0, 23.0], ["Seilbrücke", 42.0, -20.0],
-		["Holzsteg", 44.0, 50.0], ["Hochsitz", -62.0, 30.0], ["Forststrasse", 0.0, 104.0]]
+		["Holzsteg", 44.0, 50.0], ["Hochsitz", -48.0, 28.0], ["Forststrasse", 0.0, 104.0]]
 const CREEK := [Vector2(40, -130), Vector2(36, -60), Vector2(42, -20), Vector2(36, 12), Vector2(44, 50), Vector2(38, 130)]
 const C_FLOOR := Color(0.24, 0.23, 0.13)          # forest floor (needles)
 const C_CLEARING := Color(0.32, 0.4, 0.18)
@@ -44,7 +44,7 @@ func far_colour(x: float, z: float, h: float) -> Color:
 
 
 func _in_clearing(x: float, z: float, r := 1.0) -> bool:
-	return Vector2(x / 34.0, z / 30.0).length() < r or Vector2(x + 58.0, z - 33.0).length() < 13.0 * r
+	return Vector2(x / 34.0, z / 30.0).length() < r or Vector2(x + 46.0, z - 30.0).length() < 11.0 * r
 
 
 func paint(img: Image) -> void:
@@ -53,7 +53,7 @@ func paint(img: Image) -> void:
 		var hw := 30.0 * sqrt(maxf(0.0, 1.0 - pow(k / 36.0, 2.0)))
 		rect(img, k, -hw, k + _mpp(), hw, C_CLEARING)
 		k += _mpp()
-	disc(img, -58.0, 33.0, 13.0, C_CLEARING)            # the glade of the raised hide
+	disc(img, -46.0, 30.0, 11.0, C_CLEARING)            # the glade of the raised hide
 	disc(img, 0.0, 2.0, 6.0, C_TRODDEN)                 # around the fire
 	disc(img, -6.0, -14.0, 9.0, C_TRODDEN)              # in front of the sarasani
 	rect(img, -26.0, 14.0, 8.0, 21.0, C_TRODDEN)        # the row of tents
@@ -67,7 +67,7 @@ func content() -> void:
 	way(pts2([[0, 104], [-4, 75], [-2, 50], [0, 30], [0, 10]]), 2.2, C_PATH)       # from the forest road to the camp
 	way(pts2([[18, -4], [30, -14], [34, -20]]), 1.8, C_PATH)                       # to the rope bridge
 	way(pts2([[50, -20], [70, -32], [110, -44], [130, -50]]), 1.6, C_PATH)         # behind the bridge into the forest
-	way(pts2([[-18, 16], [-40, 26], [-50, 31]]), 1.6, C_PATH)                      # to the raised hide
+	way(pts2([[-18, 16], [-34, 24], [-42, 28]]), 1.6, C_PATH)                      # to the raised hide
 	way(pts2([[8, 18], [30, 34], [40, 50]]), 1.6, C_PATH)                          # to the footbridge
 	way(pts2([[48, 50], [70, 62], [130, 70]]), 1.6, C_PATH)
 	way(pts2([[-30, 8], [-31, 20]]), 1.4, C_PATH)                                  # to the latrines
@@ -101,15 +101,15 @@ func content() -> void:
 		s.prop("woodpile", WG(wp[0], wp[1]), rng.randf() * TAU)
 	s.laundry(WG(-20.0, 10.0), wrot(0.2))
 	# the creek: rope bridge in the ravine, footbridge further south, stones
-	bib.add("rope_bridge", Vector3(42.0, H(34.0, -20.0) - 0.4, -20.0), PI / 2.0, {"len": 16.0, "sag": 1.0})
-	bib.add("footbridge", Vector3(44.0, H(48.0, 50.0) - 0.1, 50.0), PI / 2.0, {"len": 8.0, "w": 1.8})
+	bib.add("rope_bridge", Vector3(42.0, hh(34.0, -20.0) - (0.0 if flat else 0.4), -20.0), PI / 2.0, {"len": 16.0, "sag": 1.0})
+	bib.add("footbridge", Vector3(44.0, hh(48.0, 50.0) - (0.0 if flat else 0.1), 50.0), PI / 2.0, {"len": 8.0, "w": 1.8})
 	for i in range(14):
 		var t := rng.randf()
 		var seg := rng.randi() % (CREEK.size() - 1)
 		var q: Vector2 = CREEK[seg].lerp(CREEK[seg + 1], t)
 		bib.add("rock", P(q.x + rng.randf_range(-2.6, 2.6), q.y, -0.2), rng.randf() * TAU, {"r": rng.randf_range(0.4, 1.0)})
 	# the raised hide at the glade in the west
-	bib.add("hochsitz", P(-66.0, 28.0), deg_to_rad(-60.0), {"h": 4.0})
+	bib.add("hochsitz", P(-52.0, 26.0), deg_to_rad(-60.0), {"h": 4.0})
 	# the forest: dense, right up to the clearing; a few big broadleaf trees at its edge make it dark
 	forest(func(x, z): return not _in_clearing(x, z, 1.06), 6.0, 0.9, 0.75, 36.0)
 	var edge := []
@@ -137,8 +137,8 @@ func own_spot() -> void:
 			s.data["platz"] = [WG(33.0, -18.0), 6.0]
 		"waldweg":
 			m.obj["pir"] = WG(2.0, 33.0)                   # the signpost at the entrance of the camp
-			s.bike(WG(3.0, 54.0), wrot(0.1))
-			s.data["platz"] = [WG(0.0, 42.0), 7.0]
+			s.bike(WG(3.0, 45.0), wrot(0.1))
+			s.data["platz"] = [WG(0.0, 40.0), 7.0]
 	s.data["wc"] = WG(-31.0, 21.0)
 	s.data["weg_z"] = WG(-30.0, 14.0).z
 
