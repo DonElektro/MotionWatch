@@ -29,7 +29,7 @@ extends Node
 ## Kapitel: 0 Einstieg · 1–4 die Jahreszeiten (Reihenfolge Herbst, Winter, Frühling, Sommer) · 5 Finale am Gipfel.
 ## Protokoll: user://maggie/vorfuehrung_protokoll.txt (und print «[Vorführung] …»), in der Info die letzten Zeilen.
 ## Lite: _lite() (Quality.lite()) – keine Kamerafahrt mit weichem Übergang (nur harte Schnitte), seltener Kamerawechsel.
-## /control {"action": "vorfuehrung", "do": "start" (len: kurz | ganz, tempo 1–4 = nur für Tests schneller, stimme, vollbild)
+## /control {"action": "vorfuehrung", "do": "start" (len: kurz | ganz, tempo 1–4 = nur für Tests schneller, stimme, vollbild, knoepfe = Spiel-Knöpfe zeigen)
 ##   | "pause" | "weiter" | "kapitel" (n) | "stop" | "info"}
 
 const T = preload("res://scripts/i18n.gd")
@@ -57,6 +57,7 @@ var pausiert := false
 var ergebnis := ""                      # "" (läuft) | fertig | abgebrochen | unterbrochen
 var tempo := 1.0
 var stimme := true
+var knoepfe := false                   # Daniel (Entwicklung): «Spiel-Knöpfe zeigen» – the normal buttons stay, a press lights up
 var vollbild := false
 
 # the autopilot
@@ -147,6 +148,8 @@ static func control(m, d: Dictionary) -> Dictionary:
 		"start":
 			var ln := str(d.get("len", d.get("laenge", "kurz"))).to_lower()
 			ln = "ganz" if ln in ["ganz", "voll", "full", "lang", "long"] else "kurz"
+			if d.has("knoepfe"):
+				v.set_knoepfe(bool(d["knoepfe"]))
 			v.starten(ln, {"tempo": float(d.get("tempo", 1.0)), "stimme": d.get("stimme", null), "vollbild": bool(d.get("vollbild", false)),
 					"kapitel": int(d.get("kapitel", 0))})
 		"pause":
@@ -188,6 +191,7 @@ func _ready() -> void:
 	var d = _json(EINST)
 	if d is Dictionary:
 		stimme = bool(d.get("stimme", true))
+		knoepfe = bool(d.get("knoepfe", false))
 
 
 static func _json(p: String):
@@ -198,12 +202,37 @@ static func _json(p: String):
 
 func set_stimme(v: bool) -> void:
 	stimme = v
+	_einst_schreiben()
+	if not v:
+		Stimme.stopp()
+
+
+func set_knoepfe(v: bool) -> void:
+	knoepfe = v
+	_einst_schreiben()
+	if laeuft and not v:
+		_hide_controls()
+
+
+func _einst_schreiben() -> void:
 	DirAccess.make_dir_recursive_absolute(EINST.get_base_dir())
 	var f := FileAccess.open(EINST, FileAccess.WRITE)
 	if f != null:
-		f.store_string(JSON.stringify({"stimme": v}))
-	if not v:
-		Stimme.stopp()
+		f.store_string(JSON.stringify({"stimme": stimme, "knoepfe": knoepfe}))
+
+
+func _aufleuchten(b) -> void:
+	"""«Spiel-Knöpfe zeigen»: the button the autopilot presses lights up briefly, like a real press"""
+	if not knoepfe or b == null or not is_instance_valid(b) or not (b is Control):
+		return
+	var c := b as Control
+	c.modulate = Color(1.9, 1.75, 1.0)
+	c.scale = Vector2(1.08, 1.08)
+	c.pivot_offset = c.size / 2.0
+	var tw := c.create_tween()
+	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tw.tween_property(c, "modulate", Color.WHITE, 0.6)
+	tw.parallel().tween_property(c, "scale", Vector2.ONE, 0.35)
 
 
 # =======================================================================================================================
@@ -474,6 +503,8 @@ func _hide_controls() -> void:
 	"""no buttons in the film: Maggie's bar, the Schutzding button, the panel of the simulator (the texts stay)"""
 	if main.ui_layer != null and main.ui_layer.visible:
 		main.ui_layer.visible = false
+	if knoepfe:                                     # «Spiel-Knöpfe zeigen»: the game buttons stay (only the panel goes)
+		return
 	var h = _hund()
 	if h != null and h.get("_bar") != null and is_instance_valid(h._bar):
 		h._bar.visible = false
@@ -523,17 +554,42 @@ func _karte(card: Control, ph: String, dt: float) -> void:
 			for id in Welt.ORDER:
 				if not id in done:
 					_log("Wählt: %s" % T.t(str(Welt.REG[id]["name"])))
-					story._start_region(id, 0)
+					if await _knopf_zeigen(card, T.t(str(Welt.REG[id]["name"]))):
+						story._start_region(id, 0)
 					return
 			_log("Wählt: Zum Gipfel")
-			story._start_finale()
+			if await _knopf_zeigen(card, T.t("Zum Gipfel")):
+				story._start_finale()
 		"ende":
 			if _abspann:
 				beenden("fertig")
-			else:
+			elif await _knopf_zeigen(card, ""):
 				story._press_primary()
 		_:
-			story._press_primary()
+			if await _knopf_zeigen(card, ""):
+				story._press_primary()
+
+
+func _knopf_zeigen(card: Control, text: String) -> bool:
+	"""«Spiel-Knöpfe zeigen»: the button of the card lights up, a moment later it is pressed (false = card gone meanwhile)"""
+	if not knoepfe:
+		return true
+	var b: Button = null
+	for n in card.find_children("*", "Button", true, false):
+		var bt := n as Button
+		if not bt.visible or bt.disabled:
+			continue
+		if text != "" and bt.text.find(text) >= 0:
+			b = bt
+			break
+		if text == "" and bt.has_theme_stylebox_override("normal") and bt.get_theme_stylebox("normal").bg_color == UI.ACC:
+			b = bt
+			break
+	if b == null:
+		return true
+	_aufleuchten(b)
+	await get_tree().create_timer(0.45, true).timeout
+	return laeuft and is_instance_valid(card) and story._card == card
 
 
 # =======================================================================================================================
@@ -660,6 +716,7 @@ func _region(dt: float) -> void:
 			and str(_ap.get("art", "")) == "frei" and story.main.now() >= float(story._zk_ready_at):
 		_k_region[rg] = true
 		_log("Schaut in den Kristall (K)")
+		_aufleuchten(story._kbtn)
 		story.look_into_crystal()
 		return
 	match str(_ap.get("art", "frei")):
@@ -768,6 +825,8 @@ func _station(h) -> void:
 
 func _druecke(h, f: String, st: Dictionary) -> void:
 	var r: Dictionary = h.befehl(f)
+	if str(r.get("error", "")) != "busy" and h.get("_knoepfe") is Dictionary:
+		_aufleuchten((h._knoepfe as Dictionary).get(f))
 	if str(r.get("error", "")) == "busy":           # Maggie is still busy (barks, sniffs): a moment later again
 		_ap["n"] = 2
 		_ap["t"] = -1.5
@@ -900,6 +959,8 @@ func _gefahr(rg: String, g) -> bool:
 	if story.main.now() - _benutzt_t < (1.2 if rg == "winter" else 2.5):
 		return false
 	_benutzt_t = story.main.now()
+	if g.get("_box_btn") != null:
+		_aufleuchten(g._box_btn)
 	var r: Dictionary = g.benutze()
 	if int(r.get("vertrieben", 0)) > 0 or r.has("fackel"):
 		_log("Schutzding benutzt: %s" % ("Fackel an" if r.has("fackel") else "%d vertrieben" % int(r["vertrieben"])))
@@ -1445,7 +1506,7 @@ func info() -> Dictionary:
 			"kapitel_name": kapitel_namen()[clampi(k, 0, 5)] if k >= 0 else "", "kapitel_namen": kapitel_namen(),
 			"phase": str(story.phase) if story != null else "", "region": str(story.region) if story != null else "",
 			"autopilot": str(_ap.get("art", "")), "zeit": _min(_jetzt() - _t0) if laeuft or ergebnis != "" else "", "spielzeit": _min(_t_spiel),
-			"tempo": tempo, "stimme": stimme, "stimme_moeglich": Stimme.moeglich(), "regionen": _regionen, "blockiert": blockaden.size(),
+			"tempo": tempo, "stimme": stimme, "knoepfe": knoepfe, "stimme_moeglich": Stimme.moeglich(), "regionen": _regionen, "blockiert": blockaden.size(),
 			"blockaden": blockaden, "fehler": _fehler.keys(), "protokoll": _zeilen.slice(-14), "lite": _lite(),
 			"datei": ProjectSettings.globalize_path(PROTOKOLL)}
 	if story != null and story.running and story.demo:
