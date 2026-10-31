@@ -325,10 +325,11 @@ static func hedge(sc, parent: Node3D, a: Vector2, b: Vector2, h := 1.9, thick :=
 		var lx2 = -L * 0.5 + (k + sc.rng.randf()) * (L / cnt)
 		var w2 := a + d * clampf((lx2 + L * 0.5) / L, 0.0, 1.0)
 		var gy2: float = sc.m.ground_y(w2.x, w2.y)
+		var rows := maxi(2, int(ceil(h / 0.5)))                   # rows of lumps up to the top: the box core does not show
 		for side in [-1.0, 1.0]:
-			for row in range(2):
-				var y = gy2 + (0.35 + row * 0.5 + sc.rng.randf_range(0.0, 0.25)) * h / 1.9 * 1.6
-				var sz = sc.rng.randf_range(0.45, 0.65) * thick / 0.9
+			for row in range(rows):
+				var y = gy2 + lerpf(0.25, h - 0.3, (row + sc.rng.randf_range(0.0, 0.6)) / rows)
+				var sz = sc.rng.randf_range(0.5, 0.7) * thick / 0.9
 				lumps.append(Transform3D(Basis(Vector3.UP, sc.rng.randf() * TAU).scaled(Vector3(sz, sz, sz)), Vector3(lx2, y, side * thick * 0.36)))
 		var szt = sc.rng.randf_range(0.5, 0.7) * thick / 0.9
 		lumps.append(Transform3D(Basis().scaled(Vector3(szt * 1.2, szt * 0.6, szt)), Vector3(lx2, gy2 + h - 0.05 + sc.rng.randf_range(-0.04, 0.08), sc.rng.randf_range(-0.1, 0.1))))
@@ -382,10 +383,10 @@ static func tree(sc, parent: Node3D, p: Vector3, kind := "laub", s := 1.0) -> No
 			var bark2 := Color(0.5, 0.32, 0.22)
 			sc.put(tr, sc.cyl(0.12, 0.25, 9.0, 8), Vector3(0, 4.5, 0), bark2, "tree", Vector3(sc.rng.randf_range(-0.04, 0.04), 0, sc.rng.randf_range(-0.04, 0.04)))
 			var fm2: ShaderMaterial = sc.foliage(4)
-			for k in range(sc.rng.randi_range(4, 6)):
+			for k in range(sc.rng.randi_range(7, 9)):                  # an umbrella of needle clumps in two tiers
 				var a = sc.rng.randf() * TAU
-				var r2 = sc.rng.randf_range(0.9, 1.4)
-				sc.put(tr, sc.sph(r2, r2 * 0.8), Vector3(cos(a) * sc.rng.randf_range(0.3, 1.3), sc.rng.randf_range(8.0, 9.6), sin(a) * sc.rng.randf_range(0.3, 1.3)), fm2, "tree")
+				var r2 = sc.rng.randf_range(1.0, 1.6)
+				sc.put(tr, sc.sph(r2, r2 * 0.9), Vector3(cos(a) * sc.rng.randf_range(0.4, 1.6), sc.rng.randf_range(7.4, 9.8), sin(a) * sc.rng.randf_range(0.4, 1.6)), fm2, "tree")
 			crown_r = 2.0
 			crown_y = 7.5
 			trunk_r = 0.3

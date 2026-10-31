@@ -32,5 +32,6 @@ void fragment() {
 	c = mix(c, vec3(0.92, 0.93, 0.95), snow_amount * 0.7 * tip);
 	c *= 1.0 - cloud_amt * smoothstep(0.52, 0.68, texture(noise_tex, (wpos.xz + cloud_off) * 0.0035).r);
 	ALBEDO = c;
+	NORMAL = normalize((VIEW_MATRIX * vec4(0.0, 1.0, 0.0, 0.0)).xyz);   // lit like the ground, also the back side (cull_disabled flips it)
 	ROUGHNESS = 0.9;
 }
