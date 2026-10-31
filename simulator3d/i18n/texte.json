@@ -1009,6 +1009,12 @@
   "it": "%d punti",
   "rm": "%d puncts"
  },
+ "%d Punkte · noch %d bis Stufe %d": {
+  "en": "%d points · %d more to level %d",
+  "fr": "%d points · encore %d jusqu’au niveau %d",
+  "it": "%d punti · ancora %d per il livello %d",
+  "rm": "%d puncts · anc %d fin al stgalim %d"
+ },
  "%d richtig / %d falsch": {
   "en": "%d right / %d wrong",
   "fr": "%d justes / %d faux",
@@ -1783,6 +1789,36 @@
   "it": "Sera, crepuscolo",
   "rm": "Saira, crepuscul"
  },
+ "Abenteuer": {
+  "en": "Adventures",
+  "fr": "Aventures",
+  "it": "Avventure",
+  "rm": "Aventuras"
+ },
+ "Abenteuer begonnen": {
+  "en": "Adventures started",
+  "fr": "Aventures commencées",
+  "it": "Avventure iniziate",
+  "rm": "Aventuras cumenzadas"
+ },
+ "Abenteuer geschafft": {
+  "en": "Adventures completed",
+  "fr": "Aventures réussies",
+  "it": "Avventure completate",
+  "rm": "Aventuras reussidas"
+ },
+ "Abenteuer starten": {
+  "en": "Start the adventure",
+  "fr": "Commencer l’aventure",
+  "it": "Inizia l’avventura",
+  "rm": "Cumenzar l’aventura"
+ },
+ "Abenteuer «%s» – viel Spass beim Entdecken!": {
+  "en": "Adventure «%s» – have fun discovering!",
+  "fr": "Aventure « %s » – amuse-toi bien à découvrir !",
+  "it": "Avventura «%s» – buon divertimento a scoprire!",
+  "rm": "Aventura «%s» – bun divertiment cun scuvrir!"
+ },
  "Abfalleimer": {
   "en": "Waste bin",
   "fr": "Poubelle",
@@ -2077,6 +2113,12 @@
   "it": "Azzerare tutto (ognuno fa tutto)",
   "rm": "Reinizialisar tut (mintgin fa tut)"
  },
+ "Alles entdeckt – das nächste Abenteuer wartet schon.": {
+  "en": "Everything discovered – the next adventure is waiting.",
+  "fr": "Tout découvert – la prochaine aventure t’attend.",
+  "it": "Tutto scoperto – la prossima avventura ti aspetta.",
+  "rm": "Tut scuvrì – la proxima aventura spetga gia."
+ },
  "Alles gewählt? Dann «Szene bauen».": {
   "en": "Everything chosen? Then «Build scene».",
   "fr": "Tout est choisi ? Alors «Construire la scène».",
@@ -2112,6 +2154,12 @@
   "fr": "Quotidien : trottinette électrique, fauteuil roulant, robot de livraison et robot tondeuse viennent de temps en temps",
   "it": "Vita quotidiana: monopattino elettrico, sedia a rotelle, robot di consegna e robot tosaerba arrivano di tanto in tanto",
   "rm": "Mintgadi: e-trottinet, sutga a rodas, robot da furniziun e robot da segar vegnan da temp en temp da sasez"
+ },
+ "Alp, See und Pass – einsam und wild.": {
+  "en": "Alp, lake and pass – lonely and wild.",
+  "fr": "Alpage, lac et col – solitaire et sauvage.",
+  "it": "Alpe, lago e passo – solitario e selvaggio.",
+  "rm": "Alp, lai e pass – sulet e selvadi."
  },
  "Alte KI-Daten löschen": {
   "en": "Delete old AI data",
@@ -3019,6 +3067,18 @@
   "it": "Montagne",
   "rm": "Muntognas"
  },
+ "Bergfuchs": {
+  "en": "Mountain fox",
+  "fr": "Renard des montagnes",
+  "it": "Volpe di montagna",
+  "rm": "Vulp da muntogna"
+ },
+ "Bergtal": {
+  "en": "Mountain valley",
+  "fr": "Vallée de montagne",
+  "it": "Valle di montagna",
+  "rm": "Val da muntogna"
+ },
  "Beschlagene Linse (Tau am Morgen, milchiger Schleier)": {
   "en": "Fogged lens (dew in the morning, milky veil)",
   "fr": "Objectif embué (rosée le matin, voile laiteux)",
@@ -3601,6 +3661,12 @@
   "it": "Palco con americana",
   "rm": "Tribuna cun traversa"
  },
+ "Camper": {
+  "en": "Camper",
+  "fr": "Campeur",
+  "it": "Campeggiatore",
+  "rm": "Campadur"
+ },
  "Camping": {
   "en": "Camping",
   "fr": "Camping",
@@ -4058,6 +4124,12 @@
   "it": "la tua auto, ferma",
   "rm": "tes auto, stat airi"
  },
+ "Dein eigenes Zuhause, selbst gebaut.": {
+  "en": "Your own home, built by yourself.",
+  "fr": "Ta propre maison, construite par toi.",
+  "it": "La tua casa, costruita da te.",
+  "rm": "Tia atgna chasa, construida da tai."
+ },
  "Dein Platz": {
   "en": "Your place",
   "fr": "Ton emplacement",
@@ -4237,6 +4309,12 @@
   "fr": "Le gardien-bot",
   "it": "Il guardiano bot",
   "rm": "Il guardian-bot"
+ },
+ "Der erste Abend: Zelt, Feuerstelle und neugierige Tiere.": {
+  "en": "The first evening: tent, fire place and curious animals.",
+  "fr": "Le premier soir : tente, foyer et animaux curieux.",
+  "it": "La prima sera: tenda, focolare e animali curiosi.",
+  "rm": "L’emprima saira: tenda, fuaina ed animals curius."
  },
  "Der Grillmeister": {
   "en": "The barbecue master",
@@ -4767,6 +4845,12 @@
   "it": "Questo punto non è in Svizzera.",
   "rm": "Quest punct n’è betg en Svizra."
  },
+ "Dieses Abenteuer kommt mit einer nächsten Version.": {
+  "en": "This adventure comes with a next version.",
+  "fr": "Cette aventure arrive avec une prochaine version.",
+  "it": "Questa avventura arriva con una prossima versione.",
+  "rm": "Questa aventura vegn cun ina proxima versiun."
+ },
  "Ding": {
   "en": "Thing",
   "fr": "Chose",
@@ -4844,6 +4928,12 @@
   "fr": "Tu conduis le rover ! Flèches, souris ou manette.",
   "it": "Guidi tu il rover! Frecce, mouse o controller.",
   "rm": "Ti manischeschas il rover! Tastas da frizza, mieur u controller."
+ },
+ "Du hast %d Erfahrungspunkte gesammelt. Weiter so!": {
+  "en": "You have collected %d experience points. Keep it up!",
+  "fr": "Tu as récolté %d points d’expérience. Continue comme ça !",
+  "it": "Hai raccolto %d punti esperienza. Continua così!",
+  "rm": "Ti has rimnà %d puncts d’experientscha. Va vinavant uschia!"
  },
  "Du hast schon die neuste Version (%s).": {
   "en": "You already have the newest version (%s).",
@@ -5078,6 +5168,12 @@
   "fr": "Un orage arrive",
   "it": "Arriva un temporale",
   "rm": "In urizi vegn"
+ },
+ "Ein grosser Platz am See – viele Leute, viel zu entdecken.": {
+  "en": "A big site by the lake – many people, much to discover.",
+  "fr": "Un grand camping au bord du lac – beaucoup de monde, beaucoup à découvrir.",
+  "it": "Un grande campeggio sul lago – tanta gente, tanto da scoprire.",
+  "rm": "Ina gronda plazza al lai – bleras persunas, bler da scuvrir."
  },
  "Ein Hinweis auf das Nächste, das jetzt zu finden ist": {
   "en": "A hint to the nearest thing that can be found now",
@@ -5402,6 +5498,12 @@
   "fr": "Découvert : %s (%d sur %d)",
   "it": "Scoperto: %s (%d di %d)",
   "rm": "Scuvrì: %s (%d da %d)"
+ },
+ "Entdeckung +%d · Abzeichen +%d · Abenteuer geschafft +%d · Abenteuer begonnen +%d": {
+  "en": "Discovery +%d · badge +%d · adventure completed +%d · adventure started +%d",
+  "fr": "Découverte +%d · badge +%d · aventure réussie +%d · aventure commencée +%d",
+  "it": "Scoperta +%d · distintivo +%d · avventura completata +%d · avventura iniziata +%d",
+  "rm": "Scuverta +%d · insigna +%d · aventura reussida +%d · aventura cumenzada +%d"
  },
  "Entdeckungen": {
   "en": "Discoveries",
@@ -6064,6 +6166,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Feriengast": {
+  "en": "Holiday guest",
+  "fr": "Vacancier",
+  "it": "Villeggiante",
+  "rm": "Giast da vacanzas"
  },
  "Ferienpark": {
   "en": "Holiday park",
@@ -6870,6 +6978,12 @@
   "it": "Fatto! Il rover è vicino alla bici.",
   "rm": "Fatg! Il rover stat tar il velo."
  },
+ "Geschafft: %s!": {
+  "en": "Done: %s!",
+  "fr": "Réussi : %s !",
+  "it": "Fatto: %s!",
+  "rm": "Reussì: %s!"
+ },
  "Gesehen": {
   "en": "Seen",
   "fr": "Vu",
@@ -6899,6 +7013,12 @@
   "fr": "Enregistré : %s – joindre ce fichier dans le chat.",
   "it": "Salvato: %s – allegare questo file nella chat.",
   "rm": "Memorisà: %s – agiuntar questa datoteca en il chat."
+ },
+ "Gesperrt": {
+  "en": "Locked",
+  "fr": "Verrouillé",
+  "it": "Bloccato",
+  "rm": "Bloccà"
  },
  "Gewehr (unblutig): Treffer %d von %d Schüssen · %d Punkte · G: Gewehr aus": {
   "en": "Rifle (bloodless): %d hits of %d shots · %d points · G: rifle off",
@@ -7405,6 +7525,12 @@
   "it": "Siepe (2 clic)",
   "rm": "Saiv viva (2 clics)"
  },
+ "Heimwächter": {
+  "en": "Home guard",
+  "fr": "Gardien de la maison",
+  "it": "Guardiano di casa",
+  "rm": "Guardian da chasa"
+ },
  "Hell": {
   "en": "Light",
   "fr": "Clair",
@@ -7477,6 +7603,18 @@
   "it": "Fare il guardiano qui sul PC (girare la testa, «Preso!»)",
   "rm": "Esser guardian qua al PC (volver il chau, «Tschiffà!»)"
  },
+ "Hier bist du": {
+  "en": "You are here",
+  "fr": "Tu es ici",
+  "it": "Sei qui",
+  "rm": "Ti es qua"
+ },
+ "Hier gibt es (noch) nichts zu entdecken.": {
+  "en": "Nothing to discover here (yet).",
+  "fr": "Rien à découvrir ici (pour l’instant).",
+  "it": "Qui non c’è (ancora) niente da scoprire.",
+  "rm": "Qua na datti (anc) nagut da scuvrir."
+ },
  "Hier liegen die geladenen Dateien": {
   "en": "The loaded files are here",
   "fr": "Les fichiers chargés sont ici",
@@ -7488,6 +7626,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Hier spielst du die Abenteuer der Reihe nach. Entdecke alles, sammle Abzeichen – so steigt deine Stufe.": {
+  "en": "Here you play the adventures one after another. Discover everything, collect badges – that is how your level rises.",
+  "fr": "Ici tu joues les aventures l’une après l’autre. Découvre tout, collectionne des badges – ainsi ton niveau monte.",
+  "it": "Qui giochi le avventure una dopo l’altra. Scopri tutto, raccogli distintivi – così sale il tuo livello.",
+  "rm": "Qua giogas ti las aventuras ina suenter l’autra. Scuvra tut, rimna insignas – uschia crescha tes stgalim."
  },
  "Hierhin stellen + Referenz-Scan": {
   "en": "Put here + reference scan",
@@ -7794,6 +7938,12 @@
   "fr": "Vous n’êtes pas des humains, mais renard, chat, branche dans le vent, lampe, ballon … Arrivez-vous à faire annoncer «Personne !» à MoveEye quand même ? Chaque fausse alarme rapporte des points – et MoveEye en tire des leçons. Seulement avec MoveEye.",
   "it": "Non siete persone, ma volpe, gatto, ramo nel vento, lampada, palloncino … Riuscite a far segnalare comunque «Persona!» a MoveEye? Ogni falso allarme dà punti – e MoveEye ne impara. Solo con MoveEye.",
   "rm": "Vus essas betg umans, mabain vulp, giat, rom en il vent, lampa, ballun … Reussis vus da far annunziar tuttina «Persuna!» a MoveEye? Mintga fauss alarm dat puncts – e MoveEye emprenda da quai. Mo cun MoveEye."
+ },
+ "Im %s fehlt noch %d – manches gibt es nur nachts, bei Regen oder am Morgen.": {
+  "en": "In %s, %d still missing – some things are only there at night, in the rain or in the morning.",
+  "fr": "Dans %s, il en manque encore %d – certaines choses n’existent que la nuit, sous la pluie ou le matin.",
+  "it": "In %s ne mancano ancora %d – alcune cose ci sono solo di notte, con la pioggia o al mattino.",
+  "rm": "En %s mancan anc %d – intginas chaussas datti mo la notg, cun plievgia u la damaun."
  },
  "Im alten Wohnwagen am Waldrand steht die Tür offen. Wer liest da wohl?": {
   "en": "In the old caravan at the edge of the forest the door is open. Who could be reading there?",
@@ -8124,6 +8274,12 @@
   "fr": "Joggeur le soir",
   "it": "Jogger la sera",
   "rm": "Currider la saira"
+ },
+ "Juhu, Stufe %d!": {
+  "en": "Hooray, level %d!",
+  "fr": "Youpi, niveau %d !",
+  "it": "Evviva, livello %d!",
+  "rm": "Hurra, stgalim %d!"
  },
  "Juli": {
   "en": "July",
@@ -8905,6 +9061,12 @@
   "fr": "Valise",
   "it": "Valigia",
   "rm": "Valisch"
+ },
+ "Kommt bald": {
+  "en": "Coming soon",
+  "fr": "Bientôt",
+  "it": "Presto",
+  "rm": "Vegn prest"
  },
  "Kommt man näher, rollt er sich zusammen. Wartet man still, schleicht er weiter der Hecke entlang.": {
   "en": "If you come closer, he rolls up. If you wait quietly, he sneaks on along the hedge.",
@@ -10998,6 +11160,12 @@
   "it": "Testare un guasto di rete",
   "rm": "Testar ina panna da la rait"
  },
+ "Neu": {
+  "en": "New",
+  "fr": "Nouveau",
+  "it": "Nuovo",
+  "rm": "Nov"
+ },
  "Neu heisst die Datei MoveEyeSim3D.exe (die alte MotionWatch3D.exe wird entfernt). Der Simulator beginnt mit frischen Einstellungen.": {
   "en": "The file is now called MoveEyeSim3D.exe (the old MotionWatch3D.exe is removed). The simulator starts with fresh settings.",
   "fr": "Le fichier s’appelle désormais MoveEyeSim3D.exe (l’ancien MotionWatch3D.exe est supprimé). Le simulateur démarre avec des réglages neufs.",
@@ -11009,6 +11177,12 @@
   "fr": "Recharger",
   "it": "Ricarica",
   "rm": "Rechargiar"
+ },
+ "Neu: «%s» wartet auf dich!": {
+  "en": "New: «%s» is waiting for you!",
+  "fr": "Nouveau : « %s » t’attend !",
+  "it": "Nuovo: «%s» ti aspetta!",
+  "rm": "Nov: «%s» spetga sin tai!"
  },
  "neue Version %s gefunden": {
   "en": "new version %s found",
@@ -11237,6 +11411,18 @@
   "fr": "Pas encore d’images manquées du jeu.",
   "it": "Ancora nessuna immagine mancata dal gioco.",
   "rm": "Anc nagins maletgs manchentads dal gieu."
+ },
+ "noch nicht": {
+  "en": "not yet",
+  "fr": "pas encore",
+  "it": "non ancora",
+  "rm": "anc betg"
+ },
+ "Noch nicht besucht – was es zu entdecken gibt, zeigt sich vor Ort.": {
+  "en": "Not visited yet – what there is to discover shows on the spot.",
+  "fr": "Pas encore visité – ce qu’il y a à découvrir se montre sur place.",
+  "it": "Non ancora visitato – cosa c’è da scoprire si vede sul posto.",
+  "rm": "Anc betg visità – tge ch’i dat da scuvrir sa mussa al lieu."
  },
  "noch nicht gemessen": {
   "en": "",
@@ -13194,6 +13380,12 @@
   "it": "bella (ombre, bagliori, nuvole)",
   "rm": "bel (umbrivas, glischs, nivels)"
  },
+ "Schön, bist du wieder da!": {
+  "en": "Nice to have you back!",
+  "fr": "Content de te revoir !",
+  "it": "Che bello, sei tornato!",
+  "rm": "Bel che ti es puspè qua!"
+ },
  "Schüssel": {
   "en": "Bowl",
   "fr": "Bol",
@@ -13674,6 +13866,12 @@
   "it": "Gioco al PC – ",
   "rm": "Gieu al PC – "
  },
+ "Spiel eine Runde mit Freunden – jedes neue Abzeichen gibt Punkte.": {
+  "en": "Play a round with friends – every new badge gives points.",
+  "fr": "Joue une partie avec des amis – chaque nouveau badge donne des points.",
+  "it": "Gioca un turno con gli amici – ogni nuovo distintivo dà punti.",
+  "rm": "Gioga ina runda cun amis – mintga nova insigna dat puncts."
+ },
  "Spiel Fehlalarm-Jäger": {
   "en": "Game false alarm hunter",
   "fr": "Jeu chasseur de fausses alarmes",
@@ -14149,6 +14347,12 @@
   "it": "Colonnina elettrica",
   "rm": "Pitga d’electricitad"
  },
+ "Stufe %d": {
+  "en": "Level %d",
+  "fr": "Niveau %d",
+  "it": "Livello %d",
+  "rm": "Stgalim %d"
+ },
  "Stufe %d · %d XP (noch %d bis Stufe %d)%s": {
   "en": "Level %d · %d XP (%d more to level %d)%s",
   "fr": "Niveau %d · %d XP (encore %d jusqu’au niveau %d)%s",
@@ -14562,6 +14766,12 @@
   "fr": "Équipe contre MoveEye",
   "it": "Squadra contro MoveEye",
   "rm": "Team cunter MoveEye"
+ },
+ "Team gegen MoveEye: Mitspieler mit dem Handy": {
+  "en": "Team against MoveEye: players with their phones",
+  "fr": "Équipe contre MoveEye : joueurs avec le portable",
+  "it": "Squadra contro MoveEye: giocatori con il telefonino",
+  "rm": "Equipa cunter MoveEye: giugaders cun il telefonin"
  },
  "Team Rot": {
   "en": "Team Red",
@@ -16184,6 +16394,18 @@
   "it": "",
   "rm": ""
  },
+ "Weiter geht es im Abenteuer «%s».": {
+  "en": "It goes on in the adventure «%s».",
+  "fr": "La suite dans l’aventure « %s ».",
+  "it": "Si continua nell’avventura «%s».",
+  "rm": "I va vinavant en l’aventura «%s»."
+ },
+ "Weiter spielen": {
+  "en": "Keep playing",
+  "fr": "Continuer à jouer",
+  "it": "Continua a giocare",
+  "rm": "Giugar vinavant"
+ },
  "Weiter ›": {
   "en": "Next ›",
   "fr": "Suivant ›",
@@ -17291,6 +17513,12 @@
   "it": "Guardato",
   "rm": "Guardà"
  },
+ "Zuhause": {
+  "en": "Home",
+  "fr": "Maison",
+  "it": "Casa",
+  "rm": "Chasa"
+ },
  "Zuletzt gesetztes Zelt / Auto um 15° drehen": {
   "en": "Turn the last placed tent / car by 15°",
   "fr": "Tourner de 15° la dernière tente / voiture placée",
@@ -17542,6 +17770,12 @@
   "fr": "Ouvre dans le navigateur les réglages MoveEye « LED d’état & boutons »",
   "it": "Apre nel browser le impostazioni MoveEye «LED di stato & tasti»",
   "rm": "Avra en il navigatur ils parameters da MoveEye «LED da status & buttuns»"
+ },
+ "Öffnet sich, wenn das Abenteuer davor zur Hälfte entdeckt ist.": {
+  "en": "Opens when half of the adventure before is discovered.",
+  "fr": "S’ouvre quand la moitié de l’aventure précédente est découverte.",
+  "it": "Si apre quando metà dell’avventura precedente è scoperta.",
+  "rm": "S’avra, cura che la mesadad da l’aventura avant è scuvrida."
  },
  "Über den Simulator": {
   "en": "",
@@ -18155,6 +18389,12 @@
   "it": "✓ Fatto (Esc)",
   "rm": "✓ Finì (Esc)"
  },
+ "✓ Geschafft": {
+  "en": "✓ Done",
+  "fr": "✓ Réussi",
+  "it": "✓ Fatto",
+  "rm": "✓ Reussì"
+ },
  "✓ gewählt": {
   "en": "✓ selected",
   "fr": "✓ choisi",
@@ -18250,6 +18490,12 @@
   "fr": "❌ Tir raté de MoveEye – fausse alarme",
   "it": "❌ Colpo mancato di MoveEye – falso allarme",
   "rm": "❌ Sajet fallà da MoveEye – fauss alarm"
+ },
+ "⭐ Stufe %d": {
+  "en": "⭐ Level %d",
+  "fr": "⭐ Niveau %d",
+  "it": "⭐ Livello %d",
+  "rm": "⭐ Stgalim %d"
  },
  "⭐ Stufen: Jede Runde gibt Erfahrungspunkte (Punkte, Abzeichen, Aufgabe, Tagesaufgabe). Höhere Stufen schalten Dinge für die eigene Figur frei.": {
   "en": "⭐ Levels: every round gives experience points (points, badges, task, daily task). Higher levels unlock things for your own figure.",
@@ -18478,6 +18724,12 @@
   "fr": "🎮 Attribuer les manettes (plusieurs manettes : gardien, furtif, rover)",
   "it": "🎮 Assegnare i controller (più controller: guardiano, furtivo, rover)",
   "rm": "🎮 Attribuir controllers (plirs controllers: guardian, sfugider, rover)"
+ },
+ "🎮 Spiel-Assistent": {
+  "en": "🎮 Game wizard",
+  "fr": "🎮 Assistant de jeu",
+  "it": "🎮 Assistente di gioco",
+  "rm": "🎮 Assistent da gieu"
  },
  "🎯 %s hat dich mit dem Auslöser erwischt!": {
   "en": "🎯 %s caught you with the shutter!",
@@ -18994,6 +19246,12 @@
   "fr": "🔍 Zoom (8 s) : les gens paraissent plus grands, l’image est plus serrée",
   "it": "🔍 Zoom (8 s): le persone sembrano più grandi, l’immagine è più stretta",
   "rm": "🔍 Zoom (8 s): la glieud para pli gronda, il maletg è pli stretg"
+ },
+ "🔒 Gesperrt": {
+  "en": "🔒 Locked",
+  "fr": "🔒 Verrouillé",
+  "it": "🔒 Bloccato",
+  "rm": "🔒 Bloccà"
  },
  "🔒 In der Zelle – ein Teamkollege muss dich befreien": {
   "en": "🔒 In the cell – a teammate has to free you",
