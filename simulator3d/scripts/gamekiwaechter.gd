@@ -135,7 +135,9 @@ func board_list() -> Array:
 
 func info() -> Dictionary:
 	return {"on": bool(main.game_kiguard), "active": active, "mw": mw_ok(), "name": NAME, "hold": snappedf(hold_s(), 0.01), "board": board_list(), "ki": ki_stats.duplicate(),
-			"mode_was": mode_was}
+			"mode_was": mode_was,
+			"turm": game.more.turm.board() if game.more != null and game.more.turm != null else [],    # «Gameplay ausfeilen»: KI-Turm (gameturm.gd)
+			"turm_on": game.more != null and game.more.turm != null and game.more.turm.on, "turm_floor": game.more.turm.floor_n() if game.more != null and game.more.turm != null else 0}
 
 
 func command(d: Dictionary) -> Dictionary:

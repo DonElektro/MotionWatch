@@ -58,6 +58,10 @@ func next_list(n := 5) -> Array:
 	return out.slice(0, n)
 
 
+var _scroll: ScrollContainer = null
+var _list: VBoxContainer = null
+
+
 func _ready() -> void:
 	visible = false
 	add_theme_stylebox_override("panel", UI.box(Color(UI.BG, 0.97), UI.ORG, 16, 14, 2))
@@ -88,6 +92,13 @@ func show_news(es := []) -> void:
 	var tag := UI.small("MOVEEYE SIM · " + main.VERSION, UI.ORG)
 	_box.add_child(tag)
 	_box.add_child(UI.heading("✨ Neu in dieser Version"))
+	# 3D-4.x: the list scrolls - the window is never higher than the screen, OK always reachable (Daniel 31.10.)
+	_scroll = ScrollContainer.new()
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_list = VBoxContainer.new()
+	_list.add_theme_constant_override("separation", 6)
+	_scroll.add_child(_list)
+	_box.add_child(_scroll)
 	for e in es:
 		var h := HBoxContainer.new()
 		h.add_theme_constant_override("separation", 10)
@@ -103,15 +114,15 @@ func show_news(es := []) -> void:
 		t.custom_minimum_size = Vector2(500, 0)
 		t.add_theme_font_size_override("font_size", 13)
 		h.add_child(t)
-		_box.add_child(h)
+		_list.add_child(h)
 	var nx := next_list()
 	if not nx.is_empty():
 		var hd := Label.new()
 		hd.text = "→ Als Nächstes im Makeover (%d/%d erledigt)" % [DONE.size(), NEXT_ALL.size()]
 		hd.add_theme_font_size_override("font_size", 14)
-		_box.add_child(hd)
+		_list.add_child(hd)
 		for x in nx:
-			_box.add_child(UI.small("   %d. %s" % [x[0], x[1]]))
+			_list.add_child(UI.small("   %d. %s" % [x[0], x[1]]))
 	var b := HBoxContainer.new()
 	b.alignment = BoxContainer.ALIGNMENT_END
 	b.add_theme_constant_override("separation", 8)
@@ -130,6 +141,12 @@ func show_news(es := []) -> void:
 	get_parent().move_child(self, -1)
 
 
+func _unhandled_input(ev: InputEvent) -> void:
+	if visible and ev is InputEventKey and ev.pressed and not ev.echo and ev.keycode == KEY_ESCAPE:
+		close(false)
+		get_viewport().set_input_as_handled()
+
+
 func close(off: bool) -> void:
 	visible = false
 	main.news_seen = main.VERSION
@@ -141,6 +158,9 @@ func close(off: bool) -> void:
 func _process(_dt: float) -> void:
 	if visible:
 		var vs := get_viewport_rect().size
+		if _scroll != null and is_instance_valid(_scroll):
+			var room := maxf(120.0, vs.y - 48.0 - (_box.get_combined_minimum_size().y - _scroll.get_combined_minimum_size().y) - 40.0)
+			_scroll.custom_minimum_size = Vector2(_list.get_combined_minimum_size().x + 14.0, minf(_list.get_combined_minimum_size().y, room))
 		size = get_combined_minimum_size()
 		position = ((vs - size) / 2.0).floor()
 
