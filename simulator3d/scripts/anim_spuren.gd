@@ -109,7 +109,7 @@ func _tritt(p: Vector3, heading: float, pfote: bool, spd: float) -> void:
 func _abdruck(p: Vector3, heading: float, pfote: bool) -> void:
 	if _mat == null:
 		_mat = StandardMaterial3D.new()
-		_mat.albedo_color = Color(0.62, 0.68, 0.78, 0.55)
+		_mat.albedo_color = Color(0.36, 0.4, 0.5, 0.6)
 		_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		_mat.roughness = 1.0
 		var bf := BoxMesh.new()
@@ -124,8 +124,8 @@ func _abdruck(p: Vector3, heading: float, pfote: bool) -> void:
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.layers = 1
 	add_child(mi)
-	var gy: float = main.ground_y(p.x, p.z) if main.hilly() else 0.0
-	mi.global_position = Vector3(p.x, maxf(gy, p.y - 0.05) + 0.006, p.z)
+	var gy: float = main.ground_y(p.x, p.z) if main.hilly() else p.y    # p.y: where the figure stands
+	mi.global_position = Vector3(p.x, gy + 0.006, p.z)
 	mi.rotation.y = heading
 	_spuren.append([mi, _t])
 	while _spuren.size() > MAX:

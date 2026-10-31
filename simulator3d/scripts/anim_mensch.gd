@@ -89,7 +89,7 @@ var _kind_next := 0.0
 var _kind_art := ""
 var _kind_v0 := 0.0
 # Spuren
-var _tritt_s := 0.0
+var _tritt_n := 0
 
 
 func _init(actor) -> void:
@@ -221,13 +221,13 @@ func _leerlauf(dt: float, now: float, steht: bool, k: float) -> void:
 		return
 	var w2 := smoothstep(0.0, 1.0, _w_leer)
 	var br: float = sin(_t * 1.5 + _seed)                         # breathing: the chest rises, the shoulders a little
-	_add(a.torso, "rotation:x", 0.012 * br * w2)
+	_add(a.torso, ^"rotation:x", 0.012 * br * w2)
 	match leer:
 		"verschr":
 			a.anim_arme = true
 			for i in range(2):
 				var s: int = a.arms[i][1]
-				_arm(i, 0.55, -0.32 * s, 1.95 + (0.1 if s > 0 else 0.0), w2)
+				_arm(i, 0.32, -0.12 * s, 1.85 + (0.12 if s > 0 else 0.0), w2, 1.05 * s)   # the upper arm turned in: forearms across
 		"taschen":
 			a.anim_arme = true
 			for i in range(2):
@@ -235,16 +235,16 @@ func _leerlauf(dt: float, now: float, steht: bool, k: float) -> void:
 				_arm(i, -0.14, 0.16 * s2, 0.32, w2)
 		"umschau":
 			var yaw := sin((_t + _seed) * 0.55) * 0.95 * w2
-			_put(a.head, "rotation:y", lerpf(a.head.rotation.y, yaw, 1.0))
-			_add(a.torso, "rotation:y", yaw * 0.15)
+			_put(a.head, ^"rotation:y", lerpf(a.head.rotation.y, yaw, 1.0))
+			_add(a.torso, ^"rotation:y", yaw * 0.15)
 		"gewicht":                                              # the weight on one leg, the other knee relaxed
-			_put(a.hips, "rotation:z", lerpf(a.hips.rotation.z, 0.07 * _gew_s, w2))
-			_add(a.body_root, "position:x", 0.03 * _gew_s * w2)
+			_put(a.hips, ^"rotation:z", lerpf(a.hips.rotation.z, 0.07 * _gew_s, w2))
+			_add(a.body_root, ^"position:x", 0.03 * _gew_s * w2)
 			for l in a.legs:
 				if int(l[1]) != int(_gew_s):
-					_put(l[2], "rotation:x", lerpf((l[2] as Node3D).rotation.x, -0.22, w2))
-					_put(l[0], "rotation:x", lerpf((l[0] as Node3D).rotation.x, 0.08, w2))
-			_put(a.torso, "rotation:z", lerpf(a.torso.rotation.z, -0.03 * _gew_s, w2))
+					_put(l[2], ^"rotation:x", lerpf((l[2] as Node3D).rotation.x, -0.22, w2))
+					_put(l[0], ^"rotation:x", lerpf((l[0] as Node3D).rotation.x, 0.08, w2))
+			_put(a.torso, ^"rotation:z", lerpf(a.torso.rotation.z, -0.03 * _gew_s, w2))
 
 
 # ---- 2 auf der Stelle drehen ------------------------------------------------------------------------------------------
@@ -258,9 +258,9 @@ func _drehen(dt: float, spd: float, frei: bool) -> void:
 	_dreh_ph += dt * PI * 3.2                                    # small steps, ~1.6 per second
 	for l in a.legs:
 		var lift: float = maxf(0.0, sin(_dreh_ph + (0.0 if int(l[1]) > 0 else PI)))
-		_add(l[0], "rotation:x", 0.22 * lift)
-		_add(l[2], "rotation:x", -(0.42 * lift))
-	_add(a.body_root, "position:y", 0.012 * absf(sin(_dreh_ph)))
+		_add(l[0], ^"rotation:x", 0.22 * lift)
+		_add(l[2], ^"rotation:x", -(0.42 * lift))
+	_add(a.body_root, ^"position:y", 0.012 * absf(sin(_dreh_ph)))
 
 
 # ---- 3 Gelände ---------------------------------------------------------------------------------------------------------
@@ -282,10 +282,10 @@ func _gelaende(dt: float, spd: float) -> void:
 			stufe_nah = _stufen_nah()
 	if spd > 0.1 and absf(_neig) > 0.04 and a.prone < 0.1:
 		var lean := -0.5 * _neig if _neig > 0.0 else 0.22 * -_neig
-		_add(a.torso, "rotation:x", lean)
+		_add(a.torso, ^"rotation:x", lean)
 		if _neig < 0.0:
 			for l in a.legs:
-				_add(l[2], "rotation:x", -(0.25 * -_neig))      # downhill: the knees bend more (braking)
+				_add(l[2], ^"rotation:x", -(0.25 * -_neig))      # downhill: the knees bend more (braking)
 
 
 func _stufen_nah() -> bool:
@@ -327,12 +327,12 @@ func vor_sync(dt: float) -> void:
 	if not stufe_nah:
 		_y_stufe = move_toward(_y_stufe, 0.0, dt * 1.5)
 		if _y_stufe > 0.0:
-			_add(a.body_root, "position:y", _y_stufe)
+			_add(a.body_root, ^"position:y", _y_stufe)
 		return
 	var p: Vector3 = a.global_position
 	var h := boden(p.x, p.z, p.y) - p.y
 	_y_stufe = lerpf(_y_stufe, clampf(h, 0.0, 0.5), clampf(dt * 8.0, 0.0, 1.0))
-	_add(a.body_root, "position:y", _y_stufe)
+	_add(a.body_root, ^"position:y", _y_stufe)
 
 
 func nach_sync(_dt: float) -> void:
@@ -342,7 +342,7 @@ func nach_sync(_dt: float) -> void:
 	if not fr or a.fig == null or not a.fig.has_method("_choose") or lod >= 2:
 		return
 	if absf(_neig) > 0.04 and a.cur_speed > 0.1:
-		_add(a.body_root, "rotation:x", (-0.18 * _neig if _neig > 0.0 else 0.08 * -_neig))
+		_add(a.body_root, ^"rotation:x", (-0.18 * _neig if _neig > 0.0 else 0.08 * -_neig))
 
 
 # ---- 4 Blick -----------------------------------------------------------------------------------------------------------
@@ -369,8 +369,8 @@ func _blick_tick(dt: float, now: float, idle: String) -> void:
 			_blick_bis = now
 	_blick_s = _blick_s.lerp(_blick, clampf(dt * 4.0, 0.0, 1.0))
 	var kk := smoothstep(0.0, 1.0, _blick_w)
-	_put(a.head, "rotation:y", lerpf(a.head.rotation.y, _blick_s.x, kk))
-	_put(a.head, "rotation:x", lerpf(a.head.rotation.x, _blick_s.y, kk))
+	_put(a.head, ^"rotation:y", lerpf(a.head.rotation.y, _blick_s.x, kk))
+	_put(a.head, ^"rotation:x", lerpf(a.head.rotation.x, _blick_s.y, kk))
 
 
 func _blick_suchen():
@@ -447,8 +447,8 @@ func _handlung(dt: float, now: float, k: float) -> void:
 				_leg(i, 0.65 * b, -1.1 * b, w)
 			_arm(1, 1.0 * b, 0.08, 0.15, w)
 			_arm(0, 0.45 * b, -0.05, 0.4, w)
-			_add(a.body_root, "position:y", -(0.22 * b * sc * w))
-			_put(a.head, "rotation:x", lerpf(a.head.rotation.x, -0.4 * b, w))
+			_add(a.body_root, ^"position:y", -(0.22 * b * sc * w))
+			_put(a.head, ^"rotation:x", lerpf(a.head.rotation.x, -0.4 * b, w))
 		"klettern":                                          # hand over hand, knee up in turn (ladder / rock)
 			var c := e * TAU * 0.9
 			for i in range(2):
@@ -457,29 +457,29 @@ func _handlung(dt: float, now: float, k: float) -> void:
 				_arm(i, lerpf(1.9, 2.9, up), 0.12 * a.arms[i][1], lerpf(0.9, 0.2, up), w)
 				_leg(i, lerpf(0.15, 1.15, 1.0 - up), lerpf(-0.25, -1.5, 1.0 - up), w)
 			_lean(-0.18, w)
-			_put(a.head, "rotation:x", lerpf(a.head.rotation.x, 0.45, w))
+			_put(a.head, ^"rotation:x", lerpf(a.head.rotation.x, 0.45, w))
 		"kurbeln":                                           # the right hand goes round, the left holds
 			var c2 := e * TAU * 1.1
 			_arm(1, 0.95 + 0.38 * sin(c2), 0.1, 0.95 + 0.45 * cos(c2), w)
 			_arm(0, 0.8, -0.08, 0.7, w)
 			_lean(-0.22 + 0.06 * sin(c2), w)
-			_add(a.torso, "rotation:y", 0.08 * sin(c2) * w)
+			_add(a.torso, ^"rotation:y", 0.08 * sin(c2) * w)
 		"hebel":                                             # reach up, pull down with the weight of the body
 			var reach := 1.0 - smoothstep(0.2, 0.7, f)
 			for i in range(2):
 				_arm(i, lerpf(0.35, 1.75, reach), 0.1 * a.arms[i][1], lerpf(1.25, 0.2, reach), w)
 				_leg(i, 0.25 * (1.0 - reach), -0.45 * (1.0 - reach), w)
 			_lean(lerpf(0.14, -0.05, reach), w)
-			_add(a.body_root, "position:y", -(0.08 * (1.0 - reach) * sc * w))
+			_add(a.body_root, ^"position:y", -(0.08 * (1.0 - reach) * sc * w))
 		"highfive":                                          # the right hand up and against the partner's, then cheering
 			var up2 := smoothstep(0.0, 0.35, f) * (1.0 - smoothstep(0.75, 1.0, f))
 			_arm(1, lerpf(0.2, 2.65, up2), 0.18, lerpf(0.6, 0.15, up2), w)
 			if f > 0.45 and f < 0.55:
-				_add(a.body_root, "position:y", 0.05 * sc * w)
+				_add(a.body_root, ^"position:y", 0.05 * sc * w)
 		"winken":
 			_arm(1, 2.55, 0.3 + 0.22 * sin(e * 8.0), 0.55 + 0.35 * sin(e * 8.0), w)
 		"freude":                                            # a little jump, both arms up
-			_add(a.body_root, "position:y", absf(sin(e * 7.0)) * 0.14 * sc * w)
+			_add(a.body_root, ^"position:y", absf(sin(e * 7.0)) * 0.14 * sc * w)
 			for i in range(2):
 				_arm(i, 2.85 + 0.2 * sin(e * 10.0 + i), 0.32 * a.arms[i][1], 0.2, w)
 		"schreck":                                           # back a step, hands up in front, the head away
@@ -487,8 +487,8 @@ func _handlung(dt: float, now: float, k: float) -> void:
 			for i in range(2):
 				_arm(i, 1.5 * b2, -0.1 * a.arms[i][1], 1.6 * b2, w)
 			_lean(0.18 * b2, w)
-			_put(a.head, "rotation:x", lerpf(a.head.rotation.x, 0.2 * b2, w))
-			_add(a.body_root, "position:z", 0.12 * b2 * w)
+			_put(a.head, ^"rotation:x", lerpf(a.head.rotation.x, 0.2 * b2, w))
+			_add(a.body_root, ^"position:z", 0.12 * b2 * w)
 
 
 # ---- 6 Wetter ----------------------------------------------------------------------------------------------------------
@@ -499,14 +499,14 @@ func _wetter(dt: float, now: float, steht: bool, k: float, idle: String) -> void
 		_zitter_bis = now + randf_range(0.8, 1.8)
 	if cold and now < _zitter_bis:
 		var z := sin(_t * 41.0 + _seed) * 0.018
-		_add(a.torso, "rotation:z", z)
-		_put(a.head, "rotation:z", z * 0.8)
+		_add(a.torso, ^"rotation:z", z)
+		_put(a.head, ^"rotation:z", z * 0.8)
 		for i in range(2):
-			_add(a.arms[i][0], "rotation:z", -(0.04 * a.arms[i][1]))   # arms close to the body
+			_add(a.arms[i][0], ^"rotation:z", -(0.04 * a.arms[i][1]))   # arms close to the body
 	if cold and steht and leer in ["", "gewicht"] and idle == "" and _steh > 3.0 and fmod(_t + _seed, 14.0) < 3.0:
 		a.anim_arme = true                                    # rubbing the hands
 		for i in range(2):
-			_arm(i, 0.72, -0.3 * a.arms[i][1], 1.5 + 0.13 * sin(_t * 15.0 + i * PI), 0.9)
+			_arm(i, 0.6, -0.12 * a.arms[i][1], 1.55 + 0.13 * sin(_t * 15.0 + i * PI), 0.9, 0.8 * a.arms[i][1])
 	if _schirm < 0:
 		_schirm = 0
 		for c in a.torso.get_children():
@@ -515,10 +515,10 @@ func _wetter(dt: float, now: float, steht: bool, k: float, idle: String) -> void
 				break
 	var umbrella := _schirm == 1
 	if str(main.weather) == "rain" and not umbrella and a.prone < 0.1:
-		_add(a.head, "rotation:x", -0.22)                    # the head drawn in, shoulders up
-		_add(a.torso, "rotation:x", -(0.05))
+		_add(a.head, ^"rotation:x", -0.22)                    # the head drawn in, shoulders up
+		_add(a.torso, ^"rotation:x", -(0.05))
 		for i in range(2):
-			_add(a.arms[i][0], "rotation:z", -(0.05 * a.arms[i][1]))
+			_add(a.arms[i][0], ^"rotation:z", -(0.05 * a.arms[i][1]))
 	var wind: float = float(main.wind)
 	if wind > 14.0:
 		if not _flat_scan:
@@ -530,7 +530,7 @@ func _wetter(dt: float, now: float, steht: bool, k: float, idle: String) -> void
 			if is_instance_valid(n):
 				var r0: Vector3 = f[1]
 				n.rotation = r0 + Vector3(0.12 * st * sin(_t * 7.0 + float(f[2])), 0, 0.08 * st * sin(_t * 9.3 + float(f[2])))
-		_add(a.torso, "rotation:z", 0.012 * st * sin(_t * 1.3 + _seed))
+		_add(a.torso, ^"rotation:z", 0.012 * st * sin(_t * 1.3 + _seed))
 
 
 func _flatter_suchen() -> void:
@@ -627,24 +627,24 @@ func _statist(dt: float, now: float, idle: String, spd: float, k: float) -> void
 			var g := sin(_t * 1.7 + _seed)
 			if g > 0.2:
 				_arm(0, 0.4 + 0.2 * sin(_t * 2.6), -0.05, 1.25 + 0.3 * sin(_t * 3.3 + 1.0), 0.6)
-			_add(a.head, "rotation:x", 0.07 * maxf(0.0, sin(_t * 3.0 + _seed * 2.0)) * (1.0 if fmod(_t + _seed, 5.0) < 1.2 else 0.0))
+			_add(a.head, ^"rotation:x", 0.07 * maxf(0.0, sin(_t * 3.0 + _seed * 2.0)) * (1.0 if fmod(_t + _seed, 5.0) < 1.2 else 0.0))
 		"grillen":                                           # at the grill: the tongs in the right hand, turning now and then
 			a.anim_voll = true
 			var flip := maxf(0.0, sin(_t * 1.4 + _seed))
 			_arm(1, 0.85 + 0.25 * flip, 0.1, 0.9 + 0.5 * flip, 1.0)
 			_arm(0, 0.35, -0.05, 1.3, 1.0)
 			_lean(-0.18, 1.0)
-			_put(a.head, "rotation:x", lerpf(a.head.rotation.x, -0.4, 1.0))
+			_put(a.head, ^"rotation:x", lerpf(a.head.rotation.x, -0.4, 1.0))
 		"zelt":                                              # pitching a tent: crouched, hammering in a peg
 			a.anim_voll = true
 			var hit := absf(sin(_t * 4.2 + _seed))
 			for i in range(2):
 				_leg(i, 1.0, -1.75, 1.0)
-			_add(a.body_root, "position:y", -(0.38 * a.body_root.scale.y))
+			_add(a.body_root, ^"position:y", -(0.38 * a.body_root.scale.y))
 			_lean(-0.55, 1.0)
 			_arm(1, 0.6 + 1.2 * hit, 0.1, 0.6 + 0.6 * (1.0 - hit), 1.0)
 			_arm(0, 1.0, -0.1, 0.3, 1.0)
-			_put(a.head, "rotation:x", lerpf(a.head.rotation.x, -0.2, 1.0))
+			_put(a.head, ^"rotation:x", lerpf(a.head.rotation.x, -0.2, 1.0))
 	if a.variant != "child" or not a.has_meta("st_statist") or lod >= 2:
 		return
 	if now >= _kind_next and now >= _kind_bis:                # children: hop, run a bit, play
@@ -666,7 +666,7 @@ func _statist(dt: float, now: float, idle: String, spd: float, k: float) -> void
 	if _kind_art == "huepfen":
 		a.anim_voll = true
 		var j := absf(sin(_t * 6.5))
-		_add(a.body_root, "position:y", j * 0.16 * a.body_root.scale.y)
+		_add(a.body_root, ^"position:y", j * 0.16 * a.body_root.scale.y)
 		for i in range(2):
 			_arm(i, 0.4 + 1.6 * j, 0.35 * a.arms[i][1], 0.3, 1.0)
 			_leg(i, 0.25 * (1.0 - j), -0.5 * (1.0 - j), 1.0)
@@ -676,18 +676,19 @@ func _statist(dt: float, now: float, idle: String, spd: float, k: float) -> void
 func _spuren(dt: float, spd: float) -> void:
 	if spd < 0.25 or a.prone > 0.3 or a.legs.size() < 2:
 		return
-	var s := sin(float(a.phase))
-	if (s >= 0.0) != (_tritt_s >= 0.0):
-		var li := 0 if s >= 0.0 else 1
-		var kn: Node3D = a.legs[li][2]
+	var n := int(floor(float(a.phase) / PI))                  # every half step cycle one foot is down (also at low fps)
+	if n != _tritt_n:
+		_tritt_n = n
+		var kn: Node3D = a.legs[posmod(n, 2)][2]
 		var fp := kn.global_transform * Vector3(0, -0.44, -0.04)
+		fp.y = a.global_position.y
 		Spuren.tritt(main, fp, float(a.heading), false, spd)
-	_tritt_s = s
 
 
 # ---- helpers: every change is remembered and taken back before the next frame of actor._animate (vorher), so the
 # ---- base animation always works on its own pose and this layer never piles up (independent of the frame rate) -------
 var _frame := false                # post ran in this frame (vor_sync / nach_sync only then)
+const PIDX := {^"rotation:x": 0, ^"rotation:y": 1, ^"rotation:z": 2, ^"position:x": 3, ^"position:y": 4, ^"position:z": 5}
 var _off := {}                     # "id|path" -> [node, path, delta]
 
 
@@ -703,11 +704,11 @@ func vorher() -> void:
 	_off.clear()
 
 
-func _add(n, path: String, dv: float) -> void:
+func _add(n, path: NodePath, dv: float) -> void:
 	if n == null or dv == 0.0:
 		return
 	var nd := n as Node3D
-	var key := "%d|%s" % [nd.get_instance_id(), path]
+	var key: int = nd.get_instance_id() * 8 + int(PIDX[path])
 	nd.set_indexed(path, float(nd.get_indexed(path)) + dv)
 	if _off.has(key):
 		_off[key][2] = float(_off[key][2]) + dv
@@ -715,30 +716,32 @@ func _add(n, path: String, dv: float) -> void:
 		_off[key] = [nd, path, dv]
 
 
-func _put(n, path: String, v: float) -> void:
+func _put(n, path: NodePath, v: float) -> void:
 	if n == null:
 		return
 	_add(n, path, v - float((n as Node3D).get_indexed(path)))
 
 
-func _arm(i: int, sx: float, sz: float, ex: float, w: float) -> void:
+func _arm(i: int, sx: float, sz: float, ex: float, w: float, sy := 0.0) -> void:
 	var A: Array = a.arms[i]
 	var sh: Node3D = A[0]
-	_put(sh, "rotation:x", lerpf(sh.rotation.x, sx, w))
-	_put(sh, "rotation:z", lerpf(sh.rotation.z, sz, w))
+	_put(sh, ^"rotation:x", lerpf(sh.rotation.x, sx, w))
+	_put(sh, ^"rotation:z", lerpf(sh.rotation.z, sz, w))
+	if sy != 0.0 or sh.rotation.y != 0.0:
+		_put(sh, ^"rotation:y", lerpf(sh.rotation.y, sy, w))
 	if A.size() > 2 and A[2] != null:
-		_put(A[2], "rotation:x", lerpf((A[2] as Node3D).rotation.x, ex, w))
+		_put(A[2], ^"rotation:x", lerpf((A[2] as Node3D).rotation.x, ex, w))
 
 
 func _leg(i: int, hx: float, kx: float, w: float) -> void:
 	var L: Array = a.legs[i]
-	_put(L[0], "rotation:x", lerpf((L[0] as Node3D).rotation.x, hx, w))
+	_put(L[0], ^"rotation:x", lerpf((L[0] as Node3D).rotation.x, hx, w))
 	if L.size() > 2 and L[2] != null:
-		_put(L[2], "rotation:x", lerpf((L[2] as Node3D).rotation.x, kx, w))
+		_put(L[2], ^"rotation:x", lerpf((L[2] as Node3D).rotation.x, kx, w))
 
 
 func _lean(x: float, w: float) -> void:
-	_put(a.torso, "rotation:x", lerpf(a.torso.rotation.x, x, w))
+	_put(a.torso, ^"rotation:x", lerpf(a.torso.rotation.x, x, w))
 
 
 static func _wahl(w: Dictionary) -> String:

@@ -518,6 +518,8 @@ func sync(dt: float) -> void:
 func _ground(x: float, z: float) -> float:
 	var g: float = a.main.ground_y(x, z) if a.main.hilly() else test_slope * x
 	if a.anim != null and a.anim.get("stufe_nah") == true:
+		if not a.main.hilly() and test_slope == 0.0:
+			g = a.global_position.y                            # (flat: the ground is where the figure stands)
 		g = a.anim.boden(x, z, g)                             # anim_mensch.gd: steps and stones (a ray down per foot)
 	return g
 

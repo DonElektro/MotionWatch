@@ -35,7 +35,8 @@ var _schw_next := 0.0
 var _schw_bis := 0.0
 var _erde: CPUParticles3D = null
 var _tropfen: CPUParticles3D = null
-var _tritt_s := 0.0
+var _tritt_n := 0
+const PIDX := {^"rotation:x": 0, ^"rotation:y": 1, ^"rotation:z": 2, ^"position:x": 3, ^"position:y": 4, ^"position:z": 5}
 var _off := {}
 
 
@@ -84,11 +85,11 @@ func vorher() -> void:
 	_off.clear()
 
 
-func _add(n, path: String, dv: float) -> void:
+func _add(n, path: NodePath, dv: float) -> void:
 	if n == null or dv == 0.0:
 		return
 	var nd := n as Node3D
-	var key := "%d|%s" % [nd.get_instance_id(), path]
+	var key: int = nd.get_instance_id() * 8 + int(PIDX[path])
 	nd.set_indexed(path, float(nd.get_indexed(path)) + dv)
 	if _off.has(key):
 		_off[key][2] = float(_off[key][2]) + dv
@@ -96,7 +97,7 @@ func _add(n, path: String, dv: float) -> void:
 		_off[key] = [nd, path, dv]
 
 
-func _put(n, path: String, v: float) -> void:
+func _put(n, path: NodePath, v: float) -> void:
 	if n != null:
 		_add(n, path, v - float((n as Node3D).get_indexed(path)))
 
@@ -132,11 +133,13 @@ func post(dt: float, spd: float, now: float, idle: String) -> void:
 	if a.kind != "dog":
 		_teilchen(false, false)
 	if lod == 0 and spd > 0.3 and a.legs.size() >= 4 and not Quality.lite():
-		var s := sin(float(a.phase))
-		if (s >= 0.0) != (_tritt_s >= 0.0):
-			var lg: Node3D = a.legs[0 if s >= 0.0 else 3][0]
-			Spuren.tritt(main, lg.global_transform * Vector3(0, -lg.position.y, 0), float(a.heading), true, spd)
-		_tritt_s = s
+		var n := int(floor(float(a.phase) / PI))
+		if n != _tritt_n:
+			_tritt_n = n
+			var lg: Node3D = a.legs[0 if posmod(n, 2) == 0 else 3][0]
+			var fp := lg.global_transform * Vector3(0, -lg.position.y, 0)
+			fp.y = a.global_position.y
+			Spuren.tritt(main, fp, float(a.heading), true, spd)
 
 
 func _wahl(now: float, idle: String) -> void:
@@ -201,11 +204,11 @@ func _reh(dt: float, spd: float, now: float, idle: String) -> void:
 			_hebe_bis = now + randf_range(1.2, 2.2)
 		if now < _hebe_bis:
 			var u := sin(clampf((_hebe_bis - now) / 1.6, 0.0, 1.0) * PI)
-			_put(a.head, "rotation:x", lerpf(a.head.rotation.x, 0.35, u))
-			_add(a.head, "rotation:z", 0.04 * sin(_t * 8.0) * u)
+			_put(a.head, ^"rotation:x", lerpf(a.head.rotation.x, 0.35, u))
+			_add(a.head, ^"rotation:z", 0.04 * sin(_t * 8.0) * u)
 			_ohr_bis = maxf(_ohr_bis, now + 0.1)
 	if a.fled and spd > 2.0:                                   # flight: the head up high, the ears back
-		_put(a.head, "rotation:x", lerpf(a.head.rotation.x, 0.3, 0.7))
+		_put(a.head, ^"rotation:x", lerpf(a.head.rotation.x, 0.3, 0.7))
 
 
 # ---- 10 Fuchs und Dachs ------------------------------------------------------------------------------------------------
@@ -213,35 +216,35 @@ func _fuchs(dt: float, spd: float, now: float, idle: String) -> void:
 	var hb: float = (a.legs[0][0] as Node3D).position.y * a.body_root.scale.y
 	if spd > 0.05 and spd < 1.1 and not a.fled:              # sneaking: low, the head forward, the tail low
 		var low := clampf(1.0 - spd / 1.1, 0.3, 1.0)
-		_add(a.body_root, "position:y", -0.12 * hb * low)
-		_put(a.head, "rotation:x", lerpf(a.head.rotation.x, -0.3, low))
+		_add(a.body_root, ^"position:y", -0.12 * hb * low)
+		_put(a.head, ^"rotation:x", lerpf(a.head.rotation.x, -0.3, low))
 		if a.tail != null:
-			_add(a.tail, "rotation:x", -0.25 * low)
+			_add(a.tail, ^"rotation:x", -0.25 * low)
 	if idle == "halt":                                        # freezing: one front paw up, the head high, quite still
 		var w := clampf((a.idle_until - now) * 3.0, 0.0, 1.0) * clampf((now - (a.idle_until - 3.5)) * 3.0, 0.0, 1.0)
 		w = maxf(w, 0.6)
-		_put(a.legs[0][0], "rotation:x", lerpf((a.legs[0][0] as Node3D).rotation.x, 0.75, w))
-		_put(a.head, "rotation:x", lerpf(a.head.rotation.x, 0.3, w))
+		_put(a.legs[0][0], ^"rotation:x", lerpf((a.legs[0][0] as Node3D).rotation.x, 0.75, w))
+		_put(a.head, ^"rotation:x", lerpf(a.head.rotation.x, 0.3, w))
 		if main.head != null:
 			var to_c: Vector3 = main.head.global_position - a.global_position
-			_put(a.head, "rotation:y", lerpf(a.head.rotation.y, clampf(wrapf(atan2(-to_c.x, -to_c.z) - float(a.heading), -PI, PI), -1.0, 1.0), w))
+			_put(a.head, ^"rotation:y", lerpf(a.head.rotation.y, clampf(wrapf(atan2(-to_c.x, -to_c.z) - float(a.heading), -PI, PI), -1.0, 1.0), w))
 		if a.tail != null:
-			_put(a.tail, "rotation:y", 0.0)
+			_put(a.tail, ^"rotation:y", 0.0)
 
 
 # ---- 11 Kuh ------------------------------------------------------------------------------------------------------------
 func _kuh(dt: float, spd: float, now: float, idle: String) -> void:
 	if idle in ["", "kauen", "lie", "look"] and spd < 0.2:     # chewing (the jaw goes round): a small turn of the head
-		_add(a.head, "rotation:z", 0.05 * sin(_t * 6.5 + _seed))
-		_add(a.head, "rotation:x", 0.02 * sin(_t * 13.0 + _seed))
+		_add(a.head, ^"rotation:z", 0.05 * sin(_t * 6.5 + _seed))
+		_add(a.head, ^"rotation:x", 0.02 * sin(_t * 13.0 + _seed))
 	if idle == "kauen":
-		_put(a.head, "rotation:x", lerpf(a.head.rotation.x, -0.15, 0.8))
+		_put(a.head, ^"rotation:x", lerpf(a.head.rotation.x, -0.15, 0.8))
 	if now >= _schw_next:
 		_schw_next = now + randf_range(2.5, 8.0)
 		_schw_bis = now + randf_range(0.6, 1.2)
 	if a.tail != null and now < _schw_bis:                    # the tail swishes at the flies
-		_add(a.tail, "rotation:z", 0.75 * sin(_t * 10.0))
-		_add(a.tail, "rotation:x", 0.25 * absf(sin(_t * 10.0)))
+		_add(a.tail, ^"rotation:z", 0.75 * sin(_t * 10.0))
+		_add(a.tail, ^"rotation:x", 0.25 * absf(sin(_t * 10.0)))
 
 
 # ---- 13-15 Hund / Maggie -----------------------------------------------------------------------------------------------
@@ -253,49 +256,49 @@ func _hund(dt: float, spd: float, now: float, idle: String) -> void:
 	var grab := idle == "root"
 	var nass := idle == "schuetteln"
 	if spur and spd > 0.15 and idle == "":                     # 13: the nose on the ground, on the track
-		_put(a.head, "rotation:x", -0.8 + 0.06 * sin(_t * 15.0))
-		_put(a.head, "rotation:y", 0.28 * sin(_t * 2.3 + _seed))
+		_put(a.head, ^"rotation:x", -0.8 + 0.06 * sin(_t * 15.0))
+		_put(a.head, ^"rotation:y", 0.28 * sin(_t * 2.3 + _seed))
 		if a.tail != null:
-			_add(a.tail, "rotation:x", -0.35)
+			_add(a.tail, ^"rotation:x", -0.35)
 	match idle:
 		"root":                                               # 14: digging with the front paws, the earth flies back
-			_put(a.body_root, "rotation:x", -0.2)
-			_add(a.body_root, "position:y", -0.05 * hb)
+			_put(a.body_root, ^"rotation:x", -0.2)
+			_add(a.body_root, ^"position:y", -0.05 * hb)
 			for i in range(2):
-				_put(a.legs[i][0], "rotation:x", 0.55 + 0.75 * sin(_t * 15.0 + PI * i))
-			_put(a.legs[2][0], "rotation:x", -0.25)
-			_put(a.legs[3][0], "rotation:x", -0.25)
-			_put(a.head, "rotation:x", -0.75)
+				_put(a.legs[i][0], ^"rotation:x", 0.55 + 0.75 * sin(_t * 15.0 + PI * i))
+			_put(a.legs[2][0], ^"rotation:x", -0.25)
+			_put(a.legs[3][0], ^"rotation:x", -0.25)
+			_put(a.head, ^"rotation:x", -0.75)
 			if a.tail != null:
-				_add(a.tail, "rotation:x", -0.4)
+				_add(a.tail, ^"rotation:x", -0.4)
 		"sit":                                                # 15: sitting - the hind legs folded, the front legs straight
-			_add(a.body_root, "position:y", -0.1 * hb)
-			_put(a.legs[0][0], "rotation:x", -0.4)
-			_put(a.legs[1][0], "rotation:x", -0.4)
-			_put(a.legs[2][0], "rotation:x", 1.25)
-			_put(a.legs[3][0], "rotation:x", 1.25)
+			_add(a.body_root, ^"position:y", -0.1 * hb)
+			_put(a.legs[0][0], ^"rotation:x", -0.4)
+			_put(a.legs[1][0], ^"rotation:x", -0.4)
+			_put(a.legs[2][0], ^"rotation:x", 1.25)
+			_put(a.legs[3][0], ^"rotation:x", 1.25)
 		"schief":                                             # the head tilted, listening
-			_add(a.body_root, "position:y", -0.1 * hb)
-			_put(a.body_root, "rotation:x", 0.4)
+			_add(a.body_root, ^"position:y", -0.1 * hb)
+			_put(a.body_root, ^"rotation:x", 0.4)
 			for i in range(4):
-				_put(a.legs[i][0], "rotation:x", -0.4 if i < 2 else 1.25)
-			_put(a.head, "rotation:z", 0.42 * (1.0 if fmod(_seed, 2.0) < 1.0 else -1.0))
-			_put(a.head, "rotation:x", 0.15)
+				_put(a.legs[i][0], ^"rotation:x", -0.4 if i < 2 else 1.25)
+			_put(a.head, ^"rotation:z", 0.42 * (1.0 if fmod(_seed, 2.0) < 1.0 else -1.0))
+			_put(a.head, ^"rotation:x", 0.15)
 		"schuetteln":                                         # shaking off the water: from the head to the tail
 			var env := clampf((a.idle_until - now) / 1.2, 0.0, 1.0)
-			_put(a.body_root, "rotation:z", 0.38 * sin(_t * 30.0) * env)
-			_put(a.head, "rotation:z", 0.5 * sin(_t * 30.0 - 0.6) * env)
+			_put(a.body_root, ^"rotation:z", 0.38 * sin(_t * 30.0) * env)
+			_put(a.head, ^"rotation:z", 0.5 * sin(_t * 30.0 - 0.6) * env)
 			if a.tail != null:
-				_add(a.tail, "rotation:y", 0.6 * sin(_t * 30.0 - 1.2) * env)
+				_add(a.tail, ^"rotation:y", 0.6 * sin(_t * 30.0 - 1.2) * env)
 		"knurren":                                            # ducking when growling: low, the head forward, the tail down
-			_add(a.body_root, "position:y", -0.12 * hb)
-			_put(a.body_root, "rotation:x", -0.12)
-			_put(a.head, "rotation:x", -0.28)
+			_add(a.body_root, ^"position:y", -0.12 * hb)
+			_put(a.body_root, ^"rotation:x", -0.12)
+			_put(a.head, ^"rotation:x", -0.28)
 			for i in range(4):
-				_put(a.legs[i][0], "rotation:x", 0.25 if i < 2 else -0.3)
+				_put(a.legs[i][0], ^"rotation:x", 0.25 if i < 2 else -0.3)
 			if a.tail != null:
-				_put(a.tail, "rotation:y", 0.0)
-				_add(a.tail, "rotation:x", -0.6)
+				_put(a.tail, ^"rotation:y", 0.0)
+				_add(a.tail, ^"rotation:x", -0.6)
 	_teilchen(grab and lod == 0, nass and lod == 0)
 
 

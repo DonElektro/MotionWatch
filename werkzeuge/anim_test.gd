@@ -67,7 +67,7 @@ func _run() -> void:
 	A.leer = "verschr"
 	A._leer_bis = p.now_s() + 30.0
 	await wait(1.2)
-	ok("Arme verschränkt (Schulter z innen, Ellbogen > 1.5)", (p.arms[1][0] as Node3D).rotation.z < -0.15 and (p.arms[1][2] as Node3D).rotation.x > 1.5)
+	ok("Arme verschränkt (Oberarm nach innen gedreht, Ellbogen > 1.5)", (p.arms[1][0] as Node3D).rotation.y > 0.5 and (p.arms[0][0] as Node3D).rotation.y < -0.5 and (p.arms[1][2] as Node3D).rotation.x > 1.5)
 	ok("anim_arme für das Figuren-Paket", p.anim_arme)
 	A.leer = "gewicht"
 	var tz := []
