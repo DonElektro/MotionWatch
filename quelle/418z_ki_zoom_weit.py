@@ -8,7 +8,7 @@
 #      ai_view gibt dem YOLO-Modell das ganze Kamerabild (es verkleinert selbst auf seinen Eingang: 960 -> 640 = 1.33 x mehr
 #      Pixel pro Person als vorher, gleiche Rechenzeit), die Lupe schneidet ihre Kachel aus dem Kamerabild (2 x mehr Pixel).
 #      Das Standardmodell SSD (300 x 300) bekommt wie bisher das Arbeitsbild (mehr Pixel bringen ihm nichts), aber auch seine
-#      Lupe-Kachel aus dem Kamerabild.
+#      Lupe-Kachel aus dem Kamerabild. In der Infrarot-Nacht (AI_FULL_MIN_BRIGHT) bleibt alles beim Arbeitsbild (Rauschen).
 #   2. Eine Person ab ~12 m bewegt im Wald (Stämme, Schatten) nur kleine Flecken, kleiner als die Mindestfläche einer Spur
 #      (min_area, mit Empfindlichkeit / Wind): keine Spur -> kein Hinweis -> keine Lupe. Jetzt ist auch kleine Bewegung ein
 #      Hinweis («weit»), wenn sie am selben Ort wiederkommt (ZOOM_FAR_N in ZOOM_FAR_S) und noch kein KI-Kasten dort ist.
@@ -45,16 +45,30 @@ ZOOM_CONFIRM_S = 5.0     # ein Lupe-Treffer auf einem «weiten» Hinweis zählt 
                          # (eine gehende Person auf 20 m legt in 5 s ~7 m zurück = ~100 px - darum «am selben Ort» grosszügig, s. unten)
 ZOOM_UPRIGHT = 1.2       # weit weg: nur ein aufrechter Kasten (Höhe >= 1.2 x Breite) - gehend ~2.5, stehend ~3.5; Äste / Büsche quer
 ZOOM_TILES_YOLO = 4      # mit dem eigenen YOLO-Modell: bis 4 Kacheln in einem Lauf (2 x 2), mit SSD (300 px) nur eine
+AI_FULL_MIN_BRIGHT = 30  # die Kamera-Pixel nur, wenn das Bild nicht Infrarot-Nacht ist (mittlere Helligkeit des Arbeitsbilds ab 30).
+                         # Gemessen mit den Bildern des Erkennungstests (test-coco640): Tag / Dämmerung (Helligkeit 38-190) mit den
+                         # Kamera-Pixeln gleich gut oder besser (Kind 0.40 -> 0.54, Wald Dämmerung 0.33 -> 0.47, eine gehende
+                         # Person neu 0.44); Infrarot-Nacht (19-22) schlechter (Stellplatz gehend 0.66 -> nichts, Kind 0.38 ->
+                         # nichts): das Rauschen der hohen Verstärkung - das Verkleinern auf 480 px mittelt es weg (wie bisher).
 ZOOM = {"seen": {}, "far": [], "looked": {}, "pend": [], "runs": 0, "far_hits": 0, "pend_n": 0}
 
 
 def ai_view(ai, frame):
     """(picture for the main AI run, scale picture / working picture): the own YOLO model gets the camera picture itself when it
     is bigger than the working picture (it letterboxes to its input anyway), SSD the working picture as before"""
-    full = getattr(ai, "full", None)
-    if ai.kind != "yolo" or full is None or full.shape[1] <= frame.shape[1]:
+    full = ai_full(ai, frame)
+    if ai.kind != "yolo" or full is frame:
         return frame, 1.0
     return full, full.shape[1] / float(frame.shape[1])
+
+
+def ai_full(ai, frame):
+    """the camera picture for the AI when it is bigger than the working picture and it is not an infrared night (noise), else
+    the working picture itself"""
+    full = getattr(ai, "full", None)
+    if full is None or full.shape[1] <= frame.shape[1] or float(STATE.get("brightness") or 0) < AI_FULL_MIN_BRIGHT:
+        return frame
+    return full
 
 
 def ai_unscale(boxes, k, n=4):
@@ -166,9 +180,7 @@ def ai_zoom_run(ai, frame, boxes, w, h, now=None):
         return boxes
     now = time.time() if now is None else now
     ZOOM["runs"] += 1
-    full = getattr(ai, "full", None)
-    if full is None or full.shape[1] < w:
-        full = frame
+    full = ai_full(ai, frame)
     k = full.shape[1] / float(w)
     yolo = ai.kind == "yolo"
     picks = zoom_pick(getattr(ai, "hints", []) or [], getattr(ai, "far", []) or [], boxes, now,
@@ -267,6 +279,7 @@ def zoom_selftest():
         assert not zoom_accept((300, 100, 10, 26, 0.6), "far", 76.0, 110, 270)        # 6 s later: too late, a new first hit
         # 2 x 2 tiles in one run (YOLO), boxes back in the working picture; camera picture 2 x bigger
         ZOOM.update(pend=[], looked={}, runs=1)
+        br0 = STATE.get("brightness"); STATE["brightness"] = 120
         frame = np.zeros((270, 480, 3), np.uint8); full = np.zeros((540, 960, 3), np.uint8)
         ai = _AI([(320 + 100, 50, 20, 60, 0.8)])           # a person in the 2nd tile (top right), 320 px tile
         ai.full = full; ai.hints = [(40, 40, 10, 24), (300, 120, 10, 24)]
@@ -279,11 +292,15 @@ def zoom_selftest():
         ai_zoom_run(ai, frame, [], 480, 270, 90.0)
         assert ai.calls == [(220, 220, 3)], ai.calls
         assert ai_unscale([(100, 50, 20, 40, 0.7)], 2.0) == [(50, 25, 10, 20, 0.7)]
+        STATE["brightness"] = 20                            # infrared night: the working picture (noise), as before
+        assert ai_view(ai, frame) == (frame, 1.0)
+        STATE["brightness"] = 120
         v, k = ai_view(ai, frame)
         assert v is full and k == 2.0
         ai.kind = "ssd"
         assert ai_view(ai, frame)[0] is frame              # SSD: the working picture as before
     finally:
+        STATE["brightness"] = br0 if "br0" in locals() else STATE.get("brightness", 0)
         ZOOM.update(seen={}, far=[], looked={}, pend=[], runs=0, far_hits=0, pend_n=0)
     return True
 
