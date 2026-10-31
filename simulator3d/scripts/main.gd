@@ -301,6 +301,7 @@ var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Z
 var fauna                             # fauna.gd (3D-3.95)
 var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»): wind, light, lures, valuables of the catalogue
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
+var tiere                             # tiere.gd (Paket «Tiere»): animals behave like real ones (flee, curl up, pounce …)
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
 var colors_on := true
 var tracks                            # tracks.gd (3D-3.98)
@@ -422,6 +423,9 @@ func _ready() -> void:
 	umgebung = preload("res://scripts/umgebung.gd").new()     # 3D-4.x: the surroundings like real (every part can be switched off)
 	umgebung.main = self
 	add_child(umgebung)
+	tiere = preload("res://scripts/tiere.gd").new()           # Paket «Tiere»: real behaviour of the animals (with «Tiere wie echt»)
+	tiere.main = self
+	add_child(tiere)
 	fauna = preload("res://scripts/fauna.gd").new()          # 3D-3.95: birds and bats
 	fauna.main = self
 	add_child(fauna)
@@ -2900,6 +2904,8 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 		return umgebung.spawn_kind(kind, from, to)    # 3D-4.x: e-scooter, wheelchair, robots, cat on the fence, chickens …
 	if szenen != null and szenen.is_kind(kind):
 		return szenen.spawn_kind(kind, from, to)      # 3D-4.x: on your pitch, camouflage / crawling, bike thief (szenenplus.gd)
+	if tiere != null and tiere.is_kind(kind):
+		return tiere.spawn_kind(kind, from, to)       # Paket «Tiere»: free dog, crows, magpies, gulls
 	if kids_on and not kids_scary and kind in ["wolf", "lynx", "boar"]:
 		kind = "hare"                             # 3D-3.69: Kinder-Modus without wild animals if so set
 	if kids_on and not kids_thief and kind in ["thief", "burglar", "drunk"]:
@@ -2919,6 +2925,8 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 		sd = randi()
 		seed(sd)
 	v.setup(self, kind, a, b, spd * randf_range(0.85, 1.15))
+	if tiere != null:
+		tiere.on_spawn(v)                         # Paket «Tiere»: the real walking speed of the animal
 	v.set_night(is_dark())
 	if sd >= 0:
 		recorder.note_spawn(v, sd)
@@ -3362,7 +3370,7 @@ func _register_controls() -> void:
 	add_control("toggle", "world_cloth", "Fahnen und Wäsche im Wind", func(): return world_cloth, func(v): set_cloth(v), "Wetter", ex)
 	add_control("toggle", "world_smoke", "Rauch aus Kaminen", func(): return world_smoke, func(v): set_smoke(v), "Wetter", ex)
 	add_control("toggle", "world_fireflies", "Glühwürmchen in warmen Nächten", func(): return world_fireflies, func(v): world_fireflies = v, "Wetter", ex)
-	add_control("toggle", "fauna_on", "Vögel am Tag, Fledermäuse in der Nacht (warm im Wärmebild, typische Fehlalarm-Ursache)", func(): return fauna_on, func(v): fauna_on = bool(v); fauna.on = fauna_on, "Wetter", {"sub": "Natur und Wind"})
+	add_control("toggle", "fauna_on", "Vögel am Tag (fliegen vorbei, Krähen, Elstern und Möwen am Boden), Fledermäuse in der Nacht (warm im Wärmebild, typische Fehlalarm-Ursache)", func(): return fauna_on, func(v): fauna_on = bool(v); fauna.on = fauna_on, "Wetter", {"sub": "Natur und Wind"})
 	add_control("toggle", "gusts", "Wind in Böen", func(): return gusts, func(v): gusts = v, "Wetter", ex)
 	add_control("toggle", "cloud_shadows", "Wolkenschatten (die Helligkeit wechselt)", func(): return cloud_shadows, func(v): cloud_shadows = v, "Wetter", ex)
 	add_control("slider", "lamp_share", "Nachts mit Stirnlampe oder Handylicht", func(): return lamp_share, func(v): lamp_share = v, "Besuch", {"min": 0, "max": 1, "step": 0.05, "expert": true})
@@ -3452,6 +3460,7 @@ func _register_controls() -> void:
 	simreal.add_controls()                                 # 3D-4.4: closer to the real device
 	objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
 	umgebung.add_controls()                                # 3D-4.x: surroundings like real
+	tiere.add_controls()                                   # Paket «Tiere»: free dog, birds on the ground
 	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
 	if statusled != null:
 		statusled.add_controls()                           # Licht & Ton → Status-LED & Tasten (Fenster «Gerät»)
@@ -4284,6 +4293,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return objplus.control(d)
 	elif a == "umgebung":                              # 3D-4.x: {do: info | set (key, value) | spawn (kind) | snow_puff | clear_tracks}
 		return umgebung.control(d)
+	elif a == "tiere":                                 # Paket «Tiere»: {do: info | spawn (kind, from, to) | threat (x, z, secs) | curl | pounce | car}
+		return tiere.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
 		return weit.control(d)
 	elif a == "parcours":                              # 3D-4.18: {do: info | start (lessons, night, seed, prep_s) | stop | state | result | game | steer ...}

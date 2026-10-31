@@ -95,6 +95,8 @@ func pick(kinds: Array) -> String:
 	var cal := calendar()
 	for k in kinds:
 		var a := activity(str(k), h)
+		if main.tiere != null:
+			a *= main.tiere.season_k(str(k))              # Paket «Tiere»: hedgehog and bats sleep in winter, the badger rests
 		if str(k) in main.PEOPLE_KINDS or str(k) in ["bbq", "homecoming", "parcel", "kids_tag", "burglar"]:
 			a *= cal
 		w.append(a)
