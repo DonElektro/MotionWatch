@@ -580,7 +580,8 @@ func paint_morning(body: Control) -> void:
 
 
 func paint_chapter(left: Control) -> void:
-	zb.tagebuch_knopf(left)
+	if z.mode != "allein":                     # (allein: the chapter page stays as it was)
+		zb.tagebuch_knopf(left)
 
 
 # ---- control API -----------------------------------------------------------------------------------------------------

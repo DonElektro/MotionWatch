@@ -4,7 +4,7 @@ extends Node
 ## Welt wissen müssen, fragen sie einen «Wirt» (host) mit kleinen zb_*-Funktionen. Allein spielen: zb_aktiv() = false, dann
 ## zeigt und tut dieser Knoten nichts.
 ##   «Die Karte des Grossvaters»: Wirt = abenteuer_zwei_team.gd (eingehängt in abenteuer_zweit.gd)
-##   «Maggie und der Bergkristall»: Wirt = maggie_zwei.gd (Einbau-Anleitung ganz unten in diesem Kopf)
+##   «Maggie und der Bergkristall»: Wirt = maggie_zwei_team.gd (Kind von maggie_zwei.gd; Anleitung ganz unten in diesem Kopf)
 ##
 ## Die zehn Bausteine (alle für den Wirt aufrufbar):
 ##   1 Geteiltes Wissen   wissen(id, [text_spieler1, text_spieler2])  · wissen_weg(id = "")
@@ -33,6 +33,8 @@ extends Node
 ##                        sind die zwei weiter als WEIT m auseinander, zeigt jeder Bildschirmteil einen Pfeil zum anderen.
 ## Bedienung (grosse Hinweise oben in jedem Bildschirmteil):
 ##   Controller: A = Team-Knopf (Räuberleiter, Seil, High-Five) · B = weitergeben · X = Fähigkeit · Y = Foto · ◀ ▶ = Ding wählen
+##     (der Wirt kann das ändern: zb_pad() -> {"team": "l1", …}; Maggie: LB Team · RB geben · ⬇ Fähigkeit · ⬆ Foto, weil A B X Y
+##     dort Maggie und den Teamrätseln gehören)
 ##   Tastatur Spieler 1: F Team · G geben · V Ding wählen · R Fähigkeit · T Foto
 ##   Tastatur Spieler 2: N Team · M geben · . Ding wählen · P Fähigkeit · , Foto
 ## Speichern: zustand() / laden(d) / neu() - der Wirt legt es in seinen Spielstand (Grossvater: R["zb"]). Einstellungen
@@ -54,34 +56,36 @@ extends Node
 ##   zb_welt(q: Vector2, h: float) -> Vector3   Boden-Position + Höhe -> Welt (für Felsblock, Fundstücke)
 ##   zb_3d() -> Node3D           Eltern-Knoten für die 3D-Dinge · zb_ordner() -> String (user://…, pro Spielstand)
 ## ---- Wirt: freiwillig (sonst Standard) ---------------------------------------------------------------------------------
-##   zb_knoepfe(i) -> bool (true) · zb_eingabe_frei(i) -> bool (true: kein Menü offen) · zb_layer() -> int (1)
+##   zb_knoepfe(i) -> bool (true: Controller von i lesen) · zb_eingabe_frei(i) -> bool (true: kein Menü offen) · zb_layer() -> int (1) ·
+##   zb_pad() -> {team, geben, faehig, foto: padmap-Knopf}
 ##   zb_heben(i, h) (Figur auf den Felsen) · zb_setzen(i, q) (Figur dorthin) · zb_bild(i) -> Image · zb_kamera(i) -> Camera3D
 ##   zb_tiere() -> Array[Node3D] · zb_tier_id(node) -> String · zb_foto_wertung(foto) -> {tier, schaerfe, punkte} · zb_licht() -> 0…1
 ##   zb_rollen() -> [{id, name, name_f, icon, faehigkeit, text, cd}, {…}] · zb_faehigkeit(i, rolle_id) -> String (Meldung; "" = geht nicht)
 ##   zb_info(i) -> String (kleine Zeile im Bildschirmteil) · zb_ereignis(art, daten) (Tagebuch, Ton …) · zb_maler() -> Objekt mit
 ##   _group / _lab / _btn (gleicher Look wie das Bedienfeld; sonst einfache eigene Knöpfe)
 ##
-## ---- Einbau-Anleitung «Maggie und der Bergkristall» (für maggie_zwei.gd, Zweig real-maggie-zwei) --------------------------
-##   1. In maggie_zwei.gd:   const ZB = preload("res://scripts/zwei_bausteine.gd")
+## ---- Einbau «Maggie und der Bergkristall» (so gebaut in maggie_zwei_team.gd, Anleitung für Änderungen) -------------------
+##   Einhänge-Punkte: maggie_zwei.gd _ready (Wirt anlegen), _p1_buttons (B: darf_benutzen), control k "zb";
+##   maggie_story.gd _region_tick (_zwei_wartet: das Tor wartet). Die Punkte unten beschreiben, was der Wirt dort tut.
+##   1. Im Wirt:              const ZB = preload("res://scripts/zwei_bausteine.gd")
 ##                           var zb = ZB.new();  zb.setup(self, main, "maggie");  add_child(zb)
-##      und die Pflicht-Funktionen oben als Methoden von maggie_zwei.gd. Koordinaten: q = Vector2(welt.x, welt.z),
+##      und die Pflicht-Funktionen oben als Methoden des Wirts. Koordinaten: q = Vector2(welt.x, welt.z),
 ##      zb_welt(q, h) = Vector3(q.x, main.ground_y(q.x, q.y) + h, q.y), zb_yaw(i) = Figur.rotation.y, zb_3d() = story (main.maggie).
-##   2. Rollen: zb_rollen() -> [{"id": "maggie", "name": "Hundeführer", "name_f": "Hundeführerin", "icon": "🐕", "faehigkeit": "Schnüffeln",
-##      "text": "Führt Maggie: X = Maggie riecht Spuren (versteckte Hinweise).", "cd": 12}, {"id": "kristall", "name": "Kristall-Hüter",
-##      "name_f": "Kristall-Hüterin", "icon": "💎", "faehigkeit": "Kristall-Licht", "text": "Trägt den Kristall: X = Bild der Zukunft.", "cd": 20}].
-##      zb_faehigkeit(i, "maggie") -> Maggie gräbt/riecht (maggie_hund.gd), Text zurück; "kristall" -> story.look_into_crystal().
-##   3. Geteiltes Wissen: Zukunftsbild-Text nur für den Kristall-Hüter: zb.wissen("zukunft", ["", text]) (Index über rolle_index);
-##      Maggies Nase nur für den Hundeführer: zb.wissen("nase", [text, ""]).
-##   4. Räuberleiter: an steilen Stellen der Region zb.teamstelle(id, Vector2(p.x, p.z), T.t("Felsstufe")) und im Signal
-##      team_geschafft(art, id) story.aufgabe_erledigt(id) - so zählt die Teamstelle als Aufgabe der Region.
-##   5. Rücken an Rücken: wenn maggie_gefahr.gd ein böses Tier nahe hat (Wölfe im Winter, Krähen …): zb.geraeusch(T.t("Ein Heulen!"), "wolf").
+##   2. Rollen: zb_rollen() -> [{"id": "kristall", "name": "Kristall-Hüter", "name_f": "Kristall-Hüterin", "icon": "💎",
+##      "faehigkeit": "Kristall-Licht", "text": …, "cd": 25}, {"id": "nase", "name": "Hundeführer", "name_f": "Hundeführerin", "icon": "🐕",
+##      "faehigkeit": "Spürnase", …}]; zb_faehigkeit(i, "kristall") -> story.look_into_crystal(), "nase" -> Spuren + Pfeil zur Station.
+##   3. Geteiltes Wissen: was der Kristall über nahe Gefahren weiss (story._zk_orte) nur bei Spieler 1: zb.wissen("maggie", [text, ""]);
+##      was Maggie riecht (maggie_hund.aktuell()) nur bei Spieler 2: zb.wissen("maggie", ["", text]).
+##   4. Räuberleiter: eine Felsstufe zwischen Rastplatz und Tor zb.teamstelle(id, q, T.t("Felsstufe"), 1.6, 0) (nur Spieler 2 als
+##      Wanderer); «oben» = zb_setzen über die Stufe drüber. (Als Pflicht-Aufgabe: im Signal team_geschafft story.aufgabe_erledigt(id).)
+##   5. Rücken an Rücken: maggie_gefahr.warnung(stufe, art, pos) -> zb.geraeusch(T.t("Da ist etwas!"), art, T.t("einen Wolf"), q) (höchstens alle 150 s).
 ##   6. Wer findet mehr: zb.fundstueck(id, q, "funde", T.t("Ein Glitzerstein")) für Fundstücke, zb.zaehle(i, "tiere") für liebe Tiere.
-##   7. Lagerfeuer: im Rastplatz-Autosave zb.lagerfeuer_frage(T.t("Was war heute das Schönste?"), [...]) und im Rastplatz-Fenster
-##      zb.paint_lagerfeuer(box); bei region_fertig(id) zb.tag_speichern(T.t(Region-Name), [Bildpfade]); Abspann: zb.tagebuch_knopf(box).
-##   8. High-Five: nach jedem Maggie-Rätsel (aufgabe_erledigt) zb.high_five("raetsel").
-##   9. Gummiband: zb.wichtig("tor", Vector2(tor.x, tor.z), 8.0, T.t("Tor")) sobald das Tor leuchtet; solange zb.haelt(): Tor zu.
-##  10. Rucksack: zb.rucksack_setzen([["fackel", T.t("Fackel"), 0.6], ["kuhglocke", T.t("Kuhglocke"), 0.4], …]) und bei Schutzdingen
-##      zb.hat(i, "fackel") prüfen (nur der Träger kann es benutzen). zb.zustand() in zustand() von maggie_zwei.gd speichern.
+##   7. Lagerfeuer: maggie_zwei.rastplatz (erster neuer Rastplatz der Region) -> zb.lagerfeuer_frage(…, true) + zb.lagerfeuer_fenster()
+##      (◀ ▶ wählen, LB = so!); story.region_beendet -> zb.tag_speichern(Titel) + zb.neu(); das Fenster hat «📔 Reisetagebuch ansehen».
+##   8. High-Five: maggie_zwei.teamraetsel_geloest / gerettet_zwei / fund -> zb.high_five(…).
+##   9. Gummiband: Wirt.haelt() (vom Tor-Test in maggie_story): Spieler 2 weiter als 15 m vom Tor -> zb.wichtig("tor", …) und warten (≤ 60 s).
+##  10. Rucksack: die Schutzdinge (maggie_gefahr.schutz) -> zb.rucksack_setzen([[id, Name, 0.6], …]); B (Schutzding) nur, wenn Spieler 1
+##      es trägt (Wirt.darf_benutzen), sonst gibt Spieler 2 es mit RB weiter.
 ##   Ohne Bausteine (allein): zb_aktiv() = false - nichts ändert sich.
 
 signal team_geschafft(art: String, id: String)
@@ -1214,6 +1218,17 @@ func _presses(i: int) -> Array:
 	out.append_array(_inj[i])
 	_inj[i] = []
 	return out
+
+
+func _unhandled_input(ev: InputEvent) -> void:
+	"""(_unhandled_input: it comes before the one of main.gd) our keys (F G V R T / N M . P ,) do not reach the hotkeys of the window (main.gd: T = TV, G, M = map, P, F) while two play"""
+	if not (ev is InputEventKey) or not aktiv():
+		return
+	var pk: int = (ev as InputEventKey).physical_keycode
+	for i in range(2):
+		if pk in (KEYS[i] as Dictionary).values() and bool(_h("zb_eingabe_frei", [i], true)):
+			get_viewport().set_input_as_handled()
+			return
 
 
 func _input_tick() -> void:
