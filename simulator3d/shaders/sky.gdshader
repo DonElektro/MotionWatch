@@ -182,13 +182,14 @@ void sky() {
 		col = mix(col, cc * energy, c * fade * (0.55 + 0.45 * cov) * (1.0 - hs * 0.9));
 		if (cumulus > 0.001) {
 			// cumulus: separate puffs, lower in the sky, bright tops and grey flat bases
-			vec2 uq = d.xz / (h + 0.2) * 0.55 + wind * TIME * 0.6 + vec2(3.7, 1.9);
-			float base = fbm(uq * 2.2) + 0.06 * (vnoise(uq * 14.0) - 0.5);   // cauliflower edges
-			float puff = smoothstep(0.585 - 0.07 * cumulus, 0.635 - 0.06 * cumulus, base);
-			float top = fbm(uq * 2.2 - normalize(d.xz + vec2(1e-4)) * 0.06);   // the side toward the zenith
-			float lit = clamp(0.55 + (base - top) * 7.0 + 0.25 * max(dot(d, LIGHT0_DIRECTION), 0.0), 0.0, 1.0);
+			vec2 uq = d.xz / (h + 0.06) * 0.42 + wind * TIME * 0.6 + vec2(3.7, 1.9);   // a high layer (small near the horizon)
+			float base = fbm(uq * 3.0) + 0.05 * (vnoise(uq * 22.0) - 0.5);   // cauliflower edges
+			float thr = 0.6 - 0.06 * cumulus;
+			float puff = smoothstep(thr, thr + 0.018, base);                 // sharp edges
+			float top = fbm(uq * 3.0 - normalize(d.xz + vec2(1e-4)) * 0.05);   // the side toward the zenith
+			float lit = clamp(0.55 + (base - top) * 8.0 + 2.5 * (base - thr) + 0.2 * max(dot(d, LIGHT0_DIRECTION), 0.0), 0.0, 1.0);
 			vec3 cu = mix(cloud_shadow * 0.85, cloud_light * 1.1, lit);
-			float band = smoothstep(0.02, 0.1, h) * (1.0 - smoothstep(0.35, 0.7, h) * 0.6);
+			float band = smoothstep(0.1, 0.22, h) * (1.0 - smoothstep(0.55, 0.85, h) * 0.5);   // not low at the horizon
 			col = mix(col, cu * energy, puff * band * min(1.0, cumulus * 1.3) * (1.0 - hs * 0.9));
 		}
 		if (contrails > 0.001) {

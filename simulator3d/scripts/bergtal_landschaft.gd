@@ -242,24 +242,24 @@ func _karst(rr: RandomNumberGenerator) -> Array:
 			var h: float = bt.H(px, pz)
 			var kk := karst_k(px, pz, h)
 			var cone: float = bt.cone_at(px, pz)
-			var single := 0.012 if (h > 260.0 and h < 760.0) else 0.0
-			var p := kk * (0.2 + 0.8 * smoothstep(0.05, 0.4, _gnoise.get_noise_2d(px, pz))) + single + cone * 0.35
+			var single := (0.004 + 0.035 * kk) if (h > 260.0 and h < 760.0) else 0.0      # single blocks, scattered
+			var p := kk * (0.02 + 0.9 * smoothstep(0.15, 0.45, _gnoise.get_noise_2d(px, pz))) + single + cone * 0.3   # groups with gaps
 			if r > p:
 				continue
 			var q := Vector2(px, pz)
 			if not _ground_ok(q, 38.0) or bt.forest_k(px, pz, h) > 0.7 or not _ok(q, 4.2):
 				continue
 			var n := 1
-			if kk > 0.3 and rr.randf() < 0.55:
-				n = rr.randi_range(2, 7)                           # a group
+			if kk > 0.3 and rr.randf() < 0.65:
+				n = rr.randi_range(3, 9)                           # a group
 			for i in range(n):
-				var o := q + Vector2.from_angle(rr.randf() * TAU) * (0.0 if i == 0 else rr.randf_range(1.0, 4.5))
+				var o := q + Vector2.from_angle(rr.randf() * TAU) * (0.0 if i == 0 else rr.randf_range(1.2, 6.0))
 				if i > 0 and not _ok(o, 4.2):
 					continue
-				var sc := rr.randf_range(0.4, 1.0) * (1.0 + 0.9 * pow(rr.randf(), 3.0))
+				var sc := rr.randf_range(0.3, 0.7) if rr.randf() < 0.55 else rr.randf_range(0.7, 1.5)   # mixed, also big ones
 				if cone > 0.3 and kk < 0.3:
 					sc *= 0.55                                      # scree: small
-				out.append([rr.randi() % 4, o.x, o.y, rr.randf() * TAU, sc, rr.randf_range(0.15, 0.4)])
+				out.append([rr.randi() % 4, o.x, o.y, rr.randf() * TAU, sc, rr.randf_range(0.2, 0.4)])
 		z += 8.0
 	return out
 

@@ -73,15 +73,16 @@ static func berg_names() -> Array:
 # Arve (Pinus cembra): 10–20 m, dichte, oft breite und unregelmässige Krone, dunkelgrün, an der Waldgrenze (1700–2400 m).
 func _b_larch(q: Dictionary) -> Dictionary:
 	var season := str(_q(q, "season", "sommer"))
-	var col: String = {"fruehling": "86b850", "sommer": "5a8a3a", "herbst": "d8a42a", "winter": "5a4c40"}.get(season, "5a8a3a")
+	# «wie auf den Fotos»: im Sommer ein ruhigeres, dunkleres Grün und schlanker (gleich viele Teile)
+	var col: String = {"fruehling": "6f9c48", "sommer": "426634", "herbst": "d8a42a", "winter": "5a4c40"}.get(season, "426634")
 	var p := [C(0.1, 7.5, 0, 3.75, 0, "5a4030", 0.26, 0, 0, 0, "tree")]
 	if season == "winter":                                 # bare: thin grey-brown twigs, see-through crown
 		p.append(K(1.5, 6.5, 0, 6.0, 0, col, 0, 0, 0, "tree"))
 		p[-1][1] = 1.1
 	else:
-		p.append(K(2.0, 5.5, 0, 4.2, 0, col, 0, 0, 0, "tree"))
-		p.append(K(1.5, 4.5, 0, 6.6, 0, cc(col).darkened(0.06), 0, 0, 0, "tree"))
-		p.append(K(0.9, 3.0, 0, 8.6, 0, cc(col).lightened(0.05), 0, 0, 0, "tree"))
+		p.append(K(1.55, 5.5, 0, 4.2, 0, col, 0, 0, 0, "tree"))
+		p.append(K(1.15, 4.5, 0, 6.6, 0, cc(col).darkened(0.06), 0, 0, 0, "tree"))
+		p.append(K(0.7, 3.0, 0, 8.6, 0, cc(col).lightened(0.05), 0, 0, 0, "tree"))
 	return {"p": p, "t": "tree", "lod": "tree", "low": true, "ob": [["circ", 0, 0, 0.28, 9.0]]}
 
 
@@ -151,25 +152,28 @@ func _b_boulder(q: Dictionary) -> Dictionary:
 # ---- «Bergtal wie auf den Fotos» (Daniel, 31.10.2026; bergtal_landschaft.gd, nur ausserhalb von Lite) ---------------------
 const BERG_FOTO := {"karst": ["Kalkblock (Karstweide)", "Berg"], "rock_tooth": ["Felszahn (Kalk)", "Berg"],
 		"spruce_dead": ["Dürre Fichte", "Berg"], "dwarf_shrub": ["Zwergsträucher (Alpenrosen, Heidelbeeren)", "Berg"]}
-const KARST_COLS := [["c4c2ba", "b0ada4", "d0cec6", "9a978d"], ["a29f95", "918e84", "aeaba1", "7e7b72"]]   # hell (Blöcke), verwittert (Felszähne)
+const KARST_COLS := [["8e8c85", "7f7d77", "9a9891", "6c6a64"], ["86837c", "77746e", "928f88", "625f59"]]   # hellgrau (Blöcke), verwittert (Felszähne)
+const MOSS := "5f6b36"
 
 
 func _b_karst(q: Dictionary) -> Dictionary:
-	"""ein kantiger heller Kalkblock, halb eingesunken (Grösse 1 = rund 1 m; der Fuss liegt unter dem Boden)"""
+	"""ein heller, kantig-runder Kalkblock, halb eingesunken, mit Moos und Gras am Fuss (Grösse 1 = rund 1 m; der Fuss liegt
+	unter dem Boden). Wenige Ecken (low): die Facetten geben Kanten und Schattierung."""
 	var cs: Array = KARST_COLS[int(_q(q, "c", 0)) % 2]
 	var p := []
 	match int(_q(q, "v", 0)) % 4:
-		0:                                                 # ein Block mit abgebrochener Ecke
-			p = [B(1.0, 0.6, 0.8, 0, 0.12, 0, cs[0], 5, 15, -7, "stone"), B(0.6, 0.45, 0.55, 0.38, 0.2, 0.18, cs[1], -10, 40, 9, "stone"),
-					B(0.5, 0.1, 0.45, -0.05, 0.43, -0.05, cs[2], 4, 15, -7, "stone")]
-		1:                                                 # flache Platte mit Spalt (Karren)
-			p = [B(1.4, 0.36, 1.0, 0, 0.04, 0, cs[1], 3, 0, 5, "stone"), B(0.7, 0.3, 0.5, -0.32, 0.2, -0.12, cs[2], 8, 25, -4, "stone"),
-					B(0.06, 0.2, 0.9, 0.22, 0.2, 0.0, cs[3], 3, 0, 5, "stone")]
-		2:                                                 # hoher, schräger Brocken
-			p = [B(0.7, 0.9, 0.6, 0, 0.2, 0, cs[0], 12, 30, 7, "stone"), B(0.45, 0.4, 0.5, 0.3, 0.05, 0.25, cs[1], -6, 70, -12, "stone")]
-		_:                                                 # drei kleine Steine
-			p = [B(0.5, 0.36, 0.4, 0.4, 0.06, 0.2, cs[2], 6, 20, -8, "stone"), B(0.42, 0.3, 0.45, -0.35, 0.05, 0.1, cs[0], -5, 55, 6, "stone"),
-					B(0.6, 0.32, 0.42, 0.0, 0.04, -0.42, cs[1], 9, -25, 4, "stone")]
+		0:                                                 # runder Block mit abgebrochener Seite
+			p = [S(0.75, 0.95, 0, 0.18, 0, cs[0], "stone"), S(0.45, 0.6, 0.38, 0.26, 0.22, cs[1], "stone"),
+					B(0.55, 0.5, 0.08, -0.1, 0.35, -0.55, cs[3], 8, 20, -6, "stone"), S(0.95, 0.22, 0, 0.0, 0, MOSS, "stone")]
+		1:                                                 # flache, gerundete Platte mit Spalt (Karren)
+			p = [S(1.05, 0.62, 0, 0.06, 0, cs[1], "stone"), S(0.5, 0.42, -0.42, 0.2, 0.2, cs[2], "stone"),
+					B(0.06, 0.18, 1.1, 0.2, 0.2, 0.0, cs[3], 3, 0, 5, "stone"), S(1.2, 0.2, 0, -0.02, 0, MOSS, "stone")]
+		2:                                                 # hoher Brocken mit scharfer Kante
+			p = [S(0.6, 1.25, 0, 0.32, 0, cs[0], "stone"), B(0.62, 0.55, 0.5, 0.22, 0.5, 0.1, cs[2], 10, 30, 15, "stone"),
+					S(0.4, 0.45, -0.35, 0.1, 0.3, cs[1], "stone"), S(0.85, 0.2, 0, 0.0, 0, MOSS, "stone")]
+		_:                                                 # drei Steine beieinander
+			p = [S(0.4, 0.5, 0.42, 0.08, 0.2, cs[2], "stone"), S(0.36, 0.42, -0.38, 0.06, 0.12, cs[0], "stone"),
+					S(0.45, 0.4, 0.02, 0.05, -0.45, cs[1], "stone"), S(1.0, 0.18, 0, 0.0, 0, MOSS, "stone")]
 	var d := {"p": p, "t": "stone", "lod": str(_q(q, "lod", "rock")), "low": true}
 	if bool(_q(q, "ob", false)):
 		d["ob"] = [["circ", 0, 0, 0.6, 0.6, true]]
@@ -177,18 +181,19 @@ func _b_karst(q: Dictionary) -> Dictionary:
 
 
 func _b_rock_tooth(q: Dictionary) -> Dictionary:
-	"""ein Felszahn am Grat: heller Kalk, senkrecht bis leicht schräg, oben abgebrochen (Höhe 1 = rund 7 m)"""
-	var cs: Array = KARST_COLS[int(_q(q, "c", 0)) % 2]
+	"""ein Felszahn am Grat: verwitterter grauer Kalk, spitz, leicht schräg, mit breitem Fuss (Höhe 1 = rund 8 m)"""
+	var cs: Array = KARST_COLS[1]
 	var p := []
 	match int(_q(q, "v", 0)) % 3:
 		0:
-			p = [B(2.6, 7.0, 2.0, 0, 2.6, 0, cs[0], 4, 10, -6, "stone"), B(1.6, 2.4, 1.4, 0.2, 6.6, -0.1, cs[2], -6, 30, 8, "stone"),
-					B(1.4, 3.0, 1.6, 1.1, 1.0, 0.6, cs[1], 8, -20, 10, "stone")]
+			p = [K(1.8, 8.0, 0, 3.4, 0, cs[0], 5, 0, -7, "stone"), S(2.2, 2.6, 0.2, 0.4, 0.1, cs[1], "stone"),
+					K(1.0, 4.5, 1.3, 1.8, 0.5, cs[2], -8, 0, 12, "stone")]
 		1:
-			p = [B(1.8, 9.0, 1.6, 0, 3.6, 0, cs[1], -8, 25, 9, "stone"), B(1.1, 2.4, 1.0, -0.4, 8.6, 0.2, cs[0], 5, 40, -7, "stone")]
+			p = [K(1.3, 10.0, 0, 4.4, 0, cs[1], -6, 0, 8, "stone"), S(1.7, 2.2, 0, 0.3, 0, cs[0], "stone"),
+					K(0.8, 5.0, -1.0, 2.0, 0.6, cs[3], 9, 0, -10, "stone")]
 		_:
-			p = [B(3.4, 4.6, 2.6, 0, 1.4, 0, cs[0], 6, -15, -9, "stone"), B(1.6, 3.6, 1.5, 0.9, 4.0, 0.3, cs[2], -9, 20, 12, "stone"),
-					B(1.2, 2.2, 1.1, -1.1, 3.2, -0.5, cs[3], 10, 60, -5, "stone")]
+			p = [S(2.6, 4.2, 0, 1.0, 0, cs[0], "stone"), K(1.4, 6.5, 0.6, 4.4, 0.2, cs[2], -7, 0, 9, "stone"),
+					K(0.9, 4.0, -1.2, 3.2, -0.5, cs[3], 10, 0, -6, "stone")]
 	return {"p": p, "t": "stone", "lod": "far", "low": true, "ob": [["circ", 0, 0, 1.6, 6.0]]}
 
 
