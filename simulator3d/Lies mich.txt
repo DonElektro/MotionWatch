@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.18.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.19.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.19.0
+3.19.0: Trailer (ca. 3 Min.) zu «Die Karte des Grossvaters» und «Maggie und der Bergkristall»: Knopf «Trailer ansehen»
+auf der Story-Karte. Neu oben im Reiter «Sim» die Karte «🛠 Entwickler» mit Trailer Grossvater, Trailer Maggie und
+Vorführung (live im Browser).
+So testest du: MoveEye → Sim → ganz oben «Trailer Grossvater».
 
 NEU IN 3.18.0
 3.18.0: Figuren und Tiere haben echte Gelenke (Knie, Ellbogen, Schultern, Hüfte, Sprunggelenk) und einen natürlicheren Gang:

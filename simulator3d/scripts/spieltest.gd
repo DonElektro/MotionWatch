@@ -54,9 +54,9 @@ const MAX_EV := 400                      # Ereignisse pro Runde (mehr wird nur g
 const MAX_ROUNDS := 400                  # so viele Runden liest die Auswertung (die neuesten)
 const MODI := {"abenteuer": "Die Karte des Grossvaters", "spielbereich": "Spielbereich", "horror": "Horror «Das Hospiz»",
 		"ferienpark": "Ferienpark-Aufgaben", "erlebniswelt": "Erlebniswelt", "spiel": "Spiel (Wächter, Rangliste)",
-		"maggie": "Maggie und der Bergkristall"}
+		"maggie": "Maggie und der Bergkristall", "trailer": "Trailer der Geschichten"}
 const KURZ := {"abenteuer": "Abenteuer", "spielbereich": "Spielbereich", "horror": "Horror", "ferienpark": "Ferienpark",
-		"erlebniswelt": "Erlebniswelt", "spiel": "Spiel", "maggie": "Maggie"}
+		"erlebniswelt": "Erlebniswelt", "spiel": "Spiel", "maggie": "Maggie", "trailer": "Trailer"}
 const WALK := ["spielbereich", "erlebniswelt", "maggie"]     # Lauf-Modi: Feststecken / im Kreis aus der Position
 # geplante Dauer (Minuten) - nur wo das Spiel selbst eine Zeit vorgibt (Quelle im Kommentar); sonst Vergleich mit den
 # anderen Einheiten desselben Modus
