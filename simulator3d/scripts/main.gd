@@ -51,6 +51,18 @@ var ort_camp := 0
 var terrain := false                  # the scene has hills (ground_y), else the ground is flat at y = 0
 var ground_fn := Callable()            # 3D-4.x: a scene with its own ground (ferienpark.gd): height in world coordinates
 var fp_spot := "zelt"                  # 3D-4.x: where MoveEye stands in the «Ferienpark am See» (ferienpark.gd SPOTS)
+var bt_spot := "huette"                # 3D-4.x «Bergtal» (bergtal.gd): the sleeping spot (SPOTS, viewpoints or «frei»)
+var bt_bed := "tent"                   # tent | mat (Isomatte + Schlafsack)
+var bt_season := "auto"                # auto (from the month) | fruehling | sommer | herbst | winter
+var bt_free: Array = []                # the own spot: [x, z, looking] in valley coordinates
+var bt_events := true                  # random events in the valley (rockfall, stranger, animal at the food, weather)
+var bt_mount := "stativ"               # MoveEye's mount at the spot: stativ | rucksack | stein | zelt | baum (height of the head)
+var bt_bag := "sommer"                 # sleeping bag: sommer | winter
+var bt_stove := true                   # a stove at the spot (hot while cooking: thermal picture)
+var bt_wall := false                   # a wind wall of stones on the side of the main wind
+var bt_orient := "leicht"              # orientation: leicht (map + marks + position) | mittel (map only) | schwer (signposts only)
+var bt_marks: Array = []               # own marks on the map [[name, x, z]] (valley coordinates)
+var bt_visited: Array = []             # places already visited (quick travel only goes there)
 var ground_mats: Array = []           # ground materials of the place (snow, wet)
 var flat_nodes: Array = []            # flat meadow and the hills far away: hidden at a real place
 var geo_note := ""
@@ -1084,6 +1096,97 @@ func set_scene(id: String) -> bool:
 	_update_temps()
 	_sync_ui()
 	return true
+
+
+const BT_MONTH := {"fruehling": "5", "sommer": "7", "herbst": "10", "winter": "1"}
+
+
+func set_bt(key: String, v) -> void:
+	"""3D-4.x «Bergtal»: sleeping spot, bed, season - the valley is built again around the spot (MoveEye stays at the origin)"""
+	set(key, v)
+	if key == "bt_season" and BT_MONTH.has(str(v)):
+		season = BT_MONTH[str(v)]                        # the path of the sun and the moon fit the season
+		_sun_cache = [-1.0, Vector2.ZERO]
+	_settings_dirty = true
+	if scene == "bergtal":
+		set_scene("bergtal")
+	else:
+		_sync_ui()
+
+
+func bt_here() -> Dictionary:
+	"""«Hier übernachten»: the place in the middle of the view (or where the rover stands) - flat enough? then sleep there"""
+	var bt = scenes.data.get("bergtal", null)
+	if bt == null:
+		start_info = preload("res://scripts/i18n.gd").t("«Hier übernachten» geht nur in der Szene Bergtal.")
+		return {"ok": false, "error": "not bergtal"}
+	return bt_take(bt.pick_here())
+
+
+func bt_take(r: Dictionary) -> Dictionary:
+	if not bool(r.get("ok", false)):
+		start_info = preload("res://scripts/i18n.gd").t(str(r.get("error", "")))
+		return r
+	bt_free = [snappedf(float(r["x"]), 0.01), snappedf(float(r["z"]), 0.01), snappedf(float(r.get("yaw", 0.0)), 0.1)]
+	bt_spot = "frei"
+	_settings_dirty = true
+	mover_home()
+	set_scene("bergtal")
+	start_info = "%s %s" % [preload("res://scripts/i18n.gd").t("Neuer Schlafplatz:"), preload("res://scripts/i18n.gd").t(str(r.get("note", "")))]
+	r["rating"] = scenes.data["bergtal"].rating if scenes.data.has("bergtal") else {}
+	return r
+
+
+func bt_goto(v: String) -> Dictionary:
+	"""quick travel in the Bergtal: «s:<spot>» = sleep there (MoveEye moves), «p:<place>» = the view flies there"""
+	var bt = scenes.data.get("bergtal", null)
+	if bt == null or v == "":
+		return {"ok": false}
+	if v.begins_with("s:"):
+		set_bt("bt_spot", v.substr(2))
+		return {"ok": true, "spot": bt_spot}
+	var nm := v.substr(2)
+	var Bt = preload("res://scripts/bergtal.gd")
+	var all: Array = Bt.all_places()
+	for mk in bt_marks:
+		all.append(mk)
+	for pl in all:
+		if str(pl[0]) == nm:
+			if not nm in bt_visited and not bt_marks.any(func(x): return str(x[0]) == nm):
+				start_info = "%s %s" % [preload("res://scripts/i18n.gd").t("Noch nicht besucht – zuerst hingehen oder hinfliegen:"), nm]
+				return {"ok": false, "error": "not visited", "place": nm}
+			var wp: Vector3 = bt.WG(float(pl[1]), float(pl[2]))
+			fly_to(wp + Vector3(0, 2, 0), 45.0)
+			return {"ok": true, "place": nm, "at": wp}
+	return {"ok": false, "error": "unknown place"}
+
+
+func bt_mark(nm: String) -> Dictionary:
+	"""an own mark on the map at the place in the middle of the view"""
+	var bt = scenes.data.get("bergtal", null)
+	if bt == null or nm.strip_edges() == "":
+		return {"ok": false}
+	var r: Dictionary = bt.pick_here()
+	if not r.has("x"):
+		return r
+	bt_marks.append([nm.strip_edges().left(30), snappedf(float(r["x"]), 0.1), snappedf(float(r["z"]), 0.1)])
+	_settings_dirty = true
+	bt._publish()
+	return {"ok": true, "marks": bt_marks}
+
+
+func _bt_do(what: String) -> void:
+	var bt = scenes.data.get("bergtal", null)
+	if bt == null:
+		start_info = preload("res://scripts/i18n.gd").t("Das geht nur in der Szene Bergtal.")
+		return
+	match what:
+		"ride":
+			bt.ride(true)
+		"morning":
+			bt.morning()
+		_:
+			bt.spawn_kind("berg_" + what)
 
 
 func set_fp_spot(v: String) -> void:
@@ -2887,6 +2990,9 @@ func time_scale_visitors() -> float:
 
 
 func spawn(kind: String, from = null, to = null) -> Node3D:
+	if kind.begins_with("berg_"):
+		var bt = scenes.data.get("bergtal", null)                  # 3D-4.x: the animals and events of the «Bergtal» (bergtal.gd)
+		return bt.spawn_kind(kind, from, to) if bt != null else null
 	if simreal != null and simreal.is_kind(kind):
 		return simreal.spawn_kind(kind, from, to)     # 3D-4.4: hood, backpack, phoning, groups, edge sneaker, deer lying ...
 	if umgebung != null and umgebung.is_kind(kind):
@@ -3339,6 +3445,32 @@ func _register_controls() -> void:
 	add_control("button", "home_edit", "Mein Zuhause bauen (Baukasten mit der Maus)", null, func(): home_editor.open(true), "Szene")
 	add_control("select", "fp_spot", "Standort im Ferienpark am See", func(): return fp_spot, func(v): set_fp_spot(str(v)), "Szene",
 			{"options": preload("res://scripts/ferienpark.gd").spot_options()})
+	var Bt = preload("res://scripts/bergtal.gd")
+	add_control("select", "bt_spot", "Schlafplatz im Bergtal", func(): return bt_spot, func(v): set_bt("bt_spot", str(v)), "Szene", {"options": Bt.spot_options()})
+	add_control("select", "bt_bed", "Übernachten im Bergtal", func(): return bt_bed, func(v): set_bt("bt_bed", str(v)), "Szene", {"options": Bt.BEDS})
+	var mo := []
+	for k in Bt.MOUNTS:
+		mo.append([k, Bt.MOUNTS[k][0]])
+	add_control("select", "bt_mount", "MoveEye-Halterung am Schlafplatz (Bergtal)", func(): return bt_mount, func(v): set_bt("bt_mount", str(v)), "Szene", {"options": mo})
+	add_control("select", "bt_bag", "Schlafsack (Bergtal)", func(): return bt_bag, func(v): set_bt("bt_bag", str(v)), "Szene", {"options": [["sommer", "Sommerschlafsack"], ["winter", "Winterschlafsack"]], "expert": true})
+	add_control("toggle", "bt_stove", "Kocher am Schlafplatz (Bergtal)", func(): return bt_stove, func(v): set_bt("bt_stove", bool(v)), "Szene", {"expert": true})
+	add_control("toggle", "bt_wall", "Windschutzmauer aus Steinen bauen (Bergtal)", func(): return bt_wall, func(v): set_bt("bt_wall", bool(v)), "Szene")
+	add_control("select", "bt_orient", "Orientierung im Bergtal", func(): return bt_orient, func(v): set_bt("bt_orient", str(v)), "Szene",
+			{"options": [["leicht", "leicht (Karte, Kompass, eigener Standort)"], ["mittel", "mittel (Karte und Kompass)"], ["schwer", "schwer (nur Wegweiser)"]], "expert": true})
+	add_control("text", "bt_mark", "Eigene Markierung auf der Karte (Name; wird in der Bildmitte gesetzt)", func(): return "", func(v): bt_mark(str(v)), "Szene", {"expert": true})
+	add_control("button", "bt_here", "Hier übernachten (Bergtal: der Platz in der Bildmitte oder beim Rover)", null, func(): bt_here(), "Szene")
+	add_control("select", "bt_goto", "Schnellreise im Bergtal (Ort wählen)", func(): return "", func(v): bt_goto(str(v)), "Szene", {"options": Bt.place_options()})
+	add_control("select", "bt_season", "Jahreszeit im Bergtal", func(): return bt_season, func(v): set_bt("bt_season", str(v)), "Szene",
+			{"options": [["auto", "nach dem Monat (Jahreszeit)"], ["fruehling", "Frühling"], ["sommer", "Sommer"], ["herbst", "Herbst (Lärchen gelb, Nebel)"], ["winter", "Winter (Schnee, Eis)"]]})
+	add_control("button", "bt_ride", "Mit der Materialseilbahn fahren (Bergtal)", null, func(): _bt_do("ride"), "Szene", {"expert": true})
+	add_control("button", "bt_morning", "Wie gut war dein Platz? (Bergtal: Bewertung jetzt)", null, func(): _bt_do("morning"), "Szene", {"expert": true})
+	add_control("toggle", "bt_events", "Bergtal: Ereignisse von selbst (Steinschlag, Fremder, Tier am Proviant, Wetterumschwung)", func(): return bt_events, func(v): bt_events = bool(v), "Besuch", {"sub": "Von selbst"})
+	add_control("button", "bt_ev_rockfall", "Steinschlag (Bergtal)", null, func(): _bt_do("rockfall"), "Besuch", {"sub": "Abläufe"})
+	add_control("button", "bt_ev_stranger", "Fremder am Rucksack (Bergtal)", null, func(): _bt_do("stranger"), "Besuch", {"sub": "Abläufe"})
+	add_control("button", "bt_ev_food", "Tier am Proviant (Bergtal)", null, func(): _bt_do("fox_food"), "Besuch", {"sub": "Abläufe"})
+	add_control("button", "bt_ev_storm", "Gewitter zieht auf (Bergtal)", null, func(): _bt_do("storm"), "Wetter", {"sub": "Mehr Wetter"})
+	add_control("button", "bt_ev_fog", "Nebel kommt schnell (Bergtal)", null, func(): _bt_do("fog"), "Wetter", {"sub": "Mehr Wetter"})
+	add_control("button", "bt_ev_fogsea", "Nebelmeer (Bergtal: das Tal im Nebel, oben Sonne)", null, func(): _bt_do("fogsea"), "Wetter", {"sub": "Mehr Wetter"})
 	add_control("map", "ort_map", "Ort auf der Karte wählen (Schweiz)", func(): return "%.6f, %.6f" % [ort_lat, ort_lon] if ort_lat != 0.0 else "",
 			func(v): set_place_text(str(v)), "Ort von der Karte")
 	add_control("text", "ort", "Ort (Name oder Koordinaten, z. B. «Zermatt» oder «46.0207, 7.7491»)", func(): return place_label(), func(v): set_place_text(str(v)), "Ort von der Karte")
@@ -4146,6 +4278,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "rover": patrol.rover_info()}
 	elif a == "overlay":
 		return {"ok": true, "overlay": overlay.info()}
+	elif a == "bergtal":                               # 3D-4.x: {do: info | spot | bed | season | here | goto | event | ride | morning | rate | horn | perf} (bergtal.gd)
+		return preload("res://scripts/bergtal.gd").control(self, d)
 	elif a == "ferienpark":                            # 3D-4.x: {do: info | spot (value) | kinds | perf} (ferienpark.gd)
 		return preload("res://scripts/ferienpark.gd").control(self, d)
 	elif a == "szenen":                                # 3D-4.x: the new scenes {do: info | spawn (kind) | restore}
@@ -5608,7 +5742,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
 var _settings_dirty := false
 

@@ -8,14 +8,14 @@ const LIST := [["camping", "Camping-Platz"], ["wald", "Wald"], ["parkplatz", "Pa
 		["zuhause", "Mein Zuhause (selbst gebaut)"], ["bauernhof", "Bauernhof"], ["seeufer", "Seeufer mit Steg"], ["baustelle", "Baustelle"],
 		["stellplatz", "Wohnmobil-Stellplatz"], ["vorlage", "Meine Vorlage (3D-Datei)"], ["schlafzimmer", "Schlafzimmer (Wecker)"],
 		["camping_voll", "Voller Campingplatz"], ["tarnen", "Tarnen und Kriechen"], ["velodieb", "Velodieb"], ["parcours", "Verfolgungs-Parcours"],
-		["ferienpark", "Ferienpark am See"]]   # 3D-4.x: szenenplus.gd
+		["ferienpark", "Ferienpark am See"], ["bergtal", "Bergtal (Alp, See, Pass)"]]   # 3D-4.x: szenenplus.gd
 # 3D-4.x: the English names for MoveEye (it translates them into its languages; without a name MoveEye shows the German one)
 const EN := {"camping": "Campsite", "wald": "Forest", "parkplatz": "Car park", "garten": "Garden / house", "lustig": "Funny place",
 		"wild": "Wildlife watching", "verstecken": "Hide and seek (many hiding places)", "ort": "Place from the map (Switzerland)",
 		"zuhause": "My home (self-built)", "bauernhof": "Farm", "seeufer": "Lake shore with jetty", "baustelle": "Building site",
 		"stellplatz": "Camper van site", "vorlage": "My template (3D file)", "schlafzimmer": "Bedroom (wake-up alarm)",
 		"camping_voll": "Full campsite", "tarnen": "Camouflage and crawling", "velodieb": "Bike thief", "parcours": "Tracking course",
-		"ferienpark": "Holiday park by the lake"}
+		"ferienpark": "Holiday park by the lake", "bergtal": "Mountain valley (alp, lake, pass)"}
 
 # visitors that come by themselves, and how often (seconds from .. to)
 const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox", "boar", "deer", "herd", "cat", "badger", "hare", "hedgehog", "marten", "squirrel", "cyclist", "couple", "stroller", "courier", "police", "drunk", "bats", "owl", "burglar", "bbq", "homecoming", "fox_trash", "kids_tag", "boar_group"], 35.0, 110.0],
@@ -39,6 +39,7 @@ const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox"
 		"velodieb": [["person", "cyclist", "dogwalk", "child", "couple", "cat", "fox", "courier", "velodieb", "velodieb"], 30.0, 90.0],
 		"ferienpark": [["person", "person", "child", "jogger", "dogwalk", "couple", "cyclist", "stroller", "cat", "fox", "hedgehog", "badger", "hare", "marten",
 			"squirrel", "deer", "bats", "owl", "drunk", "burglar", "bbq", "kids_tag", "homecoming", "courier", "fox_trash", "platz_besuch", "car"], 30.0, 90.0],   # 3D-4.x: ferienpark.gd
+		"bergtal": [["berg_auto"], 25.0, 75.0],   # 3D-4.x: bergtal.gd chooses (lonely: few people, many animals, by season and time)
 		"wild": [["feed_deer", "feed_deer", "feed_boar", "feed_fox", "feed_badger", "feed_hare", "herd", "deer", "chamois", "ibex", "lynx", "owl"], 15.0, 40.0]}
 
 var m                     # main.gd
@@ -94,6 +95,8 @@ func build(id: String, parent: Node3D) -> void:
 			m.parcours.build_scene(self)                    # 3D-4.18: parcours.gd (fixed obstacles for the lessons)
 		"ferienpark":
 			preload("res://scripts/ferienpark.gd").build_scene(self)       # 3D-4.x: big terraced campsite (bib_objekte.gd)
+		"bergtal":
+			preload("res://scripts/bergtal.gd").build_scene(self)          # 3D-4.x: 2 × 2 km mountain valley (bib_berg.gd)
 		"camping_voll", "tarnen", "velodieb":
 			preload("res://scripts/szenenplus.gd").build_scene(self, id)     # 3D-4.x: the new scenes (szenenplus.gd)
 		_:
