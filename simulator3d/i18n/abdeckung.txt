@@ -1,7 +1,7 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
 Texte gesamt: 5023 (Stellen: 6972)
-Übersetzt: en 4792, fr 4792, it 4792, rm 4792
+Übersetzt: en 5023, fr 5023, it 5023, rm 5023
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 380 Stellen
 Nicht mehr im Code (noch in texte.json): 52
