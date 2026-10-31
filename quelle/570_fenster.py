@@ -91,6 +91,7 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Recording", "loop_hours", "Continuous recording: keep (hours)", 1, 168, 1),
     ("Recording", "loop_fps", "Continuous recording: pictures per second", 1, 15, 1),
     ("Low light", "lowlight_threshold", "Low-light threshold (brightness)", 10, 150, 5),
+    ("Low light", "lowlight_hold", "Low light: wait before switching (s)", 0, 120, 5),
     ("Notifications", "notify_cooldown", "Cooldown between alarms (s)", 5, 600, 5),
     ("Notifications", "prealarm_cooldown", "Pre-alarm: min. time between messages (s)", 30, 1800, 30),
     ("Timelapse", "timelapse_interval", "Photo every N minutes", 1, 720, 1),
