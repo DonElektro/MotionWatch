@@ -331,7 +331,7 @@ DE.update({    # window in the look of the web page (2.25.0)
     "show / hide fields": "Felder ein-/ausblenden", "All quiet – I'm keeping watch!": "Alles ruhig – ich halte Wache!",
     "Happy Swiss National Day!": "Schöne Bundesfeier!", "Swap stick and buttons (left- / right-handed)": "Stick und Knöpfe tauschen (Links- / Rechtshänder)", "moving to waypoint": "fährt zu Wegpunkt", "waiting at": "wartet bei",
     "need 2+ waypoints": "mindestens 2 Wegpunkte nötig", "paused (tracking person)": "Pause (verfolgt Person)",
-    "paused (manual control)": "Pause (Handsteuerung)", "System": "System", "Log": "Protokoll", "Expand all": "Alle öffnen", "Collapse all": "Alle schliessen",
+    "paused (manual control)": "Pause (Handsteuerung)", "System": "System", "Log": "Protokoll", "Expand all": "Alle aufklappen", "Collapse all": "Alle zuklappen",
 })
 DE.update({    # texts that were written twice in the code (German / English) - now one English text + translations
     "not possible in the demo": "In der Demo nicht möglich",
@@ -523,6 +523,11 @@ TK_AI_MODEL_KEYS = ("ai_model", "ai_own_url", "ai_own_auto")   # 2.98.23 (Konzep
 TK_SPECIES_KEYS = ("species_on", "species_model", "species_norm", "species_conf")   # aufr (Konzept): the group «Tierart» (like «KI-Modell»)
 SECTIONS = ["Wake-up alarm", "Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup", "Security"]
+
+
+def tk_icons():
+    """639o: symbols «color» or «plain» (web_ui mw-icons, the switch of the web pages)"""
+    return "plain" if str(CFG.get("web_ui", {}).get("mw-icons", "")) == "plain" else "color"
 
 
 class Toggle(tk.Frame):
@@ -779,7 +784,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.21.0")
+        self.root.title("MoveEye 3.22.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1150,7 +1155,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.21.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.22.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1788,11 +1793,8 @@ class App:
         inner = ttk.Frame(canvas, style="Bg.TFrame"); win = canvas.create_window((0, 0), window=inner, anchor="nw")
         inner.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
         canvas.bind("<Configure>", lambda e: canvas.itemconfigure(win, width=min(e.width, 860)))     # readable lines on a wide screen
+        lb = self._mwbar(right, tab); lb.pack(side="top", fill="x", pady=(0, 8), before=sb)    # 639o: the bar like on every web page
         bar = tk.Frame(right, bg=C["bg"]); bar.pack(side="top", fill="x", pady=(0, 10), before=sb)   # stays at the top while scrolling
-        # like the web page: search field, then «Collapse all · Groups only · Expand all» with the same drawn symbols (nurgruppen)
-        self._fold_btn(bar, "open", lambda: self._all_sections(True), tr("Expand all")).pack(side="right")
-        self._fold_btn(bar, "groups", self._groups_only, tr("Groups only")).pack(side="right", padx=(0, 6))
-        self._fold_btn(bar, "close", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
         sf = tk.Frame(bar, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"]); sf.pack(side="left", fill="x", expand=True, padx=(0, 8))
         tk.Label(sf, text="⚲", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 11)).pack(side="left", padx=(8, 0))
         self.search_var = tk.StringVar()
@@ -1805,27 +1807,11 @@ class App:
         self.search_var.trace_add("write", lambda *a: self._search())
         if tab == "sim":                                   # 2.98.14: tab Simulator - status, the assistant, the simulator settings
             self._tk_sim_head(inner)
-        # Simple / Expert (like the web page)
-        mrow = tk.Frame(inner, bg=C["line"], padx=1, pady=1)
-        if tab != "sim":
-            mrow.pack(fill="x", pady=(0, 10))
         self._simple_seen = bool(CFG["ui_simple"])
         _G2_SIMPLE.v = page_simple(tab)                    # 586: Simple / Expert of this tab (simple_hidden in the window thread)
-        for i, (val, lab) in enumerate(((True, tr("Simple")), (False, tr("Expert")))):
-            on = page_simple(tab) == val
-            l = tk.Label(mrow, text=lab, font=("DejaVu Sans", 9, "bold"), pady=4, cursor="hand2",
-                         bg=C["acc"] if on else C["field"], fg="#ffffff" if on else C["mut"])
-            l.pack(side="left", fill="x", expand=True, padx=(0 if i == 0 else 1, 0))
-            l.bind("<Button-1>", lambda e, v=val: self._set_simple(v))
         if page_simple(tab) and tab != "sim":
             tk.Label(inner, text=tr("Simple: only the important settings. «Expert» shows all of them."), bg=C["bg"], fg=C["mut"],
                      font=("DejaVu Sans", 8), anchor="w", justify="left", wraplength=330).pack(fill="x", pady=(0, 8))
-        # nurgruppen: «On start: groups only» next to Simple / Expert (same switch as on the web page, CFG ui_start_groups)
-        sg_ = Toggle(inner, tr("On start: groups only"), CFG.get("ui_start_groups", True), self._set_start_groups)
-        for w_ in (sg_, sg_.cv, sg_.lbl):
-            w_.config(bg=C["bg"])
-        sg_.lbl.config(font=("DejaVu Sans", 9)); sg_.pack(fill="x", pady=(0, 10)); self.start_groups_tg = sg_
-        Tip(sg_.lbl, tr("On every start the settings show only the groups. Off: the menus open as you left them."))
         self.grp_meta = {}; self._open_before = None
         self.no_match = tk.Label(inner, text=tr("No match"), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9))
         # 9 groups (same as the web page). Inside a group every topic opens / closes the same way (the first one is open);
@@ -1922,8 +1908,9 @@ class App:
             if m[0].cget("fg") != col:
                 m[0].config(fg=col)
             ic_ = getattr(self, "grp_icons", {}).get(key)
-            if ic_ is not None and ic_.cget("fg") != (C["grn"] if on else C["txt"]):
-                ic_.config(fg=C["grn"] if on else C["txt"])
+            icol = C["grn"] if on else (C["mut"] if tk_icons() == "plain" else C["txt"])     # 639o: «schlicht» = grey until on
+            if ic_ is not None and ic_.cget("fg") != icol:
+                ic_.config(fg=icol)
 
     def _sub_open(self, k):
         return self._shown.get(k, k in self.open_secs)
@@ -3019,6 +3006,45 @@ class App:
     def _set_start_groups(self, v):
         CFG["ui_start_groups"] = bool(v); save_settings()
         self._groups_only(save=False) if v else self._own_view()
+
+    def _mwbar(self, parent, tab):
+        """639o: the bar of every web page in the window - Simple / Expert · Symbols coloured / plain · On start: groups only ·
+        Collapse all / Groups only / Expand all (same order, texts and symbols; a narrow window: two lines)"""
+        f = tk.Frame(parent, bg=C["bg"]); small = self._lay[0]
+        r1 = tk.Frame(f, bg=C["bg"]); r1.pack(fill="x")
+        r2 = tk.Frame(f, bg=C["bg"]) if small else r1
+        if small:
+            r2.pack(fill="x", pady=(6, 0))
+
+        def seg(host, items, cur, cmd, dis=False):
+            w = tk.Frame(host, bg=C["line"], padx=1, pady=1)
+            for i, (val, lab) in enumerate(items):
+                on = cur == val
+                l = tk.Label(w, text=lab, font=("DejaVu Sans", 9, "bold"), pady=3, padx=8, cursor="" if dis else "hand2",
+                             bg=C["acc"] if on and not dis else C["field"], fg="#ffffff" if on and not dis else C["mut"])
+                l.pack(side="left", padx=(0 if i == 0 else 1, 0))
+                if not dis:
+                    l.bind("<Button-1>", lambda e, v=val: cmd(v))
+            return w
+        nosimple = tab == "sim"                             # the tab Simulator has only one view (the window shows all its groups)
+        m = seg(r1, ((True, tr("Simple")), (False, tr("Expert"))), page_simple(tab), self._set_simple, nosimple)
+        m.pack(side="left"); Tip(m, tr("This page has only one view") if nosimple else tr("Simple: only the important settings. «Expert» shows all of them."))
+        ic = seg(r1, (("color", "🎨 " + tr("Symbols coloured")), ("plain", "◯ " + tr("plain"))), tk_icons(), self._set_icons)
+        ic.pack(side="left", padx=(8, 0)); Tip(ic, tr("Symbols: green dot or green symbol = switched on"))
+        sg_ = Toggle(r2, tr("On start: groups only"), CFG.get("ui_start_groups", True), self._set_start_groups)
+        for w_ in (sg_, sg_.cv, sg_.lbl):
+            w_.config(bg=C["bg"])
+        sg_.lbl.config(font=("DejaVu Sans", 9), wraplength=0); sg_.pack(side="left", padx=(0 if small else 10, 0)); self.start_groups_tg = sg_
+        Tip(sg_.lbl, tr("On every start the settings show only the groups. Off: the menus open as you left them."))
+        self._fold_btn(r2, "open", lambda: self._all_sections(True), tr("Expand all")).pack(side="right")
+        self._fold_btn(r2, "groups", self._groups_only, tr("Groups only")).pack(side="right", padx=(0, 6))
+        self._fold_btn(r2, "close", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
+        return f
+
+    def _set_icons(self, v):
+        """639o: symbols «color» | «plain» - the same value as the web pages (web_ui mw-icons, so every device and the window agree)"""
+        if v != tk_icons():
+            web_ui_update({"mw-icons": "plain" if v == "plain" else "color"}); self.root.after(30, self._rebuild)
 
     def _fold_btn(self, parent, kind, cmd, tip):
         """the three fold buttons with the drawn symbols of the web page (530: arrows in · two bars · arrows out)"""

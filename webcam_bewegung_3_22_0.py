@@ -23,6 +23,35 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.22.0: Reiter- und Statuszeile einzeln einklappbar (pro Gerät gemerkt, roter Punkt bei Warnungen); auf jeder Seite dieselbe
+    Bedienleiste (Einfach/Experte, Symbole farbig/schlicht, Nur Gruppen, Alle zuklappen · Nur Gruppen · Alle aufklappen) – Web,
+    Pi-Fenster und Simulator; Live: Gehtest ganz unten.
+  * 3.21.0: Simulator 3.21.0: Bergtal mit Tuffwasserfall im Schattwald, Kalkgipfel Chalchstock mit Antenne und
+    Aussichtsplattform, Drahtseil-Schlussstück, gelbe Wegweiser mit Wegzeiten aus dem Wegnetz.
+  * 3.20.0: Simulator 3.20.0: Figuren leben mehr (Atmen, Blick zu Geräuschen und Tieren, Blinzeln, Sprechen, Zittern, High-Five,
+    Klettern, Aufheben; Tiere äsen und kauen; Maggie gräbt und schüttelt sich), Spuren im Schnee, Schalter «Ansicht wippt beim
+    Gehen».
+  * 3.19.3: Trailer/Vorführung: Stopp am iPad lässt den Simulator nicht mehr schwarz (Kamera und Knöpfe kommen zurück, Knopf «×
+    Zurück», Esc); am iPad Ton mit einem Tippen (Erzähler, Musik, Geräusche).
+  * 3.19.2: Vorführung und Trailer wählen automatisch die beste Stimme und sprechen ruhiger; Knopf «🗣 Stimme» mit Liste,
+    Hörprobe und Geschwindigkeit (pro Gerät gespeichert), Hinweis zu Premium-Stimmen.
+  * 3.19.1: Vorführung und Trailer im Browser sprechen die Texte selbst vor (🔊 Ton an/aus in der Leiste, Sprache von MoveEye);
+    das iPad bleibt während der Vorführung wach; Karte «🛠 Entwickler» im Reiter «Sim» offen.
+  * 3.19.0: Simulator 3.19.0: Trailer (ca. 3 Min.) zu «Die Karte des Grossvaters» und «Maggie und der Bergkristall»; Karte «🛠
+    Entwickler» oben im Reiter «Sim» mit Trailer Grossvater, Trailer Maggie und Vorführung (live im Browser).
+  * 3.18.0: Simulator 3.18.0: Figuren und Tiere mit echten Gelenken (Knie, Ellbogen, Schultern, Hüfte, Sprunggelenk) und
+    natürlicherem Gang, Füsse bleiben am Boden.
+  * 3.17.0: Simulator-Ports: MoveEye findet auch die Ausweich-Ports 8775/8785/8795 (Portliste geprüft). Simulator 3.17.0:
+    Notfall-Start.bat, Fehlerbericht sammeln.bat, Fotos mit weniger Grafikspeicher, zweiter Simulator auf Port 8768.
+  * 3.16.0: Simulator 3.16.0: Bergtal wie auf Daniels Fotos – Kalkfels mit Grasbändern, gelbgrüne Weiden, dunkle Fichten,
+    smaragdgrüner Bergsee mit Spiegelung, Dunst; in Hoch Karstweide, Felszähne, Legföhren, Alpenrosen, Quellwolken, Abendhimmel.
+  * 3.15.2: Vollbild: in der Simulation auch ◎, ⇆, 🚜 und der Mover-Stick ausgeblendet; beim echten Live-Bild bleiben sie.
+  * 3.15.1: Live → Bedienung: in der Simulation sind Tempo, ⇆, 🚜, Mitte, Kalibrieren und Wegpunkte ausgeblendet (auch im
+    Pi-Fenster), beim echten Live-Bild sichtbar; das Simulations-Band erscheint sofort.
+  * 3.15.0: Simulator 3.15.0: Maggie sieht aus wie das echte Vorbild (weiss mit brauner Rückenplatte, brauner Kopf mit Blesse,
+    Kippohren, wedelnder Schwanz, hohe Beine), bei jedem Start gleich.
+  * 3.14.0: Simulator 3.14.0: Karte des Grossvaters – Geheimnisse (Steinmännchen mit Geheimwort, doppelter Boden, Licht auf der
+    Nachtaufnahme), Nacht mit Geräuschen und je ein Action-Teil pro Kapitel.
   * 3.13.0: Simulator 3.13.0: zu zweit zehn Team-Bausteine in der Karte des Grossvaters und bei Maggie (geteiltes Wissen,
     Räuberleiter, Rucksack teilen, Rücken an Rücken, Wer findet mehr, Fotowettbewerb, Lagerfeuer-Tagebuch, High-Five, Rollen,
     Gummiband).
@@ -63,36 +92,6 @@ Features
     Tier.
   * 3.5.0: Kriechende nachts: Voralarm «⚠ Etwas Grosses am Boden», nach 6 s «Person? (kriecht)» mit Alarm; Fuchs und Igel lösen
     nichts aus; KI-Lupe schaut auch kleine, weite Bewegungen an (nicht bei starkem Wind).
-  * 3.4.0: Nebel-Modus: Nebel erkennen, Kontrast anheben, mehr Wärmebild, Hinweis «🌫 Nebel – Sicht eingeschränkt», kein falsches
-    «Kamera verdreht» im Nebel; in Dämmerung und Wind 2–3 Treffer in Folge vor einer Personen-Meldung.
-  * 3.3.0: MoveEye Sim 3.3.0: Roter Faden – Die Karte des Grossvaters und Maggie kennen sich, neues Abzeichen «Beide Geschichten
-    geschafft».
-  * 3.2.0: MoveEye Sim 3.2.0: Statisten im Hintergrund (Ziele, Tätigkeiten, Gruppen, grüssen, weichen aus, abends heim; Menge
-    wenig / normal / belebt).
-  * 3.1.0: Handy-Mitteilungen kurz und klar: Titel mit Symbol, eine Zeile Text, Bild wo sinnvoll, nie roher Code; «🛡 Schutz ein»
-    mit Bild; im Simulator nur Alarme (Info per Schalter); E-Mail mit ganzem Text; Gerätename nur bei mehreren MoveEye;
-    ntfy-Adresse in der Webhook-Karte behoben.
-  * 3.0.2: Simulator: «Nur Gruppen» wie in MoveEye (Gruppen offen, Themen zu); Anna ist die Betreuerin der Hütte; Sepp spricht
-    passend zur Jahreszeit.
-  * 3.0.1: Geschichten-Texte überarbeitet: stimmiger, lebendiger, Tippfehler korrigiert (Maggie, Die Karte des Grossvaters,
-    Entdecken), Übersetzungen vereinheitlicht.
-  * 3.0.0: Neue gemeinsame Versionsnummer: MoveEye und MoveEye Sim haben ab jetzt immer dieselbe Nummer (3.0.0). Neue Funktion =
-    zweite Zahl, Fehlerkorrektur = dritte Zahl.
-  * 2.98.116: Reiter «Spielen» neu aufgebaut wie im Simulator (Stufe, Spielstand, Weiterspielen, Geschichten-Regal, Entdecken).
-    Simulator 3D-4.85: neues Fenster «Spielen» mit Geschichten als grosse Karten (Die Karte des Grossvaters, Maggie, Hospiz,
-    Teil 2), gleicher Start für alle Geschichten.
-  * 2.98.115: Einstellungen öffnen beim Start in «Nur Gruppen»; neuer Schalter «Beim Start: Nur Gruppen» (ab Werk ein, aus =
-    eigene Menüs zurück); Pi-Fenster: die drei Aufklapp-Knöpfe wie im Web. Simulator 3D-4.84: dasselbe im Simulator.
-  * 2.98.114: Simulator 3D-4.83: «Auf Werkseinstellungen zurücksetzen» unter Mehr (nur Besitzer) wie bei MoveEye – erst eine
-    Kopie, dann zurücksetzen und neu starten; Horror-Passwort, Sprache, Inhalte und Entwicklerdaten bleiben.
-  * 2.98.113: Simulator 3D-4.82: Bergtal-Abenteuer – Tagebuch wird vorgelesen, Kamerafahrt, Jahreszeit wählbar, 3 Spielstände
-    mit Weiterspielen, Blinki-Tipps, gemeinsames Level, Kinder-Modus, Ausblick auf Teil 2.
-  * 2.98.112: Simulator 3D-4.81: Figuren ziehen sich nach Jahreszeit an (Winter, Nacht, Berg, Regen lang mit Jacke; Sommer
-    gemischt), Paket-Figuren ohne durchscheinende Beine, im Wärmebild ist Haut wärmer als Kleidung.
-  * 2.98.111: Simulator 3D-4.80: nur noch ein «Entwickler» – Reiter «Schalter» im Fenster Mehr → Entwickler (Prüfstand,
-    Störungen, Diagnose-Paket), die Bedienfeld-Karte öffnet dieses Fenster, Spieltest-Schalter nur einmal.
-  * 2.98.110: Simulator 3D-4.79: neue Geschichte «Maggie und der Bergkristall» unter Spielen – vier Jahreszeiten-Täler, Rätsel,
-    böse und hilfreiche Tiere, etwa 2 Stunden, für Kinder ab ca. 10.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -101,10 +100,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_13_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_22_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_13_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_13_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_22_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_22_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -121,7 +120,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.13.0"
+APP_VERSION = "3.22.0"
 
 
 def default_data_dir():
@@ -243,8 +242,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_13_0.zip"
-ZD_SHA256 = "5fc36d6339ba37cc9f1e78f3ab91f1c8433e390d32a2ceaa850a346480b9dc71"
+ZD_FILE = "moveeye_daten_3_22_0.zip"
+ZD_SHA256 = "bac55ca09b0b3fda58fb0ce920c8f158a7ce653ab34b56d186908726d03ac713"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -1872,7 +1871,7 @@ _save_timer = None
 
 
 WEB_UI_KEY = re.compile(r"^mw-[A-Za-z0-9_:\-./ ]{1,90}$")
-WEB_UI_LOCAL = {"mw-sound", "mw-hdr", "mw-listen-vol"}                      # per device on purpose (sound on the phone, not on the PC)
+WEB_UI_LOCAL = {"mw-sound", "mw-hdr", "mw-listen-vol", "mw-hdr-tabs", "mw-hdr-chips"}   # per device on purpose (sound on the phone, not on the PC; 639o: header folds)
 
 
 # ---- web password set on the page / in the window: stored as a salted PBKDF2 hash; checked passwords are remembered
@@ -11008,6 +11007,8 @@ def makeover_head():
           "if(on&&!b&&document.body){b=document.createElement('div');b.className='mwsimbar';b.title='MoveEye';const s=document.createElement('span');b.appendChild(s);document.body.prepend(b);}"
           "if(b){b.hidden=!on;b.firstChild.textContent='🧪 '+(TX[L()]||TX.en);}};"
           "document.addEventListener('DOMContentLoaded',paint);"
+          # 3.16: the main page knows sim_on from its state every few seconds -> the stripe follows at once (not only every 15 s)
+          "window.mwSimMark=v=>{v=!!v;if(v!==on){on=v;paint();}};"
           "setInterval(async()=>{try{const r=await (await fetch('/api/simbar')).json();if(r.on!==on){on=r.on;}paint();}catch(e){}},15000);setTimeout(paint,1500);"
           # 2.97.0: switch the simulation; armed -> ask «disarm and simulate?» first (sim_set needs confirm)
           "window.mwSimSet=async(v,lang)=>{const P=b=>fetch('/api/sim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(x=>x.json()).catch(()=>({}));"
@@ -24553,8 +24554,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.13.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 35317178,
-         "sha256": "f84db242ce33d2301e3cedd22f0a874085f3af44b56641a47a63af215d47b096"}
+SIM3D = {"version": "3.22.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 35717995,
+         "sha256": "dba8e1e6d5198d6c357e7ad646e0fce9b0a7f96e698a4eef0d1ba90c6b601767"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -24795,6 +24796,11 @@ class SimDiscovery:
 
 
 SIMSCAN = {"running": False, "t": 0.0, "hosts": 0, "found": 0, "secs": 0.0, "net": "", "done": 0}
+# Ports aufräumen (Stabil-Start): wo ein Simulator antworten kann - 8765 (Standard), 8766 (alte «Start auf Port 8766.bat»),
+# 8767 (Python-Simulator), 8768 (zweiter 3D-Simulator, «Start auf Port 8768.bat») und die Ausweich-Ports des
+# 3D-Simulators 8775 / 8785 / 8795 (main.gd ALT_PORTS: der Port war nach einem Update noch besetzt).
+# Eine Tabelle für beide Seiten: simulator3d/schnittstelle.json «_ports», geprüft im Selbsttest (Teil 558).
+SIM_SCAN_PORTS = (8765, 8766, 8767, 8768, 8775, 8785, 8795)
 SIMHOST = {}                       # ip -> computer name (from the simulator itself, or asked once from the router's name service)
 
 
@@ -24849,7 +24855,7 @@ def sim_scan():
     from concurrent.futures import ThreadPoolExecutor
     ip = _local_ipv4(); base = ".".join(ip.split(".")[:3])
     hosts = ["127.0.0.1"] + ([f"{base}.{i}" for i in range(1, 255)] if not ip.startswith("127.") else [])
-    ports = sorted({8765, 8766, 8767, 8768, int(urllib.parse.urlsplit(sim_base()).port or 8765)})   # 8767 / 8768: further simulators
+    ports = sorted(set(SIM_SCAN_PORTS) | {int(urllib.parse.urlsplit(sim_base()).port or 8765)})   # Stabil-Start: also the spare ports
     SIMSCAN.update(running=True, t=time.time(), hosts=len(hosts) * len(ports), found=0, secs=0.0, net=f"{base}.0/24", done=0)
 
     def probe(hp):
@@ -24875,7 +24881,7 @@ def sim_scan():
     def run():
         t0 = time.time()
         try:
-            with ThreadPoolExecutor(max_workers=64) as ex:
+            with ThreadPoolExecutor(max_workers=96) as ex:      # Stabil-Start: 7 ports instead of 4-5 - about as fast as before
                 list(ex.map(probe, [(h, p) for h in hosts for p in ports
                                     if not (p == TUN_PORT and CFG.get("tunnel_on") and h in ("127.0.0.1", ip))]))   # 2.95.66: not the own tunnel
         finally:
@@ -30562,7 +30568,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_13_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_22_0.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -38760,7 +38766,7 @@ G2_TOURS = {
                 ("#btn-fav", "Favourites", "⭐ keeps a recording for ever; the others are deleted when the memory is full."),
                 ("nav.subnav", "More history", "Night timeline, animal diary, message list and log.")],
     "settings": [("#srch", "Search", "Type a word - every setting is found, sorted by topic."),
-                 ("#simplebar", "Simple or Expert", "«Simple» shows only the important settings - for this page. «Expert» shows all."),
+                 ("#mwbar .mwb-mode", "Simple or Expert", "«Simple» shows only the important settings - for this page. «Expert» shows all."),
                  ("#settings", "Topics", "Open a topic to change it. Changes are saved at once."),
                  ("#settings .g2-q", "The «?»", "Next to a setting: what it does and what we recommend."),
                  ("nav.subnav a[href='/cams']", "Cameras", "Choose the camera, add a second one, check the thermal picture.")],
@@ -46483,6 +46489,77 @@ def iface_selftest():
 SELFTEST_EXTRA.append(("One field list MoveEye ↔ simulator (simulator3d/schnittstelle.json)", iface_selftest))
 
 
+def ports_check(base=None):
+    """Ports aufräumen (Stabil-Start): the port table «_ports» in schnittstelle.json against both sides - problems or None"""
+    base = base or os.path.dirname(os.path.abspath(__file__))
+    L = iface_list(base)
+    gdir = os.path.join(base, "simulator3d", "scripts")
+    if L is None or not os.path.isdir(gdir) or "_ports" not in L:
+        return None
+    P = L["_ports"]
+
+    def gd(fn):
+        with open(os.path.join(gdir, fn), encoding="utf-8") as f:
+            return f.read()
+    probs = []
+    m = re.search(r"const ALT_PORTS := \[([\d, ]+)\]", gd("main.gd"))
+    alt = [int(x) for x in re.findall(r"\d+", m.group(1))] if m else None
+    if alt != list(P["ausweich"]):
+        probs.append(f"main.gd ALT_PORTS {alt} != ausweich {P['ausweich']}")
+    m = re.search(r"const PORT := (\d+)", gd("tunnel.gd"))
+    if not m or int(m.group(1)) != P["tunnel"] or TUN_PORT != P["tunnel"]:
+        probs.append(f"tunnel port: tunnel.gd {m and m.group(1)}, TUN_PORT {TUN_PORT}, list {P['tunnel']}")
+    m = re.search(r"\nstatic func game_ports\(.*?(?=\n(?:static )?func |\Z)", gd("game.gd"), re.S)
+    g = m.group(0) if m else ""
+    m0 = re.search(r"return \[(\d+), (\d+)\]", g)
+    m1 = re.search(r"return \[(\d+) \+ 2 \* k, (\d+) \+ 2 \* k\]", g)
+    if not m0 or [int(m0.group(1)), int(m0.group(2))] != list(P["spiel"]):
+        probs.append(f"game.gd game_ports for {P['sim']} != spiel {P['spiel']}")
+    if not m1 or int(m1.group(1)) != P["spiel_andere"] or int(m1.group(2)) != P["spiel_andere"] + 1:
+        probs.append(f"game.gd game_ports for other ports != spiel_andere {P['spiel_andere']}")
+    if TUN_LOCAL.get(18770) != P["spiel"][0] or TUN_LOCAL.get(18771) != P["spiel"][1]:
+        probs.append(f"TUN_LOCAL (343) carries {TUN_LOCAL.get(18770)}/{TUN_LOCAL.get(18771)}, not the game {P['spiel']}")
+    if list(SIM_SCAN_PORTS) != list(P["suche"]):
+        probs.append(f"SIM_SCAN_PORTS (300) {list(SIM_SCAN_PORTS)} != suche {P['suche']}")
+    for k in ["sim", "sim_zweit", "python_sim"] + [f"ausweich {x}" for x in P["ausweich"]]:
+        v = P[k] if k in P else int(k.split()[1])
+        if v not in P["suche"]:
+            probs.append(f"MoveEye does not search {k} ({v})")
+
+    def game(p):
+        return list(P["spiel"]) if p == P["sim"] else [P["spiel_andere"] + 2 * (p - P["sim"]), P["spiel_andere"] + 1 + 2 * (p - P["sim"])]
+    sims = [P["sim"], P["sim_zweit"]] + list(P["ausweich"])
+    used = {}
+    for p in sims:                                       # two simulators on one PC: nothing may overlap
+        for q in [p] + game(p):
+            if q in used and used[q] != p:
+                probs.append(f"port {q} is used by the simulators on {used[q]} and {p}")
+            used[q] = p
+    for q in (P["tunnel"], P["python_sim"]):
+        if q in used:
+            probs.append(f"port {q} (tunnel / Python simulator) is also used by the simulator on {used[q]}")
+    bdir = os.path.join(base, "simulator3d", "beilagen")
+    if os.path.isdir(bdir):
+        for fn in sorted(os.listdir(bdir)):
+            if fn.endswith(".bat"):
+                with open(os.path.join(bdir, fn), encoding="ascii", errors="replace") as f:
+                    for q in re.findall(r"--port (\d+)", f.read()):
+                        if int(q) in (P["tunnel"], P["python_sim"]) or int(q) not in P["suche"]:
+                            probs.append(f"{fn}: --port {q} collides or is not searched")
+    return probs
+
+
+def ports_selftest():
+    r = ports_check()
+    if r is None:
+        return "simulator folder not here"
+    assert not r, f"{len(r)} problems: " + " | ".join(r[:8])
+    return "ports of MoveEye and the simulator fit together (schnittstelle.json «_ports»)"
+
+
+SELFTEST_EXTRA.append(("Ports MoveEye ↔ simulator (schnittstelle.json «_ports»)", ports_selftest))
+
+
 _sim_status_340 = sim_status
 
 
@@ -46744,7 +46821,7 @@ DE = {
     "FPS": "FPS", "PERSONS NOW": "PERSONEN JETZT", "DETECTIONS": "ERKENNUNGEN", "VEHICLES IGNORED": "FAHRZEUGE IGNORIERT",
     "SHADOW % REMOVED": "SCHATTEN % ENTFERNT", "SYSTEM · CPU": "SYSTEM · CPU", "WEATHER": "WETTER",
     "Rain score": "Regen-Wert", "Wind score": "Wind-Wert", "Trigger multiplier (wind)": "Auslöse-Faktor (Wind)",
-    "EVENT LOG": "EREIGNISPROTOKOLL", "important": "Wichtiges", "Expand all": "Alle öffnen", "Collapse all": "Alle schliessen",
+    "EVENT LOG": "EREIGNISPROTOKOLL", "important": "Wichtiges", "Expand all": "Alle aufklappen", "Collapse all": "Alle zuklappen",
     "Centre camera": "Kamera zentrieren", "Snapshot": "Schnappschuss", "Add current pan as waypoint": "Aktuelle Position als Wegpunkt",
     "Clear": "Löschen", "Recalibrate (scene empty)": "Neu kalibrieren (Szene leer)", "Reset all settings": "Alle Einstellungen zurücksetzen",
     "Test notification": "Test-Benachrichtigung", "Test all channels": "Alle Kanäle testen", "testing …": "teste …", "No channel set up.": "Kein Kanal eingerichtet.", "Webhook URL (POST JSON on person; e.g. https://ntfy.sh/my-topic)":
@@ -48155,7 +48232,7 @@ DE.update({    # window in the look of the web page (2.25.0)
     "show / hide fields": "Felder ein-/ausblenden", "All quiet – I'm keeping watch!": "Alles ruhig – ich halte Wache!",
     "Happy Swiss National Day!": "Schöne Bundesfeier!", "Swap stick and buttons (left- / right-handed)": "Stick und Knöpfe tauschen (Links- / Rechtshänder)", "moving to waypoint": "fährt zu Wegpunkt", "waiting at": "wartet bei",
     "need 2+ waypoints": "mindestens 2 Wegpunkte nötig", "paused (tracking person)": "Pause (verfolgt Person)",
-    "paused (manual control)": "Pause (Handsteuerung)", "System": "System", "Log": "Protokoll", "Expand all": "Alle öffnen", "Collapse all": "Alle schliessen",
+    "paused (manual control)": "Pause (Handsteuerung)", "System": "System", "Log": "Protokoll", "Expand all": "Alle aufklappen", "Collapse all": "Alle zuklappen",
 })
 DE.update({    # texts that were written twice in the code (German / English) - now one English text + translations
     "not possible in the demo": "In der Demo nicht möglich",
@@ -48347,6 +48424,11 @@ TK_AI_MODEL_KEYS = ("ai_model", "ai_own_url", "ai_own_auto")   # 2.98.23 (Konzep
 TK_SPECIES_KEYS = ("species_on", "species_model", "species_norm", "species_conf")   # aufr (Konzept): the group «Tierart» (like «KI-Modell»)
 SECTIONS = ["Wake-up alarm", "Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup", "Security"]
+
+
+def tk_icons():
+    """639o: symbols «color» or «plain» (web_ui mw-icons, the switch of the web pages)"""
+    return "plain" if str(CFG.get("web_ui", {}).get("mw-icons", "")) == "plain" else "color"
 
 
 class Toggle(tk.Frame):
@@ -48603,7 +48685,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.13.0")
+        self.root.title("MoveEye 3.22.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -48974,7 +49056,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.13.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.22.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -49314,6 +49396,7 @@ class App:
         wide = self._lay[2] and not side_col             # wide: stick | small things | quick switches in one row
         left_w = self._win_w() - self._lay[1] - 60
         tiny = side_col or (not wide and left_w < 520)   # very narrow: small things beside the stick, switches below both
+        self._ctl_sim = simh = bool(CFG.get("sim_on"))  # 3.16: simulation = no speed, ⇆, centre, calibrate, waypoints (like the web page)
         head = self._tk_head()                           # 2.98.26: joystick, centre, calibrate, waypoints only with a pan / tilt head (2.98.29: «Ansicht» → Joystick always / never)
         u = self._tk_ui()
         bar = tk.Frame(f, bg=C["panel"]); bar.pack(fill="x")
@@ -49373,14 +49456,17 @@ class App:
             for _, short, cmd, tip in btns:
                 self._fbtn(side, short, cmd, tip).pack(side="left", padx=(6, 0))
             swb(side).pack(side="left", padx=(6, 0))
-        if not head:
+        if not head or simh:
             side.grid_remove()
+        if not head and not simh:
             tk.Label(bar, text=tr("no pan / tilt head - joystick hidden (Settings → Camera / Servos → Servo driver)"), bg=C["panel"], fg=C["mut"],
                      font=("DejaVu Sans", 8), wraplength=360, justify="left").grid(row=3, column=0, columnspan=4, sticky="w")
-        self.l_ctl_status = tk.Label(side if wide else bar, text="", bg=C["panel"], fg=C["yel"], font=("DejaVu Sans", 8), wraplength=200 if wide else 400,
+        self.l_ctl_status = tk.Label(side if wide and not simh else bar, text="", bg=C["panel"], fg=C["yel"], font=("DejaVu Sans", 8), wraplength=200 if wide else 400,
                                      justify="left")
-        if wide:
+        if wide and not simh:
             self.l_ctl_status.pack(anchor="w", pady=(6, 0))
+        elif wide:
+            self.l_ctl_status.grid(row=1, column=0, columnspan=4, sticky="w")
         else:
             self.l_ctl_status.grid(row=2, column=0, columnspan=4, sticky="w")
         # 3) quick switches, the waypoints below
@@ -49390,7 +49476,7 @@ class App:
         elif tiny:
             qf.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(8, 0)); bar.columnconfigure(c_sd, weight=1); cols = 5
         else:
-            qf.grid(row=1, column=c_sd, sticky="new", padx=(0, 14) if swap else (14, 0), pady=(8, 0)); bar.columnconfigure(c_sd, weight=1)
+            qf.grid(row=0 if simh else 1, rowspan=2 if simh else 1, column=c_sd, sticky="new", padx=(0, 14) if swap else (14, 0), pady=(8, 0)); bar.columnconfigure(c_sd, weight=1)
             cols = 5 if left_w - 170 >= 380 else 4
         grid = tk.Frame(qf, bg=C["panel"]); grid.pack(fill="x")
         for k in range(cols):
@@ -49608,11 +49694,8 @@ class App:
         inner = ttk.Frame(canvas, style="Bg.TFrame"); win = canvas.create_window((0, 0), window=inner, anchor="nw")
         inner.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
         canvas.bind("<Configure>", lambda e: canvas.itemconfigure(win, width=min(e.width, 860)))     # readable lines on a wide screen
+        lb = self._mwbar(right, tab); lb.pack(side="top", fill="x", pady=(0, 8), before=sb)    # 639o: the bar like on every web page
         bar = tk.Frame(right, bg=C["bg"]); bar.pack(side="top", fill="x", pady=(0, 10), before=sb)   # stays at the top while scrolling
-        # like the web page: search field, then «Collapse all · Groups only · Expand all» with the same drawn symbols (nurgruppen)
-        self._fold_btn(bar, "open", lambda: self._all_sections(True), tr("Expand all")).pack(side="right")
-        self._fold_btn(bar, "groups", self._groups_only, tr("Groups only")).pack(side="right", padx=(0, 6))
-        self._fold_btn(bar, "close", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
         sf = tk.Frame(bar, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"]); sf.pack(side="left", fill="x", expand=True, padx=(0, 8))
         tk.Label(sf, text="⚲", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 11)).pack(side="left", padx=(8, 0))
         self.search_var = tk.StringVar()
@@ -49625,27 +49708,11 @@ class App:
         self.search_var.trace_add("write", lambda *a: self._search())
         if tab == "sim":                                   # 2.98.14: tab Simulator - status, the assistant, the simulator settings
             self._tk_sim_head(inner)
-        # Simple / Expert (like the web page)
-        mrow = tk.Frame(inner, bg=C["line"], padx=1, pady=1)
-        if tab != "sim":
-            mrow.pack(fill="x", pady=(0, 10))
         self._simple_seen = bool(CFG["ui_simple"])
         _G2_SIMPLE.v = page_simple(tab)                    # 586: Simple / Expert of this tab (simple_hidden in the window thread)
-        for i, (val, lab) in enumerate(((True, tr("Simple")), (False, tr("Expert")))):
-            on = page_simple(tab) == val
-            l = tk.Label(mrow, text=lab, font=("DejaVu Sans", 9, "bold"), pady=4, cursor="hand2",
-                         bg=C["acc"] if on else C["field"], fg="#ffffff" if on else C["mut"])
-            l.pack(side="left", fill="x", expand=True, padx=(0 if i == 0 else 1, 0))
-            l.bind("<Button-1>", lambda e, v=val: self._set_simple(v))
         if page_simple(tab) and tab != "sim":
             tk.Label(inner, text=tr("Simple: only the important settings. «Expert» shows all of them."), bg=C["bg"], fg=C["mut"],
                      font=("DejaVu Sans", 8), anchor="w", justify="left", wraplength=330).pack(fill="x", pady=(0, 8))
-        # nurgruppen: «On start: groups only» next to Simple / Expert (same switch as on the web page, CFG ui_start_groups)
-        sg_ = Toggle(inner, tr("On start: groups only"), CFG.get("ui_start_groups", True), self._set_start_groups)
-        for w_ in (sg_, sg_.cv, sg_.lbl):
-            w_.config(bg=C["bg"])
-        sg_.lbl.config(font=("DejaVu Sans", 9)); sg_.pack(fill="x", pady=(0, 10)); self.start_groups_tg = sg_
-        Tip(sg_.lbl, tr("On every start the settings show only the groups. Off: the menus open as you left them."))
         self.grp_meta = {}; self._open_before = None
         self.no_match = tk.Label(inner, text=tr("No match"), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9))
         # 9 groups (same as the web page). Inside a group every topic opens / closes the same way (the first one is open);
@@ -49742,8 +49809,9 @@ class App:
             if m[0].cget("fg") != col:
                 m[0].config(fg=col)
             ic_ = getattr(self, "grp_icons", {}).get(key)
-            if ic_ is not None and ic_.cget("fg") != (C["grn"] if on else C["txt"]):
-                ic_.config(fg=C["grn"] if on else C["txt"])
+            icol = C["grn"] if on else (C["mut"] if tk_icons() == "plain" else C["txt"])     # 639o: «schlicht» = grey until on
+            if ic_ is not None and ic_.cget("fg") != icol:
+                ic_.config(fg=icol)
 
     def _sub_open(self, k):
         return self._shown.get(k, k in self.open_secs)
@@ -50839,6 +50907,45 @@ class App:
     def _set_start_groups(self, v):
         CFG["ui_start_groups"] = bool(v); save_settings()
         self._groups_only(save=False) if v else self._own_view()
+
+    def _mwbar(self, parent, tab):
+        """639o: the bar of every web page in the window - Simple / Expert · Symbols coloured / plain · On start: groups only ·
+        Collapse all / Groups only / Expand all (same order, texts and symbols; a narrow window: two lines)"""
+        f = tk.Frame(parent, bg=C["bg"]); small = self._lay[0]
+        r1 = tk.Frame(f, bg=C["bg"]); r1.pack(fill="x")
+        r2 = tk.Frame(f, bg=C["bg"]) if small else r1
+        if small:
+            r2.pack(fill="x", pady=(6, 0))
+
+        def seg(host, items, cur, cmd, dis=False):
+            w = tk.Frame(host, bg=C["line"], padx=1, pady=1)
+            for i, (val, lab) in enumerate(items):
+                on = cur == val
+                l = tk.Label(w, text=lab, font=("DejaVu Sans", 9, "bold"), pady=3, padx=8, cursor="" if dis else "hand2",
+                             bg=C["acc"] if on and not dis else C["field"], fg="#ffffff" if on and not dis else C["mut"])
+                l.pack(side="left", padx=(0 if i == 0 else 1, 0))
+                if not dis:
+                    l.bind("<Button-1>", lambda e, v=val: cmd(v))
+            return w
+        nosimple = tab == "sim"                             # the tab Simulator has only one view (the window shows all its groups)
+        m = seg(r1, ((True, tr("Simple")), (False, tr("Expert"))), page_simple(tab), self._set_simple, nosimple)
+        m.pack(side="left"); Tip(m, tr("This page has only one view") if nosimple else tr("Simple: only the important settings. «Expert» shows all of them."))
+        ic = seg(r1, (("color", "🎨 " + tr("Symbols coloured")), ("plain", "◯ " + tr("plain"))), tk_icons(), self._set_icons)
+        ic.pack(side="left", padx=(8, 0)); Tip(ic, tr("Symbols: green dot or green symbol = switched on"))
+        sg_ = Toggle(r2, tr("On start: groups only"), CFG.get("ui_start_groups", True), self._set_start_groups)
+        for w_ in (sg_, sg_.cv, sg_.lbl):
+            w_.config(bg=C["bg"])
+        sg_.lbl.config(font=("DejaVu Sans", 9), wraplength=0); sg_.pack(side="left", padx=(0 if small else 10, 0)); self.start_groups_tg = sg_
+        Tip(sg_.lbl, tr("On every start the settings show only the groups. Off: the menus open as you left them."))
+        self._fold_btn(r2, "open", lambda: self._all_sections(True), tr("Expand all")).pack(side="right")
+        self._fold_btn(r2, "groups", self._groups_only, tr("Groups only")).pack(side="right", padx=(0, 6))
+        self._fold_btn(r2, "close", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
+        return f
+
+    def _set_icons(self, v):
+        """639o: symbols «color» | «plain» - the same value as the web pages (web_ui mw-icons, so every device and the window agree)"""
+        if v != tk_icons():
+            web_ui_update({"mw-icons": "plain" if v == "plain" else "color"}); self.root.after(30, self._rebuild)
 
     def _fold_btn(self, parent, kind, cmd, tip):
         """the three fold buttons with the drawn symbols of the web page (530: arrows in · two bars · arrows out)"""
@@ -56076,7 +56183,7 @@ App._refresh = _kr_tk_refresh
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 245                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 247                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -58791,6 +58898,8 @@ WEB_PAGE = WEB_PAGE.replace("/*KIHDE*/{}", json.dumps({_k: _v[0] for _k, _v in _
 # are not used then. The web side is in 541 (servo_client_state "sim" → #srv-stop hidden); the setting servo_stop_btn stays for
 # the real hardware. Here the window: every «⏹ Stopp» made by App._fbtn with the command _srv_estop_btn (570, all three
 # layouts of the camera bar) is remembered and taken off / put back by App._refresh (it runs every few seconds).
+# 3.16 (Daniel 31.10.2026): in the simulation the whole small column (speed, ⇆, centre, calibrate, waypoints) is left out
+# (570 _build_controls, flag self._ctl_sim); _refresh builds the tab again when the simulation is switched.
 # ----------------------------------------------------------------------------
 
 _ss_fbtn_before = App._fbtn
@@ -58851,6 +58960,13 @@ def _ss_refresh(self, *a, **k):
     r = _ss_refresh_before(self, *a, **k)
     try:
         _ss_stop_show(self)
+    except Exception:
+        pass
+    try:                                                 # 3.16: simulation switched -> build the camera bar again (570 _build_controls)
+        if hasattr(self, "_ctl_sim") and self._ctl_sim != bool(CFG.get("sim_on")) and self.tab is not None:
+            self._ctl_sim = bool(CFG.get("sim_on"))
+            tid, self.tab = self.tab, None
+            self.root.after(10, lambda: self._tab(tid))
     except Exception:
         pass
     return r
@@ -60633,7 +60749,7 @@ for _k, _v in _HX17.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
-_HX18 = {'Groups only': ('Nur Gruppen öffnen', 'Ouvrir seulement les groupes', 'Aprire solo i gruppi', 'Avrir mo las gruppas')}
+_HX18 = {'Groups only': ('Nur Gruppen', 'Ouvrir seulement les groupes', 'Aprire solo i gruppi', 'Avrir mo las gruppas')}
 for _k, _v in _HX18.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
@@ -67482,7 +67598,7 @@ for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
 # Der 3D-Simulator spielt die Geschichte selbst (simulator3d/scripts/maggie_vorfuehrung.gd, Autopilot + Film-Kamera,
 # eigener Vorführ-Spielstand). Hier nur das Zuschauen:
 #   * Seite /sim/vorfuehrung: das Bild des Simulators (/sim/view.jpg?bare=1 – ohne die Knöpfe des Simulator-Fensters, die
-#     Leiste der Vorführung blendet der Simulator dann auch aus), Bild für Bild geholt (nie eine wachsende Verzögerung);
+#     Leiste der Vorführung blendet der Simulator dann auch aus; bare nur solange sie läuft, Fix 3.19.x), Bild für Bild geholt (nie eine wachsende Verzögerung);
 #     unten eine Leiste (verschwindet nach 4 s, Tippen zeigt sie wieder): Pause / Weiter, Kapitel zurück / Liste / weiter,
 #     Beenden, Vollbild. Ohne laufende Vorführung: Start «Kurzfassung» / «Ganze Geschichte».
 #   * /api/vorfuehrung: GET = Stand (Simulator /control vorfuehrung info), POST {do: start (len) | pause | weiter |
@@ -67664,7 +67780,7 @@ def vf_selftest():
     finally:
         CFG["sim_on"] = keep
     html = vf_page()
-    assert "/sim/view.jpg?bare=1" in html and "/api/vorfuehrung" in html and "Kurzfassung" in html and "<!--NAV-->" not in html
+    assert "/sim/view.jpg?" in html and "bare=1&" in html and "/api/vorfuehrung" in html and "Kurzfassung" in html and "<!--NAV-->" not in html
     assert "/sim/vorfuehrung" in SIM_PAGE and "/sim/vorfuehrung" in WEB_PAGE
     for L in ("fr", "it", "rm"):
         assert TRX[L].get("Watch «Maggie» as a film (demo)"), L
@@ -67672,6 +67788,370 @@ def vf_selftest():
 
 
 SELFTEST_EXTRA.append(("Vorführung «Maggie» (page /sim/vorfuehrung, owner only)", vf_selftest))
+# ----------------------------------------------------------------------------
+# Der 3D-Simulator spielt den Trailer selbst (simulator3d/scripts/trailer.gd: Kamerafahrt im Bergtal, Musik, Texttafeln,
+# Erzähler). Hier nur das Starten und Zuschauen:
+#   * /sim/trailer?id=…: startet den Trailer (wenn nicht schon einer läuft) und zeigt das Bild des Simulators
+#     (/sim/view.jpg?bare=1 – nur solange der Film läuft; danach ohne bare, sonst blieben die Knöpfe am PC versteckt),
+#     unten eine Leiste: Beenden, Nochmals, Ton, Stimme, Vollbild, Zurück.
+#   * Ton auch im Browser (Fix 3.19.x, Daniel: «am iPad nichts»): grosser Knopf «🔊 Tippen für Ton» (iOS braucht ein Tippen
+#     vor Sprache und Audio; ein Tippen irgendwo genügt). Danach Erzähler (speechSynthesis, wie bisher) und Musik + Geräusche:
+#     /api/trailer?plan=1 holt den Ton-Plan des Simulators (trailer.gd ton_plan: Zeit, Klang, Lautstärke, Überblendung),
+#     /sim/trailer_ton/<klang>.wav die Klänge (trailer_ton.gd, mono 22 kHz, zusammen ≈ 3 MB); die Seite spielt sie mit
+#     WebAudio im Takt von «t» aus /api/trailer (nachgeführt, wenn es mehr als 0.35 s abweicht). Ältere Simulatoren ohne
+#     Plan: nur der Erzähler. Der Ton läuft auf beiden Geräten (PC und iPad).
+#   * /api/trailer: GET = Stand (Simulator /control trailer info), POST {do: start (id) | stop}. Nur der Besitzer
+#     (nacht_may: Administrator, nicht im Bedienermodus), wie die Vorführung (639m).
+#   * Einstieg: Reiter «Sim» ganz oben die Karte «🛠 Entwickler» (nur mit dem Entwickler-Bereich und für den Besitzer) mit
+#     «🎬 Trailer Grossvater», «🎬 Trailer Maggie», «🎬 Vorführung»; dazu Einstellungen → Entwickler (Web 530 devExtras,
+#     Fenster 639c) ganz oben die zwei Trailer. Im Simulator selbst: oben im Fenster «Entwickler» und auf den Story-Karten.
+# Hier (nach 639m) weil VF-Teile (639m), render_page, sim_control, nacht_may, SIM_PAGE, WEB_PAGE vorher kommen.
+# ----------------------------------------------------------------------------
+TRL_IDS = ("grossvater", "maggie")
+
+
+def trl_info():
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": tr("The 3D simulator is not connected."), "offline": True}
+    try:
+        r = sim_control({"action": "trailer", "do": "info"}) or {}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:80]}
+    if not r.get("ok") and "laeuft" not in r:
+        if "unknown" in str(r.get("error") or "").lower():
+            return {"ok": False, "error": tr("This simulator has no trailers yet – update it.")}
+        return {"ok": False, "error": str(r.get("error") or tr("The 3D simulator is not connected."))[:120]}
+    return r
+
+
+def trl_plan():
+    """the sound plan of the running trailer (simulator trailer.gd ton_plan) – for music and noises in the browser"""
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": tr("The 3D simulator is not connected.")}
+    try:
+        r = sim_control({"action": "trailer", "do": "plan"}) or {}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:80]}
+    if not isinstance(r.get("plan"), list):
+        return {"ok": False, "error": str(r.get("error") or "no plan")[:120]}
+    return r
+
+
+TRL_TON_RE = re.compile(r"^[a-z_]{2,24}$")
+
+
+def trl_do(d, owner=True):
+    """start (id) / stop – only the owner"""
+    if not owner:
+        log_event("web", "Trailer refused (not the owner / operator mode)")
+        return {"ok": False, "error": tr("Only the owner can do this."), "code": 403}
+    w = str((d or {}).get("do") or "")
+    if w not in ("start", "stop"):
+        return {"ok": False, "error": "do: start | stop", "code": 400}
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": tr("The 3D simulator is not connected.")}
+    c = {"action": "trailer", "do": w}
+    if w == "start":
+        tid = str(d.get("id") or "")
+        if tid not in TRL_IDS:
+            return {"ok": False, "error": "id: " + " | ".join(TRL_IDS), "code": 400}
+        c["id"] = tid
+        lg = str(CFG.get("lang") or "")
+        if lg in ("de", "fr", "it", "rm", "en"):
+            c["sprache"] = lg
+    try:
+        r = sim_control(c) or {}
+    except Exception as e:
+        if w == "start" and "timed out" in str(e):           # building the Bergtal takes a moment
+            return {"ok": True, "loading": True}
+        return {"ok": False, "error": str(e)[:80]}
+    if str(r.get("error") or "").startswith("busy: "):
+        return {"ok": False, "error": tr("The simulator is busy: {w}").replace("{w}", str(r["error"])[6:])}
+    return r
+
+
+TRL_PAGE = _zd('639n_trailer/TRL_PAGE', ZD_PAGE)
+
+# Sprachausgabe im Browser (Daniel 31.10.2026, Vorführung und Trailer): der Simulator meldet in /control … info das Feld
+# «sprechen» {id, text, lang} (Erzähler, Untertitel, Texttafeln); die Seite liest jeden neuen Satz mit speechSynthesis vor, in
+# der Sprache von MoveEye (rm: eine romanische Stimme, falls das Gerät eine hat, sonst Deutsch). iOS: Ton erst nach einem
+# Tippen («🔊 Ton an»), dabei wird speechSynthesis einmal angestossen; Pause = Stimme verstummt. Dazu hält navigator.wakeLock
+# den Bildschirm wach, solange der Film läuft (iPad). Die Texte bleiben unten als Untertitel im Bild (der Simulator zeigt sie).
+# Stimme (Daniel 31.10.2026, «klingt fürchterlich»): automatisch die beste Stimme der Sprache – 1. Name/voiceURI mit Premium,
+# Enhanced, Erweitert, Natural, Neural, Online oder Google, 2. lokale Stimme der Region (de-CH vor de-DE vor de-AT), 3. die
+# Standardstimme; die Liste kommt auf iOS / Chrome verzögert (voiceschanged + Nachfragen). Tempo 0.92, Trailer 0.88, Tonhöhe 0.95,
+# lange Sätze an Satzzeichen geteilt. Knopf «🗣 Stimme» neben 🔊: Liste der Stimmen (beste «empfohlen», ▶ Hörprobe), Tempo-
+# Regler 0.8–1.1, Wahl pro Gerät (localStorage mw-film-stimme-<sprache>, mw-film-tempo); nur einfache Stimmen: Hinweis «Premium laden».
+SPK_JS = _zd('639n_trailer/SPK_JS', "")
+
+
+# Musik und Geräusche des Trailers im Browser (Fix 3.19.x): der Ton-Plan des Simulators (trailer.gd ton_plan) mit WebAudio
+# nachgespielt – Schleifen (Musikflächen, Wind, Wasser …) mit gleitender Lautstärke, Einzelklänge, Musik leiser während der
+# Erzähler spricht (0.6, wie trailer.gd _audio_tick), am Schluss 2 s ausblenden. Die Uhr: «t» aus /api/trailer (alle 1.5 s);
+# weicht sie mehr als 0.35 s ab, wird nachgeführt, bei mehr als 3 s (Sprung) neu aufgesetzt. Erst nach dem Tippen (iOS).
+TA_JS = _zd('639n_trailer/TA_JS', "")
+
+_HX_TRL = {
+    'Trailer Grossvater': ('Trailer Grossvater', 'Bande-annonce Grand-père', 'Trailer Nonno', 'Trailer Tat'),
+    'Trailer Maggie': ('Trailer Maggie', 'Bande-annonce Maggie', 'Trailer Maggie', 'Trailer Maggie'),
+    'Vorführung': ('Vorführung', 'Démonstration', 'Dimostrazione', 'Demonstraziun'),
+    'Developer': ('Entwickler', 'Développeur', 'Sviluppatore', 'Sviluppader'),
+    'End the trailer': ('Trailer beenden', 'Arrêter la bande-annonce', 'Termina il trailer', 'Terminar il trailer'),
+    'Watch again': ('Nochmals ansehen', 'Revoir', 'Guarda di nuovo', 'Guardar anc ina giada'),
+    'The end': ('Ende', 'Fin', 'Fine', 'Fin'),
+    'Over': ('Vorbei', 'Terminé', 'Finito', 'Terminà'),
+    'Sound on': ('Ton an', 'Son activé', 'Audio attivo', 'Tun activà'),
+    'Sound off': ('Ton aus', 'Son coupé', 'Audio spento', 'Tun deactivà'),
+    'Tap for sound': ('Tippen für Ton', 'Touchez pour le son', 'Tocca per l’audio', 'Tutgar per tun'),
+    'This simulator has no trailers yet – update it.': ('Dieser Simulator kennt die Trailer noch nicht – bitte aktualisieren.',
+                                                        'Ce simulateur ne connaît pas encore les bandes-annonces – mets-le à jour.',
+                                                        'Questo simulatore non conosce ancora i trailer – aggiornalo.',
+                                                        'Quest simulatur na conuscha anc betg ils trailers – actualisescha el.'),
+    'The simulator is busy: {w}': ('Der Simulator ist beschäftigt: {w}', 'Le simulateur est occupé : {w}', 'Il simulatore è occupato: {w}',
+                                   'Il simulatur è occupà: {w}'),
+    'Voice': ('Stimme', 'Voix', 'Voce', 'Vusch'),
+    'recommended': ('empfohlen', 'recommandée', 'consigliata', 'recumandada'),
+    'Automatic (recommended)': ('Automatisch (empfohlen)', 'Automatique (recommandée)', 'Automatica (consigliata)', 'Automatic (recumandà)'),
+    'Listen': ('Anhören', 'Écouter', 'Ascolta', 'Tadlar'),
+    'Speed': ('Tempo', 'Vitesse', 'Velocità', 'Tempo'),
+    'No voice for this language on this device.': ('Dieses Gerät hat keine Stimme für diese Sprache.', 'Cet appareil n’a pas de voix pour cette langue.',
+                                                    'Questo dispositivo non ha una voce per questa lingua.', 'Quest apparat n’ha nagina vusch per quest linguatg.'),
+    'Better voices: iPad → Settings → Accessibility → Spoken Content → Voices → English → download «Premium».': ('Bessere Stimmen: iPad → Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch → «Premium» laden.',
+                          'Meilleures voix : iPad → Réglages → Accessibilité → Contenu énoncé → Voix → Français → télécharger « Premium ».',
+                          'Voci migliori: iPad → Impostazioni → Accessibilità → Contenuto letto ad alta voce → Voci → Italiano → scarica «Premium».',
+                          'Meglras vuschs: iPad → Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch → chargiar «Premium».'),
+}
+for _k, _v in _HX_TRL.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_SPK_KEYS = ['Tap for sound', 'Voice', 'recommended', 'Automatic (recommended)', 'Listen', 'Speed', 'No voice for this language on this device.', 'Better voices: iPad → Settings → Accessibility → Spoken Content → Voices → English → download «Premium».']
+_TRL_KEYS = list(_HX_TRL) + ["Full screen", "Back", "The valley is being prepared …", "The 3D simulator is not connected."]
+
+# the Vorführung (639m) gets the same: the button in its bar, the new sentences read aloud, silent on pause, screen awake
+VF_PAGE = VF_PAGE.replace('<button type="button" class="sec" onclick="vfFull()"', '<button type="button" class="sec spk-btn" onclick="spkToggle()">🔇</button>\n    <button type="button" class="sec" onclick="vfFull()"', 1)
+VF_PAGE = VF_PAGE.replace("/*VFDE*/\n", "/*VFDE*/\n" + SPK_JS, 1)
+VF_PAGE = VF_PAGE.replace('HIDE_T = setTimeout(() => { if (!S.pause) b.classList.add("off"); }, 4000); }',
+                          'HIDE_T = setTimeout(() => { if (!S.pause && !SPK.pop) b.classList.add("off"); }, 4000); }', 1)
+VF_PAGE = VF_PAGE.replace("function vfPaint(j) {\n  S = j || {};", "function vfPaint(j) {\n  S = j || {};\n  spkTick(S, !!S.pause, !!S.laeuft);", 1)
+_VF_KEYS.extend(["Sound on", "Sound off"] + _SPK_KEYS)
+_TRL_DE_JS = json.dumps({k: DE.get(k, k) for k in ("Trailer Grossvater", "Trailer Maggie", "Vorführung", "Developer")}, ensure_ascii=False)
+
+# Settings → Developer (web 530 devExtras): the two trailers on top of the list (the window 639c: see below)
+WEB_PAGE = WEB_PAGE.replace('[["🧪", "Test bench and test run", "/sim#c-test"]',
+                            '[["🎬", "Trailer Grossvater", "/sim/trailer?id=grossvater"], ["🎬", "Trailer Maggie", "/sim/trailer?id=maggie"], '
+                            '["🧪", "Test bench and test run", "/sim#c-test"]', 1)
+WEB_PAGE = WEB_PAGE.replace("</body>", "<script>Object.assign(I18N.de, " + _TRL_DE_JS + ");</script></body>", 1)
+
+# the tab «Sim»: on top the card «🛠 Entwickler» (no fold card: the links are always visible, also with «Nur Gruppen») (only the owner with the developer area: /api/ui_simple dev + /api/trailer not 403)
+TRL_SIM_CARD = """<div class="sc wide" id="c-devquick" hidden>
+    <h2 style="margin:0 0 8px"><span>🛠</span> <span data-i18n="Developer">Developer</span></h2>
+    <div class="row2" style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn sec" href="/sim/trailer?id=grossvater" style="flex:1 1 180px;text-align:left">🎬 <span data-i18n="Trailer Grossvater">Trailer Grossvater</span> ›</a>
+      <a class="btn sec" href="/sim/trailer?id=maggie" style="flex:1 1 180px;text-align:left">🎬 <span data-i18n="Trailer Maggie">Trailer Maggie</span> ›</a>
+      <a class="btn sec" href="/sim/vorfuehrung" style="flex:1 1 180px;text-align:left">🎬 <span data-i18n="Vorführung">Vorführung</span> ›</a>
+    </div>
+  </div>
+  """
+TRL_SIMJS = """<script>
+(function trlQuick() {
+  try { Object.assign(I18N.de, /*TRLDE*/{}); } catch (e) {}
+  const c = document.getElementById("c-devquick"); if (!c) return;
+  Promise.all([fetch("/api/ui_simple?page=sim").then(x => x.json()).catch(() => ({})), fetch("/api/trailer", {cache: "no-store"}).then(x => x.status).catch(() => 403)])
+    .then(([u, st]) => { c.hidden = !(u && u.dev) || st === 403; if (!c.hidden) try { applyI18n(); } catch (e) {} });
+})();
+</script>"""
+SIM_PAGE = SIM_PAGE.replace('<main class="simp">\n', '<main class="simp">\n  ' + TRL_SIM_CARD, 1)
+SIM_PAGE = SIM_PAGE.replace("</body>", TRL_SIMJS.replace("/*TRLDE*/{}", _TRL_DE_JS) + "</body>", 1)
+
+
+def trl_page():
+    js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in _TRL_KEYS}, ensure_ascii=False) + ");"
+    return render_page(TRL_PAGE, "sim").replace("/*TLDE*/", js, 1).replace("/*SPKJS*/", SPK_JS, 1).replace("/*TAJS*/", TA_JS, 1)
+
+
+_smalltv_routes_trl_base = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):                     # + 639n: /sim/trailer and /api/trailer (550 calls smalltv_routes once)
+    _smalltv_routes_trl_base(app, reply, body)
+    from flask import Response
+
+    @app.route("/sim/trailer")
+    def trl_page_():
+        if not nacht_may(_nacht_role()):
+            return Response(tr("Only the owner can do this."), 403)
+        return Response(trl_page(), mimetype="text/html")
+
+    @app.route("/api/trailer", methods=["GET", "POST"])
+    def api_trailer():
+        own = nacht_may(_nacht_role())
+        from flask import request
+        if request.method == "GET":
+            if not own:
+                return reply({"ok": False, "error": tr("Only the owner can do this.")}, 403)
+            return reply(trl_plan() if request.args.get("plan") == "1" else trl_info())
+        r = trl_do(body(), own)
+        code = r.pop("code", None)
+        return reply(r, code) if code else reply(r)
+
+    @app.route("/sim/trailer_ton/<nm>.wav")
+    def trl_ton_(nm):                                      # one sound of the trailer (simulator /trailer_ton/<nm>.wav)
+        if not nacht_may(_nacht_role()):
+            return Response(tr("Only the owner can do this."), 403)
+        if not CFG.get("sim_on") or not TRL_TON_RE.match(nm or ""):
+            return Response("no", 404)
+        try:
+            b_, _h = _sim_get("/trailer_ton/" + nm + ".wav", 8.0)
+        except Exception:
+            return Response("simulator not reachable", 502)
+        return Response(b_, mimetype="audio/wav", headers={"Cache-Control": "private, max-age=3600"})
+
+
+if GUI_OK:                                                # the window: the two trailers in the developer part (639c)
+    _trl_tk_build_section_base = App._build_section
+
+    def _trl_tk_build_section(self, sec, sbody, settings_parent=None):
+        r = _trl_tk_build_section_base(self, sec, sbody, settings_parent)
+        if sec == "Developer":
+            for tid, nm in (("grossvater", "Trailer Grossvater"), ("maggie", "Trailer Maggie")):
+                ttk.Button(sbody, text="🎬 " + tr(nm) + " ›", command=lambda u="/sim/trailer?id=" + tid: self._open_page(u)).pack(fill="x", pady=(4, 0))
+        return r
+
+    # wraps: App._build_section (after 639m)
+    App._build_section = _trl_tk_build_section
+
+
+def trl_selftest():
+    keep = CFG.get("sim_on")
+    try:
+        CFG["sim_on"] = False
+        assert not trl_info()["ok"] and not trl_do({"do": "start", "id": "maggie"})["ok"]
+        assert trl_do({"do": "start", "id": "maggie"}, owner=False).get("code") == 403
+        assert trl_do({"do": "rm"}).get("code") == 400
+        CFG["sim_on"] = True
+        assert trl_do({"do": "start", "id": "x"}).get("code") == 400
+        _sc = globals()["sim_control"]; asked = []
+        globals()["sim_control"] = lambda d_: (asked.append(d_), {"ok": True, "loading": True})[1]
+        try:
+            assert trl_do({"do": "start", "id": "maggie"})["ok"] and asked[-1]["action"] == "trailer" and asked[-1]["id"] == "maggie"
+            assert trl_do({"do": "stop"})["ok"] and asked[-1] == {"action": "trailer", "do": "stop"}
+        finally:
+            globals()["sim_control"] = _sc
+    finally:
+        CFG["sim_on"] = keep
+    html = trl_page()
+    assert "/sim/view.jpg?" in html and "bare=1&" in html and "/api/trailer" in html and "<!--NAV-->" not in html
+    assert 'id="c-devquick"' in SIM_PAGE and "/sim/trailer?id=maggie" in SIM_PAGE and "/sim/vorfuehrung" in SIM_PAGE
+    assert SIM_PAGE.index('id="c-devquick"') < SIM_PAGE.index('id="c-conn"')
+    assert "/sim/trailer?id=grossvater" in WEB_PAGE
+    assert "speechSynthesis" in html and "spkTick(S" in html and "wakeLock" in html
+    assert "spk-tap" in html and "spkUnlock" in html and "taSync(S)" in html and "/sim/trailer_ton/" in html and "/api/trailer?plan=1" in html
+    assert "bare ? \"bare=1&\"" in html                    # the browser picture without the PC's buttons only while the film runs
+    assert TRL_TON_RE.match("pad_ruhig") and not TRL_TON_RE.match("../x")
+    assert "voiceschanged" in html and "spk-vbtn" in html and "SPK_GOOD" in html and "!SPK.pop" in html and "Stimme" in html
+    vh = vf_page()
+    assert "spkTick(S, !!S.pause" in vh and "spk-btn" in vh and "Ton an" in vh and "!SPK.pop" in vh and "Premium" in vh
+    assert "spk-tap" in vh and "Tippen für Ton" in vh and "S.laeuft ? \"bare=1&\"" in vh
+    for L in ("fr", "it", "rm"):
+        assert TRX[L].get("End the trailer"), L
+    return "Trailer: page, owner only, commands to the simulator, card on top of «Sim», entries"
+
+
+SELFTEST_EXTRA.append(("Trailer der Geschichten (page /sim/trailer, owner only)", trl_selftest))
+# Daniel (31.10.2026, Screenshots iPad): «Kopfbereich einklappbar, beide Teile einzeln» und «eine einheitliche Bedienleiste oben auf jeder Seite»
+# (bisher nur in Einstellungen: Suche mit drei Knöpfen, darunter Einfach / Experte, Symbole, Beim Start). Der Baustein kommt über
+# render_page() auf JEDE Seite mit Reitern (nav.nav); die Seite kann ihn über window.MWB_PAGE anpassen:
+#   simplePage() -> Seitenschlüssel für /api/ui_simple ("" = auf dieser Seite gibt es nur eine Ansicht: Einfach / Experte grau)
+#   simple(on)   -> eigene Umschaltung (sonst: speichern und neu laden)
+#   startGroups(on) -> eigener Schalter «Beim Start: Nur Gruppen» (sonst: speichern, bei «ein» sofort «Nur Gruppen»)
+# Die drei Klapp-Knöpfe wirken auf alle sichtbaren Klappkarten der Seite (<details>, dazu die Karten der Simulator-Steuerung
+# .sc-card / .sc-sub; ohne Hilfe- und Statuskarten: #g2-tt, [data-mwb-skip]); «Nur Gruppen» = oberste Karten offen, die Themen darin zu. Keine Klappkarten: grau. Gleiche Ids wie früher
+# (#all-close, #all-groups, #all-open, #start-groups), damit Hilfe, Rundgang und Bildschirmleser sie weiter finden.
+# Simulator (Godot): derselbe Baustein in scripts/bedienleiste.gd; Pi-Fenster: App._mwbar() in 570.
+
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_MWB = {
+    'Hide the tabs': ('Reiter einklappen', 'Replier les onglets', 'Comprimi le schede', 'Zuppentar ils registers'),
+    'Show the tabs': ('Reiter ausklappen', 'Afficher les onglets', 'Mostra le schede', 'Mussar ils registers'),
+    'Hide the status line': ('Statuszeile einklappen', 'Replier la ligne d’état', 'Comprimi la riga di stato', 'Zuppentar la lingia da status'),
+    'Show the status line': ('Statuszeile ausklappen', 'Afficher la ligne d’état', 'Mostra la riga di stato', 'Mussar la lingia da status'),
+    'Status': ('Status', 'État', 'Stato', 'Status'),
+    'This page has only one view': ('Diese Seite hat nur eine Ansicht', 'Cette page n’a qu’une seule vue', 'Questa pagina ha una sola vista',
+                                    'Questa pagina ha mo ina vista'),
+    'Nothing to fold on this page': ('Auf dieser Seite gibt es nichts zum Klappen', 'Rien à replier sur cette page', 'Niente da comprimere in questa pagina',
+                                     'Nagut da zuppentar sin questa pagina'),
+    'Symbols coloured': ('Symbole farbig', 'Symboles en couleur', 'Simboli a colori', 'Simbols colurads'),
+    'plain': ('schlicht', 'sobres', 'semplici', 'simpels'),
+}
+for _k, _v in _HX_MWB.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+MWB_KEYS = sorted(set(_HX_MWB) | {
+    "Simple", "Expert", "On start: groups only", "Collapse all", "Groups only", "Expand all",
+    "Simple: only the important settings. «Expert» shows all of them.", "Symbols: green dot or green symbol = switched on",
+    "On every start the settings show only the groups. Off: the menus open as you left them."})
+
+
+def mwb_tx():
+    """the texts of the bar in de / fr / it / rm (English = the key)"""
+    out = {"de": {k: DE.get(k, k) for k in MWB_KEYS}}
+    for L in ("fr", "it", "rm"):
+        out[L] = {k: TRX[L].get(k) or (DE.get(k, k) if L == "rm" else k) for k in MWB_KEYS}
+    return out
+
+
+MWB_CSS = _zd('639o_bedienleiste/MWB_CSS', "")
+
+
+MWB_JS = _zd('639o_bedienleiste/MWB_JS', "")
+
+
+# the manual (HELP_PAGE of 540): one paragraph in «Tipps & Tricks», German and English
+for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>',
+                "<p><b>▴ Kopf einklappen und Bedienleiste:</b> Die Reiterzeile und die Statuszeile oben klappst du je mit dem kleinen Pfeil "
+                "▴ ein und mit dem Griff ▾ wieder aus. Jedes Gerät merkt sich das selbst. Ist die Statuszeile eingeklappt und gibt es einen "
+                "Alarm, einen Fehler oder zu wenige Bilder pro Sekunde, zeigt der Griff einen roten Punkt und eine Kurzinfo. Unter den Reitern "
+                "steht auf jeder Seite dieselbe Leiste: Einfach / Experte, Symbole farbig / schlicht, «Beim Start: Nur Gruppen» und die drei "
+                "Knöpfe Alle zuklappen · Nur Gruppen · Alle aufklappen. Was auf einer Seite nichts bewirkt, ist grau.</p>"),
+               ('<section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>',
+                "<p><b>▴ Fold the header and the bar:</b> fold the tabs and the status line at the top one by one with the small arrow ▴ "
+                "and open them again with the grip ▾. Every device remembers it by itself. With the status line folded, an alarm, an error "
+                "or too few pictures per second show a red dot and a short note on the grip. Under the tabs every page has the same bar: "
+                "Simple / Expert, symbols coloured / plain, «On start: groups only» and the three buttons Collapse all · Groups only · "
+                "Expand all. What does nothing on a page is grey.</p>")):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+
+
+_render_page_before_mwb = render_page
+
+
+# wraps: render_page
+def render_page(page, active):
+    """+ 639o: the header folds and the bar under the tabs on every page with tabs (not on guest / kiosk pages)"""
+    out = _render_page_before_mwb(page, active)
+    if '<nav class="nav">' not in out or "<header" not in out:
+        return out
+    out = out.replace("</head>", MWB_CSS + "</head>", 1)
+    i = out.rfind("</body>")
+    tag = ("<script>window.MWB_TX=" + json.dumps(mwb_tx(), ensure_ascii=False).replace("</", "<\\/") + ";</script>" + MWB_JS)
+    return out[:i] + tag + out[i:] if i >= 0 else out + tag
+
+
+def _mwb_selftest():
+    p = render_page("<html><head></head><body><header><h1>MoveEye</h1><!--NAV--></header><main></main></body></html>", "live")
+    assert p.count('id="mwb-css"') == 1 and "window.MWB_TX=" in p and p.count("window.MWB)") == 1, "639o: bar missing / twice"
+    assert "mwbar" not in render_page("<html><head></head><body><main></main></body></html>", "guest"), "639o: bar on a page without tabs"
+    tx = mwb_tx()
+    for L in ("de", "fr", "it", "rm"):
+        assert all(tx[L].get(k) for k in _HX_MWB), "639o: text missing in " + L
+    assert {"mw-hdr-tabs", "mw-hdr-chips"} <= WEB_UI_LOCAL, "639o: header folds must stay per device"
+
+
+SELFTEST_EXTRA.append(("Header folds and bar (639o)", _mwb_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------

@@ -1,15 +1,15 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6848 (Stellen: 9518)
-Übersetzt: en 6848, fr 6848, it 6848, rm 6848
+Texte gesamt: 6852 (Stellen: 9522)
+Übersetzt: en 6852, fr 6852, it 6852, rm 6852
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 470 Stellen
-Nicht mehr im Code (noch in texte.json): 243
+Nicht mehr im Code (noch in texte.json): 244
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 24592, schlüssel 18341, keine Wörter 11548, index 9268, technisch 3165, doc 2063, einheit 294, log 153, englisch 126, stringname 102, pfad 98, html 68, klasse 25, shader 6
+Übersprungen (Grund: Anzahl): kennung 24617, schlüssel 18343, keine Wörter 11548, index 9268, technisch 3166, doc 2066, einheit 294, log 153, englisch 126, stringname 102, pfad 98, html 68, klasse 25, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
-  main.gd                  694    42
+  main.gd                  687    42
   bergtal_abenteuer.gd     272     7
   gamewiz.gd               252    15
   abenteuer_figuren_daten.gd   238     0
@@ -140,6 +140,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   gameturm.gd               13     0
   devtool_kontakt.gd        12     0
   geschichten_faden.gd      12     0
+  bedienleiste.gd           11     0
   replay.gd                 11     1
   bergtal_ziele.gd          11     0
   objekte_plus.gd           11     0
@@ -391,7 +392,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main.gd:5405  ' · schaut nur zu: '
   main.gd:5408  ' · Treffer %d von %d Schüssen, %d Punkte'
   main.gd:5409  ' · Update: '
-  main.gd:5753  'Blinde Flecken: '
+  main.gd:5740  'Blinde Flecken: '
   main.gd:6496  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
   main.gd:6807  'Autostart: '
   main.gd:6818  'Autologon: '
