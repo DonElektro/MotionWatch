@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 5262 (Stellen: 7279)
-Übersetzt: en 5262, fr 5262, it 5262, rm 5262
+Texte gesamt: 5383 (Stellen: 7443)
+Übersetzt: en 5383, fr 5383, it 5383, rm 5383
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 384 Stellen
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 386 Stellen
 Nicht mehr im Code (noch in texte.json): 67
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 67 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 18721, schlüssel 13390, keine Wörter 8674, index 6847, technisch 2425, doc 1542, einheit 229, englisch 101, log 78, html 67, pfad 66, klasse 24, shader 4
+Übersprungen (Grund: Anzahl): kennung 18955, schlüssel 13573, keine Wörter 8755, index 6996, technisch 2447, doc 1555, einheit 232, englisch 102, log 78, html 67, pfad 66, klasse 24, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  669    29
@@ -16,8 +16,9 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_abenteuer_daten.gd   199     0
   bergtal.gd               199     5
   bergtal_horror.gd        154     3
-  bib_objekte.gd           108     0
+  abenteuer_raetsel.gd     145     2
   bergtal_orte.gd          108     0
+  bib_objekte.gd           108     0
   bergtal_aussicht.gd       94     4
   testrun.gd                94     3
   templates.gd              93     6
@@ -46,8 +47,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   mwpc.gd                   46    12
   karte.gd                  46     8
   gamerules.gd              45     4
-  symbole.gd                44     1
   horror_raetsel.gd         44     0
+  symbole.gd                44     1
   protokoll.gd              42    16
   pir.gd                    41     0
   simint.gd                 41     6
@@ -57,8 +58,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   kitrain.gd                39     9
   fotomodus.gd              38     0
   gamejaeger.gd             38     1
-  simreal.gd                37     0
   update.gd                 37     4
+  simreal.gd                37     0
   mikrofon.gd               37     0
   geo.gd                    36     7
   gamemore.gd               36     1
@@ -102,9 +103,9 @@ Pro Datei (Texte / davon dynamische Stellen):
   devtool.gd                16     0
   weitwinkel.gd             16     0
   menschen.gd               16     0
+  grafik_hoch.gd            15     1
   b3d.gd                    15     3
   gamesneak.gd              15     0
-  grafik_hoch.gd            15     1
   home_editor.gd            14     3
   abenteuer_inventar.gd     13     0
   life.gd                   13     0
@@ -185,6 +186,8 @@ Unsicher:
   'Wide camera (NoIR Wide)': Kameraname an MoveEye (/info) – nicht umhüllen
 
 Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {name} machen:
+  abenteuer_raetsel.gd:878  'Neu: '
+  abenteuer_raetsel.gd:887  'Gegenstände: '
   abenteuer_rucksack.gd:224  'keine Wunschliste: '
   abenteuer_rucksack.gd:412  ' und '
   abenteuer_rucksack.gd:468  'Fertig'
@@ -200,11 +203,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:246  'Aussicht: '
   bergtal.gd:2180  'Schlafplatz: '
   bergtal.gd:2182  'Aussicht: '
-  bergtal_abenteuer.gd:327  'Start: '
-  bergtal_abenteuer.gd:787  ' auf der Bank mit Aussicht'
-  bergtal_abenteuer.gd:1857  'Wird frei: '
-  bergtal_abenteuer.gd:1993  '  · %.1f kg'
-  bergtal_abenteuer.gd:2076  ' - Bank'
+  bergtal_abenteuer.gd:334  'Start: '
+  bergtal_abenteuer.gd:805  ' auf der Bank mit Aussicht'
+  bergtal_abenteuer.gd:1883  'Wird frei: '
+  bergtal_abenteuer.gd:2023  '  · %.1f kg'
+  bergtal_abenteuer.gd:2108  ' - Bank'
   bergtal_aussicht.gd:357  'von'
   bergtal_aussicht.gd:536  'von'
   bergtal_aussicht.gd:1159  'Abzeichen: '

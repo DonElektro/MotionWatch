@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 12:35",
+ "generated": "2026-10-31 12:42",
  "versions": [
   {
-   "version": "2.98.99",
-   "file": "webcam_bewegung_2_98_99.py",
+   "version": "2.98.100",
+   "file": "webcam_bewegung_2_98_100.py",
    "url": "",
-   "sha256": "92cd0bb805f2b2adeaff6ddcf915ee33b900b5d1c81616c8dc5d020f2ca671aa",
-   "date": "2026-10-31 12:34",
-   "notes": "Simulator 3D-4.68: Horror «Das Hospiz» mit einem Rätsel pro Kapitel (Schlüssel, Zahlenschloss, Uhrzeit), Lösung nur auf MoveEye-Aufnahmen, Hinweis-Knopf.",
-   "sig": "14b75186f10f860d553e52b22df45ac823cd723b3ba60795e8c9418d0c749ff9b98a527b0694511526edb51c259efbd8addeacb7da388488ef2100b79172f704"
+   "sha256": "be3c2d116d0793f828e321e735ba92cb337df292db2dfeafe7757fe82300765b",
+   "date": "2026-10-31 12:42",
+   "notes": "Simulator 3D-4.69: Bergtal-Abenteuer – neue Rätsel (Peilung, Polarstern), 10 Tagebuchseiten, Gegenstände des Grossvaters, Wege freischalten, 6 Abzeichen, Hilfe-Stufen.",
+   "sig": "a1e54c8bdf9aaff61a1943cd069519eb342243df6dbc8852d4039dcd76c9320176941e7111cf57b95c47957822b4f13363db2cbb15a5d3602ae1c52af5ef2e0b"
   },
   {
    "version": "2.97.1",

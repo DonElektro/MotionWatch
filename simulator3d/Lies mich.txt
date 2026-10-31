@@ -421,6 +421,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.69
+3D-4.69: Bergtal-Abenteuer: neue Rätsel (Peilung mit Karte und Kompass, Polarstern), 10 Tagebuchseiten, Gegenstände des
+Grossvaters (Feldstecher, Taschenuhr, Pickel), Wege freischalten (Steg, Seil, Lawinenkegel im Sommer), 6 Abzeichen,
+Hilfe-Stufen Leicht / Normal / Schwer.
+So testest du: 1) Hilfe «Leicht» einstellen, Kapitel 1 starten. 2) Peilung lösen; der Feldstecher kommt dazu. 3) In der
+Nacht den Polarstern wählen.
+
 NEU IN 3D-4.68
 3D-4.68: Horror «Das Hospiz»: In jedem Kapitel ein Rätsel (Schlüssel, Zahlenschloss, Uhrzeit). Die Lösung sieht man nur auf
 MoveEye-Aufnahmen. Ein Hinweis-Knopf hilft, unter 25 % Schreck gibt es keine Schreckmomente.
