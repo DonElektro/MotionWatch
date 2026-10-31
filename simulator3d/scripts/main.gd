@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.37"
+const VERSION := "3D-4.38"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const CAM_W := [960, 640]
@@ -1209,6 +1209,8 @@ func bt_goto(v: String) -> Dictionary:
 				start_info = "%s %s" % [preload("res://scripts/i18n.gd").t("Noch nicht besucht – zuerst hingehen oder hinfliegen:"), nm]
 				return {"ok": false, "error": "not visited", "place": nm}
 			var wp: Vector3 = bt.WG(float(pl[1]), float(pl[2]))
+			if bt.get("orte") != null and bt.orte.fly(nm):        # a room (bergtal_orte.gd): the view flies inside
+				return {"ok": true, "place": nm, "inside": true}
 			fly_to(wp + Vector3(0, 2, 0), 45.0)
 			return {"ok": true, "place": nm, "at": wp}
 	return {"ok": false, "error": "unknown place"}

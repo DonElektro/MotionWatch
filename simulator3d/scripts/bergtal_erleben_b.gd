@@ -1265,6 +1265,9 @@ class Augen extends Vig:
 
 # ---- 31 · the abandoned dairy: in the ancient cheese wheel lives a mouse --------------------------------------------------------
 class Sennerei extends Vig:
+	var cr := 0.3                   # radius / height of the cheese (3D-4.38: the cheese of bergtal_orte.gd if it is there)
+	var chh := 0.25
+	var out := Vector3.ZERO
 	var mouse: Node3D
 	var kid: Node3D
 	var top := Vector3.ZERO
@@ -1275,14 +1278,23 @@ class Sennerei extends Vig:
 	func build() -> void:
 		id = "sennerei"
 		c = ew.G(-698.5, -127.0)                                 # bergtal.gd: the cheese wheel in front of the old dairy
+		var ch = ew.s.data.get("bt_dairy_cheese", null)          # 3D-4.38: bergtal_orte.gd - the cheese on the shelf inside the dairy
+		if ch != null:
+			c = ch["c"] - Vector3(0, float(ch["h"]) / 2.0, 0)
+			cr = float(ch["r"])
+			chh = float(ch["h"])
+			out = ch["out"]
 
 	func live() -> void:
-		var base: Vector3 = c + Vector3(0, 0.02, 0)
-		top = base + Vector3(0, 0.125, 0)
-		var v: Vector3 = ew.G(-700.0, -150.0)                   # the hole looks towards the path
-		phi = atan2(v.x - c.x, v.z - c.z)
+		var base: Vector3 = c + (Vector3.ZERO if out != Vector3.ZERO else Vector3(0, 0.02, 0))
+		top = base + Vector3(0, chh if out != Vector3.ZERO else 0.125, 0)
+		if out != Vector3.ZERO:
+			phi = atan2(out.x, out.z)                           # the hole looks into the room
+		else:
+			var v: Vector3 = ew.G(-700.0, -150.0)               # the hole looks towards the path
+			phi = atan2(v.x - c.x, v.z - c.z)
 		nrm = Vector3(sin(phi), 0, cos(phi))
-		hole = base + Vector3(0, 0.055, 0) + nrm * 0.3
+		hole = base + Vector3(0, 0.45 * chh if out != Vector3.ZERO else 0.055, 0) + nrm * cr
 		ew.part(vroot, ew.cylm(0.026, 0.026, 0.012, 8), hole, Color(0.12, 0.09, 0.05), "tent", Vector3(PI / 2, phi, 0))
 		ew.part(vroot, ew.cylm(0.018, 0.018, 0.012, 8), top + Vector3(0.1, 0.001, -0.06), Color(0.12, 0.09, 0.05), "tent")
 		var lb := Label3D.new()                                 # the old brand on the rind
@@ -1292,7 +1304,7 @@ class Sennerei extends Vig:
 		lb.modulate = Color(0.45, 0.3, 0.12)
 		lb.outline_size = 0
 		var a2 := phi + 0.9
-		lb.position = base + Vector3(0, 0.07, 0) + Vector3(sin(a2), 0, cos(a2)) * 0.302
+		lb.position = base + Vector3(0, chh * 0.28, 0) + Vector3(sin(a2), 0, cos(a2)) * (cr + 0.002)
 		lb.rotation.y = a2
 		vroot.add_child(lb)
 		mouse = _mouse(vroot, 1.0)

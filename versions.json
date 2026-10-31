@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 06:45",
+ "generated": "2026-10-31 06:54",
  "versions": [
   {
-   "version": "2.98.68",
-   "file": "webcam_bewegung_2_98_68.py",
+   "version": "2.98.69",
+   "file": "webcam_bewegung_2_98_69.py",
    "url": "",
-   "sha256": "7f0a9ffd00b4001ef79d60197ba63839566e04db68dbf80c2999ff1ed0eca277",
-   "date": "2026-10-31 06:45",
-   "notes": "Simulator 3D-4.37: weitere Erlebnisse im Bergtal (18–34: Schneehase, Hermelin, Salamander, Kuhglocken im Nebel, Gleitschirm, Postauto, Nordlicht …) im Entdeckungsbuch.",
-   "sig": "00e353cc9a9fe104804e12c966e9dfc286fba2300df9f920e11faa3ff12322d714292377dd9f791d6adcf3b6d5cdd9b2e264912d04c0f1eee29931e170a5e702"
+   "sha256": "63ecdde4b8edaf0cf7941f22bea890e68f32aec79375bb382ca47f1f9548cd1d",
+   "date": "2026-10-31 06:54",
+   "notes": "Simulator 3D-4.38: Orte zum Erkunden im Bergtal – begehbare Alphütte, Biwak, Kapelle, Hospiz (geschlossen), Bunker, Sennerei, Baracke, Seilbahn-Stationen, Wasserstellen, Grat, Säumerweg.",
+   "sig": "393c5e984f9a745278fd47549eca74a4e0537d48c9bfa6fc3a4de9d781c57e6e43212b4482858a7bb59ebcece2f199780ad6c87436bfc8be939c5c3a3601b303"
   },
   {
    "version": "2.97.1",

@@ -23,7 +23,10 @@ const BERG := {
 	"wood_ski": ["Alter Holzski im Eis", "Berg"], "fondue_pot": ["Fondue-Caquelon", "Berg"], "lantern_old": ["Alte Laterne", "Berg"],
 	"stepping_stone": ["Bachstein", "Berg"], "notice": ["Hinweiszettel (Selbstversorger)", "Berg"], "woodpile": ["Holzbeige", "Berg"],
 	"lift_cabin": ["Kiste der Materialseilbahn", "Berg"], "bed_tent1": ["Einmannzelt", "Berg"], "bed_tarp": ["Tarp mit Isomatte", "Berg"],
-	"bed_bivy": ["Biwaksack mit Isomatte", "Berg"], "stove": ["Kocher", "Berg"], "tripod": ["Stativ", "Berg"], "snow_cone": ["Lawinenkegel (Schneereste)", "Berg"]}
+	"bed_bivy": ["Biwaksack mit Isomatte", "Berg"], "stove": ["Kocher", "Berg"], "tripod": ["Stativ", "Berg"], "snow_cone": ["Lawinenkegel (Schneereste)", "Berg"],
+	# Orte zum Erkunden (bergtal_orte.gd, Daniel 31.10.2026)
+	"pave_stone": ["Pflasterstein (Säumerweg)", "Berg"], "wire_post": ["Stacheldraht-Pfahl (alt)", "Berg"], "wire_coil": ["Stacheldraht-Rolle (rostig)", "Berg"],
+	"laeger_plant": ["Alpenampfer (Lägerflur)", "Berg"]}
 
 
 func make(kind: String, q := {}) -> Dictionary:
@@ -621,3 +624,32 @@ func _b_snow_cone(q: Dictionary) -> Dictionary:
 	var r := float(_q(q, "r", 9.0))
 	return {"p": [S(r, r * 0.5, 0, 0.0, 0, "d8d8d4", "stone"), S(r * 0.6, r * 0.4, r * 0.3, r * 0.1, -r * 0.4, "c8c6c0", "stone"),
 			S(r * 0.15, r * 0.15, -r * 0.4, r * 0.15, r * 0.2, "6a6058", "stone")], "t": 0.0, "lod": "far"}
+
+
+# ---- Orte zum Erkunden (bergtal_orte.gd) ----------------------------------------------------------------------------------
+func _b_pave_stone(q: Dictionary) -> Dictionary:
+	# Pflasterstein eines alten Säumerwegs: flache Gneisplatte, ausgetreten (Kanten rund), 40–60 cm
+	var v := int(_q(q, "v", 0)) % 3
+	var col: String = ["8a867e", "7a766e", "96918a"][v]
+	return {"p": [B(0.5 - 0.06 * v, 0.1, 0.38 + 0.05 * v, 0, 0.03, 0, col, 0, 7.0 * (v - 1), 2.0 * (v - 1), "stone")], "t": "stone", "lod": "small", "low": true}
+
+
+func _b_wire_post(_q: Dictionary) -> Dictionary:
+	# Stacheldraht-Pfahl aus dem Aktivdienst: Winkeleisen mit «Sauschwanz»-Spirale oben, rostig, schief
+	var p := [B(0.05, 1.3, 0.05, 0, 0.62, 0, "6a3a22", 4, 0, 3, "metal"), TO(0.04, 0.07, 0.05, 1.32, 0, "6a3a22", 90, 0, 0, "metal")]
+	return {"p": p, "t": "metal", "lod": "small", "low": true, "ob": [["circ", 0, 0, 0.12, 1.3, true]]}
+
+
+func _b_wire_coil(_q: Dictionary) -> Dictionary:
+	# eine alte, halb eingewachsene Stacheldraht-Rolle (Concertina): Ringe aus rostigem Draht
+	var p := []
+	for i in range(5):
+		p.append(TO(0.34, 0.37, -0.6 + i * 0.3, 0.33, 0, "5a3420", 0, 0, 90 + 8 * (i % 2), "metal"))
+	return {"p": p, "t": "metal", "lod": "small", "low": true, "ob": [["box", 0, 0, 1.6, 0.8, 0.7, true]]}
+
+
+func _b_laeger_plant(_q: Dictionary) -> Dictionary:
+	# Alpenampfer (Rumex alpinus, «Blacke»): grosse, dunkelgrüne Blätter - wächst dort, wo früher das Vieh lag (alte Alpen)
+	var p := [S(0.42, 0.28, 0, 0.14, 0, "3a5a26", "tree"), S(0.3, 0.22, 0.25, 0.2, 0.1, "4a6a2c", "tree"), C(0.015, 0.7, 0.05, 0.45, 0, "6a4a30", 0, 0, 0, 0, "tree"),
+			S(0.05, 0.22, 0.05, 0.85, 0, "7a3a28", "tree")]
+	return {"p": p, "t": "tree", "lod": "small", "low": true}
