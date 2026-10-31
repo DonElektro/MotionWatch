@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.9.1 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.10.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -15,6 +15,16 @@ STARTEN
    Simulator das und startet sich selbst einmal neu mit ANGLE (Grafik über Direct3D 11). Das Fenster geht dabei kurz zu
    und wieder auf. Geht das nicht von selbst: "Start in virtueller Maschine (ANGLE).bat" benutzen.
    In der virtuellen Maschine muss die 3D-Beschleunigung eingeschaltet sein (VMware: Einstellungen -> Anzeige).
+
+SCHLIESST SICH DAS FENSTER GLEICH NACH DEM START? (MoveEye Sim 3.8.0)
+- In 3.8.0 stürzte der Simulator nach dem Godot-Startbild ab, während er nach Updates suchte (die Foto-Inhalte
+  wurden angewendet, bevor die Welt stand). Ab der Korrektur nicht mehr. Bis dahin: so starten
+  (Verknüpfung oder .bat neben der .exe):   MoveEyeSim3D.exe -- --no-update
+  oder                                       MoveEyeSim3D.exe -- --no-inhalte
+- Schutz: Bricht ein Start beim Einlesen der Foto-Inhalte ab, startet der nächste ohne sie und sagt es in der
+  Statuszeile. Wieder einschalten: System › Grafik › Experte: "Echte Oberflächen und Himmel".
+- Das Protokoll des letzten Starts: %APPDATA%\Godot\app_userdata\MoveEye Sim 3D\logs\godot.log
+  (ältere daneben im Ordner "logs").
 
 UPDATES (ab 3D-1.7)
 - Versionsnummer: ab 3.0.0 heisst der Simulator "MoveEye Sim" und hat immer dieselbe Nummer wie MoveEye (z. B. MoveEye 3.0.0 und
@@ -366,6 +376,7 @@ MoveEyeSim3D.exe -- --port 8766 --hour 22.5 --quality simple --stream --scene wa
   --scene: mit dieser Szene starten (camping, wald, parkplatz, garten, lustig, wild)
   --no-update: beim Start nicht nach einer neuen Version suchen
   --no-angle: in einer virtuellen Maschine nicht von selbst auf ANGLE umschalten
+  --no-inhalte: ohne Foto-Inhalte starten (echte Oberflächen und Foto-Himmel aus)
   --stream: gleich beim Start an MoveEye senden
   --win X,Y,BREITE,HOEHE: Fenster an diese Stelle und in diese Grösse
   --mini: gleich als kleines Kästchen in der Ecke starten (--mini-tiny: als kleines Symbol)
@@ -425,6 +436,21 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.10.0
+3.10.0: Vorführmodus (Entwickler): «Maggie und der Bergkristall» spielt sich selbst wie ein Film, ganz (etwa 2 h) oder als
+Kurzfassung (etwa 15 Min.). Kamerawechsel, Untertitel, Erzählerstimme. Zuschauen im Simulator oder im Browser bzw. am Handy
+(MoveEye → Simulator → Entwickler → Vorführung). Eigene Spielstände bleiben unberührt. Der Autopilot meldet, wenn er
+irgendwo nicht weiterkommt.
+So testest du: 1) Mehr → Entwickler → Vorführung → Kurzfassung ansehen. 2) Am Handy: Simulator → Entwickler → Vorführung,
+dann Pause und Kapitel.
+
+NEU IN 3.9.2
+3.9.2: Behoben: Der Simulator schloss sich bei manchen PCs gleich nach dem Start (Foto-Inhalte wurden zu früh angewendet).
+Kommt es trotzdem zu einem Absturz beim Laden der Fotos, startet der Simulator beim nächsten Mal ohne Fotos. Neue Startoption
+--no-inhalte.
+So testest du: 1) Simulator neu von der MoveEye-Seite herunterladen, entpacken, starten: er startet. 2) Fotos (Boden, Himmel)
+erscheinen nach einigen Sekunden.
 
 NEU IN 3.9.1
 3.9.1: Diebstahl-Alarm: Der Kartenlink ist wieder bei jeder Handy-Meldung vollständig dabei (Antippen öffnet die Karte, SMS mit

@@ -1,22 +1,39 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 18:19",
+ "generated": "2026-10-31 19:29",
  "versions": [
   {
-   "version": "3.9.1",
-   "file": "webcam_bewegung_3_9_1.py",
+   "version": "3.10.0",
+   "file": "webcam_bewegung_3_10_0.py",
    "url": "",
-   "sha256": "506ae9bab4d5dec008504fefcfaa4c3b365e9143e5b0dbb185d8940fe3007a45",
-   "date": "2026-10-31 18:19",
-   "notes": "Diebstahl-Alarm: Kartenlink wieder vollständig in jeder Handy-Meldung (auch SMS), Sabotage-Meldungen mit letzter GPS-Position; überall «Mover» (auch im Simulator: «Verstecken mit dem Mover»).",
-   "size": 4403927,
-   "sig": "22c1ccd1e885497bdec36d299d3726b13b16f4e61242261c1a6e4362acef8680a78c3b703730d635cf440c0dca42bf9f9a512fcafba9934482820e7b192a4901",
+   "sha256": "faff1d5275c55f227212419a11efb0640f3433b6c931f999714e73d8a75714fc",
+   "date": "2026-10-31 19:29",
+   "notes": "Vorführung im Browser: «Maggie und der Bergkristall» als Film zuschauen (Simulator → Entwickler → Vorführung), Pause und Kapitel. Simulator 3.10.0: Vorführmodus – Maggie spielt sich selbst, ganz oder als Kurzfassung, mit Kamerawechsel, Untertiteln und Erzählerstimme.",
+   "size": 4416489,
+   "sig": "38dc1980041463c15b499cc1fa045763d79b3be85275bd74a918d185eb1bbab51098eb1b47354997a0ea1c81bf619ab004ad2d07f209dae5c20cc8597ed2f00b",
    "data": {
-    "file": "moveeye_daten_3_9_1.zip",
+    "file": "moveeye_daten_3_10_0.zip",
     "url": "",
-    "sha256": "c26b538ff3c5313370845679df549a5d295e00f3d8067d3d6ea1df0ecb292039",
-    "size": 1609543,
-    "sig": "52298f41c084a14229f637156c22393d919770766feef1f35777f7d1b3d29b10868e88eda2c217913e366ace1d954cfb721c16276311f4af0f69cb42bdf93a06"
+    "sha256": "6718646c0189c4336848597766c51becbbc23562a13e1e29c0f4d57bec9359d1",
+    "size": 1611845,
+    "sig": "d323938c216a19d282d923e354d7e9ee19d325da7195001303170c13e35c441be626937decaa4d881a0647059eaedb1b6deba043ab7cbb3fe35884558f5c6d07"
+   }
+  },
+  {
+   "version": "3.9.2",
+   "file": "webcam_bewegung_3_9_2.py",
+   "url": "",
+   "sha256": "379acd853935bc37f51e4cd3cd19b5a09d7ed24c2e3cfee12259255d99642c38",
+   "date": "2026-10-31 19:26",
+   "notes": "Simulator 3.9.2: Start-Absturz behoben (Foto-Inhalte wurden zu früh angewendet); nach einem Absturz beim Laden der Fotos startet der Simulator ohne Fotos; neue Startoption --no-inhalte.",
+   "size": 4403953,
+   "sig": "9c9f3784fc918cd6513a0307976ee060330587ea4ccc1c55f79a81fd45ebe6e7e4ace222237bc751236e56a4edab0d94248b1a8c83faa3d06afb2cbec9d4c101",
+   "data": {
+    "file": "moveeye_daten_3_9_2.zip",
+    "url": "",
+    "sha256": "6e159f0a6962cb216c0cb1bb9c2923616ede7f81f5276388a2050ed42e178bb7",
+    "size": 1609632,
+    "sig": "56898ff6da73eff5c08c24d8a96325abaaa4d21854579a5c3f1f9a26cd66978d623a313e4882b25959533e1c786fa39bfcf53c35755e2ff47bd261fb3191c60b"
    }
   },
   {
@@ -95,16 +112,6 @@
    "notes": "MoveEye Sim 3.2.0: Statisten im Hintergrund (Ziele, Tätigkeiten, Gruppen, grüssen, weichen aus, abends heim; Menge wenig / normal / belebt).",
    "size": 7711209,
    "sig": "a05bc44a78d6734ec551d28202bd4679eb818446d008e8894622308dc7c0a586391f1ec401d5e33de460db3de7989c9888a18713a19e9854eba4511fccfcd505"
-  },
-  {
-   "version": "3.1.0",
-   "file": "webcam_bewegung_3_1_0.py",
-   "url": "",
-   "sha256": "607d49eb62e5a817675a76133988b3fd6b435504456ca4b5f79c63b229033769",
-   "date": "2026-10-31 16:24",
-   "notes": "Handy-Mitteilungen kurz und klar: Titel mit Symbol, eine Zeile Text, Bild wo sinnvoll, nie roher Code; «🛡 Schutz ein» mit Bild; im Simulator nur Alarme (Info per Schalter); E-Mail mit ganzem Text; Gerätename nur bei mehreren MoveEye; ntfy-Adresse in der Webhook-Karte behoben.",
-   "size": 7711051,
-   "sig": "9a8c8a65e4bc598048e522cc2dd196f17a80380a29c94147f899eac2d9ec0a259272bbea399251cb72f1d6d7552124970ebabe959e7a52bda9c5f15a4120f707"
   },
   {
    "version": "3.0.2",

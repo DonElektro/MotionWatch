@@ -9,6 +9,7 @@ extends Node
 ##   * Schalter:          devtool_schalter.gd (Paket «Entwickler zusammenlegen»: Prüfstand, Störungen, Diagnose-Paket -
 ##                        früher die Gruppe «Entwickler» im Bedienfeld; erster Reiter)
 ##   * Spieltest:         devtool_spieltest.gd (der Assistent spieltest.gd: ein / aus, Push-Zeile, Vorschläge, ZIP für Claude)
+##   * Vorführung:        devtool_vorfuehrung.gd (Vorführmodus «Maggie und der Bergkristall», maggie_vorfuehrung.gd)
 ## Hier: die Knopfzeile (ein Teil offen), das Foto ohne Bedienelemente (eigene kleine Kamera wie entdecken.gd, cull_mask 1 =
 ## wie die Kameras von MoveEye: keine Helfer-Marken) und GET /dev/kontakt/… · /dev/notizen/… · /dev/notizen.zip.
 ## Lite: dev._lite() (Quality.lite()) - die Fotos warten länger, bis die Szene steht (Kontaktbogen langsamer, sonst gleich).
@@ -23,6 +24,7 @@ var kontakt                              # devtool_kontakt.gd
 var kapitel                              # devtool_kapitel.gd
 var spieltest                            # devtool_spieltest.gd (Paket «Spieltest-Assistent»)
 var schalter                             # devtool_schalter.gd (Paket «Entwickler zusammenlegen»)
+var vorfuehrung                          # devtool_vorfuehrung.gd (Vorführmodus «Maggie»)
 var _tabs := {}                          # id -> Button
 var _bodies := {}                        # id -> Control
 var open_tab := ""
@@ -37,7 +39,8 @@ func _ready() -> void:
 	kapitel = preload("res://scripts/devtool_kapitel.gd").new()
 	spieltest = preload("res://scripts/devtool_spieltest.gd").new()
 	schalter = preload("res://scripts/devtool_schalter.gd").new()
-	for p in [schalter, notizen, kontakt, kapitel, spieltest]:
+	vorfuehrung = preload("res://scripts/devtool_vorfuehrung.gd").new()
+	for p in [schalter, notizen, kontakt, kapitel, spieltest, vorfuehrung]:
 		p.x = self
 		p.dev = dev
 		p.main = main
@@ -54,7 +57,7 @@ func build(v: VBoxContainer) -> void:
 	var holder := VBoxContainer.new()
 	holder.add_theme_constant_override("separation", 6)
 	for it in [["schalter", T.t("Schalter"), schalter], ["notizen", T.t("Notizen an Claude"), notizen], ["kontakt", T.t("Kontaktbogen"), kontakt],
-			["kapitel", T.t("Kapitel-Sprung"), kapitel], ["spieltest", T.t("Spieltest"), spieltest]]:
+			["kapitel", T.t("Kapitel-Sprung"), kapitel], ["spieltest", T.t("Spieltest"), spieltest], ["vorfuehrung", T.t("Vorführung"), vorfuehrung]]:
 		var b := Button.new()
 		b.text = str(it[1])
 		b.toggle_mode = true
@@ -78,7 +81,7 @@ func show_tab(id: String) -> void:
 	for k in _tabs:
 		(_tabs[k] as Button).set_pressed_no_signal(k == id)
 		(_bodies[k] as Control).visible = k == id
-	for p in [schalter, notizen, kontakt, kapitel, spieltest]:
+	for p in [schalter, notizen, kontakt, kapitel, spieltest, vorfuehrung]:
 		if p.has_method("on_show"):
 			p.on_show(open_tab)
 	_fit_t = 0.0
@@ -127,7 +130,7 @@ func control(d: Dictionary):
 	var w := str(d.get("do", ""))
 	if not w in MINE:
 		return null
-	if w == "tab":                               # {do: tab, value: schalter | notizen | kontakt | kapitel | spieltest | ""} - opens the window too
+	if w == "tab":                               # {do: tab, value: schalter | notizen | kontakt | kapitel | spieltest | vorfuehrung | ""} - opens the window too
 		dev.open()
 		show_tab(str(d.get("value", "")) if _tabs.has(str(d.get("value", ""))) else "")
 		return {"ok": dev.shown, "tab": open_tab}

@@ -27,6 +27,8 @@ const FILE := "user://inhalte.json"
 const DIR := "user://inhalte"
 const MODES := [["an", "An: Fotos für Boden, Wege, Zelt, Bäume und Himmel"], ["boden", "Nur Oberflächen (Himmel wie bisher)"],
 		["aus", "Aus (bisherige Code-Materialien)"]]
+const HDRI_MAX_W := 4096               # Startfix: breitere HDRIs werden beim Einlesen verkleinert (Grafikspeicher, ANGLE)
+const MARK := "user://inhalte_merker.json"   # Startfix: liegt da, solange Foto-Inhalte eingelesen / angewendet werden
 const RETRY_S := 86400.0              # nach einem Fehlschlag frühestens nach einem Tag wieder von selbst laden
 const SKY_DAY := "himmel_tag"
 const SKY_DUSK := "himmel_daemmerung"
@@ -55,6 +57,7 @@ var _t := 0.0
 var _lite_was := false
 var _http: HTTPRequest
 var _sky_on := false
+var _crash_note := ""                 # Startfix: Hinweis nach einem Absturz beim Laden (einmal als Meldung zeigen)
 
 
 func _ready() -> void:
@@ -69,9 +72,10 @@ func _ready() -> void:
 	elif "--quality" in args:
 		_off = "Prüfstand (--quality): Bilder bleiben vergleichbar"
 	_load_settings()
+	_crash_check()
 	_read_katalog()
 	_lite_was = Quality.lite()
-	call_deferred("on_scene")
+	call_deferred("on_scene")                 # (kommt die Welt erst nach der Update-Suche: on_scene wartet, siehe _world_ready)
 
 
 # ---- Einstellung -------------------------------------------------------------------------------------------------------
@@ -81,6 +85,50 @@ func _load_settings() -> void:
 	var d = JSON.parse_string(FileAccess.get_file_as_string(FILE))
 	if typeof(d) == TYPE_DICTIONARY and str(d.get("mode", "")) in ["an", "boden", "aus"]:
 		mode = str(d["mode"])
+
+
+func _crash_check() -> void:
+	"""Startfix 31.10.2026: liegt der Merker noch da, ist der letzte Start beim Einlesen / Anwenden der Foto-Inhalte
+	abgestürzt. Dann diesmal (und bis man sie wieder einschaltet) ohne Foto-Inhalte, mit Hinweis."""
+	if not FileAccess.file_exists(MARK):
+		return
+	DirAccess.remove_absolute(MARK)
+	print("inhalte: the last start crashed while loading the photo contents - switched off (inhalte_merker.json)")
+	if mode != "aus":
+		mode = "aus"
+		_save_settings()
+	_crash_note = T.t("Der letzte Start brach beim Einlesen der Foto-Inhalte ab – sie sind jetzt aus (System › Grafik › Experte: «Echte Oberflächen und Himmel»).")
+	if main != null:
+		main.start_info = _crash_note                     # Statuszeile; dazu eine Meldung, sobald die Welt steht (on_scene)
+
+
+func _exit_tree() -> void:
+	_mark(false)                                          # normal beendet (auch mitten im Laden): kein Absturz
+
+
+func _mark(on: bool) -> void:
+	if on:
+		var f := FileAccess.open(MARK, FileAccess.WRITE)
+		if f != null:
+			f.store_string(JSON.stringify({"t": Time.get_unix_time_from_system()}))
+			f.close()                                 # gleich schreiben: ein harter Absturz soll ihn hinterlassen
+	elif FileAccess.file_exists(MARK):
+		DirAccess.remove_absolute(MARK)
+
+
+var _unmark_n := 0
+
+
+func _unmark_soon() -> void:
+	"""Startfix: den Merker erst wegnehmen, wenn mit den Fotos (Boden, Himmel) schon einige Bilder gezeichnet sind - ein
+	Absturz beim ersten Zeichnen (Grafiktreiber, ANGLE) soll den nächsten Start auch ohne Foto-Inhalte starten lassen"""
+	_unmark_n += 1
+	var n := _unmark_n
+	for i in range(5):                                    # einige Bilder (auf einem langsamen PC 1 Bild/s: nicht zu viele)
+		await get_tree().process_frame
+	await get_tree().create_timer(3.0).timeout
+	if n == _unmark_n and not _loading and is_inside_tree():
+		_mark(false)
 
 
 func _save_settings() -> void:
@@ -333,6 +381,7 @@ func laden(force := false) -> void:
 		_toast(T.t("Foto-Inhalte sind aus: %s", [_off]))
 		return
 	_loading = true
+	_mark(true)
 	state = "laden"
 	_scan_zips()
 	var mis := missing()
@@ -364,6 +413,7 @@ func laden(force := false) -> void:
 	_mats.clear()
 	_reset_global()                                       # neu eingelesene Bilder: alles frisch anwenden
 	_apply_now()
+	_unmark_soon()                                        # eingelesen und angewendet: nach den ersten Bildern kein Absturz
 
 
 # ---- Bilder einlesen ----------------------------------------------------------------------------------------------------
@@ -373,6 +423,10 @@ func _img_job(path: String, rolle: String, can_compress: bool) -> Image:
 	if img == null or img.is_empty():
 		return null
 	if rolle == "hdri":
+		if img.get_width() > HDRI_MAX_W:                  # Startfix: ein sehr grosses HDRI (8k) vor dem Hochladen verkleinern
+			if img.get_format() == Image.FORMAT_RGBE9995:
+				img.convert(Image.FORMAT_RGBH)
+			img.resize(HDRI_MAX_W, maxi(1, HDRI_MAX_W * img.get_height() / img.get_width()), Image.INTERPOLATE_BILINEAR)
 		return img
 	if img.get_width() > 2048:
 		img.resize(2048, 2048 * img.get_height() / img.get_width(), Image.INTERPOLATE_LANCZOS)
@@ -382,14 +436,14 @@ func _img_job(path: String, rolle: String, can_compress: bool) -> Image:
 		return img
 	img.convert(Image.FORMAT_RGB8)
 	img.generate_mipmaps()
-	if can_compress:
+	if can_compress and OS.has_feature("editor"):
 		img.compress(Image.COMPRESS_S3TC, Image.COMPRESS_SOURCE_SRGB if rolle == "albedo" else Image.COMPRESS_SOURCE_GENERIC)
 	return img
 
 
 func _load_textures() -> void:
 	var t0 := Time.get_ticks_msec()
-	var can := RenderingServer.has_os_feature("s3tc") and not Quality.lite()
+	var can := _can_compress() and not Quality.lite()
 	var jobs := []
 	for e in entries():
 		for rolle in e["dateien"]:                        # was da ist (z. B. Asphalt ohne Normal-Karte: trotzdem nutzen)
@@ -477,22 +531,44 @@ func active_here() -> bool:
 	return _off == "" and mode != "aus" and not Quality.lite() and main != null and str(main.scene) in szenen
 
 
+static func _can_compress() -> bool:
+	"""Startfix 31.10.2026: Image.compress(S3TC) gibt es in Godot 4.3 nur im Editor - in der exportierten .exe fehlt der
+	BC-Kompressor («_image_compress_bc_func is null»). Darum dort ohne Kompression (mehr Grafikspeicher, sonst gleich)."""
+	return OS.has_feature("editor") and RenderingServer.has_os_feature("s3tc")
+
+
+func _world_ready() -> bool:
+	"""Startfix 31.10.2026: main baut die Welt erst NACH der Update-Suche (main._ready wartet dort). Der verzögerte erste
+	Aufruf von on_scene kam vorher - grass_mat und scene_parent waren noch null. In der exportierten .exe ist ein Aufruf
+	auf einer typisierten null-Variablen kein Skriptfehler, sondern ein harter Absturz (Fenster weg, Log bricht ab).
+	main._build_scene ruft on_scene ohnehin, sobald die Welt steht."""
+	return main != null and main.grass_mat != null and main.scene_parent != null and is_instance_valid(main.scene_parent)
+
+
 func on_scene() -> void:
 	"""nach jedem Aufbau einer Szene (main._build_scene) und bei Änderungen"""
-	if main == null:
+	if not _world_ready():
 		return
+	if _crash_note != "":
+		_toast(_crash_note)
+		_crash_note = ""
 	_swapped.clear()
 	_extras = _extras.filter(func(n): return is_instance_valid(n))
 	applied = false
 	if not active_here():
 		_reset_global()
 		return
+	_mark(true)
 	if _loaded_ids.is_empty() or not missing().is_empty() and not _auto_tried:
 		laden(false)                                      # lädt im Hintergrund, wendet danach an
 	_apply_now()
+	if not _loading:
+		_unmark_soon()
 
 
 func _apply_now() -> void:
+	if not _world_ready():
+		return
 	if not active_here():
 		_reset_global()
 		return
@@ -524,6 +600,8 @@ func _reset_global() -> void:
 
 func _apply_ground() -> void:
 	var gm: ShaderMaterial = main.grass_mat
+	if gm == null:
+		return
 	var a := "gras" if _loaded_ids.has("gras") else "wiese"
 	var b := "wiese" if _loaded_ids.has("wiese") else "gras"
 	if not _loaded_ids.has(a) or gm.shader == null or not _has_uniform(gm, "tex_on"):
@@ -654,6 +732,8 @@ func _meshes(root: Node) -> Array:
 	var stack := [root]
 	while not stack.is_empty():
 		var nd: Node = stack.pop_back()
+		if nd == null or not is_instance_valid(nd):
+			continue
 		for ch in nd.get_children():
 			stack.append(ch)
 			if ch is MeshInstance3D and (ch as MeshInstance3D).layers & 1 and (ch as MeshInstance3D).mesh != null:
@@ -718,7 +798,7 @@ func _process(dt: float) -> void:
 	if _t < 0.5:
 		return
 	_t = 0.0
-	if main == null or main.sky_mat == null:
+	if main == null or main.sky_mat == null or main.sun == null or not _world_ready():
 		return
 	if Quality.lite() != _lite_was:                       # Lite an / aus
 		_lite_was = Quality.lite()
