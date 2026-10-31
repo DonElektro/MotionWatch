@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 11:42",
+ "generated": "2026-10-31 11:58",
  "versions": [
   {
-   "version": "2.98.93",
-   "file": "webcam_bewegung_2_98_93.py",
+   "version": "2.98.94",
+   "file": "webcam_bewegung_2_98_94.py",
    "url": "",
-   "sha256": "a404281ca95ec8f474056a37d4a9f8d7ed2d823773d3c423b9f263d828fbe12f",
-   "date": "2026-10-31 11:42",
-   "notes": "Simulator 3D-4.62: neues Fenster Mehr → Entwickler (nur Besitzer) – Übersichtskarte aller Welten und Orte, Klick = hinspringen, Flugkamera.",
-   "sig": "405308cb6cca13dea7355b7caf8dd1f9efcc071971ac5759b31afb139e7f018850b907ca834a2665e230c9379d6448720583b49299ee26cbd7de33bd5575730d"
+   "sha256": "fe7f5595c2c3852ddf747df56af7e432833892bf8a85f404c2ec2f04ddf4e867",
+   "date": "2026-10-31 11:58",
+   "notes": "Simulator 3D-4.63: Bergtal-Abenteuer – Rucksack mit gefundener Ausrüstung, mildes Essen und Trinken, Quellen und Kochen, Tauschen ohne Geld.",
+   "sig": "a46bc8691192072ad8705f206a8b85bf8f3e9fd85d6a4057587ae5214a7f5a095befb2ad478918aaea876ce643528bcb3b82fc7726e0626ec446f1c4590e7d03"
   },
   {
    "version": "2.97.1",
