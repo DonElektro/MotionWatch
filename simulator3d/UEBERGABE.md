@@ -1,8 +1,20 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.1.0** · MoveEye **3.1.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.3.0** · MoveEye **3.3.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.3.0 (MoveEye 3.3.0): Roter Faden (`geschichten_faden.gd`)
+
+- `geschichten_faden.gd` (neu): die beiden Geschichten kennen sich (Ruedi, Anna, Sepp, Vrenis Käse, Wanderbuch im Finale,
+  Kapelle auf der alten Karte), Abzeichen «Beide Geschichten geschafft». Stand pro Spielstand in
+  `user://spielstand/<n>/faden.json`, dazu Maggies eigene Datei dieses Platzes (`spielstand.gd path_maggie`).
+
+## NEU in 3.2.0 (MoveEye 3.2.0): Statisten (`statisten.gd`)
+
+- `statisten.gd` (neu): Hintergrund-Leute mit Zielen (Bank, Brunnen, Hütte, Aussicht), Tätigkeiten, Gruppen, grüssen,
+  weichen aus, gehen abends heim (bei Regen schneller), halten in Spielmodi Abstand zu Rätseln und Gefahren
+  (`bergtal_abenteuer.gd`); Menge wenig / normal / belebt. `actor.gd`, `figur_paket.gd`, `main.gd` angepasst.
 
 ## NEU in 3.1.0 (MoveEye 3.1.0): Kurze Push-Nachrichten (nur MoveEye)
 

@@ -3427,6 +3427,24 @@
   "it": "La sera davanti a MoveEye c'è profumo di salsiccia alla griglia.",
   "rm": "La saira savura igl davant MoveEye da liongia grillada."
  },
+ "Am Abend riecht es überall nach Grillwurst.": {
+  "en": "In the evening it smells of grilled sausages everywhere.",
+  "fr": "Le soir, ça sent la saucisse grillée partout.",
+  "it": "La sera c’è profumo di salsiccia alla griglia ovunque.",
+  "rm": "La saira odura quai dapertut da liongias grigliadas."
+ },
+ "Am Abend sieht man hier manchmal Gämsen.": {
+  "en": "In the evening you sometimes see chamois here.",
+  "fr": "Le soir, on voit parfois des chamois ici.",
+  "it": "La sera qui a volte si vedono dei camosci.",
+  "rm": "La saira vesan ins qua mintgatant chamutschs."
+ },
+ "Am Abend sind viele mit dem Hund unterwegs.": {
+  "en": "In the evening many people are out with their dogs.",
+  "fr": "Le soir, beaucoup de gens promènent leur chien.",
+  "it": "La sera molti sono in giro con il cane.",
+  "rm": "La saira èn blers en viadi cun il chaun."
+ },
  "Am Abend, bevor du zum Lager zurückgehst, stehst du vor dem alten Hospiz am Pass. Die Tür ist verschlossen. Das Schloss hat Räder wie eine Uhr: Stunden und Minuten.": {
   "en": "In the evening, before you go back to your camp, you stand in front of the old hospice on the pass. The door is locked. The lock has wheels like a clock: hours and minutes.",
   "fr": "Le soir, avant de retourner au campement, tu te tiens devant le vieil hospice du col. La porte est fermée à clé. La serrure a des molettes comme une horloge : heures et minutes.",
@@ -3583,6 +3601,12 @@
   "it": "Al mattino qualcuno bussa alla tenda: un vecchio con un mantello di loden scuro, un campanaccio alla cintura. «Sono il nipote della custode dell'ospizio», dice. «Nelle notti di nebbia passo il valico con la sua campana – come lei allora, per chi si è perso.»",
   "rm": "La damaun splunta insatgi vi dal tschalet: in um vegl en in mantel da loden stgir, ina stgella da vatga a la tschinta. «Jau sun il biadi da la guardiana da l'ospizi», di el. «En notgs da tschajera vom jau cun sia stgella sur il pass – sco ella da lez temp, per ils sviads.»"
  },
+ "Am Morgen sind beim Steg oft Enten.": {
+  "en": "In the morning there are often ducks at the jetty.",
+  "fr": "Le matin, il y a souvent des canards au ponton.",
+  "it": "Al mattino al pontile ci sono spesso delle anatre.",
+  "rm": "La damaun hai savens andas tar la punt da bartga."
+ },
  "Am Ostufer des Gumpisees fällt ein Wasserfall über die Wand. Was ist wohl dahinter?": {
   "en": "On the east shore of the Gumpisee a waterfall drops over the cliff. What could be behind it?",
   "fr": "Sur la rive est du Gumpisee, une cascade tombe de la paroi. Qu’y a-t-il derrière ?",
@@ -3708,6 +3732,12 @@
   "fr": "Sur la pente boisée, il y a un trou sombre entre les rochers.",
   "it": "Sul pendio del bosco c’è un buco scuro tra le rocce.",
   "rm": "Sin la costa dal guaud hai i ina fora stgira tranter ils crappa."
+ },
+ "Am Waldrand sieht man abends manchmal Rehe.": {
+  "en": "In the evening you sometimes see deer at the edge of the forest.",
+  "fr": "Le soir, on voit parfois des chevreuils à l’orée du bois.",
+  "it": "La sera al limite del bosco a volte si vedono dei caprioli.",
+  "rm": "La saira vesan ins mintgatant chavriels a l’ur dal guaud."
  },
  "Am Waldrand steht ein alter Wohnwagen mit Moos auf dem Dach. Wer wohnt da wohl?": {
   "en": "An old caravan with moss on its roof stands at the edge of the forest. Who might live there?",
@@ -3900,6 +3930,12 @@
   "fr": "Autres scènes",
   "it": "Altre scene",
   "rm": "Autras scenas"
+ },
+ "Andere Wanderer (Statisten)": {
+  "en": "Other hikers (background people)",
+  "fr": "Autres randonneurs (figurants)",
+  "it": "Altri escursionisti (comparse)",
+  "rm": "Auters viandants (figurants)"
  },
  "Andere Welt": {
   "en": "Another world",
@@ -5298,6 +5334,12 @@
   "fr": "À « %s » : %d× rien de nouveau longtemps → indice plus tôt ou chemin plus clair ?",
   "it": "A «%s»: %d× niente di nuovo a lungo → suggerimento prima o strada più chiara?",
   "rm": "Tar «%s»: %d× ditg nagut nov chattà → tip pli baud u via pli clera?"
+ },
+ "Beide Geschichten geschafft": {
+  "en": "Both stories done",
+  "fr": "Les deux histoires réussies",
+  "it": "Entrambe le storie completate",
+  "rm": "Omaduas istorgias fatgas"
  },
  "Beim Bungalow (Bungalow-Reihe)": {
   "en": "At the bungalow (bungalow row)",
@@ -7364,6 +7406,12 @@
   "it": "Aprire il cancello del pascolo",
   "rm": "Avrir il portun da la pastgira"
  },
+ "Das Wetter ändert hier oben schnell – lieber früh los.": {
+  "en": "The weather changes quickly up here – better set off early.",
+  "fr": "Le temps change vite ici en haut – mieux vaut partir tôt.",
+  "it": "Quassù il tempo cambia in fretta – meglio partire presto.",
+  "rm": "Qua si mida l’aura svelt – meglier partir baud."
+ },
  "Das wird gelöscht:": {
   "en": "These are deleted:",
   "fr": "Ceci est effacé :",
@@ -8995,6 +9043,12 @@
   "fr": "Le centre de la vue maintenant",
   "it": "Il centro della vista ora",
   "rm": "Il center da la vista ussa"
+ },
+ "Die Murmeltiere pfeifen, wenn ein Adler kommt.": {
+  "en": "The marmots whistle when an eagle comes.",
+  "fr": "Les marmottes sifflent quand un aigle arrive.",
+  "it": "Le marmotte fischiano quando arriva un’aquila.",
+  "rm": "Las muntanellas tschivlan, cura ch’in evla vegn."
  },
  "Die Mutter vorne, die Küken hinterher – und das letzte trödelt, rennt hinterher und purzelt.": {
   "en": "Mother in front, the ducklings behind – and the last one dawdles, runs after them and tumbles.",
@@ -15192,6 +15246,18 @@
   "it": "Grüessech! Di nuovo in giro?",
   "rm": "Grüessech! Puspè en viadi?"
  },
+ "Grüezi": {
+  "en": "Hello",
+  "fr": "Bonjour",
+  "it": "Buongiorno",
+  "rm": "Allegra"
+ },
+ "Grüezi mitenand": {
+  "en": "Hello everyone",
+  "fr": "Bonjour à tous",
+  "it": "Buongiorno a tutti",
+  "rm": "Allegra a tuts"
+ },
  "Grüezi! Grad recht zum Zvieri.": {
   "en": "Grüezi! Just in time for the afternoon snack.",
   "fr": "Grüezi ! Juste à temps pour le goûter.",
@@ -15336,6 +15402,12 @@
   "it": "Buona notte! Ora MoveEye ha bisogno dell’infrarosso.",
   "rm": "Buna notg! Ussa dovra MoveEye infracotschen."
  },
+ "Guten Abend": {
+  "en": "Good evening",
+  "fr": "Bonsoir",
+  "it": "Buonasera",
+  "rm": "Buna saira"
+ },
  "Guten Morgen! Die Sonne scheint.": {
   "en": "Good morning! The sun is shining.",
   "fr": "Bonjour ! Le soleil brille.",
@@ -15407,6 +15479,12 @@
   "fr": "Avez-vous vu quelque chose de spécial en route ?",
   "it": "Ha visto qualcosa di speciale per strada?",
   "rm": "Avais Vus vis insatge spezial en viadi?"
+ },
+ "Hallo": {
+  "en": "Hi",
+  "fr": "Salut",
+  "it": "Ciao",
+  "rm": "Salut"
  },
  "Hallo nochmals! Schöner Hut - der sieht aus, als hätte er schon viele Gipfel gesehen.": {
   "en": "Hello again! Nice hat - it looks like it has seen many summits.",
@@ -15545,6 +15623,12 @@
   "fr": "Tu as eu le gypaète ?",
   "it": "Hai beccato il gipeto?",
   "rm": "Has ti tschiffà l'utschè da barba?"
+ },
+ "Hast du den kleinen Terrier gesehen, der mit einem Kind durchs Tal zieht? Eine Nase hat der – der findet alles.": {
+  "en": "Have you seen the little terrier wandering the valley with a child? What a nose – that dog finds everything.",
+  "fr": "Tu as vu le petit terrier qui parcourt la vallée avec un enfant ? Quel flair – il trouve tout.",
+  "it": "Hai visto il piccolo terrier che gira per la valle con un bambino? Che fiuto – trova tutto.",
+  "rm": "Has ti vis il pitschen terrier che va cun in uffant tras la val? Quel nas – quel chatta tut."
  },
  "Hast du die Steinböcke gesehen?": {
   "en": "Did you see the ibex?",
@@ -15768,6 +15852,12 @@
   "fr": "Aujourd’hui vers %d h, quelque chose de gros mord à la ligne du pêcheur. Prends une photo avec la caméra de MoveEye depuis le ponton.",
   "it": "Oggi verso le %d qualcosa di grosso abbocca all’amo del pescatore. Scatta una foto con la telecamera di MoveEye dal pontile.",
   "rm": "Oz enturn las %d morda insatge grond tar il pestgader. Far ina foto cun la camera da MoveEye da la punt da bartga."
+ },
+ "Heute Nacht soll es kühl werden.": {
+  "en": "It is supposed to get cool tonight.",
+  "fr": "Il paraît qu’il fera frais cette nuit.",
+  "it": "Stanotte dovrebbe fare fresco.",
+  "rm": "Questa notg duai far fraid."
  },
  "Heute steigt noch Nebel aus dem Tal. Halte den Kompass bereit und bleib auf dem Weg.": {
   "en": "Fog will rise from the valley today. Keep the compass ready and stay on the path.",
@@ -16350,6 +16440,12 @@
   "fr": "Magasin de la ferme · caisse de confiance",
   "it": "Spaccio · cassa di fiducia",
   "rm": "Butia dal bain · cassa da fidanza"
+ },
+ "Hoi": {
+  "en": "Hi",
+  "fr": "Salut",
+  "it": "Ciao",
+  "rm": "Allegra"
  },
  "Hoi! Alles gut unterwegs?": {
   "en": "Hoi! All well on the way?",
@@ -21172,6 +21268,12 @@
   "it": "Maggie ce l'ha! La marmotta ti mostra il suo passaggio segreto.",
   "rm": "Maggie ha chattà! La muntanella ta mussa ses passadi secret."
  },
+ "Maggie hebt die Nase: Von der Alp Tschuggen her riecht es nach Vrenis Alpkäse.": {
+  "en": "Maggie lifts her nose: from Alp Tschuggen comes the smell of Vreni's alpine cheese.",
+  "fr": "Maggie lève le nez : depuis l'alpage de Tschuggen, ça sent le fromage d'alpage de Vreni.",
+  "it": "Maggie alza il naso: dall'alpe Tschuggen arriva il profumo del formaggio d'alpe di Vreni.",
+  "rm": "Maggie auza il nas: da l'Alp Tschuggen nauaferd savura il chaschiel d'alp da la Vreni."
+ },
  "Maggie ist euer Familienhund: ein kleiner, heller Terrier mit hellbraunen Flecken. Sie hat eine sehr gute Nase.": {
   "en": "Maggie is your family dog: a small, light-coloured terrier with light brown spots. She has a very good nose.",
   "fr": "Maggie est le chien de la famille : un petit terrier clair avec des taches brun clair. Elle a un très bon flair.",
@@ -23333,6 +23435,12 @@
   "it": "Beh - allora ne resta di più per me.",
   "rm": "Bain - lura resta dapli per mai."
  },
+ "Nach 22 Uhr ist Nachtruhe – dann wird es still.": {
+  "en": "Quiet time starts at 10 pm – then it gets still.",
+  "fr": "Après 22 heures, c’est le calme de la nuit.",
+  "it": "Dopo le 22 c’è il riposo notturno – poi diventa silenzioso.",
+  "rm": "Suenter las 22 è ruaus da notg – lura daventi quiet."
+ },
  "nach dem Monat (Jahreszeit)": {
   "en": "by the month (season)",
   "fr": "selon le mois (saison)",
@@ -23928,6 +24036,18 @@
   "it": "Accanto al campo c'è un calzino che non è tuo.",
   "rm": "Sper il champ è in tschurrat che na tutga betg a tai."
  },
+ "Neben dem Tschingelspitz steht eine kleine Bergkapelle. Die Tür ist zu, drinnen ist es still.": {
+  "en": "Next to the Tschingelspitz stands a small mountain chapel. The door is closed, inside it is quiet.",
+  "fr": "À côté du Tschingelspitz se dresse une petite chapelle de montagne. La porte est fermée, à l'intérieur tout est calme.",
+  "it": "Accanto al Tschingelspitz c'è una piccola cappella di montagna. La porta è chiusa, dentro è tutto silenzioso.",
+  "rm": "Sper il Tschingelspitz stat ina pitschna chaplutta da muntogna. L'isch è serrà, endadens èsi quiet."
+ },
+ "Neben dem Tschingelspitz steht eine kleine Bergkapelle. Drinnen leuchtet etwas auf dem Stein vor dem Altar – wie ein Kristall.": {
+  "en": "Next to the Tschingelspitz stands a small mountain chapel. Inside, something glows on the stone before the altar – like a crystal.",
+  "fr": "À côté du Tschingelspitz se dresse une petite chapelle de montagne. À l'intérieur, quelque chose brille sur la pierre devant l'autel – comme un cristal.",
+  "it": "Accanto al Tschingelspitz c'è una piccola cappella di montagna. Dentro, qualcosa brilla sulla pietra davanti all'altare – come un cristallo.",
+  "rm": "Sper il Tschingelspitz stat ina pitschna chaplutta da muntogna. Endadens glischa insatge sin la crappa davant l'altar – sco in cristal."
+ },
  "Neben dem Weg hängt eine Stirnlampe an einem Ast - jemand hat sie vergessen. Sie leuchtet noch.": {
   "en": "Beside the path a head lamp hangs on a branch - someone forgot it. It still works.",
   "fr": "Au bord du chemin, une lampe frontale pend à une branche - quelqu'un l'a oubliée. Elle marche encore.",
@@ -23939,6 +24059,12 @@
   "fr": "À côté de la page se trouve une planche avec des clous, soigneusement emballée - exactement ce qui manque à la passerelle.",
   "it": "Accanto alla pagina c'è un'asse con chiodi, ben incartata - proprio quella che manca alla passerella.",
   "rm": "Sper la pagina è ina assa cun guttas, bain pachetada - precis ina sco quella che manca a la punt."
+ },
+ "Neben der Tür liegt ein Wanderbuch. Ein Eintrag: «Mit der alten Karte durchs ganze Tal. Danke, Bergtal!»": {
+  "en": "Next to the door lies a hikers' book. One entry: «With the old map through the whole valley. Thank you, Bergtal!»",
+  "fr": "À côté de la porte se trouve un livre des randonneurs. Une inscription : « Avec la vieille carte à travers toute la vallée. Merci, Bergtal ! »",
+  "it": "Accanto alla porta c'è un libro degli escursionisti. Una dedica: «Con la vecchia mappa attraverso tutta la valle. Grazie, Bergtal!»",
+  "rm": "Sper l'isch è in cudesch dals viandants. Ina inscripziun: «Cun la veglia charta tras l'entira val. Grazia, Bergtal!»"
  },
  "Nebenaufgabe erledigt": {
   "en": "Side task done",
@@ -24137,6 +24263,12 @@
   "fr": "Nouvelle aventure ›",
   "it": "Nuova avventura ›",
   "rm": "Nova aventura ›"
+ },
+ "Neues Abzeichen: Beide Geschichten geschafft": {
+  "en": "New badge: Both stories done",
+  "fr": "Nouveau badge : Les deux histoires réussies",
+  "it": "Nuovo distintivo: Entrambe le storie completate",
+  "rm": "Nov distintiv: Omaduas istorgias fatgas"
  },
  "Neues Passwort": {
   "en": "New password",
@@ -24935,6 +25067,12 @@
   "fr": "Ob em Schwarzseeli",
   "it": "Ob em Schwarzseeli",
   "rm": "Ob em Schwarzseeli"
+ },
+ "Oben am Grat ist es windig – eine Jacke hilft.": {
+  "en": "It is windy up on the ridge – a jacket helps.",
+  "fr": "Il y a du vent sur l’arête – une veste aide.",
+  "it": "Sulla cresta tira vento – una giacca aiuta.",
+  "rm": "Si sin la cresta tira l’aura – ina giacca gida."
  },
  "Oben am Grat soll es einen Platz geben, wo man im August viele Sternschnuppen sieht.": {
   "en": "Up on the ridge there's said to be a spot where you see lots of shooting stars in August.",
@@ -26984,6 +27122,12 @@
   "it": "Ruedi, il guardiacaccia",
   "rm": "Ruedi, il guardiaselvaschina"
  },
+ "Ruedi, der Wildhüter: «Salü! Ah, ihr zwei seid das – du und der kleine Hund! Anna von der Hütte hat mir von euch erzählt.»": {
+  "en": "Ruedi, the game warden: «Hi! Ah, so it's you two – you and the little dog! Anna from the hut told me about you.»",
+  "fr": "Ruedi, le garde-faune : « Salut ! Ah, c'est vous deux – toi et le petit chien ! Anna de la cabane m'a parlé de vous. »",
+  "it": "Ruedi, il guardiacaccia: «Ciao! Ah, siete voi due – tu e il cagnolino! Anna della capanna mi ha parlato di voi.»",
+  "rm": "Ruedi, il guardia da selvaschina: «Salid! Ah, vus essas quels dus – ti ed il pitschen chaun! L'Anna da la chamona m'ha raquintà da vus.»"
+ },
  "Rufen": {
   "en": "Shout",
   "fr": "Crier",
@@ -28199,6 +28343,12 @@
   "fr": "Belle vue",
   "it": "Bella vista",
   "rm": "Bella vista"
+ },
+ "Schöner Platz hier, nicht?": {
+  "en": "Nice place here, isn’t it?",
+  "fr": "Bel endroit, non ?",
+  "it": "Bel posto, vero?",
+  "rm": "Bel lieu qua, u betg?"
  },
  "Schöner Stein mit Glimmer": {
   "en": "Pretty stone with mica",
@@ -29586,6 +29736,36 @@
   "it": "Pagina iniziale con riquadro del simulatore",
   "rm": "Pagina da partenza cun platta dal simulatur"
  },
+ "Statisten (Leute im Hintergrund): wie viele, mit Zielen, Tätigkeiten und Gruppen": {
+  "en": "Background people: how many, with goals, things to do and groups",
+  "fr": "Figurants (gens à l’arrière-plan) : combien, avec buts, activités et groupes",
+  "it": "Comparse (persone sullo sfondo): quante, con mete, attività e gruppi",
+  "rm": "Figurants (glieud en il fund): quants, cun finamiras, activitads e gruppas"
+ },
+ "Statisten bei den Ferienpark-Aufgaben": {
+  "en": "Background people during the holiday park tasks",
+  "fr": "Figurants pendant les missions du parc de vacances",
+  "it": "Comparse durante i compiti del parco vacanze",
+  "rm": "Figurants tar las incumbensas dal parc da vacanzas"
+ },
+ "Statisten bei Maggie und im Hospiz": {
+  "en": "Background people with Maggie and in the hospice",
+  "fr": "Figurants avec Maggie et à l’hospice",
+  "it": "Comparse con Maggie e nell’ospizio",
+  "rm": "Figurants tar Maggie ed en l’ospizi"
+ },
+ "Statisten im Bergtal-Abenteuer": {
+  "en": "Background people in the mountain valley adventure",
+  "fr": "Figurants dans l’aventure de la vallée",
+  "it": "Comparse nell’avventura della valle",
+  "rm": "Figurants en l’aventura da la val"
+ },
+ "Statisten in Spielrunden": {
+  "en": "Background people in game rounds",
+  "fr": "Figurants pendant les parties",
+  "it": "Comparse nelle partite",
+  "rm": "Figurants en las partidas"
+ },
  "Statistik": {
   "en": "Statistics",
   "fr": "Statistiques",
@@ -29730,6 +29910,12 @@
   "fr": "Danger de chute de pierres : paroi au-dessus",
   "it": "Pericolo di caduta massi: parete sopra",
   "rm": "Privel da crudada da crappa: paraid da grippa survart"
+ },
+ "Stell dir vor: Ein kleiner heller Hund hat neulich meine Ziegen angebellt – ganz frech, aber lieb. Ein Kind war bei ihm.": {
+  "en": "Imagine: a little light-coloured dog barked at my goats the other day – very cheeky, but sweet. A child was with it.",
+  "fr": "Imagine : l'autre jour, un petit chien clair a aboyé après mes chèvres – très effronté, mais gentil. Un enfant était avec lui.",
+  "it": "Pensa: l'altro giorno un cagnolino chiaro ha abbaiato alle mie capre – molto sfacciato, ma buono. C'era un bambino con lui.",
+  "rm": "Imaginescha: in pitschen chaun cler ha l'auter di bagliaffà mias chauras – fitg tschuffergnà, ma char. In uffant era cun el."
  },
  "Stelle": {
   "en": "Spot",
@@ -32486,6 +32672,12 @@
   "it": "Dal belvedere vedi:",
   "rm": "Dal punct da vista vesas ti:"
  },
+ "Vom Aussichtspunkt sieht man über den ganzen See.": {
+  "en": "From the viewpoint you can see across the whole lake.",
+  "fr": "Depuis le point de vue, on voit tout le lac.",
+  "it": "Dal belvedere si vede tutto il lago.",
+  "rm": "Dal punct da vista vesan ins sur l’entir lai."
+ },
  "Vom Ende des Bootsstegs sieht man ein altes Boot, das im See liegt – nur der Mast schaut heraus.": {
   "en": "From the end of the jetty you can see an old boat lying in the lake – only the mast sticks out.",
   "fr": "Depuis le bout du ponton, on voit un vieux bateau au fond du lac – seul le mât dépasse.",
@@ -33608,6 +33800,12 @@
   "fr": "quand on ne trouve rien pendant longtemps",
   "it": "quando non si trova niente per molto tempo",
   "rm": "sch’ins na chatta nagut ditg"
+ },
+ "Wenn Nebel kommt, gut auf die Wegweiser achten.": {
+  "en": "When fog comes, watch the signposts carefully.",
+  "fr": "Quand le brouillard arrive, bien suivre les panneaux.",
+  "it": "Quando arriva la nebbia, fai attenzione ai cartelli.",
+  "rm": "Cura che la tschajera vegn, bain guardar sin ils indicaturs."
  },
  "Wenn Nebel kommt: stehen bleiben, Kompass heraus, dann erst weiter.": {
   "en": "When fog comes: stop, take out the compass, only then go on.",
@@ -35831,6 +36029,12 @@
   "it": "Aprire «Il tuo posto»: foto / panorama, tenda, auto, oggetti sorvegliati",
   "rm": "Avrir «Tes plaz»: foto / panorama, tenda, auto, objects survegliads"
  },
+ "«Der Enkel vom Bergführer war auch schon hier oben – mit einer alten Karte.»": {
+  "en": "«The mountain guide's grandson was up here too – with an old map.»",
+  "fr": "« Le petit-fils du guide de montagne est aussi déjà venu ici – avec une vieille carte. »",
+  "it": "«Anche il nipote della guida alpina è già stato quassù – con una vecchia mappa.»",
+  "rm": "«L'abiadi dal guid da muntogna è era gia stà qua si – cun ina veglia charta.»"
+ },
  "«Der Steinmann mit den Augen? Den kennen alle hier. Er schaut immer zum Biwak - als würde er es bewachen.»": {
   "en": "«The cairn with eyes? Everyone here knows it. It always looks at the bivouac - as if it were guarding it.»",
   "fr": "«Le cairn aux yeux ? Tout le monde le connaît ici. Il regarde toujours le bivouac - comme s'il le gardait.»",
@@ -36274,6 +36478,12 @@
   "fr": "Surveiller : cliquer l’endroit dans le monde (Esc = annuler)",
   "it": "Sorvegliare: cliccare il luogo nel mondo (Esc = annulla)",
   "rm": "Survegliar: cliccar il lieu en il mund (Esc = interrumper)"
+ },
+ "Übrigens: Neulich war ein Kind mit einem kleinen, hellen Terrier bei der Hütte. Die zwei wollten hinauf zum Tschingelspitz.": {
+  "en": "By the way: the other day a child with a small, light-coloured terrier came by the hut. The two wanted to go up to the Tschingelspitz.",
+  "fr": "Au fait : l'autre jour, un enfant avec un petit terrier clair est passé à la cabane. Les deux voulaient monter au Tschingelspitz.",
+  "it": "A proposito: l'altro giorno un bambino con un piccolo terrier chiaro è passato dalla capanna. Volevano salire al Tschingelspitz.",
+  "rm": "Per proposit: l'auter di è in uffant cun in pitschen terrier cler stà tar la chamona. Ils dus vulevan ir si sin il Tschingelspitz."
  },
  "Übung %d/%d: %s": {
   "en": "Practice %d/%d: %s",
