@@ -750,8 +750,8 @@ func info() -> Dictionary:
 
 func op(d: Dictionary) -> Dictionary:
 	match str(d.get("do", "info")):
-		"set":
-			set_stufe(str(d.get("value", "normal")))
+		"set":                                          # wie das Auswahlfeld «Grafik-Modus» (hält main.grafik_mode gleich)
+			main.set_grafik_mode(str(d.get("value", "normal")))
 		"dof":
 			set_dof(bool(d.get("value", false)))
 		"off_session":                                  # für Messungen: Hoch aus, ohne die Wahl zu ändern
