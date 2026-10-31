@@ -31,6 +31,8 @@ extends Node
 ##     bright lights (headlights, torch, lamps) bloom and glow at high gain
 ## Settings (card «Kamerabild», part «Wie echt»): «Kamera wie echt» (real_fx, default on), expert: «Rauschen» (lens_noise),
 ## «Bewegungsunschärfe» (cam_blur), «NoIR-Farben» (cam_noir). Lite (Quality.lite()): noise per pixel (no blotches), no glow.
+## Wide camera: camera 1 uses CM3_WIDE_NOIR; when weitwinkel.gd has sensor_info() (branch real-weitwinkel), its aperture
+## and blind cover are used and its fisheye / dark corners stay there (camphys only does the sensor part).
 ## Hook for the weather package (drops / dirt on the lens, lens.gdshader «drops», «dirt», «fogged»): state(i) tells exposure,
 ## gain and light, so drops can glow in the own light or vanish in the dark.
 
@@ -204,6 +206,17 @@ func _meter_dist(i: int) -> float:
 	return d
 
 
+func _wide_info(i: int) -> Dictionary:
+	"""camera 1 = the wide camera (package «Weitwinkel-Kamera», weitwinkel.gd sensor_info()): aperture, fisheye, blind
+	cover. Without that function (older weitwinkel.gd) the CM3_WIDE_NOIR data here are used."""
+	if i != 1 or main.weit == null or not main.weit.has_method("sensor_info"):
+		return {}
+	var wi: Dictionary = main.weit.sensor_info()
+	if wi.has("f_number") and absf(float(wi["f_number"]) - float(specs[1]["f"])) > 0.01:
+		specs[1]["f"] = float(wi["f_number"])
+	return wi
+
+
 func _ir_lit(i: int) -> bool:
 	if i == 0:
 		return main.ir_on()
@@ -268,8 +281,12 @@ func before_capture(i: int) -> void:
 				mats[i].set_shader_parameter("expo", float(ex) * float(ek[i]))
 	# the 850 nm LED: 1/r² up to the range and a soft fade behind it (Godot's spot_range cuts the light off at the range;
 	# the real light goes on, the camera just does not get enough of it - that is what expo / noise above do)
+	# The energy follows the slider «Reichweite des Infrarot-Lichts»: simreal.gd sets 36 for the 10 m module, a stronger
+	# LED (longer range) needs (r / 10)² more power for the same picture at its range (inverse square law).
 	if i == 0 and main.simreal != null and main.simreal.ir_real and main.ir_light != null:
 		main.ir_light.spot_range = float(main.ir_range) * 1.6
+		if main.ir_light.light_energy > 0.0 and main.ir_light.spot_attenuation > 1.5:
+			main.ir_light.light_energy = 36.0 * pow(clampf(float(main.ir_range), 4.0, 30.0) / 10.0, 2.0)
 
 
 func apply(i: int, m: ShaderMaterial) -> void:
@@ -282,6 +299,11 @@ func apply(i: int, m: ShaderMaterial) -> void:
 		m.set_shader_parameter("ir_tint", 0.0)
 		m.set_shader_parameter("vig", 0.0)
 		ek[i] = 1.0
+		return
+	var wi := _wide_info(i)
+	if wi.get("installed", true) == false:                  # the wide camera has its blind cover in: nothing to expose
+		m.set_shader_parameter("sn_on", 0.0)
+		m.set_shader_parameter("flare", 0.0)
 		return
 	var sp := spec(i)
 	var now_t: float = main.now()
@@ -324,7 +346,7 @@ func apply(i: int, m: ShaderMaterial) -> void:
 		var pb = m.get_shader_parameter("pan_blur")
 		if pb is Vector2:
 			m.set_shader_parameter("pan_blur", (pb as Vector2) * blur_k)
-	if main.simreal != null and main.simreal.lens_on:
+	if main.simreal != null and main.simreal.lens_on and not wi.has("fisheye"):   # the wide package keeps its own optics
 		var dist_now = m.get_shader_parameter("distort")
 		if dist_now != null and float(dist_now) > 0.0:
 			m.set_shader_parameter("distort", float(sp["distort"]))
@@ -351,7 +373,10 @@ func apply(i: int, m: ShaderMaterial) -> void:
 	m.set_shader_parameter("noir", clampf((float(nr) if nr != null else 0.0) * float(sp["noir"]) * noir_k, 0.0, 1.0))
 	m.set_shader_parameter("ir_tint", clampf(0.35 * noir_k, 0.0, 1.0) if grey else 0.0)   # 850 nm through the Bayer filter: grey, a magenta touch
 	# lens shading: the ISP corrects most of it for daylight; in the light of the LED (brightest in the middle) more stays
-	m.set_shader_parameter("vig", float(sp["ir_vig"]) if grey else float(sp["vig"]))
+	var vg: float = float(sp["ir_vig"]) if grey else float(sp["vig"])
+	if float(wi.get("vignette", 0.0)) > 0.0:                # the fisheye of the wide package already darkens the corners
+		vg *= 0.4
+	m.set_shader_parameter("vig", vg)
 	# white balance: follows a change of the light (white LED on, lamp, dusk) in ≈ 1.5 s, not at once
 	var tn = m.get_shader_parameter("tint")
 	var target: Vector3 = tn if tn is Vector3 else Vector3.ONE
