@@ -13,6 +13,13 @@ uniform float night = 0.0;            // 0 = day … 1 = night (stars)
 uniform vec2 wind = vec2(0.004, 0.0015);
 uniform float moon_phase = 0.5;       // 3D-3.98: 0 = new moon, 0.5 = full moon, 1 = new moon again
 uniform float detail = 1.0;           // 0 = no clouds / stars (simple graphics)
+// «Licht & Nacht» (licht.gd): the moon from its real place (not a light of the sky any more), stars turn with the sky,
+// fewer and fainter stars in the twilight, under the glow of a town and next to a bright moon
+uniform vec3 moon_dir = vec3(0.0, -1.0, 0.0);   // direction to the moon (world); below the horizon = not drawn
+uniform float moon_vis = -1.0;        // -1 = old way (LIGHT1 = moonlight); 0 … 1 brightness of the disk
+uniform float star_vis = -1.0;        // -1 = old way (night × clear sky); 0 … 1 how bright the stars are
+uniform float star_lim = 1.0;         // 0 … 1 share of the stars you can see (1 = all of a dark sky)
+uniform mat3 star_rot = mat3(1.0);    // world direction -> sky of the stars (sidereal time, latitude)
 
 float hash3(vec3 p) {
 	p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419));
@@ -64,27 +71,33 @@ void sky() {
 	}
 	col *= energy;
 	col += vec3(0.010, 0.016, 0.034) * night * (0.4 + 0.6 * clamp(h * 2.0, 0.0, 1.0)) * (1.0 - cloud_cover * 0.5);   // the night sky is deep blue, not black
-	if (LIGHT1_ENABLED) {                                   // the moon (not darkened with the sky)
-		float md = dot(d, LIGHT1_DIRECTION);
+	bool own_moon = moon_vis >= 0.0;
+	vec3 mdir = own_moon ? normalize(moon_dir) : LIGHT1_DIRECTION;
+	if ((own_moon && moon_vis > 0.0 && mdir.y > -0.03) || (!own_moon && LIGHT1_ENABLED)) {   // the moon (not darkened with the sky)
+		float md = dot(d, mdir);
 		float mdisk = smoothstep(0.99965, 0.9998, md);
-		vec3 mr = normalize(cross(LIGHT1_DIRECTION, vec3(0.0, 1.0, 0.0)) + vec3(1e-4));
-		vec3 mu = cross(mr, LIGHT1_DIRECTION);
-		vec3 off = d - md * LIGHT1_DIRECTION;
+		vec3 mr = normalize(cross(mdir, vec3(0.0, 1.0, 0.0)) + vec3(1e-4));
+		vec3 mu = cross(mr, mdir);
+		vec3 off = d - md * mdir;
 		float mx = dot(off, mr) / 0.0195, my = dot(off, mu) / 0.0195;
 		float lit = 0.5 - 0.5 * cos(moon_phase * 6.2832);              // lit part of the disk
 		float edge = (1.0 - 2.0 * lit) * sqrt(max(0.0, 1.0 - my * my));
 		float sx = moon_phase < 0.5 ? mx : -mx;                          // waxing: lit on the right
 		mdisk *= mix(0.04, 1.0, smoothstep(edge - 0.08, edge + 0.08, sx));
-		col += vec3(0.85, 0.88, 0.95) * mdisk * 1.6 * night * (1.0 - cloud_cover) + vec3(0.4, 0.45, 0.6) * pow(max(md, 0.0), 120.0) * 0.12 * night;
+		float mv = own_moon ? moon_vis : night;
+		float mlit = own_moon ? mix(0.15, 1.0, lit) : 1.0;              // a thin crescent glows less round itself
+		col += vec3(0.85, 0.88, 0.95) * mdisk * 1.6 * mv * (1.0 - cloud_cover) * step(-0.01, h) + vec3(0.4, 0.45, 0.6) * pow(max(md, 0.0), 120.0) * 0.12 * mv * mlit * (1.0 - 0.6 * cloud_cover);
 	}
 	if (detail > 0.5 && h > 0.0) {
 		// stars: small dots that twinkle a little, only at night and where there are no clouds
-		vec3 p = d * 220.0;
+		vec3 p = (star_rot * d) * 220.0;
 		vec3 cell = floor(p);
 		float r = hash3(cell);
-		float star = step(0.993, r) * smoothstep(0.5, 0.0, length(fract(p) - 0.5)) * (0.35 + 2.6 * pow((r - 0.993) / 0.007, 3.0));
+		float thr = mix(0.9993, 0.993, clamp(star_lim, 0.0, 1.0));      // light pollution / twilight: only the bright ones
+		float star = step(thr, r) * smoothstep(0.5, 0.0, length(fract(p) - 0.5)) * (0.35 + 2.6 * pow((r - 0.993) / 0.007, 3.0));
 		// (no twinkling: a camera does not see it, and it would look like movement)
-		col += vec3(0.9, 0.93, 1.0) * star * night * (1.0 - cloud_cover) * smoothstep(0.02, 0.2, h) * 2.2;
+		float sv = star_vis >= 0.0 ? star_vis : night * (1.0 - cloud_cover);
+		col += vec3(0.9, 0.93, 1.0) * star * sv * smoothstep(0.02, 0.2, h) * 2.2;
 		// clouds: noise on a high plane, moving with the wind
 		vec2 uv = d.xz / (h + 0.06) * 0.55 + wind * TIME;
 		float n = fbm(uv * 1.3);

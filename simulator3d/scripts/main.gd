@@ -301,6 +301,7 @@ var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Z
 var fauna                             # fauna.gd (3D-3.95)
 var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»): wind, light, lures, valuables of the catalogue
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
+var licht                             # licht.gd («Licht & Nacht»): sun, twilight, moon, stars, light pollution, lamps, glare
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
 var colors_on := true
 var tracks                            # tracks.gd (3D-3.98)
@@ -422,6 +423,9 @@ func _ready() -> void:
 	umgebung = preload("res://scripts/umgebung.gd").new()     # 3D-4.x: the surroundings like real (every part can be switched off)
 	umgebung.main = self
 	add_child(umgebung)
+	licht = preload("res://scripts/licht.gd").new()           # «Licht & Nacht»: sky and lights like real
+	licht.main = self
+	add_child(licht)
 	fauna = preload("res://scripts/fauna.gd").new()          # 3D-3.95: birds and bats
 	fauna.main = self
 	add_child(fauna)
@@ -982,6 +986,8 @@ func _build_scene() -> void:
 		umgebung.on_scene()                      # 3D-4.x: neighbour's lamp, puddles, fog wisps, tracks …
 	if szenen != null:
 		szenen.on_scene()                        # 3D-4.x: the neighbours of «Voller Campingplatz»
+	if licht != null:
+		licht.on_scene()                         # «Licht & Nacht»: place lamps, tents, windows of the scene
 	if scene == "ort" and not geo.loaded and not geo.busy and ort_lat != 0.0:
 		geo.load_place(ort_lat, ort_lon, ort_name)      # from the cache or the internet; then place_loaded()
 	if scene == "wild":
@@ -2008,7 +2014,8 @@ func clouds() -> float:
 
 func light_level() -> float:
 	var day: float = clamp((sun_el() + 6.0) / 18.0, 0.0, 1.0)
-	return 0.015 + 0.04 * moon * (1.0 - clouds()) + 0.95 * day * (1.0 - 0.45 * clouds())
+	var night: float = licht.night_level() if licht != null else 0.015 + 0.04 * moon * (1.0 - clouds())   # «Licht & Nacht»: from the lux
+	return night + 0.95 * day * (1.0 - 0.45 * clouds())
 
 
 func is_dark() -> bool:
@@ -2057,7 +2064,7 @@ func _update_sky() -> void:
 	var sky_top := top * k + Color(0.01, 0.015, 0.03) * (1.0 - k)
 	var sky_hor := hor * k + Color(0.02, 0.025, 0.04) * (1.0 - k)
 	sky_mat.set_shader_parameter("top_color", sky_top)
-	if scene in CITY_SCENES:                                # 3D-3.98: light pollution - the night sky glows orange over towns
+	if scene in CITY_SCENES and licht == null:              # 3D-3.98: light pollution - the night sky glows orange over towns (licht.gd: Land / Dorf / Stadt)
 		sky_hor += Color(0.07, 0.045, 0.025) * (1.0 - k) * (0.6 + 0.8 * cl)
 		sky_top += Color(0.012, 0.009, 0.006) * (1.0 - k) * (0.5 + cl)
 	sky_mat.set_shader_parameter("horizon_color", sky_hor)
@@ -2108,6 +2115,8 @@ func _update_sky() -> void:
 			v.set_night(dark)
 	if colors != null:
 		colors.update()                                  # 3D-3.97: season, wet surfaces, blue hour, haze
+	if licht != null:
+		licht.update()                                   # «Licht & Nacht»: moon, stars, night brightness, lamps, low sun
 
 
 func _bg_for(read_value: float) -> Color:
@@ -2664,6 +2673,7 @@ func world_reply() -> Dictionary:
 			"wide": weit.state() if weit != null else null,   # 3D-4.17: the mount of the wide camera (MoveEye 163 at once)
 			"game_live": smalltv.game_live() if smalltv != null else null}   # 3D-4.19: Spiel-Anzeige auf dem SmallTV (MoveEye 552)
 	r["buttons"] = statusled.reply() if statusled != null else null   # die Tasten des Geräts wie ein GPIO (MoveEye 163a)
+	r["sky"] = licht.reply() if licht != null else null   # «Licht & Nacht»: lux am Gerät, Dämmerung, Sonne, Mond (MoveEye liest es noch nicht)
 	if simwerte != null:
 		r.merge(simwerte.reply())                     # Simulator-Werte: battery, pi_temp, net, clock, place, forecast (power.gd)
 	return r
@@ -3205,7 +3215,7 @@ func add_control(type: String, id: String, label: String, getter, setter, group:
 
 # ---- order of the settings: groups with a symbol, parts inside (from 3D-3.5) ------------------------------------------------
 # [group, symbol (window: drawn; page of MoveEye: emoji), parts in their order]
-const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Foto des Platzes", "Zeit"]],
+const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Foto des Platzes", "Zeit", "Licht & Nacht"]],
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
 		["Kamerabild", "lens", "👁", ["", "Weitwinkel-Kamera", "Wärmebild", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
@@ -3227,7 +3237,7 @@ const DEV_IDS := ["dev_updates", "pruef_open", "simint_open"]
 const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "Patrouille"], "patrol_points": ["Mover", "Patrouille"], "patrol_area": ["Mover", "Patrouille"],
 		"patrol_random": ["Mover", "Patrouille"], "patrol_clear": ["Mover", "Patrouille"], "patrol_speed": ["Mover", "Patrouille"], "patrol_dwell": ["Mover", "Patrouille"],
 		"patrol_sweep": ["Mover", "Patrouille"], "patrol_follow": ["Mover", "Patrouille"], "patrol_judge": ["Mover", "Patrouille"],
-"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort von der Karte"], "speed": ["Szene", "Zeit"], "moon": ["Szene", "Zeit"], "moon_auto": ["Szene", "Zeit"], "season": ["Szene", "Zeit"],
+"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort von der Karte"], "speed": ["Szene", "Zeit"], "moon": ["Szene", "Licht & Nacht"], "moon_auto": ["Szene", "Licht & Nacht"], "season": ["Szene", "Zeit"],
 		"cam1_yaw": ["Kamerabild", "Weitwinkel-Kamera"], "humidity": ["Wetter", "Mehr Wetter"], "pressure": ["Wetter", "Mehr Wetter"],
 		"storm": ["Wetter", "Mehr Wetter"], "thunder": ["Wetter", "Mehr Wetter"], "cloud_shadows": ["Wetter", "Mehr Wetter"], "gusts": ["Wetter", "Natur und Wind"],
 		"world_cloth": ["Wetter", "Natur und Wind"], "world_smoke": ["Wetter", "Natur und Wind"], "world_fireflies": ["Wetter", "Natur und Wind"],
@@ -3352,8 +3362,8 @@ func _register_controls() -> void:
 			{"options": [["today", "wie heute (echtes Datum)"], ["1", "Januar"], ["2", "Februar"], ["3", "März"], ["4", "April"], ["5", "Mai"], ["6", "Juni"],
 			["7", "Juli"], ["8", "August"], ["9", "September"], ["10", "Oktober"], ["11", "November"], ["12", "Dezember"]]})
 	add_control("slider", "speed", "Zeit läuft x-fach", func(): return speed, func(v): _set_speed(v), "Szene", {"min": 1, "max": 120, "step": 1, "unit": "×", "expert": true})
-	add_control("toggle", "moon_auto", "Mondphase nach Datum (Licht und Form des Monds)", func(): return moon_auto, func(v): moon_auto = v, "Szene", {"expert": true})
-	add_control("slider", "moon", "Mond", func(): return moon, func(v):
+	add_control("toggle", "moon_auto", "Mondphase automatisch (Ort, Form und Licht des Monds nach Datum und Uhrzeit)", func(): return moon_auto, func(v): moon_auto = v, "Szene", {"expert": true})
+	add_control("slider", "moon", "Mondphase fest: beleuchteter Teil (0 = Neumond, 1 = Vollmond)", func(): return moon, func(v):
 		moon = v
 		moon_auto = false, "Szene", {"min": 0, "max": 1, "step": 0.1, "expert": true})
 	add_control("slider", "cam1_yaw", "Weitwinkel am Mast: Richtung", func(): return cam1_yaw, func(v): cam1_yaw = v, "Szene", {"min": -90, "max": 90, "step": 1, "unit": "°", "expert": true})
@@ -3452,6 +3462,7 @@ func _register_controls() -> void:
 	simreal.add_controls()                                 # 3D-4.4: closer to the real device
 	objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
 	umgebung.add_controls()                                # 3D-4.x: surroundings like real
+	licht.add_controls()                                   # «Licht & Nacht»: light pollution, place lamps, tents / windows
 	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
 	if statusled != null:
 		statusled.add_controls()                           # Licht & Ton → Status-LED & Tasten (Fenster «Gerät»)
@@ -4284,6 +4295,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return objplus.control(d)
 	elif a == "umgebung":                              # 3D-4.x: {do: info | set (key, value) | spawn (kind) | snow_puff | clear_tracks}
 		return umgebung.control(d)
+	elif a == "licht":                                 # «Licht & Nacht»: {do: info | set | sources (cam) | lux | attach | headlights | at}
+		return licht.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
 		return weit.control(d)
 	elif a == "parcours":                              # 3D-4.18: {do: info | start (lessons, night, seed, prep_s) | stop | state | result | game | steer ...}
