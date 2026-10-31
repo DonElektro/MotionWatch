@@ -28,6 +28,24 @@ def _app_place(self):
     v_wide, v_rows, v_ir, v_th = tk.BooleanVar(win, True), tk.BooleanVar(win, False), tk.BooleanVar(win, True), tk.BooleanVar(win, True)
     cb_wide = ttk.Checkbutton(of, variable=v_wide, text="")
     ttk.Checkbutton(of, variable=v_rows, text=tr("Thorough: 3 rows instead of 2 (takes longer)")).pack(anchor="w")
+    hfr = ttk.Frame(of); hfr.pack(anchor="w", pady=(4, 0))          # real-reh-fusspunkt: «Höhe der Kamera (m)» (232 cam_height)
+    v_camh = tk.StringVar(win, "%.2f" % cam_height_cfg())
+
+    def camh_set(*_a):
+        try:
+            v_ = round(float(v_camh.get().replace(",", ".")), 2)
+        except ValueError:
+            return
+        if 0.2 <= v_ <= 10.0 and v_ != CFG.get("cam_height"):
+            CFG["cam_height"] = v_; save_settings()
+            self._status("Camping / protection", "📏 " + tr("Camera height (m)") + f": {v_:.2f}")
+    sp = ttk.Spinbox(hfr, from_=0.2, to=10.0, increment=0.05, textvariable=v_camh, width=6, command=camh_set)
+    sp.pack(side="left"); sp.bind("<FocusOut>", camh_set); sp.bind("<Return>", camh_set)
+    ttk.Label(hfr, text=" " + tr("Camera height (m)")).pack(side="left")
+    _ci = cam_height_info()
+    ttk.Label(of, style="Mut.TLabel", wraplength=760, justify="left",
+              text=tr("Height of the lens above the ground - helps to tell animals from persons at night.")
+              + ((" " + trf("Simulator: camera height {m} m - counts while connected", m="%.2f" % _ci["sim"])) if _ci["sim"] else "")).pack(anchor="w")
     cb_ir = ttk.Checkbutton(of, variable=v_ir, text=tr("with the infrared light"))
     cb_th = ttk.Checkbutton(of, variable=v_th, text=tr("with the thermal camera too"))
     bf = ttk.Frame(top); bf.pack(fill="x", pady=(6, 0))

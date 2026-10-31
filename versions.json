@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 11:58",
+ "generated": "2026-10-31 12:06",
  "versions": [
   {
-   "version": "2.98.94",
-   "file": "webcam_bewegung_2_98_94.py",
+   "version": "2.98.95",
+   "file": "webcam_bewegung_2_98_95.py",
    "url": "",
-   "sha256": "fe7f5595c2c3852ddf747df56af7e432833892bf8a85f404c2ec2f04ddf4e867",
-   "date": "2026-10-31 11:58",
-   "notes": "Simulator 3D-4.63: Bergtal-Abenteuer – Rucksack mit gefundener Ausrüstung, mildes Essen und Trinken, Quellen und Kochen, Tauschen ohne Geld.",
-   "sig": "a46bc8691192072ad8705f206a8b85bf8f3e9fd85d6a4057587ae5214a7f5a095befb2ad478918aaea876ce643528bcb3b82fc7726e0626ec446f1c4590e7d03"
+   "sha256": "70575fbe189b57782fc9ed3018fbb88cd73d560f00d214eb452886299ab4d497",
+   "date": "2026-10-31 12:06",
+   "notes": "Wärmebild: Reh oder Fuchs seitlich gilt nicht mehr als Person (aufrechte Formen bleiben Person); kriechende Personen als «Person?» (flache Box + schwache KI + Spur/Wärme); Feld «Höhe der Kamera» in Platz einrichten. Simulator 3D-4.64: «Stange» heisst «Höhe der Kamera».",
+   "sig": "24e079ad0c2112d0d2b7d364148dfbcffe6fdca5ac55f543adf34367f07c387580cffa82683d5ed0f5aaa0dd89b595aead2479ce040c33af72e3360a0cf06304"
   },
   {
    "version": "2.97.1",

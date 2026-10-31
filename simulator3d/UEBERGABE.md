@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.63** · passende MoveEye-Version (früher Motion Watch) **2.98.94**
+Stand: 31.10.2026 · Simulator-Version **3D-4.64** · passende MoveEye-Version (früher Motion Watch) **2.98.95**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.64 (MoveEye 2.98.95): Wärmebild-Tier, «Person?», «Höhe der Kamera»
+
+- MoveEye (232, 180, 410, Selbsttest 417): Wärmebild-Tier nur bei flacher Form (h/b ≤ 0.8); «Person?» bei flacher Box +
+  KI ≥ 0.15 + Bewegung/Wärme (`weak_person_feed`, Zähler `person_maybe`). Feld «Höhe der Kamera (m)» in Platz einrichten
+  (317, 537, 582); die Simulator-Stange hat Vorrang, solange verbunden.
+- Simulator: «Stange» heisst «Höhe der Kamera» (toolbar, explore, fotomodus, padmap, tour; T.t-Übersetzungen).
 
 ## NEU in 3D-4.63 (MoveEye 2.98.94): Abenteuer-Rucksack (`abenteuer_inventar.gd`, `abenteuer_rucksack.gd`)
 
