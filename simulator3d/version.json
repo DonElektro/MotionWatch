@@ -1,7 +1,7 @@
 {
- "version": "3D-4.42",
+ "version": "3D-4.43",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 67105526,
- "sha256": "1ef1af0af88b9c918caf7616510dcfb27d9898d521964aa92aab552e07620536",
- "notes": "Menschen verhalten sich echter: Gangarten, Familien, Gruppen, Draussen sitzen, WC-Gang mit Taschenlampe, Tagesablauf."
+ "size": 67201697,
+ "sha256": "dac904eea8f51decee8020217b818c57b4b37e320dc162a1d4a1163d87bc1851",
+ "notes": "7 Einbruch-Abläufe mit Bericht: wann MoveEye gewarnt hat, was verpasst wurde."
 }

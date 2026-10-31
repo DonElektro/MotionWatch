@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.43
+3D-4.43: Einbruch-Abläufe: 7 Szenarien (z. B. Auskundschaften und nachts zurück, Ablenkung, Velo-Diebstahl in der Nacht),
+der Dieb nutzt Deckung; am Schluss ein Bericht: wann MoveEye gewarnt hat, was verpasst wurde. Auch im Nacht-Testlauf.
+So testest du: 1) MoveEye verbinden, Schutz an. 2) Testen → Einbruch-Abläufe → «Velo-Diebstahl in der Nacht» → Start.
+3) Am Schluss «Bericht» ansehen.
+
 NEU IN 3D-4.42
 3D-4.42: Menschen verhalten sich echter: Gangarten (gehen, eilen, rennen, schleichen, kriechen), Familien mit kleineren
 Kindern, Gruppen, die stehen bleiben und reden, Draussen sitzen, WC-Gang nachts mit Taschenlampe, Tagesablauf auf dem Platz.

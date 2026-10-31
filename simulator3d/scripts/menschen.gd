@@ -207,6 +207,8 @@ func _testing() -> bool:
 		return true
 	if main.pruef != null and main.pruef.running:
 		return true
+	if main.get("einbruch") != null and main.einbruch.running:     # Einbruch-Abläufe: the thieves get their look from there
+		return true
 	return main.game != null and main.game.round_state in ["countdown", "play"]
 
 

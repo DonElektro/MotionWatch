@@ -1273,6 +1273,12 @@
   "it": "%s Hai %s! Ora all’uscita (arancione) – ma attento alla telecamera.",
   "rm": "%s Ti has %s! Ussa a la sortida (oransch) – ma fa attenziun a la camera."
  },
+ "%s flieht (%s)%s": {
+  "en": "%s runs away (%s)%s",
+  "fr": "%s s’enfuit (%s)%s",
+  "it": "%s fugge (%s)%s",
+  "rm": "%s fugia (%s)%s"
+ },
  "%s fährt durchs Bild (keine Person – MoveEye soll keinen Push senden)": {
   "en": "%s drives through the picture (no person – MoveEye should not send a push)",
   "fr": "%s traverse l’image (pas une personne – MoveEye ne doit pas envoyer de push)",
@@ -1302,6 +1308,12 @@
   "fr": "%s n’a pas marché : %s.\nLe ZIP se trouve ici : %s – à la main : GitHub → Releases → «ki-daten» → Edit → glisser le ZIP, puis Actions → «KI-Modell» → Run workflow.",
   "it": "%s non è riuscito: %s.\nLo ZIP si trova qui: %s – a mano: GitHub → Releases → «ki-daten» → Edit → trascinare lo ZIP, poi Actions → «KI-Modell» → Run workflow.",
   "rm": "%s n’ha betg funcziunà: %s.\nIl ZIP è qua: %s – a maun: GitHub → Releases → «ki-daten» → Edit → trair il ZIP en, lura Actions → «KI-Modell» → Run workflow."
+ },
+ "%s greift zu (%s)": {
+  "en": "%s grabs (%s)",
+  "fr": "%s se sert (%s)",
+  "it": "%s ruba (%s)",
+  "rm": "%s tschiffa (%s)"
  },
  "%s hat das Spiel verlassen": {
   "en": "%s left the game",
@@ -1494,6 +1506,18 @@
   "fr": "%s : cliquer dans le monde",
   "it": "%s: cliccare nel mondo",
   "rm": "%s: cliccar en il mund"
+ },
+ "%s: Licht an – erstarrt, zieht sich zurück": {
+  "en": "%s: light on – freezes, pulls back",
+  "fr": "%s : lumière allumée – se fige, recule",
+  "it": "%s: luce accesa – si blocca, si ritira",
+  "rm": "%s: glisch en – sa fermenta, sa retira"
+ },
+ "%s: wieder dunkel – versucht es nochmals": {
+  "en": "%s: dark again – tries once more",
+  "fr": "%s : de nouveau sombre – réessaie",
+  "it": "%s: di nuovo buio – riprova",
+  "rm": "%s: puspè stgir – emprova anc ina giada"
  },
  "%s: «%s» steht in schnittstelle.json, wird aber nicht gesendet": {
   "en": "%s: «%s» is in schnittstelle.json but is not sent",
@@ -2119,17 +2143,47 @@
   "it": "Allineamento azzerato",
   "rm": "Adattaziun reinizialisada"
  },
+ "Ablauf": {
+  "en": "Run",
+  "fr": "Déroulement",
+  "it": "Svolgimento",
+  "rm": "Decurs"
+ },
+ "Ablenken": {
+  "en": "Distracting",
+  "fr": "Distraire",
+  "it": "Distrarre",
+  "rm": "Distrair"
+ },
+ "Ablenker": {
+  "en": "Distractor",
+  "fr": "Complice qui distrait",
+  "it": "Complice che distrae",
+  "rm": "Distractur"
+ },
  "Ablenkung": {
   "en": "Distraction",
   "fr": "Diversion",
   "it": "Distrazione",
   "rm": "Distracziun"
  },
+ "Ablenkung zu zweit": {
+  "en": "Distraction by two",
+  "fr": "Diversion à deux",
+  "it": "Diversione in due",
+  "rm": "Distracziun en dus"
+ },
  "Abläufe": {
   "en": "Sequences",
   "fr": "Déroulements",
   "it": "Sequenze",
   "rm": "Process"
+ },
+ "Abschnitt": {
+  "en": "Part",
+  "fr": "Étape",
+  "it": "Fase",
+  "rm": "Part"
  },
  "Absperrgitter": {
   "en": "Crowd barrier",
@@ -2328,6 +2382,12 @@
   "fr": "Les %d places pour courir sont prises",
   "it": "Tutti i %d posti per correre sono occupati",
   "rm": "Tut ils %d plazs per currer èn occupads"
+ },
+ "Alle Abläufe nacheinander": {
+  "en": "All runs one after the other",
+  "fr": "Tous les scénarios à la suite",
+  "it": "Tutti gli scenari uno dopo l’altro",
+  "rm": "Tut ils scenaris in suenter l’auter"
  },
  "Alle aufklappen": {
   "en": "Expand all",
@@ -3067,6 +3127,12 @@
   "it": "",
   "rm": ""
  },
+ "Annähern": {
+  "en": "Approach",
+  "fr": "Approche",
+  "it": "Avvicinamento",
+  "rm": "S’avischinar"
+ },
  "Anordnung zurücksetzen": {
   "en": "Reset layout",
   "fr": "Réinitialiser la disposition",
@@ -3517,6 +3583,18 @@
   "it": "Esposto: molto vento, pericoloso con il temporale",
   "rm": "Exponì: bler vent, privlus cun urizi"
  },
+ "Auskundschaften": {
+  "en": "Scouting",
+  "fr": "Repérage",
+  "it": "Sopralluogo",
+  "rm": "Spiunar"
+ },
+ "Auskundschaften und nachts zurück": {
+  "en": "Scouting by day, back at night",
+  "fr": "Repérage de jour, retour la nuit",
+  "it": "Sopralluogo di giorno, ritorno di notte",
+  "rm": "Spiunar dal di, turnar la notg"
+ },
  "Auslöser": {
   "en": "Shutter",
   "fr": "Déclencheur",
@@ -3684,6 +3762,12 @@
   "fr": "Nuit d’entraînement automatique",
   "it": "Notte di addestramento automatica",
   "rm": "Notg da trenament automatica"
+ },
+ "Autos / Zelte prüfen": {
+  "en": "Checking cars / tents",
+  "fr": "Inspecter voitures / tentes",
+  "it": "Controllare auto / tende",
+  "rm": "Controllar autos / tendas"
  },
  "Autos am Strassenrand, Bänke, Hecken, Mauern, Holzstapel, Fässer": {
   "en": "Cars at the roadside, benches, hedges, walls, woodpiles, barrels",
@@ -4177,6 +4261,12 @@
   "it": "Tanica di benzina",
   "rm": "Canister da benzin"
  },
+ "Beobachten": {
+  "en": "Watching",
+  "fr": "Observer",
+  "it": "Osservare",
+  "rm": "Observar"
+ },
  "Beobachter (C)": {
   "en": "Observer (C)",
   "fr": "Observateur (C)",
@@ -4302,6 +4392,12 @@
   "fr": "Rapport de MoveEye",
   "it": "Rapporto di MoveEye",
   "rm": "Rapport da MoveEye"
+ },
+ "Bericht zeigen": {
+  "en": "Show report",
+  "fr": "Afficher le rapport",
+  "it": "Mostra il rapporto",
+  "rm": "Mussar il rapport"
  },
  "Beschlagene Linse (Tau am Morgen, milchiger Schleier)": {
   "en": "Fogged lens (dew in the morning, milky veil)",
@@ -4662,6 +4758,12 @@
   "fr": "Télécharger Blender",
   "it": "Scaricare Blender",
   "rm": "Telechargiar Blender"
+ },
+ "Blick in Autos und Zelte": {
+  "en": "Looking into cars and tents",
+  "fr": "Regard dans les voitures et les tentes",
+  "it": "Sguardo in auto e tende",
+  "rm": "Guardar en autos e tendas"
  },
  "Blickrichtung": {
   "en": "Viewing direction",
@@ -5713,6 +5815,12 @@
   "fr": "S’y ajoutent : ",
   "it": "Si aggiungono: ",
   "rm": "Vegnan latiers: "
+ },
+ "Deckung, Schloss knacken, Velo wegschieben": {
+  "en": "cover, cut the lock, push the bike away",
+  "fr": "à couvert, forcer le cadenas, emmener le vélo",
+  "it": "al riparo, forzare il lucchetto, portare via la bici",
+  "rm": "zuppà, rumper la serrada, stuschar davent il velo"
  },
  "dein Auto, steht still": {
   "en": "your car, stands still",
@@ -7022,11 +7130,35 @@
   "it": "La sorpresa",
   "rm": "La surpraisa"
  },
+ "Dieb": {
+  "en": "Thief",
+  "fr": "Voleur",
+  "it": "Ladro",
+  "rm": "Lader"
+ },
+ "Dieb (hinten)": {
+  "en": "Thief (at the back)",
+  "fr": "Voleur (derrière)",
+  "it": "Ladro (dietro)",
+  "rm": "Lader (davos)"
+ },
  "Dieb (Velo, Tür)": {
   "en": "Thief (bike, door)",
   "fr": "Voleur (vélo, porte)",
   "it": "Ladro (bici, porta)",
   "rm": "Lair (velo, isch)"
+ },
+ "Dieb mit Lampe": {
+  "en": "Thief with a torch",
+  "fr": "Voleur avec lampe",
+  "it": "Ladro con torcia",
+  "rm": "Lader cun cazzola"
+ },
+ "Diebe wie echt: auskundschaften, warten, Licht meiden, Deckung, Ablenkung zu zweit, Flucht. Jeder Ablauf ist ein Zufall mit Seed und findet Ziel und Deckung in jeder Szene selbst. Für Pushes muss der Schutz von MoveEye an sein.": {
+  "en": "Thieves like real ones: scouting, waiting, avoiding light, cover, distraction by two, escape. Every run is random with a seed and finds its target and cover in every scene itself. For pushes the protection of MoveEye must be on.",
+  "fr": "Des voleurs comme en vrai : repérage, attente, éviter la lumière, se cacher, diversion à deux, fuite. Chaque scénario est aléatoire avec un seed et trouve lui-même cible et cachette dans chaque scène. Pour les push, la protection de MoveEye doit être activée.",
+  "it": "Ladri come veri: sopralluogo, attesa, evitare la luce, riparo, diversione in due, fuga. Ogni scenario è casuale con un seed e trova da solo obiettivo e riparo in ogni scena. Per i push la protezione di MoveEye deve essere attiva.",
+  "rm": "Laders sco en vardad: spiunar, spetgar, evitar la glisch, zuppada, distracziun en dus, fugia. Mintga scenari è casual cun in seed e chatta sez la mira e la zuppada en mintga scena. Per push sto la protecziun da MoveEye esser activada."
  },
  "Diebstahl": {
   "en": "Theft",
@@ -7863,6 +7995,54 @@
   "it": "Sovrapposizione: percorso della figura, raggio visivo, curva d’errore (solo per te)",
   "rm": "Surposiziun: via da la figura, radi da vista, curva d’errur (mo per tai)"
  },
+ "Einbruch-Ablauf": {
+  "en": "Break-in run",
+  "fr": "Scénario d’effraction",
+  "it": "Scenario di scasso",
+  "rm": "Scenari d’engular"
+ },
+ "Einbruch-Ablauf läuft: %s (Zufall %d)": {
+  "en": "Break-in run: %s (seed %d)",
+  "fr": "Scénario d’effraction en cours : %s (hasard %d)",
+  "it": "Scenario di scasso in corso: %s (caso %d)",
+  "rm": "Scenari d’engular en funcziun: %s (casualitad %d)"
+ },
+ "Einbruch-Ablauf läuft: %s · %s": {
+  "en": "Break-in run: %s · %s",
+  "fr": "Scénario d’effraction en cours : %s · %s",
+  "it": "Scenario di scasso in corso: %s · %s",
+  "rm": "Scenari d’engular en funcziun: %s · %s"
+ },
+ "Einbruch-Ablauf: %s": {
+  "en": "Break-in run: %s",
+  "fr": "Scénario d’effraction : %s",
+  "it": "Scenario di scasso: %s",
+  "rm": "Scenari d’engular: %s"
+ },
+ "Einbruch-Ablauf: %s · %s": {
+  "en": "Break-in run: %s · %s",
+  "fr": "Scénario d’effraction : %s · %s",
+  "it": "Scenario di scasso: %s · %s",
+  "rm": "Scenari d’engular: %s · %s"
+ },
+ "Einbruch-Abläufe": {
+  "en": "Break-in runs",
+  "fr": "Scénarios d’effraction",
+  "it": "Scenari di scasso",
+  "rm": "Scenaris d’engular"
+ },
+ "Einbruch-Abläufe (auskundschaften, ablenken, stehlen – wann warnt MoveEye?)": {
+  "en": "Break-in runs (scouting, distracting, stealing – when does MoveEye warn?)",
+  "fr": "Scénarios d’effraction (repérage, diversion, vol – quand MoveEye avertit-il ?)",
+  "it": "Scenari di scasso (sopralluogo, diversione, furto – quando avvisa MoveEye?)",
+  "rm": "Scenaris d’engular (spiunar, distrair, engular – cura avertescha MoveEye?)"
+ },
+ "Einbruch-Abläufe: %s": {
+  "en": "Break-in runs: %s",
+  "fr": "Scénarios d’effraction : %s",
+  "it": "Scenari di scasso: %s",
+  "rm": "Scenaris d’engular: %s"
+ },
  "Einbruch-Nacht – Einbrecher, Diebe, Polizei": {
   "en": "Burglary night – burglars, thieves, police",
   "fr": "Nuit de cambriolage – cambrioleurs, voleurs, police",
@@ -8024,6 +8204,12 @@
   "fr": "L’un est le gardien : déclencheur 🎯, lumière, sirène, scan et zoom – avec de l’énergie. Les autres se faufilent. Après chaque manche, le suivant est gardien (si personne ne veut : le gardien-bot).",
   "it": "Uno è il guardiano: scatto 🎯, luce, sirena, scansione e zoom – con energia. Gli altri si avvicinano di soppiatto. Dopo ogni turno il prossimo è guardiano (se nessuno vuole: il guardiano bot).",
   "rm": "In è guardian: sajet 🎯, glisch, sirena, scan e zoom – cun energia. Ils auters sa stulan. Suenter mintga runda è il proxim guardian (sche nagin na vul: il guardian-bot)."
+ },
+ "einer redet vorne am Gerät, der andere stiehlt hinten": {
+  "en": "one talks in front of the device, the other steals at the back",
+  "fr": "l’un parle devant l’appareil, l’autre vole derrière",
+  "it": "uno parla davanti al dispositivo, l’altro ruba dietro",
+  "rm": "in discurra davant l’apparat, l’auter engola davos"
  },
  "Eines zählt an der Hecke, die anderen verstecken sich hinter Hecken, Wohnmobilen und Autos.": {
   "en": "One counts at the hedge, the others hide behind hedges, motorhomes and cars.",
@@ -8416,6 +8602,12 @@
   "it": "Mostrare la scheda del risultato",
   "rm": "Mussar la carta da resultat"
  },
+ "erkannt, aber kein Push": {
+  "en": "detected, but no push",
+  "fr": "détecté, mais pas de push",
+  "it": "rilevato, ma nessun push",
+  "rm": "renconuschì, ma nagin push"
+ },
  "Erkannt: %s  (%s)": {
   "en": "Detected: %s  (%s)",
   "fr": "Détecté : %s  (%s)",
@@ -8560,6 +8752,12 @@
   "it": "Prima notte – La campana senza mucca",
   "rm": "Emprima notg – La stgella senza vatga"
  },
+ "Erster Push": {
+  "en": "First push",
+  "fr": "Premier push",
+  "it": "Primo push",
+  "rm": "Emprim push"
+ },
  "Erwachsene": {
   "en": "Adults",
   "fr": "Adultes",
@@ -8613,6 +8811,12 @@
   "fr": "Il fait déjà nuit.",
   "it": "È già buio.",
   "rm": "Igl è gia stgir."
+ },
+ "Es läuft schon ein Einbruch-Ablauf.": {
+  "en": "A break-in run is already running.",
+  "fr": "Un scénario d’effraction est déjà en cours.",
+  "it": "È già in corso uno scenario di scasso.",
+  "rm": "In scenari d’engular è gia en funcziun."
  },
  "Es läuft schon ein Testlauf.": {
   "en": "A test run is already running.",
@@ -9972,6 +10176,12 @@
   "it": "Abbassato dietro un ombrello",
   "rm": "Bassà davos in parasol"
  },
+ "geduldiger Dieb": {
+  "en": "patient thief",
+  "fr": "voleur patient",
+  "it": "ladro paziente",
+  "rm": "lader paziente"
+ },
  "Gefunden! Der Fuchs staunt.": {
   "en": "Found! The fox is amazed.",
   "fr": "Trouvé ! Le renard est épaté.",
@@ -10062,6 +10272,12 @@
   "it": "",
   "rm": ""
  },
+ "geht normal vorbei, nimmt den Rucksack, geht ruhig weiter": {
+  "en": "walks past normally, takes the backpack, walks calmly on",
+  "fr": "passe normalement, prend le sac à dos, continue calmement",
+  "it": "passa normalmente, prende lo zaino, prosegue tranquillo",
+  "rm": "passa normal, prenda il rucsac, va quietamain vinavant"
+ },
  "Geisterläufer: der eigene beste Weg läuft als Geist mit": {
   "en": "Ghost runner: your own best path runs along as a ghost",
   "fr": "Coureur fantôme : ton meilleur chemin court avec toi en fantôme",
@@ -10079,6 +10295,12 @@
   "fr": "Jaune",
   "it": "Giallo",
   "rm": "Mellen"
+ },
+ "Gelegenheitsdieb": {
+  "en": "Opportunist thief",
+  "fr": "Voleur d’occasion",
+  "it": "Ladro occasionale",
+  "rm": "Lader d’occasiun"
  },
  "Gelände": {
   "en": "Terrain",
@@ -10259,6 +10481,18 @@
   "fr": "Enregistré : %s – joindre ce fichier dans le chat.",
   "it": "Salvato: %s – allegare questo file nella chat.",
   "rm": "Memorisà: %s – agiuntar questa datoteca en il chat."
+ },
+ "gewarnt (kein Griff)": {
+  "en": "warned (no grab)",
+  "fr": "averti (pas de vol)",
+  "it": "avvisato (nessun furto)",
+  "rm": "avertì (nagin tschiffar)"
+ },
+ "gewarnt vor dem Griff": {
+  "en": "warned before the grab",
+  "fr": "averti avant le vol",
+  "it": "avvisato prima del furto",
+  "rm": "avertì avant il tschiffar"
  },
  "Gewartet": {
   "en": "Waited",
@@ -10739,6 +10973,12 @@
   "fr": "gris = stick brut · vert = après correction de dérive · anneau = zone morte %d %%",
   "it": "grigio = stick grezzo · verde = dopo la correzione della deriva · anello = zona morta %d %%",
   "rm": "grisch = stick crud · verd = suenter la correctura dal drift · rintg = zona morta %d %%"
+ },
+ "Griff": {
+  "en": "Grab",
+  "fr": "Vol",
+  "it": "Furto",
+  "rm": "Tschiffar"
  },
  "Grill": {
   "en": "Grill",
@@ -11352,6 +11592,12 @@
   "fr": "Fermer l’indice (désactiver les indices de Blinki : Jeu → Découvrir)",
   "it": "Chiudi il suggerimento (disattivare i suggerimenti di Blinki: Gioco → Scoprire)",
   "rm": "Serrar l’indicaziun (deactivar las indicaziuns da Blinki: Gieu → Scuvrir)"
+ },
+ "Hinweis: der Schutz von MoveEye war aus – ohne Schutz gibt es keine Pushes.": {
+  "en": "Note: the protection of MoveEye was off – without protection there are no pushes.",
+  "fr": "Remarque : la protection de MoveEye était désactivée – sans protection, pas de push.",
+  "it": "Nota: la protezione di MoveEye era spenta – senza protezione non ci sono push.",
+  "rm": "Remartga: la protecziun da MoveEye era deactivada – senza protecziun nagins push."
  },
  "Hinweise und Wetter von weitem sehen.": {
   "en": "See clues and weather from far away.",
@@ -13748,6 +13994,12 @@
   "it": "Campione di strisciata",
   "rm": "Profi da sa trair"
  },
+ "kriecht heran, trägt die Kühlbox geduckt weg": {
+  "en": "crawls up, carries the cool box away crouching",
+  "fr": "s’approche en rampant, emporte la glacière accroupi",
+  "it": "si avvicina strisciando, porta via la borsa frigo chinato",
+  "rm": "sa rampa natiers, porta davent la chascha da fraid sbassà"
+ },
  "Kristalle": {
   "en": "Crystals",
   "fr": "Cristaux",
@@ -13927,6 +14179,12 @@
   "fr": "Glacière",
   "it": "Borsa frigo",
   "rm": "Chista da fraid"
+ },
+ "Kühlbox aus der Deckung": {
+  "en": "Cool box from cover",
+  "fr": "Glacière depuis une cachette",
+  "it": "Borsa frigo dal riparo",
+  "rm": "Chascha da fraid ord la zuppada"
  },
  "Kühlboxen": {
   "en": "Cool boxes",
@@ -14119,6 +14377,12 @@
   "fr": "Long : par l'ancien chemin muletier",
   "it": "Lungo: sulla vecchia mulattiera",
   "rm": "Lung: sur la veglia via da sumarers"
+ },
+ "Lange beobachten, dann zugreifen": {
+  "en": "Watching for long, then grabbing",
+  "fr": "Observer longtemps, puis se servir",
+  "it": "Osservare a lungo, poi rubare",
+  "rm": "Observar ditg, lura tschiffar"
  },
  "Langsam quer durchs Bild": {
   "en": "Slowly across the picture",
@@ -14323,6 +14587,18 @@
   "fr": "Lumière et son",
   "it": "Luce e suono",
   "rm": "Glisch e tun"
+ },
+ "Licht (zweites Mal)": {
+  "en": "light (second time)",
+  "fr": "lumière (deuxième fois)",
+  "it": "luce (seconda volta)",
+  "rm": "glisch (segunda giada)"
+ },
+ "Licht / Ton": {
+  "en": "Light / sound",
+  "fr": "Lumière / son",
+  "it": "Luce / suono",
+  "rm": "Glisch / tun"
  },
  "Licht in der verlassenen Hütte": {
   "en": "Light in the abandoned hut",
@@ -15124,6 +15400,12 @@
   "it": "minuti al posto per dormire.",
   "rm": "minutas al plaz da durmir."
  },
+ "minutenlang in der Deckung, näher, nochmals warten, Griff": {
+  "en": "minutes in cover, closer, waits again, grabs",
+  "fr": "des minutes à couvert, plus près, attend encore, se sert",
+  "it": "minuti al riparo, più vicino, attende ancora, ruba",
+  "rm": "minutas en la zuppada, pli datiers, spetga anc ina giada, tschiffa"
+ },
  "Mischpult": {
   "en": "Mixing desk",
   "fr": "Table de mixage",
@@ -15159,6 +15441,12 @@
   "fr": "Tas de fumier",
   "it": "Letamaio",
   "rm": "Mantun da grascha"
+ },
+ "mit Beute": {
+  "en": "with the loot",
+  "fr": "avec le butin",
+  "it": "con il bottino",
+  "rm": "cun la preda"
  },
  "Mit dem Handy (gleiches WLAN): QR-Code scannen oder %s öffnen": {
   "en": "With the phone (same Wi-Fi): scan the QR code or open %s",
@@ -15478,6 +15766,12 @@
   "it": "MoveEye gira la testa (anche tracking e pattuglia si fermano brevemente).",
   "rm": "MoveEye volva il chau (er il suandar e la patrulla fan curta pausa)."
  },
+ "MoveEye erkennt eine Person": {
+  "en": "MoveEye detects a person",
+  "fr": "MoveEye détecte une personne",
+  "it": "MoveEye rileva una persona",
+  "rm": "MoveEye renconuscha ina persuna"
+ },
  "MoveEye frei aufstellen (Höhe und Richtung frei).": {
   "en": "Set up MoveEye freely (height and direction free).",
   "fr": "Placer MoveEye librement (hauteur et direction libres).",
@@ -15682,6 +15976,12 @@
   "it": "MoveEye non ha potuto avviarsi.",
   "rm": "MoveEye n’ha betg pudì vegnir cumenzà."
  },
+ "MoveEye macht Licht": {
+  "en": "MoveEye switches the light on",
+  "fr": "MoveEye allume la lumière",
+  "it": "MoveEye accende la luce",
+  "rm": "MoveEye fa glisch"
+ },
  "MoveEye meldet": {
   "en": "MoveEye reports",
   "fr": "MoveEye signale",
@@ -15766,6 +16066,12 @@
   "fr": "MoveEye n’était pas connecté",
   "it": "MoveEye non era collegato",
   "rm": "MoveEye n’era betg collià"
+ },
+ "MoveEye war nicht verbunden – nur Ablauf und Sichtbarkeit": {
+  "en": "MoveEye was not connected – only the run and visibility",
+  "fr": "MoveEye n’était pas connecté – seulement le scénario et la visibilité",
+  "it": "MoveEye non era connesso – solo scenario e visibilità",
+  "rm": "MoveEye n’era betg collià – mo scenari e visibladad"
  },
  "MoveEye warnt": {
   "en": "MoveEye warns",
@@ -15857,6 +16163,12 @@
   "it": "MoveEye: annullo la scansione …",
   "rm": "MoveEye: interrumper il scan …"
  },
+ "MoveEye: Ton / Sirene (%s)": {
+  "en": "MoveEye: sound / siren (%s)",
+  "fr": "MoveEye : son / sirène (%s)",
+  "it": "MoveEye: suono / sirena (%s)",
+  "rm": "MoveEye: tun / sirena (%s)"
+ },
  "MoveEye: Vergleich angefordert …": {
   "en": "MoveEye: comparison requested …",
   "fr": "MoveEye : comparaison demandée …",
@@ -15868,6 +16180,12 @@
   "fr": "MoveEye : comparaison avec la référence de jour …",
   "it": "MoveEye: confronto con il riferimento diurno …",
   "rm": "MoveEye: cumparegliaziun cun la referenza dal di …"
+ },
+ "MoveEye: Vorwarnung": {
+  "en": "MoveEye: pre-alarm",
+  "fr": "MoveEye : pré-alarme",
+  "it": "MoveEye: preallarme",
+  "rm": "MoveEye: preavertiment"
  },
  "MoveEye: –": {
   "en": "MoveEye: –",
@@ -16608,6 +16926,12 @@
   "it": "Mucche curiose, gracchi sfacciati, ritrovamenti strani - la valle non si prende sul serio.",
   "rm": "Vatgas curiusas, curnagls malcrudads, chats curius - la val na sa prenda betg uschè serius."
  },
+ "Nicht als Warnung gezählt: %d Sabotage-Pushes (tamper), %d Pushes ohne Dieb im Bild.": {
+  "en": "Not counted as a warning: %d sabotage pushes (tamper), %d pushes without a thief in the picture.",
+  "fr": "Non comptés comme avertissement : %d push de sabotage (tamper), %d push sans voleur dans l'image.",
+  "it": "Non contati come avviso: %d push di sabotaggio (tamper), %d push senza ladro nell'immagine.",
+  "rm": "Betg quintà sco avertiment: %d push da sabotascha (tamper), %d push senza lader en il maletg."
+ },
  "Nicht auf Menschen! Nur Tiere.": {
   "en": "Not at people! Only animals.",
   "fr": "Pas sur les gens ! Seulement les animaux.",
@@ -16758,11 +17082,23 @@
   "it": "Ancora nessuna revisione di allarme – prima riprodurre «Revisione in 3D» per un allarme in MoveEye.",
   "rm": "Anc nagina retrospectiva d’alarm – l’emprim reproducir en MoveEye tar in alarm «Retrospectiva en 3D»."
  },
+ "Noch kein Bericht – zuerst einen Ablauf starten.": {
+  "en": "No report yet – start a run first.",
+  "fr": "Pas encore de rapport – lancez d’abord un scénario.",
+  "it": "Ancora nessun rapporto – avvia prima uno scenario.",
+  "rm": "Anc nagin rapport – cumenzar l’emprim in scenari."
+ },
  "Noch kein Bericht – zuerst einen Testlauf machen.": {
   "en": "No report yet – first do a test run.",
   "fr": "Pas encore de rapport – faire d’abord un test.",
   "it": "Ancora nessun rapporto – prima fare un test.",
   "rm": "Anc nagin rapport – l’emprim far in test."
+ },
+ "Noch kein Einbruch-Ablauf.": {
+  "en": "No break-in run yet.",
+  "fr": "Pas encore de scénario d’effraction.",
+  "it": "Ancora nessuno scenario di scasso.",
+  "rm": "Anc nagin scenari d’engular."
  },
  "noch kein Foto": {
   "en": "no photo yet",
@@ -18223,6 +18559,36 @@
   "it": "Tabella dei punti: %s",
   "rm": "Tabella da puncts: %s"
  },
+ "Push": {
+  "en": "Push",
+  "fr": "Push",
+  "it": "Push",
+  "rm": "Push"
+ },
+ "Push %.0f s vor dem Griff": {
+  "en": "push %.0f s before the grab",
+  "fr": "push %.0f s avant le vol",
+  "it": "push %.0f s prima del furto",
+  "rm": "push %.0f s avant il tschiffar"
+ },
+ "Push von MoveEye (%s)": {
+  "en": "Push from MoveEye (%s)",
+  "fr": "Push de MoveEye (%s)",
+  "it": "Push di MoveEye (%s)",
+  "rm": "Push da MoveEye (%s)"
+ },
+ "Push von MoveEye (%s) – kein Dieb im Bild (Fehlalarm?)": {
+  "en": "Push from MoveEye (%s) – no thief in the picture (false alarm?)",
+  "fr": "Push de MoveEye (%s) – aucun voleur dans l'image (fausse alerte ?)",
+  "it": "Push di MoveEye (%s) – nessun ladro nell'immagine (falso allarme?)",
+  "rm": "Push da MoveEye (%s) – nagin lader en il maletg (fals alarm?)"
+ },
+ "Push von MoveEye (tamper) – Sabotage-Meldung, zählt nicht als Warnung": {
+  "en": "Push from MoveEye (tamper) – sabotage report, does not count as a warning",
+  "fr": "Push de MoveEye (tamper) – alerte sabotage, ne compte pas comme avertissement",
+  "it": "Push di MoveEye (tamper) – segnalazione di sabotaggio, non conta come avviso",
+  "rm": "Push da MoveEye (tamper) – annunzia da sabotascha, na quinta betg sco avertiment"
+ },
  "Pushes richtig %d / falsch %d": {
   "en": "Pushes right %d / wrong %d",
   "fr": "Push justes %d / faux %d",
@@ -18764,6 +19130,12 @@
   "it": "Zaino 70 L",
   "rm": "Sacados 70 L"
  },
+ "Rucksack im Vorbeigehen": {
+  "en": "Backpack in passing",
+  "fr": "Sac à dos en passant",
+  "it": "Zaino al passaggio",
+  "rm": "Rucksac en il passar"
+ },
  "Rucksack packen": {
   "en": "Pack the backpack",
   "fr": "Faire le sac",
@@ -18871,6 +19243,12 @@
   "fr": "Manche en cours",
   "it": "Turno in corso",
   "rm": "Runda en cursa"
+ },
+ "Runde mit Taschenlampe, Türgriff probieren, nichts gefunden": {
+  "en": "a round with a torch, tries a door handle, finds nothing",
+  "fr": "une ronde à la lampe de poche, essaie une poignée, ne trouve rien",
+  "it": "un giro con la torcia, prova una maniglia, non trova niente",
+  "rm": "ina runda cun la cazzola, emprova il manetsch, na chatta nagut"
  },
  "Runde um Runde gegen den KI-Wächter (MoveEye, sonst der Bot-Wächter) – jede Stufe schwerer. Eigene Rangliste «gegen die KI».": {
   "en": "Round after round against the AI guard (MoveEye, otherwise the bot guard) – every floor harder. Own ranking «against the AI».",
@@ -19932,6 +20310,12 @@
   "it": "Settembre",
   "rm": "Settember"
  },
+ "Serie: %d Abläufe, %d vor dem Griff gewarnt, Note im Mittel %.1f": {
+  "en": "Series: %d runs, %d warned before the grab, average grade %.1f",
+  "fr": "Série : %d scénarios, %d avertis avant le vol, note moyenne %.1f",
+  "it": "Serie: %d scenari, %d avvisati prima del furto, voto medio %.1f",
+  "rm": "Seria: %d scenaris, %d avertids avant il tschiffar, nota media %.1f"
+ },
  "Servo blockiert am Anschlag": {
   "en": "Servo blocked at the stop",
   "fr": "Servo bloqué en butée",
@@ -20315,6 +20699,12 @@
   "fr": "Promenade : flâne, s’arrête, regarde autour",
   "it": "Passeggiata: gironzola, si ferma, si guarda intorno",
   "rm": "Spassegiada: va plaun, sa ferma, guarda enturn"
+ },
+ "Spaziergänger": {
+  "en": "Walker",
+  "fr": "Promeneur",
+  "it": "Passante",
+  "rm": "Spassegiader"
  },
  "Speicherplatz für Aufnahmen": {
   "en": "",
@@ -21403,6 +21793,12 @@
   "it": "Ora del giorno",
   "rm": "Temp dal di"
  },
+ "Tageszeit des Ablaufs (tagsüber auskundschaften, nachts zurück) – sonst die jetzige Zeit": {
+  "en": "Time of day of the run (scouting by day, back at night) – else the current time",
+  "fr": "Heure du scénario (repérage de jour, retour la nuit) – sinon l’heure actuelle",
+  "it": "Ora dello scenario (sopralluogo di giorno, ritorno di notte) – altrimenti l’ora attuale",
+  "rm": "Ura dal scenari (spiunar dal di, turnar la notg) – uschiglio l’ura actuala"
+ },
  "Tags: ": {
   "en": "",
   "fr": "",
@@ -21426,6 +21822,12 @@
   "fr": "le jour environ 30 m",
   "it": "di giorno circa 30 m",
   "rm": "dal di circa 30 m"
+ },
+ "tagsüber vorbeigehen und schauen, nachts zurück, beobachten, zugreifen": {
+  "en": "walks past by day and looks, comes back at night, watches, grabs",
+  "fr": "passe de jour et regarde, revient la nuit, observe, se sert",
+  "it": "passa di giorno e guarda, torna di notte, osserva, ruba",
+  "rm": "passa dal di e guarda, returna la notg, observa, tschiffa"
  },
  "Talstation Materialseilbahn (innen)": {
   "en": "Goods cable car valley station (inside)",
@@ -22244,6 +22646,12 @@
   "it": "Orologio",
   "rm": "Ura"
  },
+ "Uhr: %s": {
+  "en": "Clock: %s",
+  "fr": "Heure : %s",
+  "it": "Ora: %s",
+  "rm": "Ura: %s"
+ },
  "Uhrzeit": {
   "en": "Time",
   "fr": "Heure",
@@ -22327,6 +22735,12 @@
   "fr": "aide IA inconnue : ",
   "it": "aiuto IA sconosciuto: ",
   "rm": "agid IA nunenconuschent: "
+ },
+ "Unbekannter Ablauf.": {
+  "en": "Unknown run.",
+  "fr": "Scénario inconnu.",
+  "it": "Scenario sconosciuto.",
+  "rm": "Scenari nunenconuschent."
  },
  "unbekannter Inhalt": {
   "en": "unknown content",
@@ -22496,6 +22910,12 @@
   "it": "",
   "rm": ""
  },
+ "Urteil": {
+  "en": "Verdict",
+  "fr": "Verdict",
+  "it": "Giudizio",
+  "rm": "Giudicament"
+ },
  "Vase": {
   "en": "Vase",
   "fr": "Vase",
@@ -22525,6 +22945,12 @@
   "fr": "Remorque de vélo",
   "it": "Rimorchio per bici",
   "rm": "Char da velo"
+ },
+ "Velo-Diebstahl in der Nacht": {
+  "en": "Bike theft at night",
+  "fr": "Vol de vélo la nuit",
+  "it": "Furto di bicicletta di notte",
+  "rm": "Engular in velo la notg"
  },
  "Velo-Platz": {
   "en": "Bike spot",
@@ -22765,6 +23191,24 @@
   "fr": "Pertes",
   "it": "Perdite",
   "rm": "Perditas"
+ },
+ "Verpasst": {
+  "en": "Missed",
+  "fr": "Manqué",
+  "it": "Mancato",
+  "rm": "Manchentà"
+ },
+ "verpasst – nichts gemerkt": {
+  "en": "missed – noticed nothing",
+  "fr": "manqué – rien remarqué",
+  "it": "mancato – non ha notato niente",
+  "rm": "manchentà – n’ha remartgà nagut"
+ },
+ "verpasst: %s": {
+  "en": "missed: %s",
+  "fr": "manqué : %s",
+  "it": "mancato: %s",
+  "rm": "manchentà: %s"
  },
  "verschieben (links / rechts, 2 m)": {
   "en": "move (left / right, 2 m)",
@@ -23180,6 +23624,12 @@
   "it": "Furtivo prudente (da riparo a riparo, striscia, si blocca alla luce, lampada spenta)",
   "rm": "Sfugider precaut (da cuvrida a cuvrida, sa tira, s’inschelescha en la glisch, lampa stizzada)"
  },
+ "Vorwarnung": {
+  "en": "Pre-alarm",
+  "fr": "Pré-alarme",
+  "it": "Preallarme",
+  "rm": "Preavertiment"
+ },
  "Vögel am Tag, Fledermäuse in der Nacht (warm im Wärmebild, typische Fehlalarm-Ursache)": {
   "en": "Birds by day, bats at night (warm in the thermal image, typical cause of false alarms)",
   "fr": "Oiseaux le jour, chauves-souris la nuit (chauds dans l’image thermique, cause typique de fausses alarmes)",
@@ -23569,6 +24019,12 @@
   "fr": "Chemin (2 clics)",
   "it": "Sentiero (2 clic)",
   "rm": "Senda (2 clics)"
+ },
+ "Weg / Flucht": {
+  "en": "Away / escape",
+  "fr": "Départ / fuite",
+  "it": "Via / fuga",
+  "rm": "Davent / fugia"
  },
  "Wege": {
   "en": "Paths",
@@ -24761,6 +25217,12 @@
   "it": "tempo scaduto",
   "rm": "il temp è passà"
  },
+ "Zeit um (15 Minuten) – abgebrochen.": {
+  "en": "Time is up (15 minutes) – stopped.",
+  "fr": "Temps écoulé (15 minutes) – interrompu.",
+  "it": "Tempo scaduto (15 minuti) – interrotto.",
+  "rm": "Il temp è passà (15 minutas) – interrut."
+ },
  "Zeitüberschreitung": {
   "en": "Timeout",
   "fr": "Délai dépassé",
@@ -25073,6 +25535,12 @@
   "it": "troppo tardi in vetta",
   "rm": "memia tard sin il piz"
  },
+ "zu spät gewarnt (erst nach dem Griff)": {
+  "en": "warned too late (only after the grab)",
+  "fr": "averti trop tard (seulement après le vol)",
+  "it": "avvisato troppo tardi (solo dopo il furto)",
+  "rm": "avertì memia tard (pir suenter il tschiffar)"
+ },
  "Zu steil (%d°) – %d m daneben ist es flach genug.": {
   "en": "Too steep (%d°) – %d m away it is flat enough.",
   "fr": "Trop raide (%d°) – à %d m, c'est assez plat.",
@@ -25132,6 +25600,18 @@
   "fr": "Va d’abord à un point de vue (voyage rapide ou en volant) – il y a une longue-vue ou des jumelles.",
   "it": "Prima vai a un belvedere (viaggio rapido o in volo) – lì c’è un cannocchiale o un binocolo.",
   "rm": "L’emprim ir en in punct da vista (viadi svelt u sgulond) – là datti in telescop u in binocul."
+ },
+ "Zufall": {
+  "en": "Seed",
+  "fr": "Hasard",
+  "it": "Caso",
+  "rm": "Casualitad"
+ },
+ "Zufall (Seed, 0 = jedes Mal neu)": {
+  "en": "Seed (0 = new every time)",
+  "fr": "Hasard (seed, 0 = nouveau à chaque fois)",
+  "it": "Caso (seed, 0 = nuovo ogni volta)",
+  "rm": "Casualitad (seed, 0 = mintga giada nov)"
  },
  "Zufallsereignisse (Gewitter, Hund, Auto)": {
   "en": "Random events (thunderstorm, dog, car)",
@@ -25805,6 +26285,12 @@
   "it": "⏰ Ancora 20 secondi!",
   "rm": "⏰ Anc 20 secundas!"
  },
+ "⏹ Ablauf abbrechen": {
+  "en": "⏹ Stop the run",
+  "fr": "⏹ Interrompre le scénario",
+  "it": "⏹ Interrompi lo scenario",
+  "rm": "⏹ Interrumper il scenari"
+ },
  "⏹ Nacht-Testlauf abbrechen": {
   "en": "⏹ Abort the night test run",
   "fr": "⏹ Interrompre le test de nuit",
@@ -25828,6 +26314,18 @@
   "fr": "■ Arrêter l’enregistrement et sauvegarder",
   "it": "■ Terminare la registrazione e salvare",
   "rm": "■ Terminar la registraziun e memorisar"
+ },
+ "▶ Ablauf starten (Bewertung: wann warnt MoveEye?)": {
+  "en": "▶ Start the run (rating: when does MoveEye warn?)",
+  "fr": "▶ Lancer le scénario (évaluation : quand MoveEye avertit-il ?)",
+  "it": "▶ Avvia lo scenario (valutazione: quando avvisa MoveEye?)",
+  "rm": "▶ Cumenzar il scenari (valitaziun: cura avertescha MoveEye?)"
+ },
+ "▶ Alle Abläufe nacheinander (etwa 20 Minuten)": {
+  "en": "▶ All runs one after the other (about 20 minutes)",
+  "fr": "▶ Tous les scénarios à la suite (environ 20 minutes)",
+  "it": "▶ Tutti gli scenari di seguito (circa 20 minuti)",
+  "rm": "▶ Tut ils scenaris in suenter l’auter (var 20 minutas)"
  },
  "▶ Aufnahme abspielen (genau gleich wie aufgenommen)": {
   "en": "▶ Play recording (exactly as recorded)",
