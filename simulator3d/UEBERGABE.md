@@ -1,8 +1,24 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.26** · passende MoveEye-Version (früher Motion Watch) **2.98.57**
+Stand: 31.10.2026 · Simulator-Version **3D-4.27** · passende MoveEye-Version (früher Motion Watch) **2.98.58**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.27 (MoveEye 2.98.58): Entdecken (`entdecken.gd`, Erlebniswelt 20–23)
+
+- **API** `main.entdecken`: `register(id, info)` während des Szenenbaus (main `_build_scene` ruft vorher `begin_scene`, danach
+  `on_scene`), `mark_found`, `is_found`, `count`, `total`, `possible_now`, `list`, `reset`, `forget`, `take_photo`, `show_hint`,
+  `open_book`; Signal `found(id)`. `info`: title, short_text, hint, icon, position/node, size, radius, when (night/day/morning/
+  evening/rain/dry/snow/fog, Array = alle), kind (ort/szene/tier/mensch), photo_required, active (Callable), los, demo.
+  **ids szenenübergreifend eindeutig** (`<szene>.<name>`). Ganze Tabelle: Zweig-Doku REAL_ENTDECKEN.md (Kopf von entdecken.gd).
+- Gefunden per Ansicht (näher als radius, im Bild, Sichtlinie, 0.5 s) oder Foto der Kopfkamera (ganze Kiste im Bild, ≥ 22 px).
+  Gespeichert `user://entdecken.json`, Bilder `user://entdecken/<szene>/<id>.jpg`. /control `entdecken` (info/open/photo/mark/
+  reset/hint/set/where/register/unregister/forget), Bild `GET /disc_pic/<i>.jpg`.
+- Buch = «Mehr»-Fenster (Symbol `book`, neu gezeichnet in `ui_style.gd group_icon`, Kachel «Entdeckungen» unter Spielen mit Buch
+  statt Stern – wie 📖 in MoveEye). **Blinki-Hinweis im Fensterrahmen** (`entdecken.join_fenster(fenster)`, id «blinki»):
+  Häkchen in «Fenster» = Einstellung «Blinki-Hinweise» (kein zweiter Schalter), ✕ des Rahmens schaltet sie aus.
+- Lite: `entdecken._lite()` = `Quality.lite()` (Bilder 128 × 72, Prüfung 2× statt 4× pro Sekunde).
+- MoveEye (139, 550, 639g): Kachel 📖 Entdeckungen in der Simulator-Zentrale (Blatt, Foto, im Simulator öffnen, Blinki-Hinweis).
 
 ## NEU in 3D-4.26 (MoveEye 2.98.57): Fenster im gemeinsamen Rahmen (`fenster.gd`)
 

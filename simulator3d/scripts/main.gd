@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.26"
+const VERSION := "3D-4.27"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const CAM_W := [960, 640]
@@ -299,6 +299,7 @@ var weit                              # weitwinkel.gd (3D-4.17): camera 1 = the 
 var parcours                          # parcours.gd (3D-4.18): «Verfolgungs-Parcours» - lessons, ground truth, game «Entkomme der Kamera»
 var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Zwilling» - photo / panorama of the real place
 var fauna                             # fauna.gd (3D-3.95)
+var entdecken                         # entdecken.gd (Erlebniswelt 20–23): register() / mark_found() / is_found() / count() of the scenes
 var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»): wind, light, lures, valuables of the catalogue
 var gelaende                          # gelaende.gd (3D-4.x real-gelaende): hills and hollows, paths, cloud shadows (vegetation.gd: plants)
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
@@ -465,6 +466,9 @@ func _ready() -> void:
 	gelaende = preload("res://scripts/gelaende.gd").new()   # 3D-4.x: before the first scene (it asks for the hills)
 	gelaende.main = self
 	add_child(gelaende)
+	entdecken = preload("res://scripts/entdecken.gd").new()   # Erlebniswelt 20–23: Entdeckungsbuch, Blinki-Hinweise, Fotomodus (before the scene registers)
+	entdecken.main = self
+	add_child(entdecken)
 	_build_world()
 	_build_head()
 	_build_viewports()
@@ -522,6 +526,8 @@ func _ready() -> void:
 	fenster.main = self
 	add_child(fenster)
 	fenster.setup_sim()
+	if entdecken != null:
+		entdecken.join_fenster(fenster)              # 3D-4.27: the Blinki hint in the same frame
 	mwpc.changed.connect(_on_mwpc)
 	_on_mwpc()
 	next_update_check = now() + UPDATE_EVERY
@@ -976,7 +982,11 @@ func _build_scene() -> void:
 	ground_mats.clear()
 	geo_note = ""
 	gelaende.reset()                             # 3D-4.x: flat until the scene asks for hills (gelaende.setup_relief)
+	if entdecken != null:
+		entdecken.begin_scene(scene)             # Erlebniswelt: the discoveries of the old scene go, the new scene registers its own
 	scenes.build(scene, scene_parent)
+	if entdecken != null:
+		entdecken.on_scene()                     # ... and the demo set of «Camping-Platz»
 	for n in flat_nodes:
 		n.visible = not terrain
 	gelaende.on_scene()
@@ -3227,7 +3237,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Foto des 
 		["Sensoren", "bell", "🔔", ["", "Strom", "Netz", "Zusatz-Bildschirm (SmallTV)"]],
 		["Mover", "track", "🚜", ["", "Patrouille", "Controller"]],
 		["Licht & Ton", "sun", "💡", ["", "Status-LED & Tasten", "Lautsprecher"]],      # 3D-4.22: «Lautsprecher» here like MoveEye (was «Sensoren»)
-		["Spiel", "pad", "🎮", ["", "Assistent"]],
+		["Spiel", "pad", "🎮", ["", "Entdecken", "Assistent"]],        # Erlebniswelt 20–23: «Entdecken» (entdecken.gd) on the card
 		["Wildtier", "target", "🎯", [""]],
 		["Testen", "check", "✅", ["", "Verfolgungs-Parcours", "Störungen"]],
 		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates", "Sicherheit / Benutzer"]],
@@ -3277,6 +3287,9 @@ const SIMPLE_GROUPS := ["Szene", "Wetter", "Besuch", "Testen", "Spiel"]
 # setting of the game is only in the assistant (gamewiz.gd). Those controls stay (control API, saved settings) but get
 # extra «wiz»: not in this panel and not in the Simulator control of MoveEye.
 const GAME_MAIN := ["game_wizard", "game_start", "game_stop"]
+# Erlebniswelt 20–23 (entdecken.gd): the part «Entdecken» stays on the card «Spiel» (not in the assistant); the first three in «Einfach»
+const DISC_IDS := ["disc_book", "disc_photo", "disc_hints", "disc_hint_min", "disc_demo"]
+const DISC_SIMPLE := ["disc_book", "disc_photo", "disc_hints"]
 # 3D-4.7: a fixed id per group for MoveEye (the visible names may change); sent as «gid» with every control
 const GROUP_IDS := {"Szene": "scene", "Wetter": "weather", "Besuch": "visit", "Kamerabild": "camera", "Sensoren": "sensors", "Mover": "mover", "Licht & Ton": "lightsound",
 		"Spiel": "game", "Wildtier": "wildlife", "Testen": "testrun", "System": "system", "Entwickler": "dev"}
@@ -3287,7 +3300,7 @@ func _simple_ok(c: Dictionary) -> bool:
 	"""3D-3.90: what «Einfach» shows - scene, time, weather, visitors (the inventory picks the single ones), the test run and
 	the game assistant; everything else is «Experte»"""
 	if c.group == "Spiel":
-		return c.id in GAME_MAIN
+		return c.id in GAME_MAIN or c.id in DISC_SIMPLE
 	if c.id == "mast_h":
 		return true                                   # 3D-4.x: the height of the pole - easy to find (wish of Daniel)
 	if c.group == "System":
@@ -3320,7 +3333,9 @@ func _order_controls() -> void:
 		if c.id in DEV_IDS:
 			c.extra["sub"] = "Updates" if c.id == "dev_updates" else ""
 		if c.group == "Spiel":                            # 3D-4.7: only open / start / stop on the card, the rest in the assistant
-			if c.id in GAME_MAIN:
+			if c.id in DISC_IDS:
+				c.extra["sub"] = "Entdecken"           # Erlebniswelt 20–23: its own part on the card
+			elif c.id in GAME_MAIN:
 				c.extra["sub"] = ""                    # straight on the card (no part «Runde» any more)
 			else:
 				c.extra["wiz"] = true
@@ -3545,6 +3560,7 @@ func _register_controls() -> void:
 	add_control("toggle", "game_open", "Spiel öffnen (Handys können mitspielen)", func(): return game.open, func(v): game.set_open(v), "Spiel")
 	add_control("button", "game_start", "▶ Start", null, func(): _game_card_start(), "Spiel")
 	add_control("button", "game_stop", "⏹ Stopp", null, func(): _game_card_stop(), "Spiel")
+	entdecken.register_controls()                       # Erlebniswelt 20–23: Spiel → Entdecken (Buch, Foto, Blinki-Hinweise)
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
 			{"options": [["mw", "Gegen MoveEye (echte Erkennung)"], ["guard", "Wächter (ein Spieler oder der Bot-Wächter)"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"], ["free", "Zonen-Check – ohne Erwischen (zum Testen der Erkennung)"], ["jaeger", "Fehlalarm-Jäger – Tiere und Dinge täuschen MoveEye (nur mit MoveEye)"], ["camera", "ältere: Alle gegen die Kamera"], ["mwhand", "ältere: Team gegen MoveEye (Wächter steuern MoveEye)"], ["patrol", "ältere: Patrouille mit dem Mover"]]})
@@ -4370,6 +4386,8 @@ func _control(d: Dictionary) -> Dictionary:
 		elif op_ == "morning":
 			surprise.morning()
 		return {"ok": true, "surprise": surprise.info()}
+	elif a == "entdecken":                             # Erlebniswelt 20–23: {do: info | open | close | photo | mark (id) | reset | hint | set | where (id)}
+		return entdecken.control(d) if entdecken != null else {"ok": false, "error": "no entdecken"}
 	elif a == "mehr":                                  # 3D-4.2x: «Mehr» (tests): {"do": open | theme | tour | diag | log | fb_* | shot}
 		return mehr.control(d) if mehr != null else {"ok": false, "error": "not ready"}
 	elif a == "feedback":                              # MoveEye 2.98.33: the dialog «Rückmeldung» (tests: {text, kind, stars, shot})

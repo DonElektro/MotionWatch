@@ -1,7 +1,7 @@
 {
- "version": "3D-4.26",
+ "version": "3D-4.27",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 64637396,
- "sha256": "3c81a8b691cdf3817fbc86021dd57500481690e0859c3aa91391e3f20128634e",
- "notes": "Alle schwebenden Fenster (Kompass, Karte, Livebild, SmallTV, Gerät, Mover, Kopf, Kameras, CPU) in einem gemeinsamen Rahmen: verschieben, Grösse ändern, ✕ ausblenden, Schnappen; neuer Knopf «Fenster» in der Leiste unten (Liste, «Anordnung zurücksetzen»); die Anordnung bleibt gespeichert."
+ "size": 64732969,
+ "sha256": "08dfbee365fb8e95b66e0452412984a9015af9535bed7ab99ade578f8dc9dbd9",
+ "notes": "Entdecken: Entdeckungsbuch (Spielen → Entdeckungen), Geheimnisse je Szene finden durch Hinschauen oder Foto von MoveEyes Kopfkamera, nur nachts / bei Regen / am Morgen, leise Blinki-Hinweise; Demo im Camping-Platz."
 }

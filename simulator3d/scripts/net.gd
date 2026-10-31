@@ -264,6 +264,13 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 				else:
 					_send(c, 200, sj, "image/jpeg")
 				return
+			if parts.size() == 2 and parts[0] == "disc_pic":    # Erlebniswelt 20–23: the picture of entry <i> of the Entdeckungsbuch (this scene)
+				var dj: PackedByteArray = main.entdecken.pic_bytes(str(query.get("scene", "")), int(parts[1].get_basename())) if main.entdecken != null else PackedByteArray()
+				if dj.is_empty():
+					_json(c, {"ok": false, "error": "no picture"}, 404)
+				else:
+					_send(c, 200, dj, "image/jpeg")
+				return
 			if parts.size() == 2 and parts[0] == "game_pic":    # the «caught» photos (3D-3.25)
 				var gj: PackedByteArray = main.game.gallery_jpg(int(parts[1].get_basename())) if main.game != null else PackedByteArray()
 				if gj.is_empty():
