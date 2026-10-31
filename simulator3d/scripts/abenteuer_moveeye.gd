@@ -36,7 +36,7 @@ extends Node
 ##   P["a1_sammlung"] {tier: {n, best (foto id), punkte, datum}}     P["a1_hinweise"] {"<kapitel>": {ziel, richtung, bild, mw}}
 ##   P["a1_aufgaben"] {id: "gegeben" | "erfuellt"}                   R["a1"] die laufende Nacht (modus, sichern, fuchs, licht …)
 ## Steuerbefehl: {"action": "abenteuer", "do": "a1", "was": state | modus (value) | sichern (value) | auswerten (id, tier) |
-##               tag | sammlung | wertung (id) | aufgabe (id) | reset}
+##               tag | sammlung (mit fotos) | wertung (id) | aufgabe (id) | reset}
 ## Gegenstände: über das Inventar von A4 (abenteuer_inventar.gd: hat / anzahl / nimm), solange es fehlt direkt R["items"].
 ## Lite: weniger und kleinere Aufnahmen, das Licht am Berg ohne echte Lichtquelle (Quality.lite()).
 
@@ -1306,7 +1306,8 @@ func op(d: Dictionary) -> Dictionary:
 		"tag":
 			out = tag_start()
 		"sammlung":
-			out = {"ok": true, "sammlung": sammlung(), "offen": offen().size(), "aufgaben": aufgaben(), "hinweise": ab.P.get("a1_hinweise", {})}
+			out = {"ok": true, "sammlung": sammlung(), "offen": offen().size(), "aufgaben": aufgaben(), "hinweise": ab.P.get("a1_hinweise", {}),
+					"fotos": fotos().map(func(f): return {"id": f["id"], "tier": f["tier"], "bestimmt": f["bestimmt"], "mw": f["mw"], "wertung": foto_wertung(f)})}
 		"wertung":
 			out = {"ok": false}
 			for f in fotos():
