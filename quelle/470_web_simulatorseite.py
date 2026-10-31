@@ -1508,7 +1508,7 @@ $("#d-link").textContent = t("Link for the PC browser") + ": " + location.origin
   document.querySelectorAll("details.fold").forEach(d => { if (o && d.dataset.k in o) d.open = !!o[d.dataset.k];
     d.addEventListener("toggle", () => { const m = {}; document.querySelectorAll("details.fold").forEach(x => m[x.dataset.k] = x.open);
       try { localStorage.setItem("mw-sim-fold", JSON.stringify(m)); } catch (e) {} }); }); })();
-(async () => { await initAppearance(); load(); })();
+(async () => { await initAppearance(); load(); if (location.hash === "#gw") setTimeout(() => gwOpen(), 400); })();   // 639i: «Spielen» → game wizard
 /*ALERTS*/
 </script></body></html>
 """

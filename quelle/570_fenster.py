@@ -1123,7 +1123,7 @@ class App:
         t_.config(state="disabled")
 
     def _tabs(self):
-        """2.98.14: the same 6 tabs as the web page: Live · Schutz · Verlauf · Einstellungen · Simulator · Mehr"""
+        """2.98.14: the same tabs as the web page: Live · Schutz · Verlauf · Einstellungen · Simulator · Spielen (639i) · Mehr"""
         return [(k, lab) for k, _h, lab, _s in NAV_ITEMS]
 
     def _build_header(self):
@@ -1460,6 +1460,8 @@ class App:
             self.h_text.tag_configure("t", font=("DejaVu Sans", 10, "bold")); self.h_text.tag_configure("m", foreground=C["mut"])
             self.h_text.tag_configure("tip", foreground=C["txt"], lmargin1=26, lmargin2=26, font=("DejaVu Sans", 9))
             self._h_sig = None; self._update_health()
+        elif self.tab == "play":                          # 639i: «Spielen» = adventures, badges, level, Blinki (from the simulator)
+            self._tk_play_tab(left)
         else:                                             # 2.98.14: «Verlauf» = the event log + recordings, diary, messages
             self._tk_history_bar(left).grid(row=1, column=0, sticky="ew", pady=(10, 0))
             logf = self._card(left, tr("EVENT LOG") + " · " + tr("important")); logf.grid(row=0, column=0, sticky="nsew")

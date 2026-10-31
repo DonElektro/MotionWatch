@@ -412,6 +412,7 @@ SIMHUB_JS = r"""
     if (!HASHED && (location.hash === "#c-test" || location.hash === "#c-stoer") && document.getElementById("tr-box")) { HASHED = 1; open = "tests"; }   // 2.98.23: old links to the test run
     if (!HASHED && location.hash === "#c-parc" && H.parc) { HASHED = 1; open = "parc"; }   // 416: the window opens the tile 🎯
     if (!HASHED && location.hash === "#c-nacht" && H.nacht) { HASHED = 1; open = "nacht"; }   // 579b: the tile 🌙
+    if (!HASHED && location.hash === "#c-disc" && H.disc) { HASHED = 1; open = "disc"; }   // 639i: «Spielen» → the tile 📖
     const ae = document.activeElement;
     if (!ae || (ae.type !== "range" && !(ae.closest && ae.closest("#tr-box")))) paintAll(); }
   document.addEventListener("DOMContentLoaded", () => { load(); setInterval(load, 6000); });
