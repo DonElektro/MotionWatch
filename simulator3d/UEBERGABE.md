@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.6.1** · MoveEye **3.6.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.6.2** · MoveEye **3.6.2** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.6.2 (MoveEye 3.6.2): Fehlerkorrekturen MoveEye (nur MoveEye)
+
+- Simulator-Code unverändert. MoveEye: 060, 130, 139, 180, 232 (`thermal_ai_checked`, Signatur `veto=(), ai=None` neben
+  E1 `thermal_vehicle_step`), 410, 417, 635a, 635b, 639i; `bauen.py` bricht über 8 MiB ab und warnt ab 7,5 MiB.
 
 ## NEU in 3.6.1 (MoveEye 3.6.1): Sicherheit und Fehler im Simulator
 

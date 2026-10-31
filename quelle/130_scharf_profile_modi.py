@@ -53,15 +53,22 @@ def disarm():
     arm_tick()
 
 
+_ARM_LOCK = threading.Lock()   # Code-Prüfung K10: arm_tick runs from the web, the schedule thread and the camping profile
+
+
 def arm_tick():
-    left = max(0, int(ARM["at"] - time.time() + 0.99)) if CFG["armed"] else 0
-    STATE["arm_state"] = "disarmed" if not CFG["armed"] else ("arming" if left > 0 else "armed")
-    STATE["arm_left"] = left
-    was, ARM["pk_state"] = ARM.get("pk_state"), STATE["arm_state"]
-    if was in ("disarmed", "arming") and STATE["arm_state"] == "armed":
+    with _ARM_LOCK:                                       # read + write of the state in one step: one «Protection on» only
+        left = max(0, int(ARM["at"] - time.time() + 0.99)) if CFG["armed"] else 0
+        STATE["arm_state"] = "disarmed" if not CFG["armed"] else ("arming" if left > 0 else "armed")
+        STATE["arm_left"] = left
+        was, ARM["pk_state"] = ARM.get("pk_state"), STATE["arm_state"]
+        push_on = was in ("disarmed", "arming") and STATE["arm_state"] == "armed"
+        announce = CFG["armed"] and left == 0 and not ARM["announced"]
+        if announce:
+            ARM["announced"] = True
+    if push_on:
         push_protect_on()                                 # 635b: «🛡 Protection on» with the picture (not at the program start)
-    if CFG["armed"] and left == 0 and not ARM["announced"]:
-        ARM["announced"] = True
+    if announce:
         log_event("sys", "Armed now - alarms are active")
         push_alert("armed", "armed")
         try:

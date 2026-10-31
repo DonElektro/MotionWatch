@@ -15,6 +15,11 @@
 #     und Berichte der Simulator-Tests (Nacht-Testlauf, Trainings-Nacht, Wochen-Check) weiter. Schalter sim_info_push
 #     (Push → Erweitert im Web 531a und Fenster 571a, Seite Simulator → «Einstellungen der Simulation»), ab Werk aus (636).
 #     Der Spieltest-Push (635a) schickt selbst über _send_main und hat seinen eigenen Schalter - davon unberührt.
+# Code-Prüfung (31.10.2026): ntfy nur bei bekannten ntfy-Hosts (nicht «ntfy» irgendwo im Namen), Webhook-JSON mit «text_full»
+# (060); «Name (Thema):\n Frage» kommt ganz (die Zeile nach dem «:»); echte Pi-Warnungen (Akku leer, Unterspannung, zu heiss,
+# Stromausfall, Speicherkarte voll - Klasse «hw») gehen im Simulator-Betrieb weiter aufs Handy, nur die simulierten («🧪»)
+# bleiben zurück; Titel und Texte der Kurzform kommen direkt aus _HX_PK (pk_tr), nicht über ältere gleiche Schlüssel
+# («Power» = «Ein / Aus» als Schalter).
 # Kein ntfy-Thema, keine Adresse, keine Zugangsdaten hier. Hier (nach 470 SIM_PAGE, 560–600 DE / TRX, 586 SET_HELP, vor 636
 # Werkseinstellungen), damit der Schalter in FACTORY_CFG ist; 060 ruft push_short / push_kind / push_sim_hold erst beim Senden.
 # ----------------------------------------------------------------------------
@@ -29,7 +34,9 @@ PK_MAX = 80                                               # one line on the phon
 
 # ---- the short forms -------------------------------------------------------------------------------------------------------
 # texts (the English key of the call site; a tuple = key + literal rest): (templates, symbol, title, text, class, picture)
-# class: info = not to the phone in the simulation (without the switch) · alarm / sim = always
+# class: info = not to the phone in the simulation (without the switch) · alarm / sim = always · hw = a real warning of the Pi
+# (to the phone also in the simulation, unless the value is simulated: «🧪» in the text, 285) · hw_batt = the same for the
+# battery (simulated when the simulator's UPS HAT gives the values: STATE battery «sim», 285 sim_battery_tick)
 PK_TEXTS = [
     (("Protection switched off at the device",), "🛡", "Protection off", "Switched off at the device", "info", True),
     (("Protection on - alarms are active",), "🛡", "Protection on", "Alarms are active", "info", True),
@@ -38,18 +45,18 @@ PK_TEXTS = [
     (("MoveEye is online in Wi-Fi {ssid}: {addr}",), "📶", "Online", "Wi-Fi {ssid} · open page", "info", False),
     ((("Simulation switched on automatically (a simulator is online)", ": {who}"),), "🧪", "Simulation on", "{who}", "info", False),
     ((("Fixed again", ": {k}"),), "✅", "Fixed again", "{k}", "info", False),
-    (("Power cut – running on the battery ({pct} %)",), "🔌", "Power cut", "Battery {pct} %", "info", False),
+    (("Power cut – running on the battery ({pct} %)",), "🔌", "Power cut", "Battery {pct} %", "hw_batt", False),
     (("Power back – battery {pct} %",), "🔌", "Power back", "Battery {pct} %", "info", False),
     (("Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap", "Battery almost empty: about {pct} % ({hours:.1f} h)"),
-     "🪫", "Battery {pct} %", "About {hours} h left · please charge", "info", False),
-    (("Battery empty – the Pi shuts down cleanly",), "🪫", "Battery empty", "The Pi shuts down", "info", False),
-    (("Under-voltage: power bank almost empty or cable too weak",), "⚡", "Under-voltage", "Power bank almost empty or cable too weak", "info", False),
+     "🪫", "Battery {pct} %", "About {hours} h left · please charge", "hw_batt", False),
+    (("Battery empty – the Pi shuts down cleanly",), "🪫", "Battery empty", "The Pi shuts down", "hw_batt", False),
+    (("Under-voltage: power bank almost empty or cable too weak",), "⚡", "Under-voltage", "Power bank almost empty or cable too weak", "hw", False),
     (("Battery {pct} %: the battery saver is on - fewer pictures per second, the AI less often. Back to normal when charging.",),
      "🔋", "Battery saver on", "Battery {pct} % · fewer pictures, AI less often", "info", False),
     (("The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.",),
      "🪫", "Battery until sunrise?", "{have} h left, {need} h needed", "info", False),
-    (("Memory card almost full: {free} MB free - the oldest recordings are deleted",), "💾", "Memory card almost full", "{free} MB free", "info", False),
-    (("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation",), "🌡", "Pi too hot", "{temp} °C (limit {lim} °C)", "info", False),
+    (("Memory card almost full: {free} MB free - the oldest recordings are deleted",), "💾", "Memory card almost full", "{free} MB free", "hw", False),
+    (("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation",), "🌡", "Pi too hot", "{temp} °C (limit {lim} °C)", "hw", False),
     (("Temperature fine again: {t:.1f} °C",), "🌡", "Temperature OK", "{t} °C", "info", False),
     (("Remote access: {who} is watching",), "👁", "Remote access", "{who} is watching", "info", False),
     (("Automatic update to version {v} – the program restarts (about 20 s)",), "⬆", "Update {v}", "Restarts (about 20 s)", "info", False),
@@ -98,7 +105,12 @@ def push_url_is_ntfy(url):
         host = urlsplit(str(url or "").strip()).hostname or ""
     except ValueError:
         return False
-    return "ntfy" in host.lower()
+    host = host.lower().rstrip(".")
+    # Code-Prüfung K2: only real ntfy servers - ntfy.sh, ntfy-me.com (CLAUDE.md), an own «ntfy.…» / «….ntfy.…» or a host
+    # called «ntfy» in the LAN; not every name that contains «ntfy» (contentfy.example, myntfy-bridge.local = own webhooks)
+    if host in ("ntfy", "ntfy.sh", "ntfy-me.com") or host.endswith((".ntfy.sh", ".ntfy-me.com")):
+        return True
+    return host.startswith("ntfy.") or ".ntfy." in host
 
 
 def pk_line(s, n=None):
@@ -111,6 +123,23 @@ def pk_line(s, n=None):
     cut = s[:n - 1]
     sp = cut.rfind(" ")
     return (cut[:sp] if sp > n * 0.6 else cut).rstrip(" ,;:-–·") + "…"
+
+
+def pk_tr(text):
+    """the short-form texts in the current language straight from _HX_PK (Code-Prüfung K5: tr() gave an older text for the
+    same English key, e.g. «Power» = «Ein / Aus» of a switch, «Update» = the verb «Aktualisieren»); other keys: tr()"""
+    v = _HX_PK.get(text)
+    L = cur_lang()
+    if v is None or L == "en":
+        return tr(text)
+    return v[{"de": 0, "fr": 1, "it": 2, "rm": 3}.get(L, 0)] if L in ("de", "fr", "it", "rm") else text
+
+
+def pk_trf(text, **kw):
+    try:
+        return pk_tr(text).format(**kw)
+    except (KeyError, IndexError, ValueError):
+        return text.format(**kw)
 
 
 def _pk_tpl(t):
@@ -137,7 +166,10 @@ def _pk_fill(tpl, vals):
 
 def _pk_cut(text):
     """text without a known form: the first line, the part before « - » / « – » / the first sentence (the advice behind it is on the page)"""
-    s = (str(text or "").strip().splitlines() or [""])[0]
+    lines = [x.strip() for x in str(text or "").strip().splitlines() if x.strip()] or [""]
+    s = lines[0]
+    if s.endswith(":") and len(lines) > 1:                # «Name (Thema):» + the question below (K3): the line below belongs to it
+        return s + " " + " · ".join(lines[1:])
     for sep in (" - ", " – ", ". "):
         i = s.find(sep)
         if i >= 12:
@@ -159,7 +191,7 @@ def push_kind(p):
             for cand in dict.fromkeys(_pk_tpl(t_)):
                 v = _pk_match(cand, text)
                 if v is not None:
-                    out = {"ic": ic, "title": _pk_fill(tr(ti), v), "text": _pk_fill(tr(tx), v), "cls": cls, "pic": pic}
+                    out = {"ic": ic, "title": _pk_fill(pk_tr(ti), v), "text": _pk_fill(pk_tr(tx), v), "cls": cls, "pic": pic}
                     break
             if out:
                 break
@@ -169,7 +201,7 @@ def push_kind(p):
         for key, (ic, ti, cls, pic) in PK_TITLES.items():
             for k_ in dict.fromkeys((tr(key), key)):
                 if raw == k_ or raw.startswith(k_ + " – "):
-                    out = {"ic": ic, "title": tr(ti) + raw[len(k_):], "text": _pk_cut(text), "cls": cls, "pic": pic}
+                    out = {"ic": ic, "title": pk_tr(ti) + raw[len(k_):], "text": _pk_cut(text), "cls": cls, "pic": pic}
                     break
             if out:
                 break
@@ -178,7 +210,7 @@ def push_kind(p):
         tx = _pk_cut(text)
         if not ti:
             m = re.match(r"^([^:·\n]{3,30}):\s+(.+)$", tx)
-            ti, tx = (m.group(1), m.group(2)) if m else (tr("Note"), tx)
+            ti, tx = (m.group(1), m.group(2)) if m else (pk_tr("Note"), tx)
         out = {"ic": ev_icon(ev), "title": ti, "text": tx, "cls": "alarm" if ev == "tamper" else "info", "pic": False}
     m = re.match(r"^" + re.escape(out["title"]) + r"\s*:\s*", out["text"], re.I) if out["title"] else None
     if m and out["text"][m.end():]:                       # «Safe start: …» under the title «Safe start»
@@ -254,7 +286,7 @@ def push_short(p):
         own_t = str(CFG.get(f"msg_{kind}_title", "") or "").strip()
         own_x = str(CFG.get(f"msg_{kind}_text", "") or "").strip()
         n = int(pp.get("persons") or 0)
-        title = render_msg(own_t, pp) if own_t else (trf("{n} persons", n=n) if kind == "person" and n > 1 else tr(PK_EVENT.get(kind, "Note")))
+        title = render_msg(own_t, pp) if own_t else (pk_trf("{n} persons", n=n) if kind == "person" and n > 1 else pk_tr(PK_EVENT.get(kind, "Note")))
         if push_show_name() and not own_t:
             title = ((CFG.get("device_name") or "").strip()[:20] or "MoveEye") + ": " + title
         ic = ev_icon(kind)
@@ -266,24 +298,24 @@ def push_short(p):
         else:
             parts = [hm]
             if ev == "test":
-                parts.append(tr("Test message"))
+                parts.append(pk_tr("Test message"))
             elif kind == "person" and p.get("dist"):
                 d = str(p["dist"])
                 for h_ in (tr("Person") + ", ",):
                     d = d[len(h_):] if d.startswith(h_) else d
                 parts.append(d)
             elif kind == "prealarm":
-                parts.append(tr("pre-alarm"))
+                parts.append(pk_tr("pre-alarm"))
             elif kind == "warm":
-                parts.append(tr("thermal camera"))
+                parts.append(pk_tr("thermal camera"))
             elif kind == "noise" and p.get("db") not in (None, ""):
                 parts.append(f"{p['db']} dB")
         if own_x and p.get("dist"):
             parts.append(str(p["dist"]))
     if p.get("more"):
-        parts.append(trf("+{n} more", n=p["more"]))
+        parts.append(pk_trf("+{n} more", n=p["more"]))
     if p.get("late"):
-        parts.append(trf("late, from {t}", t=hm))
+        parts.append(pk_trf("late, from {t}", t=hm))
     title = pk_line(_PK_PH.sub("", render_msg(title, p)) if "{" in title else title, 60)
     text = pk_line(" · ".join(x for x in parts if x))
     return {"title": title, "text": text}
@@ -312,8 +344,12 @@ def push_sim_hold(p):
     """True = not to the phone: in the simulation only alarms (and the reports of simulator tests), unless sim_info_push"""
     if not CFG.get("sim_on") or CFG.get("sim_info_push") or Notifier._event(p) != "info":
         return False
-    if push_kind(p)["cls"] in ("alarm", "sim"):
+    cls = push_kind(p)["cls"]
+    if cls in ("alarm", "sim"):
         return False
+    if cls in ("hw", "hw_batt") and "🧪" not in str(p.get("text") or "") + str(p.get("info_title") or ""):
+        if not (cls == "hw_batt" and (STATE.get("battery") or {}).get("sim")):
+            return False                                  # K4: the Pi really runs - its battery / heat / power warnings go out
     STATE["notify_status"] = "simulation: only alarms"
     if time.time() - _PK_HELD["t"] > 60:
         _PK_HELD["t"] = time.time()
@@ -351,7 +387,7 @@ _HX_PK = {
     "Noise": ("Geräusch", "Bruit", "Rumore", "Canera"),
     "Note": ("Hinweis", "Info", "Avviso", "Infurmaziun"),
     "Test message": ("Testnachricht", "Message de test", "Messaggio di prova", "Messadi da test"),
-    "pre-alarm": ("Voralarm", "pré-alarme", "preallarme", "pre-alarm"),
+    "pre-alarm": ("Voralarm", "pré-alarme", "preallarme", "prealarm"),
     "thermal camera": ("Wärmebild", "caméra thermique", "termocamera", "camera termica"),
     "+{n} more": ("+{n} weitere", "+{n} autres", "+{n} altri", "+{n} ulteriurs"),
     "late, from {t}": ("verspätet, von {t}", "en retard, de {t}", "in ritardo, delle {t}", "tard, da las {t}"),
@@ -461,7 +497,7 @@ def push_kurz_selftest():
         assert out["off"] == ("🛡 Schutz aus", "Am Gerät ausgeschaltet"), out["off"]
         assert out["online"] == ("📶 Online", "WLAN Camping · Seite öffnen"), out["online"]
         assert out["batt"] == ("🪫 Akku 12 %", "Noch etwa 1.5 h · bitte laden"), out["batt"]
-        assert out["person"] == ("🚶 Person erkannt", "21:07 · ca. 12 m, kommt näher") or out["person"][0] == "🚶 Person erkannt", out["person"]
+        assert out["person"] == ("🚶 Person erkannt", "21:07 · " + trf("about {m} m", m=12) + ", " + tr("coming closer")), out["person"]   # K8: text too
         assert out["night"] == ("🌙 Nachtbericht", "Zeile 1"), out["night"]
         assert push_kind(cases["off"])["pic"] and not push_kind(cases["online"])["pic"], "picture only for «Protection off»"
         on = P(text=tr("Protection on - alarms are active"), info_title="{name}: " + tr("Protection"))
@@ -479,7 +515,24 @@ def push_kurz_selftest():
         # the simulation: [SIM] in front, info messages held back (switch off), alarms and sim reports go out
         CFG["sim_on"] = True
         assert Notifier._title(cases["off"]).startswith("[SIM] 🛡 "), "[SIM] in front"
-        assert push_sim_hold(cases["off"]) and push_sim_hold(cases["online"]) and push_sim_hold(cases["batt"]), "info in the simulation"
+        assert push_sim_hold(cases["off"]) and push_sim_hold(cases["online"]), "info in the simulation"
+        # K4: real warnings of the Pi go out in the simulation too; simulated values («🧪», the simulator's battery) stay back
+        keep_b = STATE.get("battery")
+        try:
+            STATE["battery"] = {"on": True, "src": "ups"}
+            hw = [cases["batt"], P(text=tr("Battery empty – the Pi shuts down cleanly"), info_title="{name}: " + tr("power")),
+                  P(text=tr("Under-voltage: power bank almost empty or cable too weak") + " (4.7 V)", info_title="{name}: " + tr("power")),
+                  P(text=trf("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation", temp=85, lim=80),
+                    info_title="{name}: " + tr("temperature"))]
+            assert not any(push_sim_hold(x) for x in hw), [Notifier._title(x) for x in hw if push_sim_hold(x)]
+            assert push_sim_hold(P(text=tr("Battery empty – the Pi shuts down cleanly") + " (🧪 " + tr("simulator") + ")",
+                                   info_title="{name}: " + tr("power"))), "simulated battery empty went out"
+            assert push_sim_hold(P(text=trf("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation", temp=85, lim=80)
+                                   + " (🧪 " + tr("simulator") + ")", info_title="{name}: " + tr("temperature"))), "simulated heat went out"
+            STATE["battery"] = {"on": True, "src": "ups", "sim": True}
+            assert push_sim_hold(cases["batt"]), "the simulator's battery (almost empty) went out"
+        finally:
+            STATE["battery"] = keep_b
         assert not push_sim_hold(cases["person"]) and not push_sim_hold(P(event="tamper", text="x", info_title="{name}: " + tr("TAMPER ALARM")))
         assert not push_sim_hold(P(text="x", info_title="{name}: 🧪 " + tr("Night test run (simulation)"))), "the report of a sim test goes out"
         assert not push_sim_hold(P(text=trf("Person crossed the line «{zone}»", zone="Eingang"), info_title="{name}: " + tr("line"))), "zone = alarm"
@@ -493,6 +546,21 @@ def push_kurz_selftest():
         assert "sim_info_push" in SIM_PAGE, "switch not on the page Simulator"
         # an ntfy address in the webhook card goes as ntfy, a real webhook gets readable JSON
         assert push_url_is_ntfy("https://ntfy.sh/x") and push_url_is_ntfy("https://ntfy-me.com/x") and not push_url_is_ntfy("https://ha.local/api/webhook/x")
+        assert push_url_is_ntfy("https://ntfy.example.org/x") and push_url_is_ntfy("http://ntfy:80/x") and push_url_is_ntfy("https://push.ntfy.sh/x")
+        assert not push_url_is_ntfy("https://contentfy.example/hook") and not push_url_is_ntfy("https://myntfy-bridge.local/json"), "K2"
+        # K3: the question of the product page comes complete (the line after «Name (topic):»)
+        q = P(text="Max (Frage):\nWie lange hält der Akku?", info_title="{name}: " + tr("question from the product page"))
+        assert T(q) == ("💬 Frage", "Max (Frage): Wie lange hält der Akku?"), T(q)
+        # K5: the short titles straight from _HX_PK (not the older «Power» = «Ein / Aus» of a switch, «Update» = verb)
+        pw_ = P(text="Etwas mit dem Strom", info_title="{name}: " + tr("power"))
+        assert T(pw_)[0] == "🔌 Strom", T(pw_)
+        for L, want in (("fr", "⬆ Mise à jour"), ("it", "⬆ Aggiornamento"), ("rm", "⬆ Actualisaziun")):
+            CFG["lang"] = L
+            assert T(P(text="x y", info_title="{name}: Update"))[0] == want, (L, T(P(text="x y", info_title="{name}: Update")))
+        CFG["lang"] = "rm"
+        assert "prealarm" in Notifier._text(P(event="prealarm")), Notifier._text(P(event="prealarm"))
+        CFG["lang"] = "de"
+        assert Notifier._title(P(event="warm")).endswith(" Wärme erkannt"), Notifier._title(P(event="warm"))   # not «Warmer Körper»
         for L in ("fr", "it", "rm", "en"):
             CFG["lang"] = L
             ti, tx = T(P(text=tr("Protection switched off at the device"), info_title="{name}: " + tr("Buttons on the device")))
@@ -502,4 +570,39 @@ def push_kurz_selftest():
     return "one short form (title with symbol, one line), [SIM], only alarms in the simulation, webhook with an ntfy address"
 
 
+def arm_once_selftest():
+    """Code-Prüfung K10: arm_tick from several threads at the end of the countdown -> exactly one «🛡 Protection on»"""
+    names = ("push_protect_on", "push_alert", "rehearsal_on_arm", "refscan_on_armed", "log_event")
+    keep_f = {n: globals()[n] for n in names}
+    keep = (CFG.get("armed"), dict(ARM), STATE.get("arm_state"), STATE.get("arm_left"))
+    calls = []
+    arm0 = globals()["ARM"]
+
+    class _SlowArm(dict):                                    # widens the gap between reading and writing the state (the race)
+        def get(self, *a):
+            v = dict.get(self, *a); time.sleep(0.005); return v
+    try:
+        globals()["ARM"] = _SlowArm(arm0)
+        globals()["push_protect_on"] = lambda: (calls.append("on"), time.sleep(0.01))[0]
+        globals()["push_alert"] = lambda *a, **k: calls.append("alert")
+        for n in names[2:]:
+            globals()[n] = lambda *a, **k: None
+        for _round in range(5):
+            calls.clear()
+            CFG["armed"] = True; ARM.update(at=time.time() - 1, announced=False, pk_state="arming")
+            go = threading.Event()
+            ths = [threading.Thread(target=lambda: (go.wait(), arm_tick())) for _ in range(12)]
+            for t_ in ths:
+                t_.start()
+            go.set()
+            for t_ in ths:
+                t_.join(5)
+            assert calls.count("on") == 1 and calls.count("alert") == 1, calls
+    finally:
+        globals().update(keep_f); globals()["ARM"] = arm0
+        CFG["armed"] = keep[0]; ARM.clear(); ARM.update(keep[1]); STATE["arm_state"] = keep[2]; STATE["arm_left"] = keep[3]
+    return "12 threads at the end of the countdown: one «Protection on»"
+
+
 SELFTEST_EXTRA.append(("Short push messages, only alarms in the simulation (635b)", push_kurz_selftest))
+SELFTEST_EXTRA.append(("«Protection on» only once (arm_tick from several threads, 130)", arm_once_selftest))

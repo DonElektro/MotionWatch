@@ -83,8 +83,12 @@ def play_story_pic(sid, owner=True):
         return None
 
 
-def play_do(action, cid=""):
-    """«Start the adventure» (id) / open or close the start screen in the simulator / «seen» (Blinki's joy shown)"""
+def play_do(action, cid="", owner=True):
+    """«Start the adventure» (id) / open or close the start screen in the simulator / «seen» (Blinki's joy shown).
+    owner = nacht_may(...): «Das Hospiz» starts only for the owner (Code-Prüfung M4: before only the answer was filtered)"""
+    if action == "start" and str(cid or "").strip().lower() == "horror" and not owner:
+        log_event("web", "Play area: «Das Hospiz» refused (not the owner / operator mode)")
+        return {"ok": False, "error": tr("Only the owner can start this story."), "code": 403}
     if not CFG.get("sim_on"):
         return {"ok": False, "error": tr("The 3D simulator is not connected.")}
     try:
@@ -269,6 +273,8 @@ _HX_PLAY = {
                                                                        'Non ancora visitato – cosa c’è da scoprire si vede sul posto.',
                                                                        'Anc betg visità – tge ch’i dat da scuvrir sa mussa al lieu.'),
     'Stories': ('Geschichten', 'Histoires', 'Storie', 'Istorgias'),
+    'Only the owner can start this story.': ('Nur der Besitzer kann diese Geschichte starten.', 'Seul le propriétaire peut lancer cette histoire.',
+                                             'Solo il proprietario può avviare questa storia.', 'Mo il proprietari po cumenzar questa istorgia.'),
     'Discover': ('Entdecken', 'Découvrir', 'Scoprire', 'Scuvrir'),
     'Travel there': ('Hinreisen', 'Y aller', 'Andarci', 'Ir là'),
     'Keep discovering': ('Weiter entdecken', 'Continuer à découvrir', 'Continua a scoprire', 'Cuntinuar a scuvrir'),
@@ -354,7 +360,9 @@ def smalltv_routes(app, reply, body):                     # + 639i: /play and /a
         d = body(); a = str(d.get("action") or "")
         if a not in ("start", "open", "close", "seen"):
             return reply({"ok": False, "error": "unknown action"}, 400)
-        r = play_do(a, d.get("id") or "")
+        r = play_do(a, d.get("id") or "", own)
+        if r.pop("code", None) == 403:
+            return reply(r, 403)
         if r.get("state"):
             r["state"] = play_for(r["state"], own)
         return reply(r)
@@ -404,7 +412,8 @@ def _tk_play_poll(self):
 
 def _tk_play_act(self, a, cid=""):
     def work():
-        r = play_do(a, cid)
+        r = play_do(a, cid, nacht_may("admin"))           # the window = the owner, unless operator mode (M4)
+        r.pop("code", None)
         try:
             self.root.after(0, lambda: (self._status("Playing", ("✓ " + tr("The simulator travels there.")) if r.get("ok") and a == "start"
                                                      else ("⚠ " + str(r.get("error") or "")) if not r.get("ok") else tr("Open in the simulator")),
@@ -525,6 +534,18 @@ def play_selftest():
         d = play_state(True)
         assert d["ok"] and d["offline"] and isinstance(d.get("chapters"), list)
         assert not play_do("start", "camping")["ok"]
+        CFG["sim_on"] = True                                 # M4: «Das Hospiz» never starts for others (before: simulator asked)
+        _sc = globals()["sim_control"]; asked = []
+        globals()["sim_control"] = lambda d_: (asked.append(d_), {"ok": True})[1]
+        _le = globals()["log_event"]; globals()["log_event"] = lambda *a, **k: None
+        try:
+            r = play_do("start", "horror", False)
+            assert not r["ok"] and r.get("code") == 403 and not asked, ("Hospiz started without the owner", r, asked)
+            r = play_do("start", " HORROR ", False)
+            assert not r["ok"] and not asked, "Hospiz with another spelling"
+            assert nacht_may("admin", locked=True) is False and nacht_may("user", locked=False) is False
+        finally:
+            globals()["sim_control"] = _sc; globals()["log_event"] = _le; CFG["sim_on"] = False
         html = play_page()
         assert 'href="/play"' in html and "/api/play" in html and "Geschichten" in html and "Entdecken" in html and "MWBlinki" in html
         assert 'id="pl-bd"' not in html and "/sim/story_pic/" in html             # Geschichten-Menü: badges in the discovery book

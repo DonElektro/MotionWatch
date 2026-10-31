@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.6.1 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.6.2 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -425,6 +425,19 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.6.2
+3.6.2: Fehlerkorrekturen MoveEye:
+- Spieltest-Push höchstens 1 pro Minute, nur MoveEye kann ihn einschalten.
+- Schwachlicht nach einer Taschenlampe in höchstens 10 s wieder an.
+- Ohne KI wird ein warmer, flacher Körper «Person?» statt Tier.
+- Hospiz nur für den Besitzer.
+- Echte Pi-Warnungen (Akku, Hitze, Strom) kommen auch im Simulator-Betrieb.
+- Fragen von der Produktseite ganz aufs Handy.
+- «Schutz ein» nicht doppelt.
+- Übersetzungen korrigiert.
+So testest du: 1) Nacht mit Taschenlampe 20 s, dann aus: Schwachlicht ist nach höchstens 10 s an. 2) Bedienermodus: Hospiz
+lässt sich nicht starten.
 
 NEU IN 3.6.1
 3.6.1: Simulator sicherer: Werksrücksetzung, Spieltest-Löschen und Horror-Passwort gehen nicht mehr von fremden Geräten im
