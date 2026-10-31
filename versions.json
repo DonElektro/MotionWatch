@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 08:54",
+ "generated": "2026-10-31 08:59",
  "versions": [
   {
-   "version": "2.98.88",
-   "file": "webcam_bewegung_2_98_88.py",
+   "version": "2.98.89",
+   "file": "webcam_bewegung_2_98_89.py",
    "url": "",
-   "sha256": "6043b8a73674b44f01ace52c427cd0ced6b046ea327ec0629f2241f5636d7748",
-   "date": "2026-10-31 08:53",
-   "notes": "Simulator 3D-4.57: echte Oberflächen und Foto-Himmel (CC0) im Camping-Platz – Paket wird nachgeladen, nicht in Lite.",
-   "sig": "5ce62e72ac27f8a871648c6b69fb4b64c8a3288b7cea345e916a80a890050b597539ac7cb1a4b6fd8308e04b6db351cf727c60115f21a10a4a3bc684803c8009"
+   "sha256": "348c6cacea24b5f3b263cdeabd2167c388a142dfe1357ae89d0ae4c6b67dd36e",
+   "date": "2026-10-31 08:59",
+   "notes": "Simulator 3D-4.58: Foto-Modus – ein echtes Foto vom eigenen Platz als Hintergrund der Kopfkamera, Figuren werden eingepasst und gehen hinter angemalten Dingen durch.",
+   "sig": "244991507bbb465d70674f1619ef6b9219884255a0bae8d3de944e46081060f140f9ec1d6614b657f447c2de600af172f5ad6374f690aaf46002ceefb33eba03"
   },
   {
    "version": "2.97.1",

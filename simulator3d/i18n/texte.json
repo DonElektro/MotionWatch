@@ -1750,6 +1750,12 @@
   "it": "*.glb, *.gltf ; modello 3D (glTF)",
   "rm": "*.glb, *.gltf ; model 3D (glTF)"
  },
+ "*.jpg, *.jpeg, *.png, *.webp ; Foto": {
+  "en": "*.jpg, *.jpeg, *.png, *.webp ; Photo",
+  "fr": "*.jpg, *.jpeg, *.png, *.webp ; Photo",
+  "it": "*.jpg, *.jpeg, *.png, *.webp ; Foto",
+  "rm": "*.jpg, *.jpeg, *.png, *.webp ; Foto"
+ },
  "*.jpg, *.jpeg, *.png, *.webp ; Foto oder Panorama": {
   "en": "*.jpg, *.jpeg, *.png, *.webp ; photo or panorama",
   "fr": "*.jpg, *.jpeg, *.png, *.webp ; photo ou panorama",
@@ -4819,6 +4825,12 @@
   "it": "Immagine illeggibile: ",
   "rm": "Maletg betg legibel: "
  },
+ "Bild nicht lesbar: %s": {
+  "en": "Picture not readable: %s",
+  "fr": "Image illisible : %s",
+  "it": "Immagine non leggibile: %s",
+  "rm": "Maletg betg legibel: %s"
+ },
  "Bild ↑ / ↓ beim Erkunden · Höhe des Kamerakopfs": {
   "en": "Page ↑ / ↓ when exploring · height of the camera head",
   "fr": "Page ↑ / ↓ en exploration · hauteur de la tête de caméra",
@@ -4872,6 +4884,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Bildwinkel": {
+  "en": "Field of view",
+  "fr": "Angle de champ",
+  "it": "Angolo di campo",
+  "rm": "Angul da vista"
  },
  "Birne": {
   "en": "Pear",
@@ -10097,6 +10115,18 @@
   "it": "Foto",
   "rm": "Foto"
  },
+ "Foto %d": {
+  "en": "Photo %d",
+  "fr": "Photo %d",
+  "it": "Foto %d",
+  "rm": "Foto %d"
+ },
+ "Foto %d dazu – rechts neben dem letzten (Richtung im Fenster anpassen)": {
+  "en": "Photo %d added – to the right of the last one (adjust the direction in the window)",
+  "fr": "Photo %d ajoutée – à droite de la dernière (ajuster la direction dans la fenêtre)",
+  "it": "Foto %d aggiunta – a destra dell’ultima (regolare la direzione nella finestra)",
+  "rm": "Foto %d agiuntada – a dretga da l’ultima (adattar la direcziun en la fanestra)"
+ },
  "Foto / Panorama deines echten Platzes als Hintergrund – am besten mit dem Handy von dort, wo MoveEye steht (Panorama: ganz herum drehen). Auch: Bild einfach ins Fenster ziehen. Richtung und Winkel unter «Szene · Dein Platz».": {
   "en": "Photo / panorama of your real place as background – best with the phone from where MoveEye stands (panorama: turn all the way round). Also: just drag a picture into the window. Direction and angle under «Scene · Your place».",
   "fr": "Photo / panorama de ton vrai lieu en arrière-plan – le mieux avec le téléphone depuis l’endroit où se trouve MoveEye (panorama : faire le tour complet). Aussi : glisser simplement une image dans la fenêtre. Direction et angle sous «Scène · Ton lieu».",
@@ -10180,6 +10210,102 @@
   "fr": "Contenus photo : %d sur %d utilisables – manque : %s",
   "it": "Contenuti foto: %d di %d utilizzabili – mancano: %s",
   "rm": "Cuntegns da fotos: %d da %d utilisabels – manca: %s"
+ },
+ "Foto-Modus an": {
+  "en": "Photo mode on",
+  "fr": "Mode photo activé",
+  "it": "Modalità foto accesa",
+  "rm": "Modus foto activà"
+ },
+ "Foto-Modus aus": {
+  "en": "Photo mode off",
+  "fr": "Mode photo désactivé",
+  "it": "Modalità foto spenta",
+  "rm": "Modus foto deactivà"
+ },
+ "Foto-Modus – das Foto ist die Welt der MoveEye-Kamera": {
+  "en": "Photo mode – the photo is the world of the MoveEye camera",
+  "fr": "Mode photo – la photo est le monde de la caméra MoveEye",
+  "it": "Modalità foto – la foto è il mondo della telecamera MoveEye",
+  "rm": "Modus foto – la foto è il mund da la camera da MoveEye"
+ },
+ "Foto-Modus: das Foto ist die Welt – die MoveEye-Kamera sieht das echte Foto, die Figuren laufen davor": {
+  "en": "Photo mode: the photo is the world – the MoveEye camera sees the real photo, the figures walk in front of it",
+  "fr": "Mode photo : la photo est le monde – la caméra MoveEye voit la vraie photo, les figures marchent devant",
+  "it": "Modalità foto: la foto è il mondo – la telecamera MoveEye vede la foto vera, le figure camminano davanti",
+  "rm": "Modus foto: la foto è il mund – la camera da MoveEye vesa la foto vaira, las figuras van davant ella"
+ },
+ "Foto-Modus: Farbstich des Fotos auf die Figuren": {
+  "en": "Photo mode: colour cast of the photo on the figures",
+  "fr": "Mode photo : dominante de couleur de la photo sur les figures",
+  "it": "Modalità foto: dominante di colore della foto sulle figure",
+  "rm": "Modus foto: tinta da la foto sin las figuras"
+ },
+ "Foto-Modus: Figuren heller / dunkler (zur Messung am Foto)": {
+  "en": "Photo mode: figures brighter / darker (relative to the photo measurement)",
+  "fr": "Mode photo : figures plus claires / plus sombres (par rapport à la mesure de la photo)",
+  "it": "Modalità foto: figure più chiare / più scure (rispetto alla misura della foto)",
+  "rm": "Modus foto: figuras pli cleras / pli stgiras (tar la mesira da la foto)"
+ },
+ "Foto-Modus: gemalte Bereiche immer ganz vorne (sonst Abstand vom untersten Punkt am Boden)": {
+  "en": "Photo mode: painted areas always right in front (otherwise distance from their lowest point on the ground)",
+  "fr": "Mode photo : zones peintes toujours tout devant (sinon distance depuis leur point le plus bas au sol)",
+  "it": "Modalità foto: aree dipinte sempre davanti (altrimenti distanza dal loro punto più basso al suolo)",
+  "rm": "Modus foto: secturs pitturads adina dal tuttafatg davant (uschiglio distanza dal punct il pli bass sin il terren)"
+ },
+ "Foto-Modus: Helligkeit, Farbe und Rauschen neu vom Foto messen": {
+  "en": "Photo mode: measure brightness, colour and noise of the photo again",
+  "fr": "Mode photo : mesurer à nouveau luminosité, couleur et bruit de la photo",
+  "it": "Modalità foto: misurare di nuovo luminosità, colore e rumore della foto",
+  "rm": "Modus foto: mesirar danovamain clerezza, colur e canera da la foto"
+ },
+ "Foto-Modus: Horizont im Foto (0 = oben, 100 = unten; im Fenster per Klick)": {
+  "en": "Photo mode: horizon in the photo (0 = top, 100 = bottom; in the window by click)",
+  "fr": "Mode photo : horizon dans la photo (0 = haut, 100 = bas ; dans la fenêtre par clic)",
+  "it": "Modalità foto: orizzonte nella foto (0 = in alto, 100 = in basso; nella finestra con un clic)",
+  "rm": "Modus foto: orizont en la foto (0 = sura, 100 = sut; en la fanestra cun in clic)"
+ },
+ "Foto-Modus: Horizont schief (rechts tiefer = plus)": {
+  "en": "Photo mode: horizon tilted (right lower = plus)",
+  "fr": "Mode photo : horizon penché (droite plus bas = plus)",
+  "it": "Modalità foto: orizzonte storto (destra più in basso = più)",
+  "rm": "Modus foto: orizont stort (a dretga pli bass = plus)"
+ },
+ "Foto-Modus: Kamerahöhe beim Foto (= Stangenlänge)": {
+  "en": "Photo mode: camera height of the photo (= pole length)",
+  "fr": "Mode photo : hauteur de la caméra de la photo (= longueur du mât)",
+  "it": "Modalità foto: altezza della fotocamera della foto (= lunghezza dell’asta)",
+  "rm": "Modus foto: autezza da la camera tar la foto (= lunghezza da la stanga)"
+ },
+ "Foto-Modus: Kopf schaut neben das Foto (%d %% abgedeckt) – zum Schwenken ein Panorama oder weitere Fotos laden": {
+  "en": "Photo mode: the head looks past the photo (%d %% covered) – load a panorama or more photos for panning",
+  "fr": "Mode photo : la tête regarde à côté de la photo (%d %% couvert) – pour pivoter, charger un panorama ou d’autres photos",
+  "it": "Modalità foto: la testa guarda fuori dalla foto (%d %% coperto) – per ruotare caricare un panorama o altre foto",
+  "rm": "Modus foto: il chau guarda sper la foto ora (%d %% cuvert) – per volver chargiar in panorama u ulteriuras fotos"
+ },
+ "Foto-Modus: Kopf schaut neben die Fotos (%d %% abgedeckt)": {
+  "en": "Photo mode: the head looks past the photos (%d %% covered)",
+  "fr": "Mode photo : la tête regarde à côté des photos (%d %% couvert)",
+  "it": "Modalità foto: la testa guarda fuori dalle foto (%d %% coperto)",
+  "rm": "Modus foto: il chau guarda sper las fotos ora (%d %% cuvert)"
+ },
+ "Foto-Modus: Rauschen der Figuren (100 = wie gemessen)": {
+  "en": "Photo mode: noise of the figures (100 = as measured)",
+  "fr": "Mode photo : bruit des figures (100 = comme mesuré)",
+  "it": "Modalità foto: rumore delle figure (100 = come misurato)",
+  "rm": "Modus foto: canera da las figuras (100 = sco mesirà)"
+ },
+ "Foto-Modus: Schatten der Figuren": {
+  "en": "Photo mode: shadows of the figures",
+  "fr": "Mode photo : ombres des figures",
+  "it": "Modalità foto: ombre delle figure",
+  "rm": "Modus foto: sumbrivas da las figuras"
+ },
+ "Foto-Modus: zeigen, was als Figur angeglichen wird (rot)": {
+  "en": "Photo mode: show what is adjusted as a figure (red)",
+  "fr": "Mode photo : montrer ce qui est ajusté comme figure (rouge)",
+  "it": "Modalità foto: mostrare cosa viene adattato come figura (rosso)",
+  "rm": "Modus foto: mussar tge che vegn adattà sco figura (cotschen)"
  },
  "Foto: Bildwinkel (Handyfoto etwa 65°, Panorama bis 360°)": {
   "en": "",
@@ -10504,6 +10630,12 @@
   "fr": "Pour les enfants et les manches courtes : toujours le même parcours avec 3 portes. À travers les portes, puis à l’arrivée – plus c’est rapide, plus il y a de points.",
   "it": "Per bambini e turni brevi: sempre lo stesso percorso con 3 porte. Attraverso le porte, poi al traguardo – più veloce, più punti.",
   "rm": "Per uffants e rundas curtas: adina il medem parcurs cun 3 portas. Tras las portas, lura a la finala – pli svelt, dapli puncts."
+ },
+ "Für Kopf-Schwenken: ein zweites / drittes Foto daneben (weich überblendet)": {
+  "en": "For head panning: a second / third photo next to it (softly blended)",
+  "fr": "Pour pivoter la tête : une deuxième / troisième photo à côté (fondu doux)",
+  "it": "Per ruotare la testa: una seconda / terza foto accanto (dissolvenza morbida)",
+  "rm": "Per volver il chau: ina segunda / terza foto sper quella (surfatg lom)"
  },
  "Für MoveEye fehlen Python-Pakete: ": {
   "en": "Python packages missing for MoveEye: ",
@@ -11736,6 +11868,12 @@
   "it": "Gruppo di quattro",
   "rm": "Gruppa da quatter"
  },
+ "Grösse prüfen": {
+  "en": "Check size",
+  "fr": "Vérifier la taille",
+  "it": "Verifica dimensione",
+  "rm": "Controllar la grondezza"
+ },
  "Grösse stimmt nicht": {
   "en": "Size does not match",
   "fr": "La taille ne correspond pas",
@@ -12511,6 +12649,18 @@
   "it": "Hop, hop – una lepre!",
   "rm": "Hop, hop – in lieur!"
  },
+ "Horizont": {
+  "en": "Horizon",
+  "fr": "Horizon",
+  "it": "Orizzonte",
+  "rm": "Orizont"
+ },
+ "Horizont: auf den Horizont klicken (zweiter Klick weiter rechts = schief). Prüfen: die Linien 5 / 10 / 20 / 40 m und «Grösse prüfen» (1.75 m Person) – passt es nicht, Kamerahöhe oder Bildwinkel ändern. «Vorne malen»: Hecke, Zelt … mit Finger / Maus anmalen, Figuren dahinter werden verdeckt.": {
+  "en": "Horizon: click on the horizon (a second click further right = tilted). Check: the lines 5 / 10 / 20 / 40 m and «Check size» (1.75 m person) – if it does not fit, change camera height or field of view. «Paint in front»: paint hedge, tent … with finger / mouse, figures behind it are hidden.",
+  "fr": "Horizon : cliquer sur l’horizon (un deuxième clic plus à droite = penché). Vérifier : les lignes 5 / 10 / 20 / 40 m et «Vérifier la taille» (personne de 1,75 m) – si ça ne va pas, changer la hauteur de caméra ou l’angle de champ. «Peindre devant» : peindre haie, tente … au doigt / à la souris, les figures derrière sont cachées.",
+  "it": "Orizzonte: cliccare sull’orizzonte (un secondo clic più a destra = storto). Verifica: le linee 5 / 10 / 20 / 40 m e «Verifica dimensione» (persona di 1,75 m) – se non va, cambiare altezza della telecamera o angolo di campo. «Dipingi davanti»: dipingere siepe, tenda … con dito / mouse, le figure dietro vengono nascoste.",
+  "rm": "Orizont: cliccar sin l’orizont (in segund clic pli a dretga = stort). Controllar: las lingias 5 / 10 / 20 / 40 m e «Controllar la grondezza» (persuna da 1,75 m) – sche quai na va betg, midar l’autezza da la camera u l’angul da vista. «Pitturar davant»: pitturar saiv, tenda … cun il det / la mieur, las figuras davos vegnan zuppadas."
+ },
  "Horror": {
   "en": "Horror",
   "fr": "Horreur",
@@ -12708,6 +12858,12 @@
   "fr": "niveau maximal",
   "it": "livello massimo",
   "rm": "il pli aut stgalim"
+ },
+ "Höchstens 3 Fotos pro Platz – zuerst eines entfernen": {
+  "en": "At most 3 photos per place – remove one first",
+  "fr": "3 photos au maximum par emplacement – d’abord en retirer une",
+  "it": "Al massimo 3 foto per posto – prima toglierne una",
+  "rm": "Al pli 3 fotos per plazza – l’emprim allontanar ina"
  },
  "Höchstens 5 Nachrichten pro Stunde – bitte später nochmals.": {
   "en": "",
@@ -13795,6 +13951,12 @@
   "it": "Spostare le immagini della telecamera: trascinare qui",
   "rm": "Spustar ils maletgs da camera: trair qua"
  },
+ "Kamerahöhe %.2f m · Horizont %d %% · gemessen: Helligkeit %d %%, Rauschen %.1f %% · Masken: %d · Bild abgedeckt: %d %%": {
+  "en": "Camera height %.2f m · horizon %d %% · measured: brightness %d %%, noise %.1f %% · masks: %d · picture covered: %d %%",
+  "fr": "Hauteur de caméra %.2f m · horizon %d %% · mesuré : luminosité %d %%, bruit %.1f %% · masques : %d · image couverte : %d %%",
+  "it": "Altezza telecamera %.2f m · orizzonte %d %% · misurato: luminosità %d %%, rumore %.1f %% · maschere: %d · immagine coperta: %d %%",
+  "rm": "Autezza da la camera %.2f m · orizont %d %% · mesirà: clerezza %d %%, canera %.1f %% · mascras: %d · maletg cuvert: %d %%"
+ },
  "Kamerakopf 10 cm höher": {
   "en": "Camera head 10 cm higher",
   "fr": "Tête de caméra 10 cm plus haut",
@@ -14136,6 +14298,18 @@
   "fr": "Pas de fausse alarme – MoveEye n’était pas connecté",
   "it": "Nessun falso allarme – MoveEye non era collegato",
   "rm": "Nagin fauss alarm – MoveEye n’era betg collià"
+ },
+ "kein Foto": {
+  "en": "no photo",
+  "fr": "pas de photo",
+  "it": "nessuna foto",
+  "rm": "nagina foto"
+ },
+ "Kein Foto für diesen Platz – zuerst «Foto / Panorama wählen …» (Fenster «Gegenstände» · Foto des Platzes)": {
+  "en": "No photo for this place – first «Choose photo / panorama …» (window «Objects» · Photo of the place)",
+  "fr": "Pas de photo pour cet emplacement – d’abord «Choisir photo / panorama …» (fenêtre «Objets» · Photo de l’emplacement)",
+  "it": "Nessuna foto per questo posto – prima «Scegli foto / panorama …» (finestra «Oggetti» · Foto del posto)",
+  "rm": "Nagina foto per questa plazza – l’emprim «Tscherner foto / panorama …» (fanestra «Objects» · Foto da la plazza)"
  },
  "kein Foto für «%s»": {
   "en": "no photo for «%s»",
@@ -15494,6 +15668,12 @@
   "it": "Aprire l’ultimo rapporto",
   "rm": "Avrir l’ultim rapport"
  },
+ "Letztes Foto weg": {
+  "en": "Remove last photo",
+  "fr": "Retirer la dernière photo",
+  "it": "Togli l’ultima foto",
+  "rm": "Allontanar l’ultima foto"
+ },
  "Licht": {
   "en": "Light",
   "fr": "Lumière",
@@ -15969,6 +16149,12 @@
   "fr": "Martre",
   "it": "Martora",
   "rm": "Mardrer"
+ },
+ "Maske löschen": {
+  "en": "Delete mask",
+  "fr": "Effacer le masque",
+  "it": "Cancella maschera",
+  "rm": "Stizzar la mascra"
  },
  "Mast (Szene) – 3 m neben dem Gerät": {
   "en": "Mast (scene) – 3 m beside the device",
@@ -19849,6 +20035,12 @@
   "it": "Raclette",
   "rm": "Raclette"
  },
+ "Radieren": {
+  "en": "Erase",
+  "fr": "Gommer",
+  "it": "Cancella",
+  "rm": "Stizzar"
+ },
  "Rahmen von MoveEye über den Figuren: grün erkannt, rot Fehlalarm, orange übersehen": {
   "en": "MoveEye’s boxes over the figures: green detected, red false alarm, orange missed",
   "fr": "Cadres de MoveEye sur les personnages : vert détecté, rouge fausse alarme, orange manqué",
@@ -20119,6 +20311,12 @@
   "fr": "Juste : %s",
   "it": "Giusto: %s",
   "rm": "Gist: %s"
+ },
+ "Richtung": {
+  "en": "Direction",
+  "fr": "Direction",
+  "it": "Direzione",
+  "rm": "Direcziun"
  },
  "Riedmoos %d m": {
   "en": "Riedmoos %d m",
@@ -25028,6 +25226,12 @@
   "it": "Modelli – mondi pronti e modelli 3D",
   "rm": "Models – munds finids e models 3D"
  },
+ "Vorne malen": {
+  "en": "Paint in front",
+  "fr": "Peindre devant",
+  "it": "Dipingi davanti",
+  "rm": "Pitturar davant"
+ },
  "Vorsichtiger Schleicher (von Deckung zu Deckung, kriecht, erstarrt bei Licht, Lampe aus)": {
   "en": "Careful sneaker (from cover to cover, crawls, freezes in light, lamp off)",
   "fr": "Furtif prudent (de couvert en couvert, rampe, se fige à la lumière, lampe éteinte)",
@@ -25657,6 +25861,18 @@
   "fr": "Suivant : environnement ›",
   "it": "Avanti: dintorni ›",
   "rm": "Vinavant: conturns ›"
+ },
+ "Weiteres Foto vom gleichen Platz": {
+  "en": "Another photo of the same place",
+  "fr": "Autre photo du même emplacement",
+  "it": "Altra foto dello stesso posto",
+  "rm": "Ulteriura foto da la medema plazza"
+ },
+ "Weiteres Foto …": {
+  "en": "More photos …",
+  "fr": "Autre photo …",
+  "it": "Altra foto …",
+  "rm": "Ulteriura foto …"
  },
  "Weitergehen": {
   "en": "Go on",

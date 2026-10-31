@@ -1,7 +1,7 @@
 {
- "version": "3D-4.57",
+ "version": "3D-4.58",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 68028797,
- "sha256": "a63c07928cfa7f57d1558f1eed79b1aa014539e710dd87106b4856e89bc39637",
- "notes": "Echte Oberflächen und Foto-Himmel (CC0) im Camping-Platz – wird nachgeladen, nicht in Lite."
+ "size": 68118519,
+ "sha256": "1b08c57a205c3339ca5a233545acdfa9fbb11d8b7db755d048a8966120cb205a",
+ "notes": "Foto-Modus: ein echtes Foto vom eigenen Platz als Hintergrund, die Figuren werden eingepasst."
 }
