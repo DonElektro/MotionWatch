@@ -1,7 +1,7 @@
 {
- "version": "3D-4.25",
+ "version": "3D-4.26",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 64568361,
- "sha256": "dfe42c5ea422dfc5b166a68d79997482faa5881c9fba632dd15c804d38aa824c",
- "notes": "Neue Grafik-Stufe «Lite» für den Raspberry Pi 5 (System → Grafik → Grafik-Modus: Automatisch / Lite / Normal; auf dem Pi von selbst Lite), in Mehr → Selbstdiagnose die Zeile «Leistung» (Bilder/s, Renderer, Lite, Auflösung)."
+ "size": 64637396,
+ "sha256": "3c81a8b691cdf3817fbc86021dd57500481690e0859c3aa91391e3f20128634e",
+ "notes": "Alle schwebenden Fenster (Kompass, Karte, Livebild, SmallTV, Gerät, Mover, Kopf, Kameras, CPU) in einem gemeinsamen Rahmen: verschieben, Grösse ändern, ✕ ausblenden, Schnappen; neuer Knopf «Fenster» in der Leiste unten (Liste, «Anordnung zurücksetzen»); die Anordnung bleibt gespeichert."
 }

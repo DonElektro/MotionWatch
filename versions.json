@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 03:42",
+ "generated": "2026-10-31 03:55",
  "versions": [
   {
-   "version": "2.98.56",
-   "file": "webcam_bewegung_2_98_56.py",
+   "version": "2.98.57",
+   "file": "webcam_bewegung_2_98_57.py",
    "url": "",
-   "sha256": "94b54832b5836d2defbaa0fff653c9ec16eea7949b5637c85256d348ec041883",
-   "date": "2026-10-31 03:42",
-   "notes": "Sim-Kompakt: hat es neben dem Hauptbild Platz (PC, Tablet quer), steht das zweite Bild (Simulator bzw. Kamera) rechts daneben statt darüber – nichts wird mehr verdeckt; am Handy hochkant bleibt Bild im Bild. Das Simulator-Bild wächst nicht mehr mit dem Zoom «Grösse» aus seinem Platz.",
-   "sig": "955a9d2041106d389f9a62806d96d9f70d6c10e74772245d0a349a9d5d8473a635767be8aca56b98dd7e8360c9b0c2d60f67e41499d79873ba32c25400fa580a"
+   "sha256": "e244862ce85caefa253914fbebe866d557e0a03c4fe876a772cf56381975f663",
+   "date": "2026-10-31 03:55",
+   "notes": "Simulator 3D-4.26: alle schwebenden Fenster (Kompass, Karte, Livebild, SmallTV, Gerät, Mover, Kopf, Kameras, CPU) in einem gemeinsamen Rahmen – verschieben, Grösse ändern, ✕ ausblenden, Schnappen, neuer Knopf «Fenster» in der Leiste unten (Liste, «Anordnung zurücksetzen»), Anordnung pro PC gespeichert.",
+   "sig": "2e8d1968e85bbd0d30c9cb2f3053019e74587deb79805e6625d44bfdeb827ac43829f91b91ae3ecd3e49929b7fd9d77d0b9d7d272471436c55fd175ee0dc3108"
   },
   {
    "version": "2.97.1",
