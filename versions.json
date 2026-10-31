@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 12:21",
+ "generated": "2026-10-31 12:28",
  "versions": [
   {
-   "version": "2.98.97",
-   "file": "webcam_bewegung_2_98_97.py",
+   "version": "2.98.98",
+   "file": "webcam_bewegung_2_98_98.py",
    "url": "",
-   "sha256": "83760195d42b1ac29c0a698d44150a0e505713976bff89c0911463c9c3d95168",
-   "date": "2026-10-31 12:21",
-   "notes": "Simulator 3D-4.66: Bergtal-Abenteuer zu zweit (gemeinsam, Rollen, Wettrennen), geteilter Bildschirm, Hilfe übers Handy, Familien-Bestenliste.",
-   "sig": "fe8d0a77223cce306e5908d4ed89650ee53177d6b82dd530f0e8654b0410ae6c00c5435d4dd2c2e6faeea853ec4286cd51fb83e4d6d5419c24d6274da18b030a"
+   "sha256": "448e33f5a7f06646e0b91b9977ebd1540f31e40dc9318bcb6a793a259e39f44c",
+   "date": "2026-10-31 12:28",
+   "notes": "Simulator 3D-4.67: Entwickler-Fenster mit Notizen an Claude (Bild, ZIP-Export), Kontaktbogen aller Orte einer Welt, Kapitel-Sprung im Test-Spielstand.",
+   "sig": "a3c96007a301d68067d5aca3d3f089f5e2a1982872d4bf97f1d62d60b7ce28ba6fd1f9f3babf45d0a3eda777fc93da0d4be63d6bc93ec8adadb158500ffb5b0e"
   },
   {
    "version": "2.97.1",

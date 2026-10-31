@@ -1,7 +1,7 @@
 {
- "version": "3D-4.66",
+ "version": "3D-4.67",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34247861,
- "sha256": "64876cccd131f5dfbfb50020c12e8a3df96023fe47ec6099eedfac3278936590",
- "notes": "Bergtal-Abenteuer zu zweit, Hilfe übers Handy, Familien-Bestenliste."
+ "size": 34299984,
+ "sha256": "82afad625d91f3a017c5a31fbf296688f7e4ac4b451f5916afe488b00ae7a6fe",
+ "notes": "Entwickler-Fenster: Notizen an Claude, Kontaktbogen, Kapitel-Sprung im Test-Spielstand."
 }
