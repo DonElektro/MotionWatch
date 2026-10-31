@@ -47,6 +47,18 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 - **Kurzzeichen «st» (Daniel, 31.10.2026 13:18):** schickt Daniel nur «st», sofort den Kurzbericht: Tabelle «Teil | Stand»
   (Prozent je Paket + «Gesamt»), darunter eine Zeile «Zuletzt veröffentlicht: …» und eine Zeile «Wartet auf dich: …»
   (offene Entscheide, sonst «nichts»). Kein weiterer Text.
+- **Kurzzeichen (Daniel, 31.10.2026 22:14):**
+  - st: Stand
+  - neu: seit der letzten Frage veröffentlicht, mit «So testest du»
+  - ot: offene To-dos und Notizen
+  - nt: Sammelliste «nicht getestet»
+  - ok: weiter wie empfohlen
+  - halt: alles anhalten, nichts veröffentlichen
+  - los: nach halt weiter
+  - bild: aktuelle Bilder vom letzten Paket
+  - lang: nächste Antwort ausführlich
+
+  Ausser bei st kurz nachfragen, was genau gemeint ist, bevor gehandelt wird.
 - **Arbeit verteilen (Daniel, 31.10.2026 04:24):** grössere Aufträge in möglichst viele unabhängige Pakete aufteilen und
   parallel an Helfer geben – bevorzugt Helfer auf eigenen Cloud-Rechnern (Agent mit isolation "remote"), damit der lokale
   Rechner nicht überlastet. Jeder Helfer: eigener Zweig, kein Release, keine Rückfragen bei bestätigten Paketen; zusammengeführt

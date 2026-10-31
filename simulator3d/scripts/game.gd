@@ -10,7 +10,7 @@ extends Node
 ## in the picture (pixels) and there is enough light; movement is noticed by the motion detection; the thermal camera
 ## sees a warm spot also at night; the microphone hears loud steps. Objects hide (with their height).
 ## Extras (all adjustable): stones to distract, things to collect, lives, cones of view for beginners, random start/goal.
-## Page for the phone: http://<PC>:<port+5>/  ·  WebSocket: <port+6>.
+## Page for the phone: http://<PC>:8770/  ·  WebSocket: 8771 (simulator on 8765; other ports: game_ports()).
 
 var main
 var Actor = preload("res://scripts/actor.gd")
@@ -139,13 +139,24 @@ var round_runners := 1                   # how many ran in this round (the score
 var fx_nodes: Array = []                 # [node, until] of the hit sequence (laser, paint, flash)
 
 
+static func game_ports(p: int) -> Array:
+	"""Ports aufräumen (Stabil-Start): die Ports des Spiels aus dem Port des Simulators. 8765 wie bisher 8770 / 8771 (der Tunnel von
+	MoveEye trägt genau diese, TUN_LOCAL in Teil 343). Jeder andere Port P: 9770 + 2·(P − 8765) und eins mehr - so kommen
+	sich zwei Simulatoren auf Nachbar-Ports nicht mehr in die Quere (vorher P+5 / P+6: 8765 und 8766 teilten sich 8771)."""
+	var k := posmod(p - 8765, 2000)
+	if k == 0:
+		return [8770, 8771]
+	return [9770 + 2 * k, 9771 + 2 * k]
+
+
 func _ready() -> void:
 	root = Node3D.new()
 	root.name = "game"
 	main.add_child(root)
 	players.resize(MAX_P)
-	http_port = main.stream_port + 5
-	ws_port = main.stream_port + 6
+	var gp := game_ports(int(main.stream_port))
+	http_port = gp[0]
+	ws_port = gp[1]
 	_rng.randomize()
 	_build_cones()
 	on_scene()

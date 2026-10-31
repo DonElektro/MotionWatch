@@ -14,6 +14,7 @@ const INFO_FILE := "simulator3d/version.json"
 # old name and starts MoveEyeSim3D.exe (written next to it from the same ZIP) instead, see old_name_forward().
 const EXE_STEM := "MoveEyeSim3D"
 const OLD_STEM := "MotionWatch3D"
+const GONE_FILES := ["Start auf Port 8766.bat"]   # Ports aufräumen: umbenannt (8766 = Tunnel-Port von MoveEye) - nach dem Update weg
 
 var base := BASE
 var info := {}
@@ -329,6 +330,9 @@ func _install(zip_path: String, exe: String) -> String:
 	if not found:
 		DirAccess.remove_absolute(exe + ".old")
 		return "In der ZIP-Datei fehlt %s." % me
+	for g in GONE_FILES:                            # alte Beilagen, die es in der neuen ZIP nicht mehr gibt
+		if FileAccess.file_exists(dir.path_join(g)):
+			DirAccess.remove_absolute(dir.path_join(g))
 	if OS.get_name() != "Windows":
 		OS.execute("chmod", ["+x", exe])
 	return ""

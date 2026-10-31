@@ -1,9 +1,9 @@
 {
- "version": "3D-5.16.0",
- "ver": "3.16.0",
- "name": "MoveEye Sim 3.16.0",
+ "version": "3D-5.17.0",
+ "ver": "3.17.0",
+ "name": "MoveEye Sim 3.17.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35438764,
- "sha256": "bc4b53e2a6b1c60716f112f3d6ff65ae53fcaa7f444f6a42931939db6866b99a",
- "notes": "MoveEye Sim 3.16.0: Bergtal wie auf Daniels Fotos (Fels, Weiden, Fichten, Bergsee, Himmel)."
+ "size": 35521369,
+ "sha256": "9d19893a617f5c61c843f1b550d0b62bd125c56869fa1399e610fc6533c468fd",
+ "notes": "MoveEye Sim 3.17.0: Notfall-Start, Fehlerbericht sammeln, weniger Grafikspeicher, zweiter Simulator auf Port 8768."
 }
