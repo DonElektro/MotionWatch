@@ -124,7 +124,7 @@ func add_controls() -> void:
 		var kk: String = k
 		m.add_control("button", "spawn_" + kk, KINDS[kk][0], null, func(): main.spawn(kk), "Besuch", {"sub": KINDS[kk][1]})
 	m.add_control("toggle", "hard_auto", "Schwierige Personen kommen auch von selbst (Kapuze, Rucksack, Gruppe, telefoniert, schleicht am Rand)", func(): return hard_auto, func(v): _put("hard_auto", bool(v)), "Besuch", {"sub": "Von selbst"})
-	m.add_control("toggle", "anim_real", "Tiere wie echt: schnüffeln und halten öfter an, Reh liegt und steht auf, hebt den Kopf, Rotten und Rudel bleiben zusammen stehen", func(): return anim_real, func(v): _put("anim_real", bool(v)), "Besuch", {"sub": "Verhalten"})
+	m.add_control("toggle", "anim_real", "Tiere wie echt: schnüffeln und halten öfter an, Reh äugt und flüchtet in Sprüngen, Hase drückt sich ins Gras, Igel rollt sich ein, Fuchs springt auf Mäuse, Katze schleicht und springt aufs Auto, Rotten und Rudel bleiben zusammen", func(): return anim_real, func(v): _put("anim_real", bool(v)), "Besuch", {"sub": "Verhalten"})
 	m.add_control("toggle", "leash_on", "Hund beim Spaziergang an der Leine", func(): return leash_on, func(v): _put("leash_on", bool(v)), "Besuch", {"sub": "Verhalten"})
 
 
@@ -561,6 +561,10 @@ func cat_roof() -> Node3D:
 	var roof: Vector3 = car.global_transform * Vector3(0, 1.42, 0.25)
 	var side: Vector3 = car.global_transform.basis.x.normalized()
 	var start: Vector3 = car.global_position + side * 2.2 + Vector3(0, 0, 0.5)
+	if main.tiere != null and main.tiere.active():          # Paket «Tiere»: it comes along, jumps up in an arc, later down again
+		var vc = main.spawn("cat", car.global_position + side * 9.0 + Vector3(0, 0, 3.0), start)
+		main.tiere.cat_jump_car(vc, car, randf_range(20.0, 45.0))
+		return vc
 	var v = main.spawn("cat", start, Vector3(roof.x, 0, roof.z))
 	v.position = Vector3(roof.x, 1.42, roof.z)                # it is up there already (jumped)
 	v.route = [[Vector3(roof.x, 0, roof.z), randf_range(20.0, 45.0), 0.0, hp], car.global_position - side * 25.0]

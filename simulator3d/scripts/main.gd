@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.44"
+const VERSION := "3D-4.45"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -326,6 +326,7 @@ var entdecken                         # entdecken.gd (Erlebniswelt 20–23): reg
 var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»): wind, light, lures, valuables of the catalogue
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
 var menschen                          # menschen.gd (P10): people behave like real ones - gaits, groups, the day of a campsite, API for scenarios
+var tiere                             # tiere.gd (Paket «Tiere»): animals behave like real ones (flee, curl up, pounce …)
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
 var colors_on := true
 var tracks                            # tracks.gd (3D-3.98)
@@ -466,6 +467,9 @@ func _ready() -> void:
 	menschen = preload("res://scripts/menschen.gd").new()     # P10 «Menschen-Verhalten»: gaits, variety, groups, daily routine, scenario API
 	menschen.main = self
 	add_child(menschen)
+	tiere = preload("res://scripts/tiere.gd").new()           # Paket «Tiere»: real behaviour of the animals (with «Tiere wie echt»)
+	tiere.main = self
+	add_child(tiere)
 	fauna = preload("res://scripts/fauna.gd").new()          # 3D-3.95: birds and bats
 	fauna.main = self
 	add_child(fauna)
@@ -3276,6 +3280,8 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 		return szenen.spawn_kind(kind, from, to)      # 3D-4.x: on your pitch, camouflage / crawling, bike thief (szenenplus.gd)
 	if menschen != null and menschen.is_kind(kind):
 		return menschen.spawn_kind(kind, from, to)    # P10: family, standing and talking, sitting, WC walk, gaits (menschen.gd)
+	if tiere != null and tiere.is_kind(kind):
+		return tiere.spawn_kind(kind, from, to)       # Paket «Tiere»: free dog, crows, magpies, gulls
 	if kids_on and not kids_scary and kind in ["wolf", "lynx", "boar"]:
 		kind = "hare"                             # 3D-3.69: Kinder-Modus without wild animals if so set
 	if kids_on and not kids_thief and kind in ["thief", "burglar", "drunk"]:
@@ -3299,6 +3305,8 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 	v.setup(self, kind, a, b, spd * randf_range(0.85, 1.15))
 	if menschen != null:
 		menschen.after_build(v, kind)               # P10: vest, bag, bike, own pace, gentle bends, children run about
+	if tiere != null:
+		tiere.on_spawn(v)                         # Paket «Tiere»: the real walking speed of the animal
 	v.set_night(is_dark())
 	if sd >= 0:
 		recorder.note_spawn(v, sd)
@@ -3798,7 +3806,7 @@ func _register_controls() -> void:
 	add_control("toggle", "world_cloth", "Fahnen und Wäsche im Wind", func(): return world_cloth, func(v): set_cloth(v), "Wetter", ex)
 	add_control("toggle", "world_smoke", "Rauch aus Kaminen", func(): return world_smoke, func(v): set_smoke(v), "Wetter", ex)
 	add_control("toggle", "world_fireflies", "Glühwürmchen in warmen Nächten", func(): return world_fireflies, func(v): world_fireflies = v, "Wetter", ex)
-	add_control("toggle", "fauna_on", "Vögel am Tag, Fledermäuse in der Nacht (warm im Wärmebild, typische Fehlalarm-Ursache)", func(): return fauna_on, func(v): fauna_on = bool(v); fauna.on = fauna_on, "Wetter", {"sub": "Natur und Wind"})
+	add_control("toggle", "fauna_on", "Vögel am Tag (fliegen vorbei, Krähen, Elstern und Möwen am Boden), Fledermäuse in der Nacht (warm im Wärmebild, typische Fehlalarm-Ursache)", func(): return fauna_on, func(v): fauna_on = bool(v); fauna.on = fauna_on, "Wetter", {"sub": "Natur und Wind"})
 	add_control("toggle", "gusts", "Wind in Böen", func(): return gusts, func(v): gusts = v, "Wetter", ex)
 	add_control("toggle", "cloud_shadows", "Wolkenschatten (die Helligkeit wechselt)", func(): return cloud_shadows, func(v): cloud_shadows = v, "Wetter", ex)
 	add_control("slider", "lamp_share", "Nachts mit Stirnlampe oder Handylicht", func(): return lamp_share, func(v): lamp_share = v, "Besuch", {"min": 0, "max": 1, "step": 0.05, "expert": true})
@@ -3889,6 +3897,7 @@ func _register_controls() -> void:
 	objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
 	umgebung.add_controls()                                # 3D-4.x: surroundings like real
 	menschen.add_controls()                                # P10: people like real (Besuch → Verhalten / Von selbst / Menschen schicken)
+	tiere.add_controls()                                   # Paket «Tiere»: free dog, birds on the ground
 	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
 	if statusled != null:
 		statusled.add_controls()                           # Licht & Ton → Status-LED & Tasten (Fenster «Gerät»)
@@ -4745,6 +4754,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return umgebung.control(d)
 	elif a == "menschen":                              # P10: {do: info | set (key, value) | spawn (kind) | api (id, fn, args) | probe (gait, dist, dark)}
 		return menschen.control(d)
+	elif a == "tiere":                                 # Paket «Tiere»: {do: info | spawn (kind, from, to) | threat (x, z, secs) | curl | pounce | car}
+		return tiere.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
 		return weit.control(d)
 	elif a == "nacht":                                 # Nacht-Testlauf: {do: info | start | stop | state | truth | plan} (nachtlauf.gd)
