@@ -843,6 +843,7 @@ class Spinne extends Tier:
 	var l_d := 0.012                # distance housing front -> lens
 	var dur := 0.0
 	var other_sid := "ceil"
+	var drop_r := Vector3(0.04, 0.0, 0.0)  # drop point: distance, side, height (_drop_rand)
 
 	func build() -> void:
 		id = "spinne"
@@ -944,6 +945,7 @@ class Spinne extends Tier:
 		lens_hold = hold_
 		if sid in ["thread", "lens"]:
 			return {"ok": true, "state": st}
+		_drop_rand()
 		if dist > 0.0:                             # tests: straight to the thread in front of the lens (no long walk)
 			sid = "ceil"
 			_begin_drop(true)
@@ -963,9 +965,12 @@ class Spinne extends Tier:
 		var f := -ct.basis.z
 		f.y = 0.0
 		f = f.normalized() if f.length() > 0.01 else Vector3(0, 0, -1)
-		var d := lens_dist if lens_dist > 0.0 else randf_range(0.025, 0.07)
-		var side := ct.basis.x.normalized() * randf_range(-0.012, 0.012)
-		return ct.origin + f * d + side + Vector3(0, randf_range(-0.012, 0.008), 0)
+		var d := lens_dist if lens_dist > 0.0 else float(drop_r.x)
+		return ct.origin + f * d + ct.basis.x.normalized() * float(drop_r.y) + Vector3(0, float(drop_r.z), 0)
+
+	func _drop_rand() -> void:
+		"""where in front of the lens it will hang: 2.5–7 cm ahead, a little to the side, about at lens height"""
+		drop_r = Vector3(randf_range(0.025, 0.07), randf_range(-0.012, 0.012), randf_range(-0.012, 0.008))
 
 	func _begin_drop(jump := false) -> void:
 		var dp := _drop_point()
@@ -1041,6 +1046,7 @@ class Spinne extends Tier:
 			lens_want = true
 			lens_dist = 0.0
 			lens_hold = false
+			_drop_rand()
 			go("to_lens")
 		match st:
 			"rest":                               # sits still (by day mostly), legs spread
@@ -1066,7 +1072,7 @@ class Spinne extends Tier:
 					heading = heading.normalized()
 					_pick()
 			"to_lens":                            # to the ceiling, then right above the head camera
-				spd = 0.03
+				spd = 0.03 if sid != "ceil" else 0.045
 				if sid != "ceil":
 					tgt = edge(sid, "ceil")
 					if _walk(dt):
@@ -1075,7 +1081,7 @@ class Spinne extends Tier:
 				else:
 					var dp := _drop_point()
 					tgt = clampp("ceil", zt.room.to_local(dp))
-					if _walk(dt) or st_t > 120.0:
+					if _walk(dt) or st_t > 400.0:
 						_begin_drop()
 			"descend":                            # down on the safety thread, slower near the end
 				var v := 0.06 if L_end - L > 0.1 else 0.025
@@ -1223,4 +1229,5 @@ func control(d: Dictionary) -> Dictionary:
 	if valid():
 		for a in [hamster, vogel, spinne]:
 			out.append(a.info())
-	return {"ok": true, "scene": str(main.scene), "pets": pets_on, "spider": spider_on, "lite": lite, "animals": out, "stats": stats}
+	return {"ok": true, "scene": str(main.scene), "pets": pets_on, "spider": spider_on, "lite": lite, "animals": out, "stats": stats,
+			"fps": snappedf(Engine.get_frames_per_second(), 0.1)}
