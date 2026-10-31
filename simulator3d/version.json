@@ -1,7 +1,7 @@
 {
- "version": "3D-4.82",
+ "version": "3D-4.83",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34953577,
- "sha256": "95bebf047ac711234a5ad9766fa5383f949b230a09cf5d127fd71a9030e85a82",
- "notes": "Bergtal-Abenteuer: Vorlesen, Spielstände mit Weiterspielen, Blinki-Tipps, Kinder-Modus."
+ "size": 34968748,
+ "sha256": "98b1a02c17b631b5edc0c86b3f6d6b72a1c2f2b49148387e1948dffa82cb43b3",
+ "notes": "Werkseinstellungen im Simulator wie bei MoveEye (mit Kopie, Horror-Passwort und Sprache bleiben)."
 }
