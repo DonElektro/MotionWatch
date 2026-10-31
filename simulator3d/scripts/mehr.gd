@@ -3,7 +3,7 @@ extends Node
 ## 589 / 510 / 578) – gleiche Namen, gleiche Reihenfolge, gleiches Aussehen:
 ##   Karte «Mehr» ganz unten im Bedienfeld: Hilfe · Rundgang mit Blinki · Selbstdiagnose · Protokoll · Updates (führt zur
 ##   Karte System → Updates, keine zweite) · Ansicht Hell / Rotlicht / Dunkel · Rückmeldung an den Entwickler · Über den
-##   Simulator (mit «Version und Status»). Dazu «Entwickler» (devtool.gd: Karte aller Orte, Sprung, Flugkamera; nur der Besitzer). Das «?» der Leiste unten öffnet ein kleines Menü mit denselben Punkten, der Knopf
+##   Simulator (mit «Version und Status»). Dazu «Entwickler» (devtool.gd: Karte aller Orte, Sprung, Flugkamera, Reiter «Schalter» mit den Knöpfen der früheren Gruppe «Entwickler»; nur der Besitzer - das einzige «Entwickler» im Simulator). Das «?» der Leiste unten öffnet ein kleines Menü mit denselben Punkten, der Knopf
 ##   ◐ daneben schaltet Hell → Rotlicht → Dunkel (wie MoveEye). Die Teile: feedback.gd, tour.gd, diagnose.gd, protokoll.gd,
 ##   farbschema.gd, Symbole mehr_icons.gd. main.gd ruft nur build() auf, speichert keep() mit und gibt /control «mehr» weiter.
 
@@ -42,7 +42,7 @@ const ITEMS := [["help", "help", "Hilfe", "Maus, Tasten, Leiste – und die Anle
 		["updates", "update", "Updates", ""],
 		["theme", "theme", "Ansicht", ""],
 		["feedback", "chat", "Rückmeldung an den Entwickler", "Fehler, Wünsche, Lob, Fragen – anonym"],
-		["dev", "bug", "Entwickler", "Karte aller Orte, hinspringen, Flugkamera – nur für den Besitzer"],
+		["dev", "bug", "Entwickler", "Karte aller Orte, Flugkamera, Prüfstand, Störungen, Spieltest – nur für den Besitzer"],
 		["about", "info", "Über den Simulator", "Version und Status, Geschichte, Entwickler"]]
 
 

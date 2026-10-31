@@ -11103,6 +11103,24 @@
   "it": "Sviluppatore",
   "rm": "Sviluppader"
  },
+ "Entwickler-Bereich von MoveEye: an – das Bedienfeld zeigt die Karte «Entwickler» (Knopf zu diesem Fenster).": {
+  "en": "MoveEye developer area: on – the panel shows the card «Developer» (button to this window).",
+  "fr": "Espace développeur de MoveEye : activé – le panneau affiche la carte «Développeur» (bouton vers cette fenêtre).",
+  "it": "Area sviluppatore di MoveEye: attiva – il pannello mostra la scheda «Sviluppatore» (pulsante per questa finestra).",
+  "rm": "Secziun dal sviluppader da MoveEye: activa – il panel mussa la carta «Sviluppader» (buttun per questa fanestra)."
+ },
+ "Entwickler-Bereich von MoveEye: aus (MoveEye: Einstellungen → System → Gerät & Hilfe) – nur dieses Fenster.": {
+  "en": "MoveEye developer area: off (MoveEye: Settings → System → Device & help) – only this window.",
+  "fr": "Espace développeur de MoveEye : désactivé (MoveEye : Réglages → Système → Appareil et aide) – seulement cette fenêtre.",
+  "it": "Area sviluppatore di MoveEye: disattivata (MoveEye: Impostazioni → Sistema → Dispositivo e aiuto) – solo questa finestra.",
+  "rm": "Secziun dal sviluppader da MoveEye: deactivada (MoveEye: Parameters → Sistem → Apparat & agid) – mo questa fanestra."
+ },
+ "Entwickler-Fenster öffnen": {
+  "en": "Open developer window",
+  "fr": "Ouvrir la fenêtre développeur",
+  "it": "Aprire la finestra sviluppatore",
+  "rm": "Avrir la fanestra dal sviluppader"
+ },
  "Entwicklungsphase: jede Minute nach neuen Versionen schauen und sofort installieren": {
   "en": "Development phase: check for new versions every minute and install them immediately",
   "fr": "Phase de développement : chercher de nouvelles versions chaque minute et les installer immédiatement",
@@ -17971,6 +17989,12 @@
   "it": "Mappa (M)",
   "rm": "Charta (M)"
  },
+ "Karte aller Orte, Flugkamera, Prüfstand, Störungen, Spieltest – nur für den Besitzer": {
+  "en": "Map of all places, fly camera, test bench, disturbances, play test – only for the owner",
+  "fr": "Carte de tous les lieux, caméra libre, banc d’essai, perturbations, test de jeu – réservé au propriétaire",
+  "it": "Mappa di tutti i luoghi, telecamera di volo, banco di prova, disturbi, test di gioco – solo per il proprietario",
+  "rm": "Charta da tut ils lieus, camera da sgol, banc da prova, disturbis, test da gieu – mo per il possessur"
+ },
  "Karte aller Orte, hinspringen, Flugkamera – nur für den Besitzer": {
   "en": "Map of all places, jump there, fly camera – only for the owner",
   "fr": "Carte de tous les lieux, y sauter, caméra libre – réservé au propriétaire",
@@ -21916,6 +21940,12 @@
   "it": "MoveEye non collegato",
   "rm": "MoveEye betg collià"
  },
+ "MoveEye nicht verbunden – Diagnose-Paket und Entwickler-Bereich brauchen ein verbundenes MoveEye.": {
+  "en": "MoveEye not connected – the diagnosis package and the developer area need a connected MoveEye.",
+  "fr": "MoveEye non connecté – le paquet de diagnostic et l’espace développeur nécessitent un MoveEye connecté.",
+  "it": "MoveEye non collegato – il pacchetto diagnostico e l’area sviluppatore richiedono un MoveEye collegato.",
+  "rm": "MoveEye betg collià – il pachet da diagnosa e la secziun dal sviluppader dovran in MoveEye collià."
+ },
  "MoveEye packt Protokoll, Einstellungen ohne Passwörter und Systemwerte in ein ZIP (öffnet den Browser). Braucht ein verbundenes MoveEye.": {
   "en": "MoveEye packs log, settings without passwords and system values into a ZIP (opens the browser). Needs a connected MoveEye.",
   "fr": "MoveEye met journal, réglages sans mots de passe et valeurs système dans un ZIP (ouvre le navigateur). Nécessite un MoveEye connecté.",
@@ -25339,6 +25369,12 @@
   "it": "Aprire il banco di prova",
   "rm": "Avrir il banc da prova"
  },
+ "Prüfstand, Störungen und Diagnose – früher die Gruppe «Entwickler» im Bedienfeld. Spieltest: eigener Reiter.": {
+  "en": "Test bench, disturbances and diagnosis – formerly the group «Developer» in the panel. Play test: its own tab.",
+  "fr": "Banc d’essai, perturbations et diagnostic – auparavant le groupe «Développeur» du panneau. Test de jeu : onglet séparé.",
+  "it": "Banco di prova, disturbi e diagnosi – prima il gruppo «Sviluppatore» nel pannello. Test di gioco: scheda propria.",
+  "rm": "Banc da prova, disturbis e diagnosa – pli baud la gruppa «Sviluppader» en il panel. Test da gieu: agen register."
+ },
  "Prüfstand: echte Nacht %s": {
   "en": "Test bench: real night %s",
   "fr": "Banc d’essai : vraie nuit %s",
@@ -26581,6 +26617,12 @@
   "fr": "Bouchon de moutons sur la route du col",
   "it": "Ingorgo di pecore sulla strada del passo",
   "rm": "Stausch da nursas sin la via dal pass"
+ },
+ "Schalter": {
+  "en": "Switches",
+  "fr": "Commandes",
+  "it": "Comandi",
+  "rm": "Cumonds"
  },
  "Schalter aus": {
   "en": "switch off",

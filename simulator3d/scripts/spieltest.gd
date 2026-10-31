@@ -1,7 +1,8 @@
 extends Node
 ## Spieltest-Assistent (Daniel 31.10.2026, Paket «Spieltest-Assistent»): beobachtet die Spielmodi, notiert, was passiert, und
 ## macht daraus Vorschläge (feste, verständliche Regeln) – im Fenster «Mehr → Entwickler → Spieltest» (devtool_spieltest.gd).
-##   * Ein / aus nur im Entwickler-Fenster (nur der Besitzer, devtool.is_owner) oder Entwickler → «Spieltest-Assistent».
+##   * Ein / aus im Entwickler-Fenster (nur der Besitzer, devtool.is_owner) oder auf der Simulator-Seite von MoveEye
+##     (Karte «Entwickler» → «Spieltest-Assistent», Steuerelement spieltest_on - nicht mehr im Bedienfeld).
 ##     Er läuft, bis er ausgeschaltet wird – auch über Neustarts (user://spieltest/einstellung.json). Solange er läuft, steht
 ##     unten links ein kleines gezeichnetes Notizblock-Symbol (Klick = Fenster öffnen).
 ##   * Beobachtet (ohne Änderungen in den Spielen, nur Lesen 1 × pro Sekunde):
@@ -1342,12 +1343,16 @@ func clear_all() -> int:
 # the simulator settings (group «Entwickler», like MoveEye) and /control
 # =============================================================================================================================
 static func add_controls(m) -> void:
-	"""main._register_controls: the two switches in the group «Entwickler» (MoveEye has «Spieltest-Meldungen» in its group
-	«Entwickler» too - the same switch: the simulator only asks MoveEye to set it)"""
+	"""main._register_controls: the two switches of the group «Entwickler» (MoveEye has «Spieltest-Meldungen» in its group
+	«Entwickler» too - the same switch: the simulator only asks MoveEye to set it).
+	Paket «Entwickler zusammenlegen» (Daniel 31.10.2026): both «devwin» = not in the panel, drawn only in the window
+	«Mehr → Entwickler → Spieltest» (devtool_spieltest.gd). «spieltest_push» also «wiz»: MoveEye's Simulator page leaves it
+	out (it was there twice: MoveEye's own switch in Einstellungen → Entwickler + this mirror). /control set keeps working."""
 	m.add_control("toggle", "spieltest_on", "Spieltest-Assistent: beobachtet die Spiele und macht Vorschläge (Mehr → Entwickler → Spieltest)",
-			func(): return m.spieltest != null and m.spieltest.on, func(v): _ctl(m, "on", bool(v)), "Entwickler", {"expert": true})
+			func(): return m.spieltest != null and m.spieltest.on, func(v): _ctl(m, "on", bool(v)), "Entwickler", {"expert": true, "devwin": true})
 	m.add_control("toggle", "spieltest_push", "Spieltest-Meldungen aufs Handy (Schalter in MoveEye, über dessen Push)",
-			func(): return m.spieltest != null and bool(m.spieltest.mw_state().get("on", false)), func(v): _ctl(m, "push", bool(v)), "Entwickler", {"expert": true})
+			func(): return m.spieltest != null and bool(m.spieltest.mw_state().get("on", false)), func(v): _ctl(m, "push", bool(v)), "Entwickler",
+			{"expert": true, "devwin": true, "wiz": true})
 	m.controls[-1]["ro"] = func(): return m.spieltest == null or not m.spieltest.mw_connected()
 
 

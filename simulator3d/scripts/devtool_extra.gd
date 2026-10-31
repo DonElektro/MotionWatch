@@ -6,6 +6,8 @@ extends Node
 ##   * Notizen an Claude: devtool_notizen.gd (user://dev_notizen/<id>.json + .jpg, ZIP-Export)
 ##   * Kontaktbogen:      devtool_kontakt.gd (user://kontaktbogen/<welt>/<id>.jpg + index.html)
 ##   * Kapitel-Sprung:    devtool_kapitel.gd (Abenteuer, Spielbereich, Horror nur wenn schon entsperrt; Test-Spielstand)
+##   * Schalter:          devtool_schalter.gd (Paket «Entwickler zusammenlegen»: Prüfstand, Störungen, Diagnose-Paket -
+##                        früher die Gruppe «Entwickler» im Bedienfeld; erster Reiter)
 ##   * Spieltest:         devtool_spieltest.gd (der Assistent spieltest.gd: ein / aus, Push-Zeile, Vorschläge, ZIP für Claude)
 ## Hier: die Knopfzeile (ein Teil offen), das Foto ohne Bedienelemente (eigene kleine Kamera wie entdecken.gd, cull_mask 1 =
 ## wie die Kameras von MoveEye: keine Helfer-Marken) und GET /dev/kontakt/… · /dev/notizen/… · /dev/notizen.zip.
@@ -20,6 +22,7 @@ var notizen                              # devtool_notizen.gd
 var kontakt                              # devtool_kontakt.gd
 var kapitel                              # devtool_kapitel.gd
 var spieltest                            # devtool_spieltest.gd (Paket «Spieltest-Assistent»)
+var schalter                             # devtool_schalter.gd (Paket «Entwickler zusammenlegen»)
 var _tabs := {}                          # id -> Button
 var _bodies := {}                        # id -> Control
 var open_tab := ""
@@ -33,7 +36,8 @@ func _ready() -> void:
 	kontakt = preload("res://scripts/devtool_kontakt.gd").new()
 	kapitel = preload("res://scripts/devtool_kapitel.gd").new()
 	spieltest = preload("res://scripts/devtool_spieltest.gd").new()
-	for p in [notizen, kontakt, kapitel, spieltest]:
+	schalter = preload("res://scripts/devtool_schalter.gd").new()
+	for p in [schalter, notizen, kontakt, kapitel, spieltest]:
 		p.x = self
 		p.dev = dev
 		p.main = main
@@ -49,7 +53,7 @@ func build(v: VBoxContainer) -> void:
 	v.add_child(row)
 	var holder := VBoxContainer.new()
 	holder.add_theme_constant_override("separation", 6)
-	for it in [["notizen", T.t("Notizen an Claude"), notizen], ["kontakt", T.t("Kontaktbogen"), kontakt],
+	for it in [["schalter", T.t("Schalter"), schalter], ["notizen", T.t("Notizen an Claude"), notizen], ["kontakt", T.t("Kontaktbogen"), kontakt],
 			["kapitel", T.t("Kapitel-Sprung"), kapitel], ["spieltest", T.t("Spieltest"), spieltest]]:
 		var b := Button.new()
 		b.text = str(it[1])
@@ -74,7 +78,7 @@ func show_tab(id: String) -> void:
 	for k in _tabs:
 		(_tabs[k] as Button).set_pressed_no_signal(k == id)
 		(_bodies[k] as Control).visible = k == id
-	for p in [notizen, kontakt, kapitel, spieltest]:
+	for p in [schalter, notizen, kontakt, kapitel, spieltest]:
 		if p.has_method("on_show"):
 			p.on_show(open_tab)
 	_fit_t = 0.0
@@ -123,7 +127,7 @@ func control(d: Dictionary):
 	var w := str(d.get("do", ""))
 	if not w in MINE:
 		return null
-	if w == "tab":                               # {do: tab, value: notizen | kontakt | kapitel | ""} - opens the window too
+	if w == "tab":                               # {do: tab, value: schalter | notizen | kontakt | kapitel | spieltest | ""} - opens the window too
 		dev.open()
 		show_tab(str(d.get("value", "")) if _tabs.has(str(d.get("value", ""))) else "")
 		return {"ok": dev.shown, "tab": open_tab}
