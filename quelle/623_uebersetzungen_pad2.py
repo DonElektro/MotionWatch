@@ -16,7 +16,7 @@ _HX_pad2 = {
     'Menu (control panel)': ('Menü (Bedienfeld)', 'Menu (panneau de commande)', 'Menu (pannello di comando)', 'Menu (panela da manipulaziun)'),
     'Hold 1 s: leave': ('1 s halten: beenden', 'Maintenir 1 s : quitter', 'Tenere 1 s: uscire', 'Tegnair 1 s: terminar'),
     'Head in small steps': ('Kopf in kleinen Schritten', 'Tête par petits pas', 'Testa a piccoli passi', 'Chau en pitschens pass'),
-    'Hold L2 + ✚ ↑↓: pole longer / shorter': ('L2 halten + ✚ ↑↓: Stange länger / kürzer', 'Maintenir L2 + ✚ ↑↓ : mât plus long / plus court', 'Tenere L2 + ✚ ↑↓: asta più lunga / più corta', 'Tegnair L2 + ✚ ↑↓: pertga pli lunga / pli curta'),
+    'Hold L2 + ✚ ↑↓: camera higher / lower': ('L2 halten + ✚ ↑↓: Höhe der Kamera + / −', 'Maintenir L2 + ✚ ↑↓ : caméra plus haut / plus bas', 'Tenere L2 + ✚ ↑↓: telecamera più alta / più bassa', 'Tegnair L2 + ✚ ↑↓: camera pli aut / pli bass'),
     'Hold 1.5 s: emergency stop of the servos': ('1,5 s halten: Not-Aus der Servos', 'Maintenir 1,5 s : arrêt d’urgence des servos', 'Tenere 1,5 s: arresto d’emergenza dei servo', 'Tegnair 1,5 s: stop d’urgenza dals servos'),
     'Menu (the bar)': ('Menü (die Leiste)', 'Menu (la barre)', 'Menu (la barra)', 'Menu (la trav)'),
     'Choose a button of the bar (A = press, B = back)': ('Knopf der Leiste wählen (A = drücken, B = zurück)', 'Choisir un bouton de la barre (A = appuyer, B = retour)', 'Scegliere un pulsante della barra (A = premere, B = indietro)', 'Tscherner in buttun da la trav (A = smatgar, B = enavos)'),

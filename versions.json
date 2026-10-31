@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 11:42",
+ "generated": "2026-10-31 12:14",
  "versions": [
   {
-   "version": "2.98.93",
-   "file": "webcam_bewegung_2_98_93.py",
+   "version": "2.98.96",
+   "file": "webcam_bewegung_2_98_96.py",
    "url": "",
-   "sha256": "a404281ca95ec8f474056a37d4a9f8d7ed2d823773d3c423b9f263d828fbe12f",
-   "date": "2026-10-31 11:42",
-   "notes": "Simulator 3D-4.62: neues Fenster Mehr → Entwickler (nur Besitzer) – Übersichtskarte aller Welten und Orte, Klick = hinspringen, Flugkamera.",
-   "sig": "405308cb6cca13dea7355b7caf8dd1f9efcc071971ac5759b31afb139e7f018850b907ca834a2665e230c9379d6448720583b49299ee26cbd7de33bd5575730d"
+   "sha256": "bf79e91c0ce9d8c3e549a2759da82948b24d03c75797c651644263fa5b3b2a30",
+   "date": "2026-10-31 12:14",
+   "notes": "Simulator 3D-4.65: Entwickler-Fenster mit Schnellreglern (Uhrzeit, Wetter, Jahreszeit, Grafik) und Ebenen (Sichtfeld, Wege, Startpunkte, Auslöser, Lampen).",
+   "sig": "6747136d61b78b58ebf2c45c5d77713fce2301fd07392a0042cfdd91a862fbb4c6436a67d5702372ecd2d3e7634969f3a8f51f0d19ce3456605b3f2f622bdc04"
   },
   {
    "version": "2.97.1",

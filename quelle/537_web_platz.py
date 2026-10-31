@@ -80,6 +80,14 @@ function paintStart() {
   const opt = (id, label, on) => { const l = E("label", "opt"); const c = E("input"); c.type = "checkbox"; c.checked = on; c.id = id; l.append(c, E("span", "", label)); v.appendChild(l); opts[id] = c; };
   if (S.wide) opt("o-wide", tf("Use the wide-angle camera ({cam}, {deg}°): {n} directions, about {min} min", {cam: S.wide.label, deg: Math.round(S.wide.hf), n: S.wide.n, min: Math.max(1, Math.round(S.wide.eta / 60))}), true);
   opt("o-rows", t("Thorough: 3 rows instead of 2 (takes longer)"), false);
+  if (S.cam_h) {                                   // real-reh-fusspunkt: the height of the camera (foot point of the thermal check, 232)
+    const l = E("label", "opt"); const n = E("input"); n.type = "number"; n.min = 0.2; n.max = 10; n.step = 0.05; n.value = S.cam_h.m;
+    n.style.width = "90px"; n.id = "o-camh";
+    n.onchange = async () => { const r = await post("/api/place", {op: "height", value: parseFloat(n.value)}); if (r && r.ok) { n.value = r.m; toast("✓ " + t("Camera height (m)") + ": " + r.m); } };
+    l.append(n, E("span", "", t("Camera height (m)"))); v.appendChild(l);
+    v.appendChild(E("div", "mut", t("Height of the lens above the ground - helps to tell animals from persons at night.") +
+      (S.cam_h.sim ? " " + tf("Simulator: camera height {m} m - counts while connected", {m: S.cam_h.sim.toFixed(2)}) : "")));
+  }
   if (S.dark) {
     v.appendChild(E("div", "mut", "🌙 " + t("It is dark: the night reference is made now.")));
     if (S.ir_ok) opt("o-ir", t("with the infrared light"), true);
@@ -346,6 +354,8 @@ def _place_de(keys):
 PLACE_PAGE_KEYS = ["Set up the place", "1 Look around", "2 Mark", "3 Done", "Put MoveEye where it will guard. The head looks around once: it takes a photo in every direction and watches for about 10 seconds what moves and what the AI recognises. Then you only mark your tent, the access, your valuables and what to ignore.", "the whole circle (360°)", "about", "Pan range of the servo {servo}°, with the lens it sees {cover} (camera {hf}°).",
                    "No full turn: the head turns only as far as its servo goes.", "{n} directions in {rows} rows - about {min} minutes.",
                    "Use the wide-angle camera ({cam}, {deg}°): {n} directions, about {min} min", "Thorough: 3 rows instead of 2 (takes longer)",
+                   "Camera height (m)", "Height of the lens above the ground - helps to tell animals from persons at night.",
+                   "Simulator: camera height {m} m - counts while connected",
                    "It is dark: the night reference is made now.", "with the infrared light", "with the thermal camera too", "Start looking around",
                    "Show the last look-around", "Place set up on {when}: {n} things marked", "Forget the place",
                    "Forget the place? Its zones, waypoints and guarded things are removed.", "The head turns by itself - please do not stand in front of it.",
@@ -412,6 +422,15 @@ def place_routes(app, watch, reply, body):
             if not ok:
                 return reply({"ok": False, "error": tr_err(err, lang)}, 400)
             return reply({"ok": True, "result": res})
+        elif op == "height":                            # real-reh-fusspunkt: «Höhe der Kamera (m)» (232 cam_height)
+            try:
+                v_ = round(float(d.get("value")), 2)
+            except (TypeError, ValueError):
+                return reply({"ok": False, "error": "number"}, 400)
+            if not 0.2 <= v_ <= 10.0:
+                return reply({"ok": False, "error": "0.2 … 10 m"}, 400)
+            CFG["cam_height"] = v_; save_settings()
+            return reply({"ok": True, "m": v_})
         elif op == "dismiss":
             place_offer_dismiss()
         elif op == "clear":

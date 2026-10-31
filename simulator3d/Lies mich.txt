@@ -421,6 +421,26 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.65
+3D-4.65: Entwickler-Fenster: Schnellregler für Uhrzeit, Wetter, Jahreszeit und Grafik. Dazu Ebenen in der Ansicht und auf
+der Karte: Sichtfeld von MoveEye, Wege, Startpunkte, Auslöser, Lampen.
+So testest du: 1) Mehr → Entwickler → Schnellregler, Uhrzeit «Nacht» wählen: das Bedienfeld zeigt dasselbe. 2) Ebenen alle
+anhaken. 3) Zur Alp Tschuggen springen.
+
+NEU IN 3D-4.64
+3D-4.64: MoveEye 2.98.95: Wärmebild – ein Reh oder Fuchs, der nachts seitlich vorbeigeht, gilt nicht mehr als Person;
+aufrechte Formen (Kinder, Kauernde) bleiben immer Person. Kriechende Personen: eine flache Box am Boden gilt als «Person?»,
+wenn die KI einen schwachen Hinweis gibt und die Spur oder das Wärmebild ihn bestätigt. Neues Feld «Höhe der Kamera» in
+«Platz einrichten». Im Simulator heisst «Stange» jetzt «Höhe der Kamera».
+So testest du: 1) Simulator auf 23 Uhr, Wärmebild an. 2) Reh seitlich vorbeigehen lassen: es erscheint keine Person.
+3) Kind laufen lassen: es bleibt Person. 4) In «Platz einrichten» das Feld «Höhe der Kamera» ansehen.
+
+NEU IN 3D-4.63
+3D-4.63: Bergtal-Abenteuer: Rucksack mit gefundener Ausrüstung (Kompass, Stirnlampe, Feldstecher, Seil), mildes Essen und
+Trinken (nur langsamer, nie Spielende), Quellen und Kochen, Tauschen mit Figuren ohne Geld.
+So testest du: 1) Abenteuer Kapitel 1: am Wegweiser den Kompass einpacken. 2) «Essen» drücken. 3) Bei einem Wanderer
+tauschen: Proviant gegen Batterien. 4) Am Lager in der Alp Tschuggen «Kochen».
+
 NEU IN 3D-4.62
 3D-4.62: Neues Fenster Mehr → Entwickler (nur Besitzer): Übersichtskarte aller Welten und Orte, Klick = hinspringen,
 Flugkamera.

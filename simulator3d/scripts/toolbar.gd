@@ -1,9 +1,9 @@
 extends PanelContainer
 ## 3D-3.61: the tool bar at the bottom of the simulator window - everything of «Erkunden», «Patrouille» and the view
 ## with the mouse only. 3D-4.13 (wish of Daniel 30.10.2026): a «Symbol-Dock» - round drawn symbols (no emoji font needed):
-##   Erkunden · Rover ▴ (route) · Folgen · Kopf · Versetzen · Stange ▴ · Mitspieler · Ansicht ▴ · Menü · ?
+##   Erkunden · Rover ▴ (route) · Folgen · Kopf · Versetzen · Höhe der Kamera ▴ · Mitspieler · Ansicht ▴ · Menü · ?
 ## Hover (or the focus of the controller, padmap.gd): the symbol grows and its name slides out; an active function has a
-## gently pulsing green ring; the groups (Rover, Stange, Ansicht) slide a small menu up on hover / click / A. «Ansicht» has
+## gently pulsing green ring; the groups (Rover, Höhe der Kamera, Ansicht) slide a small menu up on hover / click / A. «Ansicht» has
 ## the old camera row of the window too (Frei, Kamera 1 / 2, Wärmebild, Karte, Livebild, Zum Kopf, Von oben) - main.view_bar
 ## stays as the keeper of the states and shows itself only when the dock is hidden (kids mode, building kit, game at the PC).
 ## «?» opens the mouse help of the view on hover. Light on the CPU: tweens only on hover, the state is read 3 times a second.
@@ -20,7 +20,7 @@ var _sub: PanelContainer               # the open group menu
 var _sub_box: VBoxContainer
 var _sub_for := ""
 var _sub_btns := {}                    # id -> Button of the open menu
-var _mast_sl: HSlider                  # 3D-4.x: «Stange» - the height with the mouse (live)
+var _mast_sl: HSlider                  # 3D-4.x: «Höhe der Kamera» (was «Stange», like MoveEye «Platz einrichten») - the height with the mouse (live)
 var _mast_l: Label
 var _sub_out_t := 0.0
 var _help: PanelContainer
@@ -36,7 +36,7 @@ const DOCK := [["explore", "compass", "Erkunden", "Start (Controller) · mit dem
 		["follow", "target", "Folgen", "Y (Controller) · der Kopf hält Personen, Tiere und Bewegtes in der Bildmitte", []],
 		["head", "pad", "Kopf", "L ◉ (Controller) · den Kopf von MoveEye drehen, Licht ein / aus", []],
 		["place", "move", "Versetzen", "Strg + Klick beim Erkunden · den Rover an eine andere Stelle setzen", []],
-		["mast", "ruler", "Stange", "Bild ↑ / ↓ beim Erkunden · Höhe des Kamerakopfs", ["mast_up", "mast_dn"]],
+		["mast", "ruler", "Höhe der Kamera", "Bild ↑ / ↓ beim Erkunden · Höhe der Kamera über dem Boden (Stange)", ["mast_up", "mast_dn"]],
 		["invite", "people", "Mitspieler", "J beim Erkunden · QR-Code: Mitspieler mit dem Handy, frei bewegen", []],
 		["view", "lens", "Ansicht", "0 – 3, M, L · Kameras, Karte, Livebild und was angezeigt wird", ["v0", "v1", "v2", "v3", "map", "live", "to_head", "to_top", "exview", "spectate", "cams", "info", "laser", "zones3d", "det3d"]],
 		["windows", "windows", "Fenster", "Karte, Kompass, Livebild … ein / aus und «Anordnung zurücksetzen» (fenster.gd)", []],
@@ -50,14 +50,14 @@ const NAMES := {"patrol": ["Rover-Route starten", "Der Mover fährt MoveEye die 
 		"random": ["Zufällige Route", "Zufällige Route rund um MoveEye"],
 		"clear": ["Route löschen", "Route und Bereich löschen"],
 		"route": ["Route anzeigen", "Route und Bereich in der Welt zeigen"],
-		"mast_up": ["Stange + (höher)", "Kamerakopf 10 cm höher"], "mast_dn": ["Stange − (tiefer)", "Kamerakopf 10 cm tiefer"],  # + slider (_mast_row)
+		"mast_up": ["Höhe der Kamera + (höher)", "Kamerakopf 10 cm höher"], "mast_dn": ["Höhe der Kamera − (tiefer)", "Kamerakopf 10 cm tiefer"],  # + slider (_mast_row)
 		"v0": ["Frei (0)", "Frei herumfliegen"], "v1": ["Kamera 1 (1)", "Durch die Kopfkamera schauen"],
 		"v2": ["Kamera 2 (2)", "Durch die zweite Kamera schauen"], "v3": ["Wärmebild (3)", "Das Wärmebild gross"],
 		"map": ["Karte (M)", "Übersichtskarte oben links"], "live": ["Livebild (L)", "Livebild einer Kamera unter der Karte"],
 		"to_head": ["Zum Kopf", "Zurück zu MoveEye"], "to_top": ["Von oben", "Von oben auf den Platz schauen"],
 		"exview": ["Rover-Ansicht (V)", "Erkunden: hinterher, Fahrersicht, von oben"],
 		"spectate": ["Beobachter (C)", "Wechselnde Kamera-Einstellungen von Rover und Spielern"],
-		"cams": ["Kamerabilder", "Was MoveEye sieht (im Bedienfeld)"], "info": ["Info oben", "Anzeige oben (Steuerung, Tempo, Stange)"],
+		"cams": ["Kamerabilder", "Was MoveEye sieht (im Bedienfeld)"], "info": ["Info oben", "Anzeige oben (Steuerung, Tempo, Höhe der Kamera)"],
 		"laser": ["Blickrichtung", "Roter Strahl: wohin die Kamera von MoveEye schaut (nur für dich sichtbar)"],
 		"zones3d": ["Zonen in 3D", "Die Zonen von MoveEye auf dem Boden (nur für dich sichtbar)"],
 		"det3d": ["Erkennung in 3D", "Rahmen von MoveEye über den Figuren: grün erkannt, rot Fehlalarm, orange übersehen"]}

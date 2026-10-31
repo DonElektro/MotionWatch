@@ -1,8 +1,30 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.62** · passende MoveEye-Version (früher Motion Watch) **2.98.93**
+Stand: 31.10.2026 · Simulator-Version **3D-4.65** · passende MoveEye-Version (früher Motion Watch) **2.98.96**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.65 (MoveEye 2.98.96): Entwicklertool Teil 2 «Regler + Ebenen» (`devtool_ebenen.gd`)
+
+- `devtool_ebenen.gd` (neu): Schnellregler als Spiegel der Bedienfeld-Regler (Uhrzeit, Wetter, Jahreszeit, Grafik), Ebenen
+  Sichtfeld / Wege / Startpunkte / Auslöser / Lampen in 3D und auf der Karte; `/control dev layer|set|regler|parts`.
+- `i18n/texte.json`: Eintrag «klar» (Wetter-Auswahl, main.gd `options`) von Hand ergänzt – sim_texte findet ihn nicht im Code
+  (Zeile «nicht mehr im Code»), `--aufraeumen` würde ihn entfernen.
+
+## NEU in 3D-4.64 (MoveEye 2.98.95): Wärmebild-Tier, «Person?», «Höhe der Kamera»
+
+- MoveEye (232, 180, 410, Selbsttest 417): Wärmebild-Tier nur bei flacher Form (h/b ≤ 0.8); «Person?» bei flacher Box +
+  KI ≥ 0.15 + Bewegung/Wärme (`weak_person_feed`, Zähler `person_maybe`). Feld «Höhe der Kamera (m)» in Platz einrichten
+  (317, 537, 582); die Simulator-Stange hat Vorrang, solange verbunden.
+- Simulator: «Stange» heisst «Höhe der Kamera» (toolbar, explore, fotomodus, padmap, tour; T.t-Übersetzungen).
+
+## NEU in 3D-4.63 (MoveEye 2.98.94): Abenteuer-Rucksack (`abenteuer_inventar.gd`, `abenteuer_rucksack.gd`)
+
+- `abenteuer_inventar.gd` (neu): gemeinsames Inventar (hat / gib / nimm / anzahl / gewicht), mit dem Rucksack verbunden.
+- `abenteuer_rucksack.gd` (neu): Essen und Trinken mild (nur langsamer, nie Spielende), Quellen, Kochen in der Hütte,
+  Ausrüstung finden (Kompass, Stirnlampe als Licht, Feldstecher, Seil), Tausch-Fenster ohne Geld; eingebunden in
+  `bergtal_abenteuer.gd`. Texte in `i18n/texte.json` (sim_texte nach dem Merge neu gelaufen, 0 Lücken).
+- Nicht live geprüft: Kochen, Quelle, Stirnlampe als Licht, Lite.
 
 ## NEU in 3D-4.62 (MoveEye 2.98.93): Entwicklertool Teil 1 (`devtool.gd`)
 
