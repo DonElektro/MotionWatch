@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.7.1 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.8.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -425,6 +425,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.8.0
+3.8.0: MoveEye-Datei halb so gross (rund 4 MB statt 7,5 MB): Webseiten, Bilder und alte Versionsgeschichte liegen in einer
+Zusatzdatei, die beim Update mitkommt oder automatisch nachgeladen wird. Ohne Zusatzdatei schützt MoveEye weiter (Kamera,
+Erkennung, Alarm). Für sehr alte Geräte bleibt Version 3.0.2 dauerhaft als Brücke bereit.
+So testest du: 1) Update installieren: Webseite normal. 2) Info-Seite: Version und Zusatzdaten anzeigen.
 
 NEU IN 3.7.1
 3.7.1: Maggie und der Bergkristall:

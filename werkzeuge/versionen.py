@@ -10,6 +10,13 @@ simulator3d/scripts/versionen.gd und sim_vkey() in quelle/300_werkzeuge_simulato
   python3 werkzeuge/versionen.py --pruefen                    # passen main.gd, version.json, SIM3D, APP_VERSION zusammen?
   python3 werkzeuge/versionen.py --sim-json 3.0.0 "Notiz"     # simulator3d/version.json aus der ZIP schreiben (beide Felder)
   python3 werkzeuge/versionen.py --neu-data                   # scripts/neu_data.gd aus «Lies mich.txt» (NEU IN …, beide Schemas)
+  python3 werkzeuge/versionen.py --aufraeumen [--nur-zeigen]  # höchstens 10 Hauptversionen X.Y behalten, die Brücke nie löschen
+
+Brücke (Entscheid Daniel 31.10.2026): BRUECKE (3.0.2, eine Datei unter 8 MiB, braucht keine Zusatzdatei) bleibt für immer in
+versions.json und im Repository. Geräte bis 2.98.x nehmen nur Dateien bis 8 MiB an. Die neueste Hauptdatei bleibt darum
+auch unter 8 MiB (grosse Teile in moveeye_daten_X_Y_Z.zip, bauen.py) - dann gehen alte Geräte direkt auf die neueste.
+Wäre eine Datei je grösser, schreibt --make-manifest «needs»: "3.0.0" in ihren Eintrag; Geräte ab dem Verkleinern-Paket
+nehmen dann zuerst die Brücke (update_pick, Teil 397); ältere Geräte (2.98.x bis zur letzten Version ohne Zusatzdatei) wählen 3.0.2 von Hand.
 """
 import argparse
 import hashlib
@@ -23,6 +30,11 @@ REPO = os.path.dirname(HIER)
 SIM = os.path.join(REPO, "simulator3d")
 ZIP_REL = "simulator3d/MotionWatch3D_Simulator.zip"
 SHIFT = 2
+BRUECKE = "3.0.2"                   # = UPD_BRIDGE in quelle/397_zusatzdaten_nachladen.py
+MAX_ALT = 8 * 1024 * 1024           # Grenze der Geräte bis 2.98.x
+ZIEL = 5 * 1024 * 1024              # Ziel für die Hauptdatei (Platz für Wachstum)
+MAX_HAUPT = 10                      # höchstens 10 Hauptversionen X.Y im Repository
+VFILE = re.compile(r"^webcam_bewegung_(\d{1,3})_(\d{1,3})_(\d{1,3})\.py$")
 
 
 def sim_key(v):
@@ -121,10 +133,66 @@ def pruefen():
         probleme.append("ab 3.0.0 eine Nummer für alles: APP_VERSION %s, main.gd %s, version.json ver %s, SIM3D %s" % (app, gd, ver or "-", s3d))
     if "NEU IN %s\n" % gd not in lesen(os.path.join(SIM, "Lies mich.txt")):
         probleme.append("«Lies mich.txt» hat keinen Block «NEU IN %s»" % gd)
+    probleme += groesse_bruecke(app)
     for p in probleme:
         print("PROBLEM: " + p)
     print("ok" if not probleme else "%d Probleme" % len(probleme))
     return 1 if probleme else 0
+
+
+def groesse_bruecke(app):
+    """Hauptdatei unter 8 MiB (alte Geräte) mit ihrer Zusatzdatei; die Brücke ist da, unter 8 MiB und in versions.json"""
+    out = []
+    f = os.path.join(REPO, "webcam_bewegung_%s.py" % app.replace(".", "_"))
+    if os.path.isfile(f):
+        n = os.path.getsize(f)
+        print("Hauptdatei %s: %d Bytes (%.2f MiB)" % (os.path.basename(f), n, n / 1048576))
+        if n >= MAX_ALT:
+            out.append("%s ist %.2f MiB - Geräte bis 2.98.x nehmen höchstens 8 MiB an" % (os.path.basename(f), n / 1048576))
+        elif n >= ZIEL:
+            print("Hinweis: über dem Ziel von 5 MiB - mehr in die Zusatzdatei (bauen.py ZD_MIN / ZD_KEEP_NAMES)")
+        txt = lesen(f)
+        m = re.search(r'^ZD_FILE = "([^"]+)"', txt, re.M)
+        if m and not os.path.isfile(os.path.join(REPO, m.group(1))):
+            out.append("Zusatzdatei %s fehlt neben %s" % (m.group(1), os.path.basename(f)))
+    b = os.path.join(REPO, "webcam_bewegung_%s.py" % BRUECKE.replace(".", "_"))
+    if not os.path.isfile(b):
+        out.append("Brücke %s fehlt (darf nie gelöscht werden)" % os.path.basename(b))
+    elif os.path.getsize(b) >= MAX_ALT:
+        out.append("Brücke %s ist nicht unter 8 MiB" % os.path.basename(b))
+    try:
+        vs = json.load(open(os.path.join(REPO, "versions.json"), encoding="utf-8")).get("versions") or []
+        if not any(e.get("version") == BRUECKE for e in vs):
+            out.append("Brücke %s fehlt in versions.json" % BRUECKE)
+    except (OSError, ValueError):
+        out.append("versions.json nicht lesbar")
+    return out
+
+
+def aufraeumen(nur_zeigen=False):
+    """höchstens MAX_HAUPT Hauptversionen X.Y (je die neueste Datei); die Brücke bleibt immer (zählt mit)"""
+    import subprocess
+    files = sorted((tuple(int(x) for x in m.groups()), n) for n in os.listdir(REPO) for m in [VFILE.match(n)] if m)
+    neu = {}
+    for k, n in files:
+        neu[k[:2]] = (k, n)                                  # pro X.Y die neueste
+    weg = [n for k, n in files if neu[k[:2]][1] != n]         # ältere Dateien derselben Hauptversion
+    haupt = sorted(neu.values(), reverse=True)
+    br = tuple(int(x) for x in BRUECKE.split("."))
+    rest = [x for x in haupt if x[0] != br]
+    platz = MAX_HAUPT - (1 if any(x[0] == br for x in haupt) else 0)
+    weg += [n for _k, n in rest[platz:]]
+    weg = [n for n in weg if n != "webcam_bewegung_%s.py" % BRUECKE.replace(".", "_")]   # nie die Brücke
+    for n in weg:
+        z = "moveeye_daten_" + n[len("webcam_bewegung_"):-3] + ".zip"
+        for x in (n, z):
+            if not os.path.isfile(os.path.join(REPO, x)):
+                continue
+            print(("würde löschen: " if nur_zeigen else "gelöscht: ") + x)
+            if not nur_zeigen and subprocess.run(["git", "rm", "-q", x], cwd=REPO).returncode != 0:
+                os.remove(os.path.join(REPO, x))
+    print("%d Hauptversionen, Brücke %s bleibt" % (min(len(haupt), MAX_HAUPT), BRUECKE))
+    return 0
 
 
 def sim_json(v, notes, zip_path=""):
@@ -168,7 +236,11 @@ def main():
     ap.add_argument("--sim-json", nargs=2, metavar=("X.Y.Z", "NOTIZ"))
     ap.add_argument("--zip", default="", help="mit --sim-json: diese ZIP statt simulator3d/MotionWatch3D_Simulator.zip")
     ap.add_argument("--neu-data", action="store_true")
+    ap.add_argument("--aufraeumen", action="store_true", help="höchstens 10 Hauptversionen, die Brücke bleibt")
+    ap.add_argument("--nur-zeigen", action="store_true", help="mit --aufraeumen: nur anzeigen")
     a = ap.parse_args()
+    if a.aufraeumen:
+        return aufraeumen(a.nur_zeigen)
     if a.test:
         return test()
     if a.pruefen:

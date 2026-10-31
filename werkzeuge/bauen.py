@@ -12,12 +12,19 @@ Der Pi, die Update-Funktion und die Signatur arbeiten weiter mit dieser einen Da
   python3 werkzeuge/bauen.py --neue-version "Text" --stufe funktion      # ab 3.0.0: neue Funktion X.Y+1.0 (fehler = X.Y.Z+1,
                                                                          #   gross = X+1.0.0), siehe CLAUDE.md «Versionierung»
   python3 werkzeuge/bauen.py --signieren SCHLUESSELDATEI                 # danach: versions.json schreiben, signieren, Selbsttest
+  python3 werkzeuge/bauen.py --groessen                                  # was braucht am meisten Platz? (Teile, Literale)
+
+Zusatzdaten (31.10.2026, Paket «MoveEye-Datei verkleinern»): grosse Literale (Web-Seiten, JavaScript, Bilder als base64,
+Übersetzungen) und der ältere Teil der Änderungsliste kommen beim Bauen in moveeye_daten_X_Y_Z.zip neben der Datei
+(Geräte bis 2.98.x nehmen nur Programmdateien bis 8 MiB an). quelle/ bleibt unverändert; die grosse Datei lädt die ZIP
+beim Start (Teil 012) und kennt ihre Prüfsumme (ZD_SHA256). Beide Dateien gehören zusammen ins Repository.
 
 Den Schlüssel nie ins Repository legen.
 """
 import argparse
 import ast
 import glob
+import hashlib
 import json
 import os
 import re
@@ -149,6 +156,219 @@ def zusammensetzen():
     return "".join(lesen(n) for n in teile())
 
 
+# ---------------------------------------------------------------------------- Zusatzdaten (moveeye_daten_X_Y_Z.zip)
+ZD_MIN = 4096                       # literals from this size (bytes of source) are moved out
+ZD_NEU = 30                         # the list of changes in the file keeps the entries of the newest 30 versions
+ZD_KEEP_PARTS = ("000_", "010_", "012_", "020_")   # head, basics, loader, settings: always in the file
+# tables the core needs (settings schema, German texts, menu structure, guides with index access) stay in the file
+ZD_KEEP_NAMES = {"CFG", "TOGGLES", "SLIDERS", "TEXTS", "SECTIONS", "DE", "QUICK_GUIDE", "MENU_SHORT", "GUIDE_TIPS", "_DETAIL",
+                 "G2_UI", "SET_HELP", "GONL_DE", "ALMANAC", "PAUSE_PAGE", "LANGS"}
+ZD_KEEP_PREFIX = ("_HX",)          # the translation tables _HX… also carry the German texts (DE) that the start needs
+ZD_DATE = (2026, 1, 1, 0, 0, 0)     # fixed time stamp in the zip
+
+
+def zd_name(v):
+    return "moveeye_daten_%s.zip" % v.replace(".", "_")
+
+
+def zd_pfad(v):
+    return os.path.join(REPO, zd_name(v))
+
+
+def _zd_lit(n):
+    if isinstance(n, ast.Constant):
+        return True
+    if isinstance(n, ast.Dict):
+        return all(k is not None and _zd_lit(k) for k in n.keys) and all(_zd_lit(v) for v in n.values)
+    if isinstance(n, (ast.List, ast.Tuple, ast.Set)):
+        return all(_zd_lit(e) for e in n.elts)
+    if isinstance(n, ast.UnaryOp) and isinstance(n.op, (ast.USub, ast.UAdd)) and isinstance(n.operand, ast.Constant):
+        return True
+    return False
+
+
+def _zd_ctx(st):
+    if isinstance(st, ast.Assign):
+        return ast.unparse(st.targets[0])
+    if isinstance(st, (ast.AugAssign, ast.AnnAssign)):
+        return ast.unparse(st.target)
+    if isinstance(st, ast.Expr) and isinstance(st.value, ast.Call):
+        return ast.unparse(st.value.func)
+    return type(st).__name__
+
+
+def _zd_fallback(nd, ctx):
+    if isinstance(nd, ast.Dict):
+        return "_ZDDict()"
+    if isinstance(nd, ast.List):
+        return "[]"
+    if isinstance(nd, ast.Tuple):
+        return "()"
+    if isinstance(nd, ast.Set):
+        return "set()"
+    if isinstance(nd.value, bytes):
+        return 'b""'
+    if isinstance(nd.value, str):
+        return "ZD_PAGE" if re.search(r"_(PAGE|HTML)$", ctx) else '""'
+    return repr(nd.value)
+
+
+def _zd_kopf(text):
+    """the head part: the module docstring keeps the entries of the newest ZD_NEU versions -> (new text, [(key, ph, seg)])"""
+    tree = ast.parse(text)
+    st = tree.body[0] if tree.body else None
+    if not (isinstance(st, ast.Expr) and isinstance(st.value, ast.Constant) and isinstance(st.value.value, str)):
+        return text, []
+    nd = st.value
+    lines = text.split("\n")
+    a = sum(len(x) + 1 for x in lines[:nd.lineno - 1]) + len(lines[nd.lineno - 1].encode()[:nd.col_offset].decode())
+    e = sum(len(x) + 1 for x in lines[:nd.end_lineno - 1]) + len(lines[nd.end_lineno - 1].encode()[:nd.end_col_offset].decode())
+    seg = text[a:e]
+    rx = re.compile(r"^  \* (\d+\.\d+\.\d+): ")
+    vers = sorted({tuple(int(x) for x in m.group(1).split(".")) for m in map(rx.match, seg.split("\n")) if m}, reverse=True)
+    keep = set(vers[:ZD_NEU])
+    out, cur, gone, note = [], None, 0, False
+    for ln in seg.split("\n"):
+        m = rx.match(ln)
+        if m:
+            cur = tuple(int(x) for x in m.group(1).split(".")) in keep
+        elif not ln.startswith("    ") or not ln.strip():
+            cur = None
+        if cur is False:
+            gone += 1
+            if not note:
+                out.append("  (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)")
+                note = True
+            continue
+        out.append(ln)
+    if not gone:
+        return text, []
+    ph = "\n".join(out)
+    return text[:a] + ph + text[e:], [("000_kopf_aenderungen/__doc__", ph, seg)]
+
+
+def auslagern(name, text):
+    """one part -> (text with _zd() calls, [(key, placeholder, original source)]) - see the head of this file"""
+    if name.startswith("000_"):
+        return _zd_kopf(text)
+    if name.startswith(ZD_KEEP_PARTS):
+        return text, []
+    tree = ast.parse(text, name)
+    b = text.encode()
+    off = [0]
+    for ln in b.split(b"\n"):
+        off.append(off[-1] + len(ln) + 1)
+    found = []
+    stop = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda, ast.ListComp, ast.DictComp, ast.SetComp,
+            ast.GeneratorExp, ast.For, ast.AsyncFor, ast.While, ast.JoinedStr, ast.FormattedValue)
+
+    def walk(nd, ctx):
+        if isinstance(nd, stop):
+            return
+        if isinstance(nd, ast.expr) and _zd_lit(nd) and not isinstance(nd, ast.UnaryOp):
+            a = off[nd.lineno - 1] + nd.col_offset
+            e = off[nd.end_lineno - 1] + nd.end_col_offset
+            base = re.split(r"[.\[]", ctx, maxsplit=1)[0]
+            if e - a >= ZD_MIN and base not in ZD_KEEP_NAMES and not base.startswith(ZD_KEEP_PREFIX):
+                found.append((a, e, nd, ctx))
+            return
+        for c in ast.iter_child_nodes(nd):
+            walk(c, ctx)
+
+    def body(stmts):
+        for st in stmts:
+            if isinstance(st, (ast.If, ast.Try, ast.With)):
+                if isinstance(st, ast.If):
+                    walk(st.test, _zd_ctx(st))
+                body(st.body); body(getattr(st, "orelse", []))
+                for h in getattr(st, "handlers", []):
+                    body(h.body)
+                body(getattr(st, "finalbody", []))
+            else:
+                walk(st, _zd_ctx(st))
+    body(tree.body)
+    if not found:
+        return text, []
+    stem = name[:-3]
+    out, ents, pos, used = [], [], 0, {}
+    for a, e, nd, ctx in sorted(found, key=lambda x: x[0]):
+        k = re.sub(r"[^A-Za-z0-9_]+", "_", ctx).strip("_") or "x"
+        used[k] = used.get(k, 0) + 1
+        key = "%s/%s" % (stem, k) + ("~%d" % used[k] if used[k] > 1 else "")
+        ph = "_zd(%r, %s)" % (key, _zd_fallback(nd, ctx))
+        out.append(b[pos:a]); out.append(ph.encode()); pos = e
+        ents.append((key, ph, b[a:e].decode()))
+    out.append(b[pos:])
+    return b"".join(out).decode(), ents
+
+
+def zusammensetzen_klein(zd_sha=None):
+    """(program text, entries of the data zip, version). zd_sha: the checksum written into the program (None = of the
+    zip that these entries give, see zd_bytes)"""
+    teile_ = teile()
+    v = version()
+    texts, ents = [], []
+    for n in teile_:
+        t, e = auslagern(n, lesen(n))
+        texts.append(t); ents += e
+    if ents:
+        if zd_sha is None:
+            zd_sha = hashlib.sha256(zd_bytes(v, ents)).hexdigest()
+        for i, n in enumerate(teile_):
+            if n.startswith("012_"):
+                texts[i] = (texts[i].replace('ZD_FILE = ""', 'ZD_FILE = "%s"' % zd_name(v), 1)
+                            .replace('ZD_SHA256 = ""', 'ZD_SHA256 = "%s"' % zd_sha, 1))
+    return "".join(texts), ents, v
+
+
+def zd_json(v, ents):
+    return json.dumps({"app": "MoveEye", "version": v, "file": os.path.basename(dateiname(v)),
+                       "entries": [list(x) for x in ents]}, ensure_ascii=False, indent=0)
+
+
+def zd_bytes(v, ents):
+    import io
+    import zipfile
+    bio = io.BytesIO()
+    with zipfile.ZipFile(bio, "w") as z:
+        zi = zipfile.ZipInfo("daten.json", ZD_DATE)
+        zi.compress_type = zipfile.ZIP_DEFLATED
+        zi.external_attr = 0o644 << 16
+        z.writestr(zi, zd_json(v, ents).encode("utf-8"), compresslevel=9)
+    return bio.getvalue()
+
+
+def zd_inhalt(path):
+    """daten.json of an existing zip (None if missing / unreadable)"""
+    import zipfile
+    try:
+        with zipfile.ZipFile(path) as z:
+            return z.read("daten.json").decode("utf-8")
+    except (OSError, KeyError, zipfile.BadZipFile):
+        return None
+
+
+def groessen(n=15):
+    """--groessen: what needs the most room - parts and the biggest literals"""
+    roh = zusammensetzen()
+    print("Ohne Auslagern: %d Bytes (%.2f MiB)" % (len(roh.encode()), len(roh.encode()) / 1048576))
+    print("\nGrösste Teile:")
+    for sz, nm in sorted(((len(lesen(x).encode()), x) for x in teile()), reverse=True)[:n]:
+        print("  %8d  %s" % (sz, nm))
+    rows = []
+    for nm in teile():
+        _t, es = auslagern(nm, lesen(nm))
+        rows += [(len(seg.encode()), k) for k, _p, seg in es]
+    print("\nGrösste ausgelagerte Literale:")
+    for sz, k in sorted(rows, reverse=True)[:n]:
+        print("  %8d  %s" % (sz, k))
+    text, ents, v = zusammensetzen_klein()
+    print("\nAusgelagert: %d Literale, %d Bytes · Hauptdatei %d Bytes (%.2f MiB) · ZIP %d Bytes"
+          % (len(ents), sum(len(x[2].encode()) for x in ents), len(text.encode()), len(text.encode()) / 1048576,
+             len(zd_bytes(v, ents))))
+    return 0
+
+
 def version(text=None):
     m = re.search(r'^APP_VERSION = "([0-9.]+)"', text or lesen("010_grundlagen.py"), re.M)
     if not m:
@@ -239,36 +459,56 @@ def main():
     ap.add_argument("--version", default="", help="mit --neue-version: diese Nummer statt X.Y.Z+1")
     ap.add_argument("--stufe", choices=("fehler", "funktion", "gross"), default="fehler",
                     help="mit --neue-version: fehler = X.Y.Z+1 (Standard), funktion = X.Y+1.0, gross = X+1.0.0")
+    ap.add_argument("--groessen", action="store_true", help="was braucht am meisten Platz?")
     ap.add_argument("--signieren", metavar="SCHLUESSEL", default="", help="versions.json schreiben und signieren, Selbsttest")
     a = ap.parse_args()
+    if a.groessen:
+        return groessen()
     if a.pruefen:
         if not doppelte_melden():
             return 1
-        text = zusammensetzen()
-        f = dateiname(version(text))
-        if not groesse_pruefen(text):
-            return 1
+        v = version()
+        f, zf = dateiname(v), zd_pfad(v)
         if not os.path.isfile(f):
             print("FEHLT: %s – zuerst bauen" % os.path.basename(f))
+            return 1
+        sha = hashlib.sha256(open(zf, "rb").read()).hexdigest() if os.path.isfile(zf) else ""
+        text, ents, _v = zusammensetzen_klein(sha)
+        if not groesse_pruefen(text):                      # the program file (without the data zip) counts
+            return 1
+        if ents and zd_inhalt(zf) != zd_json(v, ents):
+            print("UNTERSCHIED: %s fehlt oder passt nicht zu quelle/ – werkzeuge/bauen.py laufen lassen" % os.path.basename(zf))
             return 1
         if open(f, encoding="utf-8", newline="").read() != text:
             print("UNTERSCHIED: %s passt nicht zu quelle/ – werkzeuge/bauen.py laufen lassen (nie die grosse Datei von Hand ändern)" % os.path.basename(f))
             return 1
-        print("ok: %s = quelle/ (%d Teile)" % (os.path.basename(f), len(teile())))
+        print("ok: %s = quelle/ (%d Teile)%s" % (os.path.basename(f), len(teile()),
+                                              (" + %s (%d Literale)" % (os.path.basename(zf), len(ents))) if ents else ""))
         return 0
     if a.neue_version is not None:
-        if not groesse_pruefen(zusammensetzen()):     # vor dem Hochzählen: nichts ändern, wenn es zu gross wird
+        if not groesse_pruefen(zusammensetzen_klein("")[0]):   # vor dem Hochzählen: nichts ändern, wenn es zu gross wird
             return 1
         alt, neu = neue_version(a.neue_version, a.version, a.stufe)
         print("Version %s → %s" % (alt, neu))
         fa, fn = dateiname(alt), dateiname(neu)
-        if os.path.isfile(fa) and alt.split(".")[:2] == neu.split(".")[:2]:   # only the newest file of a main version stays
+        brucke = alt == "3.0.2"                          # Brücke (versionen.py BRUECKE): never removed
+        if os.path.isfile(fa) and alt.split(".")[:2] == neu.split(".")[:2] and not brucke:   # only the newest file of a main version stays
             if git("rm", "-q", os.path.basename(fa)).returncode != 0:
                 os.remove(fa)
+            za = zd_pfad(alt)
+            if os.path.isfile(za) and git("rm", "-q", os.path.basename(za)).returncode != 0:
+                os.remove(za)
     if not doppelte_melden():
         return 1
-    text = zusammensetzen()
-    f = dateiname(version(text))
+    v = version()
+    f, zf = dateiname(v), zd_pfad(v)
+    text, ents, _v = zusammensetzen_klein("")
+    if ents:
+        if zd_inhalt(zf) != zd_json(v, ents):              # only a changed content gives a new zip (stable checksum)
+            with open(zf, "wb") as fh:
+                fh.write(zd_bytes(v, ents))
+        sha = hashlib.sha256(open(zf, "rb").read()).hexdigest()
+        text, ents, _v = zusammensetzen_klein(sha)
     if not groesse_pruefen(text):
         return 1
     with open(f, "w", encoding="utf-8", newline="") as fh:
@@ -277,7 +517,10 @@ def main():
     if r.returncode != 0:
         print(r.stderr)
         return 1
-    print("gebaut: %s (%d Zeilen aus %d Teilen)" % (os.path.basename(f), text.count("\n"), len(teile())))
+    print("gebaut: %s (%d Zeilen aus %d Teilen, %.2f MiB)" % (os.path.basename(f), text.count("\n"), len(teile()),
+                                                             len(text.encode()) / 1048576))
+    if ents:
+        print("        %s (%d Literale ausgelagert, %.2f MiB)" % (os.path.basename(zf), len(ents), os.path.getsize(zf) / 1048576))
     if a.signieren:
         for cmd in ([sys.executable, f, "--make-manifest", ".", "--sign-key", a.signieren], [sys.executable, f, "--self-test", "."]):
             r = subprocess.run(cmd, cwd=REPO, capture_output=True, text=True)

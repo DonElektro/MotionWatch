@@ -84,6 +84,7 @@ if __name__ == "__main__":
         if a.boot or not instance_takeover(CFG["web_port"], not a.headless):
             sys.exit(0)
     start_guard()                                     # after an update: go back if the new version keeps crashing
+    zusatz_start()                                    # data zip (012 / 397): there, or fetch it while the core runs
     run_guard_start()                                 # did the whole Pi go off last time? two short runs -> safe start
     if a.paused_until and a.paused_until > time.time():
         run_paused(a.paused_until, _base_args())          # comes back by itself (execv), never returns
