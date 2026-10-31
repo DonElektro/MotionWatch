@@ -20973,8 +20973,12 @@ def thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, 
         if t0 - TPERS["animal_seen"] > 10.0:                  # a new appearance (not every picture)
             TPERS["animals"] += 1
             a_ = min(animals, key=lambda a: a[1])
+            try:                                              # for tuning QUAD_MAX_ASP with real nights (shape, box)
+                shp = f", shape h/w {foot_shape(a_[0], (a_[1], a_[2])):.2f}, box {tuple(round(float(q), 3) for q in a_[0])}"
+            except Exception:
+                shp = ""
             log_event("ai", f"Animal in the thermal picture, about {dist_round(a_[1])} m, about {a_[2]:.1f} m high - no person "
-                            f"(foot point; as a 1.7 m person it would be {dist_round(a_[3])} m away)")
+                            f"(foot point; as a 1.7 m person it would be {dist_round(a_[3])} m away{shp})")
         TPERS["animal_seen"] = t0
     if not found:
         return rest
