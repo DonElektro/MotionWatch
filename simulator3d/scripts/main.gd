@@ -3765,7 +3765,10 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Bergtal", "Ort von der Karte",
 const GROUP_RENAME := {"Testlauf": "Testen", "Wildbeobachtung": "Wildtier"}
 const SUB_RENAME := {"Akku und Strom": "Strom", "Netz-Ausfall testen": "Netz", "Zusatz-Bildschirm": "Zusatz-Bildschirm (SmallTV)", "Kinder-Modus": "Sicherheit / Benutzer"}
 # 3D-4.21: what only the developer needs (like the group «Entwickler» of MoveEye) - always «Experte»
-const DEV_IDS := ["dev_updates", "pruef_open", "simint_open"]
+# Paket «Entwickler zusammenlegen» (Daniel 31.10.2026): «dev_open» is the only entry of the card in the panel (opens the window
+# «Mehr → Entwickler» on its tab «Schalter»); the others carry «devwin": drawn in that window, not in the panel - same ids,
+# same /control set / press, still sent to MoveEye (its Simulator page shows them in «Entwickler»)
+const DEV_IDS := ["dev_updates", "dev_open", "pruef_open", "simint_open"]
 # id -> [group, part]; not listed: the group given in add_control, no part
 const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "Patrouille"], "patrol_points": ["Mover", "Patrouille"], "patrol_area": ["Mover", "Patrouille"],
 		"patrol_random": ["Mover", "Patrouille"], "patrol_clear": ["Mover", "Patrouille"], "patrol_speed": ["Mover", "Patrouille"], "patrol_dwell": ["Mover", "Patrouille"],
@@ -4124,8 +4127,10 @@ func _register_controls() -> void:
 			func(v): dev_updates = str(v) == "dev"; set_auto_update(str(v) != "off"), "Updates",
 			{"options": [["off", "nur von Hand (Knopf oben)"], ["auto", "automatisch installieren"], ["dev", "Entwicklungsphase: jede Minute, sofort"]]})
 	# 3D-4.21: group «Entwickler» (like MoveEye, only «Experte»): test bench and faults - the same buttons as in «Testen»
-	add_control("button", "pruef_open", "Prüfstand öffnen", null, func(): pruef.open(not pruef.visible), "Entwickler", {"expert": true})
-	add_control("button", "simint_open", "Störungen testen", null, func(): _open_stoer(), "Entwickler", {"expert": true})
+	# Paket «Entwickler zusammenlegen»: in the panel only «Entwickler-Fenster öffnen»; the rest («devwin») in the window, tab «Schalter»
+	add_control("button", "dev_open", "Entwickler-Fenster öffnen", null, func(): dev_window("schalter"), "Entwickler", {"expert": true})
+	add_control("button", "pruef_open", "Prüfstand öffnen", null, func(): pruef.open(not pruef.visible), "Entwickler", {"expert": true, "devwin": true})
+	add_control("button", "simint_open", "Störungen testen", null, func(): _open_stoer(), "Entwickler", {"expert": true, "devwin": true})
 	preload("res://scripts/spieltest.gd").add_controls(self)   # Spieltest-Assistent + «Spieltest-Meldungen» (wie MoveEye Entwickler)
 	add_control("toggle", "dev_updates", "Entwicklungsphase: jede Minute nach neuen Versionen schauen und sofort installieren", func(): return dev_updates, func(v): dev_updates = v; _settings_dirty = true, "Updates", {"expert": true, "hide": true})
 	add_control("toggle", "auto_update", "Neue Versionen automatisch installieren", func(): return auto_update, func(v): set_auto_update(v), "Updates", {"expert": true, "hide": true})
@@ -5724,8 +5729,8 @@ func _build_ui() -> void:
 	var subs := {}
 	var fine_folds := {}
 	for c in controls:
-		if c.extra.get("hide", false) or c.extra.get("wiz", false):
-			continue                                     # 3D-3.90: only for MoveEye (the web page), not in the window; 3D-4.7: «wiz» = only in the game assistant
+		if c.extra.get("hide", false) or c.extra.get("wiz", false) or c.extra.get("devwin", false):
+			continue                                     # 3D-3.90: only for MoveEye (the web page), not in the window; 3D-4.7: «wiz» = only in the game assistant; «devwin»: in the window «Mehr → Entwickler» (tab «Schalter» / «Spieltest»)
 		if c.group == "Testen" and testen_measure != null:   # 3D-4.x: into the card «Testen» (no own card «Testlauf» any more)
 			if c.id in ["testrun_plan", "testrun_start"]:
 				continue                                 # the card has its own row «plan + Testlauf starten»
@@ -5800,15 +5805,9 @@ func _build_ui() -> void:
 		w.get_parent().move_child(w, -1)
 	if groups.has("Entwickler"):
 		# 3D-4.22 (Angleichen, Daniel 30.10.2026): «Entwickler» like MoveEye - shown when MoveEye's «Entwickler-Bereich» is on
-		# (dev_area, sent by MoveEye), no longer tied to «Experte»; + «Diagnose-Paket» (built by MoveEye)
+		# (dev_area, sent by MoveEye), no longer tied to «Experte». Paket «Entwickler zusammenlegen»: the card has only the
+		# button «Entwickler-Fenster öffnen» (dev_open); «Diagnose-Paket» is in the window (devtool_schalter.gd); only the owner
 		dev_body = groups["Entwickler"]
-		var dgb := Button.new()
-		dgb.text = "Diagnose-Paket (MoveEye)"
-		dgb.tooltip_text = "MoveEye packt Protokoll, Einstellungen ohne Passwörter und Systemwerte in ein ZIP (öffnet den Browser). Braucht ein verbundenes MoveEye."
-		dgb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		dgb.pressed.connect(_diag_pack)
-		dev_body.add_child(dgb)
-		ui_items.append([dgb, "Diagnose-Paket MoveEye", true, dev_body])
 	update_btn = Button.new()
 	update_btn.text = "Nach Updates suchen (jetzt %s)" % VERSION
 	update_btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -5899,12 +5898,26 @@ var dev_area := false                 # 3D-4.22: the developer switch of MoveEye
 func _dev_hidden(it: Array) -> bool:
 	"""3D-4.22: a setting of the card «Entwickler» while MoveEye's «Entwickler-Bereich» is off;
 	3D-4.28: or a setting with «only» (add_control … controls[-1]["only"]) that does not fit now (e.g. not in its scene)"""
-	if dev_body != null and it[3] == dev_body and not dev_area:
+	if dev_body != null and it[3] == dev_body and not _dev_card_ok():
 		return true
 	for c in controls:
 		if c.has("only") and c.label == it[1]:
 			return not bool(c["only"].call())
 	return false
+
+
+func _dev_card_ok() -> bool:
+	"""the card «Entwickler» of the panel: MoveEye's «Entwickler-Bereich» is on and it is the owner (devtool.is_owner: not in
+	the children's mode) - like the row «Entwickler» of «Mehr» (Paket «Entwickler zusammenlegen»)"""
+	return dev_area and preload("res://scripts/devtool.gd").is_owner(self)
+
+
+func dev_window(tab := "schalter") -> Dictionary:
+	"""Paket «Entwickler zusammenlegen»: the one «Entwickler» - the window «Mehr → Entwickler» (devtool.gd), on a tab
+	(schalter | notizen | kontakt | kapitel | spieltest); only the owner (devtool.open says so otherwise)"""
+	if mehr == null or mehr.dev == null:
+		return {"ok": false, "error": "not ready"}
+	return mehr.dev.control({"do": "tab", "value": tab})
 
 
 func _only_refresh() -> void:
@@ -6187,7 +6200,7 @@ func _apply_simple() -> void:
 	for it in ui_items:
 		var vis: bool = not (ui_simple and it[2])
 		if dev_body != null and it[3] == dev_body:
-			vis = dev_area                                 # 3D-4.22: «Entwickler» with MoveEye's switch, also in «Einfach»
+			vis = _dev_card_ok()                           # 3D-4.22: «Entwickler» with MoveEye's switch, also in «Einfach» (+ only the owner)
 		elif vis and _dev_hidden(it):
 			vis = false                                    # 3D-4.28: «only» (e.g. «Standort im Ferienpark» only in that scene)
 		it[0].visible = vis
