@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.48"
+const VERSION := "3D-4.49"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -324,6 +324,7 @@ var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Z
 var fauna                             # fauna.gd (3D-3.95)
 var entdecken                         # entdecken.gd (Erlebniswelt 20–23): register() / mark_found() / is_found() / count() of the scenes
 var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»): wind, light, lures, valuables of the catalogue
+var gelaende                          # gelaende.gd (3D-4.x real-gelaende): hills and hollows, paths, cloud shadows (vegetation.gd: plants)
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
 var menschen                          # menschen.gd (P10): people behave like real ones - gaits, groups, the day of a campsite, API for scenarios
 var tiere                             # tiere.gd (Paket «Tiere»): animals behave like real ones (flee, curl up, pounce …)
@@ -521,6 +522,9 @@ func _ready() -> void:
 	geo = Geo.new()
 	geo.main = self
 	add_child(geo)
+	gelaende = preload("res://scripts/gelaende.gd").new()   # 3D-4.x: before the first scene (it asks for the hills)
+	gelaende.main = self
+	add_child(gelaende)
 	entdecken = preload("res://scripts/entdecken.gd").new()   # Erlebniswelt 20–23: Entdeckungsbuch, Blinki-Hinweise, Fotomodus (before the scene registers)
 	entdecken.main = self
 	add_child(entdecken)
@@ -1150,6 +1154,7 @@ func _build_scene() -> void:
 	_horizon.clear()
 	ground_mats.clear()
 	geo_note = ""
+	gelaende.reset()                             # 3D-4.x: flat until the scene asks for hills (gelaende.setup_relief)
 	if entdecken != null:
 		entdecken.begin_scene(scene)             # Erlebniswelt: the discoveries of the old scene go, the new scene registers its own
 	scenes.build(scene, scene_parent)
@@ -1157,6 +1162,7 @@ func _build_scene() -> void:
 		entdecken.on_scene()                     # ... and the demo set of «Camping-Platz»
 	for n in flat_nodes:
 		n.visible = not terrain
+	gelaende.on_scene()
 	if zwilling != null:
 		zwilling.on_scene()                      # 3D-4.4: the photo of the real place, tent and car by hand (first: the tent moves obj["pir"])
 	if simreal != null:
@@ -1231,15 +1237,22 @@ func open_map() -> void:
 
 
 func ground_y(x: float, z: float) -> float:
-	"""height of the ground (0 everywhere except at a real place or a scene with its own ground)"""
+	"""height of the ground (0 everywhere except at a real place, a scene with its own ground or hills of gelaende.gd)"""
 	if ground_fn.is_valid():
 		return ground_fn.call(x, z)
-	return geo.height(x, z) if terrain else 0.0
+	if terrain:
+		return geo.height(x, z)
+	return gelaende.height(x, z) if gelaende != null and gelaende.on else 0.0
+
+
+func hilly() -> bool:
+	"""the ground is not flat (a real place or hills of gelaende.gd; scenes with their own ground set terrain): things follow ground_y"""
+	return terrain or (gelaende != null and gelaende.on)
 
 
 func ground_hit(from: Vector3, d: Vector3):
 	"""where a ray meets the ground (null if not within 400 m)"""
-	if not terrain:
+	if not hilly():
 		return Plane(Vector3.UP, 0).intersects_ray(from, d)
 	var t := 0.0
 	var prev := from
@@ -2822,6 +2835,8 @@ func cloud_shade() -> float:
 		return 1.0 - 0.7 * smoothstep(0.4, 0.65, vv)
 	if not cloud_shadows or weather in ["clear", "fog"]:
 		return 1.0
+	if gelaende != null and gelaende.cloud_active():
+		return gelaende.shade_at_head()              # 3D-4.x: the same cloud shadow that drifts over the ground (gelaende.gd)
 	var t := now() - clock0
 	var w := 0.04 + wind * 0.0015
 	var v := 0.5 + 0.5 * sin(t * w) * cos(t * w * 0.63 + 2.0)
@@ -3937,6 +3952,7 @@ func _register_controls() -> void:
 	fahrzeuge.add_controls()                               # Paket «Fahrzeuge»
 	licht.add_controls()                                   # «Licht & Nacht»: light pollution, place lamps, tents / windows
 	jahreszeiten.add_controls()                            # «Jahreszeiten & Tageslauf»: season, snow, fog, leaves, campsite occupancy
+	gelaende.add_controls()                                # 3D-4.x: hills and more plants (Szene)
 	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
 	if statusled != null:
 		statusled.add_controls()                           # Licht & Ton → Status-LED & Tasten (Fenster «Gerät»)
@@ -4801,6 +4817,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return licht.control(d)
 	elif a == "jahreszeiten":                          # «Jahreszeiten»: {do: info | set (key, value) | sun (doy, lat, lon) | year}
 		return jahreszeiten.control(d)
+	elif a == "gelaende":                              # 3D-4.x: {do: info | set (key, value) | height (x, z) | los (from, to) | cloud (x, z)}
+		return gelaende.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
 		return weit.control(d)
 	elif a == "nacht":                                 # Nacht-Testlauf: {do: info | start | stop | state | truth | plan} (nachtlauf.gd)
@@ -7855,6 +7873,8 @@ func line_blocker(a: Vector3, b: Vector3) -> Dictionary:
 			var p := a2 + seg * f
 			if ground_y(p.x, p.y) > lerp(a.y, b.y, f) + 0.05:
 				return {"id": -1, "c": "Gelände", "terrain": true}
+	elif gelaende != null and gelaende.hill_blocks(a, b):   # 3D-4.x: hills and hollows of the scene (gelaende.gd)
+		return {"id": -1, "c": "Gelände", "terrain": true}
 	return {}
 
 

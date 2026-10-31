@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 08:00",
+ "generated": "2026-10-31 08:06",
  "versions": [
   {
-   "version": "2.98.79",
-   "file": "webcam_bewegung_2_98_79.py",
+   "version": "2.98.80",
+   "file": "webcam_bewegung_2_98_80.py",
    "url": "",
-   "sha256": "fd09571075ff0bbe8053a0ac7e17ada4e188fadd76b54af2101c114d244d1c0a",
-   "date": "2026-10-31 08:00",
-   "notes": "Simulator 3D-4.48: Jahreszeiten wie echt – Laub, Blüten, fallende Blätter, Schnee, Bodennebel, Tageslänge, Belegung des Campingplatzes nach Saison; Feld «season» an MoveEye.",
-   "sig": "e9538465630bd099ae37ea27770e57591430e110ee4f80f52a1b537b77d5dc52a1bf20e97ead766ab8b7c5af5482b86e30b6569cb4a7a2f1536b3dbf87375f0c"
+   "sha256": "0a747232e83bddf49a169f2a17ead2cb31d3297fa0cba240ffca250ac5f7f1d5",
+   "date": "2026-10-31 08:06",
+   "notes": "Simulator 3D-4.49: Gelände und Pflanzen im Camping-Platz – Hügel, Wege, Hecken, Baumarten, Gras und Blumen, Wolkenschatten; Hecken verdecken.",
+   "sig": "d96511e7691cec8d1060f63bac31feae2a2178db88d9bbe9c4b22b14f4f7e0657c3d35207511f2dbee4564b97a9e183fa3e3b3744aa44d7322b60c278fdbaf0d"
   },
   {
    "version": "2.97.1",

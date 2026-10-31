@@ -8,6 +8,8 @@ uniform sampler2D noise_tex;
 // «Jahreszeiten» (jahreszeiten.gd): broad-leaved trees bare in winter (only branches left) and blossoming in spring
 uniform float bare = 0.0;       // 0 = full crown, 1 = bare (only twigs)
 uniform float blossom = 0.0;    // 0 .. 1: white-pink blossoms between the leaves
+uniform float cloud_amt = 0.0;      // 3D-4.x gelaende.gd: cloud shadows (0 = off)
+uniform vec2 cloud_off = vec2(0.0);
 
 void vertex() {
 	vec3 wp = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
@@ -34,6 +36,6 @@ void fragment() {
 			col = mix(vec3(0.86, 0.84, 0.82), vec3(0.88, 0.7, 0.76), n);    // apple / cherry blossom
 		}
 	}
-	ALBEDO = col;
+	ALBEDO = col * (1.0 - cloud_amt * smoothstep(0.52, 0.68, texture(noise_tex, (w.xz + cloud_off) * 0.0035).r));   // gelaende.gd: cloud shadows
 	ROUGHNESS = 0.9;
 }
