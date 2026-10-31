@@ -61856,6 +61856,7 @@ _HX_szenen = {
     'Bike thief': ('Velodieb', 'Voleur de vélo', 'Ladro di bici', 'Lader da velo'),
     'Tracking course': ('Verfolgungs-Parcours', 'Parcours de suivi', 'Percorso di inseguimento', 'Parcours da persequitar'),
     'Holiday park by the lake': ('Ferienpark am See', 'Parc de vacances au bord du lac', 'Parco vacanze sul lago', 'Parc da vacanzas al lai'),
+    'Mountain valley (alp, lake, pass)': ('Bergtal (Alp, See, Pass)', 'Vallée de montagne (alpage, lac, col)', 'Valle alpina (alpe, lago, passo)', 'Val da muntogna (alp, lai, pass)'),
 }
 # German comes from the simulator itself (and DE is only made in part 560, after this part) - here only fr / it / rm
 for _k, _v in _HX_szenen.items():

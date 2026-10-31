@@ -1,20 +1,21 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 3062 (Stellen: 4445)
-Übersetzt: en 2825, fr 2825, it 2825, rm 2825
+Texte gesamt: 3342 (Stellen: 4842)
+Übersetzt: en 3105, fr 3104, it 3104, rm 3104
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 335 Stellen
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 340 Stellen
 Nicht mehr im Code (noch in texte.json): 22
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 42 Stellen in wizpics.gd 16, wordmark.gd 10, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 10523, schlüssel 7161, keine Wörter 5802, index 3751, technisch 1275, doc 820, einheit 112, englisch 54, pfad 54, log 53, html 42, klasse 21
+Übersprungen (Grund: Anzahl): kennung 11636, schlüssel 7759, keine Wörter 6133, index 3841, technisch 1429, doc 881, einheit 131, englisch 59, log 56, pfad 54, html 42, klasse 22
 
 Pro Datei (Texte / davon dynamische Stellen):
-  main.gd                  608    29
+  main.gd                  642    29
   gamewiz.gd               213    14
   game.gd                  211    32
+  bergtal.gd               199     5
   bib_objekte.gd           108     0
   ferienpark.gd             89     0
-  templates.gd              87     6
+  templates.gd              88     6
   toolbar.gd                85     3
   gameplus.gd               83     5
   testrun.gd                81     3
@@ -26,18 +27,19 @@ Pro Datei (Texte / davon dynamische Stellen):
   feedback.gd               66    17
   mehr.gd                   66    11
   parcours.gd               63    10
+  bib_berg.gd               56     0
   quick.gd                  55     2
   mwpc.gd                   46    12
   karte.gd                  46     8
   gamerules.gd              45     4
+  scenes.gd                 42     0
   protokoll.gd              42    16
   inventar.gd               41     4
-  scenes.gd                 41     0
   localplay.gd              41    13
   symbole.gd                40     1
   gamecompare.gd            40     6
-  kitrain.gd                39     9
   simint.gd                 39     4
+  kitrain.gd                39     9
   gamejaeger.gd             38     1
   update.gd                 37     4
   geo.gd                    36     7
@@ -79,8 +81,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamexp.gd                  7     0
   gamewatch.gd               6     0
   autostart.gd               5     0
-  figur.gd                   5     0
   visitlog.gd                5     0
+  figur.gd                   5     0
   device.gd                  4     1
   gamebots.gd                4     0
   liveview.gd                4     0
@@ -130,6 +132,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   b3d.gd:86  'Kachel leer: '
   b3d.gd:186  'glTF nicht lesbar: '
   b3d.gd:208  'Kachel ohne Dreiecke: '
+  bergtal.gd:228  'Aussicht: '
+  bergtal.gd:237  'Schlafplatz: '
+  bergtal.gd:239  'Aussicht: '
+  bergtal.gd:2103  'Schlafplatz: '
+  bergtal.gd:2105  'Aussicht: '
   dataset.gd:54  'Spiel: '
   dataset.gd:319  ' · Vielfalt hoch'
   dataset.gd:434  ' · alte KI-Daten gelöscht: %d (%.0f MB)'
@@ -175,35 +182,35 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   karte.gd:503  'Dazu kommen: '
   karte.gd:511  'ja'
   karte.gd:511  'keine'
-  main.gd:1218  '  %.0f Mbit/s'
-  main.gd:1891  ' (von MoveEye)'
-  main.gd:1924  'Der Simulator ist belegt: '
-  main.gd:2721  'aus'
-  main.gd:2721  'ein'
-  main.gd:2798  'Sabotage-Test: '
-  main.gd:2798  'aus'
-  main.gd:2852  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:2855  '\n🚨 Bewacht und weg: '
-  main.gd:3563  'keine'
-  main.gd:3589  'Wächter an MoveEye: '
-  main.gd:4176  'Dein Platz: '
-  main.gd:4397  ' · schaut nur zu: '
-  main.gd:4400  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:4401  ' · Update: '
-  main.gd:4731  'Blinde Flecken: '
-  main.gd:5365  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:5670  'Autostart: '
-  main.gd:5681  'Autologon: '
-  main.gd:5842  'Karte öffnen: '
-  main.gd:5988  'Echt-Abgleich: '
-  main.gd:5995  'Trainingspaket: '
-  main.gd:6004  ' · %d offen · %.1f MB'
-  main.gd:6004  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6013  'Verbindung · '
-  main.gd:6013  'aus'
-  main.gd:6017  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6017  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6020  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:1321  '  %.0f Mbit/s'
+  main.gd:1994  ' (von MoveEye)'
+  main.gd:2027  'Der Simulator ist belegt: '
+  main.gd:2824  'aus'
+  main.gd:2824  'ein'
+  main.gd:2901  'Sabotage-Test: '
+  main.gd:2901  'aus'
+  main.gd:2955  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:2958  '\n🚨 Bewacht und weg: '
+  main.gd:3695  'keine'
+  main.gd:3721  'Wächter an MoveEye: '
+  main.gd:4310  'Dein Platz: '
+  main.gd:4531  ' · schaut nur zu: '
+  main.gd:4534  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:4535  ' · Update: '
+  main.gd:4865  'Blinde Flecken: '
+  main.gd:5499  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:5804  'Autostart: '
+  main.gd:5815  'Autologon: '
+  main.gd:5976  'Karte öffnen: '
+  main.gd:6122  'Echt-Abgleich: '
+  main.gd:6129  'Trainingspaket: '
+  main.gd:6138  ' · %d offen · %.1f MB'
+  main.gd:6138  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6147  'Verbindung · '
+  main.gd:6147  'aus'
+  main.gd:6151  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6151  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6154  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:446  ' (automatisch von oben)'
   explore.gd:446  ' · schnell'
   feedback.gd:266  ' · TESTMODUS: geht nur an '
@@ -445,12 +452,12 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   smalltv.gd:359  'SmallTV (virtuell)'
   surprise.gd:113  'Überraschung: '
   szenenplus.gd:735  'Spiel zur Szene: '
-  templates.gd:211  'Lizenz: '
-  templates.gd:282  'Datei nicht lesbar: '
-  templates.gd:286  'Kann nicht speichern: '
-  templates.gd:294  'Datei nicht lesbar: '
-  templates.gd:303  'Umwandeln ging nicht: '
-  templates.gd:308  'Datei enthält kein 3D-Modell: '
+  templates.gd:212  'Lizenz: '
+  templates.gd:283  'Datei nicht lesbar: '
+  templates.gd:287  'Kann nicht speichern: '
+  templates.gd:295  'Datei nicht lesbar: '
+  templates.gd:304  'Umwandeln ging nicht: '
+  templates.gd:309  'Datei enthält kein 3D-Modell: '
   zwilling.gd:94  'Bild nicht lesbar: '
   zwilling.gd:104  'Kann nicht speichern: '
   zwilling.gd:168  'Foto fehlt: '

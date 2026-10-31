@@ -1801,11 +1801,35 @@
   "it": "Distintivo",
   "rm": "Insigna"
  },
+ "Abzweigung Wyssgletscher": {
+  "en": "Junction Wyssgletscher",
+  "fr": "Bifurcation Wyssgletscher",
+  "it": "Bivio Wyssgletscher",
+  "rm": "Spartiziun Wyssgletscher"
+ },
  "Achtung": {
   "en": "Attention",
   "fr": "Attention",
   "it": "Attenzione",
   "rm": "Attenziun"
+ },
+ "Achtung Absturzgefahr": {
+  "en": "Caution: risk of falling",
+  "fr": "Attention, risque de chute",
+  "it": "Attenzione, pericolo di caduta",
+  "rm": "Attenziun, privel da crudar"
+ },
+ "Achtung Lawinengefahr": {
+  "en": "Caution: avalanche danger",
+  "fr": "Attention, danger d'avalanche",
+  "it": "Attenzione, pericolo di valanghe",
+  "rm": "Attenziun, privel da lavinas"
+ },
+ "Achtung, Absturzkante! Hier geht es senkrecht hinunter.": {
+  "en": "Careful, cliff edge! It drops straight down here.",
+  "fr": "Attention, bord de falaise ! Ici, ça tombe à pic.",
+  "it": "Attenzione, bordo di un dirupo! Qui si scende a picco.",
+  "rm": "Attenziun, ur da precipizi! Qua vai giu a picco."
  },
  "Achtung: %s wird gleich entdeckt!": {
   "en": "Watch out: %s is about to be discovered!",
@@ -2059,11 +2083,83 @@
   "it": "Vita quotidiana: monopattino elettrico, sedia a rotelle, robot di consegna e robot tosaerba arrivano di tanto in tanto",
   "rm": "Mintgadi: e-trottinet, sutga a rodas, robot da furniziun e robot da segar vegnan da temp en temp da sasez"
  },
+ "Alp": {
+  "en": "Alp",
+  "fr": "Alp",
+  "it": "Alp",
+  "rm": "Alp"
+ },
+ "Alp Tschuggen": {
+  "en": "Alp Tschuggen",
+  "fr": "Alp Tschuggen",
+  "it": "Alp Tschuggen",
+  "rm": "Alp Tschuggen"
+ },
+ "Alp Tschuggen %d m": {
+  "en": "Alp Tschuggen %d m",
+  "fr": "Alp Tschuggen %d m",
+  "it": "Alp Tschuggen %d m",
+  "rm": "Alp Tschuggen %d m"
+ },
+ "Alpenblumen": {
+  "en": "Alpine flowers",
+  "fr": "Fleurs des Alpes",
+  "it": "Fiori alpini",
+  "rm": "Flurs alpinas"
+ },
+ "Alpendohlen haben den Proviant geholt": {
+  "en": "Alpine choughs took the food",
+  "fr": "Des chocards ont pris les provisions",
+  "it": "I gracchi alpini hanno preso le provviste",
+  "rm": "Ils curvs alpins han prendì il provediment"
+ },
+ "Alpendohlen streiten um ein Sandwich": {
+  "en": "Alpine choughs fight over a sandwich",
+  "fr": "Des chocards se disputent un sandwich",
+  "it": "Gracchi alpini litigano per un panino",
+  "rm": "Curvs alpins dispitan per in sandwich"
+ },
+ "Alphornbläser bei Sonnenaufgang, Kühe kommen gerannt": {
+  "en": "Alphorn player at sunrise, cows come running",
+  "fr": "Joueur de cor des Alpes au lever du soleil, les vaches accourent",
+  "it": "Suonatore di corno alpino all'alba, le mucche arrivano di corsa",
+  "rm": "Sunader da corn alpin a l'alva, las vatgas vegnan currind"
+ },
+ "Alphütte": {
+  "en": "Alp hut",
+  "fr": "Chalet d'alpage",
+  "it": "Baita d'alpe",
+  "rm": "Tegia d'alp"
+ },
  "Alte KI-Daten löschen": {
   "en": "Delete old AI data",
   "fr": "Supprimer les anciennes données IA",
   "it": "Elimina i vecchi dati IA",
   "rm": "Stizzar las datas IA veglias"
+ },
+ "Alte Laterne": {
+  "en": "Old lantern",
+  "fr": "Vieille lanterne",
+  "it": "Vecchia lanterna",
+  "rm": "Veglia lanterna"
+ },
+ "Alte Sennerei Chäsgaden": {
+  "en": "Alte Sennerei Chäsgaden",
+  "fr": "Alte Sennerei Chäsgaden",
+  "it": "Alte Sennerei Chäsgaden",
+  "rm": "Alte Sennerei Chäsgaden"
+ },
+ "Alter Holzski im Eis": {
+  "en": "Old wooden ski in the ice",
+  "fr": "Vieux ski en bois dans la glace",
+  "it": "Vecchio sci di legno nel ghiaccio",
+  "rm": "Vegl skì da lain en il glatsch"
+ },
+ "Altstafel": {
+  "en": "Altstafel",
+  "fr": "Altstafel",
+  "it": "Altstafel",
+  "rm": "Altstafel"
  },
  "Am Bootssteg": {
   "en": "At the jetty",
@@ -2071,11 +2167,23 @@
   "it": "Al pontile",
   "rm": "Al punt da bartgas"
  },
+ "Am Gletscherseeli": {
+  "en": "At the Gletscherseeli",
+  "fr": "Au Gletscherseeli",
+  "it": "Al Gletscherseeli",
+  "rm": "Al Gletscherseeli"
+ },
  "Am PC stumm (das simulierte Mikrofon hört es trotzdem)": {
   "en": "Muted on the PC (the simulated microphone still hears it)",
   "fr": "Muet sur le PC (le micro simulé l’entend quand même)",
   "it": "Muto al PC (il microfono simulato lo sente comunque)",
   "rm": "Mut al PC (il microfon simulà al auda tuttina)"
+ },
+ "Am Rand des Riedmoos": {
+  "en": "At the edge of the Riedmoos",
+  "fr": "Au bord du Riedmoos",
+  "it": "Al margine del Riedmoos",
+  "rm": "A l'ur dal Riedmoos"
  },
  "Am Strand liegt eine Flasche mit einem Zettel – eine Schatzkarte zum Aussichtspunkt.": {
   "en": "A bottle with a note lies on the beach – a treasure map to the viewpoint.",
@@ -2089,6 +2197,12 @@
   "it": "Di giorno di tanto in tanto un uccello vola proprio davanti all’obiettivo",
   "rm": "Dal di svola da temp en temp in utschè directamain davant la lentilla"
  },
+ "Am Ufer des Gumpisees": {
+  "en": "On the shore of the Gumpisee",
+  "fr": "Au bord du Gumpisee",
+  "it": "Sulla riva del Gumpisee",
+  "rm": "A la riva dal Gumpisee"
+ },
  "Am Waldhang gibt es ein dunkles Loch zwischen den Felsen.": {
   "en": "On the wooded slope there is a dark hole between the rocks.",
   "fr": "Sur la pente boisée, il y a un trou sombre entre les rochers.",
@@ -2101,6 +2215,12 @@
   "it": "Al limite del bosco c’è una vecchia roulotte con il muschio sul tetto. Chi ci abiterà?",
   "rm": "A l’ur dal guaud stat ina veglia rulotta cun mistgel sin il tetg. Tgi che sta qua?"
  },
+ "Am Wasser: Tiere kommen trinken, nachts feucht und kalt": {
+  "en": "By the water: animals come to drink, damp and cold at night",
+  "fr": "Au bord de l'eau : les animaux viennent boire, humide et froid la nuit",
+  "it": "Vicino all'acqua: gli animali vengono a bere, umido e freddo di notte",
+  "rm": "Sper l'aua: animals vegnan a baiver, la notg umid e fraid"
+ },
  "am wenigsten erwischt: %d×": {
   "en": "caught least: %d×",
   "fr": "le moins attrapé : %d×",
@@ -2112,6 +2232,12 @@
   "fr": "Quelque chose brille dans le sable à l’ouest de la plage.",
   "it": "Qualcosa luccica nella sabbia all’estremità ovest della spiaggia.",
   "rm": "A la fin vest da la riva glischa insatge en il sablun."
+ },
+ "Am Zelt (beim Eingang)": {
+  "en": "On the tent (at the entrance)",
+  "fr": "Sur la tente (à l'entrée)",
+  "it": "Sulla tenda (all'entrata)",
+  "rm": "Vi da la tenda (tar l'entrada)"
  },
  "Ampel": {
   "en": "Traffic light",
@@ -2130,6 +2256,12 @@
   "fr": "actif",
   "it": "acceso",
   "rm": "activ"
+ },
+ "An einem Baum / Pfosten befestigt": {
+  "en": "Fixed to a tree / post",
+  "fr": "Fixé à un arbre / un poteau",
+  "it": "Fissato a un albero / palo",
+  "rm": "Fixà vi d'in pign / pal"
  },
  "An jedem Punkt umschauen": {
   "en": "Look around at every point",
@@ -2323,6 +2455,12 @@
   "it": "Memoria (RAM)",
   "rm": "Memoria da lavur (RAM)"
  },
+ "Arve": {
+  "en": "Swiss stone pine",
+  "fr": "Arolle",
+  "it": "Cembro",
+  "rm": "Schember"
+ },
  "Assistent": {
   "en": "Wizard",
   "fr": "Assistant",
@@ -2335,11 +2473,29 @@
   "it": "Ramo nel vento",
   "rm": "Rom en il vent"
  },
+ "Auf dem Furggapass (beim Hospiz)": {
+  "en": "On the Furggapass (at the hospice)",
+  "fr": "Au col de la Furgga (près de l'hospice)",
+  "it": "Sul passo Furgga (presso l'ospizio)",
+  "rm": "Sin il pass Furgga (tar l'ospizi)"
+ },
  "Auf dem Pi bringt MoveEye die neue Version": {
   "en": "On the Pi, MoveEye brings the new version",
   "fr": "Sur le Pi, MoveEye apporte la nouvelle version",
   "it": "Sul Pi la nuova versione la porta MoveEye",
   "rm": "Sin il Pi porta MoveEye la nova versiun"
+ },
+ "Auf dem Rucksack (tief, nah)": {
+  "en": "On the backpack (low, close)",
+  "fr": "Sur le sac à dos (bas, proche)",
+  "it": "Sullo zaino (basso, vicino)",
+  "rm": "Sin il sac da spatla (bass, datiers)"
+ },
+ "Auf dem Stativ (Höhe frei, 1,5 m)": {
+  "en": "On the tripod (any height, 1.5 m)",
+  "fr": "Sur le trépied (hauteur libre, 1,5 m)",
+  "it": "Sul treppiede (altezza libera, 1,5 m)",
+  "rm": "Sin il stativ (autezza libra, 1,5 m)"
  },
  "Auf den Schreibtisch gelegt: %s – diese Datei im Chat anhängen.": {
   "en": "Put on the desktop: %s – attach this file in the chat.",
@@ -2352,6 +2508,12 @@
   "fr": "Vers la caméra / s’éloigner",
   "it": "Verso la telecamera / via",
   "rm": "Vers la camera / davent"
+ },
+ "Auf einem Stein (erhöht)": {
+  "en": "On a rock (raised)",
+  "fr": "Sur un rocher (surélevé)",
+  "it": "Su una pietra (rialzato)",
+  "rm": "Sin in crap (pli aut)"
  },
  "Aufgabe": {
   "en": "Task",
@@ -2461,6 +2623,18 @@
   "it": "USCITA",
   "rm": "SORTIDA"
  },
+ "Ausgesetzt: viel Wind": {
+  "en": "Exposed: lots of wind",
+  "fr": "Exposé : beaucoup de vent",
+  "it": "Esposto: molto vento",
+  "rm": "Exponì: bler vent"
+ },
+ "Ausgesetzt: viel Wind, bei Gewitter gefährlich": {
+  "en": "Exposed: lots of wind, dangerous in a thunderstorm",
+  "fr": "Exposé : beaucoup de vent, dangereux en cas d'orage",
+  "it": "Esposto: molto vento, pericoloso con il temporale",
+  "rm": "Exponì: bler vent, privlus cun urizi"
+ },
  "Auslöser": {
   "en": "Shutter",
   "fr": "Déclencheur",
@@ -2479,6 +2653,12 @@
   "it": "Scatto: colpo al centro dell’immagine (R2)",
   "rm": "Sajet: sajettar en il center dal maletg (R2)"
  },
+ "Ausserhalb des Tals.": {
+  "en": "Outside the valley.",
+  "fr": "Hors de la vallée.",
+  "it": "Fuori dalla valle.",
+  "rm": "Ordaifer la val."
+ },
  "Aussicht": {
   "en": "Viewpoint",
   "fr": "Vue",
@@ -2490,6 +2670,12 @@
   "fr": "Belvédère 25 min",
   "it": "Belvedere 25 min",
   "rm": "Vista 25 min"
+ },
+ "Aussicht: ": {
+  "en": "View: ",
+  "fr": "Vue : ",
+  "it": "Vista: ",
+  "rm": "Vista: "
  },
  "Aussichtsplattform": {
   "en": "Viewing platform",
@@ -2593,6 +2779,12 @@
   "it": "Ponte sul ruscello",
   "rm": "Punt dal flum"
  },
+ "Bachstein": {
+  "en": "Stepping stone",
+  "fr": "Pierre de gué",
+  "it": "Pietra del ruscello",
+  "rm": "Crap dal ual"
+ },
  "Bademeister-Stuhl": {
   "en": "Lifeguard chair",
   "fr": "Chaise de maître-nageur",
@@ -2634,6 +2826,12 @@
   "fr": "Banc",
   "it": "Panchina",
   "rm": "Banc"
+ },
+ "Bartgeier lässt Knochen fallen (bei einem Wanderer)": {
+  "en": "Bearded vulture drops a bone (near a hiker)",
+  "fr": "Le gypaète lâche un os (près d'un randonneur)",
+  "it": "Il gipeto lascia cadere un osso (vicino a un escursionista)",
+  "rm": "Il vutur da la barba lascha crudar in oss (sper in viandant)"
  },
  "Baseballhandschuh": {
   "en": "Baseball glove",
@@ -2755,11 +2953,35 @@
   "it": "Vicino ai bungalow vale la pena guardare nella siepe.",
   "rm": "Tar ils bungalows vala la paina da guardar en la saiv."
  },
+ "Bei der Alp Tschuggen": {
+  "en": "At the Alp Tschuggen",
+  "fr": "À l'Alp Tschuggen",
+  "it": "All'Alp Tschuggen",
+  "rm": "Tar l'Alp Tschuggen"
+ },
+ "Bei der Biwakschachtel": {
+  "en": "At the bivouac box",
+  "fr": "Au bivouac",
+  "it": "Al bivacco",
+  "rm": "Tar il bivac"
+ },
+ "Bei der Kapelle St. Jodern": {
+  "en": "At the chapel St. Jodern",
+  "fr": "À la chapelle St-Jodern",
+  "it": "Alla cappella San Jodern",
+  "rm": "Tar la chaplutta Son Jodern"
+ },
  "Bei der Rezeption (Schranke)": {
   "en": "At the reception (barrier)",
   "fr": "À la réception (barrière)",
   "it": "Alla reception (sbarra)",
   "rm": "Tar la recepziun (barriera)"
+ },
+ "Bei der Ruine Altstafel": {
+  "en": "At the Altstafel ruin",
+  "fr": "Aux ruines d'Altstafel",
+  "it": "Alla rovina Altstafel",
+  "rm": "Tar la ruina Altstafel"
  },
  "Beim Bungalow (Bungalow-Reihe)": {
   "en": "At the bungalow (bungalow row)",
@@ -2857,11 +3079,35 @@
   "it": "preparazione …",
   "rm": "preparar …"
  },
+ "Berg": {
+  "en": "Mountain",
+  "fr": "Montagne",
+  "it": "Montagna",
+  "rm": "Muntogna"
+ },
  "Berge": {
   "en": "Mountains",
   "fr": "Montagnes",
   "it": "Montagne",
   "rm": "Muntognas"
+ },
+ "Bergtal": {
+  "en": "Mountain valley",
+  "fr": "Vallée de montagne",
+  "it": "Valle alpina",
+  "rm": "Val da muntogna"
+ },
+ "Bergtal (Alp, See, Pass)": {
+  "en": "Mountain valley (alp, lake, pass)",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Bergtal: Ereignisse von selbst (Steinschlag, Fremder, Tier am Proviant, Wetterumschwung)": {
+  "en": "Mountain valley: events by themselves (rockfall, stranger, animal at the food, weather change)",
+  "fr": "Vallée : événements spontanés (chute de pierres, inconnu, animal aux provisions, changement de temps)",
+  "it": "Valle alpina: eventi automatici (caduta massi, sconosciuto, animale alle provviste, cambio del tempo)",
+  "rm": "Val: eveniments da sasez (crudada da crappa, ester, animal tar il provediment, midada da l'aura)"
  },
  "Beschlagene Linse (Tau am Morgen, milchiger Schleier)": {
   "en": "Fogged lens (dew in the morning, milky veil)",
@@ -3133,6 +3379,36 @@
   "it": "Per favore scegliere prima il file (webcam_bewegung_X.py).",
   "rm": "Per plaschair l’emprim tscherner la datoteca (webcam_bewegung_X.py)."
  },
+ "Biwak": {
+  "en": "Bivouac",
+  "fr": "Bivouac",
+  "it": "Bivacco",
+  "rm": "Bivac"
+ },
+ "Biwak Chüebodehorn": {
+  "en": "Biwak Chüebodehorn",
+  "fr": "Biwak Chüebodehorn",
+  "it": "Biwak Chüebodehorn",
+  "rm": "Biwak Chüebodehorn"
+ },
+ "Biwaksack + Isomatte": {
+  "en": "Bivy bag + sleeping mat",
+  "fr": "Sac de bivouac + matelas",
+  "it": "Sacco da bivacco + materassino",
+  "rm": "Sac da bivac + matratscha"
+ },
+ "Biwaksack mit Isomatte": {
+  "en": "Bivy bag with sleeping mat",
+  "fr": "Sac de bivouac avec matelas",
+  "it": "Sacco da bivacco con materassino",
+  "rm": "Sac da bivac cun matratscha"
+ },
+ "Biwakschachtel": {
+  "en": "Bivouac box",
+  "fr": "Bivouac (abri métallique)",
+  "it": "Bivacco fisso",
+  "rm": "Bivac fix"
+ },
  "Blau": {
   "en": "Blue",
   "fr": "Bleu",
@@ -3193,11 +3469,41 @@
   "it": "Fulmine",
   "rm": "Chametg"
  },
+ "Blockfeld-Labyrinth": {
+  "en": "Boulder field labyrinth",
+  "fr": "Labyrinthe de blocs",
+  "it": "Labirinto di massi",
+  "rm": "Labirint da blocs"
+ },
+ "Bluemenmatte": {
+  "en": "Bluemenmatte",
+  "fr": "Bluemenmatte",
+  "it": "Bluemenmatte",
+  "rm": "Bluemenmatte"
+ },
  "Blumenbeet": {
   "en": "Flower bed",
   "fr": "Massif de fleurs",
   "it": "Aiuola",
   "rm": "Iert da flurs"
+ },
+ "Blumenwiese": {
+  "en": "Flower meadow",
+  "fr": "Prairie fleurie",
+  "it": "Prato fiorito",
+  "rm": "Prà cun flurs"
+ },
+ "Boden flach genug (%d°).": {
+  "en": "Ground flat enough (%d°).",
+  "fr": "Sol assez plat (%d°).",
+  "it": "Terreno abbastanza piano (%d°).",
+  "rm": "Terren avunda plat (%d°)."
+ },
+ "Boden zu steil (%d°, höchstens %d° für %s).": {
+  "en": "Ground too steep (%d°, at most %d° for %s).",
+  "fr": "Sol trop raide (%d°, au plus %d° pour %s).",
+  "it": "Terreno troppo ripido (%d°, al massimo %d° per %s).",
+  "rm": "Terren memia stip (%d°, al pli %d° per %s)."
  },
  "Boje": {
   "en": "Buoy",
@@ -3361,6 +3667,12 @@
   "it": "Fontana",
   "rm": "Fontauna"
  },
+ "Brunnen-Trog": {
+  "en": "Fountain trough",
+  "fr": "Bassin de fontaine",
+  "it": "Vasca della fontana",
+  "rm": "Bigl"
+ },
  "Buch": {
   "en": "Book",
   "fr": "Livre",
@@ -3378,6 +3690,18 @@
   "fr": "Rangée de bungalows",
   "it": "Fila di bungalow",
   "rm": "Retscha da bungalows"
+ },
+ "Bunker im Fels": {
+  "en": "Bunker in the rock",
+  "fr": "Bunker dans la roche",
+  "it": "Bunker nella roccia",
+  "rm": "Bunker en la grippa"
+ },
+ "Bunkertür geht nur nachts auf (Murmeltier-Büro)": {
+  "en": "Bunker door opens only at night (marmot office)",
+  "fr": "La porte du bunker ne s'ouvre que la nuit (bureau des marmottes)",
+  "it": "La porta del bunker si apre solo di notte (ufficio delle marmotte)",
+  "rm": "L'isch dal bunker s'avra mo la notg (biro da muntanellas)"
  },
  "Bunter Platz zum Ausprobieren": {
   "en": "Colourful place for trying out",
@@ -3469,11 +3793,23 @@
   "it": "Pendio degli chalet",
   "rm": "Costa dals chalets"
  },
+ "Chanzle über dem Gumpisee": {
+  "en": "Chanzle über dem Gumpisee",
+  "fr": "Chanzle über dem Gumpisee",
+  "it": "Chanzle über dem Gumpisee",
+  "rm": "Chanzle über dem Gumpisee"
+ },
  "Checkpoints (+150 Punkte)": {
   "en": "Checkpoints (+150 points)",
   "fr": "Checkpoints (+150 points)",
   "it": "Checkpoint (+150 punti)",
   "rm": "Checkpoints (+150 puncts)"
+ },
+ "Chäschessi": {
+  "en": "Chäschessi",
+  "fr": "Chäschessi",
+  "it": "Chäschessi",
+  "rm": "Chäschessi"
  },
  "Code (6 Ziffern)": {
   "en": "Code (6 digits)",
@@ -3685,6 +4021,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Das geht nur in der Szene Bergtal.": {
+  "en": "This only works in the scene Mountain valley.",
+  "fr": "Possible seulement dans la scène Vallée de montagne.",
+  "it": "Funziona solo nella scena Valle alpina.",
+  "rm": "Quai va mo en la scena Val da muntogna."
  },
  "Das gerade verbundene (Pi oder MoveEye auf diesem PC)": {
   "en": "The one connected right now (Pi or MoveEye on this PC)",
@@ -4226,6 +4568,12 @@
   "it": "la borsetta",
   "rm": "la tastga"
  },
+ "die Isomatte": {
+  "en": "the sleeping mat",
+  "fr": "le matelas",
+  "it": "il materassino",
+  "rm": "la matratscha"
+ },
  "Die Kacheln oben: Szene, Tageszeit, Wetter, Besuch, Gegenstände, echter Ort und Aufstellen – ein Klick, oder ein kleines Menü direkt an der Kachel.": {
   "en": "",
   "fr": "",
@@ -4665,6 +5013,12 @@
   "it": "Monopattino elettrico (persona, veloce)",
   "rm": "E-trottinet (persuna, svelt)"
  },
+ "Echo-Platz in der Schlucht": {
+  "en": "Echo spot in the gorge",
+  "fr": "Point d'écho dans la gorge",
+  "it": "Punto dell'eco nella gola",
+  "rm": "Lieu da l'eco en la stretga"
+ },
  "Echt-Abgleich zurücksetzen": {
   "en": "Reset real match",
   "fr": "Réinitialiser l’ajustement réel",
@@ -4737,6 +5091,12 @@
   "it": "IA propria",
   "rm": "atgna IA"
  },
+ "Eigene Markierung auf der Karte (Name; wird in der Bildmitte gesetzt)": {
+  "en": "Own mark on the map (name; set in the middle of the view)",
+  "fr": "Repère personnel sur la carte (nom ; placé au centre de la vue)",
+  "it": "Segno personale sulla mappa (nome; posto al centro della vista)",
+  "rm": "Marcaziun atgna sin la charta (num; vegn mess en il center dal maletg)"
+ },
  "Eigene Regeln – wähle die Spielart:": {
   "en": "Own rules – choose the game type:",
   "fr": "Règles personnelles – choisis le type de jeu :",
@@ -4748,6 +5108,24 @@
   "fr": "Itinéraire propre (tel que placé)",
   "it": "Percorso proprio (come posato)",
   "rm": "Atgna ruta (sco messa)"
+ },
+ "Eigener Platz %d / %d": {
+  "en": "Own spot %d / %d",
+  "fr": "Emplacement personnel %d / %d",
+  "it": "Posto proprio %d / %d",
+  "rm": "Plazza atgna %d / %d"
+ },
+ "Eigener Platz («Hier übernachten»)": {
+  "en": "Own spot («Sleep here»)",
+  "fr": "Emplacement personnel (« Dormir ici »)",
+  "it": "Posto proprio («Dormire qui»)",
+  "rm": "Plazza atgna («Durmir qua»)"
+ },
+ "Eigenes Zelt": {
+  "en": "Own tent",
+  "fr": "Propre tente",
+  "it": "Tenda propria",
+  "rm": "Atgna tenda"
  },
  "ein": {
   "en": "on",
@@ -4893,6 +5271,12 @@
   "it": "Un guardiano con scatto, luce e sirena, gli altri sono ladri di bici: presto lì, prendere la bici (il sensore della bici lo segnala!), via all’uscita – 2 minuti.",
   "rm": "In guardian cun sajet, glisch e sirena, ils auters èn laders da velo: svelt là, tschiffar il velo (il sensur dal velo l’annunzia!), davent a la sortida – 2 minutas."
  },
+ "ein Zelt": {
+  "en": "a tent",
+  "fr": "une tente",
+  "it": "una tenda",
+  "rm": "ina tenda"
+ },
  "Ein-Klick-Demo": {
   "en": "One-click demo",
   "fr": "Démo en un clic",
@@ -4988,6 +5372,18 @@
   "fr": "Réduire : seulement une petite icône",
   "it": "Ridurre: solo una piccola icona",
   "rm": "Reducir: mo anc in pitschen simbol"
+ },
+ "Einmannzelt": {
+  "en": "One-person tent",
+  "fr": "Tente une place",
+  "it": "Tenda monoposto",
+  "rm": "Tenda per ina persuna"
+ },
+ "Einsames Bergtal 2 × 2 km: Alp, Bergsee, Pass, Gletscher – Zelt oder Isomatte, Schlafplatz frei wählbar": {
+  "en": "Lonely mountain valley 2 × 2 km: alp, lake, pass, glacier – tent or sleeping mat, choose your own spot",
+  "fr": "Vallée isolée 2 × 2 km : alpage, lac, col, glacier – tente ou matelas, emplacement au choix",
+  "it": "Valle solitaria 2 × 2 km: alpe, lago, passo, ghiacciaio – tenda o materassino, posto a scelta",
+  "rm": "Val solitaria 2 × 2 km: alp, lai, pass, glatscher – tenda u matratscha, plazza libra da tscherner"
  },
  "Einst.": {
   "en": "Sett.",
@@ -5344,6 +5740,12 @@
   "it": "Passa una civetta",
   "rm": "Ina tschuetta svola speravia"
  },
+ "event: rockfall | storm | fog | stranger | fox_food | choughs | hiker | marmot | chamois | ibex | cows | sheep | eagle | vulture | snowhare | stoat | salamander | ptarmigan": {
+  "en": "event: rockfall | storm | fog | stranger | fox_food | choughs | hiker | marmot | chamois | ibex | cows | sheep | eagle | vulture | snowhare | stoat | salamander | ptarmigan",
+  "fr": "event: rockfall | storm | fog | stranger | fox_food | choughs | hiker | marmot | chamois | ibex | cows | sheep | eagle | vulture | snowhare | stoat | salamander | ptarmigan",
+  "it": "event: rockfall | storm | fog | stranger | fox_food | choughs | hiker | marmot | chamois | ibex | cows | sheep | eagle | vulture | snowhare | stoat | salamander | ptarmigan",
+  "rm": "event: rockfall | storm | fog | stranger | fox_food | choughs | hiker | marmot | chamois | ibex | cows | sheep | eagle | vulture | snowhare | stoat | salamander | ptarmigan"
+ },
  "Experte": {
   "en": "Expert",
   "fr": "Expert",
@@ -5633,11 +6035,23 @@
   "it": "Roccia",
   "rm": "Crap"
  },
+ "Felsblock": {
+  "en": "Boulder",
+  "fr": "Bloc de rocher",
+  "it": "Masso",
+  "rm": "Bloc da grippa"
+ },
  "Felsen und Steinblöcke, Holzstapel, Alphütte, Büsche": {
   "en": "Rocks and boulders, woodpiles, alpine hut, bushes",
   "fr": "Rochers et blocs de pierre, tas de bois, chalet d’alpage, buissons",
   "it": "Rocce e massi, cataste di legna, baita, cespugli",
   "rm": "Grippa e blocs da crap, mantuns da laina, tegia d’alp, chaglias"
+ },
+ "Felsnische beim Murmelboden": {
+  "en": "Rock niche at the Murmelboden",
+  "fr": "Niche rocheuse au Murmelboden",
+  "it": "Nicchia nella roccia al Murmelboden",
+  "rm": "Nischa da grippa tar il Murmelboden"
  },
  "Fenster mit Vorhang (Fernseher flackert)": {
   "en": "Window with curtain (TV flickers)",
@@ -5753,6 +6167,12 @@
   "it": "Focolare",
   "rm": "Fieu da campadi"
  },
+ "Fichte": {
+  "en": "Spruce",
+  "fr": "Épicéa",
+  "it": "Abete rosso",
+  "rm": "Pign"
+ },
  "Filename: moveeye_rueckmeldung.jpg": {
   "en": "",
   "fr": "",
@@ -5795,6 +6215,12 @@
   "it": "Bottiglia sulla spiaggia / cassa al belvedere",
   "rm": "Buttiglia sin la riva / chista al punct da vista"
  },
+ "Flaschenpost im See → alte Laterne in der Gletscherspalte": {
+  "en": "Message in a bottle in the lake → old lantern in the crevasse",
+  "fr": "Bouteille à la mer dans le lac → vieille lanterne dans la crevasse",
+  "it": "Messaggio in bottiglia nel lago → vecchia lanterna nel crepaccio",
+  "rm": "Brev en butteglia en il lai → veglia lanterna en la sfessa dal glatscher"
+ },
  "Fledermäuse am Licht (nachts)": {
   "en": "Bats at the light (at night)",
   "fr": "Chauves-souris à la lumière (la nuit)",
@@ -5824,6 +6250,24 @@
   "fr": "Suivre nécessite MoveEye – connecter d’abord (d’ici là, seule la patrouille se tourne vers ce qui est suspect)",
   "it": "Seguire richiede MoveEye – prima collegare (fino ad allora solo la pattuglia si gira verso cose sospette)",
   "rm": "Suandar dovra MoveEye – l’emprim colliar (fin lura sa volva mo la patrulla vers chaussas suspectas)"
+ },
+ "Fondue-Caquelon": {
+  "en": "Fondue pot",
+  "fr": "Caquelon à fondue",
+  "it": "Caquelon da fonduta",
+  "rm": "Caquelon da fondue"
+ },
+ "Fondueplätzli": {
+  "en": "Fondueplätzli",
+  "fr": "Fondueplätzli",
+  "it": "Fondueplätzli",
+  "rm": "Fondueplätzli"
+ },
+ "Fort Chrüzli (Bunker)": {
+  "en": "Fort Chrüzli (Bunker)",
+  "fr": "Fort Chrüzli (Bunker)",
+  "it": "Fort Chrüzli (Bunker)",
+  "rm": "Fort Chrüzli (Bunker)"
  },
  "Foto": {
   "en": "Photo",
@@ -5993,6 +6437,18 @@
   "it": "Programma 3D gratuito, anche per ridurre e adattare modelli.",
   "rm": "Program 3D gratuit, er per reducir ed adattar models."
  },
+ "Fremder am Rucksack": {
+  "en": "Stranger at the backpack",
+  "fr": "Inconnu près du sac à dos",
+  "it": "Sconosciuto vicino allo zaino",
+  "rm": "Ester tar il sac da spatla"
+ },
+ "Fremder am Rucksack (Bergtal)": {
+  "en": "Stranger at the backpack (mountain valley)",
+  "fr": "Inconnu près du sac à dos (vallée)",
+  "it": "Sconosciuto vicino allo zaino (valle alpina)",
+  "rm": "Ester tar il sac da spatla (val)"
+ },
  "Fremder kommt vom Weg an deinen Platz (Zelt, dann Velo)": {
   "en": "Stranger comes from the path to your pitch (tent, then bike)",
   "fr": "Un inconnu vient du chemin vers ton emplacement (tente, puis vélo)",
@@ -6004,6 +6460,12 @@
   "fr": "Frisbee",
   "it": "Frisbee",
   "rm": "Frisbee"
+ },
+ "Frühling": {
+  "en": "Spring",
+  "fr": "Printemps",
+  "it": "Primavera",
+  "rm": "Primavaira"
  },
  "Fuchs": {
   "en": "Fox",
@@ -6022,6 +6484,54 @@
   "fr": "Renard à la poubelle (recyclage)",
   "it": "Volpe al cestino (riciclaggio)",
   "rm": "Vulp tar la ruttamenta (reciclar)"
+ },
+ "Fuchs hat den Proviant geholt": {
+  "en": "A fox took the food",
+  "fr": "Un renard a pris les provisions",
+  "it": "Una volpe ha preso le provviste",
+  "rm": "Ina vulp ha prendì il provediment"
+ },
+ "Furggakehren": {
+  "en": "Furggakehren",
+  "fr": "Furggakehren",
+  "it": "Furggakehren",
+  "rm": "Furggakehren"
+ },
+ "Furggapass": {
+  "en": "Furggapass",
+  "fr": "Furggapass",
+  "it": "Furggapass",
+  "rm": "Furggapass"
+ },
+ "Furggapass %d m": {
+  "en": "Furggapass %d m",
+  "fr": "Furggapass %d m",
+  "it": "Furggapass %d m",
+  "rm": "Furggapass %d m"
+ },
+ "Furggapass %d m ü. M.": {
+  "en": "Furggapass %d m a.s.l.",
+  "fr": "Col de la Furgga %d m",
+  "it": "Passo Furgga %d m s.l.m.",
+  "rm": "Pass Furgga %d m s.m."
+ },
+ "Furggapass (Postauto)": {
+  "en": "Furggapass (PostBus)",
+  "fr": "Col de la Furgga (CarPostal)",
+  "it": "Passo Furgga (AutoPostale)",
+  "rm": "Pass Furgga (Auto da posta)"
+ },
+ "Furggapass mit Hospiz": {
+  "en": "Furggapass with hospice",
+  "fr": "Col de la Furgga avec hospice",
+  "it": "Passo Furgga con ospizio",
+  "rm": "Pass Furgga cun ospizi"
+ },
+ "Furgghorn": {
+  "en": "Furgghorn",
+  "fr": "Furgghorn",
+  "it": "Furgghorn",
+  "rm": "Furgghorn"
  },
  "Fussgängerbrücke": {
   "en": "Footbridge",
@@ -6282,6 +6792,12 @@
   "it": "di fronte (30 m)",
   "rm": "visavi (30 m)"
  },
+ "Geheimer Bergsee hinter dem Grat (schmaler Pfad)": {
+  "en": "Secret mountain lake behind the ridge (narrow path)",
+  "fr": "Lac secret derrière l'arête (sentier étroit)",
+  "it": "Lago segreto dietro la cresta (sentiero stretto)",
+  "rm": "Lai secret davos la creta (senda stretga)"
+ },
  "Geheimer Pfad hinter dem Sanitär West zur Baumhütte": {
   "en": "Secret path behind the west toilets to the tree house",
   "fr": "Sentier secret derrière les sanitaires ouest vers la cabane",
@@ -6474,6 +6990,24 @@
   "it": "Temporale con fulmini (con pioggia; anche i fulmini sono una causa tipica di falsi allarmi)",
   "rm": "Urizi cun chametgs (cun plievgia; ils chametgs èn er in motiv tipic da fauss alarms)"
  },
+ "Gewitter zieht auf": {
+  "en": "Thunderstorm coming",
+  "fr": "Un orage approche",
+  "it": "Arriva un temporale",
+  "rm": "In urizi s'avischina"
+ },
+ "Gewitter zieht auf (Bergtal)": {
+  "en": "Thunderstorm coming (mountain valley)",
+  "fr": "Un orage approche (vallée)",
+  "it": "Arriva un temporale (valle alpina)",
+  "rm": "In urizi s'avischina (val)"
+ },
+ "Gewitter! Ausgesetzter Platz – runter vom Grat, Schutz suchen (Hütte, Biwak)": {
+  "en": "Thunderstorm! Exposed spot – get off the ridge, find shelter (hut, bivouac)",
+  "fr": "Orage ! Emplacement exposé – quitter l'arête, s'abriter (cabane, bivouac)",
+  "it": "Temporale! Posto esposto – scendi dalla cresta, cerca riparo (capanna, bivacco)",
+  "rm": "Urizi! Plazza exponida – davent da la creta, tschertgar protecziun (tegia, bivac)"
+ },
  "Gewählt: ": {
   "en": "Chosen: ",
   "fr": "Choisi : ",
@@ -6491,6 +7025,30 @@
   "fr": "endroit choisi",
   "it": "luogo scelto",
   "rm": "lieu tschernì"
+ },
+ "Gipfelbuch beim Kreuz (Tschingelspitz)": {
+  "en": "Summit book at the cross (Tschingelspitz)",
+  "fr": "Livre de sommet à la croix (Tschingelspitz)",
+  "it": "Libro di vetta alla croce (Tschingelspitz)",
+  "rm": "Cudesch da piz tar la crusch (Tschingelspitz)"
+ },
+ "Gipfelbuch-Kasten": {
+  "en": "Summit book box",
+  "fr": "Boîte du livre de sommet",
+  "it": "Cassetta del libro di vetta",
+  "rm": "Chascha dal cudesch da piz"
+ },
+ "Gipfeli": {
+  "en": "Gipfeli",
+  "fr": "Gipfeli",
+  "it": "Gipfeli",
+  "rm": "Gipfeli"
+ },
+ "Gipfelkreuz": {
+  "en": "Summit cross",
+  "fr": "Croix sommitale",
+  "it": "Croce di vetta",
+  "rm": "Crusch dal piz"
  },
  "Giraffe": {
   "en": "Giraffe",
@@ -6575,6 +7133,54 @@
   "fr": "Égalité",
   "it": "Pareggio",
   "rm": "Pari"
+ },
+ "Gleitschirm (am Boden)": {
+  "en": "Paraglider (on the ground)",
+  "fr": "Parapente (au sol)",
+  "it": "Parapendio (a terra)",
+  "rm": "Parapendi (per terra)"
+ },
+ "Gleitschirm landet auf der Kuhweide": {
+  "en": "Paraglider lands on the cow pasture",
+  "fr": "Un parapente atterrit dans le pâturage",
+  "it": "Un parapendio atterra sul pascolo",
+  "rm": "In parapendi atterrescha sin la pastgira da vatgas"
+ },
+ "Gletscher": {
+  "en": "Glacier",
+  "fr": "Glacier",
+  "it": "Ghiacciaio",
+  "rm": "Glatscher"
+ },
+ "Gletscherblick Wyssgletscher": {
+  "en": "Glacier view Wyssgletscher",
+  "fr": "Vue sur le Wyssgletscher",
+  "it": "Vista sul Wyssgletscher",
+  "rm": "Vista sin il Wyssgletscher"
+ },
+ "Gletschersee": {
+  "en": "Glacier lake",
+  "fr": "Lac glaciaire",
+  "it": "Lago glaciale",
+  "rm": "Lai da glatscher"
+ },
+ "Gletscherseeli": {
+  "en": "Gletscherseeli",
+  "fr": "Gletscherseeli",
+  "it": "Gletscherseeli",
+  "rm": "Gletscherseeli"
+ },
+ "Gletscherweg": {
+  "en": "Glacier trail",
+  "fr": "Sentier du glacier",
+  "it": "Sentiero del ghiacciaio",
+  "rm": "Senda dal glatscher"
+ },
+ "Gletscherzunge mit Spalten": {
+  "en": "Glacier tongue with crevasses",
+  "fr": "Langue glaciaire avec crevasses",
+  "it": "Lingua glaciale con crepacci",
+  "rm": "Lieunga da glatscher cun sfessas"
  },
  "glTF %s (glb %d), Erweiterungen: %s": {
   "en": "glTF %s (glb %d), extensions: %s",
@@ -6677,6 +7283,30 @@
   "fr": "Herbe et fleurs dans le pré",
   "it": "Erba e fiori sul prato",
   "rm": "Erva e flurs sin il prà"
+ },
+ "Gratspitz": {
+  "en": "Gratspitz",
+  "fr": "Gratspitz",
+  "it": "Gratspitz",
+  "rm": "Gratspitz"
+ },
+ "Gratspitz %d m": {
+  "en": "Gratspitz %d m",
+  "fr": "Gratspitz %d m",
+  "it": "Gratspitz %d m",
+  "rm": "Gratspitz %d m"
+ },
+ "Gratspitz über der Rüfi": {
+  "en": "Gratspitz above the Rüfi",
+  "fr": "Gratspitz au-dessus de la Rüfi",
+  "it": "Gratspitz sopra la Rüfi",
+  "rm": "Gratspitz sur la Rüfi"
+ },
+ "Gratweg": {
+  "en": "Ridge trail",
+  "fr": "Sentier d'arête",
+  "it": "Sentiero di cresta",
+  "rm": "Senda da la creta"
  },
  "Grau": {
   "en": "Grey",
@@ -6810,6 +7440,30 @@
   "it": "Stivale di gomma",
   "rm": "Stivel da gomma"
  },
+ "Gumpisee": {
+  "en": "Gumpisee",
+  "fr": "Gumpisee",
+  "it": "Gumpisee",
+  "rm": "Gumpisee"
+ },
+ "Gumpisee %d m": {
+  "en": "Gumpisee %d m",
+  "fr": "Gumpisee %d m",
+  "it": "Gumpisee %d m",
+  "rm": "Gumpisee %d m"
+ },
+ "Gumpisee %d m ü. M.": {
+  "en": "Gumpisee %d m a.s.l.",
+  "fr": "Gumpisee %d m",
+  "it": "Gumpisee %d m s.l.m.",
+  "rm": "Gumpisee %d m s.m."
+ },
+ "Gut geschützt vor Wind": {
+  "en": "Well sheltered from the wind",
+  "fr": "Bien abrité du vent",
+  "it": "Ben riparato dal vento",
+  "rm": "Bain protegì dal vent"
+ },
  "Gute Nacht! Jetzt braucht MoveEye Infrarot.": {
   "en": "Good night! Now MoveEye needs infrared.",
   "fr": "Bonne nuit ! Maintenant MoveEye a besoin de l’infrarouge.",
@@ -6833,6 +7487,12 @@
   "fr": "Chamois",
   "it": "Camoscio",
   "rm": "Chamutsch"
+ },
+ "Gämse auf dem Hospiz-Dach": {
+  "en": "Chamois on the hospice roof",
+  "fr": "Chamois sur le toit de l'hospice",
+  "it": "Camoscio sul tetto dell'ospizio",
+  "rm": "Chamutsch sin il tetg da l'ospizi"
  },
  "H · das Bedienfeld rechts ein / aus": {
   "en": "H · the control panel on the right on / off",
@@ -6955,6 +7615,18 @@
   "it": "Verde chiaro",
   "rm": "Verd cler"
  },
+ "Herbst (Lärchen gelb, Nebel)": {
+  "en": "Autumn (yellow larches, fog)",
+  "fr": "Automne (mélèzes jaunes, brouillard)",
+  "it": "Autunno (larici gialli, nebbia)",
+  "rm": "Atun (laresch mellens, tschajera)"
+ },
+ "Hermelin schaut aus jedem Mauerloch": {
+  "en": "Stoat peeks out of every hole in the wall",
+  "fr": "L'hermine regarde par chaque trou du mur",
+  "it": "L'ermellino sbuca da ogni buco del muro",
+  "rm": "La mustaila guarda or da mintga rusna dal mir"
+ },
  "Herzschlag, wenn die Kamera dich gleich sieht": {
   "en": "Heartbeat when the camera is about to see you",
   "fr": "Battements de cœur quand la caméra va te voir",
@@ -7009,6 +7681,12 @@
   "it": "",
   "rm": ""
  },
+ "Hier übernachten (Bergtal: der Platz in der Bildmitte oder beim Rover)": {
+  "en": "Sleep here (mountain valley: the spot in the middle of the view or at the rover)",
+  "fr": "Dormir ici (vallée : l'endroit au centre de la vue ou au rover)",
+  "it": "Dormire qui (valle alpina: il posto al centro della vista o al rover)",
+  "rm": "Durmir qua (val: la plazza en il center dal maletg u tar il rover)"
+ },
  "Hierhin stellen + Referenz-Scan": {
   "en": "Put here + reference scan",
   "fr": "Placer ici + scan de référence",
@@ -7057,6 +7735,12 @@
   "it": "Seguire dietro",
   "rm": "Suandar davos"
  },
+ "Hinweiszettel (Selbstversorger)": {
+  "en": "Notice (self-catering)",
+  "fr": "Affichette (gîte non gardé)",
+  "it": "Avviso (autogestito)",
+  "rm": "Avis (tegia senza survegliader)"
+ },
  "Hmm, nicht ganz. Schau nochmals genau hin!": {
   "en": "Hmm, not quite. Look again carefully!",
   "fr": "Hmm, pas tout à fait. Regarde encore bien !",
@@ -7093,6 +7777,18 @@
   "it": "Altana, passaggio di selvaggina",
   "rm": "Chamona d’aguat, passadi da selvaschina"
  },
+ "Holzbeige": {
+  "en": "Woodpile",
+  "fr": "Tas de bois",
+  "it": "Catasta di legna",
+  "rm": "Mantun da laina"
+ },
+ "Holzski schmilzt aus dem Gletscher (Sommer)": {
+  "en": "Wooden ski melts out of the glacier (summer)",
+  "fr": "Un ski en bois sort de la glace (été)",
+  "it": "Uno sci di legno esce dal ghiacciaio (estate)",
+  "rm": "In skì da lain vegn or dal glatscher (stad)"
+ },
  "Holzstapel, Felsen, Büsche, Waldhütte": {
   "en": "Woodpiles, rocks, bushes, forest hut",
   "fr": "Tas de bois, rochers, buissons, cabane forestière",
@@ -7104,6 +7800,18 @@
   "fr": "Hop, hop – un lièvre !",
   "it": "Hop, hop – una lepre!",
   "rm": "Hop, hop – in lieur!"
+ },
+ "Hospiz": {
+  "en": "Hospice",
+  "fr": "Hospice",
+  "it": "Ospizio",
+  "rm": "Ospizi"
+ },
+ "Hospiz %d m": {
+  "en": "Hospice %d m",
+  "fr": "Hospice %d m",
+  "it": "Ospizio %d m",
+  "rm": "Ospizi %d m"
  },
  "Hot Dog": {
   "en": "Hot dog",
@@ -7171,6 +7879,18 @@
   "it": "Ponte sospeso",
   "rm": "Punt pendenta"
  },
+ "Hängebrücke Tüfelsschlund": {
+  "en": "Suspension bridge Tüfelsschlund",
+  "fr": "Passerelle suspendue Tüfelsschlund",
+  "it": "Ponte sospeso Tüfelsschlund",
+  "rm": "Punt pendenta Tüfelsschlund"
+ },
+ "Hängebrücke · max. 10 Personen": {
+  "en": "Suspension bridge · max. 10 people",
+  "fr": "Passerelle · 10 personnes max.",
+  "it": "Ponte sospeso · max. 10 persone",
+  "rm": "Punt pendenta · max. 10 persunas"
+ },
  "Hängematte (schaukelt im Wind)": {
   "en": "Hammock (swings in the wind)",
   "fr": "Hamac (se balance au vent)",
@@ -7219,6 +7939,12 @@
   "it": "Altitudini mancanti",
   "rm": "Autezzas mancan"
  },
+ "Höhenweg West": {
+  "en": "High trail west",
+  "fr": "Sentier d'altitude ouest",
+  "it": "Sentiero d'alta quota ovest",
+  "rm": "Senda d'autezza vest"
+ },
  "Hühner (mit Hühnerstall)": {
   "en": "Chickens (with chicken coop)",
   "fr": "Poules (avec poulailler)",
@@ -7236,6 +7962,18 @@
   "fr": "Poulailler (avec poules)",
   "it": "Pollaio (con galline)",
   "rm": "Nuegl da gaglinas (cun gaglinas)"
+ },
+ "Hütte": {
+  "en": "Hut",
+  "fr": "Cabane",
+  "it": "Capanna",
+  "rm": "Tegia"
+ },
+ "Hüttenwart fegt, der Wind weht zurück": {
+  "en": "Hut guest sweeps, the wind blows it back",
+  "fr": "Le gardien balaie, le vent ramène tout",
+  "it": "Il guardiano spazza, il vento riporta tutto",
+  "rm": "Il chasader scua, il vent bufa enavos"
  },
  "I2C-Fehler": {
   "en": "I2C error",
@@ -7326,6 +8064,12 @@
   "fr": "Dans la forêt au-dessus du camp scout se trouve une petite grotte. La nuit, des lucioles y brillent.",
   "it": "Nel bosco sopra il campo scout c’è una piccola grotta. Di notte ci brillano le lucciole.",
   "rm": "En il guaud sur il champ da scouts è ina pitschna cuvel. La notg glischan là verms da glisch."
+ },
+ "Im Wasser kann man nicht übernachten.": {
+  "en": "You cannot sleep in the water.",
+  "fr": "Impossible de dormir dans l'eau.",
+  "it": "Non si può dormire nell'acqua.",
+  "rm": "Ins na po betg durmir en l'aua."
  },
  "im Ziel": {
   "en": "at the goal",
@@ -7471,6 +8215,18 @@
   "it": "Luce IR ",
   "rm": "Glisch IR "
  },
+ "Isomatte + Schlafsack (offen)": {
+  "en": "Sleeping mat + sleeping bag (open)",
+  "fr": "Matelas + sac de couchage (à la belle étoile)",
+  "it": "Materassino + sacco a pelo (all'aperto)",
+  "rm": "Matratscha + sac da durmir (avert)"
+ },
+ "Isomatte mit Schlafsack": {
+  "en": "Sleeping mat with sleeping bag",
+  "fr": "Matelas avec sac de couchage",
+  "it": "Materassino con sacco a pelo",
+  "rm": "Matratscha cun sac da durmir"
+ },
  "J beim Erkunden · QR-Code: Mitspieler mit dem Handy, frei bewegen": {
   "en": "J when exploring · QR code: players with the phone, move freely",
   "fr": "J en exploration · code QR : joueurs avec le téléphone, bouger librement",
@@ -7506,6 +8262,12 @@
   "fr": "Saison (course du soleil)",
   "it": "Stagione (percorso del sole)",
   "rm": "Stagiun (via dal sulegl)"
+ },
+ "Jahreszeit im Bergtal": {
+  "en": "Season in the mountain valley",
+  "fr": "Saison dans la vallée",
+  "it": "Stagione nella valle alpina",
+  "rm": "Stagiun en la val"
  },
  "Jahreszeiten: Gras und Laub nach dem Monat (Frühling, Sommer, Herbst, Winter)": {
   "en": "Seasons: grass and leaves by month (spring, summer, autumn, winter)",
@@ -7771,6 +8533,30 @@
   "it": "Capacità di una cella (collegato: da MoveEye)",
   "rm": "Capacitad d’ina cella (collià: da MoveEye)"
  },
+ "Kapelle": {
+  "en": "Chapel",
+  "fr": "Chapelle",
+  "it": "Cappella",
+  "rm": "Chaplutta"
+ },
+ "Kapelle auf dem Hügel": {
+  "en": "Chapel on the hill",
+  "fr": "Chapelle sur la colline",
+  "it": "Cappella sulla collina",
+  "rm": "Chaplutta sin la collina"
+ },
+ "Kapelle St. Jodern": {
+  "en": "Chapel St. Jodern",
+  "fr": "Chapelle St-Jodern",
+  "it": "Cappella San Jodern",
+  "rm": "Chaplutta Son Jodern"
+ },
+ "Kapellenweg": {
+  "en": "Chapel trail",
+  "fr": "Sentier de la chapelle",
+  "it": "Sentiero della cappella",
+  "rm": "Senda da la chaplutta"
+ },
  "Karte": {
   "en": "Map",
   "fr": "Carte",
@@ -7890,6 +8676,12 @@
   "fr": "Pas de visites spontanées",
   "it": "Nessuna visita spontanea",
   "rm": "Nagina visita da sasez"
+ },
+ "Kein Boden in der Bildmitte – schau auf den Platz und versuche es nochmals.": {
+  "en": "No ground in the middle of the view – look at the spot and try again.",
+  "fr": "Pas de sol au centre de la vue – vise l'endroit et réessaie.",
+  "it": "Nessun terreno al centro della vista – guarda il posto e riprova.",
+  "rm": "Nagin terren en il center dal maletg – guarda sin la plazza ed emprova anc ina giada."
  },
  "Kein Controller gefunden": {
   "en": "No controller found",
@@ -8216,11 +9008,23 @@
   "it": "Ciliegie",
   "rm": "Tschareschas"
  },
+ "Kiste der Materialseilbahn": {
+  "en": "Goods cable car box",
+  "fr": "Benne du téléphérique de service",
+  "it": "Cassone della teleferica",
+  "rm": "Chascha da la pendenta da material"
+ },
  "Klar": {
   "en": "Clear",
   "fr": "Dégagé",
   "it": "Sereno",
   "rm": "Cler"
+ },
+ "Klare Nacht, weiter Himmel – die Milchstrasse über dem Bergtal.": {
+  "en": "Clear night, wide sky – the Milky Way above the valley.",
+  "fr": "Nuit claire, ciel immense – la Voie lactée au-dessus de la vallée.",
+  "it": "Notte limpida, cielo ampio – la Via Lattea sopra la valle.",
+  "rm": "Notg clera, tschiel lad – la Via lattea sur la val."
  },
  "Klatschen 2×": {
   "en": "Clap 2×",
@@ -8300,6 +9104,18 @@
   "it": "Castello per arrampicarsi",
   "rm": "Rampignera"
  },
+ "Klettersteig Gratspitz": {
+  "en": "Via ferrata Gratspitz",
+  "fr": "Via ferrata Gratspitz",
+  "it": "Via ferrata Gratspitz",
+  "rm": "Via ferrata Gratspitz"
+ },
+ "Klettersteig Gratspitz (K3)": {
+  "en": "Via ferrata Gratspitz (K3)",
+  "fr": "Via ferrata Gratspitz (K3)",
+  "it": "Via ferrata Gratspitz (K3)",
+  "rm": "Via ferrata Gratspitz (K3)"
+ },
  "Klicken = Ort wählen (dort steht MoveEye) · Ziehen = verschieben · Mausrad = zoomen": {
   "en": "Click = choose place (MoveEye stands there) · drag = move · mouse wheel = zoom",
   "fr": "Clic = choisir le lieu (MoveEye s’y trouve) · glisser = déplacer · molette = zoomer",
@@ -8329,6 +9145,18 @@
   "fr": "Moment le plus serré  %d:%02d  ·  rouge = vu",
   "it": "Momento più stretto  %d:%02d  ·  rosso = visto",
   "rm": "Il mument il pli stretg  %d:%02d  ·  cotschen = vis"
+ },
+ "Kocher": {
+  "en": "Stove",
+  "fr": "Réchaud",
+  "it": "Fornellino",
+  "rm": "Cuschinet"
+ },
+ "Kocher am Schlafplatz (Bergtal)": {
+  "en": "Stove at the sleeping spot (mountain valley)",
+  "fr": "Réchaud au bivouac (vallée)",
+  "it": "Fornellino al posto per dormire (valle alpina)",
+  "rm": "Cuschinet tar la plazza da durmir (val)"
  },
  "Koffer": {
   "en": "Suitcase",
@@ -8474,6 +9302,12 @@
   "it": "Cristalli: chi ne raccoglie riceve punti extra.",
   "rm": "Cristals: tgi che rimna tals survegn puncts extra."
  },
+ "Kristallhöhle hinter dem Wasserfall (nur bei wenig Wasser)": {
+  "en": "Crystal cave behind the waterfall (only at low water)",
+  "fr": "Grotte de cristaux derrière la cascade (seulement en basses eaux)",
+  "it": "Grotta di cristalli dietro la cascata (solo con poca acqua)",
+  "rm": "Cuvel da cristals davos la cascada (mo cun pauca aua)"
+ },
  "Kuchen": {
   "en": "Cake",
   "fr": "Gâteau",
@@ -8491,6 +9325,36 @@
   "fr": "Vache",
   "it": "Mucca",
   "rm": "Vatga"
+ },
+ "Kuh am Schlafplatz": {
+  "en": "Cow at the sleeping spot",
+  "fr": "Vache près du bivouac",
+  "it": "Mucca al posto per dormire",
+  "rm": "Vatga tar la plazza da durmir"
+ },
+ "Kuh am Zelt": {
+  "en": "Cow at the tent",
+  "fr": "Vache près de la tente",
+  "it": "Mucca vicino alla tenda",
+  "rm": "Vatga tar la tenda"
+ },
+ "Kuh leckt am Zelt / klaut eine Socke": {
+  "en": "Cow licks the tent / steals a sock",
+  "fr": "Une vache lèche la tente / vole une chaussette",
+  "it": "Una mucca lecca la tenda / ruba un calzino",
+  "rm": "Ina vatga litga la tenda / engola in chaltschiel"
+ },
+ "Kuhstall": {
+  "en": "Cowshed",
+  "fr": "Étable",
+  "it": "Stalla",
+  "rm": "Stalla da vatgas"
+ },
+ "Kuppelzelt": {
+  "en": "Dome tent",
+  "fr": "Tente dôme",
+  "it": "Tenda a cupola",
+  "rm": "Tenda a cupla"
  },
  "Kurz (Tag und Nacht · etwa 2½ Min., für die automatische Optimierung)": {
   "en": "Short (day and night · about 2½ min, for automatic optimisation)",
@@ -8521,6 +9385,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Käselaib": {
+  "en": "Cheese wheel",
+  "fr": "Meule de fromage",
+  "it": "Forma di formaggio",
+  "rm": "Tschantscha da chaschiel"
  },
  "Kühe auf der Weide": {
   "en": "Cows in the pasture",
@@ -8696,6 +9566,12 @@
   "it": "Altoparlante",
   "rm": "Autpledader"
  },
+ "Lawinenkegel (Schneereste)": {
+  "en": "Avalanche cone (old snow)",
+  "fr": "Cône d'avalanche (reste de neige)",
+  "it": "Cono di valanga (resti di neve)",
+  "rm": "Cun da lavina (restanzas da naiv)"
+ },
  "Leben": {
   "en": "Lives",
   "fr": "Vies",
@@ -8714,11 +9590,29 @@
   "it": "",
   "rm": ""
  },
+ "Legföhre": {
+  "en": "Mountain pine",
+  "fr": "Pin couché",
+  "it": "Pino mugo",
+  "rm": "Tschuetta"
+ },
+ "leicht (Karte, Kompass, eigener Standort)": {
+  "en": "easy (map, compass, own position)",
+  "fr": "facile (carte, boussole, position)",
+  "it": "facile (mappa, bussola, posizione)",
+  "rm": "facil (charta, cumpass, atgna posiziun)"
+ },
  "Leider falsch – noch einmal.": {
   "en": "Sorry, wrong – try again.",
   "fr": "Dommage, faux – encore une fois.",
   "it": "Purtroppo sbagliato – ancora una volta.",
   "rm": "Donn, fallà – anc ina giada."
+ },
+ "Leitplanke": {
+  "en": "Guard rail",
+  "fr": "Glissière de sécurité",
+  "it": "Guardrail",
+  "rm": "Barriera"
  },
  "Lektion": {
   "en": "Lesson",
@@ -9010,6 +9904,24 @@
   "it": "caricamento ",
   "rm": "chargiar "
  },
+ "Lärche": {
+  "en": "Larch",
+  "fr": "Mélèze",
+  "it": "Larice",
+  "rm": "Laresch"
+ },
+ "Lärchenlichtung": {
+  "en": "Lärchenlichtung",
+  "fr": "Lärchenlichtung",
+  "it": "Lärchenlichtung",
+  "rm": "Lärchenlichtung"
+ },
+ "Lärchenwald mit Lichtung": {
+  "en": "Larch forest with clearing",
+  "fr": "Forêt de mélèzes avec clairière",
+  "it": "Lariceto con radura",
+  "rm": "God da laresch cun runcada"
+ },
  "Lässt die Firewall dieses PCs MoveEye nicht herein, verbindet sich der Simulator selbst zu MoveEye. Adresse und Code stehen auf der Seite von MoveEye unter Simulator → «Simulator hinter einer Firewall».": {
   "en": "If this PC’s firewall does not let MoveEye in, the simulator connects to MoveEye itself. Address and code are on MoveEye’s page under Simulator → «Simulator behind a firewall».",
   "fr": "Si le pare-feu de ce PC ne laisse pas entrer MoveEye, le simulateur se connecte lui-même à MoveEye. Adresse et code se trouvent sur la page de MoveEye sous Simulateur → «Simulateur derrière un pare-feu».",
@@ -9105,6 +10017,18 @@
   "fr": "Mât (scène) – comme avant, à 3 m de l’appareil",
   "it": "Palo (scena) – come prima, a 3 m dall’apparecchio",
   "rm": "Pal (scena) – sco fin ussa, 3 m sper l’apparat"
+ },
+ "Materialseilbahn (Talstation)": {
+  "en": "Goods cable car (bottom station)",
+  "fr": "Téléphérique de service (station aval)",
+  "it": "Teleferica per materiale (stazione a valle)",
+  "rm": "Pendenta da material (staziun giusut)"
+ },
+ "Materialseilbahn-Station": {
+  "en": "Goods cable car station",
+  "fr": "Station du téléphérique de service",
+  "it": "Stazione della teleferica",
+  "rm": "Staziun da la pendenta da material"
  },
  "Mauer (2 Klicks)": {
   "en": "Wall (2 clicks)",
@@ -9412,6 +10336,12 @@
   "it": "Girare nei dintorni con il rover: W A S D / frecce, stick verde o un controller (anche Bluetooth; Start = acceso / spento). Esc termina.",
   "rm": "Charrar cun il rover tras la regiun: W A S D / frizzas, stick verd u in controller da gieu (er Bluetooth; Start = en / or). Esc termina."
  },
+ "Mit der Materialseilbahn fahren (Bergtal)": {
+  "en": "Ride the goods cable car (mountain valley)",
+  "fr": "Monter dans le téléphérique de service (vallée)",
+  "it": "Salire sulla teleferica (valle alpina)",
+  "rm": "Ir cun la pendenta da material (val)"
+ },
  "Mit grossem Rucksack (anderer Umriss)": {
   "en": "With a big backpack (different outline)",
   "fr": "Avec un grand sac à dos (autre silhouette)",
@@ -9496,6 +10426,12 @@
   "it": "medio (10 m)",
   "rm": "mesaun (10 m)"
  },
+ "mittel (Karte und Kompass)": {
+  "en": "medium (map and compass)",
+  "fr": "moyen (carte et boussole)",
+  "it": "medio (mappa e bussola)",
+  "rm": "mesaun (charta e cumpass)"
+ },
  "Mitternacht, nach dem Regen": {
   "en": "Midnight, after the rain",
   "fr": "Minuit, après la pluie",
@@ -9519,6 +10455,30 @@
   "fr": "Phase de lune selon la date (lumière et forme de la lune)",
   "it": "Fase lunare secondo la data (luce e forma della luna)",
   "rm": "Fasa da la glina tenor la data (glisch e furma da la glina)"
+ },
+ "Moor": {
+  "en": "Moor",
+  "fr": "Marais",
+  "it": "Torbiera",
+  "rm": "Palì"
+ },
+ "Moor mit Wollgras": {
+  "en": "Moor with cotton grass",
+  "fr": "Marais avec linaigrette",
+  "it": "Torbiera con eriofori",
+  "rm": "Palì cun launa da palì"
+ },
+ "Moorsee (zweiter kleiner See)": {
+  "en": "Moor lake (second small lake)",
+  "fr": "Lac du marais (deuxième petit lac)",
+  "it": "Laghetto della torbiera (secondo laghetto)",
+  "rm": "Lai dal palì (segund lai pitschen)"
+ },
+ "Moorweg": {
+  "en": "Moor trail",
+  "fr": "Sentier du marais",
+  "it": "Sentiero della torbiera",
+  "rm": "Senda dal palì"
  },
  "Morgen": {
   "en": "Morning",
@@ -9887,6 +10847,12 @@
   "it": "Download di MoveEye danneggiato (checksum errato).",
   "rm": "Telechargiada da MoveEye donnegiada (summa da controlla fallada)."
  },
+ "MoveEye-Halterung am Schlafplatz (Bergtal)": {
+  "en": "MoveEye mount at the sleeping spot (mountain valley)",
+  "fr": "Fixation de MoveEye au bivouac (vallée)",
+  "it": "Supporto di MoveEye al posto per dormire (valle alpina)",
+  "rm": "Tegnida da MoveEye tar la plazza da durmir (val)"
+ },
  "MoveEye: noch keine Angaben (verbinden, MoveEye ab 2.95.97)": {
   "en": "MoveEye: no details yet (connect, MoveEye from 2.95.97)",
   "fr": "MoveEye : pas encore d’informations (connecter, MoveEye dès 2.95.97)",
@@ -9959,6 +10925,36 @@
   "it": "Mover di nuovo al posto di partenza",
   "rm": "Mover enavos al lieu da start"
  },
+ "Murmelboden": {
+  "en": "Murmelboden",
+  "fr": "Murmelboden",
+  "it": "Murmelboden",
+  "rm": "Murmelboden"
+ },
+ "Murmelboden %d m": {
+  "en": "Murmelboden %d m",
+  "fr": "Murmelboden %d m",
+  "it": "Murmelboden %d m",
+  "rm": "Murmelboden %d m"
+ },
+ "Murmeltier kommt zu spät zum Bau": {
+  "en": "Marmot is late for its burrow",
+  "fr": "Une marmotte arrive en retard au terrier",
+  "it": "Una marmotta arriva tardi alla tana",
+  "rm": "Ina muntanella vegn memia tard en sia tana"
+ },
+ "Murmeltier-Bau": {
+  "en": "Marmot burrow",
+  "fr": "Terrier de marmotte",
+  "it": "Tana della marmotta",
+  "rm": "Tana da muntanella"
+ },
+ "Murmeltier-Fussball (Tennisball)": {
+  "en": "Marmot football (tennis ball)",
+  "fr": "Football des marmottes (balle de tennis)",
+  "it": "Calcio delle marmotte (pallina da tennis)",
+  "rm": "Ballapé da muntanellas (balla da tennis)"
+ },
  "Muuuh! Eine Kuh.": {
   "en": "Mooo! A cow.",
   "fr": "Meuh ! Une vache.",
@@ -10000,6 +10996,18 @@
   "fr": "Poubelle (le couvercle claque au vent)",
   "it": "Bidone (il coperchio sbatte al vento)",
   "rm": "Bidun da ruments (il viertgel batta en il vent)"
+ },
+ "Münzfernrohr": {
+  "en": "Coin telescope",
+  "fr": "Longue-vue à pièces",
+  "it": "Cannocchiale a gettoni",
+  "rm": "Telescop cun munaida"
+ },
+ "nach dem Monat (Jahreszeit)": {
+  "en": "by the month (season)",
+  "fr": "selon le mois (saison)",
+  "it": "secondo il mese (stagione)",
+  "rm": "tenor il mais (stagiun)"
  },
  "Nach einem Update kurz zeigen, was neu ist (und was als Nächstes kommt)": {
   "en": "After an update, briefly show what is new (and what comes next)",
@@ -10218,6 +11226,12 @@
   "it": "Amplificazione notturna delle telecamere (massimo)",
   "rm": "Amplificaziun da notg da las cameras (il pli bler)"
  },
+ "Nahe am Weg: es kommen Leute vorbei": {
+  "en": "Close to the trail: people pass by",
+  "fr": "Près du sentier : des gens passent",
+  "it": "Vicino al sentiero: passa gente",
+  "rm": "Sper la senda: persunas passan speravia"
+ },
  "Name nicht gefunden (DNS)": {
   "en": "Name not found (DNS)",
   "fr": "Nom introuvable (DNS)",
@@ -10242,11 +11256,29 @@
   "it": "Nebbia",
   "rm": "Tschajera"
  },
+ "Nebel kommt schnell (Bergtal)": {
+  "en": "Fog comes fast (mountain valley)",
+  "fr": "Le brouillard arrive vite (vallée)",
+  "it": "La nebbia arriva in fretta (valle alpina)",
+  "rm": "La tschajera vegn spert (val)"
+ },
  "Nebelbank": {
   "en": "Fog bank",
   "fr": "Banc de brouillard",
   "it": "Banco di nebbia",
   "rm": "Bancada da tschajera"
+ },
+ "Nebelmeer": {
+  "en": "Sea of fog",
+  "fr": "Mer de brouillard",
+  "it": "Mare di nebbia",
+  "rm": "Mar da tschajera"
+ },
+ "Nebelmeer (Bergtal: das Tal im Nebel, oben Sonne)": {
+  "en": "Sea of fog (mountain valley: the valley in fog, sun above)",
+  "fr": "Mer de brouillard (vallée : la vallée dans le brouillard, soleil au-dessus)",
+  "it": "Mare di nebbia (valle alpina: la valle nella nebbia, sopra il sole)",
+  "rm": "Mar da tschajera (val: la val en la tschajera, survart sulegl)"
  },
  "Neige": {
   "en": "Tilt",
@@ -10313,6 +11345,18 @@
   "fr": "Installer automatiquement les nouvelles versions",
   "it": "Installare automaticamente le nuove versioni",
   "rm": "Installar automaticamain novas versiuns"
+ },
+ "Neuer Ort entdeckt:": {
+  "en": "New place discovered:",
+  "fr": "Nouveau lieu découvert :",
+  "it": "Nuovo luogo scoperto:",
+  "rm": "Nov lieu scuvert:"
+ },
+ "Neuer Schlafplatz:": {
+  "en": "New sleeping spot:",
+  "fr": "Nouvel emplacement :",
+  "it": "Nuovo posto per dormire:",
+  "rm": "Nova plazza da durmir:"
  },
  "Nicht auf Menschen! Nur Tiere.": {
   "en": "Not at people! Only animals.",
@@ -10518,6 +11562,12 @@
   "it": "Ancora nessuna immagine mancata dal gioco.",
   "rm": "Anc nagins maletgs manchentads dal gieu."
  },
+ "Noch nicht besucht – zuerst hingehen oder hinfliegen:": {
+  "en": "Not visited yet – go or fly there first:",
+  "fr": "Pas encore visité – y aller d'abord à pied ou en vol :",
+  "it": "Non ancora visitato – prima andarci o volarci:",
+  "rm": "Anc betg visità – l'emprim ir u sgular là:"
+ },
  "noch nicht gemessen": {
   "en": "",
   "fr": "",
@@ -10565,6 +11615,12 @@
   "fr": "Nord – cliquer : regarder vers le nord",
   "it": "Nord – cliccare: guardare a nord",
   "rm": "Nord – cliccar: guardar vers nord"
+ },
+ "Nordlicht-Platz (seltene klare Winternächte)": {
+  "en": "Northern lights spot (rare clear winter nights)",
+  "fr": "Point des aurores boréales (rares nuits d'hiver claires)",
+  "it": "Posto dell'aurora boreale (rare notti invernali limpide)",
+  "rm": "Lieu da la glischnera dal nord (raras notgs d'enviern cleras)"
  },
  "Normal": {
   "en": "Normal",
@@ -10614,6 +11670,12 @@
   "it": "Aprire solo i gruppi",
   "rm": "Avrir mo las gruppas"
  },
+ "Nur Kuhglocken im Nebel, plötzlich eine Kuh": {
+  "en": "Only cowbells in the fog, suddenly a cow",
+  "fr": "Seulement des cloches dans le brouillard, soudain une vache",
+  "it": "Solo campanacci nella nebbia, all'improvviso una mucca",
+  "rm": "Mo stgellas en la tschajera, anetgamain ina vatga"
+ },
  "nur Menschen": {
   "en": "only people",
   "fr": "seulement des personnes",
@@ -10650,6 +11712,24 @@
   "it": "Solo durante un turno",
   "rm": "Mo durant ina runda"
  },
+ "Nüdelistock (Gipfel Ost)": {
+  "en": "Nüdelistock (summit east)",
+  "fr": "Nüdelistock (sommet est)",
+  "it": "Nüdelistock (vetta est)",
+  "rm": "Nüdelistock (piz ost)"
+ },
+ "Ob dem Tüfelsschlund": {
+  "en": "Above the Tüfelsschlund",
+  "fr": "Au-dessus du Tüfelsschlund",
+  "it": "Sopra il Tüfelsschlund",
+  "rm": "Sur il Tüfelsschlund"
+ },
+ "Ob em Schwarzseeli": {
+  "en": "Ob em Schwarzseeli",
+  "fr": "Ob em Schwarzseeli",
+  "it": "Ob em Schwarzseeli",
+  "rm": "Ob em Schwarzseeli"
+ },
  "Oberflächen (Holz, Kies, Rasen, Beton) für eigene Modelle in Blender.": {
   "en": "Surfaces (wood, gravel, lawn, concrete) for your own models in Blender.",
   "fr": "Surfaces (bois, gravier, gazon, béton) pour tes propres modèles dans Blender.",
@@ -10661,6 +11741,18 @@
   "fr": "Objectif comme le Camera Module 3 : légère distorsion en barillet au bord (plus forte en grand-angle), image oblique en tournant vite (rolling shutter), bruit selon la lumière",
   "it": "Obiettivo come il Camera Module 3: leggera distorsione a barile ai bordi (più forte col grandangolo), immagine obliqua girando veloce (rolling shutter), rumore secondo la luce",
   "rm": "Objectiv sco il Camera Module 3: levgia distorsiun a buttatsch a l’ur (pli ferma cun grond angul), maletg sghembel cun volver svelt (rolling shutter), canera tenor la glisch"
+ },
+ "Obri Stafel": {
+  "en": "Obri Stafel",
+  "fr": "Obri Stafel",
+  "it": "Obri Stafel",
+  "rm": "Obri Stafel"
+ },
+ "Obri Stafelhütte (Seilbahn)": {
+  "en": "Obri Stafelhütte (cable car)",
+  "fr": "Obri Stafelhütte (téléphérique)",
+  "it": "Obri Stafelhütte (teleferica)",
+  "rm": "Obri Stafelhütte (pendenta)"
  },
  "Obst auf dem Tisch": {
   "en": "Fruit on the table",
@@ -10770,6 +11862,12 @@
   "it": "Aprire la cartella",
   "rm": "Avrir l’ordinatur"
  },
+ "Orientierung im Bergtal": {
+  "en": "Orientation in the mountain valley",
+  "fr": "Orientation dans la vallée",
+  "it": "Orientamento nella valle alpina",
+  "rm": "Orientaziun en la val"
+ },
  "Ort": {
   "en": "Place",
   "fr": "Lieu",
@@ -10872,6 +11970,12 @@
   "it": "Pacchetto: immagine %d di %d · %s · %s%s",
   "rm": "Pachet: maletg %d da %d · %s · %s%s"
  },
+ "Panoramatafel": {
+  "en": "Panorama board",
+  "fr": "Table panoramique",
+  "it": "Tavola panoramica",
+  "rm": "Tavla panoramica"
+ },
  "Parcours fehlt": {
   "en": "Course missing",
   "fr": "Parcours manquant",
@@ -10896,11 +12000,41 @@
   "it": "Parcheggio",
   "rm": "Plaz da parcar"
  },
+ "Parkplatz Furgga": {
+  "en": "Car park Furgga",
+  "fr": "Parking de la Furgga",
+  "it": "Parcheggio Furgga",
+  "rm": "Parcadi Furgga"
+ },
  "Parkuhr": {
   "en": "Parking meter",
   "fr": "Parcomètre",
   "it": "Parchimetro",
   "rm": "Parcometer"
+ },
+ "Pass": {
+  "en": "Pass",
+  "fr": "Col",
+  "it": "Passo",
+  "rm": "Pass"
+ },
+ "Passchanzle Furgga": {
+  "en": "Passchanzle Furgga",
+  "fr": "Passchanzle Furgga",
+  "it": "Passchanzle Furgga",
+  "rm": "Passchanzle Furgga"
+ },
+ "Passstrasse mit Haarnadelkurven": {
+  "en": "Pass road with hairpin bends",
+  "fr": "Route du col avec épingles",
+  "it": "Strada del passo con tornanti",
+  "rm": "Via dal pass cun stortas"
+ },
+ "Passweg": {
+  "en": "Pass trail",
+  "fr": "Sentier du col",
+  "it": "Sentiero del passo",
+  "rm": "Senda dal pass"
  },
  "Patrouille": {
   "en": "Patrol",
@@ -10998,6 +12132,12 @@
   "it": "Persona",
   "rm": "Persuna"
  },
+ "Pfad zum geheimen See": {
+  "en": "Path to the secret lake",
+  "fr": "Sentier vers le lac secret",
+  "it": "Sentiero verso il lago segreto",
+  "rm": "Senda al lai secret"
+ },
  "Pfadi-Lager": {
   "en": "Scout camp",
   "fr": "Camp scout",
@@ -11034,11 +12174,23 @@
   "it": "Pi 5: ritardo finché l’immagine arriva a MoveEye (elaborazione, Wi-Fi)",
   "rm": "Pi 5: retard fin ch’il maletg è tar MoveEye (elavuraziun, WLAN)"
  },
+ "Picknick-Decke mit Korb": {
+  "en": "Picnic blanket with basket",
+  "fr": "Couverture de pique-nique avec panier",
+  "it": "Coperta da picnic con cestino",
+  "rm": "Cuverta da picnic cun chanastra"
+ },
  "Picknick-Tisch": {
   "en": "Picnic table",
   "fr": "Table de pique-nique",
   "it": "Tavolo da picnic",
   "rm": "Maisa da picnic"
+ },
+ "Picknick: Korkenzieher auf dem Hut": {
+  "en": "Picnic: corkscrew on the hat",
+  "fr": "Pique-nique : tire-bouchon sur le chapeau",
+  "it": "Picnic: cavatappi sul cappello",
+  "rm": "Picnic: tiratappuns sin il chapè"
  },
  "Picknicktisch und Baum mit Astloch": {
   "en": "Picnic table and tree with a knothole",
@@ -11058,6 +12210,12 @@
   "fr": "Déclencher le PIR tente",
   "it": "Attivare il PIR tenda",
   "rm": "Activar il PIR tenda"
+ },
+ "Piz Vadret": {
+  "en": "Piz Vadret",
+  "fr": "Piz Vadret",
+  "it": "Piz Vadret",
+  "rm": "Piz Vadret"
  },
  "Pizza": {
   "en": "Pizza",
@@ -11161,6 +12319,18 @@
   "it": "",
   "rm": ""
  },
+ "Postauto": {
+  "en": "PostBus",
+  "fr": "CarPostal",
+  "it": "AutoPostale",
+  "rm": "Auto da posta"
+ },
+ "Postauto mit Dreiklang-Horn (Passstrasse)": {
+  "en": "PostBus with three-tone horn (pass road)",
+  "fr": "CarPostal avec klaxon à trois tons (route du col)",
+  "it": "AutoPostale con il clacson a tre toni (strada del passo)",
+  "rm": "Auto da posta cun corn da trais tuns (via dal pass)"
+ },
  "Power-ups: Die lila Kugel ist ein Unsichtbar-Trank (9 s fast unsichtbar), die gelbe ein Turbo (7 s schneller, aber lauter).": {
   "en": "Power-ups: the purple ball is an invisibility potion (9 s almost invisible), the yellow one a turbo (7 s faster, but louder).",
   "fr": "Power-ups : la boule violette est une potion d’invisibilité (9 s presque invisible), la jaune un turbo (7 s plus rapide, mais plus bruyant).",
@@ -11208,6 +12378,12 @@
   "fr": "Journal",
   "it": "Registro",
   "rm": "Protocol"
+ },
+ "Proviant": {
+  "en": "Food",
+  "fr": "Provisions",
+  "it": "Provviste",
+  "rm": "Provediment"
  },
  "Prüfe die Datei …": {
   "en": "Checking the file …",
@@ -11395,6 +12571,12 @@
   "it": "fuma / emette vapore",
   "rm": "fima / vapurescha"
  },
+ "Rauschendes Wasser (laut)": {
+  "en": "Rushing water (loud)",
+  "fr": "Eau bruyante (fort)",
+  "it": "Acqua che scroscia (forte)",
+  "rm": "Aua che ramura (fitg)"
+ },
  "Realismus: MG90S %.0f°/s · Servos wie echt · Drehbereich %.0f°%s · Bild mit Verzögerung · Simulator %.0f Bilder/s": {
   "en": "Realism: MG90S %.0f°/s · servos like real · turning range %.0f°%s · picture with delay · simulator %.0f frames/s",
   "fr": "Réalisme : MG90S %.0f°/s · servos réalistes · plage de rotation %.0f°%s · image avec retard · simulateur %.0f images/s",
@@ -11545,6 +12727,24 @@
   "fr": "Exact, %d animaux ! Bien compté !",
   "it": "Giusto, %d animali! Contato benissimo!",
   "rm": "Gist, %d animals! Super dumbrà!"
+ },
+ "Riedmoos %d m": {
+  "en": "Riedmoos %d m",
+  "fr": "Riedmoos %d m",
+  "it": "Riedmoos %d m",
+  "rm": "Riedmoos %d m"
+ },
+ "Riedmoos (Wollgras)": {
+  "en": "Riedmoos (cotton grass)",
+  "fr": "Riedmoos (linaigrette)",
+  "it": "Riedmoos (eriofori)",
+  "rm": "Riedmoos (launa da palì)"
+ },
+ "Riedspitz": {
+  "en": "Riedspitz",
+  "fr": "Riedspitz",
+  "it": "Riedspitz",
+  "rm": "Riedspitz"
  },
  "Riesige Auswahl, auch echte Gebäude und 3D-Scans. Filter «Downloadable», Format glTF wählen.": {
   "en": "Huge choice, also real buildings and 3D scans. Filter «Downloadable», choose format glTF.",
@@ -11750,11 +12950,41 @@
   "it": "Gridare",
   "rm": "Clamar"
  },
+ "Ruhe": {
+  "en": "Quiet",
+  "fr": "Calme",
+  "it": "Quiete",
+  "rm": "Quietezza"
+ },
  "Ruhige Nacht – selten jemand": {
   "en": "Quiet night – rarely anyone",
   "fr": "Nuit calme – rarement quelqu’un",
   "it": "Notte tranquilla – raramente qualcuno",
   "rm": "Notg quieta – darar insatgi"
+ },
+ "Ruine": {
+  "en": "Ruin",
+  "fr": "Ruines",
+  "it": "Rovina",
+  "rm": "Ruina"
+ },
+ "Ruine (alter Unterstand)": {
+  "en": "Ruin (old shelter)",
+  "fr": "Ruines (ancien abri)",
+  "it": "Rovina (vecchio riparo)",
+  "rm": "Ruina (vegl sustegn)"
+ },
+ "Ruine Altstafel": {
+  "en": "Altstafel ruin",
+  "fr": "Ruines d'Altstafel",
+  "it": "Rovina Altstafel",
+  "rm": "Ruina Altstafel"
+ },
+ "Ruine des alten Unterstands": {
+  "en": "Ruin of the old shelter",
+  "fr": "Ruines de l'ancien abri",
+  "it": "Rovina del vecchio riparo",
+  "rm": "Ruina dal vegl sustegn"
  },
  "Rund um %s": {
   "en": "Around %s",
@@ -11870,6 +13100,12 @@
   "it": "Carota",
   "rm": "Rischmelna"
  },
+ "Rüfi (Geröllhalde)": {
+  "en": "Rüfi (scree slope)",
+  "fr": "Rüfi (pierrier)",
+  "it": "Rüfi (ghiaione)",
+  "rm": "Rüfi (grava)"
+ },
  "Sabotage-Test für den Diebstahlschutz von MoveEye (scharf schalten):": {
   "en": "Sabotage test for MoveEye’s theft protection (arm it):",
   "fr": "Test de sabotage pour la protection antivol de MoveEye (armer) :",
@@ -11887,6 +13123,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Salamander-Prozession nach Regen (einer falsch rum)": {
+  "en": "Salamander procession after rain (one the wrong way)",
+  "fr": "Procession de salamandres après la pluie (une à l'envers)",
+  "it": "Processione di salamandre dopo la pioggia (una al contrario)",
+  "rm": "Processiun da salamanders suenter la plievgia (in en la fallida direcziun)"
  },
  "Sammler": {
   "en": "Collector",
@@ -11947,6 +13189,18 @@
   "fr": "Troupeau de moutons",
   "it": "Gregge di pecore",
   "rm": "Muntanella da nursas"
+ },
+ "Schafstau auf der Passstrasse": {
+  "en": "Sheep jam on the pass road",
+  "fr": "Bouchon de moutons sur la route du col",
+  "it": "Ingorgo di pecore sulla strada del passo",
+  "rm": "Stausch da nursas sin la via dal pass"
+ },
+ "Schattwald": {
+  "en": "Schattwald",
+  "fr": "Schattwald",
+  "it": "Schattwald",
+  "rm": "Schattwald"
  },
  "Schatzkiste": {
   "en": "Treasure chest",
@@ -12019,6 +13273,30 @@
   "fr": "Roseaux",
   "it": "Canneto",
   "rm": "Channa"
+ },
+ "Schlafplatz": {
+  "en": "Sleeping spot",
+  "fr": "Bivouac",
+  "it": "Posto per dormire",
+  "rm": "Plazza da durmir"
+ },
+ "Schlafplatz im Bergtal": {
+  "en": "Sleeping spot in the mountain valley",
+  "fr": "Emplacement de nuit dans la vallée",
+  "it": "Posto per dormire nella valle alpina",
+  "rm": "Plazza da durmir en la val"
+ },
+ "Schlafplatz: ": {
+  "en": "Sleeping spot: ",
+  "fr": "Emplacement : ",
+  "it": "Posto per dormire: ",
+  "rm": "Plazza da durmir: "
+ },
+ "Schlafsack (Bergtal)": {
+  "en": "Sleeping bag (mountain valley)",
+  "fr": "Sac de couchage (vallée)",
+  "it": "Sacco a pelo (valle alpina)",
+  "rm": "Sac da durmir (val)"
  },
  "Schlafwandler (Weg Zeltwiese)": {
   "en": "Sleepwalker (tent meadow path)",
@@ -12128,6 +13406,18 @@
   "it": "Chiudi (Esc)",
   "rm": "Serrar (Esc)"
  },
+ "Schlucht": {
+  "en": "Gorge",
+  "fr": "Gorge",
+  "it": "Gola",
+  "rm": "Stretga"
+ },
+ "Schluchtweg": {
+  "en": "Gorge trail",
+  "fr": "Sentier de la gorge",
+  "it": "Sentiero della gola",
+  "rm": "Senda da la stretga"
+ },
  "Schlüssel abgelehnt – Rechte prüfen (Contents und Actions: Read and write)": {
   "en": "Key rejected – check the rights (Contents and Actions: Read and write)",
   "fr": "Clé refusée – vérifier les droits (Contents et Actions : Read and write)",
@@ -12140,6 +13430,12 @@
   "it": "Mazzo di chiavi",
   "rm": "Mazzet da clavs"
  },
+ "Schmugglerroute (Markierungen nur im Abendlicht)": {
+  "en": "Smugglers' route (marks only in the evening light)",
+  "fr": "Route des contrebandiers (marques visibles seulement le soir)",
+  "it": "Via dei contrabbandieri (segni solo nella luce della sera)",
+  "rm": "Ruta dals contrabandiers (marcaziuns mo en la glisch da la saira)"
+ },
  "Schmutz und Pollen auf der Linse": {
   "en": "Dirt and pollen on the lens",
   "fr": "Saleté et pollen sur l’objectif",
@@ -12151,6 +13447,12 @@
   "fr": "Neige",
   "it": "Neve",
   "rm": "Naiv"
+ },
+ "Schneestange": {
+  "en": "Snow pole",
+  "fr": "Jalon à neige",
+  "it": "Palina da neve",
+  "rm": "Pal da naiv"
  },
  "Schnell hin, Velo greifen, weg – Reaktionszeit": {
   "en": "Quickly there, grab the bike, away – reaction time",
@@ -12169,6 +13471,12 @@
   "fr": "Vite, vite ! Un joggeur passe en courant.",
   "it": "Presto, presto! Passa un jogger.",
   "rm": "Svelt, svelt! In currider curra speravia."
+ },
+ "Schnellreise im Bergtal (Ort wählen)": {
+  "en": "Quick travel in the mountain valley (choose a place)",
+  "fr": "Voyage rapide dans la vallée (choisir un lieu)",
+  "it": "Viaggio rapido nella valle alpina (scegli un luogo)",
+  "rm": "Viadi svelt en la val (tscherner in lieu)"
  },
  "Schnellstart – ein Tipp, alles eingestellt": {
   "en": "Quick start – one tap, everything set",
@@ -12280,6 +13588,18 @@
   "it": "",
   "rm": ""
  },
+ "Schwarzgrat": {
+  "en": "Schwarzgrat",
+  "fr": "Schwarzgrat",
+  "it": "Schwarzgrat",
+  "rm": "Schwarzgrat"
+ },
+ "Schwarzseeli": {
+  "en": "Schwarzseeli",
+  "fr": "Schwarzseeli",
+  "it": "Schwarzseeli",
+  "rm": "Schwarzseeli"
+ },
  "Schweiz (Mitte)": {
   "en": "Switzerland (centre)",
   "fr": "Suisse (centre)",
@@ -12310,6 +13630,12 @@
   "fr": "Panoramique coincé",
   "it": "Brandeggio bloccato",
   "rm": "Volver stgatschà"
+ },
+ "schwer (nur Wegweiser)": {
+  "en": "hard (signposts only)",
+  "fr": "difficile (seulement les panneaux)",
+  "it": "difficile (solo segnavia)",
+  "rm": "grev (mo indicaturs)"
  },
  "Schwierige Bedingungen": {
   "en": "Difficult conditions",
@@ -12372,11 +13698,23 @@
   "it": "bella (ombre, bagliori, nuvole)",
   "rm": "bel (umbrivas, glischs, nivels)"
  },
+ "Schöne Aussicht": {
+  "en": "Beautiful view",
+  "fr": "Belle vue",
+  "it": "Bella vista",
+  "rm": "Bella vista"
+ },
  "Schüssel": {
   "en": "Bowl",
   "fr": "Bol",
   "it": "Ciotola",
   "rm": "Scadiola"
+ },
+ "See": {
+  "en": "Lake",
+  "fr": "Lac",
+  "it": "Lago",
+  "rm": "Lai"
  },
  "See / Fluss": {
   "en": "Lake / river",
@@ -12384,11 +13722,23 @@
   "it": "Lago / fiume",
   "rm": "Lai / flum"
  },
+ "Seeblick Gumpisee": {
+  "en": "Lake view Gumpisee",
+  "fr": "Vue sur le Gumpisee",
+  "it": "Vista sul Gumpisee",
+  "rm": "Vista sin il Gumpisee"
+ },
  "Seeufer mit Steg": {
   "en": "Lake shore with jetty",
   "fr": "Rive du lac avec ponton",
   "it": "Riva del lago con pontile",
   "rm": "Riva dal lai cun punt"
+ },
+ "Seeweg": {
+  "en": "Lake trail",
+  "fr": "Sentier du lac",
+  "it": "Sentiero del lago",
+  "rm": "Senda dal lai"
  },
  "Segelboot": {
   "en": "Sailing boat",
@@ -12431,6 +13781,24 @@
   "fr": "Autodiagnostic",
   "it": "Autodiagnosi",
   "rm": "Autodiagnosa"
+ },
+ "Selbstversorgerhütte\nHolz im Schopf, Ofen löschen\nKasse: 15 Fr. pro Nacht\nDanke und gute Tour!": {
+  "en": "Self-catering hut\nWood in the shed, put the stove out\nCash box: 15 Fr. per night\nThank you and good tour!",
+  "fr": "Cabane non gardée\nBois dans la remise, éteindre le poêle\nCaisse : 15 fr. par nuit\nMerci et bonne course !",
+  "it": "Capanna autogestita\nLegna nella legnaia, spegnere la stufa\nCassa: 15 fr. a notte\nGrazie e buona gita!",
+  "rm": "Tegia senza survegliader\nLaina en il tschalè, stizzar la pigna\nCassa: 15 fr. per notg\nGrazia e buna tura!"
+ },
+ "Selbstversorgerhütte Alp Tschuggen": {
+  "en": "Self-catering hut Alp Tschuggen",
+  "fr": "Cabane non gardée Alp Tschuggen",
+  "it": "Capanna autogestita Alp Tschuggen",
+  "rm": "Tegia senza survegliader Alp Tschuggen"
+ },
+ "Selfie-Wanderer an der Schluchtkante, Kuh stupst": {
+  "en": "Selfie hiker at the gorge edge, a cow nudges",
+  "fr": "Randonneur selfie au bord de la gorge, une vache pousse",
+  "it": "Escursionista selfie sul bordo della gola, una mucca spinge",
+  "rm": "Viandant da selfie a l'ur da la stretga, ina vatga stumpla"
  },
  "Sende an GitHub …": {
   "en": "Sending to GitHub …",
@@ -12563,6 +13931,12 @@
   "fr": "Placer : %s – cliquer dans le monde, Esc = annuler",
   "it": "Posare: %s – cliccare nel mondo, Esc = annulla",
   "rm": "Metter: %s – cliccar en il mund, Esc = interrumper"
+ },
+ "Sicherheit": {
+  "en": "Safety",
+  "fr": "Sécurité",
+  "it": "Sicurezza",
+  "rm": "Segirezza"
  },
  "Sicherheit / Benutzer": {
   "en": "Security / users",
@@ -12779,6 +14153,18 @@
   "fr": "Panneau solaire",
   "it": "Pannello solare",
   "rm": "Panel solar"
+ },
+ "Sommer": {
+  "en": "Summer",
+  "fr": "Été",
+  "it": "Estate",
+  "rm": "Stad"
+ },
+ "Sommerschlafsack": {
+  "en": "Summer sleeping bag",
+  "fr": "Sac de couchage d'été",
+  "it": "Sacco a pelo estivo",
+  "rm": "Sac da durmir da stad"
  },
  "Sonne": {
   "en": "Sun",
@@ -13062,6 +14448,12 @@
   "it": "Lavandino",
   "rm": "Lavanda"
  },
+ "St. Jodern %d m": {
+  "en": "St. Jodern %d m",
+  "fr": "St-Jodern %d m",
+  "it": "San Jodern %d m",
+  "rm": "Son Jodern %d m"
+ },
  "Stadt": {
   "en": "Town",
   "fr": "Ville",
@@ -13164,6 +14556,12 @@
   "it": "",
   "rm": ""
  },
+ "Stativ": {
+  "en": "Tripod",
+  "fr": "Trépied",
+  "it": "Treppiede",
+  "rm": "Stativ"
+ },
  "Status-LED & Tasten": {
   "en": "Status LED & buttons",
   "fr": "LED d’état & boutons",
@@ -13189,17 +14587,95 @@
   "rm": "Stgaffir",
   "?": "rm: Steigen"
  },
+ "Steimandli-Wald": {
+  "en": "Steimandli-Wald",
+  "fr": "Steimandli-Wald",
+  "it": "Steimandli-Wald",
+  "rm": "Steimandli-Wald"
+ },
+ "Stein bis %d m an den Platz": {
+  "en": "Stone came within %d m of the spot",
+  "fr": "Pierre arrivée à %d m de l'emplacement",
+  "it": "Pietra arrivata a %d m dal posto",
+  "rm": "Crap fin %d m da la plazza"
+ },
  "Steinbock": {
   "en": "Ibex",
   "fr": "Bouquetin",
   "it": "Stambecco",
   "rm": "Capricorn"
  },
+ "Steinbock auf der steilen Kante": {
+  "en": "Ibex on the steep edge",
+  "fr": "Bouquetin sur l'arête raide",
+  "it": "Stambecco sul bordo ripido",
+  "rm": "Capricorn a l'ur stip"
+ },
+ "Steinchaos Murmelboden": {
+  "en": "Steinchaos Murmelboden",
+  "fr": "Steinchaos Murmelboden",
+  "it": "Steinchaos Murmelboden",
+  "rm": "Steinchaos Murmelboden"
+ },
  "Steine werfen zum Ablenken": {
   "en": "Throw stones as a distraction",
   "fr": "Lancer des pierres pour distraire",
   "it": "Lanciare sassi per distrarre",
   "rm": "Bittar craps per distrair"
+ },
+ "Steinhütte": {
+  "en": "Stone hut",
+  "fr": "Cabane en pierre",
+  "it": "Capanna di pietra",
+  "rm": "Tegia da crap"
+ },
+ "Steinmann": {
+  "en": "Cairn",
+  "fr": "Cairn",
+  "it": "Ometto",
+  "rm": "Um da crap"
+ },
+ "Steinmann-Wald, einer hat Augen": {
+  "en": "Forest of cairns, one has eyes",
+  "fr": "Forêt de cairns, l'un a des yeux",
+  "it": "Bosco di ometti, uno ha gli occhi",
+  "rm": "God d'umens da crap, in ha egls"
+ },
+ "Steinschlag": {
+  "en": "Rockfall",
+  "fr": "Chute de pierres",
+  "it": "Caduta di massi",
+  "rm": "Crudada da crappa"
+ },
+ "Steinschlag (Bergtal)": {
+  "en": "Rockfall (mountain valley)",
+  "fr": "Chute de pierres (vallée)",
+  "it": "Caduta di massi (valle alpina)",
+  "rm": "Crudada da crappa (val)"
+ },
+ "Steinschlag-Gefahr: Felswand oberhalb": {
+  "en": "Rockfall danger: rock face above",
+  "fr": "Danger de chute de pierres : paroi au-dessus",
+  "it": "Pericolo di caduta massi: parete sopra",
+  "rm": "Privel da crudada da crappa: paraid da grippa survart"
+ },
+ "Sternennacht": {
+  "en": "Starry night",
+  "fr": "Nuit étoilée",
+  "it": "Notte stellata",
+  "rm": "Notg cun stailas"
+ },
+ "Sternennacht am Schlafplatz": {
+  "en": "Starry night at the sleeping spot",
+  "fr": "Nuit étoilée au bivouac",
+  "it": "Notte stellata al posto per dormire",
+  "rm": "Notg cun stailas tar la plazza da durmir"
+ },
+ "Sternschnuppen-Platz auf dem Grat (klare Nächte)": {
+  "en": "Shooting star spot on the ridge (clear nights)",
+  "fr": "Point des étoiles filantes sur l'arête (nuits claires)",
+  "it": "Posto delle stelle cadenti sulla cresta (notti limpide)",
+  "rm": "Lieu da las stailas cadentas sin la creta (notgs cleras)"
  },
  "Steuere eine Figur mit dem Stick und versuche, aus dem Bild von MoveEye zu kommen – 60 Sekunden, Punkte für die Rangliste.": {
   "en": "Steer a figure with the stick and try to get out of MoveEye’s picture – 60 seconds, points for the ranking.",
@@ -13296,6 +14772,18 @@
   "fr": "Coupure de courant",
   "it": "Interruzione di corrente",
   "rm": "Interrupziun da current"
+ },
+ "Strommast": {
+  "en": "Power pylon",
+  "fr": "Pylône électrique",
+  "it": "Traliccio",
+  "rm": "Pitga da forza"
+ },
+ "Strommast an der Strasse": {
+  "en": "Power pylon by the road",
+  "fr": "Pylône au bord de la route",
+  "it": "Traliccio lungo la strada",
+  "rm": "Pitga da forza sper la via"
  },
  "Stromsäule": {
   "en": "Power post",
@@ -13663,6 +15151,12 @@
   "it": "Mimetizzazione: ",
   "rm": "Camuflascha: "
  },
+ "Tarp mit Isomatte": {
+  "en": "Tarp with sleeping mat",
+  "fr": "Tarp avec matelas",
+  "it": "Telo con materassino",
+  "rm": "Tarp cun matratscha"
+ },
  "Tasse": {
   "en": "Cup",
   "fr": "Tasse",
@@ -13776,6 +15270,12 @@
   "fr": "Vitesse de la patrouille",
   "it": "Velocità della pattuglia",
   "rm": "Tempo da la patrulla"
+ },
+ "Tennisball": {
+  "en": "Tennis ball",
+  "fr": "Balle de tennis",
+  "it": "Pallina da tennis",
+  "rm": "Balla da tennis"
  },
  "Tennisschläger": {
   "en": "Tennis racket",
@@ -13939,6 +15439,12 @@
   "it": "Animale (2a IA)",
   "rm": "Animal (2. IA)"
  },
+ "Tier am Proviant (Bergtal)": {
+  "en": "Animal at the food (mountain valley)",
+  "fr": "Animal aux provisions (vallée)",
+  "it": "Animale alle provviste (valle alpina)",
+  "rm": "Animal tar il provediment (val)"
+ },
  "Tier steht still": {
   "en": "Animal stands still",
   "fr": "Animal immobile",
@@ -14101,6 +15607,12 @@
   "it": "Portalo in alto e lascialo «Cadere» davanti alla telecamera.",
   "rm": "Purta el ad aut e lascha «Crudar» davant la camera."
  },
+ "Trailrunner fragt den Wegweiser": {
+  "en": "Trail runner asks the signpost",
+  "fr": "Un traileur interroge le panneau",
+  "it": "Un trail runner chiede al segnavia",
+  "rm": "In currider da trail dumonda l'indicatur"
+ },
  "Training starten (der Schlüssel braucht auch «Actions: Read and write»)": {
   "en": "Start training (the key also needs «Actions: Read and write»)",
   "fr": "Lancer l’entraînement (la clé doit aussi avoir «Actions: Read and write»)",
@@ -14204,6 +15716,18 @@
   "it": "Scala",
   "rm": "Stgala"
  },
+ "Trockenmauer": {
+  "en": "Dry stone wall",
+  "fr": "Mur en pierres sèches",
+  "it": "Muro a secco",
+  "rm": "Mir sitg"
+ },
+ "Trockenmauer mit Löchern": {
+  "en": "Dry stone wall with holes",
+  "fr": "Mur en pierres sèches avec trous",
+  "it": "Muro a secco con buchi",
+  "rm": "Mir sitg cun rusnas"
+ },
  "Tropfen auf der Linse": {
   "en": "Drops on the lens",
   "fr": "Gouttes sur l’objectif",
@@ -14215,6 +15739,18 @@
   "fr": "Gouttes sur l’objectif (aussi sans pluie)",
   "it": "Gocce sull’obiettivo (anche senza pioggia)",
   "rm": "Daguts sin la lentilla (er senza plievgia)"
+ },
+ "Tschingelspitz (Gipfel West)": {
+  "en": "Tschingelspitz (summit west)",
+  "fr": "Tschingelspitz (sommet ouest)",
+  "it": "Tschingelspitz (vetta ovest)",
+  "rm": "Tschingelspitz (piz vest)"
+ },
+ "Tschuggen Strasse": {
+  "en": "Tschuggen road",
+  "fr": "Route de Tschuggen",
+  "it": "Strada Tschuggen",
+  "rm": "Via Tschuggen"
  },
  "Tschüss zusammen! Alle gehen nach Hause.": {
   "en": "Bye everyone! Everyone goes home.",
@@ -14257,6 +15793,18 @@
   "fr": "Moto",
   "it": "Moto",
   "rm": "Moto"
+ },
+ "Tüfelsschlund": {
+  "en": "Tüfelsschlund",
+  "fr": "Tüfelsschlund",
+  "it": "Tüfelsschlund",
+  "rm": "Tüfelsschlund"
+ },
+ "Tüfelsschlund (Wasserfall)": {
+  "en": "Tüfelsschlund (waterfall)",
+  "fr": "Tüfelsschlund (cascade)",
+  "it": "Tüfelsschlund (cascata)",
+  "rm": "Tüfelsschlund (cascada)"
  },
  "Tür / Haus": {
   "en": "Door / house",
@@ -14636,6 +16184,12 @@
   "it": "Percorso di inseguimento: lezioni",
   "rm": "Parcours da persequitar: lecziuns"
  },
+ "Vergessenes Fondue-Caquelon + Fuchs mit Käse": {
+  "en": "Forgotten fondue pot + fox with cheese",
+  "fr": "Caquelon oublié + renard avec du fromage",
+  "it": "Caquelon dimenticato + volpe con il formaggio",
+  "rm": "Caquelon emblidà + vulp cun chaschiel"
+ },
  "Vergleich": {
   "en": "",
   "fr": "",
@@ -14659,6 +16213,12 @@
   "fr": "Quitter",
   "it": "Lasciare",
   "rm": "Bandunar"
+ },
+ "Verlassene Sennerei mit uraltem Käselaib": {
+  "en": "Abandoned dairy with an ancient cheese wheel",
+  "fr": "Fromagerie abandonnée avec une très vieille meule",
+  "it": "Caseificio abbandonato con una forma antichissima",
+  "rm": "Chascharia bandunada cun ina tschantscha fitg veglia"
  },
  "Verlassener Wohnwagen": {
   "en": "Abandoned caravan",
@@ -14942,6 +16502,12 @@
   "it": "Preparazione: testa al centro …",
   "rm": "Preparaziun: chau en il center …"
  },
+ "Vorder Tschuggen": {
+  "en": "Vorder Tschuggen",
+  "fr": "Vorder Tschuggen",
+  "it": "Vorder Tschuggen",
+  "rm": "Vorder Tschuggen"
+ },
  "Vorlage für den Besuch (stellt «Von selbst» passend ein)": {
   "en": "Template for the visitors (sets «By themselves» to match)",
   "fr": "Modèle pour les visites (règle «Spontanément» en conséquence)",
@@ -15014,6 +16580,12 @@
   "it": "Bosco e alberi",
   "rm": "Guaud e plantas"
  },
+ "Waldlichtung (unten im Tal)": {
+  "en": "Forest clearing (down in the valley)",
+  "fr": "Clairière (au fond de la vallée)",
+  "it": "Radura nel bosco (in fondo alla valle)",
+  "rm": "Runcada en il guaud (giu en la val)"
+ },
  "Waldweg": {
   "en": "Forest path",
   "fr": "Chemin forestier",
@@ -15025,6 +16597,12 @@
   "fr": "Chemin forestier · belvédère",
   "it": "Sentiero nel bosco · belvedere",
   "rm": "Senda dal guaud · vista"
+ },
+ "Wanderer läuft im Kreis um den Wegweiser": {
+  "en": "Hiker walks in circles round the signpost",
+  "fr": "Un randonneur tourne autour du panneau",
+  "it": "Escursionista gira intorno al segnavia",
+  "rm": "Viandant chamina en rintg enturn l'indicatur"
  },
  "Warme Hand vor MoveEye (für «Wärmebild ausrichten»)": {
   "en": "Warm hand in front of MoveEye (for «Align thermal image»)",
@@ -15230,6 +16808,12 @@
   "it": "Sentieri",
   "rm": "Sendas"
  },
+ "Wegmarke weiss-rot-weiss": {
+  "en": "Trail mark white-red-white",
+  "fr": "Balisage blanc-rouge-blanc",
+  "it": "Segnavia bianco-rosso-bianco",
+  "rm": "Marcaziun alv-cotschen-alv"
+ },
  "Wegnehmen (Test: merkt es MoveEye?)": {
   "en": "Take away (test: does MoveEye notice?)",
   "fr": "Enlever (test : MoveEye le remarque-t-il ?)",
@@ -15254,6 +16838,12 @@
   "it": "Cartello",
   "rm": "Indicatur da via"
  },
+ "Wegweiser (Wanderweg)": {
+  "en": "Signpost (hiking trail)",
+  "fr": "Panneau indicateur (randonnée)",
+  "it": "Segnavia (sentiero)",
+  "rm": "Indicatur (senda)"
+ },
  "Weinglas": {
   "en": "Wine glass",
   "fr": "Verre à vin",
@@ -15271,6 +16861,12 @@
   "fr": "Blanche",
   "it": "Bianca",
   "rm": "Alva"
+ },
+ "Weisser Schneehase im braunen Herbst": {
+  "en": "White mountain hare in brown autumn",
+  "fr": "Lièvre variable blanc dans l'automne brun",
+  "it": "Lepre variabile bianca nell'autunno marrone",
+  "rm": "Lieur alv en l'atun brin"
  },
  "Weisses Licht ein / aus": {
   "en": "White light on / off",
@@ -15301,6 +16897,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Weiter Himmel: viele Sterne": {
+  "en": "Wide sky: many stars",
+  "fr": "Ciel dégagé : beaucoup d'étoiles",
+  "it": "Cielo ampio: molte stelle",
+  "rm": "Tschiel lad: bleras stailas"
  },
  "Weiter ›": {
   "en": "Next ›",
@@ -15520,6 +17122,18 @@
   "it": "Come un vero Pi 5: telecamera della testa solo tanti fotogrammi al secondo quanti il Pi riesce con l’IA, ogni immagine un po’ in ritardo (test e giochi come sull’apparecchio)",
   "rm": "Sco in Pi 5 vair: camera dal chau mo uschè blers maletgs per secunda sco ch’il Pi fa cun l’IA, mintga maletg in pau pli tard (tests e gieus sco sin l’apparat)"
  },
+ "Wie gut war dein Platz?": {
+  "en": "How good was your spot?",
+  "fr": "Ton emplacement était-il bon ?",
+  "it": "Com'era il tuo posto?",
+  "rm": "Co era tia plazza?"
+ },
+ "Wie gut war dein Platz? (Bergtal: Bewertung jetzt)": {
+  "en": "How good was your spot? (mountain valley: rate now)",
+  "fr": "Ton emplacement était-il bon ? (vallée : évaluer maintenant)",
+  "it": "Com'era il tuo posto? (valle alpina: valuta ora)",
+  "rm": "Co era tia plazza? (val: valitar ussa)"
+ },
  "wie heute (echtes Datum)": {
   "en": "like today (real date)",
   "fr": "comme aujourd’hui (date réelle)",
@@ -15718,6 +17332,12 @@
   "it": "Registro di Windows: %s",
   "rm": "Registratura da Windows: %s"
  },
+ "Windschutzmauer aus Steinen bauen (Bergtal)": {
+  "en": "Build a stone wind wall (mountain valley)",
+  "fr": "Construire un mur coupe-vent en pierres (vallée)",
+  "it": "Costruire un muretto frangivento (valle alpina)",
+  "rm": "Construir in mir da protecziun cunter il vent (val)"
+ },
  "Windspiel": {
   "en": "Wind chime",
   "fr": "Carillon à vent",
@@ -15729,6 +17349,18 @@
   "fr": "Rafale",
   "it": "Raffica",
   "rm": "Buf da vent"
+ },
+ "Winter (Schnee, Eis)": {
+  "en": "Winter (snow, ice)",
+  "fr": "Hiver (neige, glace)",
+  "it": "Inverno (neve, ghiaccio)",
+  "rm": "Enviern (naiv, glatsch)"
+ },
+ "Winterschlafsack": {
+  "en": "Winter sleeping bag",
+  "fr": "Sac de couchage d'hiver",
+  "it": "Sacco a pelo invernale",
+  "rm": "Sac da durmir d'enviern"
  },
  "Wippe": {
   "en": "Seesaw",
@@ -15857,6 +17489,12 @@
   "it": "Ombre delle nuvole: ombre veloci e profonde",
   "rm": "Umbrivas da nivels: umbrivas sveltas e stgiras"
  },
+ "Wollgras": {
+  "en": "Cotton grass",
+  "fr": "Linaigrette",
+  "it": "Eriofori",
+  "rm": "Launa da palì"
+ },
  "Wuff! Ein Hund kommt.": {
   "en": "Woof! A dog is coming.",
   "fr": "Ouaf ! Un chien arrive.",
@@ -15868,6 +17506,18 @@
   "fr": "Souhait",
   "it": "Desiderio",
   "rm": "Giavisch"
+ },
+ "Wyssgletscher": {
+  "en": "Wyssgletscher",
+  "fr": "Wyssgletscher",
+  "it": "Wyssgletscher",
+  "rm": "Wyssgletscher"
+ },
+ "Wyssstock": {
+  "en": "Wyssstock",
+  "fr": "Wyssstock",
+  "it": "Wyssstock",
+  "rm": "Wyssstock"
  },
  "Wächter": {
   "en": "Guard",
@@ -15994,6 +17644,12 @@
   "fr": "Inverser Y (stick en haut = tête / vue en bas)",
   "it": "Invertire Y (stick su = testa / vista giù)",
   "rm": "Invertir Y (stick si = chau / vista giu)"
+ },
+ "Yeti-Spuren bis zum Schneemann mit Wanderschuhen (Winter)": {
+  "en": "Yeti tracks to a snowman with hiking boots (winter)",
+  "fr": "Traces de yéti jusqu'à un bonhomme de neige en chaussures de marche (hiver)",
+  "it": "Impronte dello yeti fino a un pupazzo di neve con scarponi (inverno)",
+  "rm": "Fastizs dal yeti fin tar in um da naiv cun chalzers da muntogna (enviern)"
  },
  "Yoga am Strand": {
   "en": "Yoga on the beach",
@@ -16277,6 +17933,12 @@
   "it": "troppo corto",
   "rm": "memia curt"
  },
+ "Zu steil (%d°) – %d m daneben ist es flach genug.": {
+  "en": "Too steep (%d°) – %d m away it is flat enough.",
+  "fr": "Trop raide (%d°) – à %d m, c'est assez plat.",
+  "it": "Troppo ripido (%d°) – a %d m è abbastanza piano.",
+  "rm": "Memia stip (%d°) – %d m dasper è quai avunda plat."
+ },
  "zu viele Umleitungen": {
   "en": "",
   "fr": "",
@@ -16541,6 +18203,12 @@
   "it": "",
   "rm": ""
  },
+ "«Hier übernachten» geht nur in der Szene Bergtal.": {
+  "en": "«Sleep here» only works in the scene Mountain valley.",
+  "fr": "« Dormir ici » ne fonctionne que dans la scène Vallée de montagne.",
+  "it": "«Dormire qui» funziona solo nella scena Valle alpina.",
+  "rm": "«Durmir qua» va mo en la scena Val da muntogna."
+ },
  "«Was wäre wenn …?» bei echten Alarmen": {
   "en": "«What if …?» for real alarms",
   "fr": "«Et si …?» pour les vraies alarmes",
@@ -16612,6 +18280,12 @@
   "fr": "Transmission à MoveEye …",
   "it": "Consegna a MoveEye …",
   "rm": "Transmetter a MoveEye …"
+ },
+ "Übernachten im Bergtal": {
+  "en": "Sleeping in the mountain valley",
+  "fr": "Passer la nuit dans la vallée",
+  "it": "Pernottare nella valle alpina",
+  "rm": "Durmir en la val"
  },
  "Überraschung jetzt auslösen (bewertet MoveEye; nachts von selbst: Wetter → Überraschungsnacht):": {
   "en": "Trigger surprise now (rates MoveEye; at night by itself: Weather → Surprise night):",
@@ -16744,6 +18418,12 @@
   "fr": "– choisir un enregistrement –",
   "it": "– scegliere una registrazione –",
   "rm": "– tscherner ina registraziun –"
+ },
+ "– Ort wählen –": {
+  "en": "– choose a place –",
+  "fr": "– choisir un lieu –",
+  "it": "– scegli un luogo –",
+  "rm": "– tscherner in lieu –"
  },
  "– Vorlage wählen –": {
   "en": "– choose template –",

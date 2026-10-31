@@ -41,7 +41,7 @@ const BOULDERS := Vector2(-300, 300)
 const GORGE_HEAD := Vector2(42, -92)          # the waterfall
 const GORGE_BRIDGE := Vector2(24, -170)
 const RUIN := Vector2(-830, -215)
-const RIDGE_VIEW := Vector2(-560, 120)
+const RIDGE_VIEW := Vector2(-615, 125)
 const BIVOUAC := Vector2(-520, 560)
 const BUNKER := Vector2(250, 845)
 const GLACIER := Vector2(790, 470)
@@ -49,8 +49,8 @@ const UPPER_HUT := Vector2(470, 300)
 const CLEARING := Vector2(-150, -800)
 # viewpoints (Aussichtspunkte, Daniel 31.10.2026): [id, name, kind (gipfel | grat | kanzel | see | gletscher), x, z, furnishing
 # (bank_kreuz | fernrohr | tafel | wild), looking (degrees, 0 = north)]. Each is a reserved place and a sleeping spot.
-const VIEWPOINTS := [["vp_horn", "Tschingelspitz (Gipfel West)", "gipfel", -780.0, 60.0, "bank_kreuz", 90.0],
-		["vp_grat", "Gratspitz über der Rüfi", "grat", -560.0, 120.0, "wild", 60.0],
+const VIEWPOINTS := [["vp_horn", "Tschingelspitz (Gipfel West)", "gipfel", -790.0, 520.0, "bank_kreuz", 90.0],
+		["vp_grat", "Gratspitz über der Rüfi", "grat", -625.0, 125.0, "wild", 60.0],
 		["vp_kanzel", "Chanzle über dem Gumpisee", "kanzel", 262.0, -430.0, "fernrohr", -90.0],
 		["vp_seeblick", "Seeblick Gumpisee", "see", -250.0, -470.0, "tafel", 70.0],
 		["vp_gletscher", "Gletscherblick Wyssgletscher", "gletscher", 690.0, 330.0, "tafel", 120.0],
@@ -81,8 +81,8 @@ const TRAILS := [["Seeweg", [Vector2(178, -40), Vector2(110, -20), Vector2(60, 0
 		["Kapellenweg", [Vector2(10, -470), Vector2(40, -600), Vector2(120, -660), Vector2(CHAPEL.x, -690), Vector2(225, -800)], 0],
 		["Höhenweg West", [Vector2(60, 0), Vector2(-40, 90), Vector2(-90, 170), Vector2(-200, 250), Vector2(-300, 300), Vector2(-380, 380), Vector2(-450, 470),
 			Vector2(-520, 548)], 1],
-		["Pfad zum geheimen See", [Vector2(-560, 125), Vector2(-640, 200), Vector2(-720, 290), Vector2(-800, 360), Vector2(-860, 405)], 2],
-		["Gratweg", [Vector2(-300, 300), Vector2(-420, 230), Vector2(-500, 170), Vector2(-560, 125)], 1],
+		["Pfad zum geheimen See", [Vector2(-620, 128), Vector2(-660, 200), Vector2(-720, 290), Vector2(-800, 360), Vector2(-860, 405)], 2],
+		["Gratweg", [Vector2(-300, 300), Vector2(-420, 230), Vector2(-500, 170), Vector2(-560, 125), Vector2(-620, 128)], 1],
 		["Moorweg", [Vector2(-200, -330), Vector2(-320, -300), Vector2(-470, -240), Vector2(-600, -255), Vector2(-700, -250), Vector2(-830, -205)], 0],
 		["Gletscherweg", [Vector2(180, 140), Vector2(260, 200), Vector2(380, 270), Vector2(470, 300), Vector2(560, 380), Vector2(640, 420), Vector2(720, 450)], 2],
 		["Passweg", [Vector2(60, 0), Vector2(110, 120), Vector2(120, 260), Vector2(90, 420), Vector2(60, 560), Vector2(40, 700), Vector2(30, 780)], 1]]
@@ -93,19 +93,18 @@ const SPOTS := {"seeufer": ["Am Ufer des Gumpisees", -142.0, -332.0, 20.0, "See"
 		"huette": ["Bei der Alp Tschuggen", 30.0, 22.0, -20.0, "Hütte"],
 		"pass": ["Auf dem Furggapass (beim Hospiz)", 48.0, 818.0, 0.0, "Pass"],
 		"biwak": ["Bei der Biwakschachtel", -512.0, 548.0, 20.0, "Biwak"],
-		"grat": ["Auf dem Gratspitz", -550.0, 128.0, 60.0, "Grat"],
 		"moor": ["Am Rand des Riedmoos", -420.0, -230.0, -110.0, "Moor"],
 		"waldlichtung": ["Waldlichtung (unten im Tal)", -148.0, -790.0, 180.0, "Wald"],
 		"gletschersee": ["Am Gletscherseeli", 632.0, 450.0, -100.0, "Gletscher"],
 		"ruine": ["Bei der Ruine Altstafel", -810.0, -230.0, 80.0, "Ruine"],
 		"kapelle": ["Bei der Kapelle St. Jodern", 192.0, -688.0, -60.0, "Kapelle"],
 		"schlucht": ["Ob dem Tüfelsschlund", 62.0, -112.0, -120.0, "Schlucht"]}
-const SPOT_ORDER := ["huette", "seeufer", "felsnische", "pass", "biwak", "grat", "moor", "waldlichtung", "gletschersee", "ruine", "kapelle", "schlucht", "frei"]
+const SPOT_ORDER := ["huette", "seeufer", "felsnische", "pass", "biwak", "moor", "waldlichtung", "gletschersee", "ruine", "kapelle", "schlucht", "frei"]
 # named places (quick travel, signs, map)
 const PLACES := [["Alp Tschuggen", 60.0, 0.0], ["Gumpisee", -60.0, -390.0], ["Tüfelsschlund (Wasserfall)", 42.0, -92.0], ["Hängebrücke Tüfelsschlund", 24.0, -170.0],
 		["Furggapass mit Hospiz", 40.0, 800.0], ["Parkplatz Furgga", 100.0, 775.0], ["Fort Chrüzli (Bunker)", 250.0, 845.0], ["Kapelle St. Jodern", 210.0, -700.0],
 		["Riedmoos (Wollgras)", -470.0, -265.0], ["Schwarzseeli", -640.0, -300.0], ["Ruine Altstafel", -830.0, -215.0], ["Steinchaos Murmelboden", -300.0, 300.0],
-		["Rüfi (Geröllhalde)", -380.0, 120.0], ["Gratspitz", -560.0, 120.0], ["Biwak Chüebodehorn", -520.0, 560.0], ["Wyssgletscher", 790.0, 470.0],
+		["Rüfi (Geröllhalde)", -380.0, 120.0], ["Gratspitz", -625.0, 125.0], ["Biwak Chüebodehorn", -520.0, 560.0], ["Wyssgletscher", 790.0, 470.0],
 		["Gletscherseeli", 600.0, 430.0], ["Obri Stafelhütte (Seilbahn)", 470.0, 300.0], ["Bluemenmatte", -90.0, 170.0], ["Lärchenlichtung", -150.0, -800.0],
 		["Schattwald", -60.0, -650.0], ["Furggakehren", 160.0, 560.0], ["Klettersteig Gratspitz", -276.0, 200.0], ["Alte Sennerei Chäsgaden", -700.0, -130.0],
 		["Steimandli-Wald", -650.0, 430.0], ["Fondueplätzli", -175.0, -300.0]]
@@ -117,7 +116,7 @@ const VIGNETTES := [[1, "murmeltier_zu_spaet", "Murmeltier kommt zu spät zum Ba
 		[4, "steinbock_kante", "Steinbock auf der steilen Kante", -360.0, 210.0, 3.0],
 		[5, "schafstau_pass", "Schafstau auf der Passstrasse", 240.0, 540.0, 6.0],
 		[6, "wanderer_kreis", "Wanderer läuft im Kreis um den Wegweiser", -300.0, 300.0, 5.0],
-		[7, "gipfelbuch", "Gipfelbuch beim Kreuz", -560.0, 120.0, 3.0],
+		[7, "gipfelbuch", "Gipfelbuch beim Kreuz (Tschingelspitz)", -790.0, 520.0, 3.0],
 		[8, "fondue_fuchs", "Vergessenes Fondue-Caquelon + Fuchs mit Käse", -175.0, -300.0, 3.0],
 		[9, "echo_schlucht", "Echo-Platz in der Schlucht", 24.0, -175.0, 3.0],
 		[10, "kristallhoehle", "Kristallhöhle hinter dem Wasserfall (nur bei wenig Wasser)", 40.0, -98.0, 3.0],
@@ -125,7 +124,7 @@ const VIGNETTES := [[1, "murmeltier_zu_spaet", "Murmeltier kommt zu spät zum Ba
 		[12, "yeti_spuren", "Yeti-Spuren bis zum Schneemann mit Wanderschuhen (Winter)", 700.0, 380.0, 6.0],
 		[13, "bartgeier_knochen", "Bartgeier lässt Knochen fallen (bei einem Wanderer)", -400.0, 420.0, 5.0],
 		[14, "alphorn", "Alphornbläser bei Sonnenaufgang, Kühe kommen gerannt", 95.0, 60.0, 4.0],
-		[15, "sternschnuppen", "Sternschnuppen-Platz auf dem Grat (klare Nächte)", -585.0, 95.0, 4.0],
+		[15, "sternschnuppen", "Sternschnuppen-Platz auf dem Grat (klare Nächte)", -640.0, 80.0, 4.0],
 		[16, "flaschenpost_laterne", "Flaschenpost im See → alte Laterne in der Gletscherspalte", -20.0, -335.0, 3.0],
 		[17, "lichtung", "Lärchenwald mit Lichtung", -150.0, -800.0, 8.0],
 		[18, "blumenwiese", "Blumenwiese", -90.0, 170.0, 8.0],
@@ -202,13 +201,21 @@ static func _lite() -> bool:
 	return Bib.lite()
 
 
+static var _vp_pos := {}                     # viewpoint id -> where it really is (summits: the top)
+
+
+static func vp_xz(vp: Array) -> Vector2:
+	return _vp_pos.get(vp[0], Vector2(vp[3], vp[4]))
+
+
 static func spot_data(k: String):
 	"""[name, x, z, looking, kind] of a suggested spot (also the viewpoints), or null"""
 	if SPOTS.has(k):
 		return SPOTS[k]
 	for vp in VIEWPOINTS:
 		if vp[0] == k:
-			return [vp[1], vp[3] + 3.0, vp[4] + 3.0, vp[6], "Aussicht"]
+			var c := vp_xz(vp)
+			return [vp[1], c.x + 3.0, c.y + 3.0, vp[6], "Aussicht"]
 	return null
 
 
@@ -308,10 +315,13 @@ static func _base(x: float, z: float) -> float:
 	var side := 0.0
 	if d < 0.0:
 		var w := -d
-		side = 780.0 * pow(smoothstep(55.0, 950.0, w), 1.35)
+		if w > 700.0:
+			w = 700.0 - (w - 700.0) * 0.6                     # the west ridge: behind it the ground falls again
+		side = 1050.0 * pow(smoothstep(55.0, 950.0, w), 1.35)
 		side += 85.0 * smoothstep(338.0, 356.0, w) * smoothstep(-80.0, 0.0, z) * (1.0 - smoothstep(620.0, 700.0, z))   # the west cliff
 	else:
-		side = 740.0 * pow(smoothstep(65.0, 900.0, d), 1.3)
+		var de := d if d < 720.0 else 720.0 - (d - 720.0) * 0.6   # the east ridge
+		side = 1000.0 * pow(smoothstep(65.0, 900.0, de), 1.3)
 		side += 70.0 * smoothstep(232.0, 248.0, d) * smoothstep(-760.0, -700.0, z) * (1.0 - smoothstep(-200.0, -140.0, z))   # east cliff
 	var h := f + side
 	var n: float = _noise.get_noise_2d(x, z)
@@ -387,8 +397,18 @@ static func generate() -> void:
 	for sp in SPOTS.values():                              # the suggested spots: flat enough for a tent
 		_flatten(Vector2(sp[1], sp[2]), 7.0, 1.0)
 	for vp in VIEWPOINTS:
-		_flatten(Vector2(vp[3], vp[4]), 6.0, 1.0)
-		_flatten(Vector2(vp[3] + 3.0, vp[4] + 3.0), 4.0, 1.0)
+		var c := Vector2(vp[3], vp[4])
+		if vp[2] in ["gipfel", "grat"]:                      # on the top: the highest point nearby
+			var best := c
+			for r in range(8, 100, 8):
+				for k in range(16):
+					var q := c + Vector2(cos(TAU * k / 16.0), sin(TAU * k / 16.0)) * r
+					if H(q.x, q.y) > H(best.x, best.y):
+						best = q
+			c = best
+		_vp_pos[vp[0]] = c
+		_flatten(c, 6.0, 1.0)
+		_flatten(c + Vector2(3.0, 3.0), 4.0, 1.0)
 	_colours()
 	_gen_ms = Time.get_ticks_msec() - t0
 
@@ -1383,7 +1403,7 @@ func _vegetation() -> void:
 	for v in VIGNETTES:
 		_busy_pts.append([Vector2(v[3], v[4]), float(v[5]) + 2.0])
 	for vp in VIEWPOINTS:
-		_busy_pts.append([Vector2(vp[3], vp[4]), 9.0])
+		_busy_pts.append([vp_xz(vp), 9.0])
 	for k in SPOTS:
 		_busy_pts.append([Vector2(SPOTS[k][1], SPOTS[k][2]), 7.0])
 	var ck := str(lite)
@@ -1393,7 +1413,7 @@ func _vegetation() -> void:
 	var trees := {"larch": [], "arve": [], "spruce": [], "pine_shrub": []}
 	var trees_far := {"larch": [], "arve": [], "spruce": [], "pine_shrub": []}
 	var rocks := {}
-	var near_r := 450.0
+	var near_r := 220.0                                 # obstacles (people, animals, rover) only near the spot
 	for e in raw["trees"]:                                 # [kind, x, z, rot, scale]
 		var q := Vector2(e[1], e[2])
 		if q.distance_to(spot_xz) < 9.0:
@@ -1836,7 +1856,7 @@ var via_ferrata := []
 func _viewpoints() -> void:
 	var vps := []
 	for vp in VIEWPOINTS:
-		var c := Vector2(vp[3], vp[4])
+		var c := vp_xz(vp)
 		var yaw := deg_to_rad(float(vp[6]))
 		var fwd := Vector2(sin(yaw), -cos(yaw))
 		var back := c - fwd * 2.5
@@ -2082,17 +2102,17 @@ func _labels() -> void:
 		if SPOTS.has(k) and k != spot:
 			items.append(["Schlafplatz: " + str(SPOTS[k][0]), Vector2(SPOTS[k][1], SPOTS[k][2]), Color(1.0, 0.85, 0.4), 3.0])
 	for vp in VIEWPOINTS:
-		items.append(["Aussicht: " + str(vp[1]), Vector2(vp[3], vp[4]), Color(0.7, 0.9, 1.0), 4.0])
+		items.append(["Aussicht: " + str(vp[1]), vp_xz(vp), Color(0.7, 0.9, 1.0), 4.0])
 	for it in items:
 		var p := P((it[1] as Vector2).x, (it[1] as Vector2).y)
-		if W(p).length() > 700.0:
+		if W(p).length() > 700.0 or W(p).length() < 30.0:
 			continue
 		var l := Label3D.new()
 		l.text = T.t(str(it[0]))
 		l.position = p + Vector3(0, float(it[3]), 0)
 		l.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
 		l.font_size = 72
-		l.pixel_size = 0.02
+		l.pixel_size = 0.014
 		l.modulate = it[2]
 		l.outline_size = 10
 		l.outline_modulate = Color(0.1, 0.12, 0.1)
@@ -2166,8 +2186,11 @@ func evaluate(x: float, z: float) -> Dictionary:
 			var dh := H(q.x, q.y) - h
 			if dh > 12.0:
 				var ang := rad_to_deg(atan2(dh, r))
-				if ang > 30.0 and slope_deg(q.x, q.y, 3.0) > 40.0:
-					rock = maxf(rock, smoothstep(30.0, 38.0, ang) * (1.0 - r / 300.0))
+				var g := grad(q.x, q.y)
+				var fall := -g.normalized() if g.length() > 0.01 else Vector2.ZERO
+				var to_spot := (p0 - q).normalized()
+				if ang > 30.0 and slope_deg(q.x, q.y, 3.0) > 40.0 and fall.dot(to_spot) > 0.6:    # the fall line points at the spot
+					rock = maxf(rock, smoothstep(30.0, 38.0, ang) * (1.0 - r / 300.0) * smoothstep(0.6, 0.9, fall.dot(to_spot)))
 			r += 10.0
 	var zn := zone(x, z)
 	if zn == "scree":
@@ -2264,7 +2287,7 @@ func _publish() -> void:
 		if SPOTS.has(k):
 			marks.append([WG(SPOTS[k][1], SPOTS[k][2]), str(SPOTS[k][0]), Color(1.0, 0.8, 0.25), k == spot])
 	for vp in VIEWPOINTS:
-		marks.append([WG(vp[3], vp[4]), str(vp[1]), Color(0.5, 0.8, 1.0), vp[0] == spot])
+		marks.append([WG(vp_xz(vp).x, vp_xz(vp).y), str(vp[1]), Color(0.5, 0.8, 1.0), vp[0] == spot])
 	for pl in PLACES:
 		marks.append([WG(pl[1], pl[2]), str(pl[0]), Color(0.95, 0.95, 0.9), false])
 	for mk in (m.get("bt_marks") if m.get("bt_marks") is Array else []):
@@ -2423,7 +2446,7 @@ func _auto():
 	w["berg_marmot"] = 0.0 if season == "winter" or dark or _burrows.is_empty() else 1.2
 	w["berg_chamois"] = 0.9 if dark else 0.5
 	w["berg_ibex"] = 0.6 if dark else 0.35
-	w["berg_cows"] = 0.6 if sumr and spot_xz.distance_to(HUT) < 450.0 and _count("cow") == 0 else 0.0
+	w["berg_cows"] = 0.6 if sumr and spot_xz.distance_to(HUT) < 300.0 and _count("cow") == 0 else 0.0
 	w["berg_sheep"] = 0.4 if sumr and spot_xz.distance_to(Vector2(200, 560)) < 500.0 and _count("sheep") == 0 else 0.0
 	w["berg_fox_food"] = 0.7 if dark else (0.4 if season != "winter" else 0.2)
 	w["berg_eagle"] = 0.0 if dark else 0.3
@@ -2790,7 +2813,7 @@ func _random_event(dark: bool) -> void:
 func _tick_stones(dt: float) -> void:
 	for i in range(_stones.size() - 1, -1, -1):
 		var st: Dictionary = _stones[i]
-		var n: Node3D = st["n"]
+		var n = st["n"]
 		if not is_instance_valid(n):
 			_stones.remove_at(i)
 			continue
@@ -2801,7 +2824,7 @@ func _tick_stones(dt: float) -> void:
 				n.queue_free()
 				_stones.remove_at(i)
 			continue
-		var q := V(n.global_position)
+		var q: Vector3 = V(n.global_position)
 		var g := grad(q.x, q.z)                                 # along the slope: g = 9.81 · sin(slope), rolling friction
 		var sl := atan(g.length())
 		var down := -Vector3(g.x, 0, g.y).normalized() if g.length() > 0.001 else Vector3.ZERO
@@ -2812,7 +2835,7 @@ func _tick_stones(dt: float) -> void:
 			v = v.normalized() * 25.0
 		var wdir := tal.transform.basis * v
 		n.global_position += wdir * dt
-		var wp := n.global_position
+		var wp: Vector3 = n.global_position
 		wp.y = gy(wp.x, wp.z) + float(st["r"]) + absf(sin(m.now() * 7.0 + i)) * minf(1.2, v.length() * 0.05)   # bouncing
 		n.global_position = wp
 		n.rotate_x(v.length() * dt / float(st["r"]))
@@ -2884,7 +2907,7 @@ func _tick_thieves() -> void:
 			var list: Array = th[0]
 			var all_gone := true
 			for b in list:
-				var n: Node3D = b["n"]
+				var n = b["n"]
 				if not is_instance_valid(n):
 					continue
 				all_gone = false
@@ -2962,7 +2985,7 @@ var _vis_t := 0.0
 static func all_places() -> Array:
 	var out: Array = PLACES.duplicate()
 	for vp in VIEWPOINTS:
-		out.append([vp[1], vp[3], vp[4]])
+		out.append([vp[1], vp_xz(vp).x, vp_xz(vp).y])
 	return out
 
 
@@ -3047,7 +3070,7 @@ func ride(up := true) -> Dictionary:
 func _tick_ride(_dt: float) -> void:
 	if _ride.is_empty():
 		return
-	var n: Node3D = _ride["n"]
+	var n = _ride["n"]
 	if not is_instance_valid(n):
 		_ride = {}
 		return
@@ -3136,7 +3159,7 @@ func _discover(id: String, title: String, text: String) -> void:
 # ---- the residents near the spot ------------------------------------------------------------------------------------------
 func _residents_spawn() -> void:
 	_residents.clear()
-	if season in ["sommer", "herbst"] and spot_xz.distance_to(HUT) < 450.0:
+	if season in ["sommer", "herbst"] and spot_xz.distance_to(HUT) < 260.0:
 		_herd("cow", 3 if lite else 4)
 	if season != "winter" and not m.is_dark():
 		for b2 in _burrows.slice(0, 2):
