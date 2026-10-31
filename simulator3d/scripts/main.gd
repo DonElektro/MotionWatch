@@ -3447,12 +3447,12 @@ func _register_controls() -> void:
 	add_control("toggle", "flee_sound", "Tiere flüchten vor der Sirene", func(): return flee_sound, func(v): flee_sound = v, "Besuch", ex)
 	add_control("toggle", "avoid_on", "Um Bäume, Häuser und Fahrzeuge herumgehen", func(): return avoid_on, func(v): avoid_on = v, "Besuch", ex)
 	# 3D-4.x P1: the noise slider is also the one of «Kamera wie echt» (camphys.gd: noise from the gain of the sensor) - no second one
-	add_control("slider", "lens_noise", "Rauschen (wie der Sensor: mehr Verstärkung = mehr Rauschen, am Tag sauber)", func(): return lens_noise, func(v): lens_noise = v, "Kamerabild", {"sub": "Wie echt", "min": 0, "max": 1, "step": 0.05})
+	add_control("slider", "lens_noise", "Rauschen (wie der Sensor: mehr Verstärkung = mehr Rauschen, am Tag sauber)", func(): return lens_noise, func(v): lens_noise = v, "Kamerabild", {"sub": "Wie echt", "min": 0, "max": 1, "step": 0.05, "expert": true})
 	add_control("slider", "night_gain", "Nachtverstärkung der Kameras (höchstens)", func(): return night_gain, func(v): night_gain = v, "Kamerabild", {"min": 1, "max": 8, "step": 0.5, "unit": "×"})
 	add_control("slider", "ir_range", "Reichweite des Infrarot-Lichts", func(): return ir_range, func(v): ir_range = v, "Kamerabild", {"min": 4, "max": 30, "step": 1, "unit": "m"})
 	add_control("slider", "lens_vignette", "Dunkle Bildecken", func(): return lens_vignette, func(v): lens_vignette = v, "Kamerabild", {"min": 0, "max": 1, "step": 0.05, "expert": true})
 	# 3D-3.94: the camera like a real one - and like the real one of MoveEye
-	add_control("toggle", "real_fx", "Kamera wie echt: Bewegungsunschärfe (nachts stärker), Farben des Sensors, NoIR-Rosastich am Tag, langsamere Belichtung", func(): return realism.fx_on, func(v): realism.fx_on = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
+	add_control("toggle", "real_fx", "Kamera wie echt (Camera Module 3 NoIR): Belichtung und Verstärkung mit echten Grenzen, Rauschen bei wenig Licht, Bewegungsunschärfe, NoIR-Farben, Blendung nachts", func(): return realism.fx_on, func(v): realism.fx_on = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
 	add_control("toggle", "real_look", "Echt-Abgleich: Helligkeit, Farbe, Schärfe und Rauschen an die echten Bilder von MoveEye angleichen", func(): return realism.real_on, func(v): realism.real_on = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
 	add_control("toggle", "real_servo", "Servos wie echt: kleines Spiel, Nachschwingen nach dem Drehen", func(): return realism.servo_real, func(v): realism.servo_real = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
 	add_control("button", "real_reset", "Echt-Abgleich zurücksetzen", null, func(): realism.reset(), "Kamerabild", {"sub": "Wie echt", "expert": true})

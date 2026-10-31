@@ -36,6 +36,7 @@ uniform float sn_blob = 1.0;        // 0 (Lite): colour noise per pixel instead 
 uniform float hotpx = 0.0;          // 0..1 hot pixels (long exposure, high gain)
 uniform float ir_tint = 0.0;        // infrared picture: grey with a magenta touch (850 nm through the colour filters)
 uniform float flare = 0.0;          // glow round bright lights at night (headlights, torch) - the more gain, the more
+uniform float vig = 0.0;            // lens shading left after the ISP's correction (more in the light of the infrared LED)
 
 float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 
@@ -96,6 +97,11 @@ void fragment() {
 	if (ir_tint > 0.0) {
 		float li = dot(c, vec3(0.299, 0.587, 0.114));
 		c = mix(c, li * vec3(1.06, 0.95, 1.05), ir_tint);
+	}
+	if (vig > 0.0) {
+		vec2 qv = (suv - 0.5) * vec2(res.x / res.y, 1.0);
+		float rv = dot(qv, qv) / (0.25 * (res.x * res.x / (res.y * res.y) + 1.0));   // 1 in the corners
+		c *= 1.0 - vig * (0.6 * rv + 0.4 * rv * rv);
 	}
 	if (cnoise > 0.0) {
 		vec2 px = floor(uv * res) + seed;
