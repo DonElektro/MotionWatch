@@ -362,18 +362,29 @@ func _ev_fox(_ev) -> Array:
 	if b == null:
 		return []
 	var fn: Node3D = b._food_node
-	var ok_fn := fn != null and is_instance_valid(fn)
-	var keep := fn.visible if ok_fn else false
-	if ok_fn and not bool(_a().get("proviant_weg", false)):
-		fn.visible = true                                     # (the fox smells it even in the tent)
-	var v = b._at_food("fox")                                 # always the fox (spawn_kind sends alpine choughs while it is light)
-	if ok_fn:
-		fn.visible = keep
+	if fn == null or not is_instance_valid(fn) or bool(_a().get("proviant_weg", false)) or main.cams.is_empty():
+		return []
+	# like bergtal _at_food, but the fox comes through the picture of MoveEye (12–18 m in front) - from _ground_pt it
+	# sometimes got stuck behind the camp in the live test (31.10.2026) and never reached the food
+	var cam: Camera3D = main.cams[0]
+	var o := cam.global_position
+	var f := -cam.global_transform.basis.z
+	f.y = 0.0
+	f = f.normalized() if f.length() > 0.01 else Vector3(0, 0, -1)
+	var a := o + f.rotated(Vector3.UP, randf_range(-0.3, 0.3)) * randf_range(12.0, 18.0)
+	a.y = b.gy(a.x, a.z)
+	var fp := fn.global_position
+	fp.y = b.gy(fp.x, fp.z)
+	var at := fp + Vector3(0.5, 0, 0.3)
+	var v = main.spawn("fox", a, at)
 	if not v is Node:
 		return []
+	v.speed = 1.0
+	v.route = [[at, 5.0, 0.0], a + Vector3(10, 0, -10)]
+	v.set_meta("berg_kind", "fox_food")
 	v.set_meta("a1_tier", "fuchs")
-	if str(_a().get("sichern", "offen")) != "offen":
-		b._thieves = b._thieves.filter(func(x): return x[0] != v)
+	if str(_a().get("sichern", "offen")) == "offen":
+		b._thieves.append([v, "fox"])                         # bergtal _tick_thieves: at the bag and standing = food gone
 	_fuechse.append(v)
 	return [v]
 
@@ -415,6 +426,9 @@ func _ev_wechsel(t: String) -> Array:
 			if str(ab.R.get("season", "")) == "winter":
 				return []                                         # Winterschlaf
 			v = b._marmot((pt[0] as Vector3).lerp(pt[1], 0.5))
+			if v is Node:
+				b._residents.erase(v)                             # (not a resident of the camp: it goes into its burrow and the event ends)
+				v.route.append(pt[1])
 		_:
 			v = main.spawn({"steinbock": "ibex", "gaemse": "chamois", "fuchs": "fox"}[t], pt[0], pt[1])
 			if v != null and t != "fuchs":
@@ -700,7 +714,7 @@ func _licht_tick(n, meldet: bool, da: bool) -> void:
 	if mi != null:
 		mi.visible = fmod(_licht_t, 1.25) < 0.75                 # it blinks like a lantern that is swung
 	var cam: Camera3D = main.cams[0]
-	if not cam.is_position_in_frustum(_licht.global_position) or not main.line_free(cam.global_position, _licht.global_position):
+	if not cam.is_position_in_frustum(_licht.global_position):
 		return
 	if mi == null or not mi.visible or fmod(_licht_t, 1.25) < 0.25:
 		return                                                # (the picture shows the frame before: only while it is on)
@@ -735,26 +749,25 @@ func _licht_an() -> void:
 	if to.length() > 1.0:
 		delta = clampf(f.signed_angle_to(to.normalized(), Vector3.UP), -0.2, 0.2)   # in the picture, as near as it goes towards the goal
 	var dir := f.rotated(Vector3.UP, delta)
+	# the farthest point on the ground along the view (up to 280 m) that the camera really sees: in the picture and no
+	# hill in between (terrain sampled along the line) - «ein Licht am Berg»
 	var p := Vector3.ZERO
-	for s in range(40, 281, 10):                              # the first slope along the view = «am Berg»
+	for s in range(280, 29, -10):
 		var q := o + dir * float(s)
-		var gq: float = b.gy(q.x, q.z)
-		if gq > o.y + float(s) * 0.03:
-			p = Vector3(q.x, gq + 2.5, q.z)
+		q.y = b.gy(q.x, q.z) + 2.5
+		if cam.is_position_in_frustum(q) and _sicht_frei(b, o, q):
+			p = q
 			break
 	if p == Vector3.ZERO:
-		p = o + dir * 260.0
-		p.y = b.gy(p.x, p.z) + 2.5
-	if not cam.is_position_in_frustum(p):
-		p = o + dir * 90.0
-		p.y = maxf(b.gy(p.x, p.z) + 2.5, o.y + 3.0)
+		p = o + dir * 40.0
+		p.y = maxf(b.gy(p.x, p.z) + 2.5, o.y + 1.0)
 	_licht = Node3D.new()
 	b.s.root.add_child(_licht)
 	_licht.global_position = p
 	var mi := MeshInstance3D.new()
 	mi.name = "glow"
 	var sm := SphereMesh.new()
-	var r := clampf(o.distance_to(p) * 0.012, 0.8, 3.0)          # a lantern with its glow: a few pixels in the picture
+	var r := clampf(o.distance_to(p) * 0.015, 0.8, 4.0)          # a lantern with its glow: a few pixels in the picture
 	sm.radius = r
 	sm.height = r * 2.0
 	mi.mesh = sm
@@ -774,6 +787,14 @@ func _licht_an() -> void:
 	_licht_vis = 0.0
 	var cxz: Vector2 = ab.R.get("camp_xz", Vector2.ZERO)
 	a["licht"] = {"gezeigt": true, "ziel": zl[0], "richtung": richtung(float(zl[1]) - cxz.x, float(zl[2]) - cxz.y), "kapitel": int(ab.R.get("chapter", 1))}
+
+
+func _sicht_frei(b, o: Vector3, q: Vector3) -> bool:
+	for k in range(1, 20):
+		var x := o.lerp(q, k / 20.0)
+		if b.gy(x.x, x.z) > x.y - 0.3:
+			return false
+	return true
 
 
 func _licht_aus() -> void:
