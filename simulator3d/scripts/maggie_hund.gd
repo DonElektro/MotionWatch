@@ -222,8 +222,9 @@ func _mitte(r: String) -> Vector2:
 
 func tipp(t: String) -> void:
 	if story != null and story.has_method("tipp"):
-		story.tipp(t)
-	_zeige(t)
+		story.tipp(t)                                 # (S1 zeigt den Tipp gross unten – nicht doppelt)
+	else:
+		_zeige(t)
 
 
 func moveeye(t: String) -> void:

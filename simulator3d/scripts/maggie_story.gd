@@ -53,7 +53,7 @@ extends Node
 ##   signal region_beendet(id)        die Region ist vorbei (geschafft oder verlassen): eigene Knoten der Region entfernen
 ##   signal einstieg_graben(pos)      der Einstieg: Maggie soll bei pos graben (S2 lässt den Hund hinlaufen und graben)
 ##   signal geschichte_beendet()      die Geschichte wurde verlassen oder ist fertig (alles aufräumen)
-## Module: gibt es res://scripts/maggie_hund.gd, maggie_helfer.gd oder maggie_gefahr.gd, wird jedes beim Start der
+## Module: gibt es res://scripts/maggie_hund.gd oder maggie_gefahr.gd (maggie_helfer.gd legt der Hund selbst an), wird jedes beim Start der
 ## Geschichte angelegt (als Kind dieses Knotens, wenn es ein Node ist); vorher werden (wenn vorhanden) die Variablen
 ## `main` und `story` gesetzt. Beim Beenden werden sie wieder entfernt.
 ## Test / Fernsteuerung: /control {"action": "maggie", "do": "info" | "open" | "start" (name, look) | "region" (id) |
@@ -76,7 +76,7 @@ const REGIONEN := ["herbst", "winter", "fruehling", "sommer"]
 # the middle of every region (valley coordinates x, z of bergtal.gd)
 const MITTE := {"herbst": Vector2(-640, -200), "winter": Vector2(590, 360), "fruehling": Vector2(-120, -250), "sommer": Vector2(-530, 480)}
 const SAVE_FILE := "user://maggie/spielstand.json"
-const MODULES := ["res://scripts/maggie_hund.gd", "res://scripts/maggie_helfer.gd", "res://scripts/maggie_gefahr.gd"]
+const MODULES := ["res://scripts/maggie_hund.gd", "res://scripts/maggie_gefahr.gd"]   # (maggie_helfer.gd baut maggie_hund.gd selbst)
 const COLS := ["red", "orange", "navy", "olive", "brown", "grey", "white", "black"]
 const COL_NAMES := {"red": "Rot", "orange": "Orange", "navy": "Dunkelblau", "olive": "Olivgrün", "brown": "Braun", "grey": "Grau",
 		"white": "Weiss", "black": "Schwarz"}
@@ -286,6 +286,10 @@ func aufgabe_erledigt(id: String) -> void:
 
 
 func erwischt(von: String) -> void:
+	_schreck(von)                                  # (no await here: S3 calls this through callv)
+
+
+func _schreck(von: String) -> void:
 	if not running or phase not in ["region", "finale_walk", "intro_walk"] or main.now() < _safe_until:
 		return
 	var sq := _seq
@@ -688,6 +692,7 @@ func _load_modules() -> void:
 		if "story" in m:
 			m.story = self
 		if m is Node:
+			m.name = path.get_file().get_basename()           # S2 / S3 finden sich so (has_node("maggie_hund"))
 			add_child(m)
 		_modules.append(m)
 
@@ -1933,6 +1938,8 @@ func control(d: Dictionary) -> Dictionary:
 			var i := int(d.get("i", 0))
 			if i >= 0 and i < _rests.size():
 				_place_player(_rests[i]["pos"])
+		"gehe_tal":                                     # tests: to a point in valley coordinates (x, z)
+			_place_player(tal_punkt(float(d.get("x", 0.0)), float(d.get("z", 0.0))))
 		"gehe":
 			_place_player(Vector3(float(d.get("x", 0.0)), 0.0, float(d.get("z", 0.0))))
 		"zum_ziel":                                     # tests: right in front of the next goal

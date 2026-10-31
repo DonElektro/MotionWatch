@@ -6,7 +6,7 @@ Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 408 Stellen
 Nicht mehr im Code (noch in texte.json): 85
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 67 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 20686, schlüssel 15534, keine Wörter 9591, index 7863, technisch 2674, doc 1687, einheit 236, englisch 108, log 79, pfad 68, html 67, klasse 26, shader 4
+Übersprungen (Grund: Anzahl): kennung 20686, schlüssel 15535, keine Wörter 9593, index 7863, technisch 2673, doc 1687, einheit 236, englisch 108, log 79, pfad 68, html 67, klasse 26, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  671    29
@@ -527,7 +527,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   tv.gd:305  ' · %d Punkte'
   tv.gd:305  ' · %d×'
   tv.gd:319  'Mehr über MoveEye:\nQR-Code scannen\n'
-  maggie_story.gd:1225  'Mit'
+  maggie_story.gd:1230  'Mit'
   mwpc.gd:22  'Aus'
   mwpc.gd:75  'MoveEye hat sich beendet. Protokoll: '
   mwpc.gd:107  ' · %d Bilder erkannt, %d ms'
