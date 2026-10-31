@@ -21,3 +21,27 @@ for _k, _v in _HX_FIXP.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 
 WEB_PAGE = WEB_PAGE.replace("</body>", fixp_main_js() + "</body>", 1)     # the card of 418 with the German texts
+
+# the manual (HELP_PAGE of 540): one paragraph in the section «Erkennung», German and English
+for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
+                "<p><b>🌲 Feste Fehl-Personen, Fahrzeuge und Tiere:</b> Sieht die KI an einer Stelle über Minuten eine «Person», die sich nicht "
+                "bewegt und nie dorthin gegangen ist (eine kleine Fichte, ein Baumstamm im Infrarot-Licht), merkt sich MoveEye sie als "
+                "Gegenstand: kein Alarm, der Kopf folgt ihr nicht (war sie schon beim Start da: nach etwa 45 s, sonst nach 3 Min.). Auf der Seite "
+                "Live / Schutz erscheint ein Bild mit «Hier steht etwas, das wie eine Person aussieht – ignorieren?»: «Ignorieren» macht eine Maske "
+                "(nur für Personen, bleibt beim Drehen des Kopfs am Platz), «Ist eine Person» lernt die Stelle nie mehr. Bewegt sich der Kasten "
+                "deutlich oder kommt jemand dazu, gilt er sofort wieder als Person. Eine Person, die hingegangen ist und dann lange still steht, "
+                "wird nie ignoriert. «Person (Wärmebild)» kommt nicht mehr bei einem fahrenden Auto (breiter, warmer Fleck, viel zu schnell für "
+                "eine Person) oder wenn Kamera bzw. KI dort ein Fahrzeug oder Tier sehen. Hat die KI auf einer Spur einmal ein Tier gesehen (Hund, "
+                "Katze, Schaf, Vogel …), bleibt die Spur ein Tier – keine Person aus Bewegung, «Person?» oder Wärmebild.</p>"),
+               ('<section id="detect" data-icon="🎯"><h2>Detection</h2>',
+                "<p><b>🌲 Still false persons, vehicles and animals:</b> when the AI sees a «person» at one place for minutes that does not move "
+                "and never walked there (a small spruce, a tree trunk in the infrared light), MoveEye remembers it as a thing: no alarm, the head "
+                "does not follow it (there at the start already: after about 45 s, else after 3 min). The Live / Schutz page shows a picture "
+                "with «Something here looks like a person - ignore it?»: «Ignore» makes a mask (persons only, stays on its place when the head "
+                "turns), «It is a person» never learns that place again. When the box moves clearly or somebody comes onto it, it is a person "
+                "again at once. A person who walked there and then stands still for a long time is never ignored. «Person (thermal)» no longer "
+                "comes for a driving car (wide warm body, far too fast for a person) or when the camera or the AI sees a vehicle or an animal "
+                "there. Once the AI saw an animal on a track (dog, cat, sheep, bird …), the track stays an animal - no person from the "
+                "movement, «Person?» or the thermal picture.</p>")):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)

@@ -107,6 +107,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `410_motionwatch_kern.py` | KERN: die Erkennungs-Schleife (Bewegung, Personen, Alarm) | 969 |
 | `415_entfernung_gehtest.py` | Entfernung und Richtung einer Person, Gehtest beim Einrichten | 376 |
 | `416_verfolgung_parcours.py` | Verfolgungs-Parcours des Simulators (3D-4.18): Lektionen starten (Steuerbefehl `parcours`), Läufe mit den Werten der Verfolgung speichern (`parcours_runs.json`), A/B-Vergleich, Auto-Tuning (nur Vorschlag, «übernehmen»), mit / ohne Weitwinkel-Übergabe, Spiel «Entkomme der Kamera»; neuer Regler `track_lead` (Vorausschauen, 0 = wie bisher) als Wrapper um `MotionWatch.track`; Kachel 🎯 (139, Gruppe «Testen»); eine Sperre (147) | 600 |
+| `418_feste_fehlperson.py` | Feste Fehl-Personen lernen (Personen-Kasten der KI, der sich über Minuten nicht bewegt und nie hingegangen ist = Gegenstand; kein Push, Kopf folgt nicht; Karte «ignorieren?» mit Bild → Maske, /api/fixp), Tier vor Person (Spur behält die Tier-Klasse), Veto Tier / Fahrzeug für «Person?» und Wärmebild-Person (232), Selbsttest | 470 |
 | `420_webzugang_aufnahmen.py` | Web-Zugang, Aufnahmen, Speicher, Bild für andere Programme | 630 |
 | `425_zeitleiste.py` | Zeitleiste der Nacht: Daten für /api/timeline | 230 |
 | `426_wochenbericht.py` | Wochenbericht der Erkennung (Push + Karte) | 200 |
@@ -164,6 +165,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `639g_uebersetzungen_entdecken.py` | Übersetzungen der Kachel «Entdeckungen» (Entdeckungsbuch des Simulators, 139) | 29 |
 | `639i_spielbereich.py` | «Spielen» (Mehr → Spielen, Web /play, Fenster-Knopf unter Mehr): Kopfzeile (Stufe, Spielstand), Weiterspielen-Hinweis, Regal «Geschichten» (nur anschauen, Bild /sim/story_pic), «Entdecken», Blinki – Daten vom Simulator (spielbereich.gd / geschichten.gd); Abzeichen im Entdeckungsbuch (139) | 541 |
 | `639j_nurgruppen.py` | «Beim Start: Nur Gruppen» (Schalter `ui_start_groups`, ab Werk ein; Logik in 530 / 470 / 570 / 550): Übersetzungen DE/FR/IT/RM, Anleitungs-Absatz (Tipps, DE/EN) | 35 |
+| `639k_uebersetzungen_fehlperson.py` | Übersetzungen, Karte «Hier steht etwas, das wie eine Person aussieht – ignorieren?» auf der Hauptseite, Anleitungs-Absatz (Erkennung) zu 418 | 60 |
 | `636_werkseinstellungen_stand.py` | Standardwerte aller Teile vor dem Laden der Einstellungen (für die Werkseinstellungen) | 4 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |

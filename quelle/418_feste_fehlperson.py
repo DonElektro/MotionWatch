@@ -28,13 +28,17 @@ FIX_MATCH = 0.35            # the same spot: middle within 0.35 × its size (deg
 FIX_MATCH_H = 1.67          # of a tree jumps 10 … 25 % from run to run; a person 2 steps away is outside)
 FIX_STILL = 0.25            # «stands still»: middle within 0.25 × its height of where it was first seen, height within FIX_SIZE
 FIX_SIZE = 1.33             # (3 pictures in a row outside = it moved: the learning starts again)
+FIX_CONF_SURE = 0.75        # the AI is sure it is a person (score >= 0.75 in half of the looks): never learnt («im Zweifel Person»).
+                            # Offline with the test model (test-coco640) on the pictures of the test: the spruce 0.30 / 0.56, the
+                            # trunk 0.27, the stump in the dusk 0.25 - real persons near the camera are mostly far above.
 FIX_GAP_S = 25.0            # not seen for 25 s while learning: forgotten (the AI misses a thing now and then, not for that long)
 FIX_KEEP_S = 1800.0         # a learnt spot not seen for 30 min is forgotten (light changed, head somewhere else)
 FIX_WALK_LOOK_S = 60.0      # «walked in»: a moving track at that place in the last 60 s before the spot appeared (or 5 s after) -
                             # the AI may find a person only after it stopped; a minute covers a slow AI and a short pause
 FIX_WALK_AFTER_S = 5.0
 FIX_ANIMAL_MEM_S = 4.0      # an animal of the AI is remembered 4 s on its place (the AI runs only now and then; a new track there inherits it)
-FIX_ANIMAL_AI_S = 1.5       # an animal track becomes a person only when the AI says «person» on it for 1.5 s (≥ 2 runs) and no animal
+FIX_ANIMAL_AI_S = 1.0       # an animal track becomes a person only when the AI says «person» on it for 1 s (≥ 2 runs of the AI on
+                            # the Pi, 0.3 … 0.6 s apart) and no animal in that time: one wrong «person» of a dog is not enough
 FIXP = {"spots": [], "moving": deque(maxlen=1000), "animals": deque(maxlen=60), "start_t": 0.0, "head": None, "head_t": 0.0,
         "offers": [], "next": 1, "learned_n": 0, "suppressed": 0}
 
@@ -72,7 +76,19 @@ def _fixp_ov(a, b):
 def _fixp_walked(a, t_from, t_to):
     """a moving track (a person walking in) was at this place in the time window"""
     area = a[2] * a[3]
-    return any(t_from <= m[0] <= t_to and _fixp_ov(a, m[1]) > 0.2 and m[1][2] * m[1][3] >= 0.2 * area for m in FIXP["moving"])
+    for m in reversed(FIXP["moving"]):
+        if m[0] < t_from:
+            return False
+        if m[0] <= t_to and _fixp_ov(a, m[1]) > 0.2 and m[1][2] * m[1][3] >= 0.2 * area:
+            return True
+    return False
+
+
+def _fixp_came(s, t0, why):
+    """a person walked onto the spot: a person (not learnt) as long as it stays - learnt again only after it left (fixp_track)"""
+    if s["learned"]:
+        log_event("person", f"Still object #{s['id']}: a person {why} - a person again")
+    s.update(learned=False, came=True, first=t0, a0=s["a"], out=0, at_start=False)
 
 
 def _fixp_warm(b, pw, ph):
@@ -84,7 +100,7 @@ def _fixp_warm(b, pw, ph):
     return bool(tt and tt[0] - tt[1] >= 3.0 and 25.0 <= tt[0] <= 42.0)
 
 
-def fixp_spot_step(s, a, t0, start_t, walked, warm=False):
+def fixp_spot_step(s, a, t0, start_t, walked, warm=False, conf=0.0):
     """one observation a (angle box) of the spot s at t0 - the decision without the camera (self-test). Returns "learned" when
     the spot just became a thing, "moved" when a learned spot moved (a person again), else None."""
     if walked:
@@ -92,6 +108,7 @@ def fixp_spot_step(s, a, t0, start_t, walked, warm=False):
     if warm:
         s["warm"] = True
     s["last"] = t0; s["n"] += 1
+    s["sure"] = s.get("sure", 0) + (1 if conf >= FIX_CONF_SURE else 0)
     still = (math.hypot(a[0] - s["a0"][0], a[1] - s["a0"][1]) <= FIX_STILL * s["a0"][3]
              and 1.0 / FIX_SIZE <= a[3] / max(1e-6, s["a0"][3]) <= FIX_SIZE)
     s["out"] = 0 if still else s["out"] + 1
@@ -101,7 +118,8 @@ def fixp_spot_step(s, a, t0, start_t, walked, warm=False):
         s.update(a0=tuple(a), first=t0, out=0, learned=False, at_start=False)
         return "moved" if was else None
     need = FIX_LEARN_START_S if s["at_start"] else FIX_LEARN_S
-    if not s["learned"] and not s["walked"] and not s["warm"] and not s["never"] and t0 - s["first"] >= need:
+    if (not s["learned"] and not s["walked"] and not s.get("came") and not s["warm"] and not s["never"] and t0 - s["first"] >= need
+            and s["sure"] * 2 < s["n"]):
         s["learned"] = True
         return "learned"
     return None
@@ -109,7 +127,7 @@ def fixp_spot_step(s, a, t0, start_t, walked, warm=False):
 
 def fixp_new_spot(a, t0, start_t):
     s = {"id": FIXP["next"], "a": tuple(a), "a0": tuple(a), "first": t0, "last": t0, "n": 0, "out": 0, "learned": False,
-         "walked": False, "warm": False, "never": False, "at_start": t0 - start_t <= FIX_START_WIN_S, "offered": False}
+         "walked": False, "came": False, "warm": False, "never": False, "at_start": t0 - start_t <= FIX_START_WIN_S, "offered": False}
     FIXP["next"] += 1
     return s
 
@@ -129,18 +147,20 @@ def fixp_filter_ai(ai_boxes, pw, ph, t0, small=None):
         a = _fixp_ang(b, pw, ph, head)
         s = next((s for s in spots if _fixp_match(s, a)), None)
         if s is None:
-            for o in spots:                                  # a person box on a learnt spot that is not the thing itself:
-                if o["learned"] and _fixp_ov(a, o["a"]) > 0.3 and _fixp_walked(a, t0 - 5.0, t0):   # another person came onto it
-                    o.update(learned=False, first=t0, a0=o["a"], out=0, at_start=False)     # -> a person again
-                    log_event("person", f"Still object #{o['id']}: a person comes onto it - a person again")
+            for o in spots:                                  # a person box on a spot that is not the thing itself, walking:
+                if _fixp_ov(a, o["a"]) > 0.3 and _fixp_walked(a, t0 - 2.0, t0):     # another person comes onto it
+                    _fixp_came(o, t0, "comes onto it")
             if still and len(spots) < 12:
                 s = fixp_new_spot(a, t0, FIXP["start_t"])
                 s["walked"] = _fixp_walked(a, t0 - FIX_WALK_LOOK_S, t0)
                 spots.append(s)
             out.append(b); continue
+        if _fixp_walked(a, t0 - 2.0, t0) and (s["learned"] or t0 - s["first"] > FIX_WALK_AFTER_S):
+            _fixp_came(s, t0, "walks there")                 # the box of a walking person (the AI box sits on the thing)
         if still or s["learned"]:
             walked = t0 - s["first"] <= FIX_WALK_AFTER_S and _fixp_walked(a, s["first"], t0)
-            r = fixp_spot_step(s, a, t0, FIXP["start_t"], walked, _fixp_warm(b, pw, ph) if not s["learned"] else False) if still else None
+            r = fixp_spot_step(s, a, t0, FIXP["start_t"], walked, _fixp_warm(b, pw, ph) if not s["learned"] else False,
+                               float(b[4]) if len(b) > 4 else 0.0) if still else None
             if r == "learned":
                 FIXP["learned_n"] += 1
                 log_event("person", f"Still object #{s['id']}: a «person» that has not moved for {int(t0 - s['first'])} s and did not walk "
@@ -179,6 +199,10 @@ def fixp_track(t, pw, ph, t0):
             and (t.is_person or t.steadiness() >= CFG["speed_consistency"])):
         a = _fixp_ang(t.box, pw, ph, head); t._fx_t = t0
         FIXP["moving"].append((t0, a))                   # goes somewhere (no branch swinging to and fro), 2-3 times a second
+        for s in FIXP["spots"]:                          # the person that came onto a spot walks away again: the thing may be
+            if s.get("came") and not _fixp_match(s, a) and _fixp_ov(a, s["a"]) < 0.1 and any(   # learnt again (from 0)
+                    _fixp_match(s, _fixp_ang((px - w / 2.0, py - h / 2.0, w, h), pw, ph, head)) for px, py in list(t.hist)[-12:-3]):
+                s.update(came=False, first=t0, a0=s["a"], out=0, at_start=False)
     sup = False
     if (t.is_person or getattr(t, "fixp", False)) and learned and net < max(10.0, 0.5 * max(w, h)):
         a = a or _fixp_ang(t.box, pw, ph, head)
@@ -407,6 +431,9 @@ def fixp_selftest():
     # 4) warm like a body (thermal camera in °C): never learnt
     s4 = fixp_new_spot((5.0, 0.0, 2.0, 7.0), 100.0, 100.0)
     assert "learned" not in [fixp_spot_step(s4, (5.0, 0.0, 2.0, 7.0), 100.0 + i, 100.0, False, i == 3) for i in range(1, 200)]
+    # 4b) the AI is sure it is a person (0.9): never learnt
+    s5 = fixp_new_spot((5.0, 0.0, 2.0, 7.0), 100.0, 100.0)
+    assert "learned" not in [fixp_spot_step(s5, (5.0, 0.0, 2.0, 7.0), 100.0 + i, 100.0, False, False, 0.9) for i in range(1, 200)]
     # 5) the learnt spruce moves clearly (it was a person after all): a person again; one jump of the AI box is not enough
     assert fixp_spot_step(s, (13.0, 2.0, 4.0, 9.0), 200.0, 100.0, False) is None and s["learned"]
     assert fixp_spot_step(s, (10.0, 2.0, 4.0, 9.0), 201.0, 100.0, False) is None and s["learned"]
