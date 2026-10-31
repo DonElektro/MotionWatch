@@ -14,10 +14,10 @@ const UI = preload("res://scripts/ui_style.gd")
 const TILES := [["scene", "globe", "Szene"], ["time", "clock", "Tageszeit"], ["weather", "cloud", "Wetter"], ["visit", "person", "Besuch"],
 		["inventar", "box", "Gegenstände"], ["map", "map", "Echter Ort"], ["planner", "plan", "Aufstellen"],
 		["test", "check", "Testen"], ["pruef", "meter", "Prüfstand"], ["learn", "lens", "Trainingsbilder"], ["game", "pad", "Spiel"],
-		["disc", "book", "Entdeckungen"]]                 # Erlebniswelt 20: the Entdeckungsbuch (entdecken.gd), like the tile 📖 of MoveEye 139
+		["disc", "book", "Entdeckungen"], ["play", "star", "Spielen"]]   # Paket «Spielbereich»: the start screen (spielbereich.gd)                 # Erlebniswelt 20: the Entdeckungsbuch (entdecken.gd), like the tile 📖 of MoveEye 139
 # 3D-4.21 (Menü 2): the tiles under the same four headings as the simulator centre of MoveEye
 const HEADS := [["Welt", ["scene", "time", "weather", "visit", "inventar", "map", "planner"]], ["Testen", ["test", "pruef"]],
-		["Lernen", ["learn"]], ["Spielen", ["game", "disc"]]]
+		["Lernen", ["learn"]], ["Spielen", ["play", "game", "disc"]]]
 # 3D-4.0 (Gesamtrunde): «Patrouille» (= Rover-Route) and «Kopf steuern» only in the bar below - the bar moves, the tiles hold content
 const TIMES := [["Morgen 07:00", 7.0], ["Mittag 13:00", 13.0], ["Abend 19:30", 19.5], ["Dämmerung 21:00", 21.0], ["Nacht 23:00", 23.0], ["Tiefe Nacht 03:00", 3.0]]
 const WEATHER := [["Klar", "clear"], ["Bewölkt", "cloudy"], ["Regen", "rain"], ["Nebel", "fog"], ["Schnee", "snow"]]
@@ -120,6 +120,9 @@ func _press(id: String, b: Button) -> void:
 		"disc":
 			if main.entdecken != null:
 				main.entdecken.open_book()
+		"play":
+			if main.spielbereich != null:
+				main.spielbereich.toggle()
 		"learn":
 			main.open_train()
 		"patrol":
@@ -163,11 +166,14 @@ func _paint() -> void:
 	_subs["map"].text = "Karte der Welt"
 	if main.entdecken != null:
 		_subs["disc"].text = "%d von %d" % [main.entdecken.count(), main.entdecken.total()]
+	if main.spielbereich != null:
+		_subs["play"].text = main.spielbereich.tile_text()
 	_subs["planner"].text = "wohin?"
 	_subs["pruef"].text = "Erkennung"
 	var on := {"inventar": main.inventar != null and main.inventar.visible, "test": main.testrun.running,
 			"patrol": main.patrol.active, "head": main.headpad != null and main.headpad.visible, "map": main.karte.visible,
-			"planner": main.planner.visible, "pruef": main.pruef.visible, "game": main.gamewiz.visible}
+			"planner": main.planner.visible, "pruef": main.pruef.visible, "game": main.gamewiz.visible,
+			"play": main.spielbereich != null and main.spielbereich.is_open()}
 	for k in _tiles:
 		var a: bool = on.get(k, false)
 		_tiles[k].add_theme_stylebox_override("normal", UI.box(UI.ACC.darkened(0.55) if a else UI.BTN2, UI.ACC if a else UI.LINE, 10, 4, 2 if a else 1))

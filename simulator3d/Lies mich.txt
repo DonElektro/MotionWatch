@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.54
+3D-4.54: Spielbereich ⭐ «Spielen» im Schnellzugriff: Abenteuer der Reihe nach (Szenen als Kapitel), Entdeckungen pro
+Kapitel, Abzeichen, Stufe, Blinki als Begleiter. In MoveEye unter Mehr → «Spielen» (gleicher Aufbau).
+So testest du: 1) Schnellzugriff → ⭐ «Spielen»: Blinki und die Abenteuer-Liste. 2) Beim Ferienpark «Abenteuer starten».
+3) In MoveEye Mehr → «Spielen»: dasselbe.
+
 NEU IN 3D-4.53
 3D-4.53: Servos wie die echten MG90S: der Kopf schwenkt schnell und schwingt nach dem Halt kurz nach, Servostrom und
 Spannungseinbruch der 5-V-Schiene, Störungen «Schwaches Servosignal» (Zittern) und «Servo blockiert».

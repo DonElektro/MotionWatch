@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.53"
+const VERSION := "3D-4.54"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -326,6 +326,7 @@ var parcours                          # parcours.gd (3D-4.18): «Verfolgungs-Par
 var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Zwilling» - photo / panorama of the real place
 var fauna                             # fauna.gd (3D-3.95)
 var entdecken                         # entdecken.gd (Erlebniswelt 20–23): register() / mark_found() / is_found() / count() of the scenes
+var spielbereich                      # spielbereich.gd (Paket «Spielbereich»): start screen «Spielen» - adventures, badges, level, Blinki
 var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»): wind, light, lures, valuables of the catalogue
 var gelaende                          # gelaende.gd (3D-4.x real-gelaende): hills and hollows, paths, cloud shadows (vegetation.gd: plants)
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
@@ -539,6 +540,9 @@ func _ready() -> void:
 	entdecken = preload("res://scripts/entdecken.gd").new()   # Erlebniswelt 20–23: Entdeckungsbuch, Blinki-Hinweise, Fotomodus (before the scene registers)
 	entdecken.main = self
 	add_child(entdecken)
+	spielbereich = preload("res://scripts/spielbereich.gd").new()   # Paket «Spielbereich»: the start screen «Spielen» (quick tile)
+	spielbereich.main = self
+	add_child(spielbereich)
 	_build_world()
 	_build_head()
 	_build_viewports()
@@ -4958,6 +4962,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "surprise": surprise.info()}
 	elif a == "entdecken":                             # Erlebniswelt 20–23: {do: info | open | close | photo | mark (id) | reset | hint | set | where (id)}
 		return entdecken.control(d) if entdecken != null else {"ok": false, "error": "no entdecken"}
+	elif a == "spielbereich":                          # Paket «Spielbereich»: {do: info | open | close | start (id) | seen | reset}
+		return spielbereich.control(d) if spielbereich != null else {"ok": false, "error": "no spielbereich"}
 	elif a == "mehr":                                  # 3D-4.2x: «Mehr» (tests): {"do": open | theme | tour | diag | log | fb_* | shot}
 		return mehr.control(d) if mehr != null else {"ok": false, "error": "not ready"}
 	elif a == "feedback":                              # MoveEye 2.98.33: the dialog «Rückmeldung» (tests: {text, kind, stars, shot})
