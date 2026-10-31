@@ -895,6 +895,7 @@ class AIDetector:
         self.meta = None         # manifest of the own model
         self.boxes = []          # last persons, in processing-frame coordinates
         self.objects = []        # last non-person objects (x, y, w, h, conf, cls)
+        self.weak = []; self.weak_t = 0.0   # real-reh-fusspunkt: persons below ai_conf, raw score >= WEAK_AI_MIN, 0..1 (232 «Person?»)
         self.frame_counter = 0
         STATE["ai_model_note"] = ""
         if CFG.get("ai_model") == "own" and not force_ssd:
@@ -979,7 +980,16 @@ class AIDetector:
         t0 = time.time()
         h, w = frame.shape[:2]
         try:
-            boxes, objects = self.infer(frame, CFG["ai_conf"], CFG["object_conf"])
+            # real-reh-fusspunkt: one run with a lower person threshold (raw score WEAK_AI_MIN, 232); the boxes below the normal
+            # threshold go to self.weak («Person?» only with a flat box + movement / warmth), all others exactly as before (the
+            # NMS keeps every strong box: only a stronger box can suppress one)
+            need = own_ai_thresholds(self.meta, float(CFG["ai_conf"]), 0.5)[self.meta["classes"].index("person")] \
+                if self.kind == "yolo" and "person" in (self.meta or {}).get("classes", []) else float(CFG["ai_conf"])
+            low = (0.5 + (WEAK_AI_MIN - float(self.meta["conf"].get("person", 0.35)))) if self.kind == "yolo" else WEAK_AI_MIN
+            boxes, objects = self.infer(frame, min(float(CFG["ai_conf"]), low), CFG["object_conf"])
+            self.weak = [(b[0] / w, b[1] / h, b[2] / w, b[3] / h, b[4]) for b in boxes if b[4] < need]
+            self.weak_t = time.time()
+            boxes = [b for b in boxes if b[4] >= need]
         except Exception as e:
             if self.kind != "yolo":
                 raise

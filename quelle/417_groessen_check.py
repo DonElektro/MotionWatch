@@ -70,3 +70,59 @@ def size_ok(t, ph):
 def size_state():
     f = SIZEFIT["fit"].get(_size_bucket())
     return {"learned": bool(f), "persons": int(f[2]) if f else len(SIZEFIT["b"].get(_size_bucket(), [])), "rejects": SIZEFIT["rejects"]}
+
+
+def foot_selftest():
+    """real-reh-fusspunkt (232, third round): at night a roe deer / fox from the SIDE (flat) is an animal; a child 1.0 m, a
+    crouching person (also one that never stands up), a roe deer straight from the front and a standing person stay persons;
+    a crawling person is an animal without an AI hint and «Person?» with AI >= 0.15 + movement / warmth; by day no animal.
+    Camera 1.6 m high, 6° down - boxes from the flat-ground geometry with the field of view of this camera."""
+    vf, cam_h, pitch = erk_vfov(), 1.6, -6.0
+    hf = cam_fov()[0]
+    k = math.tan(math.radians(vf) / 2.0)
+    ThermalCam.main_aspect = 9 / 16.0
+
+    def box(dist, height, width=0.4, cx=0.5):
+        def row(z):                                          # picture row 0..1 of a point z m above the ground at dist m
+            return 0.5 + math.tan(math.atan((cam_h - z) / dist) + math.radians(pitch)) / (2.0 * k)
+        y0, y1 = row(height), row(0.0)
+        w = width / (2.0 * dist * math.tan(math.radians(hf) / 2.0))
+        return (cx - w / 2.0, y0, w, y1 - y0)
+
+    def run(seq, night=True, maybe=False):
+        """seq = [(dist, height, width)] one picture each 0.5 s -> the last decision (like thermal_classify)"""
+        hist = deque(maxlen=50); c = None
+        for n, (dist, height, width) in enumerate(seq):
+            b = box(dist, height, width)
+            d = thermal_person_check(b)
+            c = foot_decide(b, d, foot_estimate(b, cam_h, pitch, vf) if d is None else None, night, 100.0 + 0.5 * n, hist, maybe, vf)
+        return c[0] if c else None
+    for dist, height in ((6.0, 1.75), (12.0, 1.6), (9.0, 0.85), (5.0, 0.45)):
+        fe = foot_estimate(box(dist, height), cam_h, pitch, vf)
+        assert fe is not None and abs(fe[0] - dist) < 0.05 * dist and abs(fe[1] - height) < 0.05, (dist, height, fe)
+    assert foot_estimate(box(40.0, 1.7), cam_h, 6.0, vf) is None          # feet near the horizon: no estimate
+    assert foot_estimate((0.5, 0.3, 0.05, 0.7), cam_h, pitch, vf) is None  # cut off at the lower edge
+    deer_side = [(10.0 - 0.6 * i, 0.9, 1.3) for i in range(5)]            # h/w 0.69
+    fox_side = [(9.0 - 0.8 * i, 0.45, 0.8) for i in range(5)]             # h/w 0.56
+    crawl = [(7.0 - 0.2 * i, 0.45, 1.5) for i in range(5)]
+    assert run(deer_side) == "animal" and run(fox_side) == "animal", (run(deer_side), run(fox_side))
+    assert run(fox_side[:2]) == "wait"                                    # 2 pictures in 0.5 s: not decided yet
+    assert run(fox_side, night=False) is None                             # by day: no animal (only warm, as before)
+    assert run([(9.0, 1.05, 1.2)] * 5) is None                            # deer with the head high (0.88): only warm
+    assert run([(9.0, 1.0, 0.35)] * 5) == "person"                        # roe deer straight from the front: person («im Zweifel»)
+    assert run([(7.0, 1.0, 0.3)] * 5) == "person"                         # child 1.0 m
+    assert run([(6.0, 1.0, 0.55)] * 8) == "person"                        # crouching, never stands up
+    assert run([(6.0, 1.75, 0.5)] * 5) == "person"
+    assert run([(6.0, 1.75, 0.5)] * 2 + crawl) is None                    # stood, then lies down: never an animal
+    assert run(crawl) == "animal" and run(crawl, maybe=True) is None      # crawling: animal without AI, «Person?» wins
+    tr_ = [(0.40, 0.70, 0.22, 0.10)]                                      # a movement track at the same place
+    assert weak_person_check((0.41, 0.71, 0.20, 0.08, 0.17), tr_, [], None)
+    assert not weak_person_check((0.41, 0.71, 0.20, 0.08, 0.10), tr_, [], None)     # AI below 0.15
+    assert not weak_person_check((0.41, 0.71, 0.20, 0.08, 0.17), [], [], None)      # nothing confirms it
+    assert not weak_person_check((0.45, 0.50, 0.05, 0.30, 0.20), [(0.45, 0.5, 0.05, 0.3)], [], None)   # upright: not flat
+    hist = deque(maxlen=50)                                               # camera 30 % higher than thought: still no animal
+    b = box(8.0, 1.65, 0.5)
+    assert foot_decide(b, thermal_person_check(b), None, True, 1.0, hist, False, vf)[0] == "person"
+    return True
+
+SELFTEST_EXTRA.append(("Thermal picture: animal or person from the foot point (232)", foot_selftest))

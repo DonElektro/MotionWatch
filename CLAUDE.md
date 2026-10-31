@@ -39,6 +39,11 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   **Ergänzung (Daniel, 31.10.2026 03:02):** für ALLE Entscheide den Fragebogen verwenden, aber **zuerst ankündigen**
   («Fragebogen zu X kommt – sag "weiter", wenn du bereit bist») und den Turn beenden; erst nach Daniels «weiter» den Fragebogen
   zeigen, damit er sich vorher Notizen machen kann. Erklärungen/Vorschläge allein schicken, nie zusammen mit dem Popup.
+  **Ergänzung (Daniel, 31.10.2026 11:40):** statt auf «weiter» zu warten, ganz am Schluss einen kleinen «Button» zeigen:
+  Mini-Frage «Fragebogen … starten?» mit «Los» / «Noch nicht»; erst nach «Los» den eigentlichen Fragebogen.
+- **Zusammenfassung / Stand (Daniel, 31.10.2026 11:52):** wenn Daniel nach Stand, Übersicht oder Zusammenfassung fragt,
+  immer als kleine Tabelle «Teil | Stand» mit Prozenten pro Paket (geschätzt, kurz sagen woraus) und Zeile «Gesamt»,
+  darunter höchstens 1–2 Sätze. Knapp und klein.
 - **Arbeit verteilen (Daniel, 31.10.2026 04:24):** grössere Aufträge in möglichst viele unabhängige Pakete aufteilen und
   parallel an Helfer geben – bevorzugt Helfer auf eigenen Cloud-Rechnern (Agent mit isolation "remote"), damit der lokale
   Rechner nicht überlastet. Jeder Helfer: eigener Zweig, kein Release, keine Rückfragen bei bestätigten Paketen; zusammengeführt

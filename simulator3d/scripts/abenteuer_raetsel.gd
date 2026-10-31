@@ -22,8 +22,7 @@ extends RefCounted
 ##     Fehler), Schwer (keine Tipps). Vor dem Start (Schritt «Schwierigkeit & Ziel» → Einstellungen) und unterwegs wählbar.
 ## Gespeichert im Spielstand des Abenteuers: P["a3_raetsel"] (fortschritt.json), der laufende Lauf in R["a3"].
 ## Gegenstände: hat(id) / gib(id) / nimm(id) gehen an das gemeinsame Inventar von Paket A4 (scripts/abenteuer_inventar.gd:
-## Inv.hat / gib / finde / nimm; «feldstecher» liegt dort als «fernglas» → wirkt auch für die Wetterwarnung). Das Inventar
-## wird geladen, wenn die Datei da ist (vor dem Zusammenführen mit A4: eigener Speicher P["a3_raetsel"]["items"] + Rucksack).
+## Inv.hat / gib / finde / nimm; «feldstecher» liegt dort als «fernglas» → wirkt auch für die Wetterwarnung).
 ## Für andere Pakete: ab.hilfe_stufe() bzw. ab.raetsel.hilfe() -> "leicht" | "normal" | "schwer" (A4: Essen/Trinken in Leicht aus).
 ## Steuerbefehl: {"action": "abenteuer", "do": "a3", "what": state | hilfe (value) | zoom | stern (value A/B/C) | nord |
 ##                gib (value) | badges}
@@ -140,7 +139,7 @@ func S() -> Dictionary:
 	if not ab.P.has("a3_raetsel") or not ab.P["a3_raetsel"] is Dictionary:
 		ab.P["a3_raetsel"] = {}
 	var s: Dictionary = ab.P["a3_raetsel"]
-	for k in [["hilfe", "normal"], ["pages", []], ["items", {}], ["badges", {}], ["wege", {}], ["kompass", []], ["stern", []]]:
+	for k in [["hilfe", "normal"], ["pages", []], ["badges", {}], ["wege", {}], ["kompass", []], ["stern", []]]:
 		if not s.has(k[0]):
 			s[k[0]] = k[1].duplicate() if k[1] is Array or k[1] is Dictionary else k[1]
 	return s
@@ -173,52 +172,31 @@ func hilfe_stufe() -> String:
 
 
 # ---- the inventory: abenteuer_inventar.gd of package A4 (static hat / gib / finde / nimm) ---------------------------------
-const INV_PATH := "res://scripts/abenteuer_inventar.gd"
-static var _inv_s = null
-static var _inv_tried := false
+const Inv = preload("res://scripts/abenteuer_inventar.gd")
 
 
 func _inv():
-	if not _inv_tried:
-		_inv_tried = true
-		if ResourceLoader.exists(INV_PATH):
-			_inv_s = load(INV_PATH)
-	if _inv_s != null and _inv_s.get("ab") == null and _inv_s.has_method("verbinde"):
-		_inv_s.verbinde(ab)
-	return _inv_s
+	if Inv.ab == null:
+		Inv.verbinde(ab)
+	return Inv
 
 
 func hat(id: String) -> bool:
-	var iv = _inv()
-	if iv != null:
-		return bool(iv.hat(id))
-	if int((S()["items"] as Dictionary).get(id, 0)) > 0:
-		return true
-	return not ab.R.is_empty() and int((ab.R.get("items", {}) as Dictionary).get(id, 0)) > 0
+	return bool(_inv().hat(id))
 
 
 func gib(id: String) -> void:
-	var iv = _inv()
-	if iv != null:
-		if id == "ersatzteil":
-			iv.gib(id, 1)                                # used up at the footbridge (Rucksack of this tour)
-		elif not bool(iv.hat(id)):
-			iv.finde(id)                                 # stays for all chapters (feldstecher / seil / grandfather's things / pages)
-	else:
-		S()["items"][id] = 1
+	if id == "ersatzteil":
+		_inv().gib(id, 1)                                # used up at the footbridge (Rucksack of this tour)
+	elif not hat(id):
+		_inv().finde(id)                                 # stays for all chapters (feldstecher / seil / grandfather's things / pages)
 	if not ab.R.is_empty() and not id in RR()["items"]:
 		RR()["items"].append(id)
 	ab._save()
 
 
 func nimm(id: String) -> void:
-	var iv = _inv()
-	if iv != null:
-		iv.nimm(id, 1)
-	else:
-		S()["items"].erase(id)
-		if not ab.R.is_empty() and int((ab.R["items"] as Dictionary).get(id, 0)) > 0:
-			ab.R["items"][id] = int(ab.R["items"][id]) - 1
+	_inv().nimm(id, 1)
 	ab._save()
 
 

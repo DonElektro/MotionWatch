@@ -22,6 +22,8 @@ const D = preload("res://scripts/bergtal_abenteuer_daten.gd")
 const T = preload("res://scripts/i18n.gd")
 const Bt = preload("res://scripts/bergtal.gd")
 const Karte = preload("res://scripts/bergtal_abenteuer_karte.gd")
+const Inv = preload("res://scripts/abenteuer_inventar.gd")   # A4: gemeinsames Inventar (hat / gib / nimm / anzahl)
+const Ruck = preload("res://scripts/abenteuer_rucksack.gd")  # A4: Essen/Trinken mild, Ausrüstung finden, Tausch
 
 const STEPS := ["Kapitel", "Stimmung", "Schwierigkeit & Ziel", "Rucksack", "Unterwegs", "Nachtlager", "Nacht", "Morgen"]
 const SAVE_FILE := "user://bergtal_abenteuer/fortschritt.json"
@@ -114,7 +116,9 @@ func pack_kg(items: Dictionary = {}) -> float:
 	for k in it:
 		if D.ITEMS.has(k):
 			kg += float(D.ITEMS[k][1]) * int(it[k])
-	return snappedf(kg, 0.01)
+		elif str(k) in Inv.IDS:
+			kg += Inv.gewicht(str(k)) * int(it[k])          # A4: neue Gegenstände (kaese, brief …)
+	return snappedf(kg + Inv.extra_kg(), 0.01)
 
 
 func pack_l() -> float:
@@ -126,7 +130,7 @@ func pack_l() -> float:
 
 
 func has(id: String) -> bool:
-	return int((R.get("items", W["items"]) as Dictionary).get(id, 0)) > 0
+	return Inv.hat(id)                                   # A4: Rucksack + gefundene / bleibende Dinge
 
 
 func hilfe_stufe() -> String:
@@ -439,11 +443,7 @@ func _advance() -> void:
 
 func _cost_f() -> float:
 	"""what makes walking harder now: hunger, thirst, cold, a hurt foot, darkness without a lamp"""
-	var f := 1.0
-	if float(R.get("food", 50.0)) <= 0.0:
-		f *= 1.4
-	if float(R.get("water", 1.0)) <= 0.0:
-		f *= 1.3
+	var f := Ruck.kraft_f(self)                          # A4: hungrig / durstig = mild (nie Spielende, in «Leicht» aus)
 	if int(R.get("cold", 0)) > 0:
 		f *= 1.0 + 0.12 * int(R["cold"])
 	if bool(R.get("hurt", false)):
@@ -486,6 +486,7 @@ func _start_leg(i: int, pts: Array, flags: Array, nm: String) -> void:
 		t_h *= 1.3
 	if bool(R.get("hurt", false)):
 		t_h *= 1.2
+	t_h *= Ruck.tempo_f(self)                           # A4: hungrig / durstig = langsamer
 	leg = {"i": i, "pts": pts, "flags": flags, "name": nm, "t_h": t_h, "cost": float(li["cost"]) * f, "f": 0.0, "h0": main.hour(),
 			"s0": float(R["stamina"]), "food0": float(R["food"]), "water0": float(R["water"]), "up": float(li["up"]),
 			"real_s": 0.6 if fast else clampf(t_h * 9.0, 3.0, 10.0), "dist": float(li["dist"])}
@@ -507,9 +508,9 @@ func _tick_leg(dt: float) -> void:
 	var t_h: float = float(leg["t_h"])
 	main.set_hour(float(leg["h0"]) + t_h * f)
 	R["stamina"] = maxf(0.0, float(leg["s0"]) - float(leg["cost"]) * f)
-	R["food"] = maxf(0.0, float(leg["food0"]) - 10.0 * t_h * f)
+	R["food"] = maxf(0.0, float(leg["food0"]) - 10.0 * t_h * f * Ruck.verbrauch_f(self))   # A4: in «Leicht» kein Verbrauch
 	# drinking: about 0.4 L per hour + 0.15 L per 100 m up (hiking guides: 0.3–0.5 L/h, more uphill and in the heat)
-	R["water"] = maxf(0.0, float(leg["water0"]) - (0.4 * t_h + 0.15 * float(leg["up"]) / 100.0) * f)
+	R["water"] = maxf(0.0, float(leg["water0"]) - (0.4 * t_h + 0.15 * float(leg["up"]) / 100.0) * f * Ruck.verbrauch_f(self))
 	var pts: Array = leg["pts"]
 	var p := _along(pts, f)
 	R["pos"] = p
@@ -608,6 +609,7 @@ func _post_leg(i: int) -> void:
 		R["events_done"]["meet" + key] = true
 		var mk: String = R["meet"][key]
 		var me: Array = D.MEET[mk]
+		Ruck.begegnung(self, mk)                         # A4: mit dieser Figur kann man tauschen
 		_diary("meet", T.t(str(me[0])), T.t(str(me[1])))
 		_snap_later(T.t(str(me[0])), "view")
 		match str(me[2]):
@@ -626,6 +628,8 @@ func _post_leg(i: int) -> void:
 		var fd: Array = D.FINDS[fk]
 		_ask("find", T.t("Etwas gefunden"), T.t(str(fd[2])) + "\n" + T.t("%s - %.1f kg") % [T.t(str(fd[0])), float(fd[1])],
 				[["take", T.t("Mitnehmen (Rucksack wird schwerer)")], ["leave", T.t("Liegen lassen")]], {"find": fk})
+		return
+	if Ruck.nach_abschnitt(self, i):                     # A4: Quelle am Weg, Ausrüstung gefunden
 		return
 	R["stage"] = int(R["stage"]) + 1
 	_advance()
@@ -712,7 +716,7 @@ func choose(v: String) -> Dictionary:
 						_diary("weather", T.t("Weiter im Gewitter"), T.t("Nass bis auf die Haut. Am Grat wäre das gefährlich - Blitze treffen zuerst hohe Punkte.") if exposed else T.t("Nass bis auf die Haut, aber weiter."))
 					else:
 						R["fog_go"] = true
-						if str(R["level"]) == "schwer":
+						if str(R["level"]) == "schwer" and not has("kompass"):   # A4: mit gefundenem Kompass nicht
 							_diary("weather", T.t("Weiter im Nebel"), T.t("Ohne Kompass im Nebel - du verlierst kurz den Weg."))
 							_pause(0.4, false)
 					_post_leg(st_i)
@@ -754,6 +758,9 @@ func choose(v: String) -> Dictionary:
 		"tired":
 			_pause(0.75, false)
 			R["stamina"] = maxf(float(R["stamina"]), float(R["smax"]) * 0.45)
+			_post_leg(st_i)
+		"a4_fund":                                        # A4
+			Ruck.choose(self, pe, v)
 			_post_leg(st_i)
 		"camp_early":
 			if v == "yes":
@@ -797,7 +804,7 @@ func do_pause() -> Dictionary:
 
 
 func do_refill() -> Dictionary:
-	if R.is_empty() or not bool(R.get("bach", false)) or bool(R.get("walking", false)):
+	if R.is_empty() or not (bool(R.get("bach", false)) or Ruck.quelle(self) != "" or not Ruck.huette(self).is_empty()) or bool(R.get("walking", false)):
 		return {"ok": false, "error": "kein Bach hier"}
 	var cap := float(maxi(1, int(R["items"].get("wasser", 0))))
 	if str(R["season"]) == "winter" and not has("kocher"):
@@ -1236,7 +1243,7 @@ func situation() -> Dictionary:
 	return {"seed": int(R.get("seed", 0)), "chapter": int(R.get("chapter", W["chapter"])), "mood": str(R.get("mood", W["mood"])),
 			"level": str(R.get("level", W["level"])), "goal": str(R.get("goal_pick", W["goal"])), "season": str(R.get("season", W["season"])),
 			"pack": str(R.get("pack", W["pack"])), "items": (R.get("items0", W["items"]) as Dictionary).duplicate(), "tempo": int(W["tempo"]),
-			"choices": choices.duplicate(true)}
+			"choices": choices.duplicate(true), "a4_inventar": (R.get("a4_inv0", Inv.bleib_box()) as Dictionary).duplicate(true)}
 
 
 func situation_key(s: Dictionary) -> String:
@@ -1291,6 +1298,7 @@ func replay(nm := "") -> Dictionary:
 	for k in s["items"]:
 		W["items"][k] = int(s["items"][k])
 	replay_q = (s["choices"] as Array).duplicate(true)
+	Inv.replay_box = (s["a4_inventar"] as Dictionary).duplicate(true) if s.get("a4_inventar") is Dictionary else null   # A4
 	replaying = true
 	shown = true
 	var r := start_run(int(s["seed"]))
@@ -1315,6 +1323,10 @@ func _tick_replay(dt: float) -> void:
 			replaying = false
 		return
 	var c: Array = replay_q[0]
+	if str(c[1]).begins_with("a4_"):                    # A4: Essen, Kochen, Tausch
+		if Ruck.replay(self, c):
+			replay_q.pop_front()
+		return
 	match str(c[1]):
 		"pause":
 			if step == 4 and not bool(R.get("walking", false)) and (R["pending"] as Dictionary).is_empty():
@@ -1437,6 +1449,7 @@ func _changed() -> void:
 
 
 func _ready() -> void:
+	Inv.verbinde(self)                                   # A4
 	_load()
 	W["items"] = blinki_suggest()
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1536,6 +1549,7 @@ func _unhandled_key_input(ev: InputEvent) -> void:
 func _process(dt: float) -> void:
 	if not leg.is_empty():
 		_tick_leg(dt)
+	Ruck.tick(self, dt)                                  # A4: Stirnlampe als echtes Licht
 	if not R.is_empty() and step == 6:
 		_tick_night(dt)
 	_tick_replay(dt)
@@ -2011,6 +2025,7 @@ func _paint_pack() -> void:
 			cb.disabled = not unl
 			cb.toggled.connect(func(x): op({"do": "item", "key": idd, "value": 1 if x else 0}))
 			row.add_child(cb)
+	Ruck.paint_pack(self)                                # A4: gefundene Ausrüstung
 
 
 func _stat_box(parent: Control) -> void:
@@ -2018,8 +2033,9 @@ func _stat_box(parent: Control) -> void:
 	var smax: float = float(R["smax"])
 	var s: float = float(R["stamina"])
 	_bar(g, T.t("Kraft"), s, smax, GRN if s > smax * 0.4 else (ORG if s > smax * 0.15 else REDC))
-	_bar(g, T.t("Essen"), float(R["food"]), 100.0, ORG, "%d %%" % int(R["food"]))
-	_bar(g, T.t("Wasser"), float(R["water"]), maxf(1.0, float(int(R["items"].get("wasser", 0)))), ACC, "%.1f L" % float(R["water"]))
+	if Ruck.essen_an(self):                              # A4: in «Leicht» keine Essen-/Wasser-Balken
+		_bar(g, T.t("Essen"), float(R["food"]), 100.0, ORG, "%d %%" % int(R["food"]))
+		_bar(g, T.t("Wasser"), float(R["water"]), maxf(1.0, float(int(R["items"].get("wasser", 0)))), ACC, "%.1f L" % float(R["water"]))
 	var kg := pack_kg(R["items"]) + float(R["found_kg"])
 	var pk: Array = D.PACKS[str(R["pack"])]
 	_bar(g, T.t("Gewicht"), kg, float(pk[3]), ORG if kg > float(pk[3]) * 0.85 else Color(0.6, 0.66, 0.74), "%.1f kg" % kg)
@@ -2036,12 +2052,9 @@ func _stat_box(parent: Control) -> void:
 		flags.append(T.t("friert"))
 	if bool(R.get("hurt", false)):
 		flags.append(T.t("Fuss verstaucht"))
-	if float(R["food"]) <= 0.0:
-		flags.append(T.t("Hunger"))
-	if float(R["water"]) <= 0.0:
-		flags.append(T.t("Durst"))
 	if not flags.is_empty():
 		g.add_child(_lab(", ".join(flags), 12, ORG))
+	Ruck.stat_extra(self, g)                             # A4: Rucksack-Inhalt, hungrig / durstig
 
 
 func _paint_hud() -> void:
@@ -2083,6 +2096,8 @@ func _paint_hud() -> void:
 	if bool(R.get("bach", false)):
 		_btn(acts, T.t("Wasser auffüllen (Bach)"), func(): op({"do": "refill"}), false, not idle)
 	_btn(acts, T.t("Hier übernachten"), func(): op({"do": "camp_here"}), false, not idle or not pe.is_empty())
+	Ruck.hud_buttons(self, acts, idle and pe.is_empty())   # A4: Essen, Quelle, Kochen, Tauschen
+	Ruck.paint_tausch(self, body)                        # A4: Tausch-Fenster
 	if raetsel != null:
 		raetsel.paint_hud(body)
 	var lg := _group(T.t("Tagebuch"))
@@ -2121,6 +2136,10 @@ func _paint_camp() -> void:
 	cb.toggled.connect(func(x): R["wall_pick"] = x)
 	row.add_child(cb)
 	gg.add_child(_lab(T.t("Schlafen: %s") % T.t(_bed_name(bed_of())), 13))
+	if not Ruck.huette(self).is_empty():                 # A4: in der Hütte kochen
+		var ka := HFlowContainer.new()
+		gg.add_child(ka)
+		Ruck.hud_buttons(self, ka, true)
 	if raetsel != null:
 		raetsel.paint_camp(body)
 
@@ -2386,6 +2405,9 @@ func op(d: Dictionary) -> Dictionary:
 			leg = {}
 			step = 0
 			_changed()
+		_:
+			if what.begins_with("a4_"):                  # A4: Rucksack (Essen, Kochen, Tausch, Inventar)
+				out = Ruck.op(self, what, d)
 	if not out.has("state"):
 		out["state"] = state()
 	return out

@@ -314,6 +314,11 @@ func _devs_ok(devs: Array, act: String) -> Array:
 func _sim_tick(dt: float, devs: Array) -> void:
 	var ex = main.explore
 	var pv = main.padview
+	if ex != null and ex.fly:                                # Entwicklertool 1: the fly camera reads the sticks itself (explore.gd)
+		for act in fired("sim", devs):
+			if act in ["exit", "menu"]:
+				do_sim(act)
+		return
 	for d in devs:
 		for act in fired("sim", [d]):
 			if _ok(d, act):
@@ -388,7 +393,10 @@ func do_sim(act: String) -> void:
 		"menu":
 			set_menu(true)
 		"exit":
-			if ex != null and ex.on:
+			if ex != null and ex.fly:
+				ex.set_fly(false)
+				_say("Flugkamera beendet")
+			elif ex != null and ex.on:
 				ex.set_on(false)
 				_say("Erkunden beendet")
 			elif pv != null and pv.view != "":
@@ -784,7 +792,7 @@ const JS := r"""window.MWPad = window.MWPad || (function () {
               ["select", "swap", "Swap pictures / views", "Bilder / Ansichten tauschen"],
               ["start", "menu", "Menu (control panel)", "Menü (Bedienfeld)"], ["start_long", "exit", "Hold 1 s: leave", "1 s halten: beenden"],
               ["dpad", "head", "Head in small steps", "Kopf in kleinen Schritten"],
-              ["l2", "pole", "Hold L2 + ✚ ↑↓: pole longer / shorter", "L2 halten + ✚ ↑↓: Stange länger / kürzer"]],
+              ["l2", "pole", "Hold L2 + ✚ ↑↓: camera higher / lower", "L2 halten + ✚ ↑↓: Höhe der Kamera + / −"]],
       "view": [["ls", "head", "Turn / tilt the head of MoveEye", "Kopf von MoveEye drehen / neigen"],
                ["rs", "drive", "Drive the rover (without rover: move the view)", "Rover fahren (ohne Rover: Ansicht bewegen)"],
                ["r1rs", "orbit", "Hold R1: turn the view", "R1 halten: Ansicht drehen"],

@@ -5,6 +5,12 @@ extends Control
 ## 3D-4.13: the controller follows the ONE mapping of padmap.gd (right stick = drive, R1 + right stick = look round,
 ## left stick = the head of MoveEye, R3 = view, Select = live picture, Start held = end); here only the device symbol.
 ## A symbol at the top shows what steers right now: mouse, touch, controller or keyboard.
+## Entwicklertool 1 (devtool.gd, 31.10.2026): «Flugkamera» (fly) - the free camera flies through everything (walls, ground,
+## no collision): W A S D / Q E (Shift × 3), right mouse button = look round, wheel or + / − = speed; controller: right
+## stick = fly, left stick = look round (the head of MoveEye stays still meanwhile), R2 / L2 = up / down, ✚ ↑↓ = speed,
+## Start held = back. Esc or «Zurück» = the normal view again. Exploring and flying exclude each other.
+
+const T = preload("res://scripts/i18n.gd")
 
 var main
 var on := false
@@ -32,6 +38,10 @@ var rp_t := -100.0
 var rp_name := ""
 var test_drive := Vector2.ZERO        # for tests (control «explore» drive)
 var test_until := 0.0
+var fly := false                      # Entwicklertool 1: the free fly camera (devtool.gd)
+var fly_speed := 8.0                  # m/s (devtool.gd SPEEDS; Shift = × 3)
+var _fly_back: Button = null
+const FLY_SPEEDS := [1.0, 3.0, 8.0, 20.0, 60.0]
 const VIEWS := ["chase", "driver", "top"]
 const VIEW_NAMES := {"chase": "hinterher", "driver": "Fahrersicht", "top": "von oben"}
 const DEAD := 0.18                    # dead zone of the sticks
@@ -79,6 +89,14 @@ func _ready() -> void:
 	invite.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	invite.position = Vector2(14, 236)                     # under the small map, above the view buttons
 	call_deferred("_add_invite")
+	_fly_back = Button.new()
+	_fly_back.text = T.t("Zurück (Esc)")
+	_fly_back.position = Vector2(520, 14)
+	_fly_back.size = Vector2(110, 34)
+	_fly_back.focus_mode = Control.FOCUS_NONE
+	_fly_back.visible = false
+	_fly_back.pressed.connect(func(): set_fly(false))
+	add_child(_fly_back)
 
 
 func _add_invite() -> void:
@@ -98,9 +116,120 @@ func set_invite(v: bool) -> void:
 	_inv_for = ""
 
 
+func set_fly(v: bool) -> void:
+	"""Entwicklertool 1: the free fly camera on / off (the view stays where it is when it ends)"""
+	if v == fly:
+		return
+	if v and on:
+		set_on(false)                                    # exploring and flying exclude each other
+	fly = v
+	if fly:
+		if main.spectate:
+			main.spectate_stop()
+		if main.fly_tw != null:
+			main.fly_tw.kill()
+		main.follow = false
+		main.set_view(0)
+		main.start_info = T.t("Flugkamera an – Esc oder «Zurück» = normale Ansicht")
+	else:
+		main.start_info = T.t("Flugkamera aus – normale Ansicht")
+	_fly_back.visible = fly
+	_info.size = Vector2(450 if fly else 570, 52)
+	visible = fly or on
+	queue_redraw()
+
+
+func fly_step(dir: int) -> void:
+	var i := 0
+	for k in FLY_SPEEDS.size():
+		if absf(float(FLY_SPEEDS[k]) - fly_speed) < absf(float(FLY_SPEEDS[i]) - fly_speed):
+			i = k
+	fly_speed = float(FLY_SPEEDS[clampi(i + dir, 0, FLY_SPEEDS.size() - 1)])
+
+
+func _fly_input(ev: InputEvent) -> void:
+	"""the keys and the mouse of the fly camera (W A S D Q E are read in _fly_tick)"""
+	if ev is InputEventKey and ev.pressed and not ev.echo and not main.typing():
+		_set_device("keyboard")
+		match ev.keycode:
+			KEY_ESCAPE:
+				set_fly(false)
+				get_viewport().set_input_as_handled()
+			KEY_PLUS, KEY_KP_ADD, KEY_EQUAL:
+				fly_step(1)
+				get_viewport().set_input_as_handled()
+			KEY_MINUS, KEY_KP_SUBTRACT:
+				fly_step(-1)
+				get_viewport().set_input_as_handled()
+	elif ev is InputEventMouseButton and ev.pressed:
+		if main._over_hud(ev.position):
+			return
+		_set_device("mouse")
+		if ev.button_index == MOUSE_BUTTON_WHEEL_UP:
+			fly_step(1)
+			get_viewport().set_input_as_handled()
+		elif ev.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			fly_step(-1)
+			get_viewport().set_input_as_handled()
+		elif ev.button_index == MOUSE_BUTTON_RIGHT:
+			get_viewport().set_input_as_handled()        # right button: look round (not the orbit of the free view)
+	elif ev is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+		var cam: Camera3D = main.view_cam
+		var r := cam.rotation
+		cam.rotation = Vector3(clampf(r.x - ev.relative.y * 0.004, -1.5, 1.5), r.y - ev.relative.x * 0.004, 0.0)
+		get_viewport().set_input_as_handled()
+
+
+func _fly_tick(dt: float) -> void:
+	main.view_mode = 0
+	visible = true
+	var cam: Camera3D = main.view_cam
+	if main.fly_tw != null and main.fly_tw.is_running():
+		return                                           # a jump of the developer tool is flying the view
+	var mv := Vector3.ZERO
+	if not main.typing() and not main.karte.visible:
+		if Input.is_key_pressed(KEY_W):
+			mv.z -= 1
+		if Input.is_key_pressed(KEY_S):
+			mv.z += 1
+		if Input.is_key_pressed(KEY_A):
+			mv.x -= 1
+		if Input.is_key_pressed(KEY_D):
+			mv.x += 1
+		if Input.is_key_pressed(KEY_E):
+			mv.y += 1
+		if Input.is_key_pressed(KEY_Q):
+			mv.y -= 1
+	mv = mv.normalized()
+	var pm = main.padmap
+	if pm != null and not _game_pad():
+		var m: Vector2 = pm.move()
+		var lk: Vector2 = pm.look()
+		var up: float = pm.trig("r2") - pm.trig("l2")
+		if m != Vector2.ZERO or lk != Vector2.ZERO or absf(up) > 0.0:
+			_set_device("pad")
+		mv += Vector3(m.x, up, m.y)
+		if lk != Vector2.ZERO:
+			var r := cam.rotation
+			cam.rotation = Vector3(clampf(r.x - lk.y * dt * 1.2, -1.5, 1.5), r.y - lk.x * dt * 1.8, 0.0)
+		if pm.hit("up"):
+			fly_step(1)
+		if pm.hit("down"):
+			fly_step(-1)
+	var f := fly_speed * (3.0 if Input.is_key_pressed(KEY_SHIFT) else 1.0)
+	if mv != Vector3.ZERO:
+		cam.global_translate(cam.global_transform.basis * mv.limit_length(1.0) * f * dt)   # no collision, no ground: through everything
+	var dn: String = {"keyboard": T.t("Tastatur"), "mouse": T.t("Maus"), "touch": T.t("Touch"), "pad": T.t("Controller")}[device]
+	var hl := T.t("rechter Stick fliegen · linker Stick umschauen · R2 / L2 hoch / runter · ✚ ↑↓ Tempo · Start halten = zurück") if device == "pad" \
+			else T.t("W A S D fliegen · Q / E runter / hoch · Shift schneller · rechte Maustaste umschauen · Rad oder + / − Tempo · Esc zurück")
+	_info.text = "%s · %s · %s m/s%s\n%s" % [T.t("Flugkamera"), dn, str(fly_speed).trim_suffix(".0"), " × 3" if Input.is_key_pressed(KEY_SHIFT) else "", hl]
+
+
 func set_on(v: bool) -> void:
 	if v == on:
 		return
+	if v and fly:
+		set_fly(false)
 	on = v
 	if on and main.patrol != null and main.patrol.active:
 		main.patrol.set_active(false)                    # 3D-3.88: exploring and patrol exclude each other
@@ -127,7 +256,7 @@ func set_on(v: bool) -> void:
 
 func state() -> Dictionary:
 	var r: Node3D = main.rig
-	return {"ok": true, "mast": main.mast_h, "on": on, "view": view, "auto_top": auto_top, "device": device, "speed": speed, "turbo": turbo,
+	return {"ok": true, "mast": main.mast_h, "on": on, "fly": fly, "fly_speed": fly_speed, "view": view, "auto_top": auto_top, "device": device, "speed": speed, "turbo": turbo,
 			"x": snappedf(r.position.x, 0.01), "z": snappedf(r.position.z, 0.01), "pads": Input.get_connected_joypads().size(),
 			"pad_name": Input.get_joy_name(Input.get_connected_joypads()[0]) if not Input.get_connected_joypads().is_empty() else ""}
 
@@ -141,6 +270,9 @@ func _set_device(d: String) -> void:
 
 func _input(ev: InputEvent) -> void:
 	# which device steers - also when exploring is off (the controller's Start switches it on)
+	if fly:
+		_fly_input(ev)                                   # Entwicklertool 1: the fly camera
+		return
 	if _game_pad():
 		return                                           # 3D-4.x: the controller belongs to the player at the PC (localplay.gd)
 	if ev is InputEventJoypadButton and ev.pressed:
@@ -388,6 +520,9 @@ func command() -> Vector2:
 
 func _process(dt: float) -> void:
 	_cal_tick()                                              # 3D-3.96: calibration of the sticks
+	if fly:
+		_fly_tick(dt)
+		return
 	if not on:
 		return
 	turbo = Input.is_key_pressed(KEY_SHIFT)
@@ -442,7 +577,7 @@ func _process(dt: float) -> void:
 	var dn: String = {"keyboard": "Tastatur", "mouse": "Maus", "touch": "Touch", "pad": "Controller"}[device]
 	if device == "pad" and _rp_on():
 		dn = "Controller im Browser"
-	_info.text = "Erkunden · %s · %s · %.1f km/h · Stange %.1f m%s\n%s" % [dn,
+	_info.text = "Erkunden · %s · %s · %.1f km/h · Höhe der Kamera %.1f m%s\n%s" % [dn,
 			VIEW_NAMES[view] + (" (automatisch von oben)" if auto_top and view == "chase" else ""), kmh, main.mast_h, " · schnell" if turbo else "", _help()]
 
 
@@ -487,11 +622,11 @@ func _help() -> String:
 			return "Grüner Stick unten rechts fahren · Ansicht und Ende oben im Feld"
 		"mouse":
 			return "Grünen Stick ziehen · rechte Taste = umschauen · Rad = Abstand · Strg+Klick = Rover hierhin · C Beobachter · Esc"
-	return "W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Stange · C Beobachter · J Mitspieler · Esc"
+	return "W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc"
 
 
 func _draw() -> void:
-	if not on:
+	if not on and not fly:
 		return
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.05, 0.07, 0.09, 0.78))
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.25, 0.75, 0.4, 0.9), false, 1.5)
