@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.10.1** · MoveEye **3.10.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.11.0** · MoveEye **3.11.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.11.0 (MoveEye 3.11.0): Maggie zu zweit (`maggie_zwei.gd`, `zweit_bild.gd`)
+
+- `maggie_zwei.gd` (neu): 1 oder 2 Spieler, Rolle (zwei Wanderer / Spieler 2 ist Maggie), Teamrätsel je Region, Partner rettet;
+  `zweit_bild.gd` (neu): Bildschirm geteilt / gemeinsam; `maggie_story.gd`, `maggie_hund.gd`, `geschichten.gd`, `padmap.gd`
+  (Controller von maggie_zwei, ausserhalb des mit MoveEye 542 verglichenen JS-Blocks).
+- Konzept-Check: `abenteuer_zweit.gd` ohne die Emoji 🎮 / ⌨ (Text «Controller» / «Tastatur», wie maggie_zwei).
 
 ## NEU in 3.10.1 (MoveEye 3.10.1): Vorführung – «Spiel-Knöpfe zeigen»
 

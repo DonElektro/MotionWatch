@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 19:37",
+ "generated": "2026-10-31 19:48",
  "versions": [
+  {
+   "version": "3.11.0",
+   "file": "webcam_bewegung_3_11_0.py",
+   "url": "",
+   "sha256": "d45f226744ea710f63bde96b88cd47243e5b5b39e6954e8f2589761c1eaa5a3e",
+   "date": "2026-10-31 19:48",
+   "notes": "Simulator 3.11.0: «Maggie und der Bergkristall» zu zweit – 1 oder 2 Spieler, Rolle wählbar, Bildschirm geteilt oder gemeinsam, je Region ein Teamrätsel, Partner kann retten.",
+   "size": 4416420,
+   "sig": "7fa6d1d232e02177c85869437b66a5afc98cfbf8d6b52a97e6032576220c71465fe6462198692fc2348c5738fb2853e463b446b92def8ea8556ad38861d9600c",
+   "data": {
+    "file": "moveeye_daten_3_11_0.zip",
+    "url": "",
+    "sha256": "e968853c33000df19fe9bb075ed3450eacd336e8f079eab1596af95c5a466129",
+    "size": 1611965,
+    "sig": "2339f5a766de55496f73e03dfdfec6984d25d18e64dbe1681820213df599e3cfb8934d88cc238472860f026057345631dc520a40784ac07fcb5b2dd7c763d403"
+   }
+  },
   {
    "version": "3.10.1",
    "file": "webcam_bewegung_3_10_1.py",
    "url": "",
    "sha256": "b50c7ace073baab12449fd5299836334c71939b7c72a89b4152386664267944e",
-   "date": "2026-10-31 19:37",
+   "date": "2026-10-31 19:42",
    "notes": "Simulator 3.10.1: Vorführung mit Schalter «Spiel-Knöpfe zeigen» – die Knöpfe bleiben sichtbar und leuchten auf, wenn der Autopilot sie drückt.",
    "size": 4416453,
    "sig": "62d50610eb70771f0fa2221ae51f625da9807b229605b4c4ca31f1386c806cec8799541db216c298d13572a2984758843571a6d655621d66f4b22e5fb536350b",
@@ -102,16 +119,6 @@
    "notes": "MoveEye Sim 3.3.0: Roter Faden – Die Karte des Grossvaters und Maggie kennen sich, neues Abzeichen «Beide Geschichten geschafft».",
    "size": 7711358,
    "sig": "664f602b7f58cf7317eaad4b188121a63ec0e8bd25be048f29cf228b4fb648458ff0276e34ea643862d0afacf5f0edc4020b4ac0da2856a2b3f5f42964c14e0d"
-  },
-  {
-   "version": "3.2.0",
-   "file": "webcam_bewegung_3_2_0.py",
-   "url": "",
-   "sha256": "1f0f2eabaab921fa7d443e91be5c3012c5d033fcbeb11ed3945c75dabdc57955",
-   "date": "2026-10-31 16:48",
-   "notes": "MoveEye Sim 3.2.0: Statisten im Hintergrund (Ziele, Tätigkeiten, Gruppen, grüssen, weichen aus, abends heim; Menge wenig / normal / belebt).",
-   "size": 7711209,
-   "sig": "a05bc44a78d6734ec551d28202bd4679eb818446d008e8894622308dc7c0a586391f1ec401d5e33de460db3de7989c9888a18713a19e9854eba4511fccfcd505"
   },
   {
    "version": "3.0.2",

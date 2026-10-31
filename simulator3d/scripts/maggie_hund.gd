@@ -78,6 +78,7 @@ var _gesagt := {}                    # station id -> true (Hinweis schon gesagt)
 
 
 var main                             # gesetzt von maggie_story.gd (S1) vor dem Anlegen
+var zwei = null                      # maggie_zwei.gd (zwei Spieler): führt Maggie selbst, ersetzt eine Station durch ein Teamrätsel
 var _bt_alt = null
 
 
@@ -574,7 +575,14 @@ func aktuell() -> Dictionary:
 
 
 func _nah(st_: Dictionary, r := NAH_R) -> bool:
+	if not st_.is_empty() and zwei != null and is_instance_valid(zwei) and zwei.nah_bei(st_["p"], r):
+		return true                                   # zwei Spieler: Spieler 2 oder Maggie (selbst gesteuert) ist dort
 	return not st_.is_empty() and _spieler().distance_to(st_["p"]) < r
+
+
+func _zwei_ersetzt(st_: Dictionary) -> bool:
+	"""zwei Spieler: diese Station ist ein Teamrätsel (maggie_zwei.gd löst sie)"""
+	return zwei != null and is_instance_valid(zwei) and zwei.ersetzt(str(st_.get("id", "")))
 
 
 func befehl(f: String) -> Dictionary:
@@ -952,7 +960,7 @@ func _warnen() -> void:
 				{"t": "bark", "n": 3}, {"t": "wait", "s": 0.8}])
 			_zeige(T.t("Maggie knurrt! Da vorne ist etwas. Sei vorsichtig."))
 	var st_ := aktuell()                              # die Weggabelung
-	if st_.is_empty() or str(st_["ding"]) != "gabel":
+	if st_.is_empty() or str(st_["ding"]) != "gabel" or _zwei_ersetzt(st_):
 		return
 	if sp.distance_to(st_["gut_p"]) < 4.0:
 		_fertig(st_)
@@ -992,7 +1000,7 @@ func _process(dt: float) -> void:
 	if zustand_hund == "aktion":
 		if _q_tick(_q, dt):
 			zustand_hund = "folgen"
-	else:
+	elif zwei == null or not is_instance_valid(zwei) or not zwei.fuehrt_hund():
 		_folgen(dt)
 	if _graben_frei and randf() < dt * 6.0:
 		_kruemel_werfen(ppos(hund) - _richtung(hund) * 0.3, _boden_farbe(), 2)
@@ -1007,7 +1015,7 @@ func _process(dt: float) -> void:
 
 func _station_hinweis(dt: float) -> void:
 	var st_ := aktuell()
-	if st_.is_empty() or not _nah(st_):
+	if st_.is_empty() or not _nah(st_) or _zwei_ersetzt(st_):
 		_nah_t = 0.0
 		return
 	_nah_t += dt

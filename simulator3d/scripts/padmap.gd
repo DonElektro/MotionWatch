@@ -289,6 +289,9 @@ func _process(dt: float) -> void:
 	var own: Array = main.localplay.pad_devs() if main.localplay != null and main.localplay.active else []
 	if main.abenteuer != null and main.abenteuer.zweit != null:
 		own.append_array(main.abenteuer.zweit.pad_devs())   # A5: the walkers of the Bergtal adventure (zu zweit)
+	var mz = main.maggie.get_node_or_null("maggie_zwei") if main.get("maggie") != null else null
+	if mz != null:
+		own.append_array(mz.pad_devs())                     # «Maggie» für zwei Spieler (maggie_zwei.gd)
 	var free := []
 	for d in devices():
 		if not d in own:
