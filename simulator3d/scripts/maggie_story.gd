@@ -77,7 +77,7 @@ const REGIONEN := ["herbst", "winter", "fruehling", "sommer"]
 # the middle of every region (valley coordinates x, z of bergtal.gd)
 const MITTE := {"herbst": Vector2(-640, -200), "winter": Vector2(590, 360), "fruehling": Vector2(-120, -250), "sommer": Vector2(-530, 480)}
 const SAVE_FILE := "user://maggie/spielstand.json"
-const MODULES := ["res://scripts/maggie_hund.gd", "res://scripts/maggie_gefahr.gd", "res://scripts/geschichten_faden.gd"]   # (maggie_helfer.gd baut maggie_hund.gd selbst)
+const MODULES := ["res://scripts/maggie_hund.gd", "res://scripts/maggie_gefahr.gd", "res://scripts/geschichten_faden.gd", "res://scripts/maggie_zwei.gd"]   # (maggie_helfer.gd baut maggie_hund.gd selbst)
 const COLS := ["red", "orange", "navy", "olive", "brown", "grey", "white", "black"]
 const COL_NAMES := {"red": "Rot", "orange": "Orange", "navy": "Dunkelblau", "olive": "Olivgrün", "brown": "Braun", "grey": "Grau",
 		"white": "Weiss", "black": "Schwarz"}
@@ -286,6 +286,9 @@ func aufgabe_erledigt(id: String) -> void:
 
 
 func erwischt(von: String) -> void:
+	var z = get_node_or_null("maggie_zwei")             # zwei Spieler: der andere kann retten (maggie_zwei.gd)
+	if z != null and z.faengt(von):
+		return
 	_schreck(von)                                  # (no await here: S3 calls this through callv)
 
 
@@ -935,7 +938,8 @@ func _start_region(id: String, rest_i: int) -> void:
 	var sq := _seq
 	region = id
 	_region_t0 = main.now()
-	Spieltest.ereignis("maggie", "start", {"einheit": str(r["name"]), "id": id})     # Spieltest: Region gestartet
+	var zw = get_node_or_null("maggie_zwei")
+	Spieltest.ereignis("maggie", "start", {"einheit": str(r["name"]), "id": id, "spieler": zw.spieler_zahl() if zw != null else 1})     # Spieltest: Region gestartet
 	Spieltest.ereignis("maggie", "ort", {"name": str(r["name"])})
 	var col: Color = r["col"]
 	for i in range(rs.size()):
@@ -1475,6 +1479,8 @@ func _steer(dt: float) -> void:
 			k.y -= 1.0
 	var run := Input.is_key_pressed(KEY_SHIFT)
 	for j in Input.get_connected_joypads():
+		if _zwei_eigen(j):
+			continue                                      # der Controller von Spieler 2 (maggie_zwei.gd)
 		var lx := Input.get_joy_axis(j, JOY_AXIS_LEFT_X)
 		var ly := Input.get_joy_axis(j, JOY_AXIS_LEFT_Y)
 		if Vector2(lx, ly).length() > 0.2:
@@ -1497,6 +1503,11 @@ func _steer(dt: float) -> void:
 	a.ctl_run = run
 	if mv.length() > 0.1 and main.now() - _drag_t > 1.5:      # walking: the view swings slowly behind the figure
 		cam_yaw = lerp_angle(cam_yaw, a.heading, clampf(dt * 0.9, 0.0, 1.0))
+
+
+func _zwei_eigen(j: int) -> bool:
+	var z = get_node_or_null("maggie_zwei")
+	return z != null and z.eigen(j)
 
 
 func _follow_xform() -> Transform3D:
@@ -1932,6 +1943,8 @@ func control(d: Dictionary) -> Dictionary:
 			has_crystal = true
 			S["intro"] = true
 			_start_region(id, int(d.get("rest", 0)))
+		"zwei":                                        # zwei Spieler (maggie_zwei.gd): {k: wahl | info | join | pad | p1 | hin | fest …}
+			return preload("res://scripts/maggie_zwei.gd").steuer(self, d)
 		"los":                                         # tests: press the primary button of the card
 			_press_primary()
 		"aufgabe":

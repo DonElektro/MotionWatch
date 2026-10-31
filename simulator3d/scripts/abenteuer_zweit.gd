@@ -19,6 +19,7 @@ extends Node
 ## Leistung: zwei Ansichten = die Welt zweimal zeichnen. Normal: volle Auflösung, Sichtweite 1500 m. Lite: halbe Auflösung
 ## (stretch_shrink 2), Sichtweite 280 m, keine Schatten der Figuren, MSAA aus und im geteilten Bild abwechselnd je eine
 ## Ansicht pro Bild (jede mit halber Bildrate). Gemessen wird relativ: {"action": "abenteuer", "do": "zweit", "k": "fps"}.
+## Der Teil «Bildschirm wechselnd» (Ansichten bauen, teilen, Lite-Zeichnen, Schwellen) steht in zweit_bild.gd (auch für maggie_zwei.gd).
 ##
 ## Handy als Begleiter: öffnet die bestehende Handy-Spielseite (game.gd, gleiche Adresse und QR-Code wie das Spiel; auf der
 ## MoveEye-Seite «Simulator» erscheint der QR-Code von selbst). Wer beitritt, schaut zu (Rolle «watch»: das Bild der
@@ -36,12 +37,13 @@ const Board = preload("res://scripts/abenteuer_bestenliste.gd")
 const Karte = preload("res://scripts/bergtal_abenteuer_karte.gd")
 const Quality = preload("res://scripts/quality.gd")
 const Qr = preload("res://scripts/qr.gd")
+const ZB = preload("res://scripts/zweit_bild.gd")      # der gemeinsame Teil «Bildschirm wechselnd» (auch maggie_zwei.gd)
 
 const MODES := ["allein", "gemeinsam", "rollen", "wettrennen"]
 const STEPS := ["Kapitel", "Stimmung", "Schwierigkeit & Ziel", "Rucksack", "Unterwegs", "Nachtlager", "Nacht", "Morgen"]   # = bergtal_abenteuer.STEPS
 const LEASH := 110.0                 # m: so weit darf man sich von der Gruppe entfernen
-const NEAR_IN := 18.0                # m: näher = gemeinsame Ansicht
-const NEAR_OUT := 26.0               # m: weiter = wieder geteilt
+const NEAR_IN := ZB.NEAR_IN          # m: näher = gemeinsame Ansicht (zweit_bild.gd)
+const NEAR_OUT := ZB.NEAR_OUT        # m: weiter = wieder geteilt
 const RACE_M := 300.0                # m: längstens so weit den Weg entlang geht ein Rennen
 const COLS := [Color(0.23, 0.55, 1.0), Color(1.0, 0.62, 0.26)]
 const HELPER_LAYER := 128            # main.HELPER_LAYER: die Kameras von MoveEye sehen die Figuren nicht
@@ -293,13 +295,7 @@ func _process(dt: float) -> void:
 	if not race.is_empty():
 		_race_tick()
 	var d: float = (pl[0]["pos"] as Vector2).distance_to(pl[1]["pos"]) if n == 2 else 999.0
-	var m := merged
-	if mode == "rollen":
-		m = false
-	elif merged and d > NEAR_OUT:
-		m = false
-	elif not merged and d < NEAR_IN:
-		m = true
+	var m := false if mode == "rollen" else ZB.zusammen(merged, d)
 	if m != merged:
 		merged = m
 		_say(T.t("Zusammen - eine Ansicht") if merged else T.t("Getrennt - geteilter Bildschirm"))
@@ -478,40 +474,9 @@ func _build() -> void:
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(bg)
 	for i in range(2):
-		var box := SubViewportContainer.new()
-		box.stretch = true
-		box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_root.add_child(box)
-		var vp := SubViewport.new()
-		vp.handle_input_locally = false
-		vp.gui_disable_input = true
-		vp.render_target_update_mode = SubViewport.UPDATE_DISABLED
-		vp.msaa_3d = Viewport.MSAA_DISABLED
-		vp.positional_shadow_atlas_size = 1024
-		box.add_child(vp)
-		var cam := Camera3D.new()
-		cam.fov = 70.0
-		cam.near = 0.1
-		cam.cull_mask = 1 | HELPER_LAYER
-		vp.add_child(cam)
-		var chip := Label.new()
-		chip.add_theme_font_size_override("font_size", 15)
-		chip.add_theme_color_override("font_color", Color.WHITE)
-		chip.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-		chip.add_theme_constant_override("outline_size", 6)
-		chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var sb := StyleBoxFlat.new()
-		sb.bg_color = Color(0.03, 0.05, 0.08, 0.72)
-		sb.border_color = COLS[i]
-		sb.border_width_left = 4
-		sb.set_corner_radius_all(8)
-		sb.set_content_margin_all(6)
-		chip.add_theme_stylebox_override("normal", sb)
-		_root.add_child(chip)
-		pl[i]["box"] = box
-		pl[i]["vp"] = vp
-		pl[i]["cam"] = cam
-		pl[i]["chip"] = chip
+		var v := ZB.ansicht(_root, COLS[i], 1 | HELPER_LAYER)
+		for k in ["box", "vp", "cam", "chip"]:
+			pl[i][k] = v[k]
 	# «Rollen»: player 2 has MoveEye and the map instead of a second 3D view
 	_role_box = PanelContainer.new()
 	var sb2 := StyleBoxFlat.new()
@@ -564,51 +529,22 @@ func _area() -> Rect2:
 func _layout() -> void:
 	var a := _area()
 	var lite := _lite()
-	var b0: SubViewportContainer = pl[0]["box"]
 	var b1: SubViewportContainer = pl[1]["box"]
-	var vp0: SubViewport = pl[0]["vp"]
-	var vp1: SubViewport = pl[1]["vp"]
-	for bx in [b0, b1]:
-		if bx.stretch_shrink != (2 if lite else 1):
-			bx.stretch_shrink = 2 if lite else 1
-	var side := a.size.x / a.size.y >= 1.25
-	var r0 := a
-	var r1 := Rect2()
-	if not merged:
-		if side:
-			r0 = Rect2(a.position, Vector2(a.size.x / 2.0 - 2.0, a.size.y))
-			r1 = Rect2(a.position + Vector2(a.size.x / 2.0 + 2.0, 0), Vector2(a.size.x / 2.0 - 2.0, a.size.y))
-		else:
-			r0 = Rect2(a.position, Vector2(a.size.x, a.size.y / 2.0 - 2.0))
-			r1 = Rect2(a.position + Vector2(0, a.size.y / 2.0 + 2.0), Vector2(a.size.x, a.size.y / 2.0 - 2.0))
-	b0.position = r0.position
-	b0.size = r0.size
+	var rr := ZB.teilen(a, merged)                           # (zweit_bild.gd: nebeneinander / übereinander / gemeinsam)
+	var r0: Rect2 = rr[0]
+	var r1: Rect2 = rr[1]
+	ZB.setzen(pl[0], r0)
 	var second_3d := not merged and mode != "rollen"
 	b1.visible = second_3d
 	if second_3d:
-		b1.position = r1.position
-		b1.size = r1.size
+		ZB.setzen(pl[1], r1)
 	_role_box.visible = mode == "rollen"
 	if mode == "rollen":
 		_role_box.position = r1.position
 		_role_box.size = r1.size
-	_line.visible = not merged
-	_line.position = (r0.position + Vector2(r0.size.x, 0)) if side else (r0.position + Vector2(0, r0.size.y))
-	_line.size = Vector2(4, a.size.y) if side else Vector2(a.size.x, 4)
+	ZB.trennlinie(_line, r0, a, bool(rr[2]), merged)
 	# what is drawn: Lite and split = every view every second frame
-	if second_3d and lite:
-		vp0.render_target_update_mode = SubViewport.UPDATE_ONCE if _frame % 2 == 0 else SubViewport.UPDATE_DISABLED
-		vp1.render_target_update_mode = SubViewport.UPDATE_ONCE if _frame % 2 == 1 else SubViewport.UPDATE_DISABLED
-	else:
-		vp0.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-		vp1.render_target_update_mode = SubViewport.UPDATE_ALWAYS if second_3d else SubViewport.UPDATE_DISABLED
-	for i in range(2):
-		var cam: Camera3D = pl[i]["cam"]
-		cam.far = 280.0 if lite else 1500.0
-		vp0.msaa_3d = Viewport.MSAA_DISABLED if lite else main.get_viewport().msaa_3d
-		vp1.msaa_3d = vp0.msaa_3d
-		vp0.positional_shadow_atlas_size = 0 if lite else 1024
-		vp1.positional_shadow_atlas_size = vp0.positional_shadow_atlas_size
+	ZB.zeichnen(pl[0], pl[1], second_3d, lite, _frame, main.get_viewport().msaa_3d)
 	var c0: Label = pl[0]["chip"]
 	var c1: Label = pl[1]["chip"]
 	c0.position = r0.position + Vector2(10, 10)
