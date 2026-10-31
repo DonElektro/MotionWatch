@@ -1,15 +1,15 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 4568 (Stellen: 6258)
-Übersetzt: en 4337, fr 4337, it 4337, rm 4337
+Texte gesamt: 4640 (Stellen: 6353)
+Übersetzt: en 4409, fr 4409, it 4409, rm 4409
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 356 Stellen
 Nicht mehr im Code (noch in texte.json): 42
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 47 Stellen in wizpics.gd 21, wordmark.gd 10, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 15464, schlüssel 10455, keine Wörter 7248, index 5313, technisch 1799, doc 1125, einheit 175, englisch 77, log 65, pfad 61, html 47, klasse 22
+Übersprungen (Grund: Anzahl): kennung 15899, schlüssel 10746, keine Wörter 7326, index 5381, technisch 1838, doc 1152, einheit 175, englisch 83, log 67, pfad 61, html 47, klasse 22
 
 Pro Datei (Texte / davon dynamische Stellen):
-  main.gd                  656    29
+  main.gd                  658    29
   gamewiz.gd               252    15
   bergtal_abenteuer.gd     240     5
   game.gd                  211    32
@@ -19,8 +19,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   bib_objekte.gd           108     0
   bergtal_orte.gd          108     0
   bergtal_aussicht.gd       94     4
+  templates.gd              93     6
   ferienpark.gd             89     0
-  templates.gd              89     6
   toolbar.gd                87     3
   gameplus.gd               83     5
   testrun.gd                81     3
@@ -38,11 +38,11 @@ Pro Datei (Texte / davon dynamische Stellen):
   quick.gd                  57     2
   bergtal_erleben_b.gd      55     0
   entdecken.gd              55     0
+  scenes.gd                 47     0
   mwpc.gd                   46    12
   karte.gd                  46     8
   gamerules.gd              45     4
   symbole.gd                44     1
-  scenes.gd                 43     0
   protokoll.gd              42    16
   localplay.gd              41    13
   inventar.gd               41     4
@@ -64,18 +64,22 @@ Pro Datei (Texte / davon dynamische Stellen):
   padmap.gd                 27    19
   umgebung.gd               25     0
   gameshutter.gd            25     5
+  worlds.gd                 23     0
+  kompakt_festival.gd       23     0
   dataset.gd                22     3
   fenster.gd                22     0
   explore.gd                22     2
   mini.gd                   21     1
   patrol.gd                 20     0
-  worlds.gd                 20     0
   phone.gd                  20     4
   tv.gd                     19     8
   statusled.gd              19     0
   surprise.gd               19     1
+  kompakt_dorf.gd           18     0
+  kompakt_pfadi.gd          18     0
   planner.gd                18     0
   gamelearn.gd              18     0
+  kompakt_hof.gd            17     0
   szenenplus.gd             17     1
   gameturnier.gd            17     0
   weitwinkel.gd             16     0
@@ -153,11 +157,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   b3d.gd:86  'Kachel leer: '
   b3d.gd:186  'glTF nicht lesbar: '
   b3d.gd:208  'Kachel ohne Dreiecke: '
-  bergtal.gd:234  'Aussicht: '
-  bergtal.gd:243  'Schlafplatz: '
-  bergtal.gd:245  'Aussicht: '
-  bergtal.gd:2175  'Schlafplatz: '
-  bergtal.gd:2177  'Aussicht: '
+  bergtal.gd:235  'Aussicht: '
+  bergtal.gd:244  'Schlafplatz: '
+  bergtal.gd:246  'Aussicht: '
+  bergtal.gd:2180  'Schlafplatz: '
+  bergtal.gd:2182  'Aussicht: '
   bergtal_abenteuer.gd:321  'Start: '
   bergtal_abenteuer.gd:776  ' auf der Bank mit Aussicht'
   bergtal_abenteuer.gd:1834  'Wird frei: '
@@ -219,35 +223,35 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   karte.gd:503  'Dazu kommen: '
   karte.gd:511  'ja'
   karte.gd:511  'keine'
-  main.gd:1380  '  %.0f Mbit/s'
-  main.gd:2059  ' (von MoveEye)'
-  main.gd:2092  'Der Simulator ist belegt: '
-  main.gd:2898  'aus'
-  main.gd:2898  'ein'
-  main.gd:2975  'Sabotage-Test: '
-  main.gd:2975  'aus'
-  main.gd:3029  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3032  '\n🚨 Bewacht und weg: '
-  main.gd:3797  'keine'
-  main.gd:3823  'Wächter an MoveEye: '
-  main.gd:4550  'Dein Platz: '
-  main.gd:4775  ' · schaut nur zu: '
-  main.gd:4778  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:4779  ' · Update: '
-  main.gd:5113  'Blinde Flecken: '
-  main.gd:5769  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6075  'Autostart: '
-  main.gd:6086  'Autologon: '
-  main.gd:6247  'Karte öffnen: '
-  main.gd:6393  'Echt-Abgleich: '
-  main.gd:6400  'Trainingspaket: '
-  main.gd:6409  ' · %d offen · %.1f MB'
-  main.gd:6409  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6418  'Verbindung · '
-  main.gd:6418  'aus'
-  main.gd:6422  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6422  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6425  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:1430  '  %.0f Mbit/s'
+  main.gd:2109  ' (von MoveEye)'
+  main.gd:2142  'Der Simulator ist belegt: '
+  main.gd:2948  'aus'
+  main.gd:2948  'ein'
+  main.gd:3025  'Sabotage-Test: '
+  main.gd:3025  'aus'
+  main.gd:3079  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3082  '\n🚨 Bewacht und weg: '
+  main.gd:3850  'keine'
+  main.gd:3876  'Wächter an MoveEye: '
+  main.gd:4605  'Dein Platz: '
+  main.gd:4830  ' · schaut nur zu: '
+  main.gd:4833  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:4834  ' · Update: '
+  main.gd:5168  'Blinde Flecken: '
+  main.gd:5824  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6130  'Autostart: '
+  main.gd:6141  'Autologon: '
+  main.gd:6302  'Karte öffnen: '
+  main.gd:6448  'Echt-Abgleich: '
+  main.gd:6455  'Trainingspaket: '
+  main.gd:6464  ' · %d offen · %.1f MB'
+  main.gd:6464  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6473  'Verbindung · '
+  main.gd:6473  'aus'
+  main.gd:6477  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6477  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6480  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:446  ' (automatisch von oben)'
   explore.gd:446  ' · schnell'
   feedback.gd:266  ' · TESTMODUS: geht nur an '
@@ -489,13 +493,13 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   simint.gd:410  ' · ⚠ Unterspannung (Servos schwach)'
   simint.gd:417  '-Servo blockiert'
   surprise.gd:113  'Überraschung: '
-  szenenplus.gd:735  'Spiel zur Szene: '
-  templates.gd:219  'Lizenz: '
-  templates.gd:290  'Datei nicht lesbar: '
-  templates.gd:294  'Kann nicht speichern: '
-  templates.gd:302  'Datei nicht lesbar: '
-  templates.gd:311  'Umwandeln ging nicht: '
-  templates.gd:316  'Datei enthält kein 3D-Modell: '
+  szenenplus.gd:764  'Spiel zur Szene: '
+  templates.gd:225  'Lizenz: '
+  templates.gd:296  'Datei nicht lesbar: '
+  templates.gd:300  'Kann nicht speichern: '
+  templates.gd:308  'Datei nicht lesbar: '
+  templates.gd:317  'Umwandeln ging nicht: '
+  templates.gd:322  'Datei enthält kein 3D-Modell: '
   zwilling.gd:94  'Bild nicht lesbar: '
   zwilling.gd:104  'Kann nicht speichern: '
   zwilling.gd:168  'Foto fehlt: '
