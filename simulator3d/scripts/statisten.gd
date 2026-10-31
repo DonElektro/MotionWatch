@@ -214,7 +214,7 @@ func accept(kind: String) -> bool:
 func own_count() -> int:
 	var n := 0
 	for id in S:
-		if bool(S[id].get("own", false)) and int(S[id].get("group", 0)) <= 0 and is_instance_valid(S[id]["v"]):
+		if bool(S[id].get("auto", false)) and int(S[id].get("group", 0)) <= 0 and is_instance_valid(S[id]["v"]):
 			n += 1
 	return n
 
@@ -283,7 +283,7 @@ func _rebuild() -> void:
 				if Vector2(pp.x, pp.z).length() < gr + 30.0:
 					zones_static.append([pp, maxf(7.0, float(e.get("r", 6.0)) * 0.8)])
 				continue
-			if Vector2(pp.x, pp.z).length() > gr or not _walkable(pp):
+			if Vector2(pp.x, pp.z).length() > gr or Vector2(pp.x, pp.z).length() < 3.0 or not _walkable(pp):
 				continue
 			goals.append({"p": main.free_spot(pp, 0.5, true), "type": _goal_type(str(e["name"]), k), "name": str(e["name"])})
 	var d: Dictionary = main.scenes.data if main.scenes != null else {}
@@ -292,10 +292,16 @@ func _rebuild() -> void:
 			goals.append({"p": d[bk], "type": "bench", "name": "Bank", "exact": true})
 	if d.get("wc", null) is Vector3 and Vector2(d["wc"].x, d["wc"].z).length() < gr:
 		goals.append({"p": main.free_spot(d["wc"], 0.5, true), "type": "wc", "name": "WC"})
-	for az in [-25.0, 5.0, 30.0]:                               # a few spots in front of MoveEye (in its picture: a good test)
-		var p2: Vector3 = main.pos_of(az + randf_range(-8.0, 8.0), randf_range(8.0, 18.0))
+	var cam_f: Vector3 = -main.cams[0].global_transform.basis.z
+	var cam_az: float = rad_to_deg(atan2(cam_f.x, -cam_f.z))
+	var n_spot := 0
+	for i in range(12):                                         # a few spots in front of MoveEye (in its picture: a good test)
+		var p2: Vector3 = main.pos_of(cam_az + randf_range(-30.0, 30.0), randf_range(7.0, 20.0))
 		if _walkable(p2):
 			goals.append({"p": main.free_spot(p2, 0.5, true), "type": "spot", "name": ""})
+			n_spot += 1
+			if n_spot >= 3:
+				break
 
 
 func _zones_now() -> Array:
@@ -647,7 +653,7 @@ func _spawner(t: float) -> void:
 	if have > want:                                              # fewer wanted now: the last ones go home
 		for id in S:
 			var e: Dictionary = S[id]
-			if bool(e.get("own", false)) and int(e.get("group", 0)) <= 0 and not bool(e.get("home", false)):
+			if bool(e.get("auto", false)) and int(e.get("group", 0)) <= 0 and not bool(e.get("home", false)):
 				_go_home(e)
 				have -= 1
 				if have <= want:
@@ -655,7 +661,9 @@ func _spawner(t: float) -> void:
 		return
 	if have >= want or main.visitors.get_child_count() + 3 > int(main.max_visitors) + (4 if _mode != "frei" else 0):
 		return
-	spawn_one("")
+	var v = spawn_one("")
+	if v != null and S.has(v.get_instance_id()):
+		S[v.get_instance_id()]["auto"] = true                    # (only these go home when fewer are wanted - not the ones sent by hand)
 
 
 func _edge_point(c: Vector3, r: float, az_deg: float) -> Vector3:
