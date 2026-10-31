@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 04:19",
+ "generated": "2026-10-31 05:47",
  "versions": [
   {
-   "version": "2.98.58",
-   "file": "webcam_bewegung_2_98_58.py",
+   "version": "2.98.62",
+   "file": "webcam_bewegung_2_98_62.py",
    "url": "",
-   "sha256": "f0f00bb68bb67f827b7f60fe8aadb7e1996d6dfb416852d43553da46fd742b3f",
-   "date": "2026-10-31 04:19",
-   "notes": "Simulator-Zentrale: neue Kachel «📖 Entdeckungen» (Spielen) – Stand des Entdeckungsbuchs im Simulator, Liste, «📷 Foto für Entdeckungsbuch», «Im Simulator öffnen», «Blinki-Hinweis». Simulator 3D-4.27: Entdecken (Buch, Fund per Ansicht oder Foto der Kopfkamera, Tageszeit-/Wetter-Geheimnisse, Blinki-Hinweise, Demo im Camping-Platz).",
-   "sig": "5c60e58a98f01018640948b80c4f902b61d724bf808b927d2fecc59010dd570dd839a57fbe49d82367c3e80e0be7877488a296c0f9dfed1e8530a2f12428c503"
+   "sha256": "4081a35d27c87c7eba395ef93f92c6207e4fceeb59d02f817cfd83d743f41eea",
+   "date": "2026-10-31 05:47",
+   "notes": "Simulator 3D-4.31: Nacht-Testlauf – ganze Nacht im Simulator mit Wahrheit, Abgleich in MoveEye, Bericht /nacht (nur der Besitzer startet); Trainings-Nacht 🏋 und Nacht-Generalprobe 🎭 mit eigenen Symbolen.",
+   "sig": "c5118e089823331ee6ecfae8ad02163581377c5b69aea9e9439ef93092decb5768942dd0df046dbc477b8db472c70fb25f48459671708d189cb82c3dce8a6706"
   },
   {
    "version": "2.97.1",
