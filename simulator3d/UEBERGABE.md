@@ -1,8 +1,24 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.27** · passende MoveEye-Version (früher Motion Watch) **2.98.58**
+Stand: 31.10.2026 · Simulator-Version **3D-4.28** · passende MoveEye-Version (früher Motion Watch) **2.98.59**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.28 (MoveEye 2.98.59): Szenen-Bibliothek `bib_objekte.gd` + Szene «Ferienpark am See» (`ferienpark.gd`)
+
+- **Bibliothek** (~90 Dinge mit Parametern, echte Grösse, Hindernis, Wärme, Sichtweite): `var bib = Bib.new(main, scenes, knoten,
+  transform)`, `bib.add(art, pos, drehung, {…})`, `bib.many(art, liste)`, `bib.line(art, a, b, n)`, `bib.finish()`. Teile gleicher
+  Oberfläche pro 48-m-Zelle in einem Netz (+ Wärmebild-Zwilling), viele gleiche Dinge als MultiMesh (128-m-Gruppen).
+  **Lite:** `Bib.lite()` = `Quality.lite()` (zusätzlich Grafik «simple»): 6 statt 10 Ecken, kleine Teile weg, Sichtweiten
+  320/110/45 m, halber Wald, 4 Lampenlichter, 1 Rauchfahne.
+- **Ferienpark** (~500 × 500 m): See, Terrassen (`main.ground_fn` = Höhe in Weltkoordinaten), Wald, Dorf; Boden-Shader
+  `shaders/ferienpark_boden.gdshader`; Ortsschilder nur im Fenster (HELPER_LAYER), nicht im MoveEye-Bild.
+  5 MoveEye-Standorte (`ferienpark.gd SPOTS`, Einstellung `fp_spot`, gespeichert in KEEP): zelt, wohnmobil, bungalow, steg, rezeption.
+- **Neu: Regler nur in ihrer Szene.** `add_control(…)` danach `controls[-1]["only"] = func(): return scene == "…"`: der Regler
+  fehlt dann im Fenster (`_dev_hidden` / `_apply_simple`, nach `set_scene` → `_only_refresh`) und in `control_info()` – MoveEye
+  baut seine Simulator-Steuerung bei geänderter Liste von selbst neu (kein MoveEye-Code nötig). Erster Fall: «Standort im
+  Ferienpark am See».
+- MoveEye 551: Szenen-Name in allen Sprachen.
 
 ## NEU in 3D-4.27 (MoveEye 2.98.58): Entdecken (`entdecken.gd`, Erlebniswelt 20–23)
 
