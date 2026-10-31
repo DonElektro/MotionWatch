@@ -16561,6 +16561,12 @@
   "it": "Il cacciatore a MoveEye mira toccando l’immagine live",
   "rm": "Il chatschader tar MoveEye mira cun tutgar en il maletg live"
  },
+ "K · Kristall": {
+  "en": "K · crystal",
+  "fr": "K · cristal",
+  "it": "K · cristallo",
+  "rm": "K · cristal"
+ },
  "K%d Begegnung": {
   "en": "C%d encounter",
   "fr": "C%d rencontre",
@@ -18031,6 +18037,12 @@
   "fr": "s’approche en rampant, emporte la glacière accroupi",
   "it": "si avvicina strisciando, porta via la borsa frigo chinato",
   "rm": "sa rampa natiers, porta davent la chascha da fraid sbassà"
+ },
+ "Kristall %d s": {
+  "en": "Crystal %d s",
+  "fr": "Cristal %d s",
+  "it": "Cristallo %d s",
+  "rm": "Cristal %d s"
  },
  "Kristalle": {
   "en": "Crystals",

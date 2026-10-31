@@ -166,6 +166,20 @@ class Arrow:
 		draw_polyline(out + PackedVector2Array([out[0]]), Color(0, 0, 0, 0.7), 2.0)
 
 
+class Eye:
+	extends Control
+
+	func _draw() -> void:
+		var c := size / 2.0
+		var pts := PackedVector2Array()
+		for i in range(24):
+			var a := i * TAU / 24.0
+			pts.append(c + Vector2(cos(a) * 16.0, sin(a) * 9.0 * pow(absf(sin(a)), 0.4)))
+		draw_colored_polygon(pts, Color(0.9, 0.94, 1.0))
+		draw_circle(c, 6.0, Color(0.23, 0.55, 1.0))
+		draw_circle(c, 2.6, Color(0.02, 0.04, 0.08))
+
+
 func _ready() -> void:
 	process_priority = 50                 # after main: the camera of the window is ours while walking
 	_load()
@@ -317,7 +331,7 @@ func region_fertig(id: String) -> void:
 	region = ""
 	_clear_stage_things()
 	_hud.visible = false
-	var v := _new_card(str(r["sym"]) + "  " + T.t("Geschafft!"), r["col"])
+	var v := _new_card(T.t("Geschafft!"), r["col"])
 	_text(v, T.t(str(r["done"])), 17)
 	var left := 4 - done.size()
 	if left > 0:
@@ -380,11 +394,6 @@ func kachel(W: float) -> Control:
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", 10)
 	p.add_child(h)
-	var ic := Label.new()
-	ic.text = "💎"
-	ic.add_theme_font_size_override("font_size", 22)
-	ic.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	h.add_child(ic)
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 2)
 	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -448,7 +457,7 @@ func open() -> void:
 
 func _continue_card() -> void:
 	phase = "figur"
-	var v := _new_card("💎  " + T.t("Maggie und der Bergkristall"), Color(0.62, 0.85, 1.0))
+	var v := _new_card(T.t("Maggie und der Bergkristall"), Color(0.62, 0.85, 1.0))
 	if bool(S.get("finale", false)):
 		_text(v, T.t("Du hast die Geschichte schon geschafft – der Kristall ruht in der Bergkapelle. Willst du nochmals von vorne beginnen?"))
 	else:
@@ -472,7 +481,7 @@ func _figure_card() -> void:
 	_look = (S.get("look", {}) as Dictionary).duplicate() if S.get("look", {}) is Dictionary else {}
 	if _look.is_empty():
 		_look = {"col": "red", "size": "", "build": "", "hat": "", "pack": true}
-	var v := _new_card("💎  " + T.t("Maggie und der Bergkristall"), Color(0.62, 0.85, 1.0), 640)
+	var v := _new_card(T.t("Maggie und der Bergkristall"), Color(0.62, 0.85, 1.0), 640)
 	_text(v, T.t("Wer bist du? Gib deiner Figur einen Namen und such dir aus, wie sie aussieht."), 15)
 	var r0 := _row(v)
 	var nl := Label.new()
@@ -667,7 +676,7 @@ func _build_stage(season: String, spot: Vector2, hour: float, weather: String, a
 	var sq := _seq
 	phase = "reise"
 	_hud.visible = false
-	var v := _new_card("💎  " + T.t("Unterwegs …"), Color(0.62, 0.85, 1.0), 460)
+	var v := _new_card(T.t("Unterwegs …"), Color(0.62, 0.85, 1.0), 460)
 	_text(v, T.t("Einen Moment – das Tal wird vorbereitet."), 15, UI.MUT)
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -766,7 +775,7 @@ func _start_intro() -> void:
 	_beam.position = _dig_p + Vector3(0, 35, 0)
 	phase = "intro"
 	_freeze(true)
-	var v := _new_card("💎  " + T.t("Ein Abendspaziergang"), Color(0.62, 0.85, 1.0))
+	var v := _new_card(T.t("Ein Abendspaziergang"), Color(0.62, 0.85, 1.0))
 	_text(v, T.t("Ein ruhiger Herbstabend auf der Alp. Du gehst mit Maggie spazieren, eurem kleinen Hund. MoveEye ist auch dabei und passt beim Zelt auf."), 16)
 	_text(v, T.t("Plötzlich bleibt Maggie stehen. Sie schnuppert … und rennt los!"), 16)
 	_text(v, T.t("Gehen: W A S D oder Pfeiltasten · Shift = rennen · Maus ziehen = umschauen · Esc = Pause"), 13, UI.MUT)
@@ -776,7 +785,7 @@ func _start_intro() -> void:
 		phase = "intro_walk"
 		_freeze(false)
 		_hud.visible = true
-		_hud_title.text = "💎  " + T.t("Ein Abendspaziergang")
+		_hud_title.text = T.t("Ein Abendspaziergang")
 		_hud_tasks.text = ""
 		einstieg_graben.emit(_dig_p)
 		tipp(T.t("Folge Maggie! Sie hat etwas gerochen – dort, wo das Licht leuchtet."))
@@ -820,10 +829,10 @@ func _dig() -> void:
 	for id in Welt.ORDER:
 		var c := region_mitte(id)
 		shots.append({"look": c, "at": c + Vector3(80, 60, 80), "fly": 1.8, "hold": 2.8,
-				"text": str(Welt.REG[id]["sym"]) + "  " + T.t(str(Welt.REG[id]["short"]))})
+				"text": T.t(str(Welt.REG[id]["short"]))})
 	var g := tal_punkt(Welt.CHAPEL.x, Welt.CHAPEL.y)
 	shots.append({"look": g, "at": g + Vector3(40, 30, -30), "fly": 1.8, "hold": 3.2,
-			"text": "⛰  " + T.t("Ganz oben am Gipfel steht eine kleine Bergkapelle. Dort ist der Kristall sicher.")})
+			"text": T.t("Ganz oben am Gipfel steht eine kleine Bergkapelle. Dort ist der Kristall sicher.")})
 	_film(shots, T.t("Im Licht des Kristalls siehst du Bilder der Zukunft …"), _story_card)
 
 
@@ -832,7 +841,7 @@ func _story_card() -> void:
 	_freeze(true)
 	S["intro"] = true
 	_save()
-	var v := _new_card("💎  " + T.t("Der Bergkristall"), Color(0.62, 0.85, 1.0))
+	var v := _new_card(T.t("Der Bergkristall"), Color(0.62, 0.85, 1.0))
 	_text(v, T.t("In seinem Licht sieht man kurze Bilder der Zukunft. Darum darf der Kristall nicht in falsche Hände geraten."), 16)
 	_text(v, T.t("Böse Tiere wollen ihn haben. Bring ihn mit Maggie durch alle vier Jahreszeiten hinauf zur Bergkapelle am Gipfel. Dort ruht er sicher."), 16)
 	_text(v, T.t("Die Reihenfolge darfst du selbst wählen. Wenn dich ein Tier erwischt, ist das nicht schlimm: Du kommst zurück zum letzten Rastplatz, und der Kristall bleibt bei dir."), 14, UI.MUT)
@@ -849,7 +858,7 @@ func _choose_card() -> void:
 	_freeze(true)
 	_hud.visible = false
 	var done: Array = S.get("done", [])
-	var v := _new_card("💎  " + T.t("Wohin gehst du?"), Color(0.62, 0.85, 1.0), 660)
+	var v := _new_card(T.t("Wohin gehst du?"), Color(0.62, 0.85, 1.0), 660)
 	_text(v, T.t("Jede Jahreszeit ist ein eigenes Tal mit eigenen Gefahren. Wähle eins aus."), 15)
 	var g := GridContainer.new()
 	g.columns = 2
@@ -860,7 +869,7 @@ func _choose_card() -> void:
 		var r: Dictionary = Welt.REG[id]
 		var b := Button.new()
 		var ok: bool = id in done
-		b.text = str(r["sym"]) + "  " + T.t(str(r["name"])) + ("   ✓" if ok else "") + "\n" + T.t(str(r["short"]))
+		b.text = T.t(str(r["name"])) + ("   ✓" if ok else "") + "\n" + T.t(str(r["short"]))
 		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		b.custom_minimum_size = Vector2(305, 74)
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -873,7 +882,7 @@ func _choose_card() -> void:
 		g.add_child(b)
 	_text(v, T.t("%d von 4 geschafft", [done.size()]), 13, UI.MUT)
 	var row := _row(v)
-	var fb := _button(row, "⛰  " + T.t("Zum Gipfel"), _start_finale, done.size() >= 4)
+	var fb := _button(row, T.t("Zum Gipfel"), _start_finale, done.size() >= 4)
 	fb.disabled = done.size() < 4
 	fb.tooltip_text = T.t("Erst wenn alle vier Jahreszeiten geschafft sind.")
 	_button(row, T.t("Speichern und beenden"), stop)
@@ -924,7 +933,7 @@ func _start_region(id: String, rest_i: int) -> void:
 	_freeze(true)
 	phase = "region"
 	_safe_until = main.now() + 1e6                       # the card first
-	var v := _new_card(str(r["sym"]) + "  " + T.t(str(r["name"])), col)
+	var v := _new_card(T.t(str(r["name"])), col)
 	_text(v, T.t(str(r["intro"])), 16)
 	_text(v, T.t("Geh von Rastplatz zu Rastplatz bis zum Jahreszeiten-Tor. Das Tor leuchtet, wenn alle Aufgaben gelöst sind."), 14, UI.MUT)
 	var row := _row(v)
@@ -1028,7 +1037,7 @@ func _start_finale() -> void:
 	phase = "finale"
 	_freeze(true)
 	_safe_until = main.now() + 1e6
-	var v := _new_card("⛰  " + T.t("Hinauf zum Gipfel"), Color(1.0, 0.85, 0.5))
+	var v := _new_card(T.t("Hinauf zum Gipfel"), Color(1.0, 0.85, 0.5))
 	_text(v, T.t("Alle vier Jahreszeiten sind geschafft. Die Sonne geht langsam unter. Nur noch ein kurzes Stück – oben wartet die kleine Bergkapelle."), 16)
 	_text(v, T.t("Bring den Kristall hinein und leg ihn auf den Stein vor dem Altar."), 14, UI.MUT)
 	var row := _row(v)
@@ -1037,7 +1046,7 @@ func _start_finale() -> void:
 			return
 		_clear_card()
 		_hud.visible = true
-		_hud_title.text = "⛰  " + T.t("Zum Gipfel")
+		_hud_title.text = T.t("Zum Gipfel")
 		_hud_tasks.text = ""
 		_film([_shot_to(c + Vector3(0, 2, 0))], T.t("Der Kristall zeigt dir die Bergkapelle."), func():
 			_safe_until = main.now() + 2.0
@@ -1101,7 +1110,7 @@ func _finale_cut() -> void:
 func _final_card() -> void:
 	phase = "ende"
 	_play("fanfare")
-	var v := _new_card("💎  " + T.t("Geschafft!"), Color(1.0, 0.85, 0.5))
+	var v := _new_card(T.t("Geschafft!"), Color(1.0, 0.85, 0.5))
 	_text(v, T.t("Du hast den Bergkristall durch alle vier Jahreszeiten getragen, %s. Jetzt ruht er sicher in der Bergkapelle.", [str(S.get("name", ""))]), 17)
 	_text(v, T.t("Danke, Maggie – ohne deine Nase hätten wir das nie geschafft!"), 16)
 	var mins := 0
@@ -1128,7 +1137,7 @@ func _abspann() -> void:
 	box.add_theme_constant_override("separation", 14)
 	box.custom_minimum_size = Vector2(700, 0)
 	_credits.add_child(box)
-	var lines := [["💎", 40], [T.t("Maggie und der Bergkristall"), 30], ["", 20],
+	var lines := [[T.t("Maggie und der Bergkristall"), 30], ["", 20],
 			[T.t("Mit"), 15], [str(S.get("name", "")), 24], [T.t("Maggie, der kleine Terrier mit der guten Nase"), 18], ["", 10],
 			[T.t("Die Helfer"), 15], [T.t("die Eule, die im Dunkeln den Weg zeigt"), 17], [T.t("der Steinbock, der über steile Felsen trägt"), 17],
 			[T.t("das Murmeltier, das pfeift und Geheimgänge kennt"), 17], [T.t("der Fuchs, der die bösen Tiere ablenkt"), 17], ["", 10],
@@ -1169,7 +1178,7 @@ func _end_card() -> void:
 	if _credits != null:
 		_credits.queue_free()
 		_credits = null
-	var v := _new_card("💎  " + T.t("Ende"), Color(1.0, 0.85, 0.5), 520)
+	var v := _new_card(T.t("Ende"), Color(1.0, 0.85, 0.5), 520)
 	_text(v, T.t("Danke fürs Spielen!"), 17)
 	var row := _row(v)
 	_button(row, T.t("Zurück zu «Spielen»"), func():
@@ -1435,7 +1444,7 @@ func _hud_tick() -> void:
 			_beam.position = gp + Vector3(0, 35, 0)
 	var left := maxf(0.0, _zk_ready_at - t)
 	_kbtn.visible = has_crystal and phase in WALK
-	_kbtn.text = ("💎 K" if left <= 0.0 else "💎 %d s" % int(ceil(left)))
+	_kbtn.text = (T.t("K · Kristall") if left <= 0.0 else T.t("Kristall %d s", [int(ceil(left))]))
 	_kbtn.disabled = left > 0.0
 
 
@@ -1443,7 +1452,7 @@ func _paint_tasks() -> void:
 	if _hud_title == null or region == "":
 		return
 	var r: Dictionary = Welt.REG[region]
-	_hud_title.text = str(r["sym"]) + "  " + T.t(str(r["name"]))
+	_hud_title.text = T.t(str(r["name"]))
 	var lines := []
 	for id in _task_order:
 		lines.append(("✓ " if bool(_tasks[id]["done"]) else "○ ") + str(_tasks[id]["text"]))
@@ -1510,7 +1519,7 @@ func _pause() -> void:
 	_resume_phase = phase
 	phase = "pause"
 	_freeze(true)
-	var v := _new_card("⏸  " + T.t("Pause"), Color(0.62, 0.85, 1.0), 520)
+	var v := _new_card(T.t("Pause"), Color(0.62, 0.85, 1.0), 520)
 	_text(v, T.t("%d von 4 Jahreszeiten geschafft. Gespeichert wird an jedem Rastplatz.", [done_count()]), 15)
 	var row := _row(v)
 	_button(row, T.t("Weiter"), _unpause, true)
@@ -1635,7 +1644,7 @@ func _build_hud() -> void:
 	_hud_goal.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hud.add_child(_hud_goal)
 	_tipp = _out_label(19)
-	_anchor(_tipp, 0.5, 1.0, 0.5, 1.0, -380, -150, 380, -86)
+	_anchor(_tipp, 0.5, 1.0, 0.5, 1.0, -380, -200, 380, -110)
 	_tipp.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_tipp.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	_tipp.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1644,16 +1653,15 @@ func _build_hud() -> void:
 	# MoveEye's speech bubble (bottom left): an eye and a short sentence
 	_me_box = PanelContainer.new()
 	_me_box.add_theme_stylebox_override("panel", UI.box(Color(0.04, 0.07, 0.12, 0.85), UI.ACC, 14, 10, 1))
-	_anchor(_me_box, 0.0, 1.0, 0.0, 1.0, 16, -150, 420, -40)
+	_anchor(_me_box, 0.0, 1.0, 0.0, 1.0, 16, -230, 420, -120)
 	_me_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_me_box.visible = false
 	_ui.add_child(_me_box)
 	var mh := HBoxContainer.new()
 	mh.add_theme_constant_override("separation", 10)
 	_me_box.add_child(mh)
-	var eye := Label.new()
-	eye.text = "👁"
-	eye.add_theme_font_size_override("font_size", 26)
+	var eye := Eye.new()
+	eye.custom_minimum_size = Vector2(34, 24)
 	eye.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	mh.add_child(eye)
 	var mv := VBoxContainer.new()
@@ -1676,7 +1684,7 @@ func _build_hud() -> void:
 	_help.text = T.t("W A S D gehen · Shift rennen · Maus ziehen umschauen · K Kristall · Esc Pause")
 	_hud.add_child(_help)
 	_kbtn = Button.new()
-	_anchor(_kbtn, 1.0, 0.0, 1.0, 0.0, -130, 16, -16, 56)
+	_anchor(_kbtn, 1.0, 0.0, 1.0, 0.0, -170, 16, -70, 56)
 	_kbtn.tooltip_text = T.t("In den Kristall schauen: ein Bild der Zukunft (eine Gefahr oder ein Weg)")
 	_kbtn.pressed.connect(look_into_crystal)
 	_kbtn.focus_mode = Control.FOCUS_NONE

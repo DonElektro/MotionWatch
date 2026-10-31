@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 5858 (Stellen: 8011)
-Übersetzt: en 5858, fr 5858, it 5858, rm 5858
+Texte gesamt: 5860 (Stellen: 8013)
+Übersetzt: en 5860, fr 5860, it 5860, rm 5860
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 394 Stellen
 Nicht mehr im Code (noch in texte.json): 68
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 67 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 19862, schlüssel 14759, keine Wörter 9099, index 7361, technisch 2575, doc 1618, einheit 235, englisch 105, log 78, pfad 67, html 67, klasse 24, shader 4
+Übersprungen (Grund: Anzahl): kennung 19860, schlüssel 14755, keine Wörter 9073, index 7357, technisch 2575, doc 1618, einheit 234, englisch 105, log 78, pfad 67, html 67, klasse 24, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  671    29
@@ -18,7 +18,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_abenteuer_daten.gd   199     0
   bergtal_horror.gd        154     3
   abenteuer_raetsel.gd     145     2
-  maggie_story.gd          125     1
+  maggie_story.gd          127     1
   bergtal_orte.gd          108     0
   bib_objekte.gd           108     0
   bergtal_aussicht.gd       94     4
@@ -509,7 +509,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   tv.gd:305  ' · %d Punkte'
   tv.gd:305  ' · %d×'
   tv.gd:319  'Mehr über MoveEye:\nQR-Code scannen\n'
-  maggie_story.gd:1132  'Mit'
+  maggie_story.gd:1141  'Mit'
   mwpc.gd:22  'Aus'
   mwpc.gd:75  'MoveEye hat sich beendet. Protokoll: '
   mwpc.gd:107  ' · %d Bilder erkannt, %d ms'
