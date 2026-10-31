@@ -258,6 +258,7 @@ def weak_person_feed(ai, tracks, warm_boxes, person_boxes, present, frame, pw, p
     by a movement track or the thermal picture become «PERSON?» (person boxes = the normal person / alarm logic).
     Returns the «Person?» boxes 0..1 (a warm body under one never becomes an animal)."""
     wk = getattr(ai, "weak", None) or []
+    STATE["person_maybe"] = 0                                   # /api/state: how many «Person?» in this picture
     if not wk or t0 - float(getattr(ai, "weak_t", 0.0)) > WEAK_AGE_S:
         return []
     ThermalCam.main_aspect = H / float(W)
@@ -275,6 +276,7 @@ def weak_person_feed(ai, tracks, warm_boxes, person_boxes, present, frame, pw, p
         p1 = (int(bx * W), int(by * H)); p2 = (int((bx + bw) * W), int((by + bh) * H))
         cv2.rectangle(frame, p1, p2, (60, 0, 255), 3)
         cv2.putText(frame, f"PERSON? (AI {cf:.2f})", (p1[0], max(18, p1[1] - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (60, 0, 255), 2)
+    STATE["person_maybe"] = len(out)
     if out:
         present.add("person")
         if t0 - TPERS.get("weak_seen", 0.0) > 10.0:
