@@ -16,7 +16,8 @@ extends PanelContainer
 ## MoveEye-Versionen. Treffer-Karte (gesehen / verpasst) und ein Bericht pro Lauf (user://bergtal_abenteuer/berichte/).
 ## Steuerbefehl: {"action": "abenteuer", "do": state | open | close | pick (key, value) | next | back | choose (value) | go |
 ##                pause | refill | eat | camp_here | night | save (name) | situations | replay (name) | report | fast | reset |
-##                a3 (Paket A3: Rätsel, Tagebuch, Grossvaters Sachen, Wege, Abzeichen, Hilfe - abenteuer_raetsel.gd)}
+##                a3 (Paket A3: Rätsel, Tagebuch, Grossvaters Sachen, Wege, Abzeichen, Hilfe - abenteuer_raetsel.gd) |
+##                a2 (Figuren, Gespräche, Nebenaufgaben: abenteuer_figuren.gd)}
 
 const D = preload("res://scripts/bergtal_abenteuer_daten.gd")
 const T = preload("res://scripts/i18n.gd")
@@ -73,6 +74,7 @@ var karte                            # bergtal_abenteuer_karte.gd (kept between 
 var zweit                            # A5 abenteuer_zweit.gd: zu zweit, Handy-Begleiter, Familien-Bestenliste
 var raetsel                          # A3: abenteuer_raetsel.gd (Rätsel, Tagebuch, Grossvaters Sachen, Wege, Abzeichen, Hilfe-Stufen)
 var title_lab: Label
+var a2                               # A2: Figuren, Gespräche, Nebenaufgaben (abenteuer_figuren.gd)
 
 
 # =======================================================================================================================
@@ -299,6 +301,8 @@ func start_run(seed_v := 0) -> Dictionary:
 	choices = []
 	_snaps = []
 	_plan_events(ch)
+	if a2 != null:
+		a2.on_start()                                    # A2: memory of the figures, who you meet today
 	# the valley: season, orientation, the scene
 	main.bt_season = str(W["season"])
 	if main.BT_MONTH.has(str(W["season"])):
@@ -635,6 +639,8 @@ func _post_leg(i: int) -> void:
 		return
 	if Ruck.nach_abschnitt(self, i):                     # A4: Quelle am Weg, Ausrüstung gefunden
 		return
+	if a2 != null and a2.after_leg(i):
+		return                                           # A2: a talk or a side task here
 	R["stage"] = int(R["stage"]) + 1
 	_advance()
 
@@ -662,6 +668,10 @@ func choose(v: String) -> Dictionary:
 		return {"ok": false, "error": "options: " + str((pe["options"] as Array).map(func(o): return o[0]))}
 	R["pending"] = {}
 	choices.append([int(R["stage"]), str(pe["kind"]), v])
+	if str(pe["kind"]).begins_with("a2_") and a2 != null:
+		a2.choose(pe, v)                                 # A2: talk / side task
+		_changed()
+		return {"ok": true}
 	if raetsel != null and raetsel.choose(pe, v):
 		_changed()
 		return {"ok": true}
@@ -1526,6 +1536,9 @@ func _ready() -> void:
 	karte.custom_minimum_size = Vector2(320, 320)
 	raetsel = preload("res://scripts/abenteuer_raetsel.gd").new(self)
 	raetsel.attach_map(karte)
+	a2 = preload("res://scripts/abenteuer_figuren.gd").new()
+	a2.ab = self
+	add_child(a2)
 	visible = false
 	_layout()
 	zweit = load("res://scripts/abenteuer_zweit.gd").new()     # A5 (Einhänge-Punkt)
@@ -1895,6 +1908,8 @@ func _paint_chapter() -> void:
 				func(): op({"do": "pick", "key": "chapter", "value": nn}), not open, stars if open else T.t("noch nicht frei")))
 	if raetsel != null:
 		raetsel.paint_chapter(left)
+	if a2 != null:
+		a2.paint_overview(left)                          # A2: people in the valley, side tasks
 	if not situations().is_empty() or dev_open:
 		_dev_box(left)
 	if zweit != null:
@@ -2155,6 +2170,8 @@ func _paint_camp() -> void:
 		Ruck.hud_buttons(self, ka, true)
 	if raetsel != null:
 		raetsel.paint_camp(body)
+	if a2 != null:
+		a2.paint_camp(body)                              # A2: people at the camp, the talk
 
 
 func _paint_night() -> void:
@@ -2398,6 +2415,8 @@ func op(d: Dictionary) -> Dictionary:
 			out = {"ok": not (R.get("report", {}) as Dictionary).is_empty(), "report": R.get("report", {})}
 		"fast":
 			fast = bool(d.get("value", true))
+		"a2":
+			out = a2.op(d) if a2 != null else {"ok": false}
 		"dev":
 			dev_open = bool(d.get("value", not dev_open))
 			_changed()
