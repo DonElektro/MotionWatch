@@ -97,7 +97,8 @@ const Quality = preload("res://scripts/quality.gd")
 const Spieltest = preload("res://scripts/spieltest.gd")
 
 const KATS := ["funde", "tiere", "steinmaennchen", "spuren", "tagebuch", "fotos", "teamwork"]
-const KAT_ICON := {"funde": "💎", "tiere": "🐾", "steinmaennchen": "🗿", "spuren": "👣", "tagebuch": "📖", "fotos": "📸", "teamwork": "🤝"}
+const KAT_ICON := {"funde": "Fundstücke", "tiere": "Tiere", "steinmaennchen": "Steinmännchen", "spuren": "Spuren", "tagebuch": "Tagebuchseiten",
+		"fotos": "Tierfotos", "teamwork": "geholfen"}   # Text statt Emoji (die Schrift hat sie nicht), T.t() beim Anzeigen
 # kat -> [Titel (er), Titel (sie), wofür]
 const TITEL := {"spuren": ["Spurenleser", "Spurenleserin", "die meisten Spuren gelesen"],
 		"tiere": ["Adlerauge", "Adlerauge", "die meisten Tiere entdeckt"],
@@ -911,10 +912,9 @@ func _funde_tick() -> void:
 		for i in range(n_fig()):
 			if pos(i).distance_to(e["pos"]) <= NAH:
 				zaehle(i, str(e["kat"]))
-				var ic := str(KAT_ICON.get(str(e["kat"]), "💎"))
-				say(i, "%s %s" % [ic, T.t("Gefunden: %s") % str(e["text"])], 3.5, 2)
+				say(i, T.t("Gefunden: %s") % str(e["text"]), 3.5, 2)
 				if n_fig() == 2:
-					say(1 - i, "%s %s" % [ic, T.t("%s hat zuerst gefunden: %s") % [nm(i), str(e["text"])]], 3.0, 1)
+					say(1 - i, T.t("%s hat zuerst gefunden: %s") % [nm(i), str(e["text"])], 3.0, 1)
 				_ereignis("fund", {"wer": nm(i), "kat": str(e["kat"]), "text": str(e["text"])})
 				gefunden.emit(i, str(e["kat"]), str(id))
 				fund_weg(str(id))
@@ -1591,9 +1591,9 @@ func paint_zwischenstand(parent: Control) -> void:
 		var z: Dictionary = zaehler[i]
 		var tx := "%s   " % nm(i)
 		for kat in KATS:
-			tx += "%s %d  " % [KAT_ICON[kat], int(z.get(kat, 0))]
+			tx += "%s %d · " % [T.t(str(KAT_ICON[kat])), int(z.get(kat, 0))]
 		gg.add_child(_l(tx, 14, col(i), false))
-	gg.add_child(_l(T.t("💎 Fundstücke · 🐾 Tiere · 🗿 Steinmännchen · 👣 Spuren · 📖 Tagebuchseiten · 📸 Tierfotos · 🤝 geholfen · 🙌 %d High-Fives") % hf_n, 11, Color(0.55, 0.6, 0.68)))
+	gg.add_child(_l(T.t("High-Fives: %d") % hf_n, 11, Color(0.55, 0.6, 0.68)))
 
 
 func paint_auszeichnungen(parent: Control, e: Dictionary = {}) -> void:
@@ -1822,7 +1822,7 @@ func tagebuch_oeffnen() -> void:
 			var tx := "%s  " % str(nms[i] if i < nms.size() else "")
 			for kat in KATS:
 				if int(zz[i].get(kat, 0)) > 0:
-					tx += "%s %d  " % [KAT_ICON[kat], int(zz[i][kat])]
+					tx += "%s %d · " % [T.t(str(KAT_ICON[kat])), int(zz[i][kat])]
 			ev.add_child(_plain(tx, 13, Color(0.7, 0.75, 0.82)))
 		if int(e.get("high_fives", 0)) > 0:
 			ev.add_child(_plain(T.t("🙌 %d High-Fives") % int(e["high_fives"]), 13, Color(0.7, 0.75, 0.82)))

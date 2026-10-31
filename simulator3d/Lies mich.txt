@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.13.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.14.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -436,6 +436,14 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.14.0
+3.14.0: Karte des Grossvaters: Geheimnisse (5 versteckte Steinmännchen mit Geheimwort, doppelter Boden im Biwak, Licht auf der
+Nachtaufnahme), Nacht mit Geräuschen (Dachs, «Wer war es?») und je ein Action-Teil pro Kapitel (Kuhherde, Seilbahn über den
+Tüfelsschlund, Steg, der nicht trägt, Schleuse, Spiegel).
+So testest du: 1) Kapitel 1 auf «Leicht» starten, bei der Kuhherde «Schnell mitten durch» wählen. 2) Neben dem Weg das
+Steinmännchen anklicken. 3) In Kapitel 3 «Schnell hinüberrennen» wählen: das Brett bricht. 4) Am Morgen «Wer hat
+geraschelt?» beantworten.
 
 NEU IN 3.13.0
 3.13.0: Zu zweit: zehn Team-Bausteine in der Karte des Grossvaters und bei Maggie:
