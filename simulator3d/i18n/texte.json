@@ -9112,6 +9112,12 @@
   "it": "MoveEye ti ha riconosciuto nonostante %s %s!",
   "rm": "MoveEye ha identifitgà tai malgrà %s %s!"
  },
+ "MoveEye hat die Verbindung verloren – Nacht-Testlauf abgebrochen.": {
+  "en": "MoveEye lost the connection – night test run aborted.",
+  "fr": "MoveEye a perdu la connexion – test de nuit interrompu.",
+  "it": "MoveEye ha perso la connessione – test notturno interrotto.",
+  "rm": "MoveEye ha pers la colliaziun – test da notg interrut."
+ },
  "MoveEye hat die Verbindung verloren – Testlauf abgebrochen.": {
   "en": "MoveEye lost the connection – test run cancelled.",
   "fr": "MoveEye a perdu la connexion – test annulé.",
@@ -9617,6 +9623,30 @@
   "it": "Test notturno: confronto di notte …",
   "rm": "Test da notg: cumparegliaziun da notg …"
  },
+ "Nacht-Testlauf": {
+  "en": "Night test run",
+  "fr": "Test de nuit",
+  "it": "Test notturno",
+  "rm": "Test da notg"
+ },
+ "Nacht-Testlauf abgebrochen": {
+  "en": "Night test run aborted",
+  "fr": "Test de nuit interrompu",
+  "it": "Test notturno interrotto",
+  "rm": "Test da notg interrut"
+ },
+ "Nacht-Testlauf fertig": {
+  "en": "Night test run finished",
+  "fr": "Test de nuit terminé",
+  "it": "Test notturno finito",
+  "rm": "Test da notg terminà"
+ },
+ "Nacht-Testlauf läuft": {
+  "en": "Night test run is running",
+  "fr": "Test de nuit en cours",
+  "it": "Test notturno in corso",
+  "rm": "Test da notg en funcziun"
+ },
  "Nachts mit Stirnlampe oder Handylicht": {
   "en": "At night with head torch or phone light",
   "fr": "La nuit avec lampe frontale ou lumière du téléphone",
@@ -9719,6 +9749,12 @@
   "fr": "Tester une panne réseau",
   "it": "Testare un guasto di rete",
   "rm": "Testar ina panna da la rait"
+ },
+ "Neu heisst die Datei MoveEyeSim3D.exe (die alte MotionWatch3D.exe wird entfernt). Der Simulator beginnt mit frischen Einstellungen.": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Neu laden": {
   "en": "Reload",
@@ -15821,6 +15857,12 @@
   "it": "⏰ Ancora 20 secondi!",
   "rm": "⏰ Anc 20 secundas!"
  },
+ "⏹ Nacht-Testlauf abbrechen": {
+  "en": "⏹ Abort the night test run",
+  "fr": "⏹ Interrompre le test de nuit",
+  "it": "⏹ Interrompi il test notturno",
+  "rm": "⏹ Interrumper il test da notg"
+ },
  "⏹ Parcours abbrechen": {
   "en": "⏹ Cancel course",
   "fr": "⏹ Annuler le parcours",
@@ -16360,6 +16402,12 @@
   "fr": "🌙 Manche de nuit : le faisceau de lampe et les insectes à la lumière marchent le mieux dans le noir.",
   "it": "🌙 Turno notturno: il fascio di lampada e gli insetti alla luce funzionano meglio al buio.",
   "rm": "🌙 Runda da notg: radi da lampa ed insects a la glisch funcziunan il meglier en il stgir."
+ },
+ "🌙 Nacht-Testlauf (von MoveEye): %02d:%02d · Ereignis %d von %d · noch etwa %d Min.": {
+  "en": "🌙 Night test run (from MoveEye): %02d:%02d · event %d of %d · about %d min left",
+  "fr": "🌙 Test de nuit (de MoveEye) : %02d:%02d · événement %d sur %d · encore env. %d min",
+  "it": "🌙 Test notturno (da MoveEye): %02d:%02d · evento %d di %d · ancora circa %d min",
+  "rm": "🌙 Test da notg (da MoveEye): %02d:%02d · eveniment %d da %d · anc var %d min"
  },
  "🌡 Pi überhitzt (Test: Lüftung blockiert, +30 °C)": {
   "en": "🌡 Pi overheated (test: ventilation blocked, +30 °C)",
