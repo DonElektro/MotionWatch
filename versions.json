@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 13:26",
+ "generated": "2026-10-31 13:39",
  "versions": [
   {
-   "version": "2.98.105",
-   "file": "webcam_bewegung_2_98_105.py",
+   "version": "2.98.106",
+   "file": "webcam_bewegung_2_98_106.py",
    "url": "",
-   "sha256": "5b7f346cdda8f0d5b62bc1b2181e27ab5556c19ea2aa637c9120ae493244264e",
-   "date": "2026-10-31 13:26",
-   "notes": "Simulator 3D-4.74: Bergtal – Passstrasse sauber auf dem Gelände (runde Kehren), Bergdorf auf Strassenhöhe, ebene Parkplätze; Pfadilager ohne Tanne vor MoveEye beim Standort Zelte.",
-   "sig": "50b906b4df9257605a7978b6eb1637563fd9e2e5cda0403d59ee1c8573a7f683fd16ef402f7fad922ae033d10e87d38e049e43ae46e7a430f95465647879c800"
+   "sha256": "0e82c4b3271304ca928ab17c550b8ff97939f3f94e5ecf73e4881dd1a806e4bd",
+   "date": "2026-10-31 13:39",
+   "notes": "Simulator 3D-4.75: Bergtal-Abenteuer – Bestenliste mit den Tieren und Wildkamera-Fotos von MoveEye, Tauschen nach Wunschlisten, ein Feldstecher, je ein Fundort für Seil und Ersatzteil, Hilfe = Schwierigkeit.",
+   "sig": "474077f524efd76acd55fe6720d42552f3413574b7551d84a1e20827a4c230d1153d4efcbdceaf1d3f8303f5f11be2c3a724bc57b046476981e3acd7454a1108"
   },
   {
    "version": "2.97.1",

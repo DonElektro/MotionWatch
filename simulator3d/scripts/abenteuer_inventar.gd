@@ -27,7 +27,8 @@ const IDS := ["seil", "stirnlampe", "feldstecher", "kompass", "pickel", "hut", "
 		"brief", "ersatzteil", "tagebuchseite_1", "tagebuchseite_2", "tagebuchseite_3", "tagebuchseite_4", "tagebuchseite_5",
 		"tagebuchseite_6", "tagebuchseite_7", "tagebuchseite_8", "tagebuchseite_9", "tagebuchseite_10"]
 # neue ID -> ID in der bestehenden Packliste (D.ITEMS)
-const ALIAS := {"proviant": "essen", "feldstecher": "fernglas"}
+const ALIAS := {"proviant": "essen", "feldstecher": "fernglas"}   # «fernglas» = nur noch der Speicher-Schlüssel (alte Spielstände);
+                                                                  # das Fernglas der Packliste gibt es nicht mehr (Daniel 31.10.2026)
 # bleibt über alle Kapitel (Fundstücke / Belohnungen); Tagebuchseiten zusätzlich über das Präfix
 const BLEIBEND := ["seil", "kompass", "pickel", "hut", "taschenuhr"]
 # kg pro Stück für IDs, die nicht in D.ITEMS stehen (gerundete Katalogwerte):

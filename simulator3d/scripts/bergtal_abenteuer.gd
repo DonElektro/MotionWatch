@@ -90,6 +90,14 @@ func _load() -> void:
 			for k in d:
 				P[k] = d[k]
 	W["chapter"] = clampi(int(P["chapter"]), 1, 5)
+	# Schwierigkeit = Hilfe (Daniel 31.10.2026): eine alte eigene Hilfe-Stufe (A3) wird einmal zur gespeicherten Schwierigkeit
+	var a3s = P.get("a3_raetsel", {})
+	if a3s is Dictionary and (a3s as Dictionary).has("hilfe"):
+		if not P.has("schwierigkeit"):
+			P["schwierigkeit"] = preload("res://scripts/abenteuer_raetsel.gd").level_of(str(a3s["hilfe"]))
+		(a3s as Dictionary).erase("hilfe")
+	if D.LEVELS.has(str(P.get("schwierigkeit", ""))):
+		W["level"] = str(P["schwierigkeit"])
 
 
 func _save() -> void:
@@ -464,7 +472,7 @@ func _cost_f() -> float:
 func _pre_leg(i: int, pts: Array, flags: Array, nm: String) -> void:
 	"""before a leg: MoveEye warns (weather / animals one leg early), then the leg starts"""
 	var wx: String = str(R["weather"].get(str(i), ""))
-	if wx == "" and has("fernglas"):                    # with the binoculars: one leg earlier
+	if wx == "" and has("feldstecher"):                 # with grandfather's binoculars (A3): one leg earlier
 		wx = str(R["weather"].get(str(i + 1), ""))
 		if wx == "":
 			wx = str(R["weather"].get(str(i + 2), ""))
@@ -1326,7 +1334,8 @@ func replay(nm := "") -> Dictionary:
 			W[k] = s[k] if k != "chapter" and k != "tempo" else int(s[k])
 	W["items"] = {}
 	for k in s["items"]:
-		W["items"][k] = int(s["items"][k])
+		if D.ITEMS.has(k) or str(k) in Inv.IDS:          # (alte Läufe: das «fernglas» der Packliste gibt es nicht mehr)
+			W["items"][k] = int(s["items"][k])
 	replay_q = (s["choices"] as Array).duplicate(true)
 	Inv.replay_box = (s["a4_inventar"] as Dictionary).duplicate(true) if s.get("a4_inventar") is Dictionary else null   # A4
 	if a1 != null:
@@ -2022,7 +2031,7 @@ func _paint_level() -> void:
 	var ss := sunset_h()
 	gg.add_child(_lab(T.t("Sonnenuntergang heute im Bergtal: %s · Sonnenaufgang: %s") % [hm(ss), hm(sunrise_h())], 12, Color(0.6, 0.66, 0.74)))
 	if raetsel != null:
-		raetsel.paint_level(gg)                          # A3: Hilfe-Stufe
+		raetsel.paint_level(gg)                          # A3: was die Schwierigkeit für die Rätsel-Hilfe heisst
 	if zweit != null:
 		zweit.paint_choice(body)                       # A5: Mitspieler (Spielart, Namen, Handy)
 
@@ -2362,6 +2371,9 @@ func op(d: Dictionary) -> Dictionary:
 				W["tempo"] = int(v)
 			elif k in ["mood", "level", "goal", "season", "pack"]:
 				W[k] = str(v)
+				if k == "level" and D.LEVELS.has(str(v)):
+					P["schwierigkeit"] = str(v)             # bleibt gespeichert (steuert auch die Hilfe bei Rätseln, A3)
+					_save()
 			_changed()
 		"item":
 			var id := str(d.get("key", ""))
