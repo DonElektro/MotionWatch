@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.82** · passende MoveEye-Version (früher Motion Watch) **2.98.113**
+Stand: 31.10.2026 · Simulator-Version **3D-4.83** · passende MoveEye-Version (früher Motion Watch) **2.98.114**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.83 (MoveEye 2.98.114): Werkseinstellungen (`werk.gd`)
+
+- `werk.gd` (neu): Mehr → «⚠ Auf Werkseinstellungen zurücksetzen …» (nur Besitzer, Wort wie MoveEye FACTORY_WORDS), Kopie
+  nach `user://werk_kopie/`, Löschen beim nächsten Start in `main._ready` (apply_pending). `KEEP` behält u. a.
+  Horror-Passwort (nur Hash), `simulator_sprache.json` (wie MoveEye), heruntergeladene Inhalte, Entwickler-/Prüfdaten.
 
 ## NEU in 3D-4.82 (MoveEye 2.98.113): Abenteuer A6 (`spielstand.gd`, `abenteuer_stimme.gd`, `abenteuer_blinki.gd`)
 

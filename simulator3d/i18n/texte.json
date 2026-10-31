@@ -2917,6 +2917,12 @@
   "it": "Tutte le scene integrate. Clic = caricare la scena (i visitatori arrivano da soli). Verde = nuovo.",
   "rm": "Tut las scenas integradas. Clic = chargiar la scena (visitaders vegnan da sasez). Verd = nov."
  },
+ "alle Einstellungen und Regler, die Fensteranordnung, die Controller-Rollen, der Zuhause-Bausatz, der Echt-Abgleich, die Sprache (wieder wie MoveEye)": {
+  "en": "all settings and sliders, the window layout, the controller roles, the home kit, the real-world match, the language (again like MoveEye)",
+  "fr": "tous les réglages et curseurs, la disposition des fenêtres, les rôles des manettes, le kit maison, la comparaison réelle, la langue (de nouveau comme MoveEye)",
+  "it": "tutte le impostazioni e i cursori, la disposizione delle finestre, i ruoli dei controller, il kit casa, il confronto reale, la lingua (di nuovo come MoveEye)",
+  "rm": "tut ils parameters e regulaturs, la disposiziun da las fanestras, las rollas dals controllers, il kit da chasa, la cumparegliaziun reala, la lingua (puspè sco MoveEye)"
+ },
  "Alle entfernen": {
   "en": "Remove all",
   "fr": "Tout retirer",
@@ -3024,6 +3030,12 @@
   "fr": "Tous les joueurs dans l’image",
   "it": "Tutti i giocatori nell’immagine",
   "rm": "Tut ils giugaders en il maletg"
+ },
+ "alle Spielstände (Abenteuer 1–3, Maggie, Spielbereich, Level, Abzeichen, Entdeckungsbuch), die Ranglisten, Aufnahmen und Fotos und alles Weitere im Benutzerordner": {
+  "en": "all saved games (adventures 1–3, Maggie, play area, levels, badges, discovery book), the leaderboards, recordings and photos and everything else in the user folder",
+  "fr": "toutes les parties sauvegardées (aventures 1–3, Maggie, aire de jeu, niveaux, badges, carnet de découvertes), les classements, les enregistrements et photos et tout le reste du dossier utilisateur",
+  "it": "tutti i salvataggi (avventure 1–3, Maggie, area di gioco, livelli, distintivi, libro delle scoperte), le classifiche, le registrazioni e foto e tutto il resto nella cartella utente",
+  "rm": "tut ils stadis da gieu (aventuras 1–3, Maggie, zona da gieu, nivels, insignas, cudesch da scuvertas), las ranglistas, las registraziuns e fotos e tut il rest en l’ordinatur da l’utilisader"
  },
  "Alle starten bei der Basis und verstecken sich 30 s lang. Der Fänger sieht nur die Kamera, fährt den Rover und drückt «Gefunden!». Wer die Basis berührt, rettet alle. Danach steht MoveEye wieder am alten Ort.": {
   "en": "Everyone starts at the base and hides for 30 s. The seeker only sees the camera, drives the rover and presses «Found!». Whoever touches the base saves everyone. Afterwards MoveEye is back in its old place.",
@@ -4260,6 +4272,12 @@
   "fr": "Les serpents aiment les pierres chaudes et les hautes herbes.",
   "it": "I serpenti amano i sassi caldi e l'erba alta.",
   "rm": "Serps giaschan gugent sin crappels chauds ed en l'erva auta."
+ },
+ "Auf Werkseinstellungen zurücksetzen": {
+  "en": "Reset to factory settings",
+  "fr": "Rétablir les réglages d’usine",
+  "it": "Ripristinare le impostazioni di fabbrica",
+  "rm": "Restaurar ils parameters da fabrica"
  },
  "Auf Wiedersehen!": {
   "en": "Goodbye!",
@@ -5821,6 +5839,12 @@
   "it": "Fino a %d giocatori si avvicinano di soppiatto al traguardo con il telefonino (%s). «Start» apre il gioco – oppure aprire l’assistente.",
   "rm": "Fin a %d giugaders sa stulan cun il telefonin betg vis a la finala (%s). «Start» avra il gieu – u avrir l’assistent."
  },
+ "Bitte den Simulator neu starten – das Zurücksetzen geschieht beim nächsten Start.": {
+  "en": "Please restart the simulator – the reset happens at the next start.",
+  "fr": "Merci de redémarrer le simulateur – la réinitialisation a lieu au prochain démarrage.",
+  "it": "Riavvia il simulatore – il ripristino avviene al prossimo avvio.",
+  "rm": "Per plaschair reinviar il simulatur – la restauraziun succeda a la proxima partenza."
+ },
  "Bitte ein paar Worte schreiben.": {
   "en": "Please write a few words.",
   "fr": "Merci d’écrire quelques mots.",
@@ -6866,6 +6890,12 @@
   "it": "Manca la valle – la storia ha bisogno della scena Bergtal.",
   "rm": "La val manca – l’istorgia dovra la scena Bergtal."
  },
+ "Das bleibt:": {
+  "en": "These stay:",
+  "fr": "Ceci reste :",
+  "it": "Questo resta:",
+  "rm": "Quai resta:"
+ },
  "Das dritte Stück zeigt eine Sonne, die über zwei Zacken aufgeht, und einen Stein mit einem langen Schatten. Darunter steht: «Wo die Sonne am Morgen den Stein trifft.»": {
   "en": "The third piece shows a sun rising over two peaks, and a stone with a long shadow. Below it says: «Where the morning sun hits the stone.»",
   "fr": "Le troisième morceau montre un soleil qui se lève sur deux pointes, et une pierre avec une longue ombre. En dessous : «Là où le soleil du matin touche la pierre.»",
@@ -6943,6 +6973,18 @@
   "fr": "L’hermine dans le mur",
   "it": "L’ermellino nel muro",
   "rm": "L’ermellin en il mir"
+ },
+ "das Horror-Passwort, die Sprache, heruntergeladene Inhalte (Figuren, CC0-Fotos und Texturen, Karten, MoveEye auf diesem PC), eigene 3D-Modelle, Entwickler-Notizen, Kontaktbogen, Spieltest- und Prüfstand-Daten": {
+  "en": "the horror password, the language, downloaded content (figures, CC0 photos and textures, maps, MoveEye on this PC), own 3D models, developer notes, contact sheet, play test and test bench data",
+  "fr": "le mot de passe horreur, la langue, le contenu téléchargé (personnages, photos et textures CC0, cartes, MoveEye sur ce PC), les propres modèles 3D, les notes du développeur, la planche contact, les données de test de jeu et du banc d’essai",
+  "it": "la password horror, la lingua, i contenuti scaricati (figure, foto e texture CC0, mappe, MoveEye su questo PC), i propri modelli 3D, le note dello sviluppatore, il provino, i dati dei test di gioco e del banco di prova",
+  "rm": "il pled-clav horror, la lingua, il cuntegn telechargià (figuras, fotos e texturas CC0, chartas, MoveEye sin quest PC), agens models 3D, notizias dal sviluppader, il fegl da contact, las datas dal test da gieu e dal banc da prova"
+ },
+ "das Horror-Passwort, heruntergeladene Inhalte (Figuren, CC0-Fotos und Texturen, Karten, MoveEye auf diesem PC), eigene 3D-Modelle, Entwickler-Notizen, Kontaktbogen, Spieltest- und Prüfstand-Daten": {
+  "en": "the horror password, downloaded content (figures, CC0 photos and textures, maps, MoveEye on this PC), own 3D models, developer notes, contact sheet, play test and test bench data",
+  "fr": "le mot de passe horreur, le contenu téléchargé (personnages, photos et textures CC0, cartes, MoveEye sur ce PC), les propres modèles 3D, les notes du développeur, la planche contact, les données de test de jeu et du banc d’essai",
+  "it": "la password horror, i contenuti scaricati (figure, foto e texture CC0, mappe, MoveEye su questo PC), i propri modelli 3D, le note dello sviluppatore, il provino, i dati dei test di gioco e del banco di prova",
+  "rm": "il pled-clav horror, il cuntegn telechargià (figuras, fotos e texturas CC0, chartas, MoveEye sin quest PC), agens models 3D, notizias dal sviluppader, il fegl da contact, las datas dal test da gieu e dal banc da prova"
  },
  "Das Hospiz": {
   "en": "The Hospice",
@@ -7213,6 +7255,12 @@
   "fr": "Ouvrir la barrière du pâturage",
   "it": "Aprire il cancello del pascolo",
   "rm": "Avrir il portun da la pastgira"
+ },
+ "Das wird gelöscht:": {
+  "en": "These are deleted:",
+  "fr": "Ceci est effacé :",
+  "it": "Questo viene cancellato:",
+  "rm": "Quai vegn stizzà:"
  },
  "Das Wärmebild gross": {
   "en": "The thermal image large",
@@ -8144,6 +8192,12 @@
   "it": "Il simulatore è occupato al momento (%s).",
   "rm": "Il simulatur è gist occupà (%s)."
  },
+ "Der Simulator startet neu …": {
+  "en": "The simulator restarts …",
+  "fr": "Le simulateur redémarre …",
+  "it": "Il simulatore si riavvia …",
+  "rm": "Il simulatur reinvia …"
+ },
  "Der Sommerschlafsack war für den Winter zu dünn.": {
   "en": "The summer sleeping bag was too thin for winter.",
   "fr": "Le sac de couchage d'été était trop fin pour l'hiver.",
@@ -8677,6 +8731,12 @@
   "fr": "Les enfants jouent aussi à cache-cache avec MoveEye : Jeu → Découvrir → «Cache-cache avec MoveEye».",
   "it": "I bambini giocano a nascondino anche con MoveEye: Gioco → Scoprire → «Nascondino con MoveEye».",
   "rm": "Ils uffants giogan er cun MoveEye a zuppar: Gieu → Scuvrir → «Zuppar cun MoveEye»."
+ },
+ "Die Kopie konnte nicht ganz geschrieben werden (%d Dateien fehlen).": {
+  "en": "The copy could not be written completely (%d files missing).",
+  "fr": "La copie n’a pas pu être écrite entièrement (%d fichiers manquent).",
+  "it": "La copia non ha potuto essere scritta completamente (mancano %d file).",
+  "rm": "La copia n’ha betg pudì vegnir scritta cumplettamain (%d datotecas mancan)."
  },
  "Die Kreuze in den Steinen führen hinauf zu einem grossen Block. Darunter nachschauen.": {
   "en": "The crosses in the stones lead up to a big boulder. Look underneath.",
@@ -17647,6 +17707,12 @@
   "it": "Invia ora",
   "rm": "Trametter ussa"
  },
+ "Jetzt zurücksetzen": {
+  "en": "Reset now",
+  "fr": "Rétablir maintenant",
+  "it": "Ripristinare ora",
+  "rm": "Restaurar ussa"
+ },
  "Jogger": {
   "en": "Jogger",
   "fr": "Joggeur",
@@ -19237,6 +19303,18 @@
   "fr": "Caméra de tête : pose %s · gain %.1f× · lumière %s",
   "it": "Telecamera della testa: esposizione %s · guadagno %.1f× · luce %s",
   "rm": "Camera dal chau: exposiziun %s · amplificaziun %.1f× · glisch %s"
+ },
+ "Kopie der alten Einstellungen:": {
+  "en": "Copy of the old settings:",
+  "fr": "Copie des anciens réglages :",
+  "it": "Copia delle vecchie impostazioni:",
+  "rm": "Copia dals vegls parameters:"
+ },
+ "Kopien der alten Einstellungen": {
+  "en": "Copies of the old settings",
+  "fr": "Copies des anciens réglages",
+  "it": "Copie delle vecchie impostazioni",
+  "rm": "Copias dals vegls parameters"
  },
  "Kopieren": {
   "en": "Copy",
@@ -24245,6 +24323,12 @@
   "fr": "Un seul. Où peut bien être l'autre ?",
   "it": "Solo uno. Dove sarà l'altro?",
   "rm": "Mo in. Nua è bain l'auter?"
+ },
+ "Nur für den Besitzer – nicht im Kinder-Modus.": {
+  "en": "Only for the owner – not in the children’s mode.",
+  "fr": "Seulement pour le propriétaire – pas en mode enfants.",
+  "it": "Solo per il proprietario – non in modalità bambini.",
+  "rm": "Mo per il possessur – betg en il modus d’uffants."
  },
  "Nur Gruppen": {
   "en": "Groups only",
@@ -31970,6 +32054,12 @@
   "it": "Vorder Tschuggen",
   "rm": "Vorder Tschuggen"
  },
+ "vorher eine Kopie der alten Einstellungen – nur für den Besitzer": {
+  "en": "first a copy of the old settings – only for the owner",
+  "fr": "d’abord une copie des anciens réglages – seulement pour le propriétaire",
+  "it": "prima una copia delle vecchie impostazioni – solo per il proprietario",
+  "rm": "avant ina copia dals vegls parameters – mo per il possessur"
+ },
  "Vorlage für den Besuch (stellt «Von selbst» passend ein)": {
   "en": "Template for the visitors (sets «By themselves» to match)",
   "fr": "Modèle pour les visites (règle «Spontanément» en conséquence)",
@@ -32990,6 +33080,12 @@
   "fr": "Qui joue ? (un nom par ligne)",
   "it": "Chi gioca? (un nome per riga)",
   "rm": "Tgi giogia? (in num per lingia)"
+ },
+ "Werkseinstellungen: %d Dateien gelöscht, Kopie %s": {
+  "en": "Factory settings: %d files deleted, copy %s",
+  "fr": "Réglages d’usine : %d fichiers effacés, copie %s",
+  "it": "Impostazioni di fabbrica: %d file cancellati, copia %s",
+  "rm": "Parameters da fabrica: %d datotecas stizzadas, copia %s"
  },
  "Werkzeuge für Schleicher sind aus (Assistent → Extras)": {
   "en": "Tools for sneakers are off (wizard → Extras)",
@@ -34583,6 +34679,12 @@
   "it": "Prima mettere qualcosa da «Attira gli animali» (ciotola, sacco della spazzatura, borsa frigo aperta, frutta).",
   "rm": "L’emprim metter insatge da «Attira animals» (scadiola da pavlar, satg da ruments, chista da fraid averta, fritgs)."
  },
+ "Zuerst wird eine Kopie der alten Einstellungen und Spielstände gespeichert (Benutzerordner → werk_kopie). Danach startet der Simulator neu wie beim ersten Start.": {
+  "en": "First a copy of the old settings and saved games is saved (user folder → werk_kopie). Then the simulator restarts like on the first start.",
+  "fr": "D’abord une copie des anciens réglages et parties est enregistrée (dossier utilisateur → werk_kopie). Ensuite le simulateur redémarre comme au premier démarrage.",
+  "it": "Prima viene salvata una copia delle vecchie impostazioni e dei salvataggi (cartella utente → werk_kopie). Poi il simulatore si riavvia come al primo avvio.",
+  "rm": "L’emprim vegn memorisada ina copia dals vegls parameters e stadis da gieu (ordinatur da l’utilisader → werk_kopie). Lura reinvia il simulatur sco tar l’emprima partenza."
+ },
  "Zuerst zu einem Aussichtspunkt gehen (Schnellreise oder hinfliegen) – dort gibt es Fernrohr oder Feldstecher.": {
   "en": "First go to a viewpoint (quick travel or fly there) – there you have a telescope or binoculars.",
   "fr": "Va d’abord à un point de vue (voyage rapide ou en volant) – il y a une longue-vue ou des jumelles.",
@@ -34660,6 +34762,12 @@
   "fr": "Dernier : %s",
   "it": "Ultimo: %s",
   "rm": "L'ultim: %s"
+ },
+ "Zum Bestätigen {w} eintippen": {
+  "en": "Type {w} to confirm",
+  "fr": "Taper {w} pour confirmer",
+  "it": "Digitare {w} per confermare",
+  "rm": "Tippar {w} per confermar"
  },
  "Zum Gipfel": {
   "en": "To the summit",
@@ -34751,6 +34859,12 @@
   "it": "Di nuovo all'alpe",
   "rm": "Enavos sin l'alp"
  },
+ "Zurück auf die Werkseinstellungen:": {
+  "en": "Back to the factory settings:",
+  "fr": "Retour aux réglages d’usine :",
+  "it": "Ritorno alle impostazioni di fabbrica:",
+  "rm": "Enavos als parameters da fabrica:"
+ },
  "Zurück in die Hütte bringen": {
   "en": "Bring it back to the hut",
   "fr": "La rapporter dans la cabane",
@@ -34780,6 +34894,12 @@
   "fr": "Retour au choix",
   "it": "Torna alla scelta",
   "rm": "Enavos a la tscherna"
+ },
+ "Zurückgesetzt.": {
+  "en": "Reset done.",
+  "fr": "Réglages d’usine rétablis.",
+  "it": "Ripristino fatto.",
+  "rm": "Restaurà."
  },
  "Zurückstellen": {
   "en": "Put back",
@@ -35896,6 +36016,12 @@
   "fr": "⚠ %s a votre drapeau !",
   "it": "⚠ %s ha la vostra bandiera!",
   "rm": "⚠ %s ha vossa bandiera!"
+ },
+ "⚠ Auf Werkseinstellungen zurücksetzen …": {
+  "en": "⚠ Reset to factory settings …",
+  "fr": "⚠ Rétablir les réglages d’usine …",
+  "it": "⚠ Ripristinare le impostazioni di fabbrica …",
+  "rm": "⚠ Restaurar ils parameters da fabrica …"
  },
  "⚠ MoveEye ist gerade nicht verbunden. Ohne MoveEye zählt kein Fehlalarm – zuerst in MoveEye den Simulator verbinden.": {
   "en": "⚠ MoveEye is not connected right now. Without MoveEye no false alarm counts – first connect the simulator in MoveEye.",
