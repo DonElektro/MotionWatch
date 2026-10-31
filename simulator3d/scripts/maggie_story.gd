@@ -77,7 +77,7 @@ const REGIONEN := ["herbst", "winter", "fruehling", "sommer"]
 # the middle of every region (valley coordinates x, z of bergtal.gd)
 const MITTE := {"herbst": Vector2(-640, -200), "winter": Vector2(590, 360), "fruehling": Vector2(-120, -250), "sommer": Vector2(-530, 480)}
 const SAVE_FILE := "user://maggie/spielstand.json"
-const MODULES := ["res://scripts/maggie_hund.gd", "res://scripts/maggie_gefahr.gd"]   # (maggie_helfer.gd baut maggie_hund.gd selbst)
+const MODULES := ["res://scripts/maggie_hund.gd", "res://scripts/maggie_gefahr.gd", "res://scripts/geschichten_faden.gd"]   # (maggie_helfer.gd baut maggie_hund.gd selbst)
 const COLS := ["red", "orange", "navy", "olive", "brown", "grey", "white", "black"]
 const COL_NAMES := {"red": "Rot", "orange": "Orange", "navy": "Dunkelblau", "olive": "Olivgrün", "brown": "Braun", "grey": "Grau",
 		"white": "Weiss", "black": "Schwarz"}

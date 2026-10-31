@@ -163,6 +163,7 @@ func badges() -> Array:
 			out.append({"id": b, "sym": str(main.game.BADGES[b][0]), "name": T.t(str(main.game.BADGES[b][1])), "n": int(gb.get(b, 0)), "kind": "game"})
 	for c in chapters():
 		out.append({"id": "ch_" + str(c.id), "sym": c.badge, "name": c.badge_name, "n": 1 if c.state == "done" else 0, "kind": "chapter"})
+	out.append_array(preload("res://scripts/geschichten_faden.gd").abzeichen(main))   # Roter Faden: beide Geschichten
 	return out
 
 
