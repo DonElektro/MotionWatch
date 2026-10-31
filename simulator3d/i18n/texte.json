@@ -5505,6 +5505,12 @@
   "it": "Elefante",
   "rm": "Elefant"
  },
+ "Elstern am Boden (hüpfen, fliegen auf)": {
+  "en": "Magpies on the ground (hop, fly up)",
+  "fr": "Pies au sol (sautillent, s’envolent)",
+  "it": "Gazze a terra (saltellano, si alzano in volo)",
+  "rm": "Pitgas sin il terren (sautan, sgolan si)"
+ },
  "Empfindlichkeit von Kopf und Ansicht (Stick)": {
   "en": "Sensitivity of head and view (stick)",
   "fr": "Sensibilité de la tête et de la vue (stick)",
@@ -7855,6 +7861,12 @@
   "it": "Cane abbaia",
   "rm": "Chaun bauja"
  },
+ "Hund frei laufend mit seinem Menschen (läuft vor, zurück, schnüffelt)": {
+  "en": "Dog off the leash with its person (runs ahead, back, sniffs)",
+  "fr": "Chien en liberté avec son maître (court devant, revient, renifle)",
+  "it": "Cane libero con il suo padrone (corre avanti, torna, annusa)",
+  "rm": "Chaun liber cun ses uman (curra ordavant, enavos, snuffla)"
+ },
  "Hund mit Ball": {
   "en": "Dog with a ball",
   "fr": "Chien avec une balle",
@@ -9331,6 +9343,12 @@
   "fr": "Cristaux : celui qui en ramasse reçoit des points en plus.",
   "it": "Cristalli: chi ne raccoglie riceve punti extra.",
   "rm": "Cristals: tgi che rimna tals survegn puncts extra."
+ },
+ "Krähen am Boden (picken, fliegen auf)": {
+  "en": "Crows on the ground (peck, fly up)",
+  "fr": "Corneilles au sol (picorent, s’envolent)",
+  "it": "Cornacchie a terra (beccano, si alzano in volo)",
+  "rm": "Corvs sin il terren (pitgan, sgolan si)"
  },
  "Kuchen": {
   "en": "Cake",
@@ -10978,6 +10996,12 @@
   "fr": "Mouette sur la terrasse du restaurant",
   "it": "Gabbiano sulla terrazza del ristorante",
   "rm": "Muetta sin la terrassa dal restaurant"
+ },
+ "Möwen am Wasser (stehen, schwimmen, segeln)": {
+  "en": "Gulls at the water (stand, swim, glide)",
+  "fr": "Mouettes au bord de l’eau (debout, nagent, planent)",
+  "it": "Gabbiani in riva all’acqua (stanno, nuotano, planano)",
+  "rm": "Muschlas a l’aua (stattan, nodan, sgolan)"
  },
  "Mücken-Schwarm in der Dämmerung vor der Kamera": {
   "en": "Swarm of midges in front of the camera at dusk",
@@ -15361,6 +15385,12 @@
   "it": "Animali realistici: annusano e si fermano più spesso, il capriolo si sdraia e si alza, solleva la testa, branchi e mute restano insieme",
   "rm": "Animals sco vairs: sniffan e sa ferman pli savens, il chavriel giascha e stat si, auza il chau, muntanellas restan ensemen"
  },
+ "Tiere wie echt: schnüffeln und halten öfter an, Reh äugt und flüchtet in Sprüngen, Hase drückt sich ins Gras, Igel rollt sich ein, Fuchs springt auf Mäuse, Katze schleicht und springt aufs Auto, Rotten und Rudel bleiben zusammen": {
+  "en": "Animals like real: sniff and stop more often, deer watch and flee in bounds, hares press into the grass, hedgehogs roll up, foxes pounce on mice, cats stalk and jump onto cars, sounders and herds stay together",
+  "fr": "Animaux comme en vrai : reniflent et s’arrêtent plus souvent, le chevreuil observe et fuit par bonds, le lièvre se plaque dans l’herbe, le hérisson se met en boule, le renard bondit sur les souris, le chat rôde et saute sur les voitures, hardes et troupeaux restent groupés",
+  "it": "Animali come veri: annusano e si fermano più spesso, il capriolo osserva e fugge a balzi, la lepre si appiattisce nell’erba, il riccio si appallottola, la volpe salta sui topi, il gatto si apposta e salta sulle auto, branchi e greggi restano uniti",
+  "rm": "Animals sco en realitad: snufflan e sa ferman pli savens, il chavriel observa e fugia cun sigls, il lieur sa smatga en l’erva, il crutsch sa rodla en, la vulp siglia sin mieurs, il giat sa zuppa e siglia sin autos, scossas e muntaneras restan ensemen"
+ },
  "Tiere zählen": {
   "en": "Count animals",
   "fr": "Compter les animaux",
@@ -16381,6 +16411,12 @@
   "fr": "Furtif prudent (de couvert en couvert, rampe, se fige à la lumière, lampe éteinte)",
   "it": "Furtivo prudente (da riparo a riparo, striscia, si blocca alla luce, lampada spenta)",
   "rm": "Sfugider precaut (da cuvrida a cuvrida, sa tira, s’inschelescha en la glisch, lampa stizzada)"
+ },
+ "Vögel am Tag (fliegen vorbei, Krähen, Elstern und Möwen am Boden), Fledermäuse in der Nacht (warm im Wärmebild, typische Fehlalarm-Ursache)": {
+  "en": "Birds by day (flying past, crows, magpies and gulls on the ground), bats at night (warm in the thermal image, typical cause of false alarms)",
+  "fr": "Oiseaux le jour (en vol, corneilles, pies et mouettes au sol), chauves-souris la nuit (chauds dans l’image thermique, cause typique de fausses alarmes)",
+  "it": "Uccelli di giorno (in volo, cornacchie, gazze e gabbiani a terra), pipistrelli di notte (caldi nell’immagine termica, causa tipica di falsi allarmi)",
+  "rm": "Utschels di (sgolan sperasvi, corvs, pitgas e muschlas sin il terren), mezmauns la notg (chauds en il maletg termic, chaschun tipica da fauss alarms)"
  },
  "Vögel am Tag, Fledermäuse in der Nacht (warm im Wärmebild, typische Fehlalarm-Ursache)": {
   "en": "Birds by day, bats at night (warm in the thermal image, typical cause of false alarms)",
@@ -20719,41 +20755,5 @@
   "fr": "🪨 Lance une pierre : «Lancer» (PC : F) – la caméra regarde vers le bruit, pas vers toi",
   "it": "🪨 Lancia un sasso: «Lanciare» (PC: F) – la telecamera guarda verso il rumore, non verso di te",
   "rm": "🪨 Bitta in crap: «Bittar» (PC: F) – la camera guarda vers la canera, betg vers tai"
- },
- "Elstern am Boden (hüpfen, fliegen auf)": {
-  "en": "Magpies on the ground (hop, fly up)",
-  "fr": "Pies au sol (sautillent, s’envolent)",
-  "it": "Gazze a terra (saltellano, si alzano in volo)",
-  "rm": "Pitgas sin il terren (sautan, sgolan si)"
- },
- "Hund frei laufend mit seinem Menschen (läuft vor, zurück, schnüffelt)": {
-  "en": "Dog off the leash with its person (runs ahead, back, sniffs)",
-  "fr": "Chien en liberté avec son maître (court devant, revient, renifle)",
-  "it": "Cane libero con il suo padrone (corre avanti, torna, annusa)",
-  "rm": "Chaun liber cun ses uman (curra ordavant, enavos, snuffla)"
- },
- "Krähen am Boden (picken, fliegen auf)": {
-  "en": "Crows on the ground (peck, fly up)",
-  "fr": "Corneilles au sol (picorent, s’envolent)",
-  "it": "Cornacchie a terra (beccano, si alzano in volo)",
-  "rm": "Corvs sin il terren (pitgan, sgolan si)"
- },
- "Möwen am Wasser (stehen, schwimmen, segeln)": {
-  "en": "Gulls at the water (stand, swim, glide)",
-  "fr": "Mouettes au bord de l’eau (debout, nagent, planent)",
-  "it": "Gabbiani in riva all’acqua (stanno, nuotano, planano)",
-  "rm": "Muschlas a l’aua (stattan, nodan, sgolan)"
- },
- "Tiere wie echt: schnüffeln und halten öfter an, Reh äugt und flüchtet in Sprüngen, Hase drückt sich ins Gras, Igel rollt sich ein, Fuchs springt auf Mäuse, Katze schleicht und springt aufs Auto, Rotten und Rudel bleiben zusammen": {
-  "en": "Animals like real: sniff and stop more often, deer watch and flee in bounds, hares press into the grass, hedgehogs roll up, foxes pounce on mice, cats stalk and jump onto cars, sounders and herds stay together",
-  "fr": "Animaux comme en vrai : reniflent et s’arrêtent plus souvent, le chevreuil observe et fuit par bonds, le lièvre se plaque dans l’herbe, le hérisson se met en boule, le renard bondit sur les souris, le chat rôde et saute sur les voitures, hardes et troupeaux restent groupés",
-  "it": "Animali come veri: annusano e si fermano più spesso, il capriolo osserva e fugge a balzi, la lepre si appiattisce nell’erba, il riccio si appallottola, la volpe salta sui topi, il gatto si apposta e salta sulle auto, branchi e greggi restano uniti",
-  "rm": "Animals sco en realitad: snufflan e sa ferman pli savens, il chavriel observa e fugia cun sigls, il lieur sa smatga en l’erva, il crutsch sa rodla en, la vulp siglia sin mieurs, il giat sa zuppa e siglia sin autos, scossas e muntaneras restan ensemen"
- },
- "Vögel am Tag (fliegen vorbei, Krähen, Elstern und Möwen am Boden), Fledermäuse in der Nacht (warm im Wärmebild, typische Fehlalarm-Ursache)": {
-  "en": "Birds by day (flying past, crows, magpies and gulls on the ground), bats at night (warm in the thermal image, typical cause of false alarms)",
-  "fr": "Oiseaux le jour (en vol, corneilles, pies et mouettes au sol), chauves-souris la nuit (chauds dans l’image thermique, cause typique de fausses alarmes)",
-  "it": "Uccelli di giorno (in volo, cornacchie, gazze e gabbiani a terra), pipistrelli di notte (caldi nell’immagine termica, causa tipica di falsi allarmi)",
-  "rm": "Utschels di (sgolan sperasvi, corvs, pitgas e muschlas sin il terren), mezmauns la notg (chauds en il maletg termic, chaschun tipica da fauss alarms)"
  }
 }
