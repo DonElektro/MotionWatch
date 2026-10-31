@@ -1,9 +1,9 @@
 {
- "version": "3D-5.15.2",
- "ver": "3.15.2",
- "name": "MoveEye Sim 3.15.2",
+ "version": "3D-5.16.0",
+ "ver": "3.16.0",
+ "name": "MoveEye Sim 3.16.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35410791,
- "sha256": "4c8cf2e5961f315ac9d0d3390df085a2bf8a21b561c19d33bcde81d56bf1a62e",
- "notes": "MoveEye Sim 3.15.2: zusammen mit MoveEye 3.15.2 (Vollbild-Bedienung in der Simulation); im Simulator selbst nichts geändert."
+ "size": 35438764,
+ "sha256": "bc4b53e2a6b1c60716f112f3d6ff65ae53fcaa7f444f6a42931939db6866b99a",
+ "notes": "MoveEye Sim 3.16.0: Bergtal wie auf Daniels Fotos (Fels, Weiden, Fichten, Bergsee, Himmel)."
 }

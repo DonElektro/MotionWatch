@@ -10953,6 +10953,12 @@
   "it": "Crepuscolo, animali all’esca",
   "rm": "Crepuscul, animals tar l’attractiv"
  },
+ "Dürre Fichte": {
+  "en": "Dead spruce",
+  "fr": "Épicéa mort",
+  "it": "Abete rosso secco",
+  "rm": "Pign sec"
+ },
  "E-Bike-Akku": {
   "en": "E-bike battery",
   "fr": "Batterie de vélo électrique",
@@ -13726,6 +13732,12 @@
   "fr": "Ressaut rocheux",
   "it": "Gradino di roccia",
   "rm": "Stgalim da crap"
+ },
+ "Felszahn (Kalk)": {
+  "en": "Rock pinnacle (limestone)",
+  "fr": "Aiguille rocheuse (calcaire)",
+  "it": "Guglia rocciosa (calcare)",
+  "rm": "Dent da crap (chaltschina)"
  },
  "Fenster": {
   "en": "Windows",
@@ -19794,6 +19806,12 @@
   "fr": "Calendrier : plus de monde le week-end, moins en hiver",
   "it": "Calendario: più gente nel fine settimana, meno d’inverno",
   "rm": "Chalender: la fin d’emna dapli glieud, d’enviern main"
+ },
+ "Kalkblock (Karstweide)": {
+  "en": "Limestone block (karst pasture)",
+  "fr": "Bloc calcaire (pâturage karstique)",
+  "it": "Blocco calcareo (pascolo carsico)",
+  "rm": "Bloc da chaltschina (pastgira da carst)"
  },
  "Kalte Nacht am Gipfel": {
   "en": "Cold night on the summit",
@@ -38554,6 +38572,12 @@
   "fr": "Deuxième appareil MoveEye dans le monde (adresse propre : port du simulateur + 20, en général 8785)",
   "it": "Secondo apparecchio MoveEye nel mondo (indirizzo proprio: porta del simulatore + 20, di solito 8785)",
   "rm": "Segund apparat MoveEye en il mund (atgna adressa: port dal simulatur + 20, per il solit 8785)"
+ },
+ "Zwergsträucher (Alpenrosen, Heidelbeeren)": {
+  "en": "Dwarf shrubs (alpine roses, blueberries)",
+  "fr": "Arbrisseaux nains (rhododendrons, myrtilles)",
+  "it": "Arbusti nani (rododendri, mirtilli)",
+  "rm": "Cagliers nanins (rosas alpinas, uzuns)"
  },
  "Zwischen den Steinmännern steht eine Kuh mit einem weissen Fleck auf der Stirn und schaut dich an. Die Bless!": {
   "en": "Among the cairns stands a cow with a white spot on her forehead, looking at you. Bless!",

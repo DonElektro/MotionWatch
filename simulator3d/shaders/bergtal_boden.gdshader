@@ -58,15 +58,23 @@ void fragment() {
 	// grass: the season
 	float green = smoothstep(0.0, 0.05, c.g - max(c.r, c.b) * 0.98);
 	c = mix(c, c * grass_tint, green);
-	// rock on steep ground: grey gneiss, light limestone bands, rusty iron, dark serpentine (big noise and height)
-	vec3 gneis = vec3(0.16, 0.155, 0.145);
-	vec3 kalk = vec3(0.32, 0.30, 0.26);
+	// rock on steep ground («wie auf den Fotos», Stockhorn): mostly light grey limestone in oblique layers (darker grey
+	// bands between), a little rusty iron and dark serpentine (big noise); same cost as before
+	vec3 gneis = vec3(0.24, 0.235, 0.22);
+	vec3 kalk = vec3(0.46, 0.45, 0.42);
 	vec3 rost = vec3(0.24, 0.15, 0.10);
 	vec3 serp = vec3(0.09, 0.11, 0.09);
-	vec3 rock = mix(gneis, kalk, smoothstep(0.55, 0.7, fract(lpos.y * 0.012 + big * 0.8)));
-	rock = mix(rock, rost, smoothstep(0.62, 0.72, big) * 0.8);
-	rock = mix(rock, serp, smoothstep(0.38, 0.28, big) * 0.7);
+	vec3 rock = mix(kalk, gneis, smoothstep(0.62, 0.74, fract(dot(lpos, vec3(0.006, 0.014, -0.004)) + big * 0.8)));
+	rock = mix(rock, rost, smoothstep(0.66, 0.74, big) * 0.6);
+	rock = mix(rock, serp, smoothstep(0.34, 0.26, big) * 0.6);
+	rock = mix(rock, kalk * 1.12, smoothstep(520.0, 760.0, lpos.y) * 0.6);     // the high walls and summits: light
 	rock *= 0.75 + 0.5 * mid + 0.25 * (fine - 0.5);
+	if (detail > 0.5 && slope > 0.3) {
+		// water streaks down the walls (dark, vertical) - not in Lite
+		vec2 t2 = normalize(vec2(-lnrm.z, lnrm.x) + vec2(0.0001, 0.0));
+		float streak = texture(noise_tex, vec2(dot(lpos.xz, t2) * 0.11, lpos.y * 0.004)).r;
+		rock *= 1.0 - 0.35 * smoothstep(0.58, 0.75, streak);
+	}
 	float rk = smoothstep(0.2, 0.36, slope + 0.08 * (mid - 0.5)) * rockable;
 	c = mix(c, rock, rk);
 	// snow: above the snow line (lower on the side facing north), never on very steep rock
