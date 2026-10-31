@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.60** · passende MoveEye-Version (früher Motion Watch) **2.98.91**
+Stand: 31.10.2026 · Simulator-Version **3D-4.61** · passende MoveEye-Version (früher Motion Watch) **2.98.92**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.61 (MoveEye 2.98.92): Kriechende Paket-Figuren (`figur_paket.gd`)
+
+- `figur_paket.gd`: die Bezugshaltung (Grundpose) der Paket-Figuren wird gerade gerichtet – kriechende und liegende Figuren
+  liegen flach (Kopf nicht mehr im Boden, Fuss nicht in der Luft), Arme bei Winken / Handy unverändert.
 
 ## NEU in 3D-4.60 (MoveEye 2.98.91): Simulator-Sprachen Schritt 2 (`i18n/texte.json`)
 

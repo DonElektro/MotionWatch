@@ -1,7 +1,7 @@
 {
- "version": "3D-4.60",
+ "version": "3D-4.61",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34098093,
- "sha256": "56bd7d9cdeabcac87726cb3166c27a439d26f81ddd179e464daa71e2fd84b0cb",
- "notes": "Alle Simulator-Texte jetzt auch auf Englisch, Französisch, Italienisch, Rätoromanisch (Rätoromanisch noch prüfen lassen)."
+ "size": 34099204,
+ "sha256": "3ed9212db62c40ffb86bfb43d01d3c85654c064f986e587d8985d1ba76587725",
+ "notes": "Figuren aus dem Figuren-Paket: Kriechen und Liegen sehen jetzt richtig aus (Kopf und Füsse am Boden)."
 }
