@@ -143,5 +143,31 @@
   ],
   "_optional_reply": [
     "mover_pose"
-  ]
+  ],
+  "_ports": {
+    "_hinweis": "Ports aufraeumen (Stabil-Start): welche Ports MoveEye und der Simulator benutzen (eine Tabelle). Geprueft im Selbsttest von MoveEye (Teil 558: main.gd ALT_PORTS, tunnel.gd PORT, game.gd game_ports, TUN_PORT, TUN_LOCAL, SIM_SCAN_PORTS, Beilagen-.bat) und beim Start des Simulators im Editor (schnittstelle.gd). Spiel eines Simulators auf Port P: P = sim -> spiel, sonst spiel_andere + 2*(P - sim) und eins mehr. Geraet 2 im Simulator: P + 20.",
+    "sim": 8765,
+    "sim_zweit": 8768,
+    "tunnel": 8766,
+    "python_sim": 8767,
+    "ausweich": [
+      8775,
+      8785,
+      8795
+    ],
+    "spiel": [
+      8770,
+      8771
+    ],
+    "spiel_andere": 9770,
+    "suche": [
+      8765,
+      8766,
+      8767,
+      8768,
+      8775,
+      8785,
+      8795
+    ]
+  }
 }

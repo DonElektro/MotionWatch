@@ -55,6 +55,7 @@ func check() -> void:
 		for a in (L.get("control", {}) as Dictionary).keys():
 			if body.find('a == "%s"' % a) < 0 and body.find('"%s"' % a) < 0:
 				probs.append("control: MoveEye braucht «%s», main.gd _control kennt es nicht" % a)
+	probs += _ports_cmp(L.get("_ports", {}))
 	if probs.is_empty():
 		result = "Schnittstelle: OK (%d Antwort-Felder, %d Info-Felder, %d Aktionen wie in schnittstelle.json)" % [
 				(L.get("world_reply", {}) as Dictionary).size(), (L.get("info", {}) as Dictionary).size(), (L.get("control", {}) as Dictionary).size()]
@@ -62,6 +63,36 @@ func check() -> void:
 	else:
 		result = "Schnittstelle: " + " | ".join(probs)
 		printerr("SCRIPT ERROR: " + result)
+
+
+static func _ints(a) -> Array:
+	var out := []
+	if typeof(a) == TYPE_ARRAY:
+		for x in a:
+			out.append(int(x))
+	return out
+
+
+func _ports_cmp(P: Dictionary) -> Array:
+	"""Ports aufräumen (Stabil-Start): die Port-Tabelle «_ports» gegen diese Seite (MoveEye prüft dieselbe Tabelle, Teil 558)"""
+	if P.is_empty():
+		return []
+	var out := []
+	var alt := _ints(main.get_script().get_script_constant_map().get("ALT_PORTS", []))
+	if alt != _ints(P.get("ausweich", [])):
+		out.append("ports: ALT_PORTS %s is not the list %s" % [alt, P.get("ausweich")])
+	var tp := int(preload("res://scripts/tunnel.gd").PORT)
+	if tp != int(P.get("tunnel", 0)):
+		out.append("ports: tunnel.gd PORT %d is not the list %s" % [tp, P.get("tunnel")])
+	var G = preload("res://scripts/game.gd")
+	var s0 := int(P.get("sim", 0))
+	if _ints(G.game_ports(s0)) != _ints(P.get("spiel", [])):
+		out.append("ports: game_ports(%d) %s is not the list %s" % [s0, G.game_ports(s0), P.get("spiel")])
+	var b := int(P.get("spiel_andere", 0))
+	var z := int(P.get("sim_zweit", 0))
+	if _ints(G.game_ports(z)) != [b + 2 * (z - s0), b + 1 + 2 * (z - s0)]:
+		out.append("ports: game_ports(%d) %s does not fit the list (spiel_andere %d)" % [z, G.game_ports(z), b])
+	return out
 
 
 func mw_extra() -> String:

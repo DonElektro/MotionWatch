@@ -24795,6 +24795,11 @@ class SimDiscovery:
 
 
 SIMSCAN = {"running": False, "t": 0.0, "hosts": 0, "found": 0, "secs": 0.0, "net": "", "done": 0}
+# Ports aufräumen (Stabil-Start): wo ein Simulator antworten kann - 8765 (Standard), 8766 (alte «Start auf Port 8766.bat»),
+# 8767 (Python-Simulator), 8768 (zweiter 3D-Simulator, «Start auf Port 8768.bat») und die Ausweich-Ports des
+# 3D-Simulators 8775 / 8785 / 8795 (main.gd ALT_PORTS: der Port war nach einem Update noch besetzt).
+# Eine Tabelle für beide Seiten: simulator3d/schnittstelle.json «_ports», geprüft im Selbsttest (Teil 558).
+SIM_SCAN_PORTS = (8765, 8766, 8767, 8768, 8775, 8785, 8795)
 SIMHOST = {}                       # ip -> computer name (from the simulator itself, or asked once from the router's name service)
 
 
@@ -24849,7 +24854,7 @@ def sim_scan():
     from concurrent.futures import ThreadPoolExecutor
     ip = _local_ipv4(); base = ".".join(ip.split(".")[:3])
     hosts = ["127.0.0.1"] + ([f"{base}.{i}" for i in range(1, 255)] if not ip.startswith("127.") else [])
-    ports = sorted({8765, 8766, 8767, 8768, int(urllib.parse.urlsplit(sim_base()).port or 8765)})   # 8767 / 8768: further simulators
+    ports = sorted(set(SIM_SCAN_PORTS) | {int(urllib.parse.urlsplit(sim_base()).port or 8765)})   # Stabil-Start: also the spare ports
     SIMSCAN.update(running=True, t=time.time(), hosts=len(hosts) * len(ports), found=0, secs=0.0, net=f"{base}.0/24", done=0)
 
     def probe(hp):
@@ -24875,7 +24880,7 @@ def sim_scan():
     def run():
         t0 = time.time()
         try:
-            with ThreadPoolExecutor(max_workers=64) as ex:
+            with ThreadPoolExecutor(max_workers=96) as ex:      # Stabil-Start: 7 ports instead of 4-5 - about as fast as before
                 list(ex.map(probe, [(h, p) for h in hosts for p in ports
                                     if not (p == TUN_PORT and CFG.get("tunnel_on") and h in ("127.0.0.1", ip))]))   # 2.95.66: not the own tunnel
         finally:
@@ -46481,6 +46486,77 @@ def iface_selftest():
 
 
 SELFTEST_EXTRA.append(("One field list MoveEye ↔ simulator (simulator3d/schnittstelle.json)", iface_selftest))
+
+
+def ports_check(base=None):
+    """Ports aufräumen (Stabil-Start): the port table «_ports» in schnittstelle.json against both sides - problems or None"""
+    base = base or os.path.dirname(os.path.abspath(__file__))
+    L = iface_list(base)
+    gdir = os.path.join(base, "simulator3d", "scripts")
+    if L is None or not os.path.isdir(gdir) or "_ports" not in L:
+        return None
+    P = L["_ports"]
+
+    def gd(fn):
+        with open(os.path.join(gdir, fn), encoding="utf-8") as f:
+            return f.read()
+    probs = []
+    m = re.search(r"const ALT_PORTS := \[([\d, ]+)\]", gd("main.gd"))
+    alt = [int(x) for x in re.findall(r"\d+", m.group(1))] if m else None
+    if alt != list(P["ausweich"]):
+        probs.append(f"main.gd ALT_PORTS {alt} != ausweich {P['ausweich']}")
+    m = re.search(r"const PORT := (\d+)", gd("tunnel.gd"))
+    if not m or int(m.group(1)) != P["tunnel"] or TUN_PORT != P["tunnel"]:
+        probs.append(f"tunnel port: tunnel.gd {m and m.group(1)}, TUN_PORT {TUN_PORT}, list {P['tunnel']}")
+    m = re.search(r"\nstatic func game_ports\(.*?(?=\n(?:static )?func |\Z)", gd("game.gd"), re.S)
+    g = m.group(0) if m else ""
+    m0 = re.search(r"return \[(\d+), (\d+)\]", g)
+    m1 = re.search(r"return \[(\d+) \+ 2 \* k, (\d+) \+ 2 \* k\]", g)
+    if not m0 or [int(m0.group(1)), int(m0.group(2))] != list(P["spiel"]):
+        probs.append(f"game.gd game_ports for {P['sim']} != spiel {P['spiel']}")
+    if not m1 or int(m1.group(1)) != P["spiel_andere"] or int(m1.group(2)) != P["spiel_andere"] + 1:
+        probs.append(f"game.gd game_ports for other ports != spiel_andere {P['spiel_andere']}")
+    if TUN_LOCAL.get(18770) != P["spiel"][0] or TUN_LOCAL.get(18771) != P["spiel"][1]:
+        probs.append(f"TUN_LOCAL (343) carries {TUN_LOCAL.get(18770)}/{TUN_LOCAL.get(18771)}, not the game {P['spiel']}")
+    if list(SIM_SCAN_PORTS) != list(P["suche"]):
+        probs.append(f"SIM_SCAN_PORTS (300) {list(SIM_SCAN_PORTS)} != suche {P['suche']}")
+    for k in ["sim", "sim_zweit", "python_sim"] + [f"ausweich {x}" for x in P["ausweich"]]:
+        v = P[k] if k in P else int(k.split()[1])
+        if v not in P["suche"]:
+            probs.append(f"MoveEye does not search {k} ({v})")
+
+    def game(p):
+        return list(P["spiel"]) if p == P["sim"] else [P["spiel_andere"] + 2 * (p - P["sim"]), P["spiel_andere"] + 1 + 2 * (p - P["sim"])]
+    sims = [P["sim"], P["sim_zweit"]] + list(P["ausweich"])
+    used = {}
+    for p in sims:                                       # two simulators on one PC: nothing may overlap
+        for q in [p] + game(p):
+            if q in used and used[q] != p:
+                probs.append(f"port {q} is used by the simulators on {used[q]} and {p}")
+            used[q] = p
+    for q in (P["tunnel"], P["python_sim"]):
+        if q in used:
+            probs.append(f"port {q} (tunnel / Python simulator) is also used by the simulator on {used[q]}")
+    bdir = os.path.join(base, "simulator3d", "beilagen")
+    if os.path.isdir(bdir):
+        for fn in sorted(os.listdir(bdir)):
+            if fn.endswith(".bat"):
+                with open(os.path.join(bdir, fn), encoding="ascii", errors="replace") as f:
+                    for q in re.findall(r"--port (\d+)", f.read()):
+                        if int(q) in (P["tunnel"], P["python_sim"]) or int(q) not in P["suche"]:
+                            probs.append(f"{fn}: --port {q} collides or is not searched")
+    return probs
+
+
+def ports_selftest():
+    r = ports_check()
+    if r is None:
+        return "simulator folder not here"
+    assert not r, f"{len(r)} problems: " + " | ".join(r[:8])
+    return "ports of MoveEye and the simulator fit together (schnittstelle.json «_ports»)"
+
+
+SELFTEST_EXTRA.append(("Ports MoveEye ↔ simulator (schnittstelle.json «_ports»)", ports_selftest))
 
 
 _sim_status_340 = sim_status

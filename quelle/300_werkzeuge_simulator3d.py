@@ -914,6 +914,11 @@ class SimDiscovery:
 
 
 SIMSCAN = {"running": False, "t": 0.0, "hosts": 0, "found": 0, "secs": 0.0, "net": "", "done": 0}
+# Ports aufräumen (Stabil-Start): wo ein Simulator antworten kann - 8765 (Standard), 8766 (alte «Start auf Port 8766.bat»),
+# 8767 (Python-Simulator), 8768 (zweiter 3D-Simulator, «Start auf Port 8768.bat») und die Ausweich-Ports des
+# 3D-Simulators 8775 / 8785 / 8795 (main.gd ALT_PORTS: der Port war nach einem Update noch besetzt).
+# Eine Tabelle für beide Seiten: simulator3d/schnittstelle.json «_ports», geprüft im Selbsttest (Teil 558).
+SIM_SCAN_PORTS = (8765, 8766, 8767, 8768, 8775, 8785, 8795)
 SIMHOST = {}                       # ip -> computer name (from the simulator itself, or asked once from the router's name service)
 
 
@@ -968,7 +973,7 @@ def sim_scan():
     from concurrent.futures import ThreadPoolExecutor
     ip = _local_ipv4(); base = ".".join(ip.split(".")[:3])
     hosts = ["127.0.0.1"] + ([f"{base}.{i}" for i in range(1, 255)] if not ip.startswith("127.") else [])
-    ports = sorted({8765, 8766, 8767, 8768, int(urllib.parse.urlsplit(sim_base()).port or 8765)})   # 8767 / 8768: further simulators
+    ports = sorted(set(SIM_SCAN_PORTS) | {int(urllib.parse.urlsplit(sim_base()).port or 8765)})   # Stabil-Start: also the spare ports
     SIMSCAN.update(running=True, t=time.time(), hosts=len(hosts) * len(ports), found=0, secs=0.0, net=f"{base}.0/24", done=0)
 
     def probe(hp):
@@ -994,7 +999,7 @@ def sim_scan():
     def run():
         t0 = time.time()
         try:
-            with ThreadPoolExecutor(max_workers=64) as ex:
+            with ThreadPoolExecutor(max_workers=96) as ex:      # Stabil-Start: 7 ports instead of 4-5 - about as fast as before
                 list(ex.map(probe, [(h, p) for h in hosts for p in ports
                                     if not (p == TUN_PORT and CFG.get("tunnel_on") and h in ("127.0.0.1", ip))]))   # 2.95.66: not the own tunnel
         finally:

@@ -16,15 +16,20 @@ STARTEN
    und wieder auf. Geht das nicht von selbst: "Start in virtueller Maschine (ANGLE).bat" benutzen.
    In der virtuellen Maschine muss die 3D-Beschleunigung eingeschaltet sein (VMware: Einstellungen -> Anzeige).
 
-SCHLIESST SICH DAS FENSTER GLEICH NACH DEM START? (MoveEye Sim 3.8.0)
-- In 3.8.0 stürzte der Simulator nach dem Godot-Startbild ab, während er nach Updates suchte (die Foto-Inhalte
-  wurden angewendet, bevor die Welt stand). Ab der Korrektur nicht mehr. Bis dahin: so starten
-  (Verknüpfung oder .bat neben der .exe):   MoveEyeSim3D.exe -- --no-update
-  oder                                       MoveEyeSim3D.exe -- --no-inhalte
+SCHLIESST SICH DAS FENSTER GLEICH NACH DEM START?
+- "Notfall-Start.bat" doppelklicken (liegt neben der .exe). Er startet einmal mit der einfachsten Grafik: ANGLE
+  (Direct3D 11), Grafik-Modus Lite, ohne Foto-Inhalte, ohne Update-Suche und ohne Grafikstufe "Hoch". Die eigenen
+  Einstellungen bleiben gespeichert, der nächste normale Start ist wieder wie vorher. Liegt
+  "MoveEyeSim3D.console.exe" daneben, läuft der Simulator im schwarzen Fenster der .bat: dort bleiben die letzten
+  Meldungen stehen, wenn er abstürzt.
+- Geht es so, liegt es meist an der Grafik oder an den Foto-Inhalten: im Simulator unter System › Grafik den
+  Grafik-Modus "Lite" oder "Normal" wählen bzw. unter Experte "Echte Oberflächen und Himmel" ausschalten.
 - Schutz: Bricht ein Start beim Einlesen der Foto-Inhalte ab, startet der nächste ohne sie und sagt es in der
   Statuszeile. Wieder einschalten: System › Grafik › Experte: "Echte Oberflächen und Himmel".
-- Das Protokoll des letzten Starts: %APPDATA%\Godot\app_userdata\MoveEye Sim 3D\logs\godot.log
-  (ältere daneben im Ordner "logs").
+- "Fehlerbericht sammeln.bat" doppelklicken: packt die Protokolle (auch wenn der Simulator gar nicht startet) in eine
+  ZIP-Datei auf dem Desktop - ohne Passwörter, Tunnel-Code, ntfy-Themen und Schlüssel. Diese ZIP-Datei schicken.
+- Das Protokoll selbst: %APPDATA%\Godot\app_userdata\MoveEye Sim 3D\logs\godot.log (ältere daneben im Ordner "logs").
+- Von Hand (Verknüpfung): MoveEyeSim3D.exe --rendering-driver opengl3_angle -- --angle-tried --grafik lite --no-inhalte --no-update --no-hoch
 
 UPDATES (ab 3D-1.7)
 - Versionsnummer: ab 3.0.0 heisst der Simulator "MoveEye Sim" und hat immer dieselbe Nummer wie MoveEye (z. B. MoveEye 3.0.0 und
@@ -372,7 +377,12 @@ NACH EINEM UPDATE (ab 3D-3.16)
 - Auch wenn das Update gleich beim Start kommt (vor dem Einschalten des Sendens), bleibt "--stream" erhalten.
 
 PORT / START-OPTIONEN
-MoveEyeSim3D.exe -- --port 8766 --hour 22.5 --quality simple --stream --scene wald
+MoveEyeSim3D.exe -- --port 8768 --hour 22.5 --quality simple --stream --scene wald
+  --port: anderer Port (Standard 8765). Ein zweiter Simulator auf demselben PC: "Start auf Port 8768.bat".
+    Nicht 8766 (Tunnel von MoveEye) und nicht 8767 (Python-Simulator). MoveEye sucht 8765-8768 und die
+    Ausweich-Ports 8775 / 8785 / 8795. Das Spiel hat beim Port 8765 die Ports 8770 / 8771, sonst eigene
+    (8768: 9776 / 9777), so kommen sich zwei Simulatoren nicht in die Quere.
+  --grafik lite | normal | hoch | auto: Grafik-Modus nur für diesen Start; --no-hoch: diesmal ohne "Hoch"
   --scene: mit dieser Szene starten (camping, wald, parkplatz, garten, lustig, wild)
   --no-update: beim Start nicht nach einer neuen Version suchen
   --no-angle: in einer virtuellen Maschine nicht von selbst auf ANGLE umschalten

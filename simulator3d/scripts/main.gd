@@ -226,6 +226,7 @@ var view_scale := 1.0                 # 3D-3.75: sharpness of the big view on th
 var win_fps := 0                     # 3D-3.75: frames per second of the big view (0 = as fast as it goes)
 var auto_perf := true                 # 3D-3.75: too slow? the graphics get lighter by themselves
 var grafik_mode := "auto"             # 3D-4.25: «Grafik-Modus» auto | lite | normal (quality.gd; later «hoch»)
+var _grafik_keep := ""                 # Notfall-Start (Stabil-Start): --grafik gilt nur für diesen Start - das wird gespeichert
 var lite_why := ""                    # why Lite is on («Raspberry Pi 5 …», «von Hand», «wenige Bilder/s») - for «Leistung»
 var _lite_slow := false               # auto: the first seconds were very slow -> Lite for this session
 var _lite_fps: Array = []
@@ -688,6 +689,7 @@ func _ready() -> void:
 		set_view_scale(view_scale)
 	var gi := args.find("--grafik")                   # 3D-4.25: --grafik auto | lite | normal | hoch (for tests)
 	if gi >= 0 and gi + 1 < args.size():
+		_grafik_keep = grafik_mode                      # Notfall-Start: nur für diesen Start, gespeichert bleibt die eigene Wahl
 		grafik_mode = Quality.mode_id(args[gi + 1])
 		if hoch != null and grafik_mode != "hoch":
 			hoch.stufe = "normal"                       # only for this start (the file stays)
@@ -4557,6 +4559,7 @@ const LITE_KEYS := ["quality", "view_scale", "win_fps", "max_visitors"]
 
 func set_grafik_mode(v: String) -> void:
 	grafik_mode = Quality.mode_id(v)
+	_grafik_keep = ""                                     # von Hand gewählt: das gilt (auch nach --grafik)
 	lite_update()
 	if hoch != null and (grafik_mode == "hoch") != (hoch.stufe == "hoch"):
 		hoch.set_stufe(grafik_mode)                       # F1: Hoch = Neustart mit Forward+; jede andere Wahl = wieder normal
@@ -6772,6 +6775,8 @@ func _save_settings() -> void:
 		d[k] = get(k)
 	for k in _perf_orig:                                   # 3D-3.88: «automatisch leichter» is not saved
 		d[k] = _perf_orig[k]
+	if _grafik_keep != "":
+		d["grafik_mode"] = _grafik_keep
 	d["hour_now"] = snappedf(hour(), 0.001)               # 3D-3.76: the time of the scene stays after a restart
 	d["hour_at"] = int(Time.get_unix_time_from_system())
 	d["speed_now"] = speed
