@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.35** · passende MoveEye-Version (früher Motion Watch) **2.98.66**
+Stand: 31.10.2026 · Simulator-Version **3D-4.36** · passende MoveEye-Version (früher Motion Watch) **2.98.67**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.36 (MoveEye 2.98.67): Aussichtspunkte im Bergtal, Teil «Bergtal» in Szene (`bergtal_aussicht.gd`)
+
+- `bergtal_aussicht.gd` (neu): Fernrohr, Panorama, Beobachten, MoveEye-Reichweite, Stimmungen (sky.gdshader `milky`),
+  Karte aufdecken (minimap.gd), Wetter von weitem; Regler über `add_controls(main)`, Steuerung `{"action":"bergtal","do":"aussicht"}`.
+  `_lite()` = `Quality.lite()`.
+- main.gd: alle `bt_*`-Regler der Karte Szene im Teil «Bergtal» (GROUPS Szene), mit «only» nur im Bergtal (Fenster und MoveEye).
 
 ## NEU in 3D-4.35 (MoveEye 2.98.66): Erlebnisse im Bergtal 1–17 (`bergtal_erleben_a.gd`)
 

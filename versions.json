@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 06:23",
+ "generated": "2026-10-31 06:33",
  "versions": [
   {
-   "version": "2.98.66",
-   "file": "webcam_bewegung_2_98_66.py",
+   "version": "2.98.67",
+   "file": "webcam_bewegung_2_98_67.py",
    "url": "",
-   "sha256": "f187faf456f0f24070722488ce93ef2eed4f3e26a4263450c390b94ea433746a",
-   "date": "2026-10-31 06:23",
-   "notes": "Simulator 3D-4.35: Erlebnisse im Bergtal – 17 kleine Szenen mit Tieren und Menschen im Entdeckungsbuch (Murmeltiere, Schafstau, Fondue mit Fuchs, Alphorn …).",
-   "sig": "d31b59af749bf758bd62f2c446225dc87da4c94d040c9b723bd330ddcd859671b714a9f80569d61e01c44f3f39cf3fa88fbbea153252a8e418aa26bd96c68f02"
+   "sha256": "fdd8daa565a3e31ba2d953b4262ee7e8cb747a4eb8924db70d24013c53b31295",
+   "date": "2026-10-31 06:33",
+   "notes": "Simulator 3D-4.36: Aussichtspunkte im Bergtal (Fernrohr, Panoramafoto, Bergstimmungen, Karte aufdecken, Wetter von weitem); alle Bergtal-Regler im eigenen Teil «Bergtal» der Karte Szene, nur im Bergtal sichtbar.",
+   "sig": "38012c1de8eb1fcd003caad724dabddff1cf86f6be8a368f0ea1374bf2682ac8fbc53b433f4f7267afa087c5268d2a916a3c2cc6d317a2bd615756a2031ddb07"
   },
   {
    "version": "2.97.1",
