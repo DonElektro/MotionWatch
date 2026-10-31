@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.5.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.6.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -422,6 +422,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.6.0
+3.6.0: Weniger Fehlalarme: MoveEye erkennt Dinge, die wie eine Person aussehen (z. B. eine Fichte) und fragt «ignorieren?» –
+ohne Wärmekamera entscheidest du. Der Kopf folgt ignorierten Dingen nicht. Autos mit warmem Motor sind keine «Person
+(Wärmebild)» mehr. Hat die KI ein Tier erkannt, bleibt es ein Tier.
+So testest du: 1) Camping Tag: bei der Fichte kommt die Karte «ignorieren?». 2) «Ignorieren» drücken: der Kopf folgt nicht
+mehr. 3) Hund durchs Bild: keine Person. 4) Person steht still: bleibt Person.
 
 NEU IN 3.5.0
 3.5.0: Kriechende nachts: Voralarm «⚠ Etwas Grosses am Boden», nach 6 s «Person? (kriecht)» mit Alarm. Tiere wie Fuchs und

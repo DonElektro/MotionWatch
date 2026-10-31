@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.5.0** · MoveEye **3.5.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.6.0** · MoveEye **3.6.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.6.0 (MoveEye 3.6.0): Feste Fehl-Personen (nur MoveEye)
+
+- Simulator-Code unverändert. MoveEye: neue Teile `418_feste_fehlperson.py` (Personen-Kasten, der sich nie bewegt → Karte
+  «ignorieren?», Kopf folgt nicht; warme Motoren keine Person; KI-Tier bleibt Tier), `599f_fenster_fehlperson.py`,
+  `639l_uebersetzungen_fehlperson.py`; 232, 410 (`veto_` neben dem Kriech-Block von 418k), 550.
 
 ## NEU in 3.5.0 (MoveEye 3.5.0): Kriechende nachts, KI-Lupe weit (nur MoveEye)
 
