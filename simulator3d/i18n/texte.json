@@ -3277,6 +3277,12 @@
   "it": "Codice sbagliato – controllare sulla pagina di MoveEye",
   "rm": "Code fallà – guardar sin la pagina da MoveEye"
  },
+ "Compatibility": {
+  "en": "Compatibility",
+  "fr": "Compatibility",
+  "it": "Compatibility",
+  "rm": "Compatibility"
+ },
  "Computer-Spieler (Bots)": {
   "en": "Computer players (bots)",
   "fr": "Joueurs ordinateur (bots)",
@@ -5531,6 +5537,12 @@
   "it": "Seguire richiede MoveEye – prima collegare (fino ad allora solo la pattuglia si gira verso cose sospette)",
   "rm": "Suandar dovra MoveEye – l’emprim colliar (fin lura sa volva mo la patrulla vers chaussas suspectas)"
  },
+ "Forward+": {
+  "en": "Forward+",
+  "fr": "Forward+",
+  "it": "Forward+",
+  "rm": "Forward+"
+ },
  "Foto": {
   "en": "Photo",
   "fr": "Photo",
@@ -6318,6 +6330,36 @@
   "it": "Grafica «%s»",
   "rm": "Grafica «%s»"
  },
+ "Grafik «Hoch» braucht Vulkan – auf diesem PC ging es nicht, deshalb wieder «Normal».": {
+  "en": "Graphics «High» needs Vulkan – it did not work on this PC, so back to «Normal».",
+  "fr": "Le graphisme «Élevé» nécessite Vulkan – cela n'a pas fonctionné sur ce PC, retour à «Normal».",
+  "it": "La grafica «Alta» richiede Vulkan – su questo PC non ha funzionato, quindi di nuovo «Normale».",
+  "rm": "La grafica «Aut» dovra Vulkan – sin quest PC na ha quai betg funcziunà, perquai puspè «Normal»."
+ },
+ "Grafik «Hoch» geht nicht zusammen mit «Lite».": {
+  "en": "Graphics «High» does not work together with «Lite».",
+  "fr": "Le graphisme «Élevé» ne fonctionne pas avec «Lite».",
+  "it": "La grafica «Alta» non funziona insieme a «Lite».",
+  "rm": "La grafica «Aut» na funcziuna betg ensemen cun «Lite»."
+ },
+ "Grafik «Hoch» war zu langsam – für diese Sitzung aus (die Wahl bleibt gespeichert).": {
+  "en": "Graphics «High» was too slow – off for this session (the choice stays saved).",
+  "fr": "Le graphisme «Élevé» était trop lent – désactivé pour cette session (le choix reste enregistré).",
+  "it": "La grafica «Alta» era troppo lenta – disattivata per questa sessione (la scelta resta salvata).",
+  "rm": "La grafica «Aut» era memia plauna – deactivada per questa sesida (la tscherna resta memorisada)."
+ },
+ "Grafik «Hoch»: der Simulator startet jetzt mit Vulkan neu (braucht eine gute Grafikkarte) …": {
+  "en": "Graphics «High»: the simulator now restarts with Vulkan (needs a good graphics card) …",
+  "fr": "Graphisme «Élevé» : le simulateur redémarre maintenant avec Vulkan (nécessite une bonne carte graphique) …",
+  "it": "Grafica «Alta»: il simulatore si riavvia ora con Vulkan (richiede una buona scheda grafica) …",
+  "rm": "Grafica «Aut»: il simulatur startescha ussa da nov cun Vulkan (dovra ina buna carta grafica) …"
+ },
+ "Grafik «Normal»: der Simulator startet jetzt wieder mit dem normalen Renderer neu …": {
+  "en": "Graphics «Normal»: the simulator now restarts with the normal renderer …",
+  "fr": "Graphisme «Normal» : le simulateur redémarre maintenant avec le rendu normal …",
+  "it": "Grafica «Normale»: il simulatore si riavvia ora con il renderer normale …",
+  "rm": "Grafica «Normal»: il simulatur startescha ussa puspè cun il renderer normal …"
+ },
  "Grafik: ": {
   "en": "",
   "fr": "",
@@ -6329,6 +6371,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Grafikstufe": {
+  "en": "Graphics level",
+  "fr": "Niveau graphique",
+  "it": "Livello grafico",
+  "rm": "Nivel da grafica"
  },
  "Gras und Blumen auf der Wiese": {
   "en": "Grass and flowers on the meadow",
@@ -6690,6 +6738,36 @@
   "fr": "Portrait",
   "it": "Verticale",
   "rm": "Vertical"
+ },
+ "Hoch (fotorealistisch – braucht eine gute Grafikkarte)": {
+  "en": "High (photorealistic – needs a good graphics card)",
+  "fr": "Élevé (photoréaliste – nécessite une bonne carte graphique)",
+  "it": "Alta (fotorealistica – richiede una buona scheda grafica)",
+  "rm": "Aut (fotorealistic – dovra ina buna carta grafica)"
+ },
+ "Hoch aktiv (Forward+ / Vulkan)": {
+  "en": "High active (Forward+ / Vulkan)",
+  "fr": "Élevé actif (Forward+ / Vulkan)",
+  "it": "Alta attiva (Forward+ / Vulkan)",
+  "rm": "Aut activ (Forward+ / Vulkan)"
+ },
+ "Hoch gewählt, aber aus: ": {
+  "en": "High chosen, but off: ",
+  "fr": "Élevé choisi, mais désactivé : ",
+  "it": "Alta scelta, ma disattivata: ",
+  "rm": "Aut tschernì, ma deactivà: "
+ },
+ "Hoch: Licht prallt von Flächen ab, Dunst, weiche Schatten, Spiegelungen auf Wasser und nassen Flächen, bessere Oberflächen. Braucht eine gute Grafikkarte (Vulkan); der Simulator startet dafür einmal neu.": {
+  "en": "High: light bounces off surfaces, haze, soft shadows, reflections on water and wet surfaces, better surfaces. Needs a good graphics card (Vulkan); the simulator restarts once for it.",
+  "fr": "Élevé : la lumière rebondit sur les surfaces, brume, ombres douces, reflets sur l'eau et les surfaces mouillées, meilleures surfaces. Nécessite une bonne carte graphique (Vulkan) ; le simulateur redémarre une fois.",
+  "it": "Alta: la luce rimbalza sulle superfici, foschia, ombre morbide, riflessi sull'acqua e sulle superfici bagnate, superfici migliori. Richiede una buona scheda grafica (Vulkan); il simulatore si riavvia una volta.",
+  "rm": "Aut: la glisch dat enavos da las surfatschas, tschajera, sumbrivas lommas, reflexs sin l'aua e sin surfatschas bletschas, meglras surfatschas. Dovra ina buna carta grafica (Vulkan); il simulatur startescha ina giada da nov."
+ },
+ "Hoch: Tiefenschärfe in der freien Ansicht (die Kamerabilder für MoveEye bleiben scharf)": {
+  "en": "High: depth of field in the free view (the camera pictures for MoveEye stay sharp)",
+  "fr": "Élevé : profondeur de champ dans la vue libre (les images des caméras pour MoveEye restent nettes)",
+  "it": "Alta: profondità di campo nella vista libera (le immagini delle telecamere per MoveEye restano nitide)",
+  "rm": "Aut: profunditad da focus en la vista libra (ils maletgs da la camera per MoveEye restan nets)"
  },
  "hoch: zufällige Kleider und Muster, Haltungen, Dinge in der Hand, Lampen und Sonnenstand, Wetter, alle Szenen, weit weg, teils verdeckt, Kamera-Fehler (Rauschen, Unschärfe, JPEG), leere Bilder mit Ästen, Fahnen, Lichtern und Insekten": {
   "en": "high: random clothes and patterns, postures, things in the hand, lamps and sun position, weather, all scenes, far away, partly hidden, camera errors (noise, blur, JPEG), empty pictures with branches, flags, lights and insects",
@@ -7482,6 +7560,12 @@
   "fr": "Aucun résultat",
   "it": "Nessun risultato",
   "rm": "Nagin resultat"
+ },
+ "kein Vulkan (OpenGL läuft)": {
+  "en": "no Vulkan (OpenGL running)",
+  "fr": "pas de Vulkan (OpenGL en cours)",
+  "it": "nessun Vulkan (OpenGL in uso)",
+  "rm": "nagin Vulkan (OpenGL è en funcziun)"
  },
  "keine": {
   "en": "none",
@@ -8317,6 +8401,12 @@
   "fr": "Réinitialiser la liste «contre l’IA»",
   "it": "Azzerare la lista «contro l’IA»",
   "rm": "Reinizialisar la glista «cunter la IA»"
+ },
+ "Lite ist an": {
+  "en": "Lite is on",
+  "fr": "Lite est activé",
+  "it": "Lite è attivo",
+  "rm": "Lite è activà"
  },
  "Livebild": {
   "en": "Live picture",
@@ -9720,6 +9810,12 @@
   "it": "Testare un guasto di rete",
   "rm": "Testar ina panna da la rait"
  },
+ "Neu heisst die Datei MoveEyeSim3D.exe (die alte MotionWatch3D.exe wird entfernt). Der Simulator beginnt mit frischen Einstellungen.": {
+  "en": "The file is now called MoveEyeSim3D.exe (the old MotionWatch3D.exe is removed). The simulator starts with fresh settings.",
+  "fr": "Le fichier s'appelle désormais MoveEyeSim3D.exe (l'ancien MotionWatch3D.exe est supprimé). Le simulateur démarre avec de nouveaux réglages.",
+  "it": "Il file ora si chiama MoveEyeSim3D.exe (il vecchio MotionWatch3D.exe viene rimosso). Il simulatore parte con impostazioni nuove.",
+  "rm": "La datoteca sa numna ussa MoveEyeSim3D.exe (la veglia MotionWatch3D.exe vegn allontanada). Il simulatur cumenza cun novs parameters."
+ },
  "Neu laden": {
   "en": "Reload",
   "fr": "Recharger",
@@ -10001,6 +10097,12 @@
   "fr": "Normal",
   "it": "Normale",
   "rm": "Normal"
+ },
+ "Normal (wie bisher)": {
+  "en": "Normal (as before)",
+  "fr": "Normal (comme avant)",
+  "it": "Normale (come prima)",
+  "rm": "Normal (sco fin ussa)"
  },
  "Note": {
   "en": "Grade",
@@ -15298,6 +15400,12 @@
   "fr": "trop court",
   "it": "troppo corto",
   "rm": "memia curt"
+ },
+ "zu langsam": {
+  "en": "too slow",
+  "fr": "trop lent",
+  "it": "troppo lento",
+  "rm": "memia plaun"
  },
  "zu viele Umleitungen": {
   "en": "",

@@ -28,6 +28,8 @@ var Sym = preload("res://scripts/symbole.gd")          # 3D-4.22: drawn symbols,
 var sym_node = null
 var Autostart = preload("res://scripts/autostart.gd")
 var Game = preload("res://scripts/game.gd")
+var GrafikHoch = preload("res://scripts/grafik_hoch.gd")   # F1 «Grafikstufe Hoch» (Forward+: GI, Nebel, Spiegelungen, Oberflächen)
+var hoch                              # grafik_hoch.gd (null until _ready)
 var TestRun = preload("res://scripts/testrun.gd")
 var Life = preload("res://scripts/life.gd")
 var stories                           # events.gd: break-in, barbecue, coming home ... (3D-3.40)
@@ -371,6 +373,8 @@ func _ready() -> void:
 	set_process_unhandled_input(false)
 	if _vm_needs_angle(args):
 		return
+	if GrafikHoch.start_check(self, args):     # F1: «Hoch» saved but OpenGL running - start again once with Forward+
+		return
 	in_vm = _in_vm()
 	if in_vm and not "--quality" in args:
 		quality = "simple"                      # virtual machine: no real graphics card - the light graphics by default
@@ -382,6 +386,9 @@ func _ready() -> void:
 	if k >= 0 and k + 1 < args.size():
 		update_url = args[k + 1]
 	_load_settings()
+	hoch = GrafikHoch.new()                    # F1 «Grafikstufe Hoch» (own setting file user://grafik_stufe.json)
+	hoch.main = self
+	add_child(hoch)
 	home_load()                                # 3D-3.73: «Mein Zuhause»
 	realism = preload("res://scripts/realism.gd").new()      # 3D-3.94: cameras like real ones (and like the real one of MoveEye)
 	realism.main = self
@@ -3583,6 +3590,10 @@ func _register_controls() -> void:
 	add_control("select", "quality", "Grafik", func(): return quality, func(v): _set_quality(v), "Grafik",
 			{"options": [["simple", "einfach (schnell)"], ["medium", "mittel"], ["nice", "schön (Schatten, Leuchten, Wolken)"],
 						 ["ultra", "ultra (für starke Grafikkarten; mit Vulkan noch mehr Effekte)"]]})
+	add_control("select", "grafik_stufe", "Grafikstufe", func(): return hoch.stufe, func(v): hoch.set_stufe(str(v)), "System",
+			{"sub": "Grafik", "options": hoch.STUFEN, "tip": "Hoch: Licht prallt von Flächen ab, Dunst, weiche Schatten, Spiegelungen auf Wasser und nassen Flächen, bessere Oberflächen. Braucht eine gute Grafikkarte (Vulkan); der Simulator startet dafür einmal neu."})
+	add_control("toggle", "grafik_dof", "Hoch: Tiefenschärfe in der freien Ansicht (die Kamerabilder für MoveEye bleiben scharf)", func(): return hoch.dof_free, func(v): hoch.set_dof(bool(v)), "System",
+			{"sub": "Grafik", "expert": true})
 	add_control("slider", "view_scale", "Schärfe der Ansicht im Fenster (weniger = schneller; die Bilder für MoveEye bleiben scharf)", func(): return view_scale, func(v): set_view_scale(float(v)), "Grafik", {"min": 0.4, "max": 1.0, "step": 0.05, "unit": "×"})
 	add_control("select", "win_fps", "Bilder pro Sekunde im Fenster", func(): return str(win_fps), func(v): win_fps = int(v); _settings_dirty = true, "Grafik",
 			{"options": [["0", "so viele wie möglich"], ["60", "60"], ["30", "30 (spart Strom)"], ["20", "20 (schwacher PC)"]]})
@@ -3728,6 +3739,8 @@ func _apply_quality() -> void:
 	env.volumetric_fog_density = 0.008
 	env.volumetric_fog_length = 80.0
 	get_viewport().use_taa = fwd and lvl >= 3
+	if hoch != null:
+		hoch.after_quality()                       # F1: «Hoch» on top of the chosen level (or away again)
 
 
 func _game_card_start() -> void:
@@ -4273,6 +4286,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "pad": [pad_drive.x, pad_drive.y, now() - pad_t, _pad_l, _pad_r, rover_pad.dragging, sim_active, now() - _drive_t], "on": mover_on, "x": snappedf(rig.position.x, 0.01), "z": snappedf(rig.position.z, 0.01),
 				"yaw": snappedf(rad_to_deg(rig.rotation.y), 0.1), "drive": mw.get("drive", {}),
 				"near": _ob_near(Vector2(rig.position.x, rig.position.z - 0.3)).map(func(o): return [o["c"], _ob_closest(o, Vector2(rig.position.x, rig.position.z))[1]])}
+	elif a == "grafik":                                # F1 «Grafikstufe Hoch» (tests, measuring): {do: info | set (value) | dof | off_session | on_session}
+		return hoch.op(d)
 	elif a == "view":                                  # for tests: the free view from a point to a point, panel away
 		var vp_: Array = d.get("pos", [0, 3, 6])
 		var la_: Array = d.get("look", [0, 1, 0])
