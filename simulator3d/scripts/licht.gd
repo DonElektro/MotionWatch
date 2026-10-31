@@ -256,8 +256,8 @@ func compute() -> Dictionary:
 	var age := _rev(mlon - float(e["slon"])) / 360.0       # 0 new, 0.5 full (for the shape in the sky shader)
 	var cl: float = main.clouds()
 	var trans := 1.0 - 0.78 * pow(cl, 1.3)                 # clouds let this much through (overcast ~25 %)
-	var hills: float = main.sun_behind_hills() if _t_override.is_empty() else 0.0
-	var l_sun := tw_lux(el) * trans * (1.0 - 0.85 * hills)
+	var hills: float = main.sun_behind_hills() if _t_override.is_empty() and main.terrain and el > 0.0 else 0.0   # (below the horizon it is 1 anyway)
+	var l_sun := tw_lux(el) * trans * (1.0 - 0.6 * hills)      # behind a mountain: no direct sun, the sky still bright
 	var l_moon := 0.0
 	if mp.x > -1.0:
 		var pa := 180.0 - elong                            # phase angle
@@ -364,6 +364,17 @@ func update() -> void:
 	main._amb_base = amb
 	main.env.ambient_light_energy = amb + main._flash_boost
 	main.moonlight.light_energy = (f * share * 0.6 / maxf(sin(deg_to_rad(maxf(malt, 0.0))), 0.25)) * (1.0 - day) if malt > -1.0 else 0.0
+	# twilight: the sky stays the brightest thing for a while after sunset - deep blue above, orange-red at the horizon
+	# (before: it got dark with the ground and looked black in the night picture of the cameras)
+	var twk := smoothstep(-11.0, -0.5, el) * (1.0 - smoothstep(0.0, 6.0, el))
+	if twk > 0.0:
+		var hor0: Color = smat.get_shader_parameter("horizon_color")
+		var top0: Color = smat.get_shader_parameter("top_color")
+		var clear := 1.0 - 0.8 * cl
+		smat.set_shader_parameter("top_color", top0.lerp(Color(0.09, 0.15, 0.32), twk * 0.8))
+		smat.set_shader_parameter("horizon_color", hor0.lerp(Color(0.62, 0.42, 0.36).lerp(Color(0.85, 0.45, 0.22), smoothstep(-4.0, 1.0, el)) * clear + Color(0.35, 0.36, 0.38) * (1.0 - clear), twk * 0.85))
+		main._sky_e_base = maxf(main._sky_e_base, 0.06 + 0.55 * twk * twk)
+		smat.set_shader_parameter("energy", main._sky_e_base + main._flash_boost * 0.6)
 	# light pollution: the orange glow over the place (main.gd does it only without licht.gd)
 	var glow: float = LP_GLOW[s["lp"]]
 	if glow > 0.0:
@@ -532,7 +543,7 @@ func _lamps() -> void:
 	for t in _tents:
 		var on: bool = power and home_lights and not test and _evening(h, t["bed"], el) and (h < 7.5 and t["early"] or h >= 7.5)
 		for m2 in t["mats"]:
-			m2.emission_energy_multiplier = 0.55 if on else 0.0
+			m2.emission_energy_multiplier = 0.35 if on else 0.0
 		if t["light"] != null and is_instance_valid(t["light"]):
 			t["light"].light_energy = 0.7 if on else 0.0
 	for w in _wins:
