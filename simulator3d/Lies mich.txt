@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.9.2 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.10.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -436,6 +436,14 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.10.0
+3.10.0: Vorführmodus (Entwickler): «Maggie und der Bergkristall» spielt sich selbst wie ein Film, ganz (etwa 2 h) oder als
+Kurzfassung (etwa 15 Min.). Kamerawechsel, Untertitel, Erzählerstimme. Zuschauen im Simulator oder im Browser bzw. am Handy
+(MoveEye → Simulator → Entwickler → Vorführung). Eigene Spielstände bleiben unberührt. Der Autopilot meldet, wenn er
+irgendwo nicht weiterkommt.
+So testest du: 1) Mehr → Entwickler → Vorführung → Kurzfassung ansehen. 2) Am Handy: Simulator → Entwickler → Vorführung,
+dann Pause und Kapitel.
 
 NEU IN 3.9.2
 3.9.2: Behoben: Der Simulator schloss sich bei manchen PCs gleich nach dem Start (Foto-Inhalte wurden zu früh angewendet).

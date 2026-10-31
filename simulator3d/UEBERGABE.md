@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.9.2** · MoveEye **3.9.2** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.10.0** · MoveEye **3.10.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.10.0 (MoveEye 3.10.0): Vorführmodus «Maggie»
+
+- Simulator: Vorführung (Entwickler) – Maggie spielt sich selbst (ganz ≈ 2 h / Kurzfassung ≈ 15 Min.), Kamerawechsel,
+  Untertitel, Erzählerstimme, eigener Spielstand, Autopilot meldet Hänger; neue /control-Aktion (schnittstelle.json 34).
+  MoveEye: Teil `639m_vorfuehrung.py` (Vollbild /sim/vorfuehrung im Browser, Steuerung Pause/Kapitel).
+- Erste zweistellige Mittelzahl: 3.10.0 > 3.9.x überall numerisch geprüft (versionen.py/gd, sim_vkey, Web vnum, sort -V).
 
 ## NEU in 3.9.2 (MoveEye 3.9.2): Start-Absturz behoben (Foto-Inhalte)
 

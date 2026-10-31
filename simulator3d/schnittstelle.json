@@ -115,6 +115,7 @@
     "visits": "Besuche",
     "weit": "Weitwinkel-Halterung (163)",
     "entdecken": "Entdeckungsbuch, Foto fuer das Entdeckungsbuch, Blinki-Hinweise (139 Kachel Entdeckungen, Bilder /disc_pic/<i>.jpg)",
+    "vorfuehrung": "Vorfuehrmodus Maggie (maggie_vorfuehrung.gd): do start (len kurz | ganz) | pause | weiter | kapitel (n) | stop | info -> 639m Seite /sim/vorfuehrung (nur Besitzer; Simulator: nur dieser PC / verbundenes MoveEye)",
     "spielbereich": "Reiter Spielen (639i): Kopfzeile level + slot {n, name}, resume {id, title, where, pct} (Weiterspielen-Hinweis), stories [{id, title, short, dauer, age, pct, where, started, done, locked, soon, pic, last}] (Regal Geschichten, Bild /story_pic/<id>.jpg), chapters (Entdecken: Orte der Reihe nach, start = Hinreisen), badges (-> Entdeckungsbuch, 139 auch ueber entdecken badges), kids, blinki"
   },
   "_meta": {
