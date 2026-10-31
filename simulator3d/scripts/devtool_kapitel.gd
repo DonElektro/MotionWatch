@@ -5,7 +5,7 @@ extends Node
 ##     startet die Tour (fester Seed), «Nachtlager» = am Ziel angekommen, «Nacht» = Lager steht, «Morgen» = schnelle Nacht.
 ##   * Spielbereich (spielbereich.gd): Kapitel 1 … 4 offen (die davor als besucht) und hinein.
 ##   * Horror-Modus «Das Hospiz» (bergtal_horror.gd): Nacht 1 … 3 - NUR wenn Horror im laufenden Programm schon mit dem
-##     Passwort entsperrt ist (horror.unlocked). Keine Umgehung: ohne Entsperren ist der Knopf aus, /control sagt «locked».
+##     Passwort (oder dem Knopf «Ohne Passwort starten» am PC) entsperrt ist (horror.may_play). Keine Umgehung: ohne Entsperren ist der Knopf aus, /control sagt «locked».
 ## Test-Spielstand: Abenteuer, Spielbereich und Entdeckungsbuch (Abzeichen) schreiben bis zum Neustart (oder «Test beenden»)
 ## in eigene Dateien (user://dev_test/…, save_file / save_path / use_file der drei Teile) - Daniels echter Spielstand bleibt
 ## unberührt; das Level des Tests wird nicht beim Spielstand gemerkt (Engine-Meta «dev_test», spielstand.gd remember_lv).
@@ -72,7 +72,7 @@ func chapters() -> Dictionary:
 
 func horror_ok() -> bool:
 	var h = main.horror
-	return h != null and bool(h.unlocked) and not bool(main.get("kids_on"))
+	return h != null and bool(h.may_play())             # the one rule of bergtal_horror.gd (password or the button, not kids)
 
 
 # =============================================================================================================================
