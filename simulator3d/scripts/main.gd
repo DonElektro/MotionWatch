@@ -2318,6 +2318,8 @@ func busy_with(except_ := "") -> String:
 		w = "Wiedergabe"
 	elif horror != null and horror.running:
 		w = "Horror-Modus"                             # the nights of «Das Hospiz» (bergtal_horror.gd)
+	elif preload("res://scripts/ferienpark_leben.gd").task_busy(self) != "":
+		w = "Ferienpark-Aufgabe"                       # Ferienpark-Leben: lost child / bike thief (the tent task: «Nacht-Testlauf»)
 	elif _mw_task() != "":                             # 3D-4.x: one lock with MoveEye (a drill, a protection test … there)
 		w = _mw_task()
 	return "" if w == except_ else w
@@ -3785,7 +3787,7 @@ const SIMPLE_GROUPS := ["Szene", "Wetter", "Besuch", "Testen", "Spiel"]
 # extra «wiz»: not in this panel and not in the Simulator control of MoveEye.
 const GAME_MAIN := ["game_wizard", "game_start", "game_stop"]
 # Erlebniswelt 20–23 (entdecken.gd): the part «Entdecken» stays on the card «Spiel» (not in the assistant); the first three in «Einfach»
-const DISC_IDS := ["disc_book", "disc_photo", "disc_hints", "disc_hint_min", "disc_demo", "disc_seek"]
+const DISC_IDS := ["disc_book", "disc_photo", "disc_hints", "disc_hint_min", "disc_demo", "disc_seek", "fp_task_kind", "fp_task_velo", "fp_task_zelt"]
 const DISC_SIMPLE := ["disc_book", "disc_photo", "disc_hints"]
 # 3D-4.7: a fixed id per group for MoveEye (the visible names may change); sent as «gid» with every control
 const GROUP_IDS := {"Szene": "scene", "Wetter": "weather", "Besuch": "visit", "Kamerabild": "camera", "Sensoren": "sensors", "Mover": "mover", "Licht & Ton": "lightsound",
@@ -4127,6 +4129,7 @@ func _register_controls() -> void:
 	entdecken.register_controls()                       # Erlebniswelt 20–23: Spiel → Entdecken (Buch, Foto, Blinki-Hinweise)
 	add_control("button", "disc_seek", "🙈 Verstecken mit MoveEye", null, func(): _fp_seek(), "Spiel")   # Erlebniswelt 12
 	controls[-1]["only"] = func(): return scene == "ferienpark"   # 3D-4.30: only in the Ferienpark (like «Standort im Ferienpark»)
+	preload("res://scripts/ferienpark_leben.gd").add_controls(self)   # Ferienpark-Leben: 3 tasks (Spiel → Entdecken) + «Leben nach Uhrzeit» (Besuch → Von selbst)
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
 			{"options": [["mw", "Gegen MoveEye (echte Erkennung)"], ["guard", "Wächter (ein Spieler oder der Bot-Wächter)"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"], ["free", "Zonen-Check – ohne Erwischen (zum Testen der Erkennung)"], ["jaeger", "Fehlalarm-Jäger – Tiere und Dinge täuschen MoveEye (nur mit MoveEye)"], ["camera", "ältere: Alle gegen die Kamera"], ["mwhand", "ältere: Team gegen MoveEye (Wächter steuern MoveEye)"], ["patrol", "ältere: Patrouille mit dem Mover"]]})

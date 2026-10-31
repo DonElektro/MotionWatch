@@ -207,6 +207,17 @@ const OBJ := {
 }
 
 
+# Glut nach dem Grillen (Paket «Ferienpark-Leben»): Holzkohle glüht unter der Asche noch lange nach. Hersteller nennen
+# 1,5–3 h Brenndauer für Briketts, abgedeckte Glut ist nach Stunden noch heiss - SCHÄTZWERT, kein Datenblatt:
+# Abkühlen wie Newton mit τ = 75 min ab dem Ende des Grillens (nach 75 min ~150 °C, nach 3 h ~50 °C bei 15 °C Luft).
+const EMBER_TAU_MIN := 75.0
+
+
+static func embers(minutes: float, amb := 15.0) -> float:
+	"""Oberfläche der Holzkohle x Minuten nach dem Grillen (°C) - ausgehend von «bbq_coals»"""
+	return amb + (T("bbq_coals", amb) - amb) * exp(-maxf(0.0, minutes) / EMBER_TAU_MIN)
+
+
 static func obj(kind: String, hot_part: bool, default, amb := 15.0):
 	"""Temperatur für ein Teil eines Gegenstands - default (Zahl oder Material-Name) wenn die Tabelle ihn nicht kennt"""
 	if not OBJ.has(kind):
