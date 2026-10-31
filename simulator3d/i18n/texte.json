@@ -450,6 +450,18 @@
   "it": " · scollegato",
   "rm": " · separà"
  },
+ " · Godot: %s / HTTP %s": {
+  "en": " · Godot: %s / HTTP %s",
+  "fr": " · Godot: %s / HTTP %s",
+  "it": " · Godot: %s / HTTP %s",
+  "rm": " · Godot: %s / HTTP %s"
+ },
+ " · Godot: startet nicht": {
+  "en": " · Godot: does not start",
+  "fr": " · Godot : ne démarre pas",
+  "it": " · Godot: non si avvia",
+  "rm": " · Godot: na cumenza betg"
+ },
  " · im Schatten": {
   "en": " · in the shade",
   "fr": " · à l’ombre",
@@ -961,6 +973,12 @@
   "it": "%d falsi allarmi provocati",
   "rm": "%d fauss alarms provocads"
  },
+ "%d Fehler, z. B. %s": {
+  "en": "%d errors, e.g. %s",
+  "fr": "%d erreurs, p. ex. %s",
+  "it": "%d errori, p. es. %s",
+  "rm": "%d sbagls, p. ex. %s"
+ },
  "%d Gegenstände in «%s»": {
   "en": "%d things in «%s»",
   "fr": "%d objets dans «%s»",
@@ -1399,6 +1417,12 @@
   "it": "%s: %d di %d scoperti",
   "rm": "%s: %d da %d scuvrids"
  },
+ "%s: %s nicht erreichbar": {
+  "en": "%s: %s not reachable",
+  "fr": "%s : %s injoignable",
+  "it": "%s: %s non raggiungibile",
+  "rm": "%s: %s betg cuntanschibel"
+ },
  "%s: %s – %d Punkte": {
   "en": "%s: %s – %d points",
   "fr": "%s : %s – %d points",
@@ -1467,6 +1491,12 @@
   "fr": "(estimation du simulateur, MoveEye non connecté)",
   "it": "(stima del simulatore, MoveEye non collegato)",
   "rm": "(stimaziun dal simulatur, MoveEye betg collià)"
+ },
+ "(teilweise)": {
+  "en": "(partly)",
+  "fr": "(en partie)",
+  "it": "(in parte)",
+  "rm": "(per part)"
  },
  "*.glb, *.gltf ; 3D-Modell (glTF)": {
   "en": "*.glb, *.gltf ; 3D model (glTF)",
@@ -2431,6 +2461,12 @@
   "it": "",
   "rm": ""
  },
+ "An: Fotos für Boden, Wege, Zelt, Bäume und Himmel": {
+  "en": "On: photos for ground, paths, tent, trees and sky",
+  "fr": "Activé : photos pour le sol, les chemins, la tente, les arbres et le ciel",
+  "it": "Attivo: foto per suolo, sentieri, tenda, alberi e cielo",
+  "rm": "En: fotos per terren, sendas, tenda, plantas e tschiel"
+ },
  "Andere Szenen": {
   "en": "Other scenes",
   "fr": "Autres scènes",
@@ -2796,6 +2832,12 @@
   "fr": "désactivé",
   "it": "spento",
   "rm": "deactivà"
+ },
+ "Aus (bisherige Code-Materialien)": {
+  "en": "Off (previous code materials)",
+  "fr": "Désactivé (matériaux de code habituels)",
+  "it": "Spento (materiali di codice di prima)",
+  "rm": "Ora (materials da code da fin ussa)"
  },
  "aus dem Bild %.0f s · verdeckt %.0f s · verloren %d×": {
   "en": "out of the picture %.0f s · hidden %.0f s · lost %d×",
@@ -5475,6 +5517,12 @@
   "it": "Riprodurre notti vere (%d tracce di allarme, anche con altro meteo)",
   "rm": "Reproducir notgs vairas (%d fastizs d’alarm, er cun autra aura)"
  },
+ "Echte Oberflächen und Himmel (Fotos, freie Inhalte CC0; nicht in Lite)": {
+  "en": "Real surfaces and sky (photos, free CC0 content; not in Lite)",
+  "fr": "Surfaces et ciel réels (photos, contenus libres CC0 ; pas en Lite)",
+  "it": "Superfici e cielo reali (foto, contenuti liberi CC0; non in Lite)",
+  "rm": "Surfatschas e tschiel vairs (fotos, cuntegns libers CC0; betg en Lite)"
+ },
  "Echte Uhrzeit (die Uhr des PCs)": {
   "en": "Real time (the PC’s clock)",
   "fr": "Heure réelle (l’horloge du PC)",
@@ -6916,6 +6964,30 @@
   "fr": "Enlever la photo",
   "it": "Togliere la foto",
   "rm": "Foto davent"
+ },
+ "Foto-Inhalte bereit: alle %d": {
+  "en": "Photo content ready: all %d",
+  "fr": "Contenus photo prêts : les %d",
+  "it": "Contenuti foto pronti: tutti i %d",
+  "rm": "Cuntegns da fotos pronts: tuts %d"
+ },
+ "Foto-Inhalte jetzt laden / prüfen": {
+  "en": "Load / check photo content now",
+  "fr": "Charger / vérifier les contenus photo",
+  "it": "Caricare / verificare i contenuti foto ora",
+  "rm": "Chargiar / controllar ussa ils cuntegns da fotos"
+ },
+ "Foto-Inhalte sind aus: %s": {
+  "en": "Photo content is off: %s",
+  "fr": "Contenus photo désactivés : %s",
+  "it": "Contenuti foto spenti: %s",
+  "rm": "Cuntegns da fotos èn ora: %s"
+ },
+ "Foto-Inhalte: %d von %d nutzbar – fehlt: %s": {
+  "en": "Photo content: %d of %d usable – missing: %s",
+  "fr": "Contenus photo : %d sur %d utilisables – manque : %s",
+  "it": "Contenuti foto: %d di %d utilizzabili – mancano: %s",
+  "rm": "Cuntegns da fotos: %d da %d utilisabels – manca: %s"
  },
  "Foto: Bildwinkel (Handyfoto etwa 65°, Panorama bis 360°)": {
   "en": "",
@@ -10340,6 +10412,12 @@
   "it": "L ◉ (controller) · girare la testa di MoveEye, luce accesa / spenta",
   "rm": "L ◉ (controller) · volver il chau da MoveEye, glisch en / or"
  },
+ "Lade %s …": {
+  "en": "Loading %s …",
+  "fr": "Chargement de %s …",
+  "it": "Carico %s …",
+  "rm": "Chargia %s …"
+ },
  "Lade %s … %.1f von %.1f MB": {
   "en": "Loading %s … %.1f of %.1f MB",
   "fr": "Chargement de %s … %.1f sur %.1f MB",
@@ -10351,6 +10429,12 @@
   "fr": "Chargement des bâtiments 3D de swisstopo … %d sur %d",
   "it": "Carico gli edifici 3D da swisstopo … %d di %d",
   "rm": "Chargiar edifizis 3D da swisstopo … %d da %d"
+ },
+ "Lade das Paket der Foto-Inhalte …": {
+  "en": "Loading the photo content pack …",
+  "fr": "Chargement du paquet de contenus photo …",
+  "it": "Carico il pacchetto dei contenuti foto …",
+  "rm": "Chargia il pachet dals cuntegns da fotos …"
  },
  "Lade Gelände, Luftbild und Gebäude": {
   "en": "Loading terrain, aerial picture and buildings",
@@ -11951,6 +12035,12 @@
   "it": "La camera di MoveEye ha qualcosa di speciale nell’immagine – foto per il diario delle scoperte",
   "rm": "La camera da MoveEye ha insatge spezial en il maletg – foto per il cudesch da scuvertas"
  },
+ "MoveEyeSim3D-Inhalte": {
+  "en": "MoveEyeSim3D-Inhalte",
+  "fr": "MoveEyeSim3D-Inhalte",
+  "it": "MoveEyeSim3D-Inhalte",
+  "rm": "MoveEyeSim3D-Inhalte"
+ },
  "Mover": {
   "en": "Mover",
   "fr": "Mover",
@@ -12900,6 +12990,12 @@
   "it": "solo di notte",
   "rm": "mo la notg"
  },
+ "Nur Oberflächen (Himmel wie bisher)": {
+  "en": "Surfaces only (sky as before)",
+  "fr": "Surfaces seulement (ciel comme avant)",
+  "it": "Solo superfici (cielo come prima)",
+  "rm": "Mo surfatschas (tschiel sco fin ussa)"
+ },
  "nur Tiere": {
   "en": "animals only",
   "fr": "animaux seulement",
@@ -13080,6 +13176,12 @@
   "it": "Cartella",
   "rm": "Ordinatur"
  },
+ "Ordner der Foto-Inhalte öffnen": {
+  "en": "Open the photo content folder",
+  "fr": "Ouvrir le dossier des contenus photo",
+  "it": "Apri la cartella dei contenuti foto",
+  "rm": "Avrir l'ordinatur dals cuntegns da fotos"
+ },
  "Ordner öffnen": {
   "en": "Open folder",
   "fr": "Ouvrir le dossier",
@@ -13200,11 +13302,23 @@
   "it": "Creazione del pacchetto …",
   "rm": "Il pachet vegn fatg …"
  },
+ "Paket: ": {
+  "en": "Pack: ",
+  "fr": "Paquet : ",
+  "it": "Pacchetto: ",
+  "rm": "Pachet: "
+ },
  "Paket: Bild %d von %d · %s · %s%s": {
   "en": "Package: picture %d of %d · %s · %s%s",
   "fr": "Paquet : image %d sur %d · %s · %s%s",
   "it": "Pacchetto: immagine %d di %d · %s · %s%s",
   "rm": "Pachet: maletg %d da %d · %s · %s%s"
+ },
+ "Paket: Prüfsumme falsch": {
+  "en": "Pack: wrong checksum",
+  "fr": "Paquet : somme de contrôle fausse",
+  "it": "Pacchetto: checksum errata",
+  "rm": "Pachet: summa da controlla sbagliada"
  },
  "Panoramatafel": {
   "en": "Panorama board",
@@ -13692,6 +13806,12 @@
   "fr": "Banc d’essai",
   "it": "Banco di prova",
   "rm": "Banc da prova"
+ },
+ "Prüfstand (--quality): Bilder bleiben vergleichbar": {
+  "en": "Test bench (--quality): images stay comparable",
+  "fr": "Banc d'essai (--quality) : images comparables",
+  "it": "Banco di prova (--quality): immagini confrontabili",
+  "rm": "Banc da prova (--quality): maletgs restan cumparabels"
  },
  "Prüfstand (PC): Ergebnis %s": {
   "en": "Test bench (PC): result %s",
