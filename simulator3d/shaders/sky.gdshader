@@ -13,6 +13,7 @@ uniform float night = 0.0;            // 0 = day … 1 = night (stars)
 uniform vec2 wind = vec2(0.004, 0.0015);
 uniform float moon_phase = 0.5;       // 3D-3.98: 0 = new moon, 0.5 = full moon, 1 = new moon again
 uniform float detail = 1.0;           // 0 = no clouds / stars (simple graphics)
+
 float hash3(vec3 p) {
 	p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419));
 	p *= 17.0;
