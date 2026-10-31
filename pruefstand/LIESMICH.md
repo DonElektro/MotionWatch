@@ -34,6 +34,8 @@ Der Prüfstand beantwortet bei jeder neuen Version die Frage: **Erkennt MoveEye 
 - **Ganze Nacht** (`nacht`): 20–6 Uhr im Zeitraffer in etwa 11 Minuten (die Uhr des Simulators läuft schneller), etwa
   20 Tiere, Windböen, ein Regenschauer, ruhige Abschnitte ohne Besuch und 2 Personen. Hauptzahl: **Pushes pro Nacht**
   (richtig / falsch). `--mal` vervielfacht diese Nacht nicht (realistische Zahlen).
+  **Später (Daniel 31.10.2026):** «Ganze Nacht» auf den Nacht-Ablauf `simulator3d/scripts/nachtlauf.gd` des
+  Nacht-Testlaufs (MoveEye 579b, Seite /nacht) umstellen – ein Nacht-Ablauf für beide.
 - **Zufallsstarts** (`--seeds 3`): Zufall 1 = die festen Besucher von früher (4711), 2, 3 … dieselben Besucher auf anderen
   Wegen. In `VERLAUF.md` steht dann die Streuung (kleinster–grösster Wert pro Lauf). Mehr Personen: `--mal 1` … `--mal 5`.
 - **Schleichwege automatisch:** `pruefstand.py` übernimmt bei jedem Lauf die Schleichwege aus `feedback/` (Spielberichte als

@@ -20,11 +20,18 @@ var game
 var main
 
 const TOOLS := [["light", "💡", "Licht", 20, 20.0], ["siren", "📢", "Sirene", 30, 25.0], ["scan", "📡", "Scan", 25, 15.0],
-		["zoom", "🔍", "Zoom", 15, 10.0], ["shut", "🎯", "Auslöser", 8, 0.0]]
+		["zoom", "🔍", "Zoom", 15, 10.0], ["sweep", "💫", "Licht-Schwenk", 18, 15.0], ["ping", "🔊", "Geräusch-Ping", 12, 12.0],
+		["shut", "🎯", "Auslöser", 8, 0.0]]
+## Gameplay ausfeilen (Punkt 7, 31.10.2026): 💫 Licht-Schwenk 18 ⚡, 15 s - the light goes on for SWEEP_S and the head
+## swings ±SWEEP_DEG once (a person or the bot as guard; MoveEye turns its own head) · 🔊 Geräusch-Ping 12 ⚡, 12 s - who MOVES
+## within PING_R of the head right now shows up as a 👣 marker for 3 s (standing still, lying in a bush: nothing).
 const MAX := {"easy": 130.0, "normal": 100.0, "hard": 70.0}     # by the Wächter-Stufe
 const REGEN_L := {"easy": 0.5, "normal": 0.4, "hard": 0.3}       # energy per second
 const REGEN := 0.4
-const REAL_NO := ["light", "siren"]      # «Wie echte Hardware»: MoveEye has no light and no siren
+const REAL_NO := ["light", "siren", "sweep", "ping"]   # «Wie echte Hardware»: MoveEye has no light, no siren, no microphone
+const SWEEP_S := 2.2
+const SWEEP_DEG := 28.0
+const PING_R := 35.0
 const MISS_EXTRA := 10                   # a missed shot costs more
 const SIREN_S := 4.0
 const SCAN_S := 4.0
@@ -34,6 +41,8 @@ const SCAN_R := 30.0
 
 var st := {}                             # key ("mw" or "p<slot>") -> {"e", "max", "cd": {tool: time free again}, "used": {tool: n}}
 var siren_until := 0.0
+var sweep_until := 0.0
+var _sweep_base := 0.0
 var zoom_until := 0.0
 var _fov0 := -1.0
 var hints: Array = []                    # {"pos": Vector3, "k": "noise" | "scan", "t": until, "slot": int}
@@ -80,6 +89,7 @@ func round_start() -> void:
 	st.clear()
 	hints.clear()
 	siren_until = 0.0
+	sweep_until = 0.0
 	_zoom_off()
 
 
@@ -97,6 +107,9 @@ func _process(dt: float) -> void:
 			s["e"] = minf(float(s["max"]), float(s["e"]) + float(REGEN_L.get(_lv(), REGEN)) * dt)
 	if zoom_until > 0.0 and now() >= zoom_until:
 		_zoom_off()
+	if sweep_until > now() and main.game_mode != "mwhand":   # the swing of the head (MoveEye's own head: only the light)
+		var f := 1.0 - (sweep_until - now()) / SWEEP_S
+		game.guard_yaw = _sweep_base + deg_to_rad(SWEEP_DEG) * sin(f * TAU)
 	_t -= dt
 	if _t <= 0.0:
 		_t = 0.5
@@ -203,6 +216,26 @@ func use(g, id: String, who := "") -> Dictionary:
 					n += 1
 					game._say(q, "📡 Der Wächter scannt – er weiss ungefähr, wo du bist!", 2.5)
 			txt = "📡 Scan: %s in der Nähe" % ("niemand" if n == 0 else ("1 Schleicher" if n == 1 else "%d Schleicher" % n))
+		"sweep":
+			game.flash_until = maxf(float(game.flash_until), now() + SWEEP_S)
+			sweep_until = now() + SWEEP_S
+			_sweep_base = float(game.guard_yaw)
+			for q in game.players:
+				if q != null and q["role"] == "runner" and q["state"] == "play" and game.rules.looks_at(q):
+					game._say(q, "💫 Ein Lichtstrahl schwenkt vorbei!", 2.0)
+			txt = "💫 Licht-Schwenk (2 s)"
+		"ping":
+			var m := 0
+			var hp2: Vector3 = main.cams[0].global_position
+			for q in game.players:
+				if q == null or q["role"] != "runner" or q["state"] != "play" or int(q.get("hide_i", -1)) >= 0 or q.has("rt_hide"):
+					continue
+				var pos2: Vector3 = q["actor"].position
+				if float(q["actor"].cur_speed) > 0.3 and Vector2(pos2.x - hp2.x, pos2.z - hp2.z).length() <= PING_R:
+					add_hint(pos2, "ping", 3.0, int(q["slot"]))
+					m += 1
+					game._say(q, "🔊 Der Wächter horcht – du hast dich bewegt!", 2.5)
+			txt = "🔊 Geräusch-Ping: %s" % ("alles still" if m == 0 else ("1 bewegt sich" if m == 1 else "%d bewegen sich" % m))
 		"zoom":
 			if _fov0 < 0.0:
 				_fov0 = main.cams[0].fov
