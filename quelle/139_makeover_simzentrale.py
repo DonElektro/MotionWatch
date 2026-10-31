@@ -46,7 +46,7 @@ def sim_hub(force=False):
         d["rover_alarm"] = bool(CFG.get("rover_alarm"))
         try:                                                # Erlebniswelt 20–23 (simulator entdecken.gd): the Entdeckungsbuch of the scene
             dz = sim_control({"action": "entdecken"}) or {}
-            d["disc"] = {k: dz.get(k) for k in ("found", "total", "photo", "scene_name", "hint_text", "items")} if dz.get("ok") and "total" in dz else None
+            d["disc"] = {k: dz.get(k) for k in ("found", "total", "photo", "scene_name", "hint_text", "items", "badges")} if dz.get("ok") and "total" in dz else None
         except Exception:
             d["disc"] = None
     d["demo"] = {"busy": DEMO_RUN["busy"], "i": DEMO_RUN["i"], "n": DEMO_RUN["n"]}
@@ -167,7 +167,7 @@ SIMHUB_JS = r"""
     "Zones in 3D": "Zonen in 3D", "camera height": "Höhe der Kamera", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"});
   Object.assign(DE, {"Discoveries": "Entdeckungen", "{f} of {n} discovered": "{f} von {n} entdeckt", "Photo for the discovery book": "Foto für Entdeckungsbuch",
     "Open in the simulator": "Im Simulator öffnen", "Blinki hint": "Blinki-Hinweis", "a place": "ein Ort", "a scene": "eine Szene", "an animal": "ein Tier", "a person": "ein Mensch",
-    "Found!": "Entdeckt!", "Something special is in the picture – take the photo now!": "Etwas Besonderes ist im Bild – jetzt fotografieren!",
+    "Found!": "Entdeckt!", "Badges": "Abzeichen", "not yet": "noch nicht", "Something special is in the picture – take the photo now!": "Etwas Besonderes ist im Bild – jetzt fotografieren!",
     "Come close enough in the 3D view to discover places, animals and funny scenes. 📷 = take a photo with MoveEye’s camera: aim the head, then «Photo for the discovery book». 🌙 🌧 🌅 = only at night, in the rain, in the morning.": "Wer in der 3D-Ansicht nahe genug kommt, entdeckt Orte, Tiere und lustige Szenen. 📷 = mit MoveEyes Kamera fotografieren: Kopf hinrichten, dann «Foto für Entdeckungsbuch». 🌙 🌧 🌅 = nur nachts, bei Regen, am Morgen.",
     "nothing special in the picture of the camera": "nichts Besonderes im Bild der Kamera", "nothing more to find here right now": "gerade gibt es hier nichts mehr zu finden"});   // Erlebniswelt 20–23
   const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : (L() === "en" ? k : (DE[k] || k));
@@ -224,6 +224,13 @@ SIMHUB_JS = r"""
         E("small", "", x.found ? (x.short || "") : tt(({ort: "a place", szene: "a scene", tier: "an animal", mensch: "a person"})[x.kind] || "a place") + (w.trim() ? " · " + w.trim() : "")));
       c.appendChild(tx); g.appendChild(c); });
     s.appendChild(g);
+    if ((D.badges || []).length) {                     // Geschichten-Menü (639i): the badges live in the discovery book now
+      s.appendChild(E("b", "", "🎖 " + tt("Badges")));
+      const bg = E("div", "dgrid");
+      D.badges.forEach(b => { const c = E("div", "dit" + (b.n > 0 ? "" : " no")); c.title = b.name + (b.n > 0 ? "" : " – " + tt("not yet"));
+        c.append(E("div", "dph", b.n > 0 ? b.sym : "?"), E("div", "dtx", b.name)); bg.appendChild(c); });
+      s.appendChild(bg);
+    }
     const r = E("div", "shrow"); r.style.cssText = "margin-top:8px;flex-wrap:wrap";
     r.append(B("📷 " + tt("Photo for the discovery book"), () => act("disc", "photo").then(x => x && x.ok && say("📷 " + tt("Found!"))), D.photo ? "" : "sec"),
       B("📖 " + tt("Open in the simulator"), () => act("disc", "open")), B("💡 " + tt("Blinki hint"), () => act("disc", "hint")));

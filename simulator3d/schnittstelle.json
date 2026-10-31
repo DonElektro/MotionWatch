@@ -114,7 +114,7 @@
     "visits": "Besuche",
     "weit": "Weitwinkel-Halterung (163)",
     "entdecken": "Entdeckungsbuch, Foto fuer das Entdeckungsbuch, Blinki-Hinweise (139 Kachel Entdeckungen, Bilder /disc_pic/<i>.jpg)",
-    "spielbereich": "Reiter Spielen: Abenteuer (Kapitel), Abzeichen, Stufe, Blinki; Abenteuer starten (639i)"
+    "spielbereich": "Reiter Spielen (639i): Kopfzeile level + slot {n, name}, resume {id, title, where, pct} (Weiterspielen-Hinweis), stories [{id, title, short, dauer, age, pct, where, started, done, locked, soon, pic, last}] (Regal Geschichten, Bild /story_pic/<id>.jpg), chapters (Entdecken: Orte der Reihe nach, start = Hinreisen), badges (-> Entdeckungsbuch, 139 auch ueber entdecken badges), kids, blinki"
   },
   "_meta": {
     "world_reply": [
