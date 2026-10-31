@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6333 (Stellen: 8662)
-Übersetzt: en 6333, fr 6333, it 6333, rm 6333
+Texte gesamt: 6344 (Stellen: 8676)
+Übersetzt: en 6344, fr 6344, it 6344, rm 6344
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 440 Stellen
 Nicht mehr im Code (noch in texte.json): 174
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 21916, schlüssel 16469, keine Wörter 10196, index 8452, technisch 2761, doc 1827, einheit 249, englisch 116, pfad 96, log 85, html 68, klasse 26, shader 6
+Übersprungen (Grund: Anzahl): kennung 21955, schlüssel 16498, keine Wörter 10205, index 8463, technisch 2775, doc 1832, einheit 249, englisch 116, pfad 96, log 85, html 68, klasse 26, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  671    30
@@ -128,6 +128,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamekihilfe.gd            13     4
   gameturm.gd               13     0
   devtool_kontakt.gd        12     0
+  geschichten_faden.gd      12     0
   replay.gd                 11     1
   objekte_plus.gd           11     0
   smalltv.gd                11     4
@@ -206,11 +207,11 @@ Unsicher:
   'Wide camera (NoIR Wide)': Kameraname an MoveEye (/info) – nicht umhüllen
 
 Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {name} machen:
-  abenteuer_figuren.gd:697  'fertig'
-  abenteuer_figuren.gd:782  'nein'
-  abenteuer_figuren.gd:792  'nein'
-  abenteuer_figuren.gd:805  'ja'
-  abenteuer_figuren.gd:805  'nein'
+  abenteuer_figuren.gd:698  'fertig'
+  abenteuer_figuren.gd:783  'nein'
+  abenteuer_figuren.gd:793  'nein'
+  abenteuer_figuren.gd:806  'ja'
+  abenteuer_figuren.gd:806  'nein'
   ferienpark_leben.gd:925  'fertig'
   ferienpark_leben.gd:992  'fertig'
   maggie_story.gd:397  'fertig'
@@ -307,11 +308,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:2365  'Aussicht: '
   bergtal_abenteuer.gd:415  'Start: '
   bergtal_abenteuer.gd:972  ' auf der Bank mit Aussicht'
-  bergtal_abenteuer.gd:2153  'Wird frei: '
-  bergtal_abenteuer.gd:2374  'aus'
-  bergtal_abenteuer.gd:2375  'keine'
-  bergtal_abenteuer.gd:2430  '  · %.1f kg'
-  bergtal_abenteuer.gd:2524  ' - Bank'
+  bergtal_abenteuer.gd:2154  'Wird frei: '
+  bergtal_abenteuer.gd:2375  'aus'
+  bergtal_abenteuer.gd:2376  'keine'
+  bergtal_abenteuer.gd:2431  '  · %.1f kg'
+  bergtal_abenteuer.gd:2525  ' - Bank'
   gamekiwaechter.gd:100  ' · 🤖 gegen die KI – eigene Liste, zählt nicht für die Rangliste'
   gamekiwaechter.gd:147  'aus'
   gamekiwaechter.gd:147  'ein'

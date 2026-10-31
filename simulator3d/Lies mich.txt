@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.2.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.3.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -422,6 +422,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.3.0
+3.3.0: Roter Faden: Die Karte des Grossvaters und Maggie kennen sich. Ruedi, Anna und Sepp erwähnen das andere Abenteuer.
+Vrenis Käse riecht Maggie. Im Finale liegt ein Wanderbuch. Die Kapelle ist auf der alten Karte. Neues Abzeichen «Beide
+Geschichten geschafft».
+So testest du: 1) Maggie Herbst, Ruedi beim ersten Rastplatz. 2) Karte des Grossvaters, mit Anna reden.
 
 NEU IN 3.2.0
 3.2.0: Statisten im Hintergrund: gehen zu Zielen (Bank, Brunnen, Hütte, Aussicht) und verweilen. Sie haben Tätigkeiten
