@@ -47,6 +47,12 @@ func _in_clearing(x: float, z: float, r := 1.0) -> bool:
 	return Vector2(x / 34.0, z / 30.0).length() < r or Vector2(x + 46.0, z - 30.0).length() < 11.0 * r
 
 
+func _near_zelte(x: float, z: float) -> bool:
+	"""K2 (Kontaktbogen): no tree within 13 m of the MoveEye spot «zelte» - it stood 5 m from the forest edge, a fir right in
+	front of the camera (for every spot the same, so the forest does not change with the spot)"""
+	return Vector2(x - float(SPOTS["zelte"][1]), z - float(SPOTS["zelte"][2])).length() < 13.0
+
+
 func paint(img: Image) -> void:
 	var k := -36.0
 	while k <= 36.0:                                  # the clearing: an ellipse of meadow
@@ -111,13 +117,13 @@ func content() -> void:
 	# the raised hide at the glade in the west
 	bib.add("hochsitz", P(-52.0, 26.0), deg_to_rad(-60.0), {"h": 4.0})
 	# the forest: dense, right up to the clearing; a few big broadleaf trees at its edge make it dark
-	forest(func(x, z): return not _in_clearing(x, z, 1.06), 6.0, 0.9, 0.75, 36.0)
+	forest(func(x, z): return not _in_clearing(x, z, 1.06) and not _near_zelte(x, z), 6.0, 0.9, 0.75, 36.0)
 	var edge := []
 	for i in range(24):
 		var a := TAU * i / 24.0 + rng.randf_range(-0.1, 0.1)
 		var px := cos(a) * 36.0 * rng.randf_range(1.0, 1.08)
 		var pz := sin(a) * 32.0 * rng.randf_range(1.0, 1.08)
-		if free_at(px, pz, 2.5):
+		if free_at(px, pz, 2.5) and not _near_zelte(px, pz):
 			edge.append([P(px, pz, -0.1), rng.randf() * TAU, rng.randf_range(1.25, 1.6)])
 	bib.many("tree", edge)
 

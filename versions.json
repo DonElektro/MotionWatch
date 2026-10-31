@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 13:09",
+ "generated": "2026-10-31 13:26",
  "versions": [
   {
-   "version": "2.98.104",
-   "file": "webcam_bewegung_2_98_104.py",
+   "version": "2.98.105",
+   "file": "webcam_bewegung_2_98_105.py",
    "url": "",
-   "sha256": "245cc7c67f11de69ec6a61f5975618f20a863bb9face727e23a7cc71c5786271",
-   "date": "2026-10-31 13:09",
-   "notes": "Nacht-Testlauf: Ursachen der Bergtal-Nacht übersetzt (seltene Tiere, Licht am Berg, Gämse, Kuh, Hase, Hermelin, Reh, Steinschlag, Gewitter). Simulator 3D-4.73: Bergtal-Abenteuer mit MoveEye – Lager bewachen oder Wildkamera, Fuchs am Proviant, Hinweis-Aufnahme, Sammlung von 7 seltenen Tieren.",
-   "sig": "97faaf68bac49278ce31e93bf6ea2b119fb4d0b0c2430e090b9fd37bfc545c2880f6ac65464df88f6f7709be487357dfd0a12e7548c74e54a7ab174448e41c0e"
+   "sha256": "5b7f346cdda8f0d5b62bc1b2181e27ab5556c19ea2aa637c9120ae493244264e",
+   "date": "2026-10-31 13:26",
+   "notes": "Simulator 3D-4.74: Bergtal – Passstrasse sauber auf dem Gelände (runde Kehren), Bergdorf auf Strassenhöhe, ebene Parkplätze; Pfadilager ohne Tanne vor MoveEye beim Standort Zelte.",
+   "sig": "50b906b4df9257605a7978b6eb1637563fd9e2e5cda0403d59ee1c8573a7f683fd16ef402f7fad922ae033d10e87d38e049e43ae46e7a430f95465647879c800"
   },
   {
    "version": "2.97.1",
