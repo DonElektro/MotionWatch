@@ -1019,7 +1019,7 @@ func _start_finale() -> void:
 	_chapel.position = c
 	_chapel.rotation.y = atan2(st.x - c.x, st.z - c.z)
 	if Welt.lite():
-		var cl := _chapel.get_node_or_null("Kerzen") as OmniLight3D
+		var cl := _chapel.get_node_or_null("candles") as OmniLight3D
 		if cl != null:
 			cl.omni_range = 3.5
 	_beam = Welt.beam(Color(1.0, 0.9, 0.6))
@@ -1079,7 +1079,7 @@ func _finale_cut() -> void:
 	var sp := Welt.sparkles(Color(0.75, 0.92, 1.0))
 	_crystal.add_child(sp)
 	sp.emitting = true
-	var l := _crystal.get_node_or_null("Licht") as OmniLight3D
+	var l := _crystal.get_node_or_null("light") as OmniLight3D
 	if l != null:
 		create_tween().tween_property(l, "light_energy", 3.0, 2.0)
 		l.omni_range = 6.0

@@ -127,7 +127,7 @@ static func cyl(parent: Node3D, r0: float, r1: float, h: float, pos: Vector3, m:
 static func crystal(scale := 1.0) -> Node3D:
 	"""a clear, glowing mountain crystal: a hexagonal prism with a pointed tip, a few small ones around it, soft light"""
 	var n := Node3D.new()
-	n.name = "Bergkristall"
+	n.name = "crystal"
 	var c := Color(0.62, 0.85, 1.0)
 	var mb := glow(c, 1.6, 0.82)
 	var mt := glow(Color(0.85, 0.95, 1.0), 2.4, 0.9)
@@ -142,7 +142,7 @@ static func crystal(scale := 1.0) -> Node3D:
 		cyl(s, 0.0, 0.025 * scale, 0.05 * scale, Vector3(0, 0.09 * scale, 0), mt, 6)
 		cyl(s, 0.025 * scale, 0.028 * scale, 0.08 * scale, Vector3(0, 0.03 * scale, 0), mb, 6)
 	var l := OmniLight3D.new()
-	l.name = "Licht"
+	l.name = "light"
 	l.light_color = c
 	l.light_energy = 0.8
 	l.omni_range = 3.5 * maxf(1.0, scale * 0.6)
@@ -155,7 +155,7 @@ static func crystal(scale := 1.0) -> Node3D:
 # ---- a rest place: fire ring with embers, a log to sit on and a stone with the crystal sign ----------------------------
 static func rest_place(nr: int, col: Color) -> Node3D:
 	var n := Node3D.new()
-	n.name = "Rastplatz%d" % nr
+	n.name = "rest%d" % nr
 	var stone := mat(Color(0.45, 0.44, 0.42))
 	for k in range(9):
 		var a := k * TAU / 9.0
@@ -168,12 +168,12 @@ static func rest_place(nr: int, col: Color) -> Node3D:
 	log1.rotation = Vector3(0, 0, PI / 2.0)
 	# the stone with the crystal sign (lights up when reached)
 	var post := box(n, Vector3(0.5, 0.9, 0.35), Vector3(1.4, 0.45, -0.6), mat(Color(0.52, 0.5, 0.47)), Vector3(0, 0.3, 0))
-	post.name = "Stein"
+	post.name = "post"
 	var sign_ := cyl(post, 0.0, 0.09, 0.2, Vector3(0, 0.2, 0.18), glow(col, 0.4, 0.95), 6)
 	sign_.rotation = Vector3(PI / 2.0, 0, 0)
-	sign_.name = "Zeichen"
+	sign_.name = "sign"
 	var l := OmniLight3D.new()
-	l.name = "Glut"
+	l.name = "ember"
 	l.light_color = Color(1.0, 0.55, 0.25)
 	l.light_energy = 0.7
 	l.omni_range = 4.0
@@ -184,10 +184,10 @@ static func rest_place(nr: int, col: Color) -> Node3D:
 
 
 static func rest_lit(n: Node3D, col: Color) -> void:
-	var post := n.get_node_or_null("Stein")
+	var post := n.get_node_or_null("post")
 	if post == null:
 		return
-	var s := post.get_node_or_null("Zeichen") as MeshInstance3D
+	var s := post.get_node_or_null("sign") as MeshInstance3D
 	if s != null:
 		s.material_override = glow(col, 2.6, 0.95)
 
@@ -195,14 +195,14 @@ static func rest_lit(n: Node3D, col: Color) -> void:
 # ---- the Jahreszeiten-Tor: two stone pillars and a lintel, a glowing sign of the season when it is open -----------------
 static func gate(col: Color) -> Node3D:
 	var n := Node3D.new()
-	n.name = "JahreszeitenTor"
+	n.name = "gate"
 	var st := mat(Color(0.5, 0.49, 0.46))
 	for sx in [-1.0, 1.0]:
 		box(n, Vector3(0.7, 3.4, 0.7), Vector3(sx * 1.7, 1.2, 0), st)        # (goes 0.5 m into the ground)
 		box(n, Vector3(0.9, 0.3, 0.9), Vector3(sx * 1.7, 2.95, 0), st)
 	box(n, Vector3(4.4, 0.5, 0.8), Vector3(0, 3.3, 0), st)
 	var veil := MeshInstance3D.new()
-	veil.name = "Schleier"
+	veil.name = "veil"
 	var qm := QuadMesh.new()
 	qm.size = Vector2(2.7, 2.9)
 	veil.mesh = qm
@@ -210,14 +210,14 @@ static func gate(col: Color) -> Node3D:
 	veil.material_override = glow(col, 0.3, 0.12)
 	n.add_child(veil)
 	var back := veil.duplicate() as MeshInstance3D           # seen from both sides
-	back.name = "Schleier2"
+	back.name = "veil2"
 	back.rotation.y = PI
 	n.add_child(back)
 	var sym := cyl(n, 0.0, 0.22, 0.4, Vector3(0, 3.3, 0.42), glow(col, 0.4, 0.9), 6)
 	sym.rotation = Vector3(PI / 2.0, 0, 0)
-	sym.name = "Zeichen"
+	sym.name = "sign"
 	var l := OmniLight3D.new()
-	l.name = "Licht"
+	l.name = "light"
 	l.light_color = col
 	l.light_energy = 0.0
 	l.omni_range = 7.0
@@ -228,14 +228,14 @@ static func gate(col: Color) -> Node3D:
 
 
 static func gate_open(n: Node3D, col: Color, on: bool) -> void:
-	for nm in ["Schleier", "Schleier2"]:
+	for nm in ["veil", "veil2"]:
 		var v := n.get_node_or_null(nm) as MeshInstance3D
 		if v != null:
 			v.material_override = glow(col, 1.8 if on else 0.3, 0.45 if on else 0.12)
-	var s := n.get_node_or_null("Zeichen") as MeshInstance3D
+	var s := n.get_node_or_null("sign") as MeshInstance3D
 	if s != null:
 		s.material_override = glow(col, 3.0 if on else 0.4, 0.95)
-	var l := n.get_node_or_null("Licht") as OmniLight3D
+	var l := n.get_node_or_null("light") as OmniLight3D
 	if l != null:
 		l.light_energy = 1.6 if on else 0.0
 
@@ -243,7 +243,7 @@ static func gate_open(n: Node3D, col: Color, on: bool) -> void:
 # ---- a column of light far away (the next goal) – only the window sees it ----------------------------------------------
 static func beam(col: Color) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
-	mi.name = "Leuchtsaeule"
+	mi.name = "beam"
 	var cm := CylinderMesh.new()
 	cm.top_radius = 0.15
 	cm.bottom_radius = 0.45
@@ -273,7 +273,7 @@ const ALTAR := Vector3(0, 0, -1.65)
 
 static func chapel() -> Node3D:
 	var n := Node3D.new()
-	n.name = "Bergkapelle"
+	n.name = "chapel"
 	var wall := mat(Color(0.86, 0.84, 0.78))
 	var stone := mat(Color(0.5, 0.48, 0.45))
 	var roofm := mat(Color(0.34, 0.33, 0.35))
@@ -315,12 +315,12 @@ static func chapel() -> Node3D:
 			box(n, Vector3(0.08, 0.42, 0.3), Vector3(sx, 0.21, z), wood)
 	box(n, Vector3(1.3, 0.95, 0.6), ALTAR + Vector3(0, 0.47, -0.05), stone)
 	var holder := cyl(n, 0.16, 0.2, 0.18, ALTAR + Vector3(0, 1.04, 0), mat(Color(0.62, 0.6, 0.56)), 8)
-	holder.name = "Halter"
+	holder.name = "holder"
 	for sx in [-0.5, 0.5]:
 		cyl(n, 0.03, 0.03, 0.22, ALTAR + Vector3(sx, 1.06, 0.05), mat(Color(0.95, 0.93, 0.85)), 8)
 		cyl(n, 0.0, 0.02, 0.05, ALTAR + Vector3(sx, 1.2, 0.05), glow(Color(1.0, 0.7, 0.3), 3.0), 6)
 	var cl := OmniLight3D.new()
-	cl.name = "Kerzen"
+	cl.name = "candles"
 	cl.light_color = Color(1.0, 0.72, 0.4)
 	cl.light_energy = 1.0
 	cl.omni_range = 4.5
@@ -330,7 +330,7 @@ static func chapel() -> Node3D:
 	# a window on each side (glowing a little)
 	for sx in [-1.0, 1.0]:
 		var wq := box(n, Vector3(0.05, 0.8, 0.5), Vector3(sx * (hw + 0.005), 1.8, -0.4), glow(Color(1.0, 0.8, 0.5), 0.6))
-		wq.name = "Fenster"
+		wq.name = "window"
 	return n
 
 
