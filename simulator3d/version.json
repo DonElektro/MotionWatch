@@ -1,7 +1,7 @@
 {
- "version": "3D-4.26",
+ "version": "3D-4.34",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 64637396,
- "sha256": "3c81a8b691cdf3817fbc86021dd57500481690e0859c3aa91391e3f20128634e",
- "notes": "Alle schwebenden Fenster (Kompass, Karte, Livebild, SmallTV, Gerät, Mover, Kopf, Kameras, CPU) in einem gemeinsamen Rahmen: verschieben, Grösse ändern, ✕ ausblenden, Schnappen; neuer Knopf «Fenster» in der Leiste unten (Liste, «Anordnung zurücksetzen»); die Anordnung bleibt gespeichert."
+ "size": 65843704,
+ "sha256": "b91ad36a479476cff167c96643a1c6160c8c97439b80d7a308a02590cc632fc8",
+ "notes": "Neue Welt «Bergtal» (2 × 2 km); Szenen zusammengefasst zu den Welten Bergtal, Ferienpark und Zuhause (alte Szenen als Orte); Bergtal-Regler nur im Bergtal."
 }

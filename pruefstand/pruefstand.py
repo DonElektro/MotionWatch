@@ -154,7 +154,7 @@ def run(a):
         # --- the simulator: own home folder, so its settings and reports do not mix with the normal ones
         senv = dict(env, HOME=os.path.join(tmp, "home"))
         os.makedirs(senv["HOME"], exist_ok=True)
-        sim_args = ["--no-update", "--stream", "--scene", a.szene, "--hour", "12", "--port", str(a.sim_port), "--quality", a.qualitaet]
+        sim_args = ["--no-update", "--stream", "--solo", "--scene", a.szene, "--hour", "12", "--port", str(a.sim_port), "--quality", a.qualitaet]
         if a.sim_bin:
             cmd = [a.sim_bin, "--"] + sim_args
         else:
@@ -597,7 +597,7 @@ def fall_aus_spur(pfad, spur_id="", wetter="", wind=None, titel=""):
 
 
 # ---- «Übersicht → Kopf findet Ziel» (Plan Daniel 30.10.2026, docs/Gehaeuse_Variante2_Weitwinkel.md) ---------------------
-WW_MONTAGEN = {"scene": "Mast (Szene)", "base": "Unterteil vorne, fest", "head_front": "Kopf vorne", "head_rear": "Kopf hinten"}
+WW_MONTAGEN = {"case": "Im Gehäuse (v5.2)", "scene": "Mast (Szene)", "base": "Unterteil vorne, fest", "head_front": "Kopf vorne", "head_rear": "Kopf hinten"}
 
 
 def _ww_probe(sim):
@@ -677,7 +677,7 @@ def weitwinkel_messung(a, sim, web):
             (", Median %.1f s" % med) if med is not None else ""), wichtig=True)
     try:
         http_json(sim + "/control", {"action": "press", "id": "clear"}, timeout=6)
-        http_json(sim + "/control", {"action": "weit", "mount": "scene"}, timeout=6)
+        http_json(sim + "/control", {"action": "weit", "mount": "case"}, timeout=6)       # P9: the default (case v5.2)
     except Exception:
         pass
     return res
@@ -791,10 +791,10 @@ def main():
     ap.add_argument("--ohne-extras", action="store_true", help="Schleichwege und echte Nächte nicht automatisch mitlaufen lassen")
     ap.add_argument("--fall-aus-spur", default="", help="eine Alarm-Spur von MoveEye (alarm_tracks.json) als echte Nacht speichern")
     ap.add_argument("--spur-id", default="", help="welche Spur aus der Datei (Standard: die neuste)")
-    ap.add_argument("--weitwinkel", default="", help="Messung «Übersicht → Kopf findet Ziel» pro Montage der Weitwinkel-Kamera: scene, base, head_front, head_rear (mit Komma)")
+    ap.add_argument("--weitwinkel", default="", help="Messung «Übersicht → Kopf findet Ziel» pro Montage der Weitwinkel-Kamera: case (Gehäuse v5.2), scene, base, head_front, head_rear (mit Komma)")
     ap.add_argument("--ww-versuche", type=int, default=3, help="Weitwinkel-Messung: so viele Besucher pro Montage")
     ap.add_argument("--folgen", default="", help="Plan «folgen» (Verfolgungs-Parcours): Lektionen mit Komma, 1–7, 8 = nachts mit IR (Standard bei «folgen» in --plaene: 1,3,4,5,6,7)")
-    ap.add_argument("--folgen-weitwinkel", default="", help="Plan «folgen» je Montage mit und ohne Weitwinkel-Übergabe: base, head_front, head_rear (mit Komma)")
+    ap.add_argument("--folgen-weitwinkel", default="", help="Plan «folgen» je Montage mit und ohne Weitwinkel-Übergabe: case, base, head_front, head_rear (mit Komma)")
     ap.add_argument("--spur-wetter", default="", help="Wetter der echten Nacht (clear, cloudy, rain, fog, snow)")
     a = ap.parse_args()
     a.plaene = [p.strip() for p in a.plaene.split(",") if p.strip()]

@@ -44,6 +44,11 @@ def sim_hub(force=False):
         except Exception:
             d["rover"] = None
         d["rover_alarm"] = bool(CFG.get("rover_alarm"))
+        try:                                                # Erlebniswelt 20–23 (simulator entdecken.gd): the Entdeckungsbuch of the scene
+            dz = sim_control({"action": "entdecken"}) or {}
+            d["disc"] = {k: dz.get(k) for k in ("found", "total", "photo", "scene_name", "hint_text", "items")} if dz.get("ok") and "total" in dz else None
+        except Exception:
+            d["disc"] = None
     d["demo"] = {"busy": DEMO_RUN["busy"], "i": DEMO_RUN["i"], "n": DEMO_RUN["n"]}
     d["simple"] = page_simple("sim")                      # 2.98.14: «Simple» shows the assistant instead of the single tools
     d["tune"] = {"busy": TUNEA["busy"], "step": TUNEA["step"], "last": bool(TUNEA.get("last"))}
@@ -84,6 +89,13 @@ def sim_hub_do(a, v=None):
                 r = sim_control({"action": "rover", "do": str(v)[:10], "on": True}) if v != "patrol_off" else sim_control({"action": "rover", "do": "patrol", "on": False})
         elif a == "twin":
             r = sim_twin()
+        elif a == "disc":                                    # Erlebniswelt 20–23: open the book in the simulator, photo, Blinki hint
+            r = sim_control({"action": "entdecken", "do": str(v) if v in ("open", "close", "photo", "hint") else "info"})
+            if v == "photo" and r.get("ok") and not r.get("found"):
+                _SIMHUB["t"] = 0.0
+                return False, tr("nothing special in the picture of the camera")
+            if v == "hint" and not r.get("ok"):
+                return False, tr("nothing more to find here right now")
         elif a == "overlay":
             r = sim_control({"action": "set", "id": str(v.get("id")), "value": bool(v.get("on"))}) if isinstance(v, dict) and v.get("id") in ("show_zones3d", "show_det3d") else {"ok": False}
         else:
@@ -103,6 +115,12 @@ SIMHUB_CSS = r"""
 .shub .st:hover{border-color:var(--acc,#3b8cff)}.shub .st:active{transform:scale(.97)}
 .shub .st i{font-style:normal;font-size:24px;line-height:1}.shub .st b{font-size:13px;hyphens:auto;overflow-wrap:anywhere}.shub .st small{font-size:11px;color:var(--mut,#8a9bb0)}
 .shub .st.on{border-color:#f59a4a;box-shadow:0 0 0 1px #f59a4a inset}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:8px}
+.dgrid .dit{display:flex;gap:8px;align-items:flex-start;padding:8px;border-radius:12px;border:1px solid var(--line,#1f2b3a);background:var(--panel2,#151e2b)}
+.dgrid .dit.no{background:transparent;color:var(--mut,#8a9bb0)}
+.dgrid img,.dgrid .dph{width:96px;height:54px;border-radius:8px;object-fit:cover;flex:0 0 auto;background:#0006}
+.dgrid .dph{display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--mut,#8a9bb0)}
+.dgrid .dtx{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:12px}.dgrid .dtx b{font-size:13px}.dgrid .dtx small{color:var(--mut,#8a9bb0)}
 .shsheet{margin-top:8px;padding:10px;border-radius:14px;background:var(--panel,#111822);border:1px solid var(--line,#1f2b3a);display:flex;flex-wrap:wrap;gap:6px}
 .shsheet.trs{display:block}.shsheet #tr-box button{flex:0 1 auto}
 .shsheet button{flex:1 1 auto;min-width:84px}.shsheet .shrow{display:flex;gap:6px;width:100%;align-items:center}
@@ -147,6 +165,11 @@ SIMHUB_JS = r"""
     "More sensitive": "Empfindlicher", "Less sensitive": "Weniger empfindlich", "AI stricter": "KI strenger", "AI more generous": "KI grosszügiger", "Also small objects": "Auch kleine Objekte",
     "Faster decision": "Schneller entscheiden", "B is better – kept": "B ist besser – übernommen", "A stays": "A bleibt", "Place, zones, patrol": "Ort, Zonen, Patrouille",
     "Zones in 3D": "Zonen in 3D", "mast": "Stange", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"});
+  Object.assign(DE, {"Discoveries": "Entdeckungen", "{f} of {n} discovered": "{f} von {n} entdeckt", "Photo for the discovery book": "Foto für Entdeckungsbuch",
+    "Open in the simulator": "Im Simulator öffnen", "Blinki hint": "Blinki-Hinweis", "a place": "ein Ort", "a scene": "eine Szene", "an animal": "ein Tier", "a person": "ein Mensch",
+    "Found!": "Entdeckt!", "Something special is in the picture – take the photo now!": "Etwas Besonderes ist im Bild – jetzt fotografieren!",
+    "Come close enough in the 3D view to discover places, animals and funny scenes. 📷 = take a photo with MoveEye’s camera: aim the head, then «Photo for the discovery book». 🌙 🌧 🌅 = only at night, in the rain, in the morning.": "Wer in der 3D-Ansicht nahe genug kommt, entdeckt Orte, Tiere und lustige Szenen. 📷 = mit MoveEyes Kamera fotografieren: Kopf hinrichten, dann «Foto für Entdeckungsbuch». 🌙 🌧 🌅 = nur nachts, bei Regen, am Morgen.",
+    "nothing special in the picture of the camera": "nichts Besonderes im Bild der Kamera", "nothing more to find here right now": "gerade gibt es hier nichts mehr zu finden"});   // Erlebniswelt 20–23
   const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : (L() === "en" ? k : (DE[k] || k));
   const scn = x => !x ? "" : (x.en && L() !== "de" ? tt(x.en) : x.name);     // 551: scene names in the language of the page (German from the simulator)
   const WX = [["clear", "☀"], ["cloudy", "☁"], ["rain", "🌧"], ["fog", "🌫"], ["snow", "❄"]];
@@ -165,6 +188,7 @@ SIMHUB_JS = r"""
       i.oninput = () => { o.textContent = String(Math.floor(i.value)).padStart(2, "0") + ":" + String(Math.round(i.value % 1 * 60)).padStart(2, "0"); }; i.onchange = () => act("hour", +i.value); r.append(i, o); s.appendChild(r); }
     if (kind === "wide" && window.mwWide) window.mwWide.sheet(s, H, act);         // 591: the wide camera (picture, mount)
     if (kind === "parc" && window.mwParc) window.mwParc.sheet(s, H, act);         // 416: the tracking parcours
+    if (kind === "nacht" && window.mwNacht) window.mwNacht.sheet(s, H, act);      // 579b: the night test run
     if (kind === "weather") WX.forEach(([k, ic]) => { const b = E("button", k === H.weather ? "" : "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = () => act("weather", k); s.appendChild(b); });
     if (kind === "visit") VIS.forEach(([k, ic]) => { const b = E("button", "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = async () => { const r = await act("visit", k); if (r && r.ok) say(ic + " " + tt("sent")); }; s.appendChild(b); });
     if (["inbox", "drill", "train", "ab"].includes(kind)) labSheet(s, kind);
@@ -179,10 +203,32 @@ SIMHUB_JS = r"""
       s.appendChild(E("div", "mut", "🔋 " + (R.batt != null ? R.batt + " %" : "–") + (R.charging ? " · " + tt("charging") : "") + " · " + tt("rover-note")));
     }
     if (kind === "stats") statsSheet(s);
+    if (kind === "disc") discSheet(s);
     if (kind === "tests") { const tb = document.getElementById("tr-box") || window._trBox;   // 2.98.23: the test run (470) lives here, no own card
       if (tb) { window._trBox = tb; s.classList.add("trs"); s.appendChild(tb); } else s.appendChild(E("div", "mut", "–")); }
     if (["blind", "rehearsal", "autoth", "falearn", "week", "points"].includes(kind)) learnSheet(s, kind);
     box.appendChild(s);
+  }
+  // Erlebniswelt 20–23: the Entdeckungsbuch of the simulator (entdecken.gd) - count, pictures, «???» with kind and time
+  const WHEN_I = {night: "🌙", rain: "🌧", morning: "🌅", evening: "🌇", day: "☀", snow: "❄", fog: "🌫"};
+  function discSheet(s) {
+    const D = H.disc || {}; s.classList.add("trs");
+    s.appendChild(E("b", "", (D.scene_name ? D.scene_name + ": " : "") + tt("{f} of {n} discovered").replace("{f}", D.found || 0).replace("{n}", D.total || 0)));
+    const g = E("div", "dgrid");
+    (D.items || []).forEach((x, i) => {
+      const c = E("div", "dit" + (x.found ? "" : " no"));
+      if (x.found && x.pic) { const im = E("img"); im.alt = ""; im.loading = "lazy"; im.src = "/sim/disc_pic/" + i + ".jpg?t=" + x.t; c.appendChild(im); }
+      else c.appendChild(E("div", "dph", x.found ? (x.icon || "✓") : "?"));
+      const w = (x.when || []).map(k => WHEN_I[k] || "").join(" ") + (x.photo ? " 📷" : "");
+      const tx = E("div", "dtx"); tx.append(E("b", "", x.found ? ((x.icon ? x.icon + " " : "") + x.title) : "???"),
+        E("small", "", x.found ? (x.short || "") : tt(({ort: "a place", szene: "a scene", tier: "an animal", mensch: "a person"})[x.kind] || "a place") + (w.trim() ? " · " + w.trim() : "")));
+      c.appendChild(tx); g.appendChild(c); });
+    s.appendChild(g);
+    const r = E("div", "shrow"); r.style.cssText = "margin-top:8px;flex-wrap:wrap";
+    r.append(B("📷 " + tt("Photo for the discovery book"), () => act("disc", "photo").then(x => x && x.ok && say("📷 " + tt("Found!"))), D.photo ? "" : "sec"),
+      B("📖 " + tt("Open in the simulator"), () => act("disc", "open")), B("💡 " + tt("Blinki hint"), () => act("disc", "hint")));
+    s.appendChild(r);
+    s.appendChild(E("div", "mut", D.photo ? "📷 " + tt("Something special is in the picture – take the photo now!") : tt("Come close enough in the 3D view to discover places, animals and funny scenes. 📷 = take a photo with MoveEye’s camera: aim the head, then «Photo for the discovery book». 🌙 🌧 🌅 = only at night, in the rain, in the morning.")));
   }
   let LB = null, ST = null, LN = null;
   const learn = async (d) => { try { const r = d ? await (await fetch("/api/learn", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: L()}, d))})).json()
@@ -204,7 +250,7 @@ SIMHUB_JS = r"""
       if (bl.last) { const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg(bl.last, bl.game); s.append(c, E("div", "mut", "🟢 " + tt("recognised") + " · 🔴 " + tt("in the picture, not recognised") + " · ⚪ " + tt("outside the picture") + ((bl.game || []).length ? " · 🟣 " + tt("found by players in the games") : "")), E("b", "", "💡 " + (bl.last.tip || ""))); }
       else if ((bl.game || []).length) { const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg({points: []}, bl.game); s.append(c, E("div", "mut", "🟣 " + tt("found by players in the games"))); } }
     if (kind === "rehearsal") { s.append(B("▶ " + tt("Rehearsal now (2 min)"), () => learn({do: "rehearsal"})), B((LN.rehearsal_on_arm ? "✓ " : "") + tt("By itself when arming"), () => learn({do: "set", key: "rehearsal_on_arm", on: !LN.rehearsal_on_arm}), LN.rehearsal_on_arm ? "" : "sec"));
-      if (bl.rehearsal) { s.appendChild(E("b", "", "🌙 " + (bl.rehearsal.text || ""))); const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg(bl.rehearsal); s.appendChild(c); } }
+      if (bl.rehearsal) { s.appendChild(E("b", "", "🎭 " + (bl.rehearsal.text || ""))); const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg(bl.rehearsal); s.appendChild(c); } }
     if (kind === "autoth") { s.append(B("▶ " + tt("Set the thresholds now (day + night)"), () => learn({do: "autoth"})), E("div", "mut", tt("autoth-note")));
       const l = LN.autoth.last; if (l) l.res.forEach(r => s.appendChild(E("div", "mut", (r.plan === "night" ? "🌙 " : "☀ ") + (r.base != null ? r.base : "–") + " → " + (r.best != null ? r.best : "–") + " · " + tt("kept") + ": " + (r.kept.join(", ") || "–")))); }
     if (kind === "falearn") { s.append(B((LN.fa_learn_auto ? "✓ " : "") + tt("Re-enact every 👎 in the simulator"), () => learn({do: "set", key: "fa_learn_auto", on: !LN.fa_learn_auto}), LN.fa_learn_auto ? "" : "sec"), E("div", "mut", tt("fa-note")));
@@ -283,9 +329,9 @@ SIMHUB_JS = r"""
   // 2.98.14 (Konzept): the tiles in four groups - Welt (what happens in the simulator), Testen, Lernen, Spielen. «Simple»
   // shows the assistant «Erkennung verbessern» instead of the single tools for the thresholds (they stay in «Expert»).
   const GRP = {wide: "world", scene: "world", hour: "world", weather: "world", visit: "world", surprise: "world", twin: "world", devices: "world", rover: "world", templates: "world",
-    tests: "test", parc: "test", blind: "test", rehearsal: "test", inbox: "test", drill: "test", ab: "test", week: "test", stats: "test",
+    tests: "test", parc: "test", nacht: "test", blind: "test", rehearsal: "test", inbox: "test", drill: "test", ab: "test", week: "test", stats: "test",
     improve: "learn", autoth: "learn", train: "learn", falearn: "learn", diary: "learn",
-    game: "play", points: "play"};
+    game: "play", points: "play", disc: "play"};
   // 2.98.24 («Sim-Schalter nur einmal»): Trainings-Nacht, Fehlalarm-Lernen and Wochen-Check are switched only in their tile
   // (no longer also in the assistant «Erkennung verbessern» and in «Einstellungen der Simulation») - so always shown
   const EXPERT_K = ["autoth", "ab"];
@@ -308,19 +354,21 @@ SIMHUB_JS = r"""
     if (full) { const N = LN || {}; const bl = N.blind || {}, au = N.autoth || {}, re = bl.rehearsal;
       T.push(["tests", "🧪", tt("Testing"), tt("Test run, test bench")]);   // 639c: «Testen» like the simulator
       if (window.mwParc && H.parc) T.push(["parc", "🎯", tt("Tracking parcours"), window.mwParc.sub(H)]);   // 416: the tracking parcours
+      if (window.mwNacht && H.nacht) T.push(["nacht", "🌙", window.mwNacht.name(), window.mwNacht.sub(H)]);   // 579b: only with the simulator connected
       T.push(
         ["blind", "🗺", tt("Blind spots"), bl.busy && bl.kind === "map" ? "⏳ " + (bl.prog || "") : bl.last ? bl.last.found + "/" + bl.last.inview + " " + tt("recognised") : tt("find them")],
-        ["rehearsal", "🌙", tt("Night rehearsal"), bl.busy && bl.kind === "rehearsal" ? "⏳ " + (bl.prog || "") : re ? (re.max_found ? tt("up to") + " " + re.max_found + " m" : "–") : tt("before arming")],
+        ["rehearsal", "🎭", tt("Night rehearsal"), bl.busy && bl.kind === "rehearsal" ? "⏳ " + (bl.prog || "") : re ? (re.max_found ? tt("up to") + " " + re.max_found + " m" : "–") : tt("before arming")],
         ["autoth", "🎚", tt("Thresholds automatic"), au.busy ? "⏳ " + au.step : au.last ? "✓" : tt("day and night")],
         ["falearn", "👎", tt("False alarm learning"), N.fa_learn_auto ? tt("on") : tt("off")],
         ["week", "📅", tt("Weekly check"), N.week && N.week.on ? tt("on") : tt("off")],
         ["points", "🏅", tt("MoveEye points"), N.points ? String(N.points.total) : "–"]); }
     if (full) T.push(["inbox", "📨", tt("Test inbox"), LB ? (LB.sandbox ? tt("on") : tt("off")) + " · " + (LB.inbox || []).length : ""],
       ["drill", "⚡", tt("Drills"), LB && LB.drill.busy ? "⏳ " + LB.drill.left + " s" : tt("Battery, Wi-Fi, heat, cold")],
-      ["train", "🌙", tt("Training night"), LB ? (LB.train.busy ? "⏳ " + (LB.train.step || "") : LB.train.on ? tt("on") + " · " + String(LB.train.hour).padStart(2, "0") + ":00" : tt("off")) : ""],
+      ["train", "🏋", tt("Training night"), LB ? (LB.train.busy ? "⏳ " + (LB.train.step || "") : LB.train.on ? tt("on") + " · " + String(LB.train.hour).padStart(2, "0") + ":00" : tt("off")) : ""],
       ["ab", "⚖", tt("A/B comparison"), LB && LB.ab.busy ? "⏳ " + LB.ab.step : tt("Which setting is better?")],
       ["stats", "📈", tt("Statistics & versions"), tt("4 weeks, per version")]);
     if (full) T.push(["game", "🎮", tt("Game"), tt("Play on the phone")], ["diary", "📔", tt("Diary"), tt("Visits and detection")]);
+    if (full && H.disc) T.push(["disc", "📖", tt("Discoveries"), (H.disc.found || 0) + " / " + (H.disc.total || 0) + (H.disc.photo ? " · 📷" : "")]);   // Erlebniswelt 20–23
     T.forEach(([k, ic, n, sub]) => { if (full && H.simple && EXPERT_K.includes(k)) return;
       const b = E("button", "st" + (open === k || (k === "surprise" && H.surprise) ? " on" : "")); b.type = "button";
       b.append(E("i", "", ic), E("b", "", n), E("small", "", sub));
@@ -363,6 +411,7 @@ SIMHUB_JS = r"""
     const ti = document.querySelector('[data-simhub="tile"] img'); if (ti && !document.hidden) ti.src = "/sim/view.jpg?w=320&r=" + Date.now();
     if (!HASHED && (location.hash === "#c-test" || location.hash === "#c-stoer") && document.getElementById("tr-box")) { HASHED = 1; open = "tests"; }   // 2.98.23: old links to the test run
     if (!HASHED && location.hash === "#c-parc" && H.parc) { HASHED = 1; open = "parc"; }   // 416: the window opens the tile 🎯
+    if (!HASHED && location.hash === "#c-nacht" && H.nacht) { HASHED = 1; open = "nacht"; }   // 579b: the tile 🌙
     const ae = document.activeElement;
     if (!ae || (ae.type !== "range" && !(ae.closest && ae.closest("#tr-box")))) paintAll(); }
   document.addEventListener("DOMContentLoaded", () => { load(); setInterval(load, 6000); });
