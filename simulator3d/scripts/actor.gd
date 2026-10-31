@@ -83,6 +83,7 @@ static var npc_look := {}
 const BASE_H := 1.86          # P10: height of a figure with body_root.scale.y = 1 (top of the head, measured in 3D)
 var arm_hold := {}            # P10: side (-1 left, 1 right) -> Vector3(shoulder x, elbow x, shoulder z): a bag, an umbrella, a bike, a torch
 var sit_seat := 0.45          # P10: idle «sit» - height of the seat (camping chair 0.45 m, ground 0.05 m)
+var hold_post := -1           # P10: posture kept for the plain points of the route (-1 = stand up there, 1 crouch, 2 crawl)
 var _sit_k := 0.0
 var power_until := 0.0
 var emote := ""               # players: caught / goal / throw (game.gd)
@@ -1153,9 +1154,9 @@ func _next_point(now: float) -> void:
 			_face(nxt[3] if nxt.size() > 3 else target)
 		else:
 			target = nxt
-			_want_c = 0.0
-			_want_p = 0.0
-			_post_smooth = crouch > 0.0 or prone > 0.0
+			_want_c = 1.0 if hold_post >= 1 else 0.0         # P10 (menschen.gd): a sneaking / crawling gait stays down
+			_want_p = 1.0 if hold_post >= 2 else 0.0
+			_post_smooth = crouch != _want_c or prone != _want_p
 			_face(target)
 	else:
 		done = true
