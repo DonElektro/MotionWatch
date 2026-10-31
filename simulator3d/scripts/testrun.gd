@@ -24,7 +24,7 @@ const STANDARD := [
 	{"name": "Nacht, Regen", "hour": 23.5, "weather": "rain", "wind": 20.0, "visits": ["person", "cat", "person"]},
 ]
 # 3D-3.27: more test runs. «cond» = difficult conditions of main.gd (switched on only during the phase)
-const DAUER := {"quick": 150, "night": 230, "standard": 300, "hard": 520, "nacht": 650, "camping_voll": 290, "tarnen": 270, "velodieb": 230, "gegenstaende": 290, "fahrzeuge": 300}   # 3D-3.90: the one place for names and times (also the test bench)
+const DAUER := {"quick": 150, "night": 230, "standard": 300, "hard": 520, "nacht": 650, "camping_voll": 290, "tarnen": 270, "velodieb": 230, "gegenstaende": 290, "fahrzeuge": 300, "wetter": 380}   # 3D-3.90: the one place for names and times (also the test bench)
 # Prüfstand 2: a whole night in time-lapse. «until» = the hour at the end of the phase (the clock runs faster meanwhile),
 # «every» = a visitor every … s, "-" = a quiet slot (nobody comes: wind and rain alone must not give a push).
 # Realistic numbers: about 20 animals, 2 persons in 10 hours; «fixed»: --mal does not multiply it.
@@ -77,6 +77,15 @@ const PLANS := {
 		{"name": "Dämmerung, Abblendlicht, Velo mit Licht", "hour": 20.8, "weather": "clear", "wind": 10.0, "visits": ["fz_pass", "fz_bike", "-", "fz_pass", "person"]},
 		{"name": "Nacht mit Infrarot: Fernlicht, Scheinwerfer auf die Kamera, Töff", "hour": 23.0, "weather": "clear", "wind": 5.0, "cond": ["ir"], "visits": ["fz_pass_high", "fz_toward", "fz_moto", "person", "fz_pass_high"]},
 		{"name": "Nacht: Auto parkiert, Leute steigen aus, Wohnmobil, E-Trottinett", "hour": 0.5, "weather": "clear", "wind": 5.0, "cond": ["ir"], "visits": ["fz_arrive", "fz_trotti", "fz_camper", "fz_bike", "-"]}]},
+	# real-wetter (wetter.gd): rain strength, visibility, ground fog, lens drops / fog, snow cover, lightning. «wetter» = the
+	# values of the phase (rain: niesel … wolkenbruch, vis m, lens_fog, lens_drops, snow_cm, flash_every s). Only by hand.
+	"wetter": {"name": "Wetter physikalisch (Niesel, Starkregen, Nebel 50 m, beschlagene Linse, Schnee, Gewitter-Blitze · etwa 7 Min.)", "every": 14.0, "phases": [
+		{"name": "Tag, Nieselregen", "hour": 11.0, "weather": "rain", "wind": 8.0, "wetter": {"rain": "niesel"}, "visits": ["person", "fox", "person"]},
+		{"name": "Tag, Starkregen, Tropfen auf der Linse", "hour": 14.0, "weather": "rain", "wind": 30.0, "wetter": {"rain": "stark", "lens_drops": 40}, "visits": ["person", "cat", "person"]},
+		{"name": "Nebel 50 m, zieht, Bodennebel", "hour": 8.5, "weather": "fog", "wind": 12.0, "wetter": {"vis": 50.0, "drift": true, "ground": true}, "visits": ["person", "deer", "person"]},
+		{"name": "Morgen, beschlagene Linse", "hour": 7.0, "weather": "cloudy", "wind": 5.0, "wetter": {"lens_fog": 0.85}, "visits": ["person", "hare", "person"]},
+		{"name": "Schneefall, 10 cm Schnee", "hour": 15.0, "weather": "snow", "wind": 20.0, "wetter": {"rain": "stark", "snow_cm": 10.0}, "visits": ["person", "fox", "child"]},
+		{"name": "Gewitter in der Nacht, kein Besuch (jeder Push ist falsch)", "hour": 23.0, "weather": "rain", "wind": 35.0, "wetter": {"rain": "stark", "flash_every": 10.0}, "visits": ["-", "-", "-"]}]},
 	"night": {"name": "Nacht (dunkel, Infrarot, Tiere · etwa 4 Min.)", "phases": [
 		{"name": "Nacht, ohne Licht", "hour": 1.0, "weather": "clear", "wind": 5.0, "visits": ["person", "fox", "person", "hedgehog"]},
 		{"name": "Nacht, Infrarot an", "hour": 2.0, "weather": "clear", "wind": 10.0, "cond": ["ir"], "visits": ["person", "boar", "child", "badger"]},
@@ -477,6 +486,8 @@ func _start_phase(i: int) -> void:
 	main.wind = float(ph["wind"])
 	for k in main.cond:                                   # the difficult conditions of this phase only
 		main.cond[k] = k in ph.get("cond", [])
+	if main.wetter != null:
+		main.wetter.test_phase(ph.get("wetter", {}))       # real-wetter: rain strength, visibility, lens, snow, lightning of this phase
 	main.clear_visitors()
 	_pending.clear()
 	# the same visitors on the same ways every time: runs can be compared (seed 1 = the numbers of before; 2, 3 … other ways)
@@ -634,8 +645,16 @@ func _cause(animals_vis: Array) -> String:
 		return "Gegenlicht"
 	if "headlights" in conds:
 		return "Scheinwerfer"
+	if main.wetter != null and main.wetter.flash_recent(now(), 6.0):      # 6 s: MoveEye meldet bei wenig Bildern/s verspätet
+		return "Blitz"                                     # real-wetter: a flash lit the whole picture
 	if "drops" in conds:
 		return "Tropfen auf der Linse"
+	if main.wetter != null and not main.wetter.lenses.is_empty():
+		var li: Dictionary = main.wetter.lenses[0].info()
+		if float(li["fog"]) > 0.4:
+			return "Beschlagene Linse"
+		if float(li["cover"]) > 0.04 or int(li["running"]) > 0:
+			return "Tropfen auf der Linse"
 	if "shadows" in conds:
 		return "Wolkenschatten"
 	if main.weather == "snow":

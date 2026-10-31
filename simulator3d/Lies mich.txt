@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.51
+3D-4.51: Wetter näher an der Physik: Regenstärke (Niesel bis Wolkenbruch), Sichtweite im Nebel, Bodennebel, Schneedecke,
+Tropfen und Beschlag auf der Linse (rinnen ab, «Linse putzen»), Blitze. Neuer Testlauf «Wetter physikalisch».
+So testest du: 1) Wetter Regen, «Wolkenbruch»: Tropfen auf der Linse rinnen. 2) Kamerabild → «Morgen-Test»: Bild wird
+milchig, «Linse putzen». 3) Nebel, Sichtweite 50 m: Person bei 60 m verschwindet.
+
 NEU IN 3D-4.50
 3D-4.50: Kopfkamera wie die echte Camera Module 3 NoIR: Belichtung und Verstärkung nach Licht, Rauschen, NoIR-Farben am
 Tag (leicht rosa), Bewegungsunschärfe nachts, Rolling Shutter beim Drehen. Infrarot-Reichweite neu 10 m (wie ein kleines

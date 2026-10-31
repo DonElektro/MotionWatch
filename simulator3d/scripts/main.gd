@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.50"
+const VERSION := "3D-4.51"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -332,6 +332,7 @@ var tiere                             # tiere.gd (Paket «Tiere»): animals beha
 var fahrzeuge                         # fahrzeuge.gd (Paket «Fahrzeuge»): speed, lights, glare, doors, parking, engine heat
 var licht                             # licht.gd («Licht & Nacht»): sun, twilight, moon, stars, light pollution, lamps, glare
 var jahreszeiten                      # jahreszeiten.gd («Jahreszeiten & Tageslauf»): season, bare trees, blossom, leaves, fog, snow, occupancy
+var wetter                            # wetter.gd (real-wetter): rain strength, fog visibility, ground fog, snow cover, lens drops, lightning
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
 var colors_on := true
 var tracks                            # tracks.gd (3D-3.98)
@@ -487,6 +488,9 @@ func _ready() -> void:
 	jahreszeiten = preload("res://scripts/jahreszeiten.gd").new()   # «Jahreszeiten & Tageslauf»: the season shared by all scenes
 	jahreszeiten.main = self
 	add_child(jahreszeiten)
+	wetter = preload("res://scripts/wetter.gd").new()         # real-wetter: weather closer to physics (wetter.gd, linse.gd)
+	wetter.main = self
+	add_child(wetter)
 	fauna = preload("res://scripts/fauna.gd").new()          # 3D-3.95: birds and bats
 	fauna.main = self
 	add_child(fauna)
@@ -1173,6 +1177,8 @@ func _build_scene() -> void:
 		simreal.on_scene()                       # 3D-4.4: tarp, pennant, road sign
 	if umgebung != null:
 		umgebung.on_scene()                      # 3D-4.x: neighbour's lamp, puddles, fog wisps, tracks …
+	if wetter != null:
+		wetter.on_scene()                        # real-wetter: tent walls in the wind
 	if szenen != null:
 		szenen.on_scene()                        # 3D-4.x: the neighbours of «Voller Campingplatz»
 	if waerme_welt != null:
@@ -1803,6 +1809,8 @@ func _lightning(dt: float) -> void:
 			var st: Array = _flash_seq.pop_front()
 			flash_light.light_energy = float(st[1])
 			_flash_boost = float(st[2])
+			if wetter != null:
+				wetter.on_flash(float(st[1]))           # real-wetter: the bolt in the sky
 			env.ambient_light_energy = _amb_base + _flash_boost
 			sky_mat.set_shader_parameter("energy", _sky_e_base + _flash_boost * 0.6)
 		return
@@ -1813,14 +1821,21 @@ func _lightning(dt: float) -> void:
 		_flash_next = now() + randf_range(4.0, 12.0)
 	if now() >= _flash_next:
 		_flash_next = now() + randf_range(8.0, 30.0)
-		var t0 := now()
-		var e := randf_range(2.0, 4.5)
-		_flash_seq = [[t0, e, 1.2], [t0 + 0.07, 0.0, 0.0], [t0 + 0.16, e * 0.7, 0.9], [t0 + 0.22, 0.0, 0.0]]
-		if randf() < 0.5:
-			_flash_seq += [[t0 + 0.4, e * 0.5, 0.6], [t0 + 0.47, 0.0, 0.0]]
-		var dist := randf_range(800.0, 4000.0)                # thunder: later and quieter the farther away
-		var dir := Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)).normalized()
-		get_tree().create_timer(dist / 340.0).timeout.connect(func(): add_sound(30.0, dir * dist, 2.5))
+		lightning_strike()
+
+
+func lightning_strike() -> void:
+	"""one flash now: 2-3 quick flashes, thunder later (real-wetter: also the button «Blitz jetzt» and the test plan «wetter»)"""
+	var t0 := now()
+	var e := randf_range(2.0, 4.5)
+	_flash_seq = [[t0, e, 1.2], [t0 + 0.07, 0.0, 0.0], [t0 + 0.16, e * 0.7, 0.9], [t0 + 0.22, 0.0, 0.0]]
+	if randf() < 0.5:
+		_flash_seq += [[t0 + 0.4, e * 0.5, 0.6], [t0 + 0.47, 0.0, 0.0]]
+	var dist := randf_range(800.0, 4000.0)                # thunder: later and quieter the farther away
+	var dir := Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)).normalized()
+	get_tree().create_timer(dist / 340.0).timeout.connect(func(): add_sound(30.0, dir * dist, 2.5))
+	if wetter != null:
+		wetter.on_strike(dist, dir)
 
 
 func _build_fireflies() -> void:
@@ -2078,7 +2093,7 @@ func sound_db() -> float:
 	"""what the microphone at the head hears now (dB): quiet background + weather + wind + the sounds, weaker with distance"""
 	var base := -62.0 if is_dark() else -56.0
 	if weather == "rain":
-		base = -40.0
+		base = -40.0 + (wetter.rain_db() if wetter != null else 0.0)   # real-wetter: louder in heavy rain
 	base += clamp((wind - 10.0) * 0.35, 0.0, 22.0)
 	var pw := pow(10.0, base / 10.0)
 	var t := now()
@@ -2162,6 +2177,8 @@ func _update_lens() -> void:
 	var L: Dictionary = mw.get("lights", {})
 	var lit: bool = L.get("white", false) or L.get("ir", false) or (game != null and game.guard_auto)
 	insects.emitting = insects_on and dark and lit and weather != "rain" and weather != "snow" and ambient > 6.0 and scene != "schlafzimmer"   # 3D-3.96: no moths in the bedroom
+	if wetter != null:
+		wetter.lens_tick()                                # real-wetter: drops / fog on the lens come from linse.gd
 
 
 func _build_view_camera() -> void:
@@ -2503,6 +2520,8 @@ func _update_sky() -> void:
 		licht.update()                                   # «Licht & Nacht»: moon, stars, night brightness, lamps, low sun
 	if jahreszeiten != null:
 		jahreszeiten.update()                            # «Jahreszeiten»: bare trees, blossom, falling leaves, snow lying
+	if wetter != null:
+		wetter.sky_tick()                                # real-wetter: rain strength, visibility, ground fog, snow cover, lens climate
 
 
 func _bg_for(read_value: float) -> Color:
@@ -2530,7 +2549,7 @@ func _update_temps() -> void:
 	var night := 1.0 if el < 0.0 else 0.0
 	var wet := 2.0 if weather == "rain" else 0.0
 	var ground := ambient + 9.0 * sunk * (1.0 - cl) - 3.5 * night * (1.0 - cl) - wet
-	if weather == "snow":
+	if weather == "snow" or (wetter != null and wetter.snow_lying()):      # real-wetter: also while the snow stays
 		ground = min(ground, 0.0)
 	tmats["ground"].set_shader_parameter("temp", ground)
 	tmats["ground"].set_shader_parameter("far_temp", ambient - 4.0)
@@ -2791,6 +2810,8 @@ func _capture(i: int) -> void:
 		if simreal != null:
 			simreal.before_capture(i)            # 3D-4.4: lens, rolling shutter, noise, infrared, reflectors
 		weit.before_capture(i)                   # 3D-4.17: NoIR Wide - infrared picture, fisheye, the wide infrared light
+		if wetter != null:
+			wetter.before_capture(i)             # real-wetter: drops and fog on the lens, ground fog
 		if camphys != null:
 			camphys.before_capture(i)            # 3D-4.x P1: last - exposure time, gain, sensor noise, NoIR colours
 	vps[i].render_target_update_mode = SubViewport.UPDATE_ONCE
@@ -3961,6 +3982,7 @@ func _register_controls() -> void:
 	licht.add_controls()                                   # «Licht & Nacht»: light pollution, place lamps, tents / windows
 	jahreszeiten.add_controls()                            # «Jahreszeiten & Tageslauf»: season, snow, fog, leaves, campsite occupancy
 	gelaende.add_controls()                                # 3D-4.x: hills and more plants (Szene)
+	wetter.add_controls()                                  # real-wetter: rain strength, visibility, ground fog, snow, lens, lightning
 	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
 	if statusled != null:
 		statusled.add_controls()                           # Licht & Ton → Status-LED & Tasten (Fenster «Gerät»)
@@ -4829,6 +4851,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return jahreszeiten.control(d)
 	elif a == "gelaende":                              # 3D-4.x: {do: info | set (key, value) | height (x, z) | los (from, to) | cloud (x, z)}
 		return gelaende.control(d)
+	elif a == "wetter":                                # real-wetter: {do: info | set | flash | wipe | splash | fog | snow | morning}
+		return wetter.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
 		return weit.control(d)
 	elif a == "nacht":                                 # Nacht-Testlauf: {do: info | start | stop | state | truth | plan} (nachtlauf.gd)
@@ -5397,7 +5421,7 @@ func _build_ui() -> void:
 	trh.add_theme_constant_override("separation", 6)
 	tl.add_child(trh)
 	var trp := OptionButton.new()
-	for p_ in ["quick", "standard", "night", "hard"]:
+	for p_ in ["quick", "standard", "night", "hard", "wetter"]:      # real-wetter: + «Wetter physikalisch»
 		trp.add_item(str(TestrunS.PLANS[p_]["name"]).get_slice(" (", 0) + " · " + str(int(round(TestrunS.DAUER[p_] / 30.0)) / 2.0).trim_suffix(".0") + " Min.")
 	trp.select(0)
 	trh.add_child(trp)
@@ -5405,7 +5429,7 @@ func _build_ui() -> void:
 	trb.text = "Testlauf starten"
 	trb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	trb.pressed.connect(func():
-		var r_: String = testrun.start(["quick", "standard", "night", "hard"][trp.selected])
+		var r_: String = testrun.start(["quick", "standard", "night", "hard", "wetter"][trp.selected])
 		if r_ != "":
 			start_info = r_)
 	trh.add_child(trb)

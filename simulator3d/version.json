@@ -1,7 +1,7 @@
 {
- "version": "3D-4.50",
+ "version": "3D-4.51",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 67619456,
- "sha256": "65a0da8414fab2595e05e6350e727759e1d3dd8f9fcae745ca895794c28c6209",
- "notes": "Kopfkamera wie die echte Camera Module 3 NoIR: Belichtung, Rauschen, NoIR-Farben, Unschärfe nachts; Infrarot-Reichweite 10 m."
+ "size": 67701915,
+ "sha256": "ec4777cf87825ce16bf87cbd47400e3c8dc2301dcd2f6e75bd104fabd4febbd1",
+ "notes": "Wetter näher an der Physik: Regenstärke, Sichtweite, Bodennebel, Schneedecke, Tropfen und Beschlag auf der Linse, Blitze."
 }

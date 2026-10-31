@@ -13,7 +13,7 @@ extends PanelContainer
 
 const UI = preload("res://scripts/ui_style.gd")
 const TR := preload("res://scripts/testrun.gd")         # 3D-3.90: names and times of the plans only there
-const PLANS := [["quick", "", true], ["night", "", true], ["standard", "", true], ["nacht", "", false], ["hard", "", false]]
+const PLANS := [["quick", "", true], ["night", "", true], ["standard", "", true], ["nacht", "", false], ["hard", "", false], ["wetter", "", false]]
 const PLAN_DAUER := TR.DAUER
 const REPO_API := "https://api.github.com/repos/DonElektro/MotionWatch/contents/pruefstand/ergebnisse/"
 const REPO_FILES := "https://api.github.com/repos/DonElektro/MotionWatch/contents/"

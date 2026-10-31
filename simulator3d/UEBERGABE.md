@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.50** · passende MoveEye-Version (früher Motion Watch) **2.98.81**
+Stand: 31.10.2026 · Simulator-Version **3D-4.51** · passende MoveEye-Version (früher Motion Watch) **2.98.82**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.51 (MoveEye 2.98.82): Wetter physikalisch (`wetter.gd`, `linse.gd`)
+
+- `wetter.gd` (Regenstärke, Sicht, Bodennebel, Schnee, Linsenklima, Blitze; `sky_tick`, `before_capture` vor camphys) und
+  `linse.gd` + Shader (Tropfen/Beschlag, Vierecke vor der Kamera: expo → camfx → Bodennebel → Linse → lens). Steuerung
+  `{"action":"wetter"}`. Testlauf «wetter» (testrun.gd, pruefstand.py, von Hand). Lite: weniger Teilchen.
 
 ## NEU in 3D-4.50 (MoveEye 2.98.81): Kamera wie Camera Module 3 NoIR (`camphys.gd`)
 

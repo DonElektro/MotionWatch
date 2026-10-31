@@ -48,6 +48,8 @@ PLAN_NAME = {"quick": "Kurz (Tag + Nacht)", "standard": "Standard (Tag, Wind, Na
 PLAN_NAME.update({"camping_voll": "Voller Campingplatz", "tarnen": "Tarnen und Kriechen", "velodieb": "Velodieb"})
 PLAN_NAME["gegenstaende"] = "Gegenstände (Wind, Licht, Lockmittel)"
 PLAN_NAME["fahrzeuge"] = "Fahrzeuge in der Nacht (Licht, Blendung, Parkieren)"
+PLAN_DAUER["wetter"] = 380            # Zweig real-wetter: Niesel, Starkregen, Nebel 50 m, beschlagene Linse, Schnee, Gewitter-Blitze - von Hand
+PLAN_NAME["wetter"] = "Wetter physikalisch (Regen, Nebel, Linse, Schnee, Blitze)"
 FIX_PLAENE = ("spielwege", "echtenaechte", "nacht")      # Prüfstand 2: realistic numbers - --mal does not multiply, no run without effects
 WEGE = os.path.join(REPO, "simulator3d", "spielwege")
 NAECHTE = os.path.join(REPO, "simulator3d", "pruefnaechte")
@@ -773,7 +775,7 @@ def main():
     ap.add_argument("--mw", default="", help="die Motion-Watch-Datei (Standard: die neuste im Repository)")
     ap.add_argument("--sim-bin", default="", help="das exportierte Simulator-Programm (Linux)")
     ap.add_argument("--godot", default="", help="Godot 4.3 (startet das Projekt simulator3d/ direkt)")
-    ap.add_argument("--plaene", default="quick,night", help="quick, standard, night, hard, nacht (ganze Nacht), camping_voll, tarnen, velodieb, gegenstaende, fahrzeuge – mit Komma")
+    ap.add_argument("--plaene", default="quick,night", help="quick, standard, night, hard, nacht (ganze Nacht), camping_voll, tarnen, velodieb, gegenstaende, fahrzeuge, wetter – mit Komma")
     ap.add_argument("--wiederholungen", type=int, default=1, help="jeden Testlauf so oft (mehr = verlässlichere Zahlen)")
     ap.add_argument("--seeds", type=int, default=1, help="so viele Zufallsstarts (1 = die festen Besucher von früher, 4711; 2, 3 … andere Wege)")
     ap.add_argument("--mal", type=int, default=2, help="jede Besucherliste so oft, 1–5 (mehr Personen pro Lauf = verlässlichere Zahlen)")
