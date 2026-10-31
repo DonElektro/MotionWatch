@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 3807 (Stellen: 5374)
-Übersetzt: en 3556, fr 3552, it 3552, rm 3552
+Texte gesamt: 3856 (Stellen: 5439)
+Übersetzt: en 3624, fr 3624, it 3624, rm 3624
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 344 Stellen
 Nicht mehr im Code (noch in texte.json): 37
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 47 Stellen in wizpics.gd 21, wordmark.gd 10, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 13498, schlüssel 9197, keine Wörter 6779, index 4538, technisch 1660, doc 1049, einheit 148, englisch 77, log 66, pfad 59, html 47, klasse 22
+Übersprungen (Grund: Anzahl): kennung 13710, schlüssel 9361, keine Wörter 6825, index 4572, technisch 1680, doc 1057, einheit 148, englisch 77, log 66, pfad 59, html 47, klasse 22
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  656    29
@@ -58,19 +58,22 @@ Pro Datei (Texte / davon dynamische Stellen):
   padmap.gd                 27    19
   umgebung.gd               25     0
   gameshutter.gd            25     5
+  worlds.gd                 23     0
+  kompakt_festival.gd       23     0
   dataset.gd                22     3
   fenster.gd                22     0
   explore.gd                22     2
   mini.gd                   21     1
-  worlds.gd                 20     0
   patrol.gd                 20     0
   phone.gd                  20     4
   tv.gd                     19     8
   statusled.gd              19     0
   surprise.gd               19     1
+  kompakt_dorf.gd           18     0
   kompakt_pfadi.gd          18     0
   planner.gd                18     0
   gamelearn.gd              18     0
+  kompakt_hof.gd            17     0
   szenenplus.gd             17     1
   gameturnier.gd            17     0
   weitwinkel.gd             16     0
@@ -148,11 +151,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   b3d.gd:86  'Kachel leer: '
   b3d.gd:186  'glTF nicht lesbar: '
   b3d.gd:208  'Kachel ohne Dreiecke: '
-  bergtal.gd:231  'Aussicht: '
-  bergtal.gd:240  'Schlafplatz: '
-  bergtal.gd:242  'Aussicht: '
-  bergtal.gd:2154  'Schlafplatz: '
-  bergtal.gd:2156  'Aussicht: '
+  bergtal.gd:232  'Aussicht: '
+  bergtal.gd:241  'Schlafplatz: '
+  bergtal.gd:243  'Aussicht: '
+  bergtal.gd:2159  'Schlafplatz: '
+  bergtal.gd:2161  'Aussicht: '
   dataset.gd:54  'Spiel: '
   dataset.gd:319  ' · Vielfalt hoch'
   dataset.gd:434  ' · alte KI-Daten gelöscht: %d (%.0f MB)'

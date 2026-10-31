@@ -209,8 +209,10 @@ func _build(sc, sid: String) -> void:
 	bib = Bib.new(m, s, park, park.transform)
 	if flat:
 		bib.keep = [[Vector2.ZERO, place_r]]
+	m.door_node = null                                 # (the door of the scene before is gone; each spot makes its own)
 	content()                                          # (fills ways / clear / road first, the ground is painted after)
 	own_spot()
+	_door_fallback()
 	var t1 := Time.get_ticks_msec()
 	if flat:
 		_ground_place()
@@ -566,6 +568,26 @@ func own_tent(x: float, z: float, rot: float, col := Color(0.9, 0.5, 0.15)) -> v
 	s.data["platz"] = [WG(x, z), 6.0]
 
 
+func _door_fallback() -> void:
+	"""a spot without a door of its own (Dorfplatz, Weide, Bühne …): the door sensor is an invisible door at m.obj["door"]
+	(or next to MoveEye) - main.gd needs a door node and its light in every scene"""
+	var door_ok: bool = m.door_node != null and is_instance_valid(m.door_node) and m.door_node.is_inside_tree()
+	var light_ok: bool = m.door_light != null and is_instance_valid(m.door_light) and m.door_light.is_inside_tree()
+	if door_ok and light_ok:
+		return
+	var at: Vector3 = m.obj.get("door", Vector3(-3.0, 0.0, 2.0))
+	var host := Node3D.new()
+	host.name = "tuer_sensor"
+	host.position = at
+	s.root.add_child(host)
+	if not door_ok:
+		m.door_node = Node3D.new()
+		host.add_child(m.door_node)
+		m.obj["door"] = at
+	if not light_ok:
+		s.door_light_at(host, Vector3(0, 2.3, 0.4))
+
+
 # ---- lights, smoke and flags near MoveEye -------------------------------------------------------------------------------------
 func _lights_and_fx() -> void:
 	var near := []
@@ -658,7 +680,7 @@ func _hiding() -> void:
 		tries += 1
 		var wp: Vector3 = m.pos_of(rng.randf_range(-170, 170), rng.randf_range(8.0, 32.0))
 		var q := inv * wp
-		if not free_at(q.x, q.z, 1.5):
+		if _on_way(q.x, q.z, 1.5) or _water_at(q.x, q.z) or not inside(q.x, q.z, 1.5):    # (the buildings: obstacles below)
 			continue
 		var ok := true
 		for o in m._ob_near(Vector2(wp.x, wp.z)):
