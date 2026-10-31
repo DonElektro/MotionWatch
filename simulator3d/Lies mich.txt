@@ -608,6 +608,18 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-4.27
+3D-4.27: Entdecken – jede Szene kann Geheimnisse haben, die man selbst findet. Das Entdeckungsbuch (Schnellzugriff →
+Spielen → «Entdeckungen», Symbol Buch) zeigt «2 von 3 entdeckt», Gefundenes mit Bild und Text, Ungefundenes als «???» mit
+Art und Hinweis-Symbol (nur nachts, bei Regen, am Morgen, nur per Foto). Gefunden wird beim Hinschauen aus der Nähe oder
+mit einem Foto von MoveEyes Kopfkamera («Foto fürs Buch» oben in der Ansicht). Findet man lange nichts, meldet sich
+unten links Blinki mit einem leisen Hinweis (im gemeinsamen Fensterrahmen, abschaltbar unter Spiel → Entdecken oder mit ✕;
+wieder einschalten über «Fenster»). Im Camping-Platz drei Demo-Entdeckungen. In MoveEye: Simulator → Spielen → «Entdeckungen».
+So testest du: 1) Szene «Camping-Platz», Mittag: Schnellzugriff → Spielen → «Entdeckungen 0 von 3» – drei Karten «???».
+2) Hinter MoveEyes Kopf an den Wiesenrand fliegen: Steinmännchen, unten «Entdeckt: … 1 von 3». 3) Tageszeit Nacht 23:00,
+zum Holzstapel links hinten: Glühwürmchen. 4) MoveEyes Kopf nach rechts drehen, bis die Eule ganz im Bild ist → «Foto fürs
+Buch» antippen (oder in MoveEye «Entdeckungen» → «Foto für Entdeckungsbuch»). 5) 5 Minuten nichts finden → Blinki-Hinweis.
+
 NEU IN 3D-4.26
 3D-4.26: Alle schwebenden Fenster über der 3D-Ansicht (Kompass, Karte, Livebild, SmallTV, Gerät, Mover-Stick, Kopf
 steuern, Kameras bei zugeklapptem Bedienfeld, CPU-Anzeige) haben jetzt einen gemeinsamen Rahmen mit Titelleiste:
